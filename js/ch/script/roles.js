@@ -83,7 +83,9 @@ export const ROLES = {
   // two-person exchange (season 777: "I slept better last night" / "Don't say that out loud", both Jake).
   'morning-after': sc => { const a = sc.data.hurt?.[0] || sc.who[0];
     return { roles: { a, b: [sc.data.hurt?.[1], ...(sc.data.relieved || [])].find(x => x && x !== a) },
-    ending: sc.data.hurt?.length ? (sc.data.hurt.length > 1 ? 'mourning' : 'alone') : 'relief', slots: { gone: sc.data.gone } }; },
+    ending: sc.data.hurt?.length ? (sc.data.hurt.length > 1 ? 'mourning' : 'alone') : 'relief', slots: { gone: sc.data.gone, caller: sc.data.caller || undefined } }; },
+  // a: the friend of the one who left; b: the one who sent them (fallout.js payback)
+  payback: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.how === 'calledout' ? 'calledout' : 'voted', slots: { gone: sc.data.gone } }),
   quit: sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   medical: sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   // b: the one TJ is sending home, there to hear it (they leave the same day)

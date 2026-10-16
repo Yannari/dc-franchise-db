@@ -39,6 +39,8 @@ export const CH_FACT_KEYS = [
   'votedMe',
   // the caller volunteered rather than being voted in
   'volunteer',
+  // how the one who left went into the Arena: voted | calledout | volunteered (fallout.js)
+  'how',
 ];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -82,6 +84,7 @@ export function factsFor(scene, roles, state) {
     division: state.episodes.find(e => e.ep === scene.ep)?.division || null,
     votedMe: !!scene.data?.votedMe,
     volunteer: !!scene.data?.volunteer,
+    how: scene.data?.how || null,
   };
   if (a) {
     f.register = registerOf(a);

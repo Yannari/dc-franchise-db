@@ -853,13 +853,13 @@ export default {
 
   // ── the morning after ───────────────────────────────────────────────
   'morning-after.mourning': [
-    { id: 'ma.m1', turns: [
+    { id: 'ma.m1', when: { how: 'voted' }, turns: [
       { beat: "{gone}'s bunk is stripped. {a} sits on the edge of it." },
       { by: 'a', say: "It doesn't feel real that {gone} is gone." },
       { by: 'b', say: "I know. I keep looking for {gone} at breakfast." },
       { by: 'a', conf: "{gone} was my person in here. Now I have to figure out who put {gone} in that Arena, and I'm going to." },
     ] },
-    { id: 'ma.m2', turns: [
+    { id: 'ma.m2', when: { how: 'voted' }, turns: [
       { by: 'a', say: "Can I just say it? I'm really going to miss {gone}." },
       { by: 'b', say: "Me too. This house is different without {gone}." },
       { by: 'b', conf: "Losing {gone} hurts. But it also tells me who in this house doesn't care about the people I care about." },

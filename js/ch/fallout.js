@@ -15,13 +15,14 @@
 //                    those who know it exists (knowledge.js) — the rest blame
 //                    the obvious faces
 //   who gets credit  the friends who voted another way, said out loud
+import { gs } from '../core.js';
 import { getBond, addBond } from '../bonds.js';
 import { S, addScene } from './state.js';
 import { nudge } from './mind.js';
 import { remember, resentOf } from './rel.js';
 import { believedAlliances, knowsTarget } from './knowledge.js';
 
-export function morningAfter(state, { duel, vote, callout, meetings = [] }) {
+export function morningAfter(state, { duel, vote, callout, meetings = [], rng = Math.random, volunteer = false }) {
   const gone = duel.loser;
   const out = { gone, hurt: [], relieved: [], blamed: [], credited: [] };
   // Who sent them: the voters if the one voted in lost; the caller if the one
@@ -62,9 +63,39 @@ export function morningAfter(state, { duel, vote, callout, meetings = [] }) {
       if (S(o, 'temperament') < 5) for (const h of out.hurt) addBond(h, o, -0.5);
     }
   }
+  // How they went: voted in by the house, put in by their own hand, or picked by the one the house voted in
+  // (the user, 2026-10-16: Bowie was called out by Manu, and the mourners talked about "the votes")
+  const how = lostAsVotedIn ? (volunteer ? 'volunteered' : 'voted') : 'calledout';
+  const caller = how === 'calledout' && state.active.includes(callout?.by) ? callout.by : null;
   if (out.hurt.length || out.relieved.length) {
     addScene(state, 'morning-after', [...out.hurt.slice(0, 3), ...out.relieved.slice(0, 1)],
-      { gone, hurt: out.hurt, relieved: out.relieved, blamed: out.blamed.slice(0, 6) }, state.active, 'villa');
+      { gone, hurt: out.hurt, relieved: out.relieved, blamed: out.blamed.slice(0, 6), how, caller }, state.active, 'villa');
   }
+  out.payback = payback(state, rng, { gone, how, caller, culprits, hurt: out.hurt });
   return out;
+}
+
+// Payback (the user, 2026-10-16: "can people get mad at someone for choosing and eliminating someone they loved?
+// can it cause drama and heat?"). The friend who took it hardest goes to the one who did it: the caller, or after
+// a vote the voter they trust least. Saying it to a face takes nerve (closeness, boldness, a short fuse); everyone
+// else keeps it for the vote, where the grudge above already counts. Said out loud, it costs both of them: the
+// two are colder, the one confronted knows they have an enemy and sleeps worse, and the fans like the loyalty.
+function payback(state, rng, { gone, how, caller, culprits, hurt }) {
+  if (how === 'volunteered') return null;
+  const target = o => (how === 'calledout' ? (caller && caller !== o ? caller : null)
+    : [...culprits].filter(c => c !== o && state.active.includes(c)).sort((x, y) => getBond(o, x) - getBond(o, y))[0] || null);
+  const nerve = o => getBond(o, gone) * 0.35 + S(o, 'boldness') * 0.35 + (10 - S(o, 'temperament')) * 0.3;
+  const who = hurt.filter(o => target(o)).sort((x, y) => nerve(y) - nerve(x))[0];
+  if (!who) return null;
+  if (rng() >= Math.min(0.85, Math.max(0, (nerve(who) - 3) / 5))) return null;
+  const at = target(who);
+  addBond(who, at, -0.5);
+  addBond(at, who, -0.4);
+  remember(at, who, 'threatened-me', 0.8, { ally: gone });
+  remember(who, at, 'eliminated-ally', 0.4, { ally: gone });
+  nudge(state, at, 'paranoia', 0.6);
+  nudge(state, who, 'morale', 0.2);
+  gs.popularity ||= {}; gs.popularity[who] = (gs.popularity[who] || 0) + 0.3;
+  addScene(state, 'payback', [who, at], { gone, how }, state.active, 'villa');
+  return { by: who, at };
 }

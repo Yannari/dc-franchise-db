@@ -429,7 +429,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
         returnToHouse(state, winner, winner === m.a ? m.voters : [], { volunteered: m.volunteer && winner === m.a, calledOut: winner === m.b, beat: loser });
       }
       // The morning after comes after the winner has walked back in.
-      epRec.fallout = (epRec.fallout || []).concat(morningAfter(state, { duel, vote: m.vote, callout: m.callout, meetings: delib?.meetings || [] }));
+      epRec.fallout = (epRec.fallout || []).concat(morningAfter(state, { duel, vote: m.vote, callout: m.callout, meetings: delib?.meetings || [], rng: R(`payback${k}`), volunteer: m.volunteer }));
     }
     // Redemption House: the people waiting there fight for the way back (redemption.js)
     if (redemptionOn(state)) {

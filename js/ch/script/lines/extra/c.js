@@ -288,7 +288,7 @@ export default {
 
   // a: lost a close friend ({gone}) last night
   'morning-after.alone': [
-    { id: 'ma.ax1', turns: [
+    { id: 'ma.ax1', when: { how: 'voted' }, turns: [
       { beat: '{a} is up before anybody else, making two coffees out of habit, then pouring one away.' },
       { by: 'x', opt: 1, say: "You're up early." },
       { by: 'a', opt: 'x', say: "Couldn't sleep." },
@@ -327,7 +327,7 @@ export default {
       { by: 'a', say: "Then we stay in it." },
       { by: 'b', conf: "{a} and I lost the same person last night. Now we've only got each other." },
     ] },
-    { id: 'ma.mx2', turns: [
+    { id: 'ma.mx2', when: { how: 'voted' }, turns: [
       { beat: '{a} and {b} sit on {gone}\'s empty bed.' },
       { by: 'b', say: "Do you remember the first night? When {gone} wouldn't stop talking?" },
       { by: 'a', say: "Till four in the morning. About nothing." },

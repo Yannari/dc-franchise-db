@@ -43,7 +43,9 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   // a friend goes to the one who sent their friend home (fallout.js payback); the goodbye at the gate (goodbye.js)
   'payback', 'arena-goodbye',
   // the worst thing somebody was called in a daily, said to a face (daily/named.js)
-  'named-fallout']);
+  'named-fallout',
+  // the mean ones being mean (cruel.js)
+  'mock', 'gloat']);
 const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-form', 'arena-eve-confront', 'arena-eve-pep',
   'arena-eve-alone', 'morning-after', 'fight', 'team-blame', 'partner-blame', 'throw-caught', 'jealousy', 'receipts',
   'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout', 'spark', 'party-deal', 'party-tears', 'expelled-victim',
@@ -52,7 +54,7 @@ const STORY = new Set(['gym-training', 'pool-games', 'house-dinner', 'beach-run'
   'ride-to-the-final', 'psyche', 'homesick', 'call-home', 'gossip-backfire', 'ex-in-the-house', 'trash-talk',
   'vet-dismisses', 'vet-mentors-rookie', 'beach-date', 'hot-tub-truths', 'show-banter', 'rookie-hazing', 'throw', 'injury-healed', 'pass-flex']);
 const WARM = new Set(['flirt', 'beach-date', 'spark', 'vet-mentors-rookie', 'apology', 'hot-tub-truths', 'arena-eve-pep']);
-const ROW = new Set(['payback', 'fight', 'fight-physical', 'kitchen-blowup', 'receipts', 'trash-talk', 'partner-blame', 'jealousy']);
+const ROW = new Set(['mock', 'gloat', 'payback', 'fight', 'fight-physical', 'kitchen-blowup', 'receipts', 'trash-talk', 'partner-blame', 'jealousy']);
 const CAPS = { spark: 2, meeting: 2, recruit: 2, 'alliance-form': 2, plea: 2, 'leverage-threat': 1, 'counter-pitch': 1, 'spare-deal': 1, 'arena-eve-pep': 2, 'arena-eve-alone': 1 };
 const DAY_BUDGET = 7;   // non-must scenes per day, before the vote (or before the Arena)
 const AFTER_BUDGET = 7; // ...and after it: the night after the vote, the night after the Arena

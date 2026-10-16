@@ -14,11 +14,12 @@ import twists from './twists.js';
 import payback from './payback.js';
 import goodbye from './goodbye.js';
 import named from './named.js';
+import cruel from './cruel.js';
 import VOICES, { joinVariants } from './voices/index.js';
 import LONGER from './longer/index.js';
 import EXTRA from './extra/index.js';
 
-export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign, stakes, twists, goodbye, named);
+export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign, stakes, twists, goodbye, named, cruel);
 
 // more entries for the same pools, appended (never a replacement: a key here adds to the pool)
 // (payback.js adds to pools other files own: appended, like the extras)

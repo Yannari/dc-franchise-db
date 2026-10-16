@@ -192,6 +192,8 @@ describe('The Challenge, as aired', () => {
     for (const r of seasons) for (const e of r.episodes) for (const a of e.aired || []) {
       const ls = (a.script?.lines || []).filter(l => l.kind === 'say' && l.by && l.by !== 'TJ');
       for (let i = 1; i < ls.length; i++) {
+        // a "previously" is clips: two clips that happen to be the same person's are not one exchange
+        if (JSON.stringify(ls[i].shot || null) !== JSON.stringify(ls[i - 1].shot || null)) continue;
         expect(ls[i].by === ls[i - 1].by && /^(oh no|don'?t|shh|maybe don'?t|probably keep|never say)/i.test(ls[i].text), `${a.kind} ep ${e.ep}: ${ls[i - 1].by} answers ${ls[i].by}`).toBe(false);
       }
     }

@@ -87,6 +87,9 @@ export const ROLES = {
   'morning-after': sc => { const a = sc.data.hurt?.[0] || sc.who[0];
     return { roles: { a, b: [sc.data.hurt?.[1], ...(sc.data.relieved || [])].find(x => x && x !== a) },
     ending: sc.data.hurt?.length ? (sc.data.hurt.length > 1 ? 'mourning' : 'alone') : 'relief', slots: { gone: sc.data.gone, caller: sc.data.caller || undefined } }; },
+  // the mean ones (cruel.js): a mocks b, c (a kind friend) steps in; a gloats at b, voted in
+  mock: sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.defender ? 'defended' : 'alone', slots: { game: sc.data.daily || undefined } }),
+  gloat: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   // a: the one named in the daily, out loud; b: who named them (daily/named.js). {called}: what they were called
   'named-fallout': sc => ({ roles: { a: sc.who[0], b: sc.who[1] },
     ending: ['dish', 'cup'].includes(sc.data.q) ? 'picked' : sc.data.kind === 'betrayed' ? 'betrayed' : 'fires',

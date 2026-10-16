@@ -47,6 +47,7 @@ import { payDaily, arenaPurse, hurt, medicalRisk, healDay, powerRankings, earnPa
 import { purge, returnArena } from './ep-twists.js';
 import { arenaGoodbye } from './goodbye.js';
 import { worstSting } from './daily/named.js';
+import { mockAfterDaily, gloatAfterVote } from './cruel.js';
 import { redemptionOn, houseTakes, sendToRedemption, redemptionWatch, redemptionNight, returnFromRedemption, closeForFinal } from './redemption.js';
 
 // The Tribunal: the daily's winners, or the three who did best on a winning team.
@@ -249,6 +250,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       if (st && state.active.includes(st.by) && state.active.includes(st.named)) {
         addScene(state, 'named-fallout', [st.named, st.by], { q: st.q, kind: st.kind, daily: daily.name || null }, state.active, 'villa');
       }
+      // the mean ones: somebody mocks whoever choked or came last (cruel.js)
+      mockAfterDaily(state, R('mock'), daily);
       // the purge: the slowest goes home before anybody can vote, and that is this week's elimination
       if (twist === 'purge' && elimsFor(schedule, idx, state.active.length - opts.finalists + returnsAhead(idx)) > 0) {
         purged = purge(state, daily, division);
@@ -343,6 +346,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
           .sort((x, y) => getBond(votedIn, y) - getBond(votedIn, x))[0];
         const stung = vote.ballots.filter(x => x.target === votedIn && getBond(votedIn, x.voter) >= 2).sort((x, y) => getBond(votedIn, y.voter) - getBond(votedIn, x.voter))[0]?.voter || null;
         if (friend) addScene(state, 'after-vote', [votedIn, friend, ...(stung ? [stung] : [])], { count: vote.tally?.[votedIn] || 0, stung }, [votedIn, friend], 'villa');
+        // and somebody who said the name rubs it in (cruel.js)
+        gloatAfterVote(state, R(`gloat${k}`), vote);
       }
       // The call-out.
       const pool = eligible.filter(n => n !== votedIn && !used.has(n));

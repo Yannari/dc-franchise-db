@@ -331,7 +331,7 @@ export default {
       { by: 'b', say: "At least you were on it somewhere near the middle." },
       { by: 'a', say: "Honestly, I'd take the middle. Top is too loud." },
       { by: 'b', say: "Then lose a daily. Problem solved." },
-      { by: 'a', conf: "I've won enough to be number one, and now I have to win more because I'm number one. That's how this works." },
+      { by: 'a', conf: "I'm number one, and now I have to keep proving it every single week. That's how this works." },
     ] },
   ],
 

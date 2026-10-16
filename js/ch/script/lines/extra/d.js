@@ -56,7 +56,7 @@ export default {
       { by: 'b', say: "Are you asking me to be your girlfriend? Boyfriend? Partner? In a villa?" },
       { by: 'a', say: "Maybe. Is that weird?" },
       { by: 'b', say: "Very weird. Yes." },
-      { by: 'a', conf: "I didn't come here to fall for somebody. That plan lasted about two weeks." },
+      { by: 'a', conf: "I didn't come here to fall for somebody. That plan didn't last very long." },
     ] },
     { id: 'sh.x3', turns: [
       { beat: '{a} and {b} are curled up in the hammock. Somebody walks past and pretends not to see.' },

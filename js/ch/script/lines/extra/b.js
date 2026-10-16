@@ -364,7 +364,7 @@ export default {
       { by: 'b', say: "Thank you." },
       { by: 'a', say: "Can I say one thing, though?" },
       { by: 'b', say: "One thing." },
-      { by: 'a', say: "You said the same thing the night before your last daily. And you won that." },
+      { by: 'a', say: "Everybody who's ever gone into that Arena felt like this the night before. Plenty of them walked back in." },
       { by: 'b', conf: "{a} remembered something I'd forgotten. That's the difference between a friend and an ally in here." },
     ] },
   ],

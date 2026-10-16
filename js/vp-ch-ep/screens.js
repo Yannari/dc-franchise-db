@@ -470,6 +470,8 @@ if (typeof document !== 'undefined') {
       if (!root) return;
       const R = runner(root);
       if (R && R.idx < 0) goTo(R, 0, false, true);
+      // back on a screen already watched: the music of the step it is on, not of its first step
+      else if (R) playStep(R.scr, R.idx, false);
     }, 0);
   });
   document.addEventListener('keydown', e => {

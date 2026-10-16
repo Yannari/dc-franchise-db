@@ -150,13 +150,15 @@ for (const [name, s] of Object.entries(CH_STINGS)) {
     src.onended = () => { const i = live.indexOf(item); if (i >= 0) live.splice(i, 1); };
   } };
 }
-/** Fade out a crowd still cheering (the next line has started). */
-export function stopCrowd(fade = 0.6) {
+/** Fade out a crowd still cheering (the next line has started), and anything else still sounding from an
+ *  earlier step (an engine, a motor): a sting belongs to its step. `all`: every sting, now (a new screen, the
+ *  Viewing Party closed). */
+export function stopCrowd(fade = 0.6, all = false) {
   for (const it of live.slice()) {
-    if (!CROWD.has(it.name)) continue;
     try {
       const c = it.g.context; const now = c.currentTime;
-      if (now - it.at < 0.4) continue;   // the one that has only just started is this step's own
+      if (!all && !CROWD.has(it.name) && now - it.at < 1.2) continue;   // a short sting finishes by itself
+      if (!all && now - it.at < 0.4) continue;   // the one that has only just started is this step's own
       it.g.gain.cancelScheduledValues(now);
       it.g.gain.setValueAtTime(it.g.gain.value, now);
       it.g.gain.linearRampToValueAtTime(0.0001, now + fade);
@@ -376,4 +378,4 @@ export function playStep(screen, idx, sting = true) {
   } catch { /* sound must never break a screen */ }
 }
 
-if (typeof document !== 'undefined') { document.addEventListener('vp:screen', () => stopCrowd(0.3)); document.addEventListener('vp:close', () => stopCrowd(0.2)); }
+if (typeof document !== 'undefined') { document.addEventListener('vp:screen', () => stopCrowd(0.3, true)); document.addEventListener('vp:close', () => stopCrowd(0.2, true)); }

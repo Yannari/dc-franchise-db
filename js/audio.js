@@ -428,6 +428,7 @@ export class AudioEngine {
     const now = this._ctx.currentTime;
     if (this._bedNodes) { try { this._bedNodes.stop(now); } catch (e) {} this._bedNodes = null; }
     this._currentBed = null;
+    this._bedToken = (this._bedToken || 0) + 1;   // a file still loading for the old bed must not start
     if (!name) return;
     const bed = resolveBed(name);
     if (!bed) return;
@@ -454,8 +455,13 @@ export class AudioEngine {
   _playBedFile(name, bed) {
     const ctx = this._ctx;
     const target = typeof bed.volume === 'number' ? bed.volume : 0.4;
+    // Only the latest request may start. Asked for A, then B, then A again while A was still loading,
+    // both loads of A used to start, and the first loop was no longer referenced: it played on under
+    // every later bed and through a closed Viewing Party (the user, 2026-10-16: "the sound doesn't stop").
+    const token = this._bedToken = (this._bedToken || 0) + 1;
     const start = (buffer) => {
-      if (this._currentBed !== name || !this._ctx) return; // user switched beds mid-load
+      if (token !== this._bedToken || this._currentBed !== name || !this._ctx) return; // switched (or re-asked) mid-load
+      if (this._bedNodes) { try { this._bedNodes.stop(ctx.currentTime, 0.3); } catch (e) {} this._bedNodes = null; }
       try {
         const src = ctx.createBufferSource();
         src.buffer = buffer; src.loop = true;

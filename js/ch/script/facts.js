@@ -51,6 +51,8 @@ export const CH_FACT_KEYS = [
   // how a champion won (final.js pathOf), and the second champion's: showmance | survival | challenge | strategy |
   // drama | friendship | social | grind
   'path', 'pathB',
+  // the daily a scene comes out of was a physical one (dailies.js physicality): "the end of the course" needs it
+  'physical',
 ];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -101,6 +103,7 @@ export function factsFor(scene, roles, state) {
     mood: scene.data?.mood || null,
     path: scene.data?.path || null,
     pathB: scene.data?.pathB || null,
+    physical: scene.data?.physical ?? null,
   };
   if (a) {
     f.register = registerOf(a);

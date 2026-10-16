@@ -56,7 +56,7 @@ export default {
     },
     2: {
       dry: ["I was close to asking to leave. Then {b} showed up.", "I was ready to ask TJ to send me home. {b} found me first."],
-      loud: ["I was about to quit! Then {b} came and found me!", "I almost asked to go home tonight. {b} stopped me."],
+      loud: ["I was about to quit! Then {b} came and found me!", "I was one sentence away from asking TJ for a plane ticket. {b} stopped me."],
       soft: ["I was so close to asking to go home. Then {b} came looking for me, and I didn't feel so alone.", "I almost gave up tonight. {b} found me just in time."],
       odd: ["I was ready to pack my bag. Then {b} found me.", "I was this close to quitting. Then {b} showed up."],
     },
@@ -221,7 +221,7 @@ export default {
     1: {
       sharp: ["Am I supposed to be scared?", "Cute. Is that supposed to scare me?"],
       dry: ["Is that meant to scare me?", "Is that supposed to scare me, or what?"],
-      loud: ["Is that supposed to SCARE me?", "Ooh. Am I supposed to be scared now?!"],
+      loud: ["Is that supposed to SCARE me?", "Ooh. Is that supposed to scare me now?!"],
       soft: ["Are you trying to scare me?", "Why would you say that? Is that supposed to scare me?"],
       odd: ["Is that supposed to scare me? I'm going to need a minute.", "Was that supposed to be scary? Because it was a little scary."],
     },

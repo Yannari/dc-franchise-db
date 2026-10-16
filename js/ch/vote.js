@@ -299,6 +299,8 @@ export function houseDebate(state, delib, eligible) {
   const c = objectors[0] || null;
   if (!c) return null;
   const alt = intents[c] && intents[c] !== target && eligible.includes(intents[c]) && intents[c] !== c ? intents[c] : null;
+  // the one c puts forward does not take the organiser's side as if it were somebody else's name
+  const d2 = d === alt ? yes.filter(n => n !== alt)[0] || null : d;
   // the reasons said out loud are the real ones (the user, 2026-10-16: "why is everyone so scared of Evie, she
   // was last in TJ's rankings and bad at challenges"): read off the record, never a stock "bigger threat"
   // the reason PITCHED is the one the room will buy (a threat beats a grudge in public); when the speaker's own
@@ -310,8 +312,8 @@ export function houseDebate(state, delib, eligible) {
     topWeeks: state.episodes.filter(e => e.rankings?.[0]?.n === n).length });
   const truth = said.real !== said.said ? TRUTH[said.real]?.(a, target, said.said, state.ep + a.length + target.length) : null;
   // a couple more voices from the room: someone who agreed at the meeting, someone close to the name
-  const more = state.active.filter(n => ![a, target, c, d].includes(n)).sort((x, y) => Math.abs(getBond(target, y)) - Math.abs(getBond(target, x))).slice(0, 2);
-  const who = [a, target, c, ...(d ? [d] : []), ...more];
+  const more = state.active.filter(n => ![a, target, c, d2, alt].includes(n)).sort((x, y) => Math.abs(getBond(target, y)) - Math.abs(getBond(target, x))).slice(0, 2);
+  const who = [a, target, c, ...(d2 ? [d2] : []), ...more];
   return addScene(state, 'house-debate', who, { target, alt, organiser: a, why, altWhy, whyFacts: facts(target), altFacts: alt ? facts(alt) : null,
     ...(truth ? { afterConf: { by: a, text: truth } } : {}) }, state.active, 'deliberation');
 }

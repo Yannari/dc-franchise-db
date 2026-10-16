@@ -298,7 +298,7 @@ export function playDaily(state, rng, { division, pin = null }) {
   if (vsExp[0]?.d > 1.2) moments.push({ kind: 'clutch', who: vsExp[0].n });
   const worst = vsExp[vsExp.length - 1];
   if (worst?.d < -1.5 && !throws.some(t => t.name === worst.n)) moments.push({ kind: 'choke', who: worst.n });
-  for (const m of moments) addScene(state, `daily-${m.kind}`, [m.who], { daily: daily.id }, state.active, 'public');
+  for (const m of moments) addScene(state, `daily-${m.kind}`, [m.who], { daily: daily.id, physical: (daily.physicality || 0) >= 0.8 }, state.active, 'public');
   // The reward: sometimes a call home for the winners (spec §4.8).
   let reward = null;
   if (rng() < 0.3) {

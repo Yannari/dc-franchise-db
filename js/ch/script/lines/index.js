@@ -87,6 +87,9 @@ for (const list of Object.values(POOLS)) {
 //   meaning dropped     under 45% of a line of ten words or more ("I needed that." for a confessional's reason)
 //   stock               a line of five words or more pasted onto three different turns outside the ballots: it
 //                       was not written for this conversation, and the reply after it was
+//   nameless            the line says who (somebody other than the speaker) and the variant names nobody: "I
+//                       saw {b} and {c} in the gym with the door shut" became "I wish I hadn't seen it", and the
+//                       scene was about nothing (read 2026-10-16)
 const words = s => String(s).replace(/\{[^}]+\}/g, 'X').split(/\s+/).filter(Boolean).length;
 const sentences = s => String(s).split(/(?<=[.!?])\s+/).filter(Boolean);
 const stockUse = {};
@@ -94,21 +97,25 @@ for (const [k, list] of Object.entries(POOLS)) {
   if (k.startsWith('ballot')) continue;
   for (const e of list) e.turns.forEach((t, i) => { for (const vs of Object.values(t.v || {})) for (const v of [vs].flat()) (stockUse[v] ||= new Set()).add(`${e.id}:${i}`); });
 }
-export function variantFails(v, base, stock = 0) {
+const namesIn = (s, by) => new Set([...String(s).matchAll(/\{(\w+)(?:\.\w+)?\}/g)].map(m => m[1]).filter(n => n !== by));
+export function variantFails(v, base, stock = 0, by = null) {
   const ss = sentences(v);
+  // a name said only to address somebody ("Thanks, {b}.") is not what the line is about
+  const named = namesIn(String(base).replace(/^\{\w+\}[,!]\s*/, '').replace(/,\s*\{\w+\}(?=[.!?])/g, ''), by);
+  if (named.size && words(base) >= 9 && !namesIn(v, by).size) return 'nameless';
   if (ss.length >= 3 && ss.filter(x => x.endsWith('!') && words(x) <= 3).length >= 2) return 'fragments';
   if (words(base) >= 10 && words(v) < words(base) * 0.45) return 'dropped';
   if (stock >= 3 && words(v) >= 5) return 'stock';
   return null;
 }
-export const PRUNED = { fragments: 0, dropped: 0, stock: 0 };
+export const PRUNED = { fragments: 0, dropped: 0, stock: 0, nameless: 0 };
 for (const [k, list] of Object.entries(POOLS)) {
   for (const e of list) for (const t of e.turns) {
     if (!t.v) continue;
     const base = t.say || t.conf || '';
     const kept = {};
     for (const [tag, vs] of Object.entries(t.v)) {
-      const ok = [vs].flat().filter(v => { const why = variantFails(v, base, k.startsWith('ballot') ? 0 : stockUse[v]?.size || 0); if (why) PRUNED[why]++; return !why; });
+      const ok = [vs].flat().filter(v => { const why = variantFails(v, base, k.startsWith('ballot') ? 0 : stockUse[v]?.size || 0, t.by); if (why) PRUNED[why]++; return !why; });
       if (ok.length) kept[tag] = ok.length === 1 ? ok[0] : ok;
     }
     t.v = Object.keys(kept).length ? kept : undefined;

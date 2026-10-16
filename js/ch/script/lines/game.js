@@ -641,7 +641,7 @@ export default {
       { by: 'a', conf: "I froze. I have no idea what happened. My brain just stopped.", v: { loud: ['I choked! I completely CHOKED!'], soft: ['I\'m so embarrassed. I wanted the ground to swallow me.'], sharp: ['One bad day. That\'s all it was. One bad day.'] } },
     ] },
     { id: 'dk.2', turns: [
-      { by: 'a', conf: "I fell apart today. I can already feel them deciding I'm weak.", v: { odd: ['I fell off the thing. All of the things.'] } },
+      { by: 'a', conf: "I fell apart today. I can already feel them deciding I'm weak.", v: { odd: ['I fell apart. All the way apart. Pieces everywhere.'] } },
     ] },
     { id: 'dk.3', turns: [
       { by: 'a', conf: "I'm better than that. I know I'm better than that. That's what makes it so bad.", v: { soft: ['I just want to go hide in my bunk.'] } },

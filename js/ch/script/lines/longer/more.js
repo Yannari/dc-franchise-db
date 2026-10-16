@@ -12,7 +12,7 @@ export default {
     { by: 'a', say: "Every week? The same people, the same name, every single week?" },
     3,
     { by: 'b', say: "Say whatever you want. Nobody's going to believe you." },
-    { by: 'a', say: "Maybe. But you said it, and we all heard you." },
+    { by: 'a', say: "Maybe. But now everybody's going to watch who votes with you." },
     4,
     { by: 'b', conf: "{a} has nothing left, so {a} told everybody. I have to fix this before the vote, and I don't have long." }],
   'ou.2': [0, 1, 2,

@@ -160,7 +160,7 @@ export default {
       { by: 'a', conf: "I fell over twice in front of {b}, and somehow I'm the one getting complimented. I'll take it." },
     ] },
     { id: 'fl.bx3', turns: [
-      { beat: '{a} is reading on the deck. {b} lies down on the lounger next to it.' },
+      { beat: '{a} is reading on the deck. {b} lies down on the lounger next to {a}.' },
       { by: 'b', say: "What are you reading?" },
       { by: 'a', say: "The same page, for the last ten minutes." },
       { by: 'b', say: "Why?" },
@@ -488,11 +488,11 @@ export default {
 
   // a: dug deep in a daily
   'daily-clutch.any': [
-    { id: 'dc.x1', turns: [
+    { id: 'dc.x1', when: { physical: true }, turns: [
       { beat: '{a} is bent double at the end of the course, hands on {a.posAdj} knees.' },
       { by: 'a', conf: "Halfway through I was done. Completely done. Then I thought about going back to that villa as the one who gave up." },
     ] },
-    { id: 'dc.x2', turns: [
+    { id: 'dc.x2', when: { physical: true }, turns: [
       { by: 'a', conf: "My arms stopped working about two minutes before the end. I just told them to keep going anyway." },
       { by: 'a', conf: "I didn't know I had that in me. Now everybody else knows I do, too." },
     ] },
@@ -531,9 +531,9 @@ export default {
       { by: 'b', say: "From you? No." },
       { by: 'a', say: "Don't pick me." },
       { by: 'b', say: "That's not advice. That's begging." },
-      { by: 'a', say: "It's advice. I've never lost in there." },
-      { by: 'b', say: "There's a first time for everything." },
-      { by: 'b', conf: "I said it like I meant it. But {a} has never lost in there, and I lay awake thinking about that all night." },
+      { by: 'a', say: "It's advice. You do not want me in there with you." },
+      { by: 'b', say: "We'll see about that." },
+      { by: 'b', conf: "I said it like I meant it. But {a} looked very sure, and I lay awake thinking about that all night." },
     ] },
   ],
 

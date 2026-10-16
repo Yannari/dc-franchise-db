@@ -209,7 +209,7 @@ export default {
     { id: 'rg.dc2', when: { register: 'sweet' }, turns: [
       { by: 'a', conf: "I was ready to quit. Then I thought about my family watching at home, and I just couldn't let go. I'm so proud of myself." },
     ] },
-    { id: 'rg.dc3', when: { register: 'fiery' }, turns: [
+    { id: 'rg.dc3', when: { register: 'fiery', physical: true }, turns: [
       { by: 'a', conf: "I was so angry out there. At the course, at the heat, at everybody. I turned all of it into speed." },
     ] },
   ],

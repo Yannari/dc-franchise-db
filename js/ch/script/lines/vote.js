@@ -392,7 +392,7 @@ export default {
       { beat: '{a} goes straight to the bedroom. {b} follows a minute later.' },
       { by: 'b', say: "Can I sit?" },
       { by: 'a', say: "Yeah. I just didn't want to be in there with all of them." },
-      { by: 'b', say: "You've been in the Arena before. You know what to do." },
+      { by: 'b', say: "You can win in there. I've watched you all season." },
       { by: 'a', say: "I know. I just hate that it was this easy for them." },
       { by: 'a', conf: "{count} votes. They didn't even have to argue about it." },
     ] },

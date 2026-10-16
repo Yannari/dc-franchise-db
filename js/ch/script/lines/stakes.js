@@ -137,8 +137,7 @@ export default {
       { by: 'b', conf: "Last. TJ put me last in front of everybody. Fine. Let him watch what last place does in the Arena." },
     ] },
     { id: 'st.pr2', turns: [
-      { by: 'x', opt: 1, say: "Well. That was fun." },
-      { by: 'a', say: "Fun for who? He basically drew a target on my back." },
+      { by: 'a', say: "Did you hear that? TJ basically drew a target on my back." },
       { by: 'b', say: "Try being on the bottom of it." },
       { by: 'a', say: "I'd swap with you." },
       { by: 'b', say: "No you wouldn't." },

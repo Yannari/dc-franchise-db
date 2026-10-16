@@ -508,7 +508,7 @@ const LANDED = [
   (j, f, p) => `${j} nods once, slowly, in the way of somebody adjusting a decision they thought was finished.`,
   (j, f, p) => `${j} tries not to react and fails at the corners of the mouth. That answer bought something.`,
   (j, f, p) => `A juror two seats down whispers, "That was good." ${j} hears it and does not disagree.`,
-  (j, f, p) => `${j} came ready for an excuse. ${f} gave ${p.obj} an answer instead.`,
+  (j, f, p) => `${j} came ready for an excuse. ${f} gave ${j} an answer instead.`,   // p is the finalist's: name the juror
   (j, f, p) => `For the first time tonight, ${j} writes something down and underlines it.`,
 ];
 

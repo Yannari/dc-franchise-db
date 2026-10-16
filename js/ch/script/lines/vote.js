@@ -453,6 +453,15 @@ export default {
       { by: 'tj', say: "And that's {count} for {a}! You're going in, my friend. Tomorrow night, at the Arena, you choose your fighter." },
       { by: 'a', conf: "I'm not going to cry about it. I'm going to go in there and win." },
     ] },
+    // no count (a single vote has no count line: roles.js)
+    { id: 'cr.c4', turns: [
+      { by: 'tj', say: "That's the vote. {a}, you're going into the Arena tomorrow night, and you get to pick who goes in with you." }, 
+      { by: 'a', conf: "It's done. Now I get to choose, and I'm going to choose well." },
+    ] },
+    { id: 'cr.c5', turns: [
+      { by: 'tj', say: "The votes are in. {a}, it's you. Tomorrow night, the Arena." },
+      { by: 'a', say: "Fine. Then I'll make tomorrow count." },
+    ] },
   ],
   'cer-result.tie': [
     { id: 'ct.1', turns: [

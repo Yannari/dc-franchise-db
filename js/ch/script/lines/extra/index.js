@@ -5,5 +5,6 @@ import b from './b.js';
 import c from './c.js';
 import d from './d.js';
 import e from './e.js';
+import f from './f.js';
 
-export default [a, b, c, d, e];
+export default [a, b, c, d, e, f];

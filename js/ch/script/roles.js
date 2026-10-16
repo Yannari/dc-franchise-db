@@ -57,7 +57,7 @@ export const ROLES = {
   'beach-run': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.friendly ? 'friendly' : 'rivals' }),
   'sunset-talk': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.endgame ? 'endgame' : 'home' }),
   'bunk-whisper': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.heard || undefined }, ending: sc.data.heard ? 'heard' : 'safe' }),
-  'after-vote': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.stung || undefined }, ending: sc.data.stung ? 'stung' : 'any', slots: { count: COUNT_WORD[sc.data.count] || String(sc.data.count) } }),
+  'after-vote': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.stung || undefined }, ending: sc.data.stung ? 'stung' : 'any', slots: { count: sc.data.count >= 2 ? COUNT_WORD[sc.data.count] || String(sc.data.count) : undefined } }),   // "One votes": a single vote has no count line
   daily: sc => ({ roles: { a: sc.data.winners[0], b: sc.data.winners[1], c: sc.data.last?.[0] }, ending: sc.data.mode,
     slots: { game: sc.data.dailyName } }),
   meeting: sc => {
@@ -219,7 +219,7 @@ export const ROLES = {
   ballot: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.why }),
   // a ballot that says why (vote.js reasonOf): the voter's own reason, out loud
   'ballot-why': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.reason }),
-  'cer-result': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.tie ? 'tie' : 'clear', slots: { count: sc.data.count } }),
+  'cer-result': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.tie ? 'tie' : 'clear', slots: { count: [1, '1', 'one', 'One'].includes(sc.data.count) ? undefined : sc.data.count } }),   // ceremony.js passes a word
   // the Tribunal (format.js tribunal)
   'cer-nominees': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any' }),
   'tribunal-pitch': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.mode }),

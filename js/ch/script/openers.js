@@ -84,6 +84,7 @@ export const OPENERS = {
   'bunk-war': ["There's one good bunk left, and {a} and {b} both want it."],
   'sunset-talk': ['{a} and {b} sit on the sand and watch the sun go down.'],
   'arc-giant-falls': ['The morning after the Arena, the house wakes up to a strange quiet.'],
+  'house-debate': ['Before the vote, the house ends up in the common room. Somebody has to start it.', 'Dinner is over, but nobody gets up from the table. The vote is tomorrow.', 'Out on the deck, the vote comes up again, and this time nobody changes the subject.'],
   'partner-draw': ['TJ has a hat full of names, and today everybody gets a partner.'],
 };
 

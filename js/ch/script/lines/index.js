@@ -12,8 +12,12 @@ import campaign from './campaign.js';
 import stakes from './stakes.js';
 import VOICES, { joinVariants } from './voices/index.js';
 import LONGER from './longer/index.js';
+import EXTRA from './extra/index.js';
 
 export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign, stakes);
+
+// more entries for the same pools, appended (never a replacement: a key here adds to the pool)
+for (const more of EXTRA) for (const [k, list] of Object.entries(more)) (POOLS[k] ||= []).push(...list);
 
 for (const list of Object.values(POOLS)) {
   for (const e of list) {

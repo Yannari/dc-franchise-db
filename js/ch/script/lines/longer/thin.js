@@ -12,8 +12,8 @@ export default {
     { by: 'a', opt: 'x', say: "It's fine! It's a little bit on fire, but it's fine!" },
     2],
   'kd.a2': [0, 1,
-    { by: 'x', opt: 1, say: "Are they supposed to be that colour?" },
-    { by: 'a', opt: 'x', say: "That's the colour of love." },
+    { by: 'x', opt: 1, say: "Are they supposed to be that color?" },
+    { by: 'a', opt: 'x', say: "That's the color of love." },
     { by: 'x', opt: 1, say: "Love looks undercooked." },
     2],
   'kd.a3': [

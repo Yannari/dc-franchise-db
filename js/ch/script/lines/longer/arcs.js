@@ -30,7 +30,7 @@ export default {
     { by: 'b', say: "It was a long time ago. We're both here now." },
     { by: 'a', say: "We're both here now. That doesn't make us friends." },
     2,
-    { by: 'b', conf: "{a} hasn't let it go. Fine. I'm not going to spend this whole game apologising for {show_a}." }],
+    { by: 'b', conf: "{a} hasn't let it go. Fine. I'm not going to spend this whole game apologizing for {show_a}." }],
 
   // ── the villa, for the first time ──
   'ar.s1': [0, 1, 2,

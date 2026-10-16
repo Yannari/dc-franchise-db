@@ -81,11 +81,11 @@ export default {
       { by: 'b', say: "Still {opt1} or {opt2}?" },
       { by: 'a', say: "Still {opt1} or {opt2}." },
       { by: 'b', say: "So which one is it?" },
-      { by: 'a', say: "I keep thinking about who'd pick me if it was the other way round." },
+      { by: 'a', say: "I keep thinking about who'd pick me if it was the other way around." },
       { by: 'b', say: "And?" },
       { by: 'a', say: "Both of them. In a second. Neither one would think twice." },
       { by: 'b', say: "Then you don't owe either of them anything." },
-      { beat: '{a} snaps the stick in half and throws it towards the water.' },
+      { beat: '{a} snaps the stick in half and throws it toward the water.' },
       { by: 'a', conf: "It's not personal. Okay, it's a little bit personal." },
     ] },
     { id: 'pick.x8', turns: [
@@ -128,7 +128,7 @@ export default {
       { by: 'b', conf: "Everybody's trying to work out what {target} is thinking, and I don't think {target} has decided either." },
     ] },
     { id: 'guess.x3', turns: [
-      { beat: 'A few of them are lying round the pool, pretending to sunbathe.' },
+      { beat: 'A few of them are lying around the pool, pretending to sunbathe.' },
       { by: 'b', say: "I can't do this. Somebody say something normal." },
       { by: 'a', say: "The food here is really good." },
       { by: 'b', say: "Thank you." },
@@ -246,7 +246,7 @@ export default {
     ] },
     { id: 'hd.sx5', turns: [
       { beat: 'The house sits in a circle on the deck. Somebody suggested it. Everybody already regrets it.' },
-      { by: 'a', say: "So we go round and everybody says a name?" },
+      { by: 'a', say: "So we go around and everybody says a name?" },
       { by: 'd', say: "That's the idea." },
       { by: 'a', say: "Then I'll start. {b}. {case}." },
       { by: 'd', say: "Same. {b}." },

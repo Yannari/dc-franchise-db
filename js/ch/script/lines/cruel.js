@@ -19,7 +19,7 @@ export default {
       { by: 'b', say: "What are you talking about?" },
       { by: 'a', say: "{game}. I'm trying to work out if you were bad on purpose. It would be smart, honestly. Nobody votes in somebody who can't win anything." },
       { by: 'b', say: "I had a bad day." },
-      { by: 'a', say: "You've had a bad season. Today was just the one with an audience." },
+      { by: 'a', say: "Maybe. Or maybe that's how you are, and today everybody got to see it." },
       { by: 'b', say: "Are you done?" },
       { by: 'a', say: "For now. I'll pace myself." },
       { by: 'a', conf: "I'm not cruel. I'm accurate. It just feels the same to people who are losing." },

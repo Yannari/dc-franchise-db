@@ -22,7 +22,7 @@ import { stableRng } from '../../script/rng.js';
 const P = (n, k) => pronouns(n)?.[k] || ({ sub: 'they', obj: 'them', posAdj: 'their', ref: 'themself' })[k];
 const REACT = {
   hurt: [
-    (v, t) => [['beat', `${t} turns round on the sofa and stares at ${v}.`], ['say', t, `${v}? Seriously?`], ['say', v, "I'm sorry. I had to."]],
+    (v, t) => [['beat', `${t} turns around on the sofa and stares at ${v}.`], ['say', t, `${v}? Seriously?`], ['say', v, "I'm sorry. I had to."]],
     (v, t) => [['say', t, `Wow. ${v}. Okay.`], ['beat', `${v} won't look at ${t}.`]],
     (v, t) => [['say', t, `You told me this morning I was safe.`], ['say', v, "Things changed."], ['say', t, "Yeah. You did."]],
     (v, t) => [['beat', `${t} laughs, but it isn't a happy laugh.`], ['say', t, `Of all people. You.`]],
@@ -43,7 +43,7 @@ const REACT = {
     (v, t) => [['say', t, "That's fine. That's fine."]],
   ],
   offscript: [
-    (v, t, x) => [['beat', `A gasp goes round the room. That is not the name ${v} gave anybody this morning.`], ['say', x || 'TJ', x ? `${v}! What are you doing?` : "Ohhh! Somebody's off script!"]],
+    (v, t, x) => [['beat', `A gasp goes around the room. That is not the name ${v} gave anybody this morning.`], ['say', x || 'TJ', x ? `${v}! What are you doing?` : "Ohhh! Somebody's off script!"]],
     (v, t, x) => [['say', 'TJ', `Whoa. Did not see that one coming.`], ...(x ? [['say', x, `That's not what we said, ${v}.`], ['say', v, "I know what we said."]] : [])],
     (v, t, x) => [['beat', `Heads turn. Everybody in ${v}'s group looks at ${v} at once.`]],
   ],

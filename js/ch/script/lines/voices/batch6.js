@@ -38,7 +38,7 @@ export default {
     },
     3: {
       sharp: ["Same back. And you never call me out.", "You do the same for me. And you never call me out."],
-      dry: ["Same in return. And you don't call me out.", "You return the favour. And no call-outs."],
+      dry: ["Same in return. And you don't call me out.", "You return the favor. And no call-outs."],
       soft: ["Just the same back. And promise you'll never call me out.", "You do the same for me, and you never call me out. That's it."],
       odd: ["Same thing back. And you never call me out. That's the whole contract. I'll draw it in crayon.", "Same deal for me. Plus a no-call-out clause."],
     },

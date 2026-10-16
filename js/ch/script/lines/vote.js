@@ -212,7 +212,7 @@ export default {
       { by: 'c', conf: "It was decided before anybody walked in. The meeting was just so they could say they asked." },
     ] },
     { id: 'hd.o3', turns: [
-      { beat: 'The house sits round the fire pit in the common room. {a} stays standing.' },
+      { beat: 'The house sits around the fire pit in the common room. {a} stays standing.' },
       { by: 'a', say: "Can we talk about tonight? Openly. No whispering in corners." },
       { by: 'c', say: "Sure. Who are you thinking?" },
       { by: 'a', say: "{b}." },

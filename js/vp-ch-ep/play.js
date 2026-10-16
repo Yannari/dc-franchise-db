@@ -61,7 +61,7 @@ const MID = {
     '{u} shouts for {v} through the bamboo. Nobody answers.', '{u} scratches the letters into the dirt so as not to forget them.'],
   'balance-beam': ['{u} gets all the way across without spilling a drop.', '{u} crawls the last metre with the bucket held up high.',
     '{u} spills half the bucket on the way and keeps going anyway.', '{u} and {v} are on the beam at the same time, and nobody can pass.'],
-  'gauntlet-run': ['{u} flies through the tyres.', '{u} gets stuck in the mud crawl and has to wriggle free.',
+  'gauntlet-run': ['{u} flies through the tires.', '{u} gets stuck in the mud crawl and has to wriggle free.',
     '{u} needs three tries to get over the wall.', '{u} drags the sandbag the last few metres to the bell.'],
   any: ['{u} keeps going, slower than before.', '{u} and {v} are neck and neck.'],
 };
@@ -293,7 +293,7 @@ const PLAYS = {
     const board = (done, mark = {}) => tally(g, 'TIMES', u => (done.includes(u) ? { txt: fmt(secs(u)), v: 1 - (secs(u) - 140) / 200 } : { txt: '–', v: 0 }), { mark });
     return { steps: [
       { dir: 'They run it one heat at a time: the tyres, the mud crawl under the rope, the wall, the sandbag carry, and the bell.', focus: [first(x)], move: run(first(x), 'tyres'), pose: { [first(x)]: 'run' }, props: [{ k: 'sandbag', u: .6, v: .73 }] },
-      { dir: `${first(x)} misses a tyre. That's a minute on the clock.`, focus: [first(x)], cut: { plate: 'gauntlet-tyres', who: [first(x)], group: 'run' }, act: { [first(x)]: 'slump' }, move: run(first(x), 'mud'), board: 1, tally: board([x], { [first(x)]: 'x' }) },
+      { dir: `${first(x)} misses a tire. That's a minute on the clock.`, focus: [first(x)], cut: { plate: 'gauntlet-tyres', who: [first(x)], group: 'run' }, act: { [first(x)]: 'slump' }, move: run(first(x), 'mud'), board: 1, tally: board([x], { [first(x)]: 'x' }) },
       { dir: `${first(y)} drops a sandbag halfway. It goes back to the pile, and so does ${first(y)}.`, focus: [first(y)], cut: { plate: 'gauntlet-bags', who: [first(y)], group: 'run' }, move: run(first(y), 'bags'), pose: { [first(y)]: 'run', [first(x)]: null }, act: { [first(y)]: 'flinch' }, tally: board([x, y]) },
       { dir: `${first(g.lead)} goes over the wall clean and grabs the sandbags.`, focus: [first(g.lead)], cut: { plate: 'gauntlet-wall', who: [first(g.lead)], group: 'run' }, move: run(first(g.lead), 'wall'), pose: { [first(g.lead)]: 'run', [first(y)]: null }, tally: board([x, y]) },
     ], finish: { move: run(first(g.lead), 'bell'), pose: { [first(g.lead)]: null }, gong: 1, tally: tally(g, 'TIMES', u => ({ txt: fmt(secs(u)), v: 1 - (secs(u) - 140) / 200, win: g.isWin(u) })),
@@ -325,7 +325,7 @@ export const ARENA_PLAY = {
     stage: [['They throw their shoulders into the crates. {w} breaks through first.'], ['{w} digs a battery out of the wreck and runs it back to the panel.'], ['{w} has two batteries in. {l} is still digging.']],
     finish: '{w} puts the third battery in, and the panel lights up.' },
   'memory-swim': { set: t => [{ k: 'buoy', u: .5, v: .44, lit: true, c: '#2fb7e8' }, { k: 'rafts', u: .5, v: .7, laid: [t.nL || 0, t.nR || 0] }],
-    stage: [['They swim out to the buoy. {w} gets there first and stares at the colours.'], ['{w} swims back and starts laying tiles.'], ['{l} gets the order wrong and has to swim out to look again.', '{w} has six tiles down.']],
+    stage: [['They swim out to the buoy. {w} gets there first and stares at the colors.'], ['{w} swims back and starts laying tiles.'], ['{l} gets the order wrong and has to swim out to look again.', '{w} has six tiles down.']],
     finish: '{w} lays the last tile, and it\'s right.' },
   'barrel-ramp': { set: t => [{ k: 'ramps', u: .5, v: .76, up: [t.nL || 0, t.nR || 0] }],
     stage: [['They start rolling barrels up the ramp. {w} gets the first one up.'], ['A barrel gets away from {l} and rolls all the way down.', '{w} has four barrels standing.'], ['{w} is on the last few barrels.']],

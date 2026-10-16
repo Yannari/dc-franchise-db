@@ -76,7 +76,7 @@ const FX = {
       ['{c} is down to the last plate, and the last plate is the worst one.', '{c} scrapes the last plate clean and shows TJ the empty plate.']],
     cp3: [['{c} sorts every edge piece into a pile before fitting a single one.', "{c} has the corners in and is talking to the frame."],
       ['{c} has half the frame done and is guarding it from the wind with both arms.', '{c} pulls three pieces back out and starts that section again.'],
-      ['{c} has two pieces left, and neither of them fits.', '{c} turns the last piece round and round in both hands.']],
+      ['{c} has two pieces left, and neither of them fits.', '{c} turns the last piece around and around in both hands.']],
     cp4: [['{c} reaches the halfway rope and grabs it for one breath.', "{c} swims past the halfway rope, head down, not looking up."],
       ['{c} grabs the flag at the far buoy and holds on for a breath.', '{c} rounds the buoy and starts the long swim back.'],
       ["{c} gets a hand on the dock ladder and can't lift a leg out of the water.", '{c} hauls up the ladder and lies flat on the dock.']],

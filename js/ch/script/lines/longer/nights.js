@@ -153,7 +153,7 @@ export default {
   'ov.3': [
     { beat: "{a} stops in the doorway. {b} is saying {a.posAdj} name to somebody, and doesn't see {a}." },
     { by: 'b', say: "It has to be {a} this week. Nobody else makes sense." },
-    { beat: '{a} steps back out of the doorway before anybody turns round.' },
+    { beat: '{a} steps back out of the doorway before anybody turns around.' },
     { by: 'b', say: "Just keep it quiet until the vote." },
     0],
 

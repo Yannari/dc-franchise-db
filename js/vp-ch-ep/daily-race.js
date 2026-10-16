@@ -96,7 +96,7 @@ const HAZARD = {
     '{u} jump{s} short and hit{s} the water flat.', '{u} hesitate{s} on the roof, jump{s} late, and fall{s}.'],
   stuck: ['{u} get{s} stuck where the cage narrows. Back up, try again.', '{u} come{s} up for air and bang{s} {pos} head on the bars.', '{u} panic{s} for a second in the deep part and lose{s} the line.'],
   bite: ['{u} yank{s} {pos} hand out of the crate and drop{s} the piece. Something bit.', '{u} scream{s} and pull{s} out empty-handed.', "{u} feel{s} something crawl up {pos} arm and freeze{s}.", '{u} grab{s} a handful of something wet, and it is not a puzzle piece.'],
-  obstacle: { tyres: ['{u} catch{es} a foot in a tyre and go{es} down. That is a minute on the clock.', '{u} miss{es} a tyre. A minute added.'],
+  obstacle: { tyres: ['{u} catch{es} a foot in a tire and go{es} down. That is a minute on the clock.', '{u} miss{es} a tire. A minute added.'],
     mud: ['{u} get{s} stuck in the mud crawl, half under the rope.', "{u}'s shirt catches on the rope over the mud."],
     wall: ['{u} slide{s} back down the wall. And again.', '{u} need{s} three runs at the wall.'],
     bags: ['{u} drop{s} a sandbag. Back to the pile.', '{u} split{s} a sandbag halfway. Back for another one.'] },
@@ -132,7 +132,7 @@ const FEAR_GO = { heights: ['{who} looks over the edge, takes a breath, and goes
 const NTH = ['', 'first', 'second', 'third', 'fourth', 'fifth'];
 // getting through it: each obstacle, each bucket, as the runners reach them
 const THROUGH = {
-  tyres: ['{u} high-step{s} through the tyres, knees up.', '{u} hop{s} tyre to tyre and come{s} out clean.', '{u} stumble{s} on the last tyre and keep{s} going.'],
+  tyres: ['{u} high-step{s} through the tires, knees up.', '{u} hop{s} tire to tire and come{s} out clean.', '{u} stumble{s} on the last tire and keep{s} going.'],
   mud: ['{u} drag{s} {obj}self through the mud under the rope, face down.', '{u} crawl{s} out of the mud, covered head to toe.', '{u} slither{s} under the rope, spitting out mud.'],
   wall: ['{u} jump{s}, get{s} a hand on top of the wall, and haul{s} over.', '{u} take{s} a run at the wall and scramble{s} over the top.', '{u} hang{s} off the top of the wall, legs kicking, then pull{s} over.'],
   bags: ['{u} shoulder{s} a sandbag and stagger{s} toward the line.', '{u} hug{s} the sandbag to {pos} chest and run{s}.', "{u} drop{s} the sandbag on the line, gasping."],

@@ -116,17 +116,17 @@ export default {
   'rc.a6': {
     1: {
       sharp: ["Fine. And you owe me. Remember that.", "Deal. You owe me one, and I will collect."],
-      dry: ["Deal. That's one favour you owe me.", "Okay. Put it on my tab. You owe me."],
+      dry: ["Deal. That's one favor you owe me.", "Okay. Put it on my tab. You owe me."],
       loud: ["Deal! But you owe me big!", "Okay, I'm in! You owe me one!"],
       soft: ["Okay, deal. Just remember me when I need it.", "Deal. And maybe you'll be there for me next time?"],
-      odd: ["Deal! I'm writing it on my hand. You owe me one.", "Fine. That's one favour. I accept favours and cookies."],
+      odd: ["Deal! I'm writing it on my hand. You owe me one.", "Fine. That's one favor. I accept favors and cookies."],
     },
     2: {
       sharp: ["The big group owes me now. I'll pick the moment I collect.", "One vote now buys me a lot of safety later. Good trade."],
-      dry: ["A favour from the biggest group in the house is worth a lot. I'll use it later.", "I gave a vote. I got a favour. I'll cash it in when I need it."],
+      dry: ["A favor from the biggest group in the house is worth a lot. I'll use it later.", "I gave a vote. I got a favor. I'll cash it in when I need it."],
       loud: ["They owe me now! And I'm collecting the second I need it!", "The biggest group in the house owes me one. I'll take that."],
       soft: ["I helped them. Hopefully they help me when it's my turn.", "Maybe being kind now means they'll remember me later."],
-      odd: ["The whole group owes me one now. I'm going to remind them. A lot.", "Somebody owes me a favour! I feel like a mob boss. A nice one."],
+      odd: ["The whole group owes me one now. I'm going to remind them. A lot.", "Somebody owes me a favor! I feel like a mob boss. A nice one."],
     },
   },
   'rc.a5': {

@@ -792,7 +792,7 @@ export default {
       { by: 'a', say: "You do panic. You just keep moving while you panic.", v: { odd: ['Everybody\'s scared. You just keep moving.'] } },
     ] },
     { id: 'vm.3', turns: [
-      { by: 'a', conf: "{b} reminds me of me my first season. Somebody helped me, so I'm helping {b}.", v: { sharp: ['A rookie who owes me a favour is a good thing to have.'] } },
+      { by: 'a', conf: "{b} reminds me of me my first season. Somebody helped me, so I'm helping {b}.", v: { sharp: ['A rookie who owes me a favor is a good thing to have.'] } },
     ] },
   ],
   'scheme-lie.believed': [

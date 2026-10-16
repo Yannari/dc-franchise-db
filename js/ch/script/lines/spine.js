@@ -347,7 +347,7 @@ export default {
       { by: 'a', conf: "{b} said yes, but I'm not counting on it until I hear it at the vote." },
     ] },
     { id: 'rc.a6', turns: [
-      { by: 'a', say: "We're short one vote on {target}. You'd be doing us a big favour." },
+      { by: 'a', say: "We're short one vote on {target}. You'd be doing us a big favor." },
       { by: 'b', say: "And you'd owe me one. Deal." },
       { by: 'b', conf: "Now the biggest group in the house owes me one, and I'm going to use that later." },
     ] },
@@ -1001,7 +1001,7 @@ export default {
       { by: 'b', conf: "{a} was my person in here. Now I've got to play the rest of this without {a.obj}." },
     ] },
     { id: 'xg.t3', turns: [
-      { beat: 'The car is waiting outside. {a} stops at the door and turns round.' },
+      { beat: 'The car is waiting outside. {a} stops at the door and turns around.' },
       { by: 'a', say: "I'm sorry, everybody. I let you down." },
       { by: 'b', say: "You didn't let me down. Go home. Call your family." },
       { by: 'a', say: "Win this for me, okay?" },

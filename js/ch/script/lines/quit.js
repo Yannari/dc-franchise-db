@@ -159,7 +159,7 @@ export default {
   ],
   'quit-house.pleading': [
     { id: 'qh.p1', turns: [
-      { beat: 'Word gets round the villa fast. Within minutes, half the house is in the common room.' },
+      { beat: 'Word gets around the villa fast. Within minutes, half the house is in the common room.' },
       { by: 'b', say: "You don't have to do this. Seriously. Stay one more day." },
       { by: 'a', say: "I've stayed one more day for a week." },
       { by: 'c', opt: 1, say: "We need you here. Who's going to keep us sane?" },
@@ -181,7 +181,7 @@ export default {
   ],
   'quit-house.glad': [
     { id: 'qh.g1', turns: [
-      { beat: 'Word gets round the villa fast. People drift into the common room.' },
+      { beat: 'Word gets around the villa fast. People drift into the common room.' },
       { by: 'b', say: "Please. Stay. Just give it one more week." },
       { by: 'a', say: "I can't. I'm sorry." },
       { by: 'd', say: "Let {a.obj} go. If {a} doesn't want to be here, {a} shouldn't be here." },

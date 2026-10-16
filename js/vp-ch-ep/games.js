@@ -203,7 +203,7 @@ export const PLAY = {
   race: {
     start: { jump: ['The first climbers start up the ladder on the cliff face.'], swim: ['Everybody runs into the water.'],
       pull: ['They lean into the harnesses, and the trucks start to move.'], maze: ['Everybody runs into the maze.'],
-      beam: ['The first ones step onto the beam with full buckets.'], run: ['Everybody takes off for the tyres.'] },
+      beam: ['The first ones step onto the beam with full buckets.'], run: ['Everybody takes off for the tires.'] },
     lead: ['{who} is out in front.', '{who} has the lead.', 'Right now it\'s {who} in front.'],
     leadN: ['{who} are out in front.', 'Right now it\'s {who} in front.'],
     back: ['{who} is falling behind.', '{who} is struggling.'],

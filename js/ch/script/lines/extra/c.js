@@ -318,7 +318,7 @@ export default {
   // a and b: both lost {gone}
   'morning-after.mourning': [
     { id: 'ma.mx1', turns: [
-      { by: 'a', say: "I keep expecting {gone} to come round the corner." },
+      { by: 'a', say: "I keep expecting {gone} to come around the corner." },
       { by: 'b', say: "Me too. I looked for {gone} at breakfast." },
       { by: 'a', say: "This place is so much worse without {gone}." },
       { by: 'b', say: "We have to stay in it, though. For {gone}." },
@@ -362,7 +362,7 @@ export default {
       { by: 'a', conf: "If my name comes up at the vote, I'll know exactly where it came from." },
     ] },
     { id: 'ms.x3', turns: [
-      { beat: '{a} comes round the corner of the gym, and {b} and {c} stop talking mid-sentence.' },
+      { beat: '{a} comes around the corner of the gym, and {b} and {c} stop talking mid-sentence.' },
       { by: 'b', say: "Oh. Hey." },
       { by: 'a', say: "Hey. Am I interrupting?" },
       { by: 'c', opt: 1, say: "No. We were just finishing." },

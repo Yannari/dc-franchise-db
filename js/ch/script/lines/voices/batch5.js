@@ -723,7 +723,7 @@ export default {
       dry: ["Just so you know, {c} has been saying things about you.", "{c} has been talking about you. Thought you should know."],
       loud: ["{c} has been talking about you! Like, a lot!", "Did you know {c} has been saying stuff about you?"],
       soft: ["I don't want to upset you, but {c} has been saying some things about you.", "I thought you should know. {c} has been talking about you."],
-      odd: ["{c} has been saying stuff about you. Stuff-stuff.", "Rumour has it {c} has been saying things. The rumour is me."],
+      odd: ["{c} has been saying stuff about you. Stuff-stuff.", "Rumor has it {c} has been saying things. The rumor is me."],
     },
     2: {
       sharp: ["You know. Stuff.", "Things. I'd rather not repeat them."],

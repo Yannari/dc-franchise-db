@@ -32,7 +32,7 @@ export const COURSES = {
     hazard: { kind: 'missed-buoy', p: 0.05, back: 0.08, k: 'intuition' }, fear: { thing: 'the dark', at: 0.1 }, puzzle: { at: 0.9, k: 'mental', kind: 'wrong-total' } },
   'balance-beam': { len: 30, stages: [[0.3, 'the first full bucket'], [0.6, 'half a tank'], [0.85, 'nearly full']],
     hazard: { kind: 'slip', p: 0.08, back: 0.09, k: 'temperament' }, fear: { thing: 'heights', at: 0.05, mild: 0.5 } },
-  'gauntlet-run': { len: 26, stages: [[0.2, 'the tyres'], [0.4, 'the mud crawl'], [0.6, 'the wall'], [0.8, 'the sandbags'], [0.97, 'the bell']],
+  'gauntlet-run': { len: 26, stages: [[0.2, 'the tires'], [0.4, 'the mud crawl'], [0.6, 'the wall'], [0.8, 'the sandbags'], [0.97, 'the bell']],
     hazard: { kind: 'obstacle', p: 0.06, back: 0.05, k: 'physical' }, fear: { thing: 'tight spaces', at: 0.4, mild: 0.6 } },
   // the G sets (art jobs G04, G05, G08)
   'car-jump': { len: 24, stages: [[0.25, 'the first car'], [0.5, 'the second car'], [0.75, 'the third car'], [0.97, 'the last car']],

@@ -147,7 +147,7 @@ export default {
       { by: 'a', conf: "I don't care if helping {b} costs me a minute. I gave my word, and the final is where your word means the most." },
     ] },
     { id: 'phx.3', turns: [
-      { beat: '{a} finishes the station first, then turns round and jogs back to {b}.' },
+      { beat: '{a} finishes the station first, then turns around and jogs back to {b}.' },
       { by: 'b', say: "What are you doing? Go!" },
       { by: 'a', say: "We finish this one together, like we said." },
       { by: 'b', say: "You're crazy." },

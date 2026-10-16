@@ -511,7 +511,7 @@ export default {
       { by: 'b', say: "We're okay.", v: { odd: ['We\'re okay. Hug it out? Hug it out.'] } },
     ] },
     { id: 'ap.a3', turns: [
-      { by: 'b', conf: "{a} apologised. I believed it. Maybe I'm soft. Or maybe {a} meant it.", v: { sharp: ['I\'ll accept it, but I\'m still watching {a}.'] } },
+      { by: 'b', conf: "{a} apologized. I believed it. Maybe I'm soft. Or maybe {a} meant it.", v: { sharp: ['I\'ll accept it, but I\'m still watching {a}.'] } },
     ] },
   ],
   'apology.rejected': [
@@ -743,7 +743,7 @@ export default {
     { id: 'pc.1', turns: [
       { by: 'b', say: "Thank you. Seriously. You did most of that.", v: { soft: ['I would have been lost without you today.'], sharp: ['Fine. You carried me. I\'ll remember it.'] } },
       { by: 'a', say: "We're a team. That's what partners do.", v: { sharp: ['You owe me one.'], odd: ['I\'ll accept payment in snacks.'] } },
-      { by: 'b', conf: "{a} carried me today. I owe {a} for that, and I'm going to pay it back.", v: { sharp: ['I owe {a} a favour now. I hate owing people.'] } },
+      { by: 'b', conf: "{a} carried me today. I owe {a} for that, and I'm going to pay it back.", v: { sharp: ['I owe {a} a favor now. I hate owing people.'] } },
     ] },
     { id: 'pc.2', turns: [
       { by: 'a', conf: "{b} was struggling, so I took over. Now {b} owes me. That's how this game works.", v: { soft: ['I just wanted us both to do well.'] } },
@@ -1282,7 +1282,7 @@ export default {
     ] },
     { id: 'fp.2', turns: [
       { beat: 'The argument between {a} and {b} goes from shouting to shoving in a second.' },
-      { by: 'a', conf: "I lost it. I know I lost it. I'm going to pay for it.", v: { soft: ['I\'m so ashamed. That\'s not who I am.'], sharp: ['{b} pushed me to it. I\'m not apologising.'] } },
+      { by: 'a', conf: "I lost it. I know I lost it. I'm going to pay for it.", v: { soft: ['I\'m so ashamed. That\'s not who I am.'], sharp: ['{b} pushed me to it. I\'m not apologizing.'] } },
     ] },
     { id: 'fp.3', turns: [
       { by: 'a', say: "Say one more word. One more.", v: { loud: ['SAY ONE MORE WORD!'] } },

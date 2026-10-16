@@ -52,7 +52,7 @@ export default {
       { by: 'a', conf: "Everybody in this game promises everybody something. The trick is knowing which promises somebody is going to keep." },
     ] },
     { id: 'mt.ux5', turns: [
-      { beat: 'Late at night, {alliance} sits round the fire pit after everyone else has gone to bed.' },
+      { beat: 'Late at night, {alliance} sits around the fire pit after everyone else has gone to bed.' },
       { by: 'b', say: "So it's {target}, right? Can we just say it's {target}?" },
       { by: 'a', say: "It's {target}." },
       { by: 'b', say: "Great. Thank you. Bed." },
@@ -65,7 +65,7 @@ export default {
     { id: 'mt.ux6', turns: [
       { by: 'a', say: "Show of hands. {target}." },
       { beat: 'Every hand goes up.' },
-      { by: 'b', say: "Look at us. Organised." },
+      { by: 'b', say: "Look at us. Organized." },
       { by: 'a', say: "Don't get used to it." },
       { by: 'x', opt: 1, say: "Do we want a backup? In case {target} wins a daily?" },
       { by: 'a', opt: 'x', say: "If {target} wins the daily, we meet again tonight. Same place." },

@@ -59,7 +59,7 @@ export const DAILIES = [
     desc: 'A greased beam stretches over the pool, and players carry a full bucket of water across it to fill a tank on the other side. Anything spilled is gone, and a fall means climbing out and starting again with an empty bucket. The beam gets more slippery with every crossing. The fullest tank when the clock runs out wins.' },
   { id: 'gauntlet-run', name: 'Gauntlet Run', physicality: 1.2, modes: ['teams', 'solo', 'pairs'],
     blend: { physical: 0.4, endurance: 0.3, boldness: 0.3 },
-    desc: 'A beach course of tyre runs, a mud crawl under barbed rope, a wall and a sandbag carry ends at a bell. Players run it in heats against the clock. A missed obstacle adds a minute, and a dropped sandbag goes back to its pile. The fastest time across the bell wins.' },
+    desc: 'A beach course of tire runs, a mud crawl under barbed rope, a wall and a sandbag carry ends at a bell. Players run it in heats against the clock. A missed obstacle adds a minute, and a dropped sandbag goes back to its pile. The fastest time across the bell wins.' },
 ];
 
 // Pole Truth (the user's pick from Total Drama, 2026-10-15): six posts in the water, played in heats.

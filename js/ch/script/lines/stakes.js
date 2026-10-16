@@ -133,7 +133,7 @@ export default {
       { by: 'a', say: "Can we not? I didn't make the list." },
       { by: 'b', say: "No, you're just at the top of it." },
       { by: 'c', opt: 1, say: "At least you're not falling. I dropped like a rock." },
-      { by: 'a', conf: "Number one feels great for about five seconds. Then you look round the room and everybody is looking right back at you." },
+      { by: 'a', conf: "Number one feels great for about five seconds. Then you look around the room and everybody is looking right back at you." },
       { by: 'b', conf: "Last. TJ put me last in front of everybody. Fine. Let him watch what last place does in the Arena." },
     ] },
     { id: 'st.pr2', turns: [
@@ -583,7 +583,7 @@ export default {
       { by: 'b', conf: "Every new arrival means one more person I have to beat. I said welcome. I didn't mean it." },
     ] },
     { id: 'st.rc3', turns: [
-      { beat: '{a} pushes open the door. {b} and the others are sitting round a pot of rice.' },
+      { beat: '{a} pushes open the door. {b} and the others are sitting around a pot of rice.' },
       { by: 'a', say: "This is it? This is Redemption House?" },
       { by: 'b', say: "This is it. Pull up a log." },
       { by: 'c', opt: 1, say: "We were taking bets on who'd be next." },
@@ -594,7 +594,7 @@ export default {
   ],
   'redemption-watch.together': [
     { id: 'st.rw4', turns: [
-      { beat: 'In Redemption House, the residents crowd round the television as the vote plays.' },
+      { beat: 'In Redemption House, the residents crowd around the television as the vote plays.' },
       { by: 'a', say: "There. Look. {target} again." },
       { by: 'b', say: "{target} is running that house." },
       { by: 'a', say: "Not for long. Not if I get back in." },

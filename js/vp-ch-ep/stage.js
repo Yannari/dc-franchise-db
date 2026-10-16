@@ -115,8 +115,14 @@ export class ChxStage {
     const spread = Math.max(...xs) - Math.min(...xs);
     // people already drawn large (a close plate: the gym, the ridge) get no zoom; small ones a little
     const big = Math.max(...ts.map(t => t._m.s || .1));
-    const z = big >= .13 ? 1 : Math.max(1, Math.min(big >= .1 ? 1.1 : 1.2, .7 / (spread + .42)));
-    W.style.transform = tf(cx, cy + .07, z);
+    let z = big >= .13 ? 1 : Math.max(1, Math.min(big >= .1 ? 1.1 : 1.2, .7 / (spread + .42)));
+    let y = cy + .07;
+    // people standing low on the plate would have their faces behind the dialogue box: the camera rises (a
+    // little zoom, resting on the bottom of the picture) until their faces clear it; nobody is moved off the
+    // ground they stand on (the user, 2026-10-16)
+    const low = Math.max(...ts.map(t => t._m.v - (this.sizeOf(t._m) / 100) * .4));
+    if (low > .78) { const zl = Math.min(1.32, .21 / Math.max(.05, 1 - low)); if (zl > z) z = zl; y = Math.max(y, 1 - .5 / z); }
+    W.style.transform = tf(cx, y, z);
   }
 
   // ── one-shot effects ───────────────────────────────────────────────

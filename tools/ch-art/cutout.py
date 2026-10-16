@@ -8,6 +8,8 @@ scenes and then props?" So a set is an EMPTY plate plus one cut-out per player, 
       the object in that box (1600x900 plate coordinates), kept where its colour is the object's (OpenCV hue
       hue_lo..hue_hi with saturation >= sat_min, plus its dark outline), everything else transparent, cropped,
       saved to assets/sets/ch/props/<name>.webp
+  python -I tools/ch-art/cutout.py key <src.png> <name> [green|black]
+      a prop the user made alone on a flat background, keyed out and cropped (art jobs G02-G13)
   python -I tools/ch-art/cutout.py erase <src.webp> <out.webp> x0,y0,x1,y1 [x0,y0,x1,y1 ...]
       the plate with those boxes' objects painted out (the object's colour inside each box, inpainted)
 """
@@ -78,12 +80,51 @@ def erase(src, out, boxes, hue_lo=3, hue_hi=30, sat_min=35):
     print('erase ->', out)
 
 
+def key(src, name, bg='green'):
+    """A prop the user made on a flat background (prompt: plain bright green; two came on black): the background
+    keyed out, the green fringe on the edges pulled back to neutral, cropped to the object."""
+    img = cv2.imdecode(np.fromfile(src, np.uint8), cv2.IMREAD_COLOR).astype(np.float32)
+    b, g, r = img[..., 0], img[..., 1], img[..., 2]
+    if bg == 'green':
+        # how much greener than it is red or blue: the background is pure green, the object never is
+        excess = g - np.maximum(r, b)
+        alpha = np.clip(1 - (excess - 40) / 80, 0, 1)
+        # spill: pull any leftover green down to the other two
+        g2 = np.minimum(g, np.maximum(r, b) + 12)
+        img[..., 1] = np.where(alpha < 1, g2, g)
+    else:
+        # black: only the black that reaches the picture's edge is background (the object's own dark wood and
+        # shadows stay): the near-black region connected to the border, softened at its edge
+        v = np.maximum(np.maximum(r, g), b)
+        dark = (v < 34).astype(np.uint8)
+        n, lab = cv2.connectedComponents(dark)
+        h, w = dark.shape
+        edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
+        bgm = np.isin(lab, list(edge)).astype(np.float32)
+        bgm = cv2.GaussianBlur(bgm, (5, 5), 0)
+        alpha = 1 - bgm
+    a8 = (alpha * 255).astype(np.uint8)
+    a8 = cv2.morphologyEx(a8, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+    ys, xs = np.where(a8 > 20)
+    y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
+    out = np.dstack([np.clip(img, 0, 255).astype(np.uint8), a8])[y0:y1, x0:x1]
+    # a sensible size for the stage
+    h, w = out.shape[:2]
+    if max(h, w) > 900:
+        f = 900 / max(h, w); out = cv2.resize(out, (int(w * f), int(h * f)), interpolation=cv2.INTER_AREA)
+    p = os.path.join(PROPS, name + '.webp')
+    cv2.imencode('.webp', out, [cv2.IMWRITE_WEBP_QUALITY, 95])[1].tofile(p)
+    print('key', name, out.shape[1], 'x', out.shape[0], '->', p)
+
+
 if __name__ == '__main__':
     cmd = sys.argv[1]
     if cmd == 'cut':
         a = sys.argv[2:]
         extra = [int(x) for x in a[7:10]]
         cut(a[0], int(a[1]), int(a[2]), int(a[3]), int(a[4]), a[5], *extra)
+    elif cmd == 'key':
+        key(sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else 'green')
     elif cmd == 'erase':
         a = sys.argv[2:]
         boxes = [tuple(int(v) for v in b.split(',')) for b in a[2:] if ',' in b]

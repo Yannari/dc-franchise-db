@@ -236,8 +236,9 @@ const CHX_CSS = `
 .chx .roster span{font:400 .85cqw/1 'Black Ops One';padding:.35em .6em;letter-spacing:.12em}
 .chx .roster .vt{background:var(--caution);color:#111}.chx .roster .rk{background:var(--neon);color:#111}
 /* dialogue, inside the stage */
-.chx .dlg{position:absolute;left:1.8%;right:1.8%;bottom:2.4%;height:19%;z-index:12;pointer-events:none}
-.chx .dlg .panel{position:absolute;inset:0;background:linear-gradient(180deg,rgba(30,27,25,.95),rgba(16,14,13,.96));clip-path:polygon(1.2% 0,100% 0,98.8% 100%,0 100%);box-shadow:0 1cqh 3cqh rgba(0,0,0,.5)}
+.chx .dlg{position:absolute;left:1.8%;right:1.8%;bottom:2%;height:15%;z-index:12;pointer-events:none}
+/* see-through enough that the people standing behind it still show (the user, 2026-10-16: the text bar hides people) */
+.chx .dlg .panel{position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,23,21,.62),rgba(14,12,11,.86));backdrop-filter:blur(1.5px);clip-path:polygon(1.2% 0,100% 0,98.8% 100%,0 100%);box-shadow:0 1cqh 3cqh rgba(0,0,0,.5)}
 .chx .dlg .panel::before{content:"";position:absolute;left:0;right:0;top:0;height:.9cqh;background:repeating-linear-gradient(-45deg,var(--caution) 0 1.2cqw,#111 1.2cqw 2.4cqw)}
 .chx .dlg .panel::after{content:"";position:absolute;right:1.6%;bottom:12%;width:.7cqw;height:.7cqw;border-radius:50%;background:var(--rivet)}
 .chx .dlg.host .panel::before{background:repeating-linear-gradient(-45deg,var(--fire) 0 1.2cqw,#111 1.2cqw 2.4cqw)}
@@ -251,7 +252,7 @@ const CHX_CSS = `
 .chx .dlg.host .name{background:var(--fire)}
 .chx .dlg.conf .name{background:var(--red);color:#fff}
 .chx .dlg.dir .name{display:none}
-.chx .dlg .say{position:absolute;left:calc(var(--cut,0%) + 2.6%);right:5%;top:16%;bottom:8%;color:var(--hud);display:flex;align-items:center;font:600 2.15cqw/1.32 'Barlow Condensed'}
+.chx .dlg .say{position:absolute;left:calc(var(--cut,0%) + 2.6%);right:5%;top:12%;bottom:6%;color:var(--hud);display:flex;align-items:center;font:600 2.05cqw/1.28 'Barlow Condensed';text-shadow:0 .15cqw .4cqw rgba(0,0,0,.95)}
 .chx .dlg.dir .say{font:600 italic 1.95cqw/1.35 'Barlow Condensed';color:#d9cfc5}
 .chx .dlg .say span.hn{color:var(--caution)}
 .chx .dlg .say span.hg{color:var(--fire2)}

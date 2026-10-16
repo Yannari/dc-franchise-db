@@ -353,8 +353,11 @@ export function chStepScreens(row, ctx = {}) {
     // TJ's name gag right after the daily is at the daily
     if (a.kind === 'run-name' && chunks[chunks.length - 1]?.key === 'daily') k = 'daily';
     if (a.kind === 'daily') seenDaily = true;
-    // the villa, a night out and the villa reveal are one screen, however they're interleaved
-    const LIFE = ['party', 'villa', 'reveal', 'eve'];
+    // the villa and the villa reveal are one screen, however they're interleaved; a night out is its own
+    // (the user, 2026-10-16: "most of the time I don't see a night out, where is it supposed to be?")
+    const LIFE = ['villa', 'reveal', 'eve'];
+    // a scene that happens in the middle of the night out (a showmance at the bar) stays on the night out's screen
+    if (k === 'villa' && chunks[chunks.length - 1]?.key === 'party' && aired.slice(i + 1, i + 3).some(x => chapterOf(x) === 'party')) k = 'party';
     if (LIFE.includes(k) && LIFE.includes(chunks[chunks.length - 1]?.key)) { chunks[chunks.length - 1].items.push(i); return; }
     if (k === 'eve') { chunks.push({ key: 'villa', items: [i] }); return; }   // the night before opens a villa screen, never its own
     const last = chunks[chunks.length - 1];

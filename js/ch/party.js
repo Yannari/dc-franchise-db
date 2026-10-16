@@ -14,12 +14,93 @@ import { grudgeOf, intimidated, remember } from './rel.js';
 import { nudge } from './mind.js';
 import { romanceDay } from './romance.js';
 import { addRivalry } from './events.js';
+import { gs } from '../core.js';
+import { allianceOf } from './alliances.js';
+import { planOf } from './plans.js';
+import { learn, factId } from '../knowledge.js';
+import { stableRng } from '../script/rng.js';
+import { noteDeal } from './knowledge.js';
+import { freeRide } from './respect.js';
+
+const pop = (name, d) => { gs.popularity ||= {}; gs.popularity[name] = (gs.popularity[name] || 0) + d; };
+
+// ── the night's drama (the user, 2026-10-16: "don't make the night out thin, knowing it can cause a lot of
+// drama"). Drink loosens people: what they would never say sober, they say at the bar. Each beat at most
+// once a night, each with what it costs; the fights below are the rest. ──
+function nightDrama(state, rng, drink) {
+  const act = state.active, busy = new Set();
+  const free = n => !busy.has(n);
+  const out = [];
+  // 1. Loose lips: a drunk alliance member tells an outsider the plan.
+  const talkers = act.filter(n => free(n) && drink[n] >= 0.55 && allianceOf(state, n)).sort((x, y) => drink[y] - drink[x]);
+  for (const a of talkers) {
+    const al = allianceOf(state, a);
+    if (rng() >= drink[a] * (1.1 - S(a, 'temperament') / 10) * 0.32) continue;
+    const listener = act.filter(n => n !== a && free(n) && !al.members.includes(n) && getBond(a, n) >= 0).sort((x, y) => getBond(a, y) - getBond(a, x))[0];
+    if (!listener) continue;
+    const target = (planOf(state, a)?.targets || []).find(t => act.includes(t) && t !== a && !al.members.includes(t)) || null;
+    // the same seed plays the same season: belief draws come from a named stream, never Math.random
+    const lr = stableRng(state.seed, 'slip', state.ep, a, listener);
+    for (const m of al.members.filter(x => act.includes(x))) learn(listener, factId('alliance', m, String(al.id)), { sourceType: 'told', source: a, from: a, ep: state.ep, confidence: 0.7, rng: lr });
+    if (target) learn(listener, factId('target', a, target), { sourceType: 'told', source: a, from: a, ep: state.ep, confidence: 0.7, rng: lr });
+    // told the very person the plan is about, or their close friend
+    const self = target === listener;
+    if (target && (self || getBond(listener, target) >= 3)) { remember(target, a, 'plotting-against-me', 1.2); addBond(target, a, -1); nudge(state, target, 'paranoia', 1); }
+    // an ally saw it happen
+    const caught = al.members.find(m => m !== a && act.includes(m) && free(m) && rng() < 0.5) || null;
+    if (caught) { remember(caught, a, 'loose-lips', 1); addBond(caught, a, -0.6); }
+    busy.add(a); busy.add(listener); if (caught) busy.add(caught);
+    out.push(addScene(state, 'party-slip', [a, listener, ...(caught ? [caught] : [])], { alliance: al.name, target, self, caught }, [a, listener, ...(caught ? [caught] : [])], 'party'));
+    break;
+  }
+  // 2. A deal at the bar: two drunk friends promise each other the final. Real, and fragile.
+  for (const a of act.filter(n => free(n) && drink[n] >= 0.5)) {
+    const b = act.filter(n => n !== a && free(n) && drink[n] >= 0.45 && getBond(a, n) >= 2 && !state.deals.some(d => !d.broken && ((d.a === a && d.b === n) || (d.a === n && d.b === a))))
+      .sort((x, y) => getBond(a, y) - getBond(a, x))[0];
+    if (!b || rng() >= 0.3) continue;
+    state.deals.push({ id: state.deals.length + 1, a, b, ep: state.ep, broken: null, tier: 'final', drunk: true });
+    noteDeal(state, a, b);
+    addBond(a, b, 0.8);
+    busy.add(a); busy.add(b);
+    out.push(addScene(state, 'party-deal', [a, b], {}, [a, b], 'party'));
+    break;
+  }
+  // 3. The call-out: somebody bold climbs on a chair and says it to a rival in front of the whole club.
+  for (const a of act.filter(n => free(n) && drink[n] >= 0.6 && S(n, 'boldness') >= 6).sort((x, y) => drink[y] - drink[x])) {
+    const b = act.filter(n => n !== a && free(n) && (getBond(a, n) <= -2 || grudgeOf(a, n) >= 1)).sort((x, y) => grudgeOf(a, y) - grudgeOf(a, x))[0];
+    if (!b || rng() >= drink[a] * 0.55) continue;
+    // what it is about: a vote, never having been in, or just the feud
+    const why = state.episodes.some(e => (e.votes || []).some(v => v.ballots.some(x => x.voter === b && x.target === a))) ? 'vote' : freeRide(state, b) > 0.4 ? 'floater' : 'feud';
+    const firesBack = rng() < 0.35 + S(b, 'boldness') * 0.05;
+    addBond(a, b, -1.2);
+    addRivalry(state, a, b, 1);
+    remember(b, a, 'called-me-out', 1);
+    nudge(state, b, 'paranoia', 0.6);
+    pop(a, S(a, 'social') >= 6 ? 0.3 : -0.3);
+    if (firesBack) { pop(b, 0.3); nudge(state, a, 'paranoia', 0.4); }
+    busy.add(a); busy.add(b);
+    out.push(addScene(state, 'party-callout', [a, b], { why, firesBack }, act, 'party'));
+    break;
+  }
+  // 4. Tears at the bar: somebody low and homesick breaks, and a friend is there, or nobody is.
+  for (const a of act.filter(n => free(n) && drink[n] >= 0.45 && ((state.mind[n]?.morale ?? 6) <= 4.5 || (state.mind[n]?.homesick ?? 0) >= 6))) {
+    if (rng() >= 0.5) continue;
+    const f = act.filter(n => n !== a && free(n) && getBond(a, n) >= 2).sort((x, y) => getBond(a, y) - getBond(a, x))[0] || null;
+    if (f) { addBond(a, f, 1); remember(a, f, 'emotional-support', 1.2); nudge(state, a, 'homesick', -1); nudge(state, a, 'morale', 0.8); }
+    else nudge(state, a, 'morale', -0.5);
+    busy.add(a); if (f) busy.add(f);
+    out.push(addScene(state, 'party-tears', f ? [a, f] : [a], { comforted: !!f }, f ? [a, f] : [a], 'party'));
+    break;
+  }
+  return out;
+}
 
 export function partyNight(state, rng) {
   const drink = Object.fromEntries(state.active.map(n => [n,
     clamp((S(n, 'boldness') * 0.5 + (10 - S(n, 'temperament')) * 0.3 + S(n, 'social') * 0.2) / 10 + (rng() - 0.5) * 0.4, 0.05, 1)]));
   addScene(state, 'party', state.active, { drink: Object.fromEntries(Object.entries(drink).map(([k, v]) => [k, +v.toFixed(2)])) }, state.active, 'party');
   romanceDay(state, rng, { boost: 2.5 });
+  const drama = nightDrama(state, rng, drink);
   const fights = [];
   const dq = [];
   const seen = new Set();
@@ -64,5 +145,5 @@ export function partyNight(state, rng) {
     }
   }
   for (const n of state.active) nudge(state, n, 'energy', -0.9 * drink[n]);
-  return { drink, fights, dq };
+  return { drink, fights, dq, drama: drama.map(sc => sc.kind) };
 }

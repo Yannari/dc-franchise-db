@@ -19,6 +19,9 @@ const yes = (v, a, b) => (v ? a : b);
 // kind → (scene, state) → { roles: {a,b,c,d}, ending, slots }
 const COUNT_WORD = ['None', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen', 'Twenty'];
 
+// What a call-out at the bar is about (party.js nightDrama): said to the rival's face.
+const BEEF = { vote: 'you stood up and said my name at the vote', floater: "you've never been in the Arena once", feud: "you've been talking about me since day one" };
+
 // The reason a name is said at the deliberation, true to the record (vote.js whyName): a sentence, the name in it.
 const CASE = {
   easy: n => `${n} is the one any of us could beat in the Arena`,
@@ -83,6 +86,12 @@ export const ROLES = {
   medical: sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   disqualified: sc => ({ roles: { a: sc.who[1] }, ending: 'any', slots: { gone: sc.who[0] } }),
   'tj-house-meeting': sc => ({ roles: { a: sc.data.victim }, ending: 'any', slots: { gone: sc.data.gone } }),
+  // ── the night out (party.js nightDrama) ──
+  'party-slip': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.caught || undefined }, ending: sc.data.self ? 'self' : sc.data.caught ? 'caught' : 'told',
+    slots: { alliance: sc.data.alliance, target: sc.data.target || undefined } }),
+  'party-deal': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  'party-callout': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.firesBack ? 'firesback' : 'walks', slots: { beef: BEEF[sc.data.why] || BEEF.feud } }),
+  'party-tears': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.comforted ? 'comforted' : 'alone' }),
   // ── the stakes (stakes.js, redemption.js) ──
   'bank-taken': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { amount: sc.data.amount } }),
   injury: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: ['knock', 'knock', 'sprain', 'tear'][sc.data.sev] || 'knock', slots: { part: sc.data.part } }),

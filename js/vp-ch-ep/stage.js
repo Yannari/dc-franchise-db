@@ -277,7 +277,7 @@ export class ChxStage {
   // ── what this click shows ──────────────────────────────────────────
   present(s, anim, ctx) {
     const ST = this.ST, O = this.el.over;
-    O.querySelectorAll('.seg,.spray,.stamp,.winner,.open,.tcard').forEach(e => e.remove());
+    O.querySelectorAll('.seg,.spray,.stamp,.tapes,.winner,.open,.tcard').forEach(e => e.remove());   // .tapes: the DISQUALIFIED band stayed up after its step
     const focus = s.focus !== undefined ? s.focus : s.say ? [s.say[0]] : s.tj ? ['TJ'] : [];
     for (const [n, t] of Object.entries(ST.toks)) {
       t.classList.toggle('speak', !!(s.say && s.say[0] === n) || (!!s.tj && n === 'TJ'));

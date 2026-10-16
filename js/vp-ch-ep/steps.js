@@ -467,6 +467,10 @@ const BIG = {
     { dir: `The club goes quiet. Everybody knows the one rule: no violence. Somebody is going home for this.`, focus: [a.who[0]] },
     ...sidesStep(a)],
   disqualified: a => ({ slam: { tape: 'DISQUALIFIED' }, chip: [a.who[0], 'GOING HOME'] }),
+  // a quit and a medevac are the size of an elimination (the user, 2026-10-16: "wheres the wow effect")
+  quit: a => ({ slam: { stamp: 'QUIT' }, chip: [a.who[0], 'GOING HOME'] }),
+  medical: a => ({ slam: { tape: 'MEDICAL' }, chip: [a.who[0], 'PULLED OUT'] }),
+  'quit-decide': a => (a.data?.stays ? { chip: [a.who[0], 'STAYING'] } : []),
 };
 // who stood with whom when it kicked off (party.js: the house takes sides)
 function sidesStep(a) {

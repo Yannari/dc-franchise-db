@@ -46,6 +46,7 @@ import { calledOut, arenaWon, remember } from './rel.js';
 import { payDaily, arenaPurse, hurt, medicalRisk, healDay, powerRankings, earnPass, passCut, PURSE } from './stakes.js';
 import { purge, returnArena } from './ep-twists.js';
 import { arenaGoodbye } from './goodbye.js';
+import { wavering, hasWavered, quitMoment } from './quit.js';
 import { worstSting } from './daily/named.js';
 import { mockAfterDaily, gloatAfterVote } from './cruel.js';
 import { redemptionOn, houseTakes, sendToRedemption, redemptionWatch, redemptionNight, returnFromRedemption, closeForFinal } from './redemption.js';
@@ -61,6 +62,10 @@ function pop(name, d) {
   gs.popularity[name] = (gs.popularity[name] || 0) + d;
 }
 
+// The quit risk only counts once somebody has shown the signs (quit.js), so it is scaled up to keep the
+// season's rate (30 seasons: 0.53 quits a season before the gate; 0.47 after, plus about one in seven talked
+// out of it by a friend).
+const QUIT_CARRY = 4;
 // A day's quits and medicals. At most one quit a day.
 function dayExits(state, rng, injured = []) {
   const out = [];
@@ -68,9 +73,15 @@ function dayExits(state, rng, injured = []) {
   for (const n of injured) {
     if (state.active.includes(n) && rng() < medicalRisk(state.injury[n])) { medical(state, n); out.push({ name: n, how: 'medical' }); }
   }
+  // a quit comes after signs the viewer saw on an earlier day (quit.js), and the risk carries the days it waited
   for (const n of [...state.active]) {
-    if (rng() < quitRisk(state, n)) { quit(state, n); pop(n, -2); out.push({ name: n, how: 'quit' }); break; }
+    if (!hasWavered(state, n)) continue;
+    if (rng() < quitRisk(state, n) * QUIT_CARRY) {
+      if (quitMoment(state, rng, n) === 'stays') break;
+      quit(state, n); pop(n, -2); out.push({ name: n, how: 'quit' }); break;
+    }
   }
+  if (!out.some(x => x.how === 'quit')) wavering(state, rng);
   return out;
 }
 

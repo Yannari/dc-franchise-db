@@ -104,6 +104,10 @@ export const ROLES = {
   // a: the friend of the one who left; b: the one who sent them (fallout.js payback)
   payback: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.how === 'calledout' ? 'calledout' : 'voted', slots: { gone: sc.data.gone } }),
   quit: sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
+  // quit.js: the signs, the friend first, the house
+  wavering: sc => ({ roles: { a: sc.who[0], b: sc.data.heard || undefined }, ending: sc.data.heard ? 'heard' : 'alone' }),
+  'quit-decide': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.stays ? 'stays' : 'goes' }),
+  'quit-house': sc => ({ roles: { a: sc.who[0], b: sc.data.pleading?.[0], c: sc.data.pleading?.[1], d: sc.data.glad || undefined }, ending: sc.data.pleading?.length ? (sc.data.glad ? 'glad' : 'pleading') : (sc.data.glad ? 'gladonly' : 'quiet') }),
   medical: sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   // b: the one TJ is sending home, there to hear it (they leave the same day)
   disqualified: sc => ({ roles: { a: sc.who[1], b: sc.who[0] }, ending: 'any', slots: { gone: sc.who[0] } }),

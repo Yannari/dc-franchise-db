@@ -45,7 +45,9 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   // the worst thing somebody was called in a daily, said to a face (daily/named.js)
   'named-fallout',
   // the mean ones being mean (cruel.js)
-  'mock', 'gloat']);
+  'mock', 'gloat',
+  // a quit as a moment: the signs, the friend, the house (quit.js)
+  'wavering', 'quit-decide', 'quit-house']);
 const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-form', 'arena-eve-confront', 'arena-eve-pep',
   'arena-eve-alone', 'morning-after', 'fight', 'team-blame', 'partner-blame', 'throw-caught', 'jealousy', 'receipts',
   'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout', 'spark', 'party-deal', 'party-tears', 'expelled-victim',

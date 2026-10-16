@@ -23,7 +23,7 @@ export const OPENERS = {
   'trash-talk': ['{a} and {b} have been needling each other all week. It starts again.', '{a} walks past {b} and can\'t resist.', 'In the middle of the common room, {a} and {b} pick up right where they left off.'],
   'alliance-grow': ['{a} has a proposal for {b}, and it\'s about {alliance}.', '{a} pulls {b} out to the deck, away from everybody.', '{a} has been watching {b} all week, and thinks {b} is ready to join.'],
   'alliance-form': ['{a} quietly gathers a few people {a} trusts in the bedroom.', 'After the daily, {a} pulls a few people aside, one at a time, and then all together.', '{a} has an idea for a group, and starts with the people {a} trusts most.'],
-  deal: ['{a} wants a guarantee, and asks {b} to talk somewhere quiet.', '{a} and {b} sit at the end of the dock, where nobody can hear them.', '{a} finds {b} in the gym and gets straight to the point.'],
+  deal: ['{a} wants a guarantee, and asks {b} to talk somewhere quiet.', '{a} and {b} sit at the end of the dock, where nobody can hear them.', '{a} and {b} end up alone in the gym.'],
   receipts: ['{b} said {a}\'s name at the last vote, and {a} hasn\'t let it go.', '{a} has been waiting all day to get {b} alone.', '{a} walks into the kitchen, sees {b}, and stops.'],
   'counter-pitch': ['{a} knows the house is lining up against {a}, and goes to {b} with another name.', '{a} has one chance to move the vote, and it starts with {b}.', '{a} catches {b} on the way out of the kitchen. {a} has a different name for tonight.'],
   'arena-eve-confront': ['The night before the Arena, {a} walks right up to {b}.', '{a} has something to say to {b} before tomorrow, and says it in front of everybody.'],

@@ -235,7 +235,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       division = divisionFor(state, prevDiv, opts.finalists);
       prevDiv = division;
       epRec.division = division;
-      daily = playDaily(state, R('daily'), { division });
+      daily = playDaily(state, R('daily'), { division, pin: opts.dailyPins?.[plan.ep] || null });
       epRec.daily = daily;
       payDaily(state, daily);
       // the ones hurt today: how bad, and who helped them off (stakes.js)

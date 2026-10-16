@@ -53,6 +53,18 @@ describe('one-episode twists', () => {
     }
   });
 
+  it('plays the daily pinned on an episode, in a shape it has', () => {
+    const { cast, names, background } = challengeCast(24, 31);
+    setPlayers(cast);
+    const o = challengeOptions({ chDailySchedule: [{ episode: 2, dailyId: 'buried' }, { episode: 4, dailyId: 'deep-freeze' }, { episode: 5, dailyId: 'nope' }] });
+    expect(o.dailyPins).toEqual({ 2: 'buried', 4: 'deep-freeze' });
+    const r = playChallengeSeason({ cast: names, background, seed: 31, options: { dailyPins: o.dailyPins } });
+    const ep = n => r.episodes.find(e => e.ep === n);
+    expect(ep(2).daily.id).toBe('buried');
+    expect(ep(2).daily.mode).toBe('pairs');
+    expect(ep(4).daily.id).toBe('deep-freeze');
+  });
+
   it('runs two Arenas on a booked double', () => {
     expect(runs.some(({ ep }) => ep(8).arena.length === 2)).toBe(true);
   });

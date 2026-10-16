@@ -28,6 +28,7 @@ import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonS
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { circleRandomDraw, isCircleSeason, simulateCircleEpisode, circleCanRerun, lastCircleRefusal, rerunCircleEpisode,
   circlePendingChange, circleSeasonShape, circleEpisodeMap, circleTimelineDays, circleBlockShape } from './ci-run.js';
+import { challengeDailyList, challengeDrawnDailies } from './ch-run.js';
 import { isChallengeSeason, simulateChallengeEpisode, challengeCanRerun, lastChallengeRefusal, rerunChallengeEpisode,
   challengePendingChange, challengeEpisodeMap, challengeVoteShape } from './ch-run.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
@@ -3861,6 +3862,46 @@ export function _setTrShield(ep, on) {
   renderTimeline();
 }
 
+// ── THE CHALLENGE'S DAILY PICKER ──────────────────────────────────────
+// The user, 2026-10-16: "add a challenge picker dropdown like in big brother". One per episode, Auto by default;
+// a pin is `{ episode, dailyId }` in seasonConfig.chDailySchedule, read by js/ch-run.js challengeOptions.
+const _CH_SHAPE = { solo: 'Solo', pairs: 'Partners', teams: 'Teams' };
+function _chDailyEntry(ep) {
+  return (seasonConfig.chDailySchedule || []).find(t => t && Number(t.episode) === Number(ep));
+}
+function _chDailyPicker(ep) {
+  const list = challengeDailyList();
+  if (!list.length) return '';
+  const chosen = _chDailyEntry(ep)?.dailyId || '';
+  const pinned = !!chosen;
+  const drawn = challengeDrawnDailies().get(Number(ep));
+  const others = (seasonConfig.chDailySchedule || []).filter(t => t && Number(t.episode) !== Number(ep) && t.dailyId === chosen).map(t => `ep ${t.episode}`);
+  let h = `<label style="display:flex;align-items:center;gap:4px;flex:1 1 100%;min-width:0;font-size:9.5px;letter-spacing:.5px;color:${
+    pinned ? '#ff8a3d' : 'var(--muted,#7d8590)'}" title="${
+    others.length ? `Also pinned to ${others.join(', ')}` : pinned ? 'Pinned: this episode plays exactly this daily' : 'Auto: the season draws its own daily'
+  }" onclick="event.stopPropagation()"><span style="flex:0 0 auto">DAILY${others.length ? ' <span style="color:#f59e0b">&#8226;</span>' : ''}</span>`;
+  h += `<select onchange="event.stopPropagation();_setChDaily(${ep},this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:${
+    pinned ? '#ffd9bf' : '#8b949e'};border:1px solid rgba(255,120,40,${pinned ? '0.6' : '0.22'});border-radius:3px;padding:1px 2px;flex:1 1 auto;min-width:0;max-width:100%">`;
+  h += `<option value="" ${!chosen ? 'selected' : ''}>${_hubEsc(drawn ? `Auto (drawn: ${drawn})` : 'Auto')}</option>`;
+  // grouped by the shape it plays in: a partners-only daily turns the week into a partner week
+  const groups = [['Solo', d => d.modes.length === 1 && d.modes[0] === 'solo'], ['Partners only', d => d.modes.length === 1 && d.modes[0] === 'pairs'],
+    ['Solo, partners or teams', d => d.modes.length > 1]];
+  for (const [label, test] of groups) {
+    const ds = list.filter(test).sort((a, b) => a.name.localeCompare(b.name));
+    if (!ds.length) continue;
+    h += `<optgroup label="${label} &middot; ${ds.length}">`;
+    ds.forEach(d => { h += `<option value="${d.id}" ${d.id === chosen ? 'selected' : ''}>${_hubEsc(d.name)}${d.modes.length > 1 ? ` · ${d.modes.map(m => _CH_SHAPE[m]).join('/')}` : ''}</option>`; });
+    h += `</optgroup>`;
+  }
+  return h + `</select></label>`;
+}
+export function _setChDaily(ep, dailyId) {
+  seasonConfig.chDailySchedule = (seasonConfig.chDailySchedule || []).filter(t => t && Number(t.episode) !== Number(ep));
+  if (dailyId) seasonConfig.chDailySchedule.push({ episode: Number(ep), dailyId });
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
 export function _setTrMission(ep, missionId) {
   if (!seasonConfig.trMissionSchedule) seasonConfig.trMissionSchedule = [];
   let entry = _trMissionEntry(ep);
@@ -4660,7 +4701,7 @@ export function renderTimeline() {
     // …and the night's set piece, so Movie Night and the rest are on the map.
     const phaseLabel  = _ciD ? _ciD.label.toUpperCase()
       : _pmEp ? [(_pmEp.finalRecoupling ? 'Final recoupling' : PM_EPISODE_WORDS[_pmEp.moment]) || '', ...(_pmEp.rituals || []).map(r => PM_RITUAL_NAMES[r] || r)].filter(Boolean).join(' · ').toUpperCase()
-      : isTraitorsSeason() ? ''
+      : isTraitorsSeason() || isChallengeSeason() ? ''
       : phase === 'ri-duel' ? 'RI DUEL' : phase === 'finale' ? '' : phase === 'pre-merge' ? 'PRE' : 'POST';
 
     // Competition pinning: every Big Brother week has an HOH and a veto, so
@@ -4693,6 +4734,13 @@ export function renderTimeline() {
     const stageRow = (isDragSeason() && !isFinale)
       ? `<div class="fd-ep-comps" style="display:flex;gap:2px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,45,149,0.16)">
             ${_drPickers(ep)}
+          </div>`
+      : '';
+
+    // The Challenge's daily: one dropdown per episode, like Big Brother's competitions
+    const dailyRow = (isChallengeSeason() && !isFinale)
+      ? `<div class="fd-ep-comps" style="display:flex;gap:4px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,120,40,0.16)">
+            ${_chDailyPicker(ep)}
           </div>`
       : '';
 
@@ -4798,7 +4846,7 @@ export function renderTimeline() {
         <span class="${markerClass}">${markerText}</span>
       </div>
       ${twistTags ? `<div class="fd-ep-twists">${twistTags}</div>` : ''}
-      ${compRow}${missionRow}${stageRow}${villaRow}
+      ${compRow}${dailyRow}${missionRow}${stageRow}${villaRow}
     </div>`;
   });
 

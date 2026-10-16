@@ -1418,6 +1418,8 @@ export function saveConfig() {
     chFinalists: g('cfg-ch-finalists') ? (parseInt(g('cfg-ch-finalists').value) || 8) : (Number(seasonConfig.chFinalists) || 8),
     chPartyNights: g('cfg-ch-party') ? g('cfg-ch-party').checked : seasonConfig.chPartyNights !== false,
     chFormat: g('cfg-ch-format') ? g('cfg-ch-format').value : (seasonConfig.chFormat || 'vote-callout'),
+    // the daily pinned on each episode (the Season Timeline's picker, run-ui.js _chDailyPicker)
+    chDailySchedule: Array.isArray(seasonConfig.chDailySchedule) ? seasonConfig.chDailySchedule : [],
     chPass: g('cfg-ch-pass') ? g('cfg-ch-pass').value : (seasonConfig.chPass || 'off'),
     chRedemption: g('cfg-ch-redemption') ? g('cfg-ch-redemption').checked : seasonConfig.chRedemption === true,
     chPartnerWeeks: g('cfg-ch-partner-weeks') ? g('cfg-ch-partner-weeks').checked : seasonConfig.chPartnerWeeks !== false,

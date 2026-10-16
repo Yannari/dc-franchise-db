@@ -211,9 +211,13 @@ function throwIntent(state, rng, name, unit, division) {
 }
 
 // Play the daily. Returns { id, name, mode, units, scores, winners, last, throws, injuries, reward }.
-export function playDaily(state, rng, { division }) {
-  const mode = pickMode(state, rng);
-  const daily = pickDaily(state, rng, mode);
+export function playDaily(state, rng, { division, pin = null }) {
+  // a daily pinned on the Season Timeline (ch-run.js challengeOptions -> options.dailyPins): played whatever the
+  // draw, in the week's drawn shape when it has one, else its own first
+  const pinned = pin ? DAILIES.find(d => d.id === pin) : null;
+  let mode = pickMode(state, rng);
+  if (pinned && !pinned.modes.includes(mode)) mode = pinned.modes[0];
+  const daily = pinned || pickDaily(state, rng, mode);
   const units = mode === 'pairs' ? makePairs(state, rng) : mode === 'teams' ? makeTeams(state, rng) : state.active.map(n => [n]);
   const throws = [];
   const indiv = {};

@@ -25,6 +25,7 @@ import { playChallengeSeason, liveTwists } from './ch/season.js';
 import { airSeason } from './ch/story/director.js';
 import { buildSchedule } from './ch/schedule.js';
 import { DEFAULT_OPTIONS } from './ch/format.js';
+import { DAILIES } from './ch/dailies.js';
 import { airedOf } from './ch/transcript.js';
 import { chLedgerRecord } from './ch/ledger-record.js';
 import { carriedFor } from './franchise-carry.js';
@@ -76,7 +77,14 @@ export function challengeOptions(config = seasonConfig) {
     const ep = Number(b?.episode);
     if (card?.chTwist && ep >= 1 && !episodeTwists[ep]) episodeTwists[ep] = card.chTwist;
   }
+  // the daily pinned on each episode's tile (run-ui.js _chDailyPicker)
+  const dailyPins = {};
+  for (const p of config?.chDailySchedule || []) {
+    const ep = Number(p?.episode);
+    if (ep >= 1 && DAILIES.some(d => d.id === p.dailyId)) dailyPins[ep] = p.dailyId;
+  }
   return {
+    dailyPins,
     gendered: config?.chGenderBlind !== true,
     finalists: [6, 8, 10].includes(Number(config?.chFinalists)) ? Number(config.chFinalists) : DEFAULT_OPTIONS.finalists,
     partyNights: config?.chPartyNights !== false,
@@ -444,6 +452,15 @@ export function simulateChallengeEpisode() {
     ? window.snapshotGameState()
     : { initialized: true, activePlayers: [...gs.activePlayers], episode: gs.episode, phase: gs.phase };
   return row;
+}
+
+/** Every daily, for the Season Timeline's picker: id, name, and the shapes it plays in (solo, pairs, teams). */
+export function challengeDailyList() { return DAILIES.map(d => ({ id: d.id, name: d.name, modes: [...d.modes] })); }
+/** The daily each built episode drew, by episode number (aired or still queued). */
+export function challengeDrawnDailies() {
+  const out = new Map();
+  for (const r of [...(gs?.episodeHistory || []).filter(x => x?.format === CHALLENGE_FORMAT), ...(gs?._chQueue || [])]) if (r?.ch?.daily?.name) out.set(r.num, r.ch.daily.name);
+  return out;
 }
 
 /** The Season Timeline's tiles: one per episode, with how many are still in. */

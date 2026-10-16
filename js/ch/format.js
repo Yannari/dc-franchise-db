@@ -53,6 +53,7 @@ export const DEFAULT_OPTIONS = {
   redemption: false,  // Redemption House (redemption.js)
   redemptionFrom: 1,  // the episode it opens on
   episodeTwists: {},  // { [ep]: 'double' | 'purge' | 'return' }: booked on the Season Timeline (ep-twists.js)
+  dailyPins: {},      // { [ep]: daily id }: the Season Timeline's daily picker (dailies.js playDaily)
 };
 
 export function formatOf(options) {

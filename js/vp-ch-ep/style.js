@@ -62,6 +62,9 @@ const CHX_CSS = `
 @keyframes chxFallen{from{transform:translateY(-40%) rotate(-25deg);opacity:.2}}
 .chx .tok.swim .face::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(180deg,rgba(120,235,240,.55),rgba(30,140,180,.92));border-top:.2cqw solid rgba(230,255,255,.85)}
 .chx .tok.swim .body{animation:chxBob 1.6s ease-in-out infinite;animation-delay:var(--bd,0s)}
+.chx .tok.mud .face::after{content:"";position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(180deg,rgba(150,100,55,.75),rgba(92,58,28,.95));border-top:.25cqw solid rgba(70,42,20,.9)}
+.chx .tok.mud .body{animation:chxStrain .3s linear infinite}
+.chx .tok.mud .tag{display:none}
 .chx .tok.swim .tag{display:none}
 .chx .tok.climb .body{animation:chxClimb .7s ease-in-out infinite alternate}
 @keyframes chxClimb{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-8%) rotate(4deg)}}
@@ -106,6 +109,10 @@ const CHX_CSS = `
 .chx .tok.laugh .body{animation:chxLaugh .5s ease-in-out 3}
 @keyframes chxLaugh{25%{transform:translateY(-6%) rotate(-4deg)}75%{transform:translateY(-4%) rotate(4deg)}}
 .chx .tok.flinch .body{animation:chxFlinch .5s ease-out}
+.chx .tok.strain .body{animation:chxStrain .16s linear 9}
+@keyframes chxStrain{50%{transform:translateX(1.6%) rotate(1.2deg)}}
+.chx .tok.strain .face::before{content:'';position:absolute;right:8%;top:6%;width:13%;height:19%;background:radial-gradient(circle at 50% 70%,#c8efff 0 52%,#5fb8e6 56%,transparent 62%);border-radius:50% 50% 50% 50%/62% 62% 38% 38%;animation:chxSweat 1.1s ease-in 2;z-index:3;opacity:0}
+@keyframes chxSweat{0%{opacity:0;transform:translateY(-30%)}20%{opacity:1}100%{opacity:0;transform:translateY(170%)}}
 @keyframes chxFlinch{30%{transform:translateX(var(--away,-6%)) rotate(-5deg) scale(.96)}}
 .chx .tok.lean .body{animation:chxLean 1.8s ease-in-out}
 @keyframes chxLean{50%{transform:translateX(var(--to,8%)) rotate(var(--rot,5deg))}}

@@ -9,6 +9,34 @@
 // the race as it stood at that beat. Close-ups (art jobs E01-E06) for the moments they were painted for.
 import { speak, DAILY_VOICE } from './voices.js';
 import { pickBy, hashOf, nameList } from './games.js';
+import { spotAt, marksOf } from './ground.js';
+import { gauntletPart } from '../ch/daily/race.js';
+
+// ── where the course is on its plate (the user, 2026-10-15: "balance beam doesn't have good animation, I don't
+// understand what they're supposed to do") ──
+// Each race's course as a path over its plate, from the old staging's own coordinates (play.js): p is how far
+// along a unit is (0..1, the engine's progress), and the path says where they are and what they are doing.
+// The followed units (the leaders and the back) move along it at every beat; the rest wait at the start.
+const lerp = (a, b, t) => a + (b - a) * t;
+const along = (pts, t) => { const n = pts.length - 1, i = Math.min(n - 1, Math.floor(t * n)), f = t * n - i; return [lerp(pts[i][0], pts[i + 1][0], f), lerp(pts[i][1], pts[i + 1][1], f)]; };
+export const COURSE_VIEW = {
+  // three crossings with a full bucket, back with an empty one; the tank on the far platform
+  'balance-beam': { scale: .9, start: [.2, .335], at: p => { const ph = (p * 3) % 1; return [.22 + .62 * (ph < .5 ? ph * 2 : 2 - ph * 2), .335]; }, pose: () => null, bucket: true, tanks: true },
+  // up the ladder, the jump, the swim back
+  'cliff-relay': { scale: .7, start: [.42, .74], at: p => { const ph = (p * 4) % 1; return ph < .6 ? [.628, .62 - .46 * (ph / .6)] : ph < .7 ? [.66, .16] : [lerp(.62, .42, (ph - .7) / .3), .74]; },
+    pose: p => { const ph = (p * 4) % 1; return ph < .6 ? 'climb' : ph < .7 ? null : 'swim'; } },
+  // out to the buoys and back with a token
+  'reef-dash': { scale: .8, start: [.12, .76], at: (p, lane) => { const ph = (p * 4) % 1; return [.12 + .58 * (ph < .5 ? ph * 2 : 2 - ph * 2), .66 + lane * .012]; }, pose: () => 'swim' },
+  'double-cross': { scale: .8, start: [.12, .76], at: (p, lane) => { const ph = (p * 4) % 1; return [.12 + .58 * (ph < .5 ? ph * 2 : 2 - ph * 2), .66 + lane * .012]; }, pose: () => 'swim' },
+  // the loop round the point, then up the beach to the board
+  'night-swim': { scale: .8, start: [.12, .76], at: (p, lane) => (p < .9 ? [.1 + .8 * (p / .9), .64 + Math.sin(p * 6.3) * .03 + lane * .01] : [.8, .76]), pose: p => (p < .9 ? 'swim' : null) },
+  // dragging the truck down the track
+  'truck-tug': { scale: .7, start: [.3, .47], at: (p, lane) => [.3 + .5 * p, .47 + lane * .03], pose: p => (p < .9 ? 'pull' : null) },
+  // tyres, the mud crawl, the wall, the sandbags, the bell
+  'gauntlet-run': { scale: .9, start: [.2, .78], at: p => along([[.2, .78], [.3, .76], [.45, .72], [.55, .69], [.62, .7], [.68, .67]], Math.min(1, p)), pose: p => (p < 1 ? 'run' : null) },
+  // inside the maze nobody can be seen; they come out at the exit
+  'jungle-maze': { scale: 1, start: [.49, .69], hidden: true, exit: [.55, .76] },
+};
 
 const V = (say, v = {}) => ({ say, v });
 const fill = (t, slots) => t.replace(/\{(\w+)\}/g, (m, k) => (slots[k] != null ? slots[k] : m));
@@ -73,7 +101,35 @@ const FEAR_GO = { heights: ['{who} looks over the edge, takes a breath, and goes
   'the dark': ['{who} stares into the black water for a long moment, then swims out into it.'],
   'tight spaces': ['{who} squeezes into the narrowest part anyway, eyes shut.'] };
 const NTH = ['', 'first', 'second', 'third', 'fourth', 'fifth'];
+// getting through it: each obstacle, each bucket, as the runners reach them
+const THROUGH = {
+  tyres: ['{u} high-step{s} through the tyres, knees up.', '{u} hop{s} tyre to tyre and come{s} out clean.', '{u} stumble{s} on the last tyre and keep{s} going.'],
+  mud: ['{u} drag{s} {obj}self through the mud under the rope, face down.', '{u} crawl{s} out of the mud, covered head to toe.', '{u} slither{s} under the rope, spitting out mud.'],
+  wall: ['{u} jump{s}, get{s} a hand on top of the wall, and haul{s} over.', '{u} take{s} a run at the wall and scramble{s} over the top.', '{u} hang{s} off the top of the wall, legs kicking, then pull{s} over.'],
+  bags: ['{u} shoulder{s} a sandbag and stagger{s} toward the line.', '{u} hug{s} the sandbag to {pos} chest and run{s}.', "{u} drop{s} the sandbag on the line, gasping."],
+  bell: ['{u} reach{es} the bell and ring{s} it.'],
+  bucket: ['{u} make{s} it across and pour{s} the bucket into the tank.', '{u} tip{s} another bucket in. The water line goes up.', '{u} edge{s} along the beam and get{s} the bucket to the tank, barely.'],
+};
 const DRIFT = ['The current shifts and drags everybody left. They have to swim twice as hard to get back.', 'A swell comes through and pushes the whole field off course.'];
+
+// The camera follows the action into the close-ups (art jobs E01-E06) for most of a race: the wide shot is the
+// start, the field, the water; every obstacle, slip, freeze and finish that has a close-up is shown there, with
+// the people at it. { plate, group, pose } or null for the wide shot.
+const GAUNTLET_POSE = { tyres: 'run', mud: 'mud', wall: 'climb', bags: 'pull', bell: null };
+function closeOf(id, b, p) {
+  const k = b.kind;
+  if (id === 'gauntlet-run') {
+    const part = k === 'finish' || p >= .97 ? 'bell' : b.data?.part || (k === 'stage' ? ['tyres', 'mud', 'wall', 'bags', 'bell'][b.data.i] : p != null ? gauntletPart(p) : null);
+    if (!part || k === 'race-start') return null;
+    return { plate: `gauntlet-${part}`, group: 'run', pose: GAUNTLET_POSE[part], part };
+  }
+  if (id === 'balance-beam' && ['hazard', 'stage', 'overtake', 'fear-froze', 'fear-helped', 'fear-beaten', 'through'].includes(k)) return { plate: 'beam-close', group: 'beam', pose: null };
+  if (id === 'cliff-relay' && (k.startsWith('fear-') || (k === 'stage' && b.data.i >= 1))) return { plate: 'cliff-top', group: null, pose: null };
+  if (id === 'truck-tug' && ['hazard', 'stage', 'race-start', 'overtake'].includes(k) && !(k === 'stage' && b.data.i >= 2)) return { plate: 'truck-pull', group: 'pull', pose: 'pull' };
+  if (id === 'jungle-maze' && ['hazard', 'stage', 'overtake'].includes(k) && !(k === 'stage' && b.data.i >= 3) || (id === 'jungle-maze' && k.startsWith('fear-'))) return { plate: 'maze-in', group: null, pose: 'run' };
+  if (['night-swim', 'reef-dash', 'double-cross'].includes(id) && (k === 'puzzle-miss' || (k === 'finish' && (b.data.first || b.data.place <= 3)))) return { plate: 'board', group: null, pose: null };
+  return null;
+}
 
 // which close-up (art jobs E01-E06) a beat cuts to
 function cutFor(id, b, shown) {
@@ -98,8 +154,73 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
   const finishes = beats.filter(b => b.kind === 'finish');
   const follow = new Set([...finishes.slice(0, 4), ...finishes.slice(-2)].map(b => b.who[0]));
   const shownHazard = new Set(), shownCut = new Set(), safe = [];
-  let hazards = 0, rest = [], back = false, restSaid = false;
-  const push = s => { if (back && !s.scene) s.scene = { ...ctx.wide }; back = false; out.push(s); };
+  let hazards = 0, rest = [], back = false, restSaid = false, puzzles = 0;
+  // the course on the plate: the units the story follows move along it
+  const CV = COURSE_VIEW[id];
+  const plateK = ctx.wide?.plate;
+  const runners = units.filter(u => u.some(n => follow.has(n))).slice(0, 6);
+  const laneOf = u => Math.max(0, runners.indexOf(u));
+  const spot = (u, i, xy) => spotAt(plateK, xy[0] + i * .022, xy[1] + (i ? .01 : 0), CV.scale);
+  let snapNow = null, pendingMove = {};
+  const courseMove = snap => {
+    if (!CV || CV.hidden || !snap || !plateK) return {};
+    const mv = {}, ps = {};
+    for (const u of runners) {
+      const p = snap[u.join('+')]; if (p == null) continue;
+      const xy = CV.at(Math.min(1, p), laneOf(u));
+      u.slice(0, 3).forEach((n, i) => { mv[n] = spot(u, i, xy); ps[n] = CV.pose(Math.min(1, p)); });
+    }
+    return { move: mv, pose: ps };
+  };
+  // the tanks on the far platform (the beam): the three fullest, and a bucket with each runner
+  const beamProps = snap => {
+    if (!CV?.tanks || !snap) return null;
+    const top = Object.entries(snap).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    const tanks = top.map(([k, p], i) => ({ k: 'tank', u: .885 - i * .028, v: .18, fill: p }));
+    const buckets = runners.map(u => { const p = snap[u.join('+')] || 0; const [x, y] = CV.at(Math.min(1, p), 0); return { k: 'bucket', u: x + .012, v: y - .025 }; });
+    return [...tanks, ...buckets];
+  };
+  let about = null, shot = 'wide', shotSig = '';
+  const closeCast = (cl, u, snap) => {
+    const k = ctx.plateKey(cl.plate, false);
+    const ms = marksOf(k);
+    const g = cl.group ? ms.filter(m => m.kind === 'stand' && m.group === cl.group).length : 0;
+    const open = ms.filter(m => m.kind === 'stand' && !m.group).length;
+    // the ones it is about, on the action's marks; others at the same obstacle beside them
+    const here = [...u.slice(0, 3)];
+    if (cl.part && snap) for (const x of runners) if (!x.includes(u[0]) && here.length < g + open && gauntletPart(Math.min(.96, snap[x.join('+')] || 0)) === cl.part) here.push(x[0]);
+    else if (!cl.part && snap) for (const x of runners) if (!x.includes(u[0]) && here.length < Math.min(3, g + open) && cl.group) here.push(x[0]);
+    const cast = {};
+    here.forEach((n, j) => { cast[n] = j < g ? ['stand', j, cl.group] : ['stand', Math.min(open - 1, j - g)]; });
+    return cast;
+  };
+  const push = (s0) => {
+    const s = s0;
+    if (back && !s.scene) s.scene = { ...ctx.wide };
+    back = false;
+    // the shot: the close-up the moment has, or the wide course
+    const cl = about && !s.conf && !s.scene ? closeOf(id, about.b, about.p) : null;
+    if (cl && ctx.plateKey) {
+      const cast = closeCast(cl, about.u, about.b.data?.snap || snapNow);
+      const sig = cl.plate + JSON.stringify(cast);
+      if (sig !== shotSig) { s.scene = { ...ctx.scene(cl.plate, false, cast), close: 1, wipe: shot === 'wide' ? 1 : 0 }; shotSig = sig; }
+      const who = Object.keys(cast);
+      s.pose = { ...Object.fromEntries(who.map(n => [n, cl.pose])), ...(s.pose || {}) };
+      // struggling at an obstacle, through it, or done
+      if (about.b.kind === 'hazard' || about.b.kind === 'puzzle-miss' || about.b.kind === 'fear-froze') s.act = { ...(s.act || {}), [about.u[0]]: 'strain' };
+      shot = 'close';
+      out.push(s);
+      return;
+    }
+    if (shot === 'close' && !s.conf && !s.scene) { s.scene = { ...ctx.wide }; shotSig = ''; }
+    if (!s.conf) shot = 'wide';
+    // on the wide plate, the race moves on the course with this beat
+    if (!s.scene?.close && s.race !== undefined) {
+      const snap = beats.find((x, j) => x.data?.snap && j >= 0 && x.data.snap && JSON.stringify(board(x.data.snap)) === JSON.stringify(s.race))?.data?.snap || snapNow;
+      if (snap) { snapNow = snap; const cm = courseMove(snap); s.move = { ...(cm.move || {}), ...pendingMove, ...(s.move || {}) }; s.pose = { ...(cm.pose || {}), ...(s.pose || {}) }; pendingMove = {}; const bp = beamProps(snap); if (bp) s.props = bp; }
+    }
+    out.push(s);
+  };
   const cut = (spec, who, s) => {
     const [plate, group] = spec;
     shownCut.add(spec[2]);
@@ -107,26 +228,49 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
     push({ ...s, scene: { ...sc, close: 1 } });
     back = true;
   };
+  const lastPart = {};
+  let throughs = 0;
+  const progressSteps = (b, i) => {
+    if (!b.data?.snap || throughs > 16 || !['gauntlet-run', 'balance-beam'].includes(id)) return;
+    for (const x of runners) {
+      const k = x.join('+'), p = b.data.snap[k];
+      if (p == null) continue;
+      const part = id === 'gauntlet-run' ? (p >= .97 ? null : gauntletPart(p)) : Math.floor(p * 3);
+      if (lastPart[k] === undefined) { lastPart[k] = part; continue; }
+      if (part === lastPart[k] || part === null) continue;
+      const was = lastPart[k];
+      lastPart[k] = part;
+      if (id === 'gauntlet-run' && was === null) continue;
+      throughs++;
+      const sl = { u: un(x), s: s_(x), es: x.length > 1 ? '' : 'es', pos: posOf(ctx, x[0]), obj: x.length > 1 ? 'them' : ctx.V.pron?.[x[0]]?.obj || 'them' };
+      const pool = id === 'gauntlet-run' ? THROUGH[was] : THROUGH.bucket;
+      about = { b: { kind: 'through', data: { part: id === 'gauntlet-run' ? was : null, snap: b.data.snap } }, u: x, p };
+      const st = { race: board(b.data.snap), dir: line(ctx, pool, sl, `th${i}${k}`), focus: x.slice(0, 2), act: { [x[0]]: hashOf(`${k}${i}`) % 3 ? 'strain' : 'cheer' } };
+      if (id === 'balance-beam') st.props = beamProps(b.data.snap);
+      push(st);
+    }
+  };
   for (const [i, b] of beats.entries()) {
     if (stop && b.kind === stop) break;
+    if (i > 0) progressSteps(beats[i - 1], i - 1);
     const key = `rc${i}`;
     const u = b.who.length ? unitOf(b.who) : [];
+    about = u.length ? { b, u, p: b.data?.snap?.[u.join('+')] ?? null } : null;
     const slots = { u: un(u), s: s_(u), es: u.length > 1 ? '' : 'es', are: are(u), pos: posOf(ctx, u[0]), obj: ctx.V.pron?.[u[0]]?.obj || 'them' };
     const race = board(b.data?.snap);
     if (b.kind === 'race-start') {
       const set = ctx.legacy?.()?.steps?.[0] || {};
       const { dir, tally, tjCall, cut: _c, ...stage } = set;
-      push({ ...stage, race, dir: set.dir || 'And they are off.', focus: [] });
-      const spec = cutFor(id, b, shownCut);
-      if (spec) cut(spec, units[0] || [], { dir: 'Up close, the first ones strap in and dig in their heels.' });
+      const st0 = { ...stage, race, dir: set.dir || 'And they are off.', focus: [] };
+      if (CV?.hidden) { st0.hide = units.flat(); }
+      else if (CV && plateK) { st0.move = { ...(st0.move || {}), ...Object.fromEntries(runners.flatMap(u => u.slice(0, 3).map((n, i) => [n, spot(u, i, CV.start)]))) }; }
+      push(st0);
       continue;
     }
     if (b.kind === 'stage') {
       push({ race, dir: line(ctx, STAGE, { ...slots, name: b.data.name }, key), focus: u.slice(0, 2), act: { [u[0]]: 'cheer' } });
       const by = (ctx.V.ties?.[u[0]]?.friends || []).find(f => ctx.people.includes(f) && !u.includes(f));
       if (by && i % 2 === 0) { const t = voice(ctx, DAILY_VOICE.go, by, { a: u[0] }, key + 'g'); if (t) push({ say: [by, t], focus: [by, u[0]], act: { [by]: 'shout' } }); }
-      const spec = cutFor(id, b, shownCut);
-      if (spec) cut(spec, u, { dir: `${un(u)} ${are(u)} in there now.` });
       continue;
     }
     if (b.kind === 'overtake') {
@@ -141,28 +285,30 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
       if (!u.some(n => follow.has(n)) || shownHazard.has(u[0]) || hazards >= 9) continue;
       shownHazard.add(u[0]); hazards++;
       const pool = b.data.kind === 'obstacle' ? HAZARD.obstacle[b.data.part] || HAZARD.obstacle.tyres : HAZARD[b.data.kind] || HAZARD.stall;
-      const s = { race, dir: line(ctx, pool, slots, key), focus: u.slice(0, 2), act: { [u[0]]: 'flinch' }, ...(ctx.water ? { splash: b.data.kind === 'slip' ? 1 : 0 } : {}) };
-      const spec = cutFor(id, b, shownCut);
-      if (spec) cut(spec, u, s); else push(s);
+      const s = { race, dir: line(ctx, pool, slots, `${key}h${i}`), focus: u.slice(0, 2), act: { [u[0]]: 'flinch' } };
+      // a slip off the beam: into the pool with a splash, and back to the start
+      if (b.data.kind === 'slip') { s.drop = u.slice(0, 1); s.splash = 1; if (CV && plateK) pendingMove[u[0]] = spot(u, 0, CV.start); }
+      push(s);
       continue;
     }
     if (b.kind === 'puzzle-miss') {
-      const s = { race, dir: line(ctx, PUZZLE[b.data.kind] || PUZZLE.puzzle, slots, key), focus: u.slice(0, 2), act: { [u[0]]: 'slump' } };
-      const spec = cutFor(id, b, shownCut);
-      if (spec) cut(spec, u, s); else push(s);
+      // the leaders' and the back's mistakes at the end, three at most (six wrong words in a row is one joke six times)
+      if (!u.some(n => follow.has(n)) || (puzzles = (puzzles || 0) + 1) > 3) continue;
+      const s = { race, dir: line(ctx, PUZZLE[b.data.kind] || PUZZLE.puzzle, slots, `${key}p${i}`), focus: u.slice(0, 2), act: { [u[0]]: 'slump' } };
+      if (CV?.hidden && plateK) { s.show = u.slice(0, 1); s.move = { [u[0]]: spotAt(plateK, CV.exit[0], CV.exit[1], CV.scale) }; }
+      push(s);
       continue;
     }
     if (b.kind === 'drift') { push({ race, dir: line(ctx, DRIFT, {}, key), shift: { du: -0.04 }, focus: [] }); continue; }
     if (b.kind.startsWith('fear-')) {
       const n = b.who[0], fear = FEAR_NAME[b.data.fear] || b.data.fear;
-      const spec = cutFor(id, b, shownCut);
       if (b.kind === 'fear-beaten') {
         push({ race, dir: line(ctx, FEAR_GO[b.data.fear] || FEAR_GO.heights, { who: n }, key + 'g'), focus: [n] });
         const t = voice(ctx, FEAR.beaten, n, { fear }, key); if (t) push({ conf: [n, t] });
         continue;
       }
       const s = { race, dir: line(ctx, b.kind === 'fear-refused' ? FEAR.refused : FEAR.froze, { who: n, pos: posOf(ctx, n) }, key), focus: [n], act: { [n]: 'flinch' }, know: ['A fear', `${n} is scared of ${fear}.`] };
-      if (spec) cut(spec, [n], s); else push(s);
+      push(s);
       if (b.kind === 'fear-helped') { const h = b.who[1]; const t = voice(ctx, FEAR.helped, h, {}, key + 'h'); if (t) push({ say: [h, t], focus: [h, n] }); }
       else { const t = voice(ctx, FEAR.frozeConf, n, { fear }, key + 'c'); if (t) push({ conf: [n, t] }); }
       continue;
@@ -174,9 +320,9 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
         push({ race, tj: line(ctx, FINISH.board, slots, key), focus: ['TJ', ...u.slice(0, 2)], act: { [u[0]]: 'cheer' } });
       } else if (b.data.first) {
         safe.push(...u);
-        const s = { race, tj: line(ctx, FINISH.first, slots, key), focus: ['TJ', ...u.slice(0, 2)], act: { [u[0]]: 'cheer' }, power: [...safe] };
-        const spec = cutFor(id, b, shownCut);
-        if (spec) cut(spec, u, s); else push(s);
+        const s = { race, tj: line(ctx, FINISH.first, slots, `${key}f${i}`), focus: ['TJ', ...u.slice(0, 2)], act: { [u[0]]: 'cheer' }, power: [...safe] };
+        if (CV?.hidden && plateK) { s.show = u.slice(0, 2); s.move = Object.fromEntries(u.slice(0, 2).map((n, j) => [n, spotAt(plateK, CV.exit[0] + j * .03, CV.exit[1], CV.scale)])); }
+        push(s);
       } else if (b.data.last) {
         if (rest.length && !restSaid) { push({ dir: fill(FINISH.rest, { list: nameList(rest.map(un)) }), focus: [] }); restSaid = true; }
         push({ race, dir: line(ctx, FINISH.last, slots, key), focus: u.slice(0, 2), act: { [u[0]]: 'slump' } });

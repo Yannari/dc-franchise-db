@@ -236,10 +236,10 @@ export class ChxStage {
       for (const a of ['sip', 'look']) t.classList.toggle(a, ST.bgAct[n] === a && !focus.includes(n));
       t.querySelector('.chip')?.remove();
       if (ST.chips[n]) t.insertAdjacentHTML('beforeend', `<div class='chip'>${esc(ST.chips[n])}</div>`);
-      t.classList.remove('talkpop', 'shout', 'laugh', 'flinch', 'lean', 'cheer', 'cry');
+      t.classList.remove('talkpop', 'shout', 'laugh', 'flinch', 'lean', 'cheer', 'cry', 'strain');
       t.classList.toggle('dig', !!(s.dig && s.dig.includes(n)));
       t.classList.toggle('run', ST.poses[n] === 'run' || !!(ST.race && !s.finish && ST.race.some(r => r.who.includes(n)) && !s.say));
-      for (const p of ['swim', 'climb', 'pull']) t.classList.toggle(p, ST.poses[n] === p);
+      for (const p of ['swim', 'climb', 'pull', 'mud']) t.classList.toggle(p, ST.poses[n] === p);
     }
     if (anim && s.act) for (const [n, a] of Object.entries(s.act)) {
       const t = ST.toks[n]; if (!t) continue;

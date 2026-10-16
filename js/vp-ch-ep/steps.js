@@ -567,7 +567,7 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   const win = d.mode === 'solo' && (d.winners || []).length > 1 ? 'The best man and the best woman win, and they are safe at the vote.' : 'The winners are safe at the vote.';
   const card = { k: "TODAY'S DAILY", n: d.name, li: rulesOf(def?.desc), f: mode + win };
   S.push({ rules: card, tj: S.last()?.tj ? null : tjLine('rules', {}, seed, S.V.used), focus: ['TJ'] });
-  for (const li of card.li) S.push({ rules: card, tj: toYou(li), focus: ['TJ'] });
+  // the rules on one card, once (the user, 2026-10-15: 'only show the rules one time, no need to show them each time I click')
   S.push({ tj: pickBy(TJ_GO, seed), focus: ['TJ'], gong: 1 });
   const unitName = u => nameList(u);
   const winners = d.winners || [];

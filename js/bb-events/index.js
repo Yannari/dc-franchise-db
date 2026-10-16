@@ -45,6 +45,7 @@ import { AMERICAS_NOMINEE_EVENTS } from './americas-nominee.js';
 import { COIN_EVENTS } from './coin-of-destiny.js';
 import { NIGHTMARE_EVENTS } from './nightmare.js';
 import { HIGH_ROLLERS_EVENTS } from './high-rollers.js';
+import { THEME_LIFE_EVENTS } from './theme-life.js';
 import { CAMP_DIRECTOR_EVENTS } from './camp-director.js';
 import { WILDCARD_EVENTS } from './wildcard.js';
 import { RETURNED_EVENTS } from './returned.js';
@@ -107,6 +108,8 @@ export const HOUSE_EVENTS = [
   ...COIN_EVENTS,
   ...NIGHTMARE_EVENTS,
   ...HIGH_ROLLERS_EVENTS,
+  // the season's theme, as things that happen to the house (bb-events/theme-life.js)
+  ...THEME_LIFE_EVENTS,
   ...CAMP_DIRECTOR_EVENTS,
   ...WILDCARD_EVENTS,
   ...RETURNED_EVENTS,

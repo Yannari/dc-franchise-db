@@ -738,6 +738,8 @@ export default {
     { id: 'vr.f2', turns: [{ by: 'a', dr: "{b} didn't have a choice, and I don't blame {b.obj} for it. I'm the only name left. Now I need one vote." }] },
     { id: 'vr.f3', turns: [{ by: 'a', dr: "Final four. There's nobody else to put in that chair, so here I am. It's not personal. It's arithmetic." }] },
     { id: 'vr.f4', turns: [{ by: 'a', dr: "I knew this morning that if the veto got used, I'd be sitting here. And it got used." }] },
+    { id: 'vr.f5', turns: [{ by: 'a', dr: "There were four of us. Three of them couldn't go up. You do the maths. I did, about a week ago." }] },
+    { id: 'vr.f6', turns: [{ by: 'a', dr: "Nobody nominated me, really. The house just ran out of other people. Now I need one vote, and I know whose." }] },
   ],
   'veto.renom.blindsided': [
     { id: 'vr.b1', turns: [{ by: 'a', dr: "{b}? Of all people, {b}? I was helping {b.obj} plan this week." }] },

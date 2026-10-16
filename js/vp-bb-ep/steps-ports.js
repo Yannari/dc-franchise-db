@@ -103,6 +103,16 @@ export function themePrimerScreens(act, ctx, kit) {
   }];
 }
 
+// two houseguests noticing the turn, in each theme's own terms
+const TURN_TALK = {
+  'machine-summer': [['a', 'Did CORA just stop saying please?'], ['b', 'She stopped saying please on Tuesday. You only just noticed.'], ['a', "That's worse."]],
+  'summer-of-temptation': [['a', 'The Den said the price out loud tonight.'], ['b', "It's never said the price before."], ['a', "Then it's done pretending."]],
+  'summer-of-mystery': [['a', "There's somebody at the front desk now."], ['b', 'Who?'], ['a', "That's what I'm asking."]],
+  'high-rollers': [['a', 'They stopped bringing the drinks round.'], ['b', 'Nobody said the drinks were free forever.'], ['a', "Nobody said they weren't."]],
+  'summer-camp': [['a', 'No whistle this morning.'], ['b', 'Maybe the Head Counsellor slept in.'], ['a', "The Head Counsellor doesn't sleep."]],
+  'summer-school': [['a', 'The cliques are gone.'], ['b', "So who's covering me now?"], ['a', "Nobody. That's the point."]],
+};
+
 /** The week the antagonist's register changes. */
 export function themeTurnScreens(act, ctx, kit) {
   const v = voiceOf(act.themeId, act.to);
@@ -113,6 +123,13 @@ export function themeTurnScreens(act, ctx, kit) {
     { k: 'beat', t: `From here: ${to}`, rule: 2, quiet: true, toast: [String(act.speaker || 'THE VOICE').toUpperCase(), v.color] },
   ];
   const here = kit.houseNow(ctx);
+  // and the house notices, out loud (the user, 2026-10-15: the turn was a card nobody in the house reacted to)
+  const talk = TURN_TALK[act.themeId];
+  const pair = here.filter(n => n !== ctx.hoh);
+  if (talk && pair.length >= 2) {
+    const a = pair[(ctx.week || 0) % pair.length], b = pair[((ctx.week || 0) + 3) % pair.length] === a ? pair[((ctx.week || 0) + 1) % pair.length] : pair[((ctx.week || 0) + 3) % pair.length];
+    steps.push(...talk.map(([w, t]) => ({ k: 'say', by: w === 'a' ? a : b, t })));
+  }
   return [{
     id: 'theme-turn-v', kind: 'turn', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '23:40',
     kicker: 'Cam 04 · Living room', title: act.headline ? kit.titleCase(act.headline) : 'The Turn', label: 'The Turn', sub: `${act.speaker || 'The voice'} is not who it was on Sunday`,

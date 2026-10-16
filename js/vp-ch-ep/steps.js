@@ -1103,6 +1103,7 @@ function buildFinal(S, open, key, items, row, { names, house }) {
     // the checkpoint told (script/final-cp.js: the same lines the backlog prints), drawn with its board
     const prevRec = f.checkpoints?.[f.checkpoints.findIndex(c => c.id === rec.id) - 1];
     let ruled = false;
+    let shotSig = null, shotPlate = st.plate, onStage = false, curStage = 0;
     for (const l of cpLines(rec, { seed, prev: prevRec?.standings || null })) {
       if (!ruled && l.at >= 0 || (!ruled && l.kind === 'say')) { ruled = true; S.push({ rules: { k: `CHECKPOINT ${cpN(rec.id)}`, n: st.name, li: st.rules, f: 'Points by place, every checkpoint' } }); }
       const b = l.at >= 0 ? rec.beats[l.at] : null;
@@ -1116,6 +1117,23 @@ function buildFinal(S, open, key, items, row, { names, house }) {
       if (l.fx.shake) step.shake = 1;
       if (l.fx.gong) step.gong = 1;
       if (l.fx.standings) Object.assign(step, standing(rec, l.fx.standings, prevRec), { race: null });
+      // the course: a stage on its own set (games.js FINAL_STAGE stages), with the people the line is about on it
+      if (l.fx.stage != null) curStage = l.fx.stage;
+      const sg = l.fx.finish ? null : l.fx.stage != null ? st.stages?.[l.fx.stage] : onStage ? st.stages?.[curStage] : null;
+      if (sg || (l.fx.finish && (onStage || shotPlate !== (st.stages?.at(-1)?.plate || st.plate)))) {
+        const plate = sg ? sg.plate : (st.stages?.at(-1)?.plate || st.plate);
+        const ck = plateKey(plate, false);
+        const who = (step.focus || []).filter(n => n !== 'TJ' && people.includes(n));
+        const sig = `${plate}|${who.join('+')}`;
+        if (CH_MARKS[ck] && sig !== shotSig && (!sg || who.length)) {
+          const lead = sg && !l.fx.finish ? who : people;
+          const hasGroup = sg?.group && marksOf(ck).some(m => m.group === sg.group);
+          const host = marksOf(ck).some(m => m.kind === 'host') ? { TJ: hostSide(ck) } : {};
+          step.scene = { plate: ck, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot,
+            cast: { ...host, ...(sg && !l.fx.finish ? placeScene(ck, lead, hasGroup ? { group: sg.group } : {}) : lined(ck, people)) }, wipe: plate !== shotPlate ? 1 : 0, close: sg && !l.fx.finish ? 1 : 0 };
+          shotSig = sig; shotPlate = plate; onStage = !!sg && !l.fx.finish;
+        }
+      }
       S.push(step);
     }
     // after it: the first and the last, in their own words

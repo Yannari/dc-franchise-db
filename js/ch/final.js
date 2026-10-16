@@ -36,12 +36,20 @@ import { fearOfThing } from './mind.js';
 
 const pop = (name, d) => { gs.popularity ||= {}; gs.popularity[name] = (gs.popularity[name] || 0) + d; };
 
+// stages: the course, as the Gauntlet Run has one (the user, 2026-10-16: "see how the gauntlet run its good i want
+// that for the finale challenge too they're too quick especially summit run"); each is reached, by somebody first,
+// and the viewer cuts to its own set (vp-ch-ep/games.js FINAL_STAGE). stageFear: the stage that tests a fear.
 export const CHECKPOINTS = [
-  { id: 'cp1', day: 1, name: 'The Beach Haul', blend: { physical: 0.4, endurance: 0.4, boldness: 0.2 }, struggle: 'haul' },
-  { id: 'cp2', day: 1, name: 'The Banquet', blend: { temperament: 0.45, endurance: 0.3, boldness: 0.25 }, struggle: 'eat', fear: 'gross food' },
-  { id: 'cp3', day: 2, name: 'The Ridge Puzzle', blend: { mental: 0.45, endurance: 0.3, intuition: 0.25 }, struggle: 'puzzle' },
-  { id: 'cp4', day: 2, name: 'The Lagoon Swim', blend: { endurance: 0.5, physical: 0.3, boldness: 0.2 }, struggle: 'swim', fear: 'deep water' },
-  { id: 'cp5', day: 2, name: 'The Summit Run', blend: { endurance: 0.5, physical: 0.3, temperament: 0.2 }, struggle: 'run', last: true },
+  { id: 'cp1', day: 1, name: 'The Beach Haul', blend: { physical: 0.4, endurance: 0.4, boldness: 0.2 }, struggle: 'haul',
+    stages: [[0.25, 'the bag pile'], [0.55, 'the long stretch of sand'], [0.85, 'the flags']] },
+  { id: 'cp2', day: 1, name: 'The Banquet', blend: { temperament: 0.45, endurance: 0.3, boldness: 0.25 }, struggle: 'eat', fear: 'gross food',
+    stages: [[0.25, 'the first plate'], [0.55, 'the second plate'], [0.85, 'the last plate']], stageFear: { i: 1, thing: 'gross food' } },
+  { id: 'cp3', day: 2, name: 'The Ridge Puzzle', blend: { mental: 0.45, endurance: 0.3, intuition: 0.25 }, struggle: 'puzzle',
+    stages: [[0.25, 'the edge pieces'], [0.55, 'half the frame'], [0.85, 'the last few pieces']] },
+  { id: 'cp4', day: 2, name: 'The Lagoon Swim', blend: { endurance: 0.5, physical: 0.3, boldness: 0.2 }, struggle: 'swim', fear: 'deep water',
+    stages: [[0.2, 'the halfway rope'], [0.5, 'the far buoy'], [0.85, 'the dock ladder']], stageFear: { i: 0, thing: 'deep water' } },
+  { id: 'cp5', day: 2, name: 'The Summit Run', blend: { endurance: 0.5, physical: 0.3, temperament: 0.2 }, struggle: 'run', last: true,
+    stages: [[0.2, 'the jungle trail'], [0.45, 'the rope ladder'], [0.7, 'the cliff top'], [0.95, 'the finish arch']], stageFear: { i: 1, thing: 'heights', size: 0.6 } },
 ];
 // points for a place in a division: first takes the most (All Stars: five for first, four for second...)
 const POINTS = [10, 8, 6, 5, 4, 3, 2, 1, 1, 1];
@@ -60,8 +68,15 @@ function runCheckpoint(state, rng, cp, total, fin, bonus = {}) {
   for (const n of who) {
     let s = blendScore(n, cp.blend) * performanceMod(state, n, 0.85) + noise(rng) * 0.9 + (bonus[n] || 0);
     if (cp.fear) s -= fearOfThing(state, n, cp.fear) * 0.9;
+    // a stage that tests a fear the checkpoint does not (the Summit Run's rope ladder)
+    if (cp.stageFear && cp.stageFear.thing !== cp.fear) s -= fearOfThing(state, n, cp.stageFear.thing) * (cp.stageFear.size || 0.6);
     score[n] = s;
   }
+  // the one the fear stage frightens most, if anybody: frozen on it, or through it anyway (the score has paid)
+  const scared = cp.stageFear ? [...who].filter(n => fearOfThing(state, n, cp.stageFear.thing) >= 0.3)
+    .sort((a, b) => fearOfThing(state, b, cp.stageFear.thing) - fearOfThing(state, a, cp.stageFear.thing))[0] : null;
+  const froze = scared ? rng() < fearOfThing(state, scared, cp.stageFear.thing) * 0.8 : false;
+  if (scared) { if (froze) { nudge(state, scared, 'confidence', -0.5); pop(scared, 0.1); } else { nudge(state, scared, 'confidence', 0.5); pop(scared, 0.3); } }
   for (const n of who) nudge(state, n, 'energy', cp.day === 2 ? -1.6 : -2);
   const beats = [];
   const B = (t, kind, w, data = {}) => beats.push({ t, kind, who: w, data });
@@ -70,6 +85,15 @@ function runCheckpoint(state, rng, cp, total, fin, bonus = {}) {
   const pace = n => 0.72 + 0.5 * (score[n] - min) / Math.max(0.01, max - min);
   const jit = Object.fromEntries(who.map(n => [n, [0, 1, 2].map(() => (rng() - 0.5) * 0.18)]));
   const snapAt = (t, k) => Object.fromEntries(who.map(n => [n, +Math.min(0.97, Math.max(0.02, t * pace(n) + (k < 3 ? jit[n][k] * (1 - t) : 0))).toFixed(3)]));
+  // the course: each stage reached, by somebody first, with the middle of the pack at it and somebody still behind
+  (cp.stages || []).forEach(([at, name], i) => {
+    const sn = snapAt(at, Math.min(2, Math.floor(at * 3)));
+    const ord = [...who].sort((a, b) => sn[b] - sn[a]);
+    const middle = ord.slice(1, -1);
+    const mid = middle.length ? middle[i % middle.length] : ord[1];
+    B(0.2 + at * 4.6, 'cp-stage', [ord[0], ord[ord.length - 1], mid], { i, name, snap: sn, last: i === cp.stages.length - 1 });
+    if (scared && cp.stageFear.i === i) B(0.25 + at * 4.6, 'cp-fear', [scared], { i, name, thing: cp.stageFear.thing, froze, snap: sn });
+  });
   const snaps = [snapAt(0.3, 0), snapAt(0.55, 1), snapAt(0.8, 2)];
   const orderOf = snap => [...who].sort((a, b) => snap[b] - snap[a]);
   B(0, 'cp-start', who, {});
@@ -112,6 +136,8 @@ function runCheckpoint(state, rng, cp, total, fin, bonus = {}) {
     if (ord.length >= 2 && score[ord[0]] - score[ord[1]] < 0.35) B(4.5, 'cp-close', [ord[0], ord[1]], { snap: snaps[2], div: d });
   }
   const order = [...who].sort((a, b) => score[b] - score[a]);
+  // the course's beats among the race's, in time (a stable sort keeps same-time beats in the order they came)
+  beats.sort((x, y) => x.t - y.t);
   B(5, 'cp-finish', order, { places, pts, snap: Object.fromEntries(who.map(n => [n, 1])) });
   // the checkpoint's winner earns respect; the last one loses some confidence
   giveRespect(state, order[0], 'dailyWin'); nudge(state, order[0], 'confidence', 0.6);

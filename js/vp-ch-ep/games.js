@@ -57,6 +57,7 @@ export const DAILY_STAGE = {
 export const FINAL_STAGE = {
   start: { plate: 'field', hour: 'day', place: 'The Final', spot: 'beach-field' },
   cp1: { plate: 'beach', hour: 'day', place: 'Checkpoint One', spot: 'beach', name: 'The Beach Haul',
+    stages: [{ plate: 'gauntlet-bags', group: 'run' }, { plate: 'beach' }, { plate: 'beach' }],
     tj: ["Checkpoint one! See those sandbags? Each one weighs about as much as a carry-on, twice over.",
       "You pick one up, you haul it the whole length of this beach, you drop it at your flag, and you run back for the next one.",
       "Five bags each. If a bag splits, you fill it back up before it counts. Nobody helps anybody.",
@@ -86,6 +87,7 @@ export const FINAL_STAGE = {
       'A piece in the wrong place means the frame will not lock, and they have to find it themselves.',
       'Points by place in each division, added to everything so far.'] },
   cp4: { plate: 'dock', hour: 'day', place: 'Checkpoint Four', spot: 'dock', name: 'The Lagoon Swim',
+    stages: [{ plate: 'reef-buoys', group: 'swim' }, { plate: 'reef-under' }, { plate: 'dock' }],
     tj: ["Checkpoint four! Out there, way out there, is a buoy with your flag on it.",
       "You swim out, you grab your flag, and you swim it back to this dock. Don't drop it.",
       "Tired arms, cold water, no sleep. If you need to stop and hold the buoy, hold the buoy. Just don't quit on me.",
@@ -95,6 +97,7 @@ export const FINAL_STAGE = {
       'A dropped flag sinks, and they have to go back out for another one.',
       'Points by place in each division, added to the total.'] },
   cp5: { plate: 'trail', hour: 'day', place: 'Checkpoint Five', spot: 'summit', name: 'The Summit Run',
+    stages: [{ plate: 'trail' }, { plate: 'cliff-ladder', group: 'ladder' }, { plate: 'cliff-top' }, { plate: 'summit' }],
     tj: ["This is it. The last leg. Up this trail, all the way to the summit, where I'll be waiting at the finish arch.",
       "Whatever your legs have left, you leave it on this mountain.",
       "Points for this one count double in your heads, I promise you. Because when you cross that line, we add it all up.",

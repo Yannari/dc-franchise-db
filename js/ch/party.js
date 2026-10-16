@@ -51,7 +51,9 @@ function nightDrama(state, rng, drink) {
     const caught = al.members.find(m => m !== a && act.includes(m) && free(m) && rng() < 0.5) || null;
     if (caught) { remember(caught, a, 'loose-lips', 1); addBond(caught, a, -0.6); }
     busy.add(a); busy.add(listener); if (caught) busy.add(caught);
-    out.push(addScene(state, 'party-slip', [a, listener, ...(caught ? [caught] : [])], { alliance: al.name, target, self, caught }, [a, listener, ...(caught ? [caught] : [])], 'party'));
+    // a group of three in a house of twenty does not "decide everything": the boast is only said when it is near true
+    const strong = al.members.filter(m => act.includes(m)).length * 3 >= act.length;
+    out.push(addScene(state, 'party-slip', [a, listener, ...(caught ? [caught] : [])], { alliance: al.name, target, self, caught, strong }, [a, listener, ...(caught ? [caught] : [])], 'party'));
     break;
   }
   // 2. A deal at the bar: two drunk friends promise each other the final. Real, and fragile.

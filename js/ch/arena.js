@@ -116,10 +116,12 @@ function arenaGuess(state, n) {
   return S(n, 'physical') * 0.34 + S(n, 'endurance') * 0.22 + S(n, 'mental') * 0.2 + S(n, 'boldness') * 0.12 + S(n, 'temperament') * 0.12;
 }
 
-// An injury in a physical game or daily: per player, small, larger when tired.
+// An injury in a physical game or daily: per player, small, larger when tired. Halved from 0.02 (the user,
+// 2026-10-16: "are injury too common?"): 30 seasons had 5.5 a season, every one aired with its follow-ups
+// (care, a plot on the hurt one, the healing, the medic: 17 scenes a season), and most of them knocks.
 export function injuryRoll(state, rng, name, physicality) {
   const tired = (10 - (state.mind[name]?.energy ?? 7)) / 10;
-  const p = 0.02 * physicality * (1 + tired);
+  const p = 0.01 * physicality * (1 + tired);
   return rng() < p;
 }
 

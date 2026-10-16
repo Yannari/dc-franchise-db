@@ -107,7 +107,7 @@ export default {
 
   // a lets slip {alliance} to b; c, a member, overhears
   'party-slip.caught': [
-    { id: 'ps.cx1', turns: [
+    { id: 'ps.cx1', when: { strong: true }, turns: [
       { by: 'a', say: "You want to know a secret? There's a group. {alliance}. And we decide everything." },
       { by: 'b', say: "Is that so?" },
       { by: 'a', say: "Don't tell anybody I told you." },
@@ -126,7 +126,7 @@ export default {
       { by: 'c', say: "I've been standing here this whole time." },
       { by: 'b', conf: "I didn't know {alliance} existed an hour ago. Now I know its name and at least two of the people in it." },
     ] },
-    { id: 'ps.cx3', turns: [
+    { id: 'ps.cx3', when: { strong: true }, turns: [
       { beat: 'At the bar, {a} leans on {b}, talking too loudly.' },
       { by: 'a', say: "Between us, {alliance} has the votes. All of them." },
       { by: 'b', say: "All of them?" },

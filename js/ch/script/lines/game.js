@@ -971,7 +971,7 @@ export default {
   // ── the night out's drama (party.js nightDrama), written long ──
   // loose lips: a told b about the alliance's plan; c, an ally, saw it
   'party-slip.told': [
-    { id: 'ps.t1', turns: [
+    { id: 'ps.t1', when: { strong: true }, turns: [
       { beat: 'At the bar, {a} is three drinks in and leaning on {b}.' },
       { by: 'a', say: "Can I tell you something? You can't tell anybody." },
       { by: 'b', say: "Of course. What is it?" },
@@ -1001,7 +1001,7 @@ export default {
     ] },
   ],
   'party-slip.caught': [
-    { id: 'ps.c1', turns: [
+    { id: 'ps.c1', when: { strong: true }, turns: [
       { by: 'a', say: "Honestly, {alliance} has this whole game wrapped up." },
       { by: 'b', say: "{alliance}?" },
       { beat: '{c} walks up with two drinks and stops dead.' },

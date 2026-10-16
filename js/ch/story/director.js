@@ -36,6 +36,9 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   'volunteer', 'return', 'showmance', 'breakup', 'alliance-betrayal', 'deal-broken', 'fight-physical', 'final-start',
   'instant-elimination', 'overnight-sabotage', 'overnight-quit', 'final-pact-help', 'final-pact-broken', 'champions',
   'rookie-uprising', 'final-cp', 'overnight-talk', 'final-podium', 'final-congrats', 'final-lastword', 'party', 'party-slip', 'party-callout', 'expelled-goodbye', 'expelled-blame',
+  // every alliance is seen being made: a drunk slip, a betrayal or an outing names it later (the user, 2026-10-16:
+  // "there's no alliance called Riptide", named first at the bar after its forming scene was cut for room)
+  'alliance-form',
   // the stakes (stakes.js, redemption.js)
   'bank-taken', 'injury', 'power-rankings', 'pass-earned', 'pass-cut', 'redemption-arrive', 'redemption-duel', 'redemption-return', 'redemption-closed',
   // the one-episode twists (ep-twists.js)
@@ -56,7 +59,7 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   'arena-wishlist', 'wishlist-leak',
   // late arrivals (ep-twists.js)
   'late-arrival', 'late-sizeup']);
-const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-form', 'arena-eve-confront', 'arena-eve-pep',
+const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'arena-eve-confront', 'arena-eve-pep',
   'arena-eve-alone', 'morning-after', 'fight', 'team-blame', 'partner-blame', 'throw-caught', 'jealousy', 'receipts',
   'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout', 'spark', 'party-deal', 'party-tears', 'expelled-victim',
   'injury-target', 'injury-care', 'ranking-beef', 'pass-panic', 'money-talk', 'bank-brag', 'redemption-watch', 'redemption-feud']);
@@ -65,7 +68,7 @@ const STORY = new Set(['gym-training', 'pool-games', 'house-dinner', 'beach-run'
   'vet-dismisses', 'vet-mentors-rookie', 'beach-date', 'hot-tub-truths', 'show-banter', 'rookie-hazing', 'throw', 'injury-healed', 'pass-flex']);
 const WARM = new Set(['flirt', 'beach-date', 'spark', 'vet-mentors-rookie', 'apology', 'hot-tub-truths', 'arena-eve-pep']);
 const ROW = new Set(['mock', 'gloat', 'payback', 'fight', 'fight-physical', 'kitchen-blowup', 'receipts', 'trash-talk', 'partner-blame', 'jealousy']);
-const CAPS = { spark: 2, meeting: 2, recruit: 2, 'alliance-form': 2, plea: 2, 'leverage-threat': 1, 'counter-pitch': 1, 'spare-deal': 1, 'arena-eve-pep': 2, 'arena-eve-alone': 1 };
+const CAPS = { spark: 2, meeting: 2, recruit: 2, plea: 2, 'leverage-threat': 1, 'counter-pitch': 1, 'spare-deal': 1, 'arena-eve-pep': 2, 'arena-eve-alone': 1 };
 const DAY_BUDGET = 7;   // non-must scenes per day, before the vote (or before the Arena)
 const AFTER_BUDGET = 7; // ...and after it: the night after the vote, the night after the Arena
 const ANCHOR = new Set(['voted-in', 'volunteer-in', 'arena']);

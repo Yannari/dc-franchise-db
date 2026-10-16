@@ -984,10 +984,9 @@ export default {
     { id: 'xg.t1', turns: [
       { beat: '{a} is packing in the bedroom. {b} sits on the bed and watches.' },
       { by: 'b', say: "I can't believe you're actually leaving." },
-      { by: 'a', say: "Me neither. One stupid second." },
-      { by: 'c', opt: 1, say: "We'll finish this for you. I promise." },
-      { by: 'a', say: "Don't do anything stupid because of me. Promise me that instead." },
+      { by: 'a', say: "Me neither. One stupid second. Promise me you won't do anything stupid because of me." },
       { by: 'b', say: "I promise." },
+      { by: 'c', opt: 1, say: "We'll finish this for you. Both of us." },
       { beat: '{a} zips the bag shut. {b} hugs {a} for a long time.' },
       { by: 'a', conf: "I came here to win and I'm leaving in a car with my bag on my lap. I'll be thinking about last night for the rest of my life." },
     ] },
@@ -997,7 +996,7 @@ export default {
       { by: 'b', say: "Cry. Nobody's going to judge you." },
       { by: 'a', say: "Half of them are happy I'm going." },
       { by: 'c', opt: 1, say: "Not us. Never us." },
-      { by: 'a', say: "I know. That's why this is hard." },
+      { by: 'a', opt: 'c', say: "I know. That's why this is hard." },
       { by: 'b', conf: "{a} was my person in here. Now I've got to play the rest of this without {a.obj}." },
     ] },
     { id: 'xg.t3', turns: [

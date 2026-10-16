@@ -17,6 +17,8 @@ export const CH_FACT_KEYS = [
   'early', 'late',
   // how a and b stood at the scene: enemies | cold | neutral | friends
   'band', 'alliance', 'couple',
+  // a's alliance holds a third of the house or more: only then may a drunk say it "decides everything"
+  'strong',
   // how a talks, and how b talks (a line written for the voice wins: pick.js)
   'register', 'registerB',
   // vets and rookies; the same original show
@@ -114,6 +116,7 @@ export function factsFor(scene, roles, state) {
     proven: scene.data?.on ? !!scene.data.on.proven : null,
     neverIn: scene.data?.on ? !!scene.data.on.neverIn : null,
     richest: scene.data?.on ? !!scene.data.on.richest : null,
+    strong: scene.data?.strong ?? null,
   };
   if (a) {
     f.register = registerOf(a);

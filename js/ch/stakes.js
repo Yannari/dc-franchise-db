@@ -74,7 +74,9 @@ const PARTS = ['ankle', 'knee', 'shoulder', 'wrist', 'rib', 'back', 'hamstring']
  */
 export function hurt(state, rng, n, where = 'daily') {
   const r = rng();
-  const sev = r < 0.62 ? 1 : r < 0.9 ? 2 : 3;
+  // fewer injuries, and the ones that happen matter: a knock, a sprain, a tear (was 62/28/10, mostly knocks;
+  // the tears kept where they were, so the season's medicals hold)
+  const sev = r < 0.4 ? 1 : r < 0.72 ? 2 : 3;
   const part = PARTS[Math.floor(rng() * PARTS.length)];
   const inj = { part, sev, ep: state.ep, heal: state.ep + sev + 1, where };
   state.injury[n] = inj;

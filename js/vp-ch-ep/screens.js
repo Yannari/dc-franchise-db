@@ -16,6 +16,7 @@ import { chStepScreens } from './steps.js';
 import { ChxStage, AV } from './stage.js';
 import { ensureChxStyle } from './style.js';
 import { CH_MARKS } from './marks.js';
+import { bedFor, playStep, warmStings } from './sound.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const reg = () => (typeof window !== 'undefined' ? (window._chx ||= {}) : (globalThis._chx ||= {}));
@@ -31,7 +32,7 @@ export function chStepVpScreens(row, ctx = {}) {
 }
 
 function shell(key, si, s, row, week, ctx) {
-  return `<div class="chx" data-ep="${esc(key)}" data-si="${si}">
+  return `<div class="chx" data-ep="${esc(key)}" data-si="${si}" data-ambient="${bedFor(s)}">
   <div class="chx-top"><div class="chx-logo">The Challenge<small>${esc((ctx.title || 'Blue Lagoon').toUpperCase())}</small></div>
     <div class="chx-eps"><b>Episode ${esc(row.num)}</b>${week ? ` · ${esc(week)}` : ''} · ${esc(s.label)}</div>
     <div class="chx-chapmenu"><button type="button" class="chx-ibtn" onclick="chxChapters(this)">Chapters &#9662;</button><div class="chapters"></div></div><div class="chx-spacer"></div>
@@ -81,12 +82,13 @@ function runner(root) {
   const R = { root, E, si, scr: E.screens[si], idx: -1, intelOpen: false, auto: false, timer: 0 };
   R.stage = new ChxStage(root, R);
   root._chx = R;
+  warmStings();
   root.querySelector('.chx-hud').addEventListener('click', e => {
     // the map: a bubble, a place, the villa, the way back out, an empty place
     const go = e.target.closest('[data-go]');
     const inMap = e.target.closest('.mview');
-    if (go && !inMap) { e.stopPropagation(); const i = Number(go.dataset.go); if (i >= 0) goTo(R, i, false); return; }
-    if (go) { e.stopPropagation(); const i = Number(go.dataset.go); if (i >= 0) flyTo(R, go.closest('.mpin') || go, () => goTo(R, i, false)); return; }
+    if (go && !inMap) { e.stopPropagation(); const i = Number(go.dataset.go); if (i >= 0) goTo(R, i, false, true); return; }
+    if (go) { e.stopPropagation(); const i = Number(go.dataset.go); if (i >= 0) flyTo(R, go.closest('.mpin') || go, () => goTo(R, i, false, true)); return; }
     const enter = e.target.closest('[data-enter]');
     if (enter) { e.stopPropagation(); flyTo(R, enter, () => setView(R, 'villa', true)); return; }
     const zone = e.target.closest('.mpin[data-gos]');
@@ -96,7 +98,7 @@ function runner(root) {
       if (!gos.length) { hint(R, `Nobody is at ${zone.dataset.label} right now.`); return; }
       const seen = seenOf(R);
       const i = gos.find(g => !seen.has(g)) ?? gos[0];
-      flyTo(R, zone, () => goTo(R, i, false));
+      flyTo(R, zone, () => goTo(R, i, false, true));
       return;
     }
     if (e.target.closest('[data-intel]')) { e.stopPropagation(); R.intelOpen = !R.intelOpen; intel(R); paintHud(R); }
@@ -296,7 +298,9 @@ function isle(R, open) {
   I.classList.add('open');
 }
 
-function goTo(R, idx, forward) {
+// `sting`: the viewer moved here (a click, Play, a place on the map), so the step's sting plays;
+// back, restart and a seek on the bar only bring the music to the moment (vp-ch-ep/sound.js).
+function goTo(R, idx, forward, sting = forward) {
   const steps = R.scr.steps;
   idx = Math.max(0, Math.min(steps.length - 1, idx));
   const st = R.stage;
@@ -318,6 +322,7 @@ function goTo(R, idx, forward) {
   if (steps[idx]?.map) setView(R, R.mview || 'isle', false, true); else R.root.classList.remove('mview-villa');
   if (steps[idx]?.know && !R.intelOpen) R.root.querySelector('.intelbtn')?.classList.add('new');
   intel(R); chapters(R); script(R);
+  playStep(R.scr, idx, sting);
 }
 // The bar is one segment per scene (the user, 2026-10-15: "like in Total Drama, a bubble each time a scene
 // switches"): as long as its scene, filling as it plays, ticked once watched, named on hover.
@@ -408,7 +413,7 @@ export function chxFrame(el) {
 export function chxNext(el) {
   const R = runner(rootOf(el) || document.querySelector('.chx[data-ep]')); if (!R) return;
   const hn = R.idx >= 0 ? hubNext(R) : null;
-  if (hn != null && hn >= 0) { goTo(R, hn, hn === R.idx + 1); return; }
+  if (hn != null && hn >= 0) { goTo(R, hn, hn === R.idx + 1, true); return; }
   if (hn === -1 || R.idx >= R.scr.steps.length - 1) {
     const wasAuto = R.auto; stopAuto(R);
     if (typeof window.vpNext === 'function') {
@@ -464,7 +469,7 @@ if (typeof document !== 'undefined') {
       const root = document.querySelector('.chx[data-ep]');
       if (!root) return;
       const R = runner(root);
-      if (R && R.idx < 0) goTo(R, 0, false);
+      if (R && R.idx < 0) goTo(R, 0, false, true);
     }, 0);
   });
   document.addEventListener('keydown', e => {

@@ -563,6 +563,7 @@ list. The lists so far:
 | Big Brother | `docs/bb-music.md` | `js/vp-bb-ep/sound.js` (Phase 3) |
 | Perfect Match | (no list: hand-written manifest) | `js/vp-pm/sound.js` |
 | The Traitors | (no list) | `js/vp-tr/sfx.js` |
+| The Challenge | `docs/ch-music.md` (made by `tools/ch-make-audio.py`) | `js/vp-ch-ep/sound.js` |
 
 The rules every show shares:
 

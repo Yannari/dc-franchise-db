@@ -459,14 +459,15 @@ function scene(S, { a, i, title }, { names, house, goneAt, key }) {
   const night = isNight(S.min);
   if (a.spot === 'confessional' || (a.lines.length && a.lines.every(l => l.kind === 'conf'))) {
     // a confessional on its own: the chair, no room
-    const first = { scene: { plate: 'conf-day', place: 'Confessional', when: whenOf(S.day, S.min), icon: 'house', cast: {}, conf: 1 }, sceneIdx: i, title };
+    const first = { scene: { plate: 'conf-day', place: 'Confessional', when: whenOf(S.day, S.min), icon: 'house', cast: {}, conf: 1 }, sceneIdx: i, title, kind: a.kind };
     linesToSteps(S, a.lines, { names, first, sceneWho: a.who });
     return;
   }
   const place = stageOf(a, S.min);
   const crowd = key === 'party' ? house.filter(n => !goneAt[i]?.has(n) && !a.who.includes(n)).filter((n, k) => (k * 7 + a.day) % 3 === 0).slice(0, 7) : [];
   const first = sceneStep(S, a, place, { night: night || place.hour === 'night', crowd });
-  first.sceneIdx = i; first.title = title;
+  // the event it is (a fight, a showmance, a meeting): the music follows it (vp-ch-ep/sound.js)
+  first.sceneIdx = i; first.title = title; first.kind = a.kind;
   if (key === 'party') { first.dance = crowd.slice(0, 5); first.bg = Object.fromEntries(crowd.slice(5).map(n => [n, 'sip'])); }
   const k = a.kind === 'meeting' ? meetingKnow(a.data) : bondKnow(a);
   if (k) first.know = k;
@@ -523,7 +524,7 @@ function buildArrival(S, open, items, row, { names, house }) {
       lines.forEach((t, k) => S.push({ intro: k ? { ...card, still: true } : card, conf: [n, t], focus: [n] }));
     }
   }
-  for (const it of items) linesToSteps(S, it.a.lines, { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title, focus: it.a.who.slice(0, 2) } });
+  for (const it of items) linesToSteps(S, it.a.lines, { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title, kind: it.a.kind, focus: it.a.who.slice(0, 2) } });
   const gendered = !!row.ch?.division;
   const vets = house.filter(n => !info[n]?.rookie).length, rookies = house.length - vets;
   // the welcome speech, in full, before the rules card
@@ -579,7 +580,7 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
     sceneIdx: main.i, title: main.title });
   // scenes that aired before the game (picking partners, picking teams) play first, on the same sand
   const before = items.filter(x => x.i < main.i), after = items.filter(x => x.i > main.i);
-  for (const it of before) linesToSteps(S, it.a.lines, { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title, focus: it.a.who.slice(0, 2) } });
+  for (const it of before) linesToSteps(S, it.a.lines, { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title, kind: it.a.kind, focus: it.a.who.slice(0, 2) } });
   const seed = `${row.num}|${d.id}`;
   S.push({ tj: fill(pickBy(night ? TJ_DAILY_NIGHT : TJ_DAILY_OPEN, seed), { game: d.name }), focus: ['TJ'] });
   const mode = d.mode === 'pairs' ? 'In pairs. ' : d.mode === 'teams' ? 'Two teams. ' : '';
@@ -676,7 +677,7 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   // the daily's aftermath scenes, on the same plate
   for (const it of after) {
     S.at(it.i);
-    const first2 = { scene: { plate: key, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { ...placeScene(key, it.a.who) }, wipe: 1 }, sceneIdx: it.i, title: it.title, power: winners };
+    const first2 = { scene: { plate: key, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { ...placeScene(key, it.a.who) }, wipe: 1 }, sceneIdx: it.i, title: it.title, kind: it.a.kind, power: winners };
     if (it.a.lines.every(l => l.kind === 'conf')) first2.scene.cast = {};
     linesToSteps(S, it.a.lines, { names, first: first2, sceneWho: it.a.who });
   }
@@ -695,7 +696,7 @@ function buildVote(S, open, items, row, { names, house, goneAt }) {
     sceneIdx: at.i, title: 'The house vote', power: row.ch?.dailyWinners || [] });
   let ruled = false;
   for (const it of items) {
-    if (it.a.kind !== 'ceremony') { linesToSteps(S, it.a.lines, { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title } }); continue; }
+    if (it.a.kind !== 'ceremony') { linesToSteps(S, it.a.lines, { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title, kind: it.a.kind } }); continue; }
     ceremony(S, it, row, { names, rules: !ruled, again: ruled });
     ruled = true;
   }

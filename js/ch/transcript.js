@@ -9,6 +9,7 @@
 // same lines, so the two can never say different things. The stepped viewer
 // (js/vp-ch-ep/, sub-project 5) replaces the readout, not this.
 
+import { cpLines, podiumLines } from './script/final-cp.js';
 const SPOT = { airstrip: 'The airstrip', villa: 'The villa', kitchen: 'The kitchen', gym: 'The gym', 'hot-tub': 'The hot tub', bedroom: 'The bedroom',
   beach: 'The beach', pool: 'The pool deck', confessional: 'Confessional', arena: 'The Arena', final: 'The final',
   party: 'Night out', private: 'Somewhere quiet', public: 'The villa', challenge: 'The daily', deliberation: 'Deliberation' };
@@ -39,6 +40,7 @@ const TITLE = {
   quit: 'A decision', medical: 'The medic', disqualified: 'TJ arrives',
   'final-start': 'The final', overnight: 'The overnight', 'overnight-sabotage': 'The overnight', 'overnight-quit': 'The overnight',
   'final-pact-help': 'The final', 'final-pact-broken': 'The final', champions: 'The finish line',
+  'final-cp': 'A checkpoint', 'overnight-talk': 'At the fire', 'final-podium': 'The totals', 'final-congrats': 'Congratulations', 'final-lastword': 'Last words',
 };
 const titleOf = kind => TITLE[kind] || 'In the villa';
 
@@ -75,11 +77,16 @@ export function airedOf(epRec) {
   return out;
 }
 
+/** A final checkpoint's lines: the race as told (script/final-cp.js), then the reactions after it. */
+const podiumTold = s => [...(s.lines || []), ...podiumLines(s.data?.podium || {}, s.data?.totals || {}).map(l => ({ kind: l.kind === 'beat' ? 'beat' : 'say', by: l.by, text: l.text }))];
+const cpTold = (row, s) => [...cpLines(s.data.rec, { seed: `final|${row.num}`, prev: s.data.prev })
+  .map(l => ({ kind: l.kind === 'beat' ? 'beat' : 'say', by: l.by, text: l.text })), ...(s.lines || [])];
+
 /** The row's scenes for the screens: title, place, day, lines. */
 export function episodeScenes(row) {
   return (row?.ch?.aired || []).map((s, i) => ({
-    id: `${sectionOf(row, s)}-${i}`, section: sectionOf(row, s), kind: s.kind, day: s.day, title: titleOf(s.kind),
-    place: s.kind === 'previously' ? null : (SPOT[s.spot] || null), who: s.who || [], lines: s.lines || [],
+    id: `${sectionOf(row, s)}-${i}`, section: sectionOf(row, s), kind: s.kind, day: s.day, title: s.kind === 'final-cp' ? (s.data?.name || titleOf(s.kind)) : titleOf(s.kind),
+    place: s.kind === 'previously' ? null : (SPOT[s.spot] || null), who: s.who || [], lines: s.kind === 'final-cp' && s.data?.rec ? cpTold(row, s) : s.kind === 'final-podium' ? podiumTold(s) : (s.lines || []),
   }));
 }
 

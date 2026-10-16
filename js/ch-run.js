@@ -247,9 +247,12 @@ const duelOf = d => ({ game: d.game, name: d.gameName || d.game, kind: d.kind ||
 // The final as it was run: checkpoints, the instant eliminations, the overnight.
 function finalOf(f) {
   if (!f) return {};
-  return { finalists: [...(f.finalists || [])], checkpoints: (f.checkpoints || []).map(c => ({ id: c.id, scores: { ...c.scores } })),
+  // every checkpoint as it was run, beat by beat, with its order, points and standings (the viewer plays them)
+  const copy = o => JSON.parse(JSON.stringify(o ?? null));
+  return { finalists: [...(f.finalists || [])], checkpoints: (f.checkpoints || []).map(c => copy(c)),
     instant: (f.instant || []).map(duelOf), overnight: (f.overnight || []).map(o => ({ ...o })),
-    sabotage: (f.sabotage || []).map(x => ({ ...x })), help: (f.help || []).map(x => ({ ...x })), totals: { ...(f.totals || {}) } };
+    sabotage: (f.sabotage || []).map(x => ({ ...x })), help: (f.help || []).map(x => ({ ...x })), totals: { ...(f.totals || {}) },
+    podium: copy(f.podium || {}), lastWords: [...(f.lastWords || [])] };
 }
 
 /** The run tab's rows, one per episode and one for the final, from a played and aired season. */

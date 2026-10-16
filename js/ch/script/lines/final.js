@@ -23,6 +23,37 @@ export default {
       { by: 'tj', say: "Here's the deal, people. You race, you suffer, you race some more. First across the line wins it all. Any questions? Don't care! GO!" },
       { by: 'a', conf: "I didn't come all this way to finish second.", v: { soft: ['Whatever happens, I\'m proud of myself.'] } },
     ] },
+    // written long from the start (the long cut, 2026-10-16): TJ explains the whole final before it starts
+    { id: 'fs.4', turns: [
+      { beat: 'The finalists line up on the field. TJ walks out in front of them with his arms wide open.' },
+      { by: 'tj', say: "Look at you! The last ones standing! Welcome to the final of the Blue Lagoon!" },
+      { by: 'tj', say: "Here's how it works. Two days. Five checkpoints. A night in between with no sleep." },
+      { by: 'tj', say: "Every checkpoint gives points. First in your division gets the most, last gets the least. We add it all up at the end." },
+      { by: 'a', say: "And the most points wins?" },
+      { by: 'tj', say: "The most points wins. One man, one woman. Champions." },
+      { by: 'b', say: "Let's go. I've been waiting all season for this." },
+      { by: 'x', opt: 1, say: "Is anybody else's heart about to come out of their chest?" },
+      { by: 'a', conf: "Every alliance is over now. Everybody I worked with is somebody I have to beat." },
+    ] },
+    { id: 'fs.5', turns: [
+      { by: 'tj', say: "Good morning, finalists! Who's ready to suffer?" },
+      { by: 'a', say: "Nobody's ready to suffer, TJ." },
+      { by: 'tj', say: "Great answer! Five checkpoints. Points for every one. And one long cold night in the middle." },
+      { by: 'tj', say: "And somewhere in there, there might be a surprise for the ones at the bottom of the board." },
+      { by: 'b', say: "What kind of surprise?" },
+      { by: 'tj', say: "The kind you don't want. Stay off the bottom." },
+      { by: 'y', opt: 1, say: "Great. Love that." },
+      { by: 'b', conf: "Every elimination, every vote, every night I couldn't sleep was for this." },
+    ] },
+    { id: 'fs.6', turns: [
+      { beat: 'The finalists eye each other on the start line. Nobody is smiling.' },
+      { by: 'a', say: "May the best one win." },
+      { by: 'b', say: "Oh, the best one will." },
+      { by: 'tj', say: "Love the energy! Here's the deal. Five checkpoints over two days, points for every one, most points wins." },
+      { by: 'tj', say: "No votes. No call-outs. No alliances. Just you against everybody else." },
+      { by: 'a', say: "Finally." },
+      { by: 'a', conf: "I've waited all season to stop playing politics and just race. Now everybody finds out who's actually good." },
+    ] },
   ],
   'instant-elimination.any': [
     { id: 'ie.1', turns: [
@@ -136,14 +167,43 @@ export default {
     { id: 'pb2.3', turns: [
       { by: 'b', conf: "{a} walked right past me at the puzzle. I saw it. I'll always remember it.", v: { loud: ['{a} walked RIGHT PAST me!'] } },
     ] },
+    // written long from the start (the long cut, 2026-10-16)
+    { id: 'pbx.1', turns: [
+      { beat: 'At the puzzle tables, {b} looks over at {a} and waits.' },
+      { by: 'b', say: "Hey. The deal. Remember the deal?" },
+      { by: 'a', say: "I remember." },
+      { by: 'b', say: "So help me." },
+      { by: 'a', say: "I can't. I'm not even done with mine." },
+      { by: 'b', say: "You've got three pieces left. I can see them." },
+      { by: 'b', conf: "We shook on it at a bar, at a pool, on a beach. Every time. And at the one moment it mattered, {a} looked away." },
+    ] },
+    { id: 'pbx.2', turns: [
+      { by: 'a', conf: "I made {b} a promise. I meant it when I made it. But this is the final, and the money is real. I'm sorry." },
+      { by: 'b', conf: "I kept waiting for {a} to turn round. {a} never did." },
+    ] },
+    { id: 'pbx.3', turns: [
+      { by: 'b', say: "{a}! Corner piece! Please!" },
+      { beat: '{a} finishes the frame and runs for the trail without looking back.' },
+      { by: 'b', say: "Wow. Okay. Wow." },
+      { by: 'b', conf: "That's the last time I make a deal with anybody in this game. Lesson learned, the expensive way." },
+    ] },
   ],
-  'champions.any': [
-    // a gender-blind season crowns one
+  'champions.one': [
     { id: 'cp.0', turns: [
       { by: 'tj', say: "After two days, no sleep, and one very long finish line, your champion of the Blue Lagoon... {a}!" },
       { by: 'a', say: "I did it! I really did it!", v: { loud: ['I DID IT! I REALLY DID IT!'], sharp: ['I said I would. I did.'], soft: ['I can\'t stop shaking. Thank you. Thank you.'] } },
       { by: 'a', conf: "Every person in that villa wanted this. I wanted it more.", v: { odd: ['I\'m going to frame my sweaty shirt.'] } },
     ] },
+    { id: 'cp.5', turns: [
+      { by: 'tj', say: "I've counted it twice. I've counted it three times. The winner of the Blue Lagoon is... {a}!" },
+      { by: 'a', say: "No way. No way!" },
+      { by: 'tj', say: "Way! Champion! Get over here!" },
+      { by: 'a', say: "I don't even know what to say." },
+      { by: 'tj', say: "Say thank you and go take a nap. You earned it." },
+      { by: 'a', conf: "Nobody picked me to win this. I picked me." },
+    ] },
+  ],
+  'champions.two': [
     { id: 'cp.1', turns: [
       { by: 'tj', say: "Ladies and gentlemen, after everything, your champions! {a}! {b}! I'm crying! I'm actually crying!" },
       { by: 'a', say: "I did it! I actually did it!", v: { loud: ['I DID IT! I ACTUALLY DID IT!'], sharp: ['I told everybody I would. Now they have to believe it.'], soft: ['I can\'t stop crying. I can\'t believe it.'] } },
@@ -157,6 +217,261 @@ export default {
     { id: 'cp.3', turns: [
       { by: 'tj', say: "Nobody outran you! Nobody outlasted you! {a}! {b}! Champions!" },
       { by: 'a', say: "Thank you, TJ!", v: { loud: ['I LOVE YOU, TJ!'] } },
+    ] },
+    // written long from the start (the long cut, 2026-10-16)
+    { id: 'cp.4', turns: [
+      { beat: 'TJ stands at the finish arch with the totals in his hand. Nobody breathes.' },
+      { by: 'tj', say: "Two days. Five checkpoints. The coldest night of your lives. And your champions of the Blue Lagoon are..." },
+      { by: 'tj', say: "{a}! And {b}!" },
+      { by: 'a', say: "Are you serious? Are you serious right now?" },
+      { by: 'b', say: "We did it! We actually did it!" },
+      { by: 'tj', say: "You are the champions! Come here, both of you!" },
+      { by: 'a', conf: "I've dreamed about TJ saying my name at the end of a final. It's better than the dream." },
+      { by: 'b', conf: "Every vote, every elimination, every night I thought about going home. It was all for this second." },
+    ] },
+  ],
+
+  // ── the final, taking its time (final.js, 2026-10-16) ──
+  'final-cp.cp1': [
+    { id: 'fcp.1a', turns: [
+      { by: 'tj', say: "{a} takes the Beach Haul! Ten points! {b}, buddy, you're bringing up the rear." },
+      { by: 'a', say: "My arms are gone. Completely gone." },
+      { by: 'b', say: "That bag split twice. Twice!" },
+      { by: 'a', conf: "First checkpoint, first place. Everybody saw it. Now they all have to chase me." },
+      { by: 'b', conf: "Last on the first one. It's a long final. I'm not done, I'm just behind." },
+    ] },
+    { id: 'fcp.1b', turns: [
+      { by: 'tj', say: "Checkpoint one is in the books! {a} on top, and {b} at the bottom of the board." },
+      { by: 'b', say: "I'll make it up on the next one." },
+      { by: 'tj', say: "You'd better. The bottom of this board has a surprise coming." },
+      { by: 'b', conf: "TJ said 'surprise' and smiled. TJ smiling is never good for anybody." },
+    ] },
+  ],
+  'final-cp.cp2': [
+    { id: 'fcp.2a', turns: [
+      { by: 'tj', say: "{a} cleans every plate first! Ten points, and an iron stomach!" },
+      { by: 'a', say: "Don't talk to me about food. Don't say the word food." },
+      { by: 'b', say: "I can still taste it. I'm going to taste it forever." },
+      { by: 'b', conf: "I've done hard things on this show. Nothing was as hard as that last plate." },
+      { by: 'a', conf: "I just thought about home and swallowed. Don't ask me what it was. I don't want to know." },
+    ] },
+    { id: 'fcp.2b', turns: [
+      { by: 'tj', say: "The Banquet is over! Some of you look green. {b}, you look very green." },
+      { by: 'b', say: "I'm fine. I'm fine. Give me a second." },
+      { by: 'a', say: "Breathe through your nose. It helps." },
+      { by: 'a', conf: "Eating that was disgusting. Winning it was beautiful." },
+    ] },
+  ],
+  'final-cp.cp3': [
+    { id: 'fcp.3a', turns: [
+      { by: 'tj', say: "{a} locks the frame first! On no sleep! That's a champion's brain right there." },
+      { by: 'a', say: "I don't even know how I did that." },
+      { by: 'b', say: "My frame won't lock. Why won't it lock?" },
+      { by: 'tj', say: "Somewhere there's a piece in the wrong place, {b}. Find it." },
+      { by: 'b', conf: "I looked at the same twelve pieces for an hour. One of them was upside down. One." },
+    ] },
+    { id: 'fcp.3b', turns: [
+      { by: 'tj', say: "The Ridge Puzzle is done! {a} first, {b} last. Look at the board, people. It's getting tight." },
+      { by: 'a', conf: "No sleep, and I solved it first. My brain was running on nothing and it still worked." },
+      { by: 'b', conf: "That puzzle took everything I had left, and I still finished last on it." },
+    ] },
+  ],
+  'final-cp.cp4': [
+    { id: 'fcp.4a', turns: [
+      { by: 'tj', say: "{a} touches the dock first! What a swim!" },
+      { by: 'a', say: "Is it over? Tell me it's over." },
+      { by: 'tj', say: "This part is over. One more to go." },
+      { by: 'b', say: "I had to hold onto the buoy for a minute. My arms just stopped." },
+      { by: 'b', conf: "I can't feel my shoulders. Tomorrow I'll care. Today I have one more checkpoint." },
+    ] },
+    { id: 'fcp.4b', turns: [
+      { by: 'tj', say: "Everybody's out of the water! {b}, you made it. Barely, but you made it." },
+      { by: 'b', say: "Barely counts." },
+      { by: 'a', conf: "The lagoon tried to beat me. It didn't. One more leg and I can sleep for a month." },
+    ] },
+  ],
+  'final-cp.cp5': [
+    { id: 'fcp.5a', turns: [
+      { by: 'a', say: "Is that it? Is that the finish?" },
+      { by: 'tj', say: "That's it! You're done! You ran the whole final!" },
+      { by: 'b', say: "I can't feel my legs. I can't feel anything." },
+      { by: 'a', conf: "I crossed that line, and I didn't even know if I'd won. I just knew I didn't stop." },
+    ] },
+    { id: 'fcp.5b', turns: [
+      { beat: 'One by one the finalists reach the arch and collapse on the grass.' },
+      { by: 'tj', say: "Everybody's across! Now catch your breath, because I have the totals right here." },
+      { by: 'b', conf: "Two days. No sleep. I gave this final everything. Whatever the number is, I'm proud of that." },
+    ] },
+  ],
+  'overnight-talk.rivals': [
+    { id: 'ot.r1', turns: [
+      { beat: 'At the fire, {a} and {b} end up across from each other. Nobody else is talking.' },
+      { by: 'a', say: "You know you're not winning this, right?" },
+      { by: 'b', say: "Says the one who's been shaking for an hour." },
+      { by: 'a', say: "It's cold. Everybody's shaking." },
+      { by: 'b', say: "Not like you." },
+      { by: 'a', say: "We'll see who's shaking at the finish line." },
+      { by: 'b', conf: "{a} wants to get in my head the night before the end. Too late. {a} has been in my head all season. I'm used to it." },
+    ] },
+    { id: 'ot.r2', turns: [
+      { by: 'a', say: "Can I say something honestly?" },
+      { by: 'b', say: "That'd be a first." },
+      { by: 'a', say: "I never liked you. Not from day one." },
+      { by: 'b', say: "Feeling's mutual." },
+      { by: 'a', say: "Good. Then nobody's going easy on anybody tomorrow." },
+      { by: 'b', say: "Was anybody planning to?" },
+      { by: 'a', conf: "The alliances are over. All that's left is who you can't stand, and I can't stand {b}." },
+    ] },
+    { id: 'ot.r3', turns: [
+      { beat: '{b} throws a stick on the fire. {a} moves the blanket away from the sparks.' },
+      { by: 'a', say: "Watch it." },
+      { by: 'b', say: "Or what? You'll put tiles in my box again?" },
+      { by: 'a', say: "Maybe I will." },
+      { by: 'b', say: "Tomorrow I'm going to pass you on that mountain, and I'm going to wave." },
+      { by: 'b', conf: "Petty? Yes. Will I do it? Absolutely." },
+    ] },
+  ],
+  'overnight-talk.friends': [
+    { id: 'ot.f1', turns: [
+      { beat: '{a} and {b} share a blanket by the fire.' },
+      { by: 'a', say: "Can you believe we're here? Day one, I thought I'd be gone in a week." },
+      { by: 'b', say: "Me too. Now look at us. Freezing on a mountain." },
+      { by: 'a', say: "Whatever happens tomorrow, I'm glad it was you in here." },
+      { by: 'b', say: "Don't make me cry. My tears will freeze." },
+      { by: 'a', say: "Then I'll just say it once. Thank you." },
+      { by: 'b', conf: "Tomorrow we race each other. Tonight {a} is still my best friend in this game." },
+    ] },
+    { id: 'ot.f2', turns: [
+      { by: 'b', say: "What's the first thing you'll eat when this is over?" },
+      { by: 'a', say: "Pizza. A whole one. Maybe two." },
+      { by: 'b', say: "I'm going to sleep for three days and then eat pizza." },
+      { by: 'a', say: "Deal. Pizza on me." },
+      { by: 'b', say: "Pizza on whoever wins." },
+      { by: 'a', say: "Then pizza on me." },
+      { by: 'a', conf: "Talking about pizza at four in the morning is the only thing keeping me sane." },
+    ] },
+    { id: 'ot.f3', turns: [
+      { by: 'a', say: "Talk to me. Keep me awake." },
+      { by: 'b', say: "About what?" },
+      { by: 'a', say: "Anything. Home. Your dog. Anything." },
+      { by: 'b', say: "Okay. My dog is called Biscuit, and Biscuit is the best dog in the world." },
+      { by: 'a', say: "Tell me everything about Biscuit." },
+      { beat: 'They talk about Biscuit until the sky starts to go grey.' },
+      { by: 'a', conf: "I don't think I'd have made it through the night without {b}. Or without Biscuit." },
+    ] },
+  ],
+  'overnight-talk.comedy': [
+    { id: 'ot.c1', turns: [
+      { beat: 'Three in the morning. {a} stands up and starts doing jumping jacks.' },
+      { by: 'b', say: "What are you doing?" },
+      { by: 'a', say: "Staying warm. Join me." },
+      { by: 'b', say: "I'm not doing jumping jacks at three in the morning." },
+      { by: 'a', say: "Then enjoy freezing." },
+      { beat: 'Five minutes later, {b} is doing jumping jacks too.' },
+      { by: 'b', conf: "I'm not proud of it. But I'm warm." },
+    ] },
+    { id: 'ot.c2', turns: [
+      { by: 'a', say: "I've decided I'm going to talk to this rock until morning." },
+      { by: 'b', say: "Does the rock talk back?" },
+      { by: 'a', say: "The rock is a great listener." },
+      { by: 'b', say: "Better than you." },
+      { by: 'a', say: "The rock agrees with that." },
+      { by: 'b', conf: "{a} has completely lost it out here, and honestly, it's the best entertainment I've had all season." },
+    ] },
+    { id: 'ot.c3', turns: [
+      { by: 'a', say: "Okay, everybody, campfire song. I'll start." },
+      { by: 'b', say: "Please don't." },
+      { beat: '{a} sings anyway. It is very bad and very loud.' },
+      { by: 'b', say: "Somebody quit so I can get off this mountain." },
+      { by: 'a', conf: "Morale is part of the game. I sang for the team. Nobody thanked me." },
+    ] },
+  ],
+  'final-podium.any': [
+    { id: 'fpo.1', turns: [
+      { by: 'tj', say: "Everybody, gather round. Two days, five checkpoints, one long night. I've added up every point." },
+      { by: 'a', conf: "My heart was going faster at that moment than at any point on the whole mountain." },
+    ] },
+    { id: 'fpo.2', turns: [
+      { by: 'tj', say: "Okay. Stand up, all of you. It's time to find out where you finished." },
+      { by: 'a', conf: "You don't know the totals while you're running. You only know when TJ tells you." },
+    ] },
+  ],
+  'final-congrats.gracious': [
+    { id: 'fcg.g1', turns: [
+      { by: 'a', say: "Come here. You earned that." },
+      { by: 'b', say: "You pushed me the whole way. I wouldn't have won without you behind me." },
+      { by: 'a', say: "Next time it's mine." },
+      { by: 'b', say: "Next time I'll be waiting." },
+      { by: 'a', conf: "Second hurts. But I lost to the best, and I can live with that." },
+    ] },
+    { id: 'fcg.g2', turns: [
+      { beat: '{a} walks over and hugs {b} before anybody else can.' },
+      { by: 'a', say: "Champion. Say it. It's yours." },
+      { by: 'b', say: "I can't believe it." },
+      { by: 'a', say: "Believe it. You were better today." },
+      { by: 'b', conf: "{a} was the first person to hug me. That means more than {a} knows." },
+    ] },
+    { id: 'fcg.g3', turns: [
+      { by: 'a', say: "I hate that you won." },
+      { by: 'b', say: "I know." },
+      { by: 'a', say: "And I'm really happy for you." },
+      { by: 'b', say: "I know that too." },
+      { by: 'a', conf: "I wanted it so badly. But if anybody was going to beat me, I'm glad it was {b}." },
+    ] },
+  ],
+  'final-congrats.bitter': [
+    { id: 'fcg.b1', turns: [
+      { by: 'b', say: "Good race." },
+      { by: 'a', say: "Yeah. Congrats." },
+      { by: 'b', say: "You don't sound like you mean it." },
+      { by: 'a', say: "Give me a minute. I'll mean it next year." },
+      { by: 'a', conf: "I know I should be gracious. I'm not there yet. Ask me in a week." },
+    ] },
+    { id: 'fcg.b2', turns: [
+      { beat: '{a} shakes {b}\'s hand and walks straight off to sit alone.' },
+      { by: 'a', conf: "Everybody's celebrating {b}. I was right there. One checkpoint. One bad checkpoint, and it's {b} with the title instead of me." },
+    ] },
+    { id: 'fcg.b3', turns: [
+      { by: 'a', say: "Enjoy it. You got lucky on the swim." },
+      { by: 'b', say: "Luck doesn't run five checkpoints." },
+      { by: 'a', say: "We'll see next time." },
+      { by: 'b', conf: "{a} can't even say congratulations. That's fine. I've got the title. {a} has an excuse." },
+    ] },
+  ],
+  'final-lastword.instant': [
+    { id: 'flw.i1', turns: [
+      { by: 'a', conf: "I made it to the final, and I'm going home before the first night. I'm going to replay that sprint for the rest of my life." },
+    ] },
+    { id: 'flw.i2', turns: [
+      { by: 'a', conf: "Nobody warned us about an instant elimination. One sprint, and a whole season is over. I'm proud of how far I got. I'm sick about how it ended." },
+    ] },
+    { id: 'flw.i3', turns: [
+      { by: 'a', conf: "I came here as somebody nobody expected to see in the final. I got there. That's something nobody can take back." },
+    ] },
+  ],
+  'final-lastword.second': [
+    { id: 'flw.s1', turns: [
+      { by: 'a', conf: "Second place in the final of The Challenge. Two years ago I'd have cried happy tears. Right now I'm just crying." },
+    ] },
+    { id: 'flw.s2', turns: [
+      { by: 'a', conf: "I was close enough to see it. That's what hurts. Second is the first one who didn't win." },
+    ] },
+    { id: 'flw.s3', turns: [
+      { by: 'a', conf: "I'm going to go home, sleep for a week, and then start training for next time. I'm coming back for that title." },
+    ] },
+  ],
+  'final-lastword.finished': [
+    { id: 'flw.f1', turns: [
+      { by: 'a', conf: "I didn't win, but I finished. Every checkpoint, every bite, the whole night on that mountain. Nobody can take that from me." },
+    ] },
+    { id: 'flw.f2', turns: [
+      { by: 'a', conf: "I came here to win and I didn't. But I'm walking off this mountain a different person from the one who walked onto that plane." },
+    ] },
+    { id: 'flw.f3', turns: [
+      { by: 'a', conf: "Not the result I wanted. But I ran a final. Most people who've done this show never get to say that." },
+    ] },
+    { id: 'flw.f4', turns: [
+      { by: 'a', conf: "My body is broken and my heart is a little broken too. Give me a year. I'll be back." },
     ] },
   ],
 };

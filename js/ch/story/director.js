@@ -35,7 +35,7 @@ import { previouslyFor } from './previously.js';
 const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', 'pick-talk', 'pick-guess', 'daily', 'callout', 'arena', 'quit', 'medical', 'disqualified', 'tj-house-meeting', 'outing', 'empty-threat', 'tribunal-room', 'tribunal-verdict', 'tribunal-pitch',
   'volunteer', 'return', 'showmance', 'breakup', 'alliance-betrayal', 'deal-broken', 'fight-physical', 'final-start',
   'instant-elimination', 'overnight-sabotage', 'overnight-quit', 'final-pact-help', 'final-pact-broken', 'champions',
-  'rookie-uprising', 'party', 'party-slip', 'party-callout', 'expelled-goodbye', 'expelled-blame',
+  'rookie-uprising', 'final-cp', 'overnight-talk', 'final-podium', 'final-congrats', 'final-lastword', 'party', 'party-slip', 'party-callout', 'expelled-goodbye', 'expelled-blame',
   // the stakes (stakes.js, redemption.js)
   'bank-taken', 'injury', 'power-rankings', 'pass-earned', 'pass-cut', 'redemption-arrive', 'redemption-duel', 'redemption-return', 'redemption-closed']);
 const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-form', 'arena-eve-confront', 'arena-eve-pep',

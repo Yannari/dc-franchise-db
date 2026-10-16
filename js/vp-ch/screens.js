@@ -19,7 +19,9 @@ import { episodeScenes } from '../ch/transcript.js';
 // The moments that are the episode's spine; everything else is villa life.
 export const OWN_SCREEN = new Set(['previously', 'daily', 'ceremony', 'callout', 'volunteer', 'arena', 'return',
   'quit', 'medical', 'disqualified', 'instant-elimination', 'final-start', 'overnight', 'overnight-sabotage',
-  'overnight-quit', 'final-pact-help', 'final-pact-broken', 'champions']);
+  'overnight-quit', 'final-pact-help', 'final-pact-broken', 'champions',
+  // the final, taking its time: every checkpoint, the totals, the goodbyes (ch/final.js)
+  'final-cp', 'final-podium', 'final-congrats', 'final-lastword', 'overnight-talk']);
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 

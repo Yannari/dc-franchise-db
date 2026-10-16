@@ -254,7 +254,7 @@ export class ChxStage {
       if (ST.hangers) { ST.hangers.forEach((n, k) => { const t = ST.toks[n]; t?.classList.remove('hang', 'fall'); this.put(n, this.pierAt(k, ST.hangers.length), anim); }); ST.hangers = null; }
       ST.power = s.win; s.win.forEach(n => ST.toks[n]?.classList.add('safe'));
     }
-    if (s.power) ST.power = s.power;
+    if (s.power) { ST.power = s.power; ST.powerLabel = s.powerLabel || null; }
     if (s.boardReset) { ST.board = {}; ST.voters = 0; }
     if (s.vote) {
       const [v, n] = s.vote;
@@ -311,7 +311,7 @@ export class ChxStage {
     const P = ST.scene || {};
     let h = '';
     if (!ST.map && !P.conf) h += `<div class='loc ${anim && s.scene ? 'fresh' : ''}'><div class='ic'><svg viewBox='0 0 24 24'>${ICON[P.icon] || ICON.house}</svg></div><div class='txt'><div class='place'>${esc(P.place || '')}</div><div class='when'>${P.when || ''}</div></div></div>`;
-    if (ST.power.length && !ST.map) h += `<div class='power'><b>SAFE</b>${ST.power.map(n => `<img src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div>`;
+    if (ST.power.length && !ST.map) h += `<div class='power'><b>${esc(ST.powerLabel || 'SAFE')}</b>${ST.power.map(n => `<img src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div>`;
     const pinId = P.island || (P.room ? 'villa' : null);
     if (pinId && !ST.map && !P.conf) {
       const pin = marks('map-day').find(m => m.kind === 'spot' && m.id === pinId);

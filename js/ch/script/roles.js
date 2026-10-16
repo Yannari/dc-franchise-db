@@ -223,7 +223,13 @@ export const ROLES = {
   'overnight-quit': sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   'final-pact-help': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'final-pact-broken': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
-  champions: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  champions: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.who.length > 1 ? 'two' : 'one' }),
+  // the final's moments (final.js): a checkpoint's first and last; talk at the fire; the podium; the runner-up and the champion; last words
+  'final-cp': sc => ({ roles: { a: sc.data.first, b: sc.data.last }, ending: sc.data.id }),
+  'overnight-talk': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.mood }),
+  'final-podium': sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
+  'final-congrats': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.gracious ? 'gracious' : 'bitter' }),
+  'final-lastword': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.when === 'instant' ? 'instant' : sc.data.place === 2 ? 'second' : 'finished' }),
 };
 
 export function rolesOf(scene, state) {

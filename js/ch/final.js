@@ -2,75 +2,186 @@
 // ch/final.js — the two-day final
 // ══════════════════════════════════════════════════════════════════════
 //
-// Spec §3 "The final". Sources (Wikipedia, read 2026-10-14): Battle for a New
-// Champion (a checkpoint trail race, an overnight stage on a beach, a swim to
-// an island and three checkpoints on day two, "the first across the finish
-// line wins") and Total Madness (an instant elimination after the first
-// checkpoint; the overnight in the cold; the first male and first female
-// across the line win).
+// Spec §3 "The final". Sources: Battle for a New Champion and Total Madness (Wikipedia, read 2026-10-14: a
+// checkpoint race over two days, an overnight stage, an instant elimination, the first man and the first woman
+// across the line win); All Stars (HollywoodLife, 2021: "a series of checkpoints where each mini challenge
+// awarded points", five for first, four for second); The Challenge 40 (Sportskeeda, 2025: four checkpoints
+// and an overnight portion over two parts).
 //
-//   Day 1  checkpoint 1 (a run and a carry). The two slowest of each division
-//          face an INSTANT ELIMINATION, a duel on the spot.
-//          The overnight stage: no sleep, cold, an endurance and temperament
-//          test where people can quit.
-//   Day 2  checkpoint 2 (a puzzle at altitude), checkpoint 3 (the summit run).
-//          The total decides: two champions, or one in a gender-blind season.
+// The user, 2026-10-16: "the finale is very expeditive, it should take its time: longer explanations,
+// conversations, longer challenges, more drama, comedy, clashes, taunts; TJ not doing his job; 6 frames for a
+// challenge is a joke; no suspense; barely any last word or congratulations; we don't see them placed."
 //
-// Alliances end at the final (the real show's "it's every man for himself"):
-// the scene is recorded; nothing votes here.
-import { S, addScene, noise } from './state.js';
+//   Day 1  TJ's welcome and the rules. Checkpoint 1, the Beach Haul; checkpoint 2, the Banquet (an eating
+//          checkpoint). The slowest two of each division face an instant elimination.
+//   Night  the overnight: the box (comfort for the leaders, extra tiles for a rival), talk at the fire,
+//          and the cold; a quit is out of the final.
+//   Day 2  checkpoint 3, the Ridge Puzzle (a kept final deal helps here); checkpoint 4, the Lagoon Swim;
+//          checkpoint 5, the Summit Run to the finish line. Then the podium, the crowning, the goodbyes.
+//
+// Every checkpoint is placed and scored on points (first in a division takes the most), played as beats the
+// viewer shows one at a time: the start, who leads, who passes whom, who struggles (in that checkpoint's own
+// way), a taunt between rivals, a comic moment, a helping hand, the finish order, and the standings after it.
+import { getBond, addBond } from '../bonds.js';
+import { gs } from '../core.js';
+import { S, addScene, noise, archetypeOf } from './state.js';
 import { performanceMod, nudge } from './mind.js';
 import { blendScore, playDuel, ARENA_GAMES } from './arena.js';
 import { activeAlliances, endAlliance } from './alliances.js';
 import { removePlayer } from './exits.js';
 import { giveRespect } from './respect.js';
 import { grudgeOf, trustOf, remember, keptWord } from './rel.js';
-import { addBond } from '../bonds.js';
+import { addRivalry } from './events.js';
+import { fearOfThing } from './mind.js';
 
-const CHECKPOINTS = [
-  { id: 'cp1', name: 'The Beach Haul', blend: { physical: 0.4, endurance: 0.4, boldness: 0.2 } },
-  { id: 'cp2', name: 'The Ridge Puzzle', blend: { mental: 0.45, endurance: 0.3, intuition: 0.25 } },
-  { id: 'cp3', name: 'The Summit Run', blend: { endurance: 0.5, physical: 0.3, temperament: 0.2 } },
+const pop = (name, d) => { gs.popularity ||= {}; gs.popularity[name] = (gs.popularity[name] || 0) + d; };
+
+export const CHECKPOINTS = [
+  { id: 'cp1', day: 1, name: 'The Beach Haul', blend: { physical: 0.4, endurance: 0.4, boldness: 0.2 }, struggle: 'haul' },
+  { id: 'cp2', day: 1, name: 'The Banquet', blend: { temperament: 0.45, endurance: 0.3, boldness: 0.25 }, struggle: 'eat', fear: 'gross food' },
+  { id: 'cp3', day: 2, name: 'The Ridge Puzzle', blend: { mental: 0.45, endurance: 0.3, intuition: 0.25 }, struggle: 'puzzle' },
+  { id: 'cp4', day: 2, name: 'The Lagoon Swim', blend: { endurance: 0.5, physical: 0.3, boldness: 0.2 }, struggle: 'swim', fear: 'deep water' },
+  { id: 'cp5', day: 2, name: 'The Summit Run', blend: { endurance: 0.5, physical: 0.3, temperament: 0.2 }, struggle: 'run', last: true },
 ];
+// points for a place in a division: first takes the most (All Stars: five for first, four for second...)
+const POINTS = [10, 8, 6, 5, 4, 3, 2, 1, 1, 1];
+const COMIC = new Set(['wildcard', 'chaos-agent', 'goat', 'floater', 'underdog']);
 
-function runCheckpoint(state, rng, cp, who) {
-  const out = {};
-  for (const n of who) out[n] = blendScore(n, cp.blend) * performanceMod(state, n, 0.8) + noise(rng) * 0.8;
-  for (const n of who) nudge(state, n, 'energy', -2.2);
-  return out;
+const divsOf = state => (state.options.gendered ? ['m', 'f'] : ['all']);
+const inDiv = (state, d) => state.active.filter(n => d === 'all' || state.division[n] === d);
+
+/**
+ * One checkpoint: each finalist's time (as a score), the places and points in each division, and the beats:
+ * progress snapshots (for the leaderboard) with what happened between them.
+ */
+function runCheckpoint(state, rng, cp, total, fin, bonus = {}) {
+  const who = [...state.active];
+  const score = {};
+  for (const n of who) {
+    let s = blendScore(n, cp.blend) * performanceMod(state, n, 0.85) + noise(rng) * 0.9 + (bonus[n] || 0);
+    if (cp.fear) s -= fearOfThing(state, n, cp.fear) * 0.9;
+    score[n] = s;
+  }
+  for (const n of who) nudge(state, n, 'energy', cp.day === 2 ? -1.6 : -2);
+  const beats = [];
+  const B = (t, kind, w, data = {}) => beats.push({ t, kind, who: w, data });
+  // progress over the checkpoint: the eventual order shows itself as it goes, with the middle shuffling
+  const max = Math.max(...who.map(n => score[n])), min = Math.min(...who.map(n => score[n]));
+  const pace = n => 0.72 + 0.5 * (score[n] - min) / Math.max(0.01, max - min);
+  const jit = Object.fromEntries(who.map(n => [n, [0, 1, 2].map(() => (rng() - 0.5) * 0.18)]));
+  const snapAt = (t, k) => Object.fromEntries(who.map(n => [n, +Math.min(0.97, Math.max(0.02, t * pace(n) + (k < 3 ? jit[n][k] * (1 - t) : 0))).toFixed(3)]));
+  const snaps = [snapAt(0.3, 0), snapAt(0.55, 1), snapAt(0.8, 2)];
+  const orderOf = snap => [...who].sort((a, b) => snap[b] - snap[a]);
+  B(0, 'cp-start', who, {});
+  const o1 = orderOf(snaps[0]);
+  B(1, 'cp-lead', [o1[0]], { snap: snaps[0] });
+  // the struggle: the slowest, in this checkpoint's own way
+  const slowest = [...who].sort((a, b) => score[a] - score[b]);
+  B(1.5, 'cp-struggle', [slowest[0]], { snap: snaps[0], how: cp.struggle, n: 0 });
+  // a taunt between rivals running near each other
+  const near = (a, b, snap) => Math.abs(snap[a] - snap[b]) < 0.12;
+  const rivals = [];
+  for (const a of who) for (const b of who) if (a < b && (grudgeOf(a, b) + grudgeOf(b, a) >= 1.2 || getBond(a, b) <= -2)) rivals.push([a, b]);
+  const taunt = rivals.find(([a, b]) => near(a, b, snaps[1]));
+  // the pass: the biggest climber between the first and second look, and who they passed
+  const o2 = orderOf(snaps[1]);
+  const climb = who.map(n => ({ n, d: o1.indexOf(n) - o2.indexOf(n) })).sort((x, y) => y.d - x.d)[0];
+  if (climb && climb.d > 0) {
+    const passed = o2[o2.indexOf(climb.n) + 1];
+    B(2, 'cp-pass', [climb.n, passed], { snap: snaps[1] });
+  } else B(2, 'cp-lead', [o2[0]], { snap: snaps[1] });
+  if (taunt) {
+    const [a, b] = snaps[1][taunt[0]] >= snaps[1][taunt[1]] ? taunt : [taunt[1], taunt[0]];
+    const bites = rng() < 0.5;
+    addBond(a, b, -0.4); addRivalry(state, a, b, 0.5);
+    if (bites) { score[b] -= 0.25; nudge(state, b, 'confidence', -0.4); } else { score[b] += 0.15; nudge(state, b, 'confidence', 0.3); }
+    B(2.5, 'cp-taunt', [a, b], { snap: snaps[1], bites });
+  }
+  // a comic moment: somebody built for it, or somebody having the worst time
+  const comic = who.filter(n => COMIC.has(archetypeOf(n)) || S(n, 'boldness') >= 8).sort((a, b) => S(b, 'boldness') - S(a, 'boldness'))[0];
+  if (comic && rng() < 0.65) { pop(comic, 0.3); B(3, 'cp-comedy', [comic], { snap: snaps[1], how: cp.struggle }); }
+  // a hand (the puzzle: a kept final deal)
+  for (const h of fin.help.filter(x => cp.id === 'cp3' && who.includes(x.a) && who.includes(x.b))) B(3.5, 'cp-help', [h.a, h.b], { snap: snaps[2] });
+  const o3 = orderOf(snaps[2]);
+  B(4, 'cp-struggle', [slowest[1] || slowest[0]], { snap: snaps[2], how: cp.struggle, n: 1 });
+  // the close finish: the top two of a division within a whisker
+  const places = {}, pts = {};
+  for (const d of divsOf(state)) {
+    const ord = inDiv(state, d).sort((a, b) => score[b] - score[a]);
+    ord.forEach((n, i) => { places[n] = i + 1; pts[n] = POINTS[i] ?? 0; total[n] = (total[n] || 0) + pts[n]; });
+    if (ord.length >= 2 && score[ord[0]] - score[ord[1]] < 0.35) B(4.5, 'cp-close', [ord[0], ord[1]], { snap: snaps[2], div: d });
+  }
+  const order = [...who].sort((a, b) => score[b] - score[a]);
+  B(5, 'cp-finish', order, { places, pts, snap: Object.fromEntries(who.map(n => [n, 1])) });
+  // the checkpoint's winner earns respect; the last one loses some confidence
+  giveRespect(state, order[0], 'dailyWin'); nudge(state, order[0], 'confidence', 0.6);
+  nudge(state, order[order.length - 1], 'confidence', -0.6);
+  const standings = Object.fromEntries(divsOf(state).map(d => [d, inDiv(state, d).sort((a, b) => total[b] - total[a]).map(n => [n, total[n]])]));
+  const rec = { id: cp.id, name: cp.name, day: cp.day, scores: round(score), order, places, pts, standings, beats, leader: o3[0] };
+  const prev = fin.checkpoints.at(-1)?.standings || null;
+  fin.checkpoints.push(rec);
+  // the scene carries the checkpoint as run, so the viewer and the backlog tell it the same (script/final-cp.js)
+  addScene(state, 'final-cp', [...order], { id: cp.id, name: cp.name, day: cp.day, first: order[0], last: order[order.length - 1],
+    rec: JSON.parse(JSON.stringify(rec)), prev: prev ? JSON.parse(JSON.stringify(prev)) : null }, state.active, 'final');
+  return rec;
+}
+
+/** Talk at the fire on the overnight: rivals, friends, a laugh, and a deal that ends now. */
+function fireTalk(state, rng) {
+  const act = state.active;
+  const used = new Set();
+  const pairBy = score => {
+    let best = null, top = -Infinity;
+    for (const a of act) for (const b of act) {
+      if (a >= b || used.has(a) || used.has(b)) continue;
+      const s = score(a, b); if (s > top) { top = s; best = [a, b]; }
+    }
+    return best && top > 0 ? best : null;
+  };
+  const talks = [];
+  const rival = pairBy((a, b) => grudgeOf(a, b) + grudgeOf(b, a) - getBond(a, b) * 0.5 - 1);
+  if (rival) { rival.forEach(n => used.add(n)); addBond(rival[0], rival[1], -0.5); addRivalry(state, rival[0], rival[1], 0.5); talks.push(addScene(state, 'overnight-talk', rival, { mood: 'rivals' }, act, 'final')); }
+  const friends = pairBy((a, b) => getBond(a, b) - 2);
+  if (friends) { friends.forEach(n => used.add(n)); addBond(friends[0], friends[1], 0.6); nudge(state, friends[0], 'morale', 0.6); nudge(state, friends[1], 'morale', 0.6); talks.push(addScene(state, 'overnight-talk', friends, { mood: 'friends' }, act, 'final')); }
+  const funny = act.filter(n => !used.has(n)).sort((a, b) => S(b, 'boldness') + S(b, 'social') - S(a, 'boldness') - S(a, 'social'))[0];
+  const audience = act.filter(n => !used.has(n) && n !== funny)[0];
+  if (funny && audience && rng() < 0.7) { used.add(funny); used.add(audience); for (const n of act) nudge(state, n, 'morale', 0.3); talks.push(addScene(state, 'overnight-talk', [funny, audience], { mood: 'comedy' }, act, 'final')); }
+  return talks;
 }
 
 export function playFinal(state, rng) {
   state.day += 1;
-  const fin = { finalists: [...state.active], checkpoints: [], instant: [], overnight: [], champions: [], totals: {} };
+  const fin = { finalists: [...state.active], checkpoints: [], instant: [], overnight: [], champions: [], totals: {}, help: [], sabotage: [], lastWords: [] };
   for (const al of activeAlliances(state)) endAlliance(state, al, 'final');
   addScene(state, 'final-start', state.active, {}, state.active, 'final');
   const total = Object.fromEntries(state.active.map(n => [n, 0]));
-  // Checkpoint 1.
-  const s1 = runCheckpoint(state, rng, CHECKPOINTS[0], state.active);
-  for (const n of state.active) total[n] += s1[n];
-  fin.checkpoints.push({ id: 'cp1', scores: round(s1) });
-  // The instant elimination: the two slowest of each division (three or more left in it).
-  const divs = state.options.gendered ? ['m', 'f'] : ['all'];
-  for (const d of divs) {
-    const inDiv = state.active.filter(n => d === 'all' || state.division[n] === d);
-    if (inDiv.length < 3) continue;
-    const [x, y] = [...inDiv].sort((a, b) => s1[a] - s1[b]);
+
+  // ── Day 1 ──
+  runCheckpoint(state, rng, CHECKPOINTS[0], total, fin);
+  runCheckpoint(state, rng, CHECKPOINTS[1], total, fin);
+  // The instant elimination: the two lowest on points in each division with three or more left.
+  for (const d of divsOf(state)) {
+    const left = inDiv(state, d);
+    if (left.length < 3) continue;
+    const [x, y] = [...left].sort((a, b) => total[a] - total[b]);
     const game = ARENA_GAMES.find(g => g.id === 'hallway-hustle');
     const duel = playDuel(state, rng, x, y, game);
     fin.instant.push(duel);
     addScene(state, 'instant-elimination', [x, y], { winner: duel.winner, game: duel.game }, state.active, 'final');
+    // their last words, before they leave the final
+    addScene(state, 'final-lastword', [duel.loser], { when: 'instant', place: null }, [duel.loser], 'confessional');
+    fin.lastWords.push(duel.loser);
     removePlayer(state, duel.loser, 'final-instant');
     delete total[duel.loser];
   }
-  // The overnight's box (Battle for a New Champion, Wikipedia: "players empty
-  // a tile-filled box for items (a blanket, pillow, or chair) and extra tiles
-  // for rivals"). The fastest at checkpoint 1 empty theirs first: they get the
-  // comfort, and the extra tiles go to whoever they most want to break.
-  const order = [...state.active].sort((a, b) => s1[b] - s1[a]);
+
+  // ── The overnight ──
+  // The box (Battle for a New Champion: "players empty a tile-filled box for items (a blanket, pillow, or chair)
+  // and extra tiles for rivals"): the leaders on points empty theirs first, take the comfort, and pick a rival.
+  addScene(state, 'overnight', state.active, {}, state.active, 'final');
+  const order = [...state.active].sort((a, b) => total[b] - total[a]);
   const comfort = {};
   order.forEach((n, i) => { comfort[n] = i < 3 ? ['chair', 'pillow', 'blanket'][i] : null; });
-  fin.sabotage = [];
   for (const n of order.slice(0, Math.ceil(order.length / 2))) {
     const rival = state.active.filter(x => x !== n).sort((x, y) => grudgeOf(n, y) - grudgeOf(n, x)
       + (state.division[y] === state.division[n] ? 0.5 : 0) - (state.division[x] === state.division[n] ? 0.5 : 0))[0];
@@ -81,7 +192,7 @@ export function playFinal(state, rng) {
     addScene(state, 'overnight-sabotage', [n, rival], {}, state.active, 'final');
   }
   const tiles = n => fin.sabotage.filter(x => x.to === n).length;
-  // The overnight.
+  fireTalk(state, rng);
   for (const n of [...state.active]) {
     const m = state.mind[n];
     const p = Math.max(0, 0.05 * (1 - (S(n, 'endurance') + S(n, 'temperament')) / 20) * (1 + m.homesick / 10) * (1.3 - m.morale / 12) * (1 + tiles(n) * 0.5));
@@ -93,43 +204,58 @@ export function playFinal(state, rng) {
       delete total[n];
       continue;
     }
-    // Holding up through the night is worth time on day two.
+    // Holding up through the night is worth a point or two on day two.
     const held = (S(n, 'endurance') * 0.6 + S(n, 'temperament') * 0.4) / 10 + (comfort[n] ? 0.15 : 0) - tiles(n) * 0.12;
-    total[n] += held * 1.5;
+    total[n] += Math.round(held * 2);
     nudge(state, n, 'energy', -2.5);
     fin.overnight.push({ name: n, held: +held.toFixed(2), comfort: comfort[n], tiles: tiles(n) });
   }
-  addScene(state, 'overnight', state.active, {}, state.active, 'final');
   state.day += 1;
-  // A ride-to-the-final pact pays out on the puzzle: a man and a woman who are
-  // not competing with each other share the answer. Kept, it is loyalty proved;
-  // a partner in the same division owes nothing (they are racing each other).
-  fin.help = [];
+
+  // ── Day 2 ──
+  // A ride-to-the-final pact pays out on the puzzle: a man and a woman who are not racing each other share the
+  // answer. Kept, it is loyalty proved; a partner in the same division owes nothing.
   for (const d of state.deals.filter(x => x.tier === 'final' && !x.broken)) {
     if (!state.active.includes(d.a) || !state.active.includes(d.b) || state.division[d.a] === state.division[d.b]) continue;
     const keeps = rng() < 0.6 + S(d.a, 'loyalty') * 0.03;
     if (keeps) { fin.help.push({ a: d.a, b: d.b }); keptWord(d.a, d.b, 1); keptWord(d.b, d.a, 1); }
     addScene(state, keeps ? 'final-pact-help' : 'final-pact-broken', [d.a, d.b], {}, [d.a, d.b], 'final');
   }
-  const helped = n => fin.help.some(h => h.a === n || h.b === n);
-  for (const cp of CHECKPOINTS.slice(1)) {
-    const sc = runCheckpoint(state, rng, cp, state.active);
-    if (cp.id === 'cp2') for (const n of state.active) if (helped(n)) sc[n] += 0.6;
-    for (const n of state.active) total[n] += sc[n];
-    fin.checkpoints.push({ id: cp.id, scores: round(sc) });
-  }
+  const helped = Object.fromEntries(state.active.map(n => [n, fin.help.some(h => h.a === n || h.b === n) ? 0.6 : 0]));
+  runCheckpoint(state, rng, CHECKPOINTS[2], total, fin, helped);
+  runCheckpoint(state, rng, CHECKPOINTS[3], total, fin);
+  runCheckpoint(state, rng, CHECKPOINTS[4], total, fin);
+
+  // ── The finish ──
   fin.totals = round(total);
-  for (const d of divs) {
-    const inDiv = state.active.filter(n => d === 'all' || state.division[n] === d).sort((a, b) => total[b] - total[a]);
-    if (inDiv[0]) fin.champions.push(inDiv[0]);
+  fin.podium = {};
+  for (const d of divsOf(state)) {
+    const ord = inDiv(state, d).sort((a, b) => total[b] - total[a] || (fin.checkpoints.at(-1).places[a] - fin.checkpoints.at(-1).places[b]));
+    fin.podium[d] = ord;
+    if (ord[0]) fin.champions.push(ord[0]);
   }
   state.champions = fin.champions;
   // Placements for the finishers: champions 1, the rest in order of total.
   const rest = state.active.filter(n => !fin.champions.includes(n)).sort((a, b) => total[b] - total[a]);
   fin.placements = Object.fromEntries([...fin.champions.map(n => [n, 1]), ...rest.map((n, i) => [n, i + 2])]);
+  addScene(state, 'final-podium', [...state.active], { podium: fin.podium, totals: fin.totals }, state.active, 'final');
   addScene(state, 'champions', fin.champions, {}, state.active, 'final');
+  // the runners-up: one congratulates each champion (gracious, or not); everybody's last words
+  for (const c of fin.champions) {
+    const second = fin.podium[divsOf(state).find(d => fin.podium[d][0] === c)]?.[1];
+    if (!second) continue;
+    const gracious = getBond(second, c) >= 0 || S(second, 'temperament') >= 6;
+    if (gracious) addBond(second, c, 0.6);
+    addScene(state, 'final-congrats', [second, c], { gracious }, state.active, 'final');
+  }
+  for (const d of divsOf(state)) (fin.podium[d] || []).forEach((n, i) => {
+    if (i === 0) return;
+    addScene(state, 'final-lastword', [n], { when: 'finish', place: i + 1 }, [n], 'confessional');
+    fin.lastWords.push(n);
+  });
+  for (const c of fin.champions) pop(c, 3);
   state.final = fin;
   return fin;
 }
 
-const round = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, +v.toFixed(2)]));
+const round = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, +(+v).toFixed(2)]));

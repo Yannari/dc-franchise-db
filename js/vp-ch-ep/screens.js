@@ -151,11 +151,55 @@ const ITABS = [['heads', 'In their heads'], ['people', 'Relationships'], ['allie
 const BOND_WORD = v => (v >= 6 ? 'Close' : v >= 3 ? 'Friends' : v > -2 ? 'Neutral' : v > -5 ? 'Tension' : 'Enemies');
 const BOND_CLS = v => (v >= 6 ? 'close' : v >= 3 ? 'friend' : v > -2 ? 'neutral' : v > -5 ? 'tense' : 'enemy');
 const istate = () => (typeof window !== 'undefined' ? (window._chxIntel ||= { tab: 'heads', who: null }) : { tab: 'heads', who: null });
+// The house AS OF THIS STEP (the user, 2026-10-16: "the intel doesnt update live ... when an alliance is created
+// it doesnt update the alliance tab right after"): the snapshot the episode began with, and every scene aired up
+// to the step replayed on it: alliances formed, joined, left and ended, deals made and broken, couples, exits
+// and returns. The end snapshot once the episode is over.
+function reachedScene(R) {
+  let upto = -1;
+  R.E.screens.forEach((s, si) => {
+    if (si > R.si) return;
+    s.steps.forEach((st, i) => { if ((si < R.si || i <= R.idx) && st.sceneIdx != null) upto = Math.max(upto, st.sceneIdx); });
+  });
+  return upto;
+}
+function replay(H, a) {
+  const d = a.data || {}, who = a.who || [];
+  const al = name => H.alliances.find(x => x.name === name);
+  const leave = n => {
+    H.players = H.players.filter(x => x !== n);
+    for (const x of H.alliances) x.members = x.members.filter(m => m !== n);
+    H.alliances = H.alliances.filter(x => x.members.length >= 2 || (H.gone.push(x.name), false));
+    H.couples = H.couples.filter(c => !c.includes(n));
+    H.deals = H.deals.filter(x => x.a !== n && x.b !== n);
+  };
+  const pair = (x, p, q) => (x.a === p && x.b === q) || (x.a === q && x.b === p);
+  switch (a.kind) {
+    case 'alliance-form': if (d.name && !al(d.name)) H.alliances.push({ name: d.name, leader: d.leader || who[0], members: [...who] }); break;
+    case 'alliance-grow': { const x = al(d.name); if (x && who[1] && !x.members.includes(who[1])) x.members.push(who[1]); break; }
+    case 'alliance-leave': { const x = al(d.name); if (x) { x.members = x.members.filter(m => m !== who[0]); if (x.members.length < 2) { H.alliances = H.alliances.filter(y => y !== x); H.gone.push(x.name); } } break; }
+    case 'alliance-end': if (al(d.name)) { H.alliances = H.alliances.filter(y => y.name !== d.name); H.gone.push(d.name); } break;
+    case 'showmance': if (!H.couples.some(c => c.includes(who[0]) && c.includes(who[1]))) H.couples.push([who[0], who[1]]); break;
+    case 'breakup': H.couples = H.couples.filter(c => !(c.includes(who[0]) && c.includes(who[1]))); break;
+    case 'deal': case 'party-deal': if (!H.deals.some(x => pair(x, who[0], who[1]))) H.deals.push({ a: who[0], b: who[1], tier: a.kind === 'party-deal' ? 'final' : 'protect' }); break;
+    case 'deal-broken': H.deals = H.deals.filter(x => !pair(x, who[0], who[1])); H.broken.push({ a: who[0], b: who[1] }); break;
+    case 'arena': if (d.loser && !d.redemption) leave(d.loser); break;
+    case 'quit': case 'medical': case 'disqualified': case 'purge': if (who[0]) leave(who[0]); break;
+    case 'return-arena': if (d.winner && !H.players.includes(d.winner)) H.players.push(d.winner); break;
+    default:
+  }
+}
 function houseNow(R) {
   const I = R.E.row?.ch?.intel;
   if (!I) return null;
-  const last = R.si === R.E.screens.length - 1;
-  return (last && I.end) || I.start || null;
+  const last = R.si === R.E.screens.length - 1 && R.idx >= R.scr.steps.length - 1;
+  if (last && I.end) return I.end;
+  if (!I.start) return I.end || null;
+  const H = JSON.parse(JSON.stringify(I.start));
+  const aired = R.E.row?.ch?.aired || [];
+  const upto = reachedScene(R);
+  for (let i = 0; i <= upto && i < aired.length; i++) replay(H, aired[i]);
+  return H;
 }
 function intel(R) {
   const I = R.root.querySelector('.intel');
@@ -195,7 +239,7 @@ function intel(R) {
     body = `<div class="irec ihead"><span></span><b>Player</b><i>Dailies</i><i>Arena</i><i>Voted in</i><i>Votes</i><i>Bank</i></div>`
       + rows.map(([n, r]) => `<div class="irec">${face(n)}<b>${esc(n)}${r.skulls ? ` ${'&#9760;'.repeat(Math.min(3, r.skulls))}` : ''}${r.hurt ? ' &#10010;' : ''}</b><i>${r.daily}</i><i>${r.arenaW}-${r.arenaL}</i><i>${r.votedIn}</i><i>${r.votes}</i><i>${r.bank ? `$${Math.round(r.bank / 1000)}k` : '–'}</i></div>`).join('');
   }
-  const note = tab === 'heads' ? '' : `<div class="inote">${R.si === R.E.screens.length - 1 ? 'As the episode ends.' : 'As the episode began.'}</div>`;
+  const note = tab === 'heads' ? '' : `<div class="inote">${R.si === R.E.screens.length - 1 && R.idx >= R.scr.steps.length - 1 ? 'As the episode ends.' : 'As of this moment in the episode.'}</div>`;
   I.innerHTML = `<h4>INTEL <button type="button" data-close>&times;</button></h4><div class="sub">What the house doesn't know.</div>`
     + `<div class="itabs">${ITABS.map(([k, l]) => `<button type="button" data-itab="${k}" class="${k === tab ? 'on' : ''}">${esc(l)}</button>`).join('')}</div><div class="list">${body}${note}</div>`;
 }
@@ -212,7 +256,9 @@ function hubs(R) {
   steps.forEach((st, i) => {
     if (!st.map) return;
     const starts = [...new Set([...st.map.rooms.flatMap(r => r.bubs || []), ...(st.map.isle || []).flatMap(r => r.bubs || []), ...st.map.later].map(b => b.go))].filter(g => g > i).sort((a, b) => a - b);
-    const convs = starts.map(s => { let e = s + 1; while (e < steps.length && steps[e].sceneIdx == null && !steps[e].map && !steps[e].seg && !steps[e].card) e++; return { s, e: e - 1 }; });
+    // a card after a conversation is that conversation's (the new-alliance card with its faces was skipped: the run
+    // ended at it and Next jumped to the next conversation; the user, 2026-10-16, "we still dont have a screen slam")
+    const convs = starts.map(s => { let e = s + 1; while (e < steps.length && steps[e].sceneIdx == null && !steps[e].map && !steps[e].seg) e++; return { s, e: e - 1 }; });
     R.hubs.push({ at: i, convs, end: convs.length ? Math.max(...convs.map(c => c.e)) : i });
   });
   return R.hubs;
@@ -348,7 +394,8 @@ function goTo(R, idx, forward, sting = forward) {
   // on a map the dialogue box is not there; the map opens on the island, or where the viewer last was
   R.root.classList.toggle('on-map', !!steps[idx]?.map);
   if (steps[idx]?.map) setView(R, R.mview || 'isle', false, true); else R.root.classList.remove('mview-villa');
-  if (steps[idx]?.know && !R.intelOpen) R.root.querySelector('.intelbtn')?.classList.add('new');
+  // the dot: something only Intel shows, or a change to the house it now shows (an alliance, a couple)
+  if ((steps[idx]?.know || /alliance|showmance/i.test(steps[idx]?.card?.k || '')) && !R.intelOpen) R.root.querySelector('.intelbtn')?.classList.add('new');
   intel(R); chapters(R); script(R);
   playStep(R.scr, idx, sting);
 }

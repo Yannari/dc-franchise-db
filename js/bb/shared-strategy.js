@@ -827,8 +827,11 @@ function recruitmentOptions(house, weekNum = 99) {
     const members = (alliance.members || []).filter(name => house.includes(name));
     // Seven is the ceiling, not six. Past that an alliance is the house.
     if (members.length < 2 || members.length >= ceiling) continue;
+    // somebody who walked out of this group, or was thrown out of it, is not asked back (read 2026-10-15: Ripper
+    // quit The Last Resort in week four and was recruited into it again in week five, then expelled)
+    const left = new Set((alliance.quits || []).map(q => q?.player).filter(Boolean));
     for (const candidate of house) {
-      if (members.includes(candidate)) continue;
+      if (members.includes(candidate) || left.has(candidate)) continue;
       const scores = members.map(m => pairTrust(candidate, m));
       const avg = scores.reduce((sum, v) => sum + v, 0) / scores.length;
       if (Math.min(...scores) < JOIN_FLOOR || avg < joinAvg) continue;

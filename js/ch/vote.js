@@ -462,7 +462,12 @@ export function houseVote(state, rng, { eligible, delib, winners, exclude = [], 
     const flip = told != null && told !== target;
     // why, in a word, when the name is the voter's own (said out loud at the vote: ceremony.js)
     const reason = target === own.target ? reasonOf(own.terms) : null;
-    ballots.push({ voter: v, target, told, bond: +getBond(v, target).toFixed(2), wanted: Object.keys(own.terms || {}).length ? own.target : null,
+    // what is true of the name AT the vote, for the reason said out loud (the ballot is written when it airs, after
+    // the season): a "you keep winning" needs wins, a "you've never been in" needs no Arena, "the biggest bank" needs it
+    const rt = state.rec[target] || {};
+    const richest = state.active.every(n => n === target || (state.bank[n] || 0) < (state.bank[target] || 0)) && (state.bank[target] || 0) > 0;
+    const on = { proven: (rt.dailyWins || 0) + (rt.arenaW || 0) >= 2, neverIn: !((rt.arenaW || 0) + (rt.arenaL || 0)), richest };
+    ballots.push({ on, voter: v, target, told, bond: +getBond(v, target).toFixed(2), wanted: Object.keys(own.terms || {}).length ? own.target : null,
       asked: c?.target || null, via: c?.via || null, flip, why: flip ? (why === 'own read' ? 'changed their mind' : why) : why, reason,
       countBefore: Object.values(tally).reduce((a, b) => a + b, 0) - 1 });
   }

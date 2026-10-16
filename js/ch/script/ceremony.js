@@ -131,7 +131,7 @@ export function writeVote(state, epRec, vote, day) {
   const need = Math.floor(house / 2) + 1;
   vote.ballots.forEach((b, k) => {
     const own = (WHY[b.why] || 'own') === 'own' && b.reason;
-    const sc = own ? synthetic(state, epRec.ep, day, 'ballot-why', [b.voter, b.target], { reason: b.reason, house }, b.bond)
+    const sc = own ? synthetic(state, epRec.ep, day, 'ballot-why', [b.voter, b.target], { reason: b.reason, house, on: b.on || null }, b.bond)
       : synthetic(state, epRec.ep, day, 'ballot', [b.voter, b.target], { why: WHY[b.why] || 'own', flip: b.flip, house }, b.bond);
     let script = writeScene(state, sc) || (own ? writeScene(state, synthetic(state, epRec.ep, day, 'ballot', [b.voter, b.target], { why: 'own', house }, b.bond)) : null);
     run[b.target] = (run[b.target] || 0) + 1;

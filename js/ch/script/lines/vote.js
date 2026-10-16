@@ -66,7 +66,7 @@ export default {
   ],
   // ── a ballot that says why: the voter's own reason (vote.js reasonOf), one short line, out loud ──
   'ballot-why.threat': [
-    { id: 'bwy.t1', turns: [{ by: 'a', say: "{b}. You're winning too much, and somebody has to stop it now." }] },
+    { id: 'bwy.t1', when: { proven: true }, turns: [{ by: 'a', say: "{b}. You're winning too much, and somebody has to stop it now." }] },
     { id: 'bwy.t2', turns: [{ by: 'a', say: "{b}. If you get to the final, none of us win. That's it." }] },
     { id: 'bwy.t3', turns: [{ by: 'a', say: "I'm saying {b}. You're the best player in this house, and that's a compliment." }] },
     { id: 'bwy.t4', turns: [{ by: 'a', say: "{b}. I'd rather face you now than in the final." }] },
@@ -93,9 +93,9 @@ export default {
     { id: 'bwy.s4', turns: [{ by: 'a', say: "I'm going {b}. It's a chess move. Don't take it personally." }] },
   ],
   'ballot-why.floater': [
-    { id: 'bwy.f1', turns: [{ by: 'a', say: "{b}. You've never been in. It's time." }] },
-    { id: 'bwy.f2', turns: [{ by: 'a', say: "{b}. Everybody else has had to fight. Your turn." }] },
-    { id: 'bwy.f3', turns: [{ by: 'a', say: "{b}. You've been hiding all season, and I'm done carrying you." }] },
+    { id: 'bwy.f1', when: { neverIn: true }, turns: [{ by: 'a', say: "{b}. You've never been in. It's time." }] },
+    { id: 'bwy.f2', when: { neverIn: true }, turns: [{ by: 'a', say: "{b}. Everybody else has had to fight. Your turn." }] },
+    { id: 'bwy.f3', when: { early: false }, turns: [{ by: 'a', say: "{b}. You've been hiding all season, and I'm done carrying you." }] },
     { id: 'bwy.f4', turns: [{ by: 'a', say: "{b}. Let's see what you can actually do." }] },
   ],
   'ballot-why.power': [
@@ -111,10 +111,10 @@ export default {
     { id: 'bwy.r4', turns: [{ by: 'a', say: "{b}. I wasn't sure walking in. Now I am." }] },
   ],
   'ballot-why.money': [
-    { id: 'bwy.m1', turns: [{ by: 'a', say: "{b}. You've got the biggest bank in here. Somebody needs to take half of it." }] },
+    { id: 'bwy.m1', when: { richest: true }, turns: [{ by: 'a', say: "{b}. You've got the biggest bank in here. Somebody needs to take half of it." }] },
     { id: 'bwy.m2', turns: [{ by: 'a', say: "{b}. All that money makes you a target. Sorry." }] },
     { id: 'bwy.m3', turns: [{ by: 'a', say: "{b}. Whoever beats you gets rich. I like those odds for somebody." }] },
-    { id: 'bwy.m4', turns: [{ by: 'a', say: "{b}. You've been winning money all season. Time somebody else got some." }] },
+    { id: 'bwy.m4', when: { early: false }, turns: [{ by: 'a', say: "{b}. You've been winning money all season. Time somebody else got some." }] },
   ],
   'ballot.plan': [
     { id: 'bp.1', turns: [{ by: 'a', say: "{b}. I'm sticking with my people." }] },

@@ -4,14 +4,14 @@
 // voice could play more"): a schemer is cold about it, a sweet one apologises, a fiery one shouts it.
 export default {
   'ballot-why.threat': [
-    { id: 'bwy.t6', turns: [{ by: 'a', say: "{b}. You're too good, and I'm not waiting around for you to prove it again." }] },
-    { id: 'bwy.t7', turns: [{ by: 'a', say: "{b}. Look at the list of dailies you've won. That's my reason." }] },
+    { id: 'bwy.t6', when: { proven: true }, turns: [{ by: 'a', say: "{b}. You're too good, and I'm not waiting around for you to prove it again." }] },
+    { id: 'bwy.t7', when: { proven: true }, turns: [{ by: 'a', say: "{b}. Look at the list of dailies you've won. That's my reason." }] },
     { id: 'bwy.t8', when: { register: 'schemer' }, turns: [{ by: 'a', say: "{b}. Strong players make wonderful targets. You should be flattered." }] },
     { id: 'bwy.t9', when: { register: 'schemer' }, turns: [{ by: 'a', say: "{b}. Nothing personal. You're just in my way." }] },
     { id: 'bwy.t10', when: { register: 'sweet' }, turns: [{ by: 'a', say: "{b}. I'm so sorry. You're amazing, and that's exactly the problem." }] },
     { id: 'bwy.t11', when: { register: 'fiery' }, turns: [{ by: 'a', say: "{b}! Somebody has to stop you, so it might as well be me!" }] },
     { id: 'bwy.t12', when: { register: 'competitor' }, turns: [{ by: 'a', say: "{b}. I respect you. That's why I want you in there now." }] },
-    { id: 'bwy.t13', when: { register: 'cool' }, turns: [{ by: 'a', say: "{b}. The numbers don't lie. You're the biggest threat left." }] },
+    { id: 'bwy.t13', when: { register: 'cool', proven: true }, turns: [{ by: 'a', say: "{b}. The numbers don't lie. You're the biggest threat left." }] },
   ],
   'ballot-why.grudge': [
     { id: 'bwy.g6', turns: [{ by: 'a', say: "{b}. I told you I'd remember. I remembered." }] },
@@ -44,14 +44,14 @@ export default {
     { id: 'bwy.s12', when: { register: 'competitor' }, turns: [{ by: 'a', say: "{b}. Whoever comes out of that Arena, my road to the final gets shorter." }] },
   ],
   'ballot-why.floater': [
-    { id: 'bwy.f5', turns: [{ by: 'a', say: "{b}. You've watched everybody else go in. Now we get to watch you." }] },
-    { id: 'bwy.f6', turns: [{ by: 'a', say: "{b}. A whole season and I still don't know what you can do. Show me." }] },
-    { id: 'bwy.f7', when: { register: 'schemer' }, turns: [{ by: 'a', say: "{b}. You've been a passenger all season. This is your stop." }] },
-    { id: 'bwy.f8', when: { register: 'fiery' }, turns: [{ by: 'a', say: "{b}! You've been hiding behind everybody since day one, and I'm sick of it!" }] },
-    { id: 'bwy.f9', when: { register: 'competitor' }, turns: [{ by: 'a', say: "{b}. Everybody in here has earned their spot in that Arena. You haven't." }] },
-    { id: 'bwy.f10', when: { register: 'sweet' }, turns: [{ by: 'a', say: "{b}. I think it's only fair. Everybody else has had to fight." }] },
-    { id: 'bwy.f11', when: { register: 'cool' }, turns: [{ by: 'a', say: "{b}. Zero trips to the Arena. That's a statistic I'd like to fix." }] },
-    { id: 'bwy.f12', when: { register: 'shy' }, turns: [{ by: 'a', say: "{b}. You... haven't been in yet. So. {b}." }] },
+    { id: 'bwy.f5', when: { neverIn: true }, turns: [{ by: 'a', say: "{b}. You've watched everybody else go in. Now we get to watch you." }] },
+    { id: 'bwy.f6', when: { early: false }, turns: [{ by: 'a', say: "{b}. A whole season and I still don't know what you can do. Show me." }] },
+    { id: 'bwy.f7', when: { register: 'schemer', early: false }, turns: [{ by: 'a', say: "{b}. You've been a passenger all season. This is your stop." }] },
+    { id: 'bwy.f8', when: { register: 'fiery', early: false }, turns: [{ by: 'a', say: "{b}! You've been hiding behind everybody since day one, and I'm sick of it!" }] },
+    { id: 'bwy.f9', when: { register: 'competitor', neverIn: true }, turns: [{ by: 'a', say: "{b}. Everybody in here has earned their spot in that Arena. You haven't." }] },
+    { id: 'bwy.f10', when: { register: 'sweet', neverIn: true }, turns: [{ by: 'a', say: "{b}. I think it's only fair. Everybody else has had to fight." }] },
+    { id: 'bwy.f11', when: { register: 'cool', neverIn: true }, turns: [{ by: 'a', say: "{b}. Zero trips to the Arena. That's a statistic I'd like to fix." }] },
+    { id: 'bwy.f12', when: { register: 'shy', neverIn: true }, turns: [{ by: 'a', say: "{b}. You... haven't been in yet. So. {b}." }] },
   ],
   'ballot-why.power': [
     { id: 'bwy.p5', turns: [{ by: 'a', say: "{b}. Your side has had this house for too long." }] },
@@ -73,9 +73,9 @@ export default {
   'ballot-why.money': [
     { id: 'bwy.m5', turns: [{ by: 'a', say: "{b}. Half of your bank would look great on somebody else." }] },
     { id: 'bwy.m6', when: { register: 'schemer' }, turns: [{ by: 'a', say: "{b}. You've been saving up for whoever beats you. How generous." }] },
-    { id: 'bwy.m7', when: { register: 'fiery' }, turns: [{ by: 'a', say: "{b}! You've got the most money, so you get the most votes!" }] },
-    { id: 'bwy.m8', when: { register: 'competitor' }, turns: [{ by: 'a', say: "{b}. The richest person in here should have to defend it." }] },
-    { id: 'bwy.m9', when: { register: 'cool' }, turns: [{ by: 'a', say: "{b}. Biggest bank, biggest prize. It's just economics." }] },
+    { id: 'bwy.m7', when: { register: 'fiery', richest: true }, turns: [{ by: 'a', say: "{b}! You've got the most money, so you get the most votes!" }] },
+    { id: 'bwy.m8', when: { register: 'competitor', richest: true }, turns: [{ by: 'a', say: "{b}. The richest person in here should have to defend it." }] },
+    { id: 'bwy.m9', when: { register: 'cool', richest: true }, turns: [{ by: 'a', say: "{b}. Biggest bank, biggest prize. It's just economics." }] },
     { id: 'bwy.m10', when: { register: 'sweet' }, turns: [{ by: 'a', say: "{b}. It's the money, not you. I promise it's the money." }] },
   ],
 };

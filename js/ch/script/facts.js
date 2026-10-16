@@ -56,6 +56,9 @@ export const CH_FACT_KEYS = [
   // somebody besides the scene's own people is in it (state.js crowdOf: x is there). A line said to the room
   // ("in front of everybody", "you all") needs it, and a crowd version of a scene wins when there is a crowd.
   'crowd',
+  // the name at a vote, as it stood then (vote.js houseVote on): two or more wins (dailies and Arenas); never been
+  // in the Arena; the biggest bank in the house. A ballot's reason may claim only what is true.
+  'proven', 'neverIn', 'richest',
 ];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -108,6 +111,9 @@ export function factsFor(scene, roles, state) {
     pathB: scene.data?.pathB || null,
     physical: scene.data?.physical ?? null,
     crowd: !!roles.roles.x,
+    proven: scene.data?.on ? !!scene.data.on.proven : null,
+    neverIn: scene.data?.on ? !!scene.data.on.neverIn : null,
+    richest: scene.data?.on ? !!scene.data.on.richest : null,
   };
   if (a) {
     f.register = registerOf(a);

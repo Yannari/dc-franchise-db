@@ -73,4 +73,40 @@ for (const list of Object.values(POOLS)) {
     }
   }
 }
+
+// ── the quality gate (the user, 2026-10-16: "why does it sound badly translated from another language") ──
+// The voice bug fixed that day (write.js voicedOnce) meant ten thousand variants had never aired, and nobody had
+// read them in a conversation. Three kinds read as bad translation, and a variant that fails goes; the line as
+// written, which always fits the turns around it, speaks instead:
+//   shouted fragments   three sentences or more, two of them three-word shouts ("You and me! Final! Together!")
+//   meaning dropped     under 45% of a line of ten words or more ("I needed that." for a confessional's reason)
+//   stock               a line of five words or more pasted onto three different turns outside the ballots: it
+//                       was not written for this conversation, and the reply after it was
+const words = s => String(s).replace(/\{[^}]+\}/g, 'X').split(/\s+/).filter(Boolean).length;
+const sentences = s => String(s).split(/(?<=[.!?])\s+/).filter(Boolean);
+const stockUse = {};
+for (const [k, list] of Object.entries(POOLS)) {
+  if (k.startsWith('ballot')) continue;
+  for (const e of list) e.turns.forEach((t, i) => { for (const vs of Object.values(t.v || {})) for (const v of [vs].flat()) (stockUse[v] ||= new Set()).add(`${e.id}:${i}`); });
+}
+export function variantFails(v, base, stock = 0) {
+  const ss = sentences(v);
+  if (ss.length >= 3 && ss.filter(x => x.endsWith('!') && words(x) <= 3).length >= 2) return 'fragments';
+  if (words(base) >= 10 && words(v) < words(base) * 0.45) return 'dropped';
+  if (stock >= 3 && words(v) >= 5) return 'stock';
+  return null;
+}
+export const PRUNED = { fragments: 0, dropped: 0, stock: 0 };
+for (const [k, list] of Object.entries(POOLS)) {
+  for (const e of list) for (const t of e.turns) {
+    if (!t.v) continue;
+    const base = t.say || t.conf || '';
+    const kept = {};
+    for (const [tag, vs] of Object.entries(t.v)) {
+      const ok = [vs].flat().filter(v => { const why = variantFails(v, base, k.startsWith('ballot') ? 0 : stockUse[v]?.size || 0); if (why) PRUNED[why]++; return !why; });
+      if (ok.length) kept[tag] = ok.length === 1 ? ok[0] : ok;
+    }
+    t.v = Object.keys(kept).length ? kept : undefined;
+  }
+}
 export { LONGER };

@@ -9092,5 +9092,948 @@
         880
       ]
     ]
+  },
+  "maze-station": {
+    "_doc": "Jungle Maze, close: a station inside, the letter sign on its post (art job H01).",
+    "from": "H01-maze-station/Result.png",
+    "spot": "maze-station",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 420,
+        "y": 690,
+        "h": 130,
+        "group": "run"
+      },
+      {
+        "kind": "stand",
+        "x": 720,
+        "y": 650,
+        "h": 120,
+        "group": "run"
+      },
+      {
+        "kind": "stand",
+        "x": 1060,
+        "y": 700,
+        "h": 130,
+        "group": "run"
+      },
+      {
+        "kind": "stand",
+        "x": 260,
+        "y": 760,
+        "h": 136
+      }
+    ],
+    "fire": [
+      [
+        340,
+        300,
+        20
+      ],
+      [
+        580,
+        370,
+        14
+      ],
+      [
+        1300,
+        310,
+        20
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        240,
+        0.3
+      ],
+      [
+        0,
+        780,
+        600,
+        900,
+        0.4
+      ],
+      [
+        1300,
+        640,
+        1600,
+        900,
+        0.4
+      ]
+    ],
+    "cloth": [
+      [
+        870,
+        200,
+        1110,
+        410,
+        0.1
+      ]
+    ],
+    "critters": [
+      [
+        "parrot",
+        200,
+        0,
+        1600,
+        200
+      ]
+    ]
+  },
+  "maze-deadend": {
+    "_doc": "Jungle Maze, close: a dead end (H02).",
+    "from": "H02-maze-deadend/dead-end.png",
+    "spot": "maze-deadend",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 720,
+        "y": 700,
+        "h": 130,
+        "group": "run"
+      },
+      {
+        "kind": "stand",
+        "x": 1000,
+        "y": 660,
+        "h": 120,
+        "group": "run"
+      },
+      {
+        "kind": "stand",
+        "x": 1220,
+        "y": 700,
+        "h": 128,
+        "group": "run"
+      },
+      {
+        "kind": "stand",
+        "x": 480,
+        "y": 760,
+        "h": 136
+      }
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        240,
+        0.3
+      ],
+      [
+        0,
+        600,
+        420,
+        900,
+        0.4
+      ],
+      [
+        1300,
+        640,
+        1600,
+        900,
+        0.4
+      ]
+    ],
+    "critters": [
+      [
+        "parrot",
+        200,
+        0,
+        1600,
+        200
+      ]
+    ]
+  },
+  "reef-buoys": {
+    "_doc": "Reef Dash, Double Cross, Night Swim, close: the buoys at swimming level (H03).",
+    "from": "H03-reef-buoys/Result.png",
+    "spot": "reef-buoys",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 340,
+        "y": 530,
+        "h": 110,
+        "group": "swim"
+      },
+      {
+        "kind": "stand",
+        "x": 760,
+        "y": 470,
+        "h": 100,
+        "group": "swim"
+      },
+      {
+        "kind": "stand",
+        "x": 1190,
+        "y": 550,
+        "h": 115,
+        "group": "swim"
+      },
+      {
+        "kind": "stand",
+        "x": 1300,
+        "y": 455,
+        "h": 95,
+        "group": "swim"
+      }
+    ],
+    "pool": [
+      [
+        0,
+        340,
+        1600,
+        900,
+        false,
+        800,
+        600
+      ]
+    ],
+    "bob": [
+      [
+        [
+          150,
+          410
+        ],
+        [
+          270,
+          410
+        ],
+        [
+          270,
+          500
+        ],
+        [
+          150,
+          500
+        ]
+      ],
+      [
+        [
+          516,
+          360
+        ],
+        [
+          616,
+          360
+        ],
+        [
+          616,
+          440
+        ],
+        [
+          516,
+          440
+        ]
+      ],
+      [
+        [
+          984,
+          430
+        ],
+        [
+          1104,
+          430
+        ],
+        [
+          1104,
+          520
+        ],
+        [
+          984,
+          520
+        ]
+      ],
+      [
+        [
+          1360,
+          360
+        ],
+        [
+          1460,
+          360
+        ],
+        [
+          1460,
+          440
+        ],
+        [
+          1360,
+          440
+        ]
+      ]
+    ],
+    "sun": [
+      580,
+      100,
+      110
+    ],
+    "sway": [
+      [
+        1340,
+        120,
+        1600,
+        290,
+        0.35
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        0,
+        30,
+        1600,
+        300
+      ]
+    ]
+  },
+  "reef-under": {
+    "_doc": "Reef Dash, close: underwater, the token on its rope (H04).",
+    "from": "H04-reef-underwater/Result(1).png",
+    "spot": "reef-under",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 820,
+        "y": 540,
+        "h": 120,
+        "group": "swim"
+      },
+      {
+        "kind": "stand",
+        "x": 1150,
+        "y": 620,
+        "h": 110,
+        "group": "swim"
+      },
+      {
+        "kind": "stand",
+        "x": 560,
+        "y": 600,
+        "h": 110,
+        "group": "swim"
+      }
+    ],
+    "pool": [
+      [
+        0,
+        0,
+        1600,
+        120,
+        false,
+        800,
+        60
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        250,
+        260,
+        760,
+        0.4
+      ],
+      [
+        1280,
+        120,
+        1600,
+        740,
+        0.4
+      ],
+      [
+        520,
+        760,
+        720,
+        900,
+        0.3
+      ]
+    ]
+  },
+  "cliff-ladder": {
+    "_doc": "Cliff Relay, close: the rope ladder on the cliff face with its flags (H05).",
+    "from": "H05-cliff-ladder/Result2.png",
+    "spot": "cliff-ladder",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 490,
+        "y": 300,
+        "h": 100,
+        "group": "ladder"
+      },
+      {
+        "kind": "stand",
+        "x": 490,
+        "y": 540,
+        "h": 104,
+        "group": "ladder"
+      },
+      {
+        "kind": "stand",
+        "x": 490,
+        "y": 760,
+        "h": 108,
+        "group": "ladder"
+      },
+      {
+        "kind": "stand",
+        "x": 1300,
+        "y": 760,
+        "h": 96
+      }
+    ],
+    "pool": [
+      [
+        1100,
+        680,
+        1600,
+        900,
+        false,
+        1350,
+        790
+      ],
+      [
+        1040,
+        640,
+        1600,
+        690,
+        false,
+        1300,
+        660
+      ]
+    ],
+    "cloth": [
+      [
+        540,
+        80,
+        600,
+        130,
+        0.6
+      ],
+      [
+        540,
+        250,
+        600,
+        300,
+        0.6
+      ],
+      [
+        550,
+        450,
+        610,
+        500,
+        0.6
+      ],
+      [
+        560,
+        610,
+        620,
+        660,
+        0.6
+      ],
+      [
+        570,
+        760,
+        630,
+        810,
+        0.6
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        1000,
+        30,
+        1600,
+        360
+      ]
+    ]
+  },
+  "truck-finish": {
+    "_doc": "Truck Tug, close: the finish arch and the puzzle table (H06).",
+    "from": "H06-truck-finish/Result3.png",
+    "spot": "truck-finish",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 660,
+        "y": 640,
+        "h": 120,
+        "group": "table"
+      },
+      {
+        "kind": "stand",
+        "x": 940,
+        "y": 640,
+        "h": 120,
+        "group": "table"
+      },
+      {
+        "kind": "stand",
+        "x": 300,
+        "y": 720,
+        "h": 126
+      },
+      {
+        "kind": "stand",
+        "x": 1300,
+        "y": 720,
+        "h": 126
+      },
+      {
+        "kind": "host",
+        "x": 1500,
+        "y": 760,
+        "h": 124
+      }
+    ],
+    "pool": [
+      [
+        0,
+        440,
+        1600,
+        500,
+        false,
+        800,
+        470
+      ]
+    ],
+    "cloth": [
+      [
+        400,
+        80,
+        1200,
+        200,
+        0.5
+      ],
+      [
+        0,
+        470,
+        350,
+        560,
+        0.3
+      ],
+      [
+        1250,
+        470,
+        1600,
+        560,
+        0.3
+      ]
+    ],
+    "sway": [
+      [
+        200,
+        230,
+        320,
+        380,
+        0.35
+      ],
+      [
+        1220,
+        230,
+        1340,
+        380,
+        0.35
+      ],
+      [
+        1460,
+        260,
+        1600,
+        400,
+        0.35
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        0,
+        30,
+        1600,
+        220
+      ]
+    ]
+  },
+  "under-pier": {
+    "_doc": "Hang On and Cut the Rope, close: the net and the ropes under the pier (H07).",
+    "from": "H07-under-pier/Result.png",
+    "spot": "under-pier",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 530,
+        "y": 520,
+        "h": 100,
+        "group": "net"
+      },
+      {
+        "kind": "stand",
+        "x": 700,
+        "y": 470,
+        "h": 100,
+        "group": "net"
+      },
+      {
+        "kind": "stand",
+        "x": 620,
+        "y": 640,
+        "h": 104,
+        "group": "net"
+      },
+      {
+        "kind": "stand",
+        "x": 900,
+        "y": 560,
+        "h": 100,
+        "group": "rope"
+      },
+      {
+        "kind": "stand",
+        "x": 1025,
+        "y": 600,
+        "h": 100,
+        "group": "rope"
+      },
+      {
+        "kind": "stand",
+        "x": 1150,
+        "y": 560,
+        "h": 100,
+        "group": "rope"
+      }
+    ],
+    "pool": [
+      [
+        0,
+        690,
+        1600,
+        900,
+        false,
+        800,
+        790
+      ]
+    ],
+    "sway": [
+      [
+        1320,
+        280,
+        1440,
+        480,
+        0.35
+      ]
+    ],
+    "cloth": [
+      [
+        430,
+        120,
+        820,
+        680,
+        0.1
+      ],
+      [
+        880,
+        120,
+        1180,
+        620,
+        0.12
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        300,
+        220,
+        1300,
+        440
+      ]
+    ]
+  },
+  "derby-close": {
+    "_doc": "Demolition Derby, close: two towers and their rams (H08).",
+    "from": "H08-derby-close/Result.png",
+    "spot": "derby-close",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 560,
+        "y": 730,
+        "h": 130,
+        "group": "atk"
+      },
+      {
+        "kind": "stand",
+        "x": 1060,
+        "y": 730,
+        "h": 130,
+        "group": "atk"
+      },
+      {
+        "kind": "stand",
+        "x": 300,
+        "y": 790,
+        "h": 134
+      },
+      {
+        "kind": "stand",
+        "x": 1320,
+        "y": 790,
+        "h": 134
+      },
+      {
+        "kind": "host",
+        "x": 800,
+        "y": 560,
+        "h": 100
+      }
+    ],
+    "pool": [
+      [
+        0,
+        400,
+        1600,
+        450,
+        false,
+        800,
+        425
+      ]
+    ],
+    "fire": [
+      [
+        300,
+        600,
+        32
+      ]
+    ],
+    "cloth": [
+      [
+        250,
+        30,
+        360,
+        90,
+        0.6
+      ],
+      [
+        1280,
+        50,
+        1400,
+        110,
+        0.6
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        30,
+        160,
+        360,
+        0.35
+      ],
+      [
+        1440,
+        30,
+        1600,
+        330,
+        0.35
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        0,
+        30,
+        1600,
+        220
+      ]
+    ]
+  },
+  "raft-close": {
+    "_doc": "King of the Raft, close: the yellow raft at water level (H09).",
+    "from": "H09-raft-close/Result.png",
+    "spot": "raft-close",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 330,
+        "y": 512,
+        "h": 120,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 550,
+        "y": 512,
+        "h": 120,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 770,
+        "y": 512,
+        "h": 120,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 990,
+        "y": 512,
+        "h": 120,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1210,
+        "y": 512,
+        "h": 120,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1410,
+        "y": 512,
+        "h": 120,
+        "group": "raft"
+      }
+    ],
+    "pool": [
+      [
+        0,
+        370,
+        1600,
+        900,
+        false,
+        800,
+        640
+      ]
+    ],
+    "bob": [
+      [
+        [
+          170,
+          420
+        ],
+        [
+          1530,
+          420
+        ],
+        [
+          1530,
+          610
+        ],
+        [
+          170,
+          610
+        ]
+      ]
+    ],
+    "sway": [
+      [
+        1440,
+        300,
+        1600,
+        400,
+        0.3
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        0,
+        30,
+        1600,
+        300
+      ]
+    ]
+  },
+  "platform-close": {
+    "_doc": "Interrogation, close: one platform under its ring (H10).",
+    "from": "H10-platform-close/Result.png",
+    "spot": "platform-close",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 650,
+        "h": 150,
+        "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 260,
+        "y": 780,
+        "h": 120
+      }
+    ],
+    "pool": [
+      [
+        0,
+        520,
+        1600,
+        900,
+        false,
+        800,
+        700
+      ]
+    ],
+    "fall": [
+      [
+        1000,
+        0,
+        1330,
+        540
+      ]
+    ],
+    "sway": [
+      [
+        200,
+        0,
+        600,
+        140,
+        0.3
+      ],
+      [
+        1380,
+        0,
+        1600,
+        160,
+        0.3
+      ]
+    ]
   }
 }

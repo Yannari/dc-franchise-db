@@ -43,15 +43,20 @@ const RK = {
 };
 export function raftSteps(d, ctx) {
   const out = [];
-  let on = [], sand = 0, pending = {}, shoves = 0;
+  let on = [], sand = 0, pending = {}, shoves = 0, close = false, label = '';
+  const where = {};
+  const wide = () => ctx.scene('poles', false, Object.fromEntries(on.map(n => [n, where[n]])));
   const flush = s => { if (Object.keys(pending).length) { s.move = { ...(s.move || {}), ...pending }; pending = {}; } return s; };
-  const push = s => out.push(flush(s));
+  // the shove up close, on the raft (art job H09); the next step goes back to the wide shot
+  const closeUp = (who, s) => { out.push({ ...s, scene: { ...ctx.scene('raft-close', false, { TJ: null, ...Object.fromEntries(who.map((n, j) => [n, ['stand', j * 2 % 6, 'raft']])) }), close: 1 } }); close = true; };
+  const push = s => { if (close && !s.scene && !s.conf) { s.scene = wide(); close = false; } out.push(flush(s)); };
   const safe = [];
   for (const [i, b] of (d.beats || []).entries()) {
     const key = `rk${i}`;
     if (b.kind === 'raft-start') {
-      on = b.who; sand = 0; shoves = 0;
-      push({ scene: ctx.scene('poles', false, Object.fromEntries(on.map((n, j) => [n, ['stand', j % 12, 'raft']]))), seg: [b.data.label, 'King of the Raft'], stand: 'start', still: on, focus: [] });
+      on = b.who; sand = 0; shoves = 0; close = false;
+      for (const [j, n] of on.entries()) where[n] = ['stand', j % 12, 'raft'];
+      push({ scene: wide(), seg: [b.data.label, 'King of the Raft'], stand: 'start', still: on, focus: [] });
       push(tj(line(ctx, RK.tj, {}, key)));
       push({ dir: line(ctx, RK.start, { who: nameList(on) }, key + 's'), focus: on.slice(0, 4) });
       continue;
@@ -60,14 +65,14 @@ export function raftSteps(d, ctx) {
       const n = b.who[0], by = b.data.by;
       const pos = ctx.V.pron?.[n]?.posAdj || 'their';
       const text = b.data.betray ? line(ctx, RK.betray, { a: by, b: n }, key) : b.data.mate ? line(ctx, RK.gang, { a: by, m: b.data.mate, b: n }, key) : line(ctx, RK.pushed, { a: by, b: n, pos }, key);
-      push({ dir: text, drop: [n], splash: 1, focus: [by, n], act: { [by]: 'shout' }, shake: b.data.betray ? 1 : 0 });
-      pending[n] = ['stand', sand++ % 8];
+      closeUp([by, n, ...(b.data.mate ? [b.data.mate] : [])], { dir: text, drop: [n], splash: 1, focus: [by, n], act: { [by]: 'shout' }, shake: b.data.betray ? 1 : 0 });
+      where[n] = ['stand', sand++ % 8];
       if (b.data.betray) { const h = voice(ctx, HURT, n, { a: by }, key + 'h'); if (h) push(conf(n, h)); const dd = voice(ctx, DID, by, {}, key + 'd'); if (dd) push(conf(by, dd)); }
       continue;
     }
     if (b.kind === 'shove') {
       if (++shoves > 3 && !b.data.betray) continue;
-      push({ dir: line(ctx, RK.shove, { a: b.who[0], b: b.who[1] }, key), focus: b.who, act: { [b.who[0]]: 'lean' } });
+      closeUp(b.who, { dir: line(ctx, RK.shove, { a: b.who[0], b: b.who[1] }, key), focus: b.who, act: { [b.who[0]]: 'lean', [b.who[1]]: 'strain' } });
       continue;
     }
     if (b.kind === 'raft-win') {
@@ -99,6 +104,11 @@ export function cutRopeSteps(d, ctx) {
   for (const [i, b] of (d.beats || []).entries()) {
     const key = `cr${i}`;
     if (b.kind === 'rope-start') { out.push({ hang: 'start', still: units.flat(), dir: line(ctx, CR.start, {}, key), focus: [] }); out.push(tj(line(ctx, CR.tj, {}, key + 't'))); continue; }
+    // back from a close-up: the whole rope line, whoever is still hanging
+    if (out[out.length - 1]?.scene?.close === undefined && out.some(x => x.scene?.close) && b.kind !== 'cut' && !out[out.length - 1].back) {
+      const lastClose = [...out].reverse().find(x => x.scene);
+      if (lastClose?.scene?.close) out.push({ scene: { ...ctx.wide }, hang: 'start', still: units.flat().filter(x => !seen.has(x)), back: 1, focus: [] });
+    }
     if (b.kind === 'sag') { if (b.data.notch <= 3) out.push({ sag: b.data.notch, dir: line(ctx, CR.sag, {}, key), focus: [] }); continue; }
     if (b.kind === 'fall') {
       const n = b.who[0];
@@ -111,6 +121,8 @@ export function cutRopeSteps(d, ctx) {
     }
     if (b.kind === 'cut') {
       const n = b.who[0], by = b.data.by; seen.add(n);
+      // the cut, up close under the pier (art job H07), then back to the whole rope line
+      out.push({ scene: { ...ctx.scene('under-pier', false, { TJ: null, [by]: ['stand', 1, 'rope'], [n]: ['stand', 2, 'rope'] }), close: 1 }, dir: `${by} and ${n} are hanging on the same rope, and ${n} is slipping.`, focus: [by, n], act: { [n]: 'strain' } });
       out.push({ drop: [n], splash: 1, shake: 1, dir: line(ctx, CR.cut, { a: by, b: n }, key), focus: [by, n], act: { [n]: 'flinch' }, know: ['A cut rope', `${by} cut ${n} loose.`] });
       const h = voice(ctx, HURT, n, { a: by }, key + 'h'); if (h) out.push(conf(n, h));
       const dd = voice(ctx, DID, by, {}, key + 'd'); if (dd) out.push(conf(by, dd));

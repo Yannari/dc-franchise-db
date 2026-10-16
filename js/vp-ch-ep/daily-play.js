@@ -302,9 +302,13 @@ const HO = {
 function hangOn(d, ctx) {
   const out = [];
   const safe = [];
+  let order = [], gone = new Set(), close = false, ups = 0;
+  // up close under the pier (art job H07), then back to the whole net with whoever is still hanging
+  const back = () => ({ scene: { ...ctx.wide }, hang: 'start', still: order.filter(n => !gone.has(n)) });
   for (const [i, b] of (d.beats || []).entries()) {
     const key = `ho${i}`;
-    if (b.kind === 'hang-start') { out.push({ hang: 'start', still: b.data.order, dir: line(ctx, HO.start, {}, key), focus: [] }); out.push(tj(line(ctx, HO.tj, {}, key + 't'))); continue; }
+    if (close && !['fall'].includes(b.kind)) { out.push({ ...back(), focus: [] }); close = false; }
+    if (b.kind === 'hang-start') { order = b.data.order; out.push({ hang: 'start', still: b.data.order, dir: line(ctx, HO.start, {}, key), focus: [] }); out.push(tj(line(ctx, HO.tj, {}, key + 't'))); continue; }
     if (b.kind === 'fear-froze') { const n = b.who[0]; out.push({ dir: line(ctx, HO.froze, { who: n }, key), focus: [n], act: { [n]: 'flinch' }, know: ['Afraid of heights', `${n} is scared of heights, and it shows.`] }); const c = voice(ctx, CONF.froze, n, {}, key); if (c) out.push(conf(n, c)); continue; }
     if (b.kind === 'fear-helped') {
       const [n, h] = b.who;
@@ -322,7 +326,19 @@ function hangOn(d, ctx) {
     if (b.kind === 'talk') { for (const s of talkSteps(ctx, b, key)) out.push(s); continue; }
     if (b.kind === 'fall') {
       const n = b.who[0];
-      out.push({ drop: [n], splash: 1, dir: line(ctx, HO.fall, { who: n, pos: posOf(ctx, n), sub: ctx.V.pron?.[n]?.sub || 'they', obj: ctx.V.pron?.[n]?.obj || 'them' }, key), focus: [n] });
+      gone.add(n);
+      const text = line(ctx, HO.fall, { who: n, pos: posOf(ctx, n), sub: ctx.V.pron?.[n]?.sub || 'they', obj: ctx.V.pron?.[n]?.obj || 'them' }, key);
+      if (ups < 5 && hashOf(key) % 3 === 0) {
+        // up close: the one letting go, and two still hanging beside them
+        ups++;
+        const near = order.filter(x => !gone.has(x)).slice(0, 2);
+        out.push({ scene: { ...ctx.scene('under-pier', false, { TJ: null, [n]: ['stand', 0, 'net'], ...Object.fromEntries(near.map((x, j) => [x, ['stand', j + 1, j ? 'rope' : 'net']])) }), close: 1 }, focus: [n], act: { [n]: 'strain' }, dir: `${n}'s grip is going.` });
+        out.push({ drop: [n], splash: 1, dir: text, focus: [n] });
+        close = true;
+        continue;
+      }
+      if (close) { out.push({ ...back(), drop: [n], splash: 1, dir: text, focus: [n] }); close = false; continue; }
+      out.push({ drop: [n], splash: 1, dir: text, focus: [n] });
       if (hashOf(key) % 4 === 0) { const c = voice(ctx, CONF.fall, n, {}, key + 'c'); if (c) out.push(conf(n, c)); }
       continue;
     }
@@ -371,17 +387,22 @@ function statement(q, to) {
 
 function interrogation(d, ctx) {
   const out = [];
-  let plats = [], asked = 0, sand = 0, pending = {};
+  let plats = [], asked = 0, sand = 0, pending = {}, close = false, platProps = [];
   const safe = [];
+  const where = {};
+  const wide = () => ctx.scene(ctx.plate, ctx.night, Object.fromEntries(plats.map(n => [n, where[n]])));
   const flush = s => { if (Object.keys(pending).length) { s.move = { ...(s.move || {}), ...pending }; pending = {}; } return s; };
-  const push = s => out.push(flush(s));
+  // one player up close on their platform, under the ring (art job H10)
+  const closeUp = (n, s) => { out.push({ ...s, scene: { ...ctx.scene('platform-close', ctx.night, { TJ: null, [n]: ['stand', 0, 'plat'] }), close: 1 } }); close = true; };
+  const push = s => { if (close && !s.scene && !s.conf) { s.scene = wide(); s.props = platProps; close = false; } out.push(flush(s)); };
   const beats = d.beats || [];
   for (const [i, b] of beats.entries()) {
     const key = `iq${i}`;
     if (b.kind === 'platforms') {
-      plats = b.who; asked = 0; sand = 0;
-      const cast = Object.fromEntries(plats.map((n, j) => [n, ['stand', j, 'plat']]));
-      push({ scene: ctx.scene(ctx.plate, ctx.night, cast), props: plats.map((_, j) => platProp(j)).filter(Boolean), seg: [b.data.label, 'Interrogation'], stand: 'start', still: plats, focus: [] });
+      plats = b.who; asked = 0; sand = 0; close = false;
+      for (const [j, n] of plats.entries()) where[n] = ['stand', j, 'plat'];
+      platProps = plats.map((_, j) => platProp(j)).filter(Boolean);
+      push({ scene: wide(), props: platProps, seg: [b.data.label, 'Interrogation'], stand: 'start', still: plats, focus: [] });
       push(tj(line(ctx, b.data.final ? IQ.final : IQ.start, {}, key)));
       push({ dir: line(ctx, IQ.climb, { who: nameList(plats) }, key + 'c'), focus: plats });
       continue;
@@ -397,7 +418,7 @@ function interrogation(d, ctx) {
           push(tj(line(ctx, IQ.right, { a: c }, key + 'r')));
           const p = voice(ctx, IQ.pick, c, { b: b.data.target }, key + 'p');
           push(say(c, p || `${b.data.target}.`, b.data.target, { act: { [b.data.target]: 'flinch' }, chip: [b.data.target, `TILT ${b.data.tilt}`] }));
-          if (b.data.betray) push({ dir: line(ctx, IQ.betray, { a: c, b: b.data.target }, key + 'b'), focus: [c, b.data.target], shake: 1 });
+          if (b.data.betray) closeUp(b.data.target, { dir: line(ctx, IQ.betray, { a: c, b: b.data.target }, key + 'b'), focus: [b.data.target], shake: 1, act: { [b.data.target]: 'strain' } });
         } else {
           push(tj(line(ctx, IQ.wrong, { a: c }, key + 'w'), { chip: [c, `TILT ${b.data.tilt}`] }));
           push({ dir: line(ctx, IQ.tilt, { who: c }, key + 't'), focus: [c], act: { [c]: 'flinch' } });
@@ -411,8 +432,8 @@ function interrogation(d, ctx) {
     }
     if (b.kind === 'fall') {
       const n = b.who[0];
-      push({ dir: line(ctx, IQ.fall, { who: n, sub: ctx.V.pron?.[n]?.sub || 'they' }, key), drop: [n], splash: 1, focus: [n], chip: [n, ''] });
-      pending[n] = ['stand', sand++ % 6];
+      closeUp(n, { dir: line(ctx, IQ.fall, { who: n, sub: ctx.V.pron?.[n]?.sub || 'they' }, key), drop: [n], splash: 1, focus: [n], chip: [n, ''] });
+      where[n] = ['stand', sand++ % 6];
       if (hashOf(key) % 3 === 0) { const c = voice(ctx, CONF.fall, n, {}, key + 'c'); if (c) push(conf(n, c)); }
       continue;
     }

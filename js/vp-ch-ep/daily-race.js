@@ -124,10 +124,20 @@ function closeOf(id, b, p) {
     return { plate: `gauntlet-${part}`, group: 'run', pose: GAUNTLET_POSE[part], part };
   }
   if (id === 'balance-beam' && ['hazard', 'stage', 'overtake', 'fear-froze', 'fear-helped', 'fear-beaten', 'through'].includes(k)) return { plate: 'beam-close', group: 'beam', pose: null };
-  if (id === 'cliff-relay' && (k.startsWith('fear-') || (k === 'stage' && b.data.i >= 1))) return { plate: 'cliff-top', group: null, pose: null };
-  if (id === 'truck-tug' && ['hazard', 'stage', 'race-start', 'overtake'].includes(k) && !(k === 'stage' && b.data.i >= 2)) return { plate: 'truck-pull', group: 'pull', pose: 'pull' };
-  if (id === 'jungle-maze' && ['hazard', 'stage', 'overtake'].includes(k) && !(k === 'stage' && b.data.i >= 3) || (id === 'jungle-maze' && k.startsWith('fear-'))) return { plate: 'maze-in', group: null, pose: 'run' };
+  // the cliff: the climb on the ladder (H05), the edge at the top (E03)
+  if (id === 'cliff-relay' && (k.startsWith('fear-') || (k === 'stage' && b.data.i >= 2))) return { plate: 'cliff-top', group: null, pose: null };
+  if (id === 'cliff-relay' && ['stage', 'hazard', 'overtake'].includes(k)) return { plate: 'cliff-ladder', group: 'ladder', pose: 'climb' };
+  // the truck: the harnesses (E04), the finish arch and its puzzle (H06)
+  if (id === 'truck-tug' && (k === 'puzzle-miss' || (k === 'stage' && b.data.i >= 2) || (k === 'finish' && (b.data.first || b.data.place <= 3)))) return { plate: 'truck-finish', group: 'table', pose: null };
+  if (id === 'truck-tug' && ['hazard', 'stage', 'race-start', 'overtake'].includes(k)) return { plate: 'truck-pull', group: 'pull', pose: 'pull' };
+  // the maze: a station with its letter (H01), a dead end (H02), the narrow path (E02)
+  if (id === 'jungle-maze' && k === 'stage' && b.data.i < 3) return { plate: 'maze-station', group: 'run', pose: null };
+  if (id === 'jungle-maze' && (k === 'hazard' || k === 'overtake')) return { plate: 'maze-deadend', group: 'run', pose: 'run' };
+  if (id === 'jungle-maze' && k.startsWith('fear-')) return { plate: 'maze-in', group: null, pose: null };
+  // the water: at the buoys (H03), under them for the token (H04), the totals board at the end (E01)
   if (['night-swim', 'reef-dash', 'double-cross'].includes(id) && (k === 'puzzle-miss' || (k === 'finish' && (b.data.first || b.data.place <= 3)))) return { plate: 'board', group: null, pose: null };
+  if (['reef-dash', 'double-cross'].includes(id) && k === 'hazard') return { plate: 'reef-under', group: 'swim', pose: null };
+  if (['night-swim', 'reef-dash', 'double-cross'].includes(id) && ['stage', 'overtake', 'hazard', 'drift', 'fear-froze', 'fear-helped', 'fear-beaten'].includes(k)) return { plate: 'reef-buoys', group: 'swim', pose: 'swim' };
   return null;
 }
 
@@ -190,7 +200,8 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
     const here = [...u.slice(0, 3)];
     if (cl.part && snap) for (const x of runners) if (!x.includes(u[0]) && here.length < g + open && gauntletPart(Math.min(.96, snap[x.join('+')] || 0)) === cl.part) here.push(x[0]);
     else if (!cl.part && snap) for (const x of runners) if (!x.includes(u[0]) && here.length < Math.min(3, g + open) && cl.group) here.push(x[0]);
-    const cast = {};
+    // TJ is on the wide shots, not in the close-ups
+    const cast = { TJ: null };
     here.forEach((n, j) => { cast[n] = j < g ? ['stand', j, cl.group] : ['stand', Math.min(open - 1, j - g)]; });
     return cast;
   };
@@ -352,7 +363,9 @@ export function derbySteps(d, ctx) {
   const units = d.order || [];
   const unitOf = n => units.find(u => u.includes(n)) || [n];
   const tally = snap => ({ title: 'TOWERS', rows: Object.entries(snap || {}).sort((a, b) => b[1] - a[1]).slice(0, 7).map(([k, hp]) => ({ who: k.split('+'), txt: hp > 0 ? '▮'.repeat(hp) : 'DOWN', v: hp / 3, mark: hp <= 0 ? 'x' : null })) });
-  let smashes = 0;
+  let smashes = 0, close = false;
+  const closeUp = (a, b2, s) => { out.push({ ...s, scene: { ...ctx.scene('derby-close', false, { TJ: null, [a]: ['stand', 0, 'atk'], [b2]: ['stand', 1, 'atk'] }), close: 1 } }); close = true; };
+  const backWide = s => { if (close && !s.scene && !s.conf) { s.scene = { ...ctx.wide }; close = false; } return s; };
   for (const [i, b] of (d.beats || []).entries()) {
     const key = `db${i}`;
     if (b.kind === 'derby-start') {
@@ -372,21 +385,22 @@ export function derbySteps(d, ctx) {
     const sl = { a: un(by), as: by.length > 1 ? '' : 's', aes: by.length > 1 ? '' : 'es', b: whose(on), bare: on.length > 1 ? 'are' : 'is' };
     if (b.kind === 'smash' || b.kind === 'miss') {
       if (++smashes > 12 && b.data.hp !== 1) continue;
-      out.push({ tally: tally(b.data.snap), dir: line(ctx, b.kind === 'smash' ? DB.smash : DB.miss, sl, key), focus: [by[0], on[0]], act: { [by[0]]: 'shout' }, shake: b.kind === 'smash' ? 1 : 0 });
+      const st = { tally: tally(b.data.snap), dir: line(ctx, b.kind === 'smash' ? DB.smash : DB.miss, sl, key), focus: [by[0], on[0]], act: { [by[0]]: 'shout', [on[0]]: b.kind === 'smash' ? 'flinch' : 'cheer' }, shake: b.kind === 'smash' ? 1 : 0 };
+      if (b.kind === 'smash' && smashes % 2 === 1) closeUp(by[0], on[0], st); else out.push(backWide(st));
       continue;
     }
     if (b.kind === 'betray') {
-      out.push({ tally: tally(b.data.snap), dir: line(ctx, DB.betray, { a: b.who[0], as: 's', b: whose(on), bn: un(on) }, key), focus: [b.who[0], on[0]], shake: 1, act: { [on[0]]: 'flinch' } });
+      closeUp(b.who[0], on[0], { tally: tally(b.data.snap), dir: line(ctx, DB.betray, { a: b.who[0], as: 's', b: whose(on), bn: un(on) }, key), focus: [b.who[0], on[0]], shake: 1, act: { [on[0]]: 'flinch' } });
       continue;
     }
     if (b.kind === 'tower-down') {
       const u = b.who;
-      out.push({ tally: tally(b.data.snap), dir: line(ctx, DB.down, { b: un(u), bare: u.length > 1 ? 'are' : 'is' }, key), focus: u.slice(0, 2), act: { [u[0]]: 'slump' } });
+      out.push(backWide({ tally: tally(b.data.snap), dir: line(ctx, DB.down, { b: un(u), bare: u.length > 1 ? 'are' : 'is' }, key), focus: u.slice(0, 2), act: { [u[0]]: 'slump' } }));
       continue;
     }
     if (b.kind === 'last-tower') {
       const u = b.who;
-      out.push({ tally: tally(b.data.snap), tj: line(ctx, DB.win, { u: un(u), are: are(u), s: s_(u) }, key), focus: ['TJ', ...u.slice(0, 2)], power: [...u], act: { [u[0]]: 'cheer' } });
+      out.push(backWide({ tally: tally(b.data.snap), tj: line(ctx, DB.win, { u: un(u), are: are(u), s: s_(u) }, key), focus: ['TJ', ...u.slice(0, 2)], power: [...u], act: { [u[0]]: 'cheer' } }));
     }
   }
   return out;

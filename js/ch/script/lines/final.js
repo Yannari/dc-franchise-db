@@ -99,6 +99,30 @@ export default {
       { by: 'b', say: "Thank you. Seriously." },
       { by: 'a', say: "Final. Like we said.", v: { loud: ['FINAL! Like we SAID!'] } },
     ] },
+    // written long from the start (the long cut, 2026-10-16)
+    { id: 'phx.1', turns: [
+      { beat: 'On the climb, {b} slips. {a} stops and holds out a hand.' },
+      { by: 'b', say: "Go! Don't wait for me!" },
+      { by: 'a', say: "I said we'd do this together. Grab on." },
+      { by: 'b', say: "You're losing time." },
+      { by: 'a', say: "Then grab on faster." },
+      { by: 'b', conf: "People make deals in this game every day and break them every night. {a} kept ours, in the final, when it cost something." },
+    ] },
+    { id: 'phx.2', turns: [
+      { by: 'a', say: "How many pieces have you got left?" },
+      { by: 'b', say: "Too many. I can't see it." },
+      { by: 'a', say: "Corners first. Look at the corners." },
+      { by: 'b', say: "Oh. Oh! Okay. Got it." },
+      { by: 'a', conf: "I don't care if helping {b} costs me a minute. I gave my word, and the final is where your word means the most." },
+    ] },
+    { id: 'phx.3', turns: [
+      { beat: '{a} finishes the station first, then turns round and jogs back to {b}.' },
+      { by: 'b', say: "What are you doing? Go!" },
+      { by: 'a', say: "We finish this one together, like we said." },
+      { by: 'b', say: "You're crazy." },
+      { by: 'a', say: "Probably. Come on." },
+      { by: 'b', conf: "When I get home and people ask me who my real friend in there was, I'm going to say {a}." },
+    ] },
   ],
   'final-pact-broken.any': [
     { id: 'pb2.1', turns: [

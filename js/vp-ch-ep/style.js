@@ -54,6 +54,22 @@ const CHX_CSS = `
 .chx .chx-cast{z-index:3}.chx .chx-wfx{z-index:5}
 .chx .chx-props{position:absolute;inset:0;pointer-events:none;z-index:2}
 .chx .chx-props.chx-fore{z-index:4}
+/* a fight: the brawl cloud, the two inside it, caution tape for an expulsion */
+.chx .brawlfx{position:absolute;width:20cqw;translate:-50% -55%;z-index:6;pointer-events:none;animation:chxBrawl .16s steps(2) infinite alternate}
+.chx .brawlfx svg{width:100%;height:auto;display:block;overflow:visible;filter:drop-shadow(0 .6cqh .8cqh rgba(0,0,0,.5))}
+.chx .brawlfx .fist{animation:chxFist .22s ease-in-out infinite alternate;transform-origin:center}
+.chx .brawlfx .f2{animation-delay:-.11s}
+.chx .brawlfx .stars{animation:chxStars .5s linear infinite}
+.chx .tok.inbrawl{opacity:.35;filter:blur(.15cqw);animation:chxDshake .12s linear infinite}
+@keyframes chxBrawl{from{rotate:-4deg;scale:1}to{rotate:4deg;scale:1.06}}
+@keyframes chxFist{from{transform:translate(0,0)}to{transform:translate(-10px,8px)}}
+@keyframes chxStars{to{opacity:.3}}
+.chx .tapes{position:absolute;inset:0;z-index:21;pointer-events:none;overflow:hidden}
+.chx .tape{position:absolute;left:-10%;right:-10%;height:7cqh;display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(135deg,#ffd21a 0 3cqw,#141110 3cqw 6cqw);box-shadow:0 .4cqh 1cqh rgba(0,0,0,.6);animation:chxTape .45s cubic-bezier(.2,.9,.3,1.1) both}
+.chx .tape span{background:#ffd21a;color:#141110;font:400 3.4cqw/1 'Black Ops One';letter-spacing:.12em;padding:.3cqh 1.4cqw;border:.25cqw solid #141110}
+.chx .tape.t1{top:30%;rotate:-7deg}.chx .tape.t2{top:58%;rotate:5deg;animation-delay:.18s}
+.chx .tapes.still .tape{animation:none}
+@keyframes chxTape{from{transform:translateX(-110%)}to{transform:none}}
 /* the big screen on the club deck (Who Said It) */
 .chx .prop.bigscreen{transform:none;transition:none;display:flex;flex-direction:column;justify-content:center;gap:1.2cqh;padding:2cqh 2.4cqw;box-sizing:border-box;font:400 1.5cqw/1.1 'Anton',sans-serif;color:#fff;letter-spacing:.03em;text-transform:uppercase;text-shadow:0 0 .8cqw rgba(80,200,255,.7)}
 .chx .bigscreen .q{text-align:center;color:#ffd23f;font-size:1.7cqw;margin-bottom:.6cqh;animation:chxChip .45s cubic-bezier(.3,1.7,.5,1)}

@@ -138,6 +138,47 @@ export class ChxStage {
     for (let i = 0; i < 12; i++) { const d = document.createElement('div'); d.className = 'drop'; d.style.left = u * 100 + '%'; d.style.top = v * 100 + '%'; d.style.setProperty('--dx', rnd(-4, 4).toFixed(1) + 'cqw'); if (mud) d.style.background = '#8a6a44'; d.style.animationDelay = rnd(0, .1) + 's'; W.append(d); setTimeout(() => d.remove(), 1200); }
     const r = document.createElement('div'); r.className = 'splashring'; r.style.left = u * 100 + '%'; r.style.top = v * 100 + '%'; W.append(r); setTimeout(() => r.remove(), 1200);
   }
+  // Two people square up: they close the gap to each other, nose to nose.
+  clash([a, b], anim) {
+    const A = this.ST.toks[a], B = this.ST.toks[b];
+    if (!A?._m || !B?._m) return;
+    const mid = (A._m.u + B._m.u) / 2, v = (A._m.v + B._m.v) / 2, gap = Math.max(0.035, this.sizeOf(A._m) / 100 * 0.62);
+    const side = A._m.u <= B._m.u ? -1 : 1;
+    this.put(a, { ...A._m, u: mid + side * gap, v }, anim);
+    this.put(b, { ...B._m, u: mid - side * gap, v }, anim);
+    A.style.setProperty('--to', `${-side * 8}%`); B.style.setProperty('--to', `${side * 8}%`);
+  }
+  // A physical fight: a cartoon cloud of fists and stars where the two of them were, the room shaking.
+  brawl([a, b], anim) {
+    const A = this.ST.toks[a], B = this.ST.toks[b];
+    if (!A?._m || !B?._m) return;
+    const u = (A._m.u + B._m.u) / 2, v = Math.min(A._m.v, B._m.v) - this.sizeOf(A._m) / 100 * 1.1;
+    const words = ['POW!', 'BAM!', 'WHACK!'];
+    const d = document.createElement('div');
+    d.className = 'brawlfx';
+    d.style.left = u * 100 + '%'; d.style.top = v * 100 + '%';
+    d.innerHTML = `<svg viewBox='0 0 240 170'><g class='cloud'>`
+      + `<path d='M40 120 C10 118 8 80 36 74 C30 40 72 26 92 46 C102 16 150 14 160 44 C186 28 226 46 214 82 C240 92 234 132 204 134 C200 156 160 162 146 146 C128 166 84 164 74 146 C56 156 30 146 40 120 Z' fill='#f2e6d4' stroke='#141110' stroke-width='6'/>`
+      + `<path d='M70 60 l14 -26 M120 40 l4 -30 M168 54 l20 -22 M206 100 l28 -6 M30 100 l-26 -8' stroke='#141110' stroke-width='6' stroke-linecap='round'/>`
+      + `<g class='fist'><circle cx='186' cy='40' r='16' fill='#e8b48a' stroke='#141110' stroke-width='5'/><path d='M176 34 h20 M176 42 h20' stroke='#141110' stroke-width='3'/></g>`
+      + `<g class='fist f2'><circle cx='52' cy='70' r='15' fill='#c98b5f' stroke='#141110' stroke-width='5'/><path d='M43 64 h18 M43 72 h18' stroke='#141110' stroke-width='3'/></g>`
+      + `<path class='leg' d='M110 146 l-14 26 M140 146 l12 24' stroke='#141110' stroke-width='9' stroke-linecap='round'/>`
+      + `<g class='stars' fill='#ffd21a' stroke='#141110' stroke-width='3'><path d='M30 30 l6 12 13 2 -10 9 3 13 -12 -7 -12 7 3 -13 -10 -9 13 -2 Z'/><path d='M210 140 l5 10 11 2 -8 7 2 11 -10 -6 -10 6 2 -11 -8 -7 11 -2 Z'/></g>`
+      + `</g><text x='120' y='104' text-anchor='middle' font-family='Black Ops One' font-size='34' fill='#e3262d' stroke='#141110' stroke-width='2'>${words[Math.floor(Math.random() * 3)]}</text></svg>`;
+    this.el.wfx.append(d);
+    for (const t of [A, B]) t.classList.add('inbrawl');
+    if (anim) { this.shake(); setTimeout(() => this.shake(), 450); setTimeout(() => this.shake(), 900); }
+    setTimeout(() => { d.remove(); }, anim ? 2600 : 0);
+  }
+  // Pulled apart: back to where they were standing.
+  partFight(who, anim) {
+    for (const n of who) {
+      const t = this.ST.toks[n]; if (!t) continue;
+      t.classList.remove('inbrawl');
+      const home = this.ST.home[n]; if (home) this.put(n, home, anim);
+    }
+    this.el.wfx.querySelectorAll('.brawlfx').forEach(x => x.remove());
+  }
   puff(u, v) { const d = document.createElement('div'); d.className = 'puff'; d.style.left = u * 100 + '%'; d.style.top = v * 100 + '%'; this.el.wfx.append(d); setTimeout(() => d.remove(), 1100); }
   sparks() {
     for (let i = 0; i < 26; i++) { const s = document.createElement('div'); s.className = 'spark'; s.style.left = '50%'; s.style.top = '26%';
@@ -260,6 +301,10 @@ export class ChxStage {
     if (anim && s.say && !(s.act && s.act[s.say[0]])) { const t = ST.toks[s.say[0]]; if (t) { void t.offsetWidth; t.classList.add('talkpop'); } }
     if (anim && s.vote) { const t = ST.toks[s.vote[1]]; if (t) { void t.offsetWidth; t.classList.add('flinch'); this.fxAt('pop', s.vote[1], String(ST.board[s.vote[1]]), { fontSize: '2.6cqw' }); } }
     if (anim && s.fx?.heart) for (const n of s.fx.heart) this.fxAt('heart', n, HEART);
+    // a fight (the user, 2026-10-16: "fight animations, to feel like a big moment"): two square up, a brawl, pulled apart
+    if (s.clash) this.clash(s.clash, anim);
+    if (s.brawl) this.brawl(s.brawl, anim);
+    if (s.part) this.partFight(s.part, anim);
     if (anim && s.loud && s.say) this.fxAt('excl', s.say[0], '!');
     this.camera(focus, s.cam);
 
@@ -335,6 +380,8 @@ export class ChxStage {
       O.insertAdjacentHTML('beforeend', `<div class='spray ${anim ? '' : 'still'}'><svg viewBox='0 0 1000 260'><g class='paint'><text x='500' y='170' text-anchor='middle' font-family='Black Ops One' font-size='${size}' fill='${sl.color}' stroke='#000' stroke-width='9' paint-order='stroke' filter='url(#chx-spr)'>${esc(sl.spray)}</text>${drips}</g></svg></div>`);
     }
     if (sl.stamp) { O.insertAdjacentHTML('beforeend', `<div class='stamp'>${esc(sl.stamp)}</div>`); if (anim) setTimeout(() => this.shake(), 120); }
+    // caution tape across the screen: an expulsion
+    if (sl.tape) { O.insertAdjacentHTML('beforeend', `<div class='tapes ${anim ? '' : 'still'}'><div class='tape t1'><span>${esc(sl.tape)}</span></div><div class='tape t2'><span>${esc(sl.tape)}</span></div></div>`); if (anim) setTimeout(() => this.shake(), 200); }
     if (sl.winner) { O.insertAdjacentHTML('beforeend', `<div class='winner' style='font-size:${sl.winner.length > 26 ? 4.2 : 6}cqw'>${esc(sl.winner)}</div>`); if (anim) this.sparks(); }
   }
 

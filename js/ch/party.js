@@ -147,3 +147,31 @@ export function partyNight(state, rng) {
   for (const n of state.active) nudge(state, n, 'energy', -0.9 * drink[n]);
   return { drink, fights, dq, drama: drama.map(sc => sc.kind) };
 }
+
+// ── an expulsion, and the house (the user, 2026-10-16: "people actually reacting to someone getting expelled") ──
+// Before TJ sends them home: their goodbye with the friends who are losing them. After: a friend blames the one
+// they fought, and the one they fought has to live with it. Each moves the house (bonds, morale, a grudge).
+export function expelledGoodbye(state, gone, victim) {
+  const friends = state.active.filter(n => n !== gone && n !== victim && getBond(gone, n) >= 2).sort((x, y) => getBond(gone, y) - getBond(gone, x)).slice(0, 2);
+  const angry = S(gone, 'temperament') <= 4;
+  for (const f of friends) { nudge(state, f, 'morale', -0.9); nudge(state, f, 'homesick', 0.4); if (victim) { remember(f, victim, 'got-my-friend-expelled', 1); addBond(f, victim, -0.8); } }
+  addScene(state, 'expelled-goodbye', [gone, ...friends], { victim, angry }, state.active, 'villa');
+  return friends;
+}
+export function expelledAftermath(state, gone, victim, friends = []) {
+  if (!victim || !state.active.includes(victim)) return;
+  const f = friends.find(n => state.active.includes(n));
+  if (f) {
+    const heated = S(f, 'temperament') <= 5 || getBond(f, victim) <= -1;
+    addBond(f, victim, heated ? -1 : -0.4);
+    addRivalry(state, f, victim, heated ? 1 : 0.5);
+    nudge(state, victim, 'paranoia', 0.8);
+    addScene(state, 'expelled-blame', [f, victim], { gone, heated }, state.active, 'villa');
+  }
+  // the one they fought: shaken, or relieved, and a friend who stays with them
+  const vf = state.active.filter(n => n !== victim && n !== f && getBond(victim, n) >= 2).sort((x, y) => getBond(victim, y) - getBond(victim, x))[0] || null;
+  const relieved = getBond(victim, gone) <= -3;
+  if (vf) { addBond(victim, vf, 0.6); remember(victim, vf, 'emotional-support', 1); }
+  nudge(state, victim, 'morale', relieved ? 0.4 : -0.6);
+  addScene(state, 'expelled-victim', vf ? [victim, vf] : [victim], { gone, relieved }, vf ? [victim, vf] : [victim], vf ? 'villa' : 'confessional');
+}

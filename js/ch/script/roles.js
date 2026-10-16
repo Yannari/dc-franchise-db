@@ -84,7 +84,11 @@ export const ROLES = {
     ending: sc.data.hurt?.length ? (sc.data.hurt.length > 1 ? 'mourning' : 'alone') : 'relief', slots: { gone: sc.data.gone } }; },
   quit: sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   medical: sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
-  disqualified: sc => ({ roles: { a: sc.who[1] }, ending: 'any', slots: { gone: sc.who[0] } }),
+  // b: the one TJ is sending home, there to hear it (they leave the same day)
+  disqualified: sc => ({ roles: { a: sc.who[1], b: sc.who[0] }, ending: 'any', slots: { gone: sc.who[0] } }),
+  'expelled-goodbye': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.angry ? 'angry' : 'tears', slots: { target: sc.data.victim || undefined } }),
+  'expelled-blame': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.heated ? 'heated' : 'calm', slots: { gone: sc.data.gone } }),
+  'expelled-victim': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.relieved ? 'relieved' : 'shaken', slots: { gone: sc.data.gone } }),
   'tj-house-meeting': sc => ({ roles: { a: sc.data.victim }, ending: 'any', slots: { gone: sc.data.gone } }),
   // ── the night out (party.js nightDrama) ──
   'party-slip': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.caught || undefined }, ending: sc.data.self ? 'self' : sc.data.caught ? 'caught' : 'told',

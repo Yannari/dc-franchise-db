@@ -31,7 +31,7 @@ import { deliberate, houseVote, voteFallout, breakDeal, houseDebate, tribunalDec
 import { chooseOpponent, dealBetween } from './callout.js';
 import { playDaily } from './dailies.js';
 import { playDuel, injuryRoll } from './arena.js';
-import { partyNight } from './party.js';
+import { partyNight, expelledGoodbye, expelledAftermath } from './party.js';
 import { romanceDay, breakupCheck } from './romance.js';
 import { quitRisk, quit, medical, disqualify, removePlayer } from './exits.js';
 import { houseDay, psycheMoment, returnToHouse } from './house.js';
@@ -243,9 +243,12 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       epRec.party = { fights: party.fights };
       for (const d of party.dq) {
         if (!state.active.includes(d.name)) continue;
+        // TJ's verdict, then their goodbye to the friends they leave, then the house's reckoning (party.js)
         disqualify(state, d.name, d.victim); pop(d.name, -3);
+        const friends = expelledGoodbye(state, d.name, d.victim);
         epRec.exits.push({ name: d.name, how: 'disqualified', victim: d.victim });
         tjLaysDownTheLaw(state, d.name, d.victim);
+        expelledAftermath(state, d.name, d.victim, friends);
       }
       for (const n of state.active) driftDay(state, n, { rested: false });
     } else {

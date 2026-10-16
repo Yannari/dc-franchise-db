@@ -442,9 +442,30 @@ const BIG = {
   injury: a => (a.data?.sev >= 2 ? { slam: { spray: 'INJURED', color: '#ff8a1a' }, chip: [a.who[0], String(a.data.part || 'hurt').toUpperCase()] } : { chip: [a.who[0], 'BANGED UP'] }),
   'redemption-duel': a => ({ chip: [a.data?.winner || a.who[0], 'STILL ALIVE'] }),
   'redemption-return': a => ({ card: { k: 'Back from Redemption', t: a.who[0], sub: 'Fought their way out of Redemption House', faces: [a.who[0]] } }),
+  // a fight's end (the user, 2026-10-16: "fight animations to feel like a big moment"): a shouting match is
+  // pulled apart; a physical one is a brawl first; then who backed whom
+  fight: a => [{ part: a.who.slice(0, 2), dir: `Friends get between ${a.who[0]} and ${a.who[1]} and drag them to opposite ends of the bar.`, act: { [a.who[0]]: 'shout' } }, ...sidesStep(a)],
+  'fight-physical': a => [
+    { brawl: a.who.slice(0, 2), dir: `${a.who[0]} shoves ${a.who[1]}, and it turns into a brawl. Drinks go flying.`, slam: { spray: 'PHYSICAL', color: '#e3262d' }, shake: 1 },
+    { part: a.who.slice(0, 2), dir: `Security piles in and pulls ${a.who[0]} and ${a.who[1]} apart. ${a.who[0]} is still shouting.`, act: { [a.who[0]]: 'shout', [a.who[1]]: 'slump' }, shake: 1 },
+    { dir: `The club goes quiet. Everybody knows the one rule: no violence. Somebody is going home for this.`, focus: [a.who[0]] },
+    ...sidesStep(a)],
+  disqualified: a => ({ slam: { tape: 'DISQUALIFIED' }, chip: [a.who[0], 'GOING HOME'] }),
 };
+// who stood with whom when it kicked off (party.js: the house takes sides)
+function sidesStep(a) {
+  const sides = a.data?.sides || [];
+  if (!sides.length) return [];
+  const by = n => sides.filter(x => x.with === n).map(x => x.who);
+  const A = by(a.who[0]), B = by(a.who[1]);
+  const part = [A.length ? `${nameList(A.slice(0, 3))} ${A.length > 1 ? 'are' : 'is'} with ${a.who[0]}` : '', B.length ? `${nameList(B.slice(0, 3))} ${B.length > 1 ? 'back' : 'backs'} ${a.who[1]}` : ''].filter(Boolean);
+  return [{ dir: `The house picks sides. ${part.join('; ')}.`, focus: [...A.slice(0, 2), ...B.slice(0, 2)] }];
+}
 // ...and the ones that open on something to look at: TJ's rankings on the board as he reads them
+const SQUARE_UP = a => ({ clash: a.who.slice(0, 2), slam: { spray: "IT'S ON", color: '#e3262d' }, act: { [a.who[0]]: 'shout', [a.who[1]]: 'shout' }, shake: 1 });
 const OPEN = {
+  fight: SQUARE_UP,
+  'fight-physical': SQUARE_UP,
   'power-rankings': a => ({ tally: { title: "TJ's power rankings", rows: [
     ...(a.data?.order || []).map((n, i) => ({ who: [n], v: 1 - i * 0.16, txt: `#${i + 1}`, win: i === 0 })),
     ...(a.data?.last ? [{ who: [a.data.last], v: 0.06, txt: 'LAST', mark: 'x' }] : [])] } }),
@@ -481,7 +502,7 @@ function scene(S, { a, i, title }, { names, house, goneAt, key }) {
   if (k) first.know = k;
   if (OPEN[a.kind]) Object.assign(first, OPEN[a.kind](a));
   linesToSteps(S, a.lines, { names, first, sceneWho: a.who });
-  if (BIG[a.kind]) S.push({ ...BIG[a.kind](a), focus: a.who.slice(0, 4) });
+  if (BIG[a.kind]) for (const st of [].concat(BIG[a.kind](a))) S.push({ focus: a.who.slice(0, 4), ...st });
 }
 
 function villaMap(S, items) {

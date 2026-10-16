@@ -15,11 +15,11 @@
 export default {
   'engine.unseen.scene': [
     { id: 'ea2.1', turns: [{ by: 'a', say: "Who flipped? Somebody in {group} flipped." }, { beat: 'Nobody answers.' }, { by: 'a', dr: "I asked twice, loudly. Nobody suspects the one asking." }] },
-    { id: 'ea2.2', turns: [{ by: 'a', say: "We had the numbers. Somebody lied." }, { beat: 'Everyone looks at everyone else.' }] },
+    { id: 'ea2.2', turns: [{ by: 'a', say: "{group} was keeping {victim}, and there was one vote too many against {victim}. Somebody in {group} lied." }, { beat: 'Everyone in {group} looks at everyone else.' }] },
     { id: 'ea2.3', turns: [{ by: 'a', dr: "{group} came out of that vote one short. I know exactly which chair it came from. Nobody else does." }] },
-    { id: 'ea2.4', turns: [{ by: 'a', say: "Let's count it again." }, { beat: 'The count still does not work.' }] },
+    { id: 'ea2.4', turns: [{ by: 'a', say: "Let's count it again. Everybody in {group} told me they were keeping {victim}." }, { beat: 'They count again. There is still one vote against {victim} that nobody will own.' }] },
     { id: 'ea2.5', turns: [{ by: 'a', dr: "Voting against {group} was the best move I've made all season, and nobody can ever know it was me." }] },
-    { id: 'ea2.6', turns: [{ by: 'a', say: "Somebody in this room is a liar." }, { by: 'a', dr: "Somebody in this room is a liar, and it's me. Saying it first is the best cover I've got." }] },
+    { id: 'ea2.6', turns: [{ by: 'a', say: "Somebody in {group} wrote {victim}'s name and is lying about it." }, { by: 'a', dr: "Somebody in {group} voted against {victim}, and it's me. Saying it first is the best cover I've got." }] },
   ],
   'engine.blame.blamed': [
     { id: 'eb2.b1', turns: [{ by: 'a', dr: "It was {b}. It has to be. {b} was always the one I wasn't sure about." }] },

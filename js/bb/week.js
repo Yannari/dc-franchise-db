@@ -1279,7 +1279,7 @@ function _attachAllianceFallout(week, house) {
         players: _reactingFaces([player, victim], week),
         badgeText: 'THE NUMBERS DO NOT ADD UP', badgeClass: 'grey',
         eventId: 'alliance-betrayal-unseen', category: 'deals', location: 'living-room',
-      }, scriptBeat('engine.unseen', { a: player }, { ending: 'scene', group: alliance },
+      }, scriptBeat('engine.unseen', { a: player }, { ending: 'scene', group: alliance, victim },
         { ...wctx, salt: `unseen|${player}` })));
       // Somebody has to have done it, and the room has picked. This is the
       // half the viewer needs and the house never gets: the accusation lands

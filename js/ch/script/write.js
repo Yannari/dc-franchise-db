@@ -54,7 +54,7 @@ function byArchetype(tags, name) {
   const lead = (LEAD[players.find(p => p.name === name)?.archetype] || []).filter(t => tags.includes(t));
   return lead.length ? [...lead, ...tags.filter(t => !lead.includes(t))] : tags;
 }
-export function voicedLine(turn, speaker, { hush = false, rng = Math.random, ledger = null, day = 0 } = {}) {
+export function voicedLine(turn, speaker, { hush = false, rng = Math.random, ledger = null, day = 0, skip = null } = {}) {
   const base = turn.say || turn.conf;
   const v = turn.v;
   if (!v || !speaker) return { text: base, tag: null };
@@ -64,6 +64,7 @@ export function voicedLine(turn, speaker, { hush = false, rng = Math.random, led
     if (hard && AGE.has(t)) continue;
     for (const key of [...new Set([t, FAMILY[t]].filter(Boolean))]) {
       if (hush && key === 'loud') continue;
+      if (skip && (skip.has(key) || skip.has(FAMILY[key]))) continue;
       const got = [v[key]].flat().filter(Boolean);
       if (!got.length) continue;
       const start = Math.floor(rng() * got.length);
@@ -141,14 +142,24 @@ export function writeScene(state, scene) {
   const entry = pickEntry(state.lineLedger, pools, key, facts, pairKey, rng, speakers, scene.day, { strong: ['mood', 'cause', 'crowd'] });
   if (!entry) return null;
   const hush = SECRET.has(scene.spot);
+  // a voice flavors a scene; it does not take over every line of it. Two shouted lines and two jokes a speaker per
+  // scene, then their next voice speaks, or the line as written (read 2026-10-16: a loud speaker shouted all seven
+  // lines of a spark, "WHERE?!", "Is it GONE?", "SMOOTH!", and an odd one quipped on every turn of an alliance)
+  const CAPPED = ['loud', 'odd'], capped = {};
+  const skipFor = by => new Set(CAPPED.filter(f => (capped[by]?.[f] || 0) >= 2));
   const here = t => !t.opt || [t.by, ...[].concat(typeof t.opt === 'string' || Array.isArray(t.opt) ? t.opt : []),
     ...[...String(t.say || t.conf || t.beat || '').matchAll(TOKEN)].map(m => m[1])].every(k => !k || k === 'tj' || have.has(k));
   const lines = entry.turns.map((t, i) => [t, i]).filter(([t]) => here(t) && (!t.when || Object.entries(t.when).every(([k, v]) => facts[k] === v))).map(([t, i]) => {
     const kind = t.conf ? 'conf' : t.beat ? 'beat' : 'say';
     const by = t.by === 'tj' ? HOST : t.by ? r.roles[t.by] : null;
     // TJ is the host, not a cast member: his voice is written into his lines.
-    const said = kind === 'beat' || t.by === 'tj' ? { text: t.beat || t.say, tag: null } : voicedOnce(state, t, by, { hush, rng, ledger: state.lineLedger, day: scene.day });
-    const line = { kind, by, text: fill(said.text, r.roles, r.slots), voice: said.tag };
+    const said = kind === 'beat' || t.by === 'tj' ? { text: t.beat || t.say, tag: null } : voicedOnce(state, t, by, { hush, rng, ledger: state.lineLedger, day: scene.day, skip: skipFor(by) });
+    const fam = said.tag && (CAPPED.includes(said.tag) ? said.tag : FAMILY[said.tag]);
+    if (CAPPED.includes(fam)) ((capped[by] ||= {})[fam] = (capped[by][fam] || 0) + 1);
+    // a scene picked because of how its speaker talks (when: register for a, registerB for b) is already in that
+    // speaker's voice, written that way, even where no variant was swapped in
+    const reg = !said.tag && kind !== 'beat' && t.by !== 'tj' && ((t.by === 'a' && entry.when?.register) || (t.by === 'b' && entry.when?.registerB));
+    const line = { kind, by, text: fill(said.text, r.roles, r.slots), voice: said.tag || (reg ? `register:${reg}` : null) };
     // The turn's place in its entry, for the voice-coverage measurement (not enumerable: never serialised).
     Object.defineProperty(line, 'turn', { value: `${entry.id}:${i}`, enumerable: false });
     return line;

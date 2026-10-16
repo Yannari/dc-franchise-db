@@ -31,10 +31,15 @@ function clipOf(aired, who) {
   // the strongest: a line that names somebody, or raises its voice; else the longest that fits
   // a reply means nothing out of its scene ("I know. I heard. Thank you."): a clip has to stand on its own
   const reply = /^(I know|I heard|Thank|Thanks|Okay\b|Ok\b|Yes\b|Yeah\b|No\b|Me too|Same|Why|What|It |That's|That was|Good|Fine|Sure|Deal|Really|Wow)/i;
-  const score = l => (/[A-Z][a-z]+/.test(l.text.slice(1)) ? 2 : 0) + (/!/.test(l.text) ? 1 : 0) + l.text.length / 150 - (reply.test(l.text) ? 4 : 0);
+  // ...and a line said in the speaker's own voice is the one that sounds like them
+  const score = l => (/[A-Z][a-z]+/.test(l.text.slice(1)) ? 2 : 0) + (/!/.test(l.text) ? 1 : 0) + l.text.length / 150 - (reply.test(l.text) ? 4 : 0) + (l.voice ? 1 : 0);
   const all = [...said, ...conf].sort((x, y) => score(y) - score(x));
   const best = all.find(l => score(l) > 0) || null;
-  return best ? { kind: best.kind, by: best.by, text: best.text } : null;
+  if (!best) return null;
+  // the clip is the line as it aired: its voice, and (not enumerable, as write.js has it) the turn it came from
+  const clip = { kind: best.kind, by: best.by, text: best.text, voice: best.voice || null };
+  if (best.turn) Object.defineProperty(clip, 'turn', { value: best.turn, enumerable: false });
+  return clip;
 }
 const shotOf = a => ({ spot: a.script?.at || a.scene?.spot || null, kind: a.kind, who: [...(a.scene?.who || [])].slice(0, 4) });
 

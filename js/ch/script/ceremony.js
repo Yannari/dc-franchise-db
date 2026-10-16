@@ -11,7 +11,7 @@
 //
 // Ballots carry their own bond at the vote (vote.js), so a reading replayed
 // later never reads feelings from after it.
-import { writeScene } from './write.js';
+import { writeScene, voicedLine } from './write.js';
 import { pronouns } from '../../players.js';
 import { stableRng } from '../../script/rng.js';
 
@@ -20,31 +20,59 @@ import { stableRng } from '../../script/rng.js';
 // Read off the ballot the engine cast (vote.js): a friend saying your name, a name that was not the one promised,
 // an enemy saying it, the count getting close. Words only; what it costs is the engine's (voteFallout).
 const P = (n, k) => pronouns(n)?.[k] || ({ sub: 'they', obj: 'them', posAdj: 'their', ref: 'themself' })[k];
+// A spoken reaction can carry its variants by voice family (sharp, dry, loud, soft, odd): the 4th element of a row.
+// They are resolved for the speaker as the pools' are (write.js voicedLine), so the room sounds like who is in it.
+const S = (by, text, v) => ['say', by, text, v];
 const REACT = {
   hurt: [
-    (v, t) => [['beat', `${t} turns around on the sofa and stares at ${v}.`], ['say', t, `${v}? Seriously?`], ['say', v, "I'm sorry. I had to."]],
-    (v, t) => [['say', t, `Wow. ${v}. Okay.`], ['beat', `${v} won't look at ${t}.`]],
-    (v, t) => [['say', t, `You told me this morning I was safe.`], ['say', v, "Things changed."], ['say', t, "Yeah. You did."]],
-    (v, t) => [['beat', `${t} laughs, but it isn't a happy laugh.`], ['say', t, `Of all people. You.`]],
+    (v, t) => [['beat', `${t} turns around on the sofa and stares at ${v}.`], S(t, `${v}? Seriously?`, {
+      sharp: [`Really, ${v}? Interesting.`, `${v}. I'll remember that.`], dry: [`${v}. Huh.`, `Okay. ${v}. Noted, I guess.`],
+      loud: [`${v}?! SERIOUSLY?!`, `Are you KIDDING me, ${v}?`], soft: [`${v}? I thought we were okay.`, `Oh. ${v}. Wow.`],
+      odd: [`${v}? My ${v}? Rude.`, `Wait, ${v}? Did I hear that right?`] }),
+      S(v, "I'm sorry. I had to.", { sharp: ["It was the right call. Sorry."], dry: ["It was a vote. I'm sorry."], loud: ["I had to! I'm sorry!"],
+        soft: ["I'm so sorry. I really had to."], odd: ["Sorry! Please don't hate me forever. Maybe a week."] })],
+    (v, t) => [S(t, `Wow. ${v}. Okay.`, { sharp: [`Noted, ${v}.`], dry: [`Okay. ${v}. Sure.`], loud: [`WOW, ${v}! Okay!`],
+      soft: [`${v}... really?`], odd: [`Okay. ${v}. Cool cool cool.`] }), ['beat', `${v} won't look at ${t}.`]],
+    (v, t) => [S(t, 'You told me this morning I was safe.', { sharp: ['This morning I was safe. Funny how that works.'], dry: ['This morning you told me I was safe.'],
+      loud: ['You TOLD me I was SAFE!'], soft: ['You said I was safe. You told me this morning.'], odd: ['This morning I was safe. What happened between breakfast and now?'] }),
+    S(v, 'Things changed.', { sharp: ['Things change. That\'s the game.'], dry: ['It changed.'], loud: ['Things CHANGED!'], soft: ['I know. Things changed. I\'m sorry.'], odd: ['Lunch happened. Things changed.'] }),
+    S(t, 'Yeah. You did.', { sharp: ['You changed. That\'s the part I\'ll remember.'], dry: ['You did, yeah.'], loud: ['YOU changed!'], soft: ['Yeah. You did.'], odd: ['You sure did. Wow.'] })],
+    (v, t) => [['beat', `${t} laughs, but it isn't a happy laugh.`], S(t, 'Of all people. You.', { sharp: ['You. Of course it\'s you.'], dry: ['You. Of all people.'],
+      loud: ['YOU?! Of ALL people?!'], soft: ['You. I didn\'t think it would be you.'], odd: ['Of all the people in this room. You. Incredible.'] })],
   ],
   cry: [
     (v, t) => [['beat', `${t}'s eyes fill up. ${t} looks at the floor and doesn't say anything.`]],
-    (v, t) => [['beat', `${t} wipes ${P(t, 'posAdj')} eyes with the back of ${P(t, 'posAdj')} hand.`], ['say', t, "I'm fine. Keep going."]],
+    (v, t) => [['beat', `${t} wipes ${P(t, 'posAdj')} eyes with the back of ${P(t, 'posAdj')} hand.`], S(t, "I'm fine. Keep going.", {
+      sharp: ["Don't stop for me. Keep going."], dry: ["I'm fine. Next."], loud: ["I'm FINE! Keep going!"], soft: ["Sorry. I'm okay. Keep going."], odd: ["Allergies. Big allergies. Keep going."] })],
   ],
   clash: [
-    (v, t) => [['say', t, `Say it to my face, ${v}.`], ['say', v, "I just did."], ['say', t, "Then I'll see you in the Arena."]],
-    (v, t) => [['say', t, `Of course it's you. You've wanted me gone since day one.`], ['say', v, "And I'm finally saying it."]],
-    (v, t) => [['say', t, `Big words from somebody who's never won anything.`], ['say', v, "Keep talking. It'll make it easier."]],
+    (v, t) => [S(t, `Say it to my face, ${v}.`, { sharp: [`Look at me when you say it, ${v}.`], dry: [`To my face, ${v}.`], loud: [`SAY IT TO MY FACE, ${v}!`],
+      soft: [`At least look at me, ${v}.`], odd: [`Turn around and say it, ${v}. I'm right here. Hi.`] }),
+    S(v, 'I just did.', { sharp: ['I just did. Want me to say it slower?'], dry: ['I did.'], loud: ['I JUST DID!'], soft: ['I just did. I\'m sorry.'], odd: ['I did! Did you miss it? I can wave.'] }),
+    S(t, "Then I'll see you in the Arena.", { sharp: ["Then I'll see you in the Arena. Get ready."], dry: ["Then it's the Arena."], loud: ["THEN I'LL SEE YOU IN THE ARENA!"],
+      soft: ["Then I guess I'll see you in the Arena."], odd: ["Then it's a date. The Arena. Wear something nice."] })],
+    (v, t) => [S(t, "Of course it's you. You've wanted me gone since day one.", { sharp: ["Of course it's you. You've been waiting for this."], dry: ["Of course it's you."],
+      loud: ["OF COURSE it's you! You've wanted me out since DAY ONE!"], soft: ["Of course it's you. You never liked me."], odd: ["Of course it's you. I could have bet money on it. My money's gone, but still."] }),
+    S(v, "And I'm finally saying it.", { sharp: ["And now everybody knows it."], dry: ["And now I'm saying it."], loud: ["And I'm finally SAYING it!"], soft: ["I'm just being honest."], odd: ["And it feels great, honestly."] })],
+    (v, t) => [S(t, "Big words from somebody who's never had to back them up.", { sharp: ["Big words. Let's see you back them up."], dry: ["Big words."],
+      loud: ["BIG words from YOU!"], soft: ["That's a lot of talk."], odd: ["Big words. Huge. Enormous words."] }),
+    S(v, "Keep talking. It'll make it easier.", { sharp: ["Keep talking. You're helping me."], dry: ["Keep going. It helps."], loud: ["KEEP TALKING!"],
+      soft: ["You're making this easier, you know."], odd: ["Please keep talking. It's very motivating."] })],
     (v, t) => [['beat', `${t} stands up. TJ points back at the sofa, and ${t} sits down again.`], ['say', 'TJ', "Easy! Save it for the Arena!"]],
   ],
   shrug: [
-    (v, t) => [['say', t, 'Sure. Why not.']],
+    (v, t) => [S(t, 'Sure. Why not.', { sharp: ['Of course. Why not.'], dry: ['Sure.'], loud: ['Sure! Why NOT!'], soft: ['Okay. That\'s okay.'], odd: ['Sure. Love that for me.'] })],
     (v, t) => [['beat', `${t} just nods.`]],
-    (v, t) => [['say', t, "That's fine. That's fine."]],
+    (v, t) => [S(t, "That's fine. That's fine.", { sharp: ["That's fine. I'll remember it."], dry: ["Fine."], loud: ["That's FINE!"], soft: ["It's okay. It's fine."], odd: ["That's fine. Everything is fine. I'm fine."] })],
   ],
   offscript: [
-    (v, t, x) => [['beat', `A gasp goes around the room. That is not the name ${v} gave anybody this morning.`], ['say', x || 'TJ', x ? `${v}! What are you doing?` : "Ohhh! Somebody's off script!"]],
-    (v, t, x) => [['say', 'TJ', `Whoa. Did not see that one coming.`], ...(x ? [['say', x, `That's not what we said, ${v}.`], ['say', v, "I know what we said."]] : [])],
+    (v, t, x) => [['beat', `A gasp goes around the room. That is not the name ${v} gave anybody this morning.`], x
+      ? S(x, `${v}! What are you doing?`, { sharp: [`${v}. What was that?`], dry: [`${v}, what are you doing?`], loud: [`${v}! WHAT are you DOING?!`],
+        soft: [`${v}? That's not what we said.`], odd: [`${v}! That's the wrong name! Is it? It's the wrong name!`] })
+      : ['say', 'TJ', "Ohhh! Somebody's off script!"]],
+    (v, t, x) => [['say', 'TJ', `Whoa. Did not see that one coming.`], ...(x ? [S(x, `That's not what we said, ${v}.`, { sharp: [`That's not the plan, ${v}.`],
+      dry: [`That wasn't the name, ${v}.`], loud: [`That is NOT what we said, ${v}!`], soft: [`${v}... that's not what we agreed.`], odd: [`Did you forget the name, ${v}? It was a short name.`] }),
+    S(v, 'I know what we said.', { sharp: ['I know exactly what we said.'], dry: ['I know.'], loud: ['I KNOW what we said!'], soft: ['I know. I\'m sorry. I couldn\'t.'], odd: ['I know! I changed it! Surprise!'] })] : [])],
     (v, t, x) => [['beat', `Heads turn. Everybody in ${v}'s group looks at ${v} at once.`]],
   ],
   tie: [
@@ -71,7 +99,13 @@ const pickR = (key, seed, used) => {
   return list[i];
 };
 const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
-const asLines = rows => rows.map(([kind, by, text]) => (kind === 'beat' ? { kind: 'beat', by: null, text: by } : { kind: 'say', by, text }));
+// a spoken reaction in the speaker's voice when it has one (the variants of a row), as the pools' lines are
+const asLines = (rows, state, day, seed) => rows.map(([kind, by, text, v]) => {
+  if (kind === 'beat') return { kind: 'beat', by: null, text: by };
+  if (!v || by === 'TJ') return { kind: 'say', by, text };
+  const said = voicedLine({ say: text, v }, by, { rng: stableRng(seed, `v|${by}`), ledger: state.lineLedger, day });
+  return { kind: 'say', by, text: said.text, voice: said.tag };
+});
 const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 const w = n => WORD[n] || String(n);
 
@@ -117,7 +151,7 @@ export function writeVote(state, epRec, vote, day) {
     if (!sealed && top[0][1] >= need) { sealed = true; rows.push(...pickR('sealed', seed + 's', used)(top[0][0], w(top[0][1]))); }
     else if (!sealed && k >= 5 && top[1] && top[0][1] === top[1][1] && top[0][0] === t) rows.push(...pickR('tie', seed + 't', used)(top[0][0], top[1][0], w(top[0][1])));
     else if (!sealed && k >= 4 && top[0][0] === t && top[0][1] >= 3 && (k % 4 === 0) && left > 2) rows.push(...pickR('lead', seed + 'l', used)(t, w(top[0][1]), w(left)));
-    if (rows.length && script) script = { ...script, lines: [...script.lines, ...asLines(rows)] };
+    if (rows.length && script) script = { ...script, lines: [...script.lines, ...asLines(rows, state, day, seed)] };
     out.push({ kind: 'ballot', voter: b.voter, target: b.target, why: b.why, script });
   });
   const tally = Object.entries(vote.tally).sort((x, y) => y[1] - x[1]);

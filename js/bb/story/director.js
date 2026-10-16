@@ -15,6 +15,7 @@
 
 import { gs } from '../../core.js';
 import { classify, file, causeOf } from './storylines.js';
+import { lineAired } from '../script/write.js';
 import { writeStoryScene, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, writeWitnessAfter, writeVoteTalk, writeArcScene, hasPool, roomName } from './write.js';
 import { voteTalkFor } from './votetalk.js';
 import { runnerDue, arcDue } from './arcs.js';
@@ -232,7 +233,7 @@ export function airStorylines(week) {
       const airs = () => {
         remember(sc);
         shown.add(key); shown.add(String(beat.eventId));
-        beat.aired = true; engAired++;
+        beat.aired = true; engAired++; lineAired(beat.lineToken);
         seasonAired[`ev:${beat.eventId}`] = (seasonAired[`ev:${beat.eventId}`] || 0) + 1;
       };
       // A confessional airs beside the scene it is about (the user, 2026-10-14: "why is Spencer even in
@@ -622,7 +623,7 @@ export function airStorylines(week) {
     for (const beat of act.socialBeats || []) {
       at++;
       // a moment that happens AT a ceremony plays in the ceremony screen (vp-bb-ep/steps.js)
-      if ((act.type === 'nominations' && CER_NOM.test(String(beat.eventId || ''))) || (act.type === 'veto-ceremony' && CER_VETO.test(String(beat.eventId || '')))) { beat.aired = true; continue; }
+      if ((act.type === 'nominations' && CER_NOM.test(String(beat.eventId || ''))) || (act.type === 'veto-ceremony' && CER_VETO.test(String(beat.eventId || '')))) { beat.aired = true; lineAired(beat.lineToken); continue; }
       stretchBeats.push({ act, beat });
       const c = classify(beat);
       if (!c) continue;

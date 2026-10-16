@@ -115,8 +115,28 @@ function noPast(key) {
   return out;
 }
 
+// ── a line spent only if it airs ──
+// The engine writes an event's scene the moment it fires, and the picker notes the line as used then; the director
+// airs a subset of the week's events (bb/story/director.js), and the rest never reach a screen. Their lines stayed
+// spent: whole pools ran dry on scenes nobody saw while the ones that aired came round again (read 2026-10-15: pk2.s4
+// to s6 never aired, s1 to s3 aired twice). A tracked write keeps what it noted; the director confirms the ones it
+// airs, and at the end of the week the rest are given back. Noted at the pick, not at the airing, so two events in one
+// stretch still never take the same line.
+const PENDING = new Map();
+let tokenSeq = 0;
+export function lineAired(token) { if (token) PENDING.delete(token); }
+export function refundUnaired() {
+  const u = gs.bb?.lineLedger;
+  if (u) for (const { id, speakers, pairKey } of PENDING.values()) {
+    if (u.uses?.[id] > 0) { u.uses[id]--; if (!u.uses[id]) delete u.uses[id]; }
+    for (const sp of speakers) { const by = u.by?.[id]; const i = by ? by.lastIndexOf(sp) : -1; if (i >= 0) by.splice(i, 1); }
+    const pr = u.pairs?.[id]; const j = pr ? pr.lastIndexOf(pairKey) : -1; if (j >= 0) pr.splice(j, 1);
+  }
+  PENDING.clear();
+}
+
 /** Pick and fill. Returns { lines, text } — `text` is the transcript the old screens and the backlog print. */
-export function writeScene(scene, ctx = {}, rng = Math.random) {
+export function writeScene(scene, ctx = {}, rng = Math.random, { track = false } = {}) {
   if (writing.muted) return { lines: [{ kind: 'beat', by: null, text: scene.kind }], text: scene.kind, lineId: null };
   const facts = factsFor(scene, ctx);
   // A family's '.any' pool fits every ending, so it is merged with the ending's own.
@@ -131,12 +151,14 @@ export function writeScene(scene, ctx = {}, rng = Math.random) {
   const speakers = Object.values(who).filter(Boolean);
   const entry = pickEntry(ledger(), firstNight(ctx) ? noPast(key) : POOLS, key, facts, pairKey, rng, speakers, clockOf(ctx), { fresh: true });
   if (!entry) throw new Error(`no lines for ${key}`);
+  let lineToken = null;
+  if (track) { lineToken = `ln${++tokenSeq}`; PENDING.set(lineToken, { id: entry.id, speakers, pairKey }); }
   const lines = entry.turns.map(t => {
     const kind = t.dr ? 'dr' : t.beat ? 'beat' : 'say';
     const by = t.by ? who[t.by] || (t.by === 'hoh' ? ctx.hoh : null) : null;
     return { kind, by, text: said(kind, fill(variantOf(t, by) ?? (t.dr || t.beat || t.say), who, ctx, scene.data || {})) };
   });
-  return { lines, text: transcript(lines), lineId: entry.id };
+  return { lines, text: transcript(lines), lineId: entry.id, lineToken };
 }
 
 /** The script as one paragraph, for screens that print text. */

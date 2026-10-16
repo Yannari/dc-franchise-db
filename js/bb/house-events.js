@@ -520,8 +520,8 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
         // or the season after it changes (tests/bb-talk.test.js plays a season
         // with the words muted and holds every event and outcome to it).
         const words = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, ctx.act || '', meta.index, event.id);
-        const written = writeScene(raw.scene, beatCtx, words);
-        raw = { ...raw, text: written.text, lines: written.lines, lineId: written.lineId, location: raw.location || raw.scene.room || undefined };
+        const written = writeScene(raw.scene, beatCtx, words, { track: true });
+        raw = { ...raw, text: written.text, lines: written.lines, lineId: written.lineId, lineToken: written.lineToken, location: raw.location || raw.scene.room || undefined };
       }
       // A row in front of the house has witnesses who say where they stand (bb/witness.js): decided and
       // paid for here, in the engine, from its own dice, so the words never move the game

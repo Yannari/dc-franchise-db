@@ -262,6 +262,8 @@ describe('every intent airs as a script', () => {
       const week = new Set();
       const heard = new Map();
       let lines = 0, repeats = 0, selfRepeats = 0;
+      let airedLines = 0, airedRepeats = 0;
+      const airedHeard = new Set();
       for (const b of beatsOf(eps)) {
         if (!scripted(b)) continue;
         const k = `${b.week}|${b.lineId}`;
@@ -272,11 +274,16 @@ describe('every intent airs as a script', () => {
           lines++;
           const by = heard.get(l.text);
           if (by) { repeats++; if (by.has(l.by)) selfRepeats++; by.add(l.by); } else heard.set(l.text, new Set([l.by]));
+          if (b.aired) { airedLines++; if (airedHeard.has(l.text)) airedRepeats++; else airedHeard.add(l.text); }
         }
       }
       // Spec §7: under 12% of lines heard before this season, under 1.5% a person
-      // repeating themselves. Held tighter here than the spec asks: 6%.
-      expect(repeats / lines, `${repeats} of ${lines} lines repeat`).toBeLessThan(0.06);
+      // repeating themselves. What AIRS is held tighter than the spec asks: 6%. Every line written, aired or
+      // not (the classic screens and the backlog print them all), is held to 8%: a line written for an event the
+      // director did not air is given back to its pool at the week's end (bb/script/write.js refundUnaired), so
+      // the stepped viewer stops running pools dry on scenes nobody saw, and the written total rises a little.
+      expect(airedRepeats / Math.max(1, airedLines), `${airedRepeats} of ${airedLines} aired lines repeat`).toBeLessThan(0.06);
+      expect(repeats / lines, `${repeats} of ${lines} lines repeat`).toBeLessThan(0.08);
       expect(selfRepeats / lines, `${selfRepeats} of ${lines} are somebody repeating themselves`).toBeLessThan(0.015);
     }
   });

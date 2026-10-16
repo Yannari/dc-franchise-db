@@ -71,7 +71,7 @@ import {
 import { scheduleHouseBeats } from './house-events.js';
 import { writeCeremony } from './script/ceremony.js';
 import { scriptBeat, joinScripts, numberWord } from './script/inject.js';
-import { transcript } from './script/write.js';
+import { transcript, refundUnaired } from './script/write.js';
 import { airStorylines } from './story/director.js';
 import { campaignArgument, campaignCase } from '../bb-events/_read.js';
 import { runBBCompetition } from './comps.js';
@@ -7974,6 +7974,8 @@ export function simulateBBWeek(options = {}) {
   // House life as storylines (js/bb/story): file the week's beats and choose the
   // three to five conversations each stretch airs. Words only — no game state moves.
   try { airStorylines(week); } catch (err) { if (typeof process !== 'undefined' && process.env?.BB_STORY_DEBUG) throw err; }
+  // the lines of the events the director did not air go back to their pools (bb/script/write.js refundUnaired)
+  finally { try { refundUnaired(); } catch { /* the ledger is a convenience */ } }
 
   // Two stretches of house life with nothing between them is a RENDERING
   // question, and it is answered in js/vp-screens.js where the folding

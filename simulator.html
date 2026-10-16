@@ -970,6 +970,19 @@
                 <div class="hint hint-tight">The house vote: everybody says a name out loud, and the most votes goes into the Arena. The Tribunal: the daily's winners are the Tribunal; the house nominates three, they plead their case, and the Tribunal sends one in.</div>
               </div>
               <div class="form-group">
+                <label class="form-label" for="cfg-ch-pass">The ticket to the final</label>
+                <select id="cfg-ch-pass" class="form-input" onchange="saveConfig()">
+                  <option value="off">None</option>
+                  <option value="skull">The Red Skull</option>
+                  <option value="ring">The ring</option>
+                </select>
+                <div class="hint hint-tight">Win in the Arena to earn a skull (or a ring). Nobody runs the final without one: the ones who never earned one go home on the morning of the final.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><input type="checkbox" id="cfg-ch-redemption" onchange="saveConfig()"> Redemption House</label>
+                <div class="hint hint-tight">An Arena loser goes to Redemption House instead of home. Every couple of weeks the people there fight each other, and the winner goes back into the villa. It closes three weeks before the final.</div>
+              </div>
+              <div class="form-group">
                 <label class="form-label" for="cfg-ch-finalists">The final</label>
                 <select id="cfg-ch-finalists" class="form-input" onchange="saveConfig()">
                   <option value="6">Six finalists</option>

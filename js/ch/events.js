@@ -35,6 +35,9 @@ import { coupleOf } from './callout.js';
 import { arenaRead, freeRide } from './respect.js';
 import { planOf } from './plans.js';
 import { noteDeal } from './knowledge.js';
+import { bankOf, injuryOf, skullsOf } from './state.js';
+import { money, richest, passOf, passHunger } from './stakes.js';
+const state0 = ctx => ctx.state;
 
 // ── helpers ──────────────────────────────────────────────────────────
 const pop = (name, d) => { gs.popularity ||= {}; gs.popularity[name] = (gs.popularity[name] || 0) + d; };
@@ -518,6 +521,125 @@ export const EVENTS = [
       if (believed) { addBond(b, c, -1.2); remember(b, c, 'coming-for-me', 1.2, { told: a }); }
       else { addBond(b, a, -1); remember(b, a, 'lied-to-me', 1.5); }
       return addScene(ctx.state, 'scheme-lie', [a, b, c], { believed }, [a, b], 'villa');
+    } },
+  // ── the stakes (stakes.js): money, injuries, TJ's rankings, the skulls ──
+  // The bank: somebody with money says so to somebody without; the one without remembers.
+  { id: 'bank-brag', actorCooldown: 3, kind: 'drama', cooldown: 6, max: 4,
+    cast: ctx => bestPair(ctx, 'bank-brag', 6, (a, b) => (bankOf(ctx.state, a) >= 20000 && bankOf(ctx.state, b) * 3 < bankOf(ctx.state, a)
+      ? (S(a, 'boldness') - 5) * 0.3 + (bankOf(ctx.state, a) - bankOf(ctx.state, b)) / 25000 + Math.max(0, -getBond(a, b)) * 0.2 - (is(a, 'hero', 'loyal-soldier', 'underdog', 'goat') ? 2 : 0) : 0)),
+    weight: (ctx, p) => 0.3 + p.score * 0.25,
+    fire(ctx, [a, b], rng) {
+      const firesBack = rng() < 0.35 + S(b, 'boldness') * 0.04;
+      addBond(a, b, firesBack ? -1 : -0.7);
+      remember(b, a, 'bragged-about-money', 1);
+      pop(a, -0.3);
+      if (firesBack) { pop(b, 0.3); nudge(ctx.state, a, 'paranoia', 0.4); }
+      return addScene(ctx.state, 'bank-brag', [a, b], { firesBack, amount: money(bankOf(ctx.state, a)) }, [a, b, ...witnesses(ctx, [a, b], 2)], 'villa');
+    } },
+  // Two with nothing in the bank agree the richest one has to go: closer, and with a name.
+  { id: 'money-talk', kind: 'game', cooldown: 5, max: 4,
+    cast: ctx => {
+      const rich = richest(ctx.state);
+      if (!rich || bankOf(ctx.state, rich) < 25000) return null;
+      const p = bestPair(ctx, 'money-talk', 5, (a, b) => (a !== rich && b !== rich && getBond(a, b) >= 1 && bankOf(ctx.state, a) <= 7500 && bankOf(ctx.state, b) <= 7500
+        ? (S(a, 'strategic') - 4) * 0.3 + getBond(a, b) * 0.15 : 0), { ordered: false });
+      return p ? { who: [...p.who, rich], score: p.score } : null;
+    },
+    weight: (ctx, p) => 0.3 + p.score * 0.25,
+    fire(ctx, [a, b, c], rng) {
+      addBond(a, b, 0.6);
+      remember(a, c, 'too-much-money', 0.6); remember(b, c, 'too-much-money', 0.6);
+      learn(a, factId('target', b, c), { ep: ctx.state.ep });
+      return addScene(ctx.state, 'money-talk', [a, b], { target: c, amount: money(bankOf(ctx.state, c)) }, [a, b], 'villa');
+    } },
+  // Injuries: a friend tapes them up and tells them to sit the next one out.
+  { id: 'injury-care', kind: 'drama', cooldown: 3, max: 6,
+    cast: ctx => {
+      const hurtN = ctx.state.active.filter(n => injuryOf(ctx.state, n));
+      let best = null;
+      for (const n of hurtN) for (const f of ctx.state.active) {
+        if (f === n || getBond(f, n) < 2 || !cooled(ctx, 'injury-care', [f, n], 3)) continue;
+        const s = getBond(f, n) * 0.3 + injuryOf(ctx.state, n).sev * 0.4 + jitter(ctx, 'injury-care', f + n);
+        if (!best || s > best.score) best = { who: [f, n], score: s };
+      }
+      return best;
+    },
+    weight: (ctx, p) => 0.5 + p.score * 0.2,
+    fire(ctx, [a, b], rng) {
+      addBond(a, b, 0.8);
+      remember(b, a, 'emotional-support', 1.2);
+      nudge(ctx.state, b, 'morale', 0.8);
+      const inj = injuryOf(ctx.state, b);
+      return addScene(ctx.state, 'injury-care', [a, b], { part: inj.part, sev: inj.sev }, [a, b], 'villa');
+    } },
+  // ...and somebody who can scheme sees a hurt player as an easy week: send them in now. Overheard, sometimes.
+  { id: 'injury-target', actorCooldown: 3, kind: 'game', cooldown: 4, max: 4,
+    cast: ctx => {
+      const hurtN = ctx.state.active.filter(n => injuryOf(ctx.state, n));
+      let best = null;
+      for (const n of hurtN) for (const a of ctx.state.active) {
+        if (a === n || !mayScheme(a) || getBond(a, n) >= 2) continue;
+        const b = ctx.state.active.filter(x => x !== a && x !== n && getBond(a, x) >= 1.5).sort((x, y) => getBond(a, y) - getBond(a, x))[0];
+        if (!b || !cooled(ctx, 'injury-target', [a, n], 4)) continue;
+        const s = (S(a, 'strategic') - 4) * 0.3 + injuryOf(ctx.state, n).sev * 0.5 + jitter(ctx, 'injury-target', a + n);
+        if (!best || s > best.score) best = { who: [a, b, n], score: s };
+      }
+      return best;
+    },
+    weight: (ctx, p) => 0.35 + p.score * 0.25,
+    fire(ctx, [a, b, c], rng) {
+      addBond(a, b, 0.4);
+      (ctx.state.marked ||= {})[c] = ctx.state.ep;
+      learn(b, factId('target', a, c), { ep: ctx.state.ep });
+      const heard = rng() < 0.3;
+      if (heard) { addBond(c, a, -1.4); remember(c, a, 'kicked-me-when-down', 1.4); nudge(ctx.state, c, 'paranoia', 1); }
+      return addScene(ctx.state, 'injury-target', heard ? [a, b, c] : [a, b], { heard, target: c, part: injuryOf(ctx.state, c).part }, heard ? [a, b, c] : [a, b], heard ? 'villa' : 'private');
+    } },
+  // TJ's rankings: the one who fell has words for the one who passed them.
+  { id: 'ranking-beef', actorCooldown: 2, kind: 'drama', cooldown: 4, max: 5,
+    cast: ctx => {
+      const pr = [...ctx.state.scenes].reverse().find(s => s.kind === 'power-rankings' && s.ep === ctx.state.ep);
+      const a = pr?.data.drop, b = pr?.data.passer;
+      if (!a || !b || !ctx.state.active.includes(a) || !ctx.state.active.includes(b) || !cooled(ctx, 'ranking-beef', [a, b], 4)) return null;
+      return { who: [a, b], score: 1 + (S(a, 'boldness') - 5) * 0.2 };
+    },
+    weight: (ctx, p) => (ctx.night ? 0.1 : 0.7 + p.score * 0.2),
+    fire(ctx, [a, b], rng) {
+      const laughs = rng() < 0.5;
+      addBond(a, b, -0.8);
+      addRivalry(ctx.state, a, b, 1);
+      nudge(ctx.state, a, 'confidence', 0.3);
+      if (laughs) remember(a, b, 'laughed-at-me', 0.8);
+      return addScene(ctx.state, 'ranking-beef', [a, b], { laughs }, [a, b, ...witnesses(ctx, [a, b], 2)], 'villa');
+    } },
+  // The skulls: somebody without one, and the final getting closer, says it out loud to a friend.
+  { id: 'pass-panic', kind: 'drama', cooldown: 3, max: 6,
+    cast: ctx => {
+      if (!passOf(ctx.state)) return null;
+      const p = bestOne(ctx, 'pass-panic', 3, a => passHunger(ctx.state, a) - 0.4);
+      if (!p) return null;
+      const a = p.who[0];
+      const f = ctx.state.active.filter(x => x !== a && getBond(a, x) >= 1.5).sort((x, y) => getBond(a, y) - getBond(a, x))[0];
+      return f ? { who: [a, f], score: p.score } : null;
+    },
+    weight: (ctx, p) => 0.5 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const plan = rng() < 0.5 + S(a, 'boldness') * 0.03;   // decides to go and get one, or just worries
+      (ctx.state.passPanic ||= {})[a] = (ctx.state.passPanic[a] || 0) + (plan ? 1 : 0.4);
+      nudge(ctx.state, a, 'paranoia', 0.5);
+      addBond(a, b, 0.4);
+      return addScene(ctx.state, 'pass-panic', [a, b], { plan, token: passOf(ctx.state) }, [a, b], 'villa');
+    } },
+  // ...and somebody with one makes sure the ones without one know it.
+  { id: 'pass-flex', actorCooldown: 3, kind: 'drama', cooldown: 5, max: 4,
+    cast: ctx => (!passOf(ctx.state) ? null : bestPair(ctx, 'pass-flex', 5, (a, b) => (skullsOf(ctx.state, a) && !skullsOf(ctx.state, b) && state0(ctx).division[a] === state0(ctx).division[b]
+      ? (S(a, 'boldness') - 5) * 0.35 + Math.max(0, -getBond(a, b)) * 0.3 - (is(a, 'hero', 'loyal-soldier', 'underdog', 'goat', 'social-butterfly') ? 3 : 0) : 0))),
+    weight: (ctx, p) => 0.3 + p.score * 0.25,
+    fire(ctx, [a, b], rng) {
+      addBond(a, b, -0.8);
+      remember(b, a, 'rubbed-it-in', 1);
+      (ctx.state.passPanic ||= {})[b] = (ctx.state.passPanic[b] || 0) + 0.5;
+      return addScene(ctx.state, 'pass-flex', [a, b], { token: passOf(ctx.state), count: skullsOf(ctx.state, a) }, [a, b, ...witnesses(ctx, [a, b], 2)], 'villa');
     } },
 ];
 

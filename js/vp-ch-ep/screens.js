@@ -187,8 +187,9 @@ function intel(R) {
       + (H.broken.length ? `<div class="isub">Broken</div>${H.broken.map(d => `<div class="igone">${esc(d.a)} &amp; ${esc(d.b)}</div>`).join('')}` : '');
   } else if (tab === 'rec') {
     const rows = H.players.map(n => [n, H.rec[n] || {}]).sort((x, y) => (y[1].daily + y[1].arenaW * 2) - (x[1].daily + x[1].arenaW * 2));
-    body = `<div class="irec ihead"><span></span><b>Player</b><i>Dailies</i><i>Arena</i><i>Voted in</i><i>Votes</i></div>`
-      + rows.map(([n, r]) => `<div class="irec">${face(n)}<b>${esc(n)}</b><i>${r.daily}</i><i>${r.arenaW}-${r.arenaL}</i><i>${r.votedIn}</i><i>${r.votes}</i></div>`).join('');
+    // the stakes (ch/stakes.js): the bank, a skull (&#9760;) for each one earned, a cross while hurt
+    body = `<div class="irec ihead"><span></span><b>Player</b><i>Dailies</i><i>Arena</i><i>Voted in</i><i>Votes</i><i>Bank</i></div>`
+      + rows.map(([n, r]) => `<div class="irec">${face(n)}<b>${esc(n)}${r.skulls ? ` ${'&#9760;'.repeat(Math.min(3, r.skulls))}` : ''}${r.hurt ? ' &#10010;' : ''}</b><i>${r.daily}</i><i>${r.arenaW}-${r.arenaL}</i><i>${r.votedIn}</i><i>${r.votes}</i><i>${r.bank ? `$${Math.round(r.bank / 1000)}k` : '–'}</i></div>`).join('');
   }
   const note = tab === 'heads' ? '' : `<div class="inote">${R.si === R.E.screens.length - 1 ? 'As the episode ends.' : 'As the episode began.'}</div>`;
   I.innerHTML = `<h4>INTEL <button type="button" data-close>&times;</button></h4><div class="sub">What the house doesn't know.</div>`

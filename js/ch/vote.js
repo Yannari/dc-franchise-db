@@ -27,7 +27,8 @@
 // uncommitted vote their own read with the count so far pulling the timid.
 // Each ballot carries its chain: wanted → asked → told → cast, and why.
 import { getBond, addBond } from '../bonds.js';
-import { S, mayScheme, addScene, noise, shuffle, logistic, clamp, weighted } from './state.js';
+import { S, mayScheme, addScene, noise, shuffle, logistic, clamp, weighted, bankOf, injuryOf } from './state.js';
+import { passHunger } from './stakes.js';
 import { arenaRead, freeRide, arenaBase } from './respect.js';
 import { allianceOf, activeAlliances, leave } from './alliances.js';
 import { coupleOf, dealBetween, calloutTerms } from './callout.js';
@@ -266,7 +267,9 @@ function volunteer(state, rng, eligible) {
     const target = (plan?.revenge || []).concat(plan?.targets || []).find(t => eligible.includes(t) && t !== c) || null;
     const edge = target ? arenaRead(state, c) - arenaRead(state, target) : 0;
     const w = (arenaRead(state, c) - 5.5) * 0.4 + S(c, 'boldness') * 0.14 + (state.psyche[c] === 'prove' ? 0.5 : 0)
-      + (target ? grudgeOf(c, target) * 0.25 + edge * 0.3 : 0) + freeRide(state, c) * 0.9 + (state.rookie[c] ? 0.2 : 0);
+      + (target ? grudgeOf(c, target) * 0.25 + edge * 0.3 : 0) + freeRide(state, c) * 0.9 + (state.rookie[c] ? 0.2 : 0)
+      // no skull yet, and the final is coming (stakes.js); nobody volunteers on a bad ankle
+      + passHunger(state, c) * 1.4 - (injuryOf(state, c)?.sev || 0) * 0.8;
     return { c, w, target };
   }).sort((a, b) => b.w - a.w);
   const top = cands[0];
@@ -349,6 +352,11 @@ export function voteTerms(state, v, t, eligible, delib, tally) {
   terms.fear = -(grudgeOf(t, v) * (callable ? 0.5 : 0.15) * (arenaRead(state, t) / 10) * (1.2 - bold)
     + (threatAt ? threatAt.credible * 2.8 * (1.15 - bold) : 0)
     + fearOf(v, t) * (callable ? 0.45 : 0.12) * (1.1 - bold));
+  // the stakes (stakes.js): the bank, an injury, TJ's number one
+  terms.bank = Math.min(1.4, bankOf(state, t) / 35000) * (0.3 + S(v, 'strategic') / 10 * 0.6);
+  const inj = injuryOf(state, t);
+  terms.injured = inj ? inj.sev * 0.35 * (0.4 + S(v, 'strategic') / 10) + (state.marked?.[t] === state.ep ? 0.9 : 0) : 0;
+  terms.ranked = state.rankTop?.name === t && state.rankTop.ep === state.ep ? 0.5 : 0;
   terms.couple = coupleOf(state, v) === t ? -9 : 0;
   terms.deal = dealBetween(state, v, t) ? -2.4 * (0.3 + S(v, 'loyalty') / 10) : 0;
   terms.clique = state.origin[v] && state.origin[v] === state.origin[t] ? -0.9 * state.cliqueStrength : 0;

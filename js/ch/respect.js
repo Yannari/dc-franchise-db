@@ -10,7 +10,7 @@
 // have watched, not their stat sheet: `arenaRead` is the house's estimate (the
 // stats are visible in a body and a style, so they count, but the record
 // counts more once there is one).
-import { S, clamp } from './state.js';
+import { S, clamp, bankOf, injuryOf } from './state.js';
 
 export const RESPECT = {
   arenaWin: 2.2, dailyWin: 0.7, survivedVote: 0.3, volunteerWin: 1.2,
@@ -41,15 +41,18 @@ export function arenaRead(state, name) {
   const record = games ? ((r.arenaW || 0) + 1) / (games + 2) * 10 : null;
   const base = arenaBase(name);
   const looked = record == null ? base : base * 0.45 + record * 0.55 + Math.min(2, (r.arenaW || 0) * 0.5);
-  // A champion's reputation from the ledger walks in with them.
-  return looked + (state.rep[name]?.challengeWins || 0) * 0.6;
+  // A champion's reputation from the ledger walks in with them; an injury everybody saw takes some of it away.
+  return looked + (state.rep[name]?.challengeWins || 0) * 0.6 - (injuryOf(state, name)?.sev || 0) * 0.8;
 }
 
 // How dangerous someone looks overall: the Arena, the dailies, and the final.
 export function threatRead(state, name) {
   const r = state.rec[name] || {};
   const daily = (S(name, 'physical') + S(name, 'endurance') + S(name, 'mental')) / 3;
-  return arenaRead(state, name) * 0.55 + daily * 0.3 + (r.dailyWins || 0) * 0.5 + Math.max(0, r.respect || 0) * 0.15;
+  // money is a threat too (the bank, stakes.js), and TJ's number one this week is a name the whole house heard
+  const rich = Math.min(1.5, bankOf(state, name) / 40000);
+  const ranked = state.rankTop?.name === name && state.rankTop.ep === state.ep ? 0.5 : 0;
+  return arenaRead(state, name) * 0.55 + daily * 0.3 + (r.dailyWins || 0) * 0.5 + Math.max(0, r.respect || 0) * 0.15 + rich + ranked;
 }
 
 // The free-ride accusation: never been in, and the season is getting older.

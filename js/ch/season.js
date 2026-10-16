@@ -42,6 +42,8 @@ import { reviseAll } from './plans.js';
 import { spreadDay, syncActive } from './knowledge.js';
 import { morningAfter } from './fallout.js';
 import { calledOut, arenaWon, remember } from './rel.js';
+import { payDaily, arenaPurse, hurt, medicalRisk, healDay, powerRankings, earnPass, passCut, PURSE } from './stakes.js';
+import { redemptionOn, houseTakes, sendToRedemption, redemptionWatch, redemptionNight, returnFromRedemption, closeForFinal } from './redemption.js';
 
 // The Tribunal: the daily's winners, or the three who did best on a winning team.
 function tribunalOf(state, daily, immune) {
@@ -57,8 +59,9 @@ function pop(name, d) {
 // A day's quits and medicals. At most one quit a day.
 function dayExits(state, rng, injured = []) {
   const out = [];
+  // a knock is played through; a sprain sometimes, a tear often, ends it (stakes.js)
   for (const n of injured) {
-    if (state.active.includes(n) && rng() < 0.22) { medical(state, n); out.push({ name: n, how: 'medical' }); }
+    if (state.active.includes(n) && rng() < medicalRisk(state.injury[n])) { medical(state, n); out.push({ name: n, how: 'medical' }); }
   }
   for (const n of [...state.active]) {
     if (rng() < quitRisk(state, n)) { quit(state, n); pop(n, -2); out.push({ name: n, how: 'quit' }); break; }
@@ -82,7 +85,10 @@ function intelSnap(state) {
     deals: state.deals.filter(d => !d.broken && act.includes(d.a) && act.includes(d.b)).map(d => ({ a: d.a, b: d.b, tier: d.tier || 'protect' })),
     broken: state.deals.filter(d => d.broken).slice(-4).map(d => ({ a: d.a, b: d.b })),
     couples: state.couples.filter(c => !c.ended && act.includes(c.a) && act.includes(c.b)).map(c => [c.a, c.b]),
-    rec: Object.fromEntries(act.map(n => [n, { daily: R(n).dailyWins || 0, arenaW: R(n).arenaW || 0, arenaL: R(n).arenaL || 0, votedIn: R(n).votedIn || 0, calledOut: R(n).calledOut || 0, votes: R(n).votesReceived || 0 }])),
+    rec: Object.fromEntries(act.map(n => [n, { daily: R(n).dailyWins || 0, arenaW: R(n).arenaW || 0, arenaL: R(n).arenaL || 0, votedIn: R(n).votedIn || 0, calledOut: R(n).calledOut || 0, votes: R(n).votesReceived || 0,
+      // the stakes (stakes.js): money, skulls, an injury that has not healed
+      bank: state.bank?.[n] || 0, skulls: state.skulls?.[n] || 0, hurt: state.injury?.[n] && state.injury[n].heal > state.ep ? `${state.injury[n].part} ${state.injury[n].sev}` : null }])),
+    redemption: state.redemption ? state.redemption.residents.map(r => r.name) : null,
     // for the Debug screen: how each of them feels, what they need, what they are trying to do, and their word
     mind: Object.fromEntries(act.map(n => [n, Object.fromEntries(Object.entries(state.mind[n] || {}).map(([k, v]) => [k, Math.round(v * 10) / 10]))])),
     psyche: Object.fromEntries(act.map(n => [n, state.psyche[n] || null])),
@@ -120,6 +126,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     state.origin[n] = bg.origin || null;
     state.rep[n] = bg.rep || {};
     state.rec[n] = blankRecord();
+    state.bank[n] = 0;
     state.tj[n] = 0;
     initMind(state, n);
   }
@@ -168,6 +175,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     state.arrivalPairs.push([a, b]);
   }
 
+  if (redemptionOn(state)) state.redemption = { open: true, residents: [], out: [], returned: [], pending: null };
   const schedule = buildSchedule({ total: cast.length, finalists: opts.finalists, daysPerEpisode: opts.daysPerEpisode, gendered: opts.gendered });
   state.schedule = schedule;
   state.plannedEpisodes = schedule.filter(e => !e.final).length;
@@ -199,6 +207,11 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     // hand, and only then the villa (the user, 2026-10-15: "challenge on arrival").
     state.day = plan.firstDay;
     for (const n of state.active) driftDay(state, n);
+    // the morning: an injury that has healed, the one who fought back from Redemption House, TJ's rankings
+    healDay(state);
+    const back = returnFromRedemption(state);
+    if (back) { epRec.returned = back; syncActive(state); }
+    epRec.rankings = powerRankings(state);
     const premiere = idx === 0;
     let division, daily;
     const runDaily = () => {
@@ -207,6 +220,10 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       epRec.division = division;
       daily = playDaily(state, R('daily'), { division });
       epRec.daily = daily;
+      payDaily(state, daily);
+      // the ones hurt today: how bad, and who helped them off (stakes.js)
+      const rh = R('hurt');
+      for (const n of daily.injuries || []) if (state.active.includes(n)) hurt(state, rh, n, 'daily');
       epRec.exits.push(...dayExits(state, R('exits1'), daily.injuries));
     };
     if (premiere) {
@@ -311,6 +328,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
         voters: (vote?.ballots || []).filter(x => x.target === votedIn).map(x => x.voter) });
     }
 
+    // Redemption House watches the vote on the television
+    if (redemptionOn(state)) redemptionWatch(state, epRec.votes.flatMap(v => v.ballots || []));
     // ── The night before: the two who are going in, and the people around them ──
     for (const m of matches) arenaEve(state, R(`eve${m.a}`), m);
     // the rest of the house that night (the user, 2026-10-15: the villa after the vote was "four events,
@@ -362,12 +381,20 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       nudge(state, winner, 'confidence', 1.6); nudge(state, winner, 'morale', 1);
       pop(winner, duel.comeback ? 2 : duel.upset ? 1.5 : 0.6);
       duel.tj = tjVerdict(state, duel);
-      addScene(state, 'arena', [m.a, m.b], { game: duel.game, winner, loser, upset: duel.upset, comeback: duel.comeback, tj: duel.tj, beats: duel.beats, gameName: duel.gameName }, state.active, 'arena');
+      const toRedemption = houseTakes(state, idx);
+      addScene(state, 'arena', [m.a, m.b], { game: duel.game, winner, loser, upset: duel.upset, comeback: duel.comeback, tj: duel.tj, beats: duel.beats, gameName: duel.gameName,
+        redemption: toRedemption }, state.active, 'arena');
       arenaWon(winner, loser, state.active, { margin: duel.upset ? 1.4 : 1 });
-      removePlayer(state, loser, 'arena', { by: winner, game: duel.game });
+      // the winner takes half of the loser's bank, and earns a skull (stakes.js)
+      duel.took = arenaPurse(state, winner, loser);
+      earnPass(state, winner);
+      // Redemption House, while it is open: the loser is not going home yet (redemption.js)
+      if (toRedemption) { sendToRedemption(state, loser, winner, m.voters); duel.redemption = true; }
+      else removePlayer(state, loser, 'arena', { by: winner, game: duel.game });
       syncActive(state);
-      // A winner hurt in the Arena can still be pulled out.
-      if (injuryRoll(state, R(`hurt${k}`), winner, 1.3) && R(`med${k}`)() < 0.2) {
+      // A winner hurt in the Arena: how bad decides whether the medics pull them out.
+      const hurtNow = injuryRoll(state, R(`hurt${k}`), winner, 1.3) ? hurt(state, R(`hurtk${k}`), winner, 'arena') : null;
+      if (hurtNow && R(`med${k}`)() < medicalRisk(hurtNow)) {
         medical(state, winner); epRec.exits.push({ name: winner, how: 'medical' });
       } else {
         // The voters only face the one THEY put in; a winner who was called out
@@ -376,6 +403,11 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       }
       // The morning after comes after the winner has walked back in.
       epRec.fallout = (epRec.fallout || []).concat(morningAfter(state, { duel, vote: m.vote, callout: m.callout, meetings: delib?.meetings || [] }));
+    }
+    // Redemption House: the people waiting there fight for the way back (redemption.js)
+    if (redemptionOn(state)) {
+      const champ = redemptionNight(state, R('redemption'), { closing: (state.plannedEpisodes || schedule.length) - (idx + 1) <= 3 });
+      if (champ) epRec.redemption = { champ };
     }
     houseBeats(state, R('beats3'), { night: true, min: 3, max: 5 });
     psycheMoment(state, R('psyche'));
@@ -389,7 +421,12 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
   state.ep = (state.episodes.at(-1)?.ep || 0) + 1;
   gs.episode = state.ep;
   state.finalEp = { ep: state.ep, final: true, votes: [], votedIn: [], callouts: [], arena: [], exits: [] };
+  // nobody runs the final from Redemption House, or without a skull (stakes.js)
+  closeForFinal(state);
+  state.finalEp.cut = passCut(state);
+  syncActive(state);
   playFinal(state, streamFor(seed, 'final'));
+  for (const c of state.champions || []) state.bank[c] = (state.bank[c] || 0) + PURSE.champion;
   const placements = {};
   for (const g of state.gone) placements[g.name] = g.place;
   Object.assign(placements, state.final.placements);

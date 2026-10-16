@@ -28,10 +28,11 @@ export function quitRisk(state, name) {
 
 export function removePlayer(state, name, how, extra = {}) {
   if (!state.active.includes(name)) return;
-  // Their placement: how many were still in when they left.
-  const place = state.active.length;
+  // Their placement: how many were still in when they left (the people waiting in Redemption House are still in).
+  const place = state.active.length + (state.redemption?.residents?.length || 0);
   state.active = state.active.filter(n => n !== name);
-  state.gone.push({ name, ep: state.ep, day: state.day, how, place, ...extra });
+  // Redemption House: out of the villa, not yet out of the season (redemption.js writes the placement later)
+  if (!extra.pending) state.gone.push({ name, ep: state.ep, day: state.day, how, place, ...extra });
   partnerGone(state, name);
   // Their alliances lose them. A group whose leader went home is led by the
   // most strategic member still in the house, or it is over (manual §11.5:

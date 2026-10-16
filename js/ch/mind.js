@@ -20,7 +20,7 @@
 // Total Drama's td/story/psyche.js (belong, prove, control, protect, temper,
 // redemption, home): the story layer gives it a scene, and it tilts choices
 // (a `prove` player calls out the strongest; a `home` player quits sooner).
-import { S, archetypeOf, clamp } from './state.js';
+import { S, archetypeOf, clamp, injuryOf } from './state.js';
 import { getBond } from '../bonds.js';
 
 const NEED_OF_ARCH = {
@@ -90,5 +90,7 @@ export function performanceMod(state, name, pressure = 0.5) {
   // Low confidence and low temperament choke; boldness steadies.
   const nerve = (S(name, 'temperament') * 0.5 + S(name, 'boldness') * 0.3 + m.confidence * 0.2) / 10; // 0..1
   const press = 1 - pressure * (0.5 - nerve) * 0.16;       // +/- 8% at full pressure
-  return energy * conf * press;
+  // playing hurt (stakes.js): 6% a knock, 12% a sprain, 18% a tear, until it heals
+  const inj = injuryOf(state, name);
+  return energy * conf * press * (inj ? 1 - inj.sev * 0.06 : 1);
 }

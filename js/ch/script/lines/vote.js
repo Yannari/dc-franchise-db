@@ -348,6 +348,32 @@ export default {
       { by: 'a', say: "I know. I just hate that it was this easy for them." },
       { by: 'a', conf: "{count} votes. They didn't even have to argue about it." },
     ] },
+    { id: 'av.4', turns: [
+      { beat: '{b} brings {a} a glass of water and sits down on the step next to {a}.' },
+      { by: 'b', say: "Drink this. You're shaking." },
+      { by: 'a', say: "I'm not scared. I'm angry." },
+      { by: 'b', say: "Good. Angry wins Arenas." },
+      { by: 'a', say: "Who do I even pick?" },
+      { by: 'b', say: "Sleep on it. You'll know in the morning." },
+      { by: 'a', conf: "{b} didn't say anything clever. {b} just sat with me. Right now that's worth more than any alliance." },
+    ] },
+    { id: 'av.5', turns: [
+      { by: 'a', say: "Don't tell me it'll be fine." },
+      { by: 'b', say: "I wasn't going to." },
+      { by: 'a', say: "Then what were you going to say?" },
+      { by: 'b', say: "That I'd rather it was anybody else in there. And that I'll be in the stands." },
+      { by: 'a', say: "Okay. That I can take." },
+      { by: 'a', conf: "{count} people stood up and said my name. One person came to find me after. I'll remember both." },
+    ] },
+    { id: 'av.6', turns: [
+      { beat: '{a} is in the gym, hitting the bag, when {b} walks in.' },
+      { by: 'b', say: "Want me to hold it?" },
+      { by: 'a', say: "Sure." },
+      { by: 'b', say: "Harder. Pretend it's whoever you're picking." },
+      { by: 'a', say: "I haven't decided yet." },
+      { by: 'b', say: "Then pretend it's all of them." },
+      { by: 'a', conf: "I came in here to be alone. {b} didn't let me, and I'm glad." },
+    ] },
   ],
   'after-vote.stung': [
     { id: 'av.s1', turns: [

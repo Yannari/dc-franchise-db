@@ -77,6 +77,9 @@ export function challengeOptions(config = seasonConfig) {
     partnerWeeks: config?.chPartnerWeeks !== false,
     // the season's rules: the open house vote, or the Tribunal (format.js)
     format: config?.chFormat === 'tribunal' ? 'tribunal' : 'vote-callout',
+    // the twists (stakes.js, redemption.js): a skull or ring to run the final, Redemption House
+    finalPass: ['skull', 'ring'].includes(config?.chPass) ? config.chPass : null,
+    redemption: config?.chRedemption === true,
   };
 }
 

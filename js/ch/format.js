@@ -49,6 +49,8 @@ export const DEFAULT_OPTIONS = {
   partyNights: true,
   romance: true,
   partnerWeeks: true,
+  finalPass: null,    // 'skull' | 'ring': nobody runs the final without one (stakes.js)
+  redemption: false,  // Redemption House (redemption.js)
 };
 
 export function formatOf(options) {

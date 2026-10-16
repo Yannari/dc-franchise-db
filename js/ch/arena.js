@@ -119,7 +119,7 @@ function arenaGuess(state, n) {
 // An injury in a physical game or daily: per player, small, larger when tired.
 export function injuryRoll(state, rng, name, physicality) {
   const tired = (10 - (state.mind[name]?.energy ?? 7)) / 10;
-  const p = 0.012 * physicality * (1 + tired);
+  const p = 0.02 * physicality * (1 + tired);
   return rng() < p;
 }
 

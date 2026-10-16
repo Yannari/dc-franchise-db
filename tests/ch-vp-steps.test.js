@@ -13,10 +13,11 @@ import { challengeCast } from './helpers/ch-cast.js';
 
 let seasons;
 beforeAll(() => {
-  seasons = [5, 9].map(seed => {
+  // and one season with both twists on (the Red Skull, Redemption House: ch/stakes.js, ch/redemption.js)
+  seasons = [[5], [9], [21, { finalPass: 'skull', redemption: true }]].map(([seed, options = {}]) => {
     const { cast, names, background } = challengeCast(24, seed);
     setPlayers(cast);
-    const r = playChallengeSeason({ cast: names, background, seed });
+    const r = playChallengeSeason({ cast: names, background, seed, options });
     airSeason(r.state);
     return { r, rows: challengeRows(r) };
   });

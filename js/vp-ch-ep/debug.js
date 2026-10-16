@@ -189,6 +189,10 @@ function statsTab(row, K) {
     { label: 'ARENA', value: n => `${R(n).arenaW ?? 0}-${R(n).arenaL ?? 0}`, colour: C.green, bold: true },
     { label: 'IN', value: n => R(n).votedIn ?? '–', colour: C.amber },
     { label: 'VOTES', value: n => R(n).votes ?? '–', colour: C.red },
+    // the stakes (ch/stakes.js)
+    { label: 'BANK', value: n => (R(n).bank ? `$${Math.round(R(n).bank / 1000)}k` : '–'), colour: C.green },
+    { label: 'SKULL', value: n => R(n).skulls || '–', colour: C.red, bold: true },
+    { label: 'HURT', value: n => esc(R(n).hurt || '–'), colour: C.amber, small: true },
   ], n => { try { return pStats(n) || {}; } catch { return {}; } }));
 }
 

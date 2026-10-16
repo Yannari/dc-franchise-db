@@ -1418,6 +1418,8 @@ export function saveConfig() {
     chFinalists: g('cfg-ch-finalists') ? (parseInt(g('cfg-ch-finalists').value) || 8) : (Number(seasonConfig.chFinalists) || 8),
     chPartyNights: g('cfg-ch-party') ? g('cfg-ch-party').checked : seasonConfig.chPartyNights !== false,
     chFormat: g('cfg-ch-format') ? g('cfg-ch-format').value : (seasonConfig.chFormat || 'vote-callout'),
+    chPass: g('cfg-ch-pass') ? g('cfg-ch-pass').value : (seasonConfig.chPass || 'off'),
+    chRedemption: g('cfg-ch-redemption') ? g('cfg-ch-redemption').checked : seasonConfig.chRedemption === true,
     chPartnerWeeks: g('cfg-ch-partner-weeks') ? g('cfg-ch-partner-weeks').checked : seasonConfig.chPartnerWeeks !== false,
     chRomance: g('cfg-ch-romance') ? g('cfg-ch-romance').checked : seasonConfig.chRomance !== false,
     trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,
@@ -1633,6 +1635,8 @@ export function renderConfig() {
   if (g('cfg-ch-finalists')) g('cfg-ch-finalists').value = [6, 10].includes(Number(seasonConfig.chFinalists)) ? String(seasonConfig.chFinalists) : '8';
   if (g('cfg-ch-party')) g('cfg-ch-party').checked = seasonConfig.chPartyNights !== false;
   if (g('cfg-ch-format')) g('cfg-ch-format').value = seasonConfig.chFormat === 'tribunal' ? 'tribunal' : 'vote-callout';
+  if (g('cfg-ch-pass')) g('cfg-ch-pass').value = ['skull', 'ring'].includes(seasonConfig.chPass) ? seasonConfig.chPass : 'off';
+  if (g('cfg-ch-redemption')) g('cfg-ch-redemption').checked = seasonConfig.chRedemption === true;
   if (g('cfg-ch-partner-weeks')) g('cfg-ch-partner-weeks').checked = seasonConfig.chPartnerWeeks !== false;
   if (g('cfg-ch-romance')) g('cfg-ch-romance').checked = seasonConfig.chRomance !== false;
   try { window.renderPerfectMatchCastSetup?.(); } catch { /* the panel is optional chrome */ }

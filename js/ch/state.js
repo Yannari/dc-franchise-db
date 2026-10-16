@@ -44,9 +44,16 @@ export function newState(seed, options) {
     // TJ's opinion of each player (spec §4.7): respect for fighters, contempt for quitters.
     tj: {},
     scenes: [], episodes: [], final: null, champions: [],
+    // what a season is played for and what it costs (stakes.js, redemption.js)
+    bank: {}, injury: {}, skulls: {}, redemption: null,
     ep: 0, day: 0,
   };
 }
+
+// The bank, an injury that has not healed, the skulls (or rings) earned: read everywhere, written in stakes.js.
+export const bankOf = (state, n) => state.bank?.[n] || 0;
+export const injuryOf = (state, n) => { const i = state.injury?.[n]; return i && i.heal > state.ep ? i : null; };
+export const skullsOf = (state, n) => state.skulls?.[n] || 0;
 
 export function blankRecord() {
   return { dailyWins: 0, dailyLast: 0, arenaW: 0, arenaL: 0, votedIn: 0, calledOut: 0,

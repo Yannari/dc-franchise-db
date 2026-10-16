@@ -35,13 +35,16 @@ import { previouslyFor } from './previously.js';
 const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', 'pick-talk', 'pick-guess', 'daily', 'callout', 'arena', 'quit', 'medical', 'disqualified', 'tj-house-meeting', 'outing', 'empty-threat', 'tribunal-room', 'tribunal-verdict', 'tribunal-pitch',
   'volunteer', 'return', 'showmance', 'breakup', 'alliance-betrayal', 'deal-broken', 'fight-physical', 'final-start',
   'instant-elimination', 'overnight-sabotage', 'overnight-quit', 'final-pact-help', 'final-pact-broken', 'champions',
-  'rookie-uprising']);
+  'rookie-uprising',
+  // the stakes (stakes.js, redemption.js)
+  'bank-taken', 'injury', 'power-rankings', 'pass-earned', 'pass-cut', 'redemption-arrive', 'redemption-duel', 'redemption-return', 'redemption-closed']);
 const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-form', 'arena-eve-confront', 'arena-eve-pep',
   'arena-eve-alone', 'morning-after', 'fight', 'team-blame', 'partner-blame', 'throw-caught', 'jealousy', 'receipts',
-  'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout']);
+  'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout',
+  'injury-target', 'injury-care', 'ranking-beef', 'pass-panic', 'money-talk', 'bank-brag', 'redemption-watch', 'redemption-feud']);
 const STORY = new Set(['gym-training', 'pool-games', 'house-dinner', 'beach-run', 'sunset-talk', 'bunk-whisper', 'deal', 'alliance-grow', 'alliance-leave', 'alliance-end', 'apology', 'scheme-lie', 'loyalty-test',
   'ride-to-the-final', 'psyche', 'homesick', 'call-home', 'gossip-backfire', 'ex-in-the-house', 'trash-talk',
-  'vet-dismisses', 'vet-mentors-rookie', 'beach-date', 'hot-tub-truths', 'show-banter', 'rookie-hazing', 'throw']);
+  'vet-dismisses', 'vet-mentors-rookie', 'beach-date', 'hot-tub-truths', 'show-banter', 'rookie-hazing', 'throw', 'injury-healed', 'pass-flex']);
 const WARM = new Set(['flirt', 'beach-date', 'spark', 'vet-mentors-rookie', 'apology', 'hot-tub-truths', 'arena-eve-pep']);
 const ROW = new Set(['fight', 'fight-physical', 'kitchen-blowup', 'receipts', 'trash-talk', 'partner-blame', 'jealousy']);
 const CAPS = { meeting: 2, recruit: 2, 'alliance-form': 2, plea: 2, 'leverage-threat': 1, 'counter-pitch': 1, 'spare-deal': 1, 'arena-eve-pep': 2, 'arena-eve-alone': 1 };

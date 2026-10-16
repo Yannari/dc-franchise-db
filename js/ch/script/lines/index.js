@@ -9,10 +9,11 @@ import final from './final.js';
 import story from './story.js';
 import places from './places.js';
 import campaign from './campaign.js';
+import stakes from './stakes.js';
 import VOICES, { joinVariants } from './voices/index.js';
 import LONGER from './longer/index.js';
 
-export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign);
+export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign, stakes);
 
 for (const list of Object.values(POOLS)) {
   for (const e of list) {

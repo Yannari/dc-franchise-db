@@ -47,6 +47,9 @@ const PLACE = {
   deliberation: { plate: 'common', place: 'The Common Room', room: 'common', icon: 'fire', hour: 'night' },
   arena: { plate: 'arena', place: 'The Arena', room: null, island: 'arena', icon: 'skull', hour: 'night' },
   lookout: { plate: 'lookout', place: 'The Lookout', room: null, island: 'lookout', icon: 'island' },
+  // Redemption House (redemption.js): a shack in the jungle; the overnight camp stands in until its own set exists
+  redemption: { plate: 'camp', place: 'Redemption House', room: null, island: 'lookout', icon: 'skull', hour: 'night' },
+  final: { plate: 'field', place: 'The Final', room: null, island: 'beach-field', icon: 'island' },
 };
 // Somewhere quiet: by day the lookout or the bedroom, by night the pool or the beach.
 const QUIET_DAY = [{ plate: 'lookout', place: 'The Lookout', island: 'lookout', icon: 'island' }, { plate: 'bunks', place: 'The Bedroom', room: 'bunk-b', icon: 'house' }];
@@ -118,7 +121,8 @@ function chapterOf(a) {
   if (a.kind === 'ceremony' || a.kind === 'volunteer' || a.kind === 'house-debate' || a.kind.startsWith('tribunal-')) return 'vote';
   if (a.kind.startsWith('arena-eve')) return 'eve';
   if (a.kind === 'callout' || a.kind === 'arena') return 'arena';
-  if (a.kind === 'final-start') return 'final-start';
+  if (a.kind === 'final-start' || a.kind === 'pass-cut') return 'final-start';
+  if (a.kind.startsWith('redemption-') && a.kind !== 'redemption-return') return 'redemption';
   if (a.kind === 'instant-elimination') return 'instant';
   if (a.kind.startsWith('overnight')) return 'overnight';
   if (a.kind.startsWith('final-pact')) return 'final-day2';
@@ -127,7 +131,7 @@ function chapterOf(a) {
 }
 const LABEL = { arrival: 'The arrival', reveal: 'The villa', open: 'Previously', daily: 'The daily', villa: 'The villa', party: 'Night out', vote: 'The vote', eve: 'The night before',
   arena: 'The Arena', 'final-start': 'The final', instant: 'Instant elimination', overnight: 'The overnight', 'final-day2': 'The last day',
-  champions: 'The finish line' };
+  champions: 'The finish line', redemption: 'Redemption House' };
 
 // ── placing people on a plate ─────────────────────────────────────────
 // Extra places when a plate has fewer marks than people: between and just behind its own.
@@ -422,6 +426,20 @@ const BIG = {
   'tribunal-verdict': a => ({ slam: { spray: 'SENT IN', color: '#e3262d' }, chip: [a.data?.chosen || a.who[1], 'SENT IN'] }),
   showmance: a => ({ card: { k: 'Showmance', t: `${a.who[0]} & ${a.who[1]}`, sub: 'It is official, and the whole house knows', faces: a.who.slice(0, 2) } }),
   breakup: a => ({ slam: { spray: "IT'S OVER", color: '#ff8fc7' } }),
+  // the stakes (ch/stakes.js, ch/redemption.js)
+  'pass-earned': a => (a.data?.first ? { slam: { spray: a.data.token === 'ring' ? 'RING EARNED' : 'RED SKULL', color: '#e3262d' }, chip: [a.who[0], a.data.token === 'ring' ? 'HAS A RING' : 'HAS A SKULL'] }
+    : { chip: [a.who[0], `${a.data?.count || 2} ${a.data?.token === 'ring' ? 'RINGS' : 'SKULLS'}`] }),
+  'pass-cut': a => (a.data?.spared ? { chip: [a.who[0], 'SPARED'] } : { slam: { spray: a.data?.token === 'ring' ? 'NO RING' : 'NO SKULL', color: '#e3262d' }, chip: [a.who[0], 'GOING HOME'] }),
+  'bank-taken': a => ({ slam: { spray: 'PAYDAY', color: '#2fd35a' }, chip: [a.who[0], `+${a.data?.amount || ''}`] }),
+  injury: a => (a.data?.sev >= 2 ? { slam: { spray: 'INJURED', color: '#ff8a1a' }, chip: [a.who[0], String(a.data.part || 'hurt').toUpperCase()] } : { chip: [a.who[0], 'BANGED UP'] }),
+  'redemption-duel': a => ({ chip: [a.data?.winner || a.who[0], 'STILL ALIVE'] }),
+  'redemption-return': a => ({ card: { k: 'Back from Redemption', t: a.who[0], sub: 'Fought their way out of Redemption House', faces: [a.who[0]] } }),
+};
+// ...and the ones that open on something to look at: TJ's rankings on the board as he reads them
+const OPEN = {
+  'power-rankings': a => ({ tally: { title: "TJ's power rankings", rows: [
+    ...(a.data?.order || []).map((n, i) => ({ who: [n], v: 1 - i * 0.16, txt: `#${i + 1}`, win: i === 0 })),
+    ...(a.data?.last ? [{ who: [a.data.last], v: 0.06, txt: 'LAST', mark: 'x' }] : [])] } }),
 };
 
 // A cut back to last episode: the place a recap beat happened, its people on it, tinted as a flashback.
@@ -452,6 +470,7 @@ function scene(S, { a, i, title }, { names, house, goneAt, key }) {
   if (key === 'party') { first.dance = crowd.slice(0, 5); first.bg = Object.fromEntries(crowd.slice(5).map(n => [n, 'sip'])); }
   const k = a.kind === 'meeting' ? meetingKnow(a.data) : bondKnow(a);
   if (k) first.know = k;
+  if (OPEN[a.kind]) Object.assign(first, OPEN[a.kind](a));
   linesToSteps(S, a.lines, { names, first, sceneWho: a.who });
   if (BIG[a.kind]) S.push({ ...BIG[a.kind](a), focus: a.who.slice(0, 4) });
 }
@@ -989,6 +1008,20 @@ function buildFinal(S, open, key, items, row, { names, house }) {
   for (const it of items) {
     const a = it.a;
     S.at(it.i);
+    // the morning of the final, before anything starts: TJ checks every skull (or ring), and the ones without go home
+    if (a.kind === 'pass-cut') {
+      const st = FINAL_STAGE.start, pk = plateKey(st.plate, false);
+      if (!S._passCut) {
+        S._passCut = 1;
+        const lined = [...new Set([...finalists, ...items.filter(x => x.a.kind === 'pass-cut').map(x => x.a.who[0])])];
+        const ring = a.data?.token === 'ring';
+        S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { TJ: hostSide(pk), ...placeScene(pk, lined) }, wipe: 1 },
+          card: { k: 'Before the final', t: ring ? 'Show me your rings' : 'Show me your skulls', sub: 'Nobody runs the final without one', faces: lined.slice(0, 8) }, focus: ['TJ'] });
+      }
+      linesToSteps(S, a.lines, { names, sceneWho: ['TJ', a.who[0]] });
+      S.push({ ...BIG['pass-cut'](a), focus: [a.who[0]], ...(a.data?.spared ? {} : { exit: [a.who[0]] }) });
+      continue;
+    }
     if (a.kind === 'final-start') {
       const st = FINAL_STAGE.start, pk = plateKey(st.plate, false);
       S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { TJ: hostSide(pk), ...placeScene(pk, finalists) }, wipe: 1 }, card: { k: 'The final', t: 'The Final', sub: 'The last ones standing race for the title', faces: finalists, icon: 'final' }, sceneIdx: it.i, title: it.title });

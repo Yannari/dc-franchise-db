@@ -502,7 +502,7 @@ const CHX_CSS = `
 .chx .intel .ialm span{display:inline-flex;align-items:center;gap:.3cqw}
 .chx .intel .ialm em{font-style:normal;color:var(--fire);font-size:.85cqw}
 .chx .intel .igone{font:600 1cqw 'Barlow Condensed';color:var(--hud-dim);text-decoration:line-through}
-.chx .intel .irec{display:grid;grid-template-columns:2.4cqw 1fr repeat(4,3.2cqw);align-items:center;gap:.3cqw;padding:.25cqh 0;font:600 1.05cqw 'Barlow Condensed';color:var(--hud)}
+.chx .intel .irec{display:grid;grid-template-columns:2.4cqw 1fr repeat(4,3.2cqw) 4cqw;align-items:center;gap:.3cqw;padding:.25cqh 0;font:600 1.05cqw 'Barlow Condensed';color:var(--hud)}
 .chx .intel .irec i{font-style:normal;text-align:center;color:var(--caution)}
 .chx .intel .irec.ihead{font:400 .8cqw 'Black Ops One';color:var(--hud-dim);letter-spacing:.06em;text-transform:uppercase}
 .chx .intel .irec.ihead i{color:var(--hud-dim)}

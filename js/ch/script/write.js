@@ -136,7 +136,8 @@ export function writeScene(state, scene) {
   const speakers = Object.values(r.roles);
   const pairKey = [r.roles.a, r.roles.b].filter(Boolean).sort().join('|');
   const rng = stableRng(state.seed, 'line', scene.id);
-  const entry = pickEntry(state.lineLedger, pools, key, facts, pairKey, rng, speakers, scene.day);
+  // a line written for the scene's mood (an Arena return) or a fight's cause is how that scene sounds: it wins clearly
+  const entry = pickEntry(state.lineLedger, pools, key, facts, pairKey, rng, speakers, scene.day, { strong: ['mood', 'cause'] });
   if (!entry) return null;
   const hush = SECRET.has(scene.spot);
   const here = t => !t.opt || [t.by, ...[].concat(typeof t.opt === 'string' || Array.isArray(t.opt) ? t.opt : []),

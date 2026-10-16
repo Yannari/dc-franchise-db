@@ -8,5 +8,6 @@ import e from './e.js';
 import f from './f.js';
 import g from './g.js';
 import h from './h.js';
+import returns from '../returns.js';
 
-export default [a, b, c, d, e, f, g, h];
+export default [a, b, c, d, e, f, g, h, returns];

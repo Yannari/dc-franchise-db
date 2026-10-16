@@ -91,7 +91,8 @@ export const ROLES = {
   // b: somebody who voted them in (never a friend at the door: those are x and y)
   return: sc => { const nv = sc.data.voters ?? (sc.who.length - 1);
     return { roles: { a: sc.who[0], b: nv > 0 ? sc.who[1] : undefined },
-    ending: sc.data.volunteered ? 'volunteered' : sc.data.calledOut ? 'calledout' : nv > 0 ? 'faced' : 'quiet', slots: { gone: sc.data.beat } }; },
+    ending: sc.data.volunteered ? 'volunteered' : sc.data.calledOut ? 'calledout' : nv > 0 ? 'faced' : 'quiet',
+    slots: { gone: sc.data.beat, alliance: sc.data.alliance || undefined, count: sc.data.wins >= 2 ? (COUNT_WORD[sc.data.wins] || String(sc.data.wins)).toLowerCase() : undefined } }; },
   // b is never a again: one relieved player alone gets the one-person scripts, not both halves of a
   // two-person exchange (season 777: "I slept better last night" / "Don't say that out loud", both Jake).
   'morning-after': sc => { const a = sc.data.hurt?.[0] || sc.who[0];

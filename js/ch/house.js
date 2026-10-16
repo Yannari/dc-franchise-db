@@ -15,7 +15,8 @@
 //   psyche       one person's need gets a moment (the C-story)
 //   the return   the Arena winner walks back in and faces the ones who voted
 import { getBond, addBond, getPerceivedBond } from '../bonds.js';
-import { S, addScene, shuffle, weighted, mayScheme } from './state.js';
+import { S, addScene, shuffle, weighted, mayScheme, archetypeOf } from './state.js';
+import { gs } from '../core.js';
 import { remember, resentOf, intimidated } from './rel.js';
 import { noteDeal } from './knowledge.js';
 import { nudge } from './mind.js';
@@ -141,5 +142,35 @@ export function returnToHouse(state, winner, voters, how = {}) {
   const faced = voters.filter(v => state.active.includes(v));
   // the friends who meet them at the door (the user, 2026-10-16: scenes that aired as one confessional)
   const friends = state.active.filter(n => n !== winner && !faced.includes(n) && getBond(winner, n) >= 2).sort((x, y) => getBond(winner, y) - getBond(winner, x)).slice(0, 2);
-  addScene(state, 'return', [winner, ...faced, ...friends], { volunteered: !!how.volunteered, calledOut: !!how.calledOut, beat: how.beat || null, voters: faced.length }, state.active, 'public');
+  // the mood they walk back in with (the user, 2026-10-16: "the return is always the same structure is boring
+  // ... strategy comedy mockery taunt drama possible fight ... sadness for the eliminated want revenge bitter happy
+  // me vs the rest of the house my alliance vs the rest of the house"): read off what happened, and it costs
+  const mood = returnMood(state, winner, faced, how);
+  const pop = d => { gs.popularity ||= {}; gs.popularity[winner] = (gs.popularity[winner] || 0) + d; };
+  if (mood === 'sad') { nudge(state, winner, 'morale', -0.6); for (const f of friends) addBond(winner, f, 0.3); }
+  if (mood === 'revenge' || mood === 'mock' || mood === 'house') { for (const v of faced) { addBond(v, winner, -0.3); nudge(state, v, 'paranoia', 0.3); } pop(0.2); }
+  if (mood === 'alliance') { const al = allianceOf(state, winner); for (const m of al?.members || []) if (m !== winner && state.active.includes(m)) addBond(winner, m, 0.3); }
+  if (mood === 'comedy') for (const n of state.active) if (n !== winner) addBond(n, winner, 0.1);
+  if (mood === 'strategy') nudge(state, winner, 'confidence', 0.4);
+  if (mood === 'happy') nudge(state, winner, 'morale', 0.5);
+  const al = allianceOf(state, winner);
+  addScene(state, 'return', [winner, ...faced, ...friends], { volunteered: !!how.volunteered, calledOut: !!how.calledOut, beat: how.beat || null, voters: faced.length,
+    mood, wins: state.rec[winner]?.arenaW || 0, alliance: mood === 'alliance' ? al?.name || null : null }, state.active, 'public');
+}
+
+const MEAN = new Set(['villain', 'mastermind', 'schemer']);
+const LOOSE = new Set(['goat', 'wildcard', 'chaos-agent']);
+function returnMood(state, winner, faced, how) {
+  const wins = state.rec[winner]?.arenaW || 0;
+  const arch = archetypeOf(winner);
+  const al = allianceOf(state, winner);
+  const allied = al && al.members.filter(m => m !== winner && state.active.includes(m)).length >= 2;
+  const flip = (state.ep + winner.length) % 2;
+  if (how.beat && getBond(winner, how.beat) >= 2) return 'sad';
+  if (wins >= 3) return allied && flip ? 'alliance' : 'house';
+  if (faced.length >= 3 && (MEAN.has(arch) || S(winner, 'temperament') <= 4)) return 'revenge';
+  if (MEAN.has(arch)) return flip ? 'mock' : 'strategy';
+  if (LOOSE.has(arch)) return 'comedy';
+  if (allied && wins >= 2) return 'alliance';
+  return 'happy';
 }

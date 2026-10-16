@@ -80,7 +80,8 @@ function choose(ledger, pools, key, facts, pairKey, rng, speaker = null, clock =
   const speakers = [].concat(speaker || []);
   const scored = fits.map(e => {
     // A line written for the speaker's register is how they sound: it wins clearly.
-    const spec = Object.keys(e.when || {}).reduce((n, k) => n + (k === 'register' ? 4 : 1), 0) + (e.id.startsWith('g.') ? 1 : 0);
+    // ...and a show may name other facts that decide how a scene sounds (opts.strong: The Challenge's mood and cause)
+    const spec = Object.keys(e.when || {}).reduce((n, k) => n + (k === 'register' || opts?.strong?.includes(k) ? 4 : 1), 0) + (e.id.startsWith('g.') ? 1 : 0);
     const uses = u.uses[e.id] || 0;
     const samePair = (u.pairs[e.id] || []).includes(pairKey);
     const today = (u.day || {})[e.id] === clock || wordsOf(e).some(w => (u.words || {})[w] === clock) ? SAME_DAY

@@ -45,6 +45,9 @@ export const CH_FACT_KEYS = [
   'shot', 'gracious',
   // what a fight is about (cause.js GROUP): vote | talk | clash | dislike. A line may claim only what is true.
   'cause',
+  // the mood an Arena winner walks back in with (house.js returnMood): sad | house | alliance | revenge | mock |
+  // strategy | comedy | happy
+  'mood',
 ];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -92,6 +95,7 @@ export function factsFor(scene, roles, state) {
     shot: !!scene.data?.shot,
     gracious: !!scene.data?.gracious,
     cause: scene.data?.causeType || null,
+    mood: scene.data?.mood || null,
   };
   if (a) {
     f.register = registerOf(a);

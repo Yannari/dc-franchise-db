@@ -1,0 +1,243 @@
+// Register conversations, round two (see f.js): the next busiest pools, in the voice of whoever opens the scene.
+// The mourning one is the case the user caught: a villain grieving a friend still sounds like a villain.
+export default {
+  'morning-after.mourning': [
+    { id: 'rg.mm1', when: { register: 'schemer' }, turns: [
+      { beat: '{a} and {b} sit apart from the others, and {a} is watching the kitchen.' },
+      { by: 'a', say: "Look at them. Making breakfast like nothing happened." },
+      { by: 'b', say: "I miss {gone} too." },
+      { by: 'a', say: "{gone} was the only person in this house worth talking to. The rest of them are furniture." },
+      { by: 'b', say: "That's a little harsh." },
+      { by: 'a', say: "It's accurate. And every one of them who smiled at {gone} yesterday and voted the other way is going to find out what I'm like when I'm upset." },
+      { by: 'b', say: "What are you like when you're upset?" },
+      { by: 'a', say: "Patient." },
+      { by: 'a', conf: "I don't cry in here. I keep lists. {gone}'s name is at the top of the reasons, and I'm working my way through everybody else's." },
+    ] },
+    { id: 'rg.mm2', when: { register: 'sweet' }, turns: [
+      { beat: "{a} is holding the hoodie {gone} left behind." },
+      { by: 'a', say: "{gone} gave me this the first night, when I was cold. I never gave it back." },
+      { by: 'b', say: "Keep it. {gone} would want you to." },
+      { by: 'a', say: "I don't understand how people can do this to each other and then just say good morning." },
+      { by: 'b', say: "Because it's a game to them." },
+      { by: 'a', say: "It's a game to me too. I just don't want to forget the people in it." },
+      { by: 'b', say: "You won't. That's why everybody likes you." },
+      { by: 'a', conf: "I'm going to win this for {gone}. That sounds cheesy. I don't care. Somebody in here should play with a heart." },
+    ] },
+  ],
+  'morning-after.alone': [
+    { id: 'rg.ma1', when: { register: 'schemer' }, turns: [
+      { beat: '{a} is up before everybody, drinking coffee alone and watching the bedroom doors.' },
+      { by: 'a', conf: "{gone} was useful, and I liked {gone}. In here, that's almost the same as love." },
+      { by: 'a', conf: "Everybody who voted {gone} into that Arena is about to discover what I'm like without anybody to keep me nice." },
+    ] },
+    { id: 'rg.ma2', when: { register: 'fiery' }, turns: [
+      { beat: '{a} is hitting the punching bag in the gym hard enough to shake the chain.' },
+      { by: 'a', conf: "{gone} is gone, and everybody in that kitchen is smiling. I want to throw every single plate in there." },
+      { by: 'a', conf: "I'm not going to. I'm going to wait for the vote, and I'm going to say exactly one name, and I'm going to say it very loud." },
+    ] },
+  ],
+  'arena.walkover': [
+    { id: 'rg.aw1', when: { register: 'schemer' }, turns: [
+      { by: 'tj', say: "The game is {game}. Players, on my go. Go!" },
+      { beat: '{a} wins without ever looking worried.' },
+      { by: 'tj', say: "{a}! Too easy! {b}, I'm sorry, buddy. Your Challenge is over." },
+      { by: 'a', say: "Thank you, everybody who voted for me. That was fun." },
+      { by: 'b', say: "Enjoy it while it lasts, {a}." },
+      { by: 'a', say: "Oh, I will." },
+      { by: 'a', conf: "The house sent me in there to get rid of me. All they did was show everybody what happens when they try." },
+    ] },
+    { id: 'rg.aw2', when: { register: 'sweet' }, turns: [
+      { by: 'tj', say: "Tonight's game is {game}. Let's GO!" },
+      { beat: '{a} takes it, then goes straight to {b} before celebrating.' },
+      { by: 'tj', say: "{a} stays in the game! {b}, your Challenge is over." },
+      { by: 'a', say: "I'm so sorry, {b}. You were amazing in there. I mean that." },
+      { by: 'b', say: "Don't be sorry. You earned it." },
+      { by: 'a', conf: "I'm happy I'm staying. I'm not happy anybody had to go home for it. Both of those can be true at the same time." },
+    ] },
+    { id: 'rg.aw3', when: { register: 'competitor' }, turns: [
+      { by: 'tj', say: "Welcome to the Arena! The game is {game}. Go!" },
+      { beat: '{a} attacks it from the first second and never lets up.' },
+      { by: 'tj', say: "And that's it! {a} wins! {b}, you're going home." },
+      { by: 'a', say: "That's what happens! Who's next? Who wants to send me back in here?" },
+      { by: 'b', say: "Good game, {a}." },
+      { by: 'a', say: "Good game. You made me work." },
+      { by: 'a', conf: "I love the Arena. I'd come here every week if they let me. Everybody else in that house should be worried about that." },
+    ] },
+  ],
+  'return.faced': [
+    { id: 'rg.rf1', when: { register: 'schemer' }, turns: [
+      { beat: '{a} walks back into the villa without hurrying and looks at every face in the room.' },
+      { by: 'a', say: "Don't stop talking on my account. You were probably discussing me." },
+      { by: 'b', say: "Welcome back, {a}." },
+      { by: 'a', say: "Thank you, {b}. I know you voted for me. I wanted you to know that I know." },
+      { by: 'b', say: "It was a vote. It wasn't personal." },
+      { by: 'a', say: "It's personal now. Sleep well." },
+      { by: 'b', conf: "{a} didn't shout. {a} didn't have to. That was scarier than shouting." },
+    ] },
+    { id: 'rg.rf2', when: { register: 'sweet' }, turns: [
+      { beat: '{a} comes through the door, exhausted, and half the house gets up.' },
+      { by: 'a', say: "I'm back. I'm so tired. I'm back." },
+      { by: 'b', say: "Congratulations. I mean it." },
+      { by: 'a', say: "You voted for me, {b}. I heard you. It really hurt." },
+      { by: 'b', say: "I know. I'm sorry." },
+      { by: 'a', say: "I'm not going to hold it against you. I just wanted you to know it hurt." },
+      { by: 'b', conf: "Getting yelled at would have been easier. {a} just looked at me, and I felt about two inches tall." },
+    ] },
+  ],
+  'return.calledout': [
+    { id: 'rg.rcl1', when: { register: 'schemer' }, turns: [
+      { beat: '{a} walks in alone. {gone} does not.' },
+      { by: 'a', say: "{gone} looked around this entire house and decided I was the weakest. That's the last decision {gone} gets to make here." },
+      { by: 'x', opt: 1, say: "Wow. Welcome back." },
+      { by: 'a', opt: 'x', say: "Thank you. I'd like a shower and a list of everybody who thought {gone} was right." },
+      { by: 'a', conf: "{gone} called me out to make a point. I made a better one." },
+    ] },
+    { id: 'rg.rcl2', when: { register: 'sweet' }, turns: [
+      { beat: '{a} walks back in and sits down on the first chair, still shaking.' },
+      { by: 'x', opt: 1, say: "You did it! You actually did it!" },
+      { by: 'a', say: "I can't believe {gone} picked me. I thought we were friends." },
+      { by: 'b', opt: 1, say: "{gone} thought you'd be easy." },
+      { by: 'a', opt: 'b', say: "I know. That's what hurts most." },
+      { by: 'a', conf: "I didn't want to send {gone} home. I just didn't want to go home either. I hope {gone} knows it was never personal for me." },
+    ] },
+  ],
+  'daily.solo': [
+    { id: 'rg.ds1', when: { register: 'schemer' }, turns: [
+      { by: 'tj', say: "And that's {game}! {a}, {b}, you're safe at the vote!" },
+      { by: 'a', say: "Safe. And everybody else gets to spend the day being nice to me." },
+      { by: 'b', conf: "Winning feels great. Being safe feels better." },
+      { by: 'a', conf: "The best part of winning isn't the safety. It's watching everybody else start lining up to ask me for things." },
+    ] },
+    { id: 'rg.ds2', when: { register: 'sweet' }, turns: [
+      { by: 'tj', say: "That's {game}! {a}! {b}! You're safe!" },
+      { by: 'a', say: "Oh my gosh. Oh my gosh, I did it!" },
+      { by: 'b', conf: "Safe this week. I'll take it." },
+      { by: 'a', conf: "I keep thinking about everybody who didn't win. Somebody I like is going to be in the Arena this week, and I'm safe. It's the strangest feeling." },
+    ] },
+  ],
+  'overheard.any': [
+    { id: 'rg.ov1', when: { register: 'schemer' }, turns: [
+      { beat: '{a} stops at the bottom of the stairs. {b} is talking on the deck above, and the words carry.' },
+      { by: 'b', say: "...if {a} gets through this week, we never get another chance." },
+      { beat: '{a} smiles and walks away without making a sound.' },
+      { by: 'a', conf: "{b} wants me gone. How sweet. I'm going to let {b} believe the plan is working right up until the vote." },
+      { by: 'a', conf: "The best thing you can know in this house is who wants you gone and doesn't know you know." },
+    ] },
+    { id: 'rg.ov2', when: { register: 'sweet' }, turns: [
+      { beat: '{a} is about to walk into the kitchen when {b} says a name. It is {a}.' },
+      { by: 'b', say: "...it has to be {a}. Everybody likes {a} too much." },
+      { beat: '{a} backs away from the door.' },
+      { by: 'a', conf: "I made {b} breakfast this morning. {b} said thank you. And now this." },
+      { by: 'a', conf: "I don't want to be the kind of person who stops trusting everybody. But I think this game just made me one." },
+    ] },
+  ],
+  'callout.grudge': [
+    { id: 'rg.cg1', when: { register: 'schemer' }, turns: [
+      { by: 'tj', say: "{a}! Who's going in with you?" },
+      { by: 'a', say: "{b}. I've been looking forward to this since the day we met." },
+      { by: 'b', say: "The feeling's mutual." },
+      { by: 'a', say: "Oh, I doubt that. I've wanted this much longer." },
+      { by: 'a', conf: "I could have picked somebody easy. But some things are worth more than easy. Watching {b}'s face right now is one of them." },
+    ] },
+    { id: 'rg.cg2', when: { register: 'sweet' }, turns: [
+      { by: 'tj', say: "{a}, who are you calling out?" },
+      { by: 'a', say: "{b}. I'm sorry, but you know why. You've been coming after me since the first week." },
+      { by: 'b', say: "Fine. Let's settle it." },
+      { by: 'a', conf: "I don't like fighting. But {b} pushed and pushed, and I'm done being pushed." },
+    ] },
+  ],
+  'bank-taken.any': [
+    { id: 'rg.bt1', when: { register: 'schemer' }, turns: [
+      { by: 'tj', say: "{a}, you win half of {b}'s bank. That's {amount}." },
+      { by: 'a', say: "{b}, thank you for saving up for me." },
+      { by: 'b', say: "You're disgusting." },
+      { by: 'a', say: "I'm richer. Those are different things." },
+      { by: 'a', conf: "I didn't just win an elimination. I got paid for it. This is my favorite kind of night." },
+    ] },
+    { id: 'rg.bt2', when: { register: 'sweet' }, turns: [
+      { by: 'tj', say: "{a}, the rules are the rules. Half of {b}'s bank is yours: {amount}." },
+      { by: 'a', say: "I don't even feel good taking it. {b}, I'm sorry." },
+      { by: 'b', say: "Don't be. You won it." },
+      { by: 'a', conf: "That money was {b}'s. I know the rules. It still feels like I took something out of {b}'s hands." },
+    ] },
+  ],
+  'fight.any': [
+    { id: 'rg.fg1', when: { register: 'schemer' }, turns: [
+      { by: 'b', say: "Say it to my face, {a}! Say it!" },
+      { by: 'a', say: "I don't need to shout. I'm not the one losing." },
+      { by: 'b', say: "You think you're so much better than everybody!" },
+      { by: 'a', say: "Not everybody. Just you." },
+      { by: 'x', opt: 1, say: "Okay, that's enough. Both of you." },
+      { by: 'a', opt: 'x', say: "I'm perfectly calm. {b} is the one who needs help." },
+      { by: 'b', conf: "{a} never raises {a.posAdj} voice. {a} just keeps smiling while you lose your mind, and that's the point." },
+    ] },
+    { id: 'rg.fg2', when: { register: 'fiery' }, turns: [
+      { by: 'a', say: "You want to go? Huh? You want to go right now?" },
+      { by: 'b', say: "Back up. You're in my face." },
+      { by: 'a', say: "You've been in my face all week! Now I'm in yours!" },
+      { by: 'x', opt: 1, say: "Hey! Hey! Break it up!" },
+      { by: 'b', say: "Get {a} away from me!" },
+      { by: 'a', say: "Gladly! Don't come near me for the rest of this game!" },
+      { by: 'a', conf: "I've got a temper. I know it. But {b} has been poking me for days, and tonight I stopped pretending I didn't feel it." },
+    ] },
+  ],
+  'showmance.any': [
+    { id: 'rg.sh1', when: { register: 'schemer' }, turns: [
+      { beat: '{a} kisses {b} on the pool deck, right where the whole house can see.' },
+      { by: 'b', say: "In front of everybody?" },
+      { by: 'a', say: "Especially in front of everybody. Let them know you're with me." },
+      { by: 'b', say: "That sounds a lot like strategy." },
+      { by: 'a', say: "It's both. I can like you and like what it does for me." },
+      { by: 'b', say: "That's the most romantic and the least romantic thing anybody has ever said to me." },
+      { by: 'b', conf: "I know {a} is playing. I just don't know how much of this is the game, and how much is me." },
+    ] },
+    { id: 'rg.sh2', when: { register: 'sweet' }, turns: [
+      { beat: "{a} and {b} are on the daybed, and {a} can't stop smiling." },
+      { by: 'a', say: "Is this real? Like, really real?" },
+      { by: 'b', say: "It's real." },
+      { by: 'a', say: "I didn't come here for this. I came here to win." },
+      { by: 'b', say: "You can do both." },
+      { by: 'a', say: "Promise me we don't let this game ruin it." },
+      { by: 'b', say: "I promise." },
+      { by: 'a', conf: "Everybody tells you a showmance makes you a target. I don't care. Some things are worth being a target for." },
+    ] },
+  ],
+  'daily-clutch.any': [
+    { id: 'rg.dc1', when: { register: 'schemer' }, turns: [
+      { by: 'a', conf: "Everybody wrote me off out there. I could see it. That's my favorite moment, the second before I prove them wrong." },
+    ] },
+    { id: 'rg.dc2', when: { register: 'sweet' }, turns: [
+      { by: 'a', conf: "I was ready to quit. Then I thought about my family watching at home, and I just couldn't let go. I'm so proud of myself." },
+    ] },
+    { id: 'rg.dc3', when: { register: 'fiery' }, turns: [
+      { by: 'a', conf: "I was so angry out there. At the course, at the heat, at everybody. I turned all of it into speed." },
+    ] },
+  ],
+  'kitchen-blowup.any': [
+    { id: 'rg.kb1', when: { register: 'schemer' }, turns: [
+      { by: 'a', say: "Somebody finished my protein. I wonder who." },
+      { by: 'b', say: "It's a kitchen, {a}. Things get eaten." },
+      { by: 'a', say: "Things get eaten. People get voted for. It's all connected, isn't it?" },
+      { by: 'b', say: "Are you threatening me over a smoothie?" },
+      { by: 'a', say: "I'm observing. You'll know when I'm threatening you." },
+      { by: 'b', conf: "Most people yell about the food. {a} just made it sound like a murder." },
+    ] },
+    { id: 'rg.kb2', when: { register: 'sweet' }, turns: [
+      { by: 'a', say: "I cleaned this whole kitchen this morning. By myself. And it looks like this again." },
+      { by: 'b', say: "Sorry. I was going to do it." },
+      { by: 'a', say: "Everybody's always going to do it! I'm tired, {b}. I'm really tired." },
+      { by: 'b', say: "Okay. I'll do it now. Sit down." },
+      { by: 'a', conf: "I never snap. I snapped. Over dishes. This house is getting to me." },
+    ] },
+  ],
+  'flirt.back': [
+    { id: 'rg.fb1', when: { register: 'schemer' }, turns: [
+      { by: 'a', say: "You know you're the only interesting person in this house?" },
+      { by: 'b', say: "I bet you say that to everybody." },
+      { by: 'a', say: "I don't say nice things to anybody. Ask around." },
+      { by: 'b', say: "Then I'll take it." },
+      { by: 'a', say: "You should. It's limited edition." },
+      { by: 'b', conf: "Everybody says {a} is dangerous. I'm starting to understand why. It's the attention." },
+    ] },
+  ],
+};

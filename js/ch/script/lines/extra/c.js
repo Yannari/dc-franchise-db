@@ -113,7 +113,7 @@ export default {
     ] },
     { id: 'st.btx2', turns: [
       { by: 'tj', say: "{a}, you win, and the winner takes half the loser's bank. {b}, I'm sorry, {amount} is going with {a}." },
-      { by: 'b', say: "That's not fair." },
+      { by: 'b', say: "Half? That's not fair, TJ!" },
       { by: 'tj', say: "It's not supposed to be fair. It's the Arena." },
       { by: 'a', say: "I'll spend it wisely. Probably." },
       { by: 'b', say: "Don't." },
@@ -452,7 +452,7 @@ export default {
       { by: 'b', say: "Can I ask you a question about the Arena?" },
       { by: 'a', say: "You can ask. I might not answer." },
       { by: 'b', say: "What's the hardest game you've played in there?" },
-      { by: 'a', say: "Why would I tell you that? So you can practise?" },
+      { by: 'a', say: "Why would I tell you that? So you can practice?" },
       { by: 'b', say: "I was just making conversation." },
       { by: 'a', say: "Nothing's just conversation in here. You'll learn that." },
       { by: 'b', conf: "I asked a vet a simple question, and got a lecture. Fine. I'll learn the hard way, then." },

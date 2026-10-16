@@ -114,7 +114,7 @@ function stageOf(a, min) {
 }
 
 // Which chapter of the episode a scene belongs to (one VP screen per run of them).
-const DAILY_KINDS = new Set(['daily', 'daily-clutch', 'daily-choke', 'partner-draw', 'partner-pick', 'partner-blame', 'partner-carried', 'team-blame', 'picked-last', 'throw', 'throw-caught']);
+const DAILY_KINDS = new Set(['purge', 'daily', 'daily-clutch', 'daily-choke', 'partner-draw', 'partner-pick', 'partner-blame', 'partner-carried', 'team-blame', 'picked-last', 'throw', 'throw-caught']);
 const FINAL_KINDS = new Set(['final-start', 'final-cp', 'instant-elimination', 'final-lastword', 'overnight', 'overnight-sabotage', 'overnight-quit', 'overnight-talk', 'final-pact-help', 'final-pact-broken', 'final-podium', 'champions', 'final-congrats']);
 function chapterOf(a) {
   if (a.kind === 'previously') return 'open';
@@ -125,6 +125,7 @@ function chapterOf(a) {
   if (a.kind === 'ceremony' || a.kind === 'volunteer' || a.kind === 'house-debate' || a.kind.startsWith('tribunal-')) return 'vote';
   if (a.kind.startsWith('arena-eve')) return 'eve';
   if (a.kind === 'callout' || a.kind === 'arena') return 'arena';
+  if (a.kind === 'return-arena') return 'return';
   if (a.kind === 'final-start' || a.kind === 'pass-cut') return 'final-start';
   if (a.kind === 'final-cp') return a.data?.day === 2 ? 'final-day2' : 'final-start';
   if (a.kind === 'final-lastword') return a.data?.when === 'instant' ? 'instant' : 'champions';
@@ -136,7 +137,7 @@ function chapterOf(a) {
   if (a.kind === 'champions') return 'champions';
   return 'villa';
 }
-const LABEL = { arrival: 'The arrival', reveal: 'The villa', open: 'Previously', daily: 'The daily', villa: 'The villa', party: 'Night out', vote: 'The vote', eve: 'The night before',
+const LABEL = { return: 'The return', arrival: 'The arrival', reveal: 'The villa', open: 'Previously', daily: 'The daily', villa: 'The villa', party: 'Night out', vote: 'The vote', eve: 'The night before',
   arena: 'The Arena', 'final-start': 'The final: day one', instant: 'Instant elimination', overnight: 'The overnight', 'final-day2': 'The final: day two',
   champions: 'The finish line', redemption: 'Redemption House' };
 
@@ -249,6 +250,7 @@ function goneBefore(row) {
     if (a.kind === 'arena') { const l = a.data?.loser; if (l) gone.add(l); }
     if (['quit', 'medical', 'disqualified', 'overnight-quit'].includes(a.kind)) a.who.slice(0, 1).forEach(n => gone.add(n));
     if (a.kind === 'instant-elimination') { const w = a.data?.winner; a.who.filter(n => n !== w).forEach(n => gone.add(n)); }
+    if (a.kind === 'purge') gone.add(a.who[0]);
   }
   return out;
 }
@@ -448,6 +450,9 @@ const BIG = {
   injury: a => (a.data?.sev >= 2 ? { slam: { spray: 'INJURED', color: '#ff8a1a' }, chip: [a.who[0], String(a.data.part || 'hurt').toUpperCase()] } : { chip: [a.who[0], 'BANGED UP'] }),
   'redemption-duel': a => ({ chip: [a.data?.winner || a.who[0], 'STILL ALIVE'] }),
   'redemption-return': a => ({ card: { k: 'Back from Redemption', t: a.who[0], sub: 'Fought their way out of Redemption House', faces: [a.who[0]] } }),
+  // the one-episode twists (ch/ep-twists.js)
+  purge: a => ({ slam: { spray: 'PURGED', color: '#e3262d' }, chip: [a.who[0], 'GOING HOME'] }),
+  'return-arena': a => ({ card: { k: 'The Return', t: a.data?.winner || a.who[0], sub: `Back in the game after beating ${a.data?.loser || a.who[1]}`, faces: [a.data?.winner || a.who[0]] } }),
   // a fight's end (the user, 2026-10-16: "fight animations to feel like a big moment"): a shouting match is
   // pulled apart; a physical one is a brawl first; then who backed whom
   fight: a => [{ part: a.who.slice(0, 2), dir: `Friends get between ${a.who[0]} and ${a.who[1]} and drag them to opposite ends of the bar.`, act: { [a.who[0]]: 'shout' } }, ...sidesStep(a)],

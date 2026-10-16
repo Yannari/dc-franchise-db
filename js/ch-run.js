@@ -21,7 +21,7 @@
 // `formatIsRunnable()` reads.
 import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG } from './core.js';
 import { CHALLENGE_FORMAT, SHOWS } from './shows.js';
-import { playChallengeSeason } from './ch/season.js';
+import { playChallengeSeason, liveTwists } from './ch/season.js';
 import { airSeason } from './ch/story/director.js';
 import { buildSchedule } from './ch/schedule.js';
 import { DEFAULT_OPTIONS } from './ch/format.js';
@@ -68,14 +68,13 @@ export function challengeSetup() {
 }
 
 export function challengeOptions(config = seasonConfig) {
-  // the cards booked on the Season Timeline (core.js, THE CHALLENGE'S TWISTS): a rule for the whole season,
-  // beside the same switches on the setup panel; Redemption House opens on the episode it is booked on
-  const booked = {};
+  // the cards booked on the Season Timeline (core.js, THE CHALLENGE'S TWISTS): one episode each. The season's
+  // rules (the Tribunal, skulls or rings, Redemption House) are the setup panel's switches below.
+  const episodeTwists = {};
   for (const b of config?.twistSchedule || []) {
     const card = TWIST_CATALOG.find(t => t.id === (b?.type || b?.id) && t.format === CHALLENGE_FORMAT);
-    if (!card?.chApply) continue;
-    Object.assign(booked, card.chApply);
-    if (card.chApply.redemption) booked.redemptionFrom = Math.min(booked.redemptionFrom || Infinity, Number(b.episode) || 1);
+    const ep = Number(b?.episode);
+    if (card?.chTwist && ep >= 1 && !episodeTwists[ep]) episodeTwists[ep] = card.chTwist;
   }
   return {
     gendered: config?.chGenderBlind !== true,
@@ -85,12 +84,12 @@ export function challengeOptions(config = seasonConfig) {
     romance: config?.chRomance !== false,
     partnerWeeks: config?.chPartnerWeeks !== false,
     // the season's rules: the open house vote, or the Tribunal (format.js)
-    format: config?.chFormat === 'tribunal' || booked.format === 'tribunal' ? 'tribunal' : 'vote-callout',
+    format: config?.chFormat === 'tribunal' ? 'tribunal' : 'vote-callout',
     // the twists (stakes.js, redemption.js): a skull or ring to run the final, Redemption House
-    finalPass: ['skull', 'ring'].includes(config?.chPass) ? config.chPass : booked.finalPass || null,
-    redemption: config?.chRedemption === true || !!booked.redemption,
-    // the setup panel's switch opens it from the start
-    redemptionFrom: config?.chRedemption === true ? 1 : booked.redemptionFrom || 1,
+    finalPass: ['skull', 'ring'].includes(config?.chPass) ? config.chPass : null,
+    redemption: config?.chRedemption === true,
+    redemptionFrom: 1,
+    episodeTwists,
   };
 }
 
@@ -165,11 +164,11 @@ export function challengeCastProblem(cast = _cast(), setup = challengeSetup(), c
 /** The episodes this cast and these options make (the Season Timeline reads this). */
 export function challengeSeasonShape(cast = _cast(), config = seasonConfig) {
   const opts = { ...DEFAULT_OPTIONS, ...challengeOptions(config) };
-  try { return buildSchedule({ total: cast.length, finalists: opts.finalists, daysPerEpisode: opts.daysPerEpisode, gendered: opts.gendered }); }
+  try { return buildSchedule({ total: cast.length, finalists: opts.finalists, daysPerEpisode: opts.daysPerEpisode, gendered: opts.gendered, twists: liveTwists(opts) }); }
   catch { return []; }
 }
 
-const VERB = { arena: 'eliminated', quit: 'quit', medical: 'left on a medical', disqualified: 'disqualified', instant: 'eliminated' };
+const VERB = { arena: 'eliminated', quit: 'quit', medical: 'left on a medical', disqualified: 'disqualified', instant: 'eliminated', purge: 'purged' };
 
 // Who they are, for the premiere's introductions (js/vp-ch-ep: a package per player as they come off the
 // plane): their show, vet or rookie, the authored facts, and for a veteran the career the franchise
@@ -271,10 +270,13 @@ export function challengeRows(result) {
   const { state } = result;
   const cast = state.cast;
   const goneEp = Object.fromEntries(state.gone.map(g => [g.name, g.ep]));
-  const peopleAfter = ep => cast.filter(n => !(goneEp[n] <= ep));
-  const exitsAt = ep => state.gone.filter(g => g.ep === ep).map(g => ({ name: g.name, verb: VERB[g.how] || 'eliminated', channel: g.how, by: g.by || null }));
-  // Who was in the house when episode `ep` began.
-  const castAt = ep => cast.filter(n => !(goneEp[n] < ep));
+  // a player who came back in a return (ep-twists.js): out from the episode they lost until the one they won
+  const away = state.returnedFrom || [];
+  const awayAfter = (n, ep) => away.some(r => r.name === n && r.ep <= ep && ep < r.back);
+  const peopleAfter = ep => cast.filter(n => !(goneEp[n] <= ep) && !awayAfter(n, ep));
+  const exitsAt = ep => [...state.gone, ...away].filter(g => g.ep === ep).map(g => ({ name: g.name, verb: VERB[g.how] || 'eliminated', channel: g.how, by: g.by || null }));
+  // Who was in the house when episode `ep` began (a returning player counts on the night they come back).
+  const castAt = ep => cast.filter(n => !(goneEp[n] < ep) && !away.some(r => r.name === n && r.ep < ep && ep < r.back));
   const rows = [];
   for (const e of result.episodes) {
     const ballots = (e.votes || []).flatMap(v => v.ballots || []);
@@ -289,6 +291,8 @@ export function challengeRows(result) {
       ch: {
         division: e.division || null, people: peopleAfter(e.ep),
         dailyWinners: [...(e.daily?.winners || [])], votedIn: [...(e.votedIn || [])],
+        // tonight's one-episode twist (ep-twists.js)
+        twist: e.twist || null, purged: e.purged || null, returnArena: e.returnArena ? { ...e.returnArena } : null,
         callouts: (e.callouts || []).map(c => ({ by: c.by, opponent: c.opponent, reason: c.reason, promise: c.promise || null, promisedAt: c.promisedAt || null, ranked: c.ranked || null })),
         arena: (e.arena || []).map(d => ({ winner: d.winner, loser: d.loser, game: d.gameName || d.game || null })),
         aired: airedOf(e),
@@ -327,6 +331,19 @@ export function challengeRows(result) {
   return rows;
 }
 
+// The conversations the last HEARD_SEASONS Challenge seasons of this franchise aired: id -> how many of them aired
+// it. Read once, when a season is first built, and kept on gs.ch.startOf, so a rebuild never reads a later season.
+const HEARD_SEASONS = 2;
+export function heardBefore(seasons = activeSeasons(), num = Number(gs?.seasonNumber || seasonConfig?.seasonNumber) || Infinity) {
+  const earlier = Object.entries(seasons || {})
+    .map(([k, rec]) => ({ rec, ...seasonKeyParts(k, rec) }))
+    .filter(s => s.format === CHALLENGE_FORMAT && s.num < num && Array.isArray(s.rec?.lines))
+    .sort((x, y) => y.num - x.num).slice(0, HEARD_SEASONS);
+  const heard = {};
+  for (const s of earlier) for (const id of s.rec.lines) heard[id] = (heard[id] || 0) + 1;
+  return Object.keys(heard).length ? heard : null;
+}
+
 function _inputs() { return { setup: challengeSetup(), options: challengeOptions() }; }
 const _sig = inputs => JSON.stringify(inputs);
 const _fingerprint = r => JSON.stringify([r?.num, (r?.exits || []).map(x => x.name), r?.ch?.votedIn || []]);
@@ -346,13 +363,15 @@ function _build(inputs, rerolls) {
   // episode airs) and an aired episode comes back the same.
   const startOf = gs?.ch?.startOf;
   const carried = startOf?.carried || carriedFor(people, seasonConfig || {});
+  // A season built before this was kept has no heard list, and rebuilds without one.
+  const heard = startOf ? (startOf.heard || null) : heardBefore();
   const background = startOf?.background || challengeBackground(cast, inputs.setup);
   const divisions = challengeDivisions(cast, inputs.setup);
   const seed = _seed();
   const outer = gs;
   let result, inner, record = null;
   try {
-    result = playChallengeSeason({ cast, background, divisions, carried, seed, options: { ...inputs.options, rerolls } });
+    result = playChallengeSeason({ cast, background, divisions, carried, seed, heard, options: { ...inputs.options, rerolls } });
     airSeason(result.state);
     inner = gs;
     try {
@@ -361,7 +380,7 @@ function _build(inputs, rerolls) {
     } catch (e) { console.warn('Challenge ledger record failed:', e); record = null; }
   } finally { setGs(outer); }
   return { cast, seed, rows: challengeRows(result), inner, champions: [...(result.champions || [])], record,
-    startOf: { carried, background } };
+    startOf: { carried, background, heard } };
 }
 
 function _commit(built, inputs, rerolls, airedCount) {

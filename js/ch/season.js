@@ -18,6 +18,7 @@
 // Every random draw comes from a named stream (dr/rng.js streamFor), so one
 // episode's change moves that episode and nothing before it.
 import { setGs, gs } from '../core.js';
+import { newLedger } from '../script/pick.js';
 import { addBond, getBond } from '../bonds.js';
 import { romanticCompat } from '../players.js';
 import { streamFor } from '../dr/rng.js';
@@ -43,6 +44,7 @@ import { spreadDay, syncActive } from './knowledge.js';
 import { morningAfter } from './fallout.js';
 import { calledOut, arenaWon, remember } from './rel.js';
 import { payDaily, arenaPurse, hurt, medicalRisk, healDay, powerRankings, earnPass, passCut, PURSE } from './stakes.js';
+import { purge, returnArena } from './ep-twists.js';
 import { redemptionOn, houseTakes, sendToRedemption, redemptionWatch, redemptionNight, returnFromRedemption, closeForFinal } from './redemption.js';
 
 // The Tribunal: the daily's winners, or the three who did best on a winning team.
@@ -98,11 +100,16 @@ function intelSnap(state) {
   };
 }
 
-export function playChallengeSeason({ cast, background = {}, divisions = {}, options = {}, seed = 1, carried = null }) {
+// A Redemption House season has its own way back: a booked return is not played (ep-twists.js).
+export const liveTwists = opts => Object.fromEntries(Object.entries(opts?.episodeTwists || {}).filter(([, k]) => !(k === 'return' && opts.redemption)));
+
+export function playChallengeSeason({ cast, background = {}, divisions = {}, options = {}, seed = 1, carried = null, heard = null }) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [...cast],
     episodeHistory: [], popularity: {}, episode: 0 });
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const state = newState(seed, opts);
+  // The lines the last seasons aired (ch-run.js heardBefore): the picker holds them back while unheard ones fit.
+  if (heard && Object.keys(heard).length) state.lineLedger = { ...newLedger(), past: { ...heard } };
   state.fmt = formatOf(opts);
   state.cast = [...cast];
   state.active = [...cast];
@@ -176,10 +183,12 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
   }
 
   if (redemptionOn(state)) state.redemption = { open: true, residents: [], out: [], returned: [], pending: null };
-  const schedule = buildSchedule({ total: cast.length, finalists: opts.finalists, daysPerEpisode: opts.daysPerEpisode, gendered: opts.gendered });
+  const schedule = buildSchedule({ total: cast.length, finalists: opts.finalists, daysPerEpisode: opts.daysPerEpisode, gendered: opts.gendered, twists: liveTwists(opts) });
   state.schedule = schedule;
   state.plannedEpisodes = schedule.filter(e => !e.final).length;
   let prevDiv = streamFor(seed, 'coin')() < 0.5 ? 'm' : 'f';
+  // the players a return still to come will bring back: the plan already counts them (schedule.js)
+  const returnsAhead = idx => (redemptionOn(state) ? 0 : schedule.slice(idx + 1).filter(e => e.returns).length);
 
   for (let idx = 0; idx < schedule.length; idx++) {
     const plan = schedule[idx];
@@ -211,6 +220,14 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     healDay(state);
     const back = returnFromRedemption(state);
     if (back) { epRec.returned = back; syncActive(state); }
+    // tonight's one-episode twist, booked on the Season Timeline (ep-twists.js)
+    const twist = liveTwists(opts)[plan.ep] || null;
+    if (twist) epRec.twist = twist;
+    if (twist === 'return' && !redemptionOn(state)) {
+      const ret = returnArena(state, R('return'));
+      if (ret) { epRec.returnArena = ret; syncActive(state); }
+    }
+    let purged = null;
     epRec.rankings = powerRankings(state);
     const premiere = idx === 0;
     let division, daily;
@@ -225,6 +242,11 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       const rh = R('hurt');
       for (const n of daily.injuries || []) if (state.active.includes(n)) hurt(state, rh, n, 'daily');
       epRec.exits.push(...dayExits(state, R('exits1'), daily.injuries));
+      // the purge: the slowest goes home before anybody can vote, and that is this week's elimination
+      if (twist === 'purge' && elimsFor(schedule, idx, state.active.length - opts.finalists + returnsAhead(idx)) > 0) {
+        purged = purge(state, daily, division);
+        if (purged) { epRec.purged = purged; epRec.exits.push({ name: purged, how: 'purge' }); syncActive(state); }
+      }
     };
     if (premiere) {
       for (const [a, b] of state.arrivalPairs || []) addScene(state, 'arrival', [a, b], { recognised: [[a, b]] }, cast, 'airstrip');
@@ -264,8 +286,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     reviseAll(state);
     epRec.exits.push(...dayExits(state, R('exits2')));
     const immune = daily.winners.filter(w => state.active.includes(w));
-    const need = state.active.length - opts.finalists;
-    const elims = elimsFor(schedule, idx, need);
+    const need = state.active.length - opts.finalists + returnsAhead(idx);
+    const elims = purged ? 0 : elimsFor(schedule, idx, need);
     epRec.elims = elims;
     const matches = [];
     let delib = null;

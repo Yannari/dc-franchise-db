@@ -118,6 +118,10 @@ export const ROLES = {
   'redemption-watch': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.who[1] ? 'together' : 'alone', slots: { target: sc.data.target || undefined } }),
   'redemption-feud': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'redemption-duel': sc => ({ roles: { a: sc.data.winner, b: sc.data.loser }, ending: sc.data.defending ? 'defended' : 'new', slots: { game: sc.data.gameName } }),
+  // the one-episode twists (ep-twists.js)
+  purge: sc => ({ roles: { a: sc.who[0], b: sc.data.friend || undefined }, ending: sc.data.friend ? 'friend' : 'alone', slots: { game: sc.data.daily || undefined } }),
+  'return-arena': sc => ({ roles: { a: sc.data.winner, b: sc.data.loser, c: sc.data.by || undefined }, ending: 'any', slots: { game: sc.data.gameName || undefined } }),
+  'return-walkin': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.by ? 'rival' : 'friend' }),
   'redemption-return': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.voters ? 'revenge' : 'quiet', slots: { target: sc.data.by || undefined } }),
   'redemption-closed': sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   // ── the house ──

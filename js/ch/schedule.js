@@ -12,17 +12,26 @@
 // Days, not episodes, are the unit for anything that is a risk per unit of
 // time (manual §16.3): each episode carries its days.
 
-export function buildSchedule({ total, finalists, daysPerEpisode = 3, gendered = true, counts = null, episodes = null }) {
-  const need = Math.max(0, total - finalists);
+export function buildSchedule({ total, finalists, daysPerEpisode = 3, gendered = true, counts = null, episodes = null, twists = {} }) {
+  // One-episode twists booked on the Season Timeline (ep-twists.js): a booked double is one of the season's
+  // doubles, moved to its episode; a return brings one player back, so the season needs one more episode.
+  const booked = kind => Object.entries(twists || {}).filter(([, k]) => k === kind).map(([e]) => Number(e)).filter(e => e >= 1);
+  const returns = booked('return');
+  const need = Math.max(0, total - finalists) + returns.length;
   // Two late doubles on a full cast; none on a small one.
-  const doubles = need >= 12 ? 2 : need >= 8 ? 1 : 0;
+  const late = need >= 12 ? 2 : need >= 8 ? 1 : 0;
+  const bookedDoubles = booked('double');
+  const doubles = Math.max(late, bookedDoubles.length);
   const n = episodes ?? Math.max(1, need - doubles);
+  const twistAt = e => (twists || {})[e] || null;
+  const dbl = new Set(bookedDoubles.filter(e => e <= n));
+  // The doubles sit in the last third of the season, never on a purge or a return night.
+  for (let i = n; i >= 1 && dbl.size < doubles; i--) if (!twistAt(i)) dbl.add(i);
   const out = [];
   let day = 1;
   for (let i = 1; i <= n; i++) {
-    // The doubles sit in the last third of the season.
-    const elims = i > n - doubles ? 2 : 1;
-    out.push({ ep: i, firstDay: day, days: daysPerEpisode, plannedElims: elims });
+    const t = twistAt(i);
+    out.push({ ep: i, firstDay: day, days: daysPerEpisode, plannedElims: dbl.has(i) ? 2 : 1, ...(t ? { twist: t } : {}), ...(t === 'return' ? { returns: 1 } : {}) });
     day += daysPerEpisode;
   }
   out.push({ ep: n + 1, firstDay: day, days: 2, final: true });

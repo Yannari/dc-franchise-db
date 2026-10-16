@@ -53,6 +53,9 @@ export function chLedgerRecord(state, result = {}, { seasonName = null, archetyp
   const feudOf = (a, b) => rivalry[pairKey(a, b)] || rivalry[`${a}|${b}`] || rivalry[`${b}|${a}`] || 0;
 
   const rec = { seasonName: seasonName || 'The Challenge', format: CHALLENGE_FORMAT, fanFavorite: null, ratings: null, players: {} };
+  // Every written exchange this season aired, by id: the next season holds them back (ch-run.js heardBefore).
+  const aired = Object.keys(state.lineLedger?.uses || {});
+  if (aired.length) rec.lines = aired.sort();
   for (const n of cast) {
     const others = cast.filter(o => o !== n);
     const allies = others.filter(o => {

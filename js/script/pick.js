@@ -31,6 +31,11 @@ export const USED_DECAY = 0.12;
 // 2026-10-01; 7 adjacent pairs in 60 seasons shared four lines or more). By
 // days it was not enough: visits are days apart.
 export const RECENT = 0.01;
+// A line the last seasons already aired (ledger.past: id -> how many of them aired it; a show snapshots it when
+// the season is first built, so a rebuild reads the same). Held back while a line nobody has heard yet fits, and
+// after that worth this much per season that aired it: still above a line said once THIS season (USED_DECAY),
+// so a season runs through the pool's unheard lines, then last season's, and only then repeats its own.
+export const PAST = 0.5;
 
 export function matches(when = {}, facts) {
   return Object.entries(when).every(([k, v]) => (Array.isArray(v) ? v.includes(facts[k]) : facts[k] === v));
@@ -100,13 +105,21 @@ function choose(ledger, pools, key, facts, pairKey, rng, speaker = null, clock =
   // default). Big Brother asks: at USED_DECAY a register line used once still beat a fresh plain one often
   // enough that whole three-line exchanges aired twice in a season (read 2026-10-15: 33 repeats in seed 500).
   if (opts && opts.fresh && fits.some(e => !u.uses[e.id])) for (const x of scored) if (u.uses[x[0].id]) x[1] = 0;
+  // Earlier seasons: a line they aired is held back while one nobody has heard (here or then) still has weight.
+  const past = u.past || null;
+  if (past) {
+    for (const x of scored) if (past[x[0].id]) x[1] *= Math.pow(PAST, past[x[0].id]);
+    if (scored.some(([e, w]) => w > 0 && !past[e.id] && !u.uses[e.id])) for (const x of scored) if (past[x[0].id]) x[1] = 0;
+  }
   let total = scored.reduce((s, [, w]) => s + w, 0);
   // Everything that fits has been used on this pair: take the least-used fit.
   if (!total) {
     // ...not heard today first (by its words too), then the least used.
     const heardToday = x => ((u.day || {})[x.id] === clock || wordsOf(x).some(w => (u.words || {})[w] === clock)) ? 1 : 0;
     const said = x => (speakers.some(sp => (u.by?.[x.id] || []).includes(sp)) ? 1 : 0);
-    const e = fits.sort((x, y) => said(x) - said(y) || heardToday(x) - heardToday(y) || (u.uses[x.id] || 0) - (u.uses[y.id] || 0))[0] || pool.find(p => !p.when);
+    const pastOf = x => (u.past && u.past[x.id]) || 0;
+    const e = fits.sort((x, y) => said(x) - said(y) || heardToday(x) - heardToday(y) || (u.uses[x.id] || 0) - (u.uses[y.id] || 0)
+      || pastOf(x) - pastOf(y))[0] || pool.find(p => !p.when);
     return [u, e, pairKey, speaker, key, pool.length, clock];
   }
   let r = rng() * total;

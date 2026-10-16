@@ -37,7 +37,9 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   'instant-elimination', 'overnight-sabotage', 'overnight-quit', 'final-pact-help', 'final-pact-broken', 'champions',
   'rookie-uprising', 'final-cp', 'overnight-talk', 'final-podium', 'final-congrats', 'final-lastword', 'party', 'party-slip', 'party-callout', 'expelled-goodbye', 'expelled-blame',
   // the stakes (stakes.js, redemption.js)
-  'bank-taken', 'injury', 'power-rankings', 'pass-earned', 'pass-cut', 'redemption-arrive', 'redemption-duel', 'redemption-return', 'redemption-closed']);
+  'bank-taken', 'injury', 'power-rankings', 'pass-earned', 'pass-cut', 'redemption-arrive', 'redemption-duel', 'redemption-return', 'redemption-closed',
+  // the one-episode twists (ep-twists.js)
+  'purge', 'return-arena', 'return-walkin']);
 const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-form', 'arena-eve-confront', 'arena-eve-pep',
   'arena-eve-alone', 'morning-after', 'fight', 'team-blame', 'partner-blame', 'throw-caught', 'jealousy', 'receipts',
   'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout', 'spark', 'party-deal', 'party-tears', 'expelled-victim',
@@ -131,7 +133,8 @@ export function airEpisode(state, epRec, prevRec = null) {
       return n >= 2 ? Math.min(t, 1) : n >= 1 ? Math.min(t, 2) : t;
     };
     const ok = (s, tier) => {
-      if (s.who.some(n => gone.has(n))) return false;
+      // (the Return is two people the Arena already sent home, fighting their way back: ep-twists.js)
+      if (s.kind !== 'return-arena' && s.who.some(n => gone.has(n))) return false;
       // An alliance being spotted is news once; after that the house knows.
       if (s.kind === 'meeting-spotted' && filed[s.id]?.line.steps.some(x => x.step === 'spotted' && x.aired)) return false;
       const k = [...s.who].slice(0, 2).sort().join('|');

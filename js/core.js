@@ -1408,26 +1408,22 @@ export const TWIST_CATALOG = [
     incompatible:['pm-dump-none'] },
 
   /* ── THE CHALLENGE'S TWISTS ──
-     The user, 2026-10-16: "I don't see any twist in the Episode Format Designer". The engine's twists are rules
-     of the whole season (js/ch/format.js, stakes.js, redemption.js), so a card booked on any episode turns its
-     rule on for the season; Redemption House opens on the episode it is booked on. `chApply` is what
-     js/ch-run.js challengeOptions reads, beside the same switches on the setup panel. */
-  { id:'ch-tribunal', emoji:'\u{2696}', name:'The Tribunal', format:'the-challenge',
-    category:'ceremony', phase:'any', engineType:'ch-season', chApply:{ format:'tribunal' },
-    desc:'The rule for the whole season, wherever it is booked. The daily\'s winners become the Tribunal and are safe. The rest of the house nominates out loud, one at a time, and the three with the most votes stand before the Tribunal and plead their case. The Tribunal then decides in private which of the three goes into the Arena, and that player calls out an opponent. Winning a daily becomes power, not just safety: the Tribunal gets courted all week, and whoever it sends in remembers who did it.',
-    incompatible:[] },
-  { id:'ch-skull', emoji:'\u{1F480}', name:'Skulls to the Final', format:'the-challenge',
-    category:'structural', phase:'any', engineType:'ch-season', chApply:{ finalPass:'skull' },
-    desc:'The rule for the whole season, wherever it is booked. Winning an Arena earns a skull, and nobody runs the final without one. Every player starts with nothing, so a player who never goes into the Arena never earns their place: before the final, everybody still without a skull is cut, however strong their game. That forces players to volunteer or get voted in, and it turns a safe week into a lost one.',
-    incompatible:['ch-ring'] },
-  { id:'ch-ring', emoji:'\u{1F48D}', name:'Rings to the Final', format:'the-challenge',
-    category:'structural', phase:'any', engineType:'ch-season', chApply:{ finalPass:'ring' },
-    desc:'The rule for the whole season, wherever it is booked. It works like skulls, but with a ring: winning an Arena earns one, and nobody runs the final without one. Everybody without a ring is cut before the final, so a player hiding from the Arena all season is hiding from the final too.',
-    incompatible:['ch-skull'] },
-  { id:'ch-redemption', emoji:'\u{1F3DA}', name:'Redemption House', format:'the-challenge',
-    category:'returns', phase:'any', engineType:'ch-redemption', chApply:{ redemption:true },
-    desc:'Opens on the episode it is booked on. From then on, an Arena loser does not go home: they move to Redemption House, away from the villa, and watch the game go on without them. Every so often the residents fight each other in an Arena of their own, and the winner walks back into the villa while everybody they beat goes home for good. The house closes three episodes before the final, and from then on a loss in the Arena is a loss.',
-    incompatible:[] },
+     One episode each (the user, 2026-10-16: "season long twist are not in the episode format designer but in
+     the season setup ... episode twist are one time twist on 1 episode"). The season's rules (the Tribunal,
+     skulls or rings, Redemption House) are switches on the setup panel. `chTwist` is what js/ch-run.js
+     challengeOptions reads into options.episodeTwists; js/ch/ep-twists.js plays it. A night has one. */
+  { id:'ch-double', emoji:'\u{2694}', name:'Double Elimination', format:'the-challenge',
+    category:'elimination', phase:'any', engineType:'ch-episode', chTwist:'double',
+    desc:'Two people go home tonight instead of one. The house votes twice: the first player voted in calls out an opponent, then the house votes again and the second player calls out an opponent from whoever is left. Both pairs fight in the Arena that night, and both losers go home. The daily\'s winners are still safe from both votes. It is one of the season\'s planned doubles moved to this episode, so the season does not get longer.',
+    incompatible:['ch-purge', 'ch-return'] },
+  { id:'ch-purge', emoji:'\u{1F6A8}', name:'The Purge', format:'the-challenge',
+    category:'elimination', phase:'any', engineType:'ch-episode', chTwist:'purge',
+    desc:'Nobody is told until the daily is over. TJ gathers everyone and announces that it was a purge: whoever finished last in the division playing this week goes home on the spot. There is no vote, no call-out and no Arena that week, because the purge was the elimination. The daily\'s winners are safe as always, so a player who coasted through a daily can be gone before they get the chance to campaign.',
+    incompatible:['ch-double', 'ch-return'] },
+  { id:'ch-return', emoji:'\u{1F501}', name:'The Return', format:'the-challenge',
+    category:'returns', phase:'any', engineType:'ch-episode', chTwist:'return',
+    desc:'The episode opens at the Arena. The two most recent players sent home by the Arena from the same division are waiting there, and they fight each other in front of the whole house. The winner walks back into the villa and is back in the game; the loser goes home for the second time. The player who beat the returnee in the Arena the first time is still in the house, and has to live with them again. It needs two Arena losers from one division, so it cannot play on the first episodes, and it does not play in a Redemption House season. Bringing one player back makes the season one episode longer.',
+    incompatible:['ch-double', 'ch-purge'] },
 ];
 
 // ── Triple Dog Dare — dare pools by category ──

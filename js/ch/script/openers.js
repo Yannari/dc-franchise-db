@@ -91,4 +91,4 @@ export const OPENERS = {
 // Scenes staged by the viewer with their own opening (a daily, the vote, the Arena, the final's moments), or
 // led by TJ, never get one.
 export const NO_OPENER = new Set(['previously', 'daily', 'callout', 'arena', 'ceremony', 'run-name', 'run-snacks', 'quit', 'medical', 'disqualified',
-  'tj-house-meeting', 'power-rankings', 'final-start', 'final-cp', 'instant-elimination', 'champions', 'final-podium', 'villa-reveal']);
+  'tj-house-meeting', 'power-rankings', 'final-start', 'final-cp', 'instant-elimination', 'champions', 'final-podium', 'villa-reveal', 'purge', 'return-arena']);

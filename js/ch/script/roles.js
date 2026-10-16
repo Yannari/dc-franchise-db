@@ -84,6 +84,9 @@ export const ROLES = {
   'morning-after': sc => { const a = sc.data.hurt?.[0] || sc.who[0];
     return { roles: { a, b: [sc.data.hurt?.[1], ...(sc.data.relieved || [])].find(x => x && x !== a) },
     ending: sc.data.hurt?.length ? (sc.data.hurt.length > 1 ? 'mourning' : 'alone') : 'relief', slots: { gone: sc.data.gone, caller: sc.data.caller || undefined } }; },
+  // a: the one going home; b, c: the friends who come down from the stand; d: who beat them (goodbye.js)
+  'arena-goodbye': sc => ({ roles: { a: sc.data.loser, b: sc.data.friends?.[0], c: sc.data.friends?.[1], d: sc.data.winner },
+    ending: sc.data.friends?.length ? 'friends' : 'alone', slots: { target: sc.data.shot || undefined } }),
   // a: the friend of the one who left; b: the one who sent them (fallout.js payback)
   payback: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.how === 'calledout' ? 'calledout' : 'voted', slots: { gone: sc.data.gone } }),
   quit: sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),

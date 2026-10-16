@@ -41,6 +41,8 @@ export const CH_FACT_KEYS = [
   'volunteer',
   // how the one who left went into the Arena: voted | calledout | volunteered (fallout.js)
   'how',
+  // the goodbye at the Arena (goodbye.js): a parting shot was taken; they leave on good terms with the winner
+  'shot', 'gracious',
 ];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -85,6 +87,8 @@ export function factsFor(scene, roles, state) {
     votedMe: !!scene.data?.votedMe,
     volunteer: !!scene.data?.volunteer,
     how: scene.data?.how || null,
+    shot: !!scene.data?.shot,
+    gracious: !!scene.data?.gracious,
   };
   if (a) {
     f.register = registerOf(a);

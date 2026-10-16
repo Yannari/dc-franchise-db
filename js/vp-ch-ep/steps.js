@@ -124,7 +124,7 @@ function chapterOf(a) {
   if (a.spot === 'party' || a.kind === 'party' || a.kind === 'fight' || a.kind === 'fight-physical') return 'party';
   if (a.kind === 'ceremony' || a.kind === 'volunteer' || a.kind === 'house-debate' || a.kind.startsWith('tribunal-')) return 'vote';
   if (a.kind.startsWith('arena-eve')) return 'eve';
-  if (a.kind === 'callout' || a.kind === 'arena') return 'arena';
+  if (a.kind === 'callout' || a.kind === 'arena' || a.kind === 'arena-goodbye') return 'arena';
   if (a.kind === 'return-arena') return 'return';
   if (a.kind === 'final-start' || a.kind === 'pass-cut') return 'final-start';
   if (a.kind === 'final-cp') return a.data?.day === 2 ? 'final-day2' : 'final-start';
@@ -361,6 +361,8 @@ export function chStepScreens(row, ctx = {}) {
     // TJ's name gag right after the daily is at the daily
     if (a.kind === 'run-name' && chunks[chunks.length - 1]?.key === 'daily') k = 'daily';
     if (a.kind === 'daily') seenDaily = true;
+    // the goodbye belongs to its own duel's screen, whatever aired in between (bank, skull)
+    if (a.kind === 'arena-goodbye') { const own = [...chunks].reverse().find(c => c.key === 'arena' && c.items.some(j => aired[j].kind === 'arena' && aired[j].data?.loser === a.data?.loser)); if (own) { own.items.push(i); return; } }
     // the villa and the villa reveal are one screen, however they're interleaved; a night out is its own
     // (the user, 2026-10-16: "most of the time I don't see a night out, where is it supposed to be?")
     const LIFE = ['villa', 'reveal', 'eve'];
@@ -370,7 +372,7 @@ export function chStepScreens(row, ctx = {}) {
     if (k === 'eve') { chunks.push({ key: 'villa', items: [i] }); return; }   // the night before opens a villa screen, never its own
     const last = chunks[chunks.length - 1];
     if (last && last.key === k && k !== 'arena') last.items.push(i);
-    else if (last && k === 'arena' && last.key === 'arena' && aired[last.items[last.items.length - 1]].kind === 'callout') last.items.push(i);
+    else if (last && k === 'arena' && last.key === 'arena' && (aired[last.items[last.items.length - 1]].kind === 'callout' || a.kind === 'arena-goodbye')) last.items.push(i);
     else chunks.push({ key: k, items: [i] });
   });
 
@@ -826,6 +828,7 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
   const co = items.find(x => x.a.kind === 'callout');
   const ar = items.find(x => x.a.kind === 'arena');
   const at = co || ar;
+  if (!at) { for (const it of items) scene(S, it, { names, house, goneAt, key: 'arena' }); return; }
   S.at(at.i);
   const a = co?.a.who[0] || ar?.a.who[0], b = co?.a.who[1] || ar?.a.who[1];
   const duel = (row.ch?.duels || []).find(d => (d.a === a && d.b === b) || (d.a === b && d.b === a)) || null;
@@ -866,7 +869,8 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
   linesToSteps(S, pre, { names, sceneWho: [a, b, 'TJ'] });
   S.push({ rules: { k: "TONIGHT'S ELIMINATION", n: duel.name, li: rulesOf(g?.desc), f: 'The loser goes home' }, tj: pre.some(l => l.by === HOST) ? null : fill(pickBy(TJ_ARENA_RULES, `${row.num}|${duel.game}`), { game: duel.name }), focus: ['TJ'], props: ARENA_PLAY[duel.game]?.set({}) || [] });
   playDuel(S, duel, `${row.num}|${duel.game}`, S.arenaCrowd || []);
-  finishDuel(S, duel, post, names, `${row.num}|${duel.game}`, S.arenaCrowd || []);
+  const bye = items.find(x => x.a.kind === 'arena-goodbye' && x.a.data?.loser === duel.loser);
+  finishDuel(S, duel, post, names, `${row.num}|${duel.game}`, S.arenaCrowd || [], bye);
 }
 
 // A game's lines: what is said before it is played, and the result with everything after. The result is
@@ -941,7 +945,7 @@ function playDuel(S, duel, seed, crowd = []) {
   });
   S._lastProg = prog;
 }
-function finishDuel(S, duel, lines, names, seed, crowd = []) {
+function finishDuel(S, duel, lines, names, seed, crowd = [], bye = null) {
   const { a, b, winner: w, loser: l } = duel;
   const fin = { a, b, format: duel.beats[0]?.kind || 'stage', score: duel.beats.filter(x => x.score).slice(-1)[0]?.score || null, prog: { [w]: 12, [l]: Math.max(6, (S._lastProg?.[l] || 8)) }, done: w };
   const beat = lines[0]?.kind === 'beat' ? 0 : -1;
@@ -964,9 +968,18 @@ function finishDuel(S, duel, lines, names, seed, crowd = []) {
   if (!stamped) S.push({ tj: tjLine('farewell', { l }, seed, S.V.used), slam: { stamp: 'ELIMINATED' }, focus: [l], act: { [l]: 'slump' } });
   if (!lines.some(x => x.by === HOST && new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(x.text) && /stay|still|rejoin|back/i.test(x.text)))
     S.push({ tj: tjLine('winner', { w }, seed + 'w', S.V.used), focus: [w, 'TJ'] });
-  const fan = fanOf(S.V, l, crowd);
-  if (fan) { const t = speak(ARENA_VOICE.bye, fan, { l }, `${seed}|bye`, S.V.used); if (t) S.push({ say: [fan, t], focus: [l], act: { [fan]: 'shout' } }); }
-  if (!lines.some(x => x.by === l && x.kind === 'conf')) { const t = speak(ARENA_VOICE.out, l, {}, `${seed}|out`, S.V.used); if (t) S.push({ conf: [l, t] }); }
+  // the goodbye at the gate (ch/goodbye.js): last words, the friends down from the stand, a parting shot, and the
+  // exit interview as they walk out (the user, 2026-10-16: "its so quick")
+  if (bye?.a.lines?.length) {
+    S.at(bye.i);
+    S.push({ bye: 1, seg: ['The goodbye', 'The Arena'], dir: '', focus: [l, ...(bye.a.data?.friends || [])] });
+    linesToSteps(S, bye.a.lines, { names, sceneWho: [l, ...(bye.a.data?.friends || []), 'TJ'] });
+    if (bye.a.data?.shot) S.push({ chip: [bye.a.data.shot, 'CALLED OUT ON THE WAY OUT'], focus: [bye.a.data.shot] });
+  } else {
+    const fan = fanOf(S.V, l, crowd);
+    if (fan) { const t = speak(ARENA_VOICE.bye, fan, { l }, `${seed}|bye`, S.V.used); if (t) S.push({ say: [fan, t], focus: [l], act: { [fan]: 'shout' } }); }
+    if (!lines.some(x => x.by === l && x.kind === 'conf')) { const t = speak(ARENA_VOICE.out, l, {}, `${seed}|out`, S.V.used); if (t) S.push({ conf: [l, t] }); }
+  }
   S.push({ exit: [l], dir: `${l} walks back out through the gate.`, focus: [w] });
   if (crowd.length) S.push({ tj: tjLine('signoff', {}, seed + 's', S.V.used), focus: ['TJ'] });
 }

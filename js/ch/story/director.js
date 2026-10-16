@@ -40,8 +40,8 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   'bank-taken', 'injury', 'power-rankings', 'pass-earned', 'pass-cut', 'redemption-arrive', 'redemption-duel', 'redemption-return', 'redemption-closed',
   // the one-episode twists (ep-twists.js)
   'purge', 'return-arena', 'return-walkin',
-  // a friend goes to the one who sent their friend home (fallout.js payback)
-  'payback']);
+  // a friend goes to the one who sent their friend home (fallout.js payback); the goodbye at the gate (goodbye.js)
+  'payback', 'arena-goodbye']);
 const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-form', 'arena-eve-confront', 'arena-eve-pep',
   'arena-eve-alone', 'morning-after', 'fight', 'team-blame', 'partner-blame', 'throw-caught', 'jealousy', 'receipts',
   'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout', 'spark', 'party-deal', 'party-tears', 'expelled-victim',
@@ -174,6 +174,7 @@ export function airEpisode(state, epRec, prevRec = null) {
       const script = writeScene(state, sc);
       if (script) aired.push({ day, kind: arc.kind, scene: sc, script });
     };
+    const heldArcs = {};
     for (const s of pool) {
       // the arcs that open before this scene (payback, before a call-out)
       for (const arc of dayArcs.filter(a => a.before === s.id)) pushArc(arc);
@@ -214,8 +215,12 @@ export function airEpisode(state, epRec, prevRec = null) {
         }
         aired.push({ day, kind: s.kind, scene: s, script });
       }
-      // the arcs that follow this scene (the beast, the giant falling, the underdog, a running gag)
-      for (const arc of dayArcs.filter(a => a.after === s.id)) pushArc(arc);
+      // the arcs that follow this scene (the beast, the giant falling, the underdog, a running gag); after an
+      // Arena, they wait for its goodbye, which belongs right after the duel (goodbye.js)
+      const follow = dayArcs.filter(a => a.after === s.id);
+      if (s.kind === 'arena' && pool.some(x => x.kind === 'arena-goodbye' && x.data?.loser === s.data?.loser)) heldArcs[s.data.loser] = follow;
+      else for (const arc of follow) pushArc(arc);
+      if (s.kind === 'arena-goodbye') for (const arc of heldArcs[s.data?.loser] || []) pushArc(arc);
     }
   }
   epRec.aired = keepWithTheDaily(aired);

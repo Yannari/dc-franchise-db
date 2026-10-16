@@ -45,6 +45,7 @@ import { morningAfter } from './fallout.js';
 import { calledOut, arenaWon, remember } from './rel.js';
 import { payDaily, arenaPurse, hurt, medicalRisk, healDay, powerRankings, earnPass, passCut, PURSE } from './stakes.js';
 import { purge, returnArena } from './ep-twists.js';
+import { arenaGoodbye } from './goodbye.js';
 import { redemptionOn, houseTakes, sendToRedemption, redemptionWatch, redemptionNight, returnFromRedemption, closeForFinal } from './redemption.js';
 
 // The Tribunal: the daily's winners, or the three who did best on a winning team.
@@ -411,6 +412,12 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       const toRedemption = houseTakes(state, idx);
       addScene(state, 'arena', [m.a, m.b], { game: duel.game, winner, loser, upset: duel.upset, comeback: duel.comeback, tj: duel.tj, beats: duel.beats, gameName: duel.gameName,
         redemption: toRedemption }, state.active, 'arena');
+      // the goodbye at the gate, while the loser is still here (goodbye.js); Redemption House is not a goodbye
+      if (!toRedemption) {
+        const asVotedIn = loser === m.a;
+        duel.goodbye = arenaGoodbye(state, R(`bye${k}`), { loser, winner, culprits: asVotedIn ? (m.volunteer ? [] : m.voters) : [m.a],
+          how: asVotedIn ? (m.volunteer ? 'volunteered' : 'voted') : 'calledout' });
+      }
       arenaWon(winner, loser, state.active, { margin: duel.upset ? 1.4 : 1 });
       // the winner takes half of the loser's bank, and earns a skull (stakes.js)
       duel.took = arenaPurse(state, winner, loser);

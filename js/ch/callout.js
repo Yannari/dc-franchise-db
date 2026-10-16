@@ -59,13 +59,16 @@ export function calloutTerms(state, x, y) {
   // bold and the proud keep it (state.promises, vote.js campaign).
   const pr = state.promises?.[x];
   const promise = pr && pr.at === y && pr.ep >= state.ep - 1 ? 0.5 + bold * 1.3 + (1 - temper) * 0.4 + (state.word?.[x] || 0) * 0.3 : 0;
-  return { survive, grudge, prove, avoid, protect, promise, pWin };
+  // said to a friend this week: the one they would pick, and the one they would never (wishlist.js)
+  const wl = state.wishlist?.[x];
+  const wish = wl && wl.ep >= state.ep - 1 ? (wl.pick === y ? 1.4 : wl.avoid === y ? -1.6 : 0) : 0;
+  return { survive, grudge, prove, avoid, protect, promise, wish, pWin };
 }
 
 export function chooseOpponent(state, rng, x, eligible) {
   const rows = eligible.filter(y => y !== x).map(y => {
     const t = calloutTerms(state, x, y);
-    const total = t.survive + t.grudge + t.prove + t.avoid + t.protect + t.promise;
+    const total = t.survive + t.grudge + t.prove + t.avoid + t.protect + t.promise + t.wish;
     return { y, t, total };
   });
   if (!rows.length) return null;

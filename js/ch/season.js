@@ -48,6 +48,7 @@ import { purge, returnArena } from './ep-twists.js';
 import { arenaGoodbye } from './goodbye.js';
 import { wavering, hasWavered, quitMoment } from './quit.js';
 import { medevac, medicalScare } from './medevac.js';
+import { wishlist } from './wishlist.js';
 import { worstSting } from './daily/named.js';
 import { mockAfterDaily, gloatAfterVote } from './cruel.js';
 import { redemptionOn, houseTakes, sendToRedemption, redemptionWatch, redemptionNight, returnFromRedemption, closeForFinal } from './redemption.js';
@@ -276,6 +277,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       }
       // the mean ones: somebody mocks whoever choked or came last (cruel.js)
       mockAfterDaily(state, R('mock'), daily);
+      // somebody at risk this week says who they would call out, and who they never would (wishlist.js)
+      wishlist(state, R('wish'), { division, immune: daily.winners || [] });
       // the purge: the slowest goes home before anybody can vote, and that is this week's elimination
       if (twist === 'purge' && elimsFor(schedule, idx, state.active.length - opts.finalists + returnsAhead(idx)) > 0) {
         purged = purge(state, daily, division);

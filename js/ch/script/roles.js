@@ -265,6 +265,9 @@ export const ROLES = {
   'final-pact-help': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'final-pact-broken': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   champions: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.who.length > 1 ? 'two' : 'one' }),
+  // wishlist.js: a tells b who they would pick ({alt}) and who they never would ({target}); the one picked hears
+  'arena-wishlist': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { target: sc.data.avoid, alt: sc.data.pick } }),
+  'wishlist-leak': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { target: sc.data.avoid } }),
   // the champions looking back (final.js pathOf); {target}/{alt}: who a's/b's path was about (a partner, a friend)
   'champion-reflect': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.who.length > 1 ? 'two' : 'one',
     slots: { target: sc.data.ref || undefined, alt: sc.data.refB || undefined } }),

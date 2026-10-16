@@ -152,9 +152,11 @@ export function writeScene(state, scene) {
     return line;
   });
   // a conversation that would start on somebody already talking gets its setting first (openers.js)
-  if (lines[0]?.kind === 'say' && lines[0].by !== HOST && !NO_OPENER.has(scene.kind)) {
+  // ...and a moment of somebody alone, all confessional, gets the moment that set it off
+  const solo = lines.length && lines.every(l => l.kind === 'conf');
+  if ((lines[0]?.kind === 'say' && lines[0].by !== HOST || solo) && !NO_OPENER.has(scene.kind)) {
     const used = ((state.openerUsed ||= {})[scene.day] ||= {});
-    const pool = (OPENERS[scene.kind] || []).filter(t => !used[t] && [...t.matchAll(TOKEN)].every(m => have.has(m[1])));
+    const pool = (OPENERS[`${scene.kind}.${r.ending}`] || OPENERS[scene.kind] || []).filter(t => !used[t] && [...t.matchAll(TOKEN)].every(m => have.has(m[1])));
     if (pool.length) {
       const t = pool[Math.floor(stableRng(state.seed, 'opener', scene.id)() * pool.length)];
       used[t] = 1;

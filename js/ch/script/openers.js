@@ -11,6 +11,17 @@
 // {a} {b} {c} are the scene's parts, {target} and {alliance} its slots; a line naming a slot the scene does
 // not have is skipped.
 export const OPENERS = {
+  // a moment of somebody alone (all confessional): the moment that set it off, so it never reads as the tail of the
+  // scene before (the user, 2026-10-16: "mike has a random last confessional why"). By the scene's ending first.
+  'psyche.belong': ['{a} watches the rest of the alliance laughing at the other end of the pool, and stays where {a} is.', 'The alliance heads to the gym without asking {a} along.'],
+  'psyche.prove': ['{a} is the last one still training in the gym, long after everybody else has gone to bed.', '{a} scrolls back through the daily results on the board and does not like what {a} sees.'],
+  'psyche.control': ['{a} walks past a closed bedroom door with voices behind it, and stops.', '{a} counts the votes on {a.posAdj} fingers for the third time today.'],
+  'psyche.protect': ['{a} watches {a.posAdj} friends from across the deck, counting who is safe and who is not.', "Everybody in {a}'s group is asleep. {a} is not."],
+  'psyche.temper': ['{a} walks out of the kitchen before the argument can start, and keeps walking.', '{a} sits on the steps with {a.posAdj} fists still clenched.'],
+  'psyche.redemption': ['{a} looks out at the Arena from the top of the path and stands there for a long time.', '{a} is up before everybody, running laps on the beach.'],
+  'psyche.home': ['{a} sits alone by the pool, turning a friendship bracelet from home round and round.', 'It is late, and {a} is looking at the one photo from home {a} was allowed to bring.'],
+  'injury-healed': ['{a} tests {a.posAdj} {part} on the stairs, then takes them two at a time.', 'For the first time in days, {a} runs on the beach without limping.'],
+  'arena-eve-alone': ['It is late. {a} sits alone on the steps, the night before the Arena.', 'Everybody else has gone to bed. {a} is still sitting by the pool, alone.'],
   recruit: ['{a} needs one more vote, and goes looking for {b}.', '{a} catches {b} alone by the pool and asks for a minute.', '{a} sits down next to {b} on the deck. This one is about the vote.', '{a} has been counting votes all afternoon and is one short. {a} finds {b}.'],
   meeting: ['{a} gets the group together in the bedroom and shuts the door. The vote is tonight.', 'One by one, {a}\'s people drift out to the far end of the beach to settle the vote.', '{a} calls everybody in {alliance} to the gym, where nobody can listen in.', 'The alliance meets in the kitchen while the rest of the house is at the pool.'],
   spark: ['{a} and {b} end up sitting together again, and neither of them moves away.', '{a} has been finding reasons to be wherever {b} is all day.', 'Late in the afternoon, {a} and {b} are the only two left by the pool.', '{a} sits down next to {b} at dinner, a little closer than they need to.'],

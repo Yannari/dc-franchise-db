@@ -227,7 +227,7 @@ export function airEpisode(state, epRec, prevRec = null) {
       if (s.kind === 'arena-goodbye') for (const arc of heldArcs[s.data?.loser] || []) pushArc(arc);
     }
   }
-  epRec.aired = keepWithTheDaily(aired);
+  epRec.aired = keepWithTheDaily(morningFirst(aired));
   return epRec.aired;
 }
 
@@ -235,6 +235,31 @@ export function airEpisode(state, epRec, prevRec = null) {
 // later at the villa, with nothing around it (the user, 2026-10-15: "this conversation makes no sense"). TJ's
 // name gag is his line to somebody at the daily, so it goes there too.
 const AT_THE_DAILY = new Set(['daily-clutch', 'daily-choke', 'partner-blame', 'partner-carried', 'team-blame', 'throw', 'throw-caught', 'run-name']);
+// A scene whose words put it in the morning (breakfast, "good morning") airs at the start of its day, after the
+// morning's fixtures (the user, 2026-10-16: "good morning to u too when its 7:20" in the evening): the clock
+// spreads a day's scenes between its fixed times in airing order, so a breakfast aired late got an evening hour.
+const MORNING_WORDS = /\b(good morning|breakfast|this morning|woke up|wakes up|morning\.)/i;
+const NEXT_MORNING = new Set(['morning-after', 'arc-giant-falls', 'tj-at-breakfast']);   // vp-ch-ep/steps.js clockOf
+const MORNING_FIXTURES = new Set(['previously', 'power-rankings', 'return-arena', 'return-walkin', 'redemption-return', 'arrival', 'villa-reveal', 'injury-healed']);
+const MOVABLE = a => a.kind !== 'ceremony' && !ANCHOR.has(a.kind) && !MUST_ORDER.has(a.kind);
+const MUST_ORDER = new Set(['daily', 'callout', 'arena', 'arena-goodbye', 'return', 'morning-after', 'purge', 'named-fallout', 'mock', 'gloat']);
+function morningFirst(aired) {
+  const out = [];
+  for (const day of [...new Set(aired.map(a => a.day))]) {
+    const items = aired.filter(a => a.day === day);
+    const isMorning = a => MOVABLE(a) && (a.script?.lines || []).some(l => MORNING_WORDS.test(l.text || ''));
+    const head = [];
+    while (items.length && MORNING_FIXTURES.has(items[0].kind)) head.push(items.shift());
+    // the morning after an Arena is tomorrow (the viewer's clock moves it to the next day): it airs after the
+    // Arena night, not in the middle of it, or the night that follows was clocked into the next morning too
+    const arenaAt = items.findIndex(x => x.kind === 'arena');
+    const tomorrow = x => arenaAt >= 0 && NEXT_MORNING.has(x.kind) && items.indexOf(x) > arenaAt;
+    const today = items.filter(x => !tomorrow(x));
+    out.push(...head, ...today.filter(isMorning), ...today.filter(a => !isMorning(a)), ...items.filter(tomorrow));
+  }
+  return out;
+}
+
 function keepWithTheDaily(aired) {
   const out = [];
   const days = new Set(aired.filter(a => a.kind === 'daily').map(a => a.day));

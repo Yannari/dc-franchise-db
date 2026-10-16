@@ -59,7 +59,7 @@ const QUIET_NIGHT = [{ plate: 'pooldeck', place: 'The Pool', room: 'pool', icon:
   { plate: 'hottub', place: 'The Hot Tub', room: 'hottub', icon: 'house', water: 1 }];
 
 // Scenes that happen at night.
-const NIGHT = new Set(['party', 'fight', 'fight-physical', 'hot-tub-truths', 'arena-eve-pep', 'arena-eve-alone', 'arena-eve-confront', 'spark', 'flirt', 'pda']);
+const NIGHT = new Set(['party', 'party-callout', 'party-slip', 'party-deal', 'party-tears', 'expelled-goodbye', 'fight', 'fight-physical', 'hot-tub-truths', 'arena-eve-pep', 'arena-eve-alone', 'arena-eve-confront', 'spark', 'flirt', 'pda']);
 // The day's clock, in airing order: the daily, the vote and the Arena are fixed; the scenes between them are
 // spaced out, a night scene never before 9:30 PM, and the clock never runs backwards. The morning after an
 // Arena is the next morning, and everything aired after it on that day moves with it.
@@ -86,8 +86,11 @@ export function clockOf(aired, dailyNight = false) {
     const next = j < out.length && out[j].day === out[i].day && out[j].min != null ? out[j].min : 23 * 60 + 50;
     const n = j - i, gap = Math.max(10 * (n + 1), next - prev);
     let t = prev;
+    // the morning after an Arena (moved to the next day above): breakfast time, a scene every twenty minutes,
+    // not spread out to midnight (a lone one landed at 3:55 PM)
+    const morning = out[i].day > aired[i].day;
     for (let k = i; k < j; k++) {
-      t = Math.max(t + 10, prev + Math.round(gap * (k - i + 1) / (n + 1) / 5) * 5);
+      t = morning ? 8 * 60 + 20 * (k - i + 1) : Math.max(t + 10, prev + Math.round(gap * (k - i + 1) / (n + 1) / 5) * 5);
       if (NIGHT.has(aired[k].kind) && t < 21 * 60 + 30 && next > 21 * 60 + 40) t = Math.max(t, 21 * 60 + 30 + (k - i) * 15);
       out[k].min = Math.min(t, next - 5 * (j - k));
     }

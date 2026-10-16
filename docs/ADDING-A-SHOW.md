@@ -2963,6 +2963,18 @@ every new set was an approved static HTML page before any stage code.
    steps, served on a spare port and screenshotted, caught what no test did: a reveal behind the
    nominees, a houseguest beside the Diary Room chair instead of in it, a black room. Bust the
    module cache with `import('…?t=' + Date.now())`, or the browser shows the old code.
+8. **Finish the port, then measure what is left.** Big Brother's last sixty classic screens (the
+   themes, the live-show twists, the secret competitions, the Split House, High Roller's money,
+   Rivals, the Saboteur) went over in one pass (2026-10-16, `js/vp-bb-ep/steps-ports.js`), with a
+   probe listing every classic screen still airing inside a stepped week. Only the competitions
+   are left, on purpose. What the port found was not cosmetic: the stepped nomination ceremony
+   turned three keys and said "three" for a block the Head of Household had filled two of (a
+   Roadkill, America's or a curse's chair). A screen that stages a ceremony must know whose hand
+   each part of it is (`act.roadkillChair`, `americasChair`, `curseChair`), and a power nobody
+   chose (the final four's only possible replacement, `forcedReplacement`) must not be voiced as
+   a choice.
+9. **A secret stays in the side panel.** The house is never told who won the Hacker, Roadkill
+   or the App Store; the viewer is, and only in the panel ("only you know"), never on the stage.
 
 ### 18.4 Total Drama's stepped viewer, step by step (the recipe to copy)
 

@@ -14114,7 +14114,9 @@ function _buildVPScreensClassic(epRecord) {
           const priorEvicted = (_g?.episodeHistory || [])
             .filter(r => r && r.format === 'big-brother' && r.num < epRecord.num)
             .flatMap(r => [r.eliminated, r.alsoEliminated, r.evicted, r.secondEvicted, ...(r.extraEvictions || []).map(x => x?.evicted)]).filter(Boolean);
-          vpScreens = bbStepScreens(epRecord, vpScreens, { host: _bbHost(), priorEvicted, plea: name => _bbFinalPleaSpeech(epRecord, name) });
+          vpScreens = bbStepScreens(epRecord, vpScreens, { host: _bbHost(), priorEvicted, plea: name => _bbFinalPleaSpeech(epRecord, name),
+            // a late arrival's introduction (Rivals): the same words and first read everybody got on move-in day
+            intro: _bbIntroQuote, firstRead: _bbFirstRead });
         } catch (err) { console.warn('BB stepped viewer fell back to the classic screens:', err); }
       }
     } catch (err) {

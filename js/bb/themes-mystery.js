@@ -126,7 +126,7 @@ export default {
       },
       veto: {
         neutral: [
-          '{veto} holds the veto, and the hotel is delighted for them.',
+          '{veto} holds the veto. The hotel is delighted.',
           'The veto has moved. Somewhere a door has locked that used to open.',
           '{veto} won something today. Whether they won the right thing is a separate question.',
           'A veto changes hands. The Mastermind enjoys the small ones.',

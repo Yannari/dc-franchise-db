@@ -48,6 +48,12 @@ const CASES = [
   { name: "America's nominee", cfg: twist('bb-americas-nominee', [1, 2]), weeks: 2 },
   { name: 'pandora', cfg: twist('bb-pandoras-box', [1, 2, 3]), weeks: 3 },
   { name: 'app store', cfg: twist('bb-app-store', [1]), weeks: 4 },
+  { name: 'split house', cfg: twist('bb-split-house', [1]), weeks: 1 },
+  { name: 'camp director', cfg: twist('bb-camp-director', [1]), weeks: 1 },
+  { name: 'cliques', cfg: twist('bb-cliques', [1]), weeks: 1 },
+  { name: 'high rollers', cfg: { theme: 'high-rollers' }, weeks: 5 },
+  { name: 'rivals', cfg: { bbRivals: 'auto' }, weeks: 2 },
+  { name: 'saboteur', cfg: { bbSaboteur: 'random' }, weeks: 2 },
 ];
 const PLAYED = Object.fromEntries(CASES.map(c => [c.name, play(c.cfg, c.weeks)]));
 const all = name => PLAYED[name].map(ep => ({ ep, screens: bbWeekSteps(ep) }));
@@ -250,12 +256,74 @@ describe('ported screens on the stepped stage', () => {
     expect(seen).toBeGreaterThan(0);
   });
 
+  it('splits the house, and the other side of the wall plays with only its own people', () => {
+    const [{ ep, screens }] = all('split house');
+    const act = actsOf(ep, 'split-house')[0];
+    expect(act).toBeTruthy();
+    const si = screens.findIndex(s => s.kind === 'split');
+    const oi = screens.findIndex(s => s.kind === 'otherside');
+    expect(si).toBeGreaterThanOrEqual(0);
+    expect(oi).toBeGreaterThan(si);
+    const sideB = new Set(act.sides[ep.acts.find(a => a.segment === 2)?.side] || []);
+    const noms2 = screens.slice(oi).find(s => s.kind === 'noms');
+    for (const n of Object.keys(noms2.seated || {})) expect(sideB.has(n), `${n} sat at the other side's table`).toBe(true);
+    [si, oi].forEach(i => paints(screens, i));
+  });
+
+  it('elects the Camp Director in the living room and sends the slowest home from the backyard', () => {
+    const [{ ep, screens }] = all('camp director');
+    const act = actsOf(ep, 'camp-director')[0];
+    const ci = screens.findIndex(s => s.kind === 'campdirector');
+    const hi = screens.findIndex(s => s.kind === 'hittheroad');
+    expect(hi).toBe(ci + 1);
+    expect(screens[hi].steps.some(st => st.out === act.evicted)).toBe(true);
+    [ci, hi].forEach(i => paints(screens, i));
+  });
+
+  it('reads out every clique', () => {
+    const [{ ep, screens }] = all('cliques');
+    const act = actsOf(ep, 'teams-assigned')[0];
+    const ci = screens.findIndex(s => s.kind === 'cliques');
+    for (const t of act.teams) expect(screens[ci].steps.some(st => st.t.startsWith(`${t.name}:`))).toBe(true);
+    paints(screens, ci);
+  });
+
+  it("pays the house in public and keeps the slips private, every week of High Roller's", () => {
+    const kinds = new Set();
+    for (const { screens } of all('high rollers')) screens.forEach((s, i) => { if (['bucks', 'sidebet', 'derby', 'rollers'].includes(s.kind)) { kinds.add(s.kind); paints(screens, i); } });
+    expect([...kinds].sort()).toEqual(['bucks', 'derby', 'rollers', 'sidebet']);
+  });
+
+  it('lets the rivals walk in before they choose the Head of Household', () => {
+    const [{ screens }] = all('rivals');
+    const open = screens.findIndex(s => s.id === 'bb-rivals-open-v');
+    const hoh = screens.findIndex(s => s.id === 'bb-rivals-hoh-v');
+    expect(open).toBeGreaterThanOrEqual(0);
+    expect(hoh).toBeGreaterThan(open);
+    screens.forEach((s, i) => { if (s.kind === 'rivals') paints(screens, i); });
+  });
+
+  it('briefs the Saboteur in private and says each thing once', () => {
+    let seen = 0;
+    for (const { screens } of all('saboteur')) screens.forEach((s, i) => {
+      if (s.kind !== 'saboteur') return;
+      seen++;
+      const said = s.steps.map(st => st.t);
+      expect(new Set(said).size, `a line twice on ${s.title}`).toBe(said.length);
+      paints(screens, i);
+    });
+    expect(seen).toBeGreaterThan(1);
+  });
+
   it('replaces the classic screens it ported', () => {
     for (const id of ['theme-primer', 'theme-turn', 'bb-theme-open', 'bb-theme-vote', 'bb-havenots', 'bb-departure', 'bb-instant', 'bb-avote', 'bb-double', 'bb-double-3', 'bb-sanctum',
-      'bb-hacker', 'bb-hackervote', 'bb-roadkill', 'bb-americasnominee', 'bb-pandora', 'bb-detonation', 'bb-appstore', 'bb-vetodraw-replace', 'bb-vetodraw-redraw']) {
+      'bb-hacker', 'bb-hackervote', 'bb-roadkill', 'bb-americasnominee', 'bb-pandora', 'bb-detonation', 'bb-appstore', 'bb-vetodraw-replace', 'bb-vetodraw-redraw',
+      'bb-campdirector', 'bb-cliques', 'bb-cliques-end', 'bb-split', 'bb-otherside', 'bb-bucks', 'bb-sidebet', 'bb-sidebet-paid', 'bb-derby-bet', 'bb-derby-paid',
+      'bb-highrollers', 'bb-rivals-open', 'bb-rivals-hoh', 'bb-rivals-week', 'bb-rivals-out', 'bb-saboteur', 'bb-saboteur-brief', 'bb-saboteur-call', 'bb-saboteur-reveal']) {
       expect(REPLACED.test(id), id).toBe(true);
     }
     // and nothing it should not
-    for (const id of ['bb-hoh', 'bb-veto', 'bb-house-1', 'bb-safety']) expect(REPLACED.test(id), id).toBe(false);
+    // the competitions stay classic (the user, 2026-10-14): Two Crowns and Battle of the Block are competitions
+    for (const id of ['bb-hoh', 'bb-veto', 'bb-house-1', 'bb-safety', 'bb-split-hoh', 'bb-botb']) expect(REPLACED.test(id), id).toBe(false);
   });
 });

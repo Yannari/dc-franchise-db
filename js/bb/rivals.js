@@ -45,7 +45,6 @@ const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const round2 = v => Math.round(v * 100) / 100;
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
 const P = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', pos: 'theirs', Sub: 'They' }; } };
-const has = (name, verb) => `${P(name).sub} ${P(name).sub === 'they' ? verb : `${verb}s`}`;
 
 /** The rivals record, or null when the season is not running one. */
 export function rivalsState() {
@@ -286,7 +285,7 @@ const ARRIVALS = [
     + `and ${r} walks in with a case. Ten people work out in about four seconds that this is the twist. `
     + `One person works out something considerably worse, which is that ${g}.`,
   (r, p, g) => `${r} comes through that door and does not look at anybody except one person. `
-    + `${P(p).Sub} ${has(p, 'go')} completely still. ${g[0].toUpperCase()}${g.slice(1)}, `
+    + `${P(p).Sub} ${P(p).sub === 'they' ? 'go' : 'goes'} completely still. ${g[0].toUpperCase()}${g.slice(1)}, `
     + `and the entire house is about to find out.`,
   (r, p, g) => `Everybody hugs the new arrival except ${p}, who is doing a very good impression `
     + `of somebody who has never met ${r}. It lasts about a minute and a half.`,

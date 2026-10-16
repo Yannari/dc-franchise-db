@@ -30,7 +30,8 @@ import { seatedJurors } from '../bb/jury.js';
 import { finaleHouseScenes } from './finale-house.js';
 import { themeBeatScreens, themeVoiceSteps, themePrimerScreens, themeTurnScreens, haveNotScreens, departureScreens, instantScreens,
   doubleBreakScreen, americasVoteScreens, hackerScreens, hackerVoteScreens, roadkillScreens, pandoraScreens, detonationScreens,
-  appStoreScreens, drawTwistSteps } from './steps-ports.js';
+  appStoreScreens, drawTwistSteps, campDirectorScreens, cliqueScreens, splitScreens, otherSideScreen, bucksScreens, sideBetScreens,
+  sideBetPaidScreens, derbyScreens, rollersRoomScreens, rivalsScreens, saboteurScreens } from './steps-ports.js';
 
 // The engine's own moments that happen AT a ceremony (the user, 2026-10-06: "most of the time the
 // reactions are after, but sometimes it causes drama during the ceremony, same for veto"). They play
@@ -124,7 +125,7 @@ const pickBy = (list, key) => list[hash(key) % list.length];
 // who is in the house at this point of the week: nobody evicted or walked out tonight, nobody not yet arrived
 const houseNow = ctx => (ctx.house || []).filter(n => !ctx.gone?.has(n) && !ctx.hidden?.has(n));
 // what the ported screens (steps-ports.js) borrow from this file
-const KIT = { scriptSteps: (...a) => scriptSteps(...a), seatLiving: (...a) => seatLiving(...a), ROOM_NAME, CAM, ACT_TIME, listOf, word, titleCase, houseNow };
+const KIT = { scriptSteps: (...a) => scriptSteps(...a), seatLiving: (...a) => seatLiving(...a), proseSteps: (...a) => proseSteps(...a), ROOM_NAME, CAM, ACT_TIME, listOf, word, titleCase, houseNow };
 
 /** A written script (act.script.*) as steps. The camera moves in on its first spoken line. */
 function scriptSteps(lines, extra = {}) {
@@ -3332,7 +3333,7 @@ export function truthTime(text, week) {
   return t;
 }
 
-export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = null, houseLife = houseLifeMode() } = {}) {
+export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = null, houseLife = houseLifeMode(), intro = null, firstRead = null } = {}) {
   const house = (row.houseAtStart || []).slice();
   const ctx = { host, week: row.num || 1, hoh: row.hoh, house, nominees: (row.initialNominees || []).slice(), vetoHolder: row.vetoWinner,
     // the jury as it stood when this week began (never the live season's: a replayed week shows its own)
@@ -3343,7 +3344,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     safety: (row.acts || []).find(x => x && x.type === 'safety' && x.winner) || null,
     departures: (row.allianceDepartures || []).filter(d => d && d.carried),
     row,
-    pleas: row.finalPleas || [], plea, anchor: 'start', day: 1, jury: [...(row.jury || [])], finalTwo: [...(row.finalTwo || [])], priorEvicted: [...priorEvicted] };
+    pleas: row.finalPleas || [], plea, anchor: 'start', day: 1, jury: [...(row.jury || [])], finalTwo: [...(row.finalTwo || [])], priorEvicted: [...priorEvicted], intro, firstRead };
   let finalPart = 0;
   // Houseguests who walk in later in the week (rivals) are not in the house until they do.
   const late = (row.acts || []).find(a => a.type === 'rivals-open')?.arrived || [];
@@ -3396,12 +3397,28 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   // actually formed"), so the drawer shows the house from before it until the screen has played out
   const stamp = () => { for (const s of out) if (!('snap' in s)) { s.snap = ctx.snap || null; s.snapStart = ctx.snapStart || null; } };
   let segNow = 1;
+  // the rivals' handover: the latecomers walk in here, and from now on they are in the house
+  const handover = () => {
+    const h = ctx.rivalsHoh; if (!h) return;
+    ctx.rivalsHoh = null; flush(); ctx.hidden = new Set();
+    for (const scr of rivalsScreens(h, ctx, KIT)) ceremony(scr);
+    beatsOf(h);
+  };
   for (const act of row.acts || []) {
     stamp();
-    // a double (or triple) eviction's next cycle starts: the host tells the house, live
+    if (ctx.rivalsHoh && act.type !== 'rivals-open') handover();
+    // a Split House week: each side's screens seat that side of the wall, and its own Head of Household
+    const sideWas = ctx.side;
+    if (act.side && ctx.split?.sides?.[act.side] && ctx.side !== act.side) {
+      ctx.side = act.side; ctx.house = ctx.split.sides[act.side].slice(); ctx.hoh = act.side;
+    }
+    // a double (or triple) eviction's next cycle starts: the host tells the house, live; a Split House's second
+    // half is the same days on the other side of the wall
     if ((act.segment || 1) > segNow) {
       segNow = act.segment;
-      if (!row.splitHouse) { flush(); ceremony(doubleBreakScreen(ctx, KIT, { nth: segNow, host })); }
+      flush();
+      if (ctx.split) ceremony(otherSideScreen(ctx, KIT, { was: sideWas, now: ctx.side }));
+      else if (!row.splitHouse) ceremony(doubleBreakScreen(ctx, KIT, { nth: segNow, host }));
     }
     ctx.snapStart = ctx.snap || null;
     if (act.state) ctx.snap = act.state;
@@ -3537,9 +3554,27 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         if (act.saved && act.replacement) ctx.nominees = ctx.nominees.map(n => (n === act.saved ? act.replacement : n));
         beatsOf(act); break;
       case 'app-store': flush(); for (const scr of appStoreScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;
+      case 'camp-director': flush(); for (const scr of campDirectorScreens(act, ctx, KIT)) ceremony(scr);
+        if (act.evicted) (ctx.gone ||= new Set()).add(act.evicted);
+        beatsOf(act); break;
+      case 'teams-assigned': case 'teams-dissolved': flush(); for (const scr of cliqueScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;
+      case 'split-house': flush(); for (const scr of splitScreens(act, ctx, KIT)) ceremony(scr); ctx.split = act; beatsOf(act); break;
+      // High Roller's money
+      case 'bb-bucks': flush(); for (const scr of bucksScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;
+      case 'side-bet': flush(); for (const scr of sideBetScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;
+      case 'side-bet-settled': flush(); for (const scr of sideBetPaidScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;
+      case 'derby-bet': case 'derby-bet-settled': flush(); for (const scr of derbyScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;
+      case 'high-rollers-room': flush(); for (const scr of rollersRoomScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;
+      // Rivals and the Saboteur
+      case 'rivals-open': case 'rivals-week': case 'rivals-out': flush(); for (const scr of rivalsScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act);
+        if (act.type === 'rivals-open') handover();
+        break;
+      case 'saboteur-brief': case 'saboteur-debrief': case 'saboteur-accusation': case 'saboteur-reveal':
+        flush(); for (const scr of saboteurScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;
       case 'rivals-hoh':
-        // the latecomers walk in here: from now on they are in the house
-        flush(); out.push({ slot: act.type }); ctx.hidden = new Set(); beatsOf(act); break;
+        // the engine writes the handover before the arrival, but the rivals walk in before they choose anybody: it
+        // airs straight after the arrival (or before whatever comes next, if nobody arrives)
+        ctx.rivalsHoh = act; if (act.winner) ctx.hoh = act.winner; break;
       default:
         // a classic twist screen airs where it happened; in the House Life view it does not cut
         // the stretch in two (the house carries on after it as one segment, not two)
@@ -3591,7 +3626,7 @@ function countWords(t) {
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^(?:theme-(?:primer|turn)(-\d+)?|bb-(?:theme-[a-z]+|havenots|departure|instant|avote|double|sanctum|hacker|hackervote|roadkill|americasnominee|pandora|detonation|appstore|vetodraw-[a-z]+)(-\d+)?)$|^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|twist|twist-2|interview|interview-2|jury-house(-\d+)*|final-interview|cold|twins|twins-open|twins-job|twins-caught|twins-in|twins-out|duos-open|duos-key|duos-week|duos-repair|duos-expire|finale-house)(-\d+)?$/;
+export const REPLACED = /^(?:theme-(?:primer|turn)(-\d+)?|bb-(?:theme-[a-z]+|havenots|departure|instant|avote|double|sanctum|hacker|hackervote|roadkill|americasnominee|pandora|detonation|appstore|vetodraw-[a-z]+|campdirector|cliques|cliques-end|split|otherside|bucks|sidebet|sidebet-paid|derby-bet|derby-paid|highrollers|rivals-open|rivals-hoh|rivals-week|rivals-out|saboteur|saboteur-brief|saboteur-call|saboteur-reveal)(-\d+)?)$|^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|twist|twist-2|interview|interview-2|jury-house(-\d+)*|final-interview|cold|twins|twins-open|twins-job|twins-caught|twins-in|twins-out|duos-open|duos-key|duos-week|duos-repair|duos-expire|finale-house)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

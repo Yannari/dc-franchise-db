@@ -165,7 +165,7 @@ export default {
         hostile: [
           '{hoh} names {nominees}, and for the first time all season the block was not shaped by a list.',
           '{nominees} go up. No heading protected either of them, because there are no headings.',
-          '{hoh} chose {nominees} entirely on their own, which is new, and which shows.',
+          '{hoh} chose {nominees} with no help at all, which is new, and which shows.',
           '{nominees}. Two names and no category to explain either of them.',
         ],
       },

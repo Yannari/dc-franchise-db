@@ -229,7 +229,7 @@ export default {
       },
       veto: {
         neutral: [
-          '{veto} takes the veto, and the floor is delighted for them. Genuinely.',
+          '{veto} takes the veto, and the floor is genuinely delighted.',
           'The veto goes to {veto}. A very good night at this table. The Pit Boss enjoys a good night.',
           '{veto} wins the veto tonight. The prize is safety; the price is everyone seeing them win it.',
           'The veto belongs to {veto}. A small advantage can change the whole game.',
@@ -244,7 +244,7 @@ export default {
       vote: {
         neutral: [
           '{evicted} leaves, {margin}. The floor settles their tab and wishes them very well.',
-          '{margin}. {evicted} cashes out, and the game continues without them.',
+          '{margin}. {evicted} cashes out, and the game goes on.',
           '{evicted} is evicted by a vote of {margin}. Popular with the audience did not mean safe in the room.',
           '{margin}, and {evicted} goes. The Pit Boss thanks them for their custom and means it.',
         ],

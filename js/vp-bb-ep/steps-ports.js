@@ -428,3 +428,313 @@ export function drawTwistSteps(dt, kit) {
   if (!steps.some(s => s.vetoOut)) steps.push({ k: 'beat', t: `Out: ${kit.listOf(dt.lost || [])}. In: ${kit.listOf(dt.gained || [])}.`, vetoOut: dt.lost || [], vetoPlay: dt.gained || [], why: who });
   return steps;
 }
+
+// ── Summer Camp's night one: the Camp Director, and Hit The Road ─────────
+// Two places, so two screens: the vote and the banishment in the living room, then the scramble in the backyard
+// with its times on the board and the slowest out of the house before a Head of Household exists.
+export function campDirectorScreens(act, ctx, kit) {
+  if (!act?.director) return [];
+  const beats = act.beats || [];
+  const banished = act.banished || [];
+  const here = kit.houseNow(ctx);
+  const room = [
+    { k: 'bb', t: 'Houseguests, before anything else, you will elect a Camp Director. Nobody competes for it.', rule: 1 },
+    { k: 'bb', t: 'The Camp Director will banish four of you to Hit The Road.', rule: 2 },
+    { k: 'bb', t: 'The slowest of the four is evicted, tonight.', rule: 3 },
+  ];
+  const yard = [{ k: 'bb', t: `${kit.listOf(banished)}: it's time to Hit The Road. The slowest of you is going home.` }];
+  const times = [];
+  let banishedSeen = 0;
+  for (const b of beats) {
+    const t = strip(b.text);
+    if (!t) continue;
+    const tag = b.badgeText || '';
+    if (tag === 'CAMP DIRECTOR') room.push({ k: 'beat', t, toast: ['CAMP DIRECTOR', '#fcd34d'], big: [act.director, 'Camp Director', 'safe'] });
+    else if (tag === 'HIT THE ROAD') { banishedSeen++; room.push({ k: 'beat', t, ...(banishedSeen === banished.length ? { nom: banished.slice(), toast: ['HIT THE ROAD', '#ff3355'] } : {}) }); }
+    else if (tag === 'RAN IT') {
+      const who = (b.players || [])[0];
+      const sc = (act.times || []).find(x => x.name === who);
+      if (who) times.push({ n: who, text: sc ? String(sc.score) : '' });
+      yard.push({ k: 'beat', t, board: { title: 'HIT THE ROAD · TIMES', rows: times.slice() } });
+    } else if (/^EVICTED/.test(tag)) yard.push({ k: 'beat', t, out: act.evicted, shake: true, big: [act.evicted, 'Evicted on night one', 'out'] });
+    else if (tag === 'BOUND BY IT') yard.push({ k: 'beat', t });
+    else room.push({ k: 'beat', t });
+  }
+  if (act.evicted && !yard.some(s => s.out)) yard.push({ k: 'bb', t: `${act.evicted}, you were the slowest. You have been evicted from the Big Brother house.`, out: act.evicted, big: [act.evicted, 'Evicted on night one', 'out'] });
+  return [{
+    id: 'bb-campdirector-v', kind: 'campdirector', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '21:30',
+    kicker: 'Cam 04 · Living room', title: 'Camp Director', label: 'Camp Director', sub: 'Elected on night one', seated: kit.seatLiving([], here),
+    rules: [['THE VOTE', 'the house elects a Camp Director'], ['BANISHED', 'four sent to Hit The Road'], ['THE SLOWEST', 'evicted tonight']],
+    rulesTitle: 'CAMP DIRECTOR · HOW IT WORKS', steps: room,
+  }, {
+    id: 'bb-hittheroad-v', kind: 'hittheroad', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: kit.ROOM_NAME.yard, cam: kit.CAM.yard, time: '23:10',
+    kicker: `Cam 0${kit.CAM.yard} · Backyard`, title: 'Hit The Road', label: 'Hit The Road', sub: 'The slowest goes home',
+    cast: banished.map((n, i, a) => [n, Math.round(18 + (64 * i) / Math.max(1, a.length - 1))]), steps: yard,
+  }];
+}
+
+// ── Summer School's cliques ────────────────────────────────────────────
+export function cliqueScreens(act, ctx, kit) {
+  const teams = (act?.teams || []).filter(t => t && (t.members || []).length);
+  if (!teams.length) return [];
+  const over = act.type === 'teams-dissolved';
+  const say = act.secret ? 'beat' : 'bb';
+  const steps = over ? [
+    { k: 'bb', t: 'Houseguests, the cliques are over. From now on, no group is safe because one of its own is in charge.', toast: ['THE CLIQUES ARE OVER', '#ff3355'], shake: true },
+    ...beatSteps(act, kit),
+  ] : [
+    { k: say, t: act.secret ? 'The house is sorted into cliques, and nobody in it is told.' : 'Houseguests, this summer you have been sorted into cliques.', rule: 1 },
+    { k: say, t: 'While somebody from your clique is Head of Household, nobody in your clique can be nominated.', rule: 2 },
+    ...teams.flatMap(t => [
+      { k: say, t: `${t.name}: ${kit.listOf(t.members)}.`, board: { title: String(t.name).toUpperCase(), rows: t.members.map(n => ({ n })) } },
+      ...(t.blurb ? [{ k: 'beat', t: strip(t.blurb) }] : []),
+    ]),
+  ];
+  const here = kit.houseNow(ctx);
+  return [{
+    id: over ? 'bb-cliques-end-v' : 'bb-cliques-v', kind: 'cliques', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '10:00',
+    kicker: 'Cam 04 · Living room', title: over ? 'Cliques Over' : 'The Cliques', label: over ? 'Cliques Over' : 'The Cliques', sub: over ? 'Every houseguest for themselves' : 'Sorted, not chosen',
+    seated: kit.seatLiving([], here.filter(n => n !== ctx.hoh), ctx.hoh),
+    ...(over ? {} : { rules: [['SORTED', 'four cliques, not chosen'], ['COVERED', 'a clique is safe while one of its own is HOH']], rulesTitle: 'THE CLIQUES · HOW IT WORKS' }), steps,
+  }];
+}
+
+// ── The Split House ────────────────────────────────────────────────────
+export function splitScreens(act, ctx, kit) {
+  const [a, b] = act?.hohs || [];
+  if (!a || !b) return [];
+  const picks = act.picks || [];
+  const sides = { [a]: [a], [b]: [b] };
+  const steps = [
+    { k: 'bb', t: 'Houseguests, this week there are two Heads of Household.', rule: 1 },
+    { k: 'bb', t: `A wall is about to go up through the middle of this house. ${a} and ${b} will pick their sides, one houseguest at a time.`, rule: 2 },
+    { k: 'bb', t: 'Each side plays its own week: its own nominations, its own veto, its own vote. Nobody will see or hear the other side.', rule: 3 },
+  ];
+  for (const p of picks) {
+    if (!p?.by || !p.picked) continue;
+    (sides[p.by] ||= [p.by]).push(p.picked);
+    steps.push({ k: 'say', by: p.by, t: p.reason === 'nobody-left' ? `${p.picked}, I guess.` : `${p.picked}.`, ...(p.why ? { why: [`${p.by}: ${strip(p.why)}.`] } : {}),
+      board: { title: 'THE SIDES', rows: [...sides[a].map(n => ({ n, text: `${a}'s side` })), ...sides[b].map(n => ({ n, text: `${b}'s side` }))] } });
+  }
+  steps.push({ k: 'beat', t: `The wall goes up. ${a}'s side and ${b}'s side will not see each other again until the week is over.`, toast: ['THE HOUSE SPLITS', '#ff3355'], shake: true });
+  steps.push(...beatSteps(act, kit));
+  const here = kit.houseNow(ctx).filter(n => n !== a && n !== b);
+  const seated = kit.seatLiving([], here, a);
+  seated[b] = 'stand2';
+  return [{
+    id: 'bb-split-v', kind: 'split', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '22:00',
+    kicker: 'Cam 04 · Living room', title: 'The House Splits', label: 'The House Splits', sub: `${a}'s side and ${b}'s side`, seated,
+    rules: [['TWO CROWNS', `${a} and ${b}`], ['THE WALL', 'each picks a side, one at a time'], ['TWO WEEKS', 'each side its own block, veto and vote']],
+    rulesTitle: 'THE SPLIT HOUSE · HOW IT WORKS', steps,
+  }];
+}
+
+/** The second half of a Split House week: the same days, on the other side of the wall. */
+export function otherSideScreen(ctx, kit, { was, now }) {
+  const here = kit.houseNow(ctx);
+  return {
+    id: 'bb-otherside-v', kind: 'otherside', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '09:00',
+    kicker: 'Cam 04 · Living room', title: 'The Other Side', label: 'The Other Side', sub: `${now}'s side of the wall`,
+    seated: kit.seatLiving([], here.filter(n => n !== now), now),
+    steps: [
+      { k: 'beat', t: 'Meanwhile, on the other side of the wall.', toast: ['THE OTHER SIDE', '#8d97ac'] },
+      { k: 'beat', t: `Everything you have just watched happened on ${was}'s side. None of it was seen or heard over here, where ${now}'s side spent the same days playing a week of their own.` },
+    ],
+  };
+}
+
+// ── High Roller's: the money ───────────────────────────────────────────
+// The house sees who walks to the rail and who walks into the room; the viewer also sees the slips and the
+// balances (the side panel), as the classic screens said: "the room saw them bet and never saw the name".
+const money = (ctx, kit, base, steps) => {
+  const here = kit.houseNow(ctx);
+  return [{ anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '12:30', kicker: 'Cam 04 · Living room',
+    seated: kit.seatLiving([], here.filter(n => n !== ctx.hoh), ctx.hoh), ...base, steps }];
+};
+
+export function bucksScreens(act, ctx, kit) {
+  const pay = act?.payouts || [];
+  if (!pay.length) return [];
+  const tiers = ['top', 'middle', 'floor'].map(t => ({ t, names: pay.filter(p => p.tier === t) })).filter(x => x.names.length);
+  const rows = [];
+  const steps = [{ k: 'bb', t: 'Houseguests, the audience has paid you for this week. The top three are paid the most, the next three a little less, and everybody else the floor rate.', rule: 1 }];
+  for (const { t, names } of tiers) {
+    // the floor is everybody else: said, not listed (fourteen rows do not fit the board)
+    if (t !== 'floor') rows.push(...names.map(p => ({ n: p.name, text: `$${p.amount}` })));
+    const amt = names[0].amount;
+    steps.push({ k: 'bb', t: t === 'top' ? `Paid at the top, $${amt} each: ${kit.listOf(names.map(p => p.name))}.` : t === 'middle' ? `$${amt} each: ${kit.listOf(names.map(p => p.name))}.`
+      : `Everybody else is paid the floor rate, $${amt}.`, board: { title: 'THE AUDIENCE PAYS', rows: rows.slice() }, ...(t === 'top' ? { toast: ['PAID AT THE TOP', '#c9a227'] } : {}) });
+  }
+  steps.push(...beatSteps(act, kit));
+  steps.push({ k: 'beat', t: 'What anybody has saved stays private. The house only ever hears what was paid.' });
+  return money(ctx, kit, { id: 'bb-bucks-v', kind: 'bucks', title: 'The Audience Pays', label: 'The Audience Pays', sub: 'Paid in public, kept in private',
+    rules: [['THE TOP THREE', 'paid the most'], ['THE NEXT THREE', 'a little less'], ['EVERYBODY ELSE', 'the floor rate']], rulesTitle: 'THE AUDIENCE PAYS · HOW IT WORKS' }, steps);
+}
+
+export function sideBetScreens(act, ctx, kit) {
+  const bets = act?.bets || [];
+  if (!bets.length) return [];
+  const back = Math.floor((act.stake || 10) * (act.payout || 1));
+  const steps = [
+    { k: 'bb', t: `Houseguests, the rail is open. ${act.stake} on who goes home this week. A right slip pays ${back} back. A wrong one pays nothing.`, rule: 1 },
+    ...beatSteps(act, kit),
+  ];
+  const rest = bets.filter(b => !(act.beats || []).some(x => (x.players || [])[0] === b.name)).map(b => b.name);
+  if (rest.length) steps.push({ k: 'beat', t: `${kit.listOf(rest)} ${rest.length === 1 ? 'bets' : 'bet'} too.` });
+  steps[steps.length - 1] = { ...steps[steps.length - 1], why: ['The slips (the house never sees them):', ...bets.map(b => `${b.name} → ${b.on}`)] };
+  return money(ctx, kit, { id: 'bb-sidebet-v', kind: 'sidebet', title: 'The Side Bet', label: 'The Side Bet', sub: 'The room saw them bet, and never saw the name' }, steps);
+}
+
+export function sideBetPaidScreens(act, ctx, kit) {
+  const res = act?.results || [];
+  if (!res.length) return [];
+  const back = Math.floor((act.stake || 10) * (act.payout || 1));
+  const won = res.filter(r => r.won);
+  const steps = [{ k: 'bb', t: won.length === res.length ? `Every slip had ${act.evicted}'s name on it. The floor pays all ${kit.word(res.length)} of them.`
+    : won.length ? `${kit.listOf(won.map(r => r.name))} called it, and ${won.length === 1 ? 'takes' : 'take'} ${back} back. Every other slip stays with the floor.` : 'Nobody called it. The floor keeps every slip.',
+    board: { title: 'THE FLOOR SETTLES', rows: res.map(r => ({ n: r.name, text: r.won ? `+${back - (act.stake || 10)}` : `−${act.stake || 10}`, out: !r.won })) },
+    toast: ['THE FLOOR SETTLES', '#c9a227'] }, ...beatSteps(act, kit)];
+  return money(ctx, kit, { id: 'bb-sidebet-paid-v', kind: 'sidebet', title: 'The Floor Settles', label: 'The Floor Settles', sub: `${act.evicted} is the name on the winning slips`, time: '23:30' }, steps);
+}
+
+export function derbyScreens(act, ctx, kit) {
+  const settled = act?.type === 'derby-bet-settled';
+  const steps = settled ? [
+    { k: 'bb', t: (act.holders || []).length ? `${act.vetoWinner} won the veto. ${kit.listOf(act.holders)} backed ${act.vetoWinner}, so there is a second veto in this house tonight, and the one nobody competed for goes first.`
+      : `${act.vetoWinner} won the veto. Nobody backed ${act.vetoWinner}. Every slip on the board is worth exactly what the paper cost.`,
+      board: { title: 'THE SLIPS TURN OVER', rows: (act.results || []).map(r => ({ n: r.name, text: r.won ? 'holds a veto' : `had ${r.on}`, out: !r.won })) },
+      toast: [(act.holders || []).length ? 'A SECOND VETO' : 'ALL DEAD', '#c9a227'] },
+    ...beatSteps(act, kit),
+  ] : [
+    { k: 'bb', t: `Houseguests who bought a slot in the Veto Derby: there are six names on the board now, ${kit.listOf(act.players || [])}. Back the one who wins the veto, and you hold a veto of your own.`, rule: 1 },
+    ...beatSteps(act, kit),
+  ];
+  if (!settled && steps.length) steps[steps.length - 1] = { ...steps[steps.length - 1], why: ['The slips:', ...(act.bets || []).map(b => `${b.name} → ${b.on}`)] };
+  return money(ctx, kit, { id: settled ? 'bb-derby-paid-v' : 'bb-derby-bet-v', kind: 'derby', title: settled ? 'The Slips Turn Over' : 'The Derby Slips',
+    label: settled ? 'The Slips Turn Over' : 'The Derby Slips', sub: settled ? `${act.vetoWinner} won the veto` : 'Six names to back' }, steps);
+}
+
+export function rollersRoomScreens(act, ctx, kit) {
+  if (!act?.gameName) return [];
+  const steps = [
+    { k: 'bb', t: `Houseguests, the High Roller's Room is open tonight. One game: ${act.gameName}, at ${act.price}. You pay on the way in, win or lose.`, rule: 1, toast: ["HIGH ROLLER'S ROOM", '#c9a227'] },
+    ...beatSteps(act, kit),
+  ];
+  if (!(act.entries || []).length) steps.push({ k: 'beat', t: 'Nobody walks in. The door stays open all evening, and the floor keeps its game.' });
+  return money(ctx, kit, { id: 'bb-highrollers-v', kind: 'rollers', title: "High Roller's Room", label: "High Roller's Room", sub: `${act.gameName} · ${act.price}`, time: '21:00' }, steps);
+}
+
+// ── Rivals: the people who walk in already knowing somebody ────────────
+const spreadAt = names => names.map((n, i, a) => [n, Math.round(8 + (84 * i) / Math.max(1, a.length - 1))]);
+
+export function rivalsScreens(act, ctx, kit) {
+  const t = act?.type;
+  const here = kit.houseNow(ctx);
+  const base = { anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, kicker: 'Cam 04 · Living room' };
+  if (t === 'rivals-open') {
+    // the people the latecomers are here for stay in the shot as the room fills up
+    const partners = (act.pairs || []).map(p => p.partner);
+    const before0 = (act.before || here).filter(Boolean);
+    const before = [...partners.filter(n => before0.includes(n)), ...before0.filter(n => !partners.includes(n))];
+    const arrived = [];
+    const steps = [{ k: 'bb', t: `Houseguests, tonight ${kit.word((act.arrived || []).length)} more people are moving in, and every one of them is here for somebody who is already inside.`, toast: ['RIVALS', '#b3382f'], at: spreadAt(before.slice(0, 10)) }];
+    for (const s of beatSteps(act, kit)) {
+      // a latecomer walks in on the line that first names them
+      const who = (act.arrived || []).find(n => !arrived.includes(n) && String(s.t).includes(n));
+      if (who) arrived.push(who);
+      steps.push(who ? { ...s, at: spreadAt([...before.slice(0, 10 - arrived.length), ...arrived]) } : s);
+      // and introduces themself the way everybody did on move-in day, with the house's first read of them
+      if (who) {
+        let said = [];
+        try { said = ctx.intro ? kit.proseSteps(ctx.intro(who), [who]) : []; } catch { said = []; }
+        let read = [];
+        try { read = ctx.firstRead ? ctx.firstRead(who) || [] : []; } catch { read = []; }
+        if (said.length && read.length) said[said.length - 1] = { ...said[said.length - 1], why: [`First read on ${who}: ${read.join(', ')}.`] };
+        else if (read.length) said.push({ k: 'beat', t: `${who} is here for ${(act.pairs || []).find(p => p.rival === who)?.partner || 'somebody inside'}.`, why: [`First read on ${who}: ${read.join(', ')}.`] });
+        steps.push(...said);
+      }
+    }
+    const pairs = (act.pairs || []).map(p => `${p.rival} is here for ${p.partner}${p.label && p.label !== 'No connection' ? ` (${p.label})` : ''}: ${p.grudge || 'they have history'}.`);
+    if (pairs.length) steps[steps.length - 1] = { ...steps[steps.length - 1], why: [...(act.guessed ? ['Some of these were read from who gets on worst, not declared.'] : []), ...pairs] };
+    return [{ ...base, id: 'bb-rivals-open-v', kind: 'rivals', time: '21:00', title: 'Rivals: Arrival', label: 'Rivals: Arrival', sub: 'They already know somebody', cast: spreadAt(before.slice(0, 10)), steps }];
+  }
+  if (t === 'rivals-hoh') {
+    // Big Brother sets it up, the engine's first beat is the room deciding, then the ballots, the name, and what it
+    // costs (the rest of the engine's beats)
+    const tally = {};
+    const told = beatSteps(act, kit);
+    const steps = [
+      { k: 'bb', t: `${kit.listOf(act.finalists || [])}, the competition stops here. The ${kit.word((act.rivals || []).length)} houseguests who walked in tonight will decide which of you is Head of Household.`, rule: 1 },
+      ...told.slice(1, 2),
+    ];
+    for (const b of act.ballots || []) {
+      tally[b.choice] = (tally[b.choice] || 0) + 1;
+      steps.push({ k: 'beat', t: `${b.rival} writes ${b.choice}.${b.protecting ? ` Not ${b.protecting}.` : ''}`, rule: 2, board: { title: 'THE RIVALS DECIDE', rows: (act.finalists || []).map(n => ({ n, text: `${tally[n] || 0}` })) } });
+    }
+    steps.push({ k: 'bb', t: `${act.winner}, you are the new Head of Household.`, hoh: act.winner, big: [act.winner, 'Handed the house', 'safe'], toast: ['NOT WON, GIVEN', '#c9a227'] });
+    steps.push(...told.slice(2));
+    return [{ ...base, id: 'bb-rivals-hoh-v', kind: 'rivals', time: '23:30', title: 'Rivals: The Handover', label: 'Rivals: The Handover', sub: 'Power given, not won',
+      seated: kit.seatLiving([], here.filter(n => !(act.finalists || []).includes(n)).slice(0, 8)), rules: [['NOT WON', 'the competition stops at two'], ['GIVEN', 'the rivals vote the house to one of them']],
+      rulesTitle: 'RIVALS · THE HANDOVER', steps }];
+  }
+  if (t === 'rivals-week') {
+    const steps = beatSteps(act, kit);
+    if (!steps.length) return [];
+    steps[steps.length - 1] = { ...steps[steps.length - 1], why: ['Where the grudges stand:', ...(act.pairs || []).map(p => `${p.rival} and ${p.partner}: ${p.bond > 0 ? '+' : ''}${Math.round((p.bond || 0) * 10) / 10}`)] };
+    return [{ ...base, id: 'bb-rivals-week-v', kind: 'rivals', time: '16:00', title: 'Rivals: The Grudge', label: 'Rivals: The Grudge', sub: 'Still in the same house',
+      seated: kit.seatLiving([], here.filter(n => n !== ctx.hoh), ctx.hoh), steps }];
+  }
+  if (t === 'rivals-out') {
+    const steps = beatSteps(act, kit);
+    if (steps.length) steps[0] = { ...steps[0], big: [act.stays, `Outlasted ${act.gone}`, 'safe'] };
+    return [{ ...base, id: 'bb-rivals-out-v', kind: 'rivals', time: 'LIVE', title: 'Rivals: Outlasted', label: 'Rivals: Outlasted', sub: `${act.stays} stays, ${act.gone} goes`,
+      seated: kit.seatLiving([], here.filter(n => n !== ctx.hoh), ctx.hoh), steps }];
+  }
+  return [];
+}
+
+// ── The Saboteur: a job the house is never told about ──────────────────
+export function saboteurScreens(act, ctx, kit) {
+  const t = act?.type;
+  const sab = act.saboteur || act.reallyIs || null;
+  const here = kit.houseNow(ctx);
+  const steps = beatSteps(act, kit);
+  if (t === 'saboteur-brief') {
+    if (act.mission) steps.push({ k: 'beat', t: `This week's job: ${strip(act.mission.name)}. ${strip(act.mission.brief)}`, why: [`Only you know: ${sab} is the Saboteur.`, `The job pays ${act.mission.pay}${act.prize ? `, toward ${act.prize}` : ''}.`] });
+    return [{ id: 'bb-saboteur-brief-v', kind: 'saboteur', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: kit.ROOM_NAME.dr, cam: kit.CAM.dr, time: '01:30',
+      kicker: 'Cam 01 · Diary Room', title: 'The Saboteur: Mission', label: 'The Saboteur: Mission', sub: 'Told to one person, at night', cast: sab ? [[sab, 50]] : [], steps }];
+  }
+  if (t === 'saboteur-debrief') {
+    // the engine's beats already tell it (what the saboteur did, what the house said): each line once, with what
+    // the house SAW put in after the deed when the beats leave it out, and the side panel's "only you know" on the deed
+    const r = act.result || {};
+    const out = steps.slice();
+    const at = t0 => out.findIndex(s => s.t === strip(t0));
+    if (r.text) {
+      let i = at(r.text);
+      if (i < 0) { out.unshift({ k: 'beat', t: strip(r.text) }); i = 0; }
+      out[i] = { ...out[i], why: [`Only you know: ${sab} did this.`] };
+      if (act.worked && r.houseSees && at(r.houseSees) < 0) out.splice(i + 1, 0, { k: 'beat', t: strip(r.houseSees), toast: [String(r.seesBadge || 'SOMETHING HAPPENED').toUpperCase(), '#ff3355'] });
+    }
+    if (!act.worked && r.botched) { const i = at(r.botched); if (i >= 0) out[i] = { ...out[i], toast: ['IT GOES WRONG', '#9aa4b2'] }; else out.push({ k: 'beat', t: strip(r.botched), toast: ['IT GOES WRONG', '#9aa4b2'] }); }
+    if (act.paid != null) out.push({ k: 'beat', t: act.worked ? 'The job is done, and the money is banked where nobody in the house can see it.' : 'The job fails. Nothing is banked this week.',
+      why: [`Paid this week: ${act.paid || 0}.`] });
+    return [{ id: 'bb-saboteur-v', kind: 'saboteur', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '22:40',
+      kicker: 'Cam 04 · Living room', title: 'The Saboteur: Results', label: 'The Saboteur: Results', sub: act.worked ? 'It worked' : 'It did not work',
+      seated: kit.seatLiving([], here.filter(n => n !== ctx.hoh), ctx.hoh), steps: out }];
+  }
+  if (t === 'saboteur-accusation') {
+    if (steps.length) steps[0] = { ...steps[0], toast: [act.correct ? 'CAUGHT' : 'THE WRONG NAME', act.correct ? '#c9a227' : '#ff3355'] };
+    if (!act.correct && act.reallyIs) steps.push({ k: 'beat', t: `${act.named} is not the Saboteur.`, why: [`Only you know: it is ${act.reallyIs}.`] });
+    return [{ id: 'bb-saboteur-call-v', kind: 'saboteur', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '20:00',
+      kicker: 'Cam 04 · Living room', title: act.correct ? 'The Saboteur: Caught' : 'The Saboteur: Wrong Name', label: act.correct ? 'The Saboteur: Caught' : 'The Saboteur: Wrong Name',
+      sub: `${act.accuser} names ${act.named}`, seated: kit.seatLiving([], here.filter(n => n !== ctx.hoh), ctx.hoh), steps }];
+  }
+  if (t === 'saboteur-reveal') {
+    if (sab) steps.unshift({ k: 'bb', t: `Houseguests, there has been a Saboteur in this house all season. It was ${sab}.`, big: [sab, 'The Saboteur', 'out'], shake: true });
+    return [{ id: 'bb-saboteur-reveal-v', kind: 'saboteur', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: 'LIVE',
+      kicker: 'Cam 04 · Living room', title: 'The Saboteur: Reveal', label: 'The Saboteur: Reveal', sub: sab ? `It was ${sab}` : 'The reveal',
+      seated: kit.seatLiving([], here.filter(n => n !== ctx.hoh), ctx.hoh), steps }];
+  }
+  return [];
+}

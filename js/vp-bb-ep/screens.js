@@ -232,8 +232,8 @@ function seasonOf(row) { return SEASON_DIR[row.themeId] || 'default'; }
  * and House Life screens are replaced; its twist screens are kept, after the
  * part of the week they follow.
  */
-export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted = [], plea = null } = {}) {
-  const steps = bbWeekSteps(row, { host, priorEvicted, plea });
+export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted = [], plea = null, intro = null, firstRead = null } = {}) {
+  const steps = bbWeekSteps(row, { host, priorEvicted, plea, intro, firstRead });
   const houseLife = steps.some(S => S.kind === 'houselife');
   if (!steps.length) return legacy;
   const o = { season: seasonOf(row), host };

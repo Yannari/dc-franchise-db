@@ -26,7 +26,7 @@ import { installRivals, rivalsState, isRival, rivalPartner, openRivals, announce
   rivalEvicted, rivalsLedger } from '../js/bb/rivals.js';
 import { BB_TWIST_CONTRACTS } from '../js/bb/twist-contract.js';
 import { generateSummaryText } from '../js/text-backlog.js';
-import { buildVPScreens, _tvState } from '../js/vp-screens.js';
+import { buildVPScreens, _tvState, _bbIntroQuote, _bbFirstRead } from '../js/vp-screens.js';
 import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
 import { seedGame } from './helpers/setup.js';
 import { seededRandom } from './helpers/rng.js';
@@ -462,7 +462,9 @@ describe('a season with one running', () => {
     // which draws every name in the cast and dims whoever is not in the house.
     // The latecomers spent the first half of their own premiere on that wall
     // looking like people who had already been evicted.
-    const handoverAt = screens.findIndex(x => /bb-rivals-hoh/.test(x.id));
+    // ...nothing before the door opens, which is the Arrival: they walk in, then they decide the Head of Household
+    // (the engine's own handover says "the three people who walked in tonight are asked to decide")
+    const handoverAt = screens.findIndex(x => /bb-rivals-open/.test(x.id));
     expect(handoverAt).toBeGreaterThan(0);
     for (const s of screens.slice(0, handoverAt)) {
       for (const n of late) {
@@ -474,14 +476,14 @@ describe('a season with one running', () => {
     }
 
     // The night in the order it happens: the rule, the house's first evening
-    // without them, the competition, the handover, and only then the door.
+    // without them, the competition, the door, and then the handover.
     const labels = screens.map(x => x.label);
     const at = l => labels.indexOf(l);
     expect(at('Rivals: Announcement')).toBeGreaterThan(-1);
     expect(at('House Life')).toBeGreaterThan(at('Rivals: Announcement'));
     expect(at('HOH')).toBeGreaterThan(at('House Life'));
-    expect(at('Rivals: The Handover')).toBeGreaterThan(at('HOH'));
-    expect(at('Rivals: Arrival')).toBeGreaterThan(at('Rivals: The Handover'));
+    expect(at('Rivals: Arrival')).toBeGreaterThan(at('HOH'));
+    expect(at('Rivals: The Handover')).toBeGreaterThan(at('Rivals: Arrival'));
   }, 60000);
 
   it('introduces them on the screen where the house first sees them', () => {
@@ -504,9 +506,11 @@ describe('a season with one running', () => {
     gs.episodeHistory = [ep];
     buildVPScreens(ep);
     Object.keys(_tvState).forEach(k => { if (_tvState[k]) _tvState[k].idx = 99; });
-    const screen = (buildVPScreens(ep) || []).find(s => /bb-rivals-hoh/.test(s.id));
+    // the stepped viewer introduces them as they walk in (the Arrival), with the house's first read in the panel
+    const screen = (buildVPScreens(ep) || []).find(s => /bb-rivals-open/.test(s.id));
     for (const p of act.introduce) expect(screen.html).toContain(p.name);
-    expect(screen.html).toMatch(/FIRST READ|rv-read/);
+    const S = bbWeekSteps(ep, { intro: _bbIntroQuote, firstRead: _bbFirstRead }).find(x => x.id === 'bb-rivals-open-v');
+    for (const p of act.introduce) expect(S.steps.some(st => (st.why || []).some(w => w.startsWith(`First read on ${p.name}:`))), p.name).toBe(true);
   }, 60000);
 
   it('owes the favour to whoever actually voted for them', () => {

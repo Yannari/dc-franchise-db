@@ -127,14 +127,14 @@ export default {
           'The third chair is {cursed}. The Den offered it to a different person entirely, and they said yes.',
           '{hoh} names {nominees}, and the Den did not have to lift a finger.',
           '{nominees}. The Den is enjoying this more than {hoh} is.',
-          '{hoh} thinks {nominees} was their idea. Let them.',
+          '{hoh} thinks putting up {nominees} was an original idea. The Den will not argue.',
           'The block is set, and the person who set it is not the person who read it out.',
           'Two of these were chosen. The house may work out which two.',
         ],
       },
       veto: {
         neutral: [
-          '{veto} holds a necklace they competed for. Somewhere in this house is a power nobody competed for at all.',
+          '{veto} holds a necklace that had to be won. Somewhere in this house is a power nobody competed for at all.',
           '{veto} won something in front of everybody. The Den prefers the other kind.',
           '{veto} has a week. The Den is not in the week business.',
           'The veto has moved. The Den has not.',
@@ -146,7 +146,7 @@ export default {
           // Past tense on purpose: the veto may well have taken the cursed
           // houseguest off the block, and a line that assumes it did not would
           // be wrong on exactly the weeks worth watching.
-          '{veto} holds the necklace. {cursed} was never told whose hand put them in that chair, and the Den is not about to say.',
+          '{veto} holds the necklace. {cursed} was never told whose hand filled that chair, and the Den is not about to say.',
           '{veto} may keep the necklace. The Den has already spent something better.',
           'The veto bought somebody a week. The Den is not in the week business.',
           'Use the necklace. The Den will still be here on Thursday.',
@@ -188,7 +188,7 @@ export default {
           '{evicted} is gone. The Den keeps the receipt.',
           'The house evicts {evicted}, and somebody in the room exhales for the wrong reason.',
           '{evicted} walks out. The offer stands for everyone else.',
-          '{hoh} got the week they wanted. {evicted} paid for a week somebody else wanted.',
+          '{hoh} got exactly the week that was ordered. {evicted} paid for a week somebody else wanted.',
           '{evicted} never found out. Most of them do not.',
           // The margin is the one thing here the house DID rather than a name
           // it holds — a count that close, or that lopsided, is the room

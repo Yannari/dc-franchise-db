@@ -49,6 +49,16 @@ describe('the benches', () => {
     expect(new Set(beats.slice(0, 4)).size).toBe(4);
   });
 
+  it('plays on each venue\'s own bleachers, and on the camp\'s where a venue has none', () => {
+    for (const v of ['survival-island', 'carnival', 'film-lot', 'world-tour', 'hosted-camp']) {
+      const sc = run({ Duncan: left, Owen: right }, v).steps[0];
+      expect(sc.plate).toBe(`${v}/benches-day`);
+      expect(sc.signs.map(s => s.face)).toEqual(['Duncan', 'Owen']);
+      expect(left.filter(n => sc.places[n].sit).length).toBeGreaterThanOrEqual(10);
+    }
+    expect(run({ Duncan: left, Owen: right }, 'redemption').steps[0].plate).toBe('hosted-camp/benches-day');
+  });
+
   it('keeps a three-way final on its classic page', () => {
     expect(run({ Duncan: ['Gwen'], Owen: ['Bruno'], Heather: ['Lindsay'] }, 'hosted-camp')).toBeNull();
   });

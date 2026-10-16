@@ -410,14 +410,20 @@ export function tdWinnerScreen(ep, o = {}) {
 // order they went home, and say why. One scene, so the set is not rebuilt for every walk: each of them is off the set
 // until their step (scene.arrives, stage.js castAt).
 // the painted signs on each set, left then right, as fractions of the frame (a venue's own set gets its own here)
-const BENCH_SIGNS = { 'hosted-camp/benches-day': [[.115, .5456, .2094, .6411], [.8275, .5467, .9225, .6411]] };
+const BENCH_SIGNS = {
+  'hosted-camp/benches-day': [[.115, .5456, .2094, .6411], [.8275, .5467, .9225, .6411]],
+  'survival-island/benches-day': [[.1175, .5444, .2094, .64], [.8237, .5456, .9163, .64]],
+  'carnival/benches-day': [[.115, .5211, .2081, .6144], [.8263, .52, .9213, .6144]],
+  'film-lot/benches-day': [[.1194, .5456, .2131, .6411], [.8331, .5467, .9275, .6422]],
+  'world-tour/benches-day': [[.1125, .5244, .2087, .62], [.83, .5267, .9256, .6233]],
+};
 export function tdBenchesScreen(ep, o = {}) {
   const A = ep.benchAssignments || {}, R = ep.benchReasons || {};
   const finalists = Object.keys(A);
   // two sets of bleachers, two signs: a three-way final keeps its classic page
   if (finalists.length !== 2) return null;
   const venue = venueOf(ep, o);
-  // (the camp's bleachers until a venue has its own: to-edit/td-benches)
+  // (a venue without its own bleachers, the islands or Redemption, uses the camp's)
   const key = plateKey(venue, 'benches', 'day') || plateKey('hosted-camp', 'benches', 'day');
   const signs = key && BENCH_SIGNS[key];
   if (!signs) return null;

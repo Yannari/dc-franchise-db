@@ -104,7 +104,10 @@ export function cpLines(rec, { seed = '', prev = null } = {}) {
   const gendered = divs.some(d => d !== 'all');
   for (const t of CP_TJ[rec.id] || []) L('tj', 'TJ', t, -1);
   // a word on the start line: the leader and the closest chaser, or two finalists on the first one
-  const ld = prev ? Object.values(prev)[0] : null;
+  // ...from the people running THIS checkpoint: the standings before it still list whoever the instant
+  // elimination sent home (the user, 2026-10-16: James trash-talked the leader after he was gone)
+  const running = new Set(rec.order || []);
+  const ld = prev ? (Object.values(prev)[0] || []).filter(r => !running.size || running.has(r[0])) : null;
   if (ld && ld.length >= 2) { const [l1, l2] = pick(FX.pre, 'pre'); L('say', ld[1][0], l1, -1, { to: ld[0][0] }); L('say', ld[0][0], l2, -1, { to: ld[1][0] }); }
   else if ((rec.order || []).length >= 2) { const [l1, l2] = pick(FX.preFirst, 'pre'); L('say', rec.order[0], l1, -1, { to: rec.order[1] }); L('say', rec.order[1], l2, -1, { to: rec.order[0] }); }
   (rec.beats || []).forEach((b, i) => {

@@ -23,3 +23,21 @@ it('every fight says its cause, and a night has one fight at most', () => {
     }
   }
 }, 600000);
+
+// The final: nobody the instant elimination sent home speaks at a later checkpoint (the user, 2026-10-16: James
+// trash-talked the leader at checkpoint three after he was gone).
+import { cpLines } from '../js/ch/script/final-cp.js';
+it('every speaker at a final checkpoint is running it', () => {
+  for (const seed of [101, 104, 105, 7]) {
+    const { cast, names, background } = challengeCast(24, seed);
+    setPlayers(cast);
+    const r = playChallengeSeason({ cast: names, background, seed });
+    const cps = r.final?.checkpoints || [];
+    cps.forEach((rec, k) => {
+      // the case the user saw, forced: somebody the instant elimination sent home, still second in the old standings
+      const prev = k ? Object.fromEntries(Object.entries(cps[k - 1].standings).map(([d, rows]) => [d, [rows[0], ['Gone Player', 99], ...rows.slice(1)]])) : null;
+      const lines = cpLines(rec, { seed: 's', prev });
+      for (const l of lines) if (l.kind === 'say' && l.by !== 'TJ') expect(rec.order, `seed ${seed} ${rec.id}: ${l.by} says "${l.text}"`).toContain(l.by);
+    });
+  }
+}, 600000);

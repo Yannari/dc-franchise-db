@@ -273,7 +273,7 @@ export default {
       { by: 'c', opt: 1, say: "Quickly." },
       { by: 'a', say: "Everybody's lining up behind my name because it's easy. But {b} has won more than I have, and nobody's saying it." },
       { by: 'b', say: "Really? This is your play?" },
-      { by: 'a', say: "It's not a play. It's maths." },
+      { by: 'a', say: "It's not a play. It's math." },
       { by: 'b', say: "It's a scared person trying to swap places." },
       { by: 'c', opt: 1, say: "No, hang on. {a} has a point about the dailies." },
       { by: 'b', opt: 'c', say: "Oh, come on." },

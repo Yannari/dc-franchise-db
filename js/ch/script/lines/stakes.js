@@ -382,7 +382,7 @@ export default {
       { by: 'a', say: "I'm just saying. Some people are making money in this game, and some people aren't." },
       { by: 'b', say: "And some people are making themselves a big fat target." },
       { by: 'a', say: "Is that a threat?" },
-      { by: 'b', say: "It's maths. Everybody in this house wants a piece of {amount}." },
+      { by: 'b', say: "It's math. Everybody in this house wants a piece of {amount}." },
       { by: 'b', conf: "{a} just told the whole house how much money there is to take. If I go into the Arena against {a.obj}, I'm not just going for the win." },
     ] },
     { id: 'st.bf2', turns: [

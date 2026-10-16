@@ -189,7 +189,7 @@ export function writeCeremony(act, week, house, extra = {}) {
       if (act.used && act.replacement && !(act.duoUp || []).length && !act.anonymous) {
         const namer = act.diamond ? holder : (act.chairAuthority || hoh);
         if (namer && namer !== act.replacement) {
-          const end = close(act.replacement, namer) ? 'blindsided' : getBond(act.replacement, namer) < 0 ? 'expected' : 'any';
+          const end = act.forcedReplacement ? 'forced' : close(act.replacement, namer) ? 'blindsided' : getBond(act.replacement, namer) < 0 ? 'expected' : 'any';
           script.renom = part('veto.renom', { a: act.replacement, b: namer }, end, ctx, house, act.replacement);
         }
       }

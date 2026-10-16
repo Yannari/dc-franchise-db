@@ -210,6 +210,10 @@ function candidateReveals(week, evictee) {
     if (alliance.active === false) continue;
     const members = (alliance.members || []).filter(n => house.includes(n));
     if (members.length < 2) continue;
+    // Exposing a group that is everybody left (or everybody but one) tells the room nothing it does not already
+    // know, and changes nobody's vote (the user, 2026-10-16: "someone expose 4 people when going out and theres 4
+    // people left anyway so nobody really cares").
+    if (members.length >= house.length - 1 || house.length <= 3) continue;
     const suspicion = members.reduce((sum, m) => sum + suspicionOf(evictee, m), 0) / members.length;
     if (suspicion <= 0.4) continue;
     out.push({ type: 'alliance', accused: members[0], members, label: alliance.name,

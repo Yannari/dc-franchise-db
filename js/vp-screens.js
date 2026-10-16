@@ -23086,6 +23086,33 @@ export function _bbFinalPleaSpeech(ep, name) {
     ], name, vkey, 'bluff') : '';
     const speech = (argumentsPool, ...salt) => `“${vvar(openings[voice], name, voice, ...salt, 'open')} ${vvar(argumentsPool, name, voice, ...salt, 'case')}${bluffLine} ${vvar(closings[voice], name, voice, ...salt, 'close')}”`;
 
+    // ONE VOTER (the final four): the speech is to that one person, about the final three and the jury, never "the
+    // rest of you" or "walking into the Diary Room" (the user, 2026-10-16: "top4 speech obviously cater to the only
+    // person voting like in the top3").
+    if (ballots.length === 1) {
+      const V = ballots[0].voter;
+      const other = (act?.nominees || []).find(n => n !== name) || 'the other nominee';
+      const allied = alliesCanVote.includes(V) || partnerName === V;
+      const strong = profile.threat >= 7 || profile.comps >= 2;
+      const open = vvar([`${V}, there's only one vote tonight, and it's yours, so I'm talking to you.`, `${V}, this is between you and me now.`,
+        `${V}, nobody else in this room gets a say tonight, so this is for you.`, `${V}, I'm not going to talk to the room. I'm going to talk to you.`], name, vkey, 'sole-open');
+      const kase = vvar(allied ? [
+        `We've been in this together for weeks, and you know I've never once put your name forward. Take me to the final three and we keep doing what we've been doing.`,
+        `You know exactly who has had your back in this house. It's been me. Don't hand ${other} the seat I've earned beside you.`,
+        `Everything we planned was for this week. Keep me, and the final three still has somebody in it who's playing for you.`,
+      ] : strong ? [
+        `I know I've won things in here, and I know that worries you. But ${other} has friends on that jury, and I don't. That's the vote that pays.`,
+        `You're probably thinking I'm the bigger threat in a competition. ${other} is the bigger threat in front of the jury, and the jury decides who wins.`,
+      ] : [
+        `Think about the final Head of Household. ${other} is the one you'd have to beat in it, not me.`,
+        `Look past tonight, to the jury. Ask yourself who you'd rather sit beside at the end, and who you'd rather face in that last competition.`,
+        `If you keep ${other}, you're keeping the person most likely to take that last crown off you. I'm the safer choice for you.`,
+      ], name, vkey, 'sole-case');
+      const shut = vvar([`Take me to the final three, ${V}.`, `Whatever you decide, I'll respect it. I'd just like it to be me.`,
+        `Keep me, and I'll make sure you never regret it.`, `That's all I've got. The rest is up to you.`], name, vkey, 'sole-close');
+      return `“${open} ${kase} ${shut}”`;
+    }
+
     if (argType === 'showmance' && partnerName) return speech([
       `${partnerName}, everybody already sees us as a pair. Splitting us up does not erase that target; it leaves you carrying it alone.`,
       `Keeping me gives ${partnerName} one person whose vote is never a mystery and gives the rest of you two visible targets to put in front of yourselves.`,

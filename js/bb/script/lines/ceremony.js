@@ -732,6 +732,13 @@ export default {
     { id: 'vr.a5', turns: [{ by: 'a', dr: "The veto was supposed to make this week calmer. It made it calmer for everybody except me." }] },
     { id: 'vr.a6', turns: [{ by: 'a', dr: "I sat down in that chair and smiled, because the cameras were on. Inside, I was already counting votes." }] },
   ],
+  // the only houseguest left who could sit there (the final four): nobody chose it, and everybody knew it was coming
+  'veto.renom.forced': [
+    { id: 'vr.f1', turns: [{ by: 'a', dr: "The second that veto got used, I was the only person left who could go up. Nobody chose me. The numbers did." }] },
+    { id: 'vr.f2', turns: [{ by: 'a', dr: "{b} didn't have a choice, and I don't blame {b.obj} for it. I'm the only name left. Now I need one vote." }] },
+    { id: 'vr.f3', turns: [{ by: 'a', dr: "Final four. There's nobody else to put in that chair, so here I am. It's not personal. It's arithmetic." }] },
+    { id: 'vr.f4', turns: [{ by: 'a', dr: "I knew this morning that if the veto got used, I'd be sitting here. And it got used." }] },
+  ],
   'veto.renom.blindsided': [
     { id: 'vr.b1', turns: [{ by: 'a', dr: "{b}? Of all people, {b}? I was helping {b.obj} plan this week." }] },
     { id: 'vr.b2', turns: [{ by: 'a', dr: "I trusted {b}. I'm sitting here trying to work out when exactly that stopped being true." }] },

@@ -341,7 +341,8 @@ const vetoBackdoorLands = {
     if (ctx.week?.vetoDecision?.diamond || ctx.week?.hohSecret) return 0;
     const { used, replacement, backdoorTarget } = actFacts(ctx);
     if (!used || !replacement) return 0;
-    // Only a backdoor if the replacement was the plan all along.
+    // Only a backdoor if the replacement was the plan all along, and not when the chair had one possible name.
+    if (ctx.week?.vetoForcedReplacement) return 0;
     return backdoorTarget && backdoorTarget === replacement ? 14 : 0;
   },
   fire(house, ctx, api) {
@@ -368,6 +369,8 @@ const vetoReplacementShock = {
     if (ctx.week?.hohSecret && !ctx.week?.vetoDecision?.diamond) return 0;
     const { used, replacement, backdoorTarget } = actFacts(ctx);
     if (!used || !replacement) return 0;
+    // the only name left: nobody chose it (bb/week.js vetoForcedReplacement)
+    if (ctx.week?.vetoForcedReplacement) return 0;
     // The non-backdoor case: an unplanned replacement, which stings differently.
     if (backdoorTarget && backdoorTarget === replacement) return 0;
     // Whoever actually said the name: the HOH normally, the veto holder

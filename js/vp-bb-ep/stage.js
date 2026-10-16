@@ -869,8 +869,15 @@ function hudHtml(S, st, prevSt, fresh) {
     <div class="clockw">DAY ${esc(S.day)} <span class="sig"><i></i><i></i><i></i><i></i></span><div class="big">${esc(S.time)}</div></div></div>`;
 }
 
+// A theme's antagonist (steps-ports.js): it speaks from the house the way Big Brother does, in its own colour,
+// from a speaker grille instead of the eye.
+const GRILLE = `<svg class="grille" viewBox="-50 -50 100 100"><circle r="46" fill="none" stroke="var(--vc)" stroke-width="2.4"/><circle r="36" fill="none" stroke="var(--vc)" stroke-width="1.4" opacity=".7"/>${Array.from({ length: 5 }, (_, i) => `<circle r="${6 + i * 6}" fill="none" stroke="var(--vc)" stroke-width="1" opacity="${(0.9 - i * 0.14).toFixed(2)}" stroke-dasharray="2 3"/>`).join('')}<circle class="core" r="4" fill="var(--vc)"/></svg>`;
 function lineHtml(S, st, fresh, L) {
-  if (!st) return '';
+  if (!st || st.quiet) return '';
+  if (st.k === 'voice') {
+    const bars = Array.from({ length: 28 }, (_, i) => `<i style="animation-delay:${(i * 59 % 900) / 1000}s;animation-duration:${.4 + (i * 41 % 50) / 100}s"></i>`).join('');
+    return `<div class="bbv voice ${fresh ? 'fresh' : ''}" style="--vc:${esc(st.vc || '#f0c040')}">${GRILLE}<div class="who">${esc(String(st.by || '').toUpperCase())}</div><div class="tx">${escT(st.t)}</div><div class="wave">${bars}</div></div>`;
+  }
   if (st.k === 'bb') {
     const bars = Array.from({ length: 28 }, (_, i) => `<i style="animation-delay:${(i * 73 % 900) / 1000}s;animation-duration:${.5 + (i * 37 % 50) / 100}s"></i>`).join('');
     return `<div class="bbv ${fresh ? 'fresh' : ''}">${eyeSvg('eye')}<div class="who">BIG BROTHER</div><div class="tx">${escT(st.t)}</div><div class="wave">${bars}</div></div>`;
@@ -938,7 +945,8 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (S.comp && !isDr) h += compFieldHtml(S, L, st, fresh, Math.max(0, idx));
   if (L.bill && S.steps.some(x => x.bill) && !isDr) h += billHtml(L, st, fresh);
   // the live vote: a count of ballots cast, never whose (the room does not know until the host says)
-  const totalBallots = S.kind === 'evict' ? S.steps.filter(x => x.ballot).length : 0;
+  // (not in the Sanctum: there the votes are public, and the pins are on the board)
+  const totalBallots = S.kind === 'evict' && !S.sanctum ? S.steps.filter(x => x.ballot).length : 0;
   if (totalBallots && L.ballots.length && !L.votes) {
     const pips = Array.from({ length: totalBallots }, (_, i) => `<i class="${i < L.ballots.length ? 'on' : ''} ${fresh && i === L.ballots.length - 1 && st?.ballot ? 'new' : ''}"></i>`).join('');
     h += `<div class="ballots ${L.ballots.length === totalBallots ? 'locked' : ''}"><div class="k">${L.ballots.length === totalBallots ? 'Votes locked' : 'Votes cast'}</div><div class="n">${L.ballots.length}<span>/ ${totalBallots}</span></div><div class="pips">${pips}</div></div>`;
@@ -996,5 +1004,5 @@ export function stageHtml(screens, si, idx, fresh, o) {
     if (st.chip) h += `<div class="vchip">${st.chip.chip === 'choice' ? `<b>Houseguest's<br>choice</b>` : img(st.chip.chip)}<i>${esc(st.chip.drawer)} draws</i></div>`;
     if (cut) h += `<div class="flash"></div>`;
   }
-  return { html: h, cls: `stage ${S.exitPhase ? `exitcut ${S.exitPhase}` : ''} ${S.lodge ? 'lodge' : ''} ${st && st.k === 'bb' ? 'bbspeaks' : ''} ${st && st.rule != null ? 'rulesup' : ''} ${S.bright && !(st && st.k === 'dr') ? 'lightset' : ''} ${S.nv && !(st && st.k === 'dr') ? 'nv' : ''} ${fresh && st && st.shake ? 'shake' : ''}`, cam: camNow, ledger: L };
+  return { html: h, cls: `stage ${S.exitPhase ? `exitcut ${S.exitPhase}` : ''} ${S.lodge ? 'lodge' : ''} ${st && (st.k === 'bb' || st.k === 'voice') ? 'bbspeaks' : ''} ${st && st.rule != null ? 'rulesup' : ''} ${S.bright && !(st && st.k === 'dr') ? 'lightset' : ''} ${S.nv && !(st && st.k === 'dr') ? 'nv' : ''} ${fresh && st && st.shake ? 'shake' : ''}`, cam: camNow, ledger: L };
 }

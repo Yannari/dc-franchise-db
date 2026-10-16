@@ -463,6 +463,8 @@ const replacementFallout = {
   category: 'ceremonies',
   weight(house, ctx) {
     const f = actFacts(ctx);
+    // the only name left: nobody chose it, so nobody is blamed (bb/week.js vetoForcedReplacement)
+    if (ctx.week?.vetoForcedReplacement) return 0;
     return f.replacement && _noms(ctx).includes(f.replacement) ? band(9) : 0;
   },
   fire(house, ctx, api) {

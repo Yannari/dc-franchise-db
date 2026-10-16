@@ -156,6 +156,12 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .wave i{width:.35cqw;border-radius:.2cqw;background:#22e1ff;height:20%;animation:bbx-wv .9s ease-in-out infinite alternate;opacity:.85}
 @keyframes bbx-wv{to{height:100%}}
 .bbx .bbv.fresh .eye{animation:bbx-eyeopen .8s cubic-bezier(.2,.8,.2,1) both}
+.bbx .bbv.voice .grille{width:12cqw;filter:drop-shadow(0 0 2.6cqw var(--vc))}
+.bbx .bbv.voice .grille .core{animation:bbx-breathe 1.6s ease-in-out infinite;transform-origin:0 0}
+.bbx .bbv.voice.fresh .grille{animation:bbx-eyeopen .8s cubic-bezier(.2,.8,.2,1) both}
+.bbx .bbv.voice .who{color:var(--vc)}
+.bbx .bbv.voice .tx{text-shadow:0 0 2.2cqw color-mix(in srgb,var(--vc) 45%,transparent)}
+.bbx .bbv.voice .wave i{background:var(--vc)}
 .bbx .bbv.fresh .tx{animation:bbx-rise .6s .25s both}
 @keyframes bbx-eyeopen{from{transform:scale(.6);opacity:0;filter:blur(1cqw)}}
 .bbx .eye .ring{transform-origin:0 0;animation:bbx-spin 14s linear infinite}

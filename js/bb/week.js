@@ -5643,6 +5643,10 @@ export function simulateBBWeek(options = {}) {
       } else {
       replacementWhy = explainReplacement(chairAuthority, replacement,
         house.filter(n => !protectedNames.includes(n)), chooserPlan, nominees);
+      // Late in a season (the final four) the chair has ONE possible name: nobody chose it, so nobody is blamed for
+      // it and nobody says "I've decided" about it (the user, 2026-10-16: "sometimes it doesnt understand that they
+      // dont have a choice of the replacement nominee in the top4").
+      week.vetoForcedReplacement = house.filter(n => !protectedNames.includes(n)).length === 1;
       nominees = nominees.map(name => name === vetoDecision.save ? replacement : name);
       gs.bb.stats[vetoDecision.save].timesSaved++;
       gs.bb.stats[replacement].timesNominated++;
@@ -5967,6 +5971,7 @@ export function simulateBBWeek(options = {}) {
       // it covers both cases.
       diamond, chairAuthority, anonymous: (hohSecret || !!coinChair) && !diamond,
       reason: vetoDecision.reason, why: vetoDecision.why, replacementWhy,
+      forcedReplacement: !!(replacement && week.vetoForcedReplacement),
       // The block as the CEREMONY left it. `nominees` may already have been
       // rewritten by a Coup d'Etat below, and reporting that here had the
       // ceremony announcing a final block that contradicted its own

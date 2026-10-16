@@ -188,6 +188,7 @@ function scriptHtml(S) {
   return S.steps.map((st, i) => {
     const who = st.k === 'beat' ? '<span class="bbx-who cc">[ CC ]</span>'
       : st.k === 'bb' ? '<span class="bbx-who bb">Big Brother</span>'
+        : st.k === 'voice' ? `<span class="bbx-who bb" style="color:${esc(st.vc || '#f0c040')}">${esc(st.by)}</span>`
         : st.k === 'dr' ? `<span class="bbx-who dr">${esc(st.by)} · DR</span>`
           : `<span class="bbx-who">${esc(st.by)}${st.k === 'host' ? ' (live)' : ''}</span>`;
     const line = st.k === 'beat' ? `<i>${escT(st.t)}</i>` : st.k === 'bb' ? escT(st.t) : `"${escT(st.t)}"`;

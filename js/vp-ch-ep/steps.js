@@ -456,6 +456,7 @@ const BIG = {
   'redemption-duel': a => ({ chip: [a.data?.winner || a.who[0], 'STILL ALIVE'] }),
   'redemption-return': a => ({ card: { k: 'Back from Redemption', t: a.who[0], sub: 'Fought their way out of Redemption House', faces: [a.who[0]] } }),
   // the one-episode twists (ch/ep-twists.js)
+  'late-arrival': a => ({ card: { k: 'New arrivals', t: (a.data?.arrivals || a.who.slice(0, 2)).join(' & '), sub: 'Fresh legs, no enemies, and they want your spot', faces: a.data?.arrivals || a.who.slice(0, 2) } }),
   purge: a => ({ slam: { spray: 'PURGED', color: '#e3262d' }, chip: [a.who[0], 'GOING HOME'] }),
   'return-arena': a => ({ card: { k: 'The Return', t: a.data?.winner || a.who[0], sub: `Back in the game after beating ${a.data?.loser || a.who[1]}`, faces: [a.data?.winner || a.who[0]] } }),
   // a fight's end (the user, 2026-10-16: "fight animations to feel like a big moment"): a shouting match is

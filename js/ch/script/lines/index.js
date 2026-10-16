@@ -19,6 +19,7 @@ import quitLines from './quit.js';
 import medevacLines from './medevac.js';
 import championLines from './champion.js';
 import wishLines from './wishlist.js';
+import lateLines from './late.js';
 import VOICES, { joinVariants } from './voices/index.js';
 import LONGER from './longer/index.js';
 import EXTRA from './extra/index.js';
@@ -26,7 +27,7 @@ import FINAL1 from './voices/final1.js';
 import FINAL2 from './voices/final2.js';
 import FINAL3 from './voices/final3.js';
 
-export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign, stakes, twists, goodbye, named, cruel, quitLines, medevacLines, championLines, wishLines);
+export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign, stakes, twists, goodbye, named, cruel, quitLines, medevacLines, championLines, wishLines, lateLines);
 
 // more entries for the same pools, appended (never a replacement: a key here adds to the pool)
 // (payback.js adds to pools other files own: appended, like the extras)

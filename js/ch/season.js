@@ -44,7 +44,7 @@ import { spreadDay, syncActive } from './knowledge.js';
 import { morningAfter } from './fallout.js';
 import { calledOut, arenaWon, remember } from './rel.js';
 import { payDaily, arenaPurse, hurt, medicalRisk, healDay, powerRankings, earnPass, passCut, PURSE } from './stakes.js';
-import { purge, returnArena } from './ep-twists.js';
+import { purge, returnArena, lateArrival } from './ep-twists.js';
 import { arenaGoodbye } from './goodbye.js';
 import { wavering, hasWavered, quitMoment } from './quit.js';
 import { medevac, medicalScare } from './medevac.js';
@@ -155,6 +155,19 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       state.division[n] = m <= f ? 'm' : 'f';
     }
   }
+  // Late arrivals (ep-twists.js 'late'): one player a division held back from the start, walking in on the
+  // booked episode. They are cast (records, minds, bonds) but not in the house until then.
+  const lateEp = Number(Object.entries(liveTwists(opts)).find(([, k]) => k === 'late')?.[0]) || 0;
+  state.late = [];
+  if (lateEp >= 2) {
+    const rl = streamFor(seed, 'late');
+    for (const d of opts.gendered ? ['m', 'f'] : ['all']) {
+      const pool = cast.filter(n => d === 'all' || state.division[n] === d);
+      if (pool.length >= 6) state.late.push(pool[Math.floor(rl() * pool.length)]);
+    }
+    state.arrivedAt = Object.fromEntries(state.late.map(n => [n, lateEp]));
+    state.active = cast.filter(n => !state.late.includes(n));
+  }
   for (const n of cast) {
     const bg = background[n] || {};
     state.rookie[n] = !!bg.rookie;
@@ -203,7 +216,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     - ((state.carriedGrudge?.[`${x[0]}>${x[1]}`] || state.carriedGrudge?.[`${x[1]}>${x[0]}`]) ? 2 : 0));
   const usedArrival = new Set();
   state.arrivalPairs = [];
-  for (const [a, b] of reunions) {
+  for (const [a, b] of reunions.filter(([x, y]) => !state.late.includes(x) && !state.late.includes(y))) {
     if (state.arrivalPairs.length >= 3) break;
     if (usedArrival.has(a) || usedArrival.has(b)) continue;
     usedArrival.add(a); usedArrival.add(b);
@@ -216,7 +229,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
   state.plannedEpisodes = schedule.filter(e => !e.final).length;
   let prevDiv = streamFor(seed, 'coin')() < 0.5 ? 'm' : 'f';
   // the players a return still to come will bring back: the plan already counts them (schedule.js)
-  const returnsAhead = idx => (redemptionOn(state) ? 0 : schedule.slice(idx + 1).filter(e => e.returns).length);
+  const returnsAhead = idx => (redemptionOn(state) ? 0 : schedule.slice(idx + 1).filter(e => e.returns).length)
+    + state.late.filter(n => !state.active.includes(n) && !state.gone.some(g => g.name === n)).length;   // still to walk in
 
   for (let idx = 0; idx < schedule.length; idx++) {
     const plan = schedule[idx];
@@ -255,6 +269,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       const ret = returnArena(state, R('return'));
       if (ret) { epRec.returnArena = ret; syncActive(state); }
     }
+    if (twist === 'late' && state.late.length) { lateArrival(state, R('late')); epRec.arrived = [...state.late]; syncActive(state); }
     let purged = null;
     epRec.rankings = powerRankings(state);
     const premiere = idx === 0;

@@ -18,14 +18,33 @@
 //           season (it has its own way back).
 import { gs } from '../core.js';
 import { getBond, addBond } from '../bonds.js';
-import { addScene, inDivision } from './state.js';
+import { S, addScene, inDivision } from './state.js';
 import { nudge } from './mind.js';
 import { remember } from './rel.js';
 import { playDuel } from './arena.js';
 import { removePlayer } from './exits.js';
 import { giveRespect } from './respect.js';
 
-export const EP_TWISTS = ['double', 'purge', 'return'];
+export const EP_TWISTS = ['double', 'purge', 'return', 'late'];
+
+/**
+ * Late arrivals: the players held back from the start walk in (season.js state.late). The house sizes them up:
+ * first impressions both ways, the strongest of the house feeling the threat, and a vet sizing up a newcomer.
+ */
+export function lateArrival(state, rng) {
+  const fresh = state.late.filter(n => !state.active.includes(n));
+  if (!fresh.length) return null;
+  const house = [...state.active];
+  state.active.push(...fresh);
+  for (const n of fresh) for (const h of house) addBond(n, h, (rng() - 0.5) * 0.8);
+  const watcher = [...house].sort((x, y) => getBond(y, fresh[0]) - getBond(x, fresh[0]))[0];
+  for (const n of fresh) nudge(state, n, 'confidence', 0.4);
+  for (const h of house) nudge(state, h, 'paranoia', 0.2);
+  addScene(state, 'late-arrival', [...fresh, ...house.slice(0, 3)], { arrivals: fresh }, state.active, 'villa');
+  const sizer = house.filter(h => !state.rookie[h]).sort((x, y) => S(y, 'boldness') - S(x, 'boldness'))[0] || watcher;
+  if (sizer) addScene(state, 'late-sizeup', [sizer, fresh[0]], { other: fresh[1] || null }, state.active, 'villa');
+  return fresh;
+}
 const pop = (name, d) => { gs.popularity ||= {}; gs.popularity[name] = (gs.popularity[name] || 0) + d; };
 const closest = (state, n, among) => [...among].filter(x => x !== n).sort((x, y) => getBond(n, y) - getBond(n, x))[0] || null;
 

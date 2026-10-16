@@ -281,10 +281,10 @@ export function challengeRows(result) {
   // a player who came back in a return (ep-twists.js): out from the episode they lost until the one they won
   const away = state.returnedFrom || [];
   const awayAfter = (n, ep) => away.some(r => r.name === n && r.ep <= ep && ep < r.back);
-  const peopleAfter = ep => cast.filter(n => !(goneEp[n] <= ep) && !awayAfter(n, ep));
+  const peopleAfter = ep => cast.filter(n => !(goneEp[n] <= ep) && !awayAfter(n, ep) && !(state.arrivedAt?.[n] > ep));
   const exitsAt = ep => [...state.gone, ...away].filter(g => g.ep === ep).map(g => ({ name: g.name, verb: VERB[g.how] || 'eliminated', channel: g.how, by: g.by || null }));
   // Who was in the house when episode `ep` began (a returning player counts on the night they come back).
-  const castAt = ep => cast.filter(n => !(goneEp[n] < ep) && !away.some(r => r.name === n && r.ep < ep && ep < r.back));
+  const castAt = ep => cast.filter(n => !(goneEp[n] < ep) && !away.some(r => r.name === n && r.ep < ep && ep < r.back) && !(state.arrivedAt?.[n] > ep));
   const rows = [];
   for (const e of result.episodes) {
     const ballots = (e.votes || []).flatMap(v => v.ballots || []);

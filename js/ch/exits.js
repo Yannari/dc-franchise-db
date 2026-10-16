@@ -29,7 +29,8 @@ export function quitRisk(state, name) {
 export function removePlayer(state, name, how, extra = {}) {
   if (!state.active.includes(name)) return;
   // Their placement: how many were still in when they left (the people waiting in Redemption House are still in).
-  const place = state.active.length + (state.redemption?.residents?.length || 0);
+  const place = state.active.length + (state.redemption?.residents?.length || 0)
+    + (state.late || []).filter(n => !state.active.includes(n) && !state.gone.some(g => g.name === n) && n !== name).length;   // still to arrive
   state.active = state.active.filter(n => n !== name);
   // Redemption House: out of the villa, not yet out of the season (redemption.js writes the placement later)
   if (!extra.pending) state.gone.push({ name, ep: state.ep, day: state.day, how, place, ...extra });

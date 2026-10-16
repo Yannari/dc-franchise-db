@@ -65,6 +65,25 @@ describe('one-episode twists', () => {
     expect(ep(4).daily.id).toBe('deep-freeze');
   });
 
+  it('holds the late arrivals back until their episode, then plays them like everybody else', () => {
+    for (const seed of [41, 42]) {
+      const { cast, names, background } = challengeCast(24, seed);
+      setPlayers(cast);
+      const r = playChallengeSeason({ cast: names, background, seed, options: { episodeTwists: { 4: 'late' } } });
+      airSeason(r.state);
+      const rows = challengeRows(r);
+      const late = r.state.late;
+      expect(late.length).toBe(2);
+      for (const row of rows.filter(x => x.num < 4)) for (const n of late) expect(row.ch.house, `ep ${row.num}`).not.toContain(n);
+      for (const n of late) expect(rows.find(x => x.num === 4).ch.house).toContain(n);
+      expect(r.episodes.find(e => e.ep === 4).aired.some(a => a.kind === 'late-arrival')).toBe(true);
+      const gone = r.state.gone.map(g => g.place);
+      expect(new Set(gone).size).toBe(gone.length);
+      expect(Math.max(...gone)).toBe(24);
+      expect(r.state.final.finalists.length).toBe(8);
+    }
+  });
+
   it('runs two Arenas on a booked double', () => {
     expect(runs.some(({ ep }) => ep(8).arena.length === 2)).toBe(true);
   });

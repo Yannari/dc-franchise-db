@@ -53,7 +53,9 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   // the champions' last words (final.js)
   'champion-reflect',
   // who they would pick, and the one picked hearing it (wishlist.js)
-  'arena-wishlist', 'wishlist-leak']);
+  'arena-wishlist', 'wishlist-leak',
+  // late arrivals (ep-twists.js)
+  'late-arrival', 'late-sizeup']);
 const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-form', 'arena-eve-confront', 'arena-eve-pep',
   'arena-eve-alone', 'morning-after', 'fight', 'team-blame', 'partner-blame', 'throw-caught', 'jealousy', 'receipts',
   'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout', 'spark', 'party-deal', 'party-tears', 'expelled-victim',

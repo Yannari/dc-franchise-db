@@ -152,6 +152,9 @@ export default {
     2],
   'ov.3': [
     { beat: "{a} stops in the doorway. {b} is saying {a.posAdj} name to somebody, and doesn't see {a}." },
+    { by: 'b', say: "It has to be {a} this week. Nobody else makes sense." },
+    { beat: '{a} steps back out of the doorway before anybody turns round.' },
+    { by: 'b', say: "Just keep it quiet until the vote." },
     0],
 
   // ── a vet coaches a rookie ──
@@ -202,6 +205,8 @@ export default {
     0],
   'ae.n3': [
     { beat: '{a} and {b} sit where the whole group used to sit.' },
+    { by: 'a', say: "Remember when the whole group used to sit at this table?" },
+    { by: 'b', say: "Don't. I can't." },
     0,
     { by: 'b', conf: "Nobody needs to be scared of us anymore. That's the part that hurts." }],
   // ── an alliance ends: the final ──

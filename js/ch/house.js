@@ -138,5 +138,8 @@ export function returnToHouse(state, winner, voters, how = {}) {
     addBond(winner, v, -0.6);
     nudge(state, v, 'paranoia', 0.6);
   }
-  addScene(state, 'return', [winner, ...voters.filter(v => state.active.includes(v))], { volunteered: !!how.volunteered, calledOut: !!how.calledOut, beat: how.beat || null }, state.active, 'public');
+  const faced = voters.filter(v => state.active.includes(v));
+  // the friends who meet them at the door (the user, 2026-10-16: scenes that aired as one confessional)
+  const friends = state.active.filter(n => n !== winner && !faced.includes(n) && getBond(winner, n) >= 2).sort((x, y) => getBond(winner, y) - getBond(winner, x)).slice(0, 2);
+  addScene(state, 'return', [winner, ...faced, ...friends], { volunteered: !!how.volunteered, calledOut: !!how.calledOut, beat: how.beat || null, voters: faced.length }, state.active, 'public');
 }

@@ -179,6 +179,9 @@ export default {
     2],
   'lt.h3': [
     { beat: '{a} watches {b} all afternoon. {b} talks to everybody, and says nothing about what {a} told {b.obj}.' },
+    { by: 'a', say: "Did anybody ask you about the vote today?" },
+    { by: 'b', say: "A couple of people. I didn't say anything. Why?" },
+    { by: 'a', say: "No reason. Just checking." },
     0],
 
   // ── leaving a group ──

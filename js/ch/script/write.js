@@ -23,6 +23,7 @@ import { pickEntry, newLedger } from '../../script/pick.js';
 import { stableRng } from '../../script/rng.js';
 import { POOLS } from './lines/index.js';
 import { rolesOf } from './roles.js';
+import { OPENERS, NO_OPENER } from './openers.js';
 import { factsFor } from './facts.js';
 import { voiceOf } from '../../td/story/voice.js';
 import { FAMILY } from '../../td/story/voice-family-map.js';
@@ -139,6 +140,16 @@ export function writeScene(state, scene) {
     Object.defineProperty(line, 'turn', { value: `${entry.id}:${i}`, enumerable: false });
     return line;
   });
+  // a conversation that would start on somebody already talking gets its setting first (openers.js)
+  if (lines[0]?.kind === 'say' && lines[0].by !== HOST && !NO_OPENER.has(scene.kind)) {
+    const used = ((state.openerUsed ||= {})[scene.day] ||= {});
+    const pool = (OPENERS[scene.kind] || []).filter(t => !used[t] && [...t.matchAll(TOKEN)].every(m => have.has(m[1])));
+    if (pool.length) {
+      const t = pool[Math.floor(stableRng(state.seed, 'opener', scene.id)() * pool.length)];
+      used[t] = 1;
+      lines.unshift({ kind: 'beat', by: null, text: fill(t, r.roles, r.slots), voice: null });
+    }
+  }
   return { lines, text: transcript(lines), lineId: entry.id, at: entry.at || placeOfWords(scene.spot, lines, scene.kind) };
 }
 

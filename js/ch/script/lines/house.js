@@ -338,8 +338,8 @@ export default {
     ] },
     { id: 'rq.o3', turns: [
       { by: 'a', say: "I just want to know why. Why me?" },
-      { by: 'b', say: "Because you're a threat. Take it as a compliment.", v: { soft: ['Because it was you or one of my friends. I\'m sorry.'] } },
-      { by: 'a', conf: "{b} called me a threat. Good. {b} is about to find out how right that is.", v: { soft: ['A compliment. Sure. It didn\'t feel like one.'] } },
+      { by: 'b', say: "Because it was you or one of my friends. Nothing personal.", v: { soft: ["Because you weren't one of my people. I'm sorry."] } },
+      { by: 'a', conf: "{b} said it was me or a friend. Now I know exactly where I stand with {b}.", v: { soft: ["Nothing personal. Sure. It didn't feel like nothing."] } },
     ] },
   ],
   'receipts.apology': [

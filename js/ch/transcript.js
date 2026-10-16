@@ -41,7 +41,14 @@ const TITLE = {
   quit: 'A decision', medical: 'The medic', disqualified: 'TJ arrives',
   'final-start': 'The final', overnight: 'The overnight', 'overnight-sabotage': 'The overnight', 'overnight-quit': 'The overnight',
   'final-pact-help': 'The final', 'final-pact-broken': 'The final', champions: 'The finish line',
-  'power-rankings': "TJ's power rankings", 'final-cp': 'A checkpoint', 'overnight-talk': 'At the fire', 'final-podium': 'The totals', 'final-congrats': 'Congratulations', 'final-lastword': 'Last words',
+  'power-rankings': "TJ's power rankings",
+  injury: 'Hurt', 'injury-healed': 'Back to full strength', 'injury-care': 'Ice and tape', 'injury-target': 'A weakness',
+  'bank-taken': 'The bank', 'bank-brag': 'The bank', 'money-talk': 'The bank', 'ranking-beef': "TJ's list",
+  'pass-earned': 'The skull', 'pass-cut': 'Before the final', 'pass-panic': 'No skull yet', 'pass-flex': 'The skull',
+  'redemption-arrive': 'Redemption House', 'redemption-watch': 'Redemption House', 'redemption-feud': 'Redemption House', 'redemption-duel': 'Redemption',
+  'redemption-return': 'Back from Redemption', 'redemption-closed': 'Redemption House',
+  'party-slip': 'Night out', 'party-deal': 'Night out', 'party-callout': 'Night out', 'party-tears': 'Night out', 'fight-physical': 'Night out',
+  'expelled-goodbye': 'Goodbye', 'expelled-blame': 'The fallout', 'expelled-victim': 'The fallout', 'final-cp': 'A checkpoint', 'overnight-talk': 'At the fire', 'final-podium': 'The totals', 'final-congrats': 'Congratulations', 'final-lastword': 'Last words',
 };
 const titleOf = kind => TITLE[kind] || 'In the villa';
 

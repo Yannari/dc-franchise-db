@@ -113,6 +113,9 @@ export default {
     2],
   'jl.q3': [
     { beat: '{b} and {c} sit together again. {a} sits on the other side of the room.' },
+    { by: 'b', say: "You've been quiet all night." },
+    { by: 'a', say: "Just tired." },
+    { by: 'b', say: "Okay. If you say so." },
     0],
 
   // ── the old shows: friendly ──

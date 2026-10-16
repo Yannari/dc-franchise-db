@@ -67,12 +67,20 @@ export default {
     2],
   'rt.c2': [
     { beat: "{a} is back, and {gone}'s bed is empty." },
+    { by: 'x', opt: 1, say: "Get over here!" },
+    { beat: '{x} gets to {a} first and nearly knocks {a} over.', opt: 'x' },
     { by: 'b', opt: 1, say: "Hey. You did it." },
     { by: 'a', opt: 'b', say: "I did it." },
+    { by: 'y', opt: 1, say: "I knew it. I told everybody you'd be back." },
+    { by: 'a', opt: 'y', say: "You did not." },
+    { by: 'y', opt: 1, say: "I told some people." },
     0],
   'rt.c3': [0, 1,
+    { by: 'x', opt: 1, say: "What was it? What game?" },
+    { by: 'a', opt: 'x', say: "Don't ask. My whole body hurts." },
     { by: 'b', opt: 1, say: "How do you feel?" },
     { by: 'a', opt: 'b', say: "Tired. Happy. I don't know yet." },
+    { by: 'y', opt: 1, say: "Sit down before you fall down." },
     { by: 'a', conf: "{gone} picked me because {gone} thought I was the easy one. Now everybody knows I'm not." }],
 
   // ── the morning after: two of them miss the one who went ──
@@ -109,11 +117,18 @@ export default {
     { by: 'b', opt: 1, say: "Are you coming to breakfast?" },
     { by: 'a', opt: 'b', say: "In a minute." },
     { by: 'a', conf: "I'll get up. I'll eat. I'll smile at people. But I'm going to be thinking about {gone} all day." }],
-  'ma.a3': [0, 1,
+  'ma.a3': [0,
+    { by: 'x', opt: 1, say: "You okay?" },
+    { by: 'a', opt: 'x', say: "No. But I will be." },
+    { by: 'x', opt: 1, say: "You've still got people in here, you know." },
+    1,
     { by: 'a', conf: "{gone} and I had a plan for the end of this game. I still have the plan. I just don't have {gone}." }],
   // ── the morning after: glad they're gone ──
   'ma.r1': [
     { beat: '{a} is up early and in a good mood, and is trying not to show it.' },
+    { by: 'x', opt: 1, say: "You seem chipper this morning." },
+    { by: 'a', opt: 'x', say: "I slept well. That's all." },
+    { by: 'x', opt: 1, say: "Uh huh. Sure." },
     0,
     { by: 'a', conf: "I'll say the nice things when people are around. I'm just not going to fake being sad." }],
   'ma.r2': [0, 1,
@@ -123,5 +138,8 @@ export default {
     2],
   'ma.r3': [
     { beat: 'Everybody is quiet this morning. {a} is quiet too, on purpose.' },
+    { by: 'x', opt: 1, say: "Can't believe {gone} is gone." },
+    { by: 'a', opt: 'x', say: "Me neither. Big loss." },
+    { beat: '{a} goes back to making coffee.' },
     0],
 };

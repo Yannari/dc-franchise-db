@@ -48,7 +48,14 @@ export default {
     { by: 'a', say: "Then we make sure it doesn't come out." },
     2],
   'dl.7': [
-    { beat: '{a} pulls {b} aside for a minute. When they come back, neither of them says what it was about.' },
+    { beat: '{a} pulls {b} into the gym, where nobody is listening.' },
+    { by: 'a', say: "I'll be quick. I think we'd be good for each other." },
+    { by: 'b', say: "Good for each other how?" },
+    { by: 'a', say: "You don't vote for me, I don't vote for you. And if either of us goes in, we don't call each other out." },
+    { by: 'b', say: "What's in it for me? You're safer than I am." },
+    { by: 'a', say: "Right now. Next week it could be the other way round." },
+    { by: 'b', say: "Okay. Deal. But it stays between us." },
+    { by: 'a', say: "Nobody else hears about it." },
     0],
 
   // ── a spark ──
@@ -114,7 +121,7 @@ export default {
   'rq.o1': [0, 1, 2,
     { by: 'b', say: "I'm not going to lie to your face. It was a game move." },
     { by: 'a', say: "A game move that almost sent me home." },
-    { by: 'b', say: "It didn't, though. You won. Nobody's going to put you in there again for a while." },
+    { by: 'b', say: "It didn't, though. You're still here." },
     { by: 'a', say: "No. But I know who I'm putting in there." },
     3],
   'rq.o2': [0, 1, 2,
@@ -127,7 +134,7 @@ export default {
     { by: 'a', say: "That's it? That's the reason?" },
     { by: 'b', say: "That's the reason. It's not complicated." },
     { by: 'a', say: "It's complicated for me. I almost went home." },
-    { by: 'b', say: "But you didn't. You won." },
+    { by: 'b', say: "But you didn't. You're still standing here." },
     2],
   'rq.a1': [0, 1, 2,
     { by: 'b', say: "If it helps, I'm not going to do it again." },

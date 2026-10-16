@@ -328,6 +328,11 @@ const ROOM_WORDS = [
   ['kitchen', /^(the )?kitchen\b/i, /\b(breakfast|making (?:dinner|lunch|tea|coffee|toast)|the dishes|washing up|the fridge|the oven|the stove|cooking)\b/i],
   ['living-room', /^(the )?living room\b/i, null],
 ];
+// The room every stage direction of a scene puts it in, not only the first (read 2026-10-15: tc.l7 has them on a
+// bed three beats in, and the scene was moved to the kitchen for variety). Dialogue is left out: "I was in bed"
+// says where somebody was, not where the scene is.
+const stagedIn = entry => entry?.room || roomFromText((entry?.turns || []).filter(t => t.beat).map(t => ({ kind: 'beat', text: t.beat })));
+
 export function roomFromText(lines) {
   const ls = (lines || []).filter(l => l && l.text);
   const first = ls.find(l => l.kind === 'beat');
@@ -401,8 +406,9 @@ export function writeWitnessAfter(w, ctx, at) {
   const entry = pick([key], who, { x: other }, ctx, null, salt);
   if (!entry) return null;
   const sp = spotFor('witness.after.apology', [letDown, w.name], ctx, salt, JSON.stringify(entry.turns));
-  let room = sp?.room || 'kitchen';
-  if (!sp && ctx.avoidRoom) {
+  const stagedW = stagedIn(entry);
+  let room = (stagedW && stagedW !== 'diary-room' ? stagedW : null) || sp?.room || 'kitchen';
+  if (!sp && !stagedW && ctx.avoidRoom) {
     const ROTA = ['kitchen', 'living-room', 'backyard', 'bedroom'].filter(r => r !== ctx.avoidRoom);
     room = ROTA[[...salt].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7) % ROTA.length];
   }
@@ -436,8 +442,7 @@ function writeKeyed(key, t, ctx, at, o) {
   const salt = `${o.id}|${Object.values(who).join('>')}`;
   const entry = pick([key], who, data, ctx, null, salt);
   if (!entry) return null;
-  const first = entry.turns.filter(x => x.beat).slice(0, 1).map(x => ({ kind: 'beat', text: x.beat }));
-  const named = entry.room || roomFromText(first);
+  const named = stagedIn(entry);
   const cast = Object.values(who).filter(Boolean);
   const sp = named ? null : spotFor(o.spotKind, cast, ctx, salt, JSON.stringify(entry.turns));
   let room = (named && named !== 'diary-room' ? named : null) || sp?.room || null;
@@ -610,7 +615,7 @@ function writeStoryScene0(line, step, ctx) {
   // Inside a set piece too: a scene that stages its own room ("Bedroom, after lights out") is not
   // folded into the kitchen around it; it is marked, and the director airs it as its own scene
   // (the user, 2026-10-06: "it didn't switch scenes, we were still in the kitchen")
-  const named = entry.room ? null : roomFromText(entry.turns.filter(t => t.beat).slice(0, 1).map(t => ({ kind: 'beat', text: t.beat })));
+  const named = entry.room ? null : stagedIn({ turns: entry.turns });
   // a conversation that wants privacy goes to one of the places for it (bb/story/places.js): the
   // storage room, the bathroom, or out on the island
   const sp = !entry.room && !named && !ctx.inSet ? spotFor(`${line.type}.${step.step}.${step.outcome}`, base.cast, ctx, base.id, JSON.stringify(entry.turns)) : null;
@@ -689,7 +694,8 @@ function writeGameTalk0(talk, ctx, at) {
   // does not air again (the read of 2026-10-14: the same style.social scene twice)
   const entry = pick([key], who, data, { ...ctx, phase: talk.phase }, room, salt, true);
   if (!entry) return null;
-  if (entry.room) room = entry.room;
+  const stagedT = stagedIn(entry);
+  if (stagedT && stagedT !== 'diary-room') room = stagedT;
   else if (ctx.avoidRoom) {
     const ROTA = ['kitchen', 'living-room', 'backyard', 'bedroom'].filter(r => r !== ctx.avoidRoom);
     room = ROTA[[...salt].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7) % ROTA.length];
@@ -697,8 +703,7 @@ function writeGameTalk0(talk, ctx, at) {
   // a scene staged outdoors ("the backyard", "the hammock", "by the pool") is in the backyard
   if (!entry.room && /backyard|hammock|pool|lounger|grass/i.test(entry.turns[0]?.beat || '')) room = 'backyard';
   // ...and a private one that stages nowhere can go somewhere private (bb/story/places.js)
-  const staged = entry.room || /backyard|hammock|pool|lounger|grass/i.test(entry.turns[0]?.beat || '')
-    || roomFromText(entry.turns.filter(t => t.beat).slice(0, 1).map(t => ({ kind: 'beat', text: t.beat })));
+  const staged = entry.room || /backyard|hammock|pool|lounger|grass/i.test(entry.turns[0]?.beat || '') || stagedT;
   const sp = staged ? null : spotFor(`talk.${kind}`, cast, ctx, salt, JSON.stringify(entry.turns));
   if (sp) room = sp.room;
   const lines = render(entry, who, ctx, data);

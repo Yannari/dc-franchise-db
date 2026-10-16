@@ -212,14 +212,14 @@ export default {
   },
   'lt.c2': {
     0: {
-      sharp: ["Vote me in. Go on. I'm not scared of the Arena. {b} should be.", "Put my name down. Just know {b} is the one coming in with me."],
+      sharp: ["Vote me in. Go on. I'm not scared of the Arena. {b}, you should be.", "Put my name down. Just know {b} is the one coming in with me."],
       dry: ["Vote me in if you want. I'm not scared of the Arena. {b}, you might want to be.", "Go ahead. I'll be fine in the Arena. {b}, I'm not sure you will."],
       loud: ["Go ahead! Vote me in! I'm not scared! But {b}, you should be!", "Vote me in, I dare you! {b}, you're coming with me!"],
-      soft: ["Vote me in if you need to. I'll be okay in there. I'm not sure {b} will be.", "I'm not scared of the Arena. But {b}, I think you should be."],
-      odd: ["Vote me in! I love the Arena! It's my happy place! {b}, it's not your happy place.", "Go ahead, vote me in. The Arena and I are friends. {b} and the Arena are not."],
+      soft: ["Vote me in if you need to. I'll be okay in there. {b}, I'm not sure you will be.", "I'm not scared of the Arena. But {b}, I think you should be."],
+      odd: ["Vote me in! I love the Arena! It's my happy place! {b}, it's not your happy place.", "Go ahead, vote me in. The Arena and I are friends. You and the Arena are not, {b}."],
     },
     1: {
-      sharp: ["Am I supposed to be scared?", "Cute. Is that supposed to scare me?"],
+      sharp: ["Is that supposed to scare me?", "Cute. Is that supposed to scare me?"],
       dry: ["Is that meant to scare me?", "Is that supposed to scare me, or what?"],
       loud: ["Is that supposed to SCARE me?", "Ooh. Is that supposed to scare me now?!"],
       soft: ["Are you trying to scare me?", "Why would you say that? Is that supposed to scare me?"],

@@ -101,7 +101,7 @@ export default {
   'rm.hp3': {
     1: { sharp: "We heard you from the driveway.", dry: "We heard you from the driveway.", loud: "We could hear you from the DRIVEWAY!", soft: "We heard you all the way from the driveway.", odd: "We heard you from the driveway. The neighbors heard you." },
     2: { sharp: "Good. I want the whole island to hear.", dry: "Good. Let the island hear.", loud: "GOOD! I want the WHOLE ISLAND to hear!", soft: "Good! I want the whole island to hear it.", odd: "Good! I want the whole island to hear! The fish too!" },
-    3: { sharp: "One day you're the name everybody says at the vote, the next you're back in your bunk. I love this stupid game.", dry: "Voted in one night, back in my bunk the next. I love this game.",
+    3: { sharp: "One day you're the name everybody says at the vote, the next you're back in your bunk. I love this stupid game.", dry: "I was voted in one night and back in my bunk the next. I love this game.",
       loud: "One day you're the name EVERYBODY says, the next you're back in your BUNK! I LOVE this stupid game!", soft: "One day you're the name everybody says at the vote, and the next you're back in your bunk. I love this stupid game.",
       odd: "One day you're the name at the vote, the next you're back in your bunk with your socks. I love this stupid game." },
   },

@@ -463,7 +463,7 @@ export default {
       soft: "Okay. So we go back out there and act normal. Nobody stands in a corner whispering.", odd: "Okay. We go back out there and act normal. As normal as we get." },
     9: { sharp: "Then we shouldn't all walk out at once.", dry: "Don't all leave at once.", loud: "Then we shouldn't ALL walk out at ONCE!", soft: "Then we shouldn't all walk out of here at once.", odd: "Then we shouldn't all walk out at once like a parade." },
     10: { sharp: "Good point. One or two at a time.", dry: "Right. One or two at a time.", loud: "GOOD point! One or two at a time!", soft: "Good point. One or two at a time.", odd: "Good point. One or two at a time. Very stealthy." },
-    11: { sharp: "Ten minutes in a room and the vote is decided. That's what having the numbers feels like, and I'm not giving it up.", dry: "Ten minutes and the vote's decided. That's having the numbers.",
+    11: { sharp: "Ten minutes in a room and the vote is decided. That's what having the numbers feels like, and I'm not giving it up.", dry: "It took ten minutes to decide the vote. That's what having the numbers looks like.",
       loud: "TEN MINUTES in a room and the vote is DECIDED! That's what having the numbers feels like!", soft: "Ten minutes in a room and the vote is decided. That's what having the numbers feels like, and I'm not giving it up.",
       odd: "Ten minutes in a room and the vote is done. Having the numbers is like having the remote." },
   },

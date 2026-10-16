@@ -37,7 +37,7 @@ export default {
     4: { sharp: "Can we not? I didn't write the list. I just top it.", soft: "Can we not do this? I didn't make the list, I promise.", loud: "Can we not?! I didn't make the list!", dry: "I didn't make the list." },
     5: { sharp: "No. You're just sitting on top of it.", soft: "No, you're just at the top of it. That's all.", loud: "No! You're just at the top of it!", dry: "No. You're just at the top of it." },
     7: { sharp: "Number one feels great for about five seconds. Then I looked around the room and counted my enemies. There are more of them now.", soft: "Number one felt great for about five seconds. Then I looked around and everybody was looking back at me. It's scary.", loud: "Number one! Great! Five seconds later, everybody's staring at me!", dry: "Number one lasts about five seconds as a feeling. After that it's a target." },
-    8: { sharp: "Last. TJ put me last in front of everybody. Wonderful. Let them underestimate me. It's the nicest thing they'll ever do for me.", soft: "Last. TJ put me last in front of everybody. That hurt. But I'm going to show them.", loud: "LAST! TJ put me LAST! Watch what last does in the Arena!", dry: "Last place, on the record. I'll take the low expectations." },
+    8: { sharp: "Last. TJ put me last in front of everybody. Wonderful. Let them underestimate me. It's the nicest thing they'll ever do for me.", soft: "Last. TJ put me last in front of everybody. That hurt. But I'm going to show them.", loud: "LAST! TJ put me LAST! Watch what last does in the Arena!", dry: "I'm in last place, on the record. I'll take the low expectations." },
   },
   'st.prx5': {
     4: { sharp: "You're last. Aren't you scared?", soft: "You're last, though. Aren't you scared?", loud: "You're LAST! Aren't you scared?", dry: "You're last. Doesn't that scare you?" },
@@ -62,7 +62,7 @@ export default {
   },
   'pt.c3': {
     1: { sharp: "Is it the game, or is it home?", soft: "Is it the game, or is it home? You can tell me.", loud: "Game or home? Which one?", dry: "Is it the game or home?" },
-    3: { sharp: "One glass of water, then we go back in together. Nobody needs to see this.", soft: "Okay. One drink of water, then we go back in together. I've got you.", loud: "One water, then we go back in! Together!", dry: "One glass of water. Then back in, together." },
+    3: { sharp: "One glass of water, then we go back in together. Nobody needs to see this.", soft: "Okay. One drink of water, then we go back in together. I've got you.", loud: "One water, then we go back in! Together!", dry: "Drink one glass of water, and then we go back in together." },
     6: { sharp: "I came out tonight to forget the game. Instead I found out who in here actually matters.", soft: "I came out tonight to forget about the game. Instead I found out who my real friend is in here.", loud: "I came out to forget the game! I found a real friend instead!", dry: "I came out to forget the game. I learned who my real friend is instead." },
   },
   // ── jealousy ──
@@ -106,7 +106,7 @@ export default {
     5: { sharp: "That's the worst excuse I've ever heard, and I've heard a lot of them.", soft: "That's the worst excuse I've ever heard. It's kind of cute.", loud: "That's the WORST excuse ever!", dry: "That's a poor excuse." },
     7: { sharp: "You can just say you're looking at me. I won't make it weird. Much.", soft: "You can just say you're looking at me, you know.", loud: "Just say you're looking at me!", dry: "You could simply say you're looking at me." },
     8: { sharp: "Fine. I'm looking at you. Happy?", soft: "Okay. Fine. I'm looking at you.", loud: "FINE! I'm looking at you!", dry: "Fine. I'm looking at you." },
-    9: { sharp: "I'm here to win money, not to get caught staring across a pool. I'm usually much better at not getting caught.", soft: "I'm here to win money, not to get caught staring across a swimming pool. Apparently I can do both.", loud: "I came here to win! Not to stare across a pool! I can do both!", dry: "Caught staring across a pool. I can apparently do that and compete." },
+    9: { sharp: "I'm here to win money, not to get caught staring across a pool. I'm usually much better at not getting caught.", soft: "I'm here to win money, not to get caught staring across a swimming pool. Apparently I can do both.", loud: "I came here to win! Not to stare across a pool! I can do both!", dry: "I got caught staring across a pool. Apparently I can do that and compete at the same time." },
   },
   // ── recruiting by the loungers ──
   'rc.ax2': {
@@ -120,7 +120,7 @@ export default {
   // ── the pick, the morning of ──
   'pick.4': {
     0: { sharp: "You look like you didn't sleep. It's not a good look before an Arena.", soft: "You look like you didn't sleep. Are you okay?", loud: "You look terrible! Did you sleep at all?", dry: "You look like you didn't sleep.", odd: "You look like a raccoon. A tired raccoon." },
-    3: { sharp: "Because of the pick. {opt1}, {opt2}, {opt1}, {opt2}. All night. I'm sick of both of them.", soft: "Because of the pick. {opt1}, {opt2}, {opt1}, {opt2}. All night long.", loud: "The pick! {opt1}! {opt2}! All night!", dry: "The pick. {opt1}, {opt2}, repeat. All night." },
+    3: { sharp: "Because of the pick. {opt1}, {opt2}, {opt1}, {opt2}. All night. I'm sick of both of them.", soft: "Because of the pick. {opt1}, {opt2}, {opt1}, {opt2}. All night long.", loud: "The pick! {opt1}! {opt2}! All night!", dry: "The pick. I've gone from {opt1} to {opt2} and back all night." },
     4: { sharp: "Whoever it is, you go in there and you don't look back. Ever.", soft: "Whoever it is, you go in there and you don't look back. Promise me.", loud: "Whoever it is, you go in and DON'T look back!", dry: "Whoever it is, go in and don't look back." },
     6: { sharp: "And whatever happens, I'll be in the stand. Front row.", soft: "And whatever happens, I'm right there in the stand. I promise.", loud: "And I'll be in the stand! Screaming!", dry: "I'll be in the stand regardless." },
     7: { sharp: "{a} won't tell me who it is. {a} knows. {a} just doesn't have the stomach to say it yet.", soft: "{a} won't tell me who it is. I think {a} knows, and is just scared of saying it.", loud: "{a} knows who it is! {a} just won't say it!", dry: "{a} knows. {a} just hasn't said it." },

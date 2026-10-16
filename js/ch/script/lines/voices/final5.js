@@ -249,7 +249,7 @@ export default {
       odd: "Losing is bad. Losing and then watching your partner sulk is like losing twice." },
   },
   'pb.6': {
-    0: { sharp: "I picked the wrong partner, or the wrong partner got picked for me. Either way, I'm the one who pays for it at the vote.", dry: "Wrong partner, whoever picked. I pay for it at the vote.",
+    0: { sharp: "I picked the wrong partner, or the wrong partner got picked for me. Either way, I'm the one who pays for it at the vote.", dry: "I got the wrong partner, whoever picked. I'll pay for it at the vote.",
       loud: "I picked the WRONG partner, or the wrong partner got picked for me! Either way, I'm the one paying for it at the vote!", soft: "I picked the wrong partner, or the wrong partner got picked for me. Either way, I'm the one who has to live with it at the vote.",
       odd: "I picked the wrong partner, or the wrong partner picked me. Either way the vote sends me the bill." },
     1: { sharp: "We fell apart out there. Now people are going to look at both of us like we're easy to send in.", dry: "We fell apart. Now we both look easy to send in.",

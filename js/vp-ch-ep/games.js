@@ -29,7 +29,7 @@ export const DAILY_STAGE = {
   'raft-king': { plate: 'poles', hour: 'day', show: 'played', place: 'The Raft', spot: 'beach', verb: 'push', water: true },
   'cut-rope': { plate: 'dock', hour: 'day', show: 'played', place: 'The Dock', spot: 'dock', verb: 'hang', water: true },
   'double-cross': { plate: 'beach', hour: 'day', show: 'race', place: 'The Reef', spot: 'beach', verb: 'swim', water: true },
-  'trust-fall': { plate: 'cliff', hour: 'day', show: 'played', place: 'The Cliff', spot: 'cliff-jump', verb: 'jump', water: true },
+  'trust-fall': { plate: 'tower', hour: 'day', show: 'played', place: 'The Tower', spot: 'lagoon', verb: 'jump', water: true },
   'who-said-it': { plate: 'club', hour: 'night', show: 'played', place: 'The Beach Club', spot: 'club', verb: 'quiz' },
   'jungle-maze': { plate: 'maze', hour: 'day', show: 'race', place: 'The Jungle Maze', spot: 'tiki-path', verb: 'maze' },
   'hang-on': { plate: 'dock', hour: 'day', show: 'hang', place: 'The Dock', spot: 'dock', verb: 'hang', water: true },

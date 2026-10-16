@@ -144,7 +144,7 @@ export function doubleCrossSteps(d, ctx) {
     const key = `dc${i}`;
     const unit = b.who, [a, bb] = unit;
     const choice = b.data.choice || { [a]: b.data.a, [bb]: b.data.b };
-    out.push({ scene: ctx.scene('board', false, Object.fromEntries(unit.map((n, j) => [n, ['stand', 2 + j * 2]]))), ...tj(line(ctx, DC.board, { a: nameList(unit.slice(0, -1)), b: unit[unit.length - 1] }, key)), focus: ['TJ', ...unit] });
+    out.push({ scene: ctx.scene('vault', false, Object.fromEntries(unit.map((n, j) => [n, j < 2 ? ['stand', j, 'pod'] : ['stand', j - 2]]))), ...tj(line(ctx, DC.board, { a: nameList(unit.slice(0, -1)), b: unit[unit.length - 1] }, key)), focus: ['TJ', ...unit] });
     if (b.data.k === 0) out.push(tj(DC.rules[0]));
     const t1 = voice(ctx, DC.think, a, {}, key + 'a'); if (t1) out.push(say(a, t1, bb));
     const t2 = voice(ctx, DC.thinkB, bb, {}, key + 'b'); if (t2) out.push(say(bb, t2, a));
@@ -165,13 +165,13 @@ export function doubleCrossSteps(d, ctx) {
 
 // ── Trust Fall ────────────────────────────────────────────────────────
 const TF = {
-  start: ['One by one, the pairs walk up to the top of the cliff. One partner puts on a blindfold. The other takes the rope.'],
+  start: ['One by one, the pairs go out to the tower. One partner climbs to the plank and puts on a blindfold. The other goes to the lever on the dock.'],
   tj: ["Fallers, you let go when you're ready. Catchers, you catch them. Or you don't, and I give you a phone call home. Your choice!"],
-  edge: ['{f} stands at the edge with the blindfold on, and {c} takes up the rope.', '{c} holds the rope. {f} shuffles to the edge.', '{f} feels for the edge with {pos} heel. {c} wraps the rope round both hands.'],
+  edge: ['{f} stands at the end of the plank with the blindfold on, and {c} takes the lever.', '{c} grips the lever. Up on the plank, {f} shuffles to the edge.', '{f} feels for the end of the plank with {pos} heel. {c} puts both hands on the lever.'],
   wait: ['{f} stands there a long time before letting go.', '{f} says "Okay. Okay. Okay." and still does not move.'],
   go: ['{f} drops backwards straight away.', '{f} lets go without a second thought.'],
-  caught: ['{c} catches {f} a metre from the edge.', 'The rope goes tight. {c} has {f}.', '{c} holds on. {f} swings in safe.'],
-  dropped: ["{c} lets the rope run. {f} drops all the way into the water.", '{c} opens {cpos} hands. {f} falls.'],
+  caught: ['{c} pulls the lever at the right moment, and the net catches {f}.', 'The safety line goes tight. {c} has {f}.', '{c} holds the lever down. {f} swings in safe.'],
+  dropped: ["{c} lets go of the lever. {f} drops all the way into the water.", '{c} takes {cpos} hands off the lever. {f} falls.'],
   win: ['{w} had the fastest clean fall! {w} win!'],
 };
 export function trustFallSteps(d, ctx) {
@@ -179,13 +179,13 @@ export function trustFallSteps(d, ctx) {
   let shown = 0;
   for (const [i, b] of (d.beats || []).entries()) {
     const key = `tf${i}`;
-    if (b.kind === 'trust-start') { out.push({ scene: ctx.scene('cliff-top', false, {}), dir: line(ctx, TF.start, {}, key), focus: [] }); out.push(tj(TF.tj[0])); continue; }
+    if (b.kind === 'trust-start') { out.push({ scene: ctx.scene('tower', false, {}), dir: line(ctx, TF.start, {}, key), focus: [] }); out.push(tj(TF.tj[0])); continue; }
     if (b.kind === 'caught' || b.kind === 'dropped') {
       const [f, c] = b.who;
       const drop = b.kind === 'dropped';
       if (!drop && ++shown > 5) continue;
       const pos = ctx.V.pron?.[f]?.posAdj || 'their', cpos = ctx.V.pron?.[c]?.posAdj || 'their';
-      out.push({ scene: ctx.scene('cliff-top', false, { [f]: ['stand', 1], [c]: ['stand', 2] }), dir: line(ctx, TF.edge, { f, c, pos }, key), focus: [f, c] });
+      out.push({ scene: ctx.scene('tower', false, { [f]: ['stand', 0, 'plank'], [c]: ['stand', 0, 'lever'] }), dir: line(ctx, TF.edge, { f, c, pos }, key), focus: [f, c] });
       out.push({ dir: line(ctx, b.data.hesitate > 0.5 ? TF.wait : TF.go, { f }, key + 'w'), focus: [f] });
       if (drop) {
         out.push({ dir: line(ctx, TF.dropped, { f, c, cpos }, key + 'r'), drop: [f], splash: 1, shake: 1, focus: [c, f], know: ['Let go', `${c} chose the call home over ${f}.`] });

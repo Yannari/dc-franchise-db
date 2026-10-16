@@ -7617,5 +7617,1480 @@
         450
       ]
     ]
+  },
+  "buried": {
+    "_doc": "Buried: a flat stretch of sand by the water; one coffin and one buzzer podium per pair are cut-outs (props coffin, buzzer).",
+    "from": "G02-buried/scene2.png",
+    "spot": "buried",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 150,
+        "y": 700,
+        "h": 112,
+        "group": "ans"
+      },
+      {
+        "kind": "stand",
+        "x": 380,
+        "y": 700,
+        "h": 112,
+        "group": "ans"
+      },
+      {
+        "kind": "stand",
+        "x": 610,
+        "y": 700,
+        "h": 112,
+        "group": "ans"
+      },
+      {
+        "kind": "stand",
+        "x": 840,
+        "y": 700,
+        "h": 112,
+        "group": "ans"
+      },
+      {
+        "kind": "stand",
+        "x": 1070,
+        "y": 700,
+        "h": 112,
+        "group": "ans"
+      },
+      {
+        "kind": "stand",
+        "x": 1300,
+        "y": 700,
+        "h": 112,
+        "group": "ans"
+      },
+      {
+        "kind": "stand",
+        "x": 150,
+        "y": 600,
+        "h": 70,
+        "group": "coffin"
+      },
+      {
+        "kind": "stand",
+        "x": 380,
+        "y": 600,
+        "h": 70,
+        "group": "coffin"
+      },
+      {
+        "kind": "stand",
+        "x": 610,
+        "y": 600,
+        "h": 70,
+        "group": "coffin"
+      },
+      {
+        "kind": "stand",
+        "x": 840,
+        "y": 600,
+        "h": 70,
+        "group": "coffin"
+      },
+      {
+        "kind": "stand",
+        "x": 1070,
+        "y": 600,
+        "h": 70,
+        "group": "coffin"
+      },
+      {
+        "kind": "stand",
+        "x": 1300,
+        "y": 600,
+        "h": 70,
+        "group": "coffin"
+      },
+      {
+        "kind": "stand",
+        "x": 100,
+        "y": 880,
+        "h": 120
+      },
+      {
+        "kind": "stand",
+        "x": 400,
+        "y": 880,
+        "h": 120
+      },
+      {
+        "kind": "stand",
+        "x": 700,
+        "y": 880,
+        "h": 120
+      },
+      {
+        "kind": "stand",
+        "x": 1000,
+        "y": 880,
+        "h": 120
+      },
+      {
+        "kind": "host",
+        "x": 1440,
+        "y": 700,
+        "h": 118
+      }
+    ],
+    "pool": [
+      [
+        0,
+        500,
+        1600,
+        600,
+        false,
+        800,
+        550
+      ]
+    ],
+    "sway": [
+      [
+        40,
+        300,
+        200,
+        480,
+        0.35
+      ],
+      [
+        500,
+        380,
+        600,
+        500,
+        0.35
+      ],
+      [
+        1000,
+        360,
+        1120,
+        500,
+        0.35
+      ],
+      [
+        1200,
+        400,
+        1280,
+        480,
+        0.35
+      ],
+      [
+        1460,
+        260,
+        1580,
+        460,
+        0.35
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        0,
+        30,
+        1600,
+        280
+      ],
+      [
+        "crab",
+        100,
+        760,
+        1500,
+        880
+      ]
+    ]
+  },
+  "banquet": {
+    "_doc": "Food Wars and Poison Cup: the long banquet table on the beach; domes, cups and stools are cut-outs, one per player.",
+    "from": "G03-banquet/scene-v2.png",
+    "spot": "banquet",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 130,
+        "y": 472,
+        "h": 100,
+        "group": "seat"
+      },
+      {
+        "kind": "stand",
+        "x": 255,
+        "y": 472,
+        "h": 100,
+        "group": "seat"
+      },
+      {
+        "kind": "stand",
+        "x": 380,
+        "y": 472,
+        "h": 100,
+        "group": "seat"
+      },
+      {
+        "kind": "stand",
+        "x": 505,
+        "y": 472,
+        "h": 100,
+        "group": "seat"
+      },
+      {
+        "kind": "stand",
+        "x": 630,
+        "y": 472,
+        "h": 100,
+        "group": "seat"
+      },
+      {
+        "kind": "stand",
+        "x": 755,
+        "y": 472,
+        "h": 100,
+        "group": "seat"
+      },
+      {
+        "kind": "stand",
+        "x": 880,
+        "y": 472,
+        "h": 100,
+        "group": "seat"
+      },
+      {
+        "kind": "stand",
+        "x": 1005,
+        "y": 472,
+        "h": 100,
+        "group": "seat"
+      },
+      {
+        "kind": "stand",
+        "x": 1130,
+        "y": 472,
+        "h": 100,
+        "group": "seat"
+      },
+      {
+        "kind": "stand",
+        "x": 200,
+        "y": 700,
+        "h": 116
+      },
+      {
+        "kind": "stand",
+        "x": 500,
+        "y": 700,
+        "h": 116
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 700,
+        "h": 116
+      },
+      {
+        "kind": "stand",
+        "x": 1100,
+        "y": 700,
+        "h": 116
+      },
+      {
+        "kind": "host",
+        "x": 1310,
+        "y": 660,
+        "h": 116
+      }
+    ],
+    "pool": [
+      [
+        0,
+        360,
+        1600,
+        460,
+        false,
+        800,
+        410
+      ]
+    ],
+    "sway": [
+      [
+        40,
+        0,
+        200,
+        460,
+        0.35
+      ],
+      [
+        1460,
+        80,
+        1600,
+        380,
+        0.35
+      ],
+      [
+        0,
+        700,
+        300,
+        900,
+        0.3
+      ]
+    ],
+    "fire": [
+      [
+        1500,
+        560,
+        28
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        0,
+        30,
+        1600,
+        300
+      ],
+      [
+        "crab",
+        300,
+        700,
+        1300,
+        880
+      ]
+    ]
+  },
+  "crates": {
+    "_doc": "The Box: a jungle clearing; a crate and an easel per player are cut-outs.",
+    "from": "G04-critter-crates/scene.png",
+    "spot": "crates",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 120,
+        "y": 540,
+        "h": 96,
+        "group": "box"
+      },
+      {
+        "kind": "stand",
+        "x": 360,
+        "y": 540,
+        "h": 96,
+        "group": "box"
+      },
+      {
+        "kind": "stand",
+        "x": 600,
+        "y": 540,
+        "h": 96,
+        "group": "box"
+      },
+      {
+        "kind": "stand",
+        "x": 840,
+        "y": 540,
+        "h": 96,
+        "group": "box"
+      },
+      {
+        "kind": "stand",
+        "x": 1080,
+        "y": 540,
+        "h": 96,
+        "group": "box"
+      },
+      {
+        "kind": "stand",
+        "x": 1320,
+        "y": 540,
+        "h": 96,
+        "group": "box"
+      },
+      {
+        "kind": "stand",
+        "x": 110,
+        "y": 690,
+        "h": 112,
+        "group": "box"
+      },
+      {
+        "kind": "stand",
+        "x": 350,
+        "y": 690,
+        "h": 112,
+        "group": "box"
+      },
+      {
+        "kind": "stand",
+        "x": 590,
+        "y": 690,
+        "h": 112,
+        "group": "box"
+      },
+      {
+        "kind": "stand",
+        "x": 830,
+        "y": 690,
+        "h": 112,
+        "group": "box"
+      },
+      {
+        "kind": "stand",
+        "x": 1070,
+        "y": 690,
+        "h": 112,
+        "group": "box"
+      },
+      {
+        "kind": "stand",
+        "x": 1310,
+        "y": 690,
+        "h": 112,
+        "group": "box"
+      },
+      {
+        "kind": "host",
+        "x": 1500,
+        "y": 660,
+        "h": 112
+      }
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        1600,
+        380,
+        0.3
+      ],
+      [
+        0,
+        700,
+        260,
+        900,
+        0.4
+      ],
+      [
+        1300,
+        640,
+        1600,
+        900,
+        0.4
+      ]
+    ],
+    "critters": [
+      [
+        "parrot",
+        200,
+        0,
+        1600,
+        260
+      ]
+    ]
+  },
+  "cages": {
+    "_doc": "Locked In: shallow water off the beach; a cage tunnel and a bell per player are cut-outs.",
+    "from": "G05-sunken-cages/scene-v3.png",
+    "spot": "cages",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 240,
+        "y": 560,
+        "h": 80,
+        "group": "lane"
+      },
+      {
+        "kind": "stand",
+        "x": 240,
+        "y": 630,
+        "h": 88,
+        "group": "lane"
+      },
+      {
+        "kind": "stand",
+        "x": 240,
+        "y": 700,
+        "h": 96,
+        "group": "lane"
+      },
+      {
+        "kind": "stand",
+        "x": 240,
+        "y": 770,
+        "h": 104,
+        "group": "lane"
+      },
+      {
+        "kind": "stand",
+        "x": 1240,
+        "y": 560,
+        "h": 80,
+        "group": "bell"
+      },
+      {
+        "kind": "stand",
+        "x": 1240,
+        "y": 630,
+        "h": 88,
+        "group": "bell"
+      },
+      {
+        "kind": "stand",
+        "x": 1240,
+        "y": 700,
+        "h": 96,
+        "group": "bell"
+      },
+      {
+        "kind": "stand",
+        "x": 1240,
+        "y": 770,
+        "h": 104,
+        "group": "bell"
+      },
+      {
+        "kind": "stand",
+        "x": 300,
+        "y": 450,
+        "h": 80
+      },
+      {
+        "kind": "stand",
+        "x": 500,
+        "y": 450,
+        "h": 80
+      },
+      {
+        "kind": "stand",
+        "x": 700,
+        "y": 450,
+        "h": 80
+      },
+      {
+        "kind": "host",
+        "x": 1500,
+        "y": 520,
+        "h": 96
+      }
+    ],
+    "pool": [
+      [
+        0,
+        480,
+        1600,
+        820,
+        false,
+        700,
+        640
+      ]
+    ],
+    "sway": [
+      [
+        1580,
+        200,
+        1600,
+        360,
+        0.3
+      ],
+      [
+        1380,
+        200,
+        1460,
+        340,
+        0.35
+      ],
+      [
+        140,
+        280,
+        240,
+        400,
+        0.35
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        0,
+        30,
+        1600,
+        300
+      ]
+    ]
+  },
+  "truck-bed": {
+    "_doc": "Road Kill: the back of the flatbed truck with its nets.",
+    "from": "G06-truck-bed/scene.png",
+    "spot": "truck-bed",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 680,
+        "y": 360,
+        "h": 82,
+        "group": "bed"
+      },
+      {
+        "kind": "stand",
+        "x": 780,
+        "y": 360,
+        "h": 82,
+        "group": "bed"
+      },
+      {
+        "kind": "stand",
+        "x": 880,
+        "y": 360,
+        "h": 82,
+        "group": "bed"
+      },
+      {
+        "kind": "stand",
+        "x": 560,
+        "y": 470,
+        "h": 96,
+        "group": "bed"
+      },
+      {
+        "kind": "stand",
+        "x": 720,
+        "y": 470,
+        "h": 96,
+        "group": "bed"
+      },
+      {
+        "kind": "stand",
+        "x": 880,
+        "y": 470,
+        "h": 96,
+        "group": "bed"
+      },
+      {
+        "kind": "stand",
+        "x": 1040,
+        "y": 470,
+        "h": 96,
+        "group": "bed"
+      },
+      {
+        "kind": "stand",
+        "x": 440,
+        "y": 600,
+        "h": 112,
+        "group": "bed"
+      },
+      {
+        "kind": "stand",
+        "x": 620,
+        "y": 600,
+        "h": 112,
+        "group": "bed"
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 600,
+        "h": 112,
+        "group": "bed"
+      },
+      {
+        "kind": "stand",
+        "x": 980,
+        "y": 600,
+        "h": 112,
+        "group": "bed"
+      },
+      {
+        "kind": "stand",
+        "x": 1160,
+        "y": 600,
+        "h": 112,
+        "group": "bed"
+      },
+      {
+        "kind": "stand",
+        "x": 200,
+        "y": 520,
+        "h": 96,
+        "group": "net"
+      },
+      {
+        "kind": "stand",
+        "x": 320,
+        "y": 470,
+        "h": 96,
+        "group": "net"
+      },
+      {
+        "kind": "stand",
+        "x": 1300,
+        "y": 470,
+        "h": 96,
+        "group": "net"
+      },
+      {
+        "kind": "stand",
+        "x": 1420,
+        "y": 520,
+        "h": 96,
+        "group": "net"
+      },
+      {
+        "kind": "host",
+        "x": 1520,
+        "y": 700,
+        "h": 116
+      }
+    ],
+    "pool": [
+      [
+        0,
+        300,
+        1600,
+        340,
+        false,
+        800,
+        320
+      ]
+    ],
+    "sway": [
+      [
+        40,
+        40,
+        120,
+        220,
+        0.35
+      ],
+      [
+        1340,
+        40,
+        1460,
+        200,
+        0.35
+      ],
+      [
+        300,
+        160,
+        420,
+        240,
+        0.3
+      ],
+      [
+        1100,
+        120,
+        1220,
+        240,
+        0.3
+      ]
+    ],
+    "cloth": [
+      [
+        100,
+        300,
+        480,
+        560,
+        0.15
+      ],
+      [
+        1040,
+        300,
+        1500,
+        560,
+        0.15
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        0,
+        30,
+        1600,
+        240
+      ]
+    ]
+  },
+  "log": {
+    "_doc": "Rolling in the Deep: the two steel frames in the lagoon; the log is a cut-out.",
+    "from": "G07-spinning-log/scene.png",
+    "spot": "log",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 560,
+        "y": 440,
+        "h": 96,
+        "group": "hang"
+      },
+      {
+        "kind": "stand",
+        "x": 680,
+        "y": 440,
+        "h": 96,
+        "group": "hang"
+      },
+      {
+        "kind": "stand",
+        "x": 800,
+        "y": 440,
+        "h": 96,
+        "group": "hang"
+      },
+      {
+        "kind": "stand",
+        "x": 920,
+        "y": 440,
+        "h": 96,
+        "group": "hang"
+      },
+      {
+        "kind": "stand",
+        "x": 1040,
+        "y": 440,
+        "h": 96,
+        "group": "hang"
+      },
+      {
+        "kind": "stand",
+        "x": 400,
+        "y": 330,
+        "h": 84,
+        "group": "deck"
+      },
+      {
+        "kind": "stand",
+        "x": 370,
+        "y": 640,
+        "h": 86
+      },
+      {
+        "kind": "host",
+        "x": 1500,
+        "y": 700,
+        "h": 104
+      }
+    ],
+    "pool": [
+      [
+        0,
+        500,
+        1600,
+        900,
+        false,
+        800,
+        700
+      ]
+    ],
+    "sway": [
+      [
+        1440,
+        140,
+        1600,
+        400,
+        0.35
+      ],
+      [
+        460,
+        240,
+        560,
+        360,
+        0.3
+      ],
+      [
+        640,
+        260,
+        740,
+        340,
+        0.3
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        0,
+        30,
+        1600,
+        240
+      ]
+    ]
+  },
+  "cars": {
+    "_doc": "Car Jump: the crane arms over the water; the cars are cut-outs.",
+    "from": "G08-hanging-cars/scene.png",
+    "spot": "cars",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 630,
+        "y": 425,
+        "h": 84,
+        "group": "car"
+      },
+      {
+        "kind": "stand",
+        "x": 910,
+        "y": 425,
+        "h": 84,
+        "group": "car"
+      },
+      {
+        "kind": "stand",
+        "x": 1210,
+        "y": 425,
+        "h": 84,
+        "group": "car"
+      },
+      {
+        "kind": "stand",
+        "x": 1520,
+        "y": 425,
+        "h": 84,
+        "group": "car"
+      },
+      {
+        "kind": "stand",
+        "x": 120,
+        "y": 470,
+        "h": 92,
+        "group": "dock"
+      },
+      {
+        "kind": "stand",
+        "x": 260,
+        "y": 470,
+        "h": 92,
+        "group": "dock"
+      },
+      {
+        "kind": "stand",
+        "x": 400,
+        "y": 470,
+        "h": 92,
+        "group": "dock"
+      },
+      {
+        "kind": "host",
+        "x": 80,
+        "y": 470,
+        "h": 92
+      }
+    ],
+    "pool": [
+      [
+        0,
+        490,
+        1600,
+        900,
+        false,
+        900,
+        700
+      ]
+    ],
+    "cloth": [
+      [
+        40,
+        300,
+        120,
+        360,
+        0.5
+      ]
+    ],
+    "sway": [
+      [
+        20,
+        200,
+        120,
+        380,
+        0.3
+      ],
+      [
+        260,
+        260,
+        340,
+        360,
+        0.3
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        0,
+        30,
+        1600,
+        260
+      ]
+    ]
+  },
+  "vault": {
+    "_doc": "Double Cross: the share-or-steal stage at dusk.",
+    "from": "G09-vault/scene.png",
+    "spot": "vault",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 405,
+        "y": 540,
+        "h": 120,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 1185,
+        "y": 540,
+        "h": 120,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 560,
+        "y": 640,
+        "h": 116
+      },
+      {
+        "kind": "stand",
+        "x": 1030,
+        "y": 640,
+        "h": 116
+      },
+      {
+        "kind": "host",
+        "x": 800,
+        "y": 660,
+        "h": 118
+      }
+    ],
+    "pool": [
+      [
+        0,
+        320,
+        1600,
+        420,
+        false,
+        800,
+        370
+      ]
+    ],
+    "fire": [
+      [
+        90,
+        230,
+        22
+      ],
+      [
+        290,
+        220,
+        18
+      ],
+      [
+        1290,
+        220,
+        18
+      ],
+      [
+        1510,
+        230,
+        22
+      ]
+    ]
+  },
+  "tower": {
+    "_doc": "Trust Fall: the tower in the lagoon, the plank, the lever on the dock.",
+    "from": "G10-trust-tower/scene.png",
+    "spot": "tower",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 820,
+        "y": 152,
+        "h": 72,
+        "group": "plank"
+      },
+      {
+        "kind": "stand",
+        "x": 620,
+        "y": 610,
+        "h": 98,
+        "group": "lever"
+      },
+      {
+        "kind": "stand",
+        "x": 470,
+        "y": 610,
+        "h": 96
+      },
+      {
+        "kind": "host",
+        "x": 720,
+        "y": 640,
+        "h": 96
+      }
+    ],
+    "pool": [
+      [
+        0,
+        520,
+        1600,
+        900,
+        false,
+        900,
+        700
+      ]
+    ],
+    "fire": [
+      [
+        295,
+        210,
+        16
+      ]
+    ],
+    "sway": [
+      [
+        1400,
+        360,
+        1580,
+        500,
+        0.3
+      ],
+      [
+        1060,
+        380,
+        1180,
+        480,
+        0.3
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        0,
+        30,
+        1600,
+        260
+      ]
+    ]
+  },
+  "mudpit": {
+    "_doc": "Mud Brawl: the pit, the flags in the corners.",
+    "from": "G12-mud-pit/scene.png",
+    "spot": "mudpit",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 660,
+        "y": 540,
+        "h": 118,
+        "group": "duel"
+      },
+      {
+        "kind": "stand",
+        "x": 960,
+        "y": 540,
+        "h": 118,
+        "group": "duel"
+      },
+      {
+        "kind": "stand",
+        "x": 260,
+        "y": 352,
+        "h": 78
+      },
+      {
+        "kind": "stand",
+        "x": 420,
+        "y": 352,
+        "h": 78
+      },
+      {
+        "kind": "stand",
+        "x": 580,
+        "y": 352,
+        "h": 78
+      },
+      {
+        "kind": "stand",
+        "x": 740,
+        "y": 352,
+        "h": 78
+      },
+      {
+        "kind": "stand",
+        "x": 900,
+        "y": 352,
+        "h": 78
+      },
+      {
+        "kind": "stand",
+        "x": 1060,
+        "y": 352,
+        "h": 78
+      },
+      {
+        "kind": "stand",
+        "x": 1220,
+        "y": 352,
+        "h": 78
+      },
+      {
+        "kind": "stand",
+        "x": 1380,
+        "y": 352,
+        "h": 78
+      },
+      {
+        "kind": "host",
+        "x": 1500,
+        "y": 720,
+        "h": 116
+      }
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        260,
+        380,
+        0.3
+      ],
+      [
+        1380,
+        0,
+        1600,
+        300,
+        0.3
+      ],
+      [
+        560,
+        120,
+        700,
+        260,
+        0.35
+      ],
+      [
+        880,
+        120,
+        1000,
+        240,
+        0.35
+      ]
+    ],
+    "cloth": [
+      [
+        340,
+        220,
+        420,
+        270,
+        0.5
+      ],
+      [
+        1220,
+        220,
+        1300,
+        270,
+        0.5
+      ],
+      [
+        80,
+        440,
+        160,
+        490,
+        0.5
+      ],
+      [
+        1500,
+        440,
+        1580,
+        490,
+        0.5
+      ]
+    ],
+    "critters": [
+      [
+        "parrot",
+        0,
+        0,
+        1600,
+        200
+      ]
+    ]
+  },
+  "icetubs": {
+    "_doc": "Deep Freeze: the sand and the thermometer sign; one ice tub per player is a cut-out.",
+    "from": "G13-ice-tubs/scene.png",
+    "spot": "icetubs",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 150,
+        "y": 572,
+        "h": 84,
+        "group": "tub"
+      },
+      {
+        "kind": "stand",
+        "x": 360,
+        "y": 572,
+        "h": 84,
+        "group": "tub"
+      },
+      {
+        "kind": "stand",
+        "x": 570,
+        "y": 572,
+        "h": 84,
+        "group": "tub"
+      },
+      {
+        "kind": "stand",
+        "x": 780,
+        "y": 572,
+        "h": 84,
+        "group": "tub"
+      },
+      {
+        "kind": "stand",
+        "x": 990,
+        "y": 572,
+        "h": 84,
+        "group": "tub"
+      },
+      {
+        "kind": "stand",
+        "x": 1200,
+        "y": 572,
+        "h": 84,
+        "group": "tub"
+      },
+      {
+        "kind": "stand",
+        "x": 250,
+        "y": 690,
+        "h": 100,
+        "group": "tub"
+      },
+      {
+        "kind": "stand",
+        "x": 460,
+        "y": 690,
+        "h": 100,
+        "group": "tub"
+      },
+      {
+        "kind": "stand",
+        "x": 670,
+        "y": 690,
+        "h": 100,
+        "group": "tub"
+      },
+      {
+        "kind": "stand",
+        "x": 880,
+        "y": 690,
+        "h": 100,
+        "group": "tub"
+      },
+      {
+        "kind": "stand",
+        "x": 1090,
+        "y": 690,
+        "h": 100,
+        "group": "tub"
+      },
+      {
+        "kind": "stand",
+        "x": 1300,
+        "y": 690,
+        "h": 100,
+        "group": "tub"
+      },
+      {
+        "kind": "host",
+        "x": 1360,
+        "y": 790,
+        "h": 110
+      }
+    ],
+    "pool": [
+      [
+        0,
+        380,
+        1600,
+        480,
+        false,
+        800,
+        430
+      ]
+    ],
+    "sway": [
+      [
+        60,
+        290,
+        120,
+        340,
+        0.3
+      ],
+      [
+        440,
+        280,
+        520,
+        330,
+        0.3
+      ],
+      [
+        1210,
+        260,
+        1300,
+        330,
+        0.3
+      ]
+    ],
+    "critters": [
+      [
+        "seagull",
+        0,
+        30,
+        1600,
+        300
+      ],
+      [
+        "crab",
+        0,
+        760,
+        1300,
+        880
+      ]
+    ]
   }
 }

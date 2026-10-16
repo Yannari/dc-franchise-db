@@ -228,11 +228,120 @@ export function playFoodWars(state, rng, { units, power }) {
       addBond(target, buzz, -0.5); remember(target, buzz, 'picked-me', 0.8);
       R.beat(t, 'buzz', [buzz, target], { dish: d });
       // the plate: eat it, or refuse and be out
-      const size = fearOfThing(state, target, 'gross food') + 0.25 + t * 0.03;
+      const size = fearOfThing(state, target, 'gross food') + 0.25 + t * 0.06;
       const nerve = (S(target, 'temperament') * 0.5 + S(target, 'boldness') * 0.3 + S(target, 'endurance') * 0.2) / 10;
       const eats = rng() < clamp(nerve * 1.1 - size * 0.6 + (power[target] - 6) * 0.04 + 0.25, 0.08, 0.95);
       if (eats) { pop(target, 0.2); R.beat(t + 0.1, 'eats', [target], { dish: d }); }
       else { R.drop(t + 0.1, target, 'refuses', { dish: d, by: buzz }); }
+      t++;
+    }
+    const w = seated()[0];
+    R.beat(t, 'last-seated', [w], { label });
+    pop(w, 0.4);
+    return w;
+  });
+  return { beats: R.beats, score };
+}
+
+// ── Trapeze Duel: a bracket of swings over the pond ───────────────────
+// Two at a time, one on each platform. They swing out, meet in the middle, and try to wrap their legs round
+// the other and pull them off the bar. First to two wins the bout. Somebody frozen on the platform forfeits.
+export function playTrapeze(state, rng, { units, power }) {
+  const all = units.flat();
+  const R = run(all);
+  const legs = n => (S(n, 'physical') * 0.4 + S(n, 'boldness') * 0.3 + S(n, 'endurance') * 0.3) / 10 + (power[n] - 6) * 0.04;
+  const divs = state.options.gendered ? ['m', 'f'] : ['all'];
+  const score = {};
+  const faced = new Set();
+  let t = 0;
+  for (const div of divs) {
+    let field = all.filter(n => div === 'all' || state.division[n] === div).sort(() => rng() - 0.5);
+    if (!field.length) continue;
+    R.beat(t++, 'bracket', field, { label: div === 'm' ? 'The men' : div === 'f' ? 'The women' : 'Everybody' });
+    let round = 0;
+    while (field.length > 1) {
+      round++;
+      const next = [];
+      if (field.length % 2) { const bye = field.pop(); next.push(bye); R.beat(t++, 'bye', [bye], { round }); }
+      for (let i = 0; i < field.length; i += 2) {
+        const a = field[i], b = field[i + 1];
+        R.beat(t++, 'bout', [a, b], { round, last: field.length === 2 && !next.length });
+        if (getBond(a, b) <= -2) { const r = needle(state, a, b); R.beat(t++, 'talk', [r.a, r.b], { tone: r.soft ? 'smalltalk' : 'needle' }); }
+        // the height, once a day: frozen on the platform is a forfeit
+        let forfeit = null;
+        for (const n of [a, b]) {
+          if (faced.has(n) || forfeit) continue;
+          faced.add(n);
+          const size = fearOfThing(state, n, 'heights');
+          if (size < 0.25) continue;
+          const f = faceFear(state, rng, n, size * 0.8);
+          R.beat(t++, f.froze ? 'fear-froze' : 'fear-beaten', [n], { size: f.size });
+          if (f.froze) forfeit = n;
+        }
+        const sc = { [a]: 0, [b]: 0 };
+        if (forfeit) sc[forfeit === a ? b : a] = 2;
+        while (sc[a] < 2 && sc[b] < 2) {
+          // both off the bar now and then: nobody scores, they climb back up
+          if (rng() < 0.12) { R.beat(t++, 'both-fall', [a, b], { score: { ...sc } }); continue; }
+          const pa = logistic((legs(a) - legs(b)) * 4 + noise(rng) * 0.5);
+          const w = rng() < pa ? a : b;
+          sc[w]++;
+          R.beat(t++, 'swing', [w, w === a ? b : a], { score: { ...sc } });
+        }
+        const win = sc[a] > sc[b] ? a : b, lose = win === a ? b : a;
+        R.in.delete(lose); R.out.push(lose);
+        score[lose] = round;
+        const upset = !forfeit && threatRead(state, lose) - threatRead(state, win) > 1.5;
+        if (upset) pop(win, 0.6);
+        addBond(lose, win, getBond(lose, win) < 0 ? -0.6 : 0.2);
+        R.beat(t++, 'bout-win', [win, lose], { round, upset, forfeit: !!forfeit });
+        next.push(win);
+      }
+      field = next;
+    }
+    score[field[0]] = 30;
+    R.beat(t++, 'trapeze-win', [field[0]], {});
+    pop(field[0], 0.4);
+  }
+  for (const n of all) score[n] ??= 0;
+  return { beats: R.beats, score };
+}
+
+// ── Poison Cup: who you hand it to ────────────────────────────────────
+// One player is the server: TJ shows them which cup on the tray is spiked, and they hand it to anybody at the
+// table. Drink it all and you serve next; spit it out and you are out. Every hand-off is a choice everybody saw.
+const POISONS = ['hot sauce and fish oil', 'pickle juice and raw egg', 'blended sardines', 'cod liver oil', 'sour milk with chilli', 'olive brine and clam juice',
+  'a protein shake of liver', 'vinegar and wasabi', 'blended jellyfish'];
+export function playPoisonCup(state, rng, { units, power }) {
+  const all = units.flat();
+  const R = run(all);
+  let cup = 0;
+  const score = inHeats(state, rng, R, all, 9, (list, label) => {
+    for (const n of list) R.in.add(n);
+    R.beat(0, 'table', list, { label });
+    let t = 1;
+    const seated = () => list.filter(n => R.in.has(n));
+    // the first server is drawn
+    let server = seated()[Math.floor(rng() * seated().length)];
+    R.beat(t++, 'server', [server], { first: true });
+    while (seated().length > 1 && t < 80) {
+      const al = allianceOf(state, server);
+      const pick = seated().filter(n => n !== server).map(n => {
+        const threat = threatRead(state, n) * 0.4, grudge = grudgeOf(server, n) * 0.8;
+        return { n, threat, grudge, s: threat + grudge - Math.max(0, protectOf(server, n)) * 0.6
+          - (al && al.members.includes(n) && !mayScheme(server) ? 5 : 0) - (coupleOf(state, server) === n ? 9 : 0) + rng() };
+      }).sort((x, y) => y.s - x.s)[0];
+      if (!pick) break;
+      const target = pick.n;
+      const why = pick.grudge > pick.threat && pick.grudge > 0.6 ? 'grudge' : pick.threat > 1.2 ? 'threat' : 'none';
+      const d = POISONS[cup++ % POISONS.length];
+      addBond(target, server, -0.5); remember(target, server, 'picked-me', 0.8);
+      R.beat(t, 'hand', [server, target], { cup: d, why });
+      const size = fearOfThing(state, target, 'gross food') + 0.2 + t * 0.05;
+      const nerve = (S(target, 'temperament') * 0.5 + S(target, 'endurance') * 0.3 + S(target, 'boldness') * 0.2) / 10;
+      const keeps = rng() < clamp(nerve * 1.1 - size * 0.55 + (power[target] - 6) * 0.04 + 0.3, 0.1, 0.95);
+      if (keeps) { pop(target, 0.2); R.beat(t + 0.1, 'drinks', [target], { cup: d }); server = target; }
+      else R.drop(t + 0.1, target, 'spits', { cup: d, by: server });
       t++;
     }
     const w = seated()[0];

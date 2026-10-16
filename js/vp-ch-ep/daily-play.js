@@ -15,7 +15,7 @@ import { speak } from './voices.js';
 import { pickBy, hashOf, nameList } from './games.js';
 import { raceSteps, derbySteps } from './daily-race.js';
 import { raftSteps, cutRopeSteps, doubleCrossSteps, trustFallSteps, whoSaidItSteps } from './daily-betray.js';
-import { deepFreezeSteps, logRollSteps, roadKillSteps, mudBrawlSteps, buriedSteps, foodWarsSteps } from './daily-more.js';
+import { deepFreezeSteps, logRollSteps, roadKillSteps, mudBrawlSteps, buriedSteps, foodWarsSteps, trapezeSteps, poisonCupSteps } from './daily-more.js';
 
 const V = (say, v = {}) => ({ say, v });
 const fill = (t, slots) => t.replace(/\{(\w+)\}/g, (m, k) => (slots[k] != null ? slots[k] : m));
@@ -454,4 +454,5 @@ export const BEAT_PLAYS = { 'pole-truth': poleTruth, 'hang-on': hangOn, 'lagoon-
   'cliff-relay': race, 'reef-dash': race, 'truck-tug': race, 'jungle-maze': race, 'night-swim': race, 'balance-beam': race, 'gauntlet-run': race,
   'raft-king': (d, ctx) => raftSteps(d, ctx), 'cut-rope': cutRopeSteps, 'double-cross': doubleCrossSteps, 'trust-fall': trustFallSteps, 'who-said-it': whoSaidItSteps,
   'deep-freeze': deepFreezeSteps, 'log-roll': logRollSteps, 'road-kill': roadKillSteps, 'mud-brawl': mudBrawlSteps, buried: buriedSteps, 'food-wars': foodWarsSteps,
+  trapeze: trapezeSteps, 'poison-cup': poisonCupSteps,
   'car-jump': race, 'locked-in': race, 'the-box': race };

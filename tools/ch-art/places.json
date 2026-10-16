@@ -10035,5 +10035,302 @@
         0.3
       ]
     ]
+  },
+  "podiums": {
+    "_doc": "Who Said It: the beach club deck at night, the big screen the answers go up on; one podium per player is a cut-out (prop podium), on the layer in front of them.",
+    "from_night": "G11-podium-hall/scene.png",
+    "spot": "podiums",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.5,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 220,
+        "y": 690,
+        "h": 92,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 413,
+        "y": 690,
+        "h": 92,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 606,
+        "y": 690,
+        "h": 92,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 799,
+        "y": 690,
+        "h": 92,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 992,
+        "y": 690,
+        "h": 92,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 1185,
+        "y": 690,
+        "h": 92,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 1378,
+        "y": 690,
+        "h": 92,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 123,
+        "y": 600,
+        "h": 80,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 316,
+        "y": 600,
+        "h": 80,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 509,
+        "y": 600,
+        "h": 80,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 702,
+        "y": 600,
+        "h": 80,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 896,
+        "y": 600,
+        "h": 80,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 1089,
+        "y": 600,
+        "h": 80,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 1282,
+        "y": 600,
+        "h": 80,
+        "group": "pod"
+      },
+      {
+        "kind": "stand",
+        "x": 1475,
+        "y": 600,
+        "h": 80,
+        "group": "pod"
+      },
+      {
+        "kind": "host",
+        "x": 1530,
+        "y": 560,
+        "h": 84
+      }
+    ],
+    "pool": [
+      [
+        0,
+        430,
+        1600,
+        540,
+        false,
+        800,
+        480
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        0,
+        240,
+        420,
+        0.4
+      ],
+      [
+        1400,
+        0,
+        1600,
+        420,
+        0.4
+      ]
+    ],
+    "glow": [
+      [
+        0,
+        0,
+        1600,
+        110
+      ],
+      [
+        0,
+        430,
+        380,
+        520
+      ],
+      [
+        1250,
+        430,
+        1600,
+        520
+      ]
+    ]
+  },
+  "trapeze": {
+    "_doc": "Trapeze Duel: the wooden rig in the hills (the user's painting), a platform each side, two trapezes and the pond under them.",
+    "from": "G14-trapeze/scene.jpg",
+    "spot": "trapeze",
+    "night": "auto",
+    "horizon": 0.6,
+    "wind": 0.8,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 450,
+        "y": 366,
+        "h": 64,
+        "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 1172,
+        "y": 352,
+        "h": 64,
+        "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 790,
+        "y": 486,
+        "h": 66,
+        "group": "bar"
+      },
+      {
+        "kind": "stand",
+        "x": 915,
+        "y": 488,
+        "h": 66,
+        "group": "bar"
+      },
+      {
+        "kind": "stand",
+        "x": 590,
+        "y": 700,
+        "h": 80
+      },
+      {
+        "kind": "stand",
+        "x": 700,
+        "y": 700,
+        "h": 80
+      },
+      {
+        "kind": "stand",
+        "x": 810,
+        "y": 700,
+        "h": 80
+      },
+      {
+        "kind": "stand",
+        "x": 920,
+        "y": 700,
+        "h": 80
+      },
+      {
+        "kind": "stand",
+        "x": 1030,
+        "y": 700,
+        "h": 80
+      },
+      {
+        "kind": "stand",
+        "x": 1140,
+        "y": 700,
+        "h": 80
+      },
+      {
+        "kind": "stand",
+        "x": 120,
+        "y": 690,
+        "h": 80
+      },
+      {
+        "kind": "stand",
+        "x": 1460,
+        "y": 700,
+        "h": 82
+      },
+      {
+        "kind": "host",
+        "x": 330,
+        "y": 716,
+        "h": 84
+      }
+    ],
+    "pool": [
+      [
+        170,
+        715,
+        1530,
+        815,
+        false,
+        850,
+        765
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        30,
+        340,
+        400,
+        0.4
+      ],
+      [
+        960,
+        0,
+        1600,
+        260,
+        0.3
+      ],
+      [
+        440,
+        160,
+        620,
+        470,
+        0.25
+      ]
+    ]
   }
 }

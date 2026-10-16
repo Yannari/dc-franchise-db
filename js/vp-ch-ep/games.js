@@ -30,7 +30,7 @@ export const DAILY_STAGE = {
   'cut-rope': { plate: 'dock', hour: 'day', show: 'played', place: 'The Dock', spot: 'dock', verb: 'hang', water: true },
   'double-cross': { plate: 'beach', hour: 'day', show: 'race', place: 'The Reef', spot: 'beach', verb: 'swim', water: true },
   'trust-fall': { plate: 'tower', hour: 'day', show: 'played', place: 'The Tower', spot: 'lagoon', verb: 'jump', water: true },
-  'who-said-it': { plate: 'club', hour: 'night', show: 'played', place: 'The Beach Club', spot: 'club', verb: 'quiz' },
+  'who-said-it': { plate: 'podiums', hour: 'night', show: 'played', place: 'The Beach Club', spot: 'club', verb: 'quiz' },
   // the dailies on the user's G sets (js/ch/daily/more.js, race.js)
   'deep-freeze': { plate: 'icetubs', hour: 'day', show: 'played', place: 'The Ice Tubs', spot: 'beach', verb: 'sit' },
   'log-roll': { plate: 'log', hour: 'day', show: 'played', place: 'The Log', spot: 'lagoon', verb: 'hang', water: true },
@@ -41,6 +41,8 @@ export const DAILY_STAGE = {
   'the-box': { plate: 'crates', hour: 'day', show: 'played', place: 'The Clearing', spot: 'tiki-path', verb: 'reach' },
   'buried': { plate: 'buried', hour: 'day', show: 'played', place: 'The Burial Ground', spot: 'beach', verb: 'quiz' },
   'food-wars': { plate: 'banquet', hour: 'day', show: 'played', place: 'The Banquet', spot: 'beach', verb: 'eat' },
+  'poison-cup': { plate: 'banquet', hour: 'day', show: 'played', place: 'The Banquet', spot: 'beach', verb: 'drink' },
+  trapeze: { plate: 'trapeze', hour: 'day', show: 'played', place: 'The Trapeze', spot: 'lookout', verb: 'swing', water: true },
   'jungle-maze': { plate: 'maze', hour: 'day', show: 'race', place: 'The Jungle Maze', spot: 'tiki-path', verb: 'maze' },
   'hang-on': { plate: 'dock', hour: 'day', show: 'hang', place: 'The Dock', spot: 'dock', verb: 'hang', water: true },
   demolition: { plate: 'derby', hour: 'day', show: 'last', place: 'The Derby Ring', spot: 'beach-field', verb: 'smash' },

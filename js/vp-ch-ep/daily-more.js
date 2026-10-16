@@ -251,17 +251,20 @@ const FW = {
   pick: [V("{b}. Enjoy.", { sharp: ['{b}. Bon appetit.'] }), V("I pick {b}."), V("{b}. Sorry. Not sorry.")],
   dome: ['TJ lifts the dome in front of {b}: {dish}.', 'Under the dome: {dish}. {b} goes pale.'],
   eats: ['{b} holds {pos} nose and gets it down.', '{b} eats every bite, then gags.', '{b} chews, swallows, and slams the table.', '{b} eats it, looking straight at {a}.'],
+  quick: ['{a} picks {b} for the {dish}. {b} pushes it away and leaves the table.', '{a} gives {b} the {dish}, and {b} walks off.', '{b} gets the {dish} from {a} and refuses it. Out.'],
   refuses: ["{b} pushes the plate away. {b} can't do it.", '{b} gags and stands up from the table. Out.', '{b} takes one look and walks off.'],
   win: ['{w} is the last one at the table!', '{w} survived every plate and wins Food Wars!'], heat: ['{w} survives the heat and goes through!'],
 };
+// an early heat: the first two rounds whole, then only who leaves the table (the final is shown whole)
+const SHORT_AFTER = 2;
 export function foodWarsSteps(d, ctx) {
   const out = [], safe = [];
-  let seated = [], sand = 0;
+  let seated = [], sand = 0, rounds = 0, whole = true;
   const where = {};
   for (const [i, b] of (d.beats || []).entries()) {
     const key = `fw${i}`;
     if (b.kind === 'table') {
-      seated = b.who; sand = 0;
+      seated = b.who; sand = 0; rounds = 0; whole = final(b.data.label);
       for (const [j, n] of seated.entries()) where[n] = ['stand', j % 9, 'seat'];
       out.push({ scene: ctx.scene('banquet', false, Object.fromEntries(seated.map(n => [n, where[n]]))), props: seated.map((_, j) => ({ k: 'dome', u: SEAT_X[j % 9] / 1600, v: 500 / 900, w: 5.6, front: 1 })),
         seg: [b.data.label, 'Food Wars'], stand: 'start', still: seated, focus: [] });
@@ -271,15 +274,19 @@ export function foodWarsSteps(d, ctx) {
     }
     if (b.kind === 'buzz') {
       const [a, t] = b.who;
+      if (!whole && ++rounds > SHORT_AFTER) continue;
       out.push({ dir: line(ctx, FW.buzz, { a }, key), focus: [a], act: { [a]: 'cheer' } });
       const p = voice(ctx, FW.pick, a, { b: t }, key + 'p'); out.push(say(a, p || `${t}.`, t, { act: { [t]: 'flinch' } }));
       out.push({ dir: line(ctx, FW.dome, { b: t, dish: b.data.dish }, key + 'd'), focus: [t], act: { [t]: 'strain' } });
       continue;
     }
+    if (b.kind === 'eats' && !whole && rounds > SHORT_AFTER) continue;
     if (b.kind === 'eats') { const n = b.who[0]; const by = d.beats[i - 1]?.who?.[0]; out.push({ dir: line(ctx, FW.eats, { b: n, a: by || 'everybody', pos: ctx.V.pron?.[n]?.posAdj || 'their' }, key), focus: [n], act: { [n]: 'strain' } }); continue; }
     if (b.kind === 'refuses') {
       const n = b.who[0];
-      out.push({ dir: line(ctx, FW.refuses, { b: n }, key), focus: [n], act: { [n]: 'slump' }, move: { [n]: ['stand', sand++ % 4] } });
+      const by = d.beats[i - 1]?.who?.[0];
+      const short = !whole && rounds > SHORT_AFTER;
+      out.push({ dir: short ? line(ctx, FW.quick, { a: by || 'Somebody', b: n, dish: b.data.dish }, key) : line(ctx, FW.refuses, { b: n }, key), focus: [n], act: { [n]: 'slump' }, move: { [n]: ['stand', sand++ % 4] } });
       if (hashOf(key) % 2 === 0) { const c = voice(ctx, [V("I'm not eating that. I don't care. Nothing is worth that."), V("I tried. My body said no.")], n, {}, key + 'c'); if (c) out.push(conf(n, c)); }
       continue;
     }
@@ -287,6 +294,125 @@ export function foodWarsSteps(d, ctx) {
       const n = b.who[0], f = final(b.data.label);
       if (f) safe.push(n);
       out.push(tj(line(ctx, f ? FW.win : FW.heat, { w: n }, key), { focus: ['TJ', n], act: { [n]: 'cheer' }, ...(f ? { power: [...safe] } : {}) }));
+    }
+  }
+  return out;
+}
+
+// ── Trapeze Duel ──────────────────────────────────────────────────────
+const TZ = {
+  draw: ["Two at a time, up the ladders! When I blow the horn, you swing out, grab each other with your legs, and pull. Whoever ends up in the pond loses the point. First to two!"],
+  bye: ['{a} draws the free pass and skips this round.'],
+  bout: ['{a} and {b} climb the ladders to the platforms.', '{a} against {b}. Up the ladders they go.', 'Next on the trapezes: {a} and {b}.'],
+  again: ['{a} and {b} climb back up for the next point.', 'Back up the ladders, both of them.', 'They swim out of the pond and climb up again.'],
+  swing: ['The horn goes. {a} and {b} swing out and crash together in the middle.', 'They swing out. Legs everywhere.', '{a} and {b} meet over the water and lock legs.'],
+  point: ['{a} wraps both legs round {b} and pulls. {b} drops into the pond.', '{b} loses the grip on the bar and splashes down.', '{a} kicks free, and {b} falls off the trapeze.', '{a} hangs on with one hand and yanks {b} off with the other leg.'],
+  both: ['They pull each other off. Both of them hit the water. No point.', 'Nobody lets go of anybody, and both of them fall. Again.'],
+  froze: ["{a} grabs the bar, looks down at the pond, and steps back onto the platform. {a} can't do it.", "{a} won't leave the platform. TJ counts to ten. Nothing."],
+  beaten: ['{a} looks down, breathes, and swings anyway.', '{a} is scared of heights, and swings out anyway.'],
+  quick: ['{a} beats {b}, two to {n}.', '{a} pulls {b} into the pond twice and moves on, two to {n}.'],
+  forfeit: ['{b} forfeits, and {a} goes through without a swing.'],
+  upset: ['Nobody saw that coming. {a} just beat {b}.'],
+  win: ['{a} wins the Trapeze Duel!', '{a} is the last one swinging!'],
+};
+export function trapezeSteps(d, ctx) {
+  const out = [], safe = [];
+  const beats = d.beats || [];
+  let field = [], late = false, pair = null, first = true;
+  const crowd = (a, b) => Object.fromEntries(field.filter(n => n !== a && n !== b).slice(0, 8).map((n, j) => [n, ['stand', j]]));
+  const atPlats = (a, b, wipe) => ({ ...ctx.scene('trapeze', false, { [a]: ['stand', 0, 'plat'], [b]: ['stand', 1, 'plat'], ...crowd(a, b) }), ...(wipe ? {} : { wipe: 0 }) });
+  for (const [i, b] of beats.entries()) {
+    const key = `tz${i}`;
+    if (b.kind === 'bracket') { field = b.who; out.push({ scene: ctx.scene('trapeze', false, crowd()), seg: [b.data.label, 'Trapeze Duel'], focus: [] }); out.push(tj(TZ.draw[0])); continue; }
+    if (b.kind === 'bye') { out.push({ dir: line(ctx, TZ.bye, { a: b.who[0] }, key), focus: [b.who[0]] }); continue; }
+    if (b.kind === 'bout') {
+      const [a, c] = b.who; pair = [a, c]; first = true;
+      late = b.data.last || beats.slice(i).filter(x => x.kind === 'bout').length <= 3;
+      out.push({ scene: atPlats(a, c, true), dir: line(ctx, TZ.bout, { a, b: c }, key), focus: [a, c] });
+      continue;
+    }
+    if (b.kind === 'talk') { out.push(say(b.who[0], b.data.tone === 'needle' ? `Enjoy the water, ${b.who[1]}.` : `Good luck up there, ${b.who[1]}.`, b.who[1], { act: { [b.who[0]]: 'lean' } })); continue; }
+    if (b.kind === 'fear-froze' || b.kind === 'fear-beaten') {
+      const n = b.who[0];
+      out.push({ dir: line(ctx, b.kind === 'fear-froze' ? TZ.froze : TZ.beaten, { a: n }, key), focus: [n], act: { [n]: b.kind === 'fear-froze' ? 'flinch' : 'strain' } });
+      continue;
+    }
+    if (b.kind === 'swing' || b.kind === 'both-fall') {
+      if (!late) continue;
+      const [a, c] = pair;
+      if (!first) out.push({ scene: atPlats(a, c, false), dir: line(ctx, TZ.again, { a, b: c }, key + 'g'), focus: [a, c] });
+      first = false;
+      out.push({ dir: line(ctx, TZ.swing, { a, b: c }, key + 's'), focus: [a, c], move: { [a]: ['stand', 0, 'bar'], [c]: ['stand', 1, 'bar'] }, act: { [a]: 'strain', [c]: 'strain' } });
+      if (b.kind === 'both-fall') { out.push({ dir: line(ctx, TZ.both, {}, key), drop: [a, c], splash: 1, focus: [a, c] }); continue; }
+      const [w, l] = b.who;
+      out.push({ dir: line(ctx, TZ.point, { a: w, b: l }, key), drop: [l], splash: 1, focus: [w, l], act: { [w]: 'cheer' }, chip: [w, `${b.data.score[w]} - ${b.data.score[l]}`] });
+      continue;
+    }
+    if (b.kind === 'bout-win') {
+      const [w, l] = b.who;
+      if (b.data.forfeit) out.push({ dir: line(ctx, TZ.forfeit, { a: w, b: l }, key), focus: [w, l], act: { [l]: 'slump' } });
+      else if (!late) {
+        const lastSc = beats.slice(0, i).reverse().find(x => x.kind === 'swing')?.data.score || {};
+        out.push({ dir: line(ctx, TZ.quick, { a: w, b: l, n: lastSc[l] ? 'one' : 'nothing' }, key), focus: [w, l], act: { [w]: 'cheer', [l]: 'slump' } });
+      } else out.push({ dir: `${w} takes the bout.`, focus: [w, l], act: { [w]: 'cheer', [l]: 'slump' } });
+      if (b.data.upset) out.push({ dir: line(ctx, TZ.upset, { a: w, b: l }, key + 'u'), focus: [w] });
+      continue;
+    }
+    if (b.kind === 'trapeze-win') { safe.push(b.who[0]); out.push(tj(line(ctx, TZ.win, { a: b.who[0] }, key), { focus: ['TJ', b.who[0]], act: { [b.who[0]]: 'cheer' }, power: [...safe] })); }
+  }
+  return out;
+}
+
+// ── Poison Cup ────────────────────────────────────────────────────────
+const PC = {
+  tj: ["One cup on this tray is spiked. Only the server knows which. Hand it to anybody you like. Drink the whole thing and you serve next. Spit it out and you're gone!"],
+  first: ['{a}, you are serving first. Here is the tray.', 'First server: {a}. Come get your tray.'],
+  why: {
+    grudge: [V("You've been coming for me all week. Drink up.", { sharp: ['This is for everything you said about me. Cheers.'] }), V("You know exactly why you're getting this one."), V("Payback. Enjoy it.")],
+    threat: [V("You're the biggest threat at this table. Nothing personal."), V("If you're gone, I like my chances."), V("Sorry. You win too much.")],
+    none: [V("Sorry. Somebody has to drink it."), V("I don't have a reason. You were just there."), V("Don't take it personally, okay?")],
+  },
+  hand: ['{a} picks up the spiked cup and sets it down in front of {b}.', '{a} slides the cup across the table to {b}.', '{a} walks round the table and hands {b} the cup.'],
+  drinks: ['{b} drinks it in one go and slams the cup down. {b} serves next.', '{b} gags once, then swallows the lot. {b} has the tray now.', "{b} gets all of the {cup} down without blinking. Now it's {b}'s turn to serve."],
+  quick: ['{a} hands {b} the {cup}. {b} spits it out, and that is that.', '{b} gets the {cup} from {a} and cannot keep it down. Out.', '{a} gives {b} the spiked cup. {b} gags, and {b} is gone.'],
+  spits: ['{b} takes one sip of the {cup} and spits it onto the sand. Out.', '{b} gets halfway and it all comes back up. {b} is out.', "{b} can't keep the {cup} down. That's the end of it for {b}."],
+  stung: [V("{a} gave me that cup on purpose. I won't forget it."), V("Fine, {a}. Remember this when it's your name at the vote.")],
+  win: ['{w} is the last one at the table!', '{w} never spat out a single cup and wins Poison Cup!'], heat: ['{w} is the last one at the table and goes through!'],
+};
+export function poisonCupSteps(d, ctx) {
+  const out = [], safe = [];
+  let seated = [], rounds = 0, whole = true;
+  for (const [i, b] of (d.beats || []).entries()) {
+    const key = `pc${i}`;
+    if (b.kind === 'table') {
+      seated = b.who; rounds = 0; whole = final(b.data.label);
+      out.push({ scene: ctx.scene('banquet', false, Object.fromEntries(seated.map((n, j) => [n, ['stand', j % 9, 'seat']]))), props: seated.map((_, j) => ({ k: 'cup', u: SEAT_X[j % 9] / 1600, v: 500 / 900, w: 2.2, front: 1 })),
+        seg: [b.data.label, 'Poison Cup'], stand: 'start', still: seated, focus: [] });
+      out.push(tj(PC.tj[0]));
+      continue;
+    }
+    if (b.kind === 'server') { out.push(tj(line(ctx, PC.first, { a: b.who[0] }, key), { focus: ['TJ', b.who[0]] })); continue; }
+    if (b.kind === 'hand') {
+      const [a, t] = b.who;
+      if (!whole && ++rounds > SHORT_AFTER) continue;
+      out.push({ dir: line(ctx, PC.hand, { a, b: t }, key), focus: [a, t], act: { [a]: 'lean' } });
+      const w = voice(ctx, PC.why[b.data.why] || PC.why.none, a, { b: t }, key + 'w');
+      if (w) out.push(say(a, w, t, { act: { [t]: 'flinch' } }));
+      continue;
+    }
+    if (b.kind === 'drinks' && !whole && rounds > SHORT_AFTER) continue;
+    if (b.kind === 'drinks') { const n = b.who[0]; out.push({ dir: line(ctx, PC.drinks, { b: n, cup: b.data.cup }, key), focus: [n], act: { [n]: 'strain' } }); continue; }
+    if (b.kind === 'spits') {
+      const n = b.who[0];
+      const short = !whole && rounds > SHORT_AFTER;
+      out.push({ dir: line(ctx, short ? PC.quick : PC.spits, { a: b.data.by || 'Somebody', b: n, cup: b.data.cup }, key), focus: [n], act: { [n]: 'slump' }, exit: [n] });
+      if (hashOf(key) % 2 === 0 && b.data.by) { const c = voice(ctx, PC.stung, n, { a: b.data.by }, key + 'c'); if (c) out.push(conf(n, c)); }
+      continue;
+    }
+    if (b.kind === 'last-seated') {
+      const n = b.who[0], f = final(b.data.label);
+      if (f) safe.push(n);
+      out.push(tj(line(ctx, f ? PC.win : PC.heat, { w: n }, key), { focus: ['TJ', n], act: { [n]: 'cheer' }, ...(f ? { power: [...safe] } : {}) }));
     }
   }
   return out;

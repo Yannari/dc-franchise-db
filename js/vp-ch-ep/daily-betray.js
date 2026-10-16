@@ -187,7 +187,7 @@ const TF = {
   edge: ['{f} stands at the end of the plank with the blindfold on, and {c} takes the lever.', '{c} grips the lever. Up on the plank, {f} shuffles to the edge.', '{f} feels for the end of the plank with {pos} heel. {c} puts both hands on the lever.'],
   wait: ['{f} stands there a long time before letting go.', '{f} says "Okay. Okay. Okay." and still does not move.'],
   go: ['{f} drops backwards straight away.', '{f} lets go without a second thought.'],
-  caught: ['{c} pulls the lever at the right moment, and the net catches {f}.', 'The safety line goes tight. {c} has {f}.', '{c} holds the lever down. {f} swings in safe.'],
+  caught: ['{c} pulls the lever at the right moment, and the net catches {f}.', 'The safety line goes tight. {c} has {f}.', '{c} holds the lever down. {f} swings back to the tower, shaking.'],
   dropped: ["{c} lets go of the lever. {f} drops all the way into the water.", '{c} takes {cpos} hands off the lever. {f} falls.'],
   win: ['{w} had the fastest clean fall! {w} win!'],
 };
@@ -223,28 +223,35 @@ const WQ = {
 };
 const WS = {
   intro: ["Everybody on the deck! I ask a question about the house. You answer out loud, one at a time. Match the most popular answer, you get a point. Easy! Unless you have friends."],
-  most: ['The most common answer: {top}, with {n}.', '{top} gets the most votes, {n} of them.'],
+  most: ['The most common answer: {top}, with {n}.', '{top} gets named the most, by {n} people.'],
   react: [V("Wow. Okay. So that's what everybody thinks of me."), V("{n} of you said my name. I'm going to remember every single one."), V("Fine. If that's how it is, that's how it is.")],
   warm: [V("That actually means a lot. Thank you."), V("I didn't expect that. I'll take it.")],
   win: ["{w} matched the house the most! {w} {are} safe!"],
 };
+// The club deck (G11): a podium each, the front row first, the back row standing in its gaps; the big screen
+// shows the question, then what the house said.
+const POD = [...[220, 413, 606, 799, 992, 1185, 1378].map(x => [x, 690, 'f']), ...[123, 316, 509, 702, 896, 1089, 1282, 1475].map(x => [x, 600, 'b'])];
+const podiumProps = n => POD.slice(0, n).map(([x, y, row]) => ({ k: 'podium', u: x / 1600, v: (y + (row === 'f' ? 50 : 42)) / 900, w: row === 'f' ? 6 : 4.6, front: 1 }));
 export function whoSaidItSteps(d, ctx) {
   const out = [];
-  const all = (d.order || []).flat();
+  const all = (d.order || []).flat().slice(0, POD.length);
+  const pods = podiumProps(all.length);
+  const screen = (q, rows) => [...pods, { k: 'screen', q, rows, max: Math.max(1, ...rows.map(r => r.c)) }];
   for (const [i, b] of (d.beats || []).entries()) {
     const key = `ws${i}`;
     if (b.kind === 'quiz-start') {
-      out.push({ scene: ctx.scene('club', true, Object.fromEntries(all.slice(0, 11).map((n, j) => [n, ['stand', j]]))), focus: [] });
+      out.push({ scene: ctx.scene('podiums', true, Object.fromEntries(all.map((n, j) => [n, ['stand', j, 'pod']]))), props: screen('Who said it?', []), focus: [] });
       out.push(tj(WS.intro[0]));
       continue;
     }
     if (b.kind === 'question') {
       const q = WQ[b.data.q] || WQ.snake;
-      out.push(tj(q));
-      // a few answers out loud, the ones that sting first, then the tally
+      out.push(tj(q, { props: screen(q, []) }));
+      // a few answers out loud, the ones that sting first, then the tally on the screen
       const said = Object.entries(b.data.answers).sort((x, y) => (y[1] === b.data.top) - (x[1] === b.data.top)).slice(0, 5);
       for (const [v, n] of said) out.push(say(v, `${n}.`, n, { act: { [n]: b.data.q === 'final' ? 'laugh' : 'flinch' } }));
-      out.push({ dir: line(ctx, WS.most, { top: b.data.top, n: b.data.tally[b.data.top] }, key), focus: [b.data.top] });
+      const rows = Object.entries(b.data.tally).sort((x, y) => y[1] - x[1]).slice(0, 4).map(([n, c]) => ({ n, c, top: n === b.data.top }));
+      out.push({ dir: line(ctx, WS.most, { top: b.data.top, n: b.data.tally[b.data.top] }, key), focus: [b.data.top], props: screen(q, rows) });
       const r = voice(ctx, b.data.q === 'final' ? WS.warm : WS.react, b.data.top, { n: b.data.tally[b.data.top] }, key + 'r');
       if (r) out.push(conf(b.data.top, r));
       continue;

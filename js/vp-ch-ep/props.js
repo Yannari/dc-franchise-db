@@ -10,6 +10,8 @@
 // a game with a painted set skips its drawn one (`painted` in play.js).
 // Strings only: no DOM, so the steps stay pure and testable.
 
+import { playerAvatarUrl } from '../players.js';
+
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const at = (p, w, extra = '') => `left:${(p.u * 100).toFixed(2)}%;top:${(p.v * 100).toFixed(2)}%;width:${w}cqw;${extra}`;
 const box = (p, w, svg, cls = '') => `<div class="prop ${cls}" style="${at(p, w)}">${svg}</div>`;
@@ -63,7 +65,7 @@ export const SPRITES = {
   // one per player, cut out of the user's own plates (tools/ch-art/cutout.py): Pole Truth's post, the gorge's platform
   post: 1.45, 'post-short': 2, platform: 15,
   // the G sets' objects (art jobs G02-G13), one per player
-  coffin: 12, buzzer: 2.6, dome: 4.4, cup: 2, stool: 4, crate: 8, easel: 5, bell: 3, cage: 36, log: 45, car: 16, 'ice-tub': 12,
+  coffin: 12, buzzer: 2.6, podium: 7.5, dome: 4.4, cup: 2, stool: 4, crate: 8, easel: 5, bell: 3, cage: 36, log: 45, car: 16, 'ice-tub': 12,
 };
 const sprite = (file, p, w, cls = '', turn = 0) => ({ file, p, w: w || SPRITES[file], cls, turn });
 const sides = [.4, .6];
@@ -79,7 +81,7 @@ function spritesOf(p) {
     case 'puzzle': return [sprite('puzzle-frame', p, p.w || SPRITES['puzzle-frame'], p.locked ? 'pop-in' : '')];
     case 'pit': return p.pieces ? [sprite('puzzle-pieces', p)] : p.mud ? [sprite('mud-splash', { ...p, v: p.v + .02 }, 9)] : [];
     case 'pole': return [sprite('pole', p, 16, '', p.tilt || 0)];
-    case 'post': case 'post-short': case 'platform': case 'coffin': case 'buzzer': case 'dome': case 'cup': case 'stool': case 'crate': case 'easel':
+    case 'post': case 'post-short': case 'platform': case 'podium': case 'coffin': case 'buzzer': case 'dome': case 'cup': case 'stool': case 'crate': case 'easel':
     case 'bell': case 'cage': case 'log': case 'car': case 'ice-tub': return [sprite(p.k, p, p.w)];
     case 'ballring': return [sprite('ball', { ...p, u: p.u + (p.ball || 0) * .4 }, 3.2)];
     case 'lockbox': return [sprite('lockbox', p), ...(p.smoke ? [sprite('smoke', { ...p, v: p.v - .07 }, 6, 'pop-in')] : [])];
@@ -118,8 +120,14 @@ function clockHtml(p) {
 }
 
 /** A step's props as HTML for the stage's prop layer: the painted cut-outs only. */
+// The big screen on the club deck (G11): the question, then the names the house said and how many said each.
+function screenHtml(p) {
+  const rows = (p.rows || []).slice(0, 4).map(r => `<div class="r ${r.top ? 'top' : ''}"><img src="${esc(r.n === 'TJ' ? 'assets/avatars/tj-maxx.png' : playerAvatarUrl(r.n))}" alt=""><b>${esc(r.n)}</b><i style="width:${Math.round(100 * r.c / (p.max || 1))}%"></i><span>${r.c}</span></div>`).join('');
+  return `<div class="prop bigscreen" style="left:${(483 / 16).toFixed(2)}%;top:${(117 / 9).toFixed(2)}%;width:${((1113 - 483) / 16).toFixed(2)}%;height:${((447 - 117) / 9).toFixed(2)}%">`
+    + `<div class="q">${esc(p.q || '')}</div>${rows}</div>`;
+}
 export function propsHtml(list = []) {
-  return list.filter(p => p.k === 'clock').map(clockHtml).join('') + list.flatMap(spritesOf).map(spriteHtml).join('');
+  return list.filter(p => p.k === 'clock').map(clockHtml).join('') + list.filter(p => p.k === 'screen').map(screenHtml).join('') + list.flatMap(spritesOf).map(spriteHtml).join('');
 }
 /** The drawn versions, kept for the art jobs' reference sheet and tests; never on a plate. */
 export function drawnHtml(list = []) {

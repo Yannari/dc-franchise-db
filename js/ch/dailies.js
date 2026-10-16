@@ -27,7 +27,7 @@ import { playInterrogation } from './daily/interrogation.js';
 import { playRace } from './daily/race.js';
 import { playDemolition } from './daily/demolition.js';
 import { playRaftKing, playCutRope, playDoubleCross, playTrustFall, playWhoSaidIt } from './daily/betrayal.js';
-import { playDeepFreeze, playLogRoll, playRoadKill, playMudBrawl, playBuried, playFoodWars } from './daily/more.js';
+import { playDeepFreeze, playLogRoll, playRoadKill, playMudBrawl, playBuried, playFoodWars, playTrapeze, playPoisonCup } from './daily/more.js';
 
 export const DAILIES = [
   { id: 'cliff-relay', name: 'Cliff Relay', physicality: 1.2, modes: ['pairs', 'teams', 'solo'],
@@ -113,6 +113,12 @@ DAILIES.push(
   { id: 'food-wars', name: 'Food Wars', physicality: 0.3, modes: ['solo'], played: true,
     blend: { mental: 0.35, temperament: 0.35, intuition: 0.3 },
     desc: 'Everybody sits at the banquet table on the beach while TJ reads out quick questions. The first to buzz in with the right answer chooses somebody at the table to eat the next dish under the dome. Refusing the plate means leaving the table, and the dishes get worse every round. The last one still sitting at the table wins.' },
+  { id: 'trapeze', name: 'Trapeze Duel', physicality: 1.1, modes: ['solo'], played: true,
+    blend: { physical: 0.4, boldness: 0.35, endurance: 0.25 },
+    desc: 'Two players at a time climb the ladders to the platforms on either side of the rig, high over the pond, in a bracket drawn out of a hat. On the horn they swing out on the trapezes, meet in the middle, and try to wrap their legs round the other and pull them off the bar. Falling into the pond loses the point, and anybody too scared to leave the platform forfeits the bout. The first to two points wins the bout, and the last one standing in the bracket wins.' },
+  { id: 'poison-cup', name: 'Poison Cup', physicality: 0.3, modes: ['solo'], played: true,
+    blend: { temperament: 0.45, endurance: 0.3, social: 0.25 },
+    desc: 'Everybody sits at the banquet table, and one player is the server with a tray of cups. TJ shows the server which cup is spiked with something vile, and the server hands it to anybody at the table. Spitting it out or gagging puts that player out of the game; keeping the whole cup down makes them the next server. The last one still at the table wins.' },
 );
 for (const id of ['hang-on', 'cliff-relay', 'reef-dash', 'truck-tug', 'jungle-maze', 'night-swim', 'balance-beam', 'gauntlet-run', 'demolition']) { const d = DAILIES.find(x => x.id === id); if (d) d.played = true; }
 
@@ -122,6 +128,7 @@ const SIMS = { 'pole-truth': playPoleTruth, 'hang-on': playHangOn, 'lagoon-quiz'
   ...Object.fromEntries(['cliff-relay', 'reef-dash', 'truck-tug', 'jungle-maze', 'night-swim', 'balance-beam', 'gauntlet-run'].map(id => [id, race(id)])),
   'raft-king': playRaftKing, 'cut-rope': playCutRope, 'double-cross': playDoubleCross, 'trust-fall': playTrustFall, 'who-said-it': playWhoSaidIt,
   'deep-freeze': playDeepFreeze, 'log-roll': playLogRoll, 'road-kill': playRoadKill, 'mud-brawl': playMudBrawl, buried: playBuried, 'food-wars': playFoodWars,
+  trapeze: playTrapeze, 'poison-cup': playPoisonCup,
   'car-jump': race('car-jump'), 'locked-in': race('locked-in'), 'the-box': race('the-box') };
 
 export function pickMode(state, rng) {

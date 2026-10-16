@@ -54,6 +54,16 @@ const CHX_CSS = `
 .chx .chx-cast{z-index:3}.chx .chx-wfx{z-index:5}
 .chx .chx-props{position:absolute;inset:0;pointer-events:none;z-index:2}
 .chx .chx-props.chx-fore{z-index:4}
+/* the big screen on the club deck (Who Said It) */
+.chx .prop.bigscreen{transform:none;transition:none;display:flex;flex-direction:column;justify-content:center;gap:1.2cqh;padding:2cqh 2.4cqw;box-sizing:border-box;font:400 1.5cqw/1.1 'Anton',sans-serif;color:#fff;letter-spacing:.03em;text-transform:uppercase;text-shadow:0 0 .8cqw rgba(80,200,255,.7)}
+.chx .bigscreen .q{text-align:center;color:#ffd23f;font-size:1.7cqw;margin-bottom:.6cqh;animation:chxChip .45s cubic-bezier(.3,1.7,.5,1)}
+.chx .bigscreen .r{display:grid;grid-template-columns:4.2cqh 9cqw 1fr 2.4cqw;align-items:center;gap:.8cqw;animation:chxChip .45s cubic-bezier(.3,1.7,.5,1) both}
+.chx .bigscreen .r:nth-child(3){animation-delay:.12s}.chx .bigscreen .r:nth-child(4){animation-delay:.24s}.chx .bigscreen .r:nth-child(5){animation-delay:.36s}
+.chx .bigscreen .r img{width:4.2cqh;height:4.2cqh;object-fit:cover;border:.2cqw solid #fff;background:#222}
+.chx .bigscreen .r b{font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chx .bigscreen .r i{display:block;height:2.2cqh;background:linear-gradient(90deg,#ff5a1f,#ffd23f);box-shadow:0 0 .8cqw rgba(255,120,40,.7)}
+.chx .bigscreen .r span{text-align:right}
+.chx .bigscreen .r.top b,.chx .bigscreen .r.top span{color:#ffd23f}
 .chx .prop{position:absolute;transform:translate(-50%,-100%);transition:left .9s,top .9s}
 .chx .prop svg{width:100%;height:auto;display:block;overflow:visible;filter:drop-shadow(0 .4cqh .5cqh rgba(0,0,0,.45))}
 .chx .prop.bob svg,.chx .prop.bob img{animation:chxBuoy 2.4s ease-in-out infinite alternate}

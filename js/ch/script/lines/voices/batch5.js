@@ -21,7 +21,7 @@ export default {
       dry: ["TJ is on roughly his ninth wrong name for {a}. I'm keeping count.", "The most reliable thing in this game is TJ getting {a}'s name wrong."],
       loud: ["TJ STILL doesn't know {a}'s name! I love it so much!", "Best part of the whole game: TJ never knows {a}'s name!"],
       soft: ["I feel bad laughing, but TJ never getting {a}'s name right makes my day every time.", "Poor {a}. TJ still has no idea. It's the best thing in here."],
-      odd: ["TJ calls {a} a new name every day. I've lost count.", "My favourite show in this house is TJ guessing {a}'s name."],
+      odd: ["TJ calls {a} a new name every day. I've lost count.", "My favorite show in this house is TJ guessing {a}'s name."],
     },
   },
   'sh.3': {
@@ -269,7 +269,7 @@ export default {
   'rn.s1': {
     3: {
       sharp: ["TJ just called {a} the wrong name to {a.posAdj} face. I'm never letting {a.obj} forget it.", "TJ has no idea what {a}'s name is. That's going to come up every day."],
-      dry: ["TJ called {a} by the wrong name. Directly to {a}. I'll be mentioning it daily.", "TJ doesn't know {a}'s name. This is my favourite thing now."],
+      dry: ["TJ called {a} by the wrong name. Directly to {a}. I'll be mentioning it daily.", "TJ doesn't know {a}'s name. This is my favorite thing now."],
       loud: ["TJ called {a} the WRONG NAME! To {a}'s FACE! Best day ever!", "TJ doesn't know {a}'s name! I'm going to say it every day!"],
       soft: ["Poor {a}. TJ got the name wrong right to {a}'s face. I'm going to tease {a} about it forever.", "I shouldn't laugh. But TJ called {a} the wrong name, and I'm going to bring it up daily."],
       odd: ["TJ called {a} the wrong name to {a.posAdj} face. That's the funniest thing I've seen in here.", "From now on I'm calling {a} whatever TJ called {a.obj}."],
@@ -410,7 +410,7 @@ export default {
       dry: ["I heard you say my name, by the way.", "I heard my name earlier. From you."],
       loud: ["I HEARD you say my name!", "Don't lie! I heard you say my name!"],
       soft: ["I heard you say my name. I just want to talk about it.", "I heard you mention me. Can we talk?"],
-      odd: ["I heard my name. My ears are very good.", "I heard you say my name. My name is very recognisable."],
+      odd: ["I heard my name. My ears are very good.", "I heard you say my name. My name is very recognizable."],
     },
     1: {
       dry: ["Can we not do this now?", "Not now. Please."],
@@ -762,7 +762,7 @@ export default {
       dry: ["Because I'd rather fight you than anybody else here.", "Because you're my first choice."],
       loud: ["Because you're the one I want to fight!", "Because it's you I want in there!"],
       soft: ["Because if I have to fight someone, I'd rather it be you.", "Honestly? You're the one I'd most want to face."],
-      odd: ["Because you're my favourite person to fight. It's a compliment, kind of.", "Because you're the one I'd rather fight. You should be honoured."],
+      odd: ["Because you're my favorite person to fight. It's a compliment, kind of.", "Because you're the one I'd rather fight. You should be honored."],
     },
     3: {
       sharp: ["{a} has won in there before. I'm taking that threat seriously.", "{a} doesn't bluff. {a} has won in the Arena."],

@@ -18,6 +18,7 @@ import cruel from './cruel.js';
 import VOICES, { joinVariants } from './voices/index.js';
 import LONGER from './longer/index.js';
 import EXTRA from './extra/index.js';
+import FINAL1 from './voices/final1.js';
 
 export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign, stakes, twists, goodbye, named, cruel);
 
@@ -50,6 +51,24 @@ for (const list of Object.values(POOLS)) {
     const old = e.turns;
     e.turns = spec.map(x => (typeof x === 'number' ? old[x] : x));
     Object.defineProperty(e, 'origTurns', { value: old.length });   // for the guard: every original turn is kept
+  }
+}
+// Voices keyed by the FINAL turn index, applied after the long cut (voices/final*.js): a turn the long cut wrote
+// can carry voices too, and an index never drifts because the entry is already in its final shape.
+export const FINAL_VOICES = [FINAL1];
+for (const list of Object.values(POOLS)) {
+  for (const e of list) {
+    for (const batch of FINAL_VOICES) {
+      const over = batch[e.id];
+      if (!over) continue;
+      for (const [i, vs] of Object.entries(over)) {
+        const t = e.turns[Number(i)];
+        if (!t || t.beat || t.by === 'tj') continue;
+        const own = t.v || {};
+        t.v = { ...own };
+        for (const [tag, line] of Object.entries(vs)) t.v[tag] = joinVariants(own[tag], line);
+      }
+    }
   }
 }
 export { LONGER };

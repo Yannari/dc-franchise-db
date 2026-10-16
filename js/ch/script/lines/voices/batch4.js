@@ -473,7 +473,7 @@ export default {
       dry: ["It's the plan that keeps everybody here safe.", "It's the one that protects all of us."],
       loud: ["It's the plan that keeps us alive!", "It's the plan that keeps all of us here!"],
       soft: ["It's the plan that keeps all of us safe. I promise.", "I'm just trying to protect all of us."],
-      odd: ["It's the plan where none of us go home. That's my favourite kind of plan.", "It's the plan that keeps us safe. Safe plans are the best plans."],
+      odd: ["It's the plan where none of us go home. That's my favorite kind of plan.", "It's the plan that keeps us safe. Safe plans are the best plans."],
     },
   },
   'rq.o2': {

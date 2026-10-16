@@ -140,7 +140,7 @@ const WORD = {
   schemer: ['{b}. A deal is a deal, for now.'],
   earnest: ['{b}. I told somebody I would, and I meant it.'],
   tough: ['{b}. My word means something.'],
-  bossy: ['{b}. Deals get honoured.'],
+  bossy: ['{b}. Deals get honored.'],
   proud: ['{b}. I don\'t break deals.'],
   sharp: ['{b}. I keep my deals.'],
   soft: ['{b}. I promised.'],

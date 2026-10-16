@@ -434,7 +434,7 @@ const DB = {
   start: ['Every side runs to its tower and grabs a ram. TJ blows the horn.', 'The horn goes. Rams up, towers behind them, everybody charges.'],
   pact: [[V("Psst. You leave our tower alone, we leave yours alone. Deal?"), V("Deal. Until there's nobody else left.")],
     [V("We're not hitting you. Don't hit us."), V("Fine by me. Go after the big ones.")]],
-  smash: ['{a} slam{as} into {b} tower. A crate goes flying.', "{a} hit{as} {b} tower dead centre.", '{a} charge{as} {b} tower and knock{as} the top crate off.',
+  smash: ['{a} slam{as} into {b} tower. A crate goes flying.', "{a} hit{as} {b} tower dead center.", '{a} charge{as} {b} tower and knock{as} the top crate off.',
     "{a} get{as} a good hit on {b} tower. It wobbles."],
   miss: ['{a} swing{as} at {b} tower and miss{aes}.', '{a} charge{as} at {b} tower and bounce{as} off.'],
   down: ["{bw} tower comes down! {b} {bare} out.", "Crash. {bw} tower is in pieces. {b} {bare} done.", "{bw} tower topples into the sand. That's it for {b}."],

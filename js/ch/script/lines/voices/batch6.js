@@ -69,7 +69,7 @@ export default {
       sharp: ["Naturally.", "Of course."],
       dry: ["Sure. Why not.", "Shocking."],
       soft: ["Oh, come on. Really?", "Of course. Why me?"],
-      odd: ["Of course they do. The tiles love me.", "Great. More tiles. My favourite."],
+      odd: ["Of course they do. The tiles love me.", "Great. More tiles. My favorite."],
     },
   },
   'ae.n1': {
@@ -399,7 +399,7 @@ export default {
     3: {
       dry: ["{a} and I argue about our old shows all day. Honestly, it's the best part.", "Arguing with {a} about our old shows is the most fun I have here."],
       loud: ["{a} and I argue about our shows ALL day! I love it!", "Best part of this place? Arguing with {a}!"],
-      soft: ["{a} and I argue about our old shows all day. I actually like it.", "It's silly, but arguing with {a} about our shows is my favourite thing here."],
+      soft: ["{a} and I argue about our old shows all day. I actually like it.", "It's silly, but arguing with {a} about our shows is my favorite thing here."],
       odd: ["{a} and I argue about our old shows all day. It's like a sports rivalry, but with crying.", "{a} and I have the same argument every day. It never gets old."],
     },
   },
@@ -438,7 +438,7 @@ export default {
       dry: ["Winning matters less than {b} having to face me.", "I don't care about the result. I care that {b} has to look at me."],
       loud: ["Win or lose, {b} has to look me in the EYE! That's all I wanted!", "I don't care if I lose! {b} has to face me!"],
       soft: ["Winning isn't the point. I want {b} to look me in the eye after everything.", "I just want {b} to have to face me. That's all."],
-      odd: ["I don't care if I win. I care that {b} has to stare at my face. My face is very intense right now.", "Win or lose, {b} has to look at me. I've been practising my look."],
+      odd: ["I don't care if I win. I care that {b} has to stare at my face. My face is very intense right now.", "Win or lose, {b} has to look at me. I've been practicing my look."],
     },
   },
   'rs.s2': {
@@ -846,7 +846,7 @@ export default {
       sharp: ["Then let's give them something to be scared of.", "Good. Let's make them right to be scared."],
       dry: ["Then let's give them a reason.", "Then let's give them a reason to worry."],
       loud: ["Then let's give them a REASON to be scared!", "Then let's scare them!"],
-      odd: ["Then let's be scary. I'll practise my scary face.", "Then let's be the threat they think we are."],
+      odd: ["Then let's be scary. I'll practice my scary face.", "Then let's be the threat they think we are."],
     },
     2: {
       sharp: ["We're {alliance}. Nobody else.", "{alliance}. Just us. That's it."],
@@ -1068,7 +1068,7 @@ export default {
       dry: ["Thanks. I appreciate you telling me.", "Good to know. Thank you."],
       loud: ["Thank you! Seriously! Thanks for telling me!", "Wow. Thank you for telling me!"],
       soft: ["Thank you for telling me. I mean it.", "Thank you. That means a lot."],
-      odd: ["Thank you. You're my favourite snitch.", "Thank you. I owe you one."],
+      odd: ["Thank you. You're my favorite snitch.", "Thank you. I owe you one."],
     },
   },
   'rn.c1': {
@@ -1248,7 +1248,7 @@ export default {
       dry: ["{a} just exposed our whole alliance. Everybody's going to come for us now. I know who to blame.", "That was {a}'s last card, and it cost us. {a} goes next."],
       loud: ["{a} just blew up our WHOLE alliance! I know who to thank!", "Now everybody's coming for us! Thanks a lot, {a}!"],
       soft: ["{a} just exposed all of us. I'm scared. And I know whose fault it is.", "Everybody's going to come for us now. That's on {a}."],
-      odd: ["{a} just exposed our whole alliance. Now everybody's coming for us.", "Our secret is out. {a} let it out. {a} is now my least favourite person."],
+      odd: ["{a} just exposed our whole alliance. Now everybody's coming for us.", "Our secret is out. {a} let it out. {a} is now my least favorite person."],
     },
   },
   'pt.2': {

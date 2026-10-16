@@ -81,6 +81,21 @@ describe('The Challenge pools', () => {
     expect(new Set(voiced).size, said.join(' / ')).toBe(voiced.length);
   });
 
+  it('final-index voices land only on spoken turns that exist (voices/final*.js, applied after the long cut)', async () => {
+    const { FINAL_VOICES } = await import('../js/ch/script/lines/index.js');
+    const byId = {};
+    for (const list of Object.values(POOLS)) for (const e of list) byId[e.id] = e;
+    const bad = [];
+    for (const batch of FINAL_VOICES) for (const [id, turns] of Object.entries(batch)) {
+      for (const i of Object.keys(turns)) {
+        const t = byId[id]?.turns[Number(i)];
+        if (!t) bad.push(`${id}:${i} has no such turn`);
+        else if (t.beat || t.by === 'tj') bad.push(`${id}:${i} is a ${t.beat ? 'beat' : 'TJ line'}`);
+      }
+    }
+    expect(bad, bad.join('\n')).toEqual([]);
+  });
+
   it('voice overlays land only on spoken turns that exist (an overlay keyed by index drifts when a scene is rewritten)', async () => {
     const { default: VOICES } = await import('../js/ch/script/lines/voices/index.js');
     const { LONGER } = await import('../js/ch/script/lines/index.js');

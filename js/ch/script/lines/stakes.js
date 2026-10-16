@@ -28,7 +28,7 @@ export default {
       { by: 'tj', say: "{amount}, from {b} to {a}. Ouch. That's gotta sting." },
       { by: 'b', say: "It stings." },
       { by: 'tj', say: "Win a few dailies wherever you end up, buddy." },
-      { by: 'a', conf: "Every dollar of that was {b}'s, and now it's mine. Everybody back at the villa can do the maths. I'm a target, and I don't care." },
+      { by: 'a', conf: "Every dollar of that was {b}'s, and now it's mine. Everybody back at the villa can do the math. I'm a target, and I don't care." },
     ] },
   ],
 
@@ -753,7 +753,7 @@ export default {
     { id: 'st.rq2', turns: [
       { by: 'a', say: "Somebody give me a hug. I've been sleeping in a shack." },
       { beat: 'A couple of people hug {a}. Most of them hang back.' },
-      { by: 'a', conf: "Half the people in here hugged me. The other half are doing the maths on how to get rid of me again." },
+      { by: 'a', conf: "Half the people in here hugged me. The other half are doing the math on how to get rid of me again." },
     ] },
     { id: 'st.rq3', turns: [
       { by: 'a', say: "Did anybody keep my bunk?" },

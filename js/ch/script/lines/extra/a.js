@@ -493,7 +493,7 @@ export default {
       { by: 'b', say: "Thank you, everybody. Really." },
       { by: 'a', say: "They don't mean it." },
       { by: 'b', say: "I know. I don't care." },
-      { by: 'b', conf: "Half the house just lost their favorite target. I could hear them doing the maths while they were clapping." },
+      { by: 'b', conf: "Half the house just lost their favorite target. I could hear them doing the math while they were clapping." },
     ] },
     { id: 'dy.sx5', turns: [
       { by: 'tj', say: "That's time! That's the game! {a}, {b}, you're the champions of {game}, and you are SAFE!" },

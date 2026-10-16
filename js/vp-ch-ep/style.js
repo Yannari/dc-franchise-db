@@ -367,6 +367,7 @@ const CHX_CSS = `
 .chx .mpin .mlbl{font:400 .8cqw/1 'Black Ops One';letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(14,12,11,.85);padding:.25cqw .5cqw;border-bottom:.15cqw solid var(--fire);white-space:nowrap}
 .chx .mpin .bub{max-width:13cqw;font-size:.95cqw}
 .chx .dlg{transition:opacity .25s,transform .25s}
+.chx .bigclock{position:absolute;left:55.4%;top:9.6%;width:38.8%;height:32%;display:flex;align-items:center;justify-content:center;background:#140303;border-radius:.4cqw;font:400 9.6cqw/1 'Black Ops One',monospace;letter-spacing:.06em;color:#ff2a18;text-shadow:0 0 1.2cqw rgba(255,40,20,.9),0 0 .3cqw #ff6040;z-index:2;pointer-events:none}
 .chx .mtabs-unused{position:absolute;left:2%;top:3.6%;z-index:7;display:flex;pointer-events:auto}
 .chx .mtabs button{border:0;background:rgba(14,12,11,.88);color:var(--hud-dim);font:400 1cqw/1 'Black Ops One';letter-spacing:.08em;text-transform:uppercase;padding:.6cqw 1cqw;cursor:pointer}
 .chx .mtabs button.on{background:var(--fire);color:#140c08}

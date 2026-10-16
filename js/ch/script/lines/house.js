@@ -541,6 +541,32 @@ export default {
       { by: 'a', say: "Yeah. Yeah, I'd like that.", v: { soft: ['Please. Yes. Thank you.'] } },
       { by: 'a', conf: "I was this close to asking to go home. Then {b} came and found me.", v: { sharp: ['I was close to calling it. I\'m glad I didn\'t.'] } },
     ] },
+    { id: 'hs.c4', turns: [
+      { by: 'b', say: "You've been really quiet today. What's going on?" },
+      { by: 'a', say: "Nothing. I'm fine." },
+      { by: 'b', say: "You're not fine. You can tell me." },
+      { by: 'a', say: "I keep thinking about everybody back home. My little brother had a birthday and I wasn't there." },
+      { by: 'b', say: "That's hard. I'm sorry." },
+      { by: 'a', say: "He's going to watch this one day. I want him to see me do well." },
+      { by: 'b', say: "Then let's make sure he does." },
+      { by: 'a', conf: "I didn't want to talk about it. I'm glad {b} made me." },
+    ] },
+    { id: 'hs.c5', turns: [
+      { by: 'a', say: "Can I ask you something? Do you ever just want to go home?" },
+      { by: 'b', say: "Every single day. Why, do you?" },
+      { by: 'a', say: "Today, yeah. Really badly." },
+      { by: 'b', say: "Then stay until tomorrow. Just tomorrow. Then see how you feel." },
+      { by: 'a', say: "That I can probably do." },
+      { by: 'b', conf: "I could see {a} was close to giving up. Sometimes you just need somebody to make it smaller for you." },
+    ] },
+    { id: 'hs.c6', turns: [
+      { by: 'a', say: "I'd give anything for one phone call right now." },
+      { by: 'b', say: "Who would you call?" },
+      { by: 'a', say: "My mom. Just to hear her say she's proud of me." },
+      { by: 'b', say: "She is. You know that." },
+      { by: 'a', say: "I know. I just want to hear it." },
+      { by: 'a', conf: "Missing home in here is like a weight you carry everywhere. Talking to {b} made it a little lighter." },
+    ] },
   ],
   'homesick.alone': [
     { id: 'hs.a1', turns: [

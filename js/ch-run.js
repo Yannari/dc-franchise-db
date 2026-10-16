@@ -232,7 +232,9 @@ function dailyOf(d) {
   return { id: d.id, name: d.name, mode: d.mode, order, winners: [...(d.winners || [])], last: [...(d.last || [])],
     throws: (d.throws || []).map(t => t.name || t), caught: (d.caught || []).map(c => ({ thrower: c.thrower, by: c.by })),
     moments: (d.moments || []).map(m => ({ kind: m.kind, who: m.who })), injuries: [...(d.injuries || [])],
-    scores: Object.fromEntries(Object.entries(sc).map(([k, v]) => [k, Math.round(v * 100) / 100])) };
+    scores: Object.fromEntries(Object.entries(sc).map(([k, v]) => [k, Math.round(v * 100) / 100])),
+    // a played daily's moments, in order (ch/daily/): the viewer shows each one
+    beats: d.beats ? d.beats.map(b => ({ ...b, who: [...b.who], data: JSON.parse(JSON.stringify(b.data || {})) })) : null };
 }
 // An Arena game (or a final's instant elimination) as it was played.
 const duelOf = d => ({ game: d.game, name: d.gameName || d.game, kind: d.kind || null, a: d.a, b: d.b, winner: d.winner, loser: d.loser,

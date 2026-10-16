@@ -21,6 +21,9 @@ import { blendScore, injuryRoll } from './arena.js';
 import { remember, dailyWon, respected } from './rel.js';
 import { noteThrow, knowsThrow } from './knowledge.js';
 import { trustOf } from './rel.js';
+import { playPoleTruth } from './daily/pole-truth.js';
+import { playHangOn } from './daily/hang-on.js';
+import { playInterrogation } from './daily/interrogation.js';
 
 export const DAILIES = [
   { id: 'cliff-relay', name: 'Cliff Relay', physicality: 1.2, modes: ['pairs', 'teams', 'solo'],
@@ -32,9 +35,9 @@ export const DAILIES = [
   { id: 'truck-tug', name: 'Truck Tug', physicality: 1.3, modes: ['teams', 'pairs'],
     blend: { physical: 0.55, endurance: 0.35, temperament: 0.1 },
     desc: 'Each side is harnessed to a pickup truck at the start of a long sand track. They drag it to the finish line, where a puzzle waits that only opens once the truck crosses. Sand piles up under the wheels if they stop, and the harnesses rub raw, so every rest costs twice the effort to restart. The first side to drag the truck home and solve the puzzle wins.' },
-  { id: 'lagoon-quiz', name: 'Lagoon Quiz', physicality: 0.3, modes: ['solo', 'pairs'],
-    blend: { mental: 0.55, intuition: 0.25, temperament: 0.2 },
-    desc: 'Players stand on floating platforms in the lagoon while TJ asks questions about the house, the island and each other. A right answer lets them knock a rival off their platform with a padded pole. A wrong answer, or falling in on your own, puts you in the water and out of the round. The last one standing on a platform wins.' },
+  { id: 'lagoon-quiz', name: 'Interrogation', physicality: 0.5, modes: ['solo'], played: true,
+    blend: { mental: 0.3, intuition: 0.25, endurance: 0.25, temperament: 0.2 },
+    desc: 'Everybody stands on a narrow platform above the gorge, holding an overhead bar with both hands. One at a time, each player gets a true-or-false question from TJ about the people in this house, and a right answer means picking somebody whose bar tilts forward a notch. A wrong answer tilts their own, and the further a bar tilts the harder it is to hang on, until the third notch drops you into the water. The last one still holding on wins.' },
   { id: 'jungle-maze', name: 'Jungle Maze', physicality: 0.8, modes: ['solo', 'pairs', 'teams'],
     blend: { intuition: 0.35, mental: 0.3, endurance: 0.35 },
     desc: 'A maze of bamboo walls is cut into the jungle, with five stations hidden inside, each holding one letter. Players find all five, work out the word they spell, and shout it at the exit. Dead ends cost minutes, and a wrong word sends them back in for a letter they missed. The first to call the right word at the exit wins.' },
@@ -54,6 +57,15 @@ export const DAILIES = [
     blend: { physical: 0.4, endurance: 0.3, boldness: 0.3 },
     desc: 'A beach course of tyre runs, a mud crawl under barbed rope, a wall and a sandbag carry ends at a bell. Players run it in heats against the clock. A missed obstacle adds a minute, and a dropped sandbag goes back to its pile. The fastest time across the bell wins.' },
 ];
+
+// Pole Truth (the user's pick from Total Drama, 2026-10-15): six posts in the water, played in heats.
+DAILIES.push({ id: 'pole-truth', name: 'Pole Truth', physicality: 0.7, modes: ['solo'], played: true,
+  blend: { endurance: 0.35, temperament: 0.35, physical: 0.15, mental: 0.15 },
+  desc: 'Six wooden posts stand in the shallows, and six at a time, players climb up and stand on top of one, with no breakfast and no water. Every few hours TJ brings food for anybody who steps down, and in between TJ reads out a truth about somebody up there, something that was supposed to stay secret. Stepping down, falling, or getting knocked off by a hungry neighbour means the water and the end of that heat. The last one standing in each heat goes to the final heat, and the last one standing there wins.' });
+for (const id of ['hang-on']) { const d = DAILIES.find(x => x.id === id); if (d) d.played = true; }
+
+// The played dailies (ch/daily/): each one runs as beats, and the result comes out of the beats.
+const SIMS = { 'pole-truth': playPoleTruth, 'hang-on': playHangOn, 'lagoon-quiz': playInterrogation };
 
 export function pickMode(state, rng) {
   if (!state.options.partnerWeeks) return 'solo';
@@ -152,6 +164,14 @@ export function playDaily(state, rng, { division }) {
       indiv[n] = s;
     }
   }
+  // a played daily runs as beats, from each player's power for the day, and its result replaces the score
+  const power = { ...indiv };
+  let beats = null;
+  if (SIMS[daily.id]) {
+    const res = SIMS[daily.id](state, rng, { units, power, mode });
+    beats = res.beats;
+    Object.assign(indiv, res.score);
+  }
   const unitScore = u => u.reduce((a, n) => a + indiv[n], 0) / u.length;
   const ranked = [...units].sort((a, b) => unitScore(b) - unitScore(a));
   let winners;
@@ -202,7 +222,7 @@ export function playDaily(state, rng, { division }) {
   for (const n of injuries) { state.rec[n].injuries++; nudge(state, n, 'energy', -2); nudge(state, n, 'morale', -1); }
   // Clutch and choke moments: the best and worst against expectation.
   const exp = n => blendScore(n, daily.blend);
-  const vsExp = state.active.map(n => ({ n, d: indiv[n] - exp(n) })).sort((a, b) => b.d - a.d);
+  const vsExp = state.active.map(n => ({ n, d: power[n] - exp(n) })).sort((a, b) => b.d - a.d);
   const moments = [];
   if (vsExp[0]?.d > 1.2) moments.push({ kind: 'clutch', who: vsExp[0].n });
   const worst = vsExp[vsExp.length - 1];
@@ -215,11 +235,11 @@ export function playDaily(state, rng, { division }) {
     for (const w of winners) { nudge(state, w, 'homesick', -3); nudge(state, w, 'morale', 1.2); }
     addScene(state, 'call-home', winners, {}, winners, 'private');
   }
-  const aftermath = mode === 'pairs' ? pairAftermath(state, rng, units, indiv, winners, ranked)
-    : mode === 'teams' ? teamAftermath(state, rng, units, indiv, winners) : [];
+  const aftermath = mode === 'pairs' ? pairAftermath(state, rng, units, power, winners, ranked)
+    : mode === 'teams' ? teamAftermath(state, rng, units, power, winners) : [];
   return { id: daily.id, name: daily.name, mode, units, winners, last,
     scores: Object.fromEntries(Object.entries(indiv).map(([k, v]) => [k, +v.toFixed(2)])),
-    throws, caught, injuries, moments, reward, aftermath };
+    throws, caught, injuries, moments, reward, aftermath, beats };
 }
 
 // ── what a partner week leaves behind ────────────────────────────────

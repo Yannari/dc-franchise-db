@@ -30,7 +30,20 @@ const NEED_OF_ARCH = {
   showmancer: 'belong', wildcard: 'prove', 'perceptive-player': 'control',
 };
 
+// Each player's fear, read once from who they are (the user, 2026-10-15: "fear factor type" dailies). Which
+// thing they fear is drawn from the seed; how much it grips them is their boldness and temperament. A fear
+// daily tests it: a big fear freezes them, and beating it in front of everybody is a moment.
+export const FEARS = ['heights', 'deep water', 'tight spaces', 'the dark', 'creepy crawlies', 'gross food'];
+function fearFor(state, name) {
+  let h = 2166136261;
+  for (const c of `${state.seed}|fear|${name}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  return { of: FEARS[(h >>> 0) % FEARS.length],
+    size: clamp(0.15 + (10 - S(name, 'boldness')) * 0.06 + (10 - S(name, 'temperament')) * 0.025, 0.1, 0.95) };
+}
+export const fearOfThing = (state, name, thing) => (state.fears?.[name]?.of === thing ? state.fears[name].size : 0);
+
 export function initMind(state, name) {
+  (state.fears ||= {})[name] = fearFor(state, name);
   state.mind[name] = {
     energy: 8 + S(name, 'endurance') * 0.2,
     confidence: 4 + S(name, 'boldness') * 0.3 + S(name, 'physical') * 0.15 + (state.rookie[name] ? -0.8 : 0.4),

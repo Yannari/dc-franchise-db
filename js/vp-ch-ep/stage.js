@@ -276,6 +276,8 @@ export class ChxStage {
     else if (ST.race) h += `<div class='race'>${ST.race.map(r => `<div class='r ${r.p >= 1 ? 'win' : ''}'><div class='fs'>${r.who.slice(0, 3).map(n => `<img src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div><div class='bar'><b style='width:${Math.round(r.p * 100)}%'></b></div><div class='n'>${r.p >= 1 ? '&#10003;' : Math.round(r.p * 100) + '%'}</div></div>`).join('')}</div>`;
     const still = ST.hangers || ST.standers;
     if (still && !ST.duel) h += `<div class='left-hud'><b>${ST.hangers ? 'STILL HANGING' : 'STILL IN'}</b>${still.map(n => `<img class='${ST.out.has(n) ? 'out' : ''}' src='${esc(AV(n))}' title='${esc(n)}' alt=''>`).join('')}</div>`;
+    // Pole Truth's big red timer: the hours written over the plate's own digits
+    if (s.clock && /^poles-timer/.test(ST.plate || '')) h += `<div class='bigclock'>${esc(s.clock)}</div>`;
     if (s.roster) h += `<div class='roster'>${s.roster.map(r => `<div class='rc'><img src='${esc(AV(r.n))}' alt=''><div><div class='rn'>${esc(r.n)}</div>${r.show ? `<div class='rs'>${esc(r.show)}</div>` : ''}</div><span class='${r.rookie ? 'rk' : 'vt'}'>${r.rookie ? 'ROOKIE' : 'VET'}</span></div>`).join('')}</div>`;
     if (s.rules) h += `<div class='rules'><div class='k'>${esc(s.rules.k)}</div><div class='n'>${esc(s.rules.n)}</div><ol>${s.rules.li.map(x => `<li>${x}</li>`).join('')}</ol><div class='f'>${esc(s.rules.f)}</div></div>`;
     if (ST.map) h += mapHtml(ST.map, ST.plate);

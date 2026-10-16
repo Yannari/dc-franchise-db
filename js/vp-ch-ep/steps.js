@@ -19,6 +19,7 @@
 // the rules cards (the engine's own game descriptions).
 import { CH_MARKS } from './marks.js';
 import { marksOf, plateKey, lineup, hostSide, sizeAt } from './ground.js';
+import { BEAT_PLAYS } from './daily-play.js';
 import { episodeScenes } from '../ch/transcript.js';
 import { SHOWS } from '../shows.js';
 import { dailyPlay, ARENA_PLAY } from './play.js';
@@ -548,7 +549,10 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   const units = d.order || [];
   const people = units.flat();
   const key = plateKey(st.plate, night);
-  const cast = { TJ: hostSide(key), ...placeScene(key, people) };
+  // a played daily (js/ch/daily/) stages its own people; before it starts, the house waits on the open ground
+  const beatPlay = d.beats && BEAT_PLAYS[d.id] && st.show === 'played' ? BEAT_PLAYS[d.id] : null;
+  const open0 = marksOf(key).filter(m => m.kind === 'stand' && !m.group).length;
+  const cast = { TJ: hostSide(key), ...(beatPlay ? Object.fromEntries(people.slice(0, open0).map((n, j) => [n, ['stand', j]])) : placeScene(key, people)) };
   const wide = { plate: key, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast, wipe: 1, water: 0 };
   S.push({ scene: wide,
     card: { k: "Today's daily", t: d.name, sub: d.mode === 'solo' && (d.winners || []).length > 1 ? 'The best man and the best woman are safe at the vote' : 'Win it, and you are safe at the vote', icon: 'daily' },
@@ -569,8 +573,19 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   const isWin = u => u.some(n => winners.includes(n));
   const know = [];
   if ((d.throws || []).length) know.push(['Thrown', `${esc(nameList(d.throws))} ${d.throws.length > 1 ? 'are' : 'is'} losing on purpose. ${(d.caught || []).length ? `${esc(nameList(d.caught.map(c => c.by)))} saw it.` : 'Nobody in the house has noticed.'}`]);
-  const played = st.show === 'hang' ? null : dailyPlay(d, { key, seed: row.num });
-  if (played) {
+  // a played daily: every beat, in order (vp-ch-ep/daily-play.js); Hang On keeps its pier and its hang
+  const playOf = d.beats && BEAT_PLAYS[d.id] ? BEAT_PLAYS[d.id] : null;
+  if (playOf) {
+    const sceneOf = (plate, nightHere, castSpec) => { const k = plateKey(plate, nightHere || night);
+      // a close-up has nobody but the players in it (TJ: null)
+      const cast = Object.fromEntries(Object.entries({ TJ: hostSide(k), ...castSpec }).filter(([, v]) => v));
+      return { plate: k, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast, wipe: 1, water: 0 }; };
+    const steps = playOf(d, { seed, V: S.V, plateKey, scene: sceneOf, plate: st.plate, night, people });
+    if (know.length && steps[3]) steps[3].know = know.shift();
+    for (const x of steps) S.push(x);
+  }
+  const played = playOf ? { steps: [], finish: {} } : st.show === 'hang' ? null : dailyPlay(d, { key, seed: row.num });
+  if (playOf) { /* played above */ } else if (played) {
     const mid = [];
     for (const h of d.injuries || []) mid.push({ dir: fill(pickBy(st.water && st.verb === 'swim' ? PLAY.hurtWet : PLAY.hurt, seed + h), { who: h }), focus: [h], act: { [h]: 'slump' }, shake: st.verb === 'swim' ? 0 : 1 });
     const ch = (d.moments || []).find(m => m.kind === 'choke');

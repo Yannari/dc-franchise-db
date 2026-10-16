@@ -2275,6 +2275,48 @@
         "x": 1450,
         "y": 780,
         "h": 133
+      },
+      {
+        "kind": "stand",
+        "x": 430,
+        "y": 582,
+        "h": 112,
+        "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 672,
+        "y": 537,
+        "h": 102,
+        "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 880,
+        "y": 507,
+        "h": 94,
+        "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 1055,
+        "y": 476,
+        "h": 86,
+        "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 1200,
+        "y": 451,
+        "h": 80,
+        "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 1315,
+        "y": 426,
+        "h": 74,
+        "group": "plat"
       }
     ],
     "pool": [
@@ -6226,6 +6268,357 @@
         "kind": "gong",
         "x": 700,
         "y": 330
+      }
+    ]
+  },
+  "poles": {
+    "_doc": "Pole Truth, wide: six posts in the shallows, the yellow platform the fallen swim to, the sand the rest watch from (the user's plate, art job G01).",
+    "night": "auto",
+    "horizon": 0.62,
+    "wind": 0.5,
+    "noleaf": true,
+    "from": "G01-pole-truth/wide.png",
+    "spot": "poles",
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 337,
+        "y": 562,
+        "h": 70,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 446,
+        "y": 562,
+        "h": 70,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 558,
+        "y": 562,
+        "h": 70,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 667,
+        "y": 562,
+        "h": 70,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 769,
+        "y": 562,
+        "h": 70,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 885,
+        "y": 562,
+        "h": 70,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 1010,
+        "y": 738,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1065,
+        "y": 738,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1120,
+        "y": 738,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1175,
+        "y": 738,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1230,
+        "y": 738,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1285,
+        "y": 738,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 40,
+        "y": 762,
+        "h": 84
+      },
+      {
+        "kind": "stand",
+        "x": 115,
+        "y": 752,
+        "h": 82
+      },
+      {
+        "kind": "stand",
+        "x": 190,
+        "y": 760,
+        "h": 84
+      },
+      {
+        "kind": "stand",
+        "x": 1345,
+        "y": 742,
+        "h": 80
+      },
+      {
+        "kind": "stand",
+        "x": 1410,
+        "y": 746,
+        "h": 81
+      },
+      {
+        "kind": "stand",
+        "x": 1475,
+        "y": 750,
+        "h": 82
+      },
+      {
+        "kind": "stand",
+        "x": 1540,
+        "y": 754,
+        "h": 83
+      },
+      {
+        "kind": "stand",
+        "x": 265,
+        "y": 770,
+        "h": 85
+      },
+      {
+        "kind": "host",
+        "x": 1560,
+        "y": 800,
+        "h": 100
+      }
+    ]
+  },
+  "poles-timer": {
+    "_doc": "Pole Truth, wide with the big red timer: the hours passing (G01; the viewer writes the time over the digits).",
+    "night": "auto",
+    "horizon": 0.62,
+    "wind": 0.5,
+    "noleaf": true,
+    "from": "G01-pole-truth/timer.png",
+    "spot": "poles-timer",
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 337,
+        "y": 562,
+        "h": 70,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 446,
+        "y": 562,
+        "h": 70,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 558,
+        "y": 562,
+        "h": 70,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 667,
+        "y": 562,
+        "h": 70,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 769,
+        "y": 562,
+        "h": 70,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 885,
+        "y": 562,
+        "h": 70,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 1010,
+        "y": 738,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1065,
+        "y": 738,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1120,
+        "y": 738,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1175,
+        "y": 738,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1230,
+        "y": 738,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1285,
+        "y": 738,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 40,
+        "y": 762,
+        "h": 84
+      },
+      {
+        "kind": "stand",
+        "x": 115,
+        "y": 752,
+        "h": 82
+      },
+      {
+        "kind": "stand",
+        "x": 190,
+        "y": 760,
+        "h": 84
+      },
+      {
+        "kind": "stand",
+        "x": 1345,
+        "y": 742,
+        "h": 80
+      },
+      {
+        "kind": "stand",
+        "x": 1410,
+        "y": 746,
+        "h": 81
+      },
+      {
+        "kind": "stand",
+        "x": 1475,
+        "y": 750,
+        "h": 82
+      },
+      {
+        "kind": "stand",
+        "x": 1540,
+        "y": 754,
+        "h": 83
+      },
+      {
+        "kind": "stand",
+        "x": 265,
+        "y": 770,
+        "h": 85
+      },
+      {
+        "kind": "host",
+        "x": 1560,
+        "y": 800,
+        "h": 100
+      }
+    ]
+  },
+  "poles-close": {
+    "_doc": "Pole Truth, close on the six posts: who is still standing (G01).",
+    "night": "auto",
+    "horizon": 0.55,
+    "wind": 0.5,
+    "noleaf": true,
+    "from": "G01-pole-truth/close.png",
+    "spot": "poles-close",
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 213,
+        "y": 480,
+        "h": 150,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 448,
+        "y": 480,
+        "h": 150,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 687,
+        "y": 480,
+        "h": 150,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 922,
+        "y": 480,
+        "h": 150,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 1141,
+        "y": 480,
+        "h": 150,
+        "group": "pole"
+      },
+      {
+        "kind": "stand",
+        "x": 1390,
+        "y": 480,
+        "h": 150,
+        "group": "pole"
       }
     ]
   }

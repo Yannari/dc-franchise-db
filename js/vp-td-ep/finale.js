@@ -33,7 +33,7 @@ const VOnce = () => { const used = new Set(); return (n, o, ...k) => {
 const listOf = a => (a.length > 1 ? `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}` : a.join(''));
 const bondOf = ep => { const s = ep.gsSnapshot?.bonds || {}; return (a, b) => s[a <= b ? `${a}||${b}` : `${b}||${a}`] ?? 0; };
 const unquote = t => cleanText(String(t || '').trim().replace(/^["“]+|["”]+$/g, '').replace(/…$/, '.'));
-const WORD = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const WORD = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
 const word = n => WORD[n] || String(n);
 
 // the ceremony set at night (where every vote of the season happened), or the venue's public place
@@ -399,4 +399,138 @@ export function tdWinnerScreen(ep, o = {}) {
   if (fans) say(`And before we go: the fans have their own favourite. ${fans}, America loves you.`, { focus: [fans] });
   say(pickBy([`That's it! That's the season! Goodnight, everybody!`, `And that's ${seasonOf(o)}. Thanks for watching!`], ep.num, 'bye'));
   return { id: 'winner', kind: 'camp', venue: G.venue, ep: ep.num, label: 'The Winner', host, steps };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE BENCHES — at a challenge finale, everybody voted off picks a side
+// ══════════════════════════════════════════════════════════════════════
+// Total Drama Island's last episode: the losers sit in the bleachers behind the finalist they want to win, under a sign
+// with that finalist's face on it (the user, 2026-10-15, with the set: tools/td-camp/venues/zz_zzzzzbenches.py). Who
+// sits where and why is the engine's (finale.js generateBenchAssignments); here they walk over one at a time, in the
+// order they went home, and say why. One scene, so the set is not rebuilt for every walk: each of them is off the set
+// until their step (scene.arrives, stage.js castAt).
+// the painted signs on each set, left then right, as fractions of the frame (a venue's own set gets its own here)
+const BENCH_SIGNS = { 'hosted-camp/benches-day': [[.115, .5456, .2094, .6411], [.8275, .5467, .9225, .6411]] };
+export function tdBenchesScreen(ep, o = {}) {
+  const A = ep.benchAssignments || {}, R = ep.benchReasons || {};
+  const finalists = Object.keys(A);
+  // two sets of bleachers, two signs: a three-way final keeps its classic page
+  if (finalists.length !== 2) return null;
+  const venue = venueOf(ep, o);
+  // (the camp's bleachers until a venue has its own: to-edit/td-benches)
+  const key = plateKey(venue, 'benches', 'day') || plateKey('hosted-camp', 'benches', 'day');
+  const signs = key && BENCH_SIGNS[key];
+  if (!signs) return null;
+  const host = o.host || 'Chris';
+  const bond = bondOf(ep);
+  const M = (TD_MARKS[key] || {}).m || [];
+  // each side's seats, the front tier first, from the middle of the set outward
+  const seats = [0, 1].map(k => M.filter(m => m.kind === 'seat' && (k ? m.u > .5 : m.u < .5)).sort((a, b) => b.v - a.v || (k ? a.u - b.u : b.u - a.u)));
+  const stands = M.filter(m => m.kind === 'stand').sort((a, b) => a.u - b.u);
+  const hm = M.find(m => m.kind === 'host');
+  const places = {};
+  finalists.forEach((f, i) => { const m = stands[i] || { u: i ? .59 : .41, v: .71, s: .12 }; places[f] = { u: m.u, v: m.v, s: m.s }; });
+  if (hm) places[host] = { u: hm.u, v: hm.v, s: hm.s, host: true };
+  // who walks over, in the order they went home (the engine's pool is gs.eliminated, in order)
+  const order = [...new Set([...Object.keys(R), ...finalists.flatMap(f => A[f])])].filter(n => finalists.some(f => (A[f] || []).includes(n)));
+  if (!order.length) return null;
+  const sideOf = n => finalists.find(f => (A[f] || []).includes(n));
+  const used = [0, 0];
+  for (const n of order) {
+    const k = finalists.indexOf(sideOf(n)), m = seats[k][used[k]++];
+    // more of them than seats: they stand along the front of their bleachers
+    places[n] = m ? { u: m.u, v: m.v, s: m.s, sit: true, h: Math.max(8, m.s * 78) }
+      : { u: k ? .62 + (used[k] - seats[k].length) * .05 : .38 - (used[k] - seats[k].length) * .05, v: .8, s: .13, crowd: true };
+  }
+  const arrives = {};
+  const steps = [];
+  const say = (text, extra = {}) => steps.push({ k: 'say', by: host, host: true, text, ...extra });
+  steps.push({ k: 'scene', spot: 'benches', tod: 'day', plate: key, place: 'The Benches', time: 'Day', card: true, focus: finalists, bg: [], places, host, wide: true, arrives,
+    signs: finalists.map((f, i) => ({ x0: signs[i][0], y0: signs[i][1], x1: signs[i][2], y1: signs[i][3], face: f })) });
+  steps.push({ k: 'title', kicker: 'The Finale', name: 'Pick a Side', faces: finalists, vs: true });
+  say(`Everybody who got voted off this season is back for the last day. And today you don't just watch. You pick a side.`);
+  say(`${finalists[0]}'s bleachers are on the left. ${finalists[1]}'s are on the right. Sit behind the one you want to win.`, { focus: finalists });
+  const eager = pickBy(finalists, ep.num, 'eager');
+  steps.push({ k: 'say', by: eager, focus: [eager], text: V(eager, {
+    loud: [`Come on, everybody! ${eager === finalists[0] ? 'Left' : 'Right'} side! Best side!`],
+    sharp: [`Choose carefully. I remember everything.`],
+    soft: [`No pressure, guys. Really. Okay, a little pressure.`],
+    dry: [`Don't all rush at once.`],
+    any: [`Okay. Let's see who my friends are.`],
+  }, 'eager', ep.num) });
+
+  // how they cross, by what they feel for the two of them; no way of crossing said twice while there are others left
+  const CROSS = {
+    torn: ['{n} stops in the middle and looks at {o} for a second. Then {n} sits down behind {f}.', '{n} gives {o} a sorry little wave, and sits down on {f}\'s side.', '{n} can\'t look at {o}. {n} sits down behind {f}.'],
+    close: ['{n} heads straight for {f}\'s side.', '{n} doesn\'t even slow down. {f}\'s bleachers.', '{n} jogs over and drops onto {f}\'s bench.', '{n} goes straight to {f}\'s side and sits down.'],
+    cold: ['{n} looks from one side to the other for a long time, then sits down behind {f}.', '{n} sighs, and picks {f}\'s side.', '{n} takes the long way round, and ends up on {f}\'s bench.', '{n} shrugs and sits down behind {f}.'],
+    plain: ['{n} walks over and sits down behind {f}.', '{n} takes a seat on {f}\'s side.', '{n} climbs up into {f}\'s bleachers.', '{n} sits down on {f}\'s side.'],
+  };
+  const crossed = new Set();
+  const cross = (kind, n, f, o) => {
+    const all = CROSS[kind], left = all.filter(t => !crossed.has(t));
+    const t = pickBy(left.length ? left : all, ep.num, n);
+    crossed.add(t);
+    return t.replace(/\{n\}/g, n).replace(/\{f\}/g, f).replace(/\{o\}/g, o);
+  };
+  // a reaction in the speaker's voice, written with {n} for the one walking over: a line is used once, whoever it names
+  const said = new Set();
+  const react = (by, pools, n, salt) => {
+    const own = (pools[fam(by)] || []).filter(t => !said.has(t)), any = (pools.any || []).filter(t => !said.has(t));
+    const t = pickBy(own.length ? own : any.length ? any : (pools[fam(by)] || pools.any), by, n, salt);
+    said.add(t);
+    return t.replace(/\{n\}/g, n);
+  };
+  let reacted = 0;
+  order.forEach((n, i) => {
+    const f = sideOf(n), other = finalists.find(x => x !== f);
+    const b = bond(n, f), bo = bond(n, other);
+    arrives[n] = steps.length;
+    // how they cross: straight there, a long look at both, or a stop in front of the friend they are not picking
+    const beat = cross(bo >= 3 ? 'torn' : b >= 3 ? 'close' : b <= 0 && bo <= 0 ? 'cold' : 'plain', n, f, other);
+    steps.push({ k: 'beat', text: beat, focus: [n], act: { kind: 'arrive', who: [n] } });
+    const why = unquote(R[n]?.reason);
+    if (why) steps.push({ k: 'say', by: n, focus: [n], text: why });
+    // the friend they walked past says something; now and then, the one they picked does
+    if (bo >= 3) steps.push({ k: 'say', by: other, focus: [other, n], tense: true, text: react(other, {
+      loud: ['{n}?! Seriously?!', 'Wait, {n}! Where are you going?!'],
+      sharp: ['Wow, {n}. Noted.', 'Interesting choice, {n}. I\'ll remember it.'],
+      soft: ['Oh. Okay. That\'s... okay.', '{n}? I thought... never mind.'],
+      dry: ['Cool. Cool cool cool.', 'Great. Love that for me.'],
+      any: ['Really, {n}?', 'Huh. Okay, {n}.'],
+    }, n, 'past') });
+    else if (b >= 4 && reacted < 3) {
+      reacted++;
+      steps.push({ k: 'say', by: f, focus: [f, n], text: react(f, {
+        loud: ['YES! {n}! I knew it!', 'That\'s what I\'m talking about, {n}!', '{n}! My hero!'],
+        sharp: ['Good. I knew I could count on you.', 'Smart choice, {n}.', 'Welcome aboard, {n}.'],
+        soft: ['Thank you, {n}. Really.', '{n}! Thank you. That means a lot.', 'Aw, {n}.'],
+        dry: ['Thanks, {n}. Somebody here has taste.', 'Good call, {n}.', 'Look at that. A fan.'],
+        any: ['Thanks, {n}.', 'Glad you\'re with me, {n}.', 'Appreciate it, {n}.'],
+      }, n, 'thanks') });
+    }
+  });
+
+  const [nA, nB] = finalists.map(f => (A[f] || []).length);
+  const cnt = (f, x) => `${f}: ${word(x)}.`;
+  say(`And that's everybody. ${cnt(finalists[0], nA)} ${cnt(finalists[1], nB)}`, { focus: finalists });
+  if (nA !== nB) {
+    const hi = nA > nB ? finalists[0] : finalists[1], lo = hi === finalists[0] ? finalists[1] : finalists[0];
+    if (!Math.min(nA, nB)) say(`${lo}, not one person. Ouch.`, { focus: [lo], tense: true });
+    steps.push({ k: 'say', by: lo, focus: [lo], text: V(lo, {
+      loud: [`That's fine! I didn't want a crowd anyway!`],
+      sharp: [`Fine. I don't need a cheering section to win.`],
+      soft: [`It's okay. I'll just have to win it myself.`],
+      dry: [`Good. Fewer people to disappoint.`],
+      any: [`Fine. I'll win it without them.`],
+    }, 'lo', ep.num) });
+    steps.push({ k: 'conf', by: hi, focus: [hi], text: V(hi, {
+      loud: [`Did you SEE that? They picked ME! Now I just have to not blow it.`],
+      sharp: [`More people on my side means more people who'll tell the world I deserved it. That matters.`],
+      soft: [`I didn't think that many people liked me out here. Now I really don't want to let them down.`],
+      dry: [`Most of the bleachers. Nice. They can't run the race for me, though.`],
+      any: [`Seeing all of them behind me... okay. Now I really have to win this.`],
+    }, 'hi', ep.num) });
+  } else say(`${word(nA)} each. Dead even. Nice.`, { focus: finalists });
+  return { id: 'benches', kind: 'camp', venue: key.split('/')[0], ep: ep.num, label: 'The Benches', host, steps };
 }

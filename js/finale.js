@@ -3145,6 +3145,7 @@ export function generateBenchAssignments(finalists) {
   const assignments = Object.fromEntries(finalists.map(f => [f, []]));
   const reasons = {};
 
+  const usedReasons = new Set();
   pool.forEach(supporter => {
     const elimEp = (gs.episodeHistory || []).find(h => h.eliminated === supporter || h.firstEliminated === supporter);
     const votersWhoGotMeOut = (elimEp?.votingLog || []).filter(v => v.voted === supporter && v.voter !== 'THE GAME').map(v => v.voter);
@@ -3176,51 +3177,67 @@ export function generateBenchAssignments(finalists) {
     // Who has a friend still supporting from the jury?
     const friendOnJury = pool.find(j => j !== supporter && getBond(supporter, j) >= 2 && getBond(j, finalist) >= 2);
 
+    // Said out loud, on the walk over to the bleachers (the stepped viewer's benches, vp-td-ep/finale.js
+    // tdBenchesScreen): nothing about a jury house or "the bench" they have not sat on yet, nothing the record does not
+    // back up, and no reason said twice in one finale (read 2026-10-15: "I don't love either option..." five times).
     const reasonPool = [];
+    const other = otherFinalist || 'the other one';
 
-    // Tier 1: strong ally — references the actual alliance
-    if (wereAllied && best.bond >= 2)
-      reasonPool.push(`${finalist} and I were allied from the start. We had each other\u2019s backs. That doesn\u2019t end because I got voted out.`);
-    if (wereAllied && best.bond >= 2)
-      reasonPool.push(`We played together. We strategized together. ${finalist} is the person I want to see win because I know what ${finalist} went through.`);
+    // an ally from the game
+    if (wereAllied && best.bond >= 2) reasonPool.push(
+      `${finalist} and I were together from the start. Getting voted out doesn\u2019t change that.`,
+      `We were in it together, ${finalist}. I\u2019m not switching sides now.`,
+      `I played this whole game next to ${finalist}. Obviously I\u2019m sitting here.`);
 
-    // Tier 2: rejected the other finalist — reference WHY
-    if (otherVotedMeOut && otherBond <= 0)
-      reasonPool.push(`${otherFinalist} voted me out. So no \u2014 I\u2019m not sitting on ${otherFinalist}\u2019s bench. ${finalist} gets my support by default, but I mean it.`);
-    if (otherVotedMeOut && wereAlliedOther)
-      reasonPool.push(`${otherFinalist} and I were in the same alliance. Then ${otherFinalist} wrote my name down. That\u2019s why I\u2019m here \u2014 on ${finalist}\u2019s side.`);
-    if (otherBond <= -2)
-      reasonPool.push(`I\u2019ve watched ${otherFinalist} play from the bench. I don\u2019t respect it. I don\u2019t want ${otherFinalist} to win. ${finalist} is my pick.`);
-    if (otherBond <= -2)
-      reasonPool.push(`${otherFinalist} played selfish the entire season. Burned people, broke deals, never owned it. I\u2019d sit on anyone\u2019s bench to make sure ${otherFinalist} doesn\u2019t win.`);
+    // the other finalist is the reason
+    if (otherVotedMeOut && otherBond <= 0) reasonPool.push(
+      `${other} voted me out. So, no, I\u2019m not sitting over there.`,
+      `${other} wrote my name down. ${finalist} didn\u2019t. That\u2019s the whole reason.`);
+    if (otherVotedMeOut && wereAlliedOther) reasonPool.push(
+      `${other} and I had a deal, and then ${other} voted me out. So I\u2019m over here.`);
+    if (otherBond <= -2) reasonPool.push(
+      `I really, really don\u2019t want to watch ${other} win. Go, ${finalist}.`,
+      `Anybody but ${other}. Sorry, ${finalist}, that\u2019s most of the reason.`,
+      `I\u2019ve had enough of ${other} for one summer. ${finalist}, you\u2019ve got me.`);
 
-    // Tier 3: genuine support for this finalist
-    if (best.bond >= 3)
-      reasonPool.push(`${finalist} was real with me the entire game. Never lied to my face, never went behind my back. I\u2019m here because ${finalist} earned it.`);
-    if (best.bond >= 3 && friendOnJury)
-      reasonPool.push(`${friendOnJury} and I talked about this at the jury house. We both agree \u2014 ${finalist} played the best game. This bench was an easy choice.`);
-    if (best.bond >= 1 && !votedMeOut)
-      reasonPool.push(`${finalist} never came after me. In a game where everyone writes names, that means something. I remember who didn\u2019t try to end my game.`);
+    // the finalist is the reason
+    if (best.bond >= 3) reasonPool.push(
+      `${finalist} was straight with me the whole time. Never lied to me, never went behind my back. Easy choice.`,
+      `${finalist} is my friend. That\u2019s it. That\u2019s the reason.`,
+      `Out of everybody out here, ${finalist} is the one I actually trust.`);
+    if (best.bond >= 3 && friendOnJury) reasonPool.push(
+      `${friendOnJury} thinks ${finalist} deserves it too, and ${friendOnJury} is usually right.`);
+    if (best.bond >= 1 && !votedMeOut) reasonPool.push(
+      `${finalist} never came after me. Not once. That counts for a lot out here.`,
+      `${finalist} never wrote my name down. I remember that.`,
+      `${finalist} was nice to me. Like, actually nice. So, yeah.`);
 
-    // Tier 4: voted me out but I respect it
-    if (votedMeOut && best.bond >= 0)
-      reasonPool.push(`${finalist} voted me out. I know that. But I\u2019ve had time to think about it, and it was the right move. I can\u2019t be angry at someone for playing the game well.`);
-    if (votedMeOut && best.bond >= 1)
-      reasonPool.push(`Yeah, ${finalist} was part of the vote against me. But ${finalist} told me to my face before tribal. That\u2019s more than most people did. I respect the honesty.`);
+    // voted out by the one they pick, and over it
+    if (votedMeOut && best.bond >= 0) reasonPool.push(
+      `${finalist} voted me out. I know. Honestly? Good move. I\u2019d have done the same.`,
+      `Yes, ${finalist} voted for me. I\u2019m over it. Mostly.`);
+    if (votedMeOut && best.bond >= 1) reasonPool.push(
+      `${finalist} got me out fair and square. I can respect that.`);
 
-    // Tier 5: reluctant / no good option
-    if (best.bond <= 0 && otherBond <= 0)
-      reasonPool.push(`I don\u2019t love either option. But ${finalist} didn\u2019t actively make my life worse out here. ${otherFinalist ? `${otherFinalist} did.` : `That\u2019s the bar.`} So here I am.`);
-    if (best.bond <= 0 && best.bond > otherBond)
-      reasonPool.push(`This isn\u2019t a vote for ${finalist}. This is a vote against ${otherFinalist || 'the alternative'}. Sometimes that\u2019s how this game works.`);
+    // no good option
+    if (best.bond <= 0 && otherBond <= 0) reasonPool.push(
+      `I don\u2019t love either of them. ${finalist} bugs me a little less.`,
+      `Honestly? Neither. But I have to sit somewhere, so... ${finalist}.`,
+      `It\u2019s ${finalist}. Don\u2019t read into it.`);
+    if (best.bond <= 0 && best.bond > otherBond) reasonPool.push(
+      `This isn\u2019t really for ${finalist}. It\u2019s against ${other}.`);
 
-    // Fallback
-    if (!reasonPool.length) {
-      reasonPool.push(`I\u2019ve been thinking about this since I got here. ${finalist} is the right call. Not emotional \u2014 just clear.`);
-      reasonPool.push(`From the jury bench, ${finalist}\u2019s game makes the most sense to me. That\u2019s where I\u2019m sitting.`);
-    }
+    if (!reasonPool.length) reasonPool.push(
+      `I\u2019ve thought about it a lot. It\u2019s ${finalist}.`,
+      `${finalist} played the better game. That\u2019s my reason.`,
+      `${finalist}. I just want to see ${finalist} win it.`);
 
-    const reason = _pick(reasonPool, supporter + finalist + 'bench');
+    // a reason nobody has given yet, when there is one
+    // (a full side runs through its own reasons: then a plain one nobody has said, before any is said again)
+    const plainReasons = [`I\u2019ve thought about it a lot. It\u2019s ${finalist}.`, `${finalist} played the better game. That\u2019s my reason.`, `${finalist}. I just want to see ${finalist} win it.`];
+    const freshReasons = [reasonPool, plainReasons].map(l => l.filter(r => !usedReasons.has(r))).find(l => l.length) || [];
+    const reason = _pick(freshReasons.length ? freshReasons : reasonPool, supporter + finalist + 'bench');
+    usedReasons.add(reason);
     reasons[supporter] = { finalist, reason, bond: best.bond };
   });
 

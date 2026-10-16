@@ -457,6 +457,8 @@ export const TDX_CSS = `
 .tdx .tdx-stage.intel-open .tdx-intel{transform:none}
 .tdx .tdx-ihead{position:relative}
 .tdx .tdx-sign{position:absolute;background:var(--fc);border:.22cqw solid #111;border-radius:.2cqw;display:grid;place-items:center;overflow:hidden;pointer-events:none;box-shadow:inset 0 -.6cqw 0 rgba(0,0,0,.18);animation:tdxSignSway 3.2s ease-in-out infinite alternate;transform-origin:50% 0}
+.tdx .tdx-sign.face{background:none;border:0;box-shadow:none;animation:none;overflow:visible}
+.tdx .tdx-sign.face img{height:92%;width:auto;max-width:96%;object-fit:contain;filter:drop-shadow(0 .15cqw 0 rgba(0,0,0,.25))}
 .tdx .tdx-sign b{font:400 1cqw/1 'Lilita One';color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.6);writing-mode:vertical-rl;letter-spacing:.06em}
 @keyframes tdxSignSway{from{transform:rotate(-.8deg)}to{transform:rotate(.8deg)}}
 .tdx .tdx-flag{position:absolute;transform:translate(-18%,-100%);aspect-ratio:.6;pointer-events:none;z-index:0}

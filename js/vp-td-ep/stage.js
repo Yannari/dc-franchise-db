@@ -254,8 +254,10 @@ export const BUSY_LABEL = { fish: 'fishing', read: 'reading', eat: 'eating', str
 /** Who is on stage at step N, and how: a list of tokens. Never loses a person mid-scene. */
 /** A scene's team flags (placeTeams): a pole, the team's colour waving, the name on a plate. */
 export function signsHtml(L) {
-  // a painted sign the viewer fills with a team's colour (Wawanakwa's challenge platform)
-  return (L.scene?.signs || []).map(g => `<div class="tdx-sign" style="left:${(g.x0 * 100).toFixed(2)}%;top:${(g.y0 * 100).toFixed(2)}%;width:${((g.x1 - g.x0) * 100).toFixed(2)}%;height:${((g.y1 - g.y0) * 100).toFixed(2)}%;--fc:${esc(g.color)}">${g.name ? `<b>${esc(g.name)}</b>` : ''}</div>`).join('');
+  // a painted sign the viewer fills with a team's colour (Wawanakwa's challenge platform), or a blank one it puts a
+  // finalist's face on (the benches)
+  return (L.scene?.signs || []).map(g => g.face ? `<div class="tdx-sign face" style="left:${(g.x0 * 100).toFixed(2)}%;top:${(g.y0 * 100).toFixed(2)}%;width:${((g.x1 - g.x0) * 100).toFixed(2)}%;height:${((g.y1 - g.y0) * 100).toFixed(2)}%"><img src="${esc(avatar(g.face))}" alt="" title="${esc(g.face)}"></div>`
+    : `<div class="tdx-sign" style="left:${(g.x0 * 100).toFixed(2)}%;top:${(g.y0 * 100).toFixed(2)}%;width:${((g.x1 - g.x0) * 100).toFixed(2)}%;height:${((g.y1 - g.y0) * 100).toFixed(2)}%;--fc:${esc(g.color)}">${g.name ? `<b>${esc(g.name)}</b>` : ''}</div>`).join('');
 }
 // "Previously on..." (twist-screens.js tdPreviouslyScreen): a throwback's tint and tag, and the cards
 // over the season's blurred backdrop: the boot crossed out, and the board of who is still in
@@ -296,6 +298,8 @@ export function castAt(screen, L) {
   for (let i = L.idx; i >= 0; i--) { const x = screen.steps[i]; if (x?.glow) { glow = { ...x.glow }; break; } }
   for (let i = 0; i < L.idx; i++) { const x = screen.steps[i]; if ((x.k === 'idol' || x.k === 'power') && x.by && glow[x.by] && (x.k === 'idol' || glow[x.by] !== 'idol')) delete glow[x.by]; }
   for (const [n, pl0] of Object.entries(sc.places || {})) {
+    // somebody who walks on later in the scene (the benches: one at a time) is not on the set before their step
+    if (sc.arrives && sc.arrives[n] > L.idx) continue;
     const pl = n in moved ? { ...pl0, u: moved[n] } : pl0;
     // the walk out: the one leaving and the host, and whoever came to say goodbye (sc.exitWith)
     if (sc.exit && n !== sc.exit && !pl.host && n !== sc.exitWith) continue;

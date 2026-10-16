@@ -49,7 +49,7 @@ export const CHECKPOINTS = [
   { id: 'cp4', day: 2, name: 'The Lagoon Swim', blend: { endurance: 0.5, physical: 0.3, boldness: 0.2 }, struggle: 'swim', fear: 'deep water',
     stages: [[0.2, 'the halfway rope'], [0.5, 'the far buoy'], [0.85, 'the dock ladder']], stageFear: { i: 0, thing: 'deep water' } },
   { id: 'cp5', day: 2, name: 'The Summit Run', blend: { endurance: 0.5, physical: 0.3, temperament: 0.2 }, struggle: 'run', last: true,
-    stages: [[0.2, 'the jungle trail'], [0.45, 'the rope ladder'], [0.7, 'the cliff top'], [0.95, 'the finish arch']], stageFear: { i: 1, thing: 'heights', size: 0.6 } },
+    stages: [[0.18, 'the jungle trail'], [0.4, 'the rope ladder'], [0.6, 'the cliff top'], [0.8, 'the volcano path'], [0.96, 'the finish arch']], stageFear: { i: 1, thing: 'heights', size: 0.6 } },
 ];
 // points for a place in a division: first takes the most (All Stars: five for first, four for second...)
 const POINTS = [10, 8, 6, 5, 4, 3, 2, 1, 1, 1];

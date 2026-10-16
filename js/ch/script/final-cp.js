@@ -83,6 +83,7 @@ const FX = {
     cp5: [['{c} is up the jungle trail and slipping in the mud on every switchback.', '{c} ducks under the vines and keeps running.'],
       ['{c} goes up the rope ladder hand over hand, and it swings with every step.', '{c} stops halfway up the ladder for one breath, then keeps climbing.'],
       ['{c} rolls over the lip of the cliff and lies flat for a second.', '{c} gets to the cliff top and has to lean on a rock to stand.'],
+      ['{c} scrambles up the volcano path on hands and feet, and the black rock slides out from under every step.', '{c} stops on the volcano path to breathe, and the arch is still a long way up.'],
       ['{c} can see the finish arch, and finds one more gear.', '{c} is on the last stretch, and every step looks like it hurts.']],
   },
   // the stage with the fear in it (final.js stageFear)

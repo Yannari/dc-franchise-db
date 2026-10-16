@@ -47,7 +47,7 @@ export default {
       { by: 'a', say: "Wow. No welcome back? I'm hurt." },
       { by: 'y', opt: 1, say: "You'll get over it." },
       { by: 'a', opt: 'y', say: "I always do. That's the problem, isn't it? For all of you." },
-      { by: 'a', conf: "{count} times they've sent me in. {count} times I've come back. At some point they have to start asking who's really running this house." },
+      { by: 'a', conf: "They've sent me in {count} times. I've come back {count} times. At some point they have to start asking who's really running this house." },
     ] },
     // ── my alliance against the house ──
     { id: 'rm.al1', when: { mood: 'alliance' }, turns: [

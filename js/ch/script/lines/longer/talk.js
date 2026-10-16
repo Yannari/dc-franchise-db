@@ -103,8 +103,8 @@ export default {
     3],
   // ── jealousy: kept quiet ──
   'jl.q1': [0, 1,
-    { by: 'b', opt: 1, say: "Are you okay? You've been quiet." },
-    { by: 'a', opt: 'b', say: "I'm fine. Go back to your conversation." },
+    { by: 'c', opt: 1, say: "Are you okay? You've been quiet." },
+    { by: 'a', opt: 'c', say: "I'm fine. Go back to your conversation." },
     { by: 'a', conf: "If it keeps happening, I'm going to say something. Not tonight." }],
   'jl.q2': [0, 1,
     { by: 'a', say: "Okay. Good. I was just asking." },

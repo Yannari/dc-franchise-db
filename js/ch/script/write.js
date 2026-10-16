@@ -98,12 +98,13 @@ function needs(entry) {
 }
 
 export function fill(text, roles, slots) {
-  return text.replace(TOKEN, (m, role, part) => {
+  return text.replace(TOKEN, (m, role, part, at, whole) => {
     if (role === 'tj') return HOST;
     const name = roles[role] ?? slots[role];
     if (!name) return m;
-    if (!part) return name;
-    return pronouns(name)?.[part] ?? m;
+    const out = part ? pronouns(name)?.[part] ?? m : String(name);
+    // a word in a slot ("three", "they") that starts a sentence starts with a capital
+    return /(^|[.!?]\s+)$/.test(whole.slice(0, at)) ? out.charAt(0).toUpperCase() + out.slice(1) : out;
   });
 }
 

@@ -536,7 +536,7 @@ export default {
     { id: 'py.p2', turns: [
       { by: 'a', say: "Do you think I can actually win this?" },
       { by: 'b', say: "I think you can do anything you decide to do.", v: { sharp: ['If you stop doubting yourself, yeah.'] } },
-      { by: 'a', conf: "I don't need everybody to believe in me. I just need to stop doubting myself.", v: { odd: ['I believe in me. Mostly. Sometimes. Today, yes.'] } },
+      { by: 'a', conf: "I don't need everybody to believe in me. I just need to stop doubting myself.", v: { odd: ['Some days I think I can win this whole thing. Today is not one of those days, and I hate it.'] } },
     ] },
     { id: 'py.p3', turns: [
       { by: 'a', conf: "I didn't come here to be a number. I came here to be somebody people are scared to call out.", v: { soft: ['I just want to show I belong here.'] } },

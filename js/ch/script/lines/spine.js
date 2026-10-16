@@ -703,7 +703,7 @@ export default {
     { id: 'co.b1', turns: [
       { by: 'tj', say: "{a}, the floor is yours. Who are you calling out?" },
       { by: 'a', say: "{b}." },
-      { by: 'a', conf: "Was there somebody I'd rather see go home? Sure. But I'm not stupid enough to call out the person who's undefeated in there." },
+      { by: 'a', conf: "Was there somebody I'd rather see go home? Sure. But I'm not stupid enough to call out the person who keeps winning in there." },
     ] },
     { id: 'co.b2', turns: [
       { by: 'a', say: "I'm calling out {b}. I'm not going in against a beast, I'm not crazy." },

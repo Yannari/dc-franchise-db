@@ -14,7 +14,7 @@ export const OPENERS = {
   // a moment of somebody alone (all confessional): the moment that set it off, so it never reads as the tail of the
   // scene before (the user, 2026-10-16: "mike has a random last confessional why"). By the scene's ending first.
   'psyche.belong': ['{a} watches the rest of the alliance laughing at the other end of the pool, and stays on the far side.', 'The alliance heads to the gym without asking {a} along.'],
-  'psyche.prove': ['{a} is the last one still training in the gym, long after everybody else has gone to bed.', '{a} scrolls back through the daily results on the board and does not like what {a} sees.'],
+  'psyche.prove': ['{a} is the last one still training in the gym, long after everybody else has gone to bed.', '{a} scrolls back through the daily results on the board and does not like the look of it.'],
   'psyche.control': ['{a} walks past a closed bedroom door with voices behind it, and stops.', '{a} counts the votes on {a.posAdj} fingers for the third time today.'],
   'psyche.protect': ['{a} watches {a.posAdj} friends from across the deck, counting who is safe and who is not.', "Everybody in {a}'s group is asleep. {a} is not."],
   'psyche.temper': ['{a} walks out of the kitchen before the argument can start, and keeps walking.', '{a} sits on the steps with {a.posAdj} fists still clenched.'],
@@ -70,7 +70,7 @@ export const OPENERS = {
   'party-deal': ['{a} and {b} find a quiet corner of the club.'],
   'beach-date': ['{a} and {b} slip away from the villa to walk on the beach.'],
   showmance: ['{a} and {b} have stopped pretending.', 'Everybody in the villa has noticed {a} and {b}.'],
-  pda: ['{a} and {b} are on the sofa, wrapped round each other.'],
+  pda: ['{b} and {c} are on the sofa, wrapped round each other, and {a} is sitting right next to them.'],
   'throw-caught': ['{a} saw something at the daily, and can\'t let it go.'],
   'loyalty-test': ['{a} wants to know whose side {b} is on, and has a way to find out.'],
   plea: ['{a} doesn\'t want to go into the Arena, and has one person left to ask.', '{a} catches {b} on the stairs. {a} needs {b}\'s vote.'],

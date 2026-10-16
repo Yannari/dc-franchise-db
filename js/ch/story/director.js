@@ -221,7 +221,9 @@ export function airEpisode(state, epRec, prevRec = null) {
           const cause = causeOf(f.line, f.step);
           if (cause && !cause.aired) {
             const cs = state.scenes.find(x => x.id === cause.scene);
-            const text = cs && recapLine(state, cs);
+            // an alliance ending is told in the past: it opened on "has been meeting behind closed doors" (read 2026-10-16)
+            const ending = ['alliance-end', 'alliance-leave'].includes(s.kind) && cs?.kind === 'meeting';
+            const text = cs && (ending ? `${cs.who[0]}'s alliance used to meet behind closed doors.` : recapLine(state, cs));
             if (text) script = { ...script, lines: [{ kind: 'beat', by: null, text, recap: true }, ...script.lines],
               text: `(${text})\n${script.text}` };
           }

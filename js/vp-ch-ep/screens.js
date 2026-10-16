@@ -114,13 +114,27 @@ function runner(root) {
     if (e.target.closest('[data-close]') || p) isle(R, false);
     if (p) { const i = Number(p.dataset.si); if (i === R.si) goTo(R, 0, false); else if (typeof window.vpGoTo === 'function') window.vpGoTo(vpIndexOf(R, i)); }
   });
-  root.querySelector('.pbar .segs').addEventListener('click', e => {
-    const el = e.target.closest('i'); if (!el) return;
-    const g = segsOf(R)[Number(el.dataset.k)]; if (!g) return;
+  // The bar: press anywhere on it and drag to scrub (the user, 2026-10-16: "i cant pull it forward or backward i
+  // have to click multiple time"). It used to answer only a click landing on a segment, between the gaps.
+  const bar = root.querySelector('.pbar .segs');
+  const stepAt = x => {
+    const segs = [...bar.querySelectorAll('i')];
+    if (!segs.length) return null;
+    let el = segs.find(s => { const r = s.getBoundingClientRect(); return x >= r.left - 2 && x <= r.right + 2; });
+    if (!el) el = x < segs[0].getBoundingClientRect().left ? segs[0] : segs[segs.length - 1];
+    const g = segsOf(R)[Number(el.dataset.k)]; if (!g) return null;
     const r = el.getBoundingClientRect();
-    const f = Math.max(0, Math.min(0.999, (e.clientX - r.left) / Math.max(1, r.width)));
-    stopAuto(R); goTo(R, Math.min(g.z - 1, g.a + Math.floor(f * (g.z - g.a))), false);
-  });
+    const f = Math.max(0, Math.min(0.999, (x - r.left) / Math.max(1, r.width)));
+    return Math.min(g.z - 1, g.a + Math.floor(f * (g.z - g.a)));
+  };
+  let dragging = false, want = null, raf = 0;
+  const seek = x => { want = stepAt(x); if (raf) return; raf = requestAnimationFrame(() => { raf = 0; if (want != null && want !== R.idx) goTo(R, want, false); }); };
+  bar.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); dragging = true; stopAuto(R); try { bar.setPointerCapture(e.pointerId); } catch { /* old browsers */ } seek(e.clientX); });
+  bar.addEventListener('pointermove', e => { if (dragging) seek(e.clientX); });
+  const drop = e => { if (!dragging) return; dragging = false; try { bar.releasePointerCapture(e.pointerId); } catch { /* fine */ } };
+  bar.addEventListener('pointerup', drop);
+  bar.addEventListener('pointercancel', drop);
+  bar.addEventListener('click', e => e.stopPropagation());
   root.querySelector('.intel').addEventListener('click', e => {
     e.stopPropagation();
     if (e.target.closest('[data-close]')) { R.intelOpen = false; intel(R); return; }
@@ -549,6 +563,12 @@ if (typeof document !== 'undefined') {
       else if (R) playStep(R.scr, R.idx, false);
     }, 0);
   });
+  // Space never ALSO presses the button that has focus (a button fires on key-up: one press went forward and
+  // then paused, or went back): the keys belong to the player, and a click leaves no focus behind.
+  document.addEventListener('keyup', e => {
+    if (e.key === ' ' && e.target?.closest?.('.chx')) { e.preventDefault(); e.stopImmediatePropagation(); }
+  }, true);
+  document.addEventListener('click', e => { const b = e.target?.closest?.('.chx button'); if (b) setTimeout(() => b.blur(), 0); }, true);
   document.addEventListener('keydown', e => {
     const root = document.querySelector('.chx[data-ep]');
     if (!root || /input|textarea|select/i.test(e.target?.tagName || '')) return;

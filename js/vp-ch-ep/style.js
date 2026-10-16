@@ -565,7 +565,7 @@ const CHX_CSS = `
 .chx .pbtn.big.on .i-pause{display:block}
 .chx .pbtn.speed{font:400 16px/1 'Anton';letter-spacing:.04em}
 .chx .pbar{flex:1;min-width:200px;display:grid;gap:5px;padding:4px 0}
-.chx .pbar .segs{display:flex;gap:3px;position:relative;padding:6px 0;cursor:pointer}
+.chx .pbar .segs{display:flex;gap:3px;position:relative;padding:10px 0;cursor:pointer;touch-action:none;user-select:none}
 .chx .pbar .segs i{flex:1;height:8px;border-radius:4px;background:var(--cline);position:relative;overflow:hidden;transition:height .15s,background .15s}
 .chx .pbar .segs:hover i{height:11px}
 .chx .pbar .segs i:hover{background:#4a433d}

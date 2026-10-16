@@ -13,6 +13,19 @@ import { RESORT } from './resort.js';
 
 export const PLATE_DIR = 'assets/sets/bb/resort';
 const hashOf = s => { let h = 7; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+// A room's wide view is the room at its best (the user, 2026-10-14: "show the house at its best"); its corners and
+// angles are for variety. Without a weight every view of a room aired as often as every other, so the sink corner
+// came up as often as the whole kitchen. The wide and main views are three times as likely.
+const WIDE = /(-wide|-room|-suite)$|^(living-screens|bedroom-two|hallway|storage|havenot|jury-house)$/;
+// (the bar is a room of its own that happens to share the kitchen's set: a wide view of it is not the kitchen's)
+const weightOf = id => (WIDE.test(id) && !/^bar-/.test(id) ? 3 : 1);
+/** One of the plates, by the key's hash, weighted toward the wide views. */
+function weighted(list, key) {
+  const total = list.reduce((n, id) => n + weightOf(id), 0);
+  let at = hashOf(key) % total;
+  for (const id of list) { at -= weightOf(id); if (at < 0) return id; }
+  return list[0];
+}
 const built = id => !!RESORT.have.default?.[id];
 /** Whether a plate has been built (the writer may name a spot before the user has made it). */
 export const plateBuilt = built;
@@ -55,10 +68,13 @@ export function pickPlate(set, key, text = '', use = 'house') {
   if (!said.length && use === 'house') {
     const own = free.filter(id => (RESORT.plates[id].use || []).includes('house'));
     const quiet = free.filter(id => !own.includes(id));
-    if (own.length && quiet.length) return (hashOf(`${key}|room`) % 3 ? own : quiet)[hashOf(key) % (hashOf(`${key}|room`) % 3 ? own : quiet).length];
+    // a quiet corner one scene in six indoors (one in three put a third of the living room's talks in the library);
+    // outside, the quiet corners are the island (the beach, the dock), and they keep one in three
+    const every = set === 'yard' ? 3 : 6;
+    if (own.length && quiet.length) return weighted(hashOf(`${key}|room`) % every ? own : quiet, key);
   }
   const pool = said.length ? said : free.length ? free : all;
-  return pool[hashOf(key) % pool.length];
+  return weighted(pool, key);
 }
 
 // The corners of the big rooms (the user, 2026-10-14: "multiple people can talk in multiple sides of

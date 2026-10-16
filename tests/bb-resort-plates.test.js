@@ -147,3 +147,22 @@ describe('choosing a plate', () => {
     }
   });
 });
+
+// A room at its best (the user, 2026-10-16, backlog #10): an ordinary scene plays on the room's wide view more
+// often than on any one corner of it, and the quiet corner (the library) is now and then, not a third of the time.
+describe('the wide view first', () => {
+  const share = (set, ids) => {
+    let n = 0;
+    for (let i = 0; i < 3000; i++) if (ids.includes(pickPlate(set, `w:${set}:${i}`, '', 'house'))) n++;
+    return n / 3000;
+  };
+  it('plays most living room and kitchen scenes on the wide views', () => {
+    expect(share('ceremony', ['living-screens', 'living-screens-wide'])).toBeGreaterThan(0.4);
+    expect(share('ceremony', ['library-wide'])).toBeLessThan(0.25);
+    expect(share('kitchen', ['kitchen-wide', 'kitchen-room'])).toBeGreaterThan(0.5);
+    expect(share('kitchen', ['kitchen-sink'])).toBeLessThan(0.2);
+  });
+  it('keeps the island in the yard now and then', () => {
+    expect(share('yard', Object.keys(RESORT.plates).filter(id => RESORT.plates[id].place))).toBeGreaterThan(0.2);
+  });
+});

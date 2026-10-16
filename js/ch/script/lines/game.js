@@ -1201,7 +1201,7 @@ export default {
       { by: 'a', conf: "{b} has been asking for that all season. Tonight {b} got it.", when: { early: false }, v: { soft: ['I hate that I lost it. I just couldn\'t hold it in anymore.'] } },
       { by: 'a', conf: "I don't know {b} well yet, but I already can't stand {b.obj}.", when: { early: true } },
     ] },
-    { id: 'fg.2', turns: [
+    { id: 'fg.2', when: { cause: ['talk'] }, turns: [
       { by: 'a', say: "You've been running your mouth all night.", v: { loud: ['YOU\'VE BEEN RUNNING YOUR MOUTH ALL NIGHT!'] } },
       { by: 'b', say: "And you've been drinking all night, so I guess we're even.", v: { sharp: ['And? What are you going to do about it?'] } },
       { by: 'b', conf: "{a} wanted a fight. {a} got one. Now everybody's going to pick a side.", v: { soft: ['I didn\'t want this. I really didn\'t.'] } },
@@ -1225,7 +1225,7 @@ export default {
       { beat: 'Somebody pulls {a} back by the arm. {b} doesn\'t move.' },
       { by: 'b', conf: "{a} wanted me to back down in front of everybody. I'm not backing down from anybody in this house." },
     ] },
-    { id: 'fg.5', turns: [
+    { id: 'fg.5', when: { cause: ['talk'] }, turns: [
       { by: 'b', say: "If you've got something to say about me, say it here. Not behind my back." },
       { by: 'a', say: "Fine. I think you're fake. I think you smile at everybody and then talk about them the second they leave." },
       { by: 'b', say: "That's rich, coming from you." },
@@ -1237,7 +1237,7 @@ export default {
       { by: 'a', conf: "I said what everybody's been thinking about {b}. If that makes me the bad guy tonight, fine." },
       { by: 'b', conf: "{a} wanted a fight, and {a} got one. I just hope everybody watching remembers who started it." },
     ] },
-    { id: 'fg.6', turns: [
+    { id: 'fg.6', when: { cause: ['talk'] }, turns: [
       { by: 'a', say: "Can I talk to you? Now?" },
       { by: 'b', say: "If you're going to yell, no." },
       { by: 'a', say: "I'm not going to yell. I want to know why my name keeps coming out of your mouth." },
@@ -1249,7 +1249,7 @@ export default {
       { by: 'b', conf: "{a} came at me in front of everybody. That tells me {a} is scared." },
       { by: 'a', conf: "I'm done letting {b} talk about me. If it happens again, it's going to get ugly." },
     ] },
-    { id: 'fg.7', turns: [
+    { id: 'fg.7', when: { cause: ['clash', 'talk'] }, turns: [
       { by: 'b', say: "Why are you even mad at me right now?" },
       { by: 'a', say: "You know exactly why." },
       { by: 'b', say: "I genuinely don't." },
@@ -1261,7 +1261,7 @@ export default {
       { by: 'c', opt: 1, say: "Both of you, walk away. It's not worth it." },
       { by: 'a', conf: "One day {b} is going to say that to the wrong person." },
     ] },
-    { id: 'fg.8', turns: [
+    { id: 'fg.8', when: { cause: ['talk', 'vote'] }, turns: [
       { by: 'a', say: "Keep my name out of your mouth." },
       { by: 'b', say: "Or what?" },
       { by: 'a', say: "Keep going and find out." },

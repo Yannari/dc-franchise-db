@@ -161,6 +161,11 @@ export function writeScene(state, scene) {
       lines.unshift({ kind: 'beat', by: null, text: fill(t, r.roles, r.slots), voice: null });
     }
   }
+  // what it is about, said before anybody speaks (cause.js: a fight never starts in a feud nobody saw)
+  if (scene.data?.causeLine) {
+    const at = lines.findIndex(l => l.kind !== 'beat');
+    lines.splice(at < 0 ? lines.length : at, 0, { kind: 'beat', by: null, text: scene.data.causeLine, voice: null });
+  }
   return { lines, text: transcript(lines), lineId: entry.id, at: entry.at || placeOfWords(scene.spot, lines, scene.kind) };
 }
 

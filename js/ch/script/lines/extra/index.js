@@ -7,5 +7,6 @@ import d from './d.js';
 import e from './e.js';
 import f from './f.js';
 import g from './g.js';
+import h from './h.js';
 
-export default [a, b, c, d, e, f, g];
+export default [a, b, c, d, e, f, g, h];

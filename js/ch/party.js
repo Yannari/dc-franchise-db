@@ -21,6 +21,7 @@ import { learn, factId } from '../knowledge.js';
 import { stableRng } from '../script/rng.js';
 import { noteDeal } from './knowledge.js';
 import { freeRide } from './respect.js';
+import { causeOf, dislikeOf } from './cause.js';
 
 const pop = (name, d) => { gs.popularity ||= {}; gs.popularity[name] = (gs.popularity[name] || 0) + d; };
 
@@ -71,6 +72,9 @@ function nightDrama(state, rng, drink) {
     if (!b || rng() >= drink[a] * 0.55) continue;
     // what it is about: a vote, never having been in, or just the feud
     const why = state.episodes.some(e => (e.votes || []).some(v => v.ballots.some(x => x.voter === b && x.target === a))) ? 'vote' : freeRide(state, b) > 0.4 ? 'floater' : 'feud';
+    // a feud is only a feud when something happened (cause.js): no call-out over first impressions
+    const cause = why === 'feud' ? causeOf(a, b, state.ep) : null;
+    if (why === 'feud' && !cause) continue;
     const firesBack = rng() < 0.35 + S(b, 'boldness') * 0.05;
     addBond(a, b, -1.2);
     addRivalry(state, a, b, 1);
@@ -79,7 +83,7 @@ function nightDrama(state, rng, drink) {
     pop(a, S(a, 'social') >= 6 ? 0.3 : -0.3);
     if (firesBack) { pop(b, 0.3); nudge(state, a, 'paranoia', 0.4); }
     busy.add(a); busy.add(b);
-    out.push(addScene(state, 'party-callout', [a, b], { why, firesBack }, act, 'party'));
+    out.push(addScene(state, 'party-callout', [a, b], { why, firesBack, ...(cause ? { causeLine: cause.line, causeType: cause.group } : {}) }, act, 'party'));
     break;
   }
   // 4. Tears at the bar: somebody low and homesick breaks, and a friend is there, or nobody is.
@@ -111,6 +115,12 @@ export function partyNight(state, rng) {
       // The same two do not fight every night: a fight within two episodes cools it.
       if (state.lastFight?.[`${a}|${b}`] >= state.ep - 1) continue;
       if (beef < 2.5) continue;
+      // something has to have happened between them, on camera (cause.js), and one fight is the night's fight
+      if (fights.length) continue;
+      // a real event between them, or plain dislike when they genuinely can't stand each other
+      const cause = causeOf(a, b, state.ep) || (Math.min(getBond(a, b), getBond(b, a)) <= -2.5
+        ? dislikeOf((10 - S(a, 'temperament')) >= (10 - S(b, 'temperament')) ? a : b, (10 - S(a, 'temperament')) >= (10 - S(b, 'temperament')) ? b : a, state.ep) : null);
+      if (!cause) continue;
       const fuse = ((10 - S(a, 'temperament')) + (10 - S(b, 'temperament'))) / 20;
       const hot = (archetypeOf(a) === 'hothead' || archetypeOf(b) === 'hothead') ? 1.4 : 1;
       const p = clamp((beef - 2) * 0.03 * fuse * (drink[a] + drink[b]) * hot, 0, 0.35);
@@ -118,7 +128,7 @@ export function partyNight(state, rng) {
       if (seen.has(a) || seen.has(b)) continue;
       seen.add(a); seen.add(b);
       // Who started it: the shorter fuse and the bigger grudge.
-      const starter = (10 - S(a, 'temperament')) + grudgeOf(a, b) >= (10 - S(b, 'temperament')) + grudgeOf(b, a) ? a : b;
+      const starter = cause.holder;
       (state.lastFight ||= {})[`${a}|${b}`] = state.ep;
       const other = starter === a ? b : a;
       addBond(a, b, -2);
@@ -140,7 +150,7 @@ export function partyNight(state, rng) {
         const against = s.lean > 0 ? other : starter;
         addBond(s.x, against, -0.5);
       }
-      addScene(state, physical ? 'fight-physical' : 'fight', [starter, other], { sides: sides.map(s => ({ who: s.x, with: s.lean > 0 ? starter : other })) }, state.active, 'party');
+      addScene(state, physical ? 'fight-physical' : 'fight', [starter, other], { sides: sides.map(s => ({ who: s.x, with: s.lean > 0 ? starter : other })), causeLine: cause.line, causeType: cause.group }, state.active, 'party');
       if (physical) dq.push({ name: starter, victim: other });
     }
   }

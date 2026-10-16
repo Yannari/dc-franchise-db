@@ -399,7 +399,7 @@ export default {
 
   // a and b: an argument that blows up
   'fight.any': [
-    { id: 'fg.x1', turns: [
+    { id: 'fg.x1', when: { cause: ['talk'] }, turns: [
       { by: 'a', say: "Say it again. I dare you." },
       { by: 'b', say: "I said you've been lying to everybody since you got here." },
       { by: 'a', say: "Name one thing I lied about." },
@@ -421,7 +421,7 @@ export default {
       { by: 'a', say: "Number one: you never shut up." },
       { by: 'b', conf: "{a} has been waiting all season to scream at me, and tonight {a} finally did it." },
     ] },
-    { id: 'fg.x3', turns: [
+    { id: 'fg.x3', when: { cause: ['talk', 'vote'] }, turns: [
       { by: 'a', say: "Don't walk away from me while I'm talking to you." },
       { by: 'b', say: "I'm not walking away. I'm getting a drink. You're following me." },
       { by: 'a', say: "Because you won't stand still!" },

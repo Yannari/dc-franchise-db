@@ -23,6 +23,10 @@ const yes = (v, a, b) => (v ? a : b);
 const COUNT_WORD = ['None', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen', 'Twenty'];
 
 // What a call-out at the bar is about (party.js nightDrama): said to the rival's face.
+// a feud said as what it really is (cause.js GROUP): only talk is "talking about me"
+const FEUD_BEEF = { vote: 'you stood up and said my name at the vote', callout: 'you called me out in front of everybody',
+  ally: 'you sent my friend home', talk: "you've been talking about me behind my back",
+  clash: "you've had it in for me since day one", dislike: "I don't like you, and I'm done pretending I do" };
 const BEEF = { vote: 'you stood up and said my name at the vote', floater: "you've never been in the Arena once", feud: "you've been talking about me since day one" };
 
 // The reason a name is said at the deliberation, true to the record (vote.js whyName): a sentence, the name in it.
@@ -111,7 +115,8 @@ export const ROLES = {
   'party-slip': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.caught || undefined }, ending: sc.data.self ? 'self' : sc.data.caught ? 'caught' : 'told',
     slots: { alliance: sc.data.alliance, target: sc.data.target || undefined } }),
   'party-deal': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
-  'party-callout': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.firesBack ? 'firesback' : 'walks', slots: { beef: BEEF[sc.data.why] || BEEF.feud } }),
+  'party-callout': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.firesBack ? 'firesback' : 'walks',
+    slots: { beef: (sc.data.why === 'feud' && FEUD_BEEF[sc.data.causeType]) || BEEF[sc.data.why] || BEEF.feud } }),
   'party-tears': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.comforted ? 'comforted' : 'alone' }),
   // ── the stakes (stakes.js, redemption.js) ──
   'bank-taken': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { amount: sc.data.amount } }),

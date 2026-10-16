@@ -47,6 +47,7 @@ import { payDaily, arenaPurse, hurt, medicalRisk, healDay, powerRankings, earnPa
 import { purge, returnArena } from './ep-twists.js';
 import { arenaGoodbye } from './goodbye.js';
 import { wavering, hasWavered, quitMoment } from './quit.js';
+import { medevac, medicalScare } from './medevac.js';
 import { worstSting } from './daily/named.js';
 import { mockAfterDaily, gloatAfterVote } from './cruel.js';
 import { redemptionOn, houseTakes, sendToRedemption, redemptionWatch, redemptionNight, returnFromRedemption, closeForFinal } from './redemption.js';
@@ -66,12 +67,24 @@ function pop(name, d) {
 // season's rate (30 seasons: 0.53 quits a season before the gate; 0.47 after, plus about one in seven talked
 // out of it by a friend).
 const QUIT_CARRY = 4;
+// A medevac on the day of the injury, and later from one the medic cleared (per check, three a episode). Kept to
+// the season's rate before the split (30 seasons: 11 medevacs).
+const MED_NOW = 0.6, MED_LATER = 0.12;
 // A day's quits and medicals. At most one quit a day.
 function dayExits(state, rng, injured = []) {
   const out = [];
   // a knock is played through; a sprain sometimes, a tear often, ends it (stakes.js)
+  // (medevac.js: the exam, TJ, the goodbye; a bad injury the medic clears is a scare the viewer sees, and it can
+  // still end things on a later day, so a medevac often grows out of an injury that has been on screen)
   for (const n of injured) {
-    if (state.active.includes(n) && rng() < medicalRisk(state.injury[n])) { medical(state, n); out.push({ name: n, how: 'medical' }); }
+    if (!state.active.includes(n)) continue;
+    if (rng() < medicalRisk(state.injury[n]) * MED_NOW) { medevac(state, n); out.push({ name: n, how: 'medical' }); }
+    else if (state.injury[n]?.sev >= 2) medicalScare(state, n);
+  }
+  for (const n of [...state.active]) {
+    const inj = state.injury?.[n];
+    if (!inj?.scared || inj.scared === state.ep || inj.heal <= state.ep) continue;
+    if (rng() < medicalRisk(inj) * MED_LATER) { medevac(state, n); out.push({ name: n, how: 'medical' }); }
   }
   // a quit comes after signs the viewer saw on an earlier day (quit.js), and the risk carries the days it waited
   for (const n of [...state.active]) {
@@ -451,7 +464,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       // A winner hurt in the Arena: how bad decides whether the medics pull them out.
       const hurtNow = injuryRoll(state, R(`hurt${k}`), winner, 1.3) ? hurt(state, R(`hurtk${k}`), winner, 'arena') : null;
       if (hurtNow && R(`med${k}`)() < medicalRisk(hurtNow)) {
-        medical(state, winner); epRec.exits.push({ name: winner, how: 'medical' });
+        medevac(state, winner); epRec.exits.push({ name: winner, how: 'medical' });
       } else {
         // The voters only face the one THEY put in; a winner who was called out
         // comes back having sent the caller home, and a volunteer put themselves there.

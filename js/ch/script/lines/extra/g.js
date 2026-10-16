@@ -79,7 +79,7 @@ export default {
       { by: 'a', say: "I'm back. I'm so tired. I'm back." },
       { by: 'b', say: "Congratulations. I mean it." },
       { by: 'a', say: "You voted for me, {b}. I heard you. It really hurt." },
-      { by: 'b', say: "I know. I'm sorry." },
+      { by: 'b', say: "I know. I'm really sorry, {a}." },
       { by: 'a', say: "I'm not going to hold it against you. I just wanted you to know it hurt." },
       { by: 'b', conf: "Getting yelled at would have been easier. {a} just looked at me, and I felt about two inches tall." },
     ] },

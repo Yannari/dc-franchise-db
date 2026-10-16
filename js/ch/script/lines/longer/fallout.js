@@ -114,7 +114,7 @@ export default {
     2],
   'db.v2': [
     { by: 'b', say: "I heard you say my name tonight." },
-    { by: 'a', say: "I know. I'm sorry." },
+    { by: 'a', say: "I know you did. I'm sorry." },
     { by: 'b', say: "We shook on it." },
     0],
   'db.v3': [0, 1,

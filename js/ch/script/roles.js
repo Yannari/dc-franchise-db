@@ -109,6 +109,10 @@ export const ROLES = {
   'quit-decide': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.stays ? 'stays' : 'goes' }),
   'quit-house': sc => ({ roles: { a: sc.who[0], b: sc.data.pleading?.[0], c: sc.data.pleading?.[1], d: sc.data.glad || undefined }, ending: sc.data.pleading?.length ? (sc.data.glad ? 'glad' : 'pleading') : (sc.data.glad ? 'gladonly' : 'quiet') }),
   medical: sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
+  // medevac.js: the medic's exam (cleared: the scare; out: the end), and the house's goodbye
+  'medical-exam': sc => ({ roles: { a: sc.who[0], b: sc.data.friend || undefined }, ending: sc.data.verdict, slots: { part: sc.data.part } }),
+  'medical-house': sc => ({ roles: { a: sc.who[0], b: sc.data.friends?.[0], c: sc.data.friends?.[1], d: sc.data.relieved || undefined },
+    ending: sc.data.friends?.length ? (sc.data.relieved ? 'relieved' : 'friends') : 'quiet', slots: { part: sc.data.part } }),
   // b: the one TJ is sending home, there to hear it (they leave the same day)
   disqualified: sc => ({ roles: { a: sc.who[1], b: sc.who[0] }, ending: 'any', slots: { gone: sc.who[0] } }),
   'expelled-goodbye': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.angry ? 'angry' : 'tears', slots: { target: sc.data.victim || undefined } }),

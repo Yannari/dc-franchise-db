@@ -921,7 +921,6 @@ export default {
   ],
   'medical.any': [
     { id: 'md.1', turns: [
-      { beat: 'The medic finishes checking {a} and shakes their head.' },
       { by: 'tj', say: "{a}, the doctors say you're done, and I hate it. You didn't quit. Your body did. That's different, and everybody here knows it." },
       { by: 'a', conf: "I didn't get voted out, I didn't lose an elimination, and I'm still going home. That's the part that kills me." },
     ] },
@@ -1026,7 +1025,7 @@ export default {
       { by: 'a', say: "Leave them." },
       { by: 'b', say: "I'm helping." },
       { by: 'a', say: "I don't want help. I want to stay." },
-      { by: 'b', say: "I know. I'm sorry." },
+      { by: 'b', say: "I know you do. I wish you could." },
       { by: 'a', say: "Watch {target} for me. Don't let {target} get comfortable." },
       { by: 'b', conf: "{a} is gone, and {target} is still here. I don't know how I'm supposed to look at {target} after this." },
     ] },
@@ -1078,7 +1077,7 @@ export default {
     ] },
     { id: 'xb.c2', turns: [
       { by: 'a', say: "{gone} was my closest friend in here." },
-      { by: 'b', say: "I know. I'm sorry." },
+      { by: 'b', say: "I know. I'm sorry about {gone}." },
       { by: 'a', say: "Are you?" },
       { by: 'b', say: "I'm sorry it went that far. I'm not sorry I'm still here." },
       { by: 'a', say: "Fair enough." },

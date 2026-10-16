@@ -288,6 +288,8 @@ export function challengeRows(result) {
         votes: (e.votes || []).map(v => ({ votedIn: v.votedIn, tally: { ...(v.tally || {}) }, tied: !!v.tied, tiebreak: v.tiebreak || null,
           ballots: (v.ballots || []).map(b => ({ voter: b.voter, target: b.target, wanted: b.wanted || null, asked: b.asked || null, told: b.told || null, why: b.why || null, flip: !!b.flip })) })),
         duels: (e.arena || []).map(duelOf),
+        // TJ's power rankings this episode, the whole house (stakes.js): the viewer's side panel
+        rankings: (e.rankings || []).map(r => ({ n: r.n, rank: r.rank, was: r.was ?? null })),
         ties: e.ties || {},
         intel: e.intel || null,
         meetings: (e.delib?.meetings || []).map(m => ({ name: m.name || null, organiser: m.organiser, target: m.target, responses: { ...(m.responses || {}) } })),

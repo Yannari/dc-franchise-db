@@ -101,6 +101,8 @@ function runner(root) {
       flyTo(R, zone, () => goTo(R, i, false, true));
       return;
     }
+    if (e.target.closest('[data-ranks]')) { e.stopPropagation(); try { localStorage.setItem(RANKS_KEY, ranksOpen() ? '0' : '1'); } catch { /* the tab still toggles below */ }
+      const box = R.root.querySelector('.ranks'); if (box) { box.classList.toggle('rk-on'); box.classList.remove('fresh'); const t = box.querySelector('.rk-tab'); if (t) t.innerHTML = `${box.classList.contains('rk-on') ? '&#9656;' : '&#9666;'} TJ's rankings`; } return; }
     if (e.target.closest('[data-intel]')) { e.stopPropagation(); R.intelOpen = !R.intelOpen; intel(R); paintHud(R); }
     if (e.target.closest('[data-isle]')) { e.stopPropagation(); stopAuto(R); isle(R, true); }
     const mv = e.target.closest('[data-mview]');
@@ -268,6 +270,24 @@ function hint(R, text) {
   const d = document.createElement('div'); d.className = 'mhint again'; d.textContent = text;
   R.root.querySelector('.chx-hud').append(d);
 }
+// TJ's power rankings, the whole house, on a tab at the side (the user, 2026-10-16: "a full ranking, all the
+// players still there, on the side, collapsible so it doesn't hide the screens every time"). It appears once TJ
+// has read them this episode, stays closed until opened, and remembers being open.
+const RANKS_KEY = 'chx-ranks-open';
+const ranksOpen = () => { try { return localStorage.getItem(RANKS_KEY) === '1'; } catch { return false; } };
+function ranksPanel(R) {
+  const rows = R.E.row?.ch?.rankings;
+  const hud = R.root.querySelector('.chx-hud');
+  if (!rows?.length || !hud) return;
+  R.E.rankAt ??= (() => { for (const [si, s] of R.E.screens.entries()) { const i = s.steps.findIndex(x => x.ranksShown); if (i >= 0) return { si, i }; } return null; })();
+  const at = R.E.rankAt;
+  if (!at || R.si < at.si || (R.si === at.si && R.idx < at.i)) return;
+  const open = ranksOpen();
+  const fresh = R.si === at.si && R.idx === at.i;
+  const arrow = r => { const m = r.was ? r.was - r.rank : null; return m == null ? `<i class='rk-new'>new</i>` : m > 0 ? `<i class='rk-up'>&#9650;${m}</i>` : m < 0 ? `<i class='rk-dn'>&#9660;${-m}</i>` : `<i class='rk-eq'>&ndash;</i>`; };
+  hud.insertAdjacentHTML('beforeend', `<div class='ranks ${open ? 'rk-on' : ''} ${fresh ? 'fresh' : ''}'><button type='button' class='rk-tab' data-ranks>${open ? '&#9656;' : '&#9666;'} TJ's rankings</button>`
+    + `<div class='rk-list'>${rows.map(r => `<div class='rk-row ${r.rank === 1 ? 'top' : ''}'><b>#${r.rank}</b><img src='${esc(AV(r.n))}' alt=''><span>${esc(r.n)}</span>${arrow(r)}</div>`).join('')}</div></div>`);
+}
 function paintHub(R) {
   const H = hubAt(R, R.idx); if (!H) return;
   const hud = R.root.querySelector('.chx-hud'); const seen = seenOf(R);
@@ -324,6 +344,7 @@ function goTo(R, idx, forward, sting = forward) {
   R.root.dataset.idx = String(idx);
   st.present(steps[idx], true, ctxOf(R));
   paintHub(R);
+  ranksPanel(R);
   // on a map the dialogue box is not there; the map opens on the island, or where the viewer last was
   R.root.classList.toggle('on-map', !!steps[idx]?.map);
   if (steps[idx]?.map) setView(R, R.mview || 'isle', false, true); else R.root.classList.remove('mview-villa');

@@ -54,6 +54,20 @@ const CHX_CSS = `
 .chx .chx-cast{z-index:3}.chx .chx-wfx{z-index:5}
 .chx .chx-props{position:absolute;inset:0;pointer-events:none;z-index:2}
 .chx .chx-props.chx-fore{z-index:4}
+/* TJ's power rankings, on a tab at the side: closed it is just the tab, open it is the whole house */
+.chx .ranks{position:absolute;right:0;top:30%;z-index:11;display:flex;align-items:flex-start;pointer-events:auto}
+.chx .ranks .rk-tab{writing-mode:vertical-rl;rotate:180deg;font:400 1cqw/1 'Black Ops One';letter-spacing:.08em;text-transform:uppercase;background:var(--caution);color:#141110;border:0;padding:1.2cqh .55cqw;cursor:pointer;box-shadow:0 .4cqh 1cqh rgba(0,0,0,.5)}
+.chx .ranks.fresh .rk-tab{animation:chxRkPulse 1s ease-in-out 3}
+@keyframes chxRkPulse{50%{background:#ff6a1a;scale:1.12}}
+.chx .ranks .rk-list{display:none;max-height:46cqh;overflow:auto;width:17cqw;background:rgba(14,11,9,.92);border-left:.25cqw solid var(--caution);padding:.6cqh .5cqw}
+.chx .ranks.rk-on .rk-list{display:block}
+.chx .rk-row{display:grid;grid-template-columns:2.4cqw 2.6cqh 1fr 2.6cqw;align-items:center;gap:.4cqw;padding:.25cqh 0;font:600 1cqw 'Barlow Condensed';color:#e9e1d6;border-bottom:1px solid rgba(255,255,255,.06)}
+.chx .rk-row b{font:400 .9cqw 'Black Ops One';color:var(--caution)}
+.chx .rk-row img{width:2.6cqh;height:2.6cqh;object-fit:cover;border:.12cqw solid #000}
+.chx .rk-row span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chx .rk-row.top span{color:var(--caution)}
+.chx .rk-row i{font-style:normal;text-align:right;font-size:.85cqw}
+.chx .rk-up{color:#5fe06a}.chx .rk-dn{color:#ff5a4a}.chx .rk-eq{color:#8b949e}.chx .rk-new{color:#57a6e8}
 /* a fight: the brawl cloud, the two inside it, caution tape for an expulsion */
 .chx .brawlfx{position:absolute;width:20cqw;translate:-50% -55%;z-index:6;pointer-events:none;animation:chxBrawl .16s steps(2) infinite alternate}
 .chx .brawlfx svg{width:100%;height:auto;display:block;overflow:visible;filter:drop-shadow(0 .6cqh .8cqh rgba(0,0,0,.5))}

@@ -138,7 +138,7 @@ export function powerRankings(state) {
     for (const v of order.slice(rr + 1, rr + 6)) if (!state.rookie[v]) { remember(v, rookieTop, 'rookie-over-me', 0.4); addBond(v, rookieTop, -0.2); }
   }
   const who = [...new Set([top, last, drop, rise].filter(Boolean))];
-  addScene(state, 'power-rankings', who, { top, last, drop, rise, passer, rookieTop, order: order.slice(0, 5) }, state.active, 'public');
+  addScene(state, 'power-rankings', who, { top, last, drop, rise, passer, rookieTop, order: order.slice(0, 5), rows: rows.map(r => ({ ...r })) }, state.active, 'public');
   return rows;
 }
 

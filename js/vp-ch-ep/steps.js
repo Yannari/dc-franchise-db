@@ -26,6 +26,7 @@ import { dailyPlay, ARENA_PLAY } from './play.js';
 import { DAILY_VOICE, ARENA_VOICE, speak, tjLine } from './voices.js';
 import { pronouns } from '../players.js';
 import { cpLines, podiumLines } from '../ch/script/final-cp.js';
+import { rankLines } from '../ch/script/rankings.js';
 import { DAILY_STAGE, FINAL_STAGE, ARENA_STAGE, rulesOf, dailyDef, arenaDef, pickBy, nameList, fill,
   TJ_DAILY_OPEN, TJ_DAILY_NIGHT, TJ_GO, TJ_WELCOME, TJ_FIRST_DAILY, TJ_LANDING, TJ_SPEECH, TJ_ARENA_ASK, TJ_ARENA_RULES, TJ_ARENA_OUT, PLAY, DUEL } from './games.js';
 
@@ -338,6 +339,7 @@ export function chStepScreens(row, ctx = {}) {
   let cur = null;
   const times = clockOf(aired, DAILY_STAGE[ch.daily?.id]?.hour === 'night');
   const S = {
+    num: row.num,
     day: aired[0]?.day ?? row.day ?? 1, min: 8 * 60,
     V: null,
     push(step) { cur.steps.push(step); return step; },
@@ -470,9 +472,8 @@ const SQUARE_UP = a => ({ clash: a.who.slice(0, 2), slam: { spray: "IT'S ON", co
 const OPEN = {
   fight: SQUARE_UP,
   'fight-physical': SQUARE_UP,
-  'power-rankings': a => ({ tally: { title: "TJ's power rankings", rows: [
-    ...(a.data?.order || []).map((n, i) => ({ who: [n], v: 1 - i * 0.16, txt: `#${i + 1}`, win: i === 0 })),
-    ...(a.data?.last ? [{ who: [a.data.last], v: 0.06, txt: 'LAST', mark: 'x' }] : [])] } }),
+  // the full list is on the side panel from here on (screens.js ranksPanel); no board over the screen
+  'power-rankings': a => ({ ranksShown: 1 }),
 };
 
 // A cut back to last episode: the place a recap beat happened, its people on it, tinted as a flashback.
@@ -505,7 +506,18 @@ function scene(S, { a, i, title }, { names, house, goneAt, key }) {
   const k = a.kind === 'meeting' ? meetingKnow(a.data) : bondKnow(a);
   if (k) first.know = k;
   if (OPEN[a.kind]) Object.assign(first, OPEN[a.kind](a));
-  linesToSteps(S, a.lines, { names, first, sceneWho: a.who });
+  // TJ reads the rankings out loud before the house reacts (script/rankings.js: the backlog prints the same)
+  if (a.kind === 'power-rankings' && a.data?.rows) {
+    const told = rankLines(a.data.rows, { seed: `ranks|${S.num}` });
+    told.forEach((l, k) => {
+      const st = k === 0 ? first : {};
+      if (l.by === HOST) { st.tj = l.text; st.focus = l.fx.who ? ['TJ', l.fx.who] : ['TJ']; }
+      else { st.say = [l.by, l.text]; st.focus = [l.by]; st.act = { [l.by]: l.fx.move > 0 || l.fx.rank === 1 ? 'cheer' : l.fx.move < 0 || l.fx.rank === a.data.rows.length ? 'slump' : 'talkpop' }; }
+      if (l.fx.who && l.by === HOST) { st.chip = [l.fx.who, `#${l.fx.rank}${l.fx.move ? (l.fx.move > 0 ? ` \u25b2${l.fx.move}` : ` \u25bc${-l.fx.move}`) : ''}`]; if (l.fx.top) { st.slam = { spray: 'NUMBER ONE', color: '#ffd21a' }; st.shake = 1; } }
+      S.push(st);
+    });
+    linesToSteps(S, a.lines, { names, sceneWho: a.who });
+  } else linesToSteps(S, a.lines, { names, first, sceneWho: a.who });
   if (BIG[a.kind]) for (const st of [].concat(BIG[a.kind](a))) S.push({ focus: a.who.slice(0, 4), ...st });
 }
 

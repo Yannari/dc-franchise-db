@@ -371,7 +371,7 @@ export default {
 
   // a, b, c: the three who drank the most
   'party.any': [
-    { id: 'pt.x1', turns: [
+    { id: 'pt.x1', when: { early: false }, turns: [
       { beat: 'The club is packed. {a} has found a microphone, and nobody knows where it came from.' },
       { by: 'a', say: "This song goes out to everybody who voted against me!" },
       { by: 'b', say: "Oh no. Somebody get the microphone." },

@@ -30,7 +30,7 @@ function clipOf(aired, who) {
   const conf = lines.filter(l => l.kind === 'conf' && fits(l));
   // the strongest: a line that names somebody, or raises its voice; else the longest that fits
   // a reply means nothing out of its scene ("I know. I heard. Thank you."): a clip has to stand on its own
-  const reply = /^(I know|I heard|Thank|Thanks|Okay\b|Ok\b|Yes\b|Yeah\b|No\b|Me too|Same|Why|What|It |That's|That was|Good|Fine|Sure|Deal|Really|Wow)/i;
+  const reply = /^(I don't know|Maybe\b|I know|I heard|Thank|Thanks|Okay\b|Ok\b|Yes\b|Yeah\b|No\b|Me too|Same|Why|What|It |That's|That was|Good|Fine|Sure|Deal|Really|Wow)/i;
   // ...and a line said in the speaker's own voice is the one that sounds like them
   const score = l => (/[A-Z][a-z]+/.test(l.text.slice(1)) ? 2 : 0) + (/!/.test(l.text) ? 1 : 0) + l.text.length / 150 - (reply.test(l.text) ? 4 : 0) + (l.voice ? 1 : 0);
   const all = [...said, ...conf].sort((x, y) => score(y) - score(x));

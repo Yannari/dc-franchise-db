@@ -15,7 +15,7 @@ export default {
   // ── alliances ───────────────────────────────────────────────────────
   'alliance-form.any': [
     { id: 'af.1', turns: [
-      { beat: '{a} waves {b} and {c} into the gym and shuts the door behind them.' },
+      { beat: '{a} waves the others into the gym and shuts the door behind them.' },
       { by: 'a', say: "I'll be quick. I think we could run this place.", v: { loud: ['Okay, I\'m just going to say it! All of us, together! Let\'s run this house!'], soft: ['I really trust you guys. I think we should stick together.'], sharp: ['I\'ve looked at everybody. You\'re the only ones worth working with.'] } },
       { by: 'b', say: "I've been thinking the same thing.", v: { sharp: ['Okay. What\'s in it for me?'], soft: ['Really? Me? Yes. Yes, absolutely.'] } },
       { by: 'c', say: "So what do we call ourselves?", v: { odd: ['Do we get a secret handshake?'] } },

@@ -326,7 +326,7 @@ export default {
       { by: 'y', opt: 1, say: "Yeah, teach us, oh wise one." },
       { by: 'b', conf: "{a} tried to make me look stupid in front of everybody. It backfired. Now the others think {a} is the one who's scared of me." },
     ] },
-    { id: 'cw.vd2', when: C, turns: [
+    { id: 'cw.vd2', when: { crowd: true, early: false }, turns: [
       { beat: 'At breakfast, {a} looks down the table at {b}.' },
       { by: 'a', say: "Enjoy it while it lasts. Rookies always do great the first week." },
       { by: 'b', say: "It's not the first week." },

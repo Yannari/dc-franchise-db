@@ -106,7 +106,8 @@ const asLines = (rows, state, day, seed) => rows.map(([kind, by, text, v]) => {
   const said = voicedLine({ say: text, v }, by, { rng: stableRng(seed, `v|${by}`), ledger: state.lineLedger, day });
   return { kind: 'say', by, text: said.text, voice: said.tag };
 });
-const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen',
+  'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty', 'twenty-one', 'twenty-two', 'twenty-three'];
 const w = n => WORD[n] || String(n);
 
 const WHY = {

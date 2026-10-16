@@ -72,7 +72,7 @@ export default {
 
   // a and b: a promise made at the bar
   'party-deal.any': [
-    { id: 'pdeal.x1', turns: [
+    { id: 'pdeal.x1', when: { early: false }, turns: [
       { beat: 'At the edge of the dance floor, {a} pulls {b} in close so {b} can hear.' },
       { by: 'a', say: "I need to tell you something important." },
       { by: 'b', say: "Is it important, or is it the drinks?" },

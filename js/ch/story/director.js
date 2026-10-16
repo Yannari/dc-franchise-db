@@ -250,11 +250,14 @@ const AT_THE_DAILY = new Set(['daily-clutch', 'daily-choke', 'partner-blame', 'p
 // A scene whose words put it in the morning (breakfast, "good morning") airs at the start of its day, after the
 // morning's fixtures (the user, 2026-10-16: "good morning to u too when its 7:20" in the evening): the clock
 // spreads a day's scenes between its fixed times in airing order, so a breakfast aired late got an evening hour.
-const MORNING_WORDS = /\b(good morning|breakfast|this morning|woke up|wakes up|morning\.)/i;
+const MORNING_WORDS = /\b(good morning|breakfast|this morning|woke up|wakes up)\b|(?<!until |till )\bmorning\./i;   // "until morning." is a night
 const NEXT_MORNING = new Set(['morning-after', 'arc-giant-falls', 'tj-at-breakfast']);   // vp-ch-ep/steps.js clockOf
 const MORNING_FIXTURES = new Set(['previously', 'power-rankings', 'return-arena', 'return-walkin', 'redemption-return', 'arrival', 'villa-reveal', 'injury-healed']);
 const MOVABLE = a => a.kind !== 'ceremony' && !ANCHOR.has(a.kind) && !MUST_ORDER.has(a.kind);
-const MUST_ORDER = new Set(['daily', 'callout', 'arena', 'arena-goodbye', 'return', 'morning-after', 'purge', 'named-fallout', 'mock', 'gloat']);
+const MUST_ORDER = new Set(['daily', 'callout', 'arena', 'arena-goodbye', 'return', 'morning-after', 'purge', 'named-fallout', 'mock', 'gloat',
+  // the final is told in the order it ran: TJ's "you stay out here until morning" opened the final before its start line
+  'final-start', 'final-cp', 'instant-elimination', 'final-lastword', 'overnight', 'overnight-sabotage', 'overnight-talk', 'overnight-quit',
+  'final-pact-help', 'final-pact-broken', 'final-podium', 'final-congrats', 'champions', 'champion-reflect']);
 function morningFirst(aired) {
   const out = [];
   for (const day of [...new Set(aired.map(a => a.day))]) {

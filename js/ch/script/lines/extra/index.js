@@ -11,5 +11,6 @@ import h from './h.js';
 import returns from '../returns.js';
 import crowd from './crowd.js';
 import crowd2 from './crowd2.js';
+import i from './i.js';
 
-export default [a, b, c, d, e, f, g, h, returns, crowd, crowd2];
+export default [a, b, c, d, e, f, g, h, returns, crowd, crowd2, i];

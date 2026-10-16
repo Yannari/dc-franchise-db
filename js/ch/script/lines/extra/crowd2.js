@@ -137,7 +137,7 @@ export default {
       { by: 'a', say: "Nobody trusts you. Not one person on this dance floor." },
       { by: 'b', say: "And you're the one shouting it at a club. Who do you think they trust less?" },
       { by: 'y', opt: 1, say: "Can we turn the music back up?" },
-      { by: 'x', conf: "That was the most uncomfortable minute of my whole time here, and that's saying something." },
+      { by: 'x', conf: "I have never wanted to leave a dance floor so badly in my life." },
     ] },
   ],
   'trash-talk.bites': [

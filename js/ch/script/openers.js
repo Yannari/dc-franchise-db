@@ -40,6 +40,8 @@ export const OPENERS = {
   'arena-eve-confront': ['The night before the Arena, {a} walks right up to {b}.', '{a} has something to say to {b} before tomorrow, and says it in front of everybody.'],
   'arena-eve-pep': ['The night before the Arena, {a} goes to find {b}.', '{a} knocks on {b}\'s door late. Tomorrow {b} goes into the Arena.'],
   'alliance-leave': ['{a} has had enough of the group, and tells {b} first.', '{a} pulls {b} aside. Something has to change.'],
+  // an alliance that ends because the final starts ends at the start line, not in the villa kitchen
+  'alliance-end.final': ['On the start line of the final, {a} and {b} find each other one last time.', 'Before the final starts, {a} and {b} stand together for the last time as allies.'],
   'alliance-end': ['What\'s left of {alliance} sits in the bedroom, and nobody wants to say it first.', '{a} and {b} end up alone in the kitchen. The group is falling apart.'],
   'deal-broken': ['{b} heard what {a} did at the vote, and goes to find {a}.', '{a} can feel {b} staring across the common room. {b} walks over.'],
   'spare-deal': ['{a} catches {b} alone with a quiet offer: spare me, and I\'ll spare you.', '{a} has a deal in mind for {b}, and it only works if nobody else hears it.'],

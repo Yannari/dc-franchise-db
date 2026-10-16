@@ -50,7 +50,7 @@ export default {
     { by: 'a', opt: 'c', say: "It could. That's the risk every week. I'd rather take it against {target} than against somebody who's good in the Arena." },
     { by: 'b', say: "So we're betting {target} loses in there." },
     { by: 'a', say: "A daily is a lot of things at once. The Arena is one person against another, and {target} hasn't shown me that yet." },
-    { by: 'x', opt: 1, say: "I'm good with that. I've been watching {target} in the dailies too." },
+    { by: 'x', opt: 1, say: "I'm good with that. I've been watching {target} too." },
     { by: 'b', say: "Okay. {target} it is." },
     { by: 'b', conf: "{a} has thought this through. I just hope the Arena goes the way {a} thinks it will, because if {target} wins, everybody's going to ask whose idea it was." }],
   'mt.u5': [0, 1, 2,

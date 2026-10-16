@@ -187,7 +187,7 @@ export default {
       { by: 'b', say: "I'm just trying to be decent." },
       { by: 'a', say: "You weren't decent at the vote. Don't start now." },
       { beat: 'Somebody steps between them before it goes any further.' },
-      { by: 'a', conf: "I was nice for weeks, and they still put me in there. Fine. Nice is over." },
+      { by: 'a', conf: "I was nice to every one of them, and they still put me in there. Fine. Nice is over." },
     ] },
   ],
 };

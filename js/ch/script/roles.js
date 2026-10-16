@@ -49,7 +49,7 @@ const CASE = {
 export const ROLES = {
   arrival: (sc, st) => {
     const r = sc.data.recognised?.[0];
-    return r ? { roles: { a: r[0], b: r[1] }, ending: 'reunion', slots: { show_a: showName(st.origin[r[0]]) } }
+    return r ? { roles: { a: r[0], b: r[1] }, ending: st.origin[r[0]] === 'the-challenge' ? 'returning' : 'reunion', slots: { show_a: showName(st.origin[r[0]]) } }
       : { roles: { a: sc.who[0], b: sc.who[1] }, ending: 'strangers' };
   },
   'villa-reveal': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),

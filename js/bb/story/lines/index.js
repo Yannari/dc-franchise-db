@@ -32,12 +32,13 @@ import MORE_WEEK from './more-week.js';
 import VOTETALK from './votetalk.js';
 import RUNNERS from './runners.js';
 import ARCS from './arcs.js';
+import TOGETHER from './together.js';
 
 // Ids are prefixed 'st:' so a story entry can never share an id (and so a usage ledger
 // entry) with an old house-event line.
 const RAW = {};
 // the 'more-*' files widen pools that already exist: their entries are added, never replace
-for (const part of [FEUD, ALLIANCE, SHOWMANCE, TARGET, SCHEME, LIFE, MORE_ALLIANCE, MORE_HOUSE, MORE_COUPLE, SET, GROUPS, MORE_GROUPS, MORE_SETS, MORE_GROUPS2, GROUPS3, FIRSTNIGHT, MORE_SETS2, GAMETALK, GAMETALK2, GAMETALK3, CAMPTALK, STYLE, MORE_BANTER, HOHWEEK, HOHWEEK2, HOHWEEK3, WITNESS, MORE_WEEK, VOTETALK, RUNNERS, ARCS]) {
+for (const part of [FEUD, ALLIANCE, SHOWMANCE, TARGET, SCHEME, LIFE, MORE_ALLIANCE, MORE_HOUSE, MORE_COUPLE, SET, GROUPS, MORE_GROUPS, MORE_SETS, MORE_GROUPS2, GROUPS3, FIRSTNIGHT, MORE_SETS2, GAMETALK, GAMETALK2, GAMETALK3, CAMPTALK, STYLE, MORE_BANTER, HOHWEEK, HOHWEEK2, HOHWEEK3, WITNESS, MORE_WEEK, VOTETALK, RUNNERS, ARCS, TOGETHER]) {
   for (const [k, pool] of Object.entries(part)) RAW[k] = [...(RAW[k] || []), ...pool];
 }
 export const STORY_POOLS = Object.fromEntries(Object.entries(RAW).map(([k, pool]) => [k, pool.map(e => ({ ...e, id: `st:${e.id}` }))]));

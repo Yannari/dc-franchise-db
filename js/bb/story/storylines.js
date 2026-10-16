@@ -96,7 +96,12 @@ function kindRule(kind, ending, beat) {
 
 const takenElsewhere = (x, other) => {
   try {
-    return (gs.activePlayers || []).some(p => p !== x && p !== other && REL_KINSHIP[kinshipBetween(x, p)]?.group === 'Together');
+    const house = gs.activePlayers || [];
+    if (house.some(p => p !== x && p !== other && REL_KINSHIP[kinshipBetween(x, p)]?.group === 'Together')) return true;
+    // ...or a showmance made in the house, still going, with somebody still in it (read 2026-10-15: Chase, with
+    // Bowie, flirting with Ripper on screen and nothing ever said about Bowie)
+    return (gs.showmances || []).some(sh => sh.phase !== 'broken-up' && !sh.broken && (sh.players || []).includes(x)
+      && (sh.players || []).some(p => p !== x && p !== other && house.includes(p)));
   } catch { return false; }
 };
 

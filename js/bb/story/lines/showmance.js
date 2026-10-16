@@ -198,7 +198,7 @@ export default {
       { by: 'a', say: "We just have to get far enough. Then we can stop pretending." },
       { by: 'b', dr: "Saying 'no' about {a} out loud was harder than any comp I've played." },
     ] },
-    { id: 'sk.c5', room: 'bedroom', turns: [
+    { id: 'sk.c5', room: 'bedroom', when: { kin: 'together' }, turns: [
       { beat: "Everyone else is asleep. {b} slides over to {a}'s bed." },
       { by: 'a', say: "We agreed we wouldn't do this in here." },
       { by: 'b', say: "Five minutes." },

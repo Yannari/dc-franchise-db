@@ -542,6 +542,16 @@ function writeStoryScene0(line, step, ctx) {
   const preShow = step.outcome === 'couple' && line.type === 'showmance'
     && factsFor({ who, data: {}, room }, { week: ctx.week, act: 'house' }).kin === 'together';
   let keys = keysFor(line.type, step.step, step.outcome === 'couple' && line.type === 'showmance' && !preShow ? 'any' : step.outcome);
+  // A showmance never goes backwards on screen (read 2026-10-15: Chase and Ripper had the "what are we?" talk
+  // twice; Beth and Scary had their first kiss after they had already said what they were). Once the viewer has
+  // seen them become a couple, a declare or a spark is the couple being one, and a "first" kiss is not the first.
+  if (line.type === 'showmance' && !preShow) {
+    const seen = line.steps.slice(0, line.steps.indexOf(step)).filter(s => s.aired);
+    const declared = seen.some(s => s.step === 'declare'), kissed = seen.some(s => s.step === 'kiss');
+    if (STORY_POOLS['story.showmance.together.any']?.length
+      && ((step.step === 'declare' && (step.outcome === 'couple' || declared)) || (step.step === 'spark' && (declared || kissed)))) keys = ['story.showmance.together.any'];
+    else if (step.step === 'kiss' && step.outcome === 'first' && (declared || kissed)) keys = keysFor('showmance', 'kiss', 'couple');
+  }
   if (!keys.length) return null;
   // A group version is used while it has a scene this season has not aired: the group pools are
   // small, and a spent one used to rotate (the read of 2026-10-14: the cold-tea nominee scene and the

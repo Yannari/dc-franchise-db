@@ -17,6 +17,7 @@
 //
 // Every moment between people has its consequence (kit.js), and the fears are tested where a set calls for them.
 import { getBond, addBond } from '../../bonds.js';
+import { namedSting } from './named.js';
 import { remember, trustOf, grudgeOf, protectOf } from '../rel.js';
 import { nudge, fearOfThing } from '../mind.js';
 import { allianceOf } from '../alliances.js';
@@ -192,8 +193,9 @@ export function playBuried(state, rng, { units }) {
         if (right) pts[k]++;
         named[pick] = (named[pick] || 0) + 1;
         // the answer is out in the open now: the one named heard who named them
-        if (q.id !== 'final') { addBond(pick, r.buried, -0.4); remember(pick, r.buried, 'named-me', 0.6); } else addBond(pick, r.buried, 0.3);
-        R.beat(t++, 'answer', [r.ans, r.buried, pick], { q: q.id, guess, right, pts: pts[k] });
+        // what it costs depends on who said it (named.js): a friend naming you is a betrayal
+        const sting = namedSting(state, rng, r.buried, pick, q.id, { base: 0.4 });
+        R.beat(t++, 'answer', [r.ans, r.buried, pick], { q: q.id, guess, right, pts: pts[k], react: sting?.kind || null });
       }
     }
     for (const r of roles) { const k = r.u.join('+'); score[r.buried] = score[r.ans] = out.has(k) ? -1 : pts[k]; }
@@ -225,8 +227,8 @@ export function playFoodWars(state, rng, { units, power }) {
         - (al && al.members.includes(n) && !mayScheme(buzz) ? 5 : 0) - (coupleOf(state, buzz) === n ? 9 : 0) + rng() })).sort((a, b) => b.s - a.s)[0]?.n;
       if (!target) break;
       const d = DISHES[dish++ % DISHES.length];
-      addBond(target, buzz, -0.5); remember(target, buzz, 'picked-me', 0.8);
-      R.beat(t, 'buzz', [buzz, target], { dish: d });
+      const sting = namedSting(state, rng, buzz, target, 'dish', { base: 0.5 });
+      R.beat(t, 'buzz', [buzz, target], { dish: d, react: sting?.kind || null });
       // the plate: eat it, or refuse and be out
       const size = fearOfThing(state, target, 'gross food') + 0.25 + t * 0.06;
       const nerve = (S(target, 'temperament') * 0.5 + S(target, 'boldness') * 0.3 + S(target, 'endurance') * 0.2) / 10;
@@ -335,8 +337,8 @@ export function playPoisonCup(state, rng, { units, power }) {
       const target = pick.n;
       const why = pick.grudge > pick.threat && pick.grudge > 0.6 ? 'grudge' : pick.threat > 1.2 ? 'threat' : 'none';
       const d = POISONS[cup++ % POISONS.length];
-      addBond(target, server, -0.5); remember(target, server, 'picked-me', 0.8);
-      R.beat(t, 'hand', [server, target], { cup: d, why });
+      const sting = namedSting(state, rng, server, target, 'cup', { base: 0.5 });
+      R.beat(t, 'hand', [server, target], { cup: d, why, react: sting?.kind || null });
       const size = fearOfThing(state, target, 'gross food') + 0.2 + t * 0.05;
       const nerve = (S(target, 'temperament') * 0.5 + S(target, 'endurance') * 0.3 + S(target, 'boldness') * 0.2) / 10;
       const keeps = rng() < clamp(nerve * 1.1 - size * 0.55 + (power[target] - 6) * 0.04 + 0.3, 0.1, 0.95);

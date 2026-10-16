@@ -46,6 +46,7 @@ import { calledOut, arenaWon, remember } from './rel.js';
 import { payDaily, arenaPurse, hurt, medicalRisk, healDay, powerRankings, earnPass, passCut, PURSE } from './stakes.js';
 import { purge, returnArena } from './ep-twists.js';
 import { arenaGoodbye } from './goodbye.js';
+import { worstSting } from './daily/named.js';
 import { redemptionOn, houseTakes, sendToRedemption, redemptionWatch, redemptionNight, returnFromRedemption, closeForFinal } from './redemption.js';
 
 // The Tribunal: the daily's winners, or the three who did best on a winning team.
@@ -243,6 +244,11 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       const rh = R('hurt');
       for (const n of daily.injuries || []) if (state.active.includes(n)) hurt(state, rh, n, 'daily');
       epRec.exits.push(...dayExits(state, R('exits1'), daily.injuries));
+      // the worst thing anybody was called today, said to a face afterwards (daily/named.js)
+      const st = worstSting(state);
+      if (st && state.active.includes(st.by) && state.active.includes(st.named)) {
+        addScene(state, 'named-fallout', [st.named, st.by], { q: st.q, kind: st.kind, daily: daily.name || null }, state.active, 'villa');
+      }
       // the purge: the slowest goes home before anybody can vote, and that is this week's elimination
       if (twist === 'purge' && elimsFor(schedule, idx, state.active.length - opts.finalists + returnsAhead(idx)) > 0) {
         purged = purge(state, daily, division);

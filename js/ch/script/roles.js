@@ -13,6 +13,9 @@
 // own data; a line whose slot is empty is never picked (write.js).
 import { SHOWS } from '../../shows.js';
 
+// what a daily's question called somebody (daily/more.js ASK, betrayal.js QUESTIONS), as a phrase
+const CALLED = { snake: 'the biggest snake in the house', threat: 'the biggest threat in the house', fake: 'the fakest person here',
+  'next-in': 'the next one going into the Arena', coattails: 'the one riding coattails', 'never-trust': "the one you'd never trust" };
 const showName = slug => (slug && SHOWS[slug]?.name) || null;
 const yes = (v, a, b) => (v ? a : b);
 
@@ -84,6 +87,10 @@ export const ROLES = {
   'morning-after': sc => { const a = sc.data.hurt?.[0] || sc.who[0];
     return { roles: { a, b: [sc.data.hurt?.[1], ...(sc.data.relieved || [])].find(x => x && x !== a) },
     ending: sc.data.hurt?.length ? (sc.data.hurt.length > 1 ? 'mourning' : 'alone') : 'relief', slots: { gone: sc.data.gone, caller: sc.data.caller || undefined } }; },
+  // a: the one named in the daily, out loud; b: who named them (daily/named.js). {called}: what they were called
+  'named-fallout': sc => ({ roles: { a: sc.who[0], b: sc.who[1] },
+    ending: ['dish', 'cup'].includes(sc.data.q) ? 'picked' : sc.data.kind === 'betrayed' ? 'betrayed' : 'fires',
+    slots: { called: CALLED[sc.data.q] || undefined, game: sc.data.daily || undefined } }),
   // a: the one going home; b, c: the friends who come down from the stand; d: who beat them (goodbye.js)
   'arena-goodbye': sc => ({ roles: { a: sc.data.loser, b: sc.data.friends?.[0], c: sc.data.friends?.[1], d: sc.data.winner },
     ending: sc.data.friends?.length ? 'friends' : 'alone', slots: { target: sc.data.shot || undefined } }),

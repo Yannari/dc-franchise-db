@@ -20,6 +20,23 @@ function line(ctx, pool, slots, key) {
 }
 const voice = (ctx, pool, by, slots, key) => speak(pool, by, { ...slots, pron: ctx.V.pron }, `${ctx.seed}|${key}|${by}`, ctx.V.used);
 const say = (by, text, to, extra = {}) => ({ say: [by, text], focus: to ? [by, to] : [by], ...extra });
+// The one named reacts on the spot (ch/daily/named.js decides how: a friend's answer is a betrayal, a short fuse
+// snaps back, an enemy's answer is no surprise, the final question is a compliment). {b}: who named them.
+const NAMED = {
+  betrayed: [V("{b}? You said me? Seriously?", { soft: ['{b}. That actually hurt.'], sharp: ['Wow. Thanks, {b}. Really.'] }),
+    V("I'm sorry, {b} said what?", { loud: ['Excuse me? {b}?'] }), V("Okay. Noted, {b}. Noted.", { dry: ['Good to know, {b}.'] })],
+  fires: [V("Keep talking, {b}. I'm listening.", { loud: ["Say it louder, {b}! I didn't hear you!"] }),
+    V("Real brave, {b}.", { sharp: ['Cute, {b}. Very cute.'] }), V("We'll see who's laughing at the vote, {b}.")],
+  expected: [V("Of course {b} said me. Shocking.", { dry: ['{b}. What a surprise.'] }), V("Yeah, I figured {b} would.")],
+  proud: [V("I'll take that as a compliment, {b}.", { dry: ['Thank you, {b}. I know.'] }), V("Good. Be scared, {b}.", { soft: ['Me? Really? Okay. Thanks, {b}.'] })],
+  flattered: [V("Aw, {b}! Right back at you.", { soft: ['{b}! Stop, you\'ll make me cry.'] }), V("Okay, {b}. I love you too.")],
+};
+const NAMED_ACT = { proud: 'cheer', betrayed: 'slump', fires: 'shout', expected: 'look', flattered: 'laugh' };
+const namedReact = (ctx, react, who, by, key) => {
+  const pool = NAMED[react];
+  const t = pool && voice(ctx, pool, who, { b: by }, key);
+  return t ? say(who, t, by, { act: { [who]: NAMED_ACT[react] } }) : null;
+};
 const conf = (by, text) => ({ conf: [by, text] });
 const tj = (text, extra = {}) => ({ tj: text, focus: ['TJ'], ...extra });
 
@@ -249,7 +266,13 @@ export function whoSaidItSteps(d, ctx) {
       out.push(tj(q, { props: screen(q, []) }));
       // a few answers out loud, the ones that sting first, then the tally on the screen
       const said = Object.entries(b.data.answers).sort((x, y) => (y[1] === b.data.top) - (x[1] === b.data.top)).slice(0, 5);
-      for (const [v, n] of said) out.push(say(v, `${n}.`, n, { act: { [n]: b.data.q === 'final' ? 'laugh' : 'flinch' } }));
+      let snaps = 0;
+      for (const [v, n] of said) {
+        out.push(say(v, `${n}.`, n, { act: { [n]: b.data.q === 'final' ? 'laugh' : 'flinch' } }));
+        // a friend's answer, or a short fuse: the one named answers back, at most twice a question
+        const react = b.data.reacts?.[v];
+        if (snaps < 2 && ['betrayed', 'fires'].includes(react)) { const r = namedReact(ctx, react, n, v, `${key}n${v}`); if (r) { out.push(r); snaps++; } }
+      }
       const rows = Object.entries(b.data.tally).sort((x, y) => y[1] - x[1]).slice(0, 4).map(([n, c]) => ({ n, c, top: n === b.data.top }));
       out.push({ dir: line(ctx, WS.most, { top: b.data.top, n: b.data.tally[b.data.top] }, key), focus: [b.data.top], props: screen(q, rows) });
       const r = voice(ctx, b.data.q === 'final' ? WS.warm : WS.react, b.data.top, { n: b.data.tally[b.data.top] }, key + 'r');

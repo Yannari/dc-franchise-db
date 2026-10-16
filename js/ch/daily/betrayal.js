@@ -20,6 +20,7 @@
 //
 // The archetype rules hold: a nice archetype never steals, cuts or drops anybody (they share, hold on and
 // catch); a neutral one needs strategic >= 6 and loyalty <= 4; the villains decide by what it gets them.
+import { namedSting } from './named.js';
 import { getBond, addBond } from '../../bonds.js';
 import { remember, trustOf, grudgeOf, protectOf } from '../rel.js';
 import { nudge } from '../mind.js';
@@ -238,12 +239,11 @@ export function playWhoSaidIt(state, rng, { units }) {
     for (const v of all) if (answers[v] === top) pts[v]++;
     // said out loud: everybody named heard who named them (a nice answer warms, a hard one stings)
     const warm = q.id === 'final';
-    for (const [v, n] of Object.entries(answers)) {
-      if (warm) addBond(n, v, 0.3);
-      else { addBond(n, v, -0.35); remember(n, v, 'named-me', 0.5); }
-    }
+    // said out loud: everybody named heard who named them, and what it costs depends on who said it (named.js)
+    const reacts = {};
+    for (const [v, n] of Object.entries(answers)) reacts[v] = namedSting(state, rng, v, n, q.id)?.kind || null;
     if (!warm) { nudge(state, top, 'paranoia', 1); pop(top, -0.2); }
-    R.beat(k + 1, 'question', [top], { q: q.id, answers, tally, top });
+    R.beat(k + 1, 'question', [top], { q: q.id, answers, tally, top, reacts });
   }
   const divs = state.options.gendered ? ['m', 'f'] : ['all'];
   const winners = divs.map(d => all.filter(n => d === 'all' || state.division[n] === d).sort((a, b) => pts[b] - pts[a] || S(b, 'intuition') - S(a, 'intuition'))[0]).filter(Boolean);

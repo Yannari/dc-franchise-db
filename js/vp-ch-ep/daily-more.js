@@ -20,6 +20,23 @@ function line(ctx, pool, slots, key) {
 }
 const voice = (ctx, pool, by, slots, key) => speak(pool, by, { ...slots, pron: ctx.V.pron }, `${ctx.seed}|${key}|${by}`, ctx.V.used);
 const say = (by, text, to, extra = {}) => ({ say: [by, text], focus: to ? [by, to] : [by], ...extra });
+// The one named reacts on the spot (ch/daily/named.js decides how: a friend's answer is a betrayal, a short fuse
+// snaps back, an enemy's answer is no surprise, the final question is a compliment). {b}: who named them.
+const NAMED = {
+  betrayed: [V("{b}? You said me? Seriously?", { soft: ['{b}. That actually hurt.'], sharp: ['Wow. Thanks, {b}. Really.'] }),
+    V("I'm sorry, {b} said what?", { loud: ['Excuse me? {b}?'] }), V("Okay. Noted, {b}. Noted.", { dry: ['Good to know, {b}.'] })],
+  fires: [V("Keep talking, {b}. I'm listening.", { loud: ["Say it louder, {b}! I didn't hear you!"] }),
+    V("Real brave, {b}.", { sharp: ['Cute, {b}. Very cute.'] }), V("We'll see who's laughing at the vote, {b}.")],
+  expected: [V("Of course {b} said me. Shocking.", { dry: ['{b}. What a surprise.'] }), V("Yeah, I figured {b} would.")],
+  proud: [V("I'll take that as a compliment, {b}.", { dry: ['Thank you, {b}. I know.'] }), V("Good. Be scared, {b}.", { soft: ['Me? Really? Okay. Thanks, {b}.'] })],
+  flattered: [V("Aw, {b}! Right back at you.", { soft: ['{b}! Stop, you\'ll make me cry.'] }), V("Okay, {b}. I love you too.")],
+};
+const NAMED_ACT = { proud: 'cheer', betrayed: 'slump', fires: 'shout', expected: 'look', flattered: 'laugh' };
+const namedReact = (ctx, react, who, by, key) => {
+  const pool = NAMED[react];
+  const t = pool && voice(ctx, pool, who, { b: by }, key);
+  return t ? say(who, t, by, { act: { [who]: NAMED_ACT[react] } }) : null;
+};
 const conf = (by, text) => ({ conf: [by, text] });
 const tj = (text, extra = {}) => ({ tj: text, focus: ['TJ'], ...extra });
 const final = label => !/heat \d/i.test(label || '');
@@ -210,7 +227,7 @@ const BU = {
 };
 export function buriedSteps(d, ctx) {
   const out = [];
-  let roles = [], q = null;
+  let roles = [], q = null, reacted = false;
   const roleOf = n => roles.find(r => r.includes(n));
   for (const [i, b] of (d.beats || []).entries()) {
     const key = `bu${i}`;
@@ -230,11 +247,14 @@ export function buriedSteps(d, ctx) {
       else out.push({ dir: line(ctx, BU.tap, { a: bur }, key + 't'), focus: [ans], act: { [ans]: 'slump' } });
       continue;
     }
-    if (b.kind === 'ask') { q = BQ[b.data.q] || BQ.snake; out.push(tj(line(ctx, BU.ask, { q: q[0].toUpperCase() + q.slice(1) }, key))); continue; }
+    if (b.kind === 'ask') { reacted = false; q = BQ[b.data.q] || BQ.snake; out.push(tj(line(ctx, BU.ask, { q: q[0].toUpperCase() + q.slice(1) }, key))); continue; }
     if (b.kind === 'answer') {
       const [ans, bur, pick] = b.who;
       out.push(say(ans, `${b.data.guess}.`, null, { act: { [ans]: 'talkpop' } }));
       out.push({ dir: line(ctx, b.data.right ? BU.right : BU.wrong, { a: ans, b: bur, g: b.data.guess, p: pick }, key), focus: [ans], act: { [ans]: b.data.right ? 'cheer' : 'slump' }, chip: [ans, `${b.data.pts} RIGHT`] });
+      // the one named heard it: a betrayal or a snap always, anything else once a question
+      const strong = ['betrayed', 'fires'].includes(b.data.react);
+      if (b.data.react && (strong || !reacted)) { const r = namedReact(ctx, b.data.react, pick, bur, key + 'n'); if (r) { out.push(r); reacted = true; } }
       continue;
     }
     if (b.kind === 'buried-win') out.push(tj(line(ctx, BU.win, { w: nameList(b.who) }, key), { focus: ['TJ', ...b.who], power: [...b.who] }));
@@ -277,6 +297,7 @@ export function foodWarsSteps(d, ctx) {
       if (!whole && ++rounds > SHORT_AFTER) continue;
       out.push({ dir: line(ctx, FW.buzz, { a }, key), focus: [a], act: { [a]: 'cheer' } });
       const p = voice(ctx, FW.pick, a, { b: t }, key + 'p'); out.push(say(a, p || `${t}.`, t, { act: { [t]: 'flinch' } }));
+      if (['betrayed', 'fires'].includes(b.data.react)) { const r = namedReact(ctx, b.data.react, t, a, key + 'n'); if (r) out.push(r); }
       out.push({ dir: line(ctx, FW.dome, { b: t, dish: b.data.dish }, key + 'd'), focus: [t], act: { [t]: 'strain' } });
       continue;
     }
@@ -398,6 +419,7 @@ export function poisonCupSteps(d, ctx) {
       out.push({ dir: line(ctx, PC.hand, { a, b: t }, key), focus: [a, t], act: { [a]: 'lean' } });
       const w = voice(ctx, PC.why[b.data.why] || PC.why.none, a, { b: t }, key + 'w');
       if (w) out.push(say(a, w, t, { act: { [t]: 'flinch' } }));
+      if (['betrayed', 'fires'].includes(b.data.react)) { const r = namedReact(ctx, b.data.react, t, a, key + 'n'); if (r) out.push(r); }
       continue;
     }
     if (b.kind === 'drinks' && !whole && rounds > SHORT_AFTER) continue;

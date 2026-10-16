@@ -41,7 +41,9 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   // the one-episode twists (ep-twists.js)
   'purge', 'return-arena', 'return-walkin',
   // a friend goes to the one who sent their friend home (fallout.js payback); the goodbye at the gate (goodbye.js)
-  'payback', 'arena-goodbye']);
+  'payback', 'arena-goodbye',
+  // the worst thing somebody was called in a daily, said to a face (daily/named.js)
+  'named-fallout']);
 const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-form', 'arena-eve-confront', 'arena-eve-pep',
   'arena-eve-alone', 'morning-after', 'fight', 'team-blame', 'partner-blame', 'throw-caught', 'jealousy', 'receipts',
   'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout', 'spark', 'party-deal', 'party-tears', 'expelled-victim',

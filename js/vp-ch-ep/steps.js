@@ -371,8 +371,11 @@ export function chStepScreens(row, ctx = {}) {
 
   // A villa screen says WHEN it is (the user, 2026-10-15: the screen list read thin, five screens all
   // called "The villa"): before the daily, before the vote, the night after it, between two duels, after.
+  // a vote chapter counts as a vote once its ceremony (or a volunteer) is in it: the deliberation alone is not one
+  // (the user, 2026-10-16: "after that discussion we have Between the votes, I thought the votes already started")
+  const voted = x => x.key === 'vote' && x.items.some(i => aired[i].kind === 'ceremony' || aired[i].kind === 'volunteer');
   const villaLabel = ci => {
-    const before = chunks.slice(0, ci).map(x => x.key), after = chunks.slice(ci + 1).map(x => x.key);
+    const before = chunks.slice(0, ci).map(x => (x.key === 'vote' && !voted(x) ? 'deliberation' : x.key)), after = chunks.slice(ci + 1).map(x => x.key);
     if (!before.includes('daily')) return before.includes('arrival') ? 'Settling in' : 'Morning at the villa';
     if (!before.includes('vote')) return after.includes('vote') ? 'Before the vote' : 'At the villa';
     if (!before.includes('arena')) return after.includes('vote') ? 'Between the votes' : 'After the vote';
@@ -689,14 +692,20 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
 
 // ── the vote ──────────────────────────────────────────────────────────
 function buildVote(S, open, items, row, { names, house, goneAt }) {
-  open('vote', !items.some(x => x.a.kind === 'ceremony') && items.some(x => x.a.kind === 'volunteer') ? 'A volunteer' : null);
+  const cer = items.some(x => x.a.kind === 'ceremony'), vol = items.some(x => x.a.kind === 'volunteer');
+  const talk = !cer && !vol;   // the house talking it out before anybody votes
+  const nVotes = (row.ch?.votes || []).length;
+  const nth = cer ? (S._votes = (S._votes || 0) + 1) : 0;
+  open('vote', talk ? 'Deliberation' : !cer && vol ? 'A volunteer' : nVotes > 1 ? `The ${['', 'first', 'second', 'third'][nth] || 'next'} vote` : null);
   const at = items.find(x => x.a.kind === 'ceremony') || items[0];
   S.at(at.i);
   const here = house.filter(n => !goneAt[at.i]?.has(n));
   const key = plateKey('common', true);
   const cast = { TJ: ['host'], ...placeScene(key, here, { group: 'sofa' }) };
   S.push({ scene: { plate: key, place: 'The Common Room', when: whenOf(S.day, S.min), icon: 'fire', room: 'common', cast, wipe: 1 },
-    card: { k: 'Tonight', t: 'The Vote', sub: row.ch?.division === 'm' ? "Men's week: one guy goes into the Arena" : row.ch?.division === 'f' ? "Women's week: one woman goes into the Arena" : 'One of them goes into the Arena', faces: row.ch?.dailyWinners || [], facesLabel: 'Safe', icon: 'vote' },
+    card: talk ? { k: 'Before the vote', t: 'Deliberation', sub: 'The house talks it out, in front of everybody' }
+      : nVotes > 1 ? { k: `Vote ${nth} of ${nVotes}`, t: 'The Vote', sub: `A double elimination: ${nVotes} go into the Arena this week, one vote at a time` } :
+      { k: 'Tonight', t: 'The Vote', sub: row.ch?.division === 'm' ? "Men's week: one guy goes into the Arena" : row.ch?.division === 'f' ? "Women's week: one woman goes into the Arena" : 'One of them goes into the Arena', faces: row.ch?.dailyWinners || [], facesLabel: 'Safe', icon: 'vote' },
     sceneIdx: at.i, title: 'The house vote', power: row.ch?.dailyWinners || [] });
   let ruled = false;
   for (const it of items) {
@@ -740,7 +749,7 @@ function ceremony(S, cer, row, { names, rules, again }) {
       if (said < 0) S.push({ vote: [part.voter, part.target], dir: `${part.voter} votes for ${part.target}.`, focus: [part.voter], of: total, know });
       part.lines.forEach((l, k) => {
         if (k === said) { const st = { vote: [part.voter, part.target], say: [l.by, l.text], focus: [part.voter], of: total }; if (know) st.know = know; if (shouted(l.text)) { st.act = { [l.by]: 'shout' }; st.loud = 1; } S.push(st); }
-        else linesToSteps(S, [l], { names, sceneWho: [part.voter, 'TJ'] });
+        else linesToSteps(S, [l], { names, sceneWho: [part.voter, part.target, 'TJ'] });
       });
       continue;
     }

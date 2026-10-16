@@ -29,7 +29,7 @@
 import { getBond, addBond } from '../bonds.js';
 import { S, mayScheme, addScene, noise, shuffle, logistic, clamp, weighted, bankOf, injuryOf } from './state.js';
 import { passHunger } from './stakes.js';
-import { arenaRead, freeRide, arenaBase } from './respect.js';
+import { arenaRead, freeRide, arenaBase, threatRead } from './respect.js';
 import { allianceOf, activeAlliances, leave } from './alliances.js';
 import { coupleOf, dealBetween, calloutTerms } from './callout.js';
 import { nudge } from './mind.js';
@@ -299,8 +299,28 @@ export function houseDebate(state, delib, eligible) {
   const c = objectors[0] || null;
   if (!c) return null;
   const alt = intents[c] && intents[c] !== target && eligible.includes(intents[c]) && intents[c] !== c ? intents[c] : null;
-  const who = [a, target, c, ...(d ? [d] : [])];
-  return addScene(state, 'house-debate', who, { target, alt, organiser: a }, state.active, 'deliberation');
+  // the reasons said out loud are the real ones (the user, 2026-10-16: "why is everyone so scared of Evie, she
+  // was last in TJ's rankings and bad at challenges"): read off the record, never a stock "bigger threat"
+  const why = whyName(state, a, target, eligible);
+  const altWhy = alt ? whyName(state, c, alt, eligible) : null;
+  // a couple more voices from the room: someone who agreed at the meeting, someone close to the name
+  const more = state.active.filter(n => ![a, target, c, d].includes(n)).sort((x, y) => Math.abs(getBond(target, y)) - Math.abs(getBond(target, x))).slice(0, 2);
+  const who = [a, target, c, ...(d ? [d] : []), ...more];
+  return addScene(state, 'house-debate', who, { target, alt, organiser: a, why, altWhy }, state.active, 'deliberation');
+}
+
+// Why `by` wants `n` in, in the words of the game: the strongest true reason.
+function whyName(state, by, n, eligible) {
+  const r = state.rec[n] || {};
+  const pool = eligible.filter(x => x !== by);
+  const rank = (f, x) => pool.filter(y => f(y) > f(x)).length / Math.max(1, pool.length);
+  if (grudgeOf(by, n) >= 1.2) return 'grudge';
+  if (state.rankTop?.name === n && state.rankTop.ep === state.ep) return 'ranked';
+  if ((r.dailyWins || 0) + (r.arenaW || 0) >= 2 && rank(x => threatRead(state, x), n) <= 0.25) return 'threat';
+  if (freeRide(state, n) > 0.4) return 'floater';
+  if (mayScheme(n) && S(n, 'strategic') >= 6 && S(n, 'social') >= 5) return 'schemer';
+  if (rank(x => arenaRead(state, x), n) >= 0.6) return 'easy';
+  return 'trust';
 }
 
 export function deliberate(state, rng, { division, eligible, immune }) {
@@ -377,6 +397,14 @@ function topChoice(state, rng, v, eligible, delib, tally) {
   return rows[0] || { target: null };
 }
 
+// The biggest reason in a voter's own sum, as the word said out loud.
+const REASON_OF = { threat: 'threat', final: 'threat', ranked: 'threat', grudge: 'grudge', loses: 'easy', injured: 'easy', theyGo: 'strategy', use: 'strategy',
+  freeRide: 'floater', power: 'power', bandwagon: 'room', bank: 'money' };
+function reasonOf(terms = {}) {
+  const top = Object.entries(terms).filter(([k, v]) => REASON_OF[k] && v > 0.15).sort((x, y) => y[1] - x[1])[0];
+  return top ? REASON_OF[top[0]] : null;
+}
+
 // ── the vote ─────────────────────────────────────────────────────────
 export function houseVote(state, rng, { eligible, delib, winners, exclude = [], voters = null }) {
   const pool = eligible.filter(n => !exclude.includes(n));
@@ -404,8 +432,10 @@ export function houseVote(state, rng, { eligible, delib, winners, exclude = [], 
     if (!target) continue;
     tally[target] = (tally[target] || 0) + 1;
     const flip = told != null && told !== target;
+    // why, in a word, when the name is the voter's own (said out loud at the vote: ceremony.js)
+    const reason = target === own.target ? reasonOf(own.terms) : null;
     ballots.push({ voter: v, target, told, bond: +getBond(v, target).toFixed(2), wanted: Object.keys(own.terms || {}).length ? own.target : null,
-      asked: c?.target || null, via: c?.via || null, flip, why: flip ? (why === 'own read' ? 'changed their mind' : why) : why,
+      asked: c?.target || null, via: c?.via || null, flip, why: flip ? (why === 'own read' ? 'changed their mind' : why) : why, reason,
       countBefore: Object.values(tally).reduce((a, b) => a + b, 0) - 1 });
   }
   const max = Math.max(0, ...Object.values(tally));

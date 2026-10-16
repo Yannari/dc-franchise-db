@@ -19,6 +19,17 @@ const yes = (v, a, b) => (v ? a : b);
 // kind → (scene, state) → { roles: {a,b,c,d}, ending, slots }
 const COUNT_WORD = ['None', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen', 'Twenty'];
 
+// The reason a name is said at the deliberation, true to the record (vote.js whyName): a sentence, the name in it.
+const CASE = {
+  easy: n => `${n} is the one any of us could beat in the Arena`,
+  threat: n => `${n} keeps winning, and nobody else in this division has`,
+  ranked: n => `TJ put ${n} at the top of his list this morning, and he's right`,
+  grudge: n => `${n} has been coming after people in this house since day one`,
+  floater: n => `${n} hasn't done a single thing in this game except hide`,
+  schemer: n => `${n} has been playing every side of this house`,
+  trust: n => `I don't trust ${n}, and I don't think anybody here should`,
+};
+
 export const ROLES = {
   arrival: (sc, st) => {
     const r = sc.data.recognised?.[0];
@@ -27,7 +38,8 @@ export const ROLES = {
   },
   'villa-reveal': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   // a proposes, b is the name, c objects (with their own name when they have one), d backs a
-  'house-debate': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.alt ? 'split' : 'one', slots: { alt: sc.data.alt } }),
+  'house-debate': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.alt ? 'split' : 'one',
+    slots: { alt: sc.data.alt, case: CASE[sc.data.why || 'trust'](sc.who[1]), altcase: sc.data.alt ? CASE[sc.data.altWhy || 'trust'](sc.data.alt) : undefined } }),
   // the day of the Arena: a (going in) thinks the pick through with b, naming two people it could be
   'pick-talk': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { opt1: sc.data.options?.[0], opt2: sc.data.options?.[1] } }),
   // the people who might be picked, waiting; {target} is the one picking
@@ -171,6 +183,8 @@ export const ROLES = {
   // ── the vote, read out loud (ceremony.js builds these scenes) ──
   'cer-open': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.division === 'all' ? 'all' : sc.data.division }),
   ballot: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.why }),
+  // a ballot that says why (vote.js reasonOf): the voter's own reason, out loud
+  'ballot-why': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.reason }),
   'cer-result': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.tie ? 'tie' : 'clear', slots: { count: sc.data.count } }),
   // the Tribunal (format.js tribunal)
   'cer-nominees': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any' }),

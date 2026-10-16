@@ -287,7 +287,6 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
           vote.tribunal = tribunalDecide(state, R(`trib${k}`), { tribunal, nominees, delib });
           vote.votedIn = vote.tribunal.chosen;
         }
-        voteFallout(state, vote, delib);
         state.receiptsFresh = {};
         for (const b of vote.ballots) (state.receiptsFresh[b.target] ||= []).push(b.voter);
         votedIn = vote.votedIn;
@@ -303,6 +302,9 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       addScene(state, volunteer ? 'volunteer-in' : 'voted-in', [votedIn], { volunteer }, state.active, 'public');
       // the Tribunal: the nominees' pitches, the room, the verdict, after the nominations are read
       for (const sc of vote?.tribunal?.scenes || []) addScene(state, ...sc);
+      // what the vote broke (a deal, an alliance) comes after the house has heard it (the deal-broken scene
+      // used to air before the ceremony it was about)
+      if (vote) voteFallout(state, vote, delib);
       // after the vote: the one going in, with the friend who comes to find them, and a friend who said their name
       if (!volunteer && vote) {
         const friend = state.active.filter(n => n !== votedIn && !vote.ballots.some(x => x.voter === n && x.target === votedIn))

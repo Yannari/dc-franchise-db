@@ -215,7 +215,7 @@ export function playFinal(state, rng) {
     fin.sabotage.push({ from: n, to: rival });
     remember(rival, n, 'sabotaged-me', 1.5);
     addBond(n, rival, -0.6);
-    addScene(state, 'overnight-sabotage', [n, rival], {}, state.active, 'final');
+    addScene(state, 'overnight-sabotage', [n, rival], { first: fin.sabotage.length === 1 }, state.active, 'final');
   }
   const tiles = n => fin.sabotage.filter(x => x.to === n).length;
   fireTalk(state, rng);

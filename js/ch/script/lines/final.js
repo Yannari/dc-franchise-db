@@ -89,12 +89,27 @@ export default {
       { by: 'a', say: "Don't ask that. Never ask that.", v: { odd: ['It\'s late and it\'s cold. That\'s all I know.'] } },
     ] },
   ],
-  'overnight-sabotage.any': [
+  // the first of the night has TJ explain the box; the rest do not explain it again (read 2026-10-16: TJ's rules
+  // aired on the third, after two confessionals about tiles nobody had been told about)
+  'overnight-sabotage.first': [
     { id: 'os.1', turns: [
       { by: 'tj', say: "The faster you emptied your box, the comfier your night. And the first ones out get to dump extra tiles on somebody else. Choose wisely!" },
       { by: 'a', say: "Extra tiles go to {b}.", v: { sharp: ['{b}. Enjoy.'], loud: ['{b}! All of them! Every single one!'] } },
       { by: 'b', say: "Of course they do.", v: { loud: ['Are you SERIOUS?!'] } },
       { by: 'b', conf: "{a} made my night harder on purpose. I'm going to remember that at the finish line.", v: { soft: ['I didn\'t expect {a} to do that to me.'] } },
+    ] },
+    { id: 'os.5', turns: [
+      { by: 'tj', say: "Here's how tonight works. Every one of you has a box of tiles. Empty it, and you get something to sleep on. The first ones done get to give their extra tiles to somebody else." },
+      { by: 'a', say: "Then {b} gets mine.", v: { sharp: ["{b}. Every last one."], loud: ["{b}! Have them ALL!"], soft: ["I'm sorry, {b}. They're going to you."] } },
+      { by: 'b', say: "Of course it's me.", v: { loud: ["OF COURSE it's me!"], dry: ["Naturally it's me."] } },
+      { by: 'b', conf: "{a} could have given those tiles to anybody. {a} picked me, and I know why." },
+    ] },
+  ],
+  'overnight-sabotage.rest': [
+    { id: 'os.4', turns: [
+      { by: 'a', say: "Extra tiles go to {b}.", v: { sharp: ['{b}. Enjoy.'], loud: ['{b}! All of them! Every single one!'] } },
+      { by: 'b', say: "Of course they do.", v: { loud: ['Are you SERIOUS?!'] } },
+      { by: 'b', conf: "{a} made my night harder on purpose. I'm going to remember that at the finish line." },
     ] },
     { id: 'os.2', turns: [
       { by: 'a', conf: "Giving {b} extra tiles wasn't personal. It was the final. Okay, it was a little personal.", v: { soft: ['I gave {b} the extra tiles, and I felt bad. For about a second.'] } },

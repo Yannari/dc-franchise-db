@@ -260,7 +260,7 @@ export const ROLES = {
   // ── the final ──
   'final-start': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'instant-elimination': sc => ({ roles: { a: sc.data.winner, b: sc.who.find(x => x !== sc.data.winner) }, ending: 'any' }),
-  'overnight-sabotage': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  'overnight-sabotage': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.first ? 'first' : 'rest' }),
   'overnight-quit': sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   'final-pact-help': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'final-pact-broken': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),

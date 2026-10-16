@@ -12,9 +12,11 @@
 // The people: a unit passing a rival may needle them on the way (a grudge, by the archetype rules); a
 // partner or a teammate who freezes can be talked through it by the other; a thrower (dailies.js) goes
 // slower and makes more mistakes, which is how somebody watching notices.
-import { getBond } from '../../bonds.js';
-import { fearOfThing } from '../mind.js';
-import { run, needle, help, faceFear, pop, S, clamp } from './kit.js';
+import { getBond, addBond } from '../../bonds.js';
+import { fearOfThing, nudge } from '../mind.js';
+import { remember } from '../rel.js';
+import { archetypeOf } from '../state.js';
+import { run, needle, help, faceFear, pop, S, clamp, isNice } from './kit.js';
 
 // k: the stat that keeps you out of trouble on this course
 export const COURSES = {
@@ -60,6 +62,25 @@ export function playRace(state, rng, { units, power, mode, id }) {
   const div = u => (state.options.gendered && mode === 'solo' ? state.division[u[0]] : 'all');
   const divs = [...new Set(units.map(div))];
   const firstHome = {};
+  // A partner slips (a hazard, a wrong answer at the puzzle): the one whose stat it tests takes the blame, and the
+  // other one reacts on the spot (the user, 2026-10-16: "do they have some reactions when their partner is not
+  // good especially competitive/hothead?"). A short fuse, a challenge beast or a hothead snaps; a kind or close
+  // partner lifts them. Snapping stings the one who slipped; lifting them warms. Twice a pair at most.
+  const reacted = {};
+  function partnerReact(t, u, k, stat, on) {
+    if (u.length !== 2 || (reacted[k] || 0) >= 2) return;
+    const [weak, mate] = [...u].sort((x, y) => S(x, stat) - S(y, stat) || (x < y ? -1 : 1));
+    const fierce = ['challenge-beast', 'hothead'].includes(archetypeOf(mate)) ? 0.22 : 0;
+    const heat = ((10 - S(mate, 'temperament')) * 0.045 + S(mate, 'boldness') * 0.015 + fierce) * (isNice(mate) ? 0.5 : 1);
+    const warm = (isNice(mate) ? 0.3 : 0) + S(mate, 'social') * 0.025 + Math.max(0, getBond(mate, weak)) * 0.03;
+    const r = rng();
+    const tone = r < heat ? 'snaps' : r < heat + warm ? 'lifts' : null;
+    if (!tone) return;
+    reacted[k] = (reacted[k] || 0) + 1;
+    if (tone === 'snaps') { addBond(weak, mate, -0.35); remember(weak, mate, 'yelled-at-me', 0.5); nudge(state, weak, 'morale', -0.3); }
+    else { addBond(weak, mate, 0.3); nudge(state, weak, 'morale', 0.3); }
+    R.beat(t, 'partner-react', [mate, weak], { tone, on, snap: snap() });
+  }
   function checkFear(t) {
     for (const u of units) {
       const k = key(u);
@@ -90,12 +111,16 @@ export function playRace(state, rng, { units, power, mode, id }) {
       if (rng() < C.hazard.p * (1.3 - skill)) {
         prog[k] = Math.max(0, prog[k] - C.hazard.back);
         R.beat(t, 'hazard', [...u], { kind: C.hazard.kind, part: id === 'gauntlet-run' ? gauntletPart(before) : null, snap: snap() });
+        partnerReact(t, u, k, C.hazard.k, 'hazard');
       }
       // the puzzle at the end: a mistake sends them back for another go
       if (C.puzzle && prog[k] >= C.puzzle.at && !puzzled.has(k)) {
         puzzled.add(k);
         const sharp = avg(u, n => S(n, C.puzzle.k)) / 10;
-        if (rng() > sharp * 0.9) { stall[k] += 2 + Math.round((1 - sharp) * 4); R.beat(t, 'puzzle-miss', [...u], { kind: C.puzzle.kind || 'puzzle', snap: snap() }); }
+        if (rng() > sharp * 0.9) {
+          stall[k] += 2 + Math.round((1 - sharp) * 4); R.beat(t, 'puzzle-miss', [...u], { kind: C.puzzle.kind || 'puzzle', snap: snap() });
+          partnerReact(t, u, k, C.puzzle.k, 'puzzle');
+        }
       }
       if (prog[k] >= 1) {
         done.push(u);

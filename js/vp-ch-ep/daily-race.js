@@ -139,6 +139,13 @@ const THROUGH = {
   bell: ['{u} reach{es} the bell and ring{s} it.'],
   bucket: ['{u} make{s} it across and pour{s} the bucket into the tank.', '{u} tip{s} another bucket in. The water line goes up.', '{u} edge{s} along the beam and get{s} the bucket to the tank, barely.'],
 };
+// a partner snapping at, or lifting, the one who just slipped ({b})
+const PARTNER = {
+  snaps: [V("Come on, {b}! Move!", { loud: ['{b}! What are you doing?'], sharp: ['Any day now, {b}.'], dry: ["Take your time, {b}. It's not like we're racing."] }),
+    V("Are you kidding me right now, {b}?"), V("{b}, focus! We're losing this!", { loud: ["{b}! We're losing this! Focus!"] })],
+  lifts: [V("You're fine, {b}! Shake it off!", { soft: ["It's okay, {b}. We've got this."] }),
+    V("Breathe, {b}. We're still in it."), V("Keep going, {b}! I've got you!", { loud: ["Go, {b}! Go! I've got you!"] })],
+};
 const DRIFT = ['The current shifts and drags everybody left. They have to swim twice as hard to get back.', 'A swell comes through and pushes the whole field off course.'];
 
 // The camera follows the action into the close-ups (art jobs E01-E06) for most of a race: the wide shot is the
@@ -193,7 +200,7 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
   const finishes = beats.filter(b => b.kind === 'finish');
   const follow = new Set([...finishes.slice(0, 4), ...finishes.slice(-2)].map(b => b.who[0]));
   const shownHazard = new Set(), shownCut = new Set(), safe = [];
-  let hazards = 0, rest = [], back = false, restSaid = false, puzzles = 0;
+  let hazards = 0, rest = [], back = false, restSaid = false, puzzles = 0, partnerSaid = 0;
   // the course on the plate: the units the story follows move along it
   const CV = COURSE_VIEW[id];
   const plateK = ctx.wide?.plate;
@@ -371,6 +378,14 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
       const s = { race, dir: line(ctx, PUZZLE[b.data.kind] || PUZZLE.puzzle, slots, `${key}p${i}`), focus: u.slice(0, 2), act: { [u[0]]: 'slump' } };
       if (CV?.hidden && plateK) { s.show = u.slice(0, 1); s.move = { [u[0]]: spotAt(plateK, CV.exit[0], CV.exit[1], CV.scale) }; }
       push(s);
+      continue;
+    }
+    // a partner slips, and the other one snaps or lifts them (ch/daily/race.js partnerReact)
+    if (b.kind === 'partner-react') {
+      const [m, n] = b.who;
+      if (!u.some(x => follow.has(x)) || (partnerSaid = (partnerSaid || 0) + 1) > 3) continue;
+      const t = voice(ctx, PARTNER[b.data.tone] || PARTNER.lifts, m, { b: n }, key);
+      if (t) push({ race, say: [m, t], focus: [m, n], act: b.data.tone === 'snaps' ? { [m]: 'shout', [n]: 'flinch' } : { [m]: 'cheer' } });
       continue;
     }
     if (b.kind === 'drift') { push({ race, dir: line(ctx, DRIFT, {}, key), shift: { du: -0.04 }, focus: [] }); continue; }

@@ -152,7 +152,9 @@ export function writeScene(state, scene) {
   // scene, then their next voice speaks, or the line as written (read 2026-10-16: a loud speaker shouted all seven
   // lines of a spark, "WHERE?!", "Is it GONE?", "SMOOTH!", and an odd one quipped on every turn of an alliance)
   const CAPPED = ['loud', 'odd'], capped = {};
-  const skipFor = by => new Set(CAPPED.filter(f => (capped[by]?.[f] || 0) >= 2));
+  // ...and three of each in the whole scene, whoever says them (two quirky speakers made four jokes in a row)
+  const sceneCount = f => Object.values(capped).reduce((n, c) => n + (c[f] || 0), 0);
+  const skipFor = by => new Set(CAPPED.filter(f => (capped[by]?.[f] || 0) >= 2 || sceneCount(f) >= 3));
   const here = t => !t.opt || [t.by, ...[].concat(typeof t.opt === 'string' || Array.isArray(t.opt) ? t.opt : []),
     ...[...String(t.say || t.conf || t.beat || '').matchAll(TOKEN)].map(m => m[1])].every(k => !k || k === 'tj' || have.has(k));
   const lines = entry.turns.map((t, i) => [t, i]).filter(([t]) => here(t) && (!t.when || Object.entries(t.when).every(([k, v]) => facts[k] === v))).map(([t, i]) => {

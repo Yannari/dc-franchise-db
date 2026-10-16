@@ -14,7 +14,7 @@
 const PROPOSE = {
   quiet: ['{target}. I think it has to be {target}.'],
   dry: ['So, unless anyone has a better idea, and I doubt it, it\'s {target}.', 'I\'ll save us twenty minutes of talking. {target}.'],
-  loud: ['It\'s {target}! I\'m saying it! Everybody heard me say it!', 'Okay, listen up! {target} goes in, and I don\'t want to hear about it!'],
+  loud: ['It\'s {target}! I\'m saying it out loud!', 'Okay, listen up! {target} goes in, and I don\'t want to hear about it!'],
   warm: ['I hate doing this to anybody, but I really think it has to be {target}.', 'Guys, I\'ve thought about it a lot, and I think it\'s {target}. Is that okay with everybody?'],
   blunt: ['{target}. That\'s the name. Let\'s not waste time.', 'I\'ll just say it. {target}.'],
   theatrical: ['Ladies and gentlemen of {alliance}, the name of the week is... {target}.', 'I\'ve been agonising over this, truly agonising, and it\'s {target}.'],

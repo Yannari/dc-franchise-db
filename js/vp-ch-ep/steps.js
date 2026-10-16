@@ -438,7 +438,7 @@ const BIG = {
   'alliance-end': a => ({ card: { k: 'Alliance over', t: a.data?.name || 'The alliance', sub: a.data?.why === 'final' ? 'The final: from here it is every one for themselves' : 'Every one of them is on their own now', faces: a.who.slice(0, 8) } }),
   'alliance-betrayal': a => ({ slam: { spray: 'BETRAYED', color: '#e3262d' } }),
   'tribunal-verdict': a => ({ slam: { spray: 'SENT IN', color: '#e3262d' }, chip: [a.data?.chosen || a.who[1], 'SENT IN'] }),
-  showmance: a => ({ card: { k: 'Showmance', t: `${a.who[0]} & ${a.who[1]}`, sub: 'It is official, and the whole house knows', faces: a.who.slice(0, 2) } }),
+  showmance: a => ({ card: { k: 'Showmance', t: `${a.who[0]} & ${a.who[1]}`, sub: 'It is official', faces: a.who.slice(0, 2) } }),
   breakup: a => ({ slam: { spray: "IT'S OVER", color: '#ff8fc7' } }),
   // the stakes (ch/stakes.js, ch/redemption.js)
   'pass-earned': a => (a.data?.first ? { slam: { spray: a.data.token === 'ring' ? 'RING EARNED' : 'RED SKULL', color: '#e3262d' }, chip: [a.who[0], a.data.token === 'ring' ? 'HAS A RING' : 'HAS A SKULL'] }

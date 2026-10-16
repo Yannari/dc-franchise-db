@@ -24,7 +24,7 @@ const conf = (by, text) => ({ conf: [by, text] });
 const tj = (text, extra = {}) => ({ tj: text, focus: ['TJ'], ...extra });
 
 const HURT = [V("I trusted {a}. That's on me now, and it won't happen again.", { loud: ['I TRUSTED {a}!'], sharp: ['Noted, {a}. Noted forever.'] }),
-  V("{a} looked me in the eye and did that. I'm not going to forget it."), V("Everybody saw what {a} did. Good. I want them to remember it.")];
+  V("{a} looked me in the eye and did that. I'm not going to forget it."), V("{a} did that to my face. Good. I want everybody to remember it.")];
 const DID = [V("It's a game. I came here to win it, not to make friends.", { sharp: ['Somebody was going to do it. I just did it first.'] }),
   V("Do I feel bad? A little. Do I feel safe? Yes."), V("I'll deal with the fallout later. Right now I'm still in it.")];
 

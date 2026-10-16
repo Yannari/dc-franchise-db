@@ -244,7 +244,7 @@ export default {
       { by: 'b', say: "No. I'm not doing that. {target} is my friend." },
       { by: 'a', say: "Your friend isn't in this alliance. We are." },
       { by: 'b', say: "Then count me out this week. I'll vote somebody else." },
-      { by: 'a', conf: "{b} just told the whole group {b.sub}'d rather protect {target} than us. I heard it. Everybody heard it." },
+      { by: 'a', conf: "{b} just told the whole group {b.sub}'d rather protect {target} than us. I won't forget that." },
     ] },
     { id: 'mt.r2', turns: [
       { by: 'b', say: "Before you say it, I know where you're going, and I can't vote for {target}." },
@@ -1015,7 +1015,7 @@ export default {
     { id: 'xg.a1', turns: [
       { by: 'a', say: "This is a joke. {target} gets to stay, and I go home?" },
       { by: 'b', say: "You put your hands on somebody. You knew the rule." },
-      { by: 'a', say: "{target} pushed me to it. Everybody saw it." },
+      { by: 'a', say: "{target} pushed me to it. You were there." },
       { by: 'c', opt: 1, say: "Calm down. Don't make it worse on your way out." },
       { by: 'a', opt: 'c', say: "Worse? How does it get worse?" },
       { by: 'b', say: "Just go home and cool off. Please." },
@@ -1100,7 +1100,7 @@ export default {
       { by: 'b', say: "Sit down. I'll get you some water." },
       { by: 'a', say: "Everybody's looking at me like I did something." },
       { by: 'b', say: "You didn't. You got hurt. That's all." },
-      { by: 'a', conf: "I didn't want anybody sent home. And now I'm the reason somebody was, and the whole house knows it." },
+      { by: 'a', conf: "I didn't want anybody sent home. And now I'm the reason somebody was." },
     ] },
     { id: 'xv.s2', turns: [
       { by: 'a', say: "I keep seeing it when I close my eyes." },

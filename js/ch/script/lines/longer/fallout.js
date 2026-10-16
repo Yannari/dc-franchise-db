@@ -50,7 +50,7 @@ export default {
     { by: 'b', say: "I had my reasons. You'd have done the same if it was you." },
     { by: 'a', say: "No. I wouldn't. That's the whole point of being in a group." },
     { by: 'x', opt: 1, say: "Can we not do this in front of everybody?" },
-    { by: 'a', opt: 'x', say: "Everybody heard the vote. Everybody can hear this." },
+    { by: 'a', opt: 'x', say: "You said my name out loud. I can say this out loud." },
     3],
   'ab.v2': [0, 1, 2,
     { by: 'x', opt: 1, say: "Nobody made you do that." },

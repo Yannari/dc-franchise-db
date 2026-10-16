@@ -286,7 +286,7 @@ const LAST_CONF = {
   earnest: ['I\'m going to do better. I have to.'],
   tough: ['Bad day. It happens.'],
   bossy: ['That challenge was set up badly. That\'s all I\'ll say.'],
-  emotional: ['I\'m so embarrassed. Everybody saw it.'],
+  emotional: ['I\'m so embarrassed. I just want to disappear.'],
   goofy: ['I came last! But I came last with style.'],
   proud: ['One bad result doesn\'t say anything about me.'],
   sharp: ['Last. Noted. It won\'t happen again.'],

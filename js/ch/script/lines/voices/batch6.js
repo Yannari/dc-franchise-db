@@ -346,9 +346,9 @@ export default {
       odd: ["Then count me out. I'm on vacation from this alliance. A one-week vacation.", "Then I'm sitting this one out. Not literally. I'll vote somebody else."],
     },
     4: {
-      sharp: ["{b} just picked {target} over the group. Out loud. Everybody heard. That costs.", "{b} chose {target} over us in front of everybody. I won't forget it."],
-      dry: ["{b} just told the group {b.sub}'d rather protect {target}. Everybody heard that.", "So {b} picked {target} over us. Out loud. Noted."],
-      loud: ["{b} chose {target} over US! In front of EVERYBODY!", "Everybody heard {b}! {b} picked {target} over the group!"],
+      sharp: ["{b} just picked {target} over the group. Out loud. That costs.", "{b} chose {target} over us in front of everybody. I won't forget it."],
+      dry: ["{b} just told the group {b.sub}'d rather protect {target}. Noted.", "So {b} picked {target} over us. Out loud. Noted."],
+      loud: ["{b} chose {target} over US! OUT LOUD!", "You heard {b}! {b} picked {target} over the group!"],
       soft: ["{b} picked {target} over us. I heard it. Everybody did. It really hurt.", "I can't believe {b} said that in front of all of us."],
       odd: ["{b} just picked {target} over the group. Out loud. It echoed.", "{b} said {target} matters more than us. In front of us. Bold. Bad, but bold."],
     },
@@ -1278,7 +1278,7 @@ export default {
   },
   'dk.3': {
     0: {
-      sharp: ["I'm better than that, and everybody saw me fail anyway.", "I know I'm better than that. That's what stings."],
+      sharp: ["I'm better than that, and I failed anyway.", "I know I'm better than that. That's what stings."],
       dry: ["I'm better than that. That's what makes it worse.", "I know I can do better. That's the problem."],
       loud: ["I'm BETTER than that! That's what makes it so bad!", "I know I'm better than that! Ugh!"],
       odd: ["I'm better than that. I know I'm better than that. My body didn't get the memo.", "I'm better than that. That was a stunt double."],

@@ -73,7 +73,7 @@ export default {
     { id: 'kd.s3', turns: [
       { beat: '{a} drops a whole tray of eggs on the floor.' },
       { by: 'a', say: "Nobody saw that.", v: { loud: ['NOBODY SAW THAT!'] } },
-      { by: 'b', say: "Everybody saw that. Grab a towel, I'll start over.", v: { sharp: ['Everybody saw that. Move, I\'ll do it.'] } },
+      { by: 'b', say: "Okay, that happened. Grab a towel, I'll start over.", v: { sharp: ['Great. Move, I\'ll do it.'] } },
     ] },
   ],
   'kitchen-disaster.alone': [
@@ -148,7 +148,7 @@ export default {
     { id: 'ht.c3', turns: [
       { by: 'a', say: "Can I tell you something embarrassing? I think I like {target}.", v: { loud: ['Okay, I\'m just going to say it! I like {target}!'] } },
       { by: 'b', say: "That's not embarrassing. It's sweet.", v: { sharp: ['That\'s a terrible idea, and you know it.'] } },
-      { by: 'c', conf: "Everybody in that hot tub heard {a} say {target}'s name. By breakfast the whole villa will know.", v: { odd: ['Everybody heard. The whole villa\'s going to know by tomorrow.'] } },
+      { by: 'c', conf: "Everybody in that hot tub heard {a} say {target}'s name. By breakfast the whole villa will know.", v: { odd: ['The whole villa\'s going to know by tomorrow.'] } },
     ] },
   ],
   'hot-tub-truths.none': [
@@ -586,7 +586,7 @@ export default {
       { by: 'b', say: "Excuse me? We were just talking.", v: { sharp: ['I\'ll talk to whoever I want.'] } },
       { by: 'a', say: "Talking. Sure. Very close talking.", v: { sharp: ['Talking. Is that what we\'re calling it?'] } },
       { by: 'c', say: "Can everybody just calm down?", v: { soft: ['Please don\'t fight. Please.'] } },
-      { by: 'a', conf: "I'm not crazy. I saw how {b} looks at {c}. Everybody saw it.", v: { soft: ['Maybe I overreacted. I just got so scared.'] } },
+      { by: 'a', conf: "I'm not crazy. I saw how {b} looks at {c}.", v: { soft: ['Maybe I overreacted. I just got so scared.'] } },
     ] },
     { id: 'jl.b2', turns: [
       { by: 'a', say: "Stay away from {c}.", v: { loud: ['STAY AWAY FROM {c}!'] } },

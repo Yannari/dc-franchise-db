@@ -109,6 +109,6 @@ export default {
     2],
   'abs.3': [
     { by: 'a', say: "Did you see {target} tonight?" },
-    { by: 'b', say: "Everybody saw." },
+    { by: 'b', say: "I was there. I saw it." },
     0],
 };

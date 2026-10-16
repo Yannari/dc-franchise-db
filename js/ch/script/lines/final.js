@@ -237,7 +237,7 @@ export default {
       { by: 'tj', say: "{a} takes the Beach Haul! Ten points! {b}, buddy, you're bringing up the rear." },
       { by: 'a', say: "My arms are gone. Completely gone." },
       { by: 'b', say: "That bag split twice. Twice!" },
-      { by: 'a', conf: "First checkpoint, first place. Everybody saw it. Now they all have to chase me." },
+      { by: 'a', conf: "First checkpoint, first place. Now they all have to chase me." },
       { by: 'b', conf: "Last on the first one. It's a long final. I'm not done, I'm just behind." },
     ] },
     { id: 'fcp.1b', turns: [

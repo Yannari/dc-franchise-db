@@ -367,7 +367,7 @@ export default {
   },
   'fc.f3': {
     0: {
-      sharp: ["You've been coasting this whole game, and everybody knows it.", "You've coasted on everybody else. Everybody sees it."],
+      sharp: ["You've been coasting this whole game.", "You've coasted on everybody else."],
       dry: ["You've been coasting. People notice.", "You've been coasting for weeks. Everybody sees it."],
       loud: ["You've been COASTING! Everybody sees it!", "Stop coasting! We all see it!"],
       soft: ["I don't mean it in a bad way, but you've been coasting. People notice.", "Everybody's noticed you've been coasting."],
@@ -486,7 +486,7 @@ export default {
     2: {
       sharp: ["Shot down. On camera. I'm going to pretend that never happened.", "That went badly. Moving on. Quickly."],
       dry: ["So that went well. Shot down, on camera.", "I tried. It did not work. It's on tape."],
-      loud: ["Shot down! On CAMERA! By the POOL!", "That was a disaster! Everybody saw it!"],
+      loud: ["Shot down! On CAMERA! By the POOL!", "That was a DISASTER!"],
       odd: ["Shot down on camera. My grandkids will see this. Hi, grandkids.", "I've been rejected before, but never with this many cameras."],
     },
   },
@@ -529,9 +529,9 @@ export default {
   },
   'pb.2': {
     0: {
-      dry: ["I'm not trying to blame {b}. But {b} lost us that one, and everybody saw it.", "Hate to say it. {b} cost us the daily."],
-      loud: ["I'm not throwing {b} under the bus, but we lost it on that leg! Everybody saw!", "{b} lost us the daily! It's not a secret!"],
-      soft: ["I really don't want to blame {b}. But we lost because of {b}, and everybody saw.", "I feel awful saying it, but {b} was the reason we lost."],
+      dry: ["I'm not trying to blame {b}. But {b} lost us that one.", "Hate to say it. {b} cost us the daily."],
+      loud: ["I'm not throwing {b} under the bus, but we lost it on that leg!", "{b} lost us the daily! It's not a secret!"],
+      soft: ["I really don't want to blame {b}. But we lost because of {b}.", "I feel awful saying it, but {b} was the reason we lost."],
       odd: ["I'm not throwing {b} under the bus. I'm gently placing {b} near the bus. {b} lost it.", "I'm not throwing {b} under the bus. {b} lost us the daily all by {b.ref}."],
     },
   },

@@ -78,7 +78,7 @@ export function previouslyFor(state, prev) {
       : pick(rng, [`${d.winners[0]} won ${d.name}, and was safe at the vote.`, `${d.name} went to ${d.winners[0]}. Safe for the week.`]), shot);
     if (ds) clip(clipOf(ds, d.winners), shot);
     const last = (d.last || [])[0];
-    if (last && !d.winners.includes(last)) say(pick(rng, [`${last} came in last, and everybody noticed.`, `And ${last} finished dead last.`]), { daily: d.id, who: [last] });
+    if (last && !d.winners.includes(last)) say(pick(rng, [`${last} came in last.`, `And ${last} finished dead last.`]), { daily: d.id, who: [last] });
   }
 
   // the stories that moved: up to three, the biggest first, each with its clip

@@ -41,7 +41,7 @@ export default {
     { id: 'bl.5', turns: [{ by: 'a', say: "{b}, because I think it's time." }] },
     { id: 'bl.6', turns: [{ by: 'a', say: "My vote is {b}." }] },
     { id: 'bl.7', turns: [{ by: 'a', say: "It's {b} for me." }] },
-    { id: 'bl.8', turns: [{ by: 'a', say: "{b}. I think everybody saw this coming." }] },
+    { id: 'bl.8', turns: [{ by: 'a', say: "{b}. I think we all saw this coming." }] },
     { id: 'bl.9', turns: [{ by: 'a', say: "I'm going {b}. Let's see what {b.sub} can do in there." }] },
     { id: 'bl.10', turns: [{ by: 'tj', say: '{a}?' }, { by: 'a', say: '{b}.' }] },
     { id: 'bl.11', turns: [{ by: 'tj', say: "{a}, my friend, who you got?" }, { by: 'a', say: "{b}, TJ." }] },

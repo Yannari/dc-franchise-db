@@ -200,7 +200,7 @@ export default {
       { by: 'b', say: "How?" },
       { by: 'a', say: "It just was. Don't test me." },
       { by: 'b', say: "I'm not testing you. I just don't believe you." },
-      { by: 'b', conf: "{a} threatens people and then doesn't follow through. Everybody saw it. I'm not losing any sleep over this." },
+      { by: 'b', conf: "{a} threatens people and then doesn't follow through. I'm not losing any sleep over this." },
       { by: 'a', conf: "I broke my word once, and now nobody takes me seriously. I have to fix that." },
     ] },
     { id: 'lt.d2', turns: [
@@ -227,7 +227,7 @@ export default {
     ] },
     { id: 'co.pr2', turns: [
       { by: 'tj', say: "{a}, the floor is yours." },
-      { by: 'a', say: "Everybody heard me at the vote. If I go in, {b} goes in. So, {b}." },
+      { by: 'a', say: "I said it at the vote. If I go in, {b} goes in. So, {b}." },
       { by: 'b', say: "You really meant it." },
       { by: 'a', say: "I really meant it." },
       { by: 'b', say: "Okay. Then let's go." },

@@ -566,10 +566,10 @@ export default {
   },
   'dk.2': {
     0: {
-      sharp: ["Everybody saw me choke. I can already hear my name in the votes.", "I fell apart in front of the whole house. They smell blood now."],
-      dry: ["I fell apart today. Everybody saw it. Now they think I'm weak.", "Bad day, and everybody saw it. People are already talking."],
-      loud: ["I choked! In front of everybody! Now they all think I'm weak!", "Everybody saw me fall apart today. I'm so mad at myself."],
-      soft: ["I fell apart today, and everybody saw. I can feel them looking at me differently.", "I just want to hide. Everybody saw me crumble."],
+      sharp: ["I choked. I can already hear my name in the votes.", "I fell apart in front of the whole house. They smell blood now."],
+      dry: ["I fell apart today. Now they think I'm weak.", "Bad day. People are already talking."],
+      loud: ["I choked! In front of everybody! Now they all think I'm weak!", "I fell apart today! I'm so mad at myself!"],
+      soft: ["I fell apart today. I can feel them looking at me differently.", "I just want to hide. I crumbled."],
     },
   },
   'ov.1': {

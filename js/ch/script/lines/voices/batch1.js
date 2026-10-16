@@ -18,7 +18,7 @@
 const NEUTRAL = {
   quiet: ['Just {b}.', '{b}. That\'s all.', '{b}. Sorry.', 'Mm. {b}.'],
   dry: ['{b}. You knew it was coming.', '{b}. Nobody\'s surprised.', '{b}. I know, I\'m as surprised as you are.', '{b}. I\'m not going to explain it.'],
-  loud: ['{b}! Let\'s go!', '{b}! That\'s my vote, TJ!', '{b}! Loud and clear!', 'It\'s {b}! Everybody heard me!', '{b}! That\'s my vote!'],
+  loud: ['{b}! Let\'s go!', '{b}! That\'s my vote, TJ!', '{b}! Loud and clear!', 'It\'s {b}! Loud enough for you?', '{b}! That\'s my vote!'],
   warm: ['{b}. I\'m sorry, I really am.', '{b}. Please don\'t hate me.', '{b}. I\'ll give you a hug after, I promise.', 'I\'m so sorry, {b}. It\'s you.'],
   blunt: ['{b}. Not complicated.', '{b}, and I\'m not going to pretend it\'s hard.', '{b}. That\'s my vote.', '{b}. Easy one.'],
   theatrical: ['With a very heavy heart... {b}.', '{b}. That\'s all I\'m saying.', 'And my vote goes to... {b}!', '{b}. I thought about it, and it\'s still {b}.'],
@@ -81,7 +81,7 @@ const ENEMY = {
   dry: ['{b}. Imagine my surprise.', '{b}. That one wasn\'t hard.'],
   loud: ['{b}! Bye!', '{b}! And I\'d say it twice if they let me!'],
   warm: ['{b}. Sorry.'],
-  blunt: ['{b}. We don\'t get along, and everybody knows it.'],
+  blunt: ['{b}. We don\'t get along. That\'s no secret.'],
   theatrical: ['Oh, this one I\'ve been waiting for. {b}.'],
   anxious: ['{b}. Please don\'t come back angry.'],
   calm: ['{b}. It\'s a little personal.'],

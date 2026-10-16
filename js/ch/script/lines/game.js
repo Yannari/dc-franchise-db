@@ -638,10 +638,10 @@ export default {
   ],
   'daily-choke.any': [
     { id: 'dk.1', turns: [
-      { by: 'a', conf: "I froze. I have no idea what happened. My brain just stopped.", v: { loud: ['I choked! I completely CHOKED!'], soft: ['I\'m so embarrassed. Everybody saw it.'], sharp: ['One bad day. That\'s all it was. One bad day.'] } },
+      { by: 'a', conf: "I froze. I have no idea what happened. My brain just stopped.", v: { loud: ['I choked! I completely CHOKED!'], soft: ['I\'m so embarrassed. I wanted the ground to swallow me.'], sharp: ['One bad day. That\'s all it was. One bad day.'] } },
     ] },
     { id: 'dk.2', turns: [
-      { by: 'a', conf: "Everybody saw me fall apart today. I can already feel them deciding I'm weak.", v: { odd: ['I fell off the thing. All of the things.'] } },
+      { by: 'a', conf: "I fell apart today. I can already feel them deciding I'm weak.", v: { odd: ['I fell off the thing. All of the things.'] } },
     ] },
     { id: 'dk.3', turns: [
       { by: 'a', conf: "I'm better than that. I know I'm better than that. That's what makes it so bad.", v: { soft: ['I just want to go hide in my bunk.'] } },
@@ -707,7 +707,7 @@ export default {
       { by: 'b', conf: "{a} blamed me in front of everybody. Now the whole house thinks I'm the weak one.", v: { soft: ['I really tried. I really did.'] } },
     ] },
     { id: 'pb.2', turns: [
-      { by: 'a', conf: "I don't want to throw {b} under the bus. But {b} was the reason we lost, and everybody saw it.", v: { sharp: ['Partners are supposed to help. {b} was dead weight.'] } },
+      { by: 'a', conf: "I don't want to throw {b} under the bus. But {b} was the reason we lost.", v: { sharp: ['Partners are supposed to help. {b} was dead weight.'] } },
     ] },
     { id: 'pb.3', turns: [
       { by: 'b', say: "Go ahead, say it." },
@@ -735,7 +735,7 @@ export default {
     ] },
     { id: 'pb.6', turns: [
       { by: 'a', conf: "I picked the wrong partner, or the wrong partner got picked for me. Either way, I'm the one who has to live with it at the vote." },
-      { by: 'a', conf: "Everybody saw us fall apart out there. Now people are going to look at both of us like we're easy to send in." },
+      { by: 'a', conf: "We fell apart out there. Now people are going to look at both of us like we're easy to send in." },
       { by: 'b', opt: 1, conf: "{a} can blame me all {a.sub} wants. I know what I did out there, and I know what {a} didn't." },
     ] },
   ],
@@ -768,7 +768,7 @@ export default {
   ],
   'team-blame.alone': [
     { id: 'tb.a1', turns: [
-      { by: 'a', say: "We lost because of {b}. I'm sorry, but somebody has to say it.", v: { loud: ['{b} lost us that challenge! Everybody saw it!'] } },
+      { by: 'a', say: "We lost because of {b}. I'm sorry, but somebody has to say it.", v: { loud: ['{b} lost us that challenge! Say I\'m wrong!'] } },
       { beat: 'Nobody says a word. {b} walks off.' },
       { by: 'b', conf: "Nobody stood up for me. Not one person. That hurt more than losing.", v: { sharp: ['Fine. I\'ll remember who stayed quiet.'] } },
     ] },
@@ -1137,7 +1137,7 @@ export default {
       { by: 'a', say: "{beef}. There. I said it." },
       { by: 'b', say: "Okay. Good night, everybody." },
       { beat: '{b} leaves. The whole club watches {b} go, then turns back to {a}.' },
-      { by: 'a', conf: "{b} walked away. Fine. Everybody heard me, and that's what I wanted." },
+      { by: 'a', conf: "{b} walked away. Fine. I said it out loud, and that's what I wanted." },
     ] },
     { id: 'pc.w3', turns: [
       { beat: 'The music is loud, and {a} is louder.' },
@@ -1270,7 +1270,7 @@ export default {
       { by: 'b', say: "Then stop giving me things to talk about." },
       { beat: 'A couple of people laugh. {a} does not.' },
       { by: 'a', conf: "{b} thinks it's all a joke. It won't be a joke when we're both standing in the Arena." },
-      { by: 'b', conf: "{a} has a temper, and everybody just watched it. That's going to cost {a.obj}." },
+      { by: 'b', conf: "{a} has a temper, and it just came out in front of the whole bar. That's going to cost {a.obj}." },
     ] },
   ],
   'fight-physical.any': [
@@ -1287,8 +1287,8 @@ export default {
     { id: 'fp.3', turns: [
       { by: 'a', say: "Say one more word. One more.", v: { loud: ['SAY ONE MORE WORD!'] } },
       { by: 'b', say: "Or what?", v: { soft: ['Please, just stop.'] } },
-      { beat: '{a} lunges at {b}. Security is between them in seconds, but everybody saw it.' },
-      { by: 'b', conf: "Everybody saw what {a} did. Production saw it. TJ is going to see it. That's it for {a}.", v: { loud: ['Everybody SAW it! EVERYBODY!'] } },
+      { beat: '{a} lunges at {b}. Security is between them in seconds, but the damage is done.' },
+      { by: 'b', conf: "{a} put hands on me. The cameras got it. TJ is going to see it. That's it for {a}.", v: { loud: ['The CAMERAS got it! It\'s OVER for {a}!'] } },
     ] },
   ],
   'partner-draw.any': [
@@ -1310,7 +1310,7 @@ export default {
     { id: 'pp.1', turns: [
       { by: 'tj', say: "Pairs today, people! And you get to pick! Choose wisely. Or don't. It's way funnier when you don't." },
       { by: 'a', say: "I'll take {b}.", v: { loud: ['{b}! Obviously {b}!'], sharp: ['{b}. Strongest option.'] } },
-      { by: 'b', conf: "{a} picked me first. Everybody saw it. That's not just a daily, that's a statement.", v: { soft: ['It felt so nice to be chosen first.'] } },
+      { by: 'b', conf: "{a} picked me first. That's not just a daily, that's a statement.", v: { soft: ['It felt so nice to be chosen first.'] } },
     ] },
     { id: 'pp.2', turns: [
       { by: 'tj', say: "You pick your partner today! This is like a middle-school dance but with more sweating!" },

@@ -47,8 +47,8 @@ const PLACE = {
   deliberation: { plate: 'common', place: 'The Common Room', room: 'common', icon: 'fire', hour: 'night' },
   arena: { plate: 'arena', place: 'The Arena', room: null, island: 'arena', icon: 'skull', hour: 'night' },
   lookout: { plate: 'lookout', place: 'The Lookout', room: null, island: 'lookout', icon: 'island' },
-  // Redemption House (redemption.js): a shack in the jungle; the overnight camp stands in until its own set exists
-  redemption: { plate: 'camp', place: 'Redemption House', room: null, island: 'lookout', icon: 'skull', hour: 'night' },
+  // Redemption House (redemption.js): the shack in the jungle, the user's set (job G15)
+  redemption: { plate: 'redemption', place: 'Redemption House', room: null, island: 'lookout', icon: 'skull', hour: 'night' },
   final: { plate: 'field', place: 'The Final', room: null, island: 'beach-field', icon: 'island' },
 };
 // Somewhere quiet: by day the lookout or the bedroom, by night the pool or the beach.
@@ -105,6 +105,8 @@ function stageOf(a, min) {
   const night = isNight(min);
   let place = PLACE[a.spot] || null;
   if (a.kind === 'arena-eve-pep') place = { plate: night ? 'beach' : 'sunset', place: 'The Beach', island: 'beach', icon: 'island' };
+  // the Redemption residents fight in the Arena, not in the shack
+  if (a.kind === 'redemption-duel') place = PLACE.arena;
   if (!place || a.spot === 'private') place = pickBy(night ? QUIET_NIGHT : QUIET_DAY, `${a.kind}|${a.day}|${a.who.join()}`);
   return place;
 }

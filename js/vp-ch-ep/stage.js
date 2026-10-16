@@ -98,7 +98,7 @@ export class ChxStage {
       h += `<div class='glow' style='left:${f.u * 100}%;top:${f.v * 100 - fh * .6}%;width:${fh * 2.8}cqh;height:${fh * 2.8}cqh'></div>`;
       for (let i = 0; i < (sc.embers ? 7 : 4); i++) h += `<div class='ember' style='left:${f.u * 100 + rnd(-.7, .7)}%;top:${f.v * 100 - fh * .9}%;--d:${rnd(1.8, 3.6).toFixed(2)}s;--dl:${(-rnd(0, 3)).toFixed(2)}s;--dx:${rnd(-2, 2).toFixed(2)}cqw'></div>`;
     }
-    const inside = /^(common|kitchen|bunks|gym|conf)/.test(sc.plate);
+    const inside = /^(common|kitchen|bunks|gym|conf|redemption)/.test(sc.plate);
     if (night && !inside) for (let i = 0; i < 16; i++) h += `<div class='fly' style='left:${rnd(2, 96)}%;top:${rnd(25, 70)}%;--d:${rnd(5, 11).toFixed(1)}s;--dl:${(-rnd(0, 6)).toFixed(1)}s;--dx:${rnd(-5, 5).toFixed(1)}cqw;--dy:${rnd(-4, 4).toFixed(1)}cqh'></div>`;
     if (!night) for (let i = 0; i < 12; i++) h += `<div class='mote' style='left:${rnd(2, 96)}%;top:${rnd(10, 70)}%;--d:${rnd(8, 16).toFixed(1)}s;--dl:${(-rnd(0, 8)).toFixed(1)}s;--dx:${rnd(-4, 4).toFixed(1)}cqw;--dy:${rnd(-3, 3).toFixed(1)}cqh'></div>`;
     if (sc.lasers) ['#ff3df2', '#2de2ff', '#ffd21a', '#ff6a1a'].forEach((c, i) => { h += `<div class='laser' style='left:${36 + i * 4}%;top:46%;--c:${c};--d:${2.4 + i * .5}s'></div>`; });

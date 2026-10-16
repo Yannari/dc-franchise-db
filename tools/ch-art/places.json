@@ -10332,5 +10332,103 @@
         0.25
       ]
     ]
+  },
+  "redemption": {
+    "_doc": "Redemption House (redemption.js): the shack in the jungle at night, bunks, a hammock, the old TV they watch the vote on (the user's painting, job G15).",
+    "from_night": "G15-redemption-house/Night Shack With Bunks and TV.png",
+    "spot": "redemption",
+    "night": "painted",
+    "hours": [
+      "night"
+    ],
+    "horizon": 0.55,
+    "wind": 0.4,
+    "marks": [
+      {
+        "kind": "stand",
+        "x": 430,
+        "y": 690,
+        "h": 100
+      },
+      {
+        "kind": "stand",
+        "x": 620,
+        "y": 690,
+        "h": 100
+      },
+      {
+        "kind": "stand",
+        "x": 810,
+        "y": 690,
+        "h": 100
+      },
+      {
+        "kind": "stand",
+        "x": 1000,
+        "y": 690,
+        "h": 100
+      },
+      {
+        "kind": "stand",
+        "x": 520,
+        "y": 630,
+        "h": 88
+      },
+      {
+        "kind": "stand",
+        "x": 720,
+        "y": 630,
+        "h": 88
+      },
+      {
+        "kind": "stand",
+        "x": 900,
+        "y": 630,
+        "h": 88
+      },
+      {
+        "kind": "stand",
+        "x": 1300,
+        "y": 690,
+        "h": 100,
+        "group": "tv"
+      },
+      {
+        "kind": "host",
+        "x": 1170,
+        "y": 640,
+        "h": 90
+      }
+    ],
+    "glow": [
+      [
+        1420,
+        445,
+        1505,
+        555
+      ],
+      [
+        770,
+        95,
+        860,
+        200
+      ]
+    ],
+    "sway": [
+      [
+        0,
+        190,
+        310,
+        520,
+        0.3
+      ],
+      [
+        1070,
+        200,
+        1250,
+        585,
+        0.4
+      ]
+    ]
   }
 }

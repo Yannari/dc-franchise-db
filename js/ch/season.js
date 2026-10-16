@@ -77,6 +77,12 @@ function intelSnap(state) {
     broken: state.deals.filter(d => d.broken).slice(-4).map(d => ({ a: d.a, b: d.b })),
     couples: state.couples.filter(c => !c.ended && act.includes(c.a) && act.includes(c.b)).map(c => [c.a, c.b]),
     rec: Object.fromEntries(act.map(n => [n, { daily: R(n).dailyWins || 0, arenaW: R(n).arenaW || 0, arenaL: R(n).arenaL || 0, votedIn: R(n).votedIn || 0, calledOut: R(n).calledOut || 0, votes: R(n).votesReceived || 0 }])),
+    // for the Debug screen: how each of them feels, what they need, what they are trying to do, and their word
+    mind: Object.fromEntries(act.map(n => [n, Object.fromEntries(Object.entries(state.mind[n] || {}).map(([k, v]) => [k, Math.round(v * 10) / 10]))])),
+    psyche: Object.fromEntries(act.map(n => [n, state.psyche[n] || null])),
+    plans: Object.fromEntries(act.map(n => { const p = state.plans?.[n]; return [n, p ? { style: p.style, core: [...p.core], targets: p.targets.map(t => [t, p.origins?.[t] || '']),
+      shield: p.shield, revenge: [...p.revenge], finalWith: [...p.finalWith] } : null]; })),
+    word: Object.fromEntries(act.filter(n => state.word?.[n]).map(n => [n, state.word[n]])),
   };
 }
 

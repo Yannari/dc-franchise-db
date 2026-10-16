@@ -575,6 +575,31 @@ export default {
       { by: 'b', say: "Go ahead, say it." },
       { by: 'a', say: "You were slow. That's all.", v: { loud: ['You were SLOW!'] } },
     ] },
+    { id: 'pb.4', turns: [
+      { by: 'a', say: "Can we talk about what happened out there?" },
+      { by: 'b', say: "If you're going to tell me it was my fault, no." },
+      { by: 'a', say: "I'm not saying it was all you. I'm saying we didn't work together." },
+      { by: 'b', say: "You didn't listen to a word I said." },
+      { by: 'a', say: "Because you kept changing the plan halfway through." },
+      { by: 'b', say: "Because the plan wasn't working." },
+      { by: 'a', conf: "I don't know if {b} and I are going to make it through another partner week. We pull in different directions." },
+      { by: 'b', conf: "{a} wants a partner who does what {a.sub}'s told. That's not me." },
+    ] },
+    { id: 'pb.5', turns: [
+      { by: 'b', say: "You've been quiet since we finished." },
+      { by: 'a', say: "I'm trying not to say something I'll regret." },
+      { by: 'b', say: "Then just say it. Get it over with." },
+      { by: 'a', say: "We should have won that. We had it, and then we didn't." },
+      { by: 'b', say: "And that's on me." },
+      { by: 'a', say: "I didn't say that." },
+      { by: 'b', say: "You didn't have to." },
+      { by: 'b', conf: "Losing is bad enough. Losing and then watching your partner sulk about it is worse." },
+    ] },
+    { id: 'pb.6', turns: [
+      { by: 'a', conf: "I picked the wrong partner, or the wrong partner got picked for me. Either way, I'm the one who has to live with it at the vote." },
+      { by: 'a', conf: "Everybody saw us fall apart out there. Now people are going to look at both of us like we're easy to send in." },
+      { by: 'b', opt: 1, conf: "{a} can blame me all {a.sub} wants. I know what I did out there, and I know what {a} didn't." },
+    ] },
   ],
   'partner-carried.any': [
     { id: 'pc.1', turns: [

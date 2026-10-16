@@ -270,7 +270,11 @@ function volunteer(state, rng, eligible) {
     return { c, w, target };
   }).sort((a, b) => b.w - a.w);
   const top = cands[0];
-  if (!top || rng() >= logistic(top.w - 3.4) * 0.5) return null;
+  // A volunteer is a moment, not a habit (seasons had five or six; the show has one or two): rarer, and
+  // rarer still for a few weeks after the last one, when the house has just seen it done.
+  const since = state.ep - (state.lastVolunteerEp ?? -99);
+  if (!top || rng() >= logistic(top.w - 4.2) * 0.32 * Math.min(1, since / 4)) return null;
+  state.lastVolunteerEp = state.ep;
   addScene(state, 'volunteer', [top.c].concat(top.target ? [top.target] : []), { target: top.target }, state.active, 'public');
   return { name: top.c, target: top.target };
 }

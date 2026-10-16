@@ -1,139 +1,213 @@
 // ══════════════════════════════════════════════════════════════════════
-// vp-ch-ep/debug.js — The Challenge's Debug screen (the user, 2026-10-15: "we need a debug like in
-// Total Drama")
+// vp-ch-ep/debug.js — The Challenge's Debug screen
 // ══════════════════════════════════════════════════════════════════════
 //
-// The last screen of every episode, after the show: what the engine decided and why, in tabs the viewer
-// keeps open between episodes. Everything here is read off the episode's row (ch-run.js challengeRows):
-// the daily's order and scores, every ballot with the reason it was cast, the meetings and who said yes,
-// the call-outs and their reasons, the duels round by round, the house's bonds, alliances and deals as the
-// episode ended (season.js intelSnap), each player's stats and record, and what the director aired.
+// The user, 2026-10-15: "we need a debug like in Total Drama", then "fix the debug so it's more like the
+// Total Drama debug visually". So it is built from the SAME furniture Total Drama and Big Brother use
+// (vp-screens.js dbgShell, dbgPanel, dbgPortraitRow, dbgStatTable: the DEBUG DATA title, the episode
+// strip, the tab row, tinted panels, portrait rows). The furniture is passed in as `kit` (vp-screens.js
+// imports this file, so importing it back would be a cycle).
+//
+// Everything is read off the episode's row (ch-run.js challengeRows): the daily's order and scores, every
+// ballot with its reason, the meetings, the moves made before the vote, the call-outs and promises, the
+// duels round by round, and the house as the episode ended (season.js intelSnap): bonds, alliances, deals,
+// minds, needs, plans and each player's word.
 import { pStats } from '../players.js';
 import { players } from '../core.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const TABS = [['episode', 'This episode'], ['votes', 'The vote'], ['players', 'Players'], ['bonds', 'Bonds'], ['allies', 'Alliances & deals'], ['director', 'Director']];
-const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
-const tabNow = () => { try { return localStorage.getItem('ch_debug_tab') || 'episode'; } catch { return 'episode'; } };
+const TABS = [['episode', 'This Episode'], ['threats', 'Threats &amp; Heat'], ['votes', 'Vote Commitments'], ['moves', 'Working the Room'],
+  ['plans', 'Game Plans'], ['minds', 'Minds'], ['deals', 'Deals &amp; Alliances'], ['bonds', 'Bonds'], ['stats', 'Player Stats'], ['director', 'Director']];
+const KEY = 'vp_chdebug_tab';
+const tabNow = () => { try { return localStorage.getItem(KEY) || 'episode'; } catch { return 'episode'; } };
 const archOf = n => (Array.isArray(players) ? players : []).find(p => p.name === n)?.archetype || '';
-const bondCol = v => (v >= 6 ? '#3fae5a' : v >= 3 ? '#2f8fb8' : v > -2 ? '#3a3430' : v > -5 ? '#b8862f' : '#b83a3a');
+const intelOf = row => row.ch?.intel?.end || row.ch?.intel?.start || null;
 
-function table(head, rows) {
-  return `<table class="chd-t"><thead><tr>${head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
-}
+// small pieces in the same palette as the shared furniture
+const C = { grey: '#8b949e', text: '#e6edf3', dim: '#6e7681', red: '#f47067', gold: '#f0883e', amber: '#d29922', green: '#3fb950', blue: '#57a6e8', purple: '#a371f7' };
+const pill = (t, col = C.grey) => `<span style="display:inline-block;padding:1px 6px;margin:1px 2px;border-radius:9px;font-size:9px;font-weight:700;letter-spacing:.5px;color:${col};border:1px solid ${col}55;background:${col}18">${t}</span>`;
+const cell = (t, col = C.grey, w = 0) => `<div style="font-size:11px;color:${col};${w ? `min-width:${w}px;text-align:right;` : ''}">${t}</div>`;
+const meter = (v, col) => `<div style="display:flex;align-items:center;gap:4px;min-width:84px"><div style="flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden"><div style="width:${Math.max(0, Math.min(10, v)) * 10}%;height:100%;background:${col}"></div></div><span style="font-size:10px;color:${C.grey};min-width:22px;text-align:right">${(+v).toFixed(1)}</span></div>`;
+const names = list => list.map(n => `<b style="color:${C.text}">${esc(n)}</b>`).join(', ');
 
-function episodeTab(row) {
+function episodeTab(row, K) {
   const ch = row.ch || {};
   let h = '';
   const d = ch.daily;
   if (d) {
-    h += `<h4>The daily: ${esc(d.name)} <small>${esc(d.mode || '')}</small></h4>`;
-    h += table(['Place', 'Who', 'Note'], (d.order || []).map((u, i) => [String(i + 1), esc(u.join(' & ')),
-      [(d.winners || []).some(w => u.includes(w)) ? '<b class="chd-w">WON</b>' : '', (d.last || []).some(w => u.includes(w)) ? '<b class="chd-l">LAST</b>' : '',
-        (d.throws || []).some(w => u.includes(w)) ? '<b class="chd-l">THREW</b>' : ''].join(' ')]));
-    if (d.moments?.length) h += `<div class="chd-n">Moments: ${d.moments.map(m => `${esc(m.kind)} (${esc([].concat(m.who || []).join(', '))})`).join(' · ')}</div>`;
-    if (d.injuries?.length) h += `<div class="chd-n">Injured: ${esc(d.injuries.join(', '))}</div>`;
+    const sc = d.scores || {};
+    const unitScore = u => u.reduce((a, n) => a + (sc[n] || 0), 0) / Math.max(1, u.length);
+    h += K.dbgPanel(`THE DAILY — ${esc(d.name).toUpperCase()} <span style="color:${C.grey};font-weight:600">(${esc(d.mode || '')})</span>`, 'gold',
+      (d.order || []).map((u, i) => {
+        const won = (d.winners || []).some(w => u.includes(w)), last = (d.last || []).some(w => u.includes(w));
+        const threw = (d.throws || []).filter(w => u.includes(w));
+        const tag = u.length > 1 ? ` <span style="color:${C.grey};font-weight:400">&amp; ${esc(u.slice(1).join(' & '))}</span>` : '';
+        return K.dbgPortraitRow(u[0], cell(`#${i + 1}`, C.grey, 26) + cell(unitScore(u).toFixed(2), C.text, 40)
+          + `<div style="min-width:120px;text-align:right">${won ? pill('WON', C.green) : ''}${last ? pill('LAST', C.red) : ''}${threw.length ? pill(`THREW: ${esc(threw.join(', '))}`, C.amber) : ''}</div>`, { tag });
+      }).join('')
+      + ((d.caught || []).length ? K.dbgNote(`Caught throwing: ${d.caught.map(c => `${esc(c.thrower)} (seen by ${esc(c.by)})`).join(' · ')}`) : '')
+      + ((d.moments || []).length ? K.dbgNote(`Moments: ${d.moments.map(m => `${esc(m.kind)} (${esc([].concat(m.who || []).join(', '))})`).join(' · ')}`) : '')
+      + ((d.injuries || []).length ? K.dbgNote(`Injured: ${esc(d.injuries.join(', '))}`) : ''));
   }
-  if (ch.callouts?.length) {
-    h += '<h4>The call-outs</h4>' + table(['Voted in', 'Called out', 'Why'], ch.callouts.map(c => [esc(c.by), esc(c.opponent), esc(c.reason || '')]));
+  for (const c of ch.callouts || []) {
+    const prom = c.promise === 'kept' ? pill('KEPT THE THREAT', C.green) : c.promise === 'broken' ? pill(`BROKE A THREAT TO ${esc(c.promisedAt)}`, C.red) : '';
+    h += K.dbgPanel(`THE CALL-OUT — ${esc(c.by).toUpperCase()}`, 'amber',
+      K.dbgPortraitRow(c.by, `<div style="font-size:11px;color:${C.grey}">calls out</div>` + cell(`<b style="color:${C.text}">${esc(c.opponent)}</b>`) + `<div style="min-width:150px;text-align:right">${pill(esc(c.reason || ''), C.amber)}${prom}</div>`)
+      + ((c.ranked || []).length ? K.dbgNote(`How ${esc(c.by)} scored the options: ${c.ranked.map(r => `${esc(r.name)} ${r.total}`).join(' · ')}`) : ''));
   }
-  if (ch.duels?.length) {
-    h += '<h4>The Arena</h4>';
-    for (const x of ch.duels) {
-      h += `<div class="chd-duel"><b>${esc(x.name)}</b>: ${esc(x.a)} vs ${esc(x.b)}, <b class="chd-w">${esc(x.winner)}</b> wins${x.upset ? ' <i>(upset)</i>' : ''}${x.comeback ? ' <i>(comeback)</i>' : ''}${x.volunteer ? ' <i>(volunteer)</i>' : ''}</div>`;
-      h += `<div class="chd-n">${(x.beats || []).map((b, i) => `${i + 1}. ${esc(b.kind)}${b.score ? ` ${esc(Object.entries(b.score).map(([n, v]) => `${n} ${v}`).join(' – '))}` : ''}${b.winner ? ` → ${esc(b.winner)}` : ''}`).join('<br>')}</div>`;
-    }
+  for (const x of ch.duels || []) {
+    const flags = [x.upset && pill('UPSET', C.purple), x.comeback && pill('COMEBACK', C.blue), x.volunteer && pill('VOLUNTEER', C.amber)].filter(Boolean).join('');
+    h += K.dbgPanel(`THE ARENA — ${esc(x.name).toUpperCase()}`, 'red',
+      K.dbgPortraitRow(x.winner, `${pill('WON', C.green)}${flags}`) + K.dbgPortraitRow(x.loser, pill('WENT HOME', C.red), { dim: true })
+      + (x.beats || []).map((b, i) => K.dbgRow(`${i + 1}. ${esc(b.kind)}${b.n ? ` ${b.n}` : ''}`,
+        b.score ? esc(Object.entries(b.score).map(([n, v]) => `${n} ${v}`).join(' – ')) + (b.winner ? ` → <b>${esc(b.winner)}</b>` : '')
+          : b.ahead ? `${esc(b.ahead)} ahead (margin ${b.margin})` : b.winner ? `<b>${esc(b.winner)}</b> finishes first` : '')).join(''));
   }
   const exits = row.exits || [];
-  if (exits.length) h += '<h4>Out this episode</h4>' + table(['Who', 'How', 'By'], exits.map(e => [esc(e.name || e), esc(e.how || ''), esc(e.by || e.victim || '')]));
-  return h || '<div class="chd-n">Nothing recorded.</div>';
+  if (exits.length) h += K.dbgPanel('OUT THIS EPISODE', 'grey', exits.map(e => K.dbgPortraitRow(e.name || e, cell(esc(e.verb || e.channel || '')) + cell(e.by ? `by ${esc(e.by)}` : ''), { dim: true })).join(''));
+  return h || K.dbgEmpty('Nothing recorded.');
 }
 
-function votesTab(row) {
+function threatsTab(row, K) {
+  const I = intelOf(row);
+  if (!I) return K.dbgEmpty('This episode was saved without its record.');
+  const ch = row.ch || {};
+  const votes = {};
+  for (const v of ch.votes || []) for (const b of v.ballots || []) votes[b.target] = (votes[b.target] || 0) + 1;
+  const aimed = {};
+  for (const [n, p] of Object.entries(I.plans || {})) for (const [t] of p?.targets || []) (aimed[t] ||= []).push(n);
+  const list = [...I.players].sort((a, b) => ((aimed[b] || []).length * 2 + (votes[b] || 0)) - ((aimed[a] || []).length * 2 + (votes[a] || 0)));
+  return K.dbgPanel('WHO THE HOUSE IS AIMING AT', 'red', list.map(n => {
+    const r = I.rec?.[n] || {};
+    const w = I.word?.[n];
+    return K.dbgPortraitRow(n, cell(`${(aimed[n] || []).length} target${(aimed[n] || []).length === 1 ? '' : 's'}`, (aimed[n] || []).length >= 3 ? C.red : C.grey, 64)
+      + cell(`${votes[n] || 0} vote${votes[n] === 1 ? '' : 's'} today`, votes[n] ? C.amber : C.dim, 78)
+      + cell(`Arena ${r.arenaW || 0}-${r.arenaL || 0}`, r.arenaW ? C.green : C.grey, 64)
+      + cell(`in ${r.votedIn || 0}×`, C.grey, 40)
+      + `<div style="min-width:90px;text-align:right">${w ? pill(`WORD ${w > 0 ? '+' : ''}${w}`, w > 0 ? C.green : C.red) : ''}</div>`)
+      + ((aimed[n] || []).length ? K.dbgNote(`Targeted by ${esc(aimed[n].join(', '))}`) : '');
+  }).join(''));
+}
+
+function votesTab(row, K) {
   const ch = row.ch || {};
   let h = '';
-  if (ch.meetings?.length) {
-    h += '<h4>The meetings</h4>' + table(['Group', 'Organiser', 'Target', 'Answers'], ch.meetings.map(m => [esc(m.name || '(no name)'), esc(m.organiser), esc(m.target),
-      Object.entries(m.responses || {}).map(([n, r]) => `${esc(n)}: <b class="${r === 'yes' || r === 'organiser' ? 'chd-w' : r === 'refuses' ? 'chd-l' : 'chd-m'}">${esc(r)}</b>`).join(', ')]));
+  for (const m of ch.meetings || []) {
+    const col = r => (r === 'yes' || r === 'organiser' ? C.green : r === 'refuses' ? C.red : r === 'false-yes' ? C.purple : C.amber);
+    h += K.dbgPanel(`MEETING — ${esc(m.name || 'an alliance').toUpperCase()} → ${esc(m.target).toUpperCase()}`, 'purple',
+      Object.entries(m.responses || {}).map(([n, r]) => K.dbgPortraitRow(n, pill(esc(r).toUpperCase(), col(r)))).join(''));
   }
+  for (const p of ch.pitches || []) h += K.dbgRow(`${esc(p.by)} asks ${esc(p.to)}`, `vote ${esc(p.target)} — <b>${esc(p.answer)}</b>`);
   for (const v of ch.votes || []) {
-    h += `<h4>The vote: ${esc(v.votedIn)} goes in${v.tied ? ` <small>(tie, broken by ${esc(v.tiebreak || '?')})</small>` : ''}</h4>`;
-    h += table(['Voter', 'Said', 'Wanted', 'Asked to', 'Told', 'Why', ''], (v.ballots || []).map(b => [esc(b.voter), `<b>${esc(b.target)}</b>`, esc(b.wanted || ''), esc(b.asked || ''), esc(b.told || ''), esc(b.why || ''), b.flip ? '<b class="chd-l">FLIP</b>' : '']));
-    h += `<div class="chd-n">Tally: ${Object.entries(v.tally || {}).sort((a, b) => b[1] - a[1]).map(([n, c]) => `${esc(n)} ${c}`).join(' · ')}</div>`;
+    const tb = v.tiebreak ? ` <span style="color:${C.grey}">(tie${v.tiebreak.by?.length ? `, broken by ${esc(v.tiebreak.by.join(', '))}` : ', drawn'})</span>` : '';
+    h += K.dbgPanel(`THE VOTE — ${esc(v.votedIn || '?').toUpperCase()} GOES IN${tb}`, 'gold',
+      (v.ballots || []).map(b => K.dbgPortraitRow(b.voter,
+        cell(`→ <b style="color:${C.text}">${esc(b.target)}</b>`, C.grey, 0)
+        + `<div style="min-width:220px;text-align:right">${b.wanted && b.wanted !== b.target ? pill(`WANTED ${esc(b.wanted)}`, C.blue) : ''}${b.asked && b.asked !== b.target ? pill(`ASKED ${esc(b.asked)}`, C.amber) : ''}${pill(esc(b.why || ''), b.flip ? C.red : C.grey)}${b.flip ? pill('FLIP', C.red) : ''}</div>`)).join('')
+      + K.dbgNote(`Tally: ${Object.entries(v.tally || {}).sort((a, b) => b[1] - a[1]).map(([n, c]) => `${esc(n)} ${c}`).join(' · ')}`));
   }
-  return h || '<div class="chd-n">No vote this episode.</div>';
+  if (ch.volunteer) h += K.dbgPanel('A VOLUNTEER', 'amber', K.dbgPortraitRow(ch.volunteer.name, cell(ch.volunteer.target ? `wants ${esc(ch.volunteer.target)}` : 'no target named')));
+  return h || K.dbgEmpty('No vote this episode.');
 }
 
-function playersTab(row) {
-  const I = row.ch?.intel?.end || row.ch?.intel?.start;
-  const names = I?.players || row.ch?.house || [];
-  return table(['Player', 'Archetype', ...STATS.map(s => s.slice(0, 4)), 'Dailies', 'Arena', 'In', 'Votes'], names.map(n => {
-    const s = (() => { try { return pStats(n) || {}; } catch { return {}; } })();
-    const r = I?.rec?.[n] || {};
-    return [esc(n), esc(archOf(n)), ...STATS.map(k => String(s[k] ?? '–')), String(r.daily ?? '–'), `${r.arenaW ?? 0}-${r.arenaL ?? 0}`, String(r.votedIn ?? '–'), String(r.votes ?? '–')];
-  }));
+const MOVE = {
+  threat: c => [`threatens <b>${esc(c.at)}</b>`, c.bluff ? pill('BLUFF', C.amber) : '', pill(`CREDIBLE ${c.credible}`, c.credible >= 0.6 ? C.red : C.grey), c.doubted ? pill('DOUBTED', C.red) : ''],
+  counter: c => [`puts up <b>${esc(c.alt)}</b> instead`, c.moved?.length ? pill(`MOVED ${esc(c.moved.join(', '))}`, C.green) : '', c.held?.length ? pill(`HELD ${esc(c.held.join(', '))}`, C.grey) : ''],
+  spare: c => [`offers <b>${esc(c.to)}</b> a deal`, pill(esc(c.answer).toUpperCase(), c.answer === 'accepted' ? C.green : c.answer === 'false' ? C.purple : C.red)],
+  plea: c => [`pleads with <b>${esc(c.to)}</b>`, pill(c.moved ? 'MOVED' : 'HELD', c.moved ? C.green : C.grey)],
+  outing: c => ['outs the alliance hunting them', pill('PUBLIC', C.red)],
+};
+function movesTab(row, K) {
+  const list = row.ch?.campaigns || [];
+  if (!list.length) return K.dbgEmpty('Nobody worked the room this episode.');
+  const by = {};
+  for (const c of list) (by[c.from] ||= []).push(c);
+  return Object.entries(by).map(([n, cs]) => K.dbgPanel(`${esc(n).toUpperCase()} — ${cs.length} MOVE${cs.length > 1 ? 'S' : ''}`, 'purple',
+    cs.map(c => { const [t, ...p] = (MOVE[c.kind] || (() => [esc(c.kind)]))(c); return K.dbgPortraitRow(n, cell(t, C.text) + `<div style="min-width:200px;text-align:right">${p.join('')}</div>`); }).join(''))).join('')
+    + K.dbgNote('A threat is a promise: at the call-out it pulls toward the person threatened; breaking it costs the player their word.');
 }
 
-function bondsTab(row) {
-  const I = row.ch?.intel?.end || row.ch?.intel?.start;
-  if (!I) return '<div class="chd-n">This episode was saved without its record.</div>';
-  const P = I.players;
-  const b = (x, y) => I.bonds[x <= y ? `${x}||${y}` : `${y}||${x}`] || 0;
-  const short = n => esc(String(n).split(' ')[0].slice(0, 6));
-  return `<div class="chd-scroll"><table class="chd-t chd-m"><thead><tr><th></th>${P.map(n => `<th title="${esc(n)}">${short(n)}</th>`).join('')}</tr></thead><tbody>`
-    + P.map(x => `<tr><th>${esc(x)}</th>${P.map(y => (x === y ? '<td class="chd-self"></td>' : `<td style="background:${bondCol(b(x, y))}" title="${esc(x)} – ${esc(y)}: ${b(x, y)}">${b(x, y).toFixed(1)}</td>`)).join('')}</tr>`).join('')
-    + '</tbody></table></div><div class="chd-n">As the episode ended. Green close, blue friends, brown tension, red enemies.</div>';
+function plansTab(row, K) {
+  const I = intelOf(row);
+  if (!I?.plans) return K.dbgEmpty('This episode was saved without its plans.');
+  const STYLE = { architect: C.purple, structured: C.blue, reactive: C.grey };
+  return K.dbgPanel('WHAT EACH OF THEM IS TRYING TO DO', 'blue', I.players.map(n => {
+    const p = I.plans[n];
+    if (!p) return K.dbgPortraitRow(n, cell('no plan', C.dim));
+    return K.dbgPortraitRow(n, `<div style="min-width:80px;text-align:right">${pill(esc(p.style).toUpperCase(), STYLE[p.style] || C.grey)}</div>`)
+      + K.dbgNote([p.targets.length && `<span style="color:${C.red}">targets</span> ${p.targets.map(([t, why]) => `<b style="color:${C.text}">${esc(t)}</b>${why ? ` <i>(${esc(why)})</i>` : ''}`).join(', ')}`,
+        p.core.length && `<span style="color:${C.green}">trusts</span> ${names(p.core)}`,
+        p.shield && `<span style="color:${C.blue}">shield</span> ${names([p.shield])}`,
+        p.revenge.length && `<span style="color:${C.amber}">revenge</span> ${names(p.revenge)}`,
+        p.finalWith.length && `<span style="color:${C.purple}">final with</span> ${names(p.finalWith)}`].filter(Boolean).join(' · ') || 'nothing yet');
+  }).join(''));
 }
 
-function alliesTab(row) {
-  const I = row.ch?.intel?.end || row.ch?.intel?.start;
-  if (!I) return '<div class="chd-n">This episode was saved without its record.</div>';
-  let h = '<h4>Alliances</h4>' + (I.alliances.length ? table(['Name', 'Leader', 'Members'], I.alliances.map(a => [esc(a.name), esc(a.leader), esc(a.members.join(', '))])) : '<div class="chd-n">None.</div>');
-  if (I.gone?.length) h += `<div class="chd-n">Broken up: ${esc(I.gone.join(', '))}</div>`;
-  h += '<h4>Deals</h4>' + (I.deals.length ? table(['Between', 'Kind'], I.deals.map(d => [esc(`${d.a} & ${d.b}`), esc(d.tier)])) : '<div class="chd-n">None standing.</div>');
-  if (I.broken?.length) h += `<div class="chd-n">Broken: ${esc(I.broken.map(d => `${d.a} & ${d.b}`).join(', '))}</div>`;
-  h += '<h4>Couples</h4>' + (I.couples.length ? `<div class="chd-n">${esc(I.couples.map(c => c.join(' & ')).join(' · '))}</div>` : '<div class="chd-n">None.</div>');
+function mindsTab(row, K) {
+  const I = intelOf(row);
+  if (!I?.mind) return K.dbgEmpty('This episode was saved without its minds.');
+  const M = [['energy', C.green], ['confidence', C.blue], ['paranoia', C.red], ['morale', C.gold], ['homesick', C.purple]];
+  const head = `<div style="display:flex;gap:8px;padding:2px 8px 6px 34px;font-size:9px;font-weight:800;letter-spacing:1px;color:${C.grey}"><div style="flex:1"></div>${M.map(([k, col]) => `<div style="min-width:84px;color:${col}">${k.toUpperCase()}</div>`).join('')}<div style="min-width:80px;text-align:right">NEED</div></div>`;
+  return K.dbgPanel('HOW THEY FEEL, AS THE EPISODE ENDED', 'green', head + I.players.map(n => {
+    const m = I.mind[n] || {};
+    return K.dbgPortraitRow(n, M.map(([k, col]) => meter(m[k] ?? 0, col)).join('') + `<div style="min-width:80px;text-align:right">${I.psyche?.[n] ? pill(esc(I.psyche[n]).toUpperCase(), C.amber) : ''}</div>`);
+  }).join('')) + K.dbgNote('Energy and confidence scale every performance; paranoia, morale and homesickness drive fights, quits and votes.');
+}
+
+function dealsTab(row, K) {
+  const I = intelOf(row);
+  if (!I) return K.dbgEmpty('This episode was saved without its record.');
+  let h = I.alliances.length ? I.alliances.map(a => K.dbgPanel(`ALLIANCE — ${esc(a.name).toUpperCase()}`, 'purple',
+    a.members.map(n => K.dbgPortraitRow(n, n === a.leader ? pill('LEADER', C.gold) : '')).join(''))).join('') : K.dbgPanel('ALLIANCES', 'purple', K.dbgEmpty('None standing.'));
+  if (I.gone?.length) h += K.dbgNote(`Broken up: ${esc(I.gone.join(', '))}`);
+  h += K.dbgPanel('DEALS', 'amber', I.deals.length ? I.deals.map(d => K.dbgPortraitRow(d.a, cell(`&amp; <b style="color:${C.text}">${esc(d.b)}</b>`) + `<div style="min-width:80px;text-align:right">${pill(esc(d.tier).toUpperCase(), d.tier === 'spare' ? C.purple : C.amber)}</div>`)).join('') : K.dbgEmpty('None standing.'));
+  if (I.broken?.length) h += K.dbgNote(`Broken: ${esc(I.broken.map(d => `${d.a} & ${d.b}`).join(', '))}`);
+  h += K.dbgPanel('COUPLES', 'red', I.couples.length ? I.couples.map(([a, b]) => K.dbgPortraitRow(a, cell(`&amp; <b style="color:${C.text}">${esc(b)}</b>`))).join('') : K.dbgEmpty('None.'));
   return h;
 }
 
-function directorTab(row) {
+function bondsTab(row, K) {
+  const I = intelOf(row);
+  if (!I) return K.dbgEmpty('This episode was saved without its record.');
+  const P = I.players;
+  const b = (x, y) => I.bonds[x <= y ? `${x}||${y}` : `${y}||${x}`] || 0;
+  const col = v => (v >= 6 ? 'rgba(63,185,80,.55)' : v >= 3 ? 'rgba(87,166,232,.4)' : v > -2 ? 'rgba(255,255,255,.03)' : v > -5 ? 'rgba(210,153,34,.4)' : 'rgba(244,112,103,.55)');
+  const short = n => esc(String(n).split(' ')[0].slice(0, 5));
+  const grid = `<div style="overflow:auto;max-height:70vh"><table style="border-collapse:collapse;font-size:9px;color:${C.grey}"><tr><th></th>${P.map(n => `<th title="${esc(n)}" style="padding:2px;writing-mode:vertical-rl;transform:rotate(180deg);color:${C.text}">${short(n)}</th>`).join('')}</tr>`
+    + P.map(x => `<tr><th style="text-align:right;padding:2px 6px;color:${C.text};white-space:nowrap">${esc(x)}</th>${P.map(y => (x === y ? '<td style="background:#0d1117"></td>' : `<td title="${esc(x)} – ${esc(y)}: ${b(x, y)}" style="background:${col(b(x, y))};text-align:center;min-width:24px;padding:2px;color:${C.text}">${b(x, y) ? b(x, y).toFixed(0) : ''}</td>`)).join('')}</tr>`).join('')
+    + '</table></div>';
+  return K.dbgPanel('BONDS AS THE EPISODE ENDED', 'blue', grid + K.dbgNote('Green close, blue friends, amber tension, red enemies. Hover a square for the exact number.'));
+}
+
+function statsTab(row, K) {
+  const I = intelOf(row);
+  const list = I?.players || row.ch?.house || [];
+  const R = n => I?.rec?.[n] || {};
+  return K.dbgPanel('PLAYER STATS', 'grey', K.dbgStatTable(list, [
+    { label: 'ARCH', value: n => esc(archOf(n)), small: true },
+    { label: 'DAILY', value: n => R(n).daily ?? '–', colour: C.gold },
+    { label: 'ARENA', value: n => `${R(n).arenaW ?? 0}-${R(n).arenaL ?? 0}`, colour: C.green, bold: true },
+    { label: 'IN', value: n => R(n).votedIn ?? '–', colour: C.amber },
+    { label: 'VOTES', value: n => R(n).votes ?? '–', colour: C.red },
+  ], n => { try { return pStats(n) || {}; } catch { return {}; } }));
+}
+
+function directorTab(row, K) {
   const aired = row.ch?.aired || [];
-  return table(['#', 'Day', 'Kind', 'Who', 'Where', 'Lines'], aired.map((a, i) => [String(i + 1), String(a.day ?? ''), esc(a.kind), esc((a.who || []).slice(0, 5).join(', ')), esc(a.spot || ''), String((a.lines || []).length)]))
-    + `<div class="chd-n">${aired.length} scenes aired, ${aired.reduce((n, a) => n + (a.lines || []).length, 0)} lines.</div>`;
+  const byDay = {};
+  for (const a of aired) (byDay[a.day ?? '?'] ||= []).push(a);
+  return Object.entries(byDay).map(([day, list]) => K.dbgPanel(`DAY ${esc(day)} — ${list.length} SCENES`, 'grey',
+    list.map(a => K.dbgRow(`${esc(a.kind)} <span style="color:#4d545c">${esc(a.spot || '')}</span>`, `${esc((a.who || []).slice(0, 5).join(', '))} <span style="color:${C.dim}">· ${(a.lines || []).length} lines</span>`)).join(''))).join('')
+    + K.dbgNote(`${aired.length} scenes aired, ${aired.reduce((n, a) => n + (a.lines || []).length, 0)} lines.`);
 }
 
-const BUILD = { episode: episodeTab, votes: votesTab, players: playersTab, bonds: bondsTab, allies: alliesTab, director: directorTab };
+const BUILD = { episode: episodeTab, threats: threatsTab, votes: votesTab, moves: movesTab, plans: plansTab, minds: mindsTab, deals: dealsTab, bonds: bondsTab, stats: statsTab, director: directorTab };
 
-/** The Debug screen's HTML for an episode row (every tab built; the buttons show one). */
-export function chDebugHtml(row) {
-  const on = BUILD[tabNow()] ? tabNow() : 'episode';
-  return `<style>${CSS}</style><div class="chd" data-ep="${esc(row.num)}">
-    <div class="chd-head"><b>Debug</b><span>Episode ${esc(row.num)} · what the engine decided, and why</span></div>
-    <div class="chd-tabs">${TABS.map(([k, l]) => `<button type="button" class="${k === on ? 'on' : ''}" onclick="chxDebugTab(this,'${k}')">${esc(l)}</button>`).join('')}</div>
-    ${TABS.map(([k]) => `<div class="chd-pane" data-pane="${k}" style="${k === on ? '' : 'display:none'}">${(() => { try { return BUILD[k](row); } catch (e) { return `<div class="chd-n">Could not build: ${esc(e.message)}</div>`; } })()}</div>`).join('')}
-  </div>`;
+/** The Debug screen for an episode row, in Total Drama's chrome (`kit` = vp-screens.js's debug furniture). */
+export function chDebugHtml(row, kit) {
+  const tab = BUILD[tabNow()] ? tabNow() : 'episode';
+  let body;
+  try { body = BUILD[tab](row, kit); } catch (e) { body = kit.dbgEmpty(`Could not build this tab: ${esc(e.message)}`); }
+  return kit.dbgShell({ epNum: row.num, allEps: kit.allEps || [], screenId: 'ch-debug', storageKey: KEY, activeTab: tab,
+    unit: 'Ep', eyebrow: `Episode ${row.num}`, tabs: TABS, body });
 }
-export function chxDebugTab(btn, k) {
-  try { localStorage.setItem('ch_debug_tab', k); } catch { /* per viewer */ }
-  const root = btn.closest('.chd'); if (!root) return;
-  root.querySelectorAll('.chd-tabs button').forEach(b => b.classList.toggle('on', b === btn));
-  root.querySelectorAll('.chd-pane').forEach(p => { p.style.display = p.dataset.pane === k ? '' : 'none'; });
-}
-if (typeof window !== 'undefined') window.chxDebugTab = chxDebugTab;
-
-const CSS = `
-.chd{background:#0f0d0c;color:#f2ece6;font:600 14px/1.4 'Barlow Condensed',system-ui,sans-serif;padding:14px;border:1px solid #34302c}
-.chd-head{display:flex;gap:12px;align-items:baseline;margin-bottom:10px}.chd-head b{font:400 22px 'Anton';color:#ff6a1a;letter-spacing:.04em;text-transform:uppercase}
-.chd-head span{color:#9c9188}
-.chd-tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
-.chd-tabs button{border:1px solid #34302c;background:#1a1716;color:#9c9188;padding:6px 12px;font:700 13px 'Barlow Condensed';letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
-.chd-tabs button.on{background:#ff6a1a;color:#140c08;border-color:#ff6a1a}
-.chd h4{font:400 16px 'Anton';letter-spacing:.04em;text-transform:uppercase;color:#ffd21a;margin:14px 0 6px}.chd h4 small{color:#9c9188;font:600 12px 'Barlow Condensed'}
-.chd-t{border-collapse:collapse;width:100%;font-size:13px}.chd-t th,.chd-t td{border:1px solid #2a2622;padding:3px 6px;text-align:left;vertical-align:top}
-.chd-t th{background:#1a1716;color:#9c9188;font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.06em}
-.chd-m td{text-align:center;font-size:11px;color:#fff;min-width:30px}.chd-m th{font-size:10px}.chd-self{background:#111}
-.chd-scroll{overflow:auto;max-height:70vh}
-.chd-n{color:#b7ab9f;font-size:13px;margin:6px 0}
-.chd-w{color:#7fe07f}.chd-l{color:#ff7a6e}.chd-m{color:#ffc94a}
-.chd-duel{margin:6px 0 2px}
-`;

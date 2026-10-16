@@ -362,7 +362,16 @@ export function chStepScreens(row, ctx = {}) {
     open: { cast: house.slice(0, 20), season: ctx.season || null, title: ctx.title || 'Blue Lagoon' } });
   let dailyDone = false;
 
-  for (const c of chunks) {
+  // A villa screen says WHEN it is (the user, 2026-10-15: the screen list read thin, five screens all
+  // called "The villa"): before the daily, before the vote, the night after it, between two duels, after.
+  const villaLabel = ci => {
+    const before = chunks.slice(0, ci).map(x => x.key), after = chunks.slice(ci + 1).map(x => x.key);
+    if (!before.includes('daily')) return before.includes('arrival') ? 'Settling in' : 'Morning at the villa';
+    if (!before.includes('vote')) return after.includes('vote') ? 'Before the vote' : 'At the villa';
+    if (!before.includes('arena')) return after.includes('vote') ? 'Between the votes' : 'After the vote';
+    return after.includes('arena') ? 'Between the duels' : 'After the Arena';
+  };
+  for (const [ci, c] of chunks.entries()) {
     const items = c.items.map(i => ({ a: aired[i], i, title: titles[i]?.title || '' }));
     if (c.key === 'open') {
       const lines = items.flatMap(x => x.a.lines || []);
@@ -384,7 +393,7 @@ export function chStepScreens(row, ctx = {}) {
     if (c.key === 'arena') { buildArena(S, open, items, row, { names, house, goneAt }); continue; }
     if (['final-start', 'instant', 'overnight', 'final-day2', 'champions'].includes(c.key)) { buildFinal(S, open, c.key, items, row, { names, house, goneAt }); continue; }
     // villa, party, eve: scene after scene on their plates, the villa opening on its map
-    open(c.key);
+    open(c.key, c.key === 'villa' ? villaLabel(ci) : null);
     if (items.filter(x => chapterOf(x.a) !== 'party').length >= 2) villaMap(S, items.filter(x => chapterOf(x.a) !== 'party'));
     let partied = false;
     for (const it of items) {
@@ -640,7 +649,7 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
 
 // ── the vote ──────────────────────────────────────────────────────────
 function buildVote(S, open, items, row, { names, house, goneAt }) {
-  open('vote');
+  open('vote', !items.some(x => x.a.kind === 'ceremony') && items.some(x => x.a.kind === 'volunteer') ? 'A volunteer' : null);
   const at = items.find(x => x.a.kind === 'ceremony') || items[0];
   S.at(at.i);
   const here = house.filter(n => !goneAt[at.i]?.has(n));

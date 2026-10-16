@@ -14166,7 +14166,7 @@ function _buildVPScreensClassic(epRecord) {
       try {
         const _g = _coreGs || (typeof window !== 'undefined' ? window.gs : null);
         vpScreens = chStepVpScreens(epRecord, { history: _g?.episodeHistory || [], season: seasonConfig?.seasonNumber || null });
-        vpScreens.push({ id: 'ch-debug', label: 'Debug', html: chDebugHtml(epRecord) });
+        vpScreens.push({ id: 'ch-debug', label: 'Debug', html: chDebugHtml(epRecord, { dbgShell, dbgPanel, dbgHead, dbgRow, dbgPortraitRow, dbgNote, dbgEmpty, dbgStatTable, allEps: _g?.episodeHistory || [] }) });
         return vpScreens;
       } catch (err) { console.warn('Challenge stepped viewer fell back to the readout:', err); }
     }

@@ -231,7 +231,8 @@ function dailyOf(d) {
   const order = [...(d.units || [])].sort((a, b) => unit(b) - unit(a)).map(u => [...u]);
   return { id: d.id, name: d.name, mode: d.mode, order, winners: [...(d.winners || [])], last: [...(d.last || [])],
     throws: (d.throws || []).map(t => t.name || t), caught: (d.caught || []).map(c => ({ thrower: c.thrower, by: c.by })),
-    moments: (d.moments || []).map(m => ({ kind: m.kind, who: m.who })), injuries: [...(d.injuries || [])] };
+    moments: (d.moments || []).map(m => ({ kind: m.kind, who: m.who })), injuries: [...(d.injuries || [])],
+    scores: Object.fromEntries(Object.entries(sc).map(([k, v]) => [k, Math.round(v * 100) / 100])) };
 }
 // An Arena game (or a final's instant elimination) as it was played.
 const duelOf = d => ({ game: d.game, name: d.gameName || d.game, kind: d.kind || null, a: d.a, b: d.b, winner: d.winner, loser: d.loser,
@@ -267,7 +268,7 @@ export function challengeRows(result) {
       ch: {
         division: e.division || null, people: peopleAfter(e.ep),
         dailyWinners: [...(e.daily?.winners || [])], votedIn: [...(e.votedIn || [])],
-        callouts: (e.callouts || []).map(c => ({ by: c.by, opponent: c.opponent, reason: c.reason })),
+        callouts: (e.callouts || []).map(c => ({ by: c.by, opponent: c.opponent, reason: c.reason, promise: c.promise || null, promisedAt: c.promisedAt || null, ranked: c.ranked || null })),
         arena: (e.arena || []).map(d => ({ winner: d.winner, loser: d.loser, game: d.gameName || d.game || null })),
         aired: airedOf(e),
         // What the stepped viewer stages (js/vp-ch-ep): the house at the start, the daily as it was
@@ -280,6 +281,10 @@ export function challengeRows(result) {
         ties: e.ties || {},
         intel: e.intel || null,
         meetings: (e.delib?.meetings || []).map(m => ({ name: m.name || null, organiser: m.organiser, target: m.target, responses: { ...(m.responses || {}) } })),
+        // the room worked before the vote (vote.js campaign), the recruiting, and a volunteer
+        campaigns: (e.delib?.campaigns || []).map(c => ({ ...c })),
+        pitches: (e.delib?.pitches || []).map(p => ({ by: p.by, to: p.to, target: p.target, answer: p.answer })),
+        volunteer: e.delib?.volunteer || null,
         // who they are, for the arrival's name plates: their show and whether they're a rookie
         ...(e.ep === 1 ? { castInfo: Object.fromEntries(cast.map(n => [n, introOf(n, state, cast)])) } : {}),
       },

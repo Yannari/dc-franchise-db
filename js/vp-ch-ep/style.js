@@ -53,6 +53,7 @@ const CHX_CSS = `
 .chx .chx-live,.chx .chx-cast,.chx .chx-wfx{position:absolute;inset:0;pointer-events:none}
 .chx .chx-cast{z-index:3}.chx .chx-wfx{z-index:5}
 .chx .chx-props{position:absolute;inset:0;pointer-events:none;z-index:2}
+.chx .chx-props.chx-fore{z-index:4}
 .chx .prop{position:absolute;transform:translate(-50%,-100%);transition:left .9s,top .9s}
 .chx .prop svg{width:100%;height:auto;display:block;overflow:visible;filter:drop-shadow(0 .4cqh .5cqh rgba(0,0,0,.45))}
 .chx .prop.bob svg,.chx .prop.bob img{animation:chxBuoy 2.4s ease-in-out infinite alternate}
@@ -65,6 +66,9 @@ const CHX_CSS = `
 .chx .tok.mud .face::after{content:"";position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(180deg,rgba(150,100,55,.75),rgba(92,58,28,.95));border-top:.25cqw solid rgba(70,42,20,.9)}
 .chx .tok.mud .body{animation:chxStrain .3s linear infinite}
 .chx .tok.mud .tag{display:none}
+.chx .tok.ice .face::after{content:"";position:absolute;left:0;right:0;bottom:0;height:44%;background:linear-gradient(180deg,rgba(220,245,255,.7),rgba(120,190,230,.92));border-top:.25cqw solid rgba(255,255,255,.95)}
+.chx .tok.ice .body{animation:chxStrain .22s linear infinite}
+.chx .tok.ice .tag{display:none}
 .chx .tok.swim .tag{display:none}
 .chx .tok.climb .body{animation:chxClimb .7s ease-in-out infinite alternate}
 @keyframes chxClimb{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-8%) rotate(4deg)}}

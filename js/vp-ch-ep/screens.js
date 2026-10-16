@@ -38,7 +38,7 @@ function shell(key, si, s, row, week, ctx) {
     <button type="button" class="chx-ibtn" onclick="chxTv()">TV</button>
     <button type="button" class="chx-ibtn" onclick="chxSwitchViewer('classic')" title="The readout: every line of the episode, one screen per moment">Readout view</button></div>
   <div class="chx-frame" onclick="chxFrame(this)">
-    <div class="chx-world"><div class="chx-drift"><div class="chx-platebox"></div><div class="chx-live"></div><div class="chx-props"></div><div class="chx-cast"></div><div class="chx-wfx"></div></div></div>
+    <div class="chx-world"><div class="chx-drift"><div class="chx-platebox"></div><div class="chx-live"></div><div class="chx-props"></div><div class="chx-cast"></div><div class="chx-props chx-fore"></div><div class="chx-wfx"></div></div></div>
     <div class="chx-hud"></div><div class="chx-confbox"></div>
     <div class="dlg"><div class="panel"></div><div class="cutin"></div><div class="name"></div><div class="say"></div><div class="next"></div></div>
     <div class="over"></div><div class="intel"></div><div class="isle"></div><div class="static"></div>

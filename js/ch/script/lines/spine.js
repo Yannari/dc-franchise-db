@@ -210,6 +210,33 @@ export default {
       { by: 'b', say: "Okay. I hear you. I just hope it doesn't come back to bite us." },
       { by: 'a', conf: "{b} is starting to question everything. I need {b.obj} to stay with us, because if one person starts voting on their own, the whole group falls apart." },
     ] },
+    { id: 'mt.p4', turns: [
+      { by: 'a', say: "Everybody okay with {target}?" },
+      { by: 'b', say: "Okay is a strong word." },
+      { by: 'a', say: "Then give me a better one." },
+      { by: 'b', say: "I don't have a better name. I have a bad feeling about this one." },
+      { by: 'c', opt: 1, say: "Feelings don't win votes." },
+      { by: 'b', say: "No, but they've kept me alive in here so far." },
+      { by: 'a', say: "Then trust me this one time." },
+      { by: 'b', conf: "I'm going along with it. If it goes wrong, everybody in that room is going to hear about it from me." },
+    ] },
+    { id: 'mt.p5', turns: [
+      { by: 'b', say: "Can I say something before we lock it in?" },
+      { by: 'a', say: "Go ahead." },
+      { by: 'b', say: "Every week it's somebody you pick. I'm not saying it's wrong. I'm saying I notice." },
+      { by: 'a', say: "Somebody has to pick. You want to do it?" },
+      { by: 'b', say: "Maybe next week I will." },
+      { by: 'a', say: "Fine. This week it's {target}." },
+      { by: 'a', conf: "{b} wants a turn running things. That's how alliances start falling apart." },
+    ] },
+    { id: 'mt.p6', turns: [
+      { by: 'a', say: "{target}. Are we good?" },
+      { by: 'b', say: "We're good. I'm just not happy about it." },
+      { by: 'a', say: "Nobody's happy. That's not the point." },
+      { by: 'b', say: "I know what the point is. I'm allowed to not like it." },
+      { by: 'a', say: "You are. Just vote the way we said." },
+      { by: 'b', conf: "I'll do it. But I'm keeping count of every vote I didn't want to make." },
+    ] },
   ],
   'meeting.refusal': [
     { id: 'mt.r1', turns: [

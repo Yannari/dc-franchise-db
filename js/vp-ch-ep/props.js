@@ -62,6 +62,8 @@ export const SPRITES = {
   'sign-blank': 4, smoke: 5, splash: 8, 'tank-empty': 4.4, 'tank-full': 4.4, tiles: 7, token: 1.4,
   // one per player, cut out of the user's own plates (tools/ch-art/cutout.py): Pole Truth's post, the gorge's platform
   post: 1.45, 'post-short': 2, platform: 15,
+  // the G sets' objects (art jobs G02-G13), one per player
+  coffin: 12, buzzer: 2.6, dome: 4.4, cup: 2, stool: 4, crate: 8, easel: 5, bell: 3, cage: 36, log: 45, car: 16, 'ice-tub': 12,
 };
 const sprite = (file, p, w, cls = '', turn = 0) => ({ file, p, w: w || SPRITES[file], cls, turn });
 const sides = [.4, .6];
@@ -77,7 +79,8 @@ function spritesOf(p) {
     case 'puzzle': return [sprite('puzzle-frame', p, p.w || SPRITES['puzzle-frame'], p.locked ? 'pop-in' : '')];
     case 'pit': return p.pieces ? [sprite('puzzle-pieces', p)] : p.mud ? [sprite('mud-splash', { ...p, v: p.v + .02 }, 9)] : [];
     case 'pole': return [sprite('pole', p, 16, '', p.tilt || 0)];
-    case 'post': case 'post-short': case 'platform': return [sprite(p.k, p, p.w)];
+    case 'post': case 'post-short': case 'platform': case 'coffin': case 'buzzer': case 'dome': case 'cup': case 'stool': case 'crate': case 'easel':
+    case 'bell': case 'cage': case 'log': case 'car': case 'ice-tub': return [sprite(p.k, p, p.w)];
     case 'ballring': return [sprite('ball', { ...p, u: p.u + (p.ball || 0) * .4 }, 3.2)];
     case 'lockbox': return [sprite('lockbox', p), ...(p.smoke ? [sprite('smoke', { ...p, v: p.v - .07 }, 6, 'pop-in')] : [])];
     case 'crates': return (p.smashed || []).flatMap((n, k) => (n > 0 ? [sprite('crates-fallen', { ...p, u: sides[k], v: p.v + .14 }, 6, 'fallen')] : []));

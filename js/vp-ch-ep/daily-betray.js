@@ -35,51 +35,56 @@ const RK = {
     "Push, pull, shove. Last one on the raft wins. Try not to drown anybody, my insurance won't cover it."],
   pushed: ['{a} gets low and shoves {b} straight off the edge.', '{a} grabs {b} by the arm and pulls. {b} goes over.', '{b} loses {pos} footing as {a} barges in.',
     "{a} catches {b} off balance. Into the water {b} goes.", '{a} and {b} wrestle at the edge until {b} goes in.', '{b} gets shoved off by {a} and comes up spitting water.'],
-  gang: ['{a} and {m} go after {b} together. {b} has no chance.', '{a} and {m} team up on {b} and push {b} off.'],
+  gang: ['{a} and {m} go after {b} together. {b} has no chance.', '{a} and {m} team up on {b} and push {b} off.', '{m} holds {b} while {a} shoves. Splash.',
+    '{b} gets caught between {a} and {m}, and in {b} goes.', 'Two against one: {a} and {m} send {b} into the water.'],
   shove: ['{a} tries to push {b} and nearly falls in instead.', '{a} and {b} lock arms. Neither of them moves.', '{b} holds firm against {a}.'],
-  betray: ['It comes down to two allies. {a} looks at {b}, and then pushes.', '{a} and {b} were on the same side all game. Not any more. {a} shoves.'],
+  betray: ['Only allies left on the raft now. {a} looks at {b}, and then pushes.', '{a} and {b} were on the same side all game. Not any more. {a} shoves.', "{a} doesn't wait for {b} to make the first move. {a} shoves."],
   win: ['{w} is the last one on the raft!', '{w} wins King of the Raft!'],
   heat: ['{w} is the last one on the raft and goes through!'],
 };
-export function raftSteps(d, ctx) {
+// cfg: the set it is played on (King of the Raft by default; Road Kill passes the flatbed and its nets)
+export function raftSteps(d, ctx, cfg = {}) {
+  const C = { plate: 'poles', group: 'raft', slots: 12, fallen: null, close: 'raft-close', seg: 'King of the Raft', lines: RK, ...cfg };
+  const L = C.lines;
   const out = [];
   let on = [], sand = 0, pending = {}, shoves = 0, close = false, label = '';
   const where = {};
-  const wide = () => ctx.scene('poles', false, Object.fromEntries(on.map(n => [n, where[n]])));
+  const wide = () => ctx.scene(C.plate, false, Object.fromEntries(on.map(n => [n, where[n]])));
   const flush = s => { if (Object.keys(pending).length) { s.move = { ...(s.move || {}), ...pending }; pending = {}; } return s; };
   // the shove up close, on the raft (art job H09); the next step goes back to the wide shot
-  const closeUp = (who, s) => { out.push({ ...s, scene: { ...ctx.scene('raft-close', false, { TJ: null, ...Object.fromEntries(who.map((n, j) => [n, ['stand', j * 2 % 6, 'raft']])) }), close: 1 } }); close = true; };
+  const closeUp = (who, s) => { if (!C.close) { push(s); return; } out.push({ ...s, scene: { ...ctx.scene(C.close, false, { TJ: null, ...Object.fromEntries(who.map((n, j) => [n, ['stand', j * 2 % 6, 'raft']])) }), close: 1 } }); close = true; };
   const push = s => { if (close && !s.scene && !s.conf) { s.scene = wide(); close = false; } out.push(flush(s)); };
   const safe = [];
   for (const [i, b] of (d.beats || []).entries()) {
     const key = `rk${i}`;
     if (b.kind === 'raft-start') {
       on = b.who; sand = 0; shoves = 0; close = false;
-      for (const [j, n] of on.entries()) where[n] = ['stand', j % 12, 'raft'];
-      push({ scene: wide(), seg: [b.data.label, 'King of the Raft'], stand: 'start', still: on, focus: [] });
-      push(tj(line(ctx, RK.tj, {}, key)));
-      push({ dir: line(ctx, RK.start, { who: nameList(on) }, key + 's'), focus: on.slice(0, 4) });
+      for (const [j, n] of on.entries()) where[n] = ['stand', j % C.slots, C.group];
+      push({ scene: wide(), seg: [b.data.label, C.seg], stand: 'start', still: on, focus: [] });
+      push(tj(line(ctx, L.tj, {}, key)));
+      push({ dir: line(ctx, L.start, { who: nameList(on) }, key + 's'), focus: on.slice(0, 4) });
       continue;
     }
     if (b.kind === 'pushed') {
       const n = b.who[0], by = b.data.by;
       const pos = ctx.V.pron?.[n]?.posAdj || 'their';
-      const text = b.data.betray ? line(ctx, RK.betray, { a: by, b: n }, key) : b.data.mate ? line(ctx, RK.gang, { a: by, m: b.data.mate, b: n }, key) : line(ctx, RK.pushed, { a: by, b: n, pos }, key);
+      const text = b.data.betray ? line(ctx, L.betray, { a: by, b: n }, key) : b.data.mate ? line(ctx, L.gang, { a: by, m: b.data.mate, b: n }, key) : line(ctx, L.pushed, { a: by, b: n, pos }, key);
       closeUp([by, n, ...(b.data.mate ? [b.data.mate] : [])], { dir: text, drop: [n], splash: 1, focus: [by, n], act: { [by]: 'shout' }, shake: b.data.betray ? 1 : 0 });
-      where[n] = ['stand', sand++ % 8];
+      where[n] = C.fallen ? ['stand', sand++ % 4, C.fallen] : ['stand', sand++ % 8];
+      if (!C.close) pending[n] = where[n];
       if (b.data.betray) { const h = voice(ctx, HURT, n, { a: by }, key + 'h'); if (h) push(conf(n, h)); const dd = voice(ctx, DID, by, {}, key + 'd'); if (dd) push(conf(by, dd)); }
       continue;
     }
     if (b.kind === 'shove') {
       if (++shoves > 3 && !b.data.betray) continue;
-      closeUp(b.who, { dir: line(ctx, RK.shove, { a: b.who[0], b: b.who[1] }, key), focus: b.who, act: { [b.who[0]]: 'lean', [b.who[1]]: 'strain' } });
+      closeUp(b.who, { dir: line(ctx, L.shove, { a: b.who[0], b: b.who[1] }, key), focus: b.who, act: { [b.who[0]]: 'lean', [b.who[1]]: 'strain' } });
       continue;
     }
     if (b.kind === 'raft-win') {
       const w = b.who[0];
       const final = !/heat \d/i.test(b.data.label);
       if (final) safe.push(w);
-      push(tj(line(ctx, final ? RK.win : RK.heat, { w }, key), { focus: ['TJ', w], act: { [w]: 'cheer' }, ...(final ? { power: [...safe] } : {}) }));
+      push(tj(line(ctx, final ? L.win : L.heat, { w }, key), { focus: ['TJ', w], act: { [w]: 'cheer' }, ...(final ? { power: [...safe] } : {}) }));
     }
   }
   return out;
@@ -139,7 +144,7 @@ export function cutRopeSteps(d, ctx) {
 // ── Double Cross ──────────────────────────────────────────────────────
 const DC = {
   board: ["{a} and {b}, you've got the most tokens. Now the fun part. Each of you gets two cards: share, or steal. Pick one, face down.",
-    "Congratulations, {a} and {b}! You won the swim. Now let's find out if you trust each other."],
+    "Congratulations, {a} and {b}! Best total on the board. Now let's find out if you trust each other."],
   rules: ["If you both share, you're both safe. If one of you steals, only the thief is safe. If you both steal, nobody is."],
   think: [V("We share. Right? We share.", { soft: ["Please share. I'm sharing. I promise I'm sharing."] }), V("I'm sharing. You should too.")],
   thinkB: [V("Yeah. Share. Of course."), V("Obviously. We're a team.")],

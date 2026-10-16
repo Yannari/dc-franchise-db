@@ -36,6 +36,15 @@ export const COURSE_VIEW = {
   'gauntlet-run': { scale: .9, start: [.2, .78], at: p => along([[.2, .78], [.3, .76], [.45, .72], [.55, .69], [.62, .7], [.68, .67]], Math.min(1, p)), pose: p => (p < 1 ? 'run' : null) },
   // inside the maze nobody can be seen; they come out at the exit
   'jungle-maze': { scale: 1, start: [.49, .69], hidden: true, exit: [.55, .76] },
+  // the G sets: from the dock, car to car under the cranes (G08)
+  'car-jump': { scale: .9, start: [.1875, .522], at: p => along([[.1875, .522], [.394, .472], [.569, .472], [.756, .472], [.95, .472]], Math.min(1, p)), pose: () => null,
+    props: () => [.394, .569, .756, .95].map(u => ({ k: 'car', u, v: .538, w: 16 })) },
+  // a lane of cage each, from the beach to the bell (G05)
+  'locked-in': { scale: 1, lanes: 4, start: [.15, .62], at: (p, lane) => [(240 + 1000 * p) / 1600, [560, 630, 700, 770][lane % 4] / 900], pose: p => (p < .95 ? 'swim' : null),
+    props: () => [0, 1, 2, 3].flatMap(l => [{ k: 'cage', u: 740 / 1600, v: ([560, 630, 700, 770][l] + 12) / 900, w: [30, 33, 36, 39][l] }, { k: 'bell', u: 1290 / 1600, v: ([560, 630, 700, 770][l] + 6) / 900, w: 2.6 + l * .2 }]) },
+  // a crate each, and the easel for the puzzle (G04)
+  'the-box': { scale: 2.4, start: [.075, .6], at: (p, lane) => [([190, 430, 670, 910, 1150, 1390][lane % 6] - 80) / 1600, .6], pose: () => null,
+    props: () => [190, 430, 670, 910, 1150, 1390].flatMap(x => [{ k: 'easel', u: (x + 50) / 1600, v: .555, w: 4.2 }, { k: 'crate', u: x / 1600, v: .63, w: 7.5 }]) },
 };
 
 const V = (say, v = {}) => ({ say, v });
@@ -67,6 +76,10 @@ const HAZARD = {
   slip: ['{u} slip{s} on the grease and go{es} into the pool, bucket and all.', "{u}'s feet go out from under {obj}. Splash. Back to the start.",
     '{u} wobble{s}, overcorrect{s}, and fall{s} in.', '{u} make{s} it almost all the way across, then slide{s} off the end.',
     '{u} spill{s} half the bucket trying not to fall.', '{u} lose{s} {pos} balance on the first step.'],
+  'missed-jump': ['{u} jump{s} for the next car and miss{es} the door. Into the water.', "{u}'s hands slip off the door frame. Splash. Back to the dock.",
+    '{u} jump{s} short and hit{s} the water flat.', '{u} hesitate{s} on the roof, jump{s} late, and fall{s}.'],
+  stuck: ['{u} get{s} stuck where the cage narrows. Back up, try again.', '{u} come{s} up for air and bang{s} {pos} head on the bars.', '{u} panic{s} for a second in the deep part and lose{s} the line.'],
+  bite: ['{u} yank{s} {pos} hand out of the crate and drop{s} the piece. Something bit.', '{u} scream{s} and pull{s} out empty-handed.', "{u} feel{s} something crawl up {pos} arm and freeze{s}.", '{u} grab{s} a handful of something wet, and it is not a puzzle piece.'],
   obstacle: { tyres: ['{u} catch{es} a foot in a tyre and go{es} down. That is a minute on the clock.', '{u} miss{es} a tyre. A minute added.'],
     mud: ['{u} get{s} stuck in the mud crawl, half under the rope.', "{u}'s shirt catches on the rope over the mud."],
     wall: ['{u} slide{s} back down the wall. And again.', '{u} need{s} three runs at the wall.'],
@@ -168,7 +181,7 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
   // the course on the plate: the units the story follows move along it
   const CV = COURSE_VIEW[id];
   const plateK = ctx.wide?.plate;
-  const runners = units.filter(u => u.some(n => follow.has(n))).slice(0, 6);
+  const runners = units.filter(u => u.some(n => follow.has(n))).slice(0, COURSE_VIEW[id]?.lanes || 6);
   const laneOf = u => Math.max(0, runners.indexOf(u));
   const spot = (u, i, xy) => spotAt(plateK, xy[0] + i * .022, xy[1] + (i ? .01 : 0), CV.scale);
   let snapNow = null, pendingMove = {};
@@ -228,7 +241,7 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
     // on the wide plate, the race moves on the course with this beat
     if (!s.scene?.close && s.race !== undefined) {
       const snap = beats.find((x, j) => x.data?.snap && j >= 0 && x.data.snap && JSON.stringify(board(x.data.snap)) === JSON.stringify(s.race))?.data?.snap || snapNow;
-      if (snap) { snapNow = snap; const cm = courseMove(snap); s.move = { ...(cm.move || {}), ...pendingMove, ...(s.move || {}) }; s.pose = { ...(cm.pose || {}), ...(s.pose || {}) }; pendingMove = {}; const bp = beamProps(snap); if (bp) s.props = bp; }
+      if (snap) { snapNow = snap; const cm = courseMove(snap); s.move = { ...(cm.move || {}), ...pendingMove, ...(s.move || {}) }; s.pose = { ...(cm.pose || {}), ...(s.pose || {}) }; pendingMove = {}; const bp = CV?.props ? CV.props(snap) : beamProps(snap); if (bp) s.props = bp; }
     }
     out.push(s);
   };
@@ -273,6 +286,7 @@ export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = 
       const set = ctx.legacy?.()?.steps?.[0] || {};
       const { dir, tally, tjCall, cut: _c, ...stage } = set;
       const st0 = { ...stage, race, dir: set.dir || 'And they are off.', focus: [] };
+      if (CV?.props) st0.props = CV.props(null);
       if (CV?.hidden) { st0.hide = units.flat(); }
       else if (CV && plateK) { st0.move = { ...(st0.move || {}), ...Object.fromEntries(runners.flatMap(u => u.slice(0, 3).map((n, i) => [n, spot(u, i, CV.start)]))) }; }
       push(st0);

@@ -32,6 +32,13 @@ export const COURSES = {
     hazard: { kind: 'slip', p: 0.08, back: 0.09, k: 'temperament' }, fear: { thing: 'heights', at: 0.05, mild: 0.5 } },
   'gauntlet-run': { len: 26, stages: [[0.2, 'the tyres'], [0.4, 'the mud crawl'], [0.6, 'the wall'], [0.8, 'the sandbags'], [0.97, 'the bell']],
     hazard: { kind: 'obstacle', p: 0.06, back: 0.05, k: 'physical' }, fear: { thing: 'tight spaces', at: 0.4, mild: 0.6 } },
+  // the G sets (art jobs G04, G05, G08)
+  'car-jump': { len: 24, stages: [[0.25, 'the first car'], [0.5, 'the second car'], [0.75, 'the third car'], [0.97, 'the last car']],
+    hazard: { kind: 'missed-jump', p: 0.06, back: 0.22, k: 'boldness' }, fear: { thing: 'heights', at: 0.05, refuse: 0.1 } },
+  'locked-in': { len: 26, stages: [[0.15, 'into the cage'], [0.5, 'halfway through'], [0.95, 'the bell']],
+    hazard: { kind: 'stuck', p: 0.06, back: 0.05, k: 'temperament' }, fear: { thing: 'tight spaces', at: 0.1 } },
+  'the-box': { len: 26, stages: [[0.2, 'the first piece'], [0.5, 'three pieces'], [0.8, 'every piece']],
+    hazard: { kind: 'bite', p: 0.07, back: 0.08, k: 'temperament' }, fear: { thing: 'creepy crawlies', at: 0.05 }, puzzle: { at: 0.9, k: 'mental' } },
 };
 // which obstacle a gauntlet mistake is at, by where they are
 export const gauntletPart = p => (p < 0.4 ? 'tyres' : p < 0.6 ? 'mud' : p < 0.8 ? 'wall' : 'bags');

@@ -27,6 +27,7 @@ import { playInterrogation } from './daily/interrogation.js';
 import { playRace } from './daily/race.js';
 import { playDemolition } from './daily/demolition.js';
 import { playRaftKing, playCutRope, playDoubleCross, playTrustFall, playWhoSaidIt } from './daily/betrayal.js';
+import { playDeepFreeze, playLogRoll, playRoadKill, playMudBrawl, playBuried, playFoodWars } from './daily/more.js';
 
 export const DAILIES = [
   { id: 'cliff-relay', name: 'Cliff Relay', physicality: 1.2, modes: ['pairs', 'teams', 'solo'],
@@ -83,13 +84,45 @@ DAILIES.push(
     blend: { intuition: 0.45, social: 0.35, mental: 0.2 },
     desc: 'The whole house stands on the deck of the beach club while TJ asks questions about the house itself, like who is the biggest snake or who is riding coattails. Everybody answers out loud, one at a time, in front of everybody, and points go to everybody whose answer matches the most common one. Nobody can take an answer back, and everybody named hears who named them. The best man and the best woman on points win.' },
 );
+// The dailies on the user's G sets (2026-10-16): the empty scene and one object per player.
+DAILIES.push(
+  { id: 'deep-freeze', name: 'Deep Freeze', physicality: 0.6, modes: ['solo'], played: true,
+    blend: { endurance: 0.45, temperament: 0.4, physical: 0.15 },
+    desc: 'A steel tub of ice water waits on the sand for every player, and on the horn they climb in and sit down up to the neck. Every few minutes the crew tips in more ice, and in between TJ offers hot cocoa and a warm blanket to anybody who climbs out. Standing up, climbing out or taking the offer ends it for that player. The last man and the last woman still sitting in the ice win.' },
+  { id: 'log-roll', name: 'Rolling in the Deep', physicality: 1, modes: ['solo'], played: true,
+    blend: { endurance: 0.4, physical: 0.35, temperament: 0.25 },
+    desc: 'Five players at a time hang from a long log held between two steel frames over the lagoon. The log starts to turn, then spins faster and faster, and every so often it changes direction without warning. Letting go drops you into the water and out of the heat. The last one still hanging in each heat goes to the final, and the last one hanging there wins.' },
+  { id: 'road-kill', name: 'Road Kill', physicality: 1.2, modes: ['solo'], played: true,
+    blend: { physical: 0.45, boldness: 0.35, temperament: 0.2 },
+    desc: 'A division at a time, players climb onto the back of a flatbed truck while it drives down the track, with a safety net along each side. On the horn they push, pull and shove each other toward the edge. Anybody who goes over the side into a net is out, and allies who team up still have to turn on each other at the end. The last one standing on the truck wins.' },
+  { id: 'mud-brawl', name: 'Mud Brawl', physicality: 1.2, modes: ['solo'], played: true,
+    blend: { physical: 0.45, endurance: 0.3, boldness: 0.25 },
+    desc: 'Two at a time, players climb into the mud pit and wrestle for the flags in its corners, in a bracket drawn out of a hat. A bout is won by the first to bring two flags back to their own side of the pit. Losing a bout knocks you out of the bracket, and a player left over in a round gets a free pass to the next one. The last one standing in the bracket wins.' },
+  { id: 'car-jump', name: 'Car Jump', physicality: 1.1, modes: ['solo'], played: true,
+    blend: { boldness: 0.45, physical: 0.35, temperament: 0.2 },
+    desc: 'Four old cars hang from cranes high over the water, one after another, with their doors open. Players start on the dock and jump from car to car, diving through the open doors, until they reach the last one. A missed jump drops you into the water and sends you swimming back to the dock to start again. The fastest man and the fastest woman to the last car win.' },
+  { id: 'locked-in', name: 'Locked In', physicality: 1, modes: ['solo'], played: true,
+    blend: { endurance: 0.35, temperament: 0.35, physical: 0.3 },
+    desc: 'A long narrow cage tunnel lies half underwater in the shallows for each player, with a bell on a post at the far end. Players crawl and swim through the cage, holding their breath where the water reaches the top. Getting stuck, panicking or turning back costs time, and the tighter it gets the harder it is to stay calm. The first man and the first woman to ring their bell win.' },
+  { id: 'the-box', name: 'The Box', physicality: 0.4, modes: ['solo'], played: true,
+    blend: { temperament: 0.45, mental: 0.3, boldness: 0.25 },
+    desc: 'Every player has a wooden crate with a hole in the front, and the crate is full of bugs, snakes and things nobody can see. They reach in blind and pull out puzzle pieces one at a time, then build the puzzle on the easel behind them. A bite or a scream that drops a piece costs time, and a puzzle built wrong has to be taken apart. The first man and the first woman to finish their puzzle win.' },
+  { id: 'buried', name: 'Buried', physicality: 0.3, modes: ['pairs'], played: true,
+    blend: { intuition: 0.4, social: 0.35, temperament: 0.25 },
+    desc: 'One partner is buried in a coffin in the sand, and before going in they answer questions about the people in the house. The other partner stands at a buzzer over the coffin and has to guess how their partner answered, with everybody listening. A wrong guess scores nothing, and a buried partner who panics and knocks on the lid is out. The pair with the most right guesses wins, and everybody hears every answer.' },
+  { id: 'food-wars', name: 'Food Wars', physicality: 0.3, modes: ['solo'], played: true,
+    blend: { mental: 0.35, temperament: 0.35, intuition: 0.3 },
+    desc: 'Everybody sits at the banquet table on the beach while TJ reads out quick questions. The first to buzz in with the right answer chooses somebody at the table to eat the next dish under the dome. Refusing the plate means leaving the table, and the dishes get worse every round. The last one still sitting at the table wins.' },
+);
 for (const id of ['hang-on', 'cliff-relay', 'reef-dash', 'truck-tug', 'jungle-maze', 'night-swim', 'balance-beam', 'gauntlet-run', 'demolition']) { const d = DAILIES.find(x => x.id === id); if (d) d.played = true; }
 
 // The played dailies (ch/daily/): each one runs as beats, and the result comes out of the beats.
 const race = id => (state, rng, a) => playRace(state, rng, { ...a, id });
 const SIMS = { 'pole-truth': playPoleTruth, 'hang-on': playHangOn, 'lagoon-quiz': playInterrogation, demolition: playDemolition,
   ...Object.fromEntries(['cliff-relay', 'reef-dash', 'truck-tug', 'jungle-maze', 'night-swim', 'balance-beam', 'gauntlet-run'].map(id => [id, race(id)])),
-  'raft-king': playRaftKing, 'cut-rope': playCutRope, 'double-cross': playDoubleCross, 'trust-fall': playTrustFall, 'who-said-it': playWhoSaidIt };
+  'raft-king': playRaftKing, 'cut-rope': playCutRope, 'double-cross': playDoubleCross, 'trust-fall': playTrustFall, 'who-said-it': playWhoSaidIt,
+  'deep-freeze': playDeepFreeze, 'log-roll': playLogRoll, 'road-kill': playRoadKill, 'mud-brawl': playMudBrawl, buried: playBuried, 'food-wars': playFoodWars,
+  'car-jump': race('car-jump'), 'locked-in': race('locked-in'), 'the-box': race('the-box') };
 
 export function pickMode(state, rng) {
   if (!state.options.partnerWeeks) return 'solo';

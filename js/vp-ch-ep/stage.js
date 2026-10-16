@@ -38,7 +38,7 @@ export class ChxStage {
   constructor(root, R) {
     this.root = root; this.R = R;
     const q = c => root.querySelector(c);
-    this.el = { frame: q('.chx-frame'), world: q('.chx-world'), plate: q('.chx-platebox'), live: q('.chx-live'), props: q('.chx-props'), cast: q('.chx-cast'), wfx: q('.chx-wfx'),
+    this.el = { frame: q('.chx-frame'), world: q('.chx-world'), plate: q('.chx-platebox'), live: q('.chx-live'), props: q('.chx-props:not(.chx-fore)'), fore: q('.chx-fore'), cast: q('.chx-cast'), wfx: q('.chx-wfx'),
       hud: q('.chx-hud'), conf: q('.chx-confbox'), dlg: q('.dlg'), cut: q('.cutin'), name: q('.dlg .name'), say: q('.dlg .say'), over: q('.over'), intel: q('.intel'), stat: q('.static') };
     this.ST = newState();
     this.typing = 0;
@@ -82,7 +82,7 @@ export class ChxStage {
     Object.assign(ST, { plate: sc.plate, scale: sc.scale || 1.5, scene: sc, water: sc.water || 0 });
     this.root?.classList?.toggle('flashback', !!sc.flash);
     this.el.plate.innerHTML = `<img class='chx-plate' src='${PLATE(sc.plate)}.webp' alt=''><canvas class='chx-glc tdx-gl' data-src='${PLATE(sc.plate)}' data-hd='1' width='1920' height='1080'></canvas>`;
-    this.el.cast.innerHTML = ''; this.el.wfx.innerHTML = ''; this.el.live.innerHTML = ''; if (this.el.props) this.el.props.innerHTML = '';
+    this.el.cast.innerHTML = ''; this.el.wfx.innerHTML = ''; this.el.live.innerHTML = ''; if (this.el.props) this.el.props.innerHTML = ''; if (this.el.fore) this.el.fore.innerHTML = '';
     for (const [n, spec] of Object.entries(sc.cast || {})) { ST.home[n] = spec; this.put(n, spec, false); }
     for (const n of sc.hidden || []) { ST.hidden.add(n); ST.toks[n]?.classList.add('gone'); }
     if (sc.water) for (const t of Object.values(ST.toks)) { t.style.top = `calc(${t.style.top} + 7cqh)`; t.querySelector('.face').style.boxShadow = 'inset 0 -5cqh 0 rgba(60,200,220,.55)'; }
@@ -176,9 +176,12 @@ export class ChxStage {
     if (s.pose) for (const [n, p] of Object.entries(s.pose)) { if (p) ST.poses[n] = p; else delete ST.poses[n]; }
     if (s.hide) for (const n of s.hide) { ST.hidden.add(n); ST.toks[n]?.classList.add('gone'); }
     if (s.show) for (const n of s.show) { ST.hidden.delete(n); ST.toks[n]?.classList.remove('gone'); }
-    if (s.props) { ST.props = s.props; if (this.el.props) this.el.props.innerHTML = propsHtml(s.props); }
+    // an object in front of the people (a dome on the table, a coffin at their feet) goes on the layer over the cast
+    if (s.props) { ST.props = s.props; if (this.el.props) this.el.props.innerHTML = propsHtml(s.props.filter(p => !p.front)); if (this.el.fore) this.el.fore.innerHTML = propsHtml(s.props.filter(p => p.front)); }
     if (s.tally) ST.tally = s.tally;
     if (s.exit) for (const n of s.exit) {
+      // somebody leaving a challenge they were still in is out of it (Deep Freeze: climbing out of the tub)
+      if (ST.standers?.includes(n)) ST.out.add(n);
       const t = ST.toks[n]; if (!t) continue;
       const gate = marks(ST.plate).find(m => m.kind === 'gate');
       if (gate) this.put(n, ['gate'], anim);
@@ -245,7 +248,7 @@ export class ChxStage {
       t.classList.remove('talkpop', 'shout', 'laugh', 'flinch', 'lean', 'cheer', 'cry', 'strain');
       t.classList.toggle('dig', !!(s.dig && s.dig.includes(n)));
       t.classList.toggle('run', ST.poses[n] === 'run' || !!(ST.race && !s.finish && ST.race.some(r => r.who.includes(n)) && !s.say));
-      for (const p of ['swim', 'climb', 'pull', 'mud']) t.classList.toggle(p, ST.poses[n] === p);
+      for (const p of ['swim', 'climb', 'pull', 'mud', 'ice', 'buried']) t.classList.toggle(p, ST.poses[n] === p);
     }
     if (anim && s.act) for (const [n, a] of Object.entries(s.act)) {
       const t = ST.toks[n]; if (!t) continue;

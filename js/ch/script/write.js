@@ -133,6 +133,12 @@ export function writeScene(state, scene) {
   if (!key) return null;
   const have = new Set([...Object.keys(r.roles), ...Object.keys(r.slots)]);
   const pools = poolFor(key, have);
+  // a scene at the club is at night, at the club: not an entry staged at breakfast, by the pool, in the gym or the
+  // kitchen (a party spark opened on "Joel is making breakfast", and the morning sort moved the club to the morning)
+  if (scene.spot === 'party') for (const k of Object.keys(pools)) {
+    const ok = pools[k].filter(e => !e.turns.some(t => DAYTIME.test(String(t.beat || t.say || t.conf || ''))));
+    if (ok.length) pools[k] = ok;
+  }
   const facts = factsFor(scene, r, state);
   state.lineLedger ||= newLedger();
   const speakers = Object.values(r.roles);
@@ -194,6 +200,7 @@ export function writeScene(state, scene) {
 // common room, the sand the beach. A scene with a fixed place (the kitchen, the gym, the hot tub, the
 // Arena, the daily, the party) keeps it. The first place the lines name wins.
 const FLEXIBLE = new Set(['private', 'villa', 'public', null, undefined]);
+const DAYTIME = /\b(breakfast|this morning|in the morning|afternoon|sunbathe|sunbathing|lounger|loungers|the pool|poolside|gym|kitchen|fridge|stove|the sun goes down|sunset)\b/i;
 const PLACE_WORDS = [
   ['bedroom', /\b(bunk|bunks|bedroom|mattress|pillow|pillows|blanket|alarm|(shut|shuts|close|closes|closed|slams?|pushes) the door|doors? shut|door clicks)\b/i],
   ['kitchen', /\b(kitchen|fridge|stove|counter|cupboard|sink|dishes|eggs|breakfast table|cooking)\b/i],

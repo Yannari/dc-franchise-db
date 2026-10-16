@@ -239,7 +239,7 @@ export function airEpisode(state, epRec, prevRec = null) {
       if (s.kind === 'arena-goodbye') for (const arc of heldArcs[s.data?.loser] || []) pushArc(arc);
     }
   }
-  epRec.aired = keepWithTheDaily(morningFirst(aired));
+  epRec.aired = eveningAfterTheDaily(keepWithTheDaily(morningFirst(aired)));
   return epRec.aired;
 }
 
@@ -262,7 +262,10 @@ function morningFirst(aired) {
   const out = [];
   for (const day of [...new Set(aired.map(a => a.day))]) {
     const items = aired.filter(a => a.day === day);
-    const isMorning = a => MOVABLE(a) && (a.script?.lines || []).some(l => MORNING_WORDS.test(l.text || ''));
+    // a night out is never the morning, whatever its lines remember ("why didn't you say any of this this morning?"
+    // put the club ahead of the daily, read 2026-10-16: "why is night out ... right after morning at the villa")
+    const atNight = a => a.scene?.spot === 'party' || a.kind.startsWith('party');
+    const isMorning = a => MOVABLE(a) && !atNight(a) && (a.script?.lines || []).some(l => MORNING_WORDS.test(l.text || ''));
     const head = [];
     while (items.length && MORNING_FIXTURES.has(items[0].kind)) head.push(items.shift());
     // the morning after an Arena is tomorrow (the viewer's clock moves it to the next day): it airs after the
@@ -283,6 +286,28 @@ function keepWithTheDaily(aired) {
     if (held.includes(a)) continue;
     out.push(a);
     if (a.kind === 'daily') out.push(...held.filter(h => h.day === a.day));
+  }
+  return out;
+}
+
+// The evening comes after the day (the user, 2026-10-16, of a talk at sunset and the night out airing before that
+// day's daily): on a day with a daily, a scene set at sunset moves to just after the daily and what happened at it,
+// before the night's party. A scene that must keep its place (MUST_ORDER, the ceremony) never moves.
+const EVENING_WORDS = /\b(sunset|sun goes down|sun go down|the sun is going down|sundown)\b/i;
+const isEvening = a => a.kind === 'sunset-talk' || (a.script?.lines || []).some(l => l.kind === 'beat' && EVENING_WORDS.test(l.text || ''));
+function eveningAfterTheDaily(aired) {
+  const out = [...aired];
+  for (const day of new Set(out.filter(a => a.kind === 'daily').map(a => a.day))) {
+    const at = out.findIndex(a => a.kind === 'daily' && a.day === day);
+    const early = out.filter((a, i) => i < at && a.day === day && MOVABLE(a) && isEvening(a));
+    if (!early.length) continue;
+    for (const a of early) out.splice(out.indexOf(a), 1);
+    const d = out.findIndex(a => a.kind === 'daily' && a.day === day);
+    let k = d + 1;
+    while (k < out.length && out[k].day === day && AT_THE_DAILY.has(out[k].kind)) k++;
+    // and before the night: the first party scene of that day, if it comes sooner
+    const party = out.findIndex((a, i) => i >= k && a.day === day && (a.scene?.spot === 'party' || a.kind.startsWith('party')));
+    out.splice(party >= 0 ? party : k, 0, ...early);
   }
   return out;
 }

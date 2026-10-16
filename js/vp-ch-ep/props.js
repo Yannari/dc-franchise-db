@@ -60,6 +60,8 @@ export const SPRITES = {
   ball: 3, barrel: 1.7, blocks: 4, bucket: 2.2, buoy: 4, 'buoy-lit': 4, 'crates-fallen': 7, flag: 2, key: 3,
   lockbox: 3.4, 'mud-splash': 7, pole: 16, 'puzzle-frame': 6, 'puzzle-pieces': 8, ram: 6, sandbag: 3.6,
   'sign-blank': 4, smoke: 5, splash: 8, 'tank-empty': 4.4, 'tank-full': 4.4, tiles: 7, token: 1.4,
+  // one per player, cut out of the user's own plates (tools/ch-art/cutout.py): Pole Truth's post, the gorge's platform
+  post: 1.45, 'post-short': 2, platform: 15,
 };
 const sprite = (file, p, w, cls = '', turn = 0) => ({ file, p, w: w || SPRITES[file], cls, turn });
 const sides = [.4, .6];
@@ -75,6 +77,7 @@ function spritesOf(p) {
     case 'puzzle': return [sprite('puzzle-frame', p, p.w || SPRITES['puzzle-frame'], p.locked ? 'pop-in' : '')];
     case 'pit': return p.pieces ? [sprite('puzzle-pieces', p)] : p.mud ? [sprite('mud-splash', { ...p, v: p.v + .02 }, 9)] : [];
     case 'pole': return [sprite('pole', p, 16, '', p.tilt || 0)];
+    case 'post': case 'post-short': case 'platform': return [sprite(p.k, p, p.w)];
     case 'ballring': return [sprite('ball', { ...p, u: p.u + (p.ball || 0) * .4 }, 3.2)];
     case 'lockbox': return [sprite('lockbox', p), ...(p.smoke ? [sprite('smoke', { ...p, v: p.v - .07 }, 6, 'pop-in')] : [])];
     case 'crates': return (p.smashed || []).flatMap((n, k) => (n > 0 ? [sprite('crates-fallen', { ...p, u: sides[k], v: p.v + .14 }, 6, 'fallen')] : []));
@@ -86,9 +89,34 @@ function spritesOf(p) {
 }
 const spriteHtml = s => `<div class="prop sprite ${s.cls}" style="${at(s.p, s.w)}"><img src="assets/sets/ch/props/${esc(s.file)}.webp" alt=""${s.turn ? ` style="transform:rotate(${s.turn}deg)"` : ''}></div>`;
 
+// Pole Truth's big red timer (the user, 2026-10-15: "the clock isn't really well made"): the plate's own
+// screen with its digits cleared (G01 timer-empty), and the time drawn as seven-segment digits in the
+// plate's coordinates, lit segments red with a glow, the rest dim, like the board the plate was painted
+// with. It sits in the prop layer, so it moves with the camera and stays on the board.
+const SEG = { 0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc', 5: 'afgcd', 6: 'afgedc', 7: 'abc', 8: 'abcdefg', 9: 'abcdfg' };
+function digitSvg(ch, x0, y0, w, h, t) {
+  const hz = (xa, xb, y) => `${xa},${y} ${xa + t / 2},${y - t / 2} ${xb - t / 2},${y - t / 2} ${xb},${y} ${xb - t / 2},${y + t / 2} ${xa + t / 2},${y + t / 2}`;
+  const vt = (x, ya, yb) => `${x},${ya} ${x + t / 2},${ya + t / 2} ${x + t / 2},${yb - t / 2} ${x},${yb} ${x - t / 2},${yb - t / 2} ${x - t / 2},${ya + t / 2}`;
+  const g = 3, xl = x0 + t / 2, xr = x0 + w - t / 2, yt = y0 + t / 2, ym = y0 + h / 2, yb = y0 + h - t / 2;
+  const S = { a: hz(xl + g, xr - g, yt), g: hz(xl + g, xr - g, ym), d: hz(xl + g, xr - g, yb),
+    f: vt(xl, yt + g, ym - g), b: vt(xr, yt + g, ym - g), e: vt(xl, ym + g, yb - g), c: vt(xr, ym + g, yb - g) };
+  const on = SEG[ch] || '';
+  return Object.entries(S).map(([k, pts]) => `<polygon points="${pts}" class="${on.includes(k) ? 'on' : 'off'}"/>`).join('');
+}
+function clockHtml(p) {
+  const [hh, mm] = String(p.t || '00:00').split(':');
+  const ds = [...(hh || '00').padStart(2, '0'), ...(mm || '00').padStart(2, '0')];
+  const X = [915, 1047, 1232, 1364];
+  const body = ds.map((c, i) => digitSvg(c, X[i], 100, 112, 264, 24)).join('')
+    + '<circle cx="1196" cy="182" r="12" class="on"/><circle cx="1196" cy="286" r="12" class="on"/>';
+  return `<div class="prop bigclock-w" style="left:${(884 / 16).toFixed(2)}%;top:${(57 / 9).toFixed(2)}%;width:${((1508 - 884) / 16).toFixed(2)}%;height:${((411 - 57) / 9).toFixed(2)}%">`
+    + `<svg viewBox="884 57 624 354" preserveAspectRatio="none"><defs><filter id="ckGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`
+    + `<g filter="url(#ckGlow)">${body}</g></svg></div>`;
+}
+
 /** A step's props as HTML for the stage's prop layer: the painted cut-outs only. */
 export function propsHtml(list = []) {
-  return list.flatMap(spritesOf).map(spriteHtml).join('');
+  return list.filter(p => p.k === 'clock').map(clockHtml).join('') + list.flatMap(spritesOf).map(spriteHtml).join('');
 }
 /** The drawn versions, kept for the art jobs' reference sheet and tests; never on a plate. */
 export function drawnHtml(list = []) {

@@ -13,6 +13,8 @@
 // deep enough that a daily never says the same line twice (V.used is the episode's).
 import { speak } from './voices.js';
 import { pickBy, hashOf, nameList } from './games.js';
+import { raceSteps, derbySteps } from './daily-race.js';
+import { raftSteps, cutRopeSteps, doubleCrossSteps, trustFallSteps, whoSaidItSteps } from './daily-betray.js';
 
 const V = (say, v = {}) => ({ say, v });
 const fill = (t, slots) => t.replace(/\{(\w+)\}/g, (m, k) => (slots[k] != null ? slots[k] : m));
@@ -99,6 +101,20 @@ function talkSteps(ctx, b, key) {
   return out;
 }
 
+// ── one object per player (the user, 2026-10-15: "can you make it match the number of people?") ──
+// The plate is painted with none (Pole Truth: the posts painted out) or a few (the gorge's six platforms);
+// every player gets their own cut-out, at a spot of the plate's marks, in this order.
+// Pole Truth: six along the back (where the painted posts stood) and six shorter ones in the near water,
+// set between them, so nobody stands in front of anybody (eleven in one row overlapped). Plate coordinates
+// of each post's foot and its width (cqw).
+const POST_BACK = [337, 446, 558, 667, 769, 885];
+const POST_FRONT = [392, 502, 612, 722, 832, 942];
+const POST_ORDER = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const postProp = j => (j < 6 ? { k: 'post', u: POST_BACK[j] / 1600, v: 745 / 900, w: 1.45 } : { k: 'post-short', u: POST_FRONT[j - 6] / 1600, v: 800 / 900, w: 1.5 });
+// Interrogation: the gorge's six painted platforms, then a row of six cut-out ones in front
+const PLAT_FRONT = [140, 400, 660, 920, 1180, 1440];
+const platProp = j => (j < 6 ? null : { k: 'platform', u: PLAT_FRONT[j - 6] / 1600, v: 716 / 900, w: 15 });
+
 // ── Pole Truth ────────────────────────────────────────────────────────
 const PT = {
   start: ["Six poles, six of you. Climb up and stay up. Last one standing goes through. No breakfast, no water. You're welcome!",
@@ -153,7 +169,7 @@ const PT = {
 function poleTruth(d, ctx) {
   const out = [];
   const beats = d.beats || [];
-  let poles = [], raft = 0, watchers = [], pending = {}, night = false, heatIdx = 0;
+  let poles = [], raft = 0, watchers = [], pending = {}, night = false, heatIdx = 0, posts = [];
   const safe = [];   // the day's winners as TJ calls them: SAFE shows on the step that names them
   const where = {};   // where each of this heat's people is now: their pole, or a spot on the raft
   const sub = n => ctx.V.pron?.[n]?.sub || 'they';
@@ -161,11 +177,18 @@ function poleTruth(d, ctx) {
   const push = s => out.push(flush(s));
   const down = n => { where[n] = ['stand', raft % 6, 'raft']; pending[n] = where[n]; raft++; };
   const castNow = (extra = {}) => ({ ...Object.fromEntries(poles.map(n => [n, where[n]])), ...extra });
+  // the wide shots carry everybody's post; the close-up is painted with six, the first six on them
   const sceneFor = (plate, cast) => ctx.scene(plate, night, cast);
+  const withPosts = (s2, plate) => ({ ...s2, props: plate === 'poles-close' ? [] : posts });
   // after a cut to the timer, the next step is back on the wide shot
   let back = false;
   const push0 = push;
-  const pushB = s2 => { if (back && !s2.scene) { s2.scene = sceneFor('poles', castNow()); } back = false; push0(s2); };
+  const pushB = s2 => {
+    if (back && !s2.scene) s2.scene = sceneFor('poles', castNow());
+    back = false;
+    if (s2.scene) Object.assign(s2, withPosts({}, /poles-close/.test(s2.scene.plate) ? 'poles-close' : 'poles'));
+    push0(s2);
+  };
   // the first heat of each division and every final are shown whole; the heats in between show what happens
   // (the user wants the whole challenge, but five heats of the same breakfast is the same scene five times)
   const heats = beats.filter(x => x.kind === 'heat-start');
@@ -176,21 +199,25 @@ function poleTruth(d, ctx) {
     if (b.kind === 'heat-start') {
       full = whole.has(b.data.label);
       poles = b.data.poles; raft = 0; pending = {}; night = false;
-      for (const [j, n] of poles.entries()) where[n] = ['stand', j, 'pole'];
+      for (const [j, n] of poles.entries()) where[n] = ['stand', POST_ORDER[j], 'pole'];
+      posts = poles.map((_, j) => postProp(POST_ORDER[j]));
       // the next heat waits on the sand
       const rest = beats.slice(i + 1).find(x => x.kind === 'heat-start');
       watchers = (rest?.data.poles || []).slice(0, 8);
       const sand = Object.fromEntries(watchers.map((n, j) => [n, ['stand', j]]));
       pushB({ scene: sceneFor('poles', castNow(sand)), seg: [b.data.label, 'Pole Truth'], stand: 'start', still: poles, focus: [] });
       pushB(tj(line(ctx, /final/i.test(b.data.label) ? PT.final : PT.start, {}, key)));
-      pushB({ scene: sceneFor('poles-close', castNow({ TJ: null })), dir: line(ctx, PT.climb, { who: nameList(poles) }, key + 'c'), focus: poles });
+      const six = Object.fromEntries(poles.slice(0, 6).map((n, j) => [n, ['stand', j, 'pole']]));
+      pushB({ scene: sceneFor('poles-close', { TJ: null, ...six }), dir: line(ctx, PT.climb, { who: nameList(poles) }, key + 'c'), focus: poles.slice(0, 6) });
       back = true;
       heatIdx++;
       continue;
     }
     // a cut to the big timer: the hours, and who is still up there
     const clock = (say0) => {
-      pushB({ scene: sceneFor('poles-timer', Object.fromEntries(poles.filter(n => where[n][2] === 'pole').map(n => [n, where[n]]))), clock: hrs(b.t), ...say0 });
+      // the camera holds still: the time is written over the plate's own timer
+      pushB({ scene: sceneFor('poles-timer', Object.fromEntries(poles.filter(n => where[n][2] === 'pole').map(n => [n, where[n]]))), ...say0, focus: [] });
+      out[out.length - 1].props = [...posts, { k: 'clock', t: hrs(b.t) }];
       back = true;
     };
     if (b.kind === 'tempt') {
@@ -354,7 +381,7 @@ function interrogation(d, ctx) {
     if (b.kind === 'platforms') {
       plats = b.who; asked = 0; sand = 0;
       const cast = Object.fromEntries(plats.map((n, j) => [n, ['stand', j, 'plat']]));
-      push({ scene: ctx.scene(ctx.plate, ctx.night, cast), seg: [b.data.label, 'Interrogation'], stand: 'start', still: plats, focus: [] });
+      push({ scene: ctx.scene(ctx.plate, ctx.night, cast), props: plats.map((_, j) => platProp(j)).filter(Boolean), seg: [b.data.label, 'Interrogation'], stand: 'start', still: plats, focus: [] });
       push(tj(line(ctx, b.data.final ? IQ.final : IQ.start, {}, key)));
       push({ dir: line(ctx, IQ.climb, { who: nameList(plats) }, key + 'c'), focus: plats });
       continue;
@@ -400,4 +427,7 @@ function interrogation(d, ctx) {
   return out;
 }
 
-export const BEAT_PLAYS = { 'pole-truth': poleTruth, 'hang-on': hangOn, 'lagoon-quiz': interrogation };
+const race = (d, ctx) => raceSteps(d, ctx);
+export const BEAT_PLAYS = { 'pole-truth': poleTruth, 'hang-on': hangOn, 'lagoon-quiz': interrogation, demolition: derbySteps,
+  'cliff-relay': race, 'reef-dash': race, 'truck-tug': race, 'jungle-maze': race, 'night-swim': race, 'balance-beam': race, 'gauntlet-run': race,
+  'raft-king': raftSteps, 'cut-rope': cutRopeSteps, 'double-cross': doubleCrossSteps, 'trust-fall': trustFallSteps, 'who-said-it': whoSaidItSteps };

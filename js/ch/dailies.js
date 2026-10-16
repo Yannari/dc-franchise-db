@@ -24,6 +24,9 @@ import { trustOf } from './rel.js';
 import { playPoleTruth } from './daily/pole-truth.js';
 import { playHangOn } from './daily/hang-on.js';
 import { playInterrogation } from './daily/interrogation.js';
+import { playRace } from './daily/race.js';
+import { playDemolition } from './daily/demolition.js';
+import { playRaftKing, playCutRope, playDoubleCross, playTrustFall, playWhoSaidIt } from './daily/betrayal.js';
 
 export const DAILIES = [
   { id: 'cliff-relay', name: 'Cliff Relay', physicality: 1.2, modes: ['pairs', 'teams', 'solo'],
@@ -61,11 +64,32 @@ export const DAILIES = [
 // Pole Truth (the user's pick from Total Drama, 2026-10-15): six posts in the water, played in heats.
 DAILIES.push({ id: 'pole-truth', name: 'Pole Truth', physicality: 0.7, modes: ['solo'], played: true,
   blend: { endurance: 0.35, temperament: 0.35, physical: 0.15, mental: 0.15 },
-  desc: 'Six wooden posts stand in the shallows, and six at a time, players climb up and stand on top of one, with no breakfast and no water. Every few hours TJ brings food for anybody who steps down, and in between TJ reads out a truth about somebody up there, something that was supposed to stay secret. Stepping down, falling, or getting knocked off by a hungry neighbour means the water and the end of that heat. The last one standing in each heat goes to the final heat, and the last one standing there wins.' });
-for (const id of ['hang-on']) { const d = DAILIES.find(x => x.id === id); if (d) d.played = true; }
+  desc: 'Wooden posts stand in the shallows, one for every player, and a division at a time they climb up and stand on top of one, with no breakfast and no water. Every few hours TJ brings food for anybody who steps down, and in between TJ reads out a truth about somebody up there, something that was supposed to stay secret. Stepping down, falling, or getting knocked off by a hungry neighbour means the water and the end of the day. The last man and the last woman still standing win.' });
+// The betrayal dailies (the user, 2026-10-15: "add the betrayal ones"): somebody chooses between a friend and themselves.
+DAILIES.push(
+  { id: 'raft-king', name: 'King of the Raft', physicality: 1.1, modes: ['solo'], played: true,
+    blend: { physical: 0.4, boldness: 0.3, temperament: 0.3 },
+    desc: 'Everybody climbs onto the yellow raft floating off the beach, a division at a time. On the horn, players push, pull and shove each other off it, and anybody can team up with anybody. Touching the water with any part of the body means out, and the last allies standing still have to get rid of each other. The last one on the raft wins.' },
+  { id: 'cut-rope', name: 'Cut the Rope', physicality: 0.9, modes: ['pairs'], played: true,
+    blend: { endurance: 0.45, physical: 0.3, temperament: 0.25 },
+    desc: 'Each pair hangs under the pier from one rope, both holding on, while the crew lowers it a notch every few minutes. A pair drops when its weaker grip goes, but either partner can cut the other loose with the knife on the rope and hang on lighter, alone. Letting go, or getting cut, puts you in the water. The last pair hanging wins together, and somebody who cut their partner and outlasts everybody wins alone.' },
+  { id: 'double-cross', name: 'Double Cross', physicality: 0.9, modes: ['pairs'], played: true,
+    blend: { endurance: 0.4, physical: 0.3, intuition: 0.3 },
+    desc: 'Pairs swim out to the buoys over the reef and bring back numbered tokens, and the pair with the highest total goes to the board. There, each partner secretly chooses to share the safety or steal it. If both share, both are safe; if one steals, only the stealer is; if both steal, nobody is, and the next pair gets the same choice. Whoever comes out of the choice safe wins.' },
+  { id: 'trust-fall', name: 'Trust Fall', physicality: 0.6, modes: ['pairs'], played: true,
+    blend: { boldness: 0.4, social: 0.3, temperament: 0.3 },
+    desc: 'One partner stands blindfolded on the edge at the top of the cliff, and the other holds the safety rope. The faller has to let go and drop backwards, and the catcher can catch them, or let them fall into the water and take a call home for themselves. A pair that hesitates loses time, and a pair whose catcher lets go scores nothing. The pair with the fastest clean fall wins.' },
+  { id: 'who-said-it', name: 'Who Said It', physicality: 0.1, modes: ['solo'], played: true,
+    blend: { intuition: 0.45, social: 0.35, mental: 0.2 },
+    desc: 'The whole house stands on the deck of the beach club while TJ asks questions about the house itself, like who is the biggest snake or who is riding coattails. Everybody answers out loud, one at a time, in front of everybody, and points go to everybody whose answer matches the most common one. Nobody can take an answer back, and everybody named hears who named them. The best man and the best woman on points win.' },
+);
+for (const id of ['hang-on', 'cliff-relay', 'reef-dash', 'truck-tug', 'jungle-maze', 'night-swim', 'balance-beam', 'gauntlet-run', 'demolition']) { const d = DAILIES.find(x => x.id === id); if (d) d.played = true; }
 
 // The played dailies (ch/daily/): each one runs as beats, and the result comes out of the beats.
-const SIMS = { 'pole-truth': playPoleTruth, 'hang-on': playHangOn, 'lagoon-quiz': playInterrogation };
+const race = id => (state, rng, a) => playRace(state, rng, { ...a, id });
+const SIMS = { 'pole-truth': playPoleTruth, 'hang-on': playHangOn, 'lagoon-quiz': playInterrogation, demolition: playDemolition,
+  ...Object.fromEntries(['cliff-relay', 'reef-dash', 'truck-tug', 'jungle-maze', 'night-swim', 'balance-beam', 'gauntlet-run'].map(id => [id, race(id)])),
+  'raft-king': playRaftKing, 'cut-rope': playCutRope, 'double-cross': playDoubleCross, 'trust-fall': playTrustFall, 'who-said-it': playWhoSaidIt };
 
 export function pickMode(state, rng) {
   if (!state.options.partnerWeeks) return 'solo';
@@ -166,16 +190,19 @@ export function playDaily(state, rng, { division }) {
   }
   // a played daily runs as beats, from each player's power for the day, and its result replaces the score
   const power = { ...indiv };
-  let beats = null;
+  let beats = null, simWinners = null;
   if (SIMS[daily.id]) {
     const res = SIMS[daily.id](state, rng, { units, power, mode });
     beats = res.beats;
     Object.assign(indiv, res.score);
+    // a betrayal daily can name its own winners (a thief alone, a cutter alone)
+    simWinners = res.winners || null;
   }
   const unitScore = u => u.reduce((a, n) => a + indiv[n], 0) / u.length;
   const ranked = [...units].sort((a, b) => unitScore(b) - unitScore(a));
   let winners;
-  if (mode === 'solo' && state.options.gendered) {
+  if (simWinners) winners = [...simWinners];
+  else if (mode === 'solo' && state.options.gendered) {
     const best = d => [...state.active].filter(n => state.division[n] === d).sort((a, b) => indiv[b] - indiv[a])[0];
     winners = ['m', 'f'].map(best).filter(Boolean);
   } else {

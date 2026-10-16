@@ -131,6 +131,7 @@ function heat(state, rng, R, players, power, label, { tired = 1 } = {}) {
 export function playPoleTruth(state, rng, { units, power }) {
   const all = units.flat();
   const R = run(all);
-  const score = inHeats(state, rng, R, all, 6, (h, label, { final }) => heat(state, rng, R, h, power, label, { tired: final ? 0.75 : 1 }));
+  // a post each (the viewer stands twelve): a division plays at once, in heats only past that
+  const score = inHeats(state, rng, R, all, 12, (h, label, { final }) => heat(state, rng, R, h, power, label, { tired: final ? 0.75 : 1 }));
   return { beats: R.beats, score };
 }

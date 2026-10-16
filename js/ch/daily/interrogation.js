@@ -79,8 +79,8 @@ export function playInterrogation(state, rng, { units, power }) {
   const bank = questionBank(state);
   const used = new Set();
   const grip = n => (S(n, 'endurance') * 0.45 + S(n, 'temperament') * 0.3 + S(n, 'physical') * 0.25) / 10 + (power[n] - 6) * 0.03;
-  // six platforms in the gorge: heats of six, the last one holding on goes to the final heat
-  const score = inHeats(state, rng, R, all, 6, (list, label, { final }) => {
+  // a platform each (the gorge's six and six more in front): a division plays at once, in heats only past twelve
+  const score = inHeats(state, rng, R, all, 12, (list, label, { final }) => {
     for (const n of list) R.in.add(n);
     const tilt = Object.fromEntries(list.map(n => [n, 0]));
     R.beat(0, 'platforms', list, { label, final });

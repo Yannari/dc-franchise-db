@@ -580,7 +580,7 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
       // a close-up has nobody but the players in it (TJ: null)
       const cast = Object.fromEntries(Object.entries({ TJ: hostSide(k), ...castSpec }).filter(([, v]) => v));
       return { plate: k, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast, wipe: 1, water: 0 }; };
-    const steps = playOf(d, { seed, V: S.V, plateKey, scene: sceneOf, plate: st.plate, night, people });
+    const steps = playOf(d, { seed, V: S.V, plateKey, scene: sceneOf, plate: st.plate, night, people, wide, water: !!st.water, legacy: () => dailyPlay(d, { key, seed: row.num }) });
     if (know.length && steps[3]) steps[3].know = know.shift();
     for (const x of steps) S.push(x);
   }

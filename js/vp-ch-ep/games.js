@@ -25,6 +25,12 @@ export const DAILY_STAGE = {
   'truck-tug': { plate: 'truck', hour: 'day', show: 'race', place: 'The Truck Track', spot: 'beach-field', verb: 'pull' },
   'lagoon-quiz': { plate: 'gorge', hour: 'day', show: 'played', place: 'The Gorge', spot: 'gorge', verb: 'quiz', water: true },
   'pole-truth': { plate: 'poles', hour: 'day', show: 'played', place: 'The Poles', spot: 'beach', verb: 'stand', water: true },
+  // the betrayal dailies (js/ch/daily/betrayal.js)
+  'raft-king': { plate: 'poles', hour: 'day', show: 'played', place: 'The Raft', spot: 'beach', verb: 'push', water: true },
+  'cut-rope': { plate: 'dock', hour: 'day', show: 'played', place: 'The Dock', spot: 'dock', verb: 'hang', water: true },
+  'double-cross': { plate: 'beach', hour: 'day', show: 'race', place: 'The Reef', spot: 'beach', verb: 'swim', water: true },
+  'trust-fall': { plate: 'cliff', hour: 'day', show: 'played', place: 'The Cliff', spot: 'cliff-jump', verb: 'jump', water: true },
+  'who-said-it': { plate: 'club', hour: 'night', show: 'played', place: 'The Beach Club', spot: 'club', verb: 'quiz' },
   'jungle-maze': { plate: 'maze', hour: 'day', show: 'race', place: 'The Jungle Maze', spot: 'tiki-path', verb: 'maze' },
   'hang-on': { plate: 'dock', hour: 'day', show: 'hang', place: 'The Dock', spot: 'dock', verb: 'hang', water: true },
   demolition: { plate: 'derby', hour: 'day', show: 'last', place: 'The Derby Ring', spot: 'beach-field', verb: 'smash' },

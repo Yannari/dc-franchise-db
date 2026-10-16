@@ -2317,6 +2317,48 @@
         "y": 426,
         "h": 74,
         "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 140,
+        "y": 672,
+        "h": 118,
+        "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 400,
+        "y": 672,
+        "h": 118,
+        "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 660,
+        "y": 672,
+        "h": 118,
+        "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 920,
+        "y": 672,
+        "h": 118,
+        "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 1180,
+        "y": 672,
+        "h": 118,
+        "group": "plat"
+      },
+      {
+        "kind": "stand",
+        "x": 1440,
+        "y": 672,
+        "h": 118,
+        "group": "plat"
       }
     ],
     "pool": [
@@ -6272,12 +6314,12 @@
     ]
   },
   "poles": {
-    "_doc": "Pole Truth, wide: six posts in the shallows, the yellow platform the fallen swim to, the sand the rest watch from (the user's plate, art job G01).",
+    "_doc": "Pole Truth, wide: six posts in the shallows, the yellow platform the fallen swim to, the sand the rest watch from The posts are painted out (cutout.py); the viewer stands one post cut-out per player (props post, post-short).",
     "night": "auto",
     "horizon": 0.62,
     "wind": 0.5,
     "noleaf": true,
-    "from": "G01-pole-truth/wide.png",
+    "from": "G01-pole-truth/wide-empty.png",
     "spot": "poles",
     "marks": [
       {
@@ -6324,45 +6366,45 @@
       },
       {
         "kind": "stand",
-        "x": 1010,
-        "y": 738,
-        "h": 78,
-        "group": "raft"
+        "x": 392,
+        "y": 688,
+        "h": 74,
+        "group": "pole"
       },
       {
         "kind": "stand",
-        "x": 1065,
-        "y": 738,
-        "h": 78,
-        "group": "raft"
+        "x": 502,
+        "y": 688,
+        "h": 74,
+        "group": "pole"
       },
       {
         "kind": "stand",
-        "x": 1120,
-        "y": 738,
-        "h": 78,
-        "group": "raft"
+        "x": 612,
+        "y": 688,
+        "h": 74,
+        "group": "pole"
       },
       {
         "kind": "stand",
-        "x": 1175,
-        "y": 738,
-        "h": 78,
-        "group": "raft"
+        "x": 722,
+        "y": 688,
+        "h": 74,
+        "group": "pole"
       },
       {
         "kind": "stand",
-        "x": 1230,
-        "y": 738,
-        "h": 78,
-        "group": "raft"
+        "x": 832,
+        "y": 688,
+        "h": 74,
+        "group": "pole"
       },
       {
         "kind": "stand",
-        "x": 1285,
-        "y": 738,
-        "h": 78,
-        "group": "raft"
+        "x": 942,
+        "y": 688,
+        "h": 74,
+        "group": "pole"
       },
       {
         "kind": "stand",
@@ -6417,16 +6459,100 @@
         "x": 1560,
         "y": 800,
         "h": 100
+      },
+      {
+        "kind": "stand",
+        "x": 1000,
+        "y": 722,
+        "h": 72,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1060,
+        "y": 722,
+        "h": 72,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1120,
+        "y": 722,
+        "h": 72,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1180,
+        "y": 722,
+        "h": 72,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1240,
+        "y": 722,
+        "h": 72,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1300,
+        "y": 722,
+        "h": 72,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1030,
+        "y": 742,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1090,
+        "y": 742,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1150,
+        "y": 742,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1210,
+        "y": 742,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1270,
+        "y": 742,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1330,
+        "y": 742,
+        "h": 78,
+        "group": "raft"
       }
     ]
   },
   "poles-timer": {
-    "_doc": "Pole Truth, wide with the big red timer: the hours passing (G01; the viewer writes the time over the digits).",
+    "_doc": "Pole Truth, wide with the big red timer: the hours passing The posts are painted out (cutout.py); the viewer stands one post cut-out per player (props post, post-short).",
     "night": "auto",
     "horizon": 0.62,
     "wind": 0.5,
     "noleaf": true,
-    "from": "G01-pole-truth/timer.png",
+    "from": "G01-pole-truth/timer-empty.png",
     "spot": "poles-timer",
     "marks": [
       {
@@ -6473,45 +6599,45 @@
       },
       {
         "kind": "stand",
-        "x": 1010,
-        "y": 738,
-        "h": 78,
-        "group": "raft"
+        "x": 392,
+        "y": 688,
+        "h": 74,
+        "group": "pole"
       },
       {
         "kind": "stand",
-        "x": 1065,
-        "y": 738,
-        "h": 78,
-        "group": "raft"
+        "x": 502,
+        "y": 688,
+        "h": 74,
+        "group": "pole"
       },
       {
         "kind": "stand",
-        "x": 1120,
-        "y": 738,
-        "h": 78,
-        "group": "raft"
+        "x": 612,
+        "y": 688,
+        "h": 74,
+        "group": "pole"
       },
       {
         "kind": "stand",
-        "x": 1175,
-        "y": 738,
-        "h": 78,
-        "group": "raft"
+        "x": 722,
+        "y": 688,
+        "h": 74,
+        "group": "pole"
       },
       {
         "kind": "stand",
-        "x": 1230,
-        "y": 738,
-        "h": 78,
-        "group": "raft"
+        "x": 832,
+        "y": 688,
+        "h": 74,
+        "group": "pole"
       },
       {
         "kind": "stand",
-        "x": 1285,
-        "y": 738,
-        "h": 78,
-        "group": "raft"
+        "x": 942,
+        "y": 688,
+        "h": 74,
+        "group": "pole"
       },
       {
         "kind": "stand",
@@ -6566,6 +6692,90 @@
         "x": 1560,
         "y": 800,
         "h": 100
+      },
+      {
+        "kind": "stand",
+        "x": 1000,
+        "y": 722,
+        "h": 72,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1060,
+        "y": 722,
+        "h": 72,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1120,
+        "y": 722,
+        "h": 72,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1180,
+        "y": 722,
+        "h": 72,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1240,
+        "y": 722,
+        "h": 72,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1300,
+        "y": 722,
+        "h": 72,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1030,
+        "y": 742,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1090,
+        "y": 742,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1150,
+        "y": 742,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1210,
+        "y": 742,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1270,
+        "y": 742,
+        "h": 78,
+        "group": "raft"
+      },
+      {
+        "kind": "stand",
+        "x": 1330,
+        "y": 742,
+        "h": 78,
+        "group": "raft"
       }
     ]
   },

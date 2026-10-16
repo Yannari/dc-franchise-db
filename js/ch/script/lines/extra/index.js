@@ -2,5 +2,6 @@
 // pool in lines/index.js before the voice overlays and the long cut.
 import a from './a.js';
 import b from './b.js';
+import c from './c.js';
 
-export default [a, b];
+export default [a, b, c];

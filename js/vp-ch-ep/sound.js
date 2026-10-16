@@ -45,6 +45,7 @@ export const CH_BEDS = {
   'ch-final':        { files: ['final.mp3'], what: 'the final\'s checkpoints: epic, building rock' },
   'ch-overnight':    { files: ['overnight.mp3', 'overnight-2.mp3'], lift: { 'overnight.mp3': 3, 'overnight-2.mp3': 2 }, what: 'the final\'s overnight: dark, the fire, the wind' },
   'ch-champions':    { files: ['champions.mp3'], what: 'the champions crowned: anthem rock' },
+  'ch-goodbye':      { files: ['goodbye.mp3'], what: 'the Arena goodbye: last words and the walk to the gate, a soft intro and then sad alternative rock' },
   // the places themselves, when there is no music
   'ch-amb-day':      { files: ['amb-day.mp3'], amb: true, lift: { 'amb-day.mp3': 3 }, what: 'the sea against the rocks' },
   'ch-amb-night':    { files: ['amb-night.mp3'], amb: true, lift: { 'amb-night.mp3': 3 }, what: 'crickets and the sea at night' },
@@ -244,6 +245,9 @@ export function bedAt(screen, idx) {
       const d = firstIdx(steps, st => st.duel), w = d < 0 ? -1 : firstIdx(steps, st => st.slam?.winner, d);
       if (d < 0 || idx < d) return 'ch-arena-walk';
       if (w < 0 || idx < w) return 'ch-arena';
+      // the goodbye at the gate (ch/goodbye.js) has its own song, from the last words to the next scene
+      const bye = w < 0 ? -1 : firstIdx(steps, st => st.bye, w);
+      if (bye >= 0 && idx >= bye && sceneStart(steps, idx) <= bye) return 'ch-goodbye';
       return sceneStart(steps, idx) > w ? sceneBed(screen, idx) : 'ch-amb-arena';
     }
     case 'daily': {

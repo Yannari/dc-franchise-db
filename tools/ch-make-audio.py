@@ -144,6 +144,9 @@ BEDS = {
     'overnight':    ('bed', [L('overnight/echoes_andrew-ev.mp3', dur=120), L(CAMPFIRE, gain=-9, tile=True), L(WIND, gain=-12, tile=True)]),
     'overnight-2':  ('bed', [L('overnight/silent-descent_eugenio-mininni.mp3', dur=120), L(CAMPFIRE, gain=-9, tile=True), L(WIND, gain=-12, tile=True)]),
     'champions':    ('bed', [L('champions/epic-rock-anthem_ikoliks.mp3')]),
+    # the Arena goodbye: the loser's last words and the walk to the gate (Pixabay, BirdsDieAlone, "No Way"; a soft
+    # intro of about 12 s under the last words, then the band)
+    'goodbye':      ('bed', [L('goodbye/no-way_birdsdiealone.mp3')]),
     # ambience: what a place sounds like when nothing is playing (manual §18: silence is the default)
     'amb-day':      ('amb', [L(WAVES, dur=64)]),
     'amb-night':    ('amb', [L(WAVES, dur=64, gain=-8), L(CRICKETS, tile=True)]),

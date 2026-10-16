@@ -48,6 +48,7 @@ How it plays (manual §6.6, §18):
 | `ch-final` | `final.mp3` | The final's start, checkpoints and day two | the-final: Workout Epic Rock Trailer_Inflamed (QubeSounds, Pixabay) |
 | `ch-overnight` | `overnight.mp3`, `overnight-2.mp3` | The final's overnight | overnight: Echoes (Andrew Ev), Silent Descent (Eugenio Mininni), Mixkit; with the campfire and the wind |
 | `ch-champions` | `champions.mp3` | The champions, from the confetti | champions: Epic Rock Anthem (ikoliks, Pixabay) |
+| `ch-goodbye` | `goodbye.mp3` | The Arena goodbye: the loser's last words, the friends down from the stand, the walk to the gate | goodbye: No Way, sad inspirational alternative rock (BirdsDieAlone, Pixabay; found 2026-10-16) |
 | `ch-amb-day` | `amb-day.mp3` | Any place by day with no music | waves-wind: Sea waves on a rocky shore (Mixkit) |
 | `ch-amb-night` | `amb-night.mp3` | Any place at night with no music | the sea, and jungle crickets at night (Mixkit) |
 | `ch-amb-jungle` | `amb-jungle.mp3` | The maze, the tiki path, the trail | jungle: Twilight jungle (Mixkit) |

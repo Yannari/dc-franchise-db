@@ -74,6 +74,17 @@ describe('the Challenge viewer’s sound', () => {
     expect(crowned).toBeGreaterThan(0);
   });
 
+  it('plays the goodbye to its own song, from the last words until the next scene', () => {
+    const byes = SCREENS.filter(s => s.key === 'arena').map(s => [s, s.steps.findIndex(st => st.bye)]).filter(([, i]) => i >= 0);
+    expect(byes.length).toBeGreaterThan(10);
+    for (const [s, i] of byes) {
+      expect(bedAt(s, i)).toBe('ch-goodbye');
+      // and not before it: the duel keeps its own music
+      const d = s.steps.findIndex(st => st.duel);
+      if (d >= 0) expect(bedAt(s, d)).not.toBe('ch-goodbye');
+    }
+  });
+
   it('does not play every house scene to the same music, and leaves ordinary talk to the place itself', () => {
     const house = SCREENS.filter(S => S.key === 'villa').flatMap(S => S.steps.map((st, i) => (st.sceneIdx != null ? bedAt(S, i) : null))).filter(Boolean);
     const kinds = new Set(house);

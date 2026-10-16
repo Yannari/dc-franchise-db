@@ -335,7 +335,38 @@ function hint(R, text) {
 // has read them this episode, stays closed until opened, and remembers being open.
 const RANKS_KEY = 'chx-ranks-open';
 const ranksOpen = () => { try { return localStorage.getItem(RANKS_KEY) === '1'; } catch { return false; } };
+// The final's standings in the same tab: the latest totals per division up to this step; on the step TJ reads
+// them, the tab opens by itself, the points count up from the last checkpoint and the rows slide to their places.
+function standingsPanel(R, hud) {
+  const latest = {};
+  let fresh = false;
+  R.E.screens.forEach((s, si) => {
+    if (si > R.si) return;
+    s.steps.forEach((st, i) => { if (st.standings && (si < R.si || i <= R.idx)) { latest[st.standings.div] = st.standings; if (si === R.si && i === R.idx) fresh = true; } });
+  });
+  const divs = Object.values(latest);
+  if (!divs.length) return;
+  const open = fresh || ranksOpen();
+  const H = 3.4;   // a row's height, cqh
+  const body = divs.map(sd => `${sd.label ? `<div class='rk-div'>${esc(sd.label)}</div>` : ''}<div class='rk-pile' style='height:${sd.rows.length * H}cqh'>`
+    + sd.rows.map(r => { const from = fresh && r.wasRank ? r.wasRank : r.rank;
+      return `<div class='rk-row abs ${r.rank === 1 ? 'top' : ''}' data-to='${(r.rank - 1) * H}' style='top:${(from - 1) * H}cqh'><b>#${r.rank}</b><img src='${esc(AV(r.n))}' alt=''><span>${esc(r.n)}</span><i class='rk-pts' data-from='${fresh ? r.was : r.t}' data-to='${r.t}'>${fresh ? r.was : r.t}</i></div>`; }).join('')
+    + `</div>`).join('');
+  hud.insertAdjacentHTML('beforeend', `<div class='ranks ${open ? 'rk-on' : ''} ${fresh ? 'fresh' : ''}'><button type='button' class='rk-tab' data-ranks>${open ? '&#9656;' : '&#9666;'} Standings</button><div class='rk-list'><div class='rk-cp'>After checkpoint ${divs[0].cp}</div>${body}</div></div>`);
+  if (!fresh) return;
+  const box = hud.querySelector('.ranks:last-child');
+  requestAnimationFrame(() => setTimeout(() => {
+    box?.querySelectorAll('.rk-row.abs').forEach(r => { r.style.top = `${r.dataset.to}cqh`; });
+    box?.querySelectorAll('.rk-pts').forEach(el => {
+      const a = Number(el.dataset.from), b = Number(el.dataset.to), t0 = performance.now();
+      const tick = now => { const k = Math.min(1, (now - t0) / 900); el.textContent = String(Math.round(a + (b - a) * k)); if (k < 1 && el.isConnected) requestAnimationFrame(tick); };
+      requestAnimationFrame(tick);
+    });
+  }, 250));
+}
 function ranksPanel(R) {
+  const hud0 = R.root.querySelector('.chx-hud');
+  if (R.E.row?.ch?.final && hud0) return standingsPanel(R, hud0);
   const rows = R.E.row?.ch?.rankings;
   const hud = R.root.querySelector('.chx-hud');
   if (!rows?.length || !hud) return;

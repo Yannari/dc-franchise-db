@@ -67,6 +67,11 @@ const CHX_CSS = `
 .chx .rk-row span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chx .rk-row.top span{color:var(--caution)}
 .chx .rk-row i{font-style:normal;text-align:right;font-size:.85cqw}
+.chx .rk-pile{position:relative}
+.chx .rk-row.abs{position:absolute;left:0;right:0;transition:top .9s cubic-bezier(.3,.8,.3,1)}
+.chx .rk-div{font:400 .9cqw/1 'Black Ops One';letter-spacing:.1em;color:var(--fire);margin:.6cqh 0 .3cqh}
+.chx .rk-cp{font:600 .9cqw 'Barlow Condensed';letter-spacing:.08em;text-transform:uppercase;color:var(--hud-dim);margin-bottom:.3cqh}
+.chx .rk-pts{font-style:normal;text-align:right;color:var(--caution)!important;font-size:.95cqw!important}
 .chx .rk-up{color:#5fe06a}.chx .rk-dn{color:#ff5a4a}.chx .rk-eq{color:#8b949e}.chx .rk-new{color:#57a6e8}
 /* a fight: the brawl cloud, the two inside it, caution tape for an expulsion */
 .chx .brawlfx{position:absolute;width:20cqw;translate:-50% -55%;z-index:6;pointer-events:none;animation:chxBrawl .16s steps(2) infinite alternate}

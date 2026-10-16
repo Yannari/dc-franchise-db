@@ -1080,10 +1080,15 @@ function buildFinal(S, open, key, items, row, { names, house }) {
   const lined = (pk, people) => { const slots = lineup(pk, people.length); return Object.fromEntries(people.map((n, i) => [n, slots[i]])); };
   const cpN = id => Number(String(id).replace('cp', ''));
   const boardOf = (rec, snap) => (snap ? Object.entries(snap).sort((x, y) => y[1] - x[1]).map(([n, p]) => ({ who: [n], p })) : null);
-  const standing = (rec, d) => {
+  // the standings go to the side tab, the same one TJ's rankings use every episode (the user, 2026-10-16: "so it
+  // always there to see whos leading and it doesnt block the view ... when tj announced it so we see the animation
+  // of the score increasing and the placement moving"): this checkpoint's totals, and where each stood before it
+  const standing = (rec, d, prevRec) => {
     const rows = rec.standings?.[d] || [];
-    const top = Math.max(1, ...rows.map(r => r[1]));
-    return { tally: { title: `Standings after checkpoint ${cpN(rec.id)}${gendered ? `: ${divName(d)}` : ''}`, rows: rows.map(([n, t], i) => ({ who: [n], v: t / top, txt: `${t} pts`, win: i === 0 })) }, focus: rows.slice(0, 2).map(r => r[0]) };
+    const before = prevRec?.standings?.[d] || [];
+    const was = Object.fromEntries(before.map(([n, t], i) => [n, { t, rank: i + 1 }]));
+    return { standings: { cp: cpN(rec.id), div: d, label: gendered ? (d === 'm' ? 'Men' : d === 'f' ? 'Women' : 'Everybody') : null,
+      rows: rows.map(([n, t], i) => ({ n, t, rank: i + 1, was: was[n]?.t ?? 0, wasRank: was[n]?.rank ?? null })) }, focus: rows.slice(0, 2).map(r => r[0]) };
   };
 
   // A checkpoint, beat by beat.
@@ -1109,7 +1114,7 @@ function buildFinal(S, open, key, items, row, { names, house }) {
       if (l.fx.chip) step.chip = l.fx.chip;
       if (l.fx.shake) step.shake = 1;
       if (l.fx.gong) step.gong = 1;
-      if (l.fx.standings) Object.assign(step, standing(rec, l.fx.standings), { race: null });
+      if (l.fx.standings) Object.assign(step, standing(rec, l.fx.standings, prevRec), { race: null });
       S.push(step);
     }
     // after it: the first and the last, in their own words

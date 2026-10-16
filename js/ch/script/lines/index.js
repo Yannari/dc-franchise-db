@@ -19,6 +19,7 @@ import VOICES, { joinVariants } from './voices/index.js';
 import LONGER from './longer/index.js';
 import EXTRA from './extra/index.js';
 import FINAL1 from './voices/final1.js';
+import FINAL2 from './voices/final2.js';
 
 export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign, stakes, twists, goodbye, named, cruel);
 
@@ -55,7 +56,7 @@ for (const list of Object.values(POOLS)) {
 }
 // Voices keyed by the FINAL turn index, applied after the long cut (voices/final*.js): a turn the long cut wrote
 // can carry voices too, and an index never drifts because the entry is already in its final shape.
-export const FINAL_VOICES = [FINAL1];
+export const FINAL_VOICES = [FINAL1, FINAL2];
 for (const list of Object.values(POOLS)) {
   for (const e of list) {
     for (const batch of FINAL_VOICES) {

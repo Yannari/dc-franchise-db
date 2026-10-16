@@ -93,9 +93,12 @@ function heat(state, rng, R, players, power, label, { tired = 1 } = {}) {
     }
     // somebody always stays
     if (takers.length >= up().length) takers.splice(takers.indexOf([...takers].sort((a, b) => T[b] - T[a])[0]), 1);
+    // a lunge needs somebody left on a pole after it: the last one up never jumps for the tray
+    // (it once did, after everybody else had stepped down, and the heat was won by nobody)
     let lunge = null;
-    if (f.lunge && up().length >= 2) {
-      const l = up().filter(n => !takers.includes(n)).sort((a, b) => S(a, 'temperament') - S(b, 'temperament'))[0];
+    const stay = up().filter(n => !takers.includes(n));
+    if (f.lunge && stay.length >= 2) {
+      const l = [...stay].sort((a, b) => S(a, 'temperament') - S(b, 'temperament'))[0];
       if (l && rng() < (10 - S(l, 'temperament')) / 10 * 0.8) lunge = l;
     }
     R.beat(f.t, 'tempt', up(), { food: f.food, takers });

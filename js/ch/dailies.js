@@ -124,7 +124,7 @@ for (const id of ['hang-on', 'cliff-relay', 'reef-dash', 'truck-tug', 'jungle-ma
 
 // The played dailies (ch/daily/): each one runs as beats, and the result comes out of the beats.
 const race = id => (state, rng, a) => playRace(state, rng, { ...a, id });
-const SIMS = { 'pole-truth': playPoleTruth, 'hang-on': playHangOn, 'lagoon-quiz': playInterrogation, demolition: playDemolition,
+export const SIMS = { 'pole-truth': playPoleTruth, 'hang-on': playHangOn, 'lagoon-quiz': playInterrogation, demolition: playDemolition,
   ...Object.fromEntries(['cliff-relay', 'reef-dash', 'truck-tug', 'jungle-maze', 'night-swim', 'balance-beam', 'gauntlet-run'].map(id => [id, race(id)])),
   'raft-king': playRaftKing, 'cut-rope': playCutRope, 'double-cross': playDoubleCross, 'trust-fall': playTrustFall, 'who-said-it': playWhoSaidIt,
   'deep-freeze': playDeepFreeze, 'log-roll': playLogRoll, 'road-kill': playRoadKill, 'mud-brawl': playMudBrawl, buried: playBuried, 'food-wars': playFoodWars,

@@ -98,3 +98,30 @@ describe('nobody who has left takes part in a scene', () => {
     }
   });
 });
+
+// Pole Truth once let the last player on the poles lunge for the food after everybody else had stepped
+// down, and the heat was won by nobody: TJ said "{who} is the last one standing!" (2% of small heats).
+describe('every played daily names a real player in every beat', () => {
+  it('small casts, every mode, both divisions on and off', async () => {
+    const { SIMS, DAILIES, makePairs, makeTeams } = await import('../js/ch/dailies.js');
+    const { names, state } = play(3);
+    const rngOf = a => () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    for (const [id, fn] of Object.entries(SIMS)) {
+      for (const mode of DAILIES.find(d => d.id === id)?.modes || ['solo']) for (const gendered of [false, true]) {
+        for (let s = 1; s <= 120; s++) {
+          const rng = rngOf(s * 7919 + 13);
+          const k = (mode === 'teams' ? 6 : 2) + (s % 14);
+          const mix = [...names].sort(() => rng() - 0.5);
+          state.active = gendered ? [...mix.filter(n => state.division[n] === 'm').slice(0, Math.ceil(k / 2)), ...mix.filter(n => state.division[n] === 'f').slice(0, Math.floor(k / 2) || 1)] : mix.slice(0, k);
+          state.options.gendered = gendered;
+          const units = mode === 'pairs' ? makePairs(state, rng) : mode === 'teams' ? makeTeams(state, rng) : state.active.map(n => [n]);
+          const power = Object.fromEntries(state.active.map(n => [n, 3 + rng() * 6]));
+          const res = fn(state, rng, { units, power, mode });
+          const nul = res.beats.find(b => (b.who || []).some(x => x == null));
+          expect(nul, `${id} ${mode} ${gendered ? 'gendered' : 'open'} run ${s}: ${nul?.kind}`).toBeUndefined();
+          for (const w of res.winners || []) expect(w, `${id} ${mode} run ${s}: a winner`).toBeTruthy();
+        }
+      }
+    }
+  }, 300000);
+});

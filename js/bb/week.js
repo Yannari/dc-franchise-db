@@ -3342,6 +3342,8 @@ export function simulateBBWeek(options = {}) {
       // Matt told — the prize itself never appears in a public field.
       const claims = ['a dollar', 'a protein bar', 'a photo from home', 'twenty-four hours of elevator music'];
       boxAct.publicClaim = claims[Math.floor(rng() * claims.length)];
+      // what was really in it, for the viewer only (the house is told the claim)
+      boxAct.prize = BB_POWER_DEFINITIONS[prizeId]?.name || prizeId;
 
       // ── the price, which used to be a string ──
       //
@@ -4327,10 +4329,11 @@ export function simulateBBWeek(options = {}) {
     // responsibility to nominate TWO people" and turns two keys for a block
     // the Head of Household only chose half of.
     hohNominees: nominees.filter(n => n !== week.temptationChair
-      && n !== week.roadkill?.nominee && n !== week.deadLastNominee),
+      && n !== week.roadkill?.nominee && n !== week.deadLastNominee && n !== week.americasNominee?.nominee),
     curseChair: week.temptationChair || null,
     roadkillChair: week.roadkill?.nominee || null,
     deadLastChair: week.deadLastNominee || null,
+    americasChair: week.americasNominee?.nominee || null,
     brokenPromises: [...week.brokenPromises], pawnAsk: week.pawnAsk || null }, { nominees: [...nominees] }));
   revise('noms', { hoh, nominees: [...nominees] });
 

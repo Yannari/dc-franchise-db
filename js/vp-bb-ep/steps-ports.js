@@ -255,3 +255,176 @@ export function americasVoteScreens(act, ctx, kit, host) {
     seated: kit.seatLiving(noms, here.filter(n => !noms.includes(n) && n !== ctx.hoh), ctx.hoh), steps,
   }];
 }
+
+// ── The secret competitions: the Hacker, Roadkill, the cancelled vote ──────
+// Played alone and sealed: the house is never told who won, so the viewer is told in the side panel ("only you
+// know"), never on the stage. What the house DOES see (a chair that changes, a ballot that disappears) happens on it.
+const fieldOf = act => (act.results || []).map(r => r.name).filter(Boolean).concat((act.competition?.participants || [])).filter((n, i, a) => n && a.indexOf(n) === i);
+
+export function hackerScreens(act, ctx, kit) {
+  if (!act?.winner) return [];
+  const before = (ctx.nominees || []).slice();
+  const hack = act.blockHack || null;
+  const after = hack ? before.map(n => (n === hack.down ? hack.up : n)) : before;
+  const field = fieldOf(act);
+  const comp = act.competition || {};
+  const guesses = (ctx.row?.hackerGuesses || []).filter(g => g && g.who && g.guess);
+  const steps = [
+    { k: 'bb', t: 'Houseguests, this week one of you can become the Hacker.', rule: 1 },
+    { k: 'bb', t: 'You will each play the Hacker competition alone, with nobody watching. Nobody will be told how anybody did.', rule: 2 },
+    { k: 'bb', t: 'The winner is told in private, and may take one nominee off the block and put somebody else up. Nobody will ever be told who did it.', rule: 3 },
+    { k: 'beat', t: `${comp.name ? `Tonight it is ${comp.name}. ` : ''}${kit.titleCase(kit.word(field.length || 0))} houseguests go into the room one at a time, and every one of them comes back out to the same silence.` },
+    { k: 'beat', t: 'Later, one of them is called to the Diary Room alone and given a different message.', toast: ['ACCESS GRANTED', '#22e1ff'],
+      why: [`Only you know: ${act.winner} won the Hacker competition.`] },
+  ];
+  if (hack) {
+    steps.push({ k: 'bb', t: 'Houseguests, the Hacker has struck.', toast: ['HACKED', '#ff3355'], shake: true });
+    steps.push({ k: 'bb', t: `${hack.down}, you are no longer nominated. ${hack.up}, you are now nominated.`, nom: after, big: [hack.up, 'Hacked onto the block', 'out'],
+      why: [hack.why, `${hack.down} is not safe: still eligible as the replacement at the veto ceremony.`].filter(Boolean) });
+    steps.push({ k: 'beat', t: `${hack.up} stares at the screen. Nobody in the room will look at anybody else.`, tense: [hack.up, ctx.hoh].filter(Boolean) });
+  } else {
+    steps.push({ k: 'beat', t: `The block stays exactly as ${ctx.hoh || 'the Head of Household'} built it. The house spends the week waiting for a hack that never comes.`,
+      why: [`${act.winner} chose to leave the block alone.`] });
+  }
+  if (guesses.length) steps.push({ k: 'beat', t: 'By nightfall, everybody in the house has a theory about who the Hacker is.',
+    why: ['Who the house blames:', ...guesses.map(g => `${g.who} blames ${g.guess}${g.correct ? ' (right)' : ' (wrong)'}`)] });
+  const here = kit.houseNow(ctx);
+  return [{
+    id: 'bb-hacker-v', kind: 'hacker', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '21:10',
+    kicker: 'Cam 04 · Living room', title: 'The Hacker', label: 'The Hacker', sub: 'Played alone, result sealed',
+    seated: kit.seatLiving(before, here.filter(n => !before.includes(n) && n !== ctx.hoh), ctx.hoh),
+    rules: [['ALONE', 'one at a time, nobody watching'], ['SEALED', 'the winner is told in private'], ['THE BLOCK', 'one nominee down, another up, no name on it']],
+    rulesTitle: 'THE HACKER · HOW IT WORKS', steps,
+  }];
+}
+
+export function hackerVoteScreens(act, ctx, kit) {
+  const v = act?.voter;
+  if (!v) return [];
+  const pick = (l, s) => l[[...`${ctx.week}|${v}|${s}`].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 0) % l.length];
+  const steps = [
+    { k: 'beat', t: `Before the live vote, ${v} is called to the Diary Room.` },
+    { k: 'bb', t: `${v}, the Hacker has cancelled your vote. Tonight your ballot will not be counted, and you may not tell anybody.`, toast: ['VOTE CANCELLED', '#ff3355'] },
+    { k: 'dr', by: v, t: pick([`I was voting ${act.wouldHaveVoted} out. Now I sit there and watch, and I can't tell a soul.`,
+      `Somebody in this house just took my vote away, and I have to smile through the whole live show.`,
+      `I had my vote ready. ${act.wouldHaveVoted}. Now it doesn't exist.`], 'dr') },
+    { k: 'beat', t: 'Tonight the house will hear a count one short of the number of people who think they voted.', why: [act.why].filter(Boolean) },
+  ];
+  return [{
+    id: 'bb-hackervote-v', kind: 'hackervote', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: kit.ROOM_NAME.dr, cam: kit.CAM.dr, time: '19:30',
+    kicker: 'Cam 01 · Diary Room', title: 'The Cancelled Vote', label: 'The Cancelled Vote', sub: `${v}'s ballot will not count`, cast: [[v, 50]], steps,
+  }];
+}
+
+export function roadkillScreens(act, ctx, kit) {
+  if (!act?.winner) return [];
+  const field = fieldOf(act);
+  const comp = act.competition || {};
+  const steps = [
+    { k: 'bb', t: 'Houseguests, this week there is a Roadkill competition.', rule: 1 },
+    { k: 'bb', t: 'Everybody except the Head of Household plays it alone, with nobody watching.', rule: 2 },
+    { k: 'bb', t: 'The winner is told in private, and will name a third nominee at the nomination ceremony. Nobody will ever be told who.', rule: 3 },
+    { k: 'beat', t: `${comp.name ? `Tonight it is ${comp.name}. ` : ''}${kit.titleCase(kit.word(field.length || 0))} houseguests take their turn behind a closed door.` },
+    { k: 'beat', t: 'One of them comes back out of the Diary Room a little too calm.', why: [`Only you know: ${act.winner} won Roadkill.`, act.why].filter(Boolean) },
+  ];
+  const here = kit.houseNow(ctx);
+  return [{
+    id: 'bb-roadkill-v', kind: 'roadkill', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '11:40',
+    kicker: 'Cam 04 · Living room', title: 'BB Roadkill', label: 'BB Roadkill', sub: 'Played alone, result sealed',
+    seated: kit.seatLiving([], here.filter(n => n !== ctx.hoh), ctx.hoh),
+    rules: [['ALONE', 'everybody but the HOH, one at a time'], ['SEALED', 'the winner is told in private'], ['THE THIRD CHAIR', 'named at the ceremony, with no name on it']],
+    rulesTitle: 'BB ROADKILL · HOW IT WORKS', steps,
+  }];
+}
+
+// ── Pandora's Box ──────────────────────────────────────────────────────
+export function pandoraScreens(act, ctx, kit) {
+  const h = act?.hoh;
+  if (!h) return [];
+  const pick = (l, s) => l[[...`${ctx.week}|${h}|${s}`].reduce((x, c) => (x * 31 + c.charCodeAt(0)) >>> 0, 0) % l.length];
+  const steps = [
+    { k: 'beat', t: `${h} comes up to the Head of Household room. There is a second door that was not there this morning, edged in gold, with a question mark where the handle should be.` },
+    { k: 'beat', t: 'A card on the door says: something good for you, something bad for them. Or nothing at all.', toast: ["PANDORA'S BOX", '#e3b341'] },
+    { k: 'dr', by: h, t: act.opened ? pick(["I know it's a trap. Every one of these is a trap. I'm opening it anyway.", "Something good for me? I'm the Head of Household. I'll deal with the bad part later."], 'dr')
+      : pick(["Something good for me, something bad for them. I've watched this show. I'm not touching it.", "I'm not opening that. Whatever is in there, the house would never forgive me for it."], 'dr') },
+  ];
+  if (act.opened) {
+    steps.push({ k: 'beat', t: `${h} opens it. Four minutes later the door closes again, and the house is only ever told what it cost.`, toast: ['OPENED', '#ff3355'],
+      ...(act.prize ? { why: [`Only you know: the box held ${act.prize}.`] } : {}) });
+    if (act.consequenceName) steps.push({ k: 'beat', t: `The price: ${h} spends the week in ${act.consequenceName}${act.publicClaim ? `, and tells the house the box held ${act.publicClaim}` : ''}.` });
+  } else steps.push({ k: 'beat', t: `${h} reads the card twice and walks away. The door closes behind the refusal without a sound.`, toast: ['LEFT CLOSED', '#9aa4b2'] });
+  return [{
+    id: 'bb-pandora-v', kind: 'pandora', anchor: ctx.anchor, day: ctx.day, set: 'hoh', room: kit.ROOM_NAME.hoh, cam: kit.CAM.hoh, time: '12:15',
+    kicker: `Cam ${kit.CAM.hoh} · HOH room`, title: "Pandora's Box", label: "Pandora's Box", sub: 'Something good for you. Something bad for them.', cast: [[h, 50]], steps,
+  }];
+}
+
+// ── the Diamond Power of Veto, played on eviction night ─────────────────
+export function detonationScreens(act, ctx, kit) {
+  const { holder, saved, replacement } = act || {};
+  if (!holder || !saved) return [];
+  const before = (ctx.nominees || []).slice();
+  const after = before.map(n => (n === saved ? replacement : n)).filter(Boolean);
+  const steps = [
+    { k: 'beat', t: 'The pleas are done. Before the first vote can be cast, somebody stands up who is not supposed to be standing.', tense: [holder] },
+    { k: 'say', by: holder, push: true, t: 'Before anybody votes, I have something. This is the Diamond Power of Veto.', toast: ['DIAMOND VETO', '#7ee7ff'], shake: true },
+    { k: 'say', by: holder, t: 'It lets me take a nominee off the block, and name the replacement myself.' },
+    { k: 'say', by: holder, push: true, t: act.selfSave ? 'I use it on myself.' : `I use it on ${saved}.` },
+    { k: 'beat', t: act.selfSave ? `${holder} steps off the block, minutes before the vote.` : `${saved} doesn't move for a full second. Then ${saved} gets up out of the chair.`, seat: { [saved]: 'stand2' } },
+  ];
+  if (replacement) {
+    steps.push({ k: 'say', by: holder, push: true, t: `And my replacement nominee is ${replacement}.`, nom: after, big: [replacement, 'The replacement', 'out'], why: [act.replacementWhy].filter(Boolean),
+      seat: { [replacement]: before.indexOf(saved) === 0 ? 'N-1' : 'N1' } });
+    steps.push({ k: 'beat', t: 'No campaign. No plea. The house votes on a block it did not know existed two minutes ago.', tense: after });
+  }
+  const here = kit.houseNow(ctx);
+  return [{
+    id: 'bb-detonation-v', kind: 'detonation', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 1, time: 'LIVE', tvObj: true,
+    kicker: 'Live · Eviction night', title: 'The Detonation', label: 'The Detonation', sub: 'A power nobody knew existed',
+    seated: kit.seatLiving(before, here.filter(n => !before.includes(n) && n !== ctx.hoh), ctx.hoh), steps,
+  }];
+}
+
+// ── The App Store ──────────────────────────────────────────────────────
+export function appStoreScreens(act, ctx, kit) {
+  const won = (act?.winners || []).filter(w => w && w.power);
+  const shelf = act?.shelf || [];
+  const steps = [
+    { k: 'bb', t: 'Houseguests, the App Store is open.', rule: 1 },
+    { k: 'bb', t: `America has been voting on a shelf of ${kit.word(shelf.length || won.length)} powers. Nobody in this house can compete for one.`, rule: 2 },
+    { k: 'bb', t: 'Every power America chose goes to one of you, in private. You will not be told who.', rule: 3 },
+  ];
+  if (won.length <= 4) for (const w of won) steps.push({ k: 'beat', t: `${w.power} leaves the shelf. Somebody in this house is being told, right now, that they are holding it.` });
+  else steps.push({ k: 'beat', t: `${kit.titleCase(kit.word(won.length))} powers leave the shelf: ${kit.listOf(won.map(w => w.power))}. Somebody is being told about every one of them, in private.` });
+  steps.push({ k: 'beat', t: 'The house is told only that the vote happened. You will find out who holds what on the night it goes off.', toast: ['DOWNLOADED', '#a5b4fc'] });
+  const here = kit.houseNow(ctx);
+  return [{
+    id: 'bb-appstore-v', kind: 'appstore', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '12:00',
+    kicker: 'Cam 04 · Living room', title: 'The App Store', label: 'The App Store', sub: 'Nobody in this house can win one of these',
+    seated: kit.seatLiving([], here.filter(n => n !== ctx.hoh), ctx.hoh),
+    rules: [['THE SHELF', 'powers America votes on'], ['NO COMPETITION', 'nobody in the house can win one'], ['PRIVATE', 'each goes to somebody, unnamed']],
+    rulesTitle: 'THE APP STORE · HOW IT WORKS', steps,
+  }];
+}
+
+/** The Veto Redraw or Replacement, at the draw: steps for steps.js drawScreen. */
+export function drawTwistSteps(dt, kit) {
+  if (!dt?.kind) return [];
+  const name = dt.kind === 'redraw' ? 'Veto Redraw' : 'Veto Replacement';
+  const steps = [{ k: 'bb', t: `Houseguests, somebody in this house holds the ${name}, and has just used it.`, toast: [name.toUpperCase(), '#ff3355'], shake: true }];
+  const who = dt.anonymous ? [`Only you know: ${dt.holder} used it.`] : [];
+  if (!dt.changed) {
+    steps.push({ k: 'beat', t: 'The bag goes round again and returns the same names. Nothing changes.', ...(who.length ? { why: who } : {}) });
+    return steps;
+  }
+  for (const b of dt.beats || []) {
+    if (b.badgeText === 'SIX PLAY FOR IT') continue;
+    const t = String(b.text || '').replace(/<[^>]+>/g, '').trim();
+    if (!t) continue;
+    if (b.badgeText === 'TAKEN OUT') steps.push({ k: 'beat', t, vetoOut: dt.lost || [] });
+    else if (b.badgeText === 'PUT IN') steps.push({ k: 'beat', t, vetoPlay: dt.gained || [], why: [...who, dt.selfSeat ? `${dt.holder} put ${dt.holder} into the competition.` : null].filter(Boolean) });
+    else steps.push({ k: 'beat', t });
+  }
+  if (!steps.some(s => s.vetoOut)) steps.push({ k: 'beat', t: `Out: ${kit.listOf(dt.lost || [])}. In: ${kit.listOf(dt.gained || [])}.`, vetoOut: dt.lost || [], vetoPlay: dt.gained || [], why: who });
+  return steps;
+}

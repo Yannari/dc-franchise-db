@@ -64,13 +64,20 @@ describe('it does not spoil the ceremony it belongs to', () => {
       'the engine stopped seating the third chair early; this guard can be simplified')
       .toBeLessThan(acts.indexOf('nominations'));
 
-    const labels = (buildVPScreens(ep) || []).map(s => s.label);
-    const twist = labels.indexOf("America's Nominee");
+    // In the stepped viewer the audience's chair is turned AT the ceremony, after the Head of
+    // Household's own keys, by nobody's hand (vp-bb-ep/steps.js nomScreen): no screen before it.
+    const screens = buildVPScreens(ep) || [];
+    const labels = screens.map(s => s.label);
     const noms = labels.indexOf('Nomination Ceremony');
-    expect(twist, 'the twist screen vanished').toBeGreaterThan(-1);
     expect(noms).toBeGreaterThan(-1);
-    expect(twist, 'the third nominee was named before the ceremony turned a key')
-      .toBeGreaterThan(noms);
+    const early = labels.indexOf("America's Nominee");
+    expect(early === -1 || early > noms, 'the third nominee was named before the ceremony turned a key').toBe(true);
+    const html = screens[noms].html;
+    const third = ep.acts.find(a => a.type === 'americas-nominee').nominee;
+    expect(html).toContain('America has nominated a houseguest');
+    expect(html.indexOf('America has nominated a houseguest'), 'the audience’s key turned before the HOH’s')
+      .toBeGreaterThan(html.lastIndexOf('turns the next key'));
+    expect(html).toContain(third);
   });
 });
 

@@ -155,7 +155,7 @@ describe('nothing is on stage before its line', () => {
 describe('the twists stay', () => {
   it('replaces the core loop and keeps every twist screen, after its part of the week', () => {
     const { row } = weeks[1];
-    const legacy = [{ id: 'bb-house-1' }, { id: 'bb-hoh' }, { id: 'bb-hacker', label: 'Hacker' }, { id: 'bb-noms' }, { id: 'bb-house-2' },
+    const legacy = [{ id: 'bb-house-1' }, { id: 'bb-hoh' }, { id: 'bb-botb', label: 'Battle of the Block' }, { id: 'bb-noms' }, { id: 'bb-house-2' },
       { id: 'bb-vdraw' }, { id: 'bb-veto' }, { id: 'bb-cer' }, { id: 'bb-plans' }, { id: 'bb-evict' }, { id: 'bb-afterword', label: 'After' }]
       .map(x => ({ label: x.id, html: '<div></div>', ...x }));
     const out = bbStepScreens(row, legacy, { host: 'Valeria' });
@@ -169,10 +169,11 @@ describe('the twists stay', () => {
     // House Life stays: the classic feed is the week's record, every beat and the powers band
     expect(ids).toContain('bb-house-1');
     // (a twist that still keeps its classic screen; the Coin has a stepped set of its own now)
-    expect(ids).toContain('bb-hacker');
+    // (Battle of the Block is a competition, and stays classic: the user, 2026-10-14)
+    expect(ids).toContain('bb-botb');
     expect(ids).toContain('bb-afterword');
-    expect(ids.indexOf('bb-hacker')).toBeGreaterThan(ids.indexOf('bb-hoh'));
-    expect(ids.indexOf('bb-hacker')).toBeLessThan(ids.indexOf('bb-noms'));
+    expect(ids.indexOf('bb-botb')).toBeGreaterThan(ids.indexOf('bb-hoh'));
+    expect(ids.indexOf('bb-botb')).toBeLessThan(ids.indexOf('bb-noms'));
   });
 });
 

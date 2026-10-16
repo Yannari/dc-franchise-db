@@ -29,7 +29,8 @@ import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate } from 
 import { seatedJurors } from '../bb/jury.js';
 import { finaleHouseScenes } from './finale-house.js';
 import { themeBeatScreens, themeVoiceSteps, themePrimerScreens, themeTurnScreens, haveNotScreens, departureScreens, instantScreens,
-  doubleBreakScreen, americasVoteScreens } from './steps-ports.js';
+  doubleBreakScreen, americasVoteScreens, hackerScreens, hackerVoteScreens, roadkillScreens, pandoraScreens, detonationScreens,
+  appStoreScreens, drawTwistSteps } from './steps-ports.js';
 
 // The engine's own moments that happen AT a ceremony (the user, 2026-10-06: "most of the time the
 // reactions are after, but sometimes it causes drama during the ceremony, same for veto"). They play
@@ -288,22 +289,45 @@ function nomScreen(act, ctx) {
   const duo = act.duo?.blocks?.length ? act.duo : null;
   if (duo) return duoNomScreen(act, ctx, hoh, noms, seated, duo);
   if (act.anonymous) return anonNomScreen(act, ctx, hoh, noms, seated);
+  // A chair the Head of Household did not fill (a Roadkill winner's, America's, a curse's, the scoreboard's) is on
+  // the block, but its key is not the HOH's to turn: the HOH named two, and said "three" and turned three keys
+  // (the user, 2026-10-16, on the final four: "it doesnt understand that they dont have a choice").
+  const outside = {};
+  if (act.roadkillChair && noms.includes(act.roadkillChair)) outside[act.roadkillChair] = 'roadkill';
+  if (act.curseChair && noms.includes(act.curseChair)) outside[act.curseChair] = 'curse';
+  if (act.deadLastChair && noms.includes(act.deadLastChair)) outside[act.deadLastChair] = 'deadlast';
+  const anN = act.americasChair || ctx.anAct?.nominee;
+  if (anN && noms.includes(anN)) outside[anN] = 'america';
+  const mine = noms.filter(n => !outside[n]);
   const steps = [
     { k: 'bb', t: 'This is the nomination ceremony.' },
-    { k: 'say', by: hoh, t: `This is the nomination ceremony. It is my responsibility as Head of Household to nominate ${word(noms.length)} houseguests for eviction.` },
+    { k: 'say', by: hoh, t: `This is the nomination ceremony. It is my responsibility as Head of Household to nominate ${word(mine.length)} houseguests for eviction.` },
     { k: 'say', by: hoh, t: `I will now turn my first key.` },
   ];
-  const nwhy = nomWhy(act, hoh, noms, ctx.row);
-  noms.forEach((n, i) => {
+  const nwhy = nomWhy(act, hoh, mine, ctx.row);
+  const last = noms.length - 1;
+  mine.forEach((n, i) => {
     steps.push({ k: 'beat', t: i === 0 ? `${hoh} turns the first key. A face fills the first slot on the screen.` : `${hoh} turns the next key.`, reveal: n,
-      ...(i === noms.length - 1 ? { nom: noms.slice(), toast: ['NOMINATED', '#ff3355'], ...(nwhy.length ? { why: nwhy } : {}) } : {}) });
+      ...(i === mine.length - 1 ? { nom: mine.slice(), ...(mine.length === noms.length ? { nom: noms.slice(), toast: ['NOMINATED', '#ff3355'] } : {}), ...(nwhy.length ? { why: nwhy } : {}) } : {}) });
   });
-  const named = noms.map((n, i) => (i === noms.length - 1 && noms.length > 1 ? `and you, ${n}` : `you, ${n}`)).join(noms.length > 2 ? ', ' : ' ');
+  Object.entries(outside).forEach(([n, how], j) => {
+    const fin = mine.length + j === last ? { nom: noms.slice(), toast: ['NOMINATED', '#ff3355'] } : {};
+    if (how === 'roadkill') steps.push({ k: 'bb', t: 'There is one more key. The Roadkill winner has nominated a houseguest, and nobody will be told who.' },
+      { k: 'beat', t: 'The third key turns on its own. A face fills the last slot.', reveal: n, ...fin, why: [ctx.roadkillWinner ? `Only you know: ${ctx.roadkillWinner} won Roadkill and named ${n}.` : `Nobody in the house named ${n}.`] });
+    else if (how === 'america') steps.push({ k: 'bb', t: 'There is one more key. America has nominated a houseguest.' },
+      { k: 'beat', t: 'A key turns with nobody\'s hand on it. A face fills the last slot.', reveal: n, ...fin,
+        why: [ctx.anAct?.mvp ? `Only you know: ${ctx.anAct.mvp} was voted Most Valuable Player and named ${n}.` : `The audience named ${n}. Nobody in the house did.`] });
+    else if (how === 'curse') steps.push({ k: 'bb', t: `${n}, there is one more key, and it is yours. You must nominate yourself.` },
+      { k: 'beat', t: `${n} turns the last key. ${n}'s own face fills the slot.`, reveal: n, ...fin });
+    else steps.push({ k: 'bb', t: `${n} finished last in the Head of Household competition, and takes the last chair.` },
+      { k: 'beat', t: 'The last key turns on its own.', reveal: n, ...fin });
+  });
+  const named = mine.map((n, i) => (i === mine.length - 1 && mine.length > 1 ? `and you, ${n}` : `you, ${n}`)).join(mine.length > 2 ? ', ' : ' ');
   steps.push({ k: 'say', by: hoh, push: true, t: `I have nominated ${named}, for eviction.` });
   if (act.script?.noms?.length) {
     steps.push(...scriptSteps(act.script.noms));
     // every nominee past the two the speech was about hears a reason too
-    for (const n of noms) steps.push(...scriptSteps(act.script?.nomThird?.[n]));
+    for (const n of mine) steps.push(...scriptSteps(act.script?.nomThird?.[n]));
   } else if (act.target) {
     const why = act.target === act.backdoorTarget ? null
       : act.structure === 'expendables' ? `This isn't personal. I had to put two people up, and I went with the people I've connected with least.`
@@ -320,6 +344,12 @@ function nomScreen(act, ctx) {
   const VOLATILE = new Set(['hothead', 'wildcard', 'chaos-agent', 'villain']);
   for (const n of noms) {
     if (reacted.has(n)) continue;
+    // a chair nobody at the table turned: no look at the HOH, a look at everybody
+    if (outside[n] && outside[n] !== 'curse') {
+      steps.push({ k: 'beat', t: pickBy([`${n} looks round the table at every face, one at a time. Nobody looks back.`, `${n} stares at the screen. Nobody at this table turned that key, or everybody says so.`,
+        `${n} laughs, once, without meaning it. Then the counting starts: who in this room could have done that?`], `${ctx.week}|out|${n}`) });
+      continue;
+    }
     const bond = act.bondsAt?.[`${hoh}|${n}`] ?? 0;
     const arch = (ROSTER || []).find(p => p.name === n)?.archetype;
     const salt = `${ctx.week}|react|${n}`;
@@ -424,7 +454,10 @@ function drawScreen(act, ctx) {
       steps.push({ k: 'beat', t: `${d.drawer} draws ${d.drew}.`, chip: { drawer: d.drawer, chip: d.drew }, vetoPlay: [d.drew] });
     }
   }
+  // a Veto Redraw or Replacement, between the draw and the competition (vp-bb-ep/steps-ports.js)
+  steps.push(...drawTwistSteps(act.drawTwist, KIT));
   const players = new Set(steps.flatMap(s => s.vetoPlay || []));
+  for (const s of steps) for (const n of s.vetoOut || []) players.delete(n);
   const others = ctx.house.filter(n => !players.has(n) && n !== hoh && !block.includes(n));
   // the draw ends on the field, not on the last chip (the user, 2026-10-06: "the draw ends abruptly")
   const field = [...players];
@@ -3492,6 +3525,18 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         beatsOf(act); break;
       case 'instant-eviction': flush(); for (const scr of instantScreens(act, ctx, KIT)) ceremony(scr); ctx.nominees = [...(act.nominees || ctx.nominees)]; beatsOf(act); break;
       case 'americas-eviction-vote': flush(); for (const scr of americasVoteScreens(act, ctx, KIT, host)) ceremony(scr); beatsOf(act); break;
+      case 'hacker': flush(); for (const scr of hackerScreens(act, ctx, KIT)) ceremony(scr);
+        if (act.blockHack) ctx.nominees = ctx.nominees.map(n => (n === act.blockHack.down ? act.blockHack.up : n));
+        beatsOf(act); break;
+      case 'hacker-vote': flush(); for (const scr of hackerVoteScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;
+      case 'roadkill': flush(); for (const scr of roadkillScreens(act, ctx, KIT)) ceremony(scr); ctx.roadkillWinner = act.winner; beatsOf(act); break;
+      // the audience's chair is turned at the nomination ceremony itself (nomScreen)
+      case 'americas-nominee': ctx.anAct = act; beatsOf(act); break;
+      case 'pandoras-box': flush(); for (const scr of pandoraScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;
+      case 'diamond-detonation': flush(); for (const scr of detonationScreens(act, ctx, KIT)) ceremony(scr);
+        if (act.saved && act.replacement) ctx.nominees = ctx.nominees.map(n => (n === act.saved ? act.replacement : n));
+        beatsOf(act); break;
+      case 'app-store': flush(); for (const scr of appStoreScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;
       case 'rivals-hoh':
         // the latecomers walk in here: from now on they are in the house
         flush(); out.push({ slot: act.type }); ctx.hidden = new Set(); beatsOf(act); break;
@@ -3546,7 +3591,7 @@ function countWords(t) {
 }
 
 /** Ids of the legacy screens these steps replace. Everything else is a twist and stays. */
-export const REPLACED = /^(?:theme-(?:primer|turn)(-\d+)?|bb-(?:theme-[a-z]+|havenots|departure|instant|avote|double|sanctum)(-\d+)?)$|^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|twist|twist-2|interview|interview-2|jury-house(-\d+)*|final-interview|cold|twins|twins-open|twins-job|twins-caught|twins-in|twins-out|duos-open|duos-key|duos-week|duos-repair|duos-expire|finale-house)(-\d+)?$/;
+export const REPLACED = /^(?:theme-(?:primer|turn)(-\d+)?|bb-(?:theme-[a-z]+|havenots|departure|instant|avote|double|sanctum|hacker|hackervote|roadkill|americasnominee|pandora|detonation|appstore|vetodraw-[a-z]+)(-\d+)?)$|^bb-(noms|noms-2|vdraw|cer|evict|plans|final-cut|ftc-questions|ftc-speeches|jury|afh|reunion|finale-brief|safetysuite|chain|hidden-hidden|hidden-search|hidden-found|hidden-expired|prizeexchange|duo-week-open|duo-week-events|duo-week-out|camp|campdoor|wildcard|secret-power|timecapsule|power-hoh-interrogation|power-deepfake-hoh|whacktivity|power-hoh-gatekeeper|power-the-cloud|power-buy-off|power-coup-d-etat|coin|secondveto-[a-z]+|temptation|nightmare|battleback|bonuslife|teamamerica|power-mystery-competitor|power-mystery-veto|veto2|premiere|haltinghex|no-eviction|deadlast|rewind|whitelocust|moveinday|twist|twist-2|interview|interview-2|jury-house(-\d+)*|final-interview|cold|twins|twins-open|twins-job|twins-caught|twins-in|twins-out|duos-open|duos-key|duos-week|duos-repair|duos-expire|finale-house)(-\d+)?$/;
 export const ANCHOR_OF = id => {
   const base = id.replace(/-\d+$/, '');
   return /^bb-(final-hoh|final-cut|jury|ftc-questions|ftc-speeches|afh|reunion|finale-brief)$/.test(base) || /^bb-final-hoh$/.test(base) ? 'finale'

@@ -43,6 +43,11 @@ const CASES = [
   { name: 'triple eviction', cfg: twist('bb-triple-eviction', [2]), weeks: 2 },
   { name: "America's vote", cfg: twist('bb-americas-eviction-vote', [1, 2]), weeks: 2 },
   { name: 'sanctum', cfg: twist('bb-sanctum-week', [1, 2]), weeks: 2 },
+  { name: 'hacker', cfg: twist('bb-hacker', [1, 2, 3]), weeks: 3 },
+  { name: 'roadkill', cfg: twist('bb-roadkill', [1, 2]), weeks: 2 },
+  { name: "America's nominee", cfg: twist('bb-americas-nominee', [1, 2]), weeks: 2 },
+  { name: 'pandora', cfg: twist('bb-pandoras-box', [1, 2, 3]), weeks: 3 },
+  { name: 'app store', cfg: twist('bb-app-store', [1]), weeks: 4 },
 ];
 const PLAYED = Object.fromEntries(CASES.map(c => [c.name, play(c.cfg, c.weeks)]));
 const all = name => PLAYED[name].map(ep => ({ ep, screens: bbWeekSteps(ep) }));
@@ -161,8 +166,93 @@ describe('ported screens on the stepped stage', () => {
     expect(seen).toBeGreaterThan(0);
   });
 
+  it('hacks the block in front of the house, and the veto meeting sits the hacked block', () => {
+    let seen = 0, hacked = 0;
+    for (const { ep, screens } of all('hacker')) {
+      const act = actsOf(ep, 'hacker')[0];
+      if (!act) continue;
+      seen++;
+      const si = screens.findIndex(s => s.kind === 'hacker');
+      expect(si).toBeGreaterThanOrEqual(0);
+      // the winner only ever in the side panel
+      expect(screens[si].steps.some(st => st.k !== 'beat' && st.t.includes(`${act.winner} won`))).toBe(false);
+      if (act.blockHack) {
+        hacked++;
+        expect(screens[si].steps.find(st => st.nom)?.nom).toContain(act.blockHack.up);
+        const cer = screens.find(s => s.kind === 'cer');
+        if (cer) expect(Object.keys(cer.seated || {})).toContain(act.blockHack.up);
+      }
+      paints(screens, si);
+      const hv = screens.findIndex(s => s.kind === 'hackervote');
+      if (actsOf(ep, 'hacker-vote')[0]) { expect(hv).toBeGreaterThanOrEqual(0); paints(screens, hv); }
+    }
+    expect(seen).toBeGreaterThan(0);
+    expect(hacked).toBeGreaterThan(0);
+  });
+
+  it("turns only the Head of Household's keys: a Roadkill or America's chair is turned by nobody", () => {
+    let seen = 0;
+    for (const name of ['roadkill', "America's nominee"]) {
+      for (const { ep, screens } of all(name)) {
+        const third = (actsOf(ep, 'roadkill')[0] || actsOf(ep, 'americas-nominee')[0])?.nominee;
+        if (!third) continue;
+        seen++;
+        const si = screens.findIndex(s => s.kind === 'noms');
+        const S = screens[si];
+        const noms = actsOf(ep, 'nominations')[0].nominees;
+        expect(S.steps.some(st => st.by === S.steps[1].by && /nominate two houseguests/.test(st.t))).toBe(noms.length === 3);
+        expect(S.steps.some(st => st.k === 'bb' && /one more key/.test(st.t))).toBe(true);
+        expect(S.steps.find(st => st.reveal === third)?.k).toBe('beat');
+        expect(S.steps.filter(st => st.reveal).at(-1).nom).toEqual(noms);
+        if (name === 'roadkill') expect(screens.some(s => s.kind === 'roadkill')).toBe(true);
+        paints(screens, si);
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+
+  it("opens Pandora's Box or leaves it shut, and a Diamond Veto played live changes the block", () => {
+    let seen = 0;
+    for (const { ep, screens } of all('pandora')) {
+      const act = actsOf(ep, 'pandoras-box')[0];
+      if (!act) continue;
+      seen++;
+      const si = screens.findIndex(s => s.kind === 'pandora');
+      expect(screens[si].steps.some(st => (st.toast || [])[0] === (act.opened ? 'OPENED' : 'LEFT CLOSED'))).toBe(true);
+      paints(screens, si);
+      const det = actsOf(ep, 'diamond-detonation')[0];
+      if (det) {
+        const di = screens.findIndex(s => s.kind === 'detonation');
+        expect(screens[di].steps.find(st => st.nom)?.nom).toContain(det.replacement);
+        paints(screens, di);
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+
+  it('opens the App Store without naming who got what, and plays a Redraw or Replacement at the draw', () => {
+    let seen = 0;
+    for (const { ep, screens } of all('app store')) {
+      const act = actsOf(ep, 'app-store')[0];
+      if (act) {
+        seen++;
+        const si = screens.findIndex(s => s.kind === 'appstore');
+        for (const w of act.winners || []) expect(screens[si].steps.some(st => st.t.includes(`${w.name} `) && st.t.includes(w.power))).toBe(false);
+        paints(screens, si);
+      }
+      const dt = actsOf(ep, 'veto')[0]?.drawTwist;
+      if (dt?.kind) {
+        const di = screens.findIndex(s => s.kind === 'vdraw');
+        expect(screens[di].steps.some(st => /Veto (Redraw|Replacement)/.test(st.t))).toBe(true);
+        paints(screens, di);
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+
   it('replaces the classic screens it ported', () => {
-    for (const id of ['theme-primer', 'theme-turn', 'bb-theme-open', 'bb-theme-vote', 'bb-havenots', 'bb-departure', 'bb-instant', 'bb-avote', 'bb-double', 'bb-double-3', 'bb-sanctum']) {
+    for (const id of ['theme-primer', 'theme-turn', 'bb-theme-open', 'bb-theme-vote', 'bb-havenots', 'bb-departure', 'bb-instant', 'bb-avote', 'bb-double', 'bb-double-3', 'bb-sanctum',
+      'bb-hacker', 'bb-hackervote', 'bb-roadkill', 'bb-americasnominee', 'bb-pandora', 'bb-detonation', 'bb-appstore', 'bb-vetodraw-replace', 'bb-vetodraw-redraw']) {
       expect(REPLACED.test(id), id).toBe(true);
     }
     // and nothing it should not

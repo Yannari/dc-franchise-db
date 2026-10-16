@@ -601,7 +601,8 @@ describe('the antagonist reaches the reader and the backlog', () => {
     const screens = buildVPScreens(playedWeek()) || [];
     expect(screens.some(s => s.label === 'The Voice'), 'no screen for the voice').toBe(true);
     const html = screens.map(s => s.html || '').join('');
-    expect(html).toContain('Week 3. Begin.');
+    // the stepped viewer says a small count as a word (vp-bb-ep/steps.js countWords)
+    expect(html).toMatch(/Week (3|three)\. Begin\./);
   });
 
   it('does not lose the house life the week hung on that act', () => {

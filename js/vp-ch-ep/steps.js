@@ -297,7 +297,8 @@ function linesToSteps(S, lines, { names, first = null, sceneWho = [], host = fal
 function sceneStep(S, a, place, { night, extraCast = [], hidden = [], group = null, crowd = [] } = {}) {
   const key = plateKey(place.plate, night);
   // in the common room people sit on the sofa (the user, 2026-10-15: "they don't sit")
-  if (!group && place.plate === 'common') group = 'sofa';
+  if (group === 'none') group = null;
+  else if (!group && place.plate === 'common') group = 'sofa';
   const who = (a?.who || []).filter(n => n && n !== HOST);
   const cast = placeScene(key, [...new Set([...who, ...extraCast])], { group, crowd: crowd.filter(n => !who.includes(n)) });
   return { scene: { plate: key, place: place.place, when: whenOf(S.day, S.min), icon: place.icon || 'house', room: place.room || null,
@@ -542,6 +543,9 @@ function throwback(shot) {
 }
 
 // One villa/party/eve scene.
+// The scenes where TJ gathers everybody: an announcement to the house, not a conversation
+const TJ_TO_HOUSE = new Set(['tj-house-meeting', 'tj-at-breakfast', 'power-rankings', 'quit', 'medical', 'disqualified', 'purge',
+  'pass-earned', 'pass-cut', 'redemption-closed', 'late-arrival', 'partner-draw', 'partner-pick']);
 function scene(S, { a, i, title }, { names, house, goneAt, key }) {
   S.at(i);
   const night = isNight(S.min);
@@ -553,7 +557,10 @@ function scene(S, { a, i, title }, { names, house, goneAt, key }) {
   }
   const place = stageOf(a, S.min);
   const crowd = key === 'party' ? house.filter(n => !goneAt[i]?.has(n) && !a.who.includes(n)).filter((n, k) => (k * 7 + a.day) % 3 === 0).slice(0, 7) : [];
-  const first = sceneStep(S, a, place, { night: night || place.hour === 'night', crowd });
+  // TJ talking to the whole house has the whole house in the room, stood in a line (the user, 2026-10-17: "when TJ
+  // talks to everybody, only two or three people are in the common room"): everybody still in, up to fourteen
+  const everyone = TJ_TO_HOUSE.has(a.kind) ? house.filter(n => !goneAt[i]?.has(n) && !a.who.includes(n)).slice(0, Math.max(0, 14 - a.who.length)) : [];
+  const first = sceneStep(S, a, place, { night: night || place.hour === 'night', crowd, ...(everyone.length ? { extraCast: everyone, group: 'none' } : {}) });
   // the event it is (a fight, a showmance, a meeting): the music follows it (vp-ch-ep/sound.js)
   first.sceneIdx = i; first.title = title; first.kind = a.kind;
   if (key === 'party') { first.dance = crowd.slice(0, 5); first.bg = Object.fromEntries(crowd.slice(5).map(n => [n, 'sip'])); }

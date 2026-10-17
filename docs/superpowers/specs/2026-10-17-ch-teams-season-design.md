@@ -64,3 +64,37 @@ a Teams tab. The export writes each placement's team, the teams, and the switche
 vote and only for a teammate; the opponent is never on the winning team; a switch moves the player; a team of one
 folds; after the break-up nobody has a team; a team final crowns the whole best team. Audit block: switches per
 season, the break-up episode, how often a team votes in its own strongest player.
+
+## As built (2026-10-17)
+
+Commits adb4a6ce (engine), 25fb21db (dialogue), 6b03af79 (setup, rows, record), 7a5af920 (viewer), 6a8d6540 (wording).
+
+**What differs from the design above, and why (my calls):**
+- **The call-out stays with the one voted in.** The design had the winning team pick the opponent. Reading the first
+  transcripts, every deal, threat, meeting and spare-deal the house already plays is about a call-out ("if I get voted
+  in, I'm calling out X"), so a winners' pick made a season of promises nobody could keep. The one voted in calls out
+  from anybody of the division *not on the winning team*; into the winning team only when nobody else is left.
+- **A team vote takes no volunteers** (`deliberate(..., { noVolunteer })`): the team decides.
+- **A team final shields a team down to its last two** from voting and from the call-out, so there are teams left to
+  reach it (seed 6, a draft season: the weaker team was ground down to nothing and the final was solo). When nobody
+  else can go, the *winning* team votes one of its own in (`vote.winners`), never its captain.
+- **No winning team's vote ever sends in the captain**; a division with nobody on the losing team moves the week to the
+  other division (seed 11: four weeks with no Arena before this).
+- **The Tribunal and partner weeks are off in a Teams season** (setup hides them; `challengeOptions` and
+  `playChallengeSeason` force them off).
+- A past **champion** is anybody the franchise ledger has seen win a season of any show (`challengeBackground`).
+
+**Where the words come from:** `lines/teams.js`. `write.js keyFor` reads `<kind>~teams` pools while the teams stand
+(`snap.teams`, taken when the scene happened; the vote carries `vote.team`, because episodes are written after the
+season, when the teams may be long broken). `roles.js TEAM_ROLES` for the daily, the ceremony's opening, the team
+final's champions. A switch names its captains by part (`joinCaptain`/`leaveCaptain`) so a captain already gone leaves
+the part empty rather than handing the welcome to the captain being left.
+
+**Bug classes the read found** (every one from a transcript, none from a red test): a welcome line given to the wrong
+captain; a reply aired with nobody to answer it (tie it with `opt: '<role>'`); one person listed twice in a scene's
+cast; "The The Underdogs" (team names that start with The); "the house has spoken" / "the house voted me in" over a
+week only one team voted.
+
+**Tools:** `CH_TEAMS=shows|champions|vets|draft [CH_COUNT=small] [CH_END=team-final] CH_SEED=n npm run ch:transcript`
+writes `transcripts/ch-season-teams-<how>-<seed>.txt`. Tests: `tests/ch-teams.test.js` (rules),
+`tests/ch-teams-run.test.js` (from the run tab), a Teams season in `tests/ch-vp-steps.test.js` (the viewer).

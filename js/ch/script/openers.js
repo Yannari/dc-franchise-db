@@ -40,6 +40,16 @@ export const OPENERS = {
   'arena-eve-confront': ['The night before the Arena, {a} walks right up to {b}.', '{a} has something to say to {b} before tomorrow, and says it in front of everybody.'],
   'arena-eve-pep': ['The night before the Arena, {a} goes to find {b}.', '{a} knocks on {b}\'s door late. Tomorrow {b} goes into the Arena.'],
   'alliance-leave': ['{a} has had enough of the group, and tells {b} first.', '{a} pulls {b} aside. Something has to change.'],
+  // each way out of a group its own way in: a member pushed or cut loose did not decide to go (the opener
+  // said "has had enough of the group" over somebody being thrown out)
+  'alliance-leave.pushed-out': ['{b} has news for {a}, and the rest of the group already knows it.', 'The group has talked without {a}. {b} is the one sent to say it.'],
+  'alliance-leave.cut-loose': ['{b} has stopped trusting {a}, and has decided to say so.', '{b} finds {a} alone. It is not a friendly visit.'],
+  'alliance-leave.exposed': ['Everybody heard {a}\'s vote. {b} wants an explanation.', 'The vote is over, and {b} goes straight to {a}.'],
+  'alliance-leave.walked-friend': ['{a} has heard who the group is coming for, and it is somebody {a} will not give up.', '{a} has made a choice between the group and a friend.'],
+  'alliance-leave.defected': ['Word has got around about {a}, and {b} is the last to hear it.', '{b} has been told something about {a} that {b} does not want to believe.'],
+  'alliance-switch': ['{b} knocks on the door of a group {b} was never in.', '{b} has walked out of one alliance and is looking for another.'],
+  'alliance-merge': ['Two groups that have spent weeks voting against each other are about to stop.', '{a} and {b} lead rival groups, and they have asked to meet alone.'],
+  'alliance-end.drifted': ['{alliance} has not met in days, and {a} and {b} both know why.', 'Nobody has called a meeting of {alliance} all week.'],
   // an alliance that ends because the final starts ends at the start line, not in the villa kitchen
   'alliance-end.final': ['On the start line of the final, {a} and {b} find each other one last time.', 'Before the final starts, {a} and {b} stand together for the last time as allies.'],
   'alliance-end': ['What\'s left of {alliance} sits in the bedroom, and nobody wants to say it first.', '{a} and {b} end up alone in the kitchen. The group is falling apart.'],

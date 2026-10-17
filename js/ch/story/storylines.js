@@ -55,6 +55,8 @@ function rule(sc) {
     case 'alliance-betrayal': return F('alliance', 'betrayal', d.how);
     case 'alliance-leave': return F('alliance', 'leave', d.why);
     case 'alliance-end': return F('alliance', 'end', d.why);
+    case 'alliance-merge': return F('alliance', 'merge');
+    case 'alliance-switch': return F('alliance', 'grown', 'switch');
     case 'outing': return F('alliance', 'outed');
     case 'meeting-spotted': return F('alliance', 'spotted');
     case 'loyalty-test': return F('alliance', 'test', d.leaks ? 'leaks' : 'holds');
@@ -68,7 +70,7 @@ function rule(sc) {
     case 'jealousy': return F('showmance', 'jealous');
     case 'breakup': return F('showmance', 'breakup');
     case 'ex-in-the-house': return F('showmance', d.rekindle ? 'spark' : 'cold', 'ex');
-    case 'home-gossip': return F('showmance', 'house', 'home');
+    case 'home-gossip': return d.couple ? F('showmance', 'house', 'home') : F('showmance', 'spark', 'home');
     case 'home-guilt': return d.ends ? F('showmance', 'breakup', 'home') : F('showmance', 'together', 'home');
     // ── hunt ──
     case 'overheard': return F('hunt', 'overheard');
@@ -131,6 +133,7 @@ export const NEEDS = {
   'alliance.leave': ['formed', 'grown', 'meeting', 'betrayal'],
   'alliance.end': ['formed', 'grown', 'meeting', 'betrayal', 'leave'],
   'alliance.outed': null,
+  'alliance.merge': ['formed', 'grown', 'meeting'],
   'showmance.together': ['spark'],
   'showmance.date': ['together'],
   'showmance.house': ['together', 'date'],

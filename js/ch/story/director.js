@@ -59,11 +59,11 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   'arena-wishlist', 'wishlist-leak',
   // late arrivals (ep-twists.js)
   'late-arrival', 'late-sizeup']);
-const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'arena-eve-confront', 'arena-eve-pep',
+const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-merge', 'arena-eve-confront', 'arena-eve-pep',
   'arena-eve-alone', 'morning-after', 'fight', 'team-blame', 'partner-blame', 'throw-caught', 'jealousy', 'receipts',
   'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout', 'spark', 'party-deal', 'party-tears', 'expelled-victim',
   'injury-target', 'injury-care', 'home-gossip', 'home-guilt', 'ranking-beef', 'pass-panic', 'money-talk', 'bank-brag', 'redemption-watch', 'redemption-feud']);
-const STORY = new Set(['gym-training', 'pool-games', 'house-dinner', 'beach-run', 'sunset-talk', 'bunk-whisper', 'deal', 'alliance-grow', 'alliance-leave', 'alliance-end', 'apology', 'scheme-lie', 'loyalty-test',
+const STORY = new Set(['gym-training', 'pool-games', 'house-dinner', 'beach-run', 'sunset-talk', 'bunk-whisper', 'deal', 'alliance-grow', 'alliance-switch', 'alliance-leave', 'alliance-end', 'apology', 'scheme-lie', 'loyalty-test',
   'ride-to-the-final', 'psyche', 'homesick', 'call-home', 'home-talk', 'gossip-backfire', 'ex-in-the-house', 'trash-talk',
   'vet-dismisses', 'vet-mentors-rookie', 'beach-date', 'hot-tub-truths', 'show-banter', 'rookie-hazing', 'throw', 'injury-healed', 'pass-flex']);
 const WARM = new Set(['flirt', 'beach-date', 'spark', 'vet-mentors-rookie', 'apology', 'hot-tub-truths', 'arena-eve-pep']);
@@ -100,7 +100,7 @@ const RECAP = {
   'beach-date': '{0} and {1} have been inseparable.',
   'alliance-form': '{0} has an alliance, and {1} is in it.',
   'alliance-grow': '{1} was brought into {0}\'s alliance.',
-  'alliance-leave': 'The alliance {0} and {1} were in has broken apart, and {0} is out of it.',
+  'alliance-leave': '{0} is out of the alliance {1} is in.',
   meeting: '{0}\'s alliance has been meeting behind closed doors.',
   recruit: '{1} agreed to vote with {0}\'s group.',
 };

@@ -19,8 +19,9 @@
 // Archetype appetite as in The Traitors: a social-butterfly or loyal-soldier is
 // always in somebody's circle; a floater or a chaos-agent drifts.
 import { getPerceivedBond, addBond } from '../bonds.js';
+import { nudge } from './mind.js';
 import { S, archetypeOf, addScene, kinOf, KIN_PULL } from './state.js';
-import { betrayed } from './rel.js';
+import { betrayed, remember } from './rel.js';
 import { noteAlliance } from './knowledge.js';
 import { isOutsider } from './blocs.js';
 
@@ -124,13 +125,14 @@ export function afterVote(state, rng, { ballots, votedIn, calledOut, by }) {
   }
 }
 
-export function leave(state, al, name, why) {
+export function leave(state, al, name, why, extra = {}) {
   if (!al.members.includes(name)) return;
   al.members = al.members.filter(m => m !== name);
   // when the one leaving is the leader, the other part is somebody still in the group (a scene with the
   // same person on both sides read "Ireland: I'm sorry. / Ireland: That's it? You're out?")
   const other = al.leader !== name ? al.leader : al.members.find(m => state.active.includes(m)) || al.members[0];
-  if (other) addScene(state, 'alliance-leave', [name, other], { alliance: al.id, name: al.name, why }, al.members.concat(name), 'private');
+  (al.former ||= []).push(name);
+  if (other) addScene(state, 'alliance-leave', [name, other], { alliance: al.id, name: al.name, why, ...extra }, al.members.concat(name), 'private');
   if (al.leader === name && al.members.length) {
     al.leader = [...al.members].sort((a, b) => S(b, 'strategic') - S(a, 'strategic'))[0];
   }
@@ -150,7 +152,8 @@ export function growAlliances(state, rng) {
   for (const al of activeAlliances(state)) {
     const inside = al.members.filter(m => state.active.includes(m));
     if (inside.length >= cap || state.ep - al.formedEp < 1) continue;
-    const free = state.active.filter(n => !allianceOf(state, n));
+    // never back into a group they left (they walked out, or were thrown out: the room remembers)
+    const free = state.active.filter(n => !allianceOf(state, n) && !(al.former || []).includes(n));
     const best = free.map(n => ({ n, p: inside.reduce((a, m) => a + pull(state, n, m), 0) / inside.length + pull(state, al.leader, n) * 0.5 }))
       .sort((a, b) => b.p - a.p)[0];
     if (!best || best.p < 1.6 || rng() > 0.35 + S(al.leader, 'strategic') * 0.03) continue;
@@ -158,5 +161,101 @@ export function growAlliances(state, rng) {
     for (const m of inside) addBond(m, best.n, 0.5);
     noteAlliance(state, al, [best.n]);
     addScene(state, 'alliance-grow', [al.leader, best.n], { alliance: al.id, name: al.name, size: al.members.length }, al.members, 'private');
+  }
+}
+
+
+// ── alliances that change shape (the user, 2026-10-16: "do we have alliance removal, one person deciding to
+// remove themselves, or they get removed, or an alliance dissolving altogether, and all the variants?") ──
+// The group already threw people out (pushed-out, cut-loose, exposed) and ended (betrayal, numbers, final).
+// These are the rest, each with what it costs:
+//   walked         a member who no longer fits the group leaves on their own
+//   walked-friend  a member leaves because the group is coming for their partner or a close friend
+//   defected       a member jumps to another alliance they are closer to (a betrayal to the old one)
+//   merged         two smaller alliances join against a bigger one
+//   drifted        a group gone cold ends by agreement
+const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const inside = (state, al) => al.members.filter(m => state.active.includes(m));
+// how well a member fits a group: their pull to the rest of it, on average
+const fitOf = (state, al, n) => {
+  const rest = inside(state, al).filter(m => m !== n);
+  return rest.length ? rest.reduce((t, m) => t + pull(state, n, m), 0) / rest.length : 0;
+};
+const leaderTargets = (state, al) => (state.plans?.[al.leader]?.targets || []).filter(t => state.active.includes(t));
+
+export function allianceShifts(state, rng) {
+  const done = new Set();   // one change per person a day
+  for (const al of activeAlliances(state)) {
+    if (state.ep - (al.formedEp || 0) < 1) continue;
+    const ins = inside(state, al);
+    if (ins.length < 2) continue;
+    // a group gone cold ends by agreement: nobody betrayed anybody, they just stopped being a group
+    const pairs = [];
+    for (let i = 0; i < ins.length; i++) for (let j = i + 1; j < ins.length; j++) pairs.push(getPerceivedBond(ins[i], ins[j]));
+    const warmth = pairs.reduce((t, v) => t + v, 0) / pairs.length;
+    if (warmth < 0.3 && rng() < (0.3 - warmth) * 0.35) {
+      for (const m of ins) nudge(state, m, 'paranoia', 0.3);
+      endAlliance(state, al, 'drifted');
+      continue;
+    }
+    for (const m of ins) {
+      if (m === al.leader || done.has(m) || al.ended) continue;
+      // the group is coming for somebody they love: their partner, or a close friend
+      const friend = leaderTargets(state, al).find(t => t !== m && !al.members.includes(t) && (kinOf(state, m, t) === 'couple' || getPerceivedBond(m, t) >= 5));
+      const fit = fitOf(state, al, m);
+      // somewhere better: another alliance they are much closer to, with room
+      const cap = Math.max(4, Math.round(state.active.length / 3));
+      // (never back into a group they walked out of or were thrown out of)
+      const better = activeAlliances(state).filter(o => o !== al && inside(state, o).length < cap && !(o.former || []).includes(m))
+        .map(o => ({ o, gain: fitOf(state, o, m) - fit })).sort((x, y) => y.gain - x.gain)[0];
+      const nice = NICE.has(archetypeOf(m));
+      if (better && better.gain > 2.2 && (!nice || friend) && rng() < (better.gain - 2.2) * 0.12 + (1 - S(m, 'loyalty') / 10) * 0.05) {
+        // the old group hears it as a betrayal; the new one gains a vote and a person who has done this before
+        const from = al.name, to = better.o;
+        leave(state, al, m, 'defected', { to: to.name });
+        for (const x of inside(state, al)) { addBond(x, m, -1.2); betrayed(x, m, 0.8); }
+        to.members.push(m);
+        for (const x of inside(state, to)) if (x !== m) addBond(x, m, 0.5);
+        noteAlliance(state, to, [m]);
+        addScene(state, 'alliance-switch', [to.leader, m], { alliance: to.id, name: to.name, size: to.members.length, from }, to.members, 'private');
+        done.add(m);
+        continue;
+      }
+      // (measured: 0.18 + loyalty * 0.15 a day walked 1.4 people a season out for a friend; now about half that)
+      if (friend && rng() < 0.05 + (S(m, 'loyalty') / 10) * 0.06) {
+        // loyal to the person, not the group
+        leave(state, al, m, 'walked-friend', { target: friend });
+        addBond(m, friend, 0.8); remember(friend, m, 'stood-up-for-me', 1);
+        for (const x of inside(state, al)) addBond(x, m, -0.6);
+        done.add(m);
+        continue;
+      }
+      if (fit < 0 && rng() < -fit * 0.05) {
+        leave(state, al, m, 'walked');
+        for (const x of inside(state, al)) addBond(x, m, -0.4);
+        nudge(state, m, 'paranoia', 0.5);
+        done.add(m);
+      }
+    }
+  }
+  // two smaller groups join against a bigger one, when their leaders like each other enough
+  const live = activeAlliances(state).map(al => ({ al, n: inside(state, al).length })).sort((x, y) => y.n - x.n);
+  if (live.length >= 3 && state.ep >= 3) {
+    const big = live[0];
+    const small = live.slice(1).filter(x => x.n >= 2 && x.n < big.n);
+    for (let i = 0; i < small.length; i++) for (let j = i + 1; j < small.length; j++) {
+      const A = small[i].al, B = small[j].al;
+      if (A.ended || B.ended || small[i].n + small[j].n > Math.round(state.active.length / 2)) continue;
+      const cross = (pull(state, A.leader, B.leader) + pull(state, B.leader, A.leader)) / 2;
+      if (cross < 1.5 || rng() > (cross - 1.5) * 0.06 + (S(A.leader, 'strategic') + S(B.leader, 'strategic')) * 0.002) continue;
+      const [keep, fold] = small[i].n >= small[j].n ? [A, B] : [B, A];
+      const moving = inside(state, fold);
+      for (const m of moving) { if (!keep.members.includes(m)) keep.members.push(m); for (const x of inside(state, keep)) if (x !== m) addBond(x, m, 0.4); }
+      fold.ended = true; fold.endedEp = state.ep; fold.why = 'merged'; fold.into = keep.id;
+      noteAlliance(state, keep, moving);
+      addScene(state, 'alliance-merge', [keep.leader, fold.leader, ...inside(state, keep).filter(m => m !== keep.leader && m !== fold.leader)],
+        { alliance: keep.id, name: keep.name, from: fold.name, against: big.al.name }, keep.members, 'private');
+      return;
+    }
   }
 }

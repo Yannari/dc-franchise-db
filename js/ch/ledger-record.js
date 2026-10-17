@@ -47,6 +47,8 @@ export function chLedgerRecord(state, result = {}, { seasonName = null, archetyp
   const betrayals = [];
   for (const sc of state.scenes) {
     if (sc.kind === 'alliance-betrayal' || sc.kind === 'deal-broken') betrayals.push([sc.who[0], sc.who[1]]);
+    // jumping to another alliance is a betrayal of the old one's leader (alliances.js allianceShifts)
+    if (sc.kind === 'alliance-leave' && sc.data?.why === 'defected') betrayals.push([sc.who[0], sc.who[1]]);
   }
   const betrayedPair = new Set(betrayals.map(([a, b]) => pairKey(a, b)));
 

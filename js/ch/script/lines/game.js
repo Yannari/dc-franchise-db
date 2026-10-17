@@ -165,7 +165,9 @@ export default {
       { by: 'a', conf: "Getting called out by an enemy is part of the game. Getting called out by your own alliance is the worst thing that can happen in here.", v: { loud: ['My own ally! My OWN ALLY!'] } },
     ] },
   ],
-  'alliance-leave.any': [
+  // walking away on their own (allianceShifts 'walked'); every other leave has its own pool, so none of these
+  // lines can say the wrong reason (this was '.any', and joined every leave ending)
+  'alliance-leave.walked': [
     { id: 'al.1', turns: [
       { by: 'a', say: "I don't think this group is working for me anymore.", v: { sharp: ['I\'m done carrying this group.'], soft: ['I\'m sorry. I just don\'t feel safe in this group anymore.'] } },
       { by: 'b', say: "So that's it? You're just walking away?", v: { loud: ['You\'re just LEAVING?!'] } },

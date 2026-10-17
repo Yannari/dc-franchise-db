@@ -206,9 +206,17 @@ export const ROLES = {
   'alliance-form': sc => ({ roles: { a: sc.data.leader, b: sc.who.find(x => x !== sc.data.leader), c: sc.who.filter(x => x !== sc.data.leader)[1] },
     ending: yes(sc.data.origin, 'sameshow', 'any'), slots: { alliance: sc.data.name } }),
   'alliance-grow': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { alliance: sc.data.name } }),
+  // a defector joining (alliances.js allianceShifts): a leads {alliance}, b walked out of {from} to join it
+  'alliance-switch': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { alliance: sc.data.name, from: sc.data.from } }),
+  // two groups join (allianceShifts): a and b lead them; {alliance} is the name kept, {from} the one folded in,
+  // {against} the bigger group they joined against; c, d any other members in the room
+  'alliance-merge': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: 'any',
+    slots: { alliance: sc.data.name, from: sc.data.from, against: sc.data.against || undefined } }),
   'alliance-betrayal': sc => ({ roles: { a: sc.who[1], b: sc.who[0] }, ending: sc.data.how }),
-  'alliance-leave': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.why }),
-  'alliance-end': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.why }),
+  // {alliance} the group left; {target} the friend it was coming for (walked-friend); {to} where a defector went
+  'alliance-leave': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.why,
+    slots: { alliance: sc.data.name, target: sc.data.target || undefined, to: sc.data.to || undefined } }),
+  'alliance-end': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.why, slots: { alliance: sc.data.name } }),
   'rookie-uprising': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any' }),
   deal: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'deal-broken': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.how }),

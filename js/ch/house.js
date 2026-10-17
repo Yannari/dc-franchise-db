@@ -20,7 +20,7 @@ import { gs } from '../core.js';
 import { remember, resentOf, intimidated } from './rel.js';
 import { noteDeal } from './knowledge.js';
 import { nudge } from './mind.js';
-import { allianceOf, activeAlliances, formAlliances, growAlliances, leave } from './alliances.js';
+import { allianceOf, activeAlliances, formAlliances, growAlliances, leave, allianceShifts } from './alliances.js';
 import { dealBetween } from './callout.js';
 import { addRivalry } from './events.js';
 
@@ -38,6 +38,8 @@ export function houseDay(state, rng) {
   vetsAndRookies(state, rng);
   apologies(state, rng);
   paranoidLeaders(state, rng);
+  // members walking away, defecting, groups merging or drifting apart (alliances.js)
+  allianceShifts(state, rng);
   // New alliances where the house has drifted (and early, the first ones).
   formAlliances(state, rng, { max: state.ep <= 1 ? 3 : 4 });
   growAlliances(state, rng);

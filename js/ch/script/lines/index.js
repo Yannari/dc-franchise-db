@@ -21,6 +21,7 @@ import championLines from './champion.js';
 import wishLines from './wishlist.js';
 import lateLines from './late.js';
 import homeLines from './home.js';
+import shiftLines from './shifts.js';
 import VOICES, { joinVariants } from './voices/index.js';
 import LONGER from './longer/index.js';
 import EXTRA from './extra/index.js';
@@ -39,11 +40,13 @@ import FINAL12 from './voices/final12.js';
 import FINAL13 from './voices/final13.js';
 import FINAL14 from './voices/final14.js';
 
-export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign, stakes, twists, goodbye, named, cruel, quitLines, medevacLines, championLines, wishLines, lateLines, homeLines);
+export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign, stakes, twists, goodbye, named, cruel, quitLines, medevacLines, championLines, wishLines, lateLines, homeLines, shiftLines);
 
 // more entries for the same pools, appended (never a replacement: a key here adds to the pool)
 // (payback.js adds to pools other files own: appended, like the extras)
 for (const more of [...EXTRA, payback]) for (const [k, list] of Object.entries(more)) (POOLS[k] ||= []).push(...list);
+// a pool key ending in '+' adds to the pool of that name instead of replacing it (shifts.js joins game.js's)
+for (const k of Object.keys(POOLS).filter(k => k.endsWith('+'))) { (POOLS[k.slice(0, -1)] ||= []).push(...POOLS[k]); delete POOLS[k]; }
 
 for (const list of Object.values(POOLS)) {
   for (const e of list) {

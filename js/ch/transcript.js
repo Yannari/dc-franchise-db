@@ -33,7 +33,7 @@ const TITLE = {
   'kitchen-disaster': 'The kitchen', 'bunk-war': 'The bedroom', prank: 'A prank', 'trash-talk': 'Trash talk',
   'show-banter': 'Old shows', 'rookie-hazing': 'Rookies', 'vet-dismisses': 'Vets and rookies', 'vet-mentors-rookie': 'Vets and rookies',
   'floater-callout': 'Who has done what', receipts: 'Receipts', 'scheme-lie': 'A word in your ear', 'gossip-backfire': 'Gossip',
-  overheard: 'Overheard', 'loyalty-test': 'A test', 'alliance-form': 'A new alliance', 'alliance-grow': 'The alliance',
+  overheard: 'Overheard', 'loyalty-test': 'A test', 'alliance-form': 'A new alliance', 'alliance-grow': 'The alliance', 'alliance-merge': 'Two alliances', 'alliance-switch': 'The alliance',
   'alliance-leave': 'The alliance', 'alliance-end': 'The alliance', 'alliance-betrayal': 'The fallout',
   'tj-at-breakfast': 'TJ at breakfast', 'run-name': 'TJ and the names', 'run-snacks': 'The stash',
   'arc-payback': 'Old scores', 'arc-showdown': 'Old scores', 'arc-beast': 'The beast', 'arc-beast-feared': 'The beast',

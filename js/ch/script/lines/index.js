@@ -53,6 +53,7 @@ import PAIRS1 from './voices/pairs1.js';
 import TEAMS1 from './voices/teams1.js';
 import PAIRS2 from './voices/pairs2.js';
 import PAIRS3 from './voices/pairs3.js';
+import PAIRS4 from './voices/pairs4.js';
 
 export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign, stakes, twists, goodbye, named, cruel, quitLines, medevacLines, championLines, wishLines, lateLines, homeLines, shiftLines, kissLines, announceLines, dqLines, arenaPickLines, pairLines, pairVoteLines, teamLines, pairLifeLines, teamLifeLines);
 
@@ -91,7 +92,7 @@ for (const list of Object.values(POOLS)) {
 }
 // Voices keyed by the FINAL turn index, applied after the long cut (voices/final*.js): a turn the long cut wrote
 // can carry voices too, and an index never drifts because the entry is already in its final shape.
-export const FINAL_VOICES = [FINAL1, FINAL2, FINAL3, FINAL4, FINAL5, FINAL6, FINAL7, FINAL8, FINAL9, FINAL10, FINAL11, FINAL12, FINAL13, FINAL14, PAIRS1, TEAMS1, PAIRS2, PAIRS3];
+export const FINAL_VOICES = [FINAL1, FINAL2, FINAL3, FINAL4, FINAL5, FINAL6, FINAL7, FINAL8, FINAL9, FINAL10, FINAL11, FINAL12, FINAL13, FINAL14, PAIRS1, TEAMS1, PAIRS2, PAIRS3, PAIRS4];
 for (const list of Object.values(POOLS)) {
   for (const e of list) {
     for (const batch of FINAL_VOICES) {

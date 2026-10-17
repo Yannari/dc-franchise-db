@@ -41,6 +41,8 @@ export function newState(seed, options) {
     rec: {}, mind: {}, psyche: {},
     revenge: {}, debts: {}, guilt: {},
     alliances: [], deals: [], couples: [], sparks: {},
+    // somebody's partner at home, not in the cast: { name: { name, stage } } (franchise-carry atHome)
+    atHome: {},
     // TJ's opinion of each player (spec §4.7): respect for fighters, contempt for quitters.
     tj: {},
     scenes: [], episodes: [], final: null, champions: [],

@@ -180,9 +180,16 @@ export function lifeContext(pdb = {}, sdb = {}, roster = {}) {
         const other = careers.find(x => x.name === d.showmance);
         if (!other) continue;
         const key = [c.id, other.id].sort().join('|');
-        if (seen.has(key)) continue;
+        // HOW STRONG IT WAS, where the season recorded it (0..1, js/ch/export.js showmanceStrength): the third
+        // element, read by the resolver's showmanceRate. Either side's number; the higher, if both carry one.
+        const mine = Number.isFinite(d.showmanceStrength) ? d.showmanceStrength : null;
+        if (seen.has(key)) {
+          const row = out.find(x => [x[0], x[1]].sort().join('|') === key);
+          if (row && mine != null && (row[2] == null || mine > row[2])) row[2] = mine;
+          continue;
+        }
         seen.add(key);
-        out.push([c.id, other.id]);
+        out.push(mine != null ? [c.id, other.id, mine] : [c.id, other.id]);
       }
     }
     return out;

@@ -8,7 +8,7 @@ import { bKey, getBond } from './bonds.js';
 import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.js';
 import { buildDragSeasonDocument } from './dr/export.js';
 import { buildPerfectMatchSeasonDocument } from './pm/export.js';
-import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT } from './shows.js';
+import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT, CHALLENGE_FORMAT } from './shows.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
@@ -2188,7 +2188,8 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
       // _showmanceEndedOf — the Total Drama export never wrote this, so the
       // life layer had no idea any season had ever contained a romance.
       showmance: _bbShowmanceOf(player.name),
-      showmanceEnded: _showmanceEndedOf(player.name)
+      showmanceEnded: _showmanceEndedOf(player.name),
+      ..._showmanceStrengthOf(player.name),
     }, DEFAULT_FORMAT));
 
     // Append season story with separator (strip old version on re-export)
@@ -3027,6 +3028,22 @@ function _showmanceEndedOf(name) {
   return (sh.broken || sh.phase === 'broken-up' || sh.breakupEp) ? 'broken' : 'intact';
 }
 
+/**
+ * HOW STRONG IT WAS, 0..1, for the life layer (life-resolver.js showmanceRate). The user, 2026-10-16: a romance
+ * that seemed very strong should be likelier to become a couple outside. The bond the two ended on, and how many
+ * episodes it lasted, as The Challenge's ledger record measures it (js/ch/ledger-record.js strengthOf). Empty
+ * when there was no showmance, so an appearance without one carries no field.
+ */
+function _showmanceStrengthOf(name) {
+  const sh = (gs.showmances || []).find(x => (x.players || []).includes(name));
+  const other = sh ? (sh.players || []).find(n => n !== name) : null;
+  if (!other) return {};
+  const bond = Math.max(0, Math.min(10, getBond(name, other))) / 10;
+  const end = Number(sh.breakupEp) || Number(gs.episode) || 0;
+  const lasted = Math.max(0, end - (Number(sh.sparkEp) || 0));
+  return { showmanceStrength: Math.round((bond * 0.6 + Math.min(1, lasted / 6) * 0.4) * 100) / 100 };
+}
+
 export function buildBigBrotherSeasonDocument(seasonNumber) {
   const weeks = gs.bb?.weeks || [];
   if (!weeks.length) throw new Error('No Big Brother weeks have been played yet.');
@@ -3818,6 +3835,176 @@ export function mergePerfectMatchSeasonsDatabase(existing, seasonDoc) {
 }
 registerSeasonExporter(PERFECT_MATCH_FORMAT, exportPerfectMatchSeason);
 
+/**
+ * The Challenge. The document is js/ch/export.js, built from the aired rows and the season's ledger record
+ * (gs.ch.record, written by ch-run.js while the season's own relationship layer was live). Guarded the way
+ * every per-show exporter is: the rows must be this show's, and there must be a season at all, finished.
+ */
+export async function exportChallengeSeason(onStatus) {
+  const _status = onStatus || (() => {});
+  const rows = (gs.episodeHistory || []).filter(r => r && r.format === CHALLENGE_FORMAT && r.ch);
+  if (!rows.length) {
+    throw new Error(`No ${SHOWS[CHALLENGE_FORMAT].name} season to export: gs.episodeHistory has no `
+      + 'episodes with a `ch` block. Play a season first.');
+  }
+  const foreign = (gs.episodeHistory || []).filter(r => r && r.format && r.format !== CHALLENGE_FORMAT);
+  if (foreign.length) {
+    throw new Error(`This season's history contains ${foreign.length} episode(s) tagged `
+      + `"${foreign[0].format}" — refusing to publish them under a ${CHALLENGE_FORMAT} id.`);
+  }
+  // A season with no final has no champions and no placements for most of its cast: refuse it whole.
+  if (!rows.some(r => r.ch?.final)) {
+    throw new Error(`This ${SHOWS[CHALLENGE_FORMAT].name} season has not reached its final yet — play it to the end first.`);
+  }
+  if (!gs.ch?.record?.players) {
+    throw new Error(`This ${SHOWS[CHALLENGE_FORMAT].name} season has no ledger record (gs.ch.record) — re-run its last episode to rebuild it.`);
+  }
+  const seasonNum = _getSeasonNumber();
+  if (!seasonNum) return;
+  _status('Building the season document...');
+  const { buildChallengeSeasonDocument } = await import('./ch/export.js');
+  let options = {};
+  try { options = JSON.parse(gs.ch.built || '{}').options || {}; } catch { options = {}; }
+  const doc = buildChallengeSeasonDocument(rows, gs.ch.record, { seasonNumber: seasonNum, options,
+    title: seasonConfig?.name || null });
+  _status(`Built ${doc.seasonId}: ${doc.castSize} players, ${doc.episodeCount} episodes.`);
+
+  _status('Merging databases...');
+  let playersDb = null; let seasonsDb = null;
+  try {
+    const [playersResp, seasonsResp] = await Promise.all([
+      fetch('players_database.json').catch(() => null),
+      fetch('seasons_database.json').catch(() => null),
+    ]);
+    const playersExisting = playersResp?.ok ? await playersResp.json() : { franchise: {}, players: [] };
+    const seasonsExisting = seasonsResp?.ok ? await seasonsResp.json() : { franchise: {}, seasons: [] };
+    playersDb = mergeChallengeSeason(playersExisting, doc);
+    seasonsDb = mergeChallengeSeasonsDatabase(seasonsExisting, doc);
+    if (seasonsDb && playersDb?.players) {
+      seasonsDb.franchise = seasonsDb.franchise || {};
+      seasonsDb.franchise.totalPlayers = playersDb.players.length;
+    }
+  } catch (err) {
+    throw new Error(`Could not merge the databases: ${err.message || err}`);
+  }
+  const published = await _publishSeasonToSite({
+    seasonNumber: seasonNum, format: CHALLENGE_FORMAT, season: doc, players: playersDb, seasons: seasonsDb,
+  }, onStatus);
+  if (published) { _status('Done.'); return published; }
+  _status('Downloading files...');
+  _downloadJSON(doc, `${seasonId(CHALLENGE_FORMAT, seasonNum)}-data.json`);
+  if (playersDb) setTimeout(() => _downloadJSON(playersDb, 'players_database.json'), 500);
+  if (seasonsDb) setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), 1000);
+  _status('Done.');
+  return doc;
+}
+
+/**
+ * A Challenge season into players_database.json. Every champion wins (one a division): each gets the win and
+ * the badge. `challengeWins` is dailies won; `votesReceived` is house ballots that named them for the Arena.
+ * No jury votes: the show has none. Each appearance carries what the life layer and the careers read:
+ * `showmance` / `showmanceEnded` / `showmanceStrength`, `alliances`, `rivalries`, and the show's own numbers
+ * under `ch` (the registry's careerStats paths).
+ */
+export function mergeChallengeSeason(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== CHALLENGE_FORMAT) {
+    throw new Error(`mergeChallengeSeason expects a ${CHALLENGE_FORMAT} season document`);
+  }
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Challenge season document has no seasonNumber');
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  if (!db.players) db.players = [];
+  _stripSeasonFromAll(db, seasonNum, CHALLENGE_FORMAT);
+  for (const entry of seasonDoc.placements || []) {
+    const name = entry.name;
+    if (!name) continue;
+    const slug = entry.playerSlug || _slug(name);
+    let player = db.players.find(x => x.id === slug || x.name === name);
+    if (!player) {
+      player = { id: slug, name, seasons: [], totalSeasons: 0, bestPlacement: null,
+        wins: 0, totalChallengeWins: 0, totalImmunityWins: 0, totalRewardWins: 0,
+        totalVotesAgainst: 0, totalIdolsFound: 0, totalJuryVotes: 0, tier: '', badges: [], seasonDetails: [] };
+      db.players.push(player);
+    }
+    if (!player.seasonDetails) player.seasonDetails = [];
+    if (!player.seasons) player.seasons = [];
+    _stripSeasonFromPlayer(player, seasonNum, CHALLENGE_FORMAT);
+    const votes = entry.votesReceived || 0;
+    const dailies = entry.ch?.dailyWins || 0;
+    if (!player.seasons.includes(seasonNum)) player.seasons.push(seasonNum);
+    if (entry.status === 'Winner') player.wins = (player.wins || 0) + 1;
+    player.totalVotesAgainst = (player.totalVotesAgainst || 0) + votes;
+    player.totalChallengeWins = (player.totalChallengeWins || 0) + dailies;
+    player.seasonDetails.push(_tagSeasonDetail({
+      season: seasonNum, placement: entry.placement, status: entry.status,
+      exit: entry.exit || null, exitEpisode: entry.exitEpisode ?? null,
+      challengeWins: dailies, votesReceived: votes,
+      division: entry.division || null, rookie: !!entry.rookie, archetype: entry.archetype || null,
+      alliances: [...(entry.alliances || [])], rivalries: [...(entry.rivalries || [])],
+      unbreakableBonds: [...(entry.unbreakableBonds || [])],
+      betrayed: [...(entry.betrayed || [])], betrayedBy: [...(entry.betrayedBy || [])],
+      ...(entry.showmance ? { showmance: entry.showmance, showmanceEnded: entry.showmanceEnded || 'intact',
+        ...(entry.showmanceStrength != null ? { showmanceStrength: entry.showmanceStrength } : {}),
+        ...(entry.showmanceOverlapping ? { showmanceOverlapping: true } : {}) } : {}),
+      ...(entry.showmances ? { showmances: entry.showmances.map(s => ({ ...s })) } : {}),
+      popularity: entry.popularity ?? 0,
+      ch: { ...(entry.ch || {}) },
+      notes: [], gameplayStyle: '', keyMoments: [],
+    }, CHALLENGE_FORMAT));
+    const places = player.seasonDetails.map(sd => sd.placement).filter(x => x && x < 99);
+    player.avgPlacement = places.length ? Math.round(places.reduce((t, v) => t + v, 0) / places.length * 100) / 100 : null;
+    player.bestPlacement = places.length ? Math.min(...places) : null;
+    _rebuildByShow(player);
+    if (entry.status === 'Winner') {
+      player.badges = player.badges || [];
+      const badge = _winnerBadge(seasonNum, CHALLENGE_FORMAT);
+      if (!player.badges.includes(badge)) player.badges.push(badge);
+    }
+  }
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+  db.franchise.totalPlayers = db.players.length;
+  return db;
+}
+
+/** A Challenge season into seasons_database.json: one champion a division on `winners[]`. */
+export function mergeChallengeSeasonsDatabase(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== CHALLENGE_FORMAT) {
+    throw new Error(`mergeChallengeSeasonsDatabase expects a ${CHALLENGE_FORMAT} season document`);
+  }
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Challenge season document has no seasonNumber');
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  if (!db.seasons) db.seasons = [];
+  const airWindow = _airWindowFor(db, CHALLENGE_FORMAT, seasonNum);
+  const priorRatings = (db.seasons.find(x => x.seasonNumber === seasonNum && x.format === CHALLENGE_FORMAT) || {}).ratings || null;
+  db.seasons = db.seasons.filter(x => !(x.seasonNumber === seasonNum && x.format === CHALLENGE_FORMAT));
+  const winners = (seasonDoc.winners || []).filter(w => w && w.name)
+    .map(w => ({ name: w.name, playerSlug: w.playerSlug || _slug(w.name), division: w.division || null }));
+  db.seasons.push({
+    ratings: seasonDoc?.ratings || priorRatings || undefined,
+    seasonNumber: seasonNum,
+    format: CHALLENGE_FORMAT,
+    seasonId: seasonId(CHALLENGE_FORMAT, seasonNum),
+    title: _clean(seasonDoc.title, `${SHOWS[CHALLENGE_FORMAT].name} ${seasonNum}`),
+    subtitle: _clean(seasonDoc.subtitle),
+    castSize: seasonDoc.castSize,
+    episodeCount: seasonDoc.episodeCount,
+    // one champion a division: a single name in the one-winner block only when there is one
+    winner: seasonDoc.winner?.name ? { name: seasonDoc.winner.name, playerSlug: seasonDoc.winner.playerSlug || _slug(seasonDoc.winner.name) } : null,
+    winners,
+    theme: _clean(seasonDoc.seasonNarrative, _clean(seasonDoc.subtitle)),
+    status: 'Complete',
+    castPhotoPath: `assets/cast/${seasonId(CHALLENGE_FORMAT, seasonNum)}-cast.png`,
+    emoji: _clean(seasonDoc.emoji),
+    ...airWindow,
+  });
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+  return db;
+}
+registerSeasonExporter(CHALLENGE_FORMAT, exportChallengeSeason);
+
 export async function exportSeason(onStatus) {
   const out = await seasonExporterFor(seasonFormat(seasonConfig) || DEFAULT_FORMAT)(onStatus);
   // The prose comes after the record, because the fill patches the committed
@@ -4259,6 +4446,7 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
         rivalries: _bbRivalsOf(name),
         showmance: _bbShowmanceOf(name),
         showmanceEnded: _showmanceEndedOf(name),
+        ..._showmanceStrengthOf(name),
         // Big Brother only — nested so it cannot be mistaken for Total Drama stats.
         bb: {
           hohWins: bb.hohWins || 0,

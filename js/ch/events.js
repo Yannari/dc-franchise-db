@@ -32,6 +32,7 @@ import { nudge } from './mind.js';
 import { remember, grudgeOf, resentOf, trustOf, intimidated, sparked, respected, attractOf, memories } from './rel.js';
 import { allianceOf, activeAlliances } from './alliances.js';
 import { coupleOf } from './callout.js';
+import { homeFactor } from './romance.js';
 import { arenaRead, freeRide } from './respect.js';
 import { planOf } from './plans.js';
 import { noteDeal } from './knowledge.js';
@@ -397,10 +398,10 @@ export const EVENTS = [
   // ── ROMANCE ──
   { id: 'flirt', actorCooldown: 1, kind: 'romance', cooldown: 2, max: 12,
     cast: ctx => ctx.state.options.romance ? bestPair(ctx, 'flirt', 2, (a, b) => romanticCompat(a, b) && !coupleOf(ctx.state, a) && !coupleOf(ctx.state, b)
-      ? (S(a, 'social') + S(a, 'boldness') - 9) * 0.25 + attractOf(a, b) * 0.3 + (is(a, 'showmancer') ? 1 : 0) : 0) : null,
+      ? ((S(a, 'social') + S(a, 'boldness') - 9) * 0.25 + attractOf(a, b) * 0.3 + (is(a, 'showmancer') ? 1 : 0)) * homeFactor(ctx.state, a) : 0) : null,
     weight: ctx => (ctx.night ? 1.1 : 0.6),
     fire(ctx, [a, b], rng) {
-      const back = rng() < 0.35 + attractOf(b, a) * 0.1 + S(b, 'social') * 0.03;
+      const back = rng() < (0.35 + attractOf(b, a) * 0.1 + S(b, 'social') * 0.03) * homeFactor(ctx.state, b);
       if (back) { sparked(a, b, 0.7); addBond(a, b, 0.6); const k = a < b ? `${a}|${b}` : `${b}|${a}`; ctx.state.sparks[k] = (ctx.state.sparks[k] || 0) + 0.8; }
       else { addBond(a, b, -0.2); nudge(ctx.state, a, 'confidence', -0.3); }
       return addScene(ctx.state, 'flirt', [a, b], { back }, [a, b, ...witnesses(ctx, [a, b], 2)], ctx.night ? 'pool' : 'beach');
@@ -444,6 +445,94 @@ export const EVENTS = [
       addBond(a, b, rekindle ? 1.5 : -1);
       if (rekindle) { sparked(a, b, 1); const k = a < b ? `${a}|${b}` : `${b}|${a}`; ctx.state.sparks[k] = (ctx.state.sparks[k] || 0) + 1.5; }
       return addScene(ctx.state, 'ex-in-the-house', [a, b], { rekindle }, ctx.state.active, 'villa');
+    } },
+
+  // ── SOMEBODY AT HOME (state.atHome: a partner who is not in the cast) ──
+  // Early on, they say so: the house knows from then on that this one is spoken for.
+  { id: 'home-talk', kind: 'drama', cooldown: 99, max: 6,
+    cast: ctx => {
+      if (ctx.state.ep > 5) return null;
+      const a = ctx.state.active.find(n => ctx.state.atHome[n] && !ctx.state.atHome[n].told && !busy(ctx, n));
+      if (!a) return null;
+      const b = ctx.state.active.filter(x => x !== a && !busy(ctx, x)).sort((x, y) => getBond(a, y) - getBond(a, x))[0];
+      return b ? { who: [a, b], score: 1.5 } : null;
+    },
+    weight: ctx => (ctx.state.ep <= 2 ? 1.4 : 0.8),
+    fire(ctx, [a, b], rng) {
+      const at = ctx.state.atHome[a];
+      at.told = ctx.state.ep;
+      // an honest thing said early: the listener warms to them, and they miss home a little more for saying it
+      addBond(a, b, 0.6); remember(b, a, 'told-me-something-real', 0.8);
+      nudge(ctx.state, a, 'homesick', 0.8);
+      return addScene(ctx.state, 'home-talk', [a, b], { home: at.name, stage: at.stage }, ctx.state.active, rng() < 0.5 ? 'beach' : 'villa');
+    } },
+  // They crossed a line with somebody, and two other people say what everybody is thinking.
+  { id: 'home-gossip', kind: 'romance', cooldown: 4, max: 4,
+    cast: ctx => {
+      const st = ctx.state;
+      // the house can only talk about it if it was told (home-talk)
+      for (const c of st.active.filter(n => st.atHome[n]?.told)) {
+        const with_ = coupleOf(st, c) || st.active.find(x => x !== c && (st.sparks[x < c ? `${x}|${c}` : `${c}|${x}`] || 0) >= 1);
+        if (!with_) continue;
+        const talkers = st.active.filter(x => x !== c && x !== with_ && !busy(ctx, x)).sort((x, y) => (S(y, 'social') - getBond(y, c) * 0.3) - (S(x, 'social') - getBond(x, c) * 0.3));
+        const [g1] = talkers;
+        const g2 = talkers.filter(x => x !== g1).sort((x, y) => getBond(g1, y) - getBond(g1, x))[0];
+        // talked about once while it is a flirt, once more if it becomes a couple: not every pair in the house in turn
+        const stage = coupleOf(st, c) ? 'couple' : 'flirting';
+        if ((st.atHome[c].gossiped || []).includes(stage)) continue;
+        if (g1 && g2) return { who: [g1, g2, c, with_], score: 1.4 };
+      }
+      return null;
+    },
+    weight: () => 0.9,
+    fire(ctx, [g1, g2, c, with_], rng) {
+      const st = ctx.state;
+      const couple = !!coupleOf(st, c);
+      (st.atHome[c].gossiped ||= []).push(couple ? 'couple' : 'flirting');
+      // judged: the two who said it think less of them, and so does the audience
+      addBond(g1, c, -0.4); addBond(g2, c, -0.3);
+      remember(g1, c, 'cheating-on-somebody', 0.8); remember(g2, c, 'cheating-on-somebody', 0.6);
+      pop(c, couple ? -1 : -0.5);
+      // a friend of theirs hears it, and it gets back to them
+      const back = st.active.some(x => x !== g1 && x !== g2 && x !== c && getBond(x, c) >= 3) && rng() < 0.4;
+      if (back) { nudge(st, c, 'paranoia', 0.8); addBond(c, g1, -0.6); remember(c, g1, 'talked-behind-my-back', 1); }
+      return addScene(st, 'home-gossip', [g1, g2, c, with_], { home: st.atHome[c].name, stage: st.atHome[c].stage, couple, back },
+        [g1, g2], 'villa');
+    } },
+  // In a showmance with somebody at home: the night it catches up with them. They end it, or they don't.
+  { id: 'home-guilt', kind: 'romance', cooldown: 99, max: 4,
+    cast: ctx => {
+      const st = ctx.state;
+      const c = st.couples.find(x => !x.ended && x.overlapping?.length && !x.reckoned && st.active.includes(x.a) && st.active.includes(x.b) && st.ep > x.since);
+      if (!c) return null;
+      const a = c.overlapping[0], b = a === c.a ? c.b : c.a;
+      return { who: [a, b], score: 2 };
+    },
+    weight: () => 1.2,
+    fire(ctx, [a, b], rng) {
+      const st = ctx.state;
+      const c = st.couples.find(x => !x.ended && ((x.a === a && x.b === b) || (x.a === b && x.b === a)));
+      c.reckoned = st.ep;
+      const at = st.atHome[a];
+      // never said a word about {home}: tonight the one they are with hears it, and so, soon, does the house
+      if (!at.told) {
+        at.told = st.ep;
+        addBond(b, a, -1.2); remember(b, a, 'hid-somebody-at-home', 1.2);
+        nudge(st, a, 'morale', -0.6); pop(a, -0.5);
+        return addScene(st, 'home-guilt', [a, b], { home: at.name, stage: at.stage, ends: false, confess: true }, [a, b], 'beach');
+      }
+      // the loyal ones end it; the rest decide it is worth it, and carry it
+      const ends = rng() < S(a, 'loyalty') / 10 * 0.75 + (at.stage === 'married' ? 0.15 : 0);
+      if (ends) {
+        c.ended = st.ep; c.endedBy = a; c.why = 'home';
+        addBond(a, b, -2); remember(b, a, 'dumped-me', 1.4);
+        nudge(st, b, 'morale', -1.5); nudge(st, a, 'morale', -0.6); nudge(st, a, 'homesick', 0.8);
+        pop(a, 0.5);
+      } else {
+        addBond(a, b, 0.6); nudge(st, a, 'morale', -0.8);
+        pop(a, -0.5);
+      }
+      return addScene(st, 'home-guilt', [a, b], { home: at.name, stage: at.stage, ends }, ends ? st.active : [a, b], ends ? 'beach' : 'pool');
     } },
 
   // ── THE GAME ──

@@ -68,6 +68,8 @@ function rule(sc) {
     case 'jealousy': return F('showmance', 'jealous');
     case 'breakup': return F('showmance', 'breakup');
     case 'ex-in-the-house': return F('showmance', d.rekindle ? 'spark' : 'cold', 'ex');
+    case 'home-gossip': return F('showmance', 'house', 'home');
+    case 'home-guilt': return d.ends ? F('showmance', 'breakup', 'home') : F('showmance', 'together', 'home');
     // ── hunt ──
     case 'overheard': return F('hunt', 'overheard');
     case 'leverage-threat': return F('hunt', 'threat');
@@ -87,7 +89,7 @@ function rule(sc) {
     case 'arena': return F('spine', 'arena');
     // ── life ──
     case 'kitchen-disaster': case 'gym-flex': case 'hot-tub-truths': case 'tj-at-breakfast':
-    case 'homesick': case 'psyche': case 'call-home': case 'daily-clutch': case 'daily-choke':
+    case 'homesick': case 'psyche': case 'call-home': case 'daily-clutch': case 'daily-choke': case 'home-talk':
     case 'picked-last': case 'partner-carried': case 'throw': case 'throw-caught': case 'deal':
     case 'ride-to-the-final': case 'arena-eve-pep': case 'arena-eve-alone': case 'party':
     case 'partner-draw': case 'partner-pick':

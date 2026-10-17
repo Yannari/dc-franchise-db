@@ -55,7 +55,7 @@ describe('what a cast brings with them', () => {
   it('nothing carried on a franchise with no history', () => {
     setFranchiseLedger({ v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {} } } });
     const c = carriedFor(people, { format: 'traitors', franchiseMeta: true, lifeCarryover: false });
-    expect(c).toEqual({ kin: [], bonds: [], sums: [] });
+    expect(c).toEqual({ kin: [], bonds: [], sums: [], atHome: [] });
   });
 });
 

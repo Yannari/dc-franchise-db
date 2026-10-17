@@ -18,6 +18,8 @@ const CALLED = { snake: 'the biggest snake in the house', threat: 'the biggest t
   'next-in': 'the next one going into the Arena', coattails: 'the one riding coattails', 'never-trust': "the one you'd never trust" };
 const showName = slug => (slug && SHOWS[slug]?.name) || null;
 const yes = (v, a, b) => (v ? a : b);
+// a partner at home, by how serious it is (life stages: dating, public, living-together, engaged, married)
+const HOME_STAGE = { married: 'married', engaged: 'engaged', 'living-together': 'together' };
 
 // kind → (scene, state) → { roles: {a,b,c,d}, ending, slots }
 const COUNT_WORD = ['None', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen', 'Twenty'];
@@ -187,6 +189,11 @@ export const ROLES = {
   flirt: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.data.back, 'back', 'rebuffed') }),
   'beach-date': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   pda: sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any' }),
+  // somebody at home (events.js home-*): {home} is the partner's name; in the gossip, c (the one spoken for) and d
+  // (who they are with) are talked about, never in the room
+  'home-talk': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: HOME_STAGE[sc.data.stage] || 'dating', slots: { home: sc.data.home } }),
+  'home-gossip': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: yes(sc.data.couple, 'couple', 'flirting'), slots: { home: sc.data.home } }),
+  'home-guilt': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.confess ? 'confess' : yes(sc.data.ends, 'ends', 'stays'), slots: { home: sc.data.home } }),
   'ex-in-the-house': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.data.rekindle, 'rekindle', 'cold') }),
   overheard: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'ride-to-the-final': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),

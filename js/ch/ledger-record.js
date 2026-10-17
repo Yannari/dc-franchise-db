@@ -26,6 +26,13 @@ const RIVAL_RESENT = 4, RIVAL_BOND = -3.5;
 const FEUD_ROWS = 2;
 
 const pairKey = (a, b) => [a, b].sort().join('|');
+// A showmance's strength, 0..1: the bond at the end (or at the breakup's -4) and the episodes it lasted.
+export function strengthOf(n, c, lastEp) {
+  const other = c.a === n ? c.b : c.a;
+  const bond = Math.max(0, Math.min(10, getBond(n, other))) / 10;
+  const lasted = Math.max(0, (c.ended || lastEp) - (c.since || 0));
+  return Math.round((bond * 0.6 + Math.min(1, lasted / 6) * 0.4) * 100) / 100;
+}
 
 export function chLedgerRecord(state, result = {}, { seasonName = null, archetypeOf = () => null, popularity = {} } = {}) {
   if (!state || !state.cast?.length) return null;
@@ -67,7 +74,12 @@ export function chLedgerRecord(state, result = {}, { seasonName = null, archetyp
     const rivals = others.filter(o => !allies.includes(o) && (feudOf(n, o) >= FEUD_ROWS
       || Math.max(resentOf(n, o), resentOf(o, n)) >= RIVAL_RESENT || getBond(n, o) <= RIVAL_BOND));
     const showmances = (state.couples || []).filter(c => c.a === n || c.b === n)
-      .map(c => ({ partner: c.a === n ? c.b : c.a, ended: c.ended && c.endedBy !== 'exit' ? 'breakup' : 'intact' }));
+      // overlapping: this player had somebody at home (life-resolver.js reads it as "was unfaithful to")
+      .map(c => ({ partner: c.a === n ? c.b : c.a, ended: c.ended && c.endedBy !== 'exit' ? 'breakup' : 'intact',
+        ...(c.overlapping?.includes(n) ? { overlapping: true } : {}), since: c.since || 0, endedEp: c.ended || null,
+        // how strong it was, 0..1: the bond they ended on and how long it lasted (life-resolver.js reads it: a
+        // couple who were inseparable for six episodes is likelier to last outside than a two-day fling)
+        strength: strengthOf(n, c, lastEp) }));
     const r = state.rec[n] || {};
     const g = goneAt[n];
     rec.players[n] = {
@@ -90,6 +102,8 @@ export function chLedgerRecord(state, result = {}, { seasonName = null, archetyp
   }
   // Friendship is both ways or not at all.
   for (const [n, p] of Object.entries(rec.players)) p.allies = p.allies.filter(o => rec.players[o]?.allies.includes(n));
+  // The closest of them (a bond of 5 or more, both ways): the export's unbreakableBonds, D1's `bonds` table.
+  for (const [n, p] of Object.entries(rec.players)) p.closest = p.allies.filter(o => getBond(n, o) >= 5);
   for (const [by, to] of betrayals) {
     if (!rec.players[by] || !rec.players[to] || by === to) continue;
     if (!rec.players[by].betrayed.includes(to)) rec.players[by].betrayed.push(to);

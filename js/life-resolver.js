@@ -199,6 +199,20 @@ export const RATES = {
  * Weights are deliberately coarse. This decides WHO a two-person event is
  * about, never whether one happens, so precision here would be false.
  */
+/**
+ * THE CHANCE A SHOWMANCE FROM THE SEASON BECOMES A RELATIONSHIP OUTSIDE IT.
+ *
+ * The user, 2026-10-16: "if there's a romance that seems very strong, there's more chance we get a life events
+ * couple between the partners". A flat 0.75 made a two-day fling and a couple who were inseparable for half the
+ * season equally likely to last. A season that records the strength (js/ch/export.js `showmanceStrength`, 0..1:
+ * the bond they ended on and how long it lasted) moves it between 0.45 and 0.95; one that does not keeps the
+ * flat rate, so no show's numbers move until it records the strength.
+ */
+export function showmanceRate(strength) {
+  if (!Number.isFinite(strength)) return RATES.advance.showmance;
+  return Math.round((0.45 + Math.max(0, Math.min(1, strength)) * 0.5) * 1000) / 1000;
+}
+
 export function socialGraph(careers = []) {
   const byName = new Map(careers.map(c => [c.name, c.id]));
   const edges = new Map();      // slug -> Map(otherSlug -> weight)
@@ -364,6 +378,18 @@ export function resolveOffSeason({
   const castSet = new Set(cast);
   const pairFor = slug => {
     const p = pairs.find(x => x[0] === slug || x[1] === slug);
+    return p ? (p[0] === slug ? p[1] : p[0]) : null;
+  };
+  // How strong that season's showmance was, 0..1, when the season recorded it (pairs[i][2]); null when it did not.
+  const pairStrength = slug => {
+    const p = pairs.find(x => x[0] === slug || x[1] === slug);
+    return p && Number.isFinite(p[2]) ? p[2] : null;
+  };
+  // The showmance they had on screen that ENDED there. Still a showmance: somebody spoken for at home who had
+  // one has done the thing "cheated" names, whether or not it survived to the finale (it used to read only the
+  // intact ones, so a cheat who was dumped on screen came home with a clean record).
+  const brokenFor = slug => {
+    const p = (brokenPairs || []).find(x => x[0] === slug || x[1] === slug);
     return p ? (p[0] === slug ? p[1] : p[0]) : null;
   };
   // Couples who walked out of this season together. They are the ones allowed
@@ -576,7 +602,7 @@ export function resolveOffSeason({
       // Derived here from the two things the resolver already holds — who they
       // were with walking in, and who they had a showmance with — rather than
       // from the flag, so it works on seasons exported before the flag existed.
-      const inHouseWith = pairFor(slug);
+      const inHouseWith = pairFor(slug) || brokenFor(slug);
       const strayed = inHouseWith && inHouseWith !== partner;
       if (strayed) {
         emit(slug, 'cheated', { whom: partner });
@@ -630,8 +656,9 @@ export function resolveOffSeason({
       const candidate = (fromShow ? showmance : null)
         || knownTo(social, slug, 'friend', rng('who'), other => canDate(slug, other));
       const ckey = candidate ? pairKey(slug, candidate) : null;
-      // Continuing beats starting: see RATES.advance.showmance.
-      const rate = fromShow ? RATES.advance.showmance : RATES.advance.single;
+      // Continuing beats starting: see RATES.advance.showmance. How much it beats it depends on how strong
+      // the showmance was, where the season recorded that (showmanceRate).
+      const rate = fromShow ? showmanceRate(pairStrength(slug)) : RATES.advance.single;
       if (candidate && !settled.has(ckey) && rng('start')() < rate) {
         settled.add(ckey);
         taken.add(slug); taken.add(candidate);

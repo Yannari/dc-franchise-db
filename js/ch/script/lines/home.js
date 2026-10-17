@@ -1,0 +1,215 @@
+// ══════════════════════════════════════════════════════════════════════
+// ch/script/lines/home.js — somebody walked in with a partner at home
+// ══════════════════════════════════════════════════════════════════════
+//
+// events.js home-talk / home-gossip / home-guilt. {home} is the partner's name, and the partner is not in the
+// cast: never on screen, never given a pronoun (the log does not say), always called by name.
+//   home-talk    a tells b about {home}, early on. Endings by how serious it is: married, engaged, together, dating.
+//   home-gossip  a and b say what the house is thinking about c, who has {home} at home and is with d.
+//                c and d are talked about, never in the room. Endings: couple (c and d are together), flirting.
+//   home-guilt   a, in a showmance with b, with {home} at home. Endings: ends (a ends it), stays (they keep going),
+//                confess (a never told anybody about {home}, and b hears it now).
+export default {
+  'home-talk.married': [
+    { id: 'ht.m1', turns: [
+      { beat: '{a} and {b} sit on the end of the dock with their feet in the water.' },
+      { by: 'b', say: "You keep touching your finger. Is that where a ring goes?" },
+      { by: 'a', say: "They made me leave it at home. I'm married. {home} and I have been married a while now." },
+      { by: 'b', say: "And {home} was fine with you coming here for weeks?" },
+      { by: 'a', say: "{home} told me to go and win it. Then cried at the airport." },
+      { by: 'b', say: "That's a lot to carry in here." },
+      { by: 'a', say: "It's the reason I'm here. I'm not going home with nothing to show for leaving." },
+      { by: 'a', conf: "Everybody in this house knows I'm married now. Good. I want them to know who I'm doing this for." },
+    ] },
+    { id: 'ht.m2', turns: [
+      { by: 'a', say: "Can I tell you something about me before you hear it from somebody else?" },
+      { by: 'b', say: "Sure." },
+      { by: 'a', say: "I'm married. {home} is at home, watching all of this when it airs." },
+      { by: 'b', say: "So no showmance for you, then." },
+      { by: 'a', say: "No. I'm here to play, and then I'm going home to {home}." },
+      { by: 'b', say: "I respect that. Most people in here would keep it quiet." },
+      { by: 'b', conf: "{a} told me straight out about being married. I didn't ask. I liked that a lot." },
+    ] },
+  ],
+  'home-talk.engaged': [
+    { id: 'ht.e1', turns: [
+      { beat: '{a} shows {b} a photo that the producers let {a.obj} keep.' },
+      { by: 'b', say: "Who's that?" },
+      { by: 'a', say: "{home}. We're getting married when I get home." },
+      { by: 'b', say: "Congratulations. When's the wedding?" },
+      { by: 'a', say: "We haven't picked a date. I told {home} I'd pay for it with the prize money." },
+      { by: 'b', say: "No pressure, then." },
+      { by: 'a', say: "None at all." },
+      { by: 'a', conf: "We got engaged, and then I got the call for this show. {home} said go. I'm going to make that worth it." },
+    ] },
+    { id: 'ht.e2', turns: [
+      { by: 'b', say: "Do you have anybody at home?" },
+      { by: 'a', say: "I'm engaged. {home}." },
+      { by: 'b', say: "How long have you been together?" },
+      { by: 'a', say: "Long enough that I know what I'm missing every night in that bunk room." },
+      { by: 'b', say: "That sounds hard." },
+      { by: 'a', say: "It is. But {home} is the first person I'm calling when this is over, whatever happens." },
+      { by: 'b', conf: "{a} is engaged, and {a} talks about {home} like nobody else is in the room. Nobody is going to get anywhere with {a}." },
+    ] },
+  ],
+  'home-talk.together': [
+    { id: 'ht.t1', turns: [
+      { beat: 'Late in the kitchen, {a} is making toast and talking to {b} about home.' },
+      { by: 'a', say: "{home} and I live together. This is the longest we've been apart since we moved in." },
+      { by: 'b', say: "Do you think {home} is okay without you?" },
+      { by: 'a', say: "Honestly? {home} is probably enjoying having the whole bed." },
+      { by: 'b', say: "And you?" },
+      { by: 'a', say: "I'm sleeping in a room full of people who snore. I miss home." },
+      { by: 'a', conf: "I told {b} about {home} on purpose. In this house, people work out who's single by the second day." },
+    ] },
+    { id: 'ht.t2', turns: [
+      { by: 'b', say: "You've been quiet since breakfast. What's going on?" },
+      { by: 'a', say: "It's {home}'s birthday today. We live together, and I'm not there." },
+      { by: 'b', say: "I'm sorry. That's rough." },
+      { by: 'a', say: "{home} knew I'd miss it when I signed up. It still feels bad." },
+      { by: 'b', say: "Then win something today. Give {home} something to watch." },
+      { by: 'a', say: "Yeah. Okay. I can do that." },
+      { by: 'b', conf: "{a} came in with somebody waiting at home. I think that makes {a} more dangerous, not less." },
+    ] },
+  ],
+  'home-talk.dating': [
+    { id: 'ht.d1', turns: [
+      { beat: '{a} and {b} lie on the loungers by the pool in the late afternoon.' },
+      { by: 'b', say: "So, are you single?" },
+      { by: 'a', say: "No. I'm seeing somebody. {home}." },
+      { by: 'b', say: "Is it serious?" },
+      { by: 'a', say: "Serious enough that I'm telling you about it right away." },
+      { by: 'b', say: "Fair enough. I'll tell everybody to back off." },
+      { by: 'a', say: "Please do." },
+      { by: 'a', conf: "{home} and I haven't been together that long. Being in here is going to test it, and I know that." },
+    ] },
+    { id: 'ht.d2', turns: [
+      { by: 'a', say: "Do you think I should have said yes to this show?" },
+      { by: 'b', say: "Why wouldn't you?" },
+      { by: 'a', say: "Because I've got somebody at home. {home}. We'd only been together a few months when I left." },
+      { by: 'b', say: "If it's real, it'll still be there when you get back." },
+      { by: 'a', say: "That's what {home} said." },
+      { by: 'b', say: "Then believe it." },
+      { by: 'a', conf: "Everybody in here has a story about a relationship this show ended. I don't want mine to be one of them." },
+    ] },
+  ],
+
+  'home-gossip.couple': [
+    { id: 'hg.c1', turns: [
+      { beat: '{a} and {b} are on the balcony, looking down at the pool, where {c} and {d} are sharing a lounger.' },
+      { by: 'a', say: "Isn't {c} the one with somebody at home?" },
+      { by: 'b', say: "{home}. {c} talked about {home} the first week we got here." },
+      { by: 'a', say: "Well, look at that lounger and tell me {c} remembers." },
+      { by: 'b', say: "It's not our business." },
+      { by: 'a', say: "It's going to be on television. It's everybody's business." },
+      { by: 'b', say: "I'd hate to be {home} when this episode comes out." },
+      { by: 'a', conf: "I don't care who {c} kisses. I care that {c} looked me in the eye and talked about {home} like it was forever." },
+    ] },
+    { id: 'hg.c2', turns: [
+      { by: 'b', say: "Did you see {c} and {d} come in from the beach last night?" },
+      { by: 'a', say: "Holding hands. Yeah, I saw." },
+      { by: 'b', say: "And {c} is with {home}. That's not a secret. {c} told us." },
+      { by: 'a', say: "Maybe they broke up and nobody told us." },
+      { by: 'b', say: "{c} doesn't have a phone. How would they have broken up?" },
+      { by: 'a', say: "Okay. Then it's exactly what it looks like." },
+      { by: 'b', conf: "{c} can do what {c} wants. But if {c} will do that to {home}, I don't know why anybody in here trusts {c}'s word." },
+    ] },
+    { id: 'hg.c3', turns: [
+      { beat: 'In the kitchen, {a} is cleaning up and {b} is sitting on the counter.' },
+      { by: 'a', say: "Everybody's talking about {c} and {d}." },
+      { by: 'b', say: "Because of {home}?" },
+      { by: 'a', say: "Because of {home}. {c} is going to have a lot to explain when this is over." },
+      { by: 'b', say: "{d} knew about {home} too. Everybody did." },
+      { by: 'a', say: "Then they both made a choice." },
+      { by: 'a', conf: "I'm not judging. I'm watching. Somebody who keeps one secret from the person at home can keep a secret from an alliance." },
+    ] },
+  ],
+  'home-gossip.flirting': [
+    { id: 'hg.f1', turns: [
+      { by: 'a', say: "Is it me, or is {c} flirting with {d}?" },
+      { by: 'b', say: "It's not you. {c} laughs at everything {d} says." },
+      { by: 'a', say: "Doesn't {c} have somebody at home? {home}?" },
+      { by: 'b', say: "{home}. Yeah." },
+      { by: 'a', say: "So what's {c} doing?" },
+      { by: 'b', say: "Maybe nothing. A lot of people flirt and go home to the same person." },
+      { by: 'a', conf: "It's a little flirting now. I've watched enough of these shows to know where a little flirting goes." },
+    ] },
+    { id: 'hg.f2', turns: [
+      { beat: '{a} and {b} watch {c} and {d} playing cards at the other end of the table.' },
+      { by: 'b', say: "{c} hasn't mentioned {home} in days." },
+      { by: 'a', say: "{c} has mentioned {d} about forty times." },
+      { by: 'b', say: "That doesn't mean anything happened." },
+      { by: 'a', say: "Not yet." },
+      { by: 'b', say: "Let's not be the people who start that rumor." },
+      { by: 'a', say: "I'm not starting anything. I'm just counting." },
+      { by: 'b', conf: "{c} used to talk about {home} all the time. Now {c} doesn't. I noticed, and so did {a}." },
+    ] },
+  ],
+
+  'home-guilt.ends': [
+    { id: 'hgu.e1', turns: [
+      { beat: '{a} asks {b} to walk down to the beach, away from the house.' },
+      { by: 'a', say: "I can't keep doing this." },
+      { by: 'b', say: "Doing what? Us?" },
+      { by: 'a', say: "{home} is going to watch every minute of it. I keep thinking about that, and I can't stop." },
+      { by: 'b', say: "You knew about {home} when this started. So did I." },
+      { by: 'a', say: "I know. That's what makes it worse. I'm sorry." },
+      { by: 'b', say: "Don't be sorry. Just don't come back to my bed tomorrow and tell me you changed your mind." },
+      { by: 'a', say: "I won't." },
+      { by: 'b', conf: "I knew {a} had somebody at home. I thought it was different with us. Maybe it was. It's over either way." },
+    ] },
+    { id: 'hgu.e2', turns: [
+      { by: 'a', say: "Can we talk? Properly?" },
+      { by: 'b', say: "That doesn't sound good." },
+      { by: 'a', say: "I had a dream about {home} last night, and I woke up feeling sick. I can't do this to {home}." },
+      { by: 'b', say: "So you're ending it." },
+      { by: 'a', say: "I'm ending it. You didn't do anything wrong. I did." },
+      { by: 'b', say: "I'm still going to be in this house with you for weeks." },
+      { by: 'a', say: "I know. I'll keep my distance." },
+      { by: 'a', conf: "I don't know if {home} will forgive what's already happened. But I could stop it from getting worse, so I did." },
+    ] },
+  ],
+  'home-guilt.confess': [
+    { id: 'hgu.c1', turns: [
+      { beat: '{a} sits on the edge of the bed, and {b} can tell something is wrong.' },
+      { by: 'b', say: "You've been weird all day. What is it?" },
+      { by: 'a', say: "There's something I should have told you before any of this started." },
+      { by: 'b', say: "Okay. Say it." },
+      { by: 'a', say: "There's somebody at home. {home}. We're still together." },
+      { by: 'b', say: "You're telling me this now? After all of it?" },
+      { by: 'a', say: "I know. I should have said it the first day." },
+      { by: 'b', say: "Yeah. You should have." },
+      { by: 'b', conf: "I didn't know about {home}. Nobody in this house did. I don't know what else {a} hasn't told me." },
+    ] },
+    { id: 'hgu.c2', turns: [
+      { by: 'a', say: "I need to tell you something, and you're going to be angry." },
+      { by: 'b', say: "That's a great start." },
+      { by: 'a', say: "I have a partner at home. {home}. I didn't say anything because I didn't think this would happen." },
+      { by: 'b', say: "But it did happen. And you kept letting it happen." },
+      { by: 'a', say: "I know." },
+      { by: 'b', say: "Does {home} know you're doing this?" },
+      { by: 'a', say: "{home} will when it airs." },
+      { by: 'a', conf: "I kept {home} a secret because I wanted to play like I was single. Now I have to live with what that looked like." },
+    ] },
+  ],
+  'home-guilt.stays': [
+    { id: 'hgu.s1', turns: [
+      { beat: 'Late by the pool, {b} finally asks {a} the question {b} has been holding back.' },
+      { by: 'b', say: "What happens with {home} when we get out of here?" },
+      { by: 'a', say: "I don't know. I don't want to think about it in here." },
+      { by: 'b', say: "You're going to have to think about it at some point." },
+      { by: 'a', say: "Then I'll think about it at the airport. Right now I'm here, and I'm with you." },
+      { by: 'b', say: "Okay. I'll take that for now." },
+      { by: 'a', conf: "I know what this looks like. I know what {home} is going to see. I'm doing it anyway, and that's on me." },
+    ] },
+    { id: 'hgu.s2', turns: [
+      { by: 'a', say: "Everybody in here knows about {home}." },
+      { by: 'b', say: "So? Do you want to stop?" },
+      { by: 'a', say: "No. That's the problem. I don't want to stop." },
+      { by: 'b', say: "Then don't." },
+      { by: 'a', say: "It's not that simple when {home} is going to watch this." },
+      { by: 'b', say: "Then tell {home} the truth when you get home. That's all you can do now." },
+      { by: 'a', conf: "I came in here with somebody, and I'm going to leave with a mess. I'm not proud of it. I'm still not stopping." },
+    ] },
+  ],
+};

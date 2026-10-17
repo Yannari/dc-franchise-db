@@ -29,7 +29,7 @@ const TITLE = {
   arena: 'The Arena', return: 'Back in the villa', 'morning-after': 'The morning after', 'instant-elimination': 'A surprise',
   party: 'Night out', fight: 'Night out', spark: 'A spark', flirt: 'A spark', showmance: 'Something real', pda: 'Something real',
   'beach-date': 'The beach', 'hot-tub-truths': 'The hot tub', jealousy: 'Jealousy', breakup: 'A hard talk',
-  homesick: 'Missing home', 'call-home': 'A call home', psyche: 'Confessional', 'kitchen-blowup': 'The kitchen',
+  homesick: 'Missing home', 'call-home': 'A call home', 'home-talk': 'Somebody at home', 'home-gossip': 'Somebody at home', 'home-guilt': 'Somebody at home', psyche: 'Confessional', 'kitchen-blowup': 'The kitchen',
   'kitchen-disaster': 'The kitchen', 'bunk-war': 'The bedroom', prank: 'A prank', 'trash-talk': 'Trash talk',
   'show-banter': 'Old shows', 'rookie-hazing': 'Rookies', 'vet-dismisses': 'Vets and rookies', 'vet-mentors-rookie': 'Vets and rookies',
   'floater-callout': 'Who has done what', receipts: 'Receipts', 'scheme-lie': 'A word in your ear', 'gossip-backfire': 'Gossip',

@@ -22,7 +22,7 @@ import { describe, expect, it } from 'vitest';
 import { gs, seasonConfig, players } from '../js/core.js';
 import { pStats, pronouns } from '../js/players.js';
 import { _homeFactor } from '../js/romance.js';
-import { resolveOffSeason, RATES } from '../js/life-resolver.js';
+import { resolveOffSeason, RATES, showmanceRate } from '../js/life-resolver.js';
 import { KINDS } from '../js/life-events.js';
 import { seedGame } from './helpers/setup.js';
 
@@ -143,6 +143,40 @@ describe('what the log says about it afterwards', () => {
     const ended = out.filter(r => r.some(e => e.kind === 'broke-up')).length;
     expect(ended).toBeGreaterThan(0);
     expect(ended, 'every single affair ended the relationship').toBeLessThan(out.length);
+  });
+
+  it('still says so when the showmance ended on screen', () => {
+    // It read only the couples still together at the finale, so a cheat who was dumped on screen came home
+    // with a clean record (2026-10-16, found building The Challenge's export).
+    const out = Array.from({ length: 40 }, (_, i) =>
+      resolveOffSeason({ season, careers, events: dating, cast: ['ida', 'cy'], pairs: [], brokenPairs: [['ida', 'cy']], people,
+        seedSalt: 'b' + i, seasonRank: seasonRank() })).flat();
+    const cheated = out.filter(e => e.kind === 'cheated');
+    expect(cheated.length).toBeGreaterThan(30);
+    for (const e of cheated) expect(e.whom).toBe('bo');
+  });
+});
+
+describe('a strong showmance is likelier to last outside', () => {
+  // The user, 2026-10-16: "if there's a romance that seems very strong, there's more chance we have a life
+  // events couple between the partners". The season's showmanceStrength (0..1) moves the rate.
+  it('rises with strength, and a season that records none keeps the flat rate', () => {
+    expect(showmanceRate(null)).toBe(RATES.advance.showmance);
+    expect(showmanceRate(0)).toBeLessThan(showmanceRate(0.5));
+    expect(showmanceRate(0.5)).toBeLessThan(showmanceRate(1));
+    expect(showmanceRate(1)).toBeGreaterThan(0.9);
+    expect(showmanceRate(0)).toBeLessThan(0.5);
+  });
+
+  it('a strong couple starts dating far more often than a weak one, played out', () => {
+    const season = { seasonId: 'ch-1', format: 'the-challenge', number: 1 };
+    const careers = [{ id: 'ida', name: 'Ida' }, { id: 'bo', name: 'Bo' }];
+    const people = new Map([['ida', { gender: 'f', sexuality: 'straight' }], ['bo', { gender: 'm', sexuality: 'straight' }]]);
+    const dated = strength => Array.from({ length: 300 }, (_, i) =>
+      resolveOffSeason({ season, careers, events: [], cast: ['ida', 'bo'], pairs: [['ida', 'bo', strength]], people,
+        seedSalt: `${strength}|${i}`, seasonRank: new Map([['ch-1', 1]]) }))
+      .filter(r => r.some(e => e.kind === 'dating')).length;
+    expect(dated(1)).toBeGreaterThan(dated(0) + 60);
   });
 });
 

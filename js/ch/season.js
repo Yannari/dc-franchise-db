@@ -192,6 +192,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     (state.carriedGrudge ||= {})[`${b.b}>${b.a}`] = Math.min(3, Math.abs(b.delta) * 0.6);
   }
   state.kin = (carried?.kin || []).filter(k => cast.includes(k.a) && cast.includes(k.b));
+  // Walking in spoken for: a partner at home, who is not in the cast (romance.js homeFactor, events.js home-*).
+  for (const s of carried?.atHome || []) if (cast.includes(s.name) && s.whom) state.atHome[s.name] = { name: s.whom, stage: s.stage };
   for (const k of carried?.kin || []) {
     if (!cast.includes(k.a) || !cast.includes(k.b)) continue;
     if ((k.kin === 'dating' || k.kin === 'married' || k.kin === 'engaged') && romanticCompat(k.a, k.b)) {

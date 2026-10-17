@@ -261,9 +261,10 @@ export function playFinal(state, rng) {
     if (ord[0]) fin.champions.push(ord[0]);
   }
   state.champions = fin.champions;
-  // Placements for the finishers: champions 1, the rest in order of total.
+  // Placements for the finishers: champions 1, the rest in order of total, counted after every champion (two
+  // champions share 1st and the next is 3rd: numbered from 2, the season had no 6th, the export found it)
   const rest = state.active.filter(n => !fin.champions.includes(n)).sort((a, b) => total[b] - total[a]);
-  fin.placements = Object.fromEntries([...fin.champions.map(n => [n, 1]), ...rest.map((n, i) => [n, i + 2])]);
+  fin.placements = Object.fromEntries([...fin.champions.map(n => [n, 1]), ...rest.map((n, i) => [n, i + 1 + fin.champions.length])]);
   addScene(state, 'final-podium', [...state.active], { podium: fin.podium, totals: fin.totals }, state.active, 'final');
   addScene(state, 'champions', fin.champions, {}, state.active, 'final');
   // the runners-up: one congratulates each champion (gracious, or not); everybody's last words

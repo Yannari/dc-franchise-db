@@ -34,9 +34,11 @@ const pk = (a, b) => [a, b].sort().join('|');
  *   bonds  [{ a, b, delta, resent, why }]   grudges: betrayal, blindside, rivals
  *   sums   [{ a, b, delta }]       every pair's carried bond, summed and clamped
  *                                  (for an engine with no relation layer)
+ *   atHome [{ name, whom, stage }] somebody in the cast whose partner is NOT in it:
+ *                                  they walk in spoken for (life-cast.js soloPartners)
  */
 export function carriedFor(people = [], cfg = {}, { lifeLog = null, lifeSeasons = null } = {}) {
-  const out = { kin: [], bonds: [], sums: [] };
+  const out = { kin: [], bonds: [], sums: [], atHome: [] };
   const w = typeof window !== 'undefined' ? window : {};
   let meta = null, life = null;
   try { meta = buildFranchiseMeta(people, cfg); } catch { meta = null; }
@@ -80,6 +82,8 @@ export function carriedFor(people = [], cfg = {}, { lifeLog = null, lifeSeasons 
       out.bonds.push({ a: sp.a, b: sp.b, delta: sp.bondDelta, resent: sp.kind === 'rivals' || sp.wronged !== false, why: sp.kind });
     }
   }
+  // The partner left at home (Total Drama seeds the same thing as partnerAtHome: savestate.js).
+  for (const s of life?.soloPartners || []) out.atHome.push({ name: s.name, whom: s.whomName, stage: s.stage });
   out.sums = [...sum.values()].map(s => ({ ...s, delta: Math.max(-CLAMP, Math.min(CLAMP, s.delta)) })).filter(s => s.delta);
   return out;
 }

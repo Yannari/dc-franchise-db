@@ -181,6 +181,8 @@ const VERB = { arena: 'eliminated', quit: 'quit', medical: 'left on a medical', 
 // Who they are, for the premiere's introductions (js/vp-ch-ep: a package per player as they come off the
 // plane): their show, vet or rookie, the authored facts, and for a veteran the career the franchise
 // ledger holds. Recorded when the season is built, so a rewatch shows the career as it stood then.
+const atHomeFact = at => (!at ? null : at.stage === 'married' ? `Married to ${at.name}` : at.stage === 'engaged' ? `Engaged to ${at.name}`
+  : at.stage === 'living-together' ? `Lives with ${at.name}` : `Dating ${at.name}`);
 function introOf(n, state, cast) {
   const p = _player(n) || {};
   // the first sentence that says something about them (not the date they were born), at most two
@@ -201,7 +203,9 @@ function introOf(n, state, cast) {
     rival = Object.entries(cf?.rivals || {}).filter(([r]) => r !== n && cast.includes(r)).sort((x, y) => y[1] - x[1])[0]?.[0] || null;
   } catch { /* no ledger yet */ }
   const info = { origin: state.origin?.[n] || null, rookie: !!state.rookie?.[n], age: p.age || null, hometown: p.hometown || null,
-    occupation: p.occupation && p.occupation !== 'None' ? p.occupation : null, story: first(p.backstory || p.descriptor), tag: tagOf(p.voice), career, badges, rival };
+    occupation: p.occupation && p.occupation !== 'None' ? p.occupation : null, story: first(p.backstory || p.descriptor), tag: tagOf(p.voice), career, badges, rival,
+    // a partner at home (life events), on the card: the house was told on day one, and so is the viewer
+    atHome: atHomeFact(state.atHome?.[n]) };
   info.lines = introLines(n, info, state);
   return info;
 }

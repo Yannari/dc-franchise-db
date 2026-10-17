@@ -1413,11 +1413,11 @@ export const TWIST_CATALOG = [
      skulls or rings, Redemption House) are switches on the setup panel. `chTwist` is what js/ch-run.js
      challengeOptions reads into options.episodeTwists; js/ch/ep-twists.js plays it. A night has one. */
   { id:'ch-double', emoji:'\u{2694}', name:'Double Elimination', format:'the-challenge',
-    category:'elimination', phase:'any', engineType:'ch-episode', chTwist:'double',
+    category:'elim', phase:'any', engineType:'ch-episode', chTwist:'double',
     desc:'Two people go home tonight instead of one. The house votes twice: the first player voted in calls out an opponent, then the house votes again and the second player calls out an opponent from whoever is left. Both pairs fight in the Arena that night, and both losers go home. The daily\'s winners are still safe from both votes. It is one of the season\'s planned doubles moved to this episode, so the season does not get longer.',
     incompatible:['ch-purge', 'ch-return', 'ch-late'] },
   { id:'ch-purge', emoji:'\u{1F6A8}', name:'The Purge', format:'the-challenge',
-    category:'elimination', phase:'any', engineType:'ch-episode', chTwist:'purge',
+    category:'elim', phase:'any', engineType:'ch-episode', chTwist:'purge',
     desc:'Nobody is told until the daily is over. TJ gathers everyone and announces that it was a purge: whoever finished last in the division playing this week goes home on the spot. There is no vote, no call-out and no Arena that week, because the purge was the elimination. The daily\'s winners are safe as always, so a player who coasted through a daily can be gone before they get the chance to campaign.',
     incompatible:['ch-double', 'ch-return', 'ch-late'] },
   { id:'ch-return', emoji:'\u{1F501}', name:'The Return', format:'the-challenge',

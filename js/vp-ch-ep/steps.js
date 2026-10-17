@@ -612,7 +612,7 @@ function introCard(n, i) {
     result: c.winner ? 'WON' : c.finalist ? `Finalist${c.place ? `, ${ord(c.place)}` : ''}` : c.place ? `${ord(c.place)}${c.total ? ` of ${c.total}` : ''}` : 'Played',
     winner: !!c.winner, wins: c.wins || 0 }));
   const plates = [...new Set([SHOW_PLATE[i.origin], ...career.map(c => c.plate)].filter(Boolean))];
-  const facts = [i.age ? `${i.age}` : null, i.hometown, i.occupation].filter(Boolean);
+  const facts = [i.age ? `${i.age}` : null, i.hometown, i.occupation, i.atHome].filter(Boolean);
   return { n, show: SHOWS[i.origin]?.name || null, rookie: !!i.rookie, facts, story: career.length ? null : i.story || null, tag: !career.length && !i.story ? i.tag || null : null,
     career, badges: i.badges || [], rival: i.rival || null, plates: plates.length ? plates : [SHOW_PLATE['the-challenge']] };
 }

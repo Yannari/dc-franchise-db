@@ -251,7 +251,10 @@ export function bedAt(screen, idx) {
       if (w < 0 || idx < w) return 'ch-arena';
       // the goodbye at the gate (ch/goodbye.js) has its own song, from the last words to the next scene
       const bye = w < 0 ? -1 : firstIdx(steps, st => st.bye, w);
-      if (bye >= 0 && idx >= bye && sceneStart(steps, idx) <= bye) return 'ch-goodbye';
+      const out = w < 0 ? -1 : firstIdx(steps, st => st.slam?.stamp === 'ELIMINATED', w);
+      const start = out >= 0 ? out : bye;
+      const gate = start < 0 ? -1 : firstIdx(steps, st => st.exit, start);
+      if (start >= 0 && idx >= start && (gate < 0 ? sceneStart(steps, idx) <= Math.max(start, bye) : idx <= gate + 1)) return 'ch-goodbye';
       return sceneStart(steps, idx) > w ? sceneBed(screen, idx) : 'ch-amb-arena';
     }
     case 'daily': {

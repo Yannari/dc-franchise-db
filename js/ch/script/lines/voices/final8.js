@@ -90,11 +90,11 @@ export default {
   },
   // ── a lonely goodbye at the gate ──
   'gb.a1': {
-    1: { sharp: "No. I said everything I needed to in there.", dry: "No. I said it all in there.", loud: "NO! I said everything I needed to in there!", soft: "No. I think I said everything I needed to in there.", odd: "No. I said everything in there. With my arms." },
-    3: { sharp: "I didn't make a lot of friends in that house, and tonight I found out what that costs.", dry: "I didn't make many friends in that house. Tonight I saw what that costs.",
+    3: { sharp: "No. I said everything I needed to in there.", dry: "No. I said it all in there.", loud: "NO! I said everything I needed to in there!", soft: "No. I think I said everything I needed to in there.", odd: "No. I said everything in there. With my arms." },
+    7: { sharp: "I didn't make a lot of friends in that house, and tonight I found out what that costs.", dry: "I didn't make many friends in that house. Tonight I saw what that costs.",
       loud: "I didn't make a LOT of friends in that house, and tonight I found out what that COSTS!", soft: "I didn't make a lot of friends in that house, and tonight I found out what that costs. Nobody came down.",
       odd: "I didn't make a lot of friends in that house. Tonight the empty stand told me exactly how many." },
-    4: { sharp: "If I come back, I'm doing it differently. I'm not doing this alone again.", dry: "Next time, I don't do it alone.", loud: "If I come BACK, I'm doing it differently! I'm NOT doing this alone again!",
+    8: { sharp: "If I come back, I'm doing it differently. I'm not doing this alone again.", dry: "Next time, I don't do it alone.", loud: "If I come BACK, I'm doing it differently! I'm NOT doing this alone again!",
       soft: "If I ever come back, I'm doing it differently. I'm not doing this alone again.", odd: "If I come back, I'm bringing friends. Or making them. Either way, I'm not doing this alone." },
   },
   // ── a happy return ──

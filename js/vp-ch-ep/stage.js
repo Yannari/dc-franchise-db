@@ -286,7 +286,7 @@ export class ChxStage {
       for (const a of ['sip', 'look']) t.classList.toggle(a, ST.bgAct[n] === a && !focus.includes(n));
       t.querySelector('.chip')?.remove();
       if (ST.chips[n]) t.insertAdjacentHTML('beforeend', `<div class='chip'>${esc(ST.chips[n])}</div>`);
-      t.classList.remove('talkpop', 'shout', 'laugh', 'flinch', 'lean', 'cheer', 'cry', 'strain');
+      t.classList.remove('talkpop', 'shout', 'laugh', 'flinch', 'lean', 'cheer', 'cry', 'strain', 'hug');
       t.classList.toggle('dig', !!(s.dig && s.dig.includes(n)));
       t.classList.toggle('run', ST.poses[n] === 'run' || !!(ST.race && !s.finish && ST.race.some(r => r.who.includes(n)) && !s.say));
       for (const p of ['swim', 'climb', 'pull', 'mud', 'ice', 'buried']) t.classList.toggle(p, ST.poses[n] === p);
@@ -303,6 +303,8 @@ export class ChxStage {
     if (anim && s.fx?.heart) for (const n of s.fx.heart) this.fxAt('heart', n, HEART);
     // a fight (the user, 2026-10-16: "fight animations, to feel like a big moment"): two square up, a brawl, pulled apart
     if (s.clash) this.clash(s.clash, anim);
+    // a hug or a kiss: the two walk together, then hold on (style.js .tok.hug)
+    if (s.embrace) this.clash(s.embrace, anim);
     if (s.brawl) this.brawl(s.brawl, anim);
     if (s.part) this.partFight(s.part, anim);
     if (anim && s.loud && s.say) this.fxAt('excl', s.say[0], '!');

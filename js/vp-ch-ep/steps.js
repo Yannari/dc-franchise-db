@@ -270,7 +270,8 @@ function linesToSteps(S, lines, { names, first = null, sceneWho = [], host = fal
       const a = actionOf(l.text), who = namesIn(l.text, names);
       if (a && who.length) {
         if (a === 'exit') step.exit = [who[0]];
-        else if (a === 'hug' || a === 'kiss') { step.act = Object.fromEntries(who.slice(0, 2).map(n => [n, 'lean'])); if (a === 'kiss') step.fx = { heart: who.slice(0, 2) }; }
+        else if ((a === 'hug' || a === 'kiss') && who.length >= 2) { step.embrace = who.slice(0, 2); step.act = Object.fromEntries(who.slice(0, 2).map(n => [n, 'hug'])); if (a === 'kiss') step.fx = { heart: who.slice(0, 2) }; }
+        else if (a === 'hug' || a === 'kiss') step.act = { [who[0]]: 'lean' };
         else if (a === 'slam') { step.act = { [who[0]]: 'shout' }; step.shake = 1; }
         else if (a === 'cry') step.act = { [who[0]]: 'slump' };
         else step.act = { [who[0]]: a };

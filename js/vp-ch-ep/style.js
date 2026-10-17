@@ -165,6 +165,9 @@ const CHX_CSS = `
 @keyframes chxFlinch{30%{transform:translateX(var(--away,-6%)) rotate(-5deg) scale(.96)}}
 .chx .tok.lean .body{animation:chxLean 1.8s ease-in-out}
 @keyframes chxLean{50%{transform:translateX(var(--to,8%)) rotate(var(--rot,5deg))}}
+/* a hug: the two lean in and hold on, a squeeze, then let go a little */
+.chx .tok.hug .body{animation:chxHug 2.2s ease-in-out}
+@keyframes chxHug{25%{transform:translateX(var(--to,8%)) rotate(calc(var(--rot,5deg) * 1.4)) scaleX(.95)}60%{transform:translateX(var(--to,8%)) rotate(calc(var(--rot,5deg) * 1.4)) scale(.97,1.02)}}
 .chx .tok.slump .body{animation:chxSlump .9s ease-out forwards}
 @keyframes chxSlump{to{transform:translateY(6%) rotate(-3deg) scaleY(.94)}}
 .chx .tok.cheer .body{animation:chxCheer .42s ease-in-out 4}

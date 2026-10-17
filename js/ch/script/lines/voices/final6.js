@@ -213,7 +213,7 @@ export default {
   },
   'gb.a2': {
     1: { sharp: "Just good luck. You're going to need it.", dry: "Good luck. You'll need it.", loud: "Just GOOD LUCK! You're going to NEED it!", soft: "Just good luck to all of you. You're going to need it.", odd: "Just good luck. You're going to need a lot of it. Buckets." },
-    3: { sharp: "I'm not going to pretend I'm not hurting. But I'm not doing it in front of them.", dry: "It hurts. I'm just not showing them.",
+    6: { sharp: "I'm not going to pretend I'm not hurting. But I'm not doing it in front of them.", dry: "It hurts. I'm just not showing them.",
       loud: "I'm NOT going to pretend I'm not hurting! But I'm not doing it in front of THEM!", soft: "I'm not going to pretend I'm not hurting. I just didn't want to fall apart in front of them.",
       odd: "I'm hurting. I'll do it on the plane. The plane has seen worse." },
   },

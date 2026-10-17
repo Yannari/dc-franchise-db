@@ -5,6 +5,7 @@
 // fallout.mourn.<one|many>  — {a}'s ally {fallen} went home, and {a} knows who
 //   voted {fallen} out: {voters} ('one': that voter is {b}, here, and gets the
 //   cold shoulder; 'many': {a} tells the camera).
+// fallout.<mourn|found>.away — the one voter is on the other team now (a swap since): said to the camera.
 // fallout.found.<one|many>  — {a} found out {voters} wrote {a}'s own name.
 // fallout.blame.<ending>    — the plan broke and {a} blames {b}, who in fact
 //   stayed loyal. Nobody here knows who really flipped, so nobody names them.
@@ -471,7 +472,28 @@ const LOOSE = [
   ] },
 ];
 
+// the one who voted {fallen} out is on the other side now (a swap since the vote): {a} can only say it to the camera
+// (the user, 2026-10-16: "Sami was blaming Ara for voting out Spencer but they never acknowledge they're not from the same team")
+const MOURN_AWAY = [
+  { id: 'fo.ma1', turns: [{ by: 'a', conf: "{b} voted {fallen} out, and then the swap put {b} on the other side before I could say a word about it." }, { by: 'a', conf: "That's fine. We'll run into each other again." }] },
+  { id: 'fo.ma2', turns: [{ by: 'a', conf: "I know it was {b} who wrote {fallen}'s name. And now {b} gets a fresh start with new people who don't know that. Lucky {b}." }] },
+  { id: 'fo.ma3', turns: [{ by: 'a', conf: "{b} sent {fallen} home and then got swapped out of here the next morning. I didn't even get to look {b.obj} in the eye." }] },
+  { id: 'fo.ma4', turns: [{ by: 'a', conf: "Everybody over there is going to think {b} is nice. I know what {b} did to {fallen}." }, { by: 'a', conf: "Sooner or later, they'll find out too." }] },
+  { id: 'fo.ma5', turns: [{ by: 'a', conf: "I lost {fallen}, and the person who did it isn't even on my side any more. I don't know where to put this." }] },
+  { id: 'fo.ma6', turns: [{ by: 'a', conf: "{b} can switch sides as often as {b} wants. I'm not forgetting {fallen}, and I'm not forgetting who voted for it." }] },
+];
+const FOUND_AWAY = [
+  { id: 'fo.fa1', turns: [{ by: 'a', conf: "I found out {b} wrote my name. And now {b} is on the other side, so I can't even be mad at {b.obj} properly." }] },
+  { id: 'fo.fa2', turns: [{ by: 'a', conf: "{b} voted for me, then got swapped away the next morning. Convenient." }, { by: 'a', conf: "We'll be on the same side again one day. I'll remember." }] },
+  { id: 'fo.fa3', turns: [{ by: 'a', conf: "It was {b}. {b} wrote my name, and now {b} gets to start over with people who have no idea." }] },
+  { id: 'fo.fa4', turns: [{ by: 'a', conf: "The person who tried to vote me out isn't over here any more. That should make me feel better. It doesn't." }] },
+  { id: 'fo.fa5', turns: [{ by: 'a', conf: "{b} thinks the swap saved {b.obj} from me. It only bought {b.obj} some time." }] },
+  { id: 'fo.fa6', turns: [{ by: 'a', conf: "I know it was {b}. Everybody over here voted with me. The one who didn't is gone to the other side now." }] },
+];
+
 export default {
+  'fallout.mourn.away': MOURN_AWAY,
+  'fallout.found.away': FOUND_AWAY,
   'fallout.mourn.one': MOURN_ONE,
   'fallout.mourn.many': MOURN_MANY,
   'fallout.found.one': FOUND_ONE,
@@ -488,6 +510,7 @@ export default {
 export const GUARANTEED = {
   'fallout.mourn.one': ['fallen'],
   'fallout.mourn.many': ['fallen'],
+  'fallout.mourn.away': ['fallen'],
   'fallout.blame.swapped': ['plan', 'boot'],
   'fallout.blame.ally': ['boot'],
   'fallout.flip.swap': ['wrote', 'plan'],

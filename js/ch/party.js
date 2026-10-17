@@ -10,9 +10,11 @@
 // a physical fight needs a bad grudge, a short fuse and a big night together.
 import { getBond, addBond } from '../bonds.js';
 import { S, archetypeOf, addScene, clamp } from './state.js';
-import { grudgeOf, intimidated, remember } from './rel.js';
+import { grudgeOf, intimidated, remember, attractOf } from './rel.js';
 import { nudge } from './mind.js';
 import { romanceDay } from './romance.js';
+import { romanticCompat } from '../players.js';
+import { coupleOf } from './callout.js';
 import { addRivalry } from './events.js';
 import { gs } from '../core.js';
 import { allianceOf } from './alliances.js';
@@ -98,7 +100,82 @@ function nightDrama(state, rng, drink) {
     out.push(addScene(state, 'party-tears', f ? [a, f] : [a], { comforted: !!f }, f ? [a, f] : [a], 'party'));
     break;
   }
+  // 5. The drunk kiss (the user, 2026-10-16: "drunk romance, a kiss at the night out, and cheating drama, you kissed
+  //    my boyfriend, a fight about it, like Jersey Shore"). Two drunk people with something between them kiss. When
+  //    the one who kissed is somebody's (a showmance in the house, or a partner at home), it is cheating: the partner
+  //    may see it at the club, a friend of theirs may see it and tell them in the morning (kissFallout), or nobody does.
+  for (const a of act.filter(n => free(n) && drink[n] >= 0.55).sort((x, y) => drink[y] - drink[x])) {
+    const partnerIn = coupleOf(state, a);
+    const b = act.filter(n => n !== a && n !== partnerIn && free(n) && drink[n] >= 0.45 && romanticCompat(a, n)
+      && (attractOf(a, n) > 0.3 || getBond(a, n) >= 2 || (state.sparks[a < n ? `${a}|${n}` : `${n}|${a}`] || 0) >= 1))
+      .sort((x, y) => (attractOf(a, y) + getBond(a, y) * 0.2) - (attractOf(a, x) + getBond(a, x) * 0.2))[0];
+    if (!b) continue;
+    // somebody's is likelier to stop, and how much depends on who they are
+    const taken = !!partnerIn || !!state.atHome?.[a];
+    const restraint = taken ? Math.max(0.1, 1.3 - S(a, 'loyalty') / 10) : 1;
+    const flirt = archetypeOf(a) === 'showmancer' ? 1.5 : 1;
+    // (measured: 0.55 for everybody kissed 2.3 single pairs a season, about every night out; somebody taken kisses at
+    // the old rate, which their restraint already lowers)
+    if (rng() >= drink[a] * drink[b] * (taken ? 0.55 : 0.25) * restraint * flirt) continue;
+    const k = a < b ? `${a}|${b}` : `${b}|${a}`;
+    state.sparks[k] = (state.sparks[k] || 0) + 1.2;
+    addBond(a, b, 0.8);
+    busy.add(a); busy.add(b);
+    if (partnerIn) {
+      // the partner, if they are out tonight and looking, sees it; or a friend of theirs does
+      const caught = free(partnerIn) && rng() < 0.35 + drink[partnerIn] * 0.2;
+      const teller = !caught ? act.find(w => w !== a && w !== b && w !== partnerIn && free(w) && getBond(w, partnerIn) >= 3 && rng() < 0.65) || null : null;
+      pop(a, -1.5);
+      if (caught) {
+        busy.add(partnerIn);
+        const blowup = rng() < (10 - S(partnerIn, 'temperament')) / 10 * 0.7 + drink[partnerIn] * 0.2;
+        kissConsequence(state, rng, { wronged: partnerIn, kisser: a, kissed: b, blowup });
+        out.push(addScene(state, 'party-kiss', [a, b, partnerIn], { partner: partnerIn, caught: true, blowup, ended: !coupleOf(state, a) }, act, 'party'));
+      } else {
+        if (teller) state.pendingKiss = { wronged: partnerIn, kisser: a, kissed: b, teller, day: state.day };
+        out.push(addScene(state, 'party-kiss', [a, b], { partner: partnerIn, seen: !!teller }, teller ? [a, b, teller] : [a, b], 'party'));
+      }
+    } else if (state.atHome?.[a]) {
+      // somebody at home: the house will talk about it (events.js home-gossip), and the audience already is
+      pop(a, -1);
+      state.atHome[a].kissed = b;
+      out.push(addScene(state, 'party-kiss', [a, b], { home: state.atHome[a].name }, act, 'party'));
+    } else {
+      out.push(addScene(state, 'party-kiss', [a, b], {}, act, 'party'));
+    }
+    break;
+  }
   return out;
+}
+
+// What kissing somebody's partner costs, whenever they find out: both of them, and maybe the couple.
+function kissConsequence(state, rng, { wronged: p, kisser: a, kissed: b, blowup }) {
+  addBond(p, b, blowup ? -3.5 : -2.5); addBond(p, a, blowup ? -3 : -2);
+  remember(p, b, 'kissed-my-partner', 2); remember(p, a, 'cheated-on-me', 2);
+  addRivalry(state, p, b, blowup ? 2 : 1);
+  nudge(state, p, 'morale', -2); nudge(state, p, 'paranoia', 0.8);
+  if (blowup) { nudge(state, p, 'confidence', -0.4); pop(p, 0.6); }
+  // the couple: the wronged one ends it, unless they are the forgiving kind and still close
+  const c = state.couples.find(x => !x.ended && ((x.a === a && x.b === p) || (x.a === p && x.b === a)));
+  if (c && rng() < 0.35 + (10 - S(p, 'temperament')) * 0.03 + Math.max(0, 3 - getBond(p, a)) * 0.08) {
+    c.ended = state.ep; c.endedBy = p; c.why = 'kiss';
+    remember(a, p, 'dumped-me', 1); nudge(state, a, 'morale', -1.2);
+  }
+}
+
+/** The morning after a kiss somebody saw: the friend tells, and the one wronged goes to find the one who did it. */
+export function kissFallout(state, rng) {
+  const k = state.pendingKiss;
+  if (!k || state.day <= k.day) return null;
+  state.pendingKiss = null;
+  const { wronged: p, kisser: a, kissed: b, teller } = k;
+  if (![p, a, b].every(n => state.active.includes(n))) return null;
+  addBond(p, teller, 0.8); remember(p, teller, 'told-me-the-truth', 1.2);
+  addBond(a, teller, -1.2); remember(a, teller, 'talked-behind-my-back', 1);
+  const blowup = rng() < (10 - S(p, 'temperament')) / 10 * 0.6;
+  kissConsequence(state, rng, { wronged: p, kisser: a, kissed: b, blowup });
+  return addScene(state, 'kiss-fallout', [p, b, a, ...(state.active.includes(teller) ? [teller] : [])],
+    { blowup, ended: !coupleOf(state, a) }, state.active, 'villa');
 }
 
 export function partyNight(state, rng) {

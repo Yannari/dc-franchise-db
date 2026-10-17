@@ -147,6 +147,13 @@ export const ROLES = {
   'party-callout': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.firesBack ? 'firesback' : 'walks',
     slots: { beef: (sc.data.why === 'feud' && FEUD_BEEF[sc.data.causeType]) || BEEF[sc.data.why] || BEEF.feud } }),
   'party-tears': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.comforted ? 'comforted' : 'alone' }),
+  // the drunk kiss (party.js): a kissed b. caught: c, a's partner, saw it at the club (blowup: it went off). cheat:
+  // a's partner {target} is in the house and did not see. home: a has {home} waiting outside. single: neither is anyone's.
+  'party-kiss': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.caught ? sc.data.partner : undefined },
+    ending: sc.data.caught ? (sc.data.blowup ? 'blowup' : 'caught') : sc.data.partner ? 'cheat' : sc.data.home ? 'home' : 'single',
+    slots: { target: !sc.data.caught ? sc.data.partner || undefined : undefined, home: sc.data.home || undefined } }),
+  // the morning after (party.js kissFallout): a was cheated on, b kissed a's partner c, d saw it and told a
+  'kiss-fallout': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.ended ? 'breakup' : 'stays' }),
   // ── the stakes (stakes.js, redemption.js) ──
   'bank-taken': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { amount: sc.data.amount } }),
   injury: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: ['knock', 'knock', 'sprain', 'tear'][sc.data.sev] || 'knock', slots: { part: sc.data.part } }),

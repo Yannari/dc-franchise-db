@@ -727,7 +727,10 @@ export function checkShowmanceFormation(ep) {
       const bMult = SHOWMANCE_ARCHETYPE_MULT[bArch] ?? 0.50;
       // Combine multipliers: geometric mean so both archetypes influence the result
       const combinedMult = Math.sqrt(aMult * bMult);
-      const chance = Math.min(0.40, 0.07 * combinedMult);
+      // ...and somebody with a partner at home pays the price the challenge sparks already charge (_homeFactor: what
+      // they have at home, and who they are). This path ignored it, so the attached flirted at camp like anybody (the
+      // user, 2026-10-16). The draw is the same draw; only its odds move.
+      const chance = Math.min(0.40, 0.07 * combinedMult) * _homeFactor(a) * _homeFactor(b);
       if (Math.random() >= chance) continue;
 
       // Showmance forms — object with phase tracking

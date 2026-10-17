@@ -466,6 +466,10 @@ const BIG = {
   'alliance-grow': a => ({ slam: { spray: 'NEW MEMBER', color: '#ffd21a' }, chip: [a.who[1], a.data?.name ? `IN ${String(a.data.name).toUpperCase()}` : 'NEW MEMBER'] }),
   'alliance-end': a => ({ card: { k: 'Alliance over', t: a.data?.name || 'The alliance', sub: a.data?.why === 'final' ? 'The final: from here it is every one for themselves' : 'Every one of them is on their own now', faces: a.who.slice(0, 8) } }),
   'alliance-betrayal': a => ({ slam: { spray: 'BETRAYED', color: '#e3262d' } }),
+  // the drunk kiss and what it costs (ch/party.js)
+  'party-kiss': a => (a.data?.caught ? { slam: { spray: 'CAUGHT', color: '#e3262d' }, chip: [a.who[0], 'CAUGHT KISSING'] }
+    : a.data?.partner || a.data?.home ? { slam: { spray: 'THE KISS', color: '#ff8fc7' }, chip: [a.who[0], 'HAS SOMEBODY'] } : { slam: { spray: 'THE KISS', color: '#ff8fc7' } }),
+  'kiss-fallout': a => (a.data?.ended ? { slam: { spray: "IT'S OVER", color: '#e3262d' } } : { slam: { spray: 'BUSTED', color: '#e3262d' } }),
   // alliances that change shape (ch/alliances.js allianceShifts)
   'alliance-merge': a => ({ card: { k: 'Alliances merge', t: a.data?.name || 'One alliance', sub: a.data?.from ? `${a.data.from} folds into it, against ${a.data.against || 'the biggest group'}` : 'Two groups vote as one', faces: a.who.slice(0, 8) } }),
   'alliance-switch': a => ({ slam: { spray: 'SWITCHED SIDES', color: '#ff8a1a' }, chip: [a.who[1], a.data?.name ? `NOW IN ${String(a.data.name).toUpperCase()}` : 'SWITCHED'] }),

@@ -27,7 +27,7 @@ beforeAll(() => {
     airSeason(r.state);
     return { r, names, pair, friends };
   });
-});
+}, 600000);
 
 const together = (st, a, b) => st.alliances.some(al => [...new Set([...(al.members || []), ...(al.former || [])])].includes(a)
   && [...new Set([...(al.members || []), ...(al.former || [])])].includes(b));

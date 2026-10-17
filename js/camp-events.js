@@ -19,6 +19,7 @@ import { attachCampAccessToEvents, buildCampAccessSchedule, findConversationAcce
 import { stableRng } from './script/rng.js';
 import { makeScene, spotOf, spotFromAccess } from './td/script/scene.js';
 import { pastOf, pastData } from './td/past.js';
+import { homeOf, homeKin, tiedPairs, kinWord } from './season-ties.js';
 import { scriptEvent, scriptEventParts, withSceneCtx, ambientCtx, transcript, writeScene } from './td/script/write.js';
 
 // Where two people talk, in the phase the camp generator is writing (its callers set it).
@@ -3362,6 +3363,106 @@ export function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEv
           consequences: T + ' takes threat heat for an episode. Bond ' + N1 + '↔' + N2 + ' +0.4.', badgeText: 'TARGET: RETURNEE', badgeClass: 'red' },
           'ret.target', { a: N1, b: N2 }, ['won', 'final'].includes(_past(T)?.kind) ? _past(T).kind : _rets.length >= 2 ? 'many' : 'one',
           { target: T, ...pastData(T, 'T') }));
+      }
+    }
+  }
+
+  // ── WHO CAME IN ATTACHED ──
+  // The user, 2026-10-16: "do they actually acknowledge when they're in a relationship outside the game ... cheating on
+  // their partner ... if their partner/husband/wife are in the game ... also enemies". The season knew all of it
+  // (season-ties.js) and only ever said it on day one. Now: the camp says the partner at home's name out loud, the one
+  // with somebody at home talks to the camera about it, and a couple, family or exes in the same camp come back to it
+  // through the season. Fired by the season's own clock and a stable roll (stableRng), never a Math.random draw, so the
+  // rest of the season's draws stay where they were; each carries what it changes.
+  {
+    const _epT = (gs.episode || 0) + 1;
+    const _tf = (gs._tieFired ||= {});
+    const _archT = n => players.find(p => p.name === n)?.archetype || '';
+    const _schemesT = n => { const a = _archT(n), s = pStats(n);
+      return ['villain', 'mastermind', 'schemer'].includes(a) || (!['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(a) && s.strategic >= 6 && s.loyalty <= 4); };
+    const _popT = (n, d) => { if (!gs.popularity) gs.popularity = {}; gs.popularity[n] = (gs.popularity[n] || 0) + d; };
+    // somebody with a partner at home, getting close to somebody here (a showmance, or a spark the camp can see)
+    for (const X of [...group].sort()) {
+      const home = homeOf(X);
+      if (!home || _tf[`home:${X}:${_epT}`] || _epT - (_tf[`homeLast:${X}`] ?? -9) < 2) continue;
+      const sh = (gs.showmances || []).find(s => s.phase !== 'broken-up' && s.origin !== 'arrived-together' && s.players.includes(X));
+      const sp = sh ? null : (gs.romanticSparks || []).find(s => !s.fake && s.players.includes(X) && (s.intensity || 0) >= 0.3);
+      const Y = (sh || sp)?.players.find(n => n !== X);
+      if (!Y || !group.includes(Y)) continue;
+      const n = _tf[`homeN:${X}`] || 0;
+      _tf[`home:${X}:${_epT}`] = true; _tf[`homeLast:${X}`] = _epT; _tf[`homeN:${X}`] = n + 1;
+      const data = { home: home.name, homeWord: kinWord(homeKin(home.stage), home.name) };
+      const rest = group.filter(m => m !== X && m !== Y);
+      // the first time it shows, somebody here says the name; the next time, the one with somebody at home answers it
+      if (n % 2 === 0 && rest.length) {
+        const pointedBy = rest.filter(m => _schemesT(m) && getBond(m, X) <= 1).sort((a, b) => getBond(a, X) - getBond(b, X) || a.localeCompare(b))[0];
+        const C = pointedBy || [...rest].sort((a, b) => pStats(b).social - pStats(a).social || a.localeCompare(b))[0];
+        const pointed = !!pointedBy;
+        _popT(X, pointed ? -2 : -1);
+        addBond(X, C, pointed ? -1.0 : -0.3);
+        addBond(X, Y, pointed ? -0.4 : -0.2);
+        if (sp) sp.intensity = Math.max(0, (sp.intensity || 0) - 0.1);
+        events.push(scriptEvent({ type: 'tieHomeCallout', players: [X, C, Y], badgeText: 'SOMEBODY AT HOME', badgeClass: pointed ? 'red' : 'yellow',
+          text: pointed ? `${C} makes sure ${Y} knows about ${home.name}, ${X}'s ${data.homeWord} at home.` : `${C} asks ${X} about ${home.name}, ${X}'s ${data.homeWord} at home, right in front of ${Y}.`,
+          consequences: `${X} popularity ${pointed ? -2 : -1}. Bond ${X}↔${C} ${pointed ? -1.0 : -0.3}, ${X}↔${Y} ${pointed ? -0.4 : -0.2}.` },
+          makeScene('tie.home', { a: X, b: C, c: Y }, { ending: pointed ? 'pointed' : 'innocent', ...data }, group, _spotNow(X, C))));
+      } else {
+        const loy = pStats(X).loyalty;
+        const ending = loy >= 7 ? 'guilty' : loy >= 4 ? 'torn' : 'shrug';
+        if (ending === 'guilty') { addBond(X, Y, -0.4); if (sp) sp.intensity = Math.max(0, (sp.intensity || 0) - 0.25); _popT(X, 1); }
+        else if (ending === 'torn') { addBond(X, Y, -0.1); if (sp) sp.intensity = Math.max(0, (sp.intensity || 0) - 0.1); }
+        else { addBond(X, Y, 0.2); _popT(X, -1); }
+        events.push(scriptEvent({ type: 'tieHomeGuilt', players: [X, Y], badgeText: ending === 'shrug' ? 'NOT SORRY' : 'SOMEBODY AT HOME', badgeClass: ending === 'shrug' ? 'red' : 'blue',
+          text: ending === 'guilty' ? `${X} thinks about ${home.name} at home, and decides to put some distance between ${pronouns(X).ref} and ${Y}.`
+            : ending === 'torn' ? `${X} can't decide what ${Y} is to ${pronouns(X).obj}, with ${home.name} waiting at home.`
+              : `${X} isn't losing sleep over ${home.name}. ${Y} is here, and ${home.name} isn't.`,
+          consequences: ending === 'guilty' ? `Bond ${X}↔${Y} −0.4; the spark cools. ${X} popularity +1.` : ending === 'torn' ? `Bond ${X}↔${Y} −0.1.` : `Bond ${X}↔${Y} +0.2. ${X} popularity −1.` },
+          makeScene('tie.guilt', { a: X, b: Y }, { ending, ...data }, [], { id: 'confessional', label: 'Confessional' })));
+      }
+    }
+    // a couple, family or exes in the same camp: one moment a camp a day, each pair every third episode at most
+    if (_epT >= 2 && !group.some(m => _tf[`tieEp:${_epT}:${m}`])) {
+      const ready = tiedPairs([...group].sort()).filter(p => ['couple', 'family', 'exes'].includes(p.tie.kind) && _epT - (_tf[`tieLast:${p.a}|${p.b}`] ?? -9) >= 3);
+      const r = stableRng('td-tie', String(_epT), [...group].sort().join(','));
+      const P = ready.length && r() < 0.65 ? ready[Math.floor(r() * ready.length)] : null;
+      if (P) {
+        _tf[`tieLast:${P.a}|${P.b}`] = _epT;
+        group.forEach(m => { _tf[`tieEp:${_epT}:${m}`] = true; });
+        let [a, b] = r() < 0.5 ? [P.a, P.b] : [P.b, P.a];
+        let c = null, ending, fx;
+        const bond = getBond(a, b);
+        if (P.tie.kind === 'couple' && P.tie.together) {
+          // one of them has somebody else here (a showmance, or a spark the camp can see): the other one has noticed
+          const other = n => (gs.showmances || []).find(s => s.phase !== 'broken-up' && s.origin !== 'arrived-together' && s.players.includes(n) && !s.players.includes(n === P.a ? P.b : P.a))
+            || (gs.romanticSparks || []).find(s => !s.fake && (s.intensity || 0) >= 0.3 && s.players.includes(n) && !s.players.includes(n === P.a ? P.b : P.a));
+          const strays = [P.a, P.b].find(n => { const o = other(n); return o && group.includes(o.players.find(x => x !== n)); });
+          if (strays) {
+            b = strays; a = strays === P.a ? P.b : P.a; c = other(strays).players.find(x => x !== strays);
+            ending = 'jealous'; fx = () => { addBond(a, b, -0.6); addBond(a, c, -0.5); };
+          } else if (bond >= 4) { ending = 'steady'; fx = () => addBond(a, b, 0.3); }
+          else { ending = 'strained'; fx = () => addBond(a, b, -0.2); }
+        } else if (P.tie.kind === 'couple') {
+          if (bond >= 2) { ending = 'civil'; fx = () => addBond(a, b, 0.2); } else { ending = 'over'; fx = () => addBond(a, b, -0.2); }
+        } else if (P.tie.kind === 'family') {
+          // the one who got votes at the last vote is the one being looked after
+          const hit = n => gs.playerStates?.[n]?.lastVotedEp === _epT - 1;
+          if (hit(a) && !hit(b)) [a, b] = [b, a];
+          if (hit(b) || bond >= 3) { ending = 'protect'; fx = () => addBond(a, b, 0.4); } else { ending = 'bicker'; fx = () => addBond(a, b, -0.2); }
+        } else {
+          if (bond >= 1) { ending = 'thaw'; fx = () => addBond(a, b, 0.3); } else { ending = 'snipe'; fx = () => addBond(a, b, -0.3); }
+        }
+        fx();
+        const kw = kinWord(P.tie.kin, b);
+        const said = { steady: `${a} and ${b} came in together, and it still shows.`, strained: `The game is pulling at ${a} and ${b}, the couple who came in together.`,
+          jealous: `${a} came in with ${b}, and has noticed how much time ${b} spends with ${c}.`, over: `${a} and ${b} came in as a couple, and are not one any more. It's cold.`,
+          civil: `${a} and ${b} broke up out here, and are somehow all right.`, protect: `${a} looks out for ${b}, ${pronouns(a).posAdj} ${kw}.`, bicker: `${a} and ${b} bicker like family, because they are.`,
+          snipe: `${a} and ${b}, exes, still can't help it.`, thaw: `${a} and ${b}, exes, are getting along better than anybody expected.` }[ending];
+        const delta = { steady: '+0.3', strained: '−0.2', jealous: '−0.6', over: '−0.2', civil: '+0.2', protect: '+0.4', bicker: '−0.2', snipe: '−0.3', thaw: '+0.3' }[ending];
+        events.push(scriptEvent({ type: 'tieMoment', tie: P.tie.kind, players: [a, b, ...(c ? [c] : [])],
+          badgeText: P.tie.kind === 'couple' ? (P.tie.together ? 'CAME IN TOGETHER' : 'EXES NOW') : P.tie.kind === 'family' ? 'FAMILY' : 'EXES',
+          badgeClass: ['steady', 'civil', 'protect', 'thaw'].includes(ending) ? 'green' : 'red',
+          text: said, consequences: `Bond ${a}↔${b} ${delta}${ending === 'jealous' ? `, ${a}↔${c} −0.5` : ''}.` },
+          makeScene(`tie.${P.tie.kind === 'couple' ? 'couple' : P.tie.kind}`, { a, b, ...(c ? { c } : {}) }, { ending, kinWord: kw }, [], _spotNow(a, b))));
       }
     }
   }
@@ -7243,6 +7344,10 @@ export function generateCampEvents(ep, phase = 'both') {
   if (gs.discoveredVotesLastEp?.length && (phase === 'pre' || phase === 'both')) {
     const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
     const _disc = [...gs.discoveredVotesLastEp];
+    // the vote was last night; a swap since can have put the voter on another team (the user, 2026-10-16: "Sami was blaming
+    // Ara for voting out Spencer but they never acknowledge they're not from the same team"). Face to face only when they
+    // still share a camp; otherwise it's said to the camera, and a wrong-suspect confrontation doesn't happen.
+    const _sameCampNow = (x, y) => !!gs.isMerged || (gs.tribes || []).some(t => t.members.includes(x) && t.members.includes(y));
     gs.discoveredVotesLastEp = []; // consume — cleared so it doesn't repeat next episode
     // Group lost-ally events by ally so one ally's reaction is ONE consolidated event
     const _lostAllyGroups = {};
@@ -7259,10 +7364,11 @@ export function generateCampEvents(ep, phase = 'both') {
       const voterList = voters.length === 1 ? voters[0] : voters.slice(0, -1).join(', ') + ' and ' + voters[voters.length - 1];
       // One draw, where the sentence used to be picked (the season must not move).
       Math.random();
+      const _faceM = voters.length === 1 && _sameCampNow(ally, voters[0]);
       ep.campEvents[_campKey].pre.push(scriptEvent({ type: 'doubt', players: [ally, ...voters], badgeText: 'GRUDGE', badgeClass: 'red' },
         makeScene('fallout.mourn', { a: ally, b: voters[0] },
-          { ending: voters.length === 1 ? 'one' : 'many', fallen: evElim, voters: voterList }, [],
-          voters.length === 1 ? spotOf(ep, ally, voters[0], 'pre').spot : { id: 'confessional', label: 'Confessional' }),
+          { ending: _faceM ? 'one' : voters.length === 1 ? 'away' : 'many', fallen: evElim, voters: voterList }, [],
+          _faceM ? spotOf(ep, ally, voters[0], 'pre').spot : { id: 'confessional', label: 'Confessional' }),
         { ep: ep.num, phase: 'pre' }));
     });
     // Group vote-discovery events by target so one player's reaction is ONE consolidated event
@@ -7278,10 +7384,11 @@ export function generateCampEvents(ep, phase = 'both') {
       const _tP = pronouns(target);
       const voterList = voters.length === 1 ? voters[0] : voters.slice(0, -1).join(', ') + ' and ' + voters[voters.length - 1];
       Math.random();
+      const _faceF = voters.length === 1 && _sameCampNow(target, voters[0]);
       ep.campEvents[_campKey].pre.push(scriptEvent({ type: 'doubt', players: [target, ...voters], badgeText: 'KNOWS', badgeClass: 'red' },
         makeScene('fallout.found', { a: target, b: voters[0] },
-          { ending: voters.length === 1 ? 'one' : 'many', voters: voterList }, [],
-          voters.length === 1 ? spotOf(ep, target, voters[0], 'pre').spot : { id: 'confessional', label: 'Confessional' }),
+          { ending: _faceF ? 'one' : voters.length === 1 ? 'away' : 'many', voters: voterList }, [],
+          _faceF ? spotOf(ep, target, voters[0], 'pre').spot : { id: 'confessional', label: 'Confessional' }),
         { ep: ep.num, phase: 'pre' }));
     });
     // ── MISATTRIBUTION: a flip went undetected and an impulsive player turned on the WRONG suspect. Its
@@ -7301,6 +7408,7 @@ export function generateCampEvents(ep, phase = 'both') {
           : plannedTarget ? `the vote on ${plannedTarget} came apart` : `the plan came apart`);
       const _planShort = plannedTarget ? `the plan to vote ${plannedTarget}` : `the plan`;
       Math.random();
+      if (!_sameCampNow(reactor, wrongSuspect)) return;
       // What the reactor SAW go wrong, as a decided ending; the real flipper is never named (nobody here knows).
       const _misEnding = votedAlly && actualBoot ? 'ally'
         : plannedTarget && actualBoot && plannedTarget !== actualBoot ? 'swapped' : 'broke';

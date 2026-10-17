@@ -1070,6 +1070,10 @@ export function initGameState() {
     // that has never resolved an off-season, which is every franchise until it
     // has one.
     showmances: _lifeShowmances,
+    // ...and who the life log says each pair were to each other before tonight: still together, or exes
+    // (js/season-ties.js pairTie; the bond seeding above is all these used to leave behind)
+    lifeTies: (_life?.pairs || []).filter(p => p.kind === 'life-together' || p.kind === 'life-ex')
+      .map(p => ({ a: p.a, b: p.b, kind: p.kind === 'life-ex' ? 'exes' : 'couple', reason: p.reason || null })),
     playerStates: {},    // { [name]: { emotional, votesReceived, lastVotedEp, bigMoves } }
     adaptationProfiles: {}, // bounded learned tendencies; base stats remain unchanged
     _adaptationProcessedEpisodes: [],

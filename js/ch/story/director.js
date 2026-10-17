@@ -35,7 +35,7 @@ import { previouslyFor } from './previously.js';
 const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', 'pick-talk', 'pick-guess', 'daily', 'callout', 'arena', 'quit', 'medical', 'disqualified', 'tj-house-meeting', 'outing', 'empty-threat', 'tribunal-room', 'tribunal-verdict', 'tribunal-pitch',
   'volunteer', 'return', 'showmance', 'breakup', 'alliance-betrayal', 'deal-broken', 'fight-physical', 'final-start',
   'instant-elimination', 'overnight-sabotage', 'overnight-quit', 'final-pact-help', 'final-pact-broken', 'champions',
-  'rookie-uprising', 'final-cp', 'overnight-talk', 'final-podium', 'final-congrats', 'final-lastword', 'party', 'party-slip', 'party-callout', 'expelled-goodbye', 'expelled-blame',
+  'rookie-uprising', 'final-cp', 'overnight-talk', 'final-podium', 'final-congrats', 'final-lastword', 'party', 'party-slip', 'party-kiss', 'kiss-fallout', 'party-callout', 'expelled-goodbye', 'expelled-blame',
   // every alliance is seen being made: a drunk slip, a betrayal or an outing names it later (the user, 2026-10-16:
   // "there's no alliance called Riptide", named first at the bar after its forming scene was cut for room)
   'alliance-form',

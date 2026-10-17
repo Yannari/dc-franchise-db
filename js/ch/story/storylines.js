@@ -69,6 +69,8 @@ function rule(sc) {
     case 'pda': return F('showmance', 'house');
     case 'jealousy': return F('showmance', 'jealous');
     case 'breakup': return F('showmance', 'breakup');
+    case 'party-kiss': return d.partner ? F('showmance', 'jealous', d.caught ? 'caught' : 'kiss') : F('showmance', 'spark', 'kiss');
+    case 'kiss-fallout': return d.ended ? F('showmance', 'breakup', 'kiss') : F('showmance', 'jealous', 'kiss');
     case 'ex-in-the-house': return F('showmance', d.rekindle ? 'spark' : 'cold', 'ex');
     case 'home-gossip': return d.couple ? F('showmance', 'house', 'home') : F('showmance', 'spark', 'home');
     case 'home-guilt': return d.ends ? F('showmance', 'breakup', 'home') : F('showmance', 'together', 'home');

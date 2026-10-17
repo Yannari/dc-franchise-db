@@ -9,6 +9,7 @@ import { pruneIdolIntel, recordIdolIntel } from './advantage-intel.js';
 import { simulateVotes, resolveVotes, checkShotInDark, simulateRevote, summarizePitchReactions, describePitchReaction } from './voting.js';
 import { makeScene, spotOf } from './td/script/scene.js';
 import { scriptEvent, scriptEventParts, numberWord } from './td/script/write.js';
+import { homeKin, kinWord } from './season-ties.js';
 import { rollDeparture, departureText } from './departures.js';
 import { checkIdolPlays, checkIdolPreTribal, checkNonIdolAdvantageUse, findAdvantages, handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, simulateLastChance } from './challenges-core.js';
@@ -1299,6 +1300,9 @@ export function simulateEpisode() {
       return t ? t.tribeName || t.name : (gs.mergeName || 'merge');
     };
     const _push = (name, ev) => {
+      // the narrator's sentence stays at the front of the written recap (it says the show's own words: "every other
+      // contestant here knows it"), and the scene is what the stepped viewer plays
+      if (ev.narration && ev.text !== ev.narration) ev.text = `${ev.narration} ${ev.text}`;
       const key = _campOf(name);
       if (!ep.campEvents) ep.campEvents = {};
       if (!ep.campEvents[key]) ep.campEvents[key] = { pre: [], post: [] };
@@ -1308,25 +1312,36 @@ export function simulateEpisode() {
       if (sh.origin !== 'arrived-together') continue;
       const [a, b] = sh.players;
       if (!gs.activePlayers.includes(a) || !gs.activePlayers.includes(b)) continue;
-      _push(a, {
+      // ...said by them, so it reaches the screen (the user, 2026-10-16: it was a narrator's sentence the stepped viewer
+      // never aired): the camp finding out, or, a couple split across two teams, {a} to the camera about {b} over there
+      const _apart = _campOf(a) !== _campOf(b);
+      if (!gs.popularity) gs.popularity = {};
+      for (const n of [a, b]) gs.popularity[n] = (gs.popularity[n] || 0) + 1;
+      _push(a, scriptEvent({
         type: 'life-arrival',
-        text: arrivalLine({ players: [a, b], stage: sh.lifeStage, kids: sh.lifeKids }, _lw),
+        narration: arrivalLine({ players: [a, b], stage: sh.lifeStage, kids: sh.lifeKids }, _lw),
         players: [a, b],
+        consequences: `${a} and ${b} popularity +1 (a couple from day one).`,
         badgeText: 'Together Already',
         badgeClass: 'gold',
-      });
+      }, makeScene('tie.arrive', { a, b }, { ending: _apart ? 'apart' : 'couple', kinWord: kinWord(homeKin(sh.lifeStage), b) }, [],
+        _apart ? { id: 'confessional', label: 'Confessional' } : null), { ep: 1, phase: 'pre' }));
     }
     for (const p of players) {
       if (!p.partnerAtHome || !gs.activePlayers.includes(p.name)) continue;
       const _pr = pronouns(p.name);
-      _push(p.name, {
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[p.name] = (gs.popularity[p.name] || 0) + 1;
+      _push(p.name, scriptEvent({
         type: 'life-partner-at-home',
-        text: `${soloLine({ name: p.name, whomName: p.partnerAtHome.name, stage: p.partnerAtHome.stage })} `
+        narration: `${soloLine({ name: p.name, whomName: p.partnerAtHome.name, stage: p.partnerAtHome.stage })} `
           + `${_pr.Sub} came in alone, and every other ${_lw.player} here knows it.`,
         players: [p.name],
+        consequences: `${p.name} popularity +1.`,
         badgeText: 'Someone At Home',
         badgeClass: 'blue',
-      });
+      }, makeScene('tie.arrive', { a: p.name }, { ending: 'home', home: p.partnerAtHome.name, homeWord: kinWord(homeKin(p.partnerAtHome.stage), p.partnerAtHome.name) }, [],
+        { id: 'confessional', label: 'Confessional' }), { ep: 1, phase: 'pre' }));
     }
   }
 

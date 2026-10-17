@@ -61,6 +61,22 @@ export default {
       { by: 'b', say: "Why {target} and not {partner}?" },
       { by: 'a', say: "Because {partner} will be lost without {target}. The other way around, I'm not so sure." },
     ] },
+    // the pair came in together (season-ties.js): what they are to each other is the reason
+    { id: 'npm.cp2', when: { pairTied: true, pairCouple: true }, turns: [
+      { by: 'a', say: "{target} walked in here with {partner}. {partner} is {target.posAdj} {partnerIs}, and you can't out-bond that." },
+      { by: 'b', say: "So we split them up." },
+      { by: 'a', say: "Now, while we still can. Two people who'd take a bullet for each other are two votes we never get." },
+    ] },
+    { id: 'npm.cp3', when: { pairTied: true, pairCouple: true }, turns: [
+      { by: 'a', say: "Everybody keeps forgetting {target} and {partner} are a real couple. They're not an alliance, they go home together." },
+      { by: 'b', say: "And you want {target} gone first?" },
+      { by: 'a', say: "{partner} without {target} is just a sad person with one vote. {target} without {partner} would be furious, and dangerous." },
+    ] },
+    { id: 'npm.cp4', when: { pairTied: true, pairFamily: true }, turns: [
+      { by: 'a', say: "{partner} is {target.posAdj} {partnerIs}. Family. You can't make a deal stronger than that, so you don't try." },
+      { by: 'b', say: "Why {target} and not {partner}?" },
+      { by: 'a', say: "{target} is the one who'd go to war for {partner}. Take {target} out and {partner} is just one more vote." },
+    ] },
   ],
   'vp.case.group': [
     { id: 'npm.cg1', turns: [
@@ -186,6 +202,10 @@ export default {
       { by: 'b', say: "You'll lose everything {target} taught you." },
       { by: 'a', say: "Some of it. But if {target} makes the merge, {target} is playing, and nobody here knows how I play better than {target}." },
     ] },
+  ],
+  'vp.solo.case.pair': [
+    { id: 'npm.cps1', when: { pairTied: true, pairCouple: true }, turns: [{ by: 'a', conf: "{target} and {partner} came here as a couple. Nobody in this game is ever going to be as loyal to me as they are to each other, so one of them has to go." }] },
+    { id: 'npm.cps2', when: { pairTied: true, pairFamily: true }, turns: [{ by: 'a', conf: "{partner} is {target.posAdj} {partnerIs}. I'd vote for my family every time too. That's exactly why {target} can't stay." }] },
   ],
   'vp.solo.case.coach': [
     { id: 'npm.chs1', when: { coachPassed: true }, turns: [{ by: 'a', conf: "{target} picked a favourite every single session, and it was never me. Tonight, I return the favour." }] },

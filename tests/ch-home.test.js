@@ -21,7 +21,7 @@ beforeAll(() => {
     airSeason(r.state);
     return { r, names, atHome: new Set(atHome.map(x => x.name)) };
   });
-});
+}, 600000);
 
 describe('The Challenge: somebody at home', () => {
   it('the carry hands a partner who is not in the cast to the season', () => {

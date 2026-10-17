@@ -472,7 +472,8 @@ export const EVENTS = [
       const st = ctx.state;
       // the house can only talk about it if it was told (home-talk)
       for (const c of st.active.filter(n => st.atHome[n]?.told)) {
-        const with_ = coupleOf(st, c) || st.active.find(x => x !== c && (st.sparks[x < c ? `${x}|${c}` : `${c}|${x}`] || 0) >= 1);
+        const with_ = coupleOf(st, c) || (st.atHome[c].kissed && st.active.includes(st.atHome[c].kissed) ? st.atHome[c].kissed : null)
+          || st.active.find(x => x !== c && (st.sparks[x < c ? `${x}|${c}` : `${c}|${x}`] || 0) >= 1);
         if (!with_) continue;
         const talkers = st.active.filter(x => x !== c && x !== with_ && !busy(ctx, x)).sort((x, y) => (S(y, 'social') - getBond(y, c) * 0.3) - (S(x, 'social') - getBond(x, c) * 0.3));
         const [g1] = talkers;

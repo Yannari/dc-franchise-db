@@ -13,6 +13,7 @@ import { recordBetrayal } from './relationship-events.js';
 import { idolSuspicionModifier, splitVotePreference } from './adaptation.js';
 import { activeCoaches, coachesOf, coachRecord, isCoach, tribeCardHeld } from './coaches.js';
 import { aweOf } from './coach-agenda.js';
+import { pairTie } from './season-ties.js';
 
 const _arch = (n) => players.find(p => p.name === n)?.archetype || 'floater';
 const _VILLAINY = ['villain', 'mastermind', 'schemer'];
@@ -1522,6 +1523,10 @@ export function pickTarget(attackers, victims, challengeLabel) {
   // Hub personality: the lead attacker's stats influence what kind of target they prioritize
   const _hub = attackers[0];
   const _hubS = _hub ? pStats(_hub) : null;
+  // Two people who came in together, still together, or family (season-ties.js), both on the other side of this vote:
+  // two votes that never split, so one of them goes (the user, 2026-10-16: "couples treated as a voting block that others
+  // want to split up"). A couple counts as a showmance after the merge already (pairThreat below); family did not.
+  const _tiedIn = (v, kinds) => _victims.some(p => p !== v && (t => !!t && kinds.includes(t.kind) && (t.kind !== 'couple' || t.together))(pairTie(v, p)));
   return wRandom(_victims, v => {
     const avgBond = attackers.reduce((sum,a) => sum+getPerceivedBond(a,v), 0) / attackers.length;
     if (phase === 'pre-merge') {
@@ -1541,12 +1546,14 @@ export function pickTarget(attackers, victims, challengeLabel) {
       // Neither of them has a ballot, so this is the only lever that makes
       // the bargain real rather than a line of dialogue.
       const _coachFallMod = (isCoach(v) && gs._coachFallHeat?.[v] === ((gs.episode || 0) + 1)) ? 5.0 : 0;
-      return Math.max(0.1, _cwScore * 0.35 + (-avgBond) * 0.35 + _threatMod + dramaRisk + _soloMod + _volunteerModPre + _coachDangerMod + _coachFallMod + relationalTargetMod(attackers, v) + Math.random() * 0.5);
+      const _tieMod = _tiedIn(v, ['couple', 'family']) ? 0.4 : 0;
+      return Math.max(0.1, _cwScore * 0.35 + (-avgBond) * 0.35 + _threatMod + dramaRisk + _soloMod + _volunteerModPre + _coachDangerMod + _coachFallMod + _tieMod + relationalTargetMod(attackers, v) + Math.random() * 0.5);
     } else {
       const allAtTribal = [...attackers, v];
       const maxBond = allAtTribal.filter(p => p !== v).reduce((m, p) => Math.max(m, getPerceivedBond(p, v)), 0);
       const pairThreat = (maxBond >= 8 ? 1.0 : maxBond >= 7 ? 0.5 : 0)
-                       + (gs.showmances?.some(sm => sm.phase !== 'broken-up' && sm.players?.includes(v)) ? 0.5 : 0);
+                       + (gs.showmances?.some(sm => sm.phase !== 'broken-up' && sm.players?.includes(v)) ? 0.5 : 0)
+                       + (_tiedIn(v, ['family']) ? 0.5 : 0);
       const standoutMod = gs._chalStandouts?.includes(v) ? 0.35 : 0;
       // Hub personality shifts targeting priority
       let personalityMod = 0;

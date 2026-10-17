@@ -24,6 +24,7 @@ import { allianceOf, activeAlliances, formAlliances, growAlliances, leave, allia
 import { dealBetween } from './callout.js';
 import { addRivalry } from './events.js';
 import { stableRng } from '../script/rng.js';
+import { kissFallout } from './party.js';
 
 export function allianceCap(state) {
   const j = stableRng(state.seed, 'alliance-cap')();
@@ -33,6 +34,8 @@ export function allianceCap(state) {
 }
 
 export function houseDay(state, rng) {
+  // the morning after a kiss somebody saw (party.js)
+  kissFallout(state, rng);
   // Hangs: each person spends the day with a few others, chosen by pull.
   for (const a of shuffle(rng, state.active)) {
     const others = state.active.filter(b => b !== a);

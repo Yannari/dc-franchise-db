@@ -49,6 +49,9 @@ import { writePreviously } from './previously.js';
 import { chalMoments } from './chalmoments.js';
 import { MEAL_KIND, MEAL_TYPE } from '../script/food.js';
 import { placeOf, kindOf, placeById } from './places.js';
+import { pairTie } from '../../season-ties.js';
+// a couple still together, or family: two votes that never split
+const tiedPair = (x, y) => { const t = pairTie(x, y); return !!t && (t.kind === 'family' || (t.kind === 'couple' && t.together)); };
 import { kitBitScene, kitDigScene, kitRomanceScene, kitLifeScene, kitClashScene, kitDeepScene, kitCallbackScene, kitSoloScene, kitAngleScene, hasKit, kitOf, sharedGround, setKitVenue } from './kits.js';
 import { runArcs, campGame, leftThisEp } from './arcs.js';
 import { coupleScenes } from './couple.js';
@@ -66,7 +69,10 @@ const VENUE_WORDS = {
 let venueNow = 'hosted-camp';
 // engine moments that air whatever the episode's story is (see airTdEpisode): somebody leaving or arriving,
 // and the secret plays a viewer has to have seen for what follows to make sense
-const MUST_AIR = new Set(['medevac', 'medevacReplacement', 'kissTrap', 'moleBondSabotage', 'moleInfoLeak', 'moleChallengeThrow', 'moleAdvSabotage']);
+const MUST_AIR = new Set(['medevac', 'medevacReplacement', 'kissTrap', 'moleBondSabotage', 'moleInfoLeak', 'moleChallengeThrow', 'moleAdvSabotage',
+  // who came in attached (season-ties.js): the couples and the partners at home on day one, and the camp saying a partner at
+  // home's name out loud (the user, 2026-10-16: "do they actually acknowledge when they're in a relationship outside the game")
+  'life-arrival', 'life-partner-at-home', 'tieHomeCallout']);
 const AIRS_FIRST = new Set(['medevac', 'medevacReplacement']);
 let ctxAvoid = () => null;
 
@@ -397,6 +403,9 @@ export function historyOf(a, b) {
   if (!a || !b) return { facts: { hist: 'none' }, data: {} };
   let kin = 'none'; try { kin = kinshipBetween(a, b); } catch { kin = 'none'; }
   if (KIN[kin]) return { facts: { hist: KIN[kin] }, data: { kinWord: kinWord(kin, b) } };
+  // a couple who walked in together, or exes, from the life log (season-ties.js: kinshipBetween has none of it)
+  const tie = pairTie(a, b);
+  if (tie && KIN[tie.kin]) return { facts: { hist: KIN[tie.kin] }, data: { kinWord: kinWord(tie.kin, b) } };
   const sp = (gs.franchiseMeta?.seededPairs || []).filter(x => (x.a === a && x.b === b) || (x.a === b && x.b === a));
   const where = x => (/\(([^)]+)\)\s*$/.exec(x?.reason || '') || [])[1] || 'last time';
   const bet = sp.find(x => x.kind === 'betrayal' || x.kind === 'blindside');
@@ -822,7 +831,7 @@ function sparkCase(ep, t) {
   const has = s => !!s && (typeof s.has === 'function' ? s.has(boot) : Array.isArray(s) ? s.includes(boot) : false);
   const coming = (t.rivals || []).find(al => (al.members || []).includes(boot) && al.target && (al.target === leader || voters.includes(al.target)) && heardComing(ep, t, al));
   const partner = tribal.filter(x => x !== boot && x !== leader && !voters.includes(x)).sort((x, y) => getBond(boot, y) - getBond(boot, x) || x.localeCompare(y))[0];
-  const pair = partner && getBond(boot, partner) >= 5 ? partner : null;
+  const pair = tribal.find(x => x !== boot && x !== leader && !voters.includes(x) && tiedPair(boot, x)) || (partner && getBond(boot, partner) >= 5 ? partner : null);
   // (an alliance from before today: one formed this afternoon is not the reason anybody spent the morning watching it,
   // read 2026-10-14, "The Blood Oath has been planning since we arrived" the day Diego and Isabel named it)
   const theirs = (gs.namedAlliances || []).find(al => al.active !== false && (al.formed ?? 0) < ep.num && (al.members || []).includes(boot) && !(al.members || []).includes(leader))?.name || null;
@@ -972,7 +981,10 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   // the case: the ballots' own reason first, then the truest specific one
   const coming = (t.rivals || []).find(al => (al.members || []).includes(boot) && al.target && (al.target === leader || voters.includes(al.target)) && heardComing(ep, t, al));
   const partner = tribal.filter(x => x !== boot && x !== a && !voters.includes(x)).sort((x, y) => getBond(boot, y) - getBond(boot, x) || x.localeCompare(y))[0];
-  const pair = partner && getBond(boot, partner) >= 5 ? partner : null;
+  // the one they came in with (a couple still together, or family: season-ties.js) is the pair first, whatever the bond
+  const tiedTo = tribal.find(x => x !== boot && x !== a && !voters.includes(x) && tiedPair(boot, x)) || null;
+  const pair = tiedTo || (partner && getBond(boot, partner) >= 5 ? partner : null);
+  const pairT = tiedTo ? pairTie(boot, tiedTo) : null;
   const theirs = (gs.namedAlliances || []).find(al => al.active !== false && (al.formed ?? 0) < ep.num && (al.members || []).includes(boot) && !(al.members || []).includes(a))?.name || null;
   // (a coach can never play an idol on themselves: it is never the reason, or the worry)
   // (the other side's plan is on somebody else: only the coach's own name is a coach)
@@ -1042,6 +1054,8 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const sideBig = themNames.length >= 2 || tribal.filter(x => !voters.includes(x)).length >= 3;
   const facts = { ...baseFacts, ...(group ? { group: true } : {}), alliance: !!group, sideVoted, sideBig, count, glue: !!gluePair, shaky: !!shaky, cover: !!cover, close: !!b && getBond(a, b) >= 4, others: !!rest.length, other: !!rival?.target, markMe: mark === a, markB: !!mark && mark === b, otherMe: rival?.target === a, otherB: !!b && rival?.target === b, cast: shape };
   // a coach on the plan (vp.case.coach): who the coach trained (and so who loses it tonight), and where a stands
+  // the pair came in together: the plan says what they are to each other ({partnerIs}: "girlfriend", "brother")
+  if (pairT && caseOf === 'pair') { Object.assign(facts, { pairTied: true, pairCouple: pairT.kind === 'couple', pairFamily: pairT.kind === 'family' }); data.partnerIs = kinWord(pairT.kin, tiedTo); }
   if (isCoach) {
     const tr = t.coach.trained, prot = tr.filter(x => tribal.includes(x) && !Object.values(who).includes(x));
     Object.assign(facts, { coachPassed: !!tr.length && !tr.includes(a), coachMine: tr.includes(a), coachTrained: !!tr.length, coachBuilt: tr.length >= 3, coachLiked: getBond(a, boot) > 1, protege: !!prot.length });
@@ -2765,6 +2779,13 @@ export function airTdEpisode(ep) {
           if (search) { if (!item) return; searched = true; }
           offer('find', find ? 'must' : 'story', { at: i, item: claimEv(item || { ref: i }, ev) });
         }); }
+      // who came in attached, later in the season (camp-events.js WHO CAME IN ATTACHED): the confessional about the
+      // partner at home, and a couple, family or exes coming back to it. The engine writes at most one of each a camp a day.
+      events.forEach((ev, i) => {
+        if (!ev || ev.aired != null || !/^tie(HomeGuilt|Moment)$/.test(ev.type || '')) return;
+        // (somebody noticing their partner from home with somebody else here always airs: it's the cheating, said out loud)
+        offer('tie', ev.scene?.data?.ending === 'jealous' ? 'must' : 'story', { at: i, item: claimEv(longScene(ev, i) || { ref: i }, ev) });
+      });
       // what tonight's plan comes from (causeOf) airs on top of the caps: the plan calls back to it
       for (const c of (talk?.cause || []).filter(c => c.phase === phase)) {
         const ev = events[c.i];
@@ -3177,6 +3198,8 @@ export function airTdEpisode(ep) {
     for (const phase of ['pre', 'post']) {
       eventsOf(ep, camp, phase).forEach((ev, i) => {
         if (!ev || !MUST_AIR.has(ev.type) || out[phase].some(it => it.ref === i)) return;
+        // a couple the first day's own scene already introduced ("Are you two together?") is not introduced twice
+        if (ev.type === 'life-arrival' && out[phase].some(it => it.storyType === 'firstday' && (ev.players || []).every(p => (it.players || []).includes(p)))) { ev.aired = 'covered'; return; }
         ev.aired = true;
         if (AIRS_FIRST.has(ev.type)) out[phase].unshift({ ref: i }); else out[phase].push({ ref: i });
       });

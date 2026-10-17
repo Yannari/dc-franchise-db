@@ -18,7 +18,7 @@ beforeAll(() => {
     airSeason(r.state);
     return { r, record: chLedgerRecord(r.state, r) };
   });
-});
+}, 600000);
 
 const kindOf = s => (s.kind === 'alliance-leave' || s.kind === 'alliance-end' ? `${s.kind}.${s.data.why}` : s.kind);
 

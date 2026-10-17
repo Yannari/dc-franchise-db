@@ -148,10 +148,15 @@ export function isNight(time) {
 }
 
 /** The plate's file base (no extension) for a theme and an hour, falling back to what exists. */
+// Rooms with no window keep their lights on all night (the user, 2026-10-16: "the living room shouldnt have a night
+// mode, they're in interior with no windows"): the living room and its library, the memory wall, the foyer, the
+// hallway, the bathroom and the storage room. The kitchen, the dining room and the gym have windows onto the night,
+// and the bedrooms, the HOH room and the have-not room go dark at lights out.
+const NO_NIGHT = /^(living-|library-|memory-wall$|foyer$|hallway$|bathroom$|storage(-\d+)?$)/;
 export function plateBase(id, theme, night) {
   const t = RESORT.have[theme]?.[id] ? theme : 'default';
   const tods = RESORT.have[t]?.[id] || [];
-  const tod = night && tods.includes('night') ? 'night' : tods.includes('day') ? 'day' : tods[0];
+  const tod = night && tods.includes('night') && !NO_NIGHT.test(id) ? 'night' : tods.includes('day') ? 'day' : tods[0];
   return `${PLATE_DIR}/${t}/${id}-${tod}`;
 }
 

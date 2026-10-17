@@ -50,5 +50,30 @@ test('the veto draw and the HOH room', async ({ page }) => {
   expect(await shoot('bb-hohroom', 'The key turns', 'hohroom-door', 50)).toBe('hoh-suite');
   await shoot('bb-hohroom', 'photos|Photos', 'hohroom-crowd');
   await shoot('bb-hohroom', '.', 'hohroom-end', 1200);
+  // an island moment (bb-events/island-life.js) on its own spot, from whichever of the three weeks has one
+  let shot = null;
+  for (let e = ep; e >= 1 && !shot; e--) {
+    await page.evaluate(n => window.openVisualPlayer(n), e);
+    await page.waitForFunction(() => (window.vpScreens || []).length > 5);
+    shot = await page.evaluate(() => {
+      for (const [vi, V] of (window.vpScreens || []).entries()) {
+        const u = /data-uid="([^"]+)"/.exec(V.html || '')?.[1];
+        const X = u && window._bbx[u];
+        const S = X && X.screens[X.si];
+        const k = S ? (S.steps || []).findIndex(st => /^island-/.test(String(st.scene?.step || ''))) : -1;
+        if (k >= 0) return { vi, u, k, step: S.steps[k].scene.step, plate: S.steps[k].scene.plate };
+      }
+      return null;
+    });
+  }
+  expect(shot, 'an island moment in three weeks').toBeTruthy();
+  await page.evaluate(i => window.vpGoTo(i), shot.vi);
+  await page.waitForTimeout(600);
+  await page.evaluate(([u, n]) => window.bbxJump(u, n + 1), [shot.u, shot.k]);
+  await page.waitForTimeout(1500);
+  const plate = await page.evaluate(u => document.querySelector(`#bbx-st-${u} [data-plate]`)?.dataset.plate || null, shot.u);
+  console.log('island', shot.step, 'plate', plate);
+  expect(plate).toBe(shot.plate);
+  await page.locator(`#bbx-st-${shot.u}`).screenshot({ path: `${SHOTS}/bbc-island.png` });
   expect(errors.pageErrors, JSON.stringify(errors.pageErrors)).toEqual([]);
 });

@@ -3291,6 +3291,8 @@ const AT_SET = { morningafter: 9.5, hohroom: 15, afternoms: 16, dinner: 19.5, ga
 function clockOf(sc, i, k, prev) {
   const first = String((sc.lines || []).find(l => l.kind === 'beat')?.text || '');
   let t = sc.type === 'set' && AT_SET[sc.step] != null ? AT_SET[sc.step]
+    // (a fire on the beach or a walk down the pier in the dark is the night's: bb-events/island-life.js)
+    : /bonfire|fire pit|around the fire|after dark|midnight|after lights out/i.test(first) ? 22.5
     : /lights out|lights low|late|night|in the dark|still up/i.test(first) ? 23
       : /morning|breakfast|coffee|wakes/i.test(first) ? 9
         : /dinner/i.test(first) ? 19.5
@@ -3360,7 +3362,8 @@ function storyLifeScreen(scenes, ctx, n) {
       // the engine's own moments open on what happens ("An argument about the dishes turns into
       // something else") and never say where: a run of them read as one jumbled montage
       const t0 = String(lines[firstSpoken].t || '');
-      const where = sc.type === 'event' && !/^(the )?(bedroom|kitchen|backyard|living room|hoh room|storage room|dining|have-not|diary|yard|pool|lounge|bathroom|dinner|breakfast|lights out|late|morning|later|that night|after)/i.test(t0)
+      // (a moment that happens AT a place on the island opens on the place itself: "Volcano Beach. The volcano beach.")
+      const where = sc.type === 'event' && !/^island-/.test(String(sc.step || '')) && !/^(the )?(bedroom|kitchen|backyard|living room|hoh room|storage room|dining|have-not|diary|yard|pool|lounge|bathroom|dinner|breakfast|lights out|late|morning|later|that night|after)/i.test(t0)
         ? `${label}. ` : '';
       lines[firstSpoken] = { ...lines[firstSpoken], t: where + t0, scene };
       // a recap before it (Diary Room) still has to cut somewhere first

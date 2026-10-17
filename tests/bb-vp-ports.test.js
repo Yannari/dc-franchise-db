@@ -37,7 +37,8 @@ const CASES = [
   ...['summer-of-temptation', 'machine-summer', 'summer-of-mystery', 'high-rollers', 'summer-camp', 'summer-school'].map(theme => ({ name: `theme ${theme}`, cfg: { theme }, weeks: 2 })),
   { name: 'theme turn', cfg: { theme: 'high-rollers' }, weeks: 6 },
   { name: 'have-nots', cfg: { bbHaveNots: 'every-week' }, weeks: 2 },
-  { name: 'departures', cfg: { bbDepartures: 'often' }, weeks: 5 },
+  // (a seed with two walk-outs in five weeks: 'often' is a chance, and any new house event moves the dice)
+  { name: 'departures', cfg: { bbDepartures: 'often' }, weeks: 5, seed: 3 },
   { name: 'instant eviction', cfg: twist('bb-instant-eviction', [2]), weeks: 2 },
   { name: 'double eviction', cfg: twist('bb-double-eviction', [2]), weeks: 2 },
   { name: 'triple eviction', cfg: twist('bb-triple-eviction', [2]), weeks: 2 },
@@ -55,7 +56,7 @@ const CASES = [
   { name: 'rivals', cfg: { bbRivals: 'auto' }, weeks: 2 },
   { name: 'saboteur', cfg: { bbSaboteur: 'random' }, weeks: 2 },
 ];
-const PLAYED = Object.fromEntries(CASES.map(c => [c.name, play(c.cfg, c.weeks)]));
+const PLAYED = Object.fromEntries(CASES.map(c => [c.name, play(c.cfg, c.weeks, c.seed)]));
 const all = name => PLAYED[name].map(ep => ({ ep, screens: bbWeekSteps(ep) }));
 const actsOf = (ep, type) => (ep.acts || []).filter(a => a?.type === type);
 

@@ -29,6 +29,11 @@ export const SPOTS = {
   'beach-shoreline': { room: 'backyard', label: 'The Beach', island: true },
   'beach-loungers': { room: 'backyard', label: 'The Beach', island: true },
   'dock': { room: 'backyard', label: 'West Dock', island: true },
+  // the island's places where things HAPPEN (bb-events/island-life.js): never a private talk's destination
+  'beach-bonfire': { room: 'backyard', label: 'The Bonfire', island: true },
+  'beach-volcano': { room: 'backyard', label: 'Volcano Beach', island: true },
+  'beach-hutbar': { room: 'backyard', label: 'The Beach Bar', island: true },
+  'gym-racks': { room: 'backyard', label: 'The Gym', island: true },
   'pool-edge': { room: 'backyard', label: 'Backyard' },
   'balcony': { room: 'backyard', label: 'Backyard' },
 };

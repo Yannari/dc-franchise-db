@@ -2983,6 +2983,15 @@ every new set was an approved static HTML page before any stage code.
    and the viewer which beats those are, so nothing airs twice or not at all. Same for the veto draw:
    the engine records how each drawer felt about the name that came out (`draw[].feel`), so the face
    they make on screen is the one they made at the time, not today's bond on a replay.
+11. **A painted place needs things that happen there, not only talks moved there.** Big Brother's
+   island spots were only ever where a private conversation was sent (`bb/story/places.js spotFor`),
+   so the bonfire, the volcano beach, the gym and the beach bar almost never aired. Events that
+   happen BECAUSE of a place (`bb-events/island-life.js`: never have I ever at the bonfire, the pier
+   after dark, a dare at the volcano rocks, the rope swing, the gym, the beach bar) carry a `spot` on
+   the beat, and `writeEngineScene` plays them there whatever their words say. Two traps: any
+   weight at all fills a week's quota (house acts have room to spare), so the cap is the rate; and
+   a line that names a time of day ("all afternoon") can be clamped to 11 PM by the stretch clock,
+   which only runs forward, so a daytime place keeps its lines free of the hour.
 
 ### 18.4 Total Drama's stepped viewer, step by step (the recipe to copy)
 

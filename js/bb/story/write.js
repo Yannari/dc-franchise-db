@@ -32,7 +32,7 @@ import { getBond } from '../../bonds.js';
 import { addInsight } from './voice.js';
 import { addThemeTexture } from './theme-texture.js';
 import { pickTone, voiceLine, variantOf } from './register.js';
-import { spotFor, onIsland, openingAt } from './places.js';
+import { spotFor, onIsland, openingAt, SPOTS } from './places.js';
 import { pStats } from '../../players.js';
 
 const ledger = () => ((gs.bb ||= {}).storyLedger ||= newLedger());
@@ -863,9 +863,11 @@ function writeEngineScene0(beat, ctx, at) {
   // what they are doing says where they are: breakfast is not made in the backyard, and a scene
   // that opens "Storage room." is in the storage room
   const textRoom = roomFromText(lines);
-  const sp = !meeting && !textRoom ? spotFor(id, cast, ctx, `${ctx.week?.num || 0}|${ctx.stretch}|${id}|${cast.join('>')}`, JSON.stringify(lines)) : null;
+  // a moment that happens AT a place on the island (bb-events/island-life.js) is played there, whatever its words say
+  const at0 = beat.spot && SPOTS[beat.spot] ? { spot: beat.spot, ...SPOTS[beat.spot] } : null;
+  const sp = at0 || (!meeting && !textRoom ? spotFor(id, cast, ctx, `${ctx.week?.num || 0}|${ctx.stretch}|${id}|${cast.join('>')}`, JSON.stringify(lines)) : null);
   const hiddenRoom = sp?.room || null;
-  const room = meeting ? 'living-room' : textRoom && textRoom !== 'diary-room' ? textRoom : hiddenRoom || (ROOM[beat.location] ? beat.location : 'living-room');
+  const room = at0 ? at0.room : meeting ? 'living-room' : textRoom && textRoom !== 'diary-room' ? textRoom : hiddenRoom || (ROOM[beat.location] ? beat.location : 'living-room');
   if (meeting) for (const n of present) if (!cast.includes(n)) cast.push(n);
   const fam = FAMILY_WHY.find(([re]) => re.test(id))?.[1];
   const badge = beat.badgeText ? `${String(beat.badgeText).charAt(0)}${String(beat.badgeText).slice(1).toLowerCase()}.` : null;

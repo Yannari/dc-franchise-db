@@ -365,6 +365,13 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     const need = state.active.length - opts.finalists + returnsAhead(idx);
     const elims = purged ? 0 : elimsFor(schedule, idx, need);
     epRec.elims = elims;
+    // a double is announced, not discovered at the vote: TJ tells the house before anybody deliberates
+    if (elims > 1) {
+      // the two who hear it hardest: the most worried of those who can be voted in tonight
+      const atRisk = inDivision(state, division).filter(n => !immune.includes(n)).sort((x, y) => (state.mind[y]?.paranoia || 0) - (state.mind[x]?.paranoia || 0));
+      for (const n of atRisk) nudge(state, n, 'paranoia', 0.5);
+      addScene(state, 'tj-double', atRisk.slice(0, 2), { elims, division, immune: [...immune], booked: plan.twist === 'double' }, state.active, 'villa');
+    }
     const matches = [];
     let delib = null;
     const used = new Set();

@@ -486,7 +486,9 @@ export function challengeEpisodeMap() {
     const row = rows.get(d.ep);
     if (row?.ch?.people) n = row.ch.people.length;
     else if (!d.final) n = Math.max(0, n - (d.plannedElims || 1));
-    return { ep: d.ep, active: n, phase: d.final ? 'finale' : 'main', engineType: null, tribes: 1 };
+    // a double: the season's own (two late ones on a full cast), a booked one, or one a quit made necessary
+    const double = !d.final && (row ? (row.ch?.votes?.length || 0) > 1 || (row.ch?.arena?.length || 0) > 1 : (d.plannedElims || 1) > 1);
+    return { ep: d.ep, active: n, phase: d.final ? 'finale' : 'main', engineType: null, tribes: 1, double };
   });
 }
 

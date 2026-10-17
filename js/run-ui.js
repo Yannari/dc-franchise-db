@@ -4321,7 +4321,7 @@ export function renderTimeline() {
   const _ciDays = isCircleSeason() ? circleTimelineDays() : null;
 
   let html = '';
-  epMap.forEach(({ ep, active, phase, reunion }) => {
+  epMap.forEach(({ ep, active, phase, reunion, double }) => {
     const isFinale   = phase === 'finale';
     const isMergeEp  = !isHouse && phase === 'post-merge'
       && epMap.find(e => e.ep === ep - 1)?.phase === 'pre-merge';
@@ -4701,7 +4701,8 @@ export function renderTimeline() {
     // …and the night's set piece, so Movie Night and the rest are on the map.
     const phaseLabel  = _ciD ? _ciD.label.toUpperCase()
       : _pmEp ? [(_pmEp.finalRecoupling ? 'Final recoupling' : PM_EPISODE_WORDS[_pmEp.moment]) || '', ...(_pmEp.rituals || []).map(r => PM_RITUAL_NAMES[r] || r)].filter(Boolean).join(' · ').toUpperCase()
-      : isTraitorsSeason() || isChallengeSeason() ? ''
+      : isChallengeSeason() ? (double ? 'DOUBLE ELIMINATION' : '')
+      : isTraitorsSeason() ? ''
       : phase === 'ri-duel' ? 'RI DUEL' : phase === 'finale' ? '' : phase === 'pre-merge' ? 'PRE' : 'POST';
 
     // Competition pinning: every Big Brother week has an HOH and a veto, so

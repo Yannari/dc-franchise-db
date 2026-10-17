@@ -139,6 +139,9 @@ export const ROLES = {
   'expelled-goodbye': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.angry ? 'angry' : 'tears', slots: { target: sc.data.victim || undefined } }),
   'expelled-blame': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.heated ? 'heated' : 'calm', slots: { gone: sc.data.gone } }),
   'expelled-victim': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.relieved ? 'relieved' : 'shaken', slots: { gone: sc.data.gone } }),
+  // TJ announces a double (season.js): a and b are the two most worried; {count} the number going in
+  'tj-double': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.division === 'm' ? 'men' : sc.data.division === 'f' ? 'women' : 'any',
+    slots: { count: (COUNT_WORD[sc.data.elims] || String(sc.data.elims)).toLowerCase() } }),
   'tj-house-meeting': sc => ({ roles: { a: sc.data.victim }, ending: 'any', slots: { gone: sc.data.gone } }),
   // ── the night out (party.js nightDrama) ──
   'party-slip': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.caught || undefined }, ending: sc.data.self ? 'self' : sc.data.caught ? 'caught' : 'told',

@@ -395,8 +395,11 @@ export function chStepScreens(row, ctx = {}) {
     const before = chunks.slice(0, ci).map(x => (x.key === 'vote' && !voted(x) ? 'deliberation' : x.key)), after = chunks.slice(ci + 1).map(x => x.key);
     if (!before.includes('daily')) return before.includes('arrival') ? 'Settling in' : 'Morning at the villa';
     if (!before.includes('vote')) return after.includes('vote') ? 'Before the vote' : 'At the villa';
-    if (!before.includes('arena')) return after.includes('vote') ? 'Between the votes' : 'After the vote';
-    return after.includes('arena') ? 'Between the duels' : 'After the Arena';
+    // a duel FOUGHT, not an Arena chapter: the call-outs can have a chapter of their own before the first duel
+    const fought = x => x.key === 'arena' && x.items.some(j => aired[j].kind === 'arena');
+    const duelBefore = chunks.slice(0, ci).some(fought), duelAfter = chunks.slice(ci + 1).some(fought);
+    if (!duelBefore) return after.includes('vote') ? 'Between the votes' : duelAfter ? 'Before the duels' : 'After the vote';
+    return duelAfter ? 'Between the duels' : 'After the Arena';
   };
   const marks = [];   // where each chunk's screens start, for their day (below)
   for (const [ci, c] of chunks.entries()) {
@@ -447,10 +450,14 @@ export function chStepScreens(row, ctx = {}) {
   // morning after; a second duel is the second duel; anything else that repeats is later at the villa.
   const ORD = ['', 'second', 'third', 'fourth'];
   const seenLabel = {};
+  // an Arena screen is a duel only if one is fought on it (a goodbye or the bank changing hands can have its own)
+  let duels = 0;
   screens.forEach((s, i) => {
+    const duel = s.key === 'arena' && s.steps.some(st => st.duel);
+    if (duel) duels++;
     const n = seenLabel[s.label] = (seenLabel[s.label] || 0) + 1;
     if (n === 1) return;
-    if (s.key === 'arena') s.label = `The ${ORD[n - 1] || 'next'} duel`;
+    if (s.key === 'arena') s.label = duel ? (duels === 1 ? 'The first duel' : `The ${ORD[duels - 1] || 'next'} duel`) : 'At the Arena';
     else if (s.key === 'villa' && screens[i - 1]?.key === 'party' && !seenLabel['The morning after']) s.label = 'The morning after';
     else if (s.key === 'villa') s.label = seenLabel['Later at the villa'] ? `Later at the villa (${n})` : 'Later at the villa';
     seenLabel[s.label] = (seenLabel[s.label] || 0) + 1;
@@ -477,6 +484,8 @@ const BIG = {
   'party-deal': a => ({ card: { k: 'Final deal', t: `${a.who[0]} & ${a.who[1]}`, sub: 'Made at the bar. Ask them tomorrow if it still stands', faces: a.who.slice(0, 2) } }),
   deal: a => ({ chip: [a.who[0], `DEAL WITH ${String(a.who[1] || '').toUpperCase()}`] }),
   'deal-broken': a => ({ slam: { spray: 'DEAL BROKEN', color: '#e3262d' } }),
+  // a double, announced (ch/season.js): the card says it before the vote does
+  'tj-double': a => ({ card: { k: 'Tonight', t: 'Double elimination', sub: `${a.data?.elims || 2} go into the Arena tonight, one vote at a time`, icon: 'vote', faces: a.data?.immune || [], facesLabel: 'Safe' }, shake: 1 }),
   // the drunk kiss and what it costs (ch/party.js)
   'party-kiss': a => (a.data?.caught ? { slam: { spray: 'CAUGHT', color: '#e3262d' }, chip: [a.who[0], 'CAUGHT KISSING'] }
     : a.data?.partner || a.data?.home ? { slam: { spray: 'THE KISS', color: '#ff8fc7' }, chip: [a.who[0], 'HAS SOMEBODY'] } : { slam: { spray: 'THE KISS', color: '#ff8fc7' } }),
@@ -544,7 +553,7 @@ function throwback(shot) {
 
 // One villa/party/eve scene.
 // The scenes where TJ gathers everybody: an announcement to the house, not a conversation
-const TJ_TO_HOUSE = new Set(['tj-house-meeting', 'tj-at-breakfast', 'power-rankings', 'quit', 'medical', 'disqualified', 'purge',
+const TJ_TO_HOUSE = new Set(['tj-double', 'tj-house-meeting', 'tj-at-breakfast', 'power-rankings', 'quit', 'medical', 'disqualified', 'purge',
   'pass-earned', 'pass-cut', 'redemption-closed', 'late-arrival', 'partner-draw', 'partner-pick']);
 function scene(S, { a, i, title }, { names, house, goneAt, key }) {
   S.at(i);

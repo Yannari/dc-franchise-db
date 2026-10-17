@@ -48,7 +48,7 @@ const TITLE = {
   'redemption-arrive': 'Redemption House', 'redemption-watch': 'Redemption House', 'redemption-feud': 'Redemption House', 'redemption-duel': 'Redemption',
   'redemption-return': 'Back from Redemption', 'redemption-closed': 'Redemption House',
   'late-arrival': 'New arrivals', 'late-sizeup': 'Sizing them up', 'arena-wishlist': 'If it\'s me', 'wishlist-leak': 'Word gets out', 'champion-reflect': 'Looking back', 'medical-exam': 'The medic', 'medical-house': 'Leaving', wavering: 'Struggling', 'quit-decide': 'A decision', 'quit-house': 'Leaving', mock: 'After the daily', gloat: 'After the vote', payback: 'Payback', 'named-fallout': 'After the daily', 'arena-goodbye': 'The goodbye', purge: 'The Purge', 'return-arena': 'The Return', 'return-walkin': 'Back in the villa',
-  'party-slip': 'Night out', 'party-kiss': 'Night out', 'kiss-fallout': 'The morning after', 'party-deal': 'Night out', 'party-callout': 'Night out', 'party-tears': 'Night out', 'fight-physical': 'Night out',
+  'tj-double': 'A double elimination', 'party-slip': 'Night out', 'party-kiss': 'Night out', 'kiss-fallout': 'The morning after', 'party-deal': 'Night out', 'party-callout': 'Night out', 'party-tears': 'Night out', 'fight-physical': 'Night out',
   'expelled-goodbye': 'Goodbye', 'expelled-blame': 'The fallout', 'expelled-victim': 'The fallout', 'final-cp': 'A checkpoint', 'overnight-talk': 'At the fire', 'final-podium': 'The totals', 'final-congrats': 'Congratulations', 'final-lastword': 'Last words',
 };
 const titleOf = kind => TITLE[kind] || 'In the villa';

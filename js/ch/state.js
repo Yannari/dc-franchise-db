@@ -73,7 +73,9 @@ export const CROWD_KINDS = new Set(['payback', 'receipts', 'kitchen-blowup', 'pa
   'trash-talk', 'outing', 'floater-callout', 'deal-broken', 'leverage-threat', 'vet-dismisses', 'bank-brag', 'rookie-hazing',
   'show-banter', 'bunk-war', 'prank', 'ranking-beef', 'gym-flex', 'wishlist-leak',
   // the house watching TJ's list, and the stand watching half a bank change hands
-  'power-rankings', 'bank-taken']);
+  'power-rankings', 'bank-taken',
+  // TJ announcing a double: the house hears it together
+  'tj-double']);
 function crowdOf(state, kind, who, seenBy) {
   // up to four people in all: a scene that already has its own third and fourth needs no room
   if (!CROWD_KINDS.has(kind) || who.length < 2 || who.length > 3) return [];

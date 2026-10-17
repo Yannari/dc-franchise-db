@@ -88,7 +88,7 @@ export function airedOf(epRec) {
 
 /** A final checkpoint's lines: the race as told (script/final-cp.js), then the reactions after it. */
 const ranksTold = (row, s) => [...rankLines(s.data.rows, { seed: `ranks|${row.num}` }).map(l => ({ kind: 'say', by: l.by, text: l.text })), ...(s.lines || [])];
-const podiumTold = s => [...(s.lines || []), ...podiumLines(s.data?.podium || {}, s.data?.totals || {}).map(l => ({ kind: l.kind === 'beat' ? 'beat' : 'say', by: l.by, text: l.text }))];
+const podiumTold = s => [...(s.lines || []), ...podiumLines(s.data?.podium || {}, s.data?.totals || {}, s.data?.pairPodium || null).map(l => ({ kind: l.kind === 'beat' ? 'beat' : 'say', by: l.by, text: l.text }))];
 const cpTold = (row, s) => [...cpLines(s.data.rec, { seed: `final|${row.num}`, prev: s.data.prev })
   .map(l => ({ kind: l.kind === 'beat' ? 'beat' : 'say', by: l.by, text: l.text })), ...(s.lines || [])];
 

@@ -52,6 +52,9 @@ const PLACE = {
   // Redemption House (redemption.js): the shack in the jungle, the user's set (job G15)
   redemption: { plate: 'redemption', place: 'Redemption House', room: null, island: 'lookout', icon: 'skull', hour: 'night' },
   final: { plate: 'field', place: 'The Final', room: null, island: 'beach-field', icon: 'island' },
+  // a Pairs season's pairs (ch/pairs.js): named at the airstrip, or drafted off the premiere daily on the beach
+  airstrip: { plate: 'airstrip', place: 'The Airstrip', room: null, icon: 'island' },
+  challenge: { plate: 'beach', place: 'The Beach', room: null, island: 'beach', icon: 'island' },
 };
 // Somewhere quiet: by day the lookout or the bedroom, by night the pool or the beach.
 const QUIET_DAY = [{ plate: 'lookout', place: 'The Lookout', island: 'lookout', icon: 'island' }, { plate: 'bunks', place: 'The Bedroom', room: 'bunk-b', icon: 'house' }];
@@ -121,10 +124,18 @@ function stageOf(a, min) {
 
 // Which chapter of the episode a scene belongs to (one VP screen per run of them).
 const DAILY_KINDS = new Set(['purge', 'daily', 'daily-clutch', 'daily-choke', 'partner-draw', 'partner-pick', 'partner-blame', 'partner-carried', 'team-blame', 'picked-last', 'throw', 'throw-caught']);
-const FINAL_KINDS = new Set(['champion-reflect', 'final-start', 'final-cp', 'instant-elimination', 'final-lastword', 'overnight', 'overnight-sabotage', 'overnight-quit', 'overnight-talk', 'final-pact-help', 'final-pact-broken', 'final-podium', 'champions', 'final-congrats']);
+const FINAL_KINDS = new Set(['champion-reflect', 'final-start', 'final-cp', 'instant-elimination', 'final-lastword', 'overnight', 'overnight-sabotage', 'overnight-quit', 'overnight-talk', 'final-pact-help', 'final-pact-broken', 'final-podium', 'champions', 'final-congrats',
+  'share-keep-rules', 'share-keep']);
+// a Pairs season's Arena: the pair call-out, the two-on-two, inside each pair after it, a Pick season's swap
+const PAIR_ARENA = new Set(['pair-callout', 'pair-arena', 'pair-arena-blame', 'pair-arena-win', 'pair-swap']);
 function chapterOf(a) {
   if (a.kind === 'previously') return 'open';
   if (a.kind === 'arrival') return 'arrival';
+  if (a.kind === 'pairs-revealed' || a.kind === 'pair-reveal') return 'pairs';
+  if (PAIR_ARENA.has(a.kind)) return 'arena';
+  if (a.kind === 'pair-volunteer' || a.kind === 'pair-volunteer-refused') return 'vote';
+  if (a.kind === 'pair-eve') return 'eve';
+  if (a.kind === 'share-keep-rules' || a.kind === 'share-keep') return 'champions';
   if (a.kind === 'villa-reveal') return 'reveal';
   if (DAILY_KINDS.has(a.kind)) return 'daily';
   if (a.spot === 'party' || a.kind === 'party' || a.kind === 'fight' || a.kind === 'fight-physical') return 'party';
@@ -145,7 +156,7 @@ function chapterOf(a) {
 }
 const LABEL = { return: 'The return', arrival: 'The arrival', reveal: 'The villa', open: 'Previously', daily: 'The daily', villa: 'The villa', party: 'Night out', vote: 'The vote', eve: 'The night before',
   arena: 'The Arena', 'final-start': 'The final: day one', instant: 'Instant elimination', overnight: 'The overnight', 'final-day2': 'The final: day two',
-  champions: 'The finish line', redemption: 'Redemption House' };
+  champions: 'The finish line', redemption: 'Redemption House', pairs: 'The pairs' };
 
 // ── placing people on a plate ─────────────────────────────────────────
 // Extra places when a plate has fewer marks than people: between and just behind its own.
@@ -254,9 +265,11 @@ function goneBefore(row) {
   for (const a of row.ch?.aired || []) {
     out.push(new Set(gone));
     if (a.kind === 'arena') { const l = a.data?.loser; if (l) gone.add(l); }
+    if (a.kind === 'pair-arena') (a.data?.losers || []).forEach(n => gone.add(n));
+    if (a.kind === 'partner-left') a.who.slice(0, 1).forEach(n => gone.add(n));
     if (['quit', 'medical', 'disqualified', 'overnight-quit'].includes(a.kind)) a.who.slice(0, 1).forEach(n => gone.add(n));
-    if (a.kind === 'instant-elimination') { const w = a.data?.winner; a.who.filter(n => n !== w).forEach(n => gone.add(n)); }
-    if (a.kind === 'purge') gone.add(a.who[0]);
+    if (a.kind === 'instant-elimination') { const w = a.data?.winner; (a.data?.losers || a.who.filter(n => n !== w)).forEach(n => gone.add(n)); }
+    if (a.kind === 'purge') (a.data?.pair ? a.who.slice(0, 2) : a.who.slice(0, 1)).forEach(n => gone.add(n));
   }
   return out;
 }
@@ -353,12 +366,15 @@ export function chStepScreens(row, ctx = {}) {
     num: row.num,
     day: aired[0]?.day ?? row.day ?? 1, min: 8 * 60,
     V: null,
-    push(step) { cur.steps.push(step); return step; },
+    push(step) { if (step.scene && this.pairMap && !step.scene.pairs) step.scene.pairs = this.pairMap; cur.steps.push(step); return step; },
     last() { return cur.steps[cur.steps.length - 1]; },
     // the scene at airing index i: its day and time
     at(i) { const c = times[i]; if (c) { this.day = c.day; this.min = c.min; } },
   };
   S.V = V;
+  // a Pairs season: who is whose partner this episode (ch-run.js rows: the pairs as it ended, so a swap shows)
+  const pairList = ch.pairs?.end?.length ? ch.pairs.end : ch.pairs?.start || ch.final?.pairPodium && Object.values(ch.final.pairPodium).flat() || null;
+  S.pairMap = pairList ? Object.fromEntries(pairList.flatMap(([x, y]) => [[x, y], [y, x]])) : null;
   const open = (key, label) => { cur = { id: `${key}-${screens.length}`, key, label: label || LABEL[key] || 'The villa', steps: [] }; screens.push(cur); };
 
   // Group the aired scenes into chapters, in airing order.
@@ -371,7 +387,7 @@ export function chStepScreens(row, ctx = {}) {
     if (a.kind === 'run-name' && chunks[chunks.length - 1]?.key === 'daily') k = 'daily';
     if (a.kind === 'daily') seenDaily = true;
     // the goodbye belongs to its own duel's screen, whatever aired in between (bank, skull)
-    if (a.kind === 'arena-goodbye') { const own = [...chunks].reverse().find(c => c.key === 'arena' && c.items.some(j => aired[j].kind === 'arena' && aired[j].data?.loser === a.data?.loser)); if (own) { own.items.push(i); return; } }
+    if (a.kind === 'arena-goodbye') { const own = [...chunks].reverse().find(c => c.key === 'arena' && c.items.some(j => (aired[j].kind === 'arena' && aired[j].data?.loser === a.data?.loser) || (aired[j].kind === 'pair-arena' && (aired[j].data?.losers || []).includes(a.data?.loser)))); if (own) { own.items.push(i); return; } }
     // the villa and the villa reveal are one screen, however they're interleaved; a night out is its own
     // (the user, 2026-10-16: "most of the time I don't see a night out, where is it supposed to be?")
     const LIFE = ['villa', 'reveal', 'eve'];
@@ -382,6 +398,8 @@ export function chStepScreens(row, ctx = {}) {
     const last = chunks[chunks.length - 1];
     if (last && last.key === k && k !== 'arena') last.items.push(i);
     else if (last && k === 'arena' && last.key === 'arena' && (aired[last.items[last.items.length - 1]].kind === 'callout' || a.kind === 'arena-goodbye')) last.items.push(i);
+    // a pair's Arena is one screen: the call-out, the two-on-two, and what the pairs say after it
+    else if (last && k === 'arena' && last.key === 'arena' && aired[last.items[0]].kind === 'pair-callout' && ['pair-arena', 'pair-arena-blame', 'pair-arena-win', 'pair-swap', 'bank-taken', 'pass-earned'].includes(a.kind)) last.items.push(i);
     else chunks.push({ key: k, items: [i] });
   });
 
@@ -431,7 +449,7 @@ export function chStepScreens(row, ctx = {}) {
     if (['final-start', 'instant', 'overnight', 'final-day2', 'champions'].includes(c.key)) { buildFinal(S, open, c.key, items, row, { names, house, goneAt }); continue; }
     // villa, party, eve: scene after scene on their plates, the villa opening on its map
     open(c.key, c.key === 'villa' ? villaLabel(ci) : null);
-    if (items.filter(x => chapterOf(x.a) !== 'party').length >= 2) villaMap(S, items.filter(x => chapterOf(x.a) !== 'party'));
+    if (c.key !== 'pairs' && items.filter(x => chapterOf(x.a) !== 'party').length >= 2) villaMap(S, items.filter(x => chapterOf(x.a) !== 'party'));
     let partied = false;
     for (const it of items) {
       const k = chapterOf(it.a);
@@ -528,6 +546,16 @@ const BIG = {
   quit: a => ({ slam: { stamp: 'QUIT' }, chip: [a.who[0], 'GOING HOME'] }),
   medical: a => ({ slam: { tape: 'MEDICAL' }, chip: [a.who[0], 'PULLED OUT'] }),
   'quit-decide': a => (a.data?.stays ? { chip: [a.who[0], 'STAYING'] } : []),
+  // a Pairs season (ch/pairs.js): the pairs named, a pair that turned, a pair at war, a stolen partner, a swap
+  'pairs-revealed': a => ({ card: { k: 'This season', t: 'Pairs', sub: 'You win together, you go in together, you go home together', faces: (a.data?.pairs || []).flat().slice(0, 12) }, shake: 1 }),
+  'pair-reveal': a => ({ card: { k: 'Partners', t: `${a.who[0]} & ${a.who[1]}`, sub: ({ rivals: 'Production found the worst match it could', strangers: 'Two strangers, and production thinks they will clash', couple: 'Together outside the game, and now in it', ex: 'Exes, back together, for the money', family: 'Family, on the same side', friends: 'Old friends', drafted: 'A vet and the rookie they picked', picked: 'Picked by each other', unmatched: 'Nobody came for them, so they have each other' })[a.data?.how === 'fresh-meat' ? 'drafted' : a.data?.how === 'pick' ? 'picked' : a.data?.tie === 'couple' ? 'couple' : a.data?.tie === 'ex' ? 'ex' : a.data?.tie === 'family' ? 'family' : a.data?.how === 'rivals' ? (a.data?.why === 'guess' ? 'strangers' : 'rivals') : a.data?.why === 'guess' ? 'unmatched' : 'friends'] || '', faces: a.who.slice(0, 2) } }),
+  'pair-turn': a => ({ card: { k: a.data?.rivals ? 'Rivals no more' : 'A real pair', t: `${a.who[0]} & ${a.who[1]}`, sub: 'They came in at war, and now they would go in for each other', faces: a.who.slice(0, 2) } }),
+  'pair-war': a => ({ slam: { spray: 'AT WAR', color: '#e3262d' }, chip: [a.who[0], `WAR WITH ${String(a.who[1] || '').toUpperCase()}`] }),
+  'pair-swap': a => ({ slam: { spray: 'PARTNER STOLEN', color: '#e3262d' }, chip: [a.who[1], `NOW WITH ${String(a.who[0] || '').toUpperCase()}`] }),
+  'partner-swap': a => ({ card: { k: 'Twist', t: 'Partner Swap', sub: 'Every pair is broken up, and nobody gets their old partner back', faces: (a.data?.after || []).flat().slice(0, 12) }, shake: 1 }),
+  'partner-left': a => ({ slam: { tape: 'PARTNER GONE' }, chip: [a.who[0], 'GOING HOME'] }),
+  'pair-repaired': a => ({ card: { k: 'New pair', t: `${a.who[0]} & ${a.who[1]}`, sub: 'Both lost their partners, so now they have each other', faces: a.who.slice(0, 2) } }),
+  'pair-volunteer': a => ({ slam: { spray: 'VOLUNTEERED', color: '#ffd21a' } }),
 };
 // who stood with whom when it kicked off (party.js: the house takes sides)
 function sidesStep(a) {
@@ -561,7 +589,7 @@ function throwback(shot) {
 // One villa/party/eve scene.
 // The scenes where TJ gathers everybody: an announcement to the house, not a conversation
 const TJ_TO_HOUSE = new Set(['tj-double', 'tj-house-meeting', 'tj-at-breakfast', 'power-rankings', 'quit', 'medical', 'disqualified', 'purge',
-  'pass-earned', 'pass-cut', 'redemption-closed', 'late-arrival', 'partner-draw', 'partner-pick']);
+  'pass-earned', 'pass-cut', 'redemption-closed', 'late-arrival', 'partner-draw', 'partner-pick', 'pairs-revealed', 'partner-swap']);
 function scene(S, { a, i, title }, { names, house, goneAt, key }) {
   S.at(i);
   const night = isNight(S.min);
@@ -812,6 +840,12 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
 // ── the vote ──────────────────────────────────────────────────────────
 function buildVote(S, open, items, row, { names, house, goneAt }) {
   const cer = items.some(x => x.a.kind === 'ceremony'), vol = items.some(x => x.a.kind === 'volunteer');
+  // TJ telling the one voted in tomorrow's game comes after the vote: its own short screen, never "Deliberation"
+  if (!cer && !vol && items.every(x => x.a.kind === 'arena-reveal')) {
+    open('vote', 'The game revealed');
+    for (const it of items) scene(S, it, { names, house, goneAt, key: 'vote' });
+    return;
+  }
   const talk = !cer && !vol;   // the house talking it out before anybody votes
   const nVotes = (row.ch?.votes || []).length;
   const nth = cer ? (S._votes = (S._votes || 0) + 1) : 0;
@@ -824,7 +858,8 @@ function buildVote(S, open, items, row, { names, house, goneAt }) {
   S.push({ scene: { plate: key, place: 'The Common Room', when: whenOf(S.day, S.min), icon: 'fire', room: 'common', cast, wipe: 1 },
     card: talk ? { k: 'Before the vote', t: 'Deliberation', sub: 'The house talks it out, in front of everybody' }
       : nVotes > 1 ? { k: `Vote ${nth} of ${nVotes}`, t: 'The Vote', sub: `A double elimination: ${nVotes} go into the Arena this week, one vote at a time` } :
-      { k: 'Tonight', t: 'The Vote', sub: row.ch?.division === 'm' ? "Men's week: one guy goes into the Arena" : row.ch?.division === 'f' ? "Women's week: one woman goes into the Arena" : 'One of them goes into the Arena', faces: row.ch?.dailyWinners || [], facesLabel: 'Safe', icon: 'vote' },
+      { k: 'Tonight', t: 'The Vote', sub: S.pairMap ? (row.ch?.division === 'm' ? "Men's week: one men's pair goes into the Arena" : row.ch?.division === 'f' ? "Women's week: one women's pair goes into the Arena" : 'One pair goes into the Arena, together')
+        : row.ch?.division === 'm' ? "Men's week: one guy goes into the Arena" : row.ch?.division === 'f' ? "Women's week: one woman goes into the Arena" : 'One of them goes into the Arena', faces: row.ch?.dailyWinners || [], facesLabel: 'Safe', icon: 'vote' },
     sceneIdx: at.i, title: 'The house vote', power: row.ch?.dailyWinners || [] });
   let ruled = false;
   for (const it of items) {
@@ -850,6 +885,10 @@ function ceremony(S, cer, row, { names, rules, again }) {
       if (rules && trib) S.push({ rules: { k: 'HOW TONIGHT WORKS', n: 'The Tribunal', li: [div, `${esc(nameList(trib.tribunal))} won the daily, so ${trib.tribunal.length > 1 ? 'they are' : 'is'} <b>the Tribunal</b>, and cannot be voted for.`,
         'Everybody else <b>says a name out loud</b>. The <b>three with the most votes</b> are nominated.',
         'The nominees <b>plead their case</b> to the Tribunal, and the Tribunal decides <b>in private</b> who goes into the Arena.'], f: 'Win the daily, and you decide' }, focus: ['TJ'] });
+      else if (rules && S.pairMap) S.push({ rules: { k: 'HOW TONIGHT WORKS', n: 'Out loud, in pairs', li: [row.ch?.division === 'm' ? "It's a <b>men's week</b>: only a men's pair can be voted in." : row.ch?.division === 'f' ? "It's a <b>women's week</b>: only a women's pair can be voted in." : 'Any pair can be voted in this week.',
+        'One at a time, you <b>stand up and name a pair</b>, out loud. You can never name your own.',
+        safe.length ? `${esc(nameList(safe))} won the daily, so <b>nobody can vote for them</b>.` : 'Nobody won safety this week.',
+        'The pair with <b>the most votes</b> goes into the Arena together, and there <b>picks the pair who goes in with them</b>.'], f: 'You vote for two people, and two people hear it' }, focus: ['TJ'] });
       else if (rules) S.push({ rules: { k: 'HOW TONIGHT WORKS', n: 'Out loud', li: [div, 'One at a time, you <b>stand up and say a name</b>, out loud, in front of everybody.',
         safe.length ? `${esc(nameList(safe))} won the daily, so <b>nobody can vote for ${safe.length > 1 ? 'them' : 'them'}</b>.` : 'Nobody won safety this week.',
         'The one with <b>the most votes</b> goes into the Arena, and at the Arena <b>picks who goes in with them</b>.'], f: 'No secret ballots: everybody hears what you say' }, focus: ['TJ'] });
@@ -888,7 +927,9 @@ function ceremony(S, cer, row, { names, rules, again }) {
       part.lines.forEach(l => {
         if (l.by === HOST && vi && new RegExp(`\\b${vi.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(l.text) && !called) {
           called = true;
-          S.push({ tj: l.text, focus: [vi, 'TJ'], slam: { spray: 'VOTED IN', color: '#ffd21a' }, chip: [vi, 'VOTED IN'] });
+          const pv = S.pairMap?.[vi];
+          S.push({ tj: l.text, focus: [vi, ...(pv ? [pv] : []), 'TJ'], slam: { spray: 'VOTED IN', color: '#ffd21a' }, chip: [vi, 'VOTED IN'] });
+          if (pv) S.push({ chip: [pv, 'VOTED IN'], focus: [vi, pv], act: { [vi]: 'slump', [pv]: 'slump' } });
         } else linesToSteps(S, [l], { names, sceneWho: [vi, 'TJ'] });
       });
     }
@@ -897,6 +938,7 @@ function ceremony(S, cer, row, { names, rules, again }) {
 
 // ── the Arena ─────────────────────────────────────────────────────────
 function buildArena(S, open, items, row, { names, house, goneAt }) {
+  if (items.some(x => x.a.kind === 'pair-callout' || x.a.kind === 'pair-arena')) return buildArenaPairs(S, open, items, row, { names, house, goneAt });
   open('arena');
   const co = items.find(x => x.a.kind === 'callout');
   const ar = items.find(x => x.a.kind === 'arena');
@@ -1055,6 +1097,202 @@ function finishDuel(S, duel, lines, names, seed, crowd = [], bye = null) {
   }
   S.push({ exit: [l], dir: `${l} walks back out through the gate.`, focus: [w] });
   if (crowd.length) S.push({ tj: tjLine('signoff', {}, seed + 's', S.V.used), focus: ['TJ'] });
+}
+
+// ── the Arena of a Pairs season: two on two ───────────────────────────
+// The call-out decided by a pair (ch/pairs.js choosePairOpponent: agreed, or one overruled the other), both pairs at
+// their podiums, the duel beat by beat with who won and who cost each one for their side, the losing pair's goodbyes,
+// and what each pair says after it. A plate has one podium and one duel mark a side: the partner stands just outside
+// it, a step back toward the middle (sideMark).
+function sideMark(key, kind, side, k) {
+  const m = marksOf(key).find(x => x.kind === kind && x.side === side);
+  if (!m) return [kind, 0, side];
+  if (!k) return m;
+  // at the podiums the partner stands a step inside (outside is the stand); on the floor, a step outside (inside,
+  // the two pairs would stand on each other)
+  const out = kind === 'duel' ? -1 : 1;
+  const dx = (side === 'L' ? 1 : -1) * out * (m.s || .07) * 0.95;
+  return { ...m, u: Math.max(.03, Math.min(.97, m.u + dx)), v: m.v + (kind === 'duel' ? .01 : -.012) };
+}
+const sideOf = (key, kind, side, pair) => Object.fromEntries(pair.filter(Boolean).map((n, k) => [n, sideMark(key, kind, side, k)]));
+function buildArenaPairs(S, open, items, row, { names, house, goneAt }) {
+  open('arena');
+  const co = items.find(x => x.a.kind === 'pair-callout');
+  const ar = items.find(x => x.a.kind === 'pair-arena');
+  const at = co || ar;
+  S.at(at.i);
+  const duels = (row.ch?.duels || []).filter(d => d.pairs);
+  const has = (d, n) => d.pairA.includes(n) || d.pairB.includes(n);
+  const duel = (co && duels.find(d => has(d, co.a.who[0]) && has(d, co.a.who[1]))) || (ar && duels.find(d => d.winners.includes(ar.a.data?.winners?.[0]))) || null;
+  const A = duel ? duel.pairA : [co.a.who[0], co.a.who[2]].filter(Boolean);
+  const B = duel ? duel.pairB : [co.a.who[1], co.a.who[3]].filter(Boolean);
+  const here = house.filter(n => !goneAt[at.i]?.has(n));
+  const dressed = duel && CH_MARKS[`arena-${duel.game}-night`] ? `arena-${duel.game}` : ARENA_STAGE.plate;
+  const key = plateKey(dressed, true);
+  S.painted = dressed !== ARENA_STAGE.plate;
+  const crowd = here.filter(n => !A.includes(n) && !B.includes(n));
+  const cast = { TJ: ['host'], ...Object.fromEntries(A.map(n => [n, ['gate']])), ...placeScene(key, [...B, ...crowd], { group: 'house' }) };
+  S.arenaCrowd = crowd;
+  const seed = `${row.num}|${duel?.game || 'arena'}|${A[0]}`;
+  S.push({ scene: { plate: key, place: 'The Arena', when: whenOf(S.day, S.min), icon: 'skull', island: 'arena', cast, hidden: [...A], wipe: 1, embers: 1 },
+    card: { k: 'Elimination', t: 'The Arena', sub: `${nameList(A)} are going in, together`, faces: A, icon: 'arena' }, sceneIdx: at.i, title: 'The Arena' });
+  S.push({ dir: 'The house is in the stand and the torches are lit. TJ hits the gong.', focus: ['TJ'], gong: 1 });
+  S.push({ tj: tjLine('arenaWelcome', {}, `${row.num}|${A[0]}`, S.V.used), focus: ['TJ'] });
+  const vote = (row.ch?.votes || []).find(v => A.includes(v.votedIn));
+  S.push({ tj: vote ? tjLine('pairRecap', { a: A[0], b: A[1] || A[0], n: vote.tally?.[vote.votedIn] || '' }, `${seed}r`, S.V.used) : tjLine('pairVolunteer', { a: A[0], b: A[1] || A[0] }, `${seed}r`, S.V.used), focus: ['TJ'] });
+  S.push({ enter: sideOf(key, 'podium', 'L', A), dir: `${nameList(A)} walk out of the gate and take the left podium.`, focus: A });
+  if (co) {
+    const dec = co.a.who[0], about = co.a.who[1];
+    S.push({ card: { k: 'The call-out', t: `${nameList(A)} pick`, sub: 'Which pair goes into the Arena with them?', faces: A, icon: 'callout' }, focus: A });
+    const lines = co.a.lines;
+    if (!lines.some(l => l.by === HOST)) S.push({ tj: tjLine('pairAsk', { a: A[0], b: A[1] || A[0] }, `${seed}a`, S.V.used), focus: [...A, 'TJ'] });
+    const nm = x => new RegExp(`\\b${String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+    const named = lines.findIndex(l => A.includes(l.by) && l.kind === 'say' && B.some(n => nm(n).test(l.text)));
+    const callAt = named >= 0 ? named : lines.findIndex(l => A.includes(l.by) && l.kind === 'say');
+    lines.forEach((l, k) => {
+      if (k === callAt) S.push({ say: [l.by, l.text], focus: A, slam: { spray: 'CALLED OUT', color: '#ff6a1a' }, act: Object.fromEntries(B.map(n => [n, 'flinch'])), chip: [B[0], 'CALLED OUT'],
+        know: REASON[co.a.data?.reason] ? [`Why ${nameList(B)}`, REASON[co.a.data.reason](dec, about) + (co.a.data?.overruled ? ` <b>${esc(co.a.data.overruled)}</b> wanted another pair, and was overruled.` : '')] : null });
+      else linesToSteps(S, [l], { names, sceneWho: [...A, ...B, 'TJ'] });
+    });
+    if (B[1]) S.push({ chip: [B[1], 'CALLED OUT'], focus: B });
+    S.push({ enter: sideOf(key, 'podium', 'R', B), dir: `${nameList(B)} come down from the stand and take the right podium.`, focus: B });
+  }
+  const rest = items.filter(x => x !== co && x !== ar);
+  if (!ar || !duel) { for (const it of rest) afterPairDuel(S, it, names); return; }
+  S.push({ card: { k: duel.name, t: `${nameList(A)} vs ${nameList(B)}`, sub: 'The losing pair goes home', vsPairs: [A, B], icon: 'arena' }, focus: [...A, ...B] });
+  const g = arenaDef(duel.game);
+  // a two-on-two's lines are all after the result (lines/pairs.js: TJ calls it first): nothing is said before the play
+  const pre = [], post = ar.a.lines || [];
+  S.push({ rules: { k: "TONIGHT'S ELIMINATION", n: duel.name, li: [...rulesOf(g?.desc), 'Tonight it is <b>two on two</b>: both partners play, and every round counts for the pair.'], f: 'The losing pair goes home' },
+    tj: pre.some(l => l.by === HOST) ? null : fill(pickBy(TJ_ARENA_RULES, `${row.num}|${duel.game}`), { game: duel.name }), focus: ['TJ'], props: ARENA_PLAY[duel.game]?.set({}) || [] });
+  playPairDuelSteps(S, duel, seed, crowd, key);
+  finishPairDuel(S, duel, post, names, seed, crowd, rest);
+}
+
+// A two-on-two's play, from its beats: each one names who won it for their side and who cost it for theirs.
+function playPairDuelSteps(S, duel, seed, crowd, key) {
+  const { a, b } = duel, A = duel.pairA || [a], B = duel.pairB || [b];
+  const pairs = { [a]: A, [b]: B };
+  const side = n => (A.includes(n) ? a : b);
+  const AP = ARENA_PLAY[duel.game] || null;
+  const format = duel.beats[0]?.kind || 'stage';
+  const pose = POSE[duel.game];
+  S.push({ move: { ...sideOf(key, 'duel', 'L', A), ...sideOf(key, 'duel', 'R', B) }, tj: pickBy(TJ_GO, seed), gong: 1, focus: [...A, ...B], cam: [.5, .6, 1.2],
+    duel: { a, b, pairs, format, score: { [a]: 0, [b]: 0 }, prog: { [a]: 0, [b]: 0 }, max: format === 'round' ? Math.max(...duel.beats.map(x => Math.max(...Object.values(x.score || { x: 0 })))) : 12 },
+    hang: format === 'hold' ? 'duel' : null, pose: pose ? Object.fromEntries([...A, ...B].map(n => [n, pose])) : null, props: AP ? onSet(S, AP.set(setState(duel, {}))) : null });
+  let prev = null, prog = { [a]: 0, [b]: 0 };
+  const last = duel.beats.filter(x => x.kind !== 'finish').length - 1;
+  duel.beats.forEach((bt, k) => {
+    if (bt.kind === 'finish') return;
+    const w = bt.winner || bt.ahead;
+    const l = w === a ? b : a;
+    // the one who did it for the winning side, the one who cost it on the other
+    const by = bt.by && side(bt.by) === w ? bt.by : pairs[w][0];
+    const cost = bt.cost && side(bt.cost) === l ? bt.cost : pairs[l][0];
+    let text;
+    if (AP && bt.kind === 'round' && AP.round) text = fill(pickBy(AP.round, seed + k), { w: by, l: cost, n: bt.n });
+    else if (AP && bt.kind === 'stage' && AP.stage) text = fill(pickBy(AP.stage[Math.min(k, AP.stage.length - 1)], seed + k), { w: by, l: cost });
+    else if (AP && bt.kind === 'hold' && AP.hold) text = fill(AP.hold[Math.min(k, AP.hold.length - 1)], { w: by, l: cost });
+    else if (bt.kind === 'round') text = fill(pickBy(bt.margin < .3 ? DUEL.rounds.close : DUEL.rounds.win, seed + k), { w: by, n: bt.n });
+    else if (bt.kind === 'hold') text = fill(pickBy(bt.margin < .3 ? DUEL.hold.close : DUEL.hold.hold, seed + k), { w: by });
+    else text = fill(pickBy(prev && prev !== w ? DUEL.stage.swap : bt.margin < .2 ? DUEL.stage.close : DUEL.stage.ahead, seed + k), { w: by });
+    prev = w;
+    prog = { [w]: Math.min(11, Math.round((k + 1) * 3.2 + bt.margin * 1.5)), [l]: Math.min(10, Math.round((k + 1) * 3.2 - bt.margin * 2.5)) };
+    const tilt = w === a ? -18 : 18, ball = w === a ? -.8 : .8, sag = w === a ? 18 : 42;
+    // somebody in the stand shouts to the one on the side that needs it
+    const fan = fanOf(S.V, cost, crowd);
+    if (fan && k % 2) { const t = speak(ARENA_VOICE.shout, fan, { a: cost }, `${seed}|sh${k}`, S.V.used); if (t) S.push({ say: [fan, t], focus: [cost], act: { [fan]: 'shout' }, duel: { a, b, pairs, format: bt.kind, score: S._lastScore || null, prog: { ...(S._prevProg || prog) } } }); }
+    S.push({ dir: text, focus: [by, cost], act: { [by]: bt.kind === 'hold' ? 'look' : 'cheer', [cost]: 'flinch' }, cam: [w === a ? .42 : .58, .6, 1.24],
+      duel: { a, b, pairs, format: bt.kind, score: bt.score ? { ...bt.score } : null, prog: { ...prog }, ahead: w }, dig: bt.kind === 'stage' && duel.game === 'puzzle-pit' ? [...A, ...B] : null,
+      props: AP ? onSet(S, AP.set(setState(duel, prog, { tilt, ball, sag, low: k + 1 }))) : null, shake: bt.kind === 'round' ? 1 : 0 });
+    S._lastScore = bt.score ? { ...bt.score } : null; S._prevProg = { ...prog };
+    if (bt.kind === 'round' && bt.score && k < last) {
+      const sw = bt.score[w], sl = bt.score[l];
+      const num = x => ['nothing', 'one', 'two', 'three', 'four'][x] || String(x);
+      S.push({ tj: sw === sl ? tjLine('scoreTie', { s: `${num(sw)}-${num(sl)}` }, `${seed}|t${k}`, S.V.used)
+        : tjLine('pairScore', { s: `${num(Math.max(sw, sl))}-${num(Math.min(sw, sl))}`, w: nameList(pairs[sw > sl ? w : l]), l: nameList(pairs[sw > sl ? l : w]) }, `${seed}|t${k}`, S.V.used), focus: ['TJ', ...pairs[w]] });
+    }
+    if (k === Math.floor(last / 2)) {
+      const who = crowd.find(n => ![...A, ...B].some(x => (S.V.ties[n]?.friends || []).includes(x))) || crowd[0];
+      if (who) { const t = speak(ARENA_VOICE.stand, who, { a: by, b: cost, pron: S.V.pron }, `${seed}|st${k}`, S.V.used); if (t) S.push({ conf: [who, t] }); }
+    }
+  });
+  S._lastProg = prog;
+}
+
+// The result, the losing pair stamped out, what each pair says after it, both goodbyes, and the walk out together.
+function finishPairDuel(S, duel, lines, names, seed, crowd, rest) {
+  const { a, b, winner: w, loser: l } = duel, W = duel.winners, L = duel.losers;
+  const pairs = { [a]: duel.pairA, [b]: duel.pairB };
+  const fin = { a, b, pairs, format: duel.beats[0]?.kind || 'stage', score: duel.beats.filter(x => x.score).slice(-1)[0]?.score || null, prog: { [w]: 12, [l]: Math.max(6, (S._lastProg?.[l] || 8)) }, done: w };
+  const AP = ARENA_PLAY[duel.game] || null;
+  const done = { [w === a ? 'done' : 'doneR']: 1, done: w === a ? 'L' : 'R' };
+  const beat = lines[0]?.kind === 'beat' ? 0 : -1;
+  const first = { slam: { winner: `${nameList(W)} win` }, focus: W, act: Object.fromEntries(W.map(n => [n, 'cheer'])), shake: 1, duel: fin, cam: [w === a ? .42 : .58, .58, 1.26], drop: fin.format === 'hold' ? L : null,
+    props: AP ? onSet(S, AP.set(setState(duel, fin.prog, { ...done, tilt: w === a ? -30 : 30, ball: w === a ? -1 : 1, sag: w === a ? 10 : 50, low: 4 }))) : null };
+  if (AP?.finish) { S.push({ ...first, dir: fill(AP.finish, { w: W[0], l: L[0] }) }); if (beat >= 0) S.push({ dir: lines[beat].text, focus: W }); }
+  else if (beat >= 0) { first.dir = lines[beat].text; S.push(first); }
+  else S.push({ ...first, dir: `${nameList(W)} win it.` });
+  const nm = x => new RegExp(`\\b${String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+  let stamped = false;
+  lines.forEach((x, k) => {
+    if (k === beat) return;
+    if (!stamped && x.by === HOST && L.some(n => nm(n).test(x.text))) {
+      stamped = true;
+      S.push({ tj: x.text, slam: { stamp: 'ELIMINATED' }, focus: L, act: Object.fromEntries(L.map(n => [n, 'slump'])) });
+    } else linesToSteps(S, [x], { names, sceneWho: [...W, ...L, 'TJ'] });
+  });
+  if (!stamped) S.push({ tj: tjLine('pairFarewell', { l: nameList(L) }, seed, S.V.used), slam: { stamp: 'ELIMINATED' }, focus: L, act: Object.fromEntries(L.map(n => [n, 'slump'])) });
+  if (!lines.some(x => x.by === HOST && W.some(n => nm(n).test(x.text)) && /stay|still|rejoin|back/i.test(x.text)))
+    S.push({ tj: tjLine('pairWinner', { w: nameList(W) }, seed + 'w', S.V.used), focus: [...W, 'TJ'] });
+  for (const it of rest) afterPairDuel(S, it, names);
+  S.push({ exit: L, dir: `${nameList(L)} walk back out through the gate, together.`, focus: W });
+  if (crowd.length) S.push({ tj: tjLine('signoff', {}, seed + 's', S.V.used), focus: ['TJ'] });
+}
+// What follows a two-on-two on the same stage: inside each pair, the goodbyes, a stolen partner, the money and skulls.
+function afterPairDuel(S, it, names) {
+  S.at(it.i);
+  if (it.a.kind === 'arena-goodbye') {
+    const l = it.a.data?.loser, friends = it.a.data?.friends || [];
+    S.push({ bye: 1, seg: ['The goodbye', 'The Arena'], dir: '', focus: [l, ...friends] });
+    linesToSteps(S, it.a.lines || [], { names, sceneWho: [l, ...friends, 'TJ'] });
+    if (it.a.data?.shot) S.push({ chip: [it.a.data.shot, 'CALLED OUT ON THE WAY OUT'], focus: [it.a.data.shot] });
+    return;
+  }
+  linesToSteps(S, it.a.lines || [], { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title, kind: it.a.kind, focus: it.a.who.slice(0, 2) } });
+  if (BIG[it.a.kind]) for (const st of [].concat(BIG[it.a.kind](it.a))) S.push({ focus: it.a.who.slice(0, 4), ...st });
+}
+
+// ── share or keep (ch/share-keep.js) ───────────────────────────────────
+// TJ's rules at the finish line, then each pair's chooser in turn (the last pair first, the champions last): the
+// card, the pause, the word, and the slam that goes with it.
+function shareKeepSteps(S, it, f, { names }) {
+  const a = it.a;
+  S.at(it.i);
+  const st = FINAL_STAGE.finish, pk = plateKey(st.plate, false);
+  const all = f.pairPodium ? Object.values(f.pairPodium).flat(2) : (f.finalists || a.who);
+  const money = n => `$${Math.round(n || 0).toLocaleString('en-US')}`;
+  if (a.kind === 'share-keep-rules') {
+    const slots = lineup(pk, all.length);
+    S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, Math.max(S.min, 14 * 60)), icon: 'island', island: st.spot, cast: { TJ: hostSide(pk), ...Object.fromEntries(all.map((n, i) => [n, slots[i]])) }, wipe: 1 },
+      card: { k: 'The finish line', t: 'Share or keep', sub: 'The partner with more points decides what happens to the money', faces: all.slice(0, 10) }, sceneIdx: it.i, title: 'Share or keep' });
+    S.push({ rules: { k: 'THE LAST DECISION', n: 'Share or keep', li: ['Every pair that finished with money makes one choice.', 'The partner who scored <b>more points</b> in the final decides.',
+      '<b>Share</b>: the money is split down the middle. <b>Keep</b>: the one who decides takes every dollar.', 'The last pair goes first and the champions go last, in front of everybody who was sent home this season.'],
+      f: 'One word, and the season is remembered by it' }, focus: ['TJ'] });
+    linesToSteps(S, a.lines || [], { names, sceneWho: ['TJ', ...all] });
+    return;
+  }
+  const [c, p] = a.who, keep = !!a.data?.keep, amt = money(a.data?.amount);
+  S.push({ card: { k: `${(ORD[a.data?.place] || '').replace(/^./, x => x.toUpperCase())} place · ${amt}`, t: `${c} decides`, sub: `Share it with ${p}, or keep it all`, faces: [c, p], icon: 'final' },
+    focus: [c, p], sceneIdx: it.i, title: 'Share or keep' });
+  const callAt = (a.lines || []).findIndex(l => l.by === c && l.kind === 'say' && /\b(share|sharing|keep|keeping)\b/i.test(l.text));
+  const slam = keep ? { slam: { stamp: 'KEPT IT ALL' }, chip: [c, `KEPT ${amt}`], act: { [p]: 'slump', [c]: 'look' }, shake: 1 }
+    : { slam: { spray: 'SHARED', color: '#2fd35a' }, chip: [c, `SHARED ${amt}`], act: { [c]: 'hug', [p]: 'hug' }, ...(a.data?.champions ? { confetti: 1 } : {}) };
+  (a.lines || []).forEach((l, k) => {
+    if (k === callAt) S.push({ say: [l.by, l.text], focus: [c, p], ...slam });
+    else linesToSteps(S, [l], { names, sceneWho: [c, p, 'TJ'] });
+  });
+  if (callAt < 0) S.push({ dir: keep ? `${c} keeps all of it.` : `${c} shares it with ${p}.`, focus: [c, p], ...slam });
 }
 
 // Somebody in the crowd who would shout for n: a friend first, else anyone there.
@@ -1236,6 +1474,25 @@ function buildFinal(S, open, key, items, row, { names, house }) {
       if (rec) checkpoint(rec, a, it); else linesToSteps(S, a.lines, { names, sceneWho: a.who });
       continue;
     }
+    // a Pairs season's end: the rules, then each pair's chooser, the last pair first (ch/share-keep.js)
+    if (a.kind === 'share-keep-rules' || a.kind === 'share-keep') { shareKeepSteps(S, it, f, { names }); continue; }
+    if (a.kind === 'instant-elimination' && a.data?.pair) {
+      const st = FINAL_STAGE.instant, pk = plateKey(st.plate, false);
+      const W = a.data.winners || [], L = a.data.losers || [];
+      const duel = (f.instant || []).find(d => d.pairs && d.winners?.includes(W[0]));
+      S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { TJ: hostSide(pk), ...placeScene(pk, [...W, ...L]) }, wipe: 1 },
+        card: { k: 'Surprise', t: 'Instant Elimination', sub: 'One of these pairs leaves the final now', vsPairs: [W, L] } });
+      if (duel) {
+        const def = arenaDef(duel.game);
+        const { pre, post } = splitAtResult(a.lines, duel);
+        linesToSteps(S, pre, { names, sceneWho: [...W, ...L, 'TJ'] });
+        S.push({ rules: { k: 'INSTANT ELIMINATION', n: duel.name, li: rulesOf(def?.desc), f: 'The losing pair leaves the final now' }, props: ARENA_PLAY[duel.game]?.set({}) || [] });
+        playPairDuelSteps(S, duel, seed + W[0], [], pk);
+        linesToSteps(S, post, { names, sceneWho: [...W, ...L, 'TJ'] });
+        S.push({ slam: { stamp: 'ELIMINATED' }, focus: L, act: Object.fromEntries(L.map(n => [n, 'slump'])) });
+      } else linesToSteps(S, a.lines, { names, sceneWho: [...W, ...L, 'TJ'] });
+      continue;
+    }
     if (a.kind === 'instant-elimination') {
       const st = FINAL_STAGE.instant, pk = plateKey(st.plate, false);
       const [x, y] = a.who;
@@ -1289,10 +1546,10 @@ function buildFinal(S, open, key, items, row, { names, house }) {
       S.push({ scene: { plate: pk, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { TJ: hostSide(pk), ...lined(pk, all) }, wipe: 1 }, card: { k: 'The finish line', t: 'The Totals', sub: 'Two days, five checkpoints, every point added up', faces: all.slice(0, 10) }, sceneIdx: it.i, title: 'The totals' });
       linesToSteps(S, a.lines, { names, sceneWho: ['TJ', ...all] });
       // the totals from the bottom up (script/final-cp.js podiumLines: the backlog prints the same)
-      for (const l of podiumLines(f.podium || {}, f.totals || {})) {
+      for (const l of podiumLines(f.podium || {}, f.totals || {}, f.pairPodium || null)) {
         const n = l.fx.who;
         const st = l.kind === 'tj' ? { tj: l.text, focus: n ? ['TJ', n] : ['TJ'] } : { dir: l.text, focus: [n] };
-        if (n && l.fx.place > 1) { st.chip = [n, `${(ORD[l.fx.place] || `#${l.fx.place}`).toUpperCase()} PLACE`]; st.act = { [n]: l.fx.place === 2 ? 'slump' : 'look' }; }
+        if (n && l.fx.place > 1) { st.chip = [n, `${(ORD[l.fx.place] || `#${l.fx.place}`).toUpperCase()} PLACE`]; st.act = Object.fromEntries((l.fx.pair || [n]).map(x => [x, l.fx.place === 2 ? 'slump' : 'look'])); if (l.fx.pair) st.focus = ['TJ', ...l.fx.pair]; }
         if (n && l.fx.place === 1) st.act = { [n]: 'strain' };
         S.push(st);
       }

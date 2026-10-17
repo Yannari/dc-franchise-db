@@ -68,6 +68,9 @@ export class ChxStage {
       t.innerHTML = `<div class='body'><div class='face'><img src='${esc(AV(n))}' alt=''></div><span class='tag'>${n === 'TJ' ? 'TJ Maxx' : esc(n)}</span></div><div class='shadow'></div>`;
       this.el.cast.append(t); ST.toks[n] = t;
     }
+    // a Pairs season: both partners wear the pair's colour under their name (steps.js scene.pairs)
+    const pc = ST.pairs?.[n] ? pairColour(n, ST.pairs[n]) : null;
+    t.classList.toggle('paired', !!pc); if (pc) t.style.setProperty('--pair', pc);
     if (!anim) t.style.transition = 'none';
     t.style.left = m.u * 100 + '%'; t.style.top = m.v * 100 + '%'; t.style.setProperty('--sz', this.sizeOf(m).toFixed(2) + 'cqh');
     t.style.zIndex = Math.round(m.v * 50);
@@ -79,7 +82,7 @@ export class ChxStage {
   setScene(sc) {
     this.ST = newState();
     const ST = this.ST;
-    Object.assign(ST, { plate: sc.plate, scale: sc.scale || 1.5, scene: sc, water: sc.water || 0 });
+    Object.assign(ST, { plate: sc.plate, scale: sc.scale || 1.5, scene: sc, water: sc.water || 0, pairs: sc.pairs || null });
     this.root?.classList?.toggle('flashback', !!sc.flash);
     this.el.plate.innerHTML = `<img class='chx-plate' src='${PLATE(sc.plate)}.webp' alt=''><canvas class='chx-glc tdx-gl' data-src='${PLATE(sc.plate)}' data-hd='1' width='1920' height='1080'></canvas>`;
     this.el.cast.innerHTML = ''; this.el.wfx.innerHTML = ''; this.el.live.innerHTML = ''; if (this.el.props) this.el.props.innerHTML = ''; if (this.el.fore) this.el.fore.innerHTML = '';
@@ -268,7 +271,9 @@ export class ChxStage {
     if (s.finish) ST.race = s.race || null;
     if (s.duel) {
       ST.duel = s.duel;
-      if (s.hang === 'duel') [s.duel.a, s.duel.b].forEach(n => { ST.toks[n]?.classList.add('hang'); ST.toks[n]?.style.setProperty('--rope', '4cqh'); });
+      // a two-on-two hangs all four (steps.js: duel.pairs)
+      const hangers = s.duel.pairs ? [...(s.duel.pairs[s.duel.a] || [s.duel.a]), ...(s.duel.pairs[s.duel.b] || [s.duel.b])] : [s.duel.a, s.duel.b];
+      if (s.hang === 'duel') hangers.forEach(n => { ST.toks[n]?.classList.add('hang'); ST.toks[n]?.style.setProperty('--rope', '4cqh'); });
     }
     if (s.dance) ST.dance = s.dance;
     if (s.bg) ST.bgAct = s.bg;
@@ -299,7 +304,8 @@ export class ChxStage {
     }
     if (!anim && s.act) for (const [n, a] of Object.entries(s.act)) if (a === 'slump') ST.toks[n]?.classList.add('slump');
     if (anim && s.say && !(s.act && s.act[s.say[0]])) { const t = ST.toks[s.say[0]]; if (t) { void t.offsetWidth; t.classList.add('talkpop'); } }
-    if (anim && s.vote) { const t = ST.toks[s.vote[1]]; if (t) { void t.offsetWidth; t.classList.add('flinch'); this.fxAt('pop', s.vote[1], String(ST.board[s.vote[1]]), { fontSize: '2.6cqw' }); } }
+    if (anim && s.vote) { const t = ST.toks[s.vote[1]]; if (t) { void t.offsetWidth; t.classList.add('flinch'); this.fxAt('pop', s.vote[1], String(ST.board[s.vote[1]]), { fontSize: '2.6cqw' }); }
+      const pt = ST.pairs?.[s.vote[1]] && ST.toks[ST.pairs[s.vote[1]]]; if (pt) { void pt.offsetWidth; pt.classList.add('flinch'); } }
     if (anim && s.fx?.heart) for (const n of s.fx.heart) this.fxAt('heart', n, HEART);
     // a fight (the user, 2026-10-16: "fight animations, to feel like a big moment"): two square up, a brawl, pulled apart
     if (s.clash) this.clash(s.clash, anim);
@@ -321,7 +327,9 @@ export class ChxStage {
     }
     if (ST.voters) {
       const rows = Object.entries(ST.board).sort((a, b) => b[1] - a[1]);
-      h += `<div class='board'><h5>THE VOTE</h5>${rows.map(([n, c]) => `<div class='row ${anim && s.vote && s.vote[1] === n ? 'hit' : ''}'><img src='${esc(AV(n))}' alt=''><div><div class='nm'>${esc(n)}</div><div class='ticks'>${'||||| '.repeat(Math.floor(c / 5)) + '|'.repeat(c % 5)}</div></div><div class='ct'>${c}</div></div>`).join('')}<div class='left'>${ST.voters} of ${ST.of || ST.voters} have voted</div></div>`;
+      // a Pairs season's ballot is a pair's: both faces, both names
+      const p = n => ST.pairs?.[n] || null;
+      h += `<div class='board'><h5>THE VOTE</h5>${rows.map(([n, c]) => `<div class='row ${anim && s.vote && s.vote[1] === n ? 'hit' : ''}'><img src='${esc(AV(n))}' alt=''>${p(n) ? `<img class='pairimg' src='${esc(AV(p(n)))}' alt=''>` : ''}<div><div class='nm'>${esc(n)}${p(n) ? ` &amp; ${esc(p(n))}` : ''}</div><div class='ticks'>${'||||| '.repeat(Math.floor(c / 5)) + '|'.repeat(c % 5)}</div></div><div class='ct'>${c}</div></div>`).join('')}<div class='left'>${ST.voters} of ${ST.of || ST.voters} have voted</div></div>`;
     }
     if (ST.duel) h += duelHtml(ST.duel);
     else if (ST.tally) h += tallyHtml(ST.tally);
@@ -462,15 +470,25 @@ function introHtml(t, anim) {
     </div></div>`;
 }
 
+// A pair's colour: the same for both partners, picked from the pair's two names, readable on any plate.
+const PAIR_COLOURS = ['#ffd21a', '#2de2ff', '#ff3df2', '#7dff6a', '#ff6a1a', '#b48cff', '#ff5a6e', '#4dffd2', '#ffa64d', '#8fb3ff', '#e8ff5a', '#ff8fc7'];
+function pairColour(a, b) {
+  const k = [a, b].sort().join('|');
+  let h = 7; for (const c of k) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return PAIR_COLOURS[h % PAIR_COLOURS.length];
+}
+
 function duelHtml(d) {
+  // a two-on-two: each row is a pair, both faces (steps.js duel.pairs)
+  const faces = n => (d.pairs?.[n] || [n]).map(x => `<img src='${esc(AV(x))}' alt=''>`).join('');
   const row = n => {
     if (d.format === 'round' && d.score) {
       const max = d.max || Math.max(2, ...Object.values(d.score));
       const k = d.score[n] || 0;
-      return `<div class='r ${d.ahead === n || d.done === n ? 'ahead' : ''}'><img src='${esc(AV(n))}' alt=''><div class='slots'>${Array.from({ length: max }, (_, i) => `<i class='${i < k ? (d.done === n ? 'lock' : 'on') : ''}'></i>`).join('')}</div><div class='n'>${k}</div></div>`;
+      return `<div class='r ${d.ahead === n || d.done === n ? 'ahead' : ''}'>${faces(n)}<div class='slots'>${Array.from({ length: max }, (_, i) => `<i class='${i < k ? (d.done === n ? 'lock' : 'on') : ''}'></i>`).join('')}</div><div class='n'>${k}</div></div>`;
     }
     const k = Math.max(0, Math.min(12, (d.prog || {})[n] || 0));
-    return `<div class='r ${d.ahead === n || d.done === n ? 'ahead' : ''}'><img src='${esc(AV(n))}' alt=''><div class='slots'>${Array.from({ length: 12 }, (_, i) => `<i class='${i < k ? (k >= 12 ? 'lock' : 'on') : ''}'></i>`).join('')}</div><div class='n'>${d.format === 'hold' ? (d.done && d.done !== n ? 'OUT' : '&#9650;') : k}</div></div>`;
+    return `<div class='r ${d.ahead === n || d.done === n ? 'ahead' : ''}'>${faces(n)}<div class='slots'>${Array.from({ length: 12 }, (_, i) => `<i class='${i < k ? (k >= 12 ? 'lock' : 'on') : ''}'></i>`).join('')}</div><div class='n'>${d.format === 'hold' ? (d.done && d.done !== n ? 'OUT' : '&#9650;') : k}</div></div>`;
   };
   return `<div class='duelhud'>${row(d.a)}${row(d.b)}</div>`;
 }
@@ -480,7 +498,9 @@ function duelHtml(d) {
 function titleCard(c) {
   const faces = c.faces || [];
   const face = (n, k) => `<div class='tf' style='animation-delay:${(.35 + k * .12).toFixed(2)}s'><img src='${esc(AV(n))}' alt=''><b>${esc(n)}</b></div>`;
-  const row = c.vs && faces.length === 2 ? `${face(faces[0], 0)}<div class='tvs'>VS</div>${face(faces[1], 1)}` : faces.slice(0, 8).map(face).join('');
+  // pair against pair (a Pairs season's Arena): two faces a side
+  const row = c.vsPairs ? `${c.vsPairs[0].map((n, k) => face(n, k)).join('')}<div class='tvs'>VS</div>${c.vsPairs[1].map((n, k) => face(n, k + 2)).join('')}`
+    : c.vs && faces.length === 2 ? `${face(faces[0], 0)}<div class='tvs'>VS</div>${face(faces[1], 1)}` : faces.slice(0, 8).map(face).join('');
   return `<div class='tcard ${c.vs ? 'isvs' : ''}'><div class='ttape t1'></div><div class='ttape t2'></div><div class='tin'>`
     + `<div class='tk'>${esc(c.k)}</div><div class='tt'>${esc(c.t)}</div>${c.sub ? `<div class='ts'>${esc(c.sub)}</div>` : ''}`
     + (faces.length ? `${c.facesLabel ? `<div class='tl'>${esc(c.facesLabel)}</div>` : ''}<div class='tfaces'>${row}</div>` : '')

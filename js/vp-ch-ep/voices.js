@@ -94,6 +94,13 @@ export const TJ_VOICE = {
   winner: ['{w}, congratulations. You\'re still in this game. Go ahead and rejoin the group.', '{w}, you get to go back to the villa. Go on, rejoin the group.'],
   farewell: ['{l}, you fought hard tonight, and everybody here respects that. But this ends your time on The Challenge.', '{l}, I\'m sorry, buddy. You gave it everything you had. This ends your time on The Challenge.'],
   signoff: ['Now you see what\'s at stake out here. I\'ll see you guys real soon.', 'Good night, everybody. Get some sleep. You\'re going to need it.'],
+  // a Pairs season's Arena (steps.js buildArenaPairs): {a} and {b} are partners, {w}/{l} a pair's names joined
+  pairRecap: ['{a}, {b}, {n} people said your names at the vote. Come on down, both of you.', '{a} and {b}, the house voted you in with {n} votes. Come on down.'],
+  pairVolunteer: ['{a}, {b}, nobody voted for you. You asked for this. Come on down.'],
+  pairAsk: ['{a}, {b}, the moment of truth. Which pair are you taking in with you?', 'Okay, you two. Which pair is coming with you?'],
+  pairScore: ['That\'s {s}! {w} are ahead. {l}, you need this next one.', '{s}! {l}, you two have to win this next one to stay alive.'],
+  pairWinner: ['{w}, congratulations. You two are still in this game. Go on, rejoin the group.', '{w}, you get to go back to the villa together. Go on.'],
+  pairFarewell: ['{l}, you fought hard tonight, both of you. But this ends your time on The Challenge.', '{l}, I\'m sorry, guys. You went in together, and you go home together. This ends your time on The Challenge.'],
 };
 
 export const ARENA_VOICE = {

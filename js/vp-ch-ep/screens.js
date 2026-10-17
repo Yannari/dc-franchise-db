@@ -277,7 +277,14 @@ function replay(H, a, R0 = {}) {
     case 'deal': case 'party-deal': if (!H.deals.some(x => pair(x, who[0], who[1]))) H.deals.push({ a: who[0], b: who[1], tier: a.kind === 'party-deal' ? 'final' : 'protect', ep: R0.ep, drunk: a.kind === 'party-deal' }); break;
     case 'deal-broken': H.deals = H.deals.filter(x => !pair(x, who[0], who[1])); H.broken.push({ a: who[0], b: who[1] }); break;
     case 'arena': if (d.loser && !d.redemption) leave(d.loser); break;
-    case 'quit': case 'medical': case 'disqualified': case 'purge': if (who[0]) leave(who[0]); break;
+    // a Pairs season (ch/pairs.js): the pairs named, a pair going home together, a partner leaving, the swaps
+    case 'pairs-revealed': if (d.pairs) H.pairs = d.pairs.map(([x, y]) => ({ a: x, b: y, how: null, bond: 0, carry: null })); break;
+    case 'pair-arena': for (const n of d.losers || []) leave(n); if (H.pairs) H.pairs = H.pairs.filter(q => !(d.losers || []).includes(q.a)); break;
+    case 'partner-left': if (who[0]) leave(who[0]); if (H.pairs) H.pairs = H.pairs.filter(q => q.a !== who[0] && q.b !== who[0]); break;
+    case 'pair-swap': if (H.pairs && who.length === 4) { const [taker, taken, dumped, from] = who; H.pairs = H.pairs.filter(q => ![taker, taken].includes(q.a) && ![taker, taken].includes(q.b)); H.pairs.push({ a: taker, b: taken, how: 'swap', bond: 0, carry: null }, { a: dumped, b: from, how: 'swap', bond: 0, carry: null }); } break;
+    case 'partner-swap': if (d.after) H.pairs = d.after.map(([x, y]) => ({ a: x, b: y, how: 'swap', bond: 0, carry: null })); break;
+    case 'quit': case 'medical': case 'disqualified': if (who[0]) leave(who[0]); break;
+    case 'purge': for (const n of d.pair ? who.slice(0, 2) : who.slice(0, 1)) leave(n); if (H.pairs && d.pair) H.pairs = H.pairs.filter(q => !who.includes(q.a)); break;
     case 'return-arena': if (d.winner && !H.players.includes(d.winner)) H.players.push(d.winner); break;
     default:
   }
@@ -300,8 +307,10 @@ function intel(R) {
   R.root.querySelector('.intelbtn')?.classList.toggle('on', R.intelOpen);
   if (!R.intelOpen) return;
   const st = istate();
-  const tab = ITABS.some(t => t[0] === st.tab) ? st.tab : 'heads';
   const H = houseNow(R);
+  // a Pairs season has a Pairs tab, right after what the house doesn't know
+  const tabs = H?.pairs ? [ITABS[0], ['pairs', 'Pairs'], ...ITABS.slice(1)] : ITABS;
+  const tab = tabs.some(t => t[0] === st.tab) ? st.tab : 'heads';
   const face = n => `<img class='if' src='${esc(AV(n))}' alt='' title='${esc(n)}'>`;
   let body = '';
   if (tab === 'heads') {
@@ -317,6 +326,18 @@ function intel(R) {
     body = `<div class="ipick">${H.players.map(n => `<button type="button" data-who="${esc(n)}" class="${n === me ? 'on' : ''}">${face(n)}</button>`).join('')}</div><div class="isub">${esc(me)}</div>`
       + H.players.filter(n => n !== me).map(n => [n, bond(me, n)]).sort((x, y) => y[1] - x[1])
         .map(([n, v]) => `<div class="irow">${face(n)}<b>${esc(n)}</b><span class="ibond ${BOND_CLS(v)}">${BOND_WORD(v)}</span>${couple(n) ? '<span class="ilove">Showmance</span>' : ''}</div>`).join('');
+  } else if (tab === 'pairs') {
+    // every pair: how they were made, how they get on, and who has carried whom so far (season.js intelSnap)
+    const HOW = { rivals: 'Rivals', ties: 'Ride or Die', 'fresh-meat': 'Drafted', pick: 'Picked', hand: 'Set by hand', swap: 'Swapped', leftover: 'Leftovers', return: 'Back from the Arena' };
+    const TIE = { couple: 'Couple', ex: 'Exes', family: 'Family', friends: 'Old friends' };
+    const tieOf = q => TIE[{ married: 'couple', engaged: 'couple', partners: 'couple', dating: 'couple', exes: 'ex', 'old-friends': 'friends' }[q.kin] || (q.kin ? 'family' : '')] || null;
+    const bond = (x, y) => H.bonds?.[x <= y ? `${x}||${y}` : `${y}||${x}`] ?? 0;
+    body = H.pairs.length ? H.pairs.map(q => {
+      const v = q.bond ?? bond(q.a, q.b);
+      const c = q.carry ? q.carry[q.a] - q.carry[q.b] : 0;
+      const carry = Math.abs(c) >= 1 ? `${esc(c > 0 ? q.a : q.b)} carries` : 'Even';
+      return `<div class="irow">${face(q.a)}${face(q.b)}<b>${esc(q.a)} &amp; ${esc(q.b)}</b><span class="ibond ${BOND_CLS(v)}">${BOND_WORD(v)}</span><span class="iwhy">${esc([tieOf(q) || HOW[q.how] || '', carry].filter(Boolean).join(' · '))}</span></div>`;
+    }).join('') : '<div class="inone">No pairs yet.</div>';
   } else if (tab === 'allies') {
     body = H.alliances.length ? H.alliances.map(a => `<div class="ial"><div class="ialn">${esc(a.name)}</div><div class="ialm">${a.members.map(n => `<span>${face(n)}${esc(n)}${n === a.leader ? ' <em>leads</em>' : ''}</span>`).join('')}</div></div>`).join('')
       : '<div class="inone">No alliance in the house.</div>';
@@ -339,7 +360,7 @@ function intel(R) {
     const votes = all.filter((v, vi) => ceremonies[vi] != null && done.has(ceremonies[vi]));
     body = !votes.length ? `<div class="inone">${all.length ? 'The vote has not been read yet in this episode.' : 'No house vote in this episode.'}</div>`
       : votes.map((v, vi) => (votes.length > 1 ? `<div class="isub">Vote ${vi + 1}${v.votedIn ? ` · ${esc(v.votedIn)} goes in` : ''}</div>` : (v.votedIn ? `<div class="isub">${esc(v.votedIn)} goes in</div>` : ''))
-        + (v.ballots || []).map(b => `<div class="ivote">${face(b.voter)}<b>${esc(b.voter)}</b><span class="iarrow">&rarr;</span>${face(b.target)}<b>${esc(b.target)}</b><span class="iwhy">${esc(whyOf(b))}</span></div>`).join('')).join('')
+        + (v.ballots || []).map(b => `<div class="ivote">${face(b.voter)}<b>${esc(b.voter)}</b><span class="iarrow">&rarr;</span>${(b.pair || [b.target]).map(face).join('')}<b>${esc((b.pair || [b.target]).join(' & '))}</b><span class="iwhy">${esc(whyOf(b))}</span></div>`).join('')).join('')
         || '<div class="inone">No house vote in this episode.</div>';
   } else if (tab === 'rec') {
     const rows = H.players.map(n => [n, H.rec[n] || {}]).sort((x, y) => (y[1].daily + y[1].arenaW * 2) - (x[1].daily + x[1].arenaW * 2));
@@ -349,7 +370,7 @@ function intel(R) {
   }
   const note = tab === 'heads' ? '' : `<div class="inote">${R.si === R.E.screens.length - 1 && R.idx >= R.scr.steps.length - 1 ? 'As the episode ends.' : 'As of this moment in the episode.'}</div>`;
   I.innerHTML = `<h4>INTEL <button type="button" data-close>&times;</button></h4><div class="sub">What the house doesn't know.</div>`
-    + `<div class="itabs">${ITABS.map(([k, l]) => `<button type="button" data-itab="${k}" class="${k === tab ? 'on' : ''}">${esc(l)}</button>`).join('')}</div><div class="list">${body}${note}</div>`;
+    + `<div class="itabs">${tabs.map(([k, l]) => `<button type="button" data-itab="${k}" class="${k === tab ? 'on' : ''}">${esc(l)}</button>`).join('')}</div><div class="list">${body}${note}</div>`;
 }
 function paintHud(R) { R.root.querySelector('.intelbtn')?.classList.remove('new'); }
 

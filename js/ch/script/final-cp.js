@@ -110,7 +110,8 @@ const ORD = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'sevent
  * The totals read out at the finish, from the bottom up, division by division: the suspense before the crowning.
  * Shared with the viewer like cpLines: { kind, by, text, fx: { who, place } }.
  */
-export function podiumLines(podium = {}, totals = {}) {
+export function podiumLines(podium = {}, totals = {}, pairPodium = null) {
+  if (pairPodium) return pairPodiumLines(pairPodium, totals);
   const out = [];
   const divs = Object.keys(podium);
   const gendered = divs.some(d => d !== 'all');
@@ -122,6 +123,24 @@ export function podiumLines(podium = {}, totals = {}) {
       out.push({ kind: 'tj', by: 'TJ', text: i === 1 ? `And in second place, with ${pts} points... ${n}.` : `In ${ORD[i + 1] || `number ${i + 1}`} place, with ${pts} points: ${n}.`, fx: { who: n, place: i + 1 } });
     }
     if (ord[0]) out.push({ kind: 'beat', by: null, text: `That leaves one name. ${ord[0]} can barely stand still.`, fx: { who: ord[0], place: 1 } });
+  });
+  return out;
+}
+
+// A Pairs season reads pairs, from the bottom up: each pair on its partners' average (final.js finishPairs).
+function pairPodiumLines(pairPodium = {}, totals = {}) {
+  const out = [];
+  const divs = Object.keys(pairPodium);
+  const gendered = divs.some(d => d !== 'all');
+  const avg = p => Math.round(p.reduce((t, n) => t + (totals[n] || 0), 0) / Math.max(1, p.length));
+  divs.forEach((d, di) => {
+    const ord = pairPodium[d] || [];
+    if (gendered) out.push({ kind: 'tj', by: 'TJ', text: di === 0 ? `Let's start with ${divName(d)}'s pairs.` : `Now, ${divName(d)}'s pairs.`, fx: {} });
+    for (let i = ord.length - 1; i >= 1; i--) {
+      const p = ord[i];
+      out.push({ kind: 'tj', by: 'TJ', text: i === 1 ? `And in second place, with an average of ${avg(p)} points... ${nameList(p)}.` : `In ${ORD[i + 1] || `number ${i + 1}`} place, with an average of ${avg(p)} points: ${nameList(p)}.`, fx: { who: p[0], pair: p, place: i + 1 } });
+    }
+    if (ord[0]) out.push({ kind: 'beat', by: null, text: `That leaves one pair. ${nameList(ord[0])} can barely stand still.`, fx: { who: ord[0][0], pair: ord[0], place: 1 } });
   });
   return out;
 }

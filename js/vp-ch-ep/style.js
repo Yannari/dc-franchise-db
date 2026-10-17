@@ -137,6 +137,9 @@ const CHX_CSS = `
 @keyframes chxBreathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.02)}}
 .chx .tok .face{position:absolute;inset:0;overflow:hidden;background:#222;border:max(2px,.22cqw) solid #0c0a0a;clip-path:polygon(0 5%,5% 0,100% 0,100% 95%,95% 100%,0 100%);box-shadow:0 .8cqh 1.6cqh rgba(0,0,0,.5)}
 .chx .tok .face img{width:100%;height:100%;object-fit:cover;display:block}
+.chx .tok.paired .tag{box-shadow:inset 0 -.45cqh 0 var(--pair)}
+.chx .board .row img.pairimg{margin-left:-1.1cqh}
+.chx .duelhud .r img + img{margin-left:-1.1cqh}
 .chx .tok .shadow{position:absolute;left:6%;right:6%;bottom:-5%;height:12%;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.55),transparent 70%);z-index:-1}
 .chx .tok .tag{position:absolute;left:50%;bottom:-.95em;transform:translateX(-50%) rotate(-2deg);white-space:nowrap;z-index:2;font:400 clamp(7px,1.05cqw,16px)/1 'Anton',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#141110;background:var(--tape);padding:.28em .55em .22em;box-shadow:0 1px 2px rgba(0,0,0,.6);clip-path:polygon(0 10%,4% 0,9% 12%,15% 0,100% 0,97% 50%,100% 100%,8% 100%,3% 86%,0 100%)}
 .chx .tok.small .tag{display:none}

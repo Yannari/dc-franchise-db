@@ -135,7 +135,12 @@ describe('choosing a plate', () => {
 
   it('a night that does not exist falls back to the day, and a theme to the default house', () => {
     expect(plateBase('confessional', 'default', true)).toMatch(/default\/confessional-day$/);
-    expect(plateBase('living-screens', 'mystery', true)).toMatch(/\/living-screens-night$/);
+    expect(plateBase('kitchen-room', 'mystery', true)).toMatch(/\/mystery\/kitchen-room-night$/);
+  });
+  it('a room with no window keeps its lights on at night (the user, 2026-10-16)', () => {
+    for (const id of ['living-screens', 'living-sofas-2', 'library-wide', 'memory-wall', 'foyer', 'storage-2']) expect(plateBase(id, 'default', true), id).toMatch(/-day$/);
+    expect(plateBase('living-screens', 'mystery', true)).toMatch(/\/mystery\/living-screens-day$/);
+    for (const id of ['kitchen-wide', 'dining-room', 'bedroom-wide']) expect(plateBase(id, 'default', true), id).toMatch(/-night$/);
   });
 
   it('a themed season with no copy of a view takes the theme\'s view of the same corner of the room', () => {

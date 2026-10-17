@@ -124,6 +124,12 @@ function intelSnap(state) {
       // the stakes (stakes.js): money, skulls, an injury that has not healed
       bank: state.bank?.[n] || 0, skulls: state.skulls?.[n] || 0, hurt: state.injury?.[n] && state.injury[n].heal > state.ep ? `${state.injury[n].part} ${state.injury[n].sev}` : null }])),
     redemption: state.redemption ? state.redemption.residents.map(r => r.name) : null,
+    // a Pairs season: every pair, how they were made, how they get on, and who has carried whom (pairs.js)
+    pairs: state.pairs ? state.pairs.filter(p => act.includes(p.a) && act.includes(p.b)).map(p => {
+      const log = state.pairLog?.[p.id];
+      return { a: p.a, b: p.b, how: p.how, why: p.why || null, kin: p.kin || null, since: p.since, bond: Math.round(getBond(p.a, p.b) * 10) / 10,
+        carry: log ? { [p.a]: log.carry[p.a] || 0, [p.b]: log.carry[p.b] || 0 } : null };
+    }) : null,
     // for the Debug screen: how each of them feels, what they need, what they are trying to do, and their word
     mind: Object.fromEntries(act.map(n => [n, Object.fromEntries(Object.entries(state.mind[n] || {}).map(([k, v]) => [k, Math.round(v * 10) / 10]))])),
     psyche: Object.fromEntries(act.map(n => [n, state.psyche[n] || null])),

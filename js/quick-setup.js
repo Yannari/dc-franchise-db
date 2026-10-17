@@ -1379,9 +1379,12 @@ const CONFIG_SCOPE = {
     'cfg-ch-party':          ['the-challenge'],
     'cfg-ch-partner-weeks':  ['the-challenge'],
     'cfg-ch-romance':        ['the-challenge'],
+    'cfg-ch-mode':           ['the-challenge'],
+    'grp-ch-pairs':          ['the-challenge'],
     // The cast form's two Challenge fields (the castle's Background is the precedent).
     'f-ch-billing':          ['the-challenge'],
     'f-ch-division':         ['the-challenge'],
+    'f-ch-partner':          ['the-challenge'],
     'sec-tr-divider':        ['traitors'],
     'sec-dr-options':        ['drag-race'],
     'sec-dr-divider':        ['drag-race'],

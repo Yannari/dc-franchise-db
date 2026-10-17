@@ -21,7 +21,7 @@
 // `formatIsRunnable()` reads.
 import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG } from './core.js';
 import { CHALLENGE_FORMAT, SHOWS } from './shows.js';
-import { playChallengeSeason, liveTwists } from './ch/season.js';
+import { playChallengeSeason, liveTwists, pairsFinal } from './ch/season.js';
 import { airSeason } from './ch/story/director.js';
 import { buildSchedule } from './ch/schedule.js';
 import { DEFAULT_OPTIONS } from './ch/format.js';
@@ -98,7 +98,44 @@ export function challengeOptions(config = seasonConfig) {
     redemption: config?.chRedemption === true,
     redemptionFrom: 1,
     episodeTwists,
+    // a Pairs season (js/ch/pairs.js): how the pairs are made, their shape, how many run the final, and the pairs
+    // set by hand on the cast cards (two cards that name each other)
+    pairs: config?.chMode === 'pairs' ? {
+      pairing: ['rivals', 'ties', 'fresh-meat', 'pick'].includes(config.chPairing) ? config.chPairing : 'rivals',
+      shape: config.chPairShape === 'same' && config.chGenderBlind !== true ? 'same' : 'mixed',
+      finalPairs: [2, 3, 4].includes(Number(config.chFinalPairs)) ? Number(config.chFinalPairs) : null,
+      pins: partnerPins(),
+    } : null,
   };
+}
+
+/** The partners set on the cast cards (`chPartner`): only two cards that name each other count. */
+export function partnerPins(list = players || []) {
+  const named = Object.fromEntries((list || []).filter(p => p?.name && p.chPartner).map(p => [p.name, p.chPartner]));
+  const out = {};
+  for (const [a, b] of Object.entries(named)) if (named[b] === a && a !== b) out[a] = b;
+  return out;
+}
+
+/** The setup panel: the pair controls only in a Pairs season, and the solo-only ones hidden in one. */
+export function chModeUI() {
+  if (typeof document === 'undefined') return;
+  const g = id => document.getElementById(id);
+  const pairs = g('cfg-ch-mode')?.value === 'pairs';
+  const show = (id, on) => { const el = g(id); if (el) el.style.display = on ? '' : 'none'; };
+  show('grp-ch-pairs', pairs);
+  show('grp-ch-pair-shape', pairs && !g('cfg-ch-gender-blind')?.checked);
+  show('grp-ch-finalists', !pairs);
+  show('grp-ch-partner-weeks', !pairs);
+  show('grp-ch-redemption', !pairs);
+}
+
+/** The cast card's Partner list: everybody else in the cast. */
+export function chPartnerNames(self = null) {
+  if (typeof document === 'undefined') return;
+  const dl = document.getElementById('ch-partner-names');
+  if (!dl) return;
+  dl.innerHTML = (players || []).filter(p => p?.name && p.name !== self).map(p => `<option value="${String(p.name).replace(/"/g, '&quot;')}"></option>`).join('');
 }
 
 /** The show a player came from: the one the ledger has them on most often
@@ -159,6 +196,7 @@ export function challengeDivisions(cast = _cast(), setup = challengeSetup(), gen
 /** The first reason this cast cannot start a season, or null. */
 export function challengeCastProblem(cast = _cast(), setup = challengeSetup(), config = seasonConfig, genderOf = n => _player(n)?.gender) {
   const opts = challengeOptions(config);
+  if (opts.pairs) return pairsCastProblem(cast, setup, opts, genderOf);
   if (cast.length < opts.finalists + 2) return `a season needs more players than finalists: ${cast.length} players, ${opts.finalists} into the final`;
   if (opts.gendered) {
     const div = challengeDivisions(cast, setup, genderOf);
@@ -169,10 +207,36 @@ export function challengeCastProblem(cast = _cast(), setup = challengeSetup(), c
   return null;
 }
 
+// A Pairs season's cast: an even number, the shape's split (as many men as women for a man and a woman; an even
+// number of each for men's and women's pairs), and for Fresh Meat a rookie for every vet, across the divisions.
+function pairsCastProblem(cast, setup, opts, genderOf) {
+  const final = pairsFinal({ ...DEFAULT_OPTIONS, ...opts });
+  if (cast.length % 2) return `a Pairs season needs an even number of players: ${cast.length} now`;
+  if (cast.length / 2 < final + 2) return `a Pairs season needs more pairs than the final: ${cast.length / 2} pairs, ${final} into the final`;
+  const div = challengeDivisions(cast, setup, genderOf);
+  const m = cast.filter(n => div[n] === 'm').length, f = cast.filter(n => div[n] === 'f').length, open = cast.length - m - f;
+  if (opts.gendered && opts.pairs.shape === 'mixed' && Math.abs(m - f) > open) return `pairs of a man and a woman need as many men as women: ${m} men, ${f} women`;
+  if (opts.gendered && opts.pairs.shape === 'same' && (m % 2 || f % 2) && !open) return `men's and women's pairs need an even number of each: ${m} men, ${f} women`;
+  if (opts.pairs.pairing === 'fresh-meat') {
+    const bg = challengeBackground(cast, setup);
+    const rookies = cast.filter(n => bg[n]?.rookie).length;
+    if (rookies !== cast.length - rookies) return `Fresh Meat pairs every vet with a rookie: ${cast.length - rookies} vets, ${rookies} rookies (set "Billed as" on the Cast cards)`;
+    if (opts.gendered && opts.pairs.shape === 'mixed') {
+      const vm = cast.filter(n => div[n] === 'm' && !bg[n]?.rookie).length, rf = cast.filter(n => div[n] === 'f' && bg[n]?.rookie).length;
+      if (vm !== rf) return `Fresh Meat pairs a vet with a rookie of the other gender: ${vm} vet men for ${rf} rookie women`;
+    }
+  }
+  return null;
+}
+
 /** The episodes this cast and these options make (the Season Timeline reads this). */
 export function challengeSeasonShape(cast = _cast(), config = seasonConfig) {
   const opts = { ...DEFAULT_OPTIONS, ...challengeOptions(config) };
-  try { return buildSchedule({ total: cast.length, finalists: opts.finalists, daysPerEpisode: opts.daysPerEpisode, gendered: opts.gendered, twists: liveTwists(opts) }); }
+  const final = pairsFinal(opts);
+  try {
+    if (final) return buildSchedule({ pairs: true, total: Math.floor(cast.length / 2), finalists: final, daysPerEpisode: opts.daysPerEpisode, gendered: opts.gendered, twists: liveTwists(opts) });
+    return buildSchedule({ total: cast.length, finalists: opts.finalists, daysPerEpisode: opts.daysPerEpisode, gendered: opts.gendered, twists: liveTwists(opts) });
+  }
   catch { return []; }
 }
 
@@ -264,8 +328,10 @@ function dailyOf(d) {
     beats: d.beats ? d.beats.map(b => ({ ...b, who: [...b.who], data: JSON.parse(JSON.stringify(b.data || {})) })) : null };
 }
 // An Arena game (or a final's instant elimination) as it was played.
+// A Pairs season's duel is two on two: both pairs, who won and lost each beat for their side (pairs.js playPairDuel).
 const duelOf = d => ({ game: d.game, name: d.gameName || d.game, kind: d.kind || null, a: d.a, b: d.b, winner: d.winner, loser: d.loser,
-  upset: !!d.upset, comeback: !!d.comeback, volunteer: !!d.volunteer, beats: (d.beats || []).map(b => ({ ...b, score: b.score ? { ...b.score } : undefined })) });
+  upset: !!d.upset, comeback: !!d.comeback, volunteer: !!d.volunteer, beats: (d.beats || []).map(b => ({ ...b, score: b.score ? { ...b.score } : undefined })),
+  ...(d.pairs ? { pairs: true, pairA: [...d.pairA], pairB: [...d.pairB], winners: [...d.winners], losers: [...d.losers], swap: d.swap ? { ...d.swap } : null } : {}) });
 // The final as it was run: checkpoints, the instant eliminations, the overnight.
 function finalOf(f) {
   if (!f) return {};
@@ -274,7 +340,9 @@ function finalOf(f) {
   return { finalists: [...(f.finalists || [])], checkpoints: (f.checkpoints || []).map(c => copy(c)),
     instant: (f.instant || []).map(duelOf), overnight: (f.overnight || []).map(o => ({ ...o })),
     sabotage: (f.sabotage || []).map(x => ({ ...x })), help: (f.help || []).map(x => ({ ...x })), totals: { ...(f.totals || {}) },
-    podium: copy(f.podium || {}), lastWords: [...(f.lastWords || [])] };
+    podium: copy(f.podium || {}), lastWords: [...(f.lastWords || [])],
+    // a Pairs season: the pairs in finishing order, their averages, and what each chooser did with the money
+    ...(f.pairPodium ? { pairPodium: copy(f.pairPodium), pairTotals: { ...(f.pairTotals || {}) }, choices: copy(f.choices || []) } : {}) };
 }
 
 /** The run tab's rows, one per episode and one for the final, from a played and aired season. */
@@ -308,8 +376,13 @@ export function challengeRows(result) {
         dailyWinners: [...(e.daily?.winners || [])], votedIn: [...(e.votedIn || [])],
         // tonight's one-episode twist (ep-twists.js)
         twist: e.twist || null, purged: e.purged || null, returnArena: e.returnArena ? { ...e.returnArena } : null,
-        callouts: (e.callouts || []).map(c => ({ by: c.by, opponent: c.opponent, reason: c.reason, promise: c.promise || null, promisedAt: c.promisedAt || null, ranked: c.ranked || null })),
-        arena: (e.arena || []).map(d => ({ winner: d.winner, loser: d.loser, game: d.gameName || d.game || null })),
+        callouts: (e.callouts || []).map(c => ({ by: c.by, opponent: c.opponent, reason: c.reason, promise: c.promise || null, promisedAt: c.promisedAt || null, ranked: c.ranked || null,
+          ...(c.pair ? { pair: true, decider: c.decider, about: c.about, agreed: !!c.agreed, overruled: c.overruled || null } : {}) })),
+        arena: (e.arena || []).map(d => ({ winner: d.winner, loser: d.loser, game: d.gameName || d.game || null,
+          ...(d.pairs ? { winners: [...d.winners], losers: [...d.losers] } : {}) })),
+        // a Pairs season: the pairs as the week began and as it ended (a swap changes them), from Intel's snapshots
+        // (the premiere makes its pairs after the week began: its start is its end)
+        pairs: (e.intel?.start?.pairs || e.intel?.end?.pairs) ? { start: (e.intel.start?.pairs || e.intel.end.pairs).map(p => [p.a, p.b]), end: (e.intel.end?.pairs || []).map(p => [p.a, p.b]), swap: e.swap || null } : null,
         aired: airedOf(e),
         // What the stepped viewer stages (js/vp-ch-ep): the house at the start, the daily as it was
         // played, every ballot with what the voter wanted, was asked and told, and each Arena game.
@@ -317,6 +390,7 @@ export function challengeRows(result) {
         daily: dailyOf(e.daily),
         votes: (e.votes || []).map(v => ({ votedIn: v.votedIn, tally: { ...(v.tally || {}) }, tied: !!v.tied, tiebreak: v.tiebreak || null,
           ballots: (v.ballots || []).map(b => ({ voter: b.voter, target: b.target, wanted: b.wanted || null, asked: b.asked || null, told: b.told || null, why: b.why || null, flip: !!b.flip,
+            ...(b.pair ? { pair: [...b.pair], named: b.named || b.target } : {}),
             // what drove a vote that was the voter's own (vote.js reasonOf), whose plan it was, and how they stood (Intel's Votes)
             reason: b.reason || null, via: viaName(b.via), bond: b.bond ?? null })) })),
         duels: (e.arena || []).map(duelOf),
@@ -525,10 +599,13 @@ export function rerunChallengeEpisode(epNum) {
 
 /** How the episode was decided, for the hub's corner: who went into the Arena. */
 export function challengeVoteShape(row) {
-  if (row?.ch?.final) return `Champions: ${(row.ch.final.champions || []).join(' & ')}`;
+  if (row?.ch?.final) {
+    const kept = (row.ch.final.choices || []).filter(c => c.keep && c.place === 1);
+    return `Champions: ${(row.ch.final.champions || []).join(' & ')}${kept.length ? ` · ${kept.map(c => `${c.chooser} kept the money`).join(', ')}` : ''}`;
+  }
   const duels = row?.ch?.arena || [];
   if (!duels.length) return 'No elimination';
-  return duels.map(d => `${d.winner} beat ${d.loser}${d.game ? ` (${d.game})` : ''}`).join(' · ');
+  return duels.map(d => (d.winners ? `${d.winners.join(' & ')} beat ${d.losers.join(' & ')}` : `${d.winner} beat ${d.loser}`) + (d.game ? ` (${d.game})` : '')).join(' · ');
 }
 
 if (typeof window !== 'undefined') window._chRunnable = true;

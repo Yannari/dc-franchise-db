@@ -311,6 +311,8 @@ export function submitPlayer() {
       ? document.getElementById('f-ch-billing').value : undefined,
     chDivision: ['m', 'f'].includes(document.getElementById('f-ch-division')?.value)
       ? document.getElementById('f-ch-division').value : undefined,
+    // a Pairs season's partner, by name (js/ch/pairs.js keeps two cards that name each other)
+    chPartner: document.getElementById('f-ch-partner')?.value?.trim() || undefined,
   };
   ensurePortraitSelection(player); // fill in the portrait if the picker was never touched
   if (editingId) { const i = players.findIndex(p=>p.id===editingId); if(i!==-1) players[i]=player; cancelEdit(); }
@@ -332,6 +334,8 @@ export function editPlayer(id) {
   const bgEl = document.getElementById('f-background'); if (bgEl) bgEl.value = p.backgroundType || '';
   const chbEl = document.getElementById('f-ch-billing'); if (chbEl) chbEl.value = p.chBilling || '';
   const chdEl = document.getElementById('f-ch-division'); if (chdEl) chdEl.value = p.chDivision || '';
+  const chpEl = document.getElementById('f-ch-partner'); if (chpEl) chpEl.value = p.chPartner || '';
+  try { window.chPartnerNames?.(p.name); } catch { /* optional */ }
   setFormPortrait(p.avatarId, p.avatarFile);
   renderPortraitPickerInto();
   updateBackgroundPreview();
@@ -368,6 +372,7 @@ export function resetForm() {
   const bgPrev = document.getElementById('f-background-preview'); if (bgPrev) bgPrev.innerHTML = '';
   const chbEl = document.getElementById('f-ch-billing'); if (chbEl) chbEl.value = '';
   const chdEl = document.getElementById('f-ch-division'); if (chdEl) chdEl.value = '';
+  const chpEl = document.getElementById('f-ch-partner'); if (chpEl) chpEl.value = '';
   setFormPortrait(null, '');
   renderPortraitPickerInto();
   document.getElementById('archetype-desc').textContent='';
@@ -1131,6 +1136,7 @@ export function renderCard(p) {
           ${p.isCoach ? '<span class="archetype-tag" title="Trains this tribe — never competes, never votes" style="background:rgba(59,130,246,0.15);color:#3b82f6">Coach</span>' : ''}
           ${p.backgroundType ? `<span class="archetype-tag" title="Background type — how the castle recognises this contestant" style="background:rgba(148,163,184,0.15);color:#94a3b8">${p.backgroundType[0].toUpperCase()}${p.backgroundType.slice(1)}</span>` : ''}
           ${window.challengeBilling?.(p) ? `<span class="archetype-tag" title="How The Challenge bills them" style="background:rgba(255,106,26,0.15);color:#ff6a1a">${window.challengeBilling(p)}</span>` : ''}
+          ${window.challengeBilling?.(p) && seasonConfig.chMode === 'pairs' && p.chPartner ? `<span class="archetype-tag" title="${players.find(q => q.name === p.chPartner)?.chPartner === p.name ? 'Their partner this season' : 'Only one card names the other: not a pair yet'}" style="background:rgba(250,204,21,0.15);color:#facc15">&amp; ${p.chPartner}${players.find(q => q.name === p.chPartner)?.chPartner === p.name ? '' : '?'}</span>` : ''}
           ${portraitTag
     ? `<span class="archetype-tag" title="The portrait this season uses for ${p.name}" style="background:rgba(139,92,246,0.16);color:#a78bfa">${portraitTag}</span>`
     : ''}
@@ -1424,6 +1430,11 @@ export function saveConfig() {
     chRedemption: g('cfg-ch-redemption') ? g('cfg-ch-redemption').checked : seasonConfig.chRedemption === true,
     chPartnerWeeks: g('cfg-ch-partner-weeks') ? g('cfg-ch-partner-weeks').checked : seasonConfig.chPartnerWeeks !== false,
     chRomance: g('cfg-ch-romance') ? g('cfg-ch-romance').checked : seasonConfig.chRomance !== false,
+    // a Pairs season (js/ch-run.js challengeOptions -> options.pairs)
+    chMode: g('cfg-ch-mode') ? g('cfg-ch-mode').value : (seasonConfig.chMode || 'solo'),
+    chPairing: g('cfg-ch-pairing') ? g('cfg-ch-pairing').value : (seasonConfig.chPairing || 'rivals'),
+    chPairShape: g('cfg-ch-pair-shape') ? g('cfg-ch-pair-shape').value : (seasonConfig.chPairShape || 'mixed'),
+    chFinalPairs: g('cfg-ch-final-pairs') ? (parseInt(g('cfg-ch-final-pairs').value) || 3) : (Number(seasonConfig.chFinalPairs) || 3),
     trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,
     trEndgameReveal: g('cfg-tr-endgame-reveal') ? g('cfg-tr-endgame-reveal').checked : true,
     trSeer: g('cfg-tr-seer') ? g('cfg-tr-seer').value : (seasonConfig.trSeer || 'draw'),
@@ -1641,6 +1652,11 @@ export function renderConfig() {
   if (g('cfg-ch-redemption')) g('cfg-ch-redemption').checked = seasonConfig.chRedemption === true;
   if (g('cfg-ch-partner-weeks')) g('cfg-ch-partner-weeks').checked = seasonConfig.chPartnerWeeks !== false;
   if (g('cfg-ch-romance')) g('cfg-ch-romance').checked = seasonConfig.chRomance !== false;
+  if (g('cfg-ch-mode')) g('cfg-ch-mode').value = seasonConfig.chMode === 'pairs' ? 'pairs' : 'solo';
+  if (g('cfg-ch-pairing')) g('cfg-ch-pairing').value = ['rivals', 'ties', 'fresh-meat', 'pick'].includes(seasonConfig.chPairing) ? seasonConfig.chPairing : 'rivals';
+  if (g('cfg-ch-pair-shape')) g('cfg-ch-pair-shape').value = seasonConfig.chPairShape === 'same' ? 'same' : 'mixed';
+  if (g('cfg-ch-final-pairs')) g('cfg-ch-final-pairs').value = [2, 4].includes(Number(seasonConfig.chFinalPairs)) ? String(seasonConfig.chFinalPairs) : '3';
+  try { window.chModeUI?.(); } catch { /* the panel is optional chrome */ }
   try { window.renderPerfectMatchCastSetup?.(); } catch { /* the panel is optional chrome */ }
   try { window.renderCircleCastSetup?.(); } catch { /* the panel is optional chrome */ }
   set('cfg-tr-traitor-mode', seasonConfig.trTraitorMode || 'random');

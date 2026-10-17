@@ -88,6 +88,16 @@ const REACT = {
     (a, n) => [['say', 'TJ', `And that's ${n}. Nobody can catch that. ${a}, I'm sorry, buddy.`], ['beat', `${a} closes ${P(a, 'posAdj')} eyes.`]],
     (a, n) => [['beat', `That's the one. ${a} knows it before TJ says a word.`]],
   ],
+  // a Pairs season: the count is for two people (`a` is "Brody and Hannah")
+  sealedPair: [
+    (a, n) => [['say', 'TJ', `And that's ${n}. Nobody's catching that. ${a}, I'm sorry, guys.`], ['beat', `${a} look at each other and don't say a word.`]],
+    (a, n) => [['beat', `That's the one. ${a} know it before TJ opens his mouth.`]],
+    (a, n) => [['say', 'TJ', `${cap(n)} votes. That's it, that's the number. ${a}, pack a bag. You're going in together.`]],
+  ],
+  leadPair: [
+    (a, n, left) => [['say', 'TJ', `That's ${n} for ${a}, and ${left} still to vote. Don't get comfortable, either of you.`]],
+    (a, n, left) => [['beat', `${cap(n)} votes for ${a} now. One of them grabs the other's hand.`]],
+  ],
 };
 const pickR = (key, seed, used) => {
   const list = REACT[key], rng = stableRng(seed, 'react');
@@ -115,10 +125,13 @@ const WHY = {
   'broke from the plan': 'broke', 'changed their mind': 'changed',
 };
 
-function synthetic(state, ep, day, kind, who, data, bond) {
+function synthetic(state, ep, day, kind, who, data, bond, partners = null) {
   return { id: `${kind}:${ep}:${who.join('>')}`, ep, day, kind, who, data, seenBy: state.cast, spot: 'deliberation',
-    snap: { bond, house: data.house } };
+    snap: { bond, house: data.house, ...(partners ? { partners } : {}) } };
 }
+// A Pairs season's ballot names a pair (vote.js: the target is the pair's representative, `named` the one the voter
+// meant, `pair` both). The lines say both names ({b} and {pb}); the room reacts through the one the voter meant.
+const pairOfBallot = b => (b.pair ? { named: b.named || b.target, partner: b.pair.find(x => x !== (b.named || b.target)) } : null);
 
 export function writeVote(state, epRec, vote, day) {
   const out = [];
@@ -132,15 +145,20 @@ export function writeVote(state, epRec, vote, day) {
   const need = Math.floor(house / 2) + 1;
   vote.ballots.forEach((b, k) => {
     const own = (WHY[b.why] || 'own') === 'own' && b.reason;
-    const sc = own ? synthetic(state, epRec.ep, day, 'ballot-why', [b.voter, b.target], { reason: b.reason, house, on: b.on || null }, b.bond)
-      : synthetic(state, epRec.ep, day, 'ballot', [b.voter, b.target], { why: WHY[b.why] || 'own', flip: b.flip, house }, b.bond);
-    let script = writeScene(state, sc) || (own ? writeScene(state, synthetic(state, epRec.ep, day, 'ballot', [b.voter, b.target], { why: 'own', house }, b.bond)) : null);
+    const pb = pairOfBallot(b);
+    const named = pb ? pb.named : b.target;
+    const partners = pb && pb.partner ? { [pb.named]: pb.partner } : null;
+    const sc = own ? synthetic(state, epRec.ep, day, 'ballot-why', [b.voter, named], { reason: b.reason, house, on: b.on || null }, b.bond, partners)
+      : synthetic(state, epRec.ep, day, 'ballot', [b.voter, named], { why: WHY[b.why] || 'own', flip: b.flip, house }, b.bond, partners);
+    let script = writeScene(state, sc) || (own ? writeScene(state, synthetic(state, epRec.ep, day, 'ballot', [b.voter, named], { why: 'own', house }, b.bond, partners)) : null);
     run[b.target] = (run[b.target] || 0) + 1;
     // the room
     const seed = `${state.seed}|${epRec.ep}|${k}|${b.voter}`;
     const roll = stableRng(seed, 'r')();
     const rows = [];
-    const t = b.target, v = b.voter, left = vote.ballots.length - k - 1;
+    // the one who hears it (in a Pairs season, the one the voter meant), and the name the count is read for
+    const t = named, v = b.voter, left = vote.ballots.length - k - 1;
+    const tally = n => (state.options?.pairs && vote.ballots.find(x => x.target === n)?.pair ? vote.ballots.find(x => x.target === n).pair.join(' and ') : n);
     // off script: only somebody who broke from a plan they were part of, called out by somebody who stuck to it
     const stuck = b.asked && b.asked !== t ? vote.ballots.slice(0, k).find(x => x.target === b.asked && x.asked === b.asked && x.voter !== t)?.voter : null;
     if (b.flip && b.asked && b.asked !== t && (stuck || roll < 0.5)) rows.push(...pickR('offscript', seed, used)(v, t, stuck || null));
@@ -149,9 +167,9 @@ export function writeVote(state, epRec, vote, day) {
     else if (roll < 0.12) rows.push(...pickR('shrug', seed, used)(v, t));
     // the count: close at the top, or decided
     const top = Object.entries(run).sort((x, y) => y[1] - x[1]);
-    if (!sealed && top[0][1] >= need) { sealed = true; rows.push(...pickR('sealed', seed + 's', used)(top[0][0], w(top[0][1]))); }
-    else if (!sealed && k >= 5 && top[1] && top[0][1] === top[1][1] && top[0][0] === t) rows.push(...pickR('tie', seed + 't', used)(top[0][0], top[1][0], w(top[0][1])));
-    else if (!sealed && k >= 4 && top[0][0] === t && top[0][1] >= 3 && (k % 4 === 0) && left > 2) rows.push(...pickR('lead', seed + 'l', used)(t, w(top[0][1]), w(left)));
+    if (!sealed && top[0][1] >= need) { sealed = true; rows.push(...pickR(pb ? 'sealedPair' : 'sealed', seed + 's', used)(tally(top[0][0]), w(top[0][1]))); }
+    else if (!sealed && k >= 5 && top[1] && top[0][1] === top[1][1] && top[0][0] === b.target) rows.push(...pickR('tie', seed + 't', used)(tally(top[0][0]), tally(top[1][0]), w(top[0][1])));
+    else if (!sealed && k >= 4 && top[0][0] === b.target && top[0][1] >= 3 && (k % 4 === 0) && left > 2) rows.push(...pickR(pb ? 'leadPair' : 'lead', seed + 'l', used)(tally(b.target), w(top[0][1]), w(left)));
     if (rows.length && script) script = { ...script, lines: [...script.lines, ...asLines(rows, state, day, seed)] };
     out.push({ kind: 'ballot', voter: b.voter, target: b.target, why: b.why, script });
   });
@@ -161,7 +179,8 @@ export function writeVote(state, epRec, vote, day) {
   const res = vote.tribunal
     ? writeScene(state, synthetic(state, epRec.ep, day, 'cer-nominees', vote.tribunal.nominees, { house, tribunal: vote.tribunal.tribunal }, 0))
     : writeScene(state, synthetic(state, epRec.ep, day, 'cer-result', [vote.votedIn],
-      { count: WORDS[tally[0][1]] || String(tally[0][1]), tie: !!vote.tiebreak, house }, 0));
+      { count: WORDS[tally[0][1]] || String(tally[0][1]), tie: !!vote.tiebreak, house }, 0,
+      vote.ballots.find(x => x.target === vote.votedIn)?.pair ? { [vote.votedIn]: vote.ballots.find(x => x.target === vote.votedIn).pair.find(x => x !== vote.votedIn) } : null));
   if (res) out.push({ kind: 'cer-result', script: res });
   return out;
 }

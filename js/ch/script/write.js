@@ -118,7 +118,10 @@ function poolFor(key, have) {
 
 // The pool key for a kind and ending: its own pool merged with the family's
 // '.any', so an ending pool never runs dry.
-function keyFor(kind, ending) {
+// A Pairs season reads a kind's pair pools ('<kind>~pairs.<ending>') INSTEAD of its solo ones when it has them: a
+// meeting about "Brody" is a meeting about Brody and his partner, and no solo line about one person going in may air.
+function keyFor(kind, ending, pairs = false) {
+  if (pairs && (POOLS[`${kind}~pairs.${ending}`] || POOLS[`${kind}~pairs.any`])) return keyFor(`${kind}~pairs`, ending);
   const own = `${kind}.${ending}`, any = `${kind}.any`;
   if (ending !== 'any' && POOLS[own] && POOLS[any]) return [own, any];
   if (POOLS[own]) return own;
@@ -129,7 +132,7 @@ function keyFor(kind, ending) {
 export function writeScene(state, scene) {
   const r = rolesOf(scene, state);
   if (!r) return null;
-  const key = keyFor(scene.kind, r.ending ?? 'any');
+  const key = keyFor(scene.kind, r.ending ?? 'any', !!state.options?.pairs);
   if (!key) return null;
   const have = new Set([...Object.keys(r.roles), ...Object.keys(r.slots)]);
   const pools = poolFor(key, have);

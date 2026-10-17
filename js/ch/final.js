@@ -273,6 +273,8 @@ export function playFinal(state, rng) {
   // answer. Kept, it is loyalty proved; a partner in the same division owes nothing.
   for (const d of state.deals.filter(x => x.tier === 'final' && !x.broken)) {
     if (!state.active.includes(d.a) || !state.active.includes(d.b) || state.division[d.a] === state.division[d.b]) continue;
+    // partners race as one already: a pact between them is not a pact (it aired as one partner running off)
+    if (pairsOn(state) && state.partnerOf?.[d.a] === d.b) continue;
     const keeps = rng() < 0.6 + S(d.a, 'loyalty') * 0.03;
     if (keeps) { fin.help.push({ a: d.a, b: d.b }); keptWord(d.a, d.b, 1); keptWord(d.b, d.a, 1); }
     addScene(state, keeps ? 'final-pact-help' : 'final-pact-broken', [d.a, d.b], {}, [d.a, d.b], 'final');
@@ -365,10 +367,10 @@ function finishPairs(state, rng, fin, total, pairAvg, pairReps) {
     for (const n of m) { addScene(state, 'final-lastword', [n], { when: 'finish', place: i + 1, pair: true }, [n], 'confessional'); fin.lastWords.push(n); }
   });
   for (const c of fin.champions) pop(c, 3);
-  const champ = fin.choices.find(c => fin.champions.includes(c.chooser));
-  const paths = fin.champions.map(c => pathOf(state, c));
-  addScene(state, 'champion-reflect', [...fin.champions], { path: champ ? (champ.keep ? 'kept-it' : 'shared-it') : paths[0]?.path || 'grind',
-    pathB: paths[1]?.path || null, ref: champ ? champ.partner : paths[0]?.ref || null, refB: paths[1]?.ref || null, pairs: true, keep: !!champ?.keep }, state.active, 'confessional');
+  // the season's last words: each champion pair, looking back on what the one who chose did with the money
+  for (const c of fin.choices.filter(x => x.place === 1)) {
+    addScene(state, 'champion-reflect', [c.chooser, c.partner], { pair: true, chooser: c.chooser, keep: c.keep, amount: c.prize }, state.active, 'confessional');
+  }
   state.final = fin;
   return fin;
 }

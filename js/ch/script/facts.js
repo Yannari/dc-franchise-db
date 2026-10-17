@@ -12,6 +12,8 @@ import { pStats } from '../../players.js';
 
 export const CH_FACT_KEYS = [
   'ending',
+  // a Pairs season (pairs.js, share-keep.js): how the moment went
+  'hesitate', 'champions', 'walks', 'rivals', 'keepWhy', 'pairs',
   // how far into the season: a line about "weeks in here" needs late, a line
   // about first impressions needs early
   'early', 'late',
@@ -119,6 +121,13 @@ export function factsFor(scene, roles, state) {
     neverIn: scene.data?.on ? !!scene.data.on.neverIn : null,
     richest: scene.data?.on ? !!scene.data.on.richest : null,
     strong: scene.data?.strong ?? null,
+    // a Pairs season's scenes (pairs.js, share-keep.js): how the moment went, for the entries written for one way of it
+    hesitate: !!scene.data?.hesitate,
+    champions: !!scene.data?.champions,
+    walks: !!scene.data?.walks,
+    rivals: !!scene.data?.rivals,
+    keepWhy: scene.data?.why && ['share-keep'].includes(scene.kind) ? scene.data.why : null,
+    pairs: !!state.options?.pairs,
   };
   if (a) {
     f.register = registerOf(a);

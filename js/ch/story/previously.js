@@ -134,7 +134,10 @@ export function previouslyFor(state, prev) {
   // who is left, and the tease
   // as last episode ended (the season has long since played on by the time it airs)
   const left = prev.intel?.end?.players?.length || 0;
-  if (left) lines.push({ kind: 'say', by: 'TJ', text: pick(rng, [`${Cap(num(left))} players left.`, `${Cap(num(left))} of you still standing.`]), roster: true });
+  // a Pairs season counts pairs
+  const pairsLeft = state.options?.pairs && left ? Math.floor(left / 2) : 0;
+  if (pairsLeft) lines.push({ kind: 'say', by: 'TJ', text: pick(rng, [`${Cap(num(pairsLeft))} pairs left.`, `${Cap(num(pairsLeft))} pairs still standing.`]), roster: true });
+  else if (left) lines.push({ kind: 'say', by: 'TJ', text: pick(rng, [`${Cap(num(left))} players left.`, `${Cap(num(left))} of you still standing.`]), roster: true });
   say(pick(rng, ['And tonight... it gets WEIRD.', 'And now... let\'s see who\'s still standing.', 'Buckle up, buttercups.', 'Tonight, somebody else goes home. Let\'s find out who.']));
   return { kind: 'previously', lines };
 }

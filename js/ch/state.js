@@ -93,7 +93,7 @@ export function addScene(state, kind, who, data = {}, seenBy = who, spot = null)
     if (kind !== 'power-rankings') for (const w of crowd) { const [near, far] = getBond(w, who[0]) >= getBond(w, who[1]) ? who : [who[1], who[0]]; addBond(w, near, 0.15); addBond(w, far, -0.15); }
   }
   const sc = { id: state.scenes.length + 1, ep: state.ep, day: state.day, kind,
-    who: [...who], data, seenBy: [...new Set(seenBy)], spot, snap: snapOf(state, who) };
+    who: [...who], data, seenBy: [...new Set(seenBy)], spot, snap: snapOf(state, who, data) };
   state.scenes.push(sc);
   return sc;
 }
@@ -112,7 +112,16 @@ export const KIN_PULL = { couple: 2.2, 'old-friends': 1.2, exes: -1.5 };
 // How the scene's people stood with each other AT THE SCENE (manual §11.5 B):
 // the words are written after the episode, and a replayed week must not read
 // later bonds. The first two people's bond, a shared alliance, a couple.
-function snapOf(state, who) {
+// A Pairs season: each person's partner AS THE SCENE HAPPENED (a Pick season changes them; the words are written
+// after the season), for the people in it and the ones it is about.
+function snapOf(state, who, data = {}) {
+  const snap = baseSnap(state, who);
+  if (!state.partnerOf) return snap;
+  snap.partners = Object.fromEntries([...who, data.target, data.alt, data.by, data.opponent, data.gone, data.lover, ...(data.options || [])]
+    .filter(n => typeof n === 'string' && state.partnerOf[n]).map(n => [n, state.partnerOf[n]]));
+  return snap;
+}
+function baseSnap(state, who) {
   const [a, b] = who;
   const allied = !!a && state.alliances.some(x => !x.ended && x.members.includes(a));
   if (!a || !b) return { house: state.active.length, allied };

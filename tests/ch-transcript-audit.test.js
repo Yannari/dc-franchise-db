@@ -15,13 +15,20 @@ const SPOT = { villa: 'The villa', kitchen: 'Kitchen', gym: 'Gym', 'hot-tub': 'H
 it('writes a season to read', () => {
   const seed = Number(process.env.CH_SEED) || 1;
   const { cast, names, background } = challengeCast(24, seed);
+  // CH_PAIRS=rivals|ties|fresh-meat|pick plays a Pairs season (CH_SHAPE=same for men's and women's pairs)
+  const pairing = process.env.CH_PAIRS || null;
+  if (pairing === 'fresh-meat') {
+    const m = names.filter(n => background[n].gender === 'm'), f = names.filter(n => background[n].gender === 'f');
+    for (const [i, n] of m.entries()) background[n].rookie = i < 6;
+    for (const [i, n] of f.entries()) background[n].rookie = i >= 6;
+  }
   setPlayers(cast);
-  const r = playChallengeSeason({ cast: names, background, seed });
+  const r = playChallengeSeason({ cast: names, background, seed, options: pairing ? { pairs: { pairing, shape: process.env.CH_SHAPE || 'mixed' } } : {} });
   airSeason(r.state);
   const out = [];
   const missing = {};
   for (const e of [...r.episodes, r.state.finalEp]) {
-    out.push(`\n==================== EPISODE ${e.ep}${e.final ? ' — THE FINAL' : ` — ${e.division === 'm' ? "men's" : "women's"} week` } ====================`);
+    out.push(`\n==================== EPISODE ${e.ep}${e.final ? ' — THE FINAL' : e.division === 'all' ? '' : ` — ${e.division === 'm' ? "men's" : "women's"} week` } ====================`);
     let day = null, n = 0;
     for (const a of e.aired || []) {
       if (a.day !== day) { day = a.day; out.push(`\n— Day ${day} —`); }
@@ -46,5 +53,5 @@ it('writes a season to read', () => {
   }
   out.push(`\nNo lines yet: ${Object.entries(missing).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', ')}`);
   mkdirSync('transcripts', { recursive: true });
-  writeFileSync(`transcripts/ch-season-${seed}.txt`, out.join('\n'));
+  writeFileSync(`transcripts/ch-season-${pairing ? pairing + "-" : ""}${seed}.txt`, out.join('\n'));
 });

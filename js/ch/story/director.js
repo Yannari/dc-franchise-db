@@ -58,20 +58,26 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   // who they would pick, and the one picked hearing it (wishlist.js)
   'arena-wishlist', 'wishlist-leak',
   // late arrivals (ep-twists.js)
-  'late-arrival', 'late-sizeup']);
+  'late-arrival', 'late-sizeup',
+  // a Pairs season's spine (pairs.js, pair-week.js, share-keep.js)
+  'pairs-revealed', 'pair-reveal', 'pair-voted-in', 'pair-volunteer-in', 'pair-volunteer', 'pair-after-vote', 'pair-callout', 'pair-arena',
+  'pair-turn', 'pair-war', 'partner-left', 'pair-repaired', 'pair-swap', 'partner-swap', 'share-keep-rules', 'share-keep']);
 const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-merge', 'arena-eve-confront', 'arena-eve-pep',
   'arena-eve-alone', 'morning-after', 'fight', 'team-blame', 'partner-blame', 'throw-caught', 'jealousy', 'receipts',
   'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout', 'spark', 'party-deal', 'party-tears', 'expelled-victim',
-  'injury-target', 'injury-care', 'home-gossip', 'home-guilt', 'ranking-beef', 'pass-panic', 'money-talk', 'bank-brag', 'redemption-watch', 'redemption-feud']);
+  'injury-target', 'injury-care', 'home-gossip', 'home-guilt', 'ranking-beef', 'pass-panic', 'money-talk', 'bank-brag', 'redemption-watch', 'redemption-feud',
+  'pair-fight', 'pair-makeup', 'pair-protect', 'pair-want-out', 'pair-jealous', 'pair-arena-blame', 'pair-arena-win', 'pair-eve', 'pair-volunteer-refused']);
 const STORY = new Set(['gym-training', 'pool-games', 'house-dinner', 'beach-run', 'sunset-talk', 'bunk-whisper', 'deal', 'alliance-grow', 'alliance-switch', 'alliance-leave', 'alliance-end', 'apology', 'scheme-lie', 'loyalty-test',
   'ride-to-the-final', 'psyche', 'homesick', 'call-home', 'home-talk', 'gossip-backfire', 'ex-in-the-house', 'trash-talk',
-  'vet-dismisses', 'vet-mentors-rookie', 'beach-date', 'hot-tub-truths', 'show-banter', 'rookie-hazing', 'throw', 'injury-healed', 'pass-flex']);
-const WARM = new Set(['flirt', 'beach-date', 'spark', 'vet-mentors-rookie', 'apology', 'hot-tub-truths', 'arena-eve-pep']);
-const ROW = new Set(['mock', 'gloat', 'payback', 'fight', 'fight-physical', 'kitchen-blowup', 'receipts', 'trash-talk', 'partner-blame', 'jealousy']);
-const CAPS = { spark: 2, meeting: 2, recruit: 2, plea: 2, 'leverage-threat': 1, 'counter-pitch': 1, 'spare-deal': 1, 'arena-eve-pep': 2, 'arena-eve-alone': 1 };
+  'vet-dismisses', 'vet-mentors-rookie', 'beach-date', 'hot-tub-truths', 'show-banter', 'rookie-hazing', 'throw', 'injury-healed', 'pass-flex', 'pair-plan']);
+const WARM = new Set(['flirt', 'beach-date', 'spark', 'vet-mentors-rookie', 'apology', 'hot-tub-truths', 'arena-eve-pep', 'pair-makeup']);
+const ROW = new Set(['mock', 'gloat', 'payback', 'fight', 'fight-physical', 'kitchen-blowup', 'receipts', 'trash-talk', 'partner-blame', 'jealousy', 'pair-fight']);
+// a Pairs season's premiere names twelve pairs: TJ reads the list, and the house sees the best of the reactions
+const CAPS = { spark: 2, meeting: 2, recruit: 2, plea: 2, 'leverage-threat': 1, 'counter-pitch': 1, 'spare-deal': 1, 'arena-eve-pep': 2, 'arena-eve-alone': 1,
+  'pair-reveal': 5, 'partner-carried': 2, 'partner-blame': 2 };
 const DAY_BUDGET = 7;   // non-must scenes per day, before the vote (or before the Arena)
 const AFTER_BUDGET = 7; // ...and after it: the night after the vote, the night after the Arena
-const ANCHOR = new Set(['voted-in', 'volunteer-in', 'arena']);
+const ANCHOR = new Set(['voted-in', 'volunteer-in', 'arena', 'pair-voted-in', 'pair-volunteer-in', 'pair-arena']);
 
 const baseTier = k => (MUST.has(k) ? 0 : DUE.has(k) ? 1 : STORY.has(k) ? 2 : 3);
 
@@ -103,6 +109,11 @@ const RECAP = {
   'alliance-leave': '{0} is out of the alliance {1} is in.',
   meeting: '{0}\'s alliance has been meeting behind closed doors.',
   recruit: '{1} agreed to vote with {0}\'s group.',
+  // a Pairs season: the two of a pair
+  'pair-fight': '{0} and {1} have been at each other\'s throats since their last row.',
+  'pair-arena-blame': '{1} hasn\'t forgotten {0} blaming {1.obj} for the Arena.',
+  'pair-want-out': '{0} has been telling people {0.sub} wants a new partner, and {1} knows it.',
+  'pair-reveal': 'Production put {0} and {1} together, and neither of them asked for it.',
 };
 function recapLine(state, causeScene) {
   const t = RECAP[causeScene.kind];
@@ -211,7 +222,7 @@ export function airEpisode(state, epRec, prevRec = null) {
           feud.status = 'closed';
         }
       }
-      if (s.kind === 'voted-in') {
+      if (s.kind === 'voted-in' || s.kind === 'pair-voted-in') {
         const vote = epRec.votes.find(v => v.votedIn === s.who[0]);
         if (vote) aired.push({ day, kind: 'ceremony', scene: s, ceremony: writeVote(state, epRec, vote, day) });
         continue;
@@ -258,6 +269,7 @@ const NEXT_MORNING = new Set(['morning-after', 'arc-giant-falls', 'tj-at-breakfa
 const MORNING_FIXTURES = new Set(['previously', 'power-rankings', 'return-arena', 'return-walkin', 'redemption-return', 'arrival', 'villa-reveal', 'injury-healed']);
 const MOVABLE = a => a.kind !== 'ceremony' && !ANCHOR.has(a.kind) && !MUST_ORDER.has(a.kind);
 const MUST_ORDER = new Set(['daily', 'callout', 'arena', 'arena-goodbye', 'return', 'morning-after', 'purge', 'named-fallout', 'mock', 'gloat',
+  'pair-callout', 'pair-arena', 'pair-arena-blame', 'pair-arena-win', 'share-keep-rules', 'share-keep', 'pairs-revealed', 'pair-reveal',
   // the final is told in the order it ran: TJ's "you stay out here until morning" opened the final before its start line
   'final-start', 'final-cp', 'instant-elimination', 'final-lastword', 'overnight', 'overnight-sabotage', 'overnight-talk', 'overnight-quit',
   'final-pact-help', 'final-pact-broken', 'final-podium', 'final-congrats', 'champions', 'champion-reflect']);
@@ -273,7 +285,7 @@ function morningFirst(aired) {
     while (items.length && MORNING_FIXTURES.has(items[0].kind)) head.push(items.shift());
     // the morning after an Arena is tomorrow (the viewer's clock moves it to the next day): it airs after the
     // Arena night, not in the middle of it, or the night that follows was clocked into the next morning too
-    const arenaAt = items.findIndex(x => x.kind === 'arena');
+    const arenaAt = items.findIndex(x => x.kind === 'arena' || x.kind === 'pair-arena');
     const tomorrow = x => arenaAt >= 0 && NEXT_MORNING.has(x.kind) && items.indexOf(x) > arenaAt;
     const today = items.filter(x => !tomorrow(x));
     out.push(...head, ...today.filter(isMorning), ...today.filter(a => !isMorning(a)), ...items.filter(tomorrow));
@@ -284,7 +296,9 @@ function morningFirst(aired) {
 function keepWithTheDaily(aired) {
   const out = [];
   const days = new Set(aired.filter(a => a.kind === 'daily').map(a => a.day));
-  const held = aired.filter(a => AT_THE_DAILY.has(a.kind) && days.has(a.day));
+  // a draft season's pairs are picked at the daily, off its results (pairs.js): the picks stay with it
+  const atDaily = a => AT_THE_DAILY.has(a.kind) || (['pairs-revealed', 'pair-reveal', 'picked-last'].includes(a.kind) && a.scene?.spot === 'challenge');
+  const held = aired.filter(a => atDaily(a) && days.has(a.day));
   for (const a of aired) {
     if (held.includes(a)) continue;
     out.push(a);

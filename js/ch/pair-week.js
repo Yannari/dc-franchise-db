@@ -20,7 +20,9 @@ import { tjVerdict, calloutCost } from './tj.js';
 import { removePlayer } from './exits.js';
 import { returnToHouse } from './house.js';
 import { morningAfter } from './fallout.js';
-import { calledOut, arenaWon, remember } from './rel.js';
+import { calledOut, arenaWon, remember, grudgeOf, intimidated } from './rel.js';
+import { S } from './state.js';
+import { addBond } from '../bonds.js';
 import { arenaPurse, hurt, medicalRisk, earnPass } from './stakes.js';
 import { injuryRoll } from './arena.js';
 import { arenaGoodbye } from './goodbye.js';
@@ -177,6 +179,52 @@ export function pairArenaDay(state, { R, epRec, matches, delib, closing }) {
     const forL = l => (asVotedIn && m.vote ? { ...m.vote, ballots: m.vote.ballots.map(x => (x.target === a ? { ...x, target: l } : x)) } : m.vote);
     epRec.fallout = (epRec.fallout || []).concat(losers.map((l, i) => morningAfter(state, { duel: { ...duel, loser: l }, vote: forL(l),
       callout: { ...m.callout, by: asVotedIn ? l : by }, meetings: delib?.meetings || [], rng: R(`payback${k}${i}`), volunteer: m.volunteer })));
+  }
+}
+
+// ── the night before, and the day of the Arena ───────────────────────
+// A Pairs season's night before is the pair's own: the two of them going in, sitting up together (close, nervous, or
+// barely speaking), and somebody from the pair they mean to pick, who can tell, asking.
+export function pairEve(state, rng, m) {
+  const A = membersOf(state, m.a), B = membersOf(state, m.b);
+  if (A.length === 2 && A.every(n => state.active.includes(n))) {
+    const bond = getBond(A[0], A[1]);
+    const mood = bond >= 2 ? 'close' : bond <= -2 ? 'cold' : 'nervous';
+    if (mood === 'close') { addBond(A[0], A[1], 0.4); for (const n of A) nudge(state, n, 'confidence', 0.5); }
+    else if (mood === 'cold') { addBond(A[0], A[1], -0.3); for (const n of A) nudge(state, n, 'confidence', -0.2); }
+    else { addBond(A[0], A[1], 0.2); for (const n of A) nudge(state, n, 'morale', 0.2); }
+    addScene(state, 'pair-eve', A, { mood }, A, mood === 'close' ? 'beach' : 'villa');
+  }
+  // the one from the other pair with the worst feeling about it goes to ask
+  const asker = [...B].filter(n => state.active.includes(n)).sort((x, y) => (grudgeOf(y, m.a) + S(y, 'boldness') * 0.2) - (grudgeOf(x, m.a) + S(x, 'boldness') * 0.2))[0];
+  if (!asker) return;
+  const heat = grudgeOf(asker, m.a) + S(asker, 'boldness') * 0.2 - S(asker, 'temperament') * 0.1;
+  if (rng() < Math.min(0.7, Math.max(0.05, heat * 0.12))) {
+    const won = S(asker, 'boldness') + rng() * 4 > S(m.a, 'temperament') + rng() * 4;
+    intimidated(won ? asker : m.a, won ? m.a : asker, 0.6);
+    nudge(state, won ? m.a : asker, 'confidence', -0.4);
+    addBond(m.a, asker, -0.6);
+    addScene(state, 'arena-eve-confront', [asker, m.a], { rattled: won ? m.a : asker, pair: true }, state.active, 'pool');
+  }
+}
+
+// The day of the Arena: the pair going in talks the pick through between them (two pairs it could be), and the pairs
+// who could be picked wait it out together.
+export function pairPickDay(state, rng, m) {
+  if (m.volunteer || !state.active.includes(m.a)) return;
+  const A = membersOf(state, m.a);
+  const open = reps(state, (m.pool || []).filter(n => state.active.includes(n)));
+  const other = open.filter(r => r !== m.b).sort((x, y) => getBond(m.a, x) - getBond(m.a, y))[0];
+  if (other && A.length === 2) {
+    const options = rng() < 0.5 ? [m.b, other] : [other, m.b];
+    addBond(A[0], A[1], 0.2);
+    addScene(state, 'pick-talk', A, { options, pair: true }, A, 'private');
+  }
+  const worried = [...open].sort((x, y) => getBond(m.a, x) - getBond(m.a, y)).slice(0, 2);
+  if (worried.length === 2) {
+    const who = worried.flatMap(r => membersOf(state, r)).slice(0, 4);
+    for (const x of who) for (const y of who) if (x < y) addBond(x, y, 0.2);
+    addScene(state, 'pick-guess', who, { by: m.a, pair: true }, who, 'private');
   }
 }
 

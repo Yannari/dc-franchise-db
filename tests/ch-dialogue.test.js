@@ -9,7 +9,9 @@ import { VOICE_TAGS } from '../js/td/story/voice.js';
 import { challengeCast } from './helpers/ch-cast.js';
 
 const FAMILIES = ['sharp', 'dry', 'loud', 'soft', 'odd'];
-const SLOTS = new Set(['a', 'b', 'c', 'd', 'tj', 'target', 'alliance', 'game', 'gone', 'show_a', 'show_b', 'count', 'need', 'reason', 'alt', 'x', 'y', 'z', 'opt1', 'opt2', 'part', 'token', 'amount', 'second', 'case', 'altcase', 'beef', 'caller', 'called', 'home', 'from', 'to', 'against']);
+const SLOTS = new Set(['a', 'b', 'c', 'd', 'tj', 'target', 'alliance', 'game', 'gone', 'show_a', 'show_b', 'count', 'need', 'reason', 'alt', 'x', 'y', 'z', 'opt1', 'opt2', 'part', 'token', 'amount', 'second', 'case', 'altcase', 'beef', 'caller', 'called', 'home', 'from', 'to', 'against',
+  // a Pairs season: the partners of a, b, c, d and of the target, alt, a pick-talk's options; the target's partner; a place
+  'pa', 'pb', 'pc', 'pd', 'pt', 'palt', 'pgone', 'popt1', 'popt2', 'target2', 'place']);
 
 describe('The Challenge pools', () => {
   it('gate only on known facts, key variants only on real voices, and name only real slots', () => {

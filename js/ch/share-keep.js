@@ -106,7 +106,7 @@ export function shareOrKeep(state, rng, pairs) {
     }
     out.push(d);
     addScene(state, 'share-keep', [chooser, partner], { keep, amount: prize, place: p.place, why: d.why, hesitate: d.hesitate, watching,
-      champions: p.place === 1 }, state.active, 'final');
+      champions: p.place === 1, rivals: p.pair?.how === 'rivals' }, state.active, 'final');
   }
   return out;
 }

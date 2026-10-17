@@ -52,7 +52,7 @@ import { wishlist } from './wishlist.js';
 import { worstSting } from './daily/named.js';
 import { mockAfterDaily, gloatAfterVote } from './cruel.js';
 import { pairsOn, makeSeasonPairs, unitsLeft, partnerSwap, pairArcs } from './pairs.js';
-import { pairVoteNight, pairArenaDay } from './pair-week.js';
+import { pairVoteNight, pairArenaDay, pairEve, pairPickDay } from './pair-week.js';
 import { redemptionOn, houseTakes, sendToRedemption, redemptionWatch, redemptionNight, returnFromRedemption, closeForFinal } from './redemption.js';
 
 // The Tribunal: the daily's winners, or the three who did best on a winning team.
@@ -338,18 +338,14 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       // the mean ones: somebody mocks whoever choked or came last (cruel.js)
       mockAfterDaily(state, R('mock'), daily);
       // somebody at risk this week says who they would call out, and who they never would (wishlist.js)
-      wishlist(state, R('wish'), { division, immune: daily.winners || [] });
+      // (not in a Pairs season: a pair calls out a pair, and the pair talks it through on the day: pair-week.js)
+      if (!pairsOn(state)) wishlist(state, R('wish'), { division, immune: daily.winners || [] });
       // the purge: the slowest goes home before anybody can vote, and that is this week's elimination
       if (twist === 'purge' && elimsFor(schedule, idx, unitsLeft(state) - FINAL_UNITS + returnsAhead(idx)) > 0) {
         purged = purge(state, daily, division);
         if (purged) { epRec.purged = purged; epRec.exits.push({ name: purged, how: 'purge' }); syncActive(state); }
       }
     };
-    // a Pairs season's pairs, before anybody plays (Rivals, Exes): TJ names them at the airstrip
-    if (premiere && pairsOn(state) && ['rivals', 'ties'].includes(opts.pairs.pairing || 'rivals')) {
-      makeSeasonPairs(state, R('pairs'), { pins: opts.pairs.pins || {} });
-      epRec.pairs = state.pairs.map(p => [p.a, p.b]);
-    }
     // Partner Swap (the Format Designer): every pair redrawn by the season's own rule
     if (twist === 'swap' && pairsOn(state) && !premiere) { const sw = partnerSwap(state, R('swap')); if (sw) { epRec.swap = sw; epRec.pairs = sw.after; } }
     if (premiere) {
@@ -358,6 +354,12 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
         // two people who were something to each other before: they find each other first, and the house sees it
         if (kin) addBond(a, b, kin === 'couple' ? 0.6 : 0.4);
         addScene(state, 'arrival', [a, b], { recognised: [[a, b]], ...(kin ? { kin } : {}) }, cast, 'airstrip');
+      }
+      // a Pairs season's pairs, before anybody plays (Rivals, Exes): TJ names them at the airstrip, once everybody
+      // has landed and found the people they know
+      if (pairsOn(state) && ['rivals', 'ties'].includes(opts.pairs.pairing || 'rivals')) {
+        makeSeasonPairs(state, R('pairs'), { pins: opts.pairs.pins || {} });
+        epRec.pairs = state.pairs.map(p => [p.a, p.b]);
       }
       runDaily();
       const looking = [...state.active].sort((x, y) => S(y, 'boldness') - S(x, 'boldness'));
@@ -487,7 +489,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     // Redemption House watches the vote on the television
     if (redemptionOn(state)) redemptionWatch(state, epRec.votes.flatMap(v => v.ballots || []));
     // ── The night before: the two who are going in, and the people around them ──
-    for (const m of matches) arenaEve(state, R(`eve${m.a}`), m);
+    for (const m of matches) (pairsOn(state) ? pairEve : arenaEve)(state, R(`eve${m.a}`), m);
     // the rest of the house that night (the user, 2026-10-15: the villa after the vote was "four events,
     // short, boring and useless")
     houseBeats(state, R('eveBeats'), { night: true, min: 2, max: 3 });
@@ -499,7 +501,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     // and the people who might be picked, waiting
     houseDay(state, R('house3'));
     houseBeats(state, R('beats3am'), { min: 2, max: 3 });
-    for (const m of matches) pickDay(state, R(`pick${m.a}`), m);
+    for (const m of matches) (pairsOn(state) ? pairPickDay : pickDay)(state, R(`pick${m.a}`), m);
     if (pairsOn(state)) pairArenaDay(state, { R, epRec, matches, delib, closing: (state.plannedEpisodes || schedule.length) - (idx + 1) <= 2 });
     else for (const [k, m] of matches.entries()) {
       if (!state.active.includes(m.a) || !state.active.includes(m.b)) continue;

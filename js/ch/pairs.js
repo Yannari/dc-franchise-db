@@ -205,14 +205,17 @@ export function makeSeasonPairs(state, rng, { pins = {}, today = {}, winners = [
   state.lone = [...(rest.left.length % 2 ? [rest.left.at(-1)] : [])];
   for (const p of all) addPair(state, p);
   // the reveal: TJ names them, the house reacts; then each pair's first moment
-  addScene(state, 'pairs-revealed', state.active, { pairs: state.pairs.map(p => [p.a, p.b]), method }, state.active, method === 'rivals' || method === 'ties' ? 'airstrip' : 'challenge');
-  for (const p of state.pairs) {
+  // a Rivals season with little real history: TJ says so, instead of promising grudges nobody has
+  const history = state.pairs.filter(p => p.how === 'rivals' && p.why !== 'guess').length;
+  const shown = method === 'rivals' && history < state.pairs.length / 2 ? 'rivals-new' : method;
+  addScene(state, 'pairs-revealed', state.active, { pairs: state.pairs.map(p => [p.a, p.b]), method: shown }, state.active, method === 'rivals' || method === 'ties' ? 'airstrip' : 'challenge');
+  for (const [i, p] of state.pairs.entries()) {
     // walking in tied to each other is felt at once: rivals sour, a couple or family warm
     const word = p.kin ? tieWord(p.kin) : null;
     if (p.how === 'rivals') { addBond(p.a, p.b, p.why === 'guess' ? -0.2 : -0.6); nudge(state, p.a, 'morale', -0.3); nudge(state, p.b, 'morale', -0.3); }
     else if (word === 'couple' || word === 'family') addBond(p.a, p.b, 0.6);
     else if (word === 'ex') addBond(p.a, p.b, -0.3);
-    addScene(state, 'pair-reveal', [p.a, p.b], { how: p.how, why: p.why, kin: p.kin || null, tie: word }, state.active, method === 'rivals' || method === 'ties' ? 'airstrip' : 'challenge');
+    if (i > 0) addScene(state, 'pair-reveal', [p.a, p.b], { how: p.how, why: p.why, kin: p.kin || null, tie: word }, state.active, method === 'rivals' || method === 'ties' ? 'airstrip' : 'challenge');
   }
   return state.pairs;
 }
@@ -498,7 +501,7 @@ export function pairArcs(state) {
       for (const n of [p.a, p.b]) nudge(state, n, 'morale', 0.8);
       addScene(state, 'pair-turn', [p.a, p.b], { rivals: p.how === 'rivals', low: +arc.low.toFixed(1) }, state.active, 'villa');
       out.push({ pair: [p.a, p.b], arc: 'turned' });
-    } else if (!arc.war && b <= -6) {
+    } else if (!arc.war && b <= -6 && state.ep >= 2) {
       arc.war = true;
       for (const n of [p.a, p.b]) nudge(state, n, 'morale', -0.6);
       addScene(state, 'pair-war', [p.a, p.b], { rivals: p.how === 'rivals' }, state.active, 'villa');

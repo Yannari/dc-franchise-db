@@ -91,6 +91,22 @@ function rule(sc) {
     // ── the spine, filed so a story can end there ──
     case 'callout': return F('spine', 'callout', d.reason);
     case 'arena': return F('spine', 'arena');
+    // ── a Pairs season: the pair as a story (pairs.js) ──
+    case 'pair-reveal': return F('pair', 'reveal', d.how);
+    case 'pair-fight': return F('pair', 'fight', d.cause);
+    case 'pair-makeup': return F('pair', 'makeup', d.takes ? 'takes' : 'rejected');
+    case 'pair-protect': return F('pair', 'protect', d.moved ? 'moved' : 'held');
+    case 'pair-plan': return F('pair', 'plan');
+    case 'pair-want-out': return F('pair', 'want-out');
+    case 'pair-jealous': return F('pair', 'jealous');
+    case 'pair-turn': return F('pair', 'turn');
+    case 'pair-war': return F('pair', 'war');
+    case 'pair-arena-blame': return F('pair', 'blame');
+    case 'pair-arena-win': return F('pair', 'arena', d.carried ? 'carried' : 'together');
+    case 'pair-eve': return F('pair', 'eve', d.mood);
+    case 'share-keep': return F('pair', 'money', d.keep ? 'keep' : 'share');
+    case 'pair-callout': return F('spine', 'callout', d.reason);
+    case 'pair-arena': return F('spine', 'arena');
     // ── life ──
     case 'kitchen-disaster': case 'gym-flex': case 'hot-tub-truths': case 'tj-at-breakfast':
     case 'homesick': case 'psyche': case 'call-home': case 'daily-clutch': case 'daily-choke': case 'home-talk':
@@ -107,7 +123,7 @@ function keyOf(type, sc, state) {
   const [a, b] = sc.who;
   const pair = [a, b].filter(Boolean).sort().join('|');
   switch (type) {
-    case 'feud': case 'showmance': return pair;
+    case 'feud': case 'showmance': case 'pair': return pair;
     case 'alliance': {
       const id = sc.data?.alliance ?? state.alliances.find(x => x.members.includes(a) && x.members.includes(b))?.id;
       return id != null ? `al:${id}` : `pair:${pair}`;
@@ -142,6 +158,10 @@ export const NEEDS = {
   'showmance.jealous': ['together', 'date', 'spark'],
   'showmance.breakup': ['together', 'date', 'jealous'],
   'rookies.uprising': null,
+  // a pair's arc: making up answers a fight; the turn and the war answer what came before them
+  'pair.makeup': ['fight', 'blame', 'want-out', 'jealous'],
+  'pair.turn': ['reveal', 'fight', 'makeup', 'blame'],
+  'pair.war': ['reveal', 'fight', 'want-out', 'blame'],
 };
 
 export function book(state) {

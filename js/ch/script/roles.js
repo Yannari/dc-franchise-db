@@ -328,12 +328,87 @@ export const ROLES = {
   'final-podium': sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   'final-congrats': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.gracious ? 'gracious' : 'bitter' }),
   'final-lastword': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.when === 'instant' ? 'instant' : sc.data.place === 2 ? 'second' : 'finished' }),
+
+  // ── a Pairs season (ch/pairs.js, pair-week.js, share-keep.js; spec 2026-10-17) ──
+  // {pa} {pb} {pc} {pd}: the partner of a, b, c, d as the scene happened (rolesOf adds them); {pt}: the target's.
+  // TJ names the pairs; a and b are the first pair called up
+  'pairs-revealed': sc => ({ roles: { a: sc.data.pairs?.[0]?.[0], b: sc.data.pairs?.[0]?.[1] }, ending: sc.data.method || 'rivals' }),
+  // one pair finding out who they are with: a picked b (a draft), or production put them together
+  'pair-reveal': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: pairRevealEnding(sc.data) }),
+  'pair-volunteer': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.who[2] ? 'targeted' : 'open' }),
+  'pair-volunteer-refused': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  'pair-volunteer-in': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  'pair-voted-in': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { count: sc.data.count >= 2 ? COUNT_WORD[sc.data.count] || String(sc.data.count) : undefined } }),
+  'pair-after-vote': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.stung || undefined }, ending: sc.data.stung ? 'stung' : 'any',
+    slots: { count: sc.data.count >= 2 ? COUNT_WORD[sc.data.count] || String(sc.data.count) : undefined } }),
+  // a decided it, b is the one it was about; c is a's partner, d is b's. Agreed: the reason; or one overruled the other
+  'pair-callout': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] },
+    ending: sc.data.volunteer ? 'volunteer' : sc.data.agreed ? (sc.data.reason === 'avoid-beast' ? 'survive' : sc.data.reason) : sc.data.overruled ? 'overruled' : 'compromise',
+    slots: { game: sc.data.gameName || undefined } }),
+  // a, b: the winners; c, d: the losers
+  'pair-arena': sc => ({ roles: { a: sc.data.winners?.[0], b: sc.data.winners?.[1], c: sc.data.losers?.[0], d: sc.data.losers?.[1] }, ending: sc.data.tj, slots: { game: sc.data.gameName } }),
+  // inside a pair after a two-on-two: a did more, b less
+  'pair-arena-blame': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.says ? 'said' : 'swallowed', slots: { game: sc.data.game || undefined } }),
+  'pair-arena-win': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.carried ? 'carried' : 'together', slots: { game: sc.data.game || undefined } }),
+  'pair-eve': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.mood || 'close' }),
+  'partner-left': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.how === 'quit' ? 'quit' : sc.data.how === 'disqualified' ? 'disqualified' : 'medical', slots: { gone: sc.data.gone } }),
+  'pair-repaired': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { gone: sc.data.gone } }),
+  // a took b from d, and left c (a's old partner) to pair with d
+  'pair-swap': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: 'any' }),
+  'partner-swap': sc => ({ roles: { a: sc.data.after?.[0]?.[0], b: sc.data.after?.[0]?.[1] }, ending: 'any' }),
+  'pair-fight': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.cause || 'dislike' }),
+  'pair-makeup': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.takes ? 'takes' : 'rejected' }),
+  // a works b (a voter) for c (a's partner)
+  'pair-protect': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.moved ? 'moved' : 'held' }),
+  // a tells b (a friend) they want out; c is the partner, who hears it or does not
+  'pair-want-out': sc => ({ roles: { a: sc.who[0], b: sc.data.friend || undefined, c: sc.data.partner }, ending: sc.data.heard ? 'heard' : 'quiet' }),
+  'pair-plan': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { target: sc.data.target, target2: sc.data.targetPartner } }),
+  'pair-jealous': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.says ? 'said' : 'kept' }),
+  'pair-turn': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.rivals ? 'rivals' : 'any' }),
+  'pair-war': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  'share-keep-rules': sc => ({ roles: { a: sc.data.pairs?.[0]?.[0], b: sc.data.pairs?.[0]?.[1] }, ending: 'any' }),
+  // a chose, b waited
+  'share-keep': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.keep ? 'keep' : 'share',
+    slots: { amount: money(sc.data.amount), place: PLACE_WORD[sc.data.place] || undefined } }),
+};
+
+const PLACE_WORD = { 1: 'first', 2: 'second', 3: 'third', 4: 'fourth' };
+const money = n => '$' + Math.round(n || 0).toLocaleString('en-US');
+function pairRevealEnding(d = {}) {
+  if (d.how === 'fresh-meat') return 'drafted';
+  if (d.how === 'pick') return 'picked';
+  if (d.tie === 'couple') return 'couple';
+  if (d.tie === 'ex' || d.why === 'ex') return 'ex';
+  if (d.tie === 'family') return 'family';
+  if (d.how === 'rivals') return d.why === 'guess' ? 'strangers' : 'rivals';
+  if (d.how === 'ties' && d.why === 'guess') return 'unmatched';
+  if (d.tie === 'friends' || d.why === 'friends') return 'friends';
+  return d.why === 'cold' ? 'rivals' : 'strangers';
+}
+
+// A Pairs season gives some solo kinds a pair shape: the scene is the same event, with both partners in it.
+const PAIR_ROLES = {
+  purge: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { game: sc.data.daily || undefined } }),
+  'instant-elimination': sc => ({ roles: { a: sc.data.winners?.[0], b: sc.data.winners?.[1], c: sc.data.losers?.[0], d: sc.data.losers?.[1] }, ending: 'any' }),
+  'final-congrats': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.gracious ? 'gracious' : 'bitter' }),
+  'return-arena': sc => ({ roles: { a: sc.data.winners?.[0], b: sc.data.winners?.[1], c: sc.data.losers?.[0], d: sc.data.losers?.[1] }, ending: 'any',
+    slots: { game: sc.data.gameName || undefined, target: sc.data.by || undefined } }),
+  // the champions looking back on the money: a chose
+  'champion-reflect': sc => ({ roles: { a: sc.data.chooser || sc.who[0], b: sc.who.find(x => x !== (sc.data.chooser || sc.who[0])) }, ending: sc.data.keep ? 'kept' : 'shared' }),
+  'arena-reveal': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { game: sc.data.gameName } }),
 };
 
 export function rolesOf(scene, state) {
-  const f = ROLES[scene.kind];
+  const f = (scene.data?.pair && PAIR_ROLES[scene.kind]) || ROLES[scene.kind];
   if (!f) return null;
   const r = f(scene, state);
+  // a Pairs season: each part's partner as the scene happened ({pa} is a's, {pt} the target's), for the pair lines
+  const partners = scene.snap?.partners;
+  if (partners) {
+    r.slots ||= {};
+    for (const k of ['a', 'b', 'c', 'd']) if (r.roles[k] && partners[r.roles[k]] && r.slots['p' + k] == null) r.slots['p' + k] = partners[r.roles[k]];
+    for (const [k, v] of [['pt', r.slots.target], ['palt', r.slots.alt], ['pgone', r.slots.gone], ['popt1', r.slots.opt1], ['popt2', r.slots.opt2]]) if (typeof v === 'string' && partners[v]) r.slots[k] = partners[v];
+  }
   // Drop empty parts, so a line for c is never picked for a two-person scene.
   for (const k of Object.keys(r.roles)) if (!r.roles[k]) delete r.roles[k];
   // Everybody else in the conversation, in order, as x, y and z (the user, 2026-10-15: "we have group

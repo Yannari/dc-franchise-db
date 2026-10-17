@@ -235,7 +235,11 @@ export function tdMergeScreen(ep, m, o = {}) {
   const venue = venueOf(ep, o);
   const V = VENUES[venue];
   const steps = [];
-  const { key, places } = gather(venue, V.public, 'day', m.participants, host);
+  // the set holds ten: the coaches who become players today are on it first, or the host announces only the ones who
+  // happened to fit (the user, 2026-10-17: "the host only announce Bowie" with Julia and Thom promoted too; a promoted
+  // coach is pushed onto the end of the player list, past the tenth place)
+  const promoted = (ep.coachPromotions || []).map(p => p.name).filter(n => m.participants.includes(n));
+  const { key, places } = gather(venue, V.public, 'day', [...promoted, ...m.participants.filter(n => !promoted.includes(n))], host);
   steps.push({ k: 'scene', spot: V.public, tod: 'day', plate: key, place: placeName(V.public), time: '9:00 AM', card: true, focus: [], bg: [], places, host });
   // the day itself (merge.js): the news, reunions, rivals, the threat, the alliance counting votes, the bottom
   steps.push(...mergeDay({ ep, m, host, places }));

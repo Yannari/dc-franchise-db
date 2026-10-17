@@ -487,8 +487,11 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       pop(winner, duel.comeback ? 2 : duel.upset ? 1.5 : 0.6);
       duel.tj = tjVerdict(state, duel);
       const toRedemption = houseTakes(state, idx);
+      // how the winner got here: voted in, volunteered, or called out by the other one (a line about "everybody
+      // who voted for me" needs a vote: facts.how)
+      const how = winner === m.a ? (m.volunteer ? 'volunteered' : 'voted') : 'calledout';
       addScene(state, 'arena', [m.a, m.b], { game: duel.game, winner, loser, upset: duel.upset, comeback: duel.comeback, tj: duel.tj, beats: duel.beats, gameName: duel.gameName,
-        redemption: toRedemption }, state.active, 'arena');
+        redemption: toRedemption, how }, state.active, 'arena');
       // the goodbye at the gate, while the loser is still here (goodbye.js); Redemption House is not a goodbye
       if (!toRedemption) {
         const asVotedIn = loser === m.a;

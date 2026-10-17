@@ -10,6 +10,94 @@
 //   home-guilt   a, in a showmance with b, with {home} at home. Endings: ends (a ends it), stays (they keep going),
 //                confess (a never told anybody about {home}, and b hears it now).
 export default {
+  // ── romance with somebody waiting at home (roles.js homeOf / attachedFirst; facts attachedA, attachedB). These
+  // join the ordinary pools ('+') and win when one of the two is spoken for. a is the one spoken for in a spark,
+  // a showmance or a date; in a flirt, a flirts and b answers, and either may be the one with {home}. ──
+  'spark.any+': [
+    { id: 'hs.s1', when: { attachedA: true }, turns: [
+      { beat: 'Late at night, {a} and {b} are the last two left by the pool.' },
+      { by: 'b', say: "You're not tired?" },
+      { by: 'a', say: "I'm exhausted. I just don't want to go in yet." },
+      { by: 'b', say: "Why not?" },
+      { by: 'a', say: "Because then this is over, and I'll have to think about it." },
+      { by: 'b', say: "Think about what?" },
+      { by: 'a', say: "Good night, {b}." },
+      { by: 'a', conf: "{home} is at home waiting for me, and I'm sitting by a pool at two in the morning not wanting {b} to go to bed. I know exactly how that looks." },
+    ] },
+    { id: 'hs.s2', when: { attachedA: true }, turns: [
+      { by: 'b', say: "You laugh at everything I say. Do you know that?" },
+      { by: 'a', say: "That's because you're funny." },
+      { by: 'b', say: "Nobody else thinks I'm funny." },
+      { by: 'a', say: "Then nobody else is listening." },
+      { beat: '{a} stops smiling and looks away for a second.' },
+      { by: 'a', conf: "I haven't done anything wrong. But I've thought about {b} more today than I've thought about {home} all week, and that's its own kind of problem." },
+    ] },
+    { id: 'hs.s3', when: { attachedA: true }, turns: [
+      { beat: '{a} and {b} sit on the roof, their shoulders almost touching.' },
+      { by: 'b', say: "Can I ask you something?" },
+      { by: 'a', say: "If it's about {home}, I don't know the answer." },
+      { by: 'b', say: "It wasn't. But now I want to know." },
+      { by: 'a', say: "{home} is a good person. That's the problem." },
+      { by: 'b', conf: "{a} has somebody at home. I keep reminding myself of that, and then {a} looks at me, and I forget again." },
+    ] },
+  ],
+  'flirt.back+': [
+    { id: 'hs.f1', when: { attachedA: true }, turns: [
+      { by: 'a', say: "Has anybody told you you're kind of distracting?" },
+      { by: 'b', say: "You're the one who keeps sitting next to me." },
+      { by: 'a', say: "Coincidence." },
+      { by: 'b', say: "Five times today?" },
+      { by: 'a', conf: "I keep telling myself it's harmless. It's flirting. {home} would understand. I don't actually believe any of that." },
+    ] },
+    { id: 'hs.f2', when: { attachedB: true }, turns: [
+      { by: 'a', say: "Save me a seat at dinner?" },
+      { by: 'b', say: "Maybe. If you're nice to me." },
+      { by: 'a', say: "I'm always nice to you." },
+      { by: 'b', say: "That's what worries me." },
+      { by: 'b', conf: "I have {home} at home, and I just flirted back. I didn't even think about it until after I'd done it." },
+    ] },
+  ],
+  'flirt.rebuffed+': [
+    { id: 'hs.r1', when: { attachedB: true }, turns: [
+      { by: 'a', say: "So what's your story? Are you single?" },
+      { by: 'b', say: "No. I'm with {home}." },
+      { by: 'a', say: "Oh. Right. Of course you are." },
+      { by: 'b', say: "It's fine. I'm flattered. I'm just not available." },
+      { by: 'a', conf: "I didn't know about {home}. Now I do, and I feel like an idiot." },
+    ] },
+    { id: 'hs.r2', when: { attachedA: true }, turns: [
+      { by: 'a', say: "You look good tonight." },
+      { by: 'b', say: "Aren't you with somebody? {home}?" },
+      { by: 'a', say: "I was just being friendly." },
+      { by: 'b', say: "Sure you were." },
+      { by: 'b', conf: "{a} has a partner at home and is out here telling people they look good. I'm not getting in the middle of that." },
+    ] },
+  ],
+  'showmance.any+': [
+    { id: 'hs.m1', when: { attachedA: true }, turns: [
+      { beat: 'The whole house watches {a} and {b} walk in from the beach together.' },
+      { by: 'b', say: "Everybody's staring." },
+      { by: 'a', say: "Let them." },
+      { by: 'b', say: "And {home}?" },
+      { by: 'a', say: "I'll deal with that when I get home." },
+      { by: 'a', conf: "I came in here with {home}, and now I'm with {b}. I know what people are going to say about me, and some of it is going to be true." },
+    ] },
+    { id: 'hs.m2', when: { attachedA: true }, turns: [
+      { by: 'a', conf: "It happened. {b} and I are a thing now." },
+      { by: 'a', conf: "{home} is going to watch this, and there's nothing I can say that makes it okay. I'm just not willing to stop." },
+    ] },
+  ],
+  'beach-date.any+': [
+    { id: 'hs.d1', when: { attachedA: true }, turns: [
+      { beat: '{a} and {b} walk along the waterline, away from the deck.' },
+      { by: 'b', say: "Do you ever feel guilty?" },
+      { by: 'a', say: "Every single day." },
+      { by: 'b', say: "But you're still here." },
+      { by: 'a', say: "I'm still here." },
+      { by: 'a', conf: "When I'm with {b}, I don't think about {home}. Then I go to bed, and I think about nothing else." },
+    ] },
+  ],
+
   // ── the airstrip: two people who walk in already something to each other (season.js arrivalKin) ──
   //   arrival.couple      a and b are together (came in as a couple, whatever show it started on)
   //   arrival.oldfriends  a and b were close on a season the franchise remembers. Never named: it may be any show.

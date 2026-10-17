@@ -364,7 +364,7 @@ export default {
       { by: 'a', conf: "Respect to {b} for getting in there. But I was never going to let that one get close." },
       { by: 'b', conf: "I'm going to be watching that back for a long time, trying to work out what I could have done. Probably nothing." },
     ] },
-    { id: 'an.wx4', turns: [
+    { id: 'an.wx4', when: { how: 'voted' }, turns: [
       { by: 'tj', say: "Two people, one Arena, and a game called {game}. Who wants to stay on this show?" },
       { by: 'a', say: "Me." },
       { by: 'b', say: "Me!" },

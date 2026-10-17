@@ -37,7 +37,7 @@ export default {
     ] },
   ],
   'arena.walkover': [
-    { id: 'rg.aw1', when: { register: 'schemer' }, turns: [
+    { id: 'rg.aw1', when: { register: 'schemer', how: 'voted' }, turns: [
       { by: 'tj', say: "The game is {game}. Players, on my go. Go!" },
       { beat: '{a} wins without ever looking worried.' },
       { by: 'tj', say: "{a}! Too easy! {b}, I'm sorry, buddy. Your Challenge is over." },

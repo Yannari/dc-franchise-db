@@ -145,7 +145,7 @@ export function writeScene(state, scene) {
   const pairKey = [r.roles.a, r.roles.b].filter(Boolean).sort().join('|');
   const rng = stableRng(state.seed, 'line', scene.id);
   // a line written for the scene's mood (an Arena return) or a fight's cause is how that scene sounds: it wins clearly
-  const entry = pickEntry(state.lineLedger, pools, key, facts, pairKey, rng, speakers, scene.day, { strong: ['mood', 'cause', 'crowd'] });
+  const entry = pickEntry(state.lineLedger, pools, key, facts, pairKey, rng, speakers, scene.day, { strong: ['mood', 'cause', 'crowd', 'attachedA', 'attachedB'] });
   if (!entry) return null;
   const hush = SECRET.has(scene.spot);
   // a voice flavors a scene; it does not take over every line of it. Two shouted lines and two jokes a speaker per

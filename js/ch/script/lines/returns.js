@@ -42,7 +42,7 @@ export default {
       { by: 'a', say: "No, really. I'd like to know who's next, so I can start training." },
       { by: 'a', conf: "{count} Arenas. Every time, they think they've finally got me. Every time, I'm back at dinner." },
     ] },
-    { id: 'rm.hs4', when: { mood: 'house' }, turns: [
+    { id: 'rm.hs4', when: { mood: 'house', how: 'voted' }, turns: [
       { beat: 'Nobody gets up when {a} comes in. They have stopped being surprised.' },
       { by: 'a', say: "Wow. No welcome back? I'm hurt." },
       { by: 'y', opt: 1, say: "You'll get over it." },
@@ -65,7 +65,7 @@ export default {
       { by: 'a', say: "Good. Because they're going to come at us again next week." },
       { by: 'a', conf: "The house thinks it can pick us off one at a time. It can't. They'll have to beat all of us." },
     ] },
-    { id: 'rm.al3', when: { mood: 'alliance' }, turns: [
+    { id: 'rm.al3', when: { mood: 'alliance', how: 'voted' }, turns: [
       { beat: 'The rest of {alliance} has saved {a} a seat in the middle of the couch.' },
       { by: 'x', opt: 1, say: "Sit. You've earned the good seat." },
       { by: 'a', opt: 'x', say: "I'll sit when we've decided who's next. Who voted for me?" },
@@ -102,7 +102,7 @@ export default {
       { by: 'a', conf: "They thought they were getting rid of me. All they did was give me a reason." },
     ] },
     // ── mockery ──
-    { id: 'rm.mk1', when: { mood: 'mock' }, turns: [
+    { id: 'rm.mk1', when: { mood: 'mock', how: 'voted' }, turns: [
       { beat: '{a} strolls in and takes a slow bow in the middle of the common room.' },
       { by: 'a', say: "Thank you, thank you. And a special thank you to everybody who voted for me. You made this possible." },
       { by: 'b', opt: 1, say: "You're enjoying this way too much." },
@@ -122,7 +122,7 @@ export default {
       { by: 'a', opt: 'x', say: "I'll smile later. Right now I need to know who flipped and who didn't." },
       { by: 'a', conf: "Winning the Arena buys me a week. I'm not going to waste a single day of it celebrating." },
     ] },
-    { id: 'rm.st2', when: { mood: 'strategy' }, turns: [
+    { id: 'rm.st2', when: { mood: 'strategy', how: 'voted' }, turns: [
       { by: 'a', say: "Okay. Who's talking to who? What did I miss?" },
       { by: 'x', opt: 1, say: "You literally just walked in." },
       { by: 'a', opt: 'x', say: "And things happen fast in here. Talk." },
@@ -166,7 +166,7 @@ export default {
       { by: 'a', opt: 'x', say: "Good! I want the whole island to hear!" },
       { by: 'a', conf: "One day you're the name everybody says at the vote, the next you're back in your bunk. I love this stupid game." },
     ] },
-    { id: 'rm.hp4', when: { mood: 'happy' }, turns: [
+    { id: 'rm.hp4', when: { mood: 'happy', how: 'voted' }, turns: [
       { by: 'a', say: "Group hug! Everybody! I don't care who voted for me!" },
       { by: 'b', opt: 1, say: "Even me?" },
       { by: 'a', opt: 'b', say: "Even you. Tonight. Tomorrow we'll talk." },

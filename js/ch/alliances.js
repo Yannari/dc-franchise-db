@@ -32,8 +32,25 @@ const APPETITE = {
 };
 const appetite = n => APPETITE[archetypeOf(n)] ?? 1;
 
-const ALLIANCE_NAMES = ['The Shipwreck Crew', 'Lagoon Sharks', 'The Riptide', 'Night Shift', 'The Old Guard',
-  'The Undertow', 'Coral Club', 'The Dock Rats', 'High Tide', 'The Bunk Six', 'Saltwater Syndicate', 'The Breakers'];
+// The user, 2026-10-16: "the alliance names are always the same". Twelve names taken in order made every season's
+// first alliance The Shipwreck Crew. A pool for who formed it (all vets, all rookies, a mix), drawn per season.
+const ALLIANCE_NAMES = {
+  any: ['The Shipwreck Crew', 'Lagoon Sharks', 'The Riptide', 'Night Shift', 'The Undertow', 'Coral Club', 'The Dock Rats',
+    'High Tide', 'The Bunk Six', 'Saltwater Syndicate', 'The Breakers', 'The Tide Pool', 'Rip Current', 'The Sandbar',
+    'Low Tide', 'The Deep End', 'Dead Calm', 'The Reef', 'Storm Front', 'The Lifeguards', 'Second Wind', 'The Driftwood Club',
+    'The Bonfire', 'Last Light', 'The Anchor', 'Rogue Wave', 'The Roof Crew', 'The Kitchen Table', 'Sunrise Club',
+    'The Hammocks', 'Black Flag', 'The Lagoon Pact', 'Ground Zero', 'The Heat', 'Firewall', 'The Long Game'],
+  vets: ['The Old Guard', 'The Veterans', 'Hall of Fame', 'The Dynasty', 'The Big Dogs', 'Old Money', 'The Legends', 'The Establishment'],
+  rookies: ['The New Blood', 'The Fresh Faces', 'Rookie Row', 'The Underdogs', 'The Newcomers', 'Day Ones', 'The Uprising'],
+};
+// The name a new group takes: one nobody in this season has used, drawn from the pool that fits it.
+export function allianceName(state, rng, members) {
+  const vets = members.filter(n => !state.rookie?.[n]).length;
+  const kind = vets === members.length ? 'vets' : vets === 0 ? 'rookies' : 'any';
+  const free = list => list.filter(x => !state.alliances.some(a => a.name === x));
+  const pool = (kind !== 'any' && rng() < 0.5 && free(ALLIANCE_NAMES[kind]).length) ? free(ALLIANCE_NAMES[kind]) : free(ALLIANCE_NAMES.any);
+  return pool.length ? pool[Math.floor(rng() * pool.length)] : `Alliance ${state.alliances.length + 1}`;
+}
 
 export const allianceOf = (state, name) => state.alliances.find(a => !a.ended && a.members.includes(name)) || null;
 export const activeAlliances = state => state.alliances.filter(a => !a.ended);
@@ -80,7 +97,7 @@ export function formAlliances(state, rng, { max = 3 } = {}) {
       if (want + (rng() - 0.5) * 2 > 1.2) members.push(n);
     }
     if (members.length < 3) continue;
-    const name = ALLIANCE_NAMES.find(x => !state.alliances.some(a => a.name === x)) || `Alliance ${state.alliances.length + 1}`;
+    const name = allianceName(state, rng, members);
     const al = { id: state.alliances.length + 1, name, leader, members, formedEp: state.ep, formedDay: state.day, ended: false,
       origin: members.every(m => state.origin[m] && state.origin[m] === state.origin[leader]) ? state.origin[leader] : null };
     state.alliances.push(al);

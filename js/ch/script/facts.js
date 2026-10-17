@@ -19,6 +19,8 @@ export const CH_FACT_KEYS = [
   'band', 'alliance', 'couple',
   // a's alliance holds a third of the house or more: only then may a drunk say it "decides everything"
   'strong',
+  // a or b is spoken for: a partner at home, not in the cast (state.atHome; {home} is the partner's name)
+  'attachedA', 'attachedB',
   // how a talks, and how b talks (a line written for the voice wins: pick.js)
   'register', 'registerB',
   // vets and rookies; the same original show
@@ -124,6 +126,7 @@ export function factsFor(scene, roles, state) {
     f.villain = VILLAIN.has(archOf(a));
     f.rookieA = !!state.rookie[a];
     f.allied = !!snap.allied;
+    f.attachedA = !!state.atHome?.[a];
   }
   if (a && b) {
     // The snapshot is about the scene's first two PEOPLE as recorded; the
@@ -134,6 +137,7 @@ export function factsFor(scene, roles, state) {
     f.registerB = registerOf(b);
     f.rookieB = !!state.rookie[b];
     f.sameShow = !!state.origin[a] && state.origin[a] === state.origin[b];
+    f.attachedB = !!state.atHome?.[b];
   }
   return f;
 }

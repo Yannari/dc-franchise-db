@@ -18,6 +18,16 @@ const CALLED = { snake: 'the biggest snake in the house', threat: 'the biggest t
   'next-in': 'the next one going into the Arena', coattails: 'the one riding coattails', 'never-trust': "the one you'd never trust" };
 const showName = slug => (slug && SHOWS[slug]?.name) || null;
 const yes = (v, a, b) => (v ? a : b);
+// Somebody at home (state.atHome): the partner's name for {home}, the first of the two who has one. A scene
+// that is the same both ways round (a spark, a showmance, a date) puts the one spoken for first, so a line
+// written for them is said by them (the user, 2026-10-16: Thom has a boyfriend outside, and a roof scene at
+// three in the morning never mentioned him).
+const homeOf = (st, a, b) => st.atHome?.[a]?.name || st.atHome?.[b]?.name || undefined;
+function attachedFirst(sc, st, ending) {
+  const [x, y] = sc.who;
+  const [a, b] = st.atHome?.[y] && !st.atHome?.[x] ? [y, x] : [x, y];
+  return { roles: { a, b }, ending, slots: { home: homeOf(st, a, b) } };
+}
 // a partner at home, by how serious it is (life stages: dating, public, living-together, engaged, married)
 const HOME_STAGE = { married: 'married', engaged: 'engaged', 'living-together': 'together' };
 
@@ -188,8 +198,9 @@ export const ROLES = {
   'gossip-backfire': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: yes(sc.data.tells, 'told', 'kept') }),
   homesick: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.data.comforted, 'comforted', 'alone') }),
   jealousy: sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: yes(sc.data.blowup, 'blowup', 'quiet') }),
-  flirt: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.data.back, 'back', 'rebuffed') }),
-  'beach-date': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  // a flirts, b answers: never swapped. {home}: whoever of them is spoken for (facts attachedA / attachedB)
+  flirt: (sc, st) => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.data.back, 'back', 'rebuffed'), slots: { home: homeOf(st, sc.who[0], sc.who[1]) } }),
+  'beach-date': (sc, st) => attachedFirst(sc, st, 'any'),
   pda: sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any' }),
   // somebody at home (events.js home-*): {home} is the partner's name; in the gossip, c (the one spoken for) and d
   // (who they are with) are talked about, never in the room
@@ -220,8 +231,8 @@ export const ROLES = {
   'rookie-uprising': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any' }),
   deal: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'deal-broken': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.how }),
-  spark: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
-  showmance: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  spark: (sc, st) => attachedFirst(sc, st, 'any'),
+  showmance: (sc, st) => attachedFirst(sc, st, 'any'),
   breakup: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   apology: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.data.accepted, 'accepted', 'rejected') }),
   psyche: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.need, slots: { need: sc.data.need } }),

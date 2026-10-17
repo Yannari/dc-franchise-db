@@ -23,6 +23,14 @@ import { nudge } from './mind.js';
 import { allianceOf, activeAlliances, formAlliances, growAlliances, leave, allianceShifts } from './alliances.js';
 import { dealBetween } from './callout.js';
 import { addRivalry } from './events.js';
+import { stableRng } from '../script/rng.js';
+
+export function allianceCap(state) {
+  const j = stableRng(state.seed, 'alliance-cap')();
+  const cap = Math.max(2, Math.min(5, Math.round(state.active.length / 6) + (j < 0.3 ? -1 : j > 0.8 ? 1 : 0)));
+  // the first days: fewer, the house still finding out who is who
+  return state.ep <= 1 ? Math.min(cap, j < 0.5 ? 2 : 3) : cap;
+}
 
 export function houseDay(state, rng) {
   // Hangs: each person spends the day with a few others, chosen by pull.
@@ -41,7 +49,9 @@ export function houseDay(state, rng) {
   // members walking away, defecting, groups merging or drifting apart (alliances.js)
   allianceShifts(state, rng);
   // New alliances where the house has drifted (and early, the first ones).
-  formAlliances(state, rng, { max: state.ep <= 1 ? 3 : 4 });
+  // How many groups the house holds at once (the user, 2026-10-16: "do we have an alliance limit, it seems to be
+  // always 4"; it was 3, then 4, every season): a season's own number, by the house's size, two to five
+  formAlliances(state, rng, { max: allianceCap(state) });
   growAlliances(state, rng);
 }
 
@@ -156,7 +166,7 @@ export function returnToHouse(state, winner, voters, how = {}) {
   if (mood === 'strategy') nudge(state, winner, 'confidence', 0.4);
   if (mood === 'happy') nudge(state, winner, 'morale', 0.5);
   const al = allianceOf(state, winner);
-  addScene(state, 'return', [winner, ...faced, ...friends], { volunteered: !!how.volunteered, calledOut: !!how.calledOut, beat: how.beat || null, voters: faced.length,
+  addScene(state, 'return', [winner, ...faced, ...friends], { how: how.volunteered ? 'volunteered' : how.calledOut ? 'calledout' : 'voted', volunteered: !!how.volunteered, calledOut: !!how.calledOut, beat: how.beat || null, voters: faced.length,
     mood, wins: state.rec[winner]?.arenaW || 0, alliance: mood === 'alliance' ? al?.name || null : null }, state.active, 'public');
 }
 

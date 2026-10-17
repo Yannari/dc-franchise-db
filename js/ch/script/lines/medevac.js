@@ -60,7 +60,7 @@ export default {
       { by: 'b', say: "This isn't fair. You didn't lose anything. You got hurt." },
       { by: 'a', say: "Same plane, though." },
       { by: 'c', opt: 1, say: "We're going to win this for you. I swear." },
-      { by: 'a', say: "Don't win it for me. Win it because you're good enough. Then call me." },
+      { by: 'a', opt: 'c', say: "Don't win it for me. Win it because you're good enough. Then call me." },
       { beat: 'Everybody takes a turn hugging {a}. Some of them take two.' },
       { by: 'b', conf: "{a} didn't get voted out. Nobody beat {a.obj}. A {part} did. I don't know how to be angry at a {part}." },
     ] },

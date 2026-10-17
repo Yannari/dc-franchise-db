@@ -474,7 +474,12 @@ export function challengeDrawnDailies() {
 
 /** The Season Timeline's tiles: one per episode, with how many are still in. */
 export function challengeEpisodeMap() {
-  const rows = new Map([...(gs?.episodeHistory || []).filter(r => r?.format === CHALLENGE_FORMAT), ...(gs?._chQueue || [])]
+  // The episodes still to air come from the built queue only while it was built with the settings on screen: a
+  // twist just booked (a double: 19 left, then 17) has not been played into it yet, so the plan counts those
+  // (the user, 2026-10-16: "the double elimination twist doesn't update the season timeline")
+  let fresh = false;
+  try { fresh = !!gs?.ch?.built && gs.ch.built === _sig(_inputs()); } catch { fresh = false; }
+  const rows = new Map([...(gs?.episodeHistory || []).filter(r => r?.format === CHALLENGE_FORMAT), ...(fresh ? (gs?._chQueue || []) : [])]
     .map(r => [r.num, r]));
   let n = _cast().length;
   return challengeSeasonShape().map(d => {

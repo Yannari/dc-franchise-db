@@ -185,11 +185,15 @@ const MOOD = {};
 const moods = {
   'ch-scheming': ['meeting', 'meeting-spotted', 'recruit', 'deal', 'outing', 'leverage-threat', 'counter-pitch', 'spare-deal', 'plea',
     'house-debate', 'scheme-lie', 'overheard', 'loyalty-test', 'ride-to-the-final', 'alliance-form', 'alliance-grow', 'insurance',
-    'tribunal-pitch', 'tribunal-room', 'volunteer', 'pick-guess'],
+    'tribunal-pitch', 'tribunal-room', 'volunteer', 'pick-guess', 'alliance-merge', 'alliance-switch'],
   'ch-drama': ['fight', 'physical', 'kitchen-blowup', 'receipts', 'old-show-grudge', 'trash-talk', 'floater-callout', 'gossip-backfire',
     'jealousy', 'breakup', 'tj-house-meeting', 'empty-threat', 'arena-eve-confront', 'vet-dismisses', 'rookie-uprising',
-    'alliance-betrayal', 'deal-broken', 'disqualified', 'partner-blame', 'team-blame', 'ex-in-the-house'],
-  'ch-romance': ['spark', 'showmance', 'flirt', 'beach-date', 'pda', 'hot-tub-truths', 'crush', 'romance'],
+    'alliance-betrayal', 'deal-broken', 'disqualified', 'partner-blame', 'team-blame', 'ex-in-the-house',
+    'alliance-leave', 'alliance-end', 'kiss-fallout', 'home-gossip'],
+  'ch-romance': ['spark', 'showmance', 'flirt', 'beach-date', 'pda', 'hot-tub-truths', 'crush', 'romance', 'home-talk', 'home-guilt'],
+  // somebody leaving the game outside the Arena gets the Arena goodbye's song (the user, 2026-10-16: "the goodbye
+  // music doesn't play when someone goes on a medical or is expelled"): the medevac, the expelled goodbye, a quit
+  'ch-goodbye': ['medical', 'medical-house', 'expelled-goodbye', 'quit', 'quit-house'],
   'ch-fun': ['prank', 'gym-flex', 'gym-training', 'pool-games', 'show-banter', 'rookie-hazing', 'beach-run', 'comedy', 'kitchen-disaster',
     'bunk-war', 'tj-at-breakfast', 'villa-reveal', 'house-dinner'],
 };

@@ -682,6 +682,12 @@ export function buildFranchiseMeta(cast, cfg) {
     };
     for (const [name, rec] of Object.entries(season.players || {})) {
       for (const ally of rec.allies || []) add(name, ally, W.bondAllies, `Rode together to the end`, 'allies', false);
+      // The Challenge's Pairs season: the partner who kept all the money (ch/share-keep.js). Before the betrayal
+      // below, so the reason the grudge carries is this one; the betrayal stacks on it.
+      for (const victim of rec.keptMoneyFrom || []) {
+        add(victim, name, W.bondBetrayedVictim * 1.5, `${name} kept all the money from ${victim}`, 'betrayal', true, { wronged: true, kept: true });
+        add(name, victim, W.bondBetrayedBetrayer, `${name} kept all the money from ${victim}`, 'betrayal', true, { wronged: false, kept: true });
+      }
       for (const victim of rec.betrayed || []) {
         // wronged flags perspective: victim-side entry (a = the wronged party) vs
         // betrayer-side entry (a = the betrayer). Consumers that want the grudge

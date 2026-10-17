@@ -50,7 +50,12 @@ export function chLedgerRecord(state, result = {}, { seasonName = null, archetyp
     // jumping to another alliance is a betrayal of the old one's leader (alliances.js allianceShifts)
     if (sc.kind === 'alliance-leave' && sc.data?.why === 'defected') betrayals.push([sc.who[0], sc.who[1]]);
   }
+  // A Pairs season's ending: keeping the money is the heaviest betrayal the show has (share-keep.js)
+  const choices = state.final?.choices || [];
+  for (const c of choices) if (c.keep) betrayals.push([c.chooser, c.partner]);
   const betrayedPair = new Set(betrayals.map(([a, b]) => pairKey(a, b)));
+  // who each of them played the season with (the last pair they were in), in a Pairs season
+  const lastPartner = n => { const h = (state.pairHistory || []).filter(x => x.a === n || x.b === n).at(-1); return h ? (h.a === n ? h.b : h.a) : null; };
 
   // Alliance-mates: anyone who sat in the same group, in it or since gone.
   const mates = new Set();
@@ -99,7 +104,15 @@ export function chLedgerRecord(state, result = {}, { seasonName = null, archetyp
       // The show's own numbers, for the export (sub-project 6) and the wiki.
       ch: { dailyWins: r.dailyWins || 0, arenaWins: r.arenaW || 0, arenaLosses: r.arenaL || 0,
         timesVotedIn: r.votedIn || 0, calledOut: r.calledOut || 0, volunteered: r.volunteered || 0,
-        division: state.division[n] || null, rookie: !!state.rookie[n], left: g ? g.how : null },
+        division: state.division[n] || null, rookie: !!state.rookie[n], left: g ? g.how : null,
+        ...(state.options?.pairs ? { pairing: state.options.pairs.pairing || 'rivals', partner: lastPartner(n),
+          partners: [...new Set((state.pairHistory || []).filter(x => x.a === n || x.b === n).map(x => (x.a === n ? x.b : x.a)))] } : {}),
+        ...(() => {
+          const c = choices.find(x => x.chooser === n || x.partner === n);
+          return c ? { choice: { chose: c.chooser === n, keep: c.keep, amount: c.prize, with: c.chooser === n ? c.partner : c.chooser, place: c.place } } : {};
+        })() },
+      // the partner they kept the money from (franchise-meta seeds the grudge, every season after, every show)
+      ...(choices.some(c => c.keep && c.chooser === n) ? { keptMoneyFrom: choices.filter(c => c.keep && c.chooser === n).map(c => c.partner) } : {}),
     };
   }
   // Friendship is both ways or not at all.

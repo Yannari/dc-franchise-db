@@ -6,6 +6,7 @@ import { playChallengeSeason } from '../js/ch/season.js';
 import { buildSchedule } from '../js/ch/schedule.js';
 import { mayScheme } from '../js/ch/state.js';
 import { challengeCast } from './helpers/ch-cast.js';
+import { chLedgerRecord } from '../js/ch/ledger-record.js';
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 
@@ -159,6 +160,20 @@ describe('a Pairs season', () => {
     for (const s of seasons) for (const sc of s.state.scenes) kinds[sc.kind] = (kinds[sc.kind] || 0) + 1;
     for (const k of ['pair-reveal', 'pair-fight', 'pair-makeup', 'pair-plan', 'pair-callout', 'pair-arena', 'pair-arena-win', 'pair-arena-blame', 'share-keep'])
       expect(kinds[k] || 0, k).toBeGreaterThan(0);
+  });
+
+  it('the ledger keeps the partner and the choice, and a kept prize is a betrayal the franchise remembers', () => {
+    let s = seasons.find(x => x.final.choices.some(c => c.keep));
+    for (let seed = 20; !s && seed < 60; seed++) { const t = play(seed, 'rivals'); if (t.final.choices.some(c => c.keep)) s = t; }
+    expect(s).toBeTruthy();
+    // the season's own relationship layer is live only right after it plays: replay it
+    const again = play(s.state.seed, s.pairing, { shape: s.shape });
+    const rec = chLedgerRecord(again.state, again);
+    const kept = again.final.choices.find(c => c.keep);
+    expect(rec.players[kept.chooser].keptMoneyFrom).toContain(kept.partner);
+    expect(rec.players[kept.chooser].betrayed).toContain(kept.partner);
+    expect(rec.players[kept.partner].ch.choice).toMatchObject({ chose: false, keep: true, with: kept.chooser });
+    for (const n of again.names) expect(rec.players[n].ch.partner).toBeTruthy();
   });
 
   it('a solo season is untouched: no pairs, nobody chooses', () => {

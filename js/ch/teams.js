@@ -124,7 +124,9 @@ export function makeSeasonTeams(state, rng, { background = {} } = {}) {
   addScene(state, 'teams-revealed', state.active, { teams: state.teams.map(t => ({ name: t.name, members: [...t.members], captain: t.captain })), how }, state.active, 'airstrip');
   for (const t of state.teams) {
     const [cap, ...rest] = [t.captain, ...t.members.filter(n => n !== t.captain)];
-    addScene(state, 'team-reveal', [cap, ...rest.slice(0, 3)], { team: t.name, how: t.how, size: t.members.length }, state.active, 'airstrip');
+    // the whole team walks over together (the user, 2026-10-17: "only showed 4 players in each team"); the captain and
+    // the next three speak, everybody else is on screen
+    addScene(state, 'team-reveal', [cap, ...rest], { team: t.name, how: t.how, size: t.members.length, members: [cap, ...rest] }, state.active, 'airstrip');
   }
   return state.teams;
 }

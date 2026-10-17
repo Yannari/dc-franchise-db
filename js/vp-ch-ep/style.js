@@ -478,6 +478,9 @@ const CHX_CSS = `
 .chx .tcard .tf img{width:6.4cqw;height:6.4cqw;object-fit:cover;border:.3cqw solid #111;box-shadow:0 0 0 .2cqw var(--fire),0 .6cqh 1.4cqh rgba(0,0,0,.6);background:#2a2420;clip-path:polygon(6% 0,100% 0,94% 100%,0 100%)}
 .chx .tcard .tf b{font:400 1.1cqw/1 'Anton';letter-spacing:.06em;color:#fff;text-transform:uppercase}
 .chx .tcard.isvs .tf img{width:11cqw;height:11cqw}
+.chx .tcard .tfaces.many{flex-wrap:wrap;justify-content:center;max-width:46cqw;gap:.8cqw;margin-left:auto;margin-right:auto}
+.chx .tcard .tfaces.many .tf img{width:4.6cqw;height:4.6cqw}
+.chx .tcard .tfaces.many .tf b{font-size:.85cqw}
 .chx .tcard.isvs .tf b{font-size:1.8cqw}
 .chx .tcard .tvs{font:400 5cqw/1 'Anton';color:var(--caution);text-shadow:0 .3cqw 0 #000;animation:chxSlamIn .5s .5s cubic-bezier(.2,1.6,.4,1) both}
 .chx .tcard .tgo{margin-top:1.4cqw;font:400 1cqw/1 'Black Ops One';letter-spacing:.3em;color:#140c08;background:var(--fire);padding:.6cqw 1.4cqw;clip-path:polygon(6% 0,100% 0,94% 100%,0 100%);animation:chxBlinkGo 1.6s 1s ease-in-out infinite}

@@ -501,10 +501,12 @@ function titleCard(c) {
   const face = (n, k) => `<div class='tf' style='animation-delay:${(.35 + k * .12).toFixed(2)}s'><img src='${esc(AV(n))}' alt=''><b>${esc(n)}</b></div>`;
   // pair against pair (a Pairs season's Arena): two faces a side
   const row = c.vsPairs ? `${c.vsPairs[0].map((n, k) => face(n, k)).join('')}<div class='tvs'>VS</div>${c.vsPairs[1].map((n, k) => face(n, k + 2)).join('')}`
-    : c.vs && faces.length === 2 ? `${face(faces[0], 0)}<div class='tvs'>VS</div>${face(faces[1], 1)}` : faces.slice(0, 8).map(face).join('');
+    : c.vs && faces.length === 2 ? `${face(faces[0], 0)}<div class='tvs'>VS</div>${face(faces[1], 1)}` : faces.slice(0, 16).map(face).join('');
+  // a whole team (a Teams season's reveal) is more than one row of faces: two smaller rows (the user, 2026-10-17)
+  const many = !c.vsPairs && !c.vs && faces.length > 8;
   return `<div class='tcard ${c.vs ? 'isvs' : ''}'><div class='ttape t1'></div><div class='ttape t2'></div><div class='tin'>`
     + `<div class='tk'>${esc(c.k)}</div><div class='tt'>${esc(c.t)}</div>${c.sub ? `<div class='ts'>${esc(c.sub)}</div>` : ''}`
-    + (faces.length ? `${c.facesLabel ? `<div class='tl'>${esc(c.facesLabel)}</div>` : ''}<div class='tfaces'>${row}</div>` : '')
+    + (faces.length ? `${c.facesLabel ? `<div class='tl'>${esc(c.facesLabel)}</div>` : ''}<div class='tfaces${many ? ' many' : ''}'>${row}</div>` : '')
     + `<div class='tgo'>&#9654; Play on</div></div></div>`;
 }
 

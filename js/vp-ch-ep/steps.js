@@ -572,7 +572,7 @@ const BIG = {
   // a Teams season (ch/teams.js): the teams named, a switch, a team gone, the break-up
   'teams-revealed': a => ({ card: { k: 'This season', t: 'Teams', sub: ({ shows: 'Everybody plays for the show they came from', champions: 'Past champions against everybody who never won', vets: 'The vets against the rookies', draft: 'Two captains pick their teams' })[a.data?.how] || 'Team against team',
     faces: (a.data?.teams || []).map(t => t.captain).filter(Boolean).slice(0, 6) }, shake: 1 }),
-  'team-reveal': a => ({ card: { k: a.data?.how === 'draft' ? 'Captain ' + (a.who[0] || '') : 'Team', t: a.data?.team || 'Team', sub: `${a.who.length} players. Win together, and the losers vote one of their own in.`, faces: a.who.slice(0, 8) } }),
+  'team-reveal': a => ({ card: { k: a.data?.how === 'draft' ? 'Captain ' + (a.who[0] || '') : 'Team', t: a.data?.team || 'Team', sub: `${a.data?.size || a.who.length} players. Win together, and the losers vote one of their own in.`, faces: (a.data?.members || a.who).slice(0, 14) } }),
   'team-switch': a => ({ slam: { spray: 'SWITCHED SIDES', color: '#ffd21a' }, chip: [a.who[0], `NOW ${String(a.data?.to || '').toUpperCase()}`], shake: 1 }),
   'team-fold': a => ({ card: { k: 'Team gone', t: a.data?.from || 'A team', sub: `${a.who[0]} is the last of them, and joins ${a.data?.to || 'the others'}`, faces: a.who.slice(0, 2) } }),
   'teams-break': a => ({ card: { k: 'Twist', t: 'The teams are over', sub: 'Every player for themselves from here', faces: a.who.slice(0, 12) }, shake: 1 }),

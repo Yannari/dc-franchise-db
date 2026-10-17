@@ -30,6 +30,10 @@ describe('The Challenge stepped viewer: a Teams season', () => {
     const first = chStepScreens(rows[0]);
     expect(first.some(s => s.label === 'The teams')).toBe(true);
     expect(first.flatMap(s => s.steps).some(st => st.card?.t === 'Teams')).toBe(true);
+    // each team's card shows the whole team, not the four who speak (the user, 2026-10-17: "only showed 4 players")
+    const teamCards = first.flatMap(s => s.steps).filter(st => st.card && st.card.k !== 'This season' && rows[0].ch.teams.start.some(t => t.name === st.card.t));
+    expect(teamCards.length).toBe(rows[0].ch.teams.start.length);
+    for (const st of teamCards) expect(st.card.faces.length, st.card.t).toBe(rows[0].ch.teams.start.find(t => t.name === st.card.t).members.length);
     const teamWeeks = rows.filter(r => (r.ch?.votes || []).some(v => v.team));
     expect(teamWeeks.length).toBeGreaterThan(3);
     for (const r of teamWeeks) {

@@ -34,7 +34,7 @@ import { playDaily } from './dailies.js';
 import { playDuel, injuryRoll, drawGame } from './arena.js';
 import { partyNight, expelledGoodbye, expelledAftermath, dqDebate } from './party.js';
 import { romanceDay, breakupCheck } from './romance.js';
-import { quitRisk, quit, medical, disqualify, removePlayer } from './exits.js';
+import { quitRisk, quit, medical, disqualify, removePlayer, airPartnerLeft } from './exits.js';
 import { houseDay, psycheMoment, returnToHouse } from './house.js';
 import { houseBeats } from './events.js';
 import { arenaEve, pickDay, calloutCost, tjLaysDownTheLaw, tjVerdict } from './tj.js';
@@ -336,6 +336,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       const rh = R('hurt');
       for (const n of daily.injuries || []) if (state.active.includes(n)) hurt(state, rh, n, 'daily');
       epRec.exits.push(...dayExits(state, R('exits1'), daily.injuries));
+      airPartnerLeft(state);
       // the worst thing anybody was called today, said to a face afterwards (daily/named.js)
       const st = worstSting(state);
       if (st && state.active.includes(st.by) && state.active.includes(st.named)) {
@@ -390,6 +391,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
         epRec.exits.push({ name: d.name, how: 'disqualified', victim: d.victim });
         tjLaysDownTheLaw(state, d.name, d.victim);
         expelledAftermath(state, d.name, d.victim, friends);
+        airPartnerLeft(state);
       }
       for (const n of state.active) driftDay(state, n, { rested: false });
     } else {
@@ -404,6 +406,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     spreadDay(state);
     reviseAll(state);
     epRec.exits.push(...dayExits(state, R('exits2')));
+    airPartnerLeft(state);
     const immune = daily.winners.filter(w => state.active.includes(w));
     const need = unitsLeft(state) - FINAL_UNITS + returnsAhead(idx);
     const elims = purged ? 0 : elimsFor(schedule, idx, need);
@@ -508,7 +511,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     houseDay(state, R('house3'));
     houseBeats(state, R('beats3am'), { min: 2, max: 3 });
     for (const m of matches) (pairsOn(state) ? pairPickDay : pickDay)(state, R(`pick${m.a}`), m);
-    if (pairsOn(state)) pairArenaDay(state, { R, epRec, matches, delib, closing: (state.plannedEpisodes || schedule.length) - (idx + 1) <= 2 });
+    if (pairsOn(state)) { pairArenaDay(state, { R, epRec, matches, delib, closing: (state.plannedEpisodes || schedule.length) - (idx + 1) <= 2 }); airPartnerLeft(state); }
     else for (const [k, m] of matches.entries()) {
       if (!state.active.includes(m.a) || !state.active.includes(m.b)) continue;
       // The call-out, at the Arena: everything it costs happens now, when the house hears it.
@@ -589,6 +592,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     // a Pairs season: a pair that turned (rivals into friends), or one that went to war for good
     if (pairsOn(state)) epRec.pairArcs = pairArcs(state);
     epRec.exits.push(...dayExits(state, R('exits3'), [], schedule[idx + 1]?.final || idx === schedule.length - 1 ? opts.finalists : 0));
+    airPartnerLeft(state);
     state.cliqueStrength = Math.max(0.15, state.cliqueStrength * 0.84);
     epRec.intel.end = intelSnap(state);
   }

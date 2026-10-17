@@ -45,7 +45,8 @@ export function removePlayer(state, name, how, extra = {}) {
   if (pairsOn(state) && !pairDone) {
     const r = partnerLeft(state, name, how);
     if (r?.left) {
-      addScene(state, 'partner-left', [r.left], { how, gone: name }, state.active, 'villa');
+      // aired after the partner's own goodbye (a medevac's packing, a disqualification's hour): season.js flushes it
+      (state.partnerLeftQueue ||= []).push({ left: r.left, how, gone: name });
       removePlayer(state, r.left, 'partner-left', { place: rest.place ?? place, partner: name, why: how, pairDone: true });
     }
   }
@@ -60,6 +61,12 @@ export function removePlayer(state, name, how, extra = {}) {
     if (inside.length < 2) { al.ended = true; al.endedEp = state.ep; al.why = 'numbers'; continue; }
     if (al.leader === name) al.leader = [...inside].sort((a, b) => S(b, 'strategic') - S(a, 'strategic'))[0];
   }
+}
+
+/** The partners sent home by somebody else's exit, aired now (after that exit's own scenes). */
+export function airPartnerLeft(state) {
+  for (const q of state.partnerLeftQueue || []) addScene(state, 'partner-left', [q.left], { how: q.how, gone: q.gone }, state.cast, 'villa');
+  state.partnerLeftQueue = [];
 }
 
 export function quit(state, name) {

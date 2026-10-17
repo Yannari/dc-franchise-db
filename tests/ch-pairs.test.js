@@ -113,7 +113,9 @@ describe('a Pairs season', () => {
         expect(pts[c.chooser]).toBeGreaterThanOrEqual(pts[c.partner]);
         if (c.keep) { expect(NICE.has(s.arch[c.chooser])).toBe(false); expect(s.can[c.chooser]).toBe(true); }
       }
-      // the champions choose last
+      // the champions choose last (both champion pairs, with men's and women's pairs)
+      const places = s.final.choices.map(c => c.place);
+      expect(places).toEqual([...places].sort((x, y) => y - x));
       expect(s.final.choices.at(-1).place).toBe(1);
     }
   });

@@ -87,7 +87,8 @@ export function shareOrKeep(state, rng, pairs) {
   const watching = state.gone.map(g => g.name);
   addScene(state, 'share-keep-rules', pairs.flatMap(p => p.members), { pairs: pairs.map(p => p.members), prizes: pairs.map(p => PAIR_PRIZE[p.place - 1] || 0), watching }, state.active, 'final');
   const out = [];
-  for (const p of [...pairs].reverse()) {
+  // the last place first, the champions last (with men's and women's pairs, both champion pairs close it)
+  for (const p of [...pairs].sort((x, y) => y.place - x.place)) {
     if (!(PAIR_PRIZE[p.place - 1] > 0)) continue;
     const d = decide(state, rng, p);
     const { chooser, partner, keep, prize } = d;

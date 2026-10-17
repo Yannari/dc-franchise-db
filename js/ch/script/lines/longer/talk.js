@@ -40,7 +40,7 @@ export default {
   'pl.h2': [0, 1,
     { by: 'a', say: "So you're saving yourself." },
     { by: 'b', say: "Yes. I'm not going to pretend I'm not." },
-    { by: 'a', say: "At least you're honest." },
+    { by: 'a', say: "Well, you're saying it to my face. That's something." },
     { by: 'b', say: "I'm sorry. I really am." },
     2],
   'pl.h3': [0, 1,

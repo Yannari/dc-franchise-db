@@ -31,7 +31,7 @@ import { afterVote } from './alliances.js';
 import { deliberate, houseVote, voteFallout, breakDeal, houseDebate, tribunalDecide } from './vote.js';
 import { chooseOpponent, dealBetween } from './callout.js';
 import { playDaily } from './dailies.js';
-import { playDuel, injuryRoll } from './arena.js';
+import { playDuel, injuryRoll, drawGame } from './arena.js';
 import { partyNight, expelledGoodbye, expelledAftermath, dqDebate } from './party.js';
 import { romanceDay, breakupCheck } from './romance.js';
 import { quitRisk, quit, medical, disqualify, removePlayer } from './exits.js';
@@ -427,18 +427,26 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       // The call-out.
       const pool = eligible.filter(n => n !== votedIn && !used.has(n));
       if (!pool.length) break;
-      let co;
+      let co, matchGame = null;
       if (volunteer && delib.volunteer.target && pool.includes(delib.volunteer.target)) {
         co = { opponent: delib.volunteer.target, reason: 'grudge', terms: null, volunteerTarget: true };
       } else {
-        co = chooseOpponent(state, R(`callout${k}`), votedIn, pool);
+        // TJ says tomorrow's game before the call-out: on a booked night (the Format Designer's The Game Revealed),
+        // or now and then on his own (the user, 2026-10-17: "TJ revealing it should be uncommon, or a scheduler")
+        const revealed = liveTwists(opts)[plan.ep] === 'reveal' || R(`reveal${k}`)() < 0.18;
+        if (revealed) {
+          matchGame = drawGame(state, R(`game${k}`));
+          addScene(state, 'arena-reveal', [votedIn], { game: matchGame.id, gameName: matchGame.name, booked: liveTwists(opts)[plan.ep] === 'reveal' }, state.active, 'deliberation');
+        }
+        co = chooseOpponent(state, R(`callout${k}`), votedIn, pool, { game: matchGame,
+          voters: (vote?.ballots || []).filter(x => x.target === votedIn).map(x => x.voter) });
       }
       // Decided tonight, in their own head; said out loud tomorrow, at the Arena, in front of the house
       // (the show's call-out: the user's mockup, 2026-10-15). A second elimination this week cannot pick
       // the same person, so the choice is made now.
       used.add(co.opponent);
       afterVote(state, R(`after${k}`), { ballots: vote?.ballots || [], votedIn, calledOut: null, by: votedIn });
-      matches.push({ a: votedIn, b: co.opponent, volunteer, vote, co, k, pool, callout: { by: votedIn, opponent: co.opponent, reason: co.reason },
+      matches.push({ a: votedIn, b: co.opponent, volunteer, vote, co, k, pool, game: matchGame, callout: { by: votedIn, opponent: co.opponent, reason: co.reason },
         voters: (vote?.ballots || []).filter(x => x.target === votedIn).map(x => x.voter) });
     }
 
@@ -470,7 +478,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       const pr = state.promises?.[votedIn];
       const promise = pr && !m.volunteer ? (pr.at === opp ? 'kept' : state.active.includes(pr.at) ? 'broken' : null) : null;
       epRec.callouts.push({ by: votedIn, opponent: opp, reason: co.reason, terms: co.terms, ranked: co.ranked || null, promise, promisedAt: promise ? pr.at : null });
-      addScene(state, 'callout', [votedIn, opp], { reason: co.reason, volunteer: m.volunteer, promise,
+      addScene(state, 'callout', [votedIn, opp], { reason: co.reason, volunteer: m.volunteer, promise, ...(m.game ? { gameName: m.game.name } : {}),
         votedMe: !!vote?.ballots.some(x => x.voter === opp && x.target === votedIn) }, state.active, 'arena');
       if (promise) {
         state.word ||= {};
@@ -483,8 +491,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
         delete state.promises[votedIn];
       }
       afterVote(state, R(`afterco${k}`), { ballots: [], votedIn, calledOut: opp, by: votedIn });
-      calloutCost(state, votedIn, opp);
-      const duel = playDuel(state, R(`arena${k}`), m.a, m.b);
+      calloutCost(state, votedIn, opp, co.reason);
+      const duel = playDuel(state, R(`arena${k}`), m.a, m.b, m.game || null);
       duel.volunteer = m.volunteer;
       epRec.arena.push(duel);
       const { winner, loser } = duel;

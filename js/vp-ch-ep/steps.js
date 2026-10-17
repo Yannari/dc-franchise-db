@@ -128,7 +128,7 @@ function chapterOf(a) {
   if (a.kind === 'villa-reveal') return 'reveal';
   if (DAILY_KINDS.has(a.kind)) return 'daily';
   if (a.spot === 'party' || a.kind === 'party' || a.kind === 'fight' || a.kind === 'fight-physical') return 'party';
-  if (a.kind === 'ceremony' || a.kind === 'volunteer' || a.kind === 'house-debate' || a.kind.startsWith('tribunal-')) return 'vote';
+  if (a.kind === 'ceremony' || a.kind === 'volunteer' || a.kind === 'house-debate' || a.kind === 'arena-reveal' || a.kind.startsWith('tribunal-')) return 'vote';
   if (a.kind.startsWith('arena-eve')) return 'eve';
   if (a.kind === 'callout' || a.kind === 'arena' || a.kind === 'arena-goodbye') return 'arena';
   if (a.kind === 'return-arena') return 'return';
@@ -316,6 +316,7 @@ const REASON = {
   prove: (a, b) => `<b>${esc(a)}</b> wants to beat somebody strong, to prove a point. That's <b>${esc(b)}</b>.`,
   'avoid-beast': (a, b) => `<b>${esc(a)}</b> picked <b>${esc(b)}</b> to stay away from the strongest players.`,
   promise: (a, b) => `<b>${esc(a)}</b> told the house at the vote it would be <b>${esc(b)}</b>, and kept that promise.`,
+  shot: (a, b) => `A game move. <b>${esc(a)}</b> went after <b>${esc(b)}</b>, the biggest threat to ${esc(a)}'s game, knowing it could be the harder fight.`,
 };
 const ANSWER = { yes: 'said yes', no: 'said no', organiser: 'organised it' };
 function meetingKnow(d) {
@@ -488,6 +489,8 @@ const BIG = {
   'party-deal': a => ({ card: { k: 'Final deal', t: `${a.who[0]} & ${a.who[1]}`, sub: 'Made at the bar. Ask them tomorrow if it still stands', faces: a.who.slice(0, 2) } }),
   deal: a => ({ chip: [a.who[0], `DEAL WITH ${String(a.who[1] || '').toUpperCase()}`] }),
   'deal-broken': a => ({ slam: { spray: 'DEAL BROKEN', color: '#e3262d' } }),
+  // TJ says tomorrow's game before the call-out (ch/season.js)
+  'arena-reveal': a => ({ card: { k: "Tomorrow's Arena", t: a.data?.gameName || 'The game', sub: `${a.who[0]} knows the game before picking an opponent`, faces: a.who.slice(0, 1), icon: 'arena' }, shake: 1 }),
   // a double, announced (ch/season.js): the card says it before the vote does
   'tj-double': a => ({ card: { k: 'Tonight', t: 'Double elimination', sub: `${a.data?.elims || 2} go into the Arena tonight, one vote at a time`, icon: 'vote', faces: a.data?.immune || [], facesLabel: 'Safe' }, shake: 1 }),
   // the drunk kiss and what it costs (ch/party.js)

@@ -100,7 +100,10 @@ export const ROLES = {
   'empty-threat': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { target: sc.data.opponent } }),
   outing: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { alliance: sc.data.name } }),
   volunteer: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.who[1], 'targeted', 'open'), slots: { target: sc.who[1] } }),
-  callout: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.reason }),
+  // {game}: the Arena game, when TJ said it before the call-out
+  callout: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.reason, slots: { game: sc.data.gameName || undefined } }),
+  // TJ tells the one voted in which game tomorrow is (season.js), before they pick
+  'arena-reveal': sc => ({ roles: { a: sc.who[0] }, ending: 'any', slots: { game: sc.data.gameName } }),
   arena: sc => ({ roles: { a: sc.data.winner, b: sc.data.loser }, ending: sc.data.tj, slots: { game: sc.data.gameName } }),
   // b: somebody who voted them in (never a friend at the door: those are x and y)
   return: sc => { const nv = sc.data.voters ?? (sc.who.length - 1);

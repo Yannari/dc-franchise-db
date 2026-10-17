@@ -15,6 +15,8 @@ import { S, addScene } from './state.js';
 import { nudge } from './mind.js';
 import { trustOf, grudgeOf, remember, intimidated } from './rel.js';
 import { allianceOf } from './alliances.js';
+import { arenaRead } from './respect.js';
+import { gs } from '../core.js';
 
 // ── the night before ─────────────────────────────────────────────────
 // The day of the Arena, before it. The one going in talks the pick through with the friend they trust most
@@ -83,13 +85,26 @@ export function arenaEve(state, rng, match) {
 }
 
 // Calling out an ally's friend costs inside the alliance: when the house hears it, at the Arena.
-export function calloutCost(state, a, b) {
+export function calloutCost(state, a, b, reason = null) {
   const al = allianceOf(state, a);
   if (al) for (const m of al.members) {
     if (m === a || m === b || !state.active.includes(m)) continue;
     if (getBond(m, b) >= 4) { addBond(m, a, -0.8); remember(m, a, 'went-after-my-friend', 1.2); }
   }
+  // the house sees who was picked (the user, 2026-10-17): an easy pick costs respect, the audience and the friends
+  // of the one picked, by how uneven it looked; calling out somebody strong earns some of it back
+  const gap = arenaRead(state, a) - arenaRead(state, b);
+  if (gap > 0.5 && (reason === 'survive' || reason === 'avoid-beast')) {
+    const cost = Math.min(1.5, gap * 0.35);
+    state.rec[a].respect = (state.rec[a].respect || 0) - cost;
+    popOf(a, -cost * 0.8);
+    for (const f of state.active) if (f !== a && f !== b && getBond(f, b) >= 3) { addBond(f, a, -0.4); remember(f, a, 'picked-the-weak-one', 0.6); }
+  } else if (gap < -0.5 && (reason === 'prove' || reason === 'shot')) {
+    state.rec[a].respect = (state.rec[a].respect || 0) + Math.min(1.2, -gap * 0.3);
+    popOf(a, 0.4);
+  }
 }
+const popOf = (n, d) => { gs.popularity ||= {}; gs.popularity[n] = (gs.popularity[n] || 0) + d; };
 
 // ── TJ comes into the villa ──────────────────────────────────────────
 // After a disqualification TJ gathers the house and lays down the law: the

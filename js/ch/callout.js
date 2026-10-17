@@ -20,8 +20,9 @@ import { getPerceivedBond } from '../bonds.js';
 import { S, mayScheme, weighted, logistic } from './state.js';
 import { grudgeOf, oweOf, protectOf } from './rel.js';
 import { planOf } from './plans.js';
-import { arenaRead, freeRide } from './respect.js';
-import { allianceOf } from './alliances.js';
+import { arenaRead, freeRide, threatRead } from './respect.js';
+import { allianceOf, powerAlliance } from './alliances.js';
+import { blendScore } from './arena.js';
 
 export function coupleOf(state, name) {
   const c = state.couples.find(x => !x.ended && (x.a === name || x.b === name));
@@ -31,15 +32,31 @@ export function dealBetween(state, a, b) {
   return state.deals.find(d => !d.broken && ((d.a === a && d.b === b) || (d.a === b && d.b === a))) || null;
 }
 
-// What X thinks of calling out Y, split by reason.
-export function calloutTerms(state, x, y) {
-  const mine = arenaRead(state, x), theirs = arenaRead(state, y);
-  const bold = S(x, 'boldness') / 10, temper = S(x, 'temperament') / 10, loyal = S(x, 'loyalty') / 10;
+// What X thinks of calling out Y, split by reason. Every term is weighed by who X is, never gated: a strategic
+// player leans on the easy win and the game move, a hot head on the grudge, a bold one on the hard fight, and
+// any of them can still do any of it (the user, 2026-10-17: "weight it in, don't force certain types of people
+// to pick certain decisions").
+// { game }: the Arena game, when TJ said it before the call-out (season.js): how each is AT that game counts.
+// { voters }: who said x's name tonight.
+export function calloutTerms(state, x, y, { game = null, voters = [] } = {}) {
+  const atGame = n => (game ? arenaRead(state, n) * 0.4 + blendScore(n, game.blend) * 0.6 : arenaRead(state, n));
+  const mine = atGame(x), theirs = atGame(y);
+  const bold = S(x, 'boldness') / 10, temper = S(x, 'temperament') / 10, loyal = S(x, 'loyalty') / 10, strat = S(x, 'strategic') / 10;
   const pWin = logistic((mine - theirs) * 0.6);
-  const survive = pWin * 4 * (1 - bold * 0.45);
-  // A grudge: resentment and the receipts (they voted me in, they called me out).
+  // the easy win: everybody wants to survive; the strategic, and the less loyal, count it for more, and knowing the
+  // game makes the sum easier to do (was the same for everybody: strategic players picked an easy one 7% of the
+  // time and everybody else 24%, because the strategic stat was in none of it)
+  const survive = pWin * 4 * (1 - bold * 0.45) * (0.4 + strat * 1.05 + (1 - loyal) * 0.25) * (game ? 1.2 : 1);
+  // A grudge: resentment and the receipts (they voted me in, they called me out). A strategic head keeps it a
+  // little further from the game.
   const grudge = (Math.max(0, -getPerceivedBond(x, y)) * 0.2 + grudgeOf(x, y) * 0.75
-    + (planOf(state, x)?.revenge?.includes(y) ? 0.8 : 0)) * (1.25 - temper * 0.5);
+    + (planOf(state, x)?.revenge?.includes(y) ? 0.8 : 0)) * (1.25 - temper * 0.5) * (1.15 - strat * 0.3) * 0.6;
+  // The shot: the biggest threat to their own game (the house's top competitor, the leader of the group running the
+  // votes, somebody who said their name tonight), worth a harder fight to the strategic and the bold
+  const pa = powerAlliance(state);
+  const runsIt = pa && pa.leader === y && !pa.members.includes(x) ? 1 : 0;
+  const shot = (threatRead(state, y) / 10 * 1.6 + runsIt * 1.4 + (voters.includes(y) ? 0.5 : 0))
+    * (strat * 1.5 + bold * 0.5) * (0.5 + pWin * 0.5);
   const hunger = (state.rookie[x] ? 0.25 : 0) + (state.psyche[x] === 'prove' ? 0.35 : 0) + freeRide(state, x) * 0.4
     + (state.psyche[x] === 'redemption' ? 0.2 : 0);
   const prove = (theirs / 10) * bold * 3 * (1 + hunger);
@@ -58,17 +75,17 @@ export function calloutTerms(state, x, y) {
   // A threat made at the vote is a promise the whole house heard: going back on it costs your word, so the
   // bold and the proud keep it (state.promises, vote.js campaign).
   const pr = state.promises?.[x];
-  const promise = pr && pr.at === y && pr.ep >= state.ep - 1 ? 0.5 + bold * 1.3 + (1 - temper) * 0.4 + (state.word?.[x] || 0) * 0.3 : 0;
+  const promise = pr && pr.at === y && pr.ep >= state.ep - 1 ? (0.5 + bold * 1.3 + (1 - temper) * 0.4 + (state.word?.[x] || 0) * 0.3) * 0.8 : 0;
   // said to a friend this week: the one they would pick, and the one they would never (wishlist.js)
   const wl = state.wishlist?.[x];
   const wish = wl && wl.ep >= state.ep - 1 ? (wl.pick === y ? 1.4 : wl.avoid === y ? -1.6 : 0) : 0;
-  return { survive, grudge, prove, avoid, protect, promise, wish, pWin };
+  return { survive, grudge, prove, avoid, protect, promise, wish, shot, pWin };
 }
 
-export function chooseOpponent(state, rng, x, eligible) {
+export function chooseOpponent(state, rng, x, eligible, opts = {}) {
   const rows = eligible.filter(y => y !== x).map(y => {
-    const t = calloutTerms(state, x, y);
-    const total = t.survive + t.grudge + t.prove + t.avoid + t.protect + t.promise + t.wish;
+    const t = calloutTerms(state, x, y, opts);
+    const total = t.survive + t.grudge + t.prove + t.avoid + t.protect + t.promise + t.wish + t.shot;
     return { y, t, total };
   });
   if (!rows.length) return null;
@@ -77,7 +94,7 @@ export function chooseOpponent(state, rng, x, eligible) {
   const t = pick.t;
   // The reason: the biggest positive term; "avoid the beast" when the player
   // passed over the strongest eligible to take a safer fight.
-  const parts = { survive: t.survive, grudge: t.grudge, prove: t.prove };
+  const parts = { survive: t.survive, grudge: t.grudge, prove: t.prove, shot: t.shot };
   let reason = Object.entries(parts).sort((a, b) => b[1] - a[1])[0][0];
   const strongest = [...rows].sort((a, b) => arenaRead(state, b.y) - arenaRead(state, a.y))[0];
   if (reason === 'survive' && strongest.y !== pick.y && arenaRead(state, strongest.y) >= 7 && strongest.t.avoid < -0.4) reason = 'avoid-beast';

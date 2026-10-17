@@ -137,6 +137,8 @@ function chapterOf(a) {
   if (a.kind === 'teams-revealed' || a.kind === 'team-reveal') return 'teams';
   if (a.kind === 'team-huddle' || a.kind === 'team-only-one') return 'vote';
   if (a.kind === 'team-switch' || a.kind === 'team-fold') return 'arena';
+  // said at the Arena between the call-out and the duel (director.js arenaNightTogether)
+  if (a.kind === 'empty-threat') return 'arena';
   if (PAIR_ARENA.has(a.kind)) return 'arena';
   if (a.kind === 'pair-volunteer' || a.kind === 'pair-volunteer-refused') return 'vote';
   if (a.kind === 'pair-eve') return 'eve';
@@ -431,9 +433,11 @@ export function chStepScreens(row, ctx = {}) {
     if (k === 'eve') { chunks.push({ key: 'villa', items: [i] }); return; }   // the night before opens a villa screen, never its own
     const last = chunks[chunks.length - 1];
     if (last && last.key === k && k !== 'arena') last.items.push(i);
-    else if (last && k === 'arena' && last.key === 'arena' && (aired[last.items[last.items.length - 1]].kind === 'callout' || a.kind === 'arena-goodbye')) last.items.push(i);
+    // the call-out, what is said at the Arena before the duel, and the duel are one screen
+    else if (last && k === 'arena' && last.key === 'arena' && (aired[last.items[last.items.length - 1]].kind === 'callout' || a.kind === 'arena-goodbye'
+      || (last.items.some(j => aired[j].kind === 'callout') && !last.items.some(j => aired[j].kind === 'arena')))) last.items.push(i);
     // a pair's Arena is one screen: the call-out, the two-on-two, and what the pairs say after it
-    else if (last && k === 'arena' && last.key === 'arena' && aired[last.items[0]].kind === 'pair-callout' && ['pair-arena', 'pair-arena-blame', 'pair-arena-win', 'pair-swap', 'bank-taken', 'pass-earned'].includes(a.kind)) last.items.push(i);
+    else if (last && k === 'arena' && last.key === 'arena' && aired[last.items[0]].kind === 'pair-callout' && ['pair-arena', 'pair-arena-blame', 'pair-arena-win', 'pair-swap', 'bank-taken', 'pass-earned', 'empty-threat'].includes(a.kind)) last.items.push(i);
     else chunks.push({ key: k, items: [i] });
   });
 
@@ -1025,7 +1029,7 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
   const teamIdx = n => (S.teamList || []).findIndex(t => t.members.includes(n));
   const crowd = here.filter(n => n !== b).sort((x, y) => teamIdx(x) - teamIdx(y));
   const cast = { TJ: ['host'], [a]: ['gate'], ...(teamStands(key, b, crowd, teamIdx) || placeScene(key, [b, ...crowd], { group: 'house' })) };
-  S.arenaCrowd = crowd;
+  S.arenaCrowd = crowd; S.arenaCast = { key, cast };
   S.push({ scene: { plate: key, place: 'The Arena', when: whenOf(S.day, S.min), icon: 'skull', island: 'arena', cast, hidden: [a], wipe: 1, embers: 1 },
     card: { k: 'Elimination', t: 'The Arena', sub: `${a} is going in`, faces: [a], icon: 'arena' }, sceneIdx: at.i, title: 'The Arena' });
   S.push({ dir: 'The house is in the stand and the torches are lit. TJ hits the gong.', focus: ['TJ'], gong: 1 });
@@ -1048,6 +1052,13 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
     });
     S.push({ enter: { [b]: ['podium', 0, 'R'] }, dir: `${b} comes down from the stand and takes the right podium.`, focus: [b] });
   }
+  // what is said at the Arena between the call-out and the duel (an empty threat), in airing order
+  const between = items.filter(x => co && x.i > co.i && (!ar || x.i < ar.i) && x !== ar);
+  for (const it of between) {
+    S.at(it.i);
+    linesToSteps(S, it.a.lines || [], { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title, kind: it.a.kind, focus: it.a.who.slice(0, 2) } });
+    if (BIG[it.a.kind]) for (const st of [].concat(BIG[it.a.kind](it.a))) S.push({ focus: it.a.who.slice(0, 4), ...st });
+  }
   if (!ar || !duel) return;
   S.push({ card: { k: duel.name, t: `${a} vs ${b}`, sub: 'The loser goes home', faces: [a, b], vs: 1, icon: 'arena' }, focus: [a, b] });
   const g = arenaDef(duel.game);
@@ -1059,7 +1070,7 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
   finishDuel(S, duel, post, names, `${row.num}|${duel.game}`, S.arenaCrowd || [], bye);
   // a Teams season: the winner's choice, in front of both teams in the stand, a team folding, and anything that aired
   // on the Arena night between the duel and the choice, in airing order
-  const done = new Set([co, ar, bye].filter(Boolean));
+  const done = new Set([co, ar, bye, ...between].filter(Boolean));
   for (const it of items.filter(x => !done.has(x)).sort((x, y) => x.i - y.i)) {
     if (['team-switch', 'team-stay', 'team-fold'].includes(it.a.kind)) { teamChoice(S, it, { names }); continue; }
     S.at(it.i);
@@ -1096,6 +1107,24 @@ function teamStands(key, b, crowd, teamIdx) {
   return spec;
 }
 
+// Where an Arena winner goes after their answer: beside the front of the team they will play for, on its side of
+// the Arena (teamStands), stepping in toward the middle. Null when that team has nobody in the stand.
+function besideTeam(S, team, w) {
+  const A = S.arenaCast; if (!A) return null;
+  const ms = marksOf(A.key);
+  const at = sp => {
+    if (!sp) return null;
+    if (!Array.isArray(sp)) return sp;
+    const [kind, i = 0, group] = sp;
+    return ms.filter(m => m.kind === kind && (group ? m.group === group : !m.group))[i] || null;
+  };
+  const mates = Object.entries(S.teamNames || {}).filter(([n, t]) => t === team && n !== w).map(([n]) => at(A.cast[n])).filter(Boolean);
+  if (!mates.length) return null;
+  const front = [...mates].sort((x, y) => y.v - x.v)[0];
+  const inward = front.u < .5 ? 1 : -1;
+  return { u: Math.min(.96, Math.max(.04, front.u + inward * .065)), v: Math.min(.7, front.v + .015), s: (front.s || .07) * 1.04 };
+}
+
 // The Arena winner's choice in a Teams season (ch/teams.js afterTeamDuel): TJ asks, both teams watch from the stand,
 // the answer, and both teams react; a switch recolours the player from here on. A team down to one folds.
 function teamChoice(S, it, { names }) {
@@ -1111,12 +1140,14 @@ function teamChoice(S, it, { names }) {
   S.push({ card: { k: 'The choice', t: `${w}: stay or switch`, sub: `${d.from} voted ${w} in. ${stand.filter(n => n !== d.from).join(' and ') || 'The other team'} would take ${S.V.pron[w]?.obj || 'them'}.`, faces: [w], icon: 'arena' },
     focus: [], sceneIdx: it.i, title: a.kind === 'team-switch' ? 'Switching sides' : 'Staying put' });
   const lines = a.lines || [];
-  // the answer is the first thing the winner says; the switch slams and recolours on it
+  // the answer is the first thing the winner says; the switch slams and recolours on it, and the winner walks over to
+  // the side they chose (the team they join, or back to the one that voted them in)
   const answer = lines.findIndex(l => l.by === w && l.kind === 'say');
+  const goTo = besideTeam(S, a.kind === 'team-switch' ? d.to : d.from, w);
   lines.forEach((l, k) => {
     if (k === answer) {
       // the answer is a wide shot: both teams' faces when it lands
-      S.push({ say: [l.by, l.text], focus: [], ...(a.kind === 'team-switch'
+      S.push({ say: [l.by, l.text], focus: [], ...(goTo ? { move: { [w]: goTo } } : {}), ...(a.kind === 'team-switch'
         ? { slam: { spray: 'SWITCHED SIDES', color: '#ffd21a' }, reband: { [w]: d.to }, chip: [w, `NOW ${String(d.to || '').toUpperCase()}`], shake: 1 }
         : { slam: { stamp: 'STAYING' }, chip: [w, `STAYS WITH ${String(d.from || '').toUpperCase()}`] }) });
     } else linesToSteps(S, [l], { names, sceneWho: a.who });
@@ -1292,7 +1323,10 @@ function buildArenaPairs(S, open, items, row, { names, house, goneAt }) {
     if (B[1]) S.push({ chip: [B[1], 'CALLED OUT'], focus: B });
     S.push({ enter: sideOf(key, 'podium', 'R', B), dir: `${nameList(B)} come down from the stand and take the right podium.`, focus: B });
   }
-  const rest = items.filter(x => x !== co && x !== ar);
+  // what is said at the Arena between the call-out and the duel (an empty threat) plays before it, in airing order
+  const between = co && ar ? items.filter(x => x.i > co.i && x.i < ar.i) : [];
+  for (const it of between) afterPairDuel(S, it, names);
+  const rest = items.filter(x => x !== co && x !== ar && !between.includes(x));
   if (!ar || !duel) { for (const it of rest) afterPairDuel(S, it, names); return; }
   S.push({ card: { k: duel.name, t: `${nameList(A)} vs ${nameList(B)}`, sub: 'The losing pair goes home', vsPairs: [A, B], icon: 'arena' }, focus: [...A, ...B] });
   const g = arenaDef(duel.game);

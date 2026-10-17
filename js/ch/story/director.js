@@ -265,8 +265,33 @@ export function airEpisode(state, epRec, prevRec = null) {
       if (s.kind === 'arena-goodbye') for (const arc of heldArcs[s.data?.loser] || []) pushArc(arc);
     }
   }
-  epRec.aired = eveningAfterTheDaily(keepWithTheDaily(morningFirst(aired)));
+  epRec.aired = arenaNightTogether(eveningAfterTheDaily(keepWithTheDaily(morningFirst(aired))));
   return epRec.aired;
+}
+
+// The Arena night is one piece: between a call-out and its duel only what happens AT the Arena airs (an empty
+// threat); an alliance ending in the kitchen over the call-out airs after the duel's goodbye. Aired in between, it
+// cut the Arena into two screens with the villa between (24 of 160 episodes, measured 2026-10-17).
+function arenaNightTogether(aired) {
+  const out = [...aired];
+  for (let i = 0; i < out.length; i++) {
+    if (out[i].kind !== 'callout' && out[i].kind !== 'pair-callout') continue;
+    const duel = out.findIndex((x, k) => k > i && (x.kind === 'arena' || x.kind === 'pair-arena'));
+    if (duel < 0) continue;
+    const away = out.slice(i + 1, duel).filter(x => x.scene?.spot !== 'arena');
+    if (!away.length) continue;
+    const rest = out.filter(x => !away.includes(x));
+    // after the duel's goodbye (and the arcs that follow it), or right after the duel when it has none
+    const at = rest.indexOf(out[duel]);
+    let end = at;
+    const loser = out[duel].scene?.data?.loser;
+    const bye = rest.findIndex((x, k) => k > at && x.kind === 'arena-goodbye' && (!loser || x.scene?.data?.loser === loser));
+    if (bye > at && !rest.slice(at + 1, bye).some(x => ['callout', 'pair-callout', 'arena', 'pair-arena'].includes(x.kind))) end = bye;
+    while (end + 1 < rest.length && rest[end + 1].kind.startsWith('arc-')) end++;
+    rest.splice(end + 1, 0, ...away);
+    out.splice(0, out.length, ...rest);
+  }
+  return out;
 }
 
 // What happened at the daily airs with the daily: a "that was the best I've ever done" confessional aired hours

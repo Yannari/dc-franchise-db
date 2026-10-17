@@ -112,6 +112,9 @@ function stageOf(a, min) {
   if (a.kind === 'arena-eve-pep') place = { plate: night ? 'beach' : 'sunset', place: 'The Beach', island: 'beach', icon: 'island' };
   // the Redemption residents fight in the Arena, not in the shack
   if (a.kind === 'redemption-duel') place = PLACE.arena;
+  // TJ gathering the house at the villa gathers it in the common room, sat on the sofa (the user, 2026-10-17: after a
+  // disqualification TJ addressed everybody by the pool); at the Arena, the club or a daily he stays where he is
+  if (TJ_TO_HOUSE.has(a.kind) && (!a.spot || ['villa', 'pool', 'kitchen', 'beach', 'gym', 'bedroom', 'private'].includes(a.spot))) place = PLACE.public;
   if (!place || a.spot === 'private') place = pickBy(night ? QUIET_NIGHT : QUIET_DAY, `${a.kind}|${a.day}|${a.who.join()}`);
   return place;
 }

@@ -21,6 +21,7 @@ import { voteTalkFor } from './votetalk.js';
 import { runnerDue, arcDue } from './arcs.js';
 import { gameTalkFor, bondTalkFor, styleTalkFor, phaseOf, hohWeekFor } from './gametalk.js';
 import { writeMilestone } from './milestone.js';
+import { hohRoomBeats } from '../hoh-room.js';
 
 const CEREMONY = new Set(['hoh', 'nominations', 'veto', 'veto-ceremony', 'eviction']);
 // the ceremonies' own moments (kept in step with vp-bb-ep/steps.js NOM_MOMENT / VETO_MOMENT)
@@ -604,6 +605,8 @@ export function airStorylines(week) {
     }
   };
 
+  // the night the HOH room opens plays in its own screen, straight after the competition (bb/hoh-room.js)
+  const roomBeats = new Set((week.acts || []).flatMap((a, i) => hohRoomBeats(week.acts, i)));
   for (const act of week.acts) {
     if (!act) continue;
     if (act.type === 'campaign') airCampaign(act);
@@ -624,6 +627,7 @@ export function airStorylines(week) {
       at++;
       // a moment that happens AT a ceremony plays in the ceremony screen (vp-bb-ep/steps.js)
       if ((act.type === 'nominations' && CER_NOM.test(String(beat.eventId || ''))) || (act.type === 'veto-ceremony' && CER_VETO.test(String(beat.eventId || '')))) { beat.aired = true; lineAired(beat.lineToken); continue; }
+      if (roomBeats.has(beat)) { beat.aired = true; lineAired(beat.lineToken); continue; }
       stretchBeats.push({ act, beat });
       const c = classify(beat);
       if (!c) continue;

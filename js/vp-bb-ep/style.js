@@ -311,6 +311,34 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .vchip img{width:78%;height:78%;object-fit:cover;object-position:50% 14%;border-radius:50%;box-shadow:0 0 0 .2cqw #a87a10}
 .bbx .vchip b{font:900 1.3cqw/1.05 Archivo;font-stretch:80%;letter-spacing:.06cqw;color:#3d2a00;text-align:center;text-transform:uppercase}
 .bbx .vchip i{position:absolute;bottom:-3.2cqw;left:50%;transform:translateX(-50%);white-space:nowrap;font:700 .9cqw 'Chakra Petch';letter-spacing:.14cqw;color:#fff;text-transform:uppercase;font-style:normal}
+/* the HOH room opens: the key turns in the door */
+.bbx .hkey{position:absolute;left:50%;top:42%;width:12cqw;z-index:61;transform:translate(-50%,-50%);animation:bbx-hkey 1.7s ease both;filter:drop-shadow(0 0 1.2cqw #f5c542);pointer-events:none}
+@keyframes bbx-hkey{0%{transform:translate(-50%,-50%) scale(.4);opacity:0}25%{transform:translate(-50%,-50%) scale(1) rotate(0);opacity:1}60%{transform:translate(-50%,-50%) scale(1) rotate(90deg);opacity:1}100%{transform:translate(-50%,-50%) scale(1.35) rotate(90deg);opacity:0}}
+/* the veto player pick: a bag comes up, a chip rises out of it face down and turns over; the field fills above */
+.bbx .vbag{position:absolute;left:50%;top:50%;z-index:59;width:10cqw;transform:translateX(-50%);animation:bbx-bagin 2.4s ease both;pointer-events:none;filter:drop-shadow(0 1cqw 1.4cqw rgba(0,0,0,.55))}
+@keyframes bbx-bagin{0%{transform:translate(-50%,60%);opacity:0}14%{transform:translate(-50%,0);opacity:1}22%{transform:translate(-50%,0) rotate(-4deg)}30%{transform:translate(-50%,0) rotate(3deg)}38%{transform:translate(-50%,0) rotate(0)}75%{opacity:1}100%{transform:translate(-50%,40%);opacity:0}}
+.bbx .vchip3{position:absolute;left:50%;top:38%;z-index:60;width:11cqw;aspect-ratio:1;transform:translate(-50%,-50%);perspective:60cqw;animation:bbx-chiprise 1.1s .35s cubic-bezier(.2,.9,.3,1.15) both}
+@keyframes bbx-chiprise{0%{transform:translate(-50%,40%) scale(.3);opacity:0}30%{opacity:1}100%{transform:translate(-50%,-50%) scale(1)}}
+.bbx .vchip3 .vcin{position:absolute;inset:0;transform-style:preserve-3d;animation:bbx-chipflip .75s 1.35s cubic-bezier(.3,.7,.2,1.25) both}
+@keyframes bbx-chipflip{from{transform:rotateY(180deg)}to{transform:rotateY(0)}}
+.bbx .vchip3 .vcf{position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(circle at 35% 30%,#fff8d8,#f5c542 55%,#a87a10);box-shadow:0 0 0 .3cqw #fff3c4,0 1.2cqw 3cqw rgba(0,0,0,.5)}
+.bbx .vchip3 .vcf.rear{transform:rotateY(180deg);background:radial-gradient(circle at 35% 30%,#d9b3f0,#6b2a8c 55%,#2a0e3c)}
+.bbx .vchip3 .vcf.rear b{font:900 1.9cqw Archivo;font-stretch:80%;letter-spacing:.2cqw;color:#f5c542}
+.bbx .vchip3 .vcf img{width:78%;height:78%;object-fit:cover;object-position:50% 14%;border-radius:50%;box-shadow:0 0 0 .2cqw #a87a10}
+.bbx .vchip3 .vcf b{font:900 1.3cqw/1.05 Archivo;font-stretch:80%;letter-spacing:.06cqw;color:#3d2a00;text-align:center;text-transform:uppercase}
+.bbx .vchip3>i{position:absolute;bottom:-3.2cqw;left:50%;transform:translateX(-50%);white-space:nowrap;font:700 .9cqw 'Chakra Petch';letter-spacing:.14cqw;color:#fff;text-transform:uppercase;font-style:normal;animation:bbx-fadein .4s 2s both}
+@keyframes bbx-fadein{from{opacity:0}}
+.bbx .vfield{position:absolute;left:50%;top:5.2cqw;z-index:12;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5cqw;pointer-events:none}
+.bbx .vfield .vfh{font:800 .8cqw 'Chakra Petch';letter-spacing:.24cqw;color:#f5c542;background:rgba(10,4,16,.72);padding:.2cqw .8cqw;border-radius:.3cqw}
+.bbx .vfield .vfr{display:flex;gap:.6cqw}
+.bbx .vfs{width:4.4cqw;display:flex;flex-direction:column;align-items:center;gap:.25cqw}
+.bbx .vfs i{width:4cqw;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font:900 1.5cqw Archivo;font-style:normal;color:#f5c54299;background:radial-gradient(circle at 35% 30%,#7a3a9c,#2a0e3c);box-shadow:0 0 0 .15cqw #f5c54266}
+.bbx .vfs .vff{width:4cqw;aspect-ratio:1;border-radius:50%;overflow:hidden;background:var(--c);box-shadow:0 0 0 .18cqw #f5c542,0 .4cqw .8cqw rgba(0,0,0,.5)}
+.bbx .vfs .vff img{width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.bbx .vfs b{font:800 .7cqw Archivo;font-stretch:80%;color:#fff;text-shadow:0 .1cqw .3cqw #000;white-space:nowrap}
+.bbx .vfs.flip .vff{animation:bbx-nflip .7s cubic-bezier(.3,.7,.2,1) both}
+.bbx .vfs.flip.late .vff{animation-delay:2s}
 @keyframes bbx-chipin{from{transform:translate(-50%,40%) scale(.3) rotate(-120deg);opacity:0}}
 .bbx .wall.onwall{inset:0;left:0;right:0;top:0;display:block;perspective:none;z-index:1}
 .bbx .wall.onwall .mw{position:absolute;transform:none;border-radius:.15cqw;width:auto}

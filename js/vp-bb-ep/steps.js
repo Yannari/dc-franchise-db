@@ -28,6 +28,7 @@ import { players as ROSTER } from '../core.js';
 import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
 import { finaleHouseScenes } from './finale-house.js';
+import { hasHohRoom, hohRoomBeats } from '../bb/hoh-room.js';
 import { themeBeatScreens, themeVoiceSteps, themePrimerScreens, themeTurnScreens, haveNotScreens, departureScreens, instantScreens,
   doubleBreakScreen, americasVoteScreens, hackerScreens, hackerVoteScreens, roadkillScreens, pandoraScreens, detonationScreens,
   appStoreScreens, drawTwistSteps, campDirectorScreens, cliqueScreens, splitScreens, otherSideScreen, bucksScreens, sideBetScreens,
@@ -278,6 +279,92 @@ function compScreen(act, ctx, kind) {
   };
 }
 
+// ── the HOH room opens ─────────────────────────────────────────────────
+// The user's #9 (2026-10-16): the ceremonies should feel like the show's. The night of the competition, the new Head
+// of Household gets the key, the whole house runs up the stairs behind them, the door opens on the photos and the
+// basket, and the room empties out until only the people the HOH wants are left. What happens in there that night is
+// the engine's (bb/hoh-room.js): the room opening on the house, who stays when the rest leave, the letter, and what
+// each of those moved goes in the side panel. House Life does not air them again (bb/story/director.js).
+const HOH_ROOM_SEES = [
+  ['Look at you as a baby!', 'Put that down. Put it down right now.'],
+  ['There is a whole basket of your snacks in here.', 'Hands off. Okay. One each.'],
+  ['You have the spy screen! You can see the whole house from up here.', 'I can see all of you. Remember that.'],
+  ['This bed is bigger than my whole bedroom at home.', 'Shoes! Get your shoes off the bed!'],
+  ['Who picked these photos? These are so embarrassing.', 'Somebody back home who wanted me to suffer.'],
+  ['It smells like a hotel in here. A nice hotel.', 'It smells like winning.'],
+  ['There is a shower in here. A private shower.', 'And nobody is using it but me.'],
+];
+const HOH_ROOM_LOOK = [
+  `Photos from home on the dresser, a basket of favourite snacks on the bed, and a letter on the pillow. {h} slides the letter into a pocket for later.`,
+  `The photos go up first. Then somebody finds the basket. Then somebody finds the spy screen, and the whole house crowds round it.`,
+  `Everybody heads straight for the photos. {h} heads straight for the letter, looks at it, and puts it away unopened.`,
+];
+const HOH_ROOM_DR = [
+  `Everybody came up those stairs smiling. I know what most of those smiles are for.`,
+  `Tonight I get to enjoy this room. Tomorrow I name nominees, and everybody who hugged me on the stairs knows it.`,
+  `This room has a lock on the door. For one week, that is the most powerful thing in the house.`,
+  `I counted who ran up the stairs first and who came up last. I will be thinking about that list all night.`,
+];
+// what one of the night's moments moved, said for the side panel
+function effectWhy(b) {
+  const out = [];
+  for (const e of b.effects || []) {
+    const [x, y] = e.players || [];
+    if (e.kind === 'bond' && x && y) out.push(`${x} & ${y}: ${Number(e.delta) > 0 ? 'closer' : 'further apart'}`);
+    else if (e.kind === 'suspicion' && x && y) out.push(`${x} is warier of ${y} now`);
+    else if (e.kind === 'pop' && x) out.push(`${x}: ${Number(e.delta) > 0 ? 'the audience warms to this' : 'the audience goes cold on this'}`);
+    else if (e.text) out.push(stripTags(e.text));
+  }
+  return out.slice(0, 4);
+}
+function hohRoomScreen(act, ctx, beats) {
+  const hoh = act.winner;
+  const house = houseNow(ctx);
+  const rest = house.filter(n => n !== hoh);
+  const key = `${ctx.week}|hohroom|${hoh}`;
+  // the house in the room: the HOH in the middle, the first six through the door around (more is a wall of faces)
+  const first = rest.slice().sort((a, b) => hash(`${key}|in|${a}`) - hash(`${key}|in|${b}`)).slice(0, 6);
+  const crowd = [...first.slice(0, 3), hoh, ...first.slice(3)];
+  const spreadAt = names => names.map((n, i, a) => [n, Math.round(8 + (84 * i) / Math.max(1, a.length - 1))]);
+  const steps = [
+    { k: 'bb', t: `${hoh}, please come to the Diary Room to collect your Head of Household key.` },
+    { k: 'beat', t: `${hoh} comes out holding the key, and the whole house is already waiting on the stairs.`, at: [[hoh, 50]] },
+    { k: 'beat', t: `The key turns. The door swings open, and everybody pours in behind ${hoh}.`, at: spreadAt(crowd), door: true, turnKey: true },
+    { k: 'beat', t: pickBy(HOH_ROOM_LOOK, key).replace(/\{h\}/g, hoh), toast: ['THE HOH ROOM', '#f5c542'] },
+  ];
+  // two of the house react to the room, and the HOH answers (no game in it: the room is new)
+  const seen = rest.slice().sort((a, b) => hash(`${key}|${a}`) - hash(`${key}|${b}`)).slice(0, 2);
+  const lines = HOH_ROOM_SEES.slice().sort((a, b) => hash(`${key}|${a[0]}`) - hash(`${key}|${b[0]}`));
+  seen.slice(0, beats.length >= 2 ? 1 : 2).forEach((n, i) => steps.push({ k: 'say', by: n, t: lines[i][0], ...(i ? {} : { push: true }) }, { k: 'say', by: hoh, t: lines[i][1] }));
+  // the night's moments, as the engine had them: the room opening is the whole house; the rest is a room emptying
+  let emptied = false;
+  for (const b of beats) {
+    const who = b.scene?.who || {};
+    const said = (b.lines?.length ? scriptSteps(b.lines) : [{ k: 'beat', t: stripTags(b.text) }])
+      // the house has just crowded in on screen: a line that says so again starts at what happened next
+      .map(x => x.k === 'beat' ? { ...x, t: x.t.replace(/^The whole house crowds into the HOH room to look at the photos\. /, '') } : x);
+    if (!said.length) continue;
+    if (b.eventId !== 'power-hoh-room-reveal' && !emptied) {
+      emptied = true;
+      const stay = [who.a, who.b].filter(Boolean);
+      const gone = rest.filter(n => !stay.includes(n));
+      // (a moment that opens on its own picture of the room, "An hour later, only...", says it better)
+      if (gone.length && said[0].k !== 'beat') steps.push({ k: 'beat', t: `Bit by bit the house drifts back downstairs, until only ${listOf(stay)} ${stay.length > 1 ? 'are' : 'is'} left.`, at: spreadAt(stay) });
+      else if (gone.length) said[0] = { ...said[0], at: spreadAt(stay) };
+    }
+    const why = effectWhy(b);
+    if (why.length) said[said.length - 1] = { ...said[said.length - 1], why };
+    if (b.badgeText) said[0] = { ...said[0], badge: [b.badgeText, b.badgeClass || ''] };
+    steps.push(...said);
+  }
+  steps.push({ k: 'dr', by: hoh, t: pickBy(HOH_ROOM_DR, key) });
+  return {
+    id: 'bb-hohroom-v', kind: 'hohroom', anchor: 'hoh', label: 'HOH Room', set: 'hoh', room: ROOM_NAME.hoh, cam: CAM.hoh,
+    title: 'The HOH Room', kicker: `Cam ${String(CAM.hoh).padStart(2, '0')} · HOH room`, sub: `${hoh}'s room opens`,
+    day: ctx.day, time: '22:10', cast: [[hoh, 50]], steps,
+  };
+}
+
 // ── nominations, as the modern show runs them ──────────────────────────
 function nomScreen(act, ctx) {
   const hoh = act.hoh || ctx.hoh;
@@ -436,6 +523,35 @@ function anonNomScreen(act, ctx, hoh, noms, seated) {
 }
 
 // ── the veto player pick ───────────────────────────────────────────────
+// The face the drawer makes at the name that comes out (the user's #9, 2026-10-16: the draw should feel like a game).
+// Read from how the drawer felt about that person at the draw (bb/week.js records `feel`), never from today's bonds.
+const DRAW_FACE = {
+  // a nominee pulls a friend: somebody who might use the veto on them
+  nomAlly: [['say', 'Yes! Come on, get up here!'], ['say', 'Oh, thank God. Thank you, bag.'], ['say', 'That is the one I wanted.'], ['beat', '{d} grabs {n} by the arm and does not let go.']],
+  // the Head of Household pulls a friend: somebody who will leave the block alone
+  hohAlly: [['say', 'Good. That works for me.'], ['beat', '{d} keeps a straight face. Just about.'], ['say', 'Welcome to the veto, {n}.'], ['beat', '{d} and {n} share a very small nod.']],
+  // anybody pulls somebody they would rather not have
+  enemy: [['beat', '{d} looks at the chip a second too long.'], ['beat', '{d} smiles. It does not reach the eyes.'], ['say', 'Of course. Of course it is.'], ['beat', '{n} waves at {d}. {d} does not wave back.']],
+  // nothing much either way: the drawn one gets up
+  plain: [['say', "Let's go, then."], ['say', 'Me? Okay. Okay, I am in.'], ['beat', '{n} gets up and stretches, like the competition is in five minutes.'], ['say', 'I have not played in a while. I am ready.']],
+};
+function drawFace(d, name, hoh, key, used = new Set()) {
+  const feel = Number(d.feel);
+  if (!Number.isFinite(feel)) return null;
+  const isHoh = d.drawer === hoh;
+  const kind = feel >= 3 ? (isHoh ? 'hohAlly' : 'nomAlly') : feel <= -2 ? 'enemy' : 'plain';
+  // never the same face twice in one draw
+  const pool = DRAW_FACE[kind], at = hash(`${key}|${kind}`) % pool.length;
+  const pick = [...pool.slice(at), ...pool.slice(0, at)].find(x => !used.has(x[1]));
+  if (!pick) return null;
+  used.add(pick[1]);
+  const [k, t0] = pick;
+  const t = t0.replace(/\{d\}/g, d.drawer).replace(/\{n\}/g, name);
+  // the plain reaction is the drawn one's; the others are the drawer's
+  const by = kind === 'plain' ? name : d.drawer;
+  return k === 'say' ? { k: 'say', by, t } : { k: 'beat', t, focus: [d.drawer, name] };
+}
+
 function drawScreen(act, ctx) {
   const draws = act.draw || [];
   if (!draws.length) return null;
@@ -445,14 +561,27 @@ function drawScreen(act, ctx) {
     { k: 'bb', t: `${listOf([hoh, ...block])}, please come to the living room for the veto player pick.` },
     { k: 'say', by: hoh, t: `The nominees and I play in the veto. Each of us draws one chip. If you pull houseguest's choice, you pick anybody you want.`, vetoPlay: [hoh, ...block] },
   ];
-  const dwhy = [];
-  for (const d of draws) {
+  const dwhy = [], faces = new Set();
+  for (const [i, d] of draws.entries()) {
+    const key = `${ctx.week}|draw|${i}|${d.drawer}`;
+    // the drawer's hand goes into the bag first: the chip comes out face down and turns over
     if (d.chip === 'choice') {
-      steps.push({ k: 'beat', t: `${d.drawer} draws. The chip says HOUSEGUEST'S CHOICE.`, chip: { drawer: d.drawer, chip: 'choice' } });
+      const was = d.chipWas || 'choice';
+      const face = was === 'own' ? d.drawer : was === 'playing' ? d.drew : 'choice';
+      const t = was === 'own' ? `${d.drawer} draws. It's ${d.drawer}'s own chip, and the room loves it. That's houseguest's choice.`
+        : was === 'playing' ? `${d.drawer} draws ${d.drew}, who is already playing. The pick comes back to ${d.drawer}: houseguest's choice.`
+          : `${d.drawer} draws. The chip says HOUSEGUEST'S CHOICE.`;
+      steps.push({ k: 'beat', t, chip: { drawer: d.drawer, chip: face }, ...(was === 'choice' ? { toast: ["HOUSEGUEST'S CHOICE", '#d99a10'] } : {}) });
       if (d.why) dwhy.push(String(d.why).trim());
-      if (d.chose) steps.push({ k: 'say', by: d.drawer, push: true, t: `Houseguest's choice. ${d.chose}, you're playing.`, vetoPlay: [d.chose], ...(dwhy.length ? { why: dwhy.slice() } : {}) });
+      if (d.chose) {
+        steps.push({ k: 'say', by: d.drawer, push: true, t: `Houseguest's choice. ${d.chose}, you're playing.`, vetoPlay: [d.chose], ...(dwhy.length ? { why: dwhy.slice() } : {}) });
+        const face2 = Number(d.feel) >= 3 ? drawFace(d, d.chose, hoh, key, faces) : null;
+        if (face2 && face2.k === 'beat') steps.push(face2);
+      }
     } else if (d.drew) {
       steps.push({ k: 'beat', t: `${d.drawer} draws ${d.drew}.`, chip: { drawer: d.drawer, chip: d.drew }, vetoPlay: [d.drew] });
+      const face2 = drawFace(d, d.drew, hoh, key, faces);
+      if (face2) steps.push(face2);
     }
   }
   // a Veto Redraw or Replacement, between the draw and the competition (vp-bb-ep/steps-ports.js)
@@ -467,6 +596,8 @@ function drawScreen(act, ctx) {
   steps.push({ k: 'beat', t: pickBy([`The six of them look at each other and start sizing each other up.`, `Somebody is already stretching. Somebody else is very obviously not.`, `Everybody who isn't playing gets very interested in the kitchen.`], `${ctx.week}|drawbeat`).replace('The six', `The ${word(field.length)}`) });
   return { id: 'bb-vdraw-v', kind: 'vdraw', anchor: 'veto', label: 'The Draw', set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony,
     title: 'Veto Player Pick', kicker: 'Cam 04 · Living room', sub: 'Chips for the veto', day: ctx.day, time: '10:15',
+    // the field's board fills a slot per chip (stage.js), so it knows how many slots there are
+    vfield: field.length,
     seated: seatLiving(block, [...players].filter(n => n !== hoh && !block.includes(n)).concat(others), hoh), steps };
 }
 
@@ -3428,9 +3559,19 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     ctx.day = ACT_DAY[act.type] != null || row.isFinale ? Math.max(ctx.day || 0, dayOf) : Math.max(ctx.day || 0, ((ctx.week - 1) * 7) + 1);
     switch (act.type) {
       case 'house': case 'campaign': beatsOf(act); break;
-      case 'hoh':
+      case 'hoh': {
         if (!act.preCrowned) ceremony(compScreen(act, ctx, 'hoh'));
-        ctx.hoh = act.winner || ctx.hoh; ctx.anchor = 'hoh'; beatsOf(act); break;
+        ctx.hoh = act.winner || ctx.hoh; ctx.anchor = 'hoh';
+        // the room opens the same night (bb/hoh-room.js says which competitions get it, and which beats play in it)
+        const acts = row.acts || [], i = acts.indexOf(act);
+        if (hasHohRoom(act)) {
+          const room = hohRoomBeats(acts, i);
+          // (an older save chooses its House Life from the beats: these have aired here)
+          for (const b of room) aired.add(b.eventId);
+          ceremony(hohRoomScreen(act, ctx, room));
+        }
+        beatsOf(act); break;
+      }
       case 'nominations':
         if (act.byCoHoh) { ceremony({ ...nomScreen(act, ctx), id: 'bb-noms-2v', title: `Nominations · ${act.hoh || 'Second HOH'}`, label: `Nominations · ${act.hoh || 'Second HOH'}` }); beatsOf(act); break; }
         ctx.hoh = act.hoh || ctx.hoh;

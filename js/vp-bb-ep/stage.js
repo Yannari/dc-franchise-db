@@ -751,6 +751,13 @@ function reactionOf(st) {
     || (/!/.test(t) && /^(what|oh my|no way|are you (serious|kidding)|shut up|excuse me)/i.test(t)))) return 'wow';
   return null;
 }
+// the veto player pick's bag (a drawstring sack with the veto's mark), drawn so it reads at a glance
+const BAG_SVG = '<svg viewBox="0 0 100 100"><defs><linearGradient id="vbgg" x1="0" x2="1"><stop offset="0" stop-color="#2a0e3c"/><stop offset=".45" stop-color="#6b2a8c"/><stop offset="1" stop-color="#22092f"/></linearGradient></defs>'
+  + '<path d="M31 32 Q19 56 21 78 Q23 95 50 96 Q77 95 79 78 Q81 56 69 32 Z" fill="url(#vbgg)" stroke="#16051f" stroke-width="1.5"/>'
+  + '<path d="M34 22 Q42 28 50 20 Q58 28 66 22 L69 32 Q50 26 31 32 Z" fill="#4d1c69" stroke="#16051f" stroke-width="1.2"/>'
+  + '<path d="M29 31 Q50 25 71 31 L70 36 Q50 30 30 36 Z" fill="#f5c542"/>'
+  + '<circle cx="50" cy="66" r="12" fill="none" stroke="#f5c542" stroke-width="2.6"/>'
+  + '<text x="50" y="69.5" font-size="9" text-anchor="middle" fill="#f5c542" font-weight="900" font-family="Archivo,sans-serif">POV</text></svg>';
 const KEY_SVG = '<svg viewBox="0 0 24 24"><circle cx="7" cy="12" r="4.5" fill="none" stroke="#f5c542" stroke-width="2.4"/><path d="M11 12h11M18 12v4M21 12v3" stroke="#f5c542" stroke-width="2.4" stroke-linecap="round"/></svg>';
 const REACT_WOW = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#ff2e4d"/><rect x="10.6" y="5" width="2.8" height="9" rx="1.4" fill="#fff"/><circle cx="12" cy="17.6" r="1.7" fill="#fff"/></svg>';
 const REACT_LAUGH = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#f5c542"/><path d="M7 13.5q5 5.5 10 0" fill="none" stroke="#3a2600" stroke-width="2.2" stroke-linecap="round"/><path d="M7.5 9.5l2 -1.5M16.5 9.5l-2 -1.5" stroke="#3a2600" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -964,6 +971,19 @@ export function stageHtml(screens, si, idx, fresh, o) {
       : `<div class="bigrev ${fresh ? 'fresh' : ''}"><i>${esc(a)}</i><b>${esc(b)}</b></div>`;
   }
   if (fresh && st && st.door) h += '<div class="doorflood"></div>';
+  // the Head of Household's key turning in the door of the room (the night the room opens)
+  if (fresh && st && st.turnKey) h += `<div class="hkey">${KEY_SVG}</div>`;
+  // the veto player pick: the field, a slot per player, filling as the chips come out (the user's #9, 2026-10-16)
+  if (S.kind === 'vdraw' && idx >= 0) {
+    const n = Math.max(S.vfield || 0, L.vetoPlay.length);
+    const now = fresh ? (st?.vetoPlay || []) : [];
+    const slots = Array.from({ length: n }, (_, i) => {
+      const p = L.vetoPlay[i];
+      return p ? `<div class="vfs on ${now.includes(p) ? (st?.chip ? 'flip late' : 'flip') : ''}"><span class="vff" style="--c:${col(p)}">${img(p)}</span><b>${esc(p)}</b></div>`
+        : '<div class="vfs"><i>?</i></div>';
+    }).join('');
+    h += `<div class="vfield"><span class="vfh">PLAYING FOR THE VETO</span><div class="vfr">${slots}</div></div>`;
+  }
   // the Power of Veto's moment: the medallion in front of the house, used (it swings and flashes) or not (it turns away)
   if (st && st.medalHero) h += `<div class="vmedal ${st.medalHero} ${fresh ? 'fresh' : ''}">${MEDAL_SVG}<b>${st.medalHero === 'used' ? 'USED' : 'NOT USED'}</b></div>`;
   // the jury's keys: in the box (a count), then pulled one at a time onto the board
@@ -1008,7 +1028,10 @@ export function stageHtml(screens, si, idx, fresh, o) {
   else h += lineHtml(S, st, fresh, L);
   if (fresh && st) {
     if (st.toast) h += `<div class="toast" style="--tc:${st.toast[1]}"><b style="font-size:${Math.min(6, 64 / Math.max(1, st.toast[0].length)).toFixed(2)}cqw;white-space:nowrap">${esc(st.toast[0])}</b></div>`;
-    if (st.chip) h += `<div class="vchip">${st.chip.chip === 'choice' ? `<b>Houseguest's<br>choice</b>` : img(st.chip.chip)}<i>${esc(st.chip.drawer)} draws</i></div>`;
+    // the chip comes up out of the bag face down, and turns over
+    if (st.chip) h += `<div class="vbag">${BAG_SVG}</div><div class="vchip3"><div class="vcin"><div class="vcf rear"><b>VETO</b></div>`
+      + `<div class="vcf face">${st.chip.chip === 'choice' ? `<b>Houseguest's<br>choice</b>` : img(st.chip.chip) || `<b>${esc(st.chip.chip)}</b>`}</div></div>`
+      + `<i>${esc(st.chip.drawer)} draws${st.chip.chip !== 'choice' ? ` · ${esc(st.chip.chip)}` : ''}</i></div>`;
     if (cut) h += `<div class="flash"></div>`;
   }
   return { html: h, cls: `stage ${S.exitPhase ? `exitcut ${S.exitPhase}` : ''} ${S.lodge ? 'lodge' : ''} ${st && (st.k === 'bb' || st.k === 'voice') ? 'bbspeaks' : ''} ${st && st.rule != null ? 'rulesup' : ''} ${S.bright && !(st && st.k === 'dr') ? 'lightset' : ''} ${S.nv && !(st && st.k === 'dr') ? 'nv' : ''} ${fresh && st && st.shake ? 'shake' : ''}`, cam: camNow, ledger: L };

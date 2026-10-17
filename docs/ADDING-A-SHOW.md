@@ -2975,6 +2975,14 @@ every new set was an approved static HTML page before any stage code.
    a choice.
 9. **A secret stays in the side panel.** The house is never told who won the Hacker, Roadkill
    or the App Store; the viewer is, and only in the panel ("only you know"), never on the stage.
+10. **A moment the engine plays at a ceremony belongs on the ceremony's screen.** The night the
+   Head of Household's room opens had three engine events with real consequences (the room opening,
+   who stays when the rest leave, the letter shared), and House Life aired about one in fifteen of
+   them (phase-hoh-room: fired in 27 weeks of 33, aired in 2). They now play in their own HOH Room
+   screen straight after the competition, and one file (`js/bb/hoh-room.js`) tells both the director
+   and the viewer which beats those are, so nothing airs twice or not at all. Same for the veto draw:
+   the engine records how each drawer felt about the name that came out (`draw[].feel`), so the face
+   they make on screen is the one they made at the time, not today's bond on a replay.
 
 ### 18.4 Total Drama's stepped viewer, step by step (the recipe to copy)
 

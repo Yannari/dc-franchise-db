@@ -261,7 +261,8 @@ function drawVetoPlayers(house, hoh, nominees, rng, readBond, backdoorTarget = n
     const usable = chip.kind === 'name' && !playing.includes(chip.name);
     if (usable) {
       playing.push(chip.name);
-      draws.push({ drawer, chip: 'name', drew: chip.name, chose: null });
+      // how the drawer feels about who came out of the bag, for the face they make (vp-bb-ep/steps.js drawScreen)
+      draws.push({ drawer, chip: 'name', drew: chip.name, chose: null, feel: Math.round(read(drawer, chip.name)) });
       continue;
     }
     // WHY they are picking, which is a different scene each way: a blank chip
@@ -308,7 +309,7 @@ function drawVetoPlayers(house, hoh, nominees, rng, readBond, backdoorTarget = n
         ? `${drawer} is on the block and picks ${wanted}, who spent two days promising exactly this.`
         : `${drawer} is on the block and picks ${wanted} — the person they think would use it on them.`);
     draws.push({ drawer, chip: 'choice', chipWas, drew: chipWas === 'choice' ? null : chip.name,
-      chose: wanted, why });
+      chose: wanted, why, feel: Math.round(read(drawer, wanted)) });
   }
 
   // Anything the bag could not fill, fill at random rather than leave short.

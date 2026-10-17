@@ -7,7 +7,7 @@
 // house's), an unclaimed one goes dark.
 export const BBX_SPOWER_CSS = `
 .bbx .stage .spboard{position:absolute;left:50%;transform:translateX(-50%);top:7.2cqw;z-index:7;padding:.6cqw 1.2cqw .8cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(14,6,26,.88),rgba(14,6,26,.64));box-shadow:0 0 0 .1cqw rgba(176,124,255,.42);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(14,6,26,.88),rgba(14,6,26,.64));box-shadow:0 0 0 .1cqw rgba(176,124,255,.42)}
 .bbx .stage .spboard .sph{display:block;text-align:center;font:700 .7cqw 'Chakra Petch';letter-spacing:.2cqw;color:#b07cff;margin-bottom:.5cqw}
 .bbx .stage .spr{display:flex;justify-content:center;gap:.9cqw}
 .bbx .stage .spd{position:relative;width:8.6cqw;display:flex;flex-direction:column;align-items:center;gap:.25cqw;padding:.5cqw .4cqw .55cqw;border-radius:.6cqw .6cqw .3cqw .3cqw;

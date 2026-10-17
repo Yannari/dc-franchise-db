@@ -7,7 +7,7 @@
 // it goes red.
 export const BBX_INTERRO_CSS = `
 .bbx .stage .intboard{position:absolute;right:3cqw;top:7.2cqw;z-index:7;width:19cqw;padding:.7cqw 1cqw .8cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(26,6,10,.88),rgba(26,6,10,.66));box-shadow:0 0 0 .1cqw rgba(255,51,85,.42);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(26,6,10,.88),rgba(26,6,10,.66));box-shadow:0 0 0 .1cqw rgba(255,51,85,.42)}
 .bbx .stage .intboard .ih{display:block;font:700 .7cqw 'Chakra Petch';letter-spacing:.2cqw;color:#ff8aa0;margin-bottom:.5cqw}
 .bbx .stage .ir{display:grid;grid-template-columns:2.4cqw 5.4cqw 1fr 1.2cqw;align-items:center;gap:.5cqw;padding:.25cqw .3cqw;border-radius:.4cqw;margin-bottom:.25cqw}
 .bbx .stage .irf{position:relative;width:2.4cqw;aspect-ratio:1;border-radius:.35cqw;overflow:hidden;background:var(--c)}

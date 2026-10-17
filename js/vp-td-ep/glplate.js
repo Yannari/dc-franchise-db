@@ -123,6 +123,8 @@ export function liveGL(root) {
     gl.uniform1f(u('gSat'), G.sat ?? 1); gl.uniform1f(u('gHaze'), G.haze || 0); gl.uniform1f(u('gHot'), G.hot || 0); gl.uniform1f(u('gKeep'), G.keep || 0);
     const s = { cv, gl, ut: gl.getUniformLocation(pr, 't'), ready: 0, raf: 0, t0: performance.now(), bobA, upar: gl.getUniformLocation(pr, 'par'), dAmp: 0, px: 0, py: 0, tx: 0, ty: 0 };
     cv._gl = s; live.add(s);
+    // not on screen (scrolled away, a folded panel): the loop idles and draws nothing
+    if (typeof IntersectionObserver === 'function') { s.io = new IntersectionObserver(es => { s.off = !es.at(-1).isIntersecting; }); s.io.observe(cv); }
     if (cv.dataset.depth) {
       // the depth arrives on its own: until then the plate is flat, never held back
       texture(gl, 3, cv.dataset.depth, () => { gl.uniform1f(gl.getUniformLocation(pr, 'dOn'), 1); s.dAmp = +cv.dataset.depthamp || 1; });
@@ -141,29 +143,37 @@ export function liveGL(root) {
   }
 }
 
-function frame(s) {
+// The user, 2026-10-16: "are we using too much gpu, my pc is slower". The plate drew a full-screen shader at the
+// screen's refresh rate (60-144 a second), at up to 3840 pixels wide in a close-up, and kept drawing when the stage
+// had scrolled away. What moves on a plate is slow (water, palms, a breathing camera): thirty frames a second, a
+// close-up at one and a half times the pixels (the camera pushes in by 1.3 at most), and nothing drawn off screen.
+const FRAME_MS = 1000 / 30;
+function frame(s, now) {
   if (!s.cv.isConnected) return stop(s);
+  s.raf = requestAnimationFrame(t => frame(s, t));
+  if (now && now - (s.last || 0) < FRAME_MS - 2) return;
+  s.last = now || performance.now();
+  if (s.off) return;
   const { cv, gl } = s;
-  // the backing store follows the camera: a close-up gets twice the pixels so it stays crisp
-  const dpr = Math.min(window.devicePixelRatio || 1, 2), k = cv.closest('.push') ? 2 : 1;
-  const w = Math.min(Math.round(cv.clientWidth * dpr * k), 3840), h = Math.round(w * 9 / 16);
+  // the backing store follows the camera: a close-up gets more pixels so it stays crisp
+  const dpr = Math.min(window.devicePixelRatio || 1, 2), k = cv.closest('.push') ? 1.5 : 1;
+  const w = Math.min(Math.round(cv.clientWidth * dpr * k), 2560), h = Math.round(w * 9 / 16);
   if (w > 0 && (cv.width !== w || cv.height !== h)) { cv.width = w; cv.height = h; gl.viewport(0, 0, w, h); }
   const t = (performance.now() - s.t0) / 1000;
   gl.uniform1f(s.ut, t);
   if (s.dAmp) {
     // a slow drift, as if the camera breathes, and the pointer tilting the view (eased)
-    s.px += (s.tx - s.px) * .04; s.py += (s.ty - s.py) * .04;
+    s.px += (s.tx - s.px) * .08; s.py += (s.ty - s.py) * .08;
     const a = s.dAmp * .011;
     gl.uniform2f(s.upar, a * (Math.sin(t * .13) * .55 + s.px * .45), a * (Math.sin(t * .09 + 1) * .3 + s.py * .25));
   }
   // whoever is aboard a rocking boat rocks with it: the same swell, handed to the people as px
   if (s.bobA > 1) { const wd = cv.closest('.tdx-world'); if (wd) { wd.style.setProperty('--bx', `${(Math.sin(t * .7) * .0012 * s.bobA * cv.clientWidth).toFixed(2)}px`); wd.style.setProperty('--by', `${(Math.sin(t * 1.1) * .0028 * s.bobA * cv.clientHeight).toFixed(2)}px`); } }
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  s.raf = requestAnimationFrame(() => frame(s));
 }
 
 function stop(s) {
-  cancelAnimationFrame(s.raf); live.delete(s);
+  cancelAnimationFrame(s.raf); live.delete(s); s.io?.disconnect();
   if (s.stage) { s.stage.removeEventListener('pointermove', s.onMove); s.stage.removeEventListener('pointerleave', s.onLeave); }
   s.gl.getExtension('WEBGL_lose_context')?.loseContext();
 }

@@ -12,7 +12,7 @@ export const BBX_SUITE_CSS = `/* ════════ Phase 7 · the Safety 
 .bbx .stage .chipx.spent{border:.1cqw solid #8a96a8;color:#c3cbd6}
 /* the pass rail: one keycard per houseguest, the whole season's worth */
 .bbx .stage .rail{position:absolute;left:50%;top:7.6cqw;transform:translateX(-50%);display:flex;gap:.7cqw;z-index:7;padding:.7cqw 1cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(6,12,24,.72),rgba(6,12,24,.45));box-shadow:0 0 0 .1cqw rgba(34,225,255,.25);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(6,12,24,.72),rgba(6,12,24,.45));box-shadow:0 0 0 .1cqw rgba(34,225,255,.25)}
 .bbx .stage .rail .rh{position:absolute;left:1cqw;top:-1.7cqw;font:700 .85cqw 'Chakra Petch';letter-spacing:.22cqw;color:#22e1ff}
 .bbx .stage .pass{position:relative;width:5.2cqw;aspect-ratio:1.58;border-radius:.45cqw;overflow:hidden;
   background:linear-gradient(135deg,#0f2a44,#07121f);box-shadow:inset 0 0 0 .1cqw rgba(34,225,255,.55),0 0 1cqw rgba(34,225,255,.25);transition:filter .4s,box-shadow .4s}

@@ -98,7 +98,7 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .live{display:inline-flex;align-items:center;gap:.5cqw;font:700 1cqw 'Chakra Petch';letter-spacing:.16cqw;color:#fff;background:#ff2e4d;padding:.3cqw .8cqw;border-radius:.3cqw;margin-left:1cqw}
 .bbx .live::before{content:"";width:.7cqw;height:.7cqw;border-radius:50%;background:#fff;animation:bbx-blink 1.2s steps(2) infinite}
 @keyframes bbx-blink{50%{opacity:.2}}
-.bbx .camlab{font:600 1.05cqw 'Chakra Petch';letter-spacing:.18cqw;color:#fff;padding:.3cqw .8cqw;border:.1cqw solid rgba(255,255,255,.35);border-radius:.3cqw;background:rgba(0,0,0,.35);backdrop-filter:blur(.6cqw)}
+.bbx .camlab{font:600 1.05cqw 'Chakra Petch';letter-spacing:.18cqw;color:#fff;padding:.3cqw .8cqw;border:.1cqw solid rgba(255,255,255,.35);border-radius:.3cqw;background:rgba(0,0,0,.35)}
 .bbx .camlab b{color:#22e1ff;font-weight:700;margin-right:.7cqw}
 .bbx .camlab.sw{animation:bbx-camsw .4s}
 @keyframes bbx-camsw{0%{background:#22e1ff;color:#001018}}
@@ -130,7 +130,7 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .l3 .tagr .role{display:flex;align-items:center;padding:0 1.6cqw 0 1.8cqw;margin-left:-1.2cqw;background:rgba(5,9,18,.92);clip-path:polygon(1.4cqw 0,100% 0,calc(100% - 1.4cqw) 100%,0 100%);
   font:700 .95cqw 'Chakra Petch';letter-spacing:.2cqw;color:#cfe9ff;text-transform:uppercase}
 .bbx .l3 .body{position:relative;background:linear-gradient(180deg,rgba(6,10,20,.9),rgba(3,6,12,.95));border-radius:0 .9cqw .9cqw .9cqw;padding:1.6cqw 2.2cqw 1.7cqw;min-height:7.8cqw;
-  box-shadow:inset 0 .15cqw 0 color-mix(in srgb,var(--c) 80%,#fff),0 1.4cqw 3cqw rgba(0,0,0,.5);backdrop-filter:blur(1cqw);overflow:hidden}
+  box-shadow:inset 0 .15cqw 0 color-mix(in srgb,var(--c) 80%,#fff),0 1.4cqw 3cqw rgba(0,0,0,.5);overflow:hidden}
 .bbx .l3 .body::before{content:"";position:absolute;left:0;top:0;bottom:0;width:.35cqw;background:var(--c)}
 .bbx .l3 .tx{font:500 2.05cqw/1.42 Archivo;color:#f3f6ff;letter-spacing:.01cqw}
 .bbx .l3.fresh .tagr .nm{animation:bbx-wipe .45s cubic-bezier(.2,.8,.2,1) both}
@@ -223,7 +223,7 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .drring svg{width:100%;display:block}
 .bbx .drring .r1{transform-origin:50% 50%;animation:bbx-spin 30s linear infinite}
 .bbx .pop{position:absolute;z-index:9;transform:translateX(-50%);bottom:42cqw;display:flex;align-items:center;gap:.6cqw;white-space:nowrap;
-  background:rgba(5,9,18,.88);border:.1cqw solid rgba(255,255,255,.15);border-radius:.6cqw;padding:.5cqw .9cqw .5cqw .5cqw;animation:bbx-pop 2.4s cubic-bezier(.2,.8,.2,1) forwards;backdrop-filter:blur(.6cqw)}
+  background:rgba(5,9,18,.88);border:.1cqw solid rgba(255,255,255,.15);border-radius:.6cqw;padding:.5cqw .9cqw .5cqw .5cqw;animation:bbx-pop 2.4s cubic-bezier(.2,.8,.2,1) forwards}
 .bbx .pop .d{font:700 .85cqw 'Chakra Petch';letter-spacing:.12cqw;padding:.25cqw .5cqw;border-radius:.25cqw;text-transform:uppercase}
 .bbx .pop .d.up{background:#12b76a;color:#fff}
 .bbx .pop .d.down{background:#ff3355;color:#fff}
@@ -420,7 +420,7 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 @keyframes bbx-slate{0%{opacity:0;transform:translateX(-3cqw)}12%{opacity:1;transform:none}72%{opacity:1}100%{opacity:0}}
 /* ── the live eviction ── */
 .bbx .ballots.fin{right:auto;left:50%;top:6.2cqw;transform:translateX(-50%);min-width:0;text-align:center}
-.bbx .ballots{position:absolute;right:3.4cqw;top:12cqw;z-index:9;padding:1.2cqw 1.6cqw;min-width:16cqw;background:rgba(5,9,18,.9);border:.12cqw solid rgba(34,225,255,.35);border-radius:.8cqw;backdrop-filter:blur(1cqw)}
+.bbx .ballots{position:absolute;right:3.4cqw;top:12cqw;z-index:9;padding:1.2cqw 1.6cqw;min-width:16cqw;background:rgba(5,9,18,.9);border:.12cqw solid rgba(34,225,255,.35);border-radius:.8cqw}
 .bbx .ballots .k{font:800 .9cqw Archivo;font-stretch:78%;letter-spacing:.3cqw;text-transform:uppercase;color:#7fe9ff}
 .bbx .ballots .n{font:700 3.6cqw/1.1 'Chakra Petch';color:#fff}
 .bbx .ballots .n span{font-size:1.6cqw;color:rgba(255,255,255,.5);margin-left:.5cqw}

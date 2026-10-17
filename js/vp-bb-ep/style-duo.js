@@ -7,7 +7,7 @@
 // the houseguest with no partner sits apart in green, unnominatable.
 export const BBX_DUO_CSS = `
 .bbx .stage .duoboard{position:absolute;left:5cqw;right:5cqw;top:7.2cqw;z-index:7;padding:.6cqw 1cqw .8cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(6,12,24,.84),rgba(6,12,24,.6));box-shadow:0 0 0 .1cqw rgba(34,225,255,.28);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(6,12,24,.84),rgba(6,12,24,.6));box-shadow:0 0 0 .1cqw rgba(34,225,255,.28)}
 .bbx .stage .duoboard .dh{display:block;text-align:center;font:700 .78cqw 'Chakra Petch';letter-spacing:.22cqw;color:#22e1ff;margin-bottom:.5cqw}
 .bbx .stage .dr2{display:flex;justify-content:center;gap:.8cqw;flex-wrap:wrap}
 .bbx .stage .dp{position:relative;display:flex;align-items:center;gap:.2cqw;padding:.45cqw .55cqw 1.1cqw;border-radius:.6cqw;

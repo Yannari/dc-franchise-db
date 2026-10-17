@@ -7,7 +7,7 @@
 // time, it goes red.
 export const BBX_CAPSULE_CSS = `
 .bbx .stage .capboard{position:absolute;left:50%;transform:translateX(-50%);top:7.2cqw;z-index:7;width:34cqw;padding:.6cqw 1.2cqw .8cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(6,16,24,.88),rgba(6,16,24,.64));box-shadow:0 0 0 .1cqw rgba(34,225,255,.4);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(6,16,24,.88),rgba(6,16,24,.64));box-shadow:0 0 0 .1cqw rgba(34,225,255,.4)}
 .bbx .stage .capboard .cph{display:block;text-align:center;font:700 .7cqw 'Chakra Petch';letter-spacing:.2cqw;color:#22e1ff;margin-bottom:.55cqw}
 .bbx .stage .csr{display:flex;justify-content:center;gap:.6cqw;margin-bottom:.6cqw}
 .bbx .stage .cs{width:2.4cqw;aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 .8cqw Archivo;color:rgba(255,255,255,.45);

@@ -8,7 +8,7 @@
 // ACCEPTED or TURNED DOWN.
 export const BBX_WILD_CSS = `
 .bbx .stage .wildboard{position:absolute;left:50%;transform:translateX(-50%);top:7.2cqw;z-index:7;padding:.6cqw 1.2cqw .8cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(16,8,28,.86),rgba(16,8,28,.62));box-shadow:0 0 0 .1cqw rgba(176,124,255,.42);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(16,8,28,.86),rgba(16,8,28,.62));box-shadow:0 0 0 .1cqw rgba(176,124,255,.42)}
 .bbx .stage .wildboard .wh{display:block;text-align:center;font:700 .78cqw 'Chakra Petch';letter-spacing:.22cqw;color:#b07cff;margin-bottom:.5cqw}
 .bbx .stage .wildboard .wr{display:flex;justify-content:center;align-items:stretch;gap:.8cqw}
 .bbx .stage .wc{position:relative;width:6.4cqw;display:flex;flex-direction:column;align-items:center;gap:.25cqw;padding:.45cqw .4cqw .5cqw;border-radius:.6cqw;

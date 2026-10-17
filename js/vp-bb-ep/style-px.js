@@ -7,7 +7,7 @@
 // veto in gold, prizes in blue, punishments in red — and a swap moves the faces.
 export const BBX_PX_CSS = `
 .bbx .stage .pxtable{position:absolute;left:5cqw;right:5cqw;top:7.2cqw;z-index:7;padding:.6cqw 1cqw .8cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(6,12,24,.86),rgba(6,12,24,.62));box-shadow:0 0 0 .1cqw rgba(245,197,66,.3);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(6,12,24,.86),rgba(6,12,24,.62));box-shadow:0 0 0 .1cqw rgba(245,197,66,.3)}
 .bbx .stage .pxtable .pt{display:block;text-align:center;font:700 .78cqw 'Chakra Petch';letter-spacing:.22cqw;color:#f5c542;margin-bottom:.5cqw}
 .bbx .stage .pxr{display:flex;justify-content:center;gap:.6cqw;flex-wrap:wrap}
 .bbx .stage .pxb{position:relative;width:7.4cqw;height:8.4cqw;border-radius:.6cqw;display:flex;flex-direction:column;align-items:center;justify-content:center;

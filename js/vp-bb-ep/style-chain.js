@@ -8,7 +8,7 @@
 // at the end the people nobody chose, lit red.
 export const BBX_CHAIN_CSS = `
 .bbx .stage .chainbar{position:absolute;left:6cqw;right:6cqw;top:7.2cqw;z-index:7;padding:.6cqw 1cqw;display:flex;flex-direction:column;align-items:center;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(6,12,24,.8),rgba(6,12,24,.55));box-shadow:0 0 0 .1cqw rgba(245,197,66,.3);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(6,12,24,.8),rgba(6,12,24,.55));box-shadow:0 0 0 .1cqw rgba(245,197,66,.3)}
 .bbx .stage .chainbar .ch,.bbx .stage .chainbar .ch2{display:block;font:700 .75cqw 'Chakra Petch';letter-spacing:.22cqw;color:#f5c542;margin-bottom:.35cqw}
 .bbx .stage .chainbar .ch2{color:#8fa0bb}
 .bbx .stage .cls{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.15cqw;row-gap:.3cqw}

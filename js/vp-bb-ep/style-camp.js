@@ -7,7 +7,7 @@
 // turns gold, BACK IN.
 export const BBX_CAMP_CSS = `
 .bbx .stage .campboard{position:absolute;left:50%;transform:translateX(-50%);top:7.2cqw;z-index:7;padding:.6cqw 1.2cqw .8cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(24,12,4,.86),rgba(24,12,4,.62));box-shadow:0 0 0 .1cqw rgba(255,138,61,.4);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(24,12,4,.86),rgba(24,12,4,.62));box-shadow:0 0 0 .1cqw rgba(255,138,61,.4)}
 .bbx .stage .campboard .ch{display:block;text-align:center;font:700 .78cqw 'Chakra Petch';letter-spacing:.22cqw;color:#ff8a3d;margin-bottom:.5cqw}
 .bbx .stage .campboard .cr{display:flex;justify-content:center;gap:.8cqw}
 .bbx .stage .cb{position:relative;width:6.4cqw;display:flex;flex-direction:column;align-items:center;gap:.25cqw;padding:.45cqw .4cqw .5cqw;border-radius:.6cqw;

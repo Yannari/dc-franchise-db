@@ -7,7 +7,7 @@
 // so. The winner's face turns gold.
 export const BBX_WHACK_CSS = `
 .bbx .stage .whboard{position:absolute;left:50%;transform:translateX(-50%);top:7.2cqw;z-index:7;padding:.6cqw 1.2cqw .8cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(26,12,4,.88),rgba(26,12,4,.64));box-shadow:0 0 0 .1cqw rgba(255,138,61,.42);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(26,12,4,.88),rgba(26,12,4,.64));box-shadow:0 0 0 .1cqw rgba(255,138,61,.42)}
 .bbx .stage .whboard .whh{display:block;text-align:center;font:700 .74cqw 'Chakra Petch';letter-spacing:.22cqw;color:#ff8a3d;margin-bottom:.5cqw}
 .bbx .stage .wdr{display:flex;justify-content:center;gap:.9cqw}
 .bbx .stage .wd{width:11.5cqw;min-height:8cqw;display:flex;flex-direction:column;align-items:center;gap:.3cqw;padding:.5cqw .5cqw .55cqw;border-radius:.9cqw .9cqw .3cqw .3cqw;
@@ -35,7 +35,7 @@ export const BBX_WHACK_CSS = `
 .bbx .stage .expcard.live.played{box-shadow:0 0 0 .16cqw #f5c542,0 0 2cqw rgba(245,197,66,.5)}
 .bbx .stage .expcard.now{animation:bbx-whin .55s cubic-bezier(.2,1.4,.4,1) both}
 .bbx .stage .coinboard{position:absolute;left:50%;transform:translateX(-50%);top:7.2cqw;z-index:7;max-width:70cqw;padding:.6cqw 1.2cqw .8cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(24,18,4,.88),rgba(24,18,4,.64));box-shadow:0 0 0 .1cqw rgba(245,197,66,.45);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(24,18,4,.88),rgba(24,18,4,.64));box-shadow:0 0 0 .1cqw rgba(245,197,66,.45)}
 .bbx .stage .coinboard .ch2{display:flex;align-items:center;justify-content:center;gap:.4cqw;font:700 .74cqw 'Chakra Petch';letter-spacing:.22cqw;color:#f5c542;margin-bottom:.5cqw}
 .bbx .stage .coinboard .cn{width:1.2cqw;height:1.2cqw}
 .bbx .stage .ctr{display:flex;flex-wrap:wrap;justify-content:center;gap:.6cqw}
@@ -54,7 +54,7 @@ export const BBX_WHACK_CSS = `
 .bbx .stage .cres.wrong b{color:#9aa4b2}
 .bbx .stage .cres.wrong .cn{filter:grayscale(1)}
 .bbx .stage .v2board{position:absolute;left:50%;transform:translateX(-50%);top:7.2cqw;z-index:7;padding:.6cqw 1.2cqw .8cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(24,18,4,.88),rgba(24,18,4,.64));box-shadow:0 0 0 .1cqw rgba(245,197,66,.45);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(24,18,4,.88),rgba(24,18,4,.64));box-shadow:0 0 0 .1cqw rgba(245,197,66,.45)}
 .bbx .stage .v2board .v2h{display:block;text-align:center;font:700 .74cqw 'Chakra Petch';letter-spacing:.22cqw;color:#f5c542;margin-bottom:.5cqw}
 .bbx .stage .v2r{display:flex;justify-content:center;gap:.7cqw}
 .bbx .stage .v2c{width:6.2cqw;display:flex;flex-direction:column;align-items:center;gap:.2cqw;padding:.4cqw .3cqw .45cqw;border-radius:.6cqw;background:rgba(255,51,85,.1);box-shadow:inset 0 0 0 .14cqw #ff3355}
@@ -67,7 +67,7 @@ export const BBX_WHACK_CSS = `
 .bbx .stage .v2c.new{box-shadow:inset 0 0 0 .18cqw #ff3355,0 0 1.6cqw rgba(255,51,85,.55)}
 .bbx .stage .v2c.now{animation:bbx-whin .5s cubic-bezier(.2,1.4,.4,1) both}
 .bbx .stage .bkboard{position:absolute;left:50%;transform:translateX(-50%);top:7.2cqw;z-index:7;max-width:84cqw;padding:.6cqw 1.2cqw .8cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(6,14,24,.88),rgba(6,14,24,.64));box-shadow:0 0 0 .1cqw rgba(34,225,255,.42);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(6,14,24,.88),rgba(6,14,24,.64));box-shadow:0 0 0 .1cqw rgba(34,225,255,.42)}
 .bbx .stage .bkboard .bkh{display:block;text-align:center;font:700 .74cqw 'Chakra Petch';letter-spacing:.22cqw;color:#22e1ff;margin-bottom:.5cqw}
 .bbx .stage .bkr{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.6cqw}
 .bbx .stage .bkt{width:5.6cqw;display:flex;flex-direction:column;align-items:center;gap:.2cqw;padding:.4cqw .3cqw .45cqw;border-radius:.6cqw;background:rgba(34,225,255,.07);box-shadow:inset 0 0 0 .12cqw rgba(34,225,255,.4)}
@@ -82,7 +82,7 @@ export const BBX_WHACK_CSS = `
 .bbx .stage .bkt.now{animation:bbx-whin .5s cubic-bezier(.2,1.4,.4,1) both}
 .bbx .stage .bkvs{font:800 1cqw Archivo;color:#f5c542;padding:0 .3cqw}
 .bbx .stage .taboard{position:absolute;right:3cqw;top:7.2cqw;z-index:7;width:18cqw;padding:.7cqw 1cqw .8cqw;border-radius:1cqw;text-align:center;
-  background:linear-gradient(180deg,rgba(8,14,34,.9),rgba(8,14,34,.7));box-shadow:0 0 0 .12cqw rgba(91,141,255,.55);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(8,14,34,.9),rgba(8,14,34,.7));box-shadow:0 0 0 .12cqw rgba(91,141,255,.55)}
 .bbx .stage .taboard .tah{display:block;font:700 .62cqw 'Chakra Petch';letter-spacing:.18cqw;color:#8fb0ff;margin-bottom:.45cqw}
 .bbx .stage .tar{display:flex;justify-content:center;gap:.35cqw;margin-bottom:.45cqw}
 .bbx .stage .taf{position:relative;width:3.4cqw;aspect-ratio:1;border-radius:.4cqw;overflow:hidden;background:var(--c)}
@@ -93,7 +93,7 @@ export const BBX_WHACK_CSS = `
 .bbx .stage .taboard.done i{color:#f5c542}
 .bbx .stage .taboard.failed i{color:#9aa4b2}
 .bbx .stage .miboard{position:absolute;left:50%;transform:translateX(-50%);top:7.2cqw;z-index:7;max-width:80cqw;padding:.6cqw 1cqw .7cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(6,12,24,.86),rgba(6,12,24,.62));box-shadow:0 0 0 .1cqw rgba(245,197,66,.4);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(6,12,24,.86),rgba(6,12,24,.62));box-shadow:0 0 0 .1cqw rgba(245,197,66,.4)}
 .bbx .stage .miboard .mih{display:block;text-align:center;font:700 .7cqw 'Chakra Petch';letter-spacing:.22cqw;color:#f5c542;margin-bottom:.45cqw}
 .bbx .stage .mir{display:flex;flex-wrap:wrap;justify-content:center;gap:.35cqw;max-width:60cqw}
 .bbx .stage .mif{position:relative;width:3.2cqw;aspect-ratio:1;border-radius:.35cqw;overflow:hidden;background:var(--c);box-shadow:inset 0 0 0 .1cqw rgba(255,255,255,.25)}

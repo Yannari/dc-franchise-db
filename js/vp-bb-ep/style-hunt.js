@@ -9,7 +9,7 @@
 // it expires.
 export const BBX_HUNT_CSS = `
 .bbx .stage .huntmap{position:absolute;left:10cqw;right:10cqw;top:7.2cqw;z-index:7;padding:.8cqw 1cqw 1cqw;border-radius:1cqw;
-  background:linear-gradient(180deg,rgba(6,12,24,.86),rgba(6,12,24,.66));box-shadow:0 0 0 .1cqw rgba(34,225,255,.28);backdrop-filter:blur(.6cqw)}
+  background:linear-gradient(180deg,rgba(6,12,24,.86),rgba(6,12,24,.66));box-shadow:0 0 0 .1cqw rgba(34,225,255,.28)}
 .bbx .stage .huntmap .hh{display:flex;justify-content:space-between;align-items:center;font:700 .8cqw 'Chakra Petch';letter-spacing:.22cqw;color:#22e1ff;margin-bottom:.6cqw}
 .bbx .stage .huntmap .hb{display:flex;align-items:center;gap:.3cqw;color:#ff8aa0}
 .bbx .stage .huntmap .hb span{width:1.6cqw;height:.6cqw;border-radius:.15cqw;background:rgba(255,255,255,.12)}

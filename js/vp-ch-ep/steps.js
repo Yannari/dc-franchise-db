@@ -570,7 +570,9 @@ function scene(S, { a, i, title }, { names, house, goneAt, key }) {
   // TJ talking to the whole house has the whole house in the room, stood in a line (the user, 2026-10-17: "when TJ
   // talks to everybody, only two or three people are in the common room"): everybody still in, up to fourteen
   const everyone = TJ_TO_HOUSE.has(a.kind) ? house.filter(n => !goneAt[i]?.has(n) && !a.who.includes(n)).slice(0, Math.max(0, 14 - a.who.length)) : [];
-  const first = sceneStep(S, a, place, { night: night || place.hour === 'night', crowd, ...(everyone.length ? { extraCast: everyone, group: 'none' } : {}) });
+  // the room's own seating: the common room's sofa (as the vote sits), a line elsewhere (the user, 2026-10-17: a
+  // forced line stood two rows in front of the fire, "they're not even sitting correctly in the common room")
+  const first = sceneStep(S, a, place, { night: night || place.hour === 'night', crowd, ...(everyone.length ? { extraCast: everyone } : {}) });
   // the event it is (a fight, a showmance, a meeting): the music follows it (vp-ch-ep/sound.js)
   first.sceneIdx = i; first.title = title; first.kind = a.kind;
   if (key === 'party') { first.dance = crowd.slice(0, 5); first.bg = Object.fromEntries(crowd.slice(5).map(n => [n, 'sip'])); }

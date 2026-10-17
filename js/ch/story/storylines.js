@@ -121,6 +121,11 @@ function rule(sc) {
     case 'team-rift': return F('team', 'rift', d.owns ? 'owns' : 'denies');
     case 'team-switch': return F('team', 'switch');
     case 'team-strategy': return F('team', 'strategy', d.bossy ? 'bossy' : 'plan');
+    case 'team-daily-win': return F('team', 'won', d.streak ? 'streak' : 'any');
+    case 'team-daily-loss': return F('team', 'lost', d.streak ? 'streak' : 'any');
+    case 'team-vote-talk': return F('team', 'vote-talk', d.doubter ? 'split' : d.slowest ? 'slowest' : 'agree');
+    case 'team-stay': return F('team', 'stay', d.statement ? 'statement' : 'quiet');
+    case 'team-bloc': return F('alliance', 'formed', 'team');
     case 'team-coup': return F('team', 'coup', d.takes ? 'takes' : 'fails');
     case 'team-weak-link': return F('team', 'weak-link', d.defended ? 'defended' : 'piled');
     case 'team-celebrate': return F('team', 'celebrate', d.rubs ? 'rubs' : 'gracious');

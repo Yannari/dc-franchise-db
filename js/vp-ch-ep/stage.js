@@ -13,6 +13,7 @@ import { CH_MARKS } from './marks.js';
 import { liveGL } from '../vp-td-ep/glplate.js';
 import { playerAvatarUrl } from '../players.js';
 import { propsHtml } from './props.js';
+import { teamColour } from './ground.js';
 
 export const AV = n => (n === 'TJ' ? 'assets/avatars/tj-maxx.png' : playerAvatarUrl(n));
 const PLATE = k => `assets/sets/ch/${k}`;
@@ -83,7 +84,7 @@ export class ChxStage {
   setScene(sc) {
     this.ST = newState();
     const ST = this.ST;
-    Object.assign(ST, { plate: sc.plate, scale: sc.scale || 1.5, scene: sc, water: sc.water || 0, pairs: sc.pairs || null, teams: sc.teams || null });
+    Object.assign(ST, { plate: sc.plate, scale: sc.scale || 1.5, scene: sc, water: sc.water || 0, pairs: sc.pairs || null, teams: sc.teams ? { ...sc.teams } : null, teamNames: sc.teamNames ? { ...sc.teamNames } : null });
     this.root?.classList?.toggle('flashback', !!sc.flash);
     this.el.plate.innerHTML = `<img class='chx-plate' src='${PLATE(sc.plate)}.webp' alt=''><canvas class='chx-glc tdx-gl' data-src='${PLATE(sc.plate)}' data-hd='1' width='1920' height='1080'></canvas>`;
     this.el.cast.innerHTML = ''; this.el.wfx.innerHTML = ''; this.el.live.innerHTML = ''; if (this.el.props) this.el.props.innerHTML = ''; if (this.el.fore) this.el.fore.innerHTML = '';
@@ -224,6 +225,12 @@ export class ChxStage {
     // an object in front of the people (a dome on the table, a coffin at their feet) goes on the layer over the cast
     if (s.props) { ST.props = s.props; if (this.el.props) this.el.props.innerHTML = propsHtml(s.props.filter(p => !p.front)); if (this.el.fore) this.el.fore.innerHTML = propsHtml(s.props.filter(p => p.front)); }
     if (s.tally) ST.tally = s.tally;
+    // a Teams season: a switch recolours its player; the break-up takes everybody's colour off (steps.js reband)
+    if (s.reband && ST.teams) for (const [n, t] of Object.entries(s.reband)) {
+      if (t) { ST.teams[n] = teamColour(t); (ST.teamNames ||= {})[n] = t; } else { delete ST.teams[n]; if (ST.teamNames) delete ST.teamNames[n]; }
+      const tok = ST.toks[n];
+      if (tok) { tok.classList.toggle('paired', !!t); if (t) tok.style.setProperty('--pair', teamColour(t)); }
+    }
     if (s.exit) for (const n of s.exit) {
       // somebody leaving a challenge they were still in is out of it (Deep Freeze: climbing out of the tub)
       if (ST.standers?.includes(n)) ST.out.add(n);
@@ -375,7 +382,9 @@ export class ChxStage {
         const seat = marks('conf-day').find(m => m.kind === 'seat') || { u: .5 };
         const role = ctx.roleOf?.(s.conf[0]);
         C.innerHTML = `<div class='confcut'><img class='chx-plate' src='${PLATE('conf-day')}.webp' alt=''><div class='who' style='left:${seat.u * 100}%'><div class='face'><img src='${esc(AV(s.conf[0]))}' alt=''></div></div>`
-          + `<div class='lower'><div class='n'>${esc(s.conf[0])}</div>${role ? `<div class='s'>${esc(role.toUpperCase())}</div>` : ''}</div><div class='rec'><i></i>CONFESSIONAL</div><div class='vig'></div><div class='grain'></div></div>`;
+          + `<div class='lower'><div class='n'>${esc(s.conf[0])}</div>${role ? `<div class='s'>${esc(role.toUpperCase())}</div>` : ''}`
+          // a Teams season: whose team they are on, while the teams stand (the user, 2026-10-17)
+          + `${this.ST?.teamNames?.[s.conf[0]] ? `<div class='team' style='--tc:${this.ST.teams?.[s.conf[0]] || '#888'}'>${esc(this.ST.teamNames[s.conf[0]].toUpperCase())}</div>` : ''}</div><div class='rec'><i></i>CONFESSIONAL</div><div class='vig'></div><div class='grain'></div></div>`;
         if (anim) this.burst();
       }
     } else if (C.dataset.who) { C.innerHTML = ''; C.dataset.who = ''; if (anim) this.burst(); }

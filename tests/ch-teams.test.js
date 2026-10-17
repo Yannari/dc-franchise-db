@@ -96,6 +96,60 @@ describe('a Teams season', () => {
     for (const n of best.members) expect(s.placements[n]).toBe(1);
   });
 
+  // the user, 2026-10-17: "reactions to the dailies, defeat, victory, strategy, who to blame, vote, alliance, per team"
+  it('after every team daily both teams react, and the losers talk about a teammate', () => {
+    let wins = 0, talks = 0, blocs = 0;
+    for (const s of seasons) {
+      const sc = s.state.scenes;
+      for (const w of sc.filter(x => x.kind === 'team-daily-win')) {
+        wins++;
+        const loss = sc.find(x => x.kind === 'team-daily-loss' && x.ep === w.ep);
+        expect(loss, `ep ${w.ep}: a winning team's scene with no losing team's`).toBeTruthy();
+        expect(loss.data.team).not.toBe(w.data.team);
+        expect(w.data.oppTeam).toBe(loss.data.team);
+      }
+      for (const t of sc.filter(x => x.kind === 'team-vote-talk')) {
+        talks++;
+        const e = s.episodes.find(x => x.ep === t.ep) || s.episodes[t.ep - 1];
+        const team = (teamsAt(e) || []).find(x => x.name === t.data.team);
+        // the group and the name they settle on are all on the team that lost
+        for (const n of [...t.data.group, t.data.target]) expect(team?.members, `ep ${t.ep}: ${n} not on ${t.data.team}`).toContain(n);
+        expect(t.data.group).not.toContain(t.data.target);
+        // "the slowest out there" only when the name did come last of that team
+        if (t.data.slowest) expect(sc.find(x => x.kind === 'team-daily-loss' && x.ep === t.ep).data.worst).toBe(t.data.target);
+      }
+      for (const b of sc.filter(x => x.kind === 'team-bloc')) {
+        blocs++;
+        const al = s.state.alliances.find(a => a.id === b.data.alliance);
+        expect(al.team).toBe(b.data.team);
+        const e = s.episodes.find(x => x.ep === b.ep) || s.episodes[b.ep - 1];
+        const team = (teamsAt(e) || []).find(x => x.name === b.data.team);
+        // founded inside one team (a member may switch later and take the bloc across with them)
+        for (const m of b.who) expect(team.members, `ep ${b.ep}: ${m} not on ${b.data.team}`).toContain(m);
+      }
+    }
+    expect(wins).toBeGreaterThan(20);
+    expect(talks).toBeGreaterThan(20);
+    expect(blocs).toBeGreaterThan(0);
+  });
+
+  it('an Arena winner their own team voted in either switches or stays, on camera', () => {
+    let stays = 0, switches = 0;
+    for (const s of seasons) for (const sc of s.state.scenes.filter(x => x.kind === 'team-stay' || x.kind === 'team-switch')) {
+      sc.kind === 'team-stay' ? stays++ : switches++;
+      expect(sc.data.from).not.toBe(sc.data.to);
+      expect(sc.data.voted).toBeGreaterThan(0);
+      // the stay is not a switch: the player is still on the team that voted them in at the end of that episode
+      if (sc.kind === 'team-stay') {
+        const e = s.episodes.find(x => x.ep === sc.ep) || s.episodes[sc.ep - 1];
+        const end = e.intel?.end?.teams || e.teams;
+        if (end?.length > 1) expect(end.find(t => t.members.includes(sc.who[0]))?.name).toBe(sc.data.from);
+      }
+    }
+    expect(stays).toBeGreaterThan(0);
+    expect(switches).toBeGreaterThan(0);
+  });
+
   it('a solo season has no teams', () => {
     const { cast, names, background } = challengeCast(24, 3);
     setPlayers(cast);

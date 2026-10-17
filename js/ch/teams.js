@@ -19,7 +19,8 @@ import { remember, trustOf } from './rel.js';
 import { threatRead, giveRespect } from './respect.js';
 import { deliberate, houseVote, voteFallout } from './vote.js';
 import { chooseOpponent } from './callout.js';
-import { afterVote } from './alliances.js';
+import { afterVote, allianceOf, activeAlliances, allianceName, pull } from './alliances.js';
+import { noteAlliance } from './knowledge.js';
 
 export const TEAMINGS = ['shows', 'champions', 'vets', 'draft'];
 export const teamsOn = state => !!state?.options?.teams && !state.teamsBroken;
@@ -215,7 +216,9 @@ export function teamVoteNight(state, { R, epRec, division, daily, immune, elims 
     // nobody of the division outside the winning team (two teams, one of them holding every other man): the call-out
     // reaches into the winning team, never its captain (seed 11, by show: four weeks went by with no Arena)
     let own = false;
-    if (!pool.length && winTeam) { pool = live(state, winTeam).filter(n => (division === 'all' || state.division[n] === division) && n !== winTeam.captain && n !== votedIn && !used.has(n)); own = true; }
+    // A team-final season's last two of a team stay shielded here too: reaching in emptied a team of two and ended the
+    // teams the episode before the team final (run tab, seed 717: Team Alejandro folded, no team podium)
+    if (!pool.length && winTeam) { pool = live(state, winTeam).filter(n => (division === 'all' || state.division[n] === division) && n !== winTeam.captain && n !== votedIn && !used.has(n) && !shielded.has(n)); own = true; }
     if (!pool.length) break;
     const voters = (vote?.ballots || []).filter(x => x.target === votedIn).map(x => x.voter);
     const co = chooseOpponent(state, R(`callout${k}`), votedIn, pool, { voters });
@@ -226,6 +229,87 @@ export function teamVoteNight(state, { R, epRec, division, daily, immune, elims 
       callout: { by: votedIn, opponent: co.opponent, reason: co.reason } });
   }
   return { matches, delib };
+}
+
+// ── after a team daily (the user, 2026-10-17: "reactions to the dailies, defeat, victory, strategy, who to blame,
+// vote, alliance, per team, like in Total Drama") ─────────────────────────
+/**
+ * Called by dailies.js after a daily played as teams. The winning team back at the villa, the losing team taking it in,
+ * the losing team's small groups settling on a name (that is who they vote: the bonds move), and now and then a bloc
+ * forming inside a team (a real alliance, kept to one team).
+ */
+export function teamDailyReactions(state, rng, { winners, last, scores }) {
+  if (!teamsOn(state) || !winners?.length || !last?.length) return;
+  const winT = teamOfName(state, winners[0]), lossT = teamOfName(state, last[0]);
+  if (!winT || !lossT || winT === lossT) return;
+  const W = live(state, winT), L = live(state, lossT);
+  const score = n => scores?.[n] ?? 0;
+  // streaks: what each team has done lately (teamHistory of dailies kept here)
+  state.teamDailyLog ||= [];
+  state.teamDailyLog.push({ ep: state.ep, won: winT.name, lost: lossT.name });
+  const lastTwo = state.teamDailyLog.slice(-2);
+  const winStreak = lastTwo.length === 2 && lastTwo.every(x => x.won === winT.name);
+  const lossStreak = lastTwo.length === 2 && lastTwo.every(x => x.lost === lossT.name);
+
+  // the winners: who carried it, the captain, the celebration
+  const mvp = [...W].sort((x, y) => score(y) - score(x))[0];
+  const wCap = W.includes(winT.captain) ? winT.captain : W[0];
+  const wWho = [mvp, ...[wCap, ...W.filter(n => n !== mvp && n !== wCap).sort((x, y) => S(y, 'boldness') - S(x, 'boldness'))].filter(n => n !== mvp)].slice(0, 5);
+  for (const a of W) for (const b of W) if (a < b) addBond(a, b, 0.2);
+  for (const n of W) nudge(state, n, 'morale', 0.4);
+  giveRespect(state, mvp, 'dailyWin');
+  addScene(state, 'team-daily-win', wWho, { team: winT.name, oppTeam: lossT.name, mvp, captain: wCap, streak: winStreak }, W, 'villa');
+
+  // the losers: the mood, and who says what about it
+  const lCap = L.includes(lossT.captain) ? lossT.captain : L[0];
+  const worst = [...L].sort((x, y) => score(x) - score(y))[0];
+  const angry = [...L].filter(n => n !== lCap).sort((x, y) => (10 - S(y, 'temperament')) - (10 - S(x, 'temperament')))[0];
+  const lWho = [lCap, ...[angry, worst, ...L.filter(n => n !== lCap && n !== angry && n !== worst)].filter((n, i, a) => n && n !== lCap && a.indexOf(n) === i)].slice(0, 5);
+  for (const n of L) nudge(state, n, 'morale', lossStreak ? -0.6 : -0.3);
+  if (angry && worst && angry !== worst) { addBond(angry, worst, -0.3); remember(worst, angry, 'looked-at-me-after-the-loss', 0.5); }
+  addScene(state, 'team-daily-loss', lWho, { team: lossT.name, oppTeam: winT.name, captain: lCap, worst, streak: lossStreak }, L, 'villa');
+
+  // the losing team talks it out in small groups: two or three who trust each other, and the name they settle on
+  const used = new Set();
+  // one group most nights; a second, now and then, when the team is big enough for two conversations
+  const groups = Math.min(rng() < 0.35 ? 2 : 1, Math.floor(L.length / 3));
+  for (let g = 0; g < groups; g++) {
+    const free = L.filter(n => !used.has(n));
+    const lead = free.sort((x, y) => (S(y, 'strategic') + S(y, 'social')) - (S(x, 'strategic') + S(x, 'social')))[g === 0 ? 0 : Math.min(1, free.length - 1)];
+    if (!lead) break;
+    const mates = free.filter(n => n !== lead).sort((x, y) => getBond(lead, y) - getBond(lead, x)).slice(0, rng() < 0.5 ? 1 : 2);
+    if (!mates.length) break;
+    const group = [lead, ...mates];
+    // the name: the teammate this group likes least and trusts least to win them a daily
+    const target = L.filter(n => !group.includes(n)).map(n => ({ n, v: group.reduce((s, m) => s + getBond(m, n), 0) / group.length - score(n) * 0.3 }))
+      .sort((x, y) => x.v - y.v)[0]?.n;
+    if (!target) break;
+    const doubter = mates.find(m => getBond(m, target) >= 1.5) || null;
+    for (const x of group) for (const y of group) if (x < y) addBond(x, y, 0.4);
+    for (const x of group) if (x !== doubter) addBond(x, target, -0.35);
+    if (doubter) addBond(lead, doubter, -0.2);
+    for (const x of group) used.add(x);
+    // a line may say the name was the slowest out there only when it was (seed 7 read: the captain called "the slowest")
+    addScene(state, 'team-vote-talk', [...group, target], { team: lossT.name, target, doubter, group, slowest: target === worst }, group, 'private');
+  }
+
+  // a bloc inside a team: three or four teammates with no alliance of their own make one, kept to the team
+  if (activeAlliances(state).length < 5 && rng() < 0.45) {
+    for (const t of [lossT, winT]) {
+      const free = live(state, t).filter(n => !allianceOf(state, n));
+      if (free.length < 3) continue;
+      const leader = [...free].sort((x, y) => (S(y, 'strategic') + S(y, 'social')) - (S(x, 'strategic') + S(x, 'social')))[0];
+      const members = [leader, ...free.filter(n => n !== leader).map(n => ({ n, p: pull(state, leader, n) + pull(state, n, leader) * 0.5 }))
+        .filter(x => x.p > 0.5).sort((x, y) => y.p - x.p).slice(0, rng() < 0.5 ? 2 : 3).map(x => x.n)];
+      if (members.length < 3) continue;
+      const al = { id: state.alliances.length + 1, name: allianceName(state, rng, members), leader, members, formedEp: state.ep, formedDay: state.day, ended: false, origin: null, team: t.name, teamId: t.id };
+      state.alliances.push(al);
+      for (const a of members) for (const b of members) if (a < b) addBond(a, b, 0.7);
+      noteAlliance(state, al);
+      addScene(state, 'team-bloc', members, { alliance: al.id, name: al.name, leader, team: t.name, lost: t === lossT }, members, 'private');
+      break;
+    }
+  }
 }
 
 // ── after the Arena: switching sides, a team down to one ─────────────
@@ -253,7 +337,26 @@ export function afterTeamDuel(state, rng, m, duel) {
       addScene(state, 'team-switch', [w, target.captain, own.captain].filter((x, i, a) => x && a.indexOf(x) === i && state.active.includes(x)), { from: own.name, to: target.name, voted,
         // the captains by part (a captain already sent home leaves the part empty, rather than another taking it: seed 6)
         joinCaptain: state.active.includes(target.captain) && target.captain !== w ? target.captain : null,
-        leaveCaptain: state.active.includes(own.captain) && own.captain !== w ? own.captain : null }, state.active, 'arena');
+        leaveCaptain: state.active.includes(own.captain) && own.captain !== w ? own.captain : null,
+        // somebody from the old team who said the name, and somebody from the new one, for the reactions
+        stung: (m.vote.ballots || []).find(b => b.target === w && b.voter !== own.captain && state.active.includes(b.voter))?.voter || null,
+        welcomer: live(state, target).filter(n => n !== target.captain && n !== w).sort((x, y) => getBond(w, y) - getBond(w, x))[0] || null }, state.active, 'arena');
+    } else if (target) {
+      // the stay (the user, 2026-10-17: "more reactions to a switch or a stay"): back to the team that voted them in. The
+      // ones who said the name have to look at them; the team is relieved, or wary; the other side was turned down.
+      const voters = (m.vote.ballots || []).filter(b => b.target === w).map(b => b.voter).filter(n => state.active.includes(n));
+      for (const n of live(state, own)) if (n !== w) addBond(n, w, voters.includes(n) ? 0.2 : 0.5);
+      for (const n of voters) remember(w, n, 'voted-me-in-and-i-stayed', 0.6);
+      nudge(state, w, 'morale', 0.3);
+      addScene(state, 'team-stay', [w, ...[own.captain, target.captain].filter(x => x && x !== w && state.active.includes(x))], {
+        from: own.name, to: target.name, voted,
+        ownCaptain: state.active.includes(own.captain) && own.captain !== w ? own.captain : null,
+        otherCaptain: state.active.includes(target.captain) ? target.captain : null,
+        stung: voters.find(v => v !== own.captain) || null,
+        friend: live(state, own).filter(n => n !== w && !voters.includes(n) && n !== own.captain).sort((x, y) => getBond(w, y) - getBond(w, x))[0] || null,
+        // the stay reads the room: a winner who was barely voted in stays easily; most of the team voted for them, and
+        // staying is a statement
+        statement: share >= 0.5 }, state.active, 'arena');
     }
   }
   out.folded = foldTeams(state);

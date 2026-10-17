@@ -9,6 +9,8 @@ import pairMore from '../js/ch/script/lines/pairs-more.js';
 import teams from '../js/ch/script/lines/teams.js';
 import pairLife from '../js/ch/script/lines/pair-life.js';
 import teamLife from '../js/ch/script/lines/team-life.js';
+import teamMoments from '../js/ch/script/lines/team-moments.js';
+import teamMoments2 from '../js/ch/script/lines/team-moments2.js';
 
 const FAMILIES = ['sharp', 'dry', 'loud', 'soft', 'odd'];
 const TOKEN = /\{(\w+)(?:\.\w+)?\}/g;
@@ -16,7 +18,7 @@ const TOKEN = /\{(\w+)(?:\.\w+)?\}/g;
 describe('the season modes are voiced', () => {
   const byId = {};
   for (const list of Object.values(POOLS)) for (const e of list) byId[e.id] = e;
-  const files = { pairs, pairVote, pairMore, teams, pairLife, teamLife };
+  const files = { pairs, pairVote, pairMore, teams, pairLife, teamLife, teamMoments, teamMoments2 };
   it('every spoken turn has all five families, and no variant names a slot its line does not', () => {
     const short = [], extra = [];
     for (const [f, mod] of Object.entries(files)) for (const list of Object.values(mod)) for (const e0 of list) {

@@ -65,8 +65,9 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   // a Teams season's spine (teams.js)
   'teams-revealed', 'team-reveal', 'team-huddle', 'team-only-one', 'team-voted-in', 'team-after-vote', 'team-switch', 'team-fold',
   'teams-break', 'team-last-stand',
-  // a coup that changes a team's captain is the season's business (events.js)
-  'team-coup']);
+  // a coup that changes a team's captain is the season's business (events.js); both teams after every team daily, and
+  // the Arena winner's stay (teams.js, the user, 2026-10-17)
+  'team-coup', 'team-daily-win', 'team-daily-loss', 'team-stay']);
 const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-merge', 'arena-eve-confront', 'arena-eve-pep',
   'arena-eve-alone', 'morning-after', 'fight', 'team-blame', 'partner-blame', 'throw-caught', 'jealousy', 'receipts',
   'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout', 'spark', 'party-deal', 'party-tears', 'expelled-victim',
@@ -75,7 +76,8 @@ const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spa
   'team-poach', 'team-rift',
   // more of both modes (events.js, 2026-10-17)
   'pair-money-talk', 'pair-coach', 'pair-mock', 'pair-homesick', 'pair-tempt',
-  'team-weak-link', 'team-trash-talk', 'team-leak', 'team-enemy-love', 'team-new-blood', 'team-carry']);
+  'team-weak-link', 'team-trash-talk', 'team-leak', 'team-enemy-love', 'team-new-blood', 'team-carry',
+  'team-vote-talk', 'team-bloc']);
 const STORY = new Set(['gym-training', 'pool-games', 'house-dinner', 'beach-run', 'sunset-talk', 'bunk-whisper', 'deal', 'alliance-grow', 'alliance-switch', 'alliance-leave', 'alliance-end', 'apology', 'scheme-lie', 'loyalty-test',
   'ride-to-the-final', 'psyche', 'homesick', 'call-home', 'home-talk', 'gossip-backfire', 'ex-in-the-house', 'trash-talk',
   'vet-dismisses', 'vet-mentors-rookie', 'beach-date', 'hot-tub-truths', 'show-banter', 'rookie-hazing', 'throw', 'injury-healed', 'pass-flex', 'pair-plan',

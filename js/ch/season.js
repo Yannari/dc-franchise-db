@@ -578,6 +578,11 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       if (toRedemption) { sendToRedemption(state, loser, winner, m.voters); duel.redemption = true; }
       else removePlayer(state, loser, 'arena', { by: winner, game: duel.game });
       syncActive(state);
+      // a Teams season: the winner their own team sent in chooses, there in the Arena, to stay or switch sides; a team
+      // down to one folds (teams.js). Before the walk back to the villa, so it airs on the Arena's screen (2026-10-17)
+      if (m.team && teamsOn(state)) { const x = afterTeamDuel(state, R(`switch${k}`), m, duel); duel.switch = x.switch || null; if (x.switch) (epRec.switches ||= []).push(x.switch); if (x.folded?.length) (epRec.folds ||= []).push(...x.folded);
+        // a team folding into the last one ends the teams (teams.js foldTeams): the row says so, as a scheduled break-up does
+        if (state.teamsBroken?.ep === state.ep) epRec.teamsBroken = true; }
       // A winner hurt in the Arena: how bad decides whether the medics pull them out.
       const hurtNow = injuryRoll(state, R(`hurt${k}`), winner, 1.3) ? hurt(state, R(`hurtk${k}`), winner, 'arena') : null;
       if (hurtNow && R(`med${k}`)() < medicalRisk(hurtNow)) {
@@ -589,8 +594,6 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       }
       // The morning after comes after the winner has walked back in.
       epRec.fallout = (epRec.fallout || []).concat(morningAfter(state, { duel, vote: m.vote, callout: m.callout, meetings: delib?.meetings || [], rng: R(`payback${k}`), volunteer: m.volunteer }));
-      // a Teams season: the winner their own team sent in may switch sides; a team down to one folds (teams.js)
-      if (m.team && teamsOn(state)) { const x = afterTeamDuel(state, R(`switch${k}`), m, duel); duel.switch = x.switch || null; if (x.switch) (epRec.switches ||= []).push(x.switch); if (x.folded?.length) (epRec.folds ||= []).push(...x.folded); }
     }
     // Redemption House: the people waiting there fight for the way back (redemption.js)
     if (redemptionOn(state)) {

@@ -327,9 +327,10 @@ const CHX_CSS = `
 @keyframes chxCpush2{from{scale:1}to{scale:1.05}}
 .chx .confcut .who .face{position:absolute;inset:0;overflow:hidden;border:.4cqw solid #0c0a0a;clip-path:polygon(0 4%,4% 0,100% 0,100% 96%,96% 100%,0 100%);box-shadow:0 2cqh 4cqh rgba(0,0,0,.6)}
 .chx .confcut .who img{width:100%;height:100%;object-fit:cover}
-.chx .confcut .lower{position:absolute;left:4%;top:8%;display:grid;gap:.5cqh;animation:chxLowin .5s .15s cubic-bezier(.2,.9,.3,1.1) both}
+.chx .confcut .lower{position:absolute;left:4%;top:16%;display:grid;gap:.5cqh;animation:chxLowin .5s .15s cubic-bezier(.2,.9,.3,1.1) both}
 @keyframes chxLowin{from{transform:translateX(-120%)}}
 .chx .confcut .lower .n{font:400 4cqw/1 'Anton';text-transform:uppercase;color:#fff;background:#111;padding:.2em .45em .12em;border-left:.6cqw solid var(--fire);transform:skewX(-7deg)}
+.chx .confcut .lower .team{justify-self:start;font:400 1.3cqw/1 'Anton';color:#fff;background:#111;border-left:.6cqw solid var(--tc);padding:.4em .7em .3em;letter-spacing:.1em;transform:skewX(-7deg)}
 .chx .confcut .lower .s{justify-self:start;font:400 1.2cqw/1 'Black Ops One';color:#111;background:var(--caution);padding:.45em .7em;letter-spacing:.14em;transform:skewX(-7deg)}
 .chx .confcut .rec{position:absolute;right:3%;top:6%;display:flex;gap:.6cqw;align-items:center;font:400 1.3cqw/1 'Black Ops One';color:#fff;letter-spacing:.16em}
 .chx .confcut .rec i{width:1cqw;height:1cqw;border-radius:50%;background:var(--red);animation:chxBlink 1s steps(2) infinite}

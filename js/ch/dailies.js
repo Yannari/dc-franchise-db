@@ -28,7 +28,7 @@ import { playRace } from './daily/race.js';
 import { playDemolition } from './daily/demolition.js';
 import { playRaftKing, playCutRope, playDoubleCross, playTrustFall, playWhoSaidIt } from './daily/betrayal.js';
 import { pairsOn, shapeOf, logDaily } from './pairs.js';
-import { teamsOn } from './teams.js';
+import { teamsOn, teamDailyReactions } from './teams.js';
 import { playDeepFreeze, playLogRoll, playRoadKill, playMudBrawl, playBuried, playFoodWars, playTrapeze, playPoisonCup } from './daily/more.js';
 
 export const DAILIES = [
@@ -369,6 +369,8 @@ export function playDaily(state, rng, { division, pin = null, solo = false }) {
     addScene(state, 'call-home', winners, {}, winners, 'private');
   }
   if (seasonPairs) logDaily(state, units, indiv, daily.name);
+  // a Teams season: both teams react, the losers talk strategy, a bloc may form inside a team (teams.js)
+  if (seasonTeams && mode === 'teams') teamDailyReactions(state, rng, { winners, last, scores: indiv });
   const aftermath = mode === 'pairs' ? pairAftermath(state, rng, units, power, winners, ranked)
     : mode === 'teams' ? teamAftermath(state, rng, units, power, winners) : [];
   return { id: daily.id, name: daily.name, mode, units, winners, last,

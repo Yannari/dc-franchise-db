@@ -6,6 +6,10 @@
 // stand marks give the ground, the horizon gives the perspective. Pure.
 import { CH_MARKS } from './marks.js';
 
+// a team's colour (a Teams season): the same team, the same colour, every episode (steps.js casts it, stage.js recolours)
+const TEAM_COLOURS = ['#2f80ff', '#e3262d', '#ffd21a', '#2bb673', '#a24bff', '#ff8a1f'];
+export const teamColour = name => { let h = 11; for (const c of String(name)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return TEAM_COLOURS[h % TEAM_COLOURS.length]; };
+
 // Stand marks redrawn where a plate's own were wrong (the screenshots of every plate, 2026-10-15): the pool
 // deck's stood at the very bottom, behind the dialogue box. [u, v, size]; replaces the plate's free stands.
 const STAND_FIX = { pooldeck: [[.29, .66, .1], [.41, .66, .1], [.31, .76, .11], [.45, .76, .11], [.33, .86, .12], [.5, .86, .12]] };

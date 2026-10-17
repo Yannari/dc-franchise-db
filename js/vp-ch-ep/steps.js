@@ -18,7 +18,7 @@
 // adds only what the camera sees (games.js pools, picked by a seeded hash) and
 // the rules cards (the engine's own game descriptions).
 import { CH_MARKS } from './marks.js';
-import { marksOf, plateKey, lineup, hostSide, sizeAt } from './ground.js';
+import { marksOf, plateKey, lineup, hostSide, sizeAt, teamColour } from './ground.js';
 import { BEAT_PLAYS } from './daily-play.js';
 import { episodeScenes } from '../ch/transcript.js';
 import { SHOWS } from '../shows.js';
@@ -189,7 +189,7 @@ function crowdSlots(base, n, { seated = false } = {}) {
   return out;
 }
 // A conversation of a few: the stand marks nearest the middle, left to right; a crowd fills every mark.
-export function placeScene(key, people, { group = null, crowd = [] } = {}) {
+export function placeScene(key, people, { group = null, crowd = [], keep = null } = {}) {
   if (!group && people.length > 6) {
     const slots = lineup(key, people.length);
     return Object.fromEntries(people.map((n, i) => [n, slots[i]]));
@@ -198,9 +198,11 @@ export function placeScene(key, people, { group = null, crowd = [] } = {}) {
   const stands = ms.filter(m => m.kind === 'stand' && !m.group);
   const seats = ms.filter(m => m.kind === 'seat' && (!group || m.group === group));
   const spec = {};
-  // a group (the sofa, the Arena's stand) keeps to its own seats and stands; the plate's open spots are for others
-  const gStands = group ? ms.filter(m => m.kind === 'stand' && m.group === group) : [];
-  const pool = group ? [...seats.map((m, i) => ({ m, sp: ['seat', i, m.group] })), ...gStands.map((m, i) => ({ m, sp: ['stand', i, group] })), ...(gStands.length || seats.length ? [] : stands.map((m, i) => ({ m, sp: ['stand', i] })))]
+  // a group (the sofa, the Arena's stand) keeps to its own seats and stands; the plate's open spots are for others.
+  // `keep` leaves some of the group's stand marks free (a Teams Arena: the other team's side); indexes stay the plate's.
+  const allGStands = group ? ms.filter(m => m.kind === 'stand' && m.group === group) : [];
+  const gStands = keep ? allGStands.filter(keep) : allGStands;
+  const pool = group ? [...seats.map((m, i) => ({ m, sp: ['seat', i, m.group] })), ...gStands.map(m => ({ m, sp: ['stand', allGStands.indexOf(m), group] })), ...(gStands.length || seats.length ? [] : stands.map((m, i) => ({ m, sp: ['stand', i] })))]
     : [...stands.map((m, i) => ({ m, sp: ['stand', i] })), ...ms.filter(m => m.kind === 'seat').map(m => ({ m, sp: ['seat', ms.filter(x => x.kind === 'seat' && x.group === m.group).indexOf(m), m.group] }))];
   const central = [...pool].sort((a, b) => (Math.abs(a.m.u - .5) - a.m.v * .6) - (Math.abs(b.m.u - .5) - b.m.v * .6));
   // a few people take one row of the plate, the most central marks of it, so nobody stands half behind
@@ -373,7 +375,9 @@ export function chStepScreens(row, ctx = {}) {
     V: null,
     push(step) {
       if (step.scene && this.pairMap && !step.scene.pairs) step.scene.pairs = this.pairMap;
-      if (step.scene && this.teamMap && !step.scene.teams) step.scene.teams = this.teamMap;
+      if (step.scene && this.teamMap && !step.scene.teams) { step.scene.teams = { ...this.teamMap }; step.scene.teamNames = { ...this.teamNames }; }
+      // the switch recolours its player for the rest of the episode (later scenes are built after it)
+      if (step.reband && this.teamMap) for (const [n, t] of Object.entries(step.reband)) { if (t) { this.teamMap[n] = teamColour(t); this.teamNames[n] = t; } else { delete this.teamMap[n]; delete this.teamNames[n]; } }
       cur.steps.push(step); return step;
     },
     last() { return cur.steps[cur.steps.length - 1]; },
@@ -384,10 +388,12 @@ export function chStepScreens(row, ctx = {}) {
   // a Pairs season: who is whose partner this episode (ch-run.js rows: the pairs as it ended, so a swap shows)
   const pairList = ch.pairs?.end?.length ? ch.pairs.end : ch.pairs?.start || ch.final?.pairPodium && Object.values(ch.final.pairPodium).flat() || null;
   S.pairMap = pairList ? Object.fromEntries(pairList.flatMap(([x, y]) => [[x, y], [y, x]])) : null;
-  // a Teams season: each player's team colour this episode (the teams as it ended, so a switch shows; none after the
-  // break-up). The colour follows the team's place in the season's first list, so it never changes team to team.
-  const teamList = ch.teamsBroken ? null : ch.teams?.end?.length ? ch.teams.end : ch.teams?.start || null;
+  // a Teams season: each player's team colour this episode, as the episode BEGAN (a switch recolours its player at the
+  // switch: the user, 2026-10-17); none after the break-up (the break-up step clears it). Each team keeps one colour.
+  const teamList = ch.teams?.start?.length ? ch.teams.start : ch.teams?.end || null;
   S.teamMap = teamList ? Object.fromEntries(teamList.flatMap(t => t.members.map(n => [n, teamColour(t.name)]))) : null;
+  S.teamNames = teamList ? Object.fromEntries(teamList.flatMap(t => t.members.map(n => [n, t.name]))) : null;
+  S.teamList = teamList;
   const open = (key, label) => { cur = { id: `${key}-${screens.length}`, key, label: label || LABEL[key] || 'The villa', steps: [] }; screens.push(cur); };
 
   // Group the aired scenes into chapters, in airing order.
@@ -399,6 +405,21 @@ export function chStepScreens(row, ctx = {}) {
     // TJ's name gag right after the daily is at the daily
     if (a.kind === 'run-name' && chunks[chunks.length - 1]?.key === 'daily') k = 'daily';
     if (a.kind === 'daily') seenDaily = true;
+    // a Teams season's choice after the Arena (switch or stay) and a team folding belong on the Arena screen, in front of
+    // both teams (the user, 2026-10-17: "at the arena for the choice switch or not we need to see every team")
+    // (the choice goes on its own duel's screen: on a double elimination, the duel its chooser won)
+    if (['team-switch', 'team-stay', 'team-fold'].includes(a.kind)) {
+      const arenas = [...chunks].reverse().filter(c => c.key === 'arena');
+      const own = arenas.find(c => c.items.some(j => aired[j].kind === 'arena' && aired[j].data?.winner === a.who[0])) || arenas[0];
+      if (own) {
+        // whatever aired between the duel and the choice (the bank changing hands, a storyline beat) comes along, in order
+        const from = chunks.indexOf(own);
+        for (const c of chunks.slice(from + 1)) { if (c.key === 'arena') continue; own.items.push(...c.items); c.items = []; }
+        for (let j = chunks.length - 1; j > from; j--) if (!chunks[j].items.length) chunks.splice(j, 1);
+        own.items.push(i); own.items.sort((x, y) => x - y);
+        return;
+      }
+    }
     // the goodbye belongs to its own duel's screen, whatever aired in between (bank, skull)
     if (a.kind === 'arena-goodbye') { const own = [...chunks].reverse().find(c => c.key === 'arena' && c.items.some(j => (aired[j].kind === 'arena' && aired[j].data?.loser === a.data?.loser) || (aired[j].kind === 'pair-arena' && (aired[j].data?.losers || []).includes(a.data?.loser)))); if (own) { own.items.push(i); return; } }
     // the villa and the villa reveal are one screen, however they're interleaved; a night out is its own
@@ -573,9 +594,8 @@ const BIG = {
   'teams-revealed': a => ({ card: { k: 'This season', t: 'Teams', sub: ({ shows: 'Everybody plays for the show they came from', champions: 'Past champions against everybody who never won', vets: 'The vets against the rookies', draft: 'Two captains pick their teams' })[a.data?.how] || 'Team against team',
     faces: (a.data?.teams || []).map(t => t.captain).filter(Boolean).slice(0, 6) }, shake: 1 }),
   'team-reveal': a => ({ card: { k: a.data?.how === 'draft' ? 'Captain ' + (a.who[0] || '') : 'Team', t: a.data?.team || 'Team', sub: `${a.data?.size || a.who.length} players. Win together, and the losers vote one of their own in.`, faces: (a.data?.members || a.who).slice(0, 14) } }),
-  'team-switch': a => ({ slam: { spray: 'SWITCHED SIDES', color: '#ffd21a' }, chip: [a.who[0], `NOW ${String(a.data?.to || '').toUpperCase()}`], shake: 1 }),
-  'team-fold': a => ({ card: { k: 'Team gone', t: a.data?.from || 'A team', sub: `${a.who[0]} is the last of them, and joins ${a.data?.to || 'the others'}`, faces: a.who.slice(0, 2) } }),
-  'teams-break': a => ({ card: { k: 'Twist', t: 'The teams are over', sub: 'Every player for themselves from here', faces: a.who.slice(0, 12) }, shake: 1 }),
+  // (a switch, a stay and a fold play on the Arena screen: teamChoice)
+  'teams-break': a => ({ card: { k: 'Twist', t: 'The teams are over', sub: 'Every player for themselves from here', faces: a.who.slice(0, 12) }, shake: 1, reband: Object.fromEntries(a.who.map(n => [n, null])) }),
   'team-last-stand': a => ({ chip: [a.who[0], `LAST OF ${String(a.data?.team || '').toUpperCase()}`] }),
   'team-poach': a => (a.data?.seen ? { chip: [a.data.seen, 'SAW IT'] } : []),
   // more of both modes (events.js, 2026-10-17)
@@ -583,13 +603,16 @@ const BIG = {
   'team-leak': a => (a.data?.caught ? { slam: { spray: 'CAUGHT', color: '#e3262d' }, chip: [a.data.caught, 'SAW THE LEAK'] } : []),
   'team-weak-link': a => ({ chip: [a.who[1], a.data?.defended ? 'DEFENDED' : 'BLAMED FOR THE LOSS'] }),
   'team-new-blood': a => ({ chip: [a.who[0], a.data?.welcome ? 'WELCOMED IN' : 'FROZEN OUT'] }),
+  // after a team daily (teams.js teamDailyReactions)
+  'team-daily-win': a => ({ chip: [a.who[0], 'CARRIED IT'] }),
+  'team-daily-loss': a => (a.data?.streak ? { chip: [a.who[0], 'LOST AGAIN'] } : []),
+  'team-vote-talk': a => ({ chip: [a.data?.target, a.data?.doubter ? 'NAMED, NOT BY ALL' : 'THE NAME'] }),
+  'team-bloc': a => ({ card: { k: `Inside ${a.data?.team || 'the team'}`, t: a.data?.name || 'A bloc', sub: 'A group inside the team, voting together', faces: a.who.slice(0, 4) } }),
   'pair-money-talk': a => ({ chip: [a.who[1], a.data?.promise ? 'PROMISED TO SHARE' : 'DODGED THE QUESTION'] }),
   'pair-pact': a => ({ chip: [a.who[0], `A PACT WITH ${String(a.who[1] || '').toUpperCase()}`] }),
   'pair-tempt': a => (a.data?.tempted ? { chip: [a.who[1], 'TEMPTED'] } : [])
 };
-// a team's colour (a Teams season): the same team, the same colour, every episode
-const TEAM_COLOURS = ['#2f80ff', '#e3262d', '#ffd21a', '#2bb673', '#a24bff', '#ff8a1f'];
-const teamColour = name => { let h = 11; for (const c of String(name)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return TEAM_COLOURS[h % TEAM_COLOURS.length]; };
+
 // who stood with whom when it kicked off (party.js: the house takes sides)
 function sidesStep(a) {
   const sides = a.data?.sides || [];
@@ -885,12 +908,16 @@ function buildVote(S, open, items, row, { names, house, goneAt }) {
   open('vote', talk ? 'Deliberation' : !cer && vol ? 'A volunteer' : nVotes > 1 ? `The ${['', 'first', 'second', 'third'][nth] || 'next'} vote` : null);
   const at = items.find(x => x.a.kind === 'ceremony') || items[0];
   S.at(at.i);
-  const here = house.filter(n => !goneAt[at.i]?.has(n));
+  // a Teams season's vote is one team's: only that team is in the common room (the user, 2026-10-17)
+  const teamVote = (row.ch?.votes || []).find(v => v.team);
+  const voters = teamVote ? new Set(teamVote.ballots.flatMap(b => [b.voter, b.target])) : null;
+  const here = house.filter(n => !goneAt[at.i]?.has(n) && (!voters || voters.has(n)));
   const key = plateKey('common', true);
   const cast = { TJ: ['host'], ...placeScene(key, here, { group: 'sofa' }) };
   S.push({ scene: { plate: key, place: 'The Common Room', when: whenOf(S.day, S.min), icon: 'fire', room: 'common', cast, wipe: 1 },
     card: talk ? { k: 'Before the vote', t: 'Deliberation', sub: 'The house talks it out, in front of everybody' }
       : nVotes > 1 ? { k: `Vote ${nth} of ${nVotes}`, t: 'The Vote', sub: `A double elimination: ${nVotes} go into the Arena this week, one vote at a time` } :
+      teamVote ? { k: 'Tonight', t: 'The Vote', sub: teamVote.winners ? `Nobody else can go in, so ${teamVote.team} votes one of its own` : `${teamVote.team} lost the daily. Only ${teamVote.team} votes, for one of its own`, faces: row.ch?.dailyWinners || [], facesLabel: 'Safe', icon: 'vote' } :
       { k: 'Tonight', t: 'The Vote', sub: S.pairMap ? (row.ch?.division === 'm' ? "Men's week: one men's pair goes into the Arena" : row.ch?.division === 'f' ? "Women's week: one women's pair goes into the Arena" : 'One pair goes into the Arena, together')
         : row.ch?.division === 'm' ? "Men's week: one guy goes into the Arena" : row.ch?.division === 'f' ? "Women's week: one woman goes into the Arena" : 'One of them goes into the Arena', faces: row.ch?.dailyWinners || [], facesLabel: 'Safe', icon: 'vote' },
     sceneIdx: at.i, title: 'The house vote', power: row.ch?.dailyWinners || [] });
@@ -994,8 +1021,10 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
   const dressed = duel && CH_MARKS[`arena-${duel.game}-night`] ? `arena-${duel.game}` : ARENA_STAGE.plate;
   const key = plateKey(dressed, true);
   S.painted = dressed !== ARENA_STAGE.plate;
-  const crowd = here.filter(n => n !== b);
-  const cast = { TJ: ['host'], [a]: ['gate'], ...placeScene(key, [b, ...crowd], { group: 'house' }) };
+  // a Teams season: the stand sits team by team, so the switch or the stay plays in front of both (2026-10-17)
+  const teamIdx = n => (S.teamList || []).findIndex(t => t.members.includes(n));
+  const crowd = here.filter(n => n !== b).sort((x, y) => teamIdx(x) - teamIdx(y));
+  const cast = { TJ: ['host'], [a]: ['gate'], ...(teamStands(key, b, crowd, teamIdx) || placeScene(key, [b, ...crowd], { group: 'house' })) };
   S.arenaCrowd = crowd;
   S.push({ scene: { plate: key, place: 'The Arena', when: whenOf(S.day, S.min), icon: 'skull', island: 'arena', cast, hidden: [a], wipe: 1, embers: 1 },
     card: { k: 'Elimination', t: 'The Arena', sub: `${a} is going in`, faces: [a], icon: 'arena' }, sceneIdx: at.i, title: 'The Arena' });
@@ -1028,6 +1057,70 @@ function buildArena(S, open, items, row, { names, house, goneAt }) {
   playDuel(S, duel, `${row.num}|${duel.game}`, S.arenaCrowd || []);
   const bye = items.find(x => x.a.kind === 'arena-goodbye' && x.a.data?.loser === duel.loser);
   finishDuel(S, duel, post, names, `${row.num}|${duel.game}`, S.arenaCrowd || [], bye);
+  // a Teams season: the winner's choice, in front of both teams in the stand, a team folding, and anything that aired
+  // on the Arena night between the duel and the choice, in airing order
+  const done = new Set([co, ar, bye].filter(Boolean));
+  for (const it of items.filter(x => !done.has(x)).sort((x, y) => x.i - y.i)) {
+    if (['team-switch', 'team-stay', 'team-fold'].includes(it.a.kind)) { teamChoice(S, it, { names }); continue; }
+    S.at(it.i);
+    linesToSteps(S, it.a.lines || [], { names, sceneWho: it.a.who, first: { sceneIdx: it.i, title: it.title, kind: it.a.kind, focus: it.a.who.slice(0, 2) } });
+    if (BIG[it.a.kind]) for (const st of [].concat(BIG[it.a.kind](it.a))) S.push({ focus: it.a.who.slice(0, 4), ...st });
+  }
+}
+
+// A Teams season's Arena: one team in the bleachers on the left, the other on the plate's right-hand stand, so the
+// winner's choice plays between them (the user, 2026-10-17: "we need to see every team"). Null when the plate has
+// no right-hand stand or only one team is watching; the house then sits together as before.
+function teamStands(key, b, crowd, teamIdx) {
+  const sides = [...new Set(crowd.map(teamIdx))].filter(i => i >= 0);
+  if (sides.length < 2) return null;
+  const ms = marksOf(key);
+  const gStands = ms.filter(m => m.kind === 'stand' && m.group === 'house');
+  const right = gStands.map((m, i) => ({ m, i })).filter(x => x.m.u > .6);
+  if (!right.length) return null;
+  // the team with fewer people here takes the right, so the bleachers hold the bigger one
+  const count = i => crowd.filter(n => teamIdx(n) === i).length;
+  const rightTeam = [...sides].sort((x, y) => count(x) - count(y))[0];
+  const R = crowd.filter(n => teamIdx(n) === rightTeam), L = crowd.filter(n => teamIdx(n) !== rightTeam);
+  // the left side may not use the right-hand stand marks
+  const spec = placeScene(key, [b, ...L], { group: 'house', keep: m => m.u <= .6 });
+  const u0 = Math.min(...right.map(x => x.m.u)), v = Math.max(...right.map(x => x.m.v)), sz = right[0].m.s || .07;
+  R.forEach((n, k) => {
+    if (k < right.length) { spec[n] = ['stand', right[k].i, 'house']; return; }
+    // the rest stand in rows behind the marks, spread across the same ground
+    // (four across, a step wider than a face, each row a little further back and offset half a step)
+    const j = k - right.length, row = Math.floor(j / 4) + 1, col = j % 4;
+    const left = Math.max(.66, Math.min(u0, 1 - .06 - 3.5 * .062) - .04);
+    spec[n] = { u: Math.min(.96, left + (col + (row % 2 ? .5 : 0)) * .062), v: v - .045 * row, s: sz * Math.pow(.93, row) };
+  });
+  return spec;
+}
+
+// The Arena winner's choice in a Teams season (ch/teams.js afterTeamDuel): TJ asks, both teams watch from the stand,
+// the answer, and both teams react; a switch recolours the player from here on. A team down to one folds.
+function teamChoice(S, it, { names }) {
+  S.at(it.i);
+  const a = it.a, d = a.data || {}, w = a.who[0];
+  const stand = (S.teamList || []).map(t => t.name);
+  if (a.kind === 'team-fold') {
+    S.push({ card: { k: 'Team gone', t: d.from || 'A team', sub: `${w} is the last of them, and joins ${d.to || 'the others'}`, faces: [w], icon: 'arena' }, focus: [w], sceneIdx: it.i, title: 'A team folds' });
+    linesToSteps(S, a.lines || [], { names, sceneWho: a.who });
+    S.push({ reband: { [w]: d.to }, chip: [w, `NOW ${String(d.to || '').toUpperCase()}`], focus: [w] });
+    return;
+  }
+  S.push({ card: { k: 'The choice', t: `${w}: stay or switch`, sub: `${d.from} voted ${w} in. ${stand.filter(n => n !== d.from).join(' and ') || 'The other team'} would take ${S.V.pron[w]?.obj || 'them'}.`, faces: [w], icon: 'arena' },
+    focus: [], sceneIdx: it.i, title: a.kind === 'team-switch' ? 'Switching sides' : 'Staying put' });
+  const lines = a.lines || [];
+  // the answer is the first thing the winner says; the switch slams and recolours on it
+  const answer = lines.findIndex(l => l.by === w && l.kind === 'say');
+  lines.forEach((l, k) => {
+    if (k === answer) {
+      // the answer is a wide shot: both teams' faces when it lands
+      S.push({ say: [l.by, l.text], focus: [], ...(a.kind === 'team-switch'
+        ? { slam: { spray: 'SWITCHED SIDES', color: '#ffd21a' }, reband: { [w]: d.to }, chip: [w, `NOW ${String(d.to || '').toUpperCase()}`], shake: 1 }
+        : { slam: { stamp: 'STAYING' }, chip: [w, `STAYS WITH ${String(d.from || '').toUpperCase()}`] }) });
+    } else linesToSteps(S, [l], { names, sceneWho: a.who });
+  });
 }
 
 // A game's lines: what is said before it is played, and the result with everything after. The result is

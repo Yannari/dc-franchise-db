@@ -54,6 +54,8 @@ export function allianceName(state, rng, members) {
 
 export const allianceOf = (state, name) => state.alliances.find(a => !a.ended && a.members.includes(name)) || null;
 export const activeAlliances = state => state.alliances.filter(a => !a.ended);
+// a bloc made inside a team (teams.js teamDailyReactions) takes new members only from that team while the teams stand
+const teamFits = (state, al, n) => !al.teamId || state.teamsBroken || !state.teams?.length || state.teamOf?.[n] === al.teamId;
 
 // How much `a` wants to be in a group with `b`: perceived bond, the same old
 // show, and a vet seeing a rookie's vote.
@@ -170,7 +172,7 @@ export function growAlliances(state, rng) {
     const inside = al.members.filter(m => state.active.includes(m));
     if (inside.length >= cap || state.ep - al.formedEp < 1) continue;
     // never back into a group they left (they walked out, or were thrown out: the room remembers)
-    const free = state.active.filter(n => !allianceOf(state, n) && !(al.former || []).includes(n));
+    const free = state.active.filter(n => !allianceOf(state, n) && !(al.former || []).includes(n) && teamFits(state, al, n));
     const best = free.map(n => ({ n, p: inside.reduce((a, m) => a + pull(state, n, m), 0) / inside.length + pull(state, al.leader, n) * 0.5 }))
       .sort((a, b) => b.p - a.p)[0];
     if (!best || best.p < 1.6 || rng() > 0.35 + S(al.leader, 'strategic') * 0.03) continue;
@@ -223,7 +225,7 @@ export function allianceShifts(state, rng) {
       // somewhere better: another alliance they are much closer to, with room
       const cap = Math.max(4, Math.round(state.active.length / 3));
       // (never back into a group they walked out of or were thrown out of)
-      const better = activeAlliances(state).filter(o => o !== al && inside(state, o).length < cap && !(o.former || []).includes(m))
+      const better = activeAlliances(state).filter(o => o !== al && inside(state, o).length < cap && !(o.former || []).includes(m) && teamFits(state, o, m))
         .map(o => ({ o, gain: fitOf(state, o, m) - fit })).sort((x, y) => y.gain - x.gain)[0];
       const nice = NICE.has(archetypeOf(m));
       if (better && better.gain > 2.2 && (!nice || friend) && rng() < (better.gain - 2.2) * 0.12 + (1 - S(m, 'loyalty') / 10) * 0.05) {
@@ -263,6 +265,8 @@ export function allianceShifts(state, rng) {
     for (let i = 0; i < small.length; i++) for (let j = i + 1; j < small.length; j++) {
       const A = small[i].al, B = small[j].al;
       if (A.ended || B.ended || small[i].n + small[j].n > Math.round(state.active.length / 2)) continue;
+      // a team's bloc does not merge across the teams while they stand
+      if ((A.teamId || B.teamId) && !state.teamsBroken && state.teams?.length && A.teamId !== B.teamId) continue;
       const cross = (pull(state, A.leader, B.leader) + pull(state, B.leader, A.leader)) / 2;
       if (cross < 1.5 || rng() > (cross - 1.5) * 0.06 + (S(A.leader, 'strategic') + S(B.leader, 'strategic')) * 0.002) continue;
       const [keep, fold] = small[i].n >= small[j].n ? [A, B] : [B, A];

@@ -402,7 +402,31 @@ Object.assign(ROLES, {
   // a: the one going in; b: a teammate who did not say the name; c: a teammate who did
   'team-after-vote': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.stung || undefined }, ending: sc.data.stung ? 'stung' : 'any', slots: { team: sc.data.team } }),
   // a: the one switching; b: the captain they join; c: the captain they leave
-  'team-switch': sc => ({ roles: { a: sc.who[0], b: sc.data.joinCaptain || undefined, c: sc.data.leaveCaptain || undefined }, ending: 'any', slots: { from: sc.data.from, to: sc.data.to } }),
+  // a: the one switching; b: the captain they join; c: the captain they leave; d: one of the old team who said the name
+  'team-switch': sc => ({ roles: { a: sc.who[0], b: sc.data.joinCaptain || undefined, c: sc.data.leaveCaptain || undefined,
+    d: sc.data.stung && ![sc.data.joinCaptain, sc.data.leaveCaptain].includes(sc.data.stung) ? sc.data.stung : undefined,
+    // x: somebody on the new team who gets on with them
+    x: sc.data.welcomer && ![sc.data.joinCaptain, sc.data.leaveCaptain, sc.data.stung].includes(sc.data.welcomer) ? sc.data.welcomer : undefined }, ending: 'any',
+    slots: { from: sc.data.from, to: sc.data.to, count: sc.data.voted >= 2 ? (COUNT_WORD[sc.data.voted] || String(sc.data.voted)).toLowerCase() : undefined } }),
+  // a: the one staying; b: their own captain; c: the other team's captain, turned down; d: one who said the name
+  'team-stay': sc => ({ roles: { a: sc.who[0], b: sc.data.ownCaptain || undefined, c: sc.data.otherCaptain || undefined,
+    d: sc.data.stung && sc.data.stung !== sc.data.ownCaptain ? sc.data.stung : undefined,
+    // x: a teammate who did not say the name
+    x: sc.data.friend && ![sc.data.ownCaptain, sc.data.otherCaptain, sc.data.stung].includes(sc.data.friend) ? sc.data.friend : undefined }, ending: sc.data.statement ? 'statement' : 'quiet',
+    slots: { from: sc.data.from, to: sc.data.to, count: sc.data.voted >= 2 ? (COUNT_WORD[sc.data.voted] || String(sc.data.voted)).toLowerCase() : undefined } }),
+  // after a team daily: the winners (a: who carried it, b: the captain), the losers (a: the captain, b: the angry one,
+  // c: the one who did worst), a small group settling on a name (a: who leads it, b: who doubts it), a bloc inside a team
+  'team-daily-win': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.streak ? 'streak' : 'any',
+    slots: { team: sc.data.team, oppteam: sc.data.oppTeam } }),
+  'team-daily-loss': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.worst && sc.data.worst !== sc.who[0] && sc.data.worst !== sc.who[1] ? sc.data.worst : undefined },
+    ending: sc.data.streak ? 'streak' : 'any', slots: { team: sc.data.team, oppteam: sc.data.oppTeam } }),
+  'team-vote-talk': sc => {
+    const g = sc.data.group || sc.who.slice(0, -1);
+    const b = sc.data.doubter || g[1];
+    return { roles: { a: g[0], b, c: g.find(n => n !== g[0] && n !== b) }, ending: sc.data.doubter ? 'split' : sc.data.slowest ? 'slowest' : 'agree', slots: { target: sc.data.target, team: sc.data.team } };
+  },
+  'team-bloc': sc => ({ roles: { a: sc.data.leader, b: sc.who.find(x => x !== sc.data.leader), c: sc.who.filter(x => x !== sc.data.leader)[1], d: sc.who.filter(x => x !== sc.data.leader)[2] },
+    ending: sc.data.lost ? 'lost' : 'won', slots: { alliance: sc.data.name, team: sc.data.team } }),
   'team-fold': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { from: sc.data.from, to: sc.data.to } }),
   'teams-break': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.why === 'one-team' ? 'one' : 'any' }),
   'team-last-stand': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any', slots: { team: sc.data.team } }),

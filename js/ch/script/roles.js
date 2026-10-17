@@ -11,7 +11,7 @@
 // Slots a line may name besides the parts: {target}, {alliance}, {game},
 // {gone}, {show_a}, {show_b}, {need}. A slot is filled only from the scene's
 // own data; a line whose slot is empty is never picked (write.js).
-import { SHOWS } from '../../shows.js';
+import { SHOWS, CHALLENGE_FORMAT } from '../../shows.js';
 
 // what a daily's question called somebody (daily/more.js ASK, betrayal.js QUESTIONS), as a phrase
 const CALLED = { snake: 'the biggest snake in the house', threat: 'the biggest threat in the house', fake: 'the fakest person here',
@@ -53,7 +53,7 @@ export const ROLES = {
     const r = sc.data.recognised?.[0];
     // two people who were something to each other before (season.js arrivalKin): a couple, or old friends
     if (r && sc.data.kin) return { roles: { a: r[0], b: r[1] }, ending: sc.data.kin === 'couple' ? 'couple' : 'oldfriends' };
-    return r ? { roles: { a: r[0], b: r[1] }, ending: st.origin[r[0]] === 'the-challenge' ? 'returning' : 'reunion', slots: { show_a: showName(st.origin[r[0]]) } }
+    return r ? { roles: { a: r[0], b: r[1] }, ending: st.origin[r[0]] === CHALLENGE_FORMAT ? 'returning' : 'reunion', slots: { show_a: showName(st.origin[r[0]]) } }
       : { roles: { a: sc.who[0], b: sc.who[1] }, ending: 'strangers' };
   },
   'villa-reveal': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),

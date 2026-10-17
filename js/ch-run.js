@@ -223,7 +223,7 @@ function introLines(n, info, state) {
   if (best?.winner) { key = 'champ'; slots.where = best.where; }
   else if (best?.finalist) { key = 'finalist'; slots.where = best.where; }
   else if (last?.place) { key = last.total && last.place > last.total * .66 ? 'early' : 'placed'; slots.where = last.where; slots.place = _ord(last.place); }
-  else if (info.origin === 'the-challenge') key = info.rookie ? 'rookie' : 'vetHome';
+  else if (info.origin === CHALLENGE_FORMAT) key = info.rookie ? 'rookie' : 'vetHome';
   else if (!info.rookie && show) key = 'vet';
   else if (show) key = 'rookieShow';
   else key = 'rookie';

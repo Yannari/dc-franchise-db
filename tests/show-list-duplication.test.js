@@ -77,6 +77,7 @@ const PER_SHOW_DATA = {
   'js/rankings-update.js':        'per-format ranking weights — a veto is not an immunity',
   'js/settings.js':               'per-show venue list: where a season of that show can be set',
   'js/social/adapter.js':         'SHOW_WORDS: genuine per-show vocabulary',
+  'js/vp-ch-ep/steps.js':         'SHOW_PLATE: the painted backdrop of each show behind a Challenge intro card — art, not identity',
   'worker/worker-season-live.js': 'SHOW_WORDS fallback, worker-side; same vocabulary',
   'worker/worker-episode-live.js':'external wiki hosts per-show — endpoint data, not show identity',
 };

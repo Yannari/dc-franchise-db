@@ -877,7 +877,10 @@ export function renderVPScreen() {
   if (vpCurrentScreen >= vpScreens.length) window.vpCurrentScreen = 0;
   const cur = vpScreens[vpCurrentScreen];
   if (!cur) return;
-  const curPhase = _vpPhaseForScreen(cur.id);
+  // A SCREEN MAY NAME ITS OWN PHASE, as it may draw its own icon (below): The Challenge heads each real day with
+  // what it holds. A screen that does not keeps the id table's answer, so nothing else changes.
+  const phaseOf = s => s.phase || _vpPhaseForScreen(s.id);
+  const curPhase = phaseOf(cur);
   const visibleIndexes = _vpVisibleIndexes();
   const visiblePos = visibleIndexes.indexOf(vpCurrentScreen);
   if (player) player.dataset.viewMode = _vpViewMode;
@@ -902,7 +905,7 @@ export function renderVPScreen() {
     sidebar.innerHTML = '<div class="rp-sidebar-ep"><span>Episode ' + _vpEpLabel(vpEpNum) + '</span><b>' + (visiblePos + 1) + '/' + visibleIndexes.length + '</b></div>' +
       visibleIndexes.map(i => {
         const s = vpScreens[i];
-        const phase = _vpPhaseForScreen(s.id);
+        const phase = phaseOf(s);
         const phaseHead = phase.id !== lastPhase
           ? '<div class="rp-sidebar-phase"><span>' + phase.icon + '</span>' + phase.label + '</div>' : '';
         lastPhase = phase.id;

@@ -601,4 +601,25 @@ const CHX_CSS = `
 #visual-player.tdx-tv .chx .chx-frame{max-height:100vh}
 @media (max-width:760px){.chx .pbar{order:9;flex-basis:100%}}
 @media (prefers-reduced-motion:reduce){.chx .chx-drift,.chx .tok .body,.chx .fly,.chx .mote,.chx .ember{animation:none!important}}
+/* The sidebar beside a Challenge episode (the user, 2026-10-16: "icons resembling the show and visually better,
+   without changing it for the other shows"): scoped to a player holding .chx, so every other show keeps its own.
+   Charcoal and grunge, fire-orange rule, caution-tape day heads, each screen's icon on a riveted tile. */
+#visual-player:has(.chx) .rp-sidebar{background:#0f0d0c var(--chx-grunge);border-right:2px solid #ff6a1a;padding-top:14px;width:188px}
+#visual-player:has(.chx) .rp-sidebar-ep{font:400 15px Anton,'Barlow Condensed',sans-serif;letter-spacing:.06em;color:#f5efe8;padding:0 14px 8px;border-bottom:1px solid #34302c}
+#visual-player:has(.chx) .rp-sidebar-ep b{font:700 12px 'Barlow Condensed';color:#ff9a2a;align-self:center}
+#visual-player:has(.chx) .rp-sidebar-phase{position:relative;margin:14px 0 6px;padding:5px 12px 5px 14px;font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.14em;color:#141110;
+  background:#ffd21a;clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%);box-shadow:0 2px 0 rgba(0,0,0,.5)}
+#visual-player:has(.chx) .rp-sidebar-phase::after{content:'';position:absolute;right:10px;top:0;bottom:0;width:26px;background:repeating-linear-gradient(135deg,#141110 0 4px,transparent 4px 8px);opacity:.85}
+#visual-player:has(.chx) .rp-sidebar-phase span{display:none}
+#visual-player:has(.chx) .rp-sidebar-item{gap:9px;padding:6px 12px 6px 11px;font:600 15px 'Barlow Condensed',sans-serif;letter-spacing:.02em;color:#9c9188;border-left:3px solid transparent}
+#visual-player:has(.chx) .rp-sidebar-item:hover{color:#f2ece6;background:rgba(255,106,26,.07)}
+#visual-player:has(.chx) .rp-sidebar-item.done{color:#6f665e}
+#visual-player:has(.chx) .rp-sidebar-item.active{color:#fff;font-weight:800;border-left-color:#ff6a1a;background:linear-gradient(90deg,rgba(255,106,26,.28),rgba(255,106,26,0) 85%)}
+#visual-player:has(.chx) .chx-sb-ico{display:grid;place-items:center;width:24px;height:24px;flex:0 0 auto;background:#1a1716;border:1px solid #34302c;
+  clip-path:polygon(4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%,0 4px);color:#c9c4bd}
+#visual-player:has(.chx) .chx-sb-ico .rp-scr-icon{width:15px;height:15px;opacity:1;stroke-width:1.8}
+#visual-player:has(.chx) .rp-sidebar-item:hover .chx-sb-ico{border-color:#ff6a1a;color:#ff9a2a}
+#visual-player:has(.chx) .rp-sidebar-item.done .chx-sb-ico{opacity:.55}
+#visual-player:has(.chx) .rp-sidebar-item.active .chx-sb-ico{background:#ff6a1a;border-color:#ff9a2a;color:#141110;box-shadow:0 0 12px rgba(255,106,26,.55)}
+#visual-player:has(.chx) .rp-sidebar-item.active .chx-sb-ico .rp-scr-icon{transform:none}
 `;

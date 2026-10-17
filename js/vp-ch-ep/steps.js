@@ -397,7 +397,9 @@ export function chStepScreens(row, ctx = {}) {
     if (!before.includes('arena')) return after.includes('vote') ? 'Between the votes' : 'After the vote';
     return after.includes('arena') ? 'Between the duels' : 'After the Arena';
   };
+  const marks = [];   // where each chunk's screens start, for their day (below)
   for (const [ci, c] of chunks.entries()) {
+    marks.push({ at: screens.length, c });
     const items = c.items.map(i => ({ a: aired[i], i, title: titles[i]?.title || '' }));
     if (c.key === 'open') {
       const lines = items.flatMap(x => x.a.lines || []);
@@ -432,6 +434,26 @@ export function chStepScreens(row, ctx = {}) {
   }
   // the opening screen only had the open itself when there was no "previously"
   for (const s of screens) if (!s.steps.length) s.steps.push({ dir: '' });
+  // Each screen's day, from the first scene of the chunk it was built from (the sidebar heads each day with what
+  // it holds: screens.js chPhaseOf). The open has none.
+  marks.forEach((m, j) => {
+    const end = marks[j + 1]?.at ?? screens.length;
+    const day = aired[m.c.items[0]]?.day ?? null;
+    for (let k = m.at; k < end; k++) if (screens[k] && screens[k].day == null) { screens[k].day = day; screens[k].chunk = m.c.key; }
+  });
+  // No two screens of an episode share a title (the user, 2026-10-16: "there's 2 night out for some reason": the
+  // list read Before the vote, Night out, Before the vote in 348 of 599 episodes). The villa after a night out is the
+  // morning after; a second duel is the second duel; anything else that repeats is later at the villa.
+  const ORD = ['', 'second', 'third', 'fourth'];
+  const seenLabel = {};
+  screens.forEach((s, i) => {
+    const n = seenLabel[s.label] = (seenLabel[s.label] || 0) + 1;
+    if (n === 1) return;
+    if (s.key === 'arena') s.label = `The ${ORD[n - 1] || 'next'} duel`;
+    else if (s.key === 'villa' && screens[i - 1]?.key === 'party' && !seenLabel['The morning after']) s.label = 'The morning after';
+    else if (s.key === 'villa') s.label = seenLabel['Later at the villa'] ? `Later at the villa (${n})` : 'Later at the villa';
+    seenLabel[s.label] = (seenLabel[s.label] || 0) + 1;
+  });
   // map bubbles jump to the first step of their scene
   for (const s of screens) for (const st of s.steps) if (st.map) for (const r of [...st.map.rooms.flatMap(x => x.bubs), ...(st.map.isle || []).flatMap(x => x.bubs), ...st.map.later]) r.go = s.steps.findIndex(x => x.sceneIdx === r.scene);
   return screens;
@@ -444,6 +466,9 @@ const BIG = {
   'alliance-grow': a => ({ slam: { spray: 'NEW MEMBER', color: '#ffd21a' }, chip: [a.who[1], a.data?.name ? `IN ${String(a.data.name).toUpperCase()}` : 'NEW MEMBER'] }),
   'alliance-end': a => ({ card: { k: 'Alliance over', t: a.data?.name || 'The alliance', sub: a.data?.why === 'final' ? 'The final: from here it is every one for themselves' : 'Every one of them is on their own now', faces: a.who.slice(0, 8) } }),
   'alliance-betrayal': a => ({ slam: { spray: 'BETRAYED', color: '#e3262d' } }),
+  // alliances that change shape (ch/alliances.js allianceShifts)
+  'alliance-merge': a => ({ card: { k: 'Alliances merge', t: a.data?.name || 'One alliance', sub: a.data?.from ? `${a.data.from} folds into it, against ${a.data.against || 'the biggest group'}` : 'Two groups vote as one', faces: a.who.slice(0, 8) } }),
+  'alliance-switch': a => ({ slam: { spray: 'SWITCHED SIDES', color: '#ff8a1a' }, chip: [a.who[1], a.data?.name ? `NOW IN ${String(a.data.name).toUpperCase()}` : 'SWITCHED'] }),
   'tribunal-verdict': a => ({ slam: { spray: 'SENT IN', color: '#e3262d' }, chip: [a.data?.chosen || a.who[1], 'SENT IN'] }),
   showmance: a => ({ card: { k: 'Showmance', t: `${a.who[0]} & ${a.who[1]}`, sub: 'It is official', faces: a.who.slice(0, 2) } }),
   breakup: a => ({ slam: { spray: "IT'S OVER", color: '#ff8fc7' } }),

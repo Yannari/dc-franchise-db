@@ -13,6 +13,7 @@
 // root and paints step 0. A registry on `window` holds each episode's steps, so
 // a repaint never loses them (the _tvState wipe class, manual §11.5).
 import { chStepScreens } from './steps.js';
+import { CHALLENGE_FORMAT } from '../shows.js';
 import { ChxStage, AV } from './stage.js';
 import { ensureChxStyle } from './style.js';
 import { CH_MARKS } from './marks.js';
@@ -28,7 +29,46 @@ export function chStepVpScreens(row, ctx = {}) {
   reg()[key] = { row, screens, ctx: { ...ctx, ...wordsOf(row, ctx) } };
   ensureChxStyle();
   const week = row?.ch?.final ? 'The final' : row?.ch?.division === 'm' ? "Men's week" : row?.ch?.division === 'f' ? "Women's week" : '';
-  return screens.map((s, si) => ({ id: `ch-${s.id}`, label: s.label, html: shell(key, si, s, row, week, ctx) }));
+  return screens.map((s, si) => ({ id: `ch-${s.id}`, label: s.label, html: shell(key, si, s, row, week, ctx),
+    icon: chIcon(s.chunk || s.key), phase: chPhaseOf(s, screens, row) }));
+}
+
+// ── the sidebar (vp-ui.js renderVPScreen draws a screen's own icon and phase) ──
+// The user, 2026-10-16: "the bar really needs some icons resembling the show and to be visually better, without
+// changing it for the other shows". Drawn, not typed: an airstrip plane, a cocktail for the night out, a stopwatch
+// for the daily, a megaphone for the vote said out loud, crossed blades for the Arena. Styled in style.js, scoped
+// to a sidebar beside a Challenge episode.
+const CH_ICON = {
+  open: 'M4 5h16v12H4zM9 21h6M12 17v4M10 9v4l3.5-2z',
+  arrival: 'M21 15.5l-8-4.5V5a1.5 1.5 0 00-3 0v6l-8 4.5V17l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-4.5l8 2.5z',
+  villa: 'M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-6h4v6',
+  reveal: 'M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-6h4v6',
+  party: 'M5 4h14l-7 8zM12 12v7M8 20h8M16 4l2.5-2.5',
+  daily: 'M12 21a8 8 0 100-16 8 8 0 000 16zM12 9v4l2.5 2.5M10 2h4M18.5 5.5L20 4',
+  vote: 'M3 10v4h3l7 5V5L6 10zM16.5 9a4 4 0 010 6M19 6.5a8 8 0 010 11',
+  eve: 'M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z',
+  arena: 'M4 4l16 16M20 4L4 20M3 8l5-5M16 21l5-5M21 8l-5-5M8 21l-5-5',
+  return: 'M4 12a8 8 0 112.3 5.7M4 19v-6h6',
+  'final-start': 'M3 20l6-10 4 6 3-4 5 8zM14 3v8M14 3l5 2-5 2',
+  'final-day2': 'M3 20l6-10 4 6 3-4 5 8zM14 3v8M14 3l5 2-5 2',
+  instant: 'M13 2L4 14h7l-1 8 9-12h-7z',
+  overnight: 'M3 20L12 4l9 16zM12 4v16M9 20l3-5 3 5',
+  champions: 'M8 3h8v6a4 4 0 01-8 0zM8 5H4v1a3 3 0 003 3M16 5h4v1a3 3 0 01-3 3M12 13v4M9 21h6M10 17h4v4h-4z',
+  redemption: 'M6 11h12v10H6zM8 11V8a4 4 0 018 0v3M12 15v2',
+};
+export function chIcon(key) {
+  const d = CH_ICON[key] || CH_ICON.villa;
+  return `<span class="chx-sb-ico"><svg class="rp-scr-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg></span>`;
+}
+// Each day headed by what it holds (it said "Day 1 · The Daily" over every screen of every episode: the old screens'
+// table, js/vp-ui.js _CH_PHASE, has no key for the stepped viewer's chapters)
+const DAY_OF = [['champions', 'The Finish'], ['final-day2', 'The Final'], ['final-start', 'The Final'], ['daily', 'The Daily'], ['vote', 'The Vote'],
+  ['arena', 'The Arena'], ['party', 'Night Out'], ['arrival', 'The Arrival']];
+export function chPhaseOf(s, screens, row) {
+  if (s.day == null) return { id: 'ch-open', label: (row?.ch?.aired || []).some(a => a.kind === 'previously') ? 'Previously' : 'Season premiere', icon: '◀' };
+  const keys = new Set(screens.filter(x => x.day === s.day).map(x => x.chunk || x.key));
+  const what = DAY_OF.find(([k]) => keys.has(k))?.[1] || 'The Villa';
+  return { id: `ch-day${s.day}`, label: `Day ${s.day} · ${what}`, icon: '▌' };
 }
 
 function shell(key, si, s, row, week, ctx) {
@@ -570,7 +610,7 @@ export function chxSwitchViewer(which) {
     const before = window.vpScreens || [], at = window.vpCurrentScreen || 0;
     const frac = before.length > 1 ? at / (before.length - 1) : 0;
     const ep = window.vpEpNum ?? window._vpEpNum;
-    const rec = (window.gs?.episodeHistory || []).find(e => e && e.num === ep && e.format === 'the-challenge');
+    const rec = (window.gs?.episodeHistory || []).find(e => e && e.num === ep && e.format === CHALLENGE_FORMAT);
     if (!rec || typeof window.buildVPScreens !== 'function') { location.reload(); return; }
     window.buildVPScreens(rec);
     const now = window.vpScreens || [];

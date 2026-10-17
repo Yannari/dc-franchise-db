@@ -105,7 +105,10 @@ export function previouslyFor(state, prev) {
     const n = v.tally?.[v.votedIn] || 0;
     const vs = find('house-debate', x => x.scene.data?.target === v.votedIn);
     const shot = { spot: 'deliberation', kind: 'ceremony', who: [v.votedIn] };
-    say(pick(rng, [`At the vote, ${num(n)} people said ${v.votedIn}'s name out loud.`, `The house voted ${v.votedIn} into the Arena, ${num(n)} votes.`, `${Cap(num(n))} votes. ${v.votedIn} was going into the Arena.`]), shot);
+    // a Teams season's vote was one team's, never the house's (ch/teams.js)
+    say(pick(rng, v.team
+      ? [`${v.team} lost the daily, and ${num(n)} of ${v.votedIn}'s own teammates said the name out loud.`, `${v.team} voted one of their own into the Arena: ${v.votedIn}, with ${num(n)} votes.`]
+      : [`At the vote, ${num(n)} people said ${v.votedIn}'s name out loud.`, `The house voted ${v.votedIn} into the Arena, ${num(n)} votes.`, `${Cap(num(n))} votes. ${v.votedIn} was going into the Arena.`]), shot);
     if (vs && !usedScenes.has(vs.scene.id)) say(`${vs.scene.data?.organiser || vs.scene.who[0]} pushed for it, and the house went along.`, shot);
     const after = find('after-vote', x => x.scene.who[0] === v.votedIn);
     if (after) clip(clipOf(after, [v.votedIn]), shotOf(after));

@@ -576,7 +576,8 @@ export default {
     ] },
     { id: 'st.rc2', turns: [
       { by: 'b', say: "Who sent you?" },
-      { by: 'a', say: "The house voted me in, and {target} beat me in the Arena." },
+      { by: 'a', when: { teams: false }, say: "The house voted me in, and {target} beat me in the Arena." },
+      { by: 'a', when: { teams: true }, say: "My own team voted me in, and {target} beat me in the Arena." },
       { by: 'b', say: "Same story as all of us." },
       { by: 'a', say: "So what do we do in here all day?" },
       { by: 'b', say: "Watch them on TV. Get angry. Train. Get angrier." },

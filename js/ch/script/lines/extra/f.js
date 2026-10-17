@@ -344,7 +344,8 @@ export default {
       { by: 'a', say: "It's free. And watching {opt1} pretend not to watch me is the best entertainment in this villa." },
       { by: 'b', say: "And {opt2}?" },
       { by: 'a', say: "{opt2} has been extra nice to me all day. It's adorable." },
-      { by: 'a', conf: "The house put me in the Arena. They forgot that means I get to pick who comes with me. I haven't forgotten." },
+      { by: 'a', when: { teams: false }, conf: "The house put me in the Arena. They forgot that means I get to pick who comes with me. I haven't forgotten." },
+      { by: 'a', when: { teams: true }, conf: "My own team put me in the Arena. They forgot that means I get to pick who comes with me. I haven't forgotten." },
     ] },
   ],
   'arena-eve-pep.any': [

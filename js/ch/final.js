@@ -35,6 +35,7 @@ import { addRivalry } from './events.js';
 import { fearOfThing } from './mind.js';
 import { pairsOn, membersOf, repOf, playPairDuel, dissolvePair, unitsLeft, shapeOf } from './pairs.js';
 import { shareOrKeep } from './share-keep.js';
+import { teamsOn, teamFinalPlaces } from './teams.js';
 
 const pop = (name, d) => { gs.popularity ||= {}; gs.popularity[name] = (gs.popularity[name] || 0) + d; };
 
@@ -287,6 +288,7 @@ export function playFinal(state, rng) {
   // ── The finish ──
   fin.totals = round(total);
   if (pairsOn(state)) return finishPairs(state, rng, fin, total, pairAvg, pairReps);
+  if (teamsOn(state) && state.options.teams?.end === 'team-final') return finishTeams(state, fin, total);
   fin.podium = {};
   for (const d of divsOf(state)) {
     const ord = inDiv(state, d).sort((a, b) => total[b] - total[a] || (fin.checkpoints.at(-1).places[a] - fin.checkpoints.at(-1).places[b]));
@@ -371,6 +373,26 @@ function finishPairs(state, rng, fin, total, pairAvg, pairReps) {
   for (const c of fin.choices.filter(x => x.place === 1)) {
     addScene(state, 'champion-reflect', [c.chooser, c.partner], { pair: true, chooser: c.chooser, keep: c.keep, amount: c.prize }, state.active, 'confessional');
   }
+  state.final = fin;
+  return fin;
+}
+
+// A Teams season's team final (War of the Worlds 2: "the winning team equally split the grand prize"): each team on
+// its members' average; every member of the best team is a champion; the rest placed by team.
+function finishTeams(state, fin, total) {
+  const order = teamFinalPlaces(state, total);
+  fin.teamPodium = order;
+  fin.champions = [...(order[0]?.members || [])];
+  state.champions = fin.champions;
+  fin.podium = { all: order.flatMap(t => [...t.members].sort((a, b) => (total[b] || 0) - (total[a] || 0))) };
+  fin.placements = {};
+  let next = 2;
+  order.forEach((t, i) => { for (const n of t.members) fin.placements[n] = i === 0 ? 1 : next; if (i > 0) next++; });
+  addScene(state, 'final-podium', [...state.active], { podium: fin.podium, teamPodium: order, totals: fin.totals, teams: true }, state.active, 'final');
+  addScene(state, 'champions', fin.champions, { team: order[0]?.name || null, teams: true }, state.active, 'final');
+  for (const t of order.slice(1)) for (const n of t.members) { addScene(state, 'final-lastword', [n], { when: 'finish', place: fin.placements[n], team: t.name }, [n], 'confessional'); fin.lastWords.push(n); }
+  for (const c of fin.champions) pop(c, 2.5);
+  addScene(state, 'champion-reflect', fin.champions.slice(0, 2), { path: 'team', team: order[0]?.name || null, teams: true }, state.active, 'confessional');
   state.final = fin;
   return fin;
 }

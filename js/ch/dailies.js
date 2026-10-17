@@ -28,6 +28,7 @@ import { playRace } from './daily/race.js';
 import { playDemolition } from './daily/demolition.js';
 import { playRaftKing, playCutRope, playDoubleCross, playTrustFall, playWhoSaidIt } from './daily/betrayal.js';
 import { pairsOn, shapeOf, logDaily } from './pairs.js';
+import { teamsOn } from './teams.js';
 import { playDeepFreeze, playLogRoll, playRoadKill, playMudBrawl, playBuried, playFoodWars, playTrapeze, playPoisonCup } from './daily/more.js';
 
 export const DAILIES = [
@@ -138,6 +139,7 @@ export const PAIR_UNFIT = new Set(['double-cross', 'cut-rope']);
 
 export function pickMode(state, rng) {
   if (pairsOn(state)) return 'pairs';
+  if (teamsOn(state) && state.teams?.length) return 'teams';
   if (!state.options.partnerWeeks) return 'solo';
   const share = state.ep / Math.max(1, state.plannedEpisodes || 14);
   const w = [
@@ -150,6 +152,14 @@ export function pickMode(state, rng) {
 
 export function pickDaily(state, rng, mode) {
   const recent = state.episodes.slice(-5).map(e => e.daily?.id);
+  if (teamsOn(state) && mode === 'teams') {
+    // a Teams season: every daily with a team or a solo version (a pairs-only one has neither shape), the team dailies
+    // twice as likely (a solo daily is scored on each team's average)
+    const fits = DAILIES.filter(d => !PAIR_UNFIT.has(d.id) && (d.modes.includes('teams') || d.modes.includes('solo')));
+    const ok = fits.filter(d => !recent.includes(d.id));
+    const pool = (ok.length ? ok : fits).flatMap(d => (d.modes.includes('teams') ? [d, d] : [d]));
+    return pool[Math.floor(rng() * pool.length)];
+  }
   if (pairsOn(state) && mode === 'pairs') {
     // the whole library, the ones built for pairs twice as likely (a solo daily is scored on the two partners' average)
     const fits = DAILIES.filter(d => !PAIR_UNFIT.has(d.id));
@@ -247,17 +257,20 @@ function throwIntent(state, rng, name, unit, division) {
 export function playDaily(state, rng, { division, pin = null, solo = false }) {
   // a daily pinned on the Season Timeline (ch-run.js challengeOptions -> options.dailyPins): played whatever the
   // draw, in the week's drawn shape when it has one, else its own first
-  const pinned = pin && !(pairsOn(state) && PAIR_UNFIT.has(pin)) ? DAILIES.find(d => d.id === pin) : null;
+  const pinned = pin && !(pairsOn(state) && PAIR_UNFIT.has(pin)) && !(teamsOn(state) && !DAILIES.find(d => d.id === pin)?.modes.some(m => m === 'teams' || m === 'solo')) ? DAILIES.find(d => d.id === pin) : null;
   // solo: a Pairs season's combine, before anybody has a partner (Fresh Meat, Pick your partner)
   let mode = solo ? 'solo' : pickMode(state, rng);
   const seasonPairs = pairsOn(state) && mode === 'pairs';
-  if (pinned && !pinned.modes.includes(mode) && !seasonPairs) mode = pinned.modes[0];
+  // a Teams season's teams: every daily is team against team
+  const seasonTeams = teamsOn(state) && mode === 'teams' && !!state.teams?.length;
+  if (pinned && !pinned.modes.includes(mode) && !seasonPairs && !seasonTeams) mode = pinned.modes[0];
   const daily = pinned || (solo ? pickDaily(state, rng, 'solo') : pickDaily(state, rng, mode));
   // a Pairs season's own pairs (and anybody a partner left, alone); a daily that has no pairs version is played
   // by everybody on their own and scored on each pair's average
   const units = seasonPairs ? [...state.pairs.map(p => [p.a, p.b]), ...(state.lone || []).filter(n => state.active.includes(n)).map(n => [n])]
+    : seasonTeams ? state.teams.map(t => t.members.filter(n => state.active.includes(n))).filter(u => u.length)
     : mode === 'pairs' ? makePairs(state, rng) : mode === 'teams' ? makeTeams(state, rng) : state.active.map(n => [n]);
-  const playedSolo = seasonPairs && !daily.modes.includes('pairs');
+  const playedSolo = (seasonPairs && !daily.modes.includes('pairs')) || (seasonTeams && !daily.modes.includes('teams'));
   const throws = [];
   const indiv = {};
   for (const unit of units) {
@@ -285,7 +298,7 @@ export function playDaily(state, rng, { division, pin = null, solo = false }) {
   const unitScore = u => u.reduce((a, n) => a + indiv[n], 0) / u.length;
   const ranked = [...units].sort((a, b) => unitScore(b) - unitScore(a));
   let winners;
-  if (simWinners) winners = seasonPairs ? [...new Set(simWinners.flatMap(w => units.find(u => u.includes(w)) || [w]))] : [...simWinners];
+  if (simWinners) winners = seasonPairs || seasonTeams ? [...new Set(simWinners.flatMap(w => units.find(u => u.includes(w)) || [w]))] : [...simWinners];
   else if (seasonPairs && shapeOf(state) === 'same' && division && division !== 'all') {
     // men's pairs and women's pairs: the week's division's best pair is the one that is safe
     winners = [...(ranked.find(u => u.every(n => state.division[n] === division)) || ranked[0])];

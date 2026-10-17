@@ -455,7 +455,7 @@ function topChoice(state, rng, v, eligible, delib, tally) {
 // The biggest reason in a voter's own sum, as the word said out loud.
 const REASON_OF = { threat: 'threat', final: 'threat', ranked: 'threat', grudge: 'grudge', loses: 'easy', injured: 'easy', theyGo: 'strategy', use: 'strategy',
   freeRide: 'floater', power: 'power', bandwagon: 'room', bank: 'money' };
-function reasonOf(terms = {}) {
+export function reasonOf(terms = {}) {
   const top = Object.entries(terms).filter(([k, v]) => REASON_OF[k] && v > 0.15).sort((x, y) => y[1] - x[1])[0];
   return top ? REASON_OF[top[0]] : null;
 }

@@ -39,6 +39,7 @@ import { noteDeal } from './knowledge.js';
 import { bankOf, injuryOf, skullsOf } from './state.js';
 import { money, richest, passOf, passHunger } from './stakes.js';
 import { pairsOn, pairOf, carriedBy } from './pairs.js';
+import { teamsOn, teamOfName, teammates } from './teams.js';
 const state0 = ctx => ctx.state;
 
 // ── helpers ──────────────────────────────────────────────────────────
@@ -834,6 +835,63 @@ export const EVENTS = [
       addBond(a, c, -0.6);
       if (says) { addBond(a, b, -0.5); remember(a, b, 'distracted', 0.8); } else nudge(ctx.state, a, 'morale', -0.4);
       return addScene(ctx.state, 'pair-jealous', [a, b, c], { says, lover: c }, says ? [a, b, c] : [a], says ? 'villa' : 'confessional');
+    } },
+
+  // ── A TEAMS SEASON: the team as a story (spec 2026-10-17-ch-teams-season-design.md) ──
+  // The last stand: a team down to its last three knows it is the next to lose. They close ranks.
+  { id: 'team-last-stand', kind: 'drama', cooldown: 99, max: 3,
+    cast: ctx => {
+      if (!teamsOn(ctx.state)) return null;
+      for (const t of ctx.state.teams) {
+        const m = t.members.filter(n => ctx.state.active.includes(n));
+        if (m.length < 2 || m.length > 3 || (ctx.state.lastStand ||= {})[t.id]) continue;
+        if (!cooled(ctx, 'team-last-stand', [m[0]], 99)) continue;
+        return { who: [t.captain && m.includes(t.captain) ? t.captain : m[0], ...m.filter(n => n !== t.captain)], score: 1.5 };
+      }
+      return null;
+    },
+    weight: () => 1.2,
+    fire(ctx, who, rng) {
+      const t = teamOfName(ctx.state, who[0]);
+      ctx.state.lastStand[t.id] = ctx.state.ep;
+      for (const a of who) for (const b of who) if (a < b) addBond(a, b, 0.6);
+      for (const n of who) { nudge(ctx.state, n, 'morale', -0.3); nudge(ctx.state, n, 'confidence', 0.3); }
+      return addScene(ctx.state, 'team-last-stand', who, { team: t.name, size: who.length }, who, 'villa');
+    } },
+  // Poaching: somebody courts a friend on another team to come over the next time they can (afterTeamDuel reads it).
+  // A teammate of the courted one may see it.
+  { id: 'team-poach', actorCooldown: 3, kind: 'game', cooldown: 4, max: 4,
+    cast: ctx => (!teamsOn(ctx.state) ? null : bestPair(ctx, 'team-poach', 4, (a, b) => {
+      if (!ctx.state.teamOf?.[a] || ctx.state.teamOf[a] === ctx.state.teamOf[b]) return 0;
+      const mates = teammates(ctx.state, b);
+      const ownWarm = mates.reduce((s, n) => s + getBond(b, n), 0) / Math.max(1, mates.length);
+      return getBond(a, b) >= 2 ? (getBond(a, b) - ownWarm) * 0.3 + S(a, 'social') * 0.05 - 0.4 : 0;
+    })),
+    weight: (ctx, p) => 0.3 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const seen = teammates(ctx.state, b).filter(n => rng() < S(n, 'intuition') * 0.04)[0] || null;
+      addBond(a, b, 0.4);
+      (ctx.state.poached ||= {})[b] = ctx.state.teamOf[a];
+      remember(b, a, 'courted-me', 0.6);
+      if (seen) { addBond(seen, b, -0.6); remember(seen, b, 'talking-to-the-other-team', 0.8); }
+      return addScene(ctx.state, 'team-poach', [a, b, ...(seen ? [seen] : [])], { seen, from: teamOfName(ctx.state, b)?.name || null, to: teamOfName(ctx.state, a)?.name || null }, seen ? [a, b, seen] : [a, b], 'private');
+    } },
+  // A rift: a teammate confronts somebody about their alliance with people on the other team.
+  { id: 'team-rift', actorCooldown: 3, kind: 'drama', cooldown: 4, max: 4,
+    cast: ctx => (!teamsOn(ctx.state) ? null : bestPair(ctx, 'team-rift', 4, (a, b) => {
+      if (!ctx.state.teamOf?.[a] || ctx.state.teamOf[a] !== ctx.state.teamOf[b]) return 0;
+      const al = allianceOf(ctx.state, b);
+      const across = al ? al.members.filter(m => ctx.state.active.includes(m) && ctx.state.teamOf[m] && ctx.state.teamOf[m] !== ctx.state.teamOf[b]) : [];
+      return across.length && !al.members.includes(a) ? 0.6 + (10 - S(a, 'temperament')) * 0.08 + Math.max(0, -getBond(a, b)) * 0.15 : 0;
+    })),
+    weight: (ctx, p) => 0.25 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const al = allianceOf(ctx.state, b);
+      const ally = al.members.find(m => ctx.state.active.includes(m) && ctx.state.teamOf[m] !== ctx.state.teamOf[b]);
+      const owns = rng() < 0.4 + (S(b, 'boldness') - 5) * 0.06;
+      addBond(a, b, owns ? -1.2 : -0.6); addRivalry(ctx.state, a, b, 1);
+      remember(a, b, 'disloyal-to-the-team', 0.9);
+      return addScene(ctx.state, 'team-rift', [a, b], { ally, owns, team: teamOfName(ctx.state, a)?.name || null }, [a, b, ...witnesses(ctx, [a, b], 2)], 'villa');
     } },
 ];
 

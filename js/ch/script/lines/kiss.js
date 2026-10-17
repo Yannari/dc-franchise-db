@@ -32,6 +32,12 @@ export default {
       { by: 'b', conf: "{a} kissed me outside a club in front of half the house. Tomorrow everybody is going to have an opinion about it, and I don't care." },
     ] },
     { id: 'ks.s3', turns: [
+      { beat: 'The DJ puts on a slow song. {a} holds out a hand, and {b} takes it.' },
+      { by: 'b', say: "I don't slow dance." },
+      { by: 'a', say: "You're doing it right now." },
+      { by: 'b', say: "Because you're very persuasive after four shots of tequila." },
+      { beat: 'Halfway through the song, {a} kisses {b}.' },
+      { by: 'b', say: "Okay. I didn't see that coming." },
       { by: 'a', conf: "Tequila, a slow song, and {b}. I'm still working out which one of those was the bad idea." },
       { by: 'b', conf: "It wasn't a bad idea. It was a drunk idea. Those are different things, and I'd do it again." },
     ] },
@@ -54,9 +60,10 @@ export default {
   ],
   'party-kiss.home': [
     { id: 'ks.h1', turns: [
+      { beat: 'At the back of the club, {a} and {b} are standing very close.' },
       { by: 'a', say: "This is a terrible idea." },
       { by: 'b', say: "Then stop." },
-      { beat: '{a} does not stop.' },
+      { beat: '{a} does not stop. {a} kisses {b}.' },
       { by: 'a', conf: "{home} is at home, and {home} is going to watch this. I knew that when I did it. I did it anyway." },
     ] },
     { id: 'ks.h2', turns: [
@@ -76,6 +83,7 @@ export default {
       { by: 'b', conf: "I knew {a} and {c} were together. I didn't know {c} was still in the club. I don't think {a} did either." },
     ] },
     { id: 'ks.k2', turns: [
+      { beat: '{a} kisses {b} by the bar, just as {c} comes back through the crowd.' },
       { by: 'c', say: "I went to the bathroom. I was gone for five minutes." },
       { by: 'a', say: "I'm sorry. I'm drunk. It didn't mean anything." },
       { by: 'c', say: "It meant something to me." },
@@ -96,6 +104,7 @@ export default {
       { by: 'c', conf: "{b} knew exactly who {a} was with. {b} sat next to me at breakfast this morning and smiled at me. Never again." },
     ] },
     { id: 'ks.b2', turns: [
+      { beat: '{a} and {b} are kissing on the dance floor when {c} pushes through the crowd.' },
       { by: 'c', say: "You've got to be joking." },
       { by: 'a', say: "Can we talk about this outside?" },
       { by: 'c', say: "No. We can talk about it right here, in front of everybody, the way you kissed {b} in front of everybody." },

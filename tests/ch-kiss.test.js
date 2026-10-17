@@ -18,6 +18,20 @@ beforeAll(() => {
 }, 600000);
 
 describe('The Challenge: the drunk kiss', () => {
+  it('every kiss is on screen before anybody talks about it', async () => {
+    // a scene of two confessionals about a kiss nobody saw aired at a night out (the user, 2026-10-17: "what are
+    // these referring to, no setup, no dialogue, no animation"): a beat with the kiss in it, which the viewer acts
+    const { POOLS } = await import('../js/ch/script/lines/index.js');
+    for (const [k, list] of Object.entries(POOLS)) {
+      if (!k.startsWith('party-kiss.')) continue;
+      for (const e of list) {
+        const first = e.turns.findIndex(t => t.beat && /\bkiss(es|ing)?\b/i.test(t.beat));
+        expect(first, `${e.id}: no beat shows the kiss`).toBeGreaterThanOrEqual(0);
+        expect(e.turns.slice(0, first).some(t => t.conf), `${e.id}: a confessional before the kiss`).toBe(false);
+      }
+    }
+  });
+
   it('kisses happen at night outs, some of them by somebody taken, and every one airs', () => {
     let all = 0, cheats = 0, aired = 0;
     for (const r of runs) {

@@ -388,9 +388,10 @@ export default {
       { by: 'a', conf: "The day a plan gets made without me is the day I'm the name on it." },
     ] },
     { id: 'py.cx3', turns: [
-      { by: 'a', conf: "I hate sitting still in here. Sitting still means somebody else is deciding." },
-      { beat: '{a} gets up from the sun lounger and heads inside.' },
-      { by: 'a', conf: "I don't need to be in charge. I just need to know everything the person in charge knows." },
+      { beat: '{a} watches {target} hold court by the pool, three people hanging on every word.' },
+      { by: 'a', conf: "Every vote in this house so far has gone the way {target} wanted. I hate sitting still while that happens." },
+      { beat: '{a} gets up from the sun lounger and heads over.' },
+      { by: 'a', conf: "I don't need to be in charge. I just need to know everything {target} knows, before the next vote." },
     ] },
   ],
 

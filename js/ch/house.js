@@ -20,7 +20,7 @@ import { gs } from '../core.js';
 import { remember, resentOf, intimidated } from './rel.js';
 import { noteDeal } from './knowledge.js';
 import { nudge } from './mind.js';
-import { allianceOf, activeAlliances, formAlliances, growAlliances, leave, allianceShifts } from './alliances.js';
+import { allianceOf, activeAlliances, formAlliances, growAlliances, leave, allianceShifts, powerAlliance } from './alliances.js';
 import { dealBetween } from './callout.js';
 import { addRivalry } from './events.js';
 import { stableRng } from '../script/rng.js';
@@ -143,8 +143,11 @@ export function psycheMoment(state, rng) {
     nudge(state, who, 'morale', 0.6);
     if (need === 'home') nudge(state, who, 'homesick', -0.6);
   }
+  // who is running the house, if it is not their own group: what a need for control is about
+  const pa = powerAlliance(state);
+  const boss = pa && !pa.members.includes(who) && state.active.includes(pa.leader) ? pa.leader : null;
   addScene(state, 'psyche', confidant && getBond(who, confidant) >= 3 ? [who, confidant] : [who],
-    { need, homesick: +m.homesick.toFixed(1), morale: +m.morale.toFixed(1) }, [who].concat(confidant ? [confidant] : []), 'private');
+    { need, homesick: +m.homesick.toFixed(1), morale: +m.morale.toFixed(1), ...(boss ? { boss } : {}) }, [who].concat(confidant ? [confidant] : []), 'private');
 }
 
 // The Arena winner walks back in: the ones who voted them in have to face it.

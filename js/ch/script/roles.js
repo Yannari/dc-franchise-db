@@ -242,7 +242,9 @@ export const ROLES = {
   showmance: (sc, st) => attachedFirst(sc, st, 'any'),
   breakup: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   apology: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: yes(sc.data.accepted, 'accepted', 'rejected') }),
-  psyche: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.need, slots: { need: sc.data.need } }),
+  // {target}: who runs the house right now, when it is not a's own group (house.js psycheMoment: the power
+  // alliance's leader), so "the person in charge" is a name and not a riddle
+  psyche: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.need, slots: { need: sc.data.need, target: sc.data.boss || undefined } }),
   // ── the daily, partners, the night before ──
   'throw-caught': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   throw: sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
@@ -326,10 +328,12 @@ export function rolesOf(scene, state) {
   // Everybody else in the conversation, in order, as x, y and z (the user, 2026-10-15: "we have group
   // conversations, trio, duo, quatuor and more"). A turn marked { opt: 1 } is theirs to say when they are
   // there and is dropped when they are not, so one conversation plays as a duo, a trio or a four.
-  const taken = new Set(Object.values(r.roles));
+  // ...and never somebody the scene talks ABOUT (a slot: the caller, the target, the one who went home): Grett, the
+  // {caller} of a morning-after, was drawn as a bystander and said "Grett is inside, by the way" (2026-10-17)
+  r.slots ||= {};
+  const taken = new Set([...Object.values(r.roles), ...Object.values(r.slots).filter(v => typeof v === 'string')]);
   const rest = [...(scene.who || []), ...(scene.data?.crowd || [])].filter(n => n && n !== 'TJ' && !taken.has(n));
   ['x', 'y', 'z'].forEach((k, i) => { if (rest[i] && !r.roles[k]) r.roles[k] = rest[i]; });
-  r.slots ||= {};
   for (const k of Object.keys(r.slots)) if (r.slots[k] == null) delete r.slots[k];
   return r;
 }

@@ -226,4 +226,58 @@ describe('The Challenge spec audit', () => {
     }
     console.log('\n' + out.join('\n'));
   });
+
+  // The Teams season (spec 2026-10-17-ch-teams-season-design.md): a quarter of the seasons per way of making the teams,
+  // half of them ending in a team final.
+  it('plays Teams seasons and prints their rates', () => {
+    const P = Number(process.env.CH_TEAM_SEASONS) || Math.max(4, Math.round(SEASONS / 4));
+    const out = [];
+    const line = (k, v, note = '') => out.push(`${k.padEnd(48)} ${v}${note ? '   (' + note + ')' : ''}`);
+    for (const teaming of ['shows', 'champions', 'vets', 'draft']) {
+      const m = { eps: [], switches: [], folds: [], breakEp: [], teamFinal: 0, teamFinals: 0, coups: 0, coupsTaken: 0, votes: 0, strongest: 0, winnersOwn: 0,
+        callouts: 0, intoOwn: 0, kinds: {} };
+      for (let s = 1; s <= P; s++) {
+        const { cast, names, background } = challengeCast(24, 700 + s);
+        setPlayers(cast);
+        const end = s % 2 ? 'breakup' : 'team-final';
+        const r = playChallengeSeason({ cast: names, background, seed: 700 + s, options: { teams: { teaming, count: 2, end } } });
+        const st = r.state;
+        m.eps.push(r.episodes.length);
+        m.switches.push(r.episodes.reduce((t, e) => t + (e.switches?.length || 0), 0));
+        m.folds.push(r.episodes.reduce((t, e) => t + (e.folds?.length || 0), 0));
+        if (st.teamsBroken && end === 'breakup') m.breakEp.push(st.teamsBroken.ep);
+        if (end === 'team-final') { m.teamFinals++; if (st.final?.teamPodium) m.teamFinal++; }
+        for (const sc of st.scenes) {
+          if (/^team-|^teams-/.test(sc.kind)) inc(m.kinds, sc.kind);
+          if (sc.kind === 'team-coup') { m.coups++; if (sc.data.takes) m.coupsTaken++; }
+        }
+        for (const e of r.episodes) {
+          const teams = e.intel?.start?.teams || e.teams || [];
+          for (const v of e.votes.filter(x => x.team)) {
+            m.votes++; if (v.winners) m.winnersOwn++;
+            // the team voted in the teammate with the most Arena wins so far
+            const t = teams.find(x => x.name === v.team);
+            const best = (t?.members || []).filter(n => st.rec[n]).sort((a, b) => (st.rec[b].arenaW || 0) - (st.rec[a].arenaW || 0))[0];
+            if (best && best === v.votedIn && (st.rec[best].arenaW || 0) > 0) m.strongest++;
+          }
+          for (const c of e.callouts.filter(x => x.team)) {
+            m.callouts++;
+            const tOf = n => teams.find(x => x.members.includes(n))?.name;
+            if (tOf(c.by) && tOf(c.by) === tOf(c.opponent)) m.intoOwn++;
+          }
+        }
+      }
+      line(`-- ${teaming} (${P} seasons, half with a team final)`, '');
+      line('  episodes', mean(m.eps));
+      line('  switches / folds per season', `${mean(m.switches)} / ${mean(m.folds)}`);
+      line('  break-up episode (break-up seasons)', mean(m.breakEp));
+      line('  team finals that reached a team final', pct(m.teamFinal, m.teamFinals));
+      line('  team votes / the winners voting their own', `${m.votes} / ${pct(m.winnersOwn, m.votes)}`, 'rare: nobody else could go');
+      line('  team voted in its own Arena winner', pct(m.strongest, m.votes));
+      line('  call-outs of a teammate', pct(m.intoOwn, m.callouts));
+      line('  coups / taken', `${(m.coups / P).toFixed(2)} a season / ${pct(m.coupsTaken, m.coups)}`);
+      line('  team scenes per season', Object.entries(m.kinds).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${(v / P).toFixed(1)}`).join(', '));
+    }
+    console.log('\n' + out.join('\n'));
+  });
 });

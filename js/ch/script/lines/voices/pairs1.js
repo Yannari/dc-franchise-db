@@ -6,7 +6,7 @@
 export default {
   // ── after a two-on-two, the winners ──
   'paw.c1': {
-    1: { sharp: "Thank you. I was finished out there and we both know it.", dry: "Thanks. I was done out there.", loud: "THANK you! Seriously! I was DONE out there!", soft: "Thank you. Really. I had nothing left out there.", odd: "Thank you. My arms left the Arena before I did." },
+    1: { sharp: "Thank you. I was finished out there and we both know it.", dry: "Thanks. I was done out there.", loud: "THANK you, Seriously, I was DONE out there!", soft: "Thank you. Really. I had nothing left out there.", odd: "Thank you. My arms left the Arena before I did." },
     2: { sharp: "I know. Everybody in the stand could see it.", dry: "I know. I could tell.", loud: "I KNOW! I could SEE it!", soft: "I know. I could see it. It's okay.", odd: "I know. Your face was doing a whole speech." },
     3: { sharp: "I owe you one.", dry: "I owe you.", loud: "I OWE you!", soft: "I owe you. I mean that.", odd: "I owe you. Write it down somewhere." },
     4: { sharp: "You do. And I'll be collecting.", dry: "You do. I'll tell you when.", loud: "You DO! And I'll let you KNOW when I'm collecting!", soft: "You do. But we'll worry about that later.", odd: "You do. I'm thinking breakfast in bed. For a week." },
@@ -99,7 +99,7 @@ export default {
   },
   // ── a daily won as a pair ──
   'dyp.1': {
-    1: { sharp: "Yes! Partner!", dry: "Yes. Partner.", loud: "YES! PARTNER!", soft: "Yes! Partner!", odd: "Yes! Partner! High five! Two high fives!" },
+    1: { sharp: "Yes! Partner!", dry: "Yes. Partner.", loud: "YES! PARTNER!", soft: "Yes! Partner!", odd: "Yes, Partner, High five! Two high fives!" },
     2: { sharp: "We needed that. Badly.", dry: "We needed that. We really needed that.", loud: "We NEEDED that! We REALLY needed that!", soft: "We needed that. We really, really needed that.", odd: "We needed that. My blood pressure needed that." },
   },
   'dyp.3': {

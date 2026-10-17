@@ -71,7 +71,9 @@ const BED_BY_KIND = {
   hoh: 'bb-comp', veto: 'bb-comp', final: 'bb-comp', vdraw: 'bb-pre-hoh',
   noms: 'bb-brewing', cer: 'bb-veto-meeting', evict: 'bb-live-vote',
   brief: 'bb-coming-up', 'final-cut': 'bb-brewing', 'jury-q': 'bb-brewing', closing: 'bb-campaign',
-  'jury-vote': 'bb-jury-wait', afp: 'bb-celebration', reunion: 'bb-ending',
+  'jury-vote': 'bb-jury-wait', afp: 'bb-celebration',
+  // the reunion is a party with old grudges in it, not the credits (the user, 2026-10-16: "reunion should have a different music")
+  reunion: 'bb-light',
   // the twist sets
   suite: 'bb-scheming', chain: 'bb-campaign', hunt: 'bb-secret', px: 'bb-pre-hoh', duo: 'bb-scheming',
   camp: 'bb-brewing', wild: 'bb-comp', spower: 'bb-secret', capsule: 'bb-comp', interro: 'bb-drama',

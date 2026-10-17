@@ -18,10 +18,16 @@ const hashOf = s => { let h = 7; for (const c of String(s)) h = (h * 31 + c.char
 // came up as often as the whole kitchen. The wide and main views are three times as likely.
 const WIDE = /(-wide|-room|-suite)$|^(living-screens|bedroom-two|hallway|storage|havenot|jury-house)$/;
 // (the bar is a room of its own that happens to share the kitchen's set: a wide view of it is not the kitchen's)
-const weightOf = id => (WIDE.test(id) && !/^bar-/.test(id) ? 3 : 1);
+// The living room is the sofa side (the user, 2026-10-16: "when u say living room we talking more other side of the
+// living room with a wider view so we can see people in the bg"): the screens wall is the ceremony's, and its
+// close views ("living-screens-wide" is a close-up of the screens, whatever its name) are a cut, not the room.
+// The console is only ever where the lines put it ("by the plants").
+const ROOM_WEIGHT = { 'living-sofas-2': 5, 'living-sofas': 4, 'living-reverse': 3, 'living-screens': 1, 'living-screens-wide': 1, 'living-console': 0 };
+const weightOf = id => ROOM_WEIGHT[id] ?? (WIDE.test(id) && !/^bar-/.test(id) ? 3 : 1);
 /** One of the plates, by the key's hash, weighted toward the wide views. */
 function weighted(list, key) {
   const total = list.reduce((n, id) => n + weightOf(id), 0);
+  if (!total) return list[0];
   let at = hashOf(key) % total;
   for (const id of list) { at -= weightOf(id); if (at < 0) return id; }
   return list[0];
@@ -63,6 +69,14 @@ export function pickPlate(set, key, text = '', use = 'house') {
     return u.includes(use) || ((use === 'house' || use === 'secret') && u.includes('quiet'));
   });
   if (!said.length && !free.length && use === 'secret') return pickPlate(set, key, text, 'house');
+  // a private talk in a room with no hidden spot of its own (the living room) is the room's quiet corner one time in
+  // four, and the room otherwise: every one of them in the library put three living room scenes in four there
+  // (measured 2026-10-16: 73 of 110)
+  if (!said.length && use === 'secret' && !all.some(id => (RESORT.plates[id].use || []).includes('secret'))) {
+    const own = all.filter(id => (RESORT.plates[id].use || []).includes('house'));
+    const quiet = free.filter(id => !own.includes(id));
+    if (own.length && quiet.length) return weighted(hashOf(`${key}|room`) % 4 ? own : quiet, key);
+  }
   // an ordinary house scene plays on the room's own wide plates most of the time, and on a quiet
   // corner of the island (the beach, the dock) now and then (the user, 2026-10-14: show the house at its best)
   if (!said.length && use === 'house') {
@@ -92,8 +106,8 @@ export const CORNER = {
 export const CORNER_CAM = { living: 4, lsofas: 18, lconsole: 19, kitchen: 2, kstove: 17, ksink: 29, dining: 33, dtable: 28, noms: 3 };
 /** A house plate of the set in a corner nobody is using yet (`taken`: corner ids), by the key's hash; null if none. */
 export function cornerPlate(set, taken, key) {
-  const free = platesOf(set).filter(id => CORNER[id] && !taken.has(CORNER[id]) && (RESORT.plates[id].use || []).includes('house'));
-  return free.length ? free[hashOf(key) % free.length] : null;
+  const free = platesOf(set).filter(id => CORNER[id] && !taken.has(CORNER[id]) && (RESORT.plates[id].use || []).includes('house') && weightOf(id) > 0);
+  return free.length ? weighted(free, key) : null;
 }
 
 /** An island spot's own name and camera ({ name, cam }), or null for a room of the house. */

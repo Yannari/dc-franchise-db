@@ -998,7 +998,8 @@ function finaleBriefScreen(act, ctx, host) {
   for (const p of act.parts || []) steps.push({ k: 'host', by: host, t: `Part ${word(p.n)}: ${p.blurb}` });
   return { id: 'bb-finale-brief-v', kind: 'brief', anchor: 'finale', set: 'ceremony', room: ROOM_NAME.ceremony, cam: 1,
     title: 'How Tonight Works', kicker: 'Live · Finale night', sub: `${listOf(f)}`, day: ctx.day, time: 'LIVE',
-    seated: seatLiving(f.slice(0, 2), [], f[2] || null), tvObj: true, steps };
+    // the final three in the three chairs (the user, 2026-10-16: "why dont u use the 3 chair version"), not two and one standing
+    seated: seatLiving(f.slice(0, 3), f.slice(3)), tvObj: true, steps };
 }
 
 function finalPartScreen(act, ctx, n) {
@@ -1104,7 +1105,14 @@ function finalCutScreen(act, ctx) {
   steps.push({ k: 'beat', t: pick([`${listOf(pair)} sit side by side in the two chairs. Neither of them looks at the other.`, `${pair[0]} reaches over and takes ${pair[1]}'s hand. ${hoh} cannot look at either of them.`,
     `The living room has never been this quiet with three people in it.`], 'room'), tense: pair });
   steps.push({ k: 'host', by: host, t: `${listOf(pair)}, before ${hoh} decides, this is your last chance to say why you belong in the final two.` });
-  for (const p of act.pitches || []) steps.push(...proseSteps(p.text, [p.name, ...pair, hoh]));
+  // each of them stands up and gives a speech (bb-finale.js finalPitches): how they open, the case, the line only
+  // a person says, and how they sit down. The house watches the HOH through all of it.
+  for (const p of act.pitches || []) {
+    if (p.open) steps.push({ k: 'say', by: p.name, push: true, t: p.open });
+    steps.push(...proseSteps(p.text, [p.name, ...pair, hoh]));
+    if (p.aside) steps.push({ k: 'say', by: p.name, t: p.aside });
+    if (p.close) steps.push({ k: 'say', by: p.name, t: p.close });
+  }
   steps.push({ k: 'host', by: host, t: `${hoh}, it is time. Please rise, and cast the only vote that counts tonight.`, tense: pair });
   // the HOH explains, as the real final HOH does: the deal kept or broken, or who they can beat
   const reason = act.betrayal ? pick([`${act.betrayal.partner}, I made you a promise. I know I did. And I'm breaking it, because this is the only vote I get, and I have to use it to win.`,
@@ -1122,7 +1130,10 @@ function finalCutScreen(act, ctx) {
     : pick([`Final three in Big Brother. Nobody can take that away from me.`, `I'm proud of every single day. Go win this, one of you.`, `I'll see you on the other side. I'll be the one with the vote.`], 'cut') });
   steps.push({ k: 'host', by: host, t: `${act.cut}, you are the final member of the jury. Please say your goodbyes, and head out through the front door.` });
   steps.push({ k: 'beat', t: `${act.cut} hugs them both, picks up a bag, and walks to the front door. ${pronouns(act.cut).Sub || 'They'} will vote for the winner tonight.`, door: true, out: act.cut, cut: { plate: 'foyer', who: act.cut, phase: 'open' } });
-  steps.push({ k: 'host', by: host, t: `${hoh} and ${act.kept}: you are the final two of Big Brother!`, big: [`${hoh} & ${act.kept}`, 'The Final Two', 'safe'], confetti: true });
+  // back in the living room the cut chair is empty (the user, 2026-10-16: "manu is supposed to be gone"): the final
+  // Head of Household sits down in it, next to the one they kept
+  steps.push({ k: 'host', by: host, t: `${hoh} and ${act.kept}: you are the final two of Big Brother!`, big: [`${hoh} & ${act.kept}`, 'The Final Two', 'safe'], confetti: true,
+    exit: act.cut, seat: { [hoh]: pair.indexOf(act.cut) === 0 ? 'N-1' : 'N1' } });
   // the final two, alone in the house for the first time
   steps.push({ k: 'say', by: act.kept, push: true, t: pick([`We actually did it. Final two.`, `Final two. Say it again. I need to hear it again.`, `I need to sit down. I need to sit down right now.`], 'f2a') });
   steps.push({ k: 'say', by: hoh, t: pick([`Whatever happens tonight, we did this.`, `It's just us. I can't believe it's just us.`, `Now we find out what they really thought of us.`], 'f2b') });
@@ -1133,34 +1144,29 @@ function finalCutScreen(act, ctx) {
 
 function juryRoomSeats(finalTwo, jury) { return seatLiving(finalTwo, jury); }
 
-// What a finalist says on the finale stage before anything is asked: the last night, and they know it.
-const STAGE_FIRST = ['I have watched this stage on TV my whole life. I am standing on it.', 'Okay. Okay. I made it here.',
+// The final two never leave the house before the winner is named (the user, 2026-10-16: "the jury asks and closing
+// statement the finalist are still in the house, they only get out after the winner announcement with confetti and
+// everything"). The jury comes INTO the house for the questions and the statements: the final two in the two chairs
+// of the living room, the jurors on the sofas around them, the host on the big screen.
+const JURY_IN = ['I have watched this room on a screen for weeks. It is smaller than I remember.', 'Okay. Okay. I made it back in here.',
   'My legs are shaking. Please do not look at my legs.', 'Hi, everyone. I have missed some of you. Most of you.', 'I have been waiting {d} days to see all of your faces at once.'];
-// the finale stage with the final two in their chairs, the host on the mark, and the jury on its bench
-const onStage = (jury, f2, host, seats = 'F') => {
-  const sc = onSet({ jury, host, finalists: f2 });
-  if (seats === 'D') f2.forEach((n, i) => { sc.seated[n] = `D${i}`; });
-  return sc;
-};
-
+const juryInHouse = (f2, jury, extra = {}) => inHouse([...f2, ...jury], { seated: seatLiving(f2, jury.slice(0, 8), jury[8] || null), ...extra });
+const finalTwoAlone = f2 => inHouse(f2, { seated: seatLiving(f2, []) });
 function juryQuestionsScreen(act, ctx) {
   const host = ctx.host || 'Valeria';
   const jury = act.jury || ctx.jury || [];
   const f2 = act.finalTwo || ctx.finalTwo || [];
   const pick = (l, s) => pickBy(l, `${ctx.week}|jq|${s}`);
   const steps = [];
-  // the jury and the final two on one stage (the user, 2026-10-16: "they're always like in 2 different scenes"):
-  // the finalists walk out of the house for the first time, and the questions are asked face to face
-  steps.push({ k: 'host', by: host, scene: onSet({ jury, host }), t: `Welcome back to the finale of Big Brother. Our jury is here with me: ${word(jury.length)} evicted houseguests, and every one of them has a vote.` });
-  steps.push({ k: 'host', by: host, t: `Now, for the first time, please welcome our final two!` });
-  steps.push({ k: 'beat', t: `The front door opens on the studio, and the crowd is on its feet. ${listOf(f2)} walk out of the Big Brother house and onto the stage, in front of the jury.`, door: true,
-    seat: Object.fromEntries(f2.map((n, i) => [n, `D${i}`])) });
-  steps.push({ k: 'beat', t: pick([`The jury claps. Not all of them, and not all of them for the same person.`, `Some of the jury stand up. Some of them very deliberately do not.`, `${jury[0] || 'One juror'} waves. ${jury[1] || 'Another'} folds both arms.`], 'clap'), tense: f2 });
-  steps.push({ k: 'host', by: host, t: `Finalists, take a seat.`, seat: Object.fromEntries(f2.map((n, i) => [n, `F${i}`])) });
-  f2.forEach((n, i) => steps.push({ k: 'say', by: n, push: i === 0, t: pick(STAGE_FIRST, `first|${n}|${i}`).replace('{d}', String(ctx.day || 'all these')) }));
-  steps.push({ k: 'host', by: host, t: `Jurors, the finalists can hear you. You have questions for them, and they have to answer them, here, in front of all of you.` });
+  steps.push({ k: 'host', by: host, scene: finalTwoAlone(f2), t: `${listOf(f2)}, welcome to the last night of Big Brother. Tonight you have visitors. Your jury is coming into the house.` });
+  f2.forEach((n, i) => steps.push({ k: 'say', by: n, push: i === 0, t: pick([`Oh no. They're all coming in here?`, `Okay. Deep breath. They're just people we lived with.`, `I'm going to be sick. In a good way.`], `nerves|${n}|${i}`) }));
+  steps.push({ k: 'beat', t: `The front door opens. One by one, ${word(jury.length)} evicted houseguests walk back into the house they were voted out of, and sit down on the sofas.`,
+    door: true, scene: juryInHouse(f2, jury) });
+  steps.push({ k: 'beat', t: pick([`Some of the jury smile at the final two. Some of them very deliberately do not.`, `${jury[0] || 'One juror'} waves. ${jury[1] || 'Another'} folds both arms.`, `Nobody on the sofas says hello first.`], 'clap'), tense: f2 });
+  const greeter = jury[0];
+  if (greeter) steps.push({ k: 'say', by: greeter, t: pick(JURY_IN, `first|${greeter}`).replace('{d}', String(ctx.day || 'all these')) });
+  steps.push({ k: 'host', by: host, t: `Jurors, you have questions for the final two, and they have to answer them, here, in front of all of you.` });
   for (const ex of act.exchanges || []) {
-    // the question from the jury bench, the answers from the two chairs: the same stage
     steps.push(...spoken(ex.juror, ex.question, { push: true, stance: [ex.juror, ex.stanceBefore || 'undecided', ex.asked] }));
     for (const a of ex.answers || []) {
       if (a.text) steps.push(...spoken(a.finalist, a.text, { push: a.finalist === ex.asked }));
@@ -1168,24 +1174,25 @@ function juryQuestionsScreen(act, ctx) {
     }
   }
   if ((act.exchanges || []).length === 0) steps.push({ k: 'beat', t: 'The jury has no questions tonight. That is its own kind of answer.' });
-  return finaleScreen('bb-ftc-questions-v', 'jury-q', 'The Jury Asks', listOf(f2), ctx, steps);
+  return { ...finaleScreen('bb-ftc-questions-v', 'jury-q', 'The Jury Asks', listOf(f2), ctx, steps), ...juryInHouse(f2, jury), kicker: 'Live · The living room' };
 }
 
 function closingScreen(act, ctx) {
   const host = ctx.host || 'Valeria';
   const f2 = act.finalTwo || [];
   const jury = ctx.jury || [];
-  const steps = [{ k: 'host', by: host, scene: onStage(jury, f2, host), t: `Finalists, this is your last chance to speak to the jury before they vote. ${f2[0]}, you're first.` }];
+  const steps = [{ k: 'host', by: host, scene: juryInHouse(f2, jury), t: `Finalists, this is your last chance to speak to the jury before they vote. ${f2[0]}, you're first.` }];
   for (const st of act.statements || []) {
     if (st.intro) steps.push({ k: 'beat', t: stripTags(st.intro) });
     steps.push(...spoken(st.finalist, st.text, { push: true }));
     if (st.coda) steps.push(...spoken(st.finalist, st.coda));
   }
-  // back inside while the house's past comes back out, and the jury votes
-  steps.push({ k: 'host', by: host, t: `Thank you both. Finalists, please head back into the house. The next time you walk out of that door, one of you will be the winner of Big Brother.` });
-  steps.push({ k: 'beat', t: `${listOf(f2)} walk back up the steps together. At the door, ${f2[0]} looks back at the jury, once.`, exit: f2[0] });
-  steps.push({ k: 'beat', t: `The door closes behind them.`, exit: f2[1] });
-  return finaleScreen('bb-ftc-speeches-v', 'closing', 'Closing Statements', listOf(f2), ctx, steps);
+  // the jury goes out to vote; the final two stay in the house until the winner is named
+  steps.push({ k: 'host', by: host, t: `Thank you both. Jurors, please leave the house and join me in the studio. It's time to vote.` });
+  steps.push({ k: 'beat', t: `The jury files out through the front door. ${listOf(f2)} are alone in the living room again, for the last time.`, scene: finalTwoAlone(f2) });
+  steps.push({ k: 'say', by: f2[0], t: pickBy([`Did I just ruin everything?`, `I said everything I wanted to say. I think.`, `My hands still haven't stopped shaking.`], `${ctx.week}|cl1`) });
+  steps.push({ k: 'say', by: f2[1], t: pickBy([`You were great. I was fine. We're both fine.`, `Whatever happens, they heard us.`, `Now we just sit here. And wait.`], `${ctx.week}|cl2`) });
+  return { ...finaleScreen('bb-ftc-speeches-v', 'closing', 'Closing Statements', listOf(f2), ctx, steps), ...juryInHouse(f2, jury), kicker: 'Live · The living room' };
 }
 
 // the jury's keys go in, one juror at a time (the finalists are inside the house)
@@ -1226,15 +1233,12 @@ function winnerScreen(act, ctx, host, row) {
   const need = Math.floor(jury.length / 2) + 1;
   const pick = (l, s) => pickBy(l, `${ctx.week}|jv|${s}`);
   const steps = [];
-  // in the house, waiting
-  steps.push({ k: 'host', by: host, scene: inHouse(f2), t: `${listOf(f2)}, it's time. Please make your way out of the house and join us on the stage.` });
-  steps.push({ k: 'say', by: f2[0], t: pick([`Whatever happens out there, I love you.`, `This is it. This is actually it.`, `Hold my hand. Don't let go of my hand.`], 'door1') });
-  steps.push({ k: 'say', by: f2[1], t: pick([`Whatever happens, we did this together.`, `Okay. Let's go find out.`, `I can't feel my face.`], 'door2') });
-  steps.push({ k: 'beat', t: `The front door opens on the studio, and the crowd is on its feet. ${listOf(f2)} walk out of the Big Brother house together.`, door: true });
-  const walkIn = onStage(jury, f2, host, 'D');
-  steps.push({ k: 'beat', scene: walkIn, t: `${listOf(f2)} come down onto the stage, holding hands. The jury is on its feet, clapping.` });
-  steps.push({ k: 'host', by: host, t: `Welcome, both of you. Please, take a seat.`, seat: Object.fromEntries(f2.map((n, i) => [n, `F${i}`])) });
-  steps.push({ k: 'host', by: host, t: `The keys are in the box. I'll reveal them one at a time, and the first finalist to ${word(need)} votes wins Big Brother.` });
+  // in the house, in the two chairs: the keys are read to them on the big screen, and they only walk out of the
+  // front door once one of them has won (the user, 2026-10-16)
+  steps.push({ k: 'host', by: host, scene: finalTwoAlone(f2), t: `${listOf(f2)}, the jury has voted. Their keys are in the box, here with me in the studio.` });
+  steps.push({ k: 'say', by: f2[0], t: pick([`Whatever happens, I love you.`, `This is it. This is actually it.`, `Hold my hand. Don't let go of my hand.`], 'door1') });
+  steps.push({ k: 'say', by: f2[1], t: pick([`Whatever happens, we did this together.`, `Okay. Let's find out.`, `I can't feel my face.`], 'door2') });
+  steps.push({ k: 'host', by: host, t: `I'll reveal the keys one at a time, and the first finalist to ${word(need)} votes wins Big Brother.` });
   // the keys come out of the box in an order that keeps it close as long as it can be: the
   // trailing finalist's keys alternate with the leader's, so the result is the same and the
   // count is level for as long as the votes allow
@@ -1273,10 +1277,13 @@ function winnerScreen(act, ctx, host, row) {
   });
   if (act.tiebreak) steps.push({ k: 'host', by: host, t: stripTags(act.tiebreak.line), winner, confetti: true, big: [winner, 'Wins Big Brother', 'safe'] });
   steps.push({ k: 'say', by: winner, push: true, t: pick([`I can't believe it. I really can't believe it.`, `Oh my god. OH MY GOD.`, `I did it. I actually did it.`], 'win') });
+  if (runner) steps.push({ k: 'beat', t: pick([`${runner} pulls ${winner} into a hug before either of them can stand up properly.`, `${runner} is the first to hug ${winner}, and doesn't let go.`], 'hug') });
+  steps.push({ k: 'host', by: host, t: `${listOf([winner, runner].filter(Boolean))}, for the last time: please come out of the Big Brother house!` });
+  steps.push({ k: 'beat', t: `The front door opens on the studio, and the crowd is on its feet. ${listOf([winner, runner].filter(Boolean))} walk out of the Big Brother house together.`, door: true });
   // everybody who ever lived in the house, on the stage at once (the user, 2026-10-16: "we dont see everyone at
   // the announcement of the winner")
   const everyone = [...new Set([winner, runner, ...jury, ...(ctx.priorEvicted || [])].filter(Boolean))];
-  if (runner) steps.push({ k: 'beat', t: `${runner} is the first to hug ${winner}. Then the jury rushes the stage, and everybody who ever lived in that house comes with them.`,
+  if (runner) steps.push({ k: 'beat', t: `They come down onto the stage, and the jury rushes them. Everybody who ever lived in that house comes with them.`,
     scene: crowdScene(everyone, { room: 'The Finale Stage' }), confetti: true });
   steps.push({ k: 'host', by: host, push: false, t: `${winner}, how does it feel?` });
   steps.push({ k: 'say', by: winner, push: true, t: pick([`I don't think it's real yet. Ask me in a week.`, `I came in here wanting this more than anything, and I still didn't know it would feel like this.`,
@@ -3335,6 +3342,9 @@ function storyLifeScreen(scenes, ctx, n) {
     // two conversations in the same room at the same time of day are in different corners of it (the
     // user, 2026-10-14: "multiple people can talk in multiple sides of the same room"), unless the lines
     // name where they are
+    // a scene at the memory wall plays in front of it (the user, 2026-10-16: "u dont use the memory wall plate,
+    // especially when someone is looking at it missing someone")
+    if (!sc.spot && set === 'ceremony' && /memory wall|on the wall, .*black and white|(?:his|her|their|the) (?:photo|portrait) on the wall/i.test(said) && plateBuilt('memory-wall')) plate = 'memory-wall';
     if (plate && CORNER[plate] && !sc.spot) {
       const tw = sc._t < 12 ? 0 : sc._t < 17 ? 1 : sc._t < 21 ? 2 : 3;
       const taken = (cornersTaken[`${meal ? 'dining' : set}|${tw}`] ||= new Set());

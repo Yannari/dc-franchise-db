@@ -150,7 +150,7 @@ export function finaleHouseScenes(act, { week = 0, priorEvicted = [] } = {}) {
       lines.push(say(jr, pick(JURY_REPLY, key('jreply'))));
     }
     lines.push(dr(pick(f3, key('walldr')), pick(WALL_DR, key('walldr2'))));
-    scene('wall', 'living-room', 'Living Room', f3, 'house', lines, { spot: 'living-screens-wide' });
+    scene('wall', 'living-room', 'Living Room', f3, 'house', lines, { spot: 'memory-wall' });
   }
 
   // ── studying for Part Three ──

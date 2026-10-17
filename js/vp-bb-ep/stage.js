@@ -165,7 +165,7 @@ function walkFrom(S, seated, n, idx) {
   if (!b) return '';
   return `--wx:${(b.at[0] - a.at[0]).toFixed(2)}cqw;--wy:${(-(b.at[1] - a.at[1]) * 0.5625).toFixed(2)}cqw;`;
 }
-// finale night: nobody wears a week's badge (an Evicted chip on one juror of nine is noise)
+// finale night: nobody wears a week's badge (an Evicted chip on one juror of nine is noise), in the studio or in the house
 const NOCHIPS = { status: {}, out: [], leftover: [], nom: [], safe: [], spent: [], plus: null, veto: null };
 function castAt(S, i) {
   if (S.seated) {
@@ -237,11 +237,15 @@ function memoryFrames(panels, n) {
   });
   return out;
 }
+// the memory wall plate's own frames, four by four (measured on memory-wall-day.webp, 1920x1080)
+const WALL_X = [28.8, 39.74, 50.99, 61.93], WALL_B = [72.96, 52.13, 31.39, 10.65];
+const wallGrid = n => Array.from({ length: Math.min(16, n) }, (_, i) => ({ x: WALL_X[i % 4], y: WALL_B[Math.floor(i / 4)], w: 9.43, h: 16.85 }));
 function wallHtml(S, L, st, fresh) {
+  const onWall = plateFor(S) === 'memory-wall';
   const A = anchOf(S);
-  if (!A?.panels) return '';
+  if (!onWall && !A?.panels) return '';
   const names = S.wall || [];
-  const frames = memoryFrames(A.panels, names.length);
+  const frames = onWall ? wallGrid(names.length) : memoryFrames(A.panels, names.length);
   return `<div class="wall onwall">${names.map((n, i) => {
     const fr = frames[i]; if (!fr) return '';
     const s = L.status[n] || '';
@@ -818,14 +822,14 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
       const badge = r ? `<i class="rb">${react === 'laugh' ? REACT_LAUGH : REACT_WOW}</i>` : '';
       // a reaction interrupts what they were doing; otherwise they go on doing it
       const doing = r || !idle ? '' : `doing do-${idle}`;
-      h += tileHtml(n, x, `bgp ${r} ${doing}`, S.set === 'finale' ? NOCHIPS : L, badge, `z-index:1;bottom:${(21.5 + (i % 2) * 0.8).toFixed(1)}cqw;--d:${(-(i * 0.9 + idx * 0.13) % 4).toFixed(2)}s`, doing ? idleFx(idle) : '');
+      h += tileHtml(n, x, `bgp ${r} ${doing}`, (S.set === 'finale' || S.finale) ? NOCHIPS : L, badge, `z-index:1;bottom:${(21.5 + (i % 2) * 0.8).toFixed(1)}cqw;--d:${(-(i * 0.9 + idx * 0.13) % 4).toFixed(2)}s`, doing ? idleFx(idle) : '');
     });
     const A = fresh ? actionOf(st, cast.map(([n]) => n)) : null;
     const at = Object.fromEntries(focus.slice(0, 3).map((n, i) => [n, xs[i]]));
     focus.slice(0, 3).forEach((n, i) => {
       const a = actOn(A, n, xs[i], at);
       const cls = [n === speaker ? 'speak' : '', fresh && !before.includes(n) ? 'step' : '', L.plus === n ? 'plus' : '', a.cls].join(' ');
-      h += tileHtml(n, xs[i], cls, S.set === 'finale' ? NOCHIPS : L, '', '', a.fx);
+      h += tileHtml(n, xs[i], cls, (S.set === 'finale' || S.finale) ? NOCHIPS : L, '', '', a.fx);
     });
     if (A && A.kind === 'slam') h += '<div class="fx-impact"></div>';
     if (A && A.kind === 'shout') h += `<div class="speedl" style="--sx:${at[A.who[0]] ?? 50}%"></div>`;
@@ -848,8 +852,8 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     }
     if (seated) {
       const a = seatOf(S, seated, n);
-      h += tileHtml(n, x, `${cls} ${walk ? 'walk' : ''}`, S.set === 'finale' ? NOCHIPS : L, '', `${walk}bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}`, a2.fx);
-    } else h += tileHtml(n, x, cls, S.set === 'finale' ? NOCHIPS : L, '', '', a2.fx);
+      h += tileHtml(n, x, `${cls} ${walk ? 'walk' : ''}`, (S.set === 'finale' || S.finale) ? NOCHIPS : L, '', `${walk}bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}`, a2.fx);
+    } else h += tileHtml(n, x, cls, (S.set === 'finale' || S.finale) ? NOCHIPS : L, '', '', a2.fx);
   }
   // the finale's key box: a key drops through the slot
   if (S.set === 'finale' && fresh && st && st.drop && (anchOf(S)?.slot || ANCH.finale?.slot)) {

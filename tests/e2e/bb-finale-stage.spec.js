@@ -46,10 +46,19 @@ test('finale night: the living room, the stage, the key box and the whole cast',
     await page.locator('.bbx-stage').screenshot({ path: `${SHOTS}/bbf-${name}.png` });
     return plate;
   };
+  // the last days: the memory wall scene on the memory wall
+  expect(await shoot('bb-finale-house', 'in front of the memory wall', 'memory-wall')).toBe('memory-wall');
+  // the final three in the three chairs (2026-10-16)
+  expect(await shoot('bb-finale-brief', 'Good evening', 'brief-three')).toBe('living-screens-3');
   expect(await shoot('bb-final-cut', 'cast the only vote', 'final-cut')).toBe('living-screens');
-  expect(await shoot('bb-ftc-questions', 'take a seat', 'jury-q-seated')).toBe('studio-finale');
+  await shoot('bb-final-cut', 'Please don.t evict me|forgotten all of it|keep this short|hands are shaking|make this hard|Hi\. It.s me|didn.t prepare', 'final-cut-speech');
+  await shoot('bb-final-cut', 'you are the final two', 'final-two');
+  // the jury comes into the house; the final two never leave it before the winner is named
+  expect(await shoot('bb-ftc-questions', 'sit down on the sofas', 'jury-q-house')).toBe('living-screens');
+  expect(await shoot('bb-ftc-speeches', 'last chance', 'closing-house')).toBe('living-screens');
   await shoot('bb-jury', 'walks to the box|stops in front of the box|looks at the two keys', 'key-walk');
-  await shoot('bb-winner', 'rushes the stage', 'winner-crowd');
+  expect(await shoot('bb-winner', 'you are the winner', 'winner-house')).toBe('living-screens');
+  await shoot('bb-winner', 'jury rushes them', 'winner-crowd');
   await shoot('bb-afh', 'comes forward', 'afp');
   await shoot('bb-reunion', 'welcome back every houseguest', 'reunion');
   expect(errors.pageErrors, JSON.stringify(errors.pageErrors)).toEqual([]);

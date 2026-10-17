@@ -157,7 +157,10 @@ describe('the wide view first', () => {
     return n / 3000;
   };
   it('plays most living room and kitchen scenes on the wide views', () => {
-    expect(share('ceremony', ['living-screens', 'living-screens-wide'])).toBeGreaterThan(0.4);
+    // the living room is the sofa side, wide (the user, 2026-10-16): the screens wall is the ceremonies'
+    expect(share('ceremony', ['living-sofas-2', 'living-sofas', 'living-reverse'])).toBeGreaterThan(0.55);
+    expect(share('ceremony', ['living-screens', 'living-screens-wide'])).toBeLessThan(0.2);
+    expect(share('ceremony', ['living-console', 'living-screens-close'])).toBe(0);
     expect(share('ceremony', ['library-wide'])).toBeLessThan(0.25);
     expect(share('kitchen', ['kitchen-wide', 'kitchen-room'])).toBeGreaterThan(0.5);
     expect(share('kitchen', ['kitchen-sink'])).toBeLessThan(0.2);

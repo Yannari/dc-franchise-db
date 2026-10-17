@@ -82,6 +82,7 @@ function finalPitches({ hoh, options, margins, honoured, betrayal, week }) {
   // unused line in their own pool.
   const used = new Set();
   const usedShapes = new Set();
+  const said = { open: new Set(), aside: new Set(), close: new Set() };
   return options.map(name => {
     const p = pronouns(name);
     const hasDeal = honoured?.partner === name || betrayal?.partner === name;
@@ -115,8 +116,54 @@ function finalPitches({ hoh, options, margins, honoured, betrayal, week }) {
       `${name} gets straight to it. "You and me, at the end, is the final two people will talk about for years. Do you want to win the easy way, or the real way?"`,
     ];
     const text = freshPick([...pool.map(fn => fn(name, hoh, p)), ...grounded], `pitch|${week}|${name}|${hoh}`, usedShapes);
-    return { name, kind, text };
+    return { name, kind, text, ...speechOf(name, hoh, week, said) };
   });
+}
+
+// ── the rest of the speech ─────────────────────────────────────────────
+// The user, 2026-10-16: "where are the final cut speech i barely got some, even if they're comic i need to hear
+// them". The case above was the whole speech: one sentence each. Now each of the two stands up and says a speech:
+// how they open, the case, something only a person says (sometimes a joke, sometimes not), and how they sit down.
+// Picked by a hash, never the finale's rng; the two of them never share a line.
+const SPEECH_OPEN = [
+  h => `Okay. ${h}. I wrote this speech in my head about forty times this week, and I've forgotten all of it.`,
+  () => `I'll keep this short. I won't, but I'll try.`,
+  () => `Wow. Okay. My hands are shaking. Ignore the hands.`,
+  h => `${h}, I'm not going to make this hard for you. I'm just going to make it honest.`,
+  () => `I've been in this house a long time, and I've never been this nervous about two minutes of talking.`,
+  h => `Hi. It's me. You know me. That's sort of the point of this whole speech, ${h}.`,
+  () => `I didn't prepare anything, which in this house is either very brave or very stupid.`,
+];
+const SPEECH_ASIDE = [
+  () => `Also, I did the dishes yesterday. I'm not saying that should count. I'm saying it should count a little.`,
+  () => `And if you take me, I promise to stop singing in the shower. For one night. I can't promise two.`,
+  () => `Whatever you decide, I'm going to hug you. You don't get a say in that part.`,
+  h => `${h}, I've sat next to you through more of these ceremonies than I can count. I'd like to sit next to you through one more.`,
+  () => `I came in here not knowing a single person. I'm leaving, tonight or after the vote, with people I'd call at three in the morning.`,
+  () => `For the record, I'd make a great final two. I'm fun. I'm loud. I'm very good at standing still while somebody else wins.`,
+  () => `Everybody I love is watching this right now and yelling at the TV. I can feel it.`,
+  () => `I've eaten whatever was left in that fridge for weeks. I'm owed this one.`,
+];
+const SPEECH_CLOSE = [
+  () => `That's it. That's my speech. Please don't evict me.`,
+  () => `Whatever you decide, I'll respect it. Probably. Eventually.`,
+  h => `Thank you, ${h}. Really. Whatever happens.`,
+  () => `I'm going to sit down now before I say something I regret.`,
+  () => `I've said what I came to say. The rest is yours.`,
+  () => `That's everything. You know where to find me. In that chair. Hoping.`,
+];
+const _pickOnce = (pool, key, used, ...args) => {
+  let at = _pitchHash(key) % pool.length;
+  for (let k = 0; k < pool.length && used.has(at); k++) at = (at + 1) % pool.length;
+  used.add(at);
+  return pool[at](...args);
+};
+function speechOf(name, hoh, week, used) {
+  return {
+    open: _pickOnce(SPEECH_OPEN, `open|${week}|${name}|${hoh}`, used.open, hoh),
+    aside: _pickOnce(SPEECH_ASIDE, `aside|${week}|${name}|${hoh}`, used.aside, hoh),
+    close: _pickOnce(SPEECH_CLOSE, `close|${week}|${name}|${hoh}`, used.close, hoh),
+  };
 }
 
 /** The final HOH's reason for the cut, from what the house can see. */

@@ -12,14 +12,15 @@
 // Days, not episodes, are the unit for anything that is a risk per unit of
 // time (manual §16.3): each episode carries its days.
 
-export function buildSchedule({ total, finalists, daysPerEpisode = 3, gendered = true, counts = null, episodes = null, twists = {} }) {
+export function buildSchedule({ total, finalists, daysPerEpisode = 3, gendered = true, counts = null, episodes = null, twists = {}, pairs = false }) {
   // One-episode twists booked on the Season Timeline (ep-twists.js): a booked double is one of the season's
   // doubles, moved to its episode; a return brings one player back, so the season needs one more episode.
   const booked = kind => Object.entries(twists || {}).filter(([, k]) => k === kind).map(([e]) => Number(e)).filter(e => e >= 1);
   const returns = booked('return');
   const need = Math.max(0, total - finalists) + returns.length;
   // Two late doubles on a full cast; none on a small one.
-  const late = need >= 12 ? 2 : need >= 8 ? 1 : 0;
+  // A Pairs season (counted in pairs) is shorter by nature: one late double only on a big one.
+  const late = pairs ? (need >= 11 ? 1 : 0) : need >= 12 ? 2 : need >= 8 ? 1 : 0;
   const bookedDoubles = booked('double');
   const doubles = Math.max(late, bookedDoubles.length);
   const n = episodes ?? Math.max(1, need - doubles);
@@ -67,8 +68,13 @@ export function elimsFor(schedule, epIndex, need) {
 // first, so the final stays balanced (spec §3).
 export function divisionFor(state, prev, finalists) {
   if (!state.options.gendered) return 'all';
-  const m = state.active.filter(n => state.division[n] === 'm').length;
-  const f = state.active.filter(n => state.division[n] === 'f').length;
+  // a Pairs season of a man and a woman has one champion pair: every week is everybody's. Men's pairs and women's
+  // pairs take turns, counted in pairs (`finalists` is pairs then).
+  const pairs = state.options.pairs;
+  if (pairs && pairs.shape !== 'same') return 'all';
+  const units = d => (pairs ? (state.pairs || []).filter(p => state.division[p.a] === d).length : state.active.filter(n => state.division[n] === d).length);
+  const m = units('m');
+  const f = units('f');
   const half = finalists / 2;
   const overM = m - half, overF = f - half;
   if (overM <= 0 && overF > 0) return 'f';

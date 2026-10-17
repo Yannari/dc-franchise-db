@@ -37,6 +37,7 @@ import { planOf, targetScore } from './plans.js';
 import { trustOf, protectOf, grudgeOf, cooperateWith, believePitch, votedFor, betrayed, remember, intimidated, fearOf } from './rel.js';
 import { spotMeeting, noteFalseYes, outAlliance, believedAlliances, believedHunters } from './knowledge.js';
 import { breakThePower } from './blocs.js';
+import { pairsOn, partnerOf, repOf, membersOf } from './pairs.js';
 
 // The opponent the house expects X to call out (a quick read).
 function expectedCallout(state, x, pool) {
@@ -59,7 +60,8 @@ function predictor(state, eligible) {
 
 function meet(state, rng, al, eligible, ctx) {
   const present = al.members.filter(m => state.active.includes(m));
-  const outside = eligible.filter(n => !al.members.includes(n));
+  // a Pairs season: nobody puts their own partner up (it is putting themselves in)
+  const outside = eligible.filter(n => !al.members.includes(n) && !present.some(m => partnerOf(state, m) === n));
   if (!outside.length || present.length < 2) return null;
   // Each member's preference, weighted by how much they back the organiser.
   const tallies = {};
@@ -107,7 +109,7 @@ function recruit(state, rng, meeting, al, eligible, committed, ctx) {
   const votes = Object.values(meeting.responses).filter(r => r !== 'refuses').length;
   const need = Math.floor(state.active.length / 2) + 1 - votes;
   if (need <= 0) return out;
-  const free = state.active.filter(n => !allianceOf(state, n) && !committed[n] && n !== meeting.target);
+  const free = state.active.filter(n => !allianceOf(state, n) && !committed[n] && n !== meeting.target && partnerOf(state, n) !== meeting.target);
   const ranked = free.map(n => {
     // Approached by whoever in the group they trust most.
     const by = al.members.filter(m => state.active.includes(m)).sort((a, b) => trustOf(n, b) - trustOf(n, a))[0];
@@ -275,11 +277,27 @@ function volunteer(state, rng, eligible) {
       + passHunger(state, c) * 1.4 - (injuryOf(state, c)?.sev || 0) * 0.8;
     return { c, w, target };
   }).sort((a, b) => b.w - a.w);
-  const top = cands[0];
+  let top = cands[0];
   // A volunteer is a moment, not a habit (seasons had five or six; the show has one or two): rarer, and
   // rarer still for a few weeks after the last one, when the house has just seen it done.
   const since = state.ep - (state.lastVolunteerEp ?? -99);
   if (!top || rng() >= logistic(top.w - 4.2) * 0.32 * Math.min(1, since / 4)) return null;
+  if (pairsOn(state)) {
+    // A pair volunteers only when both want it. The partner's own read of it decides; a no, in front of the house,
+    // is a scene, and the one who wanted it remembers.
+    const p = partnerOf(state, top.c);
+    const theirs = p ? cands.find(x => x.c === p) : null;
+    const target = top.target && !membersOf(state, top.c).includes(top.target) ? repOf(state, top.target) : null;
+    if (p && (!theirs || theirs.w < top.w - 1.6 - S(p, 'loyalty') * 0.12)) {
+      addBond(top.c, p, -0.5); remember(top.c, p, 'would-not-go-in', 0.8);
+      addScene(state, 'pair-volunteer-refused', [top.c, p], { target }, state.active, 'deliberation');
+      return null;
+    }
+    state.lastVolunteerEp = state.ep;
+    const rep = repOf(state, top.c);
+    addScene(state, 'pair-volunteer', [top.c, ...(p ? [p] : []), ...(target ? membersOf(state, target) : [])], { target, pair: true }, state.active, 'public');
+    return { name: rep, target, pair: true, by: top.c };
+  }
   state.lastVolunteerEp = state.ep;
   addScene(state, 'volunteer', [top.c].concat(top.target ? [top.target] : []), { target: top.target }, state.active, 'public');
   return { name: top.c, target: top.target };
@@ -412,16 +430,25 @@ export function voteTerms(state, v, t, eligible, delib, tally) {
   if (al && al.members.includes(t)) terms.ally = -3 * (0.3 + S(v, 'loyalty') / 10);
   if (tally) {
     const total = Object.values(tally).reduce((a, b) => a + b, 0);
-    terms.bandwagon = total ? (tally[t] || 0) / total * (1 - bold) * (S(v, 'social') / 10) * 3.2 : 0;
+    terms.bandwagon = total ? (tally[pairsOn(state) ? repOf(state, t) : t] || 0) / total * (1 - bold) * (S(v, 'social') / 10) * 3.2 : 0;
   }
   return terms;
 }
 
 function topChoice(state, rng, v, eligible, delib, tally) {
-  const rows = eligible.filter(t => t !== v).map(t => {
+  const mine = pairsOn(state) ? membersOf(state, v) : [v];
+  const rows = eligible.filter(t => !mine.includes(t)).map(t => {
     const terms = voteTerms(state, v, t, eligible, delib, tally);
     return { target: t, terms, total: Object.values(terms).reduce((a, b) => a + b, 0) + noise(rng) * 0.35 };
   }).sort((a, b) => b.total - a.total);
+  if (pairsOn(state)) {
+    // A Pairs season votes in a pair: read from both its members, the stronger pull counting for more ("I'd vote
+    // her in, but I'd be sending him in too"). The row kept is the member the voter means.
+    const by = {};
+    for (const r of rows) (by[repOf(state, r.target)] ||= []).push(r);
+    const pairs = Object.values(by).map(rs => ({ ...rs[0], total: rs[0].total * 0.65 + rs[rs.length - 1].total * 0.35 }));
+    return pairs.sort((a, b) => b.total - a.total)[0] || { target: null };
+  }
   return rows[0] || { target: null };
 }
 
@@ -444,13 +471,16 @@ export function houseVote(state, rng, { eligible, delib, winners, exclude = [], 
     const c = delib.committed[v];
     const told = delib.intents[v] && pool.includes(delib.intents[v]) ? delib.intents[v] : null;
     let target = own.target, why = 'own read';
-    if (c && c.target && pool.includes(c.target) && c.response !== 'false-yes') {
+    // in a Pairs season a ballot names a pair; the same pair is the same vote whichever of them was said
+    const same = (x, y) => x === y || (pairsOn(state) && x && y && repOf(state, x) === repOf(state, y));
+    const ownPair = pairsOn(state) ? membersOf(state, v) : [v];
+    if (c && c.target && pool.includes(c.target) && !ownPair.includes(c.target) && c.response !== 'false-yes') {
       // Keeping your word, unless the room has visibly gone the other way and
       // you are the kind to follow it.
       const ownScore = own.total;
       const word = voteTerms(state, v, c.target, pool, delib, tally);
       const wordScore = Object.values(word).reduce((a, b) => a + b, 0) + 2 + S(v, 'loyalty') * 0.35;
-      if (wordScore >= ownScore || own.target === c.target) { target = c.target; why = c.via.startsWith('alliance') ? 'the plan' : 'kept their word'; }
+      if (wordScore >= ownScore || same(own.target, c.target)) { target = c.target; why = c.via.startsWith('alliance') ? 'the plan' : 'kept their word'; }
       else why = 'broke from the plan';
     } else if (c?.response === 'false-yes') {
       why = 'false yes';
@@ -458,16 +488,19 @@ export function houseVote(state, rng, { eligible, delib, winners, exclude = [], 
       why = 'kept the deal';
     }
     if (!target) continue;
+    // the member the voter means; the ballot itself is the pair's (its representative)
+    const named = target;
+    if (pairsOn(state)) target = repOf(state, target);
     tally[target] = (tally[target] || 0) + 1;
-    const flip = told != null && told !== target;
+    const flip = told != null && !same(told, target);
     // why, in a word, when the name is the voter's own (said out loud at the vote: ceremony.js)
-    const reason = target === own.target ? reasonOf(own.terms) : null;
+    const reason = same(target, own.target) ? reasonOf(own.terms) : null;
     // what is true of the name AT the vote, for the reason said out loud (the ballot is written when it airs, after
     // the season): a "you keep winning" needs wins, a "you've never been in" needs no Arena, "the biggest bank" needs it
-    const rt = state.rec[target] || {};
-    const richest = state.active.every(n => n === target || (state.bank[n] || 0) < (state.bank[target] || 0)) && (state.bank[target] || 0) > 0;
+    const rt = state.rec[named] || {};
+    const richest = state.active.every(n => n === named || (state.bank[n] || 0) < (state.bank[named] || 0)) && (state.bank[named] || 0) > 0;
     const on = { proven: (rt.dailyWins || 0) + (rt.arenaW || 0) >= 2, neverIn: !((rt.arenaW || 0) + (rt.arenaL || 0)), richest };
-    ballots.push({ on, voter: v, target, told, bond: +getBond(v, target).toFixed(2), wanted: Object.keys(own.terms || {}).length ? own.target : null,
+    ballots.push({ on, voter: v, target, ...(pairsOn(state) ? { named, pair: membersOf(state, target) } : {}), told, bond: +getBond(v, named).toFixed(2), wanted: Object.keys(own.terms || {}).length ? own.target : null,
       asked: c?.target || null, via: c?.via || null, flip, why: flip ? (why === 'own read' ? 'changed their mind' : why) : why, reason,
       countBefore: Object.values(tally).reduce((a, b) => a + b, 0) - 1 });
   }

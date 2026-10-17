@@ -27,6 +27,7 @@ import { playInterrogation } from './daily/interrogation.js';
 import { playRace } from './daily/race.js';
 import { playDemolition } from './daily/demolition.js';
 import { playRaftKing, playCutRope, playDoubleCross, playTrustFall, playWhoSaidIt } from './daily/betrayal.js';
+import { pairsOn, shapeOf, logDaily } from './pairs.js';
 import { playDeepFreeze, playLogRoll, playRoadKill, playMudBrawl, playBuried, playFoodWars, playTrapeze, playPoisonCup } from './daily/more.js';
 
 export const DAILIES = [
@@ -131,7 +132,12 @@ export const SIMS = { 'pole-truth': playPoleTruth, 'hang-on': playHangOn, 'lagoo
   trapeze: playTrapeze, 'poison-cup': playPoisonCup,
   'car-jump': race('car-jump'), 'locked-in': race('locked-in'), 'the-box': race('the-box') };
 
+// A Pairs season plays every daily in pairs, except the two that crown one player alone by betraying their own
+// partner (Double Cross's thief, Cut the Rope's last one hanging): there is no alone in a Pairs season.
+export const PAIR_UNFIT = new Set(['double-cross', 'cut-rope']);
+
 export function pickMode(state, rng) {
+  if (pairsOn(state)) return 'pairs';
   if (!state.options.partnerWeeks) return 'solo';
   const share = state.ep / Math.max(1, state.plannedEpisodes || 14);
   const w = [
@@ -144,6 +150,13 @@ export function pickMode(state, rng) {
 
 export function pickDaily(state, rng, mode) {
   const recent = state.episodes.slice(-5).map(e => e.daily?.id);
+  if (pairsOn(state) && mode === 'pairs') {
+    // the whole library, the ones built for pairs twice as likely (a solo daily is scored on the two partners' average)
+    const fits = DAILIES.filter(d => !PAIR_UNFIT.has(d.id));
+    const ok = fits.filter(d => !recent.includes(d.id));
+    const pool = (ok.length ? ok : fits).flatMap(d => (d.modes.includes('pairs') ? [d, d] : [d]));
+    return pool[Math.floor(rng() * pool.length)];
+  }
   const ok = DAILIES.filter(d => d.modes.includes(mode) && !recent.includes(d.id));
   const pool = ok.length ? ok : DAILIES.filter(d => d.modes.includes(mode));
   return pool[Math.floor(rng() * pool.length)];
@@ -224,20 +237,27 @@ function throwIntent(state, rng, name, unit, division) {
   let motive = 0;
   if (safeAnyway) motive += (threatRead(state, name) - 6) * 0.15 * S(name, 'strategic') / 10;
   const partner = unit.find(x => x !== name);
-  if (unit.length === 2 && partner && getBond(name, partner) < -3) motive += (-getBond(name, partner) - 3) * 0.12;
+  // sinking a partner sinks yourself in a Pairs season: that motive is gone
+  if (unit.length === 2 && partner && getBond(name, partner) < -3 && !pairsOn(state)) motive += (-getBond(name, partner) - 3) * 0.12;
   if (motive <= 0) return 0;
   return rng() < clamp(motive, 0, 0.6) ? clamp(0.3 + motive, 0.3, 0.8) : 0;
 }
 
 // Play the daily. Returns { id, name, mode, units, scores, winners, last, throws, injuries, reward }.
-export function playDaily(state, rng, { division, pin = null }) {
+export function playDaily(state, rng, { division, pin = null, solo = false }) {
   // a daily pinned on the Season Timeline (ch-run.js challengeOptions -> options.dailyPins): played whatever the
   // draw, in the week's drawn shape when it has one, else its own first
-  const pinned = pin ? DAILIES.find(d => d.id === pin) : null;
-  let mode = pickMode(state, rng);
-  if (pinned && !pinned.modes.includes(mode)) mode = pinned.modes[0];
-  const daily = pinned || pickDaily(state, rng, mode);
-  const units = mode === 'pairs' ? makePairs(state, rng) : mode === 'teams' ? makeTeams(state, rng) : state.active.map(n => [n]);
+  const pinned = pin && !(pairsOn(state) && PAIR_UNFIT.has(pin)) ? DAILIES.find(d => d.id === pin) : null;
+  // solo: a Pairs season's combine, before anybody has a partner (Fresh Meat, Pick your partner)
+  let mode = solo ? 'solo' : pickMode(state, rng);
+  const seasonPairs = pairsOn(state) && mode === 'pairs';
+  if (pinned && !pinned.modes.includes(mode) && !seasonPairs) mode = pinned.modes[0];
+  const daily = pinned || (solo ? pickDaily(state, rng, 'solo') : pickDaily(state, rng, mode));
+  // a Pairs season's own pairs (and anybody a partner left, alone); a daily that has no pairs version is played
+  // by everybody on their own and scored on each pair's average
+  const units = seasonPairs ? [...state.pairs.map(p => [p.a, p.b]), ...(state.lone || []).filter(n => state.active.includes(n)).map(n => [n])]
+    : mode === 'pairs' ? makePairs(state, rng) : mode === 'teams' ? makeTeams(state, rng) : state.active.map(n => [n]);
+  const playedSolo = seasonPairs && !daily.modes.includes('pairs');
   const throws = [];
   const indiv = {};
   for (const unit of units) {
@@ -255,17 +275,21 @@ export function playDaily(state, rng, { division, pin = null }) {
   const power = { ...indiv };
   let beats = null, simWinners = null;
   if (SIMS[daily.id]) {
-    const res = SIMS[daily.id](state, rng, { units, power, mode });
+    const res = SIMS[daily.id](state, rng, playedSolo ? { units: units.flat().map(n => [n]), power, mode: 'solo' } : { units, power, mode });
     beats = res.beats;
     Object.assign(indiv, res.score);
-    // a betrayal daily can name its own winners (a thief alone, a cutter alone)
-    simWinners = res.winners || null;
+    // a betrayal daily can name its own winners (a thief alone, a cutter alone); a Pairs season's winners are the
+    // best pair, whoever the daily crowned on their own
+    simWinners = playedSolo ? null : res.winners || null;
   }
   const unitScore = u => u.reduce((a, n) => a + indiv[n], 0) / u.length;
   const ranked = [...units].sort((a, b) => unitScore(b) - unitScore(a));
   let winners;
-  if (simWinners) winners = [...simWinners];
-  else if (mode === 'solo' && state.options.gendered) {
+  if (simWinners) winners = seasonPairs ? [...new Set(simWinners.flatMap(w => units.find(u => u.includes(w)) || [w]))] : [...simWinners];
+  else if (seasonPairs && shapeOf(state) === 'same' && division && division !== 'all') {
+    // men's pairs and women's pairs: the week's division's best pair is the one that is safe
+    winners = [...(ranked.find(u => u.every(n => state.division[n] === division)) || ranked[0])];
+  } else if (mode === 'solo' && state.options.gendered) {
     const best = d => [...state.active].filter(n => state.division[n] === d).sort((a, b) => indiv[b] - indiv[a])[0];
     winners = ['m', 'f'].map(best).filter(Boolean);
   } else {
@@ -325,6 +349,7 @@ export function playDaily(state, rng, { division, pin = null }) {
     for (const w of winners) { nudge(state, w, 'homesick', -3); nudge(state, w, 'morale', 1.2); }
     addScene(state, 'call-home', winners, {}, winners, 'private');
   }
+  if (seasonPairs) logDaily(state, units, indiv, daily.name);
   const aftermath = mode === 'pairs' ? pairAftermath(state, rng, units, power, winners, ranked)
     : mode === 'teams' ? teamAftermath(state, rng, units, power, winners) : [];
   return { id: daily.id, name: daily.name, mode, units, winners, last,

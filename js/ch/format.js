@@ -54,6 +54,7 @@ export const DEFAULT_OPTIONS = {
   redemptionFrom: 1,  // the episode it opens on
   episodeTwists: {},  // { [ep]: 'double' | 'purge' | 'return' }: booked on the Season Timeline (ep-twists.js)
   dailyPins: {},      // { [ep]: daily id }: the Season Timeline's daily picker (dailies.js playDaily)
+  pairs: null,        // a Pairs season: { pairing: 'rivals'|'ties'|'fresh-meat'|'pick', shape: 'mixed'|'same', finalPairs, pins } (pairs.js)
 };
 
 export function formatOf(options) {

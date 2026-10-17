@@ -33,6 +33,8 @@ import { giveRespect } from './respect.js';
 import { grudgeOf, trustOf, remember, keptWord } from './rel.js';
 import { addRivalry } from './events.js';
 import { fearOfThing } from './mind.js';
+import { pairsOn, membersOf, repOf, playPairDuel, dissolvePair, unitsLeft, shapeOf } from './pairs.js';
+import { shareOrKeep } from './share-keep.js';
 
 const pop = (name, d) => { gs.popularity ||= {}; gs.popularity[name] = (gs.popularity[name] || 0) + d; };
 
@@ -185,8 +187,31 @@ export function playFinal(state, rng) {
   // ── Day 1 ──
   runCheckpoint(state, rng, CHECKPOINTS[0], total, fin);
   runCheckpoint(state, rng, CHECKPOINTS[1], total, fin);
+  // A Pairs season's instant elimination: the two lowest pairs, two on two, only when four or more pairs are left
+  // (Rivals III's three all finished). A pair's points are its two partners' average.
+  const pairAvg = (r, t = total) => membersOf(state, r).reduce((x, n) => x + (t[n] || 0), 0) / membersOf(state, r).length;
+  const pairReps = () => [...new Set(state.active.map(n => repOf(state, n)))];
+  if (pairsOn(state)) {
+    for (const d of shapeOf(state) === 'same' ? ['m', 'f'] : ['all']) {
+      const left = pairReps().filter(r => d === 'all' || state.division[r] === d);
+      if (left.length < 4) continue;
+      const [x, y] = [...left].sort((a, b) => pairAvg(a) - pairAvg(b));
+      const game = ARENA_GAMES.find(g => g.id === 'hallway-hustle');
+      const duel = playPairDuel(state, rng, x, y, game);
+      fin.instant.push(duel);
+      addScene(state, 'instant-elimination', [...duel.winners, ...duel.losers], { winner: duel.winner, game: duel.game, pair: true, winners: duel.winners, losers: duel.losers }, state.active, 'final');
+      const place = unitsLeft(state);
+      dissolvePair(state, duel.loser);
+      for (const l of duel.losers) {
+        addScene(state, 'final-lastword', [l], { when: 'instant', place: null }, [l], 'confessional');
+        fin.lastWords.push(l);
+        removePlayer(state, l, 'final-instant', { place, pairDone: true });
+        delete total[l];
+      }
+    }
+  }
   // The instant elimination: the two lowest on points in each division with three or more left.
-  for (const d of divsOf(state)) {
+  for (const d of pairsOn(state) ? [] : divsOf(state)) {
     const left = inDiv(state, d);
     if (left.length < 3) continue;
     const [x, y] = [...left].sort((a, b) => total[a] - total[b]);
@@ -220,8 +245,11 @@ export function playFinal(state, rng) {
   const tiles = n => fin.sabotage.filter(x => x.to === n).length;
   fireTalk(state, rng);
   for (const n of [...state.active]) {
+    if (!state.active.includes(n)) { fin.overnight.push({ name: n, partnerQuit: true }); continue; }   // a partner who quit took them out
     const m = state.mind[n];
-    const p = Math.max(0, 0.05 * (1 - (S(n, 'endurance') + S(n, 'temperament')) / 20) * (1 + m.homesick / 10) * (1.3 - m.morale / 12) * (1 + tiles(n) * 0.5));
+    // a partner holds you up through the night: quitting a Pairs final throws away their money too
+    const p = Math.max(0, 0.05 * (1 - (S(n, 'endurance') + S(n, 'temperament')) / 20) * (1 + m.homesick / 10) * (1.3 - m.morale / 12) * (1 + tiles(n) * 0.5)
+      * (pairsOn(state) ? 0.5 : 1));
     if (rng() < p) {
       fin.overnight.push({ name: n, quit: true });
       giveRespect(state, n, 'quit');
@@ -236,6 +264,8 @@ export function playFinal(state, rng) {
     nudge(state, n, 'energy', -2.5);
     fin.overnight.push({ name: n, held: +held.toFixed(2), comfort: comfort[n], tiles: tiles(n) });
   }
+  // a quit in a Pairs season takes the partner with it (exits.js): neither runs on
+  for (const n of Object.keys(total)) if (!state.active.includes(n)) delete total[n];
   state.day += 1;
 
   // ── Day 2 ──
@@ -254,6 +284,7 @@ export function playFinal(state, rng) {
 
   // ── The finish ──
   fin.totals = round(total);
+  if (pairsOn(state)) return finishPairs(state, rng, fin, total, pairAvg, pairReps);
   fin.podium = {};
   for (const d of divsOf(state)) {
     const ord = inDiv(state, d).sort((a, b) => total[b] - total[a] || (fin.checkpoints.at(-1).places[a] - fin.checkpoints.at(-1).places[b]));
@@ -286,6 +317,58 @@ export function playFinal(state, rng) {
   const paths = fin.champions.map(c => pathOf(state, c));
   addScene(state, 'champion-reflect', [...fin.champions], { path: paths[0]?.path || 'grind', pathB: paths[1]?.path || null,
     ref: paths[0]?.ref || null, refB: paths[1]?.ref || null }, state.active, 'confessional');
+  state.final = fin;
+  return fin;
+}
+
+// The finish of a Pairs season: pairs placed on their partners' average, a champion pair (one a division when the
+// pairs are men's and women's), then every pair with money chooses to share it or keep it (share-keep.js).
+function finishPairs(state, rng, fin, total, pairAvg, pairReps) {
+  const last = fin.checkpoints.at(-1)?.places || {};
+  const lastPlace = r => Math.min(...membersOf(state, r).map(n => last[n] ?? 99));
+  const ordered = pairReps().sort((a, b) => pairAvg(b) - pairAvg(a) || lastPlace(a) - lastPlace(b));
+  const groups = shapeOf(state) === 'same' ? ['m', 'f'] : ['all'];
+  fin.podium = {};
+  fin.pairPodium = {};
+  for (const d of groups) {
+    const ord = ordered.filter(r => d === 'all' || state.division[r] === d);
+    fin.pairPodium[d] = ord.map(r => membersOf(state, r));
+    // the podium by person too, for the readers that list people (each pair together, the better partner first)
+    fin.podium[d] = ord.flatMap(r => [...membersOf(state, r)].sort((x, y) => (total[y] || 0) - (total[x] || 0)));
+    if (ord[0]) fin.champions.push(...membersOf(state, ord[0]));
+  }
+  state.champions = fin.champions;
+  // placements by pair: both partners share it; with two divisions, both champion pairs are first
+  fin.placements = {};
+  const placeOf = {};
+  for (const d of groups) fin.pairPodium[d].forEach((m, i) => { placeOf[m[0]] = i + 1; });
+  let next = groups.length + 1;
+  const rest = ordered.filter(r => placeOf[r] > 1);
+  for (const r of ordered) for (const n of membersOf(state, r)) fin.placements[n] = placeOf[r] === 1 ? 1 : null;
+  for (const r of rest) { for (const n of membersOf(state, r)) fin.placements[n] = next; next++; }
+  fin.pairTotals = Object.fromEntries(ordered.map(r => [membersOf(state, r).join(' & '), +pairAvg(r).toFixed(2)]));
+  addScene(state, 'final-podium', [...state.active], { podium: fin.podium, pairPodium: fin.pairPodium, totals: fin.totals, pairs: true }, state.active, 'final');
+  addScene(state, 'champions', fin.champions, { pairs: true }, state.active, 'final');
+  for (const d of groups) {
+    const [first, second] = fin.pairPodium[d];
+    if (!first || !second) continue;
+    const gracious = getBond(second[0], first[0]) + getBond(second[1], first[1]) >= 0 || S(second[0], 'temperament') >= 6;
+    if (gracious) for (const s of second) for (const c of first) addBond(s, c, 0.3);
+    addScene(state, 'final-congrats', [second[0], first[0], second[1], first[1]], { gracious, pair: true }, state.active, 'final');
+  }
+  // the money: every pair that won some, the last first and the champions last (Rivals III)
+  const byPlace = groups.flatMap(d => fin.pairPodium[d].map((m, i) => ({ members: m, place: i + 1, pts: Object.fromEntries(m.map(n => [n, total[n] || 0])),
+    pair: (state.pairs || []).find(p => p.a === m[0] || p.b === m[0]) || null })));
+  fin.choices = shareOrKeep(state, rng, byPlace);
+  for (const d of groups) fin.pairPodium[d].forEach((m, i) => {
+    if (i === 0) return;
+    for (const n of m) { addScene(state, 'final-lastword', [n], { when: 'finish', place: i + 1, pair: true }, [n], 'confessional'); fin.lastWords.push(n); }
+  });
+  for (const c of fin.champions) pop(c, 3);
+  const champ = fin.choices.find(c => fin.champions.includes(c.chooser));
+  const paths = fin.champions.map(c => pathOf(state, c));
+  addScene(state, 'champion-reflect', [...fin.champions], { path: champ ? (champ.keep ? 'kept-it' : 'shared-it') : paths[0]?.path || 'grind',
+    pathB: paths[1]?.path || null, ref: champ ? champ.partner : paths[0]?.ref || null, refB: paths[1]?.ref || null, pairs: true, keep: !!champ?.keep }, state.active, 'confessional');
   state.final = fin;
   return fin;
 }

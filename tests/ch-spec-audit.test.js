@@ -11,6 +11,8 @@ import { setPlayers, players } from '../js/core.js';
 import { playChallengeSeason } from '../js/ch/season.js';
 import { challengeCast } from './helpers/ch-cast.js';
 import { EVENTS } from '../js/ch/events.js';
+import { getBond } from '../js/bonds.js';
+import { mayScheme } from '../js/ch/state.js';
 
 const SEASONS = Number(process.env.CH_SEASONS) || 100;
 const pct = (a, b) => (b ? (100 * a / b).toFixed(1) + '%' : 'n/a');
@@ -165,5 +167,61 @@ describe('The Challenge spec audit', () => {
     line('event fires per season', Object.entries(m.evFires).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${(v / SEASONS).toFixed(1)}`).join(', '));
     console.log('\n' + out.join('\n'));
     expect(m.finalists.every(n => n >= 4)).toBe(true);
+  });
+
+  // The Pairs season (spec 2026-10-17 §10): a quarter of the seasons per way of making the pairs.
+  it('plays Pairs seasons and prints their rates', () => {
+    const P = Number(process.env.CH_PAIR_SEASONS) || Math.max(4, Math.round(SEASONS / 4));
+    const out = [];
+    const line = (k, v, note = '') => out.push(`${k.padEnd(48)} ${v}${note ? '   (' + note + ')' : ''}`);
+    const KIN = new Set(['married', 'engaged', 'partners', 'dating', 'twins', 'siblings', 'step-siblings', 'cousins', 'parent-child']);
+    for (const pairing of ['rivals', 'ties', 'fresh-meat', 'pick']) {
+      const m = { eps: [], fin: [], choices: 0, keeps: 0, eligible: 0, eligKeeps: 0, war: 0, warKeeps: 0, kin: 0, kinKeeps: 0, champKeeps: 0, champs: 0,
+        healed: 0, rivalsEnd: 0, partnerLeft: [], swaps: [], overruled: 0, compromise: 0, callouts: 0, reasons: {}, hesitate: 0, why: {}, prize: 0, kept: 0 };
+      for (let s = 1; s <= P; s++) {
+        const { cast, names, background } = challengeCast(24, 500 + s);
+        if (pairing === 'fresh-meat') {
+          const mm = names.filter(n => background[n].gender === 'm'), ff = names.filter(n => background[n].gender === 'f');
+          for (const [i, n] of mm.entries()) background[n].rookie = i < 6;
+          for (const [i, n] of ff.entries()) background[n].rookie = i >= 6;
+        }
+        setPlayers(cast);
+        const r = playChallengeSeason({ cast: names, background, seed: 500 + s, options: { pairs: { pairing } } });
+        const st = r.state;
+        m.eps.push(r.episodes.length);
+        m.fin.push(r.final.finalists.length / 2);
+        m.partnerLeft.push(st.gone.filter(g => g.how === 'partner-left').length);
+        m.swaps.push(r.episodes.filter(e => e.arena.some(d => d.swap)).length);
+        for (const e of r.episodes) for (const c of e.callouts) { m.callouts++; if (c.overruled) m.overruled++; if (!c.agreed && !c.overruled) m.compromise++; inc(m.reasons, c.reason); }
+        // production's rivals, and how they ended
+        if (pairing === 'rivals') for (const h of st.pairHistory.filter(x => x.how === 'rivals')) { m.rivalsEnd++; if (getBond(h.a, h.b) >= 0) m.healed++; }
+        for (const c of r.final.choices || []) {
+          m.choices++; if (c.keep) m.keeps++;
+          if (c.hesitate) m.hesitate++;
+          inc(m.why, `${c.keep ? 'keep' : 'share'}:${c.why}`);
+          m.prize += c.prize; if (c.keep) m.kept += c.prize;
+          if (mayScheme(c.chooser)) { m.eligible++; if (c.keep) m.eligKeeps++; }
+          const pr = st.pairHistory.findLast(h => (h.a === c.chooser && h.b === c.partner) || (h.b === c.chooser && h.a === c.partner));
+          if (pr?.how === 'rivals' && getBond(c.chooser, c.partner) < 0) { m.war++; if (c.keep) m.warKeeps++; }
+          const kin = st.pairs.find(p => p.a === c.chooser || p.b === c.chooser)?.kin;
+          if (kin && KIN.has(kin)) { m.kin++; if (c.keep) m.kinKeeps++; }
+          if (c.place === 1) { m.champs++; if (c.keep) m.champKeeps++; }
+        }
+      }
+      line(`-- ${pairing} (${P} seasons)`, '');
+      line('  episodes / final pairs', `${mean(m.eps)} / ${mean(m.fin)}`);
+      line('  keep: all choosers / champions', `${pct(m.keeps, m.choices)} / ${pct(m.champKeeps, m.champs)}`, 'about one in five');
+      line('  keep: those who can (mayScheme)', pct(m.eligKeeps, m.eligible), `${m.eligible} of ${m.choices} can`);
+      line('  keep: rivals still at war / kin pairs', `${pct(m.warKeeps, m.war)} (${m.war}) / ${pct(m.kinKeeps, m.kin)} (${m.kin})`, 'about half / near none');
+      line('  hesitated and shared', pct(m.hesitate, m.choices));
+      line('  money kept of money chosen over', pct(m.kept, m.prize));
+      line('  reasons', Object.entries(m.why).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', '));
+      if (pairing === 'rivals') line('  rivals who ended on a good bond', pct(m.healed, m.rivalsEnd));
+      line('  partner-left exits per season', mean(m.partnerLeft));
+      if (pairing === 'pick') line('  swaps per season', mean(m.swaps));
+      line('  call-outs: overruled / compromise', `${pct(m.overruled, m.callouts)} / ${pct(m.compromise, m.callouts)}`);
+      line('  call-out reasons', Object.entries(m.reasons).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${pct(v, m.callouts)}`).join(', '));
+    }
+    console.log('\n' + out.join('\n'));
   });
 });

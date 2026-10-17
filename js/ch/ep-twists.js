@@ -24,8 +24,9 @@ import { remember } from './rel.js';
 import { playDuel } from './arena.js';
 import { removePlayer } from './exits.js';
 import { giveRespect } from './respect.js';
+import { pairsOn, repOf, membersOf, unitsLeft, dissolvePair } from './pairs.js';
 
-export const EP_TWISTS = ['double', 'purge', 'return', 'late'];
+export const EP_TWISTS = ['double', 'purge', 'return', 'late', 'swap'];
 
 /**
  * Late arrivals: the players held back from the start walk in (season.js state.late). The house sizes them up:
@@ -56,6 +57,7 @@ export function purge(state, daily, division) {
   const pool = inDivision(state, division).filter(n => !(daily.winners || []).includes(n));
   if (pool.length < 2) return null;
   const score = n => daily.scores?.[n] ?? 0;
+  if (pairsOn(state)) return purgePair(state, daily, pool, score);
   const loser = [...pool].sort((x, y) => score(x) - score(y) || x.localeCompare(y))[0];
   // the closest friend left behind is the one who walks them to the truck
   const friend = closest(state, loser, state.active.filter(n => getBond(loser, n) >= 1.5));
@@ -65,6 +67,21 @@ export function purge(state, daily, division) {
   // the house heard it with no warning: everybody sleeps worse, a friend most of all
   for (const n of state.active) nudge(state, n, 'paranoia', 0.4);
   if (friend) { nudge(state, friend, 'morale', -1); addBond(friend, loser, 0.3); }
+  return loser;
+}
+
+// A Pairs season purges the slowest PAIR (its average), and they go together, on one placement.
+function purgePair(state, daily, pool, score) {
+  const reps = [...new Set(pool.map(n => repOf(state, n)))].filter(r => membersOf(state, r).every(n => pool.includes(n)));
+  if (reps.length < 2) return null;
+  const avg = r => membersOf(state, r).reduce((t, n) => t + score(n), 0) / membersOf(state, r).length;
+  const loser = [...reps].sort((x, y) => avg(x) - avg(y) || x.localeCompare(y))[0];
+  const both = membersOf(state, loser);
+  addScene(state, 'purge', both, { daily: daily.name || null, pair: true }, state.active, 'public');
+  const place = unitsLeft(state);
+  dissolvePair(state, loser);
+  for (const n of both) { removePlayer(state, n, 'purge', { place, partner: both.find(x => x !== n), pairDone: true }); pop(n, -0.5); }
+  for (const n of state.active) nudge(state, n, 'paranoia', 0.4);
   return loser;
 }
 

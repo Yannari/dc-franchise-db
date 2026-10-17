@@ -51,6 +51,8 @@ import { medevac, medicalScare } from './medevac.js';
 import { wishlist } from './wishlist.js';
 import { worstSting } from './daily/named.js';
 import { mockAfterDaily, gloatAfterVote } from './cruel.js';
+import { pairsOn, makeSeasonPairs, unitsLeft, partnerSwap } from './pairs.js';
+import { pairVoteNight, pairArenaDay } from './pair-week.js';
 import { redemptionOn, houseTakes, sendToRedemption, redemptionWatch, redemptionNight, returnFromRedemption, closeForFinal } from './redemption.js';
 
 // The Tribunal: the daily's winners, or the three who did best on a winning team.
@@ -131,13 +133,27 @@ function intelSnap(state) {
   };
 }
 
-// A Redemption House season has its own way back: a booked return is not played (ep-twists.js).
-export const liveTwists = opts => Object.fromEntries(Object.entries(opts?.episodeTwists || {}).filter(([, k]) => !(k === 'return' && opts.redemption)));
+// A Redemption House season has its own way back: a booked return is not played (ep-twists.js). A Pairs season
+// has no late arrival (a pair cannot walk in half), and a Partner Swap is only for a Pairs season.
+export const liveTwists = opts => Object.fromEntries(Object.entries(opts?.episodeTwists || {}).filter(([, k]) => !(k === 'return' && opts.redemption)
+  && !(opts?.pairs && (k === 'late' || k === 'return')) && !(!opts?.pairs && k === 'swap')));
+
+// A Pairs season counts pairs: the final is so many PAIRS (two a division when the pairs are men's and women's),
+// and `finalists` becomes the people in them, for everything that reads it as people.
+export function pairsFinal(opts) {
+  if (!opts?.pairs) return null;
+  const same = opts.gendered && opts.pairs.shape === 'same';
+  const n = Number(opts.pairs.finalPairs) || (same ? 4 : 3);
+  return same ? Math.max(2, n + (n % 2)) : Math.max(2, n);
+}
 
 export function playChallengeSeason({ cast, background = {}, divisions = {}, options = {}, seed = 1, carried = null, heard = null }) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [...cast],
     episodeHistory: [], popularity: {}, episode: 0 });
   const opts = { ...DEFAULT_OPTIONS, ...options };
+  // a Pairs season: no Redemption House (spec §2), finalists counted in pairs
+  const finalPairs = pairsFinal(opts);
+  if (finalPairs) { opts.redemption = false; opts.finalists = finalPairs * 2; }
   const state = newState(seed, opts);
   // The lines the last seasons aired (ch-run.js heardBefore): the picker holds them back while unheard ones fit.
   if (heard && Object.keys(heard).length) state.lineLedger = { ...newLedger(), past: { ...heard } };
@@ -243,7 +259,9 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
   }
 
   if (redemptionOn(state)) state.redemption = { open: true, residents: [], out: [], returned: [], pending: null };
-  const schedule = buildSchedule({ total: cast.length, finalists: opts.finalists, daysPerEpisode: opts.daysPerEpisode, gendered: opts.gendered, twists: liveTwists(opts) });
+  // the units the season counts down: players, or in a Pairs season pairs
+  const FINAL_UNITS = finalPairs || opts.finalists;
+  const schedule = buildSchedule({ pairs: !!finalPairs, total: finalPairs ? Math.floor(cast.length / 2) : cast.length, finalists: FINAL_UNITS, daysPerEpisode: opts.daysPerEpisode, gendered: opts.gendered, twists: liveTwists(opts) });
   state.schedule = schedule;
   state.plannedEpisodes = schedule.filter(e => !e.final).length;
   let prevDiv = streamFor(seed, 'coin')() < 0.5 ? 'm' : 'f';
@@ -253,7 +271,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
 
   for (let idx = 0; idx < schedule.length; idx++) {
     const plan = schedule[idx];
-    if (plan.final || state.active.length <= opts.finalists) break;
+    if (plan.final || unitsLeft(state) <= FINAL_UNITS) break;
     state.ep = plan.ep;
     gs.episode = plan.ep;
     // A re-run turns this episode's dice once more (ch-run.js rerunChallengeEpisode):
@@ -294,10 +312,18 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     const premiere = idx === 0;
     let division, daily;
     const runDaily = () => {
-      division = divisionFor(state, prevDiv, opts.finalists);
+      division = divisionFor(state, prevDiv, FINAL_UNITS);
       prevDiv = division;
       epRec.division = division;
-      daily = playDaily(state, R('daily'), { division, pin: opts.dailyPins?.[plan.ep] || null });
+      // a Pairs season made by a draft (Fresh Meat, Pick your partner) plays the premiere daily alone: the combine
+      const combine = premiere && pairsOn(state) && !state.pairs?.length;
+      daily = playDaily(state, R('daily'), { division, pin: opts.dailyPins?.[plan.ep] || null, solo: combine });
+      if (combine) {
+        makeSeasonPairs(state, R('pairs'), { pins: opts.pairs.pins || {}, today: daily.scores, winners: daily.winners });
+        // the combine's winners keep their safety, and so do their new partners
+        daily.winners = [...new Set(daily.winners.flatMap(w => [w, state.partnerOf[w]].filter(Boolean)))];
+        epRec.pairs = state.pairs.map(p => [p.a, p.b]);
+      }
       epRec.daily = daily;
       payDaily(state, daily);
       // the ones hurt today: how bad, and who helped them off (stakes.js)
@@ -314,11 +340,18 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       // somebody at risk this week says who they would call out, and who they never would (wishlist.js)
       wishlist(state, R('wish'), { division, immune: daily.winners || [] });
       // the purge: the slowest goes home before anybody can vote, and that is this week's elimination
-      if (twist === 'purge' && elimsFor(schedule, idx, state.active.length - opts.finalists + returnsAhead(idx)) > 0) {
+      if (twist === 'purge' && elimsFor(schedule, idx, unitsLeft(state) - FINAL_UNITS + returnsAhead(idx)) > 0) {
         purged = purge(state, daily, division);
         if (purged) { epRec.purged = purged; epRec.exits.push({ name: purged, how: 'purge' }); syncActive(state); }
       }
     };
+    // a Pairs season's pairs, before anybody plays (Rivals, Exes): TJ names them at the airstrip
+    if (premiere && pairsOn(state) && ['rivals', 'ties'].includes(opts.pairs.pairing || 'rivals')) {
+      makeSeasonPairs(state, R('pairs'), { pins: opts.pairs.pins || {} });
+      epRec.pairs = state.pairs.map(p => [p.a, p.b]);
+    }
+    // Partner Swap (the Format Designer): every pair redrawn by the season's own rule
+    if (twist === 'swap' && pairsOn(state) && !premiere) { const sw = partnerSwap(state, R('swap')); if (sw) { epRec.swap = sw; epRec.pairs = sw.after; } }
     if (premiere) {
       for (const [a, b] of state.arrivalPairs || []) {
         const kin = state.arrivalKin?.[`${a}|${b}`] || null;
@@ -364,7 +397,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     reviseAll(state);
     epRec.exits.push(...dayExits(state, R('exits2')));
     const immune = daily.winners.filter(w => state.active.includes(w));
-    const need = state.active.length - opts.finalists + returnsAhead(idx);
+    const need = unitsLeft(state) - FINAL_UNITS + returnsAhead(idx);
     const elims = purged ? 0 : elimsFor(schedule, idx, need);
     epRec.elims = elims;
     // a double is announced, not discovered at the vote: TJ tells the house before anybody deliberates
@@ -374,10 +407,11 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       for (const n of atRisk) nudge(state, n, 'paranoia', 0.5);
       addScene(state, 'tj-double', atRisk.slice(0, 2), { elims, division, immune: [...immune], booked: plan.twist === 'double' }, state.active, 'villa');
     }
-    const matches = [];
+    let matches = [];
     let delib = null;
     const used = new Set();
-    for (let k = 0; k < elims; k++) {
+    if (pairsOn(state)) ({ matches, delib } = pairVoteNight(state, { R, epRec, division, daily, immune, elims, opts, plan, liveTwist: liveTwists(opts)[plan.ep] || null }));
+    else for (let k = 0; k < elims; k++) {
       const eligible = inDivision(state, division).filter(n => !immune.includes(n) && !used.has(n));
       if (eligible.length < 2) break;
       if (!delib) { state.promises = {}; delib = deliberate(state, R('delib'), { division, eligible, immune }); epRec.delib = summarise(delib); if (!delib.volunteer) houseDebate(state, delib, eligible); }
@@ -466,7 +500,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     houseDay(state, R('house3'));
     houseBeats(state, R('beats3am'), { min: 2, max: 3 });
     for (const m of matches) pickDay(state, R(`pick${m.a}`), m);
-    for (const [k, m] of matches.entries()) {
+    if (pairsOn(state)) pairArenaDay(state, { R, epRec, matches, delib, closing: (state.plannedEpisodes || schedule.length) - (idx + 1) <= 2 });
+    else for (const [k, m] of matches.entries()) {
       if (!state.active.includes(m.a) || !state.active.includes(m.b)) continue;
       // The call-out, at the Arena: everything it costs happens now, when the house hears it.
       const { a: votedIn, b: opp, co, vote } = m;
@@ -557,7 +592,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
   state.finalEp.cut = passCut(state);
   syncActive(state);
   playFinal(state, streamFor(seed, 'final'));
-  for (const c of state.champions || []) state.bank[c] = (state.bank[c] || 0) + PURSE.champion;
+  // a Pairs season's money was paid out by the share-or-keep (share-keep.js)
+  if (!pairsOn(state)) for (const c of state.champions || []) state.bank[c] = (state.bank[c] || 0) + PURSE.champion;
   const placements = {};
   for (const g of state.gone) placements[g.name] = g.place;
   Object.assign(placements, state.final.placements);

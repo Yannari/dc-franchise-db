@@ -11,6 +11,7 @@ import { getBond } from '../bonds.js';
 import { S, addScene, clamp } from './state.js';
 import { giveRespect } from './respect.js';
 import { partnerGone } from './romance.js';
+import { pairsOn, partnerLeft, unitsLeft } from './pairs.js';
 
 // The day's quit risk for one player.
 export function quitRisk(state, name) {
@@ -29,12 +30,25 @@ export function quitRisk(state, name) {
 export function removePlayer(state, name, how, extra = {}) {
   if (!state.active.includes(name)) return;
   // Their placement: how many were still in when they left (the people waiting in Redemption House are still in).
-  const place = state.active.length + (state.redemption?.residents?.length || 0)
+  // A Pairs season places pairs: how many pairs were still in, theirs counted (both partners share it).
+  const place = pairsOn(state) ? unitsLeft(state) + (state.lone || []).filter(n => state.active.includes(n)).length
+    : state.active.length + (state.redemption?.residents?.length || 0)
     + (state.late || []).filter(n => !state.active.includes(n) && !state.gone.some(g => g.name === n) && n !== name).length;   // still to arrive
   state.active = state.active.filter(n => n !== name);
+  const { pairDone, ...rest } = extra;
   // Redemption House: out of the villa, not yet out of the season (redemption.js writes the placement later)
-  if (!extra.pending) state.gone.push({ name, ep: state.ep, day: state.day, how, place, ...extra });
+  if (!extra.pending) state.gone.push({ name, ep: state.ep, day: state.day, how, place, ...rest });
   partnerGone(state, name);
+  // A Pairs season: a partner who leaves takes the pair with them (Rivals III: "Simone was sent home as his
+  // partner"), unless somebody else is without a partner today (pairs.js partnerLeft). The Arena and the final
+  // dissolve their pairs before they remove anybody, so this only answers a quit, a medevac, a disqualification.
+  if (pairsOn(state) && !pairDone) {
+    const r = partnerLeft(state, name, how);
+    if (r?.left) {
+      addScene(state, 'partner-left', [r.left], { how, gone: name }, state.active, 'villa');
+      removePlayer(state, r.left, 'partner-left', { place: rest.place ?? place, partner: name, why: how, pairDone: true });
+    }
+  }
   // Their alliances lose them. A group whose leader went home is led by the
   // most strategic member still in the house, or it is over (manual §11.5:
   // nobody who has left the game takes part in a scene).

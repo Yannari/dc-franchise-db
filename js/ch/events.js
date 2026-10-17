@@ -38,6 +38,7 @@ import { planOf } from './plans.js';
 import { noteDeal } from './knowledge.js';
 import { bankOf, injuryOf, skullsOf } from './state.js';
 import { money, richest, passOf, passHunger } from './stakes.js';
+import { pairsOn, pairOf, carriedBy } from './pairs.js';
 const state0 = ctx => ctx.state;
 
 // ── helpers ──────────────────────────────────────────────────────────
@@ -731,7 +732,134 @@ export const EVENTS = [
       (ctx.state.passPanic ||= {})[b] = (ctx.state.passPanic[b] || 0) + 0.5;
       return addScene(ctx.state, 'pass-flex', [a, b], { token: passOf(ctx.state), count: skullsOf(ctx.state, a) }, [a, b, ...witnesses(ctx, [a, b], 2)], 'villa');
     } },
+
+  // ── A PAIRS SEASON: the pair as a relationship (spec 2026-10-17 §5.6) ──
+  // Production's rivals live in each other's pockets; a couple finds out what a game does to them; the one who carried
+  // says so. Only in a Pairs season, only between the two of a pair (or the pair and the one who matters to it).
+  // The fight: about something real between them (who carried, the call-out one of them overruled, the blame after a
+  // loss), or plain dislike between rivals. A short fuse and a cold bond start it.
+  { id: 'pair-fight', actorCooldown: 2, kind: 'drama', cooldown: 3, max: 8,
+    cast: ctx => (!pairsOn(ctx.state) ? null : bestPartners(ctx, 'pair-fight', 3, (a, b) => {
+      const cause = pairCause(ctx.state, a, b);
+      return Math.max(0, -getBond(a, b)) * 0.3 + (10 - S(a, 'temperament')) * 0.15 + (cause !== 'dislike' ? 0.8 : 0) - 1.4;
+    })),
+    weight: (ctx, p) => 0.25 + p.score * 0.4,
+    fire(ctx, [a, b], rng) {
+      const cause = pairCause(ctx.state, a, b);
+      const walks = rng() < 0.35 + (10 - S(b, 'temperament')) * 0.03;   // b walks off, or gives it back
+      addBond(a, b, walks ? -0.9 : -1.4);
+      addRivalry(ctx.state, a, b, 1);
+      remember(b, a, 'fought-with-me', 1);
+      for (const w of witnesses(ctx, [a, b], 2)) nudge(ctx.state, w, 'paranoia', 0.1);
+      pop(a, -0.1);
+      return addScene(ctx.state, 'pair-fight', [a, b], { cause, walks, rivals: pairOf(ctx.state, a)?.how === 'rivals' }, [a, b, ...witnesses(ctx, [a, b], 3)], 'villa');
+    } },
+  // Making up: a pair that has fought, and one of them goes first (social and loyal people do). For production's
+  // rivals, the first time it really holds is the turn of the season's arc (pair-turn below airs it big).
+  { id: 'pair-makeup', kind: 'drama', cooldown: 3, max: 6,
+    cast: ctx => (!pairsOn(ctx.state) ? null : bestPartners(ctx, 'pair-makeup', 3, (a, b) => {
+      if (!(rivalryOf(ctx.state, a, b) > 0 || getBond(a, b) < 0)) return 0;
+      return (S(a, 'social') + S(a, 'loyalty')) * 0.1 - Math.max(0, grudgeOf(a, b)) * 0.4 - 0.6;
+    })),
+    weight: (ctx, p) => 0.2 + p.score * 0.35,
+    fire(ctx, [a, b], rng) {
+      const takes = rng() < 0.55 + (S(b, 'social') - 5) * 0.06 - grudgeOf(b, a) * 0.1;
+      addBond(a, b, takes ? 1.6 : 0.3);
+      if (takes) { addRivalry(ctx.state, a, b, -2); remember(b, a, 'made-amends', 1); nudge(ctx.state, a, 'morale', 0.5); nudge(ctx.state, b, 'morale', 0.5); }
+      return addScene(ctx.state, 'pair-makeup', [a, b], { takes, rivals: pairOf(ctx.state, a)?.how === 'rivals' }, [a, b], 'private');
+    } },
+  // Protecting a partner: the one in danger is the pair, so a partner works the room for both of them, to the voter
+  // most likely to say their names. It moves the voter a little, and the partner remembers who stood up.
+  { id: 'pair-protect', kind: 'game', cooldown: 3, max: 6,
+    cast: ctx => {
+      if (!pairsOn(ctx.state)) return null;
+      let best = null;
+      for (const p of ctx.state.pairs) for (const [a, b] of [[p.a, p.b], [p.b, p.a]]) {
+        const heat = (ctx.state.rec[b]?.votesReceived || 0) * 0.15 + (ctx.state.receiptsFresh?.[b]?.length || 0) * 0.5 + (ctx.state.rec[b]?.votedIn || 0) * 0.3;
+        if (heat < 0.6 || getBond(a, b) < -1) continue;
+        const voter = ctx.state.active.filter(v => v !== a && v !== b && (ctx.state.receiptsFresh?.[b]?.includes(v) || getBond(v, b) < 0))
+          .sort((x, y) => getBond(a, y) - getBond(a, x))[0];
+        if (!voter || !cooled(ctx, 'pair-protect', [a, voter], 3)) continue;
+        const s = heat + S(a, 'social') * 0.1 + getBond(a, voter) * 0.1;
+        if (!best || s > best.score) best = { who: [a, voter, b], score: s };
+      }
+      return best;
+    },
+    weight: (ctx, p) => 0.3 + p.score * 0.25,
+    fire(ctx, [a, voter, b], rng) {
+      const moved = rng() < 0.3 + (S(a, 'social') - 5) * 0.06 + getBond(voter, a) * 0.04;
+      addBond(voter, b, moved ? 0.8 : 0.2);
+      addBond(voter, a, moved ? 0.4 : -0.2);
+      remember(b, a, 'stood-up-for-me', 1);
+      addBond(a, b, 0.5);
+      return addScene(ctx.state, 'pair-protect', [a, voter, b], { moved }, [a, voter], 'private');
+    } },
+  // Wanting out: a pair at war, and one of them says it to a friend (or to TJ's face, the bold ones): "give me anybody
+  // else". The partner hears about it more often than not.
+  { id: 'pair-want-out', kind: 'drama', cooldown: 99, max: 3,
+    cast: ctx => (!pairsOn(ctx.state) ? null : bestPartners(ctx, 'pair-want-out', 99, (a, b) => (getBond(a, b) <= -3 ? (-getBond(a, b) - 3) * 0.4 + grudgeOf(a, b) * 0.3 + 0.4 : 0))),
+    weight: (ctx, p) => 0.35 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const friend = ctx.state.active.filter(x => x !== a && x !== b).sort((x, y) => getBond(a, y) - getBond(a, x))[0] || null;
+      const heard = rng() < 0.55;
+      nudge(ctx.state, a, 'morale', -0.6);
+      if (heard) { addBond(b, a, -1); remember(b, a, 'wanted-out', 1.2); }
+      if (friend) addBond(a, friend, 0.3);
+      return addScene(ctx.state, 'pair-want-out', [a, ...(friend ? [friend] : []), b], { heard, friend, partner: b }, heard ? ctx.state.active : [a, friend].filter(Boolean), 'private');
+    } },
+  // The plan: a pair that gets on talks the game as a unit, and settles on the pair they want gone. The target is the
+  // pair the two of them like least; both cool on it (the vote reads it: the bond).
+  { id: 'pair-plan', kind: 'game', cooldown: 3, max: 8,
+    cast: ctx => (!pairsOn(ctx.state) ? null : bestPartners(ctx, 'pair-plan', 3, (a, b) => (getBond(a, b) >= 0 ? (S(a, 'strategic') + S(b, 'strategic')) * 0.08 + getBond(a, b) * 0.08 - 0.6 : 0))),
+    weight: (ctx, p) => 0.3 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const others = ctx.state.pairs.filter(p => p.a !== a && p.b !== a);
+      const target = others.map(p => ({ p, v: getBond(a, p.a) + getBond(a, p.b) + getBond(b, p.a) + getBond(b, p.b) - (arenaRead(ctx.state, p.a) + arenaRead(ctx.state, p.b)) * 0.15 }))
+        .sort((x, y) => x.v - y.v)[0]?.p;
+      if (!target) return null;
+      addBond(a, b, 0.4);
+      for (const x of [a, b]) for (const t of [target.a, target.b]) addBond(x, t, -0.25);
+      return addScene(ctx.state, 'pair-plan', [a, b], { target: target.a, targetPartner: target.b }, [a, b], 'private');
+    } },
+  // Distracted: one of a pair has a showmance with somebody else, and the partner pays for it in the dailies.
+  { id: 'pair-jealous', kind: 'romance', cooldown: 4, max: 4,
+    cast: ctx => (!pairsOn(ctx.state) ? null : bestPartners(ctx, 'pair-jealous', 4, (a, b) => {
+      const c = coupleOf(ctx.state, b);
+      return c && c !== a ? 0.6 + (10 - S(a, 'temperament')) * 0.08 + Math.max(0, -getBond(a, c)) * 0.2 : 0;
+    })),
+    weight: (ctx, p) => 0.35 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const c = coupleOf(ctx.state, b);
+      const says = rng() < 0.5 + (S(a, 'boldness') - 5) * 0.06;
+      addBond(a, c, -0.6);
+      if (says) { addBond(a, b, -0.5); remember(a, b, 'distracted', 0.8); } else nudge(ctx.state, a, 'morale', -0.4);
+      return addScene(ctx.state, 'pair-jealous', [a, b, c], { says, lover: c }, says ? [a, b, c] : [a], says ? 'villa' : 'confessional');
+    } },
 ];
+
+// ── the two of a pair, as an event's cast ────────────────────────────
+// Like bestPair, but only partners: each pair both ways round (a is the one who starts it).
+function bestPartners(ctx, id, cooldown, score) {
+  let best = null, top = 0;
+  for (const p of ctx.state.pairs || []) for (const [x, y] of [[p.a, p.b], [p.b, p.a]]) {
+    if (!ctx.state.active.includes(x) || !ctx.state.active.includes(y)) continue;
+    const s = score(x, y);
+    if (!(s > 0)) continue;
+    const v = s + jitter(ctx, id, x + '>' + y);
+    if (v > top && cooled(ctx, id, [x, y], cooldown)) { top = v; best = [x, y]; }
+  }
+  return best ? { who: best, score: top } : null;
+}
+// What a pair's row is about: the call-out one of them overruled, the blame after a loss, who carried, or nothing but
+// each other.
+function pairCause(state, a, b) {
+  const mem = memories(a, b).map(m => m.type);
+  if (mem.includes('overruled-me')) return 'overruled';
+  if (mem.includes('blamed-me')) return 'blame';
+  const c = carriedBy(state, a, b);
+  if (c && c.amount >= 0.8) return c.by === a ? 'carried' : 'carried-by';
+  return 'dislike';
+}
 
 const EVENTS_BY_ID = Object.fromEntries(EVENTS.map(e => [e.id, e]));
 

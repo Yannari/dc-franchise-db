@@ -26,7 +26,7 @@ import { injuryRoll } from './arena.js';
 import { arenaGoodbye } from './goodbye.js';
 import { medevac } from './medevac.js';
 import { gloatAfterVote } from './cruel.js';
-import { membersOf, partnerOf, repOf, choosePairOpponent, playPairDuel, dissolvePair, unitsLeft, infiltrate, pairingOf } from './pairs.js';
+import { membersOf, partnerOf, repOf, choosePairOpponent, playPairDuel, dissolvePair, unitsLeft, infiltrate, pairingOf, arenaPairBeats } from './pairs.js';
 
 const pop = (name, d) => { gs.popularity ||= {}; gs.popularity[name] = (gs.popularity[name] || 0) + d; };
 const reps = (state, names) => [...new Set(names.map(n => repOf(state, n)))];
@@ -153,6 +153,8 @@ export function pairArenaDay(state, { R, epRec, matches, delib, closing }) {
     const how = winner === a ? (m.volunteer ? 'volunteered' : 'voted') : 'calledout';
     addScene(state, 'pair-arena', [...winners, ...losers], { game: duel.game, gameName: duel.gameName, winner, loser, winners, losers, upset: duel.upset,
       comeback: duel.comeback, tj: duel.tj, beats: duel.beats, how }, state.active, 'arena');
+    // inside each pair: who cost it, who carried it
+    duel.inside = arenaPairBeats(state, R(`inside${k}`), duel);
     // the goodbyes at the gate, both of them, while they are still here
     const asVotedIn = loser === a;
     duel.goodbye = losers.map((l, i) => arenaGoodbye(state, R(`bye${k}${i}`), { loser: l, winner: winners[i] || winner,

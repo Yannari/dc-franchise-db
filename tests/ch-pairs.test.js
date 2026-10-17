@@ -19,7 +19,10 @@ function play(seed, pairing, { shape = 'mixed', pins = {}, twists = {} } = {}) {
   }
   setPlayers(cast);
   const res = playChallengeSeason({ cast: names, background, seed, options: { pairs: { pairing, shape, pins }, episodeTwists: twists } });
-  return { names, background, pairing, shape, ...res };
+  // read while this season's cast is the roster (the next season replaces it)
+  const arch = Object.fromEntries(names.map(n => [n, players.find(p => p.name === n)?.archetype]));
+  const can = Object.fromEntries(names.map(n => [n, mayScheme(n)]));
+  return { names, background, pairing, shape, arch, can, ...res };
 }
 
 // Every scene, in order, with the pairs as they stood (the pairs change in a Pick season)
@@ -102,13 +105,12 @@ describe('a Pairs season', () => {
   });
 
   it('every pair with money chooses: the one with more points decides, and nice archetypes never keep', () => {
-    const arch = n => players.find(p => p.name === n)?.archetype;
     for (const s of seasons) {
       expect(s.final.choices.length).toBeGreaterThan(0);
       for (const c of s.final.choices) {
         const pts = s.final.totals;
         expect(pts[c.chooser]).toBeGreaterThanOrEqual(pts[c.partner]);
-        if (c.keep) { expect(NICE.has(arch(c.chooser))).toBe(false); expect(mayScheme(c.chooser)).toBe(true); }
+        if (c.keep) { expect(NICE.has(s.arch[c.chooser])).toBe(false); expect(s.can[c.chooser]).toBe(true); }
       }
       // the champions choose last
       expect(s.final.choices.at(-1).place).toBe(1);
@@ -141,6 +143,22 @@ describe('a Pairs season', () => {
     }
     const plan = buildSchedule({ pairs: true, total: 12, finalists: 3 });
     expect(plan.filter(e => !e.final).reduce((t, e) => t + e.plannedElims, 0)).toBe(9);
+  });
+
+  it('a return brings a whole pair back, and the losers go home together again', () => {
+    const s = play(7, 'rivals', { twists: { 5: 'return' } });
+    const e = s.episodes.find(x => x.ep === 5);
+    expect(e.returnArena?.winners?.length).toBe(2);
+    expect(wasPair(s, e.returnArena.winners[0], e.returnArena.winners[1], 5)).toBe(true);
+    const back = e.returnArena.losers.map(l => s.state.gone.find(g => g.name === l));
+    expect(back[0].place).toBe(back[1].place);
+  });
+
+  it('the pair lives as a pair: fights, making up, plans, and the inside of every two-on-two air', () => {
+    const kinds = {};
+    for (const s of seasons) for (const sc of s.state.scenes) kinds[sc.kind] = (kinds[sc.kind] || 0) + 1;
+    for (const k of ['pair-reveal', 'pair-fight', 'pair-makeup', 'pair-plan', 'pair-callout', 'pair-arena', 'pair-arena-win', 'pair-arena-blame', 'share-keep'])
+      expect(kinds[k] || 0, k).toBeGreaterThan(0);
   });
 
   it('a solo season is untouched: no pairs, nobody chooses', () => {

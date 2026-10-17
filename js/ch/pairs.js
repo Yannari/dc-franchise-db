@@ -235,6 +235,13 @@ function addPair(state, p) {
   return pair;
 }
 
+/** Put a pair back together (a return from the Arena): the pair they were, as a new entry in the history. */
+export function restorePair(state, a, b) {
+  state.pairs ||= []; state.partnerOf ||= {}; state.pairLog ||= {};
+  const was = (state.pairHistory || []).findLast?.(h => (h.a === a && h.b === b) || (h.a === b && h.b === a));
+  return addPair(state, { a, b, how: was?.how || 'return', why: 'return' });
+}
+
 export function dissolvePair(state, n) {
   const p = pairOf(state, n);
   if (!p) return null;
@@ -472,4 +479,56 @@ export function partnerSwap(state, rng) {
   for (const p of state.pairs) for (const n of [p.a, p.b]) nudge(state, n, 'paranoia', 0.3);
   addScene(state, 'partner-swap', state.active, { before, after: state.pairs.map(p => [p.a, p.b]) }, state.active, 'villa');
   return { before, after: state.pairs.map(p => [p.a, p.b]) };
+}
+
+// ── the arc of a pair ────────────────────────────────────────────────
+// Production's rivals either grow into friends or stay at war, and the moment it turns is the season's: aired big.
+// Read at the end of every episode: the lowest the bond has been, and where it is now. A pair that was at war (-1 or
+// below) and now likes each other (+2) has turned; one that sank to -6 is at war for good, said once.
+export function pairArcs(state) {
+  if (!pairsOn(state)) return [];
+  const out = [];
+  state.pairArc ||= {};
+  for (const p of state.pairs) {
+    const arc = (state.pairArc[p.id] ||= { low: getBond(p.a, p.b), turned: false, war: false });
+    const b = getBond(p.a, p.b);
+    arc.low = Math.min(arc.low, b);
+    if (!arc.turned && arc.low <= -1 && b >= 2 && p.since < state.ep) {
+      arc.turned = true;
+      for (const n of [p.a, p.b]) nudge(state, n, 'morale', 0.8);
+      addScene(state, 'pair-turn', [p.a, p.b], { rivals: p.how === 'rivals', low: +arc.low.toFixed(1) }, state.active, 'villa');
+      out.push({ pair: [p.a, p.b], arc: 'turned' });
+    } else if (!arc.war && b <= -6) {
+      arc.war = true;
+      for (const n of [p.a, p.b]) nudge(state, n, 'morale', -0.6);
+      addScene(state, 'pair-war', [p.a, p.b], { rivals: p.how === 'rivals' }, state.active, 'villa');
+      out.push({ pair: [p.a, p.b], arc: 'war' });
+    }
+  }
+  return out;
+}
+
+// After a two-on-two: inside the losing pair, the one who cost it hears about it (or swallows it); inside the winning
+// pair, the one who carried it says so, or the two of them celebrate as one. From the beats (who won each one for
+// their side, who lost it for theirs).
+export function arenaPairBeats(state, rng, duel) {
+  const net = n => duel.beats.filter(b => b.by === n).length - duel.beats.filter(b => b.cost === n).length;
+  const out = [];
+  for (const [pair, won] of [[duel.losers, false], [duel.winners, true]]) {
+    if (pair.length !== 2) continue;
+    const [hi, lo] = [...pair].sort((x, y) => net(y) - net(x));
+    const gap = net(hi) - net(lo);
+    if (!won && gap >= 1) {
+      const says = rng() < 0.35 + (10 - S(hi, 'temperament')) * 0.05 - Math.max(0, getBond(hi, lo)) * 0.04;
+      if (says) { addBond(hi, lo, -0.8); remember(lo, hi, 'blamed-me', 1); }
+      addScene(state, 'pair-arena-blame', [hi, lo], { says, gap, game: duel.gameName }, state.active, 'arena');
+      out.push({ kind: 'blame', hi, lo, says });
+    } else if (won) {
+      if (gap >= 2) { remember(lo, hi, 'carried-me', 1); addBond(hi, lo, 0.3); }
+      else addBond(hi, lo, 0.8);
+      addScene(state, 'pair-arena-win', [hi, lo], { carried: gap >= 2, game: duel.gameName }, state.active, 'arena');
+      out.push({ kind: gap >= 2 ? 'carried' : 'together', hi, lo });
+    }
+  }
+  return out;
 }

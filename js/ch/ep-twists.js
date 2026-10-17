@@ -24,7 +24,7 @@ import { remember } from './rel.js';
 import { playDuel } from './arena.js';
 import { removePlayer } from './exits.js';
 import { giveRespect } from './respect.js';
-import { pairsOn, repOf, membersOf, unitsLeft, dissolvePair } from './pairs.js';
+import { pairsOn, repOf, membersOf, unitsLeft, dissolvePair, playPairDuel, restorePair, shapeOf } from './pairs.js';
 
 export const EP_TWISTS = ['double', 'purge', 'return', 'late', 'swap'];
 
@@ -92,6 +92,7 @@ function purgePair(state, daily, pool, score) {
  */
 export function returnArena(state, rng) {
   if (state.redemption) return null;
+  if (pairsOn(state)) return returnArenaPairs(state, rng);
   const losers = state.gone.filter(g => g.how === 'arena').reverse();
   for (const first of losers) {
     const div = state.division[first.name];
@@ -119,6 +120,50 @@ export function returnArena(state, rng) {
     const other = by || friend;
     if (other) addScene(state, 'return-walkin', [winner, other], { by, friend }, state.active, 'villa');
     return { winner, loser, by, game: duel.gameName || duel.game || null };
+  }
+  return null;
+}
+
+// A Pairs season's return: the two most recent pairs sent home from the Arena (the same division, when the pairs
+// are men's and women's) fight two on two; the winners walk back in as the pair they were. Placements are re-dealt
+// by pair, the losers' second exit counting as the latest one.
+function returnArenaPairs(state, rng) {
+  const gonePairs = [];
+  for (const g of [...state.gone].reverse()) {
+    if (g.how !== 'arena' || !g.partner || gonePairs.some(p => p.includes(g.name))) continue;
+    if (!state.gone.some(x => x.name === g.partner && x.how === 'arena')) continue;
+    gonePairs.push([g.partner, g.name].sort());
+  }
+  const divOf = p => (shapeOf(state) === 'same' ? state.division[p[0]] : 'all');
+  for (const first of gonePairs) {
+    const second = gonePairs.find(p => p !== first && divOf(p) === divOf(first));
+    if (!second) continue;
+    const recs = [...first, ...second].map(n => state.gone.find(g => g.name === n));
+    state.gone = state.gone.filter(g => !recs.includes(g));
+    state.active.push(...first, ...second);
+    restorePair(state, first[0], first[1]);
+    restorePair(state, second[0], second[1]);
+    const duel = playPairDuel(state, rng, first[0], second[0]);
+    for (const w of duel.winners) state.rec[w].arenaW++;
+    for (const l of duel.losers) state.rec[l].arenaL++;
+    // the losers go home again, together
+    dissolvePair(state, duel.loser);
+    state.active = state.active.filter(n => !duel.losers.includes(n));
+    for (const l of duel.losers) state.gone.push({ ...recs.find(r => r.name === l), ep: state.ep, day: state.day, how: 'arena' });
+    // placements by pair, in exit order
+    let k = 0;
+    const totalPairs = Math.floor(state.cast.length / 2);
+    state.gone.forEach((g, i) => { const prev = state.gone[i - 1]; if (i && !(prev && (prev.partner === g.name || g.partner === prev.name))) k++; g.place = totalPairs - k; });
+    (state.returnedFrom ||= []).push(...duel.winners.map(w => ({ ...recs.find(r => r.name === w), back: state.ep })));
+    for (const w of duel.winners) { nudge(state, w, 'confidence', 1.5); nudge(state, w, 'morale', 2); giveRespect(state, w, 'arenaWin'); pop(w, 1.5); }
+    for (const l of duel.losers) pop(l, -0.3);
+    const by = recs.find(r => r.name === duel.winners[0])?.by;
+    const byIn = by && state.active.includes(by) ? by : null;
+    if (byIn) for (const w of duel.winners) { remember(w, byIn, 'sent-me-away', 0.8); addBond(w, byIn, -0.4); }
+    if (byIn) nudge(state, byIn, 'paranoia', 1);
+    addScene(state, 'return-arena', [...duel.winners, ...duel.losers], { game: duel.game, gameName: duel.gameName, winner: duel.winner, loser: duel.loser,
+      winners: duel.winners, losers: duel.losers, by: byIn, upset: !!duel.upset, pair: true }, state.active, 'arena');
+    return { winner: duel.winner, loser: duel.loser, winners: duel.winners, losers: duel.losers, by: byIn, game: duel.gameName || duel.game || null };
   }
   return null;
 }

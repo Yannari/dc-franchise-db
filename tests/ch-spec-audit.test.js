@@ -191,6 +191,7 @@ describe('The Challenge spec audit', () => {
         m.eps.push(r.episodes.length);
         m.fin.push(r.final.finalists.length / 2);
         m.partnerLeft.push(st.gone.filter(g => g.how === 'partner-left').length);
+        for (const sc of st.scenes) if (/^pair-|^partner-|^share-keep/.test(sc.kind)) inc(m.kinds ||= {}, sc.kind);
         m.swaps.push(r.episodes.filter(e => e.arena.some(d => d.swap)).length);
         for (const e of r.episodes) for (const c of e.callouts) { m.callouts++; if (c.overruled) m.overruled++; if (!c.agreed && !c.overruled) m.compromise++; inc(m.reasons, c.reason); }
         // production's rivals, and how they ended
@@ -220,6 +221,7 @@ describe('The Challenge spec audit', () => {
       line('  partner-left exits per season', mean(m.partnerLeft));
       if (pairing === 'pick') line('  swaps per season', mean(m.swaps));
       line('  call-outs: overruled / compromise', `${pct(m.overruled, m.callouts)} / ${pct(m.compromise, m.callouts)}`);
+      line('  pair scenes per season', Object.entries(m.kinds || {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${(v / P).toFixed(1)}`).join(', '));
       line('  call-out reasons', Object.entries(m.reasons).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${pct(v, m.callouts)}`).join(', '));
     }
     console.log('\n' + out.join('\n'));

@@ -51,7 +51,7 @@ import { medevac, medicalScare } from './medevac.js';
 import { wishlist } from './wishlist.js';
 import { worstSting } from './daily/named.js';
 import { mockAfterDaily, gloatAfterVote } from './cruel.js';
-import { pairsOn, makeSeasonPairs, unitsLeft, partnerSwap } from './pairs.js';
+import { pairsOn, makeSeasonPairs, unitsLeft, partnerSwap, pairArcs } from './pairs.js';
 import { pairVoteNight, pairArenaDay } from './pair-week.js';
 import { redemptionOn, houseTakes, sendToRedemption, redemptionWatch, redemptionNight, returnFromRedemption, closeForFinal } from './redemption.js';
 
@@ -136,7 +136,7 @@ function intelSnap(state) {
 // A Redemption House season has its own way back: a booked return is not played (ep-twists.js). A Pairs season
 // has no late arrival (a pair cannot walk in half), and a Partner Swap is only for a Pairs season.
 export const liveTwists = opts => Object.fromEntries(Object.entries(opts?.episodeTwists || {}).filter(([, k]) => !(k === 'return' && opts.redemption)
-  && !(opts?.pairs && (k === 'late' || k === 'return')) && !(!opts?.pairs && k === 'swap')));
+  && !(opts?.pairs && k === 'late') && !(!opts?.pairs && k === 'swap')));
 
 // A Pairs season counts pairs: the final is so many PAIRS (two a division when the pairs are men's and women's),
 // and `finalists` becomes the people in them, for everything that reads it as people.
@@ -578,6 +578,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     houseBeats(state, R('beats3'), { night: true, min: 3, max: 5 });
     psycheMoment(state, R('psyche'));
     breakupCheck(state, R('breakup'));
+    // a Pairs season: a pair that turned (rivals into friends), or one that went to war for good
+    if (pairsOn(state)) epRec.pairArcs = pairArcs(state);
     epRec.exits.push(...dayExits(state, R('exits3'), [], schedule[idx + 1]?.final || idx === schedule.length - 1 ? opts.finalists : 0));
     state.cliqueStrength = Math.max(0.15, state.cliqueStrength * 0.84);
     epRec.intel.end = intelSnap(state);

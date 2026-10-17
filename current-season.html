@@ -530,7 +530,6 @@
         <button class="tab-btn" id="tabResumes" role="tab" aria-selected="false">📋 Resumes</button>
         <button class="tab-btn" id="tabRelationships" role="tab" aria-selected="false">💞 Relationships</button>
         <button class="tab-btn" id="tabEpisode" role="tab" aria-selected="false">📺 Episode</button>
-        <button class="tab-btn" id="tabCalendar" role="tab" aria-selected="false">📅 Calendar</button>
       </div>
     </div>
 
@@ -825,9 +824,6 @@ Owen: This is going to be amazing!"
         <div id="episode-rendered"></div>
       </div>
     </div>
-
-    <!-- CALENDAR TAB — every show's seasons, a year at a time (js/calendar-view.js) -->
-    <div class="window-body hidden" id="viewCalendar"></div>
 
     <!-- SEASON SETUP TAB -->
   </section>
@@ -1185,14 +1181,12 @@ Owen: This is going to be amazing!"
       tabResumes: $("tabResumes"),
       tabRelationships: $("tabRelationships"),
       tabEpisode: $("tabEpisode"),
-      tabCalendar: $("tabCalendar"),
       viewOverview: $("viewOverview"),
       viewControl: $("viewControl"),
       viewGameplay: $("viewGameplay"),
       viewResumes: $("viewResumes"),
       viewRelationships: $("viewRelationships"),
       viewEpisode: $("viewEpisode"),
-      viewCalendar: $("viewCalendar"),
 
       cardBestMove: $("cardBestMove"),
       cardEpisodeSummary: $("cardEpisodeSummary"),
@@ -2658,7 +2652,6 @@ Owen: This is going to be amazing!"
       const isResumes = which === "resumes";
       const isRelationships = which === "relationships";
       const isEpisode = which === "episode";
-      const isCalendar = which === "calendar";
       // Opening the Episode tab shows this episode's saved transcript — a reload
       // restores the tab without a click, and used to leave the box empty.
       if (isEpisode && typeof loadEpisode === 'function') loadEpisode();
@@ -2669,7 +2662,6 @@ Owen: This is going to be amazing!"
       els.viewResumes.classList.toggle("hidden", !isResumes);
       els.viewRelationships.classList.toggle("hidden", !isRelationships);
       els.viewEpisode.classList.toggle("hidden", !isEpisode);
-      els.viewCalendar.classList.toggle("hidden", !isCalendar);
 
       els.tabControl.classList.toggle("active", isControl);
       els.tabOverview.classList.toggle("active", isOverview);
@@ -2677,7 +2669,6 @@ Owen: This is going to be amazing!"
       els.tabResumes.classList.toggle("active", isResumes);
       els.tabRelationships.classList.toggle("active", isRelationships);
       els.tabEpisode.classList.toggle("active", isEpisode);
-      els.tabCalendar.classList.toggle("active", isCalendar);
       
       els.tabControl.setAttribute("aria-selected", isControl ? "true" : "false");
       els.tabOverview.setAttribute("aria-selected", isOverview ? "true" : "false");
@@ -2685,11 +2676,8 @@ Owen: This is going to be amazing!"
       els.tabResumes.setAttribute("aria-selected", isResumes ? "true" : "false");
       els.tabRelationships.setAttribute("aria-selected", isRelationships ? "true" : "false");
       els.tabEpisode.setAttribute("aria-selected", isEpisode ? "true" : "false");
-      els.tabCalendar.setAttribute("aria-selected", isCalendar ? "true" : "false");
-
+      
       // Render data when switching to new tabs
-      // The calendar is a module; one restored before it loads draws itself on load.
-      if (isCalendar) window.__mountCalendar?.(els.viewCalendar);
       if (isResumes) renderResumes();
       if (isRelationships) renderRelationships();
       if (isControl) renderSeasonControlRoom();
@@ -2709,7 +2697,6 @@ Owen: This is going to be amazing!"
     els.tabResumes.addEventListener("click", () => showTab("resumes"));
     els.tabRelationships.addEventListener("click", () => showTab("relationships"));
     els.tabEpisode.addEventListener("click", () => showTab("episode"));   // showTab loads the saved episode
-    els.tabCalendar.addEventListener("click", () => showTab("calendar"));
 
     // ----------------------------
     // Actions
@@ -7967,11 +7954,6 @@ Would you like to:
     window.__mountEpisodeStage = mountEpisodeStage;
     window.__hasStage = hasStage;
     window.dispatchEvent(new Event('episode-stage-ready'));   // an episode drawn before this loaded redraws on the stage
-    // The Calendar tab. A reload that restores the tab before this module ran
-    // finds the view already open and draws it here.
-    import { mountCalendar } from './js/calendar-view.js';
-    window.__mountCalendar = mountCalendar;
-    { const v = document.getElementById('viewCalendar'); if (v && !v.classList.contains('hidden')) mountCalendar(v); }
     const resolve = () => {
       const s = currentShow();
       return (s && s !== ALL && SHOWS[s]) ? s : null;

@@ -92,6 +92,9 @@ Every one of those needs **nothing** from you beyond the entry.
   complaint about that show specifically. Omit it and your show is rated as
   generic reality television — see §2.5, which is the part that actually
   needs your attention.
+- `airNight` and `airSlots` put the show on the franchise calendar: which
+  night of the week it goes out on, and which quarters of the year it airs in.
+  Both are required, and a test fails without them — see §5.1.
 
 **The permanent rule you must not break:** *a bare integer is Total Drama.*
 `season=14` is Total Drama 14 for ever, every other show is `season=rr-14`.
@@ -278,6 +281,65 @@ Publishing goes through `POST /api/publish-season` on the studio worker, which
 validates the format against the registry and refuses one it does not know. That
 refusal is deliberate: two unregistered shows would both write `td-N-data.json`
 and silently overwrite each other.
+
+### 5.1 The franchise calendar — when the show airs
+
+Every season sits on one calendar: a year plus a quarter (`airYear`, `airSlot`
+of `winter`/`spring`/`summer`/`fall`) on its row in `seasons_database.json`,
+and nowhere else. `js/franchise-calendar.js` turns that into everything
+time-shaped on the site: episode airdates in the wiki, a player's age on a
+given season, "the first player to…" across shows, the site header's
+"NOW · WINTER 2027", and the **Franchise Calendar** tab on `timeline.html`
+(`timeline.html#calendar`, drawn by `js/calendar-view.js`).
+
+**What a new show gets for free.** The calendar view reads `SHOWS` and nothing
+else, so with only the registry entry your show has its own row, in its
+`accent` with its `emoji` and `short` label, and a dashed **projected** bar
+for its first season in its first home quarter. Nothing in `calendar-view.js`
+names a show and nothing there needs editing.
+
+**What you must do — two things:**
+
+1. **Give it `airNight` and `airSlots` in the registry.** The schedule agreed
+   on 2026-10-17 is two shows a quarter, never two on one night:
+
+   | Quarter | Shows (night) |
+   |---|---|
+   | winter (Jan–Mar) | Drag Race (Fri) · The Traitors (Thu) |
+   | spring (Apr–Jun) | Total Drama (Mon) · The Circle (Wed) |
+   | summer (Jul–Sep) | Big Brother (Wed) · Perfect Match (Sat) |
+   | fall (Oct–Dec) | Total Drama (Mon) · The Challenge (Tue) |
+
+   Pick the quarter the real show airs in, and a night nobody else in that
+   quarter uses. `tests/franchise-calendar.test.js` ("home quarters") fails
+   when a show has no `airSlots` or two shows in one quarter share a night, so
+   adding the show forces the decision instead of leaving a gap. A third show in
+   a quarter is allowed, but it is a choice to make with the user, not a
+   default — update this table when it happens. Without `airSlots`, the show's
+   first season would be dated "one quarter after whatever aired last", and
+   every season after it would continue that accident.
+
+2. **Stamp the window in your exporter.** Your season builder (§5) reads
+   `const airWindow = _airWindowFor(db, YOUR_FORMAT, seasonNum)` BEFORE
+   filtering the old row out, and spreads `...airWindow` into the new
+   `seasons_database` row. Every registered exporter does this; copy any of
+   them. `_airWindowFor` honours, in order: the air-window dropdown in the
+   season setup (how you move one season by hand), the window a previous export
+   already wrote (re-exporting never moves a season), then `nextWindowFor`:
+   the show's next home quarter after its last season, or for a first season,
+   its first home quarter at or after the latest aired. **Forget the spread and
+   the season is undated:** it drops off the calendar, sorts last in every
+   cross-show ordering, and has no age for anyone in it, with no error
+   anywhere.
+
+The Circle (2026-10-17) has its `airSlots` but no registered exporter yet, so
+it shows as projected until its exporter exists. Writing that exporter is when
+step 2 applies to it.
+
+**Check it:** open `timeline.html#calendar`, find the show's row, and click
+its projected bar. The card says which quarters the show airs in and where its
+first season will land. After the first export the bar turns solid, with
+real dates and the winner.
 
 ---
 

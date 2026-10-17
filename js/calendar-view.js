@@ -1,4 +1,6 @@
-// The franchise calendar — the Calendar tab on current-season.html.
+// The franchise calendar — the Franchise Calendar tab on timeline.html
+// (timeline.html#calendar). A new show needs nothing here: see
+// docs/ADDING-A-SHOW.md §5.1.
 //
 // Every season of every show, one year at a time, Jan to Dec. Three questions
 // at once: what is on now, what comes after it, and what aired in a given

@@ -27,6 +27,20 @@
 }
 .tl-hero p { color: var(--muted); font-size: 14px; margin: 0; }
 
+/* ── View tabs ───────────────────────────────────────── */
+.tl-tabs { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: -6px 0 22px; }
+.tl-tab {
+  padding: 9px 16px; border-radius: 12px; cursor: pointer; font-size: 13.5px; font-weight: 700;
+  border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); color: var(--muted);
+  transition: all .2s;
+}
+.tl-tab:hover { color: #fff; border-color: rgba(255,255,255,.25); }
+.tl-tab.active {
+  color: #fff; border-color: rgba(255,159,208,.5);
+  background: linear-gradient(135deg, rgba(125,76,255,.4), rgba(255,76,230,.22));
+  box-shadow: 0 6px 22px rgba(125,76,255,.3);
+}
+
 /* ── Controls ────────────────────────────────────────── */
 .tl-controls {
   display: flex;
@@ -250,10 +264,20 @@
 
 <div class="container">
   <div class="tl-hero">
-    <h1>Career Timeline</h1>
-    <p>Every player's placement across all seasons at a glance — click a cell to visit their profile</p>
+    <h1 id="tlTitle">Career Timeline</h1>
+    <p id="tlDeck">Every player's placement across all seasons at a glance — click a cell to visit their profile</p>
   </div>
 
+  <!-- Two timelines: a player's, and the franchise's. #calendar links the second. -->
+  <div class="tl-tabs" role="tablist" aria-label="Timeline views">
+    <button class="tl-tab active" id="tabCareer" role="tab" aria-selected="true">🧑 Career Timeline</button>
+    <button class="tl-tab" id="tabCalendar" role="tab" aria-selected="false">📅 Franchise Calendar</button>
+  </div>
+
+  <!-- FRANCHISE CALENDAR — every show's seasons, a year at a time (js/calendar-view.js) -->
+  <div id="viewCalendar" hidden></div>
+
+  <div id="viewCareer">
   <div class="tl-controls">
     <input type="text" class="tl-search" id="tlSearch" placeholder="Filter by player name…"/>
     <div class="tl-filter-group" id="tlFilters">
@@ -284,6 +308,7 @@
   <div id="tl-loading" style="text-align:center;padding:60px;color:var(--muted);">Loading timeline…</div>
   <div class="tl-wrap" id="tlWrap" style="display:none;">
     <table class="tl-table" id="tlTable"></table>
+  </div>
   </div>
 
   <div class="footer"><span id="footer-seasons">9</span> seasons complete • <span id="footer-players">102</span> unique players</div>
@@ -621,5 +646,33 @@ document.getElementById('tlSortToggle').addEventListener('click', function(e) {
 })();
 </script>
   <script type="module" src="js/site-header.js"></script>
+  <script type="module">
+    // Career Timeline | Franchise Calendar. The hash is the state, so
+    // timeline.html#calendar opens straight on the calendar and Back works.
+    import { mountCalendar } from './js/calendar-view.js';
+    const VIEWS = {
+      career: { tab: 'tabCareer', view: 'viewCareer', title: 'Career Timeline',
+        deck: "Every player's placement across all seasons at a glance — click a cell to visit their profile" },
+      calendar: { tab: 'tabCalendar', view: 'viewCalendar', title: 'Franchise Calendar',
+        deck: 'Every show, every season, month by month — what aired when, and what comes next' },
+    };
+    const $ = id => document.getElementById(id);
+    function show(which) {
+      for (const [key, v] of Object.entries(VIEWS)) {
+        const on = key === which;
+        $(v.tab).classList.toggle('active', on);
+        $(v.tab).setAttribute('aria-selected', on ? 'true' : 'false');
+        $(v.view).hidden = !on;
+      }
+      $('tlTitle').textContent = VIEWS[which].title;
+      $('tlDeck').textContent = VIEWS[which].deck;
+      if (which === 'calendar') mountCalendar($('viewCalendar'));
+    }
+    const fromHash = () => (location.hash === '#calendar' ? 'calendar' : 'career');
+    $('tabCareer').addEventListener('click', () => { history.replaceState(null, '', location.pathname + location.search); show('career'); });
+    $('tabCalendar').addEventListener('click', () => { location.hash = 'calendar'; });
+    window.addEventListener('hashchange', () => show(fromHash()));
+    show(fromHash());
+  </script>
 </body>
 </html>

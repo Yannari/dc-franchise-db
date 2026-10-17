@@ -141,6 +141,17 @@ export function yearsBetween(from, to) {
  * means one quarter after whatever aired last anywhere, which is as close to
  * "soon" as a franchise with no other seasons of that show can get.
  *
+ * ── A SHOW WITH HOME QUARTERS ──
+ *
+ * Most shows now say when they air: `airSlots` on their registry entry (Drag
+ * Race and The Traitors in winter, Big Brother in summer...). Then the rhythm
+ * is not inferred at all. The next season is the next home quarter after the
+ * show's last one, and a show's FIRST season is its first home quarter at or
+ * after whatever aired last anywhere — "at", because two shows sharing a
+ * quarter is the plan, not a collision. Without this, The Traitors' first
+ * season would have landed in whatever quarter followed Drag Race, and every
+ * season after it would have continued that accident.
+ *
  * Returns { airYear, airSlot }, or null when the franchise has no dated season
  * to reason from — in which case nothing is written and nothing is guessed.
  */
@@ -152,6 +163,13 @@ export function nextWindowFor(seasons = [], format = null) {
   if (!dated.length) return null;
 
   const mine = format ? dated.filter(s => (s.format || null) === format) : dated;
+
+  const home = (format && SHOWS[format]?.airSlots || []).map(s => SLOTS.indexOf(s)).filter(i => i >= 0);
+  if (home.length) {
+    const from = mine.length ? quarters(mine[mine.length - 1]) + 1 : quarters(dated[dated.length - 1]);
+    for (let q = from; q < from + 4; q++) if (home.includes(((q % 4) + 4) % 4)) return at(q);
+  }
+
   if (!mine.length) return at(quarters(dated[dated.length - 1]) + 1);
   if (mine.length === 1) return at(quarters(mine[0]) + 4);
 

@@ -12,8 +12,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  SLOTS, airKey, byAirDate, airLabel, ageAt, latestAired, yearsBetween,
+  SLOTS, airKey, byAirDate, airLabel, ageAt, latestAired, yearsBetween, nextWindowFor,
 } from '../js/franchise-calendar.js';
+import { SHOWS } from '../js/shows.js';
 
 const s = (airYear, airSlot, extra = {}) => ({ airYear, airSlot, ...extra });
 
@@ -164,5 +165,45 @@ describe('the franchise as actually scheduled', () => {
       }
     }
     expect([...new Set(bad)], 'a player is in two seasons in the same slot').toEqual([]);
+  });
+});
+
+// Every show says which quarters it airs in (agreed 2026-10-17): two shows to a
+// quarter, never on the same night. Without it a show's first season was dated
+// "one quarter after whatever aired last" and every later season continued that
+// accident — The Traitors would have premiered in spring.
+describe('home quarters', () => {
+  const fx = [
+    s(2026, 'fall', { format: 'total-drama' }),
+    s(2026, 'summer', { format: 'big-brother' }),
+    s(2027, 'winter', { format: 'drag-race' }),
+  ];
+
+  it('gives every show a home, two to a quarter, never two on one night', () => {
+    const byQuarter = {};
+    for (const [format, show] of Object.entries(SHOWS)) {
+      expect(show.airSlots?.length, `${format} has no airSlots`).toBeGreaterThan(0);
+      for (const q of show.airSlots) {
+        expect(SLOTS).toContain(q);
+        (byQuarter[q] ||= []).push(show);
+      }
+    }
+    for (const [q, shows] of Object.entries(byQuarter)) {
+      const nights = shows.map(sh => sh.airNight);
+      expect(new Set(nights).size, `${q}: two shows on one night`).toBe(nights.length);
+    }
+  });
+
+  it("places a show's first season in its home quarter, alongside what is airing", () => {
+    expect(nextWindowFor(fx, 'traitors')).toEqual({ airYear: 2027, airSlot: 'winter' });
+    expect(nextWindowFor(fx, 'the-circle')).toEqual({ airYear: 2027, airSlot: 'spring' });
+    expect(nextWindowFor(fx, 'perfect-match')).toEqual({ airYear: 2027, airSlot: 'summer' });
+    expect(nextWindowFor(fx, 'the-challenge')).toEqual({ airYear: 2027, airSlot: 'fall' });
+  });
+
+  it('continues each show in its own quarters', () => {
+    expect(nextWindowFor(fx, 'total-drama')).toEqual({ airYear: 2027, airSlot: 'spring' });
+    expect(nextWindowFor(fx, 'big-brother')).toEqual({ airYear: 2027, airSlot: 'summer' });
+    expect(nextWindowFor(fx, 'drag-race')).toEqual({ airYear: 2028, airSlot: 'winter' });
   });
 });

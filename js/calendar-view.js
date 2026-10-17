@@ -109,16 +109,18 @@ function buildModel(seasons) {
   const ghosts = [];
   for (const [format, show] of Object.entries(SHOWS)) {
     const mine = dated.filter(s => (s.format || DEFAULT_FORMAT) === format);
-    if (!mine.length) continue;
+    // A show with nothing aired still has a first season to place when it has
+    // home quarters; without them there is no rhythm to continue.
+    if (!mine.length && !show.airSlots?.length) continue;
     const w = nextWindowFor(dated.map(s => ({ ...s, format: s.format || DEFAULT_FORMAT })), format);
     if (!w) continue;
     const last = mine.slice().sort((a, b) => airKey(a) - airKey(b)).pop();
-    const n = (Number(last.seasonNumber) || mine.length) + 1;
+    const n = last ? (Number(last.seasonNumber) || mine.length) + 1 : 1;
     const run = runOf({
       format, seasonNumber: n, title: `${show.name} ${n}`,
-      airYear: w.airYear, airSlot: w.airSlot, episodeCount: last.episodeCount,
+      airYear: w.airYear, airSlot: w.airSlot, episodeCount: last?.episodeCount,
     }, true);
-    if (run) ghosts.push(run);
+    if (run) { run.lengthGuessed = !last?.episodeCount; ghosts.push(run); }
   }
   ghosts.sort((a, b) => a.start - b.start);
 
@@ -127,7 +129,7 @@ function buildModel(seasons) {
   const all = [...runs, ...ghosts];
   const years = all.flatMap(r => [r.start.getUTCFullYear(), r.finale.getUTCFullYear()]);
   const unplaced = Object.entries(SHOWS)
-    .filter(([format]) => !dated.some(s => (s.format || DEFAULT_FORMAT) === format))
+    .filter(([format]) => !dated.some(s => (s.format || DEFAULT_FORMAT) === format) && !ghosts.some(g => g.format === format))
     .map(([format, show]) => ({ format, show }));
 
   return {
@@ -446,8 +448,11 @@ function detailHtml() {
   const status = r.projected ? 'Projected · not scheduled yet' : isNow ? 'Latest to air · the franchise is here' : 'Aired';
   const winner = r.season.winner?.name
     ? ` · Won by <b>${esc(r.season.winner.name)}</b>${r.season.winner.runnerUp ? ` over ${esc(r.season.winner.runnerUp)}` : ''}` : '';
-  const why = r.projected
-    ? `<p>Where the next season lands if ${esc(r.show.name)} keeps its rhythm, the same rule the export uses to date a new season. It isn't scheduled yet.</p>` : '';
+  const home = (r.show.airSlots || []).map(s => s[0].toUpperCase() + s.slice(1)).join(' and ');
+  const why = !r.projected ? ''
+    : r.season.seasonNumber === 1
+      ? `<p>Not played yet. ${esc(r.show.name)} airs in ${esc(home || 'its slot')}, so its first season lands here when it's exported. The episode count is a placeholder until then.</p>`
+      : `<p>Where the next season lands${home ? ` (${esc(r.show.name)} airs in ${esc(home)})` : ' if the show keeps its rhythm'}, the same rule the export uses to date a new season. It isn't scheduled yet.</p>`;
   const nb = (label, x) => x ? `<button type="button" data-key="${esc(x.key)}">${label} ${x.show.emoji} ${esc(x.short)}${x.projected ? ' (projected)' : ''}</button>` : '';
   const open = r.projected ? '' : `<a class="fc-open" href="season_ref.html?season=${encodeURIComponent(r.ref)}">Open season →</a>`;
   return `<div class="fc-dcard" style="--ac:${r.show.accent}">
@@ -455,7 +460,7 @@ function detailHtml() {
     <div>
       <small>${esc(r.show.name)} · Season ${esc(r.season.seasonNumber)} · ${status}</small>
       <h4>${esc(r.season.title || r.short)}</h4>
-      <p><b>${esc(airLabel(r.season))}</b> · ${esc(airDateLabel(r.start))} → ${esc(airDateLabel(r.finale))} · ${r.count} episodes on ${night}${winner}</p>
+      <p><b>${esc(airLabel(r.season))}</b> · ${esc(airDateLabel(r.start))} → ${esc(airDateLabel(r.finale))} · ${r.lengthGuessed ? '~' : ''}${r.count} episodes on ${night}${winner}</p>
       ${why}
       <div class="fc-nb">${nb('← Before:', prev)}${nb('After:', next)}</div>
     </div>

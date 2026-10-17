@@ -19,6 +19,12 @@ export const SHOWS = {
     // The night this show goes out on (0 = Sunday); js/franchise-calendar.js
     // dates every episode from it.
     airNight: 1,
+    // The quarters this show airs in, every year (js/franchise-calendar.js
+    // SLOTS). Two shows to a quarter, never on the same night: Drag Race and
+    // The Traitors in winter, Total Drama and The Circle in spring, Big Brother
+    // and Perfect Match in summer, Total Drama and The Challenge in fall.
+    // nextWindowFor places a show's first season and every next one here.
+    airSlots: ['spring', 'fall'],
     // Where the roster header says the cast is still: STILL IN THE <place>.
     // A camp has none -- its header names the people instead.
     rosterPlace: null,
@@ -118,6 +124,7 @@ export const SHOWS = {
     // Set at the bottom of js/bb-run.js. Read by formatIsRunnable().
     runnableFlag: '_bbRunnable',
     airNight: 3,
+    airSlots: ['summer'],
     rosterPlace: 'HOUSE',
     hasJury: true,
     roundsPath: 'bb.weeks',
@@ -188,6 +195,7 @@ export const SHOWS = {
     // Set at the bottom of js/tr-run.js. Read by formatIsRunnable().
     runnableFlag: '_trRunnable',
     airNight: 4,
+    airSlots: ['winter'],
     rosterPlace: 'CASTLE',
     roundsPath: 'tr.rounds',
     /* WHAT SHAPE THIS SHOW'S ROUNDS ARE IN -- see roundShape() below.
@@ -303,6 +311,7 @@ export const SHOWS = {
     // is deliberate: the setup screen must refuse a show with no engine.
     runnableFlag: '_drRunnable',
     airNight: 5,
+    airSlots: ['winter'],
     rosterPlace: 'COMPETITION',
     roundsPath: 'dr.episodes',
     /* WHAT SHAPE THIS SHOW'S ROUNDS ARE IN -- see roundShape() below.
@@ -383,6 +392,7 @@ export const SHOWS = {
     // earlier villa) walks in as one (js/pm-run.js _carried, pm/kin.js).
     historyFromLedger: true,
     airNight: 6,
+    airSlots: ['summer'],
     rosterPlace: 'VILLA',
     hasJury: false,
     roundsPath: 'episodeHistory',
@@ -451,6 +461,7 @@ export const SHOWS = {
     // Past seasons count: an alum walks in with their reputation and grudges.
     historyFromLedger: true,
     airNight: 3,
+    airSlots: ['spring'],
     rosterPlace: 'APARTMENTS',
     hasJury: false,
     roundsPath: 'episodeHistory',
@@ -512,6 +523,7 @@ export const SHOWS = {
     // A crossover: everybody's past on any show walks in with them.
     historyFromLedger: true,
     airNight: 2,
+    airSlots: ['fall'],
     rosterPlace: 'VILLA',
     hasJury: false,
     roundsPath: 'episodeHistory',

@@ -846,7 +846,8 @@ export const EVENTS = [
         const m = t.members.filter(n => ctx.state.active.includes(n));
         if (m.length < 2 || m.length > 3 || (ctx.state.lastStand ||= {})[t.id]) continue;
         if (!cooled(ctx, 'team-last-stand', [m[0]], 99)) continue;
-        return { who: [t.captain && m.includes(t.captain) ? t.captain : m[0], ...m.filter(n => n !== t.captain)], score: 1.5 };
+        const lead = t.captain && m.includes(t.captain) ? t.captain : m[0];
+        return { who: [lead, ...m.filter(n => n !== lead)], score: 1.5 };
       }
       return null;
     },

@@ -105,6 +105,15 @@ function rule(sc) {
     case 'pair-arena-win': return F('pair', 'arena', d.carried ? 'carried' : 'together');
     case 'pair-eve': return F('pair', 'eve', d.mood);
     case 'share-keep': return F('pair', 'money', d.keep ? 'keep' : 'share');
+    // ── a Teams season: the team as a story (teams.js) ──
+    case 'team-reveal': return F('team', 'formed', d.how);
+    case 'team-huddle': return F('team', 'huddle', d.hard ? 'hard' : 'rally');
+    case 'team-after-vote': return F('team', 'vote', d.stung ? 'stung' : 'any');
+    case 'team-last-stand': return F('team', 'last-stand');
+    case 'team-poach': return F('team', 'poach', d.seen ? 'seen' : 'quiet');
+    case 'team-rift': return F('team', 'rift', d.owns ? 'owns' : 'denies');
+    case 'team-switch': return F('team', 'switch');
+    case 'team-fold': return F('team', 'fold');
     case 'pair-callout': return F('spine', 'callout', d.reason);
     case 'pair-arena': return F('spine', 'arena');
     // ── life ──
@@ -124,6 +133,7 @@ function keyOf(type, sc, state) {
   const pair = [a, b].filter(Boolean).sort().join('|');
   switch (type) {
     case 'feud': case 'showmance': case 'pair': return pair;
+    case 'team': return `team:${sc.data?.team || sc.data?.from || '?'}`;
     case 'alliance': {
       const id = sc.data?.alliance ?? state.alliances.find(x => x.members.includes(a) && x.members.includes(b))?.id;
       return id != null ? `al:${id}` : `pair:${pair}`;

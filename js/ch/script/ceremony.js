@@ -125,18 +125,28 @@ const WHY = {
   'broke from the plan': 'broke', 'changed their mind': 'changed',
 };
 
+let voteTeam = null;   // the team whose vote writeVote is writing (a Teams season), or null
 function synthetic(state, ep, day, kind, who, data, bond, partners = null) {
+  // a Teams season's vote is one team's (teams.js): its lines read the '~teams' pools, where the house is the team.
+  // The vote says so itself (vote.team): the episode is written after the season, when the teams may be long broken.
+  const teams = voteTeam ? Object.fromEntries(who.filter(Boolean).map(n => [n, voteTeam])) : null;
   return { id: `${kind}:${ep}:${who.join('>')}`, ep, day, kind, who, data, seenBy: state.cast, spot: 'deliberation',
-    snap: { bond, house: data.house, ...(partners ? { partners } : {}) } };
+    snap: { bond, house: data.house, ...(partners ? { partners } : {}), ...(teams ? { teams } : {}) } };
 }
 // A Pairs season's ballot names a pair (vote.js: the target is the pair's representative, `named` the one the voter
 // meant, `pair` both). The lines say both names ({b} and {pb}); the room reacts through the one the voter meant.
 const pairOfBallot = b => (b.pair ? { named: b.named || b.target, partner: b.pair.find(x => x !== (b.named || b.target)) } : null);
 
 export function writeVote(state, epRec, vote, day) {
+  voteTeam = vote.team || null;
+  try { return writeVoteOf(state, epRec, vote, day); } finally { voteTeam = null; }
+}
+function writeVoteOf(state, epRec, vote, day) {
   const out = [];
   const house = vote.ballots.length;
-  const open = writeScene(state, synthetic(state, epRec.ep, day, 'cer-open', [vote.ballots[0]?.voter], { house, division: epRec.division }, 0));
+  // a Teams season's vote is the losing team's (teams.js): TJ opens it to that team; the winners voting their own in is rarer still
+  const open = writeScene(state, synthetic(state, epRec.ep, day, 'cer-open', [vote.ballots[0]?.voter], { house, division: epRec.division,
+    ...(vote.team ? { team: vote.team, teams: true, own: !!vote.winners } : {}) }, 0));
   if (open) out.push({ kind: 'cer-open', script: open });
   // a reaction heard at the first vote of a double-elimination night is not heard again at the second
   const day0 = ((state.reactUsed ||= {})[day] ||= {});

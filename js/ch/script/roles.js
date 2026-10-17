@@ -372,6 +372,30 @@ export const ROLES = {
     slots: { amount: money(sc.data.amount), place: PLACE_WORD[sc.data.place] || undefined } }),
 };
 
+// ── a Teams season (ch/teams.js; spec 2026-10-17-ch-teams-season-design.md) ──
+// {team}: the team the scene is about; {myteam}: a's own team; {oppteam}: the other side's
+const myTeam = (sc, n) => sc.snap?.teams?.[n] || undefined;
+Object.assign(ROLES, {
+  'teams-revealed': sc => ({ roles: { a: sc.data.teams?.[0]?.captain, b: sc.data.teams?.[1]?.captain }, ending: sc.data.how || 'shows',
+    slots: { team: sc.data.teams?.[0]?.name, oppteam: sc.data.teams?.[1]?.name } }),
+  // a: the captain; b, c, d: teammates
+  'team-reveal': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.how || 'any', slots: { team: sc.data.team } }),
+  'team-huddle': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.hard ? 'hard' : 'rally', slots: { team: sc.data.team } }),
+  'team-only-one': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { team: sc.data.team } }),
+  'team-voted-in': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { team: sc.data.team || undefined,
+    count: sc.data.count >= 2 ? COUNT_WORD[sc.data.count] || String(sc.data.count) : undefined } }),
+  // a: the one going in; b: a teammate who did not say the name; c: a teammate who did
+  'team-after-vote': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.stung || undefined }, ending: sc.data.stung ? 'stung' : 'any', slots: { team: sc.data.team } }),
+  // a: the one switching; b: the captain they join; c: the captain they leave
+  'team-switch': sc => ({ roles: { a: sc.who[0], b: sc.data.joinCaptain || undefined, c: sc.data.leaveCaptain || undefined }, ending: 'any', slots: { from: sc.data.from, to: sc.data.to } }),
+  'team-fold': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { from: sc.data.from, to: sc.data.to } }),
+  'teams-break': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.why === 'one-team' ? 'one' : 'any' }),
+  'team-last-stand': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any', slots: { team: sc.data.team } }),
+  // a courts b; c, b's teammate, saw it
+  'team-poach': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.seen || undefined }, ending: sc.data.seen ? 'seen' : 'quiet', slots: { from: sc.data.from || undefined, to: sc.data.to || undefined } }),
+  'team-rift': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.owns ? 'owns' : 'denies', slots: { alt: sc.data.ally || undefined, team: sc.data.team || undefined } }),
+});
+
 const PLACE_WORD = { 1: 'first', 2: 'second', 3: 'third', 4: 'fourth' };
 const money = n => '$' + Math.round(n || 0).toLocaleString('en-US');
 function pairRevealEnding(d = {}) {
@@ -397,9 +421,16 @@ const PAIR_ROLES = {
   'champion-reflect': sc => ({ roles: { a: sc.data.chooser || sc.who[0], b: sc.who.find(x => x !== (sc.data.chooser || sc.who[0])) }, ending: sc.data.keep ? 'kept' : 'shared' }),
   'arena-reveal': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { game: sc.data.gameName } }),
 };
+// ...and in a Teams season: the champions of a team final are a whole team
+const TEAM_ROLES = {
+  champions: sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: 'team', slots: { team: sc.data.team || undefined } }),
+  'champion-reflect': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'team', slots: { team: sc.data.team || undefined } }),
+  daily: sc => ({ roles: { a: sc.data.winners[0], b: sc.data.winners[1], c: sc.data.last?.[0] }, ending: sc.data.mode, slots: { game: sc.data.dailyName, team: sc.data.team || undefined, oppteam: sc.data.lastTeam || undefined } }),
+  'cer-open': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.team ? 'team' : sc.data.division === 'all' ? 'all' : sc.data.division, slots: { team: sc.data.team || undefined } }),
+};
 
 export function rolesOf(scene, state) {
-  const f = (scene.data?.pair && PAIR_ROLES[scene.kind]) || ROLES[scene.kind];
+  const f = (scene.data?.pair && PAIR_ROLES[scene.kind]) || (scene.data?.teams && TEAM_ROLES[scene.kind]) || ROLES[scene.kind];
   if (!f) return null;
   const r = f(scene, state);
   // a Pairs season: each part's partner as the scene happened ({pa} is a's, {pt} the target's), for the pair lines

@@ -48,8 +48,10 @@ describe('a Teams season', () => {
     expect(teamVotes).toBeGreaterThan(20);
   });
 
-  it('the winners pick the opponent, never one of their own unless nobody else could go', () => {
+  it('the call-out never reaches into the winning team unless nobody else could go', () => {
+    let calls = 0;
     for (const s of seasons) for (const e of s.episodes) for (const c of e.callouts.filter(x => x.team)) {
+      calls++;
       const winTeam = teamOf(e, e.daily.winners[0]);
       const oppTeam = teamOf(e, c.opponent);
       if (oppTeam === winTeam) {
@@ -60,6 +62,7 @@ describe('a Teams season', () => {
       }
       expect(c.opponent).not.toBe(e.votedIn[0]);
     }
+    expect(calls).toBeGreaterThan(20);
   });
 
   it('every week of a Teams season has its Arena', () => {

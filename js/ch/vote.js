@@ -369,7 +369,7 @@ function whyName(state, by, n, eligible) {
   return { said, real: grudge ? 'grudge' : said };
 }
 
-export function deliberate(state, rng, { division, eligible, immune }) {
+export function deliberate(state, rng, { division, eligible, immune, noVolunteer = false }) {
   const meetings = [];
   const committed = {};
   const ctx = { predict: predictor(state, eligible) };
@@ -391,7 +391,8 @@ export function deliberate(state, rng, { division, eligible, immune }) {
     }
   }
   const campaigns = campaign(state, rng, { eligible, immune, meetings, committed, ctx });
-  const vol = volunteer(state, rng, eligible);
+  // a Teams season's team vote has no volunteers (teams.js): the team decides
+  const vol = noVolunteer ? null : volunteer(state, rng, eligible);
   // Everybody's position: their commitment, or their own read.
   const intents = {};
   const delib = { ctx, meetings, pitches, campaigns, committed, volunteer: vol, intents,

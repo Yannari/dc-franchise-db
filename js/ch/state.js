@@ -116,6 +116,10 @@ export const KIN_PULL = { couple: 2.2, 'old-friends': 1.2, exes: -1.5 };
 // after the season), for the people in it and the ones it is about.
 function snapOf(state, who, data = {}) {
   const snap = baseSnap(state, who);
+  if (state.teamOf && state.teams && !state.teamsBroken) {
+    const name = id => state.teams.find(t => t.id === id)?.name || null;
+    snap.teams = Object.fromEntries(who.filter(n => state.teamOf[n]).map(n => [n, name(state.teamOf[n])]));
+  }
   if (!state.partnerOf) return snap;
   snap.partners = Object.fromEntries([...who, data.target, data.alt, data.by, data.opponent, data.gone, data.lover, data.chosen, data.against, ...(data.options || []), ...(data.nominees || [])]
     .filter(n => typeof n === 'string' && state.partnerOf[n]).map(n => [n, state.partnerOf[n]]));

@@ -120,8 +120,9 @@ function poolFor(key, have) {
 // '.any', so an ending pool never runs dry.
 // A Pairs season reads a kind's pair pools ('<kind>~pairs.<ending>') INSTEAD of its solo ones when it has them: a
 // meeting about "Brody" is a meeting about Brody and his partner, and no solo line about one person going in may air.
-function keyFor(kind, ending, pairs = false) {
-  if (pairs && (POOLS[`${kind}~pairs.${ending}`] || POOLS[`${kind}~pairs.any`])) return keyFor(`${kind}~pairs`, ending);
+// A Teams season does the same with '<kind>~teams' while the teams stand (the scene says so: snap.teams, taken as it happened).
+function keyFor(kind, ending, mode = null) {
+  if (mode && (POOLS[`${kind}~${mode}.${ending}`] || POOLS[`${kind}~${mode}.any`])) return keyFor(`${kind}~${mode}`, ending);
   const own = `${kind}.${ending}`, any = `${kind}.any`;
   if (ending !== 'any' && POOLS[own] && POOLS[any]) return [own, any];
   if (POOLS[own]) return own;
@@ -132,7 +133,7 @@ function keyFor(kind, ending, pairs = false) {
 export function writeScene(state, scene) {
   const r = rolesOf(scene, state);
   if (!r) return null;
-  const key = keyFor(scene.kind, r.ending ?? 'any', !!state.options?.pairs);
+  const key = keyFor(scene.kind, r.ending ?? 'any', state.options?.pairs ? 'pairs' : scene.snap?.teams ? 'teams' : null);
   if (!key) return null;
   const have = new Set([...Object.keys(r.roles), ...Object.keys(r.slots)]);
   const pools = poolFor(key, have);

@@ -23,7 +23,9 @@ it('writes a season to read', () => {
     for (const [i, n] of f.entries()) background[n].rookie = i >= 6;
   }
   setPlayers(cast);
-  const r = playChallengeSeason({ cast: names, background, seed, options: { ...(pairing ? { pairs: { pairing, shape: process.env.CH_SHAPE || 'mixed' } } : {}), ...(process.env.CH_FORMAT ? { format: process.env.CH_FORMAT } : {}) } });
+  const r = playChallengeSeason({ cast: names, background, seed, options: { ...(pairing ? { pairs: { pairing, shape: process.env.CH_SHAPE || 'mixed' } } : {}), ...(process.env.CH_FORMAT ? { format: process.env.CH_FORMAT } : {}),
+    // CH_TEAMS=shows|champions|vets|draft plays a Teams season (CH_COUNT=small, CH_END=team-final)
+    ...(process.env.CH_TEAMS ? { teams: { teaming: process.env.CH_TEAMS, count: process.env.CH_COUNT || 2, end: process.env.CH_END || 'breakup' } } : {}) } });
   airSeason(r.state);
   const out = [];
   const missing = {};
@@ -53,5 +55,5 @@ it('writes a season to read', () => {
   }
   out.push(`\nNo lines yet: ${Object.entries(missing).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', ')}`);
   mkdirSync('transcripts', { recursive: true });
-  writeFileSync(`transcripts/ch-season-${pairing ? pairing + "-" : ""}${seed}.txt`, out.join('\n'));
+  writeFileSync(`transcripts/ch-season-${pairing ? pairing + "-" : process.env.CH_TEAMS ? 'teams-' + process.env.CH_TEAMS + '-' : ""}${seed}.txt`, out.join('\n'));
 });

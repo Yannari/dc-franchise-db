@@ -14,6 +14,8 @@ export const CH_FACT_KEYS = [
   'ending',
   // a Pairs season (pairs.js, share-keep.js): how the moment went
   'hesitate', 'champions', 'walks', 'rivals', 'keepWhy', 'pairs',
+  // a Teams season (teams.js): the teams standing, two on one team, the winners sending one of their own, owning it
+  'teams', 'sameTeam', 'own', 'owns',
   // how far into the season: a line about "weeks in here" needs late, a line
   // about first impressions needs early
   'early', 'late',
@@ -128,6 +130,11 @@ export function factsFor(scene, roles, state) {
     rivals: !!scene.data?.rivals,
     keepWhy: scene.data?.why && ['share-keep'].includes(scene.kind) ? scene.data.why : null,
     pairs: !!state.options?.pairs,
+    // a Teams season while the teams stand; a and b on the same team
+    teams: !!scene.snap?.teams,
+    sameTeam: !!(scene.snap?.teams && a && b && scene.snap.teams[a] && scene.snap.teams[a] === scene.snap.teams[b]),
+    own: !!scene.data?.own,
+    owns: !!scene.data?.owns,
   };
   if (a) {
     f.register = registerOf(a);

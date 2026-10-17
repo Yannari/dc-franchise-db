@@ -53,7 +53,7 @@ import { worstSting } from './daily/named.js';
 import { mockAfterDaily, gloatAfterVote } from './cruel.js';
 import { pairsOn, makeSeasonPairs, unitsLeft, partnerSwap, pairArcs } from './pairs.js';
 import { pairVoteNight, pairArenaDay, pairEve, pairPickDay } from './pair-week.js';
-import { teamsOn, makeSeasonTeams, teamVoteNight, teamPickAtArena, afterTeamDuel, teamEve, breakUpTeams, placeLate } from './teams.js';
+import { teamsOn, makeSeasonTeams, teamVoteNight, afterTeamDuel, teamEve, breakUpTeams, placeLate } from './teams.js';
 import { redemptionOn, houseTakes, sendToRedemption, redemptionWatch, redemptionNight, returnFromRedemption, closeForFinal } from './redemption.js';
 
 // The Tribunal: the daily's winners, or the three who did best on a winning team.
@@ -519,15 +519,12 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     // and the people who might be picked, waiting
     houseDay(state, R('house3'));
     houseBeats(state, R('beats3am'), { min: 2, max: 3 });
-    for (const m of matches) if (!m.team) (pairsOn(state) ? pairPickDay : pickDay)(state, R(`pick${m.a}`), m);
+    for (const m of matches) (pairsOn(state) ? pairPickDay : pickDay)(state, R(`pick${m.a}`), m);
     if (pairsOn(state)) { pairArenaDay(state, { R, epRec, matches, delib, closing: (state.plannedEpisodes || schedule.length) - (idx + 1) <= 2 }); airPartnerLeft(state); }
     else for (const [k, m] of matches.entries()) {
       if (!state.active.includes(m.a) || !state.active.includes(m.b)) continue;
-      // The call-out, at the Arena: everything it costs happens now, when the house hears it. A Teams season: the
-      // winning team says the name instead (teams.js teamPickAtArena).
+      // The call-out, at the Arena: everything it costs happens now, when the house hears it.
       const { a: votedIn, b: opp, co, vote } = m;
-      if (m.team) teamPickAtArena(state, epRec, m);
-      else {
       state.rec[opp].calledOut++;
       calledOut(votedIn, opp, co.reason);
       const deal = dealBetween(state, votedIn, opp);
@@ -535,8 +532,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       // A threat made at the vote: kept, or broken in front of the person it was made to.
       const pr = state.promises?.[votedIn];
       const promise = pr && !m.volunteer ? (pr.at === opp ? 'kept' : state.active.includes(pr.at) ? 'broken' : null) : null;
-      epRec.callouts.push({ by: votedIn, opponent: opp, reason: co.reason, terms: co.terms, ranked: co.ranked || null, promise, promisedAt: promise ? pr.at : null });
-      addScene(state, 'callout', [votedIn, opp], { reason: co.reason, volunteer: m.volunteer, promise, ...(m.game ? { gameName: m.game.name } : {}),
+      epRec.callouts.push({ by: votedIn, opponent: opp, reason: co.reason, terms: co.terms, ranked: co.ranked || null, promise, promisedAt: promise ? pr.at : null, ...(m.team ? { team: true } : {}) });
+      addScene(state, 'callout', [votedIn, opp], { reason: co.reason, volunteer: m.volunteer, promise, ...(m.game ? { gameName: m.game.name } : {}), ...(m.team ? { team: true, own: !!co.own, votedMe: !!vote?.ballots.some(x => x.voter === opp && x.target === votedIn) } : {}),
         votedMe: !!vote?.ballots.some(x => x.voter === opp && x.target === votedIn) }, state.active, 'arena');
       if (promise) {
         state.word ||= {};
@@ -550,7 +547,6 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       }
       afterVote(state, R(`afterco${k}`), { ballots: [], votedIn, calledOut: opp, by: votedIn });
       calloutCost(state, votedIn, opp, co.reason);
-      }
       const duel = playDuel(state, R(`arena${k}`), m.a, m.b, m.game || null);
       duel.volunteer = m.volunteer;
       epRec.arena.push(duel);

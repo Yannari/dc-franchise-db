@@ -313,7 +313,10 @@ export function playDaily(state, rng, { division, pin = null, solo = false }) {
   // Partners who won together.
   if (mode === 'pairs') for (const [a, b] of [winners]) if (a && b) { addBond(a, b, 0.8); remember(a, b, 'worked-with-me', 1); remember(b, a, 'worked-with-me', 1); }
   for (const l of last) { state.rec[l].dailyLast++; nudge(state, l, 'confidence', -0.5); }
-  addScene(state, 'daily', state.active, { daily: daily.id, dailyName: daily.name, mode, winners, last }, state.active, 'challenge');
+  // a Teams season names the teams: the winners and the team that will vote (teams.js)
+  const teamName = n => state.teams?.find(t => t.id === state.teamOf?.[n])?.name;
+  addScene(state, 'daily', state.active, { daily: daily.id, dailyName: daily.name, mode, winners, last,
+    ...(seasonTeams ? { teams: true, team: teamName(winners[0]) || null, lastTeam: teamName(last[0]) || null } : {}) }, state.active, 'challenge');
   for (const n of state.active) nudge(state, n, 'energy', -1.2 * daily.physicality);
   // Throwing, and who catches it. A thrower who won anyway did not throw it: no record, nobody
   // catches it (season 777 aired "I saw Jacques stop and smell the flowers" about the day's winner).

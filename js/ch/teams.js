@@ -17,7 +17,8 @@ import { S, addScene, noise, logistic, inDivision, mayScheme } from './state.js'
 import { nudge } from './mind.js';
 import { remember, trustOf } from './rel.js';
 import { threatRead, giveRespect } from './respect.js';
-import { deliberate, houseVote, voteFallout, voteTerms, reasonOf } from './vote.js';
+import { deliberate, houseVote, voteFallout } from './vote.js';
+import { chooseOpponent } from './callout.js';
 import { afterVote } from './alliances.js';
 
 export const TEAMINGS = ['shows', 'champions', 'vets', 'draft'];
@@ -129,8 +130,10 @@ export function makeSeasonTeams(state, rng, { background = {} } = {}) {
 
 // ── the vote: the losing team, out loud, for one of its own ─────────
 /**
- * Day 2 of a Teams season. The last team in the daily votes for one of its own (the week's division); the winning
- * team picks the opponent from everybody else (decided now, said at the Arena). Returns { matches, delib }.
+ * Day 2 of a Teams season. The last team in the daily votes for one of its own (the week's division); the one voted
+ * in calls out an opponent from outside the winning team, as in a season played alone: decided tonight, said at the
+ * Arena. (The design had the winners pick; every deal, threat and meeting the house already says is about a call-out,
+ * so the call-out stays: the user approved the shape, this is my call, 2026-10-17.) Returns { matches, delib }.
  */
 export function teamVoteNight(state, { R, epRec, division, daily, immune, elims }) {
   const matches = [];
@@ -162,7 +165,7 @@ export function teamVoteNight(state, { R, epRec, division, daily, immune, elims 
     if (team) {
       const eligible = ownVote ? ownOf(team) : eligibleOf(team);
       const voters = live(state, team);
-      if (!delib) { state.promises = {}; delib = deliberate(state, R('delib'), { division, eligible, immune }); epRec.delib = { targets: delib.targets, meetings: delib.meetings, pitches: delib.pitches, campaigns: delib.campaigns, threats: delib.threats, volunteer: null, intents: delib.intents, hunted: delib.hunted }; }
+      if (!delib) { state.promises = {}; delib = deliberate(state, R('delib'), { division, eligible, immune, noVolunteer: true }); epRec.delib = { targets: delib.targets, meetings: delib.meetings, pitches: delib.pitches, campaigns: delib.campaigns, threats: delib.threats, volunteer: null, intents: delib.intents, hunted: delib.hunted }; }
       // the captain rallies the team before it turns on itself
       if (k === 0) teamHuddle(state, team, eligible);
       if (eligible.length === 1) {
@@ -184,7 +187,7 @@ export function teamVoteNight(state, { R, epRec, division, daily, immune, elims 
       // no team can: the house votes, as in a season played alone
       const eligible = inDivision(state, division).filter(n => !immune.includes(n) && !used.has(n) && !shielded.has(n));
       if (eligible.length < 2) break;
-      if (!delib) { state.promises = {}; delib = deliberate(state, R('delib'), { division, eligible, immune }); }
+      if (!delib) { state.promises = {}; delib = deliberate(state, R('delib'), { division, eligible, immune, noVolunteer: true }); }
       vote = houseVote(state, R(`vote${k}`), { eligible, delib, winners: immune });
       votedIn = vote.votedIn;
       epRec.votes.push(vote);
@@ -196,53 +199,30 @@ export function teamVoteNight(state, { R, epRec, division, daily, immune, elims 
     epRec.votedIn.push(votedIn);
     addScene(state, 'team-voted-in', [votedIn, ...(team ? [team.captain] : [])].filter((x, i, a) => a.indexOf(x) === i), { team: team?.name || null, count: vote?.tally?.[votedIn] || 0 }, state.active, 'public');
     if (vote) voteFallout(state, vote, delib);
-    // the winners' pick: everybody of the division outside the winning team, but the one voted in
+    // after the team vote: the one going in, a teammate who did not say the name, and one who did (teams.js)
+    if (team && vote) {
+      const said = new Set(vote.ballots.filter(b => b.target === votedIn).map(b => b.voter));
+      const mates = live(state, team).filter(n => n !== votedIn);
+      const friend = mates.filter(n => !said.has(n)).sort((x, y) => getBond(votedIn, y) - getBond(votedIn, x))[0];
+      const stung = mates.filter(n => said.has(n)).sort((x, y) => getBond(votedIn, y) - getBond(votedIn, x))[0] || null;
+      if (friend) addScene(state, 'team-after-vote', [votedIn, friend, ...(stung ? [stung] : [])], { team: team.name, stung }, [votedIn, friend, ...(stung ? [stung] : [])], 'villa');
+    }
+    // the call-out: everybody of the division outside the winning team, but the one voted in
     let pool = inDivision(state, division).filter(n => n !== votedIn && !used.has(n) && !(winTeam && winTeam.members.includes(n)) && !immune.includes(n) && !shielded.has(n));
-    // nobody of the division outside the winning team (two teams, one of them holding every other man): the winners
-    // have to send in one of their own, never the captain (seed 11, by show: four weeks went by with no Arena)
+    // nobody of the division outside the winning team (two teams, one of them holding every other man): the call-out
+    // reaches into the winning team, never its captain (seed 11, by show: four weeks went by with no Arena)
     let own = false;
     if (!pool.length && winTeam) { pool = live(state, winTeam).filter(n => (division === 'all' || state.division[n] === division) && n !== winTeam.captain && n !== votedIn && !used.has(n)); own = true; }
     if (!pool.length) break;
-    const pickers = winTeam ? live(state, winTeam) : state.active.filter(n => n !== votedIn);
-    const pick = teamPick(state, R(`pick${k}`), pickers.filter(p => !own || !pool.includes(p) || pool.length > 1), pool, delib, winTeam);
-    pick.own = own;
-    used.add(pick.opponent);
+    const voters = (vote?.ballots || []).filter(x => x.target === votedIn).map(x => x.voter);
+    const co = chooseOpponent(state, R(`callout${k}`), votedIn, pool, { voters });
+    co.own = own;
+    used.add(co.opponent);
     afterVote(state, R(`after${k}`), { ballots: vote?.ballots || [], votedIn, calledOut: null, by: votedIn });
-    matches.push({ a: votedIn, b: pick.opponent, volunteer: false, vote, k, pool, game: null, team: true,
-      co: { opponent: pick.opponent, reason: pick.reason, terms: null },
-      callout: { by: pick.spokes, opponent: pick.opponent, reason: pick.reason },
-      voters: (vote?.ballots || []).filter(x => x.target === votedIn).map(x => x.voter),
-      teamPick: pick });
+    matches.push({ a: votedIn, b: co.opponent, volunteer: false, vote, co, k, pool, game: null, team: true, voters,
+      callout: { by: votedIn, opponent: co.opponent, reason: co.reason } });
   }
   return { matches, delib };
-}
-
-// The winning team names the opponent: each of them says a name (their own read), the most named goes in; the captain
-// breaks a tie. The reason said is the captain's.
-function teamPick(state, rng, pickers, pool, delib, winTeam) {
-  const ballots = pickers.map(p => {
-    const rows = pool.map(t => { const terms = voteTerms(state, p, t, pool, delib, null); return { t, terms, total: Object.values(terms).reduce((a, b) => a + b, 0) + noise(rng) * 0.35 }; }).sort((a, b) => b.total - a.total);
-    return { voter: p, target: rows[0].t, reason: reasonOf(rows[0].terms) };
-  });
-  const tally = {};
-  for (const b of ballots) tally[b.target] = (tally[b.target] || 0) + 1;
-  const max = Math.max(...Object.values(tally));
-  const tied = Object.keys(tally).filter(n => tally[n] === max);
-  const captain = winTeam?.captain && pickers.includes(winTeam.captain) ? winTeam.captain : pickers[0];
-  const capPick = ballots.find(b => b.voter === captain)?.target;
-  const opponent = tied.includes(capPick) ? capPick : tied[0];
-  const spokes = ballots.find(b => b.voter === captain && b.target === opponent) ? captain : ballots.find(b => b.target === opponent)?.voter || captain;
-  return { opponent, tally, ballots, spokes, team: winTeam?.name || null, reason: ballots.find(b => b.voter === spokes)?.reason || 'threat' };
-}
-
-/** At the Arena: the winning team says its name. Everything it costs happens now. */
-export function teamPickAtArena(state, epRec, m) {
-  const { teamPick: p, a: votedIn, b: opp } = m;
-  state.rec[opp].calledOut++;
-  for (const b of p.ballots.filter(x => x.target === opp)) { addBond(opp, b.voter, -0.6); remember(opp, b.voter, 'sent-me-in', 1.1); }
-  epRec.callouts.push({ by: p.spokes, opponent: opp, reason: p.reason, team: p.team, pickers: p.ballots.map(b => ({ ...b })), tally: { ...p.tally } });
-  addScene(state, 'team-pick', [p.spokes, opp, votedIn], { team: p.team, reason: p.reason, count: p.tally[opp] || 0, of: p.ballots.length, own: !!p.own,
-    oppTeam: teamOfName(state, opp)?.name || null, sameTeam: state.teamOf?.[opp] === state.teamOf?.[votedIn] }, state.active, 'arena');
 }
 
 // ── after the Arena: switching sides, a team down to one ─────────────
@@ -267,7 +247,10 @@ export function afterTeamDuel(state, rng, m, duel) {
       for (const n of live(state, target)) addBond(n, w, 0.3);
       giveRespect(state, w, 'arenaWin');
       out.switch = { name: w, from: own.name, to: target.name };
-      addScene(state, 'team-switch', [w, target.captain, own.captain].filter((x, i, a) => x && a.indexOf(x) === i && state.active.includes(x)), { from: own.name, to: target.name, voted }, state.active, 'arena');
+      addScene(state, 'team-switch', [w, target.captain, own.captain].filter((x, i, a) => x && a.indexOf(x) === i && state.active.includes(x)), { from: own.name, to: target.name, voted,
+        // the captains by part (a captain already sent home leaves the part empty, rather than another taking it: seed 6)
+        joinCaptain: state.active.includes(target.captain) && target.captain !== w ? target.captain : null,
+        leaveCaptain: state.active.includes(own.captain) && own.captain !== w ? own.captain : null }, state.active, 'arena');
     }
   }
   out.folded = foldTeams(state);

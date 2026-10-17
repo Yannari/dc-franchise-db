@@ -506,7 +506,10 @@ function seasonAt(screen) {
   const players = [...new Set([...(S.activePlayers || []), ...(E.eliminated && E.eliminated !== 'No elimination' ? [E.eliminated] : [])])];
   // a screen that names its own people (the Jury House: the motel, and who is still playing)
   if (screen.people) { const all = screen.people.flatMap(t => t.members); players.splice(0, players.length, ...all); }
-  const tribes = screen.people ? screen.people : (E.tribesAtStart?.length ? E.tribesAtStart : S.tribes || []).map(t => ({ name: t.name, members: (t.members || []).filter(n => players.includes(n)) })).filter(t => t.members.length);
+  // the merge episode started with teams and ends without them: its Intel is the merged camp (the user, 2026-10-17: "the
+  // intel doesn't update at the merge to show them without a team", the Relationships tab still sorting them by old team)
+  const merged = !!(E.isMerge || S.isMerged);
+  const tribes = screen.people ? screen.people : merged ? [] : (E.tribesAtStart?.length ? E.tribesAtStart : S.tribes || []).map(t => ({ name: t.name, members: (t.members || []).filter(n => players.includes(n)) })).filter(t => t.members.length);
   const teams = tribes.length ? tribes : [{ name: S.mergeName || 'Everyone', members: players }];
   const bond = (a, b) => S.bonds?.[a <= b ? `${a}||${b}` : `${b}||${a}`] ?? 0;
   const love = (a, b) => {

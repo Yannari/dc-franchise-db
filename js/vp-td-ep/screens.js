@@ -342,8 +342,9 @@ const RIDE = {
 // the speaker's team as it stood that episode (merged: the merged tribe), and its colour
 function teamOfSpeaker(epNum, name) {
   const ep = (window.gs?.episodeHistory || []).find(e => e.num === +epNum);
-  const t = (ep?.tribesAtStart || []).find(x => (x.members || []).includes(name));
-  const tname = t?.name || (window.players || []).find(x => x.name === name)?.tribe;
+  // (the merge episode started with teams and is played merged: its speakers wear the merged tribe)
+  const t = ep?.isMerge ? null : (ep?.tribesAtStart || []).find(x => (x.members || []).includes(name));
+  const tname = ep?.isMerge ? (window.gs?.mergeName || 'merge') : t?.name || (window.players || []).find(x => x.name === name)?.tribe;
   if (!tname) return null;
   let color = '#4fb84a'; try { color = window.tribeColor ? window.tribeColor(tname) : color; } catch { /* default */ }
   return { name: tname, color };

@@ -7621,7 +7621,7 @@ export function generateCampEvents(ep, phase = 'both') {
     const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
     const _dissolutions = [...gs.allianceDissolutions];
     gs.allianceDissolutions = [];
-    _dissolutions.forEach(({ name, reason, members, betrayals, avgBond, lastMember, betrayalCount }) => {
+    _dissolutions.forEach(({ name, reason, members, betrayals, avgBond, lastMember, betrayalCount, atVote }) => {
       const activeMembers = (members || []).filter(m => gs.activePlayers.includes(m));
       if (!activeMembers.length && !lastMember) return;
       const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => activeMembers.some(m => t.members.includes(m)))?.name;
@@ -7631,16 +7631,25 @@ export function generateCampEvents(ep, phase = 'both') {
       // and were being listed in this camp's event).
       const _campTribe = gs.isMerged ? null : gs.tribes.find(t => t.name === _campKey);
       const _here = activeMembers.filter(m => !_campTribe || _campTribe.members.includes(m));
-      const _known = ['last-member', 'betrayal', 'bonds-collapsed', 'betrayals-and-low-trust'];
-      if (!_known.includes(reason)) return;
+      // every way alliances.js ends one (two of them, betrayals by two members and too many betrayals, were left
+      // out here and ended with no scene at all: measured 2026-10-16)
+      const _endKind = { 'last-member': 'last', betrayal: 'betrayal', 'ally-betrayals': 'betrayal', 'bonds-collapsed': 'collapsed',
+        'betrayals-and-low-trust': 'both', 'too-many-betrayals': 'both' }[reason];
+      if (!_endKind) return;
       if (reason === 'last-member' && !(lastMember && gs.activePlayers.includes(lastMember))) return;
-      Math.random(); // the draw that picked the sentence (the season must not move)
-      const _betrayers = (betrayals || []).map(b => b.player).filter(Boolean);
-      const _endKind = { 'last-member': 'last', betrayal: 'betrayal', 'bonds-collapsed': 'collapsed', 'betrayals-and-low-trust': 'both' }[reason];
+      // the draw that picked the sentence (the season must not move); an ending this block never used to tell
+      // draws nothing, so telling it now leaves the season as it was
+      if (!atVote && !['ally-betrayals', 'too-many-betrayals'].includes(reason)) Math.random();
+      const _betrayers = [...new Set((betrayals || []).map(b => b.player).filter(Boolean))];
+      // the ones who were betrayed tell it, never the ones who did it (read 2026-10-16: Trent told Owen "until Owen and
+      // Trent decided their vote mattered more"); with only betrayers here it is just an alliance that fell apart
+      const _wronged = _here.filter(m => !_betrayers.includes(m));
+      const _cast = _wronged.length ? _wronged : _here;
+      const _named = _wronged.length && _betrayers.length;
       const _endWho = reason === 'last-member' ? { a: lastMember }
-        : _here.length >= 2 ? { a: _here[0], b: _here[1] } : { a: _here[0] || lastMember };
-      const _endData = { ending: _endKind, group: name,
-        betrayer: _betrayers.length ? _betrayers.slice(0, 2).join(' and ') : null };
+        : _cast.length >= 2 ? { a: _cast[0], b: _cast[1] } : { a: _cast[0] || lastMember };
+      const _endData = { ending: _betrayers.length && !_wronged.length && reason !== 'last-member' ? 'collapsed' : _endKind, group: name,
+        betrayer: _named ? _betrayers.slice(0, 2).join(' and ') : null };
       ep.campEvents[_campKey].pre.push(scriptEvent(
         { type: 'allianceDissolved', players: reason === 'last-member' ? [lastMember] : _here, badgeText: 'Alliance Dissolved', badgeClass: 'red' },
         makeScene(_endWho.b ? 'alliance.end' : 'alliance.endsolo', _endWho, _endData, [],

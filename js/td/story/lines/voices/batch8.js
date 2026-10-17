@@ -136,7 +136,7 @@ export default {
     7: { warm: "I don't remember how this started, and now we have a whole royal family. I'm the Duke of Water, and I love it.", calm: "I don't know how this started. We have a royal family now, and I'm the Duke of Water. Best title I've ever had." },
   },
   'na.n1': {
-    1: { warm: "What's it?", loud: "What's IT?" },
+    1: { warm: "The end of what?", loud: "The end of WHAT?" },
     3: { warm: "Nobody's said anything, though.", calm: "Nobody's said anything." },
     5: { warm: "...Yeah. I don't remember either.", calm: "...Yeah. I don't remember." },
   },

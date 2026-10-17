@@ -55,7 +55,7 @@ const QUIT_PIVOT = [
 ];
 const QUIT_SOLO = [
   C('qt.o1', "{group} was holding me back. I'm better off on my own."),
-  C('qt.o2', "No more {group}. No more checking in. Just me."),
+  C('qt.o2', "I'm done with {group}. No more checking in. Just me."),
   C('qt.o3', "Everyone thinks you need an alliance to win. I'm about to find out if that's true."),
   Cw('qt.o4', { register: 'fiery' }, "I don't need {group}. I don't need anybody!"),
   C('qt.o5', "I stepped back from {group}. No drama. I just want my game to be my own."),

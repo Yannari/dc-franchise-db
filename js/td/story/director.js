@@ -884,9 +884,14 @@ function sidesOncePerDay(out, live) {
   }
 }
 function votePlan(ep, camp, members) {
-  const gone = ep.eliminated;
+  // a coach voted out (the coaching twist, coach-episode.js): the tribe voted and wrote the coach's name, but the coach
+  // is not one of tonight's voters and ep.eliminated stays empty, so the night had no plan, no other side, no swing vote
+  // (the user, 2026-10-16: "i barely got strategy and voting talk again was that cause the target was a coach?" Measured:
+  // 11 coach nights of 12 had none of it)
+  const coachOut = ep.eliminated ? null : (ep.coachElimination || []).find(c => c.tribe === camp || members.includes(c.coach)) || null;
+  const gone = ep.eliminated || coachOut?.coach;
   const tribal = (ep.tribalPlayers || []).filter(p => members.includes(p));
-  if (!gone || !tribal.includes(gone) || tribal.length < 3) return null;
+  if (!gone || !(tribal.includes(gone) || coachOut) || tribal.length < 3) return null;
   const ballots = (ep.votingLog || []).filter(v => v.voter && v.voted && tribal.includes(v.voter));
   // the name the plan was on: the boot, or (a tie that went to rocks, a vote that never landed on
   // the person who left) the name that drew the most votes; the target's own scene is the boot's only
@@ -935,7 +940,11 @@ function votePlan(ep, camp, members) {
   const rival = rivals.find(al => al.members.includes(boot)) || rivals[0] || null;
   const counter = (ep.votePitches || []).find(p => p !== pitch && p.pitchTarget !== boot && tribal.includes(p.pitcher) && tribal.includes(p.pitchTarget));
   const covers = new Set([pitch?.pitcher, counter?.pitcher].filter(Boolean));
-  return { boot, gone, tribal, ballots, onBoot, voters, pitch, bloc, leader, why, other, ch, rival, rivals, counter, covers };
+  // the coach's trainees (coach-episode.js revokeCoachTraining: what each of them lost when the coach went)
+  // (a coach on the ballot with ep.eliminated set too, a night two went home, is still a coach: coachElimination says so)
+  const ce = coachOut?.coach === boot ? coachOut : (ep.coachElimination || []).find(c => c.coach === boot);
+  const coach = ce ? { name: boot, trained: Object.keys(ce.lost || {}) } : null;
+  return { boot, gone, tribal, ballots, onBoot, voters, pitch, bloc, leader, why, other, ch, rival, rivals, counter, covers, coach };
 }
 
 // The plan, as a strategy talk (the user: "lacking in context, strategy, drama, comedy"). Built in
@@ -965,7 +974,10 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   const partner = tribal.filter(x => x !== boot && x !== a && !voters.includes(x)).sort((x, y) => getBond(boot, y) - getBond(boot, x) || x.localeCompare(y))[0];
   const pair = partner && getBond(boot, partner) >= 5 ? partner : null;
   const theirs = (gs.namedAlliances || []).find(al => al.active !== false && (al.formed ?? 0) < ep.num && (al.members || []).includes(boot) && !(al.members || []).includes(a))?.name || null;
-  const idol = has(gs.knownIdolHoldersPersistent) || has(gs.knownIdolHoldersThisEp);
+  // (a coach can never play an idol on themselves: it is never the reason, or the worry)
+  // (the other side's plan is on somebody else: only the coach's own name is a coach)
+  const isCoach = t.coach?.name === boot;
+  const idol = !isCoach && (has(gs.knownIdolHoldersPersistent) || has(gs.knownIdolHoldersThisEp));
   const best = Math.max(-10, ...tribal.filter(x => x !== boot).map(x => getBond(boot, x)));
   const ts = x => threatScore(x) || 0;
   const rank = [...tribal].sort((x, y) => ts(y) - ts(x) || x.localeCompare(y)).indexOf(boot);
@@ -974,7 +986,9 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   // ride-or-die so {keep} has nobody but us; or {target} said out loud they'd never vote {protects}
   const rel = !fromBallot && !coming ? relationalReason([a, ...voters.filter(x => x !== a)], boot) : null;
   const relCase = rel?.kind === 'isolate' && tribal.includes(rel.partner) && rel.partner !== who.b && rel.partner !== a ? 'isolate' : rel?.kind === 'pledge' && tribal.includes(rel.protects) ? 'pledge' : null;
-  const caseOf = relCase || ((fromBallot === 'coming' && !coming ? null : fromBallot)
+  // a coach is the case itself: the reason is what the coach did to this team, said as the ballots say it (coaches.js
+  // coachVoteReason: who they trained and who they never picked, and that a coach costs nobody an ally)
+  const caseOf = isCoach ? 'coach' : relCase || ((fromBallot === 'coming' && !coming ? null : fromBallot)
     || (coming ? 'coming' : t.ch?.sank === boot ? 'sank' : idol ? 'idol' : pair ? 'pair' : theirs ? 'group'
       : getBond(a, boot) <= -2 ? 'grudge' : rank >= 0 && rank <= 1 && tribal.length >= 4 ? 'threat' : best <= 1 ? 'outsider' : 'numbers'));
   if (t.why === 'shield') return null;   // saving an ally has its own scenes
@@ -1027,6 +1041,12 @@ function planTalk(ep, camp, t, who, shape, baseFacts, next, why, as = { step: 'p
   // of them already are one" with seven on the plan and the one left off it the target)
   const sideBig = themNames.length >= 2 || tribal.filter(x => !voters.includes(x)).length >= 3;
   const facts = { ...baseFacts, ...(group ? { group: true } : {}), alliance: !!group, sideVoted, sideBig, count, glue: !!gluePair, shaky: !!shaky, cover: !!cover, close: !!b && getBond(a, b) >= 4, others: !!rest.length, other: !!rival?.target, markMe: mark === a, markB: !!mark && mark === b, otherMe: rival?.target === a, otherB: !!b && rival?.target === b, cast: shape };
+  // a coach on the plan (vp.case.coach): who the coach trained (and so who loses it tonight), and where a stands
+  if (isCoach) {
+    const tr = t.coach.trained, prot = tr.filter(x => tribal.includes(x) && !Object.values(who).includes(x));
+    Object.assign(facts, { coachPassed: !!tr.length && !tr.includes(a), coachMine: tr.includes(a), coachTrained: !!tr.length, coachBuilt: tr.length >= 3, coachLiked: getBond(a, boot) > 1, protege: !!prot.length });
+    if (prot.length) data.protege = prot[0];
+  }
   // what this camp's day has already shown (arcBeats, t.em): the plan can call back to it
   const em = t.em || { spark: null, warned: [] };
   const sparkSeen = !!em.spark && em.spark.by === a && em.spark.of === boot;
@@ -1960,7 +1980,9 @@ export function airTdEpisode(ep) {
         for (const ev of ['pre', 'post'].flatMap(ph => eventsOf(ep, camp, ph))) {
           const k = ev?.scene?.kind, w = ev?.scene?.who || {};
           if (!ev || ev.aired != null || !k || !w.a || !w.b || /^(pitch|couple|vote|booth|tribal)/.test(k)) continue;
-          const key = `${k.split('.').slice(0, 2).join('.')}|${[w.a, w.b].sort().join('|')}`;
+          // (two alliances are two moments: Gwen and Heather ended The Drama Club and The Tripwire on one morning, and the
+          // second ending was cut as a repeat of the first)
+          const key = `${k.split('.').slice(0, 2).join('.')}|${[w.a, w.b].sort().join('|')}|${/^alliance\./.test(k) ? ev.scene?.data?.group || '' : ''}`;
           if (seenK.has(key)) { ev.aired = 'covered'; continue; }
           seenK.add(key);
         } }
@@ -3143,6 +3165,19 @@ export function airTdEpisode(ep) {
         if (!ev || !MUST_AIR.has(ev.type) || out[phase].some(it => it.ref === i)) return;
         ev.aired = true;
         if (AIRS_FIRST.has(ev.type)) out[phase].unshift({ ref: i }); else out[phase].push({ ref: i });
+      });
+    }
+    // ...and so does a named alliance ending, or somebody leaving one: the user, 2026-10-16, "i dont get much event when
+    // an alliance breaks so i never know when its happening". Measured on four seasons: 40 endings and departures,
+    // 13 on screen (a solo ending is not a storyline step, so it only ever aired as colour, and a two-person one lost
+    // its place to the day's budget). One that already aired as its long version, or was folded into another scene
+    // (aired 'covered', 'gone'), is not aired again.
+    for (const phase of ['pre', 'post']) {
+      eventsOf(ep, camp, phase).forEach((ev, i) => {
+        if (!ev || ev.aired != null || out[phase].some(it => it.ref === i)) return;
+        if (!/^alliance(Dissolved|Expelled)$/.test(ev.type || '') && !(ev.type === 'allianceCrack' && /^alliance\.(quit|dropped)/.test(ev.scene?.kind || ''))) return;
+        ev.aired = true;
+        out[phase].push({ ref: i });
       });
     }
     // Record only scenes that survived every cut. Off-camera events cannot create continuity.

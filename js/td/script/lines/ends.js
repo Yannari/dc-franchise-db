@@ -206,7 +206,7 @@ const END_COLLAPSED = [
     { by: 'a', say: "Great! {group} is officially over!" },
   ] },
   { id: 'en.c6', turns: [
-    { by: 'a', conf: "{group} isn't an alliance anymore. It's just a name for people who used to get along." },
+    { by: 'a', say: "{group} isn't an alliance anymore. It's just a name for people who used to get along." },
     { by: 'b', say: "Are you talking about us?" },
     { by: 'a', say: "Who else?" },
   ] },
@@ -282,7 +282,7 @@ const SOLO_BETRAYAL = [
     { by: 'a', conf: "Somebody blew up {group}, and I am going to find out who." },
   ] },
   { id: 'en.sb6', turns: [
-    { by: 'a', conf: "No more {group}. I'm on my own now. I don't love it." },
+    { by: 'a', conf: "{group} is gone. I'm on my own now. I don't love it." },
   ] },
 ];
 const SOLO_COLLAPSED = [
@@ -458,7 +458,7 @@ const EXPELSOLO_REPEATED = [
     { by: 'a', conf: "So {group} doesn't want me? Their loss. Seriously, their loss." },
   ] },
   { id: 'en.z5', turns: [
-    { by: 'a', conf: "No more {group}. I'm a free agent now. Which is a nice way of saying I'm alone." },
+    { by: 'a', conf: "I'm out of {group}. I'm a free agent now. Which is a nice way of saying I'm alone." },
   ] },
   { id: 'en.z6', when: { register: 'sweet' }, turns: [
     { by: 'a', conf: "I really let {group} down. I don't blame them for kicking me out." },

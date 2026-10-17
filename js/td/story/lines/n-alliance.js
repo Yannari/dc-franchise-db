@@ -533,7 +533,7 @@ export default {
       { by: 'b', say: "{group} was supposed to mean something." },
       { by: 'a', say: "It did. Until {betrayer} decided {betrayer.posAdj} vote mattered more." },
       { by: 'b', say: "So do we keep going without {betrayer.obj}?" },
-      { by: 'a', say: "Keep going with what? Two people and a name?" },
+      { by: 'a', say: "Keep going with what? Without {betrayer.obj}, {group} is just a name." },
       { by: 'a', conf: "The second somebody breaks rank, everybody starts wondering who's next. {group} was over when {betrayer} did it." },
     ] },
     { id: 'na.n3', place: 'aside', when: { voice: ['loud', 'blunt', 'tough'] }, turns: [

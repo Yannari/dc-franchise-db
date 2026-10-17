@@ -876,10 +876,15 @@ export function detectBetrayals(ep) {
       entry.reason = (entry.reason ? entry.reason + ' — ' : '') + `broke ${alliance.name}${newAllianceNote}`;
     });
   });
-  // Deactivate alliances whose membership is now too small (< 2 active)
+  // Deactivate alliances whose membership is now too small (< 2 active). The vote that did it is the alliance's
+  // end, and the camp hears about it (camp-events.js: the one left tells the camera). This ran before
+  // decayAllianceTrust, which skips an alliance already off, so an alliance whose partner went home just stopped
+  // existing (the user, 2026-10-16: "i never know when its happening").
   gs.namedAlliances.forEach(alliance => {
-    const activeCount = alliance.members.filter(m => gs.activePlayers.includes(m)).length;
-    if (activeCount < 2) alliance.active = false;
+    const active = alliance.members.filter(m => gs.activePlayers.includes(m));
+    if (active.length >= 2 || !alliance.active) return;
+    alliance.active = false;
+    (gs.allianceDissolutions ||= []).push({ name: alliance.name, ep: ep.num, reason: 'last-member', members: [...alliance.members], lastMember: active[0] || null, atVote: true });
   });
 }
 

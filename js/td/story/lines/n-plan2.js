@@ -148,4 +148,49 @@ export default {
       { by: 'c', conf: "{a} keeps saying it's {votes} votes, but I've seen {shaky} talking to the other side twice today. I'm not saying anything yet, but I'm watching." },
     ] },
   ],
+
+  // ── a coach on the plan (the coaching twist: director.js votePlan, a night the tribe voted out its coach) ──
+  // Every reason is one the ballots give (coaches.js coachVoteReason) and is true tonight: a coach has no vote and no
+  // idol they can play, the coach's trainees lose what they were taught when the coach goes (coach-episode.js
+  // revokeCoachTraining), and a coach still standing at the merge joins the game (promoteCoaches). Facts: coachPassed (a
+  // was never trained), coachMine (a was), coachTrained (anybody was), coachBuilt (three or more were), protege ({protege}, a trainee not in the
+  // scene), coachLiked (a likes the coach).
+  'vp.case.coach': [
+    { id: 'npm.ch1', when: { coachPassed: true }, turns: [
+      { by: 'a', say: "{target} has been training people all game, and not once me. I'm not keeping a coach who picked everybody else.", v: { tough: "Every session, {target} picks somebody. Every session, it's not me. I'm done waiting.", calm: "{target} has made a lot of people here better. None of them were me. That's my answer." } },
+      { by: 'b', say: "That sounds a little personal.", v: { dry: "Wow. Bitter much?" } },
+      { by: 'a', say: "It's practical. Every session {target} runs makes somebody else harder to beat." },
+    ] },
+    { id: 'npm.ch2', when: { coachBuilt: true, protege: true }, turns: [
+      { by: 'a', say: "Look at {protege}. Every session with {target}, {protege} gets a little harder to beat. That's {target}'s work." },
+      { by: 'b', say: "So we go after {protege}?" },
+      { by: 'a', say: "No. We go after the one who keeps making more of {protege}. Take out {target}, and everything {target} taught goes with {target}." },
+    ] },
+    { id: 'npm.ch3', when: { coachTrained: true }, turns: [
+      { by: 'a', say: "Here's what nobody's thinking about. If {target} is still here at the merge, {target} stops being a coach and starts playing.", v: { schemer: "Everybody's forgetting the merge, when a coach who's still here gets to play, with us and against us." } },
+      { by: 'b', say: "Against us." },
+      { by: 'a', say: "Against us, with everybody {target} ever trained owing {target} a favour. Tonight is the cheapest {target} is ever going to be." },
+    ] },
+    { id: 'npm.ch4', turns: [
+      { by: 'a', say: "{target} doesn't have a vote. Nobody out here loses an ally if {target} goes.", v: { blunt: "It's {target}, because there's no vote, no idol and no ally who comes after us. It's the easiest name all season." } },
+      { by: 'b', say: "That feels kind of cold." },
+      { by: 'a', say: "It's the one name tonight that doesn't send one of us home.", v: { warm: "I know. But it's the one name that keeps all of us here." } },
+    ] },
+    { id: 'npm.ch5', when: { coachLiked: true }, turns: [
+      { by: 'a', say: "I like {target}, I really do, but that's not the point." },
+      { by: 'b', say: "Then what's the point?" },
+      { by: 'a', say: "{target} has no vote to lose, and nobody who comes back for revenge. We cut the coach, and all of us are still here tomorrow." },
+    ] },
+    { id: 'npm.ch6', when: { coachMine: true }, turns: [
+      { by: 'a', say: "{target} trained me, I know, and I'm still writing the name." },
+      { by: 'b', say: "You'll lose everything {target} taught you." },
+      { by: 'a', say: "Some of it. But if {target} makes the merge, {target} is playing, and nobody here knows how I play better than {target}." },
+    ] },
+  ],
+  'vp.solo.case.coach': [
+    { id: 'npm.chs1', when: { coachPassed: true }, turns: [{ by: 'a', conf: "{target} picked a favourite every single session, and it was never me. Tonight, I return the favour." }] },
+    { id: 'npm.chs2', when: { coachTrained: true }, turns: [{ by: 'a', conf: "Coaches join the game at the merge. If {target} gets there, {target} walks in with everybody {target} ever trained owing {target} a favour. Not if I can help it." }] },
+    { id: 'npm.chs3', turns: [{ by: 'a', conf: "{target} has no vote, no allies to lose, and nobody who'll come after us for it. It's the cheapest name we'll ever get.", v: { warm: "I feel bad. {target} has been good to this team. But a coach is the one name that costs none of us an ally." } }] },
+    { id: 'npm.chs4', when: { coachMine: true }, turns: [{ by: 'a', conf: "{target} trained me, and if {target} goes, I lose some of that. I'm doing it anyway. A coach at the merge knows exactly how I play." }] },
+  ],
 };

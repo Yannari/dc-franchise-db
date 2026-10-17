@@ -149,3 +149,28 @@ describe('The Challenge stepped viewer: painting', () => {
     }
   });
 });
+
+// Intel's Votes tab opens on a vote only once that vote has been read to the end (the user, 2026-10-17: "the votes
+// tab shows every vote even before I read them"): doneScenes, at every step of the vote's screen.
+describe('The Challenge viewer: Intel never gets ahead of the screen', () => {
+  it('a ceremony is not done until its screen has been read to the end, and done after', async () => {
+    const { doneScenes } = await import('../js/vp-ch-ep/screens.js');
+    let checked = 0;
+    for (const { rows } of seasons) for (const row of rows.slice(0, 6)) {
+      const screens = chStepScreens(row);
+      const aired = row.ch?.aired || [];
+      const cer = aired.findIndex(a => a.kind === 'ceremony');
+      if (cer < 0) continue;
+      const si = screens.findIndex(s => s.key === 'vote' && s.steps.some(st => st.sceneIdx === cer));
+      const E = { screens, row };
+      for (let idx = 0; idx < screens[si].steps.length; idx++) {
+        const done = doneScenes({ E, si, idx }).has(cer);
+        const lastOfIt = !screens[si].steps.slice(idx + 1).some(() => true);
+        if (!lastOfIt) expect(done, `ep ${row.num}: vote counted as read at step ${idx} of ${screens[si].steps.length}`).toBe(false);
+      }
+      expect(doneScenes({ E, si: si + 1, idx: 0 }).has(cer), `ep ${row.num}: vote not counted after its screen`).toBe(true);
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(5);
+  });
+});

@@ -231,19 +231,21 @@ const istate = () => (typeof window !== 'undefined' ? (window._chxIntel ||= { ta
 // and returns. The end snapshot once the episode is over.
 // A scene counts once its LAST line has played (the user, 2026-10-16: "intel doesn't update after the dialogue
 // has been revealed"): every step belongs to the scene its first step opened, until the next one opens.
-function reachedScene(R) {
-  const owner = [];   // [scene, isCurrentOrEarlier] in airing order
+// The SET of scenes finished, never the furthest one: the screens do not show scenes in airing order (a chapter
+// gathers its own), so "everything up to the furthest" counted scenes still to come, and opened the Votes tab on
+// every ballot before the vote was read (the user, 2026-10-17: "the votes tab shows every vote before I read them").
+export function doneScenes(R) {
+  const owner = [];   // { sc, seen } for every step, in screen order
   let open = null;
   R.E.screens.forEach((s, si) => s.steps.forEach((st, i) => {
     if (st.sceneIdx != null) open = st.sceneIdx;
     if (open != null) owner.push({ sc: open, seen: si < R.si || (si === R.si && i <= R.idx) });
   }));
-  let upto = -1;
-  for (let k = 0; k < owner.length; k++) {
-    const last = k === owner.length - 1 || owner[k + 1].sc !== owner[k].sc;
-    if (last && owner[k].seen) upto = Math.max(upto, owner[k].sc);
-  }
-  return upto;
+  // done when its LAST step anywhere has been seen: a scene can own two runs of steps (the vote's opening card,
+  // then the ballots after the deliberation), and the first run ending is not the scene ending
+  const lastAt = new Map();
+  owner.forEach((o, k) => lastAt.set(o.sc, k));
+  return new Set([...lastAt].filter(([, k]) => owner[k].seen).map(([sc]) => sc));
 }
 function replay(H, a, R0 = {}) {
   const d = a.data || {}, who = a.who || [];
@@ -288,8 +290,8 @@ function houseNow(R) {
   if (!I.start) return I.end || null;
   const H = JSON.parse(JSON.stringify(I.start));
   const aired = R.E.row?.ch?.aired || [];
-  const upto = reachedScene(R);
-  for (let i = 0; i <= upto && i < aired.length; i++) replay(H, aired[i], { ep: R.E.row?.num });
+  const done = doneScenes(R);
+  for (let i = 0; i < aired.length; i++) if (done.has(i)) replay(H, aired[i], { ep: R.E.row?.num });
   return H;
 }
 function intel(R) {
@@ -330,10 +332,12 @@ function intel(R) {
     // every ballot this episode and why it went where it did, once the vote has aired (the user, 2026-10-16: "like
     // in Total Drama, a why when someone votes, so we know the reasoning: alliance, bond, revenge")
     const aired = R.E.row?.ch?.aired || [];
-    const upto = reachedScene(R);
-    const voted = aired.some((x, i) => i <= upto && x.kind === 'ceremony');
-    const votes = (R.E.row?.ch?.votes || []);
-    body = !voted ? '<div class="inone">The vote hasn\'t happened yet in this episode.</div>'
+    const done = doneScenes(R);
+    // each vote of the night opens when ITS ceremony has been read to the end (a double has two)
+    const ceremonies = aired.map((x, i) => (x.kind === 'ceremony' ? i : -1)).filter(i => i >= 0);
+    const all = R.E.row?.ch?.votes || [];
+    const votes = all.filter((v, vi) => ceremonies[vi] != null && done.has(ceremonies[vi]));
+    body = !votes.length ? `<div class="inone">${all.length ? 'The vote has not been read yet in this episode.' : 'No house vote in this episode.'}</div>`
       : votes.map((v, vi) => (votes.length > 1 ? `<div class="isub">Vote ${vi + 1}${v.votedIn ? ` · ${esc(v.votedIn)} goes in` : ''}</div>` : (v.votedIn ? `<div class="isub">${esc(v.votedIn)} goes in</div>` : ''))
         + (v.ballots || []).map(b => `<div class="ivote">${face(b.voter)}<b>${esc(b.voter)}</b><span class="iarrow">&rarr;</span>${face(b.target)}<b>${esc(b.target)}</b><span class="iwhy">${esc(whyOf(b))}</span></div>`).join('')).join('')
         || '<div class="inone">No house vote in this episode.</div>';

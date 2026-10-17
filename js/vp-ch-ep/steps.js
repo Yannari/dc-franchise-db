@@ -826,7 +826,8 @@ function ceremony(S, cer, row, { names, rules, again }) {
   if (again) S.push({ boardReset: 1, dir: 'One more vote tonight. The house votes again.', focus: ['TJ'], sceneIdx: cer.i });
   for (const part of cer.a.cer || []) {
     if (part.kind === 'cer-open') {
-      linesToSteps(S, part.lines, { names, sceneWho: ['TJ'] });
+      // the ceremony's own steps belong to it (Intel's Votes opens when they have all been read)
+      linesToSteps(S, part.lines, { names, sceneWho: ['TJ'], ...(again ? {} : { first: { sceneIdx: cer.i } }) });
       const trib = row.ch?.tribunal;
       if (rules && trib) S.push({ rules: { k: 'HOW TONIGHT WORKS', n: 'The Tribunal', li: [div, `${esc(nameList(trib.tribunal))} won the daily, so ${trib.tribunal.length > 1 ? 'they are' : 'is'} <b>the Tribunal</b>, and cannot be voted for.`,
         'Everybody else <b>says a name out loud</b>. The <b>three with the most votes</b> are nominated.',

@@ -275,3 +275,30 @@ a solo-season line ("I'm going in alone") in a pairs season.
 - Redemption House and Late Arrival off in a Pairs season for this build.
 - In `same` shape the whole house still votes (Rivals II let only the other gender vote; easy to add as an option).
 - Target keep rate about one chooser in five, higher for rivals who never made up, near zero for kin pairs.
+
+## 14. As built (2026-10-17)
+
+All of §3-§10 shipped, in these commits: 4113ebb2 (engine), 4843fb3b (pair storylines), 37214910 (ledger),
+8d06c42c (dialogue), 3e6b03a2 (setup + run tab), af988438 (export + Partner Swap card), 2010f4aa (viewer),
+ab192936 (voices), 826eddd0 (Tribunal in pairs), 46f1f4a9 (fixes from the read).
+
+Where it differs from the plan, and why:
+- **Keep rate.** About one chooser in ten keeps, not one in five: only about a quarter of choosers are allowed to keep
+  (CLAUDE.md: nice archetypes never steal; neutrals need strategic >= 6 and loyalty <= 4), and 37-65% of those do.
+  Rivals still at war keep about a third of the time; the size of the prize weighs in (`keepTerms.size`).
+- **Season length.** 24 players make 12 pairs and 9 regular episodes (one late double only when 11+ pairs must go).
+  Real pair seasons ran 13-14 pairs; a bigger cast gives a longer season.
+- **Return twist** works on pairs (the two most recent losing pairs, two on two). Late Arrivals and Redemption House
+  stay off in a Pairs season.
+- **The vote** names a pair by its representative (`repOf`: the pair's `a`); `ballot.named` is the member the voter
+  meant, `ballot.pair` both. Readers that match a ballot against the one voted in keep working.
+- **Lines.** A Pairs season reads `'<kind>~pairs.<ending>'` instead of a kind's solo pool when it has one (write.js
+  keyFor), so no solo vote-week line ("put her in the Arena") airs. Every scene snapshots each person's partner as it
+  happened (`snap.partners`), and roles get `{pa}`..`{pd}`, `{pt}`, `{palt}`, `{popt1}`, `{popt2}`.
+- **Viewer.** One podium and one duel mark per side on every Arena plate: the partner stands a step inside the podium
+  and a step outside the duel mark (steps.js sideMark). Share or keep plays on the summit plate; a plate of its own is
+  an optional art job.
+
+Tools: `CH_PAIRS=rivals|ties|fresh-meat|pick [CH_SHAPE=same] [CH_FORMAT=tribunal] CH_SEED=n npm run ch:transcript`;
+scratch tests zz-ch-pairs-smoke (outcomes), zz-ch-pairs-pools (airings against entries per pool), zz-ch-pairs-steps
+(the viewer's steps as text, and tools/ch-art/cuts/rows-pairs.json for the viewer harness).

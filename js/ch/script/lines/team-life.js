@@ -160,7 +160,7 @@ export default {
       { by: 'b', say: "Great. Thanks, team.",
         v: { sharp: "Great. Thanks, team.", dry: "Thanks, team.", loud: "GREAT! THANKS, team!", soft: "Great. Thanks, everyone.", odd: "Great. Thanks, team. Group hug cancelled." } },
       { by: 'b', conf: "Nobody said a word for me. Not one person. If {team} wants a name for the vote, they've already picked it.",
-        v: { sharp: "Nobody said a word for me. {team} has picked its name.", dry: "Nobody defended me. They've picked.", loud: "NOBODY said a WORD for me! {team} has ALREADY picked its name!", soft: "Not one person spoke up for me. If {team} needs a name at the vote, they've already chosen it.", odd: "Not one word for me. Silence. Very loud silence. My name is on their list. In pen." } },
+        v: { sharp: "Nobody said a word for me. {team} has picked its name.", dry: "Nobody defended me. They've picked.", loud: "NOBODY said a WORD for me! {team} has ALREADY picked its name!", soft: "Not one person spoke up for me. If {team} needs a name at the vote, they've already chosen it.", odd: "Not one word for me. Silence. Very loud silence. They already know whose name they're saying." } },
       { by: 'a', conf: "It's not personal. We lose, somebody goes in, and it should be the person who lost it for us.",
         v: { sharp: "Not personal. Whoever lost it should go in.", dry: "Whoever lost it goes in.", loud: "It's NOT personal! The person who LOST it should go IN!", soft: "It's not personal. If we lose, somebody goes in, and it should be whoever cost us.", odd: "It's not personal. It's math. Sad, sweaty math." } },
     ] },

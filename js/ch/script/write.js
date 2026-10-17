@@ -216,8 +216,12 @@ const PLACE_WORDS = [
 // The villa reveal is a tour: it names every room and stays at the villa. A confessional is the chair,
 // unless a stage direction puts the person somewhere ("lies awake on a lounger by the pool").
 const TOURS = new Set(['villa-reveal', 'arrival']);
+// TJ gathering the house stays where he gathered it, whatever somebody says about breakfast or the pool in it (the
+// user, 2026-10-17: "the rankings, why are they not in the common room?": a reaction naming the pool moved them)
+const ANNOUNCE = new Set(['tj-double', 'tj-house-meeting', 'tj-at-breakfast', 'power-rankings', 'quit', 'medical', 'disqualified',
+  'purge', 'pass-earned', 'pass-cut', 'redemption-closed', 'late-arrival']);
 function placeOfWords(spot, lines, kind) {
-  if (TOURS.has(kind)) return null;
+  if (TOURS.has(kind) || ANNOUNCE.has(kind)) return null;
   if (spot === 'confessional') lines = lines.filter(l => l.kind === 'beat');
   else if (!FLEXIBLE.has(spot)) return null;
   for (const l of lines) {

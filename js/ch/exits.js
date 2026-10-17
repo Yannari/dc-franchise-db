@@ -59,8 +59,9 @@ export function medical(state, name) {
   removePlayer(state, name, 'medical');
 }
 
-export function disqualify(state, name, victim) {
+export function disqualify(state, name, victim, witness = null) {
   state.tj[name] = (state.tj[name] || 0) - 2;
-  addScene(state, 'disqualified', [name, victim], {}, state.active, 'public');
+  // TJ hears from a witness first, when there is one (party.js dqDebate)
+  addScene(state, 'disqualified', [name, victim, ...(witness ? [witness] : [])], witness ? { witness } : {}, state.active, 'public');
   removePlayer(state, name, 'disqualified', { victim });
 }

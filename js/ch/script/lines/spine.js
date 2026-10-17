@@ -936,21 +936,21 @@ export default {
     ] },
   ],
   'disqualified.any': [
-    { id: 'dq.1', turns: [
+    { id: 'dq.1', when: { third: false }, turns: [
       { by: 'tj', say: "Everybody sit down. Last night, {gone} put hands on {a}, and that's the one rule I don't bend. {gone} is gone." },
       { by: 'a', conf: "I didn't want anybody sent home. But I also didn't deserve that, and the rules are the rules." },
     ] },
-    { id: 'dq.2', turns: [
+    { id: 'dq.2', when: { third: false }, turns: [
       { by: 'tj', say: "I love chaos. I love drama. I do not love violence. {gone} is out of this game, effective immediately." },
       { by: 'a', say: "I didn't even see it coming." },
       { by: 'a', conf: "One second we were yelling, and the next second it was something else. I'm just glad it's over." },
     ] },
-    { id: 'dq.3', turns: [
+    { id: 'dq.3', when: { third: false }, turns: [
       { by: 'tj', say: "Real talk, people. {gone} got physical with {a} last night. You do that, you go home. That's not a threat, it's a promise." },
       { by: 'a', conf: "The house is going to split on this. Some of them are going to say I started it. I didn't." },
     ] },
     // written long from the start (the long cut, 2026-10-16): TJ says it to their face, in front of the house
-    { id: 'dq.4', turns: [
+    { id: 'dq.4', when: { third: false }, turns: [
       { beat: 'TJ walks into the villa the next morning without knocking. Everybody knows why he is there.' },
       { by: 'tj', say: "Everybody in the common room. Now." },
       { by: 'tj', say: "{b}. Last night you put your hands on {a}." },
@@ -960,7 +960,7 @@ export default {
       { by: 'tj', say: "One mistake is the rule. You know the rule. Pack your bags." },
       { by: 'a', conf: "I didn't want anybody to go home like this. But I'm not going to pretend it was okay." },
     ] },
-    { id: 'dq.5', turns: [
+    { id: 'dq.5', when: { third: false }, turns: [
       { by: 'tj', say: "I watched the footage from last night. All of it." },
       { by: 'b', say: "Then you saw {a} start it." },
       { by: 'tj', say: "I saw {a} run their mouth. I saw you put your hands on somebody. Those are not the same thing." },
@@ -970,7 +970,7 @@ export default {
       { by: 'b', say: "No you're not." },
       { by: 'a', conf: "{b} is never going to forgive me for this, and half the house is going to blame me. That's my week now." },
     ] },
-    { id: 'dq.6', turns: [
+    { id: 'dq.6', when: { third: false }, turns: [
       { beat: 'The whole house is lined up in the common room. TJ is not smiling.' },
       { by: 'tj', say: "I love this show. I love the drama. I love the yelling. What I don't love is violence." },
       { by: 'tj', say: "{b}, you crossed the line last night. You're out. Effective immediately." },

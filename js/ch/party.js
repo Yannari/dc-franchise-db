@@ -264,3 +264,30 @@ export function expelledAftermath(state, gone, victim, friends = []) {
   nudge(state, victim, 'morale', relieved ? 0.4 : -0.6);
   addScene(state, 'expelled-victim', vf ? [victim, vf] : [victim], { gone, relieved }, vf ? [victim, vf] : [victim], vf ? 'villa' : 'confessional');
 }
+
+
+// ── the night of a fight that got physical, before TJ comes (the user, 2026-10-17: "the disqualification is rather
+// short; can we have a debate, some drama, before TJ decides: grudges, witnesses, people trying to calm the group,
+// people concerned, shouting, or calmer sometimes; it feels too short and anticlimactic") ──
+// Back at the villa the house argues it out: the aggressor's friends defend them, the victim's friends say what
+// they saw, somebody tries to calm it down. Every side taken costs something; TJ hears from a witness the next day.
+export function dqDebate(state, rng, aggressor, victim) {
+  const others = state.active.filter(n => n !== aggressor && n !== victim);
+  const lean = n => getBond(n, aggressor) - getBond(n, victim);
+  const defenders = others.filter(n => getBond(n, aggressor) >= 2.5 && lean(n) > 1).sort((x, y) => lean(y) - lean(x)).slice(0, 2);
+  const accusers = others.filter(n => !defenders.includes(n) && getBond(n, victim) >= 2.5 && lean(n) < -1).sort((x, y) => lean(x) - lean(y)).slice(0, 2);
+  // the one who tries to calm it: even-tempered, liked, and on nobody's side
+  const calmer = others.filter(n => !defenders.includes(n) && !accusers.includes(n) && Math.abs(lean(n)) < 2)
+    .sort((x, y) => (S(y, 'temperament') + S(y, 'social')) - (S(x, 'temperament') + S(x, 'social')))[0] || null;
+  const fuse = [aggressor, ...defenders, ...accusers].reduce((t, n) => t + S(n, 'temperament'), 0) / (1 + defenders.length + accusers.length);
+  const heated = fuse < 5.5 || rng() < 0.3;
+  for (const d of defenders) { addBond(d, aggressor, 0.4); addBond(d, victim, -0.6); remember(victim, d, 'took-their-side', 0.8); }
+  for (const w of accusers) { addBond(aggressor, w, -1); remember(aggressor, w, 'testified-against-me', 1.2); addBond(victim, w, 0.5); }
+  if (calmer) { addBond(calmer, aggressor, 0.2); addBond(calmer, victim, 0.2); pop(calmer, 0.4); }
+  nudge(state, aggressor, 'paranoia', 1); nudge(state, victim, 'morale', -0.5);
+  for (const n of others) nudge(state, n, 'paranoia', heated ? 0.3 : 0.1);
+  addScene(state, 'dq-debate', [aggressor, victim, ...defenders, ...accusers, ...(calmer ? [calmer] : [])],
+    { defenders, accusers, calmer, heated }, state.active, 'villa');
+  // the witness TJ asks: somebody who saw it and is not the aggressor's friend
+  return accusers[0] || calmer || null;
+}

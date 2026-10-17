@@ -135,8 +135,13 @@ export const ROLES = {
   'medical-house': sc => ({ roles: { a: sc.who[0], b: sc.data.friends?.[0], c: sc.data.friends?.[1], d: sc.data.relieved || undefined },
     ending: sc.data.friends?.length ? (sc.data.relieved ? 'relieved' : 'friends') : 'quiet', slots: { part: sc.data.part } }),
   // b: the one TJ is sending home, there to hear it (they leave the same day)
-  disqualified: sc => ({ roles: { a: sc.who[1], b: sc.who[0] }, ending: 'any', slots: { gone: sc.who[0] } }),
-  'expelled-goodbye': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.angry ? 'angry' : 'tears', slots: { target: sc.data.victim || undefined } }),
+  // c: a witness TJ hears from first (dqDebate), when there was one
+  disqualified: sc => ({ roles: { a: sc.who[1], b: sc.who[0], c: sc.data.witness || undefined }, ending: sc.data.witness ? 'hearing' : 'any', slots: { gone: sc.who[0] } }),
+  // the night of the fight (party.js dqDebate): a the aggressor, b the one hit, c a friend defending a, d a
+  // friend of b who saw it, x the one trying to calm it down. heated: shouting; calm: quiet and serious
+  'dq-debate': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.defenders?.[0], d: sc.data.accusers?.[0], x: sc.data.calmer || undefined },
+    ending: sc.data.heated ? 'heated' : 'calm' }),
+  'expelled-goodbye': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: !sc.who[1] ? 'alone' : sc.data.angry ? 'angry' : 'tears', slots: { target: sc.data.victim || undefined } }),
   'expelled-blame': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.heated ? 'heated' : 'calm', slots: { gone: sc.data.gone } }),
   'expelled-victim': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.relieved ? 'relieved' : 'shaken', slots: { gone: sc.data.gone } }),
   // TJ announces a double (season.js): a and b are the two most worried; {count} the number going in

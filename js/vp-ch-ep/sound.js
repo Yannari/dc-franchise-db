@@ -189,7 +189,7 @@ const moods = {
   'ch-drama': ['fight', 'physical', 'kitchen-blowup', 'receipts', 'old-show-grudge', 'trash-talk', 'floater-callout', 'gossip-backfire',
     'jealousy', 'breakup', 'tj-house-meeting', 'empty-threat', 'arena-eve-confront', 'vet-dismisses', 'rookie-uprising',
     'alliance-betrayal', 'deal-broken', 'disqualified', 'partner-blame', 'team-blame', 'ex-in-the-house',
-    'alliance-leave', 'alliance-end', 'kiss-fallout', 'home-gossip', 'tj-double'],
+    'alliance-leave', 'alliance-end', 'kiss-fallout', 'home-gossip', 'tj-double', 'dq-debate'],
   'ch-romance': ['spark', 'showmance', 'flirt', 'beach-date', 'pda', 'hot-tub-truths', 'crush', 'romance', 'home-talk', 'home-guilt'],
   // somebody leaving the game outside the Arena gets the Arena goodbye's song (the user, 2026-10-16: "the goodbye
   // music doesn't play when someone goes on a medical or is expelled"): the medevac, the expelled goodbye, a quit

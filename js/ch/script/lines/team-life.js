@@ -324,8 +324,8 @@ export default {
   ],
   'team-leak.caught': [
     { id: 'tll.k1', turns: [
-      { by: 'a', say: "Listen. {team}'s going after one of yours if you lose. I'm telling you so you're ready.",
-        v: { sharp: "{team}'s going after one of yours. Be ready.", dry: "Listen. {team} is going after one of yours if you lose. I'm telling you so you're ready.", loud: "LISTEN! {team}'s going after one of YOURS! I'm telling you so you're READY!", soft: "Listen. {team} is planning to go after one of yours. I'm telling you so you can be ready.", odd: "Listen. {team} has a plan. Now you have it too. Free of charge." } },
+      { by: 'a', say: "Listen. {team} is going after one of yours if you lose. I'm telling you so you're ready.",
+        v: { sharp: "{team} is going after one of yours. Be ready.", dry: "Listen. {team} is going after one of yours if you lose. I'm telling you so you're ready.", loud: "LISTEN! {team} is going after one of YOURS! I'm telling you so you're READY!", soft: "Listen. {team} is planning to go after one of yours. I'm telling you so you can be ready.", odd: "Listen. {team} has a plan. Now you have it too. Free of charge." } },
       { by: 'b', say: "You're serious?",
         v: { sharp: "Serious?", dry: "Serious?", loud: "You're SERIOUS?", soft: "Are you serious?", odd: "Serious? Serious serious?" } },
       { by: 'c', say: "Yeah, {a}. Are you serious?",
@@ -360,7 +360,7 @@ export default {
       { by: 'a', say: "I don't believe you.",
         v: { sharp: "I don't believe you.", dry: "Don't believe you.", loud: "I DON'T believe you!", soft: "I'm sorry, but I don't believe you.", odd: "I don't believe you. I believe in soup, though." } },
       { by: 'b', say: "Then don't. But I'm not giving up {alt} because {team} is nervous.",
-        v: { sharp: "Then don't. I'm not giving up {alt} for {team}'s nerves.", dry: "Then don't. I'm not giving up {alt} because {team} is nervous.", loud: "Then DON'T! But I'm NOT giving up {alt} because {team} is NERVOUS!", soft: "Then don't. But I'm not giving up {alt} just because {team} is nervous.", odd: "Then don't. I'm keeping {alt}. {team} can get a stress ball." } },
+        v: { sharp: "Then don't. I'm not giving up {alt} because {team} got nervous.", dry: "Then don't. I'm not giving up {alt} because {team} is nervous.", loud: "Then DON'T! But I'm NOT giving up {alt} because {team} is NERVOUS!", soft: "Then don't. But I'm not giving up {alt} just because {team} is nervous.", odd: "Then don't. I'm keeping {alt}. {team} can get a stress ball." } },
       { by: 'b', conf: "I can be on {team} and be with {alt}. People keep acting like I have to choose. I don't.",
         v: { sharp: "I can be on {team} and with {alt}. I don't have to choose.", dry: "I can be on {team} and with {alt}. People act like I have to choose. I don't.", loud: "I can be on {team} AND with {alt}! People act like I have to CHOOSE! I DON'T!", soft: "I can be on {team} and still be with {alt}. Everyone acts like I have to choose, but I don't.", odd: "Team and {alt}. Both. People act like it's a menu. It's a buffet." } },
       { by: 'a', conf: "{b} picked {alt} over {team}, right to my face. When we lose, I'll remember who {b} goes to bed thinking about.",

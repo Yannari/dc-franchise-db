@@ -6,6 +6,7 @@ import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, exileChoo
 import { tdJuryHouseScreen } from './vp-td-ep/jury-house.js';
 import { tdTwistBlocksScreen, tdMergeScreen } from './vp-td-ep/twist-screens.js';
 import { tdReturnScreen } from './vp-td-ep/returns.js';
+import { tdAmbassadorsScreen } from './vp-td-ep/twists-more.js';
 import { preTwistBlocks, mergeData, _buildPostTwistBlocks } from './vp-screens.js';
 import { bbHostName } from './bb-aftermath.js';
 import { transcriptHeaderLines } from './transcript-header.js';
@@ -932,6 +933,10 @@ export function _textTwists(ep, ln, sec) {
         if (am.agreed) ln(`  AGREED: ${am.target} eliminated. ${am.targetReason}`);
         else { ln(`  DEADLOCKED: No agreement. Rock draw.`); ln(`  ${am.rockDrawLoser} drew the wrong rock — eliminated.`); }
         am.returnEvents?.forEach(re => ln(`  ${re.tribe}: ${re.type === 'safe' ? 'Safe' : re.type === 'ambassador-eliminated' ? 'Ambassador lost' : 'Tribemate eliminated'}`));
+        // the day as the stepped viewer plays it: the choosing, the debate and its reasons, the news at camp, the goodbye
+        let _ambScr = null;
+        try { _ambScr = tdAmbassadorsScreen(ep, { host: seasonConfig.host || 'Chris', setting: seasonConfig.setting }); } catch { _ambScr = null; }
+        if (_ambScr) { ln('THE AMBASSADORS — AS IT AIRS'); tdStepTranscript(_ambScr).forEach(l => ln(`  ${l}`)); }
       }
     } else if (tw.type === 'emissary-vote') {
       ln('EMISSARY VOTE — winning tribe sends an emissary to losing tribe\'s tribal.');

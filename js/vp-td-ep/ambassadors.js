@@ -66,13 +66,13 @@ export function ambassadorsDay({ ep, host, venue, neutral }) {
         sharp: [`Whatever they offer you, the answer is no. None of us.`], loud: [`Don't you DARE give them one of us!`], soft: [`Please come back with all of us still here.`],
         dry: [`Try not to sell us out. It'd be awkward.`], odd: [`Bring us back a good deal. And maybe a snack.`], any: [`Don't give them any of us.`],
       }, `ask-${s.tribe}`), [ask, A]);
-      say(A, VA(A, { any: [`I'll do what I can.`], sharp: [`I'll do what I have to.`], soft: [`I'll try. That's all I can promise.`], loud: [`Nobody's going home from here! Trust me!`] }, `promise-${s.tribe}`), [A, ask]);
+      say(A, VA(A, { any: [`I'll do what I can.`, `I'll bring back the best deal I can get.`], sharp: [`I'll do what I have to.`, `I'll handle it. That's what you sent me for.`], soft: [`I'll try. That's all I can promise.`, `I'll fight for every one of you. I promise.`], loud: [`Nobody's going home from here! Trust me!`, `Nobody's touching this team! Not on my watch!`] }, `promise-${s.tribe}`), [A, ask]);
     }
     conf(A, VA(A, {
-      sharp: [`They picked me because they think I'll protect them. I'll protect whoever keeps me in this game.`],
-      loud: [`This is the biggest thing I've done out here, and I'm not blowing it!`],
-      soft: [`Somebody's game ends today because of what I say. I don't know if I can live with that.`],
-      dry: [`I get to decide who goes home today. Everybody's going to be very nice to me this morning.`],
+      sharp: [`They picked me because they think I'll protect them. I'll protect whoever keeps me in this game.`, `Everybody thinks I'm going in there for the team. I'm going in there for me.`],
+      loud: [`This is the biggest thing I've done out here, and I'm not blowing it!`, `I've got the whole team riding on my back! No pressure! Lots of pressure!`],
+      soft: [`Somebody's game ends today because of what I say. I don't know if I can live with that.`, `I didn't want this. I just didn't know how to say no.`],
+      dry: [`I get to decide who goes home today. Everybody's going to be very nice to me this morning.`, `Ambassador. It sounds important. It mostly means I get blamed.`],
       odd: [`I've never negotiated anything in my life. I once traded a sandwich for half a sandwich. I lost.`],
       any: [`Somebody's going home because of what I say today.`],
     }, `conf-${s.tribe}`));
@@ -92,6 +92,46 @@ export function ambassadorsDay({ ep, host, venue, neutral }) {
   else { say(A1, V(A1, { any: [`So. You're the one.`], soft: [`Hi. This is so weird.`], loud: [`Okay! Let's do this!`] }, 'meet1'), amb); say(A2, V(A2, { any: [`Looks like it.`], dry: [`Apparently.`], sharp: [`Let's get this over with.`] }, 'meet2'), amb); }
 
   // ── the negotiation ──
+  // The user, 2026-10-17: "the ambassadors should have a better debate with actual reasonings and a conclusion, when
+  // they announce the eliminated with reactions, maybe drama, and goodbye". Every reason is the record's: challenge wins
+  // (chalRecord), the alliance a name holds together, a grudge (bond), how loved a name is on its own team, the team
+  // sizes, and the engine's own reason for the name they settle on (twists.js targetReason).
+  const S = ep.gsSnapshot || {};
+  const winsOf = n => (S.chalRecord || globalThis.gs?.chalRecord || {})[n]?.wins || 0;
+  const allianceOf = n => (S.namedAlliances || []).find(a => a.active !== false && (a.members || []).includes(n)) || null;
+  const teamOf = n => sel.find(s => (s.members || []).includes(n) || s.ambassador === n) || null;
+  const liked = n => { const mates = (teamOf(n)?.members || []).filter(x => x !== n); return mates.length ? mates.reduce((a, x) => a + bond(n, x), 0) / mates.length : 0; };
+  const word = n => ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][n] || String(n);
+  // why `by` wants `n` gone, and why `by` won't hand over `n`, their own: each reason said once in the meeting (two names
+  // from one alliance are not both "holding it together"), and two people's words never the same sentence
+  const usedCase = new Set();
+  const pickH = (arr, ...k) => arr[[...k.join('|')].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261) % arr.length];
+  const caseAgainst = (by, n) => {
+    const w = winsOf(n), al = allianceOf(n);
+    const opts = [
+      bond(by, n) <= -2 && ['grudge:' + n, [`I'll be honest with you. ${n} and I have never gotten along, and I'm not walking into the merge with ${n} there.`, `I can't stand ${n}. I'm not going to pretend this is strategy. I just don't want ${n} at the merge.`]],
+      w >= 2 && ['wins:' + n, [`${n} has won ${word(w)} challenges. If ${n} makes the merge, ${n} wins immunity every week and neither of us ever gets a shot.`, `${word(w).replace(/^./, c => c.toUpperCase())} challenge wins. That's ${n}. Let ${n} into the merge, and we're all playing for second.`]],
+      al && ['al:' + al.name, [`${n} is holding ${al.name} together. Take ${n} out, and ${al.name} falls apart before the merge.`, `${al.name} runs through ${n}. Without ${n}, it's just a group of people who used to have a plan.`]],
+      liked(n) >= 3 && ['liked:' + n, [`Everybody on ${P(n).posAdj} team loves ${n}. At the end, that's a jury that votes for ${n}. I'd rather deal with it now.`, `Have you seen how ${P(n).posAdj} team looks at ${n}? That's a winner's jury, and it's already forming.`]],
+      ['threat:' + n, [`${n} is the one on your side I'd be scared of at the merge. You know it, and I know it.`, `If I'm honest, ${n} is the name I've been worried about since day one.`]],
+    ].filter(Boolean);
+    const [key, lines] = opts.find(([k]) => !usedCase.has(k)) || opts[opts.length - 1];
+    usedCase.add(key);
+    return pickH(lines, by, n, key);
+  };
+  const usedFor = new Set();
+  const caseFor = (by, n) => {
+    const opts = [
+      bond(by, n) >= 4 && [`${n} is my closest friend out here. I'm not handing ${P(n).obj} over.`, `${n} has had my back since day one. You're not getting ${n}.`, `Not ${n}. ${n} is the one person here I actually trust.`],
+      winsOf(n) >= 2 && [`${n} is the reason my team has won anything. Without ${n}, we lose every challenge until the merge.`, `${n} carries us. Give you ${n}, and my team doesn't win another challenge.`],
+      allianceOf(n)?.members?.includes(by) && [`${n} is with me. I'm not walking back into camp having given up my own ally.`, `${n} and I are in this together. That's not on the table.`],
+      [`${n} hasn't done anything to deserve this. I'm not putting ${P(n).posAdj} name on the table.`, `I'm not giving you ${n}. ${n} has been nothing but good to my team.`],
+    ].filter(Boolean)[0];
+    const fresh = opts.filter(t => !usedFor.has(t.replace(n, '')));
+    const t = pickH(fresh.length ? fresh : opts, by, n, 'for');
+    usedFor.add(t.replace(n, ''));
+    return t;
+  };
   const props = m.proposals || [];
   const p1 = props.find(x => x.proposer === A1)?.proposed || null;
   const p2 = props.find(x => x.proposer === A2)?.proposed || null;
@@ -103,57 +143,90 @@ export function ambassadorsDay({ ep, host, venue, neutral }) {
     villain: n => [`Let's not waste each other's time. It's ${n}. Say yes, and we both go back to camp.`],
     dealmaker: n => [`Here's what I'm thinking. ${n} goes home, and when we merge, I owe you one. A real one.`],
     'loyal-shield': n => [`Before we start, I'm not giving you anybody from my team. So let's talk about yours. Let's talk about ${n}.`],
-    emotional: n => [`I hate this. I really hate this. If I have to say a name... it's ${n}. I'm sorry.`],
+    emotional: n => [`I hate this. I really hate this. If I have to say a name, it's ${n}. I'm sorry.`],
   };
-  if (leadName) say(lead, (OPEN[typeOf(lead)] || OPEN.emotional)(leadName)[0], [lead, other]);
+  if (leadName) {
+    say(lead, (OPEN[typeOf(lead)] || OPEN.emotional)(leadName)[0], [lead, other]);
+    say(other, `Why ${leadName}?`, [other, lead]);
+    say(lead, caseAgainst(lead, leadName), [lead, other]);
+  }
   if (otherName && leadName) {
+    say(other, caseFor(other, leadName), [other, lead]);
     say(other, V(other, {
-      sharp: [`${leadName}? Cute. No. If anybody's going, it's ${otherName}.`], loud: [`No way! ${leadName} is one of mine! What about ${otherName}?`],
-      soft: [`Please, not ${leadName}. ${leadName} is my friend. What about ${otherName}?`], dry: [`Interesting pick. I was going to say ${otherName}.`],
-      odd: [`Counter-offer: ${otherName}. And I keep ${leadName}. And we never speak of this again.`], any: [`Not ${leadName}. What about ${otherName}?`],
+      sharp: [`If we're being honest about threats, let's talk about ${otherName}.`], loud: [`And while we're at it, what about ${otherName}?`],
+      soft: [`If it has to be somebody, can we at least talk about ${otherName}?`], dry: [`Funny. I came here with a different name. ${otherName}.`],
+      odd: [`Counter-offer: ${otherName}. And I keep ${leadName}. And we never speak of this again.`], any: [`What about ${otherName}?`],
     }, 'counter'), [other, lead]);
-    say(lead, V(lead, {
-      sharp: [`${otherName} is on my team. I'm not walking back into camp having handed over ${otherName}.`], loud: [`No! ${otherName} is ours! You can't have ${otherName}!`],
-      soft: [`I can't give you ${otherName}. I'd never be able to look at my team again.`], dry: [`And I can walk back having given up ${otherName}? No.`],
-      odd: [`${otherName} is like family. Annoying family. But family.`], any: [`I can't give you ${otherName}.`],
-    }, 'defend'), [lead, other]);
+    say(other, caseAgainst(other, otherName), [other, lead]);
+    say(lead, caseFor(lead, otherName), [lead, other]);
     say(other, V(other, { any: [`And you think I can walk back having given up ${leadName}?`], loud: [`Well, I can't give you ${leadName} either!`], dry: [`Then we have a problem.`] }, 'standoff'), [other, lead]);
     beat(`Neither of them says anything for a long time.`, amb, { tense: true });
+    // the numbers: the smaller team has less to give
+    const sizeOf = n => (teamOf(n)?.members || []).length;
+    const [small, big] = sizeOf(A2) - sizeOf(A1) >= 2 ? [A1, A2] : sizeOf(A1) - sizeOf(A2) >= 2 ? [A2, A1] : [null, null];
+    if (small) {
+      say(small, `Think about the numbers. Your team has ${word(sizeOf(big))} people, mine has ${word(sizeOf(small))}. You can lose one and still be fine at the merge. We can't.`, [small, big]);
+      say(big, V(big, { any: [`That's not my problem. That's what happens when you lose challenges.`], soft: [`I know. I know it isn't fair. But I have to go back to my team too.`], dry: [`Losing challenges was a choice. Not mine, but a choice.`] }, 'numbers'), [big, small]);
+    }
   }
   if (m.resistFired && def && dom) {
     say(def, V(def, {
       sharp: [`No. I see exactly what you're doing, and it's not going to work on me.`], loud: [`Stop! I'm not doing your dirty work for you!`],
       soft: [`I know you think I'll just go along with it. I won't. Not this time.`], dry: [`You're very good at this. I'm still saying no.`], odd: [`Nice try. I've seen this movie. I know how it ends.`], any: [`No. I'm not doing this your way.`],
     }, 'resist'), [def, dom], { loud: true });
-    say(dom, V(dom, { any: [`...Okay. Then what do you suggest?`], sharp: [`Fine. Then you come up with something better.`], loud: [`Then what?! Somebody has to go!`] }, 'resist-back'), [dom, def]);
+    say(dom, V(dom, { any: [`Okay. Then what do you suggest?`], sharp: [`Fine. Then you come up with something better.`], loud: [`Then what?! Somebody has to go!`] }, 'resist-back'), [dom, def]);
   } else if (dom && typeOf(dom) === 'manipulator') {
     say(dom, `Let me ask you something. Honestly. Who on your team do you think is holding you back?`, [dom, def || other]);
     beat(`${def || other} opens ${P(def || other).posAdj} mouth, and then closes it again.`, [def || other]);
   } else if (dom && typeOf(dom) === 'villain') {
     say(dom, V(dom, { any: [`Here's how this goes. You agree with me, or we draw rocks, and I like my odds.`], loud: [`Agree with me, or we go to rocks! Your choice!`] }, 'threat'), [dom, def || other]);
   }
-  if (m.agreed && m.sharedEnemy && m.target === m.sharedEnemy) {
-    say(other, `What about ${m.sharedEnemy}?`, [other, lead]);
-    beat(`${lead} goes very still.`, [lead]);
-    say(lead, V(lead, { any: [`...Actually? Yeah. I can't stand ${m.sharedEnemy}.`], soft: [`I feel bad saying it, but... yeah. ${m.sharedEnemy}.`], loud: [`Oh, thank god somebody said it! ${m.sharedEnemy}!`] }, 'shared'), [lead, other]);
-    say(other, V(other, { any: [`Me neither.`], loud: [`RIGHT?!`], dry: [`So we agree on something.`] }, 'shared2'), [other]);
-    beat(`They both laugh, a little too loudly, and then stop.`, amb);
-  }
 
-  // ── the deal, or the rocks ──
+  // ── the conclusion: the deal and why, or the rocks ──
+  const why = String(m.targetReason || '');
   if (m.agreed && m.target) {
     const T = m.target;
+    // the one giving up a teammate, and the one taking the name
+    const giver = amb.find(a => teamOf(T)?.tribe && teamOf(a)?.tribe === teamOf(T).tribe) || other;
+    const taker = amb.find(a => a !== giver) || lead;
+    if (m.sharedEnemy && T === m.sharedEnemy) {
+      say(other, `What about ${T}?`, [other, lead]);
+      beat(`${lead} goes very still.`, [lead]);
+      say(lead, V(lead, { any: [`Actually? Yeah. I can't stand ${T}.`], soft: [`I feel bad saying it, but yeah. ${T}.`], loud: [`Oh, thank goodness somebody said it! ${T}!`] }, 'shared'), [lead, other]);
+      say(other, V(other, { any: [`Me neither.`], loud: [`RIGHT?!`], dry: [`So we agree on something.`] }, 'shared2'), [other]);
+      beat(`They both laugh, a little too loudly, and then stop.`, amb);
+      say(lead, `It's not about threats any more. We'd both rather go into the merge without ${T}. That's the deal.`, amb);
+    } else if (/steered/.test(why) && dom) {
+      say(dom, `Forget the names we came in with. Who's the one person neither of us could ever get on our side? It's ${T}.`, [dom, def || other]);
+      say(def || other, `I hadn't thought about it like that.`, [def || other, dom]);
+      say(dom, `You don't have to. That's what I'm here for.`, [dom]);
+    } else if (/grudge/.test(why) && dom) {
+      say(dom, `${T}. That's my price. Take it, or we go to rocks, and I like my odds a lot more than you like yours.`, [dom, def || other], { tense: true });
+      beat(`${def || other} looks at the bag of rocks on the table, and then back at ${dom}.`, [def || other]);
+    } else {
+      if (T === leadName || T === otherName) say(taker, `It keeps coming back to ${T}. Nothing you've said changes why.`, [taker, giver]);
+      else { say(taker, `Okay. Forget both of them. What about ${T}?`, [taker, giver]); say(taker, caseAgainst(taker, T), [taker, giver]); }
+      say(giver, T === leadName || T === otherName ? `${T} is the one I came here to protect.` : `${T} is on my team.`, [giver, taker]);
+      beat(`${giver} doesn't say no.`, [giver], { tense: true });
+      say(giver, V(giver, { any: [`But you're right. I couldn't beat ${T} at the merge either.`], soft: [`I hate that you're right. I couldn't beat ${T} at the merge either.`], sharp: [`Fine. You're right, and I hate it. I couldn't beat ${T} at the merge either.`] }, 'concede'), [giver, taker]);
+    }
     say(lead, `So. ${T}?`, [lead, other], { tense: true });
-    say(other, V(other, { any: [`${T}.`], soft: [`...${T}. I'm sorry, ${T}.`], sharp: [`${T}. Done.`] }, 'agree'), [other, lead]);
+    say(other, V(other, { any: [`${T}.`], soft: [`${T}. I'm sorry, ${T}.`], sharp: [`${T}. Done.`] }, 'agree'), [other, lead]);
     beat(`They shake hands. Neither of them looks happy about it.`, amb);
+    conf(giver, V(giver, {
+      sharp: [`I gave up one of my own. It was the right move for my game, and I'll keep telling myself that.`], loud: [`I just gave away somebody from MY team. I feel sick.`],
+      soft: [`I have to go back and look ${T}'s friends in the eye. I don't know how I'm going to do that.`], dry: [`Nobody ever thanks the ambassador.`],
+      any: [`I'll have to live with that one.`],
+    }, 'giver-conf'));
     hostSay(`Have you reached a decision?`, amb);
     beat(`${A1} and ${A2} look at each other one more time.`, amb, { tense: true });
-    hostSay(`${T}... is going home tonight.`, [], { tense: true });
+    hostSay(`${T} is going home tonight.`, [], { tense: true });
     steps.push({ k: 'title', kicker: 'They agree', name: T, faces: [T], tone: 'out' });
   } else if (m.eliminatedByRocks || m.rockDrawLoser) {
     const L = m.rockDrawLoser || m.eliminated, W = amb.find(n => n !== L);
-    say(A1, V(A1, { any: [`I'm not giving you anybody.`], soft: [`I can't do it. I can't give you a name.`], loud: [`I'm not giving you ANYBODY!`] }, 'nodeal'), [A1, A2]);
+    say(A1, V(A1, { any: [`I'm not giving you anybody. I'd rather take my chances.`], soft: [`I can't do it. I can't give you a name.`], loud: [`I'm not giving you ANYBODY!`] }, 'nodeal'), [A1, A2]);
     say(A2, V(A2, { any: [`Then neither will I.`], sharp: [`Then we're done here.`], dry: [`Then I guess we're doing this the hard way.`] }, 'nodeal2'), [A2, A1]);
+    conf(A2, `Neither of us would give up our own. So now one of us goes home instead. I don't know if that's brave or stupid.`);
     hostSay(`No deal?`, amb);
     say(A1, `No deal.`, [A1]);
     hostSay(`Then it comes down to the rocks. One white, one black. Draw the black, and you're the one going home.`, amb, { tense: true });
@@ -162,45 +235,71 @@ export function ambassadorsDay({ ep, host, venue, neutral }) {
     beat(`${W} opens first. White.`, [W]);
     beat(`${L} doesn't need to look. ${L} looks anyway. Black.`, [L], { tense: true, act: { kind: 'shake', who: [L] } });
     say(L, V(L, {
-      sharp: [`A rock. I'm going home because of a rock.`], loud: [`NO! No, no, no! Are you kidding me?!`], soft: [`Oh. Okay. Okay... I tried. I really tried.`],
+      sharp: [`A rock. I'm going home because of a rock.`], loud: [`NO! No, no, no! Are you kidding me?!`], soft: [`Oh. Okay. Okay. I tried. I really tried.`],
       dry: [`Well. That's one way to go.`], odd: [`I want a rematch. Best of three.`], any: [`I'm going home.`],
     }, 'lost'), [L], { shock: true });
     say(W, V(W, { any: [`I'm sorry. I really am.`], sharp: [`It was never going to be personal.`], loud: [`I'm sorry! I didn't want it to be like this!`] }, 'won'), [W, L]);
+    say(L, V(L, { any: [`Don't be. I didn't give them anybody. Tell my team that.`], soft: [`Tell my team I didn't give them anybody. Please.`], sharp: [`Tell my team I protected every one of them. Make sure they know.`] }, 'lost2'), [L, W]);
     steps.push({ k: 'title', kicker: 'The black rock', name: L, faces: [L], tone: 'out' });
   }
 
-  // ── the walk back with the news ──
+  // ── the news, at camp: the reactions, the fight, the goodbye ──
   const gone = m.eliminated;
   if (gone) {
     const goneTribe = tribeOf(gone);
     const gs2 = sel.find(s => s.tribe === goneTribe);
     const myAmb = gs2?.ambassador;
-    if (gs2 && myAmb && myAmb !== gone) {
-      const key = campKey(goneTribe, 'day');
-      const mates = (gs2.members || []).filter(n => n !== myAmb);
-      const friend = mates.filter(n => n !== gone).sort((x, y) => bond(gone, y) - bond(gone, x))[0];
-      if (key) {
-        steps.push({ k: 'scene', spot: Vn.public, tod: 'day', plate: key, place: `${goneTribe} Camp`, time: 'Late afternoon', card: false, cut: true, focus: [myAmb, gone], bg: [], places: placeScene(key, [myAmb, gone, friend, ...mates].filter(Boolean).filter((n, i, a) => a.indexOf(n) === i).slice(0, 8), []), act: { kind: 'arrive', who: [myAmb] } });
-        beat(`${goneTribe} sees ${myAmb} coming back up the path, and starts to cheer, then stops. ${myAmb} isn't smiling.`, [myAmb, ...mates.slice(0, 3)], { tense: true });
-        say(myAmb, V(myAmb, { any: [`I need to tell you guys something.`], soft: [`I'm so sorry. I need to tell you something.`], sharp: [`Sit down. All of you.`], loud: [`Okay. Everybody. Listen.`] }, 'news'), [myAmb]);
-        say(myAmb, V(myAmb, { any: [`They're sending ${gone} home.`], soft: [`${gone}... it's you. I'm so sorry.`], sharp: [`It's ${gone}. It had to be somebody.`], dry: [`${gone}. It's ${gone}.`] }, 'name'), [myAmb, gone], { tense: true });
-        say(gone, V(gone, {
-          sharp: [`You had one job. Protect this team. And you gave them ME?`], loud: [`WHAT?! You gave them me?! Out of everybody?!`], soft: [`...Did you fight for me? Even a little?`],
-          dry: [`Of everyone on this team, you picked me. Good to know.`], odd: [`Me? But I was so nice to you! I shared my blanket!`], any: [`Me? Why me?`],
-        }, 'gone-react'), [gone, myAmb], { shock: true });
-        say(myAmb, V(myAmb, {
-          soft: [`I fought for you, I swear. But it was you, or one of us going to rocks, and I couldn't risk it.`], sharp: [`It was you, or it was me at the rocks. I made the call.`],
-          loud: [`I tried! I fought for you! They wouldn't budge!`], dry: [`I fought. I lost. I'm sorry.`], odd: [`I tried everything. I even did my negotiating face.`], any: [`I tried. I'm sorry.`],
-        }, 'amb-defend'), [myAmb, gone]);
-        if (friend) say(friend, V(friend, { any: [`This isn't fair. ${gone} didn't do anything.`], loud: [`This is garbage! ${gone} should be staying!`], soft: [`${gone}... no. I'm so sorry.`], sharp: [`We sent you in there to protect us, ${myAmb}.`] }, 'gone-friend'), [friend, myAmb]);
-        steps.push({ k: 'out', who: gone, focus: [gone] });
-        conf(myAmb, V(myAmb, {
-          sharp: [`I'd do it again. I'm not sure my team will ever forgive me, but I'd do it again.`], loud: [`That was the worst thing I've ever had to do. EVER.`],
-          soft: [`I keep seeing ${gone}'s face when I said the name. I don't think I'm going to sleep tonight.`], dry: [`Being the ambassador is great until you have to come home.`],
-          odd: [`Note to self: never volunteer for anything again.`], any: [`I had to give them a name. I'm not proud of it.`],
-        }, 'amb-conf'));
+    const key = gs2 ? campKey(goneTribe, 'day') : null;
+    const mates = gs2 ? (gs2.members || []).filter(n => n !== myAmb && n !== gone) : [];
+    const friend = mates.slice().sort((x, y) => bond(gone, y) - bond(gone, x) || x.localeCompare(y))[0] || null;
+    const cool = mates.filter(n => n !== friend).sort((x, y) => bond(gone, x) - bond(gone, y) || x.localeCompare(y))[0] || null;
+    if (gs2 && myAmb && myAmb !== gone && key) {
+      steps.push({ k: 'scene', spot: Vn.public, tod: 'day', plate: key, place: `${goneTribe} Camp`, time: 'Late afternoon', card: false, cut: true, focus: [myAmb, gone], bg: [], places: placeScene(key, [myAmb, gone, friend, cool, ...mates].filter(Boolean).filter((n, i, a) => a.indexOf(n) === i).slice(0, 8), []), act: { kind: 'arrive', who: [myAmb] } });
+      beat(`${goneTribe} sees ${myAmb} coming back up the path, and starts to cheer, then stops. ${myAmb} isn't smiling.`, [myAmb, ...mates.slice(0, 3)], { tense: true });
+      say(myAmb, V(myAmb, { any: [`I need to tell you guys something.`], soft: [`I'm so sorry. I need to tell you something.`], sharp: [`Sit down. All of you.`], loud: [`Okay. Everybody. Listen.`] }, 'news'), [myAmb]);
+      say(myAmb, V(myAmb, { any: [`They're sending ${gone} home.`], soft: [`${gone}, it's you. I'm so sorry.`], sharp: [`It's ${gone}. It had to be somebody.`], dry: [`${gone}. It's ${gone}.`] }, 'name'), [myAmb, gone], { tense: true });
+      say(gone, V(gone, {
+        sharp: [`You had one job. Protect this team. And you gave them ME?`], loud: [`WHAT?! You gave them me?! Out of everybody?!`], soft: [`Did you fight for me? Even a little?`],
+        dry: [`Of everyone on this team, you picked me. Good to know.`], odd: [`Me? But I was so nice to you! I shared my blanket!`], any: [`Me? Why me?`],
+      }, 'gone-react'), [gone, myAmb], { shock: true });
+      // why, as the ambassador tells it: the meeting's own reason
+      say(myAmb, m.sharedEnemy && gone === m.sharedEnemy ? `Honestly? They wanted you gone, and so did I. You've made enemies out here, ${gone}. I'm sorry.`
+        : /steered/.test(why) ? `They kept steering it back to you. Every name I gave them, they came back to you. I couldn't stop it.`
+          : /grudge/.test(why) ? `It was you, or it was me at the rocks. They wouldn't take anybody else. I made the call.`
+            : winsOf(gone) >= 2 ? `They're scared of you, ${gone}. You've won ${word(winsOf(gone))} challenges. Nobody wants to face you at the merge.`
+              : `I fought for you, I swear. But it was you, or one of us going to the rocks, and I couldn't risk the team.`, [myAmb, gone]);
+      if (m.sharedEnemy && gone === m.sharedEnemy) beat(`${gone} stares at ${myAmb}. Nobody else says a word.`, [gone, myAmb], { tense: true });
+      // the fight: the one closest to the one leaving takes it out on the ambassador; somebody else takes the ambassador's side
+      if (friend) {
+        say(friend, V(friend, { any: [`This isn't fair. ${gone} didn't do anything.`], loud: [`This is garbage! ${gone} should be staying!`], soft: [`${gone}, no. I'm so sorry.`], sharp: [`We sent you in there to protect us, ${myAmb}.`] }, 'gone-friend'), [friend, myAmb], { loud: bond(friend, myAmb) < 1 });
+        if (bond(friend, myAmb) < 1) say(myAmb, V(myAmb, { any: [`You weren't in that room. You don't get to say that.`], loud: [`Then YOU go next time!`], soft: [`I know. I know. I'm sorry.`] }, 'amb-back'), [myAmb, friend], { loud: true });
       }
-    } else if (gone && gs2) {
+      if (cool && cool !== friend && bond(cool, myAmb) >= 1) say(cool, V(cool, { any: [`${myAmb} did what any of us would've done. Somebody had to go.`], dry: [`It's a game. Somebody was always going home today.`], sharp: [`Better ${gone} than one of us. I said it.`] }, 'amb-side'), [cool, friend || myAmb]);
+      // the goodbye
+      if (friend) beat(`${gone} hugs ${friend} for a long time.`, [gone, friend], { act: { kind: 'hug', who: [gone, friend] } });
+      say(gone, V(gone, {
+        sharp: [`Win this. For me. And don't trust ${myAmb}.`], loud: [`You guys better win this! I mean it! For me!`], soft: [`I'm going to miss you all so much. Go win this.`],
+        dry: [`Well. It's been real. Mostly real. Win something.`], odd: [`Remember me. Name a rock after me.`], any: [`Go win this. For me.`],
+      }, 'bye'), [gone, ...(friend ? [friend] : [])]);
+      steps.push({ k: 'out', who: gone, focus: [gone] });
+      conf(gone, V(gone, {
+        sharp: [`I didn't get voted out. I got traded. There's a difference, and ${myAmb} knows it.`], loud: [`I didn't even get a VOTE! Two people in a clearing decided my whole game!`],
+        soft: [`I didn't get to fight for myself. That's the part that hurts.`], dry: [`Voted out by a committee of two. Very efficient.`], any: [`I never even got a vote.`],
+      }, 'gone-conf'));
+      conf(myAmb, V(myAmb, {
+        sharp: [`I'd do it again. I'm not sure my team will ever forgive me, but I'd do it again.`], loud: [`That was the worst thing I've ever had to do. EVER.`],
+        soft: [`I keep seeing ${gone}'s face when I said the name. I don't think I'm going to sleep tonight.`], dry: [`Being the ambassador is great until you have to come home.`],
+        odd: [`Note to self: never volunteer for anything again.`], any: [`I had to give them a name. I'm not proud of it.`],
+      }, 'amb-conf'));
+    } else if (gs2 && myAmb === gone && key) {
+      // the ambassador drew the black rock: the host brings the news to a team that sent somebody and got nobody back
+      steps.push({ k: 'scene', spot: Vn.public, tod: 'day', plate: key, place: `${goneTribe} Camp`, time: 'Late afternoon', card: false, cut: true, focus: mates.slice(0, 3), bg: [], places: placeScene(key, [...mates].slice(0, 8), [], { host }), host, act: { kind: 'arrive', who: [host] } });
+      beat(`${goneTribe} waits for ${gone} to come back up the path. The host walks into camp instead.`, mates.slice(0, 3), { tense: true });
+      hostSay(`There was no deal. ${gone} wouldn't give up any of you, and ${gone} drew the black rock. ${gone} is gone.`, mates.slice(0, 3), { tense: true });
+      if (friend) say(friend, V(friend, { any: [`No. ${gone} did that for us?`], loud: [`NO! ${gone} went home for US?!`], soft: [`${gone} protected every single one of us.`], sharp: [`${gone} took a rock for this team. Remember that.`] }, 'rock-friend'), [friend], { shock: true });
+      if (cool && cool !== friend) conf(cool, V(cool, { any: [`${gone} went down protecting us. I'm grateful. I'm also a little relieved it wasn't me.`], dry: [`Noble. Very noble. Also, one fewer of us.`] }, 'rock-cool'));
+      steps.push({ k: 'out', who: gone, focus: [] });
+    } else if (gs2) {
       steps.push({ k: 'out', who: gone, focus: [gone] });
     }
   }

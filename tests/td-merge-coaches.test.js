@@ -38,3 +38,26 @@ describe('the merge with coaches', () => {
     for (const n of promoted) expect(walk.text, `${n} not announced`).toContain(n);
   }, 600000);
 });
+
+describe('a twist on the merge night', () => {
+  it('counts the coaches who become players that night (the Brunch splits them into teams too)', () => {
+    seededRun(() => {
+      core.setPlayers(NAMES.map((n, i) => ({ ...roster.find(r => r.name === n), tribe: ['A', 'B', 'C'][i % 3], isCoach: COACHES.includes(n) })));
+      core.setSeasonConfig({ ...core.seasonConfig, name: 'Coach', teams: 3, mergeAt: 11, finaleSize: 3, finaleFormat: 'traditional', jurySize: 7,
+        romance: 'enabled', aftermath: 'disabled', popularityEnabled: false, setting: 'hosted-camp', coaches: 'manual',
+        twistSchedule: [{ episode: 8, type: 'brunch-of-disgustingness', id: 'b8' }] });
+      savestateMod.initGameState();
+      for (let g = 0; core.gs.phase !== 'complete' && core.gs.activePlayers.length > 1 && g < 9; g++) {
+        window.gs = core.gs; window.players = core.players; window.seasonConfig = core.seasonConfig;
+        episodeMod.simulateEpisode();
+      }
+    }, 6);
+    const ep = core.gs.episodeHistory.find(e => e.isMerge);
+    expect(ep?.num).toBe(8);
+    const promoted = (ep.coachPromotions || []).map(p => p.name);
+    expect(promoted.length).toBeGreaterThan(0);
+    const teams = ep.brunchTeams;
+    expect(teams, 'the Brunch did not run on the merge night').toBeTruthy();
+    for (const n of promoted) expect([...teams.boys, ...teams.girls], `${n} is not at the Brunch`).toContain(n);
+  }, 600000);
+});

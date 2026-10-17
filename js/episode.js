@@ -1669,6 +1669,11 @@ export function simulateEpisode() {
   // Subtract this episode's actual returnee count (a rescue return can bring back >1) so the
   // "merging this episode?" flag matches the merge check below and the format designer's projection.
   gs._mergingThisEp = !gs.isMerged && (gs.activePlayers.length + activeCoaches().length - (isReentry ? (ep.riReentrants?.length || 1) : 0)) <= cfg.mergeAt;
+  // a merge night's coaches are players BEFORE tonight's twists are set up: a twist picks its people here (the Brunch's
+  // boys and girls from gs.activePlayers), and promoting them at the merge check below left every coach out of it (the
+  // user, 2026-10-17: "the coaches are still not playing, it's the merge"). Same count: the merge check below adds
+  // activeCoaches() to the players, and a promoted coach has moved from one to the other.
+  if (gs._mergingThisEp && gs.coaches?.length) promoteCoaches(ep);
   scheduledTwists.forEach((twist, i) => applyTwist(ep, twist, i === 0));
   // Refresh tribesAtStart after team-changing twists (swap, dissolve, expansion, mutiny, abduction)
   const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction','first-impressions','schoolyard-pick'];

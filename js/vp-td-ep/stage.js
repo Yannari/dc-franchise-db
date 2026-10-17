@@ -518,7 +518,10 @@ function seasonAt(screen) {
     const sp = (S.romanticSparks || []).find(x => x.players?.includes(a) && x.players?.includes(b));
     return sp ? 'Spark' : null;
   };
-  return { players, teams, bond, love, alliances: S.namedAlliances || [], gone: S.dissolvedAlliances || [], powers: (S.advantages || []).filter(a => players.includes(a.holder)), num: E.num };
+  // an alliance that broke up is news in the episode it ended, and gone after (the user, 2026-10-17: "broken up alliance
+  // can disappear from the intel after the episode is done"): the snapshot keeps every one the season ever lost
+  const before = new Set(((globalThis.gs?.episodeHistory || []).find(e => e.num === +screen.ep - 1)?.gsSnapshot?.dissolvedAlliances || []).map(a => a.name));
+  return { players, teams, bond, love, alliances: S.namedAlliances || [], gone: (S.dissolvedAlliances || []).filter(a => !before.has(a.name)), powers: (S.advantages || []).filter(a => players.includes(a.holder)), num: E.num };
 }
 // ── spoiler protection (the user, 2026-10-10): hide the name each voter writes in the booth. The line
 // stays as written, only the name is blacked out, the ballot shows its folded back, and Intel keeps the

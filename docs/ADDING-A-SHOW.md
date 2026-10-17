@@ -332,9 +332,9 @@ names a show and nothing there needs editing.
    cross-show ordering, and has no age for anyone in it, with no error
    anywhere.
 
-The Circle (2026-10-17) has its `airSlots` but no registered exporter yet, so
-it shows as projected until its exporter exists. Writing that exporter is when
-step 2 applies to it.
+The Circle was the last show without an exporter. Its exporter
+(`js/ci/export.js` + `exportCircleSeason`, 2026-10-17) stamps the window like
+the rest, so its first export lands in spring.
 
 **Check it:** open `timeline.html#calendar`, find the show's row, and click
 its projected bar. The card says which quarters the show airs in and where its

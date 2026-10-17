@@ -8,7 +8,7 @@ import { bKey, getBond } from './bonds.js';
 import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.js';
 import { buildDragSeasonDocument } from './dr/export.js';
 import { buildPerfectMatchSeasonDocument } from './pm/export.js';
-import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT, CHALLENGE_FORMAT } from './shows.js';
+import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT } from './shows.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
@@ -4014,6 +4014,178 @@ export function mergeChallengeSeasonsDatabase(existing, seasonDoc) {
   return db;
 }
 registerSeasonExporter(CHALLENGE_FORMAT, exportChallengeSeason);
+
+/**
+ * The Circle. The document is js/ci/export.js, built from the aired rows and the season's ledger record
+ * (gs.ci.record, written by ci-run.js while the season's own relationship layer was live). The whole season is
+ * simulated before its first episode airs, so the record exists from episode one: what says the season is over
+ * is the queue of episodes still to air being empty, and that is what is checked.
+ */
+export async function exportCircleSeason(onStatus) {
+  const _status = onStatus || (() => {});
+  const rows = (gs.episodeHistory || []).filter(r => r && r.format === CIRCLE_FORMAT && r.ci);
+  if (!rows.length) {
+    throw new Error(`No ${SHOWS[CIRCLE_FORMAT].name} season to export: gs.episodeHistory has no `
+      + 'episodes with a `ci` block. Play a season first.');
+  }
+  const foreign = (gs.episodeHistory || []).filter(r => r && r.format && r.format !== CIRCLE_FORMAT);
+  if (foreign.length) {
+    throw new Error(`This season's history contains ${foreign.length} episode(s) tagged `
+      + `"${foreign[0].format}" — refusing to publish them under a ${CIRCLE_FORMAT} id.`);
+  }
+  if (Array.isArray(gs._ciQueue) && gs._ciQueue.length) {
+    throw new Error(`This ${SHOWS[CIRCLE_FORMAT].name} season has ${gs._ciQueue.length} episode(s) still to air — play it to the end first.`);
+  }
+  if (!gs.ci?.record?.players) {
+    throw new Error(`This ${SHOWS[CIRCLE_FORMAT].name} season has no ledger record (gs.ci.record) — re-run its last episode to rebuild it.`);
+  }
+  const seasonNum = _getSeasonNumber();
+  if (!seasonNum) return;
+  _status('Building the season document...');
+  const { buildCircleSeasonDocument } = await import('./ci/export.js');
+  const doc = buildCircleSeasonDocument(rows, gs.ci.record, { seasonNumber: seasonNum, title: seasonConfig?.name || null });
+  _status(`Built ${doc.seasonId}: ${doc.castSize} players, ${doc.episodeCount} episodes.`);
+
+  // Every episode's transcript, where the wiki fills look for it (episode-store.js, ci_episode_sN_eM). Never
+  // fails the export: with no storage the fills write from the record, and say so.
+  try {
+    const [{ putEpisode }, { episodeText }] = await Promise.all([import('./episode-store.js'), import('./ci/transcript.js')]);
+    let saved = 0;
+    for (const r of rows) { const t = episodeText(r); if (t) { await putEpisode(seasonNum, r.num, CIRCLE_FORMAT, t); saved++; } }
+    _status(`Saved ${saved} episode transcripts for the wiki.`);
+  } catch (e) { _status(`Could not save the episode transcripts (${e.message || e}); the wiki will be written from the record.`); }
+
+  _status('Merging databases...');
+  let playersDb = null; let seasonsDb = null;
+  try {
+    const [playersResp, seasonsResp] = await Promise.all([
+      fetch('players_database.json').catch(() => null),
+      fetch('seasons_database.json').catch(() => null),
+    ]);
+    const playersExisting = playersResp?.ok ? await playersResp.json() : { franchise: {}, players: [] };
+    const seasonsExisting = seasonsResp?.ok ? await seasonsResp.json() : { franchise: {}, seasons: [] };
+    playersDb = mergeCircleSeason(playersExisting, doc);
+    seasonsDb = mergeCircleSeasonsDatabase(seasonsExisting, doc);
+    if (seasonsDb && playersDb?.players) {
+      seasonsDb.franchise = seasonsDb.franchise || {};
+      seasonsDb.franchise.totalPlayers = playersDb.players.length;
+    }
+  } catch (err) {
+    throw new Error(`Could not merge the databases: ${err.message || err}`);
+  }
+  const published = await _publishSeasonToSite({
+    seasonNumber: seasonNum, format: CIRCLE_FORMAT, season: doc, players: playersDb, seasons: seasonsDb,
+  }, onStatus);
+  if (published) { _status('Done.'); return published; }
+  _status('Downloading files...');
+  _downloadJSON(doc, `${seasonId(CIRCLE_FORMAT, seasonNum)}-data.json`);
+  if (playersDb) setTimeout(() => _downloadJSON(playersDb, 'players_database.json'), 500);
+  if (seasonsDb) setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), 1000);
+  _status('Done.');
+  return doc;
+}
+
+/**
+ * A Circle season into players_database.json. A winning profile shared by two people is two wins and two
+ * badges. No votes against (a rating is a ranking, not a ballot against anyone) and no challenge wins; the
+ * show's own numbers are under `ci` (the registry's careerStats paths), with the profile they played as.
+ */
+export function mergeCircleSeason(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== CIRCLE_FORMAT) {
+    throw new Error(`mergeCircleSeason expects a ${CIRCLE_FORMAT} season document`);
+  }
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Circle season document has no seasonNumber');
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  if (!db.players) db.players = [];
+  _stripSeasonFromAll(db, seasonNum, CIRCLE_FORMAT);
+  for (const entry of seasonDoc.placements || []) {
+    const name = entry.name;
+    if (!name) continue;
+    const slug = entry.playerSlug || _slug(name);
+    let player = db.players.find(x => x.id === slug || x.name === name);
+    if (!player) {
+      player = { id: slug, name, seasons: [], totalSeasons: 0, bestPlacement: null,
+        wins: 0, totalChallengeWins: 0, totalImmunityWins: 0, totalRewardWins: 0,
+        totalVotesAgainst: 0, totalIdolsFound: 0, totalJuryVotes: 0, tier: '', badges: [], seasonDetails: [] };
+      db.players.push(player);
+    }
+    if (!player.seasonDetails) player.seasonDetails = [];
+    if (!player.seasons) player.seasons = [];
+    _stripSeasonFromPlayer(player, seasonNum, CIRCLE_FORMAT);
+    if (!player.seasons.includes(seasonNum)) player.seasons.push(seasonNum);
+    if (entry.status === 'Winner') player.wins = (player.wins || 0) + 1;
+    player.seasonDetails.push(_tagSeasonDetail({
+      season: seasonNum, placement: entry.placement, status: entry.status,
+      exit: entry.exit || null, exitEpisode: entry.exitEpisode ?? null,
+      challengeWins: 0, votesReceived: 0,
+      archetype: entry.archetype || null,
+      alliances: [...(entry.alliances || [])], rivalries: [...(entry.rivalries || [])],
+      unbreakableBonds: [...(entry.unbreakableBonds || [])],
+      betrayed: [...(entry.betrayed || [])], betrayedBy: [...(entry.betrayedBy || [])],
+      ...(entry.showmance ? { showmance: entry.showmance, showmanceEnded: entry.showmanceEnded || 'intact' } : {}),
+      ...(entry.showmances ? { showmances: entry.showmances.map(s => ({ ...s })) } : {}),
+      ...(entry.fanFavourite ? { fanFavourite: true } : {}),
+      popularity: entry.popularity ?? 0,
+      ci: { ...(entry.ci || {}) },
+      notes: [], gameplayStyle: '', keyMoments: [],
+    }, CIRCLE_FORMAT));
+    const places = player.seasonDetails.map(sd => sd.placement).filter(x => x && x < 99);
+    player.avgPlacement = places.length ? Math.round(places.reduce((t, v) => t + v, 0) / places.length * 100) / 100 : null;
+    player.bestPlacement = places.length ? Math.min(...places) : null;
+    _rebuildByShow(player);
+    if (entry.status === 'Winner') {
+      player.badges = player.badges || [];
+      const badge = _winnerBadge(seasonNum, CIRCLE_FORMAT);
+      if (!player.badges.includes(badge)) player.badges.push(badge);
+    }
+  }
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+  db.franchise.totalPlayers = db.players.length;
+  return db;
+}
+
+/** A Circle season into seasons_database.json, dated on the franchise calendar (ADDING-A-SHOW §5.1). */
+export function mergeCircleSeasonsDatabase(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== CIRCLE_FORMAT) {
+    throw new Error(`mergeCircleSeasonsDatabase expects a ${CIRCLE_FORMAT} season document`);
+  }
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Circle season document has no seasonNumber');
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  if (!db.seasons) db.seasons = [];
+  const airWindow = _airWindowFor(db, CIRCLE_FORMAT, seasonNum);
+  const priorRatings = (db.seasons.find(x => x.seasonNumber === seasonNum && x.format === CIRCLE_FORMAT) || {}).ratings || null;
+  db.seasons = db.seasons.filter(x => !(x.seasonNumber === seasonNum && x.format === CIRCLE_FORMAT));
+  const winners = (seasonDoc.winners || []).filter(w => w && w.name)
+    .map(w => ({ name: w.name, playerSlug: w.playerSlug || _slug(w.name) }));
+  const fav = seasonDoc.fanFavourite;
+  db.seasons.push({
+    ratings: seasonDoc?.ratings || priorRatings || undefined,
+    seasonNumber: seasonNum,
+    format: CIRCLE_FORMAT,
+    seasonId: seasonId(CIRCLE_FORMAT, seasonNum),
+    title: _clean(seasonDoc.title, `${SHOWS[CIRCLE_FORMAT].name} ${seasonNum}`),
+    subtitle: _clean(seasonDoc.subtitle),
+    castSize: seasonDoc.castSize,
+    episodeCount: seasonDoc.episodeCount,
+    // A shared profile wins as two people: a single name in the one-winner block only when there is one.
+    winner: seasonDoc.winner?.name ? { name: seasonDoc.winner.name, playerSlug: seasonDoc.winner.playerSlug || _slug(seasonDoc.winner.name),
+      runnerUp: seasonDoc.winner.runnerUp || null } : null,
+    winners,
+    awards: { fanFavorite: fav?.name ? { name: fav.name, playerSlug: fav.playerSlug || _slug(fav.name) } : null },
+    theme: _clean(seasonDoc.seasonNarrative, _clean(seasonDoc.subtitle)),
+    status: 'Complete',
+    castPhotoPath: `assets/cast/${seasonId(CIRCLE_FORMAT, seasonNum)}-cast.png`,
+    emoji: _clean(seasonDoc.emoji),
+    ...airWindow,
+  });
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+  return db;
+}
+registerSeasonExporter(CIRCLE_FORMAT, exportCircleSeason);
 
 export async function exportSeason(onStatus) {
   const out = await seasonExporterFor(seasonFormat(seasonConfig) || DEFAULT_FORMAT)(onStatus);

@@ -48,6 +48,13 @@ export function ciLedgerRecord(rows = [], state = null, { cast = null, winners =
   let next = finals.length + 1;
   for (const b of out) if (place[b.handle] == null) place[b.handle] = next++;
   for (const h of handles) if (place[h] == null) place[h] = next++;
+  // ...and from profiles to PEOPLE, as a standard ranking: two people sharing
+  // a profile share its place, and the next person down is two places lower
+  // (a pair at 3rd makes the next player 5th). The record book and the canon
+  // loader read places as people (ADDING-A-SHOW §5); a profile order would
+  // have left no 4th and an extra last place.
+  const ahead = h => names.filter(o => handleOf(o) && place[handleOf(o)] < place[h]).length;
+  const personPlace = new Map(names.filter(handleOf).map(n => [n, ahead(handleOf(n)) + 1]));
   const won = new Set(winners);
   const firstPlace = finals.find(p => p.place === 1)?.profile;
 
@@ -82,7 +89,7 @@ export function ciLedgerRecord(rows = [], state = null, { cast = null, winners =
       .flatMap(o => peopleOfAll(o).map(partner => ({ partner,
         ended: (met.has(h) && met.has(o)) || kissed.has(pairKey(h, o)) ? 'intact' : 'breakup' })));
     rec.players[n] = {
-      placement: place[h] || 0,
+      placement: personPlace.get(n) || 0,
       winner: won.has(n) || h === firstPlace,
       finalist: state.active.includes(h),
       episodesLasted: lastDay.get(h) || days,

@@ -345,6 +345,7 @@ const wetFeet = (key, u, v) => wetAt(key, u, v) || wetAt(key, u - .015, v) || we
 function keepDry(key, out) {
   if (!TD_WET[key]) return out;
   const free = Object.entries(out).filter(([, p]) => p && !p.host && (p.crowd || p.free));
+  const was = new Map(free.map(([, p]) => [p, p.v]));
   for (const [, p] of free) {
     if (!wetFeet(key, p.u, p.v)) continue;
     let v = p.v;
@@ -355,11 +356,13 @@ function keepDry(key, out) {
       if (u != null) { p.u = u; break; }
     }
   }
-  // the back row stays behind the front: a step up the frame from anyone in front of it nearby
+  // the back row stays behind the front: a step up the frame from anyone in front of it nearby. Only
+  // someone who stood behind them to begin with: a row of six side by side on a narrow strip of sand is one
+  // row, not a staircase up the hill (the user, 2026-10-16, The Fishing Spot: "why are they positioned like this")
   const placed = free.map(([, p]) => p).sort((a, b) => b.v - a.v);
   for (let i = 0; i < placed.length; i++) for (let j = 0; j < i; j++) {
     const f = placed[j], b = placed[i];
-    if (Math.abs(f.u - b.u) < .08 && b.v > f.v - .05) { b.v = f.v - .05; while (b.v > .3 && wetFeet(key, b.u, b.v)) b.v -= .01; }
+    if (was.get(b) < was.get(f) - .005 && Math.abs(f.u - b.u) < .08 && b.v > f.v - .05) { b.v = f.v - .05; while (b.v > .3 && wetFeet(key, b.u, b.v)) b.v -= .01; }
   }
   return out;
 }

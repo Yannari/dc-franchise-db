@@ -186,8 +186,8 @@ export default {
     5: { flirty: "{b} is the only one who sees how hard I'm working. I like that {b} notices.", schemer: "{b} is the only person who sees how hard I'm working. That makes {b} either my best ally or my biggest risk.", anxious: "{b} is the only one who sees how hard I'm working, and that makes me nervous and grateful at the same time.", calm: "{b} sees how hard I'm working. I'm still deciding what to do with that.", blunt: "{b} sees how hard I work, which is useful or dangerous. I'm not sure yet." },
   },
   'nk.ev1': {
-    0: { earnest: "An extra vote. One that nobody is counting on but me, and I want to use it well." },
-    1: { tough: "At the right vote, one name decides everything, and I get to write it twice.", earnest: "At the right vote, one name decides everything, and I'm going to make sure I write it for the right reason.", nerdy: "At the right vote, one name changes the outcome, and I'll write it twice." },
+    1: { earnest: "An extra vote. One that nobody is counting on but me, and I want to use it well." },
+    2: { tough: "At the right vote, one name decides everything, and I get to write it twice.", earnest: "At the right vote, one name decides everything, and I'm going to make sure I write it for the right reason.", nerdy: "At the right vote, one name changes the outcome, and I'll write it twice." },
   },
   'nv4.p5': { 7: { warm: "Watching that scared me. I'm on the other half of that drawing, and I'd really like to stay there with {a}." } },
   'nm.b5': {

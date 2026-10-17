@@ -38,8 +38,8 @@ export default {
     2: { warm: "What? It needed doing.", calm: "It needed doing.", loud: "What? It needed doing!" },
   },
   'nk.vs1': {
-    0: { loud: "I can steal somebody's VOTE! Take it right off them and use it myself!", calm: "I can steal somebody's vote. Take it from them and use it myself.", warm: "I can take somebody's vote away from them. I'm going to have to be really careful with this." },
-    1: { calm: "I already know whose. I'm going to wait for the night it matters most.", cruel: "I already know whose. I'm just waiting for the night it hurts the most.", competitive: "I already know whose. I'll use it the night it wins me the game." },
+    1: { loud: "I can steal somebody's VOTE! Take it right off them and use it myself!", calm: "I can steal somebody's vote. Take it from them and use it myself.", warm: "I can take somebody's vote away from them. I'm going to have to be really careful with this." },
+    2: { calm: "I already know whose. I'm going to wait for the night it matters most.", cruel: "I already know whose. I'm just waiting for the night it hurts the most.", competitive: "I already know whose. I'll use it the night it wins me the game." },
   },
   'ny.b3': {
     0: { warm: "You were really good today, you know that?", loud: "You were SO good today!", calm: "You were really good today." },

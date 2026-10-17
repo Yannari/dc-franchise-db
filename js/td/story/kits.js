@@ -185,8 +185,11 @@ const LIFE_CONF = [
 ];
 /** a brings their thing up, b teases them about it, a answers, b comes back at it, a has the last word,
  *  and one of them reflects. */
+// a line that only works in the first days ("It's been one day, Bruno." on episode 13: the user, 2026-10-16, "why 1 day")
+const EARLY_ONLY = /(been one day|one day in|on the flight)/i;
 export function kitBitScene(a, b, facts, ctx) {
-  const authoredBit = take(a, 'bit', line => !!kitExchange(a, b, line));
+  const late = (ctx?.ep || 1) > 2, fresh = line => !late || !EARLY_ONLY.test(line || '');
+  const authoredBit = take(a, 'bit', line => { const x = kitExchange(a, b, line); return !!x && (!late || x.turns.every(t => fresh(t.say || t.conf || t.text))); });
   if (authoredBit) {
     const third = ctx.third && (gs.activePlayers || []).includes(ctx.third) ? ctx.third : null;
     const exchange = kitExchange(a, b, authoredBit.line, third);
@@ -201,6 +204,7 @@ export function kitBitScene(a, b, facts, ctx) {
   // Keep custom kits working and keep the tease/reply on the opening's index.
   // The bundled sign claims need birthdays the engine has never established.
   const bit = take(a, 'bit', (line, i) => KITS[a]?.tease?.[i] && KITS[a]?.reply?.[i]
+    && [line, KITS[a].tease[i], KITS[a].reply[i]].every(fresh)
     && !(a === 'Aubrey' && /three Scorpios|psych student.*astrology/i.test(line)));
   if (!bit) return null;
   const tease = take(a, 'tease', (_, i) => i === bit.index), reply = take(a, 'reply', (_, i) => i === bit.index), conf = take(a, 'conf');

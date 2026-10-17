@@ -128,8 +128,8 @@ export default {
     ] },
   ],
   'long.adv.found.idol': [
-    { id: 'nl5.i1', turns: [
-      { beat: "{a} has been digging around the roots of the same tree for half an hour, checking over {a.posAdj} shoulder every few seconds." },
+    { id: 'nl5.i1', place: 'secret', turns: [
+      { beat: "{a} has been digging in the same spot {here} for half an hour, checking over {a.posAdj} shoulder every few seconds." },
       { by: 'a', conf: "I know how this looks. I look like an idiot digging in the dirt." },
       { beat: "{a}'s fingers close around something hard and wrapped in cloth." },
       { by: 'a', conf: "Okay. Okay. Is that...? It is. That's an idol. I actually found a Hidden Immunity Idol." },

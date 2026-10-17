@@ -2751,6 +2751,20 @@ export function airTdEpisode(ep) {
           tookR++;
           offer('returnee', 'story', { at: 0.3 + tookR * 0.01, item: claimEv(item, ev) });
         }); }
+      // a find always airs, as its long version: the search at one of the venue's hiding places (the bamboo jungle, the
+      // ruins, the cave), the item coming out of the ground, then the confessional (the user, 2026-10-16: "some plate in
+      // island venue are never use like the bamboo jungle especially to find powers"). Measured on two island seasons:
+      // half the finds aired as a bare confessional and a quarter not at all, so a season's idols appeared from nowhere.
+      // One search a day airs too, when nobody found anything.
+      { let searched = false;
+        events.forEach((ev, i) => {
+          if (!ev || ev.aired != null) return;
+          const find = /^[a-zA-Z]+Found$/.test(ev.type || ''), search = ev.type === 'idolSearch';
+          if (!find && !(search && !searched && !events.some(e => /^[a-zA-Z]+Found$/.test(e?.type || '')))) return;
+          const item = longScene(ev, i);
+          if (search) { if (!item) return; searched = true; }
+          offer('find', find ? 'must' : 'story', { at: i, item: claimEv(item || { ref: i }, ev) });
+        }); }
       // what tonight's plan comes from (causeOf) airs on top of the caps: the plan calls back to it
       for (const c of (talk?.cause || []).filter(c => c.phase === phase)) {
         const ev = events[c.i];

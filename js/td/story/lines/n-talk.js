@@ -565,10 +565,16 @@ export default {
     ] },
   ],
   'long.adv.found.extravote': [
-    C('nk.ev1', null, ["An extra vote. One vote nobody's counting on but me.", "At the right vote, one name can decide everything. And I get to write it twice."]),
+    { id: 'nk.ev1', place: 'secret', turns: [
+      { beat: "{a} is alone {here}, lifting rocks one at a time. Under the last one, there is a rolled-up note." },
+      { by: 'a', conf: "An extra vote. One vote nobody's counting on but me." },
+      { by: 'a', conf: "At the right vote, one name can decide everything. And I get to write it twice." }] },
   ],
   'long.adv.found.votesteal': [
-    C('nk.vs1', null, ["I can steal somebody's vote. Take it right off them and use it myself.", "I already know whose. I just have to wait for the night it hurts the most."]),
+    { id: 'nk.vs1', place: 'secret', turns: [
+      { beat: "{a} is alone {here}, running a hand along a ledge nobody else would bother to check. At the back of it, there is a small sealed tube." },
+      { by: 'a', conf: "I can steal somebody's vote. Take it right off them and use it myself." },
+      { by: 'a', conf: "I already know whose. I just have to wait for the night it hurts the most." }] },
   ],
   'long.adv.share.close': [
     { id: 'nk.sh1', place: 'secret', turns: [

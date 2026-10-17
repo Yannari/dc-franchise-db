@@ -112,8 +112,8 @@ export default {
     0: { calm: "I've been listening all day, and {target} is the name. I'm going with it.", warm: "I've listened to everybody today, and it's {target}. I'm not going to fight it, even though I wish I didn't have to.", loud: "I've been listening all day and it's {target}, everybody says {target}, so fine! {target}!", competitive: "Everybody's on {target}. I'm not fighting the numbers tonight. I'm saving that for a night when it matters." },
   },
   'nk.ev1': {
-    0: { calm: "An extra vote. One that nobody is counting on but me.", loud: "An EXTRA VOTE! One vote nobody knows about but me!", schemer: "An extra vote, and nobody knows. This is the best thing that's happened to me out here.", warm: "An extra vote. I'm going to be very careful about how I use it." },
-    1: { competitive: "At the right vote, one name decides everything, and I get to write it twice.", calm: "At the right moment, one name decides everything. I get to write it twice." },
+    1: { calm: "An extra vote. One that nobody is counting on but me.", loud: "An EXTRA VOTE! One vote nobody knows about but me!", schemer: "An extra vote, and nobody knows. This is the best thing that's happened to me out here.", warm: "An extra vote. I'm going to be very careful about how I use it." },
+    2: { competitive: "At the right vote, one name decides everything, and I get to write it twice.", calm: "At the right moment, one name decides everything. I get to write it twice." },
   },
   'ny.j1': {
     0: { loud: "GOOD MORNING, YOUR MAJESTY!", calm: "Good morning, your majesty." },

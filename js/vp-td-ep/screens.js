@@ -46,16 +46,20 @@ export function tdEpisodeLines(epRecord) {
     for (let i = 0; i < scr.steps.length; i++) {
       const L = ledgerAt(scr, i), s = L.step || {};
       if (s.k === 'beat' && typeof s.text === 'string') { beats.push(s.text.replace(/<[^>]*>/g, '')); continue; }
-      if (!((s.k === 'say' || s.k === 'conf') && s.by)) continue;
+      if (!((s.k === 'say' || s.k === 'conf') && s.by) && s.k !== 'read') continue;
       const beat = beats.join(' ').slice(-240) || null;
       beats = [];
       const d0 = dialogue(scr, L);
+      // the host reading a vote out is a line of his too (the user, 2026-10-16: "the voice acting doesn't read when chris is
+      // reading the votes"): only "First vote..." was voiced, every name he read was a silent 'read' step
+      const by = s.by || (s.k === 'read' ? d0.name : null);
+      if (!by) continue;
       const d = s.writes && scr.kind === 'tribal' && hideBooth() ? { ...d0, text: maskName(d0.text, s.writes) } : d0;
       if (!d.text || String(d.cls || '').includes('dir')) continue;
-      const id = lineId(s.by, d.text);
+      const id = lineId(by, d.text);
       if (have.has(id)) continue;
       have.add(id);
-      lines.push({ by: s.by, text: d.text, id, k: s.k, stage: s.stage || null, loud: !!s.loud, shock: !!s.shock,
+      lines.push({ by, text: d.text, id, k: s.k === 'read' ? 'say' : s.k, stage: s.stage || null, loud: !!s.loud, shock: !!s.shock,
         badge: d.badge?.text || null, screen: scr.id, ep: scr.ep ?? epRecord.num, why: L.scene?.why || null, beat });
     }
   };
@@ -448,7 +452,8 @@ function paint(uid, fresh) {
   if (!fresh && R.voiceIdx !== R.idx) hush();
   if (fresh) R.voiceIdx = R.idx;
   if (fresh && scr.ep != null) voicedLines(scr.ep);   // ask the bucket early, so the first line can play its voice
-  if (fresh) { hush(); if ((s.k === 'say' || s.k === 'conf') && s.by && d.text && !d.cls.includes('dir')) speak(s.by, d.text, voiceOf(s.by), { loud: !!(s.loud || s.shock), meta: { k: s.k, stage: s.stage || null, loud: !!s.loud, shock: !!s.shock, badge: d.badge?.text || null, screen: scr.id, ep: scr.ep, why: L.scene?.why || null } }); }
+  const voiceBy = s.by || (s.k === 'read' ? d.name : null);
+  if (fresh) { hush(); if ((s.k === 'say' || s.k === 'conf' || s.k === 'read') && voiceBy && d.text && !d.cls.includes('dir')) speak(voiceBy, d.text, voiceOf(voiceBy), { loud: !!(s.loud || s.shock), meta: { k: s.k === 'read' ? 'say' : s.k, stage: s.stage || null, loud: !!s.loud, shock: !!s.shock, badge: d.badge?.text || null, screen: scr.id, ep: scr.ep, why: L.scene?.why || null } }); }
   if (fresh && s.loud) { dlg.classList.remove('loud'); void dlg.offsetWidth; dlg.classList.add('loud'); }
   // what happens, animated
   if (fresh) act(st, castEl, fxEl, scr, L, s, toks);

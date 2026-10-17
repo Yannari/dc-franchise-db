@@ -120,7 +120,8 @@ const CLOSE = {
   dry: [`We'll call that progress. Loosely.`, `Okay, that's enough. I've seen enough. In every sense.`, `Session over. Nobody died. That's a win.`, `Same time tomorrow. Bring a better attitude. Mine, ideally.`],
   odd: [`Session over. Go and drink some water. Or lake.`, `And that's training! Nobody tell Chef we used his log.`, `Class dismissed. I'm going to go stare at the sea.`, `Tomorrow we do it blindfolded. Maybe. I'll decide tonight.`],
 };
-// somebody left out, watching: the first days, and once it's a pattern ({c} the coach, {d} the days)
+// somebody left out, watching: the first days, and once it's a pattern ({c} the coach, {d} the sessions in a row
+// they were passed over, never the season's day: "Day 3" on episode 9 was wrong, the user 2026-10-16)
 const WATCH = {
   early: {
     sharp: [`I'm not saying I wanted to be picked. I'm saying I noticed.`, `{c} picked them over me. Interesting choice.`, `Fine. I'll learn it by watching. I learn faster than they do anyway.`, `I'll remember who got picked first. That's all.`],
@@ -130,11 +131,11 @@ const WATCH = {
     odd: [`I'm learning by watching. Mostly I'm learning that I'm hungry.`, `I'm here in spirit. And in body. Just not in the session.`, `I've started a session of my own. It's me and a crab.`, `I'm practising in my head. In my head, I'm amazing.`],
   },
   late: {
-    sharp: [`That's {d} days in a row {c} has looked straight past me. I'm keeping count, even if {c} isn't.`, `Every morning, same faces. I know what that means, and so does everybody watching.`, `{c} has decided I don't matter. That's going to be a very expensive mistake.`, `Day {d}. I've stopped asking. I've started planning.`],
-    loud: [`{d} DAYS! {d} days of {c} acting like I'm invisible!`, `I am RIGHT HERE! Every single morning!`, `Is there a sign on my back? Does it say "don't train this one"?`, `That's it! I'm done being nice about this!`],
-    soft: [`I keep telling myself it's not personal. It's getting really hard to believe that.`, `I've stopped waiting to be picked. That's the sad part.`, `Day {d}. I still say good morning to {c}. {c} still doesn't pick me.`, `I'm starting to think {c} just doesn't like me.`],
-    dry: [`I've decided I'm self-taught now. It's going great.`, `At this point I'm just here to watch other people get better.`, `Day {d} of the {c} fan club. Membership: everybody but me.`, `I'm thinking of charging {c} for watching. I've seen every session.`],
-    odd: [`I've started training with a rock. The rock believes in me.`, `If nobody picks me tomorrow, I'm coaching myself. I'll be great at it.`, `Day {d}. I've started cheering for myself. Somebody has to.`, `I've named my imaginary coach. He's much nicer than {c}.`],
+    sharp: [`That's {d} sessions in a row {c} has looked straight past me. I'm keeping count, even if {c} isn't.`, `Every morning, same faces. I know what that means, and so does everybody watching.`, `{c} has decided I don't matter. That's going to be a very expensive mistake.`, `{d} sessions in a row. I've stopped asking. I've started planning.`],
+    loud: [`{d} SESSIONS! {d} sessions of {c} acting like I'm invisible!`, `I am RIGHT HERE! Every single morning!`, `Is there a sign on my back? Does it say "don't train this one"?`, `That's it! I'm done being nice about this!`],
+    soft: [`I keep telling myself it's not personal. It's getting really hard to believe that.`, `I've stopped waiting to be picked. That's the sad part.`, `{d} sessions now. I still say good morning to {c}. {c} still doesn't pick me.`, `I'm starting to think {c} just doesn't like me.`],
+    dry: [`I've decided I'm self-taught now. It's going great.`, `At this point I'm just here to watch other people get better.`, `{d} sessions watching the {c} fan club. Membership: everybody but me.`, `I'm thinking of charging {c} for watching. I've seen every session.`],
+    odd: [`I've started training with a rock. The rock believes in me.`, `If nobody picks me tomorrow, I'm coaching myself. I'll be great at it.`, `{d} sessions and no pick. I've started cheering for myself. Somebody has to.`, `I've named my imaginary coach. He's much nicer than {c}.`],
   },
 };
 // the coach on who they chose ({p} the first one picked)
@@ -221,8 +222,8 @@ const WRITE = {
       const cold = famOf(c) === 'sharp';
       W.beat(W.pick([`${n} walks right up to ${c}.`, `${n} waits until ${c} is alone, then goes straight over.`, `${n} catches ${c} on the way back from the water.`], 'come'));
       W.say(n, W.V(n, {
-        sharp: [`Am I invisible, or do you just not rate me?`, `Be honest. Am I on your list at all?`, `${streak} days. I'd like to know what I did.`, `Do you have a problem with me, or just a problem picking me?`],
-        loud: [`Okay, what's the deal? ${streak} days, and not ONE session!`, `Seriously! What do I have to do to get picked?!`, `Hey! Remember me? I'm on your team!`, `Is it me? Is it something I SAID?`],
+        sharp: [`Am I invisible, or do you just not rate me?`, `Be honest. Am I on your list at all?`, `${streak} sessions in a row. I'd like to know what I did.`, `Do you have a problem with me, or just a problem picking me?`],
+        loud: [`Okay, what's the deal? ${streak} sessions, and you haven't picked me ONCE!`, `Seriously! What do I have to do to get picked?!`, `Hey! Remember me? I'm on your team!`, `Is it me? Is it something I SAID?`],
         soft: [`Can I ask you something? Is there a reason you never pick me?`, `I don't want to be annoying, but... could I have a session sometime?`, `Did I do something wrong? You never pick me.`, `I'd really like to get better. Could you help me?`],
         dry: [`I've been doing the drills from the sidelines. I'm basically your best student.`, `Quick question. Am I on the team, or just near it?`, `Just checking you know my name.`, `I've watched every session. I could run them by now.`],
         odd: [`Do I need to wear a sign? I'll make a sign.`, `Is there a waiting list? Can I be on it?`, `I've been practising alone. I'd prefer a person.`, `Do coaches take bribes? I have a shell.`],

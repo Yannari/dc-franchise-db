@@ -31,6 +31,11 @@ describe('the season modes are voiced', () => {
       });
     }
     expect(short, short.slice(0, 10).join('\n')).toEqual([]);
+    // a team's name is plural as often as not ("The Vets"): never "{team}'s" (read 2026-10-17: "The Vets's going after...")
+    const possessive = [];
+    for (const mod of Object.values(files)) for (const list of Object.values(mod)) for (const e0 of list) for (const t of (byId[e0.id] || e0).turns)
+      for (const line of [t.say || t.conf || '', ...Object.values(t.v || {}).flat()]) if (/\{(team|oppteam|from|to)\}'s\b/.test(line)) possessive.push(`${e0.id}: ${line}`);
+    expect(possessive, possessive.join('\n')).toEqual([]);
     expect(extra, extra.slice(0, 10).join('\n')).toEqual([]);
   });
 });

@@ -224,7 +224,12 @@ function islandScreen(ep, S, o) {
   if (id === 'rescue-life') return tdIslandLifeScreen(ep, !!(ep.rescueIslandEvents || []).length, o);
   if (id === 'exile-island') return tdExileScreen(ep, exileOf(ep, false), o);
   if (id === 'exile-format') return tdExileScreen(ep, exileOf(ep, true), o);
-  if (id === 'twist' && o.twistBlocks?.length) return tdTwistBlocksScreen(ep, o.twistBlocks, o);
+  // a twist with a stepped screen of its own is not told again on the twist screen (the user, 2026-10-17: "there's 2
+  // screens again, the ambassadors twist and the twist screen ... useless when the ambassadors already doing the job")
+  if (id === 'twist' && o.twistBlocks?.length) {
+    const blocks = o.twistBlocks.filter(b => !(b.type === 'ambassadors' && ep.ambassadorData?.ambassadorMeeting));
+    return blocks.length ? tdTwistBlocksScreen(ep, blocks, o) : 'skip';
+  }
   // the post-vote screen also carries an elimination card for a duel or a second life: classic there
   // (the Elimination Swap plays at the vote now, as scenes: its narration block is not repeated here)
   if (id === 'post-twist' && o.postBlocks?.length && !ep.exileDuelResult && !ep.fireMaking) {

@@ -1745,7 +1745,9 @@ export function _textTdIslands(ep, ln, sec, { choice = true } = {}) {
   full(tdExileScreen(ep, exileOf(ep, true), o), 'EXILE ISLAND — AS IT AIRS');
   // the other twists and the merge, as the stepped viewer plays them (vp-td-ep/twist-screens.js)
   const safe = fn => { try { return fn(); } catch { return null; } };
-  full(safe(() => tdTwistBlocksScreen(ep, preTwistBlocks(ep), o)), 'TWISTS — AS THEY AIR');
+  // (the ambassadors' day is transcribed in full with the twist itself, above)
+  { const _pre = preTwistBlocks(ep).filter(b => !(b.type === 'ambassadors' && ep.ambassadorData?.ambassadorMeeting));
+    if (_pre.length) full(safe(() => tdTwistBlocksScreen(ep, _pre, o)), 'TWISTS — AS THEY AIR'); }
   if (!ep.exileDuelResult && !ep.fireMaking) full(safe(() => tdTwistBlocksScreen(ep, _buildPostTwistBlocks(ep), o, { post: true })), 'AFTER THE VOTE — AS IT AIRS');
   if (ep.isMerge) full(safe(() => tdMergeScreen(ep, mergeData(ep), o)), 'THE MERGE — AS IT AIRS');
 }

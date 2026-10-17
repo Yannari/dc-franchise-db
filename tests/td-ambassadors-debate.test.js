@@ -6,6 +6,8 @@ import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 import { tdAmbassadorsScreen } from '../js/vp-td-ep/twists-more.js';
+import { tdStepScreens } from '../js/vp-td-ep/screens.js';
+import { preTwistBlocks } from '../js/vp-screens.js';
 
 const roster = JSON.parse(fs.readFileSync('franchise_roster.json', 'utf8')).players;
 const NAMES = ['Gwen', 'Leshawna', 'Heather', 'Duncan', 'Courtney', 'Owen', 'Lindsay', 'Trent', 'Julia', 'Millie', 'Aubrey', 'Lake', 'Gabby', 'Bowie', 'Yul', 'Bruno'];
@@ -42,4 +44,16 @@ describe('the ambassadors', () => {
     expect(seen.agreed).toBeGreaterThan(0);
     expect(seen.rocks).toBeGreaterThan(0);
   }, 900000);
+
+  it('plays once: the twist screen does not tell the meeting again', () => {
+    seededRun(() => runOneSeason({ romance: 'enabled', setting: 'hosted-camp', twistSchedule: [{ episode: 4, type: 'ambassadors', id: 'a1' }] }, 16,
+      NAMES.map((n, i) => ({ ...roster.find(r => r.name === n), tribe: i % 2 ? 'Bass' : 'Gophers' }))), 2);
+    window.gs = core.gs; globalThis.gs = core.gs;
+    const ep = core.gs.episodeHistory.find(e => e.ambassadorData?.ambassadorMeeting);
+    const blocks = preTwistBlocks(ep);
+    expect(blocks.some(b => b.type === 'ambassadors')).toBe(true);
+    const out = tdStepScreens(ep, [{ id: 'twist', label: 'Twist', html: '<div>classic twist</div>' }, { id: 'ambassadors', label: 'The Ambassadors', html: '' }],
+      { host: 'Chris', twistBlocks: blocks.filter(b => b.type === 'ambassadors') });
+    expect(out.map(x => x.id)).toEqual(['ambassadors']);
+  }, 600000);
 });

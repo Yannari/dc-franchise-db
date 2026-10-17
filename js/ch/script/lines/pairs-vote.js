@@ -411,6 +411,117 @@ export default {
     ] },
   ],
 
+  // ── the Tribunal in a Pairs season: the winning pair judges, three pairs plead ──
+  'cer-nominees~pairs.any': [
+    { id: 'tnp.1', turns: [
+      { by: 'tj', say: "The votes are in. {a} and {pa}, {b} and {pb}, {c} and {pc}. Three pairs. Tomorrow you go before the Tribunal, and they decide which pair goes into the Arena." },
+      { by: 'a', conf: "Being nominated is one thing. Now my partner and I have to convince people who don't owe us anything." },
+    ] },
+    { id: 'tnp.2', turns: [
+      { by: 'tj', say: "Here are your nominees, people: {a} and {pa}, {b} and {pb}, and {c} and {pc}. Tribunal, one of these pairs is yours to send in." },
+      { by: 'b', conf: "Three pairs, one spot in the Arena. We need to be the pair they don't pick." },
+    ] },
+  ],
+  // a: the nominee pleading; b: the judge; c: the nominee argued against (case)
+  'tribunal-pitch~pairs.plea': [
+    { id: 'tpp.p1', turns: [
+      { by: 'a', say: "{b}, I'm not here to make a speech. {pa} and I have been straight with you since day one." },
+      { by: 'b', say: "I know you have." },
+      { by: 'a', say: "Then don't send us in. That's all I'm asking, for both of us." },
+      { by: 'b', say: "I hear you. I can't promise anything yet." },
+      { by: 'a', say: "I'm not asking for a promise. I'm asking you to remember who's been on your side." },
+      { by: 'b', conf: "{a} didn't beg, and that made it harder. I like {a} and {pa}. That's the problem." },
+    ] },
+    { id: 'tpp.p2', turns: [
+      { by: 'a', say: "Can I talk to you as a person, not as the Tribunal?" },
+      { by: 'b', say: "Go ahead." },
+      { by: 'a', say: "{pa} and I are running on empty, and I don't think we'd come back from the Arena this week. We need one more week." },
+      { by: 'b', say: "That's honest." },
+      { by: 'b', conf: "Everybody else came in with a pitch. {a} just told me the truth about the two of them. That counts for something." },
+    ] },
+  ],
+  'tribunal-pitch~pairs.threat': [
+    { id: 'tpp.t2', turns: [
+      { by: 'a', say: "Think about next week, {b}. You and your partner won't win the daily every time." },
+      { by: 'b', say: "Meaning what?" },
+      { by: 'a', say: "Meaning the pair you send in has two long memories. {pa}'s is even longer than mine." },
+      { by: 'b', conf: "{a} just told the Tribunal to be careful. With two of them, that's twice as many people to be careful of." },
+    ] },
+    { id: 'tpp.t1', turns: [
+      { by: 'a', say: "I'll keep this short. Send us in, and we'll win. And {pa} and I will remember who sent us." },
+      { by: 'b', say: "Is that a threat?" },
+      { by: 'a', say: "It's a fact. You won't be on the Tribunal forever." },
+      { by: 'b', conf: "{a} and {pa} have won in that Arena before. When they say they'll come back for us, I believe it." },
+    ] },
+  ],
+  'tribunal-pitch~pairs.deal': [
+    { id: 'tpp.d2', turns: [
+      { by: 'a', say: "You need numbers, {b}. We're two of them. Keep us, and you'll never hear our names next to yours at a vote." },
+      { by: 'b', say: "And if we don't?" },
+      { by: 'a', say: "Then you're giving two people a reason to come after you." },
+      { by: 'b', conf: "{a} and {pa} made a good case for keeping them around. Every pair makes a good case. That's the problem." },
+    ] },
+    { id: 'tpp.d1', turns: [
+      { by: 'a', say: "Here's what we're offering. Save us, and that's two votes with you, every week, until the final." },
+      { by: 'b', say: "Two votes is a big promise." },
+      { by: 'a', say: "And we keep our promises. Ask anybody about {pa}." },
+      { by: 'b', conf: "Two guaranteed votes for the rest of the season is worth a lot. If {a} and {pa} mean it." },
+    ] },
+  ],
+  'tribunal-pitch~pairs.case': [
+    { id: 'tpp.c2', turns: [
+      { by: 'a', say: "Before you decide, look at {c} and {pc}. They've never been in. Not once." },
+      { by: 'c', say: "That's because we keep winning." },
+      { by: 'a', say: "That's because everybody keeps protecting you." },
+      { by: 'b', conf: "{a} has a point about {c} and {pc}. I just don't know if it's a better point than saving {a}." },
+      { by: 'c', conf: "{a} pointed at us to get out of it. I get it. I'd have done the same, and I'll remember it anyway." },
+    ] },
+    { id: 'tpp.c1', turns: [
+      { by: 'a', say: "I'm not going to talk about us. I'm going to talk about {c} and {pc}." },
+      { by: 'c', say: "Here we go." },
+      { by: 'a', say: "They've been playing both sides, and everybody in this room knows it." },
+      { by: 'c', say: "That's not true, and you know it." },
+      { by: 'b', conf: "{a} came in swinging at {c} and {pc}. Either {a} is right, or {a} is desperate. Maybe both." },
+      { by: 'c', conf: "{a} threw us under the bus to save {a} and {pa}. I'm not going to forget it." },
+    ] },
+  ],
+  // a and b: the judges (the winning pair); {target}: the pair they send in
+  'tribunal-room~pairs.agree': [
+    { id: 'trp.a1', turns: [
+      { by: 'a', say: "Okay. I think we both know which pair it is." },
+      { by: 'b', say: "{target} and {pt}?" },
+      { by: 'a', say: "{target} and {pt}." },
+      { by: 'b', say: "Yeah. I'm there." },
+      { by: 'a', conf: "It's never fun sending a pair in. But {target} and {pt} help us least by staying." },
+    ] },
+  ],
+  'tribunal-room~pairs.split': [
+    { id: 'trp.s1', turns: [
+      { by: 'b', say: "I don't want {target} and {pt}. I think we're making a mistake." },
+      { by: 'a', say: "Then give me a better pair." },
+      { by: 'b', say: "I've been giving you a better pair this whole time." },
+      { by: 'a', say: "And I'm telling you it's {target} and {pt}. We're partners. Back me up." },
+      { by: 'b', say: "Fine. But this one's on you." },
+      { by: 'b', conf: "My own partner outvoted me. When {target} asks, I'm going to tell the truth about who wanted it." },
+    ] },
+  ],
+  // a: the judge who says it; b: the one sent in (with {pb}); c: a nominee spared
+  'tribunal-verdict~pairs.any': [
+    { id: 'tvp.1', turns: [
+      { by: 'tj', say: "Tribunal, you've made your decision. Which pair is going into the Arena?" },
+      { by: 'a', say: "{b} and {pb}." },
+      { by: 'b', say: "Of course." },
+      { by: 'c', opt: 1, conf: "I've never been so relieved to hear another pair's names." },
+      { by: 'b', conf: "I'll remember both of the people on that Tribunal. Both of them." },
+    ] },
+    { id: 'tvp.2', turns: [
+      { by: 'tj', say: "Tribunal! Give me a pair." },
+      { by: 'a', say: "We're sending in {b} and {pb}. I'm sorry. It was the best move for us." },
+      { by: 'b', say: "Best move for you. Got it." },
+      { by: 'b', conf: "They think they made a safe choice. {pb} and I are going to make it the worst choice they ever made." },
+    ] },
+  ],
+
   // ── the daily, won by a pair, in a season of pairs: one pair is safe, and one pair is going in ──
   'daily~pairs.pairs': [
     { id: 'dyp.1', turns: [

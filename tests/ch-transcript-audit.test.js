@@ -23,7 +23,7 @@ it('writes a season to read', () => {
     for (const [i, n] of f.entries()) background[n].rookie = i >= 6;
   }
   setPlayers(cast);
-  const r = playChallengeSeason({ cast: names, background, seed, options: pairing ? { pairs: { pairing, shape: process.env.CH_SHAPE || 'mixed' } } : {} });
+  const r = playChallengeSeason({ cast: names, background, seed, options: { ...(pairing ? { pairs: { pairing, shape: process.env.CH_SHAPE || 'mixed' } } : {}), ...(process.env.CH_FORMAT ? { format: process.env.CH_FORMAT } : {}) } });
   airSeason(r.state);
   const out = [];
   const missing = {};

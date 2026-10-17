@@ -344,6 +344,19 @@ export default {
       { by: 'b', conf: "{a} asked me for a deal, and I said yes. I'll keep it as long as it keeps me safe.", v: { soft: ['{a} asked me for a deal, and I said yes. I\'ll keep it. I keep my promises.'], sharp: ['I\'ll keep the deal as long as it works for me.'] } },
     ] },
   ],
+  // a: the judge who promised to save b at the Tribunal (vote.js tribunalDecide); b: sent in anyway
+  'deal-broken.tribunal': [
+    { id: 'db.t1', turns: [
+      { by: 'b', say: "You told me I was safe. You looked at me and told me." },
+      { by: 'a', say: "I tried. It wasn't only up to me." },
+      { by: 'b', say: "You were on the Tribunal. It was exactly up to you." },
+      { by: 'b', conf: "I made a deal with somebody who had the power to keep it, and they sent me in anyway. I'll know better next time." },
+    ] },
+    { id: 'db.t2', turns: [
+      { by: 'b', conf: "{a} promised to save me. Then {a} sat in that room and said nothing while they picked me." },
+      { by: 'a', conf: "I wanted to keep my word to {b}. The room went the other way, and I went with it. That's on me." },
+    ] },
+  ],
   'deal-broken.vote': [
     { id: 'db.v1', turns: [
       { by: 'b', say: "We had a deal. You said my name anyway.", v: { loud: ['WE HAD A DEAL!'], soft: ['I trusted you. We shook on it.'] } },

@@ -176,8 +176,10 @@ export function writeVote(state, epRec, vote, day) {
   const tally = Object.entries(vote.tally).sort((x, y) => y[1] - x[1]);
   const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
     'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty', 'twenty-one', 'twenty-two', 'twenty-three'];
+  // a Pairs season's nominees are pairs: each one's partner, from the ballots (a nominee nobody named: the pair as it stands)
+  const nomPartners = state.options?.pairs ? Object.fromEntries(vote.tribunal?.nominees?.map(n => [n, vote.ballots.find(x => x.target === n)?.pair?.find(x => x !== n) || state.partnerOf?.[n]]).filter(([, p]) => p) || []) : null;
   const res = vote.tribunal
-    ? writeScene(state, synthetic(state, epRec.ep, day, 'cer-nominees', vote.tribunal.nominees, { house, tribunal: vote.tribunal.tribunal }, 0))
+    ? writeScene(state, synthetic(state, epRec.ep, day, 'cer-nominees', vote.tribunal.nominees, { house, tribunal: vote.tribunal.tribunal }, 0, nomPartners))
     : writeScene(state, synthetic(state, epRec.ep, day, 'cer-result', [vote.votedIn],
       { count: WORDS[tally[0][1]] || String(tally[0][1]), tie: !!vote.tiebreak, house }, 0,
       vote.ballots.find(x => x.target === vote.votedIn)?.pair ? { [vote.votedIn]: vote.ballots.find(x => x.target === vote.votedIn).pair.find(x => x !== vote.votedIn) } : null));

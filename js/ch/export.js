@@ -35,6 +35,7 @@ export const seasonFilePath = n => `data/seasons/${seasonId(CHALLENGE, n)}-data.
 const STATUS = { arena: 'Eliminated', instant: 'Eliminated', quit: 'Quit', medical: 'Medical', disqualified: 'Disqualified', purge: 'Purged',
   'partner-left': 'Partner left' };
 const PAIRING = { rivals: 'Rivals', ties: 'Ride or Die', 'fresh-meat': 'Fresh Meat', pick: 'Pick your partner' };
+const TEAMING = { shows: 'By show', champions: 'Champions vs Underdogs', vets: 'Vets vs Rookies', draft: 'Captains draft' };
 
 // ── the rounds ─────────────────────────────────────────────────────────
 export function chVotingHistory(rows = []) {
@@ -103,6 +104,7 @@ export function chTwistsPlayed(rows = [], options = {}) {
   if (options.redemption) out.push({ episode: null, type: 'ch-redemption', name: 'Redemption House' });
   if (options.partnerWeeks && !options.pairs) out.push({ episode: null, type: 'ch-partners', name: 'Partner Weeks' });
   if (options.pairs) out.push({ episode: null, type: 'ch-pairs', name: `Pairs: ${PAIRING[options.pairs.pairing] || 'Rivals'}` });
+  if (options.teams) out.push({ episode: null, type: 'ch-teams', name: `Teams: ${TEAMING[options.teams.teaming] || 'By show'}${options.teams.end === 'team-final' ? ', team final' : ''}` });
   return out;
 }
 
@@ -149,6 +151,8 @@ export function chPlacements(rows = [], record = null) {
       // a Pairs season: who they played with (the last pair, and every pair in a Pick season), and the money
       ...(r.ch?.partner ? { partner: r.ch.partner, partners: [...(r.ch.partners || [r.ch.partner])] } : {}),
       ...(r.ch?.choice ? { moneyChoice: { ...r.ch.choice } } : {}),
+      // a Teams season: the team they ended on, every team they played for, and whether they switched
+      ...(r.ch?.team ? { team: r.ch.team, teams: [...(r.ch.teams || [r.ch.team])], ...(r.ch.switched ? { switched: true } : {}) } : {}),
       archetype: r.archetype || null,
       challengeWins: r.ch?.dailyWins || 0,
       votesReceived,
@@ -211,7 +215,8 @@ export function buildChallengeSeasonDocument(rows = [], record = null, { seasonN
     twists: chTwistsPlayed(rows, options),
     settings: { gendered: !!options.gendered || new Set(placements.map(p => p.division).filter(Boolean)).size > 1, finalPass: options.finalPass || null, redemption: !!options.redemption,
       partnerWeeks: options.partnerWeeks !== false, romance: options.romance !== false,
-      ...(options.pairs ? { pairs: { pairing: options.pairs.pairing || 'rivals', shape: options.pairs.shape || 'mixed' } } : {}) },
+      ...(options.pairs ? { pairs: { pairing: options.pairs.pairing || 'rivals', shape: options.pairs.shape || 'mixed' } } : {}),
+      ...(options.teams ? { teams: { teaming: options.teams.teaming || 'shows', count: options.teams.count || 2, end: options.teams.end || 'breakup' } } : {}) },
     // a Pairs season: every pair with its place (both partners share it), and the share-or-keep
     ...(options.pairs ? { pairs: pairsOf(placements), moneyChoices: final?.choices || [] } : {}),
     emoji: SHOWS[CHALLENGE].emoji,

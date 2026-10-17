@@ -163,7 +163,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
   // a Pairs season: no Redemption House (spec §2), finalists counted in pairs
   const finalPairs = pairsFinal(opts);
   if (finalPairs) { opts.redemption = false; opts.finalists = finalPairs * 2; }
-  if (opts.teams) opts.redemption = false;
+  if (opts.teams) { opts.redemption = false; opts.partnerWeeks = false; }   // the teams play every daily together
   const state = newState(seed, opts);
   // The lines the last seasons aired (ch-run.js heardBefore): the picker holds them back while unheard ones fit.
   if (heard && Object.keys(heard).length) state.lineLedger = { ...newLedger(), past: { ...heard } };

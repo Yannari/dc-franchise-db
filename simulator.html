@@ -968,8 +968,38 @@
                 <select id="cfg-ch-mode" class="form-input" onchange="saveConfig(); chModeUI()">
                   <option value="solo">Every player for themselves</option>
                   <option value="pairs">Pairs</option>
+                  <option value="teams">Teams</option>
                 </select>
-                <div class="hint hint-tight">Pairs: you play the whole season with a partner. You win dailies together, the house votes a pair in, the Arena is two on two, and the losing pair goes home together. At the end, the partner with more points decides whether to share the money or keep it all.</div>
+                <div class="hint hint-tight">Pairs: you play the whole season with a partner. You win dailies together, the house votes a pair in, the Arena is two on two, and the losing pair goes home together. At the end, the partner with more points decides whether to share the money or keep it all. Teams: every daily is team against team, the losing team votes one of its own into the Arena, and an Arena winner can switch sides.</div>
+              </div>
+              <!-- A Teams season (js/ch/teams.js; spec docs/superpowers/specs/2026-10-17-ch-teams-season-design.md) -->
+              <div id="grp-ch-teams">
+                <div class="form-group">
+                  <label class="form-label" for="cfg-ch-teaming">How the teams are made</label>
+                  <select id="cfg-ch-teaming" class="form-input" onchange="saveConfig()">
+                    <option value="shows">By original show</option>
+                    <option value="champions">Champions against Underdogs</option>
+                    <option value="vets">Vets against Rookies</option>
+                    <option value="draft">Captains draft their teams</option>
+                  </select>
+                  <div class="hint hint-tight">By show reads where each player came from. Champions are the players who have won a season before (the strongest third when there are too few). Vets against Rookies follows each player's billing on the Cast tab. In a draft the two strongest players are captains and pick in turn.</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="cfg-ch-team-count">Teams</label>
+                  <select id="cfg-ch-team-count" class="form-input" onchange="saveConfig()">
+                    <option value="2">Two big teams</option>
+                    <option value="small">One team for each show</option>
+                  </select>
+                  <div class="hint hint-tight">One team for each show only changes a by-show season; the other ways always make two.</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="cfg-ch-team-end">The end of the teams</label>
+                  <select id="cfg-ch-team-end" class="form-input" onchange="saveConfig()">
+                    <option value="breakup">The teams break up before the final</option>
+                    <option value="team-final">A team final: the best team are all champions</option>
+                  </select>
+                  <div class="hint hint-tight">Break up: with four more players left than run the final, TJ ends the teams and it is every player for themselves. Team final: the teams play the final, and every member of the winning team is a champion and shares the money.</div>
+                </div>
               </div>
               <div id="grp-ch-pairs">
                 <div class="form-group">

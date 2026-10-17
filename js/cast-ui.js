@@ -1435,6 +1435,10 @@ export function saveConfig() {
     chPairing: g('cfg-ch-pairing') ? g('cfg-ch-pairing').value : (seasonConfig.chPairing || 'rivals'),
     chPairShape: g('cfg-ch-pair-shape') ? g('cfg-ch-pair-shape').value : (seasonConfig.chPairShape || 'mixed'),
     chFinalPairs: g('cfg-ch-final-pairs') ? (parseInt(g('cfg-ch-final-pairs').value) || 3) : (Number(seasonConfig.chFinalPairs) || 3),
+    // a Teams season (js/ch-run.js challengeOptions -> options.teams)
+    chTeaming: g('cfg-ch-teaming') ? g('cfg-ch-teaming').value : (seasonConfig.chTeaming || 'shows'),
+    chTeamCount: g('cfg-ch-team-count') ? g('cfg-ch-team-count').value : (seasonConfig.chTeamCount || '2'),
+    chTeamEnd: g('cfg-ch-team-end') ? g('cfg-ch-team-end').value : (seasonConfig.chTeamEnd || 'breakup'),
     trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,
     trEndgameReveal: g('cfg-tr-endgame-reveal') ? g('cfg-tr-endgame-reveal').checked : true,
     trSeer: g('cfg-tr-seer') ? g('cfg-tr-seer').value : (seasonConfig.trSeer || 'draw'),
@@ -1652,7 +1656,10 @@ export function renderConfig() {
   if (g('cfg-ch-redemption')) g('cfg-ch-redemption').checked = seasonConfig.chRedemption === true;
   if (g('cfg-ch-partner-weeks')) g('cfg-ch-partner-weeks').checked = seasonConfig.chPartnerWeeks !== false;
   if (g('cfg-ch-romance')) g('cfg-ch-romance').checked = seasonConfig.chRomance !== false;
-  if (g('cfg-ch-mode')) g('cfg-ch-mode').value = seasonConfig.chMode === 'pairs' ? 'pairs' : 'solo';
+  if (g('cfg-ch-mode')) g('cfg-ch-mode').value = ['pairs', 'teams'].includes(seasonConfig.chMode) ? seasonConfig.chMode : 'solo';
+  if (g('cfg-ch-teaming')) g('cfg-ch-teaming').value = ['shows', 'champions', 'vets', 'draft'].includes(seasonConfig.chTeaming) ? seasonConfig.chTeaming : 'shows';
+  if (g('cfg-ch-team-count')) g('cfg-ch-team-count').value = seasonConfig.chTeamCount === 'small' ? 'small' : '2';
+  if (g('cfg-ch-team-end')) g('cfg-ch-team-end').value = seasonConfig.chTeamEnd === 'team-final' ? 'team-final' : 'breakup';
   if (g('cfg-ch-pairing')) g('cfg-ch-pairing').value = ['rivals', 'ties', 'fresh-meat', 'pick'].includes(seasonConfig.chPairing) ? seasonConfig.chPairing : 'rivals';
   if (g('cfg-ch-pair-shape')) g('cfg-ch-pair-shape').value = seasonConfig.chPairShape === 'same' ? 'same' : 'mixed';
   if (g('cfg-ch-final-pairs')) g('cfg-ch-final-pairs').value = [2, 4].includes(Number(seasonConfig.chFinalPairs)) ? String(seasonConfig.chFinalPairs) : '3';

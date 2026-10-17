@@ -55,6 +55,9 @@ export function chLedgerRecord(state, result = {}, { seasonName = null, archetyp
   for (const c of choices) if (c.keep) betrayals.push([c.chooser, c.partner]);
   const betrayedPair = new Set(betrayals.map(([a, b]) => pairKey(a, b)));
   // who each of them played the season with (the last pair they were in), in a Pairs season
+  // ...and in a Teams season, the team they started on and every team they played for (teams.js teamHistory)
+  const teamName = id => (state.teams || []).find(t => t.id === id)?.name || (state.teamNames || {})[id] || null;
+  const teamsOfN = n => [...new Set((state.teamHistory || []).filter(h => h.name === n && h.to).map(h => teamName(h.to)).filter(Boolean))];
   const lastPartner = n => { const h = (state.pairHistory || []).filter(x => x.a === n || x.b === n).at(-1); return h ? (h.a === n ? h.b : h.a) : null; };
 
   // Alliance-mates: anyone who sat in the same group, in it or since gone.
@@ -107,6 +110,8 @@ export function chLedgerRecord(state, result = {}, { seasonName = null, archetyp
         division: state.division[n] || null, rookie: !!state.rookie[n], left: g ? g.how : null,
         ...(state.options?.pairs ? { pairing: state.options.pairs.pairing || 'rivals', partner: lastPartner(n),
           partners: [...new Set((state.pairHistory || []).filter(x => x.a === n || x.b === n).map(x => (x.a === n ? x.b : x.a)))] } : {}),
+        ...(state.options?.teams && teamsOfN(n).length ? { teaming: state.options.teams.teaming, team: teamsOfN(n).at(-1), teams: teamsOfN(n),
+          switched: (state.teamHistory || []).some(h => h.name === n && h.how === 'switch') } : {}),
         ...(() => {
           const c = choices.find(x => x.chooser === n || x.partner === n);
           return c ? { choice: { chose: c.chooser === n, keep: c.keep, amount: c.prize, with: c.chooser === n ? c.partner : c.chooser, place: c.place } } : {};

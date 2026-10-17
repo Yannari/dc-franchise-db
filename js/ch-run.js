@@ -106,6 +106,12 @@ export function challengeOptions(config = seasonConfig) {
       finalPairs: [2, 3, 4].includes(Number(config.chFinalPairs)) ? Number(config.chFinalPairs) : null,
       pins: partnerPins(),
     } : null,
+    // a Teams season (js/ch/teams.js): how the teams are made, how many, and how they end
+    teams: config?.chMode === 'teams' ? {
+      teaming: ['shows', 'champions', 'vets', 'draft'].includes(config.chTeaming) ? config.chTeaming : 'shows',
+      count: config.chTeamCount === 'small' ? 'small' : 2,
+      end: config.chTeamEnd === 'team-final' ? 'team-final' : 'breakup',
+    } : null,
   };
 }
 
@@ -122,12 +128,15 @@ export function chModeUI() {
   if (typeof document === 'undefined') return;
   const g = id => document.getElementById(id);
   const pairs = g('cfg-ch-mode')?.value === 'pairs';
+  const teams = g('cfg-ch-mode')?.value === 'teams';
   const show = (id, on) => { const el = g(id); if (el) el.style.display = on ? '' : 'none'; };
   show('grp-ch-pairs', pairs);
+  show('grp-ch-teams', teams);
   show('grp-ch-pair-shape', pairs && !g('cfg-ch-gender-blind')?.checked);
   show('grp-ch-finalists', !pairs);
-  show('grp-ch-partner-weeks', !pairs);
-  show('grp-ch-redemption', !pairs);
+  // a Teams season plays its dailies as teams and has no Redemption House (season.js)
+  show('grp-ch-partner-weeks', !pairs && !teams);
+  show('grp-ch-redemption', !pairs && !teams);
 }
 
 /** The cast card's Partner list: everybody else in the cast. */
@@ -166,6 +175,8 @@ export function challengeBackground(cast = _cast(), setup = challengeSetup()) {
       gender: p.gender || 'm',
       // Billed a rookie when the ledger has never seen them, unless the author said otherwise.
       rookie: typeof s.rookie === 'boolean' ? s.rookie : !known,
+      // a past winner of any show on the ledger (a Teams season's Champions, js/ch/teams.js)
+      champion: known && (() => { try { return !!careerFor(n)?.seasons?.some(x => x.winner); } catch { return false; } })(),
       origin: (() => { try { return originOf(n); } catch { return null; } })(),
     };
   }
@@ -385,12 +396,20 @@ export function challengeRows(result) {
         // a Pairs season: the pairs as the week began and as it ended (a swap changes them), from Intel's snapshots
         // (the premiere makes its pairs after the week began: its start is its end)
         pairs: (e.intel?.start?.pairs || e.intel?.end?.pairs) ? { start: (e.intel.start?.pairs || e.intel.end.pairs).map(p => [p.a, p.b]), end: (e.intel.end?.pairs || []).map(p => [p.a, p.b]), swap: e.swap || null } : null,
+        // a Teams season: the teams as the week began and ended (the premiere's are its own list), who switched or
+        // folded, and the week the teams broke up (teams.js)
+        teams: (e.intel?.start?.teams || e.teams || e.intel?.end?.teams) ? {
+          start: (e.intel?.start?.teams || e.teams || e.intel.end.teams).map(t => ({ name: t.name, captain: t.captain || null, members: [...t.members] })),
+          end: (e.intel?.end?.teams || []).map(t => ({ name: t.name, captain: t.captain || null, members: [...t.members] })),
+          switches: (e.switches || []).map(x => ({ ...x })), folds: (e.folds || []).map(x => ({ ...x })) } : null,
+        teamsBroken: !!e.teamsBroken,
         aired: airedOf(e),
         // What the stepped viewer stages (js/vp-ch-ep): the house at the start, the daily as it was
         // played, every ballot with what the voter wanted, was asked and told, and each Arena game.
         house: castAt(e.ep),
         daily: dailyOf(e.daily),
         votes: (e.votes || []).map(v => ({ votedIn: v.votedIn, tally: { ...(v.tally || {}) }, tied: !!v.tied, tiebreak: v.tiebreak || null,
+          ...(v.team ? { team: v.team, ...(v.winners ? { winners: true } : {}) } : {}),
           ballots: (v.ballots || []).map(b => ({ voter: b.voter, target: b.target, wanted: b.wanted || null, asked: b.asked || null, told: b.told || null, why: b.why || null, flip: !!b.flip,
             ...(b.pair ? { pair: [...b.pair], named: b.named || b.target } : {}),
             // what drove a vote that was the voter's own (vote.js reasonOf), whose plan it was, and how they stood (Intel's Votes)
@@ -417,7 +436,9 @@ export function challengeRows(result) {
       format: CHALLENGE_FORMAT, num: f.ep, day: f.aired?.[0]?.day ?? null, exits: exitsAt(f.ep), eliminated: null,
       votes: {}, votingLog: [], winner: (result.champions || [])[0] || null,
       ch: { ties: result.episodes[result.episodes.length - 1]?.ties || {}, final: { champions: [...(result.champions || [])], placements: { ...(state.final?.placements || {}) },
-          ...finalOf(result.final) },
+          ...finalOf(result.final),
+          // a team final (final.js finishTeams): the teams in order, the first all champions
+          ...(state.final?.teamPodium ? { teamPodium: state.final.teamPodium.map((t, i) => ({ name: t.name, members: [...t.members], place: i + 1, avg: t.avg ?? null })) } : {}) },
         people: [...(result.champions || [])], house: castAt(f.ep), aired: airedOf(f) },
     });
   }
@@ -603,11 +624,17 @@ export function rerunChallengeEpisode(epNum) {
 export function challengeVoteShape(row) {
   if (row?.ch?.final) {
     const kept = (row.ch.final.choices || []).filter(c => c.keep && c.place === 1);
-    return `Champions: ${(row.ch.final.champions || []).join(' & ')}${kept.length ? ` · ${kept.map(c => `${c.chooser} kept the money`).join(', ')}` : ''}`;
+    const team = row.ch.final.teamPodium?.[0]?.name;
+    return `Champions: ${team ? `${team} (` : ''}${(row.ch.final.champions || []).join(' & ')}${team ? ')' : ''}${kept.length ? ` · ${kept.map(c => `${c.chooser} kept the money`).join(', ')}` : ''}`;
   }
   const duels = row?.ch?.arena || [];
   if (!duels.length) return 'No elimination';
-  return duels.map(d => (d.winners ? `${d.winners.join(' & ')} beat ${d.losers.join(' & ')}` : `${d.winner} beat ${d.loser}`) + (d.game ? ` (${d.game})` : '')).join(' · ');
+  // a Teams season: the team that voted, and a switch
+  const voted = (row.ch.votes || []).find(v => v.team)?.team;
+  const moves = (row.ch.teams?.switches || []).map(x => `${x.name} switched to ${x.to}`);
+  const lead = voted ? `${voted} voted · ` : '';
+  const tail = moves.length ? ` · ${moves.join(' · ')}` : '';
+  return lead + duels.map(d => (d.winners ? `${d.winners.join(' & ')} beat ${d.losers.join(' & ')}` : `${d.winner} beat ${d.loser}`) + (d.game ? ` (${d.game})` : '')).join(' · ') + tail;
 }
 
 if (typeof window !== 'undefined') window._chRunnable = true;

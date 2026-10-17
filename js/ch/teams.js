@@ -115,6 +115,7 @@ export function makeSeasonTeams(state, rng, { background = {} } = {}) {
   const made = how === 'champions' ? byChampions(state, people, background) : how === 'vets' ? byVets(state, people)
     : how === 'draft' ? byDraft(state, people, rng) : byShows(state, people);
   state.teams = made.map((t, i) => ({ id: `t${i + 1}`, name: t.name, members: [...t.members], captain: t.captain || captainOf(state, t.members), how: t.how || how, show: t.show || null }));
+  state.teamNames = Object.fromEntries(state.teams.map(t => [t.id, t.name]));   // a folded team keeps its name on the record
   state.teamOf = {};
   state.teamHistory = [];
   for (const t of state.teams) for (const n of t.members) { state.teamOf[n] = t.id; state.teamHistory.push({ name: n, from: null, to: t.id, ep: state.ep || 1, how: 'start' }); }

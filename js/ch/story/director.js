@@ -64,18 +64,24 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   'pair-turn', 'pair-war', 'partner-left', 'pair-repaired', 'pair-swap', 'partner-swap', 'share-keep-rules', 'share-keep',
   // a Teams season's spine (teams.js)
   'teams-revealed', 'team-reveal', 'team-huddle', 'team-only-one', 'team-voted-in', 'team-after-vote', 'team-switch', 'team-fold',
-  'teams-break', 'team-last-stand']);
+  'teams-break', 'team-last-stand',
+  // a coup that changes a team's captain is the season's business (events.js)
+  'team-coup']);
 const DUE = new Set(['meeting', 'plea', 'leverage-threat', 'counter-pitch', 'spare-deal', 'recruit', 'alliance-merge', 'arena-eve-confront', 'arena-eve-pep',
   'arena-eve-alone', 'morning-after', 'fight', 'team-blame', 'partner-blame', 'throw-caught', 'jealousy', 'receipts',
   'old-show-grudge', 'overheard', 'kitchen-blowup', 'floater-callout', 'spark', 'party-deal', 'party-tears', 'expelled-victim',
   'injury-target', 'injury-care', 'home-gossip', 'home-guilt', 'ranking-beef', 'pass-panic', 'money-talk', 'bank-brag', 'redemption-watch', 'redemption-feud',
   'pair-fight', 'pair-makeup', 'pair-protect', 'pair-want-out', 'pair-jealous', 'pair-arena-blame', 'pair-arena-win', 'pair-eve', 'pair-volunteer-refused',
-  'team-poach', 'team-rift']);
+  'team-poach', 'team-rift',
+  // more of both modes (events.js, 2026-10-17)
+  'pair-money-talk', 'pair-coach', 'pair-mock', 'pair-homesick', 'pair-tempt',
+  'team-weak-link', 'team-trash-talk', 'team-leak', 'team-enemy-love', 'team-new-blood', 'team-carry']);
 const STORY = new Set(['gym-training', 'pool-games', 'house-dinner', 'beach-run', 'sunset-talk', 'bunk-whisper', 'deal', 'alliance-grow', 'alliance-switch', 'alliance-leave', 'alliance-end', 'apology', 'scheme-lie', 'loyalty-test',
   'ride-to-the-final', 'psyche', 'homesick', 'call-home', 'home-talk', 'gossip-backfire', 'ex-in-the-house', 'trash-talk',
-  'vet-dismisses', 'vet-mentors-rookie', 'beach-date', 'hot-tub-truths', 'show-banter', 'rookie-hazing', 'throw', 'injury-healed', 'pass-flex', 'pair-plan']);
-const WARM = new Set(['flirt', 'beach-date', 'spark', 'vet-mentors-rookie', 'apology', 'hot-tub-truths', 'arena-eve-pep', 'pair-makeup']);
-const ROW = new Set(['mock', 'gloat', 'payback', 'fight', 'fight-physical', 'kitchen-blowup', 'receipts', 'trash-talk', 'partner-blame', 'jealousy', 'pair-fight']);
+  'vet-dismisses', 'vet-mentors-rookie', 'beach-date', 'hot-tub-truths', 'show-banter', 'rookie-hazing', 'throw', 'injury-healed', 'pass-flex', 'pair-plan',
+  'pair-train', 'pair-pact', 'team-strategy', 'team-celebrate']);
+const WARM = new Set(['flirt', 'beach-date', 'spark', 'vet-mentors-rookie', 'apology', 'hot-tub-truths', 'arena-eve-pep', 'pair-makeup', 'pair-train', 'pair-homesick']);
+const ROW = new Set(['mock', 'gloat', 'payback', 'fight', 'fight-physical', 'kitchen-blowup', 'receipts', 'trash-talk', 'partner-blame', 'jealousy', 'pair-fight', 'pair-mock', 'team-trash-talk', 'team-coup']);
 // a Pairs season's premiere names twelve pairs: TJ reads the list, and the house sees the best of the reactions
 const CAPS = { spark: 2, meeting: 2, recruit: 2, plea: 2, 'leverage-threat': 1, 'counter-pitch': 1, 'spare-deal': 1, 'arena-eve-pep': 2, 'arena-eve-alone': 1,
   'pair-reveal': 5, 'partner-carried': 2, 'partner-blame': 2, 'team-reveal': 4 };

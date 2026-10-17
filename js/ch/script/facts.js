@@ -15,7 +15,7 @@ export const CH_FACT_KEYS = [
   // a Pairs season (pairs.js, share-keep.js): how the moment went
   'hesitate', 'champions', 'walks', 'rivals', 'keepWhy', 'pairs',
   // a Teams season (teams.js): the teams standing, two on one team, the winners sending one of their own, owning it
-  'teams', 'sameTeam', 'own', 'owns',
+  'teams', 'sameTeam', 'own', 'owns', 'lostLast', 'losing',
   // how far into the season: a line about "weeks in here" needs late, a line
   // about first impressions needs early
   'early', 'late',
@@ -135,6 +135,9 @@ export function factsFor(scene, roles, state) {
     sameTeam: !!(scene.snap?.teams && a && b && scene.snap.teams[a] && scene.snap.teams[a] === scene.snap.teams[b]),
     own: !!scene.data?.own,
     owns: !!scene.data?.owns,
+    // a's team lost the last team daily; a's team has lost two or more (events.js teamRecord)
+    lostLast: !!scene.data?.lostLast,
+    losing: !!scene.data?.losing,
   };
   if (a) {
     f.register = registerOf(a);

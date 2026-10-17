@@ -480,4 +480,20 @@ export default {
       { by: 'tj', say: "{a}. The tiebreakers picked you. Sorry, buddy." },
     ] },
   ],
+  // the volunteer, confirmed: nobody voted, so TJ says it to the room and the volunteer says why (season.js volunteer-in)
+  'volunteer-in.any': [
+    { id: 'vin.1', turns: [
+      { by: 'tj', say: "No vote tonight, people! {a} asked for it, and {a} gets it. {a}, you're going into the Arena." },
+      { by: 'a', say: "Good. That's what I wanted.",
+        v: { sharp: "Good. That's what I wanted.", dry: "Good.", loud: "GOOD! That's EXACTLY what I wanted!", soft: "Good. That's what I wanted.", odd: "Good. I ordered the Arena, and it arrived." } },
+      { by: 'a', conf: "Everybody else waits to find out if they're going in. I decided. That's the difference between me and them.",
+        v: { sharp: "Everybody else waits. I decided. That's the difference.", dry: "They wait. I decided.", loud: "EVERYBODY else waits to find out! I DECIDED! That's the DIFFERENCE!", soft: "Everyone else waits to find out if they're going in. I chose it. I think that's the difference.", odd: "Everybody else waits for the Arena like the bus. I walked." } },
+    ] },
+    { id: 'vin.2', turns: [
+      { by: 'tj', say: "Well, that saves us a lot of time! {a} volunteered, so {a} goes in. Nobody else has to say a name tonight." },
+      { beat: 'A few people let out a breath they did not know they were holding.' },
+      { by: 'a', conf: "I'd rather choose my own fight than let a room full of people choose it for me.",
+        v: { sharp: "I'd rather pick my fight than let the room pick it.", dry: "I picked my own fight.", loud: "I'd RATHER choose my OWN fight than let a ROOM full of people choose it!", soft: "I'd rather choose my own fight than have a room full of people choose it for me.", odd: "I'd rather choose my own fight. The room has terrible taste in fights." } },
+    ] },
+  ],
 };

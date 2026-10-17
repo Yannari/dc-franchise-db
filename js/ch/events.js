@@ -38,7 +38,7 @@ import { planOf } from './plans.js';
 import { noteDeal } from './knowledge.js';
 import { bankOf, injuryOf, skullsOf } from './state.js';
 import { money, richest, passOf, passHunger } from './stakes.js';
-import { pairsOn, pairOf, carriedBy } from './pairs.js';
+import { pairsOn, pairOf, partnerOf, carriedBy } from './pairs.js';
 import { teamsOn, teamOfName, teammates } from './teams.js';
 const state0 = ctx => ctx.state;
 
@@ -894,7 +894,303 @@ export const EVENTS = [
       remember(a, b, 'disloyal-to-the-team', 0.9);
       return addScene(ctx.state, 'team-rift', [a, b], { ally, owns, team: teamOfName(ctx.state, a)?.name || null }, [a, b, ...witnesses(ctx, [a, b], 2)], 'villa');
     } },
+
+  // ── A PAIRS SEASON, more of the pair's life (2026-10-17, the user: "we need events for both modes") ──
+  // Training together for the Arena: a pair that gets on clicks, one that does not snaps at each other over a puzzle.
+  { id: 'pair-train', kind: 'game', cooldown: 3, max: 6,
+    cast: ctx => (!pairsOn(ctx.state) ? null : bestPartners(ctx, 'pair-train', 3, (a, b) => (S(a, 'endurance') + S(a, 'boldness')) * 0.06 + (ctx.state.rec[a]?.votesReceived || 0) * 0.08 - 0.5)),
+    weight: (ctx, p) => 0.25 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const clicks = rng() < 0.5 + getBond(a, b) * 0.06 + (S(b, 'temperament') - 5) * 0.04;
+      for (const n of [a, b]) nudge(ctx.state, n, 'confidence', clicks ? 0.5 : 0.1);
+      addBond(a, b, clicks ? 0.7 : -0.6);
+      if (clicks) { remember(a, b, 'worked-with-me', 0.6); remember(b, a, 'worked-with-me', 0.6); } else remember(b, a, 'snapped-at-me', 0.6);
+      return addScene(ctx.state, 'pair-train', [a, b], { clicks }, [a, b], 'villa');
+    } },
+  // The money, before there is any: one of a pair asks the other, straight, whether they would share. A promise said
+  // out loud weighs on the final's choice (share-keep.js keepTerms: vow); a dodge is remembered.
+  { id: 'pair-money-talk', kind: 'drama', cooldown: 99, max: 4,
+    cast: ctx => (!pairsOn(ctx.state) ? null : bestPartners(ctx, 'pair-money-talk', 99, (a, b) => {
+      if ((ctx.state.shareVows || {})[b] === a || ctx.state.active.length > 14) return 0;
+      return (10 - S(a, 'temperament')) * 0.05 + S(a, 'intuition') * 0.06 + (getBond(a, b) < 1 ? 0.4 : 0) - 0.3;
+    })),
+    weight: (ctx, p) => 0.3 + p.score * 0.35,
+    fire(ctx, [a, b], rng) {
+      const promise = rng() < 0.45 + S(b, 'loyalty') * 0.05 + getBond(a, b) * 0.05 - (S(b, 'strategic') - 5) * 0.05;
+      if (promise) { (ctx.state.shareVows ||= {})[b] = a; addBond(a, b, 0.6); remember(a, b, 'promised-to-share', 1); }
+      else { addBond(a, b, -0.7); nudge(ctx.state, a, 'paranoia', 0.8); remember(a, b, 'dodged-the-money', 1.1); }
+      return addScene(ctx.state, 'pair-money-talk', [a, b], { promise }, [a, b], 'private');
+    } },
+  // Tough love: the stronger of a pair drills the other one before an Arena they both fear. Thanks, or resentment.
+  { id: 'pair-coach', kind: 'drama', cooldown: 4, max: 5,
+    cast: ctx => (!pairsOn(ctx.state) ? null : bestPartners(ctx, 'pair-coach', 4, (a, b) => {
+      const gap = arenaRead(ctx.state, a) - arenaRead(ctx.state, b);
+      return gap > 1 ? gap * 0.25 + (S(a, 'boldness') - 5) * 0.08 - 0.2 : 0;
+    })),
+    weight: (ctx, p) => 0.25 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const thanks = rng() < 0.45 + (S(b, 'temperament') - 5) * 0.06 + getBond(a, b) * 0.05;
+      if (thanks) { nudge(ctx.state, b, 'confidence', 0.7); addBond(a, b, 0.6); remember(b, a, 'believed-in-me', 0.8); }
+      else { nudge(ctx.state, b, 'morale', -0.5); addBond(a, b, -0.8); remember(b, a, 'talked-down-to-me', 1); }
+      return addScene(ctx.state, 'pair-coach', [a, b], { thanks }, [a, b], 'villa');
+    } },
+  // Two pairs make a pact: four of them, nobody of the four votes for the other two. Bonds across, and the house sees
+  // a block (a witness or two).
+  { id: 'pair-pact', kind: 'game', cooldown: 4, max: 4,
+    cast: ctx => {
+      if (!pairsOn(ctx.state)) return null;
+      let best = null;
+      const pairs = (ctx.state.pairs || []).filter(p => ctx.state.active.includes(p.a) && ctx.state.active.includes(p.b));
+      for (const p of pairs) for (const q of pairs) {
+        if (p === q) continue;
+        const warm = getBond(p.a, q.a) + getBond(p.a, q.b) + getBond(p.b, q.a) + getBond(p.b, q.b);
+        if (warm < 3 || !cooled(ctx, 'pair-pact', [p.a, q.a], 4)) continue;
+        const s = warm * 0.15 + (S(p.a, 'strategic') + S(q.a, 'strategic')) * 0.04 - 0.4 + jitter(ctx, 'pair-pact', p.a + q.a);
+        if (!best || s > best.score) best = { who: [p.a, q.a, p.b, q.b], score: s };
+      }
+      return best;
+    },
+    weight: (ctx, p) => 0.25 + p.score * 0.3,
+    fire(ctx, [a, c, b, d], rng) {
+      const doubts = rng() < 0.3 + (S(d, 'intuition') - 5) * 0.05 - getBond(d, a) * 0.04;
+      for (const x of [a, b]) for (const y of [c, d]) addBond(x, y, doubts && y === d ? 0.2 : 0.7);
+      for (const x of [a, b]) for (const y of [c, d]) { remember(x, y, 'pact-with-me', 0.8); remember(y, x, 'pact-with-me', 0.8); }
+      if (doubts) remember(d, c, 'made-a-deal-without-me', 0.6);
+      return addScene(ctx.state, 'pair-pact', [a, c, b, d], { doubts }, [a, b, c, d, ...witnesses(ctx, [a, b, c, d], 1)], 'private');
+    } },
+  // Somebody calls a pair the weakest pair in the house, to their faces. They clap back, or it lands.
+  { id: 'pair-mock', actorCooldown: 3, kind: 'drama', cooldown: 4, max: 5,
+    cast: ctx => (!pairsOn(ctx.state) ? null : bestPair(ctx, 'pair-mock', 4, (a, b) => {
+      const pa = pairOf(ctx.state, a), pb = pairOf(ctx.state, b);
+      if (!pa || !pb || pa === pb || is(a, 'hero', 'loyal-soldier', 'social-butterfly', 'underdog', 'goat')) return 0;
+      const weak = 10 - (arenaRead(ctx.state, pb.a) + arenaRead(ctx.state, pb.b)) / 2;
+      return (S(a, 'boldness') - 5) * 0.2 + weak * 0.1 + Math.max(0, -getBond(a, b)) * 0.15 - 0.6;
+    })),
+    weight: (ctx, p) => 0.25 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const pb = partnerOf(ctx.state, b);
+      const clap = rng() < 0.4 + (S(b, 'boldness') - 5) * 0.07;
+      addBond(a, b, -0.8); if (pb) addBond(a, pb, -0.5);
+      addRivalry(ctx.state, a, b, 1);
+      if (clap) { nudge(ctx.state, b, 'confidence', 0.4); pop(b, 0.1); } else { nudge(ctx.state, b, 'morale', -0.5); if (pb) nudge(ctx.state, pb, 'morale', -0.3); }
+      remember(b, a, 'mocked-us', 1); if (pb) remember(pb, a, 'mocked-us', 0.8);
+      return addScene(ctx.state, 'pair-mock', [a, b, ...(pb ? [pb] : [])], { clap }, [a, b, ...(pb ? [pb] : []), ...witnesses(ctx, [a, b, pb], 3)], 'villa');
+    } },
+  // Missing home, inside a pair: the partner comforts, or says toughen up (the Arena is two on two, and they need you).
+  { id: 'pair-homesick', kind: 'drama', cooldown: 4, max: 4,
+    cast: ctx => (!pairsOn(ctx.state) ? null : bestPartners(ctx, 'pair-homesick', 4, (a, b) => (ctx.state.mind[a]?.homesick || 0) * 0.3 - 1)),
+    weight: (ctx, p) => 0.25 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const kind = rng() < 0.45 + (S(b, 'social') - 5) * 0.06 + getBond(a, b) * 0.06 - (is(b, 'hothead', 'villain', 'mastermind') ? 0.25 : 0);
+      if (kind) { nudge(ctx.state, a, 'homesick', -1.2); addBond(a, b, 0.9); remember(a, b, 'there-for-me', 1); }
+      else { nudge(ctx.state, a, 'homesick', -0.3); nudge(ctx.state, a, 'morale', -0.4); addBond(a, b, -0.6); remember(a, b, 'cold-to-me', 0.8); }
+      return addScene(ctx.state, 'pair-homesick', [a, b], { kind }, [a, b], 'private');
+    } },
+  // Tempted: somebody from another pair says they would rather have them as a partner. Loyal, or tempted, and their own
+  // partner notices the second.
+  { id: 'pair-tempt', actorCooldown: 3, kind: 'drama', cooldown: 4, max: 4,
+    cast: ctx => (!pairsOn(ctx.state) ? null : bestPair(ctx, 'pair-tempt', 4, (a, b) => {
+      const pa = partnerOf(ctx.state, a), pb = partnerOf(ctx.state, b);
+      if (!pa || !pb || pa === b) return 0;
+      return getBond(a, b) >= 1.5 ? (getBond(a, b) - getBond(a, pa)) * 0.2 + S(a, 'social') * 0.04 - 0.6 : 0;
+    })),
+    weight: (ctx, p) => 0.25 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const pb = partnerOf(ctx.state, b);
+      const tempted = rng() < 0.3 + Math.max(0, -getBond(b, pb)) * 0.1 + (5 - S(b, 'loyalty')) * 0.05;
+      addBond(a, b, tempted ? 0.8 : 0.2);
+      if (tempted) { addBond(b, pb, -0.5); nudge(ctx.state, pb, 'paranoia', 0.6); remember(pb, b, 'eyes-on-another-partner', 1); }
+      else { addBond(b, pb, 0.4); remember(pb, b, 'stayed-loyal', 0.6); }
+      return addScene(ctx.state, 'pair-tempt', [a, b, pb], { tempted }, tempted ? [a, b, pb] : [a, b], 'private');
+    } },
+
+  // ── A TEAMS SEASON, more of the team's life (2026-10-17, the user: "we need events for both modes") ──
+  // The plan for the next daily: the captain and a few of the team. A plan everybody owns, or the captain's alone.
+  { id: 'team-strategy', kind: 'game', cooldown: 3, max: 8,
+    cast: ctx => {
+      if (!teamsOn(ctx.state)) return null;
+      let best = null;
+      for (const t of ctx.state.teams) {
+        const cap = t.captain && ctx.state.active.includes(t.captain) ? t.captain : null;
+        const m = t.members.filter(n => ctx.state.active.includes(n) && n !== cap).sort((x, y) => S(y, 'strategic') - S(x, 'strategic')).slice(0, 3);
+        if (!cap || m.length < 2 || !cooled(ctx, 'team-strategy', [cap, m[0]], 3)) continue;
+        const s = S(cap, 'strategic') * 0.08 + (ctx.state.teamLosses?.[t.id] || 0) * 0.15 + jitter(ctx, 'team-strategy', cap);
+        if (!best || s > best.score) best = { who: [cap, ...m], score: s };
+      }
+      return best;
+    },
+    weight: (ctx, p) => 0.3 + p.score * 0.3,
+    fire(ctx, who, rng) {
+      const [cap, ...m] = who;
+      const bossy = rng() < 0.25 + (S(cap, 'boldness') - 5) * 0.06 - (S(cap, 'social') - 5) * 0.05;
+      for (const n of m) { addBond(cap, n, bossy ? -0.4 : 0.4); nudge(ctx.state, n, 'morale', bossy ? -0.2 : 0.3); }
+      if (bossy) remember(m[0], cap, 'overruled-me', 0.8);
+      return addScene(ctx.state, 'team-strategy', who, { bossy, team: teamOfName(ctx.state, cap)?.name || null, ...teamRecord(ctx.state, cap) }, who, 'villa');
+    } },
+  // The coup: a teammate comes for the captain's armband, after the team keeps losing (or because they never liked
+  // the captain). It can work: the team gets a new captain.
+  { id: 'team-coup', actorCooldown: 4, kind: 'drama', cooldown: 5, max: 2,
+    cast: ctx => (!teamsOn(ctx.state) ? null : bestPair(ctx, 'team-coup', 5, (c, cap) => {
+      const t = teamOfName(ctx.state, c);
+      if (!t || t.captain !== cap || c === cap || is(c, 'loyal-soldier', 'goat', 'underdog')) return 0;
+      const losses = ctx.state.teamLosses?.[t.id] || 0;
+      return losses * 0.3 + (S(c, 'boldness') - 5) * 0.15 + (S(c, 'strategic') - 5) * 0.08 + Math.max(0, -getBond(c, cap)) * 0.2 - 1;
+    })),
+    weight: (ctx, p) => 0.3 + p.score * 0.35,
+    fire(ctx, [c, cap], rng) {
+      const t = teamOfName(ctx.state, c);
+      const mates = teammates(ctx.state, c).filter(n => n !== cap);
+      const backing = mates.filter(n => getBond(n, c) > getBond(n, cap)).length;
+      const takes = mates.length > 0 && backing / mates.length > 0.5 + (rng() - 0.5) * 0.2;
+      addBond(c, cap, takes ? -1.6 : -1);
+      addRivalry(ctx.state, c, cap, 1);
+      if (takes) { t.captain = c; remember(cap, c, 'took-my-team', 1.4); nudge(ctx.state, c, 'confidence', 0.6); nudge(ctx.state, cap, 'morale', -0.8); }
+      else { remember(cap, c, 'came-for-my-spot', 1.1); for (const n of mates) addBond(n, c, -0.2); nudge(ctx.state, c, 'morale', -0.4); }
+      return addScene(ctx.state, 'team-coup', [c, cap, ...mates.slice(0, 2)], { takes, team: t.name, backing, of: mates.length, ...teamRecord(ctx.state, c) }, [c, cap, ...mates], 'villa');
+    } },
+  // The weak link: after a loss, the team turns on whoever did worst in the daily. Somebody stands up for them, or not.
+  // Whoever piled on remembers it at the team vote.
+  { id: 'team-weak-link', kind: 'drama', cooldown: 3, max: 6,
+    cast: ctx => {
+      if (!teamsOn(ctx.state) || !ctx.state.lastDailyTeams || !ctx.state.lastDailyScores || !ctx.state.lastDailyLast?.length) return null;
+      const t = teamOfName(ctx.state, ctx.state.lastDailyLast[0]);
+      if (!t) return null;
+      const live = t.members.filter(n => ctx.state.active.includes(n));
+      const sc = ctx.state.lastDailyScores;
+      const weak = [...live].filter(n => sc[n] != null).sort((x, y) => sc[x] - sc[y])[0];
+      if (!weak || !cooled(ctx, 'team-weak-link', [weak], 3)) return null;
+      const accuser = live.filter(n => n !== weak).sort((x, y) => (getBond(x, weak) - (10 - S(x, 'temperament')) * 0.2) - (getBond(y, weak) - (10 - S(y, 'temperament')) * 0.2))[0];
+      const defender = live.filter(n => n !== weak && n !== accuser && getBond(n, weak) >= 2).sort((x, y) => getBond(weak, y) - getBond(weak, x))[0] || null;
+      return accuser ? { who: [accuser, weak, ...(defender ? [defender] : [])], score: 0.8 + Math.max(0, -getBond(accuser, weak)) * 0.2 } : null;
+    },
+    weight: (ctx, p) => 0.35 + p.score * 0.3,
+    fire(ctx, [a, w, d], rng) {
+      const defended = !!d && rng() < 0.45 + (S(d, 'loyalty') - 5) * 0.07 + (S(d, 'boldness') - 5) * 0.04;
+      addBond(a, w, -0.8); remember(a, w, 'cost-us-the-daily', 1);
+      nudge(ctx.state, w, 'confidence', -0.5);
+      if (defended) { addBond(d, w, 1); remember(w, d, 'stood-up-for-me', 1); addBond(a, d, -0.4); }
+      else { nudge(ctx.state, w, 'morale', -0.6); for (const n of teammates(ctx.state, w).slice(0, 3)) if (n !== a) addBond(n, w, -0.2); }
+      return addScene(ctx.state, 'team-weak-link', [a, w, ...(d ? [d] : [])], { defended, team: teamOfName(ctx.state, w)?.name || null }, [a, w, ...(d ? [d] : []), ...teammates(ctx.state, w).slice(0, 2)], 'villa');
+    } },
+  // Trash talk across the line: one of each team, in front of both. It turns heated, or both end up laughing.
+  { id: 'team-trash-talk', actorCooldown: 2, kind: 'drama', cooldown: 3, max: 6,
+    cast: ctx => (!teamsOn(ctx.state) ? null : bestPair(ctx, 'team-trash-talk', 3, (a, b) => {
+      if (!ctx.state.teamOf?.[a] || ctx.state.teamOf[a] === ctx.state.teamOf[b]) return 0;
+      return (S(a, 'boldness') - 5) * 0.2 + (S(b, 'boldness') - 5) * 0.1 + Math.max(0, -getBond(a, b)) * 0.15 - 0.3;
+    })),
+    weight: (ctx, p) => 0.3 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const heated = rng() < 0.4 + Math.max(0, -getBond(a, b)) * 0.08 + (10 - S(b, 'temperament')) * 0.03;
+      addBond(a, b, heated ? -0.9 : 0.4);
+      if (heated) { addRivalry(ctx.state, a, b, 1); remember(b, a, 'ran-their-mouth', 0.8); }
+      for (const n of teammates(ctx.state, a).slice(0, 2)) addBond(n, a, 0.2);
+      return addScene(ctx.state, 'team-trash-talk', [a, b], { heated, team: teamOfName(ctx.state, a)?.name || null, oppTeam: teamOfName(ctx.state, b)?.name || null, ...teamRecord(ctx.state, a) },
+        [a, b, ...witnesses(ctx, [a, b], 3)], 'villa');
+    } },
+  // After a team win: the winners celebrate in the house while the losers count votes. Gracious, or rubbing it in.
+  { id: 'team-celebrate', actorCooldown: 3, kind: 'drama', cooldown: 3, max: 6,
+    cast: ctx => {
+      if (!teamsOn(ctx.state) || !ctx.state.lastDailyTeams || !ctx.state.lastDailyWinners?.length || !ctx.state.lastDailyLast?.length) return null;
+      const w = ctx.state.lastDailyWinners.filter(n => ctx.state.active.includes(n));
+      const l = ctx.state.lastDailyLast.filter(n => ctx.state.active.includes(n));
+      const a = w.sort((x, y) => S(y, 'boldness') - S(x, 'boldness'))[0];
+      const b = l.sort((x, y) => (10 - S(y, 'temperament')) - (10 - S(x, 'temperament')))[0];
+      return a && b && cooled(ctx, 'team-celebrate', [a, b], 3) ? { who: [a, b, ...w.filter(n => n !== a).slice(0, 1)], score: 0.6 + (S(a, 'boldness') - 5) * 0.1 } : null;
+    },
+    weight: (ctx, p) => 0.6 + p.score * 0.3,
+    fire(ctx, [a, b, c], rng) {
+      const rubs = !is(a, 'hero', 'loyal-soldier', 'social-butterfly', 'underdog', 'goat') && rng() < 0.4 + (S(a, 'boldness') - 5) * 0.08;
+      addBond(a, b, rubs ? -0.9 : 0.4);
+      if (c) addBond(a, c, 0.4);
+      if (rubs) { remember(b, a, 'rubbed-it-in', 1); pop(a, -0.1); } else pop(a, 0.1);
+      return addScene(ctx.state, 'team-celebrate', [a, b, ...(c ? [c] : [])], { rubs, team: teamOfName(ctx.state, a)?.name || null, oppTeam: teamOfName(ctx.state, b)?.name || null },
+        [a, b, ...(c ? [c] : []), ...witnesses(ctx, [a, b, c], 2)], 'villa');
+    } },
+  // The leak: a schemer tells a friend on the other team who their own team is going to vote for. A teammate may catch
+  // it, and that is a grudge the next team vote reads.
+  { id: 'team-leak', actorCooldown: 4, kind: 'game', cooldown: 5, max: 3,
+    cast: ctx => (!teamsOn(ctx.state) ? null : bestPair(ctx, 'team-leak', 5, (a, b) => {
+      if (!ctx.state.teamOf?.[a] || ctx.state.teamOf[a] === ctx.state.teamOf[b] || !mayScheme(a)) return 0;
+      return getBond(a, b) >= 2 ? (getBond(a, b) - 2) * 0.25 + (S(a, 'strategic') - 5) * 0.1 + 0.3 : 0;
+    })),
+    weight: (ctx, p) => 0.25 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const caught = teammates(ctx.state, a).filter(n => rng() < S(n, 'intuition') * 0.035)[0] || null;
+      addBond(a, b, 0.7); remember(b, a, 'told-me-their-plan', 1);
+      if (caught) { addBond(caught, a, -1.6); remember(caught, a, 'leaked-to-the-other-team', 1.4); addRivalry(ctx.state, caught, a, 1); }
+      return addScene(ctx.state, 'team-leak', [a, b, ...(caught ? [caught] : [])], { caught, team: teamOfName(ctx.state, a)?.name || null, oppTeam: teamOfName(ctx.state, b)?.name || null },
+        caught ? [a, b, caught] : [a, b], 'private');
+    } },
+  // Sleeping with the enemy: a couple on two teams, and a teammate who says so. Defends it, or keeps it quiet.
+  { id: 'team-enemy-love', kind: 'romance', cooldown: 4, max: 4,
+    cast: ctx => (!teamsOn(ctx.state) ? null : bestPair(ctx, 'team-enemy-love', 4, (c, a) => {
+      const lover = coupleOf(ctx.state, a);
+      if (!lover || !ctx.state.teamOf?.[a] || ctx.state.teamOf[lover] === ctx.state.teamOf[a] || ctx.state.teamOf[c] !== ctx.state.teamOf[a] || c === a) return 0;
+      return 0.6 + (10 - S(c, 'temperament')) * 0.06 + Math.max(0, -getBond(c, lover)) * 0.15;
+    })),
+    weight: (ctx, p) => 0.35 + p.score * 0.3,
+    fire(ctx, [c, a], rng) {
+      const lover = coupleOf(ctx.state, a);
+      const defends = rng() < 0.5 + (S(a, 'boldness') - 5) * 0.07;
+      addBond(c, a, defends ? -0.9 : -0.4);
+      if (defends) { addBond(a, lover, 0.5); remember(c, a, 'chose-them-over-us', 1); } else { nudge(ctx.state, a, 'morale', -0.4); remember(c, a, 'hiding-something', 0.7); }
+      return addScene(ctx.state, 'team-enemy-love', [c, a, lover], { defends, lover, team: teamOfName(ctx.state, a)?.name || null, oppTeam: teamOfName(ctx.state, lover)?.name || null }, [c, a], 'villa');
+    } },
+  // New blood: somebody who just switched (or whose team folded into this one) is welcomed in, or frozen out.
+  { id: 'team-new-blood', kind: 'drama', cooldown: 99, max: 4,
+    cast: ctx => {
+      if (!teamsOn(ctx.state)) return null;
+      const fresh = (ctx.state.teamHistory || []).filter(h => (h.how === 'switch' || h.how === 'fold') && h.ep >= ctx.state.ep - 1 && ctx.state.active.includes(h.name));
+      let best = null;
+      for (const h of fresh) {
+        const mates = teammates(ctx.state, h.name);
+        const host = mates.sort((x, y) => Math.abs(getBond(y, h.name)) - Math.abs(getBond(x, h.name)))[0];
+        if (!host || !cooled(ctx, 'team-new-blood', [h.name], 99)) continue;
+        const s = 0.8 + Math.abs(getBond(host, h.name)) * 0.1;
+        if (!best || s > best.score) best = { who: [h.name, host, ...mates.filter(n => n !== host).slice(0, 1)], score: s };
+      }
+      return best;
+    },
+    weight: (ctx, p) => 0.5 + p.score * 0.3,
+    fire(ctx, [n, host, x], rng) {
+      const welcome = rng() < 0.45 + getBond(host, n) * 0.08 + (S(host, 'social') - 5) * 0.05;
+      for (const m of [host, x].filter(Boolean)) addBond(m, n, welcome ? 0.6 : -0.4);
+      nudge(ctx.state, n, 'morale', welcome ? 0.5 : -0.6);
+      if (!welcome) remember(n, host, 'froze-me-out', 0.9); else remember(n, host, 'welcomed-me', 0.8);
+      const h = [...(ctx.state.teamHistory || [])].reverse().find(e => e.name === n);
+      return addScene(ctx.state, 'team-new-blood', [n, host, ...(x ? [x] : [])], { welcome, team: teamOfName(ctx.state, n)?.name || null, how: h?.how || 'switch' }, [n, host, ...(x ? [x] : [])], 'villa');
+    } },
+  // "I'm carrying this team": the team's best daily player says it out loud. The team agrees, or turns on them.
+  { id: 'team-carry', actorCooldown: 4, kind: 'drama', cooldown: 4, max: 4,
+    cast: ctx => {
+      if (!teamsOn(ctx.state)) return null;
+      let best = null;
+      for (const t of ctx.state.teams) {
+        const live = t.members.filter(n => ctx.state.active.includes(n));
+        if (live.length < 3) continue;
+        const star = [...live].sort((x, y) => (ctx.state.rec[y]?.dailyWins || 0) + arenaRead(ctx.state, y) * 0.3 - (ctx.state.rec[x]?.dailyWins || 0) - arenaRead(ctx.state, x) * 0.3)[0];
+        const other = live.filter(n => n !== star).sort((x, y) => getBond(star, x) - getBond(star, y))[0];
+        if (!other || !cooled(ctx, 'team-carry', [star], 4) || is(star, 'hero', 'loyal-soldier', 'goat', 'underdog', 'social-butterfly')) continue;
+        const s = (S(star, 'boldness') - 5) * 0.2 + (ctx.state.teamLosses?.[t.id] || 0) * 0.2 + jitter(ctx, 'team-carry', star) - 0.2;
+        if (s > 0 && (!best || s > best.score)) best = { who: [star, other], score: s };
+      }
+      return best;
+    },
+    weight: (ctx, p) => 0.25 + p.score * 0.3,
+    fire(ctx, [a, b], rng) {
+      const backlash = rng() < 0.5 + (S(b, 'boldness') - 5) * 0.06 - getBond(b, a) * 0.05;
+      if (backlash) { addBond(a, b, -1); for (const n of teammates(ctx.state, a).slice(0, 3)) addBond(n, a, -0.3); remember(b, a, 'thinks-they-carry-us', 1); }
+      else { nudge(ctx.state, a, 'confidence', 0.4); addBond(a, b, 0.2); }
+      return addScene(ctx.state, 'team-carry', [a, b], { backlash, team: teamOfName(ctx.state, a)?.name || null, ...teamRecord(ctx.state, a) }, [a, b, ...teammates(ctx.state, a).slice(0, 2)], 'villa');
+    } },
 ];
+
+// A team's record as a line may say it: lost the last daily (only a daily played as teams counts), and lost two or more
+// so far. "We keep losing" over a team that had never lost aired in the first read (2026-10-17).
+function teamRecord(state, n) {
+  const id = state.teamOf?.[n];
+  return { lostLast: !!(state.lastDailyTeams && id && state.lastDailyLast?.some(x => state.teamOf?.[x] === id)), losing: (state.teamLosses?.[id] || 0) >= 2 };
+}
 
 // ── the two of a pair, as an event's cast ────────────────────────────
 // Like bestPair, but only partners: each pair both ways round (a is the one who starts it).

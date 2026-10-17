@@ -338,6 +338,8 @@ export const ROLES = {
   'pair-volunteer': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.who[2] ? 'targeted' : 'open' }),
   'pair-volunteer-refused': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'pair-volunteer-in': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  // the one who volunteered, going into the Arena (season.js): it aired as "(no lines yet)" until 2026-10-17
+  'volunteer-in': sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   'pair-voted-in': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { count: sc.data.count >= 2 ? COUNT_WORD[sc.data.count] || String(sc.data.count) : undefined } }),
   'pair-after-vote': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.stung || undefined }, ending: sc.data.stung ? 'stung' : 'any',
     slots: { count: sc.data.count >= 2 ? COUNT_WORD[sc.data.count] || String(sc.data.count) : undefined } }),
@@ -364,6 +366,19 @@ export const ROLES = {
   'pair-want-out': sc => ({ roles: { a: sc.who[0], b: sc.data.friend || undefined, c: sc.data.partner }, ending: sc.data.heard ? 'heard' : 'quiet' }),
   'pair-plan': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { target: sc.data.target, target2: sc.data.targetPartner } }),
   'pair-jealous': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.says ? 'said' : 'kept' }),
+  // more of a pair's life (events.js, 2026-10-17)
+  'pair-train': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.clicks ? 'clicks' : 'clash' }),
+  // a asks; b answers (promises to share, or dodges)
+  'pair-money-talk': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.promise ? 'promise' : 'dodge' }),
+  // a: the stronger partner, drilling; b: the one being drilled
+  'pair-coach': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.thanks ? 'thanks' : 'resents' }),
+  // a and c: the two who start it (one of each pair); b and d: their partners
+  'pair-pact': sc => ({ roles: { a: sc.who[0], c: sc.who[1], b: sc.who[2], d: sc.who[3] }, ending: sc.data.doubts ? 'doubts' : 'sealed' }),
+  // a mocks; b and c are the pair
+  'pair-mock': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.clap ? 'clap' : 'stung' }),
+  'pair-homesick': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.kind ? 'kind' : 'tough' }),
+  // a tempts b; c is b's partner
+  'pair-tempt': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.tempted ? 'tempted' : 'loyal' }),
   'pair-turn': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.rivals ? 'rivals' : 'any' }),
   'pair-war': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'share-keep-rules': sc => ({ roles: { a: sc.data.pairs?.[0]?.[0], b: sc.data.pairs?.[0]?.[1] }, ending: 'any' }),
@@ -394,6 +409,23 @@ Object.assign(ROLES, {
   // a courts b; c, b's teammate, saw it
   'team-poach': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.seen || undefined }, ending: sc.data.seen ? 'seen' : 'quiet', slots: { from: sc.data.from || undefined, to: sc.data.to || undefined } }),
   'team-rift': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.owns ? 'owns' : 'denies', slots: { alt: sc.data.ally || undefined, team: sc.data.team || undefined } }),
+  // more of a team's life (events.js, 2026-10-17)
+  // a: the captain; b, c, d: the teammates at the table
+  'team-strategy': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.bossy ? 'bossy' : 'plan', slots: { team: sc.data.team || undefined } }),
+  // a: the one coming for the armband; b: the captain; c, d: teammates watching
+  'team-coup': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.takes ? 'takes' : 'fails', slots: { team: sc.data.team || undefined } }),
+  // a: the one who blames; b: the weak link; c: the one who stands up for them
+  'team-weak-link': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.defended ? sc.who[2] : undefined }, ending: sc.data.defended ? 'defended' : 'piled', slots: { team: sc.data.team || undefined } }),
+  'team-trash-talk': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.heated ? 'heated' : 'laughs', slots: { team: sc.data.team || undefined, oppteam: sc.data.oppTeam || undefined } }),
+  // a: a winner; b: one of the losing team; c: a teammate of a's
+  'team-celebrate': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.rubs ? 'rubs' : 'gracious', slots: { team: sc.data.team || undefined, oppteam: sc.data.oppTeam || undefined } }),
+  // a: the leak; b: the friend on the other team; c: the teammate who caught it
+  'team-leak': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.caught || undefined }, ending: sc.data.caught ? 'caught' : 'clean', slots: { team: sc.data.team || undefined, oppteam: sc.data.oppTeam || undefined } }),
+  // a: the teammate who says it; b: the one in love; c: the lover, on the other team
+  'team-enemy-love': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.defends ? 'defends' : 'hides', slots: { alt: sc.data.lover || undefined, team: sc.data.team || undefined, oppteam: sc.data.oppTeam || undefined } }),
+  // a: the new arrival; b: the one who meets them; c: another teammate
+  'team-new-blood': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.welcome ? 'welcome' : 'frozen', slots: { team: sc.data.team || undefined } }),
+  'team-carry': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.backlash ? 'backlash' : 'agree', slots: { team: sc.data.team || undefined } }),
 });
 
 const PLACE_WORD = { 1: 'first', 2: 'second', 3: 'third', 4: 'fourth' };

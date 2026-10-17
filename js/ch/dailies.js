@@ -313,6 +313,9 @@ export function playDaily(state, rng, { division, pin = null, solo = false }) {
   // Partners who won together.
   if (mode === 'pairs') for (const [a, b] of [winners]) if (a && b) { addBond(a, b, 0.8); remember(a, b, 'worked-with-me', 1); remember(b, a, 'worked-with-me', 1); }
   for (const l of last) { state.rec[l].dailyLast++; nudge(state, l, 'confidence', -0.5); }
+  // what the house remembers of today's daily, for the events that read it (events.js team-weak-link, team-celebrate)
+  state.lastDailyScores = { ...indiv }; state.lastDailyWinners = [...winners]; state.lastDailyLast = [...last]; state.lastDailyTeams = !!seasonTeams;
+  if (seasonTeams && state.teamOf?.[last[0]]) (state.teamLosses ||= {})[state.teamOf[last[0]]] = ((state.teamLosses || {})[state.teamOf[last[0]]] || 0) + 1;
   // a Teams season names the teams: the winners and the team that will vote (teams.js)
   const teamName = n => state.teams?.find(t => t.id === state.teamOf?.[n])?.name;
   addScene(state, 'daily', state.active, { daily: daily.id, dailyName: daily.name, mode, winners, last,

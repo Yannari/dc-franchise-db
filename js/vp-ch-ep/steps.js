@@ -578,6 +578,14 @@ const BIG = {
   'teams-break': a => ({ card: { k: 'Twist', t: 'The teams are over', sub: 'Every player for themselves from here', faces: a.who.slice(0, 12) }, shake: 1 }),
   'team-last-stand': a => ({ chip: [a.who[0], `LAST OF ${String(a.data?.team || '').toUpperCase()}`] }),
   'team-poach': a => (a.data?.seen ? { chip: [a.data.seen, 'SAW IT'] } : []),
+  // more of both modes (events.js, 2026-10-17)
+  'team-coup': a => (a.data?.takes ? { slam: { spray: 'NEW CAPTAIN', color: '#ffd21a' }, chip: [a.who[0], `CAPTAIN OF ${String(a.data?.team || '').toUpperCase()}`], shake: 1 } : { chip: [a.who[1], 'STILL CAPTAIN'] }),
+  'team-leak': a => (a.data?.caught ? { slam: { spray: 'CAUGHT', color: '#e3262d' }, chip: [a.data.caught, 'SAW THE LEAK'] } : []),
+  'team-weak-link': a => ({ chip: [a.who[1], a.data?.defended ? 'DEFENDED' : 'BLAMED FOR THE LOSS'] }),
+  'team-new-blood': a => ({ chip: [a.who[0], a.data?.welcome ? 'WELCOMED IN' : 'FROZEN OUT'] }),
+  'pair-money-talk': a => ({ chip: [a.who[1], a.data?.promise ? 'PROMISED TO SHARE' : 'DODGED THE QUESTION'] }),
+  'pair-pact': a => ({ chip: [a.who[0], `A PACT WITH ${String(a.who[1] || '').toUpperCase()}`] }),
+  'pair-tempt': a => (a.data?.tempted ? { chip: [a.who[1], 'TEMPTED'] } : [])
 };
 // a team's colour (a Teams season): the same team, the same colour, every episode
 const TEAM_COLOURS = ['#2f80ff', '#e3262d', '#ffd21a', '#2bb673', '#a24bff', '#ff8a1f'];

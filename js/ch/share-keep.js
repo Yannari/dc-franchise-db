@@ -47,6 +47,8 @@ export function keepTerms(state, chooser, partner, pair, prize = PAIR_PRIZE[0]) 
     // the size of it: half of the champions' money is still life-changing, all of it is more so (Bananas kept 275k)
     size: Math.log(Math.max(1, prize) / PAIR_PRIZE[2]) * 0.35,
     tie: word === 'couple' || couple ? -2.6 : word === 'family' ? -2.8 : word === 'friends' ? -1 : 0,
+    // a promise to share, said to the partner's face weeks before (events.js pair-money-talk)
+    vow: state.shareVows?.[chooser] === partner ? -0.9 : 0,
     // a rivalry that never healed: production put them together, and it stayed war
     rivals: pair?.how === 'rivals' && bond < 0 ? 0.7 + Math.min(1, -bond * 0.12) : 0,
     // the fans are watching, and a social player knows it

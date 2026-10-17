@@ -159,7 +159,7 @@ const PT = {
     legs: ["{who}'s legs start shaking. A minute later, {who} falls off.", "{who}'s knees give out. Splash.", '{who} crouches to rest and topples forward into the water.',
       '{who} has been swaying for a while. Now {who} is in the water.', "{who} can't feel {pos} feet anymore, and that's the end of it."],
     sleep: ["{who}'s eyes keep closing. One lean too far, and {who} falls in.", '{who} nods off for one second and wakes up underwater.',
-      '{who} has been awake all day, and it finally wins.'],
+      '{who} has been awake all day, and the tiredness finally takes over.'],
   },
   lunge: ['{who} smells the pizza and loses it. {who} jumps for it, right off the pole.', '{who} lunges for the pizza tray and goes flying.'],
   knocked: ['{who} gets hit on the way down and goes in too.', '{who} is knocked clean off {pos} pole.'],

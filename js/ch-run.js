@@ -289,6 +289,9 @@ export function challengeRows(result) {
   const exitsAt = ep => [...state.gone, ...away].filter(g => g.ep === ep).map(g => ({ name: g.name, verb: VERB[g.how] || 'eliminated', channel: g.how, by: g.by || null }));
   // Who was in the house when episode `ep` began (a returning player counts on the night they come back).
   const castAt = ep => cast.filter(n => !(goneEp[n] < ep) && !away.some(r => r.name === n && r.ep < ep && ep < r.back) && !(state.arrivedAt?.[n] > ep));
+  // a ballot's plan, by name: 'alliance:3' is the group called The Riptide (Intel's Votes)
+  const alName = id => state.alliances.find(a => String(a.id) === String(id))?.name || null;
+  const viaName = v => (!v ? null : /^(alliance|recruited):/.test(v) ? `${v.split(':')[0]}:${alName(v.split(':')[1]) || ''}` : v);
   const rows = [];
   for (const e of result.episodes) {
     const ballots = (e.votes || []).flatMap(v => v.ballots || []);
@@ -313,7 +316,9 @@ export function challengeRows(result) {
         house: castAt(e.ep),
         daily: dailyOf(e.daily),
         votes: (e.votes || []).map(v => ({ votedIn: v.votedIn, tally: { ...(v.tally || {}) }, tied: !!v.tied, tiebreak: v.tiebreak || null,
-          ballots: (v.ballots || []).map(b => ({ voter: b.voter, target: b.target, wanted: b.wanted || null, asked: b.asked || null, told: b.told || null, why: b.why || null, flip: !!b.flip })) })),
+          ballots: (v.ballots || []).map(b => ({ voter: b.voter, target: b.target, wanted: b.wanted || null, asked: b.asked || null, told: b.told || null, why: b.why || null, flip: !!b.flip,
+            // what drove a vote that was the voter's own (vote.js reasonOf), whose plan it was, and how they stood (Intel's Votes)
+            reason: b.reason || null, via: viaName(b.via), bond: b.bond ?? null })) })),
         duels: (e.arena || []).map(duelOf),
         // TJ's power rankings this episode, the whole house (stakes.js): the viewer's side panel
         rankings: (e.rankings || []).map(r => ({ n: r.n, rank: r.rank, was: r.was ?? null })),

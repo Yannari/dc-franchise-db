@@ -201,7 +201,27 @@ function ctxOf(R) {
 // Tabs: in their heads (what this episode has shown so far), relationships (pick anybody: how everybody
 // stands with them), alliances, deals and couples, the record. The house as the episode began until its
 // last screen, then as it ends, so the drawer never gets ahead of the screen.
-const ITABS = [['heads', 'In their heads'], ['people', 'Relationships'], ['allies', 'Alliances'], ['deals', 'Deals'], ['rec', 'Record']];
+const ITABS = [['heads', 'In their heads'], ['people', 'Relationships'], ['allies', 'Alliances'], ['deals', 'Deals'], ['votes', 'Votes'], ['rec', 'Record']];
+// A deal in the house's words (the user, 2026-10-16: "a final deal, we don't say final two, it can go to final eight")
+const DEAL_WORD = { final: 'Final deal', protect: 'No votes, no call-outs', spare: 'Kept off the vote', tribunal: 'Tribunal deal' };
+// Why a ballot went where it did (vote.js houseVote: why, reason, via), in plain words
+const REASON_WORD = { threat: 'a threat', grudge: 'a grudge', easy: 'an easy win in the Arena', strategy: 'the smart move', floater: 'has never been in the Arena',
+  power: 'too much power', room: 'going with the room', money: 'the biggest bank' };
+export function whyOf(b) {
+  const r = b.reason ? REASON_WORD[b.reason] : null;
+  const plan = b.via && b.via.startsWith('alliance:') && b.via.slice(9) ? b.via.slice(9) : null;
+  if (b.why === 'the plan') return `${plan ? `the plan of ${plan}` : 'the alliance plan'}${r ? `, and ${r}` : ''}`;
+  if (b.why === 'kept their word') {
+    if (b.via?.startsWith('counter:')) return `talked round by ${b.via.slice(8)}`;
+    if (b.via?.startsWith('recruited:')) return `recruited into the vote${b.via.slice(10) ? ` by ${b.via.slice(10)}` : ''}`;
+    return b.asked ? `kept their word to vote ${b.asked}` : 'kept their word';
+  }
+  if (b.why === 'broke from the plan') return `broke from the plan (asked: ${b.asked || 'somebody else'})${r ? `; ${r}` : ''}`;
+  if (b.why === 'false yes') return `said yes to ${b.asked || 'a plan'} and lied`;
+  if (b.why === 'kept the deal') return b.via?.startsWith('spare:') ? `kept a deal with ${b.via.slice(6)}` : 'kept a deal';
+  if (b.why === 'changed their mind') return `told the house ${b.told || 'another name'}, changed their mind${r ? `: ${r}` : ''}`;
+  return r ? `own read: ${r}` : 'own read';
+}
 const BOND_WORD = v => (v >= 6 ? 'Close' : v >= 3 ? 'Friends' : v > -2 ? 'Neutral' : v > -5 ? 'Tension' : 'Enemies');
 const BOND_CLS = v => (v >= 6 ? 'close' : v >= 3 ? 'friend' : v > -2 ? 'neutral' : v > -5 ? 'tense' : 'enemy');
 const istate = () => (typeof window !== 'undefined' ? (window._chxIntel ||= { tab: 'heads', who: null }) : { tab: 'heads', who: null });
@@ -209,15 +229,23 @@ const istate = () => (typeof window !== 'undefined' ? (window._chxIntel ||= { ta
 // it doesnt update the alliance tab right after"): the snapshot the episode began with, and every scene aired up
 // to the step replayed on it: alliances formed, joined, left and ended, deals made and broken, couples, exits
 // and returns. The end snapshot once the episode is over.
+// A scene counts once its LAST line has played (the user, 2026-10-16: "intel doesn't update after the dialogue
+// has been revealed"): every step belongs to the scene its first step opened, until the next one opens.
 function reachedScene(R) {
+  const owner = [];   // [scene, isCurrentOrEarlier] in airing order
+  let open = null;
+  R.E.screens.forEach((s, si) => s.steps.forEach((st, i) => {
+    if (st.sceneIdx != null) open = st.sceneIdx;
+    if (open != null) owner.push({ sc: open, seen: si < R.si || (si === R.si && i <= R.idx) });
+  }));
   let upto = -1;
-  R.E.screens.forEach((s, si) => {
-    if (si > R.si) return;
-    s.steps.forEach((st, i) => { if ((si < R.si || i <= R.idx) && st.sceneIdx != null) upto = Math.max(upto, st.sceneIdx); });
-  });
+  for (let k = 0; k < owner.length; k++) {
+    const last = k === owner.length - 1 || owner[k + 1].sc !== owner[k].sc;
+    if (last && owner[k].seen) upto = Math.max(upto, owner[k].sc);
+  }
   return upto;
 }
-function replay(H, a) {
+function replay(H, a, R0 = {}) {
   const d = a.data || {}, who = a.who || [];
   const al = name => H.alliances.find(x => x.name === name);
   const leave = n => {
@@ -233,9 +261,18 @@ function replay(H, a) {
     case 'alliance-grow': { const x = al(d.name); if (x && who[1] && !x.members.includes(who[1])) x.members.push(who[1]); break; }
     case 'alliance-leave': { const x = al(d.name); if (x) { x.members = x.members.filter(m => m !== who[0]); if (x.members.length < 2) { H.alliances = H.alliances.filter(y => y !== x); H.gone.push(x.name); } } break; }
     case 'alliance-end': if (al(d.name)) { H.alliances = H.alliances.filter(y => y.name !== d.name); H.gone.push(d.name); } break;
+    // a defector joining another group (allianceShifts), and two groups becoming one
+    case 'alliance-switch': { const x = al(d.name); if (x && who[1] && !x.members.includes(who[1])) x.members.push(who[1]); break; }
+    case 'alliance-merge': { const keep = al(d.name), fold = al(d.from); if (keep && fold) { for (const m of fold.members) if (!keep.members.includes(m)) keep.members.push(m); H.alliances = H.alliances.filter(y => y !== fold); H.gone.push(fold.name); } break; }
+    // a couple ended by a kiss (party.js) or by somebody at home (events.js home-guilt)
+    case 'party-kiss': if (d.ended && d.partner) H.couples = H.couples.filter(c => !(c.includes(who[0]) && c.includes(d.partner))); break;
+    case 'kiss-fallout': if (d.ended) H.couples = H.couples.filter(c => !(c.includes(who[0]) && c.includes(who[2]))); break;
+    case 'home-guilt': if (d.ends) H.couples = H.couples.filter(c => !(c.includes(who[0]) && c.includes(who[1]))); break;
+    case 'ride-to-the-final': if (!H.deals.some(x => pair(x, who[0], who[1]))) H.deals.push({ a: who[0], b: who[1], tier: 'final', ep: R0.ep }); break;
+    case 'spare-deal': if (d.answer !== 'refused' && !H.deals.some(x => pair(x, who[0], who[1]))) H.deals.push({ a: who[0], b: who[1], tier: 'spare', ep: R0.ep }); break;
     case 'showmance': if (!H.couples.some(c => c.includes(who[0]) && c.includes(who[1]))) H.couples.push([who[0], who[1]]); break;
     case 'breakup': H.couples = H.couples.filter(c => !(c.includes(who[0]) && c.includes(who[1]))); break;
-    case 'deal': case 'party-deal': if (!H.deals.some(x => pair(x, who[0], who[1]))) H.deals.push({ a: who[0], b: who[1], tier: a.kind === 'party-deal' ? 'final' : 'protect' }); break;
+    case 'deal': case 'party-deal': if (!H.deals.some(x => pair(x, who[0], who[1]))) H.deals.push({ a: who[0], b: who[1], tier: a.kind === 'party-deal' ? 'final' : 'protect', ep: R0.ep, drunk: a.kind === 'party-deal' }); break;
     case 'deal-broken': H.deals = H.deals.filter(x => !pair(x, who[0], who[1])); H.broken.push({ a: who[0], b: who[1] }); break;
     case 'arena': if (d.loser && !d.redemption) leave(d.loser); break;
     case 'quit': case 'medical': case 'disqualified': case 'purge': if (who[0]) leave(who[0]); break;
@@ -252,7 +289,7 @@ function houseNow(R) {
   const H = JSON.parse(JSON.stringify(I.start));
   const aired = R.E.row?.ch?.aired || [];
   const upto = reachedScene(R);
-  for (let i = 0; i <= upto && i < aired.length; i++) replay(H, aired[i]);
+  for (let i = 0; i <= upto && i < aired.length; i++) replay(H, aired[i], { ep: R.E.row?.num });
   return H;
 }
 function intel(R) {
@@ -283,10 +320,23 @@ function intel(R) {
       : '<div class="inone">No alliance in the house.</div>';
     if (H.gone.length) body += `<div class="isub">Broken up</div>${H.gone.map(n => `<div class="igone">${esc(n)}</div>`).join('')}`;
   } else if (tab === 'deals') {
-    body = (H.deals.length ? H.deals.map(d => `<div class="irow">${face(d.a)}${face(d.b)}<b>${esc(d.a)} &amp; ${esc(d.b)}</b><span class="ibond friend">${d.tier === 'final' ? 'Ride to the final' : 'No votes, no call-outs'}</span></div>`).join('')
+    // every deal standing, final deals first (the user: "any side deal should go in intel, I can't remember all that")
+    const order = { final: 0, protect: 1, spare: 2, tribunal: 3 };
+    body = (H.deals.length ? [...H.deals].sort((x, y) => (order[x.tier] ?? 9) - (order[y.tier] ?? 9)).map(d => `<div class="irow">${face(d.a)}${face(d.b)}<b>${esc(d.a)} &amp; ${esc(d.b)}</b><span class="ibond ${d.tier === 'final' ? 'close' : 'friend'}">${esc(DEAL_WORD[d.tier] || 'A deal')}${d.drunk ? ' (made drunk)' : ''}${d.ep ? ` · ep ${esc(d.ep)}` : ''}</span></div>`).join('')
       : '<div class="inone">No deal standing.</div>')
       + (H.couples.length ? `<div class="isub">Couples</div>${H.couples.map(([a, b]) => `<div class="irow">${face(a)}${face(b)}<b>${esc(a)} &amp; ${esc(b)}</b><span class="ilove">Showmance</span></div>`).join('')}` : '')
       + (H.broken.length ? `<div class="isub">Broken</div>${H.broken.map(d => `<div class="igone">${esc(d.a)} &amp; ${esc(d.b)}</div>`).join('')}` : '');
+  } else if (tab === 'votes') {
+    // every ballot this episode and why it went where it did, once the vote has aired (the user, 2026-10-16: "like
+    // in Total Drama, a why when someone votes, so we know the reasoning: alliance, bond, revenge")
+    const aired = R.E.row?.ch?.aired || [];
+    const upto = reachedScene(R);
+    const voted = aired.some((x, i) => i <= upto && x.kind === 'ceremony');
+    const votes = (R.E.row?.ch?.votes || []);
+    body = !voted ? '<div class="inone">The vote hasn\'t happened yet in this episode.</div>'
+      : votes.map((v, vi) => (votes.length > 1 ? `<div class="isub">Vote ${vi + 1}${v.votedIn ? ` · ${esc(v.votedIn)} goes in` : ''}</div>` : (v.votedIn ? `<div class="isub">${esc(v.votedIn)} goes in</div>` : ''))
+        + (v.ballots || []).map(b => `<div class="ivote">${face(b.voter)}<b>${esc(b.voter)}</b><span class="iarrow">&rarr;</span>${face(b.target)}<b>${esc(b.target)}</b><span class="iwhy">${esc(whyOf(b))}</span></div>`).join('')).join('')
+        || '<div class="inone">No house vote in this episode.</div>';
   } else if (tab === 'rec') {
     const rows = H.players.map(n => [n, H.rec[n] || {}]).sort((x, y) => (y[1].daily + y[1].arenaW * 2) - (x[1].daily + x[1].arenaW * 2));
     // the stakes (ch/stakes.js): the bank, a skull (&#9760;) for each one earned, a cross while hurt

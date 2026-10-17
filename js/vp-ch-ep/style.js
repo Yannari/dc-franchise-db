@@ -532,6 +532,10 @@ const CHX_CSS = `
 .chx .intel .isub{font:400 .95cqw 'Black Ops One';letter-spacing:.14em;color:var(--hud-dim);text-transform:uppercase;margin:1cqh 0 .5cqh}
 .chx .intel .irow{display:flex;align-items:center;gap:.5cqw;padding:.35cqh 0;font:600 1.1cqw 'Barlow Condensed';color:var(--hud)}
 .chx .intel .irow b{flex:1}
+/* Intel's Votes: voter, the name, and why, on two lines */
+.chx .intel .ivote{display:grid;grid-template-columns:auto auto auto auto 1fr;align-items:center;column-gap:.4cqw;padding:.45cqh 0;font:600 1.05cqw 'Barlow Condensed';color:var(--hud);border-bottom:1px solid rgba(255,255,255,.06)}
+.chx .intel .ivote .iarrow{color:var(--fire)}
+.chx .intel .ivote .iwhy{grid-column:1/-1;font:500 .95cqw 'Barlow Condensed';font-style:italic;color:var(--hud-dim);padding-left:2.2cqw}
 .chx .intel .ibond{font:400 .85cqw 'Anton';letter-spacing:.06em;text-transform:uppercase;padding:.15cqw .5cqw;background:#2a2420;color:var(--hud-dim)}
 .chx .intel .ibond.close{background:#173a22;color:#7fe07f}.chx .intel .ibond.friend{background:#17323a;color:#6fd8ff}
 .chx .intel .ibond.tense{background:#3a2d12;color:#ffc94a}.chx .intel .ibond.enemy{background:#3a1215;color:#ff7a6e}

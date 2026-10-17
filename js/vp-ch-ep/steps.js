@@ -466,6 +466,16 @@ const BIG = {
   'alliance-grow': a => ({ slam: { spray: 'NEW MEMBER', color: '#ffd21a' }, chip: [a.who[1], a.data?.name ? `IN ${String(a.data.name).toUpperCase()}` : 'NEW MEMBER'] }),
   'alliance-end': a => ({ card: { k: 'Alliance over', t: a.data?.name || 'The alliance', sub: a.data?.why === 'final' ? 'The final: from here it is every one for themselves' : 'Every one of them is on their own now', faces: a.who.slice(0, 8) } }),
   'alliance-betrayal': a => ({ slam: { spray: 'BETRAYED', color: '#e3262d' } }),
+  // somebody leaving a group, whatever the way out (the user, 2026-10-16: "Yul got removed from Lagoon Sharks, but
+  // there were no screen slams"): thrown out, cut loose, caught voting the other way, walking out, defecting
+  'alliance-leave': a => ({ slam: { spray: ({ 'pushed-out': 'KICKED OUT', 'cut-loose': 'CUT LOOSE', exposed: 'EXPOSED', defected: 'DEFECTED', walked: 'WALKED OUT', 'walked-friend': 'WALKED OUT' })[a.data?.why] || 'OUT', color: '#e3262d' },
+    chip: [a.who[0], a.data?.name ? `OUT OF ${String(a.data.name).toUpperCase()}` : 'OUT OF THE ALLIANCE'] }),
+  // a deal to go to the end together (the user: "no screen slam for a final deal, and we don't say final two:
+  // it can go to the final eight"), drunk at the bar or sober on the beach; an ordinary deal gets its chip
+  'ride-to-the-final': a => ({ card: { k: 'Final deal', t: `${a.who[0]} & ${a.who[1]}`, sub: 'They take each other as far as it goes', faces: a.who.slice(0, 2) } }),
+  'party-deal': a => ({ card: { k: 'Final deal', t: `${a.who[0]} & ${a.who[1]}`, sub: 'Made at the bar. Ask them tomorrow if it still stands', faces: a.who.slice(0, 2) } }),
+  deal: a => ({ chip: [a.who[0], `DEAL WITH ${String(a.who[1] || '').toUpperCase()}`] }),
+  'deal-broken': a => ({ slam: { spray: 'DEAL BROKEN', color: '#e3262d' } }),
   // the drunk kiss and what it costs (ch/party.js)
   'party-kiss': a => (a.data?.caught ? { slam: { spray: 'CAUGHT', color: '#e3262d' }, chip: [a.who[0], 'CAUGHT KISSING'] }
     : a.data?.partner || a.data?.home ? { slam: { spray: 'THE KISS', color: '#ff8fc7' }, chip: [a.who[0], 'HAS SOMEBODY'] } : { slam: { spray: 'THE KISS', color: '#ff8fc7' } }),

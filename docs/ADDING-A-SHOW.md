@@ -239,6 +239,19 @@ The season document must carry, whatever the show:
 | `twists[]` | the season page's Twists section; `_extractTwists()` is show-agnostic |
 | a per-round array | **the shape decision below** |
 
+And on each placement row, for the readers that are not the season page (The
+Challenge's exporter, `js/ch/export.js`, is the worked example and
+`tests/ch-export.test.js` checks every one):
+
+| Field | Who reads it |
+|---|---|
+| placements **taken from your ledger record** | `legacy-canon.js` rebuilds any record whose placements differ from the document, which throws away its allies, showmances and betrayals |
+| a standard ranking: everybody at place p has p-1 people ahead | the record book and Legacy. Two champions at 1st make the next player 3rd; The Challenge numbered them from 2 and no season had a 6th |
+| `alliances`, `rivalries`, `unbreakableBonds` | the life layer's social graph; `unbreakableBonds` fills D1's `bonds` table |
+| `showmance`, `showmanceEnded` (`'intact'`/`'broken'`) | the life layer: who walked out together, and who cheated on a partner at home |
+| `showmanceStrength` (0..1) | `life-resolver.js showmanceRate`: a strong showmance is likelier to last outside. Without it the flat 0.75 applies |
+| your `careerStats` paths (`ch.dailyWins`) | the record book, the rankings board and the published ledger's `stats` |
+
 **The per-round shape.** Total Drama exports `votingHistory[]` (episode,
 eliminated, votes) and Big Brother exports `weeks[]` (hoh, nominees, veto,
 ballots, evicted, haveNots). Nothing generic exists. `roundLedger()` in

@@ -1382,6 +1382,7 @@ const CONFIG_SCOPE = {
     'cfg-ch-mode':           ['the-challenge'],
     'grp-ch-pairs':          ['the-challenge'],
     'grp-ch-teams':          ['the-challenge'],
+    'grp-ch-format':         ['the-challenge'],
     // The cast form's two Challenge fields (the castle's Background is the precedent).
     'f-ch-billing':          ['the-challenge'],
     'f-ch-division':         ['the-challenge'],

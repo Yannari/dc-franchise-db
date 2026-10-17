@@ -283,6 +283,14 @@ function replay(H, a, R0 = {}) {
     case 'partner-left': if (who[0]) leave(who[0]); if (H.pairs) H.pairs = H.pairs.filter(q => q.a !== who[0] && q.b !== who[0]); break;
     case 'pair-swap': if (H.pairs && who.length === 4) { const [taker, taken, dumped, from] = who; H.pairs = H.pairs.filter(q => ![taker, taken].includes(q.a) && ![taker, taken].includes(q.b)); H.pairs.push({ a: taker, b: taken, how: 'swap', bond: 0, carry: null }, { a: dumped, b: from, how: 'swap', bond: 0, carry: null }); } break;
     case 'partner-swap': if (d.after) H.pairs = d.after.map(([x, y]) => ({ a: x, b: y, how: 'swap', bond: 0, carry: null })); break;
+    // a Teams season (ch/teams.js): the teams named, a switch, a team folded into another, the break-up
+    case 'teams-revealed': if (d.teams) H.teams = d.teams.map(t => ({ name: t.name, captain: t.captain || null, members: [...t.members] })); break;
+    case 'team-switch': case 'team-fold': if (H.teams && who[0]) {
+      for (const t of H.teams) t.members = t.members.filter(n => n !== who[0]);
+      H.teams.find(t => t.name === d.to)?.members.push(who[0]);
+      H.teams = H.teams.filter(t => t.members.length);
+    } break;
+    case 'teams-break': H.teams = null; H.teamsOver = true; break;
     case 'quit': case 'medical': case 'disqualified': if (who[0]) leave(who[0]); break;
     case 'purge': for (const n of d.pair ? who.slice(0, 2) : who.slice(0, 1)) leave(n); if (H.pairs && d.pair) H.pairs = H.pairs.filter(q => !who.includes(q.a)); break;
     case 'return-arena': if (d.winner && !H.players.includes(d.winner)) H.players.push(d.winner); break;
@@ -309,7 +317,8 @@ function intel(R) {
   const st = istate();
   const H = houseNow(R);
   // a Pairs season has a Pairs tab, right after what the house doesn't know
-  const tabs = H?.pairs ? [ITABS[0], ['pairs', 'Pairs'], ...ITABS.slice(1)] : ITABS;
+  // ...and a Teams season a Teams tab, while the teams stand
+  const tabs = H?.pairs ? [ITABS[0], ['pairs', 'Pairs'], ...ITABS.slice(1)] : H?.teams?.length ? [ITABS[0], ['teams', 'Teams'], ...ITABS.slice(1)] : ITABS;
   const tab = tabs.some(t => t[0] === st.tab) ? st.tab : 'heads';
   const face = n => `<img class='if' src='${esc(AV(n))}' alt='' title='${esc(n)}'>`;
   let body = '';
@@ -338,6 +347,15 @@ function intel(R) {
       const carry = Math.abs(c) >= 1 ? `${esc(c > 0 ? q.a : q.b)} carries` : 'Even';
       return `<div class="irow">${face(q.a)}${face(q.b)}<b>${esc(q.a)} &amp; ${esc(q.b)}</b><span class="ibond ${BOND_CLS(v)}">${BOND_WORD(v)}</span><span class="iwhy">${esc([tieOf(q) || HOW[q.how] || '', carry].filter(Boolean).join(' · '))}</span></div>`;
     }).join('') : '<div class="inone">No pairs yet.</div>';
+  } else if (tab === 'teams') {
+    // every team still standing: its captain, who is left, and how the team gets on inside (the average bond)
+    const bond = (x, y) => H.bonds?.[x <= y ? `${x}||${y}` : `${y}||${x}`] ?? 0;
+    body = H.teams.map(t => {
+      const m = t.members.filter(n => H.players.includes(n));
+      let sum = 0, k = 0; for (const x of m) for (const y of m) if (x < y) { sum += bond(x, y); k++; }
+      const v = k ? sum / k : 0;
+      return `<div class="ial"><div class="ialn">${esc(t.name)} <span class="ibond ${BOND_CLS(v)}">${BOND_WORD(v)}</span></div><div class="ialm">${m.map(n => `<span>${face(n)}${esc(n)}${n === t.captain ? ' <em>captain</em>' : ''}</span>`).join('')}</div></div>`;
+    }).join('') || '<div class="inone">No teams yet.</div>';
   } else if (tab === 'allies') {
     body = H.alliances.length ? H.alliances.map(a => `<div class="ial"><div class="ialn">${esc(a.name)}</div><div class="ialm">${a.members.map(n => `<span>${face(n)}${esc(n)}${n === a.leader ? ' <em>leads</em>' : ''}</span>`).join('')}</div></div>`).join('')
       : '<div class="inone">No alliance in the house.</div>';

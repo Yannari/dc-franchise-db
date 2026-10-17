@@ -68,8 +68,9 @@ export class ChxStage {
       t.innerHTML = `<div class='body'><div class='face'><img src='${esc(AV(n))}' alt=''></div><span class='tag'>${n === 'TJ' ? 'TJ Maxx' : esc(n)}</span></div><div class='shadow'></div>`;
       this.el.cast.append(t); ST.toks[n] = t;
     }
-    // a Pairs season: both partners wear the pair's colour under their name (steps.js scene.pairs)
-    const pc = ST.pairs?.[n] ? pairColour(n, ST.pairs[n]) : null;
+    // a Pairs season: both partners wear the pair's colour under their name (steps.js scene.pairs); a Teams season,
+    // the team's (steps.js scene.teams)
+    const pc = ST.pairs?.[n] ? pairColour(n, ST.pairs[n]) : ST.teams?.[n] || null;
     t.classList.toggle('paired', !!pc); if (pc) t.style.setProperty('--pair', pc);
     if (!anim) t.style.transition = 'none';
     t.style.left = m.u * 100 + '%'; t.style.top = m.v * 100 + '%'; t.style.setProperty('--sz', this.sizeOf(m).toFixed(2) + 'cqh');
@@ -82,7 +83,7 @@ export class ChxStage {
   setScene(sc) {
     this.ST = newState();
     const ST = this.ST;
-    Object.assign(ST, { plate: sc.plate, scale: sc.scale || 1.5, scene: sc, water: sc.water || 0, pairs: sc.pairs || null });
+    Object.assign(ST, { plate: sc.plate, scale: sc.scale || 1.5, scene: sc, water: sc.water || 0, pairs: sc.pairs || null, teams: sc.teams || null });
     this.root?.classList?.toggle('flashback', !!sc.flash);
     this.el.plate.innerHTML = `<img class='chx-plate' src='${PLATE(sc.plate)}.webp' alt=''><canvas class='chx-glc tdx-gl' data-src='${PLATE(sc.plate)}' data-hd='1' width='1920' height='1080'></canvas>`;
     this.el.cast.innerHTML = ''; this.el.wfx.innerHTML = ''; this.el.live.innerHTML = ''; if (this.el.props) this.el.props.innerHTML = ''; if (this.el.fore) this.el.fore.innerHTML = '';

@@ -14,12 +14,32 @@ import { challengeCast } from './helpers/ch-cast.js';
 let seasons;
 beforeAll(() => {
   // and one season with both twists on (the Red Skull, Redemption House: ch/stakes.js, ch/redemption.js)
-  seasons = [[5], [9], [21, { finalPass: 'skull', redemption: true }]].map(([seed, options = {}]) => {
+  // ...and a Teams season with a team final (ch/teams.js)
+  seasons = [[5], [9], [21, { finalPass: 'skull', redemption: true }], [7, { teams: { teaming: 'draft', count: 2, end: 'team-final' } }]].map(([seed, options = {}]) => {
     const { cast, names, background } = challengeCast(24, seed);
     setPlayers(cast);
     const r = playChallengeSeason({ cast: names, background, seed, options });
     airSeason(r.state);
     return { r, rows: challengeRows(r) };
+  });
+});
+
+describe('The Challenge stepped viewer: a Teams season', () => {
+  it('names the teams, colours every player by team, explains the team vote, and stages a switch', () => {
+    const { rows } = seasons[3];
+    const first = chStepScreens(rows[0]);
+    expect(first.some(s => s.label === 'The teams')).toBe(true);
+    expect(first.flatMap(s => s.steps).some(st => st.card?.t === 'Teams')).toBe(true);
+    const teamWeeks = rows.filter(r => (r.ch?.votes || []).some(v => v.team));
+    expect(teamWeeks.length).toBeGreaterThan(3);
+    for (const r of teamWeeks) {
+      const steps = chStepScreens(r).flatMap(s => s.steps);
+      expect(steps.some(st => st.rules?.n === 'Out loud, by team'), `ep ${r.num}`).toBe(true);
+      const sc = steps.find(st => st.scene?.cast && Object.keys(st.scene.cast).length > 2)?.scene;
+      expect(Object.keys(sc?.teams || {}).length, `ep ${r.num}`).toBeGreaterThan(0);
+    }
+    const sw = rows.filter(r => r.ch?.teams?.switches?.length);
+    for (const r of sw) expect(chStepScreens(r).flatMap(s => s.steps).some(st => st.slam?.spray === 'SWITCHED SIDES'), `ep ${r.num}`).toBe(true);
   });
 });
 
@@ -114,9 +134,10 @@ describe('The Challenge stepped viewer: the steps', () => {
     for (const { r, rows } of seasons) {
       const voted = rows.filter(row => !row.ch.final && row.ch.votes.some(v => !v.volunteer));
       const kinds = row => new Set(row.ch.aired.map(x => x.kind));
-      const debates = voted.filter(row => kinds(row).has('house-debate')).length;
-      const after = voted.filter(row => kinds(row).has('after-vote')).length;
-      expect(r.state.scenes.some(s => s.kind === 'house-debate'), 'the engine files a debate').toBe(true);
+      // (a Teams season's debate is the losing team's huddle, and its after-vote the team's: ch/teams.js)
+      const debates = voted.filter(row => kinds(row).has('house-debate') || kinds(row).has('team-huddle')).length;
+      const after = voted.filter(row => kinds(row).has('after-vote') || kinds(row).has('team-after-vote')).length;
+      expect(r.state.scenes.some(s => s.kind === 'house-debate' || s.kind === 'team-huddle'), 'the engine files a debate').toBe(true);
       expect(debates, `debates aired on ${debates} of ${voted.length} vote nights`).toBeGreaterThanOrEqual(voted.length / 2);
       expect(after, `after-vote aired on ${after} of ${voted.length} vote nights`).toBeGreaterThanOrEqual(voted.length / 2);
     }

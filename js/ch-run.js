@@ -92,7 +92,7 @@ export function challengeOptions(config = seasonConfig) {
     romance: config?.chRomance !== false,
     partnerWeeks: config?.chPartnerWeeks !== false,
     // the season's rules: the open house vote, or the Tribunal (format.js)
-    format: config?.chFormat === 'tribunal' ? 'tribunal' : 'vote-callout',
+    format: config?.chFormat === 'tribunal' && config?.chMode !== 'teams' ? 'tribunal' : 'vote-callout',   // a Teams season votes by team
     // the twists (stakes.js, redemption.js): a skull or ring to run the final, Redemption House
     finalPass: ['skull', 'ring'].includes(config?.chPass) ? config.chPass : null,
     redemption: config?.chRedemption === true,
@@ -137,6 +137,8 @@ export function chModeUI() {
   // a Teams season plays its dailies as teams and has no Redemption House (season.js)
   show('grp-ch-partner-weeks', !pairs && !teams);
   show('grp-ch-redemption', !pairs && !teams);
+  // ...and votes as a team, never the house or the Tribunal (teams.js teamVoteNight)
+  show('grp-ch-format', !teams);
 }
 
 /** The cast card's Partner list: everybody else in the cast. */

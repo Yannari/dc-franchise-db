@@ -132,6 +132,11 @@ function chapterOf(a) {
   if (a.kind === 'previously') return 'open';
   if (a.kind === 'arrival') return 'arrival';
   if (a.kind === 'pairs-revealed' || a.kind === 'pair-reveal') return 'pairs';
+  // a Teams season (ch/teams.js): the teams named; the huddle before the vote (what the team says after it is the
+  // villa's, as after-vote is: the ceremony ends its screen); a switch at the Arena
+  if (a.kind === 'teams-revealed' || a.kind === 'team-reveal') return 'teams';
+  if (a.kind === 'team-huddle' || a.kind === 'team-only-one') return 'vote';
+  if (a.kind === 'team-switch' || a.kind === 'team-fold') return 'arena';
   if (PAIR_ARENA.has(a.kind)) return 'arena';
   if (a.kind === 'pair-volunteer' || a.kind === 'pair-volunteer-refused') return 'vote';
   if (a.kind === 'pair-eve') return 'eve';
@@ -156,7 +161,7 @@ function chapterOf(a) {
 }
 const LABEL = { return: 'The return', arrival: 'The arrival', reveal: 'The villa', open: 'Previously', daily: 'The daily', villa: 'The villa', party: 'Night out', vote: 'The vote', eve: 'The night before',
   arena: 'The Arena', 'final-start': 'The final: day one', instant: 'Instant elimination', overnight: 'The overnight', 'final-day2': 'The final: day two',
-  champions: 'The finish line', redemption: 'Redemption House', pairs: 'The pairs' };
+  champions: 'The finish line', redemption: 'Redemption House', pairs: 'The pairs', teams: 'The teams' };
 
 // ── placing people on a plate ─────────────────────────────────────────
 // Extra places when a plate has fewer marks than people: between and just behind its own.
@@ -366,7 +371,11 @@ export function chStepScreens(row, ctx = {}) {
     num: row.num,
     day: aired[0]?.day ?? row.day ?? 1, min: 8 * 60,
     V: null,
-    push(step) { if (step.scene && this.pairMap && !step.scene.pairs) step.scene.pairs = this.pairMap; cur.steps.push(step); return step; },
+    push(step) {
+      if (step.scene && this.pairMap && !step.scene.pairs) step.scene.pairs = this.pairMap;
+      if (step.scene && this.teamMap && !step.scene.teams) step.scene.teams = this.teamMap;
+      cur.steps.push(step); return step;
+    },
     last() { return cur.steps[cur.steps.length - 1]; },
     // the scene at airing index i: its day and time
     at(i) { const c = times[i]; if (c) { this.day = c.day; this.min = c.min; } },
@@ -375,6 +384,10 @@ export function chStepScreens(row, ctx = {}) {
   // a Pairs season: who is whose partner this episode (ch-run.js rows: the pairs as it ended, so a swap shows)
   const pairList = ch.pairs?.end?.length ? ch.pairs.end : ch.pairs?.start || ch.final?.pairPodium && Object.values(ch.final.pairPodium).flat() || null;
   S.pairMap = pairList ? Object.fromEntries(pairList.flatMap(([x, y]) => [[x, y], [y, x]])) : null;
+  // a Teams season: each player's team colour this episode (the teams as it ended, so a switch shows; none after the
+  // break-up). The colour follows the team's place in the season's first list, so it never changes team to team.
+  const teamList = ch.teamsBroken ? null : ch.teams?.end?.length ? ch.teams.end : ch.teams?.start || null;
+  S.teamMap = teamList ? Object.fromEntries(teamList.flatMap(t => t.members.map(n => [n, teamColour(t.name)]))) : null;
   const open = (key, label) => { cur = { id: `${key}-${screens.length}`, key, label: label || LABEL[key] || 'The villa', steps: [] }; screens.push(cur); };
 
   // Group the aired scenes into chapters, in airing order.
@@ -556,7 +569,19 @@ const BIG = {
   'partner-left': a => ({ slam: { tape: 'PARTNER GONE' }, chip: [a.who[0], 'GOING HOME'] }),
   'pair-repaired': a => ({ card: { k: 'New pair', t: `${a.who[0]} & ${a.who[1]}`, sub: 'Both lost their partners, so now they have each other', faces: a.who.slice(0, 2) } }),
   'pair-volunteer': a => ({ slam: { spray: 'VOLUNTEERED', color: '#ffd21a' } }),
+  // a Teams season (ch/teams.js): the teams named, a switch, a team gone, the break-up
+  'teams-revealed': a => ({ card: { k: 'This season', t: 'Teams', sub: ({ shows: 'Everybody plays for the show they came from', champions: 'Past champions against everybody who never won', vets: 'The vets against the rookies', draft: 'Two captains pick their teams' })[a.data?.how] || 'Team against team',
+    faces: (a.data?.teams || []).map(t => t.captain).filter(Boolean).slice(0, 6) }, shake: 1 }),
+  'team-reveal': a => ({ card: { k: a.data?.how === 'draft' ? 'Captain ' + (a.who[0] || '') : 'Team', t: a.data?.team || 'Team', sub: `${a.who.length} players. Win together, and the losers vote one of their own in.`, faces: a.who.slice(0, 8) } }),
+  'team-switch': a => ({ slam: { spray: 'SWITCHED SIDES', color: '#ffd21a' }, chip: [a.who[0], `NOW ${String(a.data?.to || '').toUpperCase()}`], shake: 1 }),
+  'team-fold': a => ({ card: { k: 'Team gone', t: a.data?.from || 'A team', sub: `${a.who[0]} is the last of them, and joins ${a.data?.to || 'the others'}`, faces: a.who.slice(0, 2) } }),
+  'teams-break': a => ({ card: { k: 'Twist', t: 'The teams are over', sub: 'Every player for themselves from here', faces: a.who.slice(0, 12) }, shake: 1 }),
+  'team-last-stand': a => ({ chip: [a.who[0], `LAST OF ${String(a.data?.team || '').toUpperCase()}`] }),
+  'team-poach': a => (a.data?.seen ? { chip: [a.data.seen, 'SAW IT'] } : []),
 };
+// a team's colour (a Teams season): the same team, the same colour, every episode
+const TEAM_COLOURS = ['#2f80ff', '#e3262d', '#ffd21a', '#2bb673', '#a24bff', '#ff8a1f'];
+const teamColour = name => { let h = 11; for (const c of String(name)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return TEAM_COLOURS[h % TEAM_COLOURS.length]; };
 // who stood with whom when it kicked off (party.js: the house takes sides)
 function sidesStep(a) {
   const sides = a.data?.sides || [];
@@ -589,7 +614,7 @@ function throwback(shot) {
 // One villa/party/eve scene.
 // The scenes where TJ gathers everybody: an announcement to the house, not a conversation
 const TJ_TO_HOUSE = new Set(['tj-double', 'tj-house-meeting', 'tj-at-breakfast', 'power-rankings', 'quit', 'medical', 'disqualified', 'purge',
-  'pass-earned', 'pass-cut', 'redemption-closed', 'late-arrival', 'partner-draw', 'partner-pick', 'pairs-revealed', 'partner-swap']);
+  'pass-earned', 'pass-cut', 'redemption-closed', 'late-arrival', 'partner-draw', 'partner-pick', 'pairs-revealed', 'partner-swap', 'teams-revealed', 'teams-break']);
 function scene(S, { a, i, title }, { names, house, goneAt, key }) {
   S.at(i);
   const night = isNight(S.min);
@@ -885,6 +910,15 @@ function ceremony(S, cer, row, { names, rules, again }) {
       if (rules && trib) S.push({ rules: { k: 'HOW TONIGHT WORKS', n: 'The Tribunal', li: [div, `${esc(nameList(trib.tribunal))} won the daily, so ${trib.tribunal.length > 1 ? 'they are' : 'is'} <b>the Tribunal</b>, and cannot be voted for.`,
         'Everybody else <b>says a name out loud</b>. The <b>three with the most votes</b> are nominated.',
         'The nominees <b>plead their case</b> to the Tribunal, and the Tribunal decides <b>in private</b> who goes into the Arena.'], f: 'Win the daily, and you decide' }, focus: ['TJ'] });
+      else if (rules && (row.ch?.votes || []).some(v => v.team)) {
+        // a Teams season's vote (ch/teams.js): only the losing team votes, and only for one of its own
+        const tv = row.ch.votes.find(v => v.team);
+        S.push({ rules: { k: 'HOW TONIGHT WORKS', n: 'Out loud, by team', li: [div,
+          tv.winners ? `Nobody else can go in, so <b>${esc(tv.team)}</b> has to vote for one of its own, even though they won.` : `<b>${esc(tv.team)}</b> lost the daily, so <b>only ${esc(tv.team)} votes</b>, and only for one of their own.`,
+          'One at a time, you <b>stand up and say a teammate\'s name</b>, out loud, in front of everybody.',
+          'The one with <b>the most votes</b> goes into the Arena, and at the Arena <b>picks who goes in with them</b>, from anybody not on the winning team.'],
+          f: 'Your own team decides, and everybody hears it' }, focus: ['TJ'] });
+      }
       else if (rules && S.pairMap) S.push({ rules: { k: 'HOW TONIGHT WORKS', n: 'Out loud, in pairs', li: [row.ch?.division === 'm' ? "It's a <b>men's week</b>: only a men's pair can be voted in." : row.ch?.division === 'f' ? "It's a <b>women's week</b>: only a women's pair can be voted in." : 'Any pair can be voted in this week.',
         'One at a time, you <b>stand up and name a pair</b>, out loud. You can never name your own.',
         safe.length ? `${esc(nameList(safe))} won the daily, so <b>nobody can vote for them</b>.` : 'Nobody won safety this week.',

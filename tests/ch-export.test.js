@@ -162,4 +162,27 @@ describe('The Challenge exporter', () => {
     expect(types).toContain('ch-redemption');
     expect(doc.settings.redemption).toBe(true);
   });
+
+  it('a Pairs season: every placement names its partner, pairs share a place, and the money choices are kept', () => {
+    const { doc, rows } = season(6, { pairs: { pairing: 'rivals' } });
+    expect(doc.settings.pairs).toEqual({ pairing: 'rivals', shape: 'mixed' });
+    expect(doc.twists.map(t => t.type)).toContain('ch-pairs');
+    expect(doc.twists.map(t => t.type)).not.toContain('ch-partners');
+    for (const p of doc.placements) {
+      expect(p.partner, p.name).toBeTruthy();
+      const q = doc.placements.find(x => x.name === p.partner);
+      if (p.status === 'Eliminated' && q?.status === 'Eliminated') expect(q.placement).toBe(p.placement);
+    }
+    expect(doc.pairs.length).toBe(12);
+    expect(doc.pairs[0].placement).toBe(1);
+    expect(doc.moneyChoices.length).toBeGreaterThan(0);
+    expect(doc.final.choices.length).toBe(doc.moneyChoices.length);
+    const chooser = doc.placements.find(p => p.name === doc.moneyChoices[0].chooser);
+    expect(chooser.moneyChoice).toMatchObject({ chose: true });
+    // a pair ballot keeps both names, and an Arena both pairs
+    const h = doc.votingHistory.find(x => x.votes.length);
+    expect(h.votes[0].targetPair).toContain(h.votes[0].target);
+    expect(doc.votingHistory.find(x => x.arena.length).arena[0].winners.length).toBe(2);
+    expect(rows.length).toBe(doc.episodeCount);
+  });
 });

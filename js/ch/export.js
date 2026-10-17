@@ -31,7 +31,10 @@ const cap = s => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 export const seasonFilePath = n => `data/seasons/${seasonId(CHALLENGE, n)}-data.json`;
 
 // The run's exit channels (ch-run.js VERB), as a placement status.
-const STATUS = { arena: 'Eliminated', instant: 'Eliminated', quit: 'Quit', medical: 'Medical', disqualified: 'Disqualified', purge: 'Purged' };
+// A Pairs season's partner who went home because their partner did (exits.js) left by their own door.
+const STATUS = { arena: 'Eliminated', instant: 'Eliminated', quit: 'Quit', medical: 'Medical', disqualified: 'Disqualified', purge: 'Purged',
+  'partner-left': 'Partner left' };
+const PAIRING = { rivals: 'Rivals', ties: 'Ride or Die', 'fresh-meat': 'Fresh Meat', pick: 'Pick your partner' };
 
 // ── the rounds ─────────────────────────────────────────────────────────
 export function chVotingHistory(rows = []) {
@@ -48,14 +51,17 @@ export function chVotingHistory(rows = []) {
       exits,
       // the house vote, said out loud; ballots on more than one vote in a night (a double) keep their order
       votes: (ch.votes || []).flatMap((v, i) => (v.ballots || []).map(b => ({ voter: b.voter, voterSlug: slug(b.voter),
-        target: b.target, targetSlug: slug(b.target), channel: 'house', ...(ch.votes.length > 1 ? { vote: i + 1 } : {}) }))),
+        target: b.target, targetSlug: slug(b.target), channel: 'house', ...(ch.votes.length > 1 ? { vote: i + 1 } : {}),
+        // a Pairs season's ballot names a pair: `target` is its first name, `targetPair` both
+        ...(b.pair ? { targetPair: [...b.pair] } : {}) }))),
       votedIn: [...(ch.votedIn || [])],
       tally: Object.assign({}, ...(ch.votes || []).map(v => v.tally || {})),
       tiebreak: (ch.votes || []).map(v => v.tiebreak).find(Boolean) || null,
       daily: ch.daily ? { id: ch.daily.id || null, name: ch.daily.name || null, mode: ch.daily.mode || null } : null,
       dailyWinners: [...(ch.dailyWinners || [])],
       callouts: (ch.callouts || []).map(c => ({ by: c.by, opponent: c.opponent, reason: c.reason || null })),
-      arena: (ch.arena || []).map(d => ({ winner: d.winner, loser: d.loser, game: d.game || null })),
+      arena: (ch.arena || []).map(d => ({ winner: d.winner, loser: d.loser, game: d.game || null, ...(d.winners ? { winners: [...d.winners], losers: [...d.losers] } : {}) })),
+      ...(ch.pairs ? { pairs: ch.pairs.end?.length ? ch.pairs.end.map(p => [...p]) : ch.pairs.start.map(p => [...p]) } : {}),
       twist: ch.twist || null,
       ...(ch.purged ? { purged: ch.purged } : {}),
       ...(ch.returnArena ? { returnArena: { ...ch.returnArena } } : {}),
@@ -76,6 +82,9 @@ export function chFinal(rows = []) {
     placements: { ...(f.placements || {}) },
     totals: { ...(f.totals || {}) },
     checkpoints: (f.checkpoints || []).length,
+    // a Pairs season: the pairs in finishing order, and what each pair's chooser did with the money
+    ...(f.pairPodium ? { pairPodium: JSON.parse(JSON.stringify(f.pairPodium)), choices: (f.choices || []).map(c => ({ place: c.place, chooser: c.chooser,
+      partner: c.partner, keep: !!c.keep, amount: c.prize, why: c.why })) } : {}),
     exits: (row.exits || []).map(x => ({ name: x.name, slug: slug(x.name), verb: x.verb, channel: x.channel || null })),
   };
 }
@@ -92,7 +101,8 @@ export function chTwistsPlayed(rows = [], options = {}) {
   if (options.finalPass === 'skull') out.push({ episode: null, type: 'ch-red-skull', name: 'The Red Skull' });
   if (options.finalPass === 'ring') out.push({ episode: null, type: 'ch-final-ring', name: 'The Final Ring' });
   if (options.redemption) out.push({ episode: null, type: 'ch-redemption', name: 'Redemption House' });
-  if (options.partnerWeeks) out.push({ episode: null, type: 'ch-partners', name: 'Partner Weeks' });
+  if (options.partnerWeeks && !options.pairs) out.push({ episode: null, type: 'ch-partners', name: 'Partner Weeks' });
+  if (options.pairs) out.push({ episode: null, type: 'ch-pairs', name: `Pairs: ${PAIRING[options.pairs.pairing] || 'Rivals'}` });
   return out;
 }
 
@@ -136,6 +146,9 @@ export function chPlacements(rows = [], record = null) {
       exitEpisode: champion || (finalist && !(x && x.episode === final?.episode)) ? null : x?.episode ?? null,
       division: r.ch?.division || null,
       rookie: !!r.ch?.rookie,
+      // a Pairs season: who they played with (the last pair, and every pair in a Pick season), and the money
+      ...(r.ch?.partner ? { partner: r.ch.partner, partners: [...(r.ch.partners || [r.ch.partner])] } : {}),
+      ...(r.ch?.choice ? { moneyChoice: { ...r.ch.choice } } : {}),
       archetype: r.archetype || null,
       challengeWins: r.ch?.dailyWins || 0,
       votesReceived,
@@ -158,6 +171,18 @@ export function chPlacements(rows = [], record = null) {
     };
   });
   return out.sort((a, b) => (a.placement || 99) - (b.placement || 99) || a.name.localeCompare(b.name));
+}
+
+// The season's pairs, as they finished: each partner's last partner, once per pair, best placement first.
+function pairsOf(placements) {
+  const seen = new Set(), out = [];
+  for (const p of placements) {
+    if (!p.partner || seen.has(p.name)) continue;
+    seen.add(p.name); seen.add(p.partner);
+    const q = placements.find(x => x.name === p.partner);
+    out.push({ members: [p.name, p.partner], placement: p.placement || q?.placement || 0, status: p.status });
+  }
+  return out.sort((a, b) => (a.placement || 99) - (b.placement || 99));
 }
 
 /** The season document. `options` are the season's switches (ch-run.js inputs.options). */
@@ -185,7 +210,10 @@ export function buildChallengeSeasonDocument(rows = [], record = null, { seasonN
     votingHistory: chVotingHistory(rows),
     twists: chTwistsPlayed(rows, options),
     settings: { gendered: !!options.gendered || new Set(placements.map(p => p.division).filter(Boolean)).size > 1, finalPass: options.finalPass || null, redemption: !!options.redemption,
-      partnerWeeks: options.partnerWeeks !== false, romance: options.romance !== false },
+      partnerWeeks: options.partnerWeeks !== false, romance: options.romance !== false,
+      ...(options.pairs ? { pairs: { pairing: options.pairs.pairing || 'rivals', shape: options.pairs.shape || 'mixed' } } : {}) },
+    // a Pairs season: every pair with its place (both partners share it), and the share-or-keep
+    ...(options.pairs ? { pairs: pairsOf(placements), moneyChoices: final?.choices || [] } : {}),
     emoji: SHOWS[CHALLENGE].emoji,
     exitVerbs: exitVerbs(CHALLENGE),
   };

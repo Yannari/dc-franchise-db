@@ -240,7 +240,9 @@ export function challengeSeasonShape(cast = _cast(), config = seasonConfig) {
   catch { return []; }
 }
 
-const VERB = { arena: 'eliminated', quit: 'quit', medical: 'left on a medical', disqualified: 'disqualified', instant: 'eliminated', purge: 'purged' };
+const VERB = { arena: 'eliminated', quit: 'quit', medical: 'left on a medical', disqualified: 'disqualified', instant: 'eliminated', purge: 'purged',
+  // a Pairs season: went home because their partner did (exits.js)
+  'partner-left': 'went home with their partner' };
 
 // Who they are, for the premiere's introductions (js/vp-ch-ep: a package per player as they come off the
 // plane): their show, vet or rookie, the authored facts, and for a veteran the career the franchise

@@ -51,6 +51,8 @@ const CASE = {
 export const ROLES = {
   arrival: (sc, st) => {
     const r = sc.data.recognised?.[0];
+    // two people who were something to each other before (season.js arrivalKin): a couple, or old friends
+    if (r && sc.data.kin) return { roles: { a: r[0], b: r[1] }, ending: sc.data.kin === 'couple' ? 'couple' : 'oldfriends' };
     return r ? { roles: { a: r[0], b: r[1] }, ending: st.origin[r[0]] === 'the-challenge' ? 'returning' : 'reunion', slots: { show_a: showName(st.origin[r[0]]) } }
       : { roles: { a: sc.who[0], b: sc.who[1] }, ending: 'strangers' };
   },

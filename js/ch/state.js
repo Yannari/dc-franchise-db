@@ -96,6 +96,17 @@ export function addScene(state, kind, who, data = {}, seenBy = who, spot = null)
   return sc;
 }
 
+// What two people are to each other beyond the bond: a couple now (a showmance, or one who came in together),
+// old friends from a season the franchise remembers, or exes (franchise-carry kin). The pull a couple and old
+// friends have toward each other, in an alliance and a partner pick (the user, 2026-10-16: "a couple are, for
+// example, more drawn to team up").
+export function kinOf(state, a, b) {
+  if (state.couples?.some(c => !c.ended && ((c.a === a && c.b === b) || (c.a === b && c.b === a)))) return 'couple';
+  const k = (state.kin || []).find(x => (x.a === a && x.b === b) || (x.a === b && x.b === a));
+  return k ? (k.kin === 'exes' ? 'exes' : k.kin === 'old-friends' ? 'old-friends' : null) : null;
+}
+export const KIN_PULL = { couple: 2.2, 'old-friends': 1.2, exes: -1.5 };
+
 // How the scene's people stood with each other AT THE SCENE (manual §11.5 B):
 // the words are written after the episode, and a replayed week must not read
 // later bonds. The first two people's bond, a shared alliance, a couple.

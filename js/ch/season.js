@@ -22,7 +22,7 @@ import { newLedger } from '../script/pick.js';
 import { addBond, getBond } from '../bonds.js';
 import { romanticCompat } from '../players.js';
 import { streamFor } from '../dr/rng.js';
-import { newState, blankRecord, addScene, inDivision, noise, S } from './state.js';
+import { newState, blankRecord, addScene, inDivision, noise, S, kinOf } from './state.js';
 import { DEFAULT_OPTIONS, formatOf } from './format.js';
 import { buildSchedule, elimsFor, divisionFor } from './schedule.js';
 import { initMind, driftDay, nudge } from './mind.js';
@@ -221,8 +221,22 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
     - ((state.carriedGrudge?.[`${x[0]}>${x[1]}`] || state.carriedGrudge?.[`${x[1]}>${x[0]}`]) ? 2 : 0));
   const usedArrival = new Set();
   state.arrivalPairs = [];
-  for (const [a, b] of reunions.filter(([x, y]) => !state.late.includes(x) && !state.late.includes(y))) {
-    if (state.arrivalPairs.length >= 3) break;
+  // First, the people who walk in already something to each other, whatever show they came from (franchise-carry
+  // kin): a couple arriving together, then old friends. Exes have their own scene (events.js ex-in-the-house).
+  const kinPairs = (state.kin || []).filter(k => k.a !== k.b && cast.includes(k.a) && cast.includes(k.b))
+    .map(k => ({ pair: [k.a, k.b], kin: kinOf(state, k.a, k.b) })).filter(k => k.kin === 'couple' || k.kin === 'old-friends')
+    .sort((x, y) => (x.kin === 'couple' ? 0 : 1) - (y.kin === 'couple' ? 0 : 1));
+  state.arrivalKin = {};
+  const notLate = ([x, y]) => !state.late.includes(x) && !state.late.includes(y);
+  for (const { pair: [a, b], kin } of kinPairs.filter(k => notLate(k.pair))) {
+    if (state.arrivalPairs.length >= 2) break;
+    if (usedArrival.has(a) || usedArrival.has(b)) continue;
+    usedArrival.add(a); usedArrival.add(b);
+    state.arrivalPairs.push([a, b]);
+    state.arrivalKin[`${a}|${b}`] = kin;
+  }
+  for (const [a, b] of reunions.filter(notLate)) {
+    if (state.arrivalPairs.length >= 3 + Object.keys(state.arrivalKin).length) break;
     if (usedArrival.has(a) || usedArrival.has(b)) continue;
     usedArrival.add(a); usedArrival.add(b);
     state.arrivalPairs.push([a, b]);
@@ -306,7 +320,12 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       }
     };
     if (premiere) {
-      for (const [a, b] of state.arrivalPairs || []) addScene(state, 'arrival', [a, b], { recognised: [[a, b]] }, cast, 'airstrip');
+      for (const [a, b] of state.arrivalPairs || []) {
+        const kin = state.arrivalKin?.[`${a}|${b}`] || null;
+        // two people who were something to each other before: they find each other first, and the house sees it
+        if (kin) addBond(a, b, kin === 'couple' ? 0.6 : 0.4);
+        addScene(state, 'arrival', [a, b], { recognised: [[a, b]], ...(kin ? { kin } : {}) }, cast, 'airstrip');
+      }
       runDaily();
       const looking = [...state.active].sort((x, y) => S(y, 'boldness') - S(x, 'boldness'));
       addScene(state, 'villa-reveal', looking.slice(0, 5), {}, state.active, 'villa');   // the first two, and three more behind them (x, y, z)

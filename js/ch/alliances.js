@@ -19,7 +19,7 @@
 // Archetype appetite as in The Traitors: a social-butterfly or loyal-soldier is
 // always in somebody's circle; a floater or a chaos-agent drifts.
 import { getPerceivedBond, addBond } from '../bonds.js';
-import { S, archetypeOf, addScene } from './state.js';
+import { S, archetypeOf, addScene, kinOf, KIN_PULL } from './state.js';
 import { betrayed } from './rel.js';
 import { noteAlliance } from './knowledge.js';
 import { isOutsider } from './blocs.js';
@@ -47,6 +47,8 @@ export function pull(state, a, b) {
   if (state.rookie[a] && state.rookie[b]) p += 0.5;
   // Outsiders to the power find each other (blocs.js).
   if (state.ep > 1 && isOutsider(state, a) && isOutsider(state, b)) p += 1.2;
+  // A couple wants each other in the group, old friends do too, and exes would rather not (state.js kinOf).
+  p += KIN_PULL[kinOf(state, a, b)] || 0;
   return p;
 }
 

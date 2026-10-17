@@ -10,6 +10,45 @@
 //   home-guilt   a, in a showmance with b, with {home} at home. Endings: ends (a ends it), stays (they keep going),
 //                confess (a never told anybody about {home}, and b hears it now).
 export default {
+  // ── the airstrip: two people who walk in already something to each other (season.js arrivalKin) ──
+  //   arrival.couple      a and b are together (came in as a couple, whatever show it started on)
+  //   arrival.oldfriends  a and b were close on a season the franchise remembers. Never named: it may be any show.
+  'arrival.couple': [
+    { id: 'akc.1', turns: [
+      { beat: '{a} and {b} come down the plane steps holding hands.' },
+      { by: 'b', say: "Everybody's staring at us." },
+      { by: 'a', say: "Let them stare. They were going to work it out in about five minutes anyway." },
+      { by: 'b', say: "They're going to come for us first, you know that." },
+      { by: 'a', say: "Then they'll have to get through both of us." },
+      { by: 'b', conf: "Coming in as a couple is a target on your back from the first day. I'd still rather have {a} next to me than be in here alone." },
+    ] },
+    { id: 'akc.2', turns: [
+      { by: 'a', say: "Okay. Rules. In front of everybody, we're just two players." },
+      { by: 'b', say: "And behind closed doors?" },
+      { by: 'a', say: "Behind closed doors, I've got your back and you've got mine." },
+      { by: 'b', say: "That's the only rule I care about." },
+      { beat: 'Across the airstrip, people are already watching them.' },
+      { by: 'a', conf: "Everybody's going to say a couple is two votes. They're right. That's exactly why I'm glad {b} is here." },
+    ] },
+  ],
+  'arrival.oldfriends': [
+    { id: 'ako.1', turns: [
+      { beat: '{a} sees {b} on the airstrip and drops a bag to run over.' },
+      { by: 'a', say: "Tell me you're actually here. Tell me I'm not going to be alone in this place." },
+      { by: 'b', say: "I'm here. And you're not getting rid of me." },
+      { by: 'a', say: "Last time we played together, you were the only person I trusted." },
+      { by: 'b', say: "Then nothing has changed." },
+      { by: 'b', conf: "{a} and I have been through a season together already. In a house full of people I don't know, that's worth a lot." },
+    ] },
+    { id: 'ako.2', turns: [
+      { by: 'b', say: "{a}! I didn't know you were coming." },
+      { by: 'a', say: "Nobody tells anybody anything on these shows." },
+      { by: 'b', say: "We're working together. I'm not even asking." },
+      { by: 'a', say: "You don't have to ask." },
+      { by: 'a', conf: "The people who've watched us play before know we're close. That's good for us, and it's also the first thing they'll try to break." },
+    ] },
+  ],
+
   'home-talk.married': [
     { id: 'ht.m1', turns: [
       { beat: '{a} and {b} sit on the end of the dock with their feet in the water.' },

@@ -14,7 +14,7 @@
 // player who cannot stand their partner can sink them. Anybody watching may
 // catch it (intuition), and being caught costs trust and respect.
 import { getPerceivedBond, getBond, addBond } from '../bonds.js';
-import { S, mayScheme, addScene, noise, shuffle, clamp, weighted } from './state.js';
+import { S, mayScheme, addScene, noise, shuffle, clamp, weighted, kinOf, KIN_PULL } from './state.js';
 import { performanceMod, nudge } from './mind.js';
 import { giveRespect, threatRead } from './respect.js';
 import { blendScore, injuryRoll } from './arena.js';
@@ -150,6 +150,13 @@ export function pickDaily(state, rng, mode) {
 }
 
 // Partners: drawn, or picked (the pick is a signal, and being picked last stings).
+// How much a picker wants a partner: the bond they read, how strong they are (to a strategic picker), a little
+// chance, and what they are to each other (a couple picks each other; old friends lean that way; exes do not).
+function pickScore(state, rng, p, x) {
+  return getPerceivedBond(p, x) * 0.6 + threatRead(state, x) * 0.4 * S(p, 'strategic') / 10 + noise(rng) * 0.4
+    + (KIN_PULL[kinOf(state, p, x)] || 0) * 1.3;
+}
+
 export function makePairs(state, rng) {
   const drawn = rng() < 0.5;
   const out = [];
@@ -165,8 +172,7 @@ export function makePairs(state, rng) {
       const order = [...pickers].sort((a, b) => (state.rec[b].respect - state.rec[a].respect) || (a < b ? -1 : 1));
       const left = [...pickees];
       for (const p of order) {
-        const scored = left.map(x => ({ x, s: getPerceivedBond(p, x) * 0.6 + threatRead(state, x) * 0.4 * S(p, 'strategic') / 10 + noise(rng) * 0.4 }))
-          .sort((a, b) => b.s - a.s);
+        const scored = left.map(x => ({ x, s: pickScore(state, rng, p, x) })).sort((a, b) => b.s - a.s);
         const chosen = scored[0].x;
         left.splice(left.indexOf(chosen), 1);
         out.push([p, chosen]);
@@ -181,10 +187,23 @@ export function makePairs(state, rng) {
       }
       left.forEach((x, i) => out[i % out.length].push(x));
     }
-  } else {
+  } else if (drawn) {
     const a = shuffle(rng, state.active);
     for (let i = 0; i < a.length; i += 2) out.push(a.slice(i, i + 2));
     if (out.length > 1 && out[out.length - 1].length === 1) out[out.length - 2].push(out.pop()[0]);
+  } else {
+    // Picked, with no divisions: the most respected pick first, from whoever is still free (this used to be a
+    // shuffle whether drawn or picked, so a couple was paired by chance even on a picking day)
+    const left = [...state.active].sort((a, b) => (state.rec[b].respect - state.rec[a].respect) || (a < b ? -1 : 1));
+    while (left.length >= 2) {
+      const p = left.shift();
+      const chosen = left.map(x => ({ x, s: pickScore(state, rng, p, x) })).sort((a, b) => b.s - a.s)[0].x;
+      left.splice(left.indexOf(chosen), 1);
+      out.push([p, chosen]);
+      addBond(p, chosen, 0.6);
+      remember(chosen, p, 'worked-with-me', 0.8, { picked: true });
+    }
+    if (left.length && out.length) out[out.length - 1].push(left[0]);
   }
   addScene(state, drawn ? 'partner-draw' : 'partner-pick', state.active, { pairs: out }, state.active, 'public');
   return out;

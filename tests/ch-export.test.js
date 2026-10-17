@@ -17,6 +17,8 @@ import { roundLedger } from '../js/wiki-fill.js';
 import { CHALLENGE_FORMAT, roundShape, SHOWS } from '../js/shows.js';
 import { setFranchiseLedger, applyPublishedSeason, activeSeasons } from '../js/franchise-meta.js';
 import { challengeCast } from './helpers/ch-cast.js';
+import { episodeText } from '../js/ch/transcript.js';
+import { episodeKey } from '../js/episode-store.js';
 
 const played = {};
 function season(seed, options = {}) {
@@ -145,6 +147,12 @@ describe('The Challenge exporter', () => {
     expect(row.status).toBe('Complete');
     expect(row.seasonId).toBe('ch-2');
     expect(row.winners.map(w => w.name).sort()).toEqual(doc.winners.map(w => w.name).sort());
+  });
+
+  it('every episode has its screenplay for the wiki fills, under the show key', () => {
+    const { rows } = season(3);
+    for (const r of rows) expect(episodeText(r).length, `episode ${r.num}`).toBeGreaterThan(500);
+    expect(episodeKey(2, 1, CHALLENGE_FORMAT)).toBe('ch_episode_s2_e1');
   });
 
   it('names the twists that played and the season switches', () => {

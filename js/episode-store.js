@@ -60,6 +60,21 @@ export async function getEpisode(season, episode, format) {
 }
 
 /**
+ * Save one episode's text under the site's key. For a show that writes its own screenplay as it plays (The
+ * Challenge: js/ch/transcript.js episodeText), so the wiki fills read real scenes rather than only the record.
+ */
+export async function putEpisode(season, episode, format, text) {
+  const db = await openStore();
+  const key = episodeKey(season, episode, format);
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(EPISODE_STORE, 'readwrite');
+    tx.objectStore(EPISODE_STORE).put(String(text || ''), key);
+    tx.oncomplete = () => resolve(key);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/**
  * Every episode this season has a transcript for.
  *
  * Gaps are normal and are not an error: an episode nobody generated is simply

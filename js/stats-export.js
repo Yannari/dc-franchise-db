@@ -3869,6 +3869,16 @@ export async function exportChallengeSeason(onStatus) {
     title: seasonConfig?.name || null });
   _status(`Built ${doc.seasonId}: ${doc.castSize} players, ${doc.episodeCount} episodes.`);
 
+  // Every episode's screenplay, where the wiki fills look for it (episode-store.js, ch_episode_sN_eM). The
+  // Challenge writes its own as it plays, so the character and game-history articles read real scenes, not only
+  // the record. Never fails the export: with no storage the fills write from the record, and say so.
+  try {
+    const [{ putEpisode }, { episodeText }] = await Promise.all([import('./episode-store.js'), import('./ch/transcript.js')]);
+    let saved = 0;
+    for (const r of rows) { const t = episodeText(r); if (t) { await putEpisode(seasonNum, r.num, CHALLENGE_FORMAT, t); saved++; } }
+    _status(`Saved ${saved} episode transcripts for the wiki.`);
+  } catch (e) { _status(`Could not save the episode transcripts (${e.message || e}); the wiki will be written from the record.`); }
+
   _status('Merging databases...');
   let playersDb = null; let seasonsDb = null;
   try {

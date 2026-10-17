@@ -5,6 +5,7 @@ import { coachArrival } from './vp-td-ep/coach-arrive.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, exileChooserReason, islandOrder } from './vp-td-ep/twists.js';
 import { tdJuryHouseScreen } from './vp-td-ep/jury-house.js';
 import { tdTwistBlocksScreen, tdMergeScreen } from './vp-td-ep/twist-screens.js';
+import { tdReturnScreen } from './vp-td-ep/returns.js';
 import { preTwistBlocks, mergeData, _buildPostTwistBlocks } from './vp-screens.js';
 import { bbHostName } from './bb-aftermath.js';
 import { transcriptHeaderLines } from './transcript-header.js';
@@ -387,12 +388,21 @@ export function _textReturns(ep, ln, sec) {
         (ph.events||[]).forEach(evt => ln(`  ${evt.text}`));
       });
       ln(`${_returnees.join(' and ')} ${_returnees.length>1?'are the last ones':'is the last one'} standing and ${_returnees.length>1?'return':'returns'} to the game.`);
+    } else if (ep.riReentry?.walkIn) {
+      ln(`Nobody is left out there to compete against: ${_returnees.join(' and ')} ${_returnees.length>1?'walk':'walks'} back into the game.`);
     } else {
       ln(`${_returnees.join(' and ')} ${_returnees.length>1?'win':'wins'} the return challenge and ${_returnees.length>1?'rejoin':'rejoins'} the game.`);
     }
     const _ri = ep.riReentry;
     if (_ri?.streakCount >= 2) ln(`Win streak: ${_ri.streakCount} — returns as a perceived threat.`);
     if (ep.riReentryLosers?.length) ln(`Permanently eliminated: ${ep.riReentryLosers.join(', ')}`);
+    // the walk back into camp, as the stepped viewer plays it (vp-td-ep/returns.js returnCamp)
+    if (!ep.isBigBrother && (!ep.format || ep.format === 'total-drama')) {
+      let scr = null;
+      try { scr = tdReturnScreen(ep, { host: seasonConfig.host || 'Chris', setting: seasonConfig.setting }); } catch { scr = null; }
+      const at = scr ? scr.steps.findIndex(s => s.k === 'scene' && s.place !== 'The Return') : -1;
+      if (at > 0) { sec('BACK AT CAMP — AS IT AIRS'); tdStepTranscript({ ...scr, steps: scr.steps.slice(at) }).forEach(l => ln(l)); }
+    }
   }
   if (ep.exileDuelResult) {
     if (!ep.isRIReentry) sec('RETURNS');

@@ -79,6 +79,19 @@ export function tdReturnScreen(ep, o = {}) {
   const say = (text, extra = {}) => steps.push({ k: 'say', by: host, host: true, text, ...extra });
 
   steps.push({ k: 'scene', spot: A.spot, tod: 'day', plate: A.key, place: 'The Return', time: 'Day', card: true, focus: field, bg: [], places, host });
+  // nobody left to beat: no challenge, they walk back in (episode.js riReentry.walkIn; the user, 2026-10-17: "when there's
+  // only 1 for the last duel no need to do it, just let them return")
+  if (ep.riReentry?.walkIn) {
+    say(winners.length > 1 ? `${listOf(winners)}, everybody else out here is gone. There's nobody left to beat. You're back in the game.` : `${winner}, everybody else out here is gone. There's nobody left to beat, so there's no challenge today. You're back in the game.`, { focus: winners });
+    for (const w of winners) steps.push({ k: 'say', by: w, focus: [w], loud: true, text: V(w, {
+      loud: ["Wait, that's it? I'm BACK? I'm back!", "No challenge? Fine by me! I'm BACK!"], sharp: ['I outlasted every one of them out here. That counts.', 'Good. I was getting bored of winning.'],
+      soft: ["I don't even know what to say. I'm going back.", "I really thought I'd never see camp again."], dry: ['Last one standing by default. I will take it.', 'So I won by being the only one left. A classic.'],
+      any: ["I'm back. I can't believe I'm back.", 'Second chance. I am not wasting it.'],
+    }, 'walkin', ep.num) });
+    steps.push({ k: 'title', kicker: 'Back in the game', name: listOf(winners), faces: winners, tone: 'fire' });
+    steps.push(...returnCamp(ep, o, winners));
+    return { id: 'return', kind: 'island', venue, ep: ep.num, label: 'The Return', host, steps };
+  }
   say(field.length > 1 ? `Every one of you was voted out of this game. ${winners.length > 1 ? `${winners.length === 2 ? 'Two' : winners.length} of you` : 'One of you'} gets to walk back in. The rest of you are done for good.` : `${winner}, you've earned your way back.`);
   steps.push({ k: 'title', kicker: 'The return challenge', name: label, faces: field.slice(0, 8), vs: field.length === 2 });
   if (ri?.challenge?.desc) say(ri.challenge.desc);
@@ -133,13 +146,82 @@ export function tdReturnScreen(ep, o = {}) {
   steps.push({ k: 'title', kicker: 'Back in the game', name: listOf(winners), faces: winners, tone: 'fire' });
   if (losers.length) {
     say(losers.length > 1 ? `${listOf(losers)}, that's the end of the road. For good.` : `${losers[0]}, that's the end of the road. For good.`, { focus: losers });
-    for (const n of losers.slice(1, 3)) steps.push({ k: 'say', by: n, focus: [n], text: V(n, {
+    const usedOut = new Set();
+    for (const n of losers.slice(1, 3)) steps.push({ k: 'say', by: n, focus: [n], text: freshV(usedOut, n, {
       loud: ['Unbelievable. Unbelievable!'], sharp: ["Fine. Enjoy it. It won't last."], soft: ["I gave it everything. I'm proud of that, at least."], dry: ['Well. That was a lot of effort for a trip home.'],
       any: ["That's it, then. I'm done.", 'Good luck in there. You earned it.'],
     }, 'out', ep.num) });
     steps.push({ k: 'out', who: losers[0], focus: losers });
   }
+  steps.push(...returnCamp(ep, o, winners));
   return { id: 'return', kind: 'island', venue, ep: ep.num, label: 'The Return', host, steps };
+}
+
+// -- BACK AT CAMP --
+// The user, 2026-10-17: "the RI return at the camp should have dialogue, reactions, drama". The return screen ended at
+// the arena, and the one coming back was next seen in the middle of a camp that never reacted. Now they walk in: a friend
+// is thrilled, whoever wrote their name squirms or squares up, somebody counts the votes again, and the returnee tells
+// the camera what changes. Words only: what the return did to the bonds is the engine's (episode.js re-entry).
+export function returnCamp(ep, o, winners) {
+  const bond = bondOf(ep);
+  const hist = globalThis.gs?.episodeHistory || [];
+  const out = [];
+  winners.forEach((w, wi) => {
+    // the camp they walk into: their team's, or after the merge the merged camp (the camp record the camp screens read)
+    const team = (ep.tribesAtStart || []).find(t => (t.members || []).includes(w));
+    const groups = Object.entries(ep.campAccess?.groups || {});
+    const grp = team ? null : (groups.find(([, g]) => (g.members || []).includes(w)) || groups[0] || null);
+    const campName = team?.name || grp?.[0] || null;
+    const camp = (team ? team.members : grp ? (grp[1].members || []) : (ep.activeAtStart || ep.gsSnapshot?.activePlayers || [])).filter(n => n !== w && !winners.includes(n));
+    if (!camp.length) return;
+    const C = campPlate(ep, o, campName);
+    if (!C.key) return;
+    // who wrote their name the night they went
+    const night = hist.find(h => h.num < ep.num && (h.eliminated === w || [].concat(h.firstEliminated || []).includes(w)));
+    const voters = [...new Set((night?.votingLog || []).filter(v => v.voted === w && camp.includes(v.voter)).map(v => v.voter))];
+    const ally = camp.filter(n => !voters.includes(n) && bond(w, n) >= 3).sort((a, b) => bond(w, b) - bond(w, a) || a.localeCompare(b))[0] || null;
+    const culprit = voters.slice().sort((a, b) => bond(w, a) - bond(w, b) || a.localeCompare(b))[0] || null;
+    const plotter = camp.filter(n => n !== ally && n !== culprit && bond(w, n) < 1).sort((a, b) => bond(w, a) - bond(w, b) || a.localeCompare(b))[0] || null;
+    const near = [...new Set([ally, culprit, plotter, ...camp].filter(Boolean))].slice(0, 8);
+    const used = new Set();
+    const k = `rc|${ep.num}|${w}`;
+    const sayW = (by, lines, tag, focus = [by], extra = {}) => out.push({ k: 'say', by, focus, text: freshV(used, by, lines, k, tag), ...extra });
+    out.push({ k: 'scene', spot: C.spot, tod: 'day', plate: C.key, place: campName && campName !== 'merge' ? `${campName} Camp` : `${globalThis.gs?.mergeName || 'The'} Camp`, time: 'Late afternoon', card: wi === 0, cut: wi > 0,
+      focus: [w], bg: [], places: placeScene(C.key, [w, ...near], []), act: { kind: 'arrive', who: [w] } });
+    out.push({ k: 'beat', text: `${w} walks back into camp. For a second, nobody moves.`, focus: [w, ...near.slice(0, 3)], tense: true,
+      side: [{ tab: 'log', text: `${w} is back${voters.length ? `; ${listOf(voters)} voted ${w} out` : ''}` }] });
+    if (ally) {
+      out.push({ k: 'beat', text: `${ally} gets there first.`, focus: [ally, w], act: { kind: 'hug', who: [ally, w] } });
+      sayW(ally, { loud: ["You're BACK! Get over here!", "NO WAY! You're actually back!"], soft: ["I can't believe it. I missed you so much.", "You're back. You're really back."],
+        sharp: ['Took you long enough. Welcome back.', "Good. Now we've got the numbers again."], dry: ["Oh, thank goodness. It's been so boring without you.", 'Look who decided to come back.'],
+        any: ["You're back! I can't believe it!"] }, 'ally', [ally, w], { loud: true });
+      sayW(w, { any: ["I told you I'd be back.", 'Did you miss me?', "I'm not going anywhere this time."] }, 'allyback', [w, ally]);
+    }
+    if (culprit) {
+      const cold = bond(w, culprit) <= -2;
+      sayW(culprit, cold ? { sharp: ["Well. That's inconvenient.", "Huh. Didn't think we'd see you again."], loud: ['Oh, come ON. Seriously?'], dry: ['Great. This is fine. Everything is fine.'], any: ['Welcome back, I guess.'] }
+        : { soft: ["Hey. Look, about the vote, it wasn't personal.", "I'm glad you're okay. Really."], loud: ['Okay, before you say anything, it was a numbers thing!'], dry: ['So. This is awkward.'], any: ['Hey. Welcome back.'] }, 'cul', [culprit, w]);
+      sayW(w, cold ? { sharp: [`I know exactly who wrote my name, ${culprit}. I had a lot of time to think about it.`, `Don't get comfortable, ${culprit}. I remember everything.`],
+        loud: ["Don't \"welcome back\" me! You voted me OUT!"], soft: [`I'm not here to fight. But I know it was you, ${culprit}.`], any: [`I know it was you, ${culprit}. Just so you know that I know.`] }
+        : { any: ["Sure it wasn't. We'll talk later.", "It's fine. I'd just like to know where I stand this time.", "I know you voted for me. I'm choosing not to hold it against you. Yet."] }, 'culback', [w, culprit], { loud: cold });
+      if (voters.length > 1) out.push({ k: 'beat', text: `${listOf(voters.filter(v => v !== culprit))} ${voters.length > 2 ? 'trade' : 'trades'} a look with ${culprit}. ${voters.length === 2 ? 'They both' : 'They all'} wrote the same name.`, focus: voters, tense: true });
+    }
+    if (plotter) out.push({ k: 'conf', by: plotter, text: freshV(used, plotter, {
+      sharp: [`We got rid of ${w} once. Now we have to do it all over again, and this time ${w} knows exactly who did it.`, `${w} coming back is the worst thing that could've happened to my game. So ${w} goes again. Soon.`],
+      loud: [`Are you KIDDING me?! We already voted ${w} out! That was supposed to be DONE!`],
+      soft: [`I feel bad, but ${w} coming back changes everything, and not in a good way for me.`],
+      dry: ['So the vote we all agreed on just got undone. Cool. Love that.'],
+      any: [`${w} being back changes the numbers. I need to figure out where ${w} lands, fast.`],
+    }, k, 'plot') });
+    out.push({ k: 'conf', by: w, text: freshV(used, w, {
+      sharp: ["They voted me out once. They're not getting a second chance at it. I know who everybody is now.", "Out there, I had nothing to do but think. I've got a list, and I know exactly who's on it."],
+      loud: ["I'm BACK, baby! And I'm not the same person who left!", 'They should have been nicer to me the first time. Now they get the angry version.'],
+      soft: ["I'm just so happy to be back. I'm going to be smarter this time. I have to be.", "Walking back in was the scariest thing I've done out here. But I'm here."],
+      dry: ['Coming back into a camp that voted you out is like walking into a party you were uninvited from. I brought snacks, though.'],
+      any: ["I've been voted out once. I know what it feels like. I'm not letting it happen again."],
+    }, k, 'conf') });
+  });
+  return out;
 }
 
 // ══════════════════════════════════════════════════════════════════════

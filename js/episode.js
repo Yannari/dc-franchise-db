@@ -1468,19 +1468,22 @@ export function simulateEpisode() {
     ep.isRIReentry = true;
     if (cfg.riFormat === 'rescue') {
       const _rescuePlayers = [...gs.riPlayers];
+      // (as many left out there as come back from this return: nobody to beat, they all walk back in)
+      const _walkIn = _rescuePlayers.length <= Math.max(1, cfg.riReturnPerEvent || 1);
       // How many rejoin from THIS return challenge (cfg.riReturnPerEvent, default 1) — e.g. DC4's
       // two Rescue Island returnees rejoining at the same time. The gauntlet is told to leave that
       // many LAST-STANDING survivors (all crowned as returning), never eliminating below it.
       const _perEvent = Math.max(1, Math.min(cfg.riReturnPerEvent || 1, _rescuePlayers.length - 1));
-      const _rr = simulateRescueReturnChallenge(_rescuePlayers, epNum, _perEvent);
-      const winners = (_rr.winners && _rr.winners.length)
+      const _rr = _walkIn ? { winner: _rescuePlayers[0], winners: [..._rescuePlayers], phases: [], competitors: [..._rescuePlayers], walkIn: true }
+        : simulateRescueReturnChallenge(_rescuePlayers, epNum, _perEvent);
+      const winners = _walkIn ? [..._rescuePlayers] : (_rr.winners && _rr.winners.length)
         ? _rr.winners.slice(0, _perEvent)
         : (_rr.finalStandings || [_rr.winner]).slice(0, _perEvent);
       const winner = winners[0]; // primary returnee — VP/stats read the single field for back-compat
       const losers = _rescuePlayers.filter(p => !winners.includes(p));
       ep.riReentrant = winner; ep.riReentrants = winners; ep.riReentryLosers = losers;
-      ep.rescueReturn = _rr;   // full phase / elimination / farewell data (VP + text)
-      ep.riReentry = { winner, winners, losers, challengeType: 'rescue-return', challengeLabel: 'Edge of Extinction: The Return' };
+      ep.rescueReturn = _walkIn ? null : _rr;   // full phase / elimination / farewell data (VP + text); none for a walk-in
+      ep.riReentry = { winner, winners, losers, challengeType: 'rescue-return', challengeLabel: 'Edge of Extinction: The Return', ...(_walkIn ? { walkIn: true } : {}) };
       ep.rescueReturnChallenge = { winner, winners, losers, challengeType: 'rescue-return', challengeLabel: 'Edge of Extinction: The Return' };
       if (gs.riReturnCount === 0) { gs.riPlayers = []; } else { gs.riPlayers = gs.riPlayers.filter(p => !_rescuePlayers.includes(p)); }
       losers.forEach(l => { gs.eliminated.push(l); if (gs.isMerged) gs.jury.push(l); }); // jury only forms post-merge
@@ -1504,11 +1507,15 @@ export function simulateEpisode() {
         });
       });
     } else {
-      const _riResult = simulateRIReentry(gs.riPlayers);
+      // one person left out there: nobody to beat, so no challenge, they walk back in (the user, 2026-10-17: "when
+      // there's only 1 for the last duel no need to do it, just let them return")
+      const _riResult = gs.riPlayers.length === 1
+        ? { winner: gs.riPlayers[0], losers: [], walkIn: true, challengeType: 'walk-in', challengeLabel: 'The Return', phases: [], breathingMoments: [], challenge: null, tiebreaker: null, streakData: gs.riWinStreak || {} }
+        : simulateRIReentry(gs.riPlayers);
       const winner = _riResult.winner;
       const losers = _riResult.losers;
       ep.riReentrant = winner; ep.riReentryLosers = losers;
-      ep.riReentry = { winner, losers, challengeType: _riResult.challengeType, challengeLabel: _riResult.challengeLabel };
+      ep.riReentry = { winner, losers, challengeType: _riResult.challengeType, challengeLabel: _riResult.challengeLabel, ...(_riResult.walkIn ? { walkIn: true } : {}) };
       gs.riPlayers = [];
       losers.forEach(l => { gs.eliminated.push(l); if (gs.isMerged) gs.jury.push(l); });
       gs.activePlayers.push(winner);

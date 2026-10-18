@@ -81,7 +81,12 @@ export function rolesOf(scene, state) {
     // team, local, don: the team's two, the doer first
     const lead = d.snap?.lead;
     const pair = t ? [t.a, t.b] : who.slice(0, 2);
-    const a = LEAD_KINDS.has(scene.kind) && lead && pair.includes(lead) ? lead : who.find(n => pair.includes(n)) || pair[0];
+    const botcher = d.snap?.botcher && pair.includes(d.snap.botcher) ? d.snap.botcher : null;
+    const watcher = botcher ? pair.find(n => n !== botcher) : null;
+    // the Botch: a is the one in the water, unless the partner pushed them in (pushed) or is the one watching
+    const a = scene.kind === 'whose-botch' && botcher ? (d.ending === 'pushed' ? watcher : botcher)
+      : scene.kind === 'watching-botch' && watcher ? watcher
+      : LEAD_KINDS.has(scene.kind) && lead && pair.includes(lead) ? lead : who.find(n => pair.includes(n)) || pair[0];
     if (a) roles.a = a;
     const b = pair.find(n => n !== a);
     if (b) roles.b = b;

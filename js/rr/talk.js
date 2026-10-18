@@ -217,9 +217,12 @@ export function talkAtStretch(state, team, stretch, t, api, rng) {
     const cands = [];
     for (const kind of Object.values(SCENES)) {
       if (!STRETCH_FAMILIES.includes(kind.family) || ['teams', 'group', 'don'].includes(kind.cast) || EMITTED.has(kind.id) || played.has(kind.id)) continue;
-      const ctx = baseCtx(state, id, null, stretch, t, api, { present });
-      const b = bestMoment(kind, ctx, moments);
-      if (b.w > 0) cands.push({ kind: kind.id, w: b.w * damp(state, kind.id, id), moment: b.moment });
+      // either partner can be the one the moment is about (the scared one, the one who refuses)
+      for (const flip of [false, true]) {
+        const ctx = baseCtx(state, id, null, stretch, t, api, { present, flip });
+        const b = bestMoment(kind, ctx, moments);
+        if (b.w > 0) cands.push({ kind: kind.id, w: b.w * damp(state, kind.id, id) / 2, moment: b.moment, flip });
+      }
     }
     for (const s of threadSteps(state, mine)) {
       const kind = SCENES[s.kindId];
@@ -233,7 +236,7 @@ export function talkAtStretch(state, team, stretch, t, api, rng) {
       const c = draw(cands, rng);
       if (!c) break;
       cands.splice(cands.indexOf(c), 1);
-      const ctx = baseCtx(state, id, null, stretch, t, api, c.people ? { people: c.people, present } : { present });
+      const ctx = baseCtx(state, id, null, stretch, t, api, c.people ? { people: c.people, present } : { present, flip: !!c.flip });
       ctx.moment = c.moment;
       if (tryPlay(state, ctx, c.kind, rng, out)) { played.add(c.kind); break; }
     }
@@ -370,7 +373,7 @@ export function closeLegTalk(state, leg, rng, { places = {}, at = {} } = {}) {
       let done = false;
       for (const kindId of order) {
         const ctx = baseCtx(state, id, null, { id: at[id]?.stretch ?? 'mat', kind: 'mat' }, at[id]?.t ?? null, null,
-          { event: { last: place === n, first: place === 1, passed: true, fails: place === n ? 2 : 0 } });
+          { event: { last: place === n, first: place === 1, passed: true, fails: place === n ? 2 : 0 }, flip: rng() < 0.5 });
         ctx.moment = 'mat';
         if (tryPlay(state, ctx, kindId, rng, out, { gate: false })) { done = true; break; }
       }

@@ -9,6 +9,8 @@ import { PLACES } from '../js/rr/places.js';
 import { streamFor } from '../js/dr/rng.js';
 import { setGs } from '../js/core.js';
 import { fixtureCtx } from './helpers/rr-catalogue.js';
+import { playRaceSeason } from '../js/rr/season.js';
+import { setPlayers } from '../js/core.js';
 import { raceCast, raceState } from './helpers/rr-cast.js';
 
 describe('rr season read (2026-10-18)', () => {
@@ -141,6 +143,34 @@ describe('rr season read (2026-10-18)', () => {
     q.stretch = { id: 'airport', kind: 'travel', mode: 'flight', base: 300 };
     q.moment = 'plane';
     expect(late).toBeLessThan(whenOf(SCENES['plan-the-leg'], q));
+  });
+
+  it('a partner moment can be about either partner, not always the first one listed', () => {
+    const { cast, teams } = raceCast(10, 2);
+    setPlayers(cast);
+    const r = playRaceSeason({ teams, seed: 2 });
+    const st = r.state;
+    const FIRST_PERSON = ['fear-through', 'refuse', 'homesick', 'old-wound', 'blame', 'phobia', 'gross-out'];
+    let first = 0, second = 0;
+    for (const sc of st.scenes.filter(s => FIRST_PERSON.includes(s.kind))) {
+      const t = st.teams[sc.data.team];
+      if (sc.who[0] === t.a) first++; else if (sc.who[0] === t.b) second++;
+    }
+    expect(first + second).toBeGreaterThan(20);
+    expect(second).toBeGreaterThan((first + second) * 0.25);
+  });
+
+  it('a Botch moment knows who did the Botch', () => {
+    const { cast, teams } = raceCast(10, 2);
+    setPlayers(cast);
+    const r = playRaceSeason({ teams, seed: 2 });
+    const st = r.state;
+    const scs = st.scenes.filter(s => ['watching-botch', 'whose-botch'].includes(s.kind));
+    expect(scs.length).toBeGreaterThan(3);
+    for (const sc of scs) {
+      const t = st.teams[sc.data.team];
+      expect([t.a, t.b]).toContain(sc.data.snap.botcher);
+    }
   });
 
   it('a cast never has two teams with the same identity', () => {

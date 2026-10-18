@@ -373,7 +373,9 @@ export function closeLegTalk(state, leg, rng, { places = {}, at = {} } = {}) {
       let done = false;
       for (const kindId of order) {
         const ctx = baseCtx(state, id, null, { id: at[id]?.stretch ?? 'mat', kind: 'mat' }, at[id]?.t ?? null, null,
-          { event: { last: place === n, first: place === 1, passed: true, fails: place === n ? 2 : 0 }, flip: rng() < 0.5 });
+          { event: { last: place === n, first: place === 1, passed: true, fails: place === n ? 2 : 0 }, flip: rng() < 0.5,
+            matPlace: place == null ? 'mid' : place === 1 ? 'first' : place === n ? 'last' : place <= Math.ceil(n / 3) ? 'top'
+              : place > n - Math.ceil(n / 3) ? 'bottom' : 'mid' });
         ctx.moment = 'mat';
         if (tryPlay(state, ctx, kindId, rng, out, { gate: false })) { done = true; break; }
       }

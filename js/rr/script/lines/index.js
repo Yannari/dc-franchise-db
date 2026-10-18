@@ -9,9 +9,14 @@
 //   stock      a line of five words or more pasted onto three different turns: not written for this one
 //   nameless   the line says who (somebody other than the speaker) and the variant names nobody
 import partners from './partners.js';
+import partners1 from './partners-1.js';
+import partners2 from './partners-2.js';
+import partners3 from './partners-3.js';
+import partners4 from './partners-4.js';
+import partners5 from './partners-5.js';
 import don from './don.js';
 
-const FILES = [partners, don];
+const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don];
 
 export const POOLS = {};
 for (const f of FILES) for (const [k, list] of Object.entries(f)) (POOLS[k] ||= []).push(...list);

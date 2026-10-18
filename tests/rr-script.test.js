@@ -58,6 +58,36 @@ describe('rr roles and facts', () => {
     expect(roles.b).toBe(t2.a);
   });
 
+  it('the writers can see the task, the ride, the result at the mat, why the lead changed, and who is older', () => {
+    for (const k of ['taskType', 'mode', 'matPlace', 'why', 'aElder']) expect(RR_FACT_KEYS).toContain(k);
+    const st = res.state;
+    const mat = st.scenes.filter(s => ['blame', 'celebrate', 'bond-moment'].includes(s.kind) && s.data.stretch === 'mat');
+    expect(mat.length).toBeGreaterThan(0);
+    for (const s of mat) expect(['first', 'top', 'mid', 'bottom', 'last']).toContain(s.data.matPlace);
+    const travel = st.scenes.filter(s => s.data.snap?.stretchKind === 'travel');
+    expect(travel.some(s => s.data.snap.mode)).toBe(true);
+    const task = st.scenes.filter(s => ['either', 'botch', 'allin'].includes(s.data.snap?.stretchKind));
+    expect(task.some(s => factsFor(s, rolesOf(s, st), st).taskType)).toBe(true);
+    // a snap knows where and when it happened; a lead change knows why
+    const snaps = st.scenes.filter(s => s.kind === 'snap');
+    expect(snaps.length).toBeGreaterThan(0);
+    for (const s of snaps) { expect(s.data.stretch).toBeTruthy(); expect(s.data.t).not.toBeNull(); }
+    for (const s of st.scenes.filter(x => x.kind === 'leader-shift')) expect(['injury', 'snap', 'crush', 'win']).toContain(s.data.why);
+    // a Botch's hint is a slot
+    const wb = st.scenes.find(s => s.kind === 'whose-botch');
+    if (wb) expect(rolesOf(wb, st).slots.teaser).toBeTruthy();
+  });
+
+  it('a parent-and-child team knows who is older, when the cast says so', () => {
+    const ctx = fixtureCtx('bond-moment');
+    const t = ctx.state.teams[ctx.team.id];
+    t.rel = 'parent-child';
+    t.elder = t.b;
+    const sc = playScene(ctx, 'bond-moment', () => 0.5, { ending: 'memory' });
+    const r = rolesOf(sc, ctx.state);
+    expect(factsFor(sc, r, ctx.state).aElder).toBe(r.roles.a === t.b);
+  });
+
   it('facts use only the whitelist, and never change after the scene', () => {
     const st = res.state;
     for (const sc of st.scenes.filter(s => SCENES[s.kind]).slice(0, 400)) {

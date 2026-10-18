@@ -111,6 +111,8 @@ export function rolesOf(scene, state) {
     penalty: d.penalty ? PENALTY[d.penalty] || null : null,
     amount: d.amount ?? d.raised ?? null,
     local: roles.local || null,
+    // the hint on a Botch or Watch board ("Who's ready to get wet?")
+    teaser: s?.teaser || null,
   };
   for (const k of Object.keys(slots)) if (slots[k] == null) delete slots[k];
   return { roles, ending: d.ending ?? 'any', slots };

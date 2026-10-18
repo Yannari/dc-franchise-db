@@ -57,6 +57,7 @@ function closedUntil(state, s, t) {
 // `adjust(team, stretch, t, res)` lets the finale reshape a stretch's result (the footrace).
 export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   state.leg = leg.n;
+  state.placeNow = to.id;
   const clockStart = state.clock;
   const active = state.order.filter(id => !state.gone.includes(id));
   payStipend(state, leg);
@@ -198,10 +199,11 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       extra += said.extra || 0;
       // a hurt partner hands over the lead
       const hurt = said.find(x => x.kind === 'injury' && x.data.ending !== 'minor');
-      if (hurt) leaderCheck(state, id, 'injury', rng, hurt.who[0]);
+      const at = { stretch: s, t };
+      if (hurt) leaderCheck(state, id, 'injury', rng, hurt.who[0], at);
       // a snap can move the lead too
-      if (snapCheck(state, id, rng)) leaderCheck(state, id, 'snap', rng);
-      makeupCheck(state, id, rng);
+      if (snapCheck(state, id, rng, at)) leaderCheck(state, id, 'snap', rng, null, at);
+      makeupCheck(state, id, rng, at);
       behind(state, id, perceivedRank(state, id));
     }
     // the clock runs in whole minutes; a gain can't bring a plane down early
@@ -233,6 +235,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
 
   const result = checkIn(state, leg, run.finish, run.out, rng);
   result.log = run.log;
+  result.stretchKinds = Object.fromEntries(stretches.map(s => [s.id, s.kind]));
   Object.assign(result, { place: to.id, placeName: to.name, money: leg.money ?? 0, twist: leg.twist ?? null, clockStart, broke,
     depart: result.depart, starts: Object.fromEntries(starters.map(id => [id, depart[id] || 0])) });
   result.route = stretches.map(s => s.id);

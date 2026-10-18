@@ -8,6 +8,7 @@
 // never live state, never a truth the speakers did not see.
 import { identityOf } from '../identities.js';
 import { voiceOf } from '../../td/story/voice.js';
+import { players } from '../../core.js';
 import { FAMILY } from '../../td/story/voice-family-map.js';
 
 export const RR_FACT_KEYS = [
@@ -24,8 +25,14 @@ export const RR_FACT_KEYS = [
   'behind', 'ahead', 'broke', 'snapped',
   // the hour, as a word: night (22-5), morning (5-11), day (11-17), evening (17-22)
   'tod',
-  // the stretch and how the task went
-  'stretchKind', 'fails', 'switched', 'quit', 'place',
+  // the stretch and how the task went; the task's main type (water, stomach, perform, heights...); how they travel
+  'stretchKind', 'taskType', 'mode', 'fails', 'switched', 'quit', 'place',
+  // at the mat: first, top (first third), mid, bottom (last third), last
+  'matPlace',
+  // why the system played it (a lead change: injury, snap, crush, win)
+  'why',
+  // a is the older of the two by a generation (a parent, a grandparent): true / false; null when unknown
+  'aElder',
   // the scene that caused this one (a chain), and the storyline step it moves
   'cause', 'threadStep',
   // how a talks, and how b talks: the voice family of their strongest tag (sharp, dry, loud, soft, odd)
@@ -33,6 +40,15 @@ export const RR_FACT_KEYS = [
 ];
 
 const todWord = m => (m == null ? null : m >= 1320 || m < 300 ? 'night' : m < 660 ? 'morning' : m < 1020 ? 'day' : 'evening');
+const ageOf = n => players.find(p => p.name === n)?.age ?? null;
+// the team's elder: authored on the team (the Casting Room), else from the two ages, a generation apart
+function elderOf(team) {
+  if (!team) return null;
+  if (team.elder) return team.elder;
+  const x = ageOf(team.a), y = ageOf(team.b);
+  if (x == null || y == null) return null;
+  return x - y >= 15 ? team.a : y - x >= 15 ? team.b : null;
+}
 const registerOf = n => { const t = n ? voiceOf(n)[0] : null; return t ? FAMILY[t] || null : null; };
 
 export function factsFor(scene, roles, state) {
@@ -52,7 +68,10 @@ export function factsFor(scene, roles, state) {
     behind: s.rank != null && s.rank > 0.66, ahead: s.rank != null && s.rank < 0.33,
     broke: !!s.broke, snapped: !!s.snapped,
     tod: todWord(s.tod),
-    stretchKind: s.stretchKind ?? null, fails: !s.fails ? 0 : s.fails === 1 ? 1 : 'many',
+    stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null,
+    matPlace: d.matPlace ?? null, why: d.why ?? null,
+    aElder: (() => { const e = elderOf(state.teams[d.team]); const a = roles?.roles?.a; return e && a ? e === a : null; })(),
+    fails: !s.fails ? 0 : s.fails === 1 ? 1 : 'many',
     switched: !!(d.switched), quit: !!(d.quit), place: s.place ?? null,
     cause: cause ? cause.kind : null,
     threadStep: thread ? thread.split(' ')[0] : null,

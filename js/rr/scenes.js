@@ -24,7 +24,7 @@ const people = (state, id) => (id && state.teams[id] ? [state.teams[id].a, state
 // ── What a scene may know (the dialogue reads this, never live state; manual §19.2 step 1) ──
 // Taken when the scene is played, BEFORE its ending changes anything: how the two stood, where, when.
 export const SNAP_KEYS = ['leg', 'phase', 'tod', 'rank', 'band', 'bandX', 'allied', 'rivalry', 'couple', 'rel', 'relFam',
-  'identity', 'identityB', 'money', 'broke', 'snapped', 'place', 'stretchKind', 'taskTypes', 'fails', 'side', 'lead', 'botcher'];
+  'identity', 'identityB', 'money', 'broke', 'snapped', 'place', 'stretchKind', 'mode', 'taskTypes', 'fails', 'side', 'lead', 'botcher'];
 const ROMANTIC = ['dating', 'married', 'newly-dating', 'on-off', 'once-engaged'];
 export const relFamOf = rel => (REL[rel]?.family ? 'family' : ROMANTIC.includes(rel) ? 'romantic' : rel === 'exes' ? 'exes'
   : ['rivals', 'enemies'].includes(rel) ? 'rivals' : 'friends');
@@ -54,6 +54,8 @@ export function snapOf(st, { tid = null, oid = null, stretch = null, t = null, f
     snapped: !!(tid && st.snapped[tid]),
     place: st.placeNow ?? null,
     stretchKind: stretch?.kind ?? null,
+    // how they travel on this stretch (flight, taxi, foot, camel...)
+    mode: stretch?.mode ?? null,
     taskTypes: [...new Set(types)],
     fails: fails || 0,
     side: tid && stretch?.id ? st.attempts?.[tid]?.[stretch.id]?.side ?? null : null,
@@ -195,7 +197,9 @@ export function playScene(ctx, kindId, rng, { ending = null } = {}) {
   const effects = [];
   kind._endings[e].fx?.(makeFx(ctx, effects), ctx);
   const data = { ending: e, family: kind.family, effects, t: ctx.t ?? null, stretch: ctx.stretch?.id ?? null,
-    team: ctx.tid ?? null, other: ctx.oid ?? null, cause: ctx.cause ?? null, facts: kind.facts ? kind.facts(ctx) : {}, snap };
+    team: ctx.tid ?? null, other: ctx.oid ?? null, cause: ctx.cause ?? null, facts: kind.facts ? kind.facts(ctx) : {}, snap,
+    // why the system played it (a lead changed after an injury or a snap), and where the team stands on the mat
+    why: ctx.event?.cause ?? null, matPlace: ctx.matPlace ?? null };
   const sc = addScene(ctx.state, kindId, who, data, seenByOf(ctx, kind, who));
   const nxt = kind.next?.[e];
   if (nxt) { ctx.state.chained ||= {}; (ctx.state.chained[ctx.tid] ||= []).push({ kind: nxt, cause: sc.id, other: ctx.oid }); }

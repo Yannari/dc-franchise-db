@@ -133,7 +133,8 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     else if (r === 'express') state.passes[first].express++;
     else if (r === 'save') state.passes[first].save++;
     else if (r === 'first-class') (state.firstClass ||= {})[first] = n + 1;
-    if (r === 'call-home') act(state, 'call-home', first, null, rng, 'joy', { t: finish[first] });
+    // the call home is usually joy; now and then the news from home is bad (the scene's weights decide)
+    if (r === 'call-home') act(state, 'call-home', first, null, rng, null, { t: finish[first] });
     else if (r) act(state, 'reward', first, null, rng, 'prize-joy', { reward: r, t: finish[first] });
   }
 

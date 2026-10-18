@@ -88,6 +88,29 @@ describe('rr roles and facts', () => {
     expect(factsFor(sc, r, ctx.state).aElder).toBe(r.roles.a === t.b);
   });
 
+  it('a two-team scene knows the other team too: its relationship, its money, its failures, and who owes whom', () => {
+    for (const k of ['relB', 'relFamB', 'brokeB', 'failsB', 'weOwe']) expect(RR_FACT_KEYS).toContain(k);
+    const ctx = fixtureCtx('deal');
+    const st = ctx.state;
+    ctx.state.money[ctx.other.id] = 0;
+    const sc = playScene(ctx, 'deal', () => 0.5, { ending: 'struck' });
+    const f = factsFor(sc, rolesOf(sc, st), st);
+    expect(f.relB).toBe(st.teams[ctx.other.id].rel);
+    expect(f.brokeB).toBe(true);
+    expect(f.failsB).toBe('many');
+    // the helping team struck the deal: the other team owes it
+    const ctx2 = fixtureCtx('deal-broken', { doerArchetype: 'villain' });
+    ctx2.state.deals = [{ a: ctx2.other.id, b: ctx2.team.id, leg: 3, done: false }];
+    const br = playScene(ctx2, 'deal-broken', () => 0.5, { ending: 'walk-away' });
+    expect(factsFor(br, rolesOf(br, ctx2.state), ctx2.state).weOwe).toBe(true);
+  });
+
+  it("the other team's lines speak in the other team's relationship", async () => {
+    const { voicedLine } = await import('../js/rr/script/write.js');
+    const turn = { by: 'c', say: 'base', v: { 'rel:family': 'family line', 'rel:exes': 'exes line' } };
+    expect(voicedLine(turn, 'Nobody', { relFam: 'exes', rng: () => 0 }).text).toBe('exes line');
+  });
+
   it('facts use only the whitelist, and never change after the scene', () => {
     const st = res.state;
     for (const sc of st.scenes.filter(s => SCENES[s.kind]).slice(0, 400)) {

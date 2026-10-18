@@ -19,6 +19,8 @@ export const RR_FACT_KEYS = [
   'band', 'bandX', 'allied', 'rival', 'couple',
   // the team: its relationship, its family of relationship, its identity (and the other team's)
   'rel', 'relFam', 'identity', 'identityB',
+  // the other team: its relationship, broke, failing at this stretch (0, 1, 'many'); a's team owes c's (a deal, a loan)
+  'relB', 'relFamB', 'brokeB', 'failsB', 'weOwe',
   // the task is one the identity is good at, or bad at
   'idGood', 'idBad',
   // where they think they are in the race; the money; a team not speaking
@@ -43,6 +45,14 @@ export const RR_FACT_KEYS = [
   'register', 'registerB',
 ];
 
+// who owes whom between the two teams: a deal records the team that helped; a loan or a repayment is the borrower's
+function weOwe(scene, state) {
+  const d = scene.data || {};
+  if (['borrow', 'repay'].includes(scene.kind)) return true;
+  if (!['deal', 'deal-broken'].includes(scene.kind) || !d.team || !d.other) return null;
+  const deal = [...(state.deals || [])].reverse().find(x => (x.a === d.team && x.b === d.other) || (x.a === d.other && x.b === d.team));
+  return deal ? deal.a === d.other : null;
+}
 const todWord = m => (m == null ? null : m >= 1320 || m < 300 ? 'night' : m < 660 ? 'morning' : m < 1020 ? 'day' : 'evening');
 const ageOf = n => players.find(p => p.name === n)?.age ?? null;
 // the team's elder: authored on the team (the Casting Room), else from the two ages, a generation apart
@@ -67,7 +77,8 @@ export function factsFor(scene, roles, state) {
     ending: d.ending ?? 'any',
     phase: s.phase ?? null, early: s.phase === 'early', late: s.phase === 'late',
     band: s.band ?? null, bandX: s.bandX ?? null, allied: !!s.allied, rival: (s.rivalry || 0) >= 2, couple: !!s.couple,
-    rel: s.rel ?? null, relFam: s.relFam ?? null, identity: s.identity ?? null, identityB: s.identityB ?? null,
+    rel: s.rel ?? null, relFam: s.relFam ?? null, relB: s.relB ?? null, relFamB: s.relFamB ?? null,
+    brokeB: !!s.brokeB, failsB: !s.failsB ? 0 : s.failsB === 1 ? 1 : 'many', weOwe: weOwe(scene, state), identity: s.identity ?? null, identityB: s.identityB ?? null,
     idGood: !!(id && types.some(x => id.good.includes(x))), idBad: !!(id && types.some(x => id.bad.includes(x))),
     behind: s.rank != null && s.rank > 0.66, ahead: s.rank != null && s.rank < 0.33,
     broke: !!s.broke, snapped: !!s.snapped,

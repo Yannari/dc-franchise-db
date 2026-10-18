@@ -88,7 +88,9 @@ A pool file is a JS module: `export default { '<kind>.<ending>': [entries], '<ki
   grandparent-grandchild, newly-dating, on-off, once-engaged, coworkers, roommates, rivals, enemies,
   reality-vets), `relFam` (family/romantic/exes/friends/rivals), `identity`, `identityB`, `idGood`, `idBad`
   (the task is one their identity is good/bad at), `behind`, `ahead` (where they *think* they are),
-  `broke`, `snapped` (not speaking), `tod` (night/morning/day/evening), `stretchKind`
+  `broke`, `snapped` (not speaking), and for the OTHER team in a two-team scene: `relB`, `relFamB`, `brokeB`,
+  `failsB` (0, 1, 'many'); `weOwe` (a's team owes c's: a deal c's team helped with, a loan) — `rel:` variants on
+  `c`/`d` lines follow the other team's relationship; `tod` (night/morning/day/evening), `stretchKind`
   (travel/either/botch/allin/mat/board), `taskType` (the task's main type: water, heights, nerve, stomach,
   perform, brains, hands, strength, search, people, patience, travel — so a line can say "eat it" or
   "jump"), `mode` (how they travel on this stretch: flight, taxi, foot, drive, camel, boat, bus),

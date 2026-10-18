@@ -24,7 +24,8 @@ const people = (state, id) => (id && state.teams[id] ? [state.teams[id].a, state
 // ── What a scene may know (the dialogue reads this, never live state; manual §19.2 step 1) ──
 // Taken when the scene is played, BEFORE its ending changes anything: how the two stood, where, when.
 export const SNAP_KEYS = ['leg', 'phase', 'tod', 'rank', 'band', 'bandX', 'allied', 'rivalry', 'couple', 'rel', 'relFam',
-  'identity', 'identityB', 'money', 'broke', 'snapped', 'place', 'stretchKind', 'mode', 'taskTypes', 'fails', 'side', 'lead', 'botcher'];
+  'identity', 'identityB', 'money', 'broke', 'snapped', 'place', 'stretchKind', 'mode', 'taskTypes', 'fails', 'side', 'lead', 'botcher',
+  'relB', 'relFamB', 'brokeB', 'failsB'];
 const ROMANTIC = ['dating', 'married', 'newly-dating', 'on-off', 'once-engaged'];
 export const relFamOf = rel => (REL[rel]?.family ? 'family' : ROMANTIC.includes(rel) ? 'romantic' : rel === 'exes' ? 'exes'
   : ['rivals', 'enemies'].includes(rel) ? 'rivals' : 'friends');
@@ -62,6 +63,11 @@ export function snapOf(st, { tid = null, oid = null, stretch = null, t = null, f
     lead: tid ? st.lead[tid] ?? null : null,
     // who is doing (or just did) this team's Botch or Watch
     botcher: tid ? st.botch?.last?.[tid] ?? null : null,
+    // the other team, as it stood: its relationship, its money, how it's doing at this stretch
+    relB: oid ? st.teams[oid].rel : null,
+    relFamB: oid ? relFamOf(st.teams[oid].rel) : null,
+    brokeB: oid ? !(st.money[oid] > 0) : false,
+    failsB: oid && stretch?.id ? st.attempts?.[oid]?.[stretch.id]?.fails || 0 : 0,
   };
 }
 

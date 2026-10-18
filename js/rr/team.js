@@ -9,9 +9,10 @@
 import { REL, S } from './state.js';
 import { getBond } from '../bonds.js';
 import { playScene } from './scenes.js';
+import { blowUpUsed } from './talk.js';
 
 export function snapCheck(state, id, rng) {
-  if (state.snapped[id]) return null;
+  if (state.snapped[id] || blowUpUsed(state, id)) return null;     // one blow-up per team per leg (talk.js caps)
   const t = state.teams[id];
   const stress = Math.max(state.mind[t.a].stress, state.mind[t.b].stress);
   const hot = S(t.a, 'temperament') <= S(t.b, 'temperament') ? t.a : t.b;

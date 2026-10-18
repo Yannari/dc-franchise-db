@@ -153,9 +153,10 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
     let said;
     if (kind === 'beat' || t.by === 'don' || t.by === 'local') said = { text: t.beat || t.say || t.conf, tag: null };
     else if (t.id && (said = identityLine(state, by, t.id, rng))) said = { text: said, tag: `id:${t.id}` };
-    // a speaker's relationship lines are their own team's (c and d are the other team; in a room, each speaker's own)
+    // a speaker's relationship lines are their own team's (c and d are the other team; in a romance the crush, b, and
+    // b's partner d are; in a room, each speaker's own)
     else said = voicedLine(t, by, { relFam: SCENES[scene.kind]?.cast === 'group' || scene.kind === 'same-flight' ? relFamOfPerson(state, by)
-      : ['c', 'd'].includes(t.by) ? scene.data?.snap?.relFamB || null : relFam, rng,
+      : (SCENES[scene.kind]?.family === 4 ? ['b', 'd'] : ['c', 'd']).includes(t.by) ? scene.data?.snap?.relFamB || null : relFam, rng,
       ledger: state.lineLedger, clock, skip: skipFor(by) });
     const fam = said.tag && (CAPPED.includes(said.tag) ? said.tag : FAMILY[said.tag]);
     if (CAPPED.includes(fam)) ((capped[by] ||= {})[fam] = (capped[by][fam] || 0) + 1);

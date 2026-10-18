@@ -35,30 +35,68 @@ finding one marked coconut in a pile of three thousand is Search + Patience).
 ## Do we need new stats? No.
 
 The nine stats already cover a race. Each task type is a **blend** of them, the way Drag Race's `blendScore` answers a
-challenge:
+challenge.
 
-| Task type | Blend (weights) |
-|---|---|
-| Water | physical .4, endurance .4, boldness .2 |
-| Heights | boldness .5, physical .3, temperament .2 |
-| Strength | physical .6, endurance .4 |
-| Stomach | endurance .5, temperament .3, boldness .2 |
-| Nerve | boldness .6, temperament .4 |
-| Brains | mental .7, intuition .3 |
-| Search | intuition .5, mental .2, endurance .3 |
-| Perform | social .5, boldness .5 |
-| People | social .6, strategic .2, intuition .2 |
-| Travel | mental .4, intuition .4, strategic .2 |
-| Hands | mental .3, temperament .4, physical .3 |
-| Patience | temperament .6, endurance .4 |
+### Temperament is volatility, not grit
 
-Three things that look like they need a stat and do not:
+This is the Big Brother competition library's standing correction (`js/bb-comps/_shared.js`, `scoreField` / `swingBy`),
+and it applies here unchanged. Low temperament means a short fuse (angry, impulsive, quick to snap), which is not
+the same as weak. A hothead can be ferociously stubborn; plenty have finished a task out of pure spite. So:
 
-- **Teamwork** comes from the pair's bond and relationship. Two exes who hate each other lose time on every task that
-  needs both of them; that is the bond doing it, and it changes as the bond changes.
+- **In pressure tasks, temperament sets the SPREAD, not the LEVEL.** A calm racer lands near their own number every time.
+  A volatile one is a coin toss between cracking early and ploughing through further than anyone. Same average, wider swing.
+- **Temperament is the skill only where steadiness IS the job:** a delicate hand (carrying eggs, balancing a tray, a
+  card tower) and tasks that punish rushing (the volatile racer does it twice).
+- **A task that eliminates or restarts** (fail the bite, start over) pays for the spread itself, because there a wide
+  swing stops being fair and becomes a pure penalty. The BB wall comps do this; so will ours.
+
+| Task type | Level (what makes you good) | Temperament |
+|---|---|---|
+| Water | physical .45, endurance .40, boldness .15 | spread: panic in the water, or not |
+| Heights | boldness .60, physical .40 | spread: freezes at the edge, or charges it |
+| Strength | physical .60, endurance .40 | — |
+| Stomach | endurance .55, boldness .45 | spread: gags and quits, or eats it angry |
+| Nerve | boldness .70, endurance .30 | spread |
+| Brains | mental .70, intuition .30 | — |
+| Search | intuition .50, endurance .30, mental .20 | spread: tears the pile apart, or works it |
+| Perform | social .50, boldness .50 | — |
+| People | social .60, strategic .20, intuition .20 | spread: a "no" turns into a shouting match, or doesn't |
+| Travel | mental .40, intuition .40, strategic .20 | — |
+| Hands | mental .30, physical .30, intuition .20, **temperament .20** | skill (delicate tasks only; assembly tasks drop it) |
+| Patience | **temperament .50**, endurance .30, mental .20 | skill: rushing it means doing it twice |
+
+### Temperament off the task: where team fights come from
+
+The biggest thing temperament does in this show is not on a task at all. Under time pressure (lost, last, a task gone
+wrong twice) a volatile racer snaps at their partner. The bond drops, and every task that needs both of them gets slower
+until they make up. That loop (pressure → snap → slower → more pressure) is the Amazing Race's core drama and it runs
+on temperament, the pair's bond and the relationship (exes snap fastest; a parent swallows it for the kid).
+
+### Teamwork, domain skill, luck
+
+None of them is a stat, and all three matter a lot:
+
+- **Teamwork** is the pair's bond and relationship. Two exes who can't stand each other lose time on every task that
+  needs both of them, and win it back the leg they make peace. It moves every leg.
 - **Domain skill** (surfers swim, lumberjacks chop) is the identity. That is what identities are for.
-- **Luck** (the taxi that breaks down, the flight that is full) is not a stat and never will be (a franchise rule). Travel
-  mishaps are random events; Travel skill decides how much time a team loses when one hits them.
+- **Luck** is never a stat (a franchise rule), but the race is full of it and it has to be felt: the full flight, the
+  taxi driver who gets lost, the shop that opens at nine, the clue box that is closed until morning. These are random
+  travel events. **Travel skill decides how much time a team loses** when one hits them, and **strategy decides how much
+  it matters** (the team that booked the backup flight shrugs it off). The equalisers (hours of operation, one flight
+  for everybody) are what keep a leg close, and close is where the suspense is.
+
+### Family and identity
+
+They are two different questions about the same team, so they never compete:
+
+- **Relationship** says how the two are tied: parent and child, siblings, cousins, married, dating, exes, BFFs,
+  grandparent and grandchild, coworkers, roommates, rivals.
+- **Identity** says what they are together, and a family team can have one. Father & Son can also be Farmers. Two sisters can
+  be Influencers. A married couple can be Firefighters. Or a family team has no identity at all and is just "Father & Son",
+  like in the show.
+
+The relationship decides what the bond can be (romance only between people who are not family, and it can be one-sided)
+and how they fight. The identity decides what they are good at and how they talk.
 
 ## Custom identities
 
@@ -81,9 +119,10 @@ bad at, about another team). Yours are mixed in first; the borrowed voice fills 
 
 ---
 
-## The 48
+## The 54
 
-Each identity: what they are good and bad at, their natural friction (✗) and friends (♥), and three sample lines:
+Eight groups from the first draft, plus **Everyday Jobs** (the Amazing Race casts a lot of these: teachers, office
+workers, students). Each identity: what they are good and bad at, their natural friction (✗) and friends (♥), and three sample lines:
 at a task they are good at, at one they are bad at, and about another team. `{partner}` is the other teammate.
 
 ### Athletes
@@ -342,6 +381,38 @@ at a task they are good at, at one they are bad at, and about another team. `{pa
 - *Perform:* "Find the note, {partner}. Breathe from down here. We've sung for bigger crowds every Sunday."
 - *Nerve:* "I'm praying. Quietly. Out loud would scare the bats."
 - *Others:* "The rock boys aren't so bad. One of them can really sing. He just won't admit it."
+
+### Everyday Jobs
+
+**Teachers**: good **People, Patience** · bad **Nerve, Stomach** · ✗ Party Animals · ♥ Librarians, Retirees
+- *People:* "Excuse me, sir? Hi. Two quick questions and then we'll leave you alone, I promise."
+- *Stomach:* "I've eaten in a school cafeteria for twelve years and this is still the worst thing I've ever put in my mouth."
+- *Others:* "The skateboard boys remind me of my third period. I like them. I'm also watching them."
+
+**Office Workers**: good **Brains, Patience** · bad **Strength, Nerve** · ✗ Survivalists · ♥ Flight Attendants
+- *Patience:* "This is just data entry with coconuts. I do this all day. Hand me the next one."
+- *Strength:* "I sit at a desk. My chair has wheels. I don't carry things, things come to me."
+- *Others:* "The survivalists asked what we do. I said spreadsheets. They looked sorry for us."
+
+**Construction Workers**: good **Strength, Heights** · bad **Brains, Perform** · ✗ Fashion Bloggers · ♥ Lumberjacks, Mechanics
+- *Heights:* "It's just scaffolding without the scaffolding. Clip in and don't look at your feet."
+- *Brains:* "Give me a hammer and I'll build you a house. Give me a riddle and I'll give it right back to you."
+- *Others:* "The fashion kids asked if we had a stylist. I have a hard hat."
+
+**Servers**: good **Hands, People** · bad **Water, Brains** · ✗ Rich Kids · ♥ Chefs
+- *Hands:* "Six plates, two arms, nothing spills. I've done a wedding for three hundred people."
+- *Water:* "I spend my whole life carrying water to people. I've never once had to get in it."
+- *Others:* "The rich kids didn't tip the taxi driver. I noticed. I always notice."
+
+**Truckers**: good **Travel, Patience** · bad **Perform, Brains** · ✗ Influencers · ♥ Mechanics, Farmers
+- *Travel:* "Left at the water tower, then it's straight for six miles. I can feel a shortcut coming."
+- *Perform:* "Twenty years on the road and I've never sung anywhere somebody could hear me."
+- *Others:* "The influencer girls asked if we had a ring light in the cab. We have a radio."
+
+**College Students**: good **Brains, Stomach** · bad **Travel, Patience** · ✗ Retirees · ♥ Party Animals, Gamers
+- *Stomach:* "We cook noodles in a kettle. This is nothing."
+- *Travel:* "I've never booked a flight. My mom books the flight. Mom isn't here."
+- *Others:* "The retirees keep giving us snacks. I'm not complaining."
 
 ---
 

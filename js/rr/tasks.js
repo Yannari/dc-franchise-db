@@ -39,7 +39,10 @@ export function runTask(state, team, task, t, api, rng, who = 'both', { stretchI
   const level = Math.max(0.5, teamLevel(state, id, task.types, who));
   const [a, b] = people(state, id);
   const spread = who === 'both' ? (spreadOf(a, task.types) + spreadOf(b, task.types)) / 2 : spreadOf(who, task.types);
-  const p = attemptChance(level, task.pass);
+  // a pep talk, a bribe, a lucky hat (the catalogue's `pass` effect) helps the next task, once
+  const boost = state.passBoost?.[id] || 0;
+  if (boost) state.passBoost[id] = 0;
+  const p = attemptChance(level, task.pass + boost);
   const base = task.base * chainScale(state, id, task);
   let dur = 0, attempts = startAttempts, quit = false, failedNoted = false;
   const row = record(state, id, stretchId, { side: task.side || null });

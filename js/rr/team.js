@@ -6,8 +6,9 @@
 // come from"): under pressure a volatile partner snaps, the bond drops, and every
 // task that needs both of them is slower (skill.js teamwork ×0.92) until they make
 // up. Exes snap fastest (state.js REL), a grandparent swallows it for the grandchild.
-import { addScene, REL, S } from './state.js';
-import { getBond, addBond } from '../bonds.js';
+import { REL, S } from './state.js';
+import { getBond } from '../bonds.js';
+import { playScene } from './scenes.js';
 
 export function snapCheck(state, id, rng) {
   if (state.snapped[id]) return null;
@@ -16,10 +17,8 @@ export function snapCheck(state, id, rng) {
   const hot = S(t.a, 'temperament') <= S(t.b, 'temperament') ? t.a : t.b;
   const p = (stress / 100) * ((10 - S(hot, 'temperament')) / 10) * (REL[t.rel]?.snap ?? 1) * 0.15;
   if (rng() >= p) return null;
-  state.snapped[id] = true;
-  addBond(t.a, t.b, -1);
   const other = hot === t.a ? t.b : t.a;
-  return addScene(state, 'snap', [hot, other], { team: id, stress: Math.round(stress) }, [t.a, t.b]);
+  return playScene({ state, team: { id }, moment: 'snap', people: [hot, other] }, 'snap', rng);
 }
 
 export function makeupCheck(state, id, rng) {
@@ -28,9 +27,7 @@ export function makeupCheck(state, id, rng) {
   let p = 0.25 + 0.03 * getBond(t.a, t.b);
   if (t.rel === 'exes' || t.rel === 'enemies') p *= 0.6;
   if (rng() >= Math.max(0.05, p)) return null;
-  state.snapped[id] = false;
-  addBond(t.a, t.b, 0.5);
-  return addScene(state, 'makeup', [t.a, t.b], { team: id }, [t.a, t.b]);
+  return playScene({ state, team: { id }, moment: 'makeup' }, 'makeup', rng);
 }
 
 // An event that can move the lead: the leader hurt (always), a crush (half the time),
@@ -45,6 +42,5 @@ export function leaderCheck(state, id, event, rng, subject = null) {
   else if (event === 'snap') p = 0.3 * S(other, 'boldness') / 10;
   else if (event === 'win') p = subject === other ? 0.3 : 0;
   if (!p || rng() >= p) return null;
-  state.lead[id] = other;
-  return addScene(state, 'lead-shift', [other, lead], { team: id, event }, [t.a, t.b]);
+  return playScene({ state, team: { id }, moment: 'lead', people: [other, lead], event: { cause: event } }, 'leader-shift', rng);
 }

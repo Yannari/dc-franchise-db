@@ -61,6 +61,6 @@ describe('rr mind and team', () => {
     const was = st.lead.t1;
     leaderCheck(st, 't1', 'injury', streamFor(1, 'l'), was);
     expect(st.lead.t1).not.toBe(was);
-    expect(st.scenes.at(-1).kind).toBe('lead-shift');
+    expect(st.scenes.at(-1).kind).toBe('leader-shift');
   });
 });

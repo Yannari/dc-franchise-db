@@ -40,10 +40,12 @@ describe('rr money', () => {
     expect(st.money[st.order[0]]).toBe(5);
   });
 
-  it('a broke team walks where it can', () => {
+  it('a broke team walks a short ride, and begs for a long one', () => {
     const st = raceState(2, 1);
-    const taxi = { id: 'taxi', kind: 'travel', mode: 'taxi', base: 30, cost: 40 };
-    expect(afford(st, st.teams[st.order[0]], taxi, 0, streamFor(1, 'm'), none).how).toBe('walk');
+    const near = { id: 'taxi', kind: 'travel', mode: 'taxi', base: 15, cost: 40 };
+    expect(afford(st, st.teams[st.order[0]], near, 0, streamFor(1, 'm'), none).how).toBe('walk');
+    const far = { id: 'taxi', kind: 'travel', mode: 'taxi', base: 30, cost: 40 };
+    expect(afford(st, st.teams[st.order[0]], far, 0, streamFor(1, 'm'), none).how).toBe('beg');
   });
 
   it('a team at $0 on a boat stretch begs, never where begging is not allowed', () => {
@@ -86,7 +88,7 @@ describe('rr money', () => {
     st.debts.push({ from: t, to: ally, amount: 40, leg: 1, paid: false });
     st.money[t] = 0; st.leg = 4;
     repayDebts(st);
-    expect(st.scenes.some(s => s.kind === 'debt-dodged')).toBe(true);
+    expect(st.scenes.some(s => s.kind === 'repay' && s.data.ending === 'dodged')).toBe(true);
   });
 
   it('travel charges the fare, and a broke team still gets through', () => {

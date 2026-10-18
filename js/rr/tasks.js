@@ -57,7 +57,7 @@ export function runTask(state, team, task, t, api, rng, who = 'both', { stretchI
     if (row.fails === 2 && !failedNoted) {
       failedNoted = true;
       addScene(state, 'attempt-fail', who === 'both' ? [a, b] : [who, partner(state, id, who)],
-        { t: t + dur, stretch: stretchId, team: id, fails: row.fails }, [a, b]);
+        { t: t + dur, stretch: stretchId, team: id, fails: row.fails, effects: [['stress', id, 12]] }, [a, b]);
     }
     if (onFail && onFail(attempts, row, t + dur) === 'quit') { quit = true; break; }
   }
@@ -103,7 +103,8 @@ export function runEither(state, team, stretch, t, api, rng, { side = null } = {
       const here = sideOf(pick);
       const lv = Math.max(0.5, teamLevel(state, id, here.types));
       const remaining = (here.base / (lv / 5)) / attemptChance(lv, here.pass);
-      if (expected(state, id, other, rng) < 0.7 * remaining) { switched = true; sw = other.id; return 'quit'; }
+      // each failure makes the side they're on feel worse than it is (the show's switchers)
+      if (expected(state, id, other, rng) < remaining * (0.6 + 0.25 * row.fails)) { switched = true; sw = other.id; return 'quit'; }
       return null;
     } });
   let end = first.end;
@@ -112,6 +113,7 @@ export function runEither(state, team, stretch, t, api, rng, { side = null } = {
     end = second.end;
     pick = sw;
     record(state, id, stretch.id, { side: sw, switched: true });
+    (state.switches ||= []).push({ team: id, leg: state.leg, stretch: stretch.id, to: sw });
   }
   return { end, data: { side: pick, switched } };
 }
@@ -130,6 +132,7 @@ export function pickBotch(state, team, stretch, rng) {
   }
   state.botch.last[id] = who;
   state.botch.count[who] = (state.botch.count[who] || 0) + 1;
+  (state.botch.history ||= []).push({ team: id, who, leg: state.leg, stretch: stretch.id, random: !!stretch.random });
   return who;
 }
 
@@ -144,7 +147,8 @@ export function runBotch(state, team, stretch, t, api, rng) {
       if (witnesses.length) {
         state.pending[id] = (state.pending[id] || 0) + PENALTIES.botchHelp;
         const seen = [who, watcher, ...witnesses.flatMap(x => people(state, x))];
-        addScene(state, 'helped-botch', [watcher, who], { t: at, stretch: stretch.id, team: id, witnesses }, seen);
+        addScene(state, 'helped-botch', [watcher, who], { t: at, stretch: stretch.id, team: id, witnesses,
+          effects: [['pending', id, PENALTIES.botchHelp]] }, seen);
       }
     }
     if (n >= 5) {
@@ -157,7 +161,8 @@ export function runBotch(state, team, stretch, t, api, rng) {
     state.pending[id] = (state.pending[id] || 0) + PENALTIES.botchQuit;
     state.rec[id].quits++;
     pop(who, -2);
-    addScene(state, 'quit-task', [who, watcher], { t: res.end, stretch: stretch.id, team: id }, [who, watcher]);
+    addScene(state, 'quit-task', [who, watcher], { t: res.end, stretch: stretch.id, team: id,
+      effects: [['pending', id, PENALTIES.botchQuit], ['pop', who, -2]] }, [who, watcher]);
   }
   return { ...res, data: { ...res.data, who, quit: res.quit } };
 }
@@ -168,7 +173,8 @@ export function runAllIn(state, team, stretch, t, api, rng) {
   const tired = [a, b].find(n => state.mind[n].energy < 20);
   if (tired && rng() < 0.3) {
     state.pending[id] = (state.pending[id] || 0) + PENALTIES.allInSkip;
-    addScene(state, 'allin-alone', [partner(state, id, tired), tired], { t, stretch: stretch.id, team: id }, [a, b]);
+    addScene(state, 'allin-alone', [partner(state, id, tired), tired], { t, stretch: stretch.id, team: id,
+      effects: [['pending', id, PENALTIES.allInSkip]] }, [a, b]);
     return runTask(state, team, stretch, t, api, rng, partner(state, id, tired));
   }
   return runTask(state, team, stretch, t, api, rng, 'both');

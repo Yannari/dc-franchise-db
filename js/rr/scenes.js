@@ -211,11 +211,14 @@ export function interviewAfter(state, sc, rng) {
   const kind = SCENES[sc.kind];
   const partnerBond = (sc.data.effects || []).filter(e => e[0] === 'bond' && who.includes(e[1]) && who.includes(e[2])).reduce((s, e) => s + e[3], 0);
   let kindId = 'int-feeling';
-  if (kind?.family === 4 && !sc.data.other) kindId = 'int-secret';
+  const lovers = sc.data.facts?.lovers || [];
+  const firstTime = !state.scenes.some(x => x.kind.startsWith('int-') && x.data.team === tid);
+  if (kind?.family === 4 && lovers.some(n => who.includes(n)) && rng() < 0.5) kindId = 'int-secret';
   else if (kind?.scheme || ['alliance-pitch', 'deal', 'boomerang-decide', 'express-give'].includes(sc.kind)) kindId = 'int-strategy';
   else if (sc.data.other && [2, 7, 8, 12].includes(kind?.family)) kindId = 'int-about-team';
   else if (partnerBond < 0 && who.length === 2 && rng() < 0.4) kindId = 'int-contradict';
-  const ivWho = kindId === 'int-secret' ? [who[0]] : who;
+  else if (firstTime) kindId = 'int-backstory';                 // the first time a team sits down: who they are
+  const ivWho = kindId === 'int-secret' ? [lovers.find(n => who.includes(n)) || who[0]] : who;
   const ctx = { state, team: { id: tid }, other: sc.data.other ? { id: sc.data.other } : null, moment: 'interview',
     people: ivWho, seenBy: ivWho, t: sc.data.t, cause: sc.id };
   let ending = null;

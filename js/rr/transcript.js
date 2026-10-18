@@ -8,7 +8,7 @@
 // never pays off, a team with nothing but task moments: all of it shows here first.
 const hhmm = m => { const d = ((Math.round(m) % 1440) + 1440) % 1440; return `${String(Math.floor(d / 60)).padStart(2, '0')}:${String(d % 60).padStart(2, '0')}`; };
 const num = v => (typeof v === 'number' ? (v > 0 ? '+' : '') + (Number.isInteger(v) ? v : v.toFixed(2)) : v);
-const SKIP_DATA = new Set(['ending', 'family', 'effects', 't', 'stretch', 'team', 'other', 'cause', 'facts', 'threads', 'event']);
+const SKIP_DATA = new Set(['ending', 'family', 'effects', 't', 'stretch', 'team', 'other', 'cause', 'facts', 'threads', 'event', 'talk']);
 
 // `signed` for an effect's delta (+0.5), plain for a fact (place=3)
 function compact(v, name, signed = false) {

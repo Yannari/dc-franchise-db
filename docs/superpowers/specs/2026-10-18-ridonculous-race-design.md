@@ -539,6 +539,34 @@ Then Playwright screenshots of every scene kind.
 - **Dialogue**: the §19.4 table against every new pool; repetition measured per kind.
 - **The ledger**: the season writes its record; the next show reads it.
 
+### First audit, 2026-10-18 (100 seasons, 12 teams, four places)
+
+The hard rules held throughout: no sabotage by a nice archetype, no Botch alternation broken, a winner every
+season, every scene with a recorded effect. What the first runs showed, and what was done about it:
+
+- **55 catalogue kinds never fired.** The talk layer offered only the partner family at a stretch (locals, money,
+  body and place had no door); Don's opener, demo and ruling were never emitted; `leaderCheck` was never called;
+  `size-up` read "first meeting" after the meeting was recorded; console, goodbye kiss and the exit interview had
+  no moment; rooms opened only on a hold, never at a task or the mat. All fixed, pinned by `tests/rr-reach.test.js`.
+  Nine still never fire, every one for want of place data the library brings (perform tasks, split tasks, a bus,
+  a superteam, a Zip-It task) or a second Express Pass.
+- **Begging was unreachable** (a broke team walked every taxi), and **Either/Or switches were 0** (the test
+  compared a fresh attempt against a full one). Now 0.9 begs and 3.3 switches a season.
+- **Romance never paid off**: a thread step weighed its own small `when` (a flirt at 0.06), the crush thread put
+  the near-kiss before the confession and closed on the kiss, and the chained confession was refused by the
+  romance cap. Now 7 confessions in 100 seasons, 1.3 interrupted attempts before each.
+- **Read-outs, not fixed** (rates, not broken mechanisms):
+  - **Domination is the known-hot number.** The top team takes 7.4 of 13 legs (chance 3.7) and the team with
+    the most leg wins wins the season 55% of the time (chance 33%). Opening hours (a team that reaches a place
+    before it opens waits at its door) brought it down from 8.3 and 60%. What remains is skill elasticity:
+    a task's time scales with `5 / level` and its pass chance with `0.08 × (level − 5)`, so a level-7 team is
+    1.75 times faster than a level-4 team on every task. It is a design decision until three seasons have been
+    read.
+  - The mean gap at the mat is 4.5 hours; 1.3 teams a season are eliminated where Don finds them.
+  - A team saved on a non-elimination leg goes out the next leg 47–67% of the time, by penalty.
+  - About one blow-up per team every four legs; exes the most (0.39 a leg), grandparents the least (0.19).
+  - 9.3 sabotage attempts a season, 12% caught; Boomerangs aimed at teams 2.5/10 apart in perceived rank.
+
 ## 13. Sub-projects, in order
 
 Too large for one plan. Each gets its own plan and ends with something that runs.

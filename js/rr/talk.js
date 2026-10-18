@@ -20,7 +20,12 @@ import { S } from './state.js';
 const ONE = 0.6, TWO = 0.25;              // partner moments at a stretch: one 60%, two 25%, none 15%
 const PAIR_CAP = 3;                       // the same two people (of different teams), moments per leg
 const ROOM_WINDOW = 45;                   // one room per stretch per 45 minutes
-const MEET = 0.2, MEET_THREAD = 0.15, MEET_MAX = 0.6;   // a meeting airs a moment: 20%, more when a thread waits on them
+const MEET = 0.2, MEET_THREAD = 0.3, MEET_MAX = 0.7;    // a meeting airs a moment: 20%, more when a thread waits on them
+const THREAD_PULL = 3;                    // a storyline's next step outweighs a passing moment
+// At a stretch, besides the partners (1): the locals there (5), money (6), the body (9), the place (10).
+const STRETCH_FAMILIES = [1, 5, 6, 9, 10];
+// played by the mechanics that decide them (money.js, chill.js), never offered as talk
+const EMITTED = new Set(['beg', 'borrow', 'repay', 'surrender', 'reward', 'call-home']);
 const OVERLAP_FAMILIES = [2, 4, 5, 6, 7, 8];
 const BLOWUPS = { snap: null, 'old-wound': ['explodes'], blame: ['blow-up'], shove: ['shove'] };
 
@@ -52,12 +57,15 @@ function damp(state, kindId, tid) {
 const lovers = ctx => (ctx.people?.length >= 2 ? ctx.people.slice(0, 2) : [ctx.A, ctx.C]);
 const partners = (st, x, y) => Object.values(st.teams).some(t => (t.a === x && t.b === y) || (t.a === y && t.b === x));
 function pairCount(state, x, y) {
-  return thisLeg(state).filter(s => s.data.family !== 13 && s.who.includes(x) && s.who.includes(y)).length;
+  return thisLeg(state).filter(s => s.data.talk && s.data.family !== 13 && s.who.includes(x) && s.who.includes(y)).length;
 }
 
 // The endings this scene may not have here, or 'all' when the scene itself is capped.
+// A chained scene continues the moment that caused it (a confession said aloud is answered):
+// it isn't held to the pair or romance caps, only to the blow-up and sabotage ones.
 function banned(state, ctx, kind) {
   prepare(ctx);
+  if (ctx.cause != null) return bannedEndings(state, ctx, kind);
   const who = ctx.people?.length ? ctx.people : [ctx.A, ctx.B, ctx.C, ctx.D].filter(Boolean);
   // the same two people of different teams: at most three moments a leg (partners are together all leg)
   for (const x of who) for (const y of who) {
@@ -68,6 +76,10 @@ function banned(state, ctx, kind) {
     const ls = lovers(ctx);
     if (thisLeg(state).some(s => s.data.family === 4 && (s.data.facts?.lovers || []).some(n => ls.includes(n)))) return 'all';
   }
+  return bannedEndings(state, ctx, kind);
+}
+
+function bannedEndings(state, ctx, kind) {
   const out = new Set();
   // one blow-up per team per leg
   if (kind.id in BLOWUPS && blowUpUsed(state, ctx.tid)) {
@@ -75,7 +87,7 @@ function banned(state, ctx, kind) {
   }
   // nothing warm between two teams on the leg one sabotaged the other
   const sab = state.sabotaged || {};
-  if (ctx.oid && ((sab[ctx.tid]?.by === ctx.oid && sab[ctx.tid].leg === state.leg) || (sab[ctx.oid]?.by === ctx.tid && sab[ctx.oid].leg === state.leg))) {
+  if (ctx.tid && ctx.oid && ((sab[ctx.tid]?.by === ctx.oid && sab[ctx.tid]?.leg === state.leg) || (sab[ctx.oid]?.by === ctx.tid && sab[ctx.oid]?.leg === state.leg))) {
     for (const e of kind.endings) if (warm(kind, e)) out.add(e);
   }
   if (out.size >= kind.endings.length) return 'all';
@@ -103,6 +115,7 @@ function tryPlay(state, ctx, kindId, rng, out, { gate = true } = {}) {
   if (!ending) return null;
   const sc = playScene(ctx, kindId, rng, { ending });
   if (!sc) return null;
+  sc.data.talk = true;
   out.push(sc);
   out.extra = (out.extra || 0) + (ctx.extra || 0);      // may be negative: a gain
   ctx.extra = 0;
@@ -135,10 +148,11 @@ function typesOf(stretch) { return stretch?.types || (stretch?.sides || []).flat
 
 function momentsAt(state, id, stretch) {
   const m = [];
+  if (stretch?.first) m.push('arrive');                 // the place's first stretch: the arrival
   switch (stretch?.kind) {
     case 'travel':
       m.push('travel', 'quiet');
-      if (stretch.mode === 'flight') m.push('plane', 'wait');
+      if (stretch.mode === 'flight') m.push('plane', 'wait', 'airport');
       if ((stretch.cost || 0) > 0) m.push('fare');
       break;
     case 'either': m.push('either', 'tip'); break;
@@ -182,7 +196,8 @@ function playChain(state, c, id, stretch, t, api, rng, out, present) {
   const kind = SCENES[c.kind];
   const ctx = baseCtx(state, id, kind.cast === 'teams' ? c.other : null, stretch, t, api, { cause: c.cause, present });
   ctx.moment = kind.moments[0] ?? null;
-  return tryPlay(state, ctx, c.kind, rng, out, { gate: false });
+  // a romance chain still needs the two to be able to be a couple (its own gate)
+  return tryPlay(state, ctx, c.kind, rng, out, { gate: kind.family === 4 });
 }
 
 // ── The partners, at a stretch ──
@@ -201,7 +216,7 @@ export function talkAtStretch(state, team, stretch, t, api, rng) {
   for (let k = 0; k < n; k++) {
     const cands = [];
     for (const kind of Object.values(SCENES)) {
-      if (kind.family !== 1 || played.has(kind.id)) continue;
+      if (!STRETCH_FAMILIES.includes(kind.family) || ['teams', 'group', 'don'].includes(kind.cast) || EMITTED.has(kind.id) || played.has(kind.id)) continue;
       const ctx = baseCtx(state, id, null, stretch, t, api, { present });
       const b = bestMoment(kind, ctx, moments);
       if (b.w > 0) cands.push({ kind: kind.id, w: b.w * damp(state, kind.id, id), moment: b.moment });
@@ -211,7 +226,7 @@ export function talkAtStretch(state, team, stretch, t, api, rng) {
       if (!kind || ['teams', 'group'].includes(kind.cast) || played.has(kind.id)) continue;
       const ctx = baseCtx(state, id, null, stretch, t, api, kind.family === 4 ? { people: s.who, present } : { present });
       const b = bestMoment(kind, ctx, moments);
-      if (b.w > 0) cands.push({ kind: kind.id, w: b.w * s.weight * 2, moment: b.moment, people: kind.family === 4 ? s.who : null });
+      if (b.w > 0) cands.push({ kind: kind.id, w: s.weight * THREAD_PULL, moment: b.moment, people: kind.family === 4 ? s.who : null });
     }
     // a capped candidate is skipped and the next one drawn
     while (cands.length) {
@@ -234,21 +249,24 @@ export function talkAtOverlap(state, team, others, stretch, t, api, rng) {
   const ids = others.map(idOf).filter(o => o && o !== id && state.teams[o]);
   state.metAt ||= {};
   for (const c of takeChains(state, id, ids)) playChain(state, c, id, stretch, t, api, rng, out, [id, ...ids]);
-  const moments = ['overlap', ...(stretch?.capacity ? ['queue'] : []), ...(stretch?.mode === 'flight' ? ['airport', 'plane'] : []),
-    ...(stretch?.kind === 'mat' ? ['mat'] : [])];
+  // at the Chill Zone the race is over: only what belongs on the mat (a console, a gloat, an accusation)
+  const moments = stretch?.kind === 'mat' ? ['mat']
+    : ['overlap', ...(stretch?.capacity ? ['queue'] : []), ...(stretch?.mode === 'flight' ? ['airport', 'plane'] : [])];
   for (const o of ids) {
     const key = `${state.leg}|${stretch?.id}|${pairKey(id, o)}`;
     if (state.metAt[key]) continue;
     state.metAt[key] = true;
+    // the first time these two teams ever meet (size-up reads it; `see` below records the meeting)
+    const firstMeet = !state.seen?.[id]?.[o];
     see(state, id, o, state.leg, t, stretch?.id, false);
     const cands = [];
     // both ways round: either team can be the one who acts
     for (const [a, b] of [[id, o], [o, id]]) {
       for (const kind of Object.values(SCENES)) {
         if (kind.cast !== 'teams' || !OVERLAP_FAMILIES.includes(kind.family)) continue;
-        const ctx = baseCtx(state, a, b, stretch, t, api);
+        const ctx = baseCtx(state, a, b, stretch, t, api, { firstMeet });
         const bm = bestMoment(kind, ctx, moments);
-        if (bm.w > 0) cands.push({ kind: kind.id, w: bm.w * damp(state, kind.id, a), moment: bm.moment, a, b });
+        if (bm.w > 0) cands.push({ kind: kind.id, w: bm.w * damp(state, kind.id, a), moment: bm.moment, a, b, firstMeet });
       }
     }
     const both = [...people(state, id), ...people(state, o)];
@@ -261,7 +279,7 @@ export function talkAtOverlap(state, team, others, stretch, t, api, rng) {
       const extra = kind.family === 4 ? { people: s.who } : {};
       const ctx = baseCtx(state, a, b, stretch, t, api, extra);
       const bm = bestMoment(kind, ctx, moments);
-      if (bm.w > 0) { cands.push({ kind: kind.id, w: bm.w * s.weight * 2, moment: bm.moment, a, b, people: extra.people }); pull += s.weight; }
+      if (bm.w > 0) { cands.push({ kind: kind.id, w: s.weight * THREAD_PULL, moment: bm.moment, a, b, people: extra.people }); pull += s.weight; }
     }
     const total = cands.reduce((s, c) => s + c.w, 0);
     if (rng() >= Math.min(MEET_MAX, MEET * Math.min(1, total) + MEET_THREAD * pull)) continue;
@@ -269,7 +287,7 @@ export function talkAtOverlap(state, team, others, stretch, t, api, rng) {
       const c = draw(cands, rng);
       if (!c) break;
       cands.splice(cands.indexOf(c), 1);
-      const ctx = baseCtx(state, c.a, c.b, stretch, t, api, c.people ? { people: c.people } : {});
+      const ctx = baseCtx(state, c.a, c.b, stretch, t, api, { firstMeet, ...(c.people ? { people: c.people } : {}) });
       ctx.moment = c.moment;
       if (tryPlay(state, ctx, c.kind, rng, out)) break;
     }
@@ -294,7 +312,7 @@ export function talkAtWait(state, present, stretch, t, api, rng, moment = null) 
   out.extra = 0;
   if (ids.length < 3) return out;
   state.roomsAt ||= {};
-  const key = `${state.leg}|${stretch?.id}|${Math.floor(t / ROOM_WINDOW)}`;
+  const key = `${state.leg}|${stretch?.id}|${moment || roomMoment(stretch)}|${Math.floor(t / ROOM_WINDOW)}`;
   if (state.roomsAt[key]) return out;
   state.roomsAt[key] = true;
   const all = ids.flatMap(id => people(state, id));
@@ -311,6 +329,7 @@ export function talkAtWait(state, present, stretch, t, api, rng, moment = null) 
   pairs.sort((p, q) => q.b - p.b || (p.x + p.y).localeCompare(q.x + q.y));
   for (const p of pairs) { if (seat.length + [p.x, p.y].filter(n => !seat.includes(n)).length <= 4) { add(p.x); add(p.y); } }
   const teamOf = n => ids.find(id => people(state, id).includes(n));
+  if (seat.length < 2) return out;           // every pair here has had its moments this leg
   const tid = teamOf(seat[0]);
   const oid = seat.map(teamOf).find(x => x !== tid) || ids.find(x => x !== tid);
   const m = moment || roomMoment(stretch);

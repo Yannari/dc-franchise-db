@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { playRaceSeason } from '../js/rr/season.js';
 import { setPlayers, players } from '../js/core.js';
 import { raceCast } from './helpers/rr-cast.js';
+import { SCENES } from '../js/rr/scenes.js';
 
 const NICE = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
 const SABOTAGE = ['push', 'ram', 'steal', 'kidnap-pet', 'course-sabotage', 'fake-shortcut', 'mind-game', 'admin-sabotage', 'free-ride', 'revenge', 'alliance-betrayal', 'deal-broken', 'shove', 'lie', 'secret-used'];
@@ -50,6 +51,13 @@ describe('rr engine', () => {
         const t = s.state.teams[sc.data.team];
         expect(sc.who.sort()).toEqual([t.a, t.b].sort());
       }
+    }
+  });
+
+  it('every scene records what it changed, and a catalogue kind always has its ending', () => {
+    for (const s of seasons) for (const sc of s.state.scenes) {
+      expect(sc.data.effects?.length, `#${sc.id} ${sc.kind}`).toBeGreaterThan(0);
+      if (SCENES[sc.kind]) expect(SCENES[sc.kind].endings, `#${sc.id} ${sc.kind}`).toContain(sc.data.ending);
     }
   });
 

@@ -6,7 +6,7 @@ export default {
   arrive: 'airport', local: ['drive', 'foot', 'taxi'], finale: true,
   stretches: [
     { id: 'cab', kind: 'travel', mode: 'drive', base: 35, cost: 0, plate: 'airport curb, taxis', label: 'Drive yourselves into the city' },
-    { id: 'tower-stairs', kind: 'allin', types: ['strength'], base: 30, pass: 0.85, loopCost: 5, plate: 'fire escape stairs + tower window', label: 'The deck',
+    { id: 'tower-stairs', kind: 'allin', types: ['strength'], base: 30, pass: 0.85, loopCost: 5, opens: 540, closes: 1260, plate: 'fire escape stairs + tower window', label: 'The deck',
       desc: 'Teams climb eighty-six flights of the skyscraper on foot to the observation deck, where a briefcase with their name on it waits beside the tip. Both partners must reach the top, and a partner who stops to rest keeps the whole team on the stairs. The tip on the briefcase sends them down again and into the park.' },
     { id: 'park', kind: 'travel', mode: 'foot', base: 20, cost: 0, plate: 'park path', label: 'Into the park' },
     { id: 'midmat', kind: 'midmat', plate: 'park path, bronze mat', label: 'The midpoint Chill Zone' },

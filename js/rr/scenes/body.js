@@ -8,7 +8,7 @@ const physical = c => (c.stretch?.types || (c.stretch?.sides || []).flatMap(s =>
 const mishap = c => identityOf(c.state.teams[c.tid])?.mishap || 1;
 
 register([
-  K({ id: 'injury', family: 9, moments: ['fail', 'pass'], when: c => (physical(c) ? 0.004 * ((c.stretch?.base || 20) / 60) * 6 * mishap(c) : 0), endings: {
+  K({ id: 'injury', family: 9, moments: ['fail', 'pass'], when: c => (physical(c) ? 0.01 * ((c.stretch?.base || 20) / 60) * 6 * mishap(c) : 0), endings: {
     minor: { w: 4, fx: (fx, c) => fx.time(c.tid, 10) },
     carried: { w: 2, fx: (fx, c) => { fx.mind(c.B, 'energy', -20); fx.bond(c.A, c.B, 1); fx.time(c.tid, 15); } },
     serious: { w: 0.4, fx: (fx, c) => { c.state.injured ||= {}; c.state.injured[c.tid] = c.state.leg; fx.time(c.tid, 60); fx.custom('injured', c.tid); } },
@@ -17,7 +17,7 @@ register([
     'pushes-through': { w: c => c.S(c.A, 'endurance') / 4, fx: (fx, c) => fx.mind(c.A, 'energy', -15) },
     'blind-from-spice': { w: 0.4, fx: (fx, c) => { fx.time(c.tid, 15); fx.bond(c.A, c.B, 0.5); } },
   } }),
-  K({ id: 'exhaustion', family: 9, moments: ['travel', 'fail'], when: c => (Math.min(c.energy(c.A), c.energy(c.B)) < 15 ? 1 : 0), endings: {
+  K({ id: 'exhaustion', family: 9, moments: ['travel', 'fail'], when: c => { const e = Math.min(c.energy(c.A), c.energy(c.B)); return e < 75 ? (80 - e) / 40 : 0; }, endings: {
     collapse: { w: c => (10 - c.S(c.A, 'endurance')) / 4, fx: (fx, c) => fx.time(c.tid, 20) },
     'second-wind': { w: c => c.S(c.A, 'boldness') / 4, fx: (fx, c) => fx.mind(c.A, 'energy', 15) },
   } }),

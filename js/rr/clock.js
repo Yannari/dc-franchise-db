@@ -42,7 +42,8 @@ export function runLeg({ teams, stretches, resolve }) {
     // push a team's running stretch back (or, negative, bring it forward, never before now)
     delay(id, minutes) {
       const r = byId[id];
-      if (!r || r.done || !minutes) return;
+      // a team that has checked in at the mat is done: nothing pushes or pulls it after that
+      if (!r || r.done || (r.i >= stretches.length && r.t <= api.now) || !minutes) return;
       const last = [...log].reverse().find(l => l.id === id);
       if (minutes > 0) {
         if (last && last.to > api.now) last.to += minutes;

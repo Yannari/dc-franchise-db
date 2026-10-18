@@ -131,7 +131,8 @@ export function resolveBoard(state, team, stretch, t, api, rng) {
       (state.uturn ||= {})[target] = { by: id, stretch: stretch.after };
       state.boomeranged[target] = id;
       act(state, 'boomerang-decide', id, target, rng,
-        { ending: (state.rivalry[pairKey(id, target)] || 0) >= 1 ? 'target-rival' : 'target-threat', data: { target } });
+        { ending: (state.rivalry[pairKey(id, target)] || 0) >= 1 ? 'target-rival' : 'target-threat',
+          data: { target, rankGap: Math.round(Math.abs(perceivedRank(state, id) - perceivedRank(state, target)) * 100) / 100 } });
     } else if (targets.length) {
       const target = weightedPick(aimWeights(state, id, targets), rng).id;
       (state.yielded ||= {})[target] = id;

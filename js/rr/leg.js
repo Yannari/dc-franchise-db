@@ -14,7 +14,7 @@ import { resolveTask, runTask } from './tasks.js';
 import { handOut, resolveBoard, useExpress } from './twists.js';
 import { runLeg } from './clock.js';
 import { talkAtStretch, talkAtOverlap, talkAtWait, closeLegTalk } from './talk.js';
-import { snapCheck, makeupCheck } from './team.js';
+import { snapCheck, makeupCheck, leaderCheck } from './team.js';
 import { tick, behind } from './mind.js';
 import { perceivedRank } from './knowledge.js';
 import { teamLevel } from './skill.js';
@@ -34,7 +34,7 @@ const people = (st, id) => [st.teams[id].a, st.teams[id].b];
 // and the twist's board right after the first task (the Don Box at its exit).
 function buildRoute(state, leg, from, to, rng, nTeams) {
   const air = from ? flightStretches(from, to, nTeams, rng, { book: !!leg.book }) : [];
-  const own = to.stretches.map(s => ({ ...s }));
+  const own = to.stretches.map((s, i) => ({ ...s, first: i === 0 }));
   const out = [...air, ...own];
   if (['boomerang', 'yield', 'boomerang-vote'].includes(leg.twist)) {
     const k = out.findIndex(s => TASKS.includes(s.kind));
@@ -60,6 +60,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   const clockStart = state.clock;
   const active = state.order.filter(id => !state.gone.includes(id));
   payStipend(state, leg);
+  const broke = active.filter(id => !(state.money[id] > 0));
   repayDebts(state);
   handOut(state, leg, rng);
 
@@ -71,8 +72,15 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   const superEnd = {};
   const midmat = [];
   const legStart = state.scenes.length;
+  // the Chill Zone keeps the teams that checked in: those who arrived in the last two hours are there
+  const MAT_COMPANY = 120;
+  const atMat = (id, t) => Object.keys(matAt).filter(x => x !== id && matAt[x] <= t && t - matAt[x] <= MAT_COMPANY);
 
   const depart = state.legs.at(-1)?.depart || {};
+  // Don opens the leg, demonstrates each task to the first team there, and reads a twist's rule the first time
+  emit(state, 'don-opener', [], rng() < 0.67 ? 'annoyed' : 'bored', { t: 0, place: to.id, effects: [['opener', leg.n, to.id]] });
+  const demoed = new Set();
+  state.rulesRead ||= {};
   const starters = [...state.lastOrder.filter(id => active.includes(id)), ...active.filter(id => !state.lastOrder.includes(id))];
 
   const resolve = (team, s, t, api) => {
@@ -94,10 +102,24 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       if (here.length && s.kind !== 'mat') extra += talkAtOverlap(state, id, here, s, t, api, rng).extra || 0;
       if (s.kind === 'mat') {
         // the mat: a team that arrives while others are still there meets them (consoles, gloats)
-        const there = here.filter(x => matAt[x] != null);
+        const there = atMat(id, t);
         if (there.length) talkAtOverlap(state, id, there, s, t, api, rng);
       }
       if (s.capacity && here.length + 1 > s.capacity) talkAtWait(state, [id, ...here], s, t, api, rng, 'queue');
+      // three or more teams at one task: they watch each other
+      else if (TASKS.includes(s.kind) && here.length >= 2) talkAtWait(state, [id, ...here], s, t, api, rng, 'watching');
+      // three or more on the mat: the crowd at the Chill Zone
+      if (s.kind === 'mat') { const there = atMat(id, t); if (there.length >= 2) talkAtWait(state, [id, ...there], s, t, api, rng, 'mat-crowd'); }
+    }
+
+    // Don's demonstration, as the first team reaches a task; a twist's rule, the first time the season meets it
+    if (TASKS.includes(s.kind) && !demoed.has(s.id)) {
+      demoed.add(s.id);
+      emit(state, 'don-demo', [], rng() < 0.67 ? 'gag' : 'dry', { t, stretch: s.id, effects: [['demo', s.id]] });
+    }
+    if (s.kind === 'board' && leg.twist && !state.rulesRead[leg.twist]) {
+      state.rulesRead[leg.twist] = leg.n;
+      emit(state, 'don-rule', [], 'explained', { t, stretch: s.id, rule: leg.twist, effects: [['rule', leg.twist]] });
     }
 
     // a place that's closed: wait for it to open, with whoever else is waiting
@@ -172,8 +194,13 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
 
     // after the stretch: the partners talk, tempers and the clock in their legs
     if (s.kind !== 'mat') {
-      extra += talkAtStretch(state, id, s, t, api, rng).extra || 0;
-      snapCheck(state, id, rng);
+      const said = talkAtStretch(state, id, s, t, api, rng);
+      extra += said.extra || 0;
+      // a hurt partner hands over the lead
+      const hurt = said.find(x => x.kind === 'injury' && x.data.ending !== 'minor');
+      if (hurt) leaderCheck(state, id, 'injury', rng, hurt.who[0]);
+      // a snap can move the lead too
+      if (snapCheck(state, id, rng)) leaderCheck(state, id, 'snap', rng);
       makeupCheck(state, id, rng);
       behind(state, id, perceivedRank(state, id));
     }
@@ -190,7 +217,11 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   if (air) {
     for (const s of boardFlightScenes(state, air)) {
       const ids = s.data.teams;
-      if (ids.length >= 3) talkAtWait(state, ids, air, air.flights[s.data.flight]?.departs ?? s.data.t, null, rng, 'plane');
+      if (ids.length < 3) continue;
+      // the gate, then the cabin
+      const departs = air.flights[s.data.flight]?.departs ?? s.data.t;
+      talkAtWait(state, ids, air, departs - 20, null, rng, 'airport');
+      talkAtWait(state, ids, air, departs, null, rng, 'plane');
     }
   }
 
@@ -202,7 +233,8 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
 
   const result = checkIn(state, leg, run.finish, run.out, rng);
   result.log = run.log;
-  Object.assign(result, { place: to.id, placeName: to.name, money: leg.money ?? 0, twist: leg.twist ?? null, clockStart });
+  Object.assign(result, { place: to.id, placeName: to.name, money: leg.money ?? 0, twist: leg.twist ?? null, clockStart, broke,
+    depart: result.depart, starts: Object.fromEntries(starters.map(id => [id, depart[id] || 0])) });
   result.route = stretches.map(s => s.id);
   result.scenes = state.scenes.slice(legStart);
   return result;

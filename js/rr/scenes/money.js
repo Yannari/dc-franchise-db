@@ -30,7 +30,7 @@ register([
     stripped: { w: 2, fx: (fx, c) => { fx.mind(c.A, 'morale', -15); fx.mind(c.B, 'morale', -15); } },
     defiant: { w: c => c.S(c.lead, 'boldness') / 5, fx: (fx, c) => fx.mind(c.lead, 'morale', -5) },
   } }),
-  K({ id: 'spending-fight', family: 6, moments: ['fare'], when: c => (c.money(c.tid) < 60 && c.money(c.tid) >= (c.stretch?.cost || 0) ? 0.3 : 0), endings: {
+  K({ id: 'spending-fight', family: 6, moments: ['fare'], when: c => ((c.stretch?.cost || 0) > 0 && c.money(c.tid) < 100 ? 0.3 : 0), endings: {
     'saver-wins': { w: 1, fx: (fx, c) => { fx.time(c.tid, 10); fx.bond(c.A, c.B, -0.3); } },
     'spender-wins': { w: 1, fx: (fx, c) => { fx.money(c.tid, -10); fx.bond(c.A, c.B, -0.3); } },
   } }),

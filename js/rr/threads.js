@@ -16,7 +16,8 @@ const o = (kind, endings = null) => ({ kind, endings });
 export const THREADS = {
   crush: { who: 'person',
     opens: [o('crush-noticed'), o('flirt', ['returned']), o('crush-confided')],
-    steps: ['crush-noticed', 'crush-confided', 'flirt', 'near-kiss', 'confession-attempt', 'confession'],
+    // the catalogue's "flirt / near-kiss": a near-kiss is the side door (a kiss ends it early), the confession the main one
+    steps: ['crush-noticed', 'crush-confided', 'flirt', 'confession-attempt', 'confession'],
     closes: [o('confession', ['mutual', 'crushed', 'reversed', 'not-now']), o('near-kiss', ['kiss']), o('goodbye-kiss')] },
   rivalry: { who: 'teams',
     opens: [o('trash-talk'), o('gloat', ['rubbed-in']), o('mock-the-struggle', ['laugh']), o('queue-jump', ['called-out']),
@@ -26,8 +27,8 @@ export const THREADS = {
     closes: [o('save-your-enemy', ['saves']), o('comeuppance'), o('revenge', ['takes-high-road'])] },
   debt: { who: 'teams',
     opens: [o('help-offer', ['accepted']), o('rescue', ['saves']), o('deal', ['struck']), o('borrow', ['lent'])],
-    steps: ['repay', 'romance-costs', 'medevac-choice', 'express-give'],
-    closes: [o('repay'), o('medevac-choice', ['repays-kindness']), o('express-give', ['to-an-ally']), o('deal-broken', ['walk-away'])] },
+    steps: ['help-offer', 'share-info', 'rescue', 'repay', 'medevac-choice', 'express-give'],
+    closes: [o('repay'), o('rescue', ['saves']), o('medevac-choice', ['repays-kindness']), o('express-give', ['to-an-ally']), o('deal-broken', ['walk-away'])] },
   secret: { who: 'team',
     opens: [o('old-wound', ['surfaces'])],
     steps: ['old-wound', 'makeup'],

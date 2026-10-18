@@ -40,8 +40,9 @@ register([
     'at-the-stage': { w: 0.3, fx: (fx, c) => fx.mind(c.A, 'morale', -10) },
   } }),
   K({ id: 'don-ruling', family: 11, cast: 'don', moments: ['ruling'], endings: {
+    // a ruling on a caught sabotage is never 'allowed'
     'no-sharing': { w: 1, fx: (fx, c) => fx.time(c.tid, 20) },
-    allowed: { w: 1, fx: (fx, c) => fx.mind(c.A, 'morale', 3) },
+    allowed: { w: c => (c.cause ? 0 : 1), fx: (fx, c) => fx.mind(c.A, 'morale', 3) },
     threat: { w: 1, fx: (fx, c) => fx.mind(c.A, 'stress', 8) },
   } }),
 ]);

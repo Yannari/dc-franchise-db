@@ -7,8 +7,9 @@
 // can, borrows from an ally standing there, or begs (never where it's forbidden:
 // airports, the Amazing Race's own rule). Debts are remembered: paid back, or
 // dodged after three legs. A non-elimination leg can take everything.
-import { addScene, S } from './state.js';
+import { S } from './state.js';
 import { getBond, addBond } from '../bonds.js';
+import { emit } from './scenes.js';
 
 export function payStipend(state, leg) {
   for (const id of state.order) {
@@ -38,7 +39,8 @@ function beg(state, team, stretch, t, rng) {
     raised += got;
   }
   state.rec[team.id].begged += raised;
-  addScene(state, 'beg', [a, b], { t, stretch: stretch.id, team: team.id, raised, rounds }, [a, b]);
+  emit(state, 'beg', [a, b], raised >= cost * 1.5 ? 'generous' : 'scraps',
+    { t, stretch: stretch.id, team: team.id, raised, rounds, effects: [['money', team.id, raised], ['time', team.id, Math.round(minutes)]] });
   return { minutes: Math.round(minutes), how: 'beg' };
 }
 
@@ -48,7 +50,8 @@ function beg(state, team, stretch, t, rng) {
 // rules) so the race never stalls.
 export function afford(state, team, stretch, t, rng, api) {
   const cost = stretch.cost || 0;
-  if (['taxi', 'bus'].includes(stretch.mode)) return { minutes: stretch.base * 2, how: 'walk' };
+  // a short ride can be walked; a long one can't (the show's broke teams beg for the taxi)
+  if (['taxi', 'bus'].includes(stretch.mode) && (stretch.base || 0) <= 20) return { minutes: stretch.base * 2, how: 'walk' };
   for (const o of api?.here?.(stretch.id, t) || []) {
     if (o.id === team.id || !state.teams[o.id]) continue;
     if ((state.money[o.id] || 0) > cost * 2 && bestBond(state, team.id, o.id) >= 2) {
@@ -56,7 +59,8 @@ export function afford(state, team, stretch, t, rng, api) {
       state.money[team.id] = (state.money[team.id] || 0) + cost;
       state.debts.push({ from: team.id, to: o.id, amount: cost, leg: state.leg, paid: false });
       const who = [...people(state, team.id), ...people(state, o.id)];
-      addScene(state, 'borrow', who, { t, stretch: stretch.id, team: team.id, lender: o.id, amount: cost }, who);
+      emit(state, 'borrow', who, 'lent', { t, stretch: stretch.id, team: team.id, other: o.id, lender: o.id, amount: cost,
+        effects: [['money', team.id, cost], ['money', o.id, -cost], ['debt', team.id, o.id, cost]] });
       return { minutes: 10, how: 'borrow' };
     }
   }
@@ -83,11 +87,13 @@ export function repayDebts(state) {
       state.money[d.to] = (state.money[d.to] || 0) + d.amount;
       d.paid = true;
       for (const x of people(state, d.from)) for (const y of people(state, d.to)) addBond(x, y, 0.5);
-      addScene(state, 'repay', who, { team: d.from, lender: d.to, amount: d.amount }, who);
+      emit(state, 'repay', who, 'paid', { team: d.from, other: d.to, lender: d.to, amount: d.amount,
+        effects: [['money', d.from, -d.amount], ['money', d.to, d.amount], ['teams', d.from, d.to, 0.5]] });
     } else if (state.leg - d.leg >= 3) {
       d.dodged = true;
       for (const x of people(state, d.from)) for (const y of people(state, d.to)) addBond(x, y, -1);
-      addScene(state, 'debt-dodged', who, { team: d.from, lender: d.to, amount: d.amount }, who);
+      emit(state, 'repay', who, 'dodged', { team: d.from, other: d.to, lender: d.to, amount: d.amount,
+        effects: [['teams', d.from, d.to, -1], ['dodged', d.from, d.to, d.amount]] });
     }
   }
 }

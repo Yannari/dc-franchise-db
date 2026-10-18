@@ -27,6 +27,32 @@ function act(state, kindId, tid, oid, rng, ending = null, data = {}) {
   return sc;
 }
 
+// A team going home: the team closest to it comes over (console), a couple says goodbye,
+// and the team says its last word to camera (int-exit).
+function farewell(state, out, finished, finish, rng, atMat) {
+  const t = finish[out] ?? Math.max(...Object.values(finish));
+  if (!atMat) { const [a, b] = people(state, out); act(state, 'int-exit', out, null, rng, getBond(a, b) >= 0 ? 'grateful' : 'bitter', { t }); return; }
+  const close = (a, b) => people(state, a).reduce((s, x) => s + people(state, b).reduce((u, y) => u + getBond(x, y), 0), 0) / 4;
+  const friends = finished.filter(id => id !== out).sort((a, b) => close(b, out) - close(a, out));
+  if (friends[0] && close(friends[0], out) >= 1) {
+    const ctx = { state, team: { id: friends[0] }, other: { id: out }, moment: 'mat', t, stretch: { id: 'mat', kind: 'mat' },
+      present: [friends[0], out], event: { consoleTarget: out } };
+    playScene(ctx, 'console', rng);
+  }
+  for (const c of (state.couples || []).filter(x => !x.ended)) {
+    const mine = people(state, out);
+    const leaving = mine.includes(c.a) ? c.a : mine.includes(c.b) ? c.b : null;
+    if (!leaving) continue;
+    const staying = leaving === c.a ? c.b : c.a;
+    const otherTeam = state.order.find(id => people(state, id).includes(staying));
+    if (!otherTeam || otherTeam === out) continue;
+    playScene({ state, team: { id: out }, other: { id: otherTeam }, people: [leaving, staying], moment: 'elim', t,
+      present: [out, otherTeam] }, 'goodbye-kiss', rng);
+  }
+  const [a, b] = people(state, out);
+  act(state, 'int-exit', out, null, rng, getBond(a, b) >= 0 ? 'grateful' : 'bitter', { t });
+}
+
 export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
   const n = leg.n;
   const lastIdx = id => { const i = state.lastOrder.indexOf(id); return i < 0 ? 1e9 : i; };
@@ -85,7 +111,8 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     result.nonElim = { id: last, penalty: p };
     state.rec[last].lasts++;
     if (p === 'surrender-money' || p === 'surrender-all') surrender(state, last, p);
-    else if (p === 'speed-bump') state.speedBump[last] = n + 1;
+    if (p === 'surrender-money' || p === 'surrender-all') act(state, 'surrender', last, null, rng, null, { t: finish[last] ?? null, penalty: p });
+    if (p === 'speed-bump') state.speedBump[last] = n + 1;
     else if (p === 'marked') state.marked[last] = n + 1;
     act(state, 'don-fakeout', last, null, rng, 'relief', { penalty: p, t: finish[last] ?? null });
   }
@@ -118,6 +145,7 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     const carry = (state.pending[id] || 0) + (result.nonElim.penalty === 'departure' ? DEPARTURE_PENALTY : 0);
     if (carry) state.carryPenalty[id] = carry;
   }
+  for (const id of result.eliminated) farewell(state, id, finished, finish, rng, finish[id] != null);
   for (const id of result.eliminated) if (!state.gone.includes(id)) state.gone.push(id);
 
   rest(state);

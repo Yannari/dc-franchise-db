@@ -9,6 +9,7 @@ import { setGs } from '../js/core.js';
 import { raceState } from './helpers/rr-cast.js';
 import { fixtureCtx } from './helpers/rr-catalogue.js';
 import { snapCheck } from '../js/rr/team.js';
+import { romanticCompat } from '../js/players.js';
 
 const BLOWUPS = { snap: null, 'old-wound': ['explodes'], blame: ['blow-up'], shove: ['shove'] };
 
@@ -110,6 +111,23 @@ describe('rr talk layer', () => {
     let snaps = 0;
     for (let i = 0; i < 200; i++) if (snapCheck(st, ctx.team.id, () => 0)) snaps++;
     expect(snaps).toBe(0);
+  });
+
+  it('a confession said aloud is answered at once, whatever the romance cap', () => {
+    for (let s = 1; s <= 40; s++) {
+      const ctx = fixtureCtx('confession-attempt', { seed: s });
+      const st = ctx.state;
+      ctx.moment = 'overlap';
+      const first = playScene(ctx, 'confession-attempt', () => 0.5, { ending: 'said' });
+      const [x, y] = first.data.facts.lovers;
+      if (!romanticCompat(x, y)) continue;      // not a compatible pair in this cast
+      const out = talkAtOverlap(st, ctx.team.id, [ctx.other.id], { id: 'later', kind: 'travel', mode: 'foot', base: 10 }, 200, ctx.api, streamFor(s, 'c'));
+      const conf = out.find(x => x.kind === 'confession');
+      expect(conf, `seed ${s}`).toBeTruthy();
+      expect(conf.data.cause).toBe(first.id);
+      return;
+    }
+    throw new Error('no compatible pair in forty casts');
   });
 
   it('a gloat that escalates is followed by the shove it caused, the next time the teams meet', () => {

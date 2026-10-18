@@ -120,7 +120,8 @@ register([
     kiss: { w: 1, fx: (fx, c) => { fx.rel(c.tid, 'dating'); fx.bond(c.A, c.B, 1); } },
     almost: { w: 1, fx: (fx, c) => fx.bond(c.A, c.B, 0.5) },
   } }),
-  K({ id: 'homesick', family: 1, moments: ['quiet', 'plane'], when: c => (Math.min(c.morale(c.A), c.morale(c.B)) < 35 ? 0.6 : 0), endings: {
+  K({ id: 'homesick', family: 1, moments: ['quiet', 'plane'],
+    when: c => (Math.min(c.morale(c.A), c.morale(c.B)) < 40 ? 0.6 : c.state.leg >= 5 ? 0.03 * (c.state.leg - 4) / 4 : 0), endings: {
     'misses-home': { w: 1, fx: (fx, c) => fx.mind(c.A, 'morale', -5) },
     'partner-lifts': { w: c => 1 + Math.max(0, c.bond(c.A, c.B)) / 4, fx: (fx, c) => { fx.bond(c.A, c.B, 1); fx.mind(c.A, 'morale', 8); } },
     'wants-out': { w: c => (10 - c.S(c.A, 'endurance')) / 8, fx: (fx, c) => fx.mind(c.A, 'stress', 8) },

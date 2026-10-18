@@ -37,14 +37,16 @@ function sab({ delay, rivalry = 2, backfire = 10 }) {
 const close = c => !c.allied() && (Math.abs(c.rank(c.tid) - c.rank(c.oid)) <= 0.25 || c.rivalry() >= 1);
 const w = base => c => (close(c) ? base * c.S(c.A, 'strategic') / 10 : 0);
 const facts = c => ({ caught: !!c.caught });
+// a sabotage that's seen goes to Don (the catalogue's don-ruling: "try that again and you're out")
+const ruled = { seen: 'don-ruling' };
 
 register([
-  K({ id: 'push', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: w(0.05), endings: sab({ delay: 20 }), facts }),
-  K({ id: 'ram', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: c => (['drive', 'taxi'].includes(c.stretch?.mode) ? w(0.06)(c) : 0), endings: sab({ delay: 15, backfire: 15 }), facts }),
-  K({ id: 'steal', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: c => (c.stretch?.kind && c.stretch.kind !== 'travel' ? w(0.04)(c) : 0), endings: sab({ delay: 30 }), facts }),
-  K({ id: 'kidnap-pet', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: w(0.005), endings: sab({ delay: 60, rivalry: 3, backfire: 20 }), facts }),
-  K({ id: 'course-sabotage', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: w(0.03), endings: sab({ delay: 25 }), facts }),
-  K({ id: 'fake-shortcut', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: w(0.02), endings: sab({ delay: 40 }), facts }),
+  K({ id: 'push', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: w(0.05), endings: sab({ delay: 20 }), facts, next: ruled }),
+  K({ id: 'ram', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: c => (['drive', 'taxi'].includes(c.stretch?.mode) ? w(0.06)(c) : 0), endings: sab({ delay: 15, backfire: 15 }), facts, next: ruled }),
+  K({ id: 'steal', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: c => (c.stretch?.kind && c.stretch.kind !== 'travel' ? w(0.04)(c) : 0), endings: sab({ delay: 30 }), facts, next: ruled }),
+  K({ id: 'kidnap-pet', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: w(0.005), endings: sab({ delay: 60, rivalry: 3, backfire: 20 }), facts, next: ruled }),
+  K({ id: 'course-sabotage', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: w(0.03), endings: sab({ delay: 25 }), facts, next: ruled }),
+  K({ id: 'fake-shortcut', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: w(0.02), endings: sab({ delay: 40 }), facts, next: ruled }),
   K({ id: 'mind-game', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: w(0.05), endings: {
     rattled: { w: c => (10 - c.S(c.C, 'temperament')) / 5, fx: (fx, c) => { fx.mind(c.C, 'stress', 15); fx.pass(c.oid, -0.1); fx.rivalry(c.tid, c.oid, 1); c.state.rec[c.tid].sabotage++; c.seenBy = [c.A, c.B, c.C, c.D]; } },
     'steels-them': { w: c => c.S(c.C, 'temperament') / 5, fx: (fx, c) => { fx.bond(c.C, c.D, 1); fx.rivalry(c.tid, c.oid, 1); c.state.rec[c.tid].sabotage++; c.seenBy = [c.A, c.B, c.C, c.D]; } },

@@ -52,14 +52,14 @@ describe('rr leg', () => {
     expect(checked.length).toBeGreaterThan(5);
     for (const s of checked) {
       for (const id of [s.data.team, s.data.other]) {
-        const ok = r.log.some(l => l.id === id && l.stretch === s.data.stretch && l.from <= s.data.t && s.data.t <= l.to);
+        const ok = r.log.some(l => l.id === id && l.stretch === s.data.stretch && l.from <= s.data.t && (s.data.t <= l.to || l.stretch === 'mat'));
         expect(ok, `${s.kind} ${id} at ${s.data.stretch} ${s.data.t}`).toBe(true);
       }
       // a room (family 3) seats people from any team present; a two-team scene names only its two teams
       if (s.data.family !== 3) for (const n of s.who) expect([s.data.team, s.data.other], s.kind).toContain(teamOf(st, n));
       for (const n of s.who) {
         const id = teamOf(st, n);
-        expect(r.log.some(l => l.id === id && l.stretch === s.data.stretch && l.from <= s.data.t && s.data.t <= l.to), `${s.kind} ${n}`).toBe(true);
+        expect(r.log.some(l => l.id === id && l.stretch === s.data.stretch && l.from <= s.data.t && (s.data.t <= l.to || l.stretch === 'mat')), `${s.kind} ${n}`).toBe(true);
       }
     }
   });
@@ -84,7 +84,8 @@ describe('rr leg', () => {
       const r = playLeg(st, { n: 2, kind: 'elim', money: 100, reward: null, twist: 'boomerang' },
         PLACES['red-sand-desert'], PLACES['fire-mountain-isle'], streamFor(s, 'boom'));
       const target = Object.keys(st.uturn || {})[0];
-      if (!target) continue;
+      // a target can be stopped before the board (a place closed for the night, then Don): look for one that got there
+      if (!target || !r.log.some(l => l.id === target && l.stretch === 'board')) continue;
       found = true;
       const redo = st.uturn[target].stretch;
       expect(r.log.filter(l => l.id === target && l.stretch === redo)).toHaveLength(2);

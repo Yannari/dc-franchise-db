@@ -4,7 +4,7 @@ export default {
   arrive: 'airport', local: ['taxi', 'foot', 'boat'],
   stretches: [
     { id: 'jungle', kind: 'travel', mode: 'foot', base: 25, cost: 0, plate: 'jungle path', label: 'Into the jungle' },
-    { id: 'lava-falls', kind: 'either', plate: 'lava stepping stones + waterfall clearing', label: 'Lava or Falls',
+    { id: 'lava-falls', kind: 'either', opens: 420, closes: 1170, plate: 'lava stepping stones + waterfall clearing', label: 'Lava or Falls',
       desc: 'Two ways to the far side of the island. Lava means hopping a line of stepping stones across a river of lava, fast but one slip sends you back to the bank to start again. Falls means rafting down the river channel, then climbing the slippery path behind the waterfall, slower but rarely fatal to your shoes. Teams may switch, and the first across finds the next Don Box in the clearing.',
       sides: [
         { id: 'lava', label: 'Lava', types: ['nerve'], base: 20, pass: 0.55, loopCost: 12 },

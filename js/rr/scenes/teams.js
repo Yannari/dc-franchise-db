@@ -11,7 +11,7 @@ const hasDeal = c => (c.state.deals || []).some(d => !d.done && ((d.a === c.tid 
 const hero = (c, n) => ['hero', 'loyal-soldier', 'social-butterfly'].includes(archetypeOf(n));
 
 register([
-  K({ id: 'size-up', family: 2, cast: 'teams', moments: ['overlap'], when: c => (firstMeet(c) ? 1 : 0), endings: {
+  K({ id: 'size-up', family: 2, cast: 'teams', moments: ['overlap'], when: c => ((c.firstMeet ?? firstMeet(c)) ? 1 : 0), endings: {
     friendly: { w: c => c.S(c.lead, 'social') / 3, fx: (fx, c) => fx.teams(c.tid, c.oid, 0.5) },
     wary: { w: c => c.S(c.lead, 'strategic') / 3, fx: (fx, c) => fx.believe([c.A, c.B], { about: c.oid, claim: 'threat', value: true }) },
     dismissive: { w: c => (c.friction() ? 2 : 0.3), fx: (fx, c) => fx.teams(c.tid, c.oid, -0.5) },
@@ -90,7 +90,7 @@ register([
     right: { w: c => (c.state.sabotaged[c.tid]?.by === c.oid ? 3 : 0.2), fx: (fx, c) => fx.rivalry(c.tid, c.oid, 2) },
     wrong: { w: c => (c.state.sabotaged[c.tid]?.by === c.oid ? 0.2 : 2), fx: (fx, c) => { fx.teams(c.tid, c.oid, -2); fx.rivalry(c.tid, c.oid, 1); } },
   } }),
-  K({ id: 'confront', family: 2, cast: 'teams', moments: ['overlap', 'mat'], when: c => (c.state.sabotaged?.[c.tid]?.by === c.oid && c.state.sabotaged[c.tid].seen && c.state.sabotaged[c.tid].leg === c.state.leg ? 1 : 0), endings: {
+  K({ id: 'confront', family: 2, cast: 'teams', moments: ['overlap', 'mat'], when: c => (c.state.sabotaged?.[c.tid]?.by === c.oid && c.state.sabotaged[c.tid].seen && c.state.sabotaged[c.tid].leg >= c.state.leg - 1 ? 1 : 0), endings: {
     denied: { w: 1, fx: (fx, c) => fx.rivalry(c.tid, c.oid, 1) },
     admitted: { w: c => c.S(c.C, 'loyalty') / 5, fx: (fx, c) => fx.teams(c.tid, c.oid, -1) },
     'revenge-vowed': { w: c => c.S(c.A, 'boldness') / 5, fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 2); fx.note(`revenge:${c.tid}|${c.oid}`, c.state.leg); } },

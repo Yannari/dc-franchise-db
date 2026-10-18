@@ -753,7 +753,8 @@ export default {
   ],
   'loyalty-test.leaks': [
     { id: 'lt.l1', turns: [
-      { by: 'a', say: "Keep this to yourself, but I'm thinking about going after somebody unexpected this week.", v: { sharp: ['This stays between us. I mean it.'] } },
+      // keep: the long cut answers it with "Who?" (the sharp take said only "This stays between us. I mean it.", read 2026-10-18)
+      { by: 'a', keep: ['somebody'], say: "Keep this to yourself, but I'm thinking about going after somebody unexpected this week.", v: { sharp: ["This stays between us. I'm going after somebody nobody expects this week."] } },
       { by: 'b', say: "My lips are sealed." },
       { by: 'a', conf: "I made it up. Every word. And it came back to me by dinner from somebody else. Now I know {b} talks.", v: { loud: ['IT CAME BACK TO ME! In one day! {b}!'] } },
     ] },

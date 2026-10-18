@@ -67,6 +67,8 @@ export function humanize(text) {
   t = t.replace(/\bi('|\b)/g, 'I$1');
   // a sentence still starts with a capital, after a brace or a quote too
   t = t.replace(/(^|[.!?]\s+)(["']?)([a-z])/g, (m, a, q, c) => a + q + c.toUpperCase());
+  // "?!" is a question ("How is anybody sleeping?!" became "sleeping?.")
+  t = t.replace(/\?!+|!+\?/g, '?');
   let bangs = 0;
   t = t.replace(/!+/g, (m, at) => (++bangs === 1 ? '!' : '.'));
   return t;

@@ -11,7 +11,7 @@
 //
 // Ballots carry their own bond at the vote (vote.js), so a reading replayed
 // later never reads feelings from after it.
-import { writeScene, voicedLine } from './write.js';
+import { writeScene, voicedLine, humanize } from './write.js';
 import { pronouns } from '../../players.js';
 import { stableRng } from '../../script/rng.js';
 
@@ -112,9 +112,11 @@ const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
 // a spoken reaction in the speaker's voice when it has one (the variants of a row), as the pools' lines are
 const asLines = (rows, state, day, seed) => rows.map(([kind, by, text, v]) => {
   if (kind === 'beat') return { kind: 'beat', by: null, text: by };
-  if (!v || by === 'TJ') return { kind: 'say', by, text };
+  if (by === 'TJ') return { kind: 'say', by, text };
+  // said the way a person says it, as every other line is (write.js humanize: "That's FINE!" aired at a vote)
+  if (!v) return { kind: 'say', by, text: humanize(text) };
   const said = voicedLine({ say: text, v }, by, { rng: stableRng(seed, `v|${by}`), ledger: state.lineLedger, day });
-  return { kind: 'say', by, text: said.text, voice: said.tag };
+  return { kind: 'say', by, text: humanize(said.text), voice: said.tag };
 });
 const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen',
   'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty', 'twenty-one', 'twenty-two', 'twenty-three'];

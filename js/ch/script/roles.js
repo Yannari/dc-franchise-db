@@ -395,6 +395,11 @@ Object.assign(ROLES, {
   'teams-revealed': sc => ({ roles: { a: sc.data.teams?.[0]?.captain, b: sc.data.teams?.[1]?.captain }, ending: sc.data.how || 'shows',
     slots: { team: sc.data.teams?.[0]?.name, oppteam: sc.data.teams?.[1]?.name } }),
   // a: the captain; b, c, d: teammates
+  // the team picks its captain (teams.js electCaptain): a the captain, b the one they beat (or who stepped aside),
+  // c a supporter, d somebody who mocks the new captain, e a candidate who ran for the laugh
+  'team-captain': sc => ({ roles: { a: sc.data.captain, b: sc.data.runnerUp || sc.data.conceded || undefined, c: sc.data.supporter || undefined,
+    d: sc.data.mocker || undefined, e: sc.data.joker && sc.data.joker !== sc.data.runnerUp ? sc.data.joker : undefined },
+    ending: ['uncontested', 'contested', 'conceded', 'tie', 'clash', 'fight'].includes(sc.data.outcome) ? sc.data.outcome : 'contested', slots: { team: sc.data.team } }),
   'team-reveal': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.how || 'any', slots: { team: sc.data.team } }),
   'team-huddle': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.hard ? 'hard' : 'rally', slots: { team: sc.data.team } }),
   'team-only-one': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { team: sc.data.team } }),

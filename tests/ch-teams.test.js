@@ -23,6 +23,27 @@ describe('a Teams season', () => {
     seasons.push(play(6, 'draft', { end: 'team-final' }));
   });
 
+  it('every team picks its captain on camera, except in a draft, whose captains are the drafters', () => {
+    // the user, 2026-10-18: "there's no dialogue for team captain, it just chooses without even announcing it"
+    const outcomes = new Set();
+    for (const s of seasons) {
+      const scenes = s.state.scenes.filter(x => x.kind === 'team-captain');
+      if (s.teaming === 'draft') { expect(scenes.length, 'a draft has no captain vote').toBe(0); continue; }
+      const first = s.state.episodes[0]?.teams || [];
+      expect(scenes.length, `${s.teaming}: one captain scene per team`).toBe(s.state.teamNames ? Object.keys(s.state.teamNames).length : first.length);
+      for (const sc of scenes) {
+        // the teams as they were made (the season's end has sent people home and switched others)
+        const team = first.find(t => t.name === sc.data.team) || null;
+        // the one the scene crowned is the team's captain as the season began, and is on that team
+        expect(sc.data.captain).toBeTruthy();
+        if (team) expect(team.members).toContain(sc.data.captain);
+        outcomes.add(sc.data.outcome);
+      }
+    }
+    // more than one way it goes, across these seasons
+    expect(outcomes.size, [...outcomes].join(', ')).toBeGreaterThan(1);
+  });
+
   it('puts everybody on exactly one team', () => {
     for (const s of seasons) {
       const first = s.episodes[0].teams;

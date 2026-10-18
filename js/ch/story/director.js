@@ -63,7 +63,7 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   'pairs-revealed', 'pair-reveal', 'pair-voted-in', 'pair-volunteer-in', 'pair-volunteer', 'pair-after-vote', 'pair-callout', 'pair-arena',
   'pair-turn', 'pair-war', 'partner-left', 'pair-repaired', 'pair-swap', 'partner-swap', 'share-keep-rules', 'share-keep',
   // a Teams season's spine (teams.js)
-  'teams-revealed', 'team-reveal', 'team-huddle', 'team-only-one', 'team-voted-in', 'team-after-vote', 'team-switch', 'team-fold',
+  'teams-revealed', 'team-captain', 'team-reveal', 'team-huddle', 'team-only-one', 'team-voted-in', 'team-after-vote', 'team-switch', 'team-fold',
   'teams-break', 'teams-break-across', 'teams-break-inside', 'team-last-stand',
   // a coup that changes a team's captain is the season's business (events.js); both teams after every team daily, and
   // the Arena winner's stay (teams.js, the user, 2026-10-17)
@@ -310,7 +310,7 @@ const BREAK_UP = new Set(['teams-break', 'teams-break-across', 'teams-break-insi
 const MOVABLE = a => a.kind !== 'ceremony' && !ANCHOR.has(a.kind) && !MUST_ORDER.has(a.kind);
 const MUST_ORDER = new Set(['daily', 'callout', 'arena', 'arena-goodbye', 'return', 'morning-after', 'purge', 'named-fallout', 'mock', 'gloat',
   'pair-callout', 'pair-arena', 'pair-arena-blame', 'pair-arena-win', 'share-keep-rules', 'share-keep', 'pairs-revealed', 'pair-reveal',
-  'team-switch', 'teams-revealed', 'team-reveal',
+  'team-switch', 'teams-revealed', 'team-captain', 'team-reveal',
   // the final is told in the order it ran: TJ's "you stay out here until morning" opened the final before its start line
   'final-start', 'final-cp', 'instant-elimination', 'final-lastword', 'overnight', 'overnight-sabotage', 'overnight-talk', 'overnight-quit',
   'final-pact-help', 'final-pact-broken', 'final-podium', 'final-congrats', 'champions', 'champion-reflect']);

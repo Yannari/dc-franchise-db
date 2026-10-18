@@ -16,6 +16,8 @@ export const RESPECT = {
   arenaWin: 2.2, dailyWin: 0.7, survivedVote: 0.3, volunteerWin: 1.2,
   quit: -4, volunteerLoss: -0.8, caughtThrowing: -1.6, arenaLoss: -0.4,
   fearBeaten: 0.6, froze: -0.5, steppedDown: -0.5,
+  // a team chose them to lead it (teams.js electCaptain)
+  captain: 0.6,
 };
 
 export function giveRespect(state, name, kind) {

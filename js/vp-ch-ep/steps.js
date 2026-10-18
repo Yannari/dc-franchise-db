@@ -134,7 +134,7 @@ function chapterOf(a) {
   if (a.kind === 'pairs-revealed' || a.kind === 'pair-reveal') return 'pairs';
   // a Teams season (ch/teams.js): the teams named; the huddle before the vote (what the team says after it is the
   // villa's, as after-vote is: the ceremony ends its screen); a switch at the Arena
-  if (a.kind === 'teams-revealed' || a.kind === 'team-reveal') return 'teams';
+  if (a.kind === 'teams-revealed' || a.kind === 'team-reveal' || a.kind === 'team-captain') return 'teams';
   if (a.kind === 'team-huddle' || a.kind === 'team-only-one') return 'vote';
   if (a.kind === 'team-switch' || a.kind === 'team-fold') return 'arena';
   // said at the Arena between the call-out and the duel (director.js arenaNightTogether)
@@ -610,6 +610,14 @@ const BIG = {
   'teams-revealed': a => ({ card: { k: 'This season', t: 'Teams', sub: ({ shows: 'Everybody plays for the show they came from', champions: 'Past champions against everybody who never won', vets: 'The vets against the rookies', draft: 'Two captains pick their teams' })[a.data?.how] || 'Team against team',
     faces: (a.data?.teams || []).map(t => t.captain).filter(Boolean).slice(0, 6) }, shake: 1 }),
   'team-reveal': a => ({ card: { k: a.data?.how === 'draft' ? 'Captain ' + (a.who[0] || '') : 'Team', t: a.data?.team || 'Team', sub: `${a.data?.size || a.who.length} players. Win together, and the losers vote one of their own in.`, faces: (a.data?.members || a.who).slice(0, 14) } }),
+  // the team's captain, chosen out loud (teams.js electCaptain): the name, and the count if there was a vote
+  'team-captain': a => {
+    const d = a.data || {};
+    const count = Object.entries(d.votes || {}).sort((x, y) => y[1] - x[1]).map(([n, v]) => `${n} ${v}`).join(' · ');
+    const how = { uncontested: 'Nobody ran against them', conceded: `${d.conceded || 'The other candidate'} stepped aside`, tie: 'A tie, settled on respect',
+      clash: 'A vote that turned into an argument', fight: 'A vote that had to be broken up', contested: 'Voted in by the team' }[d.outcome] || 'Voted in by the team';
+    return { card: { k: `Captain of ${d.team || 'the team'}`, t: d.captain || a.who[0], sub: count && d.outcome !== 'uncontested' ? `${how}: ${count}` : how, faces: [d.captain || a.who[0]] }, ...(d.outcome === 'fight' ? { shake: 1 } : {}) };
+  },
   // (a switch, a stay and a fold play on the Arena screen: teamChoice)
   'teams-break': a => ({ card: { k: 'Twist', t: 'The teams are over', sub: 'Every player for themselves from here', faces: a.who.slice(0, 12) }, shake: 1, reband: Object.fromEntries(a.who.map(n => [n, null])) }),
   'team-last-stand': a => ({ chip: [a.who[0], `LAST OF ${String(a.data?.team || '').toUpperCase()}`] }),

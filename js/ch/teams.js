@@ -12,6 +12,7 @@
 //   state.teamHistory   every move: { name, from, to, ep, how }
 //   state.teamsBroken   the teams are over (the break-up): the season is every player for themselves
 import { getBond, addBond, getPerceivedBond } from '../bonds.js';
+import { gs, players } from '../core.js';
 import { SHOWS } from '../shows.js';
 import { S, addScene, noise, logistic, inDivision, mayScheme } from './state.js';
 import { nudge } from './mind.js';
@@ -120,6 +121,87 @@ function byCustom(state, people, custom = []) {
   return teams;
 }
 
+// ── the team picks its captain (the user, 2026-10-18: "there's no dialogue for team captain, it just chooses without
+// even announcing it: where are the debate, comedy, drama, clash, fight, understanding, siding, speech, mockery") ──
+// Who wants it is the bold, the strategic and the respected; each pitches in their own way; a candidate close to another
+// may step aside; every teammate says a name, by the bond they read and the respect they hold; two candidates who cannot
+// stand each other clash, and two hotheads can come to blows; somebody who dislikes the winner and has the edge for it
+// mocks them. Every one of those moves a bond, a mood or a reputation. A draft's captains are the drafters: no vote.
+const PITCH = { villain: 'plan', mastermind: 'plan', schemer: 'plan', hero: 'carry', 'loyal-soldier': 'carry', underdog: 'carry',
+  hothead: 'win', 'challenge-beast': 'win', wildcard: 'joke', 'chaos-agent': 'joke', 'social-butterfly': 'people', showmancer: 'people',
+  floater: 'reluctant', goat: 'reluctant', 'perceptive-player': 'plan' };
+const archOf = n => players.find(p => p.name === n)?.archetype || null;
+const NICE_ARCH = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const popDelta = (n, d) => { gs.popularity ||= {}; gs.popularity[n] = (gs.popularity[n] || 0) + d; };
+function electCaptain(state, rng, team) {
+  const members = [...team.members];
+  if (members.length < 2) return team.captain || members[0] || null;
+  const respect = n => state.rec[n]?.respect || 0;
+  const want = n => S(n, 'boldness') * 0.4 + S(n, 'strategic') * 0.3 + respect(n) * 0.2 + (state.mind[n]?.confidence || 5) * 0.15
+    - (PITCH[archOf(n)] === 'reluctant' ? 1.5 : 0) + noise(rng) * 0.8;
+  const ranked = [...members].sort((a, b) => want(b) - want(a));
+  // the first always runs; a second and third only if they want it nearly as much
+  let candidates = ranked.filter((n, i) => i === 0 || (i < 3 && want(n) >= want(ranked[0]) - 1.2));
+  // understanding: a candidate who is close to a stronger one steps aside for them
+  let conceded = null;
+  if (candidates.length >= 2) {
+    const [lead, ...rest] = candidates;
+    // a friend, or a kind soul who sees somebody wants it more (a fresh cast has no history: character carries it)
+    const kind = rest.find(n => getBond(n, lead) >= 2 || ((NICE_ARCH.has(archOf(n)) || !mayScheme(n)) && getBond(n, lead) >= 0 && rng() < 0.3));
+    if (kind) { conceded = { by: kind, for: lead }; candidates = candidates.filter(n => n !== kind); addBond(kind, lead, 0.6); remember(lead, kind, 'stood-up-for-me', 0.6); }
+  }
+  // siding: every teammate says a name out loud; a candidate says their own
+  const votes = {};
+  const sides = {};
+  for (const v of members) {
+    const pick = candidates.includes(v) ? v : [...candidates].sort((a, b) =>
+      (getPerceivedBond(v, b) * 0.5 + respect(b) * 0.3 + threatRead(state, b) * 0.15 + noise(rng) * 0.4)
+      - (getPerceivedBond(v, a) * 0.5 + respect(a) * 0.3 + threatRead(state, a) * 0.15 + noise(rng) * 0.4))[0];
+    votes[pick] = (votes[pick] || 0) + 1;
+    sides[v] = pick;
+  }
+  const tally = [...candidates].sort((a, b) => (votes[b] || 0) - (votes[a] || 0) || respect(b) - respect(a) || a.localeCompare(b));
+  const captain = tally[0];
+  const runnerUp = tally[1] || null;
+  const tie = !!runnerUp && (votes[captain] || 0) === (votes[runnerUp] || 0);
+  // clash: two candidates who cannot stand each other; two short fuses who loathe each other come to blows
+  let clash = null;
+  const fuse = n => ['hothead', 'chaos-agent'].includes(archOf(n)) || S(n, 'temperament') <= 3;
+  // two who do not get on, or two bold people wanting the same job, one of them with a short fuse
+  const sparks = runnerUp && (getBond(captain, runnerUp) <= -1
+    || ((fuse(captain) || fuse(runnerUp)) && S(captain, 'boldness') + S(runnerUp, 'boldness') >= 12 && getBond(captain, runnerUp) < 1 && rng() < 0.45));
+  if (sparks) {
+    const blows = fuse(captain) && fuse(runnerUp) && (getBond(captain, runnerUp) <= -3 || rng() < 0.3);
+    clash = blows ? 'fight' : 'clash';
+    addBond(captain, runnerUp, clash === 'fight' ? -1.2 : -0.6);
+    if (clash === 'fight') { popDelta(captain, -1); popDelta(runnerUp, -1); }
+  }
+  // mockery: somebody who dislikes the new captain and has the edge for it takes a shot
+  // (a dislike, or a mean streak toward somebody who is not their friend; the nice never mock)
+  const edge = n => mayScheme(n) || ['hothead', 'villain', 'chaos-agent'].includes(archOf(n));
+  const mocker = members.filter(n => n !== captain && n !== runnerUp && !NICE_ARCH.has(archOf(n)) && edge(n)
+    && (getBond(n, captain) <= -1 || (getBond(n, captain) < 1 && sides[n] !== captain && rng() < 0.4)))
+    .sort((a, b) => getBond(a, captain) - getBond(b, captain))[0] || null;
+  if (mocker) { addBond(captain, mocker, -0.5); remember(captain, mocker, 'talked-down-to', 0.6); popDelta(mocker, -0.4); }
+  // the comic: a wildcard or chaos agent who ran, or who backs themselves for the laugh
+  const joker = candidates.find(n => n !== captain && PITCH[archOf(n)] === 'joke') || null;
+  // what it costs and earns
+  team.captain = captain;
+  giveRespect(state, captain, 'captain');
+  nudge(state, captain, 'confidence', 0.5);
+  for (const [v, pick] of Object.entries(sides)) if (v !== pick) addBond(v, pick, pick === captain ? 0.3 : 0.15);
+  for (const v of members) if (sides[v] !== captain && !candidates.includes(v)) addBond(v, captain, -0.1);
+  if (runnerUp) { nudge(state, runnerUp, 'morale', tie ? -0.6 : -0.4); if (tie || getBond(runnerUp, captain) < 0) remember(runnerUp, captain, 'beat-me', 0.6); }
+  const outcome = clash === 'fight' ? 'fight' : clash ? 'clash' : tie ? 'tie' : conceded && !runnerUp ? 'conceded' : runnerUp ? 'contested' : 'uncontested';
+  // the faces: the captain, the one they beat (or who stepped aside), a supporter, the mocker
+  const supporter = members.find(n => n !== captain && sides[n] === captain && n !== mocker && n !== (conceded?.by)) || null;
+  const who = [captain, runnerUp || conceded?.by || supporter, ...(runnerUp || conceded ? [supporter] : []), mocker].filter(Boolean);
+  addScene(state, 'team-captain', [...new Set(who)], { team: team.name, outcome, captain, runnerUp, conceded: conceded?.by || null, supporter, mocker, joker,
+    votes: Object.fromEntries(candidates.map(c => [c, votes[c] || 0])), of: members.length, pitch: PITCH[archOf(captain)] || 'win', rivalPitch: runnerUp ? PITCH[archOf(runnerUp)] || 'win' : null },
+    members, 'airstrip');
+  return captain;
+}
+
 /** Make the season's teams after the arrivals. `background` carries past champions (ch-run.js). */
 export function makeSeasonTeams(state, rng, { background = {} } = {}) {
   const people = [...state.active];
@@ -134,6 +216,8 @@ export function makeSeasonTeams(state, rng, { background = {} } = {}) {
   // walking in as a team: teammates warm a little, and the old show's pride is in the room
   for (const t of state.teams) for (const a of t.members) for (const b of t.members) if (a < b) addBond(a, b, 0.4);
   addScene(state, 'teams-revealed', state.active, { teams: state.teams.map(t => ({ name: t.name, members: [...t.members], captain: t.captain })), how }, state.active, 'airstrip');
+  // ...then each team picks its captain, out loud (a draft's captains are the drafters)
+  if (how !== 'draft') for (const t of state.teams) electCaptain(state, rng, t);
   for (const t of state.teams) {
     const [cap, ...rest] = [t.captain, ...t.members.filter(n => n !== t.captain)];
     // the whole team walks over together (the user, 2026-10-17: "only showed 4 players in each team"); the captain and

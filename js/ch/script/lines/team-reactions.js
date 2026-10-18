@@ -225,8 +225,8 @@ export default {
         v: { sharp: "I don't know who's going in yet. I wasn't leaving {c} out there alone.", dry: "I don't know who's going in. I just know sitting alone on a step after that is the worst, and {c} didn't need it." } },
     ] },
     { id: 'tdl.a7', turns: [
-      { by: 'b', say: "I'm not going in tonight. I want that clear right now.",
-        v: { sharp: "Just so everybody knows, I'm not going in tonight.", loud: "I am not going in tonight! I want that clear right now!" } },
+      { by: 'b', say: "I'm not the one going in tomorrow. I want that clear right now.",
+        v: { sharp: "Just so everybody knows, I'm not the one going in tomorrow.", loud: "I am not going in tomorrow! I want that clear right now!" } },
       { by: 'a', say: "Nobody's said your name." },
       { by: 'b', say: "Good. Keep it that way." },
       { by: 'c', opt: 1, say: "Wow. Thanks for thinking of the team.",

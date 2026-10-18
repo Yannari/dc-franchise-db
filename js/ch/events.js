@@ -1057,6 +1057,9 @@ export const EVENTS = [
       if (ctx.state.lastDailyBlamed === ctx.state.ep) return null;
       // "cost us today": this week's daily, not last week's (it aired in episode 2 about episode 1's, before the new one)
       if (ctx.state.lastDailyEp !== ctx.state.ep) return null;
+      // ...and before the vote (the daily's day, or the next morning): on the Arena's day it blamed somebody who had just
+      // won in there (read 2026-10-18)
+      if (ctx.state.day - (ctx.state.lastDailyDay ?? -9) > 1) return null;
       const t = teamOfName(ctx.state, ctx.state.lastDailyLast[0]);
       if (!t) return null;
       const live = t.members.filter(n => ctx.state.active.includes(n));

@@ -371,7 +371,7 @@ export default {
       { by: 'tj', say: "Love the energy! Go!" },
       { beat: 'It looks even for about five seconds. Then {a} pulls away.' },
       { by: 'tj', say: "That's it! {a} wins it, and makes it look easy! {b}, head up, you'll be back one day." },
-      { by: 'a', conf: "Whoever voted me in tonight, I hope they were watching. That's what happens." },
+      { by: 'a', conf: "Whoever voted me in last night, I hope they were watching. That's what happens." },
     ] },
     { id: 'an.wx5', turns: [
       { by: 'tj', say: "Tonight's game is {game}. I've seen it end in thirty seconds, and I've seen it go for half an hour. Let's find out which!" },

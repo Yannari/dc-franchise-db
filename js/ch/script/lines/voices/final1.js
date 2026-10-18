@@ -114,7 +114,7 @@ export default {
   },
   // ── the Arena ──
   'an.wx4': {
-    6: { sharp: "Whoever voted me in tonight, I hope they were watching. That's what happens.", cruel: "Whoever voted me in tonight: that was a preview. You're next.", soft: "Whoever voted me in tonight... I hope they saw that. I'm still here.", loud: "Whoever voted me in, I hope you were watching! That's what happens!", dry: "Whoever voted me in tonight knows better now." },
+    6: { sharp: "Whoever voted me in last night, I hope they were watching. That's what happens.", cruel: "Whoever voted me in last night: that was a preview. You're next.", soft: "Whoever voted me in last night... I hope they saw that. I'm still here.", loud: "Whoever voted me in, I hope you were watching! That's what happens!", dry: "Whoever voted me in last night knows better now." },
   },
   'rt.c3': {
     7: { sharp: "{gone} picked me because {gone} thought I was the easy one. Now everybody knows better.", cruel: "{gone} thought I was easy. {gone} is on a plane. I'm in the villa.", soft: "{gone} picked me because {gone} thought I was the easy one. I'm so glad I proved {gone} wrong.", loud: "{gone} thought I was easy! Now everybody knows I'm not!", dry: "{gone} thought I'd be easy. {gone} found out I wasn't." },

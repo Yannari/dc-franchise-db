@@ -170,7 +170,7 @@ export default {
     ] },
     { id: 'tlw.p2', turns: [
       { by: 'a', say: "What happened out there?",
-        v: { sharp: "What happened out there?", dry: "So what happened out there?", loud: "What happened out there?", soft: "What happened out there today?", odd: "What happened out there? Seriously, I want to know." } },
+        v: { sharp: "What happened out there?", dry: "So what happened out there?", loud: "What happened out there?", soft: "What happened out there?", odd: "What happened out there? Seriously, I want to know." } },
       { by: 'b', say: "I don't know. I just froze.",
         v: { sharp: "I don't know. I froze.", dry: "I don't know. I froze.", loud: "I don't know, I just froze!", soft: "I don't know. I just froze.", odd: "I don't know. I just froze, and I couldn't get going again." } },
       { by: 'a', say: "You froze, and the rest of us had to stand there and watch the other team win.",
@@ -185,12 +185,12 @@ export default {
   ],
   'team-weak-link.defended': [
     { id: 'tlw.d1', turns: [
-      { by: 'a', say: "Let's be honest about who cost us today. It was {b}.",
-        v: { sharp: "Let's be honest. {b} cost us today.", dry: "Let's be honest. It was {b}.", loud: "Let's be honest about who cost us today! It was {b}!", soft: "Let's be honest about who cost us today. It was {b}.", odd: "Let's be honest about who cost us today. We all know it was {b}." } },
+      { by: 'a', say: "Let's be honest about who cost us that daily. It was {b}.",
+        v: { sharp: "Let's be honest. {b} cost us that daily.", dry: "Let's be honest. It was {b}.", loud: "Let's be honest about who cost us that daily! It was {b}!", soft: "Let's be honest about who cost us that daily. It was {b}.", odd: "Let's be honest about who cost us that daily. We all know it was {b}." } },
       { by: 'b', say: "Seriously?",
         v: { sharp: "Seriously?", dry: "Seriously?", loud: "Are you serious?", soft: "Really? You're doing this?", odd: "Seriously? In front of everybody?" } },
-      { by: 'c', say: "No. Stop. {b} was the one who got us back in it after the first half. Did you not see that part?",
-        v: { sharp: "No. {b} got us back in it after the first half. Did you miss that?", dry: "No. {b} got us back in it after the first half. You didn't see that?", loud: "No, stop! {b} was the one who got us back in it after the first half! Did you not see that part?", soft: "No, stop. {b} was the one who got us back in it after the first half. Did you not see that?", odd: "No. Stop. {b} was the one who got us back in it after the first half. I watched the whole thing." } },
+      { by: 'c', say: "No. Stop. {b} was out there as long as any of us. Did you not see that part?",
+        v: { sharp: "No. {b} was out there as long as any of us. Did you miss that?", dry: "No. {b} lasted as long as any of us. You didn't see that?", loud: "No, stop! {b} was out there as long as any of us! Did you not see that part?", soft: "No, stop. {b} was out there as long as any of us. Did you not see that?", odd: "No. Stop. {b} was out there as long as any of us. I watched the whole thing." } },
       { by: 'a', say: "And then fell apart at the end.",
         v: { sharp: "And then fell apart at the end.", dry: "And then fell apart at the end.", loud: "And then fell apart at the end!", soft: "And then fell apart at the end, though.", odd: "And then fell apart at the end, which is the part that matters." } },
       { by: 'c', say: "We all fell apart at the end. If you want somebody to blame, go look in the mirror.",
@@ -202,8 +202,8 @@ export default {
         v: { sharp: "{c} wants to protect {b}. Fine. {c} can explain it at the vote when we lose again.", dry: "{c} wants to protect {b}. Fine. {c} can explain that at the vote when we lose again.", loud: "{c} wants to protect {b}? Fine! Then {c} can explain it at the vote when we lose again!", soft: "{c} wants to protect {b}. Okay. Then {c} can explain it at the vote if we lose again.", odd: "{c} wants to protect {b}. Fine. We'll see if {c} still feels that way after the next loss." } },
     ] },
     { id: 'tlw.d2', turns: [
-      { by: 'a', say: "Somebody has to take the blame for today, and I'm looking right at them.",
-        v: { sharp: "Somebody takes the blame for today, and I'm looking right at them.", dry: "Somebody has to take the blame for today. I'm looking right at them.", loud: "Somebody has to take the blame for today, and I'm looking right at them!", soft: "Someone has to take the blame for today, and I'm looking right at them.", odd: "Somebody has to take the blame for today, and I think we all know who I mean." } },
+      { by: 'a', say: "Somebody has to take the blame for that daily, and I'm looking right at them.",
+        v: { sharp: "Somebody takes the blame for that daily, and I'm looking right at them.", dry: "Somebody has to take the blame for that daily. I'm looking right at them.", loud: "Somebody has to take the blame for that daily, and I'm looking right at them!", soft: "Someone has to take the blame for that daily, and I'm looking right at them.", odd: "Somebody has to take the blame for that daily, and I think we all know who I mean." } },
       { by: 'c', say: "Don't. You were behind {b} for half of it, and nobody said a word to you.",
         v: { sharp: "Don't. You were behind {b} for half of it, and nobody said a word.", dry: "Don't. You were behind {b} for half of it. Nobody said anything to you.", loud: "Don't! You were behind {b} for half of it, and nobody said a word to you!", soft: "Please don't. You were behind {b} for half of it, and nobody said anything to you.", odd: "Don't. You were behind {b} for half of it, and nobody made a big deal about that." } },
       { by: 'a', say: "That's different.",

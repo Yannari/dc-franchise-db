@@ -57,7 +57,7 @@ export default {
   // ── staying with the team that voted you in ──
   'team-stay.statement': [
     { id: 'tsy.s1', turns: [
-      { by: 'tj', say: "{a}, {count} of your own team said your name tonight, and you just won. You can go back to {from}, or you can switch to {to}. Your call." },
+      { by: 'tj', say: "{a}, {count} of your own team said your name last night, and you just won. You can go back to {from}, or you can switch to {to}. Your call." },
       { by: 'a', say: "I'm staying with {from}.",
         v: { sharp: "I'm staying with {from}.", dry: "I'll stay with {from}.", loud: "I'm staying with {from}!", soft: "I'm going to stay with {from}.", odd: "I'm staying with {from}. I know, I'm surprised too." } },
       { beat: 'Nobody on {from} knows where to look.' },

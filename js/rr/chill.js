@@ -141,7 +141,7 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     else if (r === 'first-class') (state.firstClass ||= {})[first] = n + 1;
     // the call home is usually joy; now and then the news from home is bad (the scene's weights decide)
     if (r === 'call-home') act(state, 'call-home', first, null, rng, null, { t: finish[first] });
-    else if (r) act(state, 'reward', first, null, rng, 'prize-joy', { reward: r, t: finish[first] });
+    else if (r) act(state, 'reward', first, null, rng, null, { reward: r, t: finish[first] });
   }
 
   for (const id of racing) state.rec[id].penalties += state.pending[id] || 0;

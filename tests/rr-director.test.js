@@ -88,6 +88,14 @@ describe('rr director', () => {
     for (const s of sys) expect(s.data.snap, s.kind).toBeTruthy();
   });
 
+  it('an episode airs at most two of the same optional kind', () => {
+    for (const ep of aired) {
+      const n = {};
+      for (const s of ep.segments.filter(x => x.tier >= 2)) n[s.kind] = (n[s.kind] || 0) + 1;
+      for (const [k, v] of Object.entries(n)) expect(v, `leg ${ep.n} ${k}`).toBeLessThanOrEqual(2);
+    }
+  });
+
   it('an interview airs only after the moment it is about', () => {
     for (const ep of aired) {
       const seen = new Set();

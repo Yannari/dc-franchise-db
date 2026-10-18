@@ -8,6 +8,8 @@ import { mayScheme, REL } from '../js/rr/state.js';
 import { setPlayers, players } from '../js/core.js';
 import { streamFor } from '../js/dr/rng.js';
 import { raceCast } from './helpers/rr-cast.js';
+import { airSeason } from '../js/rr/episode.js';
+import { POOLS } from '../js/rr/script/lines/index.js';
 
 const N = Number(process.env.RR_SEASONS || 100);
 const TEAMS = Number(process.env.RR_TEAMS || 12);
@@ -26,6 +28,7 @@ it(`audits ${N} seasons of ${TEAMS} teams`, () => {
     quits: 0, medevacs: 0, returns: 0, onLocation: 0, nonElim: {}, nonElimOut: {}, alliances: 0, allianceLife: [],
     snaps: {}, relLegs: {}, switches: 0, botchViolations: 0, moments: 0, kinds: {}, partner: 0, between: 0, group: 0,
     chains: 0, worstPair: 0, opened: {}, advanced: {}, closed: {}, interruptedBeforePayoff: [], noEffects: 0, winners: 0,
+    epScenes: [], epLines: [], unwritten: {}, segs: 0, maxUse: { id: null, n: 0 }, saidTwice: 0,
   };
   const chance = streamFor(99, 'audit-chance');
 
@@ -37,6 +40,22 @@ it(`audits ${N} seasons of ${TEAMS} teams`, () => {
     const st = res.state;
     const arch = n => players.find(p => p.name === n)?.archetype;
     if (res.winner) M.winners++;
+
+    // the dialogue: what aired, how long, what had no words, what wore out
+    const eps = airSeason(res);
+    for (const ep of eps) {
+      M.epScenes.push(ep.segments.length);
+      M.epLines.push(ep.segments.reduce((n, sg) => n + (sg.lines?.length || 0), 0));
+      for (const sg of ep.segments) if (!sg.lines) inc(M.unwritten, sg.kind + (sg.ending ? '.' + sg.ending : ''));
+      M.segs += ep.segments.length;
+    }
+    const uses = st.lineLedger?.uses || {};
+    for (const [id, n] of Object.entries(uses)) if (n > M.maxUse.n) M.maxUse = { id, n, season: s };
+    // the same exchange said twice by the same person in a season
+    for (const [id, by] of Object.entries(st.lineLedger?.by || {})) {
+      const seen = new Set();
+      for (const n of by) { if (seen.has(n)) M.saidTwice++; seen.add(n); }
+    }
 
     // leg wins: the top team, beside a uniformly random winner each leg among the teams racing it
     const wins = st.order.map(id => st.rec[id].legWins);
@@ -162,6 +181,12 @@ it(`audits ${N} seasons of ${TEAMS} teams`, () => {
   line('worst count for one cross-team pair in one leg (cap 3)', M.worstPair);
   for (const t of Object.keys({ ...M.opened, ...M.closed })) line(`thread ${t}: opened / advanced / closed per season`, `${f1((M.opened[t] || 0) / N)} / ${f1((M.advanced[t] || 0) / N)} / ${f1((M.closed[t] || 0) / N)}`);
   line('interrupted confession attempts before a confession', f1(avg(M.interruptedBeforePayoff)));
+  line('aired scenes per episode / lines per episode', `${f1(avg(M.epScenes))} / ${f1(avg(M.epLines))}`);
+  line('aired scenes with no words yet', pct(Object.values(M.unwritten).reduce((a, b) => a + b, 0), M.segs));
+  L.push(`   no words for: ${Object.entries(M.unwritten).sort((a, b) => b[1] - a[1]).slice(0, 25).map(([k, v]) => `${k}:${v}`).join(' ')}`);
+  line('the most-aired entry in one season', `${M.maxUse.id} x${M.maxUse.n}`);
+  line('one person saying the same exchange twice in a season', M.saidTwice);
+  line('pools / entries written', `${Object.keys(POOLS).length} / ${Object.values(POOLS).reduce((a, l) => a + l.length, 0)}`);
   const never = Object.keys(SCENES).filter(k => !M.kinds[k]);
   L.push(`kinds that never fired (${never.length}): ${never.join(', ')}`);
   const rare = Object.entries(M.kinds).filter(([k]) => SCENES[k]).sort((a, b) => a[1] - b[1]).slice(0, 15);

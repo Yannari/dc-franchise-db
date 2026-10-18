@@ -133,13 +133,17 @@ export function airLeg(state, leg) {
 
   // 2 and 3: against the budget
   let budget = legBudget(leg.order.length);
+  // an episode airs at most two of the same optional kind (the third small talk is the one a viewer notices)
+  const PER_KIND = 2;
+  const optional = {};
   for (const tier of [2, 3]) {
     const cands = scenes.filter(s => !picked.has(s.id) && tierOf(s) === tier && !s.kind.startsWith('int-'))
       .sort((x, y) => weight(y) - weight(x) || x.id - y.id);
     for (const s of cands) {
       if (budget <= 0) break;
-      if (!ok(s)) continue;
+      if (!ok(s) || (optional[s.kind] || 0) >= PER_KIND) continue;
       take(s, tier);
+      optional[s.kind] = (optional[s.kind] || 0) + 1;
       budget--;
     }
   }
@@ -147,12 +151,14 @@ export function airLeg(state, leg) {
   for (const [id] of [...picked]) {
     const s = byId.get(id);
     const c = s?.data?.cause != null && !s.kind.startsWith('int-') ? byId.get(s.data.cause) : null;
-    if (c && !picked.has(c.id)) take(c, 2);
+    // the cause comes with its chain; if its kind is already aired twice, the chain carries a recap beat instead (writer)
+    if (c && !picked.has(c.id) && (optional[c.kind] || 0) < PER_KIND) { take(c, 2); optional[c.kind] = (optional[c.kind] || 0) + 1; }
   }
   // interviews about what aired, while the budget lasts
   for (const s of scenes.filter(s => s.kind.startsWith('int-') && !picked.has(s.id))) {
     if (budget <= 0) break;
-    if (s.data?.about != null && picked.has(s.data.about) && s.kind !== 'int-exit' && s.kind !== 'int-bleachers') { take(s, 2); budget--; }
+    if (s.data?.about != null && picked.has(s.data.about) && s.kind !== 'int-exit' && s.kind !== 'int-bleachers'
+      && (optional[s.kind] || 0) < PER_KIND) { take(s, 2); optional[s.kind] = (optional[s.kind] || 0) + 1; budget--; }
   }
   // an interview whose moment didn't air doesn't either (int-exit is about the exit, which always airs)
   for (const [id] of [...picked]) {

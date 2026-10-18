@@ -178,6 +178,24 @@ describe('a Teams season', () => {
     expect(switches).toBeGreaterThan(0);
   });
 
+  // the user's premiere read, 2026-10-18: the winning team's alliance met about a name it could not vote for, and a
+  // player on Blue was overheard planning to vote in somebody on Green
+  it('on a team week only the team that votes plans the vote, and nobody plans on the other team', () => {
+    let meetings = 0;
+    for (const s of seasons) for (const e of s.episodes) {
+      const tv = (e.votes || []).find(v => v.team);
+      if (!tv) continue;
+      const voters = new Set(tv.ballots.map(b => b.voter));
+      for (const sc of s.state.scenes.filter(x => x.ep === e.ep && (x.kind === 'meeting' || x.kind === 'recruit'))) {
+        meetings++;
+        for (const n of sc.who) expect(voters.has(n), `ep${e.ep} ${sc.kind}: ${n} does not vote this week`).toBe(true);
+      }
+    }
+    expect(meetings).toBeGreaterThan(20);
+    for (const s of seasons) for (const sc of s.state.scenes.filter(x => x.kind === 'overheard' && x.snap?.teams))
+      expect(sc.snap.teams[sc.who[0]], `ep${sc.ep}: overheard across the teams`).toBe(sc.snap.teams[sc.who[1]]);
+  });
+
   it('a solo season has no teams', () => {
     const { cast, names, background } = challengeCast(24, 3);
     setPlayers(cast);

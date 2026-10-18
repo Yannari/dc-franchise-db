@@ -56,6 +56,11 @@ const LEAD = { villain: ['cruel', 'schemer'], mastermind: ['schemer', 'calm'], s
 // line is said the way a person says it: no word in capitals (TJ is a name), one "!" at most, and a sharp variant
 // that is only fragments is passed over for the line as written.
 const KEEP_CAPS = new Set(['TJ', 'OK', 'MVP', 'DJ']);
+// The first episode is the first day: a line that says time has passed ("You haven't sat next to me all week",
+// "Taylor has been planning this for days", "I've been watching the votes") is never said in it (read 2026-10-18, a
+// premiere). "Last time" stays: a returnee's last season.
+export const FIRST_WEEK = /\b(all week|for days|for weeks|(two|three|four|a few|several) weeks|all season|every week|last week|since day one|the last vote|watching the votes|been voting with|in every daily|the dailies so far|every (night|meal|morning)|floating between groups|haven't sat next to me)\b/i;
+
 export function humanize(text) {
   if (!text) return text;
   let t = text.replace(/\b[A-Z][A-Z']+\b/g, w => (KEEP_CAPS.has(w) ? w : w.toLowerCase()));
@@ -77,7 +82,7 @@ function byArchetype(tags, name) {
   const lead = (LEAD[players.find(p => p.name === name)?.archetype] || []).filter(t => tags.includes(t));
   return lead.length ? [...lead, ...tags.filter(t => !lead.includes(t))] : tags;
 }
-export function voicedLine(turn, speaker, { hush = false, rng = Math.random, ledger = null, day = 0, skip = null } = {}) {
+export function voicedLine(turn, speaker, { hush = false, rng = Math.random, ledger = null, day = 0, skip = null, first = false } = {}) {
   const base = turn.say || turn.conf;
   const v = turn.v;
   if (!v || !speaker) return { text: base, tag: null };
@@ -88,7 +93,7 @@ export function voicedLine(turn, speaker, { hush = false, rng = Math.random, led
     for (const key of [...new Set([t, FAMILY[t]].filter(Boolean))]) {
       if (hush && key === 'loud') continue;
       if (skip && (skip.has(key) || skip.has(FAMILY[key]))) continue;
-      const got = [v[key]].flat().filter(Boolean).filter(x => !((key === 'sharp' || FAMILY[key] === 'sharp') && choppy(x) && !choppy(base)));
+      const got = [v[key]].flat().filter(Boolean).filter(x => !((key === 'sharp' || FAMILY[key] === 'sharp') && choppy(x) && !choppy(base)) && !(first && FIRST_WEEK.test(x)));
       if (!got.length) continue;
       const start = Math.floor(rng() * got.length);
       const order = got.map((_, i) => got[(start + i) % got.length]);
@@ -166,6 +171,10 @@ export function writeScene(state, scene) {
     const ok = pools[k].filter(e => !e.turns.some(t => DAYTIME.test(String(t.beat || t.say || t.conf || ''))));
     if (ok.length) pools[k] = ok;
   }
+  if (scene.ep === 1) for (const k of Object.keys(pools)) {
+    const ok = pools[k].filter(e => !e.turns.some(t => FIRST_WEEK.test(String(t.say || t.conf || t.beat || ''))));
+    if (ok.length) pools[k] = ok;
+  }
   const facts = factsFor(scene, r, state);
   state.lineLedger ||= newLedger();
   const speakers = Object.values(r.roles);
@@ -190,7 +199,7 @@ export function writeScene(state, scene) {
     const kind = t.conf ? 'conf' : t.beat ? 'beat' : 'say';
     const by = t.by === 'tj' ? HOST : t.by ? r.roles[t.by] : null;
     // TJ is the host, not a cast member: his voice is written into his lines.
-    const said = kind === 'beat' || t.by === 'tj' ? { text: t.beat || t.say, tag: null } : voicedOnce(state, t, by, { hush, rng, ledger: state.lineLedger, day: scene.day, skip: skipFor(by) });
+    const said = kind === 'beat' || t.by === 'tj' ? { text: t.beat || t.say, tag: null } : voicedOnce(state, t, by, { hush, rng, ledger: state.lineLedger, day: scene.day, skip: skipFor(by), first: scene.ep === 1 });
     const fam = said.tag && (CAPPED.includes(said.tag) ? said.tag : FAMILY[said.tag]);
     if (CAPPED.includes(fam)) ((capped[by] ||= {})[fam] = (capped[by][fam] || 0) + 1);
     // a scene picked because of how its speaker talks (when: register for a, registerB for b) is already in that

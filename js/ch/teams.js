@@ -217,9 +217,12 @@ function electCaptain(state, rng, team) {
 /** Make the season's teams after the arrivals. `background` carries past champions (ch-run.js). */
 export function makeSeasonTeams(state, rng, { background = {} } = {}) {
   const people = [...state.active];
-  const how = teamingOf(state);
+  let how = teamingOf(state);
   const made = how === 'champions' ? byChampions(state, people, background) : how === 'vets' ? byVets(state, people)
     : how === 'draft' ? byDraft(state, people, rng) : how === 'custom' ? byCustom(state, people, state.options.teams?.custom) : byShows(state, people);
+  // custom teams with nobody on them fall back to a draft (byCustom): then it is a draft, announced as one, with the
+  // drafters as captains (it was announced as "we've made the teams" and the drafters stood for a captain vote too)
+  if (how === 'custom' && made.every(t => t.how === 'draft')) how = 'draft';
   state.teams = made.map((t, i) => ({ id: `t${i + 1}`, name: t.name, members: [...t.members], captain: t.captain || captainOf(state, t.members), how: t.how || how, show: t.show || null }));
   state.teamNames = Object.fromEntries(state.teams.map(t => [t.id, t.name]));   // a folded team keeps its name on the record
   state.teamOf = {};
@@ -285,7 +288,7 @@ export function teamVoteNight(state, { R, epRec, division, daily, immune, elims 
     if (team) {
       const eligible = ownVote ? ownOf(team) : eligibleOf(team);
       const voters = live(state, team);
-      if (!delib) { state.promises = {}; delib = deliberate(state, R('delib'), { division, eligible, immune, noVolunteer: true }); epRec.delib = { targets: delib.targets, meetings: delib.meetings, pitches: delib.pitches, campaigns: delib.campaigns, threats: delib.threats, volunteer: null, intents: delib.intents, hunted: delib.hunted }; }
+      if (!delib) { state.promises = {}; delib = deliberate(state, R('delib'), { division, eligible, immune, noVolunteer: true, voters }); epRec.delib = { targets: delib.targets, meetings: delib.meetings, pitches: delib.pitches, campaigns: delib.campaigns, threats: delib.threats, volunteer: null, intents: delib.intents, hunted: delib.hunted }; }
       // the captain rallies the team before it turns on itself
       if (k === 0) teamHuddle(state, team, eligible);
       if (eligible.length === 1) {

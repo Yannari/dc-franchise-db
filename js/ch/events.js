@@ -543,7 +543,9 @@ export const EVENTS = [
     cast: ctx => {
       // Somebody overhears a plan aimed at them.
       for (const t of ctx.state.active) {
-        const hunter = ctx.state.active.find(h => h !== t && planOf(ctx.state, h)?.targets?.[0] === t);
+        // (while the teams stand, a plan on somebody from the other team is a plan nobody can vote for)
+        const sameSide = h => !ctx.state.teams?.length || ctx.state.teamsBroken || ctx.state.teamOf?.[h] === ctx.state.teamOf?.[t];
+        const hunter = ctx.state.active.find(h => h !== t && sameSide(h) && planOf(ctx.state, h)?.targets?.[0] === t);
         if (hunter && cooled(ctx, 'overheard', [t, hunter], 4) && hash(ctx.state.seed, ctx.state.day, 'ov', t) < S(t, 'intuition') * 0.05) return { who: [t, hunter], score: 1.2 };
       }
       return null;

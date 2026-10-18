@@ -135,6 +135,11 @@ const REASON_TEXT = {
   final: 'nobody wants to run a final against them',
 };
 
+const canReach = (state, name) => {
+  const mine = state.teams?.length && !state.teamsBroken ? state.teamOf?.[name] : null;
+  return n => !mine || state.teamOf?.[n] === mine;
+};
+
 export function formPlan(state, name) {
   const pool = state.active.filter(n => n !== name);
   const skill = planSkill(name);
@@ -146,7 +151,10 @@ export function formPlan(state, name) {
   if (shield) { plan.shield = shield.name; plan.origins[shield.name] = shield.why; }
   plan.finalWith = readFinalWith(state, name, pool);
   plan.revenge = pool.filter(n => grudgeOf(name, n) >= 2.5);
-  const scored = pool.map(n => ({ n, ...targetScore(state, name, n, plan) })).sort((a, b) => b.total - a.total);
+  // while the teams stand, a vote is inside your own team: you can only ever say a teammate's name (a Blue player was
+  // overheard planning to vote in somebody on Green, read 2026-10-18)
+  const reach = canReach(state, name);
+  const scored = pool.filter(reach).map(n => ({ n, ...targetScore(state, name, n, plan) })).sort((a, b) => b.total - a.total);
   plan.targets = scored.slice(0, skill >= 7 ? 2 : 1).filter(x => x.total > 0.5).map(x => x.n);
   for (const t of plan.targets) plan.origins[t] = REASON_TEXT[scored.find(x => x.n === t).why] || REASON_TEXT.threat;
   plan.betrayal = skill < 6 ? [] : core.filter(n => respectOf(name, n) >= 1.5 && trustOf(name, n) < 4)
@@ -166,7 +174,7 @@ export function revisePlan(state, name) {
   const next = formPlan(state, name);
   // Targets are sticky: a target survives a revision unless the reason has
   // gone (they left, became core, or fell far down the list).
-  const keep = old.targets.filter(t => state.active.includes(t) && !next.core.includes(t)
+  const keep = old.targets.filter(t => state.active.includes(t) && !next.core.includes(t) && canReach(state, name)(t)
     && targetScore(state, name, t, next).total > 0.2);
   const targets = [...new Set([...keep, ...next.targets])].slice(0, Math.max(1, next.targets.length));
   for (const t of targets) if (!old.targets.includes(t)) log(next, state, 'target', null, t, next.origins[t] || 'moved up the list');

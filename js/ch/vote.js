@@ -58,8 +58,10 @@ function predictor(state, eligible) {
   return x => (x in memo ? memo[x] : (memo[x] = expectedCallout(state, x, eligible.filter(y => y !== x))));
 }
 
-function meet(state, rng, al, eligible, ctx) {
-  const present = al.members.filter(m => state.active.includes(m));
+function meet(state, rng, al, eligible, ctx, isVoter = () => true) {
+  // only the people who vote this week meet about it (a Teams week: the losing team; the winners' alliance held a meeting
+  // about a name it could not vote for, read 2026-10-18)
+  const present = al.members.filter(m => state.active.includes(m) && isVoter(m));
   // a Pairs season: nobody puts their own partner up (it is putting themselves in)
   const outside = eligible.filter(n => !al.members.includes(n) && !present.some(m => partnerOf(state, m) === n));
   if (!outside.length || present.length < 2) return null;
@@ -104,15 +106,15 @@ function meet(state, rng, al, eligible, ctx) {
 }
 
 // ── 2. recruiting ────────────────────────────────────────────────────
-function recruit(state, rng, meeting, al, eligible, committed, ctx) {
+function recruit(state, rng, meeting, al, eligible, committed, ctx, isVoter = () => true) {
   const out = [];
   const votes = Object.values(meeting.responses).filter(r => r !== 'refuses').length;
-  const need = Math.floor(state.active.length / 2) + 1 - votes;
+  const need = Math.floor(state.active.filter(isVoter).length / 2) + 1 - votes;
   if (need <= 0) return out;
-  const free = state.active.filter(n => !allianceOf(state, n) && !committed[n] && n !== meeting.target && partnerOf(state, n) !== meeting.target);
+  const free = state.active.filter(n => isVoter(n) && !allianceOf(state, n) && !committed[n] && n !== meeting.target && partnerOf(state, n) !== meeting.target);
   const ranked = free.map(n => {
-    // Approached by whoever in the group they trust most.
-    const by = al.members.filter(m => state.active.includes(m)).sort((a, b) => trustOf(n, b) - trustOf(n, a))[0];
+    // Approached by whoever in the group they trust most (and who votes this week).
+    const by = al.members.filter(m => state.active.includes(m) && isVoter(m)).sort((a, b) => trustOf(n, b) - trustOf(n, a))[0];
     return { n, by, pull: believePitch(n, by) + cooperateWith(n, al.leader) * 0.5 };
   // A couple of targeted asks, not a canvass of the whole house: the swing
   // votes this group can actually reach.
@@ -158,7 +160,7 @@ function altFor(state, n, eligible, soft, ctx) {
   return rows.sort((a, b) => b.s - a.s)[0]?.x || null;
 }
 
-function campaign(state, rng, { eligible, immune, meetings, committed, ctx }) {
+function campaign(state, rng, { eligible, immune, meetings, committed, ctx, isVoter = () => true }) {
   const out = [];
   // Expected votes against each eligible from what the room has committed.
   const against = {};
@@ -181,7 +183,7 @@ function campaign(state, rng, { eligible, immune, meetings, committed, ctx }) {
       if (state.ep - lastThreat > 1 && !done.has('threat') && pool.length)
         opts.push({ kind: 'threat', w: (0.08 + bold * 0.4) * (0.6 + arenaRead(state, n) / 15) * (wordOf(state, n) < 0 ? 0.5 : 1) });
       // c) the counter-pitch: a name instead of theirs, to the votes that are not locked in
-      const soft = state.active.filter(v => v !== n && (!committed[v]?.target || (committed[v].target === n && committed[v].response === 'reluctant')));
+      const soft = state.active.filter(v => v !== n && isVoter(v) && (!committed[v]?.target || (committed[v].target === n && committed[v].response === 'reluctant')));
       if (!done.has('counter') && soft.length) opts.push({ kind: 'counter', w: 0.04 + strat * 0.3, soft });
       // d) the quiet offer: to a voter on them who they could call out
       const spareTo = Object.keys(committed).filter(v => committed[v].target === n && pool.includes(v) && !dealBetween(state, n, v))
@@ -369,12 +371,15 @@ function whyName(state, by, n, eligible) {
   return { said, real: grudge ? 'grudge' : said };
 }
 
-export function deliberate(state, rng, { division, eligible, immune, noVolunteer = false }) {
+export function deliberate(state, rng, { division, eligible, immune, noVolunteer = false, voters = null }) {
   const meetings = [];
   const committed = {};
   const ctx = { predict: predictor(state, eligible) };
+  // `voters`: who votes this week (a Teams week: the losing team); everybody, when it is the house
+  const voteSet = voters ? new Set(voters) : null;
+  const isVoter = n => !voteSet || voteSet.has(n);
   for (const al of activeAlliances(state)) {
-    const m = meet(state, rng, al, eligible, ctx);
+    const m = meet(state, rng, al, eligible, ctx, isVoter);
     if (!m) continue;
     meetings.push(m);
     for (const [v, r] of Object.entries(m.responses)) {
@@ -385,19 +390,19 @@ export function deliberate(state, rng, { division, eligible, immune, noVolunteer
   const pitches = [];
   for (const m of meetings) {
     const al = state.alliances.find(a => a.id === m.alliance);
-    for (const p of recruit(state, rng, m, al, eligible, committed, ctx)) {
+    for (const p of recruit(state, rng, m, al, eligible, committed, ctx, isVoter)) {
       pitches.push(p);
       if (p.answer === 'accepted' || p.answer === 'false-yes') committed[p.to] = { target: p.target, via: `recruited:${al.id}`, response: p.answer === 'false-yes' ? 'false-yes' : 'yes' };
     }
   }
-  const campaigns = campaign(state, rng, { eligible, immune, meetings, committed, ctx });
+  const campaigns = campaign(state, rng, { eligible, immune, meetings, committed, ctx, isVoter });
   // a Teams season's team vote has no volunteers (teams.js): the team decides
   const vol = noVolunteer ? null : volunteer(state, rng, eligible);
   // Everybody's position: their commitment, or their own read.
   const intents = {};
   const delib = { ctx, meetings, pitches, campaigns, committed, volunteer: vol, intents,
     threats: campaigns.filter(c => c.kind === 'threat'), targets: Object.fromEntries(meetings.map(m => [m.alliance, m.target])) };
-  for (const v of state.active) intents[v] = committed[v]?.target ?? topChoice(state, rng, v, eligible, delib, null).target;
+  for (const v of state.active.filter(isVoter)) intents[v] = committed[v]?.target ?? topChoice(state, rng, v, eligible, delib, null).target;
   // The hunted learn they are hunted (from what has spread).
   delib.hunted = Object.fromEntries(eligible.map(n => [n, believedHunters(state, n)]));
   return delib;

@@ -268,7 +268,7 @@ export function airEpisode(state, epRec, prevRec = null) {
       if (s.kind === 'arena-goodbye') for (const arc of heldArcs[s.data?.loser] || []) pushArc(arc);
     }
   }
-  epRec.aired = arenaNightTogether(eveningAfterTheDaily(keepWithTheDaily(morningFirst(aired))));
+  epRec.aired = villaAfterTheDaily(arenaNightTogether(eveningAfterTheDaily(keepWithTheDaily(morningFirst(aired)))));
   return epRec.aired;
 }
 
@@ -314,6 +314,9 @@ const MOVABLE = a => a.kind !== 'ceremony' && !ANCHOR.has(a.kind) && !MUST_ORDER
 const MUST_ORDER = new Set(['daily', 'callout', 'arena', 'arena-goodbye', 'return', 'morning-after', 'purge', 'named-fallout', 'mock', 'gloat',
   'pair-callout', 'pair-arena', 'pair-arena-blame', 'pair-arena-win', 'share-keep-rules', 'share-keep', 'pairs-revealed', 'pair-reveal',
   'team-switch', 'teams-revealed', 'team-captain', 'team-reveal',
+  // a team's night after its daily, in the order it happened: a vote talk whose line said "good morning" was moved
+  // ahead of the teams being named (read 2026-10-18, seed 20's premiere)
+  'team-daily-win', 'team-daily-loss', 'team-vote-talk', 'team-huddle', 'team-bloc', 'team-after-vote',
   // the final is told in the order it ran: TJ's "you stay out here until morning" opened the final before its start line
   'final-start', 'final-cp', 'instant-elimination', 'final-lastword', 'overnight', 'overnight-sabotage', 'overnight-talk', 'overnight-quit',
   'final-pact-help', 'final-pact-broken', 'final-podium', 'final-congrats', 'champions', 'champion-reflect']);
@@ -378,6 +381,21 @@ function eveningAfterTheDaily(aired) {
     const party = out.findIndex((a, i) => i >= k && a.day === day && (a.scene?.spot === 'party' || a.kind.startsWith('party')));
     out.splice(party >= 0 ? party : k, 0, ...early);
   }
+  return out;
+}
+
+// The premiere's villa reveal comes when they walk in, straight after the daily and what happened at it: it was added
+// once the daily had been played, so it aired after both teams had been back at the villa for a whole evening
+// (read 2026-10-18: the losers sat on the villa steps before anybody had seen the villa)
+function villaAfterTheDaily(aired) {
+  const out = [...aired];
+  const v = out.findIndex(a => a.kind === 'villa-reveal');
+  const d = out.findIndex(a => a.kind === 'daily');
+  if (v < 0 || d < 0 || v < d || out[v].day !== out[d].day) return out;
+  const [reveal] = out.splice(v, 1);
+  let k = d + 1;
+  while (k < out.length && out[k].day === reveal.day && AT_THE_DAILY.has(out[k].kind)) k++;
+  out.splice(k, 0, reveal);
   return out;
 }
 

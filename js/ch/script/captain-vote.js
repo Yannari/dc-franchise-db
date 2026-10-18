@@ -12,6 +12,7 @@ import { writeScene, transcript } from './write.js';
 
 const PITCHES = 'PITCHES', VOTE = 'VOTE';
 const NUM = ['', 'One', 'Two', 'Three', 'Four'];
+const NUM_WORDS = ['none', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 const list = ns => ns.length < 2 ? ns.join('') : `${ns.slice(0, -1).join(', ')} and ${ns[ns.length - 1]}`;
 const beat = text => ({ kind: 'beat', by: null, text, voice: null });
 
@@ -33,7 +34,9 @@ function part(state, scene, kind, who, data, used) {
 export function writeCaptainVote(state, scene, script) {
   const d = scene?.data;
   if (!script || !d) return script;
-  const used = new Set();
+  // across both teams' votes: two captains running on the same pitch read as one speech (read 2026-10-18)
+  // (kept as a list on the state: the season is saved between episodes, and a Set does not survive it)
+  const used = new Set(Array.isArray(state.captainLinesUsed) ? state.captainLinesUsed : []);
   const lines = [...script.lines];
   const at = text => lines.findIndex(l => l.kind === 'beat' && l.text === text);
   // the pitches: every candidate when there was a race (the frontrunner first, the way they stepped forward)
@@ -66,6 +69,12 @@ export function writeCaptainVote(state, scene, script) {
     : `${list(quiet.map(b => `${b.voter} says ${b.pick}`))}.`));
   const count = Object.entries(d.votes || {}).sort((x, y) => y[1] - x[1]);
   const tally = count.length > 1 ? [beat(`The count: ${count.map(([n, v]) => `${n} ${v}`).join(', ')}.`)] : [];
+  // a level count that isn't played as a tie (a clash or a fight won it): say how it was settled (the engine breaks it
+  // on respect: teams.js electCaptain). "The count: Isabel 6, Cheryl Hole 6", then "Isabel does not clap", read 2026-10-18
+  if (count.length > 1 && count[0][1] === count[1][1] && d.outcome !== 'tie' && d.captain) {
+    const n = NUM_WORDS[count[0][1]] || String(count[0][1]);
+    tally.push(beat(`It's level, ${n} each. Nobody wants another round, and the room leans to ${d.captain}.`));
+  }
   const v = at(VOTE);
   if (v >= 0) lines.splice(v, 1, ...ballots, ...tally);
   else if (all.length) {
@@ -73,6 +82,7 @@ export function writeCaptainVote(state, scene, script) {
     lines.splice(firstConf < 0 ? lines.length : firstConf, 0, ...ballots, ...tally);
   }
   // a marker that found nothing to hold is never printed
+  state.captainLinesUsed = [...used];
   const out = lines.filter(l => !(l.kind === 'beat' && (l.text === PITCHES || l.text === VOTE)));
   return { ...script, lines: out, text: transcript(out) };
 }

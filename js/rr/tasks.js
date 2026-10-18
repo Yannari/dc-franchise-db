@@ -12,6 +12,7 @@ import { addScene, S, mayScheme, partner } from './state.js';
 import { teamLevel, spreadOf } from './skill.js';
 import { PENALTIES } from './format.js';
 import { gs } from '../core.js';
+import { snapOf } from './scenes.js';
 
 export const attemptChance = (level, pass) => Math.min(0.95, Math.max(0.05, pass + 0.08 * (level - 5)));
 
@@ -46,6 +47,7 @@ export function runTask(state, team, task, t, api, rng, who = 'both', { stretchI
   const base = task.base * chainScale(state, id, task);
   let dur = 0, attempts = startAttempts, quit = false, failedNoted = false;
   const row = record(state, id, stretchId, { side: task.side || null });
+  if (!startAttempts) row.fails = 0;
   for (;;) {
     attempts++;
     dur += base * (1 + spread * 0.3 * (rng() - 0.5)) / (level / 5);
@@ -180,7 +182,7 @@ export function runAllIn(state, team, stretch, t, api, rng) {
   return runTask(state, team, stretch, t, api, rng, 'both');
 }
 
-export function resolveTask(state, team, stretch, t, api, rng) {
+function runAny(state, team, stretch, t, api, rng) {
   switch (stretch.kind) {
     case 'either': return runEither(state, team, stretch, t, api, rng);
     case 'botch': return runBotch(state, team, stretch, t, api, rng);
@@ -188,4 +190,16 @@ export function resolveTask(state, team, stretch, t, api, rng) {
     case 'route': return runTask(state, team, stretch, t, api, rng, 'both');
     default: return { end: t };
   }
+}
+
+// Every run at a task, kept per leg for the episode (the director shows every team at every task from it).
+export function resolveTask(state, team, stretch, t, api, rng) {
+  // what the episode may say about this run, as things stood when the team got there
+  const snap = snapOf(state, { tid: team.id, stretch, t, who: people(state, team.id) });
+  const r = runAny(state, team, stretch, t, api, rng);
+  const row = state.attempts?.[team.id]?.[stretch.id] || {};
+  (state.taskLog ||= []).push({ leg: state.leg, team: team.id, stretch: stretch.id, kind: stretch.kind,
+    side: r.data?.side ?? row.side ?? null, who: r.data?.who ?? null, attempts: row.attempts || 0, fails: row.fails || 0,
+    switched: !!r.data?.switched, quit: !!(r.quit || r.data?.quit), from: t, to: r.end, snap });
+  return r;
 }

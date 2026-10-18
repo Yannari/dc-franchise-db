@@ -1,0 +1,85 @@
+// The Ridonculous Race: the director, what a leg airs and in what order (dialogue plan, Task 9).
+import { describe, it, expect, beforeAll } from 'vitest';
+import { airLeg, MUST, WARM, ROW, legBudget } from '../js/rr/story/director.js';
+import { playRaceSeason } from '../js/rr/season.js';
+import { SCENES } from '../js/rr/scenes.js';
+import { setPlayers } from '../js/core.js';
+import { raceCast } from './helpers/rr-cast.js';
+
+describe('rr director', () => {
+  let res, aired;
+  beforeAll(() => {
+    const { cast, teams } = raceCast(12, 4);
+    setPlayers(cast);
+    res = playRaceSeason({ teams, seed: 4, options: { twists: { 3: 'boomerang' } } });
+    aired = res.legs.map(l => airLeg(res.state, l));
+  });
+
+  it('every team is seen at every task it ran', () => {
+    const st = res.state;
+    res.legs.forEach((leg, i) => {
+      const rows = (st.taskLog || []).filter(r => r.leg === leg.n);
+      expect(rows.length).toBeGreaterThan(0);
+      for (const r of rows) {
+        const seen = aired[i].segments.some(s => s.stretch === r.stretch && s.teams.includes(r.team));
+        expect(seen, `leg ${leg.n}: ${r.team} at ${r.stretch}`).toBe(true);
+      }
+    });
+  });
+
+  it('every must-air moment airs', () => {
+    const st = res.state;
+    res.legs.forEach((leg, i) => {
+      const ids = new Set(aired[i].segments.map(s => s.scene));
+      for (const sc of st.scenes.filter(s => s.leg === leg.n && MUST.has(s.kind))) expect(ids.has(sc.id), `leg ${leg.n} #${sc.id} ${sc.kind}`).toBe(true);
+    });
+  });
+
+  it('runs in clock order', () => {
+    for (const ep of aired) {
+      const ts = ep.segments.map(s => s.t).filter(t => t != null);
+      for (let i = 1; i < ts.length; i++) expect(ts[i]).toBeGreaterThanOrEqual(ts[i - 1]);
+    }
+  });
+
+  it('keeps to the leg budget beyond what must air', () => {
+    res.legs.forEach((leg, i) => {
+      const extra = aired[i].segments.filter(s => s.tier >= 2).length;
+      expect(extra).toBeLessThanOrEqual(legBudget(leg.order.length));
+    });
+  });
+
+  it('holds the guards: one blow-up a team, one romance a person, nothing warm after a row', () => {
+    const st = res.state;
+    const byId = Object.fromEntries(st.scenes.map(s => [s.id, s]));
+    for (const ep of aired) {
+      const rows = new Set(), blows = {}, romance = {};
+      for (const seg of ep.segments) {
+        const sc = byId[seg.scene];
+        if (!sc) continue;
+        const pair = sc.who.slice(0, 2).sort().join('|');
+        if (WARM.has(sc.kind)) expect(rows.has(pair), `warm after a row: #${sc.id} ${sc.kind}`).toBe(false);
+        if (ROW.has(sc.kind)) {
+          rows.add(pair);
+          if (sc.data.team) { blows[sc.data.team] = (blows[sc.data.team] || 0) + 1; expect(blows[sc.data.team]).toBeLessThanOrEqual(1); }
+        }
+        if (SCENES[sc.kind]?.family === 4) for (const n of sc.data.facts?.lovers || []) {
+          romance[n] = (romance[n] || 0) + 1;
+          expect(romance[n], `${n} has two romance beats`).toBeLessThanOrEqual(1);
+        }
+      }
+    }
+  });
+
+  it('an interview airs only after the moment it is about', () => {
+    for (const ep of aired) {
+      const seen = new Set();
+      const byId = Object.fromEntries(res.state.scenes.map(s => [s.id, s]));
+      for (const seg of ep.segments) {
+        const sc = byId[seg.scene];
+        if (sc?.kind.startsWith('int-') && sc.data.about != null) expect(seen.has(sc.data.about), `#${sc.id}`).toBe(true);
+        if (seg.scene != null) seen.add(seg.scene);
+      }
+    }
+  });
+});

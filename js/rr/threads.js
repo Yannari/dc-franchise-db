@@ -88,6 +88,8 @@ const participants = (st, sc) => [...new Set([...people(st, sc.data?.team), ...p
 function tag(sc, th, how = null) {
   const def = THREADS[th.thread];
   (sc.data.threads ||= []).push(`${th.thread} ${Math.min(th.step, def.steps.length)}/${def.steps.length}${how ? ' ' + how : ''}`);
+  // which storyline it moved, by id (the director follows a season's storylines by these)
+  if (!(sc.data.threadIds ||= []).includes(th.id)) sc.data.threadIds.push(th.id);
 }
 const keyOf = who => [...who].sort().join('|');
 const teamsGone = (st, who) => who.every(n => st.gone.some(id => people(st, id).includes(n)));

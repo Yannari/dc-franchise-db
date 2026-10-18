@@ -48,7 +48,8 @@ const num = k => NUM[k] || String(k);
 const CASE = {
   easy: n => `${n} is the one any of us could beat in the Arena`,
   threat: (n, f = {}) => (f.arenaW >= 2 ? `${n} has won ${num(f.arenaW)} eliminations already, and nobody wants to be standing next to ${n} in the final`
-    : f.daily >= 2 ? `${n} has won ${num(f.daily)} dailies, and if we don't stop ${n} now, we never will`
+    : f.daily >= 2 ? (f.team ? `${n} has been on the winning side of ${num(f.daily)} dailies, and if we don't stop ${n} now, we never will`
+      : `${n} has won ${num(f.daily)} dailies, and if we don't stop ${n} now, we never will`)
     : `${n} keeps winning, and nobody else in this division has`),
   ranked: (n, f = {}) => (f.topWeeks >= 2 ? `TJ has had ${n} at the top of his list ${num(f.topWeeks)} weeks running, and he's right`
     : `TJ put ${n} at the top of his list this morning, and he's right`),

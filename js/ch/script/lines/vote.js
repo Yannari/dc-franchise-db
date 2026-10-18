@@ -22,7 +22,7 @@ export default {
     { id: 'co.m3', turns: [{ by: 'tj', say: "Fellas, look around. One of you is about to have a very bad week. Ladies, you're voting too, so don't get comfortable." }] },
   ],
   'cer-open.f': [
-    { id: 'co.f1', turns: [{ by: 'tj', say: "Ladies' week! One of you queens is going into the Arena, and the whole house gets a say. Who's it gonna be?" }] },
+    { id: 'co.f1', turns: [{ by: 'tj', say: "Ladies' week! One of you ladies is going into the Arena, and the whole house gets a say. Who's it gonna be?" }] },
     { id: 'co.f2', turns: [{ by: 'tj', say: "It's a women's vote, people. One name each, said nice and loud. I love this part. I'm not supposed to love this part, but I love this part." }] },
     { id: 'co.f3', turns: [{ by: 'tj', say: "Ladies, one of you is going into the Arena. Fellas, you're voting, so think hard. Let's go around the room." }] },
   ],

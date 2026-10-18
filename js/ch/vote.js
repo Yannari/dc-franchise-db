@@ -334,7 +334,8 @@ export function houseDebate(state, delib, eligible) {
   // reasoning right? they should verbalize that or lie and tell us in the confessional")
   const said = whyName(state, a, target, eligible), saidAlt = alt ? whyName(state, c, alt, eligible) : null;
   const why = said.said, altWhy = saidAlt?.said || null;
-  const facts = n => ({ arenaW: state.rec[n]?.arenaW || 0, daily: state.rec[n]?.dailyWins || 0,
+  // (a Teams season credits every member of the winning team with the daily: `team` says the count is shared)
+  const facts = n => ({ arenaW: state.rec[n]?.arenaW || 0, daily: state.rec[n]?.dailyWins || 0, team: !!state.options?.teams,
     topWeeks: state.episodes.filter(e => e.rankings?.[0]?.n === n).length });
   const truth = said.real !== said.said ? TRUTH[said.real]?.(a, target, said.said, state.ep + a.length + target.length) : null;
   // a couple more voices from the room: someone who agreed at the meeting, someone close to the name

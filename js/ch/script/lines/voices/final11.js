@@ -287,7 +287,7 @@ export default {
   'gt.3': {
     1: { sharp: "You're doing more than yesterday.", dry: "More than yesterday.", loud: "You're doing MORE than you did yesterday!", soft: "You're doing more than you did yesterday.", odd: "You're doing more than yesterday. Science." },
     2: { sharp: "Doesn't feel like it.", dry: "It doesn't feel like it.", loud: "I don't FEEL like it!", soft: "I don't feel like it.", odd: "I don't feel like it. I feel like soup." },
-    3: { sharp: "You never feel it. You just look back and notice.", dry: "You never feel it. You notice later.", loud: "You NEVER feel it! You just look back and NOTICE!", soft: "You never feel it. That's how it works. You just look back and notice.", odd: "You never feel it. One day you just look back and you're strong." },
+    3: { sharp: "You never feel it. You just look back and notice.", dry: "You never feel it. You notice later.", loud: "You NEVER feel it! You just look back and NOTICE!", soft: "You never feel it while it's happening. You just look back one day and notice.", odd: "You never feel it. One day you just look back and you're strong." },
     4: { sharp: "If my name comes out this week, I want to be ready.", dry: "If it's my name this week, I want to be ready.", loud: "If my name comes out this week, I want to be READY!", soft: "If my name comes out this week, I want to be ready.", odd: "If my name comes out this week, I want to be the readiest person in that Arena." },
     5: { sharp: "Then we come back tomorrow. Same time.", dry: "Same time tomorrow.", loud: "Then we come BACK tomorrow! Same TIME!", soft: "Then we come back tomorrow. Same time.", odd: "Then we come back tomorrow. Same time, same pain." },
     6: { sharp: "Same time.", dry: "Same time.", loud: "Same TIME!", soft: "Same time.", odd: "Same time. Same pain." },
@@ -416,8 +416,8 @@ export default {
     4: { sharp: "At least you're near the middle.", dry: "You're near the middle.", loud: "At LEAST you were somewhere near the MIDDLE!", soft: "At least you were somewhere near the middle.", odd: "At least you're near the middle. The middle is cozy." },
     5: { sharp: "I'd take the middle. The top is too loud.", dry: "I'd take the middle.", loud: "Honestly, I'd TAKE the middle! The top is too LOUD!", soft: "Honestly, I'd take the middle. The top is too loud.", odd: "I'd take the middle. The top has too many eyes on it." },
     6: { sharp: "Then lose a daily. Problem solved.", dry: "Lose a daily, then.", loud: "Then LOSE a daily! Problem SOLVED!", soft: "Then lose a daily. Problem solved.", odd: "Then lose a daily. I can show you how." },
-    7: { sharp: "I'm number one, and now I have to keep proving it every week. That's how this works.", dry: "Being number one means I have to prove it again every week.", loud: "I'm NUMBER ONE, and now I have to keep PROVING it every single week!",
-      soft: "I'm number one, and now I have to keep proving it every single week. That's how this works.", odd: "I'm number one. Now I have to keep being number one, every week, forever." },
+    7: { sharp: "I'm number one, and now I have to keep proving it every week. Everybody wants a go at the top now.", dry: "Being number one means I have to prove it again every week.", loud: "I'm NUMBER ONE, and now I have to keep PROVING it every single week!",
+      soft: "I'm number one, and now I have to keep proving it every single week. Everybody wants a go at the top.", odd: "I'm number one. Now I have to keep being number one, every week, forever." },
   },
   // ── counter-pitches at the vote ──
   'cp.m3': {
@@ -451,7 +451,7 @@ export default {
     4: { sharp: "I want you to vote for whoever actually helps you. That's not me.", dry: "Vote for whoever helps you. Not me.", loud: "I want you to vote for whoever ACTUALLY helps you! That's NOT me!", soft: "I want you to vote for whoever actually helps you. That's not me.", odd: "I want you to vote for whoever helps you most. Spoiler: it's not me." },
     5: { sharp: "You don't get to pick who goes in because you're nervous.", dry: "Being nervous doesn't let you pick.", loud: "You DON'T get to pick who goes in just because you're NERVOUS!", soft: "You don't get to pick who goes in just because you're nervous.", odd: "You don't get to pick who goes in because you're nervous. That's not a rule." },
     6: { sharp: "Nobody gets to pick. That's why we vote.", dry: "Nobody picks. We vote.", loud: "NOBODY gets to pick! That's WHY we vote!", soft: "Nobody gets to pick. That's why we vote.", odd: "Nobody gets to pick. That's why we vote. Democracy." },
-    7: { sharp: "Then let them vote.", dry: "Then let them vote.", loud: "Then LET them vote!", soft: "Then let them vote.", odd: "Then let them vote. That's how it works." },
+    7: { sharp: "Then let them vote.", dry: "Then let them vote.", loud: "Then LET them vote!", soft: "Then let them vote.", odd: "Fine. Then let them vote." },
     8: { sharp: "When {a} put it like that, it made sense. I'm not saying I'm voting {b}. I'm thinking about it.", dry: "{a} made sense. I'm not saying I'm voting {b}, but I'm thinking about it.",
       loud: "When {a} put it like THAT, it made SENSE! I'm not saying I'm voting {b}! I'm THINKING about it!", soft: "When {a} put it like that, it made sense. I'm not saying I'm voting {b}. I'm saying I'm thinking about it.",
       odd: "When {a} put it like that, it made sense. I'm not voting {b}. Probably. Maybe." },

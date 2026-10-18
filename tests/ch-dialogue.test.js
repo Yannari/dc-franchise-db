@@ -73,6 +73,18 @@ describe('The Challenge pools', () => {
     expect(bad.map(b => `${b.id}: ${b.text}`), bad.map(b => `${b.id}: ${b.text}`).join('\n')).toEqual([]);
   });
 
+  // ...and the slogan that closes a line ("That's how it works", "I know who my friends are now": the user, 2026-10-18,
+  // "tf does that mean"). "That's the game" stays in a quarrel, where the reply picks it up ("So is this."), and in TJ's
+  // mouth at the end of a game; never as a confessional's last word.
+  it('no slogan closes a line', () => {
+    const bad = allTexts().filter(({ text }) => /\bThat's how (it|this) works\b|\bI know who my (real )?friends are\b/i.test(text));
+    const conf = [];
+    for (const list of Object.values(POOLS)) for (const e of list) for (const t of e.turns) if (t.conf)
+      for (const text of [t.conf, ...Object.values(t.v || {}).flat()]) if (/\bThat's the game\b/i.test(text)) conf.push(`${e.id}: ${text}`);
+    const all = [...bad.map(b => `${b.id}: ${b.text}`), ...conf];
+    expect(all, all.join('\n')).toEqual([]);
+  });
+
   it('a new alliance has three or four members: its lines never count them', () => {
     // "Can I trust you two?" and "It's us three" aired in an alliance of four.
     const bad = allTexts(k => /^alliance-(form|grow)\./.test(k)).filter(({ text }) =>

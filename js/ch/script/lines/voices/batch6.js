@@ -677,7 +677,7 @@ export default {
   },
   'sl.b2': {
     2: {
-      sharp: ["One sentence about {c}, and now {b} doubts {c.obj}. That's all it takes.", "One comment, and now {b} is doing the rest."],
+      sharp: ["One sentence about {c}, and now {b} doubts {c.obj}. I barely had to try.", "One comment, and now {b} is doing the rest."],
       dry: ["One comment was all it took. Now {b} doesn't trust {c}.", "One comment, and {b} won't look at {c} the same way."],
       loud: ["One little comment and BOOM! {b} doesn't trust {c}!", "One comment! That's all it took!"],
       soft: ["I feel a little bad. One comment, and now {b} doesn't trust {c}.", "I didn't say much. I didn't have to."],

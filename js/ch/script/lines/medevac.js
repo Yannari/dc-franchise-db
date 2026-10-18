@@ -87,7 +87,7 @@ export default {
       { by: 'a', say: "Me neither. I keep waiting for somebody to tell me it's a joke." },
       { beat: 'At the other end of the room, {d} is already talking quietly to somebody about the vote.' },
       { by: 'b', say: "Unbelievable. {a}'s not even out of the door." },
-      { by: 'a', say: "Let it go. That's the game." },
+      { by: 'a', say: "Let it go. It isn't worth it." },
       { by: 'b', conf: "{d} didn't even wait for the car to leave. I'll remember that when it's {d}'s name on the line." },
     ] },
   ],

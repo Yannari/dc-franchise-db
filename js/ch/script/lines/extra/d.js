@@ -30,7 +30,7 @@ export default {
       { by: 'a', opt: 'x', say: "I know. I was there." },
       { by: 'b', opt: 1, say: "Okay, well done. Genuinely." },
       { by: 'a', opt: 'b', say: "Genuinely? You put me there." },
-      { by: 'b', opt: 1, say: "And you came back. That's the game." },
+      { by: 'b', opt: 1, say: "And you came back. Fair play to you." },
       { by: 'a', conf: "Nobody's going to call me out as the easy pick again. Not after tonight." },
     ] },
   ],

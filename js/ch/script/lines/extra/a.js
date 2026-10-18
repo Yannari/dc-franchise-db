@@ -21,7 +21,7 @@ export default {
       { by: 'a', say: "Okay. If I pick {opt1}, I'm saying {opt1} is weak, and the whole house hears that." },
       { by: 'b', say: "And if you pick {opt2}?" },
       { by: 'a', say: "Then I'm going after somebody who's never done anything to me." },
-      { by: 'b', say: "That's the game, though. Nobody in there has done anything to anybody. Until they have." },
+      { by: 'b', say: "Welcome to the Challenge. Nobody in there has done anything to anybody. Until they have." },
       { by: 'a', say: "Whoever I pick is going to hate me for the rest of the season." },
       { by: 'b', say: "Only if they come back." },
       { by: 'a', say: "Wow. Cold." },
@@ -331,7 +331,7 @@ export default {
       { by: 'b', say: "At least you were on it somewhere near the middle." },
       { by: 'a', say: "Honestly, I'd take the middle. Top is too loud." },
       { by: 'b', say: "Then lose a daily. Problem solved." },
-      { by: 'a', conf: "I'm number one, and now I have to keep proving it every single week. That's how this works." },
+      { by: 'a', conf: "I'm number one, and now I have to keep proving it every single week. Everybody wants a go at the top." },
     ] },
   ],
 

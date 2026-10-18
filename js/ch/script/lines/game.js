@@ -771,7 +771,7 @@ export default {
     { id: 'tb.d1', turns: [
       { by: 'a', say: "Let's be real. We lost because of {b}.", v: { loud: ['We LOST because of {b}!'], sharp: ['I\'ll say what everybody\'s thinking. {b} sank us.'] } },
       { by: 'c', say: "Back off. {b} gave everything out there.", v: { loud: ['BACK OFF! {b} was trying!'], soft: ['That\'s not fair. We all made mistakes.'] } },
-      { by: 'b', conf: "{a} came for me in front of the team. {c} stood up for me. I know who my friends are now.", v: { soft: ['I almost cried when {c} defended me.'] } },
+      { by: 'b', conf: "{a} came for me in front of the whole team, and {c} was the only one who said anything. I noticed who didn't.", v: { soft: ['I almost cried when {c} defended me.'] } },
     ] },
     { id: 'tb.d2', turns: [
       { by: 'a', say: "Somebody has to take responsibility for that." },

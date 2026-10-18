@@ -115,7 +115,7 @@ export default {
       { by: 'c', opt: 1, say: "Can't blame us for asking.",
         v: { sharp: "Can't blame us for asking.", dry: "Worth a shot.", loud: "Hey, you can't blame us for asking!", soft: "You can't blame us for asking.", odd: "Can't blame us for asking. We'll ask again next time." } },
       { by: 'a', conf: "I didn't even think about it. My team made a call, I won, and now we move on together. That's how a team works.",
-        v: { sharp: "I didn't even think about it. My team made a call, I won, and we move on. That's a team.", dry: "Didn't even think about it. My team made a call, I won, we move on. That's how it works.", loud: "I didn't even think about it! My team made a call, I won, and now we move on together. That's how a team works!", soft: "I didn't even think about it. My team made a call, I won, and now we move on together. That's how a team works.", odd: "I didn't even think about it. My team made a call, I won, and now we move on. Bruised, but still a team." } },
+        v: { sharp: "I didn't even think about it. My team made a call, I won, and we move on. That's a team.", dry: "Didn't even think about it. My team made a call, I won, we move on.", loud: "I didn't even think about it! My team made a call, I won, and now we move on together. That's how a team works!", soft: "I didn't even think about it. My team made a call, I won, and now we move on together. That's how a team works.", odd: "I didn't even think about it. My team made a call, I won, and now we move on. Bruised, but still a team." } },
     ] },
   ],
 

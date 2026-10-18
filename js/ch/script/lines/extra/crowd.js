@@ -354,7 +354,7 @@ export default {
       { by: 'a', say: "{amount}. Not bad for a few weeks, right?" },
       { by: 'b', say: "Congratulations. Mine's a lot smaller." },
       { by: 'x', say: "Mine's basically zero, so thanks for that, {a}." },
-      { by: 'a', say: "Win something, then. That's how it works." },
+      { by: 'a', say: "Win something, then. Nobody handed it to me." },
       { by: 'y', opt: 1, say: "Easy to say with that much in the bank." },
       { by: 'b', conf: "I didn't argue with {a}. There's no point arguing with a number. But I noticed how quiet the room got." },
     ] },

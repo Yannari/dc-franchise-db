@@ -995,8 +995,8 @@ export default {
       { by: 'c', say: "Then play it.",
         v: { sharp: "Then play it.", dry: "Then play it.", loud: "Then PLAY it!", soft: "Then play it.", odd: "Then play it. Tomorrow." } },
       { by: 'tj', say: "Oh, that's SPICY! Everybody heard that, right? Everybody heard that!" },
-      { by: 'd', conf: "We said their names, they said ours. That's how it works. I'm not scared of them.",
-        v: { sharp: "We said their names, they said ours. That's how it works. I'm not scared.", dry: "We said their names. They said ours. That's it. Not scared.", loud: "We said their names, they said OURS! That's how it works, and I'm not scared of them!", soft: "We said their names, and they said ours. That's how it works. I'm not scared of them.", odd: "We said their names, they said ours. That's how it works. I'm not scared of them. I'm a bit tired of them." } },
+      { by: 'd', conf: "We said their names, they said ours. Fair's fair. I'm not scared of them.",
+        v: { sharp: "We said their names, they said ours. Fair's fair. I'm not scared.", dry: "We said their names. They said ours. That's it. Not scared.", loud: "We said their names, they said ours! Fair's fair, and I'm not scared of them!", soft: "We said their names, and they said ours. Fair enough. I'm not scared of them.", odd: "We said their names, they said ours. Fair's fair. I'm not scared of them. I'm a bit tired of them." } },
     ] },
     { id: 'pco.g3', turns: [
       { by: 'tj', say: "Moment of truth, you two. Who's going in with you?" },

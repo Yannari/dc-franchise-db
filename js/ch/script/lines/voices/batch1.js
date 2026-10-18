@@ -175,7 +175,7 @@ const FALSE_CONF = {
   dry: ['I agreed with them this morning. Then I changed my mind.'],
   loud: ['Did I tell them I was voting their way? Yeah! Did I? No!'],
   warm: ['I feel bad lying to them, but I\'d feel worse going home.'],
-  blunt: ['I lied to them. That\'s the game.'],
+  blunt: ['I lied to them. I\'d do it again tomorrow.'],
   theatrical: ['And the award for best supporting liar goes to... me.'],
   anxious: ['They\'re going to know it was me. Oh no. They\'re definitely going to know.'],
   calm: ['They\'ll be upset for a day. I\'ll still be here.'],

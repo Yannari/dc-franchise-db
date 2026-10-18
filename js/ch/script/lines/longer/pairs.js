@@ -109,7 +109,7 @@ export default {
     { by: 'b', say: "Do you think I'm going home tomorrow?" },
     { by: 'a', say: "No. I think you're coming back here tomorrow night, and I'm going to have to hear about it for a week." },
     { by: 'b', say: "I hope so." },
-    { by: 'b', conf: "{a} didn't have to stay up with me. That's how I know who my real friends are in here." }],
+    { by: 'b', conf: "{a} didn't have to stay up with me. {a} did anyway, until I fell asleep." }],
   'ep.3': [
     { beat: '{a} brings {b} a plate of food and sits down next to {b.obj}.' },
     { by: 'a', say: "Eat something. You need it for tomorrow." },

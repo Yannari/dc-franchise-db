@@ -34,7 +34,7 @@ export default {
       { beat: '{a} is on the floor after another set. {b} drops down next to {a.obj}.' },
       { by: 'b', say: "You're doing more than you did yesterday." },
       { by: 'a', say: "I don't feel like it." },
-      { by: 'b', say: "You never feel it. That's how it works. You just look back and notice." },
+      { by: 'b', say: "You never feel it while it's happening. You just look back one day and notice." },
       { by: 'a', say: "If my name comes out this week, I want to be ready." },
       { by: 'b', say: "Then we come back tomorrow. Same time." },
       { by: 'a', say: "Same time." },

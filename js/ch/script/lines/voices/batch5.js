@@ -748,7 +748,7 @@ export default {
       dry: ["To keep it simple, if I go in, I'm calling out {b}.", "If I'm voted in, it's {b}. That's all."],
       loud: ["Real simple! I go in, {b} goes in!", "If I go in, I'm calling out {b}! Easy!"],
       soft: ["I'm just being honest. If I go in, I'm calling out {b}.", "I want to be clear. If it's me, it's {b}."],
-      odd: ["Simple. Me in, {b} in. That's how it works.", "If I go in, I'm calling out {b}. Nothing personal. Well, a little personal."],
+      odd: ["Simple. If I go in, {b} comes with me.", "If I go in, I'm calling out {b}. Nothing personal. Well, a little personal."],
     },
     1: {
       sharp: ["Me? Why?", "What did I do?"],

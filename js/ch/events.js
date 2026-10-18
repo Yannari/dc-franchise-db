@@ -1036,6 +1036,8 @@ export const EVENTS = [
       const t = teamOfName(ctx.state, c);
       if (!t || t.captain !== cap || c === cap || is(c, 'loyal-soldier', 'goat', 'underdog')) return 0;
       const losses = ctx.state.teamLosses?.[t.id] || 0;
+      // nobody comes for a captain the team has not yet lost with (it aired on the premiere, the day of the vote)
+      if (!losses) return 0;
       return losses * 0.3 + (S(c, 'boldness') - 5) * 0.15 + (S(c, 'strategic') - 5) * 0.08 + Math.max(0, -getBond(c, cap)) * 0.2 - 1;
     })),
     weight: (ctx, p) => 0.3 + p.score * 0.35,
@@ -1083,7 +1085,9 @@ export const EVENTS = [
       ctx.state.lastDailyBlamed = ctx.state.ep;
       const ls = [...ctx.state.scenes].reverse().find(x => x.kind === 'team-daily-loss' && x.ep === ctx.state.ep);
       if (ls) ls.data.blamed = true;
-      return addScene(ctx.state, 'team-weak-link', [a, w, ...(d ? [d] : [])], { defended, team: teamOfName(ctx.state, w)?.name || null }, [a, w, ...(d ? [d] : []), ...teammates(ctx.state, w).slice(0, 2)], 'villa');
+      // the part of that daily people talk about after ("the wall": dailies.js DAILY_TASK)
+      const task = ctx.state.lastTeamDay?.ep === ctx.state.ep ? ctx.state.lastTeamDay.task || null : null;
+      return addScene(ctx.state, 'team-weak-link', [a, w, ...(d ? [d] : [])], { defended, task, team: teamOfName(ctx.state, w)?.name || null }, [a, w, ...(d ? [d] : []), ...teammates(ctx.state, w).slice(0, 2)], 'villa');
     } },
   // Trash talk across the line: one of each team, in front of both. It turns heated, or both end up laughing.
   { id: 'team-trash-talk', actorCooldown: 2, kind: 'drama', cooldown: 3, max: 6,
@@ -1104,6 +1108,8 @@ export const EVENTS = [
   { id: 'team-celebrate', actorCooldown: 3, kind: 'drama', cooldown: 3, max: 6,
     cast: ctx => {
       if (!teamsOn(ctx.state) || !ctx.state.lastDailyTeams || !ctx.state.lastDailyWinners?.length || !ctx.state.lastDailyLast?.length) return null;
+      // between this week's daily and its vote ("Some of us have a vote tonight"), like the weak link
+      if (ctx.state.lastDailyEp !== ctx.state.ep || ctx.state.day - (ctx.state.lastDailyDay ?? -9) > 1) return null;
       const w = ctx.state.lastDailyWinners.filter(n => ctx.state.active.includes(n));
       const l = ctx.state.lastDailyLast.filter(n => ctx.state.active.includes(n));
       const a = w.sort((x, y) => S(y, 'boldness') - S(x, 'boldness'))[0];
@@ -1139,6 +1145,9 @@ export const EVENTS = [
     cast: ctx => (!teamsOn(ctx.state) ? null : bestPair(ctx, 'team-enemy-love', 4, (c, a) => {
       const lover = coupleOf(ctx.state, a);
       if (!lover || !ctx.state.teamOf?.[a] || ctx.state.teamOf[lover] === ctx.state.teamOf[a] || ctx.state.teamOf[c] !== ctx.state.teamOf[a] || c === a) return 0;
+      // the one in love, whoever confronts them: once a week or so (Jules was confronted about Ellie three times in four
+      // episodes by three different teammates, read 2026-10-18)
+      if (!cooled(ctx, 'team-enemy-love', [a], 8)) return 0;
       return 0.6 + (10 - S(c, 'temperament')) * 0.06 + Math.max(0, -getBond(c, lover)) * 0.15;
     })),
     weight: (ctx, p) => 0.35 + p.score * 0.3,

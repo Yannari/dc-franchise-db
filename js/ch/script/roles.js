@@ -456,7 +456,7 @@ Object.assign(ROLES, {
   // a: the one coming for the armband; b: the captain; c, d: teammates watching
   'team-coup': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.takes ? 'takes' : 'fails', slots: { team: sc.data.team || undefined } }),
   // a: the one who blames; b: the weak link; c: the one who stands up for them
-  'team-weak-link': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.defended ? sc.who[2] : undefined }, ending: sc.data.defended ? 'defended' : 'piled', slots: { team: sc.data.team || undefined } }),
+  'team-weak-link': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.defended ? sc.who[2] : undefined }, ending: sc.data.defended ? 'defended' : 'piled', slots: { team: sc.data.team || undefined, task: sc.data.task || undefined } }),
   'team-trash-talk': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.heated ? 'heated' : 'laughs', slots: { team: sc.data.team || undefined, oppteam: sc.data.oppTeam || undefined } }),
   // a: a winner; b: one of the losing team; c: a teammate of a's
   'team-celebrate': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.rubs ? 'rubs' : 'gracious', slots: { team: sc.data.team || undefined, oppteam: sc.data.oppTeam || undefined } }),

@@ -50,6 +50,29 @@ const SECRET = new Set(['private', 'confessional']);
 const LEAD = { villain: ['cruel', 'schemer'], mastermind: ['schemer', 'calm'], schemer: ['schemer'], hothead: ['loud', 'blunt'],
   'challenge-beast': ['competitive'], hero: ['earnest', 'warm'], 'loyal-soldier': ['earnest'], 'social-butterfly': ['warm'],
   showmancer: ['flirty', 'warm'], underdog: ['earnest'], goat: ['ditzy'], 'chaos-agent': ['chaotic'], wildcard: ['chaotic'] };
+// ── people, not filters (the user, 2026-10-18: "dialogue is so robotic, they don't talk like humans at all") ──
+// The five families were written as filters over one line: loud put words in capitals and an "!" on every
+// sentence ("BACK OFF! James was trying!"), sharp chopped it into a telegram ("A week before they regret it."). A
+// line is said the way a person says it: no word in capitals (TJ is a name), one "!" at most, and a sharp variant
+// that is only fragments is passed over for the line as written.
+const KEEP_CAPS = new Set(['TJ', 'OK', 'MVP', 'DJ']);
+export function humanize(text) {
+  if (!text) return text;
+  let t = text.replace(/\b[A-Z][A-Z']+\b/g, w => (KEEP_CAPS.has(w) ? w : w.toLowerCase()));
+  t = t.replace(/\bi('|\b)/g, 'I$1');
+  // a sentence still starts with a capital, after a brace or a quote too
+  t = t.replace(/(^|[.!?]\s+)(["']?)([a-z])/g, (m, a, q, c) => a + q + c.toUpperCase());
+  let bangs = 0;
+  t = t.replace(/!+/g, (m, at) => (++bangs === 1 ? '!' : '.'));
+  return t;
+}
+// a telegram: two sentences or more of three words or fewer ("Day one. Captain nearly in a fistfight.")
+export function choppy(text) {
+  const parts = String(text).split(/(?<=[.!?])\s+/).filter(Boolean);
+  const short = parts.filter(x => x.split(/\s+/).length <= 3).length;
+  return parts.length >= 2 && short >= 2;
+}
+
 function byArchetype(tags, name) {
   const lead = (LEAD[players.find(p => p.name === name)?.archetype] || []).filter(t => tags.includes(t));
   return lead.length ? [...lead, ...tags.filter(t => !lead.includes(t))] : tags;
@@ -65,7 +88,7 @@ export function voicedLine(turn, speaker, { hush = false, rng = Math.random, led
     for (const key of [...new Set([t, FAMILY[t]].filter(Boolean))]) {
       if (hush && key === 'loud') continue;
       if (skip && (skip.has(key) || skip.has(FAMILY[key]))) continue;
-      const got = [v[key]].flat().filter(Boolean);
+      const got = [v[key]].flat().filter(Boolean).filter(x => !((key === 'sharp' || FAMILY[key] === 'sharp') && choppy(x) && !choppy(base)));
       if (!got.length) continue;
       const start = Math.floor(rng() * got.length);
       const order = got.map((_, i) => got[(start + i) % got.length]);
@@ -158,7 +181,9 @@ export function writeScene(state, scene) {
   const CAPPED = ['loud', 'odd'], capped = {};
   // ...and three of each in the whole scene, whoever says them (two quirky speakers made four jokes in a row)
   const sceneCount = f => Object.values(capped).reduce((n, c) => n + (c[f] || 0), 0);
-  const skipFor = by => new Set(CAPPED.filter(f => (capped[by]?.[f] || 0) >= 2 || sceneCount(f) >= 3));
+  // (2026-10-18: a quip on the end of a line is funny once a scene, not three times: one odd line a scene, two loud)
+  const SCENE_CAP = { loud: 2, odd: 1 };
+  const skipFor = by => new Set(CAPPED.filter(f => (capped[by]?.[f] || 0) >= 2 || sceneCount(f) >= SCENE_CAP[f]));
   const here = t => !t.opt || [t.by, ...[].concat(typeof t.opt === 'string' || Array.isArray(t.opt) ? t.opt : []),
     ...[...String(t.say || t.conf || t.beat || '').matchAll(TOKEN)].map(m => m[1])].every(k => !k || k === 'tj' || have.has(k));
   const lines = entry.turns.map((t, i) => [t, i]).filter(([t]) => here(t) && (!t.when || Object.entries(t.when).every(([k, v]) => facts[k] === v))).map(([t, i]) => {
@@ -171,7 +196,7 @@ export function writeScene(state, scene) {
     // a scene picked because of how its speaker talks (when: register for a, registerB for b) is already in that
     // speaker's voice, written that way, even where no variant was swapped in
     const reg = !said.tag && kind !== 'beat' && t.by !== 'tj' && ((t.by === 'a' && entry.when?.register) || (t.by === 'b' && entry.when?.registerB));
-    const line = { kind, by, text: fill(said.text, r.roles, r.slots), voice: said.tag || (reg ? `register:${reg}` : null) };
+    const line = { kind, by, text: fill(kind === 'beat' || t.by === 'tj' ? said.text : humanize(said.text), r.roles, r.slots), voice: said.tag || (reg ? `register:${reg}` : null) };
     // The turn's place in its entry, for the voice-coverage measurement (not enumerable: never serialised).
     Object.defineProperty(line, 'turn', { value: `${entry.id}:${i}`, enumerable: false });
     return line;

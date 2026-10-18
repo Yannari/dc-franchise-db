@@ -11,6 +11,7 @@ import { addScene } from './state.js';
 import { teamLevel, spreadOf } from './skill.js';
 import { identityOf } from './identities.js';
 import { REGIONS } from './places.js';
+import { spend, afford } from './money.js';
 
 const CHECK_IN = 30;
 
@@ -90,6 +91,12 @@ export function resolveTravel(state, team, stretch, t, api, rng) {
   }
 
   let dur = groundTime(state, id, stretch, rng);
+  // the fare (money.js): a broke team walks, borrows, begs, or scrapes it together
+  if (stretch.cost > 0 && !spend(state, id, stretch.cost)) {
+    const a = afford(state, team, stretch, t, rng, api);
+    dur += a.minutes;
+    if (a.how !== 'walk') spend(state, id, stretch.cost);
+  }
   let start = t;
   if (stretch.capacity) start = api.slot(stretch.id, stretch.capacity, t, dur);
 

@@ -31,6 +31,10 @@ export const DIRECTOR_KINDS = {
   'task-start': ['any'],
   'task-try': ['first-try', 'after-fails', 'struggling', 'switched', 'quit'],
   'task-done': ['any'],
+  // the system's own moments (tasks.js, travel.js, twists.js): one ending each
+  'attempt-fail': ['any'], 'quit-task': ['any'], 'helped-botch': ['any'], 'allin-alone': ['any'],
+  'travel-mishap': ['any'], 'found-flight': ['any'], 'same-flight': ['any'], 'express-used': ['any'],
+  'yield-found': ['any'], 'yield-decide': ['any'],
 };
 
 const AGE = new Set(['kid', 'teen', 'adult', 'grown']);

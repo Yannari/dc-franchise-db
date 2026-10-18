@@ -33,8 +33,8 @@ export const RR_FACT_KEYS = [
   'why',
   // a is the older of the two by a generation (a parent, a grandparent): true / false; null when unknown
   'aElder',
-  // the scene that caused this one (a chain), and the storyline step it moves
-  'cause', 'threadStep',
+  // the scene that caused this one (a chain, or the moment an interview is about), its ending, and the storyline step it moves
+  'cause', 'causeEnding', 'threadStep',
   // how a talks, and how b talks: the voice family of their strongest tag (sharp, dry, loud, soft, odd)
   'register', 'registerB',
 ];
@@ -73,7 +73,7 @@ export function factsFor(scene, roles, state) {
     aElder: (() => { const e = elderOf(state.teams[d.team]); const a = roles?.roles?.a; return e && a ? e === a : null; })(),
     fails: !s.fails ? 0 : s.fails === 1 ? 1 : 'many',
     switched: !!(d.switched), quit: !!(d.quit), place: s.place ?? null,
-    cause: cause ? cause.kind : null,
+    cause: cause ? cause.kind : null, causeEnding: cause ? cause.data?.ending ?? null : null,
     threadStep: thread ? thread.split(' ')[0] : null,
     register: registerOf(roles?.roles?.a), registerB: registerOf(roles?.roles?.b),
   };

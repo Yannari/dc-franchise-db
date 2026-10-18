@@ -118,6 +118,28 @@ celebrating) `a` is the team's leader. For fear, refusing, embarrassment, an old
 injury, `a` is the one it happens to. In a Botch or Watch, `a` is the one doing it (`whose-botch`), except
 `pushed` where `a` is the partner who pushed `b` into it; in `watching-botch` `a` is the one watching.
 
+## Who's who in the other kinds of scene
+
+- **Two teams** (`cast: 'teams'`): `a` acted (the one who trash-talks, pitches the alliance, offers help,
+  shoves), `b` is `a`'s partner, `c` is the one on the other team `a` deals with, `d` is `c`'s partner.
+  `{team}` is a's team, `{teamB}` c's. The two teams just met at the same stretch; they only know what they
+  see there and what happened between them before (`allied`, `rival`, `bandX`).
+- **Romance** (family 4): `a` and `b` are the two people with the crush, on DIFFERENT teams; `c` is a's
+  partner, `d` is b's partner, present but optional (`opt: true` on their turns). `{crush}` = b.
+- **Rooms** (`cast: 'group'`): `a` to `f` are the people seated together (on a plane row, in a queue, at a
+  closed gate, watching a task, at the mat), from different teams, in seat order; a scene can have as few
+  as two of them, so turns for `c`–`f` are `opt: true`. Never count heads.
+- **Locals** (`cast: 'local'`): `a`, `b` the team; `by: 'local'` speaks as their role ("The driver", "The
+  judge", "The ticket agent", "The vendor"), never with a name; `{local}` is that role word.
+- **Don** (`by: 'don'`): `a`, `b` the team he speaks to when there is one.
+- **Interviews** (family 13): `a`, `b` are the two partners side by side in front of the map (only `a` in a
+  secret one). An interview follows a moment that aired: `cause` is that moment's kind and `causeEnding`
+  its ending — gate on them so the interview is about the right thing, and never retell the scene: say
+  the feeling and the reason, in a sentence or two each, and let the partner contradict.
+- **The system's own moments** (`attempt-fail`, `quit-task`, `helped-botch`, `allin-alone`,
+  `travel-mishap`, `found-flight`, `same-flight`, `express-used`, `yield-found`, `yield-decide`, and the
+  director's `task-start`, `task-try`, `task-done`): `a`, `b` the team (`a` is the one doing a solo task).
+
 ## How much
 
 - Every pool you own: **3 to 5 entries per ending**, at least **2 with no `when`**. Write `.any` entries

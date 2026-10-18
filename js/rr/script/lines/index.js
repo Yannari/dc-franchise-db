@@ -15,8 +15,19 @@ import partners3 from './partners-3.js';
 import partners4 from './partners-4.js';
 import partners5 from './partners-5.js';
 import don from './don.js';
+import tasks from './tasks.js';
+import teams1 from './teams-1.js';
+import teams2 from './teams-2.js';
+import rooms from './rooms.js';
+import romance from './romance.js';
+import localsMoney from './locals-money.js';
+import infoSabotage from './info-sabotage.js';
+import bodyPlace from './body-place.js';
+import donTwists from './don-twists.js';
+import interviews from './interviews.js';
 
-const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don];
+const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
+  localsMoney, infoSabotage, bodyPlace, donTwists, interviews];
 
 export const POOLS = {};
 for (const f of FILES) for (const [k, list] of Object.entries(f)) (POOLS[k] ||= []).push(...list);

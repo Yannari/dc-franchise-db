@@ -78,6 +78,29 @@ describe('the stakes and Redemption House', () => {
     }
   });
 
+  it('every movement of the bank is on its episode\'s row with its reason, and they add up', () => {
+    // the Intel's Money tab reads row.ch.money (the user, 2026-10-18: "how do I see the money of each week")
+    for (const { r, rows } of seasons) {
+      let checked = 0;
+      for (const row of rows) {
+        const I = row.ch?.intel;
+        if (!I?.start?.rec || !I?.end?.rec || row.ch.final) continue;
+        expect(Array.isArray(row.ch.money)).toBe(true);
+        for (const m of row.ch.money) expect(['daily', 'arena-win', 'arena-took', 'arena-lost'], m.why).toContain(m.why);
+        // somebody back from Redemption House mid-episode was not in the opening snapshot
+        for (const n of I.end.players.filter(x => I.start.rec[x])) {
+          const sum = row.ch.money.filter(m => m.name === n).reduce((s, m) => s + m.delta, 0);
+          expect((I.start.rec[n].bank || 0) + sum, `${n} in episode ${row.num}`).toBe(I.end.rec[n].bank);
+          checked++;
+        }
+      }
+      expect(checked).toBeGreaterThan(50);
+      // the champions' prize is on the final's row
+      const fin = rows.find(x => x.ch?.final);
+      for (const c of r.state.champions) expect(fin.ch.money.some(m => m.name === c && m.why === 'champion')).toBe(true);
+    }
+  });
+
   it('every new scene kind writes and airs, and no step prints an unfilled slot', () => {
     const kinds = new Set();
     for (const { r, rows } of seasons) {

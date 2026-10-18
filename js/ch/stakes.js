@@ -35,12 +35,23 @@ export { money };
 // ── the bank ─────────────────────────────────────────────────────────
 export const PURSE = { solo: 10000, pairs: 7500, team: 20000, arena: 5000, champion: 250000 };
 
+/**
+ * Every change to a bank goes through here and is logged (the user, 2026-10-18: "how do I see the money of each
+ * week"): state.moneyLog keeps { ep, name, delta, why, other, at }, where `at` is the part of the episode it happened
+ * in ('daily', 'arena', 'final'), so the viewer shows it only once that part has aired.
+ */
+export function credit(state, name, delta, why, { other = null, at = why } = {}) {
+  if (!delta) return;
+  state.bank[name] = bankOf(state, name) + delta;
+  (state.moneyLog ||= []).push({ ep: state.ep, name, delta, why, other, at });
+}
+
 /** The daily's purse, paid to its winners. Returns { each, who } or null. */
 export function payDaily(state, daily) {
   const who = (daily.winners || []).filter(w => state.active.includes(w));
   if (!who.length) return null;
   const each = daily.mode === 'solo' ? PURSE.solo : daily.mode === 'pairs' ? PURSE.pairs : Math.max(2500, Math.round(PURSE.team / who.length / 500) * 500);
-  for (const w of who) state.bank[w] = bankOf(state, w) + each;
+  for (const w of who) credit(state, w, each, 'daily', { other: daily.name || null });
   daily.purse = { each, who };
   return daily.purse;
 }
@@ -48,8 +59,9 @@ export function payDaily(state, daily) {
 /** The Arena: the winner takes half of the loser's bank, and a bonus for the win. The amount taken. */
 export function arenaPurse(state, winner, loser) {
   const took = Math.round(bankOf(state, loser) / 2 / 500) * 500;
-  state.bank[loser] = bankOf(state, loser) - took;
-  state.bank[winner] = bankOf(state, winner) + took + PURSE.arena;
+  credit(state, loser, -took, 'arena-lost', { other: winner, at: 'arena' });
+  credit(state, winner, PURSE.arena, 'arena-win', { other: loser, at: 'arena' });
+  credit(state, winner, took, 'arena-took', { other: loser, at: 'arena' });
   if (took >= 5000) {
     // they did not just send them home, they took their money
     remember(loser, winner, 'took-my-money', 0.8);

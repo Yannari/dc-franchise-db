@@ -43,7 +43,7 @@ import { reviseAll } from './plans.js';
 import { spreadDay, syncActive } from './knowledge.js';
 import { morningAfter } from './fallout.js';
 import { calledOut, arenaWon, remember } from './rel.js';
-import { payDaily, arenaPurse, hurt, medicalRisk, healDay, powerRankings, earnPass, passCut, PURSE } from './stakes.js';
+import { payDaily, arenaPurse, hurt, medicalRisk, healDay, powerRankings, earnPass, passCut, PURSE, credit } from './stakes.js';
 import { purge, returnArena, lateArrival } from './ep-twists.js';
 import { arenaGoodbye } from './goodbye.js';
 import { wavering, hasWavered, quitMoment } from './quit.js';
@@ -623,8 +623,8 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
   // a Pairs season's money was paid out by the share-or-keep (share-keep.js)
   // a team final splits two champions' purses between the whole team (War of the Worlds 2)
   const teamFinal = state.final?.teamPodium;
-  if (teamFinal) for (const c of state.champions || []) state.bank[c] = (state.bank[c] || 0) + Math.round(PURSE.champion * 2 / Math.max(1, state.champions.length) / 500) * 500;
-  else if (!pairsOn(state)) for (const c of state.champions || []) state.bank[c] = (state.bank[c] || 0) + PURSE.champion;
+  if (teamFinal) for (const c of state.champions || []) credit(state, c, Math.round(PURSE.champion * 2 / Math.max(1, state.champions.length) / 500) * 500, 'champion', { at: 'final' });
+  else if (!pairsOn(state)) for (const c of state.champions || []) credit(state, c, PURSE.champion, 'champion', { at: 'final' });
   const placements = {};
   for (const g of state.gone) placements[g.name] = g.place;
   Object.assign(placements, state.final.placements);

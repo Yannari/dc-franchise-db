@@ -252,9 +252,17 @@ export function playFinal(state, rng) {
     const p = Math.max(0, 0.05 * (1 - (S(n, 'endurance') + S(n, 'temperament')) / 20) * (1 + m.homesick / 10) * (1.3 - m.morale / 12) * (1 + tiles(n) * 0.5)
       * (pairsOn(state) ? 0.5 : 1));
     if (rng() < p) {
-      fin.overnight.push({ name: n, quit: true });
+      // why, from the same terms as the chance (the user, 2026-10-18: "Sami just quit for seemingly no reason"): the
+      // tiles somebody dumped on them, home, a night that convinced them they cannot win, or the body giving out
+      const why = tiles(n) >= 1 && rng() < 0.6 ? 'tiles' : m.homesick >= 4 ? 'home' : m.morale <= 4 ? 'beaten' : 'body';
+      const by = why === 'tiles' ? fin.sabotage.filter(x => x.to === n).map(x => x.from).find(x => state.active.includes(x)) || null : null;
+      // the one who sees it happen: the closest friend still out here
+      const friend = state.active.filter(x => x !== n && x !== by).sort((x, y) => getBond(y, n) - getBond(x, n))[0] || null;
+      fin.overnight.push({ name: n, quit: true, why });
       giveRespect(state, n, 'quit');
-      addScene(state, 'overnight-quit', [n], {}, state.active, 'final');
+      if (friend && getBond(friend, n) >= 1) { addBond(friend, n, 0.3); nudge(state, friend, 'morale', -0.3); }
+      if (by) remember(n, by, 'sabotaged-me', 1);
+      addScene(state, 'overnight-quit', [n, ...(friend ? [friend] : []), ...(by ? [by] : [])], { why, friend, by }, state.active, 'final');
       removePlayer(state, n, 'final-quit');
       delete total[n];
       continue;

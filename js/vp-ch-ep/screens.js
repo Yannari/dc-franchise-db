@@ -201,7 +201,27 @@ function ctxOf(R) {
 // Tabs: in their heads (what this episode has shown so far), relationships (pick anybody: how everybody
 // stands with them), alliances, deals and couples, the record. The house as the episode began until its
 // last screen, then as it ends, so the drawer never gets ahead of the screen.
-const ITABS = [['heads', 'In their heads'], ['people', 'Relationships'], ['allies', 'Alliances'], ['deals', 'Deals'], ['votes', 'Votes'], ['rec', 'Record']];
+const ITABS = [['heads', 'In their heads'], ['people', 'Relationships'], ['allies', 'Alliances'], ['deals', 'Deals'], ['votes', 'Votes'], ['rec', 'Record'], ['money', 'Money']];
+
+// ── the Money tab (the user, 2026-10-18: "how do I see the money of each week, it's not in intel") ──
+const cash = v => `$${Math.round(v).toLocaleString('en-US')}`;
+const MONEY_WHY = { daily: m => `Won ${m.other || 'the daily'}`, 'arena-win': m => `Beat ${m.other} in the Arena`, 'arena-took': m => `Took half of ${m.other}'s bank`,
+  'arena-lost': m => `${m.other} took half`, champion: () => 'Champion', kept: () => 'Kept the prize', shared: m => `Shared with ${m.other}` };
+// A movement airs with its part of the episode: the daily's pay once the daily is over, the Arena's once the Arena is
+const MONEY_AT = { daily: ['daily'], arena: ['arena', 'pair-arena'], final: ['final-podium', 'champions', 'share-keep'] };
+// The bank as each earlier episode of this season ended, for the line beside each name
+function bankHistory(row) {
+  const rows = (typeof window !== 'undefined' && window.gs?.episodeHistory || [])
+    .filter(r => r?.format === CHALLENGE_FORMAT && r.num < row.num && r.ch?.intel?.end?.rec).sort((a, b) => a.num - b.num);
+  return n => rows.map(r => r.ch.intel.end.rec[n]?.bank ?? null).filter(v => v != null);
+}
+// A small line of the bank across the season: SVG, the last point the bank now
+function moneyLine(points) {
+  if (points.length < 2) return '';
+  const max = Math.max(...points, 1), w = 60, h = 14;
+  const xy = points.map((v, i) => `${(i / (points.length - 1) * w).toFixed(1)},${(h - 1 - v / max * (h - 2)).toFixed(1)}`).join(' ');
+  return `<svg class="iline" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${xy}" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>`;
+}
 // A deal in the house's words (the user, 2026-10-16: "a final deal, we don't say final two, it can go to final eight")
 const DEAL_WORD = { final: 'Final deal', protect: 'No votes, no call-outs', spare: 'Kept off the vote', tribunal: 'Tribunal deal' };
 // Why a ballot went where it did (vote.js houseVote: why, reason, via), in plain words
@@ -385,6 +405,26 @@ function intel(R) {
     // the stakes (ch/stakes.js): the bank, a skull (&#9760;) for each one earned, a cross while hurt
     body = `<div class="irec ihead"><span></span><b>Player</b><i>Dailies</i><i>Arena</i><i>Voted in</i><i>Votes</i><i>Bank</i></div>`
       + rows.map(([n, r]) => `<div class="irec">${face(n)}<b>${esc(n)}${r.skulls ? ` ${'&#9760;'.repeat(Math.min(3, r.skulls))}` : ''}${r.hurt ? ' &#10010;' : ''}</b><i>${r.daily}</i><i>${r.arenaW}-${r.arenaL}</i><i>${r.votedIn}</i><i>${r.votes}</i><i>${r.bank ? `$${Math.round(r.bank / 1000)}k` : '–'}</i></div>`).join('');
+  } else if (tab === 'money') {
+    // the bank as the episode began, every movement that has aired so far and why, and the season's line
+    const row = R.E.row;
+    const atEnd = R.si === R.E.screens.length - 1 && R.idx >= R.scr.steps.length - 1;
+    const done = doneScenes(R);
+    const aired = row?.ch?.aired || [];
+    const seen = at => atEnd || aired.some((a, i) => done.has(i) && (MONEY_AT[at] || []).includes(a.kind));
+    const moves = (row?.ch?.money || []).filter(m => seen(m.at));
+    const start = n => row?.ch?.intel?.start?.rec?.[n]?.bank ?? H.rec[n]?.bank ?? 0;
+    const hist = bankHistory(row);
+    const list = [...new Set([...H.players, ...moves.map(m => m.name)])].map(n => {
+      const mine = moves.filter(m => m.name === n);
+      const now = start(n) + mine.reduce((s, m) => s + m.delta, 0);
+      return { n, now, delta: now - start(n), mine };
+    }).sort((x, y) => y.now - x.now);
+    body = !row?.ch?.money ? '<div class="inone">This episode was saved before the bank kept a record. Re-run it to see the money.</div>'
+      : `<div class="imoney ihead"><span></span><b>Player</b><i>Bank</i><i>This episode</i></div>`
+      + list.map(({ n, now, delta, mine }) => `<div class="imoney">${face(n)}<b>${esc(n)}${moneyLine([...hist(n), now])}`
+        + `${mine.length ? `<small>${mine.map(m => esc(MONEY_WHY[m.why]?.(m) || m.why)).join(' · ')}</small>` : ''}</b>`
+        + `<i>${now ? cash(now) : '–'}</i><i class="${delta > 0 ? 'up' : delta < 0 ? 'down' : ''}">${delta ? `${delta > 0 ? '+' : '−'}${cash(Math.abs(delta))}` : '–'}</i></div>`).join('');
   }
   const note = tab === 'heads' ? '' : `<div class="inote">${R.si === R.E.screens.length - 1 && R.idx >= R.scr.steps.length - 1 ? 'As the episode ends.' : 'As of this moment in the episode.'}</div>`;
   I.innerHTML = `<h4>INTEL <button type="button" data-close>&times;</button></h4><div class="sub">What the house doesn't know.</div>`

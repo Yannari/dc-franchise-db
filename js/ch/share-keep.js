@@ -17,7 +17,7 @@ import { gs } from '../core.js';
 import { S, addScene, mayScheme, logistic, archetypeOf } from './state.js';
 import { nudge } from './mind.js';
 import { grudgeOf, remember } from './rel.js';
-import { PURSE } from './stakes.js';
+import { PURSE, credit } from './stakes.js';
 import { carriedBy, tieWord } from './pairs.js';
 
 const pop = (n, d) => { gs.popularity ||= {}; gs.popularity[n] = (gs.popularity[n] || 0) + d; };
@@ -94,8 +94,8 @@ export function shareOrKeep(state, rng, pairs) {
     if (!(PAIR_PRIZE[p.place - 1] > 0)) continue;
     const d = decide(state, rng, p);
     const { chooser, partner, keep, prize } = d;
-    state.bank[chooser] = (state.bank[chooser] || 0) + (keep ? prize : prize / 2);
-    state.bank[partner] = (state.bank[partner] || 0) + (keep ? 0 : prize / 2);
+    credit(state, chooser, keep ? prize : prize / 2, keep ? 'kept' : 'shared', { other: partner, at: 'final' });
+    credit(state, partner, keep ? 0 : prize / 2, 'shared', { other: chooser, at: 'final' });
     if (keep) {
       // the heaviest thing one player can do to another on this show (franchise-carry reads it for every season after)
       addBond(partner, chooser, -5);

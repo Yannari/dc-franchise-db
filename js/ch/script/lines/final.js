@@ -118,18 +118,88 @@ export default {
       { by: 'b', conf: "{a} could have picked anyone and picked me. Fine. I'll empty every last tile and still beat {a}.", v: { loud: ['{a} dumped the tiles on ME?! Fine! I\'ll empty EVERY tile!'] } },
     ] },
   ],
-  'overnight-quit.any': [
+  // The overnight quit is a moment, with its reason (the user, 2026-10-18: "Sami just quit for seemingly no reason"):
+  // a: quits; b: the closest friend out there, if any; c: the one who dumped tiles on a, if still in. final.js picks
+  // the reason from the terms of the chance itself.
+  'overnight-quit.body': [
     { id: 'oq.1', turns: [
-      { by: 'a', say: "TJ. I'm done. I can't do it.", v: { soft: ['I\'m sorry. I can\'t do this anymore.'] } },
-      { by: 'tj', say: "You're quitting? IN THE FINAL? Buddy. Buddy, no. Okay. Yes. You're out. I'm heartbroken and also kind of mad." },
-      { by: 'a', conf: "I made it so far. I just couldn't make it through the night.", v: { sharp: ['I know what everyone will say. I don\'t care. My body was done.'] } },
+      { beat: '{a} has stopped talking. {a} sits with both arms wrapped around {a.posAdj} knees, shaking.' },
+      { by: 'b', opt: 1, say: "Hey. Talk to me. Are you okay?" },
+      { by: 'a', say: "I can't feel my hands. I haven't been able to for an hour." },
+      { by: 'b', opt: 1, say: "It's a few more hours. The sun comes up and it gets better." },
+      { by: 'a', say: "I'm not going to make it to the sun." },
+      { by: 'a', say: "TJ. I'm done. I can't do it." },
+      { by: 'tj', say: "You're quitting? In the final? Buddy. Okay. If your body says you're done, you're done. You're out." },
+      { by: 'a', conf: "I made it this far. I just couldn't make it through the night. My body stopped listening to me." },
     ] },
     { id: 'oq.2', turns: [
+      { beat: '{a} tries to stand up, sways, and sits back down hard.' },
+      { by: 'b', opt: 1, say: "Whoa. Sit. Just sit for a second." },
+      { by: 'a', say: "I've been sitting. It's not getting better. It's getting worse." },
       { beat: '{a} stands up in the dark and walks toward the medic tent.' },
-      { by: 'a', conf: "I'm done. I gave this game everything I had, and tonight I ran out.", v: { soft: ['I\'m so sorry to everybody who believed in me.'] } },
+      { by: 'tj', say: "And we've lost one. {a} couldn't take the cold, and {a} is out of the final." },
+      { by: 'a', conf: "I gave this game everything I had, and tonight I ran out. I'm not ashamed of that. I'm just sad." },
+      { by: 'b', opt: 1, conf: "Watching {a} walk away hurt. I wanted to go with {a.obj}, and I can't. I have to finish this." },
     ] },
-    { id: 'oq.3', turns: [
+  ],
+  'overnight-quit.home': [
+    { id: 'oqh.1', turns: [
+      { beat: '{a} is staring at the fire and has been for a long time.' },
+      { by: 'b', opt: 1, say: "You've been quiet all night. What's going on?" },
+      { by: 'a', say: "I keep thinking about home. About my family. I haven't talked to them in weeks." },
+      { by: 'b', opt: 1, say: "One more day. Then you can call everybody." },
+      { by: 'a', say: "I know. I just don't want it anymore. Not like this. I want to go home." },
+      { by: 'tj', say: "Are you sure? You're one day from the end." },
+      { by: 'a', say: "I'm sure. I'm sorry, TJ." },
+      { by: 'a', conf: "Everybody's going to say I gave up the money. Maybe I did. Right now the people I love are worth more than a check." },
+    ] },
+    { id: 'oqh.2', turns: [
+      { by: 'a', say: "Can I tell you something? I don't think I care about winning anymore." },
+      { by: 'b', opt: 1, say: "You're tired. Everybody's tired." },
+      { by: 'a', say: "It's not tired. I miss home so much it hurts. I've missed it for days." },
+      { beat: '{a} gets up and walks over to TJ.' },
+      { by: 'tj', say: "{a} is going home. Tonight. Out of the final." },
+      { by: 'a', conf: "I'm not quitting on the game. I'm choosing my family. I'd make the same choice again." },
+    ] },
+  ],
+  'overnight-quit.beaten': [
+    { id: 'oqb.1', turns: [
+      { by: 'a', say: "Be honest. Do I have any chance tomorrow?" },
+      { by: 'b', opt: 1, say: "Of course you do. It's not over." },
+      { by: 'a', say: "I'm behind. I've been behind all day. Everybody out here is faster than me." },
+      { by: 'b', opt: 1, say: "Then you finish. Finishing still counts for something." },
+      { by: 'a', say: "Not to me. I didn't come here to finish." },
+      { by: 'tj', say: "And that's it for {a}. Out of the final, in the middle of the night." },
+      { by: 'a', conf: "I knew around midnight I wasn't going to win. After that, every hour out here was just pain for nothing." },
+    ] },
+    { id: 'oqb.2', turns: [
+      { beat: '{a} watches the others huddle together and does the maths.' },
+      { by: 'a', say: "I'm too far behind. Even if I make it through tonight, I'm not catching anybody." },
+      { by: 'b', opt: 1, say: "You don't know that. Tomorrow is a whole day." },
+      { by: 'a', say: "I do know it. I've seen the points." },
+      { by: 'tj', say: "{a} has decided to leave the final. I hate it, but it's {a.posAdj} call." },
+      { by: 'a', conf: "I'd rather walk away on my own than crawl to a finish line at the back." },
+    ] },
+  ],
+  'overnight-quit.tiles': [
+    { id: 'oqt.1', turns: [
+      { beat: '{a} is still digging through the box long after everybody else has finished.' },
+      { by: 'a', say: "Why is there still so much in here? I've been at this for hours." },
+      { by: 'c', opt: 1, say: "That's the final. Nothing personal." },
+      { by: 'a', opt: 'c', say: "You put half of it in there, {c}. It's personal." },
+      { by: 'b', opt: 1, say: "Leave it. Get warm. You'll finish it." },
+      { by: 'a', say: "I won't. I'm frozen, and the box is still full of tiles. I'm done." },
       { by: 'tj', say: "And we've lost one. {a} is out of the final." },
+      { by: 'a', conf: "They buried me in tiles and left me out in the cold. It worked. I hope it was worth it." },
+    ] },
+    { id: 'oqt.2', turns: [
+      { beat: '{a} has a box of tiles in front of {a.obj} that is still half full.' },
+      { by: 'b', opt: 1, say: "Do you want me to help you?" },
+      { by: 'a', say: "You can't. That's the rule. I have to empty it myself." },
+      { by: 'a', say: "And I can't feel my fingers anymore." },
+      { by: 'tj', say: "{a} is out of the final. The box won." },
+      { by: 'a', conf: "I wasn't beaten tonight. I was buried. There's a difference, and everybody out here knows it." },
+      { by: 'c', opt: 1, conf: "I gave {a} the tiles because I wanted {a.obj} gone. I didn't think it would happen before morning." },
     ] },
   ],
   'final-pact-help.any': [

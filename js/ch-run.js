@@ -368,6 +368,7 @@ export function challengeRows(result) {
   // a player who came back in a return (ep-twists.js): out from the episode they lost until the one they won
   const away = state.returnedFrom || [];
   const awayAfter = (n, ep) => away.some(r => r.name === n && r.ep <= ep && ep < r.back);
+  const moneyAt = ep => (state.moneyLog || []).filter(m => m.ep === ep).map(m => ({ ...m }));
   const peopleAfter = ep => cast.filter(n => !(goneEp[n] <= ep) && !awayAfter(n, ep) && !(state.arrivedAt?.[n] > ep));
   const exitsAt = ep => [...state.gone, ...away].filter(g => g.ep === ep).map(g => ({ name: g.name, verb: VERB[g.how] || 'eliminated', channel: g.how, by: g.by || null }));
   // Who was in the house when episode `ep` began (a returning player counts on the night they come back).
@@ -405,6 +406,8 @@ export function challengeRows(result) {
           end: (e.intel?.end?.teams || []).map(t => ({ name: t.name, captain: t.captain || null, members: [...t.members] })),
           switches: (e.switches || []).map(x => ({ ...x })), folds: (e.folds || []).map(x => ({ ...x })) } : null,
         teamsBroken: !!e.teamsBroken,
+        // the bank's movements this episode, and why (stakes.js credit): the Intel's Money tab
+        money: moneyAt(e.ep),
         aired: airedOf(e),
         // What the stepped viewer stages (js/vp-ch-ep): the house at the start, the daily as it was
         // played, every ballot with what the voter wanted, was asked and told, and each Arena game.
@@ -441,7 +444,7 @@ export function challengeRows(result) {
           ...finalOf(result.final),
           // a team final (final.js finishTeams): the teams in order, the first all champions
           ...(state.final?.teamPodium ? { teamPodium: state.final.teamPodium.map((t, i) => ({ name: t.name, members: [...t.members], place: i + 1, avg: t.avg ?? null })) } : {}) },
-        people: [...(result.champions || [])], house: castAt(f.ep), aired: airedOf(f) },
+        people: [...(result.champions || [])], house: castAt(f.ep), aired: airedOf(f), money: moneyAt(f.ep) },
     });
   }
   return rows;

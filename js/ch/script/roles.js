@@ -309,7 +309,8 @@ export const ROLES = {
   'final-start': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'instant-elimination': sc => ({ roles: { a: sc.data.winner, b: sc.who.find(x => x !== sc.data.winner) }, ending: 'any' }),
   'overnight-sabotage': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.first ? 'first' : 'rest' }),
-  'overnight-quit': sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
+  // a quits the overnight; b, the closest friend out there, sees it; c, the one who dumped tiles on a (final.js)
+  'overnight-quit': sc => ({ roles: { a: sc.who[0], b: sc.data?.friend || undefined, c: sc.data?.by || undefined }, ending: ['tiles', 'home', 'beaten', 'body'].includes(sc.data?.why) ? sc.data.why : 'body' }),
   'final-pact-help': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'final-pact-broken': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   champions: sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.who.length > 1 ? 'two' : 'one' }),

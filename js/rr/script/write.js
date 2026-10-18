@@ -135,7 +135,7 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   const speakers = Object.entries(r.roles).filter(([k]) => k !== 'don' && k !== 'local').map(([, n]) => n);
   const pairKey = [r.roles.a, r.roles.b].filter(Boolean).sort().join('|');
   const rng = stableRng(state.seed, 'rr-line', scene.id);
-  const entry = pickEntry(state.lineLedger, pools, key, facts, pairKey, rng, speakers, clock, { strong: ['cause', 'threadStep', 'relFam'] });
+  const entry = pickEntry(state.lineLedger, pools, key, facts, pairKey, rng, speakers, clock, { strong: ['cause', 'threadStep'] });
   if (!entry) return null;
   const relFam = scene.data?.snap?.relFam || null;
   const capped = {};

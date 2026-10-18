@@ -33,6 +33,8 @@ export const RR_FACT_KEYS = [
   'why',
   // what went wrong on the road (travel-mishap): flat-tyre, lost-driver, wrong-way
   'mishap',
+  // the twist Don explains (don-rule): boomerang, yield, boomerang-vote; a team sent back because everybody picked it
+  'rule', 'byVote',
   // a is the older of the two by a generation (a parent, a grandparent): true / false; null when unknown
   'aElder',
   // the scene that caused this one (a chain, or the moment an interview is about), its ending, and the storyline step it moves
@@ -71,7 +73,7 @@ export function factsFor(scene, roles, state) {
     broke: !!s.broke, snapped: !!s.snapped,
     tod: todWord(s.tod),
     stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null,
-    matPlace: d.matPlace ?? null, why: d.why ?? null, mishap: scene.kind === 'travel-mishap' ? d.kind ?? null : null,
+    matPlace: d.matPlace ?? null, why: d.why ?? null, rule: d.rule ?? null, byVote: !!d.byVote, mishap: scene.kind === 'travel-mishap' ? d.kind ?? null : null,
     aElder: (() => { const e = elderOf(state.teams[d.team]); const a = roles?.roles?.a; return e && a ? e === a : null; })(),
     fails: !s.fails ? 0 : s.fails === 1 ? 1 : 'many',
     switched: !!(d.switched), quit: !!(d.quit), place: s.place ?? null,

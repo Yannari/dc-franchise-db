@@ -114,14 +114,20 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     if (p === 'surrender-money' || p === 'surrender-all') act(state, 'surrender', last, null, rng, null, { t: finish[last] ?? null, penalty: p });
     if (p === 'speed-bump') state.speedBump[last] = n + 1;
     else if (p === 'marked') state.marked[last] = n + 1;
-    act(state, 'don-fakeout', last, null, rng, 'relief', { penalty: p, t: finish[last] ?? null });
+    act(state, 'don-fakeout', last, null, rng, null, { penalty: p, t: finish[last] ?? null });
   }
 
   // every team's moment on the mat
+  const N = order.length, third = Math.ceil(N / 3);
+  const bandOf = i => (i === 0 ? 'first' : i === N - 1 ? 'last' : i < third ? 'top' : i >= N - third ? 'bottom' : 'mid');
   order.forEach((id, i) => {
     if (result.eliminated.includes(id)) return;
-    emit(state, 'don-place', people(state, id), penalties[id] ? 'penalty-reveal' : 'plain',
-      { team: id, place: i + 1, t: finish[id] ?? null, stretch: 'mat', effects: [['placed', id, i + 1]] });
+    const band = bandOf(i);
+    const ending = penalties[id] ? 'penalty-reveal'
+      : (state.rec[id].sabotage || 0) >= 1 && rng() < 0.5 ? 'scared-of-them'
+      : band === 'mid' && rng() < 0.35 ? 'bored' : 'plain';
+    emit(state, 'don-place', people(state, id), ending,
+      { team: id, place: i + 1, matPlace: band, t: finish[id] ?? null, stretch: 'mat', effects: [['placed', id, i + 1]] });
   });
 
   // the winner's reward

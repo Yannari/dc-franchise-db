@@ -120,7 +120,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
     }
     if (s.kind === 'board' && leg.twist && !state.rulesRead[leg.twist]) {
       state.rulesRead[leg.twist] = leg.n;
-      emit(state, 'don-rule', [], 'explained', { t, stretch: s.id, rule: leg.twist, effects: [['rule', leg.twist]] });
+      emit(state, 'don-rule', [], rng() < 0.2 ? 'grudging-repeat' : 'explained', { t, stretch: s.id, rule: leg.twist, effects: [['rule', leg.twist]] });
     }
 
     // a place that's closed: wait for it to open, with whoever else is waiting
@@ -169,7 +169,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
         return { out: true, end: t };
       }
       emit(state, 'don-place', people(state, id), 'plain', { team: id, t, stretch: s.id, place: midmat.length,
-        midmat: true, effects: [['midmat', id, midmat.length]] });
+        matPlace: midmat.length === 1 ? 'first' : 'mid', midmat: true, effects: [['midmat', id, midmat.length]] });
       res = { end: t + 2 };
     } else if (s.kind === 'mat') {
       matAt[id] = t;

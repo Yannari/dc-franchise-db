@@ -88,7 +88,7 @@ export function handOut(state, leg, rng) {
     (state.uturn ||= {})[target] = { by: 'vote', stretch: null };
     state.boomeranged[target] = 'vote';
     const split = tally[target] <= ballots.length / 2;
-    act(state, 'boomerang-vote', target, null, rng, { ending: split ? 'split' : 'decided', present: ids,
+    act(state, 'boomerang-vote', target, null, rng, { ending: split ? 'split' : 'decided', present: [target, ...ids.filter(x => x !== target)],
       data: { event: { target }, ballots, target } });
   }
 }
@@ -106,7 +106,7 @@ export function resolveBoard(state, team, stretch, t, api, rng) {
   if (u && !u.served) {
     u.served = true;
     redo = u.stretch || stretch.after;
-    act(state, 'boomerang-hit', id, u.by !== 'vote' ? u.by : null, rng);
+    act(state, 'boomerang-hit', id, u.by !== 'vote' ? u.by : null, rng, { data: { byVote: u.by === 'vote' } });
     return { end, redo };
   }
   // A yielded team waits.

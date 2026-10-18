@@ -20,7 +20,10 @@ const sparks = c => { const [x, y] = lovers(c); return c.state.sparks[pairKey(x,
 const attempts = c => { const [x, y] = lovers(c); return (c.state.confess ||= {})[pairKey(x, y)] || 0; };
 const romance = (w) => c => (allowed(c) ? w(c) : 0);
 
-register([
+// every romance scene records its two lovers (threads.js reads them as the crush's people)
+const withLovers = kinds => kinds.map(k => ({ ...k, facts: c => ({ lovers: lovers(c) }) }));
+
+register(withLovers([
   K({ id: 'crush-noticed', family: 4, cast: 'teams', moments: ['overlap', 'plane', 'quiet'], when: romance(c => (sparks(c) >= 1 ? 0.3 : 0.05)), endings: {
     radar: { w: c => c.S(c.B, 'intuition') / 5, fx: (fx, c) => { const [x, y] = lovers(c); fx.believe([c.B], { about: x, claim: 'likes', value: y }); fx.spark(x, y); } },
     teased: { w: 1, fx: (fx, c) => { const [x] = lovers(c); fx.mind(x, 'stress', 5); } },
@@ -69,4 +72,4 @@ register([
     promise: { w: 2, fx: (fx, c) => { const [x, y] = lovers(c); fx.bond(x, y, 1); fx.note(`promise:${pairKey(x, y)}`, c.state.leg); } },
     'no-promises': { w: 0.5, fx: (fx, c) => { const [x, y] = lovers(c); fx.uncouple(x, y); } },
   } }),
-]);
+]));

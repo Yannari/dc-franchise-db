@@ -478,7 +478,7 @@ export default {
     ] },
     { id: 'fpo.2', turns: [
       { by: 'tj', say: "Okay. Stand up, all of you. It's time to find out where you finished." },
-      { by: 'a', conf: "You don't know the totals while you're running. You only know when TJ tells you." },
+      { by: 'a', conf: "Out there I had no idea what the totals were. Nobody knows until TJ says them." },
     ] },
   ],
   'final-congrats.gracious': [

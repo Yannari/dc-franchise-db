@@ -85,6 +85,17 @@ describe('The Challenge pools', () => {
     expect(all, all.join('\n')).toEqual([]);
   });
 
+  // ...and the maxim told to the camera ("You don't pick the weakest. You pick who you'd hate to see at the final."):
+  // a confessional says what this person is doing, not a rule for everybody. Said to somebody's face it is a jab
+  // ("You don't look ready. You look tired."), and stays.
+  it('no confessional is a maxim', () => {
+    const MAXIM = /^(sometimes |everybody thinks )?(you|people)\b[^.!?]*\b(don't|never)\b[^.!?]*[.!?]\s+(you don't[.!?]\s+)?(you|they)\b/i;
+    const bad = [];
+    for (const list of Object.values(POOLS)) for (const e of list) for (const t of e.turns) if (t.conf)
+      for (const text of [t.conf, ...Object.values(t.v || {}).flat()]) if (MAXIM.test(text)) bad.push(`${e.id}: ${text}`);
+    expect(bad, bad.join('\n')).toEqual([]);
+  });
+
   it('a new alliance has three or four members: its lines never count them', () => {
     // "Can I trust you two?" and "It's us three" aired in an alliance of four.
     const bad = allTexts(k => /^alliance-(form|grow)\./.test(k)).filter(({ text }) =>

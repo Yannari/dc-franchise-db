@@ -62,7 +62,7 @@ export default {
       { by: 'a', say: "Don't tell me that. That's not helping." },
       { by: 'b', say: "I'm not saying pick {opt2}. I'm just telling you what I saw." },
       { by: 'a', say: "I'm not picking somebody because they cried. I'm picking whoever I want to beat." },
-      { by: 'a', conf: "Everybody thinks you pick the weakest person. You don't. You pick the one you'd hate to see at the final." },
+      { by: 'a', conf: "Everybody thinks I'll pick the weakest. I'm picking the one I'd hate to see at the final, and I know who that is." },
     ] },
     { id: 'pick.x6', turns: [
       { by: 'b', say: "You've got that face." },
@@ -446,7 +446,7 @@ export default {
       { by: 'b', say: "For them, nothing did." },
       { by: 'a', say: "That's what makes me so mad." },
       { by: 'b', say: "Then use it tomorrow." },
-      { by: 'b', conf: "Sometimes you don't have to say anything. You just have to show up and sit there." },
+      { by: 'b', conf: "I didn't say anything clever. I just showed up and sat there with them, and I think that was enough." },
     ] },
     { id: 'av.x6', turns: [
       { by: 'a', say: "Just tell me I'm not crazy. I was safe this morning, right?" },

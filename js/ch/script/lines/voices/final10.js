@@ -16,8 +16,8 @@ export default {
     8: { sharp: "I'm not picking somebody because they cried. I'm picking whoever I want to beat.", dry: "I don't pick people for crying. I pick who I want to beat.",
       loud: "I'm NOT picking somebody because they cried! I'm picking whoever I want to BEAT!", soft: "I'm not going to pick somebody because they cried. I'm picking whoever I want to beat.",
       odd: "I'm not picking somebody for crying. Crying isn't a weakness. Losing is." },
-    9: { sharp: "Everybody thinks you pick the weakest person. You don't. You pick the one you'd hate to see at the final.", dry: "You don't pick the weakest. You pick who you'd hate to see at the final.",
-      loud: "Everybody thinks you pick the WEAKEST person! You DON'T! You pick the one you'd hate to see at the FINAL!", soft: "Everybody thinks you pick the weakest person. You don't. You pick the one you'd hate to see at the final.",
+    9: { sharp: "Everybody thinks I'll pick the weakest. I'm picking the one I'd hate to see at the final, and I know who that is.", dry: "I'm not picking the weakest. I'm picking the one I'd hate to see at the final, and I know who that is.",
+      loud: "Everybody thinks you pick the WEAKEST person! You DON'T! You pick the one you'd hate to see at the FINAL!", soft: "Everybody thinks I'll pick the weakest. I'm picking the one I'd hate to see at the final, and I know who that is.",
       odd: "Everybody thinks you pick the weakest person. Wrong. You pick the face you never want to see at the finish line." },
   },
   'hd.s3': {

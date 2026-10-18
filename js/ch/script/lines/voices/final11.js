@@ -314,8 +314,8 @@ export default {
     5: { sharp: "For them, nothing did.", dry: "For them, nothing did.", loud: "For THEM, nothing did!", soft: "For them, nothing did.", odd: "For them, nothing did. That's the worst part." },
     6: { sharp: "That's what makes me so mad.", dry: "That's what makes me mad.", loud: "That's what makes me SO MAD!", soft: "That's what makes me so mad.", odd: "That's what makes me so mad. Hot mad." },
     7: { sharp: "Then use it tomorrow.", dry: "Use it tomorrow.", loud: "Then USE it tomorrow!", soft: "Then use it tomorrow.", odd: "Then use it tomorrow. Mad is fuel." },
-    8: { sharp: "Sometimes you don't say anything. You show up and sit there.", dry: "Sometimes you just show up and sit.", loud: "Sometimes you don't have to SAY anything! You just have to SHOW UP and sit there!",
-      soft: "Sometimes you don't have to say anything. You just have to show up and sit there.", odd: "Sometimes the best thing you can say is nothing, sitting right next to somebody." },
+    8: { sharp: "I didn't say much. I just sat with them, and it seemed to help.", dry: "Sometimes you just show up and sit.", loud: "I didn't have to say anything! I just showed up and sat there with them!",
+      soft: "I didn't say anything clever. I just showed up and sat there with them, and I think that was enough.", odd: "Sometimes the best thing you can say is nothing, sitting right next to somebody." },
   },
   // ── crowd: floater, vet ──
   'cw.ff1': {

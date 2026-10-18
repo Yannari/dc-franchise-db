@@ -321,6 +321,8 @@ export function talkAtWait(state, present, stretch, t, api, rng, moment = null) 
   const all = ids.flatMap(id => people(state, id));
   const seat = [];
   const add = n => { if (seat.length < 4 && !seat.includes(n)) seat.push(n); };
+  // the crowd at the mat is about the team that just stepped on (the first one given)
+  if ((moment || roomMoment(stretch)) === 'mat-crowd') people(state, ids[0]).forEach(add);
   for (const s of threadSteps(state, all)) if (seat.length + s.who.filter(n => !seat.includes(n)).length <= 4) s.who.forEach(add);
   const pairs = [];
   for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {

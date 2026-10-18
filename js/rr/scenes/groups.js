@@ -2,6 +2,7 @@
 // (docs/ridonculous-race-scenes.md §3). The talk layer seats up to four people (ctx.people)
 // from the teams present (ctx.present); `A`,`B` is the first team, `C`,`D` the second.
 import { K, register } from './registry.js';
+import { mayScheme } from '../state.js';
 
 // the seated people (talk.js seats up to four); the first is the one the scene is about
 const seat = c => (c.people?.length ? c.people : [c.A, c.B, c.C, c.D].filter(Boolean));
@@ -16,7 +17,8 @@ register([
   K({ id: 'airport-crowd', family: 3, cast: 'group', moments: ['airport'], endings: {
     scramble: { w: 2, fx: (fx, c) => { fx.time(c.tid, 5); fx.mind(first(c), 'stress', 4); } },
     cooperate: { w: c => (c.allied() ? 2 : 0.4), fx: (fx, c) => fx.teams(c.tid, c.oid, 0.5) },
-    'lie-about-flight': { w: c => (c.rivalry() ? 1 : 0.2), fx: (fx, c) => fx.believe([c.C, c.D], { about: 'flight', claim: 'next', value: 'later', truth: false, source: c.tid }) },
+    // a lie is a scheme: only somebody who may scheme tells it (CLAUDE.md archetype rules)
+    'lie-about-flight': { w: c => (!mayScheme(first(c)) ? 0 : c.rivalry() ? 1 : 0.2), fx: (fx, c) => fx.believe([c.C, c.D], { about: 'flight', claim: 'next', value: 'later', truth: false, source: c.tid }) },
   } }),
   K({ id: 'plane-row', family: 3, cast: 'group', moments: ['plane'], endings: {
     'seatmates-talk': { w: 2, fx: (fx, c) => fx.teams(c.tid, c.oid, 1) },
@@ -47,7 +49,8 @@ register([
   } }),
   K({ id: 'mat-crowd', family: 3, cast: 'group', moments: ['mat-crowd'], endings: {
     applause: { w: 2, fx: (fx, c) => fx.mind(first(c), 'morale', 3) },
-    boos: { w: c => ((c.state.rec[c.tid]?.caught || 0) > 0 ? 3 : 0.1), fx: (fx, c) => { fx.mind(first(c), 'morale', -5); fx.pop(first(c), -1); } },
+    // the crowd boos a team that was caught messing with others, and nobody else
+    boos: { w: c => ((c.state.rec[c.tid]?.caught || 0) > 0 ? 3 : 0), fx: (fx, c) => { fx.mind(first(c), 'morale', -5); fx.pop(first(c), -1); } },
     relief: { w: c => (c.allied() ? 2 : 0.5), fx: (fx, c) => fx.teams(c.tid, c.oid, 0.5) },
   } }),
   K({ id: 'superteam-pick', family: 3, cast: 'group', moments: ['superteam'], endings: {

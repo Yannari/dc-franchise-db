@@ -173,6 +173,28 @@ describe('rr season read (2026-10-18)', () => {
     }
   });
 
+  it('in a room: only a schemer lies about the flight, boos are for a team that was caught, the arriving team is first at the mat', async () => {
+    const { SCENES, whenOf, prepare } = await import('../js/rr/scenes.js');
+    const { talkAtWait } = await import('../js/rr/talk.js');
+    const ctx = fixtureCtx('airport-crowd', { doerArchetype: 'hero' });
+    const st = ctx.state;
+    const k = SCENES['airport-crowd'];
+    prepare(ctx);
+    ctx.people = [st.teams[ctx.team.id].a, st.teams[ctx.other.id].a];
+    expect(k._endings['lie-about-flight'].w(ctx)).toBe(0);
+    const m = SCENES['mat-crowd'];
+    const c2 = fixtureCtx('mat-crowd');
+    prepare(c2);
+    c2.state.rec[c2.team.id].caught = 0;
+    expect(m._endings.boos.w(c2)).toBe(0);
+    const c3 = fixtureCtx('mat-crowd');
+    const st3 = c3.state;
+    const ids = st3.order.slice(0, 4);
+    const out = talkAtWait(st3, ids, { id: 'mat', kind: 'mat' }, 300, null, () => 0.3, 'mat-crowd');
+    const sc = out.find(s => s.kind === 'mat-crowd');
+    if (sc) expect([st3.teams[ids[0]].a, st3.teams[ids[0]].b]).toContain(sc.who[0]);
+  });
+
   it('a cast never has two teams with the same identity', () => {
     for (const seed of [1, 2, 3, 4]) {
       const ids = raceCast(18, seed).teams.map(t => t.identity).filter(Boolean);

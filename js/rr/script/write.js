@@ -23,6 +23,7 @@ import { voiceOf } from '../../td/story/voice.js';
 import { FAMILY } from '../../td/story/voice-family-map.js';
 import { POOLS } from './lines/index.js';
 import { rolesOf, DON } from './roles.js';
+import { SCENES, relFamOf } from '../scenes.js';
 import { factsFor } from './facts.js';
 import { identityLine } from './identity.js';
 
@@ -152,8 +153,9 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
     let said;
     if (kind === 'beat' || t.by === 'don' || t.by === 'local') said = { text: t.beat || t.say || t.conf, tag: null };
     else if (t.id && (said = identityLine(state, by, t.id, rng))) said = { text: said, tag: `id:${t.id}` };
-    // a speaker's relationship lines are their own team's (c and d are the other team)
-    else said = voicedLine(t, by, { relFam: ['c', 'd'].includes(t.by) ? scene.data?.snap?.relFamB || null : relFam, rng,
+    // a speaker's relationship lines are their own team's (c and d are the other team; in a room, each speaker's own)
+    else said = voicedLine(t, by, { relFam: SCENES[scene.kind]?.cast === 'group' || scene.kind === 'same-flight' ? relFamOfPerson(state, by)
+      : ['c', 'd'].includes(t.by) ? scene.data?.snap?.relFamB || null : relFam, rng,
       ledger: state.lineLedger, clock, skip: skipFor(by) });
     const fam = said.tag && (CAPPED.includes(said.tag) ? said.tag : FAMILY[said.tag]);
     if (CAPPED.includes(fam)) ((capped[by] ||= {})[fam] = (capped[by][fam] || 0) + 1);
@@ -164,6 +166,11 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
     lines.push(line);
   });
   return { lines, lineId: entry.id };
+}
+
+function relFamOfPerson(state, n) {
+  const t = Object.values(state.teams).find(x => x.a === n || x.b === n);
+  return t ? relFamOf(t.rel) : null;
 }
 
 function partnerOf(state, n) {

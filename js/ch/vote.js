@@ -65,22 +65,25 @@ function meet(state, rng, al, eligible, ctx, isVoter = () => true) {
   // a Pairs season: nobody puts their own partner up (it is putting themselves in)
   const outside = eligible.filter(n => !al.members.includes(n) && !present.some(m => partnerOf(state, m) === n));
   if (!outside.length || present.length < 2) return null;
+  // who runs it: the leader, or (a leader who switched teams, or cannot vote this week) the sharpest one in the room.
+  // The Roof Crew met without Heather, who had gone to Blue, and Heather ran the meeting (read 2026-10-18)
+  const lead = present.includes(al.leader) ? al.leader : [...present].sort((a, b) => S(b, 'strategic') - S(a, 'strategic') || a.localeCompare(b))[0];
   // Each member's preference, weighted by how much they back the organiser.
   const tallies = {};
   for (const m of present) {
-    const w = m === al.leader ? 2 : clamp(1 + cooperateWith(m, al.leader) * 0.1, 0.3, 1.6);
+    const w = m === lead ? 2 : clamp(1 + cooperateWith(m, lead) * 0.1, 0.3, 1.6);
     const ranked = outside.map(n => ({ n, s: targetScore(state, m, n, planOf(state, m), ctx).total })).sort((a, b) => b.s - a.s);
     ranked.slice(0, 2).forEach((r, i) => { tallies[r.n] = (tallies[r.n] || 0) + w * (i === 0 ? 1 : 0.45) * Math.max(0.2, r.s); });
   }
   const name = Object.entries(tallies).sort((a, b) => b[1] - a[1])[0]?.[0];
   if (!name) return null;
-  const leaderPlan = planOf(state, al.leader);
-  const reasonKey = targetScore(state, al.leader, name, leaderPlan, ctx).why;
+  const leaderPlan = planOf(state, lead);
+  const reasonKey = targetScore(state, lead, name, leaderPlan, ctx).why;
   const reason = reasonKey;
   const theirPick = ctx.predict(name);
   const responses = {};
   for (const m of present) {
-    if (m === al.leader) { responses[m] = 'organiser'; continue; }
+    if (m === lead) { responses[m] = 'organiser'; continue; }
     const own = outside.map(n => ({ n, s: targetScore(state, m, n, planOf(state, m), ctx).total })).sort((a, b) => b.s - a.s);
     const mine = own[0];
     const theirs = own.find(x => x.n === name)?.s ?? 0;
@@ -96,10 +99,10 @@ function meet(state, rng, al, eligible, ctx, isVoter = () => true) {
       responses[m] = 'yes';
     }
     if (responses[m] === 'false-yes') noteFalseYes(state, m, al.id);
-    if (responses[m] === 'refuses') addBond(m, al.leader, -0.6);
+    if (responses[m] === 'refuses') addBond(m, lead, -0.6);
   }
   const spotted = spotMeeting(state, al, present);
-  const meeting = { alliance: al.id, name: al.name, organiser: al.leader, target: name, reason, reasonKey, expectedCallout: theirPick, responses, spotted };
+  const meeting = { alliance: al.id, name: al.name, organiser: lead, target: name, reason, reasonKey, expectedCallout: theirPick, responses, spotted };
   addScene(state, 'meeting', present, meeting, present, 'private');
   if (spotted.length) addScene(state, 'meeting-spotted', spotted, { alliance: al.id, present }, spotted, 'private');
   return meeting;

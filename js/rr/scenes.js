@@ -84,6 +84,21 @@ function makeFx(ctx, effects) {
       push(['unally', t1, t2]);
     },
     note(key, value) { st.notes ||= {}; st.notes[key] = value; push(['note', key]); },
+    // romance: sparks grow to a couple at three; at most four active couples (the franchise cap)
+    spark(a, b) {
+      const k = pairKey(a, b);
+      st.sparks[k] = (st.sparks[k] || 0) + 1;
+      push(['spark', a, b]);
+      if (st.sparks[k] >= 3 && !st.couples.some(x => !x.ended && pairKey(x.a, x.b) === k)
+        && st.couples.filter(x => !x.ended).length < 4) { st.couples.push({ a, b, since: st.leg, ended: null }); push(['couple', a, b]); }
+    },
+    couple(a, b) {
+      const k = pairKey(a, b);
+      if (st.couples.some(x => !x.ended && pairKey(x.a, x.b) === k) || st.couples.filter(x => !x.ended).length >= 4) { push(['couple-held', a, b]); return; }
+      st.couples.push({ a, b, since: st.leg, ended: null }); push(['couple', a, b]);
+    },
+    uncouple(a, b) { const k = pairKey(a, b); for (const x of st.couples) if (!x.ended && pairKey(x.a, x.b) === k) x.ended = st.leg; push(['uncouple', a, b]); },
+    sabotaged(victim, by, seen) { st.sabotaged ||= {}; st.sabotaged[victim] = { by, leg: st.leg, seen: !!seen }; push(['sabotaged', victim, by, !!seen]); },
     custom(name, ...args) { push([name, ...args]); },
   };
 }
@@ -145,3 +160,10 @@ export function playScene(ctx, kindId, rng, { ending = null } = {}) {
 import './scenes/partners.js';
 import './scenes/teams.js';
 import './scenes/groups.js';
+import './scenes/romance.js';
+import './scenes/locals.js';
+import './scenes/money.js';
+import './scenes/info.js';
+import './scenes/sabotage.js';
+import './scenes/body.js';
+import './scenes/place.js';

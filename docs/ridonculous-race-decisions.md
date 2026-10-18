@@ -56,6 +56,10 @@ stat blends live in `docs/ridonculous-race-identities.md`.
 
 ## Writing
 
+- **Every identity has its own voice, shaped by the speaker's archetype** (2026-10-18). A Goth who's a villain and
+  a Goth who's an underdog both sound like Goths, but not like each other. The dialogue sub-project writes identity
+  voice lines per archetype group (villain, nice, neutral at least), not one set per identity.
+
 - Human dialogue, strong characterization, **no clever lines** in the stepped viewer. Lines answer each other.
 - Don is a dry host, not an announcer.
 

@@ -367,6 +367,8 @@ export function teamDailyReactions(state, rng, { winners, last, scores, daily = 
   state.teamDailyLog.push({ ep: state.ep, won: winT.name, lost: lossT.name });
   // what the day was, for the lines: its name, its hard part, how close, and who came through or fell apart
   const day = { daily: daily.name || null, task: daily.task || null, physical: !!daily.physical, close: !!close };
+  // the captain's huddle before the vote reads the same day (teamHuddle)
+  state.lastTeamDay = { ep: state.ep, ...day };
   const lastTwo = state.teamDailyLog.slice(-2);
   const winStreak = lastTwo.length === 2 && lastTwo.every(x => x.won === winT.name);
   const lossStreak = lastTwo.length === 2 && lastTwo.every(x => x.lost === lossT.name);
@@ -550,7 +552,8 @@ function teamHuddle(state, team, eligible) {
   const who = [cap, ...live(state, team).filter(n => n !== cap).slice(0, 3)];
   const hard = mayScheme(cap) && S(cap, 'strategic') >= 6;
   for (const n of who) nudge(state, n, 'morale', hard ? -0.2 : 0.3);
-  addScene(state, 'team-huddle', who, { team: team.name, hard, size: live(state, team).length, eligible: eligible.length }, live(state, team), 'villa');
+  const day = state.lastTeamDay?.ep === state.ep ? state.lastTeamDay : {};
+  addScene(state, 'team-huddle', who, { team: team.name, hard, size: live(state, team).length, eligible: eligible.length, task: day.task || null, close: day.close ?? null }, live(state, team), 'villa');
 }
 
 /**

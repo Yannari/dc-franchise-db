@@ -344,7 +344,12 @@ export function playDaily(state, rng, { division, pin = null, solo = false }) {
   // a Teams season names the teams: the winners and the team that will vote (teams.js)
   const teamName = n => state.teams?.find(t => t.id === state.teamOf?.[n])?.name;
   addScene(state, 'daily', state.active, { daily: daily.id, dailyName: daily.name, mode, winners, last,
-    ...(seasonTeams ? { teams: true, team: teamName(winners[0]) || null, lastTeam: teamName(last[0]) || null } : {}) }, state.active, 'challenge');
+    ...(seasonTeams ? { teams: true, team: teamName(winners[0]) || null, lastTeam: teamName(last[0]) || null, task: DAILY_TASK[daily.id] || null, close,
+      // who speaks: the day's best on the winning team cheers, and a bold one from the losing team (not its captain, who
+      // speaks in the huddle) talks to the camera: the first name on a team's list said it every week (read 2026-10-18)
+      mvp: [...winners].sort((a, b) => indiv[b] - indiv[a])[0], voice: (() => { const cap = state.teams.find(t => t.id === state.teamOf?.[last[0]])?.captain;
+        const bold = [...last].filter(n => n !== cap).sort((a, b) => S(b, 'boldness') - S(a, 'boldness') || a.localeCompare(b)).slice(0, 3);
+        return bold[state.ep % Math.max(1, bold.length)] || last[0]; })() } : {}) }, state.active, 'challenge');
   for (const n of state.active) nudge(state, n, 'energy', -1.2 * daily.physicality);
   // Throwing, and who catches it. A thrower who won anyway did not throw it: no record, nobody
   // catches it (season 777 aired "I saw Jacques stop and smell the flowers" about the day's winner).

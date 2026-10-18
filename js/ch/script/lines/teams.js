@@ -469,44 +469,7 @@ export default {
   ],
 
   // ── the losing team before it votes ──────────────────────────────────
-  'team-huddle.rally': [
-    { id: 'tmh.r1', turns: [
-      { by: 'a', say: "Okay, {team}. We lost. It happens. But we're not going to tear each other apart over it.",
-        v: { sharp: "Okay, {team}. We lost. It happens. We're not tearing each other apart over it.", dry: "Okay, {team}. We lost. It happens. Let's not tear each other apart over it.", loud: "Okay, {team}, we lost! It happens! But we're not going to tear each other apart over it!", soft: "Okay, {team}. We lost. It happens. But let's not tear each other apart over it.", odd: "Okay, {team}. We lost. It happens. Let's not make it worse by fighting." } },
-      { by: 'b', say: "We still have to put somebody in.",
-        v: { sharp: "We still have to put somebody in.", dry: "We still have to put somebody in.", loud: "We still have to put somebody in!", soft: "We still have to put somebody in, though.", odd: "We still have to put somebody in. That part doesn't go away." } },
-      { by: 'a', say: "I know. And whoever it is, the rest of us are behind them in there. Deal?",
-        v: { sharp: "I know. Whoever it is, the rest of us are behind them. Deal?", dry: "I know. And whoever it is, the rest of us are behind them in there. Deal?", loud: "I know! And whoever it is, the rest of us are behind them in there! Deal?", soft: "I know. And whoever it is, the rest of us are behind them in there. Deal?", odd: "I know. And whoever it is, the rest of us are cheering the loudest in there. Deal?" } },
-      { by: 'c', opt: 1, say: "Deal.",
-        v: { sharp: "Deal.", dry: "Deal.", loud: "Deal!", soft: "Deal.", odd: "Deal. I'll bring the noise." } },
-      { by: 'a', conf: "If we lose and stick together, we'll win the next one. If we start blaming each other, we're done.",
-        v: { sharp: "If we lose and stick together, we win the next one. If we start blaming each other, we're done.", dry: "Lose and stick together, and we win the next one. Start blaming each other, and we're done.", loud: "If we lose and stick together, we'll win the next one! If we start blaming each other, we're done!", soft: "If we lose and stick together, I think we'll win the next one. If we start blaming each other, we're done.", odd: "If we lose and stick together, we'll win the next one. If we start blaming each other, we might as well pack." } },
-    ] },
-    { id: 'tmh.r2', turns: [
-      { by: 'a', say: "Everybody sit down. We need to talk before tonight.",
-        v: { sharp: "Everybody sit down. We need to talk.", dry: "Everybody sit down. We should talk before tonight.", loud: "Everybody sit down, we need to talk before tonight!", soft: "Can everybody sit down? We need to talk before tonight.", odd: "Everybody sit down. We need to talk before tonight, and it won't take long." } },
-      { by: 'b', say: "Is this the big speech?",
-        v: { sharp: "Is this the speech?", dry: "Is this the big speech?", loud: "Oh, is this the big speech?", soft: "Is this the big speech?", odd: "Is this the big speech? Should I get a snack?" } },
-      { by: 'a', say: "Yes, it's the speech. We vote, we say it to each other's faces, and tomorrow we're still a team.",
-        v: { sharp: "Yes. We vote, we say it to each other's faces, and tomorrow we're still a team.", dry: "Yes, it's the speech. We vote, we say it to each other's faces, and tomorrow we're still a team.", loud: "Yes, it's the speech! We vote, we say it to each other's faces, and tomorrow we're still a team!", soft: "Yes, it's the speech. We vote, we say it to each other's faces, and tomorrow we're still a team.", odd: "Yes, it's the speech. We vote, we say it to each other's faces, and tomorrow we all still eat breakfast together." } },
-      { by: 'b', conf: "{a} means every word of that. I just don't think everybody on this team does.",
-        v: { sharp: "{a} means every word of that. I don't think everybody on this team does.", dry: "{a} means it. I don't think everybody on this team does.", loud: "{a} means every word of that! I just don't think everybody on this team does!", soft: "{a} means every word of that. I just don't think everybody on this team does.", odd: "{a} means every word of that. Some of the others were nodding a little too much." } },
-    ] },
-  ],
-  'team-huddle.hard': [
-    { id: 'tmh.h1', turns: [
-      { by: 'a', say: "Let's not make this complicated. We all know who's been dragging this team down.",
-        v: { sharp: "Let's keep it simple. We all know who's been dragging this team down.", dry: "Let's not make this complicated. We all know who's been dragging us down.", loud: "Let's not make this complicated! We all know who's been dragging this team down!", soft: "Let's not make this complicated. I think we all know who's been dragging this team down.", odd: "Let's not make this complicated. We all know who's been dragging this team down, even if nobody says it." } },
-      { by: 'b', say: "Wow. Okay. You're just going to say it like that?",
-        v: { sharp: "Wow. You're just going to say it like that?", dry: "Wow. Okay. Just like that.", loud: "Wow, okay! You're just going to say it like that?", soft: "Wow. Okay. You're really just going to say it like that?", odd: "Wow. Okay. No warm-up at all?" } },
-      { by: 'a', say: "I'm not going to pretend. Pretending is how we keep losing.",
-        v: { sharp: "I'm not pretending. Pretending is how we keep losing.", dry: "I'm not going to pretend. That's how we keep losing.", loud: "I'm not going to pretend! Pretending is how we keep losing!", soft: "I'm not going to pretend. I think pretending is how we keep losing.", odd: "I'm not going to pretend. We've been pretending for weeks, and look where it got us." } },
-      { by: 'c', opt: 1, conf: "{a} didn't say a name, but nobody needed one. Everybody knew who it was.",
-        v: { sharp: "{a} didn't say a name. Nobody needed one. Everybody knew who it was.", dry: "{a} didn't say a name. Didn't need to. Everybody knew.", loud: "{a} didn't say a name, but nobody needed one! Everybody knew who it was!", soft: "{a} didn't say a name, but nobody needed one. Everyone knew who it was.", odd: "{a} didn't say a name, but nobody needed one. Everybody looked at the same person." } },
-      { by: 'a', conf: "Being captain means saying what everybody's thinking, even when it makes people angry at me.",
-        v: { sharp: "Being captain means saying what everybody's thinking, even when it makes people angry.", dry: "Being captain means saying what everybody's thinking. Even when they hate me for it.", loud: "Being captain means saying what everybody's thinking, even when it makes people angry at me!", soft: "Being captain means saying what everybody's thinking, even when it makes people angry at me.", odd: "Being captain means saying what everybody's thinking, and then eating dinner alone." } },
-    ] },
-  ],
+  // (the captain's huddle before a team vote: team-reactions.js, rewritten 2026-10-18)
   'team-only-one.any': [
     { id: 'tmo.1', turns: [
       { by: 'tj', say: "{team}, here's the problem. You've only got one person left who can go in this week. {a}, I'm sorry, buddy. No vote needed." },
@@ -516,68 +479,7 @@ export default {
         v: { sharp: "No vote, no speech. My team ran out of people, and I'm the only one left who can go.", dry: "No vote. No speech. My team ran out of people, and I'm the only one left.", loud: "No vote, no speech! My team just ran out of people, and I'm the only one left who can go!", soft: "No vote, no speech. My team just ran out of people, and I'm the only one left who can go.", odd: "No vote, no speech. My team just ran out of people, and I'm the last name on the list." } },
     ] },
   ],
-  // ── after the team vote: the one going in, and their teammates ──────
-  'team-after-vote.stung': [
-    { id: 'tma.s1', turns: [
-      { beat: '{a} finds {b} on the steps, and {c} walks out right behind.' },
-      { by: 'a', say: "You didn't say my name. Thank you.",
-        v: { sharp: "You didn't say my name. Thanks.", dry: "You didn't say my name. Thank you.", loud: "You didn't say my name! Thank you!", soft: "You didn't say my name. Thank you, really.", odd: "You didn't say my name. Thank you. I noticed." } },
-      { by: 'b', say: "I wasn't going to.",
-        v: { sharp: "I wasn't going to.", dry: "I wasn't going to.", loud: "I was never going to!", soft: "I wasn't going to.", odd: "I wasn't going to. Not you." } },
-      { by: 'a', say: "{c} did, though.",
-        v: { sharp: "{c} did.", dry: "{c} did, though.", loud: "{c} did, though!", soft: "{c} did, though.", odd: "{c} did, though. Loud and clear." } },
-      { by: 'c', say: "It was a team vote. I voted with the team.",
-        v: { sharp: "It was a team vote. I voted with the team.", dry: "It was a team vote. I went with the team.", loud: "It was a team vote! I voted with the team!", soft: "It was a team vote. I just voted with the team.", odd: "It was a team vote. I voted with the team, like everybody else." } },
-      { by: 'a', say: "You voted for me. Just say it.",
-        v: { sharp: "You voted for me. Say it.", dry: "You voted for me. Just say it.", loud: "You voted for me! Just say it!", soft: "You voted for me. You can just say it.", odd: "You voted for me. Just say it. It's fine." } },
-      { by: 'c', say: "Fine. I voted for you.",
-        v: { sharp: "Fine. I voted for you.", dry: "Fine. I voted for you.", loud: "Fine! I voted for you!", soft: "Okay. I voted for you.", odd: "Fine. I voted for you. Happy now?" } },
-      { by: 'a', conf: "Getting voted in by the house is one thing. Getting voted in by your own team really hurts.",
-        v: { sharp: "Getting voted in by the house is one thing. Getting voted in by your own team really hurts.", dry: "The house voting you in is one thing. Your own team doing it really hurts.", loud: "Getting voted in by the house is one thing! Getting voted in by your own team really hurts!", soft: "Getting voted in by the house is one thing. Getting voted in by your own team really, really hurts.", odd: "Getting voted in by the house is one thing. Getting voted in by your own team hurts in a whole different way." } },
-      { by: 'c', conf: "Somebody had to go. I'm not going to apologize for picking the person I picked.",
-        v: { sharp: "Somebody had to go. I'm not apologizing for who I picked.", dry: "Somebody had to go. I won't apologize for who I picked.", loud: "Somebody had to go! I'm not going to apologize for picking the person I picked!", soft: "Somebody had to go. I'm not going to apologize for picking the person I picked.", odd: "Somebody had to go. I'm not going to apologize for picking who I picked, even if it's awkward now." } },
-    ] },
-    { id: 'tma.s2', turns: [
-      { by: 'a', say: "I can't believe my own team did that to me.",
-        v: { sharp: "My own team did that to me.", dry: "My own team. Can't believe it.", loud: "I can't believe my own team did that to me!", soft: "I can't believe my own team did that to me.", odd: "I can't believe my own team did that to me. I made them pancakes yesterday." } },
-      { by: 'b', say: "Not all of us voted for you.",
-        v: { sharp: "Not all of us voted for you.", dry: "Not all of us voted for you.", loud: "Not all of us voted for you!", soft: "Not all of us voted for you, I promise.", odd: "Not all of us voted for you. Just so you know." } },
-      { by: 'a', say: "Enough of you did.",
-        v: { sharp: "Enough of you did.", dry: "Enough of you did.", loud: "Well, enough of you did!", soft: "Enough of you did, though.", odd: "Enough of you did, though." } },
-      { by: 'c', say: "It wasn't personal.",
-        v: { sharp: "It wasn't personal.", dry: "It wasn't personal.", loud: "It wasn't personal!", soft: "It really wasn't personal.", odd: "It wasn't personal, I promise." } },
-      { by: 'a', say: "When it's your own team, it's always personal, {c}.",
-        v: { sharp: "It's always personal when it's your own team, {c}.", dry: "It's always personal when it's your own team, {c}.", loud: "When it's your own team, it's always personal, {c}!", soft: "When it's your own team, it's always personal, {c}.", odd: "When it's your own team, it's always personal, {c}. You know that." } },
-      { by: 'b', conf: "{a} is going to come back from that Arena. And when that happens, {c} is going to wish {c.sub} had voted differently.",
-        v: { sharp: "{a} is coming back from that Arena. When that happens, {c} will wish {c.sub} had voted differently.", dry: "{a} will come back from that Arena. Then {c} is going to wish {c.sub} had voted differently.", loud: "{a} is going to come back from that Arena! And when that happens, {c} is going to wish {c.sub} had voted differently!", soft: "I think {a} is going to come back from that Arena. And when that happens, {c} is going to wish {c.sub} had voted differently.", odd: "{a} is going to come back from that Arena. And when that happens, {c} had better be very nice." } },
-    ] },
-  ],
-  'team-after-vote.any': [
-    { id: 'tma.a1', turns: [
-      { by: 'b', say: "I didn't vote for you.",
-        v: { sharp: "I didn't vote for you.", dry: "I didn't vote for you.", loud: "I didn't vote for you!", soft: "I didn't vote for you, just so you know.", odd: "I didn't vote for you. I want that on the record." } },
-      { by: 'a', say: "I know. I heard.",
-        v: { sharp: "I know. I heard.", dry: "I know. I heard.", loud: "I know, I heard!", soft: "I know. I heard.", odd: "I know. I heard every name." } },
-      { by: 'b', say: "For what it's worth, I think the team made a mistake.",
-        v: { sharp: "For what it's worth, the team made a mistake.", dry: "For what it's worth, I think the team made a mistake.", loud: "For what it's worth, I think the team made a big mistake!", soft: "For what it's worth, I think the team made a mistake.", odd: "For what it's worth, I think the team made a mistake. A big one." } },
-      { by: 'a', say: "That actually means a lot.",
-        v: { sharp: "That means a lot.", dry: "That actually means a lot.", loud: "That actually means a lot!", soft: "That really means a lot to me.", odd: "That actually means a lot. More than you know." } },
-      { by: 'a', conf: "{b} was one of the only people on {team} who didn't say my name. I'm going to remember that, whatever team I end up on.",
-        v: { sharp: "{b} was one of the only people on {team} who didn't say my name. I'll remember that, whatever team I'm on.", dry: "{b} was one of the few on {team} who didn't say my name. I'll remember that, whatever team I end up on.", loud: "{b} was one of the only people on {team} who didn't say my name! I'm going to remember that, whatever team I end up on!", soft: "{b} was one of the only people on {team} who didn't say my name. I'm going to remember that, whatever team I end up on.", odd: "{b} was one of the only people on {team} who didn't say my name. I'm keeping a list, and {b} is at the top of the good side." } },
-    ] },
-    { id: 'tma.a2', turns: [
-      { by: 'b', say: "Are you going to be okay?",
-        v: { sharp: "You going to be okay?", dry: "You going to be okay?", loud: "Hey, are you going to be okay?", soft: "Are you going to be okay?", odd: "Are you going to be okay? You look pale." } },
-      { by: 'a', say: "I'm going to win. And then I'm going to think about which team I want to be on.",
-        v: { sharp: "I'm going to win. Then I'll think about which team I want to be on.", dry: "I'm going to win. Then I'll think about which team I want to be on.", loud: "I'm going to win! And then I'm going to think about which team I want to be on!", soft: "I'm going to win. And then I'm going to think about which team I want to be on.", odd: "I'm going to win. Then I'm going to have a long think about which team I want to be on." } },
-      { by: 'b', say: "Wait, what does that mean?",
-        v: { sharp: "What does that mean?", dry: "What does that mean?", loud: "Wait, what does that mean?", soft: "Wait, what do you mean by that?", odd: "Wait, what does that mean? Are you leaving us?" } },
-      { by: 'a', say: "It means if I win in there, I don't have to come back to the people who voted me in.",
-        v: { sharp: "If I win in there, I don't have to come back to the people who voted me in.", dry: "It means if I win, I don't have to come back to the people who voted me in.", loud: "It means if I win in there, I don't have to come back to the people who voted me in!", soft: "It means if I win in there, I don't have to come back to the people who voted me in.", odd: "It means if I win in there, I get to choose who I come back to, and I might not choose them." } },
-      { by: 'b', conf: "{a} just said out loud what everybody on this team is scared of.",
-        v: { sharp: "{a} just said out loud what everybody on this team is scared of.", dry: "{a} just said what everybody on this team is scared of.", loud: "{a} just said out loud what everybody on this team is scared of!", soft: "{a} just said out loud what everybody on this team is scared of.", odd: "{a} just said out loud what everybody on this team has been worrying about all night." } },
-    ] },
-  ],
+  // (after the team vote: team-reactions.js, rewritten 2026-10-18)
 
   // ── a call-out in a Teams season (appended to the call-out pools: when teams stand) ──
   'callout.grudge+': [
@@ -915,29 +817,7 @@ export default {
         v: { sharp: "Half my team wanted me in and half didn't. I'll find out which half was which.", dry: "Half my team wanted me in. Half didn't. I'll find out who was who.", loud: "Half my team wanted me in and half didn't! I'm going to find out which half was which!", soft: "Half my team wanted me in and half didn't. I'm going to find out which half was which.", odd: "Half my team wanted me in and half didn't. I'm going to find out which half was which, one by one." } },
     ] },
   ],
-  'daily~teams.teams': [
-    { id: 'dyt.1', turns: [
-      { by: 'tj', say: "{team} wins {game}! You're all safe! {oppteam}, I'm sorry, guys. You know what happens now." },
-      { by: 'a', say: "Let's go, {team}!",
-        v: { sharp: "Let's go, {team}.", dry: "Nice. Let's go, {team}.", loud: "Let's go, {team}!", soft: "Yes! Let's go, {team}!", odd: "Let's go, {team}! I knew we had it." } },
-      { by: 'c', conf: "We lost, so tonight we have to turn on each other. That's what teams mean here, and nobody likes it.",
-        v: { sharp: "We lost, so tonight we turn on each other. That's what teams mean here. Nobody likes it.", dry: "We lost, so tonight we turn on each other. That's teams here. Nobody likes it.", loud: "We lost, so tonight we have to turn on each other! That's what teams mean here, and nobody likes it!", soft: "We lost, so tonight we have to turn on each other. That's what teams mean here, and nobody likes it.", odd: "We lost, so tonight we have to turn on each other. Nobody likes this part, and it happens every week." } },
-    ] },
-    { id: 'dyt.2', turns: [
-      { by: 'tj', say: "And that's {game}! {team}, take a bow! Everybody else, you know what comes next." },
-      { by: 'b', say: "That's what a real team looks like!",
-        v: { sharp: "That's what a real team looks like.", dry: "So that's what a real team looks like.", loud: "That's what a real team looks like!", soft: "That's what a real team looks like!", odd: "That's what a real team looks like! Write it down!" } },
-      { by: 'c', conf: "Every week we lose, there's one less of us. You can feel the team getting smaller.",
-        v: { sharp: "Every week we lose, there's one less of us. You can feel the team getting smaller.", dry: "Every week we lose, there's one less of us. The team keeps getting smaller.", loud: "Every week we lose, there's one less of us! You can feel the team getting smaller!", soft: "Every week we lose, there's one less of us. You can feel the team getting smaller.", odd: "Every week we lose, there's one less of us. There are empty chairs at dinner now." } },
-    ] },
-    { id: 'dyt.3', turns: [
-      { by: 'tj', say: "{team} takes it! That's a team win, people! {oppteam}, you're voting tonight." },
-      { by: 'a', say: "We're safe! All of us!",
-        v: { sharp: "We're safe. All of us.", dry: "We're safe. All of us.", loud: "We're safe, all of us!", soft: "We're safe! All of us!", odd: "We're safe, all of us! Best feeling ever." } },
-      { by: 'c', conf: "Losing with my team means looking at the people I trust and picking one of them. I hate this part.",
-        v: { sharp: "Losing with my team means picking one of the people I trust. I hate this part.", dry: "Losing as a team means picking one of the people I trust. I hate this part.", loud: "Losing with my team means looking at the people I trust and picking one of them! I hate this part!", soft: "Losing with my team means looking at the people I trust and picking one of them. I really hate this part.", odd: "Losing with my team means looking at the people I trust and picking one of them. Worst part of the week." } },
-    ] },
-  ],
+  // (TJ calls a team daily: team-reactions.js, rewritten 2026-10-18)
   'champions.team': [
     { id: 'cht.1', turns: [
       { beat: 'TJ stands at the finish arch with the totals in his hand. Nobody breathes.' },

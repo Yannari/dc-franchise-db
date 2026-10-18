@@ -405,7 +405,7 @@ Object.assign(ROLES, {
   'captain-pitch': sc => ({ roles: { a: sc.who[0] }, ending: ['plan', 'carry', 'win', 'joke', 'people', 'reluctant'].includes(sc.data.pitch) ? sc.data.pitch : 'win', slots: { team: sc.data.team } }),
   'captain-ballot': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] || undefined }, ending: ['self', 'friend', 'against', 'respect', 'shrug'].includes(sc.data.why) ? sc.data.why : 'shrug', slots: { team: sc.data.team } }),
   'team-reveal': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.how || 'any', slots: { team: sc.data.team } }),
-  'team-huddle': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.hard ? 'hard' : 'rally', slots: { team: sc.data.team } }),
+  'team-huddle': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.hard ? 'hard' : 'rally', slots: { team: sc.data.team, task: sc.data.task || undefined } }),
   'team-only-one': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { team: sc.data.team } }),
   'team-voted-in': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { team: sc.data.team || undefined,
     count: sc.data.count >= 2 ? COUNT_WORD[sc.data.count] || String(sc.data.count) : undefined } }),
@@ -503,7 +503,7 @@ const PAIR_ROLES = {
 const TEAM_ROLES = {
   champions: sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: 'team', slots: { team: sc.data.team || undefined } }),
   'champion-reflect': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'team', slots: { team: sc.data.team || undefined } }),
-  daily: sc => ({ roles: { a: sc.data.winners[0], b: sc.data.winners[1], c: sc.data.last?.[0] }, ending: sc.data.mode, slots: { game: sc.data.dailyName, team: sc.data.team || undefined, oppteam: sc.data.lastTeam || undefined } }),
+  daily: sc => ({ roles: { a: sc.data.mvp || sc.data.winners[0], b: sc.data.winners.find(n => n !== (sc.data.mvp || sc.data.winners[0])), c: sc.data.voice || sc.data.last?.[0] }, ending: sc.data.mode, slots: { game: sc.data.dailyName, team: sc.data.team || undefined, oppteam: sc.data.lastTeam || undefined, task: sc.data.task || undefined } }),
   'cer-open': sc => ({ roles: { a: sc.who[0] }, ending: sc.data.team ? 'team' : sc.data.division === 'all' ? 'all' : sc.data.division, slots: { team: sc.data.team || undefined } }),
 };
 

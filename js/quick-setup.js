@@ -781,6 +781,36 @@ function _structureCardHTML() {
     </section>`;
   }
 
+  // The Challenge's own card (the user, 2026-10-18: "the default is every player for themselves, not pairs"): Quick
+  // Setup offered it Total Drama's tribes, merge and jury and no way to choose Pairs or Teams, which lived only in
+  // Advanced. The season's mode and how its pairs or teams are made write through to CHALLENGE OPTIONS.
+  if (_format() === CHALLENGE_FORMAT) {
+    const mode = ['pairs', 'teams'].includes(_g('cfg-ch-mode')?.value) ? _g('cfg-ch-mode').value : 'solo';
+    const how = mode === 'pairs' ? 'cfg-ch-pairing' : mode === 'teams' ? 'cfg-ch-teaming' : null;
+    const custom = how && _g(how)?.value === 'custom';
+    const word = mode === 'pairs' ? 'pairs' : 'teams';
+    return `<section class="qs-card">
+      <div class="qs-card-head"><span class="qs-card-icon">▚</span><h3>Structure</h3>
+        <span class="qs-card-hint">Dailies, a vote said out loud, and the Arena.</span></div>
+      ${caststrip}
+      <div class="qs-grid2">
+        <label class="qs-field">
+          <span class="qs-label">Season mode</span>
+          <select id="qs-ch-mode" class="qs-input" onchange="qsChSet('cfg-ch-mode','qs-ch-mode')">${_cloneOptions('cfg-ch-mode')}</select>
+        </label>
+        ${how ? `<label class="qs-field">
+          <span class="qs-label">How the ${word} are made</span>
+          <select id="qs-ch-how" class="qs-input" onchange="qsChSet('${how}','qs-ch-how')">${_cloneOptions(how)}</select>
+        </label>` : `<label class="qs-field">
+          <span class="qs-label">The final</span>
+          <select id="qs-ch-finalists" class="qs-input" onchange="qsChSet('cfg-ch-finalists','qs-ch-finalists')">${_cloneOptions('cfg-ch-finalists')}</select>
+        </label>`}
+      </div>
+      ${custom ? `<div class="qs-caststrip"><span class="qs-cast-word">You build the ${word} yourself, by drag and drop.</span>
+        <button class="qs-link" onclick="qsGoChCustom('${word}')">Cast › ${word === 'pairs' ? 'Pairs' : 'Teams'} →</button></div>` : ''}
+    </section>`;
+  }
+
   return `<section class="qs-card">
     <div class="qs-card-head"><span class="qs-card-icon">▚</span><h3>Structure</h3></div>
     ${caststrip}
@@ -972,6 +1002,12 @@ function _syncFromLegacy() {
   pair('qs-host', 'cfg-host');
   pair('qs-setting', 'cfg-setting');
   pair('qs-finale-format', 'cfg-finale-format');
+  // the Challenge's card
+  pair('qs-ch-mode', 'cfg-ch-mode');
+  pair('qs-ch-finalists', 'cfg-ch-finalists');
+  const m = _g('cfg-ch-mode')?.value;
+  if (m === 'pairs') pair('qs-ch-how', 'cfg-ch-pairing');
+  if (m === 'teams') pair('qs-ch-how', 'cfg-ch-teaming');
 }
 
 // ── Live (DOM-only) updates — never rebuilds identity/structure inputs, so the
@@ -1636,6 +1672,23 @@ export function qsSetMode(mode) {
 
 export function qsGoCast() { window.showTab?.('cast'); }
 
+// The Challenge's card: a value set here is set on CHALLENGE OPTIONS' own control, through its own change handler
+// (saveConfig, and chModeUI for the mode), then the card is drawn again (the mode decides which choice it shows).
+export function qsChSet(legacyId, quickId) {
+  const q = _g(quickId), l = _g(legacyId);
+  if (!q || !l) return;
+  l.value = q.value;
+  l.dispatchEvent(new Event('change', { bubbles: true }));
+  _markCustom();
+  renderQuickSetup();
+  try { window.renderCastRoom?.(); } catch { /* the Casting Room is optional chrome */ }
+}
+// ...and its link to the Casting Room's custom view
+export function qsGoChCustom(view) {
+  window._crView = view === 'pairs' ? 'pairs' : 'teams';
+  window.showTab?.('cast');
+}
+
 // Toggle a season objective on/off. protect-favorite carries a target player.
 export function qsToggleObjective(id) {
   const objs = _qsObjectives();
@@ -1827,6 +1880,6 @@ if (typeof window !== 'undefined') {
   Object.assign(window, {
     renderQuickSetup, qsSetIdentity, qsStep, qsRange, qsFinaleFormat,
     qsApplyPreset, applyQuickPreset, qsSetMode, qsGoCast, qsStartSeason,
-    qsToggleObjective, qsSetObjectiveTarget,
+    qsToggleObjective, qsSetObjectiveTarget, qsChSet, qsGoChCustom,
   });
 }

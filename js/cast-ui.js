@@ -34,7 +34,9 @@ export function showTab(name) {
   document.querySelectorAll('.tab-btn').forEach((btn, i) => {
     if (i < tabs.length) btn.classList.toggle('active', tabs[i] === name);
   });
-  if (name === 'cast')    renderTribeSelect();
+  // the Casting Room's views follow the setup (the user, 2026-10-18: "I can't find the team/pair tab"): a Pairs or Teams
+  // view chosen in Season Setup showed only after a reload, because opening the tab never redrew the room
+  if (name === 'cast')    { renderTribeSelect(); try { window.renderCastRoom?.(); } catch { /* the room is additive */ } }
   if (name === 'setup')   { populateRelDropdowns(); updateCastSizeDisplay(); renderTimeline(); renderTwistCatalog(); try { window.renderQuickSetup?.(); } catch {} }
   if (name === 'run')     initRunTab();
   if (name === 'results') renderResultsTab();

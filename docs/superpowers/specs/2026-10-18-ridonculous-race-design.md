@@ -11,6 +11,8 @@ Read first, in this order:
 - `docs/ridonculous-race-research.md`: what both shows do, leg by leg;
 - `docs/ridonculous-race-identities.md`: the 54 identities, the 12 task types and their stat blends;
 - `docs/ridonculous-race-decisions.md`: the running list of the user's decisions;
+- `docs/ridonculous-race-scenes.md`: **the scene catalogue**, every kind of moment the race can air, from both
+  shows, in 13 families, with its endings, consequences and threads: the contract between engine and dialogue;
 - `docs/superpowers/specs/2026-10-14-the-challenge-design.md`: the closest show in build, and the pattern this
   spec follows.
 
@@ -210,6 +212,18 @@ reach the next event, so the world is always consistent:
 - **luck**: a roll for the attempt, a travel event;
 - **loops**: a failed attempt costs its time and starts again, until a local approves.
 
+**The talk layer.** The race is mostly people talking while they do things (the user: "it's supposed to feel
+realistic like the real show, but flow well, conversation"). So beside the mechanics, every stretch, every overlap
+and every wait offers moments from the scene catalogue (`docs/ridonculous-race-scenes.md`):
+- the partners get one or two at nearly every stretch (reading the tip, deciding, arguing about the way, a pep
+  talk, a snap, money worries, an old wound);
+- two teams at one place get a between-teams moment;
+- a wait (a plane, a bus, a queue, a place closed for the night) becomes a room where three or four people talk.
+Each moment's ending is decided by the engine and changes something. **Threads** (a crush, a rivalry, a debt, a
+secret, a curse, a team learning to work together, an alliance, a villain's run, an underdog's climb) carry across
+legs and choose the next moment, so storylines build and pay off. A moment can cause the next (a gloat, a shove, a
+confrontation), and pacing caps keep any pair or kind from crowding a leg.
+
 **Encounters are computed, not scripted.** Whenever two or more teams overlap at a place, the engine offers them
 an encounter, and the encounter decides something (§7.4). The airport, the plane, the queue, the task site, the
 road (a taxi alongside), the mat.
@@ -272,6 +286,9 @@ rest), **morale** (wins, losses, homesickness), **stress** (time pressure, being
 
 ### 7.4 Between teams (encounters)
 
+The mechanics below are the core; the full set of moments between teams, with their endings and consequences, is
+families 2, 3, 4, 7 and 8 of the scene catalogue.
+
 Each one decides something, and each one has a consequence (`CLAUDE.md`: no cosmetic events):
 
 | Encounter | What it decides |
@@ -330,6 +347,12 @@ Every heroic, villainous, cowardly or selfless moment moves `gs.popularity` (`CL
 sabotage caught, a quit, a refusal, a rival helped.
 
 ## 8. Dialogue (type A with a race director, §19)
+
+**The scene catalogue** (`docs/ridonculous-race-scenes.md`) is what the dialogue writes: about 140 kinds in 13
+families (the partners; teams together; group rooms; romance and matchmaking; locals, drivers and judges; money;
+information and deception; sabotage; body, fear and limits; the place itself; Don; the twists; interviews), plus
+the threads. Each kind is written as whole exchanges of 8–12 lines, keyed `long.<kind>.<ending>`, gated on the
+facts the catalogue lists; an `interrupted` ending leaves its thread open.
 
 **Every event is a scene** (`makeScene(kind, who, data, seenBy, spot)`), and **nobody refers to something they didn't
 see**. This matters more here than on any show: teams in different places literally didn't see each other. The words
@@ -520,11 +543,14 @@ Then Playwright screenshots of every scene kind.
 
 Too large for one plan. Each gets its own plan and ends with something that runs.
 
-1. **Engine, headless, and its spec audit**: the clock, travel, money, tasks, team, encounters, twists, the mat, the
-   finale, `season.js`, `audit:rr-spec`. Starts with three places from the library, enough for a season.
-2. **The place library**: all 41 places as data (tasks in the four-part rule, travel, hours, Don's lines), from
+1. **Engine, headless, and its spec audit**: the clock, travel, money, tasks, team, encounters, **the scene
+   catalogue as data, the talk layer, the threads, a plain transcript of every scene**, twists, the mat, the
+   finale, `season.js`, `audit:rr-spec`. Starts with four places from the library, enough for a season.
+2. **Dialogue**, straight after the engine (the user: dialogue is part of the core system): the script and story
+   port, the pools for every catalogue kind, the voice layers, three seasons read. Written against the catalogue,
+   so the engine's scenes are its fixed contract.
+3. **The place library**: all 41 places as data (tasks in the four-part rule, travel, hours, Don's lines), from
    `LEGS.txt` and the research.
-3. **Dialogue**: the script and story port, the pools, the transcript tool, three seasons read.
 4. **Run tab and setup**: the registry entry, the Pairs setup with relationship, identity and name, the identity maps,
    the ledger read and write.
 5. **Art**: plates through the pipeline, marks and masks, the remaining props, the confessional plate, the sound list.

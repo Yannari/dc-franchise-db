@@ -9,7 +9,7 @@
 // another arrived never sees it.
 //
 // The clock knows nothing about tasks or money. `resolve(team, stretch, t, api)`
-// says what a stretch costs; the clock keeps the log, the queue, the stations
+// says what a stretch costs ({ end }, { hold }, { end, skip }, { end, back }, { out, end }); the clock keeps the log, the queue, the stations
 // (`slot`), the vehicles that wait to fill (`vehicle`) and pushes (`delay`).
 
 export function runLeg({ teams, stretches, resolve }) {
@@ -99,7 +99,8 @@ export function runLeg({ teams, stretches, resolve }) {
     r.arrived = null;
     r.t = end;
     if (res.out) { out.push(r.id); r.done = true; continue; }
-    r.i += 1 + (res.skip || 0);
+    // `back: n`: a Boomerang sends a team back to the stretch n before this one, to run it again
+    r.i = res.back ? Math.max(0, r.i - res.back) : r.i + 1 + (res.skip || 0);
   }
   current = null;
   return { log, finish, out };

@@ -62,4 +62,16 @@ describe('rr clock', () => {
     runLeg({ teams: [{ id: 'x', t: 0 }, { id: 'y', t: 0 }], stretches: [walk(5)], resolve: (team, s, t) => { order.push(team.id); return { end: t + 5 }; } });
     expect(order).toEqual(['x', 'y']);
   });
+
+  it('a resolver can send a team back to run earlier stretches again', () => {
+    const st = [{ id: 'task', kind: 'allin' }, { id: 'board', kind: 'board' }, { id: 'mat', kind: 'mat' }];
+    let sent = false;
+    const r = runLeg({ teams: [{ id: 'x', t: 0 }], stretches: st, resolve: (team, s, t) => {
+      if (s.id === 'board' && !sent) { sent = true; return { end: t + 1, back: 1 }; }
+      return { end: t + 10 };
+    } });
+    expect(r.log.filter(l => l.stretch === 'task')).toHaveLength(2);
+    expect(r.log.filter(l => l.stretch === 'board')).toHaveLength(2);
+    expect(r.finish.x).toBe(10 + 1 + 10 + 10 + 10);
+  });
 });

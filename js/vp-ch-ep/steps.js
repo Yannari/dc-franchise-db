@@ -816,8 +816,9 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   const seed = `${row.num}|${d.id}`;
   S.push({ tj: fill(pickBy(night ? TJ_DAILY_NIGHT : TJ_DAILY_OPEN, seed), { game: d.name }), focus: ['TJ'] });
   const mode = d.mode === 'pairs' ? 'In pairs. ' : d.mode === 'teams' ? 'Two teams. ' : '';
-  const win = d.mode === 'solo' && (d.winners || []).length > 1 ? 'The best man and the best woman win, and they are safe at the vote.' : 'The winners are safe at the vote.';
-  const card = { k: "TODAY'S DAILY", n: d.name, li: rulesOf(def?.desc), f: mode + win };
+  const win = d.tally ? 'Everybody plays for themselves, and every finish counts for the team. The team with the better average place wins, and the whole team is safe at the vote.'
+    : d.mode === 'solo' && (d.winners || []).length > 1 ? 'The best man and the best woman win, and they are safe at the vote.' : 'The winners are safe at the vote.';
+  const card = { k: "TODAY'S DAILY", n: d.name, li: rulesOf(def?.desc), f: (d.tally ? '' : mode) + win };
   S.push({ rules: card, tj: S.last()?.tj ? null : tjLine('rules', {}, seed, S.V.used), focus: ['TJ'] });
   // the rules on one card, once (the user, 2026-10-15: 'only show the rules one time, no need to show them each time I click')
   S.push({ tj: pickBy(TJ_GO, seed), focus: ['TJ'], gong: 1 });
@@ -903,10 +904,12 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   const first = played ? (played.finish?.dir ? {} : { ...played.finish, win: winners, power: winners, slam: { winner: `${wName} ${wVerb}` } }) : { win: winners, slam: { winner: `${nameList(winners)} ${winners.length > 1 ? 'win' : 'wins'}` }, power: winners, finish: st.show, race: st.show === 'race' ? units.slice(0, Math.min(6, units.length)).map(u => ({ who: u, p: isWin(u) ? 1 : .9 })) : null };
   linesToSteps(S, lines, { names, first, sceneWho: ['TJ', ...people] });
   for (const k of know) { const last = S.last(); if (last && !last.know) last.know = k; }
+  // a team daily played alone: TJ says how it added up, and why a heat won by the losing team did not save it
+  if (d.tally?.length > 1) S.push({ tj: tallyLine(d.tally, S.teamNames), focus: ['TJ'], power: winners });
   // TJ with everybody after: how it went, and what happens now
   const week = row.ch?.division === 'm' ? "It's a men's week, so only a guy can be voted in." : row.ch?.division === 'f' ? "It's a women's week, so only a woman can be voted in." : '';
   const wn = wName;
-  S.push({ tj: tjLine('debrief', { w: wn }, seed, S.V.used), focus: ['TJ'] });
+  S.push({ tj: tjLine(wTeam ? 'debriefTeam' : 'debrief', { w: wn }, seed, S.V.used), focus: ['TJ'] });
   if (!row.ch?.final) S.push({ tj: tjLine('next', { w: wn, week }, seed + 'n', S.V.used), focus: ['TJ', ...winners.slice(0, 1)], power: winners });
   // the daily's aftermath scenes, on the same plate
   for (const it of after) {
@@ -915,6 +918,21 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
     if (it.a.lines.every(l => l.kind === 'conf')) first2.scene.cast = {};
     linesToSteps(S, it.a.lines, { names, first: first2, sceneWho: it.a.who });
   }
+}
+
+// TJ adds up a team daily that everybody played alone (dailies.js tally): every place, averaged per team. A heat won
+// by somebody on a losing team is said out loud, because that is the result that looks wrong.
+function tallyLine(tally, teamNames) {
+  const name = t => teamNames?.[t.members[0]] || `${t.members[0]}'s team`;
+  const fmt = n => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+  const [top, ...rest] = tally;
+  const avgs = tally.map(t => `${name(t)}, ${fmt(t.avg)}`).join('. ');
+  const lost = rest.flatMap(t => t.heats.map(h => ({ h, t })));
+  const heat = lost.length
+    ? ` ${nameList(lost.map(x => x.h))}, you won your heat for ${name(lost[0].t)}, but one great finish can't carry a whole team.`
+    : top.heats.length ? ` And ${nameList(top.heats)} won ${top.heats.length > 1 ? 'their heats' : 'a heat'} on top of that.` : '';
+  const level = rest[0] && fmt(rest[0].avg) === fmt(top.avg) ? ` That's level, so it goes to the best single finish, and that was ${top.best}.` : '';
+  return `Here's how it adds up. Every finish counts for your team, and lower is better. Average place: ${avgs}.${level} ${name(top)} wins the daily.${heat}`;
 }
 
 // ── the vote ──────────────────────────────────────────────────────────

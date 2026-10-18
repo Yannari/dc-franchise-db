@@ -286,7 +286,7 @@ export function playDaily(state, rng, { division, pin = null, solo = false }) {
   }
   // a played daily runs as beats, from each player's power for the day, and its result replaces the score
   const power = { ...indiv };
-  let beats = null, simWinners = null;
+  let beats = null, simWinners = null, heatWinners = null;
   if (SIMS[daily.id]) {
     const res = SIMS[daily.id](state, rng, playedSolo ? { units: units.flat().map(n => [n]), power, mode: 'solo' } : { units, power, mode });
     beats = res.beats;
@@ -294,9 +294,22 @@ export function playDaily(state, rng, { division, pin = null, solo = false }) {
     // a betrayal daily can name its own winners (a thief alone, a cutter alone); a Pairs season's winners are the
     // best pair, whoever the daily crowned on their own
     simWinners = playedSolo ? null : res.winners || null;
+    heatWinners = playedSolo ? res.score?.champions || null : null;
   }
-  const unitScore = u => u.reduce((a, n) => a + indiv[n], 0) / u.length;
+  // A Teams season's daily with no team version: everybody plays it alone (in heats, a division at a time), and every
+  // finish counts for the team. The team with the better average place wins: a rule TJ can say in one sentence, and
+  // does (the user, 2026-10-18: "a member of green won the boy phase and a member of blue won the women, but green end
+  // up winning, it's never explained why").
+  const byPlace = seasonTeams && playedSolo;
+  const placeOf = {};
+  if (byPlace) units.flat().sort((a, b) => indiv[b] - indiv[a]).forEach((n, i) => { placeOf[n] = i + 1; });
+  const avgPlace = u => u.reduce((a, n) => a + placeOf[n], 0) / u.length;
+  // (level on average: the team with the best single finish, and TJ says so)
+  const unitScore = u => byPlace ? -avgPlace(u) - Math.min(...u.map(n => placeOf[n])) / 1000 : u.reduce((a, n) => a + indiv[n], 0) / u.length;
   const ranked = [...units].sort((a, b) => unitScore(b) - unitScore(a));
+  const tally = byPlace ? ranked.map(u => ({ members: [...u], avg: +avgPlace(u).toFixed(1), best: [...u].sort((a, b) => placeOf[a] - placeOf[b])[0],
+    // the heats this team won on the day (a men's heat and a women's heat: the sim's own winners)
+    heats: (heatWinners || []).filter(w => u.includes(w)) })) : null;
   let winners;
   if (simWinners) winners = seasonPairs || seasonTeams ? [...new Set(simWinners.flatMap(w => units.find(u => u.includes(w)) || [w]))] : [...simWinners];
   else if (seasonPairs && shapeOf(state) === 'same' && division && division !== 'all') {
@@ -375,7 +388,7 @@ export function playDaily(state, rng, { division, pin = null, solo = false }) {
     : mode === 'teams' ? teamAftermath(state, rng, units, power, winners) : [];
   return { id: daily.id, name: daily.name, mode, units, winners, last,
     scores: Object.fromEntries(Object.entries(indiv).map(([k, v]) => [k, +v.toFixed(2)])),
-    throws, caught, injuries, moments, reward, aftermath, beats };
+    throws, caught, injuries, moments, reward, aftermath, beats, tally };
 }
 
 // ── what a partner week leaves behind ────────────────────────────────

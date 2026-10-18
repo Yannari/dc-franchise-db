@@ -364,8 +364,10 @@ function dailyOf(d) {
   if (!d) return null;
   const sc = d.scores || {};
   const unit = u => u.reduce((a, n) => a + (sc[n] || 0), 0) / Math.max(1, u.length);
-  const order = [...(d.units || [])].sort((a, b) => unit(b) - unit(a)).map(u => [...u]);
-  return { id: d.id, name: d.name, mode: d.mode, order, winners: [...(d.winners || [])], last: [...(d.last || [])],
+  // a team daily played alone is decided on average place (dailies.js tally): its order is the tally's
+  const order = d.tally ? d.tally.map(t => [...t.members]) : [...(d.units || [])].sort((a, b) => unit(b) - unit(a)).map(u => [...u]);
+  return { id: d.id, name: d.name, mode: d.mode, order,
+    tally: d.tally ? d.tally.map(t => ({ members: [...t.members], avg: t.avg, best: t.best, heats: [...(t.heats || [])] })) : null, winners: [...(d.winners || [])], last: [...(d.last || [])],
     throws: (d.throws || []).map(t => t.name || t), caught: (d.caught || []).map(c => ({ thrower: c.thrower, by: c.by })),
     moments: (d.moments || []).map(m => ({ kind: m.kind, who: m.who })), injuries: [...(d.injuries || [])],
     scores: Object.fromEntries(Object.entries(sc).map(([k, v]) => [k, Math.round(v * 100) / 100])),

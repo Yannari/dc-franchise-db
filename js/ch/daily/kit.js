@@ -113,7 +113,7 @@ export { mayScheme, logistic, clamp, noise, S };
  */
 export function inHeats(state, rng, R, all, size, play) {
   const divs = state.options.gendered ? ['m', 'f'] : ['all'];
-  const score = {};
+  const score = {}, champs = [];
   const name = (div, i, n) => (n > 1 ? `${div === 'm' ? "Men's heat" : div === 'f' ? "Women's heat" : 'Heat'} ${i + 1}` : div === 'm' ? 'The men' : div === 'f' ? 'The women' : 'Everybody');
   for (const div of divs) {
     const list = all.filter(n => div === 'all' || state.division[n] === div);
@@ -132,8 +132,12 @@ export function inHeats(state, rng, R, all, size, play) {
       const champ = play(winners, div === 'm' ? "The men's final" : div === 'f' ? "The women's final" : 'The final', { final: true });
       R.out.slice(before).forEach((n, j) => { score[n] = 10 + j; });
       score[champ] = 30;
-    } else score[winners[0]] = 30;
+      champs.push(champ);
+    } else { score[winners[0]] = 30; champs.push(winners[0]); }
   }
   for (const n of all) score[n] ??= 0;
+  // the best man and the best woman, carried on the score unseen (a Teams season says whose heat a losing team won:
+  // dailies.js tally); only a split by division is a heat a viewer saw
+  if (divs.length > 1) Object.defineProperty(score, 'champions', { value: champs, enumerable: false });
   return score;
 }

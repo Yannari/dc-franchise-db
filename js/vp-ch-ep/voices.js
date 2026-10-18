@@ -84,7 +84,9 @@ export const TJ_VOICE = {
   call: ['{a} is out in front! {b}, you have to move!', 'Look at {a} go! Everybody else, this is not over yet!', '{b}, you\'re running out of time!',
     'This is close! {a}, don\'t slow down now!', 'Come on, people! {a} is pulling away from you!'],
   rules: ['Alright, listen up. Here\'s how it works.', 'Okay, everybody. Here\'s the deal.'],
-  debrief: ['Good job, everybody. That was a tough one. {w}, that was a dominating performance.', 'Alright, everybody, bring it in. Some of you looked like you were born for that. {w}, that was all you.'],
+  debrief: ['Good job, everybody. That was a tough one. {w}, that was a dominating performance.', 'Alright, everybody, bring it in. {w}, nobody was even close to you today. That was all you.'],
+  // a whole team won it ("Blue, that was all you" was said to twelve people, read 2026-10-18)
+  debriefTeam: ['Good work, everybody. {w}, every one of you pulled your weight out there, and that is why you won.', 'Alright, bring it in. {w}, nobody on your team let up today, and it showed.'],
   next: ['{w}, you\'re safe at the vote. Everybody else, go back to the villa and figure out who\'s going into the Arena. {week}', '{w}, nobody can vote for you this week. As for the rest of you, go home and decide who\'s going in. {week}'],
   arenaWelcome: ['Welcome to the Arena, everybody!', 'Alright, everybody. Welcome to the Arena.'],
   arenaRecap: ['{a}, {n} people said your name at the vote. Come on down.', '{a}, you got {n} votes last night. Come on down.'],

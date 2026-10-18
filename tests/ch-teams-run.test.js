@@ -2,7 +2,7 @@
 // plays one episode per press to the final, the rows carry the teams, and the export and ledger say who was on which.
 import { describe, expect, it } from 'vitest';
 import { gs, setGs, setPlayers, seasonConfig } from '../js/core.js';
-import { simulateChallengeEpisode, challengeCastProblem, challengeOptions, challengeVoteShape } from '../js/ch-run.js';
+import { simulateChallengeEpisode, challengeCastProblem, challengeOptions, challengeVoteShape, challengeEpisodeMap } from '../js/ch-run.js';
 import { chPlacements, chTwistsPlayed } from '../js/ch/export.js';
 import { setFranchiseLedger } from '../js/franchise-meta.js';
 import { challengeCast } from './helpers/ch-cast.js';
@@ -49,5 +49,22 @@ describe('a Teams season from the run tab', () => {
     expect(final.teamPodium.length).toBeGreaterThanOrEqual(1);
     expect([...final.champions].sort()).toEqual([...final.teamPodium[0].members].sort());
     expect(challengeVoteShape(rows.at(-1))).toMatch(new RegExp(`^Champions: ${final.teamPodium[0].name} \\(`));
+    // a team final never breaks up, so the Season Timeline has no break-up tile
+    expect(challengeEpisodeMap().some(t => t.teamsBreak)).toBe(false);
+  });
+
+  it('the Season Timeline marks the break-up: where it will be before the season, where it was after', () => {
+    freshTeams(20);
+    const planned = challengeEpisodeMap().filter(t => t.teamsBreak).map(t => t.ep);
+    expect(planned.length).toBe(1);
+    const rows = playAll();
+    const aired = rows.filter(r => r.ch.teamsBroken).map(r => r.num);
+    expect(aired.length).toBe(1);
+    // the planned break-up is the morning rule (finalists + 4 left); a team emptied before that ends the teams early
+    const why = rows.find(r => r.ch.teamsBroken).ch.aired.find(a => a.kind === 'teams-break')?.data?.why;
+    if (why === 'one-team') expect(aired[0]).toBeLessThanOrEqual(planned[0]);
+    else expect(aired).toEqual(planned);
+    // once aired, the tile is where it happened
+    expect(challengeEpisodeMap().filter(t => t.teamsBreak).map(t => t.ep)).toEqual(aired);
   });
 });

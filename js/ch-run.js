@@ -581,13 +581,23 @@ export function challengeEpisodeMap() {
   const rows = new Map([...(gs?.episodeHistory || []).filter(r => r?.format === CHALLENGE_FORMAT), ...(fresh ? (gs?._chQueue || []) : [])]
     .map(r => [r.num, r]));
   let n = _cast().length;
+  // A Teams season's break-up, the Challenge's merge (the user, 2026-10-18: "we should have the merge badge in the
+  // season timeline"): an aired episode says so itself; one still to come breaks where season.js will, on the first
+  // morning the house is down to the finalists and four more. A team-final season never breaks up.
+  const opts = challengeOptions();
+  const breaks = !!opts.teams && opts.teams.end !== 'team-final';
+  let broken = [...rows.values()].some(r => r?.ch?.teamsBroken);
   return challengeSeasonShape().map(d => {
     const row = rows.get(d.ep);
+    const startN = n;
     if (row?.ch?.people) n = row.ch.people.length;
     else if (!d.final) n = Math.max(0, n - (d.plannedElims || 1));
     // a double: the season's own (two late ones on a full cast), a booked one, or one a quit made necessary
     const double = !d.final && (row ? (row.ch?.votes?.length || 0) > 1 || (row.ch?.arena?.length || 0) > 1 : (d.plannedElims || 1) > 1);
-    return { ep: d.ep, active: n, phase: d.final ? 'finale' : 'main', engineType: null, tribes: 1, double };
+    let teamsBreak = false;
+    if (breaks && row) teamsBreak = !!row.ch?.teamsBroken;
+    else if (breaks && !broken && !d.final && startN <= (opts.finalists || DEFAULT_OPTIONS.finalists) + 4) { teamsBreak = true; broken = true; }
+    return { ep: d.ep, active: n, phase: d.final ? 'finale' : 'main', engineType: null, tribes: 1, double, teamsBreak };
   });
 }
 

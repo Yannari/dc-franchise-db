@@ -4321,10 +4321,13 @@ export function renderTimeline() {
   const _ciDays = isCircleSeason() ? circleTimelineDays() : null;
 
   let html = '';
-  epMap.forEach(({ ep, active, phase, reunion, double }) => {
+  epMap.forEach(({ ep, active, phase, reunion, double, teamsBreak }) => {
     const isFinale   = phase === 'finale';
     const isMergeEp  = !isHouse && phase === 'post-merge'
       && epMap.find(e => e.ep === ep - 1)?.phase === 'pre-merge';
+    // The Challenge's merge is its Teams season's break-up (ch-run.js challengeEpisodeMap): the merge's marker,
+    // in the show's own words
+    const isTeamsBreak = !!teamsBreak && !isFinale;
     const isJuryEp   = juryOpensAt !== null && active === juryOpensAt && !isFinale;
     const isSelected = selectedEpisodes.has(ep);
     const twists     = schedule.filter(t => Number(t.episode) === ep);
@@ -4686,14 +4689,15 @@ export function renderTimeline() {
 
     const markerClass = isFinale ? 'fd-ep-marker finale'
       : isJuryEp ? 'fd-ep-marker jury'
-        : isMergeEp ? 'fd-ep-marker merge' : 'fd-ep-marker';
+        : isMergeEp || isTeamsBreak ? 'fd-ep-marker merge' : 'fd-ep-marker';
     const _pmN = _pmNights?.get(ep) || null;
     const _ciD = _ciDays?.get(ep) || null;
     const markerText  = _pmN && !isFinale ? (_pmN.end !== _pmN.start ? `${_pmN.start} → ${_pmN.end} in the villa` : `${_pmN.end} in the villa`)
       : _ciD ? (_ciD.end !== _ciD.start ? `${_ciD.start} → ${_ciD.end} in the Circle` : `${_ciD.end} in the Circle`)
       : isFinale ? (reunion ? 'REUNION' : 'FINALE')
       : isJuryEp ? `JURY · ${active} left`
-        : isMergeEp ? `MERGE · ${active} left` : `${active} left`;
+        : isMergeEp ? `MERGE · ${active} left`
+        : isTeamsBreak ? `TEAMS BREAK UP · ${active} left` : `${active} left`;
     // A castle has no tribes and no merge, so it has no PRE/POST to stamp — the
     // episode map hands every season a pre/post split it shares with Total
     // Drama, and left alone it would print a meaningless PRE on every night.

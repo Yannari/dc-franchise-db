@@ -792,7 +792,7 @@ export default {
 
   // ── the vote, the daily and the final, in a Teams season ─────────────
   'cer-open.team': [
-    { id: 'tmc.1', when: { own: false }, turns: [{ by: 'tj', say: "{team}, you lost today. So one of you is going into the Arena, and you're the ones who decide. Out loud. To each other's faces." }] },
+    { id: 'tmc.1', when: { own: false }, turns: [{ by: 'tj', say: "{team}, you lost yesterday. So one of you is going into the Arena, and you're the ones who decide. Out loud. To each other's faces." }] },
     { id: 'tmc.2', when: { own: false }, turns: [{ by: 'tj', say: "Alright, {team}. This is the worst part of losing. Look at your teammates, and pick one. Out loud." }] },
     { id: 'tmc.3', when: { own: false }, turns: [{ by: 'tj', say: "{team}, it's your vote. Everybody else, sit back and enjoy the show. This is going to hurt." }] },
     { id: 'tmc.4', when: { own: true }, turns: [{ by: 'tj', say: "{team}, you won, and there's nobody else left to go in. So you vote one of your own. Out loud. Sorry, guys." }] },

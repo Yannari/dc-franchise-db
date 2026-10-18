@@ -416,7 +416,10 @@ export function teamDailyReactions(state, rng, { winners, last, scores, daily = 
     if (doubter) addBond(lead, doubter, -0.2);
     for (const x of group) used.add(x);
     // a line may say the name was the slowest out there only when it was (seed 7 read: the captain called "the slowest")
-    addScene(state, 'team-vote-talk', [...group, target], { team: lossT.name, target, doubter, group, slowest: target === worst, ...day }, group, 'private');
+    // the vote is the day after the daily (season.js): the losers settle a name the morning of it ("Have you got a name for
+    // tonight?" aired on the daily's evening, the vote the next day, read 2026-10-18)
+    const talk = addScene(state, 'team-vote-talk', [...group, target], { team: lossT.name, target, doubter, group, slowest: target === worst, ...day }, group, 'private');
+    talk.day = state.day + 1;
   }
 
   // a bloc inside a team: three or four teammates with no alliance of their own make one, kept to the team

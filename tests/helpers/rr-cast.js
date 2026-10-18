@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { rngFor } from '../../js/dr/rng.js';
 import { setPlayers } from '../../js/core.js';
 import { newState, addTeams, REL } from '../../js/rr/state.js';
+import { IDENTITIES } from '../../js/rr/identities.js';
 
 let _roster = null;
 const roster = () => (_roster ||= (() => {
@@ -12,9 +13,7 @@ const roster = () => (_roster ||= (() => {
   return (Array.isArray(r) ? r : r.players || []).filter(p => p && p.name && p.stats);
 })());
 
-// identities are drawn when the list exists (engine plan Task 2)
-let IDS = [];
-export function useIdentities(list) { IDS = list; }
+const IDS = Object.entries(IDENTITIES).map(([id, x]) => ({ id, name: x.name }));
 
 export function raceCast(nTeams = 12, seed = 7) {
   const rng = rngFor(seed * 104729 + 11);

@@ -63,7 +63,8 @@ export const FIRST_WEEK = /\b(all week|for days|for weeks|(two|three|four|a few|
 
 export function humanize(text) {
   if (!text) return text;
-  let t = text.replace(/\b[A-Z][A-Z']+\b/g, w => (KEEP_CAPS.has(w) ? w : w.toLowerCase()));
+  const NAMED = { ARENA: 'Arena', CHALLENGE: 'Challenge', VILLA: 'Villa' };
+  let t = text.replace(/\b[A-Z][A-Z']+\b/g, w => (KEEP_CAPS.has(w) ? w : NAMED[w] || w.toLowerCase()));
   t = t.replace(/\bi('|\b)/g, 'I$1');
   // a sentence still starts with a capital, after a brace or a quote too
   t = t.replace(/(^|[.!?]\s+)(["']?)([a-z])/g, (m, a, q, c) => a + q + c.toUpperCase());

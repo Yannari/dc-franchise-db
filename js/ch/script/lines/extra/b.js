@@ -551,7 +551,7 @@ export default {
       { by: 'x', opt: 1, say: "Is it, though? {a} has friends." },
       { by: 'b', opt: 'x', say: "{a} has people who are nice to {a}. That's different." },
       { beat: '{a} leaves without the towel.' },
-      { by: 'a', conf: "Nice to me. That's what {b} called my friends. I'm going to find out which of them are actually friends." },
+      { by: 'a', conf: "{b} told the kitchen nobody trusts me. I'm going to find out who in there was nodding." },
     ] },
     { id: 'ov.x3', turns: [
       { beat: 'The bathroom walls in the villa are thin. {a} finds out exactly how thin.' },

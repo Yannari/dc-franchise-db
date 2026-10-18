@@ -149,7 +149,7 @@ export default {
       { by: 'b', conf: "{a} is terrible at flirting. I think that's why it works." },
     ] },
     { id: 'fl.bx2', turns: [
-      { by: 'a', say: "You were really good in the daily today." },
+      { by: 'a', say: "You were really good in that daily." },
       { by: 'b', say: "You were watching?" },
       { by: 'a', say: "Everybody was watching." },
       { by: 'b', say: "But you were watching." },

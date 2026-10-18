@@ -171,7 +171,7 @@ export default {
   },
   // ── flirts ──
   'fl.bx2': {
-    0: { sharp: "You were good in the daily today.", dry: "You were good today.", loud: "You were REALLY good in the daily today!", soft: "You were really good in the daily today.", odd: "You were really good in the daily today. I took notes." },
+    0: { sharp: "You were good in that daily.", dry: "You were good out there.", loud: "You were really good in that daily!", soft: "You were really good in that daily, you know.", odd: "You were really good in that daily. I took notes." },
     1: { sharp: "You were watching?", dry: "You were watching?", loud: "You were WATCHING?", soft: "You were watching me?", odd: "You were watching? With your eyes?" },
     2: { sharp: "Everybody was watching.", dry: "Everyone was watching.", loud: "EVERYBODY was watching!", soft: "Everybody was watching.", odd: "Everybody was watching. It was a whole audience." },
     3: { sharp: "But you were watching.", dry: "But you were.", loud: "But YOU were watching!", soft: "But you were watching.", odd: "But you were watching. Specifically." },

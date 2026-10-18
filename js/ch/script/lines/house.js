@@ -154,7 +154,8 @@ export default {
   'hot-tub-truths.none': [
     { id: 'ht.n1', turns: [
       { beat: '{a} and {b} sit in the hot tub watching the lights of the bay.' },
-      { by: 'a', say: "Sometimes I forget we're on a show.", v: { soft: ['It\'s so pretty out here. I wish my family could see this.'], sharp: ['Don\'t get used to it. Somebody\'s going home this week.'] } },
+      // keep: the reply is "They'd love it here. Mine would too." (a variant without family aired, read 2026-10-18)
+      { by: 'a', keep: ['family'], say: "Sometimes I forget we're on a show. I wish my family could see this.", v: { soft: ['It\'s so pretty out here. I wish my family could see this.'], sharp: ['My family would never believe this place.'] } },
       { by: 'b', say: "They'd love it here. Mine would too.", v: { odd: ['And then TJ shows up yelling and you remember.'] } },
       { by: 'a', conf: "Those quiet minutes with {b} are the only time in this game I don't feel like I'm being watched.", v: { sharp: ['{b} is easy to talk to. That\'s exactly why I have to be careful.'] } },
     ] },

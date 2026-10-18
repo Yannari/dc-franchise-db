@@ -21,6 +21,46 @@ export { SCENES, K, register, pairKey };
 
 const people = (state, id) => (id && state.teams[id] ? [state.teams[id].a, state.teams[id].b] : []);
 
+// ── What a scene may know (the dialogue reads this, never live state; manual §19.2 step 1) ──
+// Taken when the scene is played, BEFORE its ending changes anything: how the two stood, where, when.
+export const SNAP_KEYS = ['leg', 'phase', 'tod', 'rank', 'band', 'bandX', 'allied', 'rivalry', 'couple', 'rel', 'relFam',
+  'identity', 'identityB', 'money', 'broke', 'snapped', 'place', 'stretchKind', 'taskTypes', 'fails', 'side', 'lead'];
+const ROMANTIC = ['dating', 'married', 'newly-dating', 'on-off', 'once-engaged'];
+export const relFamOf = rel => (REL[rel]?.family ? 'family' : ROMANTIC.includes(rel) ? 'romantic' : rel === 'exes' ? 'exes'
+  : ['rivals', 'enemies'].includes(rel) ? 'rivals' : 'friends');
+export const bandOf = b => (b <= -4 ? 'enemies' : b < -1 ? 'cold' : b >= 3 ? 'friends' : 'neutral');
+export function snapOf(st, { tid = null, oid = null, stretch = null, t = null, fails = 0, who = [] } = {}) {
+  const [A, B] = people(st, tid), [C, D] = people(st, oid);
+  const total = st.totalLegs || Math.max(1, st.leg);
+  const f = st.leg / total;
+  const across = oid && A ? [A, B].flatMap(x => [C, D].map(y => getBond(x, y))) : null;
+  const types = stretch?.types || (stretch?.sides || []).flatMap(s => s.types || []) || [];
+  return {
+    leg: st.leg,
+    phase: f <= 0.34 ? 'early' : f >= 0.67 ? 'late' : 'mid',
+    tod: t == null ? null : ((Math.round((st.clock ?? 420) + t) % 1440) + 1440) % 1440,
+    rank: tid ? Math.round(perceivedRank(st, tid) * 100) / 100 : null,
+    band: A && B ? bandOf(getBond(A, B)) : null,
+    bandX: across ? bandOf(across.reduce((s, x) => s + x, 0) / across.length) : null,
+    allied: !!(tid && oid && st.alliances.some(al => !al.ended && al.teams.includes(tid) && al.teams.includes(oid))),
+    rivalry: tid && oid ? st.rivalry[pairKey(tid, oid)] || 0 : 0,
+    couple: (st.couples || []).some(c => !c.ended && who.includes(c.a) && who.includes(c.b)),
+    rel: tid ? st.teams[tid].rel : null,
+    relFam: tid ? relFamOf(st.teams[tid].rel) : null,
+    identity: tid ? st.teams[tid].identity ?? null : null,
+    identityB: oid ? st.teams[oid].identity ?? null : null,
+    money: tid ? st.money[tid] ?? 0 : null,
+    broke: tid ? !(st.money[tid] > 0) : false,
+    snapped: !!(tid && st.snapped[tid]),
+    place: st.placeNow ?? null,
+    stretchKind: stretch?.kind ?? null,
+    taskTypes: [...new Set(types)],
+    fails: fails || 0,
+    side: tid && stretch?.id ? st.attempts?.[tid]?.[stretch.id]?.side ?? null : null,
+    lead: tid ? st.lead[tid] ?? null : null,
+  };
+}
+
 // The context a kind reads: the teams, the place, the moment, and helpers.
 export function prepare(ctx) {
   if (ctx._ready) return ctx;
@@ -147,10 +187,11 @@ export function playScene(ctx, kindId, rng, { ending = null } = {}) {
   if (kind.scheme && !mayScheme(who[0])) return null;
   if (!ending && whenOf(kind, ctx) <= 0) return null;
   const e = ending || decideEnding(kind, ctx, rng);
+  const snap = snapOf(ctx.state, { tid: ctx.tid, oid: ctx.oid, stretch: ctx.stretch, t: ctx.t, fails: ctx.fails, who });
   const effects = [];
   kind._endings[e].fx?.(makeFx(ctx, effects), ctx);
   const data = { ending: e, family: kind.family, effects, t: ctx.t ?? null, stretch: ctx.stretch?.id ?? null,
-    team: ctx.tid ?? null, other: ctx.oid ?? null, cause: ctx.cause ?? null, facts: kind.facts ? kind.facts(ctx) : {} };
+    team: ctx.tid ?? null, other: ctx.oid ?? null, cause: ctx.cause ?? null, facts: kind.facts ? kind.facts(ctx) : {}, snap };
   const sc = addScene(ctx.state, kindId, who, data, seenByOf(ctx, kind, who));
   const nxt = kind.next?.[e];
   if (nxt) { ctx.state.chained ||= {}; (ctx.state.chained[ctx.tid] ||= []).push({ kind: nxt, cause: sc.id, other: ctx.oid }); }
@@ -173,7 +214,10 @@ export function emit(state, kindId, who, ending, data = {}) {
     return sc;
   }
   const seen = seenBy || [...new Set([...who, ...people(state, rest.team)])];
-  return addScene(state, kindId, who, { ending, family: kind.family, effects, ...rest }, seen);
+  const stretchObj = typeof stretch === 'object' && stretch ? stretch
+    : rest.stretch ? { id: rest.stretch, kind: rest.stretch === 'mat' ? 'mat' : rest.stretchKind ?? null } : null;
+  const snap = snapOf(state, { tid: rest.team ?? null, oid: rest.other ?? null, stretch: stretchObj, t: rest.t ?? null, who });
+  return addScene(state, kindId, who, { ending, family: kind.family, effects, ...rest, snap }, seen);
 }
 
 // The weight of a moment, read from what it changed: what makes it worth an interview.

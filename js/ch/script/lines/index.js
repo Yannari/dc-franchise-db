@@ -135,17 +135,38 @@ export function variantFails(v, base, stock = 0, by = null) {
   if (stock >= 3 && words(v) >= 5) return 'stock';
   return null;
 }
-export const PRUNED = { fragments: 0, dropped: 0, stock: 0, nameless: 0 };
+//   pickup              the reply picks up a word the line said ("You can't just call a room. That's not a thing." /
+//                       "It's a thing now."), and the variant says none of them ("You can't call a room."): the reply
+//                       answers something nobody said (read 2026-10-18: "Don't get used to it" / "They'd love it here").
+//                       Measured 401 variants; the line as written always fits its reply.
+const PICK_STOP = new Set(('a an the and or but if so to of in on at for with from by is are was were be been am i you he she it we they me him her us them my your our their this that these those ' +
+  'what who why how when where not no yes do does did dont don\'t im i\'m it\'s that\'s just really very can can\'t will won\'t would could should have has had get got go going ' +
+  'there here then than now about like okay oh well yeah one all any some out up off over too also again').split(' '));
+const pickWords = s => new Set(String(s).toLowerCase().replace(/\{[^}]+\}/g, ' ').replace(/[^a-z' ]/g, ' ').split(/\s+/).filter(w => w.length > 3 && !PICK_STOP.has(w)));
+export function dropsPickup(v, base, reply) {
+  if (!reply) return false;
+  const want = [...pickWords(base)].filter(w => pickWords(reply).has(w));
+  if (!want.length) return false;
+  const vw = [...pickWords(v)];
+  return !want.some(w => vw.some(x => x === w || x.startsWith(w.slice(0, 5))));
+}
+export const PRUNED = { fragments: 0, dropped: 0, stock: 0, nameless: 0, pickup: 0 };
 for (const [k, list] of Object.entries(POOLS)) {
-  for (const e of list) for (const t of e.turns) {
-    if (!t.v) continue;
+  for (const e of list) e.turns.forEach((t, i) => {
+    if (!t.v) return;
     const base = t.say || t.conf || '';
+    // the next thing somebody else says out loud, which may pick up this line's words
+    const reply = t.say ? e.turns.slice(i + 1).find(x => !x.beat && x.by && x.by !== t.by && x.say)?.say : null;
     const kept = {};
     for (const [tag, vs] of Object.entries(t.v)) {
-      const ok = [vs].flat().filter(v => { const why = variantFails(v, base, k.startsWith('ballot') ? 0 : stockUse[v]?.size || 0, t.by); if (why) PRUNED[why]++; return !why; });
+      const ok = [vs].flat().filter(v => {
+        const why = variantFails(v, base, k.startsWith('ballot') ? 0 : stockUse[v]?.size || 0, t.by) || (dropsPickup(v, base, reply) ? 'pickup' : null);
+        if (why) PRUNED[why]++;
+        return !why;
+      });
       if (ok.length) kept[tag] = ok.length === 1 ? ok[0] : ok;
     }
     t.v = Object.keys(kept).length ? kept : undefined;
-  }
+  });
 }
 export { LONGER };

@@ -23,20 +23,21 @@ describe('the season modes are voiced', () => {
   for (const list of Object.values(POOLS)) for (const e of list) byId[e.id] = e;
   const files = { pairs, pairVote, pairMore, teams, pairLife, teamLife, teamMoments, teamReactions };
   const VOICED_WHERE_IT_MATTERS = new Set(['teamReactions']);
-  it('every spoken turn has all five families, and no variant names a slot its line does not', () => {
-    const short = [], extra = [];
-    for (const [f, mod] of Object.entries(files)) for (const list of Object.values(mod)) for (const e0 of list) {
+  // (every spoken turn used to need all five families: five copies of one line in five tones, the robot the user heard,
+  // 2026-10-18. The gate in lines/index.js now prunes a variant that drops what its reply picks up, and the line as
+  // written speaks; a turn may carry any voices, or none.)
+  void VOICED_WHERE_IT_MATTERS;
+  it('no variant names a slot its line does not, and no team name takes a possessive', () => {
+    const extra = [];
+    for (const [, mod] of Object.entries(files)) for (const list of Object.values(mod)) for (const e0 of list) {
       const e = byId[e0.id] || e0;
       e.turns.forEach((t, i) => {
         if (t.beat || !t.by || t.by === 'tj') return;
-        const missing = FAMILIES.filter(k => ![t.v?.[k]].flat().filter(Boolean).length);
-        if (missing.length && !VOICED_WHERE_IT_MATTERS.has(f)) short.push(`${f} ${e.id}[${i}] ${missing.join(',')}`);
         const base = new Set([...String(t.say || t.conf).matchAll(TOKEN)].map(m => m[1]));
         for (const k of FAMILIES) for (const line of [t.v?.[k]].flat().filter(Boolean))
           for (const m of line.matchAll(TOKEN)) if (!base.has(m[1])) extra.push(`${e.id}[${i}] ${k}: {${m[1]}}`);
       });
     }
-    expect(short, short.slice(0, 10).join('\n')).toEqual([]);
     // a team's name is plural as often as not ("The Vets"): never "{team}'s" (read 2026-10-17: "The Vets's going after...")
     const possessive = [];
     for (const mod of Object.values(files)) for (const list of Object.values(mod)) for (const e0 of list) for (const t of (byId[e0.id] || e0).turns)

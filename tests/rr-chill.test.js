@@ -99,6 +99,16 @@ describe('rr Chill Zone', () => {
     expect(st2.firstClass[p]).toBe(3);
   });
 
+  it('on the final, the midpoint team is out as third and nobody else goes', () => {
+    const st = setup(3); const [a, b, c] = st.order;
+    st.midmatOut = { 2: c };
+    const r = checkIn(st, { n: 2, kind: 'final' }, { [a]: 300, [b]: 300 + DON_GOES_AFTER + 50 }, [c]);
+    expect(r.order).toEqual([a, b, c]);
+    expect(r.eliminated).toEqual([c]);
+    expect(r.how[c]).toBe('midpoint');
+    expect(st.scenes.some(s => s.kind === 'don-arrives')).toBe(false);
+  });
+
   it('a medevac brings back the eliminated team the medevaced team owes most', () => {
     const st = setup(7); const [a, , , , e, f] = st.order;
     st.gone.push(e, f);

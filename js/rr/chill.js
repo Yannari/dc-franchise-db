@@ -46,20 +46,26 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
   const behindAll = notFinished.filter(id => !(id in finish)).sort((a, b) => lastIdx(a) - lastIdx(b));
   const order = [...finished, ...behindAll];
 
-  const result = { n, order, times, penalties, eliminated: [], how: {}, nonElim: null, onLocation: [], unserved: [], saved: null };
+  const result = { n, kind: leg.kind, order, times, penalties, eliminated: [], how: {}, nonElim: null, onLocation: [], unserved: [], saved: null };
 
-  if (leg.kind === 'elim' || leg.kind === 'final') {
-    // Don goes to a team that never reached the mat, or one hours behind the second-last.
+  if (leg.kind === 'final') {
+    // the finale: the team cut at the midpoint mat is third; the other two race to the end
+    for (const id of behindAll) {
+      result.eliminated.push(id);
+      result.how[id] = state.midmatOut?.[n] === id ? 'midpoint' : 'on-location';
+    }
+  } else if (leg.kind === 'elim') {
+    // Don goes to a team that never reached the mat, or else one hours behind the second-last.
     const raw = Object.keys(finish).sort((a, b) => finish[a] - finish[b]);
     const secondLast = raw.length >= 2 ? finish[raw[raw.length - 2]] : null;
     const far = raw.filter(id => secondLast != null && finish[id] - secondLast > DON_GOES_AFTER);
-    const onLoc = [...behindAll, ...far.filter(id => !behindAll.includes(id))];
+    const onLoc = behindAll.length ? behindAll : far;
     if (onLoc.length) {
       for (const id of onLoc) {
         result.eliminated.push(id); result.how[id] = 'on-location'; result.onLocation.push(id);
         act(state, 'don-arrives', id, null, rng);
       }
-    } else if (leg.kind === 'elim') {
+    } else {
       let out = finished.at(-1);
       if (out && useSave(state, out)) {
         result.saved = out;

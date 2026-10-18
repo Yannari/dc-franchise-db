@@ -54,7 +54,8 @@ function closedUntil(state, s, t) {
   return t + ((s.opens - tod + DAY) % DAY);
 }
 
-export function playLeg(state, leg, from, to, rng) {
+// `adjust(team, stretch, t, res)` lets the finale reshape a stretch's result (the footrace).
+export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   state.leg = leg.n;
   const active = state.order.filter(id => !state.gone.includes(id));
   payStipend(state, leg);
@@ -160,6 +161,8 @@ export function playLeg(state, leg, from, to, rng) {
     } else {
       res = { end: t };
     }
+
+    if (adjust) res = adjust(team, s, t, res) || res;
 
     // after the stretch: the partners talk, tempers and the clock in their legs
     if (s.kind !== 'mat') {

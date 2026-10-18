@@ -21,6 +21,9 @@ export const RR_FACT_KEYS = [
   'rel', 'relFam', 'identity', 'identityB',
   // the other team: its relationship, broke, failing at this stretch (0, 1, 'many'); a's team owes c's (a deal, a loan)
   'relB', 'relFamB', 'brokeB', 'failsB', 'weOwe',
+  // the last sabotage done to a's team (push, ram, steal, kidnap-pet, course-sabotage, fake-shortcut, mind-game...);
+  // a's team is the one that just arrived where the other team already was
+  'sabKind', 'weArrived',
   // the task is one the identity is good at, or bad at
   'idGood', 'idBad',
   // where they think they are in the race; the money; a team not speaking
@@ -78,7 +81,7 @@ export function factsFor(scene, roles, state) {
     phase: s.phase ?? null, early: s.phase === 'early', late: s.phase === 'late',
     band: s.band ?? null, bandX: s.bandX ?? null, allied: !!s.allied, rival: (s.rivalry || 0) >= 2, couple: !!s.couple,
     rel: s.rel ?? null, relFam: s.relFam ?? null, relB: s.relB ?? null, relFamB: s.relFamB ?? null,
-    brokeB: !!s.brokeB, failsB: !s.failsB ? 0 : s.failsB === 1 ? 1 : 'many', weOwe: weOwe(scene, state), identity: s.identity ?? null, identityB: s.identityB ?? null,
+    brokeB: !!s.brokeB, sabKind: s.sabKind ?? null, weArrived: d.arriving != null ? d.arriving === d.team : null, failsB: !s.failsB ? 0 : s.failsB === 1 ? 1 : 'many', weOwe: weOwe(scene, state), identity: s.identity ?? null, identityB: s.identityB ?? null,
     idGood: !!(id && types.some(x => id.good.includes(x))), idBad: !!(id && types.some(x => id.bad.includes(x))),
     behind: s.rank != null && s.rank > 0.66, ahead: s.rank != null && s.rank < 0.33,
     broke: !!s.broke, snapped: !!s.snapped,

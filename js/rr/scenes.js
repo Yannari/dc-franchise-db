@@ -25,7 +25,7 @@ const people = (state, id) => (id && state.teams[id] ? [state.teams[id].a, state
 // Taken when the scene is played, BEFORE its ending changes anything: how the two stood, where, when.
 export const SNAP_KEYS = ['leg', 'phase', 'tod', 'rank', 'band', 'bandX', 'allied', 'rivalry', 'couple', 'rel', 'relFam',
   'identity', 'identityB', 'money', 'broke', 'snapped', 'place', 'stretchKind', 'mode', 'taskTypes', 'fails', 'side', 'lead', 'botcher',
-  'relB', 'relFamB', 'brokeB', 'failsB'];
+  'relB', 'relFamB', 'brokeB', 'failsB', 'sabKind'];
 const ROMANTIC = ['dating', 'married', 'newly-dating', 'on-off', 'once-engaged'];
 export const relFamOf = rel => (REL[rel]?.family ? 'family' : ROMANTIC.includes(rel) ? 'romantic' : rel === 'exes' ? 'exes'
   : ['rivals', 'enemies'].includes(rel) ? 'rivals' : 'friends');
@@ -68,6 +68,8 @@ export function snapOf(st, { tid = null, oid = null, stretch = null, t = null, f
     relFamB: oid ? relFamOf(st.teams[oid].rel) : null,
     brokeB: oid ? !(st.money[oid] > 0) : false,
     failsB: oid && stretch?.id ? st.attempts?.[oid]?.[stretch.id]?.fails || 0 : 0,
+    // the last sabotage done to this team, as far as anyone knows what it was
+    sabKind: tid ? st.sabotaged?.[tid]?.kind ?? null : null,
   };
 }
 
@@ -101,7 +103,7 @@ export function prepare(ctx) {
   });
 }
 
-function makeFx(ctx, effects) {
+function makeFx(ctx, effects, kindId = null) {
   const st = ctx.state;
   const push = e => effects.push(e);
   return {
@@ -151,7 +153,8 @@ function makeFx(ctx, effects) {
       st.couples.push({ a, b, since: st.leg, ended: null }); push(['couple', a, b]);
     },
     uncouple(a, b) { const k = pairKey(a, b); for (const x of st.couples) if (!x.ended && pairKey(x.a, x.b) === k) x.ended = st.leg; push(['uncouple', a, b]); },
-    sabotaged(victim, by, seen) { st.sabotaged ||= {}; st.sabotaged[victim] = { by, leg: st.leg, seen: !!seen }; push(['sabotaged', victim, by, !!seen]); },
+    // which sabotage it was (push, steal, course-sabotage...) is kept, so a confrontation can name it
+    sabotaged(victim, by, seen) { st.sabotaged ||= {}; st.sabotaged[victim] = { by, leg: st.leg, seen: !!seen, kind: kindId }; push(['sabotaged', victim, by, !!seen]); },
     custom(name, ...args) { push([name, ...args]); },
   };
 }
@@ -201,11 +204,13 @@ export function playScene(ctx, kindId, rng, { ending = null } = {}) {
   const e = ending || decideEnding(kind, ctx, rng);
   const snap = snapOf(ctx.state, { tid: ctx.tid, oid: ctx.oid, stretch: ctx.stretch, t: ctx.t, fails: ctx.fails, who });
   const effects = [];
-  kind._endings[e].fx?.(makeFx(ctx, effects), ctx);
+  kind._endings[e].fx?.(makeFx(ctx, effects, kindId), ctx);
   const data = { ending: e, family: kind.family, effects, t: ctx.t ?? null, stretch: ctx.stretch?.id ?? null,
     team: ctx.tid ?? null, other: ctx.oid ?? null, cause: ctx.cause ?? null, facts: kind.facts ? kind.facts(ctx) : {}, snap,
     // why the system played it (a lead changed after an injury or a snap), and where the team stands on the mat
-    why: ctx.event?.cause ?? null, matPlace: ctx.matPlace ?? null };
+    why: ctx.event?.cause ?? null, matPlace: ctx.matPlace ?? null,
+    // in a meeting, the team that just got there (talk.js: the one arriving finds the other already here)
+    arriving: ctx.arriving ?? null };
   const sc = addScene(ctx.state, kindId, who, data, seenByOf(ctx, kind, who));
   const nxt = kind.next?.[e];
   if (nxt) { ctx.state.chained ||= {}; (ctx.state.chained[ctx.tid] ||= []).push({ kind: nxt, cause: sc.id, other: ctx.oid }); }

@@ -290,7 +290,7 @@ export function talkAtOverlap(state, team, others, stretch, t, api, rng) {
       const c = draw(cands, rng);
       if (!c) break;
       cands.splice(cands.indexOf(c), 1);
-      const ctx = baseCtx(state, c.a, c.b, stretch, t, api, { firstMeet, ...(c.people ? { people: c.people } : {}) });
+      const ctx = baseCtx(state, c.a, c.b, stretch, t, api, { firstMeet, arriving: id, ...(c.people ? { people: c.people } : {}) });
       ctx.moment = c.moment;
       if (tryPlay(state, ctx, c.kind, rng, out)) break;
     }

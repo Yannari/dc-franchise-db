@@ -89,7 +89,9 @@ A pool file is a JS module: `export default { '<kind>.<ending>': [entries], '<ki
   reality-vets), `relFam` (family/romantic/exes/friends/rivals), `identity`, `identityB`, `idGood`, `idBad`
   (the task is one their identity is good/bad at), `behind`, `ahead` (where they *think* they are),
   `broke`, `snapped` (not speaking), and for the OTHER team in a two-team scene: `relB`, `relFamB`, `brokeB`,
-  `failsB` (0, 1, 'many'); `weOwe` (a's team owes c's: a deal c's team helped with, a loan) — `rel:` variants on
+  `failsB` (0, 1, 'many'); `sabKind` (the last sabotage done to a's team: push, ram, steal, kidnap-pet,
+  course-sabotage, fake-shortcut, mind-game, admin-sabotage, free-ride, revenge — so an accusation or a
+  confrontation can name it); `weArrived` (a's team just arrived where c's team already was); `weOwe` (a's team owes c's: a deal c's team helped with, a loan) — `rel:` variants on
   `c`/`d` lines follow the other team's relationship; `tod` (night/morning/day/evening), `stretchKind`
   (travel/either/botch/allin/mat/board), `taskType` (the task's main type: water, heights, nerve, stomach,
   perform, brains, hands, strength, search, people, patience, travel — so a line can say "eat it" or

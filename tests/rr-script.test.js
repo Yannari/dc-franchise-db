@@ -111,6 +111,21 @@ describe('rr roles and facts', () => {
     expect(voicedLine(turn, 'Nobody', { relFam: 'exes', rng: () => 0 }).text).toBe('exes line');
   });
 
+  it('a confrontation knows what the sabotage was, and a meeting knows who just arrived', () => {
+    for (const k of ['sabKind', 'weArrived']) expect(RR_FACT_KEYS).toContain(k);
+    const ctx = fixtureCtx('push', { doerArchetype: 'villain' });
+    const st = ctx.state;
+    playScene(ctx, 'push', () => 0.5, { ending: 'seen' });
+    expect(st.sabotaged[ctx.other.id].kind).toBe('push');
+    // the victims, later: their scene knows it was a push
+    const later = fixtureCtx('confront');
+    Object.assign(later, { state: st, team: { id: ctx.other.id }, other: { id: ctx.team.id }, _ready: false, moment: 'overlap', arriving: ctx.other.id });
+    const sc = playScene(later, 'confront', () => 0.5, { ending: 'denied' });
+    const f = factsFor(sc, rolesOf(sc, st), st);
+    expect(f.sabKind).toBe('push');
+    expect(f.weArrived).toBe(true);
+  });
+
   it('facts use only the whitelist, and never change after the scene', () => {
     const st = res.state;
     for (const sc of st.scenes.filter(s => SCENES[s.kind]).slice(0, 400)) {

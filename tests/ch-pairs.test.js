@@ -7,6 +7,7 @@ import { buildSchedule } from '../js/ch/schedule.js';
 import { mayScheme } from '../js/ch/state.js';
 import { challengeCast } from './helpers/ch-cast.js';
 import { chLedgerRecord } from '../js/ch/ledger-record.js';
+import { previouslyFor } from '../js/ch/story/previously.js';
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 
@@ -155,6 +156,22 @@ describe('a Pairs season', () => {
     expect(wasPair(s, e.returnArena.winners[0], e.returnArena.winners[1], 5)).toBe(true);
     const back = e.returnArena.losers.map(l => s.state.gone.find(g => g.name === l));
     expect(back[0].place).toBe(back[1].place);
+  });
+
+  it('the recap names both of a pair: who went in, who was picked, who went home', () => {
+    // "In Ram Wall, Alejandro beat Gigi Cherie, and Gigi Cherie went home" aired while Harriett went home too
+    let checked = 0;
+    for (const s of seasons) for (const [i, prev] of s.state.episodes.entries()) {
+      const next = s.state.episodes[i + 1];
+      if (!next || !prev.arena?.length) continue;
+      // the Arena's lines (a pair can swap partners between the daily and the Arena, so the daily's own line is not one)
+      const tj = (previouslyFor(s.state, prev)?.lines || []).filter(l => l.by === 'TJ' && l.shot?.spot === 'arena').map(l => l.text);
+      for (const a of prev.arena) for (const [n, mate] of [[a.loser, a.losers?.find(x => x !== a.loser)], [a.winner, a.winners?.find(x => x !== a.winner)]]) {
+        if (!mate) continue;
+        for (const t of tj.filter(t => t.includes(n))) { expect(t, t).toContain(mate); checked++; }
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
   });
 
   it('the pair lives as a pair: fights, making up, plans, and the inside of every two-on-two air', () => {

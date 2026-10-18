@@ -570,7 +570,12 @@ const BIG = {
   // the one-episode twists (ch/ep-twists.js)
   'late-arrival': a => ({ card: { k: 'New arrivals', t: (a.data?.arrivals || a.who.slice(0, 2)).join(' & '), sub: 'Fresh legs, no enemies, and they want your spot', faces: a.data?.arrivals || a.who.slice(0, 2) } }),
   purge: a => ({ slam: { spray: 'PURGED', color: '#e3262d' }, chip: [a.who[0], 'GOING HOME'] }),
-  'return-arena': a => ({ card: { k: 'The Return', t: a.data?.winner || a.who[0], sub: `Back in the game after beating ${a.data?.loser || a.who[1]}`, faces: [a.data?.winner || a.who[0]] } }),
+  // a Pairs return (ep-twists.js) brings two back and sends two home: the card names both of each
+  'return-arena': a => {
+    const back = a.data?.pair && a.data.winners?.length ? a.data.winners : [a.data?.winner || a.who[0]];
+    const beat = a.data?.pair && a.data.losers?.length ? a.data.losers : [a.data?.loser || a.who[1]];
+    return { card: { k: 'The Return', t: back.join(' & '), sub: `Back in the game after beating ${beat.join(' and ')}`, faces: back } };
+  },
   // a fight's end (the user, 2026-10-16: "fight animations to feel like a big moment"): a shouting match is
   // pulled apart; a physical one is a brawl first; then who backed whom
   fight: a => [{ part: a.who.slice(0, 2), dir: `Friends get between ${a.who[0]} and ${a.who[1]} and drag them to opposite ends of the bar.`, act: { [a.who[0]]: 'shout' } }, ...sidesStep(a)],

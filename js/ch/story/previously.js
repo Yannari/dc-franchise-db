@@ -57,16 +57,34 @@ const STORIES = [
   ['breakup', s => `${s.who[0]} and ${s.who[1]} broke up, in a house they can't leave.`],
   ['fight-physical', s => `${s.who[0]} and ${s.who[1]} had to be pulled apart.`],
   ['fight', s => `${s.who[0]} and ${s.who[1]} went at it, in front of everybody.`],
-  ['house-debate', s => `${s.who[0]} said ${s.data?.target || s.who[1]}'s name out loud in front of the whole house, and ${s.who[2]} pushed back.`],
+  ['house-debate', (s, P) => { const t = s.data?.target || s.who[1]; return P(t) !== t
+    ? `${s.who[0]} said ${P(t)} out loud in front of the whole house, and ${s.who[2]} pushed back.`
+    : `${s.who[0]} said ${t}'s name out loud in front of the whole house, and ${s.who[2]} pushed back.`; }],
   ['alliance-end', s => `${s.data?.name || 'An alliance'} fell apart.`],
   ['jealousy', s => `${s.who[0]} didn't like how close ${s.who[1]} and ${s.who[2] || 'somebody'} were getting, and said so.`],
   ['kitchen-blowup', s => `${s.who[0]} and ${s.who[1]} blew up in the kitchen, and it wasn't about the food.`],
-  ['receipts', s => `${s.who[0]} went to find out why ${s.who[1]} said ${pronouns(s.who[0])?.posAdj || 'their'} name at the vote.`],
+  ['receipts', (s, P) => P(s.who[0]) !== s.who[0]
+    ? `${s.who[0]} went to find out why ${s.who[1]} named ${P(s.who[0])} at the vote.`
+    : `${s.who[0]} went to find out why ${s.who[1]} said ${pronouns(s.who[0])?.posAdj || 'their'} name at the vote.`],
 ];
+
+// A Pairs season goes in, wins and goes home as two (the user, 2026-10-17: "Alejandro beat Gigi Cherie, and Gigi
+// Cherie went home" aired while Harriett went home too). The partner comes from that episode's own record (the
+// Arena's two pairs, a ballot's pair), never live state: the season has played on by the time it airs.
+function pairNamer(state, prev) {
+  if (!state.options?.pairs) return n => n;
+  const partner = {};
+  const add = p => { if (Array.isArray(p) && p.length === 2) { partner[p[0]] ||= p[1]; partner[p[1]] ||= p[0]; } };
+  for (const a of prev.arena || []) { add(a.pairA); add(a.pairB); add(a.winners); add(a.losers); }
+  for (const v of prev.votes || []) for (const b of v.ballots || []) add(b.pair);
+  return n => (partner[n] ? `${n} and ${partner[n]}` : n);
+}
 
 export function previouslyFor(state, prev) {
   if (!prev) return null;
   const rng = stableRng(state.seed, 'previously', prev.ep);
+  const pairOf = pairNamer(state, prev);
+  const two = n => pairOf(n) !== n;
   const lines = [];
   const say = (text, shot = null) => lines.push({ kind: 'say', by: 'TJ', text, ...(shot ? { shot } : {}) });
   const clip = (c, shot) => { if (c) lines.push({ ...c, clip: true, shot }); };
@@ -83,7 +101,9 @@ export function previouslyFor(state, prev) {
       : pick(rng, [`${d.winners[0]} won ${d.name}, and was safe at the vote.`, `${d.name} went to ${d.winners[0]}. Safe for the week.`]), shot);
     if (ds) clip(clipOf(ds, d.winners), shot);
     const last = (d.last || [])[0];
-    if (last && !d.winners.includes(last)) say(pick(rng, [`${last} came in last.`, `And ${last} finished dead last.`]), { daily: d.id, who: [last] });
+    // a Pairs daily is run by pairs, and d.last is the whole last pair: they came last together
+    const lastP = state.options?.pairs && (d.last || []).length === 2 ? list(d.last) : last;
+    if (last && !d.winners.includes(last)) say(pick(rng, [`${lastP} came in last.`, `And ${lastP} finished dead last.`]), { daily: d.id, who: [last] });
   }
 
   // the stories that moved: up to three, the biggest first, each with its clip
@@ -95,7 +115,7 @@ export function previouslyFor(state, prev) {
     if (!a) continue;
     usedScenes.add(a.scene.id);
     const shot = shotOf(a);
-    say(tell(a.scene), shot);
+    say(tell(a.scene, pairOf), shot);
     clip(clipOf(a, a.scene.who.slice(0, 3)), shot);
     told++;
   }
@@ -106,9 +126,12 @@ export function previouslyFor(state, prev) {
     const vs = find('house-debate', x => x.scene.data?.target === v.votedIn);
     const shot = { spot: 'deliberation', kind: 'ceremony', who: [v.votedIn] };
     // a Teams season's vote was one team's, never the house's (ch/teams.js)
+    const P = pairOf(v.votedIn);
     say(pick(rng, v.team
       ? [`${v.team} lost the daily, and ${num(n)} of ${v.votedIn}'s own teammates said the name out loud.`, `${v.team} voted one of their own into the Arena: ${v.votedIn}, with ${num(n)} votes.`]
-      : [`At the vote, ${num(n)} people said ${v.votedIn}'s name out loud.`, `The house voted ${v.votedIn} into the Arena, ${num(n)} votes.`, `${Cap(num(n))} votes. ${v.votedIn} was going into the Arena.`]), shot);
+      : two(v.votedIn)
+        ? [`At the vote, ${num(n)} people said ${P} out loud.`, `The house voted ${P} into the Arena, ${num(n)} votes.`, `${Cap(num(n))} votes. ${P} were going into the Arena.`]
+        : [`At the vote, ${num(n)} people said ${v.votedIn}'s name out loud.`, `The house voted ${v.votedIn} into the Arena, ${num(n)} votes.`, `${Cap(num(n))} votes. ${v.votedIn} was going into the Arena.`]), shot);
     if (vs && !usedScenes.has(vs.scene.id)) say(`${vs.scene.data?.organiser || vs.scene.who[0]} pushed for it, and the house went along.`, shot);
     const after = find('after-vote', x => x.scene.who[0] === v.votedIn);
     if (after) clip(clipOf(after, [v.votedIn]), shotOf(after));
@@ -116,22 +139,31 @@ export function previouslyFor(state, prev) {
   }
   // a volunteer
   const vol = (prev.callouts || []).find(c => !(prev.votes || []).some(v => v.votedIn === c.by));
-  if (vol) say(pick(rng, [`${vol.by} volunteered for the Arena, and went after ${vol.opponent}.`, `${vol.by} didn't wait for a vote. ${vol.by} volunteered and called out ${vol.opponent}.`]), { spot: 'arena', who: [vol.by, vol.opponent] });
+  if (vol) say(pick(rng, two(vol.by)
+    ? [`${pairOf(vol.by)} volunteered for the Arena, and went after ${pairOf(vol.opponent)}.`, `${pairOf(vol.by)} didn't wait for a vote. They volunteered and called out ${pairOf(vol.opponent)}.`]
+    : [`${vol.by} volunteered for the Arena, and went after ${vol.opponent}.`, `${vol.by} didn't wait for a vote. ${vol.by} volunteered and called out ${vol.opponent}.`]), { spot: 'arena', who: [vol.by, vol.opponent] });
 
   // the call-out, in the caller's words; the Arena, and the loser's last word
   for (const co of (prev.callouts || [])) {
     const cs = find('callout', x => x.scene.who[0] === co.by);
     const shot = { spot: 'arena', kind: 'arena', who: [co.by, co.opponent] };
-    if (!vol || vol.by !== co.by) say(pick(rng, [`${co.by} called out ${co.opponent}.`, `${co.by} looked across the Arena and picked ${co.opponent}.`]), shot);
+    if (!vol || vol.by !== co.by) say(pick(rng, [`${pairOf(co.by)} called out ${pairOf(co.opponent)}.`, `${pairOf(co.by)} looked across the Arena and picked ${pairOf(co.opponent)}.`]), shot);
     if (cs) clip(clipOf(cs, [co.by]), shot);
   }
   for (const a of prev.arena || []) {
     const shot = { spot: 'arena', kind: 'arena', who: [a.winner, a.loser] };
-    say(a.comeback ? pick(rng, [`${a.winner} came back from the dead in ${a.gameName} and sent ${a.loser} home.`, `${a.loser} had it won, until ${a.winner} took it away.`])
-      : a.upset ? pick(rng, [`Nobody gave ${a.winner} a chance against ${a.loser}. ${a.winner} won anyway.`, `${a.winner} pulled off the upset, and ${a.loser} went home.`])
-      : pick(rng, [`In ${a.gameName}, ${a.winner} beat ${a.loser}, and ${a.loser} went home.`, `${a.winner} won the elimination. ${a.loser} did not.`]), shot);
-    const ar = find('arena', x => x.scene.who.includes(a.loser));
-    if (ar) clip(clipOf(ar, [a.loser]), shot);
+    const W = pairOf(a.winner), L = pairOf(a.loser);
+    say(two(a.loser)
+      ? (a.comeback ? pick(rng, [`${W} came back from the dead in ${a.gameName} and sent ${L} home.`, `${L} had it won, until ${W} took it away.`])
+        : a.upset ? pick(rng, [`Nobody gave ${W} a chance against ${L}. They won anyway.`, `${W} pulled off the upset, and ${L} went home.`])
+        : pick(rng, [`In ${a.gameName}, ${W} beat ${L} and sent them both home.`, `${W} won the elimination. ${L} went home together.`]))
+      : (a.comeback ? pick(rng, [`${a.winner} came back from the dead in ${a.gameName} and sent ${a.loser} home.`, `${a.loser} had it won, until ${a.winner} took it away.`])
+        : a.upset ? pick(rng, [`Nobody gave ${a.winner} a chance against ${a.loser}. ${a.winner} won anyway.`, `${a.winner} pulled off the upset, and ${a.loser} went home.`])
+        : pick(rng, [`In ${a.gameName}, ${a.winner} beat ${a.loser}, and ${a.loser} went home.`, `${a.winner} won the elimination. ${a.loser} did not.`])), shot);
+    // the last word: either of the two who went home
+    const gone = a.losers?.length ? a.losers : [a.loser];
+    const ar = find('arena', x => gone.some(n => x.scene.who.includes(n)));
+    if (ar) clip(clipOf(ar, gone), shot);
   }
 
   // who is left, and the tease

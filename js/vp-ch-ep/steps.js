@@ -325,7 +325,8 @@ function sceneStep(S, a, place, { night, extraCast = [], hidden = [], group = nu
   // in the common room people sit on the sofa (the user, 2026-10-15: "they don't sit")
   if (group === 'none') group = null;
   else if (!group && place.plate === 'common') group = 'sofa';
-  const who = (a?.who || []).filter(n => n && n !== HOST);
+  // (a scene's `away` people are talked about, not there: ch/transcript.js airedOf)
+  const who = (a?.who || []).filter(n => n && n !== HOST && !(a?.away || []).includes(n));
   const cast = placeScene(key, [...new Set([...who, ...extraCast])], { group, crowd: crowd.filter(n => !who.includes(n)) });
   return { scene: { plate: key, place: place.place, when: whenOf(S.day, S.min), icon: place.icon || 'house', room: place.room || null,
     island: place.island || null, cast, hidden, water: place.water || 0, lasers: place.lasers || 0, embers: place.embers || 0, wipe: 1, crowd } };
@@ -914,7 +915,7 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   // the daily's aftermath scenes, on the same plate
   for (const it of after) {
     S.at(it.i);
-    const first2 = { scene: { plate: key, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { ...placeScene(key, it.a.who) }, wipe: 1 }, sceneIdx: it.i, title: it.title, kind: it.a.kind, power: winners };
+    const first2 = { scene: { plate: key, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast: { ...placeScene(key, it.a.who.filter(n => !(it.a.away || []).includes(n))) }, wipe: 1 }, sceneIdx: it.i, title: it.title, kind: it.a.kind, power: winners };
     if (it.a.lines.every(l => l.kind === 'conf')) first2.scene.cast = {};
     linesToSteps(S, it.a.lines, { names, first: first2, sceneWho: it.a.who });
   }

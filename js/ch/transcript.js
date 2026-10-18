@@ -80,8 +80,14 @@ export function airedOf(epRec) {
       continue;
     }
     if (!a.script) continue;
+    // `away`: the people a scene is ABOUT who were not there (a vote talk names its target to the group, seenBy = the
+    // group): never stood in the room, unless they speak (the user, 2026-10-18: "when they talk about voting someone
+    // the stepped viewer adds this person to the screen even though they weren't there")
+    const speaks = new Set((a.script.lines || []).map(l => l.by));
+    const seen = a.scene?.seenBy;
+    const away = Array.isArray(seen) ? (a.scene?.who || []).filter(n => !seen.includes(n) && !speaks.has(n)) : [];
     out.push({ kind: a.kind, day: a.day, spot: a.script?.at || a.scene?.spot || null, who: [...new Set([...(a.scene?.who || []), ...(a.scene?.data?.crowd || [])])], data: plain(a.scene?.data), snap: plain(a.scene?.snap),
-      lines: compact(a.script.lines) });
+      ...(away.length ? { away } : {}), lines: compact(a.script.lines) });
   }
   return out;
 }

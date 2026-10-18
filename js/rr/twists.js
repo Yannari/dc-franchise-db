@@ -9,7 +9,7 @@
 //
 // Who a team aims at is the team's choice, read from what it believes: rivalry, grudges
 // (a negative bond), and the teams it thinks are near it in the race.
-import { SCENES, playScene, decideEnding, prepare, pairKey } from './scenes.js';
+import { SCENES, playScene, decideEnding, prepare, pairKey, snapOf } from './scenes.js';
 import { addScene, S } from './state.js';
 import { perceivedRank } from './knowledge.js';
 import { teamLevel } from './skill.js';
@@ -67,7 +67,7 @@ export function handOut(state, leg, rng) {
     const key = leg.twist === 'boomerang' ? 'boomerang' : 'yield';
     state.passes[id][key] = (state.passes[id][key] || 0) + 1;
     if (key === 'boomerang') act(state, 'boomerang-found', id, null, rng);
-    else addScene(state, 'yield-found', people(state, id), { team: id, effects: [['pass', id, 'yield']] });
+    else addScene(state, 'yield-found', people(state, id), { team: id, effects: [['pass', id, 'yield']], snap: snapOf(state, { tid: id, who: people(state, id) }) });
   }
   if (leg.twist === 'boomerang-vote') {
     const pos = id => state.lastOrder.indexOf(id);
@@ -137,7 +137,7 @@ export function resolveBoard(state, team, stretch, t, api, rng) {
       const target = weightedPick(aimWeights(state, id, targets), rng).id;
       (state.yielded ||= {})[target] = id;
       addScene(state, 'yield-decide', people(state, id), { team: id, other: target, t, stretch: stretch.id,
-        effects: [['yield', id, target]] });
+        effects: [['yield', id, target]], snap: snapOf(state, { tid: id, oid: target, stretch, t, who: people(state, id) }) });
     }
   }
   return { end, redo };
@@ -161,7 +161,8 @@ export function useExpress(state, team, stretch, stretches = []) {
   }
   if (state.expressPlan[key] !== stretch.id) return false;
   state.passes[id].express--;
-  addScene(state, 'express-used', people(state, id), { team: id, stretch: stretch.id, effects: [['express', id, stretch.id]] });
+  addScene(state, 'express-used', people(state, id), { team: id, stretch: stretch.id, effects: [['express', id, stretch.id]],
+    snap: snapOf(state, { tid: id, stretch, who: people(state, id) }) });
   return true;
 }
 

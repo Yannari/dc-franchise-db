@@ -59,7 +59,8 @@ export function runTask(state, team, task, t, api, rng, who = 'both', { stretchI
     if (row.fails === 2 && !failedNoted) {
       failedNoted = true;
       addScene(state, 'attempt-fail', who === 'both' ? [a, b] : [who, partner(state, id, who)],
-        { t: t + dur, stretch: stretchId, team: id, fails: row.fails, effects: [['stress', id, 12]] }, [a, b]);
+        { t: t + dur, stretch: stretchId, team: id, fails: row.fails, effects: [['stress', id, 12]],
+          snap: snapOf(state, { tid: id, stretch: task, t: t + dur, fails: row.fails, who: [a, b] }) }, [a, b]);
     }
     if (onFail && onFail(attempts, row, t + dur) === 'quit') { quit = true; break; }
   }
@@ -150,7 +151,7 @@ export function runBotch(state, team, stretch, t, api, rng) {
         state.pending[id] = (state.pending[id] || 0) + PENALTIES.botchHelp;
         const seen = [who, watcher, ...witnesses.flatMap(x => people(state, x))];
         addScene(state, 'helped-botch', [watcher, who], { t: at, stretch: stretch.id, team: id, witnesses,
-          effects: [['pending', id, PENALTIES.botchHelp]] }, seen);
+          effects: [['pending', id, PENALTIES.botchHelp]], snap: snapOf(state, { tid: id, stretch, t: at, who: [watcher, who] }) }, seen);
       }
     }
     if (n >= 5) {
@@ -164,7 +165,7 @@ export function runBotch(state, team, stretch, t, api, rng) {
     state.rec[id].quits++;
     pop(who, -2);
     addScene(state, 'quit-task', [who, watcher], { t: res.end, stretch: stretch.id, team: id,
-      effects: [['pending', id, PENALTIES.botchQuit], ['pop', who, -2]] }, [who, watcher]);
+      effects: [['pending', id, PENALTIES.botchQuit], ['pop', who, -2]], snap: snapOf(state, { tid: id, stretch, t: res.end, who: [who, watcher] }) }, [who, watcher]);
   }
   return { ...res, data: { ...res.data, who, quit: res.quit } };
 }
@@ -176,7 +177,7 @@ export function runAllIn(state, team, stretch, t, api, rng) {
   if (tired && rng() < 0.3) {
     state.pending[id] = (state.pending[id] || 0) + PENALTIES.allInSkip;
     addScene(state, 'allin-alone', [partner(state, id, tired), tired], { t, stretch: stretch.id, team: id,
-      effects: [['pending', id, PENALTIES.allInSkip]] }, [a, b]);
+      effects: [['pending', id, PENALTIES.allInSkip]], snap: snapOf(state, { tid: id, stretch, t, who: [a, b] }) }, [a, b]);
     return runTask(state, team, stretch, t, api, rng, partner(state, id, tired));
   }
   return runTask(state, team, stretch, t, api, rng, 'both');

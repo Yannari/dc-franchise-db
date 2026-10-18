@@ -58,7 +58,8 @@ export function rolesOf(scene, state) {
   const d = scene.data || {};
   const tid = d.team, oid = d.other;
   const t = tid ? state.teams[tid] : null;
-  const cast = kind?.cast || 'team';
+  // a plane full of teams is a room (travel.js same-flight)
+  const cast = scene.kind === 'same-flight' ? 'group' : kind?.cast || 'team';
   const roles = {};
   const who = scene.who || [];
 

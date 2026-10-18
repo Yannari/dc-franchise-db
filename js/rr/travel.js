@@ -12,6 +12,7 @@ import { teamLevel, spreadOf } from './skill.js';
 import { identityOf } from './identities.js';
 import { REGIONS } from './places.js';
 import { spend, afford } from './money.js';
+import { snapOf } from './scenes.js';
 
 const CHECK_IN = 30;
 
@@ -61,7 +62,8 @@ function resolveFlight(state, team, stretch, t, rng) {
   if (c && c.taken.length < c.seats && t + CHECK_IN <= c.departs && rng() < 0.3 * teamLevel(state, id, ['travel']) / 10) {
     c.taken.push(id);
     const t2 = state.teams[id];
-    addScene(state, 'found-flight', [t2.a, t2.b], { t, stretch: stretch.id, team: id, effects: [['flight', id, 'connection']] }, [t2.a, t2.b]);
+    addScene(state, 'found-flight', [t2.a, t2.b], { t, stretch: stretch.id, team: id, effects: [['flight', id, 'connection']],
+      snap: snapOf(state, { tid: id, stretch, t, who: [t2.a, t2.b] }) }, [t2.a, t2.b]);
     return { end: c.lands, data: { flight: 'connection' } };
   }
   let k = stretch.flights.findIndex(f => f.taken.length < f.seats && f.departs >= t + CHECK_IN);
@@ -107,7 +109,8 @@ export function resolveTravel(state, team, stretch, t, api, rng) {
     const [kind, base] = MISHAPS[Math.floor(rng() * MISHAPS.length)];
     const minutes = Math.round(base / (Math.max(1, teamLevel(state, id, ['travel'])) / 5));
     dur += minutes;
-    addScene(state, 'travel-mishap', [tm.a, tm.b], { t, stretch: stretch.id, team: id, kind, minutes, effects: [['time', id, minutes]] }, [tm.a, tm.b]);
+    addScene(state, 'travel-mishap', [tm.a, tm.b], { t, stretch: stretch.id, team: id, kind, minutes, effects: [['time', id, minutes]],
+      snap: snapOf(state, { tid: id, stretch, t, who: [tm.a, tm.b] }) }, [tm.a, tm.b]);
   }
   return { end: start + dur };
 }
@@ -120,7 +123,7 @@ export function boardFlightScenes(state, stretch) {
     if (!f.taken.length) return;
     const people = f.taken.flatMap(id => [state.teams[id].a, state.teams[id].b]);
     out.push(addScene(state, 'same-flight', people, { flight: k, teams: [...f.taken], t: f.departs, stretch: stretch.id,
-      effects: f.taken.map(id => ['flight', id, k]) }, people));
+      effects: f.taken.map(id => ['flight', id, k]), snap: snapOf(state, { stretch, t: f.departs, who: people }) }, people));
   });
   return out;
 }

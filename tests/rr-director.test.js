@@ -71,6 +71,23 @@ describe('rr director', () => {
     }
   });
 
+  it("a task beat casts the one doing a Botch first, names the side, and keeps the task's snapshot", () => {
+    const st = res.state;
+    for (const ep of aired) for (const seg of ep.segments.filter(s => s.beat)) {
+      const row = st.taskLog.find(r => `task:${r.leg}:${r.team}:${r.stretch}` === seg.beat.split(':').slice(0, 4).join(':'));
+      expect(row, seg.beat).toBeTruthy();
+      if (row.kind === 'botch' && row.who) expect(seg.who[0]).toBe(row.who);
+      if (row.side) expect(seg.side).toBe(row.side);
+    }
+  });
+
+  it("the system's own moments keep a snapshot, and a mishap says what went wrong", () => {
+    const st = res.state;
+    const sys = st.scenes.filter(s => ['attempt-fail', 'travel-mishap', 'same-flight', 'quit-task', 'helped-botch', 'allin-alone', 'found-flight', 'express-used'].includes(s.kind));
+    expect(sys.length).toBeGreaterThan(5);
+    for (const s of sys) expect(s.data.snap, s.kind).toBeTruthy();
+  });
+
   it('an interview airs only after the moment it is about', () => {
     for (const ep of aired) {
       const seen = new Set();

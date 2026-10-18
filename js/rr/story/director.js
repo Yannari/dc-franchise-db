@@ -62,12 +62,16 @@ function taskEnding(row) {
   return row.fails >= 4 ? 'struggling' : 'after-fails';
 }
 
-// A task beat: the director's own moment for a team at a task, from the task log.
-function taskBeat(state, row, i) {
-  const [a, b] = people(state, row.team);
-  return { id: `task:${row.leg}:${row.team}:${row.stretch}:${i}`, leg: row.leg, kind: 'task-try', who: [a, b], seenBy: [a, b],
-    data: { ending: taskEnding(row), team: row.team, stretch: row.stretch, t: row.from, switched: row.switched, quit: row.quit,
-      side: row.side, snap: row.snap ? { ...row.snap, fails: row.fails } : null } };
+// A task beat: the director's own moment for a team at a task, from the task log. The one doing a Botch
+// speaks as a; the side they ran is named; a team's first task of the leg can air as its arrival at the task
+// and its last as the finish (`kind`), when nothing about the run itself needs telling.
+function taskBeat(state, row, i, kind = 'task-try') {
+  const [x, y] = people(state, row.team);
+  const [a, b] = row.kind === 'botch' && row.who && [x, y].includes(row.who) ? [row.who, row.who === x ? y : x] : [x, y];
+  return { id: `task:${row.leg}:${row.team}:${row.stretch}:${i}`, leg: row.leg, kind, who: [a, b], seenBy: [a, b],
+    data: { ending: kind === 'task-try' ? taskEnding(row) : 'any', team: row.team, stretch: row.stretch, t: row.from,
+      switched: row.switched, quit: row.quit, side: row.side,
+      snap: row.snap ? { ...row.snap, fails: row.fails, side: row.side ?? row.snap.side, botcher: row.who ?? row.snap.botcher } : null } };
 }
 
 // The storylines the season follows: the open threads with the most aired steps, then the oldest.
@@ -112,12 +116,17 @@ export function airLeg(state, leg) {
   // 1: every team at every task it ran; a moment there of its own if it has one, else a task beat
   const beats = [];
   const rows = (state.taskLog || []).filter(r => r.leg === n);
+  const firstOf = {}, lastOf = {};
+  rows.forEach((r, i) => { firstOf[r.team] ??= i; lastOf[r.team] = i; });
   rows.forEach((r, i) => {
     const here = scenes.filter(s => s.data?.team === r.team && s.data?.stretch === r.stretch && !s.kind.startsWith('int-'));
     if (here.some(s => picked.has(s.id))) return;
     const best = here.filter(ok).sort((x, y) => weight(y) - weight(x) || x.id - y.id)[0];
-    if (best) take(best, 1);
-    else beats.push(taskBeat(state, r, i));
+    if (best) { take(best, 1); return; }
+    // a clean run says nothing about itself: the first one airs as getting there, the last as getting out
+    const clean = !r.fails && !r.switched && !r.quit;
+    const kind = clean && firstOf[r.team] === i ? 'task-start' : clean && lastOf[r.team] === i ? 'task-done' : 'task-try';
+    beats.push(taskBeat(state, r, i, kind));
   });
   // ...and the followed storylines' steps
   for (const s of inOrder(scenes.filter(s => tierOf(s) === 1 && !picked.has(s.id)))) if (ok(s)) take(s, 1);
@@ -156,9 +165,11 @@ export function airLeg(state, leg) {
   for (const [id, tier] of picked) {
     const s = byId.get(id);
     const teams = [...new Set([s.data?.team, s.data?.other, ...s.who.map(x => teamOf(state, x))].filter(Boolean))];
-    segs.push({ scene: s.id, kind: s.kind, ending: s.data?.ending ?? null, stretch: s.data?.stretch ?? null, t: s.data?.t ?? 0, teams, tier, src: s });
+    segs.push({ scene: s.id, kind: s.kind, ending: s.data?.ending ?? null, stretch: s.data?.stretch ?? null, t: s.data?.t ?? 0, teams,
+      who: [...s.who], side: s.data?.snap?.side ?? null, tier, src: s });
   }
-  for (const b of beats) segs.push({ scene: null, beat: b.id, kind: b.kind, ending: b.data.ending, stretch: b.data.stretch, t: b.data.t, teams: [b.data.team], tier: 1, src: b });
+  for (const b of beats) segs.push({ scene: null, beat: b.id, kind: b.kind, ending: b.data.ending, stretch: b.data.stretch, t: b.data.t,
+    teams: [b.data.team], who: [...b.who], side: b.data.side ?? null, tier: 1, src: b });
   segs.sort((x, y) => x.t - y.t || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
 
   // write what aired (only now are its words spent), and remember the storylines that moved

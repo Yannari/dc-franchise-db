@@ -387,9 +387,16 @@ export function chStepScreens(row, ctx = {}) {
     at(i) { const c = times[i]; if (c) { this.day = c.day; this.min = c.min; } },
   };
   S.V = V;
-  // a Pairs season: who is whose partner this episode (ch-run.js rows: the pairs as it ended, so a swap shows)
-  const pairList = ch.pairs?.end?.length ? ch.pairs.end : ch.pairs?.start || ch.final?.pairPodium && Object.values(ch.final.pairPodium).flat() || null;
-  S.pairMap = pairList ? Object.fromEntries(pairList.flatMap(([x, y]) => [[x, y], [y, x]])) : null;
+  // a Pairs season: who is whose partner this episode. The pairs as it began, then as it ended on top (a swap shows):
+  // the end alone has no entry for the pair that went home tonight, and the vote's board showed one of them (the
+  // user, 2026-10-18: "the dialogue box at the right doesn't show the pair, only 1 person, when counting")
+  // ...and in the premiere the pairs are made during the episode, so the night's own record fills them in: every ballot
+  // names a pair, and the Arena's two sides are pairs
+  const named = [...(ch.votes || []).flatMap(v => (v.ballots || []).map(b => b.pair)), ...(ch.arena || []).flatMap(d => [d.pairA, d.pairB])]
+    .filter(p => Array.isArray(p) && p.length === 2);
+  const pairList = ch.pairs || named.length ? [...named, ...(ch.pairs?.start || []), ...(ch.pairs?.end || [])] : [];
+  const podium = ch.final?.pairPodium ? Object.values(ch.final.pairPodium).flat() : [];
+  S.pairMap = pairList.length || podium.length ? Object.fromEntries([...podium, ...pairList].flatMap(([x, y]) => [[x, y], [y, x]])) : null;
   // a Teams season: each player's team colour this episode, as the episode BEGAN (a switch recolours its player at the
   // switch: the user, 2026-10-17); none after the break-up (the break-up step clears it). Each team keeps one colour.
   const teamList = ch.teams?.start?.length ? ch.teams.start : ch.teams?.end || null;

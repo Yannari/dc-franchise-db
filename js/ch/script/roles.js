@@ -466,7 +466,11 @@ function pairRevealEnding(d = {}) {
   if (d.tie === 'couple') return 'couple';
   if (d.tie === 'ex' || d.why === 'ex') return 'ex';
   if (d.tie === 'family') return 'family';
-  if (d.how === 'rivals') return d.why === 'guess' ? 'strangers' : 'rivals';
+  if (d.how === 'ties' && (d.tie === 'friends' || d.why === 'friends')) return 'friends';
+  // two who already get on, whatever production meant: relieved (pairs.js records the bond as the names are called)
+  if (d.bond >= 1.5 && d.how !== 'fresh-meat' && d.how !== 'pick') return 'relieved';
+  // history without a grudge: wary, not hostile
+  if (d.how === 'rivals') return d.why === 'guess' ? 'strangers' : d.why === 'cold' ? 'wary' : 'rivals';
   if (d.how === 'ties' && d.why === 'guess') return 'unmatched';
   if (d.tie === 'friends' || d.why === 'friends') return 'friends';
   return d.why === 'cold' ? 'rivals' : 'strangers';

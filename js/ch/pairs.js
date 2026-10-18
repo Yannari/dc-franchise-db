@@ -212,10 +212,15 @@ export function makeSeasonPairs(state, rng, { pins = {}, today = {}, winners = [
   for (const [i, p] of state.pairs.entries()) {
     // walking in tied to each other is felt at once: rivals sour, a couple or family warm
     const word = p.kin ? tieWord(p.kin) : null;
-    if (p.how === 'rivals') { addBond(p.a, p.b, p.why === 'guess' ? -0.2 : -0.6); nudge(state, p.a, 'morale', -0.3); nudge(state, p.b, 'morale', -0.3); }
+    // how they feel about each other as their names are called, before the pairing sours or warms it: two who
+    // already get on are relieved whatever production meant by it (the user, 2026-10-18: "any pairs that have a
+    // good reaction, or a neutral?")
+    const before = Math.round(getBond(p.a, p.b) * 10) / 10;
+    if (before >= 1.5 && !word) { addBond(p.a, p.b, 0.3); nudge(state, p.a, 'morale', 0.2); nudge(state, p.b, 'morale', 0.2); }
+    else if (p.how === 'rivals') { addBond(p.a, p.b, p.why === 'guess' ? -0.2 : p.why === 'cold' ? -0.3 : -0.6); nudge(state, p.a, 'morale', -0.3); nudge(state, p.b, 'morale', -0.3); }
     else if (word === 'couple' || word === 'family') addBond(p.a, p.b, 0.6);
     else if (word === 'ex') addBond(p.a, p.b, -0.3);
-    if (i > 0) addScene(state, 'pair-reveal', [p.a, p.b], { how: p.how, why: p.why, kin: p.kin || null, tie: word }, state.active, method === 'rivals' || method === 'ties' ? 'airstrip' : 'challenge');
+    if (i > 0) addScene(state, 'pair-reveal', [p.a, p.b], { how: p.how, why: p.why, kin: p.kin || null, tie: word, bond: before }, state.active, method === 'rivals' || method === 'ties' ? 'airstrip' : 'challenge');
   }
   return state.pairs;
 }

@@ -421,6 +421,51 @@ export default {
         v: { sharp: "Everybody else brings old fights in. We start clean. I like clean.", dry: "Everybody else is carrying old fights in. We start clean. Good.", loud: "Everybody else is carrying old fights in with them! We're starting CLEAN, and I like clean!", soft: "Everybody else is carrying old fights in with them. We're starting clean, and I like that.", odd: "Everybody else is carrying old fights in with them. We're starting clean. I'd like to stay clean for at least a week." } },
     ] },
   ],
+  // history without a grudge (pairs.js why 'cold'): they never got on, but they never fought either
+  'pair-reveal.wary': [
+    { id: 'prr.w1', turns: [
+      { by: 'tj', say: "{a}! {b}! You two, together!" },
+      { by: 'a', say: "Okay. I can work with that.",
+        v: { sharp: "Fine. I can work with that.", dry: "Okay. I can work with that.", loud: "Okay! I can WORK with that!", soft: "Okay. I think I can work with that.", odd: "Okay. I can work with that. Probably." } },
+      { by: 'b', say: "We've never really been close.",
+        v: { sharp: "We've never been close.", dry: "We've never really been close.", loud: "We've NEVER really been close!", soft: "We've never really been close, have we.", odd: "We've never really been close. We've been near each other, though." } },
+      { by: 'a', say: "No. But we've never had a problem either.",
+        v: { sharp: "No. But no problem either.", dry: "No. But we've never had a problem either.", loud: "No! But we've never had a PROBLEM either!", soft: "No. But we've never had a problem with each other either.", odd: "No. But we've never had a problem either. That's something." } },
+      { by: 'b', conf: "{a} and I have been on the same shows and barely said ten words to each other. It could be a lot worse.",
+        v: { sharp: "{a} and I have barely said ten words to each other. It could be a lot worse.", dry: "{a} and I barely said ten words to each other before this. Could be worse.", loud: "{a} and I have barely said TEN words to each other! It could be a lot worse!", soft: "{a} and I have barely said ten words to each other. Honestly, it could be a lot worse.", odd: "{a} and I have been on the same shows and barely said ten words to each other. We're about to say a lot more." } },
+    ] },
+    { id: 'prr.w2', turns: [
+      { by: 'tj', say: "Next pair! {a} and {b}! Production thinks you two won't get along." },
+      { by: 'b', say: "Production might be right. We'll see.",
+        v: { sharp: "Production might be right.", dry: "Production might be right. We'll see.", loud: "Production might be RIGHT! We'll see!", soft: "Production might be right. I hope not.", odd: "Production might be right. They usually are about this kind of thing." } },
+      { by: 'a', say: "Or we just do the work and find out.",
+        v: { sharp: "Or we do the work and find out.", dry: "Or we just do the work and find out.", loud: "Or we just do the WORK and find out!", soft: "Or we could just do the work and find out together.", odd: "Or we just do the work and find out. That's the whole season, really." } },
+      { by: 'a', conf: "{b} isn't my favourite person in here. {b} isn't my enemy either. That's a better start than most of these pairs have.",
+        v: { sharp: "{b} isn't my favourite person. {b} isn't my enemy either. Better than most pairs here.", dry: "{b} isn't my favourite person here. Not my enemy either. Better start than most.", loud: "{b} isn't my favourite person in here, but {b} isn't my ENEMY either! That's a better start than most of these pairs have!", soft: "{b} isn't my favourite person in here, but {b} isn't my enemy either. That's a better start than most of these pairs have.", odd: "{b} isn't my favourite person in here. {b} isn't my enemy either. Somewhere in the middle, which is a nice place to start." } },
+    ] },
+  ],
+  // two who already get on, whatever production meant by pairing them (pairs.js records the bond at the reveal)
+  'pair-reveal.relieved': [
+    { id: 'prr.l1', turns: [
+      { by: 'tj', say: "{a}! Your partner is... {b}!" },
+      { by: 'a', say: "Oh, thank God. It's you.",
+        v: { sharp: "Thank God. It's you.", dry: "Oh, good. It's you.", loud: "Oh, thank GOD! It's you!", soft: "Oh, thank God. I'm so glad it's you.", odd: "Oh, thank God. It's you. I had a whole speech ready for somebody worse." } },
+      { by: 'b', say: "Don't look so relieved. They'll think we planned it.",
+        v: { sharp: "Don't look so relieved. They'll think we planned it.", dry: "Don't look that relieved. They'll think we planned it.", loud: "Don't look so RELIEVED! They'll think we planned it!", soft: "Don't look so relieved. They'll think we planned it somehow.", odd: "Don't look so relieved. They'll think we bribed somebody." } },
+      { by: 'a', conf: "Everybody else is getting somebody they can't stand. I got {b}. I'm going to keep my head down and enjoy it.",
+        v: { sharp: "Everybody else got somebody they can't stand. I got {b}. Head down, enjoy it.", dry: "Everybody else got somebody they can't stand. I got {b}. I'll enjoy it quietly.", loud: "Everybody else is getting somebody they can't STAND! I got {b}! I'm going to keep my head down and enjoy it!", soft: "Everybody else is getting somebody they can't stand, and I got {b}. I'm going to keep my head down and enjoy it.", odd: "Everybody else is getting somebody they can't stand. I got {b}. I'm trying very hard not to smile on camera." } },
+    ] },
+    { id: 'prr.l2', turns: [
+      { by: 'tj', say: "{a} and {b}! Come on up!" },
+      { beat: '{a} and {b} look at each other and start laughing.' },
+      { by: 'b', say: "Production thinks we're going to fight?",
+        v: { sharp: "Production thinks we'll fight?", dry: "Production thinks we're going to fight?", loud: "Production thinks we're going to FIGHT?", soft: "Production really thinks we're going to fight?", odd: "Production thinks we're going to fight? Did they read the right file?" } },
+      { by: 'a', say: "They don't know us very well.",
+        v: { sharp: "They don't know us.", dry: "They don't know us very well.", loud: "They don't know us very WELL!", soft: "They don't know us very well, do they.", odd: "They don't know us very well. Let's not tell them." } },
+      { by: 'b', conf: "Production paired me with {a} to cause trouble. {a} is one of the few people in here I actually like. Somebody made a mistake, and I'm not reporting it.",
+        v: { sharp: "Production paired me with {a} to cause trouble. I actually like {a}. Somebody made a mistake. I won't report it.", dry: "They paired me with {a} to cause trouble. I actually like {a}. Somebody got it wrong. Not my problem.", loud: "Production paired me with {a} to cause TROUBLE! {a} is one of the few people in here I actually like! Somebody made a mistake, and I'm NOT reporting it!", soft: "Production paired me with {a} to cause trouble, but {a} is one of the few people in here I actually like. Somebody made a mistake, and I'm not going to report it.", odd: "Production paired me with {a} to cause trouble. {a} is one of the few people in here I actually like. Somebody made a mistake, and I'm keeping very quiet about it." } },
+    ] },
+  ],
   'pair-reveal.friends': [
     { id: 'prr.o1', turns: [
       { by: 'tj', say: "{a} and {b}! Best buds! Get over here!" },

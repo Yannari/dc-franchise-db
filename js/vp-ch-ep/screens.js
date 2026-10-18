@@ -395,9 +395,28 @@ function intel(R) {
     // each vote of the night opens when ITS ceremony has been read to the end (a double has two)
     const ceremonies = aired.map((x, i) => (x.kind === 'ceremony' ? i : -1)).filter(i => i >= 0);
     const all = R.E.row?.ch?.votes || [];
-    const votes = all.filter((v, vi) => ceremonies[vi] != null && done.has(ceremonies[vi]));
+    // ...and while it is read, ballot by ballot: the voters whose vote has been said so far (the user, 2026-10-18:
+    // "the votes intel is not updating live")
+    const said = {};
+    let open = null;
+    R.E.screens.forEach((s, si) => s.steps.forEach((st, i) => {
+      if (st.sceneIdx != null) open = st.sceneIdx;
+      const seen = si < R.si || (si === R.si && i <= R.idx);
+      if (seen && st.vote && open != null) (said[open] ||= []).push(st.vote[0]);
+    }));
+    const votes = all.map((v, vi) => {
+      const at = ceremonies[vi];
+      if (at == null) return null;
+      if (done.has(at)) return v;
+      const heard = said[at] || [];
+      if (!heard.length) return null;
+      // the ballots said so far, in the order they were said; who goes in is not known yet
+      const ballots = heard.map(n => (v.ballots || []).find(b => b.voter === n)).filter(Boolean);
+      return { ...v, ballots, votedIn: null, partial: (v.ballots || []).length };
+    }).filter(Boolean);
     body = !votes.length ? `<div class="inone">${all.length ? 'The vote has not been read yet in this episode.' : 'No house vote in this episode.'}</div>`
       : votes.map((v, vi) => (votes.length > 1 ? `<div class="isub">Vote ${vi + 1}${v.votedIn ? ` · ${esc(v.votedIn)} goes in` : ''}</div>` : (v.votedIn ? `<div class="isub">${esc(v.votedIn)} goes in</div>` : ''))
+        + (v.partial ? `<div class="isub">${v.ballots.length} of ${v.partial} votes said</div>` : '')
         + (v.ballots || []).map(b => `<div class="ivote">${face(b.voter)}<b>${esc(b.voter)}</b><span class="iarrow">&rarr;</span>${(b.pair || [b.target]).map(face).join('')}<b>${esc((b.pair || [b.target]).join(' & '))}</b><span class="iwhy">${esc(whyOf(b))}</span></div>`).join('')).join('')
         || '<div class="inone">No house vote in this episode.</div>';
   } else if (tab === 'rec') {

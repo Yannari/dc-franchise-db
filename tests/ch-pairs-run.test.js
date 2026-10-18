@@ -5,6 +5,7 @@ import { gs, setGs, setPlayers, players, seasonConfig } from '../js/core.js';
 import { simulateChallengeEpisode, challengeCastProblem, challengeSeasonShape, challengeOptions, partnerPins,
   challengeVoteShape } from '../js/ch-run.js';
 import { setFranchiseLedger } from '../js/franchise-meta.js';
+import { chStepScreens } from '../js/vp-ch-ep/steps.js';
 import { challengeCast } from './helpers/ch-cast.js';
 
 function freshPairs(n = 16, extra = {}, castSeed = 3) {
@@ -58,5 +59,22 @@ describe('a Pairs season from the run tab', () => {
       if (r.ch.arena.length) expect(challengeVoteShape(r)).toMatch(/ & .* beat .* & /);
     }
     expect(gs.phase).toBe('complete');
+  });
+
+  it('the vote\'s board shows both of a pair, the pair voted in tonight included', () => {
+    // the board read the pairs as the episode ENDED, and the pair voted in had gone home by then: one face (2026-10-18)
+    freshPairs(16);
+    const rows = playAll().filter(r => !r.ch.final && (r.ch.votes || []).length);
+    let checked = 0;
+    for (const row of rows) {
+      let pairs = null;
+      for (const s of chStepScreens(row)) for (const st of s.steps) {
+        if (st.scene?.pairs) pairs = st.scene.pairs;
+        if (!st.vote) continue;
+        expect(pairs?.[st.vote[1]], `episode ${row.num}: ${st.vote[1]} has no partner on the board`).toBeTruthy();
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(20);
   });
 });

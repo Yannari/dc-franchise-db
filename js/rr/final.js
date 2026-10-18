@@ -34,16 +34,17 @@ export function playFinal(state, leg, from, to, rng) {
 
   // the bleachers: every eliminated team, rooting for the finalist it's closer to
   const bleachers = [];
+  const endT = Math.max(...r.log.filter(l => l.stretch === 'mat').map(l => l.to), 0);
   for (const id of state.order.filter(x => state.gone.includes(x) && x !== midOut)) {
     if (order.length < 2) break;
     const roots = closeness(state, id, order[0]) >= closeness(state, id, order[1]) ? order[0] : order[1];
     bleachers.push({ id, roots });
-    emit(state, 'int-bleachers', people(state, id), 'roots-for', { team: id, other: roots });
+    emit(state, 'int-bleachers', people(state, id), 'roots-for', { team: id, other: roots, t: endT });
   }
   if (midOut && order.length >= 2) {
     const roots = closeness(state, midOut, order[0]) >= closeness(state, midOut, order[1]) ? order[0] : order[1];
     bleachers.push({ id: midOut, roots });
-    emit(state, 'int-bleachers', people(state, midOut), 'roots-for', { team: midOut, other: roots });
+    emit(state, 'int-bleachers', people(state, midOut), 'roots-for', { team: midOut, other: roots, t: endT });
   }
   return { ...r, midOut, order, winner, bleachers };
 }

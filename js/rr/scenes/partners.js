@@ -10,6 +10,8 @@ const other = c => (c.lead === c.A ? c.B : c.A);
 const types = c => c.stretch?.types || (c.stretch?.sides || []).flatMap(s => s.types) || [];
 const has = (c, ...t) => types(c).some(x => t.includes(x));
 const DATING = ['dating', 'newly-dating', 'on-off', 'married', 'once-engaged'];
+// the secret has been told (threads.js closed it): it rarely comes back
+const secretOut = c => (c.state.threads || []).some(t => t.thread === 'secret' && t.closed && t.closed !== 'gone' && t.who.includes(c.A));
 
 register([
   K({ id: 'tip-read', family: 1, moments: ['tip'], endings: {
@@ -40,7 +42,9 @@ register([
     cheap: { w: c => 1 + 50 / Math.max(10, c.money(c.tid)), fx: (fx, c) => { fx.time(c.tid, 8); fx.money(c.tid, 5); } },
     split: { w: 0.5, fx: (fx, c) => both(fx, c, 'stress', 3) },
   } }),
-  K({ id: 'plan-the-leg', family: 1, moments: ['plane', 'wait', 'quiet'], endings: {
+  // planning happens on the plane and in the queue, not on the run to the mat
+  K({ id: 'plan-the-leg', family: 1, moments: ['plane', 'wait', 'quiet'],
+    when: c => (c.stretch?.kind === 'mat' ? 0 : c.moment === 'plane' || c.moment === 'wait' || c.stretch?.mode === 'flight' ? 1 : 0.25), endings: {
     strategy: { w: c => c.S(c.lead, 'strategic') / 3, fx: (fx, c) => { fx.note(`plan:${c.tid}`, c.state.leg); fx.believe([c.A, c.B], { about: 'plan', claim: 'leg', value: c.state.leg }); } },
     drift: { w: 1, fx: (fx, c) => both(fx, c, 'morale', 3) },
     ignored: { w: c => (10 - c.S(other(c), 'strategic')) / 6, fx: (fx, c) => { fx.bond(c.A, c.B, -0.3); fx.mind(c.lead, 'stress', 3); } },
@@ -79,10 +83,10 @@ register([
   } }),
   K({ id: 'celebrate', family: 1, moments: ['pass', 'mat'], when: c => (c.event?.passed || c.event?.first ? 1 : 0.2), endings: {
     hug: { w: c => 1 + Math.max(0, c.bond(c.A, c.B)) / 3, fx: (fx, c) => { fx.bond(c.A, c.B, 0.5); both(fx, c, 'morale', 5); } },
-    'gloat-at-others': { w: c => c.S(c.lead, 'boldness') / 8, fx: (fx, c) => { both(fx, c, 'morale', 3); fx.note(`gloated:${c.tid}`, c.state.leg); } },
+    'gloat-at-others': { w: c => ((c.present || []).length > 1 ? c.S(c.lead, 'boldness') / 8 : 0), fx: (fx, c) => { both(fx, c, 'morale', 3); fx.note(`gloated:${c.tid}`, c.state.leg); } },
     jinx: { w: 0.3, fx: (fx, c) => { both(fx, c, 'morale', 3); fx.note(`jinx:${c.tid}`, c.state.leg); } },
   } }),
-  K({ id: 'old-wound', family: 1, moments: ['fail', 'quiet'], when: c => (Math.max(c.stress(c.A), c.stress(c.B)) > 50 ? 0.15 : 0), endings: {
+  K({ id: 'old-wound', family: 1, moments: ['fail', 'quiet'], when: c => (Math.max(c.stress(c.A), c.stress(c.B)) > 50 ? 0.15 : 0) * (secretOut(c) ? 0.1 : 1), endings: {
     surfaces: { w: 1, fx: (fx, c) => fx.bond(c.A, c.B, -1) },
     'told-calmly': { w: c => c.S(c.A, 'temperament') / 5, fx: (fx, c) => fx.bond(c.A, c.B, 1) },
     explodes: { w: c => (10 - c.S(c.A, 'temperament')) / 6, fx: (fx, c) => { fx.bond(c.A, c.B, -1.5); fx.snap(c.tid, true); } },

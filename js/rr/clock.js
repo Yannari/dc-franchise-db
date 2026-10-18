@@ -39,12 +39,20 @@ export function runLeg({ teams, stretches, resolve }) {
       }
       return [...seen.values()];
     },
+    // push a team's running stretch back (or, negative, bring it forward, never before now)
     delay(id, minutes) {
       const r = byId[id];
-      if (!r || r.done || minutes <= 0) return;
+      if (!r || r.done || !minutes) return;
       const last = [...log].reverse().find(l => l.id === id);
-      if (last && last.to > api.now) last.to += minutes;
-      r.t += minutes;
+      if (minutes > 0) {
+        if (last && last.to > api.now) last.to += minutes;
+        r.t += minutes;
+        return;
+      }
+      if (!last || last.to <= api.now) return;
+      const to = Math.max(api.now, last.to + minutes);
+      r.t -= last.to - to;
+      last.to = to;
     },
     slot(stretchId, capacity, t, dur) {
       const f = (free[stretchId] ||= Array(Math.max(1, capacity)).fill(-Infinity));

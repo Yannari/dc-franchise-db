@@ -4,7 +4,7 @@ import { K, register } from './registry.js';
 import { reseat } from '../travel.js';
 
 register([
-  K({ id: 'lie', family: 7, cast: 'teams', scheme: true, moments: ['overlap', 'airport'], when: c => (c.rivalry() >= 1 || c.friction() ? 0.15 : 0.02), endings: {
+  K({ id: 'lie', family: 7, cast: 'teams', scheme: true, moments: ['overlap', 'airport'], when: c => (c.allied() ? 0 : c.rivalry() >= 1 || c.friction() ? 0.15 : 0.02), endings: {
     believed: { w: c => (10 - c.S(c.state.lead[c.oid], 'intuition')) / 4, fx: (fx, c) => { fx.believe([c.C, c.D], { about: 'way', claim: 'told', value: 'wrong', truth: false, source: c.tid }); fx.time(c.oid, 20); } },
     'caught-out': { w: c => c.S(c.state.lead[c.oid], 'intuition') / 4, fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 2); fx.pop(c.A, -2); } },
   } }),

@@ -20,7 +20,7 @@ const people = (st, id) => (id && st.teams[id] ? [st.teams[id].a, st.teams[id].b
 
 function act(state, kindId, tid, oid, rng, ending = null, data = {}) {
   const ctx = { state, team: { id: tid }, other: oid ? { id: oid } : null, moment: SCENES[kindId].moments[0] ?? null,
-    present: [tid, oid].filter(Boolean), event: data.event || null };
+    present: [tid, oid].filter(Boolean), event: data.event || null, t: data.t ?? null };
   const e = ending || decideEnding(SCENES[kindId], prepare(ctx), rng);
   const sc = playScene(ctx, kindId, rng, { ending: e });
   if (sc) Object.assign(sc.data, data);
@@ -63,7 +63,7 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     if (onLoc.length) {
       for (const id of onLoc) {
         result.eliminated.push(id); result.how[id] = 'on-location'; result.onLocation.push(id);
-        act(state, 'don-arrives', id, null, rng);
+        act(state, 'don-arrives', id, null, rng, null, { t: Math.max(...Object.values(finish)) });
       }
     } else {
       let out = finished.at(-1);
@@ -75,7 +75,7 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
       if (out) {
         result.eliminated.push(out); result.how[out] = 'last';
         if (penalties[out]) result.unserved.push(out);
-        act(state, 'don-elim', out, null, rng);
+        act(state, 'don-elim', out, null, rng, null, { t: finish[out] });
       }
     }
   } else {
@@ -87,14 +87,14 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     if (p === 'surrender-money' || p === 'surrender-all') surrender(state, last, p);
     else if (p === 'speed-bump') state.speedBump[last] = n + 1;
     else if (p === 'marked') state.marked[last] = n + 1;
-    act(state, 'don-fakeout', last, null, rng, 'relief', { penalty: p });
+    act(state, 'don-fakeout', last, null, rng, 'relief', { penalty: p, t: finish[last] ?? null });
   }
 
   // every team's moment on the mat
   order.forEach((id, i) => {
     if (result.eliminated.includes(id)) return;
     emit(state, 'don-place', people(state, id), penalties[id] ? 'penalty-reveal' : 'plain',
-      { team: id, place: i + 1, effects: [['placed', id, i + 1]] });
+      { team: id, place: i + 1, t: finish[id] ?? null, stretch: 'mat', effects: [['placed', id, i + 1]] });
   });
 
   // the winner's reward
@@ -106,8 +106,8 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     else if (r === 'express') state.passes[first].express++;
     else if (r === 'save') state.passes[first].save++;
     else if (r === 'first-class') (state.firstClass ||= {})[first] = n + 1;
-    if (r === 'call-home') act(state, 'call-home', first, null, rng, 'joy');
-    else if (r) act(state, 'reward', first, null, rng, 'prize-joy', { reward: r });
+    if (r === 'call-home') act(state, 'call-home', first, null, rng, 'joy', { t: finish[first] });
+    else if (r) act(state, 'reward', first, null, rng, 'prize-joy', { reward: r, t: finish[first] });
   }
 
   for (const id of racing) state.rec[id].penalties += state.pending[id] || 0;

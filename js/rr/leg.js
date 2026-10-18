@@ -57,6 +57,7 @@ function closedUntil(state, s, t) {
 // `adjust(team, stretch, t, res)` lets the finale reshape a stretch's result (the footrace).
 export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   state.leg = leg.n;
+  const clockStart = state.clock;
   const active = state.order.filter(id => !state.gone.includes(id));
   payStipend(state, leg);
   repayDebts(state);
@@ -91,6 +92,11 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       talked.add(key);
       const here = api.here(s.id, t).map(x => x.id).filter(x => x !== id);
       if (here.length && s.kind !== 'mat') extra += talkAtOverlap(state, id, here, s, t, api, rng).extra || 0;
+      if (s.kind === 'mat') {
+        // the mat: a team that arrives while others are still there meets them (consoles, gloats)
+        const there = here.filter(x => matAt[x] != null);
+        if (there.length) talkAtOverlap(state, id, there, s, t, api, rng);
+      }
       if (s.capacity && here.length + 1 > s.capacity) talkAtWait(state, [id, ...here], s, t, api, rng, 'queue');
     }
 
@@ -171,7 +177,9 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       makeupCheck(state, id, rng);
       behind(state, id, perceivedRank(state, id));
     }
-    const end = Math.max(t, Math.round((res.end ?? t) + Math.max(0, extra)));     // the clock runs in whole minutes
+    // the clock runs in whole minutes; a gain can't bring a plane down early
+    const gain = s.kind === 'travel' && s.mode === 'flight' ? Math.max(0, extra) : extra;
+    const end = Math.max(t, Math.round((res.end ?? t) + gain));
     tick(state, id, end - t);
     return { ...res, end };
   };
@@ -194,6 +202,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
 
   const result = checkIn(state, leg, run.finish, run.out, rng);
   result.log = run.log;
+  Object.assign(result, { place: to.id, placeName: to.name, money: leg.money ?? 0, twist: leg.twist ?? null, clockStart });
   result.route = stretches.map(s => s.id);
   result.scenes = state.scenes.slice(legStart);
   return result;

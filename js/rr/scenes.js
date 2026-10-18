@@ -56,11 +56,12 @@ function makeFx(ctx, effects) {
     bond(a, b, d) { if (!a || !b || a === b) return; addBond(a, b, d); push(['bond', a, b, d]); },
     teams(t1, t2, d) { for (const x of people(st, t1)) for (const y of people(st, t2)) addBond(x, y, d); push(['teams', t1, t2, d]); },
     mind(n, key, d) { if (!n) return; nudgeMind(st, n, key, d); push(['mind', n, key, d]); },
+    // minutes lost (or, negative, won): the team at the centre adds them to its stretch;
+    // another team's running stretch is pushed or pulled by the clock
     time(teamId, m) {
       if (!teamId || !m) return;
-      if (teamId === ctx.tid && m > 0) ctx.extra = (ctx.extra || 0) + m;
-      else if (m > 0) ctx.api?.delay?.(teamId, m);
-      else st.pending[teamId] = (st.pending[teamId] || 0) + m;
+      if (teamId === ctx.tid) ctx.extra = (ctx.extra || 0) + m;
+      else ctx.api?.delay?.(teamId, m);
       push(['time', teamId, m]);
     },
     money(teamId, d) { st.money[teamId] = Math.max(0, (st.money[teamId] || 0) + d); push(['money', teamId, d]); },
@@ -188,6 +189,10 @@ function weight(sc) {
   return w;
 }
 const INTERVIEWS_PER_LEG = 3;
+const MIN_WEIGHT = 0.5;                   // a clear tip or a quick taxi isn't worth a confessional
+// endings where a scheme or an offer went wrong for the one who made it
+const FAILED = ['caught-out', 'called-out', 'backfires', 'seen', 'discovered', 'refused', 'laughed-off',
+  'rejected-rudely', 'wasted', 'fizzles', 'caught-spying', 'thinks-twice', 'held-back'];
 const FEAR = ['fear-through', 'phobia', 'injury', 'freezes', 'exhaustion'];
 
 // After a big moment, maybe an interview about it: only from people who saw it, of the
@@ -199,6 +204,7 @@ export function interviewAfter(state, sc, rng) {
   const used = state.scenes.filter(x => x.leg === state.leg && x.kind.startsWith('int-') && x.data.team === tid).length;
   if (used >= INTERVIEWS_PER_LEG) return null;
   const w = weight(sc);
+  if (w < MIN_WEIGHT) return null;
   if (rng() >= Math.min(0.7, w * 0.25)) return null;
   const who = people(state, tid).filter(n => sc.seenBy.includes(n));
   if (!who.length) return null;
@@ -213,10 +219,24 @@ export function interviewAfter(state, sc, rng) {
   const ctx = { state, team: { id: tid }, other: sc.data.other ? { id: sc.data.other } : null, moment: 'interview',
     people: ivWho, seenBy: ivWho, t: sc.data.t, cause: sc.id };
   let ending = null;
+  const effs = sc.data.effects || [];
   if (kindId === 'int-feeling') {
-    const valence = partnerBond + (sc.data.effects || []).filter(e => e[0] === 'mind' && e[2] === 'morale' && who.includes(e[1])).reduce((s, e) => s + e[3] / 10, 0);
+    const mood = effs.filter(e => e[0] === 'mind' && who.includes(e[1]))
+      .reduce((s, e) => s + (e[2] === 'morale' ? e[3] : e[2] === 'stress' ? -e[3] : 0) / 10, 0);
+    // warmth with another team counts too (a good talk on the plane is a good moment)
+    const across = effs.filter(e => e[0] === 'teams' && (e[1] === tid || e[2] === tid)).reduce((s, e) => s + e[3] / 2, 0);
+    const valence = partnerBond + mood + across;
     ending = valence > 0 ? 'glad' : FEAR.includes(sc.kind) || FEAR.includes(sc.data.ending) ? 'scared'
       : S(who[0], 'temperament') < 5 ? 'angry' : 'hurt';
+  } else if (kindId === 'int-strategy') {
+    ending = sc.data.facts?.caught || FAILED.includes(sc.data.ending) ? 'justifies' : 'proud';
+  } else if (kindId === 'int-about-team') {
+    // what the other team is to them now, read from what the moment did between them
+    const o = sc.data.other;
+    const warm = effs.filter(e => e[0] === 'teams' && [e[1], e[2]].includes(o)).reduce((s, e) => s + e[3], 0);
+    const feud = effs.filter(e => e[0] === 'rivalry' && [e[1], e[2]].includes(o)).reduce((s, e) => s + e[3], 0);
+    const hit = effs.some(e => (e[0] === 'time' || e[0] === 'pending') && e[1] === tid && e[2] > 0);
+    ending = warm > 0 ? 'respect' : feud > 0 || warm < 0 ? 'grudge' : hit ? 'fear' : 'respect';
   }
   const iv = playScene(ctx, kindId, rng, { ending: ending || decideEnding(SCENES[kindId], prepare(ctx), rng) });
   iv.data.about = sc.id;

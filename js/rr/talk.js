@@ -104,7 +104,7 @@ function tryPlay(state, ctx, kindId, rng, out, { gate = true } = {}) {
   const sc = playScene(ctx, kindId, rng, { ending });
   if (!sc) return null;
   out.push(sc);
-  out.extra = (out.extra || 0) + (ctx.extra || 0);
+  out.extra = (out.extra || 0) + (ctx.extra || 0);      // may be negative: a gain
   ctx.extra = 0;
   advanceThreads(state, sc);
   const iv = interviewAfter(state, sc, rng);
@@ -196,18 +196,20 @@ export function talkAtStretch(state, team, stretch, t, api, rng) {
   const moments = momentsAt(state, id, stretch);
   const mine = people(state, id);
   const played = new Set();
+  // who else is here (a gloat needs an audience; a side can be chosen by watching)
+  const present = [id, ...((api?.here?.(stretch?.id, t)) || []).map(x => x.id).filter(x => x !== id && state.teams[x])];
   for (let k = 0; k < n; k++) {
     const cands = [];
     for (const kind of Object.values(SCENES)) {
       if (kind.family !== 1 || played.has(kind.id)) continue;
-      const ctx = baseCtx(state, id, null, stretch, t, api);
+      const ctx = baseCtx(state, id, null, stretch, t, api, { present });
       const b = bestMoment(kind, ctx, moments);
       if (b.w > 0) cands.push({ kind: kind.id, w: b.w * damp(state, kind.id, id), moment: b.moment });
     }
     for (const s of threadSteps(state, mine)) {
       const kind = SCENES[s.kindId];
       if (!kind || ['teams', 'group'].includes(kind.cast) || played.has(kind.id)) continue;
-      const ctx = baseCtx(state, id, null, stretch, t, api, kind.family === 4 ? { people: s.who } : {});
+      const ctx = baseCtx(state, id, null, stretch, t, api, kind.family === 4 ? { people: s.who, present } : { present });
       const b = bestMoment(kind, ctx, moments);
       if (b.w > 0) cands.push({ kind: kind.id, w: b.w * s.weight * 2, moment: b.moment, people: kind.family === 4 ? s.who : null });
     }
@@ -216,7 +218,7 @@ export function talkAtStretch(state, team, stretch, t, api, rng) {
       const c = draw(cands, rng);
       if (!c) break;
       cands.splice(cands.indexOf(c), 1);
-      const ctx = baseCtx(state, id, null, stretch, t, api, c.people ? { people: c.people } : {});
+      const ctx = baseCtx(state, id, null, stretch, t, api, c.people ? { people: c.people, present } : { present });
       ctx.moment = c.moment;
       if (tryPlay(state, ctx, c.kind, rng, out)) { played.add(c.kind); break; }
     }

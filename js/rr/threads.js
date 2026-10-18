@@ -83,6 +83,11 @@ function whoFor(st, def, sc) {
   return people(st, sc.data?.team);
 }
 const participants = (st, sc) => [...new Set([...people(st, sc.data?.team), ...people(st, sc.data?.other), ...(sc.who || [])])];
+// the scene remembers which storylines it moved (the transcript prints them)
+function tag(sc, th, how = null) {
+  const def = THREADS[th.thread];
+  (sc.data.threads ||= []).push(`${th.thread} ${Math.min(th.step, def.steps.length)}/${def.steps.length}${how ? ' ' + how : ''}`);
+}
 const keyOf = who => [...who].sort().join('|');
 const teamsGone = (st, who) => who.every(n => st.gone.some(id => people(st, id).includes(n)));
 
@@ -96,10 +101,10 @@ export function advanceThreads(state, sc) {
   for (const th of state.threads) {
     if (th.closed || !subset(th.who, here)) continue;
     const def = THREADS[th.thread];
-    if (matches(def.closes, sc)) { th.closed = `${sc.kind}:${sc.data.ending}`; th.lastLeg = state.leg; continue; }
-    if (sc.data?.ending === 'interrupted') continue;      // an interruption leaves the thread where it was
+    if (matches(def.closes, sc)) { th.closed = `${sc.kind}:${sc.data.ending}`; th.lastLeg = state.leg; tag(sc, th, 'closed'); continue; }
+    if (sc.data?.ending === 'interrupted') { tag(sc, th, 'held'); continue; }   // an interruption leaves the thread where it was
     const idx = def.steps.indexOf(sc.kind);
-    if (idx >= th.step) { th.step = idx + 1; th.lastLeg = state.leg; }
+    if (idx >= th.step) { th.step = idx + 1; th.lastLeg = state.leg; tag(sc, th); }
   }
   for (const def of Object.values(THREADS)) {
     if (!matches(def.opens, sc)) continue;
@@ -108,8 +113,10 @@ export function advanceThreads(state, sc) {
     if (who.length < (def.who === 'team' ? 2 : def.who === 'teams' ? 4 : 1)) continue;
     const k = keyOf(who);
     if (state.threads.some(t => !t.closed && t.thread === def.id && keyOf(t.who) === k)) continue;
-    state.threads.push({ id: `th${state.threads.length + 1}`, thread: def.id, who, step: def.steps.indexOf(sc.kind) + 1,
-      since: state.leg, lastLeg: state.leg, closed: null, cause: sc.id });
+    const th = { id: `th${state.threads.length + 1}`, thread: def.id, who, step: def.steps.indexOf(sc.kind) + 1,
+      since: state.leg, lastLeg: state.leg, closed: null, cause: sc.id };
+    state.threads.push(th);
+    tag(sc, th, 'opens');
   }
 }
 

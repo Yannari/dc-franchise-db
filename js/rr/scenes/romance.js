@@ -6,7 +6,20 @@ import { K, register, pairKey } from './registry.js';
 import { REL } from '../state.js';
 import { romanticCompat } from '../../players.js';
 
-const lovers = c => (c.people?.length >= 2 ? [c.people[0], c.people[1]] : [c.A, c.C]);
+// The two people: those the scene names, else the pair across the two teams with the most
+// between them already (sparks, then bond), among the romantically compatible ones.
+function lovers(c) {
+  if (c.people?.length >= 2) return [c.people[0], c.people[1]];
+  if (c._lovers) return c._lovers;
+  const pairs = [[c.A, c.C], [c.A, c.D], [c.B, c.C], [c.B, c.D]].filter(([x, y]) => x && y && romanticCompat(x, y));
+  if (!pairs.length) return (c._lovers = [c.A, c.C]);
+  const score = ([x, y]) => 3 * (c.state.sparks[pairKey(x, y)] || 0) + c.bond(x, y);
+  let best = pairs[0];
+  for (const p of pairs.slice(1)) if (score(p) > score(best)) best = p;
+  return (c._lovers = best);
+}
+// someone already carrying a crush on another person
+const elsewhere = c => { const [x, y] = lovers(c); return (c.state.threads || []).some(t => t.thread === 'crush' && !t.closed && t.who.includes(x) && !t.who.includes(y)); };
 const teamOfName = (c, n) => Object.values(c.state.teams).find(t => t.a === n || t.b === n);
 function allowed(c) {
   const [x, y] = lovers(c);
@@ -18,7 +31,7 @@ function allowed(c) {
 const couple = c => { const [x, y] = lovers(c); return c.state.couples.some(k => !k.ended && pairKey(k.a, k.b) === pairKey(x, y)); };
 const sparks = c => { const [x, y] = lovers(c); return c.state.sparks[pairKey(x, y)] || 0; };
 const attempts = c => { const [x, y] = lovers(c); return (c.state.confess ||= {})[pairKey(x, y)] || 0; };
-const romance = (w) => c => (allowed(c) ? w(c) : 0);
+const romance = (w) => c => (allowed(c) ? w(c) * (elsewhere(c) ? 0.1 : 1) : 0);
 
 // every romance scene records its two lovers (threads.js reads them as the crush's people)
 const withLovers = kinds => kinds.map(k => ({ ...k, facts: c => ({ lovers: lovers(c) }) }));

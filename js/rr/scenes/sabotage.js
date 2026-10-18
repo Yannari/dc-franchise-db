@@ -33,7 +33,8 @@ function sab({ delay, rivalry = 2, backfire = 10 }) {
     backfires: { w: 0.2, fx: (fx, c) => { fx.time(c.tid, backfire); fx.rivalry(c.tid, c.oid, 1); c.state.rec[c.tid].sabotage++; c.seenBy = seenBy(c, false); } },
   };
 }
-const close = c => (Math.abs(c.rank(c.tid) - c.rank(c.oid)) <= 0.25 || c.rivalry() >= 1);
+// a close rival, never an ally (an ally is betrayed through alliance-betrayal, family 2)
+const close = c => !c.allied() && (Math.abs(c.rank(c.tid) - c.rank(c.oid)) <= 0.25 || c.rivalry() >= 1);
 const w = base => c => (close(c) ? base * c.S(c.A, 'strategic') / 10 : 0);
 const facts = c => ({ caught: !!c.caught });
 

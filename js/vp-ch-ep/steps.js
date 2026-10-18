@@ -833,7 +833,7 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
       // a close-up has nobody but the players in it (TJ: null)
       const cast = Object.fromEntries(Object.entries({ TJ: hostSide(k), ...castSpec }).filter(([, v]) => v));
       return { plate: k, place: st.place, when: whenOf(S.day, S.min), icon: 'island', island: st.spot, cast, wipe: 1, water: 0 }; };
-    const steps = playOf(d, { seed, V: S.V, plateKey, scene: sceneOf, plate: st.plate, night, people, wide, water: !!st.water, legacy: () => dailyPlay(d, { key, seed: row.num }) });
+    const steps = playOf(d, { seed, V: S.V, teamNames: S.teamNames, plateKey, scene: sceneOf, plate: st.plate, night, people, wide, water: !!st.water, legacy: () => dailyPlay(d, { key, seed: row.num }) });
     if (know.length && steps[3]) steps[3].know = know.shift();
     for (const x of steps) S.push(x);
   }
@@ -898,7 +898,7 @@ function buildDaily(S, open, items, row, { names, house, goneAt }) {
   // The finish: TJ calls it (the engine's own daily lines).
   const lines = main.a.lines;
   // a whole team is "Zoey's team", never twelve names (the user, 2026-10-16)
-  const wTeam = winners.length > 3, wName = wTeam ? `${winners[0]}'s team` : nameList(winners), wVerb = winners.length > 1 && !wTeam ? 'win' : 'wins';
+  const wTeam = winners.length > 3, wName = wTeam ? S.teamNames?.[winners[0]] || `${winners[0]}'s team` : nameList(winners), wVerb = winners.length > 1 && !wTeam ? 'win' : 'wins';
   if (played?.finish?.dir) { S.push({ ...played.finish, win: winners, power: winners, slam: { winner: `${wName} ${wVerb}` }, focus: winners.slice(0, 2) }); }
   const first = played ? (played.finish?.dir ? {} : { ...played.finish, win: winners, power: winners, slam: { winner: `${wName} ${wVerb}` } }) : { win: winners, slam: { winner: `${nameList(winners)} ${winners.length > 1 ? 'win' : 'wins'}` }, power: winners, finish: st.show, race: st.show === 'race' ? units.slice(0, Math.min(6, units.length)).map(u => ({ who: u, p: isWin(u) ? 1 : .9 })) : null };
   linesToSteps(S, lines, { names, first, sceneWho: ['TJ', ...people] });

@@ -196,10 +196,22 @@ function electCaptain(state, rng, team) {
   // the faces: the captain, the one they beat (or who stepped aside), a supporter, the mocker
   const supporter = members.find(n => n !== captain && sides[n] === captain && n !== mocker && n !== (conceded?.by)) || null;
   const who = [captain, runnerUp || conceded?.by || supporter, ...(runnerUp || conceded ? [supporter] : []), mocker].filter(Boolean);
+  // every ballot, said out loud, and why it went that way (the user, 2026-10-18: "we don't even see the votes of many
+  // people talking about it"): a candidate names themselves; a friend; against somebody they cannot stand; respect; a shrug
+  const ballots = members.map(v => {
+    const pick = sides[v];
+    const other = candidates.find(c => c !== pick);
+    const why = v === pick ? 'self' : getBond(v, pick) >= 2 ? 'friend' : other && getBond(v, other) <= -1 ? 'against'
+      : respect(pick) + threatRead(state, pick) * 0.3 >= 1.5 ? 'respect' : 'shrug';
+    return { voter: v, pick, why, against: why === 'against' ? other : null };
+  }).sort((x, y) => (x.why === 'self') - (y.why === 'self'));
+  // only a vote that was contested is read out; an uncontested captain or a lone candidate after a concession is not
+  const counted = candidates.length > 1;
   addScene(state, 'team-captain', [...new Set(who)], { team: team.name, outcome, captain, runnerUp, conceded: conceded?.by || null, supporter, mocker, joker,
-    votes: Object.fromEntries(candidates.map(c => [c, votes[c] || 0])), of: members.length, pitch: PITCH[archOf(captain)] || 'win', rivalPitch: runnerUp ? PITCH[archOf(runnerUp)] || 'win' : null },
+    votes: Object.fromEntries(candidates.map(c => [c, votes[c] || 0])), of: members.length, candidates: [...candidates],
+    pitches: Object.fromEntries(candidates.map(c => [c, PITCH[archOf(c)] || 'win'])), ballots: counted ? ballots : [] },
     members, 'airstrip');
-  return captain;
+  return { captain, runnerUp, mocker, sides };
 }
 
 /** Make the season's teams after the arrivals. `background` carries past champions (ch-run.js). */
@@ -215,11 +227,20 @@ export function makeSeasonTeams(state, rng, { background = {} } = {}) {
   for (const t of state.teams) for (const n of t.members) { state.teamOf[n] = t.id; state.teamHistory.push({ name: n, from: null, to: t.id, ep: state.ep || 1, how: 'start' }); }
   // walking in as a team: teammates warm a little, and the old show's pride is in the room
   for (const t of state.teams) for (const a of t.members) for (const b of t.members) if (a < b) addBond(a, b, 0.4);
-  addScene(state, 'teams-revealed', state.active, { teams: state.teams.map(t => ({ name: t.name, members: [...t.members], captain: t.captain })), how }, state.active, 'airstrip');
+  const revealed = addScene(state, 'teams-revealed', state.active, { teams: state.teams.map(t => ({ name: t.name, members: [...t.members], captain: t.captain })), how }, state.active, 'airstrip');
   // ...then each team picks its captain, out loud (a draft's captains are the drafters)
-  if (how !== 'draft') for (const t of state.teams) electCaptain(state, rng, t);
+  const elected = {};
+  if (how !== 'draft') for (const t of state.teams) elected[t.id] = electCaptain(state, rng, t);
+  // the announcement speaks before the vote: its voices are never the captains it will crown (they spoiled it, 2026-10-18)
+  if (how !== 'draft' && revealed?.data) revealed.data.voices = state.teams.slice(0, 2).map(t => t.members.find(n => n !== t.captain) || t.captain);
   for (const t of state.teams) {
-    const [cap, ...rest] = [t.captain, ...t.members.filter(n => n !== t.captain)];
+    // the team's first moment as a team: the captain, then the ones who backed them; the one who lost the vote and the
+    // one who mocked the captain stand at the back (the one who nearly fought the captain had said "I'm in", 2026-10-18)
+    const e = elected[t.id] || {};
+    const back = new Set([e.runnerUp, e.mocker].filter(Boolean));
+    const backers = t.members.filter(n => n !== t.captain && !back.has(n) && e.sides?.[n] === t.captain);
+    const rest = [...backers, ...t.members.filter(n => n !== t.captain && !back.has(n) && !backers.includes(n)), ...back];
+    const cap = t.captain;
     // the whole team walks over together (the user, 2026-10-17: "only showed 4 players in each team"); the captain and
     // the next three speak, everybody else is on screen
     addScene(state, 'team-reveal', [cap, ...rest], { team: t.name, how: t.how, size: t.members.length, members: [cap, ...rest] }, state.active, 'airstrip');

@@ -28,6 +28,7 @@
 import { writeScene } from '../script/write.js';
 import { pronouns } from '../../players.js';
 import { writeVote } from '../script/ceremony.js';
+import { writeCaptainVote } from '../script/captain-vote.js';
 import { file, causeOf, book } from './storylines.js';
 import { arcsFor } from './arcs.js';
 import { previouslyFor } from './previously.js';
@@ -242,6 +243,8 @@ export function airEpisode(state, epRec, prevRec = null) {
       if (picked.has(s.id)) {
         const f = filed[s.id];
         let script = writeScene(state, s);
+        // a team's captain vote is written with its pitches and its ballots (captain-vote.js)
+        if (s.kind === 'team-captain') script = writeCaptainVote(state, s, script);
         // A chapter whose cause the viewer never saw opens by saying it.
         if (f && script) {
           const cause = causeOf(f.line, f.step);

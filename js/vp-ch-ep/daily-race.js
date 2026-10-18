@@ -60,7 +60,10 @@ const posOf = (ctx, n) => ctx.V.pron?.[n]?.posAdj || 'their';
 // A unit is one player, a pair or trio (named, plural), or a team: a whole team is "Spencer's team", singular
 // (the user, 2026-10-16: a dozen names read out before "hit the water wrong").
 const many = u => u.length > 1 && u.length <= 3;
-const un = u => (u.length > 3 ? `${u[0]}'s team` : nameList(u));
+// a Teams season's team is called by its name (the user, 2026-10-18: "it says Natalia's team instead of the name of
+// the team"); a team made for one day has no name, and is the first one's team
+let TEAM_NAME = null;
+const un = u => (u.length > 3 ? TEAM_NAME?.[u[0]] || `${u[0]}'s team` : nameList(u));
 const are = u => (many(u) ? 'are' : 'is');
 const s_ = u => (many(u) ? '' : 's');
 const posU = (ctx, u) => (u.length > 1 ? 'their' : posOf(ctx, u[0]));
@@ -72,7 +75,7 @@ const RELAY_GO = ["It's a relay! One at a time from each team, and nobody goes u
   'Teams, line up! {a} and {b}, you are first. When your teammate finishes the leg, you go. Not before. GO!'];
 const RELAY_TAG = ['{x} finishes the leg and slaps hands with {y}. {y} is off.', '{x} is done. {y} goes next for {t}.', '{x} tags {y}, and {y} goes flying.',
   '{x} comes off the course gasping and tags in {y}.', 'In goes {y} for {t}, after a solid leg from {x}.', '{x} hands over to {y}.'];
-const RELAY_RUN = ['{list} each climb a clean leg, and {x} tags {y}.', '{list} get through their legs without a slip. {y} is up next for {t}.'];
+const RELAY_RUN = ['{list} each get through a clean leg, and {x} tags {y}.', '{list} get through their legs without a slip. {y} is up next for {t}.'];
 const RELAY_WIN = ['{c} brings it home! {t} wins!', '{c} finishes the last leg, and {t} piles on. They win!'];
 const RELAY_LAST = ['{c} finishes the last leg for {t}. Too late.', '{c} brings {t} home, a long way behind.'];
 const RELAY_STAGE = ['{c} gets {t} to {name}.', '{c} reaches {name} for {t}.', '{t} reaches {name}, thanks to {c}.'];
@@ -191,6 +194,7 @@ function cutFor(id, b, shown) {
 
 /** The race steps for a played race daily: { steps }. ctx.legacy() is the old staging's set-up (props, places). */
 export function raceSteps(d, ctx, { id = d.id, stop = null, toBoard = false } = {}) {
+  TEAM_NAME = ctx.teamNames || null;
   const out = [];
   const beats = d.beats || [];
   const unitOf = who => (d.order || []).find(u => u.includes(who[0])) || who;
@@ -441,8 +445,9 @@ const DB = {
   betray: ['{a} turn{as} around and hit{as} {b} tower. They had a deal.', "Nobody expected that. {a} just went after {bn}, the side {a} promised to leave alone."],
   win: ["{u} {are} the last tower standing! {u} win{s} the Derby!", "And that's the Derby! {u} take{s} it!"],
 };
-const whose = u => (u.length > 3 ? `${u[0]}'s team's` : many(u) ? `${un(u)}'s` : `${u[0]}'s`);
+const whose = u => (u.length > 3 ? `${un(u)}'s` : many(u) ? `${un(u)}'s` : `${u[0]}'s`);
 export function derbySteps(d, ctx) {
+  TEAM_NAME = ctx.teamNames || null;
   const out = [];
   const units = d.order || [];
   const unitOf = n => units.find(u => u.includes(n)) || [n];

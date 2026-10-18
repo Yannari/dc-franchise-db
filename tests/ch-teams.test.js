@@ -37,8 +37,15 @@ describe('a Teams season', () => {
         // the one the scene crowned is the team's captain as the season began, and is on that team
         expect(sc.data.captain).toBeTruthy();
         if (team) expect(team.members).toContain(sc.data.captain);
+        // a race is voted out loud, everybody on the team (the user, 2026-10-18: "we don't even see the votes")
+        if (sc.data.candidates.length > 1) expect(sc.data.ballots.length).toBe(sc.data.of);
         outcomes.add(sc.data.outcome);
       }
+      // the announcement speaks before the vote, so its two voices are never the captains it is about to crown
+      // (Sami and Julia spoke first, and both won: the user, 2026-10-18 "this still appears with a spoil of who wins")
+      const rev = s.state.scenes.find(x => x.kind === 'teams-revealed');
+      for (const v of rev.data.voices || []) expect(scenes.map(x => x.data.captain)).not.toContain(v);
+      expect((rev.data.voices || []).length).toBe(2);
     }
     // more than one way it goes, across these seasons
     expect(outcomes.size, [...outcomes].join(', ')).toBeGreaterThan(1);

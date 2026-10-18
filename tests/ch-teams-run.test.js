@@ -75,14 +75,19 @@ describe('a Teams season from the run tab', () => {
 
   it('the Season Timeline marks the break-up: where it will be before the season, where it was after', () => {
     freshTeams(20);
-    const planned = challengeEpisodeMap().filter(t => t.teamsBreak).map(t => t.ep);
+    const plan = challengeEpisodeMap();
+    const planned = plan.filter(t => t.teamsBreak).map(t => t.ep);
     expect(planned.length).toBe(1);
     const rows = playAll();
     const aired = rows.filter(r => r.ch.teamsBroken).map(r => r.num);
     expect(aired.length).toBe(1);
     // the planned break-up is the morning rule (finalists + 4 left); a team emptied before that ends the teams early
     const why = rows.find(r => r.ch.teamsBroken).ch.aired.find(a => a.kind === 'teams-break')?.data?.why;
-    if (why === 'one-team') expect(aired[0]).toBeLessThanOrEqual(planned[0]);
+    // ...and a quit or a medical the plan could not know about gets there sooner (seed 20 lost two in episode 7)
+    const housed = r => (r.ch.house || []).length;   // who started the episode
+    // (the plan's `active` is who is left after its episode: the one before says who starts it)
+    const ahead = rows.some(r => r.num > 1 && r.num <= planned[0] && housed(r) < (plan.find(t => t.ep === r.num - 1)?.active ?? 0));
+    if (why === 'one-team' || ahead) expect(aired[0]).toBeLessThanOrEqual(planned[0]);
     else expect(aired).toEqual(planned);
     // once aired, the tile is where it happened
     expect(challengeEpisodeMap().filter(t => t.teamsBreak).map(t => t.ep)).toEqual(aired);

@@ -404,6 +404,10 @@ export function crRenderGrid() {
 }
 
 function _tribesBodyHTML(shown, { teams = false } = {}) {
+  // a lane that can be named, added and removed right here: a Challenge team, or a Total Drama tribe (the user,
+  // 2026-10-18: "adapt this way of creating teams for Total Drama too"); other shows' lanes stay as they are
+  const noun = teams ? 'team' : _isTotalDrama() ? 'tribe' : null;
+  const Noun = noun ? noun[0].toUpperCase() + noun.slice(1) : '';
   const laneNames = [...new Set([..._configuredTribeNames(), ..._castTribeNames()])];
   const shownIds = new Set(shown.map(_key));
   const lanes = laneNames.map(name => {
@@ -414,10 +418,10 @@ function _tribesBodyHTML(shown, { teams = false } = {}) {
     const body = members.length
       ? members.map(p => _card(p, { draggable: true, withSelect: true })).join('')
       : `<div class="cr-lane-hint">drop players here</div>`;
-    // a Challenge team is named and removed right on its lane
-    const nameHTML = teams
-      ? `<input class="cr-lane-rename" value="${esc(name)}" data-old="${esc(name)}" onchange="crRenameTeam(this.dataset.old, this.value)" aria-label="Team name">
-        <button class="cr-lane-x" data-name="${esc(name)}" onclick="crRemoveTeam(this.dataset.name)" title="Remove this team (its players go back to No team)">&#10005;</button>`
+    // a team or tribe is named and removed right on its lane
+    const nameHTML = noun
+      ? `<input class="cr-lane-rename" value="${esc(name)}" data-old="${esc(name)}" onchange="crRenameTeam(this.dataset.old, this.value)" aria-label="${Noun} name">
+        <button class="cr-lane-x" data-name="${esc(name)}" onclick="crRemoveTeam(this.dataset.name)" title="Remove this ${noun} (its players go back to ${teams ? 'No team' : 'Unassigned'})">&#10005;</button>`
       : `<span class="cr-lane-name">${esc(name)}</span>`;
     return `<div class="cr-lane" data-tribe="${esc(name)}" ondragover="crDragOver(event)" ondragleave="crDragLeave(event)" ondrop="crDrop(event)">
       <div class="cr-lane-head"><span class="cr-lane-dot" style="background:${tc}"></span>
@@ -438,8 +442,8 @@ function _tribesBodyHTML(shown, { teams = false } = {}) {
 
   // The shuffling tools would deal Catfish faces in as players: not on the Circle.
   const toolbar = _isCircle() ? `<div class="cr-toolbar"><span class="cr-toolbar-label">Drag each person into a category: Day 1 and Newcomers play; a Catfish face is someone a player plays as.</span></div>` : `<div class="cr-toolbar">
-    <span class="cr-toolbar-label">${teams ? 'Drag each player onto a team' : 'Casting tools'}</span>
-    ${teams ? '<button class="cr-tool" onclick="crAddTeam()">&#65291; Team</button>' : ''}
+    <span class="cr-toolbar-label">${noun ? `Drag each player onto a ${noun}` : 'Casting tools'}</span>
+    ${noun ? `<button class="cr-tool" onclick="crAddTeam()">&#65291; ${Noun}</button>` : ''}
     <button class="cr-tool" onclick="crBalance()" title="Snake-distribute by total stats">Balance</button>
     <button class="cr-tool" onclick="crSnake()" title="Snake draft by threat">Snake Draft</button>
     <button class="cr-tool" onclick="crRandomize()" title="Shuffle evenly">Randomize</button>
@@ -745,6 +749,11 @@ function _isCircle() {
 function _isChallenge() {
   try { return !!window.isChallengeSeason?.(); } catch { return false; }
 }
+// Total Drama: the format the shared tribes belong to (a season with no format set is Total Drama, shows.js)
+function _isTotalDrama() {
+  const f = seasonFormat(seasonConfig);
+  return !f || f === 'total-drama';
+}
 // The Challenge's custom Teams and Pairs (the user, 2026-10-18: "a custom mode that uses the teams made with drag and
 // drop, adapted for pairs too, only when one of them is selected"): which one this season is building, or null
 function _chCustom() {
@@ -817,31 +826,40 @@ function _assignTribe(pid, tribe) {
   renderCast(); // → renderCastRoom via hook
 }
 
-// ── The Challenge's custom teams: a team is a tribe name on the cards (ch-run.js customTeams) ──
+// ── Lanes made right here: a Challenge team (ch-run.js customTeams) or a Total Drama tribe ──
+// Both are a tribe name on the cards and an entry in Season Setup's tribes, so the Tribe Builder there, each card's
+// tribe picker and these lanes always agree.
 function _saveConfig() { try { localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); } catch { /* storage full or blocked */ } }
+const _laneNoun = () => (_chCustom() === 'teams' ? 'team' : 'tribe');
+const _laneNounCap = () => (_laneNoun() === 'team' ? 'Team' : 'Tribe');
+function _afterLaneChange() {
+  _saveConfig();
+  try { window.renderTribeBuilder?.(); window.renderTribeSelect?.(); } catch { /* the setup panel is optional */ }
+}
 export function crAddTeam() {
   seasonConfig.tribes ||= [];
   const used = new Set([..._configuredTribeNames(), ..._castTribeNames()]);
-  let i = 1; while (used.has(`Team ${i}`)) i++;
+  const word = _laneNounCap();
+  let i = 1; while (used.has(`${word} ${i}`)) i++;
   const colours = seasonConfig.tribes.map(t => t.color);
-  seasonConfig.tribes.push({ name: `Team ${i}`, color: TRIBE_PALETTE.find(c => !colours.includes(c)) || TRIBE_PALETTE[seasonConfig.tribes.length % TRIBE_PALETTE.length] });
-  _saveConfig();
+  seasonConfig.tribes.push({ name: `${word} ${i}`, color: TRIBE_PALETTE.find(c => !colours.includes(c)) || TRIBE_PALETTE[seasonConfig.tribes.length % TRIBE_PALETTE.length] });
+  _afterLaneChange();
   crRenderGrid();
 }
 export function crRenameTeam(old, name) {
   name = String(name || '').trim();
   if (!name || name === old) { crRenderGrid(); return; }
-  if ([..._configuredTribeNames(), ..._castTribeNames()].some(n => n.toLowerCase() === name.toLowerCase())) { alert(`There is already a team called ${name}.`); crRenderGrid(); return; }
+  if ([..._configuredTribeNames(), ..._castTribeNames()].some(n => n.toLowerCase() === name.toLowerCase())) { alert(`There is already a ${_laneNoun()} called ${name}.`); crRenderGrid(); return; }
   seasonConfig.tribes ||= [];
   const t = seasonConfig.tribes.find(x => x.name === old);
   if (t) t.name = name; else seasonConfig.tribes.push({ name, color: tribeColor(old) });
   players.forEach(p => { if (p.tribe === old) p.tribe = name; });
-  _saveConfig(); saveCast(); renderCast();
+  _afterLaneChange(); saveCast(); renderCast();
 }
 export function crRemoveTeam(name) {
   seasonConfig.tribes = (seasonConfig.tribes || []).filter(t => t.name !== name);
   players.forEach(p => { if (p.tribe === name) p.tribe = ''; });
-  _saveConfig(); saveCast(); renderCast();
+  _afterLaneChange(); saveCast(); renderCast();
 }
 
 // ── The Challenge's custom pairs: written as the two cards' Partner fields ──
@@ -906,7 +924,7 @@ export function crClearPairs() {
 // ── Casting tools ──
 function _applyDistribution(fn) {
   const tribeNames = _toolTribeNames();
-  if (tribeNames.length < 2) { alert(_chCustom() === 'teams' ? 'Add at least two teams first (＋ Team).' : 'Set up at least two tribes in Season Setup first.'); return; }
+  if (tribeNames.length < 2) { alert(_chCustom() === 'teams' ? 'Add at least two teams first (＋ Team).' : _isTotalDrama() ? 'Add at least two tribes first (＋ Tribe).' : 'Set up at least two tribes in Season Setup first.'); return; }
   const opts = { preserve: !!window._crPreserve, relationships };
   const result = fn(players, tribeNames, opts);
   const byKey = new Map(result.map(p => [String(_key(p)), p.tribe]));

@@ -22,6 +22,12 @@ stat blends live in `docs/ridonculous-race-identities.md`.
   (Carrie → Devin). Bonds across teams work the same way.
 - Everything else (route, legs, twists per leg) the design proposes.
 
+## Money
+
+- **Money is in** (2026-10-18), with **begging and money penalties**, like The Amazing Race: a cash envelope each leg,
+  spent on everything but flights; running out means begging, selling, borrowing; non-elimination legs can take it
+  all.
+
 ## Stats
 
 - **No new stats.** Task types are blends of the nine. Temperament is volatility (spread), not grit (level), except where

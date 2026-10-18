@@ -10,7 +10,10 @@ import teams from '../js/ch/script/lines/teams.js';
 import pairLife from '../js/ch/script/lines/pair-life.js';
 import teamLife from '../js/ch/script/lines/team-life.js';
 import teamMoments from '../js/ch/script/lines/team-moments.js';
-import teamMoments2 from '../js/ch/script/lines/team-moments2.js';
+// team-reactions.js is written the other way (2026-10-18, the user: "dialogue are so robotic, they don't talk like
+// humans at all"): five copies of one line in five tones is the robot. A voice there is a different thing to say,
+// written on the turns where a person shows who they are; a short reply is said as written.
+import teamReactions from '../js/ch/script/lines/team-reactions.js';
 
 const FAMILIES = ['sharp', 'dry', 'loud', 'soft', 'odd'];
 const TOKEN = /\{(\w+)(?:\.\w+)?\}/g;
@@ -18,7 +21,8 @@ const TOKEN = /\{(\w+)(?:\.\w+)?\}/g;
 describe('the season modes are voiced', () => {
   const byId = {};
   for (const list of Object.values(POOLS)) for (const e of list) byId[e.id] = e;
-  const files = { pairs, pairVote, pairMore, teams, pairLife, teamLife, teamMoments, teamMoments2 };
+  const files = { pairs, pairVote, pairMore, teams, pairLife, teamLife, teamMoments, teamReactions };
+  const VOICED_WHERE_IT_MATTERS = new Set(['teamReactions']);
   it('every spoken turn has all five families, and no variant names a slot its line does not', () => {
     const short = [], extra = [];
     for (const [f, mod] of Object.entries(files)) for (const list of Object.values(mod)) for (const e0 of list) {
@@ -26,7 +30,7 @@ describe('the season modes are voiced', () => {
       e.turns.forEach((t, i) => {
         if (t.beat || !t.by || t.by === 'tj') return;
         const missing = FAMILIES.filter(k => ![t.v?.[k]].flat().filter(Boolean).length);
-        if (missing.length) short.push(`${f} ${e.id}[${i}] ${missing.join(',')}`);
+        if (missing.length && !VOICED_WHERE_IT_MATTERS.has(f)) short.push(`${f} ${e.id}[${i}] ${missing.join(',')}`);
         const base = new Set([...String(t.say || t.conf).matchAll(TOKEN)].map(m => m[1]));
         for (const k of FAMILIES) for (const line of [t.v?.[k]].flat().filter(Boolean))
           for (const m of line.matchAll(TOKEN)) if (!base.has(m[1])) extra.push(`${e.id}[${i}] ${k}: {${m[1]}}`);
@@ -38,6 +42,6 @@ describe('the season modes are voiced', () => {
     for (const mod of Object.values(files)) for (const list of Object.values(mod)) for (const e0 of list) for (const t of (byId[e0.id] || e0).turns)
       for (const line of [t.say || t.conf || '', ...Object.values(t.v || {}).flat()]) if (/\{(team|oppteam|from|to)\}'s\b/.test(line)) possessive.push(`${e0.id}: ${line}`);
     expect(possessive, possessive.join('\n')).toEqual([]);
-    expect(extra, extra.slice(0, 10).join('\n')).toEqual([]);
+    expect(extra, extra.join('\n')).toEqual([]);
   });
 });

@@ -13,7 +13,9 @@ const SLOTS = new Set(['a', 'b', 'c', 'd', 'tj', 'target', 'alliance', 'game', '
   // a Pairs season: the partners of a, b, c, d and of the target, alt, a pick-talk's options; the target's partner; a place
   'pa', 'pb', 'pc', 'pd', 'pt', 'palt', 'pgone', 'popt1', 'popt2', 'target2', 'place',
   // a Teams season: the team a scene is about, and the other side
-  'team', 'oppteam']);
+  'team', 'oppteam',
+  // after a daily: its name, and what they call its hard part (dailies.js DAILY_TASK)
+  'daily', 'task']);
 
 describe('The Challenge pools', () => {
   it('gate only on known facts, key variants only on real voices, and name only real slots', () => {

@@ -65,6 +65,16 @@ export const DAILIES = [
 ];
 
 // Pole Truth (the user's pick from Total Drama, 2026-10-15): six posts in the water, played in heats.
+// What the players call the hard part of each daily, the way they'd say it after ("we lost it on the wall"), for the
+// scenes after it (teams.js teamDailyReactions: the user, 2026-10-18, "it always so robotic, where's the emotion").
+// Written to read after "on", "at", "got to", or as a sentence's subject.
+export const DAILY_TASK = { 'cliff-relay': 'the ladder', 'reef-dash': 'the dive', 'truck-tug': 'the truck', 'lagoon-quiz': 'the questions',
+  'jungle-maze': 'the maze', 'hang-on': 'the net', demolition: 'the towers', 'night-swim': 'the numbers', 'balance-beam': 'the beam',
+  'gauntlet-run': 'the wall', 'pole-truth': 'the poles', 'raft-king': 'the raft', 'cut-rope': 'the rope', 'double-cross': 'the swim',
+  'trust-fall': 'the plank', 'who-said-it': 'the questions', 'deep-freeze': 'the ice', 'log-roll': 'the log', 'road-kill': 'the truck',
+  'mud-brawl': 'the mud', 'car-jump': 'the jumps', 'locked-in': 'the cage', 'the-box': 'the box', buried: 'the coffin', 'food-wars': 'the food',
+  trapeze: 'the trapeze', 'poison-cup': 'the cups' };
+
 DAILIES.push({ id: 'pole-truth', name: 'Pole Truth', physicality: 0.7, modes: ['solo'], played: true,
   blend: { endurance: 0.35, temperament: 0.35, physical: 0.15, mental: 0.15 },
   desc: 'Wooden posts stand in the shallows, one for every player, and a division at a time they climb up and stand on top of one, with no breakfast and no water. Every few hours TJ brings food for anybody who steps down, and in between TJ reads out a truth about somebody up there, something that was supposed to stay secret. Stepping down, falling, or getting knocked off by a hungry neighbour means the water and the end of the day. The last man and the last woman still standing win.' });
@@ -307,6 +317,8 @@ export function playDaily(state, rng, { division, pin = null, solo = false }) {
   // (level on average: the team with the best single finish, and TJ says so)
   const unitScore = u => byPlace ? -avgPlace(u) - Math.min(...u.map(n => placeOf[n])) / 1000 : u.reduce((a, n) => a + indiv[n], 0) / u.length;
   const ranked = [...units].sort((a, b) => unitScore(b) - unitScore(a));
+  const sd = (() => { const xs = units.flat().map(n => (byPlace ? placeOf[n] : indiv[n])); const m = xs.reduce((a, x) => a + x, 0) / Math.max(1, xs.length); return Math.sqrt(xs.reduce((a, x) => a + (x - m) ** 2, 0) / Math.max(1, xs.length)) || 1; })();
+  const close = ranked.length > 1 && Math.abs(unitScore(ranked[0]) - unitScore(ranked[1])) < sd * 0.25;
   const tally = byPlace ? ranked.map(u => ({ members: [...u], avg: +avgPlace(u).toFixed(1), best: [...u].sort((a, b) => placeOf[a] - placeOf[b])[0],
     // the heats this team won on the day (a men's heat and a women's heat: the sim's own winners)
     heats: (heatWinners || []).filter(w => u.includes(w)) })) : null;
@@ -383,7 +395,7 @@ export function playDaily(state, rng, { division, pin = null, solo = false }) {
   }
   if (seasonPairs) logDaily(state, units, indiv, daily.name);
   // a Teams season: both teams react, the losers talk strategy, a bloc may form inside a team (teams.js)
-  if (seasonTeams && mode === 'teams') teamDailyReactions(state, rng, { winners, last, scores: indiv });
+  if (seasonTeams && mode === 'teams') teamDailyReactions(state, rng, { winners, last, scores: indiv, daily: { id: daily.id, name: daily.name, task: DAILY_TASK[daily.id] || null, physical: (daily.physicality || 0) >= 0.8 }, close, moments });
   const aftermath = mode === 'pairs' ? pairAftermath(state, rng, units, power, winners, ranked)
     : mode === 'teams' ? teamAftermath(state, rng, units, power, winners) : [];
   return { id: daily.id, name: daily.name, mode, units, winners, last,

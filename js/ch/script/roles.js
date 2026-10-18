@@ -426,14 +426,15 @@ Object.assign(ROLES, {
     slots: { from: sc.data.from, to: sc.data.to, count: sc.data.voted >= 2 ? (COUNT_WORD[sc.data.voted] || String(sc.data.voted)).toLowerCase() : undefined } }),
   // after a team daily: the winners (a: who carried it, b: the captain), the losers (a: the captain, b: the angry one,
   // c: the one who did worst), a small group settling on a name (a: who leads it, b: who doubts it), a bloc inside a team
+  // {daily}: the daily's name; {task}: what they call its hard part ("the wall": dailies.js DAILY_TASK)
   'team-daily-win': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2], d: sc.who[3] }, ending: sc.data.streak ? 'streak' : 'any',
-    slots: { team: sc.data.team, oppteam: sc.data.oppTeam } }),
+    slots: { team: sc.data.team, oppteam: sc.data.oppTeam, daily: sc.data.daily || undefined, task: sc.data.task || undefined } }),
   'team-daily-loss': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.worst && sc.data.worst !== sc.who[0] && sc.data.worst !== sc.who[1] ? sc.data.worst : undefined },
-    ending: sc.data.streak ? 'streak' : 'any', slots: { team: sc.data.team, oppteam: sc.data.oppTeam } }),
+    ending: sc.data.streak ? 'streak' : 'any', slots: { team: sc.data.team, oppteam: sc.data.oppTeam, daily: sc.data.daily || undefined, task: sc.data.task || undefined } }),
   'team-vote-talk': sc => {
     const g = sc.data.group || sc.who.slice(0, -1);
     const b = sc.data.doubter || g[1];
-    return { roles: { a: g[0], b, c: g.find(n => n !== g[0] && n !== b) }, ending: sc.data.doubter ? 'split' : sc.data.slowest ? 'slowest' : 'agree', slots: { target: sc.data.target, team: sc.data.team } };
+    return { roles: { a: g[0], b, c: g.find(n => n !== g[0] && n !== b) }, ending: sc.data.doubter ? 'split' : sc.data.slowest ? 'slowest' : 'agree', slots: { target: sc.data.target, team: sc.data.team, task: sc.data.task || undefined } };
   },
   'team-bloc': sc => ({ roles: { a: sc.data.leader, b: sc.who.find(x => x !== sc.data.leader), c: sc.who.filter(x => x !== sc.data.leader)[1], d: sc.who.filter(x => x !== sc.data.leader)[2] },
     ending: sc.data.lost ? 'lost' : 'won', slots: { alliance: sc.data.name, team: sc.data.team } }),

@@ -12,6 +12,8 @@ import { pStats } from '../../players.js';
 
 export const CH_FACT_KEYS = [
   'ending',
+  // after a team daily (teams.js teamDailyReactions): it was close; the winners lost the one before
+  'close', 'bounce',
   // a Pairs season (pairs.js, share-keep.js): how the moment went
   'hesitate', 'champions', 'walks', 'rivals', 'keepWhy', 'pairs',
   // a Teams season (teams.js): the teams standing, two on one team, the winners sending one of their own, owning it
@@ -137,6 +139,8 @@ export function factsFor(scene, roles, state) {
     owns: !!scene.data?.owns,
     // a's team lost the last team daily; a's team has lost two or more (events.js teamRecord)
     lostLast: !!scene.data?.lostLast,
+    close: scene.data?.close ?? null,
+    bounce: !!scene.data?.bounce,
     losing: !!scene.data?.losing,
   };
   if (a) {

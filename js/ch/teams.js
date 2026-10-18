@@ -354,7 +354,7 @@ export function teamVoteNight(state, { R, epRec, division, daily, immune, elims 
  * the losing team's small groups settling on a name (that is who they vote: the bonds move), and now and then a bloc
  * forming inside a team (a real alliance, kept to one team).
  */
-export function teamDailyReactions(state, rng, { winners, last, scores }) {
+export function teamDailyReactions(state, rng, { winners, last, scores, daily = {}, close = false, moments = [] }) {
   if (!teamsOn(state) || !winners?.length || !last?.length) return;
   const winT = teamOfName(state, winners[0]), lossT = teamOfName(state, last[0]);
   if (!winT || !lossT || winT === lossT) return;
@@ -362,7 +362,11 @@ export function teamDailyReactions(state, rng, { winners, last, scores }) {
   const score = n => scores?.[n] ?? 0;
   // streaks: what each team has done lately (teamHistory of dailies kept here)
   state.teamDailyLog ||= [];
+  // the winners lost the one before: a bounce back (a line may say "after last time" only then)
+  const bounce = state.teamDailyLog.at(-1)?.lost === winT.name;
   state.teamDailyLog.push({ ep: state.ep, won: winT.name, lost: lossT.name });
+  // what the day was, for the lines: its name, its hard part, how close, and who came through or fell apart
+  const day = { daily: daily.name || null, task: daily.task || null, physical: !!daily.physical, close: !!close };
   const lastTwo = state.teamDailyLog.slice(-2);
   const winStreak = lastTwo.length === 2 && lastTwo.every(x => x.won === winT.name);
   const lossStreak = lastTwo.length === 2 && lastTwo.every(x => x.lost === lossT.name);
@@ -374,7 +378,7 @@ export function teamDailyReactions(state, rng, { winners, last, scores }) {
   for (const a of W) for (const b of W) if (a < b) addBond(a, b, 0.2);
   for (const n of W) nudge(state, n, 'morale', 0.4);
   giveRespect(state, mvp, 'dailyWin');
-  addScene(state, 'team-daily-win', wWho, { team: winT.name, oppTeam: lossT.name, mvp, captain: wCap, streak: winStreak }, W, 'villa');
+  addScene(state, 'team-daily-win', wWho, { team: winT.name, oppTeam: lossT.name, mvp, captain: wCap, streak: winStreak, bounce, ...day }, W, 'villa');
 
   // the losers: the mood, and who says what about it
   const lCap = L.includes(lossT.captain) ? lossT.captain : L[0];
@@ -383,7 +387,8 @@ export function teamDailyReactions(state, rng, { winners, last, scores }) {
   const lWho = [lCap, ...[angry, worst, ...L.filter(n => n !== lCap && n !== angry && n !== worst)].filter((n, i, a) => n && n !== lCap && a.indexOf(n) === i)].slice(0, 5);
   for (const n of L) nudge(state, n, 'morale', lossStreak ? -0.6 : -0.3);
   if (angry && worst && angry !== worst) { addBond(angry, worst, -0.3); remember(worst, angry, 'looked-at-me-after-the-loss', 0.5); }
-  addScene(state, 'team-daily-loss', lWho, { team: lossT.name, oppTeam: winT.name, captain: lCap, worst, streak: lossStreak }, L, 'villa');
+  const choke = moments.find(m => m.kind === 'choke' && L.includes(m.who))?.who || null;
+  addScene(state, 'team-daily-loss', lWho, { team: lossT.name, oppTeam: winT.name, captain: lCap, worst, streak: lossStreak, choke, ...day }, L, 'villa');
 
   // the losing team talks it out in small groups: two or three who trust each other, and the name they settle on
   const used = new Set();
@@ -406,7 +411,7 @@ export function teamDailyReactions(state, rng, { winners, last, scores }) {
     if (doubter) addBond(lead, doubter, -0.2);
     for (const x of group) used.add(x);
     // a line may say the name was the slowest out there only when it was (seed 7 read: the captain called "the slowest")
-    addScene(state, 'team-vote-talk', [...group, target], { team: lossT.name, target, doubter, group, slowest: target === worst }, group, 'private');
+    addScene(state, 'team-vote-talk', [...group, target], { team: lossT.name, target, doubter, group, slowest: target === worst, ...day }, group, 'private');
   }
 
   // a bloc inside a team: three or four teammates with no alliance of their own make one, kept to the team

@@ -33,7 +33,7 @@ import teamLines from './teams.js';
 import pairLifeLines from './pair-life.js';
 import teamLifeLines from './team-life.js';
 import teamMomentLines from './team-moments.js';
-import teamMomentLines2 from './team-moments2.js';
+import teamReactionLines from './team-reactions.js';
 import VOICES, { joinVariants } from './voices/index.js';
 import LONGER from './longer/index.js';
 import EXTRA from './extra/index.js';
@@ -52,7 +52,7 @@ import FINAL12 from './voices/final12.js';
 import FINAL13 from './voices/final13.js';
 import FINAL14 from './voices/final14.js';
 
-export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign, stakes, twists, goodbye, named, cruel, quitLines, medevacLines, championLines, wishLines, lateLines, homeLines, shiftLines, kissLines, announceLines, dqLines, arenaPickLines, pairLines, pairVoteLines, teamLines, pairLifeLines, teamLifeLines, teamMomentLines, teamMomentLines2);
+export const POOLS = Object.assign({}, spine, vote, house, game, final, story, places, campaign, stakes, twists, goodbye, named, cruel, quitLines, medevacLines, championLines, wishLines, lateLines, homeLines, shiftLines, kissLines, announceLines, dqLines, arenaPickLines, pairLines, pairVoteLines, teamLines, pairLifeLines, teamLifeLines, teamMomentLines, teamReactionLines);
 
 // more entries for the same pools, appended (never a replacement: a key here adds to the pool)
 // (payback.js adds to pools other files own: appended, like the extras)

@@ -156,6 +156,73 @@ export function playScene(ctx, kindId, rng, { ending = null } = {}) {
   return sc;
 }
 
+// A moment a system decided (the mat, a twist, a ruling): recorded with the ending the
+// system chose. With `data.effects` the system's own effects are the record; without them
+// the kind's ending applies its fx like any scene.
+export function emit(state, kindId, who, ending, data = {}) {
+  const kind = SCENES[kindId];
+  if (!kind) throw new Error(`rr emit: no scene kind ${kindId}`);
+  if (!kind.endings.includes(ending)) throw new Error(`rr emit: ${kindId} has no ending ${ending}`);
+  const { effects, seenBy, present, event, stretch, ...rest } = data;
+  if (!effects?.length) {
+    const ctx = { state, team: rest.team ? { id: rest.team } : null, other: rest.other ? { id: rest.other } : null,
+      people: who, present, event, stretch, seenBy, moment: kind.moments[0] ?? null };
+    const sc = playScene(ctx, kindId, () => 0.5, { ending });
+    Object.assign(sc.data, rest);
+    return sc;
+  }
+  const seen = seenBy || [...new Set([...who, ...people(state, rest.team)])];
+  return addScene(state, kindId, who, { ending, family: kind.family, effects, ...rest }, seen);
+}
+
+// The weight of a moment, read from what it changed: what makes it worth an interview.
+function weight(sc) {
+  let w = 0;
+  for (const e of sc.data?.effects || []) {
+    if (e[0] === 'bond' || e[0] === 'teams') w += Math.abs(e[3]);
+    else if (e[0] === 'rivalry') w += e[3];
+    else if (['snapped', 'couple', 'uncouple', 'sabotaged', 'ally', 'unally', 'lead', 'rel', 'injured', 'quit-race'].includes(e[0])) w += 1.5;
+    else if (e[0] === 'time' || e[0] === 'pending') w += Math.abs(e[2]) / 30;
+    else if (e[0] === 'mind') w += Math.abs(e[3]) / 15;
+  }
+  return w;
+}
+const INTERVIEWS_PER_LEG = 3;
+const FEAR = ['fear-through', 'phobia', 'injury', 'freezes', 'exhaustion'];
+
+// After a big moment, maybe an interview about it: only from people who saw it, of the
+// moment's own team, at most three per team per leg (the show spends them carefully).
+export function interviewAfter(state, sc, rng) {
+  if (!sc || sc.kind.startsWith('int-')) return null;
+  const tid = sc.data?.team;
+  if (!tid || !state.teams[tid]) return null;
+  const used = state.scenes.filter(x => x.leg === state.leg && x.kind.startsWith('int-') && x.data.team === tid).length;
+  if (used >= INTERVIEWS_PER_LEG) return null;
+  const w = weight(sc);
+  if (rng() >= Math.min(0.7, w * 0.25)) return null;
+  const who = people(state, tid).filter(n => sc.seenBy.includes(n));
+  if (!who.length) return null;
+  const kind = SCENES[sc.kind];
+  const partnerBond = (sc.data.effects || []).filter(e => e[0] === 'bond' && who.includes(e[1]) && who.includes(e[2])).reduce((s, e) => s + e[3], 0);
+  let kindId = 'int-feeling';
+  if (kind?.family === 4 && !sc.data.other) kindId = 'int-secret';
+  else if (kind?.scheme || ['alliance-pitch', 'deal', 'boomerang-decide', 'express-give'].includes(sc.kind)) kindId = 'int-strategy';
+  else if (sc.data.other && [2, 7, 8, 12].includes(kind?.family)) kindId = 'int-about-team';
+  else if (partnerBond < 0 && who.length === 2 && rng() < 0.4) kindId = 'int-contradict';
+  const ivWho = kindId === 'int-secret' ? [who[0]] : who;
+  const ctx = { state, team: { id: tid }, other: sc.data.other ? { id: sc.data.other } : null, moment: 'interview',
+    people: ivWho, seenBy: ivWho, t: sc.data.t, cause: sc.id };
+  let ending = null;
+  if (kindId === 'int-feeling') {
+    const valence = partnerBond + (sc.data.effects || []).filter(e => e[0] === 'mind' && e[2] === 'morale' && who.includes(e[1])).reduce((s, e) => s + e[3] / 10, 0);
+    ending = valence > 0 ? 'glad' : FEAR.includes(sc.kind) || FEAR.includes(sc.data.ending) ? 'scared'
+      : S(who[0], 'temperament') < 5 ? 'angry' : 'hurt';
+  }
+  const iv = playScene(ctx, kindId, rng, { ending: ending || decideEnding(SCENES[kindId], prepare(ctx), rng) });
+  iv.data.about = sc.id;
+  return iv;
+}
+
 // Load the families (each file registers its kinds).
 import './scenes/partners.js';
 import './scenes/teams.js';
@@ -167,3 +234,6 @@ import './scenes/info.js';
 import './scenes/sabotage.js';
 import './scenes/body.js';
 import './scenes/place.js';
+import './scenes/don.js';
+import './scenes/twist-scenes.js';
+import './scenes/interviews.js';

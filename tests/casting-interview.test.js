@@ -214,8 +214,12 @@ describe('the article renders it the way the reference does', () => {
 describe('writing one with the model', () => {
   const worker = read('worker/worker-episode-live.js');
   const studio = read('js/studio.js');
-  const fn = worker.slice(worker.indexOf('async function generateCastingInterview'),
-    worker.indexOf('async function socialViaOpenAI'));
+  // the handler alone: from its signature to the next top-level function, whatever that is (the slice used to run
+  // to socialViaOpenAI, and generateCampKit was later written in between, so its body.ground and body.wiki were
+  // charged to the casting interview)
+  const start = worker.indexOf('async function generateCastingInterview');
+  const next = worker.slice(start + 1).search(/\n(?:async )?function \w/);
+  const fn = worker.slice(start, next < 0 ? undefined : start + 1 + next);
 
   it('is reachable as its own mode', () => {
     expect(fn.length, 'generateCastingInterview is missing').toBeGreaterThan(500);

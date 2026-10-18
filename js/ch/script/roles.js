@@ -473,6 +473,8 @@ function pairRevealEnding(d = {}) {
   if (d.how === 'rivals') return d.why === 'guess' ? 'strangers' : d.why === 'cold' ? 'wary' : 'rivals';
   if (d.how === 'ties' && d.why === 'guess') return 'unmatched';
   if (d.tie === 'friends' || d.why === 'friends') return 'friends';
+  // a pair set by hand (a cast card's partner, the Casting Room's Pairs view): the author's pairing, not production's guess
+  if (d.how === 'hand') return d.why === 'cold' ? 'rivals' : 'set';
   return d.why === 'cold' ? 'rivals' : 'strangers';
 }
 

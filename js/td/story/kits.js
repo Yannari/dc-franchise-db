@@ -186,7 +186,7 @@ const LIFE_CONF = [
 /** a brings their thing up, b teases them about it, a answers, b comes back at it, a has the last word,
  *  and one of them reflects. */
 // a line that only works in the first days ("It's been one day, Bruno." on episode 13: the user, 2026-10-16, "why 1 day")
-const EARLY_ONLY = /(been one day|one day in|on the flight)/i;
+const EARLY_ONLY = /\b(been one day|one day in|on the flight)\b/i;
 export function kitBitScene(a, b, facts, ctx) {
   const late = (ctx?.ep || 1) > 2, fresh = line => !late || !EARLY_ONLY.test(line || '');
   const authoredBit = take(a, 'bit', line => { const x = kitExchange(a, b, line); return !!x && (!late || x.turns.every(t => fresh(t.say || t.conf || t.text))); });

@@ -370,7 +370,7 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
       }
       // a Pairs season's pairs, before anybody plays (Rivals, Exes): TJ names them at the airstrip, once everybody
       // has landed and found the people they know
-      if (pairsOn(state) && ['rivals', 'ties'].includes(opts.pairs.pairing || 'rivals')) {
+      if (pairsOn(state) && ['rivals', 'ties', 'custom'].includes(opts.pairs.pairing || 'rivals')) {
         makeSeasonPairs(state, R('pairs'), { pins: opts.pairs.pins || {} });
         epRec.pairs = state.pairs.map(p => [p.a, p.b]);
       }

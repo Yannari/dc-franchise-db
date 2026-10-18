@@ -101,18 +101,29 @@ export function challengeOptions(config = seasonConfig) {
     // a Pairs season (js/ch/pairs.js): how the pairs are made, their shape, how many run the final, and the pairs
     // set by hand on the cast cards (two cards that name each other)
     pairs: config?.chMode === 'pairs' ? {
-      pairing: ['rivals', 'ties', 'fresh-meat', 'pick'].includes(config.chPairing) ? config.chPairing : 'rivals',
+      pairing: ['rivals', 'ties', 'fresh-meat', 'pick', 'custom'].includes(config.chPairing) ? config.chPairing : 'rivals',
       shape: config.chPairShape === 'same' && config.chGenderBlind !== true ? 'same' : 'mixed',
       finalPairs: [2, 3, 4].includes(Number(config.chFinalPairs)) ? Number(config.chFinalPairs) : null,
       pins: partnerPins(),
     } : null,
     // a Teams season (js/ch/teams.js): how the teams are made, how many, and how they end
     teams: config?.chMode === 'teams' ? {
-      teaming: ['shows', 'champions', 'vets', 'draft'].includes(config.chTeaming) ? config.chTeaming : 'shows',
+      teaming: ['shows', 'champions', 'vets', 'draft', 'custom'].includes(config.chTeaming) ? config.chTeaming : 'shows',
       count: config.chTeamCount === 'small' ? 'small' : 2,
       end: config.chTeamEnd === 'team-final' ? 'team-final' : 'breakup',
+      // custom: the teams built in the Casting Room's Teams view (each player's team is their card's tribe field)
+      ...(config.chTeaming === 'custom' ? { custom: customTeams(config) } : {}),
     } : null,
   };
+}
+
+/**
+ * A custom Teams season's teams, as built in the Casting Room's Teams view (cast-room.js): each player's team is their
+ * card's tribe field, the order and names are the Season Setup's tribes, then any other name a card carries.
+ */
+export function customTeams(config = seasonConfig, list = players || []) {
+  const names = [...new Set([...(config?.tribes || []).map(t => t.name), ...(list || []).map(p => p?.tribe).filter(Boolean)])];
+  return names.map(name => ({ name, members: (list || []).filter(p => p?.name && p.tribe === name).map(p => p.name) }));
 }
 
 /** The partners set on the cast cards (`chPartner`): only two cards that name each other count. */
@@ -210,6 +221,13 @@ export function challengeDivisions(cast = _cast(), setup = challengeSetup(), gen
 export function challengeCastProblem(cast = _cast(), setup = challengeSetup(), config = seasonConfig, genderOf = n => _player(n)?.gender) {
   const opts = challengeOptions(config);
   if (opts.pairs) return pairsCastProblem(cast, setup, opts, genderOf);
+  if (opts.teams?.teaming === 'custom') {
+    const teams = (opts.teams.custom || []).map(t => ({ ...t, members: t.members.filter(n => cast.includes(n)) })).filter(t => t.members.length);
+    if (teams.length < 2 || teams.some(t => t.members.length < 2)) return 'custom teams need at least two teams of two or more (Cast › Casting Room › Teams)';
+    const placed = new Set(teams.flatMap(t => t.members));
+    const off = cast.filter(n => !placed.has(n));
+    if (off.length) return `${off.length === 1 ? `${off[0]} is` : `${off.slice(0, 3).join(', ')}${off.length > 3 ? ` and ${off.length - 3} more` : ''} are`} on no team (Cast › Casting Room › Teams)`;
+  }
   if (cast.length < opts.finalists + 2) return `a season needs more players than finalists: ${cast.length} players, ${opts.finalists} into the final`;
   if (opts.gendered) {
     const div = challengeDivisions(cast, setup, genderOf);
@@ -230,6 +248,18 @@ function pairsCastProblem(cast, setup, opts, genderOf) {
   const m = cast.filter(n => div[n] === 'm').length, f = cast.filter(n => div[n] === 'f').length, open = cast.length - m - f;
   if (opts.gendered && opts.pairs.shape === 'mixed' && Math.abs(m - f) > open) return `pairs of a man and a woman need as many men as women: ${m} men, ${f} women`;
   if (opts.gendered && opts.pairs.shape === 'same' && (m % 2 || f % 2) && !open) return `men's and women's pairs need an even number of each: ${m} men, ${f} women`;
+  if (opts.pairs.pairing === 'custom') {
+    // every player in a pair set by hand (the Casting Room's Pairs view writes the cards' partners), and in the shape
+    const pins = opts.pairs.pins || {};
+    const off = cast.filter(n => !pins[n] || !cast.includes(pins[n]));
+    if (off.length) return `custom pairs: ${off.slice(0, 3).join(', ')}${off.length > 3 ? ` and ${off.length - 3} more` : ''} still need a partner (Cast › Casting Room › Pairs)`;
+    if (opts.gendered) for (const n of cast) {
+      const o = pins[n];
+      if (n > o || !div[n] || !div[o]) continue;
+      if (opts.pairs.shape === 'mixed' && div[n] === div[o]) return `${n} and ${o} are a pair, but this season's pairs are a man and a woman`;
+      if (opts.pairs.shape === 'same' && div[n] !== div[o]) return `${n} and ${o} are a pair, but this season's pairs are men's and women's pairs`;
+    }
+  }
   if (opts.pairs.pairing === 'fresh-meat') {
     const bg = challengeBackground(cast, setup);
     const rookies = cast.filter(n => bg[n]?.rookie).length;

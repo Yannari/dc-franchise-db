@@ -1,7 +1,7 @@
 // ch-teams-run.test.js — a Teams season is REACHABLE from the run tab: the setup's options reach the engine, a season
 // plays one episode per press to the final, the rows carry the teams, and the export and ledger say who was on which.
 import { describe, expect, it } from 'vitest';
-import { gs, setGs, setPlayers, seasonConfig } from '../js/core.js';
+import { gs, setGs, setPlayers, players, seasonConfig } from '../js/core.js';
 import { simulateChallengeEpisode, challengeCastProblem, challengeOptions, challengeVoteShape, challengeEpisodeMap } from '../js/ch-run.js';
 import { chPlacements, chTwistsPlayed } from '../js/ch/export.js';
 import { setFranchiseLedger } from '../js/franchise-meta.js';
@@ -51,6 +51,26 @@ describe('a Teams season from the run tab', () => {
     expect(challengeVoteShape(rows.at(-1))).toMatch(new RegExp(`^Champions: ${final.teamPodium[0].name} \\(`));
     // a team final never breaks up, so the Season Timeline has no break-up tile
     expect(challengeEpisodeMap().some(t => t.teamsBreak)).toBe(false);
+  });
+
+  it('a custom season plays the teams built in the Casting Room, and says who is on no team', () => {
+    freshTeams(20, { chTeaming: 'custom', tribes: [{ name: 'Sharks', color: '#3b82f6' }, { name: 'Jets', color: '#ef4444' }] });
+    players.forEach((p, i) => { p.tribe = i % 2 ? 'Jets' : 'Sharks'; });
+    expect(challengeOptions().teams.custom.map(t => [t.name, t.members.length])).toEqual([['Sharks', 10], ['Jets', 10]]);
+    expect(challengeCastProblem()).toBe(null);
+    const want = Object.fromEntries(players.map(p => [p.name, p.tribe]));
+    const rows = playAll();
+    for (const t of rows[0].ch.teams.start) for (const n of t.members) expect(want[n], n).toBe(t.name);
+    // TJ says the teams were set, and each team has its first moment
+    for (const k of ['teams-revealed', 'team-reveal']) expect(rows[0].ch.aired.find(x => x.kind === k)?.lines?.length, k).toBeGreaterThan(0);
+    // somebody left off a team is said before the season starts
+    freshTeams(20, { chTeaming: 'custom', tribes: [{ name: 'Sharks', color: '#3b82f6' }, { name: 'Jets', color: '#ef4444' }] });
+    players.forEach((p, i) => { p.tribe = i === 0 ? '' : i % 2 ? 'Jets' : 'Sharks'; });
+    expect(challengeCastProblem()).toMatch(/on no team/);
+    players.forEach(p => { p.tribe = 'Sharks'; });
+    expect(challengeCastProblem()).toMatch(/at least two teams/);
+    players.forEach(p => { p.tribe = ''; });   // the helper's cast objects are shared between calls
+    seasonConfig.tribes = [];
   });
 
   it('the Season Timeline marks the break-up: where it will be before the season, where it was after', () => {

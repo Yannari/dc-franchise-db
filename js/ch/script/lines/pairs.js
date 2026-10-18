@@ -125,6 +125,27 @@ export default {
         v: { sharp: "Everybody looked at muscles. I looked at who kept going when it got hard. {b}.", dry: "Everybody else looked at muscles. I looked at who kept going when it hurt. That was {b}.", loud: "Everybody else was looking at MUSCLES! I was looking at who kept going when it got hard, and that was {b}!", soft: "Everybody else was looking at muscles. I was looking at who kept going when it got hard. That was {b}.", odd: "Everybody else was looking at muscles. I was looking at who kept going when it got hard. That was {b}, every single round." } },
     ] },
   ],
+  // custom: the pairs the author made in the Casting Room (pairs.js; ch-run.js partnerPins). a and b: the first pair
+  'pairs-revealed.custom': [
+    { id: 'prv.c1', turns: [
+      { by: 'tj', say: "Welcome to the Blue Lagoon, people! This season you play in pairs, and your partners are already decided. We put a lot of thought into this. Some of you are going to love it." },
+      { by: 'tj', say: "You win together, you go into the Arena together, and you go home together. First up, {a} and {b}!" },
+      { by: 'a', say: "Okay. Hi, partner.",
+        v: { sharp: "Hi, partner.", dry: "Okay. Hi, partner.", loud: "Okay! Hi, PARTNER!", soft: "Okay. Hi, partner. Nice to meet you properly.", odd: "Okay. Hi, partner. That word is going to take some getting used to." } },
+      { by: 'b', say: "Hi. Let's make this work.",
+        v: { sharp: "Hi. Let's make it work.", dry: "Hi. Let's make this work.", loud: "Hi! Let's make this WORK!", soft: "Hi. Let's make this work, okay?", odd: "Hi. Let's make this work. We've got a whole season to figure it out." } },
+      { by: 'a', conf: "I didn't choose {b}, and {b} didn't choose me. Now everything I do in here, I do with {b}.",
+        v: { sharp: "I didn't choose {b}. {b} didn't choose me. Now everything I do, I do with {b}.", dry: "I didn't choose {b}, and {b} didn't choose me. Now it's all with {b}.", loud: "I didn't choose {b}, and {b} didn't choose me! Now everything I do in here, I do with {b}!", soft: "I didn't choose {b}, and {b} didn't choose me. Now everything I do in here, I'll be doing with {b}.", odd: "I didn't choose {b}, and {b} didn't choose me. Now everything I do in here, I do with {b}, including breakfast." } },
+    ] },
+    { id: 'prv.c2', turns: [
+      { by: 'tj', say: "Pairs season, people! And no, you don't get to pick. The pairs are set, and they're not changing because you don't like your partner." },
+      { by: 'tj', say: "{a}, {b}. You two are first." },
+      { by: 'b', say: "Okay. I can work with that.",
+        v: { sharp: "Fine. I can work with that.", dry: "Okay. I can work with that.", loud: "Okay! I can WORK with that!", soft: "Okay. I think I can work with that.", odd: "Okay. I can work with that. I've worked with worse." } },
+      { by: 'b', conf: "Everybody is looking at everybody else's partner and trying to work out who got lucky. I'm looking at mine.",
+        v: { sharp: "Everybody's sizing up the other partners. I'm looking at mine.", dry: "Everybody's working out who got lucky. I'm looking at mine.", loud: "Everybody's looking at everybody else's partner trying to work out who got LUCKY! I'm looking at mine!", soft: "Everybody is looking at everybody else's partner, trying to work out who got lucky. I'm just looking at mine.", odd: "Everybody is looking at everybody else's partner and trying to work out who got lucky. I'm still learning my partner's surname." } },
+    ] },
+  ],
   'pairs-revealed.pick': [
     { id: 'prv.p1', turns: [
       { by: 'tj', say: "Okay, people, here's the twist. This season you play in pairs, and you pick them yourselves. Right now. Out loud." },
@@ -419,6 +440,29 @@ export default {
         v: { sharp: "I'll take it. You don't know my embarrassing stories.", dry: "I'll take it. At least you don't know my embarrassing stories.", loud: "I'll take it! At least you don't know all my EMBARRASSING stories!", soft: "I'll take it. At least you don't know all my embarrassing stories.", odd: "I'll take it. At least you don't know my embarrassing stories. Yet." } },
       { by: 'a', conf: "Everybody else is carrying old fights in with them. We're starting clean. I like clean.",
         v: { sharp: "Everybody else brings old fights in. We start clean. I like clean.", dry: "Everybody else is carrying old fights in. We start clean. Good.", loud: "Everybody else is carrying old fights in with them! We're starting CLEAN, and I like clean!", soft: "Everybody else is carrying old fights in with them. We're starting clean, and I like that.", odd: "Everybody else is carrying old fights in with them. We're starting clean. I'd like to stay clean for at least a week." } },
+    ] },
+  ],
+  // a pair set by hand (a card's partner, the Casting Room's Pairs view), with no tie and no strong feeling either way
+  'pair-reveal.set': [
+    { id: 'prr.t1', turns: [
+      { by: 'tj', say: "{a}! {b}! You're together!" },
+      { by: 'a', say: "Hey. Looks like it's us.",
+        v: { sharp: "Hey. It's us.", dry: "Hey. Looks like it's us.", loud: "Hey! Looks like it's US!", soft: "Hey. Looks like it's us, then.", odd: "Hey. Looks like it's us. For the whole season." } },
+      { by: 'b', say: "Looks like it. Are you any good at puzzles?",
+        v: { sharp: "Looks like it. Any good at puzzles?", dry: "Looks like it. Are you any good at puzzles?", loud: "Looks like it! Are you any good at PUZZLES?", soft: "Looks like it. Are you any good at puzzles? I'm not.", odd: "Looks like it. Are you any good at puzzles? Asking for the team." } },
+      { by: 'a', say: "No idea. I guess we find out at the first daily.",
+        v: { sharp: "No idea. We find out at the first daily.", dry: "No idea. We'll find out at the first daily.", loud: "No idea! I guess we find out at the FIRST daily!", soft: "No idea, honestly. I guess we find out at the first daily.", odd: "No idea. I guess we find out at the first daily, along with everybody watching." } },
+      { by: 'b', conf: "{a} and I don't have a story yet. We get to write one. I'd like it to end at the final.",
+        v: { sharp: "{a} and I don't have a story yet. I'd like it to end at the final.", dry: "{a} and I have no story yet. Hopefully it ends at the final.", loud: "{a} and I don't have a story YET! We get to write one, and I'd like it to end at the final!", soft: "{a} and I don't have a story yet. We get to write one together, and I'd like it to end at the final.", odd: "{a} and I don't have a story yet. We get to write one. I'd like a happy ending, if anybody's taking requests." } },
+    ] },
+    { id: 'prr.t2', turns: [
+      { by: 'tj', say: "Next pair! {a} and {b}!" },
+      { by: 'b', say: "Okay. Partner.",
+        v: { sharp: "Okay. Partner.", dry: "Okay. Partner.", loud: "Okay! PARTNER!", soft: "Okay. Hi, partner.", odd: "Okay. Partner. Strange word." } },
+      { by: 'a', say: "Partner. Let's not be the first ones out.",
+        v: { sharp: "Partner. Let's not go out first.", dry: "Partner. Let's not be the first ones out.", loud: "Partner! Let's NOT be the first ones out!", soft: "Partner. Let's try not to be the first ones out.", odd: "Partner. Let's not be the first ones out. Second would be fine." } },
+      { by: 'a', conf: "I don't love it and I don't hate it. {b} is a fresh start, and in a house this full of history, that's not nothing.",
+        v: { sharp: "I don't love it, I don't hate it. {b} is a fresh start, and that's not nothing.", dry: "Don't love it, don't hate it. {b} is a fresh start. That counts for something here.", loud: "I don't LOVE it and I don't hate it! {b} is a fresh start, and in a house this full of history, that's not nothing!", soft: "I don't love it and I don't hate it. {b} is a fresh start, and in a house this full of history, that's not nothing.", odd: "I don't love it and I don't hate it. {b} is a fresh start, and in a house this full of history, I'll take a clean page." } },
     ] },
   ],
   // history without a grudge (pairs.js why 'cold'): they never got on, but they never fought either

@@ -61,6 +61,30 @@ describe('a Pairs season from the run tab', () => {
     expect(gs.phase).toBe('complete');
   });
 
+  it('a custom season plays the pairs made in the Casting Room, and says who still needs a partner', () => {
+    freshPairs(16, { chPairing: 'custom' });
+    const m = players.filter(p => p.gender === 'm'), f = players.filter(p => p.gender === 'f');
+    m.forEach((p, i) => { p.chPartner = f[i].name; f[i].chPartner = p.name; });
+    expect(challengeCastProblem()).toBe(null);
+    const want = new Set(m.map((p, i) => [p.name, f[i].name].sort().join('|')));
+    const rows = playAll();
+    const first = rows[0].ch.pairs?.start?.length ? rows[0].ch.pairs.start : rows[0].ch.pairs.end;
+    expect(first.length).toBeGreaterThan(0);
+    for (const [a, b] of first) expect(want.has([a, b].sort().join('|')), `${a} & ${b}`).toBe(true);
+    // TJ says the pairs were set, and a pair's first moment airs
+    for (const k of ['pairs-revealed', 'pair-reveal']) expect(rows[0].ch.aired.find(x => x.kind === k)?.lines?.length, k).toBeGreaterThan(0);
+    // a player with no partner, and a pair outside the season's shape, are said before it starts
+    freshPairs(16, { chPairing: 'custom' });
+    players.forEach(p => { p.chPartner = ''; });   // the helper's cast objects are shared between calls
+    const m2 = players.filter(p => p.gender === 'm'), f2 = players.filter(p => p.gender === 'f');
+    m2.slice(1).forEach((p, i) => { p.chPartner = f2[i + 1].name; f2[i + 1].chPartner = p.name; });
+    expect(challengeCastProblem()).toMatch(/still need a partner/);
+    m2[0].chPartner = m2[1].name; f2[0].chPartner = f2[1].name;
+    m2[1].chPartner = m2[0].name; f2[1].chPartner = f2[0].name;
+    expect(challengeCastProblem()).toMatch(/a man and a woman/);
+    players.forEach(p => { p.chPartner = ''; });
+  });
+
   it('the vote\'s board shows both of a pair, the pair voted in tonight included', () => {
     // the board read the pairs as the episode ENDED, and the pair voted in had gone home by then: one face (2026-10-18)
     freshPairs(16);

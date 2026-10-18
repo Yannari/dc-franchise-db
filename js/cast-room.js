@@ -17,7 +17,7 @@ import { CIRCLE_CATEGORIES } from './ci/categories.js';
 import { STATS, ARCHETYPE_NAMES, ARCHETYPES, players, relationships, seasonConfig } from './core.js';
 import { threat, threatTier, overall, tribeColor, playerAvatarUrl } from './players.js';
 import { seasonFormat } from './core.js';
-import { saveCast, renderCast, editPlayer, cancelEdit } from './cast-ui.js';
+import { saveCast, renderCast, editPlayer, cancelEdit, TRIBE_PALETTE } from './cast-ui.js';
 import { franchiseHistorySummary } from './franchise-meta.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -357,7 +357,10 @@ function _filterBarHTML() {
 }
 
 function _warningsHTML() {
-  const w = castWarnings(players, relationships, _configuredTribeNames(), { format: seasonFormat(seasonConfig) });
+  // The Challenge has no tribes: the warnings about them only mean something to a custom Teams season, as teams
+  const custom = _chCustom();
+  let w = castWarnings(players, relationships, _configuredTribeNames(), { format: seasonFormat(seasonConfig) });
+  if (_isChallenge()) w = custom === 'teams' ? w.map(x => ({ ...x, text: x.text.replace(/^Tribe /, 'Team ').replace(/\btribe\b/g, 'team') })) : w.filter(x => !/\btribe/i.test(x.text));
   if (!w.length) return '';
   const rows = w.map(x => `<span class="cr-warn-row cr-warn-${x.level}">${esc(x.text)}</span>`).join('');
   return `<div class="cr-warnings" id="cr-warnings">
@@ -385,6 +388,8 @@ export function crRenderGrid() {
   if (clr) clr.hidden = active === 0;
 
   if (view === 'tribes') { host.innerHTML = _tribesBodyHTML(shown); return; }
+  if (view === 'teams' && _chCustom() === 'teams') { host.innerHTML = _tribesBodyHTML(shown, { teams: true }); return; }
+  if (view === 'pairs' && _chCustom() === 'pairs') { host.innerHTML = _pairsBodyHTML(shown); return; }
 
   if (!players.length) {
     host.innerHTML = `<div class="cr-empty"><div class="cr-empty-icon">🎬</div><p>No cast yet — add players or load a preset.</p></div>`;
@@ -398,7 +403,7 @@ export function crRenderGrid() {
   host.innerHTML = `<div class="cr-grid">${sorted.map(p => _card(p)).join('')}</div>`;
 }
 
-function _tribesBodyHTML(shown) {
+function _tribesBodyHTML(shown, { teams = false } = {}) {
   const laneNames = [...new Set([..._configuredTribeNames(), ..._castTribeNames()])];
   const shownIds = new Set(shown.map(_key));
   const lanes = laneNames.map(name => {
@@ -409,9 +414,14 @@ function _tribesBodyHTML(shown) {
     const body = members.length
       ? members.map(p => _card(p, { draggable: true, withSelect: true })).join('')
       : `<div class="cr-lane-hint">drop players here</div>`;
+    // a Challenge team is named and removed right on its lane
+    const nameHTML = teams
+      ? `<input class="cr-lane-rename" value="${esc(name)}" data-old="${esc(name)}" onchange="crRenameTeam(this.dataset.old, this.value)" aria-label="Team name">
+        <button class="cr-lane-x" data-name="${esc(name)}" onclick="crRemoveTeam(this.dataset.name)" title="Remove this team (its players go back to No team)">&#10005;</button>`
+      : `<span class="cr-lane-name">${esc(name)}</span>`;
     return `<div class="cr-lane" data-tribe="${esc(name)}" ondragover="crDragOver(event)" ondragleave="crDragLeave(event)" ondrop="crDrop(event)">
       <div class="cr-lane-head"><span class="cr-lane-dot" style="background:${tc}"></span>
-        <span class="cr-lane-name">${esc(name)}</span>
+        ${nameHTML}
         <span class="cr-lane-meta">${all.length} · avg ${avg}</span></div>
       <div class="cr-lane-body">${body}</div>
     </div>`;
@@ -422,18 +432,63 @@ function _tribesBodyHTML(shown) {
   const unBody = un.length ? un.map(p => _card(p, { draggable: true, withSelect: true })).join('') : `<div class="cr-lane-hint">drop players here</div>`;
   lanes.push(`<div class="cr-lane cr-lane-un" data-tribe="" ondragover="crDragOver(event)" ondragleave="crDragLeave(event)" ondrop="crDrop(event)">
     <div class="cr-lane-head"><span class="cr-lane-dot" style="background:var(--muted)"></span>
-      <span class="cr-lane-name">${_isCircle() ? 'Decide (a player, Day 1 or later)' : 'Unassigned'}</span><span class="cr-lane-meta">${unAll.length}</span></div>
+      <span class="cr-lane-name">${_isCircle() ? 'Decide (a player, Day 1 or later)' : teams ? 'No team' : 'Unassigned'}</span><span class="cr-lane-meta">${unAll.length}</span></div>
     <div class="cr-lane-body">${unBody}</div>
   </div>`);
 
   // The shuffling tools would deal Catfish faces in as players: not on the Circle.
   const toolbar = _isCircle() ? `<div class="cr-toolbar"><span class="cr-toolbar-label">Drag each person into a category: Day 1 and Newcomers play; a Catfish face is someone a player plays as.</span></div>` : `<div class="cr-toolbar">
-    <span class="cr-toolbar-label">Casting tools</span>
+    <span class="cr-toolbar-label">${teams ? 'Drag each player onto a team' : 'Casting tools'}</span>
+    ${teams ? '<button class="cr-tool" onclick="crAddTeam()">&#65291; Team</button>' : ''}
     <button class="cr-tool" onclick="crBalance()" title="Snake-distribute by total stats">Balance</button>
     <button class="cr-tool" onclick="crSnake()" title="Snake draft by threat">Snake Draft</button>
     <button class="cr-tool" onclick="crRandomize()" title="Shuffle evenly">Randomize</button>
     <label class="cr-preserve"><input type="checkbox" id="cr-preserve" ${window._crPreserve ? 'checked' : ''} onchange="crTogglePreserve()"> Preserve relationships</label>
   </div>`;
+  return toolbar + `<div class="cr-lanes">${lanes.join('')}</div>`;
+}
+
+// ── The Challenge's custom pairs (the Pairs view) ──
+// A pair is two cards whose Partner fields name each other (ch-run.js partnerPins): the view reads and writes exactly
+// that, so the card and the view always agree. A lane per pair; "New pair" holds the first of two until the second
+// is dropped in; "Unpaired" clears a partner.
+function _cardPairs() {
+  const byName = new Map(players.map(p => [p.name, p]));
+  const out = [], seen = new Set();
+  for (const p of players) {
+    const o = p.chPartner && byName.get(p.chPartner);
+    if (!o || o === p || o.chPartner !== p.name || seen.has(p.name)) continue;
+    seen.add(p.name); seen.add(o.name);
+    out.push([p, o]);
+  }
+  return { out, seen, byName };
+}
+function _pairsBodyHTML(shown) {
+  const { out: pairs, seen, byName } = _cardPairs();
+  const shownIds = new Set(shown.map(_key));
+  const waiting = window._crPairWaiting && byName.get(window._crPairWaiting) && !seen.has(window._crPairWaiting) ? byName.get(window._crPairWaiting) : null;
+  const mixed = seasonConfig.chPairShape !== 'same' && seasonConfig.chGenderBlind !== true;
+  const card = p => (shownIds.has(_key(p)) ? _card(p, { draggable: true }) : '');
+  const lanes = pairs.map(([a, b], i) => {
+    const off = seasonConfig.chGenderBlind === true ? null
+      : mixed && a.gender && a.gender === b.gender ? 'Two of the same: this season pairs a man and a woman'
+      : !mixed && a.gender && b.gender && a.gender !== b.gender ? "A man and a woman: this season's pairs are men's and women's" : null;
+    const avg = ((statTotal(a.stats) + statTotal(b.stats)) / 2).toFixed(0);
+    return `<div class="cr-lane cr-lane-pair" data-pair="${i}" ondragover="crDragOver(event)" ondragleave="crDragLeave(event)" ondrop="crDropPair(event)">
+      <div class="cr-lane-head"><span class="cr-lane-name">Pair ${i + 1}</span>${off ? `<span class="cr-lane-warn" title="${esc(off)}">&#9888;</span>` : ''}
+        <span class="cr-lane-meta">avg ${avg}</span></div>
+      <div class="cr-lane-body">${card(a)}${card(b)}</div></div>`;
+  });
+  lanes.push(`<div class="cr-lane cr-lane-new" data-pair="new" ondragover="crDragOver(event)" ondragleave="crDragLeave(event)" ondrop="crDropPair(event)">
+    <div class="cr-lane-head"><span class="cr-lane-name">New pair</span><span class="cr-lane-meta">${waiting ? '1 of 2' : '0 of 2'}</span></div>
+    <div class="cr-lane-body">${waiting ? card(waiting) : ''}<div class="cr-lane-hint">${waiting ? `drop ${esc(waiting.name)}'s partner here` : 'drop two players here to pair them'}</div></div></div>`);
+  const un = players.filter(p => !seen.has(p.name) && p !== waiting);
+  lanes.push(`<div class="cr-lane cr-lane-un" data-pair="none" ondragover="crDragOver(event)" ondragleave="crDragLeave(event)" ondrop="crDropPair(event)">
+    <div class="cr-lane-head"><span class="cr-lane-dot" style="background:var(--muted)"></span><span class="cr-lane-name">Unpaired</span><span class="cr-lane-meta">${un.length}</span></div>
+    <div class="cr-lane-body">${un.filter(p => shownIds.has(_key(p))).map(p => _card(p, { draggable: true })).join('') || '<div class="cr-lane-hint">drop a player here to unpair them</div>'}</div></div>`);
+  const toolbar = `<div class="cr-toolbar"><span class="cr-toolbar-label">${pairs.length} pair${pairs.length === 1 ? '' : 's'} · ${un.length + (waiting ? 1 : 0)} unpaired</span>
+    <button class="cr-tool" onclick="crPairRest()" title="${mixed ? 'Pair everybody left, a man with a woman' : 'Pair everybody left'}">Pair the rest</button>
+    <button class="cr-tool" onclick="crClearPairs()">Clear all</button></div>`;
   return toolbar + `<div class="cr-lanes">${lanes.join('')}</div>`;
 }
 
@@ -520,6 +575,8 @@ function _shellHTML() {
         <div class="cr-viewtoggle" role="tablist" aria-label="Cast view">
           <button class="cr-viewbtn active" data-view="grid" onclick="crSetView('grid')">Grid</button>
           <button class="cr-viewbtn" data-view="tribes" onclick="crSetView('tribes')">Tribes</button>
+          <button class="cr-viewbtn" data-view="teams" onclick="crSetView('teams')" hidden>Teams</button>
+          <button class="cr-viewbtn" data-view="pairs" onclick="crSetView('pairs')" hidden>Pairs</button>
           <button class="cr-viewbtn" data-view="villa" onclick="crSetView('villa')" hidden>Villa</button>
           <button class="cr-viewbtn" data-view="circle" onclick="crSetView('circle')" hidden>&#11093; Circle</button>
         </div>
@@ -688,19 +745,30 @@ function _isCircle() {
 function _isChallenge() {
   try { return !!window.isChallengeSeason?.(); } catch { return false; }
 }
+// The Challenge's custom Teams and Pairs (the user, 2026-10-18: "a custom mode that uses the teams made with drag and
+// drop, adapted for pairs too, only when one of them is selected"): which one this season is building, or null
+function _chCustom() {
+  if (!_isChallenge()) return null;
+  if (seasonConfig.chMode === 'teams' && seasonConfig.chTeaming === 'custom') return 'teams';
+  if (seasonConfig.chMode === 'pairs' && seasonConfig.chPairing === 'custom') return 'pairs';
+  return null;
+}
 function _syncViewButtons(room) {
   const villa = _isVilla();
   const circle = _isCircle();
   const challenge = _isChallenge();
+  const custom = _chCustom();
   let view = window._crView || 'grid';
   if ((view === 'villa' && !villa) || (view === 'circle' && !circle)
-    || (view === 'tribes' && (villa || challenge))) view = 'grid';
+    || (view === 'tribes' && (villa || challenge)) || (view === 'teams' && custom !== 'teams') || (view === 'pairs' && custom !== 'pairs')) view = 'grid';
   room.dataset.view = view;
   room.querySelectorAll('.cr-viewbtn[data-view]').forEach(b => {
     b.classList.toggle('active', b.dataset.view === view);
     if (b.dataset.view === 'villa') b.hidden = !villa;
     if (b.dataset.view === 'circle') b.hidden = !circle;
     if (b.dataset.view === 'tribes') { b.hidden = villa || challenge; b.textContent = circle ? 'Categories' : 'Tribes'; }
+    if (b.dataset.view === 'teams') b.hidden = custom !== 'teams';
+    if (b.dataset.view === 'pairs') b.hidden = custom !== 'pairs';
   });
 }
 
@@ -749,10 +817,96 @@ function _assignTribe(pid, tribe) {
   renderCast(); // → renderCastRoom via hook
 }
 
+// ── The Challenge's custom teams: a team is a tribe name on the cards (ch-run.js customTeams) ──
+function _saveConfig() { try { localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); } catch { /* storage full or blocked */ } }
+export function crAddTeam() {
+  seasonConfig.tribes ||= [];
+  const used = new Set([..._configuredTribeNames(), ..._castTribeNames()]);
+  let i = 1; while (used.has(`Team ${i}`)) i++;
+  const colours = seasonConfig.tribes.map(t => t.color);
+  seasonConfig.tribes.push({ name: `Team ${i}`, color: TRIBE_PALETTE.find(c => !colours.includes(c)) || TRIBE_PALETTE[seasonConfig.tribes.length % TRIBE_PALETTE.length] });
+  _saveConfig();
+  crRenderGrid();
+}
+export function crRenameTeam(old, name) {
+  name = String(name || '').trim();
+  if (!name || name === old) { crRenderGrid(); return; }
+  if ([..._configuredTribeNames(), ..._castTribeNames()].some(n => n.toLowerCase() === name.toLowerCase())) { alert(`There is already a team called ${name}.`); crRenderGrid(); return; }
+  seasonConfig.tribes ||= [];
+  const t = seasonConfig.tribes.find(x => x.name === old);
+  if (t) t.name = name; else seasonConfig.tribes.push({ name, color: tribeColor(old) });
+  players.forEach(p => { if (p.tribe === old) p.tribe = name; });
+  _saveConfig(); saveCast(); renderCast();
+}
+export function crRemoveTeam(name) {
+  seasonConfig.tribes = (seasonConfig.tribes || []).filter(t => t.name !== name);
+  players.forEach(p => { if (p.tribe === name) p.tribe = ''; });
+  _saveConfig(); saveCast(); renderCast();
+}
+
+// ── The Challenge's custom pairs: written as the two cards' Partner fields ──
+const _byPid = pid => players.find(x => String(_key(x)) === String(pid));
+function _unpair(p) {
+  const o = p.chPartner && players.find(x => x.name === p.chPartner);
+  if (o && o.chPartner === p.name) o.chPartner = '';
+  p.chPartner = '';
+}
+function _pairUp(a, b) {
+  _unpair(a); _unpair(b);
+  a.chPartner = b.name; b.chPartner = a.name;
+}
+export function crDropPair(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('cr-lane-over');
+  let pid = window._crDragId;
+  try { pid = e.dataTransfer.getData('text/plain') || pid; } catch {}
+  window._crDragId = null;
+  const p = _byPid(pid);
+  if (!p) return;
+  const lane = e.currentTarget.dataset.pair;
+  const waiting = window._crPairWaiting && window._crPairWaiting !== p.name ? players.find(x => x.name === window._crPairWaiting) : null;
+  if (lane === 'none') { _unpair(p); if (window._crPairWaiting === p.name) window._crPairWaiting = null; }
+  else if (lane === 'new') {
+    _unpair(p);
+    if (waiting) { _pairUp(waiting, p); window._crPairWaiting = null; } else window._crPairWaiting = p.name;
+  } else {
+    // a full pair takes nobody: drag one of them out first
+    const pair = _cardPairs().out[Number(lane)];
+    if (!pair || pair.includes(p)) { crRenderGrid(); return; }
+    alert(`Pair ${Number(lane) + 1} is full. Drag one of them to Unpaired or New pair first.`);
+    crRenderGrid();
+    return;
+  }
+  saveCast(); renderCast();
+}
+export function crPairRest() {
+  const { seen } = _cardPairs();
+  const left = players.filter(p => !seen.has(p.name));
+  window._crPairWaiting = null;
+  const mixed = seasonConfig.chPairShape !== 'same' && seasonConfig.chGenderBlind !== true;
+  const shuffled = [...left].sort(() => Math.random() - 0.5);
+  if (mixed) {
+    const m = shuffled.filter(p => p.gender === 'm'), f = shuffled.filter(p => p.gender === 'f');
+    while (m.length && f.length) _pairUp(m.shift(), f.shift());
+  } else {
+    for (const g of [...new Set(shuffled.map(p => p.gender || ''))]) {
+      const same = shuffled.filter(p => (p.gender || '') === g);
+      while (same.length >= 2) _pairUp(same.shift(), same.shift());
+    }
+  }
+  saveCast(); renderCast();
+}
+export function crClearPairs() {
+  if (!confirm('Clear every pair?')) return;
+  window._crPairWaiting = null;
+  players.forEach(p => { p.chPartner = ''; });
+  saveCast(); renderCast();
+}
+
 // ── Casting tools ──
 function _applyDistribution(fn) {
   const tribeNames = _toolTribeNames();
-  if (tribeNames.length < 2) { alert('Set up at least two tribes in Season Setup first.'); return; }
+  if (tribeNames.length < 2) { alert(_chCustom() === 'teams' ? 'Add at least two teams first (＋ Team).' : 'Set up at least two tribes in Season Setup first.'); return; }
   const opts = { preserve: !!window._crPreserve, relationships };
   const result = fn(players, tribeNames, opts);
   const byKey = new Map(result.map(p => [String(_key(p)), p.tribe]));
@@ -910,6 +1064,13 @@ const CR_CSS = `
 .cr-lane-name { font-weight:600; font-size:14px; }
 .cr-lane-meta { margin-left:auto; font-size:11px; color:var(--muted); font-family:var(--font-mono,monospace); }
 .cr-lane-body { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
+.cr-lane-rename { flex:1; min-width:0; background:transparent; border:1px solid transparent; border-radius:5px; color:var(--text); font-weight:600; font-size:14px; font-family:inherit; padding:2px 5px; }
+.cr-lane-rename:hover, .cr-lane-rename:focus { border-color:var(--border); background:var(--surface2); outline:none; }
+.cr-lane-x { background:none; border:1px solid var(--border); border-radius:5px; color:var(--muted); cursor:pointer; font-size:11px; width:22px; height:22px; flex-shrink:0; }
+.cr-lane-x:hover { color:#ef4444; border-color:rgba(239,68,68,.4); }
+.cr-lane-warn { color:#f59e0b; font-size:13px; cursor:help; }
+.cr-lane-pair, .cr-lane-new { min-height:0; }
+.cr-lane-new { border-style:dashed; }
 .cr-lane-hint { grid-column:1/-1; text-align:center; color:var(--muted); font-size:12px; padding:22px 8px; border:1px dashed var(--border); border-radius:8px; }
 
 .cr-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.55); opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:900; }
@@ -944,5 +1105,6 @@ if (typeof window !== 'undefined') {
     renderCastRoom, crRenderGrid, crOpenDrawerFor, crAddPlayer, crCloseDrawer, crCardKey,
     crSetView, crOnFilterInput, crClearFilters, crDragStart, crDragOver, crDragLeave, crDrop, crChangeTribe,
     crBalance, crSnake, crRandomize, crTogglePreserve, crToggleManage, crCloseManage, crDrawerTrap,
+    crAddTeam, crRenameTeam, crRemoveTeam, crDropPair, crPairRest, crClearPairs,
   });
 }

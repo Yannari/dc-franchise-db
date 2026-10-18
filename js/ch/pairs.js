@@ -23,7 +23,8 @@ import { threatRead, arenaRead } from './respect.js';
 import { blendScore, drawGame } from './arena.js';
 import { calloutTerms, coupleOf } from './callout.js';
 
-export const PAIRINGS = ['rivals', 'ties', 'fresh-meat', 'pick'];
+// custom: every pair set by hand in the Casting Room's Pairs view (cast-room.js), through the cards' partners
+export const PAIRINGS = ['rivals', 'ties', 'fresh-meat', 'pick', 'custom'];
 
 export const pairsOn = state => !!state?.options?.pairs;
 export const pairingOf = state => state.options.pairs?.pairing || 'rivals';
@@ -193,6 +194,8 @@ export function makeSeasonPairs(state, rng, { pins = {}, today = {}, winners = [
   if (method === 'ties') made = tiePairs(state, people);
   else if (method === 'fresh-meat') made = freshMeatPairs(state, rng, people, today);
   else if (method === 'pick') made = pickPairs(state, rng, people, today, winners);
+  // custom: the hand-set pairs are the season; anybody left unpaired (the setup warns) is paired below
+  else if (method === 'custom') made = { out: [], left: people };
   else made = rivalPairs(state, people);
   // anybody the method could not place (an uneven cast the setup should have refused): paired with each other
   const rest = match(state, made.left, (a, b) => -getBond(a, b));

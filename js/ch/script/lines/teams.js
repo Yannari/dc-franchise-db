@@ -64,6 +64,29 @@ export default {
         v: { sharp: "The vets think we'll be easy. Fine. We've got more energy than they do and nothing to lose.", dry: "The vets think we'll be easy. Fine. We've got more energy, and nothing to lose.", loud: "The vets think we're going to be easy! Fine! We've got more energy than they do, and we've got nothing to lose!", soft: "The vets think we're going to be easy. That's okay. We've got more energy than they do, and nothing to lose.", odd: "The vets think we're going to be easy. Fine. Some of them were stretching for twenty minutes this morning." } },
     ] },
   ],
+  // custom: the teams the author built in the Casting Room (teams.js byCustom). a, b: the first two teams' captains
+  'teams-revealed.custom': [
+    { id: 'tmr.x1', turns: [
+      { by: 'tj', say: "Welcome to the Blue Lagoon, people! This season you play on teams, and we've already made them. No draft, no arguing. You're on the team you're on." },
+      { by: 'tj', say: "{team}, over here. {oppteam}, over there. {a}, {b}, you're the captains. Look after your people." },
+      { by: 'a', say: "Okay. Let's see who I've got.",
+        v: { sharp: "Fine. Let's see who I've got.", dry: "Okay. Let's see who I've got.", loud: "Okay! Let's see who I've GOT!", soft: "Okay. Let's see who I've got, then.", odd: "Okay. Let's see who I've got. I'm hoping for tall people." } },
+      { by: 'b', say: "I like mine already.",
+        v: { sharp: "I like mine.", dry: "I like mine already.", loud: "I like mine ALREADY!", soft: "I really like mine already.", odd: "I like mine already. I haven't met half of them." } },
+      { by: 'a', conf: "Nobody picked these teams but production. So nobody in here can blame a captain for who they're stuck with. Yet.",
+        v: { sharp: "Production picked these teams, so nobody can blame a captain for who they're stuck with. Yet.", dry: "Production picked the teams. Nobody gets to blame a captain for who they got. Yet.", loud: "Production picked these teams, so NOBODY in here can blame a captain for who they're stuck with! Yet!", soft: "Production picked these teams, so nobody in here can blame a captain for who they ended up with. Not yet, anyway.", odd: "Production picked these teams, so nobody can blame a captain for who they got. That'll last about a week." } },
+    ] },
+    { id: 'tmr.x2', turns: [
+      { by: 'tj', say: "Here's how it works this season. Teams. Already set. {team} and {oppteam}. Find your people and stand with them." },
+      { beat: 'The house splits in two and starts sizing up the other side.' },
+      { by: 'b', say: "Look at their side. We're fine.",
+        v: { sharp: "Look at them. We're fine.", dry: "Look at their side. We're fine.", loud: "Look at their side! We're FINE!", soft: "Look at their side. I think we're going to be fine.", odd: "Look at their side. We're fine. They've got a lot of shoulders, though." } },
+      { by: 'a', say: "Don't say that out loud. They can hear you.",
+        v: { sharp: "Don't say that out loud.", dry: "Don't say that out loud. They can hear you.", loud: "Don't say that OUT LOUD! They can hear you!", soft: "Please don't say that out loud. They can hear you.", odd: "Don't say that out loud. They can hear you. They're right there." } },
+      { by: 'b', conf: "We didn't choose each other. Now we have to win together anyway. That's every team, I guess.",
+        v: { sharp: "We didn't choose each other. Now we win together anyway.", dry: "We didn't choose each other. We still have to win together. Like every team.", loud: "We didn't CHOOSE each other! Now we have to win together anyway, and that's every team, I guess!", soft: "We didn't choose each other, but now we have to win together anyway. I suppose that's every team.", odd: "We didn't choose each other. Now we have to win together anyway. It's like a family dinner, but with mud." } },
+    ] },
+  ],
   'teams-revealed.draft': [
     { id: 'tmr.d1', turns: [
       { by: 'tj', say: "This season you're on teams, and you don't pick them. Your captains do. {a}, {b}, step up." },
@@ -138,6 +161,21 @@ export default {
         v: { sharp: "First daily. Let's take it.", dry: "First daily. Let's take it.", loud: "First daily, let's take it!", soft: "First daily. Let's take it.", odd: "First daily. Let's take it, and then let's take the next one." } },
       { by: 'a', conf: "The other side has done this before and we haven't. But they're tired of it, and we're not.",
         v: { sharp: "The other side has done this before, and we haven't. But they're tired, and we're not.", dry: "They've done this before, and we haven't. But they're tired of it, and we're not.", loud: "The other side has done this before and we haven't! But they're tired of it, and we're not!", soft: "The other side has done this before, and we haven't. But they're tired of it, and we're not.", odd: "The other side has done this before and we haven't. But they're tired, and I've never been more awake." } },
+    ] },
+  ],
+  // custom: a team the author built. a: its captain; b, c, d: teammates
+  'team-reveal.custom': [
+    { id: 'tmv.x1', turns: [
+      { by: 'a', say: "Okay, {team}. Nobody picked anybody here, so nobody owes anybody. Let's just win.",
+        v: { sharp: "{team}. Nobody picked anybody, nobody owes anybody. Let's win.", dry: "Okay, {team}. Nobody picked anybody, so nobody owes anybody. Let's just win.", loud: "Okay, {team}, nobody picked anybody, so nobody owes anybody, so let's just WIN!", soft: "Okay, {team}. Nobody picked anybody here, so nobody owes anybody anything. Let's just try to win.", odd: "Okay, {team}. Nobody picked anybody here, so nobody owes anybody. That's a nice clean start." } },
+      { by: 'b', say: "I'm in. Just tell me what you need.",
+        v: { sharp: "I'm in. Tell me what you need.", dry: "I'm in. Just tell me what you need.", loud: "I'm IN! Just tell me what you need!", soft: "I'm in. Just tell me what you need from me.", odd: "I'm in. Just tell me what you need. I'm good at carrying things." } },
+      { by: 'c', opt: 1, say: "And if we lose?",
+        v: { sharp: "And if we lose?", dry: "And if we lose?", loud: "And if we LOSE?", soft: "And what if we lose?", odd: "And if we lose? Somebody has to ask." } },
+      { by: 'a', opt: 'c', say: "Then we vote, and we live with it. Let's not lose.",
+        v: { sharp: "Then we vote and live with it. Don't lose.", dry: "Then we vote, and live with it. Let's not lose.", loud: "Then we vote, and we live with it! Let's NOT lose!", soft: "Then we vote, and we live with it together. Let's try not to lose.", odd: "Then we vote, and we live with it. Let's not lose. That's the whole plan." } },
+      { by: 'a', conf: "I didn't build this team. I have to lead it anyway. Some of these people I've barely spoken to.",
+        v: { sharp: "I didn't build this team. I lead it anyway. Some of them I've barely spoken to.", dry: "Didn't build this team. Have to lead it anyway. Some of them I barely know.", loud: "I didn't BUILD this team! I have to lead it anyway, and some of these people I've barely spoken to!", soft: "I didn't build this team, but I have to lead it anyway. Some of these people I've barely spoken to.", odd: "I didn't build this team. I have to lead it anyway. I'm going to start by learning everybody's names." } },
     ] },
   ],
   'team-reveal.draft': [

@@ -1657,10 +1657,10 @@ export function renderConfig() {
   if (g('cfg-ch-partner-weeks')) g('cfg-ch-partner-weeks').checked = seasonConfig.chPartnerWeeks !== false;
   if (g('cfg-ch-romance')) g('cfg-ch-romance').checked = seasonConfig.chRomance !== false;
   if (g('cfg-ch-mode')) g('cfg-ch-mode').value = ['pairs', 'teams'].includes(seasonConfig.chMode) ? seasonConfig.chMode : 'solo';
-  if (g('cfg-ch-teaming')) g('cfg-ch-teaming').value = ['shows', 'champions', 'vets', 'draft'].includes(seasonConfig.chTeaming) ? seasonConfig.chTeaming : 'shows';
+  if (g('cfg-ch-teaming')) g('cfg-ch-teaming').value = ['shows', 'champions', 'vets', 'draft', 'custom'].includes(seasonConfig.chTeaming) ? seasonConfig.chTeaming : 'shows';
   if (g('cfg-ch-team-count')) g('cfg-ch-team-count').value = seasonConfig.chTeamCount === 'small' ? 'small' : '2';
   if (g('cfg-ch-team-end')) g('cfg-ch-team-end').value = seasonConfig.chTeamEnd === 'team-final' ? 'team-final' : 'breakup';
-  if (g('cfg-ch-pairing')) g('cfg-ch-pairing').value = ['rivals', 'ties', 'fresh-meat', 'pick'].includes(seasonConfig.chPairing) ? seasonConfig.chPairing : 'rivals';
+  if (g('cfg-ch-pairing')) g('cfg-ch-pairing').value = ['rivals', 'ties', 'fresh-meat', 'pick', 'custom'].includes(seasonConfig.chPairing) ? seasonConfig.chPairing : 'rivals';
   if (g('cfg-ch-pair-shape')) g('cfg-ch-pair-shape').value = seasonConfig.chPairShape === 'same' ? 'same' : 'mixed';
   if (g('cfg-ch-final-pairs')) g('cfg-ch-final-pairs').value = [2, 4].includes(Number(seasonConfig.chFinalPairs)) ? String(seasonConfig.chFinalPairs) : '3';
   try { window.chModeUI?.(); } catch { /* the panel is optional chrome */ }

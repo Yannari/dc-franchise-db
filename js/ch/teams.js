@@ -22,7 +22,8 @@ import { chooseOpponent } from './callout.js';
 import { afterVote, allianceOf, activeAlliances, allianceName, pull } from './alliances.js';
 import { noteAlliance } from './knowledge.js';
 
-export const TEAMINGS = ['shows', 'champions', 'vets', 'draft'];
+// custom: the teams built by hand in the Casting Room's Teams view (cast-room.js; ch-run.js options.teams.custom)
+export const TEAMINGS = ['shows', 'champions', 'vets', 'draft', 'custom'];
 export const teamsOn = state => !!state?.options?.teams && !state.teamsBroken;
 export const teamingOf = state => state.options.teams?.teaming || 'shows';
 export const teamOfName = (state, n) => (state.teams || []).find(t => t.id === state.teamOf?.[n]) || null;
@@ -109,12 +110,22 @@ function byDraft(state, people, rng = Math.random) {
   return teams;
 }
 
+// The teams as the author built them: [{ name, members }]. Anybody not on one (the setup warns) joins the smallest; fewer
+// than two teams with anybody on them is no Teams season, so the captains draft instead.
+function byCustom(state, people, custom = []) {
+  const teams = custom.map(t => ({ name: t.name, members: (t.members || []).filter(n => people.includes(n)), how: 'custom' })).filter(t => t.members.length);
+  if (teams.length < 2) return byDraft(state, people);
+  const placed = new Set(teams.flatMap(t => t.members));
+  for (const n of people.filter(x => !placed.has(x))) teams.sort((a, b) => a.members.length - b.members.length)[0].members.push(n);
+  return teams;
+}
+
 /** Make the season's teams after the arrivals. `background` carries past champions (ch-run.js). */
 export function makeSeasonTeams(state, rng, { background = {} } = {}) {
   const people = [...state.active];
   const how = teamingOf(state);
   const made = how === 'champions' ? byChampions(state, people, background) : how === 'vets' ? byVets(state, people)
-    : how === 'draft' ? byDraft(state, people, rng) : byShows(state, people);
+    : how === 'draft' ? byDraft(state, people, rng) : how === 'custom' ? byCustom(state, people, state.options.teams?.custom) : byShows(state, people);
   state.teams = made.map((t, i) => ({ id: `t${i + 1}`, name: t.name, members: [...t.members], captain: t.captain || captainOf(state, t.members), how: t.how || how, show: t.show || null }));
   state.teamNames = Object.fromEntries(state.teams.map(t => [t.id, t.name]));   // a folded team keeps its name on the record
   state.teamOf = {};

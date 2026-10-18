@@ -144,7 +144,7 @@ export default {
 
   // ── the losers. a: the captain; b: the angry one; c: who did worst, when it isn't a or b ──
   'team-daily-loss.any': [
-    { id: 'tdl.a1', turns: [
+    { id: 'tdl.a1', when: { blamed: false }, turns: [
       { beat: 'Nobody on {team} says a word on the walk back. Not until the villa door shuts.' },
       { by: 'b', say: "{c}, what happened to you on {task}?",
         v: { sharp: "{c}, what was that on {task}? Seriously.", dry: "{c}, I loved the bit on {task} where you just stopped.", loud: "{c}, what the hell happened to you on {task}?", soft: "{c}, are you okay? You looked like you were really struggling on {task}.", odd: "{c}, I'm not angry. I just want to know what you were doing on {task}." } },
@@ -636,6 +636,89 @@ export default {
       { by: 'b', say: "Yes! That's us!" },
       { by: 'c', conf: "TJ said somebody on our team, and every single one of us looked at somebody else.",
         v: { dry: "TJ said 'somebody on your team', and we all looked at each other like it was a game of musical chairs.", sharp: "TJ said somebody on our team. Every one of us looked at somebody else. That tells you everything." } },
+    ] },
+  ],
+
+  // ── a team that lost looks for somebody to blame, right there at the daily (dailies.js teamAftermath). a: who
+  // blames; b: who did worst; c: a friend of b's who stands up for them (defended). Rewritten 2026-10-18 from
+  // game.js's tb.* and their long cut (the user, reading "We LOST because of James!" / "BACK OFF! James was trying!" /
+  // "You're saying it in front of everybody so they'll remember it at the vote": "even this, it doesn't sound natural
+  // at all"). One blame a loss: when this airs, the villa's weak-link scene and the loss scene's blame stand down. ──
+  'team-blame.defended': [
+    { id: 'tbm.d1', turns: [
+      { by: 'a', say: "{b}. What happened on {task}?",
+        v: { sharp: "{b}, you cost us on {task}. Everybody saw it.", dry: "{b}, quick question about {task}. What exactly were you doing?", loud: "{b}, what happened on {task}? Seriously, what happened?" } },
+      { by: 'b', say: "I slipped. I know.",
+        v: { soft: "I know. I'm sorry. I slipped.", loud: "I know, okay? I slipped!" } },
+      { by: 'c', say: "Leave it. {b} isn't the only one who messed up today.",
+        v: { loud: "Hey, leave {b} alone! {b} isn't the only one who messed up today.", soft: "Can we not? {b} isn't the only one who had a bad day.", dry: "Yes, let's all pick on {b}. Very grown up." } },
+      { by: 'a', say: "I'm only saying what everybody saw." },
+      { by: 'c', say: "Then say what you did on {task} too. Go on." },
+      { beat: '{a} does not.' },
+      { by: 'b', conf: "{a} came for me in front of the whole team, and {c} was the only one who said anything. I noticed who didn't.",
+        v: { sharp: "{a} went for me in front of everybody. {c} said something. Nobody else did. I noticed.", soft: "{a} came for me in front of everybody, and I wanted the ground to swallow me. Then {c} said something, and I nearly cried.", dry: "{a} chose today to put me on trial in front of the team. {c} turned up as my lawyer. Nobody else came." } },
+      { by: 'c', conf: "I don't even like arguing. I just wasn't going to sit there while {a} made {b} the reason for everything.",
+        v: { sharp: "I don't do arguments. I wasn't letting {a} pin the whole day on {b}, though.", loud: "I hate arguing! But I wasn't going to sit there while {a} made {b} the reason for everything!" } },
+    ] },
+    { id: 'tbm.d2', turns: [
+      { by: 'a', say: "Somebody has to take responsibility for that." },
+      { by: 'c', say: "Great. Start with yourself.",
+        v: { loud: "Great, then start with yourself!", dry: "Lovely idea. You first." } },
+      { by: 'a', say: "I wasn't the one at the back." },
+      { by: 'c', say: "You weren't carrying anybody either." },
+      { by: 'b', say: "It's fine. I know I was bad today.",
+        v: { soft: "It's okay. I know I was bad today. I'm sorry." } },
+      { by: 'c', say: "Stop. You don't have to say that." },
+      { by: 'b', conf: "{a} wanted somebody to blame, and picked me. {c} didn't let {a} have it. I owe {c} for that.",
+        v: { sharp: "{a} needed a name for the loss and chose mine. {c} wouldn't let it stick. I owe {c}.", soft: "{a} wanted somebody to blame, and it was me. {c} wouldn't let it happen. I'll never forget that." } },
+    ] },
+    { id: 'tbm.d3', turns: [
+      { beat: '{a} drops a wet towel on the sand, right next to {b}.' },
+      { by: 'a', say: "Next time, maybe don't hold everybody up.",
+        v: { dry: "Next time, feel free to hurry. We'll wait, obviously.", loud: "Next time, don't hold everybody up!" } },
+      { by: 'b', say: "Wow." },
+      { by: 'c', say: "Pick that up. And apologise." },
+      { by: 'a', say: "For what? For saying it?" },
+      { by: 'c', say: "For saying it like that." },
+      { by: 'a', conf: "Everybody's acting like I kicked a puppy. {b} lost us that daily, and I'm the only one honest enough to say it.",
+        v: { sharp: "They're acting like I kicked a puppy. {b} lost us the daily. I said so. That's all I did.", dry: "Apparently I'm the villain now, for noticing that {b} lost us the daily. Great." } },
+      { by: 'c', conf: "{a} needed somebody to be angry at, and {b} was the easiest one in the room.",
+        v: { soft: "{a} was angry and needed somewhere to put it, and {b} was the easiest target. It wasn't fair." } },
+    ] },
+  ],
+  'team-blame.alone': [
+    { id: 'tbm.a1', turns: [
+      { by: 'a', say: "We lost because of {b}. I'm sorry, but somebody has to say it.",
+        v: { sharp: "We lost because of {b}. Somebody had to say it.", loud: "We lost because of {b}! Go on, tell me I'm wrong!" } },
+      { beat: 'Nobody says a word. {b} walks off down the beach.' },
+      { by: 'b', conf: "Nobody stood up for me. Not one person. That hurt more than losing.",
+        v: { sharp: "Not one person stood up for me. I'll remember every one of them.", soft: "Nobody said anything. Not one person. I've never felt so alone in a room full of people." } },
+      { by: 'a', conf: "Everybody was thinking it. I'll be the bad guy for one night if it means we stop losing.",
+        v: { dry: "Everybody was thinking it. I said it out loud. Apparently that's worse." } },
+    ] },
+    { id: 'tbm.a2', turns: [
+      { by: 'a', say: "Look, I'm not trying to be mean, but that loss was on {b}." },
+      { beat: 'A couple of people nod. Nobody looks at {b}.' },
+      { by: 'b', conf: "One bad daily, and now I'm the one they all nod about. That's going to follow me all the way to the vote.",
+        v: { sharp: "One bad daily, and I'm the one they nod about. That's coming with me to the vote.", soft: "One bad day, and now they all nod when somebody says my name. I don't know how to fix that by tonight." } },
+    ] },
+    { id: 'tbm.a3', turns: [
+      { by: 'a', say: "{b}, you were the weak link today." },
+      { by: 'b', say: "Got it. Thanks.",
+        v: { dry: "Thanks. Really helpful.", loud: "Got it! Thanks so much!" } },
+      { by: 'a', say: "I'm saying it so you can do better." },
+      { by: 'b', say: "I said I got it." },
+      { by: 'b', conf: "{a} said it in front of everybody. Now I'm the weak link, and that sticks in here.",
+        v: { sharp: "{a} called me the weak link in front of everybody. That label doesn't wash off in here.", soft: "{a} said it in front of everybody. I know it's going to stick to me now." } },
+    ] },
+    { id: 'tbm.a4', turns: [
+      { by: 'a', say: "{task} was a disaster, and we all know whose fault it was." },
+      { by: 'b', say: "Then say my name. If that's what you mean.",
+        v: { loud: "Then say my name! If that's what you mean, say it!", soft: "If you mean me, just say my name." } },
+      { by: 'a', say: "{b}." },
+      { beat: 'Nobody else says anything.' },
+      { by: 'b', conf: "I asked {a} to say it, and {a} did. I don't know what I expected. I thought somebody would stop it.",
+        v: { sharp: "I told {a} to say my name, and {a} said it. I thought somebody would stop it. Nobody did.", dry: "I dared {a} to say my name. {a} said my name. In hindsight, a poor dare." } },
     ] },
   ],
 };

@@ -14,6 +14,8 @@ export const CH_FACT_KEYS = [
   'ending',
   // after a team daily (teams.js teamDailyReactions): it was close; the winners lost the one before
   'close', 'bounce',
+  // the daily already had its blame (dailies.js teamAftermath): the loss scene does not blame again
+  'blamed',
   // a Pairs season (pairs.js, share-keep.js): how the moment went
   'hesitate', 'champions', 'walks', 'rivals', 'keepWhy', 'pairs',
   // a Teams season (teams.js): the teams standing, two on one team, the winners sending one of their own, owning it
@@ -141,6 +143,7 @@ export function factsFor(scene, roles, state) {
     lostLast: !!scene.data?.lostLast,
     close: scene.data?.close ?? null,
     bounce: !!scene.data?.bounce,
+    blamed: !!scene.data?.blamed,
     losing: !!scene.data?.losing,
   };
   if (a) {

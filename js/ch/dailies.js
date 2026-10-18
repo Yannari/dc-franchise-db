@@ -339,7 +339,7 @@ export function playDaily(state, rng, { division, pin = null, solo = false }) {
   if (mode === 'pairs') for (const [a, b] of [winners]) if (a && b) { addBond(a, b, 0.8); remember(a, b, 'worked-with-me', 1); remember(b, a, 'worked-with-me', 1); }
   for (const l of last) { state.rec[l].dailyLast++; nudge(state, l, 'confidence', -0.5); }
   // what the house remembers of today's daily, for the events that read it (events.js team-weak-link, team-celebrate)
-  state.lastDailyScores = { ...indiv }; state.lastDailyWinners = [...winners]; state.lastDailyLast = [...last]; state.lastDailyTeams = !!seasonTeams;
+  state.lastDailyScores = { ...indiv }; state.lastDailyWinners = [...winners]; state.lastDailyLast = [...last]; state.lastDailyTeams = !!seasonTeams; state.lastDailyEp = state.ep;
   if (seasonTeams && state.teamOf?.[last[0]]) (state.teamLosses ||= {})[state.teamOf[last[0]]] = ((state.teamLosses || {})[state.teamOf[last[0]]] || 0) + 1;
   // a Teams season names the teams: the winners and the team that will vote (teams.js)
   const teamName = n => state.teams?.find(t => t.id === state.teamOf?.[n])?.name;
@@ -402,7 +402,13 @@ export function playDaily(state, rng, { division, pin = null, solo = false }) {
   // a Teams season: both teams react, the losers talk strategy, a bloc may form inside a team (teams.js)
   if (seasonTeams && mode === 'teams') teamDailyReactions(state, rng, { winners, last, scores: indiv, daily: { id: daily.id, name: daily.name, task: DAILY_TASK[daily.id] || null, physical: (daily.physicality || 0) >= 0.8 }, close, moments });
   const aftermath = mode === 'pairs' ? pairAftermath(state, rng, units, power, winners, ranked)
-    : mode === 'teams' ? teamAftermath(state, rng, units, power, winners) : [];
+    : mode === 'teams' ? teamAftermath(state, rng, units, power, winners, DAILY_TASK[daily.id] || null) : [];
+  // one blame a loss: the daily's own (teamAftermath) says it, so the loss scene and the villa's weak-link stand down
+  if (aftermath.some(x => x.kind === 'team-blame')) {
+    state.lastDailyBlamed = state.ep;
+    const ls = [...state.scenes].reverse().find(s => s.kind === 'team-daily-loss' && s.ep === state.ep);
+    if (ls) ls.data.blamed = true;
+  }
   return { id: daily.id, name: daily.name, mode, units, winners, last,
     scores: Object.fromEntries(Object.entries(indiv).map(([k, v]) => [k, +v.toFixed(2)])),
     throws, caught, injuries, moments, reward, aftermath, beats, tally };
@@ -444,7 +450,7 @@ function pairAftermath(state, rng, units, indiv, winners, ranked) {
 // ── a team that lost looks for somebody to blame ─────────────────────
 // Total Drama's losing-team scene, the Challenge's way: the weakest performer
 // on the losing side takes it, and their friends on the team take their side.
-function teamAftermath(state, rng, units, indiv, winners) {
+function teamAftermath(state, rng, units, indiv, winners, task = null) {
   const losing = units.find(u => !u.some(n => winners.includes(n)));
   if (!losing || losing.length < 3) return [];
   const weakest = [...losing].sort((x, y) => indiv[x] - indiv[y])[0];
@@ -454,7 +460,7 @@ function teamAftermath(state, rng, units, indiv, winners) {
   addBond(blamer, weakest, -0.8); remember(weakest, blamer, 'blamed-me', 1);
   const defenders = losing.filter(n => n !== weakest && n !== blamer && getBond(n, weakest) >= 3);
   for (const d of defenders) { addBond(d, blamer, -0.4); remember(weakest, d, 'stood-up-for-me', 1); }
-  addScene(state, 'team-blame', [blamer, weakest, ...defenders.slice(0, 2)], { defenders }, losing, 'villa');
+  addScene(state, 'team-blame', [blamer, weakest, ...defenders.slice(0, 2)], { defenders, task }, losing, 'villa');
   return [{ kind: 'team-blame', blamer, weakest, defenders }];
 }
 

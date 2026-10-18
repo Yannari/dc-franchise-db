@@ -57,7 +57,8 @@ export const OPENERS = {
   'deal-broken': ['{b} heard what {a} did at the vote, and goes to find {a}.', '{a} can feel {b} staring across the common room. {b} walks over.'],
   'spare-deal': ['{a} catches {b} alone with a quiet offer: spare me, and I\'ll spare you.', '{a} has a deal in mind for {b}, and it only works if nobody else hears it.'],
   'partner-blame': ['{a} is still fuming about how the daily went, and {b} is right there.', 'Back at the villa after the daily, {a} hasn\'t calmed down.'],
-  'team-blame': ['The losing team gets back to the villa, and {a} is already looking for someone to blame.'],
+  // (it airs at the daily, before anybody is back at the villa: director.js AT_THE_DAILY)
+  'team-blame': ['The losing team is still catching its breath, and {a} is already looking for someone to blame.'],
   'vet-dismisses': ['{a} has been on this show more times than anybody, and lets {b} know it.', '{a}, a veteran, watches {b}, a rookie, and can\'t help commenting.'],
   'vet-mentors-rookie': ['{a} has been here before. {b} hasn\'t. {a} sits down to help.', '{a} sees {b} struggling and pulls up a chair.'],
   'rookie-hazing': ['The veterans have decided the rookies need to earn their place. {a} starts with {b}.', '{a} has a job for {b}, and it\'s not a nice one.'],

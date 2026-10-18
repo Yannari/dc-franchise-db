@@ -1053,6 +1053,10 @@ export const EVENTS = [
   { id: 'team-weak-link', kind: 'drama', cooldown: 3, max: 6,
     cast: ctx => {
       if (!teamsOn(ctx.state) || !ctx.state.lastDailyTeams || !ctx.state.lastDailyScores || !ctx.state.lastDailyLast?.length) return null;
+      // the daily already blamed somebody this week (dailies.js teamAftermath): one blame a loss
+      if (ctx.state.lastDailyBlamed === ctx.state.ep) return null;
+      // "cost us today": this week's daily, not last week's (it aired in episode 2 about episode 1's, before the new one)
+      if (ctx.state.lastDailyEp !== ctx.state.ep) return null;
       const t = teamOfName(ctx.state, ctx.state.lastDailyLast[0]);
       if (!t) return null;
       const live = t.members.filter(n => ctx.state.active.includes(n));
@@ -1070,6 +1074,10 @@ export const EVENTS = [
       nudge(ctx.state, w, 'confidence', -0.5);
       if (defended) { addBond(d, w, 1); remember(w, d, 'stood-up-for-me', 1); addBond(a, d, -0.4); }
       else { nudge(ctx.state, w, 'morale', -0.6); for (const n of teammates(ctx.state, w).slice(0, 3)) if (n !== a) addBond(n, w, -0.2); }
+      // one blame a loss: this is it, so the loss scene (written after the episode) does not blame as well
+      ctx.state.lastDailyBlamed = ctx.state.ep;
+      const ls = [...ctx.state.scenes].reverse().find(x => x.kind === 'team-daily-loss' && x.ep === ctx.state.ep);
+      if (ls) ls.data.blamed = true;
       return addScene(ctx.state, 'team-weak-link', [a, w, ...(d ? [d] : [])], { defended, team: teamOfName(ctx.state, w)?.name || null }, [a, w, ...(d ? [d] : []), ...teammates(ctx.state, w).slice(0, 2)], 'villa');
     } },
   // Trash talk across the line: one of each team, in front of both. It turns heated, or both end up laughing.

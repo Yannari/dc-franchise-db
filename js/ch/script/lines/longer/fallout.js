@@ -209,34 +209,5 @@ export default {
     { by: 'b', say: "You're making things up now." },
     { by: 'a', conf: "{b} can say it all {b.sub} wants. I know what I saw, and I'm going to tell people." }],
 
-  // ── blamed for a team loss: somebody stands up ──
-  'tb.d1': [0, 1,
-    { by: 'a', say: "I'm not attacking anybody. I'm saying what happened." },
-    { by: 'c', say: "You're saying it in front of everybody so they'll remember it at the vote." },
-    { by: 'a', say: "That's not what this is." },
-    { by: 'c', say: "Then say it to {b}, not to the whole room." },
-    2],
-  'tb.d2': [0, 1,
-    { by: 'a', say: "I wasn't the one at the back." },
-    { by: 'c', say: "You weren't the one carrying anybody either." },
-    { by: 'b', say: "It's fine. I know I was bad today." },
-    { by: 'c', say: "It's not fine. We lost as a team." },
-    { by: 'b', conf: "{a} wanted a name for the loss, and {a} picked mine. {c} didn't let {a} have it. I won't forget that." }],
-  'tb.d3': [
-    { by: 'a', say: "We all know who lost it for us." },
-    { by: 'c', say: "Don't. Not now." },
-    { by: 'a', say: "Somebody has to say it." },
-    { by: 'c', say: "No, they don't." },
-    0],
-  // ── blamed, and nobody stands up ──
-  'tb.a1': [0, 1, 2,
-    { by: 'a', conf: "Somebody had to say it. Everybody was thinking it. I'm just the only one who said it out loud." }],
-  'tb.a2': [
-    { by: 'a', say: "Look, I'm not trying to be mean, but that loss was on {b}." },
-    { beat: 'A couple of people nod. Nobody looks at {b}.' },
-    0],
-  'tb.a3': [0, 1,
-    { by: 'a', say: "I'm not saying it to be cruel. I'm saying it so you can do better." },
-    { by: 'b', say: "I said I got it." },
-    { by: 'b', conf: "{a} said it in front of everybody. Now I'm the weak link, and that sticks in here." }],
+  // (blamed for a team loss: team-reactions.js tbm.*, rewritten 2026-10-18)
 };

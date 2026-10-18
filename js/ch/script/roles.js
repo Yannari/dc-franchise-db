@@ -265,7 +265,7 @@ export const ROLES = {
   'picked-last': sc => ({ roles: { a: sc.who[0], b: sc.data.by }, ending: 'any' }),
   'partner-blame': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'partner-carried': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
-  'team-blame': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: yes(sc.who[2], 'defended', 'alone') }),
+  'team-blame': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: yes(sc.who[2], 'defended', 'alone'), slots: { task: sc.data?.task || undefined } }),
   'arena-eve-pep': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
   'arena-eve-alone': sc => ({ roles: { a: sc.who[0] }, ending: 'any' }),
   'arena-eve-confront': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.rattled === sc.who[1] ? 'rattled' : 'backfires' }),

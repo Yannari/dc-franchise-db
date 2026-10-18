@@ -767,34 +767,7 @@ export default {
       { by: 'b', conf: "I couldn't have done it without {a}. I'm not going to forget that when it comes to the vote.", v: { soft: ['{a} was so patient with me.'] } },
     ] },
   ],
-  'team-blame.defended': [
-    { id: 'tb.d1', turns: [
-      { by: 'a', say: "Let's be real. We lost because of {b}.", v: { loud: ['We LOST because of {b}!'], sharp: ['I\'ll say what everybody\'s thinking. {b} sank us.'] } },
-      { by: 'c', say: "Back off. {b} gave everything out there.", v: { loud: ['BACK OFF! {b} was trying!'], soft: ['That\'s not fair. We all made mistakes.'] } },
-      { by: 'b', conf: "{a} came for me in front of the whole team, and {c} was the only one who said anything. I noticed who didn't.", v: { soft: ['I almost cried when {c} defended me.'] } },
-    ] },
-    { id: 'tb.d2', turns: [
-      { by: 'a', say: "Somebody has to take responsibility for that." },
-      { by: 'c', say: "Then take it yourself. You were slow too.", v: { sharp: ['Then start with yourself.'] } },
-    ] },
-    { id: 'tb.d3', turns: [
-      { by: 'c', conf: "I wasn't going to let {a} pin the loss on {b}. Not while I'm standing right there.", v: { soft: ['{b} is my friend. Of course I said something.'] } },
-    ] },
-  ],
-  'team-blame.alone': [
-    { id: 'tb.a1', turns: [
-      { by: 'a', say: "We lost because of {b}. I'm sorry, but somebody has to say it.", v: { loud: ['{b} lost us that challenge! Say I\'m wrong!'] } },
-      { beat: 'Nobody says a word. {b} walks off.' },
-      { by: 'b', conf: "Nobody stood up for me. Not one person. That hurt more than losing.", v: { sharp: ['Fine. I\'ll remember who stayed quiet.'] } },
-    ] },
-    { id: 'tb.a2', turns: [
-      { by: 'b', conf: "I'm the team's scapegoat now. One bad day, and that's who I am to them.", v: { soft: ['I really tried my best.'] } },
-    ] },
-    { id: 'tb.a3', turns: [
-      { by: 'a', say: "{b}, you were the weak link today." },
-      { by: 'b', say: "Got it. Thanks.", v: { loud: ['THANKS, {a}!'] } },
-    ] },
-  ],
+  // (a team that lost blames somebody: team-reactions.js, rewritten 2026-10-18)
 
   // ── the night before the Arena ──────────────────────────────────────
   'arena-eve-pep.any': [

@@ -394,8 +394,32 @@ export function breakUpTeams(state, why = 'breakup') {
     // the old team's loyalty fades, and the people across the line are just people now
     for (const o of state.active) if (n < o && state.teamOf[n] && state.teamOf[n] !== state.teamOf[o]) addBond(n, o, 0.2);
   }
-  addScene(state, 'teams-break', state.active, { why, teams: (state.teams || []).map(t => ({ name: t.name, members: live(state, t) })) }, state.active, 'villa');
+  // the voices (the user, 2026-10-18: the break-up "should be a moment"): one from each side, a captain if still in,
+  // so the first reaction comes from across the old line
+  const sides = (state.teams || []).map(t => ({ t, m: live(state, t) })).filter(x => x.m.length);
+  const voices = sides.map(({ t, m }) => (m.includes(t.captain) ? t.captain : m[0]));
+  const who = [...new Set([...voices, ...state.active])];
+  addScene(state, 'teams-break', who, { why, teams: sides.map(({ t, m }) => ({ name: t.name, members: m })) }, state.active, 'villa');
+  if (sides.length < 2) return;
+  // ...then the two conversations the line kept from happening. Across it: the two who got on best, who can talk
+  // now without a teammate watching. Inside a team: the two who never got on, who no longer have to pretend.
+  const pairsOf = test => state.active.flatMap(n => state.active.filter(o => n < o && test(n, o)).map(o => [n, o, getBond(n, o)]));
+  const across = pairsOf((n, o) => state.teamOf[n] && state.teamOf[o] && state.teamOf[n] !== state.teamOf[o]).sort((x, y) => y[2] - x[2])[0];
+  if (across && across[2] >= 1) {
+    const [a, b] = across;
+    addBond(a, b, 1);
+    remember(a, b, 'worked-with-me', 0.5); remember(b, a, 'worked-with-me', 0.5);
+    addScene(state, 'teams-break-across', [a, b], { from: teamName(state, a), to: teamName(state, b) }, [a, b], 'private');
+  }
+  const inside = pairsOf((n, o) => state.teamOf[n] && state.teamOf[n] === state.teamOf[o]).sort((x, y) => x[2] - y[2])[0];
+  if (inside && inside[2] <= -1) {
+    const [a, b] = inside;
+    addBond(a, b, -0.6);
+    for (const x of [a, b]) nudge(state, x, 'morale', -0.2);
+    addScene(state, 'teams-break-inside', [a, b], { team: teamName(state, a) }, [a, b], 'villa');
+  }
 }
+const teamName = (state, n) => (state.teams || []).find(t => t.id === state.teamOf?.[n])?.name || null;
 
 // ── the team's own moments ───────────────────────────────────────────
 // The captain gathers the losing team before the vote: a rally, or a captain who already knows the name.

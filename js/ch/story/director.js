@@ -64,7 +64,7 @@ const MUST = new Set(['arrival', 'villa-reveal', 'house-debate', 'after-vote', '
   'pair-turn', 'pair-war', 'partner-left', 'pair-repaired', 'pair-swap', 'partner-swap', 'share-keep-rules', 'share-keep',
   // a Teams season's spine (teams.js)
   'teams-revealed', 'team-reveal', 'team-huddle', 'team-only-one', 'team-voted-in', 'team-after-vote', 'team-switch', 'team-fold',
-  'teams-break', 'team-last-stand',
+  'teams-break', 'teams-break-across', 'teams-break-inside', 'team-last-stand',
   // a coup that changes a team's captain is the season's business (events.js); both teams after every team daily, and
   // the Arena winner's stay (teams.js, the user, 2026-10-17)
   'team-coup', 'team-daily-win', 'team-daily-loss', 'team-stay']);
@@ -301,9 +301,12 @@ const AT_THE_DAILY = new Set(['daily-clutch', 'daily-choke', 'partner-blame', 'p
 // A scene whose words put it in the morning (breakfast, "good morning") airs at the start of its day, after the
 // morning's fixtures (the user, 2026-10-16: "good morning to u too when its 7:20" in the evening): the clock
 // spreads a day's scenes between its fixed times in airing order, so a breakfast aired late got an evening hour.
-const MORNING_WORDS = /\b(good morning|breakfast|this morning|woke up|wakes up)\b|(?<!until |till )\bmorning\./i;   // "until morning." is a night
+// "until morning." is a night, and so is "two in the morning." (an alliance born in a bathroom at two in the morning
+// aired as the morning and pushed the teams' break-up down the episode, read 2026-10-18)
+const MORNING_WORDS = /\b(good morning|breakfast|this morning|woke up|wakes up)\b|(?<!until |till |(?:one|two|three|four|five|\d) in the )\bmorning\./i;
 const NEXT_MORNING = new Set(['morning-after', 'arc-giant-falls', 'tj-at-breakfast']);   // vp-ch-ep/steps.js clockOf
 const MORNING_FIXTURES = new Set(['previously', 'power-rankings', 'return-arena', 'return-walkin', 'redemption-return', 'arrival', 'villa-reveal', 'injury-healed']);
+const BREAK_UP = new Set(['teams-break', 'teams-break-across', 'teams-break-inside']);
 const MOVABLE = a => a.kind !== 'ceremony' && !ANCHOR.has(a.kind) && !MUST_ORDER.has(a.kind);
 const MUST_ORDER = new Set(['daily', 'callout', 'arena', 'arena-goodbye', 'return', 'morning-after', 'purge', 'named-fallout', 'mock', 'gloat',
   'pair-callout', 'pair-arena', 'pair-arena-blame', 'pair-arena-win', 'share-keep-rules', 'share-keep', 'pairs-revealed', 'pair-reveal',
@@ -321,6 +324,14 @@ function morningFirst(aired) {
     const isMorning = a => MOVABLE(a) && !atNight(a) && (a.script?.lines || []).some(l => MORNING_WORDS.test(l.text || ''));
     const head = [];
     while (items.length && MORNING_FIXTURES.has(items[0].kind)) head.push(items.shift());
+    // the teams' break-up is the morning's news: TJ says it right after "previously", and the two conversations it
+    // starts follow it (teams.js breakUpTeams)
+    const broke = items.filter(a => BREAK_UP.has(a.kind));
+    if (broke.length) {
+      for (const a of broke) items.splice(items.indexOf(a), 1);
+      const at = head.findIndex(a => a.kind === 'previously') + 1;
+      head.splice(at, 0, ...broke);
+    }
     // the morning after an Arena is tomorrow (the viewer's clock moves it to the next day): it airs after the
     // Arena night, not in the middle of it, or the night that follows was clocked into the next morning too
     const arenaAt = items.findIndex(x => x.kind === 'arena' || x.kind === 'pair-arena');

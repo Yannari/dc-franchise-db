@@ -66,5 +66,10 @@ describe('a Teams season from the run tab', () => {
     else expect(aired).toEqual(planned);
     // once aired, the tile is where it happened
     expect(challengeEpisodeMap().filter(t => t.teamsBreak).map(t => t.ep)).toEqual(aired);
+    // ...and TJ says it first thing: right after "previously", the two conversations it starts behind it
+    const kinds = rows.find(r => r.ch.teamsBroken).ch.aired.map(a => a.kind);
+    const at = kinds.indexOf('teams-break');
+    expect(at).toBe(kinds.indexOf('previously') + 1);
+    for (const k of ['teams-break-across', 'teams-break-inside']) if (kinds.includes(k)) expect(kinds.indexOf(k)).toBeGreaterThan(at), expect(kinds.indexOf(k)).toBeLessThan(at + 3);
   });
 });

@@ -428,7 +428,12 @@ Object.assign(ROLES, {
   'team-bloc': sc => ({ roles: { a: sc.data.leader, b: sc.who.find(x => x !== sc.data.leader), c: sc.who.filter(x => x !== sc.data.leader)[1], d: sc.who.filter(x => x !== sc.data.leader)[2] },
     ending: sc.data.lost ? 'lost' : 'won', slots: { alliance: sc.data.name, team: sc.data.team } }),
   'team-fold': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { from: sc.data.from, to: sc.data.to } }),
-  'teams-break': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: sc.data.why === 'one-team' ? 'one' : 'any' }),
+  // a and b: one from each old team (teams.js breakUpTeams); c: anybody else in the room
+  'teams-break': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: sc.data.why === 'one-team' ? 'one' : 'any' }),
+  // a and b were on different teams and got on; now they can talk
+  'teams-break-across': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any' }),
+  // a and b were on the same team and never got on; now they don't have to
+  'teams-break-inside': sc => ({ roles: { a: sc.who[0], b: sc.who[1] }, ending: 'any', slots: { team: sc.data.team || undefined } }),
   'team-last-stand': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.who[2] }, ending: 'any', slots: { team: sc.data.team } }),
   // a courts b; c, b's teammate, saw it
   'team-poach': sc => ({ roles: { a: sc.who[0], b: sc.who[1], c: sc.data.seen || undefined }, ending: sc.data.seen ? 'seen' : 'quiet', slots: { from: sc.data.from || undefined, to: sc.data.to || undefined } }),

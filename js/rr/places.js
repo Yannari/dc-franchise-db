@@ -24,7 +24,7 @@ export const REGIONS = ['north', 'desert', 'old-coast', 'ocean', 'far-east'];
 const TASK_KINDS = new Set(['either', 'botch', 'allin', 'route', 'superteam']);
 // Real countries and cities that a description must not name (a sample, kept to the
 // likely ones; the place library's own guard grows it).
-const REAL = /\b(japan|france|paris|china|beijing|india|egypt|morocco|brazil|mexico|canada|toronto|new york|london|england|australia|iceland|russia|hawaii|dubai|italy|spain|germany|africa|america|europe|asia|zimbabwe|argentina|bahamas|vietnam|indonesia|finland|romania|transylvania|scotland|singapore|philippines|malta|denmark|sweden|turkey|peru|chile|kenya|tanzania|thailand)\b/i;
+export const REAL = /\b(japan|france|paris|china|beijing|india|egypt|morocco|brazil|mexico|canada|toronto|new york|london|england|australia|iceland|russia|hawaii|dubai|italy|spain|germany|africa|america|europe|asia|zimbabwe|argentina|bahamas|vietnam|indonesia|finland|romania|transylvania|scotland|singapore|philippines|malta|denmark|sweden|turkey|peru|chile|kenya|tanzania|thailand)\b/i;
 
 function checkTask(s, where, out) {
   if (!Array.isArray(s.types) || !s.types.length) out.push(`${where}: no types`);

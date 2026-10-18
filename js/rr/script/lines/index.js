@@ -1,0 +1,46 @@
+// The Ridonculous Race's line pools, by family. Each file exports { '<kind>.<ending>': [entries] };
+// a key in a later file adds to the pool of that name (never replaces it).
+//
+// The quality gate runs at load (The Challenge's, ch/script/lines/index.js; the user, 2026-10-16:
+// "why does it sound badly translated from another language"). A variant that fails goes, and the
+// line as written, which always fits the turns around it, speaks instead:
+//   fragments  three sentences or more, two of them three-word shouts ("You and me! Final! Together!")
+//   dropped    under 45% of a line of ten words or more: the meaning is gone
+//   stock      a line of five words or more pasted onto three different turns: not written for this one
+//   nameless   the line says who (somebody other than the speaker) and the variant names nobody
+import partners from './partners.js';
+import don from './don.js';
+
+const FILES = [partners, don];
+
+export const POOLS = {};
+for (const f of FILES) for (const [k, list] of Object.entries(f)) (POOLS[k] ||= []).push(...list);
+
+const words = s => String(s).replace(/\{[^}]+\}/g, 'X').split(/\s+/).filter(Boolean).length;
+const sentences = s => String(s).split(/(?<=[.!?])\s+/).filter(Boolean);
+const namesIn = (s, by) => new Set([...String(s).matchAll(/\{(\w+)(?:\.\w+)?\}/g)].map(m => m[1]).filter(n => n !== by));
+export function variantFails(v, base, stock = 0, by = null) {
+  const ss = sentences(v);
+  const named = namesIn(String(base).replace(/^\{\w+\}[,!]\s*/, '').replace(/,\s*\{\w+\}(?=[.!?])/g, ''), by);
+  if (named.size && words(base) >= 9 && !namesIn(v, by).size) return 'nameless';
+  if (ss.length >= 3 && ss.filter(x => x.endsWith('!') && words(x) <= 3).length >= 2) return 'fragments';
+  if (words(base) >= 10 && words(v) < words(base) * 0.45) return 'dropped';
+  if (stock >= 3 && words(v) >= 5) return 'stock';
+  return null;
+}
+
+const stockUse = {};
+for (const list of Object.values(POOLS)) for (const e of list) e.turns.forEach((t, i) => {
+  for (const [tag, vs] of Object.entries(t.v || {})) if (!tag.startsWith('rel:')) for (const v of [vs].flat()) (stockUse[v] ||= new Set()).add(`${e.id}:${i}`);
+});
+export const PRUNED = { fragments: 0, dropped: 0, stock: 0, nameless: 0 };
+for (const list of Object.values(POOLS)) for (const e of list) for (const t of e.turns) {
+  if (!t.v) continue;
+  const base = t.say || t.conf || '';
+  const kept = {};
+  for (const [tag, vs] of Object.entries(t.v)) {
+    const ok = [vs].flat().filter(v => { const why = variantFails(v, base, stockUse[v]?.size || 0, t.by); if (why) PRUNED[why]++; return !why; });
+    if (ok.length) kept[tag] = ok.length === 1 ? ok[0] : ok;
+  }
+  t.v = Object.keys(kept).length ? kept : undefined;
+}

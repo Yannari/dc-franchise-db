@@ -71,6 +71,10 @@ export function pull(state, a, b) {
   p += KIN_PULL[kinOf(state, a, b)] || 0;
   return p;
 }
+// A couple or old friends come as a pair: the tie to the one person they know inside a group is not averaged away
+// by the strangers around them (it was, and they shared an alliance only 1.34 times as often as two strangers did,
+// 2026-10-18). Exes count the same way, against.
+const tieTo = (state, n, group) => group.reduce((t, m) => t + (KIN_PULL[kinOf(state, n, m)] || 0), 0);
 
 // Form alliances: a few leaders, each recruiting. Called early (days 1-3), and
 // again whenever the house has drifted enough for a new group to make sense.
@@ -95,8 +99,16 @@ export function formAlliances(state, rng, { max = 3 } = {}) {
     for (const { n } of ranked) {
       if (members.length >= cap) break;
       // The candidate weighs the group: their pull to its members, their appetite.
-      const want = members.reduce((acc, m) => acc + pull(state, n, m), 0) / members.length * appetite(n);
+      const want = (members.reduce((acc, m) => acc + pull(state, n, m), 0) / members.length + tieTo(state, n, members)) * appetite(n);
       if (want + (rng() - 0.5) * 2 > 1.2) members.push(n);
+    }
+    // ...and a member brings their partner or old friend along, one past the core if need be
+    for (const m of [...members]) {
+      if (members.length > cap) break;
+      const k = pool.find(x => !members.includes(x) && KIN_PULL[kinOf(state, m, x)] > 0);
+      if (!k) continue;
+      const want = (members.reduce((acc, x) => acc + pull(state, k, x), 0) / members.length + tieTo(state, k, members)) * appetite(k);
+      if (want + (rng() - 0.5) * 2 > 1.2) members.push(k);
     }
     if (members.length < 3) continue;
     const name = allianceName(state, rng, members);
@@ -173,7 +185,7 @@ export function growAlliances(state, rng) {
     if (inside.length >= cap || state.ep - al.formedEp < 1) continue;
     // never back into a group they left (they walked out, or were thrown out: the room remembers)
     const free = state.active.filter(n => !allianceOf(state, n) && !(al.former || []).includes(n) && teamFits(state, al, n));
-    const best = free.map(n => ({ n, p: inside.reduce((a, m) => a + pull(state, n, m), 0) / inside.length + pull(state, al.leader, n) * 0.5 }))
+    const best = free.map(n => ({ n, p: inside.reduce((a, m) => a + pull(state, n, m), 0) / inside.length + pull(state, al.leader, n) * 0.5 + tieTo(state, n, inside) }))
       .sort((a, b) => b.p - a.p)[0];
     if (!best || best.p < 1.6 || rng() > 0.35 + S(al.leader, 'strategic') * 0.03) continue;
     al.members.push(best.n);

@@ -55,6 +55,8 @@ describe('the season modes have a house life of their own', () => {
   it('a promise to share weighs against keeping the money', () => {
     const r = pairs[0];
     const p = r.state.pairs?.[0] || { a: r.state.cast[0], b: r.state.cast[1] };
+    // (the season may already have made this promise: measure without it first)
+    r.state.shareVows = {};
     const without = keepTerms(r.state, p.a, p.b, p).vow;
     r.state.shareVows = { [p.a]: p.b };
     expect(keepTerms(r.state, p.a, p.b, p).vow).toBeLessThan(without);

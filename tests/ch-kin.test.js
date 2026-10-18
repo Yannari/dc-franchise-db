@@ -45,9 +45,9 @@ describe('The Challenge: couples and old friends', () => {
         randN++; randHit += together(r.state, names[i], names[j]);
       }
     }
-    // measured over twenty seasons against every pair: 0.36 against 0.25-0.27 (1.34-1.43 times). The old 1.5 held only on
-    // the twenty-pair sample; the pull is real and smaller than this test once claimed
-    expect(kinHit / kinN).toBeGreaterThan(randHit / randN * 1.25);
+    // measured over twenty seasons against every pair: 0.36 against 0.27 (1.34 times) while the tie was averaged over
+    // the group; counted whole, and a member bringing their partner along, 0.80 against 0.29 (2.7 times, 2026-10-18)
+    expect(kinHit / kinN).toBeGreaterThan(randHit / randN * 2);
   });
 
   it('a couple who walk in together are partnered more often than chance on a picking week', () => {

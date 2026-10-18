@@ -146,7 +146,7 @@ export default {
       { by: 'a', say: "When you said {gone}'s name, did you think about me at all?" },
       { by: 'b', say: "I thought about the numbers." },
       { by: 'a', say: "Right. The numbers." },
-      { by: 'b', say: "It's not like that. It's the game." },
+      { by: 'b', say: "Don't take it like that. This is the game." },
       { by: 'a', say: "Everything's the game until it's you." },
       { by: 'b', conf: "That was worse than being yelled at. {a} just looked disappointed in me." },
     ] },

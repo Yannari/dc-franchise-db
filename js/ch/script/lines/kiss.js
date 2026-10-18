@@ -39,7 +39,7 @@ export default {
       { beat: 'Halfway through the song, {a} kisses {b}.' },
       { by: 'b', say: "Okay. I didn't see that coming." },
       { by: 'a', conf: "Tequila, a slow song, and {b}. I'm still working out which one of those was the bad idea." },
-      { by: 'b', conf: "It wasn't a bad idea. It was a drunk idea. Those are different things, and I'd do it again." },
+      { by: 'b', conf: "Bad idea? It was a drunk idea. Those are different things, and I'd do it again." },
     ] },
   ],
   'party-kiss.cheat': [

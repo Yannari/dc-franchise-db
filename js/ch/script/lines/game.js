@@ -205,7 +205,7 @@ export default {
       { by: 'a', conf: "{b} cut me out of the alliance for no reason. {b} is getting paranoid.", v: { soft: ['I didn\'t do anything wrong. I really didn\'t.'] } },
     ] },
     { id: 'al.c3', turns: [
-      { by: 'b', say: "It's not working with you. That's all I'm going to say." },
+      { by: 'b', say: "This isn't working with you. That's all I'm going to say." },
       { by: 'a', say: "That's all? Seriously?", v: { loud: ['THAT\'S ALL?!'] } },
     ] },
   ],
@@ -302,7 +302,7 @@ export default {
       { by: 'a', conf: "I walked past the gym and saw {b} and {c} in there with the door shut. Nobody shuts a door in this house unless they're making a plan.", v: { loud: ['Doors shut in the middle of the day?! They\'re up to something!'], soft: ['I wish I hadn\'t seen it. Now I can\'t stop thinking about it.'] } },
     ] },
     { id: 'ms.2', turns: [
-      { by: 'a', conf: "{b} and {c} went quiet the second I walked in. That's not a coincidence. That's an alliance.", v: { sharp: ['They stopped talking the second I walked in. They\'re working together.'] } },
+      { by: 'a', conf: "{b} and {c} went quiet the second I walked in. Nobody goes that quiet unless they're in an alliance.", v: { sharp: ['They stopped talking the second I walked in. They\'re working together.'] } },
     ] },
     { id: 'ms.3', turns: [
       { by: 'a', conf: "I counted who was missing from the kitchen. {b}, {c}, and a couple of others. Now I know who's working together.", v: { odd: ['I did a headcount. I\'m basically a detective now.'] } },
@@ -333,7 +333,7 @@ export default {
     { id: 'dl.5', turns: [
       { by: 'b', say: "I don't want to end up across from you in that Arena.", v: { sharp: ['I\'d rather not have to beat you.'] } },
       { by: 'a', say: "Then let's make sure we never do.", v: { soft: ['Me neither. Let\'s look out for each other.'] } },
-      { by: 'b', conf: "{a} and I have a deal now. It's not an alliance. It's insurance.", v: { loud: ['A deal! I love a deal!'] } },
+      { by: 'b', conf: "{a} and I have a deal now. Call it insurance. Neither of us is calling it an alliance.", v: { loud: ['A deal! I love a deal!'] } },
     ] },
     { id: 'dl.6', turns: [
       { by: 'a', say: "Let's keep each other off the ballot. Just us. Nobody else needs to know.", v: { sharp: ['A quiet deal. Just between us.'] } },
@@ -1325,7 +1325,7 @@ export default {
     { id: 'pp.1', turns: [
       { by: 'tj', say: "Pairs today, people! And you get to pick! Choose wisely. Or don't. It's way funnier when you don't." },
       { by: 'a', say: "I'll take {b}.", v: { loud: ['{b}! Obviously {b}!'], sharp: ['{b}. Strongest option.'] } },
-      { by: 'b', conf: "{a} picked me first. That's not just a daily, that's a statement.", v: { soft: ['It felt so nice to be chosen first.'] } },
+      { by: 'b', conf: "{a} picked me first. Everybody saw that, and everybody knows what it means.", v: { soft: ['It felt so nice to be chosen first.'] } },
     ] },
     { id: 'pp.2', turns: [
       { by: 'tj', say: "You pick your partner today! This is like a middle-school dance but with more sweating!" },

@@ -80,7 +80,7 @@ export default {
       { by: 'b', opt: 1, say: "Breathe. Let them look at it." },
       { beat: 'The medic pokes at {a}\'s {part}, and {a} winces.' },
       { by: 'a', say: "Sprained. Great. Perfect timing." },
-      { by: 'b', opt: 1, say: "It's not broken. That's something." },
+      { by: 'b', opt: 1, say: "Nothing's broken, at least. That's something." },
       { by: 'a', conf: "Not broken. Just bad enough that every strong player in the house now thinks I'm a free win." },
     ] },
   ],
@@ -158,7 +158,7 @@ export default {
     ] },
     { id: 'st.pr4', turns: [
       { by: 'd', opt: 1, say: "Did you see that? I jumped. I actually jumped." },
-      { by: 'x', opt: 1, say: "Calm down. It's TJ's list, not the final." },
+      { by: 'x', opt: 1, say: "Calm down. It's only TJ's list. The final is ages away." },
       { by: 'a', say: "Don't get comfortable, anybody. This list changes every week." },
       { by: 'b', say: "Then I'm safe, I guess. Nobody comes for last." },
       { by: 'a', say: "Last gets voted in because they're easy." },
@@ -508,7 +508,7 @@ export default {
       { by: 'b', say: "Because {target} hurt {target.posAdj} {part}?" },
       { by: 'a', say: "Because {target} can't play on that {part}. Not this week." },
       { by: 'b', say: "Remind me never to get hurt around you." },
-      { by: 'a', conf: "People will say it's dirty. It's not dirty. It's timing." },
+      { by: 'a', conf: "People will say it's dirty. I call it timing." },
     ] },
   ],
   'injury-target.heard': [
@@ -559,7 +559,7 @@ export default {
     { id: 'st.ra3', turns: [
       { by: 'tj', say: "This is it. Redemption House. No pool, no bar, no gym. Just you and your thoughts." },
       { by: 'a', say: "Sounds fun." },
-      { by: 'tj', say: "It's not supposed to be fun. It's supposed to make you hungry." },
+      { by: 'tj', say: "Nobody said it would be fun. It's supposed to make you hungry." },
       { by: 'a', conf: "I'm already hungry. I'm going to be starving by the time I get my shot." },
     ] },
   ],

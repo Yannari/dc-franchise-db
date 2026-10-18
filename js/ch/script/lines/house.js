@@ -147,7 +147,7 @@ export default {
     ] },
     { id: 'ht.c3', turns: [
       { by: 'a', say: "Can I tell you something embarrassing? I think I like {target}.", v: { loud: ['Okay, I\'m just going to say it! I like {target}!'] } },
-      { by: 'b', say: "That's not embarrassing. It's sweet.", v: { sharp: ['That\'s a terrible idea, and you know it.'] } },
+      { by: 'b', say: "Embarrassing? It's sweet.", v: { sharp: ['That\'s a terrible idea, and you know it.'] } },
       { by: 'c', conf: "Everybody in that hot tub heard {a} say {target}'s name. By breakfast the whole villa will know.", v: { odd: ['The whole villa\'s going to know by tomorrow.'] } },
     ] },
   ],
@@ -246,7 +246,7 @@ export default {
   ],
   'show-banter.sour': [
     { id: 'sb.s1', turns: [
-      { by: 'a', say: "No offence, but {show_b} isn't exactly a real competition.", v: { loud: ['{show_b}? That\'s not a real show! That\'s a vacation!'] } },
+      { by: 'a', say: "No offence, but {show_b} isn't exactly a real competition.", v: { loud: ['{show_b}? You call that a show? It\'s a vacation!'] } },
       { by: 'b', say: "Excuse me? Say that again.", v: { sharp: ['Careful.'] } },
       { by: 'a', say: "I'm just saying, {show_a} was harder." },
       { by: 'b', conf: "{a} thinks being from {show_a} makes {a.obj} better than me. I'll be happy to show {a.obj} how wrong that is.", v: { soft: ['That really stung, honestly. I worked hard on {show_b}.'] } },
@@ -307,7 +307,7 @@ export default {
       { by: 'b', say: "I did. I was hungry.", v: { sharp: ['Me. Problem?'] } },
       { by: 'a', say: "We're all hungry! That's the whole point of sharing!", v: { soft: ['That was for everybody, {b}. That really isn\'t fair.'] } },
       { by: 'b', say: "It's eggs, {a}. Calm down." },
-      { by: 'a', conf: "It's not the eggs. It's that {b} thinks this whole house exists for {b.obj}.", v: { soft: ['I know it\'s just eggs. I\'m just so tired of being the only one who cares.'] } },
+      { by: 'a', conf: "Forget the eggs. {b} thinks this whole house exists for {b.obj}.", v: { soft: ['I know it\'s just eggs. I\'m just so tired of being the only one who cares.'] } },
     ] },
     { id: 'kb.2', turns: [
       { beat: '{a} slams a cupboard shut.' },

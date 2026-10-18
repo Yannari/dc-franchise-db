@@ -35,7 +35,7 @@ export default {
   ],
   'ballot-why.strategy': [
     { id: 'bwy.s5', turns: [{ by: 'a', say: "{b}. I've got a plan, and you're the first part of it." }] },
-    { id: 'bwy.s6', turns: [{ by: 'a', say: "{b}. It's not about you. It's about who you'd pick." }] },
+    { id: 'bwy.s6', turns: [{ by: 'a', say: "{b}. I'm worried about who you'd pick. Nothing against you." }] },
     { id: 'bwy.s7', when: { register: 'schemer' }, turns: [{ by: 'a', say: "{b}. You won't understand why yet. You will in a couple of weeks." }] },
     { id: 'bwy.s8', when: { register: 'schemer' }, turns: [{ by: 'a', say: "{b}. Somebody has to go first. Sorry, that's you." }] },
     { id: 'bwy.s9', when: { register: 'cool' }, turns: [{ by: 'a', say: "{b}. I've run every version of this week. This is the best one." }] },
@@ -60,7 +60,7 @@ export default {
     { id: 'bwy.p8', when: { register: 'fiery' }, turns: [{ by: 'a', say: "{b}! I'm tired of your group telling the rest of us how to vote!" }] },
     { id: 'bwy.p9', when: { register: 'competitor' }, turns: [{ by: 'a', say: "{b}. Your group wants a fight. Here's one." }] },
     { id: 'bwy.p10', when: { register: 'cool' }, turns: [{ by: 'a', say: "{b}. Your alliance has too many votes. Simple math." }] },
-    { id: 'bwy.p11', when: { register: 'sweet' }, turns: [{ by: 'a', say: "{b}. It's not you, it's who you're with. I'm sorry." }] },
+    { id: 'bwy.p11', when: { register: 'sweet' }, turns: [{ by: 'a', say: "{b}. You're fine. The problem is who you're with. I'm sorry." }] },
   ],
   'ballot-why.room': [
     { id: 'bwy.r5', turns: [{ by: 'a', say: "{b}. I can count, and so can everybody else." }] },

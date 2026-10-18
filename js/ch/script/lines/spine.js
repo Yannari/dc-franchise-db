@@ -276,7 +276,7 @@ export default {
       { by: 'b', say: "I'm not. Sorry. I'm not saying that name." },
       { by: 'a', say: "Okay. Then tell me who you want instead." },
       { by: 'b', say: "I don't have a name. I just know it isn't {target}." },
-      { by: 'a', say: "That's not a plan. That's a feeling." },
+      { by: 'a', say: "Do you have a plan, or just a feeling?" },
       { by: 'b', say: "Then it's a feeling. I'm still not doing it." },
       { by: 'a', conf: "{b} wants the protection of the group without doing the hard part. That can't last." },
       { by: 'b', conf: "I know I just made things awkward. I'd rather be awkward than vote for {target}." },
@@ -371,7 +371,7 @@ export default {
       { by: 'b', say: "Most? How many is most?" },
       { by: 'a', say: "Enough that it happens either way. I'd rather you were on the side that wins." },
       { by: 'b', say: "That's a little bit of a threat." },
-      { by: 'a', say: "It's not a threat. It's just the numbers. I'm telling you because I like you." },
+      { by: 'a', say: "I'm not threatening you. I'm telling you the numbers, because I like you." },
       { by: 'b', say: "Fine. {target}. I'm not going to fight a vote that's already decided." },
       { by: 'b', conf: "I don't love being told what's already decided. But {a} came to me first, and in this house that counts for something." },
     ] },
@@ -946,7 +946,7 @@ export default {
       { by: 'a', conf: "One second we were yelling, and the next second it was something else. I'm just glad it's over." },
     ] },
     { id: 'dq.3', when: { third: false }, turns: [
-      { by: 'tj', say: "Real talk, people. {gone} got physical with {a} last night. You do that, you go home. That's not a threat, it's a promise." },
+      { by: 'tj', say: "Real talk, people. {gone} got physical with {a} last night. You do that, you go home. I mean that." },
       { by: 'a', conf: "The house is going to split on this. Some of them are going to say I started it. I didn't." },
     ] },
     // written long from the start (the long cut, 2026-10-16): TJ says it to their face, in front of the house

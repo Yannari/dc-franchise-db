@@ -311,7 +311,7 @@ export default {
       { by: 'a', say: "Want to hear something stupid?" },
       { by: 'b', say: "Always." },
       { by: 'a', say: "I'm more nervous for you than I've ever been for me." },
-      { by: 'b', say: "That's not stupid. That's kind of nice." },
+      { by: 'b', say: "Stupid? That's kind of nice." },
       { by: 'a', say: "Don't tell anybody. I have a reputation." },
       { by: 'b', say: "As what?" },
       { by: 'a', say: "Somebody who doesn't get nervous." },

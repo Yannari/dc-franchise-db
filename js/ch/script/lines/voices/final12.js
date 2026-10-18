@@ -23,7 +23,7 @@ export default {
     3: { sharp: "You know who. Everybody here knows.", dry: "Everyone knows who.", loud: "You KNOW who! EVERYBODY here knows who!", soft: "You know who. Everybody here knows who.", odd: "You know who. Everybody knows. It's the worst-kept secret in the house." },
     4: { sharp: "Say it, then.", dry: "Say it.", loud: "Then SAY it!", soft: "Say it, then.", odd: "Say it, then. Out loud. Go." },
     5: { sharp: "{b}.", dry: "{b}.", loud: "{b}!", soft: "{b}.", odd: "{b}. There. Said it." },
-    6: { sharp: "It's not crazy.", dry: "Not crazy.", loud: "I mean, it's NOT crazy!", soft: "I mean, it's not crazy.", odd: "I mean, it's not crazy. It's a little crazy. Mostly not." },
+    6: { sharp: "It's not crazy.", dry: "Not crazy.", loud: "I mean, it's NOT crazy!", soft: "I mean, it's not crazy.", odd: "I mean, is it crazy? A little. Mostly not." },
     7: { sharp: "It's completely crazy.", dry: "It's crazy.", loud: "It's COMPLETELY crazy!", soft: "It's completely crazy.", odd: "It's completely crazy. Unhinged, even." },
     8: { sharp: "I came in sure about {a}. Now I'm not sure about anything, and that's {a}'s fault.", dry: "I was sure about {a}. Now I'm not sure about anything.",
       loud: "I came in SURE about {a}! Now I'm not sure about ANYTHING, and that's {a}'s fault!", soft: "I came in sure about {a}. Now I'm not sure about anything, and that's {a}'s fault.",
@@ -282,7 +282,7 @@ export default {
   'rc.a1': {
     0: { sharp: "Got a second? We're thinking {target} this week, and we could use you.", dry: "We're on {target}. We could use you.", loud: "Hey, do you have a SECOND? We're thinking {target} this week, and we could USE you!",
       soft: "Hey, do you have a second? We're thinking {target} this week, and we could use you.", odd: "Hey, got a second? We're thinking {target} this week. You'd complete the set." },
-    3: { sharp: "That's not an answer.", dry: "Not an answer.", loud: "That's NOT an answer!", soft: "That's not really an answer.", odd: "That's not an answer. That's a riddle." },
+    3: { sharp: "That's not an answer.", dry: "Not an answer.", loud: "That's NOT an answer!", soft: "That's not really an answer.", odd: "You've answered me with a riddle." },
     5: { sharp: "Why {target}, then? One reason.", dry: "Why {target}? One reason.", loud: "Why {target}, then? Give me ONE reason!", soft: "Why {target}, then? Give me one reason.", odd: "Why {target}, then? One reason. A good one." },
     7: { sharp: "Fine. I'm in. Nothing against {target}, but I won't be the odd one out.", dry: "In. Nothing against {target}. I won't be the odd one out.",
       loud: "OKAY! I'm IN! I don't have anything against {target}, but I'm NOT going to be the odd one out!", soft: "Okay. I'm in. I don't have anything against {target}, but I'm not going to be the odd one out either.",

@@ -37,7 +37,7 @@ export default {
   // ── gym taunts and lessons ──
   'cw2.tb2': {
     1: { sharp: "Lift all you want, {b}. It won't help.", dry: "Lift all you want, {b}. It won't help.", loud: "Lift ALL you want, {b}! It won't HELP!", soft: "Lift all you want, {b}. It's not going to help.", odd: "Lift all you want, {b}. The weights feel sorry for you." },
-    2: { sharp: "Can you not, {a}? We're working out.", dry: "Can you not, {a}? Some of us are working out.", loud: "Can you NOT, {a}? Some of us are trying to WORK OUT!", soft: "Can you not, {a}? Some of us are trying to work out.", odd: "Can you not, {a}? This is a gym, not a roast." },
+    2: { sharp: "Can you not, {a}? We're working out.", dry: "Can you not, {a}? Some of us are working out.", loud: "Can you NOT, {a}? Some of us are trying to WORK OUT!", soft: "Can you not, {a}? Some of us are trying to work out.", odd: "Can you not, {a}? We came here to lift, not to get roasted." },
     3: { sharp: "And {b} is already losing.", dry: "And {b} is already losing.", loud: "And {b} is ALREADY losing!", soft: "And {b} is already losing.", odd: "And {b} is already losing. To a dumbbell." },
     4: { sharp: "Leave me alone for one morning.", dry: "Can you leave me alone for one morning?", loud: "Can you leave me ALONE for ONE morning?", soft: "Can you please leave me alone for one morning?", odd: "Can you leave me alone for one morning? I'll book you for the afternoon." },
     5: { sharp: "{b}, ignore it. That's what {a} wants.", dry: "Ignore it, {b}. That's what {a} wants.", loud: "{b}, IGNORE it! That's what {a} WANTS!", soft: "{b}, just ignore it. That's what {a} wants.", odd: "{b}, ignore it. {a} feeds on attention." },
@@ -239,7 +239,7 @@ export default {
     2: { sharp: "Why did you do it, then?", dry: "Then why did you do it?", loud: "Why did you DO it, then?", soft: "Why did you do it, then?", odd: "Why did you do it, then? I'm curious." },
     3: { sharp: "Everybody else was, and I didn't want to be the one who didn't.", dry: "Because everybody else was, and I didn't want to be the one who didn't.", loud: "Because EVERYBODY else was, and I didn't want to be the ONE who didn't!",
       soft: "Because everybody else was, and I didn't want to be the one who didn't.", odd: "Because everybody else was, and being the only one who doesn't is lonely." },
-    4: { sharp: "That's not a great reason.", dry: "That isn't a great reason.", loud: "That's NOT a great reason!", soft: "That's not a great reason.", odd: "That's not a great reason. It's barely a reason." },
+    4: { sharp: "That's not a great reason.", dry: "That isn't a great reason.", loud: "That's NOT a great reason!", soft: "That's not a great reason.", odd: "That's a terrible reason. That's barely a reason." },
     5: { sharp: "I know. That's why I'm saying sorry.", dry: "I know. That's why I'm apologizing.", loud: "I KNOW! That's WHY I'm saying sorry!", soft: "I know. That's why I'm saying sorry.", odd: "I know. That's why I'm here, saying sorry, with my whole face." },
     6: { sharp: "{b} said sorry. I'll take it. I won't forget it, but I'll take it.", dry: "{b} said sorry, and I'll take it. I won't forget it, but I'll take it.", loud: "{b} said SORRY! I'll TAKE it! I won't FORGET it, but I'll take it!",
       soft: "{b} said sorry. I'll take it. I won't forget it, but I'll take it.", odd: "{b} said sorry. I accept. I'm also keeping a copy in my head." },
@@ -368,7 +368,7 @@ export default {
     1: { sharp: "Why me? What did I do?", dry: "Why me? What did I do?", loud: "Why ME? What did I DO?", soft: "Why me? What did I do?", odd: "Why me? What did I do? I've been nice. Mostly." },
     2: { sharp: "Nothing. That's not the point. Nobody wants to be the one I pick.", dry: "Nothing. That isn't the point. The point is nobody wants to be the one I pick.",
       loud: "NOTHING! That's NOT the point! The point is NOBODY wants to be the one I pick!", soft: "Nothing. That's not the point. The point is nobody wants to be the one I pick.",
-      odd: "Nothing. It's not about you. It's about nobody wanting to be my pick." },
+      odd: "Nothing. This isn't about you. Nobody wants to be my pick, that's all." },
     3: { sharp: "So if we vote you in, {b} pays for it.", dry: "So if we vote you in, it's {b} who pays.", loud: "So if we vote you IN, it's {b} who PAYS for it!", soft: "So if we vote you in, it's {b} who pays for it.", odd: "So if we vote you in, {b} gets the bill." },
     4: { sharp: "Now you get it.", dry: "Now you understand.", loud: "NOW you get it!", soft: "Now you get it.", odd: "Now you get it. Gold star." },
     5: { sharp: "Great. So now I have to keep you safe.", dry: "Great. Now I have to keep you safe.", loud: "GREAT! So now I have to keep YOU safe!", soft: "Great. So now I have to keep you safe.", odd: "Great. So now I'm your bodyguard." },

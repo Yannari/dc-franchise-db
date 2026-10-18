@@ -290,7 +290,7 @@ export default {
     2: { sharp: "Say what? It's a list.", dry: "It's a list.", loud: "Say WHAT? It's a list!", soft: "Say what? It's just a list.", odd: "Say what? It's a list. Lists can't hurt you. Usually." },
     3: { sharp: "It's a list with your name at the top, {a}. That's a target.", dry: "It's a list with your name at the top, {a}. That's a target.",
       loud: "It's a list with YOUR name at the top, {a}! That's a TARGET!", soft: "It's a list with your name at the top, {a}. That makes you a target.",
-      odd: "It's a list with your name on top, {a}. That's not a list. That's a dartboard." },
+      odd: "It's a list with your name on top, {a}. Everybody's going to be throwing darts at it." },
     4: { sharp: "And mine at the bottom. Which is somehow also a target.", dry: "And mine's at the bottom. Also a target.", loud: "And MINE at the bottom! Which is ALSO a target!",
       soft: "And mine's at the bottom. Which somehow makes me a target too.", odd: "And mine at the bottom. Which is also a target. There's no winning spot." },
     6: { sharp: "Everybody stop looking at me. I didn't write it.", dry: "Stop looking at me. I didn't write it.", loud: "Everybody STOP looking at me! I didn't WRITE it!",

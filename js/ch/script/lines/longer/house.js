@@ -21,7 +21,7 @@ export default {
     { by: 'a', say: "I've been cleaning it. That's the problem. I'm the only one who does." },
     { by: 'b', say: "Nobody asked you to." },
     5,
-    { by: 'a', conf: "It's not about the dishes. It's that {b} acts like the rest of us are staff." },
+    { by: 'a', conf: "Forget the dishes. {b} acts like the rest of us are staff." },
     { by: 'b', conf: "{a} has been looking for a reason to yell at me. The dishes were just the first thing {a.sub} found." }],
   'kb.3': [0, 1, 2,
     { by: 'b', say: "Is your name on it?" },

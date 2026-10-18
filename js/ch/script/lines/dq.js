@@ -91,7 +91,7 @@ export default {
       { by: 'tj', say: "{c}, tell the house what you told me." },
       { by: 'c', say: "I saw {b} put hands on {a}. I'm not happy about saying it." },
       { by: 'b', say: "So that's it? One person's word?" },
-      { by: 'tj', say: "It's not one person's word. It's the footage, it's {c}, and it's the rules. You're going home, {b}." },
+      { by: 'tj', say: "We have the footage, we have {c}, and we have the rules. You're going home, {b}." },
       { by: 'b', say: "This is a joke." },
       { by: 'tj', say: "There's nothing funny about it. Say your goodbyes." },
       { by: 'c', conf: "{b} is never going to forgive me for saying it out loud. I'd still say it again." },

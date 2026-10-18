@@ -56,7 +56,7 @@ export default {
       { by: 'a', say: "They tried. They tried again. {alliance} is still standing." },
       { by: 'b', opt: 1, say: "Enjoy it while it lasts." },
       { by: 'a', opt: 'b', say: "We will. All of us. Together." },
-      { by: 'a', conf: "It's not me against the house anymore. It's {alliance} against the house, and we're winning." },
+      { by: 'a', conf: "For weeks it was me against the house. Now it's {alliance} against the house, and we're winning." },
     ] },
     { id: 'rm.al2', when: { mood: 'alliance' }, turns: [
       { beat: '{alliance} meets {a} at the door like a team meeting a player off the field.' },

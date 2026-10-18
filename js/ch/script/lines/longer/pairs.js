@@ -158,7 +158,7 @@ export default {
     { by: 'b', say: "I'm not going to stand here and apologize for voting." },
     { by: 'a', say: "I'm not asking for sorry. I'm asking for a reason." },
     { by: 'b', say: "I gave you one. Everybody was voting the same way." },
-    { by: 'a', say: "That's not a reason. That's an excuse." },
+    { by: 'a', say: "You're making excuses." },
     3],
   'rq.d2': [0, 1, 2,
     { by: 'b', say: "Not here. Not like this." },

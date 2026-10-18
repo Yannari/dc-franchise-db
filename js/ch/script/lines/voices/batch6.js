@@ -58,7 +58,7 @@ export default {
   },
   'dl.5': {
     2: {
-      sharp: ["{a} and I have a deal. Not an alliance. Insurance. I like insurance.", "It's not friendship. It's insurance. {a} and I both need it."],
+      sharp: ["{a} and I have a deal. Not an alliance. Insurance. I like insurance.", "We're each other's insurance now, and {a} and I both need it."],
       dry: ["It's not an alliance with {a}. Think of it as insurance.", "{a} and I agreed to stay out of each other's way. That's insurance."],
       soft: ["{a} and I made a deal. It's not an alliance, but it makes me feel safer.", "I have a deal with {a} now. It's a little bit of safety in a scary place."],
       odd: ["{a} and I have a deal. It just means one less person coming after me.", "It's not an alliance. It's just a deal."],
@@ -189,7 +189,7 @@ export default {
       dry: ["That's not a real tradition.", "I'm pretty sure that's not a tradition."],
       loud: ["That is NOT a tradition!", "You just made that up!"],
       soft: ["Is that really a tradition? I don't think it is.", "That's not a tradition, is it?"],
-      odd: ["That is not a tradition. I've read the rulebook. There's no rulebook.", "That's not a tradition. That's a trap."],
+      odd: ["That is not a tradition. I've read the rulebook. There's no rulebook.", "Tradition? It sounds like a trap."],
     },
     2: {
       sharp: ["It is today.", "It is if I say it is."],
@@ -727,7 +727,7 @@ export default {
       dry: ["I wish I could. I can't this time.", "I can't this time. I'm sorry."],
       loud: ["I wish I could! I can't this time!", "I can't! Not this time!"],
       soft: ["I wish I could help you. I really do. I can't this time.", "I'm so sorry. I can't this time."],
-      odd: ["I wish I could. My hands are tied. Metaphorically.", "I want to help. I can't. It's not you, it's the numbers."],
+      odd: ["I wish I could. My hands are tied. Metaphorically.", "I want to help. I can't. You've done nothing wrong. The numbers are against you."],
     },
     2: {
       sharp: ["Fine. I'll remember.", "Noted. I won't forget."],
@@ -1297,7 +1297,7 @@ export default {
     2: {
       dry: ["It was nothing. Calm down.", "Nothing happened."],
       loud: ["RELAX! It was nothing!", "Calm down! Nothing happened!"],
-      soft: ["Please relax. It was nothing, I promise.", "It's not what it looked like. It was nothing."],
+      soft: ["Please relax. It was nothing, I promise.", "I swear it isn't what it looked like. Nothing happened."],
       odd: ["Relax. It was nothing. A friendly nothing.", "It was nothing! We were just... standing near each other. Closely."],
     },
   },

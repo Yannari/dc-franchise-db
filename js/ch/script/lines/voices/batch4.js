@@ -487,7 +487,7 @@ export default {
     1: {
       dry: ["It's a game, {a}. I played it.", "It's the game, {a}."],
       loud: ["It's a GAME, {a}! I'm playing it!", "It's a game! That's what we do here!"],
-      soft: ["I'm sorry, {a}. It's a game. I had to play it.", "It's not personal, {a}. It's the game."],
+      soft: ["I'm sorry, {a}. It's a game. I had to play it.", "Don't take it personally, {a}. This game makes you do it."],
       odd: ["It's a game, {a}. I'm just playing it.", "It's a game! I'm a game player! That's what I'm doing!"],
     },
     2: {

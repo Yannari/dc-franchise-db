@@ -100,7 +100,7 @@ export default {
       { by: 'a', say: "Somebody. Not me. I thought we were good." },
       { by: 'b', say: "We are good. It was strategy. You're strong. I needed you out of {game}." },
       { by: 'a', say: "So I'm a threat now. Great. Good to know where I stand." },
-      { by: 'a', conf: "It's not about what was on the table. It's about {b} looking around it and deciding I was the one to hurt." },
+      { by: 'a', conf: "Forget what was on the table. {b} looked around it and decided I was the one to hurt." },
     ] },
     { id: 'nf.p2', turns: [
       { by: 'a', say: "I can still taste it. I want you to know that." },

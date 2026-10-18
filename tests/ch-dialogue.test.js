@@ -59,6 +59,20 @@ describe('The Challenge pools', () => {
     expect(bad.map(b => `${b.id}: ${b.text}`), bad.map(b => `${b.id}: ${b.text}`).join('\n')).toEqual([]);
   });
 
+  // The user, 2026-10-18: "That's a wish, not a plan... thats a X not a Y, ban that". The writer's tic of reframing a
+  // thing as another thing ("It's not a threat. It's a plan.", "That's not luck. That's the game.") read in every
+  // other scene; 210 lines had it. A conditional ("if it's not me, it's you") is not the tic.
+  const REFRAME = [
+    /(?<!\bif )\b(that|this|it)(?:'s| is| was)(?: just)? not\b[^.!?]{0,40}[.!?,;]\s*(?:but )?(?:that|this|it)(?:'s| is| was)\b/i,
+    /\b(?:that|this|it)(?:'s| is| was) (?:a|an|the|my|your|our|just)?\s?[\w' ]{1,25}, not (?:a|an|the|my|your|our)\b/i,
+    /\b(?:that|this|it)(?:'s| is) more (?:of )?(?:a|an) [\w ]{1,20} than (?:a|an)\b/i,
+    /\b(?:it|that) wasn't (?:a|an) [\w ]{1,20}[.,]\s*(?:it|that) was\b/i,
+  ];
+  it('nobody reframes one thing as another', () => {
+    const bad = allTexts().filter(({ text }) => REFRAME.some(r => r.test(text)));
+    expect(bad.map(b => `${b.id}: ${b.text}`), bad.map(b => `${b.id}: ${b.text}`).join('\n')).toEqual([]);
+  });
+
   it('a new alliance has three or four members: its lines never count them', () => {
     // "Can I trust you two?" and "It's us three" aired in an alliance of four.
     const bad = allTexts(k => /^alliance-(form|grow)\./.test(k)).filter(({ text }) =>

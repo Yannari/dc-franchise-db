@@ -468,7 +468,7 @@ export default {
       { beat: 'The rankings are still on the screen when {a} turns on {b}.' },
       { by: 'a', say: "What have you done that I haven't? Tell me. Everybody's listening." },
       { by: 'b', say: "Sounds like a you problem." },
-      { by: 'x', say: "Guys, it's TJ's list, not a vote." },
+      { by: 'x', say: "Guys, it's only TJ's list. Nobody's voting on it." },
       { by: 'a', say: "It's a target. TJ just put one on me and took one off {b}." },
       { by: 'y', opt: 1, say: "Then maybe stop yelling about it so loud." },
       { by: 'a', conf: "Everybody watched me lose my cool over a list. I know how that looked. I'm still right." },

@@ -21,7 +21,7 @@ const A = {
   strategy: [
     "I never once went into the Arena. People will say I got lucky. I didn't get lucky. I made sure my name was never the easy one to say.",
     "Every vote this season went where I wanted it to. Most of them didn't even know I was the one steering it.",
-    "I played the whole house without ever standing in that Arena. That's not luck. That's the game.",
+    "I played the whole house without ever standing in that Arena. People will call it luck. I played it that way.",
   ],
   drama: [
     "I fought with half the house. I'm not going to pretend I was easy to live with. But I never pretended to be somebody I'm not, and I won anyway.",

@@ -60,7 +60,7 @@ export default {
   },
   'rg.sp1': {
     1: { sharp: "Please. I love embarrassing. Especially yours.", soft: "Of course. I won't laugh. Much.", loud: "YES. Tell me everything!", dry: "Go ahead. I collect embarrassing." },
-    3: { sharp: "That's not embarrassing. That's adorable. Which is worse.", soft: "That's not embarrassing. That's really sweet.", loud: "That's not embarrassing! That's cute!", dry: "That's not embarrassing. It's sweet." },
+    3: { sharp: "Embarrassing? That's adorable. Which is worse.", soft: "Embarrassing? No. That's really sweet.", loud: "Embarrassing? That's cute!", dry: "Embarrassing? It's sweet." },
     5: { sharp: "For what it's worth, I look for you too. Don't tell anybody.", soft: "For what it's worth... I look for you too.", loud: "I look for you too! There! I said it!", dry: "For what it's worth, I look for you too." },
   },
   // ── payback after the vote: the voter's side ──

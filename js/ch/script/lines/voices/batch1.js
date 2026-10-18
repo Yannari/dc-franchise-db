@@ -113,7 +113,7 @@ const PLAN = {
   calm: ['{b}. We\'re all on the same page.'],
   competitive: ['{b}. We play as a team, we win as a team.'],
   schemer: ['{b}. Exactly as planned.'],
-  cruel: ['{b}. It\'s not personal. It\'s the group\'s vote.'],
+  cruel: ['{b}. Nothing personal. The group voted, and I\'m the one saying it.'],
   chaotic: ['{b}! For the squad!'],
   food: ['{b}. That\'s it from me.'],
   ditzy: ['{b}. That\'s what we said.'],

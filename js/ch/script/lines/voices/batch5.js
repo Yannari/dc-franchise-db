@@ -323,7 +323,7 @@ export default {
   'rn.c1': {
     1: {
       sharp: ["{a}, TJ. It's {a}.", "It's {a}. Try to keep up, TJ."],
-      dry: ["Still {a}, TJ.", "That's not it, TJ. It's {a}."],
+      dry: ["Still {a}, TJ.", "It's nothing to do with that, TJ. It's {a}."],
       loud: ["It's {a}, TJ!", "TJ! It's {a}!"],
       soft: ["Um, it's {a}, TJ.", "It's {a}, TJ. But that's okay."],
     },
@@ -359,8 +359,8 @@ export default {
       odd: ["We're all hungry! Sharing is the whole point! It's kindergarten rules!", "We're all hungry! I've been dreaming about those eggs!"],
     },
     4: {
-      sharp: ["It's not about eggs. It's that {b} thinks this house exists for {b.obj}.", "{b} acts like this house is {b.posAdj} personal hotel. The eggs are just proof."],
-      dry: ["It's not really the eggs. It's that {b} thinks the house exists for {b.obj}.", "The eggs aren't the point. The point is {b} only thinks about {b.ref}."],
+      sharp: ["Forget the eggs. {b} thinks this house exists for {b.obj}, that's the problem.", "{b} acts like this house is {b.posAdj} personal hotel. The eggs are just proof."],
+      dry: ["The eggs are the least of it. {b} thinks the house exists for {b.obj}.", "The eggs aren't the point. The point is {b} only thinks about {b.ref}."],
       loud: ["It's not about the eggs! {b} thinks the whole house belongs to {b.obj}!", "This isn't about eggs! It's about {b} being selfish!"],
       odd: ["It's not about eggs. Okay, it's a little bit about eggs. But mostly it's {b}.", "The eggs are a symbol. Of {b} being selfish. Also they were eggs."],
     },
@@ -748,7 +748,7 @@ export default {
       dry: ["To keep it simple, if I go in, I'm calling out {b}.", "If I'm voted in, it's {b}. That's all."],
       loud: ["Real simple! I go in, {b} goes in!", "If I go in, I'm calling out {b}! Easy!"],
       soft: ["I'm just being honest. If I go in, I'm calling out {b}.", "I want to be clear. If it's me, it's {b}."],
-      odd: ["Simple. Me in, {b} in. That's how it works.", "If I go in, I'm calling out {b}. It's not personal. It's a little personal."],
+      odd: ["Simple. Me in, {b} in. That's how it works.", "If I go in, I'm calling out {b}. Nothing personal. Well, a little personal."],
     },
     1: {
       sharp: ["Me? Why?", "What did I do?"],

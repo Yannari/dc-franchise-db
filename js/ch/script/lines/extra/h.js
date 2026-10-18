@@ -35,7 +35,7 @@ export default {
       { by: 'a', say: "I could. I'm not going to." },
       { by: 'b', say: "What is your problem with me?" },
       { by: 'a', say: "You are. Everything about you rubs me the wrong way." },
-      { by: 'b', say: "That's not a reason. That's a personality clash." },
+      { by: 'b', say: "So you two just clash. Give me an actual reason." },
       { by: 'a', say: "Call it whatever you want. I don't want you here." },
       { by: 'a', conf: "I can't explain it. Some people you click with. Some people you want on the next plane home. {b} is the second kind." },
     ] },

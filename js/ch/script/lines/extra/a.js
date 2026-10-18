@@ -44,7 +44,7 @@ export default {
       { by: 'a', say: "Can I ask you something, and you just answer, no thinking?" },
       { by: 'b', say: "Sure." },
       { by: 'a', say: "{opt1} or {opt2}. Who do you want gone?" },
-      { by: 'b', say: "That's not fair. That's about me, not you." },
+      { by: 'b', say: "That isn't fair. You're putting it on me." },
       { by: 'a', say: "I know. I'm asking anyway." },
       { by: 'b', say: "{opt1}. {opt1} has been working against us all week." },
       { by: 'a', say: "That's what I thought you'd say." },
@@ -236,7 +236,7 @@ export default {
     { id: 'hd.sx4', turns: [
       { by: 'a', say: "I'll keep it short. {b}. {case}." },
       { by: 'c', say: "And I'll keep mine shorter. {alt}." },
-      { by: 'a', say: "That's not a reason. That's a name." },
+      { by: 'a', say: "You've given me a name. I asked for a reason." },
       { by: 'c', say: "Fine. {altcase}. Happy?" },
       { by: 'd', say: "I came out here to sit in the sun." },
       { by: 'b', say: "Welcome to the vote. You're in it now." },

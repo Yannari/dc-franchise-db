@@ -6,7 +6,7 @@ export default {
   'purge.any': [
     { id: 'tw.p1', turns: [
       { beat: 'TJ waits until the last player crosses the line, and nobody moves to celebrate.' },
-      { by: 'tj', say: "Before anybody heads back to the villa, I have something to tell you. That was not just a daily. That was a purge." },
+      { by: 'tj', say: "Before anybody heads back to the villa, I have something to tell you. That daily was a purge." },
       { by: 'tj', say: "Whoever finished last does not go to a vote, and does not go to the Arena. They go home. Right now." },
       { by: 'tj', say: "{a}, that's you. I'm sorry." },
       { by: 'a', say: "Are you serious? Nobody said anything about a purge." },
@@ -161,7 +161,7 @@ export default {
       { by: 'a', conf: "I got a second life in this game. I'm not going to waste it being polite." },
     ] },
     { id: 'tw.r6', turns: [
-      { by: 'tj', say: "This is not an elimination. This is a return." },
+      { by: 'tj', say: "Nobody's going home tonight. Tonight, somebody comes back." },
       { by: 'tj', say: "{a} and {b}, you were sent home from this Arena. One of you is about to undo that." },
       { by: 'c', opt: 'c', conf: "I sent {a} home once. I really did not want to have to do it again." },
       { by: 'b', say: "Since the day I left, I've gone over every one of their games in my head. I know them better than they do." },
@@ -182,7 +182,7 @@ export default {
       { by: 'a', say: "You might have to." },
       { by: 'b', say: "Is that a threat?" },
       { by: 'a', say: "It's a schedule." },
-      { by: 'b', conf: "I sent {a} home. {a} came back. That's not a coincidence, that's a problem with my name on it." },
+      { by: 'b', conf: "I sent {a} home, and {a} came back. That's a problem, and it has my name on it." },
     ] },
     { id: 'tw.wr2', turns: [
       { by: 'b', say: "So you're back." },

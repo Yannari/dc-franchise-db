@@ -135,7 +135,7 @@ export default {
     { id: 'oq.2', turns: [
       { beat: '{a} tries to stand up, sways, and sits back down hard.' },
       { by: 'b', opt: 1, say: "Whoa. Sit. Just sit for a second." },
-      { by: 'a', say: "I've been sitting. It's not getting better. It's getting worse." },
+      { by: 'a', say: "I've been sitting down. It keeps getting worse." },
       { beat: '{a} stands up in the dark and walks toward the medic tent.' },
       { by: 'tj', say: "And we've lost one. {a} couldn't take the cold, and {a} is out of the final." },
       { by: 'a', conf: "I gave this game everything I had, and tonight I ran out. I'm not ashamed of that. I'm just sad." },

@@ -103,7 +103,7 @@ export default {
       { by: 'a', say: "Is that supposed to be nice?" },
       { by: 'd', say: "It's supposed to be true." },
       { by: 'a', say: "Then here's something true. You're going to be the next one carrying a bag down those stairs." },
-      { by: 'd', conf: "{a} quit. That's not a threat, that's a gift. I'll take it." },
+      { by: 'd', conf: "{a} quit. Honestly? That's a gift. I'll take it." },
     ] },
   ],
   'quit-decide.goes': [
@@ -151,7 +151,7 @@ export default {
       { by: 'a', say: "Fine. One thing." },
       { by: 'b', say: "Think about the person who gets on that plane. Is that the person you want to be when you get home?" },
       { by: 'a', say: "That's not fair." },
-      { by: 'b', say: "It's not supposed to be fair. It's supposed to keep you here." },
+      { by: 'b', say: "Nobody said it was fair. It's supposed to keep you here." },
       { beat: '{a} is quiet for a long time, then laughs, and wipes {a.posAdj} eyes.' },
       { by: 'a', say: "Okay. Okay. I'm staying. You're annoying, and I'm staying." },
       { by: 'b', conf: "{a} almost walked out today. If I have to do this every week, I will." },

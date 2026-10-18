@@ -114,7 +114,7 @@ export default {
     { id: 'st.btx2', turns: [
       { by: 'tj', say: "{a}, you win, and the winner takes half the loser's bank. {b}, I'm sorry, {amount} is going with {a}." },
       { by: 'b', say: "Half? That's not fair, TJ!" },
-      { by: 'tj', say: "It's not supposed to be fair. It's the Arena." },
+      { by: 'tj', say: "Fair? This is the Arena." },
       { by: 'a', say: "I'll spend it wisely. Probably." },
       { by: 'b', say: "Don't." },
       { by: 'b', conf: "Losing hurts. Losing and then watching somebody count your money hurts more." },
@@ -400,7 +400,7 @@ export default {
     { id: 'tt.sx1', turns: [
       { by: 'a', say: "You know you're only still here because nobody's bothered to vote you in." },
       { by: 'b', say: "Sounds like a good way to still be here." },
-      { by: 'a', say: "It's not a strategy. It's luck." },
+      { by: 'a', say: "Call it strategy if you want. It was luck." },
       { by: 'b', say: "Then I'm very lucky. Thanks for noticing." },
       { by: 'a', say: "It'll run out." },
       { by: 'b', say: "Maybe. Want a drink while we wait?" },
@@ -531,7 +531,7 @@ export default {
       { by: 'a', say: "Can I give you some advice for tomorrow?" },
       { by: 'b', say: "From you? No." },
       { by: 'a', say: "Don't pick me." },
-      { by: 'b', say: "That's not advice. That's begging." },
+      { by: 'b', say: "Is that advice, or are you begging?" },
       { by: 'a', say: "It's advice. You do not want me in there with you." },
       { by: 'b', say: "We'll see about that." },
       { by: 'b', conf: "I said it like I meant it. But {a} looked very sure, and I lay awake thinking about that all night." },

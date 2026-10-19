@@ -440,6 +440,25 @@ export function airLeg(state, leg) {
   const phase = k => (k.startsWith('task-') ? 0 : 1);
   segs.sort((x, y) => x.t - y.t || phase(x.kind) - phase(y.kind)
     || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
+  // the finale's third team is cut at the halfway mat before the final dash, the way the show cuts it (the user,
+  // 2026-10-19: it aired after the winners were crowned, because that's when the team got there): the cut airs just
+  // after the second finalist leaves the halfway mat, their own racing before it, their goodbye after it
+  if (leg.kind === 'final') {
+    const mids = segs.filter(x => x.kind === 'don-place' && x.src?.data?.midmat).map(x => x.t);
+    for (const out of mids.length ? (leg.eliminated || []).filter(id => leg.how?.[id] === 'midpoint') : []) {
+      const cut = Math.max(...mids) + 0.5;
+      const exit = segs.find(x => EXIT_KINDS.has(x.kind) && x.teams.includes(out));
+      if (!exit || exit.t <= cut) continue;
+      const STEP = { console: 0.1, goodbye: 0.15, 'goodbye-kiss': 0.15, 'int-exit': 0.2 };
+      const before = segs.filter(x => x !== exit && x.teams.includes(out) && !(x.kind in STEP) && x.kind !== 'int-bleachers' && x.t > cut - 0.45)
+        .sort((x, y) => x.t - y.t);
+      before.forEach((x, i) => { x.t = cut - 0.45 + (0.4 * (i + 1)) / (before.length + 1); });
+      for (const x of segs) if (x.teams.includes(out) && x.kind in STEP && x.t > cut) x.t = cut + STEP[x.kind];
+      exit.t = cut;
+    }
+    segs.sort((x, y) => x.t - y.t || phase(x.kind) - phase(y.kind)
+      || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
+  }
   // once Don has sent a team home, the episode doesn't go back to them racing: what happened before the exit airs
   // before it, anything after it (an on-location exit leaves a team out on the road) doesn't air at all
   // (not the finale: its cut and its bleachers are their own sequence)

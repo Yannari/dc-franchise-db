@@ -26,4 +26,24 @@ describe('rr finale halfway mat', () => {
     }
     expect(n).toBeGreaterThanOrEqual(6);
   });
+
+  it('the third team is cut at the halfway mat before the final dash, the way the show cuts it (the user, 2026-10-19)', () => {
+    for (const seed of [61, 3, 8]) {
+      const { cast, teams } = raceCast(12, seed);
+      setPlayers(cast);
+      const res = playRaceSeason({ teams, seed });
+      const leg = res.legs.at(-1);
+      const out = leg.eliminated.find(id => leg.how[id] === 'midpoint');
+      if (!out) continue;
+      const segs = airSeason(res).at(-1).segments;
+      const cut = segs.findIndex(s => s.kind === 'don-elim' && s.teams.includes(out));
+      const crown = segs.findIndex(s => s.kind === 'don-crown');
+      const lastMid = Math.max(...segs.map((s, i) => (s.kind === 'don-place' && s.src?.data?.midmat ? i : -1)));
+      expect(cut, `seed ${seed}`).toBeGreaterThan(lastMid);
+      expect(cut, `seed ${seed}`).toBeLessThan(crown);
+      // nothing of theirs airs after their cut but their goodbye
+      for (const s of segs.slice(cut + 1).filter(x => x.teams.includes(out))) expect(['int-exit', 'console', 'goodbye', 'goodbye-kiss', 'int-bleachers'], `seed ${seed} ${s.kind}`).toContain(s.kind);
+    }
+  });
 });
+

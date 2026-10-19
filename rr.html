@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Ridonculous Race</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+<body class="rr-body">
+<div class="rr-app">
+  <div class="rr-bar">
+    <span class="brand">THE RIDONCULOUS RACE</span>
+    <label>Seed <input id="rr-seed" type="number" min="1" value="8"></label>
+    <label>Teams <select id="rr-teams">
+      <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option selected>12</option>
+    </select></label>
+    <button class="go" id="rr-play">Play season</button>
+    <label>Episode <select class="ep" id="rr-ep"></select></label>
+    <span class="status" id="rr-status">loading…</span>
+  </div>
+  <div class="rr-wrap">
+    <div>
+      <div class="stage-holder" id="rr-stage-holder" style="position:relative"></div>
+      <div class="rr-ctrl">
+        <button id="rr-back">◀ Back</button>
+        <button id="rr-scene">⏮ Scene</button>
+        <button class="go" id="rr-next">Next ▶</button>
+        <button id="rr-auto">▶ Auto</button>
+        <button id="rr-full">⛶ Full screen</button>
+        <span class="hint">Click the picture, Space or → for the next line; ← goes back.</span>
+        <span class="stepn" id="rr-stepn"></span>
+      </div>
+    </div>
+    <aside class="rr-side" id="rr-side"></aside>
+  </div>
+</div>
+<div class="rr-loading" id="rr-loading" style="position:fixed">Playing the season…</div>
+<script type="module" src="js/vp-rr-ep/app.js"></script>
+</body>
+</html>

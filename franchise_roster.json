@@ -7347,6 +7347,27 @@
       "descriptor": "The Desi Dance Dynamo",
       "backstory": "Velvet grew up training in jazz, contemporary dance, hip-hop, Bollywood, and bhangra. She originally planned to become a professional backup dancer but became frustrated with auditions that treated her as interchangeable. After performing in drag for a queer South Asian dance night, she discovered that Velvet allowed her to be both the choreographer and the star. She quickly built a reputation for explosive nightclub numbers, although most of her costumes were commissioned or assembled at the last minute. She enters Drag Race certain that her movement will separate her from the cast.",
       "personality": "Velvet is energetic, talkative, competitive, and emotionally transparent. She learns choreography immediately and performs every lip sync as though it were a stadium finale. Her confidence becomes impatience when teammates cannot match her pace, and she frequently interrupts people without realizing it. Velvet is not naturally strategic, struggles to sew, and tends to overpower acting scenes instead of listening to her partners. Criticism makes her defensive, but her emotions pass quickly and she rarely holds a grudge for long. Behind the chaos is a passionate performer who genuinely wants everyone to experience the same joy she feels when the music begins."
+    },
+    {
+      "name": "Anais",
+      "slug": "anais",
+      "gender": "f",
+      "sexuality": "lesbian",
+      "archetype": "underdog",
+      "stats": {
+        "physical": 7,
+        "endurance": 8,
+        "mental": 6,
+        "social": 6,
+        "strategic": 3,
+        "loyalty": 9,
+        "boldness": 3,
+        "intuition": 4,
+        "temperament": 7
+      },
+      "voice": "#earnest #warm #anxious Replies quickly and often makes a small joke at her own expense. Gives concrete answers rather than impressive ones. Asks follow-up questions because she wants to understand, not because she is collecting leverage. Anxiety appears in unnecessary explanations. When asked to lie, becomes overly specific or changes the subject badly. #-goofy",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

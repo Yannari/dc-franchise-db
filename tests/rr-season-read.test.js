@@ -124,7 +124,9 @@ describe('rr season read (2026-10-18)', () => {
     ctx.moment = 'overlap';
     const w0 = whenOf(SCENES['crush-noticed'], ctx);
     if (w0 > 0) {
-      const [x] = prepare(ctx) && [ctx.A];
+      // the one the scene would make the crusher (either partner: romance.js lovers), not always A
+      prepare(ctx);
+      const x = ctx._lovers?.[0] ?? ctx.A;
       ctx.state.threads = [{ id: 'th1', thread: 'crush', who: [x, 'Somebody Else'], step: 1, since: 1, lastLeg: 1, closed: null }];
       const ctx2 = Object.assign(ctx, { _ready: false, _lovers: null });
       expect(whenOf(SCENES['crush-noticed'], ctx2)).toBeLessThanOrEqual(w0 * 0.2);

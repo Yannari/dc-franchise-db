@@ -165,6 +165,9 @@ describe('rr director', () => {
       const run = {};
       for (const seg of ep.segments) {
         if (seg.kind === 'int-bleachers') continue; // the finale's bleachers: every team out gets its word
+        // check-ins in the same minute are a run, the way the show does the mat ('third... fourth... fifth'), not one
+        // moment repeated (2026-10-19: a new cast checked three featured teams in at minute 86)
+        if (seg.kind === 'don-place' && seg.stretch === 'mat') continue;
         const k = `${seg.t}|${seg.stretch}|${seg.kind}`;
         run[k] = (run[k] || 0) + 1;
         expect(run[k], `leg ${ep.n} ${k}`).toBeLessThanOrEqual(2);

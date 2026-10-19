@@ -455,6 +455,17 @@ export function airLeg(state, leg) {
       before.forEach((x, i) => { x.t = cut - 0.45 + (0.4 * (i + 1)) / (before.length + 1); });
       for (const x of segs) if (x.teams.includes(out) && x.kind in STEP && x.t > cut) x.t = cut + STEP[x.kind];
       exit.t = cut;
+      // a runaway win: the winners were crowned before the race for the halfway mat was settled. The show cuts that
+      // race (the second team's check-in at the halfway mat, the third team's run and its cut) in just before the crown
+      const crown = segs.find(x => x.kind === 'don-crown' && x.ending === 'winner');
+      if (crown && cut > crown.t) {
+        const second = segs.find(x => x.kind === 'don-place' && x.src?.data?.midmat && x.t === Math.max(...mids));
+        const lo = crown.t - 1;
+        const end = Math.max(...segs.filter(x => x.teams.includes(out) && x.t >= cut && x.t <= cut + 0.25).map(x => x.t));
+        const race = segs.filter(x => x !== crown && x.kind !== 'int-bleachers' && x.t > lo && x.t <= end
+          && (x.teams.includes(out) || (second && x.teams.includes(second.teams[0]) && x.t <= second.t))).sort((x, y) => x.t - y.t);
+        race.forEach((x, i) => { x.t = lo + (0.95 * (i + 1)) / (race.length + 1); });
+      }
     }
     segs.sort((x, y) => x.t - y.t || phase(x.kind) - phase(y.kind)
       || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));

@@ -308,7 +308,7 @@ names a show and nothing there needs editing.
    | winter (Jan–Mar) | Drag Race (Fri) · The Traitors (Thu) |
    | spring (Apr–Jun) | Total Drama (Mon) · The Circle (Wed) |
    | summer (Jul–Sep) | Big Brother (Wed) · Perfect Match (Sat) |
-   | fall (Oct–Dec) | Total Drama (Mon) · The Challenge (Tue) |
+   | fall (Oct–Dec) | Total Drama (Mon) · The Challenge (Tue) · The Ridonculous Race (Wed, the third show of the quarter, chosen with the user) |
 
    Pick the quarter the real show airs in, and a night nobody else in that
    quarter uses. `tests/franchise-calendar.test.js` ("home quarters") fails

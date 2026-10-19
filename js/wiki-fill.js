@@ -286,9 +286,11 @@ export function roundLedger(doc = {}) {
         else if (p.result === 'LOW') call.low.push(p.name);
         else if (p.result === 'BTM' || p.result === 'ELIM') call.btm.push(p.name);
       }
-      if (r.challenge?.name) facts.push(`the maxi challenge was ${r.challenge.name}`);
+      // the round's challenge in the show's own word (Drag Race: the maxi challenge; a race: a challenge)
+      const chal = showWords(format).challenge || 'challenge';
+      if (r.challenge?.name) facts.push(`the ${chal} was ${r.challenge.name}`);
       if (r.runwayCategory) facts.push(`the runway category was ${r.runwayCategory}`);
-      if (call.win.length) facts.push(`${call.win.join(' and ')} won the maxi challenge`);
+      if (call.win.length) facts.push(`${call.win.join(' and ')} won the ${chal}`);
       if (call.high.length) facts.push(`high: ${call.high.join(', ')}`);
       if (call.low.length) facts.push(`low: ${call.low.join(', ')}`);
       if (call.btm.length) facts.push(`the bottom: ${call.btm.join(', ')}`);

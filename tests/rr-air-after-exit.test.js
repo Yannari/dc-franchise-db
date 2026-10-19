@@ -38,7 +38,7 @@ describe('rr after the exit', () => {
 
   it('no "one teams": a wait for the next flight is narrated only when there are teams waiting for it', () => {
     for (const { eps } of seasons) for (const ep of eps) for (const s of ep.segments) for (const l of s.lines || []) {
-      expect(l.text, `leg ${ep.n}`).not.toMatch(/one teams/i);
+      expect(l.text, `leg ${ep.n}`).not.toMatch(/\bone teams\b/i);
     }
   });
 

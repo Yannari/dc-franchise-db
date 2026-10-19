@@ -342,6 +342,39 @@ const SHOW_WORDS = {
       { id: 'winner', text: 'Who wins The Challenge?' },
     ],
   },
+  'ridonculous-race': {
+    name: 'The Ridonculous Race',
+    short: 'RR',
+    episode: 'leg',
+    Episode: 'Leg',
+    episodeShort: 'Leg',
+    elimination: 'elimination',
+    eliminated: 'eliminated',
+    challenge: 'challenge',
+    home: 'the race',
+    // No vote: the clock decides, and the last team to the Chill Zone goes home.
+    vote: 'the Chill Zone',
+    finalVote: 'the finale',
+    comps: ['leg', 'challenge'],
+    danger: 'in last place',
+    Danger: 'In last place',
+    onDanger: 'in last place',
+    nominated: 'came in last',
+    Pawn: 'A team at the back',
+    Ceremony: 'The Chill Zone',
+    nominee: 'a team at the back',
+    pawn: 'a team at the back',
+    ceremony: 'the Chill Zone',
+    // No jury: the finale is a race to the stage.
+    jury: 'the finalists',
+    safe: 'safe',
+    nominationLabel: 'Last place',
+    polls: [
+      { id: 'legwin', text: 'Who wins the next leg?' },
+      { id: 'last', text: 'Who comes in last?' },
+      { id: 'winner', text: 'Who wins The Ridonculous Race?' },
+    ],
+  },
 };
 
 /** The words this show uses. Unknown formats get the generic set, never a crash. */

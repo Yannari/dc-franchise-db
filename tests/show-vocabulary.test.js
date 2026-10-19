@@ -159,7 +159,8 @@ function docFor(format) {
     const path = SHOWS[format].roundsPath.split('.');
     const round = {
       episode: 1,
-      challenge: { id: 'x', name: 'the maxi challenge' },
+      // the challenge in the show's own word (Drag Race's is the maxi challenge; a race runs challenges)
+      challenge: { id: 'x', name: `the ${showWords(format).challenge || 'challenge'}` },
       placements: [
         { name: 'Testcase', result: 'WIN' },
         // ELIM, not BTM: the queen who goes home is marked by her EXIT, and

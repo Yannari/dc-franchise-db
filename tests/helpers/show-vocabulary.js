@@ -128,6 +128,17 @@ export const VOCAB = {
       'challenge', 'challenges', 'house', 'villa', 'island', 'beach',
     ],
   },
+  'ridonculous-race': {
+    // Its own nouns, as phrases ("a boomerang" and "a leg" are ordinary English).
+    // It races through places other shows live in (an island, a beach) and runs
+    // challenges at every one, so it owns those too. No vote, no jury, no camp,
+    // no house: those stay forbidden here.
+    own: [
+      'chill zone', 'don box', 'botch or watch', 'travel tip', 'express pass',
+      'non-elimination leg', 'racer', 'racers', 'the ridonculous race',
+      'challenge', 'challenges', 'island', 'beach',
+    ],
+  },
 };
 
 /** Everything a given format is not allowed to say. */

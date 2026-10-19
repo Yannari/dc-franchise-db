@@ -563,6 +563,61 @@ export const SHOWS = {
     polls: ['Who gets voted into the Arena next?', 'Who gets called out?',
       'Who wins the next elimination?', 'Who wins The Challenge?'],
   },
+  // ── THE EIGHTH SHOW: THE RIDONCULOUS RACE ────────────────────────────
+  //
+  // Teams of two race around the world, one place per leg. Every leg ends at the
+  // Chill Zone, and the last team in goes home, unless the leg is a
+  // non-elimination one. No vote: the clock decides. Don hosts. A finale city
+  // crowns one team. Rounds are legs (placements).
+  //
+  // Spec: docs/superpowers/specs/2026-10-18-ridonculous-race-design.md
+  'ridonculous-race': {
+    prefix: 'rr', name: 'The Ridonculous Race', short: 'RR', emoji: '🏁', accent: '#f2b705',
+    venue: { label: 'around the world', icon: '🏁' },
+    // Set at the bottom of js/rr-run.js. The setup screen refuses the show
+    // until that module is imported.
+    runnableFlag: '_rrRunnable',
+    // Racers from every show walk in with their history (a reality-show-vet team).
+    historyFromLedger: true,
+    // Fall, Wednesday: the slot pencilled with the user (2026-10-17), the third
+    // show of the quarter beside Total Drama (Mon) and The Challenge (Tue).
+    airNight: 3,
+    airSlots: ['fall'],
+    rosterPlace: 'RACE',
+    hasJury: false,
+    roundsPath: 'episodeHistory',
+    roundShape: 'placements',
+    words: { seasonComplete: 'The race is over. The winners are crowned.', noExitLine: 'Nobody went home',
+      openingStoryline: 'Teams of two, one race around the world, and a million dollars at the finish line.',
+      quietRound: 'A leg of the race',
+      player: 'racer', players: 'racers', round: 'Leg',
+      exit: 'eliminated', exitAction: 'eliminate',
+      exitDq: 'disqualified', exitWalk: 'quit',
+      challenge: 'challenge', comp: 'leg', comps: 'legs won',
+      compBeast: 'front-runner', compWon: 'legs',
+      milestone: 'the finale',
+      fanWords: ['the Chill Zone', 'the Don Box', 'Botch or Watch', 'Either/Or', 'the Boomerang', 'non-elimination leg',
+        'Express Pass', 'the finale', 'Don'],
+      host: 'Don',
+    },
+    // PROVISIONAL until a season has been played and the signals printed
+    // (ADDING-A-SHOW §2.5). The race sells mess, travel disasters and team
+    // fights; a team winning every leg is its complaint.
+    audience: { strategy: 0.6, blindside: 0.8, mess: 1.3, predictable: 1.0,
+      steamroll: 1.1, showmance: 1.0, twist: 1.1 },
+    // Written by the export (a later sub-project). Declared now so the article rows exist.
+    careerStats: [
+      ['rr.legWins', 'totalLegWins', 'legs won'],
+      ['rr.lasts', 'totalLastPlaces', 'last-place finishes'],
+    ],
+    articleStats: {
+      career: [['legWins', 'Legs won']],
+      season: [['rr.legWins', 'Legs won']],
+      comps: [['rr.legWins', 'Legs won']],
+    },
+    polls: ['Who wins the next leg?', 'Who comes in last?',
+      'Who uses the Boomerang next?', 'Who wins The Ridonculous Race?'],
+  },
 };
 
 /** The default for anything that predates formats — every old season is this. */
@@ -588,6 +643,7 @@ export const BB_FORMAT = 'big-brother';
 export const PERFECT_MATCH_FORMAT = 'perfect-match';
 export const CIRCLE_FORMAT = 'the-circle';
 export const CHALLENGE_FORMAT = 'the-challenge';
+export const RACE_FORMAT = 'ridonculous-race';
 
 const BY_PREFIX = Object.fromEntries(
   Object.entries(SHOWS).map(([format, show]) => [show.prefix, format]));
@@ -881,5 +937,9 @@ export const HOSTS_BY_FORMAT = {
   // assets/avatars/tj-maxx.png (a HOST literal). Every line he says is original.
   'the-challenge': [
     { value: 'TJ Maxx', label: 'TJ Maxx' },
+  ],
+  // Don, the Ridonculous Race's own host (assets/avatars/don.png): upbeat, slick, vain.
+  'ridonculous-race': [
+    { value: 'Don', label: 'Don' },
   ],
 };

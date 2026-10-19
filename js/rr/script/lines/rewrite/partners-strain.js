@@ -1,0 +1,247 @@
+// The team under strain, rewritten to the standard (scenes of 6 to 12 lines). In blame a blames b; in money-worry a
+// leads; in watching-botch a watches while b is in the Botch; in silent-treatment they've just snapped at each other.
+import { V } from '../places/_kit.js';
+
+const keys = (kind, endings) => [...endings.map(e => `${kind}.${e}`), `${kind}.any`];
+
+export default {
+  retire: [...keys('blame', ['accepted', 'deflected', 'blow-up']), ...keys('money-worry', ['plan', 'blame', 'beg-now']),
+    ...keys('watching-botch', ['cheer', 'coach-illegal', 'nerves', 'quiet']), ...keys('silent-treatment', ['thaws', 'holds', 'breaks'])],
+  pools: {
+    'blame.accepted': [
+      { id: 'ps.ba1', turns: [
+        { by: 'a', ...V("That was you. You know that was you.", "That was you.", "You know that was you.", "That was YOU! You KNOW that was you!", "That was you, and you know it was you.", "That was you. History will record it was you.") },
+        { by: 'b', say: "I know." },
+        { by: 'a', say: "You're not even going to argue?" },
+        { by: 'b', say: "No. I messed up. I'm sorry. I'll make it up to you." },
+        { beat: '{a} opens {a.posAdj} mouth to keep going, and finds there\'s nothing left to say.' },
+        { by: 'a', say: "...Okay. Thanks for saying it." },
+      ] },
+      { id: 'ps.ba2', turns: [
+        { by: 'a', say: "If you'd just listened to me back there, we'd be an hour ahead." },
+        { by: 'b', ...V("You're right. I should have listened. I didn't, and that's on me.", "You're right. That's on me.", "You're right. My fault.", "You're RIGHT! I SHOULD have listened! That's on ME!", "You're right. I should have listened to you, and I didn't. That's on me.", "You're right. I ignored the wise one. The wise one was you.") },
+        { by: 'a', say: "I was ready for a fight." },
+        { by: 'b', say: "I'm too tired for a fight. And you're right." },
+        { by: 'a', say: "Next time, you listen." },
+        { by: 'b', say: "Next time I listen." },
+      ] },
+    ],
+    'blame.deflected': [
+      { id: 'ps.bd1', turns: [
+        { by: 'a', say: "We lost so much time because of you." },
+        { by: 'b', ...V("Because of me? You were the one holding the map.", "Me? You had the map.", "You had the map.", "Because of ME? YOU were the one holding the MAP!", "Because of me? You were the one who was holding the map.", "Me? The map was in your hands. The map was your child.") },
+        { by: 'a', say: "Upside down. Because you gave it to me upside down." },
+        { by: 'b', say: "It's a map. You turn it round. It's not hard." },
+        { beat: 'They walk on, side by side, both completely sure it was the other one.' },
+        { by: 'a', say: "It was you." },
+      ] },
+      { id: 'ps.bd2', turns: [
+        { by: 'a', ...V("That's twice now you've cost us.", "That's twice you've cost us.", "Twice now. You.", "That's TWICE now you've COST us!", "That's the second time now that you've cost us.", "That's twice. Two times. A pattern, some might say.") },
+        { by: 'b', say: "Twice? Who got us on the wrong bus this morning?" },
+        { by: 'a', say: "That bus had the right number on it." },
+        { by: 'b', say: "It had the right number going the wrong way." },
+        { by: 'a', say: "That doesn't count." },
+        { by: 'b', say: "It counts for exactly as much as yours." },
+      ] },
+    ],
+    'blame.blow-up': [
+      { id: 'ps.bb1', turns: [
+        { by: 'a', say: "You always do this. Every single time it matters, you fall apart." },
+        { by: 'b', ...V("Every single time? Who carried you through the last leg?", "Who carried you last leg?", "Every time? Who carried you?", "EVERY single time? WHO carried you through the LAST LEG?", "Every single time? Who do you think carried you through the last leg?", "Every time? I carried you last leg like a backpack.") },
+        { by: 'a', say: "Oh, here we go." },
+        { by: 'b', say: "Yes, here we go. Here we go, because you never say thank you." },
+        { beat: 'It gets loud. A crew member pretends very hard to be looking at something else.' },
+        { by: 'a', say: "Fine!" },
+        { by: 'b', say: "Fine!" },
+      ] },
+      { id: 'ps.bb2', turns: [
+        { by: 'b', say: "Don't. Don't say it." },
+        { by: 'a', ...V("I'm going to say it. That was the worst thing you've done this whole race.", "I'm saying it. That was your worst yet.", "I'll say it. Your worst.", "I'm GOING to say it! That was the WORST thing you've done this WHOLE race!", "I'm going to say it. That was the worst thing you've done this whole race.", "I'm saying it. That was your masterpiece of failure.") },
+        { by: 'b', say: "You think I don't know that? You think I'm happy?" },
+        { by: 'a', say: "I think you don't care." },
+        { by: 'b', say: "Don't you dare tell me I don't care." },
+        { beat: '{b} walks off ahead and doesn\'t look back. {a} kicks a stone, hard, and regrets it at once.' },
+      ] },
+    ],
+    'money-worry.plan': [
+      { id: 'ps.mp1', turns: [
+        { by: 'b', say: "How much have we got left?" },
+        { by: 'a', ...V("Not much. So here's the plan. We walk everything we can walk, and we save the rest for the flight.", "Not much. Walk what we can, save for the flight.", "Not much. Walk, and save for the flight.", "Not MUCH! So here's the PLAN! We WALK everything we can, and SAVE the rest for the FLIGHT!", "Not much. So here's the plan: we walk everything we can and save the rest for the flight.", "Not much. Plan: our legs are the taxi, the money is for the sky.") },
+        { by: 'b', say: "And food?" },
+        { by: 'a', say: "Food is a luxury now. We had breakfast." },
+        { by: 'b', say: "We had half a banana." },
+        { by: 'a', say: "And it was a great half." },
+      ] },
+      { id: 'ps.mp2', turns: [
+        { by: 'a', say: "Okay. Let's count it. Every coin." },
+        { beat: 'They empty their pockets onto a bench and count it twice.' },
+        { by: 'b', ...V("It's enough for one cab or two buses. Not both.", "One cab, or two buses.", "Cab, or buses. Not both.", "It's ENOUGH for ONE cab or TWO buses! Not BOTH!", "It's enough for one cab or two buses, but not both.", "One cab, or two buses. Choose your destiny.") },
+        { by: 'a', say: "Two buses. And we ask people the way, so we don't waste either." },
+        { by: 'b', say: "That's a good plan." },
+        { by: 'a', say: "I've had a lot of time to think on the walk." },
+      ] },
+    ],
+    'money-worry.blame': [
+      { id: 'ps.mb1', turns: [
+        { by: 'a', say: "Where did all our money go?" },
+        { by: 'b', ...V("Don't look at me.", "Don't look at me.", "Not me.", "Don't LOOK at me!", "Don't look at me like that.", "Don't look at me. My hands are innocent.") },
+        { by: 'a', say: "You bought three coffees and a hat." },
+        { by: 'b', say: "It was a very cold morning, and it's a very good hat." },
+        { by: 'a', say: "It's a very expensive hat. It's the most expensive thing we own." },
+        { beat: '{b} pulls the hat down a little further over {b.posAdj} ears and says nothing.' },
+      ] },
+      { id: 'ps.mb2', turns: [
+        { by: 'b', say: "We'd have money if you hadn't paid that driver double." },
+        { by: 'a', ...V("He said it was a special price.", "He said special price.", "It was a special price.", "He SAID it was a SPECIAL price!", "He told me it was a special price.", "He said special price. I believed in him.") },
+        { by: 'b', say: "It was special. It was specially twice as much." },
+        { by: 'a', say: "Well, you were asleep in the back. You can't blame the awake one." },
+        { by: 'b', say: "I can blame the awake one for being awake and bad at maths." },
+        { beat: 'They count what\'s left. It does not take long.' },
+      ] },
+    ],
+    'money-worry.beg-now': [
+      { id: 'ps.mn1', turns: [
+        { by: 'a', ...V("We're out. We have to ask people. Now, before it gets dark.", "We're out. We ask people. Now.", "Out. We ask. Now.", "We're OUT! We have to ASK people! NOW, before it gets DARK!", "We're out of money. We have to ask people, now, before it gets dark.", "We're broke. Time to throw ourselves on the kindness of strangers.") },
+        { by: 'b', say: "I can't. I can't ask strangers for money." },
+        { by: 'a', say: "Then hold the sign, and I'll do the talking." },
+        { by: 'b', say: "What sign?" },
+        { beat: '{a} is already writing one on the back of an old tip.' },
+        { by: 'a', say: "This sign." },
+      ] },
+      { id: 'ps.mn2', turns: [
+        { by: 'b', say: "We've got nothing left for the train." },
+        { by: 'a', ...V("Then we stand by the station and we smile at people until somebody helps.", "Then we smile at people till someone helps.", "Then we smile until someone helps.", "Then we STAND by the station and SMILE at people until SOMEBODY helps!", "Then we stand by the station and smile until somebody helps us.", "Then we stand there and smile like the hungriest people on earth.") },
+        { by: 'b', say: "Is that a plan?" },
+        { by: 'a', say: "It's the only plan we've got." },
+        { by: 'b', say: "Okay. Smiling. I can smile." },
+        { beat: '{b} smiles. It looks more like a wince. {a} decides not to mention it.' },
+      ] },
+    ],
+    'watching-botch.cheer': [
+      { id: 'ps.wc1', turns: [
+        { by: 'a', ...V("Come on, {b}! You've got this! You've so got this!", "Come on, {b}. You've got this.", "You've got this, {b}.", "Come ON, {b}! You've GOT this! You've SO got this!", "Come on, {b}! You've got this, you really have!", "Come on, {b}! You were made for this moment, probably!") },
+        { by: 'b', say: "I don't have this! I have none of this!" },
+        { by: 'a', say: "You have some of it! You have most of it!" },
+        { beat: '{b} slips, catches {b.ref}, and keeps going.' },
+        { by: 'a', say: "Yes! That's it! I'm so proud of you!" },
+        { by: 'b', say: "Stop being proud and stop shouting!" },
+      ] },
+      { id: 'ps.wc2', turns: [
+        { by: 'a', say: "Look at {b.obj} go. I've never seen {b.obj} move this fast." },
+        { by: 'b', ...V("Am I nearly there? Tell me I'm nearly there!", "Nearly there? Tell me!", "Am I nearly there?", "Am I NEARLY there? TELL me I'm nearly there!", "Am I nearly there? Please tell me I'm nearly there!", "Is the end near? Can you see it? Describe it to me!") },
+        { by: 'a', say: "You're nearly there! Keep going!" },
+        { by: 'b', say: "You're lying!" },
+        { by: 'a', say: "I'm lying a little bit! Keep going anyway!" },
+        { beat: '{b} keeps going. It is, in fact, a very long way still.' },
+      ] },
+    ],
+    'watching-botch.coach-illegal': [
+      { id: 'ps.wi1', turns: [
+        { by: 'a', ...V("Left! Go left! No, your other left!", "Left! Your other left!", "Left! Other left!", "LEFT! Go LEFT! No, your OTHER left!", "Go left! No, no, your other left!", "Left! The left that's on the left!") },
+        { beat: 'A crew member walks over to {a}, holding up a hand.' },
+        { by: 'a', say: "What? What did I do?" },
+        { by: 'b', say: "You're not allowed to help! It's a Watch! You just watch!" },
+        { by: 'a', say: "I was barely helping! I said one direction!" },
+        { by: 'b', say: "That's thirty minutes, {a}. You just cost us thirty minutes." },
+      ] },
+      { id: 'ps.wi2', turns: [
+        { by: 'a', say: "Psst. {b}. Psst. It's the blue one. Try the blue one." },
+        { by: 'b', ...V("Stop talking to me! You'll get us a penalty!", "Stop talking! Penalty!", "Shh! Penalty!", "STOP talking to me! You'll get us a PENALTY!", "Stop talking to me, you'll get us a penalty!", "Silence! The rules have ears!") },
+        { by: 'a', say: "Nobody can hear me. I'm whispering." },
+        { beat: 'Every crew member in the area turns round and looks at {a}.' },
+        { by: 'a', say: "...Okay, maybe they can hear me." },
+        { by: 'b', say: "Thirty minutes. For a whisper." },
+      ] },
+    ],
+    'watching-botch.nerves': [
+      { id: 'ps.wn1', turns: [
+        { by: 'b', say: "I can't do it. My hands won't stop shaking." },
+        { by: 'a', ...V("Breathe. Just breathe. In and out. You're okay.", "Breathe. In and out. You're okay.", "Breathe. You're okay.", "BREATHE! Just BREATHE! In and OUT! You're OKAY!", "Just breathe, okay? In and out. You're okay.", "Breathe. In, out. Like a very calm accordion.") },
+        { by: 'b', say: "Everybody's watching. Everybody's watching me fail." },
+        { by: 'a', say: "Nobody's watching. Everybody's busy with their own thing. It's just me watching." },
+        { beat: '{b} takes one long breath, steadies {b.posAdj} hands, and tries again.' },
+        { by: 'b', say: "Don't watch. Even you. Look at a tree." },
+      ] },
+      { id: 'ps.wn2', turns: [
+        { by: 'a', say: "Why's {b.sub} stopped? Why has {b.sub} just stopped?" },
+        { by: 'b', ...V("I'm thinking! I'm just thinking! I'm not scared!", "I'm thinking! Not scared!", "Just thinking. Not scared.", "I'm THINKING! I'm just THINKING! I'm NOT scared!", "I'm just thinking, okay? I'm not scared!", "I'm not frozen. I'm pondering. Deeply.") },
+        { by: 'a', say: "You're scared." },
+        { by: 'b', say: "I'm a little scared." },
+        { by: 'a', say: "Then be scared and keep going. Both at the same time." },
+        { beat: '{b} keeps going, scared, one careful step after another.' },
+      ] },
+    ],
+    'watching-botch.quiet': [
+      { id: 'ps.wq1', turns: [
+        { beat: '{a} watches from the side, chewing {a.posAdj} thumb, saying nothing at all.' },
+        { by: 'b', ...V("Why aren't you saying anything? Say something!", "Say something!", "Why so quiet?", "Why AREN'T you saying ANYTHING? Say SOMETHING!", "Why aren't you saying anything? Please say something!", "Why the silence? Your silence is very loud.") },
+        { by: 'a', say: "I don't want to put you off." },
+        { by: 'b', say: "The silence is putting me off!" },
+        { by: 'a', say: "Okay! Okay. You're doing great." },
+        { by: 'b', say: "Thank you. Now be quiet." },
+      ] },
+      { id: 'ps.wq2', turns: [
+        { by: 'a', say: "I'm not going to shout. Last time I shouted, you fell over." },
+        { by: 'b', ...V("I fell over because the floor was wet. Not because you shouted.", "I fell because the floor was wet.", "The floor was wet. Not you.", "I fell over because the FLOOR was WET! Not because you SHOUTED!", "I fell over because the floor was wet, not because you shouted.", "The floor betrayed me. You were innocent. Mostly.") },
+        { by: 'a', say: "Then I'll just stand here and think nice things." },
+        { beat: '{a} stands there thinking nice things, very hard, with a very strained face.' },
+        { by: 'b', say: "I can feel you thinking. It's worse." },
+        { by: 'a', say: "I can't win." },
+      ] },
+    ],
+    'silent-treatment.thaws': [
+      { id: 'ps.st1', turns: [
+        { beat: 'Neither of them has said a word for twenty minutes.' },
+        { by: 'a', ...V("Do you want some of my water?", "Water?", "Want some water?", "Do you WANT some of my WATER?", "Do you want some of my water?", "Water? It's a peace offering. In a bottle.") },
+        { by: 'b', say: "...Yeah. Thanks." },
+        { by: 'a', say: "I'm sorry about before." },
+        { by: 'b', say: "Me too. I was being an idiot." },
+        { by: 'a', say: "We were both being idiots. Together. As a team." },
+      ] },
+      { id: 'ps.st2', turns: [
+        { by: 'b', say: "This is stupid." },
+        { by: 'a', ...V("What is?", "What is?", "What's stupid?", "WHAT is?", "What's stupid?", "What is? Specifically? There's a lot to choose from.") },
+        { by: 'b', say: "Not talking. We're in a race, and we're not even talking. We're a team." },
+        { by: 'a', say: "You started it." },
+        { by: 'b', say: "And I'm finishing it. Truce?" },
+        { by: 'a', say: "Truce." },
+      ] },
+    ],
+    'silent-treatment.holds': [
+      { id: 'ps.sh1', turns: [
+        { by: 'a', say: "Are you going to talk to me at all today?" },
+        { beat: '{b} looks straight ahead and says nothing.' },
+        { by: 'a', ...V("Okay. Great. That's very mature.", "Great. Very mature.", "Mature. Great.", "OKAY! GREAT! That's VERY mature!", "Okay, great. That's really mature.", "Great. A silent partner. Like a business, but sadder.") },
+        { beat: 'They walk the rest of the way in silence. It\'s a long way.' },
+        { by: 'a', say: "Turn left here." },
+        { beat: '{b} turns left without a word.' },
+      ] },
+      { id: 'ps.sh2', turns: [
+        { by: 'b', say: "Tell {a} it's this way." },
+        { by: 'a', ...V("There's nobody to tell. I'm right here. I can hear you.", "I'm right here. I can hear you.", "I'm here. I heard you.", "There's NOBODY to tell! I'm RIGHT HERE! I can HEAR you!", "There's nobody else here to tell. I'm right next to you.", "Who are you telling? The air? The air doesn't care.") },
+        { by: 'b', say: "Tell {a} I'm still not talking to {a.obj}." },
+        { by: 'a', say: "This is ridiculous." },
+        { beat: 'It is ridiculous. It goes on for another hour anyway.' },
+        { by: 'b', say: "Tell {a} it's still this way." },
+      ] },
+    ],
+    'silent-treatment.breaks': [
+      { id: 'ps.sb1', turns: [
+        { beat: 'An hour of silence ends all at once.' },
+        { by: 'a', ...V("You know what? No. I'm not doing this anymore. Say what you want to say.", "No. Say what you want to say.", "Enough. Say it.", "You know WHAT? NO! I'm NOT doing this anymore! SAY what you want to SAY!", "You know what? No, I'm not doing this anymore. Just say what you want to say.", "Enough. The silence ends now. Speak your mind, all of it.") },
+        { by: 'b', say: "You want me to say it? Fine. You were awful back there." },
+        { by: 'a', say: "Me? You were the one who..." },
+        { by: 'b', say: "Don't. Don't make this about me." },
+        { beat: 'It is now very much not silent. It is the opposite of silent.' },
+      ] },
+      { id: 'ps.sb2', turns: [
+        { by: 'b', say: "Are you still sulking?" },
+        { by: 'a', ...V("I'm not sulking. I'm choosing not to speak to you. It's different.", "Not sulking. Choosing. Different.", "I'm choosing silence. Different.", "I'm NOT sulking! I'm CHOOSING not to speak to you! It's DIFFERENT!", "I'm not sulking. I'm choosing not to talk to you, which is different.", "I'm not sulking. I'm on a vow of silence. About you.") },
+        { by: 'b', say: "You just spoke to me." },
+        { by: 'a', say: "That doesn't count. That was a correction." },
+        { by: 'b', say: "You're impossible." },
+        { by: 'a', say: "And you're still wrong about the bridge." },
+      ] },
+    ],
+  },
+};

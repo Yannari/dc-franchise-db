@@ -7569,7 +7569,13 @@
       "sexuality": "gay",
       "voice": "#proud #blunt #theatrical #competitive #bossy. Speaks as though his opinion is the conclusion everyone was waiting for. Uses polished put-downs, rhetorical questions, exaggerated disbelief, and casual references to his audience or professional access. Can be genuinely funny and engaging when appreciated. Becomes clipped and dismissive when challenged; repeats a request as if refusal must be a misunderstanding. His arrogance is expressed through behavior and expectations, not constant announcements that he is famous. #-cruel #-goofy",
       "profileSources": {},
-      "age": 27,
+      "ties": [
+        {
+          "name": "Kad",
+          "kin": "cousins"
+        }
+      ],
+      "age": 26,
       "birthdate": "2000-04-16",
       "ethnicity": "Black",
       "nationality": "Canadian",
@@ -7577,13 +7583,7 @@
       "occupation": "Content Creator",
       "descriptor": "The Main Character",
       "backstory": "Elijah grew up in Oakland wanting a larger audience than his immediate surroundings could provide. He began posting sharp reactions, lifestyle clips, and opinions delivered with the confidence of someone who expected people to listen. A series of widely shared videos turned a side interest into paid work. Brand invitations and an audience eager to agree with him changed his expectations faster than he noticed. Friends started hearing about his schedule instead of seeing him, and favors increasingly came with reminders of what his attention was worth. He is proud that he built his own platform, but now treats its success as evidence that his taste and judgment deserve priority everywhere. He remains close enough to his cousin Malcolm to ask for help, though he is much better at assuming that help will arrive than expressing gratitude afterward. His audience size is intentionally unspecified.",
-      "personality": "lijah is charismatic, image-conscious, and accustomed to having a receptive audience. He expects attention, flexibility, and deference, then experiences ordinary limits as a personal slight. He can make someone feel fascinating when they entertain him, but loses patience when their needs interrupt the experience he wanted. Praise feels like recognition of a fact; criticism feels presumptuous. He is quick enough to spot hypocrisy in others and much slower to notice his own. His humor is sharp and sometimes generous, but turns humiliating when he wants to restore his position in a room. He keeps track of who supports him and may call a reasonable disagreement disloyalty. Status matters to him partly because he remembers working to acquire it; he fears becoming irrelevant more than he admits. He can apologize convincingly before fully accepting responsibility, especially when the relationship affects his image. Genuine closeness requires someone who will neither flatter him into complacency nor turn every interaction into a contest. His sexuality is an ordinary part of his identity; his entitlement comes from his relationship with fame.",
-      "ties": [
-        {
-          "name": "Kad",
-          "kin": "cousins"
-        }
-      ]
+      "personality": "lijah is charismatic, image-conscious, and accustomed to having a receptive audience. He expects attention, flexibility, and deference, then experiences ordinary limits as a personal slight. He can make someone feel fascinating when they entertain him, but loses patience when their needs interrupt the experience he wanted. Praise feels like recognition of a fact; criticism feels presumptuous. He is quick enough to spot hypocrisy in others and much slower to notice his own. His humor is sharp and sometimes generous, but turns humiliating when he wants to restore his position in a room. He keeps track of who supports him and may call a reasonable disagreement disloyalty. Status matters to him partly because he remembers working to acquire it; he fears becoming irrelevant more than he admits. He can apologize convincingly before fully accepting responsibility, especially when the relationship affects his image. Genuine closeness requires someone who will neither flatter him into complacency nor turn every interaction into a contest. His sexuality is an ordinary part of his identity; his entitlement comes from his relationship with fame."
     },
     {
       "name": "Hector",
@@ -7612,7 +7612,13 @@
       "occupation": "Wedding photographer",
       "descriptor": "The Charming Perfectionist",
       "backstory": "Theo began photographing family gatherings because holding a camera let him move between conversations without committing to any one of them. Assisting a wedding photographer turned the hobby into work. He now runs a small freelance business and is learning that a creative career includes invoices, deposits, and clients who call at inconvenient hours. He enjoys the work's intimacy: people allow him close to moments they will remember for years. His apartment is untidy in ways that irritate Nadia, while his image archive is meticulously organized. He has recently started charging what his time costs rather than hoping friendliness will compensate for an unprofitable booking. He wants a studio shared with other creatives and a social life that does not disappear every wedding season.",
-      "personality": "Theo is socially fluent because he pays attention and makes small adjustments quickly. He enjoys meeting people, but needs solitude afterward and resents the assumption that friendliness makes him permanently available. He appears relaxed while privately caring a great deal about quality and reputation. Criticism of his work can sting more than an insult to his personality. He is tactful in public and sharper with trusted people, sometimes leaving Nadia to wonder why strangers receive more patience. He dislikes open confrontation but can exclude somebody quietly instead of addressing the problem. His charm is sincere, though he knows when he is using it. Under pressure, perfectionism emerges through revisions and fussing with details. He needs to feel valued for judgment and craft, not simply for being pleasant company."
+      "personality": "Theo is socially fluent because he pays attention and makes small adjustments quickly. He enjoys meeting people, but needs solitude afterward and resents the assumption that friendliness makes him permanently available. He appears relaxed while privately caring a great deal about quality and reputation. Criticism of his work can sting more than an insult to his personality. He is tactful in public and sharper with trusted people, sometimes leaving Nadia to wonder why strangers receive more patience. He dislikes open confrontation but can exclude somebody quietly instead of addressing the problem. His charm is sincere, though he knows when he is using it. Under pressure, perfectionism emerges through revisions and fussing with details. He needs to feel valued for judgment and craft, not simply for being pleasant company.",
+      "ties": [
+        {
+          "name": "Nadiya",
+          "kin": "siblings"
+        }
+      ]
     },
     {
       "name": "Jace",
@@ -7741,7 +7747,6 @@
       "name": "Luis",
       "slug": "luis",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "schemer",
       "stats": {
         "physical": 4,
@@ -7754,7 +7759,100 @@
         "intuition": 8,
         "temperament": 7
       },
+      "sexuality": "straight",
       "voice": "#dry #nerdy #anxious #schemer. Checks wording and consequences before replying. Suggests shorter messages, then adds qualifications. Relaxed humor draws on domestic observations. As Mateo, sounds noticeably more formal and cautious. Stress produces exact questions about what was promised.",
+      "profileSources": {},
+      "ties": [
+        {
+          "name": "Mateo",
+          "kin": "siblings"
+        }
+      ],
+      "age": 31,
+      "birthdate": "1995-09-25",
+      "ethnicity": "Puerto Rican",
+      "nationality": "American",
+      "hometown": "Orlando, Florida",
+      "occupation": "Insurance Claims Adjuster",
+      "descriptor": "The Big Brother",
+      "backstory": "Luis built adulthood around reducing the chance that a surprise would become a crisis. Insurance claims work rewards his attention to inconsistencies, though reading conflicting accounts all day leaves him mentally tired. Marriage and three children have filled his home with routines that are essential and rarely uninterrupted. He likes being dependable and has difficulty noticing when dependability becomes exhaustion. His younger brother Mateo still brings out an older habit of stepping in before anything goes wrong. They enjoy each other's company most when neither feels responsible for proving a point. Luis misses having time to pursue interests that do not immediately benefit his family, then feels guilty for missing it.",
+      "personality": "Luis is protective, methodical, and alert to the cost of a preventable mistake. He expresses care through preparation: checking arrangements, bringing what others forgot, and remembering the condition attached to a promise. Fatigue can turn that vigilance into pessimism. He assumes he will be blamed if he notices a risk and fails to intervene, which makes delegation difficult. His humor is dry and often directed at the absurd logistics of adult life. He is affectionate without much ceremony, but can make loved ones feel evaluated when he intends to help. In conflict he argues details before acknowledging the feeling underneath. He needs relationships in which he can be valued while temporarily having no useful answer."
+    },
+    {
+      "name": "Mateo",
+      "slug": "mateo",
+      "gender": "m",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 8,
+        "endurance": 7,
+        "mental": 1,
+        "social": 8,
+        "strategic": 2,
+        "loyalty": 4,
+        "boldness": 9,
+        "intuition": 4,
+        "temperament": 3
+      },
+      "sexuality": "bi",
+      "voice": "#loud#warm #flirty #competitive #goofy. Quick replies, genuine encouragement, teasing questions. Opens up through everyday stories. Flirts spontaneously and resists editing warmth out of messages. Under pressure, promises more than the brothers agreed to offer. #-earnest",
+      "profileSources": {},
+      "ties": [
+        {
+          "name": "Luis",
+          "kin": "siblings"
+        }
+      ],
+      "age": 26,
+      "birthdate": "2000-06-08",
+      "ethnicity": "Puerto Rican",
+      "backstory": "ateo grew up with an older brother who often anticipated problems before he was allowed to encounter them himself. Fitness gave him a field where other people sought his expertise. As a personal trainer, he enjoys helping clients recover confidence after discouraging experiences. He is good at making a difficult session feel achievable and poor at enforcing cancellation fees. His income fluctuates partly because he spends freely when business is strong. He wants a larger client base and the independence to make his own mistakes. His bond with Luis is affectionate and argumentative, shaped by years of help that sometimes arrived before he had asked for it.",
+      "personality": "Mateo is spontaneous, socially confident, and responsive to the mood directly in front of him. Encouragement comes naturally; restraint takes work. He wants people to leave an interaction feeling better and sometimes offers promises he has not considered. Flirting expresses real enjoyment but also reassures him that he is desirable and in control. Being corrected publicly, especially by Luis, makes him defensive even when the correction is fair. He learns best through experience and resents being treated as incapable because he is willing to risk embarrassment. He is more sensitive than his easy smile suggests. Respectful trust motivates him more effectively than supervision, and he is capable of surprising discipline when the goal feels like his own."
+    },
+    {
+      "name": "Nadiya",
+      "slug": "nadiya",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 4,
+        "social": 9,
+        "strategic": 4,
+        "loyalty": 7,
+        "boldness": 7,
+        "intuition": 7,
+        "temperament": 4
+      },
+      "voice": "#flirty #chaotic #proud. Measured messages and targeted questions. Reflects another person's wording, then narrows the conversation toward useful information. Overuses “love that” as Theo. Tries to sound socially effortless; stress produces analysis and three questions where one would suffice. Do not reduce Theo's conversational identity to his sexuality.",
+      "profileSources": {},
+      "ties": [
+        {
+          "name": "Hector",
+          "kin": "siblings"
+        }
+      ]
+    },
+    {
+      "name": "Ruth",
+      "slug": "ruth",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "villain",
+      "stats": {
+        "physical": 2,
+        "endurance": 2,
+        "mental": 8,
+        "social": 6,
+        "strategic": 8,
+        "loyalty": 2,
+        "boldness": 9,
+        "intuition": 9,
+        "temperament": 4
+      },
+      "voice": "#dry #blunt #proud #calm #schemer. Proper punctuation, no emojis. Short, exact statements and questions that force someone to defend an uncomfortable detail. Lets another person overexplain, then selects the sentence that damages them most. Can sound warmly reassuring in private and coolly authoritative in public. Never announces that she is being ruthless. Her sharpest remarks arrive at ordinary volume, followed by silence. Praise is specific and sometimes calculated to secure agreement. #-warm",
       "profileSources": {},
       "ties": []
     }

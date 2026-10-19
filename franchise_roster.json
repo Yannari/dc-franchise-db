@@ -7802,6 +7802,27 @@
       "ethnicity": "Puerto Rican",
       "backstory": "ateo grew up with an older brother who often anticipated problems before he was allowed to encounter them himself. Fitness gave him a field where other people sought his expertise. As a personal trainer, he enjoys helping clients recover confidence after discouraging experiences. He is good at making a difficult session feel achievable and poor at enforcing cancellation fees. His income fluctuates partly because he spends freely when business is strong. He wants a larger client base and the independence to make his own mistakes. His bond with Luis is affectionate and argumentative, shaped by years of help that sometimes arrived before he had asked for it.",
       "personality": "Mateo is spontaneous, socially confident, and responsive to the mood directly in front of him. Encouragement comes naturally; restraint takes work. He wants people to leave an interaction feeling better and sometimes offers promises he has not considered. Flirting expresses real enjoyment but also reassures him that he is desirable and in control. Being corrected publicly, especially by Luis, makes him defensive even when the correction is fair. He learns best through experience and resents being treated as incapable because he is willing to risk embarrassment. He is more sensitive than his easy smile suggests. Respectful trust motivates him more effectively than supervision, and he is capable of surprising discipline when the goal feels like his own."
+    },
+    {
+      "name": "Nadiya",
+      "slug": "nadiya",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 4,
+        "social": 9,
+        "strategic": 4,
+        "loyalty": 7,
+        "boldness": 7,
+        "intuition": 7,
+        "temperament": 4
+      },
+      "voice": "#flirty #chaotic #proud. Measured messages and targeted questions. Reflects another person's wording, then narrows the conversation toward useful information. Overuses “love that” as Theo. Tries to sound socially effortless; stress produces analysis and three questions where one would suffice. Do not reduce Theo's conversational identity to his sexuality.",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

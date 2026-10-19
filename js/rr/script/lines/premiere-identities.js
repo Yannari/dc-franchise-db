@@ -4,7 +4,9 @@
 // themselves straight to camera, one with an oddly specific detail, the other undercutting it, and it lands on a
 // punchline. Sometimes Don has one line back. In our own words. a and b are the team.
 const don = say => ({ by: 'don', say });
-const say = (by, s) => ({ by, say: s });
+// the team speaks in the confessional, the way the show meets its teams: Don's label at the station, then the two of
+// them to camera
+const say = (by, s) => ({ by, conf: s });
 const beat = s => ({ beat: s });
 const t = (identity, ...turns) => ({ id: `pi.${identity}`, when: { identity }, turns: turns.map(x => (typeof x === 'string' ? don(x) : x)) });
 

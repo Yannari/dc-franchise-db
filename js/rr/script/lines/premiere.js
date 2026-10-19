@@ -6,7 +6,9 @@
 // own words. a and b are the team.
 const don = say => ({ by: 'don', say });
 const n = (id, ...lines) => ({ id, turns: lines.map(l => (typeof l === 'string' ? don(l) : l)) });
-const say = (by, s) => ({ by, say: s });
+// the team speaks in the confessional, the way the show meets its teams: Don's label at the station, then the two of
+// them to camera
+const say = (by, s) => ({ by, conf: s });
 const beat = s => ({ beat: s });
 const r = (id, when, ...turns) => ({ id, when: { ...when, identity: null }, turns: turns.map(x => (typeof x === 'string' ? don(x) : x)) });
 const g = (id, ...turns) => ({ id, turns: turns.map(x => (typeof x === 'string' ? don(x) : x)) });

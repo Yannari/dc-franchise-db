@@ -35,6 +35,8 @@ describe('rr premiere', () => {
       expect(text, t.name).toContain(t.a);
       expect(text, t.name).toContain(t.b);
       expect(s.lines.some(l => l.by === 'Don')).toBe(true);
+      // ...and the two of them in the confessional (a team that says nothing, the Goths, is shown, not interviewed)
+      if (!/^pi\.goths$/.test(s.lineId)) expect(s.lines.some(l => l.kind === 'conf'), t.name).toBe(true);
       expect(s.lineId, t.name).toMatch(t.identity ? /^pi\./ : /^pr\./);
     }
   });

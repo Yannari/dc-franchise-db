@@ -141,7 +141,7 @@ const stairs = {
       { by: 'a', say: "That's what a million dollars does." },
     ] },
     { id: 'sky.ts-f4', when: TS, turns: [
-      { by: 'b', say: "Remember the first day? I had to stop every ten flights." },
+      { by: 'b', say: "Remember the first day? We could barely find the airport." },
       { by: 'a', say: "And now?" },
       { by: 'b', say: "Now I'm not stopping until there's a cheque in my hand." },
     ] },

@@ -36,6 +36,8 @@ export const RR_FACT_KEYS = [
   'stretchKind', 'taskType', 'mode', 'fails', 'switched', 'quit', 'place',
   // the challenge itself (its stretch id: 'stew', 'spices'): a place's own lines for its own tasks
   'taskId',
+  // the leg's picking task (the spices): all five right, three or four, two or fewer
+  'picked',
   // at the mat: first, top (first third), mid, bottom (last third), last
   'matPlace',
   // why the system played it (a lead change: injury, snap, crush, win)
@@ -100,6 +102,7 @@ export function factsFor(scene, roles, state) {
     aElder: (() => { const e = elderOf(state.teams[d.team]); const a = roles?.roles?.a; return e && a ? e === a : null; })(),
     fails: !s.fails ? 0 : s.fails === 1 ? 1 : 'many',
     switched: !!(d.switched), quit: !!(d.quit), place: s.place ?? null, taskId: d.stretch ?? null,
+    picked: s.picked == null ? null : s.picked >= 5 ? 'right' : s.picked >= 3 ? 'mostly' : 'wrong',
     cause: cause ? cause.kind : null, causeEnding: cause ? cause.data?.ending ?? null : null,
     threadStep: thread ? thread.split(' ')[0] : null,
     register: registerOf(roles?.roles?.a), registerB: registerOf(roles?.roles?.b),

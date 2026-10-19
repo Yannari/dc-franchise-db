@@ -28,8 +28,30 @@ const record = (state, id, stretchId, patch) => {
 
 function chainScale(state, id, stretch) {
   if (!stretch.chain) return 1;
+  if (stretch.chain.by === 'picks') return 1 + 0.12 * wrongPicks(state, id, stretch);
   const prev = state.attempts?.[id]?.[stretch.chain.from]?.attempts || 1;
   return 1 + 0.15 * (prev - 1);
+}
+
+// A task fed by a picking task (the stew cooked with the team's own spices): each wrong pick makes it worse.
+function wrongPicks(state, id, stretch) {
+  const p = state.picks?.[id];
+  return p && p.leg === state.leg && p.stretch === stretch.chain.from ? p.of - p.right : 0;
+}
+const chainPenalty = (state, id, task) => (task.chain?.by === 'picks' ? 0.05 * wrongPicks(state, id, task) : 0);
+
+// A picking task (the spices: five out of forty, no judge): one go; how many picks are right is the team's
+// knowledge of the task's types, and a team under pressure guesses (the real leg: the ones who didn't know
+// grabbed at random). Recorded for the task it feeds (state.picks) and the lines (snap.picked).
+function runPick(state, id, task, stretchId, t, level, spread, rng) {
+  const stress = people(state, id).reduce((s, n) => s + (state.mind[n]?.stress || 0), 0) / 200;
+  const q = Math.min(0.95, Math.max(0.1, 0.15 + 0.08 * level - 0.15 * stress));
+  let right = 0;
+  for (let i = 0; i < task.pick.of; i++) if (rng() < q) right++;
+  (state.picks ||= {})[id] = { leg: state.leg, stretch: stretchId, of: task.pick.of, right };
+  record(state, id, stretchId, { attempts: 1, fails: 0, right });
+  const dur = task.base * (1 + spread * 0.3 * (rng() - 0.5)) / (level / 5);
+  return { end: t + dur, attempts: 1, quit: false, data: { attempts: 1, fails: 0, p: 1, right } };
 }
 
 // One run at a task (a side of an Either/Or is a task too). `who` is 'both' or a name.
@@ -43,7 +65,8 @@ export function runTask(state, team, task, t, api, rng, who = 'both', { stretchI
   // a pep talk, a bribe, a lucky hat (the catalogue's `pass` effect) helps the next task, once
   const boost = state.passBoost?.[id] || 0;
   if (boost) state.passBoost[id] = 0;
-  const p = attemptChance(level, task.pass + boost);
+  if (task.pick) return runPick(state, id, task, stretchId, t, level, spread, rng);
+  const p = attemptChance(level, task.pass + boost - chainPenalty(state, id, task));
   const base = task.base * chainScale(state, id, task);
   let dur = 0, attempts = startAttempts, quit = false, failedNoted = false;
   const row = record(state, id, stretchId, { side: task.side || null });
@@ -201,6 +224,7 @@ export function resolveTask(state, team, stretch, t, api, rng) {
   const row = state.attempts?.[team.id]?.[stretch.id] || {};
   (state.taskLog ||= []).push({ leg: state.leg, team: team.id, stretch: stretch.id, kind: stretch.kind,
     side: r.data?.side ?? row.side ?? null, who: r.data?.who ?? null, attempts: row.attempts || 0, fails: row.fails || 0,
-    switched: !!r.data?.switched, quit: !!(r.quit || r.data?.quit), from: t, to: r.end, snap });
+    switched: !!r.data?.switched, quit: !!(r.quit || r.data?.quit), from: t, to: r.end, snap,
+    ...(r.data?.right != null ? { right: r.data.right } : {}) });
   return r;
 }

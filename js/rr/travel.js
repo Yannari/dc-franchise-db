@@ -102,11 +102,20 @@ export function resolveTravel(state, team, stretch, t, api, rng) {
   let start = t;
   if (stretch.capacity) start = api.slot(stretch.id, stretch.capacity, t, dur);
 
-  // the odd mishap on the road: the adversity twins get more of them
   const tm = state.teams[id];
+  // a team whose identity won't ride (the Vegans and their camel) goes beside it, slower
+  if (stretch.refuse?.identities?.includes(tm.identity)) {
+    const minutes = Math.round(dur * (stretch.refuse.slow - 1));
+    dur += minutes;
+    addScene(state, 'travel-mishap', [tm.a, tm.b], { t, stretch: stretch.id, team: id, kind: stretch.refuse.kind, minutes,
+      effects: [['time', id, minutes]], snap: snapOf(state, { tid: id, stretch, t, who: [tm.a, tm.b] }) }, [tm.a, tm.b]);
+    return { end: start + dur };
+  }
+  // the odd mishap on the road (a stretch can have its own: a camel goes down): the adversity twins get more of them
   const mishap = identityOf(tm)?.mishap || 1;
-  if (stretch.mode !== 'foot' && rng() < 0.06 * mishap) {
-    const [kind, base] = MISHAPS[Math.floor(rng() * MISHAPS.length)];
+  const list = stretch.mishaps || MISHAPS;
+  if (stretch.mode !== 'foot' && rng() < (stretch.mishapRate ?? 0.06) * mishap) {
+    const [kind, base] = list[Math.floor(rng() * list.length)];
     const minutes = Math.round(base / (Math.max(1, teamLevel(state, id, ['travel'])) / 5));
     dur += minutes;
     addScene(state, 'travel-mishap', [tm.a, tm.b], { t, stretch: stretch.id, team: id, kind, minutes, effects: [['time', id, minutes]],

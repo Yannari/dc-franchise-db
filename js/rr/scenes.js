@@ -27,7 +27,7 @@ const people = (state, id) => (id && state.teams[id] ? [state.teams[id].a, state
 // (the director drops warm scenes between them; nobody consoles a team they clashed with)
 export const CLASH_KINDS = new Set(['trash-talk', 'gloat', 'shove', 'push', 'accusation', 'confront', 'mock-the-struggle', 'alliance-betrayal', 'deal-broken']);
 
-export const SNAP_KEYS = ['leg', 'fresh', 'phase', 'tod', 'rank', 'band', 'bandX', 'allied', 'rivalry', 'couple', 'rel', 'relFam',
+export const SNAP_KEYS = ['leg', 'fresh', 'phase', 'picked', 'tod', 'rank', 'band', 'bandX', 'allied', 'rivalry', 'couple', 'rel', 'relFam',
   'identity', 'identityB', 'money', 'broke', 'snapped', 'place', 'stretchKind', 'mode', 'taskTypes', 'fails', 'side', 'lead', 'botcher',
   'relB', 'relFamB', 'brokeB', 'failsB', 'sabKind'];
 const ROMANTIC = ['dating', 'married', 'newly-dating', 'on-off', 'once-engaged'];
@@ -69,6 +69,8 @@ export function snapOf(st, { tid = null, oid = null, stretch = null, t = null, f
     lead: tid ? st.lead[tid] ?? null : null,
     // who is doing (or just did) this team's Botch or Watch
     botcher: tid ? st.botch?.last?.[tid] ?? null : null,
+    // how many of the team's picks were right at this leg's picking task (the spices: 0..5), for what it feeds
+    picked: tid && st.picks?.[tid]?.leg === st.leg ? st.picks[tid].right : null,
     // the other team, as it stood: its relationship, its money, how it's doing at this stretch
     relB: oid ? st.teams[oid].rel : null,
     relFamB: oid ? relFamOf(st.teams[oid].rel) : null,

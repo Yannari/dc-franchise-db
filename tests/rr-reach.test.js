@@ -28,8 +28,17 @@ describe('rr reach', () => {
     }
   });
 
-  it('every reachable kind fires in eight seasons', () => {
-    const missing = REACH.filter(k => !kinds[k]);
+  it('every reachable kind fires in eight seasons (the rare ones in twenty-four)', () => {
+    // a near-kiss comes about once in eight seasons (3 in 24, measured 2026-10-18): eight seasons missed it a third
+    // of the time, which measured the sample, not the reach (§11.5)
+    const RARE = ['near-kiss'];
+    const more = {};
+    for (let s = 9; s <= 24; s++) {
+      const { cast, teams } = raceCast(12, s);
+      setPlayers(cast);
+      for (const sc of playRaceSeason({ teams, seed: s }).state.scenes) if (RARE.includes(sc.kind)) more[sc.kind] = 1;
+    }
+    const missing = REACH.filter(k => !kinds[k] && !more[k]);
     expect(missing).toEqual([]);
   });
 

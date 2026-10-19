@@ -9,5 +9,6 @@ import greatWallHills from './great-wall-hills.js';
 import ironTowerCity from './iron-tower-city.js';
 import fireMountainIsle from './fire-mountain-isle.js';
 import redSandDesert from './red-sand-desert.js';
+import homeCity from './home-city.js';
 
-export default [redOutback, torchStatueHarbour, tombSands, treasureIsles, savannaFalls, rockNorth, greatWallHills, ironTowerCity, fireMountainIsle, redSandDesert];
+export default [redOutback, torchStatueHarbour, tombSands, treasureIsles, savannaFalls, rockNorth, greatWallHills, ironTowerCity, fireMountainIsle, redSandDesert, homeCity];

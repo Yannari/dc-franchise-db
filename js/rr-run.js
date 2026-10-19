@@ -64,7 +64,9 @@ export const RACE_RELATIONSHIPS = Object.keys(REL).map(id => ({ id, label: {
   'parent-child': 'Parent and child', siblings: 'Siblings', cousins: 'Cousins', 'grandparent-grandchild': 'Grandparent and grandchild',
   married: 'Married', dating: 'Dating', 'newly-dating': 'Newly dating', 'on-off': 'On and off', exes: 'Exes',
   'once-engaged': 'Once engaged', bffs: 'Best friends', coworkers: 'Coworkers', roommates: 'Roommates', rivals: 'Rivals',
-  enemies: 'Enemies', 'reality-vets': 'Reality-show vets' }[id] || id }));
+  enemies: 'Enemies', 'reality-vets': 'Reality-show vets' }[id] || id }))
+  // a couple who are engaged: the engine races them as a couple (dating), and everybody knows (history.engaged)
+  .concat({ id: 'engaged', label: 'Engaged' });
 /** The identities a team can race as, for the cast card's picker. */
 export const RACE_IDENTITIES = Object.entries(IDENTITIES).map(([id, x]) => ({ id, label: x.name }));
 
@@ -144,9 +146,11 @@ function _team(i, a, b, { rel = null, identity = null, name = null, customName =
   // a relationship set on the Pairs view wins; else what their history says
   let tie = null;
   try { tie = tieBetween(a, b); } catch { tie = null; }
-  const h = REL[rel] ? null : raceHistoryRel(a, b, carried, tie, vets);
-  const r = REL[rel] ? rel : h.rel;
-  const history = h?.from ? { from: h.from, kin: h.kin, engaged: !!h.engaged } : null;
+  const set = rel === 'engaged' ? 'dating' : REL[rel] ? rel : null;
+  const h = set ? null : raceHistoryRel(a, b, carried, tie, vets);
+  const r = set || h.rel;
+  const history = rel === 'engaged' ? { from: 'set', kin: 'engaged', engaged: true }
+    : h?.from ? { from: h.from, kin: h.kin, engaged: !!h.engaged } : null;
   const typed = String(name || '').trim();
   // a custom identity: a name of the user's own that plays like a built-in one (identities.js identityOf reads
   // custom.strength for its strengths and voice)

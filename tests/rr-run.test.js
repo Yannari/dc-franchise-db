@@ -352,3 +352,20 @@ describe("a couple's life has the last word over their tie", () => {
   });
 });
 
+
+describe('Engaged, picked in the Pairs view', () => {
+  it('is a couple who are engaged: Don says so, and one of them says so', async () => {
+    const { raceSetTeam, raceTeamOptions } = await import('../js/rr-run.js');
+    const { relLabel } = await import('../js/rr/story/previously.js');
+    const { REL_TAGS } = await import('../js/rr/script/lines/premiere-rel-tags.js');
+    expect(raceTeamOptions().rels.some(r => r.id === 'engaged' && r.label === 'Engaged')).toBe(true);
+    freshSeason(8);
+    const t0 = raceTeams()[0];
+    raceSetTeam(t0.a, t0.b, 'rrRel', 'engaged');
+    const t = raceTeams()[0];
+    expect(t.rel).toBe('dating');
+    expect(t.history).toMatchObject({ engaged: true });
+    expect(relLabel(t)).toBe('an engaged couple');
+    expect(REL_TAGS.engaged.length).toBeGreaterThanOrEqual(3);
+  });
+});

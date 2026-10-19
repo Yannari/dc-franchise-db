@@ -237,7 +237,8 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   // an identity's introduction can't know what the two of them are: one of them says it (lines/premiere-rel-tags.js)
   if (scene.kind === 'team-intro' && /^(pi|ci)\./.test(entry.id) && entry.id !== 'ci.own' && lines.some(l => l.kind === 'conf')) {
     const t = state.teams[scene.data?.team];
-    const tags = t && REL_TAGS[t.rel];
+    // an engaged couple (set in the Pairs view, or from their history) say that, not just that they're together
+    const tags = t && (t.history?.engaged ? REL_TAGS.engaged : REL_TAGS[t.rel]);
     if (tags?.length) {
       const lastBy = [...lines].reverse().find(l => l.kind === 'conf')?.by;
       const who = lastBy === t.a ? t.b : t.a;

@@ -26,6 +26,8 @@ export const RR_FACT_KEYS = [
   'custom', 'customB', 'ownIntro',
   // a's team is already in an alliance the other team isn't in (a pitch is to join it)
   'bloc',
+  // the team are an engaged couple (set in the Pairs view, or from their history; never the race's own proposal)
+  'engaged',
   // the other team: its relationship, broke, failing at this stretch (0, 1, 'many'); a's team owes c's (a deal, a loan)
   'relB', 'relFamB', 'brokeB', 'failsB', 'weOwe',
   // the last sabotage done to a's team (push, ram, steal, kidnap-pet, course-sabotage, fake-shortcut, mind-game...);
@@ -113,6 +115,7 @@ export function factsFor(scene, roles, state) {
     rel: s.rel ?? null, relFam: s.relFam ?? null, relB: s.relB ?? null, relFamB: s.relFamB ?? null,
     brokeB: !!s.brokeB, sabKind: s.sabKind ?? null, weArrived: d.arriving != null ? d.arriving === d.team : null, failsB: !s.failsB ? 0 : s.failsB === 1 ? 1 : 'many', weOwe: weOwe(scene, state), identity: s.identity ?? null, identityB: s.identityB ?? null,
     bloc: !!s.bloc,
+    engaged: !!state.teams[d.team]?.history?.engaged,
     custom: !!state.teams[d.team]?.custom?.name, customB: !!state.teams[d.other]?.custom?.name,
     ownIntro: !!(state.teams[d.team]?.lines?.introA && state.teams[d.team]?.lines?.introB),
     idGood: !!(id && types.some(x => id.good.includes(x))), idBad: !!(id && types.some(x => id.bad.includes(x))),

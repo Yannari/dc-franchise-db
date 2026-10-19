@@ -210,7 +210,8 @@ export function airLeg(state, leg) {
     // a challenge with its own lines is seen being done: a team's plain moment there (a hug, a pep talk) gives way
     // to the challenge itself; a story (another team, a storyline step, a cause) keeps its place
     const plain = s => !s.data?.other && !s.data?.threadIds?.length && s.data?.cause == null;
-    if (best && !(TASK_LINES.has(r.stretch) && plain(best))) { take(best, 1); return; }
+    // ...and at a challenge with its own lines, a team with a story there is still seen doing the challenge
+    if (best && !(TASK_LINES.has(r.stretch) && plain(best))) { take(best, 1); if (!TASK_LINES.has(r.stretch)) return; }
     // a clean run says nothing about itself: the first one airs as getting there, the last as getting out
     const clean = !r.fails && !r.switched && !r.quit;
     // a picking task's moment is the picking and how it went (the spices: all five, most, a guess)
@@ -348,6 +349,10 @@ export function airLeg(state, leg) {
   // (a picking task's result is each team's own: how many it got right is its story, so it never merges)
   const CLEAN_BEAT = b => b.data.snap?.picked == null
     && (b.kind === 'task-start' || b.kind === 'task-done' || (b.kind === 'task-try' && b.data.ending === 'first-try'));
+  // (picks finishing in the same minute: the third on is shown at the start of its picking, which is when it chose)
+  const picks = {};
+  for (const b of beats) if (b.kind === 'task-try' && b.data.snap?.picked != null) (picks[`${b.data.stretch}|${b.data.t}`] ||= []).push(b);
+  for (const group of Object.values(picks)) for (const b of group.slice(2)) b.data.t = Math.round(b.data.from ?? b.data.t);
   const spot = {};
   for (const b of beats) if (CLEAN_BEAT(b)) (spot[`${b.data.stretch}|${b.data.t}|${b.kind}`] ||= []).push(b);
   for (const [key, group] of Object.entries(spot)) {

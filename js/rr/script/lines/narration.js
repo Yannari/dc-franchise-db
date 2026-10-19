@@ -9,8 +9,8 @@ const ids = (prefix, list) => list.map((e, i) => ({ id: `${prefix}.${i + 1}`, ..
 
 export default {
   'don-narrate.depart': ids('nd', [
-    don("Yesterday's Chill Zone is today's starting line. Teams leave in the order they arrived, starting with yesterday's winners, {winners}."),
-    don("Last leg's finish line is this leg's starting line. Teams head out in the order they came in, which means {winners} are first out the door."),
+    don("Where the last leg ended, this one begins. Teams head out in the order they checked in, and that means {winners} go first."),
+    don("The finish line has become the start line. {winners} checked in first, so they head out first."),
     don("The Chill Zone is now a starting line. That's called recycling.", "Teams leave in the order they finished, led by {winners}."),
     don("Teams depart in the order they arrived. First out: {winners}."),
     don("And we're off! Well, {winners} are off. Everybody else leaves in the order they came in yesterday."),
@@ -25,7 +25,7 @@ export default {
     don("The Chill Zone empties out team by team, starting with yesterday's winners, {winners}."),
   ]),
   'don-narrate.flight-wait': ids('nw', [
-    don("{count} teams wait at the airport for flight number two, which doesn't leave for {gap}. The first flight is already in the air."),
+    don("The first plane is gone. {count} teams are left at the gate, and their flight doesn't board for {gap}."),
     don("Flight number one is gone, and {count} teams are stuck at the gate for flight number two, which leaves in {gap}."),
     don("The first flight is up, up and away. The next one leaves in {gap}, so {count} teams get to sit and think about their choices."),
     don("{count} teams missed the first flight. They'll have to wait {gap} for the next one."),
@@ -39,7 +39,7 @@ export default {
     don("The gate for flight number two fills up with {count} teams. Departure is in {gap}."),
   ]),
   'don-narrate.first-landed': ids('nf', [
-    don("Flight number one has landed, and the race for first place is on."),
+    don("Flight number one is down, and the teams on it are already fighting over cabs."),
     don("Flight number one is on the ground, and those teams take off like they stole something."),
     don("The first flight touches down. Doors open, teams out, and it's a stampede."),
     don("Flight number one has landed! The teams on board have the lead. Now they have to keep it."),
@@ -52,18 +52,18 @@ export default {
     don("Flight number one is in, and the leaders are out of the airport before their luggage is."),
   ]),
   'don-narrate.flight-landed': ids('nl', [
-    don("This just in: flight number {flight} has landed."),
+    don("And now flight number {flight} touches down. Seatbelts off, everybody running."),
     don("Flight number {flight} touches down, and those teams have a lot of catching up to do."),
     don("And there's flight number {flight}. Better late than never."),
     don("Flight number {flight} has landed, and those teams are already behind."),
-    don("This just in: flight number {flight} is on the ground, and the race is very much on."),
+    don("Flight number {flight} is on the ground, and the race is very much on."),
     don("Here comes flight number {flight}. The teams on board have some ground to make up."),
     don("Flight {flight} has touched down. Behind, but not beaten. Yet."),
     don("And flight number {flight} lands! Everybody off, everybody run."),
     don("Flight number {flight} is on the ground, and the teams on it hit the cab rank at a sprint."),
     don("Wheels down for flight number {flight}. Time to start catching up."),
     don("Flight number {flight} has landed. The leaders have a head start, but this race loves a comeback."),
-    don("This just in: flight {flight} has arrived. Everybody on it is very aware they're behind."),
+    don("Flight {flight} has arrived. Everybody on it is very aware they're behind."),
     don("Flight number {flight} lands, and the chase is on."),
     don("And now flight number {flight}. Late to the party, but still invited."),
   ]),
@@ -84,7 +84,7 @@ export default {
     don("{team} head into {task}, and back at {prevTask}, it's getting crowded."),
   ]),
   'don-narrate.last-stretch': ids('ns', [
-    don("Most of the teams are safe at the Chill Zone, but the last {count} are battling to not come in last."),
+    don("Most of the teams are safe and sitting down. The last {count} are still out there, and only one of them is going home."),
     don("{count} teams are still out there, and one of them is going home."),
     don("Down to the last {count} teams, and one of them is about to take a very long walk."),
     don("Most teams have checked in. For the last {count}, the race now is to not come in last."),

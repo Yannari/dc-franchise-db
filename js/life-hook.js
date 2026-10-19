@@ -165,6 +165,25 @@ export function lifeContext(pdb = {}, sdb = {}, roster = {}) {
     return out;
   };
 
+  // Couples who left a season ENGAGED (the race records a couple's stage: rr/export.js showmanceStage) and still
+  // together: the resolver records the engagement, the way a breakup on screen ends a relationship.
+  const engagedPairsFor = seasonId => {
+    const out = [];
+    const seen = new Set();
+    for (const c of careers) {
+      for (const d of c.details || []) {
+        if (d.seasonId !== seasonId || !d.showmance || d.showmanceStage !== 'engaged' || d.showmanceEnded === 'broken') continue;
+        const other = careers.find(x => x.name === d.showmance);
+        if (!other) continue;
+        const key = [c.id, other.id].sort().join('|');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push([c.id, other.id]);
+      }
+    }
+    return out;
+  };
+
   const pairsFor = seasonId => {
     const out = [];
     const seen = new Set();
@@ -199,6 +218,7 @@ export function lifeContext(pdb = {}, sdb = {}, roster = {}) {
     careers,
     castBySeason,
     pairsFor,
+    engagedPairsFor,
     brokenPairsFor,
     names: Object.fromEntries(players.map(p => [p.id, p.name])),
     people,
@@ -244,6 +264,7 @@ export function resolveGapWith(ctx, season, log) {
     cast: ctx.castBySeason.get(season.seasonId) || [],
     pairs: ctx.pairsFor(season.seasonId),
     brokenPairs: ctx.brokenPairsFor ? ctx.brokenPairsFor(season.seasonId) : [],
+    engagedPairs: ctx.engagedPairsFor ? ctx.engagedPairsFor(season.seasonId) : [],
   });
 }
 

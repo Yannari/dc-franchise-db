@@ -355,7 +355,7 @@ export function fameOf(career) {
  *           correct: the resolver should not invent a couple out of nothing.
  */
 export function resolveOffSeason({
-  season, careers = [], events = [], cast = [], pairs = [], brokenPairs = [], seedSalt = '',
+  season, careers = [], events = [], cast = [], pairs = [], brokenPairs = [], engagedPairs = [], seedSalt = '',
   // Who knows whom. Built once by the caller and passed in, since it is the
   // same for every player in one resolution.
   graph = null,
@@ -403,6 +403,10 @@ export function resolveOffSeason({
   // already together: without this the off-season rolled the ordinary odds on
   // a relationship the season had already ended on screen.
   const endedOnScreen = new Set((brokenPairs || []).map(x => [x[0], x[1]].sort().join('|')));
+  // Couples who got engaged on screen (the race's proposal on the mat): what the audience watched is not a
+  // probability, so the engagement is recorded this off-season.
+  const engagedOnScreen = new Set((engagedPairs || []).map(x => [x[0], x[1]].sort().join('|')));
+  const beforeEngaged = st => STAGES.indexOf(st) >= 0 && STAGES.indexOf(st) < STAGES.indexOf('engaged');
   // Handled once per couple: a relationship is ONE event, so resolving it from
   // both sides would either duplicate it or, worse, move it two stages.
   const settled = new Set();
@@ -615,6 +619,10 @@ export function resolveOffSeason({
       // What the audience watched is not a probability. If this couple's
       // showmance ended on screen this season, the relationship ended; the only
       // thing left to decide is what it is called.
+      if (engagedOnScreen.has(pairKey(slug, partner)) && beforeEngaged(stage)) {
+        emit(slug, 'engaged', { whom: partner });
+        continue;
+      }
       const brokeOnScreen = endedOnScreen.has(pairKey(slug, partner));
       if (brokeOnScreen || r() < endChance) {
         // A marriage separates before it divorces; anything else just ends, and
@@ -653,6 +661,13 @@ export function resolveOffSeason({
       // being important to somebody is not the same as being their type.
       const showmance = pairFor(slug);
       const fromShow = !!(showmance && canDate(slug, showmance));
+      // two people who met on the show and got engaged on it leave engaged
+      if (fromShow && engagedOnScreen.has(pairKey(slug, showmance)) && !settled.has(pairKey(slug, showmance)) && !taken.has(showmance)) {
+        settled.add(pairKey(slug, showmance));
+        taken.add(slug); taken.add(showmance);
+        emit(slug, 'engaged', { whom: showmance });
+        continue;
+      }
       const candidate = (fromShow ? showmance : null)
         || knownTo(social, slug, 'friend', rng('who'), other => canDate(slug, other));
       const ckey = candidate ? pairKey(slug, candidate) : null;

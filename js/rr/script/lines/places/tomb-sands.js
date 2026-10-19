@@ -192,7 +192,7 @@ const pyramid = {
     { id: 'tms.py-dn1', when: PY, turns: [
       { beat: '{a} and {b} reach the Don Box on the far side of the pyramid and grab the tip.' },
       { by: 'a', say: "Camels. To the river." },
-      { by: 'b', ...V("Camels again? We've done camels!", "Camels again?", "More camels?", "CAMELS again? We've DONE camels!", "Camels again? We've already done camels!", "The camels have found us once more.") },
+      { by: 'b', ...V("Camels? Nobody said anything about camels!", "Camels again?", "More camels?", "CAMELS again? We've DONE camels!", "Camels again? We've already done camels!", "The camels have found us once more.") },
     ] },
     { id: 'tms.py-dn2', when: PY, turns: [
       { by: 'b', say: "We conquered a pyramid." },

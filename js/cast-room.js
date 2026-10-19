@@ -470,6 +470,9 @@ function _cardPairs() {
 // ── The Ridonculous Race's team, set right on its lane: what the two of them are, the identity they race as (one of
 //    the built-in ones, or the user's own: a name that plays like a built-in one), and a team name. Written to both
 //    cards (rr-run.js raceSetTeam), which is what raceTeams reads. ──
+// the lines a user writes for a team (rr-run.js TEAM_LINES), as the Pairs view asks for them
+const LINE_FIELDS = [['rrLineGood', "At a challenge they're good at…"], ['rrLineStruggle', 'When a challenge keeps beating them…'],
+  ['rrLineWin', 'When they win something…'], ['rrLineElim', 'Going home…']];
 function _raceTeamPanel(a, b) {
   const o = (typeof window !== 'undefined' && window.raceTeamOptions?.()) || { rels: [], ids: [] };
   const v = k => a[k] ?? b[k] ?? '';
@@ -491,13 +494,23 @@ function _raceTeamPanel(a, b) {
     <div class="cr-rt-row">${['rrCustomBad1', 'rrCustomBad2'].map(f => `<select class="cr-rt" data-f="${f}" onchange="crRaceTeam(this)">
       <option value="">Weak at…</option>${opt(o.types || [], v(f))}</select>`).join('')}</div>` : ''}
     <input class="cr-rt" data-f="rrTeamName" placeholder="Team name (optional: the identity's, or the two of them)" value="${esc(v('rrTeamName'))}" onchange="crRaceTeam(this)">
+    <details class="cr-rt-lines"${[a.rrLineIntro, b.rrLineIntro, ...LINE_FIELDS.map(([f]) => v(f))].some(Boolean) ? ' open' : ''}>
+      <summary>Their own lines (optional)</summary>
+      <div class="cr-rt-sub">Their introduction in the premiere, one line each to camera (both, or Don's lines air)</div>
+      ${[a, b].map(p => `<input class="cr-rt" data-f="rrLineIntro" data-p="${esc(p.name)}" placeholder="${esc(p.name)} says…" value="${esc(p.rrLineIntro || '')}" onchange="crRaceTeam(this)">`).join('')}
+      <div class="cr-rt-sub">Said first at that moment, once a season</div>
+      ${LINE_FIELDS.map(([f, label]) => `<input class="cr-rt" data-f="${f}" placeholder="${esc(label)}" value="${esc(v(f))}" onchange="crRaceTeam(this)">`).join('')}
+    </details>
   </div>`;
 }
 /** A team field changed on its lane: both cards take it, and the lane redraws when the identity changes. */
 export function crRaceTeam(el) {
   const box = el?.closest?.('.cr-race-team');
   if (!box) return;
-  window.raceSetTeam?.(box.dataset.a, box.dataset.b, el.dataset.f, el.value);
+  // a person's own line goes on their card only
+  const p = el.dataset.p;
+  if (p) window.raceSetTeam?.(p, p === box.dataset.a ? box.dataset.b : box.dataset.a, el.dataset.f, el.value);
+  else window.raceSetTeam?.(box.dataset.a, box.dataset.b, el.dataset.f, el.value);
   saveCast();
   if (el.dataset.f === 'rrIdentity') crRenderGrid();
 }

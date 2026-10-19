@@ -7006,3 +7006,6 @@ textarea.ci-bio{resize:vertical;width:100%}
 .cr-race-team .cr-rt:focus { outline: 1px solid #f2b705; }
 .cr-race-team .cr-rt-sub { font-size: 10px; color: var(--muted, #8b95b3); margin-top: 2px; }
 .cr-race-team .cr-rt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.cr-race-team .cr-rt-lines { display: flex; flex-direction: column; gap: 5px; }
+.cr-race-team .cr-rt-lines > summary { font-size: 11px; color: #f2b705; cursor: pointer; }
+.cr-race-team .cr-rt-lines[open] { gap: 5px; }

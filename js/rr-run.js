@@ -130,11 +130,12 @@ export function raceTeams(list = _list(), config = seasonConfig) {
     const pick = k => p[k] || q[k] || null;
     out.push(_team(out.length, p.name, o, { rel: pick('rrRel'), identity: pick('rrIdentity'), name: pick('rrTeamName'),
       customName: pick('rrCustomName'), customLike: [pick('rrCustomLike'), pick('rrCustomLike2'), pick('rrCustomLike3')],
-      customGood: [pick('rrCustomGood1'), pick('rrCustomGood2')], customBad: [pick('rrCustomBad1'), pick('rrCustomBad2')], carried }));
+      customGood: [pick('rrCustomGood1'), pick('rrCustomGood2')], customBad: [pick('rrCustomBad1'), pick('rrCustomBad2')], carried,
+      lines: _teamLines(p, q) }));
   }
   return out;
 }
-function _team(i, a, b, { rel = null, identity = null, name = null, customName = null, customLike = [], customGood = [], customBad = [], carried = null } = {}) {
+function _team(i, a, b, { rel = null, identity = null, name = null, customName = null, customLike = [], customGood = [], customBad = [], carried = null, lines = null } = {}) {
   let vets = false;
   try { vets = hasFranchiseHistory(a) && hasFranchiseHistory(b); } catch { vets = false; }
   // a relationship set on the Pairs view wins; else what their history says
@@ -152,11 +153,11 @@ function _team(i, a, b, { rel = null, identity = null, name = null, customName =
     const mix = uniq(customLike).filter(x => IDENTITIES[x]).slice(0, 3);
     const good = uniq(customGood).filter(x => TASK_TYPES[x]).slice(0, 2);
     const bad = uniq(customBad).filter(x => TASK_TYPES[x] && !good.includes(x)).slice(0, 2);
-    return { id: 't' + (i + 1), a, b, rel: r, ...(history ? { history } : {}), identity: null, name: typed || own,
+    return { id: 't' + (i + 1), a, b, rel: r, ...(history ? { history } : {}), ...(lines ? { lines } : {}), identity: null, name: typed || own,
       custom: { name: own, mix, voice: mix[0] || null, good, bad, strength: mix[0] || null } };
   }
   const id = IDENTITIES[identity] ? identity : null;
-  return { id: 't' + (i + 1), a, b, rel: r, ...(history ? { history } : {}), identity: id,
+  return { id: 't' + (i + 1), a, b, rel: r, ...(history ? { history } : {}), ...(lines ? { lines } : {}), identity: id,
     // a typed name over an identity's is the team's own (the engine's identityName reads custom.name)
     name: typed || (id ? IDENTITIES[id].name : `${a} & ${b}`),
     custom: typed && (!id || typed !== IDENTITIES[id].name) ? { name: typed } : null };
@@ -423,13 +424,27 @@ export const RACE_TASK_TYPES = Object.keys(TASK_TYPES).map(id => ({ id, label: {
   stomach: 'Eating anything', nerve: 'Nerve', brains: 'Brains', search: 'Finding things', perform: 'Performing', people: 'People',
   travel: 'Getting around', hands: 'Hands-on', patience: 'Patience' }[id] || id }));
 
+// The lines the user writes for a team (the Pairs view's "Their own lines"): the card field, and the moment it is said at
+// (identity.js hooks). Said first at that moment, once a season.
+export const TEAM_LINES = [['rrLineGood', 'good'], ['rrLineStruggle', 'struggle'], ['rrLineWin', 'win'], ['rrLineElim', 'elim']];
+// braces would read as slots: a typed line is said as typed
+const _typed = s => String(s || '').replace(/[{}]/g, '').replace(/\s+/g, ' ').trim();
+function _teamLines(p, q) {
+  const out = {};
+  if (_typed(p?.rrLineIntro) && _typed(q?.rrLineIntro)) { out.introA = _typed(p.rrLineIntro); out.introB = _typed(q.rrLineIntro); }
+  for (const [f, hook] of TEAM_LINES) { const v = _typed(p?.[f] || q?.[f]); if (v) out[hook] = [v]; }
+  return Object.keys(out).length ? out : null;
+}
+
 /** The team fields the Pairs view sets, on both of the team's cards (so the team reads the same either way round). */
 const TEAM_FIELDS = new Set(['rrRel', 'rrIdentity', 'rrCustomName', 'rrCustomLike', 'rrCustomLike2', 'rrCustomLike3',
-  'rrCustomGood1', 'rrCustomGood2', 'rrCustomBad1', 'rrCustomBad2', 'rrTeamName']);
+  'rrCustomGood1', 'rrCustomGood2', 'rrCustomBad1', 'rrCustomBad2', 'rrTeamName', ...TEAM_LINES.map(([f]) => f), 'rrLineIntro']);
+// a person's own line (their half of the introduction) is on their card only
+const PERSON_FIELDS = new Set(['rrLineIntro']);
 export function raceSetTeam(a, b, field, value) {
   if (!TEAM_FIELDS.has(field)) return false;
   const v = typeof value === 'string' ? value.trim() : value;
-  for (const n of [a, b]) {
+  for (const n of PERSON_FIELDS.has(field) ? [a] : [a, b]) {
     const p = _player(n);
     if (!p) continue;
     if (v === '' || v == null) delete p[field]; else p[field] = v;

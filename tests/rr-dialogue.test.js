@@ -9,7 +9,7 @@ import { REAL } from '../js/rr/places.js';
 import { fixtureCtx } from './helpers/rr-catalogue.js';
 
 const ROLE_KEYS = ['a', 'b', 'c', 'd', 'e', 'f', 'don', 'local'];
-const SLOT_KEYS = ['placing', 'number', 'relTag', 'teaser', 'teams', 'winners', 'count', 'gap', 'flight', 'prevTask', 'team', 'teamB', 'identity', 'identityB', 'place', 'task', 'side', 'partner', 'crush', 'target', 'reward', 'penalty', 'amount', 'local'];
+const SLOT_KEYS = ['placing', 'number', 'relTag', 'teaser', 'teams', 'winners', 'count', 'gap', 'flight', 'prevTask', 'team', 'teamB', 'identity', 'identityB', 'place', 'task', 'side', 'partner', 'crush', 'target', 'reward', 'penalty', 'amount', 'local', 'ownA', 'ownB', 'donLabel'];
 const PRON = ['sub', 'obj', 'pos', 'posAdj', 'ref', 'Sub', 'Obj', 'PosAdj'];
 // this show has no vote (spec §8; manual §19.4 "the format's own words")
 const VOTE_WORDS = /\b(vote[sd]?|voting|ballots?|tribal|jury|evict(ed|ion)?|nominat(e|ed|ion)|the Arena|immunity)\b/i;

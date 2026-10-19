@@ -178,6 +178,12 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   // an interview about a moment is one written for that kind of moment, or there is no interview
   const aboutIt = e => !ABOUT_INTERVIEWS.has(scene.kind) || scene.data?.about == null || e.when?.cause != null;
   for (const k of [].concat(key)) pools[k] = (POOLS[k] || []).filter(e => [...needs(e)].every(n => have.has(n)) && placed(e) && aboutIt(e));
+  // the premiere's introductions: the one the user wrote for a team airs; else a custom identity's own (written for any
+  // name) over the relationship lines, which would never say what the team is
+  if (scene.kind === 'team-intro') {
+    const tier = facts.ownIntro ? 'ownIntro' : facts.custom ? 'custom' : null;
+    if (tier) for (const k of Object.keys(pools)) { const mine = pools[k].filter(e => e.when?.[tier]); if (mine.length) pools[k] = mine; }
+  }
   state.lineLedger ||= newLedger();
   const clock = scene.leg ?? state.leg;
   const speakers = Object.entries(r.roles).filter(([k]) => k !== 'don' && k !== 'local').map(([, n]) => n);

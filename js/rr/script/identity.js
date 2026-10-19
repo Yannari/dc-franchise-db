@@ -35,6 +35,8 @@ const teamOfName = (st, n) => Object.values(st.teams).find(t => t.a === n || t.b
 export function identityLine(state, speaker, hook, rng = Math.random) {
   const t = teamOfName(state, speaker);
   if (!t) return null;
+  // a line the user wrote for this team at this moment (the Pairs view), before anything from a kit
+  const mine = [].concat(t.lines?.[hook] || []).filter(Boolean);
   let lines = [];
   if (t.identity && KITS[t.identity]) {
     const k = KITS[t.identity];
@@ -45,6 +47,8 @@ export function identityLine(state, speaker, hook, rng = Math.random) {
   // a team says each kit line once a season (state.kitLedger, reset with the line ledger); none left, it stays quiet
   state.kitLedger ||= {};
   const used = (state.kitLedger[t.id ?? t.name] ||= []);
+  const ownFresh = mine.filter(l => !used.includes(l));
+  if (ownFresh.length) { used.push(ownFresh[0]); return ownFresh[0]; }
   const fresh = lines.filter(l => !used.includes(l));
   if (!fresh.length) return null;
   const pick = fresh[Math.floor(rng() * fresh.length) % fresh.length];

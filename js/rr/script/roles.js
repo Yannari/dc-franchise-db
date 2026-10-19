@@ -133,6 +133,11 @@ export function rolesOf(scene, state) {
     ...(scene.kind === 'don-narrate' ? { teamVoc: null, teamBVoc: null, targetVoc: null, ...d.slots } : {}),
     // a premiere introduction: what the two of them are, in Don's words ({relTag}, director.js)
     ...(scene.kind === 'team-intro' ? d.slots || {} : {}),
+    // a team's own introduction (the Casting Room's Pairs view): each of them, and Don's label for the two of them
+    ...(scene.kind === 'team-intro' && state.teams[tid]?.lines?.introA ? {
+      ownA: state.teams[tid].lines[roles.a === state.teams[tid].a ? 'introA' : 'introB'] || null,
+      ownB: state.teams[tid].lines[roles.a === state.teams[tid].a ? 'introB' : 'introA'] || null,
+      donLabel: [identityName(state, tid), d.slots?.relTag].filter(Boolean).join(' and ') || null } : {}),
   };
   for (const k of Object.keys(slots)) if (slots[k] == null) delete slots[k];
   return { roles, ending: d.ending ?? 'any', slots };

@@ -22,6 +22,7 @@ import { SCENES, CLASH_KINDS, relFamOf } from '../scenes.js';
 import { getPlace } from '../places.js';
 import { writeScene, TASK_LINES } from '../script/write.js';
 import { pickedOf } from '../script/facts.js';
+import { teamRef, teamTag } from './previously.js';
 
 export const MUST = new Set(['don-opener', 'don-demo', 'don-place', 'don-crown', 'don-elim', 'don-arrives', 'don-fakeout', 'don-rule', 'don-ruling',
   'boomerang-found', 'boomerang-decide', 'boomerang-hit', 'boomerang-vote', 'yield', 'zip-it', 'save-used', 'medevac-choice',
@@ -68,6 +69,50 @@ function weight(sc) {
     else w += 0.5;
   }
   return w;
+}
+
+// Don's narration, placed where the real show puts it (episode 3, the user's goal transcript)
+const NUM = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen',
+  'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen'];
+const gapWords = m => (m < 40 ? 'half an hour' : m < 75 ? 'an hour' : m < 105 ? 'an hour and a half' : m < 150 ? 'two hours'
+  : `${NUM[Math.round(m / 60)] || Math.round(m / 60)} hours`);
+const TASK_STRETCH = ['allin', 'botch', 'either', 'superteam', 'route'];
+function narrate(state, leg, scenes) {
+  const n = leg.n, out = [];
+  const add = (ending, t, slots) => out.push({ scene: null, beat: `narr:${n}:${ending}:${out.length}`, kind: 'don-narrate', ending, stretch: null,
+    t, teams: [], who: [], side: null, tier: 0,
+    src: { id: `narr:${n}:${ending}:${out.length}`, leg: n, kind: 'don-narrate', who: [], seenBy: [], data: { ending, t, slots } } });
+  // the departure: last leg's winners first out of the Chill Zone (before Don's opener)
+  const prev = (state.legs || []).find(l => l.n === n - 1);
+  if (prev?.order?.[0]) add('depart', -1, { winners: teamTag(state, prev.order[0]) });
+  // the flights: who's waiting for the next one, and each landing
+  const flights = scenes.filter(s => s.kind === 'same-flight').sort((x, y) => x.data.flight - y.data.flight);
+  if (flights.length >= 2) {
+    add('flight-wait', flights[0].data.t, { count: NUM[flights[1].data.teams.length] || String(flights[1].data.teams.length),
+      gap: gapWords(flights[1].data.t - flights[0].data.t) });
+    flights.forEach((f, k) => {
+      if (f.data.lands == null) return;
+      add(k ? 'flight-landed' : 'first-landed', f.data.lands, { flight: NUM[k + 1] });
+    });
+  }
+  // the bridge: the leaders reach a later task while somebody is still at an earlier one
+  const place = getPlace(leg.place);
+  const tasks = (place?.stretches || []).filter(s => TASK_STRETCH.includes(s.kind) && s.called);
+  const rows = (state.taskLog || []).filter(r => r.leg === n);
+  tasks.forEach((s, i) => {
+    if (!i) return;
+    const here = rows.filter(r => r.stretch === s.id).sort((x, y) => x.from - y.from)[0];
+    if (!here) return;
+    const behind = tasks.slice(0, i).reverse().find(p => rows.some(r => r.stretch === p.id && r.to > here.from));
+    if (behind) add('bridge', here.from, { team: teamRef(state, here.team), task: s.called, prevTask: behind.called });
+  });
+  // the bottom of an elimination leg: the last four still out there
+  const N = leg.order.length;
+  if (leg.kind === 'elim' && N >= 5 && leg.times) {
+    const t = leg.times[leg.order[N - 5]];
+    if (t != null) add('last-stretch', t + 1, { count: 'four' });
+  }
+  return out;
 }
 
 function taskEnding(row) {
@@ -281,8 +326,11 @@ export function airLeg(state, leg) {
     }
   }
 
+  // Don narrating it (the real show: the departure order, the flights, a bridge, the bottom of the leg)
+  const narration = narrate(state, leg, scenes);
+
   // the episode, in clock order
-  const segs = [...montages];
+  const segs = [...montages, ...narration];
   for (const [id, tier] of picked) {
     const s = byId.get(id);
     const teams = teamsIn(s);

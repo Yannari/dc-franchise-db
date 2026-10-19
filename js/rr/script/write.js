@@ -41,6 +41,9 @@ export const DIRECTOR_KINDS = {
   'mat-montage': ['any'], 'task-montage': ['any'],
   // a ride that is the leg's signature (a place's stretch with ride: true, the camel): the first teams on it, riding
   'ride': ['any'],
+  // Don narrating the episode (director.js): the departure order, the flights, a bridge between the leaders and the
+  // rest, the bottom of an elimination leg
+  'don-narrate': ['depart', 'flight-wait', 'first-landed', 'flight-landed', 'bridge', 'last-stretch'],
 };
 
 const AGE = new Set(['kid', 'teen', 'adult', 'grown']);

@@ -32,10 +32,11 @@ import more4 from './more-4.js';
 import finale from './finale.js';
 import montage from './montage.js';
 import ride from './ride.js';
+import narration from './narration.js';
 import redSandDesert from './places/red-sand-desert.js';
 
 const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
-  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, ride, redSandDesert];
+  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, ride, narration, redSandDesert];
 
 export const POOLS = {};
 for (const f of FILES) for (const [k, list] of Object.entries(f)) (POOLS[k] ||= []).push(...list);

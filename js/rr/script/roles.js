@@ -60,7 +60,7 @@ export function rolesOf(scene, state) {
   const t = tid ? state.teams[tid] : null;
   // a plane full of teams is a room (travel.js same-flight)
   // the director's own kinds have no catalogue entry: a big cast's quick check-in is Don's
-  const cast = scene.kind === 'same-flight' ? 'group' : scene.kind === 'mat-montage' ? 'don' : kind?.cast || 'team';
+  const cast = scene.kind === 'same-flight' ? 'group' : ['mat-montage', 'don-narrate'].includes(scene.kind) ? 'don' : kind?.cast || 'team';
   const roles = {};
   const who = scene.who || [];
 
@@ -117,6 +117,8 @@ export function rolesOf(scene, state) {
     teaser: s?.teaser || null,
     // a task montage: the teams that got through it together ("Goths, Lawyers and Nurses")
     teams: d.teamsList?.length ? listNames(d.teamsList.map(id => teamName(state, id))) : null,
+    // Don's narration carries its own (director.js): {winners} {count} {gap} {flight} {task} {prevTask} {team}
+    ...(scene.kind === 'don-narrate' ? d.slots || {} : {}),
   };
   for (const k of Object.keys(slots)) if (slots[k] == null) delete slots[k];
   return { roles, ending: d.ending ?? 'any', slots };

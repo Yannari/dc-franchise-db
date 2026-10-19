@@ -131,7 +131,7 @@ export function boardFlightScenes(state, stretch) {
   flights.forEach((f, k) => {
     if (!f.taken.length) return;
     const people = f.taken.flatMap(id => [state.teams[id].a, state.teams[id].b]);
-    out.push(addScene(state, 'same-flight', people, { flight: k, teams: [...f.taken], t: f.departs, stretch: stretch.id,
+    out.push(addScene(state, 'same-flight', people, { flight: k, teams: [...f.taken], t: f.departs, lands: f.lands, stretch: stretch.id,
       effects: f.taken.map(id => ['flight', id, k]), snap: snapOf(state, { stretch, t: f.departs, who: people }) }, people));
   });
   return out;

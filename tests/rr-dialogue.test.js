@@ -9,13 +9,13 @@ import { REAL } from '../js/rr/places.js';
 import { fixtureCtx } from './helpers/rr-catalogue.js';
 
 const ROLE_KEYS = ['a', 'b', 'c', 'd', 'e', 'f', 'don', 'local'];
-const SLOT_KEYS = ['placing', 'teaser', 'teams', 'team', 'teamB', 'identity', 'identityB', 'place', 'task', 'side', 'partner', 'crush', 'target', 'reward', 'penalty', 'amount', 'local'];
+const SLOT_KEYS = ['placing', 'teaser', 'teams', 'winners', 'count', 'gap', 'flight', 'prevTask', 'team', 'teamB', 'identity', 'identityB', 'place', 'task', 'side', 'partner', 'crush', 'target', 'reward', 'penalty', 'amount', 'local'];
 const PRON = ['sub', 'obj', 'pos', 'posAdj', 'ref', 'Sub', 'Obj', 'PosAdj'];
 // this show has no vote (spec §8; manual §19.4 "the format's own words")
 const VOTE_WORDS = /\b(vote[sd]?|voting|ballots?|tribal|jury|evict(ed|ion)?|nominat(e|ed|ion)|the Arena|immunity)\b/i;
 const HEAD_COUNT = /\b(you|us|we) (two|three|four|five|six)\b|\bthe (three|four|five|six) of (us|you)\b|\ball (three|four|five|six) of\b/i;
 // the conversations that are scenes in themselves: a fight, a crush, a deal
-const QUICK = new Set(['mat-montage', 'task-montage']);
+const QUICK = new Set(['mat-montage', 'task-montage', 'don-narrate']);
 const LONG = new Set(['blame', 'old-wound', 'silent-treatment', 'makeup', 'breakup', 'back-together', 'homesick', 'fear-through',
   'refuse', 'money-worry', 'crush-confided', 'confession-attempt', 'confession', 'near-kiss', 'jealousy', 'alliance-pitch',
   'alliance-betrayal', 'deal', 'deal-broken', 'trash-talk', 'confront', 'accusation', 'help-offer', 'rescue', 'console']);

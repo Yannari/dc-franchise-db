@@ -33,6 +33,7 @@ import { buildSchedule } from './rr/schedule.js';
 import { DEFAULT_OPTIONS } from './rr/format.js';
 import { REL } from './rr/state.js';
 import { IDENTITIES } from './rr/identities.js';
+import { TASK_TYPES } from './rr/types.js';
 import { PLACES } from './rr/places.js';
 import { rrLedgerRecord } from './rr/ledger-record.js';
 import { carriedFor } from './franchise-carry.js';
@@ -93,16 +94,29 @@ export function raceTeams(list = _list(), config = seasonConfig) {
     seen.add(p.name); seen.add(o);
     const q = _player(o) || {};
     const pick = k => p[k] || q[k] || null;
-    out.push(_team(out.length, p.name, o, { rel: pick('rrRel'), identity: pick('rrIdentity'), name: pick('rrTeamName') }));
+    out.push(_team(out.length, p.name, o, { rel: pick('rrRel'), identity: pick('rrIdentity'), name: pick('rrTeamName'),
+      customName: pick('rrCustomName'), customLike: [pick('rrCustomLike'), pick('rrCustomLike2'), pick('rrCustomLike3')],
+      customGood: [pick('rrCustomGood1'), pick('rrCustomGood2')], customBad: [pick('rrCustomBad1'), pick('rrCustomBad2')] }));
   }
   return out;
 }
-function _team(i, a, b, { rel = null, identity = null, name = null } = {}) {
+function _team(i, a, b, { rel = null, identity = null, name = null, customName = null, customLike = [], customGood = [], customBad = [] } = {}) {
   let vets = false;
   try { vets = hasFranchiseHistory(a) && hasFranchiseHistory(b); } catch { vets = false; }
   const r = REL[rel] ? rel : vets ? 'reality-vets' : 'bffs';
-  const id = IDENTITIES[identity] ? identity : null;
   const typed = String(name || '').trim();
+  // a custom identity: a name of the user's own that plays like a built-in one (identities.js identityOf reads
+  // custom.strength for its strengths and voice)
+  const own = identity === 'custom' && String(customName || '').trim();
+  if (own) {
+    const uniq = list => [...new Set([].concat(list || []).filter(Boolean))];
+    const mix = uniq(customLike).filter(x => IDENTITIES[x]).slice(0, 3);
+    const good = uniq(customGood).filter(x => TASK_TYPES[x]).slice(0, 2);
+    const bad = uniq(customBad).filter(x => TASK_TYPES[x] && !good.includes(x)).slice(0, 2);
+    return { id: 't' + (i + 1), a, b, rel: r, identity: null, name: typed || own,
+      custom: { name: own, mix, voice: mix[0] || null, good, bad, strength: mix[0] || null } };
+  }
+  const id = IDENTITIES[identity] ? identity : null;
   return { id: 't' + (i + 1), a, b, rel: r, identity: id,
     // a typed name over an identity's is the team's own (the engine's identityName reads custom.name)
     name: typed || (id ? IDENTITIES[id].name : `${a} & ${b}`),
@@ -354,22 +368,26 @@ export function raceVoteShape(row) {
   return `${first} came first · ${last} ${out && out !== 'eliminated' ? out : 'came last and went home'}${where}`;
 }
 
-/** The cast form's race pickers (simulator.html f-rr-rel, f-rr-identity), filled from the engine's own lists so
- *  they can never drift from what the engine knows. */
-export function raceFillForm() {
-  if (typeof document === 'undefined') return;
-  const fill = (id, first, list) => {
-    const el = document.getElementById(id);
-    if (!el || el.dataset.filled) return;
-    el.innerHTML = `<option value="">${first}</option>` + list.map(x => `<option value="${x.id}">${x.label}</option>`).join('');
-    el.dataset.filled = '1';
-  };
-  fill('f-rr-rel', 'Best friends, unless both have played before', RACE_RELATIONSHIPS);
-  fill('f-rr-identity', 'None: named after the two of them', RACE_IDENTITIES);
+/** The Pairs view's pickers (cast-room.js): the relationships and identities a team can have. */
+export function raceTeamOptions() { return { rels: RACE_RELATIONSHIPS, ids: RACE_IDENTITIES, types: RACE_TASK_TYPES }; }
+/** What a team can be good or bad at, in words (a custom identity's strengths and weaknesses). */
+export const RACE_TASK_TYPES = Object.keys(TASK_TYPES).map(id => ({ id, label: { water: 'Water', heights: 'Heights', strength: 'Strength',
+  stomach: 'Eating anything', nerve: 'Nerve', brains: 'Brains', search: 'Finding things', perform: 'Performing', people: 'People',
+  travel: 'Getting around', hands: 'Hands-on', patience: 'Patience' }[id] || id }));
+
+/** The team fields the Pairs view sets, on both of the team's cards (so the team reads the same either way round). */
+const TEAM_FIELDS = new Set(['rrRel', 'rrIdentity', 'rrCustomName', 'rrCustomLike', 'rrCustomLike2', 'rrCustomLike3',
+  'rrCustomGood1', 'rrCustomGood2', 'rrCustomBad1', 'rrCustomBad2', 'rrTeamName']);
+export function raceSetTeam(a, b, field, value) {
+  if (!TEAM_FIELDS.has(field)) return false;
+  const v = typeof value === 'string' ? value.trim() : value;
+  for (const n of [a, b]) {
+    const p = _player(n);
+    if (!p) continue;
+    if (v === '' || v == null) delete p[field]; else p[field] = v;
+  }
+  return true;
 }
 
 if (typeof window !== 'undefined') window._rrRunnable = true;
-if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', raceFillForm);
-  else raceFillForm();
-}
+

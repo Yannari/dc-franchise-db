@@ -241,3 +241,58 @@ describe('a leg can be re-run', () => {
     expect(racePlayed().res.legs[2].order).toEqual(gs.episodeHistory[2].rr.order.map(o => o.team));
   });
 });
+
+describe('a team set up in the Pairs view', () => {
+  it('a custom identity is a name of your own that plays like a built-in one: "the Ballerinas", strong like the Dancers', async () => {
+    const { raceSetTeam } = await import('../js/rr-run.js');
+    const { teamRef } = await import('../js/rr/script/roles.js');
+    const { identityOf } = await import('../js/rr/identities.js');
+    freshSeason(8);
+    const t0 = raceTeams()[0];
+    raceSetTeam(t0.a, t0.b, 'rrIdentity', 'custom');
+    raceSetTeam(t0.a, t0.b, 'rrCustomName', 'Ballerinas');
+    raceSetTeam(t0.a, t0.b, 'rrCustomLike', 'dancers');
+    raceSetTeam(t0.a, t0.b, 'rrRel', 'exes');
+    const t = raceTeams()[0];
+    expect(t.name).toBe('Ballerinas');
+    expect(t.identity).toBe(null);
+    expect(t.custom).toMatchObject({ name: 'Ballerinas', mix: ['dancers'], voice: 'dancers' });
+    expect(t.rel).toBe('exes');
+    const { IDENTITIES } = await import('../js/rr/identities.js');
+    expect(identityOf(t).name).toBe('Ballerinas');
+    expect(identityOf(t).good).toEqual(IDENTITIES.dancers.good);
+    expect(teamRef({ teams: { t1: t } }, 't1')).toBe('the Ballerinas');
+    // both cards carry it, so the team reads the same whichever card comes first
+    const { players } = await import('../js/core.js');
+    for (const n of [t0.a, t0.b]) expect(players.find(p => p.name === n).rrCustomName).toBe('Ballerinas');
+    expect(raceCastProblem()).toBe(null);
+  });
+});
+
+describe('a custom identity can be anything', () => {
+  it("blends up to three identities: their most shared strengths and weaknesses, two of each, the first one's voice", async () => {
+    const { identityOf, IDENTITIES } = await import('../js/rr/identities.js');
+    const mix = ['soldiers', 'dancers', 'lifeguards'];
+    const id = identityOf({ custom: { name: 'Stunt Doubles', mix } });
+    const goods = mix.flatMap(m => IDENTITIES[m].good), bads = mix.flatMap(m => IDENTITIES[m].bad);
+    expect(id.name).toBe('Stunt Doubles');
+    expect(id.good.length).toBe(2);
+    for (const g of id.good) expect(goods).toContain(g);
+    for (const b of id.bad) { expect(bads).toContain(b); expect(id.good).not.toContain(b); }
+    expect(id.bad.length).toBeLessThanOrEqual(2);
+  });
+
+  it('or is built from scratch: the strengths and weaknesses picked, whatever it borrows', async () => {
+    const { raceSetTeam } = await import('../js/rr-run.js');
+    const { identityOf } = await import('../js/rr/identities.js');
+    freshSeason(8);
+    const t0 = raceTeams()[0];
+    for (const [f, v] of [['rrIdentity', 'custom'], ['rrCustomName', 'Divers'], ['rrCustomLike', 'goths'], ['rrCustomLike2', 'chefs'],
+      ['rrCustomGood1', 'water'], ['rrCustomGood2', 'heights'], ['rrCustomBad1', 'brains']]) raceSetTeam(t0.a, t0.b, f, v);
+    const t = raceTeams()[0];
+    expect(t.custom).toMatchObject({ name: 'Divers', mix: ['goths', 'chefs'], voice: 'goths', good: ['water', 'heights'], bad: ['brains'] });
+    const id = identityOf(t);
+    expect(id.good).toEqual(['water', 'heights']);
+    expect(id.bad).toEqual(['brains']);
+  });
+});

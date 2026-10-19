@@ -816,7 +816,7 @@ function _structureCardHTML() {
         <span class="qs-card-hint">Teams of two, one place a leg, and the last team in goes home.</span></div>
       ${caststrip}
       <div class="qs-housenote">${teams} ${teams === 1 ? 'team' : 'teams'} of two${legs.length ? ` · ${legs.length} legs, ${legs.filter(l => l.kind === 'non').length} of them non-elimination` : ''}.
-        Pair the cast in <button class="qs-link" onclick="qsGoCast()">Cast › Casting Room › Pairs</button>; each card's Team relationship, identity and name fill in the team.</div>
+        Pair the cast in <button class="qs-link" onclick="qsGoCast()">Cast › Casting Room › Pairs</button>, and set each team's relationship, identity (built in, or your own) and name right there.</div>
     </section>`;
   }
 
@@ -1462,10 +1462,6 @@ const CONFIG_SCOPE = {
     'f-ch-billing':          ['the-challenge'],
     'f-ch-division':         ['the-challenge'],
     'f-ch-partner':          ['the-challenge', 'ridonculous-race'],
-    // The Ridonculous Race's team fields on the cast form (js/rr-run.js raceTeams reads each).
-    'f-rr-rel':              ['ridonculous-race'],
-    'f-rr-identity':         ['ridonculous-race'],
-    'f-rr-teamname':         ['ridonculous-race'],
     'sec-tr-divider':        ['traitors'],
     'sec-dr-options':        ['drag-race'],
     'sec-dr-divider':        ['drag-race'],
@@ -1531,7 +1527,9 @@ export function applyFormatScope() {
     show(el && _scopeHost(el), formats.includes(fmt));
   }
   for (const [id, formats] of Object.entries(CONFIG_SCOPE.sections)) {
-    show(_g(id), formats.includes(fmt));
+    // a form control listed as a section (the cast form's show fields) hides with its label, not alone
+    const el = _g(id);
+    show(el && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName) ? _scopeHost(el) : el, formats.includes(fmt));
   }
   if (fmt === 'big-brother') qsOnHouseOptionChange();
 

@@ -467,6 +467,41 @@ function _cardPairs() {
   }
   return { out, seen, byName };
 }
+// ── The Ridonculous Race's team, set right on its lane: what the two of them are, the identity they race as (one of
+//    the built-in ones, or the user's own: a name that plays like a built-in one), and a team name. Written to both
+//    cards (rr-run.js raceSetTeam), which is what raceTeams reads. ──
+function _raceTeamPanel(a, b) {
+  const o = (typeof window !== 'undefined' && window.raceTeamOptions?.()) || { rels: [], ids: [] };
+  const v = k => a[k] ?? b[k] ?? '';
+  const opt = (list, cur) => list.map(x => `<option value="${esc(x.id)}"${x.id === cur ? ' selected' : ''}>${esc(x.label)}</option>`).join('');
+  const custom = v('rrIdentity') === 'custom';
+  return `<div class="cr-race-team" data-a="${esc(a.name)}" data-b="${esc(b.name)}" onclick="event.stopPropagation()" ondragstart="event.stopPropagation()">
+    <select class="cr-rt" data-f="rrRel" onchange="crRaceTeam(this)" title="What the two of them are to each other. Family teams never have a romance.">
+      <option value="">Relationship: best friends (vets if both have played before)</option>${opt(o.rels, v('rrRel'))}</select>
+    <select class="cr-rt" data-f="rrIdentity" onchange="crRaceTeam(this)" title="The kind of team they race as. It shapes what they're good at and how they talk. Two teams can't share one.">
+      <option value="">No identity: named after the two of them</option>${opt(o.ids, v('rrIdentity'))}
+      <option value="custom"${custom ? ' selected' : ''}>Custom identity…</option></select>
+    ${custom ? `<input class="cr-rt" data-f="rrCustomName" placeholder="Your identity's name (Ballerinas, Stunt Doubles...)" value="${esc(v('rrCustomName'))}" onchange="crRaceTeam(this)">
+    <div class="cr-rt-sub">Borrows from (up to three: it blends what they're good and bad at, and talks like the first)</div>
+    ${['rrCustomLike', 'rrCustomLike2', 'rrCustomLike3'].map((f, k) => `<select class="cr-rt" data-f="${f}" onchange="crRaceTeam(this)">
+      <option value="">${k ? 'and…' : 'Plays like…'}</option>${opt(o.ids, v(f))}</select>`).join('')}
+    <div class="cr-rt-sub">Or build it: strong at / weak at (replaces the blend's)</div>
+    <div class="cr-rt-row">${['rrCustomGood1', 'rrCustomGood2'].map(f => `<select class="cr-rt" data-f="${f}" onchange="crRaceTeam(this)">
+      <option value="">Strong at…</option>${opt(o.types || [], v(f))}</select>`).join('')}</div>
+    <div class="cr-rt-row">${['rrCustomBad1', 'rrCustomBad2'].map(f => `<select class="cr-rt" data-f="${f}" onchange="crRaceTeam(this)">
+      <option value="">Weak at…</option>${opt(o.types || [], v(f))}</select>`).join('')}</div>` : ''}
+    <input class="cr-rt" data-f="rrTeamName" placeholder="Team name (optional: the identity's, or the two of them)" value="${esc(v('rrTeamName'))}" onchange="crRaceTeam(this)">
+  </div>`;
+}
+/** A team field changed on its lane: both cards take it, and the lane redraws when the identity changes. */
+export function crRaceTeam(el) {
+  const box = el?.closest?.('.cr-race-team');
+  if (!box) return;
+  window.raceSetTeam?.(box.dataset.a, box.dataset.b, el.dataset.f, el.value);
+  saveCast();
+  if (el.dataset.f === 'rrIdentity') crRenderGrid();
+}
+
 function _pairsBodyHTML(shown) {
   const { out: pairs, seen, byName } = _cardPairs();
   const shownIds = new Set(shown.map(_key));
@@ -475,13 +510,15 @@ function _pairsBodyHTML(shown) {
   const mixed = !_isRace() && seasonConfig.chPairShape !== 'same' && seasonConfig.chGenderBlind !== true;
   const card = p => (shownIds.has(_key(p)) ? _card(p, { draggable: true }) : '');
   const lanes = pairs.map(([a, b], i) => {
-    const off = seasonConfig.chGenderBlind === true ? null
+    // a race's team is any two people: The Challenge's pairing rule never applies to it
+    const off = _isRace() || seasonConfig.chGenderBlind === true ? null
       : mixed && a.gender && a.gender === b.gender ? 'Two of the same: this season pairs a man and a woman'
       : !mixed && a.gender && b.gender && a.gender !== b.gender ? "A man and a woman: this season's pairs are men's and women's" : null;
     const avg = ((statTotal(a.stats) + statTotal(b.stats)) / 2).toFixed(0);
     return `<div class="cr-lane cr-lane-pair" data-pair="${i}" ondragover="crDragOver(event)" ondragleave="crDragLeave(event)" ondrop="crDropPair(event)">
-      <div class="cr-lane-head"><span class="cr-lane-name">Pair ${i + 1}</span>${off ? `<span class="cr-lane-warn" title="${esc(off)}">&#9888;</span>` : ''}
+      <div class="cr-lane-head"><span class="cr-lane-name">${_isRace() ? `Team ${i + 1}` : `Pair ${i + 1}`}</span>${off ? `<span class="cr-lane-warn" title="${esc(off)}">&#9888;</span>` : ''}
         <span class="cr-lane-meta">avg ${avg}</span></div>
+      ${_isRace() ? _raceTeamPanel(a, b) : ''}
       <div class="cr-lane-body">${card(a)}${card(b)}</div></div>`;
   });
   lanes.push(`<div class="cr-lane cr-lane-new" data-pair="new" ondragover="crDragOver(event)" ondragleave="crDragLeave(event)" ondrop="crDropPair(event)">

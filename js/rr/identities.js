@@ -75,9 +75,27 @@ export const IDENTITIES = {
   'college-students': I('College Students', 'everyday', ['brains', 'stomach'], ['travel', 'patience'], ['retirees'], ['party-animals', 'gamers']),
 };
 
-// The identity a team plays as: a built-in one, or a custom one's chosen strengths.
+// The identity a team plays as: a built-in one, or the user's own (the user, 2026-10-19: "custom identities could
+// borrow from different identities so our possibilities become endless, or build a specific one"). A custom identity
+// `{ name, mix, good, bad, voice }` blends up to three built-in ones: their most shared strengths and weaknesses, two
+// of each (a built-in has two of each, so a blend is no stronger than one), their frictions and friendships, and
+// talks like `voice` (identity.js). Strengths or weaknesses picked by hand (`good`, `bad`) replace the blend's. An
+// old custom with only `strength` plays as that one identity.
+const BLENDS = new WeakMap();
+const ranked = list => { const n = {}; for (const t of list) n[t] = (n[t] || 0) + 1; return Object.keys(n).sort((x, y) => n[y] - n[x]); };
 export function identityOf(team) {
   if (team?.identity && IDENTITIES[team.identity]) return IDENTITIES[team.identity];
-  if (team?.custom?.strength && IDENTITIES[team.custom.strength]) return IDENTITIES[team.custom.strength];
-  return null;
+  const c = team?.custom;
+  if (!c) return null;
+  const mix = (c.mix?.length ? c.mix : c.strength ? [c.strength] : []).filter(id => IDENTITIES[id]);
+  if (!mix.length && !c.good?.length && !c.bad?.length) return null;
+  if (BLENDS.has(c)) return BLENDS.get(c);
+  const of = mix.map(id => IDENTITIES[id]);
+  const good = (c.good?.length ? c.good : ranked(of.flatMap(x => x.good))).slice(0, 2);
+  const bad = (c.bad?.length ? c.bad : ranked(of.flatMap(x => x.bad))).filter(t => !good.includes(t)).slice(0, 2);
+  const out = { name: c.name || of[0]?.name || 'Custom', group: of[0]?.group || 'everyday', good, bad,
+    friction: [...new Set(of.flatMap(x => x.friction || []))], friends: [...new Set(of.flatMap(x => x.friends || []))],
+    ...(of.some(x => x.mishap) ? { mishap: of.reduce((a, x) => a + (x.mishap || 1), 0) / of.length } : {}), custom: true };
+  BLENDS.set(c, out);
+  return out;
 }

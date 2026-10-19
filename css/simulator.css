@@ -6998,3 +6998,11 @@ textarea.ci-bio{resize:vertical;width:100%}
 #sec-pm-cast, #sec-ci-cast { display: none; }
 #cast-room[data-view="villa"] #sec-pm-cast, #tab-cast.cast-room-off #sec-pm-cast { display: flex; }
 #cast-room[data-view="circle"] #sec-ci-cast, #tab-cast.cast-room-off #sec-ci-cast { display: block; }
+
+/* The Ridonculous Race's team, set on its lane in the Casting Room's Pairs view (cast-room.js _raceTeamPanel) */
+.cr-race-team { display: grid; grid-template-columns: 1fr; gap: 5px; padding: 6px 8px 2px; }
+.cr-race-team .cr-rt { width: 100%; font-size: 11.5px; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--border, #2a3354);
+  background: var(--surface2, #141b31); color: var(--text, #e8ecf6); }
+.cr-race-team .cr-rt:focus { outline: 1px solid #f2b705; }
+.cr-race-team .cr-rt-sub { font-size: 10px; color: var(--muted, #8b95b3); margin-top: 2px; }
+.cr-race-team .cr-rt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }

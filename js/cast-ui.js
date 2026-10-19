@@ -315,11 +315,14 @@ export function submitPlayer() {
       ? document.getElementById('f-ch-division').value : undefined,
     // a Pairs season's partner, by name (js/ch/pairs.js keeps two cards that name each other)
     chPartner: document.getElementById('f-ch-partner')?.value?.trim() || undefined,
-    // The Ridonculous Race's team, on either partner's card (js/rr-run.js raceTeams): stored only when set
-    rrRel: document.getElementById('f-rr-rel')?.value || undefined,
-    rrIdentity: document.getElementById('f-rr-identity')?.value || undefined,
-    rrTeamName: document.getElementById('f-rr-teamname')?.value?.trim() || undefined,
   };
+  // The Ridonculous Race's team is set in the Casting Room's Pairs view (cast-room.js), on both cards: an edit of the
+  // card in this form keeps it
+  if (editingId) {
+    const was = players.find(p => p.id === editingId);
+    for (const k of ['rrRel', 'rrIdentity', 'rrCustomName', 'rrCustomLike', 'rrCustomLike2', 'rrCustomLike3', 'rrCustomGood1', 'rrCustomGood2',
+      'rrCustomBad1', 'rrCustomBad2', 'rrTeamName']) if (was?.[k] !== undefined) player[k] = was[k];
+  }
   ensurePortraitSelection(player); // fill in the portrait if the picker was never touched
   if (editingId) { const i = players.findIndex(p=>p.id===editingId); if(i!==-1) players[i]=player; cancelEdit(); }
   else { players.push(player); resetForm(); }
@@ -342,10 +345,6 @@ export function editPlayer(id) {
   const chdEl = document.getElementById('f-ch-division'); if (chdEl) chdEl.value = p.chDivision || '';
   const chpEl = document.getElementById('f-ch-partner'); if (chpEl) chpEl.value = p.chPartner || '';
   try { window.chPartnerNames?.(p.name); } catch { /* optional */ }
-  try { window.raceFillForm?.(); } catch { /* optional */ }
-  for (const [id, k] of [['f-rr-rel', 'rrRel'], ['f-rr-identity', 'rrIdentity'], ['f-rr-teamname', 'rrTeamName']]) {
-    const el = document.getElementById(id); if (el) el.value = p[k] || '';
-  }
   setFormPortrait(p.avatarId, p.avatarFile);
   renderPortraitPickerInto();
   updateBackgroundPreview();
@@ -383,7 +382,6 @@ export function resetForm() {
   const chbEl = document.getElementById('f-ch-billing'); if (chbEl) chbEl.value = '';
   const chdEl = document.getElementById('f-ch-division'); if (chdEl) chdEl.value = '';
   const chpEl = document.getElementById('f-ch-partner'); if (chpEl) chpEl.value = '';
-  for (const id of ['f-rr-rel', 'f-rr-identity', 'f-rr-teamname']) { const el = document.getElementById(id); if (el) el.value = ''; }
   setFormPortrait(null, '');
   renderPortraitPickerInto();
   document.getElementById('archetype-desc').textContent='';

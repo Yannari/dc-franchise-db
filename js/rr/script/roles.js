@@ -40,6 +40,8 @@ export function teamRef(state, id) {
   const t = state.teams[id];
   if (!t) return null;
   if (t.identity && IDENTITIES[t.identity]?.name === t.name) return `the ${t.name}`;
+  // a custom identity, by the name the user gave it
+  if (t.custom?.strength && t.custom.name && t.custom.name === t.name) return `the ${t.name}`;
   return t.name.replace(/ & /g, ' and ');
 }
 // the team spoken to, by the two of them ("Alec and Spud, you're team number two!")

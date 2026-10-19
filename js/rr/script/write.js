@@ -121,6 +121,15 @@ export const PREFER = ['place', 'taskId'];
 // the challenges that have their own lines (the director airs the challenge itself for them)
 export const TASK_LINES = new Set(Object.values(POOLS).flatMap(l => l.map(e => e.when?.taskId)).filter(Boolean));
 
+// Lines that talk as if the scene were at a task (they name the task or its judge): kept for scenes at a task.
+const TASK_TALK = /\b(task|judge)\b/i;
+const TASKY = new Set(Object.values(POOLS).flat().filter(e => e.turns.some(t => TASK_TALK.test([t.say, t.conf, t.beat].join(' ')))));
+// kinds that are about a task whatever stretch they're filed under (Don explaining it, a team doing it)
+const KIND_AT_TASK = new Set(['task-start', 'task-try', 'task-done', 'attempt-fail', 'quit-task', 'helped-botch', 'allin-alone',
+  'whose-botch', 'watching-botch', 'decide-side', 'don-demo', 'don-rule', 'don-ruling', 'judge-yes', 'identity-moment']);
+// the interviews that are about the moment before them: only a line written for that kind of moment will do
+const ABOUT_INTERVIEWS = new Set(['int-feeling', 'int-strategy', 'int-about-team', 'int-contradict']);
+
 // Endings the kind's general lines can't speak for (a check-in that never mentions the penalty): their own pool only.
 export const OWN_ONLY = new Set(['don-place.penalty-reveal']);
 
@@ -146,8 +155,12 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   if (scene.data?.place != null && ORDINAL[scene.data.place]) r.slots.placing = ORDINAL[scene.data.place];
   const have = new Set([...Object.keys(r.roles), ...Object.keys(r.slots)]);
   const pools = {};
-  for (const k of [].concat(key)) pools[k] = (POOLS[k] || []).filter(e => [...needs(e)].every(n => have.has(n)));
   const facts = factsFor(scene, r, state);
+  // a line that talks as if it were at a task ("they go at the task twice as hard") plays only at one
+  const placed = e => !(facts.at && facts.at !== 'task' && !KIND_AT_TASK.has(scene.kind) && TASKY.has(e));
+  // an interview about a moment is one written for that kind of moment, or there is no interview
+  const aboutIt = e => !ABOUT_INTERVIEWS.has(scene.kind) || scene.data?.about == null || e.when?.cause != null;
+  for (const k of [].concat(key)) pools[k] = (POOLS[k] || []).filter(e => [...needs(e)].every(n => have.has(n)) && placed(e) && aboutIt(e));
   state.lineLedger ||= newLedger();
   const clock = scene.leg ?? state.leg;
   const speakers = Object.entries(r.roles).filter(([k]) => k !== 'don' && k !== 'local').map(([, n]) => n);

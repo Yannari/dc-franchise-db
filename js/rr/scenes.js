@@ -265,7 +265,9 @@ const INTERVIEWS_PER_LEG = 3;
 const MIN_WEIGHT = 0.5;                   // a clear tip or a quick taxi isn't worth a confessional
 // endings where a scheme or an offer went wrong for the one who made it
 const FAILED = ['caught-out', 'called-out', 'backfires', 'seen', 'discovered', 'refused', 'laughed-off',
-  'rejected-rudely', 'wasted', 'fizzles', 'caught-spying', 'thinks-twice', 'held-back'];
+  'rejected-rudely', 'wasted', 'fizzles', 'caught-spying', 'thinks-twice', 'held-back',
+  // the mind-game that made them stronger, the later-flight trick that cost the schemers, the revenge not taken
+  'steels-them', 'later-flight-attempt', 'takes-high-road'];
 const FEAR = ['fear-through', 'phobia', 'injury', 'freezes', 'exhaustion'];
 
 // After a big moment, maybe an interview about it: only from people who saw it, of the

@@ -36,6 +36,8 @@ export const RR_FACT_KEYS = [
   'stretchKind', 'taskType', 'mode', 'fails', 'switched', 'quit', 'place',
   // the challenge itself (its stretch id: 'stew', 'spices'): a place's own lines for its own tasks
   'taskId',
+  // where the scene is: 'task', 'airport' (airports and planes), 'mat', 'road' (anywhere in between)
+  'at',
   // the leg's picking task (the spices): all five right, three or four, two or fewer
   'picked',
   // at the mat: first, top (first third), mid, bottom (last third), last
@@ -77,6 +79,15 @@ function elderOf(team) {
 }
 const registerOf = n => { const t = n ? voiceOf(n)[0] : null; return t ? FAMILY[t] || null : null; };
 
+// where a scene happens, from its stretch: a task, an airport or a plane, the mat, or the road between
+const TASK_STRETCHES = ['allin', 'botch', 'either', 'superteam', 'route', 'midmat'];
+function atOf(s, d) {
+  if (TASK_STRETCHES.includes(s.stretchKind)) return 'task';
+  if (s.stretchKind === 'mat' || d.stretch === 'mat') return 'mat';
+  if (s.mode === 'flight' || /airport|plane|flight/.test(String(d.stretch || ''))) return 'airport';
+  return s.stretchKind || d.stretch ? 'road' : null;
+}
+
 // how a picking task went (the spices: right picks out of five), in the words the pools gate on
 export const pickedOf = n => (n == null ? null : n >= 5 ? 'right' : n >= 3 ? 'mostly' : 'wrong');
 
@@ -100,6 +111,7 @@ export function factsFor(scene, roles, state) {
     broke: !!s.broke, snapped: !!s.snapped,
     tod: todWord(s.tod),
     stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null,
+    at: atOf(s, d),
     matPlace: d.matPlace ?? null, why: d.why ?? null, rule: d.rule ?? null, byVote: !!d.byVote,
     aDid: !!d.aDid, exitHow: d.exitHow ?? null, mishap: scene.kind === 'travel-mishap' ? d.kind ?? null : null,
     aElder: (() => { const e = elderOf(state.teams[d.team]); const a = roles?.roles?.a; return e && a ? e === a : null; })(),

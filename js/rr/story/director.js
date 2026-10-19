@@ -302,10 +302,11 @@ export function airLeg(state, leg) {
     const lines = ws.flatMap(w => w?.lines || []);
     seg.lines = lines.length ? lines : null;
     seg.lineId = ws.map(w => w?.lineId).filter(Boolean).join(',') || null;
-    if (ws.some(w => !w)) unwritten.push(seg.kind + (seg.ending ? '.' + seg.ending : ''));
+    if (ws.some(w => !w) && !seg.kind.startsWith('int-')) unwritten.push(seg.kind + (seg.ending ? '.' + seg.ending : ''));
     for (const src of seg.srcs || [seg.src]) for (const id of src.data?.threadIds || []) state.storyAired[id] = (state.storyAired[id] || 0) + 1;
     delete seg.src;
     delete seg.srcs;
   }
-  return { n, segments: segs, unwritten };
+  // an interview nobody has written for its moment doesn't air (a generic one reads as a random scene)
+  return { n, segments: segs.filter(s => s.lines || !s.kind.startsWith('int-')), unwritten };
 }

@@ -171,3 +171,5 @@ export const REGISTER_LINES = {
 // the two voices added for the roster's authored ones (registers-more.js: goofy, shy), in the same pools
 import { REGISTER_MORE } from './registers-more.js';
 for (const [k, list] of Object.entries(REGISTER_MORE)) (REGISTER_LINES[k] ||= []).push(...list);
+import { REGISTER_MORE2 } from './registers-more2.js';
+for (const [k, list] of Object.entries(REGISTER_MORE2)) (REGISTER_LINES[k] ||= []).push(...list);

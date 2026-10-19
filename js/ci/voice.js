@@ -88,6 +88,23 @@ export function byRegister(text, register, rng = () => 0.5) {
     case 'blunt':
       return firstUp(tidy(onText(text, p => unslang(p.replace(/!{2,}/g, '!'))
         .replace(/^\s*(honestly|omg|okay so|ngl|no offense but),?\s*/i, ''))));
+    // chill: relaxed, no shouting; now and then a lower-case start, a "dude" on the end
+    case 'chill': {
+      let t = onText(text, p => p.replace(/!{2,}/g, '!'));
+      if (rng() < 0.35) t = t.replace(/^(\s*)([A-Z])(?=[a-z])/, (m, sp, c) => sp + c.toLowerCase());
+      if (rng() < 0.2) t = lastText(t, p => p.replace(/([A-Za-z0-9)])\.?(\s*)$/, '$1, dude$2'));
+      return t;
+    }
+    // stoic: no filler, no exclamation marks, a full stop at the end
+    case 'stoic': {
+      const t = firstUp(tidy(onText(text, p => unslang(p.replace(/!+/g, '.'))
+        .replace(/^\s*(honestly|omg|okay so|okay|ngl|so|well|oh|like),?\s*/i, ''))));
+      return lastText(t, p => p.replace(/([A-Za-z0-9)])(\s*)$/, '$1.$2'));
+    }
+    // catty and diva are in their words (registers-more2.js); the typing is left as written
+    case 'catty':
+    case 'diva':
+      return text;
     // goofy: now and then a message trails off into a "lol" or an extra "!!"; never shouted, never formal
     case 'goofy':
       if (rng() >= 0.35) return text;

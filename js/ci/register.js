@@ -21,21 +21,37 @@ import { readVoiceText } from '../td/story/voice-words.js';
 /** The six a stats-only player, or a persona's job, can have. */
 export const REGISTERS = ['warm', 'hype', 'dry', 'formal', 'flirty', 'blunt'];
 /** ...and the two only an authored voice reaches: every register a line can be written for. */
-export const ALL_REGISTERS = [...REGISTERS, 'goofy', 'shy'];
+export const ALL_REGISTERS = [...REGISTERS, 'goofy', 'shy', 'chill', 'catty', 'diva', 'stoic'];
 
-// Every voice tag (td/story/voice-words.js WORDS) and where it types. Their families (td/story/voice-family-map.js)
-// mostly agree: soft is warm or flirty, dry is dry or formal, loud is hype, sharp is blunt or formal, odd is goofy;
-// the two quiet ones of the soft and dry families (anxious, quiet) are shy.
+// Every voice tag (td/story/voice-words.js WORDS) and where it types on its own. Read against the roster (2026-10-19),
+// a tag on its own still misplaces some voices, so the tags around it decide too (inContext below):
+//   calm      laid-back is chill (the surfer bros), unless the voice is a brainy one: formal
+//   quiet     confident-quiet is stoic (B, Chase, Hicks), but quiet AND nervous or soft is shy (Maggy, Drew)
+//   proud     the vain and condescending are catty, but a tough one (Duncan) is blunt
+//   theatrical  a diva, unless the voice is a silly one (food, goofy, ditzy): goofy
+//   food      goofy, unless it is a warm voice that feeds people (a doting grandmother): warm
 export const VOICE_REGISTER = {
   warm: 'warm', earnest: 'warm', emotional: 'warm',
   flirty: 'flirty',
   dry: 'dry',
-  calm: 'formal', nerdy: 'formal', schemer: 'formal',
+  nerdy: 'formal', schemer: 'formal',
+  calm: 'chill',
   loud: 'hype', competitive: 'hype',
-  blunt: 'blunt', cruel: 'blunt', tough: 'blunt', bossy: 'blunt', proud: 'blunt',
-  goofy: 'goofy', ditzy: 'goofy', food: 'goofy', theatrical: 'goofy', chaotic: 'goofy',
-  quiet: 'shy', anxious: 'shy',
+  blunt: 'blunt', tough: 'blunt', bossy: 'blunt',
+  cruel: 'catty', proud: 'catty',
+  theatrical: 'diva',
+  goofy: 'goofy', ditzy: 'goofy', food: 'goofy', chaotic: 'goofy',
+  anxious: 'shy',
+  quiet: 'stoic',
 };
+function inContext(t, has) {
+  if (t === 'calm') return has('nerdy') ? 'formal' : 'chill';
+  if (t === 'quiet') return has('anxious') || has('warm') || has('emotional') ? 'shy' : 'stoic';
+  if (t === 'proud') return has('tough') ? 'blunt' : 'catty';
+  if (t === 'theatrical') return has('goofy') || has('food') || has('ditzy') ? 'goofy' : 'diva';
+  if (t === 'food') return has('warm') && !has('goofy') ? 'warm' : 'goofy';
+  return VOICE_REGISTER[t];
+}
 
 const PLAYS = new Set(['schemer']);
 /** The register an authored voice says, or null: the author's hashtags and hand-set tags first, then its words. */
@@ -46,7 +62,7 @@ export function voiceRegister(p) {
   // "manipulative" first and "cruel" next, and types cruel)
   const typed = tags.filter(t => VOICE_REGISTER[t] && !PLAYS.has(t));
   const t = typed[0] || tags.find(x => VOICE_REGISTER[x]);
-  return t ? VOICE_REGISTER[t] : null;
+  return t ? inContext(t, x => tags.includes(x)) : null;
 }
 
 const LEAN = {

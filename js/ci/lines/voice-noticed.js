@@ -195,3 +195,7 @@ export const VOICE_NOTICED = {
     r1("That message did not sound like the {b} in those pictures."),
   ]),
 };
+
+// chill, catty, diva and stoic, noticed (registers-more2.js)
+import { NOTICED_MORE2 } from './registers-more2.js';
+Object.assign(VOICE_NOTICED, NOTICED_MORE2);

@@ -205,7 +205,10 @@ describe('every voice finds its register', () => {
     const of = n => registerOfPerson(roster.find(p => p.name === n));
     expect(of('Alejandro')).toBe('flirty');
     expect(of('Gwen')).toBe('dry');
-    expect(of('Heather')).toBe('blunt');
+    expect(of('Heather')).toBe('catty');
+    expect(of('Bridgette')).toBe('chill');
+    expect(of('B')).toBe('stoic');
+    expect(of('Jacques')).toBe('diva');
     expect(of('Lindsay')).toBe('goofy');
     expect(of('Owen')).toBe('goofy');
     expect(of('Izzy')).toBe('goofy');

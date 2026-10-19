@@ -227,7 +227,9 @@ function islandScreen(ep, S, o) {
   // a twist with a stepped screen of its own is not told again on the twist screen (the user, 2026-10-17: "there's 2
   // screens again, the ambassadors twist and the twist screen ... useless when the ambassadors already doing the job")
   if (id === 'twist' && o.twistBlocks?.length) {
-    const blocks = o.twistBlocks.filter(b => !(b.type === 'ambassadors' && ep.ambassadorData?.ambassadorMeeting));
+    // (nor No Tribal Council: the episode's own no-tribal screen says it where Tribal would be, the user, 2026-10-18:
+    // "remove no tribal council from the twist announcement")
+    const blocks = o.twistBlocks.filter(b => !(b.type === 'ambassadors' && ep.ambassadorData?.ambassadorMeeting) && b.type !== 'no-tribal');
     return blocks.length ? tdTwistBlocksScreen(ep, blocks, o) : 'skip';
   }
   // the post-vote screen also carries an elimination card for a duel or a second life: classic there

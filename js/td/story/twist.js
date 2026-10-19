@@ -16,6 +16,7 @@ import { gs, seasonConfig } from '../../core.js';
 import { pStats } from '../../players.js';
 import { getBond } from '../../bonds.js';
 import { writeStory } from './write.js';
+import { STORY_POOLS } from './lines/index.js';
 import { factsFor } from '../script/facts.js';
 
 const GIFT = { 1: 'kit', 2: 'clue', 3: 'totem' };
@@ -277,7 +278,22 @@ const AUC_KIND = r => (!r.sold ? null : r.effect === 'immunity' ? 'immunity' : r
   : r.blind ? 'blindfood' : 'food');
 const money = n => `$${n}`;
 export function writeAuctionScript(ep, A) {
-  const write = writer(ep);
+  // one room, everybody in it: the auction is the host at the front and the bids from the floor, never a secret
+  // meeting (every lot opened on "Chris, Ara and Julia are in the cave, well away from the others", then the next bid
+  // on "Spencer catches Julia alone on the jungle path", read 2026-10-18)
+  const write0 = writer(ep);
+  // ...and with every bid on air, no line twice in one auction while the pool has another (the season ledger only
+  // counts what aired, so ten bids in a row all drew "I don't know what I'm doing anymore, but $140")
+  const spent = {};
+  const write = (pool, ending, who, data) => {
+    const k = `${pool}.${ending}`, ids = (STORY_POOLS[k] || []).map(e => e.id);
+    let left = ids.filter(id => !(spent[k] || []).includes(id));
+    if (ids.length && !left.length) { spent[k] = []; left = ids; }
+    const w = write0(pool, ending, who, data, 'soft', { place: 'public', noSetup: true, ...(ids.length ? { entryIds: left } : {}) });
+    if (w?.lineId) (spent[k] = spent[k] || []).push(w.lineId);
+    return w;
+  };
+  const cap = x => String(x || '').replace(/^./, c => c.toUpperCase());
   const host = A.host || seasonConfig?.host || 'Chris';
   const st = n => { try { return pStats(n) || {}; } catch { return {}; } };
   const L = w => w?.lines || [];
@@ -292,50 +308,59 @@ export function writeAuctionScript(ep, A) {
     out.push(...L(write('auc.lot', lotKind, { h: host }, { ...(lot ? { lot } : {}), amount: money(r.start || 20) })));
     if (!r.sold) {
       out.push(...L(write('auc.nobid', 'any', { h: host }, {})));
-      lots.push({ order: r.order, title: lot || 'A covered lot', blind: r.blind, winner: null, finalBid: 0, bank: null, lines: out });
+      lots.push({ order: r.order, title: cap(lot) || 'A covered lot', blind: r.blind, winner: null, finalBid: 0, bank: null, lines: out });
       continue;
     }
     const log = r.bidLog || [];
-    const good = log.filter(b => !b.failed);
-    const fighters = [...new Set(good.map(b => b.bidder))];
-    // a real bidding war (two people, a long climb to a big price) plays as one exchange from the
-    // first bid; anything else is the bids worth hearing, one line each
-    const war = fighters.length === 2 && good.length >= 6 && r.finalBid >= 160;
-    if (!war) out.push(...L(write('auc.bid', 'open', { a: log[0].bidder }, { amount: money(log[0].amount) })));
-    if (war) {
-      const loser = fighters.find(x => x !== r.winner);
-      const mid = good[Math.floor(good.length / 2)];
-      out.push(...L(write('auc.bid', 'war', { a: loser, b: r.winner, h: host }, { amount: money(mid.amount), top: money(r.finalBid) })));
-    } else {
-      // the bids worth hearing: each new bidder's first, a jump, a loan, a refusal, and the last one
-      let prev = log[0].bidder, said = 0;
-      const heard = new Set([log[0].bidder]);
-      for (let i = 1; i < log.length && said < 3; i++) {
-        const b = log[i];
-        if (b.failed) {
-          out.push(...L(write('auc.bid', b.refusedBy ? 'refused' : 'broke', { a: b.bidder, ...(b.refusedBy ? { b: b.refusedBy } : {}) }, { amount: money(b.amount) })));
-          said++; continue;
-        }
-        const last = log.slice(i + 1).every(x => x.failed);
-        if (b.jump) { out.push(...L(write('auc.bid', 'jump', { a: b.bidder, b: prev, h: host }, { amount: money(b.amount) }))); said++; }
-        else if (b.lent) { out.push(...L(write('auc.bid', 'loan', { a: b.bidder, b: b.lent.from }, { amount: money(b.amount) }))); said++; }
-        else if (!heard.has(b.bidder) || last) { out.push(...L(write('auc.bid', 'raise', { a: b.bidder, b: prev }, { amount: money(b.amount) }))); said++; }
-        heard.add(b.bidder); prev = b.bidder;
-      }
-    }
+    // every bid, in order, with its price (the user, 2026-10-18: "we don't see all the bids, it's weird": three bids
+    // picked out of ten, or a war played as "Higher." "Higher than that." from $60 to $240). A raise and the jump the
+    // same bidder makes on top of it are one bid, the jump. The host calls the price every few bids; two people going
+    // back and forth get one exchange of their own; whoever dropped out of a long climb says so.
+    const seq = log.filter((b, i) => !(!b.failed && log[i + 1]?.jump && log[i + 1].bidder === b.bidder));
+    const rival = i => { for (let j = i - 1; j >= 0; j--) if (!seq[j].failed && seq[j].bidder !== seq[i].bidder) return seq[j].bidder; return null; };
+    const heard = new Set(), backed = new Set();
+    const bids = {};
+    let sinceCall = 0, streak = 0, heat = false;
+    seq.forEach((b, i) => {
+      const amount = money(b.amount);
+      const prev = i ? rival(i) : null;
+      const vs = prev ? { b: prev } : {};
+      const last = seq.slice(i + 1).every(x => x.failed);
+      if (b.failed) out.push(...L(write('auc.bid', b.refusedBy ? 'refused' : 'broke', { a: b.bidder, ...(b.refusedBy ? { b: b.refusedBy } : {}) }, { amount })));
+      else if (!i) out.push(...L(write('auc.bid', 'open', { a: b.bidder }, { amount })));
+      else if (b.jump) out.push(...L(write('auc.bid', 'jump', { a: b.bidder, ...vs, h: host }, { amount })));
+      // (the loan is asked for once: every bid after it is on the same money)
+      else if (b.lent && !backed.has(b.bidder)) { backed.add(b.bidder); out.push(...L(write('auc.bid', 'loan', { a: b.bidder, b: b.lent.from }, { amount }))); }
+      else out.push(...L(write('auc.bid', heard.has(b.bidder) ? 'again' : 'raise', { a: b.bidder, ...vs }, { amount })));
+      if (b.failed) return;
+      heard.add(b.bidder);
+      bids[b.bidder] = (bids[b.bidder] || 0) + 1;
+      // the same two, trading bids
+      streak = prev && i >= 2 && seq[i - 1].bidder === prev && !seq[i - 1].failed ? streak + 1 : 0;
+      sinceCall++;
+      if (last) return;
+      if (!heat && streak >= 4) { heat = true; sinceCall = 0; out.push(...L(write('auc.bid', 'heat', { a: b.bidder, b: prev, h: host }, {}))); }
+      else if (sinceCall >= 3) { sinceCall = 0; out.push(...L(write('auc.call', 'any', { h: host, a: b.bidder, ...vs }, { amount }))); }
+    });
+    // the runner-up of a real climb lets it go (unless they already said they were out of money)
+    const final = seq.length - 1 - [...seq].reverse().findIndex(b => !b.failed);
+    const second = final > 0 ? rival(final) : null;
+    if (second && bids[second] >= 2 && !seq.some(b => b.failed && b.bidder === second)) out.push(...L(write('auc.bid', 'quit', { a: second, b: r.winner }, {})));
     out.push(...L(write('auc.sold', 'any', { a: r.winner, h: host }, { amount: money(r.finalBid) })));
     const kind = AUC_KIND(r);
     const watcher = ['power', 'immunity', 'idol'].includes(kind)
       ? roster.filter(m => m !== r.winner).sort((x, y) => (st(y).intuition || 0) - (st(x).intuition || 0) || x.localeCompare(y))[0] : null;
     const shown = r.switchOffer?.took ? r.switchOffer.keptLabel : r.revealedLabel;
     const what = String(shown || r.label || '').replace(/\s*\(.*\)\s*$/, '').replace(/ — .*$/, '').toLowerCase();
-    out.push(...L(write('auc.win', kind, { a: r.winner, h: host, ...(watcher ? { b: watcher } : {}) }, { lot: what, amount: money(r.finalBid) })));
+    // the switch is offered the moment it is sold, before anybody opens or eats it: Julia ate the sandwich ("Oh my god,
+    // it's real food") and was then offered a trade for it (read 2026-10-18). Traded away, the switch is the reaction.
     if (r.switchOffer) {
       const other = String(r.switchOffer.otherLabel || '').toLowerCase();
       const how = r.switchOffer.took ? (r.switchOutcome === 'downgrade' ? 'dud' : 'upgrade') : 'kept';
       out.push(...L(write('auc.switch', how, { a: r.winner, h: host }, { lot: what, thing: other })));
     }
-    lots.push({ order: r.order, title: r.blind ? 'A covered lot' : r.label, blind: r.blind, winner: r.winner, finalBid: r.finalBid, bank: r.budgetsAfter || null, lines: out });
+    if (!r.switchOffer?.took) out.push(...L(write('auc.win', kind, { a: r.winner, h: host, ...(watcher ? { b: watcher } : {}) }, { lot: what, amount: money(r.finalBid) })));
+    lots.push({ order: r.order, title: r.blind ? 'A covered lot' : cap(r.label), blind: r.blind, winner: r.winner, finalBid: r.finalBid, bank: r.budgetsAfter || null, lines: out });
   }
   const left = A.budgetsRemaining || {};
   const names = Object.keys(left);

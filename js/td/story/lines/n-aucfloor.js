@@ -7,13 +7,17 @@
 //   auc.lot.<kind>        h puts a lot up: food / comfort / letter ({lot}), covered, immunity
 //                         (a covered lot nobody is told is immunity); {amount} is the starting bid
 //   auc.nobid.any         nobody bids
+//   Every bid airs, in order (read 2026-10-18: "we don't see all the bids"):
 //   auc.bid.open          a opens the bidding at {amount}
-//   auc.bid.raise         a outbids b at {amount}
+//   auc.bid.raise         a's first bid on this lot, outbidding b, at {amount}
+//   auc.bid.again         a bids again, over b, at {amount} (short: these come one after another)
 //   auc.bid.jump          a jumps straight to {amount} over b
 //   auc.bid.loan          a is out of money and b lends it; a bids {amount}
 //   auc.bid.refused       a is out of money, asks b, and b says no
 //   auc.bid.broke         a is out of money and has to stop
-//   auc.bid.war           a and b go back and forth, past {amount}, until b wins at {top}
+//   auc.call.any          h calls the price: a holds it at {amount}, b was outbid
+//   auc.bid.heat          a and b have been trading bids and nobody else is in (no price: the bids say it)
+//   auc.bid.quit          a, the runner-up of a long climb, lets b have it
 //   auc.sold.any          h sells it to a for {amount}
 //   auc.win.<kind>        a sees what they bought ({lot}, lowercase): food, comfort, letter,
 //                         blindfood (a covered lot that was only food), immunity, power, idol,
@@ -28,7 +32,7 @@ export default {
   'auc.open.any': [
     { id: 'naf.op1', turns: [
       { by: 'h', say: "Welcome to the auction! Everybody gets five hundred bucks. Food, comfort, and a few covered lots that might be something great or might be a bowl of bugs. And I'm not telling you when it ends." },
-      { by: 'a', say: "Wait, it could just end? Whenever?", v: { loud: "WAIT. It could end whenever? That's evil!", dry: "Oh, good. Uncertainty. My favourite." } },
+      { by: 'a', say: "Wait, it could just end? Whenever?", v: { loud: "Wait, it could end whenever? That's evil!", dry: "Oh, good. Uncertainty. My favourite." } },
       { by: 'h', say: "Whenever I feel like it. So if you want something, don't wait." },
       { by: 'b', opt: true, say: "I've been eating rice for two weeks. I'm spending all of it.", v: { schemer: "Five hundred bucks, and everybody's going to watch what everybody else buys. This is going to be fun." } },
     ] },
@@ -41,8 +45,8 @@ export default {
   ],
   'auc.lot.food': [
     { id: 'naf.f1', turns: [{ by: 'h', say: "Something for the hungry ones: {lot}. Bidding starts at {amount}." }] },
-    { id: 'naf.f2', turns: [{ by: 'h', say: "Next lot: {lot}. Who wants it? {amount} to start." }] },
-    { id: 'naf.f3', turns: [{ by: 'h', say: "Here's {lot}, and I'll be honest, it smells incredible. {amount}, anybody?" }] },
+    { id: 'naf.f2', turns: [{ by: 'h', say: "Who's hungry? It's {lot}. {amount} to start." }] },
+    { id: 'naf.f3', turns: [{ by: 'h', say: "Up for grabs: {lot}. I'd bid on it myself. {amount}, anybody?" }] },
   ],
   'auc.lot.comfort': [
     { id: 'naf.m1', turns: [{ by: 'h', say: "Not food this time: {lot}. You look like you need it. {amount} to start." }] },
@@ -54,7 +58,7 @@ export default {
   ],
   'auc.lot.covered': [
     { id: 'naf.c1', turns: [{ by: 'h', say: "Covered lot. Could be an advantage, could be a plate of eyeballs. {amount} to find out." }] },
-    { id: 'naf.c2', turns: [{ by: 'h', say: "Another covered one. I know what's under there, and you don't. {amount} to start." }] },
+    { id: 'naf.c2', turns: [{ by: 'h', say: "This one stays covered. I know what's under there, and you don't. {amount} to start." }] },
     { id: 'naf.c3', turns: [{ by: 'h', say: "Mystery lot! Don't look at me like that, I'm not giving you a hint. {amount}." }] },
   ],
   'auc.lot.immunity': [
@@ -66,13 +70,13 @@ export default {
   ],
 
   'auc.bid.open': [
-    { id: 'naf.bo1', turns: [{ by: 'a', say: "{amount}.", v: { loud: "{amount}! Right here! {amount}!", anxious: "Um, {amount}? Is that how this works?", calm: "I'll start at {amount}.", goofy: "{amount}, and I'm not ashamed." } }] },
+    { id: 'naf.bo1', turns: [{ by: 'a', say: "{amount}.", v: { loud: "{amount}! Right here!", anxious: "Um, {amount}? Is that how this works?", calm: "I'll start at {amount}.", goofy: "{amount}, and I'm not ashamed." } }] },
     { id: 'naf.bo2', turns: [{ by: 'a', say: "I'll open it. {amount}.", v: { schemer: "{amount}. Let's see who wants it.", food: "{amount}, and I need it more than any of you." } }] },
   ],
   'auc.bid.raise': [
     { id: 'naf.br1', turns: [{ by: 'a', say: "{amount}.", v: { loud: "{amount}! Sorry, {b}!", dry: "{amount}. Sorry, {b}. Not really.", warm: "{amount}! Sorry, {b}, I really want this one." } }] },
     { id: 'naf.br2', turns: [{ by: 'a', say: "I'll go {amount}.", v: { competitive: "{amount}. Your move, {b}.", anxious: "Okay, okay, {amount}. Oh no, I'm doing this." } }] },
-    { id: 'naf.br3', turns: [{ by: 'b', say: "Oh, come on." }, { by: 'a', say: "{amount}." }] },
+    { id: 'naf.br3', turns: [{ by: 'a', say: "{amount}." }, { by: 'b', say: "Oh, come on." }] },
     { id: 'naf.br4', turns: [{ beat: "{a} raises a hand without even looking up." }, { by: 'a', say: "{amount}." }] },
   ],
   'auc.bid.jump': [
@@ -88,53 +92,43 @@ export default {
     { id: 'naf.bf2', turns: [{ by: 'a', say: "Can anybody spot me? {b}?" }, { beat: "{b} folds both arms and looks the other way." }, { by: 'a', conf: "I asked {b} for a little money in front of everybody, and {b} looked straight past me. I'm not forgetting that." }] },
   ],
   'auc.bid.broke': [
-    { id: 'naf.bk1', turns: [{ by: 'a', say: "I'm out. I'm actually out.", v: { loud: "NO! I'm out of money!", dry: "And that's my entire fortune. Gone. Lovely." } }] },
+    { id: 'naf.bk1', turns: [{ by: 'a', say: "I'm out. I'm actually out.", v: { loud: "No! I'm out of money!", dry: "And that's my entire fortune. Gone. Lovely." } }] },
   ],
-  'auc.bid.war': [
-    { id: 'naf.bw1', turns: [
-      { by: 'h', say: "Sixty... eighty... a hundred, from the two of you, and nobody else is even trying." },
-      { by: 'b', say: "Higher." },
-      { by: 'a', say: "Higher.", v: { loud: "HIGHER!" } },
-      { by: 'b', say: "Higher than that." },
-      { by: 'h', say: "We're at {amount}, people. For one lot." },
-      { by: 'a', say: "I'm not letting {b} have it." },
-      { by: 'b', say: "{top}." },
-      { beat: "{a} opens {a.posAdj} mouth, looks at {a.posAdj} money, and closes it again." },
+  'auc.bid.again': [
+    { id: 'naf.ba1', turns: [{ by: 'a', say: "{amount}." }] },
+    { id: 'naf.ba2', turns: [{ by: 'a', say: "{amount}.", v: { dry: "{amount}. Keep up, {b}.", loud: "{amount}! Come on, {b}!", anxious: "{amount}. Oh no. Okay. {amount}.", tough: "{amount}. Go home, {b}." } }] },
+    { id: 'naf.ba3', turns: [{ by: 'a', say: "{amount}, {b}." }] },
+    { id: 'naf.ba4', turns: [{ beat: "{a} doesn't even let {b} finish." }, { by: 'a', say: "{amount}." }] },
+    { id: 'naf.ba5', turns: [{ by: 'a', say: "Fine. {amount}." }] },
+    { id: 'naf.ba6', turns: [{ by: 'a', say: "{amount}. I can do this all day.", v: { goofy: "{amount}. I don't know what I'm doing anymore, but {amount}." } }] },
+    { id: 'naf.ba7', turns: [{ by: 'a', say: "{amount}.", v: { competitive: "{amount}. You're not getting it, {b}.", warm: "{amount}. Sorry, {b}. I really want it.", schemer: "{amount}. How much have you got left, {b}?" } }] },
+  ],
+  'auc.call.any': [
+    { id: 'naf.ca1', turns: [{ by: 'h', say: "{amount} to {a}. {b}?" }] },
+    { id: 'naf.ca2', turns: [{ by: 'h', say: "I have {amount}. Do I hear more?" }] },
+    { id: 'naf.ca3', turns: [{ by: 'h', say: "We're at {amount}, people. For one lot." }] },
+    { id: 'naf.ca4', turns: [{ by: 'h', say: "{amount} from {a}. Going once..." }] },
+    { id: 'naf.ca5', turns: [{ by: 'h', say: "{amount}! {b}, are you just going to let that happen?" }] },
+  ],
+  'auc.bid.heat': [
+    { id: 'naf.bh1', turns: [{ beat: "{a} and {b} keep raising, twenty at a time, staring right at each other." }] },
+    { id: 'naf.bh2', turns: [
+      { by: 'b', say: "You don't even want it, {a}. You just don't want me to have it." },
+      { by: 'a', say: "Both of those can be true." },
     ] },
-    { id: 'naf.bw2', turns: [
-      { beat: "{a} and {b} both put their hands up at the same time, and neither of them puts it down." },
-      { by: 'a', say: "You don't even want it, {b}. You just don't want me to have it." },
-      { by: 'b', say: "Both of those can be true." },
-      { by: 'h', say: "{amount}! Does anybody else want in on this? No? Just you two? Great." },
-      { by: 'a', say: "Fine. One more." },
-      { by: 'b', say: "{top}." },
-      { by: 'a', say: "...I'm done.", v: { tough: "Take it. Choke on it.", warm: "Okay, it's yours, enjoy it." } },
+    { id: 'naf.bh3', turns: [{ beat: "Nobody else is bidding anymore. The others just watch {a} and {b}." }, { by: 'h', say: "This is the best thing that's happened to me all season." }] },
+    { id: 'naf.bh4', turns: [
+      { by: 'b', say: "I'll just keep going until you stop.", v: { competitive: "I don't lose auctions. I don't lose anything." } },
+      { by: 'a', say: "Same.", v: { anxious: "Okay, but I'm also going to keep going? I think?" } },
+      { by: 'h', say: "Ladies and gentlemen, we have a grudge match." },
     ] },
-    { id: 'naf.bw3', turns: [
-      { beat: "{a} and {b} keep raising, twenty at a time, staring right at each other." },
-      { by: 'h', say: "This is the best thing that's happened to me all season. {amount}!" },
-      { by: 'b', say: "{top}, and I'll keep going." },
-      { by: 'a', say: "Then keep it.", v: { cruel: "You can have it. You clearly need it." } },
-    ] },
-    { id: 'naf.bw4', turns: [
-      { by: 'b', say: "Fine. I'll just keep going until you stop.", v: { competitive: "I don't lose auctions. I don't lose anything." } },
-      { by: 'a', say: "Same.", v: { anxious: "Okay, but, um, I'm also going to keep going? I think?" } },
-      { by: 'h', say: "Ladies and gentlemen, we have a grudge match. {amount}!" },
-      { by: 'b', say: "{top}." },
-      { by: 'a', say: "...You win. Enjoy it, I guess." },
-      { by: 'a', conf: "I didn't even want it that much. I just really, really didn't want {b} to have it." },
-    ] },
-    { id: 'naf.bw5', turns: [
-      { by: 'h', say: "We've got two bidders and nobody else is even trying. {amount}, going up..." },
-      { by: 'a', say: "This is ridiculous. One more." },
-      { by: 'b', say: "{top}." },
-      { by: 'a', say: "Nope. I'm out. Somebody stop me if I try again.", v: { goofy: "Somebody hold my arms down. I'm out." } },
-    ] },
-    { id: 'naf.bw6', turns: [
-      { beat: "The bidding between {a} and {b} goes so long the others start eating their own snacks just to watch." },
-      { by: 'b', say: "{top}, final offer." },
-      { by: 'a', say: "Take it.", v: { tough: "Take it. You're going to need the energy, because I'm coming for you." } },
-    ] },
+  ],
+  'auc.bid.quit': [
+    { id: 'naf.bq1', turns: [{ by: 'a', say: "...I'm done.", v: { tough: "Take it. Choke on it.", warm: "Okay, it's yours, {b}. Enjoy it." } }] },
+    { id: 'naf.bq2', turns: [{ by: 'a', say: "Nope. I'm out. Somebody stop me if I try again.", v: { goofy: "Somebody hold my arms down. I'm out." } }] },
+    { id: 'naf.bq3', turns: [{ beat: "{a} opens {a.posAdj} mouth, looks at {a.posAdj} money, and closes it again." }] },
+    { id: 'naf.bq4', turns: [{ by: 'a', say: "Take it.", v: { tough: "Take it. You're going to need the energy, because I'm coming for you." } }] },
+    { id: 'naf.bq5', turns: [{ by: 'a', say: "...You win. Enjoy it, I guess." }, { by: 'a', conf: "I didn't even want it that much. I just really, really didn't want {b} to have it." }] },
   ],
   'auc.sold.any': [
     { id: 'naf.s1', turns: [{ by: 'h', say: "Going once, going twice... sold to {a} for {amount}!" }] },
@@ -152,11 +146,11 @@ export default {
     { id: 'naf.we1', turns: [{ beat: "{a} holds it with both hands and doesn't say anything for a while." }, { by: 'a', say: "Sorry. Give me a second.", v: { tough: "I'm fine. It's just dusty in here.", goofy: "I'm not crying, you're crying." } }] },
   ],
   'auc.win.blindfood': [
-    { id: 'naf.wb1', turns: [{ by: 'h', say: "Let's see what you won, {a}!" }, { beat: "The cover comes off. It's {lot}." }, { by: 'a', say: "...For {amount}?", v: { loud: "I PAID {amount} FOR THIS?", dry: "Well. That's a very expensive lesson.", food: "Honestly? I'll take it. Food is food." } }] },
+    { id: 'naf.wb1', turns: [{ by: 'h', say: "Let's see what you won, {a}!" }, { beat: "The cover comes off. It's {lot}." }, { by: 'a', say: "...For {amount}?", v: { loud: "I paid {amount} for this?", dry: "Well. That's a very expensive lesson.", food: "Honestly? I'll take it. Food is food." } }] },
     { id: 'naf.wb2', turns: [{ beat: "{a} lifts the cover and stares at {lot}." }, { by: 'a', say: "This is fine. This is totally fine." }] },
   ],
   'auc.win.immunity': [
-    { id: 'naf.wi1', turns: [{ by: 'h', say: "Let's see what's under there!" }, { beat: "The cover comes off: individual immunity." }, { by: 'a', say: "Wait. Is that... I'm safe?", v: { loud: "I'M SAFE! I BOUGHT IMMUNITY!", schemer: "Well. That changes tonight, doesn't it." } }, { by: 'b', opt: true, say: "You've got to be kidding me.", v: { cruel: "Great. {a} bought a way out. Love that for us." } }] },
+    { id: 'naf.wi1', turns: [{ by: 'h', say: "Let's see what's under there!" }, { beat: "The cover comes off: individual immunity." }, { by: 'a', say: "Wait. Is that... I'm safe?", v: { loud: "I'm safe! I bought immunity!", schemer: "Well. That changes tonight, doesn't it." } }, { by: 'b', opt: true, say: "You've got to be kidding me.", v: { cruel: "Great. {a} bought a way out. Love that for us." } }] },
   ],
   'auc.win.power': [
     { id: 'naf.wp1', turns: [{ beat: "{a} reads the note under the cover and quickly folds it up." }, { by: 'a', say: "It's... nice. It's a nice thing." }, { by: 'b', opt: true, conf: "{a} just spent a fortune on a covered lot and hid it in two seconds. That's an advantage. Everybody here knows it's an advantage." }] },
@@ -175,10 +169,10 @@ export default {
     { id: 'naf.xk1', turns: [{ by: 'h', say: "Or... you could trade it for whatever's behind the curtain." }, { by: 'a', say: "No way. I'm keeping it.", v: { anxious: "No, no, no, I'm not risking it, I'm keeping this.", tough: "Tempting, but no." } }] },
   ],
   'auc.switch.upgrade': [
-    { id: 'naf.xu1', turns: [{ by: 'h', say: "Want to trade {lot} for whatever's behind the curtain?" }, { by: 'a', say: "...Yeah. Let's do it." }, { beat: "Behind the curtain: {thing}." }, { by: 'a', say: "YES! I knew it!" }] },
+    { id: 'naf.xu1', turns: [{ by: 'h', say: "Want to trade {lot} for whatever's behind the curtain?" }, { by: 'a', say: "...Yeah. Let's do it." }, { beat: "Behind the curtain: {thing}." }, { by: 'a', say: "Yes! I knew it!" }] },
   ],
   'auc.switch.dud': [
-    { id: 'naf.xd1', turns: [{ by: 'h', say: "Want to trade {lot} for whatever's behind the curtain?" }, { by: 'a', say: "Sure, why not." }, { beat: "Behind the curtain: {thing}." }, { by: 'a', say: "No. No, no, no. Give it back!", v: { dry: "Well. That's what I get for gambling.", loud: "THAT'S NOT FAIR!" } }, { by: 'h', say: "No take-backs!" }] },
+    { id: 'naf.xd1', turns: [{ by: 'h', say: "Want to trade {lot} for whatever's behind the curtain?" }, { by: 'a', say: "Sure, why not." }, { beat: "Behind the curtain: {thing}." }, { by: 'a', say: "No. No, no, no. Give it back!", v: { dry: "Well. That's what I get for gambling.", loud: "That's not fair!" } }, { by: 'h', say: "No take-backs!" }] },
   ],
   'auc.close.any': [
     { id: 'naf.e1', turns: [{ by: 'h', say: "And that's it! The auction is over. Whatever you didn't spend, you don't get to keep." }] },

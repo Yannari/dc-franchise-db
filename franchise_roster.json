@@ -7636,6 +7636,27 @@
       "descriptor": "The Easygoing Daredevil",
       "backstory": "ace grew up near the coast and worked beach jobs through his teens. Helping nervous visitors get comfortable in the water led to surf instruction and the discovery that he was more patient teaching than he was sitting in a classroom. He rents a place with friends and supplements lessons with equipment-rental shifts when bookings slow. He saves for trips in short enthusiastic bursts, then spends some of the money fixing a friend's car or joining an unplanned weekend away. Lorraine has photographed him for practice and family albums for years. He wants to travel between teaching seasons, but has yet to decide whether he wants a lasting business or simply a larger collection of places he has lived.",
       "personality": "Jace is relaxed about inconvenience and attentive when somebody feels physically out of their depth. He is good at making an embarrassed beginner try again. Patience becomes less reliable when someone imposes a distant deadline or demands a five-year plan. He wants freedom, but benefits from other people quietly maintaining the structure around him. He is generous in the moment and inconsistent with follow-through once the moment has passed. His competitiveness is easy to miss until a friend says he cannot do something. Then he may take a risk he would advise a student against. In conflict, he tries humor and distraction before admitting hurt. He is capable of loyalty and courage, though he sometimes confuses avoiding a difficult decision with keeping his options open."
+    },
+    {
+      "name": "Kad",
+      "slug": "kad",
+      "gender": "nb",
+      "sexuality": "straight",
+      "archetype": "challenge-beast",
+      "stats": {
+        "physical": 7,
+        "endurance": 7,
+        "mental": 7,
+        "social": 4,
+        "strategic": 5,
+        "loyalty": 6,
+        "boldness": 4,
+        "intuition": 6,
+        "temperament": 3
+      },
+      "voice": "#quiet #competitive #proud. Speaks sparingly, listens through an explanation, and gives a short, considered reply. Polite even when annoyed: acknowledges the other person, states his disagreement, and stops. Uses dry, understated humor with people he trusts. Does not fill silence, boast constantly, or turn every exchange into a challenge. Anger tightens his diction and lengthens the pause before his answer. A courteous sentence can carry unmistakable heat without becoming an insult. #-cruel",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

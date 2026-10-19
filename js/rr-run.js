@@ -292,6 +292,25 @@ export function raceEpisodeMap() {
   });
 }
 
+// The race the run tab built, played again in this page for the stepped viewer (js/vp-rr-ep/vp.js): the same teams,
+// seed, options and franchise history give the same race, so every screen is the leg that aired. Kept in memory,
+// never in gs (an engine state is megabytes); rebuilt when the race is rebuilt.
+let _played = null;
+export function racePlayed() {
+  const r = gs?.rr;
+  if (!r?.teams?.length || !r.seed) return null;
+  const sig = `${r.seed}|${r.built || ''}`;
+  if (_played?.sig === sig) return _played;
+  let options = {};
+  try { options = r.built ? JSON.parse(r.built).options || {} : {}; } catch { options = {}; }
+  const outer = gs;
+  try {
+    const res = playRaceSeason({ teams: r.teams.map(t => ({ ...t })), seed: r.seed, options, carried: r.startOf?.carried || null });
+    _played = { sig, res, eps: airSeason(res) };
+  } finally { setGs(outer); }
+  return _played;
+}
+
 /** A race can't re-run one leg yet: its legs share one clock and one line ledger (a re-run is a later sub-project). */
 export function raceCanRerun() { return false; }
 

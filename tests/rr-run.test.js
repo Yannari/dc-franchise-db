@@ -141,20 +141,47 @@ describe('the site shows a leg', () => {
     expect(buildHubAftermath(aired.at(-1)).why).toMatch(/won The Ridonculous Race/);
   });
 
-  it("the Visual Player embeds the stepped viewer on the leg, and the backlog is the leg's transcript", async () => {
+  it("the Visual Player shows the leg as chapters of the stepped viewer, ending at the Chill Zone; the backlog is the leg's transcript", async () => {
     const { buildVPScreens } = await import('../js/vp-screens.js');
     const { generateSummaryText } = await import('../js/text-backlog.js');
+    const { racePlayed } = await import('../js/rr-run.js');
+    const { episodeScreens, flatSteps } = await import('../js/vp-rr-ep/steps.js');
+    try { localStorage.removeItem('rr-vp'); } catch { /* none */ }
     freshSeason(8);
     const aired = playAll();
     const r = aired[2];
     const screens = buildVPScreens(r);
-    expect(screens.map(s => s.id)).toEqual(['rr-watch', 'rr-transcript']);
-    expect(screens[0].html).toContain(`rr.html?sim=1&amp;ep=${r.num}`);
+    expect(screens.length).toBeGreaterThanOrEqual(4);
+    expect(screens.every(x => /^rr-c\d+$/.test(x.id))).toBe(true);
+    expect(screens[0].label).toBe('Previously');
+    expect(screens.at(-1).label).toBe('The Chill Zone');
+    expect(screens.map(x => x.label)).not.toContain('Transcript');
+    expect(screens[0].html).toContain('rrxSwitchViewer');
+    // the race played again here is the one the row aired, and every step of the leg is in exactly one chapter
+    const played = racePlayed();
+    expect(played.res.legs[r.num - 1].order).toEqual(r.rr.order.map(o => o.team));
+    const reg = window._rrx[`rr${r.num}`];
+    const e = episodeScreens(played.res, played.eps, r.num - 1);
+    const covered = reg.chapters.reduce((n, c) => n + flatSteps(e.screens).filter(f => f.si >= c.from && f.si <= c.to).length, 0);
+    expect(covered).toBe(flatSteps(e.screens).length);
+    for (let k = 1; k < reg.chapters.length; k++) expect(reg.chapters[k].from).toBe(reg.chapters[k - 1].to + 1);
     const text = generateSummaryText(r);
     expect(text).toMatch(new RegExp(`^LEG ${r.num} `));
-    const said = r.rr.aired.segments.flatMap(s => s.lines).find(l => l.kind === 'say');
+    const said = r.rr.aired.segments.flatMap(x => x.lines).find(l => l.kind === 'say');
     expect(text).toContain(said.text);
     expect(text).not.toMatch(/Tribal|Immunity|voted out/);
+  });
+
+  it('the transcript is the other mode, one button away, with a button back', async () => {
+    const { buildVPScreens } = await import('../js/vp-screens.js');
+    freshSeason(8);
+    const aired = playAll();
+    localStorage.setItem('rr-vp', 'readout');
+    try {
+      const screens = buildVPScreens(aired[1]);
+      expect(screens.map(x => x.id)).toEqual(['rr-transcript']);
+      expect(screens[0].html).toContain("rrxSwitchViewer('stepped')");
+    } finally { localStorage.removeItem('rr-vp'); }
   });
 });
 

@@ -162,7 +162,10 @@ export function nextWindowFor(seasons = [], format = null) {
   const dated = seasons.filter(s => airKey(s) != null).sort(byAirDate);
   if (!dated.length) return null;
 
-  const mine = format ? dated.filter(s => (s.format || null) === format) : dated;
+  // An All Stars season is not part of the flagship's rhythm: it has its own
+  // quarter (nextAllStarsWindow), and counting it here would push the next
+  // winter season a year late every time one aired.
+  const mine = format ? dated.filter(s => (s.format || null) === format && !s.allStars) : dated;
 
   const home = (format && SHOWS[format]?.airSlots || []).map(s => SLOTS.indexOf(s)).filter(i => i >= 0);
   if (home.length) {
@@ -179,6 +182,52 @@ export function nextWindowFor(seasons = [], format = null) {
   // are out of order; half a year is the franchise's commonest cadence and a
   // safer answer than repeating a date that already exists.
   return at(last + (step > 0 && step <= 8 ? step : 2));
+}
+
+/**
+ * Where a show's next ALL STARS season belongs, or null for a show without one.
+ *
+ * The registry says when (`allStars` on the show's entry): the first is
+ * possible only once the flagship has aired its `after`-th season, in the
+ * first All Stars quarter after it, and every one after that a year on. A
+ * season row counts as All Stars when it carries `allStars: true`.
+ *
+ * Before the first, the flagship seasons it waits for may not exist yet — the
+ * franchise is in 2027 and the third Drag Race airs in 2029 — so the flagship's
+ * own rhythm is walked forward to find them. Those projected flagship windows
+ * come back as `bridge`, so a calendar can draw the seasons the All Stars is
+ * waiting on instead of a lone bar with nothing before it.
+ *
+ * Returns { airYear, airSlot, number, bridge }; `number` is which All Stars
+ * this would be.
+ */
+export function nextAllStarsWindow(seasons = [], format = null) {
+  const cfg = format ? SHOWS[format]?.allStars : null;
+  const slots = (cfg?.airSlots || []).map(s => SLOTS.indexOf(s)).filter(i => i >= 0);
+  if (!slots.length) return null;
+  const quarters = s => { const k = airKey(s); return Math.floor(k / 10) * 4 + (k % 10); };
+  const at = q => ({ airYear: Math.floor(q / 4), airSlot: SLOTS[((q % 4) + 4) % 4] });
+  const slotAfter = q0 => { for (let q = q0 + 1; q <= q0 + 4; q++) if (slots.includes(((q % 4) + 4) % 4)) return q; return q0 + 4; };
+
+  const dated = seasons.filter(s => airKey(s) != null).sort(byAirDate);
+  if (!dated.length) return null;
+  const mine = dated.filter(s => (s.format || null) === format);
+  const stars = mine.filter(s => s.allStars);
+  if (stars.length) return { ...at(slotAfter(quarters(stars[stars.length - 1]))), number: stars.length + 1, bridge: [] };
+
+  const need = Math.max(1, Number(cfg.after) || 1);
+  const flagships = mine.filter(s => !s.allStars);
+  const bridge = [];
+  let rows = dated;
+  while (flagships.length < need) {
+    const w = nextWindowFor(rows, format);
+    if (!w) return null;
+    const row = { format, airYear: w.airYear, airSlot: w.airSlot };
+    bridge.push(w);
+    flagships.push(row);
+    rows = [...rows, row].sort(byAirDate);
+  }
+  return { ...at(slotAfter(quarters(flagships[need - 1]))), number: 1, bridge };
 }
 
 // ── THE FRANCHISE'S PRESENT, SET ONCE ────────────────────────────────

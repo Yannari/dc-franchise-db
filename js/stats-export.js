@@ -13,7 +13,7 @@ import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
-import { nextWindowFor } from './franchise-calendar.js';
+import { nextWindowFor, nextAllStarsWindow } from './franchise-calendar.js';
 import { ratingsForSeason } from './ratings.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -2249,7 +2249,7 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
  * needs a "when". So it is placed by continuing the show's own rhythm rather
  * than left blank for somebody to notice later.
  */
-function _airWindowFor(db, format, seasonNum) {
+function _airWindowFor(db, format, seasonNum, { allStars = false } = {}) {
   const rows = (db && db.seasons) || [];
   const prior = rows.find(s => s.seasonNumber === seasonNum && (s.format || DEFAULT_FORMAT) === format);
   // An explicit choice in the season setup beats everything — including the
@@ -2263,7 +2263,11 @@ function _airWindowFor(db, format, seasonNum) {
   if (prior && prior.airYear && prior.airSlot) {
     return { airYear: prior.airYear, airSlot: prior.airSlot };
   }
-  return nextWindowFor(rows.filter(s => s !== prior), format) || {};
+  const others = rows.filter(s => s !== prior);
+  // An All Stars season keeps its own quarter, not the flagship's next one.
+  const star = allStars ? nextAllStarsWindow(others, format) : null;
+  if (star) return { airYear: star.airYear, airSlot: star.airSlot };
+  return nextWindowFor(others, format) || {};
 }
 
 function _mergeSeasonsDatabase(existing, rawStats, template) {
@@ -2597,7 +2601,10 @@ export function mergeDragSeasonsDatabase(existing, seasonDoc) {
 
   const db = JSON.parse(JSON.stringify(existing || {}));
   if (!db.seasons) db.seasons = [];
-  const airWindow = _airWindowFor(db, DRAG_FORMAT, seasonNum);
+  // Read off the episodes the way js/dr/grid.js shapeOf does, plus the finale
+  // row, which is the only one a Save-rule All Stars marks.
+  const allStars = (seasonDoc.dr?.episodes || []).some(e => e?.dr?.allStars || e?.allStars || e?.dr?.finale?.allStars);
+  const airWindow = _airWindowFor(db, DRAG_FORMAT, seasonNum, { allStars });
   // Read before the filter: the row is rebuilt from the document, so anything
   // the document does not carry would not survive a re-publish.
   const priorRatings = (db.seasons.find(x =>
@@ -2618,6 +2625,7 @@ export function mergeDragSeasonsDatabase(existing, seasonDoc) {
     seasonNumber: seasonNum,
     format: DRAG_FORMAT,
     seasonId: seasonId(DRAG_FORMAT, seasonNum),
+    ...(allStars ? { allStars: true } : {}),
     title: _clean(seasonDoc.title, `${SHOWS[DRAG_FORMAT].name} ${seasonNum}`),
     subtitle: _clean(seasonDoc.subtitle),
     castSize: seasonDoc.castSize,

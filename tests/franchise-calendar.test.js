@@ -12,7 +12,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  SLOTS, airKey, byAirDate, airLabel, ageAt, latestAired, yearsBetween, nextWindowFor,
+  SLOTS, airKey, byAirDate, airLabel, ageAt, latestAired, yearsBetween, nextWindowFor, nextAllStarsWindow,
 } from '../js/franchise-calendar.js';
 import { SHOWS } from '../js/shows.js';
 
@@ -205,5 +205,30 @@ describe('home quarters', () => {
     expect(nextWindowFor(fx, 'total-drama')).toEqual({ airYear: 2027, airSlot: 'spring' });
     expect(nextWindowFor(fx, 'big-brother')).toEqual({ airYear: 2027, airSlot: 'summer' });
     expect(nextWindowFor(fx, 'drag-race')).toEqual({ airYear: 2028, airSlot: 'winter' });
+  });
+});
+
+describe('Drag Race All Stars', () => {
+  const dr = (n, y, extra = {}) => s(y, 'winter', { format: 'drag-race', seasonNumber: n, ...extra });
+  const td = s(2027, 'spring', { format: 'total-drama' });
+
+  it('the first is possible the summer of the third flagship season, with the seasons it waits on', () => {
+    const w = nextAllStarsWindow([dr(1, 2027), td], 'drag-race');
+    expect(w).toMatchObject({ airYear: 2029, airSlot: 'summer', number: 1 });
+    expect(w.bridge).toEqual([{ airYear: 2028, airSlot: 'winter' }, { airYear: 2029, airSlot: 'winter' }]);
+  });
+
+  it('then one a year', () => {
+    const fx = [dr(1, 2027), dr(2, 2028), dr(3, 2029), s(2029, 'summer', { format: 'drag-race', seasonNumber: 4, allStars: true })];
+    expect(nextAllStarsWindow(fx, 'drag-race')).toMatchObject({ airYear: 2030, airSlot: 'summer', number: 2, bridge: [] });
+  });
+
+  it('an aired All Stars does not push the next flagship season off its winter', () => {
+    const fx = [dr(1, 2027), dr(2, 2028), dr(3, 2029), s(2029, 'summer', { format: 'drag-race', seasonNumber: 4, allStars: true })];
+    expect(nextWindowFor(fx, 'drag-race')).toEqual({ airYear: 2030, airSlot: 'winter' });
+  });
+
+  it('a show without All Stars has none', () => {
+    expect(nextAllStarsWindow([td], 'total-drama')).toBe(null);
   });
 });

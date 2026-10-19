@@ -23,7 +23,7 @@
 
 import { SHOWS, DEFAULT_FORMAT } from './shows.js';
 import {
-  airKey, airLabel, latestAired, nextWindowFor, episodeAirDates, airDateLabel,
+  airKey, airLabel, latestAired, nextWindowFor, nextAllStarsWindow, episodeAirDates, airDateLabel,
 } from './franchise-calendar.js';
 
 const DAY = 86400000;
@@ -85,7 +85,7 @@ function subtitleOf(title, show) {
 }
 
 /** One season as a run of weekly dates, or null when it has no window. */
-function runOf(season, projected = false) {
+function runOf(season, projected = false, key = null) {
   const format = season.format || DEFAULT_FORMAT;
   const show = SHOWS[format] || { name: format, short: '?', emoji: '📺', accent: '#9b6dff', prefix: '?' };
   const count = Number(season.episodeCount) > 0 ? Number(season.episodeCount) : 12;
@@ -94,17 +94,28 @@ function runOf(season, projected = false) {
   const ref = season.seasonId || (show.prefix === 'td' ? season.seasonNumber : `${show.prefix}-${season.seasonNumber}`);
   return {
     season, format, show, count, projected, ref,
-    key: projected ? `next-${format}` : String(ref),
+    key: key || (projected ? `next-${format}` : String(ref)),
     start: dates[0],
     finale: dates[dates.length - 1],
-    short: `${show.short} ${season.seasonNumber}`,
+    // An All Stars season is counted on its own: "DR AS1", not "DR 4".
+    short: season.allStars && show.allStars
+      ? `${show.short} ${show.allStars.short}${season.asNumber || ''}`
+      : `${show.short} ${season.seasonNumber}`,
     sub: subtitleOf(season.title, show),
   };
 }
 
 function buildModel(seasons) {
   const dated = seasons.filter(s => airKey(s) != null);
-  const runs = dated.map(s => runOf(s)).filter(Boolean)
+  // Each aired All Stars learns which one it was, in air order.
+  const starCount = {};
+  const numbered = dated.slice().sort((a, b) => airKey(a) - airKey(b)).map(s => {
+    if (!s.allStars) return s;
+    const f = s.format || DEFAULT_FORMAT;
+    starCount[f] = (starCount[f] || 0) + 1;
+    return { ...s, asNumber: starCount[f] };
+  });
+  const runs = numbered.map(s => runOf(s)).filter(Boolean)
     .sort((a, b) => a.start - b.start || a.finale - b.finale);
 
   // Each show's next season, continued from its own rhythm.
@@ -123,11 +134,35 @@ function buildModel(seasons) {
       airYear: w.airYear, airSlot: w.airSlot, episodeCount: last?.episodeCount,
     }, true);
     if (run) { run.lengthGuessed = !last?.episodeCount; ghosts.push(run); }
+
+    // ALL STARS — possible, on its own quarter. Before the first one, the
+    // flagship seasons it waits on are drawn too (the `bridge`), so the bar
+    // does not float in a year with nothing before it.
+    const as = nextAllStarsWindow(dated.map(s => ({ ...s, format: s.format || DEFAULT_FORMAT })), format);
+    if (!as) continue;
+    let k = n;
+    for (const b of as.bridge) {
+      if (b.airYear === w.airYear && b.airSlot === w.airSlot) continue;
+      k++;
+      const bridge = runOf({
+        format, seasonNumber: k, title: `${show.name} ${k}`,
+        airYear: b.airYear, airSlot: b.airSlot, episodeCount: last?.episodeCount,
+      }, true, `next-${format}-${k}`);
+      if (bridge) { bridge.lengthGuessed = !last?.episodeCount; ghosts.push(bridge); }
+    }
+    const lastStar = mine.filter(s => s.allStars).sort((a, b) => airKey(a) - airKey(b)).pop();
+    const count = lastStar?.episodeCount || last?.episodeCount;
+    const star = runOf({
+      format, allStars: true, asNumber: as.number, seasonNumber: as.number,
+      title: `${show.name} ${show.allStars.label} ${as.number}`,
+      airYear: as.airYear, airSlot: as.airSlot, episodeCount: count,
+    }, true, `next-${format}-as`);
+    if (star) { star.lengthGuessed = !count; star.possible = true; ghosts.push(star); }
   }
   ghosts.sort((a, b) => a.start - b.start);
 
   const nowSeason = latestAired(dated);
-  const nowRun = nowSeason ? runs.find(r => r.season === nowSeason) : null;
+  const nowRun = nowSeason ? runs.find(r => r.season === nowSeason || (nowSeason.seasonId && r.season.seasonId === nowSeason.seasonId)) : null;
   const all = [...runs, ...ghosts];
   const years = all.flatMap(r => [r.start.getUTCFullYear(), r.finale.getUTCFullYear()]);
   const unplaced = Object.entries(SHOWS)
@@ -395,10 +430,10 @@ function barHtml(r, year, i) {
   const roomy = width >= 14;
   const winner = roomy && !r.projected && r.season.winner?.name ? `<span class="crown">👑 ${esc(r.season.winner.name)}</span>` : '';
   const sub = width >= 11 && r.sub ? `<span>${esc(r.sub)}</span>` : '';
-  const tip = `${r.short}${r.sub ? ' · ' + r.sub : ''} — ${airDateLabel(r.start)} to ${airDateLabel(r.finale)}${r.projected ? ' (projected)' : ''}`;
+  const tip = `${r.short}${r.sub ? ' · ' + r.sub : ''} — ${airDateLabel(r.start)} to ${airDateLabel(r.finale)}${r.possible ? ' (possible)' : r.projected ? ' (projected)' : ''}`;
   return `<button type="button" class="${cls.join(' ')}" data-key="${esc(r.key)}" title="${esc(tip)}"
     style="left:${left}%;width:${width}%;--ac:${r.show.accent};--wk:calc(100% / ${weeks.toFixed(2)});animation-delay:${120 + i * 90}ms">
-    <b>${esc(r.short)}</b>${r.projected ? (width >= 8 ? '<span class="tag">projected</span>' : '') : sub}${winner}</button>`;
+    <b>${esc(r.short)}</b>${r.projected ? (width >= 8 ? `<span class="tag">${r.possible ? 'possible' : 'projected'}</span>` : '') : sub}${winner}</button>`;
 }
 
 function boardHtml(year) {
@@ -447,20 +482,27 @@ function detailHtml() {
   const { prev, next } = neighbours(r);
   const night = NIGHTS[r.show.airNight ?? 5] || '';
   const isNow = state.model.nowRun === r;
-  const status = r.projected ? 'Projected · not scheduled yet' : isNow ? 'Latest to air · the franchise is here' : 'Aired';
+  const status = r.possible ? 'Possible · not scheduled yet' : r.projected ? 'Projected · not scheduled yet' : isNow ? 'Latest to air · the franchise is here' : 'Aired';
+  const stars = r.show.allStars;
+  const which = r.season.allStars && stars ? `${stars.label} ${r.season.asNumber || ''}` : `Season ${r.season.seasonNumber}`;
+  const starSlots = (stars?.airSlots || []).map(s => s[0].toUpperCase() + s.slice(1)).join(' and ');
   const winner = r.season.winner?.name
     ? ` · Won by <b>${esc(r.season.winner.name)}</b>${r.season.winner.runnerUp ? ` over ${esc(r.season.winner.runnerUp)}` : ''}` : '';
   const home = (r.show.airSlots || []).map(s => s[0].toUpperCase() + s.slice(1)).join(' and ');
   const why = !r.projected ? ''
+    : r.possible
+      ? `<p>A possible ${esc(r.show.name)} ${esc(stars.label)}. ${r.season.asNumber === 1
+        ? `The first can follow ${esc(r.show.name)} ${esc(stars.after)}, in ${esc(starSlots)}`
+        : `One a year, in ${esc(starSlots)}`}, after that winter's season has crowned its winner. It isn't scheduled; play it and it lands here.</p>`
     : r.season.seasonNumber === 1
       ? `<p>Not played yet. ${esc(r.show.name)} airs in ${esc(home || 'its slot')}, so its first season lands here when it's exported. The episode count is a placeholder until then.</p>`
       : `<p>Where the next season lands${home ? ` (${esc(r.show.name)} airs in ${esc(home)})` : ' if the show keeps its rhythm'}, the same rule the export uses to date a new season. It isn't scheduled yet.</p>`;
-  const nb = (label, x) => x ? `<button type="button" data-key="${esc(x.key)}">${label} ${x.show.emoji} ${esc(x.short)}${x.projected ? ' (projected)' : ''}</button>` : '';
+  const nb = (label, x) => x ? `<button type="button" data-key="${esc(x.key)}">${label} ${x.show.emoji} ${esc(x.short)}${x.possible ? ' (possible)' : x.projected ? ' (projected)' : ''}</button>` : '';
   const open = r.projected ? '' : `<a class="fc-open" href="season_ref.html?season=${encodeURIComponent(r.ref)}">Open season →</a>`;
   return `<div class="fc-dcard" style="--ac:${r.show.accent}">
     <div class="big">${r.show.emoji}</div>
     <div>
-      <small>${esc(r.show.name)} · Season ${esc(r.season.seasonNumber)} · ${status}</small>
+      <small>${esc(r.show.name)} · ${esc(which)} · ${status}</small>
       <h4>${esc(r.season.title || r.short)}</h4>
       <p><b>${esc(airLabel(r.season))}</b> · ${esc(airDateLabel(r.start))} → ${esc(airDateLabel(r.finale))} · ${r.lengthGuessed ? '~' : ''}${r.count} episodes on ${night}${winner}</p>
       ${why}
@@ -482,7 +524,7 @@ function chronoHtml() {
     if (state.selected === r.key) cls.push('sel');
     out.push(`<button type="button" class="${cls.join(' ')}" data-key="${esc(r.key)}" style="--ac:${r.show.accent};animation-delay:${Math.min(i * 45, 1200)}ms"
       title="${esc(r.season.title || r.short)}"><span class="dot">${r.show.emoji}</span><b>${esc(r.short)}</b>
-      <small>${esc(airLabel(r.season))}${r.projected ? '<br>projected' : ''}</small></button>`);
+      <small>${esc(airLabel(r.season))}${r.possible ? '<br>possible' : r.projected ? '<br>projected' : ''}</small></button>`);
   });
   return `<div class="fc-rail">${out.join('')}</div>`;
 }

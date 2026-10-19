@@ -312,6 +312,13 @@ export const SHOWS = {
     runnableFlag: '_drRunnable',
     airNight: 5,
     airSlots: ['winter'],
+    // ALL STARS, ON ITS OWN SCHEDULE. Possible from the year of the third
+    // flagship season, then one a year. Summer rather than spring: a 16-week
+    // winter season is still airing through April, and two runs of one show
+    // on the same Friday is the one collision the home quarters exist to
+    // prevent. Read by nextAllStarsWindow (js/franchise-calendar.js); a
+    // season row is All Stars when it carries `allStars: true`.
+    allStars: { label: 'All Stars', short: 'AS', airSlots: ['summer'], after: 3 },
     rosterPlace: 'COMPETITION',
     roundsPath: 'dr.episodes',
     /* WHAT SHAPE THIS SHOW'S ROUNDS ARE IN -- see roundShape() below.

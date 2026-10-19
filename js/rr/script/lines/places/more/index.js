@@ -11,6 +11,7 @@ import fireMountainIsle from './fire-mountain-isle.js';
 import redSandDesert from './red-sand-desert.js';
 import homeCity from './home-city.js';
 import homeCity3 from './home-city-3.js';
+import eitherOrs from './either-ors.js';
 import mat from './mat.js';
 
-export default [redOutback, torchStatueHarbour, tombSands, treasureIsles, savannaFalls, rockNorth, greatWallHills, ironTowerCity, fireMountainIsle, redSandDesert, homeCity, homeCity3, mat];
+export default [redOutback, torchStatueHarbour, tombSands, treasureIsles, savannaFalls, rockNorth, greatWallHills, ironTowerCity, fireMountainIsle, redSandDesert, homeCity, homeCity3, eitherOrs, mat];

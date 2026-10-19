@@ -85,6 +85,8 @@ function narrate(state, leg, scenes) {
   const add = (ending, t, slots) => out.push({ scene: null, beat: `narr:${n}:${ending}:${out.length}`, kind: 'don-narrate', ending, stretch: null,
     t, teams: [], who: [], side: null, tier: 0,
     src: { id: `narr:${n}:${ending}:${out.length}`, leg: n, kind: 'don-narrate', who: [], seenBy: [], data: { ending, t, slots, snap: { place: leg.place } } } });
+  // the premiere: Don's welcome, before the first team turns up (the introductions follow it, then his rules)
+  if (n === 1) add('welcome', -3, {});
   // the departure: last leg's winners first out of the Chill Zone (before Don's opener)
   const prev = (state.legs || []).find(l => l.n === n - 1);
   if (prev?.order?.[0]) add('depart', -1, { winners: teamTag(state, prev.order[0]) });
@@ -244,6 +246,25 @@ export function airLeg(state, leg) {
         data: { ending: 'any', team: l.id, stretch: s.id, t: l.from,
           snap: { leg: n, place: leg.place, rel: tm.rel, relFam: relFamOf(tm.rel), identity: tm.identity ?? null, mode: s.mode } } });
     }
+  }
+  // the premiere meets its teams the way the show does: every one introduced as it turns up, after Don's welcome
+  // and before his rules (the user, 2026-10-19). They arrive in an order the seed draws.
+  if (n === 1) {
+    const seed = Number(state.seed) || 1;
+    const arrival = [...leg.order].sort((x, y) => ((Number(x.slice(1)) * 7919 + seed * 104729) % 1009) - ((Number(y.slice(1)) * 7919 + seed * 104729) % 1009) || (x < y ? -1 : 1));
+    arrival.forEach((id, k) => {
+      const tm = state.teams[id];
+      if (!tm) return;
+      // each its own moment, between the welcome (-3) and the rules (0)
+      beats.push({ id: `intro:${id}`, leg: n, kind: 'team-intro', who: [tm.a, tm.b], seenBy: [tm.a, tm.b],
+        data: { ending: 'any', team: id, stretch: null, t: -3 + (k + 1) / (arrival.length + 1),
+          snap: { leg: n, place: leg.place, rel: tm.rel, relFam: relFamOf(tm.rel), identity: tm.identity ?? null } } });
+      // ...and a team introduced by its identity says, in an interview, what the two of them are to each other (a
+      // team with none was introduced that way already)
+      if (tm.identity) beats.push({ id: `dyn:${id}`, leg: n, kind: 'team-dynamic', who: [tm.a, tm.b], seenBy: [tm.a, tm.b],
+        data: { ending: 'any', team: id, stretch: null, t: -3 + (k + 1.5) / (arrival.length + 1),
+          snap: { leg: n, place: leg.place, rel: tm.rel, relFam: relFamOf(tm.rel), identity: tm.identity ?? null } } });
+    });
   }
   // ...and the followed storylines' steps
   for (const s of inOrder(scenes.filter(s => tierOf(s) === 1 && !picked.has(s.id)))) if (ok(s)) take(s, 1);

@@ -68,7 +68,7 @@ export function rolesOf(scene, state) {
   const t = tid ? state.teams[tid] : null;
   // a plane full of teams is a room (travel.js same-flight)
   // the director's own kinds have no catalogue entry: a big cast's quick check-in is Don's
-  const cast = scene.kind === 'same-flight' ? 'group' : ['mat-montage', 'don-narrate'].includes(scene.kind) ? 'don' : kind?.cast || 'team';
+  const cast = scene.kind === 'same-flight' ? 'group' : ['mat-montage', 'don-narrate', 'team-intro'].includes(scene.kind) ? 'don' : kind?.cast || 'team';
   const roles = {};
   const who = scene.who || [];
 

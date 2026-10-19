@@ -17,13 +17,13 @@ const place = {
   'don-opener.annoyed': [
     { id: 'hc.op1', when: P, turns: [
       { beat: 'Don stands on the roof of the old train station, the city tower behind him, the wind doing terrible things to his hair.' },
-      don("Welcome to the Ridonculous Race! Teams of two, racing around the world for one million dollars!"),
+      don("And that's everybody! Teams of two, racing around the world for one million dollars. Here's how it works."),
       don("At the end of every leg there's a Chill Zone. The last team to reach it may be eliminated. The first team to reach the final Chill Zone wins it all."),
       { beat: 'He holds up a box with his own face on it.' },
       don("And this is the Don Box. It holds your tips. It's also very handsome. Racers, the race starts... now!"),
     ] },
     { id: 'hc.op2', when: P, turns: [
-      don("Hello, and welcome to Home City, home of the city tower, a very cold lake, and the start of the Ridonculous Race!"),
+      don("That's all of them! Welcome to Home City, home of the city tower, a very cold lake, and the start of the Ridonculous Race!"),
       don("Our teams are about to race around the world, one leg at a time, for a million dollars. Some of them are going to make it. Most of them aren't."),
       { beat: 'He gestures at the crowd of teams on the platform below.' },
       don("Look at them. So fresh. So hopeful. Enjoy it, racers. It never lasts."),
@@ -32,7 +32,7 @@ const place = {
   'don-opener.bored': [
     { id: 'hc.op3', when: P, turns: [
       { beat: 'Don stands at the top of the station steps with a megaphone he clearly doesn\'t need.' },
-      don("Racers! Welcome to the Ridonculous Race. Your first Don Box is at the foot of the city tower. On foot. Go!"),
+      don("Racers! That's all of you. Your first Don Box is at the foot of the city tower. On foot. Go!"),
       { beat: 'Nobody moves. Everyone is still taking selfies.' },
       don("I said go! The million dollars is not going to win itself!"),
     ] },

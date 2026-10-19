@@ -55,7 +55,7 @@ export default {
         { by: 'c', say: "I didn't know it was the last one!" },
         { by: 'b', say: "That's the second thing you've taken from us this race." },
         { by: 'd', say: "What was the first thing?" },
-        { by: 'b', say: "First place on the last leg." },
+        { by: 'b', say: "Our dignity." },
       ] },
       { id: 'vt.sf7', when: A, turns: [
         { by: 'd', say: "Truce? Just for the flight?" },

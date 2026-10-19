@@ -17,7 +17,7 @@ export default {
       { id: 'vs.s2', turns: [
         { by: 'b', say: "Psst. It's the third one from the left. Don't tell anyone we told you." },
         { by: 'd', say: "Why would you help us?" },
-        { by: 'a', say: "Because you helped us at the last stop, and we don't like owing people." },
+        { by: 'a', say: "Because one day we'll need help, and we'd like you to remember this." },
         { by: 'c', ...V("So now we're even?", "Even, then?", "So we're even.", "So NOW we're EVEN?", "So now we're even, then?", "So the books are balanced?") },
         { by: 'b', say: "Now we're even. Next time, we're enemies again." },
         { by: 'd', say: "Looking forward to it." },
@@ -154,7 +154,7 @@ export default {
       ] },
       { id: 'vs.c8', turns: [
         { by: 'a', say: "Best place we've been so far? Go." },
-        { by: 'd', say: "The desert. The stars at night. I've never seen so many stars." },
+        { by: 'd', say: "The first night. The stars. I've never seen so many stars." },
         { by: 'c', say: "I liked the place with the free breakfast." },
         { by: 'b', ...V("That was a waiting room.", "That was a waiting room.", "That was a waiting room, though.", "That was a WAITING ROOM!", "That was just a waiting room.", "That was a waiting room. You loved a waiting room.") },
         { by: 'c', say: "It was a very good breakfast." },

@@ -121,9 +121,63 @@
     border-top:1px solid var(--stroke);padding:12px 20px;display:flex;gap:12px;
     align-items:center;justify-content:center;backdrop-filter:blur(6px)}
   .empty{text-align:center;padding:60px 20px;color:var(--muted)}
+
+  /* ── THE THREE TABS: deciding (Inbox) and looking things up (History, Couples) ── */
+  .life-tabs{display:flex;gap:6px;margin:0 0 22px;border-bottom:1px solid var(--stroke);flex-wrap:wrap}
+  .life-tabs a{padding:10px 16px;color:var(--muted);text-decoration:none;font-weight:700;font-size:14px;
+    border-bottom:2px solid transparent;margin-bottom:-1px}
+  .life-tabs a:hover{color:var(--text)}
+  .life-tabs a[aria-current="page"]{color:var(--text);border-bottom-color:var(--accent)}
+  .life-tabs .n{font-size:11px;color:var(--muted);font-weight:600;margin-left:4px}
+  body:not(.on-inbox) .commit{display:none}
+  body:not(.on-inbox) .wrap{padding-bottom:40px}
+  [hidden]{display:none !important}
+  .lb-intro{color:var(--muted);margin:0 0 14px;font-size:14px}
+  .lb-tools input[type=search]{background:var(--panel-2);border:1px solid var(--stroke);color:var(--text);
+    border-radius:8px;padding:8px 11px;font:inherit;min-width:240px;flex:1 1 240px;max-width:340px}
+  .lb-tools input[type=search]:focus{outline:none;border-color:var(--accent)}
+  .lb-ev{display:grid;grid-template-columns:auto 84px 1fr;gap:12px;align-items:start;
+    padding:11px 15px;border-top:1px solid var(--stroke);background:var(--panel)}
+  .lb-ev a,.lb-couple a,.lb-person a{color:var(--text);text-decoration:none;border-bottom:1px dotted var(--muted)}
+  .lb-ev a:hover,.lb-couple a:hover,.lb-person a:hover{color:#c4b5fd;border-color:#c4b5fd}
+  .lb-person{display:flex;gap:16px;align-items:center;padding:16px 18px;margin:0 0 20px;border-radius:14px;
+    border:1px solid rgba(125,76,255,.45);background:radial-gradient(120% 160% at 0% 0%,rgba(125,76,255,.22),var(--panel) 65%)}
+  .lb-big{width:68px;height:68px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.18);flex:0 0 auto;background:var(--panel-2)}
+  .lb-person > div{flex:1;min-width:0}
+  .lb-pname{font-size:20px;font-weight:800}
+  .lb-pstate{color:var(--muted);font-size:14px;margin-top:2px}
+  .lb-plinks{display:flex;gap:16px;margin-top:6px;font-size:13px;flex-wrap:wrap}
+  .lb-stages button[aria-pressed="false"]{opacity:.4}
+  .lb-stages button[aria-pressed="true"]{color:var(--text);border-color:rgba(255,255,255,.3)}
+  .lb-group{margin:0 0 24px}
+  .lb-group h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+  .lb-group h3 span{font-weight:600;margin-left:4px}
+  .lb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+  .lb-couple{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--stroke);
+    border-radius:12px;background:var(--panel)}
+  .lb-couple.ended{opacity:.75}
+  .lb-faces{display:flex;flex:0 0 auto}
+  .lb-faces .av,.lb-faces .fb{width:40px;height:40px;flex:0 0 auto;border-radius:50%;object-fit:cover;
+    border:2px solid var(--panel-2);background:var(--panel-2)}
+  .lb-faces .fb{display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--muted);
+    background:linear-gradient(160deg,#3a3350,#2a2438)}
+  .lb-faces > * + *{margin-left:-12px}
+  .lb-cbody{min-width:0;flex:1}
+  .lb-cnames{font-weight:700}
+  .lb-cnames span{color:var(--muted);font-weight:500;margin:0 2px}
+  .lb-couple details{margin-top:6px;font-size:12.5px;color:var(--muted)}
+  .lb-couple summary{cursor:pointer}
+  .lb-couple ul{margin:6px 0 0;padding-left:18px}
+  .lb-couple li span{opacity:.7;font-size:11.5px}
+  .lb-note{color:var(--muted);margin:0 0 16px}
+  @media (max-width:640px){
+    .lb-ev{grid-template-columns:auto 1fr}
+    .lb-ev .sig{display:none}
+    .lb-person{flex-wrap:wrap}
+  }
 </style>
 </head>
-<body>
+<body class="on-inbox">
 <header class="modern-header" id="modernHeader">
   <div class="header-container">
     <div class="header-top">
@@ -146,6 +200,16 @@
   <p class="sub">What happened between seasons. Only what you approve reaches a character's page.
     <a href="devotees.html">← Players</a></p>
 
+  <nav class="life-tabs" aria-label="Life">
+    <a href="#inbox" data-tab="inbox" aria-current="page">Inbox</a>
+    <a href="#history" data-tab="history">History <span class="n" id="n-history"></span></a>
+    <a href="#couples" data-tab="couples">Couples</a>
+  </nav>
+
+  <div id="history-view" hidden></div>
+  <div id="couples-view" hidden></div>
+
+  <div id="inbox-view">
   <dl class="terms">
     <dt>The off-season</dt>
     <dd>The months between one season airing and the next. <strong>Resolving</strong> it works out
@@ -205,6 +269,7 @@
   <div class="bar views sigs" id="sigs"></div>
 
   <div id="list"></div>
+  </div>
 </div>
 
 <div class="commit">
@@ -224,6 +289,7 @@ import { airLabel, airKey, byAirDate } from './js/franchise-calendar.js';
 import { summarise } from './js/life-resolver.js';
 import { lifeContext, resolveGapWith, loadLifeLog, saveLifeLog, unresolvedGaps }
   from './js/life-hook.js';
+import { setBrowseData, showHistory, showCouples } from './js/life-browse.js';
 
 const $ = s => document.querySelector(s);
 const esc = t => String(t ?? '').replace(/[&<>"]/g, c =>
@@ -237,6 +303,9 @@ try { policy = { ...defaultPolicy, ...(JSON.parse(localStorage.getItem(POLICY_KE
 const savePolicy = () => { try { localStorage.setItem(POLICY_KEY, JSON.stringify(policy)); } catch {} };
 
 let events = [];
+// THE LOG AS LAST SAVED. History and Couples read this, never `events`: a box
+// ticked in the inbox is not canon until it is committed.
+let savedEvents = [];
 let seasons = [];
 // Which of the four lists is on screen. An inbox opens on what is waiting.
 let view = 'waiting';
@@ -709,7 +778,7 @@ $('#commit').onclick = async () => {
     // and drop out of the waiting list. This is the moment the inbox empties,
     // and it is deliberately committing that does it rather than ticking:
     // until it is saved, an approval is only an intention.
-    if (j) { touched.clear(); render(); }
+    if (j) { touched.clear(); savedEvents = JSON.parse(JSON.stringify(events)); syncBrowse(); render(); }
   } catch (err) {
     // Said out loud. A silent failure looks exactly like a successful save.
     $('#saved').textContent = `could not save (${err.message}) — use Copy JSON`;
@@ -730,6 +799,7 @@ $('#commit').onclick = async () => {
     fetch('franchise_roster.json').then(r => r.json()).catch(() => ({ players: [] })),
   ]);
   events = log;
+  savedEvents = JSON.parse(JSON.stringify(log));
   // Family & ties on the character: a couple set there is where their life starts.
   try { (await import('./js/ties.js')).useRoster(roster); } catch { /* ties are an extra */ }
   ctx = lifeContext(pdb, sdb, roster);
@@ -765,7 +835,46 @@ $('#commit').onclick = async () => {
     if (swept.added) { try { await saveLog(events, { ask: false }); } catch { /* Commit will report it */ } }
   }
   render();
+  syncBrowse();
+  route();
 })();
+
+// ── THE TABS ──
+//
+// One page, three tabs, the hash says which — so a link can open somebody's
+// history directly: life.html#history/lindsay.
+function syncBrowse() {
+  setBrowseData({ events: savedEvents, names, genders, seasons, rank: rank(), face });
+  $('#n-history').textContent = savedEvents.filter(e => e.status === 'approved').length || '';
+}
+
+function route() {
+  const [tab, who] = (location.hash.slice(1) || 'inbox').split('/');
+  const id = ['history', 'couples'].includes(tab) ? tab : 'inbox';
+  document.querySelectorAll('.life-tabs [data-tab]').forEach(a =>
+    a.setAttribute('aria-current', a.dataset.tab === id ? 'page' : 'false'));
+  $('#inbox-view').hidden = id !== 'inbox';
+  $('#history-view').hidden = id !== 'history';
+  $('#couples-view').hidden = id !== 'couples';
+  document.body.classList.toggle('on-inbox', id === 'inbox');
+  if (!ctx) return;
+  const slug = who ? decodeURIComponent(who) : null;
+  if (id === 'history') showHistory($('#history-view'), slug);
+  if (id === 'couples') showCouples($('#couples-view'), slug);
+}
+window.addEventListener('hashchange', route);
+
+// A name anywhere in the two reading tabs opens that person.
+document.addEventListener('click', ev => {
+  const a = ev.target.closest('[data-who],[data-cwho]');
+  if (!a) return;
+  ev.preventDefault();
+  const tab = a.dataset.cwho ? 'couples' : 'history';
+  const slug = a.dataset.cwho || a.dataset.who;
+  const next = '#' + tab + '/' + encodeURIComponent(slug);
+  if (location.hash === next) route(); else location.hash = next;
+  window.scrollTo({ top: document.querySelector('.life-tabs').offsetTop - 80, behavior: 'smooth' });
+});
 </script>
 </body>
 </html>

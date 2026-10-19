@@ -10,6 +10,9 @@ import { rolesOf } from '../js/rr/script/roles.js';
 import { getPlace } from '../js/rr/places.js';
 import { raceCast } from './helpers/rr-cast.js';
 
+const DESERT_ROUTE = ['home-city', 'red-sand-desert', 'iron-tower-city', 'red-sand-desert', 'fire-mountain-isle', 'red-sand-desert',
+  'rock-north', 'red-sand-desert', 'great-wall-hills', 'red-sand-desert', 'savanna-falls', 'red-sand-desert', 'skyline-finale'];
+
 describe('rr Red Sand Desert, 1:1', () => {
   const states = [];
   beforeAll(() => {
@@ -17,7 +20,8 @@ describe('rr Red Sand Desert, 1:1', () => {
       const { cast, teams } = raceCast(12, seed);
       teams[0].identity = 'vegans';
       setPlayers(cast);
-      states.push(playRaceSeason({ teams, seed }).state);
+      // every other leg in the desert (the library has grown: a drawn route visits it once or twice a season)
+      states.push(playRaceSeason({ teams, seed, options: { route: DESERT_ROUTE } }).state);
     }
   });
   const rows = (st, stretch) => (st.taskLog || []).filter(r => r.stretch === stretch);

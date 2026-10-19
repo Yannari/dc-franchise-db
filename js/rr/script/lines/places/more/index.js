@@ -5,5 +5,6 @@ import tombSands from './tomb-sands.js';
 import treasureIsles from './treasure-isles.js';
 import savannaFalls from './savanna-falls.js';
 import rockNorth from './rock-north.js';
+import greatWallHills from './great-wall-hills.js';
 
-export default [redOutback, torchStatueHarbour, tombSands, treasureIsles, savannaFalls, rockNorth];
+export default [redOutback, torchStatueHarbour, tombSands, treasureIsles, savannaFalls, rockNorth, greatWallHills];

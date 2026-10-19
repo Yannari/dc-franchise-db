@@ -47,6 +47,30 @@ function play(seed, nTeams) {
   return out;
 }
 
+// A season from the simulator's run tab (?sim=1): the race the run tab built (js/rr-run.js), replayed here exactly,
+// the same teams, cast, seed, options and franchise history, so every leg is the one the run tab aired. Read from the
+// page that frames or opened this one (the run tab's player embeds it), else from what the run tab left in storage.
+function simSource() {
+  for (const w of [window.parent !== window ? window.parent : null, window.opener]) {
+    try { if (w?.gs?.rr?.teams?.length) return { rr: w.gs.rr, players: w.players || [] }; } catch { /* another origin */ }
+  }
+  try { const s = JSON.parse(localStorage.getItem('rr_sim_season') || 'null'); if (s?.rr?.teams?.length) return s; } catch { /* no storage */ }
+  return null;
+}
+function playSim() {
+  const src = simSource();
+  if (!src) throw new Error('no season from the simulator: play a leg in the run tab first');
+  const r = src.rr;
+  const names = new Set(r.teams.flatMap(t => [t.a, t.b]));
+  const cast = (src.players || []).filter(p => p && names.has(p.name)).map(p => JSON.parse(JSON.stringify(p)));
+  setPlayers(cast);
+  let options = {};
+  try { options = r.built ? JSON.parse(r.built).options || {} : {}; } catch { options = {}; }
+  const res = playRaceSeason({ teams: r.teams.map(t => ({ ...t })), seed: r.seed, options, carried: r.startOf?.carried || null });
+  const eps = airSeason(res);
+  return { seed: r.seed, nTeams: r.teams.length, res, eps, cast, built: [], sim: true };
+}
+
 function episode(i) {
   if (!season.built[i]) season.built[i] = { ...episodeScreens(season.res, season.eps, i), res: season.res };
   return season.built[i];
@@ -69,7 +93,7 @@ function draw(fresh) {
   side.paint(ep, si, idx, { speaking: s.steps[idx]?.team || null });
   $('rr-stepn').textContent = `Episode ${ep.n} · click ${at + 1} of ${flat.length}`;
   const u = new URL(location.href);
-  u.searchParams.set('seed', season.seed); u.searchParams.set('teams', season.nTeams);
+  if (!season.sim) { u.searchParams.set('seed', season.seed); u.searchParams.set('teams', season.nTeams); }
   u.searchParams.set('ep', ep.n); u.searchParams.set('step', at);
   history.replaceState(null, '', u);
 }
@@ -108,13 +132,13 @@ async function start() {
   $('rr-loading').style.display = 'flex';
   await new Promise(r => setTimeout(r, 30));
   try {
-    await loadRoster();
-    season = play(seed, n);
-    faces = Object.fromEntries(season.cast.map(p => [p.name, avatarUrl({ slug: p.slug || p.name })]));
+    if (params.get('sim')) season = playSim();
+    else { await loadRoster(); season = play(seed, n); }
+    faces = Object.fromEntries(season.cast.map(p => [p.name, avatarUrl({ slug: p.slug || p.name, avatarId: p.avatarId, avatarFile: p.avatarFile })]));
     const sel = $('rr-ep');
     sel.innerHTML = season.res.legs.map((l, i) => `<option value="${i}">Leg ${l.n} · ${l.placeName}${l.kind === 'final' ? ' (final)' : l.kind === 'non' ? ' (non-elim)' : ''}</option>`).join('');
     const winner = season.res.winner ? season.res.state.teams[season.res.winner].name : '?';
-    status(`seed ${seed} · ${n} teams · ${season.res.legs.length} legs`);
+    status(season.sim ? `your season · ${season.nTeams} teams · ${season.res.legs.length} legs` : `seed ${seed} · ${n} teams · ${season.res.legs.length} legs`);
     $('rr-loading').style.display = 'none';
     void winner;
     const want = Math.max(1, Math.min(season.res.legs.length, parseInt(params.get('ep'), 10) || 1)) - 1;
@@ -169,4 +193,6 @@ window.__rr = {
   find(pred) { const k = flat.findIndex(f => pred(ep.screens[f.si], ep.screens[f.si].steps[f.idx])); return k; },
   step(k, fresh = true) { at = k; draw(fresh); },
 };
+// the run tab's season has no seed or cast size to pick
+if (params.get('sim')) for (const id of ['rr-seed', 'rr-teams', 'rr-play']) { const el = $(id); if (el) (el.closest('label') || el).style.display = 'none'; }
 start();

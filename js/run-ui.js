@@ -31,6 +31,9 @@ import { circleRandomDraw, isCircleSeason, simulateCircleEpisode, circleCanRerun
 import { challengeDailyList, challengeDrawnDailies } from './ch-run.js';
 import { isChallengeSeason, simulateChallengeEpisode, challengeCanRerun, lastChallengeRefusal, rerunChallengeEpisode,
   challengePendingChange, challengeEpisodeMap, challengeVoteShape } from './ch-run.js';
+import { isRaceSeason, simulateRaceEpisode, raceCanRerun, lastRaceRefusal, racePendingChange, raceEpisodeMap,
+  raceVoteShape } from './rr-run.js';
+import { raceEpisodeText } from './rr-view.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
 import { dragBadges } from './dr/badges.js';
@@ -45,7 +48,7 @@ import { JUDGES as DR_JUDGES } from './dr/data/judges.js';
 import { SONGS as DR_SONGS } from './dr/data/songs.js';
 import { GROUP_THEMES as DR_GG_THEMES } from './dr/chal/girl-group.js';
 import { roundExits, exitVerbs, SHOWS, showWords, showName, DEFAULT_FORMAT, DRAG_FORMAT, TRAITORS_FORMAT,
-  PERFECT_MATCH_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT } from './shows.js';
+  PERFECT_MATCH_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT, RACE_FORMAT } from './shows.js';
 import { seasonFormat } from './core.js';
 import { loadRankingBoards } from './ranking-boards.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
@@ -144,7 +147,7 @@ function _freshTranscript(epRecord) {
        with the screens it retranscribes. It also self-heals a season played
        before any of this, which is the only way one gets a transcript now. */
     const _regen = epRecord && typeof window.generateSummaryText === 'function'
-      && (_isCastleRow(epRecord) || _isDragRow(epRecord) || _isCircleRow(epRecord) || _isChallengeRow(epRecord)
+      && (_isCastleRow(epRecord) || _isDragRow(epRecord) || _isCircleRow(epRecord) || _isChallengeRow(epRecord) || _isRaceRow(epRecord)
         ? !epRecord.summaryText || (epRecord.textV || 0) < (window.TEXT_BACKLOG_V || 1)
         : false);
     if (_regen) {
@@ -283,6 +286,8 @@ const _isDragRow = ep => !!ep && ep.format === DRAG_FORMAT;
 const _isCircleRow = ep => !!ep && ep.format === CIRCLE_FORMAT;
 // The Challenge too (ch/transcript.js reads the aired scenes the row carries).
 const _isChallengeRow = ep => !!ep && ep.format === CHALLENGE_FORMAT;
+// The Ridonculous Race too (rr-view.js reads the aired segments the row carries).
+const _isRaceRow = ep => !!ep && ep.format === RACE_FORMAT;
 // Same question for the main stage. A stored drag episode shares none of Total
 // Drama's eighty flags, so running them over it would be eighty reads of
 // fields that are not there; it gets its own card.
@@ -397,6 +402,8 @@ export function buildHubAftermath(ep) {
     ? [...ep.pm.shares].sort((x, y) => y.share - x.share).map(s => `${s.couple.join(" & ")} ${Math.round(s.share * 100)}%`).join(" · ")
     // The Circle has ratings, not ballots: the shape is who held the power.
     : seasonFormat(ep) === CHALLENGE_FORMAT ? challengeVoteShape(ep)
+    // A race has no ballots: the shape is who won the leg and who came last.
+    : seasonFormat(ep) === RACE_FORMAT ? raceVoteShape(ep)
     : seasonFormat(ep) === CIRCLE_FORMAT
       ? circleBlockShape(roundExits(ep, CIRCLE_FORMAT).map((x, i) => ({ ...x, ...(ep.exits?.[i] || {}) })))
       : voteEntries.map(([name, count]) => `${name} ${count}`).join(' · ') || 'No standard vote';
@@ -420,6 +427,16 @@ export function buildHubAftermath(ep) {
       : exits.length
         ? exits.map(x => `${x.name} ${x.verb}${DOOR[x.channel] ? ` ${DOOR[x.channel]}` : ''}.`).join(' ')
         : 'Nobody left the villa tonight.';
+  } else if (seasonFormat(ep) === RACE_FORMAT) {
+    // No vote: the clock decides. The last team to the Chill Zone goes home, unless the leg is a
+    // non-elimination one; a team too far behind is sent home where it stands.
+    const r = ep.rr || {};
+    const last = r.order?.[r.order.length - 1];
+    const gone = [...new Set((ep.exits || []).map(x => x.team))];
+    why = r.final ? `${(r.final.winners || []).join(' and ')} won The Ridonculous Race.`
+      : gone.length ? gone.map(t => { const x = ep.exits.find(e => e.team === t); return `${t} ${x.verb === 'eliminated' ? 'came last and were eliminated' : x.verb}.`; }).join(' ')
+      : r.kind === 'non' && last ? `${last.name} came last, but it was a non-elimination leg.`
+      : `${showWords(RACE_FORMAT).noExitLine}.`;
   } else if (seasonFormat(ep) === CHALLENGE_FORMAT) {
     // The house votes someone INTO the Arena, out loud; the duel decides who
     // leaves. Quits, medicals and disqualifications are their own doors.
@@ -632,7 +649,7 @@ export function renderSeasonHub() {
   const _bbSeason = isBigBrotherSeason();
   // A castle has no tribes and no merge either, so Total Drama's phase names
   // describe nothing about it. What it has is a number of people left.
-  const phaseLabel = (_bbSeason || isTraitorsSeason() || isPerfectMatchSeason() || isCircleSeason() || isChallengeSeason())
+  const phaseLabel = (_bbSeason || isTraitorsSeason() || isPerfectMatchSeason() || isCircleSeason() || isChallengeSeason() || isRaceSeason())
     ? (model.phase === 'complete' ? 'Complete' : model.remaining ? 'Final ' + model.remaining : 'Setup')
     : model.phase === 'pre-merge' ? 'Pre-Merge' : model.phase === 'post-merge' ? 'Post-Merge' : model.phase === 'finale' ? 'Finale' : model.phase === 'complete' ? 'Complete' : 'Setup';
   // A castle's season ends with the reunion: until it has aired, the main
@@ -1155,6 +1172,31 @@ export function renderEpisodeView(epRecord) {
     let _txt = '';
     try { _txt = _spoilerFree ? '' : (window.generateSummaryText?.(epRecord) || ''); } catch { _txt = ''; }
     _tEl.value = _txt;
+    _tEl.style.display = '';
+    return;
+  }
+  /* THE RIDONCULOUS RACE'S CARD: no vote, no immunity. Who won the leg, who
+     came last, and who went home; the Chill Zone's order under it. */
+  if (_isRaceRow(epRecord)) {
+    const r = epRecord.rr || {};
+    const hide = v => (_spoilerFree ? '???' : v);
+    const gone = [...new Set((epRecord.exits || []).map(x => `${x.team} (${x.verb})`))].join(' + ') || (r.kind === 'non' ? 'Nobody (non-elimination leg)' : 'Nobody');
+    const facts = r.final
+      ? `<div class="ep-fact ep-eliminated"><label>Winners</label><span>${hide((r.final.winners || []).join(' & ') || '—')}</span></div>`
+      : `<div class="ep-fact"><label>Won the leg</label><span>${hide(r.order?.[0]?.name || '—')}</span></div>
+         <div class="ep-fact"><label>Came last</label><span>${hide(r.order?.[r.order.length - 1]?.name || '—')}</span></div>
+         <div class="ep-fact ep-eliminated"><label>Went home</label><span>${hide(gone)}</span></div>`;
+    card.innerHTML = `<div class="ep-result">
+      <div class="ep-result-header">
+        <span class="ep-result-num">Leg ${epRecord.num}${r.placeName ? ` · ${r.placeName}` : ''}</span>
+        <span class="ep-result-phase" style="color:${SHOWS[RACE_FORMAT].accent}">${r.final ? 'THE FINALE' : r.kind === 'non' ? 'NON-ELIMINATION' : 'LEG'}</span>
+      </div>
+      <div class="ep-facts">${facts}</div>
+      ${_spoilerFree ? `<div style="margin-top:8px;font-size:11px;color:var(--muted);font-style:italic;text-align:center">Spoiler-free mode — open Visual Player to watch the leg</div>`
+        : `<div style="margin-top:4px"><div style="font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">The Chill Zone</div><div class="ep-vote-list">${(r.order || []).map((o, i) => `<span class="ep-vote-chip ${i === 0 ? 'top' : ''}">${o.place}. ${o.name}</span>`).join('')}</div></div>`}
+    </div>`;
+    const _tEl = document.getElementById('ep-output-text');
+    _tEl.value = _spoilerFree ? '' : (epRecord.summaryText || raceEpisodeText(epRecord));
     _tEl.style.display = '';
     return;
   }
@@ -1809,6 +1851,30 @@ export function simulateNext() {
   // Seventh engine, seventh branch, on the FORMAT alone. The whole season
   // plays and airs on the first press (js/ch-run.js) and the rows queue;
   // popularity is the engine's own, so updatePopularity is skipped.
+  // ── THE RIDONCULOUS RACE ─────────────────────────────────────────────
+  //
+  // Eighth engine, eighth branch, on the FORMAT alone. The whole race plays
+  // and airs on the first press (js/rr-run.js) and the legs queue; popularity
+  // is the engine's own, so updatePopularity is skipped.
+  if (isRaceSeason()) {
+    const rrEp = simulateRaceEpisode();
+    if (!rrEp) {
+      const why = lastRaceRefusal();
+      alert(why ? `This cast can't start a race yet: ${why}.`
+        : gs.activePlayers && gs.activePlayers.length ? 'This season is already complete.'
+          : 'Add players to Cast Builder first.');
+      return;
+    }
+    const pending = racePendingChange();
+    if (pending && pending !== _rrNoticeShown) { _rrNoticeShown = pending; alert(pending); }
+    saveGameState();
+    _refreshFeed();
+    _autoRevealSpoiler(rrEp.num);
+    viewingEpNum = rrEp.num;
+    renderRunTab();
+    document.getElementById('run-main').scrollTop = 0;
+    return;
+  }
   if (isChallengeSeason()) {
     const chEp = simulateChallengeEpisode();
     if (!chEp) {
@@ -2061,6 +2127,8 @@ function _canReplay(epNum) {
   if (isCircleSeason()) return circleCanRerun();
   // The Challenge re-deals an episode off its stored seed, like the Circle.
   if (isChallengeSeason()) return challengeCanRerun();
+  // A race can't re-run one leg yet (rr-run.js): the button stays away rather than re-airing.
+  if (isRaceSeason()) return raceCanRerun();
   /* THE MAIN STAGE ASKS THE SAME QUESTION THE CASTLE DOES. It used to ask
      "is there a checkpoint", which made the button a property of THIS BROWSER
      SESSION rather than of the season: it vanished on reload, and vanished
@@ -2207,6 +2275,7 @@ export function replayEpisode(epNum) {
 let _pmNoticeShown = null;
 let _ciNoticeShown = null;
 let _chNoticeShown = null;
+let _rrNoticeShown = null;
 /**
  * THE VILLA'S PRESET. One press draws a season the way the real show would
  * for THIS cast and length — a format on every vote night, a rule on every
@@ -3074,6 +3143,8 @@ export function buildEpisodeMap() {
   if (isCircleSeason()) return circleEpisodeMap();
   // The Challenge is its schedule too (js/ch-run.js), counted from what it played.
   if (isChallengeSeason()) return challengeEpisodeMap();
+  // The Ridonculous Race is its schedule too (js/rr-run.js): one tile per leg.
+  if (isRaceSeason()) return raceEpisodeMap();
   if (isPerfectMatchSeason()) {
     const counts = perfectMatchVillaCounts();
     return perfectMatchSeasonShape().schedule.map(e => ({ ep: e.ep, active: counts.get(e.ep) ?? (players || []).length,
@@ -4321,7 +4392,7 @@ export function renderTimeline() {
   const _ciDays = isCircleSeason() ? circleTimelineDays() : null;
 
   let html = '';
-  epMap.forEach(({ ep, active, phase, reunion, double, teamsBreak }) => {
+  epMap.forEach(({ ep, active, phase, reunion, double, teamsBreak, nonElim }) => {
     const isFinale   = phase === 'finale';
     const isMergeEp  = !isHouse && phase === 'post-merge'
       && epMap.find(e => e.ep === ep - 1)?.phase === 'pre-merge';
@@ -4706,6 +4777,7 @@ export function renderTimeline() {
     const phaseLabel  = _ciD ? _ciD.label.toUpperCase()
       : _pmEp ? [(_pmEp.finalRecoupling ? 'Final recoupling' : PM_EPISODE_WORDS[_pmEp.moment]) || '', ...(_pmEp.rituals || []).map(r => PM_RITUAL_NAMES[r] || r)].filter(Boolean).join(' · ').toUpperCase()
       : isChallengeSeason() ? (double ? 'DOUBLE ELIMINATION' : '')
+      : isRaceSeason() ? (nonElim ? 'NON-ELIMINATION' : '')
       : isTraitorsSeason() ? ''
       : phase === 'ri-duel' ? 'RI DUEL' : phase === 'finale' ? '' : phase === 'pre-merge' ? 'PRE' : 'POST';
 

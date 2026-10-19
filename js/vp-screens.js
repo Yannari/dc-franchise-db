@@ -43,7 +43,8 @@ import { tdStepScreens, tdSteppedOn, TDX_SWITCH } from './vp-td-ep/screens.js';
 import { riChoiceQuote, exileChooserReason } from './vp-td-ep/twists.js';
 import { gs as _coreGs } from './core.js';
 import { momentTitle as pmMomentTitle } from './pm/transcript.js';
-import { DRAG_FORMAT, HOSTS_BY_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT } from './shows.js';
+import { DRAG_FORMAT, HOSTS_BY_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT, RACE_FORMAT } from './shows.js';
+import { raceVpScreens } from './rr-view.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -14161,6 +14162,13 @@ function _buildVPScreensClassic(epRecord) {
   // villa map, the vote out loud, the call-out at the Arena). The readout
   // (js/vp-ch/screens.js) is one click away on every screen, and is what an
   // episode falls back to if the stepped build throws. Assigned AND returned.
+  // ── THE RIDONCULOUS RACE ──────────────────────────────────────────
+  // The stepped viewer (js/vp-rr-ep, rr.html?sim=1) embedded on the leg, replaying the race the run tab built,
+  // and the transcript one tab away (js/rr-view.js). Assigned AND returned.
+  if (epRecord.format === RACE_FORMAT) {
+    vpScreens = raceVpScreens(epRecord);
+    return vpScreens;
+  }
   if (epRecord.format === CHALLENGE_FORMAT) {
     let stepped = true;
     try { stepped = window.localStorage?.getItem('ch-vp') !== 'classic'; } catch { /* storage can throw */ }

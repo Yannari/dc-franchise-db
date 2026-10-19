@@ -127,3 +127,33 @@ describe('the franchise keeps it', () => {
     expect(keys.some(k => /^rr-3$/.test(k)), keys.join(',')).toBe(true);
   });
 });
+
+describe('the site shows a leg', () => {
+  it('the hub says who won the leg and who went home, in race words; the eliminated are both of them', async () => {
+    const { getEpisodeEliminations, buildHubAftermath } = await import('../js/run-ui.js');
+    freshSeason(8);
+    const aired = playAll();
+    const elim = aired.find(r => r.rr.kind === 'elim' && r.exits.length);
+    for (const x of elim.exits) expect(getEpisodeEliminations(elim)).toContain(x.name);
+    const why = buildHubAftermath(elim).why;
+    expect(why).toMatch(/eliminated|went home|sent home|on the road|medevac|quit/);
+    expect(why).not.toMatch(/vote|ballot|tribal/i);
+    expect(buildHubAftermath(aired.at(-1)).why).toMatch(/won The Ridonculous Race/);
+  });
+
+  it("the Visual Player embeds the stepped viewer on the leg, and the backlog is the leg's transcript", async () => {
+    const { buildVPScreens } = await import('../js/vp-screens.js');
+    const { generateSummaryText } = await import('../js/text-backlog.js');
+    freshSeason(8);
+    const aired = playAll();
+    const r = aired[2];
+    const screens = buildVPScreens(r);
+    expect(screens.map(s => s.id)).toEqual(['rr-watch', 'rr-transcript']);
+    expect(screens[0].html).toContain(`rr.html?sim=1&amp;ep=${r.num}`);
+    const text = generateSummaryText(r);
+    expect(text).toMatch(new RegExp(`^LEG ${r.num} `));
+    const said = r.rr.aired.segments.flatMap(s => s.lines).find(l => l.kind === 'say');
+    expect(text).toContain(said.text);
+    expect(text).not.toMatch(/Tribal|Immunity|voted out/);
+  });
+});

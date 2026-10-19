@@ -117,9 +117,10 @@ import { rpBuildCoachBoard } from './vp-coaches.js';
 import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish, rpBuildJuryVotes, rpBuildJuryLife } from './vp-finale.js';
 import { traitorsScreensRevealed, screenNarration } from './vp-tr/screens.js';
 import { generateDragSummaryText } from './vp-dr/summary.js';
-import { DRAG_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT } from './shows.js';
+import { DRAG_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT, RACE_FORMAT } from './shows.js';
 import { episodeText as circleEpisodeText } from './ci/transcript.js';
 import { episodeText as challengeEpisodeText } from './ch/transcript.js';
+import { raceEpisodeText } from './rr-view.js';
 import { chStepText } from './vp-ch-ep/steps.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 // rpBuildAftermath is read off window (not statically imported) — aftermath.js already imports from
@@ -4020,6 +4021,8 @@ export function generateSummaryText(ep) {
   // The Challenge: the same transcript its screens draw (js/vp-ch/screens.js).
   // The Challenge: the stepped viewer's own steps, so the backlog says what the screen shows (the rules
   // cards, the play-by-play, TJ at the Arena); a row from before the stepped viewer falls back.
+  // The Ridonculous Race: the same transcript its Visual Player's Transcript tab shows (js/rr-view.js).
+  if (ep.format === RACE_FORMAT) return raceEpisodeText(ep);
   if (ep.format === CHALLENGE_FORMAT) {
     try { if (ep.ch?.house) return `EPISODE ${ep.num}${ep.ch.final ? ' — THE FINAL' : ''}
 ${chStepText(ep)}`; } catch (e) { console.warn('Challenge step text failed:', e); }

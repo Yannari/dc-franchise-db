@@ -8,7 +8,7 @@ import { bKey, getBond } from './bonds.js';
 import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.js';
 import { buildDragSeasonDocument } from './dr/export.js';
 import { buildPerfectMatchSeasonDocument } from './pm/export.js';
-import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT } from './shows.js';
+import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT, RACE_FORMAT } from './shows.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
@@ -4099,6 +4099,179 @@ export function mergeChallengeSeasonsDatabase(existing, seasonDoc) {
   return db;
 }
 registerSeasonExporter(CHALLENGE_FORMAT, exportChallengeSeason);
+
+/**
+ * The Ridonculous Race. The document is js/rr/export.js, built from the aired legs and the season's ledger record
+ * (gs.rr.record, written by rr-run.js when the last leg airs). Until 2026-10-19 the race had no exporter, and a race
+ * season fell back to Total Drama's. Guarded the way every per-show exporter is: the rows must be this show's, and
+ * the season must be finished.
+ */
+export async function exportRaceSeason(onStatus) {
+  const _status = onStatus || (() => {});
+  const rows = (gs.episodeHistory || []).filter(r => r && r.format === RACE_FORMAT && r.rr);
+  if (!rows.length) {
+    throw new Error(`No ${SHOWS[RACE_FORMAT].name} season to export: gs.episodeHistory has no `
+      + 'legs with an `rr` block. Play a season first.');
+  }
+  const foreign = (gs.episodeHistory || []).filter(r => r && r.format && r.format !== RACE_FORMAT);
+  if (foreign.length) {
+    throw new Error(`This season's history contains ${foreign.length} episode(s) tagged `
+      + `"${foreign[0].format}" — refusing to publish them under a ${RACE_FORMAT} id.`);
+  }
+  if (!rows.some(r => r.rr?.kind === 'final')) {
+    throw new Error(`This ${SHOWS[RACE_FORMAT].name} season has not reached its finale yet — play it to the end first.`);
+  }
+  if (!gs.rr?.record?.players) {
+    throw new Error(`This ${SHOWS[RACE_FORMAT].name} season has no ledger record (gs.rr.record) — re-run its last leg to rebuild it.`);
+  }
+  const seasonNum = _getSeasonNumber();
+  if (!seasonNum) return;
+  _status('Building the season document...');
+  const { buildRaceSeasonDocument } = await import('./rr/export.js');
+  const doc = buildRaceSeasonDocument(rows, gs.rr.record, { seasonNumber: seasonNum, title: seasonConfig?.name || null });
+  _status(`Built ${doc.seasonId}: ${doc.castSize} racers, ${doc.episodeCount} legs.`);
+
+  // every leg's transcript, where the wiki fills look for it (episode-store.js); never fails the export
+  try {
+    const [{ putEpisode }, { raceEpisodeText }] = await Promise.all([import('./episode-store.js'), import('./rr-view.js')]);
+    let saved = 0;
+    for (const r of rows) { const t = raceEpisodeText(r); if (t) { await putEpisode(seasonNum, r.num, RACE_FORMAT, t); saved++; } }
+    _status(`Saved ${saved} leg transcripts for the wiki.`);
+  } catch (e) { _status(`Could not save the leg transcripts (${e.message || e}); the wiki will be written from the record.`); }
+
+  _status('Merging databases...');
+  let playersDb = null; let seasonsDb = null;
+  try {
+    const [playersResp, seasonsResp] = await Promise.all([
+      fetch('players_database.json').catch(() => null),
+      fetch('seasons_database.json').catch(() => null),
+    ]);
+    const playersExisting = playersResp?.ok ? await playersResp.json() : { franchise: {}, players: [] };
+    const seasonsExisting = seasonsResp?.ok ? await seasonsResp.json() : { franchise: {}, seasons: [] };
+    playersDb = mergeRaceSeason(playersExisting, doc);
+    seasonsDb = mergeRaceSeasonsDatabase(seasonsExisting, doc);
+    if (seasonsDb && playersDb?.players) {
+      seasonsDb.franchise = seasonsDb.franchise || {};
+      seasonsDb.franchise.totalPlayers = playersDb.players.length;
+    }
+  } catch (err) {
+    throw new Error(`Could not merge the databases: ${err.message || err}`);
+  }
+  const published = await _publishSeasonToSite({
+    seasonNumber: seasonNum, format: RACE_FORMAT, season: doc, players: playersDb, seasons: seasonsDb,
+  }, onStatus);
+  if (published) { _status('Done.'); return published; }
+  _status('Downloading files...');
+  _downloadJSON(doc, `${seasonId(RACE_FORMAT, seasonNum)}-data.json`);
+  if (playersDb) setTimeout(() => _downloadJSON(playersDb, 'players_database.json'), 500);
+  if (seasonsDb) setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), 1000);
+  _status('Done.');
+  return doc;
+}
+
+/**
+ * A race season into players_database.json. The winners are a team: both win and both get the badge.
+ * `challengeWins` is legs won; nobody receives votes. Each appearance carries what the life layer and the careers
+ * read: `showmance` / `showmanceEnded` / `showmanceStrength` / `showmanceStage` (a couple team leaves dating,
+ * engaged or married), `alliances`, `rivalries`, the partner and the team, and the race's numbers under `rr`
+ * (the registry's careerStats paths).
+ */
+export function mergeRaceSeason(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== RACE_FORMAT) {
+    throw new Error(`mergeRaceSeason expects a ${RACE_FORMAT} season document`);
+  }
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Ridonculous Race season document has no seasonNumber');
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  if (!db.players) db.players = [];
+  _stripSeasonFromAll(db, seasonNum, RACE_FORMAT);
+  for (const entry of seasonDoc.placements || []) {
+    const name = entry.name;
+    if (!name) continue;
+    const slug = entry.playerSlug || _slug(name);
+    let player = db.players.find(x => x.id === slug || x.name === name);
+    if (!player) {
+      player = { id: slug, name, seasons: [], totalSeasons: 0, bestPlacement: null,
+        wins: 0, totalChallengeWins: 0, totalImmunityWins: 0, totalRewardWins: 0,
+        totalVotesAgainst: 0, totalIdolsFound: 0, totalJuryVotes: 0, tier: '', badges: [], seasonDetails: [] };
+      db.players.push(player);
+    }
+    if (!player.seasonDetails) player.seasonDetails = [];
+    if (!player.seasons) player.seasons = [];
+    _stripSeasonFromPlayer(player, seasonNum, RACE_FORMAT);
+    const legs = entry.rr?.legWins || 0;
+    if (!player.seasons.includes(seasonNum)) player.seasons.push(seasonNum);
+    if (entry.status === 'Winner') player.wins = (player.wins || 0) + 1;
+    player.totalChallengeWins = (player.totalChallengeWins || 0) + legs;
+    player.seasonDetails.push(_tagSeasonDetail({
+      season: seasonNum, placement: entry.placement, status: entry.status,
+      exit: entry.exit || null, exitEpisode: entry.exitEpisode ?? null,
+      challengeWins: legs, votesReceived: 0,
+      partner: entry.partner || null, team: entry.team || null, relationship: entry.relationship || null,
+      identity: entry.identity || null, archetype: entry.archetype || null,
+      alliances: [...(entry.alliances || [])], rivalries: [...(entry.rivalries || [])],
+      betrayed: [...(entry.betrayed || [])], betrayedBy: [...(entry.betrayedBy || [])],
+      ...(entry.showmance ? { showmance: entry.showmance, showmanceEnded: entry.showmanceEnded || 'intact',
+        ...(entry.showmanceStrength != null ? { showmanceStrength: entry.showmanceStrength } : {}),
+        ...(entry.showmanceStage ? { showmanceStage: entry.showmanceStage } : {}) } : {}),
+      ...(entry.showmances ? { showmances: entry.showmances.map(s => ({ ...s })) } : {}),
+      popularity: entry.popularity ?? 0,
+      rr: { ...(entry.rr || {}) },
+      notes: [], gameplayStyle: '', keyMoments: [],
+    }, RACE_FORMAT));
+    const places = player.seasonDetails.map(sd => sd.placement).filter(x => x && x < 99);
+    player.avgPlacement = places.length ? Math.round(places.reduce((t, v) => t + v, 0) / places.length * 100) / 100 : null;
+    player.bestPlacement = places.length ? Math.min(...places) : null;
+    _rebuildByShow(player);
+    if (entry.status === 'Winner') {
+      player.badges = player.badges || [];
+      const badge = _winnerBadge(seasonNum, RACE_FORMAT);
+      if (!player.badges.includes(badge)) player.badges.push(badge);
+    }
+  }
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+  db.franchise.totalPlayers = db.players.length;
+  return db;
+}
+
+/** A race season into seasons_database.json: the winning team on `winners[]`, both of them. */
+export function mergeRaceSeasonsDatabase(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== RACE_FORMAT) {
+    throw new Error(`mergeRaceSeasonsDatabase expects a ${RACE_FORMAT} season document`);
+  }
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Ridonculous Race season document has no seasonNumber');
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  if (!db.seasons) db.seasons = [];
+  const airWindow = _airWindowFor(db, RACE_FORMAT, seasonNum);
+  const priorRatings = (db.seasons.find(x => x.seasonNumber === seasonNum && x.format === RACE_FORMAT) || {}).ratings || null;
+  db.seasons = db.seasons.filter(x => !(x.seasonNumber === seasonNum && x.format === RACE_FORMAT));
+  const winners = (seasonDoc.winners || []).filter(w => w && w.name)
+    .map(w => ({ name: w.name, playerSlug: w.playerSlug || _slug(w.name), ...(w.team ? { team: w.team } : {}) }));
+  db.seasons.push({
+    ratings: seasonDoc?.ratings || priorRatings || undefined,
+    seasonNumber: seasonNum,
+    format: RACE_FORMAT,
+    seasonId: seasonId(RACE_FORMAT, seasonNum),
+    title: _clean(seasonDoc.title, `${SHOWS[RACE_FORMAT].name} ${seasonNum}`),
+    subtitle: _clean(seasonDoc.subtitle),
+    castSize: seasonDoc.castSize,
+    episodeCount: seasonDoc.episodeCount,
+    winner: null,
+    winners,
+    winningTeam: seasonDoc.winningTeam || null,
+    theme: _clean(seasonDoc.seasonNarrative, _clean(seasonDoc.subtitle)),
+    status: 'Complete',
+    castPhotoPath: `assets/cast/${seasonId(RACE_FORMAT, seasonNum)}-cast.png`,
+    emoji: _clean(seasonDoc.emoji),
+    ...airWindow,
+  });
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+  return db;
+}
+registerSeasonExporter(RACE_FORMAT, exportRaceSeason);
 
 /**
  * The Circle. The document is js/ci/export.js, built from the aired rows and the season's ledger record

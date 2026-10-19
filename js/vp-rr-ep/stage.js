@@ -46,15 +46,15 @@ const AMBIENT = { 'rock-north': 'snow', 'red-sand-desert': 'mote', 'tomb-sands':
 
 export function createStage(holder, { faceOf, legLabel }) {
   holder.innerHTML = `<div class="rr-frame" id="rr-frame"><div class="stage" id="rr-stage">
-    <div id="rr-cam"><div id="rr-world"><div class="plate" id="rr-pA"></div><div class="plate" id="rr-pB"></div><div class="layer" id="rr-gl"></div>
-      <div class="layer" id="rr-under"></div><div class="layer" id="rr-toks"></div><div class="layer" id="rr-fx"></div></div></div>
+    <div id="rr-cam"><div id="rr-lift"><div id="rr-world"><div class="plate" id="rr-pA"></div><div class="plate" id="rr-pB"></div><div class="layer" id="rr-gl"></div>
+      <div class="layer" id="rr-under"></div><div class="layer" id="rr-toks"></div><div class="layer" id="rr-fx"></div></div></div></div>
     <div class="vignette"></div><div class="rr-replay"><span>◂◂ LAST TIME</span></div><div class="layer" id="rr-ui"></div><div class="layer" id="rr-amb" style="z-index:31;pointer-events:none"></div>
     <div class="hud-leg" id="rr-leg"></div><div class="hud-task" id="rr-task"></div>
   </div>
   <div class="vn" id="rr-vn"><img class="av" id="rr-vnav" alt=""><div class="tx"><span class="nm" id="rr-vnnm"></span><span class="tm" id="rr-vntm"></span><div class="ln" id="rr-vnln"></div></div><div class="more">▼</div></div></div>`;
   const $ = id => holder.querySelector('#' + id);
   const stage = $('rr-stage'), frame = $('rr-frame'), cam = $('rr-cam'), under = $('rr-under'), toks = $('rr-toks'), fx = $('rr-fx'), ui = $('rr-ui'), amb = $('rr-amb');
-  let timers = [], flip = false, cur = { ep: null, si: -1, idx: -1 }, typer = null, side = 'left', lastWho = null, ambTimer = null;
+  let curLift = 0, timers = [], flip = false, cur = { ep: null, si: -1, idx: -1 }, typer = null, side = 'left', lastWho = null, ambTimer = null;
   const later = (ms, fn) => timers.push(setTimeout(fn, ms));
   const clearTimers = () => { timers.forEach(clearTimeout); timers = []; clearInterval(typer); };
 
@@ -164,6 +164,17 @@ export function createStage(holder, { faceOf, legLabel }) {
     }, kind === 'snow' ? 140 : 380);
   }
 
+  // ── the lift: the bar sits over the bottom of the picture, so a shot whose people stand low is raised
+  // just clear of it (steps.js liftFor); a climb is followed step by step. Under the picture (a narrow
+  // window) nothing is lifted.
+  function applyLift(s, k, animate) {
+    const overlaid = getComputedStyle($('rr-vn')).position === 'absolute';
+    const L = overlaid && s.kind === 'world' ? ((s.liftAt ? s.liftAt[k] : s.lift) || 0) : 0;
+    const el = $('rr-lift');
+    el.style.transition = animate && L !== curLift ? 'transform 1.2s cubic-bezier(.45,.05,.2,1)' : 'none';
+    el.style.transform = L ? `translateY(-${L}%)` : '';
+    curLift = L;
+  }
   // ── the camera: wide for action; in on Don's pause and on a speaker in a crowd ──
   function wide(now) { if (now) cam.style.transition = 'none'; cam.style.transform = 'translate(0,0) scale(1)'; if (now) { void cam.offsetWidth; cam.style.transition = ''; } }
   function close(x, y, sc = 1.5, now = false) {
@@ -200,6 +211,7 @@ export function createStage(holder, { faceOf, legLabel }) {
     $('rr-vnnm').style.display = beat ? 'none' : '';
     $('rr-vntm').textContent = beat ? '' : iv ? 'interview' : by === 'Don' ? 'host' : team ? teamOf(ep, team).name : 'local';
     const text = step.text || '';
+    box.classList.toggle('long', text.length > 150);
     if (!fresh || step.part === 'pause') { L.textContent = text; return; }
     L.textContent = ''; let i = 0;
     typer = setInterval(() => { i += 2; L.textContent = text.slice(0, i); if (i >= text.length) clearInterval(typer); }, 16);
@@ -431,11 +443,11 @@ export function createStage(holder, { faceOf, legLabel }) {
     if (s.kind !== 'world') { wide(!fresh); return; }
     if (step?.part === 'pause' && step.focus) {
       const at = posAt(s, step.focus, k) || s.matAt;
-      if (at) { close(at[0], at[1] - (s.size || 8) * 0.9, 1.45, !fresh); return; }
+      if (at) { close(at[0], at[1] - curLift - (s.size || 8) * 0.9, 1.45, !fresh); return; }
     }
     if (step?.team && s.teams.length >= 3 && !s.pos) {
       const at = posAt(s, step.team, k);
-      if (at) { close(at[0], at[1] - (s.size || 8), 1.16, !fresh); return; }
+      if (at) { close(at[0], at[1] - curLift - (s.size || 8), 1.16, !fresh); return; }
     }
     wide(!fresh);
     void el;
@@ -477,6 +489,7 @@ export function createStage(holder, { faceOf, legLabel }) {
       if (s.kind === 'world') { toks.innerHTML = ''; fx.querySelectorAll('.don').forEach(e => e.remove()); ui.querySelectorAll('.inset').forEach(e => e.remove()); under.querySelectorAll('.prop').forEach(e => e.remove()); world(ep, s, k, true); }
       animateStep(ep, s, k);
     }
+    applyLift(s, k, stepFresh);
     const step = s.steps[k];
     overlays(ep, s, k, fresh);
     vn(ep, s, step, fresh);

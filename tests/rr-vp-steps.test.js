@@ -8,7 +8,7 @@ import { playRaceSeason } from '../js/rr/season.js';
 import { setPlayers } from '../js/core.js';
 import { raceCast } from './helpers/rr-cast.js';
 import { castFromRoster, rosterPlayers } from '../js/vp-rr-ep/cast.js';
-import { episodeScreens, flatSteps, intelAt } from '../js/vp-rr-ep/steps.js';
+import { episodeScreens, flatSteps, intelAt, extentOf, BAR } from '../js/vp-rr-ep/steps.js';
 import { PLACE_PLATES, RACE, placeFiles, propFiles, plateUrl, raceUrl, propUrl, slugFile } from '../js/vp-rr-ep/plates.js';
 import { PLACES } from '../js/rr/places.js';
 
@@ -125,6 +125,22 @@ describe('rr viewer steps', () => {
         }
       }
     });
+  });
+
+  it('lifts every shot so nobody stands behind the dialogue bar, and nobody leaves the top', () => {
+    const behind = [];
+    each(ep => {
+      for (const s of ep.screens) {
+        if (s.kind !== 'world' || !s.plate) continue;
+        // a shot whose camera follows a climb is checked step by step
+        const shots = s.liftAt ? s.pos.map((pos, k) => [extentOf({ ...s, marks: {}, pos: [pos], donStand: null, localAt: null, matAt: null }), s.liftAt[k]]) : [[extentOf(s), s.lift]];
+        for (const [{ bottom, top }, lift] of shots) {
+          expect(top - lift, `${s.id} lifted out of the top`).toBeGreaterThanOrEqual(1.9);
+          if (bottom - lift > 100 - BAR + 0.1) behind.push(`${s.id} ${s.seg} ${s.plate.f} bottom ${bottom.toFixed(1)} lift ${lift}`);
+        }
+      }
+    });
+    expect(behind).toEqual([]);
   });
 
   it('shows every team at every task it ran', () => {

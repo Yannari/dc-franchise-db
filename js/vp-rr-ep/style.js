@@ -81,21 +81,24 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .rr-frame{container-type:inline-size;position:relative;width:100%}
 .stage-holder:fullscreen{display:flex;align-items:center;justify-content:center;background:#000}
 .stage-holder:fullscreen .rr-frame{width:min(100vw,150vh)}
-.vn{position:relative;margin-top:1cqw;min-height:max(60px,9.6cqw);overflow:hidden;z-index:50;opacity:.45;cursor:pointer;
+/* the bar sits over the bottom of the picture (the shot is lifted clear of it: steps.js BAR); in a narrow window it moves under it */
+.vn{position:absolute;left:1.6cqw;right:1.6cqw;bottom:1.2cqw;height:8.3cqw;overflow:hidden;z-index:50;opacity:0;pointer-events:none;cursor:pointer;
   background:linear-gradient(180deg,rgba(14,19,38,.93),rgba(8,11,24,.97));border:2px solid var(--line);border-radius:1.4cqw;box-shadow:0 1.2cqw 3cqw rgba(0,0,0,.55)}
-.vn.on{opacity:1}
+.vn.on{opacity:1;pointer-events:auto}
+@container (max-width: 760px){.vn{position:relative;left:auto;right:auto;bottom:auto;height:auto;min-height:max(60px,9.6cqw);margin-top:1cqw;opacity:.45}.vn.on{opacity:1}}
 .vn.fresh{animation:vnIn .25s ease-out}
 .vn::before{content:"";position:absolute;left:0;top:0;bottom:0;width:.6cqw;border-radius:1.4cqw 0 0 1.4cqw;background:var(--c,var(--gold))}
-.vn .av{position:absolute;bottom:max(6px,.8cqw);width:max(46px,8cqw);height:max(46px,8cqw);border-radius:50%;object-fit:cover;border:.55cqw solid var(--c,var(--gold));
+.vn .av{position:absolute;bottom:max(6px,.8cqw);width:max(46px,6.7cqw);height:max(46px,6.7cqw);border-radius:50%;object-fit:cover;border:.55cqw solid var(--c,var(--gold));
   background:#222;box-shadow:0 0 0 .3cqw #0b0f1e,0 1cqw 2cqw rgba(0,0,0,.5);animation:breathe 3.2s ease-in-out infinite}
 .vn.left .av{left:1.6cqw} .vn.right .av{right:1.6cqw}
 .vn .av.pop{animation:avPop .3s cubic-bezier(.2,1.6,.4,1)}
-.vn .tx{padding:1.1cqw 2.5cqw 1.3cqw}
-.vn.left .tx{padding-left:max(62px,11cqw)} .vn.right .tx{padding-right:max(62px,11cqw)}
+.vn .tx{padding:.9cqw 2.5cqw 1cqw}
+.vn.left .tx{padding-left:max(62px,9.5cqw)} .vn.right .tx{padding-right:max(62px,9.5cqw)}
 .vn:not(.on) .av,.vn:not(.on) .more,.vn:not(.on) .nm{display:none}
 .vn .nm{display:inline-block;font-family:Bungee;font-size:max(10px,1.2cqw);letter-spacing:.04em;color:#0b0f1e;background:var(--c,var(--gold));padding:.15cqw .8cqw;border-radius:.5cqw}
 .vn .tm{font:800 max(8px,.85cqw) Rubik;color:#9fb3d9;margin-left:.7cqw;letter-spacing:.1em;text-transform:uppercase}
-.vn .ln{font-size:max(13px,1.7cqw);line-height:1.36;margin-top:.5cqw}
+.vn .ln{font-size:max(13px,1.6cqw);line-height:1.34;margin-top:.4cqw}
+.vn.long .ln{font-size:max(12px,1.38cqw)}
 .vn.beat .ln{font-style:italic;color:#cfe0ff;font-size:max(12.5px,1.55cqw)}
 .vn.beat::before{background:#8fb4ff}
 .vn.pause .ln{font-family:Bungee;font-size:3cqw;letter-spacing:.3em;color:var(--gold)}

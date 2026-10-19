@@ -571,7 +571,36 @@ function stageScreen(s, color) {
   }
   s.marks = marks;
   s.as = as;
+  s.lift = liftFor(s);
+  // a climb or a drop spans the frame: the camera follows the team instead, step by step
+  if (s.pos && extentOf(s).bottom - s.lift > 100 - BAR) s.liftAt = s.pos.map(pos => liftFor({ ...s, marks: {}, pos: [pos] }));
   void extras;
+}
+
+// The dialogue bar sits over the bottom of the picture (BAR: its share of the frame's height, with its margin).
+// A screen whose people stand low is lifted by just enough that every face and name stays clear of the bar,
+// and never so far that the highest face leaves the top of the frame. A shot nobody stands low in isn't moved.
+export const BAR = 17;
+export function extentOf(s) {
+  let bottom = 0, top = 100;
+  const add = (b, t) => { bottom = Math.max(bottom, b); top = Math.min(top, t); };
+  const z = s.size || 8;
+  const one = (as, [, y]) => {
+    if (as === 'swim' || as === 'dive') add(y + 1.2 * z, y - 0.8 * z);
+    else if (as === 'ride') add(y + 0.5 * z, y - 2.6 * z);
+    else add(y, y - 2.35 * z);
+  };
+  for (const [id, m] of Object.entries(s.marks || {})) one(s.as?.[id], m);
+  for (const pos of s.pos || []) for (const [id, m] of Object.entries(pos)) one(s.as?.[id], m);
+  for (const d of [s.donStand, ...Object.values(s.localAt || {})].filter(Boolean)) add(d[1], d[1] - 2.1 * z);
+  if (s.matAt) add(s.matAt[1] + 1, s.matAt[1] - 2.35 * z);
+  return { bottom, top };
+}
+function liftFor(s) {
+  const { bottom, top } = extentOf(s);
+  if (!bottom) return 0;
+  const need = bottom + 2 - (100 - BAR);           // (+2: the plate's slow push moves the bottom out a little)
+  return Math.round(Math.max(0, Math.min(need, top - 2)) * 10) / 10;
 }
 
 // ── navigation and what has aired ──────────────────────────────────────

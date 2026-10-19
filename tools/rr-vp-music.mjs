@@ -56,4 +56,10 @@ for (const [pid, p] of Object.entries(PLACE_MUSIC)) {
 const filled = all.filter(f => existsSync(f)).length;
 out = out.replace('**The rules for a file**', `**Filled: ${filled} of ${all.length} slots.**\n\n**The rules for a file**`);
 writeFileSync('assets/audio/rr/README.md', out);
+// the files that exist, for the viewer (a missing file is never fetched: it falls back or is silent)
+writeFileSync('js/vp-rr-ep/music-have.js', `// Written by tools/rr-vp-music.mjs: the Ridonculous Race music files on disk (js/vp-rr-ep/music.js lists every slot).
+export const HAVE = new Set(${JSON.stringify(all.filter(f => existsSync(f)).concat(Object.values(AMBIENCE).filter(f => existsSync(f))), null, 1)});
+// dB a file could not be raised by without clipping (tools/rr-vp-audio.py), given back on playback
+export const LIFT = ${JSON.stringify(Object.fromEntries(Object.entries(credits).filter(([, c]) => c.lift > 0.5).map(([f, c]) => ['assets/audio/rr/' + f, c.lift])), null, 1)};
+`);
 console.log(`README: ${filled}/${all.length} filled`);

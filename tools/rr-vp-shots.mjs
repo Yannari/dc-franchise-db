@@ -37,6 +37,11 @@ const KINDS = {
   nonelim: '(s, t) => t.slam?.text === "NON-ELIMINATION"',
   crown: '(s, t) => t.slam?.text === "THE WINNERS!"',
   end: '(s) => s.kind === "end"',
+  crowd: '(s, t, k) => (s.crowd || []).filter(c => c.pos[k]).length >= 2 && s.mode !== "mat"',
+  crowdride: '(s, t, k) => s.mode === "act" && s.plate?.mode === "ride" && (s.crowd || []).some(c => c.pos[k]) && k >= 1',
+  close: '(s, t) => t.cam?.shot === "close" && !t.slam && t.part !== "pause"',
+  matcrowd: '(s, t, k) => s.mode === "mat" && (s.crowd || []).length >= 2',
+  follow: '(s, t, k) => t.cam?.shot === "follow" && k >= 1',
 };
 
 const browser = await chromium.launch();

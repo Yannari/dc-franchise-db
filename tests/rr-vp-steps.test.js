@@ -8,9 +8,12 @@ import { playRaceSeason } from '../js/rr/season.js';
 import { setPlayers } from '../js/core.js';
 import { raceCast } from './helpers/rr-cast.js';
 import { castFromRoster, rosterPlayers } from '../js/vp-rr-ep/cast.js';
-import { episodeScreens, flatSteps, intelAt, extentOf, BAR } from '../js/vp-rr-ep/steps.js';
+import { episodeScreens, flatSteps, intelAt, extentOf, BAR, crowdAt, boxOf, inView, attemptAt, CROWD_SCALE } from '../js/vp-rr-ep/steps.js';
 import { PLACE_PLATES, RACE, placeFiles, propFiles, plateUrl, raceUrl, propUrl, slugFile } from '../js/vp-rr-ep/plates.js';
 import { PLACES } from '../js/rr/places.js';
+import { PLACE_MUSIC, MOMENTS, RACE_SOUNDS, placeFile, raceFile } from '../js/vp-rr-ep/music.js';
+import { HAVE } from '../js/vp-rr-ep/music-have.js';
+import { soundAt } from '../js/vp-rr-ep/sound.js';
 
 const SEASONS = [[12, 8], [8, 3], [6, 5]];
 const played = [];
@@ -133,7 +136,7 @@ describe('rr viewer steps', () => {
       for (const s of ep.screens) {
         if (s.kind !== 'world' || !s.plate) continue;
         // a shot whose camera follows a climb is checked step by step
-        const shots = s.liftAt ? s.pos.map((pos, k) => [extentOf({ ...s, marks: {}, pos: [pos], donStand: null, localAt: null, matAt: null }), s.liftAt[k]]) : [[extentOf(s), s.lift]];
+        const shots = s.liftAt ? s.pos.map((pos, k) => [extentOf({ ...s, marks: {}, pos: [pos], crowd: crowdAt(s, k), donStand: null, localAt: null, matAt: null }), s.liftAt[k]]) : [[extentOf(s), s.lift]];
         for (const [{ bottom, top }, lift] of shots) {
           expect(top - lift, `${s.id} lifted out of the top`).toBeGreaterThanOrEqual(1.9);
           if (bottom - lift > 100 - BAR + 0.1) behind.push(`${s.id} ${s.seg} ${s.plate.f} bottom ${bottom.toFixed(1)} lift ${lift}`);
@@ -187,4 +190,170 @@ describe('rr viewer steps', () => {
       }
     });
   });
+  // ── the rest of the race behind the shot (the user, 2026-10-19: "we dont see them at the same zone") ──
+  it('puts behind a shot only the teams the log has at that stretch at that moment', () => {
+    let crowds = 0;
+    each((ep, p, i) => {
+      const leg = p.res.legs[i];
+      const rankedBefore = new Set();
+      for (const s of ep.screens) {
+        for (const c of s.crowd || []) {
+          expect(s.teams, `${s.id}: ${c.team} is both in the shot and behind it`).not.toContain(c.team);
+          if (s.mode === 'mat') { expect(rankedBefore.has(c.team), `${s.id}: ${c.team} waits at the Chill Zone before its placement aired`).toBe(true); continue; }
+          if (s.seg === 'don-opener' || s.seg === 'team-intro') continue;
+          c.pos.forEach((at, k) => {
+            if (!at) return;
+            crowds++;
+            const t = s.crowdT[k];
+            const row = leg.log.find(r => r.id === c.team && r.stretch === s.stretch && t >= r.from - 1 && t <= r.to + 1);
+            expect(row, `${s.id} ${s.stretch}: ${c.team} on screen at ${t} but the log has it elsewhere`).toBeTruthy();
+          });
+        }
+        for (const x of s.steps) if (x.rank && !x.rank.out) rankedBefore.add(x.rank.team);
+      }
+    });
+    expect(crowds).toBeGreaterThan(200);
+  });
+
+  it('stands nobody behind the shot in water, unless they swim, ride or climb it', () => {
+    const half = s => (s.crowdSize || 6) * 0.775;
+    each(ep => {
+      for (const s of ep.screens) for (const c of s.crowd || []) c.pos.forEach(at => {
+        if (!at || at[0] < 0 || at[0] > 100) return;
+        if (['stand', 'run'].includes(c.as)) {
+          expect(s.plate.water, `${s.id} ${c.team} stands on a water plate`).toBeFalsy();
+          const g = Array.isArray(s.plate.g) ? s.plate.g : [s.plate.g, s.plate.g];
+          const onSpot = s.plate.spots?.some(sp => Math.abs(sp[0] - at[0]) < 1 && Math.abs(sp[1] - at[1]) < 1);
+          expect(onSpot || (at[1] >= Math.min(...g) - 0.5 && at[1] <= Math.max(...g) + 0.5), `${s.id} ${c.team} at ${at} off the ground of ${s.plate.f}`).toBe(true);
+          expect(onSpot || (at[0] >= s.plate.x[0] - 0.5 && at[0] <= s.plate.x[1] + 0.5), `${s.id} ${c.team} at x=${at[0]} off the ground of ${s.plate.f}`).toBe(true);
+          expect(at[0], `${s.id} ${c.team} cut by the frame`).toBeGreaterThanOrEqual(half(s) - 0.7);
+        } else if (s.plate.water) expect(['swim', 'dive', 'ride', 'hop', 'zip', 'para', 'climb'], `${s.id} ${c.team} ${c.as} in water`).toContain(c.as);
+      });
+    });
+  });
+
+  it('never shows a rank on the crowd: a rank is only ever for a team in the shot', () => {
+    each(ep => {
+      for (const s of ep.screens) for (const x of s.steps) if (x.rank) expect(s.teams, `${s.id}: a rank for a team not in the shot`).toContain(x.rank.team);
+    });
+  });
+
+  it('works out a task attempt by attempt: up, a slip back, and up again', () => {
+    const row = { from: 0, to: 30, attempts: 3, fails: 2 };
+    const at = [2, 8, 9.5, 14, 19.5, 25, 29.8].map(t => attemptAt(row, t));
+    expect(at.map(a => a.st)).toEqual(['try', 'fail', 'fail', 'try', 'fail', 'try', 'done']);
+    expect(at[3].p).toBeLessThan(at[2].p);              // the slip
+    expect(at[6].p).toBeGreaterThan(0.95);
+    expect(attemptAt({ from: 0, to: 10, attempts: 2, quit: true }, 9.8).st).toBe('quit');
+  });
+
+  // ── the camera: wide for the action, in where a line earns it, held, and never cutting the one talking ──
+  it('frames every speaker whole and above the bar, in every shot', () => {
+    const bad = [];
+    let closes = 0;
+    each(ep => {
+      for (const s of ep.screens) {
+        if (s.kind !== 'world' || !s.plate) continue;
+        s.steps.forEach((st, k) => {
+          const cam = st.cam;
+          expect(cam, `${s.id} step ${k} has no shot`).toBeTruthy();
+          if (cam.shot !== 'wide') closes++;
+          expect(cam.s).toBeGreaterThanOrEqual(1);
+          expect(cam.x).toBeGreaterThanOrEqual(0); expect(cam.x).toBeLessThanOrEqual(100 - 100 / cam.s + 0.01);
+          const who = st.part === 'pause' ? null : st.by === 'Don' ? (s.donStand ? 'Don' : null) : st.team && s.teams.includes(st.team) ? st.team : st.by && s.localAt?.[st.by] ? st.by : null;
+          if (who == null || cam.shot === 'wide') return;            // a wide shot is the lift, checked above
+          const b = boxOf(s, who, k);
+          if (!inView(cam, b, BAR)) bad.push(`${s.id} ${s.seg} step ${k} ${cam.shot} x${cam.s} cuts ${who} [${b.map(v => v.toFixed(1))}] view ${cam.x},${cam.y}`);
+        });
+      }
+    });
+    expect(bad).toEqual([]);
+    expect(closes).toBeGreaterThan(100);
+  });
+
+  it('holds a shot: no cut on one click and another on the next, except a push-in on a pause or a slam', () => {
+    const jumpy = [];
+    each(ep => {
+      for (const s of ep.screens) {
+        if (s.kind !== 'world' || s.steps.some(x => x.cam?.shot === 'follow')) continue;
+        const key = c => `${c.shot}|${c.s}|${c.x}|${c.y}`;
+        for (let k = 2; k < s.steps.length; k++) {
+          const [a, b, c] = [s.steps[k - 2], s.steps[k - 1], s.steps[k]];
+          const forced = x => x.part === 'pause' || !!x.slam || !!x.rank;
+          if (key(a.cam) !== key(b.cam) && key(b.cam) !== key(c.cam) && !forced(b) && !forced(c)) {
+            // allowed only when the next speaker was out of the shot
+            const who = c.by === 'Don' ? 'Don' : c.team || c.by;
+            if (inView(b.cam, boxOf(s, who, k))) jumpy.push(`${s.id} ${s.seg} steps ${k - 2}-${k}`);
+          }
+        }
+      }
+    });
+    expect(jumpy).toEqual([]);
+  });
+
+  it('gives every reaction to somebody in the shot', () => {
+    let n = 0;
+    each(ep => {
+      for (const s of ep.screens) for (const st of s.steps) if (st.react) {
+        n++;
+        expect(s.teams, `${s.id} reaction by a team not in the shot`).toContain(st.react.team);
+        expect(['nod', 'shake', 'jump', 'laugh', 'tilt', 'slump']).toContain(st.react.how);
+      }
+    });
+    expect(n).toBeGreaterThan(300);
+  });
 });
+
+// ── the sound: every place and moment its own track, the race's own stings, never a Total Drama bed ──
+describe('rr viewer sound', () => {
+  it('has a file for every place and every moment, with its credit', () => {
+    const credits = JSON.parse(readFileSync('assets/audio/rr/credits.json', 'utf8'));
+    for (const place of Object.keys(PLACE_MUSIC)) for (const m of Object.keys(MOMENTS)) {
+      const f = placeFile(place, m);
+      expect(existsSync(f), f).toBe(true);
+      expect(HAVE.has(f), f).toBe(true);
+      expect(credits[f.replace('assets/audio/rr/', '')]?.license, f).toMatch(/CC BY|CC0|Pixabay/);
+    }
+    for (const name of Object.keys(RACE_SOUNDS)) expect(existsSync(raceFile(name)), name).toBe(true);
+    for (const f of HAVE) expect(existsSync(f), f).toBe(true);
+    expect(Object.keys(PLACE_MUSIC).sort()).toEqual(Object.keys(PLACES).sort());
+    // different music in each place: no track twice
+    const titles = Object.values(credits).map(c => c.title);
+    expect(new Set(titles).size).toBe(titles.length);
+  });
+
+  it('plays the place and the moment of every step, from a file the race owns', () => {
+    each((ep, p, i) => {
+      const placeId = p.res.legs[i].place;
+      const seen = new Set();
+      ep.screens.forEach((s, si) => s.steps.forEach((_, k) => {
+        const { moment, bed, sting } = soundAt(ep, si, k);
+        expect(moment, `${s.id} has no moment`).toBeTruthy();
+        expect(bed?.file, `${s.id} ${s.seg} is silent`).toBeTruthy();
+        expect(bed.file.startsWith('assets/audio/rr/'), `${s.id}: ${bed.file} is not the race's`).toBe(true);
+        if (moment.place) seen.add(moment.moment);
+        if (moment.place && s.kind === 'world' && !s.replay && !s.plate?.race) expect([placeId, p.res.legs[i - 1]?.place]).toContain(moment.place);
+        if (sting) expect(existsSync(raceFile(sting)), sting).toBe(true);
+      }));
+      for (const m of ['opener', 'challenge', 'chill-zone', 'interview']) expect(seen.has(m), `leg ${i + 1} never plays ${m}`).toBe(true);
+    });
+  });
+
+  it('marks the moments: a task going wrong, the Don Box, a placement, the elimination', () => {
+    let struggle = 0, box = 0, place = 0, elim = 0;
+    each(ep => ep.screens.forEach((s, si) => s.steps.forEach((st, k) => {
+      const { moment, sting } = soundAt(ep, si, k);
+      if (moment?.moment === 'struggle') struggle++;
+      if (sting === 'donbox') { box++; expect(st.part).toBe('tip'); }
+      if (sting === 'placement') { place++; expect(st.rank).toBeTruthy(); }
+      if (moment?.moment === 'elimination') elim++;
+    })));
+    expect(struggle).toBeGreaterThan(20); expect(box).toBeGreaterThan(10); expect(place).toBeGreaterThan(20); expect(elim).toBeGreaterThan(3);
+  });
+
+  it('tells the simulator pane to play no bed of its own under the race', () => {
+    const src = readFileSync('js/vp-rr-ep/vp.js', 'utf8');
+    expect(src).toMatch(/class="rrx"[^>]*data-ambient="none"/);
+  });
+});
+

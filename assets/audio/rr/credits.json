@@ -1,0 +1,1082 @@
+{
+ "home-city/opener.mp3": {
+  "title": "Motivator",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100803",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Motivator.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "home-city/travel.mp3": {
+  "title": "Delay Rock",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100262",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Delay%20Rock.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "home-city/challenge.mp3": {
+  "title": "Hotrock",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100201",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Hotrock.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.4
+ },
+ "home-city/struggle.mp3": {
+  "title": "I Can Feel it Coming",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700085",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/I%20Can%20Feel%20it%20Coming.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "home-city/chill-zone.mp3": {
+  "title": "Funky Chunk",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500054",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Funky%20Chunk.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "home-city/elimination.mp3": {
+  "title": "Heartbreaking",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100208",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heartbreaking.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 6.2
+ },
+ "home-city/recap.mp3": {
+  "title": "Chipper",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100295",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chipper.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "home-city/interview.mp3": {
+  "title": "Chill Wave",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600048",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chill%20Wave.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "red-sand-desert/opener.mp3": {
+  "title": "Tabuk",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100818",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Tabuk.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.6
+ },
+ "red-sand-desert/travel.mp3": {
+  "title": "Finding the Balance",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100708",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Finding%20the%20Balance.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "red-sand-desert/challenge.mp3": {
+  "title": "Ibn Al-Noor",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100706",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ibn%20Al-Noor.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "red-sand-desert/struggle.mp3": {
+  "title": "Old Road",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100725",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Old%20Road.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "red-sand-desert/chill-zone.mp3": {
+  "title": "Desert City",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100564",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Desert%20City.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "red-sand-desert/elimination.mp3": {
+  "title": "Teller of the Tales",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400020",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Teller%20of%20the%20Tales.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 3.1
+ },
+ "red-sand-desert/recap.mp3": {
+  "title": "Derp Nugget",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1800013",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Derp%20Nugget.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "red-sand-desert/interview.mp3": {
+  "title": "Vadodora Chill Mix",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400050",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Vadodora%20Chill%20Mix.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "iron-tower-city/opener.mp3": {
+  "title": "Bushwick Tarantella",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300002",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bushwick%20Tarantella.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.4
+ },
+ "iron-tower-city/travel.mp3": {
+  "title": "Sidewalk Shade",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200103",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sidewalk%20Shade.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "iron-tower-city/challenge.mp3": {
+  "title": "Le Grand Chase",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1800021",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Le%20Grand%20Chase.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.4
+ },
+ "iron-tower-city/struggle.mp3": {
+  "title": "Miri's Magic Dance",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100157",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Miris%20Magic%20Dance.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 2.0
+ },
+ "iron-tower-city/chill-zone.mp3": {
+  "title": "Suave Standpipe",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500078",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Suave%20Standpipe.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "iron-tower-city/elimination.mp3": {
+  "title": "Duet Musette",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100250",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Duet%20Musette.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.7
+ },
+ "iron-tower-city/recap.mp3": {
+  "title": "One-eyed Maestro",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100692",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/One-eyed%20Maestro.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "iron-tower-city/interview.mp3": {
+  "title": "Parisian",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100120",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Parisian.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 1.6
+ },
+ "great-wall-hills/opener.mp3": {
+  "title": "Shenyang",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600066",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Shenyang.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.5
+ },
+ "great-wall-hills/travel.mp3": {
+  "title": "Guzheng City",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100001",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Guzheng%20City.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 3.4
+ },
+ "great-wall-hills/challenge.mp3": {
+  "title": "Mountain Emperor",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700012",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mountain%20Emperor.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.4
+ },
+ "great-wall-hills/struggle.mp3": {
+  "title": "Asian Drums",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100396",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Asian%20Drums.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 3.3
+ },
+ "great-wall-hills/chill-zone.mp3": {
+  "title": "Ishikari Lore",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100192",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ishikari%20Lore.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 3.3
+ },
+ "great-wall-hills/elimination.mp3": {
+  "title": "Nu Flute",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100680",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Nu%20Flute.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.0
+ },
+ "great-wall-hills/recap.mp3": {
+  "title": "Big Mojo",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100306",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Big%20Mojo.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 14.2
+ },
+ "great-wall-hills/interview.mp3": {
+  "title": "Ripples",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100691",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ripples.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 2.2
+ },
+ "rock-north/opener.mp3": {
+  "title": "Achaidh Cheide",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100340",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Achaidh%20Cheide.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 2.7
+ },
+ "rock-north/travel.mp3": {
+  "title": "Fiddles McGinty",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400051",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fiddles%20McGinty.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "rock-north/challenge.mp3": {
+  "title": "Burn The World Waltz",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100009",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Burn%20The%20World%20Waltz%20.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 2.5
+ },
+ "rock-north/struggle.mp3": {
+  "title": "Spider Eyes",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100526",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Spider%20Eyes.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 2.6
+ },
+ "rock-north/chill-zone.mp3": {
+  "title": "Galway",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700016",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Galway.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "rock-north/elimination.mp3": {
+  "title": "Moorland",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200106",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Moorland.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 1.4
+ },
+ "rock-north/recap.mp3": {
+  "title": "Metalmania",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700023",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Metalmania.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "rock-north/interview.mp3": {
+  "title": "Frost Waltz",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100516",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Frost%20Waltz.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.2
+ },
+ "savanna-falls/opener.mp3": {
+  "title": "AngloZulu",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100411",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/AngloZulu.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "savanna-falls/travel.mp3": {
+  "title": "Allada",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500001",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Allada.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 1.3
+ },
+ "savanna-falls/challenge.mp3": {
+  "title": "Sauropod Spotting",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2500002",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sauropod%20Spotting.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "savanna-falls/struggle.mp3": {
+  "title": "Drums of the Deep",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400021",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Drums%20of%20the%20Deep.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 5.3
+ },
+ "savanna-falls/chill-zone.mp3": {
+  "title": "Zanzibar",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500006",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Zanzibar.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "savanna-falls/elimination.mp3": {
+  "title": "Kalimba Relaxation Music",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900039",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Kalimba%20Relaxation%20Music.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 2.2
+ },
+ "savanna-falls/recap.mp3": {
+  "title": "Dentaneosuchus Hunt",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2500003",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dentaneosuchus%20Hunt.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "savanna-falls/interview.mp3": {
+  "title": "Expeditionary",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100436",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Expeditionary.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 4.6
+ },
+ "treasure-isles/opener.mp3": {
+  "title": "Beachfront Celebration",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200022",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Beachfront%20Celebration.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "treasure-isles/travel.mp3": {
+  "title": "Island Meet and Greet",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000004",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Island%20Meet%20and%20Greet.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "treasure-isles/challenge.mp3": {
+  "title": "Arroz Con Pollo",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1800011",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Arroz%20Con%20Pollo.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "treasure-isles/struggle.mp3": {
+  "title": "Invariance",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100847",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Invariance.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "treasure-isles/chill-zone.mp3": {
+  "title": "Paradise Found",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2300000",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Paradise_Found.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "treasure-isles/elimination.mp3": {
+  "title": "With the Sea",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100008",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/With%20the%20Sea.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 7.3
+ },
+ "treasure-isles/recap.mp3": {
+  "title": "Notanico Merengue",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100130",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Notanico%20Merengue.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.5
+ },
+ "treasure-isles/interview.mp3": {
+  "title": "Beach Party",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100613",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Beach%20Party.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "tomb-sands/opener.mp3": {
+  "title": "Return of the Mummy",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700046",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Return%20of%20the%20Mummy.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "tomb-sands/travel.mp3": {
+  "title": "Desert of Lost Souls",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1800001",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Desert%20of%20Lost%20Souls.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 2.4
+ },
+ "tomb-sands/challenge.mp3": {
+  "title": "Curse of the Scarab",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600014",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Curse%20of%20the%20Scarab.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 1.2
+ },
+ "tomb-sands/struggle.mp3": {
+  "title": "Hidden Wonders",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700006",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Hidden%20Wonders.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.7
+ },
+ "tomb-sands/chill-zone.mp3": {
+  "title": "Opium",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100371",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Opium.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "tomb-sands/elimination.mp3": {
+  "title": "Ancient Rite",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900048",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ancient%20Rite.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.8
+ },
+ "tomb-sands/recap.mp3": {
+  "title": "East of Tunesia",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100246",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/East%20of%20Tunesia.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 3.8
+ },
+ "tomb-sands/interview.mp3": {
+  "title": "Mystery Bazaar",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700005",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mystery%20Bazaar.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 3.5
+ },
+ "torch-statue-harbour/opener.mp3": {
+  "title": "Highlight Reel",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100205",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Highlight%20Reel.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 2.2
+ },
+ "torch-statue-harbour/travel.mp3": {
+  "title": "Style Funk",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100058",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/StyleFunk.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 3.1
+ },
+ "torch-statue-harbour/challenge.mp3": {
+  "title": "Sax, Rock, and Roll",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100086",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sax%20Rock%20and%20Roll.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "torch-statue-harbour/struggle.mp3": {
+  "title": "Griphop",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100413",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Griphop.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "torch-statue-harbour/chill-zone.mp3": {
+  "title": "Jazz Brunch",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700074",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Jazz%20Brunch.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.6
+ },
+ "torch-statue-harbour/elimination.mp3": {
+  "title": "Night on the Docks - Sax",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100137",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Night%20on%20the%20Docks%20-%20Sax.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.9
+ },
+ "torch-statue-harbour/recap.mp3": {
+  "title": "Private Eye",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100767",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Private%20Eye.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "torch-statue-harbour/interview.mp3": {
+  "title": "Cool Vibes",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100863",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cool%20Vibes.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.7
+ },
+ "red-outback/opener.mp3": {
+  "title": "Lord of the Rangs",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2300010",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Lord%20of%20the%20Rangs.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.3
+ },
+ "red-outback/travel.mp3": {
+  "title": "Still Pickin",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900033",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Still%20Pickin.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "red-outback/challenge.mp3": {
+  "title": "River Valley Breakdown",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300032",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/River%20Valley%20Breakdown.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "red-outback/struggle.mp3": {
+  "title": "Chee Zee Jungle",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100684",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chee%20Zee%20Jungle.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "red-outback/chill-zone.mp3": {
+  "title": "Fireflies and Stardust",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600061",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fireflies%20and%20Stardust.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "red-outback/elimination.mp3": {
+  "title": "Crossing the Divide",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400034",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Crossing%20the%20Divide.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.5
+ },
+ "red-outback/recap.mp3": {
+  "title": "Corncob",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100565",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Corncob.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": -0.0
+ },
+ "red-outback/interview.mp3": {
+  "title": "Cattails",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100743",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cattails.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "fire-mountain-isle/opener.mp3": {
+  "title": "Carefree",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carefree.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.2
+ },
+ "fire-mountain-isle/travel.mp3": {
+  "title": "Rite of Passage",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100829",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Rite%20of%20Passage.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 2.3
+ },
+ "fire-mountain-isle/challenge.mp3": {
+  "title": "Firebrand",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100830",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Firebrand.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "fire-mountain-isle/struggle.mp3": {
+  "title": "Tikopia",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100827",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Tikopia.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.5
+ },
+ "fire-mountain-isle/chill-zone.mp3": {
+  "title": "Tiki Bar Mixer",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000006",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Tiki%20Bar%20Mixer.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.3
+ },
+ "fire-mountain-isle/elimination.mp3": {
+  "title": "When The Wind Blows",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100717",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/When%20The%20Wind%20Blows.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 1.5
+ },
+ "fire-mountain-isle/recap.mp3": {
+  "title": "Arcane",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100831",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Arcane.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "fire-mountain-isle/interview.mp3": {
+  "title": "Moonlight Beach",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000005",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Moonlight%20Beach.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.4
+ },
+ "skyline-finale/opener.mp3": {
+  "title": "Our Story Begins",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100856",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Our%20Story%20Begins.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "skyline-finale/travel.mp3": {
+  "title": "Hiding Your Reality",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700081",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Hiding%20Your%20Reality.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.4
+ },
+ "skyline-finale/challenge.mp3": {
+  "title": "Five Armies",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100875",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Five%20Armies.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "skyline-finale/struggle.mp3": {
+  "title": "Impending Boom",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100198",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Impending%20Boom.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "skyline-finale/chill-zone.mp3": {
+  "title": "Pennsylvania Rose",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100116",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Pennsylvania%20Rose.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.9
+ },
+ "skyline-finale/elimination.mp3": {
+  "title": "Rumination",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100354",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Rumination.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 7.4
+ },
+ "skyline-finale/recap.mp3": {
+  "title": "Heroic Age",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100848",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heroic%20Age.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.3
+ },
+ "skyline-finale/interview.mp3": {
+  "title": "Airship Serenity",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600046",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Airship%20Serenity.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "race/logo.mp3": {
+  "title": "Discovery Hit",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300023",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Discovery%20Hit.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 5s",
+  "lift": 0.0
+ },
+ "race/title.mp3": {
+  "title": "NewsSting",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100361",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/NewsSting.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 3.5s",
+  "lift": 4.0
+ },
+ "race/donbox.mp3": {
+  "title": "Loping Sting",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200014",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Loping%20Sting.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 4.5s",
+  "lift": 0.0
+ },
+ "race/boomerang.mp3": {
+  "title": "Danse Macabre - Big Hit 1",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100558",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Danse%20Macabre%20-%20Big%20Hit%201.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 4.5s",
+  "lift": 6.7
+ },
+ "race/penalty.mp3": {
+  "title": "Der Kleber Sting",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100612",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Der%20Kleber%20Sting.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 6s",
+  "lift": 4.8
+ },
+ "race/eliminated.mp3": {
+  "title": "Darkness Speaks",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100364",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Darkness%20Speaks.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 6s",
+  "lift": 5.0
+ },
+ "race/safe.mp3": {
+  "title": "Light Sting",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100433",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Light%20Sting.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 5s",
+  "lift": 1.8
+ },
+ "race/placement.mp3": {
+  "title": "Gustav Sting",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100529",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Gustav%20Sting.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 2.5s",
+  "lift": 1.9
+ },
+ "race/winners.mp3": {
+  "title": "The Curtain Rises",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500011",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Curtain%20Rises.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 7s",
+  "lift": 1.2
+ },
+ "race/flight.mp3": {
+  "title": "Airport Lounge",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100806",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Airport%20Lounge.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "race/finale.mp3": {
+  "title": "At Launch",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100539",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/At%20Launch.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.4
+ },
+ "race/theme.mp3": {
+  "title": "Cool Rock",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100279",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cool%20Rock.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ }
+}

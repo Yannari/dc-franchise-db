@@ -15,6 +15,8 @@ import { episodeScreens, flatSteps } from './steps.js';
 import { createStage } from './stage.js';
 import { createSidebar } from './sidebar.js';
 import { RR_CSS } from './style.js';
+import { playStep, soundControlsHtml, wireSoundControls } from './sound.js';
+import { initAudio } from '../audio.js';
 
 const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -94,6 +96,7 @@ function show(i, step = 0, fresh = true) {
 function draw(fresh) {
   const { si, idx } = flat[at];
   stage.paint(ep, si, idx, fresh);
+  playStep(ep, si, idx, fresh);
   const s = ep.screens[si];
   side.paint(ep, si, idx, { speaking: s.steps[idx]?.team || null });
   $('rr-stepn').textContent = `Episode ${ep.n} · click ${at + 1} of ${flat.length}`;
@@ -158,6 +161,10 @@ async function start() {
   }
 }
 
+// sound: the race's own music by place and moment (sound.js), with its mute, volume and music switch
+initAudio();
+$('rr-snd').innerHTML = soundControlsHtml();
+wireSoundControls($('rr-snd'));
 $('rr-seed').value = params.get('seed') || '8';
 $('rr-teams').value = params.get('teams') || '12';
 $('rr-play').onclick = start;

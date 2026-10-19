@@ -29,10 +29,18 @@ for (const [w, h] of SIZES) {
           const box = e => e.getBoundingClientRect();
           const vn = box(document.getElementById('rr-vn')), st = box(document.getElementById('rr-stage'));
           const out = [];
-          for (const e of document.querySelectorAll('#rr-stage .tok .pair img, #rr-stage .swim img, #rr-stage .don img, #rr-stage .don svg, #rr-stage .inset img, #rr-stage .iv .cf img')) {
+          // a wide shot: nobody under the bar. A close-up (steps.js planCamera): whoever it is on is whole, inside the
+          // frame and clear of the bar; the people it is not on may be cut by the frame, as on television.
+          const f0 = window.__rr.flat[k], cam = window.__rr.ep.screens[f0.si].steps[f0.idx].cam;
+          const close = cam && cam.shot !== 'wide';
+          const sel = close ? (cam.on || []).map(w => w === 'Don' || !/^t\d+$/.test(w) ? `#rr-stage .don[data-p="${w}"] img, #rr-stage .don[data-p="${w}"] svg` : `#rr-stage .tok[data-team="${w}"]:not([data-crowd]) .pair img, #rr-stage .swim[data-team="${w}"]:not([data-crowd]) img`).join(', ')
+            : '#rr-stage .tok .pair img, #rr-stage .swim img, #rr-stage .don img, #rr-stage .don svg, #rr-stage .inset img, #rr-stage .iv .cf img';
+          for (const e of sel ? document.querySelectorAll(sel) : []) {
             const b = box(e);
             if (!b.width) continue;
-            if (b.bottom > vn.top + 0.5 && b.top < vn.bottom && b.right > vn.left && b.left < vn.right) out.push(`overlaps the bar: ${e.dataset.p || e.closest('[data-p]')?.dataset.p || '?'} (${Math.round(b.bottom - vn.top)}px)`);
+            const who = e.dataset.p || e.dataset.c || e.closest('[data-p]')?.dataset.p || '?';
+            if (b.bottom > vn.top + 0.5 && b.top < vn.bottom && b.right > vn.left && b.left < vn.right) out.push(`overlaps the bar: ${who} (${Math.round(b.bottom - vn.top)}px)${close ? ' in a ' + cam.shot : ''}`);
+            if (close && (b.left < st.left - 1 || b.right > st.right + 1 || b.top < st.top - 1 || b.bottom > st.bottom + 1)) out.push(`${cam.shot} cuts its subject ${who}`);
           }
           const sp = document.querySelector('#rr-stage img.speaking');
           if (sp) { const b = box(sp); if (b.left < st.left - 1 || b.right > st.right + 1 || b.top < st.top - 1 || b.bottom > st.bottom + 1) out.push(`speaker cut by the frame: ${sp.dataset.p} [${[b.left - st.left, b.top - st.top, st.right - b.right, st.bottom - b.bottom].map(Math.round)}] ${sp.parentElement.className}|${sp.parentElement.parentElement.className} cam=${document.getElementById('rr-cam').style.transform}`); }

@@ -144,11 +144,72 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .tok.ride .veh{animation:rideBob .5s ease-in-out infinite}
 .tok.ride.camel .veh,.tok.ride.emu .veh{width:calc(var(--sz)*2.2)}
 .tok.zip .veh{bottom:auto;top:calc(var(--sz)*-.9);width:calc(var(--sz)*1.6)}
+/* the rickshaw: the pair runs in front of it, pulling; a raft is carried over their heads */
+.tok.ride.rickshaw .veh{left:-35%;width:calc(var(--sz)*2.3);animation:rideBob .32s ease-in-out infinite}
+.tok.ride.rickshaw .pair{transform:translateX(calc(var(--sz)*.45))}
+.tok .veh.carry{bottom:auto;top:calc(var(--sz)*-.55);width:calc(var(--sz)*2.2);z-index:3;animation:carryBob .5s ease-in-out infinite}
+@keyframes carryBob{0%,100%{transform:translateX(-50%) translateY(0) rotate(-2deg)}50%{transform:translateX(-50%) translateY(-.35cqw) rotate(2deg)}}
 .tok.para .veh{bottom:auto;top:calc(var(--sz)*-2.1);width:calc(var(--sz)*3)}
 .tok.climb .pair img{animation:climb .9s ease-in-out infinite}
 .tok .bubble{position:absolute;left:50%;top:-2.6cqw;transform:translateX(-50%);background:#fff;color:var(--ink);font:800 1cqw Rubik;padding:.15cqw .6cqw;border-radius:1cqw;white-space:nowrap;animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
-@keyframes idle{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-.25cqw) rotate(-2deg)}65%{transform:translateY(.1cqw) rotate(1.5deg)}}
-@keyframes talk{0%,100%{transform:translateY(0) rotate(0) scale(1.04)}50%{transform:translateY(-.55cqw) rotate(-3deg) scale(1.06)}}
+@keyframes idle{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-.3cqw) rotate(-3deg)}65%{transform:translateY(.12cqw) rotate(2.5deg)}}
+@keyframes talk{0%,100%{transform:translateY(0) rotate(0) scale(1.06)}25%{transform:translateY(-.95cqw) rotate(-4deg) scale(1.1)}50%{transform:translateY(-.2cqw) rotate(2deg) scale(1.07)}75%{transform:translateY(-.7cqw) rotate(-2deg) scale(1.09)}}
+/* the rest of the race, behind: smaller, a little dimmer, under the team the shot is about */
+.tok.crowd{z-index:6;filter:saturate(.82) brightness(.93)}
+.tok.crowd .lab{font-size:calc(var(--sz)*.19);opacity:.9}
+.tok.crowd .pair{filter:drop-shadow(0 .3cqw .25cqw rgba(0,0,0,.45))}
+.swim.crowd{z-index:6;filter:saturate(.82) brightness(.93)}
+.tok.st-fail .pair{filter:drop-shadow(0 0 .6cqw rgba(255,80,60,.8))}
+.tok.st-done .pair{filter:drop-shadow(0 0 .7cqw rgba(255,220,90,.9))}
+.tok.st-quit .pair img{filter:grayscale(.6)}
+/* running: a quick bouncing gait, leaning into the run */
+.tok.running .pair{animation:wRun .32s ease-in-out infinite}
+.tok.running.rtl .pair{animation-name:wRunL}
+.tok.running .shadow{animation:wRunShadow .32s ease-in-out infinite}
+@keyframes wRun{0%,100%{transform:translateY(0) rotate(6deg)}50%{transform:translateY(-.9cqw) rotate(10deg)}}
+@keyframes wRunL{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-.9cqw) rotate(-10deg)}}
+@keyframes wRunShadow{0%,100%{transform:translateX(-50%) scaleX(1)}50%{transform:translateX(-50%) scaleX(.7)}}
+/* a runner keeps going between clicks */
+.tok.crowd.running.ltr{animation:driftR 5s linear forwards} .tok.crowd.running.rtl{animation:driftL 5s linear forwards}
+@keyframes driftR{to{margin-left:4cqw}} @keyframes driftL{to{margin-left:-4cqw}}
+/* the work of each task, on the pair: dig, eat (and pull a face), draw, sweat, rock out, take a photo, bob, chase,
+   build, shear, wait at the edge, chill, watch */
+.tok.w-search .pair{animation:wDig 1.05s ease-in-out infinite}
+.tok.w-eat .pair{animation:wEat 2.6s ease-in-out infinite}
+.tok.w-eat .pair img:first-child{animation:wCringe 2.6s ease-in-out infinite}
+.tok.w-draw .pair{animation:wScribble .38s linear infinite}
+.tok.w-sweat .pair{animation:wSway 2.8s ease-in-out infinite}
+.tok.w-sweat .pair img{filter:sepia(.35) saturate(1.6) hue-rotate(-12deg)}
+.tok.w-guitar .pair{animation:wHeadbang .46s ease-in-out infinite}
+.tok.w-photo .pair{animation:wLean 2.2s ease-in-out infinite}
+.tok.w-bob .pair{animation:wDunk 2.2s ease-in-out infinite}
+.tok.w-chase .pair{animation:wChase 2.4s ease-in-out infinite}
+.tok.w-build .pair{animation:wHammer .62s ease-in-out infinite}
+.tok.w-shear .pair{animation:wShear .26s linear infinite}
+.tok.w-bungee .pair{animation:wTeeter 1.6s ease-in-out infinite}
+.tok.w-chill .pair{animation:wChill 4.2s ease-in-out infinite}
+.tok.w-watch .pair{animation:wWatch 3.4s ease-in-out infinite}
+.tok.w-wait .pair{animation:wWait 1.3s ease-in-out infinite;animation-delay:var(--d,0s)}
+@keyframes wWait{0%,100%{transform:translateY(0)}20%{transform:translateY(-.45cqw)}40%{transform:translateY(0)}60%{transform:translateY(-.25cqw) rotate(-3deg)}}
+@keyframes wDig{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(.7cqw) rotate(10deg)}50%{transform:translateY(-.25cqw) rotate(-5deg)}75%{transform:translateY(.55cqw) rotate(8deg)}}
+@keyframes wEat{0%,40%,100%{transform:scaleY(1)}10%,30%{transform:scaleY(.94) translateY(.2cqw)}20%{transform:scaleY(1.03)}60%{transform:translateX(-.4cqw) rotate(-6deg) scaleY(.92)}66%{transform:translateX(.4cqw) rotate(6deg) scaleY(.92)}72%{transform:translateX(-.3cqw) rotate(-4deg)}}
+@keyframes wCringe{0%,55%,85%,100%{filter:none}62%,78%{filter:hue-rotate(70deg) saturate(1.5) brightness(.9)}}
+@keyframes wScribble{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(.35cqw) rotate(2deg)}75%{transform:translateX(-.35cqw) rotate(-2deg)}}
+@keyframes wSway{0%,100%{transform:translateX(0) rotate(-3deg)}50%{transform:translateX(.3cqw) translateY(.3cqw) rotate(3deg) scaleY(.96)}}
+@keyframes wHeadbang{0%,100%{transform:rotate(-4deg) translateY(0)}50%{transform:rotate(16deg) translateY(.5cqw)}}
+@keyframes wLean{0%,100%{transform:translateX(0) rotate(0)}40%,60%{transform:translateX(.8cqw) rotate(7deg)}}
+@keyframes wDunk{0%,30%,100%{transform:translateY(0)}45%,62%{transform:translateY(1.6cqw) scaleY(.9)}70%{transform:translateY(-.4cqw)}}
+@keyframes wChase{0%,100%{transform:translateX(0) scaleX(1)}45%{transform:translateX(3cqw) scaleX(1)}50%{transform:translateX(3cqw) scaleX(-1)}95%{transform:translateX(0) scaleX(-1)}}
+@keyframes wHammer{0%,100%{transform:translateY(0) rotate(0)}40%{transform:translateY(-.6cqw) rotate(-8deg)}60%{transform:translateY(.25cqw) rotate(5deg)}}
+@keyframes wShear{0%,100%{transform:translateX(0)}50%{transform:translateX(.3cqw) rotate(2deg)}}
+@keyframes wTeeter{0%,100%{transform:rotate(0)}30%{transform:rotate(-7deg) translateY(-.2cqw)}70%{transform:rotate(6deg)}}
+@keyframes wChill{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateY(.2cqw)}}
+@keyframes wWatch{0%,100%{transform:translateX(0)}50%{transform:translateX(.25cqw) rotate(2deg)}}
+/* the sound: mute, volume, music on or off */
+.rr-snd{display:inline-flex;align-items:center;gap:6px}
+.rr-snd button{font:800 14px Rubik,system-ui;padding:7px 10px;border-radius:10px;border:0;background:#1d2747;color:#fff;cursor:pointer;line-height:1}
+.rr-snd .snd-vol{width:86px;accent-color:#f7c948;cursor:pointer}
+.rr-snd .snd-music.off{opacity:.45;text-decoration:line-through}
 @keyframes climb{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-.4cqw) rotate(5deg)}}
 @keyframes rideBob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-.3cqw)}}
 @keyframes thumpR{from{transform:rotate(10deg) scale(3);opacity:0}to{transform:rotate(10deg);opacity:1}}

@@ -275,7 +275,7 @@ export function episodeScreens(res, eps, i) {
         narrator: donSpeaks && ['narrate', 'flight', 'landing'].includes(mode),
         hud: { task: hudTask, clock }, timecard: first ? timecard : null, steps,
         from: prevLeg?.place || null, to: placeId, who: [...(seg.who || [])], stretchKind: stretch?.kind || null,
-        members: Object.fromEntries(teams.map(id => [id, membersOf(id)])),
+        members: Object.fromEntries(teams.map(id => [id, membersOf(id)])), t: seg.t,
       };
       if (first) Object.assign(steps[0].intel, segIntel);
       decorate(scr, seg, scene, leg, { nameOfTeam, membersOf, teamOf, stretch, sceneById });
@@ -292,6 +292,24 @@ export function episodeScreens(res, eps, i) {
     steps: [{ by: null, part: 'card', text: '', intel: {} }] });
 
   for (const s of screens) stageScreen(s, color);
+  // the rest of the race around each shot, the people's reactions, how they come in, and the camera
+  const rows = (leg.log || []).map(r => ({ ...r }));
+  const tries = (st.taskLog || []).filter(r => r.leg === leg.n);
+  const aired = new Set();                 // teams whose placement has been read out on screen so far
+  const introduced = [];                   // the premiere's teams, in the order they arrived on screen
+  screens.forEach((s, si) => {
+    if (s.kind === 'world' && s.plate) {
+      const next = screens.slice(si + 1).find(x => x.t != null && x.t > (s.t ?? Infinity));
+      const t1 = s.t == null || s.t < 0 ? null : Math.min(s.t + 12, Math.max(s.t + 2, next?.t ?? s.t + 6));
+      planCrowd(s, { rows, tries, place, aired, t1, members: membersOf, introduced, racing: st.order.filter(id => racing.includes(id)), first: leg.n === 1 });
+      if (s.seg === 'team-intro') introduced.push(...s.teams.filter(id => !introduced.includes(id)));
+      relift(s);
+      planEnter(s, screens, si);
+      planReact(s, teamOf, membersOf);
+      planCamera(s);
+    } else if (s.steps) s.steps.forEach(x => { x.cam = { shot: 'wide', s: 1, x: 0, y: 0 }; });
+    for (const x of s.steps || []) if (x.rank?.team != null && !x.rank.out) aired.add(x.rank.team);
+  });
   return { screens, n: leg.n, place: placeId, placeName: leg.placeName, kind: leg.kind, racing, color, total: res.legs.length,
     startOrder: prevLeg ? prevLeg.order.filter(id => racing.includes(id)).concat(racing.filter(id => !prevLeg.order.includes(id))) : racing.slice() };
 }
@@ -595,13 +613,340 @@ export function extentOf(s) {
   for (const pos of s.pos || []) for (const [id, m] of Object.entries(pos)) one(s.as?.[id], m);
   for (const d of [s.donStand, ...Object.values(s.localAt || {})].filter(Boolean)) add(d[1], d[1] - 2.1 * z);
   if (s.matAt) add(s.matAt[1] + 1, s.matAt[1] - 2.35 * z);
+  // the rest of the race behind them: smaller, but just as clear of the bar
+  const zc = s.crowdSize || z * CROWD_SCALE;
+  for (const c of s.crowd || []) for (const p of c.pos) if (p && p[0] > -2 && p[0] < 102) {
+    if (c.as === 'swim' || c.as === 'dive') add(p[1] + 1.2 * zc, p[1] - 0.8 * zc);
+    else if (c.as === 'ride') add(p[1] + 0.5 * zc, p[1] - 2.6 * zc);
+    else add(p[1], p[1] - 2.35 * zc);
+  }
   return { bottom, top };
+}
+export const crowdAt = (s, k) => (s.crowd || []).map(c => ({ ...c, pos: [c.pos[k]] }));
+// the lift again once the crowd is on the plate (a climb is lifted step by step, with the crowd as it is then)
+function relift(s) {
+  // the shot is framed for the teams it is about; the crowd fits in it or is out of it
+  const own = { ...s, crowd: null };
+  s.lift = liftFor(own);
+  delete s.liftAt;
+  if (s.pos && extentOf(own).bottom - s.lift > 100 - BAR) s.liftAt = s.pos.map(pos => liftFor({ ...own, marks: {}, pos: [pos] }));
+  // a crowd team that the shot cannot hold above the bar (the bottom of a climb while the team is at the top) is out of the shot
+  let dropped = false;
+  for (const c of s.crowd || []) c.pos.forEach((p, k) => {
+    if (!p) return;
+    const L = s.liftAt ? s.liftAt[k] : s.lift;
+    const one = extentOf({ size: s.size, crowdSize: s.crowdSize, crowd: [{ ...c, pos: [p] }] });
+    if (one.bottom - L > 100 - BAR || one.top - L < 1.9) { c.pos[k] = null; c.st[k] = 'off'; dropped = true; }
+  });
+  if (dropped) { s.crowd = s.crowd.filter(c => c.pos.some(Boolean)); if (!s.crowd.length) delete s.crowd; }
 }
 function liftFor(s) {
   const { bottom, top } = extentOf(s);
   if (!bottom) return 0;
   const need = bottom + 2 - (100 - BAR);           // (+2: the plate's slow push moves the bottom out a little)
   return Math.round(Math.max(0, Math.min(need, top - 2)) * 10) / 10;
+}
+
+// ── the rest of the race: the teams the log puts at this stretch at this moment, racing behind ──
+// The user (2026-10-19): "we dont see them at the same zone running is part of the charm". A shot at a task or
+// on a road shows, small and behind the team that is talking, every other team the leg's log (leg.log: where each
+// team was, from when to when) has at that stretch in the minutes the shot covers: at work on the task and failing
+// and trying again as the task log says they did (state.taskLog: attempts, fails), riding level, passing, or
+// running through. At the Chill Zone, the teams already checked in on screen wait to one side. Never a team whose
+// placement has not aired, and never a rank: the crowd carries no badge.
+const IN_PLACE = new Set(['search', 'eat', 'draw', 'sweat', 'guitar', 'photo', 'bob', 'chase', 'build', 'shear', 'bungee']);
+const PATH_MODES = new Set(['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride']);
+const MAX_CROWD = 4;
+export const CROWD_SCALE = 0.7;
+
+// Where a team is in its run at a task at time tk: progress p (0..1 along the task), and what it is doing.
+// Every failed attempt climbs part of the way and slips back; the last one goes all the way (or is a quit).
+export function attemptAt(row, tk) {
+  const span = Math.max(1, row.to - row.from);
+  const f = Math.max(0, Math.min(1, (tk - row.from) / span));
+  const A = Math.max(1, row.attempts || 1);
+  if (A === 1 && !row.quit) return { f, p: 0.1 + 0.9 * f, st: f > 0.92 ? 'done' : 'try' };
+  const x = Math.min(A - 1e-6, f * A), a = Math.floor(x), u = x - a;
+  if (a < A - 1) return { f, p: 0.12 + 0.55 * u, st: u > 0.78 ? 'fail' : 'try' };
+  if (row.quit) return { f, p: 0.12 + 0.3 * u, st: u > 0.85 ? 'quit' : 'try' };
+  return { f, p: 0.12 + 0.88 * u, st: u > 0.9 ? 'done' : 'try' };
+}
+
+const groundTop = plate => (Array.isArray(plate.g) ? Math.min(...plate.g) : plate.g);
+// n free places on the ground, as far as possible from where the shot's own people stand
+// `avoid`: [x, half-width] of everybody already there; a crowd token needs its own width clear of each of them
+function freeSpots(plate, n, avoid, half, pack = 1) {
+  if (plate.spots?.length) {
+    const free = plate.spots.filter(sp => !avoid.some(([a, h]) => Math.abs(a - sp[0]) < (h + half) * 0.85));
+    return free.slice(0, n).map(sp => [sp[0], sp[1]]);
+  }
+  const x0 = Math.max(plate.x[0], half + 0.6), x1 = Math.min(plate.x[1], 100 - half - 0.6);
+  if (x1 <= x0) return [];
+  const out = [], taken = [...avoid];
+  for (let i = 0; i < n; i++) {
+    let best = null, bestD = -Infinity;
+    for (let x = x0; x <= x1; x += 0.5) {
+      // the clearance left between this token's edge and the nearest other's
+      const d = taken.length ? Math.min(...taken.map(([a, h]) => Math.abs(a - x) - h - half)) : 50;
+      if (d > bestD) { bestD = d; best = x; }
+    }
+    if (best == null || bestD < -half * 0.35 * pack) break;
+    taken.push([best, half]); out.push([Math.round(best * 10) / 10, groundTop(plate)]);
+  }
+  return out;
+}
+
+function planCrowd(s, ctx) {
+  const ps = s.steps.length;
+  const z = (s.size || 8) * CROWD_SCALE, half = z * 0.775;
+  const fz = (s.size || 8) * 0.8;
+  const fgX = Object.values(s.marks || {}).map(m => [m[0], fz]).concat([s.donStand, s.boxAt, ...Object.values(s.localAt || {})].filter(Boolean).map(m => [m[0], fz * 0.7]))
+    .concat(s.matAt ? [[s.matAt[0], (s.size || 8) * 1.4]] : []);
+  // the premiere: every team at the start line in front of Don, and each team arriving finds the ones before it waiting
+  const lineUp = (ids, zz) => {
+    const spots = freeSpots(s.plate, ids.length, fgX, zz * 0.775, 2.4);
+    if (!spots.length) return;
+    s.crowdSize = zz;
+    s.crowd = spots.map((at, i) => ({ team: ids[i], as: 'stand', work: 'wait', pos: s.steps.map(() => at), st: s.steps.map(() => 'wait') }));
+  };
+  if (s.seg === 'don-opener' && ctx.first && standable(s.plate)) {
+    const ids = ctx.racing.filter(id => !s.teams.includes(id));
+    const span = Math.max(20, s.plate.x[1] - s.plate.x[0] - 8 - (s.donStand ? 12 : 0));
+    lineUp(ids, Math.max(3.6, Math.min(z, span / (ids.length * 1.25))));
+    return;
+  }
+  if (s.seg === 'team-intro' && standable(s.plate)) {
+    const ids = ctx.introduced.filter(id => !s.teams.includes(id)).slice(-6);
+    if (ids.length) lineUp(ids, Math.min(z, Math.max(4.2, 60 / (ids.length * 1.3))));
+    return;
+  }
+  if (s.mode === 'mat') {
+    if (!standable(s.plate)) return;
+    // the teams already checked in, at the side of the Chill Zone
+    const done = [...ctx.aired].filter(id => !s.teams.includes(id)).slice(-5);
+    const spots = freeSpots(s.plate, done.length, fgX, half);
+    if (!spots.length) return;
+    s.crowdSize = z;
+    s.crowd = spots.map((at, i) => ({ team: done[i], as: 'stand', work: 'chill', pos: s.steps.map(() => at), st: s.steps.map(() => 'chill') }));
+    return;
+  }
+  if (!s.stretch || ['airport', 'board', 'speed-bump', 'mat', 'midmat'].includes(s.stretch) || s.t == null || s.t < 0 || ctx.t1 == null || s.replay) return;
+  if (['cabin', 'narrate', 'landing', 'flight', 'don'].includes(s.mode)) return;
+  const T = Array.from({ length: ps }, (_, k) => s.t + (ctx.t1 - s.t) * (ps > 1 ? k / (ps - 1) : 0));
+  const stretch = ctx.place?.stretches.find(x => x.id === s.stretch) || null;
+  const seen = new Set();
+  const here = ctx.rows.filter(r => r.stretch === s.stretch && !s.teams.includes(r.id) && r.from <= ctx.t1 + 0.5 && r.to >= s.t - 0.5)
+    .map(r => ({ r, tr: ctx.tries.find(x => x.team === r.id && x.stretch === s.stretch && x.from <= r.to + 0.5 && x.to >= r.from - 0.5) || null }))
+    // an Either: only the teams on this side of it are in this picture
+    .filter(({ tr }) => !s.side || stretch?.kind !== 'either' || !tr || !tr.side || tr.side === s.side)
+    .sort((a, b) => Math.abs(Math.max(a.r.from, s.t) - s.t) - Math.abs(Math.max(b.r.from, s.t) - s.t))
+    .filter(({ r }) => (seen.has(r.id) ? false : (seen.add(r.id), true)))
+    .slice(0, MAX_CROWD);
+  if (!here.length) return;
+  const plate = s.plate;
+  const within = (r, tk) => tk >= r.from - 1 && tk <= r.to + 1;
+  s.crowdSize = z;
+  s.crowdT = T.map(t => Math.round(t * 10) / 10);
+  const act = s.mode === 'act' && plate.path && PATH_MODES.has(plate.mode) ? plate.mode : null;
+  const work = s.work || (stretch && stretchPlates(s.place, s.stretch, s.side)?.act?.mode);
+  const M = z * 0.95 + 1;
+  const fgRow = ctx.rows.find(r => r.id === s.teams[0] && r.stretch === s.stretch);
+  s.crowd = [];
+  here.forEach(({ r, tr }, i) => {
+    const row = tr || { from: r.from, to: r.to, attempts: 1 };
+    const pos = [], sts = [];
+    let at = null;
+    if (!act && standable(plate) && IN_PLACE.has(work)) at = freeSpots(plate, 1, fgX.concat(s.crowd.map(c => c.pos.find(Boolean)).filter(Boolean).map(p => [p[0], half])), half)[0] || null;
+    T.forEach((tk, k) => {
+      if (!within(r, tk)) { pos.push(null); sts.push(tk < r.from ? 'away' : 'gone'); return; }
+      const a = attemptAt(row, tk);
+      if (act === 'ride') {
+        const ff = fgRow ? Math.max(0, Math.min(1, (tk - fgRow.from) / Math.max(1, fgRow.to - fgRow.from))) : 0.5;
+        let x = 50 + (a.f - ff) * 150;
+        // never on top of the team the shot is about: level with them means beside them
+        if (Math.abs(x - 50) < 16) x = 50 + (x < 50 || (x === 50 && i % 2) ? -16 - 7 * (i >> 1) : 16 + 7 * (i >> 1));
+        x = Math.max(-18, Math.min(118, x));
+        const y = (pathAt(plate.path, 0.5)[1]) - 5 - (i % 2) * 3;
+        pos.push([Math.round(x * 10) / 10, Math.round(y * 10) / 10]); sts.push('ride');
+      } else if (act) {
+        let pt = pathAt(plate.path, a.p);
+        if (act === 'hop') pt = [...plate.path[Math.round(a.p * (plate.path.length - 1))]];
+        if (act === 'swim' || act === 'dive') {
+          // in the water beside the team the shot is about, never on top of its heads
+          const fg = s.pos?.[k]?.[s.teams[0]], lo = M, hi = 100 - M - z;
+          let x = pt[0] + (i % 2 ? 9 : -9);
+          if (fg && Math.abs(x - fg[0]) < 14) x = fg[0] + (x >= fg[0] ? 14 : -14) + (i >> 1) * (x >= fg[0] ? 8 : -8);
+          if (x < lo || x > hi) x = fg ? fg[0] + (x < lo ? 14 : -14) : Math.min(hi, Math.max(lo, x));
+          pt = [Math.min(hi, Math.max(lo, x)), Math.min(100 - 1.2 * z - 2, pt[1] - 4 - 2 * i)];
+        }
+        else if (act === 'hop') pt = [pt[0] + (i % 2 ? 2.5 : -2.5), pt[1]];
+        else pt = [Math.min(100 - M, Math.max(M, pt[0] + (i % 2 ? 6 : -6))), Math.max(z * 2.35 + 7, pt[1])];
+        pos.push([Math.round(pt[0] * 10) / 10, Math.round(pt[1] * 10) / 10]); sts.push(a.st);
+      } else if (at) {
+        pos.push(at); sts.push(a.st);
+      } else if (standable(plate)) {
+        pos.push('run'); sts.push('run');
+      } else { pos.push(null); sts.push('gone'); }
+    });
+    // runners pass through once: in at one side of the ground, out at the other, over up to three of the steps they are here
+    if (pos.includes('run')) {
+      const ks = pos.map((p, k) => (p === 'run' ? k : -1)).filter(k => k >= 0);
+      const start = ks[Math.min(ks.length - 1, i % 2)];
+      const span = ks.filter(k => k >= start).slice(0, 3);
+      const gx0 = Math.max(plate.x[0], half + 0.6), gx1 = Math.min(plate.x[1], 100 - half - 0.6);
+      const ltr = i % 2 === 0;
+      const fr = span.length === 1 ? [0.5] : span.length === 2 ? [0.25, 0.75] : [0.12, 0.5, 0.88];
+      pos.forEach((p, k) => {
+        if (p !== 'run') return;
+        const j = span.indexOf(k);
+        if (j < 0) { pos[k] = null; sts[k] = k < start ? 'away' : 'gone'; return; }
+        const f = ltr ? fr[j] : 1 - fr[j];
+        pos[k] = [Math.round((gx0 + (gx1 - gx0) * f) * 10) / 10, groundTop(plate)];
+      });
+    }
+    if (!pos.some(Boolean)) return;
+    const as = act || (pos.some(Boolean) && sts.includes('run') ? 'run' : 'stand');
+    s.crowd.push({ team: r.id, as, work: !act && at ? work : null, pos, st: sts, ltr: i % 2 === 0, row: { from: r.from, to: r.to } });
+  });
+  if (!s.crowd.length) { delete s.crowd; delete s.crowdT; }
+}
+
+// ── how the teams come in: at a run, the first time the episode sees them at a stretch ──
+function planEnter(s, screens, si) {
+  // Don's GO at the start line: on his last line, if it is the GO, the teams sprint off
+  if (s.mode === 'don' && (s.teams.length || s.crowd?.length)) {
+    const last = s.steps.length - 1;
+    if (last > 0 && s.steps[last].by === 'Don' && /\bgo\b|\brace\b|\brun\b/i.test(s.steps[last].text || '')) s.exitAt = last;
+  }
+  // the premiere: each team runs in to the start line
+  if (s.seg === 'team-intro' && !s.replay) { s.enter = Object.fromEntries(s.teams.filter(id => s.marks?.[id]).map(id => [id, 'left'])); return; }
+  if (!s.stretch || s.mode === 'mat' || s.mode === 'cabin' || s.mode === 'act' || s.replay) return;
+  const before = screens.slice(0, si).filter(x => x.stretch === s.stretch && x.kind === 'world');
+  s.enter = {};
+  s.teams.forEach((id, i) => { if (!before.some(x => x.teams.includes(id)) && s.marks?.[id]) s.enter[id] = s.marks[id][0] > 50 ? 'right' : 'left'; void i; });
+  if (!Object.keys(s.enter).length) delete s.enter;
+}
+
+// ── who reacts to a line: the partner, or the other team in the shot ──
+const EXCITED = /\b(yes|yay|woo+|amazing|awesome|love|best|won|win|first|go go|let's go|we did it)\b|!{1,}$/i;
+const UPSET = /\b(no|not|never|ugh|stop|seriously|hate|wrong|lost|worst|kill|idiot|shut up|ow|gross|eww?)\b/i;
+const FUNNY = /\b(ha(ha)+|lol|joke|funny|kidding)\b/i;
+export function reactionTo(text) {
+  const t = String(text || '');
+  if (FUNNY.test(t)) return 'laugh';
+  if (UPSET.test(t) && /[!?]/.test(t)) return 'shake';
+  if (EXCITED.test(t)) return 'jump';
+  if (/\?\s*$/.test(t)) return 'tilt';
+  return 'nod';
+}
+function planReact(s, teamOf, membersOf) {
+  let lastTeam = null;
+  s.steps.forEach((st, k) => {
+    if (st.by === 'Don') {
+      const team = st.rank?.team ?? st.focus ?? null;
+      if (team && st.rank) st.react = { team, how: st.rank.out ? 'slump' : st.rank.place <= 3 ? 'jump' : 'nod' };
+      else if (st.slam?.cls === 'gold' && team) st.react = { team, how: 'jump' };
+      else if (st.slam?.cls === 'red' && (s.arriving?.[0] || s.teams[0])) st.react = { team: s.arriving?.[0] || s.teams[0], how: 'shake' };
+      return;
+    }
+    const team = st.by ? teamOf[st.by] : null;
+    if (!team || st.part === 'conf' || st.part === 'beat') return;
+    const how = reactionTo(st.text);
+    // an ordinary line gets a nod on every other click; a loud one always gets its reaction
+    if (how === 'nod' && k % 2) { lastTeam = team; return; }
+    const next = s.steps.slice(k + 1).find(x => x.by && teamOf[x.by] && teamOf[x.by] !== team);
+    const other = (lastTeam && lastTeam !== team && s.teams.includes(lastTeam)) ? lastTeam : next && s.teams.includes(teamOf[next.by]) ? teamOf[next.by] : null;
+    if (other) st.react = { team: other, how };
+    else {
+      const partner = membersOf(team).find(n => n !== st.by);
+      if (partner && s.teams.includes(team)) st.react = { team, who: partner, how };
+    }
+    lastTeam = team;
+  });
+}
+
+// ── the camera: wide for the action, in where a line earns it, and held ──
+// A shot is { shot, on, s, x, y }: `s` the zoom, (x, y) the world point at the frame's top-left (in % of the
+// plate), chosen so that everybody it is ON is inside the frame and above the dialogue bar. Wide is the whole
+// plate, lifted by the screen's lift so the bar covers nobody. The rules (spec §9.3; the user, 2026-10-19):
+//   * wide on a scene's first line, on a stage direction, on the Don Box, on an arrival montage;
+//   * in on a punchline, a short loud reply, Don's dig: the speaker's whole team in the frame;
+//   * Don's pause before a placement is a push-in on the team, and a slam a quick push-in;
+//   * a climb or a jump is followed;
+//   * a shot holds for at least two lines unless the next speaker is out of it (nobody talks from off screen).
+const MIN_HOLD = 2;
+const PUNCH = /[!?]\s*$|!\s|\.\.\.|—|\b(no|what|ugh|seriously|wow|great|perfect|never|love|hate|dead|kill|run|go)\b/i;
+const FOLLOW = new Set(['climb', 'zip', 'para']);
+export function boxOf(s, who, k) {
+  const z = s.size || 8;
+  if (who === 'Don') { const d = s.donStand; return d ? [d[0] - 0.55 * z, d[1] - 2.1 * z, d[0] + 0.55 * z, d[1]] : null; }
+  if (s.localAt?.[who]) { const d = s.localAt[who]; return [d[0] - 0.5 * z, d[1] - 2.0 * z, d[0] + 0.5 * z, d[1]]; }
+  const at = s.pos?.[k]?.[who] || (s.hiddenUntil?.[who] != null && k === s.hiddenUntil[who] ? s.matAt : null) || s.marks?.[who];
+  if (!at) return null;
+  const as = s.as?.[who];
+  if (as === 'swim' || as === 'dive') { const gap = Math.max(5, z * 0.95); const n = s.swimmers?.[who]?.length || 1; return [at[0] - 0.6 * z, at[1] - 0.9 * z, at[0] + (n - 1) * gap + 0.6 * z, at[1] + 1.25 * z]; }
+  if (as === 'ride') return [at[0] - 1.3 * z, at[1] - 2.7 * z, at[0] + 1.3 * z, at[1] + 0.6 * z];
+  return [at[0] - 0.8 * z, at[1] - 2.4 * z, at[0] + 0.8 * z, at[1] + 0.3];
+}
+export function inView(cam, b, bar = BAR) {
+  if (!b) return true;
+  const w = 100 / cam.s, hTop = cam.y, hBottom = cam.y + (100 - bar) / cam.s;
+  return b[0] >= cam.x - 0.6 && b[2] <= cam.x + w + 0.6 && b[1] >= hTop - 0.6 && b[3] <= hBottom + 0.6;
+}
+function frameOn(s, k, who, maxS, shot) {
+  const boxes = who.map(w => boxOf(s, w, k)).filter(Boolean);
+  if (!boxes.length) return null;
+  const b = [Math.min(...boxes.map(x => x[0])) - 2.5, Math.min(...boxes.map(x => x[1])) - 3, Math.max(...boxes.map(x => x[2])) + 2.5, Math.max(...boxes.map(x => x[3])) + 2];
+  const w = b[2] - b[0], h = b[3] - b[1];
+  let sc = Math.min(maxS, 100 / (w * 1.15), (100 - BAR) / (h * 1.12));
+  if (sc < 1.12) return null;
+  sc = Math.round(sc * 100) / 100;
+  const vw = 100 / sc, vh = (100 - BAR) / sc;
+  let x = (b[0] + b[2]) / 2 - vw / 2;
+  x = Math.max(0, Math.min(100 - vw, x));
+  let y = b[3] - vh + (vh - h) * 0.35;            // the faces a little above the middle of the space over the bar
+  y = Math.max(0, Math.min(100 - vh, Math.min(y, b[1])));
+  // a subject the frame cannot hold whole above the bar gets no close-up (the shot stays wide)
+  if (b[1] < y - 0.3 || b[3] > y + vh + 0.3 || b[0] < x - 0.3 || b[2] > x + vw + 0.3) return null;
+  const r = (v, max) => Math.min(Math.floor(max * 100) / 100, Math.round(v * 10) / 10);
+  return { shot, on: who, s: sc, x: r(x, 100 - vw), y: r(y, 100 - vh) };
+}
+function planCamera(s) {
+  const steps = s.steps;
+  const wideAt = k => ({ shot: 'wide', on: [], s: 1, x: 0, y: (s.liftAt ? s.liftAt[k] : s.lift) || 0 });
+  const speakerOf = st => (st.part === 'pause' ? null : st.by === 'Don' ? (s.donStand ? 'Don' : null) : st.team && s.teams.includes(st.team) ? st.team : st.by && s.localAt?.[st.by] ? st.by : null);
+  const want = k => {
+    const st = steps[k], prev = steps[k - 1];
+    const sp = speakerOf(st);
+    const focus = st.rank?.team ?? st.focus ?? null;
+    if (st.part === 'pause' && focus != null) return { ...(frameOn(s, k, [focus], 1.6, 'close') || wideAt(k)), force: true };
+    if (st.slam && (focus ?? s.arriving?.[0]) != null) return { ...(frameOn(s, k, [focus ?? s.arriving[0]], 1.35, 'close') || wideAt(k)), force: true };
+    if (st.rank && s.donStand) return frameOn(s, k, ['Don', st.rank.team], 1.4, 'two') || wideAt(k);
+    if (s.pos && FOLLOW.has(s.plate?.mode) && s.teams[0] != null) return frameOn(s, k, [s.teams[0]], 1.25, 'follow') || wideAt(k);
+    if (k === 0 || ['beat', 'tip', 'card'].includes(st.part) || (s.seg === 'mat-montage' && st.arrive)) return wideAt(k);
+    if (sp != null && prev?.by && prev.by !== st.by && String(st.text || '').length <= 70 && PUNCH.test(st.text || '')) return frameOn(s, k, [sp], 1.55, 'close') || wideAt(k);
+    if (sp != null && st.react?.team != null && st.react.team !== sp && ['jump', 'shake', 'laugh'].includes(st.react.how)) return frameOn(s, k, [sp, st.react.team], 1.35, 'two') || wideAt(k);
+    if (sp != null && s.teams.length >= 3 && sp !== 'Don') return frameOn(s, k, [sp], 1.22, 'two') || wideAt(k);
+    return wideAt(k);
+  };
+  const same = (a, b) => a.shot === b.shot && a.s === b.s && a.x === b.x && a.y === b.y;
+  let cur = null, held = 0;
+  steps.forEach((st, k) => {
+    const w = want(k);
+    const sp = speakerOf(st);
+    const spBox = sp != null ? boxOf(s, sp, k) : null;
+    if (!cur) { cur = w; held = 1; }
+    else if (w.force) { cur = w; held = 1; }
+    else if (cur.shot === 'follow' || w.shot === 'follow') { cur = w; held = 1; }     // a follow moves with its subject
+    else if (!inView(cur, spBox)) {
+      // the next speaker is out of the shot: a shot with them in it, both teams if it was soon after a cut
+      const both = held < MIN_HOLD && cur.on?.length ? frameOn(s, k, [...new Set([...cur.on, sp])], 1.35, 'two') : null;
+      cur = (inView(w, spBox) && held >= MIN_HOLD ? w : both) || wideAt(k); held = 1;
+    } else if (held >= MIN_HOLD && !same(w, cur)) { cur = w; held = 1; }
+    else held++;
+    const { force, ...shot } = cur; void force;
+    st.cam = shot;
+  });
 }
 
 // ── navigation and what has aired ──────────────────────────────────────

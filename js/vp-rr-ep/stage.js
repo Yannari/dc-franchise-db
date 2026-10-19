@@ -81,17 +81,21 @@ export function createStage(holder, { faceOf, legLabel }) {
   function tokenEl(ep, s, id, pos, opts = {}) {
     const t = teamOf(ep, id), c = ep.color[id];
     const e = document.createElement('div');
-    const as = s.as?.[id] || 'stand';
-    e.className = `tok ${as}${opts.extraCls ? ' ' + opts.extraCls : ''}`;
+    const as = opts.as || s.as?.[id] || 'stand';
+    const work = opts.work !== undefined ? opts.work : (s.work && s.teams?.[0] === id ? s.work : s.work ? 'watch' : null);
+    e.className = `tok ${as}${work ? ' w-' + work : ''}${opts.extraCls ? ' ' + opts.extraCls : ''}`;
     e.dataset.team = id;
     e.style.setProperty('--c', c);
-    e.style.setProperty('--sz', (s.size || 8) + 'cqw');
+    e.style.setProperty('--sz', (opts.size || s.size || 8) + 'cqw');
     e.style.setProperty('--d', (-(hash(id) % 2600) / 1000).toFixed(2) + 's');
     e.style.left = pos[0] + '%'; e.style.top = pos[1] + '%';
     let veh = '';
     const pl = s.plate || {};
-    if (['ride', 'zip', 'para'].includes(as) && pl.prop) veh = `<img class="veh" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
+    if (['ride', 'zip', 'para'].includes(as) && pl.prop && s.mode === 'act') veh = `<img class="veh" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
     if (pl.prop && String(pl.prop).match(/^(camel|emu)/)) e.classList.add(pl.prop.split('@')[0]);
+    // a rickshaw is pulled at a run; a raft on a walk is carried over their heads
+    if (as === 'ride' && /^rickshaw/.test(pl.prop || '') && s.mode === 'act') e.classList.add('rickshaw', 'running', 'ltr');
+    if (as === 'walk' && /^raft/.test(pl.prop || '') && s.mode === 'act') veh = `<img class="veh carry" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
     e.innerHTML = `<div class="pair">${[t.a, t.b].map(n => `<img data-p="${esc(n)}" src="${faceOf(n)}" alt="">`).join('')}</div>${veh}<div class="shadow"></div><div class="lab">${esc(t.name)}</div>`;
     toks.appendChild(e);
     return e;
@@ -104,6 +108,33 @@ export function createStage(holder, { faceOf, legLabel }) {
     const gap = Math.max(5, (s.size || 8) * 0.95); e.style.left = (pos[0] + k * gap) + '%'; e.style.top = (pos[1] + k * 1.5) + '%';
     e.innerHTML = `<div class="ripple"></div><img data-p="${esc(name)}" src="${faceOf(name)}" alt=""><span class="lab">${esc(name)}</span>`;
     toks.appendChild(e);
+    return e;
+  }
+  // the rest of the race, behind the team the shot is about: smaller, a little dimmer, never a rank
+  function crowdEl(ep, s, c, k) {
+    const at = c.pos[k];
+    if (!at) return null;
+    const z = s.crowdSize || (s.size || 8) * 0.7;
+    if (c.as === 'swim' || c.as === 'dive') {
+      const t = teamOf(ep, c.team), col = ep.color[c.team], gap = Math.max(4, z * 0.95);
+      const els = [t.a, t.b].map((n, j) => {
+        const e = document.createElement('div');
+        e.className = 'swim crowd' + (c.as === 'dive' ? ' dive' : ''); e.dataset.team = c.team; e.dataset.crowd = '1';
+        e.style.setProperty('--c', col); e.style.setProperty('--sz', Math.max(3.5, z * 0.85) + 'cqw');
+        e.style.left = (at[0] + j * gap) + '%'; e.style.top = (at[1] + j * 1.2) + '%';
+        e.innerHTML = `<div class="ripple"></div><img data-c="${esc(n)}" src="${faceOf(n)}" alt="">`;
+        toks.appendChild(e); return e;
+      });
+      return els[0];
+    }
+    const st = c.st[k];
+    const e = tokenEl(ep, s, c.team, at, { as: c.as === 'run' ? 'stand' : c.as, size: z, work: c.work && st !== 'gone' ? c.work : null,
+      extraCls: `crowd st-${st}${c.as === 'run' ? ' running ' + (c.ltr ? 'ltr' : 'rtl') : ''}` });
+    e.dataset.crowd = '1';
+    e.querySelectorAll('img[data-p]').forEach(i => { i.dataset.c = i.dataset.p; delete i.dataset.p; });
+    if (['ride', 'zip', 'para'].includes(c.as) && s.plate?.prop && !e.querySelector('.veh')) {
+      const v = document.createElement('img'); v.className = 'veh'; v.src = propUrl(s.plate.place || s.place, s.plate.prop); v.alt = ''; e.appendChild(v);
+    }
     return e;
   }
   function personEl(name, pos, sz, { local = false, label = null } = {}) {
@@ -167,23 +198,25 @@ export function createStage(holder, { faceOf, legLabel }) {
   // ── the lift: the bar sits over the bottom of the picture, so a shot whose people stand low is raised
   // just clear of it (steps.js liftFor); a climb is followed step by step. Under the picture (a narrow
   // window) nothing is lifted.
-  function applyLift(s, k, animate) {
+  // ── the camera (steps.js planCamera decides every shot): the world point (x, y) at the frame's top-left, at zoom s.
+  // Wide is the whole plate lifted clear of the bar; a close-up frames its subject above the bar. Under the picture
+  // (a narrow window, the bar below it) a wide shot is not lifted and a close-up keeps inside the plate.
+  let curCam = '';
+  function camera(s, k, fresh) {
+    const c = (s.kind === 'world' && s.steps[k]?.cam) || { shot: 'wide', s: 1, x: 0, y: 0 };
     const overlaid = getComputedStyle($('rr-vn')).position === 'absolute';
-    const L = overlaid && s.kind === 'world' ? ((s.liftAt ? s.liftAt[k] : s.lift) || 0) : 0;
-    const el = $('rr-lift');
-    el.style.transition = animate && L !== curLift ? 'transform 1.2s cubic-bezier(.45,.05,.2,1)' : 'none';
-    el.style.transform = L ? `translateY(-${L}%)` : '';
-    curLift = L;
-  }
-  // ── the camera: wide for action; in on Don's pause and on a speaker in a crowd ──
-  function wide(now) { if (now) cam.style.transition = 'none'; cam.style.transform = 'translate(0,0) scale(1)'; if (now) { void cam.offsetWidth; cam.style.transition = ''; } }
-  function close(x, y, sc = 1.5, now = false) {
-    const cx = 50, cy = 40;
-    let tx = cx - sc * x, ty = cy - sc * y;
-    tx = Math.min(0, Math.max(100 - sc * 100, tx)); ty = Math.min(0, Math.max(100 - sc * 100, ty));
-    if (now) cam.style.transition = 'none';
-    cam.style.transform = `translate(${tx}%,${ty}%) scale(${sc})`;
-    if (now) { void cam.offsetWidth; cam.style.transition = ''; }
+    const sc = c.s || 1;
+    let { x, y } = c;
+    if (!overlaid) y = c.shot === 'wide' ? 0 : Math.max(0, Math.min(100 - 100 / sc, y));
+    const t = `translate(${(-sc * x).toFixed(2)}%,${(-sc * y).toFixed(2)}%) scale(${sc})`;
+    const key = t;
+    $('rr-lift').style.transform = '';
+    if (!fresh || key === curCam) { cam.style.transition = 'none'; cam.style.transform = t; void cam.offsetWidth; cam.style.transition = ''; curCam = key; cam.dataset.shot = c.shot; return; }
+    const step = s.steps[k];
+    // a slam is a quick push-in; a follow moves with its subject; anything else eases over
+    cam.style.transition = `transform ${step?.slam ? 0.45 : c.shot === 'follow' ? 1.3 : 1.1}s cubic-bezier(.45,.05,.2,1)`;
+    cam.style.transform = t; curCam = key; cam.dataset.shot = c.shot;
+    curLift = c.shot === 'wide' ? y : 0;
   }
 
   // ── the dialogue box ──
@@ -321,11 +354,14 @@ export function createStage(holder, { faceOf, legLabel }) {
     // Don and the locals
     if (s.don && s.donStand) personEl('Don', s.donStand, (s.size || 8) * 0.95);
     for (const [nm, at] of Object.entries(s.localAt || {})) personEl(nm, at, (s.size || 8) * 0.85, { local: true, label: nm.replace(/^(A|The) /i, '') });
+    // the rest of the race, behind them
+    if (!(s.exitAt === k && !fresh)) for (const c of s.crowd || []) crowdEl(ep, s, c, k);
     // the teams
     const it = intelAt(ep, cur.si, k);
     for (const id of s.teams) {
       const at = posAt(s, id, k);
       if (!at) continue;
+      if (s.exitAt === k && !fresh) continue;           // GO! they are gone
       if (s.swimmers?.[id]) {
         s.swimmers[id].forEach((n, j) => swimmerEl(ep, s, id, n, at, j));
         continue;
@@ -365,9 +401,14 @@ export function createStage(holder, { faceOf, legLabel }) {
         else if (s.mode === 'act' && pl.mode === 'para') from = [to[0] - 10, -10];
         else if (s.mode === 'act') from = pl.path ? pl.path[0] : to;
         else if (s.mode === 'mat' && (s.arriving || []).includes(id)) from = [-10, to[1]];
+        else if (s.enter?.[id]) from = [s.enter[id] === 'right' ? 110 : -10, to[1]];
         else from = null;
+        if (e.dataset.crowd) return;
         if (from && (from[0] !== to[0] || from[1] !== to[1])) {
-          e.animate([{ left: from[0] + '%', top: from[1] + '%' }, { left: to[0] + '%', top: to[1] + '%' }], { duration: s.mode === 'mat' ? 1000 : 1400, delay: i * 120, easing: 'ease-out', fill: 'backwards' });
+          const run = s.mode === 'mat' || s.enter?.[id];
+          const d = s.mode === 'mat' ? 1000 : run ? 1250 : 1400;
+          if (run) { e.classList.add('running', from[0] > to[0] ? 'rtl' : 'ltr'); later(d + i * 120, () => e.classList.remove('running', 'rtl', 'ltr')); dustTrail(from, to, d, i * 120); }
+          e.animate([{ left: from[0] + '%', top: from[1] + '%' }, { left: to[0] + '%', top: to[1] + '%' }], { duration: d, delay: i * 120, easing: run ? 'cubic-bezier(.3,.1,.4,1)' : 'ease-out', fill: 'backwards' });
         } else {
           e.animate([{ transform: 'translate(-50%,-60%) scale(.6)', opacity: 0 }, { transform: 'translate(-50%,-100%) scale(1)', opacity: 1 }], { duration: 380, delay: i * 70, easing: 'cubic-bezier(.3,1.6,.5,1)', fill: 'backwards' });
         }
@@ -395,6 +436,15 @@ export function createStage(holder, { faceOf, legLabel }) {
         if (hop && pl.fx === 'splash') later(600, () => splash(b[0], b[1] + 1, 6));
       }
     }
+    if (k > 0 && s.pos && !['swim', 'dive', 'ride', 'hop'].includes(pl.mode)) for (const id of s.teams) {
+      const a = s.pos[k - 1]?.[id], b = s.pos[k]?.[id];
+      if (a && b && (a[0] !== b[0] || a[1] !== b[1])) {
+        dustTrail(a, b, 1300, 0);
+        // a slip back down is fast and loose; going up is the climb's own motion
+        if (b[1] > a[1] + 8 && pl.mode === 'climb') toks.querySelectorAll(`[data-team="${id}"]:not([data-crowd])`).forEach(e => e.animate([{ left: a[0] + '%', top: a[1] + '%' }, { left: b[0] + '%', top: b[1] + '%' }], { duration: 650, easing: 'cubic-bezier(.6,0,.9,.6)', fill: 'backwards' }));
+      }
+    }
+    crowdMoves(ep, s, k);
     // a slip on a failed try, a quit
     if (s.plan?.fail === k) {
       const id = s.teams[0], at = posAt(s, id, k) || s.marks[id];
@@ -413,8 +463,100 @@ export function createStage(holder, { faceOf, legLabel }) {
     // the mat: a team steps on as Don checks it in
     if (s.mode === 'mat' && step?.arrive && s.hiddenUntil) {
       const id = step.arrive, e = toks.querySelector(`[data-team="${id}"]`);
-      if (e) e.animate([{ left: '-10%', top: s.matAt[1] + '%' }, { left: s.matAt[0] + '%', top: s.matAt[1] + '%' }], { duration: 900, easing: 'ease-out', fill: 'backwards' });
+      if (e) {
+        e.classList.add('running', 'ltr'); later(950, () => e.classList.remove('running', 'ltr'));
+        e.animate([{ left: '-10%', top: s.matAt[1] + '%' }, { left: (s.matAt[0] - 4) + '%', top: s.matAt[1] + '%', offset: 0.8 }, { left: s.matAt[0] + '%', top: (s.matAt[1] - 4) + '%', offset: 0.9 }, { left: s.matAt[0] + '%', top: s.matAt[1] + '%' }], { duration: 1000, easing: 'ease-out', fill: 'backwards' });
+        dustTrail([-10, s.matAt[1]], s.matAt, 900, 0);
+        later(1000, () => particles('dust', s.matAt[0], s.matAt[1], 8, 4));
+      }
     }
+    // GO! the teams sprint off to the race
+    if (s.exitAt === k) toks.querySelectorAll('.tok').forEach((e, i) => {
+      const x = parseFloat(e.style.left), y = parseFloat(e.style.top);
+      e.classList.add('running', 'ltr');
+      e.animate([{ left: x + '%', top: y + '%' }, { left: (112 + i * 3) + '%', top: y + '%' }], { duration: 1300 + i * 90, delay: 250 + i * 70, easing: 'cubic-bezier(.5,0,.8,.6)', fill: 'forwards' });
+      later(250 + i * 70, () => dustTrail([x, y], [x + 25, y], 600, 0));
+    });
+    // a bungee drop: off the edge, down on the cord, back up, and again smaller
+    if (s.work === 'bungee' && k > 0) {
+      const id = s.teams[0], e = toks.querySelector(`[data-team="${id}"]:not([data-crowd])`), at = s.marks[id];
+      if (e && at) e.animate([{ left: at[0] + '%', top: at[1] + '%' }, { left: (at[0] + 8) + '%', top: (at[1] - 6) + '%', offset: 0.15 }, { left: (at[0] + 14) + '%', top: Math.min(97, at[1] + 34) + '%', offset: 0.42 },
+        { left: (at[0] + 13) + '%', top: (at[1] + 6) + '%', offset: 0.62 }, { left: (at[0] + 13) + '%', top: Math.min(97, at[1] + 20) + '%', offset: 0.78 }, { left: at[0] + '%', top: at[1] + '%' }], { duration: 2600, easing: 'ease-in-out' });
+    }
+    // done: a jump for joy; a celebration scene starts with one
+    if ((s.seg === 'celebrate' && k === 0) || (k === s.steps.length - 1 && s.seg === 'task-done')) {
+      toks.querySelectorAll(`[data-team="${s.teams[0]}"]:not([data-crowd]) .pair`).forEach(p => p.animate(JUMP, { duration: 900, delay: 200, iterations: 2 }));
+      const at = posAt(s, s.teams[0], k); if (at) later(300, () => particles('spark', at[0], at[1] - (s.size || 8) * 1.4, 12, 6));
+    }
+  }
+  const JUMP = [{ transform: 'translateY(0)' }, { transform: 'translateY(-2.2cqw) scale(1.05)', offset: 0.35 }, { transform: 'translateY(0) scaleY(.92)', offset: 0.7 }, { transform: 'translateY(0)' }];
+  // puffs of dust along a run (a plate of water gets a splash instead)
+  function dustTrail(a, b, dur, delay) {
+    if (!a || !b) return;
+    const water = cur.ep && cur.ep.screens[cur.si]?.plate?.water;
+    for (let q = 1; q <= 4; q++) later(delay + dur * q / 5, () => {
+      const p = lerpPos(a, b, q / 5);
+      if (p[0] < -2 || p[0] > 102) return;
+      if (water) splash(p[0], p[1], 4); else particles('dust', p[0], p[1] - 0.5, 3, 2.5);
+    });
+  }
+  // the rest of the race between two steps: moving on, coming in, leaving, failing and trying again
+  function crowdMoves(ep, s, k) {
+    for (const c of s.crowd || []) {
+      const a = k > 0 ? c.pos[k - 1] : null, b = c.pos[k];
+      const els = [...toks.querySelectorAll(`[data-team="${c.team}"][data-crowd]`)];
+      const water = ['swim', 'dive'].includes(c.as) || s.plate?.water;
+      if (b && els.length) {
+        let from = a;
+        if (!from) {
+          // in: a runner at a run, a rider from off the side; anybody else pops in where they are
+          if (c.as === 'run') from = [c.ltr ? -10 : 110, b[1]];
+          else if (c.as === 'ride') from = [b[0] < 50 ? -18 : 118, b[1]];
+        }
+        if (from && (from[0] !== b[0] || from[1] !== b[1])) {
+          const run = c.as === 'run' || c.as === 'stand';
+          els.forEach((e, j) => {
+            const off = e.classList.contains('swim') ? [j * Math.max(4, (s.crowdSize || 6) * 0.95), j * 1.2] : [0, 0];
+            const kf = c.as === 'hop' ? [{ left: from[0] + '%', top: from[1] + '%' }, { left: (from[0] + b[0]) / 2 + '%', top: Math.min(from[1], b[1]) - 7 + '%' }, { left: b[0] + '%', top: b[1] + '%' }]
+              : [{ left: from[0] + off[0] + '%', top: from[1] + off[1] + '%' }, { left: b[0] + off[0] + '%', top: b[1] + off[1] + '%' }];
+            e.animate(kf, { duration: run ? 1500 : 1300, easing: 'ease-in-out', fill: 'backwards' });
+          });
+          if (water) for (let q = 0; q < 3; q++) later(q * 380, () => { const p = lerpPos(from, b, q / 3); splash(p[0], p[1], 4); });
+          else if (c.as !== 'zip' && c.as !== 'para') dustTrail(from, b, 1300, 0);
+        } else if (!a) els.forEach(e => e.animate([{ opacity: 0, transform: 'translate(-50%,-80%) scale(.7)' }, { opacity: 1, transform: e.classList.contains('swim') ? 'translate(-50%,-50%)' : 'translate(-50%,-100%)' }], { duration: 420, easing: 'ease-out', fill: 'backwards' }));
+        // what the attempt did: a failed try shakes and slips, a success jumps
+        const st = c.st[k];
+        if (st === 'fail') { els.forEach(e => e.animate(SHAKE, { duration: 420, iterations: 2, delay: 500 })); later(700, () => (water ? splash(b[0], b[1], 8) : particles('dust', b[0], b[1], 6, 4))); }
+        if (st === 'done' && c.st[k - 1] !== 'done') els.forEach(e => e.querySelector('.pair')?.animate(JUMP, { duration: 900, delay: 400, iterations: 2 }));
+      } else if (a && !b && c.st[k] === 'gone') {
+        // out of the shot at a run: a ghost of them that leaves and is gone
+        const g = crowdEl(ep, s, { ...c, pos: [a], st: ['run'] }, 0);
+        if (!g) continue;
+        const to = c.as === 'ride' ? [a[0] + 40, a[1]] : [c.ltr === false ? -12 : 112, a[1]];
+        [...toks.querySelectorAll(`[data-team="${c.team}"][data-crowd]`)].forEach(e => {
+          e.classList.add('running', to[0] < a[0] ? 'rtl' : 'ltr');
+          e.animate([{ left: a[0] + '%', top: a[1] + '%', opacity: 1 }, { left: to[0] + '%', top: to[1] + '%', opacity: 0.9 }], { duration: 1500, easing: 'ease-in', fill: 'forwards' })
+            .finished.then(() => e.remove()).catch(() => {});
+        });
+        if (!water) dustTrail(a, to, 1300, 0);
+      }
+    }
+  }
+  const SHAKE = [{ transform: 'translate(-50%,-100%) rotate(0)' }, { transform: 'translate(-56%,-100%) rotate(-9deg)' }, { transform: 'translate(-44%,-100%) rotate(9deg)' }, { transform: 'translate(-50%,-100%) rotate(0)' }];
+  // the one listening: a nod, a shake, a jump, a laugh, a tilt of the head, a slump
+  const REACT = {
+    nod: [{ transform: 'translateY(0)' }, { transform: 'translateY(.5cqw) rotate(2deg)' }, { transform: 'translateY(0)' }, { transform: 'translateY(.4cqw)' }, { transform: 'translateY(0)' }],
+    shake: [{ transform: 'rotate(0)' }, { transform: 'rotate(-11deg)' }, { transform: 'rotate(10deg)' }, { transform: 'rotate(-8deg)' }, { transform: 'rotate(0)' }],
+    jump: [{ transform: 'translateY(0)' }, { transform: 'translateY(-1.8cqw) scale(1.08)', offset: 0.4 }, { transform: 'translateY(0) scaleY(.9)', offset: 0.75 }, { transform: 'translateY(0)' }],
+    laugh: [{ transform: 'rotate(0)' }, { transform: 'translateY(-.4cqw) rotate(-6deg)' }, { transform: 'translateY(0) rotate(5deg)' }, { transform: 'translateY(-.4cqw) rotate(-5deg)' }, { transform: 'rotate(0)' }],
+    tilt: [{ transform: 'rotate(0)' }, { transform: 'rotate(-14deg)', offset: 0.3 }, { transform: 'rotate(-14deg)', offset: 0.7 }, { transform: 'rotate(0)' }],
+    slump: [{ transform: 'translateY(0)' }, { transform: 'translateY(1cqw) scale(.94)', offset: 0.4 }, { transform: 'translateY(.9cqw) scale(.95)', offset: 0.85 }, { transform: 'translateY(0)' }],
+  };
+  function react(s, k) {
+    const r = s.steps[k]?.react;
+    if (!r) return;
+    const imgs = r.who ? [...stage.querySelectorAll(`img[data-p="${CSS.escape(r.who)}"]`)] : [...toks.querySelectorAll(`[data-team="${r.team}"]:not([data-crowd]) img`)];
+    imgs.forEach((im, j) => im.animate(REACT[r.how] || REACT.nod, { duration: r.how === 'jump' ? 800 : r.how === 'tilt' ? 1400 : 900, delay: 350 + j * 90, easing: 'ease-in-out', iterations: r.how === 'laugh' ? 2 : 1 }));
   }
   const lerpPos = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 
@@ -445,20 +587,6 @@ export function createStage(holder, { faceOf, legLabel }) {
     }
   }
 
-  function camera(ep, s, k, el, fresh) {
-    const step = s.steps[k];
-    if (s.kind !== 'world') { wide(!fresh); return; }
-    if (step?.part === 'pause' && step.focus) {
-      const at = posAt(s, step.focus, k) || s.matAt;
-      if (at) { close(at[0], at[1] - curLift - (s.size || 8) * 0.9, 1.45, !fresh); return; }
-    }
-    if (step?.team && s.teams.length >= 3 && !s.pos) {
-      const at = posAt(s, step.team, k);
-      if (at) { close(at[0], at[1] - curLift - (s.size || 8), 1.16, !fresh); return; }
-    }
-    wide(!fresh);
-    void el;
-  }
 
   // ── the one entry point ──
   function paint(ep, si, k, fresh = false) {
@@ -496,12 +624,12 @@ export function createStage(holder, { faceOf, legLabel }) {
       if (s.kind === 'world') { toks.innerHTML = ''; fx.querySelectorAll('.don').forEach(e => e.remove()); ui.querySelectorAll('.inset').forEach(e => e.remove()); under.querySelectorAll('.prop').forEach(e => e.remove()); world(ep, s, k, true); }
       animateStep(ep, s, k);
     }
-    applyLift(s, k, stepFresh);
     const step = s.steps[k];
     overlays(ep, s, k, fresh);
     vn(ep, s, step, fresh);
-    const el = speaking(step?.part === 'pause' ? 'Don' : step?.by);
-    camera(ep, s, k, el, fresh);
+    speaking(step?.part === 'pause' ? 'Don' : step?.by);
+    camera(s, k, stepFresh);
+    if (stepFresh || screenFresh) react(s, k);
   }
 
   return { paint, el: frame, stop: () => { clearTimers(); clearInterval(ambTimer); } };

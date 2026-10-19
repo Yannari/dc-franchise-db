@@ -20,6 +20,7 @@ import { episodeScreens, flatSteps } from './steps.js';
 import { createStage } from './stage.js';
 import { createSidebar } from './sidebar.js';
 import { RR_CSS } from './style.js';
+import { playStep, soundControlsHtml, wireSoundControls } from './sound.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const reg = () => (typeof window !== 'undefined' ? (window._rrx ||= {}) : (globalThis._rrx ||= {}));
@@ -145,7 +146,8 @@ export function raceStepVpScreens(row, { played, aired = [] } = {}) {
 function shell(key, ci, c, row) {
   const R = reg()[key];
   const legs = R.aired.map(a => `<option value="${a.num}"${a.num === row.num ? ' selected' : ''}>Leg ${a.num} · ${esc(a.place)}</option>`).join('');
-  return `<div class="rrx" data-key="${esc(key)}" data-ci="${ci}">
+  // data-ambient="none": the pane plays no Total Drama bed under the race (sound.js plays the race's own)
+  return `<div class="rrx" data-key="${esc(key)}" data-ci="${ci}" data-ambient="none">
   <div class="rrx-top"><span class="rrx-logo">The Ridonculous Race</span>
     <select class="rrx-legs" onchange="rrxLeg(this.value)" title="Watch another leg">${legs}</select>
     <span class="rrx-chap">${esc(c.name)}</span><span class="rrx-spacer"></span>
@@ -161,6 +163,7 @@ function shell(key, ci, c, row) {
         <button type="button" class="rrx-btn go" onclick="rrxNext(this)">Next ▶</button>
         <button type="button" class="rrx-btn" onclick="rrxSkip(this,10)" title="Ten lines on">10 ⏩</button>
         <button type="button" class="rrx-btn rrx-auto" onclick="rrxAuto(this)">▶ Auto</button>
+        ${soundControlsHtml('rr-snd rrx-snd')}
         <span class="stepn"></span>
       </div></div>
     <div class="rrx-sidecol"><button type="button" class="rrx-tab" onclick="rrxIntel(this)">INTEL ◂</button><aside class="rr-side rrx-side"></aside></div>
@@ -190,6 +193,7 @@ function runner(root) {
   root.classList.toggle('intel-open', open);
   const R = { root, R0, c, flat, at: -1, stage, side, auto: null, ci: Number(root.dataset.ci), last: Number(root.dataset.ci) === R0.chapters.length - 1 };
   stage.el.addEventListener('click', () => next(R));
+  wireSoundControls(root.querySelector('.rrx-snd'));
   scrubber(R);
   RUN.set(root, R);
   return R;
@@ -242,6 +246,7 @@ function draw(R, fresh) {
   if (!f) return;
   paintBar(R);
   R.stage.paint(R.R0.e, f.si, f.idx, fresh);
+  playStep(R.R0.e, f.si, f.idx, fresh);
   R.side.paint(R.R0.e, f.si, f.idx, { speaking: R.R0.e.screens[f.si].steps[f.idx]?.team || null });
   const n = R.root.querySelector('.stepn');
   const before = R.R0.sizes.slice(0, R.ci).reduce((a, x) => a + x, 0), total = R.R0.sizes.reduce((a, x) => a + x, 0);

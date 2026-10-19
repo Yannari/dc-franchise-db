@@ -59,6 +59,26 @@ describe('the benches', () => {
     expect(run({ Duncan: left, Owen: right }, 'redemption').steps[0].plate).toBe('hosted-camp/benches-day');
   });
 
+  // (the user, 2026-10-19: "the benches finale section in the stepped viewer don't have the assistant choice section")
+  it('plays the assistant pick: each finalist takes one off their bench, who comes down to stand with them', () => {
+    const e = ep({ Duncan: left, Owen: right }, 'hosted-camp');
+    e.assistants = { Duncan: { name: 'Gwen', heartPick: 'Gwen', brainPick: 'Bowie', decision: 'heart', bond: 4 }, Owen: { name: 'Bruno', heartPick: 'Millie', brainPick: 'Bruno', decision: 'agonized', bond: 1 } };
+    const scr = tdBenchesScreen(e, { host: 'Chris', setting: 'hosted-camp' });
+    const text = scr.steps.map(s => s.text || s.name || '').join('\n');
+    expect(text).toContain('Pick an Assistant');
+    expect(text).toContain('Gwen climbs down from the bleachers and stands next to Duncan.');
+    expect(text).toContain('Bruno climbs down from the bleachers and stands next to Owen.');
+    expect(text).toContain('Owen looks from Millie to Bruno');
+    expect(text).toContain('Duncan and Gwen and Owen and Bruno');
+    // standing beside them on the last shot, off the bleachers
+    const last = scr.steps.filter(s => s.k === 'scene').pop().places;
+    expect(last.Gwen.sit).toBeFalsy();
+    expect(Math.abs(last.Gwen.u - last.Duncan.u)).toBeLessThan(.1);
+    // a finalist with nobody on the bench goes alone
+    e.assistants = { Duncan: { name: 'Gwen', heartPick: 'Gwen', brainPick: 'Gwen', decision: 'unanimous', bond: 4 }, Owen: null };
+    expect(tdBenchesScreen(e, { host: 'Chris', setting: 'hosted-camp' }).steps.map(s => s.text || '').join('\n')).toContain("Owen, nobody's sitting behind you.");
+  });
+
   it('keeps a three-way final on its classic page', () => {
     expect(run({ Duncan: ['Gwen'], Owen: ['Bruno'], Heather: ['Lindsay'] }, 'hosted-camp')).toBeNull();
   });

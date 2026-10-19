@@ -538,5 +538,64 @@ export function tdBenchesScreen(ep, o = {}) {
       any: [`Seeing all of them behind me... okay. Now I really have to win this.`],
     }, 'hi', ep.num) });
   } else say(`${word(nA)} each. Dead even. Nice.`, { focus: finalists });
+
+  // the assistants (finale.js selectAssistants): each finalist takes one person off their own bench into the final
+  // challenge, by heart, by head, on impulse or after a long look at both (the user, 2026-10-19: "the benches finale
+  // section in the stepped viewer don't have the assistant choice section")
+  const AS = ep.assistants || null;
+  if (AS && finalists.some(f => AS[f]?.name)) {
+    steps.push({ k: 'title', kicker: 'The Finale', name: 'Pick an Assistant', faces: finalists, vs: true });
+    say(`One more thing. Finalists, each of you takes one person off your bench to run the final challenge with you. Choose well.`, { focus: finalists });
+    const moved = { ...places };
+    finalists.forEach((f, i) => {
+      const a = AS[f];
+      if (!a?.name) {
+        say(`${f}, nobody's sitting behind you. You're doing this alone.`, { focus: [f], tense: true });
+        steps.push({ k: 'say', by: f, focus: [f], text: V(f, {
+          loud: [`Good! I don't need anybody slowing me down!`], sharp: [`Fine. Then nobody gets to share the credit.`], soft: [`That's okay. I've been on my own out here before.`],
+          dry: [`Great. A team of one. Very efficient.`], any: [`Then I'll do it by myself.`],
+        }, 'solo', ep.num) });
+        return;
+      }
+      const n = a.name, heart = a.heartPick, head = a.brainPick;
+      const passed = n === heart ? head : heart;
+      if (a.decision === 'agonized' || a.decision === 'impulsive') steps.push({ k: 'beat', focus: [f, heart, head].filter(Boolean),
+        text: a.decision === 'impulsive' ? `${f} doesn't even look along the bench.` : `${f} looks from ${heart} to ${head}, and back again, for a long time.`, tense: a.decision === 'agonized' });
+      steps.push({ k: 'say', by: f, focus: [f, n], text: a.decision === 'unanimous' ? V(f, {
+        loud: [`${n}! Obviously! Get down here!`], sharp: [`${n}. That was never a question.`], soft: [`${n}. It was always going to be you.`], dry: [`${n}. That took no thought at all.`],
+        any: [`${n}. Easy.`, `${n}. Who else?`],
+      }, 'asU', ep.num, i) : a.decision === 'heart' ? V(f, {
+        soft: [`${n}. I trust you more than anybody up there.`], loud: [`${n}! I don't care who's fastest. I want you with me!`],
+        any: [`${n}. I want somebody next to me I actually trust.`],
+      }, 'asH', ep.num, i) : a.decision === 'brain' ? V(f, {
+        sharp: [`${n}. You give me the best chance of winning. That's all this is.`], dry: [`${n}. Sorry, ${passed}. ${n} is faster.`],
+        any: [`${n}. You're my best shot at winning this.`],
+      }, 'asB', ep.num, i) : a.decision === 'impulsive' ? `${n}! Let's go!` : `...${n}.` });
+      // and down they come, to stand with them
+      const fp = places[f];
+      moved[n] = { u: Math.min(.92, Math.max(.08, fp.u + (i ? .07 : -.07))), v: fp.v, s: fp.s };
+      steps.push({ k: 'scene', spot: 'benches', tod: 'day', plate: key, place: 'The Benches', time: 'Day', card: false, focus: [f, n], bg: [], places: { ...moved }, host, wide: true,
+        signs: steps[0].signs });
+      steps.push({ k: 'beat', focus: [n, f], text: `${n} climbs down from the bleachers and stands next to ${f}.`, act: { kind: 'arrive', who: [n] } });
+      const ab = bond(n, f);
+      steps.push({ k: 'say', by: n, focus: [n, f], text: ab >= 2 ? V(n, {
+        loud: [`Let's win this thing!`], soft: [`I won't let you down. I promise.`], sharp: [`Good choice. Now let's not waste it.`], dry: [`I'm stretching. That counts as warming up.`],
+        any: [`Let's go win this.`, `I've got you.`],
+      }, 'asOk', ep.num, i) : V(n, {
+        sharp: [`Don't make me regret this.`], loud: [`Fine! But I'm doing this for me too!`], dry: [`Well. This is a surprise for both of us.`],
+        any: [`Okay. Let's just do this.`, `I'm in. Don't make it weird.`],
+      }, 'asMeh', ep.num, i) });
+      // the friend who wasn't picked, still in the stands
+      if (passed && passed !== n && (A[f] || []).includes(passed) && bond(passed, f) >= 2) steps.push({ k: 'say', by: passed, focus: [passed], text: V(passed, {
+        loud: [`Wow! Okay! I see how it is!`], sharp: [`Noted, ${f}.`], soft: [`That's fine. Really. Good luck.`], dry: [`Love being the backup.`],
+        any: [`Huh. Okay.`, `Didn't see that coming.`],
+      }, 'asP', ep.num, i) });
+      if (a.decision === 'agonized' || a.decision === 'brain') steps.push({ k: 'conf', by: f, focus: [f], text: a.decision === 'brain'
+        ? `${passed} is my friend. ${n} is the one who can help me win. Today I need the second one.`
+        : n === heart ? `My head said ${head}. I went with ${heart}. If I lose, at least I lose with somebody I trust.` : `Every part of me wanted ${heart}. But ${head} is faster, and I didn't come this far to lose on a feeling.` });
+    });
+    const pairs = finalists.filter(f => AS[f]?.name).map(f => `${f} and ${AS[f].name}`);
+    if (pairs.length) say(`So that's it. ${listOf(pairs)}. Everybody else, back up in the stands and make some noise.`, { focus: finalists });
+  }
   return { id: 'benches', kind: 'camp', venue: key.split('/')[0], ep: ep.num, label: 'The Benches', host, steps };
 }

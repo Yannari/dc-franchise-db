@@ -42,6 +42,7 @@ const KINDS = {
   close: '(s, t) => t.cam?.shot === "close" && !t.slam && t.part !== "pause"',
   matcrowd: '(s, t, k) => s.mode === "mat" && (s.crowd || []).length >= 2',
   follow: '(s, t, k) => t.cam?.shot === "follow" && k >= 1',
+  intro: '(s, t, k) => s.seg === "team-intro" && s.kind === "world" && (s.crowd || []).length >= 3',
 };
 
 const browser = await chromium.launch();

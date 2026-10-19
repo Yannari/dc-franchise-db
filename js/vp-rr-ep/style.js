@@ -42,6 +42,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .plate{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .7s ease;will-change:opacity,transform}
 .plate.on{opacity:1}
 #rr-gl{z-index:1;pointer-events:none}
+.plate-skirt{position:absolute;left:0;right:0;top:100%;height:34%;background-size:100% 294%;background-position:center bottom;transform:scaleY(-1);filter:brightness(.5) saturate(.8) blur(1.5px);pointer-events:none}
 #rr-gl .tdx-gl{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .5s}
 #rr-gl .tdx-gl.on{opacity:1}
 #rr-under,#rr-toks,#rr-fx{z-index:2}
@@ -193,7 +194,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 @keyframes wWait{0%,100%{transform:translateY(0)}20%{transform:translateY(-.45cqw)}40%{transform:translateY(0)}60%{transform:translateY(-.25cqw) rotate(-3deg)}}
 @keyframes wDig{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(.7cqw) rotate(10deg)}50%{transform:translateY(-.25cqw) rotate(-5deg)}75%{transform:translateY(.55cqw) rotate(8deg)}}
 @keyframes wEat{0%,40%,100%{transform:scaleY(1)}10%,30%{transform:scaleY(.94) translateY(.2cqw)}20%{transform:scaleY(1.03)}60%{transform:translateX(-.4cqw) rotate(-6deg) scaleY(.92)}66%{transform:translateX(.4cqw) rotate(6deg) scaleY(.92)}72%{transform:translateX(-.3cqw) rotate(-4deg)}}
-@keyframes wCringe{0%,55%,85%,100%{filter:none}62%,78%{filter:hue-rotate(70deg) saturate(1.5) brightness(.9)}}
+@keyframes wCringe{0%,55%,85%,100%{filter:none}62%,78%{filter:hue-rotate(45deg) saturate(1.3) brightness(.92)}}
 @keyframes wScribble{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(.35cqw) rotate(2deg)}75%{transform:translateX(-.35cqw) rotate(-2deg)}}
 @keyframes wSway{0%,100%{transform:translateX(0) rotate(-3deg)}50%{transform:translateX(.3cqw) translateY(.3cqw) rotate(3deg) scaleY(.96)}}
 @keyframes wHeadbang{0%,100%{transform:rotate(-4deg) translateY(0)}50%{transform:rotate(16deg) translateY(.5cqw)}}

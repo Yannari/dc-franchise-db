@@ -46,7 +46,7 @@ const AMBIENT = { 'rock-north': 'snow', 'red-sand-desert': 'mote', 'tomb-sands':
 
 export function createStage(holder, { faceOf, legLabel }) {
   holder.innerHTML = `<div class="rr-frame" id="rr-frame"><div class="stage" id="rr-stage">
-    <div id="rr-cam"><div id="rr-lift"><div id="rr-world"><div class="plate" id="rr-pA"></div><div class="plate" id="rr-pB"></div><div class="layer" id="rr-gl"></div>
+    <div id="rr-cam"><div id="rr-lift"><div id="rr-world"><div class="plate-skirt" id="rr-skirt"></div><div class="plate" id="rr-pA"></div><div class="plate" id="rr-pB"></div><div class="layer" id="rr-gl"></div>
       <div class="layer" id="rr-under"></div><div class="layer" id="rr-toks"></div><div class="layer" id="rr-fx"></div></div></div></div>
     <div class="vignette"></div><div class="rr-replay"><span>◂◂ LAST TIME</span></div><div class="layer" id="rr-ui"></div><div class="layer" id="rr-amb" style="z-index:31;pointer-events:none"></div>
     <div class="beatcard" id="rr-beat"></div><div class="hud-leg" id="rr-leg"></div><div class="hud-task" id="rr-task"></div>
@@ -67,6 +67,8 @@ export function createStage(holder, { faceOf, legLabel }) {
     if ((b.dataset.url || '') === (url || '') && b.classList.contains('on')) return;
     flip = !flip;
     a.className = 'plate'; a.dataset.url = url || ''; a.style.backgroundImage = url ? `url("${url}")` : 'none';
+    // under the plate's bottom edge (what a lifted shot shows beneath the bar): its own ground, mirrored and dimmed
+    $('rr-skirt').style.backgroundImage = url ? `url("${url}")` : 'none';
     void a.offsetWidth; a.className = 'plate on'; b.classList.remove('on');
     // the plate alive (js/vp-td-ep/glplate.js): its own pixels moved by the motion map read off its paint
     // (tools/rr-vp-motion.py): water ripples and glints, leaves flutter, lava shimmers, lamps twinkle

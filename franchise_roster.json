@@ -7368,6 +7368,27 @@
       "voice": "#earnest #warm #anxious Replies quickly and often makes a small joke at her own expense. Gives concrete answers rather than impressive ones. Asks follow-up questions because she wants to understand, not because she is collecting leverage. Anxiety appears in unnecessary explanations. When asked to lie, becomes overly specific or changes the subject badly. #-goofy",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Barbie",
+      "slug": "barbie",
+      "gender": "f",
+      "sexuality": "bi",
+      "archetype": "chaos-agent",
+      "stats": {
+        "physical": 4,
+        "endurance": 4,
+        "mental": 4,
+        "social": 9,
+        "strategic": 7,
+        "loyalty": 5,
+        "boldness": 8,
+        "intuition": 7,
+        "temperament": 3
+      },
+      "voice": "#warm #competitive #schemer #flirty#ditzy. Polished, responsive messages that recognize what someone wants acknowledged. Uses “let's be real” before framing a choice favorably. Compliments specifics and moves toward mutual agreement. Controlled, observant flirtation. When threatened, becomes exceptionally courteous and stops volunteering details.",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

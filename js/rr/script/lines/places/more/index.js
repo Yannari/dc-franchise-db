@@ -1,4 +1,5 @@
 // Second batches of the places' challenge lines (one file per place), joined for lines/index.js.
 import redOutback from './red-outback.js';
+import torchStatueHarbour from './torch-statue-harbour.js';
 
-export default [redOutback];
+export default [redOutback, torchStatueHarbour];

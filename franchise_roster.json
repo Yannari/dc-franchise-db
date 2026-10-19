@@ -7410,6 +7410,27 @@
       "voice": " #schemer#tough #goofy#nerdy #competitive. Derek speaks bluntly through practical examples. Brooke's messages are over-edited encouragement, with “hun” and “aw stop.” Reassures before establishing what reassurance is needed. Under pressure, the sweetness abruptly becomes managerial instructions. His effort to sound believable suppresses spontaneity.",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Brooke",
+      "slug": "brooke",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 3,
+        "endurance": 4,
+        "mental": 8,
+        "social": 8,
+        "strategic": 3,
+        "loyalty": 9,
+        "boldness": 4,
+        "intuition": 7,
+        "temperament": 9
+      },
+      "voice": "#warm #earnest. The intended cover uses friendly complete sentences, gentle questions, and occasional hearts. Derek's actual performance is too polished: “hun,” “aw stop,” and reassurance that arrives before he understands the problem. Stress causes abrupt instructions and unexplained changes in warmth. Those slips belong in the simulation even when the public profile sounds convincing.",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

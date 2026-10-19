@@ -30,7 +30,7 @@ describe('rr director', () => {
   it('every must-air moment airs', () => {
     const st = res.state;
     res.legs.forEach((leg, i) => {
-      const ids = new Set(aired[i].segments.map(s => s.scene));
+      const ids = new Set(aired[i].segments.flatMap(s => s.scenes || [s.scene]));
       for (const sc of st.scenes.filter(s => s.leg === leg.n && MUST.has(s.kind))) expect(ids.has(sc.id), `leg ${leg.n} #${sc.id} ${sc.kind}`).toBe(true);
     });
   });

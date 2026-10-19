@@ -30,9 +30,10 @@ import more2 from './more-2.js';
 import more3 from './more-3.js';
 import more4 from './more-4.js';
 import finale from './finale.js';
+import montage from './montage.js';
 
 const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
-  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale];
+  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage];
 
 export const POOLS = {};
 for (const f of FILES) for (const [k, list] of Object.entries(f)) (POOLS[k] ||= []).push(...list);

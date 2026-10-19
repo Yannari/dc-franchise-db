@@ -36,6 +36,9 @@ export const DIRECTOR_KINDS = {
   'attempt-fail': ['any'], 'quit-task': ['any'], 'helped-botch': ['any'], 'allin-alone': ['any'],
   'travel-mishap': ['any'], 'found-flight': ['any'], 'same-flight': ['any'], 'express-used': ['any'],
   'yield-found': ['any'], 'yield-decide': ['any'],
+  // a big cast (director.js BIG_CAST): Don checks in a team with no story this leg in a line, and the clean
+  // runs of teams like it at a task are shown together ({teams} names them)
+  'mat-montage': ['any'], 'task-montage': ['any'],
 };
 
 const AGE = new Set(['kid', 'teen', 'adult', 'grown']);

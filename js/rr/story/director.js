@@ -38,6 +38,15 @@ export const SOUR_X = CLASH_KINDS;
 export const WARM_X = new Set(['small-talk', 'alliance-pitch', 'alliance-check', 'share-info', 'help-offer', 'mentor', 'tag-along', 'watching-together']);
 const teamsKey = s => (s.data?.team && s.data?.other ? [s.data.team, s.data.other].sort().join('|') : null);
 
+// A big cast airs like the show, and at least BIG_CAST teams always get their full scenes (the user, 2026-10-18).
+// Beyond those, a team with no story that leg (not in the top three or the bottom three, no penalty, nothing with
+// another team, no storyline step, nothing that must air) is checked in by Don in a line beside the others like
+// it, and its clean runs at a task are shown together. Who is quiet rotates: the teams hurried least so far get
+// the spare full places first. Ten teams or fewer racing: every team's full scenes.
+export const BIG_CAST = 10;
+// what every team gets, story or not
+const BACKGROUND = new Set(['don-place', 'don-opener', 'same-flight', 'int-bleachers']);
+
 // beyond what must air and every team at every task (about 40 for twelve teams): the real show runs about 60 moments
 export const legBudget = teams => Math.round(8 + 1.5 * teams);
 // storylines the season follows at once
@@ -189,17 +198,66 @@ export function airLeg(state, leg) {
     if (s?.kind.startsWith('int-') && s.data?.about != null && !picked.has(s.data.about)) picked.delete(id);
   }
 
-  // an interview about a moment that just left the cut leaves with it
-  for (const [id] of [...picked]) {
-    const s = byId.get(id);
-    if (s?.kind.startsWith('int-') && s.data?.about != null && !picked.has(s.data.about)) picked.delete(id);
+  // a big cast: the teams with no story this leg check in together, and their clean runs at a task air together
+  const teamsIn = s => [...new Set([s.data?.team, s.data?.other, ...s.who.map(x => teamOf(state, x))].filter(Boolean))];
+  const montages = [];
+  const N = leg.order.length;
+  if (N > BIG_CAST) {
+    const featured = new Set([...leg.order.slice(0, 3), ...leg.order.slice(-3), ...(leg.eliminated || [])]);
+    if (leg.nonElim?.id) featured.add(leg.nonElim.id);
+    for (const [id, p] of Object.entries(leg.penalties || {})) if (p) featured.add(id);
+    // a story: something that must air, something with another team, a storyline's step (a hug after a task isn't one)
+    for (const [id, tier] of picked) {
+      const s = byId.get(id);
+      if (BACKGROUND.has(s.kind)) continue;
+      if (tier === 0 || s.data?.other || s.data?.threadIds?.length) for (const x of teamsIn(s)) featured.add(x);
+    }
+    // at least BIG_CAST teams in full; the spare places go to the teams hurried least so far
+    state.quickCount ||= {};
+    for (const id of [...leg.order].sort((x, y) => (state.quickCount[x] || 0) - (state.quickCount[y] || 0) || leg.order.indexOf(x) - leg.order.indexOf(y))) {
+      if (featured.size >= BIG_CAST) break;
+      featured.add(id);
+    }
+    for (const id of leg.order) if (!featured.has(id)) state.quickCount[id] = (state.quickCount[id] || 0) + 1;
+    const quiet = id => id && !featured.has(id);
+    // Don runs down the quiet ones, a line each, in the order they came in
+    const checkins = [...picked.keys()].map(id => byId.get(id))
+      .filter(s => s.kind === 'don-place' && !s.data?.midmat && quiet(s.data?.team) && ['plain', 'bored'].includes(s.data?.ending))
+      .sort((x, y) => (x.data.place ?? 0) - (y.data.place ?? 0));
+    let run = [];
+    const flush = () => {
+      if (!run.length) return;
+      montages.push({ scene: run[0].id, scenes: run.map(s => s.id), kind: 'mat-montage', ending: 'any', stretch: 'mat',
+        t: run[0].data?.t ?? 0, teams: run.map(s => s.data.team), who: run.flatMap(s => s.who), side: null, tier: 0,
+        srcs: run.map(s => ({ ...s, kind: 'mat-montage', data: { ...s.data, ending: 'any' } })) });
+      run = [];
+    };
+    for (const s of checkins) {
+      picked.delete(s.id);
+      if (run.length && s.data.place !== run.at(-1).data.place + 1) flush();
+      run.push(s);
+    }
+    flush();
+    // clean runs at the same task, two or more quiet teams: one shared beat
+    const CLEAN = b => b.kind === 'task-start' || b.kind === 'task-done' || (b.kind === 'task-try' && b.data.ending === 'first-try');
+    const byStretch = {};
+    for (const b of beats) if (CLEAN(b) && quiet(b.data.team)) (byStretch[b.data.stretch] ||= []).push(b);
+    for (const [stretch, group] of Object.entries(byStretch)) {
+      if (group.length < 2) continue;
+      for (const b of group) beats.splice(beats.indexOf(b), 1);
+      const first = [...group].sort((x, y) => x.data.t - y.data.t)[0];
+      const ids = group.map(b => b.data.team);
+      montages.push({ scene: null, beat: `taskm:${n}:${stretch}`, kind: 'task-montage', ending: 'any', stretch, t: first.data.t,
+        teams: ids, who: group.flatMap(b => b.who), side: null, tier: 1,
+        src: { ...first, id: `taskm:${n}:${stretch}`, kind: 'task-montage', data: { ...first.data, ending: 'any', teamsList: ids } } });
+    }
   }
 
   // the episode, in clock order
-  const segs = [];
+  const segs = [...montages];
   for (const [id, tier] of picked) {
     const s = byId.get(id);
-    const teams = [...new Set([s.data?.team, s.data?.other, ...s.who.map(x => teamOf(state, x))].filter(Boolean))];
+    const teams = teamsIn(s);
     segs.push({ scene: s.id, kind: s.kind, ending: s.data?.ending ?? null, stretch: s.data?.stretch ?? null, t: s.data?.t ?? 0, teams,
       who: [...s.who], side: s.data?.snap?.side ?? null, tier, src: s });
   }
@@ -211,12 +269,15 @@ export function airLeg(state, leg) {
   state.storyAired ||= {};
   const unwritten = [];
   for (const seg of segs) {
-    const w = writeScene(state, seg.src);
-    seg.lines = w?.lines || null;
-    seg.lineId = w?.lineId || null;
-    if (!w) unwritten.push(seg.kind + (seg.ending ? '.' + seg.ending : ''));
-    for (const id of seg.src.data?.threadIds || []) state.storyAired[id] = (state.storyAired[id] || 0) + 1;
+    // a check-in run is one line from Don per team
+    const ws = (seg.srcs || [seg.src]).map(src => writeScene(state, src));
+    const lines = ws.flatMap(w => w?.lines || []);
+    seg.lines = lines.length ? lines : null;
+    seg.lineId = ws.map(w => w?.lineId).filter(Boolean).join(',') || null;
+    if (ws.some(w => !w)) unwritten.push(seg.kind + (seg.ending ? '.' + seg.ending : ''));
+    for (const src of seg.srcs || [seg.src]) for (const id of src.data?.threadIds || []) state.storyAired[id] = (state.storyAired[id] || 0) + 1;
     delete seg.src;
+    delete seg.srcs;
   }
   return { n, segments: segs, unwritten };
 }

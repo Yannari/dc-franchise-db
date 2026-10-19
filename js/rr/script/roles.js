@@ -59,7 +59,8 @@ export function rolesOf(scene, state) {
   const tid = d.team, oid = d.other;
   const t = tid ? state.teams[tid] : null;
   // a plane full of teams is a room (travel.js same-flight)
-  const cast = scene.kind === 'same-flight' ? 'group' : kind?.cast || 'team';
+  // the director's own kinds have no catalogue entry: a big cast's quick check-in is Don's
+  const cast = scene.kind === 'same-flight' ? 'group' : scene.kind === 'mat-montage' ? 'don' : kind?.cast || 'team';
   const roles = {};
   const who = scene.who || [];
 
@@ -114,7 +115,14 @@ export function rolesOf(scene, state) {
     local: roles.local || null,
     // the hint on a Botch or Watch board ("Who's ready to get wet?")
     teaser: s?.teaser || null,
+    // a task montage: the teams that got through it together ("Goths, Lawyers and Nurses")
+    teams: d.teamsList?.length ? listNames(d.teamsList.map(id => teamName(state, id))) : null,
   };
   for (const k of Object.keys(slots)) if (slots[k] == null) delete slots[k];
   return { roles, ending: d.ending ?? 'any', slots };
+}
+
+// "A", "A and B", "A, B and C"
+function listNames(names) {
+  return names.length <= 1 ? names[0] || null : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
 }

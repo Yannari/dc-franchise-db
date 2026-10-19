@@ -91,7 +91,9 @@ export function writeFinaleRecap(ep, { finalists = null } = {}) {
 
   // ═══ THE COACHES ═══
   const fired = coaches.filter(c => c.firedEp), promoted = coaches.filter(c => c.promotedEp);
-  if (fired.length) H(pick([`And the coaches? ${list(fired.map(c => c.name))} never made it to the merge. ${fired.length === 1 ? 'Their own team voted them out.' : 'Their own teams voted them out.'} They're here tonight, and they're watching.`,
+  const p1 = fired.length === 1 ? pr(fired[0].name) : null;
+  const be = p1 ? (p1.sub === 'they' ? 'are' : 'is') : 'are';
+  if (fired.length) H(pick([`And the coaches? ${list(fired.map(c => c.name))} never made it to the merge. ${p1 ? `${Cap(p1.posAdj)} own team voted ${p1.obj} out. ${Cap(p1.sub)} ${be} here tonight, and watching.` : `Their own teams voted them out. They're here tonight, and they're watching.`}`,
     `Let's not forget the coaches. ${list(fired.map(c => `${c.name}, fired in ${EP(c.firedEp)}`))}. Tonight they get the best seats in the house.`], 'fired'), { players: fired.map(c => c.name).slice(0, 4) });
   for (const c of promoted) H(fin.includes(c.name) ? pick([`${c.name} started this season as a coach. Tonight, ${pr(c.name).sub} ${pr(c.name).sub === 'they' ? 'are' : 'is'} in the finale.`, `Coach, then player, now finalist. ${c.name} has done it all.`], `pro${c.name}`)
     : pick([`${c.name} went from coach to player at the merge, and made it to ${c.playerOutEp ? EP(c.playerOutEp) : 'the jury'}.`, `${c.name} traded the whistle for a vote at the merge. ${c.playerOutEp ? `${Cap(EP(c.playerOutEp))} was the end of it.` : ''}`], `pro${c.name}`), { players: [c.name] });

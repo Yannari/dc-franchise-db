@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 import { tdPreviouslyScreen } from '../js/vp-td-ep/twist-screens.js';
-import { tdFinalImmunityScreen, tdFinaleWalkScreen } from '../js/vp-td-ep/finale.js';
+import { tdFinalImmunityScreen, tdFinaleWalkScreen, tdWinnerScreen, tdFinalTribalScreen } from '../js/vp-td-ep/finale.js';
 
 describe('the finale recap', () => {
   it('recaps the season, then each finalist in turn, and plays as the road to the finale', () => {
@@ -49,6 +49,34 @@ describe('the finale recap', () => {
       expect(new Set(said).size).toBe(said.length);
     });
   }, 180000);
+
+  // the winner: the whole cast on the set, and the season counted with everybody it sent home in order
+  it('puts the whole cast on the winner\'s set and counts the season with the boot order', () => {
+    seededRun(() => {
+      runOneSeason({}, 16);
+      const fin = core.gs.episodeHistory.find(h => h.isFinale);
+      const scr = tdWinnerScreen(fin, { host: 'Chris', history: core.gs.episodeHistory });
+      const crowd = scr.steps.filter(s => s.k === 'scene').map(s => Object.keys(s.places || {}).length);
+      expect(Math.max(...crowd)).toBeGreaterThanOrEqual(Math.min(20, 16));
+      const order = scr.steps.find(s => s.k === 'title' && s.kicker === 'Voted out, in order');
+      expect(order.faces.length).toBe(16 - (fin.finaleFinalists || []).length);
+    });
+  }, 180000);
+
+  // the coaches voted out before the merge watch the finale from the stands with the jury (the user, 2026-10-19)
+  it('seats the coaches voted out with the jury at Final Tribal, without a vote', () => {
+    const ep = { num: 9, isFinale: true, finaleFinalists: ['Ann', 'Bea'], winner: 'Ann',
+      juryResult: { votes: { Ann: 2, Bea: 1 }, reasoning: [{ juror: 'Cal', votedFor: 'Ann', reason: 'x' }, { juror: 'Dee', votedFor: 'Ann', reason: 'y' }, { juror: 'Eli', votedFor: 'Bea', reason: 'z' }] },
+      ftcData: { finalistStatements: { Ann: ['I played.'], Bea: ['So did I.'] }, jurorQA: [] },
+      finaleCoaches: [{ name: 'Coach Zed', tribe: 'Red', trained: ['Ann'], firedEp: 3 }], gsSnapshot: { bonds: {}, jury: ['Cal', 'Dee', 'Eli'] } };
+    const scr = tdFinalTribalScreen(ep, { host: 'Chris', setting: 'hosted-camp' });
+    const stands = scr.steps.filter(s => s.k === 'scene' && s.spot === 'jury-bleachers');
+    expect(stands.some(s => 'Coach Zed' in s.places)).toBe(true);
+    expect(scr.steps.some(s => s.k === 'beat' && /coach who never made the merge: Coach Zed/.test(s.text))).toBe(true);
+    // the coach of a finalist gets a word before the vote; the coach never votes
+    expect(scr.steps.some(s => s.k === 'say' && s.by === 'Coach Zed')).toBe(true);
+    expect(scr.steps.filter(s => s.k === 'read').length).toBe(3);
+  });
 
   // the walk past everyone the season sent home: a card for each, in the order they went, and a finalist's words
   it('walks past every boot in order, each with a finalist speaking, and no line twice', () => {

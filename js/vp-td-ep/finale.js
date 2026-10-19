@@ -17,7 +17,7 @@
 // PURE. Who is in the final, what they said, how each juror voted and why, who the immunity winner
 // took: all the engine's record (finale.js). The host's lines and the reactions are worded here, in each
 // person's voice (td/story/voice-family.js), never deciding anything.
-import { placeScene, plateKey, venueOf, VENUES, cleanText } from './steps.js';
+import { placeScene, plateKey, venueOf, VENUES, cleanText, seatAll } from './steps.js';
 import { familyOf } from '../td/story/voice-family.js';
 import { TD_MARKS } from './marks.js';
 
@@ -35,6 +35,7 @@ const bondOf = ep => { const s = ep.gsSnapshot?.bonds || {}; return (a, b) => s[
 const unquote = t => cleanText(String(t || '').trim().replace(/^["“]+|["”]+$/g, '').replace(/…$/, '.'));
 const WORD = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
 const word = n => WORD[n] || String(n);
+const Cap = t => String(t).charAt(0).toUpperCase() + String(t).slice(1);
 
 // the ceremony set at night (where every vote of the season happened), or the venue's public place
 function ceremony(ep, o, tod = 'night') {
@@ -93,28 +94,41 @@ export function tdFinalTribalScreen(ep, o = {}) {
   const say = (text, extra = {}) => steps.push({ k: 'say', by: host, host: true, text, ...extra });
 
   const J = juryPlates(ep, o);
-  const seated = J.wide ? jurors.slice(0, Math.max(1, seatsOn(J.wide))) : [];
-  // a cut to the stands (all of them seated, the one talking in focus), or to a close shot of one juror
+  // the stands: every juror, and the coaches voted out before the merge, who watch without a vote (finaleGallery),
+  // as many shots of the bleachers as their seats need (they used to stop at the seat count; the user, 2026-10-19)
+  const G = finaleGallery(ep);
+  const crowd = [...jurors, ...G.coaches.filter(c => !jurors.includes(c))];
+  const ST = standsOf(ep, o, crowd);
+  const seated = J.wide ? crowd : [];
+  // a cut to the stands (the shot with the one talking in it), or to a close shot of one juror
   const toJury = (focus, close = false) => {
     const key = close && J.close ? J.close : J.wide;
     if (!key) return;
-    const who = close && J.close ? focus.slice(0, 1) : seated;
+    if (key === J.wide) { steps.push({ ...ST.scene(focus), place: 'The Jury', cut: false }); return; }
+    const who = focus.slice(0, 1);
     // the plate's own hour: these frames are painted at their time already (the tiki stage is night), and a
     // day plate asked for at night is darkened a second time
     steps.push({ k: 'scene', spot: key === J.close ? 'jury-close' : 'jury-bleachers', tod: /-night$/.test(key) ? 'night' : 'day', plate: key, place: 'The Jury', time: J.day ? 'Day' : 'Night', card: false,
       focus, bg: [], places: seatJury(key, who), host: null, wide: key !== J.close, still: true, ...(J.indoor ? { noWx: true } : {}), ...(J.night ? { nightFrame: true } : {}) });
   };
+  // the finalists seated apart at the fire (placeScene stood three of them on top of each other, read 2026-10-19)
+  const ftcPlaces = J.wide && C.spot === 'ceremony' ? seatAll(C.key, finalists, host) : placeScene(C.key, J.wide ? finalists : [...finalists, ...jurors.slice(0, 7)], [], { host });
   const toFinal = (focus = finalists) => steps.push({ k: 'scene', spot: C.spot, tod: 'night', plate: C.key, place: 'Final Tribal Council', time: 'Night', card: false,
-    focus, bg: [], places: placeScene(C.key, J.wide ? finalists : [...finalists, ...jurors.slice(0, 7)], [], { host }), host, wide: true });
+    focus, bg: [], places: ftcPlaces, host, wide: true });
   steps.push({ k: 'scene', spot: C.spot, tod: 'night', plate: C.key, place: 'Final Tribal Council', time: 'Night', card: true,
-    focus: finalists, bg: [], places: placeScene(C.key, J.wide ? finalists : [...finalists, ...jurors.slice(0, 7)], [], { host }), host, wide: true });
+    focus: finalists, bg: [], places: ftcPlaces, host, wide: true });
   say(pickBy([
     `${listOf(finalists)}. Out of everybody who started this season, you're the last ${word(finalists.length)}. Tonight, for once, none of you get a vote.`,
     `Welcome to the final Tribal Council. ${listOf(finalists)}, everything you did to get here is about to be judged by the people you did it to.`,
   ], ep.num, finalists.join('|')));
   if (J.wide) {
-    toJury(seated);
-    steps.push({ k: 'beat', text: `The jury files in and takes their seats: ${listOf(jurors)}. Every one of them was voted out by somebody in this game, and some of them by somebody sitting right across from them.`, focus: seated, act: { kind: 'arrive', who: seated } });
+    ST.shots.forEach((shot, i) => {
+      steps.push({ ...ST.scene(shot, i), place: 'The Jury', cut: false });
+      const jn = shot.filter(n => jurors.includes(n)), cn = shot.filter(n => G.coaches.includes(n));
+      if (i === 0) steps.push({ k: 'beat', text: `The jury files in and takes their seats: ${listOf(jurors)}. Every one of them was voted out by somebody in this game, and some of them by somebody sitting right across from them.`, focus: jn, act: { kind: 'arrive', who: shot } });
+      else if (jn.length) steps.push({ k: 'beat', text: `Behind them, ${listOf(jn)}.`, focus: jn, act: { kind: 'arrive', who: shot } });
+      if (cn.length && cn[0] === G.coaches[0]) steps.push({ k: 'beat', text: `And with them, ${G.coaches.length === 1 ? 'the coach' : 'the coaches'} who never made the merge: ${listOf(G.coaches)}. No vote tonight. Just the best seat${G.coaches.length === 1 ? '' : 's'} in the house.`, focus: cn, ...(i && !jn.length ? { act: { kind: 'arrive', who: shot } } : {}) });
+    });
     toFinal();
   } else steps.push({ k: 'beat', text: `The jury walks in: ${listOf(jurors)}. Every one of them was voted out by somebody in this game, and some of them by somebody sitting right here.`,
     focus: jurors.slice(0, 6), act: { kind: 'arrive', who: jurors.slice(0, 7) } });
@@ -132,6 +146,40 @@ export function tdFinalTribalScreen(ep, o = {}) {
 
   // the jury asks (generateFTCData jurorQA): the question to their face, the answer, and how it lands
   const QA = (ftc.jurorQA || []).filter(q => q.juror && q.targetForQuestion && q.question);
+  // ...but first, the ones who didn't come to ask anything: a juror with something to say to a finalist's face (the
+  // one who sent them home, the one they can't stand, or the one they want to see win), and how it lands
+  const histF = (o.history || globalThis.gs?.episodeHistory || []).filter(h => h.num < ep.num);
+  const sentHome = (f, j) => histF.some(h => (h.eliminated === j || h.firstEliminated === j) && (h.votingLog || []).some(v => v.voter === f && v.voted === j));
+  const askers = new Set(QA.map(q => q.juror));
+  const said1 = VOnce();
+  const statements = jurors.filter(j => !askers.has(j)).map(j => {
+    const by = [...finalists].sort((a, b) => bond(j, a) - bond(j, b));
+    const hate = by[0], love = by[by.length - 1];
+    if (bond(j, hate) <= -2.5 || (sentHome(hate, j) && bond(j, hate) <= 0)) return { j, f: hate, kind: sentHome(hate, j) ? 'sent' : 'hate', w: -bond(j, hate) + (sentHome(hate, j) ? 2 : 0) };
+    if (bond(j, love) >= 4) return { j, f: love, kind: 'love', w: bond(j, love) - 2 };
+    return null;
+  }).filter(Boolean).sort((a, b) => b.w - a.w).slice(0, 2);
+  if (statements.length) say(pickBy([`Before the questions, some of you just want to say something. Go ahead.`, `A couple of you told me you don't have questions. You have something to say. The floor is yours.`], ep.num, 'stm'));
+  statements.forEach(({ j, f, kind }, i) => {
+    if (J.wide) toJury([j], !!J.close && i % 2 === 0);
+    steps.push({ k: 'say', by: j, focus: J.wide ? [j] : [j, f], tense: kind !== 'love', loud: kind !== 'love' && fam(j) === 'loud', text: kind === 'sent' ? said1(j, {
+      sharp: [`I don't have a question. ${f}, you sent me home with a smile on your face. I just wanted you to hear me say I remember.`],
+      soft: [`I'm not going to ask you anything, ${f}. I just want you to know that it really hurt, and I trusted you.`],
+      loud: [`No question! ${f}, you wrote my name and then hugged me goodbye! Who does that?!`],
+      any: [`This isn't a question. ${f}, you voted me out, and I've had a long time to think about how you did it.`],
+    }, f, 'sent') : kind === 'hate' ? said1(j, {
+      sharp: [`This isn't a question. ${f}, you played a nasty game, and I want everybody up here to remember how it felt.`],
+      dry: [`I'll keep it short, ${f}. I don't like you. That's my statement.`],
+      any: [`I'm not asking you anything, ${f}. I just want the jury to remember who you were out there.`],
+    }, f, 'hate') : said1(j, {
+      soft: [`No question from me. ${f}, whatever happens tonight, I'm so proud of you.`], loud: [`I don't need to ask anything! ${f}, you were amazing out there!`],
+      any: [`No question. ${f}, you played the game I wish I'd played. That's all.`],
+    }, f, 'love') });
+    if (J.wide) toFinal([f]);
+    steps.push({ k: 'beat', focus: [f], feel: kind === 'love' ? { [f]: 'relief' } : { [f]: kind === 'sent' ? 'guilty' : 'scared' },
+      text: kind === 'love' ? pickBy([`${f} mouths a thank you up at the stands.`, `${f} smiles for the first time tonight.`], f, ep.num)
+        : pickBy([`${f} takes it and doesn't look away.`, `${f} looks down at ${pos(f)} hands.`, `${f} starts to answer, then stops.`], f, ep.num, i) });
+  });
   if (QA.length) say(pickBy([`Jury, the floor is yours.`, `Jury. Ask whatever you want.`], ep.num, 'qa'));
   QA.forEach((q, i) => {
     const t = q.targetForQuestion, j = q.juror;
@@ -147,6 +195,22 @@ export function tdFinalTribalScreen(ep, o = {}) {
   });
 
   // the vote: each juror walks up, and the name stays theirs until it is read
+  // each finalist's coach, when they had one and are here, gets a word before the vote (coachStory: who trained them most)
+  for (const f of finalists) {
+    const c = (ep.finaleCoaches || []).find(x => x.trained?.[0] === f && x.name !== f && !finalists.includes(x.name) && crowd.includes(x.name));
+    if (!c) continue;
+    say(pickBy([`${c.name}, you coached ${f} at the start of all this. Anything you want to say?`, `${c.name}. ${f} was one of yours. Last word before the vote?`], ep.num, c.name), { focus: [f] });
+    if (J.wide) toJury([c.name], !!J.close);
+    steps.push({ k: 'say', by: c.name, focus: [c.name], text: V(c.name, {
+      soft: [`${f}, I watched you get stronger every single day. Whatever happens tonight, I'm proud of you.`],
+      loud: [`${f}! You were my best camper! Win or lose, that doesn't change!`],
+      sharp: [`I told ${f} on day one: nobody hands you this. ${f} went and took it. That's all I'll say.`],
+      dry: [`I'd like the record to show I taught ${f} everything. ${f} may disagree.`],
+      any: [`I coached ${f} before I ever got the chance to play. Look where ${f} is now.`],
+    }, 'coachword', ep.num) });
+    if (J.wide) toFinal([f]);
+    steps.push({ k: 'beat', text: `${f} nods up at ${c.name}.`, focus: [f], feel: { [f]: 'relief' } });
+  }
   say(`Jury, it's time to vote. This time, you're not voting somebody out. You're voting for the winner.`, { tense: true });
   if (J.wide) toJury(seated);
   const swung = new Set((ep.ftcSwings || []).map(s => s.juror || s.name).filter(Boolean));
@@ -235,7 +299,8 @@ export function tdFinalTribalScreen(ep, o = {}) {
   jr.reasoning.forEach((r, i) => {
     steps.push({ k: 'conf', by: r.juror, text: unquote(r.reason), focus: [r.juror, r.votedFor], side: [{ tab: 'tally', voter: r.juror, target: r.votedFor }] });
   });
-  return { id: 'ftc', kind: 'tribal', venue: C.venue, ep: ep.num, label: 'Final Tribal Council', host, steps };
+  // (the tally on screen while the votes are read, at the venues that hand out marshmallows too)
+  return { id: 'ftc', kind: 'tribal', venue: C.venue, ep: ep.num, label: 'Final Tribal Council', host, steps, readTally: true };
 }
 
 // the moment: the winner, the runners-up, the jury
@@ -379,8 +444,65 @@ export function tdWinnerScreen(ep, o = {}) {
   } else {
     say(pickBy([`${winner}. The jury has spoken, and it's yours.`, `Ladies and gentlemen, ${winner}!`], ep.num, winner), { focus: [winner] });
   }
-  steps.push({ k: 'beat', text: `Everybody who played this season comes running out of the dark at once, and ${winner} disappears under the pile.`, focus: [winner], applause: 'big' });
+  // everybody who played comes running: the whole cast on the set, not a sentence about them (the user, 2026-10-19:
+  // "the total drama finale in stepped viewer is kinda underwhelming"), the coaches voted out with them
+  const bond = bondOf(ep);
+  const snap = ep.gsSnapshot || {};
+  const gone = [...new Set([...(snap.eliminated || []), ...(snap.riPlayers || [])])].filter(n => !finalists.includes(n));
+  const coaches = (ep.finaleCoaches || []).map(c => c.name).filter(n => !finalists.includes(n) && !gone.includes(n));
+  const cast = [...finalists, ...gone, ...coaches];
+  const everyone = placeScene(G.key, [winner, ...runners, ...gone, ...coaches].slice(0, 20), [], { host });
+  steps.push({ k: 'beat', text: `Everybody who played this season comes running out of the dark at once.`, focus: [winner], applause: 'big' });
+  steps.push({ k: 'scene', spot: G.spot, tod: 'night', plate: G.key, place: 'The Winner', time: 'Night', card: false, cut: true, focus: [winner], bg: [], places: everyone, host, wide: true });
+  steps.push({ k: 'beat', text: `${winner} disappears under the pile.`, focus: [winner], act: { kind: 'arrive', who: [...gone, ...coaches].slice(0, 18) }, applause: 'big' });
   steps.push({ k: 'title', kicker: 'Winner', name: winner, faces: [winner] });
+  const VC = VOnce();
+  // the first ones to get to the winner: their closest friends in the cast
+  const close = cast.filter(n => n !== winner && !runners.includes(n)).sort((a, b) => bond(winner, b) - bond(winner, a)).filter(n => bond(winner, n) >= 3).slice(0, 2);
+  close.forEach((n, i) => {
+    steps.push({ k: 'beat', text: i === 0 ? `${n} gets there first and lifts ${winner} off the ground.` : `${n} is right behind, yelling ${winner}'s name.`, focus: [n, winner], act: { kind: 'hug', who: [n, winner] } });
+    steps.push({ k: 'say', by: n, focus: [n, winner], loud: fam(n) === 'loud', text: VC(n, {
+      loud: [`YOU DID IT! I told everybody you would!`, `That's my best friend! That's MY best friend!`], soft: [`I'm so proud of you. I knew it. I always knew it.`], sharp: [`I'd like it noted that I called this weeks ago.`], dry: [`Well, you're unbearable now. Congratulations.`],
+      any: [`You did it! You actually did it!`, `I'm so happy for you!`],
+    }, winner, 'close', i) });
+  });
+  // the coach who trained them
+  const coach = (ep.finaleCoaches || []).find(c => c.trained?.[0] === winner && c.name !== winner && cast.includes(c.name));
+  if (coach) {
+    steps.push({ k: 'beat', text: `${coach.name} pushes through the crowd to get to ${winner}.`, focus: [coach.name, winner], act: { kind: 'hug', who: [coach.name, winner] } });
+    steps.push({ k: 'say', by: coach.name, focus: [coach.name, winner], text: V(coach.name, {
+      loud: [`THAT'S MY CAMPER! I coached that!`], soft: [`I told you on day one you had it in you. I'm so proud of you.`], sharp: [`Coach of the champion. I'll take that.`], dry: [`I'm taking at least ten percent of the credit.`],
+      any: [`That's my camper! I knew it from the first day!`],
+    }, 'coachwin', ep.num) });
+  }
+  // the runners-up, each found by the friend who would come and find them
+  const consoled = new Set();
+  runners.forEach((f, i) => {
+    const pal = cast.filter(n => n !== f && n !== winner && !close.includes(n) && n !== coach?.name && !consoled.has(n) && !runners.includes(n)).sort((a, b) => bond(f, b) - bond(f, a))[0];
+    if (!pal || bond(f, pal) < 2) return;
+    consoled.add(pal);
+    steps.push({ k: 'beat', text: `Off to one side, ${pal} finds ${f}.`, focus: [pal, f], act: { kind: 'hug', who: [pal, f] } });
+    steps.push({ k: 'say', by: pal, focus: [pal, f], text: VC(pal, {
+      soft: [`Hey. You were amazing out there. I mean it.`], loud: [`You were robbed! I'm saying it! ROBBED!`], dry: [`For what it's worth, you were my winner.`],
+      any: [`Hey. You were incredible. Don't forget that.`, `You played a great game. Everybody saw it.`],
+    }, f, 'pal', i) });
+  });
+  // and somebody who is not happy about it
+  const sour = cast.filter(n => n !== winner && !runners.includes(n)).sort((a, b) => bond(winner, a) - bond(winner, b))[0];
+  if (sour && bond(winner, sour) <= -3) steps.push({ k: 'say', by: sour, focus: [sour], text: VC(sour, {
+    sharp: [`Lovely. The jury got it wrong, and now we all have to clap.`], loud: [`This is a joke! A JOKE!`], dry: [`I'll clap. Slowly.`],
+    any: [`Great. Good for ${winner}. I'm going to go get a drink.`],
+  }, winner, 'sour') });
+  // the season, counted, and everybody it sent home, in the order they went
+  const hist = (o.history || globalThis.gs?.episodeHistory || []).filter(h => h.num < ep.num);
+  const order = hist.flatMap(h => [...(h.coachElimination || []).map(c => c.coach), h.firstEliminated, h.eliminated]).filter((n, i, a) => n && !finalists.includes(n) && a.indexOf(n) === i);
+  const blinds = hist.filter(h => h.tribalStory?.shocking || h.tribalStory?.blindside).length;
+  const started = finalists.length + gone.length;
+  if (order.length) {
+    say(pickBy([`${Cap(word(started))} campers. ${Cap(word(hist.length + 1))} episodes. ${blinds ? `${Cap(word(blinds))} blindside${blinds === 1 ? '' : 's'}. ` : ''}And one winner.`,
+      `What a season. ${Cap(word(order.length))} people voted out, ${blinds ? `${word(blinds)} of them blindsided, ` : ''}and ${winner} outlasted every one of them.`], ep.num, 'wrap'), { focus: [winner] });
+    steps.push({ k: 'title', kicker: 'Voted out, in order', name: seasonOf(o) === 'this season' ? 'The season' : seasonOf(o), faces: order });
+  }
   steps.push({ k: 'conf', by: winner, focus: [winner], text: V(winner, {
     loud: ["I came here to win, and I WON! I'm going to be screaming about this for a year!"],
     sharp: ["Everybody spent this whole season trying to work out how to beat me. Turns out the answer was: you don't."],

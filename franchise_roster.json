@@ -7612,7 +7612,13 @@
       "occupation": "Wedding photographer",
       "descriptor": "The Charming Perfectionist",
       "backstory": "Theo began photographing family gatherings because holding a camera let him move between conversations without committing to any one of them. Assisting a wedding photographer turned the hobby into work. He now runs a small freelance business and is learning that a creative career includes invoices, deposits, and clients who call at inconvenient hours. He enjoys the work's intimacy: people allow him close to moments they will remember for years. His apartment is untidy in ways that irritate Nadia, while his image archive is meticulously organized. He has recently started charging what his time costs rather than hoping friendliness will compensate for an unprofitable booking. He wants a studio shared with other creatives and a social life that does not disappear every wedding season.",
-      "personality": "Theo is socially fluent because he pays attention and makes small adjustments quickly. He enjoys meeting people, but needs solitude afterward and resents the assumption that friendliness makes him permanently available. He appears relaxed while privately caring a great deal about quality and reputation. Criticism of his work can sting more than an insult to his personality. He is tactful in public and sharper with trusted people, sometimes leaving Nadia to wonder why strangers receive more patience. He dislikes open confrontation but can exclude somebody quietly instead of addressing the problem. His charm is sincere, though he knows when he is using it. Under pressure, perfectionism emerges through revisions and fussing with details. He needs to feel valued for judgment and craft, not simply for being pleasant company."
+      "personality": "Theo is socially fluent because he pays attention and makes small adjustments quickly. He enjoys meeting people, but needs solitude afterward and resents the assumption that friendliness makes him permanently available. He appears relaxed while privately caring a great deal about quality and reputation. Criticism of his work can sting more than an insult to his personality. He is tactful in public and sharper with trusted people, sometimes leaving Nadia to wonder why strangers receive more patience. He dislikes open confrontation but can exclude somebody quietly instead of addressing the problem. His charm is sincere, though he knows when he is using it. Under pressure, perfectionism emerges through revisions and fussing with details. He needs to feel valued for judgment and craft, not simply for being pleasant company.",
+      "ties": [
+        {
+          "name": "Nadiya",
+          "kin": "siblings"
+        }
+      ]
     },
     {
       "name": "Jace",

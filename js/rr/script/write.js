@@ -105,7 +105,9 @@ export function fill(text, roles, slots) {
     if (name == null) return m;
     if (!part && slots[`${role}Voc`] && TEAM_SLOTS.includes(role) && /^[,.!?]/.test(whole.slice(at + m.length))
       && /(^|[.!?,]\s+)$/.test(whole.slice(0, at))) name = slots[`${role}Voc`];
-    const out = part ? pronouns(name)?.[part] ?? m : String(name);
+    let out = part ? pronouns(name)?.[part] ?? m : String(name);
+    // "the Goths, Crimson and Ennui, go first": an aside in the name closes before the sentence goes on
+    if (role === 'winners' && out.includes(', ') && /^ [a-z]/.test(whole.slice(at + m.length))) out += ',';
     return /(^|[.!?]\s+)$/.test(whole.slice(0, at)) ? out.charAt(0).toUpperCase() + out.slice(1) : out;
   });
 }

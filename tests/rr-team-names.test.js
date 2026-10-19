@@ -25,6 +25,13 @@ describe('rr team names in lines', () => {
     expect(fill('Mm. {team}. {placing}.', {}, slots)).toBe('Mm. Natalia and Dunia. Second.');
   });
 
+  it('the winners named with their two names close the aside before a verb', () => {
+    const w = { winners: 'the Skateboarders, Riya and Chef Hatchet' };
+    expect(fill('Here we go! {winners} grab the first tip.', {}, w)).toBe('Here we go! The Skateboarders, Riya and Chef Hatchet, grab the first tip.');
+    expect(fill('First out: {winners}.', {}, w)).toBe('First out: the Skateboarders, Riya and Chef Hatchet.');
+    expect(fill('{winners} go first.', {}, { winners: 'best friends Carrie and Devin' })).toBe('Best friends Carrie and Devin go first.');
+  });
+
   it("a plural name takes a bare apostrophe", () => {
     expect(fill("I'd take {team}'s case.", {}, slots)).toBe("I'd take the Church Choir's case.");
     expect(fill("I'd take {team}'s case.", {}, { team: 'the Lawyers' })).toBe("I'd take the Lawyers' case.");

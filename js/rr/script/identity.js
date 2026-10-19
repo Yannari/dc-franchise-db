@@ -18,6 +18,7 @@ import performers from './identity/performers.js';
 import subcultures from './identity/subcultures.js';
 import uniforms from './identity/uniforms.js';
 import online from './identity/online.js';
+import online2 from './identity/online-2.js';
 import brains from './identity/brains.js';
 import handsOn from './identity/hands-on.js';
 import lifestyle from './identity/lifestyle.js';
@@ -25,7 +26,7 @@ import everyday from './identity/everyday.js';
 
 export const HOOKS = ['good', 'bad', 'win', 'struggle', 'lose', 'quit', 'about-friction', 'about-friend', 'arrive',
   'mat-first', 'mat-last', 'elim'];
-export const KITS = Object.assign({}, athletes, performers, subcultures, uniforms, online, brains, handsOn, lifestyle, everyday);
+export const KITS = Object.assign({}, athletes, performers, subcultures, uniforms, online, online2, brains, handsOn, lifestyle, everyday);
 
 const teamOfName = (st, n) => Object.values(st.teams).find(t => t.a === n || t.b === n) || null;
 

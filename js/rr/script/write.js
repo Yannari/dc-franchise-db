@@ -166,8 +166,36 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
     Object.defineProperty(line, 'turn', { value: `${entry.id}:${i}`, enumerable: false });
     lines.push(line);
   });
+  // the team's identity, heard at a natural moment (when the entry didn't already call one)
+  if (!lines.some(l => String(l.voice || '').startsWith('id:'))) {
+    const hook = AUTO_HOOK[scene.kind]?.(facts);
+    const who = r.roles.a;
+    if (hook && who && stableRng(state.seed, 'rr-idhook', scene.id)() < AUTO_SHARE) {
+      const said = identityLine(state, who, hook, stableRng(state.seed, 'rr-idline', scene.id));
+      if (said) lines.push({ kind: scene.kind.startsWith('int-') ? 'conf' : 'say', by: who,
+        text: fill(said, r.roles, { ...r.slots, partner: partnerOf(state, who) }), voice: `id:${hook}` });
+    }
+  }
   return { lines, lineId: entry.id };
 }
+
+// Where a team's identity speaks on its own (identity.js hooks), and how often: at a task it's good or bad at,
+// when a task keeps failing or is given up, on arriving somewhere new, first or last on the mat, going home,
+// at a rival in trash talk, at a friend in good small talk.
+const AUTO_SHARE = 0.5;
+const AUTO_HOOK = {
+  'task-try': f => (f.ending === 'quit' ? 'quit' : ['struggling', 'after-fails'].includes(f.ending) ? 'struggle'
+    : f.idGood ? 'good' : f.idBad ? 'bad' : null),
+  'task-start': f => (f.idGood ? 'good' : f.idBad ? 'bad' : null),
+  'task-done': f => (f.ahead ? 'win' : null),
+  'celebrate': () => 'win',
+  'arrival-awe': () => 'arrive',
+  'don-place': f => (f.matPlace === 'first' ? 'mat-first' : f.matPlace === 'last' ? 'mat-last' : null),
+  'int-exit': () => 'elim',
+  'trash-talk': () => 'about-friction',
+  'gloat': () => 'about-friction',
+  'small-talk': f => (f.ending === 'click' ? 'about-friend' : null),
+};
 
 function relFamOfPerson(state, n) {
   const t = Object.values(state.teams).find(x => x.a === n || x.b === n);

@@ -7389,6 +7389,27 @@
       "voice": "#warm #competitive #schemer #flirty#ditzy#proud. Polished, responsive messages that recognize what someone wants acknowledged. Uses “let's be real” before framing a choice favorably. Compliments specifics and moves toward mutual agreement. Controlled, observant flirtation. When threatened, becomes exceptionally courteous and stops volunteering details.",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Derek",
+      "slug": "derek",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "mastermind",
+      "stats": {
+        "physical": 7,
+        "endurance": 7,
+        "mental": 6,
+        "social": 6,
+        "strategic": 8,
+        "loyalty": 2,
+        "boldness": 8,
+        "intuition": 8,
+        "temperament": 5
+      },
+      "voice": " #schemer#tough #goofy#nerdy #competitive. Derek speaks bluntly through practical examples. Brooke's messages are over-edited encouragement, with “hun” and “aw stop.” Reassures before establishing what reassurance is needed. Under pressure, the sweetness abruptly becomes managerial instructions. His effort to sound believable suppresses spontaneity.",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

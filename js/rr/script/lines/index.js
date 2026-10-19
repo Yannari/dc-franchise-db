@@ -72,6 +72,7 @@ import volNerve from './rewrite/vol-nerve.js';
 import volInterviews from './rewrite/vol-interviews.js';
 import volDonMat from './rewrite/vol-don-mat.js';
 import volMore from './rewrite/vol-more.js';
+import volMore2 from './rewrite/vol-more-2.js';
 import redSandDesert from './places/red-sand-desert.js';
 import ironTowerCity from './places/iron-tower-city.js';
 import homeCity from './places/home-city.js';
@@ -92,7 +93,7 @@ const FILES = [partners, partners1, partners2, partners3, partners4, partners5, 
 // The rewrite (lines/rewrite/, docs/rr-writers-brief.md "The rewrite standard"): each file brings its pools and
 // retires the old lines they replace, a whole pool ('mind-game.rattled') or the old interview lines for one kind
 // of moment ({ key: 'int-strategy.proud', cause: 'mind-game' }).
-export const REWRITES = [mindGame, celebrate, shareInfo, trashTalk, fear, snapRw, talkRw, interviewsRw, betweenTeams, partnersRw, roomsRw, donPlaceRw, goodbyes, sabotageRw, schemesRw, romanceRw, localsMoneyRw, partnersChoices, partnersStrain, partnersHeart, partnersRoles, betweenTeams2, body1, body2, twistsRw, donRest, intSecret, volDonPlace, volQuick, volTravel, volTalk1, volTalk2, volFriction, volPartners, volNerve, volInterviews, volDonMat, volMore];
+export const REWRITES = [mindGame, celebrate, shareInfo, trashTalk, fear, snapRw, talkRw, interviewsRw, betweenTeams, partnersRw, roomsRw, donPlaceRw, goodbyes, sabotageRw, schemesRw, romanceRw, localsMoneyRw, partnersChoices, partnersStrain, partnersHeart, partnersRoles, betweenTeams2, body1, body2, twistsRw, donRest, intSecret, volDonPlace, volQuick, volTravel, volTalk1, volTalk2, volFriction, volPartners, volNerve, volInterviews, volDonMat, volMore, volMore2];
 const ownPlace = e => e.when?.place != null || e.when?.taskId != null;
 const retired = (key, e) => !ownPlace(e) && REWRITES.some(rw => rw.retire.some(r => (typeof r === 'string' ? r === key
   : r.key === key && [].concat(e.when?.cause).includes(r.cause))));

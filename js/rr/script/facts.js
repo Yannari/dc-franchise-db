@@ -34,6 +34,8 @@ export const RR_FACT_KEYS = [
   'tod',
   // the stretch and how the task went; the task's main type (water, stomach, perform, heights...); how they travel
   'stretchKind', 'taskType', 'mode', 'fails', 'switched', 'quit', 'place',
+  // the challenge itself (its stretch id: 'stew', 'spices'): a place's own lines for its own tasks
+  'taskId',
   // at the mat: first, top (first third), mid, bottom (last third), last
   'matPlace',
   // why the system played it (a lead change: injury, snap, crush, win)
@@ -97,7 +99,7 @@ export function factsFor(scene, roles, state) {
     aDid: !!d.aDid, exitHow: d.exitHow ?? null, mishap: scene.kind === 'travel-mishap' ? d.kind ?? null : null,
     aElder: (() => { const e = elderOf(state.teams[d.team]); const a = roles?.roles?.a; return e && a ? e === a : null; })(),
     fails: !s.fails ? 0 : s.fails === 1 ? 1 : 'many',
-    switched: !!(d.switched), quit: !!(d.quit), place: s.place ?? null,
+    switched: !!(d.switched), quit: !!(d.quit), place: s.place ?? null, taskId: d.stretch ?? null,
     cause: cause ? cause.kind : null, causeEnding: cause ? cause.data?.ending ?? null : null,
     threadStep: thread ? thread.split(' ')[0] : null,
     register: registerOf(roles?.roles?.a), registerB: registerOf(roles?.roles?.b),

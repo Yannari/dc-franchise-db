@@ -158,3 +158,18 @@ describe('rr endings that speak alone', () => {
     for (const s of pens) { const w = writeScene(st, s); if (w) expect(anyIds.has(w.lineId), w.lineId).toBe(false); }
   });
 });
+
+describe('rr place and challenge lines', () => {
+  it("a scene knows its challenge, and a place's own lines weigh more than the general ones", async () => {
+    const { STRONG } = await import('../js/rr/script/write.js');
+    const { factsFor, RR_FACT_KEYS } = await import('../js/rr/script/facts.js');
+    expect(STRONG).toEqual(expect.arrayContaining(['place', 'taskId', 'cause', 'threadStep']));
+    expect(RR_FACT_KEYS).toContain('taskId');
+    const { cast, teams } = raceCast(8, 2);
+    setPlayers(cast);
+    const st = playRaceSeason({ teams, seed: 2 }).state;
+    const s = st.scenes.find(x => x.data?.stretch === 'stew');
+    expect(s).toBeTruthy();
+    expect(factsFor(s, rolesOf(s, st), st).taskId).toBe('stew');
+  });
+});

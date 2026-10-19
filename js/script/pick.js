@@ -106,6 +106,10 @@ function choose(ledger, pools, key, facts, pairKey, rng, speaker = null, clock =
   // default). Big Brother asks: at USED_DECAY a register line used once still beat a fresh plain one often
   // enough that whole three-line exchanges aired twice in a season (read 2026-10-15: 33 repeats in seed 500).
   if (opts && opts.fresh && fits.some(e => !u.uses[e.id])) for (const x of scored) if (u.uses[x[0].id]) x[1] = 0;
+  // A show can name facts whose own lines always win when one fits and still has weight (opts.prefer: the
+  // Ridonculous Race's place and challenge: Red Sand Desert's opener over the general ones, every time it fits).
+  const own = e => Object.keys(e.when || {}).some(k => opts?.prefer?.includes(k));
+  if (opts?.prefer && scored.some(([e, w]) => w > 0 && own(e))) for (const x of scored) if (!own(x[0])) x[1] = 0;
   // Earlier seasons: a line they aired is held back while one nobody has heard (here or then) still has weight.
   const past = u.past || null;
   if (past) {

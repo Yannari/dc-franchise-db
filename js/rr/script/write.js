@@ -111,6 +111,14 @@ function needs(entry) {
   return n;
 }
 
+// Facts that decide how a scene sounds, weighed four times an ordinary one: what caused it, the storyline it moves,
+// and where it is: a place's own lines and a challenge's own lines win over the general ones when they fit.
+export const STRONG = ['cause', 'threadStep', 'place', 'taskId'];
+// ...and a place's or a challenge's own line, when one fits, always wins (it airs once a visit; the ledger stops repeats)
+export const PREFER = ['place', 'taskId'];
+// the challenges that have their own lines (the director airs the challenge itself for them)
+export const TASK_LINES = new Set(Object.values(POOLS).flatMap(l => l.map(e => e.when?.taskId)).filter(Boolean));
+
 // Endings the kind's general lines can't speak for (a check-in that never mentions the penalty): their own pool only.
 export const OWN_ONLY = new Set(['don-place.penalty-reveal']);
 
@@ -143,7 +151,7 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   const speakers = Object.entries(r.roles).filter(([k]) => k !== 'don' && k !== 'local').map(([, n]) => n);
   const pairKey = [r.roles.a, r.roles.b].filter(Boolean).sort().join('|');
   const rng = stableRng(state.seed, 'rr-line', scene.id);
-  const entry = pickEntry(state.lineLedger, pools, key, facts, pairKey, rng, speakers, clock, { strong: ['cause', 'threadStep'] });
+  const entry = pickEntry(state.lineLedger, pools, key, facts, pairKey, rng, speakers, clock, { strong: STRONG, prefer: PREFER });
   if (!entry) return null;
   const relFam = scene.data?.snap?.relFam || null;
   const capped = {};

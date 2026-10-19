@@ -19,9 +19,9 @@
 // The episode runs in clock order: teams at the same minute cut between each other, and the end of
 // a close leg plays as a race.
 import { SCENES, CLASH_KINDS } from '../scenes.js';
-import { writeScene } from '../script/write.js';
+import { writeScene, TASK_LINES } from '../script/write.js';
 
-export const MUST = new Set(['don-opener', 'don-place', 'don-crown', 'don-elim', 'don-arrives', 'don-fakeout', 'don-rule', 'don-ruling',
+export const MUST = new Set(['don-opener', 'don-demo', 'don-place', 'don-crown', 'don-elim', 'don-arrives', 'don-fakeout', 'don-rule', 'don-ruling',
   'boomerang-found', 'boomerang-decide', 'boomerang-hit', 'boomerang-vote', 'yield', 'zip-it', 'save-used', 'medevac-choice',
   'speed-bump', 'surrender', 'reward', 'call-home', 'int-exit', 'console', 'goodbye-kiss', 'int-bleachers',
   'confession', 'breakup', 'back-together', 'alliance-betrayal', 'deal-broken', 'leader-shift', 'quit-task', 'snap',
@@ -151,7 +151,10 @@ export function airLeg(state, leg) {
     const sameSpot = s => [...picked.keys()].filter(id => { const p = byId.get(id); return p && p.kind === s.kind
       && p.data?.stretch === s.data?.stretch && (p.data?.t ?? 0) === (s.data?.t ?? 0); }).length;
     const best = here.filter(ok).filter(s => sameSpot(s) < 2).sort((x, y) => weight(y) - weight(x) || x.id - y.id)[0];
-    if (best) { take(best, 1); return; }
+    // a challenge with its own lines is seen being done: a team's plain moment there (a hug, a pep talk) gives way
+    // to the challenge itself; a story (another team, a storyline step, a cause) keeps its place
+    const plain = s => !s.data?.other && !s.data?.threadIds?.length && s.data?.cause == null;
+    if (best && !(TASK_LINES.has(r.stretch) && plain(best))) { take(best, 1); return; }
     // a clean run says nothing about itself: the first one airs as getting there, the last as getting out
     const clean = !r.fails && !r.switched && !r.quit;
     const kind = clean && firstOf[r.team] === i ? 'task-start' : clean && lastOf[r.team] === i ? 'task-done' : 'task-try';

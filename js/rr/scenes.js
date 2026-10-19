@@ -239,10 +239,12 @@ export function emit(state, kindId, who, ending, data = {}) {
     return sc;
   }
   const seen = seenBy || [...new Set([...who, ...people(state, rest.team)])];
+  // a stretch given by name ('stew', 'mat') is kept on the scene (it was dropped: Don's demo didn't know its task)
+  const sid = typeof stretch === 'string' ? stretch : stretch?.id ?? null;
   const stretchObj = typeof stretch === 'object' && stretch ? stretch
-    : rest.stretch ? { id: rest.stretch, kind: rest.stretch === 'mat' ? 'mat' : rest.stretchKind ?? null } : null;
+    : sid ? { id: sid, kind: sid === 'mat' ? 'mat' : rest.stretchKind ?? null } : null;
   const snap = snapOf(state, { tid: rest.team ?? null, oid: rest.other ?? null, stretch: stretchObj, t: rest.t ?? null, who });
-  return addScene(state, kindId, who, { ending, family: kind.family, effects, ...rest, snap }, seen);
+  return addScene(state, kindId, who, { ending, family: kind.family, effects, ...rest, ...(sid ? { stretch: sid } : {}), snap }, seen);
 }
 
 // The weight of a moment, read from what it changed: what makes it worth an interview.

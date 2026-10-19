@@ -19,6 +19,26 @@ describe('rr identity voice', () => {
     expect(lines.length).toBeGreaterThanOrEqual(30);
   });
 
+  it('a team never says the same kit line twice in a season', () => {
+    const seen = new Set();
+    for (const ep of eps) for (const s of ep.segments) for (const l of s.lines || []) {
+      if (!l.auto) continue;
+      expect(seen.has(`${l.by}|${l.text}`), `${l.by}: ${l.text}`).toBe(false);
+      seen.add(`${l.by}|${l.text}`);
+    }
+  });
+
+  it('an added line is said in the scene, before its closing interview, and never struggles after a success', () => {
+    for (const ep of eps) for (const s of ep.segments) {
+      const ls = s.lines || [];
+      ls.forEach((l, i) => {
+        if (!l.auto || s.kind.startsWith('int-')) return;
+        expect(ls.slice(0, i).some(x => x.kind === 'conf') && ls.slice(i).every(x => x.kind !== 'conf'), `${s.kind}: ${l.text}`).toBe(false);
+        if (s.kind === 'task-try' && s.ending === 'after-fails') expect(l.voice).not.toBe('id:struggle');
+      });
+    }
+  });
+
   it('only a team with an identity speaks one, and no slot is left unfilled', () => {
     const st = res.state;
     const teamOf = n => Object.values(st.teams).find(t => t.a === n || t.b === n);

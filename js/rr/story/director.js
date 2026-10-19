@@ -35,7 +35,7 @@ const ROW_ENDINGS = { blame: ['blow-up'], 'old-wound': ['explodes'], 'silent-tre
 const isRow = s => ROW.has(s.kind) || (ROW_ENDINGS[s.kind] || []).includes(s.data?.ending);
 // between two teams: after a clash this leg, nothing friendly between them (manual §19.4 "one pair, two moods")
 export const SOUR_X = new Set(['trash-talk', 'gloat', 'shove', 'accusation', 'confront', 'mock-the-struggle', 'alliance-betrayal', 'deal-broken']);
-export const WARM_X = new Set(['small-talk', 'alliance-pitch', 'alliance-check', 'share-info', 'help-offer', 'mentor', 'tag-along']);
+export const WARM_X = new Set(['small-talk', 'alliance-pitch', 'alliance-check', 'share-info', 'help-offer', 'mentor', 'tag-along', 'watching-together']);
 const teamsKey = s => (s.data?.team && s.data?.other ? [s.data.team, s.data.other].sort().join('|') : null);
 
 // beyond what must air and every team at every task (about 40 for twelve teams): the real show runs about 60 moments

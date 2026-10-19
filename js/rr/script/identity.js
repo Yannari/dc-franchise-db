@@ -42,6 +42,12 @@ export function identityLine(state, speaker, hook, rng = Math.random) {
   } else if (t.custom?.voice && KITS[t.custom.voice]) {
     lines = [...(t.custom.lines?.[hook] || []), ...(KITS[t.custom.voice].voice?.[hook] || [])];
   }
-  if (!lines.length) return null;
-  return lines[Math.floor(rng() * lines.length) % lines.length];
+  // a team says each kit line once a season (state.kitLedger, reset with the line ledger); none left, it stays quiet
+  state.kitLedger ||= {};
+  const used = (state.kitLedger[t.id ?? t.name] ||= []);
+  const fresh = lines.filter(l => !used.includes(l));
+  if (!fresh.length) return null;
+  const pick = fresh[Math.floor(rng() * fresh.length) % fresh.length];
+  used.push(pick);
+  return pick;
 }

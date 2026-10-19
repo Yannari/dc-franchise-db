@@ -170,12 +170,17 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   if (!lines.some(l => String(l.voice || '').startsWith('id:'))) {
     const hook = AUTO_HOOK[scene.kind]?.(facts);
     // whoever didn't just speak says it (a, unless a had the last word; then a's partner)
-    const lastBy = [...lines].reverse().find(l => l.kind !== 'beat')?.by;
+    let end = lines.length;
+    if (!scene.kind.startsWith('int-')) while (end > 0 && lines[end - 1].kind === 'conf') end--;
+    const lastBy = lines.slice(0, end).reverse().find(l => l.kind !== 'beat')?.by;
     const partner = r.roles.b && partnerOf(state, r.roles.a) === r.roles.b ? r.roles.b : null;
     const who = lastBy === r.roles.a && partner ? partner : r.roles.a;
     if (hook && who && stableRng(state.seed, 'rr-idhook', scene.id)() < AUTO_SHARE) {
       const said = identityLine(state, who, hook, stableRng(state.seed, 'rr-idline', scene.id));
-      if (said) lines.push({ kind: scene.kind.startsWith('int-') ? 'conf' : 'say', by: who,
+      // said in the scene: before the closing interview, if the scene ends on one
+      let at = lines.length;
+      if (!scene.kind.startsWith('int-')) while (at > 0 && lines[at - 1].kind === 'conf') at--;
+      if (said && at > 0) lines.splice(at, 0, { kind: scene.kind.startsWith('int-') ? 'conf' : 'say', by: who,
         text: fill(said, r.roles, { ...r.slots, partner: partnerOf(state, who) }), voice: `id:${hook}`, auto: true });
     }
   }
@@ -187,7 +192,8 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
 // at a rival in trash talk, at a friend in good small talk.
 const AUTO_SHARE = 0.5;
 const AUTO_HOOK = {
-  'task-try': f => (f.ending === 'quit' ? 'quit' : ['struggling', 'after-fails'].includes(f.ending) ? 'struggle'
+  // after-fails is the try that finally worked: no struggle line over it
+  'task-try': f => (f.ending === 'quit' ? 'quit' : f.ending === 'struggling' ? 'struggle' : f.ending === 'after-fails' ? null
     : f.idGood ? 'good' : f.idBad ? 'bad' : null),
   'task-start': f => (f.idGood ? 'good' : f.idBad ? 'bad' : null),
   'task-done': f => (f.ahead ? 'win' : null),

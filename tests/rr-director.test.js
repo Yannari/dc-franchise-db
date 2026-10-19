@@ -118,6 +118,7 @@ describe('rr director', () => {
 
   it('two teams who clashed this leg get nothing friendly after it', async () => {
     const { SOUR_X, WARM_X } = await import('../js/rr/story/director.js');
+    expect(WARM_X.has('watching-together')).toBe(true);
     const byId = Object.fromEntries(res.state.scenes.map(s => [s.id, s]));
     for (const ep of aired) {
       const sour = new Set();

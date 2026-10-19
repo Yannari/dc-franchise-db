@@ -16,6 +16,7 @@ const hhmm = m => { const d = ((Math.round(m) % 1440) + 1440) % 1440; return `${
 export function airSeason(result) {
   const st = result.state;
   st.lineLedger = null;            // a fresh season of words
+  st.kitLedger = null;
   st.storyAired = {};
   const eps = [];
   for (const [i, l] of result.legs.entries()) {

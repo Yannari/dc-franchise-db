@@ -185,15 +185,22 @@ export function renderEntry(state, entry, cast, rng, ctx = {}) {
     return PAIR_ROLES.has(role) && p ? (p.roles?.[role] || p.players[0]).split(' ')[0] : null;
   };
   if (entry.stage) lines.push({ who: cast.a, kind: 'stage', text: fill(state, entry.stage, cast, 'narration') });
-  (entry.turns || []).forEach((t, ti) => {
-    const speaker = who(t.by);
+  (entry.turns || []).forEach((t0, ti) => {
+    const speaker = who(t0.by);
     // Answering somebody, rather than starting something.
-    const reply = ti > 0 && entry.turns.slice(0, ti).some(x => x.by !== t.by);
-    const person = personOf(t.by);
-    const tag = x => (person ? { ...x, person } : x);
+    const reply = ti > 0 && entry.turns.slice(0, ti).some(x => x.by !== t0.by);
+    const person = personOf(t0.by);
     // The one at the keyboard: a shared profile types in two voices.
-    const typist = t.by === 'a' ? cast.personA || null
-      : PAIR_ROLES.has(t.by) ? state.profiles[cast.a]?.roles?.[t.by] || null : null;
+    const typist = t0.by === 'a' ? cast.personA || null
+      : PAIR_ROLES.has(t0.by) ? state.profiles[cast.a]?.roles?.[t0.by] || null : null;
+    // The turn in the speaker's own voice, when the line has one for their register (`v`: { register: text } for its
+    // main field, or { register: { send, say, ... } }): what they say, not how it is typed (the user, 2026-10-19,
+    // choosing "voice versions on key lines" so the voices reach the conversations everybody has). A catfish speaks
+    // in the persona's register while the cover holds (cover.js shownRegister), like everything else they type.
+    const vr = t0.v && speaker && state.profiles[speaker] && t0.by !== 'host' ? t0.v[shownRegister(state, speaker, ctx.scene, typist)] : null;
+    const field = ['send', 'post', 'say', 'video', 'react'].find(k => t0[k]);
+    const t = vr ? { ...t0, ...(typeof vr === 'string' ? { [field]: vr } : vr) } : t0;
+    const tag = x => ({ ...(person ? { ...x, person } : x), ...(vr ? { voiced: true } : {}) });
     // A catfish types in the persona's register until the cover cracks (ci/cover.js).
     const voiceOf = () => ({ ...(state.profiles[speaker]?.voice || {}), register: shownRegister(state, speaker, ctx.scene, typist) });
     // The person at the keyboard, for what the author wrote about them.

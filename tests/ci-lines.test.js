@@ -13,12 +13,37 @@ import { EMOJI } from '../js/ci/voice.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
 
 const ENTRIES = Object.entries(POOLS).flatMap(([k, list]) => list.map(e => [k, e]));
-const turnTexts = e => (e.turns || []).flatMap(t => ['react', 'say', 'send', 'post', 'video'].filter(x => t[x]).map(x => [t.by, x, t[x]]));
+// (a turn's voice versions, `v` (script.js), are checked as lines too: the main field's kind, or each field of an object)
+const KINDS = ['react', 'say', 'send', 'post', 'video'];
+const MAIN = t => ['send', 'post', 'say', 'video', 'react'].find(x => t[x]);   // the field a string variant replaces (script.js)
+const variants = t => Object.values(t.v || {}).flatMap(v => (typeof v === 'string' ? [[t.by, MAIN(t), v]] : KINDS.filter(x => v[x]).map(x => [t.by, x, v[x]])));
+const turnTexts = e => (e.turns || []).flatMap(t => [...KINDS.filter(x => t[x]).map(x => [t.by, x, t[x]]), ...variants(t)]);
 const allTexts = e => [e.stage, e.beat, ...turnTexts(e).map(t => t[2])].filter(Boolean);
 const SLOT = /\{([^}]*)\}/g;
 const OK_SLOT = /^([abc])(\.(real|aka|face|brain|older|younger|parent|kid|parentWord|kidWord|olderSib|youngerSib|sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj))?$|^([et]):([A-Za-z0-9]+)$|^(q|game|ans|x|n|topic|town)$/;
 
 describe('the pools are well-formed', () => {
+  // a voice version is the same moment said another way: its registers are real ones, and it names nobody the line
+  // itself doesn't (a slot only the variant has would fill from a cast the scene never chose)
+  it('lands every voice version on the line it was written for', async () => {
+    const { VOICE_MISSES } = await import('../js/ci/lines/index.js');
+    expect(VOICE_MISSES).toEqual([]);
+  });
+  it('has voice versions only for real registers, with no slot the line itself lacks', async () => {
+    const { ALL_REGISTERS } = await import('../js/ci/register.js');
+    for (const [, e] of ENTRIES) for (const t of e.turns || []) {
+      if (!t.v) continue;
+      const base = new Set(KINDS.filter(x => t[x]).flatMap(x => [...String(t[x]).matchAll(SLOT)].map(m => m[1].split('.')[0])));
+      for (const [r, v] of Object.entries(t.v)) {
+        expect(ALL_REGISTERS, `${e.id}: ${r}`).toContain(r);
+        for (const text of typeof v === 'string' ? [v] : Object.values(v)) for (const m of String(text).matchAll(SLOT)) {
+          const k = m[1].split('.')[0];
+          if (!/^[et]:/.test(m[1])) expect(base.has(k), `${e.id} ${r}: {${m[1]}}`).toBe(true);
+        }
+      }
+    }
+  });
+
   it('has unique ids that start with their pool key, and only known pool keys', () => {
     const ids = ENTRIES.map(([, e]) => e.id);
     expect(new Set(ids).size).toBe(ids.length);

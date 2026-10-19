@@ -34,10 +34,12 @@ describe('the morning after a goodbye warning', () => {
     const defends = chats.filter(x => x.sc.data.intent === 'defend');
     expect(defends.length).toBeGreaterThan(0);
     for (const { state, sc } of defends) {
-      const g = state.scenes.find(s => s.kind === 'goodbye' && s.day === sc.day && s.data.warning?.about === sc.who[0]);
-      expect(g).toBeTruthy();
+      // (a day can hold two goodbye videos that both warn about the same player: the defence answers one of them)
+      const gs = state.scenes.filter(s => s.kind === 'goodbye' && s.day === sc.day && s.data.warning?.about === sc.who[0]);
+      expect(gs.length).toBeGreaterThan(0);
+      const g = gs.find(x => x.who[0] === sc.data.about);
+      expect(g, `${sc.data.about} made no warning about ${sc.who[0]} that day`).toBeTruthy();
       expect(g.seenBy).toContain(sc.who[1]);
-      expect(sc.data.about).toBe(g.who[0]);
     }
   });
 });

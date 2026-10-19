@@ -32,6 +32,7 @@ import { SCENES_MORE } from './scenes-more.js';
 import { SCENES_WEAR } from './scenes-wear.js';
 import { REGISTER_LINES } from './registers.js';
 import { REGISTER_PASS2 } from './registers-pass2.js';
+import { VOICES as VOICES_1 } from './voices/batch1.js';
 import { VOICE_NOTICED } from './voice-noticed.js';
 import { FLIRT_ACT } from './flirt-act.js';
 import { TOPIC_LINES } from './topics.js';
@@ -53,4 +54,18 @@ import { FORMAT_LINES, FORMAT_LINES_2, FORMAT_LINES_3, FORMAT_LINES_4, GOODBYE_C
 export const POOLS = {};
 for (const part of [GROUPCHAT_LINES, MORNING_AFTER, AUDIENCE_LINES, PRIZE_LINES, CHAT_DEPTH, ALLIANCE_LINES, ARRIVAL_ROOM, BLOCKING_BUILD, ROMANCE_LINES, PAIR_LINES, MORE_LINES, ASIDES, CHAT_VOICES, TOPIC_LINES, FLIRT_ACT, CHAT_A, CHAT_B, SLIPS, SLIP_TOPICS, FEED, CIRCLE, PROFILES, RATINGS, HANGOUT, BLOCKING, VISIT, VISIT_CLASH, TWOTIMING_LINES, KIN_LINES, FINALE_NIGHT, REUNION_LINES, FINALE_MORE, GOODBYE, FINALE, HOST, GAME_LINES, LIFE_LINES, SHARED_LINES, G_STATEMENT_NAME, G_ASK_GUESS, G_MAKE, G_REST, G_MORE, G_CALLBACKS, SCENES_MORE, SCENES_WEAR, REGISTER_LINES, REGISTER_PASS2, VOICE_NOTICED, FORMAT_LINES, FORMAT_LINES_2, FORMAT_LINES_3, FORMAT_LINES_4, GOODBYE_CLOSE, GOODBYE_SHOUT, ANTIVIRUS_LINES, ARRIVAL_LINES, POWER_LINES, TWIST_LINES, IDENTITY_LINES, COUNT_LINES, AI_LINES]) {
   for (const [k, v] of Object.entries(part)) POOLS[k] = [...(POOLS[k] || []), ...v];
+}
+
+// Voice versions of key lines (voices/batch*.js): [entry id, the turn's text as written, { register: text }]. A
+// version lands on the turn whose own text matches exactly; one that finds no such turn (the line was rewritten) is
+// kept in VOICE_MISSES, which tests/ci-lines.test.js requires to be empty.
+export const VOICE_MISSES = [];
+{
+  const byId = new Map(Object.values(POOLS).flat().map(e => [e.id, e]));
+  const MAIN = t => ['send', 'post', 'say', 'video', 'react'].find(x => t[x]);
+  for (const [id, at, v] of [...VOICES_1]) {
+    const t = (byId.get(id)?.turns || []).find(x => x[MAIN(x)] === at);
+    if (!t) { VOICE_MISSES.push(id); continue; }
+    t.v = { ...(t.v || {}), ...v };
+  }
 }

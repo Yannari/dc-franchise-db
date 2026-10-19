@@ -42,6 +42,7 @@ import snapRw from './rewrite/snap.js';
 import talkRw from './rewrite/talk.js';
 import interviewsRw from './rewrite/interviews.js';
 import betweenTeams from './rewrite/between-teams.js';
+import partnersRw from './rewrite/partners.js';
 import redSandDesert from './places/red-sand-desert.js';
 
 const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
@@ -50,7 +51,7 @@ const FILES = [partners, partners1, partners2, partners3, partners4, partners5, 
 // The rewrite (lines/rewrite/, docs/rr-writers-brief.md "The rewrite standard"): each file brings its pools and
 // retires the old lines they replace, a whole pool ('mind-game.rattled') or the old interview lines for one kind
 // of moment ({ key: 'int-strategy.proud', cause: 'mind-game' }).
-export const REWRITES = [mindGame, celebrate, shareInfo, trashTalk, fear, snapRw, talkRw, interviewsRw, betweenTeams];
+export const REWRITES = [mindGame, celebrate, shareInfo, trashTalk, fear, snapRw, talkRw, interviewsRw, betweenTeams, partnersRw];
 const retired = (key, e) => REWRITES.some(rw => rw.retire.some(r => (typeof r === 'string' ? r === key
   : r.key === key && [].concat(e.when?.cause).includes(r.cause))));
 

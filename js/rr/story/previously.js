@@ -59,7 +59,13 @@ function relTag(t) {
 // what the two of them are, as Don labels a team at its introduction: "best friends", "a married couple", "father and son"
 const REL_LABEL = { married: 'a married couple', dating: 'a couple', 'newly-dating': 'a brand-new couple', 'on-off': 'an on-again, off-again couple',
   'once-engaged': 'former fiancés', 'reality-vets': 'reality-show vets' };
-export function relLabel(t) { return REL_LABEL[t?.rel] || relTag(t); }
+export function relLabel(t) {
+  // what their history made them (rr-run.js raceHistoryRel): an engagement, or a bond from another show
+  if (t?.history?.engaged) return 'an engaged couple';
+  if (t?.history?.from === 'ledger' && t.rel === 'exes') return 'exes, since their last show together';
+  if (t?.history?.from === 'ledger' && t.rel === 'bffs') return 'old friends from another show';
+  return REL_LABEL[t?.rel] || relTag(t);
+}
 
 // "best friends Carrie and Devin", "the Goths, Crimson and Ennui"
 export function teamTag(state, id) {

@@ -39,6 +39,7 @@ import { PLACES } from './rr/places.js';
 import { rrLedgerRecord } from './rr/ledger-record.js';
 import { carriedFor } from './franchise-carry.js';
 import { recordBuiltSeason, hasFranchiseHistory } from './franchise-meta.js';
+import { tieBetween } from './ties.js';
 
 export const isRaceSeason = () => seasonFormat(seasonConfig) === RACE_FORMAT;
 
@@ -67,6 +68,37 @@ export const RACE_RELATIONSHIPS = Object.keys(REL).map(id => ({ id, label: {
 /** The identities a team can race as, for the cast card's picker. */
 export const RACE_IDENTITIES = Object.entries(IDENTITIES).map(([id, x]) => ({ id, label: x.name }));
 
+// What two people already are to each other, when nobody set the team's relationship (the user, 2026-10-19: "does it
+// take into account pre-relationships from older franchises, or life events like engaged, bf/gf?"): their family tie
+// on the roster first, then the life layer and earlier seasons (franchise-carry.js kin: a couple, an engagement, a
+// marriage, exes from an old showmance, old allies), then an old grudge between them, then two people who have both
+// played before, then best friends. `from` says where it came from (Don's label uses it), `engaged` an engagement.
+const TIE_REL = { 'parent-child': 'parent-child', grandparent: 'grandparent-grandchild', siblings: 'siblings', twins: 'siblings',
+  'step-siblings': 'siblings', cousins: 'cousins', married: 'married', engaged: 'dating', partners: 'dating', dating: 'dating', exes: 'exes' };
+const KIN_REL = { dating: 'dating', partners: 'dating', engaged: 'dating', married: 'married', exes: 'exes', 'old-friends': 'bffs' };
+export function raceHistoryRel(a, b, carried, tie, vets = false) {
+  const pair = x => (x.a === a && x.b === b) || (x.a === b && x.b === a);
+  if (tie && TIE_REL[tie.kin]) return { rel: TIE_REL[tie.kin], from: 'family', engaged: tie.kin === 'engaged', kin: tie.kin };
+  const k = (carried?.kin || []).find(pair);
+  if (k && KIN_REL[k.kin]) return { rel: KIN_REL[k.kin], from: k.from || 'ledger', engaged: k.kin === 'engaged', kin: k.kin };
+  const grudge = (carried?.bonds || []).filter(pair).reduce((m, x) => Math.min(m, Number(x.delta) || 0), 0);
+  if (grudge <= -4) return { rel: 'enemies', from: 'ledger', engaged: false, kin: 'grudge' };
+  if (grudge < 0) return { rel: 'rivals', from: 'ledger', engaged: false, kin: 'grudge' };
+  if (vets) return { rel: 'reality-vets', from: 'ledger', engaged: false, kin: null };
+  return { rel: 'bffs', from: null, engaged: false, kin: null };
+}
+// the franchise as this race reads it: as it stood when the race was built, or (before that) as it stands now
+let _carryMemo = null;
+function _carried(list) {
+  if (gs?.rr?.startOf?.carried) return gs.rr.startOf.carried;
+  const key = list.map(p => p.name).sort().join('|');
+  if (_carryMemo?.key === key) return _carryMemo.carried;
+  let carried = { kin: [], bonds: [] };
+  try { carried = carriedFor(list, seasonConfig || {}); } catch { /* no franchise yet */ }
+  _carryMemo = { key, carried };
+  return carried;
+}
+
 /** The partners set on the cast cards: only two cards that name each other count. A card has one Partner field
  *  (`chPartner`, which the Casting Room's Pairs view writes for The Challenge's pairs and for a race's teams);
  *  `rrPartner` is the same thing for a cast built in code. */
@@ -89,6 +121,7 @@ export function raceTeams(list = _list(), config = seasonConfig) {
   }
   const pins = racePartnerPins(list);
   const seen = new Set(), out = [];
+  const carried = _carried(list);
   for (const p of list) {
     const o = pins[p.name];
     if (!o || seen.has(p.name)) continue;
@@ -97,14 +130,19 @@ export function raceTeams(list = _list(), config = seasonConfig) {
     const pick = k => p[k] || q[k] || null;
     out.push(_team(out.length, p.name, o, { rel: pick('rrRel'), identity: pick('rrIdentity'), name: pick('rrTeamName'),
       customName: pick('rrCustomName'), customLike: [pick('rrCustomLike'), pick('rrCustomLike2'), pick('rrCustomLike3')],
-      customGood: [pick('rrCustomGood1'), pick('rrCustomGood2')], customBad: [pick('rrCustomBad1'), pick('rrCustomBad2')] }));
+      customGood: [pick('rrCustomGood1'), pick('rrCustomGood2')], customBad: [pick('rrCustomBad1'), pick('rrCustomBad2')], carried }));
   }
   return out;
 }
-function _team(i, a, b, { rel = null, identity = null, name = null, customName = null, customLike = [], customGood = [], customBad = [] } = {}) {
+function _team(i, a, b, { rel = null, identity = null, name = null, customName = null, customLike = [], customGood = [], customBad = [], carried = null } = {}) {
   let vets = false;
   try { vets = hasFranchiseHistory(a) && hasFranchiseHistory(b); } catch { vets = false; }
-  const r = REL[rel] ? rel : vets ? 'reality-vets' : 'bffs';
+  // a relationship set on the Pairs view wins; else what their history says
+  let tie = null;
+  try { tie = tieBetween(a, b); } catch { tie = null; }
+  const h = REL[rel] ? null : raceHistoryRel(a, b, carried, tie, vets);
+  const r = REL[rel] ? rel : h.rel;
+  const history = h?.from ? { from: h.from, kin: h.kin, engaged: !!h.engaged } : null;
   const typed = String(name || '').trim();
   // a custom identity: a name of the user's own that plays like a built-in one (identities.js identityOf reads
   // custom.strength for its strengths and voice)
@@ -114,11 +152,11 @@ function _team(i, a, b, { rel = null, identity = null, name = null, customName =
     const mix = uniq(customLike).filter(x => IDENTITIES[x]).slice(0, 3);
     const good = uniq(customGood).filter(x => TASK_TYPES[x]).slice(0, 2);
     const bad = uniq(customBad).filter(x => TASK_TYPES[x] && !good.includes(x)).slice(0, 2);
-    return { id: 't' + (i + 1), a, b, rel: r, identity: null, name: typed || own,
+    return { id: 't' + (i + 1), a, b, rel: r, ...(history ? { history } : {}), identity: null, name: typed || own,
       custom: { name: own, mix, voice: mix[0] || null, good, bad, strength: mix[0] || null } };
   }
   const id = IDENTITIES[identity] ? identity : null;
-  return { id: 't' + (i + 1), a, b, rel: r, identity: id,
+  return { id: 't' + (i + 1), a, b, rel: r, ...(history ? { history } : {}), identity: id,
     // a typed name over an identity's is the team's own (the engine's identityName reads custom.name)
     name: typed || (id ? IDENTITIES[id].name : `${a} & ${b}`),
     custom: typed && (!id || typed !== IDENTITIES[id].name) ? { name: typed } : null };
@@ -373,6 +411,13 @@ export function raceVoteShape(row) {
 
 /** The Pairs view's pickers (cast-room.js): the relationships and identities a team can have. */
 export function raceTeamOptions() { return { rels: RACE_RELATIONSHIPS, ids: RACE_IDENTITIES, types: RACE_TASK_TYPES }; }
+/** What the team's relationship will be if the user leaves it: the Pairs view's default, in words. */
+export function raceDefaultRel(a, b) {
+  const t = raceTeams().find(x => (x.a === a && x.b === b) || (x.a === b && x.b === a));
+  if (!t) return null;
+  const label = RACE_RELATIONSHIPS.find(r => r.id === t.rel)?.label || t.rel;
+  return { rel: t.rel, label: t.history?.engaged ? 'Engaged' : label, from: t.history?.from || null };
+}
 /** What a team can be good or bad at, in words (a custom identity's strengths and weaknesses). */
 export const RACE_TASK_TYPES = Object.keys(TASK_TYPES).map(id => ({ id, label: { water: 'Water', heights: 'Heights', strength: 'Strength',
   stomach: 'Eating anything', nerve: 'Nerve', brains: 'Brains', search: 'Finding things', perform: 'Performing', people: 'People',

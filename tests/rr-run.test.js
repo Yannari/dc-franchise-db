@@ -312,3 +312,28 @@ describe("the hub says a race's exits by team", () => {
     expect(model.storylines.join(' ')).not.toMatch(new RegExp(`${x.name}'s exit`));
   });
 });
+
+describe("a team's relationship comes from its history when nobody set one", () => {
+  it('family ties, then the life layer and past seasons, then a grudge, then two vets, then best friends', async () => {
+    const { raceHistoryRel } = await import('../js/rr-run.js');
+    const none = { kin: [], bonds: [] };
+    expect(raceHistoryRel('A', 'B', none, { kin: 'parent-child' })).toMatchObject({ rel: 'parent-child', from: 'family' });
+    expect(raceHistoryRel('A', 'B', none, { kin: 'twins' })).toMatchObject({ rel: 'siblings' });
+    expect(raceHistoryRel('A', 'B', none, { kin: 'grandparent' })).toMatchObject({ rel: 'grandparent-grandchild' });
+    expect(raceHistoryRel('A', 'B', { kin: [{ a: 'A', b: 'B', kin: 'engaged', from: 'life' }], bonds: [] }, null)).toMatchObject({ rel: 'dating', engaged: true, from: 'life' });
+    expect(raceHistoryRel('A', 'B', { kin: [{ a: 'B', b: 'A', kin: 'married', from: 'life' }], bonds: [] }, null)).toMatchObject({ rel: 'married' });
+    expect(raceHistoryRel('A', 'B', { kin: [{ a: 'A', b: 'B', kin: 'exes', from: 'ledger' }], bonds: [] }, null)).toMatchObject({ rel: 'exes', from: 'ledger' });
+    expect(raceHistoryRel('A', 'B', { kin: [{ a: 'A', b: 'B', kin: 'old-friends', from: 'ledger' }], bonds: [] }, null)).toMatchObject({ rel: 'bffs', from: 'ledger' });
+    expect(raceHistoryRel('A', 'B', { kin: [], bonds: [{ a: 'A', b: 'B', delta: -6, resent: true }] }, null)).toMatchObject({ rel: 'enemies' });
+    expect(raceHistoryRel('A', 'B', { kin: [], bonds: [{ a: 'A', b: 'B', delta: -2, resent: true }] }, null)).toMatchObject({ rel: 'rivals' });
+    expect(raceHistoryRel('A', 'B', none, null, true)).toMatchObject({ rel: 'reality-vets' });
+    expect(raceHistoryRel('A', 'B', none, null, false)).toMatchObject({ rel: 'bffs', from: null });
+  });
+
+  it("Don's label says it: an engaged couple, exes since their last show", async () => {
+    const { relLabel } = await import('../js/rr/story/previously.js');
+    expect(relLabel({ rel: 'dating', history: { engaged: true } })).toBe('an engaged couple');
+    expect(relLabel({ rel: 'exes', history: { from: 'ledger' } })).toBe('exes, since their last show together');
+    expect(relLabel({ rel: 'bffs', history: { from: 'ledger' } })).toBe('old friends from another show');
+  });
+});

@@ -477,7 +477,7 @@ function _raceTeamPanel(a, b) {
   const custom = v('rrIdentity') === 'custom';
   return `<div class="cr-race-team" data-a="${esc(a.name)}" data-b="${esc(b.name)}" onclick="event.stopPropagation()" ondragstart="event.stopPropagation()">
     <select class="cr-rt" data-f="rrRel" onchange="crRaceTeam(this)" title="What the two of them are to each other. Family teams never have a romance.">
-      <option value="">Relationship: best friends (vets if both have played before)</option>${opt(o.rels, v('rrRel'))}</select>
+      <option value="">${(() => { const d = window.raceDefaultRel?.(a.name, b.name); return d ? `Relationship: ${esc(d.label.toLowerCase())}${d.from ? ` (from their ${d.from === 'family' ? 'family' : d.from === 'life' ? 'life' : 'past seasons'})` : ' (the default)'}` : 'Relationship: from their history'; })()}</option>${opt(o.rels, v('rrRel'))}</select>
     <select class="cr-rt" data-f="rrIdentity" onchange="crRaceTeam(this)" title="The kind of team they race as. It shapes what they're good at and how they talk. Two teams can't share one.">
       <option value="">No identity: named after the two of them</option>${opt(o.ids, v('rrIdentity'))}
       <option value="custom"${custom ? ' selected' : ''}>Custom identity…</option></select>

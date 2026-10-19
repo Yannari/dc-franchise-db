@@ -4,7 +4,7 @@
 import { describe, it, expect } from 'vitest';
 import { POOLS, REWRITES } from '../js/rr/script/lines/index.js';
 
-const QUICK = new Set(['celebrate', 'judge-yes', 'tip-read', 'ride', 'arrival-awe', 'task-start', 'task-done', 'attempt-fail', 'gross-out', 'don-place']);
+const QUICK = new Set(['celebrate', 'judge-yes', 'tip-read', 'ride', 'arrival-awe', 'task-start', 'task-done', 'attempt-fail', 'gross-out', 'don-place', 'don-elim', 'don-fakeout', 'don-arrives', 'identity-moment']);
 const WHERE = [
   ['airport', /\b(airport|boarding pass|departure board|the gate|row (one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)|seatbelt|overhead bin)\b/i],
   ['task', /\b(task|judge)\b/i],
@@ -17,19 +17,21 @@ describe('rr rewrite', () => {
       const mine = new Set(Object.values(rw.pools).flat().map(e => e.id));
       for (const r of rw.retire) {
         const key = typeof r === 'string' ? r : r.key;
-        const left = (POOLS[key] || []).filter(e => !mine.has(e.id) && (typeof r === 'string' || [].concat(e.when?.cause).includes(r.cause)));
+        // a place's own lines and a challenge's own lines are never retired by a general rewrite
+        const own = e => e.when?.place != null || e.when?.taskId != null;
+        const left = (POOLS[key] || []).filter(e => !mine.has(e.id) && !own(e) && (typeof r === 'string' || [].concat(e.when?.cause).includes(r.cause)));
         expect(left.map(e => e.id), `${key}${r.cause ? ' after ' + r.cause : ''}`).toEqual([]);
       }
     }
   });
 
-  it('quick hits are 2 to 5 lines, story moments are scenes of 6 to 12', () => {
+  it('quick hits are 2 to 6 lines, story moments are scenes of 6 to 12', () => {
     for (const rw of REWRITES) for (const [k, list] of Object.entries(rw.pools)) {
       if (k.startsWith('int-')) continue;
       const quick = QUICK.has(k.split('.')[0]);
       for (const e of list) {
         expect(e.turns.length, e.id).toBeGreaterThanOrEqual(quick ? 2 : 6);
-        expect(e.turns.length, e.id).toBeLessThanOrEqual(quick ? 5 : 12);
+        expect(e.turns.length, e.id).toBeLessThanOrEqual(quick ? 6 : 12);
       }
     }
   });

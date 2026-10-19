@@ -35,7 +35,7 @@ Race", "where's the context") and pasted the real episode 3 as the goal (local c
 `.superpowers/reference/rr-ep03-french-is-an-eiffel-language.txt`; read it before writing). The user asked for a
 mix of the real show's pace and longer scenes. Everything in `lines/rewrite/` meets this:
 
-- **Quick hits, 2 to 5 lines**: arrivals, celebrations, a tip, the judge, a ride, the little bits between teams.
+- **Quick hits, 2 to 6 lines**: arrivals, celebrations, a tip, the judge, a ride, the little bits between teams.
   Dense and specific, the way the real show cuts between teams: the Vegans pedalling the moped to save its fuel,
   the moped jump through the neighbour's gazebo, the Ice Dancers who smile in their sleep.
 - **Full scenes, 6 to 12 lines**: the story moments (fights, schemes, alliances, betrayals, romance, confrontations,

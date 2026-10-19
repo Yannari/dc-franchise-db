@@ -81,7 +81,7 @@ function narrate(state, leg, scenes) {
   const n = leg.n, out = [];
   const add = (ending, t, slots) => out.push({ scene: null, beat: `narr:${n}:${ending}:${out.length}`, kind: 'don-narrate', ending, stretch: null,
     t, teams: [], who: [], side: null, tier: 0,
-    src: { id: `narr:${n}:${ending}:${out.length}`, leg: n, kind: 'don-narrate', who: [], seenBy: [], data: { ending, t, slots } } });
+    src: { id: `narr:${n}:${ending}:${out.length}`, leg: n, kind: 'don-narrate', who: [], seenBy: [], data: { ending, t, slots, snap: { place: leg.place } } } });
   // the departure: last leg's winners first out of the Chill Zone (before Don's opener)
   const prev = (state.legs || []).find(l => l.n === n - 1);
   if (prev?.order?.[0]) add('depart', -1, { winners: teamTag(state, prev.order[0]) });
@@ -106,6 +106,8 @@ function narrate(state, leg, scenes) {
     const behind = tasks.slice(0, i).reverse().find(p => rows.some(r => r.stretch === p.id && r.to > here.from));
     if (behind) add('bridge', here.from, { team: teamRef(state, here.team), task: s.called, prevTask: behind.called });
   });
+  // Don presents the Chill Zone just before the first team reaches it (not at the finale: its end is the stage)
+  if (leg.kind !== 'final' && leg.times && leg.order[0] && leg.times[leg.order[0]] != null) add('chill', leg.times[leg.order[0]] - 2, {});
   // the bottom of an elimination leg: the last four still out there
   const N = leg.order.length;
   if (leg.kind === 'elim' && N >= 5 && leg.times) {

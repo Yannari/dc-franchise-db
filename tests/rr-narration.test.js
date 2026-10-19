@@ -51,11 +51,13 @@ describe('rr narration', () => {
     expect(bridges).toBeGreaterThan(3);
   });
 
-  it('every narration is Don, with every slot filled', () => {
+  it('every narration is Don (a stage direction at most), with every slot filled', () => {
     let n = 0;
     for (const ep of eps) for (const s of ep.segments.filter(s => s.kind === 'don-narrate')) {
       expect(s.lines?.length, `leg ${ep.n} ${s.ending}`).toBeGreaterThan(0);
-      for (const l of s.lines) { expect(l.by).toBe('Don'); expect(l.text).not.toMatch(/[{}]|undefined|null/); }
+      // Don speaks every word; the Chill Zone intro may set the scene around him first
+      for (const l of s.lines) { if (l.kind !== 'beat') expect(l.by).toBe('Don'); expect(l.text).not.toMatch(/[{}]|undefined|null/); }
+      expect(s.lines.some(l => l.by === 'Don')).toBe(true);
       n++;
     }
     expect(n).toBeGreaterThan(20);

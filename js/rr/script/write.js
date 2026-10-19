@@ -43,7 +43,7 @@ export const DIRECTOR_KINDS = {
   'ride': ['any'],
   // Don narrating the episode (director.js): the departure order, the flights, a bridge between the leaders and the
   // rest, the bottom of an elimination leg
-  'don-narrate': ['depart', 'flight-wait', 'first-landed', 'flight-landed', 'bridge', 'last-stretch'],
+  'don-narrate': ['depart', 'flight-wait', 'first-landed', 'flight-landed', 'bridge', 'chill', 'last-stretch'],
 };
 
 const AGE = new Set(['kid', 'teen', 'adult', 'grown']);

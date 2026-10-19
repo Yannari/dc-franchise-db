@@ -59,7 +59,7 @@ register([
     used: { w: 1, fx: (fx, c) => { fx.time(c.tid, -10); c.state.rec[c.tid].sabotage++; } },
     'called-out': { w: c => c.S(c.C, 'intuition') / 5, fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 1); fx.pop(c.A, -1); } },
   }, facts }),
-  K({ id: 'revenge', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: c => (c.state.sabotaged?.[c.tid]?.by === c.oid ? 0.3 : 0), endings: {
+  K({ id: 'revenge', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: c => (c.state.sabotaged?.[c.tid]?.by === c.oid && c.state.sabotaged[c.tid].seen ? 0.3 : 0), endings: {   // revenge for what they saw
     'paid-back': { w: 1, fx: (fx, c) => { fx.time(c.oid, 20); fx.rivalry(c.tid, c.oid, 2); c.state.rec[c.tid].sabotage++; } },
     'takes-high-road': { w: c => c.S(c.A, 'loyalty') / 4, fx: (fx, c) => { fx.teams(c.tid, c.oid, 0.5); fx.pop(c.A, 2); } },
   }, facts }),

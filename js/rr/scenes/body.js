@@ -15,7 +15,8 @@ register([
   } }),
   K({ id: 'illness', family: 9, moments: ['fail', 'pass'], when: c => ((c.stretch?.types || []).includes('stomach') ? 0.1 : 0.01), endings: {
     'pushes-through': { w: c => c.S(c.A, 'endurance') / 4, fx: (fx, c) => fx.mind(c.A, 'energy', -15) },
-    'blind-from-spice': { w: 0.4, fx: (fx, c) => { fx.time(c.tid, 15); fx.bond(c.A, c.B, 0.5); } },
+    // only a food task has a pepper in it
+    'blind-from-spice': { w: c => ((c.stretch?.types || []).includes('stomach') ? 0.4 : 0), fx: (fx, c) => { fx.time(c.tid, 15); fx.bond(c.A, c.B, 0.5); } },
   } }),
   K({ id: 'exhaustion', family: 9, moments: ['travel', 'fail'], when: c => { const e = Math.min(c.energy(c.A), c.energy(c.B)); return e < 75 ? (80 - e) / 40 : 0; }, endings: {
     collapse: { w: c => (10 - c.S(c.A, 'endurance')) / 4, fx: (fx, c) => fx.time(c.tid, 20) },

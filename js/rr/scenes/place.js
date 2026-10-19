@@ -14,8 +14,8 @@ register([
     homecoming: { w: 0.2, fx: (fx, c) => fx.mind(c.A, 'morale', 10) },
   } }),
   K({ id: 'identity-moment', family: 10, moments: ['tip'], when: c => (good(c) || bad(c) ? 0.6 : 0), endings: {
-    'in-their-element': { w: c => (good(c) ? 2 : 0.1), fx: (fx, c) => { fx.mind(c.A, 'morale', 6); fx.pass(c.tid, 0.03); } },
-    'out-of-element': { w: c => (bad(c) ? 2 : 0.1), fx: (fx, c) => fx.mind(c.A, 'morale', -5) },
+    'in-their-element': { w: c => (good(c) ? 2 : 0), fx: (fx, c) => { fx.mind(c.A, 'morale', 6); fx.pass(c.tid, 0.03); } },
+    'out-of-element': { w: c => (bad(c) ? 2 : 0), fx: (fx, c) => fx.mind(c.A, 'morale', -5) },
   } }),
   K({ id: 'cultural-task', family: 10, moments: ['pass'], when: c => (types(c).some(t => ['perform', 'people'].includes(t)) ? 0.2 : 0), endings: {
     moved: { w: c => c.S(c.A, 'social') / 4, fx: (fx, c) => { fx.mind(c.A, 'morale', 10); fx.bond(c.A, c.B, 1); } },

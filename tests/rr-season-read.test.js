@@ -195,6 +195,27 @@ describe('rr season read (2026-10-18)', () => {
     if (sc) expect([st3.teams[ids[0]].a, st3.teams[ids[0]].b]).toContain(sc.who[0]);
   });
 
+  it('revenge is for a sabotage the team saw; a rumour is about our own Boomerang; element and spice fit the task', async () => {
+    const { SCENES, whenOf, prepare } = await import('../js/rr/scenes.js');
+    const c1 = fixtureCtx('revenge', { doerArchetype: 'villain' });
+    c1.moment = 'overlap';
+    c1.state.sabotaged = { [c1.team.id]: { by: c1.other.id, leg: 3, seen: false, kind: 'push' } };
+    expect(whenOf(SCENES.revenge, c1)).toBe(0);
+    const c2 = fixtureCtx('rumour');
+    c2.moment = 'overlap';
+    c2.state.boomeranged = { [c2.other.id]: 'somebody' };
+    expect(whenOf(SCENES.rumour, c2)).toBe(0);
+    const c3 = fixtureCtx('identity-moment');
+    prepare(c3);
+    c3.state.teams[c3.team.id].identity = 'surfers';
+    c3.stretch = { id: 'x', kind: 'allin', types: ['brains'] };
+    expect(SCENES['identity-moment']._endings['in-their-element'].w(c3)).toBe(0);
+    const c4 = fixtureCtx('illness');
+    prepare(c4);
+    c4.stretch = { id: 'x', kind: 'allin', types: ['strength'] };
+    expect(SCENES.illness._endings['blind-from-spice'].w(c4)).toBe(0);
+  });
+
   it('a cast never has two teams with the same identity', () => {
     for (const seed of [1, 2, 3, 4]) {
       const ids = raceCast(18, seed).teams.map(t => t.identity).filter(Boolean);

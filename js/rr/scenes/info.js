@@ -29,7 +29,7 @@ register([
     exploited: { w: c => c.S(c.A, 'strategic') / 4, fx: (fx, c) => { fx.time(c.oid, 20); fx.rivalry(c.tid, c.oid, 1); } },
     fizzles: { w: 1, fx: (fx, c) => fx.mind(c.A, 'morale', -2) },
   } }),
-  K({ id: 'rumour', family: 7, cast: 'teams', moments: ['overlap', 'mat'], when: c => (Object.keys(c.state.boomeranged || {}).length ? 0.2 : 0), endings: {
+  K({ id: 'rumour', family: 7, cast: 'teams', moments: ['overlap', 'mat'], when: c => (c.state.boomeranged?.[c.tid] ? 0.2 : 0), endings: {   // a team guesses who sent IT back
     'guess-right': { w: c => c.S(c.A, 'intuition') / 4, fx: (fx, c) => fx.believe([c.A, c.B], { about: 'boomerang', claim: 'by', value: c.state.boomeranged[c.tid] ?? null }) },
     'guess-wrong': { w: 1, fx: (fx, c) => { fx.believe([c.A, c.B], { about: 'boomerang', claim: 'by', value: c.oid, truth: false }); fx.rivalry(c.tid, c.oid, 1); } },
   } }),

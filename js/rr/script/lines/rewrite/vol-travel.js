@@ -38,7 +38,7 @@ export default {
         { by: 'd', ...V("Then we're getting off first. We're in row nine.", "We're getting off first. Row nine.", "Row nine. We're first.", "Then WE'RE getting off FIRST! We're in ROW NINE!", "Then we'll be getting off first, we're in row nine.", "Then victory is ours. Row nine. Front of the plane.") },
         { by: 'a', say: "We're in row eight." },
         { by: 'c', say: "We'll see who's faster with the overhead lockers." },
-        { beat: 'Four racers spend the last half hour of the flight staring at the overhead lockers.' },
+        { beat: 'Nobody in these rows takes their eyes off the overhead lockers for the last half hour of the flight.' },
         { by: 'b', say: "My hand's on the seatbelt. I'm ready." },
       ] },
       { id: 'vt.sf5', when: A, turns: [

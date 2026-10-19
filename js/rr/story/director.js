@@ -47,6 +47,9 @@ const teamsKey = s => (s.data?.team && s.data?.other ? [s.data.team, s.data.othe
 // it, and its clean runs at a task are shown together. Who is quiet rotates: the teams hurried least so far get
 // the spare full places first. Ten teams or fewer racing: every team's full scenes.
 export const BIG_CAST = 10;
+// the moments a team checks in or is sent home, and what may still air of a team after Don has sent it home
+const EXIT_KINDS = new Set(['don-elim', 'don-arrives', 'don-fakeout']);
+const AFTER_EXIT = new Set(['int-exit', 'console', 'goodbye', 'goodbye-kiss', 'mat-montage', 'don-narrate']);
 // what every team gets, story or not
 const BACKGROUND = new Set(['don-place', 'don-opener', 'same-flight', 'int-bleachers']);
 
@@ -88,7 +91,8 @@ function narrate(state, leg, scenes) {
   // the flights: who's waiting for the next one, and each landing
   const flights = scenes.filter(s => s.kind === 'same-flight').sort((x, y) => x.data.flight - y.data.flight);
   if (flights.length >= 2) {
-    add('flight-wait', flights[0].data.t, { count: NUM[flights[1].data.teams.length] || String(flights[1].data.teams.length),
+    // the wait is worth a line when a crowd is left at the gate ("one teams" was the bug)
+    if (flights[1].data.teams.length >= 2) add('flight-wait', flights[0].data.t, { count: NUM[flights[1].data.teams.length] || String(flights[1].data.teams.length),
       gap: gapWords(flights[1].data.t - flights[0].data.t) });
     flights.forEach((f, k) => {
       if (f.data.lands == null) return;
@@ -398,7 +402,31 @@ export function airLeg(state, leg) {
   }
   for (const b of beats) segs.push({ scene: null, beat: b.id, kind: b.kind, ending: b.data.ending, stretch: b.data.stretch, t: b.data.t,
     teams: [b.data.team], who: [...b.who], side: b.data.side ?? null, picked: pickedOf(b.data.snap?.picked), tier: 1, src: b });
-  segs.sort((x, y) => x.t - y.t || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
+  // in the same minute a team finishes its challenge before it checks in
+  const phase = k => (k.startsWith('task-') ? 0 : 1);
+  segs.sort((x, y) => x.t - y.t || phase(x.kind) - phase(y.kind)
+    || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
+  // once Don has sent a team home, the episode doesn't go back to them racing: what happened before the exit airs
+  // before it, anything after it (an on-location exit leaves a team out on the road) doesn't air at all
+  // (not the finale: its cut and its bleachers are their own sequence)
+  for (const out of leg.kind === 'final' ? [] : leg.eliminated || []) {
+    const k = segs.findIndex(x => EXIT_KINDS.has(x.kind) && x.teams.includes(out));
+    if (k < 0) continue;
+    const exit = segs[k];
+    const after = segs.slice(k + 1).filter(x => x.teams.includes(out) && !AFTER_EXIT.has(x.kind) && !x.kind.startsWith('int-'));
+    for (const x of after) segs.splice(segs.indexOf(x), 1);
+    // sent home on the road, mid-challenge: we see them still at it when Don arrives, never finishing it
+    const roadside = leg.how?.[out] === 'on-location';
+    const keep = after.filter(x => !roadside || x.t <= exit.t || x.kind.startsWith('task-'));
+    for (const x of keep) {
+      x.t = Math.min(x.t, exit.t);
+      if (roadside && x.kind === 'task-done' && x.src) {
+        x.kind = 'task-try'; x.ending = 'struggling';
+        x.src = { ...x.src, kind: 'task-try', data: { ...x.src.data, ending: 'struggling', t: x.t } };
+      }
+    }
+    segs.splice(segs.indexOf(exit), 0, ...keep);
+  }
 
   // write what aired (only now are its words spent), and remember the storylines that moved
   state.storyAired ||= {};
@@ -415,5 +443,6 @@ export function airLeg(state, leg) {
     delete seg.srcs;
   }
   // an interview nobody has written for its moment doesn't air (a generic one reads as a random scene)
-  return { n, segments: segs.filter(s => s.lines || !s.kind.startsWith('int-')), unwritten };
+  // ...and nothing airs without words (`unwritten` keeps the list for the read)
+  return { n, segments: segs.filter(s => s.lines), unwritten };
 }

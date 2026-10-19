@@ -8102,6 +8102,1304 @@
       "afterSeason": "dr-1",
       "seq": 169,
       "status": "approved"
+    },
+    {
+      "player": "alejandro",
+      "kind": "garden",
+      "afterSeason": "td-15",
+      "seq": 1,
+      "status": "proposed"
+    },
+    {
+      "player": "alejandro",
+      "kind": "feud",
+      "afterSeason": "td-15",
+      "seq": 2,
+      "status": "proposed",
+      "whom": "sky"
+    },
+    {
+      "player": "b",
+      "kind": "pet",
+      "afterSeason": "td-15",
+      "seq": 3,
+      "status": "proposed"
+    },
+    {
+      "player": "beardo",
+      "kind": "investment",
+      "afterSeason": "td-15",
+      "seq": 4,
+      "status": "proposed"
+    },
+    {
+      "player": "blaineley",
+      "kind": "enrolled",
+      "afterSeason": "td-15",
+      "seq": 5,
+      "status": "proposed"
+    },
+    {
+      "player": "brick",
+      "kind": "moved-abroad",
+      "afterSeason": "td-15",
+      "seq": 6,
+      "status": "proposed"
+    },
+    {
+      "player": "bridgette",
+      "kind": "started-business",
+      "afterSeason": "td-15",
+      "seq": 7,
+      "status": "proposed"
+    },
+    {
+      "player": "bridgette",
+      "kind": "merch",
+      "afterSeason": "td-15",
+      "seq": 8,
+      "status": "proposed"
+    },
+    {
+      "player": "brody",
+      "kind": "moved-in",
+      "afterSeason": "td-15",
+      "seq": 9,
+      "status": "proposed",
+      "whom": "mary"
+    },
+    {
+      "player": "brody",
+      "kind": "started-business",
+      "afterSeason": "td-15",
+      "seq": 10,
+      "status": "proposed"
+    },
+    {
+      "player": "cameron",
+      "kind": "renovated",
+      "afterSeason": "td-15",
+      "seq": 11,
+      "status": "proposed"
+    },
+    {
+      "player": "cameron",
+      "kind": "red-carpet",
+      "afterSeason": "td-15",
+      "seq": 12,
+      "status": "proposed"
+    },
+    {
+      "player": "cameron",
+      "kind": "award",
+      "afterSeason": "td-15",
+      "seq": 13,
+      "status": "proposed"
+    },
+    {
+      "player": "cody",
+      "kind": "volunteering",
+      "afterSeason": "td-15",
+      "seq": 14,
+      "status": "proposed"
+    },
+    {
+      "player": "courtney",
+      "kind": "business-folded",
+      "afterSeason": "td-15",
+      "seq": 15,
+      "status": "proposed"
+    },
+    {
+      "player": "courtney",
+      "kind": "moved-city",
+      "afterSeason": "td-15",
+      "seq": 16,
+      "status": "proposed"
+    },
+    {
+      "player": "dakota",
+      "kind": "travelling",
+      "afterSeason": "td-15",
+      "seq": 17,
+      "status": "proposed"
+    },
+    {
+      "player": "dj",
+      "kind": "career-change",
+      "afterSeason": "td-15",
+      "seq": 18,
+      "status": "proposed"
+    },
+    {
+      "player": "dj",
+      "kind": "old-car",
+      "afterSeason": "td-15",
+      "seq": 19,
+      "status": "proposed"
+    },
+    {
+      "player": "duncan",
+      "kind": "spin-off",
+      "afterSeason": "td-15",
+      "seq": 20,
+      "status": "proposed"
+    },
+    {
+      "player": "duncan",
+      "kind": "tattoo",
+      "afterSeason": "td-15",
+      "seq": 21,
+      "status": "proposed"
+    },
+    {
+      "player": "ella",
+      "kind": "tattoo",
+      "afterSeason": "td-15",
+      "seq": 22,
+      "status": "proposed"
+    },
+    {
+      "player": "ella",
+      "kind": "marathon",
+      "afterSeason": "td-15",
+      "seq": 23,
+      "status": "proposed"
+    },
+    {
+      "player": "emma",
+      "kind": "side-hustle",
+      "afterSeason": "td-15",
+      "seq": 24,
+      "status": "proposed"
+    },
+    {
+      "player": "eva",
+      "kind": "moved-city",
+      "afterSeason": "td-15",
+      "seq": 25,
+      "status": "proposed"
+    },
+    {
+      "player": "ezekiel",
+      "kind": "year-off",
+      "afterSeason": "td-15",
+      "seq": 26,
+      "status": "proposed"
+    },
+    {
+      "player": "gwen",
+      "kind": "dating",
+      "afterSeason": "td-15",
+      "seq": 27,
+      "status": "proposed",
+      "whom": "duncan"
+    },
+    {
+      "player": "gwen",
+      "kind": "graduated",
+      "afterSeason": "td-15",
+      "seq": 28,
+      "status": "proposed"
+    },
+    {
+      "player": "harold",
+      "kind": "promoted",
+      "afterSeason": "td-15",
+      "seq": 29,
+      "status": "proposed"
+    },
+    {
+      "player": "heather",
+      "kind": "haircut",
+      "afterSeason": "td-15",
+      "seq": 30,
+      "status": "proposed"
+    },
+    {
+      "player": "heather",
+      "kind": "rewatch-podcast",
+      "afterSeason": "td-15",
+      "seq": 31,
+      "status": "proposed"
+    },
+    {
+      "player": "izzy",
+      "kind": "tattoo",
+      "afterSeason": "td-15",
+      "seq": 32,
+      "status": "proposed"
+    },
+    {
+      "player": "jacques",
+      "kind": "pet",
+      "afterSeason": "td-15",
+      "seq": 33,
+      "status": "proposed"
+    },
+    {
+      "player": "jacques",
+      "kind": "cameo",
+      "afterSeason": "td-15",
+      "seq": 34,
+      "status": "proposed"
+    },
+    {
+      "player": "jacques",
+      "kind": "new-language",
+      "afterSeason": "td-15",
+      "seq": 35,
+      "status": "proposed"
+    },
+    {
+      "player": "jasmine",
+      "kind": "enrolled",
+      "afterSeason": "td-15",
+      "seq": 36,
+      "status": "proposed"
+    },
+    {
+      "player": "jasmine",
+      "kind": "side-hustle",
+      "afterSeason": "td-15",
+      "seq": 37,
+      "status": "proposed"
+    },
+    {
+      "player": "jasmine",
+      "kind": "podcast-guest",
+      "afterSeason": "td-15",
+      "seq": 38,
+      "status": "proposed"
+    },
+    {
+      "player": "jasmine",
+      "kind": "volunteering",
+      "afterSeason": "td-15",
+      "seq": 39,
+      "status": "proposed"
+    },
+    {
+      "player": "jay",
+      "kind": "moved-in",
+      "afterSeason": "td-15",
+      "seq": 40,
+      "status": "proposed",
+      "whom": "kitty"
+    },
+    {
+      "player": "jo",
+      "kind": "moved",
+      "afterSeason": "td-15",
+      "seq": 41,
+      "status": "proposed"
+    },
+    {
+      "player": "junior",
+      "kind": "moved-abroad",
+      "afterSeason": "td-15",
+      "seq": 42,
+      "status": "proposed"
+    },
+    {
+      "player": "justin",
+      "kind": "garden",
+      "afterSeason": "td-15",
+      "seq": 43,
+      "status": "proposed"
+    },
+    {
+      "player": "kelly",
+      "kind": "marathon",
+      "afterSeason": "td-15",
+      "seq": 44,
+      "status": "proposed"
+    },
+    {
+      "player": "leonard",
+      "kind": "year-off",
+      "afterSeason": "td-15",
+      "seq": 45,
+      "status": "proposed"
+    },
+    {
+      "player": "leonard",
+      "kind": "haircut",
+      "afterSeason": "td-15",
+      "seq": 46,
+      "status": "proposed"
+    },
+    {
+      "player": "leshawna",
+      "kind": "went-public",
+      "afterSeason": "td-15",
+      "seq": 47,
+      "status": "proposed",
+      "whom": "owen"
+    },
+    {
+      "player": "leshawna",
+      "kind": "marathon",
+      "afterSeason": "td-15",
+      "seq": 48,
+      "status": "proposed"
+    },
+    {
+      "player": "lightning",
+      "kind": "enrolled",
+      "afterSeason": "td-15",
+      "seq": 49,
+      "status": "proposed"
+    },
+    {
+      "player": "lightning",
+      "kind": "side-hustle",
+      "afterSeason": "td-15",
+      "seq": 50,
+      "status": "proposed"
+    },
+    {
+      "player": "lightning",
+      "kind": "lost-money",
+      "afterSeason": "td-15",
+      "seq": 51,
+      "status": "proposed"
+    },
+    {
+      "player": "lindsay",
+      "kind": "merch",
+      "afterSeason": "td-15",
+      "seq": 52,
+      "status": "proposed"
+    },
+    {
+      "player": "lindsay",
+      "kind": "volunteering",
+      "afterSeason": "td-15",
+      "seq": 53,
+      "status": "proposed"
+    },
+    {
+      "player": "mickey",
+      "kind": "tattoo",
+      "afterSeason": "td-15",
+      "seq": 54,
+      "status": "proposed"
+    },
+    {
+      "player": "mickey",
+      "kind": "marathon",
+      "afterSeason": "td-15",
+      "seq": 55,
+      "status": "proposed"
+    },
+    {
+      "player": "mike",
+      "kind": "moved",
+      "afterSeason": "td-15",
+      "seq": 56,
+      "status": "proposed"
+    },
+    {
+      "player": "noah",
+      "kind": "memoir",
+      "afterSeason": "td-15",
+      "seq": 57,
+      "status": "proposed"
+    },
+    {
+      "player": "owen",
+      "kind": "laid-off",
+      "afterSeason": "td-15",
+      "seq": 58,
+      "status": "proposed"
+    },
+    {
+      "player": "ryan",
+      "kind": "dating",
+      "afterSeason": "td-15",
+      "seq": 59,
+      "status": "proposed",
+      "whom": "kelly"
+    },
+    {
+      "player": "sam",
+      "kind": "laid-off",
+      "afterSeason": "td-15",
+      "seq": 60,
+      "status": "proposed"
+    },
+    {
+      "player": "sam",
+      "kind": "tattoo",
+      "afterSeason": "td-15",
+      "seq": 61,
+      "status": "proposed"
+    },
+    {
+      "player": "samey",
+      "kind": "award",
+      "afterSeason": "td-15",
+      "seq": 62,
+      "status": "proposed"
+    },
+    {
+      "player": "scarlett",
+      "kind": "garden",
+      "afterSeason": "td-15",
+      "seq": 63,
+      "status": "proposed"
+    },
+    {
+      "player": "scott",
+      "kind": "marathon",
+      "afterSeason": "td-15",
+      "seq": 64,
+      "status": "proposed"
+    },
+    {
+      "player": "shawn",
+      "kind": "graduated",
+      "afterSeason": "td-15",
+      "seq": 65,
+      "status": "proposed"
+    },
+    {
+      "player": "shawn",
+      "kind": "quit-job",
+      "afterSeason": "td-15",
+      "seq": 66,
+      "status": "proposed"
+    },
+    {
+      "player": "sky",
+      "kind": "graduated",
+      "afterSeason": "td-15",
+      "seq": 67,
+      "status": "proposed"
+    },
+    {
+      "player": "sky",
+      "kind": "career-change",
+      "afterSeason": "td-15",
+      "seq": 68,
+      "status": "proposed"
+    },
+    {
+      "player": "staci",
+      "kind": "learned",
+      "afterSeason": "td-15",
+      "seq": 69,
+      "status": "proposed"
+    },
+    {
+      "player": "sugar",
+      "kind": "travelling",
+      "afterSeason": "td-15",
+      "seq": 70,
+      "status": "proposed"
+    },
+    {
+      "player": "tammy",
+      "kind": "moved-city",
+      "afterSeason": "td-15",
+      "seq": 71,
+      "status": "proposed"
+    },
+    {
+      "player": "trent",
+      "kind": "bought-home",
+      "afterSeason": "td-15",
+      "seq": 72,
+      "status": "proposed"
+    },
+    {
+      "player": "zoey",
+      "kind": "year-off",
+      "afterSeason": "td-15",
+      "seq": 73,
+      "status": "proposed"
+    },
+    {
+      "player": "carrie",
+      "kind": "new-job",
+      "afterSeason": "td-15",
+      "seq": 74,
+      "status": "proposed"
+    },
+    {
+      "player": "ellody",
+      "kind": "garden",
+      "afterSeason": "td-15",
+      "seq": 75,
+      "status": "proposed"
+    },
+    {
+      "player": "lorenzo",
+      "kind": "marathon",
+      "afterSeason": "td-15",
+      "seq": 76,
+      "status": "proposed"
+    },
+    {
+      "player": "macarthur",
+      "kind": "haircut",
+      "afterSeason": "td-15",
+      "seq": 77,
+      "status": "proposed"
+    },
+    {
+      "player": "spud",
+      "kind": "marathon",
+      "afterSeason": "td-15",
+      "seq": 78,
+      "status": "proposed"
+    },
+    {
+      "player": "taylor",
+      "kind": "started-business",
+      "afterSeason": "td-15",
+      "seq": 79,
+      "status": "proposed"
+    },
+    {
+      "player": "tom",
+      "kind": "learned",
+      "afterSeason": "td-15",
+      "seq": 80,
+      "status": "proposed"
+    },
+    {
+      "player": "chet",
+      "kind": "volunteering",
+      "afterSeason": "td-15",
+      "seq": 81,
+      "status": "proposed"
+    },
+    {
+      "player": "gerry",
+      "kind": "went-public",
+      "afterSeason": "td-15",
+      "seq": 82,
+      "status": "proposed",
+      "whom": "miles"
+    },
+    {
+      "player": "rock",
+      "kind": "pet",
+      "afterSeason": "td-15",
+      "seq": 83,
+      "status": "proposed"
+    },
+    {
+      "player": "axel",
+      "kind": "went-public",
+      "afterSeason": "td-15",
+      "seq": 84,
+      "status": "proposed",
+      "whom": "ripper"
+    },
+    {
+      "player": "bowie",
+      "kind": "pet",
+      "afterSeason": "td-15",
+      "seq": 85,
+      "status": "proposed"
+    },
+    {
+      "player": "brightly",
+      "kind": "started-business",
+      "afterSeason": "td-15",
+      "seq": 86,
+      "status": "proposed"
+    },
+    {
+      "player": "brightly",
+      "kind": "cooking",
+      "afterSeason": "td-15",
+      "seq": 87,
+      "status": "proposed"
+    },
+    {
+      "player": "chase",
+      "kind": "engaged",
+      "afterSeason": "td-15",
+      "seq": 88,
+      "status": "proposed",
+      "whom": "nichelle"
+    },
+    {
+      "player": "damien",
+      "kind": "graduated",
+      "afterSeason": "td-15",
+      "seq": 89,
+      "status": "proposed"
+    },
+    {
+      "player": "damien",
+      "kind": "learned",
+      "afterSeason": "td-15",
+      "seq": 90,
+      "status": "proposed"
+    },
+    {
+      "player": "emmah",
+      "kind": "moved-abroad",
+      "afterSeason": "td-15",
+      "seq": 91,
+      "status": "proposed"
+    },
+    {
+      "player": "hicks",
+      "kind": "laid-off",
+      "afterSeason": "td-15",
+      "seq": 92,
+      "status": "proposed"
+    },
+    {
+      "player": "julia",
+      "kind": "dating",
+      "afterSeason": "td-15",
+      "seq": 93,
+      "status": "proposed",
+      "whom": "spencer"
+    },
+    {
+      "player": "julia",
+      "kind": "bought-home",
+      "afterSeason": "td-15",
+      "seq": 94,
+      "status": "proposed"
+    },
+    {
+      "player": "millie",
+      "kind": "bought-home",
+      "afterSeason": "td-15",
+      "seq": 95,
+      "status": "proposed"
+    },
+    {
+      "player": "ripper",
+      "kind": "moved",
+      "afterSeason": "td-15",
+      "seq": 96,
+      "status": "proposed"
+    },
+    {
+      "player": "wayne",
+      "kind": "renovated",
+      "afterSeason": "td-15",
+      "seq": 97,
+      "status": "proposed"
+    },
+    {
+      "player": "wayne",
+      "kind": "in-shape",
+      "afterSeason": "td-15",
+      "seq": 98,
+      "status": "proposed"
+    },
+    {
+      "player": "jake",
+      "kind": "investment",
+      "afterSeason": "td-15",
+      "seq": 99,
+      "status": "proposed"
+    },
+    {
+      "player": "miriam",
+      "kind": "moved",
+      "afterSeason": "td-15",
+      "seq": 100,
+      "status": "proposed"
+    },
+    {
+      "player": "grett",
+      "kind": "graduated",
+      "afterSeason": "td-15",
+      "seq": 101,
+      "status": "proposed"
+    },
+    {
+      "player": "grett",
+      "kind": "bought-home",
+      "afterSeason": "td-15",
+      "seq": 102,
+      "status": "proposed"
+    },
+    {
+      "player": "grett",
+      "kind": "new-language",
+      "afterSeason": "td-15",
+      "seq": 103,
+      "status": "proposed"
+    },
+    {
+      "player": "dan",
+      "kind": "laid-off",
+      "afterSeason": "td-15",
+      "seq": 104,
+      "status": "proposed"
+    },
+    {
+      "player": "dan",
+      "kind": "volunteering",
+      "afterSeason": "td-15",
+      "seq": 105,
+      "status": "proposed"
+    },
+    {
+      "player": "drew",
+      "kind": "side-hustle",
+      "afterSeason": "td-15",
+      "seq": 106,
+      "status": "proposed"
+    },
+    {
+      "player": "gabby",
+      "kind": "dating",
+      "afterSeason": "td-15",
+      "seq": 107,
+      "status": "proposed",
+      "whom": "nura"
+    },
+    {
+      "player": "gabby",
+      "kind": "mentored",
+      "afterSeason": "td-15",
+      "seq": 108,
+      "status": "proposed"
+    },
+    {
+      "player": "sterling",
+      "kind": "travelling",
+      "afterSeason": "td-15",
+      "seq": 109,
+      "status": "proposed"
+    },
+    {
+      "player": "sterling",
+      "kind": "promoted",
+      "afterSeason": "td-15",
+      "seq": 110,
+      "status": "proposed"
+    },
+    {
+      "player": "eureka",
+      "kind": "business-folded",
+      "afterSeason": "td-15",
+      "seq": 111,
+      "status": "proposed"
+    },
+    {
+      "player": "will",
+      "kind": "moved-abroad",
+      "afterSeason": "td-15",
+      "seq": 112,
+      "status": "proposed"
+    },
+    {
+      "player": "alec",
+      "kind": "new-job",
+      "afterSeason": "td-15",
+      "seq": 113,
+      "status": "proposed"
+    },
+    {
+      "player": "fiore",
+      "kind": "career-change",
+      "afterSeason": "td-15",
+      "seq": 114,
+      "status": "proposed"
+    },
+    {
+      "player": "ellie",
+      "kind": "pet",
+      "afterSeason": "td-15",
+      "seq": 115,
+      "status": "proposed"
+    },
+    {
+      "player": "wix",
+      "kind": "haircut",
+      "afterSeason": "td-15",
+      "seq": 116,
+      "status": "proposed"
+    },
+    {
+      "player": "james",
+      "kind": "new-job",
+      "afterSeason": "td-15",
+      "seq": 117,
+      "status": "proposed"
+    },
+    {
+      "player": "riya",
+      "kind": "hobby",
+      "afterSeason": "td-15",
+      "seq": 118,
+      "status": "proposed"
+    },
+    {
+      "player": "rosa-maria",
+      "kind": "new-job",
+      "afterSeason": "td-15",
+      "seq": 119,
+      "status": "proposed"
+    },
+    {
+      "player": "aiden",
+      "kind": "travelling",
+      "afterSeason": "td-15",
+      "seq": 120,
+      "status": "proposed"
+    },
+    {
+      "player": "hunter",
+      "kind": "quit-job",
+      "afterSeason": "td-15",
+      "seq": 121,
+      "status": "proposed"
+    },
+    {
+      "player": "yul",
+      "kind": "moved",
+      "afterSeason": "td-15",
+      "seq": 122,
+      "status": "proposed"
+    },
+    {
+      "player": "yul",
+      "kind": "haircut",
+      "afterSeason": "td-15",
+      "seq": 123,
+      "status": "proposed"
+    },
+    {
+      "player": "tess",
+      "kind": "old-car",
+      "afterSeason": "td-15",
+      "seq": 124,
+      "status": "proposed"
+    },
+    {
+      "player": "ally",
+      "kind": "garden",
+      "afterSeason": "td-15",
+      "seq": 125,
+      "status": "proposed"
+    },
+    {
+      "player": "oliver",
+      "kind": "moved",
+      "afterSeason": "td-15",
+      "seq": 126,
+      "status": "proposed"
+    },
+    {
+      "player": "oliver",
+      "kind": "travelling",
+      "afterSeason": "td-15",
+      "seq": 127,
+      "status": "proposed"
+    },
+    {
+      "player": "jade",
+      "kind": "new-language",
+      "afterSeason": "td-15",
+      "seq": 128,
+      "status": "proposed"
+    },
+    {
+      "player": "spencer",
+      "kind": "moved-abroad",
+      "afterSeason": "td-15",
+      "seq": 129,
+      "status": "proposed"
+    },
+    {
+      "player": "spencer",
+      "kind": "watch-party",
+      "afterSeason": "td-15",
+      "seq": 130,
+      "status": "proposed",
+      "whom": "julia"
+    },
+    {
+      "player": "spencer",
+      "kind": "year-off",
+      "afterSeason": "td-15",
+      "seq": 131,
+      "status": "proposed"
+    },
+    {
+      "player": "zaid",
+      "kind": "tattoo",
+      "afterSeason": "td-15",
+      "seq": 132,
+      "status": "proposed"
+    },
+    {
+      "player": "zaid",
+      "kind": "surgery",
+      "afterSeason": "td-15",
+      "seq": 133,
+      "status": "proposed"
+    },
+    {
+      "player": "ivy",
+      "kind": "graduated",
+      "afterSeason": "td-15",
+      "seq": 134,
+      "status": "proposed"
+    },
+    {
+      "player": "ivy",
+      "kind": "travelling",
+      "afterSeason": "td-15",
+      "seq": 135,
+      "status": "proposed"
+    },
+    {
+      "player": "hannah",
+      "kind": "garden",
+      "afterSeason": "td-15",
+      "seq": 136,
+      "status": "proposed"
+    },
+    {
+      "player": "amelie",
+      "kind": "laid-off",
+      "afterSeason": "td-15",
+      "seq": 137,
+      "status": "proposed"
+    },
+    {
+      "player": "lynda",
+      "kind": "hobby",
+      "afterSeason": "td-15",
+      "seq": 138,
+      "status": "proposed"
+    },
+    {
+      "player": "natalia",
+      "kind": "dating",
+      "afterSeason": "td-15",
+      "seq": 139,
+      "status": "proposed",
+      "whom": "ernesto"
+    },
+    {
+      "player": "natalia",
+      "kind": "pet",
+      "afterSeason": "td-15",
+      "seq": 140,
+      "status": "proposed"
+    },
+    {
+      "player": "marissa",
+      "kind": "moved-city",
+      "afterSeason": "td-15",
+      "seq": 141,
+      "status": "proposed"
+    },
+    {
+      "player": "marissa",
+      "kind": "burnout",
+      "afterSeason": "td-15",
+      "seq": 142,
+      "status": "proposed"
+    },
+    {
+      "player": "logan",
+      "kind": "marathon",
+      "afterSeason": "td-15",
+      "seq": 143,
+      "status": "proposed"
+    },
+    {
+      "player": "richard",
+      "kind": "year-off",
+      "afterSeason": "td-15",
+      "seq": 144,
+      "status": "proposed"
+    },
+    {
+      "player": "richard",
+      "kind": "moved-abroad",
+      "afterSeason": "td-15",
+      "seq": 145,
+      "status": "proposed"
+    },
+    {
+      "player": "misha",
+      "kind": "flatmates",
+      "afterSeason": "td-15",
+      "seq": 146,
+      "status": "proposed",
+      "whom": "jules"
+    },
+    {
+      "player": "tobias",
+      "kind": "career-change",
+      "afterSeason": "td-15",
+      "seq": 147,
+      "status": "proposed"
+    },
+    {
+      "player": "jane",
+      "kind": "tattoo",
+      "afterSeason": "td-15",
+      "seq": 148,
+      "status": "proposed"
+    },
+    {
+      "player": "aaron",
+      "kind": "new-language",
+      "afterSeason": "td-15",
+      "seq": 149,
+      "status": "proposed"
+    },
+    {
+      "player": "gyselle",
+      "kind": "quit-job",
+      "afterSeason": "td-15",
+      "seq": 150,
+      "status": "proposed"
+    },
+    {
+      "player": "ireland",
+      "kind": "new-job",
+      "afterSeason": "td-15",
+      "seq": 151,
+      "status": "proposed"
+    },
+    {
+      "player": "nico",
+      "kind": "marathon",
+      "afterSeason": "td-15",
+      "seq": 152,
+      "status": "proposed"
+    },
+    {
+      "player": "hasan",
+      "kind": "enrolled",
+      "afterSeason": "td-15",
+      "seq": 153,
+      "status": "proposed"
+    },
+    {
+      "player": "hasan",
+      "kind": "travelling",
+      "afterSeason": "td-15",
+      "seq": 154,
+      "status": "proposed"
+    },
+    {
+      "player": "zella",
+      "kind": "graduated",
+      "afterSeason": "td-15",
+      "seq": 155,
+      "status": "proposed"
+    },
+    {
+      "player": "zella",
+      "kind": "moved-abroad",
+      "afterSeason": "td-15",
+      "seq": 156,
+      "status": "proposed"
+    },
+    {
+      "player": "amberly",
+      "kind": "business-folded",
+      "afterSeason": "td-15",
+      "seq": 157,
+      "status": "proposed"
+    },
+    {
+      "player": "stella",
+      "kind": "travelling",
+      "afterSeason": "td-15",
+      "seq": 158,
+      "status": "proposed"
+    },
+    {
+      "player": "taystee",
+      "kind": "bought-home",
+      "afterSeason": "td-15",
+      "seq": 159,
+      "status": "proposed"
+    },
+    {
+      "player": "taystee",
+      "kind": "garden",
+      "afterSeason": "td-15",
+      "seq": 160,
+      "status": "proposed"
+    },
+    {
+      "player": "sharon-needles",
+      "kind": "career-change",
+      "afterSeason": "td-15",
+      "seq": 161,
+      "status": "proposed"
+    },
+    {
+      "player": "riot",
+      "kind": "travelling",
+      "afterSeason": "td-15",
+      "seq": 162,
+      "status": "proposed"
+    },
+    {
+      "player": "quin",
+      "kind": "garden",
+      "afterSeason": "td-15",
+      "seq": 163,
+      "status": "proposed"
+    },
+    {
+      "player": "quin",
+      "kind": "podcast",
+      "afterSeason": "td-15",
+      "seq": 164,
+      "status": "proposed"
+    },
+    {
+      "player": "paige-turner",
+      "kind": "marathon",
+      "afterSeason": "td-15",
+      "seq": 165,
+      "status": "proposed"
+    },
+    {
+      "player": "paige-turner",
+      "kind": "started-business",
+      "afterSeason": "td-15",
+      "seq": 166,
+      "status": "proposed"
+    },
+    {
+      "player": "minnie-skurr",
+      "kind": "hobby",
+      "afterSeason": "td-15",
+      "seq": 167,
+      "status": "proposed"
+    },
+    {
+      "player": "ginger-hollywood",
+      "kind": "enrolled",
+      "afterSeason": "td-15",
+      "seq": 168,
+      "status": "proposed"
+    },
+    {
+      "player": "ginger-hollywood",
+      "kind": "volunteering",
+      "afterSeason": "td-15",
+      "seq": 169,
+      "status": "proposed"
+    },
+    {
+      "player": "ginger-hollywood",
+      "kind": "injury",
+      "afterSeason": "td-15",
+      "seq": 170,
+      "status": "proposed"
+    },
+    {
+      "player": "gigi-cherie",
+      "kind": "moved-in",
+      "afterSeason": "td-15",
+      "seq": 171,
+      "status": "proposed",
+      "whom": "autumnatic"
+    },
+    {
+      "player": "cupcakke",
+      "kind": "year-off",
+      "afterSeason": "td-15",
+      "seq": 172,
+      "status": "proposed"
+    },
+    {
+      "player": "cupcakke",
+      "kind": "bought-home",
+      "afterSeason": "td-15",
+      "seq": 173,
+      "status": "proposed"
+    },
+    {
+      "player": "cupcakke",
+      "kind": "bad-investment",
+      "afterSeason": "td-15",
+      "seq": 174,
+      "status": "proposed"
+    },
+    {
+      "player": "cheryl-hole",
+      "kind": "new-language",
+      "afterSeason": "td-15",
+      "seq": 175,
+      "status": "proposed"
+    },
+    {
+      "player": "anita-crown-davenport",
+      "kind": "road-trip",
+      "afterSeason": "td-15",
+      "seq": 176,
+      "status": "proposed",
+      "whom": "velvet-vixen"
+    },
+    {
+      "player": "aubrey",
+      "kind": "haircut",
+      "afterSeason": "td-15",
+      "seq": 177,
+      "status": "proposed"
+    },
+    {
+      "player": "ara",
+      "kind": "marathon",
+      "afterSeason": "td-15",
+      "seq": 178,
+      "status": "proposed"
+    },
+    {
+      "player": "ernesto",
+      "kind": "laid-off",
+      "afterSeason": "td-15",
+      "seq": 179,
+      "status": "proposed"
+    },
+    {
+      "player": "finn",
+      "kind": "laid-off",
+      "afterSeason": "td-15",
+      "seq": 180,
+      "status": "proposed"
+    },
+    {
+      "player": "finn",
+      "kind": "marathon",
+      "afterSeason": "td-15",
+      "seq": 181,
+      "status": "proposed"
+    },
+    {
+      "player": "nura",
+      "kind": "road-trip",
+      "afterSeason": "td-15",
+      "seq": 182,
+      "status": "proposed",
+      "whom": "gabby"
+    },
+    {
+      "player": "sami",
+      "kind": "bought-home",
+      "afterSeason": "td-15",
+      "seq": 183,
+      "status": "proposed"
     }
   ]
 }

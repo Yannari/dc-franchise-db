@@ -14,6 +14,7 @@ import { useSave } from './twists.js';
 import { rest } from './mind.js';
 import { emit, playScene, SCENES, decideEnding, prepare, CLASH_KINDS } from './scenes.js';
 import { getBond } from '../bonds.js';
+import { S } from './state.js';
 
 const CASH = 200;
 const people = (st, id) => (id && st.teams[id] ? [st.teams[id].a, st.teams[id].b] : []);
@@ -24,6 +25,24 @@ function act(state, kindId, tid, oid, rng, ending = null, data = {}) {
   const e = ending || decideEnding(SCENES[kindId], prepare(ctx), rng);
   const sc = playScene(ctx, kindId, rng, { ending: e });
   if (sc) Object.assign(sc.data, data);
+  return sc;
+}
+
+// A couple who just won can propose on the mat: a couple not engaged or married yet, close (bond 4 and up), rarely
+// after a leg win and more often at the finish. The bolder one asks. A yes is the leg it happened on (engagedAt), not
+// their history: the premiere is written after the season, and it still meets a dating couple.
+const PROPOSE_RELS = ['dating', 'newly-dating', 'on-off', 'once-engaged'];
+const PROPOSE_P = { leg: 0.06, final: 0.35 };
+function proposalCheck(state, leg, order, finish, rng) {
+  const id = order[0];
+  const t = id && state.teams[id];
+  if (!t || !PROPOSE_RELS.includes(t.rel) || t.history?.engaged || t.engagedAt || state.proposed?.[id]) return null;
+  if (getBond(t.a, t.b) < 4 || rng() >= (leg.kind === 'final' ? PROPOSE_P.final : PROPOSE_P.leg)) return null;
+  const [asks, asked] = S(t.a, 'boldness') >= S(t.b, 'boldness') ? [t.a, t.b] : [t.b, t.a];
+  const sc = playScene({ state, team: { id }, moment: 'proposal', people: [asks, asked], t: (finish[id] ?? 0) + 0.5,
+    stretch: { id: 'mat', kind: 'mat' }, present: [id] }, 'proposal', rng);
+  (state.proposed ||= {})[id] = leg.n;
+  if (sc?.data?.ending === 'yes') t.engagedAt = leg.n;
   return sc;
 }
 
@@ -163,6 +182,8 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     if (r === 'call-home') act(state, 'call-home', first, null, rng, null, { t: finish[first] });
     else if (r) act(state, 'reward', first, null, rng, null, { reward: r, t: finish[first] });
   }
+
+  proposalCheck(state, leg, order, finish, rng);
 
   for (const id of racing) state.rec[id].penalties += state.pending[id] || 0;
   // what a non-elimination last team didn't serve, and the departure penalty, carry

@@ -14,6 +14,11 @@ const DATING = ['dating', 'newly-dating', 'on-off', 'married', 'once-engaged'];
 const secretOut = c => (c.state.threads || []).some(t => t.thread === 'secret' && t.closed && t.closed !== 'gone' && t.who.includes(c.A));
 
 register([
+  // A couple proposes on the mat after a win (chill.js proposalCheck). A is the one asking.
+  K({ id: 'proposal', family: 1, moments: ['proposal'], endings: {
+    yes: { w: c => 1 + Math.max(0, c.bond(c.A, c.B)) / 2, fx: (fx, c) => { fx.bond(c.A, c.B, 2); both(fx, c, 'morale', 10); fx.note(`engaged:${c.tid}`, c.state.leg); } },
+    'not-yet': { w: c => (c.bond(c.A, c.B) < 5 ? 1 : 0.25), fx: (fx, c) => { fx.bond(c.A, c.B, -1.5); fx.mind(c.A, 'morale', -10); fx.mind(c.B, 'stress', 5); } },
+  } }),
   K({ id: 'tip-read', family: 1, moments: ['tip'], endings: {
     clear: { w: c => c.S(c.lead, 'mental'), fx: (fx, c) => fx.mind(c.lead, 'morale', 1) },
     puzzled: { w: c => 10 - c.S(c.lead, 'mental'), fx: (fx, c) => fx.time(c.tid, 6) },

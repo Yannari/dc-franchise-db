@@ -7736,6 +7736,27 @@
       "descriptor": "The Lady Photographer",
       "backstory": "Lorraine built a career in real-estate photography after years as the relative entrusted with everyone's family pictures. She likes solving a bad angle, arranging light, and making an ordinary space feel worth noticing. Two divorces left her more independent and less certain that experience automatically produces wisdom. She has a wide network of acquaintances but fewer people she calls when she feels lonely. Her nephew Jace brings out her affectionate, meddling side. She enjoys linen shirts, ambitious weekend plans, and purchases she describes as investments. Work keeps placing her inside other people's fresh starts while she considers what she wants her own next chapter to contain.",
       "personality": "Lorraine is adaptable, sociable, and quick to make an unfamiliar environment feel domestic. She asks questions easily and often supplies advice before being invited. Concern can become a way of claiming closeness faster than another person is ready for. She enjoys feeling current and gets embarrassed when a reference exposes her uncertainty. Rather than admit she does not know, she may improvise confidently and explain too much. Her self-deprecating humor is usually warm, though it sometimes asks others to reassure her. She is tougher in a practical crisis than in a conversation about rejection. When she feels accepted without having to entertain or help, her wit becomes more relaxed and her advice less insistent."
+    },
+    {
+      "name": "Luis",
+      "slug": "luis",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 4,
+        "endurance": 3,
+        "mental": 8,
+        "social": 4,
+        "strategic": 7,
+        "loyalty": 5,
+        "boldness": 4,
+        "intuition": 8,
+        "temperament": 7
+      },
+      "voice": "#dry #nerdy #anxious #schemer. Checks wording and consequences before replying. Suggests shorter messages, then adds qualifications. Relaxed humor draws on domestic observations. As Mateo, sounds noticeably more formal and cautious. Stress produces exact questions about what was promised.",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

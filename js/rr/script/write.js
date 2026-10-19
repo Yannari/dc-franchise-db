@@ -128,7 +128,7 @@ export const TASK_LINES = new Set(Object.values(POOLS).flatMap(l => l.map(e => e
 const TASK_TALK = /\b(task|judge)\b/i;
 const TASKY = new Set(Object.values(POOLS).flat().filter(e => e.turns.some(t => TASK_TALK.test([t.say, t.conf, t.beat].join(' ')))));
 // kinds that are about a task whatever stretch they're filed under (Don explaining it, a team doing it)
-const KIND_AT_TASK = new Set(['task-start', 'task-try', 'task-done', 'attempt-fail', 'quit-task', 'helped-botch', 'allin-alone',
+export const KIND_AT_TASK = new Set(['task-start', 'task-try', 'task-done', 'attempt-fail', 'quit-task', 'helped-botch', 'allin-alone',
   'whose-botch', 'watching-botch', 'decide-side', 'don-demo', 'don-rule', 'don-ruling', 'judge-yes', 'identity-moment']);
 // the interviews that are about the moment before them: only a line written for that kind of moment will do
 const ABOUT_INTERVIEWS = new Set(['int-feeling', 'int-strategy', 'int-about-team', 'int-contradict']);

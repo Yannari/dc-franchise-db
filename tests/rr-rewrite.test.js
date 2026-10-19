@@ -3,6 +3,7 @@
 // story moments are scenes of 6 to 12; a line that names where it is (an airport, a task) only plays there.
 import { describe, it, expect } from 'vitest';
 import { POOLS, REWRITES } from '../js/rr/script/lines/index.js';
+import { KIND_AT_TASK } from '../js/rr/script/write.js';
 
 const QUICK = new Set(['celebrate', 'judge-yes', 'tip-read', 'ride', 'arrival-awe', 'task-start', 'task-done', 'attempt-fail', 'gross-out', 'don-place', 'don-elim', 'don-fakeout', 'don-arrives', 'identity-moment']);
 const WHERE = [
@@ -41,7 +42,8 @@ describe('rr rewrite', () => {
       if (k.startsWith('int-')) continue;
       for (const e of list) {
         const text = e.turns.map(t => [t.say, t.beat, t.conf].join(' ')).join(' ');
-        for (const [at, re] of WHERE) if (re.test(text)) expect(e.when?.at, `${e.id} names the ${at}`).toBe(at);
+        // the kinds that only ever happen at a challenge may name it anywhere (the writer's own rule, write.js)
+        for (const [at, re] of WHERE) if (re.test(text) && !(at === 'task' && KIND_AT_TASK.has(k.split('.')[0]))) expect(e.when?.at, `${e.id} names the ${at}`).toBe(at);
       }
     }
   });

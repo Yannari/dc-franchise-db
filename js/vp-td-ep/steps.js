@@ -605,6 +605,8 @@ export function tdCampScreen(ep, camp, phase, members = [], o = {}) {
       steps.push({ k: 'beat', text, badge, cut: true, act: actOf(text, cast, null),
         side: [{ tab: 'log', text: `${badge ? badge.text + ': ' : ''}${focus.join(', ')}` }] });
       if (ev.type === 'idolFound' && focus[0]) { steps[steps.length - 1].side.push({ tab: 'secrets', text: `${focus[0]} found a Hidden Immunity Idol.` }); foundStep(steps, ev); }
+      // the willed Legacy Advantage, in the heir's hands
+      if (ev.type === 'legacyInheritance' && focus[0]) foundStep(steps, ev);
     }
   }
   if (!steps.length) return null;
@@ -619,8 +621,9 @@ const FIND_NAME = { idol: 'Hidden Immunity Idol', extraVote: 'Extra Vote', voteS
   amulet: 'Amulet', secondLife: 'Second Life Amulet', 'idol-totem': 'Hidden Immunity Idol', beware: 'Beware Advantage',
   voteBlock: 'Vote Block', teamSwap: 'Team Swap', safetyNoPower: 'Safety Without Power', soleVote: 'Sole Vote' };
 // every kind of find: the idol path (idolFound, with advType) and the tactical ones (advantages.js: voteStealFound...)
-const findType = ev => ev.advType || (ev.type || '').replace(/Found$/, '');
-const isFind = ev => ev.type === 'idolFound' || (/^[a-zA-Z]+Found$/.test(ev.type || '') && !!FIND_NAME[findType(ev)]);
+// (and the Legacy Advantage a boot willed, the morning it lands in the heir's bag: camp-events.js legacyInheritance)
+const findType = ev => ev.type === 'legacyInheritance' ? 'legacy' : ev.advType || (ev.type || '').replace(/Found$/, '');
+const isFind = ev => ev.type === 'idolFound' || ev.type === 'legacyInheritance' || (/^[a-zA-Z]+Found$/.test(ev.type || '') && !!FIND_NAME[findType(ev)]);
 // the search, when the scene doesn't show it: alone, somewhere the venue has, and the hand finding it
 const FIND_BEAT = {
   'world-tour': ['{a} waits until the cabin is asleep, then runs a hand under every seat cushion in the row. Under the third one, there is something.', '{a} checks the overhead bin nobody uses. Tucked behind a blanket, there is a small sealed package.'],
@@ -758,8 +761,13 @@ export function tdTribalScreen(ep, o = {}) {
   // "they just said Ellie used an extra vote, they didn't show it")
   const plays = ep.idolPlays || [];
   const precast = (ep.votingLog || []).filter(v => (v.voter === 'THE GAME' || v.isBlackVote) && v.voted && tribal.includes(v.voted) && !tribal.includes(v.voter));
-  const PRE = new Set(['extraVote', 'voteSteal', 'voteBlock', 'kip', 'soleVote', 'safetyNoPower', 'teamSwap', 'legacy']);
+  // (not the Legacy Advantage: the engine fires it once the votes are cast, as an idol, and it plays as one below)
+  const PRE = new Set(['extraVote', 'voteSteal', 'voteBlock', 'kip', 'soleVote', 'safetyNoPower', 'teamSwap']);
   const prePlays = plays.filter(p => PRE.has(p.type));
+  // the Super Idol is played after the votes are read (episode.js): the holder hears who is going and saves them. A night
+  // the engine sent to a tie after it keeps it with the idols before the read (the revote has its own reading).
+  const superPlay = coaches.length || ep.isTie || ep._alsoOut || ep._holdPlate ? null : plays.find(p => p.superIdol && (p.playedFor || p.player) !== elim) || null;
+  const superFor = superPlay ? (superPlay.playedFor || superPlay.player) : null;
   const held = {};
   for (const a of ep.gsSnapshot?.advantages || []) if (tribal.includes(a.holder)) (held[a.holder] ||= new Set()).add(a.type === 'superIdol' ? 'idol' : a.type);
   for (const p of plays) if (tribal.includes(p.player)) (held[p.player] ||= new Set()).add(p.type || 'idol');
@@ -845,23 +853,42 @@ export function tdTribalScreen(ep, o = {}) {
     { focus: [v.voted].filter(n => tribal.includes(n)), side: [{ tab: 'room', text: v.isBlackVote ? `${v.voter}'s Black Vote: ${v.voted}.` : `Penalty vote: ${v.voted}.` }] });
   // Chris asks, every time; then whoever stands up
   say(`If anybody has a Hidden Immunity Idol and you want to play it, now would be the time to do so.`);
-  const idolPlays = plays.filter(p => !PRE.has(p.type));
+  const idolPlays = plays.filter(p => !PRE.has(p.type) && p !== superPlay);
   if (!idolPlays.length) steps.push({ k: 'beat', text: Object.values(steps[0].glow || {}).includes('idol') ? `Nobody moves. Whoever has one is keeping it.` : `Nobody moves.`, focus: [], tense: true });
   for (const p of idolPlays) {
+    // the Legacy Advantage is immunity (the user, 2026-10-19: it never showed; it played as a card with no word on what it
+    // did, before the vote, and the holder's votes were still read out, four on Samey and Sam sent home on one)
+    if (p.type === 'legacy') {
+      steps.push({ k: 'power', by: p.player, type: 'legacy', name: POWER.legacy.name, the: POWER.legacy.the, on: null, focus: [p.player].filter(n => tribal.includes(n)) });
+      say(`This is the Legacy Advantage. ${p.player} is immune tonight, so any votes cast for ${p.player} will not count.`, { focus: [p.player] });
+      reacted(p);
+      continue;
+    }
     const t = IDOL_SAY(p);
     if (t) { steps.push({ k: 'beat', text: t, focus: [p.player].filter(n => tribal.includes(n)) }); reacted(p); continue; }
     const forWho = p.playedFor || p.player;
     steps.push({ k: 'idol', by: p.player, for: forWho, misplay: !!p.misplay, super: !!p.superIdol, focus: [p.player, forWho].filter((n, i, a) => tribal.includes(n) && a.indexOf(n) === i) });
-    say(`This is a Hidden Immunity Idol. Any votes cast for ${forWho} will not count.`, { focus: [forWho] });
+    say(`This is ${p.superIdol ? 'a Super Idol' : 'a Hidden Immunity Idol'}. Any votes cast for ${forWho} will not count.`, { focus: [forWho] });
     reacted(p);
   }
+  // ...and the Super Idol, once the reading has said who is going (handout and readVotes call this at that point)
+  const superMoment = !superPlay ? null : () => {
+    steps.push({ k: 'idol', by: superPlay.player, for: superFor, super: true, tense: true, focus: [superPlay.player, superFor].filter((n, i, a) => tribal.includes(n) && a.indexOf(n) === i) });
+    // (the holder's walk up comes before the host can name it)
+    reacted(superPlay);
+    // (a marshmallow night reads no votes: there it is played before the last one is handed out)
+    say(V.style === 'handout' ? `Hold on. That's a Super Idol, and a Super Idol can be played even now. Every vote cast for ${superFor} is cancelled.`
+      : `Hold on. That's a Super Idol, and a Super Idol can be played after the votes are read. Every vote cast for ${superFor} is cancelled.`, { focus: [superFor], tense: true });
+  };
   if (ep.shotInDark?.player) {
     const s = ep.shotInDark;
     steps.push({ k: 'beat', text: `${s.player} plays a Shot in the Dark.`, focus: [s.player] });
     say(s.safe ? `${s.player}: you're safe.` : `${s.player}: not safe.`, { focus: [s.player] });
   }
   // the counted votes, for the reading and the Intel tally afterwards
-  const protectedSet = new Set((ep.idolPlays || []).filter(p => !p.type && !p.misplay).map(p => p.playedFor || p.player));
+  // (an idol the last-chance night forces out, or the chain of command's, carries type 'idol'; the Legacy is an immunity too;
+  // the Super Idol's votes are read, and only cancelled after: superMoment)
+  const protectedSet = new Set((ep.idolPlays || []).filter(p => (!p.type || p.type === 'idol' || p.type === 'legacy') && !p.misplay && p !== superPlay).map(p => p.playedFor || p.player));
   if (ep.shotInDark?.safe) protectedSet.add(ep.shotInDark.player);
   const ballots = [...(ep.votingLog || []).filter(v => tribal.includes(v.voter) && v.voted && !v.voteStolen && !v.voteBlocked), ...precast.map(v => ({ ...v, voter: v.isBlackVote ? `${v.voter} (Black Vote)` : 'Penalty' })),
     ...plays.filter(p => (p.type === 'extraVote' || p.type === 'voteSteal') && p.target && tribal.includes(p.player))
@@ -875,7 +902,8 @@ export function tdTribalScreen(ep, o = {}) {
     colorOf: o.colorOf || null, teamOf: n => (ep.tribesAtStart || []).find(t => (t.members || []).includes(n))?.name || ep.tribalTribe || null,
     bond: (x, y) => (ep.gsSnapshot?.bonds || {})[x <= y ? `${x}||${y}` : `${y}||${x}`] ?? 0 };
   // (a coach night reads the votes: a coach was never in line for a marshmallow)
-  if (V.style === 'handout' && !coaches.length) handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host, alsoOut: ep._alsoOut || null, hold: !!ep._holdPlate, rv });
+  const sup = superPlay ? { for: superFor, out: elim, moment: superMoment } : null;
+  if (V.style === 'handout' && !coaches.length) handout(steps, say, V, { tribal, elim, counts, immune: [].concat(ep.immunityWinner || []).filter(n => tribal.includes(n)), tie, revote, rocks: !!ep.isRockDraw, host, alsoOut: ep._alsoOut || null, hold: !!ep._holdPlate, rv, sup, shielded: protectedSet });
   else {
     // who has gone before this one: the boot is the nth voted out of the game
     // (and, on a Multi-Tribal night, whoever the councils before this one sent home: o.before, tdMultiTribalScreen)
@@ -887,7 +915,7 @@ export function tdTribalScreen(ep, o = {}) {
     // (a coach read after another coach's read the same night is "the next": the first was saved by the card, and "the
     // first coach voted out" said twice in one night read as a mistake)
     readVotes(steps, say, { ...V, _host: host, _nth: isCoach ? (o.before?.coachRead ? null : ORD[coachGone] || null) : ORD[gone] || null, _who: isCoach ? 'coach' : 'person', _of: isCoach ? 'this season' : 'of the game', _ep: ep },
-      { tribal: seatedAll, elim, ballots, protectedSet, tie, revote, rocks: !!ep.isRockDraw, rv });
+      { tribal: seatedAll, elim: sup ? sup.for : elim, ballots, protectedSet, tie, revote, rocks: !!ep.isRockDraw, rv, sup });
   }
   // the card's verdict, and a coach's goodbye (coach-tribal.js)
   const coachNight = coaches.length ? cardAfterRead(steps, say, { ep, host, tribal, coaches, readOut: coachReadOut(ep) }) : null;
@@ -968,10 +996,27 @@ export function tdTribalScreen(ep, o = {}) {
   // whoever actually leaves: the card's replacement, not the coach it saved (the user, 2026-10-14: the host told Bowie,
   // just saved by the card, to grab his torch)
   if (coachNight?.out) elim = coachNight.out;
+  // a Legacy Advantage is willed on the way out (advantages.js handleAdvantageInheritance; the snapshot, taken after,
+  // has it in the heir's hands), in the boot's last words to the camera, the way the heir hears of it in the morning
+  // from a note (camp-events.js legacyInheritance): nobody at camp knows (the user, 2026-10-19: "dont show when a
+  // legacy advantage is played and gifted")
+  const willed = (ep.gsSnapshot?.advantages || []).filter(a => a.type === 'legacy' && a.inheritedFrom === elim && a.inheritedEp === ep.num && a.holder && a.holder !== elim);
+  const confPlate = plateKey(venue, 'confessional', 'night') || plateKey(venue, 'confessional', 'day');
+  const will = () => {
+    if (!willed.length) return;
+    if (confPlate) steps.push({ k: 'scene', spot: 'confessional', tod: 'night', plate: confPlate, place: PLACE.confessional || 'Confessional', time: 'Later', card: true, focus: [elim], bg: [], places: placeScene(confPlate, [elim]) });
+    for (const a of willed) {
+      steps.push({ k: 'conf', by: elim, text: `I've had the Legacy Advantage this whole time, and it doesn't leave with me. It goes to ${a.holder}.` });
+      steps.push({ k: 'power', by: elim, type: 'legacy', name: POWER.legacy.name, the: POWER.legacy.the, on: a.holder, will: true, focus: [elim],
+        side: [{ tab: 'secrets', text: `${elim} left the Legacy Advantage to ${a.holder}. ${a.holder} finds it in the morning.` }] });
+      steps.push({ k: 'conf', by: elim, text: `${a.holder}, you'll know when to use it. Make it count.` });
+    }
+  };
   // voted out onto an island: nobody leaves the game tonight, the host says where they go next
   if (ep.riChoice) {
     steps.forEach(x => { if (x.k === 'out') x.island = true; });
     say(ep.riChoice === 'RESCUE ISLAND' ? `${elim}, you're not going home. You're going to Rescue Island.` : `${elim}, grab your torch. You have one more choice to make.`, { focus: [elim] });
+    will();
     return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps: forwardClock(steps), elim };
   }
   // the walk out: whoever actually leaves (elim, the card's replacement when the card decided it, above)
@@ -1044,11 +1089,11 @@ export function tdTribalScreen(ep, o = {}) {
     steps.push({ k: 'scene', spot: 'pier', tod: 'night', plate: pier, place: 'The Pier', time: '9:14 PM', focus: [], bg: [], wide: true, places: {}, parked: 'clownboat' });
     steps.push({ k: 'beat', text: `The boat pulls away from Stawaki. ${elim} leaves the game.`, act: { kind: 'depart', ride: 'clownboat' } });
   } else steps.push({ k: 'beat', text: `${elim} leaves the game.`, walk: elim });
+  will();
   // after: the people who did it, or the one who lost their person, to the camera
-  const confPlate = plateKey(venue, 'confessional', 'night') || plateKey(venue, 'confessional', 'day');
   const afterLines = (story?.after || []).filter(l => l.kind === 'conf' && l.by);
   if (afterLines.length && confPlate) {
-    steps.push({ k: 'scene', spot: 'confessional', tod: 'night', plate: confPlate, place: PLACE.confessional || 'Confessional', time: 'Later', card: true, focus: [afterLines[0].by], bg: [], places: placeScene(confPlate, [afterLines[0].by]) });
+    steps.push({ k: 'scene', spot: 'confessional', tod: 'night', plate: confPlate, place: PLACE.confessional || 'Confessional', time: 'Later', card: !willed.length, cut: !!willed.length, focus: [afterLines[0].by], bg: [], places: placeScene(confPlate, [afterLines[0].by]) });
     afterLines.forEach(l => steps.push(lineStep(l)));
   }
   // at Wawanakwa the Boat of Losers runs to Playa Des Losers, the resort the voted-out wait at (Total Drama Island)
@@ -1073,7 +1118,10 @@ export function tdTribalScreen(ep, o = {}) {
   return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps: forwardClock(steps), elim };
 }
 
-function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, rocks, host, alsoOut = null, hold = false, rv = null }) {
+function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, rocks, host, alsoOut = null, hold = false, rv = null, sup = null, shielded = new Set() }) {
+  // a Super Idol (sup): the last two are the one the votes sent home and the one going home tonight; the holder
+  // stands up before the last item is handed out
+  if (tie || hold || alsoOut) sup = null;
   const n = tribal.length;
   // a tie: the revote happens before anyone is called
   if (tie) {
@@ -1100,19 +1148,22 @@ function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, roc
   const left = n - (alsoOut ? 2 : 1);
   say(`There are ${n} of you and only ${left} ${left === 1 ? V.item : V.items} on this plate. When I call your name, come and get one.`);
   // safe order: immunity first, then the fewest votes; the last two are the boot and the closest call
-  const others = tribal.filter(x => x !== elim && x !== alsoOut && !immune.includes(x));
-  const order = others.sort((a, b) => (counts[a] || 0) - (counts[b] || 0) || a.localeCompare(b));
+  const others = tribal.filter(x => x !== elim && x !== alsoOut && x !== sup?.for && !immune.includes(x));
+  // (whoever an idol or the Legacy Advantage protects is called first: with every other count at zero the alphabet made
+  // Samey, immune on the Legacy, the closest call)
+  const order = others.sort((a, b) => (shielded.has(b) - shielded.has(a)) || (counts[a] || 0) - (counts[b] || 0) || a.localeCompare(b));
   // a double elimination announced in advance: the last two both go, nobody gets the final one; after a
   // tiebreaker or the rocks there is nobody left to keep in suspense
   const settled = !!(rv?.tb || rocks);
-  const runnerUp = alsoOut || settled ? null : order.length ? order[order.length - 1] : null;
+  const runnerUp = sup ? sup.for : alsoOut || settled ? null : order.length ? order[order.length - 1] : null;
   for (const im of immune) if (im !== elim) { steps.push({ k: 'safe', who: im, item: V.item, immune: true }); }
-  const early = alsoOut || settled ? order : order.slice(0, Math.max(0, order.length - 1));
+  const early = sup || alsoOut || settled ? order : order.slice(0, Math.max(0, order.length - 1));
   for (const w of early) steps.push({ k: 'safe', who: w, item: V.item });
   if (runnerUp) {
     say(`${elim}. ${runnerUp}.`, { tense: true, focus: [elim, runnerUp] });
     say(`This is the final ${V.item} of the evening.`, { tense: true, focus: [elim, runnerUp] });
     steps.push({ k: 'beat', text: `${elim} and ${runnerUp} wait.`, tense: true, focus: [elim, runnerUp] });
+    if (sup) sup.moment();
     steps.push({ k: 'safe', who: runnerUp, item: V.item, last: true });
   }
   if (alsoOut) {
@@ -1206,7 +1257,10 @@ function voteReaction(steps, V, { v, tally, deciding, tribal, elim, ballots, i, 
   else if (leads && cnt >= 2 && i >= n - 4) push(knew ? (temper <= 4 ? 'angry' : 'steady') : 'scared', ally, { [X]: knew ? (temper <= 4 ? 'angry' : 'steady') : 'scared' });
 }
 
-function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, revote, rocks, rv = null }) {
+function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, revote, rocks, rv = null, sup = null }) {
+  // a Super Idol (sup): the reading runs to the one the votes send home (elim here is sup.for), the holder stands up, and
+  // with those votes cancelled the host names who really goes (sup.out)
+  if (tie) sup = null;
   say(`I'll read the votes.`);
   // the deciding vote last: everyone else's first, the boot's held back until the end
   const live = ballots.filter(v => !protectedSet.has(v.voted));
@@ -1262,7 +1316,7 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
   order.forEach(({ v, dead: d, deciding, after: late }, i) => {
     // after the vote that decides it: the rest, read straight through for the record
     if (late) {
-      if (!restSaid) { restSaid = true; steps.push({ k: 'say', by: V._host, host: true, text: REST[(ballots.length + i) % REST.length] }); }
+      if (!restSaid) { restSaid = true; steps.push({ k: 'say', by: V._host, host: true, text: sup ? REST[2] : REST[(ballots.length + i) % REST.length] }); }
       tally[v.voted] = (tally[v.voted] || 0) + 1;
       steps.push({ k: 'read', vote: v.voted, dead: false, deciding: false, tally: { ...tally }, focus: [v.voted], line: `${v.voted}.`, quick: true });
       return;
@@ -1281,6 +1335,7 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
     const after = lead(tally);
     let line;
     if (d) line = `${v.voted}. Does not count.`;
+    else if (deciding && sup) line = `${v.voted}. That's ${after.map(([n, c]) => `${word(c)} vote${c === 1 ? '' : 's'} ${n}`).join(', ')}...`;
     else if (deciding) line = `The ${V._nth || 'next'} ${V._who || 'person'} voted out ${V._of}... ${v.voted}.${order.some(o => o.after) ? ` That's ${word(tally[v.voted])} votes. That's enough.` : ''}`;
     // the count names everybody with a vote, not the top two (the user, 2026-10-18: "That's three votes Natalia, two
     // votes Spencer", with two on Julia and one on Ara left out, "it spoils me that it's between Natalia and Spencer")
@@ -1289,9 +1344,22 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
     else line = `${v.voted}.`;
     steps.push({ k: 'read', vote: v.voted, dead: !!d, deciding: !!deciding, tally: { ...tally }, focus: [v.voted], line, tense: !!deciding || close,
       of, left: order.length - i - 1, blind: !!deciding && !!V._ep?.tribalStory?.shocking, ...(close && !deciding && i >= 2 ? { contend } : {}) });
-    if (d) steps.push({ k: 'beat', text: `A vote for ${v.voted}, and it doesn't count. ${v.voted} lets out a breath.`, focus: [v.voted], feel: { [v.voted]: 'relief' } });
-    else if (V._ep) voteReaction(steps, V, { v, tally, deciding: !!deciding, tribal, elim, ballots, i, n: order.length });
+    // (the breath once, on the first vote that doesn't count: four in a row read as a loop)
+    if (d && !(V._dead ||= new Set()).has(v.voted)) { V._dead.add(v.voted); steps.push({ k: 'beat', text: `A vote for ${v.voted}, and it doesn't count. ${v.voted} lets out a breath.`, focus: [v.voted], feel: { [v.voted]: 'relief' } }); }
+    else if (V._ep) voteReaction(steps, V, { v, tally, deciding: !!deciding, tribal, elim: sup ? sup.out : elim, ballots, i, n: order.length });
   });
+  if (sup) {
+    sup.moment();
+    const left = Object.entries(tally).filter(([n]) => n !== sup.for).sort((a, b) => b[1] - a[1]);
+    const cnt = tally[sup.out] || 0;
+    say(left.length >= 2 ? `So the votes that count: ${left.map(([n, c]) => `${word(c)} vote${c === 1 ? '' : 's'} ${n}`).join(', ')}.` : cnt ? `That leaves ${word(cnt)} vote${cnt === 1 ? '' : 's'} ${sup.out}.` : `That leaves nobody with a vote.`,
+      { focus: left.slice(0, 2).map(x => x[0]).filter(x => tribal.includes(x)), tense: true });
+    steps.push({ k: 'read', vote: sup.out, dead: false, deciding: true, tally: Object.fromEntries(left), focus: [sup.out], line: `The ${V._nth || 'next'} ${V._who || 'person'} voted out ${V._of}... ${sup.out}.`, tense: true,
+      of: left.reduce((t, [, c]) => t + c, 0), left: 0, blind: !!V._ep?.tribalStory?.shocking, recount: true });
+    if (V._ep) voteReaction(steps, V, { v: { voted: sup.out }, tally, deciding: true, tribal, elim: sup.out, ballots, i: order.length, n: order.length + 1 });
+    steps.push({ k: 'out', who: sup.out, focus: [sup.out] });
+    return;
+  }
   if (tie) {
     steps.push({ k: 'title', kicker: 'Deadlock', name: 'A tie', faces: Object.entries(tally).filter(([, c]) => c === Math.max(...Object.values(tally))).map(([n]) => n) });
     say(revote.length ? `We have a tie. Which means a revote.` : `We have a tie.`);
@@ -1318,8 +1386,8 @@ export function tdStepTranscript(screen) {
     else if (s.k === 'title') out.push(`[${s.kicker}: ${s.name}]`);
     else if (s.k === 'ballot') out.push(`[${s.voter} votes: ${s.voted}]`);
     else if (s.k === 'ballots') out.push(`(${s.text})`);
-    else if (s.k === 'power') out.push(`(${s.by} plays ${s.the || s.name}${s.on ? ` on ${s.on}` : ''}.)`);
-    else if (s.k === 'idol') out.push(`(${s.by} plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.)`);
+    else if (s.k === 'power') out.push(s.will ? `(${s.by} leaves ${s.the || s.name} to ${s.on}.)` : `(${s.by} plays ${s.the || s.name}${s.on ? ` on ${s.on}` : ''}.)`);
+    else if (s.k === 'idol') out.push(`(${s.by} plays ${s.super ? 'the Super Idol' : 'a Hidden Immunity Idol'}${s.for !== s.by ? ` for ${s.for}` : ''}.)`);
     else if (s.k === 'safe') out.push(`${screen.host || 'Chris'}: "${s.who}${s.immune ? ', you have immunity' : ''}." (${s.who} is safe${s.last ? ': the last ' + s.item : ''}.)`);
     else if (s.k === 'read') out.push(`${screen.host || 'Chris'}: "${s.line || `${s.vote}${s.dead ? '. Does not count' : ''}.`}"`);
     else if (s.k === 'out') out.push(`(${s.who} is ${s.island ? 'voted out' : 'eliminated'}.)`);
@@ -1343,9 +1411,13 @@ export function tdDoubleTribalScreen(ep, o = {}) {
   const first = ep.firstEliminated;
   const key = p => `${p.player}:${p.type || 'idol'}:${p.stolenFrom || ''}`;
   const once = new Set((ep.idolPlays1 || []).map(key));
+  // the saved episode keeps both votes' plays on idolPlays, the first vote's first: the second vote's are what follows them.
+  // (Filtering by key dropped a second idol the same player played on the second vote, as the same "Katie:idol:".)
+  const p1 = ep.idolPlays1 || [], all = ep.idolPlays || [];
+  const plays2 = p1.length && all.length >= p1.length && p1.every((p, i) => key(all[i]) === key(p)) ? all.slice(p1.length) : all.filter(p => !once.has(key(p)));
   const v1 = { ...ep, eliminated: first, firstEliminated: null, idolPlays: ep.idolPlays1 || [], tribalStory: ep.tribalStory1 || null, riChoice: ep.firstRIChoice || null, _holdPlate: !!ep.announcedDoubleElim,
     isTie: false, revoteLog: [], shotInDark: ep.shotInDark1 || null, tiebreakerResult: ep.tiebreakerResult1 || null };
-  const v2 = { ...ep, firstEliminated: null, votingLog: ep.votingLog2, votes: ep.votes2, idolPlays: (ep.idolPlays || []).filter(p => !once.has(key(p))),
+  const v2 = { ...ep, firstEliminated: null, votingLog: ep.votingLog2, votes: ep.votes2, idolPlays: plays2,
     tribalPlayers: (ep.tribalPlayers || []).filter(n => n !== first), alliances: ep.alliances2 || [], defections: [] };
   if (!tdTribalStepped(v1) || !tdTribalStepped(v2)) return null;
   const a = tdTribalScreen(v1, o), b = tdTribalScreen(v2, { ...o, qa: [] });

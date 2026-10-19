@@ -17,6 +17,8 @@
 // adv.flush.any — {a} plants a fear in {b}, who holds an idol, so {b} plays it
 //   for nothing. {b} believes it.
 // adv.share.<close|ally> — {a} gives {b} an idol before the vote.
+// adv.inherit.any — the morning {a} finds the Legacy Advantage {target} left {a} on the way out
+//   (advantages.js handleAdvantageInheritance). Alone with the camera; {target} is gone.
 // host.gotcha.any — {host} promises {a} and {b} a reward. It isn't one.
 // This camp votes tonight for every adv.exposed/handover/flush/share. Ids: 'ad.'.
 const C = (id, ...lines) => ({ id, turns: lines.map(l => ({ by: 'a', conf: l })) });
@@ -336,8 +338,18 @@ const GOTCHA = [
   ] },
 ];
 
+const INHERIT = [
+  C('ad.li1', "There was a note in my bag this morning. From {target}. It's the Legacy Advantage.", "{target} trusted me with this. I'm not going to waste it."),
+  C('ad.li2', "{target} is gone, and {target} still found a way to look after me.", "Nobody here knows I have this, and that's how it stays."),
+  C('ad.li3', "Last night {target} went home. This morning I'm holding the Legacy Advantage.", "I've read the note about ten times. It doesn't say what to do with it. It just says I'll know."),
+  Cw('ad.li4', { register: 'schemer' }, "{target} left me the Legacy Advantage. Sweet of {target}. Very useful, too."),
+  C('ad.li5', "I'm holding something {target} kept hidden this whole time, and I keep thinking {target} should be the one using it.", "So I'll use it the way {target} would have."),
+  Cw('ad.li6', { register: 'fiery' }, "They voted {target} out, and {target} handed me this on the way out the door. Bad night for them!"),
+];
+
 export default {
   'adv.search.any': SEARCH,
+  'adv.inherit.any': INHERIT,
   ...Object.fromEntries(Object.entries(FOUND).map(([k, v]) => [`adv.found.${k}`, v])),
   ...Object.fromEntries(Object.entries(EXPOSED).map(([k, v]) => [`adv.exposed.${k}`, v])),
   'adv.handover.any': HANDOVER,

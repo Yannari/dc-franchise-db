@@ -7838,12 +7838,18 @@ export function generateCampEvents(ep, phase = 'both') {
       if (!gs.activePlayers.includes(to)) return;
       const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(to))?.name;
       if (!_campKey || !ep.campEvents[_campKey]) return;
-      const _toPr = pronouns(to);
-      ep.campEvents[_campKey].pre.push({ type: 'legacyInheritance', players: [to], text: _rp([
+      const _toPr = pronouns(to), _frPr = pronouns(from);
+      // (written as the heir's confessional, the engine's sentence opening it: the loose-event writer gave it a passer-by
+      // praising the heir for a secret nobody knew, td/script/write.js scriptLooseEvents)
+      const _legEv = { type: 'legacyInheritance', players: [to], text: _rp([
         `${to} finds something unexpected in ${_toPr.posAdj} bag this morning. A note from ${from}: "You'll know when to use it." The Legacy Advantage has been passed down.`,
-        `${from} willed ${_toPr.posAdj} Legacy Advantage to ${to}. Production slipped it into ${_toPr.posAdj} bag overnight. ${to} unfolds the note and goes very, very quiet.`,
-        `The Legacy Advantage changes hands. ${from} chose ${to} with ${_toPr.posAdj} last words. ${to} now carries a secret and a responsibility.`,
-      ]), badgeText: 'Legacy Inherited', badgeClass: 'gold' });
+        `${from} willed ${_frPr.posAdj} Legacy Advantage to ${to}. Production slipped it into ${_toPr.posAdj} bag overnight. ${to} unfolds the note and goes very, very quiet.`,
+        `The Legacy Advantage changes hands. ${from} chose ${to} with ${_frPr.posAdj} last words. ${to} now carries a secret and a responsibility.`,
+      ]), badgeText: 'Legacy Inherited', badgeClass: 'gold' };
+      const _legLine = _legEv.text;
+      withSceneCtx({ ep: ep.num, phase: 'pre' }, () => scriptEvent(_legEv, makeScene('adv.inherit', { a: to }, { target: from }, [], { id: 'confessional', label: 'Confessional' })));
+      if (_legEv.lines?.length) { _legEv.lines = [{ kind: 'beat', by: null, text: _legLine }, ..._legEv.lines]; _legEv.text = transcript(_legEv.lines); }
+      ep.campEvents[_campKey].pre.push(_legEv);
     });
   }
 

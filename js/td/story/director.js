@@ -72,7 +72,10 @@ let venueNow = 'hosted-camp';
 const MUST_AIR = new Set(['medevac', 'medevacReplacement', 'kissTrap', 'moleBondSabotage', 'moleInfoLeak', 'moleChallengeThrow', 'moleAdvSabotage',
   // who came in attached (season-ties.js): the couples and the partners at home on day one, and the camp saying a partner at
   // home's name out loud (the user, 2026-10-16: "do they actually acknowledge when they're in a relationship outside the game")
-  'life-arrival', 'life-partner-at-home', 'tieHomeCallout']);
+  'life-arrival', 'life-partner-at-home', 'tieHomeCallout',
+  // the morning a Legacy Advantage lands in the heir's bag (camp-events.js; it never aired, so the heir played an advantage
+  // nobody had seen them get)
+  'legacyInheritance']);
 const AIRS_FIRST = new Set(['medevac', 'medevacReplacement']);
 let ctxAvoid = () => null;
 

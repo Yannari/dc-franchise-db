@@ -440,7 +440,7 @@ export function hudHtml(screen, L, fresh, o = {}) {
   if (s.k === 'ballots') h += `<div class="tdx-title tdx-ballots${fresh ? ' fresh' : ''}"><div class="band"></div><div class="inner"><div class="kicker">The vote</div><div class="big">${esc(s.text)}</div></div><div class="faces">${(s.who || []).map((n, i) => `<span style="--i:${i}"><img src="${esc(avatar(n))}" alt=""><b>✓</b></span>`).join('')}</div></div>`;
   // a power played before the vote: its card, the player, and whoever it lands on
   if (s.k === 'power') h += `<div class="tdx-idol power${fresh ? ' fresh' : ''}"><div class="rays"></div><div class="totem"><svg viewBox="0 0 64 80">${POWER_ICON[s.type] || POWER_ICON.legacy}</svg></div><div class="lbl">${esc(s.name)}</div><div class="for"><img src="${esc(avatar(s.by))}" alt="">${s.on ? `<span>→</span><img src="${esc(avatar(s.on))}" alt="">` : ''}</div></div>`;
-  if (s.k === 'idol') h += `<div class="tdx-idol${fresh ? ' fresh' : ''}"><div class="rays"></div><div class="totem"><svg viewBox="0 0 60 90"><path d="M18 10h24l4 18-6 8 6 10-4 34H18l-4-34 6-10-6-8z" fill="#c89a3a" stroke="#3a2210" stroke-width="3"/><circle cx="24" cy="24" r="4" fill="#3a2210"/><circle cx="36" cy="24" r="4" fill="#3a2210"/><path d="M22 34h16M24 56h12M22 66h16" stroke="#3a2210" stroke-width="3"/></svg></div><div class="lbl">Hidden Immunity Idol</div><div class="for"><img src="${esc(avatar(s.by))}" alt="">${s.for !== s.by ? `<span>→</span><img src="${esc(avatar(s.for))}" alt="">` : ''}</div></div>`;
+  if (s.k === 'idol') h += `<div class="tdx-idol${fresh ? ' fresh' : ''}"><div class="rays"></div><div class="totem"><svg viewBox="0 0 60 90"><path d="M18 10h24l4 18-6 8 6 10-4 34H18l-4-34 6-10-6-8z" fill="#c89a3a" stroke="#3a2210" stroke-width="3"/><circle cx="24" cy="24" r="4" fill="#3a2210"/><circle cx="36" cy="24" r="4" fill="#3a2210"/><path d="M22 34h16M24 56h12M22 66h16" stroke="#3a2210" stroke-width="3"/></svg></div><div class="lbl">${s.super ? 'Super Idol' : 'Hidden Immunity Idol'}</div><div class="for"><img src="${esc(avatar(s.by))}" alt="">${s.for !== s.by ? `<span>→</span><img src="${esc(avatar(s.for))}" alt="">` : ''}</div></div>`;
   if (s.k === 'out') h += `<div class="tdx-outcard${fresh ? ' fresh' : ''}"><img src="${esc(avatar(s.who))}" alt=""><div>${esc(s.who)}</div><span>${s.island ? 'Voted out' : 'Eliminated'}</span></div>`;
   return h;
 }
@@ -481,8 +481,8 @@ export function dialogue(screen, L) {
   if (s.k === 'read') return { name: host, cls: 'host', text: s.line || (s.dead ? `${s.vote}. Does not count.` : s.revote ? `${s.vote}.` : s.deciding ? `${s.vote}. That's enough.` : `${s.vote}.`), hostCut: host };
   if (s.k === 'out') return { name: '', cls: 'dir', text: `${s.who} is ${s.island ? 'voted out' : 'eliminated'}.` };
   if (s.k === 'found') return s.text ? { name: '', cls: 'dir', text: s.text, badge: s.item ? { text: s.label.toUpperCase(), cls: 'gold' } : null } : { name: '', cls: 'dir hidden', text: '' };
-  if (s.k === 'power') return { name: '', cls: 'dir', text: `${s.by} stands up and plays ${s.the || s.name}${s.on ? ` on ${s.on}` : ''}.` };
-  if (s.k === 'idol') return { name: '', cls: 'dir', text: `${s.by} stands up and plays a Hidden Immunity Idol${s.for !== s.by ? ` for ${s.for}` : ''}.` };
+  if (s.k === 'power') return { name: '', cls: 'dir', text: s.will ? `${s.by} leaves ${s.the || s.name} to ${s.on}.` : `${s.by} stands up and plays ${s.the || s.name}${s.on ? ` on ${s.on}` : ''}.` };
+  if (s.k === 'idol') return { name: '', cls: 'dir', text: `${s.by} stands up and plays ${s.super ? 'the Super Idol' : 'a Hidden Immunity Idol'}${s.for !== s.by ? ` for ${s.for}` : ''}.` };
   if (s.k === 'ballots' || s.k === 'title' || s.k === 'ballot' || s.k === 'intro') return { name: '', cls: 'dir hidden', text: '' };
   return { name: '', cls: 'dir hidden', text: '' };
 }

@@ -80,13 +80,20 @@ const EXTRA = `
 .rrx .rrx-ctrl .stepn{margin-left:auto;font-size:12px;color:#8b95b3}
 .rrx .rrx-body{display:grid;grid-template-columns:minmax(0,1fr) 36px;gap:12px}
 .rrx.intel-open .rrx-body{grid-template-columns:minmax(0,1fr) 300px}
-@media (max-width:1000px){.rrx .rrx-body,.rrx.intel-open .rrx-body{grid-template-columns:minmax(0,1fr)}.rrx .rrx-tab{writing-mode:horizontal-tb;height:auto;width:100%}}
 .rrx .rrx-tab{writing-mode:vertical-rl;font:800 12px Bungee,system-ui;letter-spacing:.12em;color:#ffc21f;background:#0d1426;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:12px 6px;cursor:pointer;height:220px}
 .rrx.intel-open .rrx-tab{writing-mode:horizontal-tb;height:auto;width:100%;margin-bottom:8px}
 .rrx .rrx-side{display:none}
 .rrx.intel-open .rrx-side{display:block}
 .rrx .rr-side{max-height:calc(100vh - 220px);overflow:auto}
-.rrx .stage-holder{max-width:max(560px,calc((100vh - 290px) * 16 / 9))}
+.rrx .stage-holder{max-width:max(560px,calc((100vh - 310px) * 16 / 9))}
+.rrx .rrx-scrub{position:relative;display:flex;gap:3px;height:14px;margin:10px 0 0;cursor:pointer;touch-action:none;user-select:none}
+.rrx .rrx-scrub i{position:relative;display:block;height:6px;margin-top:4px;border-radius:4px;background:#1d2747;overflow:hidden}
+.rrx .rrx-scrub i b{position:absolute;inset:0 auto 0 0;width:0;background:#f7c948}
+.rrx .rrx-scrub i.cur{background:#2a3a66}
+.rrx .rrx-scrub:hover i{height:8px;margin-top:3px}
+.rrx .rrx-scrub .knob{position:absolute;top:0;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px #f7c948;pointer-events:none}
+/* narrow: one column, the Intel tab lying flat under the picture (last, so it wins over the tab's own rule) */
+@media (max-width:1000px){.rrx .rrx-body,.rrx.intel-open .rrx-body{grid-template-columns:minmax(0,1fr)}.rrx .rrx-tab{writing-mode:horizontal-tb;height:auto;width:100%}}
 `;
 
 // ── the chapters ──
@@ -127,7 +134,9 @@ export function raceStepVpScreens(row, { played, aired = [] } = {}) {
   const e = { ...episodeScreens(played.res, played.eps, i), res: played.res };
   const chapters = chaptersOf(e, played.res.legs[i].place);
   const key = `rr${row.num}`;
-  reg()[key] = { row, e, chapters, aired: aired.map(r => ({ num: r.num, place: r.rr?.placeName || '' })) };
+  const all = flatSteps(e.screens);
+  const sizes = chapters.map(c => all.filter(f => f.si >= c.from && f.si <= c.to).length);
+  reg()[key] = { row, e, chapters, sizes, aired: aired.map(r => ({ num: r.num, place: r.rr?.placeName || '' })), pending: null };
   const phase = { id: 'rr-leg', label: `Leg ${row.num} · ${row.rr?.placeName || ''}`, icon: '🏁' };
   return chapters.map((c, ci) => ({ id: `rr-c${ci}`, label: c.name, html: shell(key, ci, c, row), phase,
     icon: ICONS[c.key] || (c.name === 'The Chill Zone' ? ICONS.mat : '⚑') }));
@@ -143,9 +152,14 @@ function shell(key, ci, c, row) {
     <button type="button" class="rrx-btn" onclick="rrxSwitchViewer('readout')" title="Every line of the leg as text">Transcript</button></div>
   <div class="rrx-body">
     <div><div class="stage-holder rrx-holder" style="position:relative"></div>
+      <div class="rrx-scrub" title="Click or drag to go anywhere in the leg">${R.chapters.map((x, k) =>
+        `<i data-k="${k}" style="flex:${Math.max(1, R.sizes[k])}" title="${esc(x.name)}"><b></b></i>`).join('')}<span class="knob"></span></div>
       <div class="rrx-ctrl">
+        <button type="button" class="rrx-btn" onclick="rrxSkip(this,-1e9)" title="Back to the start of this part">⏮</button>
+        <button type="button" class="rrx-btn" onclick="rrxSkip(this,-10)" title="Ten lines back">⏪ 10</button>
         <button type="button" class="rrx-btn" onclick="rrxBack(this)">◀ Back</button>
         <button type="button" class="rrx-btn go" onclick="rrxNext(this)">Next ▶</button>
+        <button type="button" class="rrx-btn" onclick="rrxSkip(this,10)" title="Ten lines on">10 ⏩</button>
         <button type="button" class="rrx-btn rrx-auto" onclick="rrxAuto(this)">▶ Auto</button>
         <span class="stepn"></span>
       </div></div>
@@ -174,18 +188,64 @@ function runner(root) {
   let open = false;
   try { open = localStorage.getItem(INTEL_KEY) === '1'; } catch { open = false; }
   root.classList.toggle('intel-open', open);
-  const R = { root, R0, c, flat, at: -1, stage, side, auto: null, last: Number(root.dataset.ci) === R0.chapters.length - 1 };
+  const R = { root, R0, c, flat, at: -1, stage, side, auto: null, ci: Number(root.dataset.ci), last: Number(root.dataset.ci) === R0.chapters.length - 1 };
   stage.el.addEventListener('click', () => next(R));
+  scrubber(R);
   RUN.set(root, R);
   return R;
+}
+// the media bar: the whole leg, a segment per part; a click or a drag goes there, into another part too
+function scrubber(R) {
+  const bar = R.root.querySelector('.rrx-scrub');
+  if (!bar) return;
+  const target = x => {
+    const segs = [...bar.querySelectorAll('i')];
+    let el = segs.find(sg => { const r = sg.getBoundingClientRect(); return x >= r.left - 2 && x <= r.right + 2; });
+    if (!el) el = x < segs[0].getBoundingClientRect().left ? segs[0] : segs[segs.length - 1];
+    const k = Number(el.dataset.k), r = el.getBoundingClientRect();
+    const f = Math.max(0, Math.min(0.999, (x - r.left) / Math.max(1, r.width)));
+    return { ci: k, at: Math.floor(f * Math.max(1, R.R0.sizes[k])) };
+  };
+  let dragging = false;
+  const seek = x => {
+    const t = target(x);
+    if (t.ci === R.ci) { if (t.at !== R.at) { R.at = t.at; draw(R, false); } return; }
+    if (dragging) return;            // a drag stays in this part; a click goes to the other one
+    goToPart(R, t.ci, t.at);
+  };
+  bar.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); stopAuto(R); const t = target(e.clientX); if (t.ci !== R.ci) { goToPart(R, t.ci, t.at); return; } dragging = true; try { bar.setPointerCapture(e.pointerId); } catch { /* old browsers */ } seek(e.clientX); });
+  bar.addEventListener('pointermove', e => { if (dragging) seek(e.clientX); });
+  const drop = e => { if (!dragging) return; dragging = false; try { bar.releasePointerCapture(e.pointerId); } catch { /* fine */ } };
+  bar.addEventListener('pointerup', drop);
+  bar.addEventListener('pointercancel', drop);
+  bar.addEventListener('click', e => e.stopPropagation());
+}
+function goToPart(R, ci, at) {
+  R.R0.pending = { ci, at };
+  if (typeof window.vpGoTo === 'function') window.vpGoTo(ci);
+}
+function paintBar(R) {
+  const segs = R.root.querySelectorAll('.rrx-scrub i');
+  segs.forEach((sg, k) => {
+    sg.classList.toggle('cur', k === R.ci);
+    const b = sg.querySelector('b');
+    if (b) b.style.width = k < R.ci ? '100%' : k > R.ci ? '0%' : `${((R.at + 1) / Math.max(1, R.flat.length)) * 100}%`;
+  });
+  const cur = segs[R.ci], knob = R.root.querySelector('.rrx-scrub .knob'), bar = R.root.querySelector('.rrx-scrub');
+  if (cur && knob && bar) {
+    const r = cur.getBoundingClientRect(), b = bar.getBoundingClientRect();
+    knob.style.left = `${r.left - b.left + r.width * ((R.at + 0.5) / Math.max(1, R.flat.length))}px`;
+  }
 }
 function draw(R, fresh) {
   const f = R.flat[R.at];
   if (!f) return;
+  paintBar(R);
   R.stage.paint(R.R0.e, f.si, f.idx, fresh);
   R.side.paint(R.R0.e, f.si, f.idx, { speaking: R.R0.e.screens[f.si].steps[f.idx]?.team || null });
   const n = R.root.querySelector('.stepn');
-  if (n) n.textContent = `${R.c.name} · ${R.at + 1} of ${R.flat.length}`;
+  const before = R.R0.sizes.slice(0, R.ci).reduce((a, x) => a + x, 0), total = R.R0.sizes.reduce((a, x) => a + x, 0);
+  if (n) n.textContent = `${R.c.name} · ${before + R.at + 1} of ${total}`;
   const nx = R.root.querySelector('.rrx-btn.go');
   if (nx) nx.textContent = R.at >= R.flat.length - 1 ? (R.last ? (nextLeg(R) ? 'Next leg ▶' : 'The end') : 'Next part ▶') : 'Next ▶';
 }
@@ -205,6 +265,17 @@ function back(R) {
 function stopAuto(R) { if (R.auto) { clearTimeout(R.auto); R.auto = null; R.root.querySelector('.rrx-auto')?.classList.remove('on'); } }
 
 export function rrxNext(el) { const R = runner(rootOf(el)); if (R) next(R); }
+/** Jump n lines on (or back), across parts; -1e9 is the start of this part. */
+export function rrxSkip(el, n) {
+  const R = runner(rootOf(el)); if (!R) return;
+  stopAuto(R);
+  if (n <= -1e8) { R.at = 0; draw(R, false); return; }
+  const to = R.at + n;
+  if (to >= 0 && to < R.flat.length) { R.at = to; draw(R, false); return; }
+  if (to < 0 && R.ci > 0) { const k = R.ci - 1; goToPart(R, k, Math.max(0, R.R0.sizes[k] + to)); return; }
+  if (to >= R.flat.length && !R.last) { goToPart(R, R.ci + 1, Math.min(R.R0.sizes[R.ci + 1] - 1, to - R.flat.length)); return; }
+  R.at = Math.max(0, Math.min(R.flat.length - 1, to)); draw(R, false);
+}
 export function rrxBack(el) { const R = runner(rootOf(el)); if (R) back(R); }
 export function rrxAuto(el) {
   const R = runner(rootOf(el)); if (!R) return;
@@ -239,7 +310,7 @@ export function raceViewerMode() {
   try { return localStorage.getItem('rr-vp') === 'readout' ? 'readout' : 'stepped'; } catch { return 'stepped'; }
 }
 
-if (typeof window !== 'undefined') Object.assign(window, { rrxNext, rrxBack, rrxAuto, rrxIntel, rrxLeg, rrxSwitchViewer });
+if (typeof window !== 'undefined') Object.assign(window, { rrxNext, rrxBack, rrxSkip, rrxAuto, rrxIntel, rrxLeg, rrxSwitchViewer });
 if (typeof document !== 'undefined') {
   // a screen opens on its first step
   document.addEventListener('vp:screen', () => {
@@ -247,7 +318,10 @@ if (typeof document !== 'undefined') {
       const root = document.querySelector('.rrx[data-key]');
       if (!root) return;
       const R = runner(root);
-      if (R && R.at < 0) { R.at = 0; draw(R, true); }
+      if (!R) return;
+      const p = R.R0.pending;
+      if (p && p.ci === R.ci) { R.R0.pending = null; R.at = Math.max(0, Math.min(R.flat.length - 1, p.at)); draw(R, true); }
+      else if (R.at < 0) { R.at = 0; draw(R, true); }
     }, 0);
   });
   document.addEventListener('keydown', e => {

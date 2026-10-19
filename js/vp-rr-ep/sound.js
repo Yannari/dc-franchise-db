@@ -17,7 +17,7 @@ import { audio as engine, BED_CATALOG, CUE_CATALOG } from '../audio.js';
 import { PLACE_MUSIC, RACE_SOUNDS, AMBIENCE, placeFile, raceFile } from './music.js';
 import { HAVE, LIFT } from './music-have.js';
 
-const MUSIC_VOL = 0.3, UNDER_VOICE = 0.2, AMB_VOL = 0.18, STING_VOL = 0.55;
+const MUSIC_VOL = 0.3, UNDER_VOICE = 0.2, AMB_VOL = 0.18, STING_VOL = 0.55, STING_DUCK = 0.22;
 const TASKS = new Set(['either', 'botch', 'allin', 'route', 'superteam', 'midmat']);
 const STRUGGLE_KIND = /fear|phobia|exhaust|quit|struggl|panic|meltdown|freez|speed-bump|don-ruling|travel-mishap|snap|blame|closed-for-night/;
 const STRUGGLE_END = /fail|struggl|quit|freez|stuck|lost/;
@@ -94,7 +94,8 @@ export function soundAt(ep, si, k) {
 
 // ── playing it ─────────────────────────────────────────────────────────
 const bedId = f => 'rr:' + f;
-function registerBed(b) {
+/** The engine's id for a bed (registered on first use): what the simulator pane's data-ambient names. */
+export function registerBed(b) {
   const id = bedId(b.file);
   if (!BED_CATALOG[id]) BED_CATALOG[id] = { build: null, file: b.file, volume: Math.min(1, Math.round(b.vol * 10 ** ((LIFT[b.file] || 0) / 20) * 100) / 100) };
   return id;
@@ -108,16 +109,43 @@ function loadSting(ctx, name) {
 }
 for (const name of Object.keys(RACE_SOUNDS)) {
   if (RACE_SOUNDS[name].kind !== 'sting') continue;
-  CUE_CATALOG['rr-' + name] = { duck: true, build(ctx, dest, now) {
+  // the sting ducks the music itself, deep and for as long as it plays (the engine's own duck is half for 0.8 s,
+  // so a three-second sting played over the bed at full: the user heard "an overlap of music")
+  CUE_CATALOG['rr-' + name] = { duck: false, build(ctx, dest, now) {
     const got = buffers[name] || [];
     if (!got.length) { loadSting(ctx, name); return; }
     const src = ctx.createBufferSource(); src.buffer = got[0];
+    try {
+      const bus = engine._bedGain?.gain, dur = got[0].duration || 1;
+      if (bus) {
+        bus.cancelScheduledValues(now); bus.setValueAtTime(bus.value, now);
+        bus.linearRampToValueAtTime(STING_DUCK, now + 0.08); bus.setValueAtTime(STING_DUCK, now + dur * 0.85);
+        bus.linearRampToValueAtTime(1, now + dur + 0.9);
+      }
+    } catch { /* the sting still plays */ }
     const g = ctx.createGain(); g.gain.value = Math.min(1, STING_VOL * 10 ** ((LIFT[raceFile(name)] || 0) / 20));
     src.connect(g); g.connect(dest); src.start(now);
   } };
 }
 function warm() {
   try { const ctx = engine._ctx; if (ctx) for (const n of Object.keys(RACE_SOUNDS)) if (RACE_SOUNDS[n].kind === 'sting' && HAVE.has(raceFile(n))) loadSting(ctx, n); } catch { /* never break a screen */ }
+}
+
+// ONE BED AT A TIME. The engine crossfades a change over 1.2 s and starts the new track from its top; clicking or
+// skipping through moments faster than that stacked fading copies of two tracks (A, B, A again) on each other. So a
+// change waits for the clicking to settle: only the bed still wanted half a second after the last click is asked
+// for (so a run of fast clicks is one crossfade, not one per moment), and the bed already playing is never asked
+// again (a chapter change no longer drops it to silence and restarts it: vp.js names it as the screen's
+// data-ambient, so the pane asks for the very bed that is already playing).
+const SETTLE_MS = 500;
+let wantBed = null, bedTimer = null;
+function setBed(id) {
+  wantBed = id;
+  clearTimeout(bedTimer); bedTimer = null;
+  if (id === (engine._desiredBed ?? null)) return;
+  // the very first bed (nothing playing yet) starts at once
+  const wait = engine._desiredBed == null && !engine._currentBed ? 0 : SETTLE_MS;
+  bedTimer = setTimeout(() => { bedTimer = null; try { engine.ambient(wantBed); } catch { /* fine */ } }, wait);
 }
 
 /** Play step k of screen si: its bed (always), its sting (only on a click: `sting`). */
@@ -128,11 +156,11 @@ export function playStep(ep, si, k, sting = true) {
   try {
     warm();
     const { bed, sting: cue } = soundAt(ep, si, k);
-    engine.ambient(bed ? registerBed(bed) : null);
+    setBed(bed ? registerBed(bed) : null);
     if (sting && cue && HAVE.has(raceFile(cue))) engine.sfx('rr-' + cue);
   } catch { /* sound must never break a screen */ }
 }
-export function stopSound() { try { engine.ambient(null); } catch { /* fine */ } }
+export function stopSound() { clearTimeout(bedTimer); bedTimer = null; wantBed = null; try { engine.ambient(null); } catch { /* fine */ } }
 
 // ── the controls: mute, volume, music on/off ───────────────────────────
 export function soundControlsHtml(cls = 'rr-snd') {

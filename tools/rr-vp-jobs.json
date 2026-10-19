@@ -1,0 +1,33 @@
+{
+  "_": "Plates out of use until the user repaints them (Downloads/RidonculousRace-frames/edit/<src>/, prompt.txt there). tools/rr-vp-repaints.py notices a repaint in done/ (its file no longer matches sha256 below), makes it a plate and switches it on (js/vp-rr-ep/repainted.js).",
+  "jobs": [
+    {
+      "place": "home-city",
+      "src": "02-home-city",
+      "file": "task-9434868",
+      "why": "the sky-deck elevator: a flat door and a tiled wall, no floor to stand on",
+      "sha256": "d1e1ac4a62589a62135d0685a4d4db5a378db529c2df0027901d0318b2e2dd29"
+    },
+    {
+      "place": "red-sand-desert",
+      "src": "03-red-sand-desert",
+      "file": "task-9435287",
+      "why": "the spice market: baskets fill the frame, no ground",
+      "sha256": "1a3f3410d816b1a8e49ad8d11756a2841b954d96b7862f8b821469f60006fe90"
+    },
+    {
+      "place": "red-sand-desert",
+      "src": "03-red-sand-desert",
+      "file": "task-9435344",
+      "why": "the spice market, second view: baskets fill the frame, no ground",
+      "sha256": "c27bf8975d42c61a927d41e917a1d7ff42015c444c13ef12e51224499512be1b"
+    },
+    {
+      "place": "red-sand-desert",
+      "src": "03-red-sand-desert",
+      "file": "task-9435484",
+      "why": "the stew: one bowl on a shelf does not read as a place",
+      "sha256": "4c57afcdde99b727d1bf0e29222bb10a4d68bb42ae9016e86f7fd220cc466682"
+    }
+  ]
+}

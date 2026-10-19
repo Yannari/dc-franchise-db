@@ -20,7 +20,7 @@ import { episodeScreens, flatSteps } from './steps.js';
 import { createStage } from './stage.js';
 import { createSidebar } from './sidebar.js';
 import { RR_CSS } from './style.js';
-import { playStep, soundControlsHtml, wireSoundControls } from './sound.js';
+import { playStep, soundAt, registerBed, soundControlsHtml, wireSoundControls } from './sound.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const reg = () => (typeof window !== 'undefined' ? (window._rrx ||= {}) : (globalThis._rrx ||= {}));
@@ -139,15 +139,18 @@ export function raceStepVpScreens(row, { played, aired = [] } = {}) {
   const sizes = chapters.map(c => all.filter(f => f.si >= c.from && f.si <= c.to).length);
   reg()[key] = { row, e, chapters, sizes, aired: aired.map(r => ({ num: r.num, place: r.rr?.placeName || '' })), pending: null };
   const phase = { id: 'rr-leg', label: `Leg ${row.num} · ${row.rr?.placeName || ''}`, icon: '🏁' };
-  return chapters.map((c, ci) => ({ id: `rr-c${ci}`, label: c.name, html: shell(key, ci, c, row), phase,
+  // each chapter names the bed its first step plays, so the pane asks for the music that is already on (never
+  // silence and a restart of the same track at every chapter: an overlap of the track with itself)
+  const bedOf = c => { try { const b = soundAt(e, c.from, 0).bed; return b ? registerBed(b) : 'none'; } catch { return 'none'; } };
+  return chapters.map((c, ci) => ({ id: `rr-c${ci}`, label: c.name, html: shell(key, ci, c, row, bedOf(c)), phase,
     icon: ICONS[c.key] || (c.name === 'The Chill Zone' ? ICONS.mat : '⚑') }));
 }
 
-function shell(key, ci, c, row) {
+function shell(key, ci, c, row, bed = 'none') {
   const R = reg()[key];
   const legs = R.aired.map(a => `<option value="${a.num}"${a.num === row.num ? ' selected' : ''}>Leg ${a.num} · ${esc(a.place)}</option>`).join('');
-  // data-ambient="none": the pane plays no Total Drama bed under the race (sound.js plays the race's own)
-  return `<div class="rrx" data-key="${esc(key)}" data-ci="${ci}" data-ambient="none">
+  // data-ambient: the race's own bed for the chapter's first step (sound.js), never a Total Drama one
+  return `<div class="rrx" data-key="${esc(key)}" data-ci="${ci}" data-ambient="${esc(bed)}">
   <div class="rrx-top"><span class="rrx-logo">The Ridonculous Race</span>
     <select class="rrx-legs" onchange="rrxLeg(this.value)" title="Watch another leg">${legs}</select>
     <span class="rrx-chap">${esc(c.name)}</span><span class="rrx-spacer"></span>
@@ -173,6 +176,7 @@ function shell(key, ci, c, row) {
 
 // ── the runtime: a runner per mounted screen ──
 const RUN = new WeakMap();
+const RUNNERS = new Set();             // every runner made, so one left behind by a chapter or leg change stops
 const INTEL_KEY = 'rr-vp-intel';
 function faceOf(name) {
   const p = (typeof window !== 'undefined' ? window.players : null)?.find?.(x => x?.name === name);
@@ -196,6 +200,7 @@ function runner(root) {
   wireSoundControls(root.querySelector('.rrx-snd'));
   scrubber(R);
   RUN.set(root, R);
+  RUNNERS.add(R);
   return R;
 }
 // the media bar: the whole leg, a segment per part; a click or a drag goes there, into another part too
@@ -244,6 +249,7 @@ function paintBar(R) {
 function draw(R, fresh) {
   const f = R.flat[R.at];
   if (!f) return;
+  if (!R.root.isConnected) { stopAuto(R); return; }    // a chapter no longer on screen plays nothing
   paintBar(R);
   R.stage.paint(R.R0.e, f.si, f.idx, fresh);
   playStep(R.R0.e, f.si, f.idx, fresh);
@@ -319,6 +325,8 @@ if (typeof window !== 'undefined') Object.assign(window, { rrxNext, rrxBack, rrx
 if (typeof document !== 'undefined') {
   // a screen opens on its first step
   document.addEventListener('vp:screen', () => {
+    // the chapter (or leg) that was on screen stops its Auto: it must never play its music under the new one
+    for (const R of [...RUNNERS]) if (!R.root.isConnected) { stopAuto(R); R.stage.stop?.(); RUNNERS.delete(R); }
     setTimeout(() => {
       const root = document.querySelector('.rrx[data-key]');
       if (!root) return;

@@ -1,24 +1,48 @@
-# Motion maps for the Ridonculous Race plates, so js/vp-td-ep/glplate.js can bring them alive.
+# What may move on each Ridonculous Race plate, for js/vp-rr-ep/life.js.
 #
-# Total Drama's plates have hand-made motion maps; these are read off the paint itself:
-#   wind  (R of the top third)    foliage: greens, strongest high in the frame (leaves, palms, fronds)
-#   water (G of the top third)    saturated teal/blue below the horizon (sea, lagoon, river, the pool)
-#   heat  (G of the middle third) lava and fire: hot saturated orange (it licks and shimmers)
-#   lights(B of the middle third) small bright warm spots on a dark plate (lamps, windows at night)
-#   sky   (R of the bottom third) left 0: the plate keeps its own painted sky (nothing under it)
-# One map per plate, beside it: <plate>-motion.webp, 640 x 1080 (three 640 x 360 maps stacked).
+# The user (2026-10-19): "the bg screen seem to be moving but not like normal lively bg its like its vibrating for no
+# reason". The plates used to borrow Total Drama's shader and its motion maps were read off the paint with loose
+# colour rules: every teal sign, every painted map on a museum wall, every green wall counted as water or leaves, and
+# a fine ripple and a desert heat shimmer ran over them. Now a plate moves only where it really has water, leaves or
+# lava, found strictly and checked by eye (the overrides below), and life.js moves it slowly.
 #
-#   python tools/rr-vp-motion.py            (makes what is missing; --force remakes all)
-import os, sys
+# Per plate, beside it: <plate>-life.webp (640 x 360; R: leaves, G: water, B: lava), and the list of plates that have
+# one in js/vp-rr-ep/life-have.js (a plate without one is simply the painted plate, under the camera's slow drift).
+#
+#   python tools/rr-vp-motion.py              (remakes every map and the list)
+#   python tools/rr-vp-motion.py --sheet DIR  (and contact sheets of the masks over the plates, to look at)
+import json, os, subprocess, sys
 import numpy as np
 from PIL import Image, ImageFilter
+from scipy import ndimage
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SETS = os.path.join(ROOT, 'assets', 'sets', 'rr')
-force = '--force' in sys.argv
 W, H = 640, 360
-# plates whose blue is sky or a painted wall, never water
-NO_WATER = {'confess', 'worldmap', 'gate', 'cabin', 'galley', 'logo'}
+
+# checked by eye on the sheets (2026-10-19): what the colour rules get wrong
+NO_WIND = {
+    'home-city/task-9434876', 'home-city/task-9434855', 'home-city/task-9434868', 'treasure-isles/task-9449549',
+    'treasure-isles/task-9449621', 'great-wall-hills/task-9440310', 'great-wall-hills/task-9440339',
+    'great-wall-hills/task-9440338', 'rock-north/task-9441040', 'rock-north/task-9441025', 'rock-north/chill-9441059',
+    'rock-north/chill-9441025', 'rock-north/task-9440800', 'red-sand-desert/task-9435869', 'torch-statue-harbour/task-22412320',
+    'torch-statue-harbour/task-22412499', 'torch-statue-harbour/task-22412644', 'tomb-sands/task-22409957',
+    'tomb-sands/task-22409944', 'tomb-sands/task-22409901', 'iron-tower-city/task-9436279', 'iron-tower-city/task-9436302',
+    'iron-tower-city/task-9436198', 'skyline-finale/task-9450185', 'skyline-finale/task-9450269', 'skyline-finale/task-9450082',
+    'red-outback/task-22419762', 'red-outback/task-22419761', 'red-outback/task-22419889',
+    # green that is not leaves: a teal river, a park's lawn and hills
+    'tomb-sands/task-22410534', 'tomb-sands/task-22410673', 'skyline-finale/chill-9450523', 'skyline-finale/task-9450434',
+    'skyline-finale/chill-9450538', 'treasure-isles/task-9449576', 'treasure-isles/present-9449351',
+}
+NO_WATER = {
+    'treasure-isles/task-9449549', 'treasure-isles/task-9449621', 'home-city/task-9434876', 'home-city/task-9434868',
+    'home-city/task-9434810', 'great-wall-hills/arrive-9440243', 'great-wall-hills/task-9440310', 'rock-north/task-9441025',
+    'rock-north/chill-9441025', 'torch-statue-harbour/task-22412320', 'red-sand-desert/task-9435484', 'savanna-falls/arrive-9441427',
+    'treasure-isles/arrive-9449512', 'iron-tower-city/present-9436193', 'iron-tower-city/chill-9436288',
+    'rock-north/present-9440796', 'rock-north/present-9440799', 'rock-north/task-9440922', 'rock-north/task-9440800',
+}
+LAVA_PLACES = {'fire-mountain-isle'}
+SKIP = {'confess', 'worldmap', 'gate', 'cabin', 'galley', 'logo', 'sky', 'runway', 'don', 'plane'}
 
 
 def hsv(im):
@@ -26,40 +50,99 @@ def hsv(im):
     return a[..., 0] * 360, a[..., 1], a[..., 2]
 
 
-def soft(mask, r=3):
-    img = Image.fromarray(np.clip(mask * 255, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(r))
+def big(mask, frac):
+    """Only the connected regions larger than `frac` of the frame (a sea, a canopy; not a sign or a map on a wall)."""
+    lab, n = ndimage.label(mask)
+    if not n:
+        return mask & False
+    sizes = ndimage.sum(mask, lab, range(1, n + 1))
+    keep = np.zeros(n + 1, bool)
+    keep[1:] = sizes > frac * mask.size
+    return keep[lab]
+
+
+def soft(mask, r=4):
+    img = Image.fromarray((mask * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(r))
     return np.asarray(img, dtype=np.float32) / 255.0
 
 
-def motion(path):
-    stem = os.path.basename(path)[:-5]
+def life(path, key, place):
     im = Image.open(path).convert('RGB').resize((W, H), Image.LANCZOS)
     h, s, v = hsv(im)
     y = np.linspace(0, 1, H)[:, None] * np.ones((1, W))
-    wind = ((h > 70) & (h < 165) & (s > .28) & (v > .18)).astype(np.float32) * (0.35 + 0.65 * (1 - y))
-    water = np.zeros_like(wind)
-    if stem not in NO_WATER:
-        # below the horizon only (above it the same blue is the sky)
-        water = ((h > 165) & (h < 215) & (s > .32) & (v > .3)).astype(np.float32) * np.clip((y - .38) / .12, 0, 1)
-    heat = ((h < 38) & (s > .62) & (v > .72)).astype(np.float32)
-    dark = v.mean() < .38
-    lights = ((h > 30) & (h < 65) & (s > .45) & (v > .85)).astype(np.float32) if dark else np.zeros_like(wind)
-    top = np.dstack([soft(wind) * .9, soft(water, 2) * .85, np.zeros_like(wind)])
-    mid = np.dstack([np.zeros_like(wind), soft(heat, 2) * .9, soft(lights, 1.5)])
-    bot = np.zeros_like(top)
-    out = np.vstack([top, mid, bot])
-    Image.fromarray(np.clip(out * 255, 0, 255).astype(np.uint8)).save(os.path.join(os.path.dirname(path), stem + '-motion.webp'), 'WEBP', quality=70)
-    return True
+    wind = np.zeros((H, W), bool)
+    if key not in NO_WIND:
+        leaves = (h > 70) & (h < 160) & (s > .3) & (v > .2) & (y < .78)
+        wind = big(leaves, .006)
+    water = np.zeros((H, W), bool)
+    if key not in NO_WATER:
+        # water lies under a horizon: a blue region that reaches up into the top of the frame is sky (or a wall)
+        wet = (h > 168) & (h < 212) & (s > .42) & (v > .3)
+        lab, n = ndimage.label(wet)
+        for i, sl in enumerate(ndimage.find_objects(lab), 1):
+            if sl[0].start < .36 * H:
+                wet[lab == i] = False
+        water = big(wet, .02)
+    lava = np.zeros((H, W), bool)
+    if place in LAVA_PLACES:
+        lava = big((h < 36) & (s > .7) & (v > .78), .004)
+    out = np.dstack([soft(wind) * (0.35 + 0.65 * (1 - y)), soft(water, 3), soft(lava, 3)])
+    has = {'wind': bool(wind.mean() > .004), 'water': bool(water.mean() > .01), 'lava': bool(lava.mean() > .003)}
+    return out, has
 
 
-made = 0
-for d in sorted(os.listdir(SETS)):
-    folder = os.path.join(SETS, d)
-    for f in sorted(os.listdir(folder)):
-        if not f.endswith('.webp') or f.startswith('c-') or f.endswith('-motion.webp') or f in ('don.webp', 'plane.webp', 'logo.webp'):
+def main():
+    have = {}
+    rows = []
+    for d in sorted(os.listdir(SETS)):
+        folder = os.path.join(SETS, d)
+        if not os.path.isdir(folder) or d == 'race':
             continue
-        out = os.path.join(folder, f[:-5] + '-motion.webp')
-        if os.path.exists(out) and not force:
-            continue
-        made += motion(os.path.join(folder, f))
-print('made', made)
+        for f in sorted(os.listdir(folder)):
+            if not f.endswith('.webp') or f.startswith('c-') or f.endswith('-motion.webp') or f.endswith('-life.webp'):
+                continue
+            stem = f[:-5]
+            key = f'{d}/{stem}'
+            if stem in SKIP:
+                continue
+            out, has = life(os.path.join(folder, f), key, d)
+            dst = os.path.join(folder, stem + '-life.webp')
+            if any(has.values()):
+                Image.fromarray(np.clip(out * 255, 0, 255).astype(np.uint8)).save(dst, 'WEBP', quality=80)
+                have[f'assets/sets/rr/{key}.webp'] = [k for k, x in has.items() if x]
+            elif os.path.exists(dst):
+                os.remove(dst)
+            rows.append((key, has, out))
+    js = ('// Made by tools/rr-vp-motion.py: the plates with something that moves (leaves, water, lava) and so a\n'
+          '// <plate>-life.webp map beside them. Every other plate is the painted plate under the camera\'s slow drift.\n'
+          'export const LIFE = ' + json.dumps(have, indent=1) + ';\n')
+    open(os.path.join(ROOT, 'js', 'vp-rr-ep', 'life-have.js'), 'w', encoding='utf8', newline='\n').write(js)
+    print(f'{len(have)} of {len(rows)} plates move')
+    if '--sheet' in sys.argv:
+        sheet_dir = sys.argv[sys.argv.index('--sheet') + 1]
+        os.makedirs(sheet_dir, exist_ok=True)
+        tiles = []
+        for key, has, out in rows:
+            im = Image.open(os.path.join(SETS, key + '.webp')).convert('RGB').resize((W // 2 * 2 // 2 * 1, H // 2 * 2 // 2 * 1))
+            base = np.asarray(Image.open(os.path.join(SETS, key + '.webp')).convert('RGB').resize((W, H)), dtype=np.float32)
+            tint = base.copy()
+            tint = tint * (1 - .6 * out[..., :1]) + np.array([40, 255, 40]) * .6 * out[..., :1]
+            tint = tint * (1 - .6 * out[..., 1:2]) + np.array([40, 120, 255]) * .6 * out[..., 1:2]
+            tint = tint * (1 - .6 * out[..., 2:3]) + np.array([255, 30, 30]) * .6 * out[..., 2:3]
+            tiles.append((key, Image.fromarray(np.clip(tint, 0, 255).astype(np.uint8))))
+            del im
+        cols, per = 4, 24
+        for p in range(0, len(tiles), per):
+            chunk = tiles[p:p + per]
+            sheet = Image.new('RGB', (cols * W // 2, ((len(chunk) + cols - 1) // cols) * (H // 2 + 16)), (20, 20, 30))
+            from PIL import ImageDraw
+            dr = ImageDraw.Draw(sheet)
+            for i, (key, t) in enumerate(chunk):
+                x0, y0 = (i % cols) * W // 2, (i // cols) * (H // 2 + 16)
+                sheet.paste(t.resize((W // 2, H // 2)), (x0, y0))
+                dr.text((x0 + 4, y0 + H // 2 + 2), key, fill=(255, 230, 120))
+            sheet.save(os.path.join(sheet_dir, f'life-{p // per}.jpg'), quality=80)
+
+
+if __name__ == '__main__':
+    main()

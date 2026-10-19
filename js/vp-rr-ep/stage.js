@@ -9,8 +9,8 @@
 // slam. Every avatar idles; whoever is talking bounces.
 import { plateUrl, raceUrl, propUrl } from './plates.js';
 import { PLACES } from '../rr/places.js';
-import { intelAt } from './steps.js';
-import { liveGL } from '../vp-td-ep/glplate.js';
+import { intelAt, offOf } from './steps.js';
+import { plateLife } from './life.js';
 
 const ORD = ['', '1ST', '2ND', '3RD', '4TH', '5TH', '6TH', '7TH', '8TH', '9TH', '10TH', '11TH', '12TH', '13TH', '14TH'];
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -40,7 +40,6 @@ function globeSVG(seed = 7) {
     <circle cx="50" cy="50" r="47" fill="#fff"/><g clip-path="url(#gc${seed})">${panes}</g><circle cx="50" cy="50" r="47" fill="none" stroke="#bfe8ff" stroke-width="2.4"/></svg>`;
 }
 
-const HOT = new Set(['red-sand-desert', 'tomb-sands', 'red-outback']);
 const AMBIENT = { 'rock-north': 'snow', 'red-sand-desert': 'mote', 'tomb-sands': 'mote', 'red-outback': 'mote', 'fire-mountain-isle': 'ember',
   'great-wall-hills': 'mote', 'savanna-falls': 'mote', 'treasure-isles': 'spark', 'torch-statue-harbour': 'mote', 'iron-tower-city': 'spark', 'skyline-finale': 'mote', 'home-city': 'mote' };
 
@@ -70,13 +69,10 @@ export function createStage(holder, { faceOf, legLabel }) {
     // under the plate's bottom edge (what a lifted shot shows beneath the bar): its own ground, mirrored and dimmed
     $('rr-skirt').style.backgroundImage = url ? `url("${url}")` : 'none';
     void a.offsetWidth; a.className = 'plate on'; b.classList.remove('on');
-    // the plate alive (js/vp-td-ep/glplate.js): its own pixels moved by the motion map read off its paint
-    // (tools/rr-vp-motion.py): water ripples and glints, leaves flutter, lava shimmers, lamps twinkle
-    const glw = $('rr-gl');
-    glw.innerHTML = url ? `<canvas class="tdx-gl" data-src="${url.replace(/\.webp$/, '')}" data-grade="${HOT.has(placeOfUrl(url)) ? 'hot' : 'day'}"></canvas>` : '';
-    if (url) liveGL(glw);
+    // the plate's slow life (life.js): only its real leaves, water and lava move, and slowly
+    stopLife(); stopLife = plateLife($('rr-gl'), url);
   }
-  const placeOfUrl = u => (String(u).match(/assets\/sets\/rr\/([^/]+)\//) || [])[1];
+  let stopLife = () => {};
   const plateOf = s => (s.plate?.race ? raceUrl(s.plate.f) : s.plate?.f ? plateUrl(s.plate.place || s.place, s.plate.f) : null);
   const teamOf = (ep, id) => ep.res.state.teams[id];
 
@@ -212,6 +208,7 @@ export function createStage(holder, { faceOf, legLabel }) {
     if (!overlaid) y = c.shot === 'wide' ? 0 : Math.max(0, Math.min(100 - 100 / sc, y));
     const t = `translate(${(-sc * x).toFixed(2)}%,${(-sc * y).toFixed(2)}%) scale(${sc})`;
     const key = t;
+    cam.dataset.s = String(sc);
     $('rr-lift').style.transform = '';
     if (!fresh || key === curCam) { cam.style.transition = 'none'; cam.style.transform = t; void cam.offsetWidth; cam.style.transition = ''; curCam = key; cam.dataset.shot = c.shot; return; }
     const step = s.steps[k];
@@ -258,11 +255,29 @@ export function createStage(holder, { faceOf, legLabel }) {
     L.textContent = ''; let i = 0;
     typer = setInterval(() => { i += 2; L.textContent = text.slice(0, i); if (i >= text.length) clearInterval(typer); }, 16);
   }
+  // whoever is talking bounces, and the sound comes off them: three arcs pulsing beside the face, on the side away
+  // from a partner (the user, 2026-10-19: in the confessional "they dont talk")
+  const SW = '<svg viewBox="0 0 24 32"><path d="M3 10 Q8 16 3 22"/><path d="M9 6 Q17 16 9 26"/><path d="M15 2 Q26 16 15 30"/></svg>';
   function speaking(name) {
     frame.querySelectorAll('.speaking').forEach(e => e.classList.remove('speaking'));
+    frame.querySelectorAll('.sw').forEach(e => e.remove());
     if (!name) return null;
     const el = stage.querySelector(`img[data-p="${CSS.escape(name)}"]`) || stage.querySelector(`.don[data-p="${CSS.escape(name)}"]`);
-    if (el) el.classList.add('speaking');
+    if (!el) return null;
+    el.classList.add('speaking');
+    const face = el.tagName === 'IMG' ? el : el.querySelector('img,svg');
+    const host = el.tagName === 'IMG' ? el.parentElement : el;
+    if (face && host && !el.closest('.inset,.clip')) {
+      const w = document.createElement('i');
+      const first = host.classList.contains('cf') ? host.classList.contains('L') : host.classList.contains('pair') && face === host.firstElementChild && host.children.length > 1;
+      w.className = 'sw' + (first ? ' flip' : '');
+      w.innerHTML = SW;
+      const fw = face.offsetWidth || 40;
+      w.style.width = (fw * 0.34) + 'px'; w.style.height = (fw * 0.5) + 'px';
+      w.style.top = (face.offsetTop + fw * 0.12) + 'px';
+      w.style.left = (first ? face.offsetLeft - fw * 0.4 : face.offsetLeft + fw * 1.04) + 'px';
+      host.appendChild(w);
+    }
     return el;
   }
 
@@ -317,19 +332,27 @@ export function createStage(holder, { faceOf, legLabel }) {
     } else { const last = pts.at(-1); Object.assign(p.style, { left: last.left, top: last.top, transform: last.transform }); }
   }
 
+  // The interview cutaway, as the show shoots it: the team in front of the map, lit, the camera easing in on whoever
+  // is talking (a two-shot pushes toward the speaker), the other one listening and reacting, the name bar the first time.
   function interview(ep, s, fresh) {
     const team = s.team ? teamOf(ep, s.team) : null;
     const c = s.team ? ep.color[s.team] : '#f7c948';
-    const seat = (n, cls, d) => `<div class="cf ${cls}" style="--c:${c};--d:${d}s"><img data-p="${esc(n)}" src="${n === 'Don' ? raceUrl('don') : faceOf(n)}" alt=""></div>`;
-    let h = compassSVG();
-    h += s.solo || s.people.length === 1 ? seat(s.solo || s.people[0], 'solo', -0.4) : seat(s.people[0], 'L', -0.2) + seat(s.people[1], 'R', -1.4);
+    const seat = (n, cls, d) => `<div class="cf ${cls}" data-who="${esc(n)}" style="--c:${c};--d:${d}s"><div class="key"></div><img data-p="${esc(n)}" src="${n === 'Don' ? raceUrl('don') : faceOf(n)}" alt=""></div>`;
+    let h = `<div class="iv-cam"><div class="iv-bg" style="background-image:url('${raceUrl('confess')}')"></div>${compassSVG()}`;
+    h += (s.solo || s.people.length === 1 ? seat(s.solo || s.people[0], 'solo', -0.4) : seat(s.people[0], 'L', -0.2) + seat(s.people[1], 'R', -1.4)) + '</div>';
     if (s.caption && team) {
       const nm = s.solo ? s.solo : `${team.a} &amp; ${team.b}`;
       h += `<div class="lower ${fresh ? 'fresh' : ''}"><div class="nm">${s.solo ? esc(nm) : nm.split(' &amp; ').map(esc).join(' &amp; ')}</div><div class="tm">${esc(team.name)}</div></div>`;
     }
     const d = document.createElement('div'); d.className = 'iv' + (fresh ? ' fresh' : '');
-    d.style.backgroundImage = `url('${raceUrl('confess')}')`;
     d.innerHTML = h; under.appendChild(d);
+  }
+  function ivFocus(s, step) {
+    const cam = under.querySelector('.iv-cam');
+    if (!cam) return;
+    const by = step?.by, two = s.people.length === 2 && !s.solo;
+    cam.className = 'iv-cam' + (two ? (by === s.people[0] ? ' on-L' : by === s.people[1] ? ' on-R' : '') : by ? ' on-solo' : '');
+    cam.querySelectorAll('.cf').forEach(f => f.classList.toggle('talking', f.dataset.who === by));
   }
 
   function world(ep, s, k, fresh) {
@@ -364,11 +387,19 @@ export function createStage(holder, { faceOf, legLabel }) {
       const at = posAt(s, id, k);
       if (!at) continue;
       if (s.exitAt === k && !fresh) continue;           // GO! they are gone
+      // a line sent them away (steps.js planExits): drawn on the step they leave (to walk off), gone after it
+      const off = offOf(s, id, k), leaving = fresh && (s.leaveAt?.[k] || []).includes(id);
+      if (off === 'team' && !leaving) continue;
+      const gone = Array.isArray(off) && !leaving ? off : [];
       if (s.swimmers?.[id]) {
-        s.swimmers[id].forEach((n, j) => swimmerEl(ep, s, id, n, at, j));
+        s.swimmers[id].filter(n => !gone.includes(n)).forEach((n, j) => swimmerEl(ep, s, id, n, at, j));
         continue;
       }
       const e = tokenEl(ep, s, id, at, { extraCls: it.out[id] ? 'out' : '' });
+      if (gone.length) {
+        e.querySelectorAll('.pair img').forEach(im => { if (gone.includes(im.dataset.p)) im.remove(); });
+        const left = e.querySelector('.pair img'); if (left) left.style.left = 'calc(var(--sz) * .275)';
+      }
       const place = s.mode === 'mat' ? it.placed[id] : null;
       if (place) {
         const r = document.createElement('div');
@@ -447,6 +478,48 @@ export function createStage(holder, { faceOf, legLabel }) {
       }
     }
     crowdMoves(ep, s, k);
+    // somebody walks off because a line said so, and comes back when a line brings them
+    for (const id of s.leaveAt?.[k] || []) {
+      const off = offOf(s, id, k), at = posAt(s, id, k) || s.marks?.[id];
+      if (!at) continue;
+      const out = at[0] < 50 ? -14 : 114;
+      const els = off === 'team' ? [...toks.querySelectorAll(`[data-team="${id}"]:not([data-crowd])`)]
+        : (off || []).flatMap(n => [...toks.querySelectorAll(`[data-team="${id}"]:not([data-crowd]) img[data-p="${CSS.escape(n)}"]`)]);
+      els.forEach((e, i) => {
+        if (off === 'team') {
+          e.classList.add('running', out < at[0] ? 'rtl' : 'ltr');
+          e.animate([{ left: at[0] + '%', top: at[1] + '%' }, { left: out + '%', top: at[1] + '%' }], { duration: 1500, delay: 400 + i * 60, easing: 'cubic-bezier(.5,0,.8,.6)', fill: 'forwards' })
+            .finished.then(() => e.remove()).catch(() => {});
+        } else {
+          // one partner goes: off at a run, the other stays where they were
+          e.animate([{ transform: 'translateX(0)', opacity: 1 }, { transform: `translateX(${out < at[0] ? -40 : 40}cqw)`, opacity: 0 }], { duration: 1400, delay: 400, easing: 'cubic-bezier(.5,0,.8,.6)', fill: 'forwards' })
+            .finished.then(() => { const pair = e.parentElement; e.remove(); const left = pair?.querySelector('img'); if (left) left.style.left = 'calc(var(--sz) * .275)'; }).catch(() => {});
+        }
+      });
+      later(400, () => dustTrail(at, [out, at[1]], 1300, 0));
+    }
+    for (const id of s.backAt?.[k] || []) {
+      const at = posAt(s, id, k) || s.marks?.[id];
+      if (!at) continue;
+      const from = at[0] < 50 ? -12 : 112;
+      const wasOff = offOf(s, id, k - 1) === 'team';
+      toks.querySelectorAll(`[data-team="${id}"]:not([data-crowd])`).forEach(e => {
+        if (!wasOff) { e.querySelector('.pair')?.animate([{ transform: 'translateX(-1.5cqw)', opacity: .3 }, { transform: 'none', opacity: 1 }], { duration: 600, easing: 'ease-out' }); return; }
+        e.classList.add('running', from < at[0] ? 'ltr' : 'rtl'); later(1200, () => e.classList.remove('running', 'ltr', 'rtl'));
+        e.animate([{ left: from + '%', top: at[1] + '%' }, { left: at[0] + '%', top: at[1] + '%' }], { duration: 1200, easing: 'cubic-bezier(.3,.1,.4,1)', fill: 'backwards' });
+      });
+      dustTrail([from, at[1]], at, 1100, 0);
+    }
+    // the teams behind see the big moment in front: they glance over, cheer or wince
+    if (step?.crowdReact) {
+      const fx0 = (posAt(s, s.teams[0], k) || s.matAt || [50])[0];
+      toks.querySelectorAll('[data-crowd]').forEach((c, i) => {
+        const x = parseFloat(c.style.left), dir = fx0 < x ? -1 : 1;
+        const tgt = c.querySelector('.pair') || c.querySelector('img');
+        const kf = step.crowdReact === 'cheer' ? JUMP : step.crowdReact === 'wince' ? WINCE : GLANCE(dir);
+        tgt?.animate(kf, { duration: step.crowdReact === 'glance' ? 1700 : 950, delay: 300 + i * 140, easing: 'ease-in-out', iterations: step.crowdReact === 'cheer' ? 2 : 1 });
+      });
+    }
     // a slip on a failed try, a quit
     if (s.plan?.fail === k) {
       const id = s.teams[0], at = posAt(s, id, k) || s.marks[id];
@@ -492,6 +565,8 @@ export function createStage(holder, { faceOf, legLabel }) {
     }
   }
   const JUMP = [{ transform: 'translateY(0)' }, { transform: 'translateY(-2.2cqw) scale(1.05)', offset: 0.35 }, { transform: 'translateY(0) scaleY(.92)', offset: 0.7 }, { transform: 'translateY(0)' }];
+  const WINCE = [{ transform: 'none' }, { transform: 'translateY(.4cqw) scale(.9,.94) rotate(-5deg)', offset: 0.3 }, { transform: 'translateY(.3cqw) scale(.93) rotate(4deg)', offset: 0.6 }, { transform: 'none' }];
+  const GLANCE = dir => [{ transform: 'none' }, { transform: `translateX(${dir * 0.5}cqw) rotate(${dir * 12}deg)`, offset: 0.22 }, { transform: `translateX(${dir * 0.5}cqw) rotate(${dir * 12}deg)`, offset: 0.78 }, { transform: 'none' }];
   // puffs of dust along a run (a plate of water gets a splash instead)
   function dustTrail(a, b, dur, delay) {
     if (!a || !b) return;
@@ -630,10 +705,11 @@ export function createStage(holder, { faceOf, legLabel }) {
     overlays(ep, s, k, fresh);
     vn(ep, s, step, fresh);
     speaking(step?.part === 'pause' ? 'Don' : step?.by);
+    if (s.kind === 'iv') ivFocus(s, step);
     camera(s, k, stepFresh);
     if (stepFresh || screenFresh) react(s, k);
   }
 
-  return { paint, el: frame, stop: () => { clearTimers(); clearInterval(ambTimer); } };
+  return { paint, el: frame, stop: () => { clearTimers(); clearInterval(ambTimer); stopLife(); } };
   void legLabel;
 }

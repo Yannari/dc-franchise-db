@@ -39,22 +39,24 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .stage-holder{width:100%;max-width:max(560px,calc((100vh - 330px) * 16 / 9));margin:0 auto}
 .stage{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:14px;background:#000;cursor:pointer;
   box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px var(--line);container-type:inline-size;user-select:none}
-.plate{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .7s ease;will-change:opacity,transform}
+.plate{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .7s ease}
 .plate.on{opacity:1}
 #rr-gl{z-index:1;pointer-events:none}
 .plate-skirt{position:absolute;left:0;right:0;top:100%;height:34%;background-size:100% 294%;background-position:center bottom;transform:scaleY(-1);filter:brightness(.5) saturate(.8) blur(1.5px);pointer-events:none}
-#rr-gl .tdx-gl{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .5s}
-#rr-gl .tdx-gl.on{opacity:1}
+#rr-gl .rr-life{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .6s}
+#rr-gl .rr-life.on{opacity:1}
 #rr-under,#rr-toks,#rr-fx{z-index:2}
 #rr-lift{position:absolute;inset:0}
 #rr-world{position:absolute;inset:0;transform-origin:50% 60%}
-#rr-world.kb-in{animation:kbIn 20s ease-out forwards} #rr-world.kb-pan{animation:kbPan 20s ease-in-out forwards} #rr-world.kb-out{animation:kbOut 20s ease-out forwards}
-#rr-world.kb-still-kb-in{transform:scale(1.05)} #rr-world.kb-still-kb-pan{transform:scale(1.04) translateX(-1%)} #rr-world.kb-still-kb-out{transform:scale(1.01)}
-@keyframes kbIn{from{transform:scale(1.01)}to{transform:scale(1.05)}}
-@keyframes kbPan{from{transform:scale(1.04) translateX(1%)}to{transform:scale(1.04) translateX(-1%)}}
-@keyframes kbOut{from{transform:scale(1.05)}to{transform:scale(1.01)}}
+/* the camera breathes: a slow drift that never stops and never jumps (a cut starts the next one), the whole world
+   with it so feet stay on their ground. Never a shake: only a slam pushes in (stage.js camera). */
+#rr-world.kb-in{animation:kbIn 38s ease-in-out infinite alternate} #rr-world.kb-pan{animation:kbPan 44s ease-in-out infinite alternate}
+#rr-world.kb-out{animation:kbOut 41s ease-in-out infinite alternate}
+@keyframes kbIn{from{transform:scale(1.025) translate(.35%,.15%)}to{transform:scale(1.045) translate(-.35%,-.2%)}}
+@keyframes kbPan{from{transform:scale(1.035) translate(.7%,0)}to{transform:scale(1.035) translate(-.7%,-.15%)}}
+@keyframes kbOut{from{transform:scale(1.045) translate(-.3%,-.15%)}to{transform:scale(1.025) translate(.3%,.1%)}}
 .layer{position:absolute;inset:0}
-#rr-cam{position:absolute;inset:0;transform-origin:0 0;transition:transform 1.1s cubic-bezier(.45,.05,.2,1);will-change:transform}
+#rr-cam{position:absolute;inset:0;transform-origin:0 0;transition:transform 1.1s cubic-bezier(.45,.05,.2,1)}
 #rr-ui{z-index:40;pointer-events:none}
 .vignette{position:absolute;inset:0;pointer-events:none;z-index:30;background:radial-gradient(120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.42))}
 
@@ -228,11 +230,11 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 
 /* Don, locals, props */
 .don{position:absolute;transform:translate(-50%,-100%);z-index:9;text-align:center;pointer-events:none}
-.don img,.don svg{display:block;width:var(--sz);height:var(--sz);border-radius:50%;border:calc(var(--sz)*.06) solid var(--gold);object-fit:cover;background:#1a2340;
+.don>img,.don>svg{display:block;width:var(--sz);height:var(--sz);border-radius:50%;border:calc(var(--sz)*.06) solid var(--gold);object-fit:cover;background:#1a2340;
   box-shadow:0 .6cqw 1cqw rgba(0,0,0,.4);animation:idleDon 3s ease-in-out infinite}
-.don.speaking img,.don.speaking svg{animation:talk .55s ease-in-out infinite}
+.don.speaking>img,.don.speaking>svg{animation:talk .55s ease-in-out infinite}
 .don .lab{display:inline-block;margin-top:.25cqw;font:800 calc(var(--sz)*.16) Rubik;background:var(--gold);color:#0b0b14;padding:.05cqw .55cqw;border-radius:99px;white-space:nowrap}
-.don.local img,.don.local svg{border-color:#d9d9d9} .don.local .lab{background:#d9d9d9}
+.don.local>img,.don.local>svg{border-color:#d9d9d9} .don.local .lab{background:#d9d9d9}
 @keyframes idleDon{0%,100%{transform:translateY(0)}50%{transform:translateY(-.3cqw) rotate(-2deg)}}
 .prop{position:absolute;transform:translate(-50%,-100%);z-index:8;filter:drop-shadow(0 .6cqw .5cqw rgba(0,0,0,.45));pointer-events:none}
 .matimg{position:absolute;transform:translate(-50%,-50%);z-index:3;filter:drop-shadow(0 .4cqw .3cqw rgba(0,0,0,.35))}
@@ -304,18 +306,24 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .inset .ppl img.speaking{animation:talk .55s ease-in-out infinite}
 .inset .ppl span{display:inline-block;margin-top:.2cqw;font:800 .8cqw Rubik;background:var(--c);color:#0b0b14;padding:0 .5cqw;border-radius:99px}
 
-/* the interview room, as the show shoots it */
-.iv{position:absolute;inset:0;z-index:2;background:#06101f center/cover no-repeat;overflow:hidden}
-.iv{animation:ivDrift 24s ease-in-out infinite alternate}
-.iv.fresh{animation:ivIn .35s ease-out both,ivDrift 24s .35s ease-in-out infinite alternate}
-@keyframes ivDrift{from{background-position:46% 50%;background-size:104%}to{background-position:54% 46%;background-size:110%}}
+/* the interview room, as the show shoots it: the map behind, soft; the team lit in front of it; the camera easing in
+   on whoever talks (a two-shot pushes toward the speaker); the listener a touch darker, reacting */
+.iv{position:absolute;inset:0;z-index:2;background:#06101f;overflow:hidden}
+.iv.fresh{animation:ivIn .35s ease-out both}
+.iv-cam{position:absolute;inset:0;transform-origin:50% 40%;transition:transform 1s cubic-bezier(.45,.05,.2,1)}
+.iv-cam.on-L{transform:scale(1.07) translateX(4%)} .iv-cam.on-R{transform:scale(1.07) translateX(-4%)} .iv-cam.on-solo{transform:scale(1.04)}
+.iv-bg{position:absolute;inset:-4%;background:center/cover no-repeat;filter:blur(1.2px) brightness(.82) saturate(.9);animation:ivDrift 30s ease-in-out infinite alternate}
+@keyframes ivDrift{from{transform:translate(-1%,0) scale(1.02)}to{transform:translate(1%,-.8%) scale(1.05)}}
 .iv .compass{position:absolute;left:3.5cqw;bottom:14cqw;width:10cqw;opacity:.75}
 .iv .cf{position:absolute;top:10.5cqw;width:23cqw;height:23cqw;transform:translateX(-50%)}
 .iv.fresh .cf{animation:ivSit .5s cubic-bezier(.2,1.3,.4,1) both}
-.iv .cf img{width:100%;height:100%;border-radius:50%;object-fit:cover;border:.55cqw solid var(--c);background:#0d1a2c;
-  box-shadow:0 0 0 .35cqw #07101d,0 2cqw 4cqw rgba(0,0,0,.55);animation:idle 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+.iv .cf .key{position:absolute;inset:-22%;border-radius:50%;background:radial-gradient(circle,rgba(255,236,190,.34),rgba(255,236,190,0) 62%);opacity:.55;transition:opacity .5s}
+.iv .cf.talking .key{opacity:1}
+.iv .cf img{position:relative;width:100%;height:100%;border-radius:50%;object-fit:cover;border:.55cqw solid var(--c);background:#0d1a2c;
+  box-shadow:0 0 0 .35cqw #07101d,0 2cqw 4cqw rgba(0,0,0,.55);animation:idle 3.2s ease-in-out infinite;animation-delay:var(--d,0s);transition:filter .4s}
 .iv .cf img.speaking{animation:talk .55s ease-in-out infinite}
-.iv .cf img:not(.speaking){filter:brightness(.9)}
+.iv .cf:not(.talking) img{filter:brightness(.82) saturate(.9)}
+.iv .cf .sw{width:7.5cqw!important;height:11cqw!important;top:6cqw!important}
 .iv .cf.L{left:31%} .iv .cf.R{left:67%} .iv .cf.solo{left:50%}
 .iv .lower{position:absolute;left:0;top:34cqw;width:60%;height:6.6cqw;background:linear-gradient(90deg,rgba(120,200,110,.18),rgba(120,200,110,.42));
   border-radius:0 .7cqw .7cqw 0;text-align:right;padding:.7cqw 1.6cqw 0 0}
@@ -325,6 +333,13 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 @keyframes ivIn{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
 @keyframes ivSit{from{transform:translateX(-50%) translateY(6cqw);opacity:0}to{transform:translateX(-50%);opacity:1}}
 @keyframes lowerIn{from{transform:translateX(-100%)}to{transform:none}}
+/* the sound coming off whoever talks (stage.js speaking) */
+.sw{position:absolute;pointer-events:none;z-index:4;display:block}
+.sw svg{width:100%;height:100%;overflow:visible;display:block}
+.sw path{fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;opacity:0;animation:swPulse 1.1s ease-out infinite;filter:drop-shadow(0 0 1.5px rgba(0,0,0,.7))}
+.sw path:nth-child(2){animation-delay:.16s} .sw path:nth-child(3){animation-delay:.32s}
+.sw.flip{transform:scaleX(-1)}
+@keyframes swPulse{0%{opacity:0;transform:translateX(-8%)}30%{opacity:.95}100%{opacity:0;transform:translateX(10%)}}
 
 /* a clip from last time, over the map */
 .clip{position:absolute;right:8cqw;top:9cqw;width:20cqw;padding:1cqw;background:#f2ead6;border-radius:.6cqw;transform:rotate(3deg);box-shadow:0 1.4cqw 3cqw rgba(0,0,0,.55);text-align:center;z-index:42}

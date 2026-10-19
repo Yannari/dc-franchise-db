@@ -16,8 +16,20 @@
 // task, or riding): `path` is the route a team takes across it, `mode` how (walk, hop,
 // climb, zip, swim, dive, para, ride, bungee), `prop` a cut-out that goes with them
 // (a camel, a jet ski, the parachute), `fx` the particles of the work.
+//
+// `closed: true` is a space nobody else could be in (an elevator lobby, a stairwell, a sauna, a stall close-up):
+// steps.js closedShot puts no other team behind a shot on it. A plate with no ground to stand on, or that does not
+// read as its place, waits for the user's repaint (repaint() below; the jobs are in tools/rr-vp-jobs.json and in the
+// user's Downloads/RidonculousRace-frames/edit/ with a prompt.txt per place). Plates out of use with a stand-in that
+// fits and no job: arrive-9434797 (a column close-up), task-9441122 (a character on it), task-9441761 (tall grass,
+// no ground), task-22412644 (a bare olive ground: the sewer talks on the sewer's ledge, the big apple at the park pond).
+
+import { REPAINTED } from './repainted.js';
 
 const p = (f, g = 90, x = [12, 88], more = {}) => ({ f, g, x, ...more });
+// A plate out of use until the user repaints it (tools/rr-vp-jobs.json; the job is in their frames folder's edit/):
+// its repaint once tools/rr-vp-repaints.py has found it in done/, its stand-in until then.
+export const repaint = (f, then, meanwhile) => (REPAINTED.has(f) ? then : meanwhile);
 
 export const RACE = {
   dir: 'race',
@@ -35,20 +47,20 @@ export const RACE = {
 export const PLACE_PLATES = {
   'home-city': {
     src: '02-home-city', title: 'present-9434583', opener: p('arrive-9434588', 97, [14, 86]),
-    arrive: [p('arrive-9434797', 95, [30, 92])],
+    arrive: [p('arrive-9434588', 97, [14, 86])],
     props: { helmet: 'Empty purple helmet with chin strap-2', trolley: 'Teal zipline trolley with hand grips-5' },
     st: {
-      'to-tower': { talk: [p('arrive-9434588', 97, [14, 86]), p('arrive-9434797', 95, [30, 92])] },
+      'to-tower': { talk: [p('arrive-9434588', 97, [14, 86])] },
       tower: {
         talk: [p('task-9434810', 96, [8, 90])],
         sides: {
-          stairs: { talk: [p('task-9434876', 93, [10, 70])],
-            act: p('task-9434855', 95, [10, 90], { mode: 'climb', path: [[33, 96], [60, 77], [35, 50], [62, 27]], fx: 'sweat' }) },
-          skydeck: { talk: [p('task-9434868', 96, [10, 60])],
+          stairs: { talk: [p('task-9434876', 93, [10, 70], { closed: true })],
+            act: p('task-9434855', 95, [10, 90], { closed: true, mode: 'climb', path: [[33, 96], [60, 77], [35, 50], [62, 27]], fx: 'sweat' }) },
+          skydeck: { talk: [repaint('task-9434868', p('task-9434868', 93, [8, 92], { closed: true }), p('task-9434876', 93, [10, 70], { closed: true }))],
             act: p('task-9434827', 70, [12, 88], { mode: 'walk', path: [[8, 52], [30, 53], [55, 53], [80, 52], [96, 50]], fx: 'wind' }) },
         },
       },
-      zipline: { talk: [p('task-9434876', 93, [10, 70])],
+      zipline: { talk: [p('task-9434876', 93, [10, 70], { closed: true })],
         act: p('task-9435028', 0, [0, 0], { water: true, mode: 'zip', prop: 'trolley', path: [[24, 38], [38, 45], [52, 52], [66, 60]], fx: 'wind' }) },
       mat: { talk: [p('travel-9435166', 95, [6, 94])] },
     },
@@ -60,12 +72,15 @@ export const PLACE_PLATES = {
     st: {
       taxi: { talk: [p('arrive-9435299', 93, [22, 92]), p('travel-9435869', 95, [60, 96])],
         act: p('arrive-9435392', 95, [6, 94], { mode: 'ride', prop: 'taxi', path: [[-14, 96], [50, 96], [114, 96]] }) },
-      spices: { talk: [p('task-9435287', 99, [10, 90]), p('task-9435344', 99, [10, 90])],
-        act: p('task-9435287', 99, [10, 90], { mode: 'search', prop: 'jars', fx: 'spice' }) },
+      spices: { talk: [repaint('task-9435287', p('task-9435287', 93, [8, 92]), p('task-9435287', 99, [10, 90], { closed: true })),
+          repaint('task-9435344', p('task-9435344', 93, [8, 92]), p('task-9435344', 99, [10, 90], { closed: true }))],
+        act: repaint('task-9435287', p('task-9435287', 93, [8, 92], { mode: 'search', prop: 'jars', fx: 'spice' }),
+          p('task-9435287', 99, [10, 90], { closed: true, mode: 'search', prop: 'jars', fx: 'spice' })) },
       camel: { talk: [p('present-9435572', 88, [10, 70])],
         act: p('present-9435500', 86, [10, 90], { mode: 'ride', prop: 'camel', path: [[-12, 86], [40, 85], [112, 86]], fx: 'dust' }) },
-      stew: { talk: [p('task-9435484', 99, [8, 92])],
-        act: p('task-9435484', 99, [8, 92], { mode: 'eat', prop: 'stew', fx: 'steam' }) },
+      stew: { talk: [repaint('task-9435484', p('task-9435484', 93, [8, 92]), p('task-9435484', 99, [8, 92], { closed: true }))],
+        act: repaint('task-9435484', p('task-9435484', 93, [8, 92], { mode: 'eat', prop: 'stew', fx: 'steam' }),
+          p('task-9435484', 99, [8, 92], { closed: true, mode: 'eat', prop: 'stew', fx: 'steam' })) },
       run: { talk: [p('task-9435630', 93, [12, 70])] },
       mat: { talk: [p('chill-9434778', 74, [6, 96], { mat: [46, 70] }), p('chill-9434777', 76, [6, 96], { mat: [18, 74] })] },
     },
@@ -82,7 +97,7 @@ export const PLACE_PLATES = {
       'catacomb-walk': { talk: [p('task-9436001', 90, [10, 88])] },
       catacombs: { talk: [p('task-9436279', 96, [6, 94])],
         act: p('task-9436279', 96, [6, 94], { mode: 'search', prop: 'skull', fx: 'dust' }) },
-      'cheese-raft': { talk: [p('task-9436302', 96, [6, 94])],
+      'cheese-raft': { talk: [p('task-9436302', 48, [4, 96])],
         act: p('task-9436198', 0, [0, 0], { water: true, mode: 'ride', prop: 'cheese', path: [[-12, 84], [45, 82], [112, 80]], fx: 'splash' }) },
       mat: { talk: [p('chill-9436288', 82, [6, 94], { mat: [50, 78] })] },
     },
@@ -114,13 +129,13 @@ export const PLACE_PLATES = {
       'spa-cab': { talk: [p('present-9440799', 94, [30, 96])],
         act: p('present-9440799', 94, [30, 96], { mode: 'ride', prop: 'taxi@red-sand-desert', path: [[-14, 95], [50, 94], [114, 95]], fx: 'snow' }) },
       sauna: { talk: [p('task-9440922', 94, [8, 96])],
-        act: p('task-9440800', 92, [10, 80], { mode: 'sweat', prop: 'bucket', fx: 'steam' }) },
+        act: p('task-9440800', 92, [10, 80], { closed: true, mode: 'sweat', prop: 'bucket', fx: 'steam' }) },
       'ice-river': { talk: [p('task-9440922', 94, [8, 96])],
         act: p('task-9440942', 0, [0, 0], { water: true, mode: 'hop', spots: [[14, 66], [32, 49], [72, 55], [86, 72]],
           path: [[14, 66], [32, 49], [72, 55], [86, 72]], fx: 'splash' }) },
       'town-cab': { talk: [p('present-9440796', 92, [6, 70])],
         act: p('present-9440796', 92, [6, 94], { mode: 'ride', prop: 'taxi@red-sand-desert', path: [[-14, 93], [50, 92], [114, 93]], fx: 'snow' }) },
-      'air-guitar': { talk: [p('task-9441040', 93, [6, 70]), p('task-9441122', 98, [6, 94])],
+      'air-guitar': { talk: [p('task-9441040', 93, [6, 70], { closed: true })],
         act: p('task-9441025', 83, [30, 70], { mode: 'guitar', prop: 'crowd', fx: 'notes' }) },
       mat: { talk: [p('chill-9441059', 92, [6, 94]), p('chill-9441025', 83, [12, 88], { mat: [50, 81] })] },
     },
@@ -137,7 +152,7 @@ export const PLACE_PLATES = {
         act: p('task-9441568', 0, [0, 0], { water: true, mode: 'swim', prop: 'camera', path: [[8, 92], [30, 90], [52, 86], [70, 84]], fx: 'splash' }) },
       rhino: { talk: [p('task-9441524', 97, [6, 94])],
         act: p('task-9441524', 97, [6, 94], { mode: 'photo', prop: 'rhino', fx: 'flash' }) },
-      'village-run': { talk: [p('task-9441526', 93, [6, 94]), p('task-9441761', 99, [8, 92])] },
+      'village-run': { talk: [p('task-9441526', 93, [6, 94])] },
       mat: { talk: [p('chill-9441823', 88, [6, 70]), p('chill-9441911', 88, [6, 60])] },
     },
   },
@@ -149,7 +164,7 @@ export const PLACE_PLATES = {
     st: {
       'museum-cab': { talk: [p('arrive-9449521', 97, [6, 94])],
         act: p('travel-9449534', 97, [6, 94], { mode: 'ride', prop: 'taxi@red-sand-desert', path: [[-14, 98], [50, 97], [114, 98]] }) },
-      'pirate-map': { talk: [p('task-9449549', 97, [6, 94]), p('task-9449621', 98, [6, 94])],
+      'pirate-map': { talk: [p('task-9449549', 97, [6, 94]), p('task-9449621', 98, [6, 94], { closed: true })],
         act: p('task-9449549', 97, [6, 94], { mode: 'search', prop: 'map', fx: 'dust' }) },
       'jet-ski': { talk: [p('task-9449576', 94, [4, 60])],
         act: p('task-9449601', 0, [0, 0], { water: true, mode: 'ride', prop: 'jetski', path: [[-12, 86], [50, 84], [114, 84]], fx: 'splash' }) },
@@ -166,15 +181,15 @@ export const PLACE_PLATES = {
     st: {
       cab: { talk: [p('arrive-9450078', 98, [4, 96])],
         act: p('task-9450114', 97, [4, 96], { mode: 'ride', prop: 'taxi', path: [[-14, 97], [50, 96], [114, 97]] }) },
-      'tower-stairs': { talk: [p('task-9450185', 96, [6, 94]), p('task-9450269', 97, [6, 30])],
-        act: p('task-9450082', 95, [10, 90], { mode: 'climb', path: [[34, 96], [60, 78], [30, 60], [60, 42], [34, 26]], fx: 'sweat' }) },
+      'tower-stairs': { talk: [p('task-9450185', 96, [6, 94]), p('task-9450269', 97, [6, 30], { closed: true })],
+        act: p('task-9450082', 95, [10, 90], { closed: true, mode: 'climb', path: [[34, 96], [60, 78], [30, 60], [60, 42], [34, 26]], fx: 'sweat' }) },
       park: { talk: [p('chill-9450538', 94, [16, 84])] },
       midmat: { talk: [p('chill-9450538', 94, [16, 84], { matPos: [50, 88], bronze: true })] },
       boathouse: { talk: [p('task-9450434', 86, [4, 84])] },
       buoys: { talk: [p('task-9450434', 86, [4, 84])],
         act: p('chill-9450523', 0, [0, 0], { water: true, mode: 'swim', prop: 'buoy', path: [[4, 92], [28, 86], [52, 84], [76, 86]], fx: 'splash' }) },
       footrace: { talk: [p('present-9450040', 97, [20, 80])],
-        act: p('chill-9450538', 94, [16, 84], { mode: 'run', path: [[30, 90], [50, 92], [70, 94]], fx: 'dust' }) },
+        act: p('chill-9450538', 94, [16, 84], { mode: 'run', path: [[30, 94], [50, 94], [70, 94]], fx: 'dust' }) },
       mat: { talk: [p('present-9450040', 97, [20, 80], { matPos: [50, 95] })] },
     },
   },
@@ -186,9 +201,9 @@ export const PLACE_PLATES = {
       'tomb-cab': { talk: [p('present-22410572', 92, [6, 94])],
         act: p('present-22410572', 92, [6, 94], { mode: 'ride', prop: 'taxi@red-sand-desert', path: [[-14, 93], [50, 92], [114, 93]], fx: 'dust' }) },
       pyramid: {
-        talk: [p('task-22410049', 96, [6, 60])],
+        talk: [p('task-22410049', 96, [6, 60], { closed: true })],
         sides: {
-          over: { talk: [p('task-22410049', 96, [6, 60])],
+          over: { talk: [p('task-22410049', 96, [6, 60], { closed: true })],
             act: p('present-22409867', 96, [6, 94], { mode: 'climb', path: [[40, 96], [46, 70], [52, 44], [56, 22]], fx: 'dust' }) },
           under: { talk: [p('task-22409901', 94, [10, 90]), p('task-22409944', 96, [6, 94])],
             act: p('task-22409957', 94, [6, 94], { mode: 'walk', prop: 'mummy', path: [[14, 94], [34, 94], [60, 92], [86, 94]], fx: 'darts' }) },
@@ -210,10 +225,10 @@ export const PLACE_PLATES = {
         act: p('present-22413470', 0, [0, 0], { water: true, mode: 'ride', prop: 'raft@savanna-falls', path: [[-12, 90], [50, 88], [114, 88]], fx: 'splash' }) },
       'statue-climb': { talk: [p('present-22412601', 96, [40, 96])],
         act: p('task-22412320', 0, [0, 0], { water: true, mode: 'climb', prop: 'carriage', path: [[52, 96], [52, 76], [51, 50], [50, 26]] }) },
-      sewer: { talk: [p('task-22412644', 92, [6, 80])],
+      sewer: { talk: [p('task-22412499', 62, [6, 70])],
         act: p('task-22412499', 0, [0, 0], { water: true, mode: 'swim', prop: 'gator', path: [[4, 84], [30, 82], [56, 84], [80, 82]], fx: 'splash', inset: 'AT THE DRAIN' }) },
-      'big-apple': { talk: [p('task-22412644', 92, [6, 80])],
-        act: p('task-22412644', 92, [6, 80], { mode: 'bob', prop: 'apple', fx: 'splash' }) },
+      'big-apple': { talk: [p('chill-22413471', 86, [20, 80])],
+        act: p('chill-22413471', 86, [20, 80], { mode: 'bob', prop: 'apple', fx: 'splash' }) },
       mat: { talk: [p('chill-22413471', 86, [20, 80], { matPos: [50, 84] })] },
     },
   },

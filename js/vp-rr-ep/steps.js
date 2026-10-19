@@ -292,6 +292,9 @@ export function episodeScreens(res, eps, i) {
     steps: [{ by: null, part: 'card', text: '', intel: {} }] });
 
   for (const s of screens) stageScreen(s, color);
+  // a line that sends people away takes them off the stage (and a later one brings them back)
+  const teamNames = Object.fromEntries(Object.entries(st.teams).map(([id, t]) => [id, t.name]));
+  for (const s of screens) if (s.kind === 'world' && s.plate) planExits(s, { teamNames });
   // the rest of the race around each shot, the people's reactions, how they come in, and the camera
   const rows = (leg.log || []).map(r => ({ ...r }));
   const tries = (st.taskLog || []).filter(r => r.leg === leg.n);
@@ -301,13 +304,17 @@ export function episodeScreens(res, eps, i) {
     if (s.kind === 'world' && s.plate) {
       const next = screens.slice(si + 1).find(x => x.t != null && x.t > (s.t ?? Infinity));
       const t1 = s.t == null || s.t < 0 ? null : Math.min(s.t + 12, Math.max(s.t + 2, next?.t ?? s.t + 6));
-      planCrowd(s, { rows, tries, place, aired, t1, members: membersOf, introduced, racing: st.order.filter(id => racing.includes(id)), first: leg.n === 1 });
+      planCrowd(s, { rows, tries, place, aired, t1, members: membersOf, teamOf, introduced, racing: st.order.filter(id => racing.includes(id)), first: leg.n === 1 });
       if (s.seg === 'team-intro') introduced.push(...s.teams.filter(id => !introduced.includes(id)));
       relift(s);
       planEnter(s, screens, si);
       planReact(s, teamOf, membersOf);
+      planCrowdReact(s);
       planCamera(s);
-    } else if (s.steps) s.steps.forEach(x => { x.cam = { shot: 'wide', s: 1, x: 0, y: 0 }; });
+    } else if (s.steps) {
+      s.steps.forEach(x => { x.cam = { shot: 'wide', s: 1, x: 0, y: 0 }; });
+      if (s.kind === 'iv') planIvReact(s);
+    }
     for (const x of s.steps || []) if (x.rank?.team != null && !x.rank.out) aired.add(x.rank.team);
   });
   return { screens, n: leg.n, place: placeId, placeName: leg.placeName, kind: leg.kind, racing, color, total: res.legs.length,
@@ -647,17 +654,35 @@ function liftFor(s) {
   return Math.round(Math.max(0, Math.min(need, top - 2)) * 10) / 10;
 }
 
-// ── the rest of the race: the teams the log puts at this stretch at this moment, racing behind ──
-// The user (2026-10-19): "we dont see them at the same zone running is part of the charm". A shot at a task or
-// on a road shows, small and behind the team that is talking, every other team the leg's log (leg.log: where each
-// team was, from when to when) has at that stretch in the minutes the shot covers: at work on the task and failing
-// and trying again as the task log says they did (state.taskLog: attempts, fails), riding level, passing, or
-// running through. At the Chill Zone, the teams already checked in on screen wait to one side. Never a team whose
-// placement has not aired, and never a rank: the crowd carries no badge.
+// ── the rest of the race: the teams the log puts at this stretch at this moment, doing the same thing ──
+// The user (2026-10-19), first: "we dont see them at the same zone running is part of the charm"; then: "if they are
+// alone they are alone but even in close space we have people running around should they even be at this part of the
+// leg? also they are people but they never interact". So the background has a reason or it is empty:
+//   * only in an open space (a task area, a road, the Chill Zone): never an elevator, a plane, a cab, a stairwell,
+//     a small room or a close-up (closedShot; a plate says `closed: true`);
+//   * only the teams the leg's log (leg.log) has at this stretch in the minutes the shot covers: a team the log has
+//     alone is alone;
+//   * doing what the team in the shot is doing, at their own attempt from the task log (state.taskLog): on the
+//     task's path (a climb, a swim, a ride) or at its work (digging, eating, shearing) on the plate the task is done
+//     on. A conversation at a task whose work happens elsewhere has nobody behind it; on a road, a team may pass
+//     through once;
+//   * two teams at most (the start line, where every team is, is the one exception), never a team in the scene;
+//   * reacting to a big moment in front: a glance, a cheer, a wince (planCrowdReact).
+// At the Chill Zone the teams already checked in on screen wait to one side; never a rank on the crowd.
 const IN_PLACE = new Set(['search', 'eat', 'draw', 'sweat', 'guitar', 'photo', 'bob', 'chase', 'build', 'shear', 'bungee']);
 const PATH_MODES = new Set(['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride']);
-const MAX_CROWD = 4;
+const TASK_KINDS = new Set(['either', 'botch', 'allin', 'route', 'superteam']);
+export const MAX_CROWD = 2;
 export const CROWD_SCALE = 0.7;
+
+/** A shot nobody else could be in: a closed space, a vehicle's inside, the airport, a close-up plate. */
+export function closedShot(s) {
+  if (!s || s.kind !== 'world' || !s.plate) return true;
+  if (['cabin', 'narrate', 'landing', 'flight'].includes(s.mode)) return true;
+  if (s.plate.race || s.plate.closed) return true;
+  if (['airport', 'board', 'speed-bump'].includes(s.stretch)) return true;
+  return false;
+}
 
 // Where a team is in its run at a task at time tk: progress p (0..1 along the task), and what it is doing.
 // Every failed attempt climbs part of the way and slips back; the last one goes all the way (or is a quit).
@@ -702,53 +727,64 @@ function planCrowd(s, ctx) {
   const fz = (s.size || 8) * 0.8;
   const fgX = Object.values(s.marks || {}).map(m => [m[0], fz]).concat([s.donStand, s.boxAt, ...Object.values(s.localAt || {})].filter(Boolean).map(m => [m[0], fz * 0.7]))
     .concat(s.matAt ? [[s.matAt[0], (s.size || 8) * 1.4]] : []);
+  if (closedShot(s)) return;
+  // everybody in the scene is in front of it: a team that talks or is part of it is never an extra
+  const inScene = new Set([...s.teams, ...(s.who || []).map(n => ctx.teamOf?.[n]).filter(Boolean),
+    ...s.steps.map(x => (x.by ? ctx.teamOf?.[x.by] : null)).filter(Boolean)]);
   // the premiere: every team at the start line in front of Don, and each team arriving finds the ones before it waiting
-  const lineUp = (ids, zz) => {
+  const lineUp = (ids, zz, work = 'wait') => {
     const spots = freeSpots(s.plate, ids.length, fgX, zz * 0.775, 2.4);
     if (!spots.length) return;
     s.crowdSize = zz;
-    s.crowd = spots.map((at, i) => ({ team: ids[i], as: 'stand', work: 'wait', pos: s.steps.map(() => at), st: s.steps.map(() => 'wait') }));
+    s.crowd = spots.map((at, i) => ({ team: ids[i], as: 'stand', work, pos: s.steps.map(() => at), st: s.steps.map(() => work) }));
   };
   if (s.seg === 'don-opener' && ctx.first && standable(s.plate)) {
-    const ids = ctx.racing.filter(id => !s.teams.includes(id));
+    const ids = ctx.racing.filter(id => !inScene.has(id));
     const span = Math.max(20, s.plate.x[1] - s.plate.x[0] - 8 - (s.donStand ? 12 : 0));
     lineUp(ids, Math.max(3.6, Math.min(z, span / (ids.length * 1.25))));
     return;
   }
   if (s.seg === 'team-intro' && standable(s.plate)) {
-    const ids = ctx.introduced.filter(id => !s.teams.includes(id)).slice(-6);
-    if (ids.length) lineUp(ids, Math.min(z, Math.max(4.2, 60 / (ids.length * 1.3))));
+    // the two teams that arrived just before, waiting
+    const ids = ctx.introduced.filter(id => !inScene.has(id)).slice(-MAX_CROWD);
+    if (ids.length) lineUp(ids, z);
     return;
   }
   if (s.mode === 'mat') {
     if (!standable(s.plate)) return;
-    // the teams already checked in, at the side of the Chill Zone
-    const done = [...ctx.aired].filter(id => !s.teams.includes(id)).slice(-5);
-    const spots = freeSpots(s.plate, done.length, fgX, half);
-    if (!spots.length) return;
-    s.crowdSize = z;
-    s.crowd = spots.map((at, i) => ({ team: done[i], as: 'stand', work: 'chill', pos: s.steps.map(() => at), st: s.steps.map(() => 'chill') }));
+    // the teams checked in just before, at the side of the Chill Zone
+    const done = [...ctx.aired].filter(id => !inScene.has(id)).slice(-MAX_CROWD);
+    if (done.length) lineUp(done, z, 'chill');
     return;
   }
-  if (!s.stretch || ['airport', 'board', 'speed-bump', 'mat', 'midmat'].includes(s.stretch) || s.t == null || s.t < 0 || ctx.t1 == null || s.replay) return;
-  if (['cabin', 'narrate', 'landing', 'flight', 'don'].includes(s.mode)) return;
-  const T = Array.from({ length: ps }, (_, k) => s.t + (ctx.t1 - s.t) * (ps > 1 ? k / (ps - 1) : 0));
+  if (!s.stretch || ['mat', 'midmat'].includes(s.stretch) || s.t == null || s.t < 0 || ctx.t1 == null || s.replay) return;
+  if (['don', 'demo'].includes(s.mode)) return;
+  s.crowdWin = [s.t, ctx.t1];
+  const plate = s.plate;
   const stretch = ctx.place?.stretches.find(x => x.id === s.stretch) || null;
+  const task = !!stretch && TASK_KINDS.has(stretch.kind);
+  const actPlate = stretchPlates(s.place, s.stretch, s.side)?.act || null;
+  const act = s.mode === 'act' && plate.path && PATH_MODES.has(plate.mode) ? plate.mode : null;
+  const work = s.work || actPlate?.mode || null;
+  // what the teams behind can be doing in this picture
+  let how = null;
+  if (act) how = 'path';
+  else if (IN_PLACE.has(work) && standable(plate) && (s.mode === 'act' || (actPlate && actPlate.f === plate.f))) how = 'work';
+  else if (!task && standable(plate) && !s.plate.water) how = 'pass';
+  if (!how) return;
+  const T = Array.from({ length: ps }, (_, k) => s.t + (ctx.t1 - s.t) * (ps > 1 ? k / (ps - 1) : 0));
   const seen = new Set();
-  const here = ctx.rows.filter(r => r.stretch === s.stretch && !s.teams.includes(r.id) && r.from <= ctx.t1 + 0.5 && r.to >= s.t - 0.5)
+  const here = ctx.rows.filter(r => r.stretch === s.stretch && !inScene.has(r.id) && r.from <= ctx.t1 + 0.5 && r.to >= s.t - 0.5)
     .map(r => ({ r, tr: ctx.tries.find(x => x.team === r.id && x.stretch === s.stretch && x.from <= r.to + 0.5 && x.to >= r.from - 0.5) || null }))
     // an Either: only the teams on this side of it are in this picture
     .filter(({ tr }) => !s.side || stretch?.kind !== 'either' || !tr || !tr.side || tr.side === s.side)
     .sort((a, b) => Math.abs(Math.max(a.r.from, s.t) - s.t) - Math.abs(Math.max(b.r.from, s.t) - s.t))
     .filter(({ r }) => (seen.has(r.id) ? false : (seen.add(r.id), true)))
-    .slice(0, MAX_CROWD);
+    .slice(0, how === 'pass' ? 1 : MAX_CROWD);
   if (!here.length) return;
-  const plate = s.plate;
   const within = (r, tk) => tk >= r.from - 1 && tk <= r.to + 1;
   s.crowdSize = z;
   s.crowdT = T.map(t => Math.round(t * 10) / 10);
-  const act = s.mode === 'act' && plate.path && PATH_MODES.has(plate.mode) ? plate.mode : null;
-  const work = s.work || (stretch && stretchPlates(s.place, s.stretch, s.side)?.act?.mode);
   const M = z * 0.95 + 1;
   const fgRow = ctx.rows.find(r => r.id === s.teams[0] && r.stretch === s.stretch);
   s.crowd = [];
@@ -756,7 +792,10 @@ function planCrowd(s, ctx) {
     const row = tr || { from: r.from, to: r.to, attempts: 1 };
     const pos = [], sts = [];
     let at = null;
-    if (!act && standable(plate) && IN_PLACE.has(work)) at = freeSpots(plate, 1, fgX.concat(s.crowd.map(c => c.pos.find(Boolean)).filter(Boolean).map(p => [p[0], half])), half)[0] || null;
+    if (how === 'work') {
+      at = freeSpots(plate, 1, fgX.concat(s.crowd.map(c => c.pos.find(Boolean)).filter(Boolean).map(p => [p[0], half])), half)[0] || null;
+      if (!at) return;                       // no room at the task: not in this picture (never running round it instead)
+    }
     T.forEach((tk, k) => {
       if (!within(r, tk)) { pos.push(null); sts.push(tk < r.from ? 'away' : 'gone'); return; }
       const a = attemptAt(row, tk);
@@ -782,19 +821,17 @@ function planCrowd(s, ctx) {
         else if (act === 'hop') pt = [pt[0] + (i % 2 ? 2.5 : -2.5), pt[1]];
         else pt = [Math.min(100 - M, Math.max(M, pt[0] + (i % 2 ? 6 : -6))), Math.max(z * 2.35 + 7, pt[1])];
         pos.push([Math.round(pt[0] * 10) / 10, Math.round(pt[1] * 10) / 10]); sts.push(a.st);
-      } else if (at) {
+      } else if (how === 'work') {
         pos.push(at); sts.push(a.st);
-      } else if (standable(plate)) {
-        pos.push('run'); sts.push('run');
-      } else { pos.push(null); sts.push('gone'); }
+      } else { pos.push('run'); sts.push('run'); }
     });
-    // runners pass through once: in at one side of the ground, out at the other, over up to three of the steps they are here
+    // a team on the road passes through once: in at one side of the ground, out at the other, over up to three steps
     if (pos.includes('run')) {
       const ks = pos.map((p, k) => (p === 'run' ? k : -1)).filter(k => k >= 0);
-      const start = ks[Math.min(ks.length - 1, i % 2)];
+      const start = ks[0];
       const span = ks.filter(k => k >= start).slice(0, 3);
       const gx0 = Math.max(plate.x[0], half + 0.6), gx1 = Math.min(plate.x[1], 100 - half - 0.6);
-      const ltr = i % 2 === 0;
+      const ltr = true;
       const fr = span.length === 1 ? [0.5] : span.length === 2 ? [0.25, 0.75] : [0.12, 0.5, 0.88];
       pos.forEach((p, k) => {
         if (p !== 'run') return;
@@ -805,10 +842,28 @@ function planCrowd(s, ctx) {
       });
     }
     if (!pos.some(Boolean)) return;
-    const as = act || (pos.some(Boolean) && sts.includes('run') ? 'run' : 'stand');
-    s.crowd.push({ team: r.id, as, work: !act && at ? work : null, pos, st: sts, ltr: i % 2 === 0, row: { from: r.from, to: r.to } });
+    const as = act || (how === 'pass' ? 'run' : 'stand');
+    s.crowd.push({ team: r.id, as, work: how === 'work' ? work : null, pos, st: sts, ltr: true, row: { from: r.from, to: r.to } });
   });
   if (!s.crowd.length) { delete s.crowd; delete s.crowdT; }
+}
+
+// ── the background sees the big moments in front: a glance, a cheer, a wince ──
+function planCrowdReact(s) {
+  if (!s.crowd?.length) return;
+  const last = s.steps.length - 1;
+  s.steps.forEach((st, k) => {
+    if (!s.crowd.some(c => c.pos[k] && c.st[k] !== 'gone')) return;
+    let how = null;
+    if (st.slam) how = st.slam.cls === 'gold' ? 'cheer' : 'wince';
+    else if (st.rank && !st.rank.out) how = st.rank.place === 1 ? 'cheer' : 'glance';
+    else if (s.plan?.fail === k || s.plan?.quit === k) how = 'wince';
+    else if (k === last && s.seg === 'task-done') how = 'glance';
+    else if (k === s.exitAt) how = 'glance';
+    else if (s.leaveAt?.[k]) how = 'glance';
+    else if (st.react && ['jump', 'shake'].includes(st.react.how) && st.part !== 'conf' && k % 3 === 0) how = 'glance';
+    if (how) st.crowdReact = how;
+  });
 }
 
 // ── how the teams come in: at a run, the first time the episode sees them at a stretch ──
@@ -825,6 +880,101 @@ function planEnter(s, screens, si) {
   s.enter = {};
   s.teams.forEach((id, i) => { if (!before.some(x => x.teams.includes(id)) && s.marks?.[id]) s.enter[id] = s.marks[id][0] > 50 ? 'right' : 'left'; void i; });
   if (!Object.keys(s.enter).length) delete s.enter;
+}
+
+// ── exits: a stage direction that sends people away takes them off the stage ──
+// The user (2026-10-19): "it says x and y are gone but theyre still on the screen". A beat whose subject is named
+// people (or a team by its name) followed by a leaving verb ("are gone", "run off", "walk away", "leaves.", "are out
+// of there", "storm off", "disappear") walks them off at that step; they stay off until a later line brings them
+// back: their own line, or a beat with them coming back. A subject has to open its clause ("Before Bruno leaves"
+// is nobody leaving), and "leave" counts only on its own or on its way out ("Kai leaves a note" is not a departure).
+const rx = s => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const GO_VERBS = 'run|runs|ran|race|races|raced|sprint|sprints|sprinted|dash|dashes|dashed|hurry|hurries|hurried|rush|rushes|rushed|storm|storms|stormed|stomp|stomps|stomped|walk|walks|walked|head|heads|headed|bolt|bolts|bolted|peel|peels|peeled|stalk|stalks|stalked|march|marches|marched|wander|wanders|wandered|zoom|zooms|zoomed|speed|speeds|sped|tear|tears|tore|drive|drives|drove|limp|limps|limped|scramble|scrambles|scrambled|scurry|scurries|scurried|flee|flees|fled|jog|jogs|jogged|stride|strides|strode|slip|slips|slipped|charge|charges|charged';
+const LEAVE_RE = `(?:(?:are|is|were|was)\\s+(?:already\\s+|long\\s+|both\\s+|all\\s+)?(?:gone|out\\s+of\\s+(?:there|here|sight)|out\\s+the\\s+door|off(?=[\\s.,!;?]|$)|away\\b)`
+  + `|(?:${GO_VERBS})\\s+(?:off|away|out(?!\\s+of\\b))\\b`
+  + `|(?:take|takes|took|set|sets|push|pushes|pushed)\\s+off\\b`
+  + `|(?:clear|clears|cleared)\\s+out\\b`
+  + `|(?:disappear|disappears|disappeared|vanish|vanishes|vanished)\\b`
+  + `|(?:leave|leaves|left)(?=\\s*(?:[.,;!?]|$)|\\s+(?:without|together|first|at\\s+a|in\\s+a|the\\s+(?:mat|room|scene|shop|stall|market|square|station|platform|dock|beach|stage|car|cab|bench|others|rest))))`;
+const BACK_RE = `(?:(?:come|comes|came|run|runs|ran|race|races|raced|hurry|hurries|hurried|rush|rushes|rushed|walk|walks|walked|sprint|sprints|sprinted|stomp|stomps|stomped|jog|jogs|jogged|double|doubles|doubled|head|heads|headed)\\s+back\\b`
+  + `|(?:return|returns|returned|rejoin|rejoins|rejoined|reappear|reappears|reappeared)\\b|(?:are|is|were|was)\\s+back\\b)`;
+function subjectRe(names, teamNames, verbs) {
+  const alts = [...names.map(rx), ...Object.values(teamNames).map(n => `(?:the\\s+)?${rx(n)}`)].sort((a, b) => b.length - a.length);
+  if (!alts.length) return null;
+  const NAME = `(?:${alts.join('|')})`;
+  const SUBJ = `(${NAME}(?:\\s*(?:,\\s*(?:and\\s+)?|\\s+and\\s+|\\s*&\\s*)${NAME})*)`;
+  const ADV = '(?:\\s+(?:both|then|just|already|quickly|promptly|finally|simply|immediately|soon|all))*';
+  return new RegExp(`(?:^|[.!?;:\\u2014\\u2013]\\s*|,\\s*|\\b(?:and\\s+then|then|so)\\s+)${SUBJ}${ADV}\\s+${verbs}`, 'gi');
+}
+function subjectsOf(re, text, names, teamNames) {
+  const out = [];
+  if (!re) return out;
+  const byName = new Map(names.map(n => [n.toLowerCase(), n]));
+  const byTeam = new Map(Object.entries(teamNames).map(([id, n]) => [n.toLowerCase(), id]));
+  for (const m of String(text || '').matchAll(re)) {
+    const subj = m[1].replace(/^the\s+/i, '');
+    // the names in the subject, longest first so a team's name is not read as one of its words
+    const parts = [...byTeam.keys(), ...byName.keys()].sort((a, b) => b.length - a.length);
+    let rest = subj.toLowerCase();
+    const found = [];
+    for (const p of parts) {
+      let i = rest.indexOf(p);
+      while (i >= 0) { found.push([i, p]); rest = rest.slice(0, i) + ' '.repeat(p.length) + rest.slice(i + p.length); i = rest.indexOf(p); }
+    }
+    found.sort((a, b) => a[0] - b[0]).forEach(([, p]) => { const v = byTeam.get(p) || byName.get(p); if (v && !out.includes(v)) out.push(v); });
+  }
+  return out;
+}
+/** Who a stage direction sends away: people's names, or team ids for a team named by its name. */
+export function exitsIn(text, names, teamNames = {}) {
+  return subjectsOf(subjectRe(names, teamNames, LEAVE_RE), text, names, teamNames);
+}
+/** Who a stage direction brings back. */
+export function returnsIn(text, names, teamNames = {}) {
+  return subjectsOf(subjectRe(names, teamNames, BACK_RE), text, names, teamNames);
+}
+/** Is team `id` on the stage at step k (a partner who walked off alone leaves the other one there)? */
+export function onStage(s, id, k) { return s.offAt?.[k]?.[id] !== 'team'; }
+/** Who of team `id` is off at step k: 'team', a list of names, or nothing. */
+export const offOf = (s, id, k) => s.offAt?.[k]?.[id] || null;
+
+export function planExits(s, { teamNames = {} } = {}) {
+  const members = s.members || {};
+  const names = s.teams.flatMap(id => members[id] || []);
+  const tn = Object.fromEntries(s.teams.filter(id => teamNames[id]).map(id => [id, teamNames[id]]));
+  const teamOfName = n => s.teams.find(id => (members[id] || []).includes(n)) || null;
+  const off = {};                         // id -> 'team' | Set(names)
+  const offAt = [], leaveAt = {}, backAt = {};
+  let any = false;
+  const goes = (id, who, k) => {
+    const pair = members[id] || [];
+    const cur = off[id];
+    if (cur === 'team') return;
+    const set = new Set(cur || []);
+    (who === 'team' ? pair : who).forEach(n => set.add(n));
+    off[id] = pair.every(n => set.has(n)) ? 'team' : set;
+    (leaveAt[k] ||= []).includes(id) || leaveAt[k].push(id);
+    any = true;
+  };
+  const comes = (id, who, k) => {
+    const cur = off[id];
+    if (!cur) return;
+    if (who === 'team' || cur === 'team') delete off[id];
+    else { who.forEach(n => cur.delete(n)); if (!cur.size) delete off[id]; }
+    (backAt[k] ||= []).includes(id) || backAt[k].push(id);
+  };
+  s.steps.forEach((st, k) => {
+    // whoever speaks is back with that line (nobody talks from off the stage)
+    if (st.by && st.team && off[st.team]) comes(st.team, off[st.team] === 'team' ? 'team' : [st.by], k);
+    if (st.part === 'beat' && st.text) {
+      for (const x of returnsIn(st.text, names, tn)) { const id = tn[x] ? x : teamOfName(x); if (id) comes(id, tn[x] ? 'team' : [x], k); }
+      for (const x of exitsIn(st.text, names, tn)) { const id = tn[x] ? x : teamOfName(x); if (id) goes(id, tn[x] ? 'team' : [x], k); }
+    }
+    offAt.push(Object.fromEntries(Object.entries(off).map(([id, v]) => [id, v === 'team' ? 'team' : [...v]])));
+  });
+  if (!any) { delete s.offAt; delete s.leaveAt; delete s.backAt; return s; }
+  s.offAt = offAt; s.leaveAt = leaveAt; s.backAt = backAt;
+  return s;
 }
 
 // ── who reacts to a line: the partner, or the other team in the shot ──
@@ -855,13 +1005,25 @@ function planReact(s, teamOf, membersOf) {
     // an ordinary line gets a nod on every other click; a loud one always gets its reaction
     if (how === 'nod' && k % 2) { lastTeam = team; return; }
     const next = s.steps.slice(k + 1).find(x => x.by && teamOf[x.by] && teamOf[x.by] !== team);
-    const other = (lastTeam && lastTeam !== team && s.teams.includes(lastTeam)) ? lastTeam : next && s.teams.includes(teamOf[next.by]) ? teamOf[next.by] : null;
+    const here = id => s.teams.includes(id) && onStage(s, id, k);
+    const other = (lastTeam && lastTeam !== team && here(lastTeam)) ? lastTeam : next && here(teamOf[next.by]) ? teamOf[next.by] : null;
     if (other) st.react = { team: other, how };
     else {
-      const partner = membersOf(team).find(n => n !== st.by);
-      if (partner && s.teams.includes(team)) st.react = { team, who: partner, how };
+      const partner = membersOf(team).find(n => n !== st.by && !(offOf(s, team, k) || []).includes?.(n));
+      if (partner && here(team)) st.react = { team, who: partner, how };
     }
     lastTeam = team;
+  });
+}
+
+// ── the confessional: the one not talking listens, and it shows (a nod, a laugh, a tilt, a shake) ──
+function planIvReact(s) {
+  if (s.solo || s.people?.length !== 2) return;
+  s.steps.forEach((st, k) => {
+    if (!st.by || !s.people.includes(st.by)) return;
+    const how = reactionTo(st.text);
+    if (how === 'nod' && k % 2) return;
+    st.react = { team: s.team, who: s.people.find(n => n !== st.by), how };
   });
 }
 
@@ -879,6 +1041,7 @@ const PUNCH = /[!?]\s*$|!\s|\.\.\.|—|\b(no|what|ugh|seriously|wow|great|perfec
 const FOLLOW = new Set(['climb', 'zip', 'para']);
 export function boxOf(s, who, k) {
   const z = s.size || 8;
+  if (s.offAt && s.teams?.includes(who) && !onStage(s, who, k)) return null;     // walked off
   if (who === 'Don') { const d = s.donStand; return d ? [d[0] - 0.55 * z, d[1] - 2.1 * z, d[0] + 0.55 * z, d[1]] : null; }
   if (s.localAt?.[who]) { const d = s.localAt[who]; return [d[0] - 0.5 * z, d[1] - 2.0 * z, d[0] + 0.5 * z, d[1]]; }
   const at = s.pos?.[k]?.[who] || (s.hiddenUntil?.[who] != null && k === s.hiddenUntil[who] ? s.matAt : null) || s.marks?.[who];
@@ -938,6 +1101,8 @@ function planCamera(s) {
     if (!cur) { cur = w; held = 1; }
     else if (w.force) { cur = w; held = 1; }
     else if (cur.shot === 'follow' || w.shot === 'follow') { cur = w; held = 1; }     // a follow moves with its subject
+    // a held close-up whose subject has moved out of it (a swimmer across the water, a team walking off) lets go
+    else if (cur.shot !== 'wide' && !(cur.on || []).every(x => inView(cur, boxOf(s, x, k)))) { cur = (w.on || []).every(x => inView(w, boxOf(s, x, k))) ? w : wideAt(k); held = 1; }
     else if (!inView(cur, spBox)) {
       // the next speaker is out of the shot: a shot with them in it, both teams if it was soon after a cut
       const both = held < MIN_HOLD && cur.on?.length ? frameOn(s, k, [...new Set([...cur.on, sp])], 1.35, 'two') : null;

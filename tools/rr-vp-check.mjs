@@ -33,8 +33,8 @@ for (const [w, h] of SIZES) {
           // frame and clear of the bar; the people it is not on may be cut by the frame, as on television.
           const f0 = window.__rr.flat[k], cam = window.__rr.ep.screens[f0.si].steps[f0.idx].cam;
           const close = cam && cam.shot !== 'wide';
-          const sel = close ? (cam.on || []).map(w => w === 'Don' || !/^t\d+$/.test(w) ? `#rr-stage .don[data-p="${w}"] img, #rr-stage .don[data-p="${w}"] svg` : `#rr-stage .tok[data-team="${w}"]:not([data-crowd]) .pair img, #rr-stage .swim[data-team="${w}"]:not([data-crowd]) img`).join(', ')
-            : '#rr-stage .tok .pair img, #rr-stage .swim img, #rr-stage .don img, #rr-stage .don svg, #rr-stage .inset img, #rr-stage .iv .cf img';
+          const sel = close ? (cam.on || []).map(w => w === 'Don' || !/^t\d+$/.test(w) ? `#rr-stage .don[data-p="${w}"] > img, #rr-stage .don[data-p="${w}"] > svg` : `#rr-stage .tok[data-team="${w}"]:not([data-crowd]) .pair img, #rr-stage .swim[data-team="${w}"]:not([data-crowd]) img`).join(', ')
+            : '#rr-stage .tok .pair img, #rr-stage .swim img, #rr-stage .don > img, #rr-stage .don > svg, #rr-stage .inset img, #rr-stage .iv .cf img';
           for (const e of sel ? document.querySelectorAll(sel) : []) {
             const b = box(e);
             if (!b.width) continue;
@@ -58,10 +58,18 @@ for (const [w, h] of SIZES) {
 }
 // and the plates do run their shader
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
-await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=5&step=40`);
+await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=5&step=0`);
 await page.waitForFunction(() => window.__rr?.ep, null, { timeout: 60000 });
+// a step on a plate with water or leaves (life-have.js): its canvas runs; a plate without stays the crisp painting
+const k = await page.evaluate(async () => {
+  const { LIFE } = await import('./js/vp-rr-ep/life-have.js');
+  const { plateUrl } = await import('./js/vp-rr-ep/plates.js');
+  const r = window.__rr;
+  return r.flat.findIndex(f => { const s = r.ep.screens[f.si]; return s.kind === 'world' && s.plate?.f && !s.plate.race && LIFE[plateUrl(s.plate.place || s.place, s.plate.f)]; });
+});
+await page.evaluate(k => window.__rr.step(k, false), Math.max(0, k));
 await page.waitForTimeout(2500);
-const gl = await page.evaluate(() => !!document.querySelector('#rr-gl canvas.tdx-gl.on'));
+const gl = k >= 0 && await page.evaluate(() => !!document.querySelector('#rr-gl canvas.rr-life.on'));
 console.log(`checked ${checked} steps, ${bad} with a problem; motion shader running: ${gl}`);
 await browser.close();
 process.exit(bad || !gl ? 1 : 0);

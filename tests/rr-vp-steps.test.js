@@ -283,7 +283,9 @@ describe('rr viewer steps', () => {
           if (key(a.cam) !== key(b.cam) && key(b.cam) !== key(c.cam) && !forced(b) && !forced(c)) {
             // allowed only when the next speaker was out of the shot
             const who = c.by === 'Don' ? 'Don' : c.team || c.by;
-            if (inView(b.cam, boxOf(s, who, k))) jumpy.push(`${s.id} ${s.seg} steps ${k - 2}-${k}`);
+            // or the shot before lost its own subject (a swimmer gone across the water)
+            const lost = b.cam.shot !== 'wide' && (b.cam.on || []).some(x => !inView(b.cam, boxOf(s, x, k)));
+            if (inView(b.cam, boxOf(s, who, k)) && !lost) jumpy.push(`${s.id} ${s.seg} steps ${k - 2}-${k}`);
           }
         }
       }
@@ -296,6 +298,7 @@ describe('rr viewer steps', () => {
     each(ep => {
       for (const s of ep.screens) for (const st of s.steps) if (st.react) {
         n++;
+        if (s.kind === 'iv') { expect(s.people, `${s.id} a confessional reaction by somebody not in it`).toContain(st.react.who); expect(st.react.who).not.toBe(st.by); continue; }
         expect(s.teams, `${s.id} reaction by a team not in the shot`).toContain(st.react.team);
         expect(['nod', 'shake', 'jump', 'laugh', 'tilt', 'slump']).toContain(st.react.how);
       }
@@ -351,9 +354,10 @@ describe('rr viewer sound', () => {
     expect(struggle).toBeGreaterThan(20); expect(box).toBeGreaterThan(10); expect(place).toBeGreaterThan(20); expect(elim).toBeGreaterThan(3);
   });
 
-  it('tells the simulator pane to play no bed of its own under the race', () => {
+  it('tells the simulator pane to play the race own bed, the one already on, never one of its own', () => {
     const src = readFileSync('js/vp-rr-ep/vp.js', 'utf8');
-    expect(src).toMatch(/class="rrx"[^>]*data-ambient="none"/);
+    expect(src).toMatch(/class="rrx"[^>]*data-ambient="\$\{esc\(bed\)\}"/);
+    expect(src).toMatch(/soundAt\(e, c\.from, 0\)\.bed/);
   });
 });
 

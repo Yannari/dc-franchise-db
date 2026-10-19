@@ -1,34 +1,24 @@
-// "Previously on The Ridonculous Race" (story/previously.js): Don telling last episode as one short story over
-// the clips. The frame: `open` (where the teams were; `open.first` after the first leg), `result` (who took the
-// leg, who went home; `.on-location` when Don had to go and find them; `.non-elim` when nobody went), `tease`
-// (the close, always ending "on The Ridonculous Race!"). Between them, two or three moments, past tense, one
-// clause each, keyed `<kind>.<ending>` or `<kind>` (the family-8 sabotages share `sabotage` / `sabotage.seen`).
-// Slots: {place} {count} in the open; {winner} {out} {last} in the result; in a moment, {a} {b} (the people)
-// and {team} {teamB} {target} (filled the way a host says them: "the Goths", "Alec and Spud"). Every clause in a
-// list needs the same slots. A later moment is joined on ("Meanwhile, ..."), so a clause is one plain sentence.
+// "Last time on The Ridonculous Race" (story/previously.js), in the real show's shape (episode 3, the user's goal):
+// the leg in a line with Don's gag (`open`: {summary} is the place's `recap`, "shopping for spices and cameling
+// through the desert"), at most one storyline moment (the keyed clauses below, past tense, {a} {b} the people,
+// {team} {teamB} {target} filled "the Goths" / "Alec and Spud"), the winners (`winners`: {winners} is "best friends
+// Carrie and Devin"), who went home with a dig (`exit`, `.on-location`, `.non-elim`: {out} / {last}), and then
+// always "But that was then, and this is The Ridonculous Race!"
 export default {
-  open: ["Previously on The Ridonculous Race, the teams raced through {place}.",
-    "Previously on The Ridonculous Race, the race hit {place}, and it did not go smoothly for everybody.",
-    "Previously on The Ridonculous Race, we spent a leg in {place}, and I'm still finding sand in places.",
-    "Previously on The Ridonculous Race, the teams took on everything {place} could throw at them."],
-  'open.first': ["Previously on The Ridonculous Race, {count} teams set off from {place} on the race of a lifetime.",
-    "Previously on The Ridonculous Race, {count} teams of two lined up in {place} for a million dollars and a lot of airport food."],
-
-  result: ["{winner} took the leg, and {out} took the long walk home.",
-    "In the end, {winner} got to me first, and {out} got to me last, which meant goodbye.",
-    "{winner} won the leg. {out} did not, and they're gone.",
-    "{winner} came in first, and {out} came in last and went home, which is how this works."],
-  'result.on-location': ["{winner} took the leg, and {out} were so far behind that I had to go out and send them home myself.",
-    "{winner} came in first, and {out} never made it to the mat at all. I went to them. They're gone."],
-  'result.non-elim': ["{winner} took the leg, and {last} came in dead last, but it was a non-elimination leg. Lucky them.",
-    "{winner} came in first, and {last} came in last and should have gone home. They didn't. Non-elimination leg.",
-    "{winner} won the leg, {last} lost it, and nobody went home. I don't make the rules. Okay, I do."],
-
-  tease: ["Who's next to go home? Find out right now, on The Ridonculous Race!",
-    "Who'll keep it together, and who'll fall apart? Find out right now, on The Ridonculous Race!",
-    "It's anybody's race. Well, it's somebody's race. Find out whose, right now, on The Ridonculous Race!",
-    "Who's going to crack this time? Stay tuned, because this is The Ridonculous Race!",
-    "Who's in, who's out, and who's crying in an airport? Find out right now, on The Ridonculous Race!"],
+  open: ["Last time on The Ridonculous Race, after {summary}, our teams were exhausted. So was I, and all I did was watch.",
+    "Last time on The Ridonculous Race, after {summary}, our teams had worked up a serious sweat. I had worked up a serious appetite. Lunch was great.",
+    "Last time on The Ridonculous Race, after {summary}, our teams were sore, sunburned and smelly. I was fine. I had a hat.",
+    "Last time on The Ridonculous Race, after {summary}, our teams learned a lot about themselves. Mostly that they should have trained."],
+  winners: ["The winners were {winners}.", "Taking first place were {winners}, who will not stop bringing it up.",
+    "First to the Chill Zone were {winners}. In my book, everybody else was a loser."],
+  exit: ["We could only send one team home, and last week it was {out}. I'm not sad.",
+    "And last week we said goodbye to {out}. I'll miss them. That was a lie.",
+    "Somebody had to come in last, and that somebody was {out}. Bye.",
+    "And last week, {out} took the long walk home. I offered them a ride. I didn't mean it."],
+  'exit.on-location': ["And {out} were so far behind that I had to go out and find them, just to send them home. Worth it.",
+    "And {out} never even made it to the Chill Zone. I went to them. They're gone."],
+  'exit.non-elim': ["And {last} came in dead last, but it was a non-elimination leg, so nobody went home. I'm still annoyed about it.",
+    "And {last} should have gone home, but it was a non-elimination leg. Lucky them. Unlucky me."],
 
   sabotage: ["{a} and {b} decided {teamB} were in their way, and did something about it.",
     "{team} played dirty, and {teamB} paid for it.",

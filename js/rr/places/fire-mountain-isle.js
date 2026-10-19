@@ -1,6 +1,6 @@
 // Fire-Mountain Isle (LEGS.txt 48-FIRE-MOUNTAIN-ISLE; the leg mockup, mockup/mockup-rr-leg.html).
 export default {
-  id: 'fire-mountain-isle', name: 'Fire-Mountain Isle', region: 'ocean', map: { x: 3, y: 45 },
+  id: 'fire-mountain-isle', name: 'Fire-Mountain Isle', recap: 'hopping over lava, diving in the lagoon and carving logs into statues', region: 'ocean', map: { x: 3, y: 45 },
   arrive: 'airport', local: ['taxi', 'foot', 'boat'],
   stretches: [
     { id: 'jungle', kind: 'travel', mode: 'foot', base: 25, cost: 0, plate: 'jungle path', label: 'Into the jungle' },

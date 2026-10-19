@@ -1,7 +1,7 @@
 // Home City: the starting line (Downloads/RidonculousRace-frames/LEGS.txt 02-HOME-CITY;
 // the real show's first leg: the tower, Stairs or Scares, the zipline to the island airport).
 export default {
-  id: 'home-city', name: 'Home City', region: 'north', map: { x: 22, y: 31 },
+  id: 'home-city', name: 'Home City', recap: 'racing up the city tower and ziplining over the lake', region: 'north', map: { x: 22, y: 31 },
   arrive: 'station', local: ['foot', 'taxi'], start: true,
   stretches: [
     { id: 'to-tower', kind: 'travel', mode: 'foot', base: 20, cost: 0, plate: 'station facade', label: 'Run to the tower' },

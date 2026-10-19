@@ -1,7 +1,8 @@
 // The Ridonculous Race: "previously on", from what actually aired (dialogue plan, Task 10).
 import { describe, it, expect, beforeAll } from 'vitest';
 import { airSeason } from '../js/rr/episode.js';
-import { previouslyFor, RECAP_KINDS, teamRef } from '../js/rr/story/previously.js';
+import { previouslyFor, RECAP_KINDS, teamRef, teamTag } from '../js/rr/story/previously.js';
+import { getPlace } from '../js/rr/places.js';
 import { playRaceSeason } from '../js/rr/season.js';
 import { setPlayers } from '../js/core.js';
 import { raceCast } from './helpers/rr-cast.js';
@@ -20,12 +21,12 @@ describe('rr previously', () => {
     for (const ep of eps.slice(1)) expect(ep.previously, `leg ${ep.n}`).toBeTruthy();
   });
 
-  it('recaps only moments that aired last time, at most five (three moments, the winner, the exit), Don speaking', () => {
+  it('recaps only moments that aired last time, at most four (a storyline moment or two, the winner, the exit), Don speaking', () => {
     for (let i = 1; i < eps.length; i++) {
       const p = eps[i].previously;
       const airedLast = new Set(eps[i - 1].segments.map(s => s.scene).filter(x => x != null));
       expect(p.scenes.length).toBeGreaterThan(0);
-      expect(p.scenes.length).toBeLessThanOrEqual(5);
+      expect(p.scenes.length).toBeLessThanOrEqual(4);
       for (const id of p.scenes) expect(airedLast.has(id), `leg ${eps[i].n} recaps #${id}`).toBe(true);
       expect(p.lines.every(l => l.by === 'Don')).toBe(true);
       for (const l of p.lines) expect(l.text).not.toMatch(/[{}]|undefined/);
@@ -40,19 +41,27 @@ describe('rr previously', () => {
     }
   });
 
-  it('Don tells it as a story: where they were, what happened, who won and who went, and a tease', () => {
+  it('Don tells it the way the show does: the leg in a line, the winners, who went home, "but that was then"', () => {
     for (let i = 1; i < eps.length; i++) {
       const p = eps[i].previously, texts = p.lines.map(l => l.text);
-      const place = res.legs[i - 1].placeName;
-      expect(texts[0], `leg ${eps[i].n}`).toMatch(/^Previously on The Ridonculous Race/);
-      expect(texts[0], `leg ${eps[i].n}`).toContain(place);
-      expect(texts.at(-1), `leg ${eps[i].n}`).toMatch(/Ridonculous Race!$/);
-      const winner = teamRef(res.state, res.legs[i - 1].order[0]).replace(/^the /, '');
-      const out = res.legs[i - 1].eliminated[0];
-      const result = texts.at(-2);
-      expect(result, `leg ${eps[i].n}: the winner`).toBeTruthy();
-      if (out) expect(result, `leg ${eps[i].n}: winner and exit in one line`).toContain(teamRef(res.state, out).replace(/^the /, ''));
+      const leg = res.legs[i - 1], place = getPlace(leg.place);
+      expect(texts[0], `leg ${eps[i].n}`).toMatch(/^Last time on The Ridonculous Race/);
+      expect(texts[0], `leg ${eps[i].n}`).toContain(place.recap || place.name);
+      expect(texts.at(-1)).toBe('But that was then, and this is The Ridonculous Race!');
+      const t = res.state.teams[leg.order[0]];
+      expect(texts.some(x => x.includes(t.a) && x.includes(t.b)), `leg ${eps[i].n}: the winners by name`).toBe(true);
+      const out = leg.eliminated[0];
+      if (out) expect(texts.some(x => x.includes(teamRef(res.state, out).replace(/^the /, ''))), `leg ${eps[i].n}: the exit`).toBe(true);
       for (const x of texts) expect(x[0], x).toBe(x[0].toUpperCase());
+    }
+  });
+
+  it('the winners are named the way the show names them: "best friends Carrie and Devin", "the Goths, Crimson and Ennui"', () => {
+    for (const id of Object.keys(res.state.teams)) {
+      const tag = teamTag(res.state, id), t = res.state.teams[id];
+      expect(tag).toContain(t.a);
+      expect(tag).toContain(t.b);
+      expect(tag).not.toMatch(/undefined|null|parent-child|grandparent-grandchild|newly-dating|once-engaged|reality-vets|on-off/);
     }
   });
 

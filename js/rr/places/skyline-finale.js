@@ -2,7 +2,7 @@
 // skyscraper, the stairs to the deck, the midpoint Chill Zone in the park, the buoys, the race
 // to the stage). The memory task is the Amazing Race's.
 export default {
-  id: 'skyline-finale', name: 'Skyline City', region: 'north', map: { x: 26, y: 34 },
+  id: 'skyline-finale', name: 'Skyline City', recap: 'the last race through the skyline city', region: 'north', map: { x: 26, y: 34 },
   arrive: 'airport', local: ['drive', 'foot', 'taxi'], finale: true,
   stretches: [
     { id: 'cab', kind: 'travel', mode: 'drive', base: 35, cost: 0, plate: 'airport curb, taxis', label: 'Drive yourselves into the city' },

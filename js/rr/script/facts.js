@@ -70,7 +70,7 @@ function weOwe(scene, state) {
 const todWord = m => (m == null ? null : m >= 1320 || m < 300 ? 'night' : m < 660 ? 'morning' : m < 1020 ? 'day' : 'evening');
 const ageOf = n => players.find(p => p.name === n)?.age ?? null;
 // the team's elder: authored on the team (the Casting Room), else from the two ages, a generation apart
-function elderOf(team) {
+export function elderOf(team) {
   if (!team) return null;
   if (team.elder) return team.elder;
   const x = ageOf(team.a), y = ageOf(team.b);

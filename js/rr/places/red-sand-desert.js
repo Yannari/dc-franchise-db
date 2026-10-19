@@ -4,7 +4,7 @@
 // the Vegans walked beside theirs); Botch or Watch, a stew cooked with the team's own spices; on foot to the
 // Chill Zone.
 export default {
-  id: 'red-sand-desert', name: 'Red Sand Desert', region: 'desert', map: { x: 48, y: 41 },
+  id: 'red-sand-desert', name: 'Red Sand Desert', recap: 'shopping for spices and cameling through the desert', region: 'desert', map: { x: 48, y: 41 },
   arrive: 'airport', local: ['taxi', 'camel', 'foot'],
   stretches: [
     { id: 'taxi', kind: 'travel', mode: 'taxi', base: 30, cost: 25, plate: 'desert road', label: 'Cab to the spice corner' },

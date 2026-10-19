@@ -1,29 +1,35 @@
 // ══════════════════════════════════════════════════════════════════════
-// rr/story/previously.js — "Previously on The Ridonculous Race", from what aired
+// rr/story/previously.js — "Last time on The Ridonculous Race", from what aired
 // ══════════════════════════════════════════════════════════════════════
 //
-// Manual §19.2 step 8. Don tells last episode as one short story over the clips (the user, 2026-10-18:
-// "this can't be how Don is doing his recap" — it was four disconnected one-liners):
-//   1. where the teams were ("Previously on The Ridonculous Race, the teams took on the Red Sand Desert.")
-//   2. two or three moments that aired, in order, named by who did them and joined up ("Meanwhile, ...")
-//   3. one line for the result: who took the leg and who went home (or that nobody did)
-//   4. a tease ("... Find out right now, on The Ridonculous Race!")
-// A team is named the way a host says it: "the Goths" for an identity team, "Alec and Spud" for the rest.
+// Manual §19.2 step 8, in the shape the real show uses (episode 3, the user's goal transcript, 2026-10-18):
+//   "Last time on The Ridonculous Race, after shopping for spices and cameling through the desert, our teams
+//    built up a hearty appetite. And I lost mine. The winners were best friends Carrie and Devin. In my book,
+//    everyone else was a loser, but we could only eliminate one team, and last week it was the LARPers. I'm not
+//    sad. But that was then, and this is The Ridonculous Race!"
+// So: the leg in one line (the place's `recap`, or its name) with Don's own gag; at most one storyline moment that
+// matters (a betrayal, a break-up); the winners named the way the show names them ("best friends Carrie and
+// Devin", "the Goths, Crimson and Ennui"); who went home, with a dig; "But that was then...".
 import { SCENES } from '../scenes.js';
 import { IDENTITIES } from '../identities.js';
+import { getPlace } from '../places.js';
+import { pronouns } from '../../players.js';
 import { rolesOf, DON } from '../script/roles.js';
 import { fill } from '../script/write.js';
+import { elderOf } from '../script/facts.js';
 import RECAP from '../script/lines/recap.js';
 
 const SABOTAGE = new Set(Object.keys(SCENES).filter(k => SCENES[k].family === 8 && SCENES[k].scheme));
 const RESULT = ['don-place', 'don-elim', 'don-arrives', 'don-fakeout'];
-const FRAME = new Set(['open', 'open.first', 'result', 'result.on-location', 'result.non-elim', 'tease']);
+const FRAME = new Set(['open', 'winners', 'exit', 'exit.on-location', 'exit.non-elim']);
+// the storyline moments big enough to make the recap (the show recaps the leg, not every row)
+const BIG = new Set(['alliance-betrayal', 'breakup', 'back-together', 'confession', 'medevac-choice', 'quit-talk',
+  'save-your-enemy', 'boomerang-decide', 'near-kiss', 'injury', 'deal-broken', 'accusation', 'old-wound', 'blame', 'snap']);
 export const RECAP_KINDS = [...new Set([...RESULT, ...Object.keys(RECAP).filter(k => !FRAME.has(k)).map(k => k.split('.')[0])
   .flatMap(k => (k === 'sabotage' ? [...SABOTAGE] : [k]))])];
-const BEATS = 3;
-const JOIN = ['Meanwhile, ', 'And '];
+export const CLOSE = 'But that was then, and this is The Ridonculous Race!';
 
-// "the Goths" for a team named by its identity, "Alec and Spud" for a team named by its people
+// "the Goths" for a team named by its identity, "Alec and Spud" for the rest
 export function teamRef(state, id) {
   const t = state.teams[id];
   if (!t) return null;
@@ -31,8 +37,35 @@ export function teamRef(state, id) {
   return t.name.replace(/ & /g, ' and ');
 }
 
-const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen',
-  'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen'];
+// what the two of them are to each other, the way a host introduces them
+const REL_TAG = { cousins: 'cousins', married: 'married couple', dating: 'couple', 'newly-dating': 'brand-new couple',
+  'on-off': 'on-again, off-again couple', exes: 'exes', 'once-engaged': 'former fiancés', bffs: 'best friends',
+  coworkers: 'coworkers', roommates: 'roommates', rivals: 'rivals', enemies: 'sworn enemies', 'reality-vets': 'reality TV veterans' };
+const he = n => pronouns(n)?.sub;
+function relTag(t) {
+  const [x, y] = [t.a, t.b];
+  if (t.rel === 'siblings') {
+    const g = [he(x), he(y)];
+    return g.every(s => s === 'he') ? 'brothers' : g.every(s => s === 'she') ? 'sisters' : g.includes('he') && g.includes('she') ? 'brother and sister' : 'siblings';
+  }
+  if (t.rel === 'parent-child' || t.rel === 'grandparent-grandchild') {
+    const old = elderOf(t) || x, kid = old === x ? y : x;
+    const up = t.rel === 'parent-child' ? { he: 'father', she: 'mother' } : { he: 'grandpa', she: 'grandma' };
+    const down = t.rel === 'parent-child' ? { he: 'son', she: 'daughter' } : { he: 'grandson', she: 'granddaughter' };
+    const a = up[he(old)], b = down[he(kid)];
+    return a && b ? `${a} and ${b}` : t.rel === 'parent-child' ? 'parent and kid' : 'grandparent and grandkid';
+  }
+  return REL_TAG[t.rel] || 'partners';
+}
+
+// "best friends Carrie and Devin", "the Goths, Crimson and Ennui"
+export function teamTag(state, id) {
+  const t = state.teams[id];
+  if (!t) return null;
+  if (t.identity && IDENTITIES[t.identity]?.name === t.name) return `the ${t.name}, ${t.a} and ${t.b}`;
+  return `${relTag(t)} ${t.a} and ${t.b}`;
+}
+
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const pick = (list, rng) => list[Math.floor(rng() * list.length) % list.length];
 
@@ -43,9 +76,6 @@ function clausesFor(sc) {
   return null;
 }
 
-// how much a moment matters to a recap: the storylines the season follows first
-const rank = (sc, followed) => ((sc.data?.threadIds || []).some(id => followed.has(id)) ? 60 : 30);
-
 export function previouslyFor(state, prevEp, rng = Math.random) {
   if (!prevEp) return null;
   const byId = new Map(state.scenes.map(s => [s.id, s]));
@@ -53,50 +83,44 @@ export function previouslyFor(state, prevEp, rng = Math.random) {
   const aired = prevEp.segments.map(s => byId.get(s.scene)).filter(Boolean);
   const say = text => ({ kind: 'say', by: DON, text: cap(text) });
   const kept = [];
+  const place = getPlace(prevEp.place);
 
-  // 1. where they were
-  const lines = [say(fill(pick(RECAP[prevEp.n === 1 && RECAP['open.first'] ? 'open.first' : 'open'], rng), {},
-    { place: prevEp.placeName || 'the last stop', count: WORDS[prevEp.teams] || String(prevEp.teams ?? '') }))];
+  // 1. the leg in a line, and Don's gag
+  const lines = [say(fill(pick(RECAP.open, rng), {}, { summary: place?.recap || `racing through ${prevEp.placeName || 'the last stop'}` }))];
 
-  // 2. the moments, in the order they happened, one clause per kind of moment per team
-  const seenKey = new Set();
-  const beats = aired.filter(s => !RESULT.includes(s.kind) && clausesFor(s) && rolesOf(s, state))
-    .sort((x, y) => rank(y, followed) - rank(x, followed) || x.id - y.id)
-    .filter(s => {
-      // one moment of each kind: three sabotages in a row is a list, not a story
-      const k = SABOTAGE.has(s.kind) || SCENES[s.kind]?.family === 8 ? 'sabotage' : s.kind;
-      if (seenKey.has(k)) return false;
-      seenKey.add(k);
-      return true;
-    })
-    .slice(0, BEATS)
-    .sort((x, y) => (x.data?.t ?? 0) - (y.data?.t ?? 0) || x.id - y.id);
-  for (const sc of beats) {
-    const r = rolesOf(sc, state);
+  // 2. at most one storyline moment, the biggest the season is following
+  const follows = s => (s.data?.threadIds || []).some(id => followed.has(id));
+  const big = aired.filter(s => BIG.has(s.kind) && clausesFor(s) && rolesOf(s, state))
+    .sort((x, y) => follows(y) - follows(x) || x.id - y.id)[0];
+  if (big) {
+    const r = rolesOf(big, state);
     const slots = { ...r.slots };
-    if (sc.data?.team) slots.team = teamRef(state, sc.data.team);
-    if (sc.data?.other) slots.teamB = teamRef(state, sc.data.other);
-    if (sc.data?.target) slots.target = teamRef(state, sc.data.target) || slots.target;
-    let text = fill(pick(clausesFor(sc), rng), r.roles, slots);
-    if (/\{\w+(\.\w+)?\}/.test(text)) continue;
-    // the second and third moments join the first ("Meanwhile, the Goths...")
-    if (kept.length) text = JOIN[(kept.length - 1) % JOIN.length] + text.replace(/^The /, 'the ');
-    lines.push(say(text));
-    kept.push(sc);
+    if (big.data?.team) slots.team = teamRef(state, big.data.team);
+    if (big.data?.other) slots.teamB = teamRef(state, big.data.other);
+    if (big.data?.target) slots.target = teamRef(state, big.data.target) || slots.target;
+    const text = fill(pick(clausesFor(big), rng), r.roles, slots);
+    if (!/\{\w+(\.\w+)?\}/.test(text)) { lines.push(say(text)); kept.push(big); }
   }
 
-  // 3. the result: who took the leg, and who went home (or that nobody did)
+  // 3. the winners, the way the show names them
   const winner = prevEp.order?.[0];
-  const out = prevEp.eliminated?.[0];
-  const how = out ? (prevEp.how?.[out] === 'on-location' ? 'result.on-location' : 'result') : 'result.non-elim';
-  const last = out || prevEp.order?.at(-1);
-  if (winner && RECAP[how]) {
-    lines.push(say(fill(pick(RECAP[how], rng), {}, { winner: teamRef(state, winner), out: teamRef(state, out), last: teamRef(state, last) })));
-    for (const s of aired) if ((s.kind === 'don-place' && s.data?.team === winner) || (RESULT.includes(s.kind) && s.kind !== 'don-place' && s.data?.team === last)) kept.push(s);
+  if (winner) {
+    lines.push(say(fill(pick(RECAP.winners, rng), {}, { winners: teamTag(state, winner) })));
+    const w = aired.find(s => s.kind === 'don-place' && s.data?.team === winner);
+    if (w) kept.push(w);
   }
 
-  // 4. the tease
-  lines.push(say(pick(RECAP.tease, rng)));
-  if (lines.length < 3) return null;
+  // 4. who went home (or that nobody did), with a dig
+  const out = prevEp.eliminated?.[0];
+  const last = out || prevEp.order?.at(-1);
+  const key = out ? (prevEp.how?.[out] === 'on-location' ? 'exit.on-location' : 'exit') : 'exit.non-elim';
+  if (last && RECAP[key]) {
+    lines.push(say(fill(pick(RECAP[key], rng), {}, { out: teamRef(state, last), last: teamRef(state, last) })));
+    const x = aired.find(s => RESULT.includes(s.kind) && s.kind !== 'don-place' && s.data?.team === last);
+    if (x) kept.push(x);
+  }
+
+  // 5. "But that was then..."
+  lines.push(say(CLOSE));
   return { lines, scenes: kept.map(s => s.id), kinds: kept.map(s => s.kind) };
 }

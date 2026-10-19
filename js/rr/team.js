@@ -8,19 +8,31 @@
 // up. Exes snap fastest (state.js REL), a grandparent swallows it for the grandchild.
 import { REL, S } from './state.js';
 import { getBond } from '../bonds.js';
-import { playScene } from './scenes.js';
-import { blowUpUsed } from './talk.js';
+import { playScene, interviewAfter } from './scenes.js';
+import { advanceThreads } from './threads.js';
+import { blowUpUsed, isFresh } from './talk.js';
+
+// A moment played here (not picked by talk.js) gets its confessional the same way: maybe, from who saw it
+// (read 2026-10-19: a leg with two blow-ups and no confessional at all)
+function withInterview(state, sc, rng) {
+  if (!sc) return sc;
+  const iv = interviewAfter(state, sc, rng);
+  if (iv) advanceThreads(state, iv);
+  return sc;
+}
 
 // `at`: where and when it happens ({ stretch, t }), so the scene can be placed and timed
 export function snapCheck(state, id, rng, at = {}) {
   if (state.snapped[id] || blowUpUsed(state, id)) return null;     // one blow-up per team per leg (talk.js caps)
+  // played here, not picked by talk.js, so it keeps the first hour's rule itself: no fight has built up yet
+  if (isFresh(state, at.t)) return null;
   const t = state.teams[id];
   const stress = Math.max(state.mind[t.a].stress, state.mind[t.b].stress);
   const hot = S(t.a, 'temperament') <= S(t.b, 'temperament') ? t.a : t.b;
   const p = (stress / 100) * ((10 - S(hot, 'temperament')) / 10) * (REL[t.rel]?.snap ?? 1) * 0.15;
   if (rng() >= p) return null;
   const other = hot === t.a ? t.b : t.a;
-  return playScene({ state, team: { id }, moment: 'snap', people: [hot, other], ...at }, 'snap', rng);
+  return withInterview(state, playScene({ state, team: { id }, moment: 'snap', people: [hot, other], ...at }, 'snap', rng), rng);
 }
 
 export function makeupCheck(state, id, rng, at = {}) {
@@ -44,5 +56,5 @@ export function leaderCheck(state, id, event, rng, subject = null, at = {}) {
   else if (event === 'snap') p = 0.3 * S(other, 'boldness') / 10;
   else if (event === 'win') p = subject === other ? 0.3 : 0;
   if (!p || rng() >= p) return null;
-  return playScene({ state, team: { id }, moment: 'lead', people: [other, lead], event: { cause: event }, ...at }, 'leader-shift', rng);
+  return withInterview(state, playScene({ state, team: { id }, moment: 'lead', people: [other, lead], event: { cause: event }, ...at }, 'leader-shift', rng), rng);
 }

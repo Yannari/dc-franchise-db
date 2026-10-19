@@ -363,11 +363,11 @@ export default {
     'overheard.learns-plan': [
       { id: 'sc.ol1', turns: [
         { beat: '{a} and {b} sit back to back with {c} and {d}, and hear every word.' },
-        { by: 'c', say: "When we land, we skip the cab line and walk to the station. Nobody thinks of the station." },
-        { by: 'a', ...V("The station. They're going to the station.", "The station. Noted.", "They're going to the station.", "The STATION! They're going to the STATION!", "The station. They're going to the station, did you hear?", "The station. The secret station. Now ours too.") },
+        { by: 'c', say: "At the next Don Box, we don't queue with everybody. We read the tip round the back, where nobody looks." },
+        { by: 'a', ...V("Round the back. They read it round the back.", "Round the back. Noted.", "They read it round the back.", "Round the BACK! They read it round the BACK!", "Round the back. They read it round the back, did you hear?", "Round the back. The secret back. Now ours too.") },
         { by: 'b', say: "Shh. Don't move. Pretend to be asleep." },
-        { beat: 'When they land, {a} and {b} are first at the station. {c} and {d} are second.' },
-        { by: 'd', say: "How did they know about the station?" },
+        { beat: 'At the next Don Box, {c} and {d} come round the back and find {a} and {b} already there, reading.' },
+        { by: 'd', say: "How did they know about round the back?" },
       ] },
       { id: 'sc.ol2', turns: [
         { by: 'd', say: "If it's a Botch or Watch, you take anything with heights, and I'll take the food." },

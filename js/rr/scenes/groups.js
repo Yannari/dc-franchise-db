@@ -33,7 +33,7 @@ register([
   } }),
   K({ id: 'closed-for-night', family: 3, cast: 'group', moments: ['closed'], endings: {
     campfire: { w: 2, fx: (fx, c) => pairsTeams(fx, c, 0.5) },
-    'secret-meeting': { w: c => c.S(first(c), 'strategic') / 5, fx: (fx, c) => fx.ally(c.tid, c.oid) },
+    'secret-meeting': { w: c => (c.canAlly() ? c.S(first(c), 'strategic') / 5 : 0), fx: (fx, c) => fx.ally(c.tid, c.oid) },
     'cant-sleep': { w: 1, fx: (fx, c) => seat(c).forEach(n => fx.mind(n, 'energy', -10)) },
     prank: { w: c => (c.rivalry() ? 0.6 : 0.1), fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 1); fx.mind(across(c), 'energy', -10); } },
   } }),

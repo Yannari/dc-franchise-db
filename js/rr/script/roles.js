@@ -133,6 +133,8 @@ export function rolesOf(scene, state) {
     ...(scene.kind === 'don-narrate' ? { teamVoc: null, teamBVoc: null, targetVoc: null, ...d.slots } : {}),
     // a premiere introduction: what the two of them are, in Don's words ({relTag}, director.js)
     ...(scene.kind === 'team-intro' ? d.slots || {} : {}),
+    // the team a's team is already allied with (a pitch to join it)
+    allyTeam: d.snap?.blocWith?.[0] ? teamRef(state, d.snap.blocWith[0]) : null,
     // a team's own introduction (the Casting Room's Pairs view): each of them, and Don's label for the two of them
     ...(scene.kind === 'team-intro' && state.teams[tid]?.lines?.introA ? {
       ownA: state.teams[tid].lines[roles.a === state.teams[tid].a ? 'introA' : 'introB'] || null,

@@ -146,15 +146,18 @@ describe('rr season read (2026-10-18)', () => {
   });
 
   it('a partner moment can be about either partner, not always the first one listed', () => {
-    const { cast, teams } = raceCast(10, 2);
-    setPlayers(cast);
-    const r = playRaceSeason({ teams, seed: 2 });
-    const st = r.state;
+    // four seasons pooled: one season measured its own luck (seed 2 alone is 8 in 33; over ten seasons it is 51%,
+    // measured 2026-10-19)
     const FIRST_PERSON = ['fear-through', 'refuse', 'homesick', 'old-wound', 'blame', 'phobia', 'gross-out'];
     let first = 0, second = 0;
-    for (const sc of st.scenes.filter(s => FIRST_PERSON.includes(s.kind))) {
-      const t = st.teams[sc.data.team];
-      if (sc.who[0] === t.a) first++; else if (sc.who[0] === t.b) second++;
+    for (const seed of [1, 2, 3, 4]) {
+      const { cast, teams } = raceCast(10, seed);
+      setPlayers(cast);
+      const st = playRaceSeason({ teams, seed }).state;
+      for (const sc of st.scenes.filter(s => FIRST_PERSON.includes(s.kind))) {
+        const t = st.teams[sc.data.team];
+        if (sc.who[0] === t.a) first++; else if (sc.who[0] === t.b) second++;
+      }
     }
     expect(first + second).toBeGreaterThan(20);
     expect(second).toBeGreaterThan((first + second) * 0.25);

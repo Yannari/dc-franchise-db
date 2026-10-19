@@ -40,3 +40,22 @@ describe('rr chill zone intro', () => {
     }
   });
 });
+
+describe('rr chill zone intro, with penalties', () => {
+  // Hunted 2026-10-19 over 30 seasons: a team with a penalty steps onto the mat (Don reveals it) before the first team
+  // checks in, and the intro was timed from the first check-in, so Don presented the Chill Zone to a team already on it.
+  it('Don presents the Chill Zone before anybody steps onto its mat, a penalty reveal included', async () => {
+    const { raceCast } = await import('./helpers/rr-cast.js');
+    for (const seed of [1, 2, 4, 5]) {
+      const { cast, teams } = raceCast(12, seed);
+      setPlayers(cast);
+      const r = playRaceSeason({ teams, seed });
+      airSeason(r).forEach((ep, i) => {
+        if (r.legs[i].kind === 'final') return;
+        const intro = ep.segments.findIndex(s => s.kind === 'don-narrate' && s.ending === 'chill');
+        const first = ep.segments.findIndex(s => s.kind === 'don-place' || s.kind === 'mat-montage');
+        if (first >= 0) expect(intro, `seed ${seed} leg ${ep.n}`).toBeLessThan(first);
+      });
+    }
+  });
+});

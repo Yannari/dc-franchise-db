@@ -26,7 +26,7 @@ register([
     'called-out': { w: 1, fx: (fx, c) => { fx.teams(c.tid, c.oid, -1); fx.rivalry(c.tid, c.oid, 1); } },
     fight: { w: c => (10 - c.S(c.A, 'temperament')) / 8, fx: (fx, c) => { fx.time(c.tid, 5); fx.time(c.oid, 5); } },
   } }),
-  K({ id: 'alliance-pitch', family: 2, cast: 'teams', moments: ['overlap'], when: c => (!c.allied() && c.S(c.lead, 'strategic') >= 6 ? 0.15 * c.S(c.lead, 'strategic') / 10 : 0), endings: {
+  K({ id: 'alliance-pitch', family: 2, cast: 'teams', moments: ['overlap'], when: c => (!c.allied() && c.canAlly() && c.S(c.lead, 'strategic') >= 6 ? 0.15 * c.S(c.lead, 'strategic') / 10 : 0), endings: {
     accepted: { w: c => Math.max(0.2, 1 + c.teamBond() / 3), fx: (fx, c) => fx.ally(c.tid, c.oid) },
     refused: { w: 1, fx: (fx, c) => fx.teams(c.tid, c.oid, -0.3) },
     trial: { w: 0.6, fx: (fx, c) => { fx.ally(c.tid, c.oid); fx.note(`trial:${c.tid}|${c.oid}`, c.state.leg); } },

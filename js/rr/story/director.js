@@ -61,6 +61,9 @@ const FOLLOWED = 4;
 const people = (st, id) => (id && st.teams[id] ? [st.teams[id].a, st.teams[id].b] : []);
 const teamOf = (st, n) => Object.keys(st.teams).find(id => st.teams[id].a === n || st.teams[id].b === n);
 
+// what a confessional about a moment adds to its claim on the airtime (about two small bond moves)
+const IV_BONUS = 2;
+
 // how much a moment changed (what makes one task moment worth more than another)
 function weight(sc) {
   let w = 0;
@@ -113,7 +116,11 @@ function narrate(state, leg, scenes) {
     if (behind) add('bridge', here.from, { team: teamRef(state, here.team), task: s.called, prevTask: behind.called });
   });
   // Don presents the Chill Zone just before the first team reaches it (not at the finale: its end is the stage)
-  if (leg.kind !== 'final' && leg.times && leg.order[0] && leg.times[leg.order[0]] != null) add('chill', leg.times[leg.order[0]] - 2, {});
+  // (a team with a penalty steps onto the mat, hears it, and serves it before anybody checks in: that's the first one)
+  if (leg.kind !== 'final' && leg.times && leg.order[0] && leg.times[leg.order[0]] != null) {
+    const onMat = (state.scenes || []).filter(x => x.leg === n && x.kind === 'don-place' && x.data?.t != null).map(x => x.data.t);
+    add('chill', Math.min(leg.times[leg.order[0]], ...onMat) - 2, {});
+  }
   // the bottom of an elimination leg: the last four still out there
   const N = leg.order.length;
   if (leg.kind === 'elim' && N >= 5 && leg.times) {
@@ -278,9 +285,13 @@ export function airLeg(state, leg) {
     return c && !picked.has(c.id) && (optional[c.kind] || 0) < PER_KIND ? c : null;
   };
   const takeCause = c => { take(c, 2); optional[c.kind] = (optional[c.kind] || 0) + 1; };
+  // a moment somebody talks about to camera is worth its airtime: without this, the moments that had a confessional
+  // were the ones cut, and a leg could air none (read 2026-10-19: four interviews played, none aired)
+  const talkedAbout = new Set(scenes.filter(s => s.kind.startsWith('int-') && s.data?.about != null).map(s => s.data.about));
+  const airWeight = s => weight(s) + (talkedAbout.has(s.id) ? IV_BONUS : 0);
   for (const tier of [2, 3]) {
     const cands = scenes.filter(s => !picked.has(s.id) && tierOf(s) === tier && !s.kind.startsWith('int-'))
-      .sort((x, y) => weight(y) - weight(x) || x.id - y.id);
+      .sort((x, y) => airWeight(y) - airWeight(x) || x.id - y.id);
     for (const s of cands) {
       if (budget <= 0) break;
       if (picked.has(s.id) || !ok(s) || (optional[s.kind] || 0) >= PER_KIND) continue;

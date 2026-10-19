@@ -27,11 +27,20 @@ function act(state, kindId, tid, oid, rng, ending = null, data = {}) {
   return sc;
 }
 
+// When the team going home is told: once everybody is in. After a Save, the team that used it checks in after the one
+// going home; two teams in the same minute check in before the one told it's out (read 2026-10-19).
+function exitTime(times, out) {
+  const lastIn = Math.max(...Object.values(times));
+  const tied = Object.entries(times).some(([id, v]) => id !== out && v === lastIn);
+  return times[out] < lastIn || tied ? lastIn + 1 : times[out];
+}
+
 // A team going home: the team closest to it comes over (console), a couple says goodbye,
 // and the team says its last word to camera (int-exit).
 function farewell(state, out, finished, finish, rng, atMat, how = 'last') {
   // a team cut at the finale's midpoint says goodbye there, not at the finish
-  const t = how === 'midpoint' && state.midmatAt?.[state.leg] != null ? state.midmatAt[state.leg] : finish[out] ?? Math.max(...Object.values(finish));
+  const t = how === 'midpoint' && state.midmatAt?.[state.leg] != null ? state.midmatAt[state.leg]
+    : finish[out] != null ? (how === 'last' ? exitTime(finish, out) : finish[out]) : Math.max(...Object.values(finish));
   if (!atMat) { const [a, b] = people(state, out); act(state, 'int-exit', out, null, rng, getBond(a, b) >= 0 ? 'grateful' : 'bitter', { t, exitHow: how }); return; }
   const close = (a, b) => people(state, a).reduce((s, x) => s + people(state, b).reduce((u, y) => u + getBond(x, y), 0), 0) / 4;
   // a consoler likes every one of them and hasn't turned on them this leg
@@ -95,7 +104,7 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     if (onLoc.length) {
       for (const id of onLoc) {
         result.eliminated.push(id); result.how[id] = 'on-location'; result.onLocation.push(id);
-        act(state, 'don-arrives', id, null, rng, null, { t: Math.max(...Object.values(finish)) });
+        act(state, 'don-arrives', id, null, rng, null, { t: Math.max(...Object.values(times)) });
       }
     } else {
       let out = finished.at(-1);
@@ -107,7 +116,7 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
       if (out) {
         result.eliminated.push(out); result.how[out] = 'last';
         if (penalties[out]) result.unserved.push(out);
-        act(state, 'don-elim', out, null, rng, null, { t: finish[out] });
+        act(state, 'don-elim', out, null, rng, null, { t: exitTime(times, out) });
       }
     }
   } else {
@@ -163,7 +172,8 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     const carry = (state.pending[id] || 0) + (result.nonElim.penalty === 'departure' ? DEPARTURE_PENALTY : 0);
     if (carry) state.carryPenalty[id] = carry;
   }
-  for (const id of result.eliminated) farewell(state, id, finished, finish, rng, finish[id] != null, result.how[id]);
+  // goodbyes at the check-in time (finish plus the minutes served at the mat), so they air after the teams before them
+  for (const id of result.eliminated) farewell(state, id, finished, times, rng, finish[id] != null, result.how[id]);
   for (const id of result.eliminated) if (!state.gone.includes(id)) state.gone.push(id);
 
   rest(state);

@@ -174,7 +174,7 @@ export default {
         { by: 'b', say: "Then may the best team win, and we stay friends after." },
         { by: 'd', say: "We're in. But we're the best team, just so you know." },
       ] },
-      { id: 'vn.a4', turns: [
+      { id: 'vn.a4', when: { bloc: false }, turns: [
         { by: 'a', say: "Can I say something? You two are the only ones here who've been nice to us." },
         { by: 'c', say: "That's because everybody else is a nightmare." },
         { by: 'b', ...V("Exactly. So let's be the two non-nightmares, together.", "So let's be the non-nightmares. Together.", "Two non-nightmares.", "EXACTLY! So let's be the TWO NON-NIGHTMARES, together!", "Exactly. So let's be the two non-nightmare teams, together.", "So let's be an island of niceness. A small island.") },

@@ -16,7 +16,9 @@ const DESERT_ROUTE = ['home-city', 'red-sand-desert', 'iron-tower-city', 'red-sa
 describe('rr Red Sand Desert, 1:1', () => {
   const states = [];
   beforeAll(() => {
-    for (const seed of [1, 2, 3, 4, 5, 6]) {
+    // ten seasons: on six, one team's long run of bowls could flip the averages (measured 2026-10-19 over forty:
+    // right spices 0.49 fails a stew, mixed 0.79, wrong 0.99)
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
       const { cast, teams } = raceCast(12, seed);
       teams[0].identity = 'vegans';
       setPlayers(cast);

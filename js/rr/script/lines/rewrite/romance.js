@@ -41,7 +41,7 @@ export default {
       { id: 'ro2.ct2', turns: [
         { by: 'c', ...V("Should I tell {b} you said {b.posAdj} hair looks nice?", "Should I tell {b} about the hair comment?", "I'll tell {b} you like the hair.", "Should I TELL {b} you said {b.posAdj} HAIR looks NICE?", "Should I tell {b} that you said {b.posAdj} hair looks nice?", "Shall I pass on your hair review to {b}?") },
         { by: 'a', say: "I never said that." },
-        { by: 'c', say: "You said it twice. Once on the plane, once in the cab." },
+        { by: 'c', say: "You said it twice. Once to me, and once, very quietly, to yourself." },
         { by: 'a', say: "If you tell {b.obj}, I'll tell everybody about your karaoke." },
         { by: 'c', say: "...Okay. Truce." },
         { beat: 'They shake on it. {c} hums the karaoke song very quietly for the rest of the leg.' },

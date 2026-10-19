@@ -22,7 +22,7 @@ export default {
         { by: 'b', say: "Now we're even. Next time, we're enemies again." },
         { by: 'd', say: "Looking forward to it." },
       ] },
-      { id: 'vs.s3', turns: [
+      { id: 'vs.s3', when: { taskType: ['brains', 'hands', 'patience'] }, turns: [
         { by: 'c', say: "How did you get it so fast?" },
         { by: 'a', say: "Don't look at it. Listen to it. It clicks when it's right." },
         { by: 'd', ...V("It clicks?", "It clicks?", "Clicks?", "It CLICKS?", "It actually clicks?", "It talks to you? With a click?") },

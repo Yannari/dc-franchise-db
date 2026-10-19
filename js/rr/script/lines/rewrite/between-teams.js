@@ -14,7 +14,7 @@ export default {
     'comeuppance.penalty', 'comeuppance.elimination-by-victims', 'comeuppance.any'],
   pools: {
     'alliance-pitch.accepted': [
-      { id: 'bt.pa-air1', when: { at: 'airport' }, turns: [
+      { id: 'bt.pa-air1', when: { at: 'airport', bloc: false }, turns: [
         { beat: '{a} sits down next to {c} at the gate, a little too casually.' },
         { by: 'a', ...V("Can I be honest with you? You two are the only team here I trust.", "Honestly? You're the only team I trust.", "You're the only team here I trust. Honestly.", "Can I be HONEST with you? You two are the ONLY team here I trust!",
           "Can I be honest? You two are the only team in this whole race I actually trust.", "Honestly? You're the only team here who doesn't look like a trap.") },
@@ -179,7 +179,7 @@ export default {
     ],
 
     'spy.copies': [
-      { id: 'bt.sc-task1', turns: [
+      { id: 'bt.sc-task1', when: { taskType: ['brains', 'hands', 'patience', 'search'] }, turns: [
         { beat: '{a} and {b} are pretending to tie their shoes right behind {c} and {d}.' },
         { by: 'a', ...V("Look what they're doing. They're doing it backwards. Starting at the end.", "Look. They start at the end.", "They're doing it backwards. From the end.", "LOOK what they're doing! They're doing it BACKWARDS! Starting at the END!",
           "Look at what they're doing. They're doing it backwards, starting at the end.", "Look. They're doing it in reverse. Like a rewinding video.") },

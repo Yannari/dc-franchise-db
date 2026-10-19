@@ -34,6 +34,17 @@ const ROMANTIC = ['dating', 'married', 'newly-dating', 'on-off', 'once-engaged']
 export const relFamOf = rel => (REL[rel]?.family ? 'family' : ROMANTIC.includes(rel) ? 'romantic' : rel === 'exes' ? 'exes'
   : ['rivals', 'enemies'].includes(rel) ? 'rivals' : 'friends');
 export const bandOf = b => (b <= -4 ? 'enemies' : b < -1 ? 'cold' : b >= 3 ? 'friends' : 'neutral');
+// An alliance is a few teams: two teams can make a deal when at most one of them is in a bloc already and the bloc
+// they would make is at most MAX_BLOC teams (measured 2026-10-19: every deal joined a bloc, and blocs reached 9 of 12).
+export const MAX_BLOC = 3;
+export function canAlly(st, t1, t2) {
+  if (!t1 || !t2) return false;
+  const bloc = id => st.alliances.find(x => !x.ended && x.teams.includes(id));
+  const A = bloc(t1), B = bloc(t2);
+  if (A && B) return false;
+  return ((A || B)?.teams.length || 1) + 1 <= MAX_BLOC;
+}
+
 export function snapOf(st, { tid = null, oid = null, stretch = null, t = null, fails = 0, who = [] } = {}) {
   const [A, B] = people(st, tid), [C, D] = people(st, oid);
   const total = st.totalLegs || Math.max(1, st.leg);
@@ -50,6 +61,9 @@ export function snapOf(st, { tid = null, oid = null, stretch = null, t = null, f
     band: A && B ? bandOf(getBond(A, B)) : null,
     bandX: across ? bandOf(across.reduce((s, x) => s + x, 0) / across.length) : null,
     allied: !!(tid && oid && st.alliances.some(al => !al.ended && al.teams.includes(tid) && al.teams.includes(oid))),
+    // a's team is already in an alliance the other team isn't in: a pitch is to join it (and names who's in it)
+    ...(() => { const al = tid && st.alliances.find(x => !x.ended && x.teams.includes(tid) && !x.teams.includes(oid));
+      return al ? { bloc: true, blocWith: al.teams.filter(x => x !== tid) } : { bloc: false }; })(),
     rivalry: tid && oid ? st.rivalry[pairKey(tid, oid)] || 0 : 0,
     couple: (st.couples || []).some(c => !c.ended && who.includes(c.a) && who.includes(c.b)),
     rel: tid ? st.teams[tid].rel : null,
@@ -107,6 +121,8 @@ export function prepare(ctx) {
     friction: () => { const a = identityOf(st.teams[tid]), b = identityOf(st.teams[oid]);
       return !!(a && b && (a.friction.includes(st.teams[oid].identity) || b.friction.includes(st.teams[tid].identity))); },
     allied: () => st.alliances.some(al => !al.ended && al.teams.includes(tid) && al.teams.includes(oid)),
+    // two teams may make a deal if it leaves them in one bloc of at most MAX_BLOC teams (an alliance, not the race)
+    canAlly: () => canAlly(st, tid, oid),
     peopleDefault: null,
   });
 }
@@ -137,6 +153,8 @@ function makeFx(ctx, effects, kindId = null) {
     rel(teamId, r) { st.teams[teamId].rel = r; push(['rel', teamId, r]); },
     snap(teamId, on) { st.snapped[teamId] = on; push(['snapped', teamId, on]); },
     ally(t1, t2) {
+      // a forced pairing (Superteam, a pass given) that would grow a bloc past its size stays a friendship
+      if (!canAlly(st, t1, t2) && !st.alliances.some(x => !x.ended && x.teams.includes(t1) && x.teams.includes(t2))) { push(['ally-full', t1, t2]); return; }
       let al = st.alliances.find(x => !x.ended && (x.teams.includes(t1) || x.teams.includes(t2)));
       if (al) { for (const t of [t1, t2]) if (!al.teams.includes(t)) al.teams.push(t); }
       else st.alliances.push(al = { id: st.alliances.length + 1, teams: [t1, t2], since: st.leg, ended: null });

@@ -140,9 +140,9 @@ export default {
         { by: 'a', say: "Best plan we've had." },
       ] },
       { id: 'vk.p5', turns: [
-        { by: 'a', say: "Today we stay away from the team that keeps following us. Whatever they do, we do the opposite." },
+        { by: 'a', say: "New plan. We pick the most lost-looking team here, and whatever they do, we do the opposite." },
         { by: 'b', ...V("What if they go the right way?", "What if they're right?", "What if they're right, though?", "What if they go the RIGHT way?", "What if they actually go the right way?", "What if they're right for once? It could happen.") },
-        { by: 'a', say: "They've never gone the right way. Not once, all race." },
+        { by: 'a', say: "Look at them. Do they look like people going the right way?" },
         { by: 'b', say: "That's actually a good plan." },
         { by: 'a', say: "It's a great plan. It's the only plan I've ever had that works by watching other people fail." },
         { by: 'b', say: "That's most of your plans." },

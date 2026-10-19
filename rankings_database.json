@@ -231,53 +231,9 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "mickey",
-      "name": "Mickey",
-      "rank": 5,
-      "tier": "S+",
-      "score": 91.1,
-      "title": "The Nervous Mastermind",
-      "emoji": "🧠",
-      "reasoning": "Mickey's legacy is still enormous: a champion, a runner-up, and one of the rare players with multiple seasons of real endgame equity. His S10 was the first true blemish, as he joined Bowie's Movement but overplayed his fear of Zoey's likability and gave Bowie the excuse to cut him in Episode 3. Even that early exit reads less like incompetence than two masterminds recognizing each other too quickly; Mickey saw the game, but Bowie moved first.",
-      "strengths": [
-        "S5 winner",
-        "Two deep runs before S10",
-        "2 idols/advantages found",
-        "Strong strategic instincts"
-      ],
-      "weaknesses": [
-        "S10 placement: 17th",
-        "Broke alliance discipline early",
-        "Outmaneuvered by Bowie"
-      ],
-      "avgPlacement": 6.666666666666667,
-      "winRate": 33.33,
-      "wins": 1,
-      "seasonsPlayed": 3,
-      "placements": [
-        1,
-        2,
-        17
-      ],
-      "challengeWins": 3,
-      "votesAgainst": 12,
-      "juryVotes": 4,
-      "idolsFound": 2,
-      "placementPercentile": 98.51,
-      "winPercentile": 97.76,
-      "challengePercentile": 81.34,
-      "socialPercentile": 95.52,
-      "strategicPercentile": 85.07,
-      "scoreHistory": [
-        96,
-        91.1
-      ],
-      "blockSurvived": 0
-    },
-    {
       "playerId": "julia",
       "name": "Julia",
-      "rank": 6,
+      "rank": 5,
       "tier": "S+",
       "score": 90.7,
       "wins": 1,
@@ -329,7 +285,7 @@
     {
       "playerId": "cameron",
       "name": "Cameron",
-      "rank": 7,
+      "rank": 6,
       "tier": "S+",
       "score": 90.2,
       "title": "The Brainiac",
@@ -362,6 +318,51 @@
       "challengePercentile": 92.54,
       "socialPercentile": 70.15,
       "strategicPercentile": 50,
+      "blockSurvived": 0
+    },
+    {
+      "playerId": "mickey",
+      "name": "Mickey",
+      "rank": 7,
+      "tier": "S",
+      "score": 89.8,
+      "title": "The Nervous Mastermind",
+      "emoji": "🧠",
+      "reasoning": "Mickey's legacy is still enormous: a champion, a runner-up, and one of the rare players with multiple seasons of real endgame equity. His S10 was the first true blemish, as he joined Bowie's Movement but overplayed his fear of Zoey's likability and gave Bowie the excuse to cut him in Episode 3. Even that early exit reads less like incompetence than two masterminds recognizing each other too quickly; Mickey saw the game, but Bowie moved first. A champion and a runner-up, but a near-first boot in his latest outing keeps him at the top of S rather than among the S+ legends.",
+      "strengths": [
+        "S5 winner",
+        "Two deep runs before S10",
+        "2 idols/advantages found",
+        "Strong strategic instincts"
+      ],
+      "weaknesses": [
+        "S10 placement: 17th",
+        "Broke alliance discipline early",
+        "Outmaneuvered by Bowie"
+      ],
+      "avgPlacement": 6.666666666666667,
+      "winRate": 33.33,
+      "wins": 1,
+      "seasonsPlayed": 3,
+      "placements": [
+        1,
+        2,
+        17
+      ],
+      "challengeWins": 3,
+      "votesAgainst": 12,
+      "juryVotes": 4,
+      "idolsFound": 2,
+      "placementPercentile": 98.51,
+      "winPercentile": 97.76,
+      "challengePercentile": 81.34,
+      "socialPercentile": 95.52,
+      "strategicPercentile": 85.07,
+      "scoreHistory": [
+        96,
+        91.1,
+        89.8
+      ],
       "blockSurvived": 0
     },
     {
@@ -614,49 +615,9 @@
       ]
     },
     {
-      "playerId": "lindsay",
-      "tier": "S",
-      "score": 84,
-      "rank": 14,
-      "avgPlacement": 8,
-      "winRate": 33.33,
-      "placements": [
-        3,
-        1,
-        20
-      ],
-      "challengeWins": 1,
-      "votesAgainst": 8,
-      "juryVotes": 6,
-      "idolsFound": 0,
-      "status": "Competed in 3/7 seasons",
-      "title": "The Glow-Up Queen",
-      "emoji": "💖",
-      "reasoning": "Lindsay won S1 with pure social grace and timing, beating Alejandro 5-4 while taking only 1 vote all season. She returned to reach the S2 Finale (lost 1-5-1 to Duncan) and then suffered a brutal S7 first boot (6-2-2). With a 33.3% win rate and 6 lifetime jury votes, her résumé is built on likability and trust webs. Rivalries with Jasmine/Shawn in S7 and minimal advantage play left her exposed in fast starts.",
-      "strengths": [
-        "Universal likability and low-parchment gameplay",
-        "Durable alliance webs that scale to the endgame",
-        "Threat calibration without needing challenge runs"
-      ],
-      "weaknesses": [
-        "Vulnerable to early consensus boots in new casts",
-        "Light advantage usage and low challenge reliance",
-        "Can be labeled expendable when tribes seek calm"
-      ],
-      "name": "Lindsay",
-      "seasonsList": [
-        2,
-        1,
-        7
-      ],
-      "seasonsPlayed": 3,
-      "wins": 1,
-      "blockSurvived": 0
-    },
-    {
       "playerId": "sami",
       "name": "Sami",
-      "rank": 15,
+      "rank": 14,
       "tier": "S",
       "score": 83.9,
       "wins": 0,
@@ -682,7 +643,7 @@
     {
       "playerId": "ryan",
       "name": "Ryan",
-      "rank": 16,
+      "rank": 15,
       "tier": "S",
       "score": 83.1,
       "title": "The Gentle Wrecking Ball",
@@ -724,47 +685,9 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "duncan",
-      "name": "Duncan",
-      "rank": 17,
-      "tier": "S",
-      "score": 83,
-      "title": "The Delinquent",
-      "emoji": "🗡️",
-      "reasoning": "CHAMPION season on the résumé. WINNER of S2. Legit jury respect (5 finalist votes). 5-3 vote. (S1). Won Final Tribal 5-1-1. (S2). Across 3 season(s): avg placement 7.33.",
-      "strengths": [
-        "S2 winner",
-        "Beat Alejandro S2",
-        "Endurance king"
-      ],
-      "weaknesses": [
-        "S4: early boot",
-        "17 votes total"
-      ],
-      "avgPlacement": 7.33,
-      "winRate": 33.33,
-      "wins": 1,
-      "seasonsPlayed": 3,
-      "placements": [
-        7,
-        1,
-        14
-      ],
-      "challengeWins": 2,
-      "votesAgainst": 17,
-      "juryVotes": 5,
-      "idolsFound": 1,
-      "placementPercentile": 71.64,
-      "winPercentile": 94.03,
-      "challengePercentile": 70.15,
-      "socialPercentile": 57.46,
-      "strategicPercentile": 77.61,
-      "blockSurvived": 0
-    },
-    {
       "playerId": "riya",
       "name": "Riya",
-      "rank": 18,
+      "rank": 16,
       "tier": "S",
       "score": 82.8,
       "wins": 0,
@@ -810,7 +733,7 @@
       "playerId": "macarthur",
       "tier": "S",
       "score": 82.6,
-      "rank": 19,
+      "rank": 17,
       "avgPlacement": 6,
       "winRate": 33.33,
       "placements": [
@@ -857,9 +780,53 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "lindsay",
+      "tier": "S",
+      "score": 81.5,
+      "rank": 18,
+      "avgPlacement": 8,
+      "winRate": 33.33,
+      "placements": [
+        3,
+        1,
+        20
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 8,
+      "juryVotes": 6,
+      "idolsFound": 0,
+      "status": "Competed in 3/7 seasons",
+      "title": "The Glow-Up Queen",
+      "emoji": "💖",
+      "reasoning": "Lindsay won S1 with pure social grace and timing, beating Alejandro 5-4 while taking only 1 vote all season. She returned to reach the S2 Finale (lost 1-5-1 to Duncan) and then suffered a brutal S7 first boot (6-2-2). With a 33.3% win rate and 6 lifetime jury votes, her résumé is built on likability and trust webs. Rivalries with Jasmine/Shawn in S7 and minimal advantage play left her exposed in fast starts.",
+      "strengths": [
+        "Universal likability and low-parchment gameplay",
+        "Durable alliance webs that scale to the endgame",
+        "Threat calibration without needing challenge runs"
+      ],
+      "weaknesses": [
+        "Vulnerable to early consensus boots in new casts",
+        "Light advantage usage and low challenge reliance",
+        "Can be labeled expendable when tribes seek calm"
+      ],
+      "name": "Lindsay",
+      "seasonsList": [
+        2,
+        1,
+        7
+      ],
+      "seasonsPlayed": 3,
+      "wins": 1,
+      "blockSurvived": 0,
+      "scoreHistory": [
+        84,
+        81.5
+      ]
+    },
+    {
       "playerId": "jake",
       "name": "Jake",
-      "rank": 20,
+      "rank": 19,
       "tier": "S",
       "score": 81.1,
       "wins": 0,
@@ -902,47 +869,9 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "emma",
-      "name": "Emma",
-      "rank": 21,
-      "tier": "S",
-      "score": 81,
-      "title": "The Comeback Kid",
-      "emoji": "🔁",
-      "reasoning": "CHAMPION season on the résumé. WINNER of S3. Reliable challenge contributor (5 total wins). High-end strategist (best rank: #2). 4-3-1 tiebreaker victory. (S3). Lost via rocks in a deadlock. (S6). Across 3 season(s): avg placement 9.33.",
-      "strengths": [
-        "S3 winner",
-        "Three seasons",
-        "Champion who returned"
-      ],
-      "weaknesses": [
-        "S6: rock draw chaos",
-        "S2: early boot"
-      ],
-      "avgPlacement": 9.33,
-      "winRate": 33.33,
-      "wins": 1,
-      "seasonsPlayed": 3,
-      "placements": [
-        17,
-        1,
-        10
-      ],
-      "challengeWins": 5,
-      "votesAgainst": 5,
-      "juryVotes": 4,
-      "idolsFound": 0,
-      "placementPercentile": 58.21,
-      "winPercentile": 94.03,
-      "challengePercentile": 83.58,
-      "socialPercentile": 79.1,
-      "strategicPercentile": 88.06,
-      "blockSurvived": 0
-    },
-    {
       "playerId": "sanders",
       "name": "Sanders",
-      "rank": 22,
+      "rank": 20,
       "tier": "S",
       "score": 80.2,
       "wins": 0,
@@ -978,54 +907,9 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "miriam",
-      "name": "Miriam",
-      "rank": 23,
-      "tier": "S",
-      "score": 80,
-      "wins": 1,
-      "seasonsPlayed": 2,
-      "scoreHistory": [
-        93.9,
-        80
-      ],
-      "placements": [
-        1,
-        19
-      ],
-      "avgPlacement": 10,
-      "challengeWins": 1,
-      "votesAgainst": 9,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "The Grandmother Gambit",
-      "emoji": "🧶",
-      "reasoning": "Miriam’s S11 win remains one of the franchise’s sharpest single-season achievements, built on timing, alliance coverage, and just enough advantage power to survive a dangerous endgame. She was never a ghost — 9 total votes against shows opponents saw her coming — but she converted pressure into the season’s defining victory. Her S13 flameout in 19th damages the career average, yet the win, idol, and strategist reputation still keep her comfortably in S-tier territory.",
-      "strengths": [
-        "S11 champion",
-        "One idol found/played",
-        "Three-alliance winning game",
-        "Converted pressure into control"
-      ],
-      "weaknesses": [
-        "19th in return season",
-        "9 votes against",
-        "Only 1 challenge win"
-      ],
-      "winRate": 50,
-      "overrides": [
-        {
-          "season": 13,
-          "value": 5,
-          "reason": "equalizer"
-        }
-      ],
-      "blockSurvived": 0
-    },
-    {
       "playerId": "james",
       "name": "James",
-      "rank": 24,
+      "rank": 21,
       "tier": "A",
       "score": 79.4,
       "wins": 1,
@@ -1068,9 +952,51 @@
       ]
     },
     {
+      "playerId": "duncan",
+      "name": "Duncan",
+      "rank": 22,
+      "tier": "A",
+      "score": 78.5,
+      "title": "The Delinquent",
+      "emoji": "🗡️",
+      "reasoning": "CHAMPION season on the résumé. WINNER of S2. Legit jury respect (5 finalist votes). 5-3 vote. (S1). Won Final Tribal 5-1-1. (S2). Across 3 season(s): avg placement 7.33.",
+      "strengths": [
+        "S2 winner",
+        "Beat Alejandro S2",
+        "Endurance king"
+      ],
+      "weaknesses": [
+        "S4: early boot",
+        "17 votes total"
+      ],
+      "avgPlacement": 7.33,
+      "winRate": 33.33,
+      "wins": 1,
+      "seasonsPlayed": 3,
+      "placements": [
+        7,
+        1,
+        14
+      ],
+      "challengeWins": 2,
+      "votesAgainst": 17,
+      "juryVotes": 5,
+      "idolsFound": 1,
+      "placementPercentile": 71.64,
+      "winPercentile": 94.03,
+      "challengePercentile": 70.15,
+      "socialPercentile": 57.46,
+      "strategicPercentile": 77.61,
+      "blockSurvived": 0,
+      "scoreHistory": [
+        83,
+        78.5
+      ]
+    },
+    {
       "playerId": "thom",
       "name": "Thom",
-      "rank": 25,
+      "rank": 23,
       "tier": "A",
       "score": 78.5,
       "wins": 0,
@@ -1123,7 +1049,7 @@
       "playerId": "zoey",
       "tier": "A",
       "score": 78.4,
-      "rank": 26,
+      "rank": 24,
       "avgPlacement": 9.4,
       "winRate": 0,
       "placements": [
@@ -1178,7 +1104,7 @@
       "playerId": "carrie",
       "tier": "A",
       "score": 77.8,
-      "rank": 27,
+      "rank": 25,
       "avgPlacement": 4.5,
       "winRate": 0,
       "placements": [
@@ -1217,10 +1143,52 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "emma",
+      "name": "Emma",
+      "rank": 26,
+      "tier": "A",
+      "score": 77.5,
+      "title": "The Comeback Kid",
+      "emoji": "🔁",
+      "reasoning": "CHAMPION season on the résumé. WINNER of S3. Reliable challenge contributor (5 total wins). High-end strategist (best rank: #2). 4-3-1 tiebreaker victory. (S3). Lost via rocks in a deadlock. (S6). Across 3 season(s): avg placement 9.33.",
+      "strengths": [
+        "S3 winner",
+        "Three seasons",
+        "Champion who returned"
+      ],
+      "weaknesses": [
+        "S6: rock draw chaos",
+        "S2: early boot"
+      ],
+      "avgPlacement": 9.33,
+      "winRate": 33.33,
+      "wins": 1,
+      "seasonsPlayed": 3,
+      "placements": [
+        17,
+        1,
+        10
+      ],
+      "challengeWins": 5,
+      "votesAgainst": 5,
+      "juryVotes": 4,
+      "idolsFound": 0,
+      "placementPercentile": 58.21,
+      "winPercentile": 94.03,
+      "challengePercentile": 83.58,
+      "socialPercentile": 79.1,
+      "strategicPercentile": 88.06,
+      "blockSurvived": 0,
+      "scoreHistory": [
+        81,
+        77.5
+      ]
+    },
+    {
       "playerId": "cody",
       "tier": "A",
       "score": 77.2,
-      "rank": 28,
+      "rank": 27,
       "avgPlacement": 9.333333333333334,
       "winRate": 0,
       "placements": [
@@ -1263,7 +1231,7 @@
     {
       "playerId": "ally",
       "name": "Ally",
-      "rank": 29,
+      "rank": 28,
       "tier": "A",
       "score": 76.9,
       "wins": 0,
@@ -1308,7 +1276,7 @@
     {
       "playerId": "jay",
       "name": "Jay",
-      "rank": 30,
+      "rank": 29,
       "tier": "A",
       "score": 76.7,
       "title": "The Loyal Heart",
@@ -1340,6 +1308,52 @@
       "challengePercentile": 29.85,
       "socialPercentile": 87.31,
       "strategicPercentile": 85.07,
+      "blockSurvived": 0
+    },
+    {
+      "playerId": "miriam",
+      "name": "Miriam",
+      "rank": 30,
+      "tier": "A",
+      "score": 76,
+      "wins": 1,
+      "seasonsPlayed": 2,
+      "scoreHistory": [
+        93.9,
+        80,
+        76
+      ],
+      "placements": [
+        1,
+        19
+      ],
+      "avgPlacement": 10,
+      "challengeWins": 1,
+      "votesAgainst": 9,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "The Grandmother Gambit",
+      "emoji": "🧶",
+      "reasoning": "Miriam’s S11 win remains one of the franchise’s sharpest single-season achievements, built on timing, alliance coverage, and just enough advantage power to survive a dangerous endgame. She was never a ghost — 9 total votes against shows opponents saw her coming — but she converted pressure into the season’s defining victory. Her S13 flameout in 19th damages the career average, and with the title alone no longer enough to hold S, the win, idol, and strategist reputation keep her in the upper A tier rather than among the franchise's top threats.",
+      "strengths": [
+        "S11 champion",
+        "One idol found/played",
+        "Three-alliance winning game",
+        "Converted pressure into control"
+      ],
+      "weaknesses": [
+        "19th in return season",
+        "9 votes against",
+        "Only 1 challenge win"
+      ],
+      "winRate": 50,
+      "overrides": [
+        {
+          "season": 13,
+          "value": 5,
+          "reason": "equalizer"
+        }
+      ],
       "blockSurvived": 0
     },
     {

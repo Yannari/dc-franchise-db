@@ -1,0 +1,266 @@
+// Who does what, rewritten to the standard (scenes of 6 to 12 lines): the embarrassing tip, the team split up, the lead
+// changing hands, a place's custom met well or badly, the souvenir, and a challenge that goes against who they are.
+// a is the one it happens to; in leader-shift a is the one who ends up leading.
+import { V } from '../places/_kit.js';
+
+const keys = (kind, endings) => [...endings.map(e => `${kind}.${e}`), `${kind}.any`];
+
+export default {
+  retire: [...keys('embarrassed', ['does-it', 'bargains', 'role-swap']), ...keys('separation', ['regroup', 'different-rules']),
+    ...keys('leader-shift', ['takes-charge', 'gives-way']), ...keys('cultural-task', ['moved', 'disrespectful']),
+    ...keys('souvenir', ['kept', 'left']), ...keys('identity-crisis', ['hide', 'quit-and-unquit', 'accept'])],
+  pools: {
+    'embarrassed.does-it': [
+      { id: 'pr.ed1', turns: [
+        { by: 'a', say: "In front of all these people? I have to dance in front of all these people?" },
+        { by: 'b', ...V("They don't know you. You'll never see any of them again.", "They don't know you. Never again.", "You'll never see them again.", "They DON'T know you! You'll NEVER see any of them AGAIN!", "They don't know you, and you'll never see any of them again.", "They're strangers. Tomorrow you'll be a legend they can't name.") },
+        { by: 'a', say: "It's going to be on television. Everybody I know will see it." },
+        { by: 'b', say: "Then make it good." },
+        { beat: '{a} dances. Badly, and bravely, and with {a.posAdj} eyes shut the whole time.' },
+        { by: 'a', say: "Never speak of this." },
+      ] },
+      { id: 'pr.ed2', turns: [
+        { by: 'a', ...V("I have to sing. Out loud. With this hat on.", "I have to sing. With this hat.", "Sing. In this hat.", "I have to SING! OUT LOUD! With this HAT on!", "I have to sing out loud, with this hat on.", "I have to sing. In the hat. The hat makes it worse.") },
+        { by: 'b', say: "The hat is very nice." },
+        { by: 'a', say: "The hat has bells on it." },
+        { by: 'b', say: "That makes it festive." },
+        { beat: '{a} takes a breath, jingles once, and starts singing.' },
+        { by: 'b', say: "I'm so proud of you. I'm also filming this in my head forever." },
+      ] },
+    ],
+    'embarrassed.bargains': [
+      { id: 'pr.eb1', turns: [
+        { by: 'a', say: "I'll do it. But you have to carry my bag for the rest of the day." },
+        { by: 'b', ...V("Deal. Done. Go. Before you change your mind.", "Deal. Go, before you change your mind.", "Deal. Go.", "DEAL! DONE! GO! Before you CHANGE your MIND!", "Deal, done. Go on, before you change your mind.", "Deal. Sealed. Witnessed by the pigeons. Go.") },
+        { by: 'a', say: "And tomorrow." },
+        { by: 'b', say: "And tomorrow. Go!" },
+        { by: 'a', say: "And I pick the seats on the next flight." },
+        { by: 'b', say: "You can have whatever you want. Just do the dance!" },
+      ] },
+      { id: 'pr.eb2', turns: [
+        { by: 'b', say: "Please. You'll be so much better at it than me." },
+        { by: 'a', ...V("Then I want something. I want the window seat. Every flight, for the rest of the race.", "I want the window seat. Every flight.", "Window seat. Every flight.", "Then I WANT something! The WINDOW SEAT! EVERY flight, for the REST of the race!", "Then I want something in return. The window seat, on every flight, for the rest of the race.", "Then I demand the window. Every flight. Forever. Write it down.") },
+        { by: 'b', say: "Every flight? That's a lot of windows." },
+        { by: 'a', say: "That's the price of my dignity." },
+        { by: 'b', say: "Fine. Every window is yours." },
+        { beat: '{a} walks up to the crowd, shaking out {a.posAdj} hands like a boxer.' },
+      ] },
+    ],
+    'embarrassed.role-swap': [
+      { id: 'pr.er1', turns: [
+        { by: 'a', say: "I can't. I can feel my face going red already. I really can't." },
+        { by: 'b', ...V("Then I'll do it. Give me the hat.", "Then I'll do it. Give me the hat.", "I'll do it. Hat.", "Then I'LL do it! Give me the HAT!", "Then I'll do it. Here, give me the hat.", "Then I'll do it. Pass me the hat of shame.") },
+        { by: 'a', say: "You'd do that? You hate this kind of thing even more than me." },
+        { by: 'b', say: "I do. But you've done the last three scary things. My turn." },
+        { beat: '{b} puts on the hat and walks out into the middle of the square.' },
+        { by: 'a', say: "I'm going to cheer so loud. You'll hate it." },
+      ] },
+      { id: 'pr.er2', turns: [
+        { by: 'b', say: "You're shaking. Look at your hands. You're shaking." },
+        { by: 'a', ...V("I'm fine. I'm totally fine. I'm going to be sick, but I'm fine.", "I'm fine. I'll be sick, but fine.", "Fine. Going to be sick. Fine.", "I'm FINE! I'm TOTALLY fine! I'm going to be SICK, but I'm FINE!", "I'm fine, totally fine. I'm going to be sick, but I'm fine.", "I'm fine. My stomach has resigned, but I'm fine.") },
+        { by: 'b', say: "Swap with me. I'll do the performing. You do the next hard one." },
+        { by: 'a', say: "The next hard one might be worse." },
+        { by: 'b', say: "Then we'll swap again. That's how teams work." },
+        { beat: '{a} hands over the costume, looking more relieved than anyone has ever looked.' },
+      ] },
+    ],
+    'separation.regroup': [
+      { id: 'pr.sr1', turns: [
+        { beat: 'The two of them were split up an hour ago. Now {a} is running down a street, shouting {b}\'s name.' },
+        { by: 'a', ...V("{b}! {b}! Where are you?", "{b}! Where are you?", "{b}! Where?", "{b}! {b}! WHERE are you?", "{b}! {b}, where are you?", "{b}! Show yourself, or at least make a noise!") },
+        { by: 'b', say: "Over here! By the fountain! I've been by the fountain for twenty minutes!" },
+        { by: 'a', say: "Which fountain? There are four fountains!" },
+        { beat: 'They find each other at the third fountain and hug like they\'ve been apart for a year.' },
+        { by: 'b', say: "Never leave me again. Not even for a challenge." },
+      ] },
+      { id: 'pr.sr2', turns: [
+        { by: 'b', say: "How did yours go?" },
+        { by: 'a', ...V("Terrible. Yours?", "Terrible. Yours?", "Bad. Yours?", "TERRIBLE! Yours?", "Honestly, terrible. How about yours?", "A catastrophe in three acts. Yours?") },
+        { by: 'b', say: "Also terrible. I got lost twice." },
+        { by: 'a', say: "I got lost three times, and asked a statue for directions." },
+        { by: 'b', say: "Did it help?" },
+        { by: 'a', say: "More than the people did." },
+      ] },
+    ],
+    'separation.different-rules': [
+      { id: 'pr.sd1', turns: [
+        { by: 'a', say: "Wait. Your half said you had to wait for me? Mine said I had to wait for you." },
+        { by: 'b', ...V("So we've both been waiting for each other? For forty minutes?", "We've both been waiting? Forty minutes?", "Forty minutes, both waiting?", "So we've BOTH been WAITING for each OTHER? For FORTY MINUTES?", "So we've both been waiting for each other, for forty minutes?", "So we were both statues, waiting for the other statue?") },
+        { by: 'a', say: "On opposite sides of the same wall." },
+        { by: 'b', say: "I could hear you sneezing. I thought it was a stranger." },
+        { by: 'a', say: "It was me. I sneeze like that." },
+        { by: 'b', say: "I know how you sneeze. It sounded different through a wall." },
+      ] },
+      { id: 'pr.sd2', turns: [
+        { by: 'b', say: "Mine had completely different instructions to yours." },
+        { by: 'a', ...V("Of course it did. Why would anything be simple?", "Of course. Nothing's simple.", "Course it did.", "Of COURSE it did! WHY would ANYTHING be simple?", "Of course it did. Why would anything be simple on this race?", "Naturally. Simple things are illegal here.") },
+        { by: 'b', say: "I've been doing the wrong half for half an hour." },
+        { by: 'a', say: "And I've been doing your half." },
+        { by: 'b', say: "So between us we've done the whole thing, just in the wrong places." },
+        { by: 'a', say: "Teamwork." },
+      ] },
+    ],
+    'leader-shift.takes-charge': [
+      { id: 'pr.lt1', turns: [
+        { by: 'a', ...V("Give me the map. I'm leading now.", "Map. I'm leading now.", "Give me the map.", "Give me the MAP! I'M leading now!", "Give me the map. I'm going to lead for a while.", "Hand over the map. There's a new captain on this ship.") },
+        { by: 'b', say: "Since when do you lead?" },
+        { by: 'a', say: "Since we went round that roundabout four times." },
+        { by: 'b', say: "It was three times." },
+        { by: 'a', say: "It was four. I counted. Map." },
+        { beat: '{b} hands over the map. {a} turns it the right way up, and they start moving.' },
+      ] },
+      { id: 'pr.lt2', turns: [
+        { by: 'b', say: "I don't know where we are. I don't know where anything is." },
+        { by: 'a', ...V("Then I've got it. Follow me. Don't argue, just follow.", "I've got it. Follow me.", "Follow me. Don't argue.", "Then I've GOT it! FOLLOW me! Don't ARGUE, just FOLLOW!", "Then I've got it. Just follow me, and don't argue.", "Then behold, your new leader. Walk behind me in awe.") },
+        { by: 'b', say: "You've never led once this whole race." },
+        { by: 'a', say: "Then it's about time I started." },
+        { beat: '{a} sets off with total confidence. {b} follows, surprised to find {b.ref} relieved.' },
+        { by: 'b', say: "This is nice. I could get used to this." },
+      ] },
+    ],
+    'leader-shift.gives-way': [
+      { id: 'pr.lg1', turns: [
+        { by: 'b', say: "You lead. You've been right about everything today, and I've been wrong about everything." },
+        { by: 'a', ...V("Not everything. You were right about the sandwich.", "You were right about the sandwich.", "The sandwich. You were right.", "Not EVERYTHING! You were RIGHT about the SANDWICH!", "Not everything. You were right about the sandwich.", "Not everything. Your sandwich call was visionary.") },
+        { by: 'b', say: "The sandwich doesn't count." },
+        { by: 'a', say: "Okay. I'll lead. But you have to tell me if I go wrong." },
+        { by: 'b', say: "I'll tell you. Gently." },
+        { by: 'a', say: "You've never said anything gently in your life." },
+      ] },
+      { id: 'pr.lg2', turns: [
+        { by: 'b', say: "I'm done leading. My head's spinning. You take over." },
+        { by: 'a', ...V("Are you sure? You love being in charge.", "Sure? You love being in charge.", "You love being in charge.", "Are you SURE? You LOVE being in CHARGE!", "Are you sure? You love being in charge.", "Are you sure? Being in charge is your favourite hobby.") },
+        { by: 'b', say: "I love it when it's going well. It's not going well." },
+        { by: 'a', say: "Okay. I've got it. Rest your brain for a bit." },
+        { beat: '{b} walks behind {a} for the next hour, and for the first time all race, looks at the view.' },
+        { by: 'b', say: "There's been a view this whole time?" },
+      ] },
+    ],
+    'cultural-task.moved': [
+      { id: 'pr.cm1', turns: [
+        { beat: 'When it\'s over, an old woman in the crowd comes over and takes {a}\'s hands in hers.' },
+        { by: 'a', ...V("She said thank you. For doing it properly. For caring about it.", "She said thank you, for doing it properly.", "She thanked us. For caring.", "She said THANK you! For doing it PROPERLY! For CARING about it!", "She said thank you, for doing it properly, and for caring about it.", "She thanked us. For meaning it. That's the best tip I've ever had.") },
+        { by: 'b', say: "Are you crying?" },
+        { by: 'a', say: "A little. That meant something to her. You could see it meant something." },
+        { by: 'b', say: "It meant something to me, too." },
+        { by: 'a', say: "This is why I wanted to do this race. Not the money. This." },
+      ] },
+      { id: 'pr.cm2', turns: [
+        { by: 'b', say: "That was beautiful. I didn't expect it to be beautiful." },
+        { by: 'a', ...V("They've been doing it the same way for hundreds of years, and they let us join in.", "Hundreds of years, and they let us join in.", "Hundreds of years. And we joined in.", "They've been doing it the SAME way for HUNDREDS of YEARS, and they let US join in!", "They've been doing it the same way for hundreds of years, and they let us join in.", "Centuries of the same steps, and today two strangers got to borrow them.") },
+        { by: 'b', say: "I'm going to remember that for the rest of my life." },
+        { beat: 'The family who taught them waves them off down the road.' },
+        { by: 'a', say: "I want to come back here. When there's no race. Just to say thank you." },
+        { by: 'b', say: "We'll come back." },
+      ] },
+    ],
+    'cultural-task.disrespectful': [
+      { id: 'pr.cd1', turns: [
+        { by: 'a', ...V("Can we hurry this up? It's a dance. Just let us do the dance.", "Hurry up. It's just a dance.", "Hurry. It's a dance.", "Can we HURRY this up? It's a DANCE! Just let us DO the dance!", "Can we hurry this up? It's only a dance, just let us do it.", "Can we speed up the sacred bit? We're on a clock.") },
+        { beat: 'The whole room goes quiet. The man teaching them puts down his drum.' },
+        { by: 'b', say: "{a}. Apologise. Right now." },
+        { by: 'a', say: "What? I just said hurry up." },
+        { by: 'b', say: "This is their wedding dance. You just told a whole family to hurry up their wedding dance." },
+        { beat: 'It takes ten minutes of apologising before the drum starts again.' },
+      ] },
+      { id: 'pr.cd2', turns: [
+        { by: 'a', say: "Why are they all looking at me?" },
+        { by: 'b', ...V("Because you put your feet up on the table. Their sacred table.", "Your feet. On their sacred table.", "Feet. Sacred table.", "Because you put your FEET up on the TABLE! Their SACRED table!", "Because you just put your feet up on their sacred table.", "Because your feet are resting on several centuries of tradition.") },
+        { by: 'a', say: "How was I supposed to know it was sacred? It looks like a table." },
+        { by: 'b', say: "It has candles on it. And flowers. And a picture of somebody's grandmother." },
+        { beat: '{a} takes {a.posAdj} feet down very, very slowly.' },
+        { by: 'a', say: "I'm going to wait outside." },
+      ] },
+    ],
+    'souvenir.kept': [
+      { id: 'pr.sk1', turns: [
+        { by: 'a', say: "I'm keeping this. It's coming home with me." },
+        { by: 'b', ...V("It's a rock. You're keeping a rock.", "It's a rock.", "A rock. You're keeping a rock.", "It's a ROCK! You're KEEPING a ROCK!", "It's a rock. You're really keeping a rock?", "It's a rock. Of all the things here, you chose a rock.") },
+        { by: 'a', say: "It's the rock I sat on when we nearly went out and didn't." },
+        { by: 'b', say: "...Okay. That's actually a good rock." },
+        { beat: '{a} wraps the rock in a sock and puts it carefully in {a.posAdj} bag.' },
+        { by: 'b', say: "Don't let it out at the security check." },
+      ] },
+      { id: 'pr.sk2', turns: [
+        { by: 'b', say: "What's that in your pocket?" },
+        { by: 'a', ...V("A ticket stub. From the bus with the goat. I'm keeping every ticket.", "A ticket stub. I'm keeping every ticket.", "Ticket stub. Keeping them all.", "A TICKET STUB! From the bus with the GOAT! I'm keeping EVERY ticket!", "A ticket stub from the bus with the goat. I'm keeping every one.", "A ticket from the goat bus. My collection grows.") },
+        { by: 'b', say: "Every ticket? We've had about forty tickets." },
+        { by: 'a', say: "Forty-two. I'm making a book." },
+        { by: 'b', say: "That's the most you thing I've ever heard." },
+        { by: 'a', say: "Thank you." },
+      ] },
+    ],
+    'souvenir.left': [
+      { id: 'pr.sl1', turns: [
+        { by: 'a', say: "I really want to take one of these shells home." },
+        { by: 'b', ...V("Leave it. It belongs here. It's been here longer than us.", "Leave it. It belongs here.", "It belongs here. Leave it.", "LEAVE it! It BELONGS here! It's been here LONGER than us!", "Leave it. It belongs here, it's been here longer than we have.", "Leave it. It lives here. We're just visiting its house.") },
+        { by: 'a', say: "Just one shell. Nobody will notice one shell." },
+        { by: 'b', say: "The shell will notice." },
+        { beat: '{a} sighs, and puts the shell back exactly where it was.' },
+        { by: 'a', say: "Fine. Goodbye, shell. You were a good shell." },
+      ] },
+      { id: 'pr.sl2', turns: [
+        { by: 'b', say: "Are you going to buy that?" },
+        { by: 'a', ...V("No. We need the money. I'll just remember it instead.", "No. I'll remember it instead.", "No. I'll just remember it.", "NO! We NEED the money! I'll just REMEMBER it instead!", "No, we need the money. I'll just remember it.", "No. I'll keep it in my head. My head is free.") },
+        { by: 'b', say: "You've been looking at it for five minutes." },
+        { by: 'a', say: "I'm memorising it. Every detail." },
+        { beat: '{a} gives it one last long look, and puts it down.' },
+        { by: 'b', say: "I'll buy you one after we win." },
+      ] },
+    ],
+    'identity-crisis.hide': [
+      { id: 'pr.ih1', turns: [
+        { by: 'a', say: "Everything about this is against everything we stand for." },
+        { by: 'b', ...V("Then don't think about it. Pretend we're somebody else for ten minutes.", "Pretend we're somebody else. Ten minutes.", "Be somebody else. Ten minutes.", "Then DON'T think about it! PRETEND we're somebody ELSE for TEN MINUTES!", "Then don't think about it. Just pretend we're somebody else for ten minutes.", "Then become someone else. Briefly. Like an actor. A tired actor.") },
+        { by: 'a', say: "I don't know how to be somebody else." },
+        { by: 'b', say: "Nobody back home has to know." },
+        { by: 'a', say: "It's going to be on television, {b}." },
+        { beat: '{a} pulls {a.posAdj} hood up as far as it will go and gets on with it.' },
+      ] },
+      { id: 'pr.ih2', turns: [
+        { by: 'a', ...V("If anybody from home sees this, I'm finished. Our whole thing is finished.", "If home sees this, we're finished.", "If home sees, we're done.", "If ANYBODY from HOME sees this, I'm FINISHED! Our WHOLE thing is FINISHED!", "If anybody from home sees this, we're finished. Our whole thing is finished.", "If home sees this, our reputation dies. With a small funeral.") },
+        { by: 'b', say: "Then keep your face turned away from the cameras." },
+        { by: 'a', say: "There are cameras everywhere. There are four on me right now." },
+        { by: 'b', say: "Then just do it really fast." },
+        { beat: '{a} does it really fast, face turned to a wall the whole time.' },
+        { by: 'a', say: "That never happened." },
+      ] },
+    ],
+    'identity-crisis.quit-and-unquit': [
+      { id: 'pr.iq1', turns: [
+        { by: 'a', say: "No. I'm done. This isn't us. I'm not doing it. We quit." },
+        { by: 'b', ...V("Okay. Okay, we quit. Let's sit down.", "Okay. We quit. Sit down.", "Okay. We quit.", "OKAY! OKAY, we QUIT! Let's SIT DOWN!", "Okay. Okay, we quit. Let's just sit down for a minute.", "Okay. We quit. Let's sit and be quitters together.") },
+        { beat: 'They sit down on the kerb. Nobody says anything for a long time.' },
+        { by: 'a', say: "We can't quit. We've come too far to quit." },
+        { by: 'b', say: "I know. I was waiting for you to say it." },
+        { by: 'a', say: "Help me up. Let's go and do the stupid thing." },
+      ] },
+      { id: 'pr.iq2', turns: [
+        { by: 'b', say: "If we quit, we're out. If we keep going, we're doing the thing we said we'd never do." },
+        { by: 'a', ...V("Then we quit. We have principles.", "Then we quit. Principles.", "Quit. Principles.", "Then we QUIT! We have PRINCIPLES!", "Then we quit. We do have principles.", "Then we quit, nobly, like people in a sad film.") },
+        { beat: 'Half an hour later, they are still sitting there. Two teams have gone past.' },
+        { by: 'a', say: "My principles are getting really uncomfortable." },
+        { by: 'b', say: "Mine went numb twenty minutes ago." },
+        { by: 'a', say: "Okay. Okay. Just this once. Then we go back to having principles." },
+      ] },
+    ],
+    'identity-crisis.accept': [
+      { id: 'pr.ia1', turns: [
+        { by: 'a', say: "You know what? Who cares. Who cares what anybody thinks." },
+        { by: 'b', ...V("Since when do you not care what people think?", "Since when don't you care?", "You don't care? Since when?", "Since WHEN do you NOT care what PEOPLE think?", "Since when do you not care what people think?", "You? Not caring? Has someone swapped you?") },
+        { by: 'a', say: "Since about two minutes ago. It feels amazing." },
+        { by: 'b', say: "It looks amazing. You look ten years younger." },
+        { beat: '{a} throws {a.ref} into it, completely, and comes out laughing.' },
+        { by: 'a', say: "I've been so worried about being us that I forgot to have fun." },
+      ] },
+      { id: 'pr.ia2', turns: [
+        { by: 'b', say: "I thought you'd hate this." },
+        { by: 'a', ...V("I thought I'd hate it too. Turns out I'm a lot more than one thing.", "Turns out I'm more than one thing.", "I'm more than one thing.", "I THOUGHT I'd hate it TOO! Turns out I'm a LOT more than ONE thing!", "I thought I'd hate it too. Turns out I'm a lot more than just one thing.", "Me too. Turns out I contain multitudes. And sequins.") },
+        { by: 'b', say: "That's very deep." },
+        { by: 'a', say: "Don't tell anybody I said it." },
+        { by: 'b', say: "I'm telling everybody." },
+        { beat: '{a} pretends to be annoyed, and fails.' },
+      ] },
+    ],
+  },
+};

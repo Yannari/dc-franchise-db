@@ -7900,6 +7900,27 @@
       "voice": "#chaotic #nerdy #goofy. Caps for emphasis, “NOT the…,” abrupt observations, and callbacks. Notices contradictions before emotional cues. Accurate strategic reads can sound like throwaway jokes. Genuine vulnerability removes the performance: short, specific, slightly awkward sincerity. #-emotional #-schemer #-earnest #-anxious",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Wyatt",
+      "slug": "wyatt",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 8,
+        "endurance": 9,
+        "mental": 4,
+        "social": 3,
+        "strategic": 2,
+        "loyalty": 10,
+        "boldness": 6,
+        "intuition": 3,
+        "temperament": 7
+      },
+      "voice": "#proud#quiet #blunt #tough #earnest. Short concrete messages. “Yep” and “say less” mean a decision is settled. Answers honest questions plainly. Support takes the form of promises to act. Responds to betrayal with a direct question and silence. Avoid constant cowboy sayings. #-cruel",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

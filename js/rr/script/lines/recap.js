@@ -6,12 +6,12 @@
 // always "But that was then, and this is The Ridonculous Race!"
 export default {
   open: ["Last time on The Ridonculous Race, after {summary}, our teams were exhausted. So was I, and all I did was watch.",
-    "Last time on The Ridonculous Race, after {summary}, our teams had worked up a serious sweat. I had worked up a serious appetite. Lunch was great.",
+    "Last time on The Ridonculous Race, after {summary}, our teams were dripping. I had a little light perspiration, and a facial.",
     "Last time on The Ridonculous Race, after {summary}, our teams were sore, sunburned and smelly. I was fine. I had a hat.",
     "Last time on The Ridonculous Race, after {summary}, our teams learned a lot about themselves. Mostly that they should have trained."],
   winners: ["The winners were {winners}.", "Taking first place were {winners}, who will not stop bringing it up.",
-    "First to the Chill Zone were {winners}. In my book, everybody else was a loser."],
-  exit: ["We could only send one team home, and last week it was {out}. I'm not sad.",
+    "First to the Chill Zone were {winners}. Everybody else was, by definition, slower. I checked."],
+  exit: ["One team had to go home last week, and it was {out}. I've already forgotten their faces.",
     "And last week we said goodbye to {out}. I'll miss them. That was a lie.",
     "Somebody had to come in last, and that somebody was {out}. Bye.",
     "And last week, {out} took the long walk home. I offered them a ride. I didn't mean it."],

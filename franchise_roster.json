@@ -7462,7 +7462,13 @@
       "occupation": "Nursing student",
       "descriptor": "The Future Nurse",
       "backstory": "rooke delayed nursing school after graduation so she could work, save, and help her mother through a difficult recovery. She returned to training with less patience for romantic ideas about being endlessly selfless. Café shifts taught her to remain pleasant while telling someone no; clinical placements are teaching her when a confident answer needs checking. She likes her work but guards her free time, spending it on used-book browsing, friends, and ambitious recipes that leave too many dishes. She dated Derek because he made ordinary evenings entertaining and took her ambitions seriously. They separated when their plans for the next few years stopped fitting together. Friendship became easier once neither expected the other to change course.",
-      "personality": "Brooke is caring and observant, with a strong distinction between helping and taking responsibility for someone else's choices. She notices when a person is embarrassed and gives them a graceful way to recover. She also notices when embarrassment is being used to avoid accountability. Her easy smile can lead people to expect agreement, an assumption she corrects without much ceremony. She likes playful confidence but loses interest when every conversation becomes a contest. Under stress, she grows practical and can sound impatient with feelings that have no immediate solution. She sometimes takes too long to ask for comfort because she fears sounding helpless. She is loyal to people who respect her limits and remembers whether an apology produced an actual change. In competition, she would assess both the promise and the person making it before deciding what either is worth."
+      "personality": "Brooke is caring and observant, with a strong distinction between helping and taking responsibility for someone else's choices. She notices when a person is embarrassed and gives them a graceful way to recover. She also notices when embarrassment is being used to avoid accountability. Her easy smile can lead people to expect agreement, an assumption she corrects without much ceremony. She likes playful confidence but loses interest when every conversation becomes a contest. Under stress, she grows practical and can sound impatient with feelings that have no immediate solution. She sometimes takes too long to ask for comfort because she fears sounding helpless. She is loyal to people who respect her limits and remembers whether an apology produced an actual change. In competition, she would assess both the promise and the person making it before deciding what either is worth.",
+      "ties": [
+        {
+          "name": "Derek",
+          "kin": "exes"
+        }
+      ]
     },
     {
       "name": "Curtis",

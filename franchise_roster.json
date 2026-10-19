@@ -7885,7 +7885,7 @@
       "slug": "sasha",
       "gender": "f",
       "sexuality": "queer",
-      "archetype": "floater",
+      "archetype": "wildcard",
       "stats": {
         "physical": 4,
         "endurance": 4,

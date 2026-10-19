@@ -353,7 +353,7 @@ export const VOICES = [
     stoic: "Everyone's being nice. Too nice {e:eyes}" }],
   ['circle.open.m1', "Good morning Circle {e:sun} Who's actually awake?", {
     hype: "GOOD MORNING CIRCLE {e:sun} Who's AWAKE?!", dry: "Good morning, Circle {e:sun} Who's actually awake. Not me", blunt: "Morning {e:sun} Who's up?",
-    goofy: "Good morning Circle {e:sun} Who's awake? I'm half awake. The other half is still in bed", shy: "Good morning {e:sun} Is anyone awake?",
+    goofy: "Good morning Circle {e:sun} Who's awake? I'm half awake. The other half is still snoozing", shy: "Good morning {e:sun} Is anyone awake?",
     chill: "Morning, Circle {e:sun} Who's up?", catty: "Good morning {e:sun} Who's awake and who's pretending?", diva: "Good morning, darlings {e:sun} The star has risen",
     stoic: "Morning {e:sun} Who's up?" }],
   ['circle.open.m2', "Morning fam! Did anybody else dream about this place??", {

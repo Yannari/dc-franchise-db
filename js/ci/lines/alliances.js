@@ -186,7 +186,7 @@ export const ALLIANCE_LINES = {
       { by: 'b', send: "Surviving. Barely. Love you guys" },
     ] },
     { turns: [
-      { by: 'a', say: "Circle, open {game}.", send: "Emergency {game} meeting {e:shock}" },
+      { by: 'a', say: "Circle, open {game}.", send: "Emergency meeting, {game} {e:shock}" },
       { by: 'b', send: "Uh oh. What happened" },
       { by: 'c', send: "I'm here, I'm here" },
     ] },

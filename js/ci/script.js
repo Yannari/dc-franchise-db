@@ -201,8 +201,9 @@ export function renderEntry(state, entry, cast, rng, ctx = {}) {
     const field = ['send', 'post', 'say', 'video', 'react'].find(k => t0[k]);
     const t = vr ? { ...t0, ...(typeof vr === 'string' ? { [field]: vr } : vr) } : t0;
     const tag = x => ({ ...(person ? { ...x, person } : x), ...(vr ? { voiced: true } : {}) });
-    // A catfish types in the persona's register until the cover cracks (ci/cover.js).
-    const voiceOf = () => ({ ...(state.profiles[speaker]?.voice || {}), register: shownRegister(state, speaker, ctx.scene, typist) });
+    // A catfish types in the persona's register until the cover cracks (ci/cover.js). A voice version is already in
+    // that register, so it keeps the typing habits (emoji, caps) and skips the register reshaping, which would voice it twice.
+    const voiceOf = () => ({ ...(state.profiles[speaker]?.voice || {}), register: vr ? null : shownRegister(state, speaker, ctx.scene, typist) });
     // The person at the keyboard, for what the author wrote about them.
     const p0 = state.profiles[speaker];
     const typer = typist || p0?.roles?.face || p0?.players?.[0];

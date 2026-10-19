@@ -17,7 +17,9 @@ const seasons = [1, 2, 3, 4].map(seed => {
 });
 const scenes = kind => seasons.flatMap(state => state.scenes.filter(s => s.kind === kind && s.script?.blocks?.length).map(sc => ({ sc, state })));
 const DECISION = /^hangout\.(agree|trade|yield|trio\.|solo\.decide)/;
-const nameIn = (state, h, text) => text.toLowerCase().includes(String(state.profiles[h].shown.name).toLowerCase());
+// A whole word: a player named B is not named by "being" (2026-10-19, seed 3).
+const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const nameIn = (state, h, text) => new RegExp(`\\b${esc(String(state.profiles[h].shown.name))}\\b`, 'i').test(text);
 
 describe('the Hangout keeps its secret', () => {
   it('never airs the decision, and ends sealed', () => {

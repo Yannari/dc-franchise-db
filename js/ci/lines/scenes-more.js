@@ -126,6 +126,11 @@ export const SCENES_MORE = {
     s1("I can't tell anybody what just happened. Or can I?"),
     s1("I'm gonna miss {b}. I didn't expect that."),
     s1("Okay. Back to the game. The game doesn't stop."),
+    s1("{b} was sitting right there. On my couch. In my apartment."),
+    s1("I keep looking at the door like {b} is coming back."),
+    s1("Everything {b} said in there, I believe. I don't know why, but I do."),
+    s1("Circle, I need a minute. Actually, I need ten."),
+    s1("Now I have to go back to typing to people. After that."),
   ]),
   ...E('goodbye.after', [
     s1("{b} was my person in here. It's quiet without {b}."),
@@ -260,6 +265,11 @@ export const SCENES_MORE = {
     s1("Deep breath. Here's the door. Knock."),
     s1("I've talked to these people every day and I've never seen this hallway."),
     s1("My heart is pounding. Why is my heart pounding? I'm the one who got blocked."),
+    s1("Which door is it? Please let me pick the right door."),
+    s1("I've seen this place on a screen for days. It's smaller in person."),
+    s1("Okay. Whoever's behind this door, I hope they're happy to see me."),
+    s1("One last thing before I go. This is it."),
+    s1("I practiced what I'm gonna say. I've already forgotten all of it."),
   ]),
   ...E('meet.settle', [
     talk("I need to sit down. My legs don't work.", "Sit, sit. Oh my God."),

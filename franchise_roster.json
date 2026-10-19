@@ -7884,7 +7884,6 @@
       "name": "Sasha",
       "slug": "sasha",
       "gender": "f",
-      "sexuality": "queer",
       "archetype": "wildcard",
       "stats": {
         "physical": 4,
@@ -7897,15 +7896,23 @@
         "intuition": 5,
         "temperament": 7
       },
+      "sexuality": "queer",
       "voice": "#chaotic #nerdy #goofy. Caps for emphasis, “NOT the…,” abrupt observations, and callbacks. Notices contradictions before emotional cues. Accurate strategic reads can sound like throwaway jokes. Genuine vulnerability removes the performance: short, specific, slightly awkward sincerity. #-emotional #-schemer #-earnest #-anxious",
       "profileSources": {},
-      "ties": []
+      "age": 25,
+      "birthdate": "2001-09-02",
+      "ethnicity": "Korean American",
+      "nationality": "American",
+      "hometown": "Los Angeles, California",
+      "occupation": "Stand-up Comic",
+      "descriptor": "The Bad Influence",
+      "backstory": "sha grew up in Los Angeles and spent her early adulthood balancing irregular jobs with open mics. She knows which venues pay promptly, which sound systems fail, and which friendly invitations are unpaid work in disguise. Comedy began as a way to make awkward experiences usable and became something she wanted badly enough to organize her life around. She tests material on friends who do not always consent to being an audience. Financial uncertainty is a persistent pressure she disguises as an anecdote. She keeps notebooks full of observations and is far more disciplined about revision than her casual presentation suggests. Asking directly for support remains harder than making a room laugh.",
+      "personality": "Sasha reacts to tension by finding its absurd detail. She reads social contradictions quickly and often says the accurate thing in the least reassuring way. Humor lets her participate while preserving an escape route: if rejected, she can claim it was a bit. She is generous with attention when someone feels excluded, but impatient with demands for solemnity she considers performative. Boredom tempts her into provocation. She wants freedom to test boundaries and can become defensive when told that a joke had consequences. In private she revisits those moments more than she admits. Trust reveals a quieter, less polished person who needs reassurance and dislikes needing it. She respects people who challenge her specifically rather than simply asking her to be nicer."
     },
     {
       "name": "Wyatt",
       "slug": "wyatt",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "loyal-soldier",
       "stats": {
         "physical": 8,
@@ -7918,9 +7925,18 @@
         "intuition": 3,
         "temperament": 7
       },
+      "sexuality": "straight",
       "voice": "#proud#quiet #blunt #tough #earnest. Short concrete messages. “Yep” and “say less” mean a decision is settled. Answers honest questions plainly. Support takes the form of promises to act. Responds to betrayal with a direct question and silence. Avoid constant cowboy sayings. #-cruel",
       "profileSources": {},
-      "ties": []
+      "age": 47,
+      "birthdate": "1979-12-03",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Miles City, Montana",
+      "occupation": "Ranch Hand",
+      "descriptor": "The Cowboy",
+      "backstory": "Wyatt has worked on ranches around eastern Montana for most of his adult life. Seasonal demands taught him to budget cautiously and repair things before replacing them. Raising a daughter made his routines more complicated and his priorities clearer. He handles packed lunches, school forms, and questions that cannot be answered with because I said so. He is proud of their life but uneasy about how much depends on another person's land and payroll. Friends know they can call when something breaks. He rarely calls when he needs company. His long-term hope is a modest place of his own with enough stability that a bad month does not feel like the start of losing everything.",
+      "personality": "Wyatt prefers clear obligations and considers consistency a form of affection. He is observant about practical discomfort: a cold room, an empty plate, somebody carrying too much. Emotional ambiguity frustrates him because he cannot repair it with a task. He is slow to trust, then reluctant to revise that trust, partly because reconsideration feels disloyal. He can mistake tact for dishonesty and stubbornness for integrity. Around his daughter he is more patient, playful, and willing to explain than strangers would expect. Anger makes him terse rather than theatrical. He respects direct disagreement and dislikes being maneuvered into an answer. His growth depends on accepting that a changed judgment can be responsible rather than faithless."
     }
   ]
 }

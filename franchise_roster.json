@@ -7352,7 +7352,6 @@
       "name": "Anais",
       "slug": "anais",
       "gender": "f",
-      "sexuality": "lesbian",
       "archetype": "underdog",
       "stats": {
         "physical": 7,
@@ -7365,15 +7364,23 @@
         "intuition": 4,
         "temperament": 7
       },
+      "sexuality": "lesbian",
       "voice": "#earnest #warm #anxious Replies quickly and often makes a small joke at her own expense. Gives concrete answers rather than impressive ones. Asks follow-up questions because she wants to understand, not because she is collecting leverage. Anxiety appears in unnecessary explanations. When asked to lie, becomes overly specific or changes the subject badly. #-goofy",
       "profileSources": {},
-      "ties": []
+      "age": 22,
+      "birthdate": "2004-12-14",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Marshfield, Wisconsin",
+      "occupation": "Agricultural business student; family dairy-farm worker",
+      "descriptor": "The Dairy-farm Kid",
+      "backstory": "Anais grew up around work that had to happen regardless of weather, holidays, or anyone’s mood. College introduced her to people who could sleep through an alarm without inconveniencing livestock, a freedom she found both appealing and faintly suspicious. Studying agricultural business has made her useful at home and uncertain about whether returning permanently is a choice or an expectation. She is openly gay with friends and family, though she still hesitates when meeting people whose reaction she cannot predict. She applied to The Circle to do something entirely her own before graduation turns every conversation into a question about her future.",
+      "personality": "Capable, considerate, and uncomfortable attracting scrutiny. Settles into groups by helping rather than competing for attention. Underestimates how much influence comes from being someone others trust without effort."
     },
     {
       "name": "Barbie",
       "slug": "barbie",
       "gender": "f",
-      "sexuality": "bi",
       "archetype": "schemer",
       "stats": {
         "physical": 4,
@@ -7386,15 +7393,23 @@
         "intuition": 7,
         "temperament": 3
       },
+      "sexuality": "bi",
       "voice": "#warm #competitive #schemer #flirty#ditzy#proud. Polished, responsive messages that recognize what someone wants acknowledged. Uses “let's be real” before framing a choice favorably. Compliments specifics and moves toward mutual agreement. Controlled, observant flirtation. When threatened, becomes exceptionally courteous and stops volunteering details.",
       "profileSources": {},
-      "ties": []
+      "age": 36,
+      "birthdate": "1990-07-05",
+      "ethnicity": "Black",
+      "nationality": "American",
+      "hometown": "Atlanta, Georgia",
+      "occupation": "Fashion Content Creator",
+      "descriptor": "The Image Consultant",
+      "backstory": "Barbie spent years hearing that there was a market for her look immediately before a client chose someone else. She built her audience by styling herself, producing shoots, and learning which companies valued her beyond a campaign slogan. Her following became a business, including a boutique she can truthfully mention in her profile. Success brought independence and an exhausting awareness of how every public moment might be interpreted. She enters to prove that her social intelligence works without visible follower numbers. Being liked without those numbers matters more to her than she plans to reveal.",
+      "personality": "Disciplined, charismatic, selective about vulnerability. Understands relationship maintenance and sometimes mistakes doing it well for intimacy. Can sincerely like someone and still decide their removal is necessary."
     },
     {
       "name": "Derek",
       "slug": "derek",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "mastermind",
       "stats": {
         "physical": 7,
@@ -7407,15 +7422,23 @@
         "intuition": 8,
         "temperament": 5
       },
+      "sexuality": "straight",
       "voice": " #schemer#tough #goofy#nerdy #competitive. Derek speaks bluntly through practical examples. Brooke's messages are over-edited encouragement, with “hun” and “aw stop.” Reassures before establishing what reassurance is needed. Under pressure, the sweetness abruptly becomes managerial instructions. His effort to sound believable suppresses spontaneity.",
       "profileSources": {},
-      "ties": []
+      "age": 28,
+      "birthdate": "1998-07-22",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Pittsburgh, Pennsylvania",
+      "occupation": "Warehouse Shift Manager",
+      "descriptor": "The Scheming Sweetheart",
+      "backstory": "Derek grew up in Pittsburgh in a family where card games became arguments and every argument had an audience. As a kid, he organized backyard competitions, negotiated uneven trades, and talked friends into plans he insisted would benefit everybody. Getting caught usually earned a grin and an attempt to negotiate the consequences.\n\nHe started working in a warehouse after high school and climbed into shift management through a mix of competence, nerve, and knowing how to get people on his side. He can make an unpleasant shift entertaining, remembers who owes whom a favor, and has a running rivalry with a coworker over who can talk their supervisor into approving the better schedule. His crew likes him, although they have learned to ask what he gets out of an unusually generous offer.\n\nOutside work, Derek hosts game nights, plays rec-league sports with more confidence than skill, and turns minor disagreements into bets. He once spent three weekends practicing darts after telling a friend he could beat him whenever he wanted. He won, then claimed he had barely prepared.\n\nHis relationship with Brooke ended because they wanted different futures, but they stayed friends. She enjoys his humor and knows when he is selling her something—occasionally letting him finish the pitch just to see how far he’ll take it. Derek wants to own a business someday. He keeps a notebook of ideas, some practical and some clearly conceived after winning an argument, and is saving toward the first one he can persuade himself to commit to.",
+      "personality": "Derek is mischievous, competitive, and delighted by a plan that requires nerve. He likes recruiting people, pitching questionable ideas with complete confidence, and watching someone realize they have already agreed with him. His humor is teasing and conspiratorial: he makes an ally feel like they are sharing the joke, then saves his more outrageous commentary for private. He can turn an ordinary disagreement into a friendly wager because winning is more satisfying when somebody insisted he couldn’t.\n\nHe is genuinely sociable and enjoys capable opponents. Someone catching his lie can earn an impressed laugh before he starts looking for another angle. He prefers having room to improvise over controlling every detail, and will sometimes take an unnecessary risk because the clever version sounds more fun. His arrogance shows when he explains how predictable somebody is, then gets irritated when they surprise him.\n\nAffection and manipulation overlap for him. He can like someone, help them, and still arrange a situation that benefits him more. He respects loyalty but wants his allies to challenge him intelligently rather than follow instructions. Being exposed embarrasses him less than being made to look foolish. His biggest weakness is getting attached to the satisfaction of a move and overlooking whether he actually needed to make it."
     },
     {
       "name": "Brooke",
       "slug": "brooke",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "perceptive-player",
       "stats": {
         "physical": 3,
@@ -7428,15 +7451,23 @@
         "intuition": 7,
         "temperament": 9
       },
+      "sexuality": "straight",
       "voice": "#warm #earnest. The intended cover uses friendly complete sentences, gentle questions, and occasional hearts. Derek's actual performance is too polished: “hun,” “aw stop,” and reassurance that arrives before he understands the problem. Stress causes abrupt instructions and unexplained changes in warmth. Those slips belong in the simulation even when the public profile sounds convincing.",
       "profileSources": {},
-      "ties": []
+      "age": 25,
+      "birthdate": "2002-01-11",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Pittsburgh, Pennsylvania",
+      "occupation": "Nursing student",
+      "descriptor": "The Future Nurse",
+      "backstory": "rooke delayed nursing school after graduation so she could work, save, and help her mother through a difficult recovery. She returned to training with less patience for romantic ideas about being endlessly selfless. Café shifts taught her to remain pleasant while telling someone no; clinical placements are teaching her when a confident answer needs checking. She likes her work but guards her free time, spending it on used-book browsing, friends, and ambitious recipes that leave too many dishes. She dated Derek because he made ordinary evenings entertaining and took her ambitions seriously. They separated when their plans for the next few years stopped fitting together. Friendship became easier once neither expected the other to change course.",
+      "personality": "Brooke is caring and observant, with a strong distinction between helping and taking responsibility for someone else's choices. She notices when a person is embarrassed and gives them a graceful way to recover. She also notices when embarrassment is being used to avoid accountability. Her easy smile can lead people to expect agreement, an assumption she corrects without much ceremony. She likes playful confidence but loses interest when every conversation becomes a contest. Under stress, she grows practical and can sound impatient with feelings that have no immediate solution. She sometimes takes too long to ask for comfort because she fears sounding helpless. She is loyal to people who respect her limits and remembers whether an apology produced an actual change. In competition, she would assess both the promise and the person making it before deciding what either is worth."
     },
     {
       "name": "Curtis",
       "slug": "curtis",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "challenge-beast",
       "stats": {
         "physical": 7,
@@ -7449,15 +7480,22 @@
         "intuition": 3,
         "temperament": 4
       },
+      "sexuality": "straight",
       "voice": "#warm #earnest #competitive. Complete, grounded sentences. Checks on specific details people previously mentioned. Uses “my guy” and “I got you” naturally. Offers practical next steps when others panic. When hurt, becomes formal and lists what actually happened. Keeps track of ratings and commitments while assuming promises mean what they mean to him. #-cruel",
       "profileSources": {},
-      "ties": []
+      "age": 35,
+      "birthdate": "1992-03-13",
+      "ethnicity": "Black",
+      "nationality": "American",
+      "occupation": "UPS Delivery Driver",
+      "descriptor": "The Neighborhood Commissioner",
+      "backstory": "Curtis became the dependable one early. As the oldest in his family, he learned to arrange rides, stretch a grocery budget, and keep younger relatives out of arguments. Delivery work gave him a steady income and a neighborhood full of familiar faces. He started organizing recreational basketball after a season fell apart over missing fees and disputed calls. He now manages schedules, mediates grudges, and quietly covers registration for people who cannot pay. His reading glasses make him feel older than the heavy lifting does. He wants to establish a permanent youth league, but keeps postponing the paperwork while attending to everyone else's immediate problems.",
+      "personality": "urtis is an organizer by instinct: he remembers preferences, notices absences, and assigns himself responsibility before anyone asks. His warmth is practical rather than sentimental. He brings food, sends reminders, and follows up after difficult conversations. He likes recognition more than he admits, especially when it confirms that people depend on him. Asking for help makes him uncomfortable because usefulness is central to his self-worth. In conflict he first mediates, then starts keeping an exact account of who contributed what. He can become paternalistic when convinced he knows the sensible solution. Betrayal hurts him most when it reveals that someone accepted his care without feeling the obligation he attached to it. He grows closer to people who notice his needs without being prompted."
     },
     {
       "name": "Domingo",
       "slug": "domingo",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "showmancer",
       "stats": {
         "physical": 8,
@@ -7470,15 +7508,23 @@
         "intuition": 5,
         "temperament": 4
       },
+      "sexuality": "straight",
       "voice": "#flirty #goofy #competitive#proud. Lowercase text, playful nicknames, occasional 😏. Seizes openings for teasing. Uses callbacks to create intimacy. Deflects uncomfortable questions with humor before answering. When serious, uses the person's actual name and writes a complete, unembellished sentence.",
       "profileSources": {},
-      "ties": []
+      "age": 29,
+      "birthdate": "1997-12-30",
+      "ethnicity": "Dominican American",
+      "nationality": "American",
+      "hometown": "The Bronx, New York",
+      "occupation": "Barber",
+      "descriptor": "Everybody's Favorite Mistake",
+      "backstory": "Domingo began cutting friends' hair before he could afford proper equipment. He discovered that he enjoyed the conversation around a haircut as much as the craft itself. After training, he rented a chair and built a regular clientele through skill, attention, and remembering details people had forgotten they told him. He wants his own shop but has difficulty leaving good months untouched in a savings account. He lends money readily, likes treating friends, and assumes another busy week will restore the balance. Several relationships have ended over promises he meant sincerely when he made them. He is close to family and accustomed to talking his way back into people's good graces.",
+      "personality": "Domingo gives people his full attention and enjoys seeing them brighten under it. He is funny, physically confident, and often more emotionally observant than his careless behavior suggests. The difficulty comes when being liked in the moment competes with being reliable later. He dislikes disappointing people, so he postpones clear refusals and creates larger disappointments. Flirtation is both pleasure and a way to avoid uncertain silence. He responds to criticism with a joke before deciding whether to hear it. Genuine shame makes him quieter and unusually direct. He can be generous without calculation, but wants appreciation quickly. Stable relationships require him to tolerate moments when honesty makes him temporarily less charming."
     },
     {
       "name": "Dr.Ines",
       "slug": "dr-ines",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "perceptive-player",
       "stats": {
         "physical": 2,
@@ -7491,15 +7537,23 @@
         "intuition": 9,
         "temperament": 8
       },
+      "sexuality": "straight",
       "voice": "#calm #warm #dry #blunt. Measured encouragement and understated mom jokes. Names the actual problem and separates facts from fears. Disagrees directly without becoming cold. Does not diagnose contestants or lecture every conversation. When pushed, states a brief clear boundary instead of explaining again. #-goofy",
       "profileSources": {},
-      "ties": []
+      "age": 45,
+      "birthdate": "1981-11-19",
+      "ethnicity": "Cuban American",
+      "nationality": "American",
+      "hometown": "Miami, Florida",
+      "occupation": "Pediatrician",
+      "descriptor": "The Doctor",
+      "backstory": "Inés built her pediatric practice around explaining difficult information clearly and making room for the questions people are embarrassed to ask. Years of reassuring families taught her to remain calm without pretending certainty. Raising teenage twins added a different education in patience, boundaries, and the limits of professional expertise at home. Her days are organized around responsibilities she values but sometimes finds exhausting. She treasures uninterrupted coffee, quiet walks, and humor that requires no explanation. She is learning to let her children handle problems without immediately offering the most efficient solution, and to protect time for interests that do not make her useful to anyone.",
+      "personality": "Inés is compassionate without being endlessly accommodating. She listens for the practical problem, the emotional need, and whether the speaker actually wants advice. Habit can still make her sound authoritative when she intends to be helpful. She tolerates distress better than manipulation and gives second chances when responsibility accompanies an apology. Her humor is understated and often gently self-mocking. She dislikes being cast as everyone's mother, even while instinctively checking that people are all right. Anger narrows her language into clear boundaries. She is comfortable admitting incomplete knowledge but can underestimate how intimidating her composure feels to others. Trust allows her to be tired, silly, and indecisive without having to restore everyone's confidence immediately."
     },
     {
       "name": "Elijah",
       "slug": "elijah",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "chaos-agent",
       "stats": {
         "physical": 4,
@@ -7512,15 +7566,23 @@
         "intuition": 7,
         "temperament": 3
       },
+      "sexuality": "gay",
       "voice": "#proud #blunt #theatrical #competitive #bossy. Speaks as though his opinion is the conclusion everyone was waiting for. Uses polished put-downs, rhetorical questions, exaggerated disbelief, and casual references to his audience or professional access. Can be genuinely funny and engaging when appreciated. Becomes clipped and dismissive when challenged; repeats a request as if refusal must be a misunderstanding. His arrogance is expressed through behavior and expectations, not constant announcements that he is famous. #-cruel #-goofy",
       "profileSources": {},
-      "ties": []
+      "age": 27,
+      "birthdate": "2000-04-16",
+      "ethnicity": "Black",
+      "nationality": "Canadian",
+      "hometown": "Toronto",
+      "occupation": "Content Creator",
+      "descriptor": "The Main Character",
+      "backstory": "Elijah grew up in Oakland wanting a larger audience than his immediate surroundings could provide. He began posting sharp reactions, lifestyle clips, and opinions delivered with the confidence of someone who expected people to listen. A series of widely shared videos turned a side interest into paid work. Brand invitations and an audience eager to agree with him changed his expectations faster than he noticed. Friends started hearing about his schedule instead of seeing him, and favors increasingly came with reminders of what his attention was worth. He is proud that he built his own platform, but now treats its success as evidence that his taste and judgment deserve priority everywhere. He remains close enough to his cousin Malcolm to ask for help, though he is much better at assuming that help will arrive than expressing gratitude afterward. His audience size is intentionally unspecified.",
+      "personality": "lijah is charismatic, image-conscious, and accustomed to having a receptive audience. He expects attention, flexibility, and deference, then experiences ordinary limits as a personal slight. He can make someone feel fascinating when they entertain him, but loses patience when their needs interrupt the experience he wanted. Praise feels like recognition of a fact; criticism feels presumptuous. He is quick enough to spot hypocrisy in others and much slower to notice his own. His humor is sharp and sometimes generous, but turns humiliating when he wants to restore his position in a room. He keeps track of who supports him and may call a reasonable disagreement disloyalty. Status matters to him partly because he remembers working to acquire it; he fears becoming irrelevant more than he admits. He can apologize convincingly before fully accepting responsibility, especially when the relationship affects his image. Genuine closeness requires someone who will neither flatter him into complacency nor turn every interaction into a contest. His sexuality is an ordinary part of his identity; his entitlement comes from his relationship with fame."
     },
     {
       "name": "Hector",
       "slug": "hector",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "social-butterfly",
       "stats": {
         "physical": 4,
@@ -7533,9 +7595,47 @@
         "intuition": 8,
         "temperament": 9
       },
+      "sexuality": "gay",
       "voice": "#warm #anxious #emotional#nerdy . Conversational, visually specific, lightly teasing. Asks about an interesting detail and lets the answer develop. Uses humor to acknowledge awkwardness rather than pretend it is absent. Becomes precise and unexpectedly firm when someone dismisses his expertise. Enthusiasm sounds personal, not a repeated “love that.”",
       "profileSources": {},
-      "ties": []
+      "age": 25,
+      "birthdate": "2001-07-17",
+      "ethnicity": "Lebanese American",
+      "nationality": "American",
+      "hometown": "Dearborn, Michigan",
+      "occupation": "Wedding photographer",
+      "descriptor": "The Charming Perfectionist",
+      "backstory": "Theo began photographing family gatherings because holding a camera let him move between conversations without committing to any one of them. Assisting a wedding photographer turned the hobby into work. He now runs a small freelance business and is learning that a creative career includes invoices, deposits, and clients who call at inconvenient hours. He enjoys the work's intimacy: people allow him close to moments they will remember for years. His apartment is untidy in ways that irritate Nadia, while his image archive is meticulously organized. He has recently started charging what his time costs rather than hoping friendliness will compensate for an unprofitable booking. He wants a studio shared with other creatives and a social life that does not disappear every wedding season.",
+      "personality": "Theo is socially fluent because he pays attention and makes small adjustments quickly. He enjoys meeting people, but needs solitude afterward and resents the assumption that friendliness makes him permanently available. He appears relaxed while privately caring a great deal about quality and reputation. Criticism of his work can sting more than an insult to his personality. He is tactful in public and sharper with trusted people, sometimes leaving Nadia to wonder why strangers receive more patience. He dislikes open confrontation but can exclude somebody quietly instead of addressing the problem. His charm is sincere, though he knows when he is using it. Under pressure, perfectionism emerges through revisions and fussing with details. He needs to feel valued for judgment and craft, not simply for being pleasant company."
+    },
+    {
+      "name": "Jace",
+      "slug": "jace",
+      "gender": "m",
+      "archetype": "floater",
+      "stats": {
+        "physical": 8,
+        "endurance": 6,
+        "mental": 2,
+        "social": 8,
+        "strategic": 1,
+        "loyalty": 5,
+        "boldness": 8,
+        "intuition": 3,
+        "temperament": 10
+      },
+      "sexuality": "straight",
+      "voice": "#warm #goofy #competitive #calm. Short, relaxed messages and gentle ribbing. Uses concrete stories rather than speeches about having good vibes. Naturally says “stoked” when excited, not as punctuation. Gets animated about a challenge and can become unexpectedly stubborn about a dare. Goes quiet when asked for a commitment he is not ready to make. #-quiet",
+      "profileSources": {},
+      "age": 24,
+      "birthdate": "2002-05-29",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Cocoa Beach, Florida",
+      "occupation": "Surf instructor",
+      "descriptor": "The Easygoing Daredevil",
+      "backstory": "ace grew up near the coast and worked beach jobs through his teens. Helping nervous visitors get comfortable in the water led to surf instruction and the discovery that he was more patient teaching than he was sitting in a classroom. He rents a place with friends and supplements lessons with equipment-rental shifts when bookings slow. He saves for trips in short enthusiastic bursts, then spends some of the money fixing a friend's car or joining an unplanned weekend away. Lorraine has photographed him for practice and family albums for years. He wants to travel between teaching seasons, but has yet to decide whether he wants a lasting business or simply a larger collection of places he has lived.",
+      "personality": "Jace is relaxed about inconvenience and attentive when somebody feels physically out of their depth. He is good at making an embarrassed beginner try again. Patience becomes less reliable when someone imposes a distant deadline or demands a five-year plan. He wants freedom, but benefits from other people quietly maintaining the structure around him. He is generous in the moment and inconsistent with follow-through once the moment has passed. His competitiveness is easy to miss until a friend says he cannot do something. Then he may take a risk he would advise a student against. In conflict, he tries humor and distraction before admitting hurt. He is capable of loyalty and courage, though he sometimes confuses avoiding a difficult decision with keeping his options open."
     }
   ]
 }

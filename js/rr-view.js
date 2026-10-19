@@ -43,8 +43,7 @@ export function raceVpScreens(row) {
   const accent = SHOWS[RACE_FORMAT]?.accent || '#f2b705';
   const src = `rr.html?sim=1&ep=${encodeURIComponent(row?.num || 1)}`;
   const watch = `<div class="rr-vp-watch" style="display:flex;flex-direction:column;gap:8px;height:100%">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-      <div style="font-weight:800;color:${accent};letter-spacing:.5px">LEG ${esc(row?.num)} · ${esc((r.placeName || '').toUpperCase())}</div>
+    <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
       <a href="${esc(src)}" target="_blank" rel="opener" style="color:${accent};font-size:12px">Open in its own window ↗</a>
     </div>
     <iframe src="${esc(src)}" title="The Ridonculous Race, leg ${esc(row?.num)}" style="width:100%;height:calc(100vh - 150px);min-height:420px;border:0;border-radius:12px;background:#0b1020" allow="fullscreen"></iframe>

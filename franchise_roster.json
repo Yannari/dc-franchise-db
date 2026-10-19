@@ -7473,6 +7473,27 @@
       "voice": "#flirty #goofy #competitive#proud. Lowercase text, playful nicknames, occasional 😏. Seizes openings for teasing. Uses callbacks to create intimacy. Deflects uncomfortable questions with humor before answering. When serious, uses the person's actual name and writes a complete, unembellished sentence.",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Dr.Ines",
+      "slug": "dr-ines",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 2,
+        "endurance": 2,
+        "mental": 10,
+        "social": 4,
+        "strategic": 6,
+        "loyalty": 5,
+        "boldness": 7,
+        "intuition": 9,
+        "temperament": 8
+      },
+      "voice": "#calm #warm #dry #blunt. Measured encouragement and understated mom jokes. Names the actual problem and separates facts from fears. Disagrees directly without becoming cold. Does not diagnose contestants or lecture every conversation. When pushed, states a brief clear boundary instead of explaining again. #-goofy",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

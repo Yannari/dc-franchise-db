@@ -52,7 +52,9 @@ function clipOf(row, screen, st, cut) {
 export function clipsFrom(row, screens, { max = 3, cut = true } = {}) {
   const cands = [];
   screens.forEach((sc, si) => {
-    let best = null;
+    // each speaker's best line on this screen (a screen's single best line left a teaser with three clips of one
+    // person when one person had the best line everywhere: read 2026-10-19)
+    const best = {};
     sc.steps.forEach((st, k) => {
       if (!st.who || st.host || OUTCOME.test(st.key || '')) return;
       if (!['say', 'react', 'send', 'post', 'video'].includes(st.part)) return;
@@ -61,15 +63,16 @@ export function clipsFrom(row, screens, { max = 3, cut = true } = {}) {
       // A cut that leaves two words ("Oh my God…") teases nothing.
       if (cut && cutLine(st.text).split(/\s+/).length < 4) return;
       const score = (HOT[sc.kind] || 0) + (SPICY.test(st.key || '') ? 2 : 0) + (st.part === 'say' || st.part === 'react' ? 1 : 0) + (st.text.includes('?') ? 0.5 : 0);
-      if (!best || score > best.score) best = { sc, st, score, at: si * 1000 + k };
+      if (!best[st.who] || score > best[st.who].score) best[st.who] = { sc, st, score, at: si * 1000 + k, si };
     });
-    if (best && best.score >= 1.5) cands.push(best);
+    for (const c of Object.values(best)) if (c.score >= 1.5) cands.push(c);
   });
-  // The best, one per speaker where the episode allows it.
+  // The best, one per speaker and one per screen where the episode allows it; then one per speaker; then the rest.
   const ranked = cands.sort((a, b) => b.score - a.score || a.at - b.at);
-  const picked = [], who = new Set();
-  for (const c of ranked) if (picked.length < max && !who.has(c.st.who)) { picked.push(c); who.add(c.st.who); }
-  for (const c of ranked) if (picked.length < max && !picked.includes(c)) picked.push(c);
+  const picked = [], who = new Set(), where = new Set();
+  for (const c of ranked) if (picked.length < max && !who.has(c.st.who) && !where.has(c.si)) { picked.push(c); who.add(c.st.who); where.add(c.si); }
+  for (const c of ranked) if (picked.length < max && !who.has(c.st.who) && !picked.includes(c)) { picked.push(c); who.add(c.st.who); }
+  for (const c of ranked) if (picked.length < max && !picked.includes(c) && !where.has(c.si)) { picked.push(c); where.add(c.si); }
   return picked.sort((a, b) => a.at - b.at).map(c => clipOf(row, c.sc, c.st, cut));
 }
 

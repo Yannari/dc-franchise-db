@@ -91,7 +91,8 @@ export function publicSnapshot(state) {
     const ppl = peopleOf(state, h);
     const ap = ppl.reduce((s, n) => s + readApproval(L, n), 0) / Math.max(1, ppl.length);
     const fame = ppl.reduce((s, n) => s + (L.fame?.[n] || 0), 0);
-    out[h] = { approval: Math.round(ap * 10) / 10, fame: Math.round(fame * 10) / 10, label: labelFor(ap) };
+    // (+ 0: a rounded -0.04 is -0, which a saved season reads back as 0, and the snapshot no longer matches itself)
+    out[h] = { approval: Math.round(ap * 10) / 10 + 0, fame: Math.round(fame * 10) / 10 + 0, label: labelFor(ap) };
   }
   return out;
 }

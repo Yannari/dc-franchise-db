@@ -36,6 +36,8 @@ export const RR_FACT_KEYS = [
   'stretchKind', 'taskType', 'mode', 'fails', 'switched', 'quit', 'place',
   // the challenge itself (its stretch id: 'stew', 'spices'): a place's own lines for its own tasks
   'taskId',
+  // the side a team took at an Either/Or ('stairs', 'skydeck', 'lava', 'falls'): a place's lines for each side
+  'side',
   // where the scene is: 'task', 'airport' (airports and planes), 'mat', 'road' (anywhere in between)
   'at',
   // the leg's picking task (the spices): all five right, three or four, two or fewer
@@ -111,6 +113,7 @@ export function factsFor(scene, roles, state) {
     broke: !!s.broke, snapped: !!s.snapped,
     tod: todWord(s.tod),
     stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null,
+    side: s.side ?? null,
     at: atOf(s, d),
     matPlace: d.matPlace ?? null, why: d.why ?? null, rule: d.rule ?? null, byVote: !!d.byVote,
     aDid: !!d.aDid, exitHow: d.exitHow ?? null, mishap: scene.kind === 'travel-mishap' ? d.kind ?? null : null,

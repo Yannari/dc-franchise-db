@@ -354,6 +354,33 @@ export const VISIT = {
       { by: 'a', say: "You don't even have a phone." },
       { by: 'b', say: "I will someday!" },
     ], beat: 'The door shuts on both of them laughing.' },
+    // (six more: a visit airs most nights, and the same goodbye two nights running was read twice, 2026-10-19)
+    { id: 'visit.bye.07', turns: [
+      { by: 'a', say: "I don't want to go." },
+      { by: 'b', say: "Then don't. Stay. Hide in the bathroom." },
+      { by: 'a', say: "They'd find me. Bye, {b}." },
+    ] },
+    { id: 'visit.bye.08', turns: [
+      { by: 'b', say: "Will you be okay?" },
+      { by: 'a', say: "I'll be better than okay. Worry about yourself in here." },
+    ], beat: '{b} holds the door open a second longer than {b.sub} needs to.' },
+    { id: 'visit.bye.09', turns: [
+      { by: 'a', say: "One more hug. Then I'm really going." },
+      { by: 'b', say: "That's what you said last time." },
+    ], beat: 'It is not the last hug.' },
+    { id: 'visit.bye.10', turns: [
+      { by: 'a', say: "Remember what I told you. Trust your gut." },
+      { by: 'b', say: "I'll remember. Thank you for coming here." },
+    ] },
+    { id: 'visit.bye.11', turns: [
+      { by: 'b', say: "This was the best part of my whole week." },
+      { by: 'a', say: "Mine too. Okay. Go. Before I start crying." },
+    ], beat: '{a} is already crying on the way out.' },
+    { id: 'visit.bye.12', turns: [
+      { by: 'a', say: "I'll be watching. Every single night." },
+      { by: 'b', say: "No pressure, then." },
+      { by: 'a', say: "All the pressure. Bye!" },
+    ] },
   ],
   'report': [
     { id: 'report.01', turns: [

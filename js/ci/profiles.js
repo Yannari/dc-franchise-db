@@ -152,6 +152,11 @@ function shuffled(list, rng) {
 export function drawPersonas(truths, pool, rng, pickBy = 'stats') {
   const median = medianAge(truths);
   const left = [...pool];
+  // A persona named like somebody already in the room is never handed out unasked: two "Jake"s in one Circle reads
+  // as one person (a season read, 2026-10-19: "ANONYMOUS asks Jake", asked by the other Jake). A pin still wins.
+  const first = x => String(x || '').trim().split(/\s+/)[0].toLowerCase();
+  const inRoom = new Set(truths.map(t => first(t.name)));
+  const clash = p => inRoom.has(first(p.handle || p.name));
   const assigned = {};
   const take = (t, p) => {
     assigned[t.name] = { personaId: p.id, reason: reasonFor(t, p) };
@@ -162,7 +167,7 @@ export function drawPersonas(truths, pool, rng, pickBy = 'stats') {
   const best = t => {
     const mine = t.persona && left.find(x => x.id === t.persona);
     if (mine && reasonFor(t, mine)) return mine;
-    return left.map(p => [p, fitScore(t, p, median)]).filter(([, s]) => s > -1)
+    return left.filter(p => !clash(p)).map(p => [p, fitScore(t, p, median)]).filter(([, s]) => s > -1)
       .sort((a, b) => b[1] - a[1])[0]?.[0];
   };
 
@@ -186,7 +191,7 @@ export function drawPersonas(truths, pool, rng, pickBy = 'stats') {
   if (pickBy === 'random') {
     for (const t of open.filter(t => t.catfish === 'always')) { const p = best(t); if (p) take(t, p); }
     for (const p of shuffled(left, rng)) {
-      if (rng() > RANDOM_TAKE) continue;
+      if (rng() > RANDOM_TAKE || clash(p)) continue;
       const takers = open.filter(t => !assigned[t.name] && reasonFor(t, p));
       if (takers.length) take(takers[Math.floor(rng() * takers.length)], p);
     }

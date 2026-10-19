@@ -7822,7 +7822,12 @@
       },
       "voice": "#flirty #chaotic #proud. Measured messages and targeted questions. Reflects another person's wording, then narrows the conversation toward useful information. Overuses “love that” as Theo. Tries to sound socially effortless; stress produces analysis and three questions where one would suffice. Do not reduce Theo's conversational identity to his sexuality.",
       "profileSources": {},
-      "ties": []
+      "ties": [
+        {
+          "name": "Hector",
+          "kin": "siblings"
+        }
+      ]
     }
   ]
 }

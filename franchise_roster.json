@@ -7834,6 +7834,27 @@
           "kin": "siblings"
         }
       ]
+    },
+    {
+      "name": "Ruth",
+      "slug": "ruth",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "villain",
+      "stats": {
+        "physical": 2,
+        "endurance": 2,
+        "mental": 8,
+        "social": 6,
+        "strategic": 8,
+        "loyalty": 2,
+        "boldness": 9,
+        "intuition": 9,
+        "temperament": 4
+      },
+      "voice": "#dry #blunt #proud #calm #schemer. Proper punctuation, no emojis. Short, exact statements and questions that force someone to defend an uncomfortable detail. Lets another person overexplain, then selects the sentence that damages them most. Can sound warmly reassuring in private and coolly authoritative in public. Never announces that she is being ruthless. Her sharpest remarks arrive at ordinary volume, followed by silence. Praise is specific and sometimes calculated to secure agreement. #-warm",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

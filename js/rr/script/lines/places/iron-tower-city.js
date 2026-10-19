@@ -302,7 +302,7 @@ const catacombs = {
     ] },
     { id: 'itc.ct-s2', when: CT, turns: [
       { by: 'a', say: "Okay. Noses on. What do you smell?" },
-      { by: 'b', say: "Damp. Old. And you. You haven't showered since the desert." },
+      { by: 'b', say: "Damp. Old. And you. You haven't showered since the plane." },
       { by: 'a', say: "Smell past me." },
     ] },
     { id: 'itc.ct-s3', when: CT, turns: [

@@ -7604,6 +7604,12 @@
       "sexuality": "gay",
       "voice": "#warm #anxious #emotional#nerdy . Conversational, visually specific, lightly teasing. Asks about an interesting detail and lets the answer develop. Uses humor to acknowledge awkwardness rather than pretend it is absent. Becomes precise and unexpectedly firm when someone dismisses his expertise. Enthusiasm sounds personal, not a repeated “love that.”",
       "profileSources": {},
+      "ties": [
+        {
+          "name": "Nadiya",
+          "kin": "siblings"
+        }
+      ],
       "age": 25,
       "birthdate": "2001-07-17",
       "ethnicity": "Lebanese American",
@@ -7612,13 +7618,7 @@
       "occupation": "Wedding photographer",
       "descriptor": "The Charming Perfectionist",
       "backstory": "Theo began photographing family gatherings because holding a camera let him move between conversations without committing to any one of them. Assisting a wedding photographer turned the hobby into work. He now runs a small freelance business and is learning that a creative career includes invoices, deposits, and clients who call at inconvenient hours. He enjoys the work's intimacy: people allow him close to moments they will remember for years. His apartment is untidy in ways that irritate Nadia, while his image archive is meticulously organized. He has recently started charging what his time costs rather than hoping friendliness will compensate for an unprofitable booking. He wants a studio shared with other creatives and a social life that does not disappear every wedding season.",
-      "personality": "Theo is socially fluent because he pays attention and makes small adjustments quickly. He enjoys meeting people, but needs solitude afterward and resents the assumption that friendliness makes him permanently available. He appears relaxed while privately caring a great deal about quality and reputation. Criticism of his work can sting more than an insult to his personality. He is tactful in public and sharper with trusted people, sometimes leaving Nadia to wonder why strangers receive more patience. He dislikes open confrontation but can exclude somebody quietly instead of addressing the problem. His charm is sincere, though he knows when he is using it. Under pressure, perfectionism emerges through revisions and fussing with details. He needs to feel valued for judgment and craft, not simply for being pleasant company.",
-      "ties": [
-        {
-          "name": "Nadiya",
-          "kin": "siblings"
-        }
-      ]
+      "personality": "Theo is socially fluent because he pays attention and makes small adjustments quickly. He enjoys meeting people, but needs solitude afterward and resents the assumption that friendliness makes him permanently available. He appears relaxed while privately caring a great deal about quality and reputation. Criticism of his work can sting more than an insult to his personality. He is tactful in public and sharper with trusted people, sometimes leaving Nadia to wonder why strangers receive more patience. He dislikes open confrontation but can exclude somebody quietly instead of addressing the problem. His charm is sincere, though he knows when he is using it. Under pressure, perfectionism emerges through revisions and fussing with details. He needs to feel valued for judgment and craft, not simply for being pleasant company."
     },
     {
       "name": "Jace",
@@ -7639,6 +7639,13 @@
       "sexuality": "straight",
       "voice": "#warm #goofy #competitive #calm. Short, relaxed messages and gentle ribbing. Uses concrete stories rather than speeches about having good vibes. Naturally says “stoked” when excited, not as punctuation. Gets animated about a challenge and can become unexpectedly stubborn about a dare. Goes quiet when asked for a commitment he is not ready to make. #-quiet",
       "profileSources": {},
+      "ties": [
+        {
+          "name": "Lorraine",
+          "kin": "aunt-uncle",
+          "role": "younger"
+        }
+      ],
       "age": 24,
       "birthdate": "2002-05-29",
       "ethnicity": "White",
@@ -7647,14 +7654,7 @@
       "occupation": "Surf instructor",
       "descriptor": "The Easygoing Daredevil",
       "backstory": "ace grew up near the coast and worked beach jobs through his teens. Helping nervous visitors get comfortable in the water led to surf instruction and the discovery that he was more patient teaching than he was sitting in a classroom. He rents a place with friends and supplements lessons with equipment-rental shifts when bookings slow. He saves for trips in short enthusiastic bursts, then spends some of the money fixing a friend's car or joining an unplanned weekend away. Lorraine has photographed him for practice and family albums for years. He wants to travel between teaching seasons, but has yet to decide whether he wants a lasting business or simply a larger collection of places he has lived.",
-      "personality": "Jace is relaxed about inconvenience and attentive when somebody feels physically out of their depth. He is good at making an embarrassed beginner try again. Patience becomes less reliable when someone imposes a distant deadline or demands a five-year plan. He wants freedom, but benefits from other people quietly maintaining the structure around him. He is generous in the moment and inconsistent with follow-through once the moment has passed. His competitiveness is easy to miss until a friend says he cannot do something. Then he may take a risk he would advise a student against. In conflict, he tries humor and distraction before admitting hurt. He is capable of loyalty and courage, though he sometimes confuses avoiding a difficult decision with keeping his options open.",
-      "ties": [
-        {
-          "name": "Lorraine",
-          "kin": "aunt-uncle",
-          "role": "younger"
-        }
-      ]
+      "personality": "Jace is relaxed about inconvenience and attentive when somebody feels physically out of their depth. He is good at making an embarrassed beginner try again. Patience becomes less reliable when someone imposes a distant deadline or demands a five-year plan. He wants freedom, but benefits from other people quietly maintaining the structure around him. He is generous in the moment and inconsistent with follow-through once the moment has passed. His competitiveness is easy to miss until a friend says he cannot do something. Then he may take a risk he would advise a student against. In conflict, he tries humor and distraction before admitting hurt. He is capable of loyalty and courage, though he sometimes confuses avoiding a difficult decision with keeping his options open."
     },
     {
       "name": "Kad",
@@ -7683,8 +7683,7 @@
       "occupation": "Student Athlete",
       "descriptor": "The Quiet Competitor",
       "backstory": "Kad grew up in Toronto playing school basketball and competing with cousins over everything from sprint times to who could finish a puzzle first. A college sports scholarship never materialized, forcing him to build an identity beyond being the athlete in the room. Customer-facing work led to commercial leasing, where preparation and confidence could turn a difficult appointment into a commission. He trains before work and still enters local amateur competitions when his schedule permits. Elijah is one of the relatives who remembers him before his carefully assembled professional image. Malcolm respects his cousin's intelligence, though both have a habit of turning a casual disagreement into a test neither wants to lose. His name, career, and history are new proposed additions.",
-      "personality": "Kad is a reserved competitor who prefers to demonstrate ability rather than announce it. He watches, learns the standard, and puts his energy into meeting it. His manners are deliberate: he lets people finish, thanks them for help, and can disagree without making the exchange personal. That composure takes effort. Losing, being patronized, and seeing someone take credit for another person's work can provoke a quick internal flare of anger. His jaw sets, his replies shorten, and he may need a moment before speaking, but he usually finds a civil way to answer. He is not endlessly unbothered; he simply considers losing control in public another kind of defeat. Frustration can make him overtrain, compete too aggressively, or keep replaying a slight long after the conversation ended. He offers practical support quietly and dislikes having his restraint mistaken for weakness or indifference. Around trusted people, he relaxes into small jokes and unforced affection. He respects opponents who win fairly and accepts a clear correction, although he may need time to stop feeling it. His central tension is learning to express anger honestly before politeness turns it into a private grudge.",
-      "ties": []
+      "personality": "Kad is a reserved competitor who prefers to demonstrate ability rather than announce it. He watches, learns the standard, and puts his energy into meeting it. His manners are deliberate: he lets people finish, thanks them for help, and can disagree without making the exchange personal. That composure takes effort. Losing, being patronized, and seeing someone take credit for another person's work can provoke a quick internal flare of anger. His jaw sets, his replies shorten, and he may need a moment before speaking, but he usually finds a civil way to answer. He is not endlessly unbothered; he simply considers losing control in public another kind of defeat. Frustration can make him overtrain, compete too aggressively, or keep replaying a slight long after the conversation ended. He offers practical support quietly and dislikes having his restraint mistaken for weakness or indifference. Around trusted people, he relaxes into small jokes and unforced affection. He respects opponents who win fairly and accepts a clear correction, although he may need time to stop feeling it. His central tension is learning to express anger honestly before politeness turns it into a private grudge."
     },
     {
       "name": "Lila",
@@ -7821,7 +7820,6 @@
       "name": "Nadiya",
       "slug": "nadiya",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "showmancer",
       "stats": {
         "physical": 5,
@@ -7834,6 +7832,7 @@
         "intuition": 7,
         "temperament": 4
       },
+      "sexuality": "straight",
       "voice": "#flirty #chaotic #proud. Measured messages and targeted questions. Reflects another person's wording, then narrows the conversation toward useful information. Overuses “love that” as Theo. Tries to sound socially effortless; stress produces analysis and three questions where one would suffice. Do not reduce Theo's conversational identity to his sexuality.",
       "profileSources": {},
       "ties": [
@@ -7841,13 +7840,21 @@
           "name": "Hector",
           "kin": "siblings"
         }
-      ]
+      ],
+      "age": 27,
+      "birthdate": "1999-10-09",
+      "ethnicity": "Lebanese American",
+      "nationality": "American",
+      "hometown": "Dearborn, Michigan",
+      "occupation": "Model",
+      "descriptor": "The Conversation Architect",
+      "backstory": "Nadia grew up in Dearborn in a family where plans were discussed collectively and revised repeatedly. Pharmacy work sharpened her ability to hear the worry beneath a routine question. She enjoys tracing an error to its source and dislikes leaving a problem half understood. At home, she builds detailed travel plans, compares purchases, and maintains lists that nobody else follows quite correctly. Her brother Theo is both a confidant and a source of irritation because he handles uncertainty with an ease she cannot manufacture. She has considered further study in healthcare, but keeps researching routes instead of choosing one. Being prepared has gradually become her preferred way of feeling safe.",
+      "personality": "Nadia is curious about people, especially the gap between what they say and what they do. She offers attention that can feel unusually flattering until her questions become too exact. Competence reassures her, and she gets controlling when information is incomplete. She struggles to let another person's messy explanation remain messy. In friendships she is useful, observant, and generous with research, but may present advice as if the decision has already been made. She can recognize her own anxiety intellectually without stopping its behavior. Embarrassment makes her brisk and analytical; trust makes her more playful and willing to admit a bad guess. Her pride lies in seeing connections others miss, which makes abandoning an elegant but incorrect theory particularly difficult."
     },
     {
       "name": "Ruth",
       "slug": "ruth",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "villain",
       "stats": {
         "physical": 2,
@@ -7860,9 +7867,18 @@
         "intuition": 9,
         "temperament": 4
       },
+      "sexuality": "straight",
       "voice": "#dry #blunt #proud #calm #schemer. Proper punctuation, no emojis. Short, exact statements and questions that force someone to defend an uncomfortable detail. Lets another person overexplain, then selects the sentence that damages them most. Can sound warmly reassuring in private and coolly authoritative in public. Never announces that she is being ruthless. Her sharpest remarks arrive at ordinary volume, followed by silence. Praise is specific and sometimes calculated to secure agreement. #-warm",
       "profileSources": {},
-      "ties": []
+      "age": 65,
+      "birthdate": "1961-05-18",
+      "ethnicity": "Black",
+      "nationality": "American",
+      "hometown": "Birmingham, Alabama",
+      "occupation": "Retired Postal Worker",
+      "descriptor": "The Final Word",
+      "backstory": "Ruth spent more than three decades in the postal service, where she developed endurance, a precise memory for excuses, and little patience for people who confuse authority with competence. She and her late husband built a steady life around work, family visits, and church commitments. Widowhood changed her daily routines more than her appetite for independence. She resents being treated as fragile and has become selective about offers of help that arrive with instructions attached. Choir remains a source of friendship and pleasure. Retirement has given her time to reconsider habits she once accepted as duties, including the assumption that every free afternoon should be available to somebody else.",
+      "personality": "Ruth is perceptive, controlled, and thoroughly convinced that her judgment deserves more weight than most people's. She notices weakness quickly and decides whether to comfort it, recruit it, or expose it. Her warmth is real but selective; being welcomed into her good graces can make someone feel protected enough to stop questioning her. She likes knowing what people confide when they think they are speaking to the sensible person in the room. In conflict, she prefers to establish the terms of the argument before anyone notices they have accepted them. She rarely needs a direct lie when a carefully chosen truth, omitted detail, or pointed question can produce the same result. She can protect an ally sincerely and later sacrifice them without feeling obliged to apologize for changing priorities. Pride makes her harsh toward people who publicly correct her, and she can mistake personal irritation for moral clarity. Her humor is dry, sometimes affectionate, sometimes deliberately humiliating. Beneath her composure is a competitive appetite she enjoys allowing others to underestimate. She wants influence, respect, and the final say; calling a decision necessary helps her avoid admitting that she also enjoyed making it."
     }
   ]
 }

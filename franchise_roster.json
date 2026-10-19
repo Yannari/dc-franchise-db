@@ -7678,6 +7678,33 @@
       "voice": "#warm #emotional #earnest. Hearts, exclamation marks, and spontaneous “omg.” Responds first to emotional meaning. Remembers small personal details. When suspicious, asks whether someone is upset with her before considering manipulation. Hurt messages lose their emojis and become plain questions. #-schemer",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Lorraine",
+      "slug": "lorraine",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 8,
+        "social": 6,
+        "strategic": 6,
+        "loyalty": 6,
+        "boldness": 8,
+        "intuition": 7,
+        "temperament": 5
+      },
+      "voice": "#blunt#warm #goofy #anxious. Naturally conversational and wry. As Jace, inserts “bro” and “stoked” into carefully punctuated prose. Checks whether people have eaten and advises them to rest. Uncertainty about slang makes her explain more, exposing more of Lorraine. #-dry",
+      "profileSources": {},
+      "ties": [
+        {
+          "name": "Jace",
+          "kin": "aunt-uncle",
+          "role": "elder"
+        }
+      ]
     }
   ]
 }

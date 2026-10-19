@@ -168,8 +168,11 @@ describe('rr place and challenge lines', () => {
     const { cast, teams } = raceCast(8, 2);
     setPlayers(cast);
     const st = playRaceSeason({ teams, seed: 2 }).state;
-    const s = st.scenes.find(x => x.data?.stretch === 'stew');
+    // any challenge the season ran (the library has grown: which places a season visits depends on its route)
+    const { PLACES } = await import('../js/rr/places.js');
+    const tasks = new Set(Object.values(PLACES).flatMap(p => p.stretches.filter(x => ['allin', 'botch', 'either', 'superteam'].includes(x.kind)).map(x => x.id)));
+    const s = st.scenes.find(x => tasks.has(x.data?.stretch));
     expect(s).toBeTruthy();
-    expect(factsFor(s, rolesOf(s, st), st).taskId).toBe('stew');
+    expect(factsFor(s, rolesOf(s, st), st).taskId).toBe(s.data.stretch);
   });
 });

@@ -102,12 +102,19 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .vn.long .ln{font-size:max(12px,1.38cqw)}
 .vn.beat .ln{font-style:italic;color:#cfe0ff;font-size:max(12.5px,1.55cqw)}
 /* a stage direction (no speaker) is a caption card in the middle of the picture, not the speaker's bar */
-.beatcard{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);z-index:48;max-width:62cqw;min-width:30cqw;padding:1.2cqw 2.2cqw;text-align:center;
-  background:linear-gradient(180deg,rgba(14,19,38,.88),rgba(8,11,24,.92));border:2px solid rgba(143,180,255,.45);border-radius:1.2cqw;box-shadow:0 1cqw 3cqw rgba(0,0,0,.5);
-  font:italic 500 max(13px,1.6cqw)/1.4 Rubik;color:#e3ecff;display:none;pointer-events:none}
+.beatcard{position:absolute;left:50%;top:37%;transform:translate(-50%,-50%) rotate(-1.4deg);z-index:48;max-width:56cqw;min-width:26cqw;
+  padding:1.7cqw 2.6cqw 1.5cqw;text-align:center;color:#1b2033;display:none;pointer-events:none;
+  background:radial-gradient(circle at 1px 1px,rgba(15,20,36,.07) 1px,transparent 1.2px) 0 0/.55cqw .55cqw,linear-gradient(175deg,#fffdf4,#fff1cf);
+  border:max(2px,.32cqw) solid #0f1424;border-radius:.5cqw;box-shadow:.65cqw .75cqw 0 #0f1424,0 1.6cqw 3.2cqw rgba(0,0,0,.4);
+  font:600 max(13px,1.6cqw)/1.42 Rubik;letter-spacing:.005em}
+/* gold tape holding the card to the picture */
+.beatcard::before,.beatcard::after{content:'';position:absolute;top:-1cqw;width:6cqw;height:1.9cqw;background:rgba(247,201,72,.82);
+  box-shadow:0 .2cqw .4cqw rgba(0,0,0,.25);border-left:1px dashed rgba(120,80,0,.35);border-right:1px dashed rgba(120,80,0,.35)}
+.beatcard::before{left:-1.6cqw;transform:rotate(-24deg)}
+.beatcard::after{right:-1.6cqw;transform:rotate(22deg)}
 .beatcard.on{display:block}
-.beatcard.fresh{animation:beatIn .35s ease-out}
-@keyframes beatIn{from{opacity:0;transform:translate(-50%,-40%)}to{opacity:1;transform:translate(-50%,-50%)}}
+.beatcard.fresh{animation:beatIn .42s cubic-bezier(.2,1.4,.4,1)}
+@keyframes beatIn{0%{opacity:0;transform:translate(-50%,-90%) rotate(-7deg) scale(.92)}60%{opacity:1;transform:translate(-50%,-46%) rotate(.6deg) scale(1.01)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-1.4deg) scale(1)}}
 .vn.beat::before{background:#8fb4ff}
 .vn.pause .ln{font-family:Bungee;font-size:3cqw;letter-spacing:.3em;color:var(--gold)}
 .vn .more{position:absolute;right:1.4cqw;bottom:.7cqw;font-size:1.1cqw;color:var(--gold);animation:blink 1s infinite}

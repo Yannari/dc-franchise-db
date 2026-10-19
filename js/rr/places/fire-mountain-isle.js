@@ -1,4 +1,6 @@
-// Fire-Mountain Isle (LEGS.txt 48-FIRE-MOUNTAIN-ISLE; the leg mockup, mockup/mockup-rr-leg.html).
+// Fire-Mountain Isle (LEGS.txt 48-FIRE-MOUNTAIN-ISLE; the leg mockup, mockup/mockup-rr-leg.html). From World Tour's
+// island finale (the wiki's "Hawaiian Punch"): a dummy of wood and pineapples made to look like someone, hauled up the
+// volcano past a river of lava and thrown into the crater; adapted here into a pair's statue of one of them.
 export default {
   id: 'fire-mountain-isle', name: 'Fire-Mountain Isle', recap: 'hopping over lava, diving in the lagoon and carving logs into statues', region: 'ocean', map: { x: 3, y: 45 },
   arrive: 'airport', local: ['taxi', 'foot', 'boat'],
@@ -13,7 +15,7 @@ export default {
     { id: 'lagoon', called: 'the lagoon', kind: 'botch', types: ['water'], base: 18, pass: 0.55, loopCost: 8, teaser: "Who's ready to get wet?", plate: 'lagoon, sea mine', label: 'Botch or Watch: the lagoon',
       desc: 'One partner swims across the lagoon to the next Don Box while the other watches from the shore and may only shout. An old sea mine floats in the middle and touching it means swimming back to the beach and starting over. The swimmer is through when they slap the Don Box on the far rocks and pull the tip.' },
     { id: 'statue', called: 'the log pile', kind: 'allin', types: ['hands', 'strength'], base: 30, pass: 0.5, loopCost: 10, plate: 'log pile', label: 'All-In: the offering',
-      desc: 'Both partners build a statue out of the logs and pineapples piled on the beach, then carry it up the volcano together and throw it into the crater as an offering. A statue that falls apart on the way up has to be rebuilt at the bottom, and the volcano only accepts one that arrives in one piece. The tip is waiting at the rim once the statue goes in.' },
+      desc: 'Both partners build a statue out of the logs and pineapples piled on the beach, and it has to look like one of them: a pineapple head, log arms, a face carved with a shell. Then they carry it up the volcano path together, past a stream of lava, and throw it into the crater as an offering. A statue that falls apart on the way up has to be rebuilt at the bottom, and the volcano only accepts one that arrives in one piece. The tip is waiting at the rim once the statue goes in.' },
     { id: 'climb', kind: 'travel', mode: 'foot', base: 30, cost: 0, plate: 'volcano path', label: 'The climb' },
     { id: 'mat', kind: 'mat', plate: 'volcano rim', label: 'The Chill Zone' },
   ],

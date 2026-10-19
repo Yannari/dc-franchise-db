@@ -6,7 +6,7 @@
 // been relabelled to HOH and Veto. Every Block Buster in a season scored zero.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { computeScore, scoreTier, placementPct, RU_ADV, RU_ALLY, RU_SHOW }
+import { computeScore, scoreTier, placementPct, RU_ADV, RU_ALLY, RU_SHOW, RU_WINNER_FLOOR }
   from '../js/rankings-update.js';
 import { SHOWS } from '../js/shows.js';
 import { resolve } from 'node:path';
@@ -348,5 +348,34 @@ describe('the board never prints a number its own badge contradicts', () => {
     [...src.matchAll(/s >= (\d+(?:\.\d+)?)/g)].forEach(m => {
       expect(Number(m[1]) % 1, `gate ${m[1]} is not a whole number`).toBe(0);
     });
+  });
+});
+
+describe('a champion keeps a floor, not a tier', () => {
+  // A winner who came back and was booted early twice. The old hand-held rule
+  // kept every winner at S; decided 2026-10-19 they can fall, but never below A.
+  const flop = {
+    allPcts: [S.placementPct(1, CAST), S.placementPct(17, CAST), S.placementPct(16, CAST)],
+    wins: 1, nonWinFinals: 0, numSeasons: 3, format: 'total-drama',
+    immWins: 0, rewWins: 0, comp3Wins: 0, advFound: 0, advPlayed: 0, advWasted: 0, advHeld: 0,
+    strategicScore: 0, alliances: 0, socialCol: 12, fanFav: false, quit: false, override: 0,
+    castSize: CAST, isFinalist: false,
+  };
+
+  it('a winner who flopped since can fall out of S, and lands no lower than A', () => {
+    const s = S.computeScore(flop);
+    expect(s).toBe(RU_WINNER_FLOOR);
+    expect(S.scoreTier(s)).toBe('A');
+  });
+
+  it('the floor is for champions only: the same career without the win scores under it', () => {
+    expect(S.computeScore({ ...flop, wins: 0 })).toBeLessThan(RU_WINNER_FLOOR);
+  });
+
+  it('a winner the formula already puts above the floor is not touched', () => {
+    // a bare one-season winner (no comps, no powers) scores in the 70s on the formula alone
+    const s = S.computeScore(blank(S, 1));
+    expect(s).toBeGreaterThan(RU_WINNER_FLOOR);
+    expect(S.computeScore(blank(S, 1, { immWins: 2 }))).toBeGreaterThan(s);
   });
 });

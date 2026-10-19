@@ -440,6 +440,18 @@ export const RU_ADV = { found: 0.8, played: 2.4, wasted: 2.4, held: 2.4 };
 // played a power. It is a tiebreaker now, not a term.
 export const RU_ALLY = { weight: 0.25, cap: 4 };
 
+// ── A CHAMPION KEEPS A FLOOR, NOT A TIER ──
+//
+// The rule used to be "a winner never drops below S", held by hand: nothing in
+// this file enforced it, so every update scored a returning champion's flop and
+// somebody put them back at 80 (Miriam sat at exactly 80.0 after winning S11
+// and going 19th in S13). S reads "Championship Caliber — top-tier threats",
+// and a winner who has since been booted early is not that on the record; a
+// champion who could not fall also had nothing at stake in coming back.
+// Decided 2026-10-19: a winner can never fall below A (71), the bottom of
+// "Elite Threats". The title is permanent; S has to keep being earned.
+export const RU_WINNER_FLOOR = 71;
+
 export const RU_SHOW = {
   'total-drama': {
     comp1: { label: 'Imm',  weight: 1.6, title: '+1.6 per individual immunity win' },
@@ -1158,7 +1170,8 @@ export function computeScore(p) {
   const override = Math.max(-5, Math.min(5, p.override || 0));
 
   const raw = base + winBonus + finBonus + multiBonus + physBonus + stratBonus + socialBonus + quitAdj + override;
-  return Math.round(Math.min(Math.max(raw, 0), 100) * 10) / 10;
+  const floored = p.wins > 0 ? Math.max(raw, RU_WINNER_FLOOR) : raw;
+  return Math.round(Math.min(Math.max(floored, 0), 100) * 10) / 10;
 }
 
 export function scoreTier(s) {
@@ -1381,6 +1394,8 @@ function buildPreview() {
         ? existing.score
         : (hist && hist.length ? hist[hist.length - 1] : 0);
     }
+    // the receipt says when the champion's floor, not the game, set the number
+    if (totalWins > 0 && newScore === RU_WINNER_FLOOR) parts.push('ChampionFloor:' + RU_WINNER_FLOOR);
     const oldTier  = existing?existing.tier:null;
     const newTier  = scoreTier(newScore);
 

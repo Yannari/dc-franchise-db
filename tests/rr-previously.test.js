@@ -28,7 +28,7 @@ describe('rr previously', () => {
       expect(p.scenes.length).toBeGreaterThan(0);
       expect(p.scenes.length).toBeLessThanOrEqual(4);
       for (const id of p.scenes) expect(airedLast.has(id), `leg ${eps[i].n} recaps #${id}`).toBe(true);
-      expect(p.lines.every(l => l.by === 'Don')).toBe(true);
+      expect(p.lines.filter(l => !l.clip).every(l => l.by === 'Don')).toBe(true);
       for (const l of p.lines) expect(l.text).not.toMatch(/[{}]|undefined/);
     }
   });
@@ -43,7 +43,7 @@ describe('rr previously', () => {
 
   it('Don tells it the way the show does: the leg in a line, the winners, who went home, "but that was then"', () => {
     for (let i = 1; i < eps.length; i++) {
-      const p = eps[i].previously, texts = p.lines.map(l => l.text);
+      const p = eps[i].previously, texts = p.lines.filter(l => !l.clip).map(l => l.text);
       const leg = res.legs[i - 1], place = getPlace(leg.place);
       expect(texts[0], `leg ${eps[i].n}`).toMatch(/^Last time on The Ridonculous Race/);
       expect(texts[0], `leg ${eps[i].n}`).toContain(place.recap || place.name);
@@ -67,7 +67,7 @@ describe('rr previously', () => {
 
   it('a team is named the way a host says it: "the Goths", "Alec and Spud", never a bare label', () => {
     const labels = Object.values(res.state.teams).filter(t => t.identity).map(t => t.name);
-    for (const ep of eps.slice(1)) for (const l of ep.previously.lines) {
+    for (const ep of eps.slice(1)) for (const l of ep.previously.lines.filter(x => !x.clip)) {
       for (const name of labels) {
         const bare = new RegExp(`(^|[^e] )${name}\b|^${name}\b`);
         expect(l.text.replace(new RegExp(`[Tt]he ${name}`, 'g'), ''), `${l.text}`).not.toMatch(bare);
@@ -94,6 +94,23 @@ describe('rr previously', () => {
         .map(k => (res.state.scenes.find(s => s.kind === k)?.family === 8 ? 'sabotage' : k));
       expect(new Set(beats).size, `leg ${ep.n}: ${beats}`).toBe(beats.length);
     }
+  });
+
+  it('replays what was really said: a clip of each moment, word for word, right after Don sets it up', () => {
+    let withClips = 0;
+    for (let i = 1; i < eps.length; i++) {
+      const p = eps[i].previously;
+      const said = new Set(eps[i - 1].segments.flatMap(s => s.lines || []).filter(l => l.kind !== 'beat').map(l => `${l.by}|${l.text}`));
+      const clips = p.lines.filter(l => l.clip);
+      if (clips.length >= 2) withClips++;
+      for (const l of clips) expect(said.has(`${l.by}|${l.text}`), `leg ${eps[i].n}: ${l.by}: ${l.text}`).toBe(true);
+      expect(p.lines[0].clip, 'Don opens').toBeFalsy();
+      expect(p.lines.at(-1).clip, 'Don closes').toBeFalsy();
+      // a clip follows Don's line about it, two at most in a row
+      let run = 0;
+      for (const l of p.lines) { run = l.clip ? run + 1 : 0; expect(run).toBeLessThanOrEqual(2); }
+    }
+    expect(withClips / (eps.length - 1)).toBeGreaterThanOrEqual(0.8);
   });
 
   it('only recaps kinds it has words for', () => {

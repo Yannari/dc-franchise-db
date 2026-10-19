@@ -10,6 +10,9 @@
 // So: the leg in one line (the place's `recap`, or its name) with Don's own gag; at most one storyline moment that
 // matters (a betrayal, a break-up); the winners named the way the show names them ("best friends Carrie and
 // Devin", "the Goths, Crimson and Ennui"); who went home, with a dig; "But that was then...".
+// On television each of Don's lines plays over the footage, so after each one the recap replays a clip: a line or two
+// of what was really said in that moment last time, word for word (`clip: true`). The leg's line gets a clip from
+// its challenges (somebody kicked by an emu, somebody swimming past a mine).
 import { SCENES } from '../scenes.js';
 import { IDENTITIES } from '../identities.js';
 import { getPlace } from '../places.js';
@@ -18,6 +21,7 @@ import { rolesOf, DON, teamRef } from '../script/roles.js';
 import { fill } from '../script/write.js';
 import { elderOf } from '../script/facts.js';
 import RECAP from '../script/lines/recap.js';
+import RECAP_AT from '../script/lines/recap-places.js';
 
 const SABOTAGE = new Set(Object.keys(SCENES).filter(k => SCENES[k].family === 8 && SCENES[k].scheme));
 const RESULT = ['don-place', 'don-elim', 'don-arrives', 'don-fakeout'];
@@ -61,6 +65,23 @@ export function teamTag(state, id) {
 }
 
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+// the moments of a challenge worth replaying behind the leg's line
+const TASK_CLIP = new Set(['task-try', 'attempt-fail', 'ride', 'travel-mishap', 'gross-out', 'phobia', 'fear-through', 'whose-botch',
+  'watching-botch', 'celebrate']);
+// a clip: the two lines of a scene that play best out of it (short, said with feeling), as they aired
+function clipOf(ep, sceneId, max = 2) {
+  const seg = ep.segments.find(x => x.scene === sceneId);
+  const said = (seg?.lines || []).filter(l => l.kind === 'say' || l.kind === 'conf');
+  if (!said.length) return [];
+  const score = (l, i) => (l.text.length <= 110 ? 2 : 0) + (/!/.test(l.text) ? 2 : /\?/.test(l.text) ? 1 : 0) + i / said.length;
+  let best = 0, bestScore = -1;
+  for (let i = 0; i + Math.min(max, said.length) <= said.length; i++) {
+    const sc = said.slice(i, i + max).reduce((a, l, k) => a + score(l, i + k), 0);
+    if (sc >= bestScore) { best = i; bestScore = sc; }
+  }
+  return said.slice(best, best + max).map(l => ({ kind: l.kind, by: l.by, text: l.text, clip: true }));
+}
 const pick = (list, rng) => list[Math.floor(rng() * list.length) % list.length];
 
 function clausesFor(sc) {
@@ -80,7 +101,15 @@ export function previouslyFor(state, prevEp, rng = Math.random) {
   const place = getPlace(prevEp.place);
 
   // 1. the leg in a line, and Don's gag
-  const lines = [say(fill(pick(RECAP.open, rng), {}, { summary: place?.recap || `racing through ${prevEp.placeName || 'the last stop'}` }))];
+  // the place's own gag when it has some, most of the time
+  const opens = RECAP_AT[prevEp.place] && rng() < 0.7 ? RECAP_AT[prevEp.place] : RECAP.open;
+  const lines = [say(fill(pick(opens, rng), {}, { summary: place?.recap || `racing through ${prevEp.placeName || 'the last stop'}` }))];
+  const clips = [];
+  const replay = (id, max) => { const c = clipOf(prevEp, id, max); if (c.length) { lines.push(...c); clips.push(id); } };
+  //    ...over a moment from its challenges, the liveliest of a few
+  const bangs = x => (x.lines || []).filter(l => l.kind === 'say' && /!/.test(l.text)).length;
+  const tasky = prevEp.segments.filter(x => x.scene != null && TASK_CLIP.has(x.kind) && bangs(x) >= 2).sort((x, y) => bangs(y) - bangs(x));
+  if (tasky.length) replay(pick(tasky.slice(0, 4), rng).scene, 2);
 
   // 2. at most one storyline moment, the biggest the season is following
   const follows = s => (s.data?.threadIds || []).some(id => followed.has(id));
@@ -93,7 +122,7 @@ export function previouslyFor(state, prevEp, rng = Math.random) {
     if (big.data?.other) slots.teamB = teamRef(state, big.data.other);
     if (big.data?.target) slots.target = teamRef(state, big.data.target) || slots.target;
     const text = fill(pick(clausesFor(big), rng), r.roles, slots);
-    if (!/\{\w+(\.\w+)?\}/.test(text)) { lines.push(say(text)); kept.push(big); }
+    if (!/\{\w+(\.\w+)?\}/.test(text)) { lines.push(say(text)); kept.push(big); replay(big.id, 2); }
   }
 
   // 3. the winners, the way the show names them
@@ -101,7 +130,7 @@ export function previouslyFor(state, prevEp, rng = Math.random) {
   if (winner) {
     lines.push(say(fill(pick(RECAP.winners, rng), {}, { winners: teamTag(state, winner) })));
     const w = aired.find(s => s.kind === 'don-place' && s.data?.team === winner);
-    if (w) kept.push(w);
+    if (w) { kept.push(w); replay(w.id, 2); }
   }
 
   // 4. who went home (or that nobody did), with a dig
@@ -112,9 +141,12 @@ export function previouslyFor(state, prevEp, rng = Math.random) {
     lines.push(say(fill(pick(RECAP[key], rng), {}, { out: teamRef(state, last), last: teamRef(state, last) })));
     const x = aired.find(s => RESULT.includes(s.kind) && s.kind !== 'don-place' && s.data?.team === last);
     if (x) kept.push(x);
+    // the goodbye: their exit interview if it aired, or the moment Don told them
+    const bye = aired.find(s => s.kind === 'int-exit' && s.data?.team === last) || x;
+    if (bye) replay(bye.id, 2);
   }
 
   // 5. "But that was then..."
   lines.push(say(CLOSE));
-  return { lines, scenes: kept.map(s => s.id), kinds: kept.map(s => s.kind) };
+  return { lines, scenes: kept.map(s => s.id), kinds: kept.map(s => s.kind), clips };
 }

@@ -34,7 +34,8 @@ export function episodeText(state, leg, ep) {
   const name = id => state.teams[id]?.name || id;
   const clock = leg.clockStart ?? 420;
   const out = [`LEG ${ep.n} · ${leg.placeName || PLACES[leg.place]?.name || '?'} · ${leg.kind}${leg.twist ? ' · ' + leg.twist : ''}`];
-  if (ep.previously) for (const l of ep.previously.lines) out.push(`   ${l.by}: ${l.text}`);
+  // a clip of last time plays under Don's line: "   > Natalia: ..."
+  if (ep.previously) for (const l of ep.previously.lines) out.push(`   ${l.clip ? '> ' : ''}${l.by}${l.kind === 'conf' ? ' [interview]' : ''}: ${l.text}`);
   for (const seg of ep.segments) {
     const where = seg.stretch ? ` @${seg.stretch}` : '';
     out.push(`-- [${hhmm(clock + (seg.t || 0))}] ${seg.kind}${seg.ending ? '/' + seg.ending : ''}${where} (${seg.teams.map(name).join(' / ')})`);

@@ -2,7 +2,8 @@
 //   * no avatar on the stage overlaps the dialogue bar (the bar sits under the picture), in any shot
 //   * no avatar is cut by the frame's edge, in any shot: whoever a close-up cannot hold whole has faded out of it
 //   * no two avatars overlap by more than a small margin (a crowded cabin, the teams behind a shot)
-//   * no stamp, slam, rank or stage-direction card sits on a face
+//   * no stamp, slam, rank, stage-direction card or Don Box tip card sits on a face
+//   * nobody in the scene fades out of a shot (only the teams behind it may)
 //   * whoever is speaking is fully inside the picture
 //   * the plate is alive: its motion canvas is running (or the CSS drift is), on every world screen
 //   (serve the repo: python serve.py 8765)   node tools/rr-vp-check.mjs [seed] [teams] [eps]
@@ -24,7 +25,7 @@ for (const [w, h] of SIZES) {
       const ks = await page.evaluate(() => window.__rr.flat.map((f, k) => {
         const s = window.__rr.ep.screens[f.si];
         const t = s.steps[f.idx];
-        return (k % 7 === 0 || s.mode === 'mat' || s.mode === 'act' || s.mode === 'cabin' || t.stamp || t.slam || t.part === 'beat' || (t.cam && t.cam.shot !== 'wide' && k % 2 === 0) || (s.kind === 'iv' && f.idx === 0)) ? k : -1;
+        return (k % 7 === 0 || t.part === 'tip' || s.mode === 'mat' || s.mode === 'act' || s.mode === 'cabin' || t.stamp || t.slam || t.part === 'beat' || (t.cam && t.cam.shot !== 'wide' && k % 2 === 0) || (s.kind === 'iv' && f.idx === 0)) ? k : -1;
       }).filter(k => k >= 0));
       for (const k of ks.slice(0, 160)) {
         const r = await page.evaluate(k => {
@@ -56,6 +57,8 @@ for (const [w, h] of SIZES) {
             if (!imgs.length) continue;
             avatars.push({ e, who: (e.dataset.crowd ? 'behind ' : '') + (e.dataset.team || e.dataset.p || '?'), team: e.dataset.team, b: union(imgs) });
           }
+          // only a team behind the scene may fade out of a shot: never one in it, nor Don, nor a local
+          for (const e of document.querySelectorAll('#rr-world .offcam')) if (!e.dataset.crowd) out.push(`faded out of the shot though in the scene: ${e.dataset.team || e.dataset.p}`);
           const M = 1.5;                       // px: an idle bob or a talking bounce moves a face this much
           for (const a of avatars) {
             const b = a.b;
@@ -72,7 +75,7 @@ for (const [w, h] of SIZES) {
             const o = meet(A.b, B.b) / Math.min(area(A.b), area(B.b));
             if (o > 0.1) out.push(`overlap ${Math.round(o * 100)}%: ${A.who} / ${B.who}`);
           }
-          const overlays = [...document.querySelectorAll('#rr-stage .stamp, #rr-stage .slam .band, #rr-stage .slam > img, #rr-stage .tok .rank, #rr-stage .beatcard.on')].filter(seen);
+          const overlays = [...document.querySelectorAll('#rr-stage .stamp, #rr-stage .slam .band, #rr-stage .slam > img, #rr-stage .tok .rank, #rr-stage .beatcard.on, #rr-stage .tipcard .card, #rr-stage .tipcard .in')].filter(seen);
           for (const o of overlays) {
             const ob = box(o);
             for (const a of avatars) {

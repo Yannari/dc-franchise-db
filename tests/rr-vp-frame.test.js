@@ -13,7 +13,7 @@ import { setPlayers } from '../js/core.js';
 import { raceCast } from './helpers/rr-cast.js';
 import {
   episodeScreens, facesAt, padOf, viewRect, safeRect, inRect, overlapOf, OVERLAP_OK, screenFaces, stampSpot, slamSpot,
-  stampSize, slamSize, placeOverlay, HUD_H, BAR, boxOf, inView,
+  stampSize, slamSize, placeOverlay, HUD_H, BAR, boxOf, inView, tipSpot, TIP_SIZE, coverOf,
 } from '../js/vp-rr-ep/steps.js';
 
 const SEASONS = [[12, 8], [8, 3], [6, 5]];
@@ -44,6 +44,26 @@ describe('rr viewer: nobody cut by the frame', () => {
     // the close-ups do push in past people (the crowd behind most of all), and they fade
     expect(faded).toBeGreaterThan(100);
     expect(fadedBehind).toBeGreaterThan(50);
+  });
+
+  // the user, 2026-10-19: only the teams behind a scene may fade. A close-up that cannot hold every team in the scene
+  // whole (and Don, and a local) is a wider two-shot, or the wide shot
+  it('never fades a team in the scene, in any step of any season: the shot holds them all whole', () => {
+    const bad = [];
+    let held = 0;
+    worlds((s, p) => {
+      if (p.seed === 5) return;
+      s.steps.forEach((st, k) => {
+        for (const h of st.hide || []) if (!h.startsWith('c:')) bad.push(`${s.id} ${s.seg} step ${k} fades ${h}`);
+        const r = safeRect(viewRect(st.cam));
+        for (const f of facesAt(s, k)) if (f.kind !== 'crowd') {
+          if (!inRect(padOf(f, f.z), r, 0)) bad.push(`${s.id} ${s.seg} step ${k} ${st.cam.shot} cuts ${f.key}`);
+          else if (st.cam.shot !== 'wide') held++;
+        }
+      });
+    });
+    expect(bad).toEqual([]);
+    expect(held).toBeGreaterThan(200);
   });
 
   it('never fades the one talking, and plays no reaction by somebody faded out', () => {
@@ -135,6 +155,22 @@ describe('rr viewer: no stamp or slam on a face', () => {
     }));
     expect(n).toBeGreaterThan(20);
     expect(bad).toEqual([]);
+  });
+
+  it('reads the Don Box tip card off every face: at the top, to a side, or smaller', () => {
+    let n = 0, smaller = 0;
+    worlds(s => s.steps.forEach((st, k) => {
+      if (st.part !== 'tip') return;
+      n++;
+      const { at, k: kk } = tipSpot(s, k, st.cam);
+      if (kk < 1) smaller++;
+      const sz = [TIP_SIZE[0] * kk, TIP_SIZE[1] * kk];
+      expect(coverOf(sz, at, screenFaces(s, k, st.cam)), `${s.id} tip card on a face`).toBe(0);
+      expect(at[1] - sz[1] / 2, `${s.id} under the HUD`).toBeGreaterThanOrEqual(HUD_H - 0.1);
+      expect(at[1] + sz[1] / 2, `${s.id} over the bar`).toBeLessThanOrEqual(100 - BAR + 0.1);
+    }));
+    expect(n).toBeGreaterThan(20);
+    void smaller;
   });
 
   it('puts an overlay above a face in the middle, and on the least of them when every place has one', () => {

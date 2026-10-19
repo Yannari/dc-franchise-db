@@ -9,7 +9,7 @@
 // slam. Every avatar idles; whoever is talking bounces.
 import { plateUrl, raceUrl, propUrl } from './plates.js';
 import { PLACES } from '../rr/places.js';
-import { intelAt, offOf, stampSpot, slamSpot, placeOverlay, screenFaces, BAR, HUD_H } from './steps.js';
+import { intelAt, offOf, stampSpot, slamSpot, tipSpot, placeOverlay, screenFaces, BAR, HUD_H } from './steps.js';
 import { plateLife } from './life.js';
 
 const ORD = ['', '1ST', '2ND', '3RD', '4TH', '5TH', '6TH', '7TH', '8TH', '9TH', '10TH', '11TH', '12TH', '13TH', '14TH'];
@@ -660,7 +660,12 @@ export function createStage(holder, { faceOf, legLabel }) {
       const t = step.tip;
       const c = document.createElement('div'); c.className = 'tipcard' + (fresh ? '' : ' still');
       c.innerHTML = `<img class="card" src="${raceUrl('c-tip')}" alt=""><div class="in"><div class="k">${esc(t.kind)}</div><div class="lb">${esc(t.label)}</div><div class="b">${esc(t.desc)}</div>${t.sides.length ? `<div class="os">${t.sides.map(x => `<div class="o">${esc(x)}</div>`).join('')}</div>` : ''}</div>`;
-      ui.appendChild(c);
+      c.style.visibility = 'hidden'; ui.appendChild(c);
+      // off every face (Don, the teams): at the top in the middle, or to a side, or smaller (steps.js tipSpot)
+      const [w, h] = turnedSize(c), sz = [w + 1.5, h + 1.5];
+      const { at, k: kk } = tipSpot(s, k, view, sz, bounds(view));
+      c.style.setProperty('--k', kk);
+      c.style.left = at[0] + '%'; c.style.top = (at[1] - sz[1] * kk / 2) + '%'; c.style.visibility = '';
     }
     if (step?.slam) {
       const sl = document.createElement('div'); sl.className = `slam ${step.slam.cls || ''}${fresh ? ' fresh' : ''}`;

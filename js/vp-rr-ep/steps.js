@@ -1124,7 +1124,20 @@ export function inView(cam, b, bar = BAR) {
   const r = safeRect(viewRect(cam, bar));
   return b[0] >= r[0] - 0.05 && b[2] <= r[2] + 0.05 && b[1] >= r[1] - 0.05 && b[3] <= r[3] + 0.05;
 }
+// Everybody the scene is about at step k (its teams, Don, a local): a shot holds them all whole, or it is wider. Only
+// the teams behind it (the crowd) may fade out of a close-up (the user, 2026-10-19: never hide a scene team).
+export function sceneOf(s, k) {
+  const out = s.teams.filter(id => boxOf(s, id, k));
+  if (s.don && s.donStand) out.push('Don');
+  for (const nm of Object.keys(s.localAt || {})) out.push(nm);
+  return out;
+}
+export const holdsAll = (cam, s, k) => sceneOf(s, k).every(w => inView(cam, boxOf(s, w, k)));
 function frameOn(s, k, who, maxS, shot) {
+  // the subject, and everybody else in the scene with it: a close-up that would cut one of them is a wider shot
+  const all = [...new Set([...who, ...sceneOf(s, k)])];
+  if (all.length > who.length && shot === 'close') shot = 'two';
+  who = all;
   const boxes = who.map(w => boxOf(s, w, k)).filter(Boolean);
   if (!boxes.length) return null;
   // the margins hold the plate's slow push (DRIFT) and a talking bounce
@@ -1174,7 +1187,8 @@ export function planHide(s) {
     if (!st.cam) return;
     const r = safeRect(viewRect(st.cam));
     const hide = new Set();
-    for (const f of facesAt(s, k)) if (!inRect(padOf(f, f.z), r, 0)) hide.add(f.key);
+    // only the teams behind the scene: a team in it (or Don, or a local) is never faded (the camera holds them all)
+    for (const f of facesAt(s, k)) if (f.kind === 'crowd' && !inRect(padOf(f, f.z), r, 0)) hide.add(f.key);
     const sp = st.by === 'Don' ? 'p:Don' : st.team ? 't:' + st.team : st.by && s.localAt?.[st.by] ? 'p:' + st.by : null;
     if (sp) hide.delete(sp);
     if (hide.size) st.hide = [...hide];
@@ -1210,13 +1224,15 @@ function planCamera(s) {
     else if (w.force) { cur = w; held = 1; }
     else if (cur.shot === 'follow' || w.shot === 'follow') { cur = w; held = 1; }     // a follow moves with its subject
     // a held close-up whose subject has moved out of it (a swimmer across the water, a team walking off) lets go
-    else if (cur.shot !== 'wide' && !(cur.on || []).every(x => inView(cur, boxOf(s, x, k)))) { cur = (w.on || []).every(x => inView(w, boxOf(s, x, k))) ? w : wideAt(k); held = 1; }
+    else if (cur.shot !== 'wide' && !holdsAll(cur, s, k)) { cur = w.shot === 'wide' || holdsAll(w, s, k) ? w : wideAt(k); held = 1; }
     else if (!inView(cur, spBox)) {
       // the next speaker is out of the shot: a shot with them in it, both teams if it was soon after a cut
       const both = held < MIN_HOLD && cur.on?.length ? frameOn(s, k, [...new Set([...cur.on, sp])], 1.35, 'two') : null;
       cur = (inView(w, spBox) && held >= MIN_HOLD ? w : both) || wideAt(k); held = 1;
     } else if (held >= MIN_HOLD && !same(w, cur)) { cur = w; held = 1; }
     else held++;
+    // a shot that would cut somebody in the scene (one arriving on the mat, one coming back) is the wide one
+    if (cur.shot !== 'wide' && !holdsAll(cur, s, k)) { cur = wideAt(k); held = 1; }
     const { force, ...shot } = cur; void force;
     st.cam = shot;
   });
@@ -1386,14 +1402,38 @@ export function stampSize(text) {
  */
 export function placeOverlay([w, h], faces, prefer, { top = HUD_H, bottom = 100 - BAR } = {}) {
   const fit = ([cx, cy]) => [Math.min(100 - w / 2 - 0.8, Math.max(w / 2 + 0.8, cx)), Math.min(bottom - h / 2 - 0.5, Math.max(top + h / 2, cy))];
-  const rect = ([cx, cy]) => [cx - w / 2 - 0.3, cy - h / 2 - 0.3, cx + w / 2 + 0.3, cy + h / 2 + 0.3];     // a hair clear
-  const covers = c => { const r = rect(c); return faces.reduce((a, f) => a + overlapOf(r, f.box || f), 0); };
+  const covers = c => coverOf([w, h], c, faces);
   const tries = prefer.map(fit);
   const [px, py] = tries[0];
   for (let dy = 0; dy <= 100; dy += 2) for (const sy of dy ? [-1, 1] : [1]) for (const dx of [0, -10, 10, -20, 20, -30, 30, -40, 40]) tries.push(fit([px + dx, py + sy * dy]));
   let best = tries[0], bc = Infinity;
   for (const c of tries) { const v = covers(c); if (v === 0) return c.map(n => Math.round(n * 10) / 10); if (v < bc) { bc = v; best = c; } }
   return best.map(n => Math.round(n * 10) / 10);
+}
+/** How much face an overlay of [w, h] centred at c covers (0: none; a hair of clearance counts). */
+export function coverOf([w, h], [cx, cy], faces) {
+  const r = [cx - w / 2 - 0.3, cy - h / 2 - 0.3, cx + w / 2 + 0.3, cy + h / 2 + 0.3];
+  return faces.reduce((a, f) => a + overlapOf(r, f.box || f), 0);
+}
+/** placeOverlay at full size, or smaller (down the `scales`) until a place covers no face: { at, k }. */
+export function fitOverlay([w, h], faces, prefer, opts, scales = [1, 0.9, 0.8, 0.7, 0.6, 0.52, 0.45]) {
+  let best = null;
+  for (const k of scales) {
+    const sz = [w * k, h * k];
+    const at = placeOverlay(sz, faces, prefer(sz), opts);
+    const c = coverOf(sz, at, faces);
+    if (!c) return { at, k };
+    if (!best || c < best.c) best = { at, k, c };
+  }
+  return { at: best.at, k: best.k };
+}
+// The Don Box tip card (style.js .tipcard: the card 27cqw tall beside a 44cqw panel), [width %, height %], estimated.
+export const TIP_SIZE = [10.2 + 44 - 2 + 1.5, 27 * CQ_H + 1.5];
+/** Where step k's tip card goes and how big: at the top in the middle, else beside, else smaller; never on a face. */
+export function tipSpot(s, k, cam, size = TIP_SIZE, opts) {
+  const faces = s.kind === 'world' ? screenFaces(s, k, cam) : [];
+  const top = opts?.top ?? HUD_H;
+  return fitOverlay(size, faces, ([w, h]) => [[50, top + h / 2 + 0.5], [w / 2 + 1, top + h / 2 + 0.5], [100 - w / 2 - 1, top + h / 2 + 0.5]], opts);
 }
 /** The stamp of step k at its place under a shot: above its team, or beside it. */
 export function stampSpot(s, k, cam, size, opts) {

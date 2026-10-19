@@ -1,7 +1,7 @@
 // Screenshots of the moments the user asked about (2026-10-19), found anywhere in the season, to LOOK at:
 //   (serve the repo: python -m http.server 8765)   node tools/rr-vp-look.mjs [seed] [teams] [kinds,...]
 // kinds: company, alone, elevator, cabin, confess, confess2, intro, exit, plates (every plate in use, with its people),
-//   closecrowd, closecut, plane4, plane4close, fail, done, slam
+//   closecrowd, closecut, plane4, plane4close, fail, done, slam, tip, galleyclose, talkclose
 // Shots land in shots/rr-vp/look-*.png. RR_URL sets the page.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -29,6 +29,9 @@ const FIND = {
   fail: '(s, t) => !!t.stamp && t.stamp.text === "TRY AGAIN"',
   done: '(s, t) => !!t.stamp && t.stamp.text === "DONE!"',
   slam: '(s, t) => !!t.slam && s.kind === "world"',
+  tip: '(s, t) => t.part === "tip"',
+  galleyclose: '(s, t) => s.mode === "cabin" && s.plate?.f === "galley" && t.by && t.cam && t.cam.shot !== "wide"',
+  talkclose: '(s, t) => s.mode === "talk" && s.teams.length >= 2 && t.by && t.cam && t.cam.shot !== "wide"',
 };
 // RR_PLATES=task-9436302,task-22412499: a talk step on each of those plates
 for (const f of (process.env.RR_PLATES || '').split(',').filter(Boolean)) FIND['plate-' + f] = `(s, t, k) => s.kind === "world" && s.plate?.f === "${f}" && t.by && k >= 1`;

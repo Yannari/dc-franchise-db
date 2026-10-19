@@ -241,9 +241,10 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .matimg.bronze{filter:sepia(1) saturate(2.4) hue-rotate(-18deg) brightness(.8) drop-shadow(0 .4cqw .3cqw rgba(0,0,0,.35))}
 
 /* cards: the tip, slams, the title */
-.tipcard{position:absolute;left:50%;top:3.5cqw;transform:translateX(-50%);z-index:40;display:flex;align-items:center;animation:cardIn .7s cubic-bezier(.2,.9,.3,1.25) both}
+/* placed (and shrunk if need be) off every face by stage.js: steps.js tipSpot */
+.tipcard{position:absolute;left:50%;top:3.5cqw;transform:translateX(-50%) scale(var(--k,1));transform-origin:50% 0;z-index:40;display:flex;align-items:center;animation:cardIn .7s cubic-bezier(.2,.9,.3,1.25) both}
 .tipcard.still{animation:none}
-.tipcard .card{height:27cqw;filter:drop-shadow(0 1.5cqw 2cqw rgba(0,0,0,.55));transform:rotate(-6deg);z-index:2}
+.tipcard .card{height:27cqw;width:10.19cqw;filter:drop-shadow(0 1.5cqw 2cqw rgba(0,0,0,.55));transform:rotate(-6deg);z-index:2}
 .tipcard .in{width:44cqw;margin-left:-2cqw;background:#eef4ff;color:var(--ink);border-radius:1cqw;padding:1.3cqw 1.6cqw 1.3cqw 3cqw;
   box-shadow:0 1.5cqw 3cqw rgba(0,0,0,.5);border:.3cqw solid #0f1424;display:flex;flex-direction:column;gap:.6cqw}
 .tipcard .k{font-family:Bungee;font-size:2.1cqw;line-height:1.05;color:#2c4a9a}

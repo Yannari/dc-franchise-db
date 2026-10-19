@@ -26,6 +26,7 @@ import { rolesOf, DON } from './roles.js';
 import { SCENES, relFamOf } from '../scenes.js';
 import { factsFor } from './facts.js';
 import { identityLine } from './identity.js';
+import { REL_TAGS } from './lines/premiere-rel-tags.js';
 
 // The moments the director makes itself, from the leg's record (not engine scenes): kind -> endings.
 export const DIRECTOR_KINDS = {
@@ -233,6 +234,17 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
     Object.defineProperty(line, 'turn', { value: `${entry.id}:${i}`, enumerable: false });
     lines.push(line);
   });
+  // an identity's introduction can't know what the two of them are: one of them says it (lines/premiere-rel-tags.js)
+  if (scene.kind === 'team-intro' && /^(pi|ci)\./.test(entry.id) && entry.id !== 'ci.own' && lines.some(l => l.kind === 'conf')) {
+    const t = state.teams[scene.data?.team];
+    const tags = t && REL_TAGS[t.rel];
+    if (tags?.length) {
+      const lastBy = [...lines].reverse().find(l => l.kind === 'conf')?.by;
+      const who = lastBy === t.a ? t.b : t.a;
+      const text = tags[Math.floor(stableRng(state.seed, 'rr-reltag', scene.id)() * tags.length) % tags.length];
+      lines.push({ kind: 'conf', by: who, text: fill(text, r.roles, { ...r.slots, partner: partnerOf(state, who) }), voice: null });
+    }
+  }
   // the team's identity, heard at a natural moment (when the entry didn't already call one)
   if (!lines.some(l => String(l.voice || '').startsWith('id:'))) {
     const hook = AUTO_HOOK[scene.kind]?.(facts);

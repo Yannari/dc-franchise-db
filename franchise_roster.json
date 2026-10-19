@@ -7657,6 +7657,27 @@
       "voice": "#quiet #competitive #proud. Speaks sparingly, listens through an explanation, and gives a short, considered reply. Polite even when annoyed: acknowledges the other person, states his disagreement, and stops. Uses dry, understated humor with people he trusts. Does not fill silence, boast constantly, or turn every exchange into a challenge. Anger tightens his diction and lengthens the pause before his answer. A courteous sentence can carry unmistakable heat without becoming an insult. #-cruel",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Lila",
+      "slug": "lila",
+      "gender": "f",
+      "sexuality": "bi",
+      "archetype": "hero",
+      "stats": {
+        "physical": 3,
+        "endurance": 5,
+        "mental": 7,
+        "social": 9,
+        "strategic": 2,
+        "loyalty": 9,
+        "boldness": 4,
+        "intuition": 7,
+        "temperament": 5
+      },
+      "voice": "#warm #emotional #earnest. Hearts, exclamation marks, and spontaneous “omg.” Responds first to emotional meaning. Remembers small personal details. When suspicious, asks whether someone is upset with her before considering manipulation. Hurt messages lose their emojis and become plain questions. #-schemer",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

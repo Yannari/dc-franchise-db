@@ -3,8 +3,8 @@
     "format": "total-drama",
     "name": "🏆 Total Drama Franchise Rankings - Complete Cast",
     "version": "11.0_ASCII_SAFE_TITLE_EMOJI_REFRESH",
-    "lastUpdated": "2026-08-22",
-    "totalPlayers": 152,
+    "lastUpdated": "2026-10-19",
+    "totalPlayers": 164,
     "seasons": 7,
     "improvements": [
       "All strings ASCII-safe (no em-dash/smart quotes)",
@@ -106,10 +106,50 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "bowie",
+      "name": "Bowie",
+      "rank": 2,
+      "tier": "S+",
+      "score": 96.9,
+      "wins": 1,
+      "seasonsPlayed": 3,
+      "placements": [
+        1,
+        2,
+        3
+      ],
+      "avgPlacement": 2,
+      "challengeWins": 2,
+      "votesAgainst": 17,
+      "juryVotes": 0,
+      "idolsFound": 5,
+      "title": "The Velvet Guillotine",
+      "emoji": "♟️",
+      "reasoning": "Bowie’s third deep run cements him as the franchise’s sharpest modern schemer: a winner, a runner-up, and now a P3 finisher who still knew exactly when to turn idols into leverage. S15 did not reinvent him so much as confirm the pattern — dense alliance work, clean advantage timing, and just enough heat that the votes started to find him. The ceiling is already proven by S9, but this finish adds a new wrinkle to his legacy: even when everyone knows Bowie is the architect, he is still almost impossible to remove before the endgame.",
+      "strengths": [
+        "Winner and runner-up",
+        "3 idols found/held",
+        "5 advantages played in S10",
+        "Elite vote architect"
+      ],
+      "weaknesses": [
+        "12 votes against",
+        "Highly visible threat",
+        "Finale loss to Jasmine"
+      ],
+      "scoreHistory": [
+        94,
+        99,
+        96.9
+      ],
+      "winRate": 33.33,
+      "blockSurvived": 0
+    },
+    {
       "playerId": "jacques",
       "tier": "S+",
       "score": 95.7,
-      "rank": 2,
+      "rank": 3,
       "avgPlacement": 3,
       "winRate": 33.33,
       "placements": [
@@ -159,7 +199,7 @@
     {
       "playerId": "jade",
       "name": "Jade",
-      "rank": 3,
+      "rank": 4,
       "tier": "S+",
       "score": 94.4,
       "wins": 1,
@@ -191,82 +231,9 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "bowie",
-      "name": "Bowie",
-      "rank": 4,
-      "tier": "S+",
-      "score": 94,
-      "wins": 1,
-      "seasonsPlayed": 2,
-      "placements": [
-        1,
-        2
-      ],
-      "avgPlacement": 1.5,
-      "challengeWins": 2,
-      "votesAgainst": 12,
-      "juryVotes": 0,
-      "idolsFound": 3,
-      "title": "The Velvet Guillotine",
-      "emoji": "♟️",
-      "reasoning": "Bowie has become the franchise's cleanest modern strategist: a winner, a runner-up, and the most advantage-literate player on the board. His S9 win was a masterpiece of hoarded power and surgical betrayal, and S10 nearly repeated the trick as he formed The Movement, cut Mickey early, steered Stephanie's ambassador boot, buried Scott at merge, and still reached the finale with five advantages played. The only flaw is visibility: by the end, too many jurors could point to him as the architect, and Jasmine turned his chess match into a footrace he could not control.",
-      "strengths": [
-        "Winner and runner-up",
-        "3 idols found/held",
-        "5 advantages played in S10",
-        "Elite vote architect"
-      ],
-      "weaknesses": [
-        "12 votes against",
-        "Highly visible threat",
-        "Finale loss to Jasmine"
-      ],
-      "scoreHistory": [
-        94,
-        99
-      ],
-      "winRate": 50,
-      "blockSurvived": 0
-    },
-    {
-      "playerId": "james",
-      "name": "James",
-      "rank": 5,
-      "tier": "S+",
-      "score": 92.9,
-      "wins": 1,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        92.9
-      ],
-      "placements": [
-        1
-      ],
-      "avgPlacement": 1,
-      "challengeWins": 1,
-      "votesAgainst": 9,
-      "juryVotes": 7,
-      "idolsFound": 1,
-      "title": "The Spotlight Survivor",
-      "emoji": "📸",
-      "reasoning": "James turned one season into an S+ legacy by winning S12 with a 7-vote jury finish despite taking 9 votes against along the way. He was not a pure challenge steamroller, but his idol play, alliance flexibility, and ability to survive sustained targeting made the win feel earned rather than accidental. As a one-time player, the sample is smaller than the legends around him, but his single-season peak is undeniable.",
-      "strengths": [
-        "S12 champion",
-        "7 jury votes",
-        "Survived 9 votes against",
-        "Played 1 idol"
-      ],
-      "weaknesses": [
-        "Only 1 challenge win",
-        "One-season sample",
-        "Frequently targeted"
-      ],
-      "blockSurvived": 0
-    },
-    {
       "playerId": "mickey",
       "name": "Mickey",
-      "rank": 6,
+      "rank": 5,
       "tier": "S+",
       "score": 91.1,
       "title": "The Nervous Mastermind",
@@ -304,6 +271,58 @@
       "scoreHistory": [
         96,
         91.1
+      ],
+      "blockSurvived": 0
+    },
+    {
+      "playerId": "julia",
+      "name": "Julia",
+      "rank": 6,
+      "tier": "S+",
+      "score": 90.7,
+      "wins": 1,
+      "seasonsPlayed": 3,
+      "placements": [
+        6,
+        2,
+        1
+      ],
+      "avgPlacement": 3,
+      "challengeWins": 7,
+      "votesAgainst": 23,
+      "juryVotes": 0,
+      "idolsFound": 5,
+      "title": "The Ice-Cold Influencer",
+      "emoji": "💅",
+      "reasoning": "With S15, Julia finally converted her reputation from terrifying endgame fixture into an actual crown. Her win was appropriately messy: she needed help, took ten votes, wasted an idol, and still kept enough options alive through four alliances to win immunity, play an idol correctly, and survive the heat. Across three seasons, that completes the arc from the player Bowie could expose to the ruthless social reader who finally survived her own threat level.",
+      "strengths": [
+        "S13 runner-up",
+        "6 challenge wins",
+        "3 idols found",
+        "Major blindside architect"
+      ],
+      "weaknesses": [
+        "No wins in 2 seasons",
+        "13 votes against",
+        "Threat level hard to hide"
+      ],
+      "scoreHistory": [
+        65.4,
+        88.1,
+        90.7
+      ],
+      "winRate": 33.33,
+      "overrides": [
+        {
+          "season": 13,
+          "value": 1,
+          "reason": "equalizer"
+        },
+        {
+          "season": 15,
+          "value": 1,
+          "reason": "help"
+        }
       ],
       "blockSurvived": 0
     },
@@ -391,55 +410,10 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "julia",
-      "name": "Julia",
-      "rank": 9,
-      "tier": "S",
-      "score": 88.1,
-      "wins": 0,
-      "seasonsPlayed": 2,
-      "placements": [
-        6,
-        2
-      ],
-      "avgPlacement": 4,
-      "challengeWins": 6,
-      "votesAgainst": 13,
-      "juryVotes": 0,
-      "idolsFound": 3,
-      "title": "The Ice-Cold Influencer",
-      "emoji": "💅",
-      "reasoning": "Julia remains one of the franchise’s sharpest non-winners, combining ruthless social reads with real challenge power across two deep runs. In S9, she manipulated Raj into leaving with an idol, helped form the Misfits to topple Ripper, and still had enough pull to assist the Priya blindside after Bowie stripped her idol with Knowledge is Power. Her S13 runner-up finish cemented her as an elite endgame threat, though her flashiness and threat level kept her from turning dominance into a crown.",
-      "strengths": [
-        "S13 runner-up",
-        "6 challenge wins",
-        "3 idols found",
-        "Major blindside architect"
-      ],
-      "weaknesses": [
-        "No wins in 2 seasons",
-        "13 votes against",
-        "Threat level hard to hide"
-      ],
-      "scoreHistory": [
-        65.4,
-        88.1
-      ],
-      "winRate": 0,
-      "overrides": [
-        {
-          "season": 13,
-          "value": 1,
-          "reason": "equalizer"
-        }
-      ],
-      "blockSurvived": 0
-    },
-    {
       "playerId": "scott",
       "tier": "S",
       "score": 87.4,
-      "rank": 10,
+      "rank": 9,
       "avgPlacement": 5.5,
       "winRate": 0,
       "placements": [
@@ -484,7 +458,7 @@
     {
       "playerId": "anastasia",
       "name": "Anastasia",
-      "rank": 11,
+      "rank": 10,
       "tier": "S",
       "score": 86.5,
       "wins": 0,
@@ -519,7 +493,7 @@
     {
       "playerId": "logan",
       "name": "Logan",
-      "rank": 12,
+      "rank": 11,
       "tier": "S",
       "score": 86.3,
       "wins": 0,
@@ -551,33 +525,10 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "millie",
-      "name": "Millie",
-      "rank": 13,
-      "tier": "S",
-      "score": 85.8,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        2
-      ],
-      "avgPlacement": 2,
-      "challengeWins": 1,
-      "votesAgainst": 1,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "The Overachiever",
-      "emoji": "📔",
-      "reasoning": "S9's most complete non-winner. Millie converted a Beware package into the Red Idol, used it at F8 to nullify a five-vote strike on Priya, and held her alliances together through one of the season's messiest post-merges. She won F5 immunity and was the last woman standing going into the finale. Her game had everything a winning résumé needs — she just ran into Bowie.",
-      "strengths": [],
-      "weaknesses": [],
-      "blockSurvived": 0
-    },
-    {
       "playerId": "jasmine",
       "tier": "S",
       "score": 85.3,
-      "rank": 14,
+      "rank": 12,
       "avgPlacement": 9.333333333333334,
       "winRate": 33.33,
       "placements": [
@@ -618,10 +569,55 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "spencer",
+      "name": "Spencer",
+      "rank": 13,
+      "tier": "S",
+      "score": 84.6,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "scoreHistory": [
+        71.1,
+        84.6
+      ],
+      "placements": [
+        5,
+        2
+      ],
+      "avgPlacement": 3.5,
+      "challengeWins": 3,
+      "votesAgainst": 34,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "The Coalition Equalizer",
+      "emoji": "⚖️",
+      "reasoning": "Spencer turned a strong but messy S14 power-broker game into a full S15 finalist run. The upgrade was real: he finally added immunity, reward momentum, and an effective idol play to the flexible alliance work that already defined him. The catch is that the same warning light never went away — 15 votes against says he was still constantly exposed, even as he kept finding help and numbers to survive one more ceremony.",
+      "strengths": [
+        "S14 fifth place",
+        "Three alliances",
+        "Strong swing-vote positioning",
+        "Tier A score without advantages"
+      ],
+      "weaknesses": [
+        "19 votes against",
+        "Zero challenge wins",
+        "No finalist equity shown"
+      ],
+      "blockSurvived": 0,
+      "winRate": 0,
+      "overrides": [
+        {
+          "season": 15,
+          "value": 1,
+          "reason": "help"
+        }
+      ]
+    },
+    {
       "playerId": "lindsay",
       "tier": "S",
       "score": 84,
-      "rank": 15,
+      "rank": 14,
       "avgPlacement": 8,
       "winRate": 33.33,
       "placements": [
@@ -656,6 +652,32 @@
       "seasonsPlayed": 3,
       "wins": 1,
       "blockSurvived": 0
+    },
+    {
+      "playerId": "sami",
+      "name": "Sami",
+      "rank": 15,
+      "tier": "S",
+      "score": 83.9,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        83.9
+      ],
+      "placements": [
+        4
+      ],
+      "avgPlacement": 4,
+      "challengeWins": 4,
+      "votesAgainst": 1,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 2,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S15's breakout new player, with a fourth-place finish that played bigger than most debut games. Sami built an unusually wide alliance web without becoming an easy target, took only one vote all season, and turned danger into leverage with two effective idol plays. Add three immunity wins and a reward win, and their run had the shape of a finalist — they just became too hard to ignore at the final four.",
+      "strengths": [],
+      "weaknesses": []
     },
     {
       "playerId": "ryan",
@@ -918,55 +940,9 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "zoey",
-      "tier": "S",
-      "score": 80.8,
-      "rank": 22,
-      "avgPlacement": 7.75,
-      "winRate": 0,
-      "placements": [
-        2,
-        4,
-        15,
-        10
-      ],
-      "challengeWins": 8,
-      "votesAgainst": 13,
-      "juryVotes": 6,
-      "idolsFound": 1,
-      "status": "Competed in 3/7 seasons",
-      "title": "The Soft-Power Magnet",
-      "emoji": "🌸",
-      "reasoning": "Zoey is one of the franchise's purest jury threats, with a runner-up finish, a fourth place, 8 challenge wins, and 6 jury votes proving her ceiling. Her S10 game was quieter but familiar: people trusted her instinctively, from Gwen to Ryan to Cody to Sanders, which made her both protected and terrifying. Mickey targeted her early for exactly that reason, and the merge open vote confirmed the danger of being everyone's favorite person. She left gracefully after losing to Sanders, but her championship case remains one betrayal or immunity away.",
-      "strengths": [
-        "8 challenge wins",
-        "6 jury votes",
-        "Elite social trust",
-        "Multiple deep runs"
-      ],
-      "weaknesses": [
-        "Still winless",
-        "Often labeled a jury threat",
-        "Trust breaks derail endgames"
-      ],
-      "name": "Zoey",
-      "seasonsList": [
-        4,
-        3,
-        7
-      ],
-      "seasonsPlayed": 4,
-      "wins": 0,
-      "scoreHistory": [
-        77,
-        80.8
-      ],
-      "blockSurvived": 0
-    },
-    {
       "playerId": "sanders",
       "name": "Sanders",
-      "rank": 23,
+      "rank": 22,
       "tier": "S",
       "score": 80.2,
       "wins": 0,
@@ -1004,7 +980,7 @@
     {
       "playerId": "miriam",
       "name": "Miriam",
-      "rank": 24,
+      "rank": 23,
       "tier": "S",
       "score": 80,
       "wins": 1,
@@ -1047,10 +1023,162 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "james",
+      "name": "James",
+      "rank": 24,
+      "tier": "A",
+      "score": 79.4,
+      "wins": 1,
+      "seasonsPlayed": 2,
+      "scoreHistory": [
+        92.9,
+        79.4
+      ],
+      "placements": [
+        1,
+        21
+      ],
+      "avgPlacement": 11,
+      "challengeWins": 1,
+      "votesAgainst": 11,
+      "juryVotes": 7,
+      "idolsFound": 1,
+      "title": "The Spotlight Survivor",
+      "emoji": "📸",
+      "reasoning": "James is still defined by his S12 win, a scrappy champion’s game built on survival, idol timing, and flexible alliances rather than clean domination. His S15 return was a sharp comedown: two alliances gave him structure, but he never turned that into safety and went out at P21 with only two votes against. That early fall trims the aura, but it does not erase the peak — James remains a winner whose legacy is more about one undeniable season than a long résumé.",
+      "strengths": [
+        "S12 champion",
+        "7 jury votes",
+        "Survived 9 votes against",
+        "Played 1 idol"
+      ],
+      "weaknesses": [
+        "Only 1 challenge win",
+        "One-season sample",
+        "Frequently targeted"
+      ],
+      "blockSurvived": 0,
+      "winRate": 50,
+      "overrides": [
+        {
+          "season": 15,
+          "value": 4.5,
+          "reason": "TO S"
+        }
+      ]
+    },
+    {
+      "playerId": "thom",
+      "name": "Thom",
+      "rank": 25,
+      "tier": "A",
+      "score": 78.5,
+      "wins": 0,
+      "seasonsPlayed": 3,
+      "scoreHistory": [
+        86.2,
+        74.7,
+        78.5
+      ],
+      "placements": [
+        2,
+        13,
+        6
+      ],
+      "avgPlacement": 7,
+      "challengeWins": 4,
+      "votesAgainst": 13,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "The Clean Runner-Up",
+      "emoji": "💞",
+      "reasoning": "Thom’s legacy is no longer just that pristine runner-up game; S15 gave him a messier but meaningful third chapter, finishing 6th as the season’s equalizer while finally absorbing real heat. After two runs where almost nobody could get a vote to stick to him, 11 votes against in one season shows how much more visible he became, even as he still picked up an immunity win, a reward win, and two alliances. He remains one of the franchise’s cleanest non-winners, but this exit turns his arc from protected social centerpiece into a strong player who could steady a game without quite controlling its finish.",
+      "strengths": [
+        "2nd-place finish",
+        "Only 2 total votes against",
+        "2 challenge wins",
+        "Played 1 idol"
+      ],
+      "weaknesses": [
+        "No win despite finalist run",
+        "S13 drop to 13th",
+        "0 jury votes"
+      ],
+      "winRate": 0,
+      "overrides": [
+        {
+          "season": 13,
+          "value": 2,
+          "reason": "equalizer"
+        },
+        {
+          "season": 15,
+          "value": 2,
+          "reason": "equalizer"
+        }
+      ],
+      "blockSurvived": 0
+    },
+    {
+      "playerId": "zoey",
+      "tier": "A",
+      "score": 78.4,
+      "rank": 26,
+      "avgPlacement": 9.4,
+      "winRate": 0,
+      "placements": [
+        2,
+        4,
+        15,
+        10,
+        16
+      ],
+      "challengeWins": 8,
+      "votesAgainst": 17,
+      "juryVotes": 6,
+      "idolsFound": 1,
+      "status": "Competed in 3/7 seasons",
+      "title": "The Soft-Power Magnet",
+      "emoji": "🌸",
+      "reasoning": "Zoey remains one of the franchise’s cleanest almost-winners: trusted on instinct, dangerous in any vote, and still carrying a runner-up finish, a fourth place, and a pile of challenge wins without the title to match. S15 was a harsh equalizer for that reputation, cutting her at P16 with four votes against her instead of letting her settle back into the “everyone’s favorite person” lane. Five seasons in, her case is still strong, but Sanders remains the clearest reminder that Zoey has usually been one step, one immunity, or one betrayal short of finishing the job.",
+      "strengths": [
+        "8 challenge wins",
+        "6 jury votes",
+        "Elite social trust",
+        "Multiple deep runs"
+      ],
+      "weaknesses": [
+        "Still winless",
+        "Often labeled a jury threat",
+        "Trust breaks derail endgames"
+      ],
+      "name": "Zoey",
+      "seasonsList": [
+        4,
+        3,
+        7
+      ],
+      "seasonsPlayed": 5,
+      "wins": 0,
+      "scoreHistory": [
+        77,
+        80.8,
+        78.4
+      ],
+      "blockSurvived": 0,
+      "overrides": [
+        {
+          "season": 15,
+          "value": -3,
+          "reason": "equalizer"
+        }
+      ]
+    },
+    {
       "playerId": "carrie",
       "tier": "A",
       "score": 77.8,
-      "rank": 25,
+      "rank": 27,
       "avgPlacement": 4.5,
       "winRate": 0,
       "placements": [
@@ -1092,7 +1220,7 @@
       "playerId": "cody",
       "tier": "A",
       "score": 77.2,
-      "rank": 26,
+      "rank": 28,
       "avgPlacement": 9.333333333333334,
       "winRate": 0,
       "placements": [
@@ -1135,7 +1263,7 @@
     {
       "playerId": "ally",
       "name": "Ally",
-      "rank": 27,
+      "rank": 29,
       "tier": "A",
       "score": 76.9,
       "wins": 0,
@@ -1180,7 +1308,7 @@
     {
       "playerId": "jay",
       "name": "Jay",
-      "rank": 28,
+      "rank": 30,
       "tier": "A",
       "score": 76.7,
       "title": "The Loyal Heart",
@@ -1218,7 +1346,7 @@
       "playerId": "sky",
       "tier": "A",
       "score": 75.7,
-      "rank": 29,
+      "rank": 31,
       "avgPlacement": 7,
       "winRate": 0,
       "placements": [
@@ -1256,7 +1384,7 @@
     {
       "playerId": "brick",
       "name": "Brick",
-      "rank": 30,
+      "rank": 32,
       "tier": "A",
       "score": 75.1,
       "title": "The Noble Shield",
@@ -1299,7 +1427,7 @@
     {
       "playerId": "aiden",
       "name": "Aiden",
-      "rank": 31,
+      "rank": 33,
       "tier": "A",
       "score": 75,
       "wins": 0,
@@ -1344,7 +1472,7 @@
     {
       "playerId": "hannah",
       "name": "Hannah",
-      "rank": 32,
+      "rank": 34,
       "tier": "A",
       "score": 74.8,
       "wins": 0,
@@ -1377,54 +1505,9 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "thom",
-      "name": "Thom",
-      "rank": 33,
-      "tier": "A",
-      "score": 74.7,
-      "wins": 0,
-      "seasonsPlayed": 2,
-      "scoreHistory": [
-        86.2,
-        74.7
-      ],
-      "placements": [
-        2,
-        13
-      ],
-      "avgPlacement": 7.5,
-      "challengeWins": 2,
-      "votesAgainst": 2,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "The Clean Runner-Up",
-      "emoji": "💞",
-      "reasoning": "Thom’s peak game was one of the cleanest losses on the board: a 2nd-place finish with only a single vote against him that season. He combined two challenge wins, an idol, multiple alliances, and the Jake showmance into a run that felt socially insulated and emotionally central. His S13 return was much shorter at 13th, but even then he only picked up one vote, reinforcing how rarely people actually wanted him gone.",
-      "strengths": [
-        "2nd-place finish",
-        "Only 2 total votes against",
-        "2 challenge wins",
-        "Played 1 idol"
-      ],
-      "weaknesses": [
-        "No win despite finalist run",
-        "S13 drop to 13th",
-        "0 jury votes"
-      ],
-      "winRate": 0,
-      "overrides": [
-        {
-          "season": 13,
-          "value": 2,
-          "reason": "equalizer"
-        }
-      ],
-      "blockSurvived": 0
-    },
-    {
       "playerId": "alec",
       "name": "Alec",
-      "rank": 34,
+      "rank": 35,
       "tier": "A",
       "score": 74.5,
       "wins": 0,
@@ -1469,7 +1552,7 @@
     {
       "playerId": "fiore",
       "name": "Fiore",
-      "rank": 35,
+      "rank": 36,
       "tier": "A",
       "score": 73,
       "wins": 0,
@@ -1512,10 +1595,36 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "ara",
+      "name": "Ara",
+      "rank": 37,
+      "tier": "A",
+      "score": 72.1,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        72.1
+      ],
+      "placements": [
+        7
+      ],
+      "avgPlacement": 7,
+      "challengeWins": 0,
+      "votesAgainst": 16,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 2,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S15's highest-heat new player, and one of the rare rookies who actually turned idol power into survival. Ara took 16 votes and still made seventh, using two effective idol plays and enough alliance coverage to keep dodging the vote when the target settled on them. It was a loud, scrappy debut rather than a clean control game, but P7 feels earned for a newcomer who kept forcing the cast to vote again.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "tom",
       "tier": "A",
       "score": 72,
-      "rank": 36,
+      "rank": 38,
       "avgPlacement": 5,
       "winRate": 0,
       "placements": [
@@ -1548,9 +1657,9 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "spencer",
-      "name": "Spencer",
-      "rank": 37,
+      "playerId": "nura",
+      "name": "Nura",
+      "rank": 39,
       "tier": "A",
       "score": 71.1,
       "wins": 0,
@@ -1562,30 +1671,21 @@
         5
       ],
       "avgPlacement": 5,
-      "challengeWins": 0,
-      "votesAgainst": 19,
+      "challengeWins": 1,
+      "votesAgainst": 9,
+      "blockSurvived": 0,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "The Coalition Equalizer",
-      "emoji": "⚖️",
-      "reasoning": "Spencer’s lone season is a classic fifth-place power-broker run: no challenge wins, no idols, but enough social reach to stay relevant deep into S14. His game was defined by flexibility, sitting inside three different alliances and repeatedly acting as the equalizer when numbers got messy. The downside is obvious too — 19 votes against is a flashing warning light that he was constantly on the board before finally running out of road.",
-      "strengths": [
-        "S14 fifth place",
-        "Three alliances",
-        "Strong swing-vote positioning",
-        "Tier A score without advantages"
-      ],
-      "weaknesses": [
-        "19 votes against",
-        "Zero challenge wins",
-        "No finalist equity shown"
-      ],
-      "blockSurvived": 0
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S15's equalizer, Nura made their rookie season matter less by owning the game than by keeping it from tipping too far in anyone else's favor. Their three alliances gave them reach, but the nine votes against them show how often that balancing act put a target on their back. One immunity win helped carry them to P5, where their legacy settled as a steadying force who could shape the season without quite closing it.",
+      "strengths": [],
+      "weaknesses": []
     },
     {
       "playerId": "geoff",
       "name": "Geoff",
-      "rank": 38,
+      "rank": 40,
       "tier": "A",
       "score": 71,
       "title": "The Party Surfer",
@@ -1620,9 +1720,47 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "gabby",
+      "name": "Gabby",
+      "rank": 41,
+      "tier": "A",
+      "score": 71,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "scoreHistory": [
+        70.3,
+        71
+      ],
+      "placements": [
+        5,
+        10
+      ],
+      "avgPlacement": 7.5,
+      "challengeWins": 3,
+      "votesAgainst": 13,
+      "juryVotes": 0,
+      "idolsFound": 2,
+      "title": "The Idol Escape Artist",
+      "emoji": "🎭",
+      "reasoning": "Gabby’s return made her legacy more complicated than just “too stubborn to eliminate.” After a first run defined by idol-fueled survival, S15 showed she could actually win immunity and build alliances, but not turn that into lasting control. Finishing 10th keeps her in that strange Total Drama lane: dangerous enough to survive pressure, not stable enough to steer the game.",
+      "strengths": [
+        "S11 5th place",
+        "Played 2 idols",
+        "Survived heavy targeting",
+        "Endgame presence"
+      ],
+      "weaknesses": [
+        "9 votes against",
+        "0 challenge wins",
+        "Only 1 alliance"
+      ],
+      "blockSurvived": 0,
+      "winRate": 0
+    },
+    {
       "playerId": "blaineley",
       "name": "Blaineley",
-      "rank": 39,
+      "rank": 42,
       "tier": "B",
       "score": 70.4,
       "title": "The Media Maven",
@@ -1658,7 +1796,7 @@
     {
       "playerId": "bridgette",
       "name": "Bridgette",
-      "rank": 40,
+      "rank": 43,
       "tier": "B",
       "score": 70.3,
       "title": "The Surfboard Shield",
@@ -1707,45 +1845,10 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "gabby",
-      "name": "Gabby",
-      "rank": 41,
-      "tier": "B",
-      "score": 70.3,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        70.3
-      ],
-      "placements": [
-        5
-      ],
-      "avgPlacement": 5,
-      "challengeWins": 0,
-      "votesAgainst": 9,
-      "juryVotes": 0,
-      "idolsFound": 2,
-      "title": "The Idol Escape Artist",
-      "emoji": "🎭",
-      "reasoning": "Gabby’s 5th-place run was messy, loud, and hard to kill. She absorbed 9 votes and had no challenge wins, but two idol plays kept her game alive far longer than her threat level suggested it should have lasted. Her legacy is less about control and more about survival instinct under constant fire.",
-      "strengths": [
-        "S11 5th place",
-        "Played 2 idols",
-        "Survived heavy targeting",
-        "Endgame presence"
-      ],
-      "weaknesses": [
-        "9 votes against",
-        "0 challenge wins",
-        "Only 1 alliance"
-      ],
-      "blockSurvived": 0
-    },
-    {
       "playerId": "taylor",
       "tier": "B",
       "score": 70,
-      "rank": 42,
+      "rank": 44,
       "avgPlacement": 7,
       "winRate": 0,
       "placements": [
@@ -1780,7 +1883,7 @@
     {
       "playerId": "isabel",
       "name": "Isabel",
-      "rank": 43,
+      "rank": 45,
       "tier": "B",
       "score": 69.4,
       "wins": 0,
@@ -1813,44 +1916,47 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "mike",
-      "name": "Mike",
-      "rank": 44,
+      "playerId": "lake",
+      "name": "Lake",
+      "rank": 46,
       "tier": "B",
-      "score": 69,
-      "title": "The Many Faces",
-      "emoji": "🎭",
-      "reasoning": "Eliminated 2-0 (Sierra's perfect idol). (S4). Blindsided while Zoey held immunity. (S3). Across 2 season(s): avg placement 9.00.",
-      "strengths": [
-        "Improved S4",
-        "Two seasons"
-      ],
-      "weaknesses": [
-        "Voted out by Zoey S4"
-      ],
-      "avgPlacement": 9,
-      "winRate": 0,
+      "score": 69.2,
       "wins": 0,
       "seasonsPlayed": 2,
-      "placements": [
-        12,
-        6
+      "scoreHistory": [
+        64.9,
+        69.2
       ],
-      "challengeWins": 2,
-      "votesAgainst": 8,
+      "placements": [
+        7,
+        13
+      ],
+      "avgPlacement": 10,
+      "challengeWins": 0,
+      "votesAgainst": 6,
       "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 63.43,
-      "winPercentile": 45.52,
-      "challengePercentile": 75.37,
-      "socialPercentile": 57.46,
-      "strategicPercentile": 77.61,
-      "blockSurvived": 0
+      "idolsFound": 2,
+      "title": "The Alliance Hopper",
+      "emoji": "🌊",
+      "reasoning": "Lake is now a two-time player whose case is still built on activity without authority. Her S15 fall at P13 hurts, but the effective idol play and spotless vote record show the same instincts that made her S12 run to 7th feel sneakily alive. She can read danger and find alliances; she just has not turned that motion into control, a finale push, or a signature Total Drama legacy yet.",
+      "strengths": [
+        "7th place debut",
+        "Played 1 idol",
+        "5 alliances",
+        "Only 6 votes against"
+      ],
+      "weaknesses": [
+        "0 challenge wins",
+        "No jury votes",
+        "Limited control"
+      ],
+      "blockSurvived": 0,
+      "winRate": 0
     },
     {
       "playerId": "rosa-maria",
       "name": "Rosa-Maria",
-      "rank": 45,
+      "rank": 47,
       "tier": "B",
       "score": 69,
       "wins": 0,
@@ -1885,7 +1991,7 @@
     {
       "playerId": "chase",
       "name": "Chase",
-      "rank": 46,
+      "rank": 48,
       "tier": "B",
       "score": 68.5,
       "wins": 0,
@@ -1923,7 +2029,7 @@
     {
       "playerId": "beth",
       "name": "Beth",
-      "rank": 47,
+      "rank": 49,
       "tier": "B",
       "score": 68.4,
       "title": "The Sweetheart",
@@ -1959,7 +2065,7 @@
     {
       "playerId": "jen",
       "name": "Jen",
-      "rank": 48,
+      "rank": 50,
       "tier": "B",
       "score": 68.2,
       "wins": 0,
@@ -1995,9 +2101,38 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "millie",
+      "name": "Millie",
+      "rank": 51,
+      "tier": "B",
+      "score": 67.7,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        2,
+        25
+      ],
+      "avgPlacement": 13.5,
+      "challengeWins": 1,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "The Overachiever",
+      "emoji": "📔",
+      "reasoning": "Millie’s legacy is still built on S9, where she played like the season’s most complete non-winner: the Red Idol save on Priya, the F5 immunity win, and a steady hand through a messy merge all gave her a finale-worthy case. S15 is a sharp comedown, with a P25 exit and four votes against showing none of the control that defined her first run. She is still a major “what if” from the reboot era, but now her story is as much about how high she peaked before Bowie as it is about never finding that level again.",
+      "strengths": [],
+      "weaknesses": [],
+      "blockSurvived": 0,
+      "scoreHistory": [
+        85.8,
+        67.7
+      ],
+      "winRate": 0
+    },
+    {
       "playerId": "ellie",
       "name": "Ellie",
-      "rank": 49,
+      "rank": 52,
       "tier": "B",
       "score": 67.7,
       "wins": 0,
@@ -2035,7 +2170,7 @@
     {
       "playerId": "dwayne",
       "name": "Dwayne",
-      "rank": 50,
+      "rank": 53,
       "tier": "B",
       "score": 67.6,
       "title": "The Dad",
@@ -2071,7 +2206,7 @@
     {
       "playerId": "caleb",
       "name": "Caleb",
-      "rank": 51,
+      "rank": 54,
       "tier": "B",
       "score": 67.4,
       "wins": 0,
@@ -2116,7 +2251,7 @@
     {
       "playerId": "ezekiel",
       "name": "Ezekiel",
-      "rank": 52,
+      "rank": 55,
       "tier": "B",
       "score": 67.3,
       "title": "The Idol Gambler",
@@ -2160,7 +2295,7 @@
     {
       "playerId": "gwen",
       "name": "Gwen",
-      "rank": 53,
+      "rank": 56,
       "tier": "B",
       "score": 67.2,
       "title": "The Shadow Marathoner",
@@ -2206,7 +2341,7 @@
       "playerId": "shawn",
       "tier": "B",
       "score": 67,
-      "rank": 54,
+      "rank": 57,
       "avgPlacement": 9,
       "winRate": 0,
       "placements": [
@@ -2243,7 +2378,7 @@
     {
       "playerId": "trent",
       "name": "Trent",
-      "rank": 55,
+      "rank": 58,
       "tier": "B",
       "score": 66.6,
       "title": "The Bruised Strategist",
@@ -2294,7 +2429,7 @@
     {
       "playerId": "amy",
       "name": "Amy",
-      "rank": 56,
+      "rank": 59,
       "tier": "B",
       "score": 66.4,
       "title": "The Mean Twin",
@@ -2327,7 +2462,7 @@
     {
       "playerId": "damien",
       "name": "Damien",
-      "rank": 57,
+      "rank": 60,
       "tier": "B",
       "score": 66.3,
       "wins": 0,
@@ -2370,9 +2505,35 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "manu",
+      "name": "Manu",
+      "rank": 61,
+      "tier": "B",
+      "score": 65.7,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        65.7
+      ],
+      "placements": [
+        9
+      ],
+      "avgPlacement": 9,
+      "challengeWins": 2,
+      "votesAgainst": 5,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Manu’s debut was a solid new-player run: competitive enough to grab two reward wins and social enough to work within more than one alliance. The problem was that the heat never fully went away, and five votes against tells the story of a player people kept circling back to. Ninth place leaves Manu looking capable, but not yet dangerous enough to control the season.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "marissa",
       "name": "Marissa",
-      "rank": 58,
+      "rank": 62,
       "tier": "B",
       "score": 65.6,
       "wins": 0,
@@ -2405,9 +2566,46 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "natalia",
+      "name": "Natalia",
+      "rank": 63,
+      "tier": "B",
+      "score": 65.5,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "scoreHistory": [
+        53.9,
+        65.5
+      ],
+      "placements": [
+        12,
+        11
+      ],
+      "avgPlacement": 11.5,
+      "challengeWins": 0,
+      "votesAgainst": 15,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "The Early Alliance Spark",
+      "emoji": "✨",
+      "reasoning": "Natalia’s second run nudged the same story forward rather than rewriting it: from 12th to 11th, with more connections and less heat at the elimination ceremony. S15 made her feel more plugged into the camp, but it still never turned into control over where the votes went. Her legacy is a lower-middle presence who kept finding ways into alliances, just not far enough into the game to make the season bend around her.",
+      "strengths": [
+        "2 alliance connections",
+        "Narrative equalizer boost",
+        "Socially involved early"
+      ],
+      "weaknesses": [
+        "12th place finish",
+        "0 challenge wins",
+        "9 votes against"
+      ],
+      "blockSurvived": 0,
+      "winRate": 0
+    },
+    {
       "playerId": "eureka",
       "name": "Eureka",
-      "rank": 59,
+      "rank": 64,
       "tier": "B",
       "score": 65.4,
       "wins": 0,
@@ -2442,7 +2640,7 @@
     {
       "playerId": "sugar",
       "name": "Sugar",
-      "rank": 60,
+      "rank": 65,
       "tier": "B",
       "score": 65.2,
       "title": "The Pageant Menace",
@@ -2475,44 +2673,9 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "lake",
-      "name": "Lake",
-      "rank": 61,
-      "tier": "B",
-      "score": 64.9,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        64.9
-      ],
-      "placements": [
-        7
-      ],
-      "avgPlacement": 7,
-      "challengeWins": 0,
-      "votesAgainst": 6,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "The Alliance Hopper",
-      "emoji": "🌊",
-      "reasoning": "Lake’s lone run to 7th was quietly busy: no challenge wins, but an idol play and five alliances show someone constantly trying to reposition. That activity kept her relevant deep into S12, though it never translated into a firm power base or jury respect. She lands as a solid one-season player with tools, but not yet a defining move.",
-      "strengths": [
-        "7th place debut",
-        "Played 1 idol",
-        "5 alliances",
-        "Only 6 votes against"
-      ],
-      "weaknesses": [
-        "0 challenge wins",
-        "No jury votes",
-        "Limited control"
-      ],
-      "blockSurvived": 0
-    },
-    {
       "playerId": "scarlett",
       "name": "Scarlett",
-      "rank": 62,
+      "rank": 66,
       "tier": "B",
       "score": 64.7,
       "title": "The Volatile Mastermind",
@@ -2561,7 +2724,7 @@
     {
       "playerId": "jo",
       "name": "Jo",
-      "rank": 63,
+      "rank": 67,
       "tier": "B",
       "score": 64.7,
       "title": "The Alpha Athlete",
@@ -2595,9 +2758,49 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "mike",
+      "name": "Mike",
+      "rank": 68,
+      "tier": "B",
+      "score": 64.5,
+      "title": "The Many Faces",
+      "emoji": "🎭",
+      "reasoning": "Mike’s career has become a string of games where the shield around him disappears at the worst possible time. He was blindsided while Zoey had immunity, then got clipped 2-0 by Sierra’s perfect idol, and S15’s 15th-place finish with five votes against him suggests he still couldn’t get ahead of the vote. Across three winless seasons, he reads as a dangerous enough returnee to target, but not a steady enough strategist to survive when Total Drama starts squeezing.",
+      "strengths": [
+        "Improved S4",
+        "Two seasons"
+      ],
+      "weaknesses": [
+        "Voted out by Zoey S4"
+      ],
+      "avgPlacement": 11,
+      "winRate": 0,
+      "wins": 0,
+      "seasonsPlayed": 3,
+      "placements": [
+        12,
+        6,
+        15
+      ],
+      "challengeWins": 2,
+      "votesAgainst": 13,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 63.43,
+      "winPercentile": 45.52,
+      "challengePercentile": 75.37,
+      "socialPercentile": 57.46,
+      "strategicPercentile": 77.61,
+      "blockSurvived": 0,
+      "scoreHistory": [
+        69,
+        64.5
+      ]
+    },
+    {
       "playerId": "zaid",
       "name": "Zaid",
-      "rank": 64,
+      "rank": 69,
       "tier": "B",
       "score": 64.5,
       "wins": 0,
@@ -2632,7 +2835,7 @@
     {
       "playerId": "hunter",
       "name": "Hunter",
-      "rank": 65,
+      "rank": 70,
       "tier": "B",
       "score": 64.3,
       "wins": 0,
@@ -2676,7 +2879,7 @@
     {
       "playerId": "priya",
       "name": "Priya",
-      "rank": 66,
+      "rank": 71,
       "tier": "B",
       "score": 63.9,
       "wins": 0,
@@ -2714,7 +2917,7 @@
     {
       "playerId": "kelly",
       "name": "Kelly",
-      "rank": 67,
+      "rank": 72,
       "tier": "B",
       "score": 63.6,
       "title": "The Fireline Fallen",
@@ -2761,9 +2964,35 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "bruno",
+      "name": "Bruno",
+      "rank": 73,
+      "tier": "B",
+      "score": 63.6,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        63.6
+      ],
+      "placements": [
+        12
+      ],
+      "avgPlacement": 12,
+      "challengeWins": 0,
+      "votesAgainst": 7,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Bruno’s S15 debut was short of a deep run, but it was not a quiet P12. He built one alliance and played his idol correctly when the votes came for him, giving his game one clean survival beat even as the target kept finding him. Seven votes against tells the story: Bruno was dangerous enough to draw attention, but not connected enough to make that attention go away.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "gerry",
       "name": "Gerry",
-      "rank": 68,
+      "rank": 74,
       "tier": "B",
       "score": 63.2,
       "wins": 0,
@@ -2806,9 +3035,35 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "oliwia",
+      "name": "Oliwia",
+      "rank": 75,
+      "tier": "B",
+      "score": 62.9,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        62.9
+      ],
+      "placements": [
+        8
+      ],
+      "avgPlacement": 8,
+      "challengeWins": 0,
+      "votesAgainst": 8,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Oliwia’s rookie season was a respectable but uneven P8 run. She had enough social traction to land in two alliances, but the wasted idol kept her from turning that structure into a real power swing. With eight votes against her, she spent too much of S15 as an exposed target, yet still lasted long enough to make her first game feel like more than a warm-up.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "mk",
       "name": "MK",
-      "rank": 69,
+      "rank": 76,
       "tier": "B",
       "score": 62.3,
       "wins": 0,
@@ -2831,7 +3086,7 @@
     {
       "playerId": "dave",
       "name": "Dave",
-      "rank": 70,
+      "rank": 77,
       "tier": "B",
       "score": 61.9,
       "title": "The Neurotic Strategist",
@@ -2867,7 +3122,7 @@
     {
       "playerId": "heather",
       "name": "Heather",
-      "rank": 71,
+      "rank": 78,
       "tier": "B",
       "score": 61.1,
       "title": "The Queen Bee",
@@ -2904,7 +3159,7 @@
     {
       "playerId": "dawn",
       "name": "Dawn",
-      "rank": 72,
+      "rank": 79,
       "tier": "C",
       "score": 60.6,
       "title": "The Aura Casualty",
@@ -2951,9 +3206,46 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "grett",
+      "name": "Grett",
+      "rank": 80,
+      "tier": "C",
+      "score": 60.2,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "scoreHistory": [
+        43.2,
+        60.2
+      ],
+      "placements": [
+        14,
+        14
+      ],
+      "avgPlacement": 14,
+      "challengeWins": 0,
+      "votesAgainst": 13,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "The Early Lightning Rod",
+      "emoji": "⚡",
+      "reasoning": "Grett’s return only reinforced the same problem: she can make herself part of the story, but not in a way that keeps her safe. After an early 14th-place exit with eight votes against, S15 gave her another 14th-place finish and five more votes against, making her career feel defined by social heat she never managed to cool down. She’s memorable, but Total Drama has kept treating that visibility as a reason to send her home.",
+      "strengths": [
+        "Memorable early target",
+        "Created visible conflict",
+        "Survived past the first few boots"
+      ],
+      "weaknesses": [
+        "8 votes against",
+        "14th place finish",
+        "0 challenge wins"
+      ],
+      "blockSurvived": 0,
+      "winRate": 0
+    },
+    {
       "playerId": "owen",
       "name": "Owen",
-      "rank": 73,
+      "rank": 81,
       "tier": "C",
       "score": 59.5,
       "title": "The Big Buddy",
@@ -2988,7 +3280,7 @@
     {
       "playerId": "ivy",
       "name": "Ivy",
-      "rank": 74,
+      "rank": 82,
       "tier": "C",
       "score": 59.5,
       "wins": 0,
@@ -3023,7 +3315,7 @@
     {
       "playerId": "courtney",
       "name": "Courtney",
-      "rank": 75,
+      "rank": 83,
       "tier": "C",
       "score": 59.1,
       "title": "The Courtroom Wildfire",
@@ -3069,7 +3361,7 @@
       "playerId": "kitty",
       "tier": "C",
       "score": 59,
-      "rank": 76,
+      "rank": 84,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -3107,7 +3399,7 @@
       "playerId": "laurie",
       "tier": "C",
       "score": 59,
-      "rank": 77,
+      "rank": 85,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -3140,9 +3432,46 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "yul",
+      "name": "Yul",
+      "rank": 86,
+      "tier": "C",
+      "score": 58.8,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "scoreHistory": [
+        51.2,
+        58.8
+      ],
+      "placements": [
+        12,
+        20
+      ],
+      "avgPlacement": 16,
+      "challengeWins": 0,
+      "votesAgainst": 12,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "The Fallen Idol Bet",
+      "emoji": "🃏",
+      "reasoning": "Yul’s return did less to rewrite his S12 story than underline it. The idol-and-alliance shell once made him look more dangerous than he was, and S15’s 20th-place finish showed the same gap between presence and control in even harsher form. His legacy is a contestant who attracts votes before he builds protection: noticeable, abrasive, and consistently easier to cut than to follow.",
+      "strengths": [
+        "Found and played 1 idol",
+        "1 alliance",
+        "Had visible game presence"
+      ],
+      "weaknesses": [
+        "12th-place finish",
+        "0 challenge wins",
+        "8 votes against"
+      ],
+      "blockSurvived": 0,
+      "winRate": 0
+    },
+    {
       "playerId": "ripper",
       "name": "Ripper",
-      "rank": 78,
+      "rank": 87,
       "tier": "C",
       "score": 58.7,
       "wins": 0,
@@ -3187,7 +3516,7 @@
     {
       "playerId": "max",
       "name": "Max",
-      "rank": 79,
+      "rank": 88,
       "tier": "C",
       "score": 57.8,
       "title": "The Evil Genius",
@@ -3220,7 +3549,7 @@
     {
       "playerId": "leshawna",
       "name": "Leshawna",
-      "rank": 80,
+      "rank": 89,
       "tier": "C",
       "score": 57.8,
       "title": "The Real One",
@@ -3256,7 +3585,7 @@
     {
       "playerId": "emmah",
       "name": "Emmah",
-      "rank": 81,
+      "rank": 90,
       "tier": "C",
       "score": 57,
       "wins": 0,
@@ -3294,7 +3623,7 @@
     {
       "playerId": "axel",
       "name": "Axel",
-      "rank": 82,
+      "rank": 91,
       "tier": "C",
       "score": 57,
       "wins": 0,
@@ -3317,7 +3646,7 @@
     {
       "playerId": "dan",
       "name": "Dan",
-      "rank": 83,
+      "rank": 92,
       "tier": "C",
       "score": 57,
       "wins": 0,
@@ -3353,7 +3682,7 @@
       "playerId": "pete",
       "tier": "C",
       "score": 56.8,
-      "rank": 84,
+      "rank": 93,
       "avgPlacement": 10,
       "winRate": 0,
       "placements": [
@@ -3389,7 +3718,7 @@
     {
       "playerId": "topher",
       "name": "Topher",
-      "rank": 85,
+      "rank": 94,
       "tier": "C",
       "score": 56.6,
       "title": "The Host Wannabe",
@@ -3422,7 +3751,7 @@
     {
       "playerId": "benji",
       "name": "Benji",
-      "rank": 86,
+      "rank": 95,
       "tier": "C",
       "score": 56.1,
       "wins": 0,
@@ -3455,9 +3784,35 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "ernesto",
+      "name": "Ernesto",
+      "rank": 96,
+      "tier": "C",
+      "score": 55.5,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        55.5
+      ],
+      "placements": [
+        17
+      ],
+      "avgPlacement": 17,
+      "challengeWins": 0,
+      "votesAgainst": 3,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Ernesto’s Total Drama debut was short enough that his game never really got to define the season. Finishing 17th with three votes against points to an early elimination that was decisive, but not especially infamous. His legacy is that of a new player who entered the cast and left before he could turn first impressions into real staying power.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "richard",
       "name": "Richard",
-      "rank": 87,
+      "rank": 97,
       "tier": "C",
       "score": 55.2,
       "wins": 0,
@@ -3491,7 +3846,7 @@
     {
       "playerId": "stephanie",
       "name": "Stephanie",
-      "rank": 88,
+      "rank": 98,
       "tier": "C",
       "score": 55.1,
       "title": "The Unspent Fuse",
@@ -3534,7 +3889,7 @@
     {
       "playerId": "lill",
       "name": "Lill",
-      "rank": 89,
+      "rank": 99,
       "tier": "C",
       "score": 55,
       "wins": 0,
@@ -3569,7 +3924,7 @@
     {
       "playerId": "noah",
       "name": "Noah",
-      "rank": 90,
+      "rank": 100,
       "tier": "C",
       "score": 54.6,
       "title": "The Snark King",
@@ -3603,10 +3958,36 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "ren",
+      "name": "Ren",
+      "rank": 101,
+      "tier": "C",
+      "score": 54.6,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        54.6
+      ],
+      "placements": [
+        18
+      ],
+      "avgPlacement": 18,
+      "challengeWins": 0,
+      "votesAgainst": 1,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Ren’s debut barely had time to become a game, which is the defining point of their legacy: a new player gone in 18th before the season could show what they were capable of. With only one vote against them, the exit reads less like a long collapse than an immediate cut, leaving Ren as an early reminder of how little room S15 gave its newest faces.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "brody",
       "tier": "C",
       "score": 54.5,
-      "rank": 91,
+      "rank": 102,
       "avgPlacement": 13.666666666666666,
       "winRate": 0,
       "placements": [
@@ -3644,7 +4025,7 @@
     {
       "playerId": "dj",
       "name": "DJ",
-      "rank": 92,
+      "rank": 103,
       "tier": "C",
       "score": 54,
       "title": "The Gentle Giant",
@@ -3680,7 +4061,7 @@
     {
       "playerId": "harold",
       "name": "Harold",
-      "rank": 93,
+      "rank": 104,
       "tier": "C",
       "score": 54,
       "title": "The Ninja Nerd",
@@ -3714,9 +4095,9 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "natalia",
-      "name": "Natalia",
-      "rank": 94,
+      "playerId": "dunia",
+      "name": "Dunia",
+      "rank": 105,
       "tier": "C",
       "score": 53.9,
       "wins": 0,
@@ -3725,32 +4106,24 @@
         53.9
       ],
       "placements": [
-        12
+        19
       ],
-      "avgPlacement": 12,
+      "avgPlacement": 19,
       "challengeWins": 0,
-      "votesAgainst": 9,
+      "votesAgainst": 0,
+      "blockSurvived": 0,
       "juryVotes": 0,
       "idolsFound": 0,
-      "title": "The Early Alliance Spark",
-      "emoji": "✨",
-      "reasoning": "Natalia's S14 run ended in 12th, but she showed enough social initiative to avoid feeling like a total non-factor. With two alliances and 9 votes against, she was involved in the board even if she never gained the leverage to shape it. Her profile is a classic lower-tier equalizer: present, connected, but gone before the game could truly become hers.",
-      "strengths": [
-        "2 alliance connections",
-        "Narrative equalizer boost",
-        "Socially involved early"
-      ],
-      "weaknesses": [
-        "12th place finish",
-        "0 challenge wins",
-        "9 votes against"
-      ],
-      "blockSurvived": 0
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S15's cleanest early exit on paper. Dunia finished 19th without ever taking a vote, which makes their first run feel less like a rejected social game and more like a rookie story that ended before it could really start. For a new player, that leaves a strange legacy: no damage, no enemies, but also no time to build a case.",
+      "strengths": [],
+      "weaknesses": []
     },
     {
       "playerId": "josee",
       "name": "Josee",
-      "rank": 95,
+      "rank": 106,
       "tier": "C",
       "score": 53.6,
       "title": "The Fury Duelist",
@@ -3794,7 +4167,7 @@
     {
       "playerId": "karol",
       "name": "Karol",
-      "rank": 96,
+      "rank": 107,
       "tier": "C",
       "score": 53.6,
       "wins": 0,
@@ -3828,7 +4201,7 @@
     {
       "playerId": "eva",
       "name": "Eva",
-      "rank": 97,
+      "rank": 108,
       "tier": "C",
       "score": 53.4,
       "title": "The Tempered Equalizer",
@@ -3878,7 +4251,7 @@
     {
       "playerId": "hicks",
       "name": "Hicks",
-      "rank": 98,
+      "rank": 109,
       "tier": "C",
       "score": 53.2,
       "wins": 0,
@@ -3916,7 +4289,7 @@
     {
       "playerId": "seraphine",
       "name": "Seraphine",
-      "rank": 99,
+      "rank": 110,
       "tier": "C",
       "score": 53.2,
       "wins": 0,
@@ -3950,7 +4323,7 @@
     {
       "playerId": "katie",
       "name": "Katie",
-      "rank": 100,
+      "rank": 111,
       "tier": "C",
       "score": 52.8,
       "title": "The BFF",
@@ -3984,7 +4357,7 @@
     {
       "playerId": "sadie",
       "name": "Sadie",
-      "rank": 101,
+      "rank": 112,
       "tier": "C",
       "score": 52.2,
       "title": "The BFF",
@@ -4016,43 +4389,9 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "yul",
-      "name": "Yul",
-      "rank": 102,
-      "tier": "C",
-      "score": 51.2,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        51.2
-      ],
-      "placements": [
-        12
-      ],
-      "avgPlacement": 12,
-      "challengeWins": 0,
-      "votesAgainst": 8,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "The Fallen Idol Bet",
-      "emoji": "🃏",
-      "reasoning": "Yul’s S12 game has the same surface-level assets as a more dangerous player: an idol, an alliance, and enough presence to draw attention. But the execution never caught up to the threat level, and his idol play could not keep him from sliding out in 12th. With 8 votes against and no challenge wins, he looked more like a target with a trinket than a strategist with a plan.",
-      "strengths": [
-        "Found and played 1 idol",
-        "1 alliance",
-        "Had visible game presence"
-      ],
-      "weaknesses": [
-        "12th-place finish",
-        "0 challenge wins",
-        "8 votes against"
-      ],
-      "blockSurvived": 0
-    },
-    {
       "playerId": "lynda",
       "name": "Lynda",
-      "rank": 103,
+      "rank": 113,
       "tier": "C",
       "score": 51.2,
       "wins": 0,
@@ -4086,7 +4425,7 @@
     {
       "playerId": "rodney",
       "name": "Rodney",
-      "rank": 104,
+      "rank": 114,
       "tier": "C",
       "score": 51,
       "title": "The Loverboy",
@@ -4119,9 +4458,35 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "finn",
+      "name": "Finn",
+      "rank": 115,
+      "tier": "D",
+      "score": 50.8,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        50.8
+      ],
+      "placements": [
+        22
+      ],
+      "avgPlacement": 22,
+      "challengeWins": 0,
+      "votesAgainst": 3,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S15’s early new-player casualty. Finn only took three votes, but at P22 his season ended before he could build much of a footprint. His legacy is a short one: a first-timer who never got the runway to turn arrival into momentum.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "sierra",
       "name": "Sierra",
-      "rank": 105,
+      "rank": 116,
       "tier": "D",
       "score": 50.1,
       "title": "The Superfan",
@@ -4157,7 +4522,7 @@
     {
       "playerId": "anne-maria",
       "name": "Anne Maria",
-      "rank": 106,
+      "rank": 117,
       "tier": "D",
       "score": 50,
       "title": "The Jersey Diva",
@@ -4192,7 +4557,7 @@
     {
       "playerId": "lightning",
       "name": "Lightning",
-      "rank": 107,
+      "rank": 118,
       "tier": "D",
       "score": 50,
       "title": "The Jock",
@@ -4228,7 +4593,7 @@
     {
       "playerId": "sterling",
       "name": "Sterling",
-      "rank": 108,
+      "rank": 119,
       "tier": "D",
       "score": 49.7,
       "wins": 0,
@@ -4260,9 +4625,35 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "aubrey",
+      "name": "Aubrey",
+      "rank": 120,
+      "tier": "D",
+      "score": 48.9,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        48.9
+      ],
+      "placements": [
+        23
+      ],
+      "avgPlacement": 23,
+      "challengeWins": 0,
+      "votesAgainst": 5,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S15's rookie run that ended before it could really take shape. Aubrey finished 23rd with five votes against them, making their legacy less about a single disastrous move and more about how quickly a new player can get marked as expendable in Total Drama.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "brightly",
       "name": "Brightly",
-      "rank": 109,
+      "rank": 121,
       "tier": "D",
       "score": 48.8,
       "wins": 0,
@@ -4285,7 +4676,7 @@
     {
       "playerId": "sam",
       "name": "Sam",
-      "rank": 110,
+      "rank": 122,
       "tier": "D",
       "score": 47.6,
       "title": "The Eager Underdog",
@@ -4327,7 +4718,7 @@
     {
       "playerId": "izzy",
       "name": "Izzy",
-      "rank": 111,
+      "rank": 123,
       "tier": "D",
       "score": 47.4,
       "title": "The Chaos Gremlin",
@@ -4361,7 +4752,7 @@
     {
       "playerId": "alessio",
       "name": "Alessio",
-      "rank": 112,
+      "rank": 124,
       "tier": "D",
       "score": 47.1,
       "wins": 0,
@@ -4395,7 +4786,7 @@
     {
       "playerId": "mary",
       "name": "Mary",
-      "rank": 113,
+      "rank": 125,
       "tier": "D",
       "score": 47,
       "title": "The Brain",
@@ -4429,7 +4820,7 @@
     {
       "playerId": "nick",
       "name": "Nick",
-      "rank": 114,
+      "rank": 126,
       "tier": "D",
       "score": 47,
       "wins": 0,
@@ -4463,7 +4854,7 @@
     {
       "playerId": "raj",
       "name": "Raj",
-      "rank": 115,
+      "rank": 127,
       "tier": "D",
       "score": 46.8,
       "wins": 0,
@@ -4484,9 +4875,35 @@
       "blockSurvived": 0
     },
     {
+      "playerId": "evie",
+      "name": "Evie",
+      "rank": 128,
+      "tier": "D",
+      "score": 46.1,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        46.1
+      ],
+      "placements": [
+        24
+      ],
+      "avgPlacement": 24,
+      "challengeWins": 0,
+      "votesAgainst": 11,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S15’s rough rookie exit. Evie landed in P24 with 11 votes against, the kind of early elimination that says the cast had settled on her before her game could really open up. As a new player, her legacy is less about a missed endgame than a reminder of how quickly a first-timer can get swallowed by the ceremony without enough cover.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "tess",
       "name": "Tess",
-      "rank": 116,
+      "rank": 129,
       "tier": "D",
       "score": 45.8,
       "wins": 0,
@@ -4520,7 +4937,7 @@
     {
       "playerId": "oliver",
       "name": "Oliver",
-      "rank": 117,
+      "rank": 130,
       "tier": "D",
       "score": 45.8,
       "wins": 0,
@@ -4555,7 +4972,7 @@
       "playerId": "devin",
       "tier": "D",
       "score": 45,
-      "rank": 118,
+      "rank": 131,
       "avgPlacement": 14,
       "winRate": 0,
       "placements": [
@@ -4590,7 +5007,7 @@
     {
       "playerId": "tristan",
       "name": "Tristan",
-      "rank": 119,
+      "rank": 132,
       "tier": "D",
       "score": 43.6,
       "wins": 0,
@@ -4624,7 +5041,7 @@
     {
       "playerId": "kai",
       "name": "Kai",
-      "rank": 120,
+      "rank": 133,
       "tier": "D",
       "score": 43.5,
       "wins": 0,
@@ -4658,7 +5075,7 @@
     {
       "playerId": "tyler",
       "name": "Tyler",
-      "rank": 121,
+      "rank": 134,
       "tier": "D",
       "score": 43.4,
       "title": "The Heartfirst Liability",
@@ -4699,43 +5116,9 @@
       "blockSurvived": 0
     },
     {
-      "playerId": "grett",
-      "name": "Grett",
-      "rank": 122,
-      "tier": "D",
-      "score": 43.2,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        43.2
-      ],
-      "placements": [
-        14
-      ],
-      "avgPlacement": 14,
-      "challengeWins": 0,
-      "votesAgainst": 8,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "The Early Lightning Rod",
-      "emoji": "⚡",
-      "reasoning": "Grett's 14th-place finish is dragged down by one glaring number: 8 votes against in a single season. That kind of heat this early usually means either poor threat management or a social position that collapsed fast. She had enough presence to be noticed, but in Total Drama, being noticed for the wrong reasons is often fatal.",
-      "strengths": [
-        "Memorable early target",
-        "Created visible conflict",
-        "Survived past the first few boots"
-      ],
-      "weaknesses": [
-        "8 votes against",
-        "14th place finish",
-        "0 challenge wins"
-      ],
-      "blockSurvived": 0
-    },
-    {
       "playerId": "samey",
       "name": "Samey",
-      "rank": 123,
+      "rank": 135,
       "tier": "D",
       "score": 42,
       "title": "The Sweet Twin",
@@ -4770,7 +5153,7 @@
       "playerId": "lorenzo",
       "tier": "D",
       "score": 42,
-      "rank": 124,
+      "rank": 136,
       "avgPlacement": 16,
       "winRate": 0,
       "placements": [
@@ -4805,7 +5188,7 @@
     {
       "playerId": "diego",
       "name": "Diego",
-      "rank": 125,
+      "rank": 137,
       "tier": "D",
       "score": 41.4,
       "wins": 0,
@@ -4839,7 +5222,7 @@
     {
       "playerId": "wix",
       "name": "Wix",
-      "rank": 126,
+      "rank": 138,
       "tier": "D",
       "score": 41.2,
       "wins": 0,
@@ -4873,7 +5256,7 @@
     {
       "playerId": "junior",
       "name": "Junior",
-      "rank": 127,
+      "rank": 139,
       "tier": "D",
       "score": 41,
       "title": "The Kid",
@@ -4908,7 +5291,7 @@
     {
       "playerId": "ted",
       "name": "Ted",
-      "rank": 128,
+      "rank": 140,
       "tier": "D",
       "score": 40.2,
       "wins": 0,
@@ -4942,7 +5325,7 @@
     {
       "playerId": "chet",
       "name": "Chet",
-      "rank": 129,
+      "rank": 141,
       "tier": "D",
       "score": 40.1,
       "wins": 0,
@@ -4965,7 +5348,7 @@
     {
       "playerId": "ennui",
       "name": "Ennui",
-      "rank": 130,
+      "rank": 142,
       "tier": "D",
       "score": 40,
       "title": "The Deadpan Goth",
@@ -5000,7 +5383,7 @@
     {
       "playerId": "will",
       "name": "Will",
-      "rank": 131,
+      "rank": 143,
       "tier": "D",
       "score": 39.4,
       "wins": 0,
@@ -5034,7 +5417,7 @@
     {
       "playerId": "beardo",
       "name": "Beardo",
-      "rank": 132,
+      "rank": 144,
       "tier": "D",
       "score": 39,
       "title": "The Soundboard",
@@ -5068,7 +5451,7 @@
     {
       "playerId": "amelie",
       "name": "Amelie",
-      "rank": 133,
+      "rank": 145,
       "tier": "D",
       "score": 38.2,
       "wins": 0,
@@ -5101,7 +5484,7 @@
     {
       "playerId": "nichelle",
       "name": "Nichelle",
-      "rank": 134,
+      "rank": 146,
       "tier": "D",
       "score": 38.1,
       "wins": 0,
@@ -5124,7 +5507,7 @@
     {
       "playerId": "maggy",
       "name": "Maggy",
-      "rank": 135,
+      "rank": 147,
       "tier": "D",
       "score": 38.1,
       "wins": 0,
@@ -5158,7 +5541,7 @@
     {
       "playerId": "justin",
       "name": "Justin",
-      "rank": 136,
+      "rank": 148,
       "tier": "D",
       "score": 38,
       "title": "The Model",
@@ -5194,7 +5577,7 @@
     {
       "playerId": "ella",
       "name": "Ella",
-      "rank": 137,
+      "rank": 149,
       "tier": "D",
       "score": 38,
       "title": "The Disney Princess",
@@ -5228,7 +5611,7 @@
     {
       "playerId": "tammy",
       "name": "Tammy",
-      "rank": 138,
+      "rank": 150,
       "tier": "D",
       "score": 37,
       "title": "The Cosplayer",
@@ -5264,7 +5647,7 @@
       "playerId": "spud",
       "tier": "D",
       "score": 37,
-      "rank": 139,
+      "rank": 151,
       "avgPlacement": 17,
       "winRate": 0,
       "placements": [
@@ -5299,7 +5682,7 @@
     {
       "playerId": "scary-girl",
       "name": "Scary Girl",
-      "rank": 140,
+      "rank": 152,
       "tier": "D",
       "score": 36.5,
       "wins": 0,
@@ -5322,7 +5705,7 @@
     {
       "playerId": "rock",
       "name": "Rock",
-      "rank": 141,
+      "rank": 153,
       "tier": "D",
       "score": 36.1,
       "wins": 0,
@@ -5345,7 +5728,7 @@
     {
       "playerId": "drew",
       "name": "Drew",
-      "rank": 142,
+      "rank": 154,
       "tier": "D",
       "score": 35.9,
       "wins": 0,
@@ -5379,7 +5762,7 @@
     {
       "playerId": "connor",
       "name": "Connor",
-      "rank": 143,
+      "rank": 155,
       "tier": "D",
       "score": 35.6,
       "wins": 0,
@@ -5413,7 +5796,7 @@
     {
       "playerId": "ashley",
       "name": "Ashley",
-      "rank": 144,
+      "rank": 156,
       "tier": "D",
       "score": 33.3,
       "wins": 0,
@@ -5447,7 +5830,7 @@
     {
       "playerId": "zee",
       "name": "Zee",
-      "rank": 145,
+      "rank": 157,
       "tier": "D",
       "score": 33.2,
       "wins": 0,
@@ -5470,7 +5853,7 @@
     {
       "playerId": "b",
       "name": "B",
-      "rank": 146,
+      "rank": 158,
       "tier": "D",
       "score": 33,
       "title": "The Silent Genius",
@@ -5505,7 +5888,7 @@
     {
       "playerId": "miles",
       "name": "Miles",
-      "rank": 147,
+      "rank": 159,
       "tier": "D",
       "score": 33,
       "wins": 0,
@@ -5528,7 +5911,7 @@
     {
       "playerId": "staci",
       "name": "Staci",
-      "rank": 148,
+      "rank": 160,
       "tier": "D",
       "score": 32,
       "title": "The Storyteller",
@@ -5564,7 +5947,7 @@
       "playerId": "ellody",
       "tier": "D",
       "score": 32,
-      "rank": 149,
+      "rank": 161,
       "avgPlacement": 19,
       "winRate": 0,
       "placements": [
@@ -5599,7 +5982,7 @@
     {
       "playerId": "leonard",
       "name": "Leonard",
-      "rank": 150,
+      "rank": 162,
       "tier": "D",
       "score": 28,
       "title": "The Wizard",
@@ -5635,7 +6018,7 @@
     {
       "playerId": "dakota",
       "name": "Dakota",
-      "rank": 151,
+      "rank": 163,
       "tier": "D",
       "score": 26,
       "title": "The Celebrity",
@@ -5671,7 +6054,7 @@
     {
       "playerId": "crimson",
       "name": "Crimson",
-      "rank": 152,
+      "rank": 164,
       "tier": "D",
       "score": 21,
       "title": "The Goth Twin",

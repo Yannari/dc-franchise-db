@@ -806,6 +806,11 @@ function buildRecords(season){
     // Placements
     srIndexRows(s);
     const placementsHTML=(s.placements||[]).map((p,idx)=>{
+      // A row the AI writer skipped still says "[AI_FILL]" in every prose field (Zoey, TD15):
+      // the string as keyMoments took the whole season page down on .slice().map.
+      p={...p};
+      for(const k of ['story','notes','gameplayStyle'])if(typeof p[k]==='string'&&p[k].trim()==='[AI_FILL]')p[k]='';
+      if(!Array.isArray(p.keyMoments))p.keyMoments=[];
       const isRich=p.story||p.keyMoments?.length||p.alliances?.length;
       const pnum=p.placement===1?'🥇':p.placement===2?'🥈':p.placement===3?'🥉':'#'+p.placement;
       let chips=[];

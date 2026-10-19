@@ -293,7 +293,8 @@ export function attachRecords(doc, threads, format) {
     // timeline below sits beside them: the timeline is the SIMULATOR'S OWN
     // record of the same season, round by round, and where the two disagree the
     // timeline is the one that happened.
-    if (row.keyMoments?.length) t.moments = row.keyMoments.slice(0, 8);
+    // (an unwritten row says "[AI_FILL]" here, and a string sliced is nine letters, not moments)
+    if (Array.isArray(row.keyMoments) && row.keyMoments.length) t.moments = row.keyMoments.slice(0, 8);
     t.timeline = timelineFor(doc, t.name);
   }
 

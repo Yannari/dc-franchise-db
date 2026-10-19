@@ -7756,7 +7756,12 @@
       },
       "voice": "#dry #nerdy #anxious #schemer. Checks wording and consequences before replying. Suggests shorter messages, then adds qualifications. Relaxed humor draws on domestic observations. As Mateo, sounds noticeably more formal and cautious. Stress produces exact questions about what was promised.",
       "profileSources": {},
-      "ties": []
+      "ties": [
+        {
+          "name": "Mateo",
+          "kin": "siblings"
+        }
+      ]
     },
     {
       "name": "Mateo",

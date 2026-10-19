@@ -192,7 +192,7 @@ function _firstChanged(aired, rows) {
   return null;
 }
 
-function _build(inputs) {
+function _build(inputs, rerolls = {}) {
   _lastRefusal = null;
   const problem = raceCastProblem();
   if (problem) { _refuse(problem); return null; }
@@ -205,7 +205,7 @@ function _build(inputs) {
   const outer = gs;
   let result, eps, inner, record = null;
   try {
-    result = playRaceSeason({ teams: inputs.teams, options: inputs.options, seed, carried });
+    result = playRaceSeason({ teams: inputs.teams, options: { ...inputs.options, rerolls }, seed, carried });
     eps = airSeason(result);
     inner = gs;
     try {
@@ -216,8 +216,8 @@ function _build(inputs) {
   return { seed, rows: raceRows(result, eps), inner, teams: inputs.teams, winner: result.winner, record, startOf: { carried } };
 }
 
-function _commit(built, inputs, airedCount) {
-  gs.rr = { seed: built.seed, teams: built.teams.map(t => ({ ...t })), winner: built.winner || null,
+function _commit(built, inputs, airedCount, rerolls = {}) {
+  gs.rr = { seed: built.seed, teams: built.teams.map(t => ({ ...t })), winner: built.winner || null, rerolls: { ...rerolls },
     built: _sig(inputs), record: built.record || null, startOf: built.startOf || null };
   gs._rrQueue = built.rows.slice(airedCount);
   gs.relationshipDimensions = built.inner.relationshipDimensions || {};
@@ -233,18 +233,19 @@ export function racePendingChange() { return _lastNotice; }
 function _refreshQueue() {
   const aired = (gs.episodeHistory || []).filter(r => r && r.format === RACE_FORMAT);
   const inputs = _inputs();
+  const rerolls = { ...(gs.rr?.rerolls || {}) };
   if (Array.isArray(gs._rrQueue) && (gs.rr?.built === _sig(inputs) || gs.rr?.deferred === _sig(inputs))) return true;
-  const built = _build(inputs);
+  const built = _build(inputs, rerolls);
   if (!built) return false;
   const changed = _firstChanged(aired, built.rows);
-  if (changed == null) { _lastNotice = null; _commit(built, inputs, aired.length); return true; }
+  if (changed == null) { _lastNotice = null; _commit(built, inputs, aired.length, rerolls); return true; }
   // a change that would rewrite a leg already aired waits; the race keeps the setup it was built with
-  _lastNotice = `That change affects leg ${changed}, which has already aired. Start a new season to race with it.`;
+  _lastNotice = `That change affects leg ${changed}, which has already aired. Re-run leg ${changed} to race it with the change.`;
   if (!Array.isArray(gs._rrQueue)) {
     const asBuilt = gs.rr?.built ? JSON.parse(gs.rr.built) : inputs;
-    const again = _build(asBuilt);
+    const again = _build(asBuilt, rerolls);
     if (!again) return false;
-    _commit(again, asBuilt, aired.length);
+    _commit(again, asBuilt, aired.length, rerolls);
   }
   gs.rr.deferred = _sig(inputs);
   return true;
@@ -299,20 +300,46 @@ let _played = null;
 export function racePlayed() {
   const r = gs?.rr;
   if (!r?.teams?.length || !r.seed) return null;
-  const sig = `${r.seed}|${r.built || ''}`;
+  const sig = `${r.seed}|${r.built || ''}|${JSON.stringify(r.rerolls || {})}`;
   if (_played?.sig === sig) return _played;
   let options = {};
   try { options = r.built ? JSON.parse(r.built).options || {} : {}; } catch { options = {}; }
   const outer = gs;
   try {
-    const res = playRaceSeason({ teams: r.teams.map(t => ({ ...t })), seed: r.seed, options, carried: r.startOf?.carried || null });
+    const res = playRaceSeason({ teams: r.teams.map(t => ({ ...t })), seed: r.seed, options: { ...options, rerolls: { ...(r.rerolls || {}) } }, carried: r.startOf?.carried || null });
     _played = { sig, res, eps: airSeason(res) };
   } finally { setGs(outer); }
   return _played;
 }
 
-/** A race can't re-run one leg yet: its legs share one clock and one line ledger (a re-run is a later sub-project). */
-export function raceCanRerun() { return false; }
+/** A race with a seed can re-run any leg: every leg draws from its own stream. */
+export function raceCanRerun() { return !!gs?.rr?.seed; }
+
+/** Re-run leg N: its dice turn once more (and it takes any setup change); every earlier leg stays exactly as it
+ *  aired; the later ones are cleared, to be simulated again. */
+export function rerunRaceEpisode(epNum) {
+  _lastRefusal = null;
+  if (!gs?.rr?.seed) return _refuse('this season has no stored seed, so the legs that already aired could not be reproduced');
+  const N = Math.max(1, Number(epNum) || 1);
+  const aired = (gs.episodeHistory || []).filter(r => r && r.format === RACE_FORMAT);
+  const prefix = aired.filter(r => r.num < N);
+  const inputs = _inputs();
+  const rerolls = { ...(gs.rr.rerolls || {}), [N]: ((gs.rr.rerolls || {})[N] || 0) + 1 };
+  const built = _build(inputs, rerolls);
+  if (!built) return false;
+  const changed = _firstChanged(prefix, built.rows);
+  if (changed != null) return _refuse(`a change to the setup affects leg ${changed}, which comes before leg ${N}. Re-run leg ${changed} instead`);
+  if (!built.rows.some(r => r.num === N)) return _refuse(`the race has no leg ${N}`);
+  gs.episodeHistory = [...(gs.episodeHistory || []).filter(r => !(r && r.format === RACE_FORMAT && r.num >= N))];
+  _commit(built, inputs, prefix.length, rerolls);
+  _lastNotice = null;
+  delete gs.rrWinners;
+  gs.phase = 'race';
+  const last = prefix[prefix.length - 1];
+  gs.activePlayers = last ? [...(last.rr?.people || [])] : [];
+  gs.episode = last ? last.num : 0;
+  return true;
+}
 
 /** How the leg went, for the hub's corner: who won it, who came last, and where. */
 export function raceVoteShape(row) {

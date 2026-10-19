@@ -218,3 +218,26 @@ describe('the Visual Player names the leg', () => {
     for (const id of ['rr-watch', 'rr-transcript']) expect(_vpPhaseForScreen(id).label).toBe('The Leg');
   });
 });
+
+describe('a leg can be re-run', () => {
+  it('re-running leg 3 keeps legs 1 and 2 as they aired, clears the rest, and plays leg 3 again with new dice', async () => {
+    const { raceCanRerun, rerunRaceEpisode } = await import('../js/rr-run.js');
+    freshSeason(8);
+    const first = [simulateRaceEpisode(), simulateRaceEpisode(), simulateRaceEpisode(), simulateRaceEpisode()];
+    expect(raceCanRerun()).toBe(true);
+    const was = JSON.stringify(first[2].rr.order.map(o => o.team)) + JSON.stringify(first[2].rr.aired.segments.map(s => s.lineId));
+    let changed = false;
+    for (let k = 0; k < 4 && !changed; k++) {
+      expect(rerunRaceEpisode(3)).toBe(true);
+      expect(gs.episodeHistory.map(r => r.num)).toEqual([1, 2]);
+      expect(gs.episodeHistory.map(r => JSON.stringify(r.rr.order))).toEqual(first.slice(0, 2).map(r => JSON.stringify(r.rr.order)));
+      const again = simulateRaceEpisode();
+      expect(again.num).toBe(3);
+      changed = JSON.stringify(again.rr.order.map(o => o.team)) + JSON.stringify(again.rr.aired.segments.map(s => s.lineId)) !== was;
+    }
+    expect(changed).toBe(true);
+    // the race played again for the viewer is the re-run one
+    const { racePlayed } = await import('../js/rr-run.js');
+    expect(racePlayed().res.legs[2].order).toEqual(gs.episodeHistory[2].rr.order.map(o => o.team));
+  });
+});

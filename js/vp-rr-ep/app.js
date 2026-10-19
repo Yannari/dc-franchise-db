@@ -70,7 +70,7 @@ function playSim() {
   setPlayers(cast);
   let options = {};
   try { options = r.built ? JSON.parse(r.built).options || {} : {}; } catch { options = {}; }
-  const res = playRaceSeason({ teams: r.teams.map(t => ({ ...t })), seed: r.seed, options, carried: r.startOf?.carried || null });
+  const res = playRaceSeason({ teams: r.teams.map(t => ({ ...t })), seed: r.seed, options: { ...options, rerolls: { ...(r.rerolls || {}) } }, carried: r.startOf?.carried || null });
   const eps = airSeason(res);
   const aired = Number.isFinite(src.aired) ? Math.max(1, src.aired) : eps.length;
   return { seed: r.seed, nTeams: r.teams.length, res, eps, cast, built: [], sim: true, aired };

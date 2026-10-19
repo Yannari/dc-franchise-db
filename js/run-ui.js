@@ -32,7 +32,7 @@ import { challengeDailyList, challengeDrawnDailies } from './ch-run.js';
 import { isChallengeSeason, simulateChallengeEpisode, challengeCanRerun, lastChallengeRefusal, rerunChallengeEpisode,
   challengePendingChange, challengeEpisodeMap, challengeVoteShape } from './ch-run.js';
 import { isRaceSeason, simulateRaceEpisode, raceCanRerun, lastRaceRefusal, racePendingChange, raceEpisodeMap,
-  raceVoteShape } from './rr-run.js';
+  raceVoteShape, rerunRaceEpisode } from './rr-run.js';
 import { raceEpisodeText } from './rr-view.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
@@ -2127,7 +2127,7 @@ function _canReplay(epNum) {
   if (isCircleSeason()) return circleCanRerun();
   // The Challenge re-deals an episode off its stored seed, like the Circle.
   if (isChallengeSeason()) return challengeCanRerun();
-  // A race can't re-run one leg yet (rr-run.js): the button stays away rather than re-airing.
+  // A race re-runs a leg off its stored seed, like the Challenge (rr-run.js).
   if (isRaceSeason()) return raceCanRerun();
   /* THE MAIN STAGE ASKS THE SAME QUESTION THE CASTLE DOES. It used to ask
      "is there a checkpoint", which made the button a property of THIS BROWSER
@@ -2150,6 +2150,7 @@ export function replayEpisode(epNum) {
   if (isPerfectMatchSeason()) { _replayVillaEpisode(epNum); return; }
   if (isCircleSeason()) { _replayCircleEpisode(epNum); return; }
   if (isChallengeSeason()) { _replayChallengeEpisode(epNum); return; }
+  if (isRaceSeason()) { _replayRaceEpisode(epNum); return; }
   /* THE MAIN STAGE, WHICH NO LONGER NEEDS ONE EITHER. `rerunDragEpisode`
      rolls the season back off the rows that aired, so a drag re-run survives
      a reload and a browser that never managed to write a checkpoint. The
@@ -2468,6 +2469,32 @@ function _replayChallengeEpisode(epNum) {
     try { renderRunTab(); } catch { /* state is already back */ }
     const why = failure ? (failure.message || String(failure)) : refused;
     alert(`Episode ${epNum} could not be re-run, so nothing was changed.${why ? `\n\n${why}` : ''}`);
+    return;
+  }
+  saveGameState();
+  _refreshFeed();
+  viewingEpNum = ep.num;
+  renderRunTab();
+}
+
+function _replayRaceEpisode(epNum) {
+  const laterEps = (gs.episodeHistory || []).filter(e => e.num > epNum);
+  const msg = laterEps.length
+    ? `Re-run Leg ${epNum}?\n\nLeg ${epNum} will be raced again, and Legs ${epNum + 1}–${epNum + laterEps.length} will be cleared — simulate them again from there. Every earlier leg stays exactly as it is.`
+    : `Re-run Leg ${epNum} into a different leg?`;
+  if (!confirm(msg)) return;
+  const before = snapshotGs();
+  let ep = null, failure = null, refused = null;
+  try {
+    if (rerunRaceEpisode(epNum)) ep = simulateRaceEpisode();
+    if (!ep) refused = lastRaceRefusal();
+  } catch (e) { failure = e; }
+  if (!ep) {
+    gs = before;
+    repairGsSets(gs);
+    try { renderRunTab(); } catch { /* state is already back */ }
+    const why = failure ? (failure.message || String(failure)) : refused;
+    alert(`Leg ${epNum} could not be re-run, so nothing was changed.${why ? `\n\n${why}` : ''}`);
     return;
   }
   saveGameState();

@@ -42,6 +42,7 @@ export function playRaceSeason({ teams, options = {}, seed = 1, carried = null }
   state.kin = (carried?.kin || []).filter(k => cast.includes(k.a) && cast.includes(k.b));
 
   const schedule = buildSchedule({ teams: teams.length, options: opts, seed });
+  state.totalLegs = schedule.length;
   const route = drawRoute({ legs: schedule.length, seed, options: opts });
   const legs = [];
   const outOrder = [];
@@ -50,7 +51,8 @@ export function playRaceSeason({ teams, options = {}, seed = 1, carried = null }
 
   for (const planned of schedule) {
     const n = planned.n;
-    const rng = streamFor(seed, `leg${n}`);
+    // a leg re-run from the run tab (options.rerolls: { leg: times }) draws again; every earlier leg is untouched
+    const rng = streamFor(seed, opts.rerolls?.[n] ? `leg${n}r${opts.rerolls[n]}` : `leg${n}`);
     for (let i = 0; i < 4; i++) rng();
     const from = n === 1 ? null : PLACES[route[n - 2]];
     const to = PLACES[route[n - 1]];

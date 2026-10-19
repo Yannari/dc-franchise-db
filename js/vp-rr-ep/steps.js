@@ -115,8 +115,45 @@ export function episodeScreens(res, eps, i) {
       steps: [{ by: null, part: 'card', text: `${racing.length} teams · around the world · one million dollars`, intel: {} }] });
   }
   if (ep.previously?.lines?.length) {
-    push({ kind: 'map', place: placeId, from: prevLeg?.place || null, to: placeId, hud: { task: 'PREVIOUSLY', clock: null },
-      steps: ep.previously.lines.map(l => ({ ...say(l), map: true })) });
+    // Don over the map; after each of his lines, the clip it points at, replayed on that scene's own plate
+    // (js/rr/story/previously.js: `clip: true` lines, `clips` the scenes they come from, in order)
+    const clips = [...(ep.previously.clips || [])];
+    const runs = [];
+    for (const l of ep.previously.lines) {
+      const clip = !!(l.clip || (l.by && l.by !== 'Don'));
+      const last = runs.at(-1);
+      if (last && last.clip === clip) last.lines.push(l); else runs.push({ clip, lines: [l] });
+    }
+    for (const run of runs) {
+      if (!run.clip) {
+        push({ kind: 'map', place: placeId, from: prevLeg?.place || null, to: placeId, hud: { task: 'PREVIOUSLY', clock: null },
+          steps: run.lines.map(l => ({ ...say(l), map: true })) });
+        continue;
+      }
+      // which scene each line was said in: the next clipped scene with that speaker in it
+      let group = null;
+      for (const l of run.lines) {
+        const at = clips.findIndex(id => whoOfClip(st, id).includes(l.by));
+        const id = at >= 0 ? clips.splice(at, 1)[0] : (group?.id ?? null);
+        if (!group || group.id !== id) { group = { id, lines: [] }; run.groups = [...(run.groups || []), group]; }
+        group.lines.push(l);
+      }
+      for (const g of run.groups) {
+        const conf = g.lines.every(l => l.kind === 'conf');
+        const speakers = [...new Set(g.lines.map(l => l.by))];
+        const teams = [...new Set(speakers.map(n => teamOf[n]).filter(Boolean))];
+        const steps = g.lines.map(l => ({ ...say(l), clip: true }));
+        if (conf && teams.length === 1) {
+          push({ kind: 'iv', seg: 'replay', replay: true, place: placeId, team: teams[0], solo: null, caption: false,
+            people: membersOf(teams[0]), hud: { task: 'LAST TIME', clock: null }, steps });
+          continue;
+        }
+        const plate = clipPlate(st, g.id, prevLeg) || { ...(prevLeg ? matPlate(prevLeg.place) : plates.opener), place: prevLeg?.place || placeId };
+        push({ kind: 'world', seg: 'replay', replay: true, mode: 'talk', place: placeId, stretch: null, plate: plate.race ? plate : { ...plate, place: plate.place || prevLeg?.place || placeId },
+          teams, locals: speakers.filter(n => n !== 'Don' && !teamOf[n]), don: speakers.includes('Don'), narrator: false,
+          hud: { task: 'LAST TIME', clock: null }, steps, members: Object.fromEntries(teams.map(id => [id, membersOf(id)])), who: speakers });
+      }
+    }
   }
   // 2. the title card
   const kinds = [...new Set((place?.stretches || []).filter(s => TASKS.has(s.kind)).map(s => KIND_NAME[s.kind]))];
@@ -142,7 +179,9 @@ export function episodeScreens(res, eps, i) {
       else if (seg.ending === 'flight-wait') { mode = 'flight'; hudTask = 'IN THE AIR'; }
       else if (/landed/.test(seg.ending || '')) { plate = pick(plates.arrive, 0) || plates.opener; mode = 'landing'; hudTask = 'ARRIVAL'; }
       else if (seg.ending === 'last-stretch') { plate = matPlate(placeId); mode = 'narrate'; hudTask = 'CHILL ZONE'; }
-      else { plate = lastPlate || plates.opener; mode = 'narrate'; }
+      // Don at the mat, before the first team reaches it, introducing the Chill Zone
+      else if (seg.ending === 'chill') { plate = matPlate(placeId); mode = 'mat'; hudTask = 'CHILL ZONE'; }
+      else { plate = (lastPlate?.place === placeId ? lastPlate : plates.opener); mode = 'narrate'; }
     } else if (k === 'don-opener') { plate = leg.n === 1 ? plates.opener : (prevLeg ? matPlate(prevLeg.place) : plates.opener); placeFor = leg.n === 1 ? placeId : (prevLeg?.place || placeId); mode = 'don'; hudTask = 'THE START'; }
     else if (k === 'don-demo') {
       const sp = stretchPlates(placeId, seg.stretch, null);
@@ -163,15 +202,15 @@ export function episodeScreens(res, eps, i) {
       const sp = stretchPlates(placeId, seg.stretch, seg.side);
       const wantsAct = (TASKS.has(stretch.kind) && ACT_KINDS.has(k)) || (stretch.kind === 'travel' && RIDE_KINDS.has(k));
       if (wantsAct && sp?.act) { plate = sp.act; mode = 'act'; }
-      else plate = pick(sp?.talk, nth(`${placeId}|${seg.stretch}|${seg.side || ''}`)) || sp?.act || lastPlate || plates.opener;
+      else plate = pick(sp?.talk, nth(`${placeId}|${seg.stretch}|${seg.side || ''}`)) || sp?.act || (lastPlate?.place === placeId ? lastPlate : plates.opener);
       if (!standable(plate) && mode !== 'act') plate = pick(sp?.talk?.filter(standable), 0) || plates.opener;
       if (sideLabel) hudTask += ` · ${sideLabel.toUpperCase()}`;
     } else if (seg.stretch === 'board' || seg.stretch === 'speed-bump') {
-      plate = lastPlate || plates.opener; hudTask = seg.stretch === 'board' ? 'THE BOARD' : 'SPEED BUMP';
+      plate = (lastPlate?.place === placeId ? lastPlate : plates.opener); hudTask = seg.stretch === 'board' ? 'THE BOARD' : 'SPEED BUMP';
     } else {
-      plate = lastPlate || plates.opener;
+      plate = (lastPlate?.place === placeId ? lastPlate : plates.opener);
     }
-    if (plate && !plate.race) plate = { ...plate, place: placeFor };
+    if (plate && !plate.race) plate = { ...plate, place: plate.place || placeFor };
     if (plate && mode !== 'iv' && standable(plate)) lastPlate = { ...plate };
 
     // the time card, on the first step after a gap in the clock
@@ -254,6 +293,27 @@ export function episodeScreens(res, eps, i) {
   for (const s of screens) stageScreen(s, color);
   return { screens, n: leg.n, place: placeId, placeName: leg.placeName, kind: leg.kind, racing, color, total: res.legs.length,
     startOrder: prevLeg ? prevLeg.order.filter(id => racing.includes(id)).concat(racing.filter(id => !prevLeg.order.includes(id))) : racing.slice() };
+}
+
+// ── a clip from last time: who was in it, and the plate it was shot on ─
+function clipScene(st, id) {
+  if (typeof id === 'number') return st.scenes.find(s => s.id === id) || null;
+  const m = String(id || '').match(/^(task|ride):(\d+):([^:]+):([^:]+)/);
+  if (!m) return null;
+  const tm = st.teams[m[3]];
+  return { kind: m[1] === 'ride' ? 'ride' : 'task-try', leg: +m[2], who: tm ? [tm.a, tm.b] : [], data: { team: m[3], stretch: m[4] } };
+}
+function whoOfClip(st, id) { return clipScene(st, id)?.who || []; }
+function clipPlate(st, id, prevLeg) {
+  const sc = clipScene(st, id);
+  const place = prevLeg?.place;
+  if (!sc || !place) return null;
+  const stretch = sc.data?.stretch;
+  if (MAT_KINDS.has(sc.kind) || stretch === 'mat' || stretch === 'midmat') return { ...matPlate(place, 0, stretch === 'midmat'), place };
+  if (stretch === 'airport') return { ...RACE.gate, race: true };
+  const sp = stretch ? stretchPlates(place, stretch, sc.data?.snap?.side || null) : null;
+  const p = sp?.talk?.find(standable) || null;
+  return p ? { ...p, place } : { ...PLACE_PLATES[place].opener, place };
 }
 
 // ── the show's beats around the words: the tip, the pause, the slams ───
@@ -373,9 +433,10 @@ export function pathAt(path, f) {
 const groundY = (plate, i) => (Array.isArray(plate.g) ? (i % 2 ? plate.g[0] : plate.g[1]) : plate.g);
 
 // Spread n standers along the plate's ground (or onto its spots), keeping clear of `avoid`.
-function spread(plate, n, avoid = []) {
+function spread(plate, n, avoid = [], margin = 0) {
   if (plate.spots?.length) return Array.from({ length: n }, (_, i) => { const s = plate.spots[i % plate.spots.length]; return [s[0] + Math.floor(i / plate.spots.length) * 3, s[1]]; });
-  const [x0, x1] = plate.x;
+  // a token is wider than its feet: keep the whole pair inside the frame
+  const x0 = Math.max(plate.x[0], margin), x1 = Math.min(plate.x[1], 100 - margin);
   const free = [];
   const N = Math.max(n, 1);
   for (let i = 0; i < 60 && free.length < N; i++) {
@@ -420,6 +481,7 @@ function stageScreen(s, color) {
   const marks = {};
   const as = {};
   const ps = s.steps.length;
+  const M = s.size * 0.95 + 1;
   // Don and the Don Box stand on the ground too
   const extras = [];
   if (s.mode === 'cabin' || s.kind === 'flight') {
@@ -427,7 +489,7 @@ function stageScreen(s, color) {
     const people = s.teams.flatMap(id => [id]);
     if (seats && n <= 1) s.teams.forEach((id, i) => { marks[id] = seats[i]; as[id] = 'seat'; });
     else {
-      const pts = spread(plate || RACE.galley, n);
+      const pts = spread(plate || RACE.galley, n, [], M);
       s.teams.forEach((id, i) => { marks[id] = pts[i]; as[id] = 'stand'; });
     }
     void people;
@@ -438,11 +500,11 @@ function stageScreen(s, color) {
     s.donAt = [Math.min(plate.x[1], Math.max(plate.x[0], donX)), groundY(plate, 0)];
     const arriving = (s.arriving || []).filter(id => s.teams.includes(id));
     const others = s.teams.filter(id => !arriving.includes(id));
-    const pts = spread(plate, others.length, [mat[0], s.donAt[0]]);
+    const pts = spread(plate, others.length, [mat[0], s.donAt[0]], M);
     others.forEach((id, i) => { marks[id] = pts[i]; as[id] = 'stand'; });
     // a montage: each team steps on the mat in turn and then stands aside
     if (arriving.length > 1) {
-      const aside = spread(plate, arriving.length + others.length, [mat[0], s.donAt[0]]).slice(others.length);
+      const aside = spread(plate, arriving.length + others.length, [mat[0], s.donAt[0]], M).slice(others.length);
       arriving.forEach((id, i) => { marks[id] = aside[i]; as[id] = 'stand'; });
       // nobody is at the Chill Zone before Don checks them in
       s.hiddenUntil = {};
@@ -462,7 +524,13 @@ function stageScreen(s, color) {
         f = Math.max(0, Math.min(1, f - i * 0.12));
         let pt = pathAt(plate.path, f);
         if (plate.mode === 'hop') { const idx = Math.round(f * (plate.path.length - 1)); pt = [...plate.path[idx]]; }
-        if (['swim', 'dive', 'ride'].includes(plate.mode)) pt = [pt[0], pt[1] + i * 4];
+        if (['swim', 'dive'].includes(plate.mode)) {
+          // a head in the water is centred on its point, its name under it: both stay above the frame's bottom
+          const gap = Math.max(5, s.size * 0.95);
+          pt = [Math.min(100 - M - gap, Math.max(M * 0.6, pt[0])), Math.min(100 - 1.2 * s.size - 1, pt[1] + i * 4)];
+        } else if (plate.mode === 'ride') pt = [pt[0], pt[1] + i * 4];
+        // a climber or a jumper is never so high (or so far to the side) that their faces leave the frame
+        else pt = [Math.min(100 - M, Math.max(M, pt[0])), Math.max(s.size * 2.35 + 1, pt[1])];
         pos[id] = pt;
       });
       s.pos.push(pos);
@@ -483,7 +551,7 @@ function stageScreen(s, color) {
   } else {
     // standing scenes; an in-place task (search, cook, build) plays its work beside them
     const avoid = s.don ? [] : [];
-    const pts = spread(plate, n + (s.don ? 1 : 0) + s.locals.length, avoid);
+    const pts = spread(plate, n + (s.don ? 1 : 0) + s.locals.length, avoid, M);
     let j = 0;
     if (s.don) { s.donStand = pts[j++]; }
     s.locals.forEach(nm => { (s.localAt ||= {})[nm] = pts[j++]; });

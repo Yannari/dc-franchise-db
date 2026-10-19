@@ -19,7 +19,7 @@
     <label>Episode <select class="ep" id="rr-ep"></select></label>
     <span class="status" id="rr-status">loading…</span>
   </div>
-  <div class="rr-wrap">
+  <div class="rr-wrap intel-closed" id="rr-wrap">
     <div>
       <div class="stage-holder" id="rr-stage-holder" style="position:relative"></div>
       <div class="rr-ctrl">
@@ -28,11 +28,11 @@
         <button class="go" id="rr-next">Next ▶</button>
         <button id="rr-auto">▶ Auto</button>
         <button id="rr-full">⛶ Full screen</button>
-        <span class="hint">Click the picture, Space or → for the next line; ← goes back.</span>
+        <span class="hint">Click the picture, Space or → for the next line; ← goes back; I opens Intel.</span>
         <span class="stepn" id="rr-stepn"></span>
       </div>
     </div>
-    <aside class="rr-side" id="rr-side"></aside>
+    <div class="rr-sidecol"><button class="rr-tab" id="rr-tab" title="Intel (I)" aria-expanded="false">INTEL ◂</button><aside class="rr-side" id="rr-side"></aside></div>
   </div>
 </div>
 <div class="rr-loading" id="rr-loading" style="position:fixed">Playing the season…</div>

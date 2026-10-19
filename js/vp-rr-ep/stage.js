@@ -10,6 +10,7 @@
 import { plateUrl, raceUrl, propUrl } from './plates.js';
 import { PLACES } from '../rr/places.js';
 import { intelAt } from './steps.js';
+import { liveGL } from '../vp-td-ep/glplate.js';
 
 const ORD = ['', '1ST', '2ND', '3RD', '4TH', '5TH', '6TH', '7TH', '8TH', '9TH', '10TH', '11TH', '12TH', '13TH', '14TH'];
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -39,13 +40,15 @@ function globeSVG(seed = 7) {
     <circle cx="50" cy="50" r="47" fill="#fff"/><g clip-path="url(#gc${seed})">${panes}</g><circle cx="50" cy="50" r="47" fill="none" stroke="#bfe8ff" stroke-width="2.4"/></svg>`;
 }
 
-const AMBIENT = { 'rock-north': 'snow', 'red-sand-desert': 'mote', 'tomb-sands': 'mote', 'red-outback': 'mote', 'fire-mountain-isle': 'ember' };
+const HOT = new Set(['red-sand-desert', 'tomb-sands', 'red-outback']);
+const AMBIENT = { 'rock-north': 'snow', 'red-sand-desert': 'mote', 'tomb-sands': 'mote', 'red-outback': 'mote', 'fire-mountain-isle': 'ember',
+  'great-wall-hills': 'mote', 'savanna-falls': 'mote', 'treasure-isles': 'spark', 'torch-statue-harbour': 'mote', 'iron-tower-city': 'spark', 'skyline-finale': 'mote', 'home-city': 'mote' };
 
 export function createStage(holder, { faceOf, legLabel }) {
   holder.innerHTML = `<div class="rr-frame" id="rr-frame"><div class="stage" id="rr-stage">
-    <div id="rr-cam"><div class="plate" id="rr-pA"></div><div class="plate" id="rr-pB"></div>
-      <div class="layer" id="rr-under"></div><div class="layer" id="rr-toks"></div><div class="layer" id="rr-fx"></div></div>
-    <div class="vignette"></div><div class="layer" id="rr-ui"></div><div class="layer" id="rr-amb" style="z-index:31;pointer-events:none"></div>
+    <div id="rr-cam"><div id="rr-world"><div class="plate" id="rr-pA"></div><div class="plate" id="rr-pB"></div><div class="layer" id="rr-gl"></div>
+      <div class="layer" id="rr-under"></div><div class="layer" id="rr-toks"></div><div class="layer" id="rr-fx"></div></div></div>
+    <div class="vignette"></div><div class="rr-replay"><span>◂◂ LAST TIME</span></div><div class="layer" id="rr-ui"></div><div class="layer" id="rr-amb" style="z-index:31;pointer-events:none"></div>
     <div class="hud-leg" id="rr-leg"></div><div class="hud-task" id="rr-task"></div>
   </div>
   <div class="vn" id="rr-vn"><img class="av" id="rr-vnav" alt=""><div class="tx"><span class="nm" id="rr-vnnm"></span><span class="tm" id="rr-vntm"></span><div class="ln" id="rr-vnln"></div></div><div class="more">▼</div></div></div>`;
@@ -56,13 +59,22 @@ export function createStage(holder, { faceOf, legLabel }) {
   const clearTimers = () => { timers.forEach(clearTimeout); timers = []; clearInterval(typer); };
 
   // ── pieces ──
+  // the slow push on a plate moves the whole world with it, so feet stay on the ground they stand on
   function setPlate(url, kb) {
+    const w = $('rr-world');
+    if (kb !== undefined) { w.className = ''; void w.offsetWidth; w.className = kb || ''; }
     const a = flip ? $('rr-pA') : $('rr-pB'), b = flip ? $('rr-pB') : $('rr-pA');
     if ((b.dataset.url || '') === (url || '') && b.classList.contains('on')) return;
     flip = !flip;
     a.className = 'plate'; a.dataset.url = url || ''; a.style.backgroundImage = url ? `url("${url}")` : 'none';
-    void a.offsetWidth; a.className = 'plate on ' + (kb || ''); b.classList.remove('on');
+    void a.offsetWidth; a.className = 'plate on'; b.classList.remove('on');
+    // the plate alive (js/vp-td-ep/glplate.js): its own pixels moved by the motion map read off its paint
+    // (tools/rr-vp-motion.py): water ripples and glints, leaves flutter, lava shimmers, lamps twinkle
+    const glw = $('rr-gl');
+    glw.innerHTML = url ? `<canvas class="tdx-gl" data-src="${url.replace(/\.webp$/, '')}" data-grade="${HOT.has(placeOfUrl(url)) ? 'hot' : 'day'}"></canvas>` : '';
+    if (url) liveGL(glw);
   }
+  const placeOfUrl = u => (String(u).match(/assets\/sets\/rr\/([^/]+)\//) || [])[1];
   const plateOf = s => (s.plate?.race ? raceUrl(s.plate.f) : s.plate?.f ? plateUrl(s.plate.place || s.place, s.plate.f) : null);
   const teamOf = (ep, id) => ep.res.state.teams[id];
 
@@ -401,6 +413,14 @@ export function createStage(holder, { faceOf, legLabel }) {
       ui.appendChild(sl);
       if (fresh) { const at = s.matAt || [50, 50]; if (step.slam.cls === 'gold') for (let q = 0; q < 3; q++) later(q * 250, () => particles('spark', 30 + Math.random() * 40, 30, 14, 14)); else flash(at[0], 30); }
     }
+    ui.querySelectorAll('.clip').forEach(e => e.remove());
+    if (step?.clip && s.kind === 'map') {
+      // last time, on screen: the one saying it, framed as a clip over the map
+      const team = step.team, c = team ? ep.color[team] : '#c9d3ea';
+      const d = document.createElement('div'); d.className = 'clip' + (fresh ? ' fresh' : ''); d.style.setProperty('--c', c);
+      d.innerHTML = `<div class="cl-h">LAST TIME</div><img data-p="${esc(step.by)}" src="${team ? faceOf(step.by) : 'data:image/svg+xml;utf8,' + encodeURIComponent(LOCAL_SVG)}" alt=""><div class="cl-n">${esc(step.by)}${team ? ' · ' + esc(teamOf(ep, team).name) : ''}</div>`;
+      ui.appendChild(d);
+    }
     if (fresh && k === 0 && s.timecard) {
       const tc = document.createElement('div'); tc.className = 'timecard'; tc.textContent = s.timecard; stage.appendChild(tc); later(2300, () => tc.remove());
     }
@@ -435,10 +455,11 @@ export function createStage(holder, { faceOf, legLabel }) {
       if (!same) { lastWho = null; side = 'left'; }
       cur = { ep, si, idx: k };
       hud(ep, s);
+      stage.classList.toggle('replay', !!s.replay);
       const kb = ['kb-in', 'kb-pan', 'kb-out'][hash(s.id) % 3];
-      if (s.kind === 'iv') { setPlate(null); interview(ep, s, screenFresh); }
-      else if (s.kind === 'map' || s.kind === 'flight') { setPlate(null); mapScreen(ep, s, screenFresh); }
-      else { setPlate(plateOf(s), screenFresh || !same ? kb : ''); }
+      if (s.kind === 'iv') { setPlate(null, ''); interview(ep, s, screenFresh); }
+      else if (s.kind === 'map' || s.kind === 'flight') { setPlate(null, ''); mapScreen(ep, s, screenFresh); }
+      else { setPlate(plateOf(s), !same ? kb : undefined); }
       if (['logo', 'title', 'end'].includes(s.kind)) ui.innerHTML = titleCard(s, screenFresh, hash(ep.place) % 1000 + 3);
       if (s.kind === 'world') world(ep, s, k, screenFresh);
       if (s.mode === 'landing') {

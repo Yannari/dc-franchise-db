@@ -71,7 +71,7 @@ describe('rr viewer steps', () => {
           if (!step.by || step.part === 'pause') return;
           const where = `${s.id} ${s.seg} "${step.text.slice(0, 40)}"`;
           if (s.kind === 'iv') { expect(s.people, where).toContain(step.by); return; }
-          if (s.kind === 'map') { expect(step.by, where).toBe('Don'); return; }
+          if (s.kind === 'map') { expect(step.by === 'Don' || step.clip, where).toBe(true); return; }
           if (step.by === 'Don') { expect(s.don || s.narrator || s.kind === 'flight', where).toBe(true); return; }
           const team = teamOf[step.by];
           if (!team) { expect(s.localAt?.[step.by], where).toBeTruthy(); return; }
@@ -106,6 +106,19 @@ describe('rr viewer steps', () => {
           expect(s.plate.water, `${s.id} Don or a local in water`).toBeFalsy();
           expect(onGround(s.plate, d), `${s.id} Don/local at ${d}`).toBe(true);
         }
+        // a pair is wider than its feet: the whole token inside the frame
+        const half = (s.size || 8) * 0.775;
+        for (const [team, m] of Object.entries(s.marks)) if (s.as[team] !== 'swim' && s.as[team] !== 'dive' && s.as[team] !== 'ride') {
+          expect(m[0], `${s.id} ${s.seg} ${team} at x=${m[0]} half=${half} on ${s.plate.f}`).toBeGreaterThanOrEqual(half - 0.6);
+          expect(m[0], `${s.id} ${s.seg} ${team} at x=${m[0]}`).toBeLessThanOrEqual(100 - half + 0.6);
+        }
+        for (const pos of s.pos || []) for (const [team, [x, y]] of Object.entries(pos)) if (!['swim', 'dive', 'ride'].includes(s.as[team])) {
+          expect(y, `${s.id} ${team} too high: the faces leave the frame`).toBeGreaterThanOrEqual(s.size * 2.35 + 0.5);
+          expect(x, `${s.id} ${team} too far to the side`).toBeGreaterThanOrEqual(half - 0.6);
+        }
+        for (const pos of s.pos || []) for (const [team, [, y]] of Object.entries(pos)) if (['swim', 'dive'].includes(s.as[team])) {
+          expect(y, `${s.id} ${team}: a swimmer's head and name leave the bottom of the frame`).toBeLessThanOrEqual(100 - 1.2 * s.size - 0.5);
+        }
         for (const pos of s.pos || []) for (const [x, y] of Object.values(pos)) {
           expect(x, s.id).toBeGreaterThanOrEqual(0); expect(x, s.id).toBeLessThanOrEqual(100);
           expect(y, s.id).toBeGreaterThanOrEqual(5); expect(y, s.id).toBeLessThanOrEqual(100);
@@ -137,6 +150,16 @@ describe('rr viewer steps', () => {
     for (const pl of Object.values(PLACE_PLATES)) for (const s of Object.values(pl.st)) for (const a of [s.act, ...Object.values(s.sides || {}).map(x => x.act)]) {
       if (a?.prop) expect(existsSync(propUrl(Object.keys(PLACE_PLATES).find(k => PLACE_PLATES[k] === pl), a.prop)), a.prop).toBe(true);
     }
+  });
+
+  it('shoots every screen on a plate of the place it says it is in', () => {
+    each(ep => {
+      for (const s of ep.screens) {
+        if (!s.plate?.f || s.plate.race) continue;
+        expect(placeFiles(s.plate.place), `${s.id} ${s.seg}: ${s.plate.f} is not a plate of ${s.plate.place}`).toContain(s.plate.f);
+        expect(existsSync(plateUrl(s.plate.place, s.plate.f)), `${s.id} ${s.plate.place}/${s.plate.f}`).toBe(true);
+      }
+    });
   });
 
   it('names no real country or city on screen', () => {

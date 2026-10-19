@@ -138,6 +138,20 @@ $('rr-scene').onclick = backScene;
 $('rr-auto').onclick = toggleAuto;
 $('rr-full').onclick = () => { const h = $('rr-stage-holder'); if (document.fullscreenElement) document.exitFullscreen(); else h.requestFullscreen?.(); };
 stage.el.addEventListener('click', () => { if (season) next(); });
+
+// Intel: a bar at the stage's edge, closed unless this viewer left it open
+const INTEL_KEY = 'rr-vp-intel-open';
+function setIntel(open, remember = true) {
+  $('rr-wrap').classList.toggle('intel-closed', !open);
+  $('rr-tab').textContent = open ? 'INTEL ▸' : 'INTEL ◂';
+  $('rr-tab').setAttribute('aria-expanded', String(open));
+  if (remember) { try { localStorage.setItem(INTEL_KEY, open ? '1' : '0'); } catch { /* private window: not remembered */ } }
+}
+let intelOpen = false;
+try { intelOpen = localStorage.getItem(INTEL_KEY) === '1'; } catch { intelOpen = false; }
+if (params.get('intel')) intelOpen = params.get('intel') === '1';
+setIntel(intelOpen, false);
+$('rr-tab').onclick = () => setIntel($('rr-wrap').classList.contains('intel-closed'));
 addEventListener('keydown', e => {
   if (!season || ['INPUT', 'SELECT'].includes(document.activeElement?.tagName)) return;
   if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); next(); }
@@ -145,6 +159,7 @@ addEventListener('keydown', e => {
   else if (e.key === 'PageUp') { e.preventDefault(); backScene(); }
   else if (e.key === 'f') $('rr-full').click();
   else if (e.key === 'a') toggleAuto();
+  else if (e.key === 'i' || e.key === 'I') $('rr-tab').click();
 });
 
 // for the screenshot harness: jump to a step, find a screen kind

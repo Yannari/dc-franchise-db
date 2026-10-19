@@ -12,6 +12,8 @@ mkdirSync('shots/rr-vp', { recursive: true });
 const KINDS = {
   logo: '(s) => s.kind === "logo"',
   previously: '(s) => s.kind === "map"',
+  replay: '(s) => !!s.replay',
+  chill: '(s) => s.seg === "don-narrate" && s.ending === "chill"',
   title: '(s) => s.kind === "title"',
   opener: '(s) => s.seg === "don-opener"',
   tip: '(s, t) => t.part === "tip"',
@@ -37,14 +39,17 @@ const KINDS = {
 };
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+const [VW, VH] = (process.env.RR_VIEW || '1600x1000').split('x').map(Number);
+const page = await browser.newPage({ viewport: { width: VW, height: VH } });
 const errors = [];
 page.on('pageerror', e => errors.push(String(e)));
+page.on('response', r => { if (r.status() >= 400 && !/favicon/.test(r.url())) errors.push(r.status() + ' ' + r.url()); });
 page.on('console', m => { if (m.type() === 'error' && !/favicon/.test(m.text())) errors.push(m.text()); });
 for (const n of epList.split(',').map(Number)) {
-  await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=${n}&step=0`);
+  await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=${n}&step=0&intel=${process.env.RR_INTEL || '0'}`);
   await page.waitForFunction(() => window.__rr?.ep, null, { timeout: 60000 });
-  for (const [name, fn] of Object.entries(KINDS)) {
+  const only = process.env.RR_KINDS ? process.env.RR_KINDS.split(',') : null;
+  for (const [name, fn] of Object.entries(KINDS).filter(([n]) => !only || only.includes(n))) {
     const ks = await page.evaluate(`(() => { const p = ${fn}; const r = window.__rr; const out = [];
       r.flat.forEach((f, k) => { const s = r.ep.screens[f.si]; if (p(s, s.steps[f.idx], f.idx)) out.push(k); }); return out; })()`);
     if (!ks.length) continue;
@@ -52,8 +57,8 @@ for (const n of epList.split(',').map(Number)) {
       // arrive at it the way a viewer does: the step before, then a click
       await page.evaluate(k => { window.__rr.step(Math.max(0, k - 1), false); window.__rr.step(k, true); }, k);
       await page.waitForTimeout(name === 'title' || name === 'logo' ? 1200 : 1700);
-      const file = `shots/rr-vp/s${seed}-e${n}-${name}${all ? '-' + k : ''}.png`;
-      await page.locator('.rr-wrap').screenshot({ path: file });
+      const file = `shots/rr-vp/s${seed}-e${n}-${name}${all ? '-' + k : ''}${process.env.RR_TAG || ''}.png`;
+      await page.screenshot({ path: file, fullPage: true });
       console.log(file);
     }
   }

@@ -19,7 +19,7 @@ import { tick, behind } from './mind.js';
 import { perceivedRank } from './knowledge.js';
 import { teamLevel } from './skill.js';
 import { checkIn } from './chill.js';
-import { emit, playScene } from './scenes.js';
+import { emit, playScene, interviewAfter } from './scenes.js';
 import { addScene } from './state.js';
 import { DON_GOES_AFTER } from './format.js';
 
@@ -235,6 +235,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   closeLegTalk(state, leg.n, rng, { places: prelim, at: lastAt });
 
   const result = checkIn(state, leg, run.finish, run.out, rng);
+  interviewFloor(state, leg.n, result, rng);
   result.log = run.log;
   result.stretchKinds = Object.fromEntries(stretches.map(s => [s.id, s.kind]));
   Object.assign(result, { place: to.id, placeName: to.name, money: leg.money ?? 0, twist: leg.twist ?? null, clockStart, broke,
@@ -244,3 +245,17 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   return result;
 }
 
+// Every leg airs confessionals (read 2026-10-19: legs with none). When a leg ends with fewer than IV_FLOOR interviews,
+// the teams at the top of the mat, whose check-ins always air (director.js featured), talk about getting there.
+const IV_FLOOR = 2;
+function interviewFloor(state, n, result, rng) {
+  const ivs = () => state.scenes.filter(x => x.leg === n && x.kind.startsWith('int-') && !['int-exit', 'int-bleachers'].includes(x.kind)).length;
+  if (ivs() >= IV_FLOOR) return;
+  const top = (result.order || []).slice(0, 3);
+  const places = state.scenes.filter(x => x.leg === n && x.kind === 'don-place' && top.includes(x.data?.team))
+    .sort((x, y) => top.indexOf(x.data.team) - top.indexOf(y.data.team));
+  for (const sc of places) {
+    if (ivs() >= IV_FLOOR) break;
+    interviewAfter(state, sc, rng, { force: true });
+  }
+}

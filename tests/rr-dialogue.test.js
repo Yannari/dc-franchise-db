@@ -109,7 +109,8 @@ describe('rr dialogue: the writer', () => {
     const sc = emit(ctx.state, 'don-place', [t.a, t.b], 'plain', { team: ctx.team.id, place: 3, t: 400, stretch: 'mat', effects: [['placed', ctx.team.id, 3]] });
     const w = writeScene(ctx.state, sc);
     expect(w.lines.some(l => l.by === 'Don')).toBe(true);
-    expect(w.lines.map(l => l.text).join(' ')).toMatch(/third/);
+    // the placing as an ordinal or as a team number ({placing} or {number}): 'third' or 'team number three'
+    expect(w.lines.map(l => l.text).join(' ')).toMatch(/third|number three/);
   });
 
   it('an identity line comes from the team\'s own kit; a custom identity hears only voice lines', () => {

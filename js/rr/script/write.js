@@ -162,6 +162,16 @@ const NUMBER = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', '
 const speakerName = (by, roles, slots) => (by === 'don' ? DON : by === 'local'
   ? (slots.local ? slots.local.charAt(0).toUpperCase() + slots.local.slice(1) : 'A local') : roles[by]);
 
+/** Whether an interview about a moment has lines written for that kind of moment (the director rescues only one that
+ * can be voiced): its pools hold an entry whose `cause` names the moment's kind. Other scenes: true. */
+export function canVoice(state, scene) {
+  if (!ABOUT_INTERVIEWS.has(scene.kind) || scene.data?.about == null) return true;
+  const about = state.scenes.find(x => x.id === scene.data.about);
+  const key = keyFor(scene.kind, scene.data?.ending ?? 'any');
+  if (!about || !key) return false;
+  return [].concat(key).some(k => (POOLS[k] || []).some(e => e.when?.cause != null && [].concat(e.when.cause).includes(about.kind)));
+}
+
 /** { lines: [{ kind, by, text, voice }], lineId } or null when the kind has no pool (or no entry fits). */
 export function writeScene(state, scene, { roles: given = null } = {}) {
   const r = given || rolesOf(scene, state);

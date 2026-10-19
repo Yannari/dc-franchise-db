@@ -290,15 +290,16 @@ const FEAR = ['fear-through', 'phobia', 'injury', 'freezes', 'exhaustion'];
 
 // After a big moment, maybe an interview about it: only from people who saw it, of the
 // moment's own team, at most three per team per leg (the show spends them carefully).
-export function interviewAfter(state, sc, rng) {
+export function interviewAfter(state, sc, rng, { force = false } = {}) {
   if (!sc || sc.kind.startsWith('int-')) return null;
   const tid = sc.data?.team;
   if (!tid || !state.teams[tid]) return null;
   const used = state.scenes.filter(x => x.leg === state.leg && x.kind.startsWith('int-') && x.data.team === tid).length;
   if (used >= INTERVIEWS_PER_LEG) return null;
   const w = weight(sc);
-  if (w < MIN_WEIGHT) return null;
-  if (rng() >= Math.min(0.7, w * 0.25)) return null;
+  // forced (a leg that would otherwise air no confessional, leg.js): the moment's weight and the dice don't decide
+  if (!force && w < MIN_WEIGHT) return null;
+  if (!force && rng() >= Math.min(0.7, w * 0.25)) return null;
   const subject = sc.who[0];
   const who = people(state, tid).filter(n => sc.seenBy.includes(n)).sort((x, y) => (y === subject) - (x === subject));
   if (!who.length) return null;
@@ -310,7 +311,8 @@ export function interviewAfter(state, sc, rng) {
   if (kind?.family === 4 && lovers.some(n => who.includes(n)) && rng() < 0.5) kindId = 'int-secret';
   else if (kind?.scheme || ['alliance-pitch', 'deal', 'boomerang-decide', 'express-give'].includes(sc.kind)) kindId = 'int-strategy';
   else if (sc.data.other && [2, 4, 7, 8, 12].includes(kind?.family) && kindId !== 'int-secret') kindId = 'int-about-team';
-  else if (partnerBond < 0 && who.length === 2 && rng() < 0.4) kindId = 'int-contradict';
+  // a forced interview (leg.js floor) is how the leg felt: the kinds written for a check-in
+  else if (!force && partnerBond < 0 && who.length === 2 && rng() < 0.4) kindId = 'int-contradict';
   else if (firstTime) kindId = 'int-backstory';                 // the first time a team sits down: who they are
   const ivWho = kindId === 'int-secret' ? [lovers.find(n => who.includes(n)) || who[0]] : who;
   const ctx = { state, team: { id: tid }, other: sc.data.other ? { id: sc.data.other } : null, moment: 'interview',

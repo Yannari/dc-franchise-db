@@ -20,7 +20,7 @@
 // a close leg plays as a race.
 import { SCENES, CLASH_KINDS, relFamOf } from '../scenes.js';
 import { getPlace } from '../places.js';
-import { writeScene, TASK_LINES } from '../script/write.js';
+import { writeScene, TASK_LINES, canVoice } from '../script/write.js';
 import { pickedOf } from '../script/facts.js';
 import { teamRef, teamTag, relLabel } from './previously.js';
 
@@ -315,6 +315,13 @@ export function airLeg(state, leg) {
     if (ivSlots <= 0) break;
     if (s.data?.about != null && picked.has(s.data.about) && s.kind !== 'int-exit' && s.kind !== 'int-bleachers'
       && (optional[s.kind] || 0) < PER_KIND) { take(s, 2); optional[s.kind] = (optional[s.kind] || 0) + 1; ivSlots--; }
+  }
+  // a leg airs a confessional: when none made it, the strongest interview airs with the moment it is about
+  const airedIv = () => [...picked.keys()].some(id => { const k = byId.get(id)?.kind || ''; return k.startsWith('int-') && k !== 'int-exit' && k !== 'int-bleachers'; });
+  if (!airedIv()) {
+    const best = scenes.filter(s => s.kind.startsWith('int-') && s.kind !== 'int-exit' && s.kind !== 'int-bleachers' && byId.get(s.data?.about) && canVoice(state, s))
+      .sort((x, y) => airWeight(byId.get(y.data.about)) - airWeight(byId.get(x.data.about)) || x.id - y.id)[0];
+    if (best) { const ab = byId.get(best.data.about); if (!picked.has(ab.id)) take(ab, 2); take(best, 2); }
   }
   // an interview whose moment didn't air doesn't either (int-exit is about the exit, which always airs)
   for (const [id] of [...picked]) {

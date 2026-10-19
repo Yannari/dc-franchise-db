@@ -14,8 +14,9 @@ import redSandDesert from './places/red-sand-desert.js';
 import fireMountainIsle from './places/fire-mountain-isle.js';
 import skylineFinale from './places/skyline-finale.js';
 import ironTowerCity from './places/iron-tower-city.js';
+import greatWallHills from './places/great-wall-hills.js';
 
-export const PLACES = Object.fromEntries([homeCity, redSandDesert, fireMountainIsle, skylineFinale, ironTowerCity].map(p => [p.id, p]));
+export const PLACES = Object.fromEntries([homeCity, redSandDesert, fireMountainIsle, skylineFinale, ironTowerCity, greatWallHills].map(p => [p.id, p]));
 
 export const getPlace = id => PLACES[id] || null;
 

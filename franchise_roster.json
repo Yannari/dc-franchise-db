@@ -7494,6 +7494,27 @@
       "voice": "#calm #warm #dry #blunt. Measured encouragement and understated mom jokes. Names the actual problem and separates facts from fears. Disagrees directly without becoming cold. Does not diagnose contestants or lecture every conversation. When pushed, states a brief clear boundary instead of explaining again. #-goofy",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Elijah",
+      "slug": "elijah",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "chaos-agent",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 5,
+        "social": 9,
+        "strategic": 7,
+        "loyalty": 3,
+        "boldness": 9,
+        "intuition": 7,
+        "temperament": 3
+      },
+      "voice": "#proud #blunt #theatrical #competitive #bossy. Speaks as though his opinion is the conclusion everyone was waiting for. Uses polished put-downs, rhetorical questions, exaggerated disbelief, and casual references to his audience or professional access. Can be genuinely funny and engaging when appreciated. Becomes clipped and dismissive when challenged; repeats a request as if refusal must be a misunderstanding. His arrogance is expressed through behavior and expectations, not constant announcements that he is famous. #-cruel #-goofy",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

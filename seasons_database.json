@@ -1,8 +1,8 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 14,
-    "totalPlayers": 184,
+    "totalSeasons": 15,
+    "totalPlayers": 196,
     "description": "Total Drama franchise statistics and season data"
   },
   "seasons": [
@@ -773,6 +773,89 @@
       "emoji": "",
       "airYear": 2027,
       "airSlot": "winter"
+    },
+    {
+      "ratings": {
+        "v": 1,
+        "score": 66.1,
+        "tier": {
+          "key": "great",
+          "label": "Great",
+          "min": 65
+        },
+        "demos": {
+          "teens": 68.8,
+          "youngAdults": 45.5,
+          "middleAged": 32.7,
+          "older": 27.9
+        },
+        "curve": [
+          42,
+          46.6,
+          46.8,
+          52,
+          58.3,
+          62.3,
+          64.8,
+          65.1,
+          67.6,
+          72.1,
+          69,
+          71.2,
+          73.6,
+          76.3,
+          74.7,
+          75.6,
+          77.9,
+          78.8,
+          73.3,
+          76.2,
+          66.1,
+          67.5,
+          61.2,
+          59.9,
+          61.1,
+          55
+        ]
+      },
+      "seasonNumber": 15,
+      "format": "total-drama",
+      "seasonId": "td-15",
+      "title": "Total Drama Coaches VS New Blood: The Season of Broken Majorities",
+      "subtitle": "A post-game strategy audit of a season where coaches became players, alliances became liabilities, and Julia won because the endgame finally rewarded nerve over approval.",
+      "castSize": 25,
+      "episodeCount": 26,
+      "jurySize": 0,
+      "winner": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "vote": "",
+        "runnerUp": "Spencer",
+        "keyStats": "Julia wins after entering as a coach, surviving the merge promotion, carrying an idol and an extra vote through the most volatile stretch, and beating Spencer in the final volcano race after taking the last immunity. Her official endgame is strange on paper because the finale was decided by the race rather than a conventional jury vote, but the record still shows a winner who reached the end with power, protection, and agency.",
+        "strategy": "Julia's game was not about being loved; it was about never letting the vote happen to her. Early, she used the coach role to invest selectively, gather information without needing a ballot, and let players expose themselves trying to impress or remove her. Once promoted, she pivoted from mentor to operator: buying the extra vote in public, keeping the idol live, joining and breaking blocs as needed, and repeatedly redirecting heat onto louder targets like Natalia, Manu, Nura, and Bowie. Her most important skill was timing: she rarely needed to be the first name out loud, but she was often the person turning the second name into the real vote. The jury disliked large parts of her game, but the season's final format meant she only had to survive their anger long enough to win the last race.",
+        "legacy": "Julia's win is the defining argument of the season: a returning finalist came back with a reputation, absorbed the target, and still finished the job. It is not a clean social win, and it is not a heroic win; it is a ruthless endgame win built on threat management, advantages, and late challenge execution. Her legacy is that she proved a coach could stop being a shield and become the blade."
+      },
+      "awards": {
+        "fanFavorite": {
+          "name": "Natalia",
+          "playerSlug": "natalia"
+        },
+        "bestStrategic": {
+          "name": "Bowie",
+          "playerSlug": "bowie"
+        },
+        "mostChallengeWins": {
+          "name": "Sami",
+          "playerSlug": "sami",
+          "detail": "3 wins"
+        }
+      },
+      "theme": "This season was defined by institutional instability. The coach format created two games at once: contestants voting, and non-voting mentors shaping who became useful, threatening, or expendable. The early phase was a lesson in mechanics — Save Cards, swaps, Redemption Island, summits and coach votes kept turning simple majorities into puzzles. The middle phase belonged to players who could live inside fractured structures: Natalia, Ara, Sami, Bowie, Gabby, Lake and Julia all had moments where they seemed to be steering the season. The merge blew those structures apart. Bruno, Natalia, Manu, Gabby, Oliwia, Ara, Thom and Nura all left through votes or twists that punished either visibility, loyalty, or bad timing. By the end, the pure strategists remained: Sami, Spencer, Bowie and Julia. Sami ran out of bodies, Bowie ran out of jury goodwill, Spencer ran out of final-challenge execution, and Julia — disliked, targeted, but still armed and adaptive — finally finished the job she came back to do.",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/s15-cast.png",
+      "emoji": "",
+      "airYear": 2027,
+      "airSlot": "spring"
     }
   ]
 }

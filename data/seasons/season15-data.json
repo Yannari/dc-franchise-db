@@ -1,0 +1,3287 @@
+{
+  "seasonNumber": 15,
+  "format": "total-drama",
+  "seasonId": "td-15",
+  "title": "Total Drama Coaches VS New Blood: The Season of Broken Majorities",
+  "subtitle": "A post-game strategy audit of a season where coaches became players, alliances became liabilities, and Julia won because the endgame finally rewarded nerve over approval.",
+  "castSize": 25,
+  "episodeCount": 26,
+  "jurySize": 0,
+  "winner": {
+    "name": "Julia",
+    "playerSlug": "julia",
+    "vote": "",
+    "runnerUp": "Spencer",
+    "keyStats": "Julia wins after entering as a coach, surviving the merge promotion, carrying an idol and an extra vote through the most volatile stretch, and beating Spencer in the final volcano race after taking the last immunity. Her official endgame is strange on paper because the finale was decided by the race rather than a conventional jury vote, but the record still shows a winner who reached the end with power, protection, and agency.",
+    "strategy": "Julia's game was not about being loved; it was about never letting the vote happen to her. Early, she used the coach role to invest selectively, gather information without needing a ballot, and let players expose themselves trying to impress or remove her. Once promoted, she pivoted from mentor to operator: buying the extra vote in public, keeping the idol live, joining and breaking blocs as needed, and repeatedly redirecting heat onto louder targets like Natalia, Manu, Nura, and Bowie. Her most important skill was timing: she rarely needed to be the first name out loud, but she was often the person turning the second name into the real vote. The jury disliked large parts of her game, but the season's final format meant she only had to survive their anger long enough to win the last race.",
+    "legacy": "Julia's win is the defining argument of the season: a returning finalist came back with a reputation, absorbed the target, and still finished the job. It is not a clean social win, and it is not a heroic win; it is a ruthless endgame win built on threat management, advantages, and late challenge execution. Her legacy is that she proved a coach could stop being a shield and become the blade."
+  },
+  "finalists": [
+    {
+      "name": "Julia",
+      "playerSlug": "julia",
+      "placement": 1,
+      "votes": 0
+    },
+    {
+      "name": "Spencer",
+      "playerSlug": "spencer",
+      "placement": 2,
+      "votes": 0
+    }
+  ],
+  "placements": [
+    {
+      "placement": 1,
+      "name": "Julia",
+      "playerSlug": "julia",
+      "phase": "Winner",
+      "notes": "Julia won by weaponizing the coach position, surviving the jury's dislike, and closing with the only endgame performance that mattered.",
+      "strategicRank": 9.6,
+      "story": "Julia's early game was all leverage: she had no vote, but she had information, training access, and the ability to make players feel chosen or ignored. She benefited from the Save Card era more than anyone, most notably when it kept her alive and let her name Ren as the replacement. At the merge, she did not try to become universally liked; she used her idol, extra vote, and relationships with players like Natalia, Ara, Thom, Sami, and Spencer as interchangeable tools. The Natalia vote was the pivot where Julia stopped being protected by structure and started shaping the board herself. Her Manu vote, Oliwia vote, and Nura endgame all show the same pattern: she let coalitions form, then chose the version that left her with the most control. By the finale, the jury was hostile, but Julia had kept herself in a format where jury hostility could not stop her. She beat Spencer in the last race because she stayed composed when the game became purely execution.",
+      "gameplayStyle": "ruthless adaptive closer",
+      "keyMoments": [
+        "Ep9: used the Save Card to stay and named Ren as the replacement",
+        "Ep15: bought the extra vote at auction in full view of the cast",
+        "Ep16: joined the late Natalia coalition instead of protecting an old ally",
+        "Ep17: used the extra vote to bury Manu and take Gabby out as collateral",
+        "Ep18: flipped into the Oliwia vote despite Alliance fallout",
+        "Ep22: won immunity and played the idol in the endgame crunch",
+        "Ep26: won final immunity and the volcano race"
+      ],
+      "gameArchetype": "social-manipulator",
+      "resume": "Julia could claim she entered with the biggest returning-player target, survived as a coach without a vote, reached promotion, carried and correctly managed advantages, drove or joined the key Natalia, Manu, Oliwia and Nura eliminations, and then won the final challenge sequence outright.",
+      "demise": "Julia's last real threat was Bowie at final three: he had enough strategic respect and jury relationships to beat her if he reached the end. That threat died when Spencer won immunity and the jury elimination removed Bowie instead, leaving Julia against Spencer in a final format she could win by execution.",
+      "demiseKind": "won-the-game",
+      "optimalLine": "Her correct line was exactly the cold one she played: keep the idol and extra vote as deterrents, avoid being the visible leader until the numbers were small, and make sure Bowie or Sami did not sit at the end with her. The only cleaner version would have been softer jury management, but that was less important than survival in this format.",
+      "ceiling": "won-it",
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 1,
+      "advWasted": 1,
+      "advHeld": 0,
+      "votesReceived": 10,
+      "alliances": [
+        "The Marshmallow Mafia",
+        "The Alliance",
+        "The Collective",
+        "The Chaos Brigade"
+      ],
+      "rivalries": [
+        "Bowie",
+        "Lake",
+        "Ernesto",
+        "Evie",
+        "Manu",
+        "Nura",
+        "Oliwia",
+        "Ren",
+        "Sami"
+      ],
+      "socialScore": 2,
+      "strategicScore": 38.5
+    },
+    {
+      "placement": 2,
+      "name": "Spencer",
+      "playerSlug": "spencer",
+      "phase": "Finalist",
+      "notes": "Spencer played one of the season's most active strategic games, but burned too many bridges and lost the only challenge that could crown them.",
+      "strategicRank": 8.4,
+      "story": "Spencer started as Bowie's prized student and immediately learned the season's core mechanic: if you can make people believe the majority already exists, they often create it for you. Their pre-merge game was messy but ambitious, including the Aubrey betrayal, the James vote, and a web of temporary deals with Natalia, Sami, Bowie, and later Julia. Getting voted out at Blue looked like a fatal overreach, but Spencer used Redemption Island to reset the threat perception and came back sharper. Post-merge, Spencer kept appearing in the middle of the deciding votes: Bruno, Natalia, Oliwia, Ara, Nura, and the Bowie endgame all ran through their relationships or betrayals. The issue was that Spencer's relationships curdled; Sami, Ara, Nura, Bowie, and Natalia all had reasons to see them as slippery or cruel. They reached the end because they were useful to everyone until the last possible moment. They lost because Julia beat them in the final race, not because they lacked a case.",
+      "gameplayStyle": "calculating bridge-burner",
+      "keyMoments": [
+        "Ep3: broke the Aubrey final-three pact to protect Bowie",
+        "Ep7: voted James out after the Save Card failed",
+        "Ep12: blindsided with an idol in pocket and went to Redemption Island",
+        "Ep14: returned from Redemption as a major merge threat",
+        "Ep16: joined the Natalia blindside coalition",
+        "Ep18: exposed Sami during Hung Out to Dry and played an extra vote",
+        "Ep25: won immunity and survived the jury elimination that cut Bowie"
+      ],
+      "gameArchetype": "social-manipulator",
+      "resume": "Spencer could argue they repeatedly built numbers from minority positions, survived a blindside through Redemption, returned and re-entered the power structure, helped remove Natalia, Oliwia, Ara, Nura, Sami and Bowie, and won the crucial final-three immunity.",
+      "demise": "Spencer's game ended when Julia won the final immunity and then beat them through the volcano race phases. The strategic danger was already gone after Bowie left; the loss was that Spencer could not convert a final-two seat into the season's actual win condition.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Spencer needed to stop treating every relationship as a variable to be solved. Keeping Sami or Bowie genuinely loyal instead of repeatedly humiliating or redirecting them would have given Spencer either a cleaner final shield or stronger jury-side momentum. In the finale itself, there was no better strategic line left: they simply needed to beat Julia.",
+      "ceiling": "could-have-won",
+      "challengeWins": 2,
+      "immunityWins": 1,
+      "rewardWins": 2,
+      "idolsFound": 1,
+      "advPlayed": 1,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 15,
+      "alliances": [
+        "The Network",
+        "The Alliance",
+        "The Collective",
+        "The Chaos Brigade"
+      ],
+      "rivalries": [
+        "Bowie",
+        "Natalia",
+        "Ara",
+        "Nura",
+        "Sami"
+      ],
+      "socialScore": 3,
+      "strategicScore": 40.5
+    },
+    {
+      "placement": 3,
+      "name": "Bowie",
+      "playerSlug": "bowie",
+      "phase": "Juror",
+      "notes": "Bowie was arguably the best strategist of the season, but his threat level and jury damage made him the perfect late cut.",
+      "strategicRank": 9.2,
+      "story": "Bowie began as a coach with an obvious résumé and still managed to build a real coaching tree: Spencer, Sami, and Oliwia all mattered deep into the game. His best work came before promotion, when he could influence without voting and push players into plans they thought were their own. Once promoted at the merge, he played an aggressive information game, constantly probing pairs and using other people's insecurities to change votes. He helped engineer the Bruno and Natalia outcomes, maneuvered through the Manu/Nura stretch, and inherited Thom's Legacy Advantage. The problem was visibility: everyone knew Bowie was thinking, and the jury saw him as someone who treated people like numbers. At final three, he was too dangerous to sit next to and too disliked to be harmless. The jury elimination twist punished exactly the kind of game Bowie had played.",
+      "gameplayStyle": "visible numbers architect",
+      "keyMoments": [
+        "Ep1: formed The Iron Grip with Sami as a coach",
+        "Ep3: survived the anti-Bowie push through fractured votes",
+        "Ep14: promoted at the merge with three protégés still active",
+        "Ep16: joined the live coalition that took out Natalia",
+        "Ep17: used the Manu vote cover while pushing his own endgame interests",
+        "Ep20: survived the rock-draw chaos that removed Thom",
+        "Ep25: lost the jury elimination vote after Spencer won immunity"
+      ],
+      "gameArchetype": "alliance-hub",
+      "resume": "Bowie could claim he built multiple deep players before promotion, entered the merge as a full contestant with live strategic capital, helped guide the Bruno, Natalia, Manu, Ara and Nura votes, and stayed central despite being an obvious former winner.",
+      "demise": "Bowie was ended by the jury elimination at final three. Spencer's immunity protected the one player Bowie could not target, and the jury chose between Bowie and Julia; enough jurors held Bowie responsible for cold, numbers-first play that they removed him before he could argue the case himself.",
+      "demiseKind": "exposed",
+      "optimalLine": "Bowie needed to reduce the visible authorship of his moves after promotion. The better line was to let Sami or Spencer take more public ownership while Bowie kept Thom and a few jurors warmer. Once the jury got direct power, his résumé became evidence against him.",
+      "ceiling": "could-have-won",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 2,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 5,
+      "alliances": [
+        "The Iron Grip",
+        "The Engine",
+        "The Blindside Brigade",
+        "The Chaos Trio",
+        "The Snuff Squad",
+        "The Alliance"
+      ],
+      "rivalries": [
+        "Lake",
+        "Mike",
+        "Julia",
+        "Aubrey",
+        "Ara",
+        "Bruno",
+        "Dunia",
+        "Evie",
+        "Sami",
+        "Spencer"
+      ],
+      "socialScore": 2,
+      "strategicScore": 39
+    },
+    {
+      "placement": 4,
+      "name": "Sami",
+      "playerSlug": "sami",
+      "phase": "Juror",
+      "notes": "Sami controlled large stretches of the game through challenge value and vote architecture, but became too exposed as the endgame's obvious operator.",
+      "strategicRank": 8.8,
+      "story": "Sami's first strength was that people underestimated how much he was tracking. Early on, he built ties with Bowie, Spencer, Mike, Oliwia, Dunia, and later Lake while rarely needing to say the first name out loud. His challenge performances kept him valuable through the tribe phase, and his merge game turned into a series of counter-pitches: Bruno, Natalia, Oliwia, Ara and Nura all intersected with his calculations. He won when he needed to, found a Vote Steal, and used advantages and immunity to stay alive while others fought over trust. But the lie-detector challenge and the late-game feuds exposed how many votes he had steered. By final four, everyone understood Sami was too dangerous if the game returned to a vote. His elimination in Triple Dog Dare was technically a failed dare, but strategically it was the group finally running him out of runway.",
+      "gameplayStyle": "calculating challenge operator",
+      "keyMoments": [
+        "Ep2: won immunity and became the early Blue standout",
+        "Ep5: helped flip the Aubrey vote when the Zoey plan collapsed",
+        "Ep14: voted Bruno out and re-entered the merge power structure",
+        "Ep16: joined the counter-pitch that removed Natalia",
+        "Ep18: betrayed The Alliance by voting Oliwia",
+        "Ep19: found and played the Vote Steal in the chaotic Thom rock vote",
+        "Ep24: failed the final dare after completing multiple brutal rounds"
+      ],
+      "gameArchetype": "alliance-hub",
+      "resume": "Sami could genuinely argue he was the most consistent challenge-and-strategy hybrid: he won safety when needed, built several alliances, found and used a Vote Steal, shaped the Bruno, Natalia, Oliwia and late Nura votes, and was rarely out of the count until the very end.",
+      "demise": "Sami was eliminated in the Triple Dog Dare challenge after Spencer redirected the final dare to him and Sami refused. By that point, Bowie, Spencer and Julia all had reasons to want him gone, and his social cover had collapsed after weeks of exposed vote-steering.",
+      "demiseKind": "exposed",
+      "optimalLine": "Sami's better line was to keep one endgame bond unbroken. He burned Spencer, Bowie and Julia at different points, then entered final four with no one invested in saving him. He should have used the Vote Steal to create a durable final-three structure rather than another public enemy.",
+      "ceiling": "could-have-won",
+      "challengeWins": 3,
+      "immunityWins": 3,
+      "rewardWins": 1,
+      "idolsFound": 0,
+      "advPlayed": 2,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 1,
+      "alliances": [
+        "The Iron Grip",
+        "The Engine",
+        "The Blindside Brigade",
+        "The Marshmallow Mafia",
+        "The Chaos Trio",
+        "The Snuff Squad",
+        "The Alliance",
+        "The Shield Wall"
+      ],
+      "rivalries": [
+        "Bowie",
+        "Grett",
+        "Julia",
+        "Oliwia",
+        "Spencer",
+        "Zoey"
+      ],
+      "socialScore": 2,
+      "strategicScore": 37
+    },
+    {
+      "placement": 5,
+      "name": "Nura",
+      "playerSlug": "nura",
+      "phase": "Juror",
+      "notes": "Nura turned a volatile early reputation into a deep underdog run, but her loyalty pockets could not survive the final-five math.",
+      "strategicRank": 7.1,
+      "story": "Nura looked like an early hothead, but the season repeatedly showed she had more restraint and reads than people credited. She helped stabilize camps, built trust with Gabby and Manu, and became a useful vote in multiple blocs without always being the loudest strategist. Her social recovery after blowups was better than expected; she could apologize, regroup, and keep voting. The problem was that her game depended on pairs and emotional anchors, and those anchors kept getting cut: Manu, Gabby, Thom, and finally The Shield Wall. She won key safety at seven, but the endgame turned her into the easiest consensus target once Julia was immune and Bowie/Spencer/Julia aligned. Sami tried to protect her, but not with enough votes. Nura left knowing Spencer had finally won the long feud.",
+      "gameplayStyle": "volatile loyal survivor",
+      "keyMoments": [
+        "Ep1: standout physical opening and early social-shell gesture",
+        "Ep4: helped lock the Evie vote as the practical camp choice",
+        "Ep7: maintained the water-meeting alliance with Gabby, Lake and Manu",
+        "Ep12: survived the failed vote that removed Spencer",
+        "Ep18: won immunity in Hung Out to Dry",
+        "Ep20: survived the rock draw that accidentally removed Thom",
+        "Ep22: fell 4-1 after The Shield Wall failed"
+      ],
+      "gameArchetype": "wildcard",
+      "resume": "Nura's final case would have been loyalty, survival under constant suspicion, key immunity at seven, and being on the right side of several major coalition votes while never needing to be the most visible strategist.",
+      "demise": "Nura was ended by the Bowie-Spencer-Julia trio at final five. Julia's immunity blocked one target, Bowie and Julia protected each other with idols, and Spencer's long-running grudge lined up with the numbers. Sami's stray vote on Bowie could not save her.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Nura needed to cut Spencer earlier, when Manu and Gabby were still around and her emotional coalition had numbers. Waiting until final five left her trying to beat a trio with only Sami as an unreliable shield.",
+      "ceiling": "could-have-won",
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 9,
+      "alliances": [
+        "The Snuff Squad",
+        "The Bond",
+        "The Shield Wall"
+      ],
+      "rivalries": [
+        "James",
+        "Julia",
+        "Ara",
+        "Ernesto",
+        "Spencer"
+      ],
+      "socialScore": 3,
+      "strategicScore": 19
+    },
+    {
+      "placement": 6,
+      "name": "Thom",
+      "playerSlug": "thom",
+      "phase": "Juror",
+      "notes": "Thom played a socially warm, useful game that was derailed by pure rock-draw bad luck.",
+      "strategicRank": 6.9,
+      "story": "Thom's season began as a coach building Gabby and Ernesto, but his real value was emotional glue. He made people feel noticed, which mattered in a season full of public betrayals and exposed alliances. After promotion, he quietly became one of the few people multiple sides trusted enough to recruit, especially Gabby, Nura, Julia, and Bowie. He won safety at a key final-seven vote and was positioned well enough that he was not even the target at final six. His weakness was that he kept trying to play a principled social game in a structure that rewarded chaos and advantage timing. The vote where he left was not a referendum on his strategy; it was a rock draw after a fractured mess. That makes his exit one of the season's harshest.",
+      "gameplayStyle": "earnest social stabilizer",
+      "keyMoments": [
+        "Ep2: nearly went home when Finn tied him, then survived the revote",
+        "Ep7: James went after the Save Card failed, leaving Thom's coach path clearer",
+        "Ep14: promoted at the merge with two protégés active",
+        "Ep15: joined The Snuff Squad as a trusted worker vote",
+        "Ep19: won Lucky Hunt immunity",
+        "Ep20: had his vote stolen and was eliminated by rocks despite receiving no votes"
+      ],
+      "gameArchetype": "alliance-hub",
+      "resume": "Thom could argue he survived as both coach and player, built durable trust with Gabby and Nura, won a crucial immunity, and stayed off the direct target list deep into the merge.",
+      "demise": "Thom was eliminated by rock draw at final six after the Bowie-Nura tie structure collapsed into chaos. Sami stole Thom's vote, multiple blocs fractured, and Thom was not in the tie or targeted; he simply drew the losing outcome.",
+      "demiseKind": "collateral",
+      "optimalLine": "There was little he could know. His best possible line was to push harder for a clean Julia or Spencer vote before tribal, but once the Vote Steal hit and the room fractured, he lost to mechanics more than strategy.",
+      "ceiling": "could-have-won",
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "rewardWins": 1,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 11,
+      "alliances": [
+        "The Snuff Squad",
+        "The Collective"
+      ],
+      "rivalries": [
+        "Natalia",
+        "Lake",
+        "Grett",
+        "Mike",
+        "Ara",
+        "Dunia"
+      ],
+      "socialScore": 2,
+      "strategicScore": 20
+    },
+    {
+      "placement": 7,
+      "name": "Ara",
+      "playerSlug": "ara",
+      "phase": "Juror",
+      "notes": "Ara had one of the season's sharpest strategic minds, but her visibility and personal rivalries finally made her the obvious final-six cut.",
+      "strategicRank": 8,
+      "story": "Ara played from day one like a class president counting ballots, and for a long time it worked. She gathered information, tested people, repaired relationships when useful, and built overlapping bonds with Ernesto, Gabby, Natalia, Julia and eventually Sami. Her best moves came when she used other people's assumptions against them: the Spencer blindside at Blue, the survival after being targeted repeatedly, and her ability to keep appearing as a swing rather than the architect. But she talked too much, feuded too openly, and carried too many personal relationships into strategic rooms. By the late merge, everyone understood that Ara was not just a vote; she was a planner. The extra vote at final seven gave her one more shot, not a path. The Snuff Squad and Julia converged, and Ara was finally too visible to hide.",
+      "gameplayStyle": "watchful deal-maker",
+      "keyMoments": [
+        "Ep1: lost her vote on the journey, forcing an early defensive posture",
+        "Ep6: took the Immunity Totem and lied to her tribe about the summit",
+        "Ep10: helped drive the Ernesto vote after the tribe dissolve",
+        "Ep12: led the Spencer blindside that sent him to Redemption",
+        "Ep15: formed The Majority with Natalia",
+        "Ep18: survived cross-pressure while Oliwia went home",
+        "Ep19: played an extra vote but was voted out 4-3-1"
+      ],
+      "gameArchetype": "social-manipulator",
+      "resume": "Ara could claim she survived without early vote power, acquired a live totem, repeatedly sat in the swing position, helped remove Ernesto, Spencer, Manu and Oliwia, and maintained influence across multiple fractured blocs.",
+      "demise": "Ara was ended when Nura, Bowie, Thom and Julia aligned on her at final seven. Her extra vote landed on Nura, but Sami's misfire onto Spencer and Julia/Thom's betrayal left Ara without the four votes she needed.",
+      "demiseKind": "exposed",
+      "optimalLine": "Ara needed to stop being the obvious counterweight to every pair. The better line was to let Nura and Spencer keep fighting while she downshifted after Natalia left. Instead, she remained the name everyone could justify on both strategic and personal grounds.",
+      "ceiling": "could-have-won",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 2,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 16,
+      "alliances": [
+        "The Marshmallow Mafia",
+        "The Majority"
+      ],
+      "rivalries": [
+        "Bowie",
+        "Thom",
+        "James",
+        "Manu",
+        "Nura",
+        "Spencer"
+      ],
+      "socialScore": 2,
+      "strategicScore": 36.5
+    },
+    {
+      "placement": 8,
+      "name": "Oliwia",
+      "playerSlug": "oliwia",
+      "phase": "Juror",
+      "notes": "Oliwia lasted by becoming useful to bigger players, but her name came up so often that the consensus finally caught her.",
+      "strategicRank": 6,
+      "story": "Oliwia's game was built on survival through social utility rather than control. She bonded with Aubrey, Bruno, Sami, Lake, and later Bowie, but those relationships often pulled her in conflicting directions. Her best moment was accepting Lake's idol protection at the Grett vote; it saved her and gave her a real post-merge lane. She tried to formalize with The Alliance, but never fully trusted them and was never fully trusted back. The merge exposed her as a perpetual fallback name: weak link when convenient, social leak when threatening, easy betrayal when alliances cracked. She found an idol and misplayed it, which sums up the problem: she could locate safety, but not always the right timing. By final eight, Sami and Julia decided her name was simpler than the alternatives, and Spencer's extra vote made it stick.",
+      "gameplayStyle": "nervy social survivor",
+      "keyMoments": [
+        "Ep5: voted Aubrey in the Blue flip, damaging a friendship but surviving",
+        "Ep10: joined new Green and built ties with Lake and Sami",
+        "Ep13: was saved by Lake's idol as Grett left",
+        "Ep15: found a merge idol",
+        "Ep16: misplayed the idol with zero votes canceled",
+        "Ep17: joined the Manu vote through The Alliance",
+        "Ep18: voted out after her own alliance split"
+      ],
+      "gameArchetype": "floater",
+      "resume": "Oliwia's case would be that she survived repeated targeting, built enough bonds to be saved by an idol, joined key votes against Grett and Manu, and stayed adaptable through multiple tribe structures.",
+      "demise": "Oliwia was ended when The Marshmallow Mafia and parts of The Alliance converged on her at final eight. Ara, Sami, Julia and Spencer's extra vote overcame the scattered Julia and Ara votes, and her old allies did not coordinate in time.",
+      "demiseKind": "collateral",
+      "optimalLine": "She needed to use her idol at the Natalia vote or hold it with more discipline. More importantly, she needed to choose between Bowie/Sami/Julia and the anti-Julia side earlier instead of staying half-attached to both.",
+      "ceiling": "best-realistic-finish",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 1,
+      "advHeld": 0,
+      "votesReceived": 8,
+      "alliances": [
+        "The Chaos Trio",
+        "The Alliance"
+      ],
+      "rivalries": [
+        "Grett",
+        "Julia",
+        "Sami"
+      ],
+      "socialScore": 2,
+      "strategicScore": 15.5
+    },
+    {
+      "placement": 9,
+      "name": "Manu",
+      "playerSlug": "manu",
+      "phase": "Juror",
+      "notes": "Manu's loyalty and work ethic carried him deep, but his game never adjusted fast enough when loyalty stopped being enough.",
+      "strategicRank": 5.8,
+      "story": "Manu began as the season's straight-line loyalist: help the camp, protect your people, and do not be the one who lets anyone down. That made him valuable through the tribe phase and kept him socially liked in several camps. His bonds with Grett, Mike, Nura, Lake and Gabby gave him options, but he rarely turned those options into proactive control. When he finally tried to make bigger moves, they were emotionally charged, especially around Julia and the people who cut his allies. The Tied Destinies twist made his vulnerability contagious, and unfortunately Gabby was tied to him. Julia's extra vote and the fractured blocs gave the vote just enough weight to take him out. Manu's exit hurt because it proved the loyal soldier had friends, just not enough friends with the same priority.",
+      "gameplayStyle": "loyal workhorse shield",
+      "keyMoments": [
+        "Ep2: helped stabilize Grett after Ice Ice Baby",
+        "Ep5: broke his endgame pact with Mike by voting him out",
+        "Ep11: clashed with Bruno and began pushing for respect",
+        "Ep14: survived the chaotic merge vote where Bruno left",
+        "Ep15: won reward and found an idol clue on Exile",
+        "Ep17: targeted by The Alliance and removed, taking Gabby with him"
+      ],
+      "gameArchetype": "pawn-shield",
+      "resume": "Manu could argue he was a provider, a trusted connector, and a loyal number in multiple blocs who helped remove Mike, Bruno and other threats while rarely being the first target until deep merge.",
+      "demise": "Manu was ended by the Tied Destinies vote. Julia, Ara and Oliwia voted Manu, Julia added an extra vote, and because Gabby was tied to him she left as collateral. His personal vote on Julia showed he saw the danger, but not soon enough.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Manu needed to weaponize loyalty earlier by forming a firm anti-Julia bloc with Nura, Gabby and Thom before The Alliance pulled Ara and Oliwia. Waiting until the vote made his Julia read emotionally true but numerically weak.",
+      "ceiling": "best-realistic-finish",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 2,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 5,
+      "alliances": [
+        "The Drama Triangle",
+        "The Snuff Squad"
+      ],
+      "rivalries": [
+        "James",
+        "Julia",
+        "Ara"
+      ],
+      "socialScore": 2,
+      "strategicScore": 14
+    },
+    {
+      "placement": 10,
+      "name": "Gabby",
+      "playerSlug": "gabby",
+      "phase": "Juror",
+      "notes": "Gabby had a strong social and advantage-backed game, but the paired elimination twist made her pay for Manu's target.",
+      "strategicRank": 7.6,
+      "story": "Gabby quietly played one of the better social games of the pre-merge. She found the Legacy Advantage, built bonds with Thom, Nura, Ara, Natalia and Lake, and repeatedly gathered information without looking like the main driver. Her strategic flaw was softness around relationships: she wanted to protect Thom, Ara, Nura and later Manu-adjacent connections even when those networks conflicted. At merge, she had enough respect to be dangerous and enough warmth to be a jury threat. Winning immunity at the Natalia vote kept her safe at the perfect moment, but it also left her exposed as someone everyone knew could win endgame respect. The cruel part is that she was not voted out directly. She was tied to Manu and taken out when the vote hit him. That makes her one of the season's cleanest robbed players.",
+      "gameplayStyle": "warm information broker",
+      "keyMoments": [
+        "Ep2: found the Legacy Advantage",
+        "Ep4: Evie publicly accused Dunia, but Gabby stayed clean in the vote",
+        "Ep10: helped remove Ernesto with Ara",
+        "Ep12: voted Spencer out while refusing to write Ara",
+        "Ep15: won individual immunity at On the Edge",
+        "Ep16: survived the Natalia chaos by staying immune",
+        "Ep17: eliminated as collateral through Tied Destinies"
+      ],
+      "gameArchetype": "under-the-radar",
+      "resume": "Gabby could claim a Legacy Advantage, strong cross-tribal bonds, key votes against Evie, Ernesto and Spencer, an individual immunity win, and one of the best jury-facing social games left at the time of her exit.",
+      "demise": "Gabby was eliminated because Manu was voted out while tied to her by the Tied Destinies twist. The votes were about Manu, Julia's grudge and Alliance math; Gabby was simply attached to the wrong partner.",
+      "demiseKind": "collateral",
+      "optimalLine": "There was almost no correct read available once tied to Manu. Her best line was to push a harder anti-Oliwia or anti-Julia majority before tribal, but she had no reason to know Manu would become the final landing spot.",
+      "ceiling": "could-have-won",
+      "challengeWins": 2,
+      "immunityWins": 2,
+      "rewardWins": 1,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 4,
+      "alliances": [
+        "The Snuff Squad",
+        "The Quiet Two"
+      ],
+      "rivalries": [
+        "Ernesto"
+      ],
+      "socialScore": 2,
+      "strategicScore": 13.5
+    },
+    {
+      "placement": 11,
+      "name": "Natalia",
+      "playerSlug": "natalia",
+      "phase": "Juror",
+      "notes": "Natalia played aggressively from the first idol find onward, but became too visible, too unpredictable, and too threatening at the merge.",
+      "strategicRank": 8.1,
+      "story": "Natalia found an idol early and used that security to play a bigger game than most of her tribe realized. She built relationships with Ernesto, Ara, Gabby, Nura and later Julia, while constantly testing whether people would move for her. Her flaw was that she never stopped acting like the center of the room, even when the room had started comparing notes. She helped drive early boots, survived multiple swaps, and had real social capital, especially with people she comforted or rallied in challenges. But at the merge she was one of the easiest people to label as dangerous: idol rumors, jury relationships, showmance visibility, and chaos all attached to her. The Natalia vote is where the season's scattered blocs discovered they could form a live coalition in real time. She left because too many people believed, correctly, that letting her reach the end was reckless.",
+      "gameplayStyle": "idol-backed social firestarter",
+      "keyMoments": [
+        "Ep2: found the Green idol",
+        "Ep4: voted Grett as an idol-exposure counter while the room sent Evie home",
+        "Ep7: helped form The Network with Spencer",
+        "Ep10: voted Gabby and fractured her own bloc at Ernesto's boot",
+        "Ep14: survived the ambassador rock draw that removed Lake",
+        "Ep15: bankrolled Julia's extra vote purchase",
+        "Ep16: blindsided by Sami, Spencer, Bowie and Julia"
+      ],
+      "gameArchetype": "social-manipulator",
+      "resume": "Natalia could claim an early idol, repeated challenge leadership, influence in the Finn, Evie and Ernesto votes, key alliances with Ara and Gabby, and enough jury relationships that the merge tribe openly feared her endgame chances.",
+      "demise": "Natalia was taken out at the first full post-merge vote after Gabby won immunity. A late coalition of Sami, Spencer, Bowie and Julia landed on her because she had too much social capital and too many overlapping plans. Her own vote on Spencer did not protect her, and the idol never got played.",
+      "demiseKind": "exposed",
+      "optimalLine": "Once merged, Natalia needed to play the idol or dramatically reduce her visibility. Targeting Spencer while also holding multiple alliance threads made her too easy to unite against. The optimal move was to let Ara or Sami absorb the strategic spotlight for one round.",
+      "ceiling": "could-have-won",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 1,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 6,
+      "alliances": [
+        "The Wire",
+        "The Outwit Club",
+        "The Majority",
+        "The Quiet Two"
+      ],
+      "rivalries": [
+        "Lake",
+        "Grett",
+        "Thom",
+        "Finn",
+        "Spencer"
+      ],
+      "socialScore": 3,
+      "strategicScore": 32
+    },
+    {
+      "placement": 12,
+      "name": "Bruno",
+      "playerSlug": "bruno",
+      "phase": "Juror",
+      "notes": "Bruno had tools and relationships, but his game was too reactive and too emotionally visible once the merge hit.",
+      "strategicRank": 5.4,
+      "story": "Bruno's game began with a real advantage: he won the first journey and took the Vote Steal. But after that, he struggled to turn tools into a coherent power structure. He was liked by some players and protected by others, especially Mike, Lake, Oliwia and later Zoey, but he also picked fights and made people feel judged or dismissed. Finding the Blue idol gave him another chance to control his fate, yet the idol did not become a long-term strategic anchor. At the merge, Bruno was a convenient target because multiple factions had old grudges and few people saw him as essential. Spencer, Sami, Bowie and Thom all had reasons to let him go, while Manu's betrayal from The Drama Triangle sealed the social read. Bruno was not helpless, but he was always playing defense after his early advantage splash.",
+      "gameplayStyle": "useful but reactive",
+      "keyMoments": [
+        "Ep1: won the journey Vote Steal",
+        "Ep1: used the Vote Steal at the chaotic Millie vote",
+        "Ep6: found the Blue idol from the summit clue",
+        "Ep10: helped survive the Blue shrink but lost Dunia to Bowie's Save Card",
+        "Ep13: voted Grett and was blamed as the strategic center",
+        "Ep14: blindsided at the merge by a five-vote coalition"
+      ],
+      "gameArchetype": "pawn-shield",
+      "resume": "Bruno could point to the first Vote Steal, a found idol, several survival rounds while isolated from key allies, and participation in the Grett blindside.",
+      "demise": "Bruno was voted out at the merge when The Marshmallow Mafia and others converged on him as an old grudge and easy consensus. Manu, Sami, Spencer, Bowie and Thom wrote him down, and the social damage from earlier conflicts meant few people fought for him.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Bruno needed to use his idol or advantage capital to build a stable trio before merge instead of relying on being useful and liked. Once merged, he should have exposed the anti-Bruno move and forced the vote onto a bigger shared threat like Sami or Spencer.",
+      "ceiling": "best-realistic-finish",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 1,
+      "advPlayed": 1,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 7,
+      "alliances": [
+        "The Drama Triangle"
+      ],
+      "rivalries": [
+        "Bowie",
+        "Aubrey"
+      ],
+      "socialScore": 1,
+      "strategicScore": 11.5
+    },
+    {
+      "placement": 13,
+      "name": "Lake",
+      "playerSlug": "lake",
+      "phase": "Juror",
+      "notes": "Lake played a calm, perceptive, socially respected game, but the ambassador twist removed her without a vote.",
+      "strategicRank": 6.7,
+      "story": "Lake's game was subtle but real. She repeatedly improved the groups she was in: leading Blue construction, bonding with Aubrey, later anchoring relationships with Mike, Gabby, Sami, Bruno and Oliwia. She found an idol at Green and made the season's cleanest idol play by saving Oliwia and taking out Grett. That move proved she could be decisive, not just calm. Her issue was that her loyalty made her predictable; she would not give up Sami at the ambassador negotiation, just as Natalia would not give up Gabby. That principle forced rocks. Lake lost to a bag, not to a vote or a failed read. Her exit removed one of the few players with both social respect and a clean strategic signature.",
+      "gameplayStyle": "calm loyal tactician",
+      "keyMoments": [
+        "Ep1: stood out in Dig Deep and led Blue's early structure",
+        "Ep5: bonded with Gabby before the tribe dissolve split them",
+        "Ep8: lost Mike as her closest partner",
+        "Ep12: found the Green idol",
+        "Ep13: played the idol on Oliwia and sent Grett home",
+        "Ep14: deadlocked with Natalia as ambassador and drew the wrong rock"
+      ],
+      "gameArchetype": "under-the-radar",
+      "resume": "Lake could claim strong social bonds, a hidden idol find, a successful idol play for another player, and a principled ambassador stand where she refused to sacrifice her ally.",
+      "demise": "Lake was eliminated by the Ambassadors twist. She refused Natalia's Sami proposal, Natalia refused her Gabby proposal, and the deadlock sent them to rocks; Lake drew wrong and left without a vote.",
+      "demiseKind": "collateral",
+      "optimalLine": "Her best line was probably still to protect Sami; giving him up would have destroyed her standing and agency. If playing strictly to survive, she could have offered a less protected middle name, but Natalia had little incentive to accept anything but Sami.",
+      "ceiling": "could-have-won",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 1,
+      "advPlayed": 1,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 0,
+      "alliances": [
+        "The Marshmallow Mafia",
+        "The Drama Triangle"
+      ],
+      "rivalries": [
+        "Bowie",
+        "Natalia",
+        "Grett",
+        "Thom",
+        "Julia"
+      ],
+      "socialScore": 2,
+      "strategicScore": 20.5
+    },
+    {
+      "placement": 14,
+      "name": "Grett",
+      "playerSlug": "grett",
+      "phase": "Pre-Merge",
+      "notes": "Grett had force, reads and social pull, but her volatility made her the exact player Lake could justify cutting with an idol play.",
+      "strategicRank": 6.5,
+      "story": "Grett's early game was messy but active: she built with Dunia, clashed with Gabby, defended her place in challenges, and tried to turn coach neglect into motivation. She had a real social pocket with Manu and a strategic pocket with Lake and others, but she kept overclaiming credit and creating tension. At Red, she helped consolidate against Yul and later Mike, yet she was never as in control as she thought she was. Her biggest problem was that people feared the combination of likability, challenge ability and unpredictability. At the Green vote, she thought Oliwia was the landing spot, but Lake played an idol on Oliwia and flipped the outcome. Grett's exit was dramatic because it exposed Bruno, but it also exposed Grett's own blind spot: she believed she could see the room while Lake was actually moving underneath it.",
+      "gameplayStyle": "volatile credit-claimer",
+      "keyMoments": [
+        "Ep2: voted Finn on revote after flipping away from Thom",
+        "Ep5: took the summit idol clue but failed to find the idol",
+        "Ep6: helped vote Yul while her own Thom vote strayed",
+        "Ep8: joined the Mike blindside despite Lake's loyalty to him",
+        "Ep13: became the target of Lake's idol counterstrike",
+        "Ep13: lost the Redemption duel to Spencer"
+      ],
+      "gameArchetype": "wildcard",
+      "resume": "Grett could argue she survived early coach neglect, built genuine bonds with Dunia and Manu, influenced the Yul and Mike votes, and stayed strategically active across multiple swaps.",
+      "demise": "Grett was voted out when Lake played an idol for Oliwia, canceling the intended Oliwia votes and leaving Grett exposed. Lake, Oliwia and Bruno wrote Grett, while Manu and Sami failed to land their alternate plan.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Grett needed to stop treating Oliwia as an easy vote and recognize Lake's attachment to her. Splitting votes or flushing Lake's idol before targeting Oliwia would have been the safer line.",
+      "ceiling": "best-realistic-finish",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 5,
+      "alliances": [],
+      "rivalries": [
+        "Natalia",
+        "Lake",
+        "Thom",
+        "Mike",
+        "Oliwia",
+        "Sami"
+      ],
+      "socialScore": 1,
+      "strategicScore": 25.5
+    },
+    {
+      "placement": 15,
+      "name": "Mike",
+      "playerSlug": "mike",
+      "phase": "Pre-Merge",
+      "notes": "Mike was a likeable connector and Redemption warrior, but his social threat became too obvious before he had numbers to protect it.",
+      "strategicRank": 5.1,
+      "story": "Mike played a gentle, bond-heavy game that made people comfortable, which is both a strength and a threat. He helped Evie, Bruno, Manu, Lake and others feel seen, and on Red he became important enough that people began measuring their games around him. The Yul vote was his biggest strategic mark: he organized the move and got publicly called out for it. That moment gave him agency but also made him visible. When Red lost again, the Anti-Mike Front formed because everyone liked him and because he had already been named too many times. Lake tried to protect him by voting Thom, but Mike had no majority left. His Redemption streak was impressive, but Spencer eventually ended it.",
+      "gameplayStyle": "kind social threat",
+      "keyMoments": [
+        "Ep3: bonded with Evie through fire practice and Bruno through encouragement",
+        "Ep6: organized the Yul blindside and was exposed in Yul's exit",
+        "Ep8: lost the Red vote when Gabby, Grett, Nura and Manu united",
+        "Ep8: beat Yul in the Redemption log roll",
+        "Ep9: beat Ren and Dunia in the Redemption obstacle course",
+        "Ep10: lost the Redemption endurance hold to Spencer"
+      ],
+      "gameArchetype": "social-manipulator",
+      "resume": "Mike could claim he built sincere cross-tribal bonds, organized the Yul blindside, survived multiple Redemption duels, and was targeted because people believed he could win a jury vote.",
+      "demise": "Mike's in-game demise came when Gabby, Grett, Nura and Manu decided his social threat was too high and voted him out over Lake's attempt to hold the duo together. His final season exit came when Spencer beat him on Redemption Island.",
+      "demiseKind": "exposed",
+      "optimalLine": "After the Yul blindside, Mike needed to hide behind Lake or Grett and stop looking like the emotional center of Red. The correct move was to push a Grett or Thom narrative before the Anti-Mike Front solidified.",
+      "ceiling": "could-have-won",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 5,
+      "alliances": [],
+      "rivalries": [
+        "Bowie",
+        "Grett",
+        "Thom",
+        "Zoey"
+      ],
+      "socialScore": 1,
+      "strategicScore": 14
+    },
+    {
+      "placement": 16,
+      "name": "Zoey",
+      "playerSlug": "zoey",
+      "phase": "Pre-Merge",
+      "notes": "[AI_FILL]",
+      "strategicRank": "[AI_FILL]",
+      "story": "[AI_FILL]",
+      "gameplayStyle": "[AI_FILL]",
+      "keyMoments": "[AI_FILL]",
+      "gameArchetype": "[AI_FILL]",
+      "resume": "[AI_FILL]",
+      "demise": "[AI_FILL]",
+      "demiseKind": "[AI_FILL]",
+      "optimalLine": "[AI_FILL]",
+      "ceiling": "[AI_FILL]",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 4,
+      "alliances": [],
+      "rivalries": [
+        "Mike",
+        "Aubrey",
+        "Dunia",
+        "Ren",
+        "Sami"
+      ],
+      "socialScore": 0,
+      "strategicScore": 18.5
+    },
+    {
+      "placement": 17,
+      "name": "Ernesto",
+      "playerSlug": "ernesto",
+      "phase": "Pre-Merge",
+      "notes": "Ernesto had warmth and bonds, but his indecision and challenge liability made him expendable once Ara and Gabby found common ground.",
+      "strategicRank": 4.2,
+      "story": "Ernesto's first half was defined by relationships: Ara, Natalia, Ren, Thom and Julia all pulled him in different directions. He was liked, but often treated as someone else's number rather than a strategic driver. He tried to break out of that with deception and small side deals, but his emotional attachments kept overriding clean execution. After the tribe dissolve, he landed in a spot where Ara and Gabby could make him the practical vote, and Spencer was willing to cut him for challenge and number reasons. Ernesto's vote for Nura shows how lost he was at the final decision point: he went to tribal with one plan and wrote a third name. His exit was less about one mistake and more about never proving he could be the person deciding the vote.",
+      "gameplayStyle": "warm indecisive connector",
+      "keyMoments": [
+        "Ep1: formed an early friendship with Ara",
+        "Ep4: became Julia's eyes and ears while thinking they were partners",
+        "Ep5: got caught in Ara's kiss trap and lost a key relationship",
+        "Ep7: chose outside obligations over Ara's Spencer vote",
+        "Ep10: overheard plans that excluded him and spiraled",
+        "Ep10: voted Nura while Ara, Gabby and Spencer sent him out"
+      ],
+      "gameArchetype": "floater",
+      "resume": "Ernesto could claim social bonds with multiple power players and some challenge effort, but he had no clean vote ownership and no clear path to a final argument.",
+      "demise": "Ernesto was voted out when Ara and Gabby settled on him, Spencer joined for practical reasons, and Natalia/Nura's scattered votes failed to protect him. His own Nura vote broke from the stated plan and showed how isolated his read had become.",
+      "demiseKind": "outplayed",
+      "optimalLine": "He needed to pick a side earlier and stay there. Specifically, after losing Ara's trust, he should have locked with Natalia and Spencer or exposed Ara/Gabby's plan before tribal rather than casting a lonely Nura vote.",
+      "ceiling": "best-realistic-finish",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 3,
+      "alliances": [],
+      "rivalries": [
+        "Gabby",
+        "James",
+        "Julia",
+        "Nura"
+      ],
+      "socialScore": 1,
+      "strategicScore": 13
+    },
+    {
+      "placement": 18,
+      "name": "Ren",
+      "playerSlug": "ren",
+      "phase": "Pre-Merge",
+      "notes": "Ren's challenge utility kept them relevant, but they never converted usefulness into a protected voting bloc.",
+      "strategicRank": 4.8,
+      "story": "Ren was valuable physically and socially decent, but often peripheral to the real strategy. They were repeatedly passed over by coaches, which became part of their story and gave them a chip on the shoulder. On Green, they built trust with Ara, Ernesto and Natalia, but not enough to become indispensable when Save Card chaos arrived. Their best stretch came in challenges: captaining, performing, and being the person others noticed as merge-dangerous. Unfortunately, visibility without deep alliance insulation is lethal. When Julia's Save Card protected her, she named Ren as the replacement. Ren left not because the room had centered on them all day, but because they were available, capable, and insufficiently protected.",
+      "gameplayStyle": "useful exposed athlete",
+      "keyMoments": [
+        "Ep5: landed on Green after the tribe expansion and bonded through the Am-AH-Zon Race",
+        "Ep6: was passed over again and began side-dealing with Spencer",
+        "Ep7: captained Green in Tropical Takedown over Spencer's objection",
+        "Ep8: remained on the edge of the Natalia-Spencer-Ara tensions",
+        "Ep9: was named replacement by Julia's Save Card and sent out",
+        "Ep10: lost Redemption to Mike in Memory Sequence"
+      ],
+      "gameArchetype": "pawn-shield",
+      "resume": "Ren's case would be challenge reliability, captaining under pressure, and surviving as a useful number despite chronic coach neglect. It was not yet a winning case.",
+      "demise": "Ren was eliminated when votes against Julia were nullified by the Save Card and Julia named Ren as the replacement. Ren was collateral for a failed coach strike and had no advantage or tight bloc to stop it.",
+      "demiseKind": "collateral",
+      "optimalLine": "Ren needed to formalize with Spencer or Natalia before the multi-tribal round instead of hovering as an available vote. If they had been somebody's non-negotiable ally, Julia likely names someone else.",
+      "ceiling": "best-realistic-finish",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 1,
+      "alliances": [],
+      "rivalries": [
+        "James",
+        "Julia",
+        "Zoey"
+      ],
+      "socialScore": 1,
+      "strategicScore": 12.5
+    },
+    {
+      "placement": 19,
+      "name": "Dunia",
+      "playerSlug": "dunia",
+      "phase": "Pre-Merge",
+      "notes": "Dunia read the game well and built quiet trust, but a Save Card replacement ended her before she could cash in that social capital.",
+      "strategicRank": 5.6,
+      "story": "Dunia's game was quiet, observant and often stronger than the edit around her. She bonded with Grett, Sami, Oliwia and Zoey, and she was frequently positioned as someone people trusted with information. Her problem was that she did not control the coach mechanics around her. On Blue, votes were aimed at Bowie, but Bowie's Save Card was live and Zoey signed. Bowie named Dunia as the replacement, turning her from observer into casualty. She had enough strategic sense to be dangerous later, especially as someone who could mediate and gather information, but she never reached the phase where that mattered. Her Redemption attempt showed fight, but Mike beat her by a hand's width. This is a classic case of a player being available, not beaten in the original vote.",
+      "gameplayStyle": "quiet perceptive mediator",
+      "keyMoments": [
+        "Ep4: was exposed by Evie as a strategic center after the Evie vote",
+        "Ep5: joined the flip that sent Aubrey out",
+        "Ep6: rebuilt trust with Sami after conflict",
+        "Ep9: was removed when Bowie's Save Card redirected the Blue vote",
+        "Ep9: took the Redemption torch instead of quitting",
+        "Ep9: lost the Redemption obstacle course narrowly to Mike"
+      ],
+      "gameArchetype": "under-the-radar",
+      "resume": "Dunia could claim strong discretion, useful social bonds, and participation in the Aubrey vote, but she left before building a finalist résumé.",
+      "demise": "Dunia was not voted out by ballots against her; votes targeted Bowie, Bowie's Save Card saved him, and Bowie named Dunia as the replacement. The decision removed a quiet social threat without needing to beat her in the vote.",
+      "demiseKind": "collateral",
+      "optimalLine": "Dunia's only real counterplay was to make herself less nameable by Bowie, either by repairing that relationship or publicly tying herself to Sami/Oliwia as a protected number. She could not know the Save Card would be used against her specifically.",
+      "ceiling": "could-have-won",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 0,
+      "alliances": [],
+      "rivalries": [
+        "Bowie",
+        "Thom",
+        "Zoey"
+      ],
+      "socialScore": 1,
+      "strategicScore": 14
+    },
+    {
+      "placement": 20,
+      "name": "Yul",
+      "playerSlug": "yul",
+      "phase": "Pre-Merge",
+      "notes": "Yul arrived late, played hard immediately, and was cut because nobody trusted him enough to let that continue.",
+      "strategicRank": 3.7,
+      "story": "Yul's season began in the worst possible position: late arrival, no bonds, and a reputation that entered camp before he did. He tried to compensate with side deals, challenge effort and direct pitches, but that made him visible faster. On Red, he overplayed enough that Mike could organize a clean strike with Gabby, Manu and Lake. Yul's best argument was that he was useful and strategically aware, but usefulness is not the same as trust. Once people saw him as unpredictable, he had no old foundation to fall back on. His Redemption win over Finn showed he could fight, but his in-game path had already collapsed. His exit speech correctly identified Mike's role, but that only helped expose Mike after Yul was gone.",
+      "gameplayStyle": "late-arrival agitator",
+      "keyMoments": [
+        "Ep2: entered late onto Blue with no bonds",
+        "Ep3: became involved in anti-Evie and anti-Bowie crossfire",
+        "Ep5: landed on Red and cut side deals with Lake and Gabby",
+        "Ep6: was blindsided by Mike's coalition",
+        "Ep6: beat Finn in the Redemption endurance duel",
+        "Ep8: lost the Redemption log roll to Mike"
+      ],
+      "gameArchetype": "wildcard",
+      "resume": "Yul could claim challenge contributions and an ability to identify threats, but he had no stable voting bloc and no jury path at the time he left.",
+      "demise": "Yul was voted out when Mike organized a five-person move against him, with Gabby, Manu and Lake joining. Nura and Grett's stray votes could not change that he had become the least trusted player on Red.",
+      "demiseKind": "outplayed",
+      "optimalLine": "As a late arrival, Yul needed humility and patience. Instead of pitching final twos and stirring distrust immediately, he should have become an obedient number for one vote and let existing fractures expose themselves.",
+      "ceiling": "best-realistic-finish",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 4,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 0,
+      "strategicScore": 23
+    },
+    {
+      "placement": 21,
+      "name": "James",
+      "playerSlug": "james",
+      "phase": "Pre-Merge",
+      "notes": "James's coach game died because Julia refused to save him, leaving his protégés and enemies to cut him without a safety net.",
+      "strategicRank": 5.5,
+      "story": "James entered as a former winner and tried to coach with blunt authority. He built some trust with Natalia and Dunia, but he also made enough people wary that his guidance started to look like control. On Green, his relationship with Natalia was meaningful, but that also made him a symbol of a power structure some players wanted to break. The critical vote was not really about James's challenge usefulness; it was about whether the coach bloc would protect itself. James called for the Save Card, but Julia refused, and that refusal was effectively the vote. Once the card failed, the numbers could land on him. His exit mattered because it marked the end of the coaches pretending they were a unified class.",
+      "gameplayStyle": "blunt winner-coach",
+      "keyMoments": [
+        "Ep1: trained Natalia and Dunia in boldness",
+        "Ep3: started drawing strategic maps with Manu",
+        "Ep5: publicly exposed Ara's information game",
+        "Ep7: called for the Save Card at Green tribal",
+        "Ep7: lost protection when Julia refused to sign",
+        "Ep7: was voted out as Green cut another coach"
+      ],
+      "gameArchetype": "alliance-hub",
+      "resume": "James could argue he developed key players, especially Natalia and Dunia, and gave strategic structure to Green, but as a contestant he had too little direct voting record.",
+      "demise": "James was voted out when Julia refused to sign the Save Card. Without unanimous coach protection, the votes against James counted and the tribe cut him as the coach whose influence had become too costly.",
+      "demiseKind": "outplayed",
+      "optimalLine": "James needed to repair with Julia before the vote or avoid calling for a card he could not secure. Once he asked and Julia refused, his weakness became public and fatal.",
+      "ceiling": "best-realistic-finish",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 2,
+      "alliances": [
+        "The Wire"
+      ],
+      "rivalries": [
+        "Ara",
+        "Ernesto",
+        "Manu",
+        "Nura",
+        "Ren"
+      ],
+      "socialScore": 0,
+      "strategicScore": 23.5
+    },
+    {
+      "placement": 22,
+      "name": "Finn",
+      "playerSlug": "finn",
+      "phase": "Pre-Merge",
+      "notes": "Finn played loudly before he had enough trust, then lost the revote when the flippers chose stability over chaos.",
+      "strategicRank": 3.6,
+      "story": "Finn entered with energy and a desire to make an impact, but impact is not the same as position. He created friction around camp, overplayed socially, and became an easy name when Green needed a vote. His only viable counter was the anti-Thom coach strike, but that coalition lacked the numbers and Ara had no vote. The first vote tied Finn with Thom, which shows Finn was not dead on arrival; there was a path if the anti-coach side held. But on the revote, Grett, Dunia and Ernesto broke toward Finn, and that ended it. Redemption gave him a second narrative, but Yul eventually beat him. Finn's game was more potential than execution.",
+      "gameplayStyle": "loud early combustor",
+      "keyMoments": [
+        "Ep1: clashed over camp food and chores",
+        "Ep2: targeted Thom as a coach worth cutting",
+        "Ep2: tied 3-3 with Thom at Green tribal",
+        "Ep2: lost the revote when flippers moved to him",
+        "Ep5: beat Aubrey in the Blindfold Maze on Redemption",
+        "Ep6: lost the Redemption endurance duel to Yul"
+      ],
+      "gameArchetype": "early-casualty",
+      "resume": "Finn had no finalist case; he could only argue he tried to play hard and identified the coach threat early.",
+      "demise": "Finn went out on the revote after the anti-Thom vote failed to hold. Gabby held on Finn, and Grett, Dunia and Ernesto flipped to avoid rocks, giving Finn the majority against him.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Finn's correct move was to stop making himself the emotional alternative to Thom. He needed to let Grett or Dunia front the anti-coach argument while he became a quieter number.",
+      "ceiling": "overperformed",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 3,
+      "alliances": [],
+      "rivalries": [
+        "Natalia"
+      ],
+      "socialScore": 0,
+      "strategicScore": 19.5
+    },
+    {
+      "placement": 23,
+      "name": "Aubrey",
+      "playerSlug": "aubrey",
+      "phase": "Pre-Merge",
+      "notes": "Aubrey had charm and flashes of competence, but her social volatility and weak-link label made her the first easy swap boot.",
+      "strategicRank": 3.1,
+      "story": "Aubrey's early game was chaotic in a way that made people enjoy her but not rely on her. She built real bonds with Evie, Lake and Oliwia, and her night-watch moment showed she could be brave when it counted. The problem was that she also fought with Bruno, overclaimed challenge value, and never settled into a secure bloc. On the small Blue tribe, the original plan was to take out Zoey, but Bowie and Zoey's pressure pushed the vote toward Aubrey. Oliwia's miscommunication did not matter because Sami and Dunia also landed there. Aubrey's blindside was emotionally loud, but strategically simple: she was the name the most people could tolerate. Redemption gave her one duel, but Finn beat her decisively.",
+      "gameplayStyle": "chaotic social spark",
+      "keyMoments": [
+        "Ep1: became Blue's first weak-link discussion after Dig Deep",
+        "Ep3: Spencer broke their final-three pact by voting against her",
+        "Ep5: clashed publicly with Bruno on the small Blue tribe",
+        "Ep5: became the compromise vote after the Zoey plan collapsed",
+        "Ep5: lost the Blindfold Maze duel to Finn",
+        "Ep5: chose to keep fighting on Redemption before losing"
+      ],
+      "gameArchetype": "early-casualty",
+      "resume": "Aubrey had no winning case; she could cite social bonds and effort, but no strategic control or stable alliance.",
+      "demise": "Aubrey was voted out when Sami, Oliwia and Dunia landed on her as the workable majority after the Zoey vote fell apart. Bowie and Zoey's pressure helped create the opening, but the deciding ballots came from players willing to cut the weakest link.",
+      "demiseKind": "outplayed",
+      "optimalLine": "She needed to de-escalate the Bruno feud and lock Oliwia before tribal. In a five-person tribe, one solid pair plus a coach pitch could have saved her.",
+      "ceiling": "overperformed",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 5,
+      "alliances": [],
+      "rivalries": [
+        "Bowie",
+        "Bruno",
+        "Zoey"
+      ],
+      "socialScore": 0,
+      "strategicScore": 14.5
+    },
+    {
+      "placement": 24,
+      "name": "Evie",
+      "playerSlug": "evie",
+      "phase": "Pre-Merge",
+      "notes": "Evie never recovered from being labeled a challenge liability and chose not to fight back through Redemption.",
+      "strategicRank": 3.4,
+      "story": "Evie's early game had flashes of calm and intelligence, but she kept landing in the wrong kind of visibility. Blue voted her out into a swap, and on Green she entered without deep roots while the tribe was already counting weaknesses. Manu tried to work with her and she had moments of humor and connection, but the One Million Bucks loss made her the practical name. She tried to redirect toward Thom with the anti-coach logic, but the room had already consolidated. Her tribal blowup exposed Dunia and Natalia's idol rumors, but it did not save her. At the crossroads, she declined Redemption, which confirms she was emotionally done. Strategically, she never built enough insulation for a rough challenge day.",
+      "gameplayStyle": "calm isolated misfit",
+      "keyMoments": [
+        "Ep3: was voted out of Blue but moved to Green in the elimination swap",
+        "Ep4: struggled in One Million Bucks, B.C.",
+        "Ep4: tried to organize votes against Thom",
+        "Ep4: was voted out by the Natalia bloc",
+        "Ep4: exposed Dunia and Natalia information on the way out",
+        "Ep4: chose the Motel instead of Redemption Island"
+      ],
+      "gameArchetype": "early-casualty",
+      "resume": "Evie had no real case; she had some social bonds and composure, but no vote control and no challenge protection.",
+      "demise": "Evie was voted out when Natalia's bloc and Grett both converged on her as the weakest and least controllable option after the challenge. Manu's Thom vote could not create a countermajority.",
+      "demiseKind": "never-had-a-path",
+      "optimalLine": "Evie needed to integrate immediately after the swap and make herself a number for Natalia or Grett rather than trying to revive an anti-coach plan with too few votes.",
+      "ceiling": "best-realistic-finish",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 11,
+      "alliances": [],
+      "rivalries": [
+        "Bowie",
+        "Julia"
+      ],
+      "socialScore": 0,
+      "strategicScore": 9.5
+    },
+    {
+      "placement": 25,
+      "name": "Millie",
+      "playerSlug": "millie",
+      "phase": "Pre-Merge",
+      "notes": "Millie was the first proof that coaches were expendable, leaving with the Save Card unused.",
+      "strategicRank": 2.2,
+      "story": "Millie's game barely got time to exist. As a coach, her value was supposed to be training, but that became the argument against her: every session made someone else harder to beat. Blue saw that keeping a coach could mean subsidizing future opponents. The anti-Millie plan was messy, with votes scattering everywhere, but enough people still saw her as the right structural cut. The Save Card could have protected her, but it had to be committed before the read and it was not used. That made her the season's first major lesson: no one was safe just because the format said they were special. Strategically, she was a casualty of the twist more than her own gameplay.",
+      "gameplayStyle": "expendable early coach",
+      "keyMoments": [
+        "Ep1: arrived as a coach with a nurturing pitch",
+        "Ep1: trained Evie and Ren before the tribe turned on coach value",
+        "Ep1: became the target of both Anti-Millie and Spencer Core plans",
+        "Ep1: left when the Save Card was not used",
+        "Ep1: her revoked training immediately affected Evie and Ren"
+      ],
+      "gameArchetype": "early-casualty",
+      "resume": "Millie had no case; she left before building a contestant résumé.",
+      "demise": "Millie was voted out because Blue decided a coach who trained other people was more dangerous than useful. The Save Card was not committed, so she left holding theoretical protection that never activated.",
+      "demiseKind": "never-had-a-path",
+      "optimalLine": "Her only line was to make her training feel scarce and personal rather than broadly threatening. Once multiple people believed she was strengthening their opponents, the vote became rational.",
+      "ceiling": "overperformed",
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "rewardWins": 0,
+      "idolsFound": 0,
+      "advPlayed": 0,
+      "advWasted": 0,
+      "advHeld": 0,
+      "votesReceived": 4,
+      "alliances": [],
+      "rivalries": [],
+      "socialScore": 0,
+      "strategicScore": 18
+    }
+  ],
+  "votingHistory": [
+    {
+      "episode": 1,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "votes": [
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Millie",
+          "targetSlug": "millie"
+        },
+        {
+          "voter": "Mike",
+          "voterSlug": "mike",
+          "target": "Evie",
+          "targetSlug": "evie"
+        },
+        {
+          "voter": "Aubrey",
+          "voterSlug": "aubrey",
+          "target": "Bruno",
+          "targetSlug": "bruno"
+        },
+        {
+          "voter": "Bruno",
+          "voterSlug": "bruno",
+          "target": "Millie",
+          "targetSlug": "millie"
+        },
+        {
+          "voter": "Evie",
+          "voterSlug": "evie",
+          "target": "Bruno",
+          "targetSlug": "bruno"
+        },
+        {
+          "voter": "Oliwia",
+          "voterSlug": "oliwia",
+          "target": "Sami",
+          "targetSlug": "sami"
+        },
+        {
+          "voter": "Ren",
+          "voterSlug": "ren",
+          "target": "Evie",
+          "targetSlug": "evie"
+        },
+        {
+          "voter": "Sami",
+          "voterSlug": "sami",
+          "target": "Millie",
+          "targetSlug": "millie"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Millie",
+          "targetSlug": "millie"
+        }
+      ]
+    },
+    {
+      "episode": 2,
+      "eliminated": "Finn",
+      "eliminatedSlug": "finn",
+      "votes": [
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Finn",
+          "targetSlug": "finn"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Finn",
+          "targetSlug": "finn"
+        },
+        {
+          "voter": "Grett",
+          "voterSlug": "grett",
+          "target": "Thom",
+          "targetSlug": "thom"
+        },
+        {
+          "voter": "Dunia",
+          "voterSlug": "dunia",
+          "target": "Thom",
+          "targetSlug": "thom"
+        },
+        {
+          "voter": "Ernesto",
+          "voterSlug": "ernesto",
+          "target": "Gabby",
+          "targetSlug": "gabby"
+        },
+        {
+          "voter": "Finn",
+          "voterSlug": "finn",
+          "target": "Thom",
+          "targetSlug": "thom"
+        },
+        {
+          "voter": "Manu",
+          "voterSlug": "manu",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        },
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Finn",
+          "targetSlug": "finn"
+        }
+      ]
+    },
+    {
+      "episode": 3,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "votes": [
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Mike",
+          "targetSlug": "mike"
+        },
+        {
+          "voter": "Mike",
+          "voterSlug": "mike",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Aubrey",
+          "voterSlug": "aubrey",
+          "target": "Evie",
+          "targetSlug": "evie"
+        },
+        {
+          "voter": "Bruno",
+          "voterSlug": "bruno",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Evie",
+          "voterSlug": "evie",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Oliwia",
+          "voterSlug": "oliwia",
+          "target": "Evie",
+          "targetSlug": "evie"
+        },
+        {
+          "voter": "Ren",
+          "voterSlug": "ren",
+          "target": "Evie",
+          "targetSlug": "evie"
+        },
+        {
+          "voter": "Sami",
+          "voterSlug": "sami",
+          "target": "Evie",
+          "targetSlug": "evie"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Aubrey",
+          "targetSlug": "aubrey"
+        },
+        {
+          "voter": "Yul",
+          "voterSlug": "yul",
+          "target": "Aubrey",
+          "targetSlug": "aubrey"
+        }
+      ]
+    },
+    {
+      "episode": 4,
+      "eliminated": "Evie",
+      "eliminatedSlug": "evie",
+      "votes": [
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Grett",
+          "targetSlug": "grett"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Evie",
+          "targetSlug": "evie"
+        },
+        {
+          "voter": "Grett",
+          "voterSlug": "grett",
+          "target": "Evie",
+          "targetSlug": "evie"
+        },
+        {
+          "voter": "Dunia",
+          "voterSlug": "dunia",
+          "target": "Evie",
+          "targetSlug": "evie"
+        },
+        {
+          "voter": "Ernesto",
+          "voterSlug": "ernesto",
+          "target": "Evie",
+          "targetSlug": "evie"
+        },
+        {
+          "voter": "Manu",
+          "voterSlug": "manu",
+          "target": "Thom",
+          "targetSlug": "thom"
+        },
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Evie",
+          "targetSlug": "evie"
+        },
+        {
+          "voter": "Evie",
+          "voterSlug": "evie",
+          "target": "Thom",
+          "targetSlug": "thom"
+        }
+      ]
+    },
+    {
+      "episode": 5,
+      "eliminated": "Aubrey",
+      "eliminatedSlug": "aubrey",
+      "votes": [
+        {
+          "voter": "Bruno",
+          "voterSlug": "bruno",
+          "target": "Zoey",
+          "targetSlug": "zoey"
+        },
+        {
+          "voter": "Aubrey",
+          "voterSlug": "aubrey",
+          "target": "Zoey",
+          "targetSlug": "zoey"
+        },
+        {
+          "voter": "Oliwia",
+          "voterSlug": "oliwia",
+          "target": "Aubrey",
+          "targetSlug": "aubrey"
+        },
+        {
+          "voter": "Sami",
+          "voterSlug": "sami",
+          "target": "Aubrey",
+          "targetSlug": "aubrey"
+        },
+        {
+          "voter": "Dunia",
+          "voterSlug": "dunia",
+          "target": "Aubrey",
+          "targetSlug": "aubrey"
+        }
+      ]
+    },
+    {
+      "episode": 6,
+      "eliminated": "Yul",
+      "eliminatedSlug": "yul",
+      "votes": [
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Yul",
+          "targetSlug": "yul"
+        },
+        {
+          "voter": "Yul",
+          "voterSlug": "yul",
+          "target": "Thom",
+          "targetSlug": "thom"
+        },
+        {
+          "voter": "Grett",
+          "voterSlug": "grett",
+          "target": "Thom",
+          "targetSlug": "thom"
+        },
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Grett",
+          "targetSlug": "grett"
+        },
+        {
+          "voter": "Manu",
+          "voterSlug": "manu",
+          "target": "Yul",
+          "targetSlug": "yul"
+        },
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Yul",
+          "targetSlug": "yul"
+        },
+        {
+          "voter": "Mike",
+          "voterSlug": "mike",
+          "target": "Yul",
+          "targetSlug": "yul"
+        }
+      ]
+    },
+    {
+      "episode": 7,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "votes": [
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Ara",
+          "voterSlug": "ara",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Ren",
+          "voterSlug": "ren",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "James",
+          "targetSlug": "james"
+        },
+        {
+          "voter": "Ernesto",
+          "voterSlug": "ernesto",
+          "target": "James",
+          "targetSlug": "james"
+        }
+      ]
+    },
+    {
+      "episode": 8,
+      "eliminated": "Mike",
+      "eliminatedSlug": "mike",
+      "votes": [
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Mike",
+          "targetSlug": "mike"
+        },
+        {
+          "voter": "Grett",
+          "voterSlug": "grett",
+          "target": "Mike",
+          "targetSlug": "mike"
+        },
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Mike",
+          "targetSlug": "mike"
+        },
+        {
+          "voter": "Manu",
+          "voterSlug": "manu",
+          "target": "Mike",
+          "targetSlug": "mike"
+        },
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Thom",
+          "targetSlug": "thom"
+        },
+        {
+          "voter": "Mike",
+          "voterSlug": "mike",
+          "target": "Thom",
+          "targetSlug": "thom"
+        }
+      ]
+    },
+    {
+      "episode": 9,
+      "eliminated": "Dunia",
+      "eliminatedSlug": "dunia",
+      "votes": [
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Ara",
+          "voterSlug": "ara",
+          "target": "Ren",
+          "targetSlug": "ren"
+        },
+        {
+          "voter": "Ren",
+          "voterSlug": "ren",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Ernesto",
+          "voterSlug": "ernesto",
+          "target": "Julia",
+          "targetSlug": "julia"
+        }
+      ]
+    },
+    {
+      "episode": 10,
+      "eliminated": "Ernesto",
+      "eliminatedSlug": "ernesto",
+      "votes": [
+        {
+          "voter": "Ara",
+          "voterSlug": "ara",
+          "target": "Ernesto",
+          "targetSlug": "ernesto"
+        },
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Ernesto",
+          "voterSlug": "ernesto",
+          "target": "Nura",
+          "targetSlug": "nura"
+        },
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Gabby",
+          "targetSlug": "gabby"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Ernesto",
+          "targetSlug": "ernesto"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Ernesto",
+          "targetSlug": "ernesto"
+        }
+      ]
+    },
+    {
+      "episode": 11,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "votes": [
+        {
+          "voter": "Ara",
+          "voterSlug": "ara",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Zoey",
+          "targetSlug": "zoey"
+        },
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Gabby",
+          "targetSlug": "gabby"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Zoey",
+          "targetSlug": "zoey"
+        }
+      ]
+    },
+    {
+      "episode": 12,
+      "eliminated": "Spencer",
+      "eliminatedSlug": "spencer",
+      "votes": [
+        {
+          "voter": "Ara",
+          "voterSlug": "ara",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Nura",
+          "targetSlug": "nura"
+        }
+      ]
+    },
+    {
+      "episode": 13,
+      "eliminated": "Grett",
+      "eliminatedSlug": "grett",
+      "votes": [
+        {
+          "voter": "Manu",
+          "voterSlug": "manu",
+          "target": "Oliwia",
+          "targetSlug": "oliwia"
+        },
+        {
+          "voter": "Lake",
+          "voterSlug": "lake",
+          "target": "Grett",
+          "targetSlug": "grett"
+        },
+        {
+          "voter": "Sami",
+          "voterSlug": "sami",
+          "target": "Oliwia",
+          "targetSlug": "oliwia"
+        },
+        {
+          "voter": "Oliwia",
+          "voterSlug": "oliwia",
+          "target": "Grett",
+          "targetSlug": "grett"
+        },
+        {
+          "voter": "Grett",
+          "voterSlug": "grett",
+          "target": "Oliwia",
+          "targetSlug": "oliwia"
+        },
+        {
+          "voter": "Bruno",
+          "voterSlug": "bruno",
+          "target": "Grett",
+          "targetSlug": "grett"
+        }
+      ]
+    },
+    {
+      "episode": 14,
+      "eliminated": "Bruno",
+      "eliminatedSlug": "bruno",
+      "votes": [
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Ara",
+          "voterSlug": "ara",
+          "target": "Manu",
+          "targetSlug": "manu"
+        },
+        {
+          "voter": "Bruno",
+          "voterSlug": "bruno",
+          "target": "Thom",
+          "targetSlug": "thom"
+        },
+        {
+          "voter": "Manu",
+          "voterSlug": "manu",
+          "target": "Bruno",
+          "targetSlug": "bruno"
+        },
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Oliwia",
+          "voterSlug": "oliwia",
+          "target": "Thom",
+          "targetSlug": "thom"
+        },
+        {
+          "voter": "Sami",
+          "voterSlug": "sami",
+          "target": "Bruno",
+          "targetSlug": "bruno"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Bruno",
+          "targetSlug": "bruno"
+        },
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Bruno",
+          "targetSlug": "bruno"
+        },
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Bruno",
+          "targetSlug": "bruno"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Manu",
+          "targetSlug": "manu"
+        }
+      ]
+    },
+    {
+      "episode": 16,
+      "eliminated": "Natalia",
+      "eliminatedSlug": "natalia",
+      "votes": [
+        {
+          "voter": "Natalia",
+          "voterSlug": "natalia",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Ara",
+          "voterSlug": "ara",
+          "target": "Julia",
+          "targetSlug": "julia"
+        },
+        {
+          "voter": "Manu",
+          "voterSlug": "manu",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Julia",
+          "targetSlug": "julia"
+        },
+        {
+          "voter": "Oliwia",
+          "voterSlug": "oliwia",
+          "target": "Julia",
+          "targetSlug": "julia"
+        },
+        {
+          "voter": "Sami",
+          "voterSlug": "sami",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        },
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        },
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Natalia",
+          "targetSlug": "natalia"
+        }
+      ]
+    },
+    {
+      "episode": 17,
+      "eliminated": "Manu",
+      "eliminatedSlug": "manu",
+      "votes": [
+        {
+          "voter": "Gabby",
+          "voterSlug": "gabby",
+          "target": "Oliwia",
+          "targetSlug": "oliwia"
+        },
+        {
+          "voter": "Ara",
+          "voterSlug": "ara",
+          "target": "Manu",
+          "targetSlug": "manu"
+        },
+        {
+          "voter": "Manu",
+          "voterSlug": "manu",
+          "target": "Julia",
+          "targetSlug": "julia"
+        },
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Julia",
+          "targetSlug": "julia"
+        },
+        {
+          "voter": "Oliwia",
+          "voterSlug": "oliwia",
+          "target": "Manu",
+          "targetSlug": "manu"
+        },
+        {
+          "voter": "Sami",
+          "voterSlug": "sami",
+          "target": "Gabby",
+          "targetSlug": "gabby"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Oliwia",
+          "targetSlug": "oliwia"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Manu",
+          "targetSlug": "manu"
+        }
+      ]
+    },
+    {
+      "episode": 18,
+      "eliminated": "Oliwia",
+      "eliminatedSlug": "oliwia",
+      "votes": [
+        {
+          "voter": "Ara",
+          "voterSlug": "ara",
+          "target": "Oliwia",
+          "targetSlug": "oliwia"
+        },
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Julia",
+          "targetSlug": "julia"
+        },
+        {
+          "voter": "Oliwia",
+          "voterSlug": "oliwia",
+          "target": "Julia",
+          "targetSlug": "julia"
+        },
+        {
+          "voter": "Sami",
+          "voterSlug": "sami",
+          "target": "Oliwia",
+          "targetSlug": "oliwia"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Julia",
+          "targetSlug": "julia"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Oliwia",
+          "targetSlug": "oliwia"
+        }
+      ]
+    },
+    {
+      "episode": 19,
+      "eliminated": "Ara",
+      "eliminatedSlug": "ara",
+      "votes": [
+        {
+          "voter": "Ara",
+          "voterSlug": "ara",
+          "target": "Nura",
+          "targetSlug": "nura"
+        },
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Sami",
+          "voterSlug": "sami",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Nura",
+          "targetSlug": "nura"
+        },
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Ara",
+          "targetSlug": "ara"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Ara",
+          "targetSlug": "ara"
+        }
+      ]
+    },
+    {
+      "episode": 20,
+      "eliminated": "Thom",
+      "eliminatedSlug": "thom",
+      "votes": [
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Sami",
+          "voterSlug": "sami",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Nura",
+          "targetSlug": "nura"
+        },
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Julia",
+          "targetSlug": "julia"
+        },
+        {
+          "voter": "Thom",
+          "voterSlug": "thom",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Nura",
+          "targetSlug": "nura"
+        }
+      ]
+    },
+    {
+      "episode": 22,
+      "eliminated": "Nura",
+      "eliminatedSlug": "nura",
+      "votes": [
+        {
+          "voter": "Nura",
+          "voterSlug": "nura",
+          "target": "Spencer",
+          "targetSlug": "spencer"
+        },
+        {
+          "voter": "Sami",
+          "voterSlug": "sami",
+          "target": "Bowie",
+          "targetSlug": "bowie"
+        },
+        {
+          "voter": "Spencer",
+          "voterSlug": "spencer",
+          "target": "Nura",
+          "targetSlug": "nura"
+        },
+        {
+          "voter": "Bowie",
+          "voterSlug": "bowie",
+          "target": "Nura",
+          "targetSlug": "nura"
+        },
+        {
+          "voter": "Julia",
+          "voterSlug": "julia",
+          "target": "Nura",
+          "targetSlug": "nura"
+        }
+      ]
+    }
+  ],
+  "showmances": [
+    {
+      "players": [
+        "Ara",
+        "Ernesto"
+      ],
+      "playerSlugs": [
+        "ara",
+        "ernesto"
+      ],
+      "phase": "broken",
+      "startEpisode": 2,
+      "endEpisode": 9,
+      "endedBy": "faded",
+      "origin": "strategic",
+      "episodesActive": 6
+    },
+    {
+      "players": [
+        "Sami",
+        "Spencer"
+      ],
+      "playerSlugs": [
+        "sami",
+        "spencer"
+      ],
+      "phase": "broken",
+      "startEpisode": 2,
+      "endEpisode": 19,
+      "endedBy": "sabotaged",
+      "origin": "organic",
+      "episodesActive": 7
+    },
+    {
+      "players": [
+        "Natalia",
+        "Ernesto"
+      ],
+      "playerSlugs": [
+        "natalia",
+        "ernesto"
+      ],
+      "phase": "broken-up",
+      "startEpisode": 2,
+      "endEpisode": 10,
+      "endedBy": "separated",
+      "origin": "impulsive",
+      "episodesActive": 7
+    },
+    {
+      "players": [
+        "Gabby",
+        "Ara"
+      ],
+      "playerSlugs": [
+        "gabby",
+        "ara"
+      ],
+      "phase": "broken",
+      "startEpisode": 3,
+      "endEpisode": 15,
+      "endedBy": "sabotaged",
+      "origin": "organic",
+      "episodesActive": 7
+    },
+    {
+      "players": [
+        "Gabby",
+        "Nura"
+      ],
+      "playerSlugs": [
+        "gabby",
+        "nura"
+      ],
+      "phase": "ride-or-die",
+      "startEpisode": 5,
+      "endEpisode": null,
+      "endedBy": null,
+      "origin": "organic",
+      "episodesActive": 7
+    },
+    {
+      "players": [
+        "Natalia",
+        "Ara"
+      ],
+      "playerSlugs": [
+        "natalia",
+        "ara"
+      ],
+      "phase": "broken-up",
+      "startEpisode": 10,
+      "endEpisode": 16,
+      "endedBy": "separated",
+      "origin": "impulsive",
+      "episodesActive": 6
+    },
+    {
+      "players": [
+        "Spencer",
+        "Julia"
+      ],
+      "playerSlugs": [
+        "spencer",
+        "julia"
+      ],
+      "phase": "target",
+      "startEpisode": 22,
+      "endEpisode": null,
+      "endedBy": null,
+      "origin": "organic",
+      "episodesActive": 4
+    }
+  ],
+  "alliances": [
+    {
+      "name": "The Iron Grip",
+      "members": [
+        "Bowie",
+        "Sami"
+      ],
+      "memberSlugs": [
+        "bowie",
+        "sami"
+      ],
+      "formedEpisode": 1,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Engine",
+      "members": [
+        "Bowie",
+        "Sami"
+      ],
+      "memberSlugs": [
+        "bowie",
+        "sami"
+      ],
+      "formedEpisode": 2,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Network",
+      "members": [
+        "Spencer"
+      ],
+      "memberSlugs": [
+        "spencer"
+      ],
+      "formedEpisode": 7,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Wire",
+      "members": [
+        "James",
+        "Natalia"
+      ],
+      "memberSlugs": [
+        "james",
+        "natalia"
+      ],
+      "formedEpisode": 7,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Blindside Brigade",
+      "members": [
+        "Bowie",
+        "Sami"
+      ],
+      "memberSlugs": [
+        "bowie",
+        "sami"
+      ],
+      "formedEpisode": 9,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Marshmallow Mafia",
+      "members": [
+        "Sami",
+        "Lake",
+        "Julia",
+        "Ara"
+      ],
+      "memberSlugs": [
+        "sami",
+        "lake",
+        "julia",
+        "ara"
+      ],
+      "formedEpisode": 10,
+      "active": false,
+      "betrayals": [
+        "Spencer",
+        "Spencer"
+      ]
+    },
+    {
+      "name": "The Drama Triangle",
+      "members": [
+        "Bruno",
+        "Manu",
+        "Lake"
+      ],
+      "memberSlugs": [
+        "bruno",
+        "manu",
+        "lake"
+      ],
+      "formedEpisode": 10,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Chaos Trio",
+      "members": [
+        "Bowie",
+        "Oliwia",
+        "Sami"
+      ],
+      "memberSlugs": [
+        "bowie",
+        "oliwia",
+        "sami"
+      ],
+      "formedEpisode": 11,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Snuff Squad",
+      "members": [
+        "Manu",
+        "Nura",
+        "Gabby",
+        "Thom",
+        "Sami",
+        "Bowie"
+      ],
+      "memberSlugs": [
+        "manu",
+        "nura",
+        "gabby",
+        "thom",
+        "sami",
+        "bowie"
+      ],
+      "formedEpisode": 12,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Outwit Club",
+      "members": [
+        "Natalia"
+      ],
+      "memberSlugs": [
+        "natalia"
+      ],
+      "formedEpisode": 13,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Majority",
+      "members": [
+        "Natalia",
+        "Ara"
+      ],
+      "memberSlugs": [
+        "natalia",
+        "ara"
+      ],
+      "formedEpisode": 14,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Alliance",
+      "members": [
+        "Bowie",
+        "Spencer",
+        "Sami",
+        "Oliwia",
+        "Julia"
+      ],
+      "memberSlugs": [
+        "bowie",
+        "spencer",
+        "sami",
+        "oliwia",
+        "julia"
+      ],
+      "formedEpisode": 15,
+      "active": false,
+      "betrayals": [
+        "Bowie"
+      ]
+    },
+    {
+      "name": "The Quiet Two",
+      "members": [
+        "Natalia",
+        "Gabby"
+      ],
+      "memberSlugs": [
+        "natalia",
+        "gabby"
+      ],
+      "formedEpisode": 16,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Collective",
+      "members": [
+        "Spencer",
+        "Julia",
+        "Thom"
+      ],
+      "memberSlugs": [
+        "spencer",
+        "julia",
+        "thom"
+      ],
+      "formedEpisode": 20,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Bond",
+      "members": [
+        "Nura"
+      ],
+      "memberSlugs": [
+        "nura"
+      ],
+      "formedEpisode": 21,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Shield Wall",
+      "members": [
+        "Sami",
+        "Nura"
+      ],
+      "memberSlugs": [
+        "sami",
+        "nura"
+      ],
+      "formedEpisode": 21,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Chaos Brigade",
+      "members": [
+        "Spencer",
+        "Julia"
+      ],
+      "memberSlugs": [
+        "spencer",
+        "julia"
+      ],
+      "formedEpisode": 22,
+      "active": true,
+      "betrayals": []
+    }
+  ],
+  "finalTribalCouncil": {
+    "votes": [],
+    "note": "No jury — winner decided by the final volcano race and joust (Hawaiian Punch finale)."
+  },
+  "twists": [
+    {
+      "id": "ice-ice-baby",
+      "name": "Ice Ice Baby",
+      "emoji": "🧊",
+      "desc": "Arctic mountain challenge. Summit climb, fort building, and capture-the-flag assault on ice. Tribe teamwork under freezing conditions.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        1
+      ]
+    },
+    {
+      "id": "reward-challenge",
+      "name": "Reward Challenge",
+      "emoji": "🏅",
+      "desc": "A reward challenge runs before immunity. Winner picks who shares it. Tribal still runs.",
+      "category": "advantages",
+      "inCatalog": true,
+      "episodes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "id": "journey",
+      "name": "Journey",
+      "emoji": "🗺️",
+      "desc": "Select players go on a journey for a chance at an advantage.",
+      "category": "advantages",
+      "inCatalog": true,
+      "episodes": [
+        1
+      ]
+    },
+    {
+      "id": "late-arrival",
+      "name": "Late Arrival",
+      "emoji": "🧭",
+      "desc": "One player is held back from the start of the season and walks into camp partway through, joining whichever tribe has fewest players — or a camp the author picks. They arrive with nothing: no bonds, no alliance, no challenge record, and a camp that has already decided who it trusts. Being the easiest vote there is IS the twist, and the only thing that fixes it is what they do in the days after they walk in.",
+      "category": "team",
+      "inCatalog": true,
+      "episodes": [
+        2
+      ]
+    },
+    {
+      "id": "night-at-museum",
+      "name": "Night at the Museum",
+      "emoji": "🏛️",
+      "desc": "Museum heist. Navigate security, search galleries for statue pieces, assemble under animal siege.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        2
+      ]
+    },
+    {
+      "id": "tusks-and-ladders",
+      "name": "Tusks and Ladders",
+      "emoji": "🐘",
+      "desc": "DC4 big-top team challenge. Every ladder piece is tethered to one furious elephant — grab them off its trunk, tail, and back, assemble a ladder, then send two climbers up to a cannon to fire at the rival team's flag. First flag hit wins immunity. The elephant runs a rage meter (Calm→Rampage); schemers can smack it into charging the rival team, heroes rescue thrown teammates and lead it into getting its tusks stuck, and a host tranquilizer ends the mayhem before the cannon duel.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        3
+      ]
+    },
+    {
+      "id": "elimination-swap",
+      "name": "Elimination Swap",
+      "emoji": "🔀",
+      "desc": "The voted-out player is sent to another tribe instead. They pick one member of the new tribe to swap back in exchange.",
+      "category": "elim",
+      "inCatalog": true,
+      "episodes": [
+        3
+      ]
+    },
+    {
+      "id": "million-bucks-bc",
+      "name": "One Million Bucks, B.C.",
+      "emoji": "🦴",
+      "desc": "Prehistoric two-part challenge. Phase 1: fire-making with rocks (cheating possible). Phase 2: bone battle on columns over a tar pit — 3-way free-for-all, last standing wins.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        4
+      ]
+    },
+    {
+      "id": "amazon-race",
+      "name": "The Am-AH-Zon Race",
+      "emoji": "🌿",
+      "desc": "Jungle expedition race. Zipline crossing, multi-segment jungle trek with hazards, guardian tribe encounter, and treasure hunt in ancient ruins.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        5
+      ]
+    },
+    {
+      "id": "tribe-expansion",
+      "name": "Tribe Expansion",
+      "emoji": "📈",
+      "desc": "A new tribe is formed — all players reshuffled into N+1 groups.",
+      "category": "team",
+      "inCatalog": true,
+      "episodes": [
+        5
+      ]
+    },
+    {
+      "id": "basic-straining",
+      "name": "Basic Straining",
+      "emoji": "🎖️",
+      "desc": "Chef's military boot camp. 6 phases of escalating challenges. Players quit or get eliminated. Last team standing (pre-merge) or last player standing (post-merge) wins.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        6
+      ]
+    },
+    {
+      "id": "three-gifts",
+      "name": "The Summit",
+      "emoji": "🎁",
+      "desc": "One nominee per tribe travels to a private location and chooses: tribal survival kit, hidden idol clue, or Immunity Totem. Works with any number of tribes.",
+      "category": "advantages",
+      "inCatalog": true,
+      "episodes": [
+        6
+      ]
+    },
+    {
+      "id": "tropical-takedown",
+      "name": "Tropical Takedown",
+      "emoji": "🌴",
+      "desc": "Cliff dive tag-relay into shark-infested waters, retrieve golden chains, then race longboards down a volcanic slope.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        7
+      ]
+    },
+    {
+      "id": "project-runaway",
+      "name": "Project Runaway",
+      "emoji": "👗",
+      "desc": "Fashion challenge. Catch a creature, assign roles, build matching outfits, and compete in a runway show judged by the host.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        8
+      ]
+    },
+    {
+      "id": "slap-slap-revolution",
+      "name": "Slap Slap Revolution",
+      "emoji": "👋",
+      "desc": "Grind meat into a giant sausage, bobsled down a mountain, then 1v1 slap-dance fights on electrified DDR platforms. Last tribe standing avoids tribal.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        9
+      ]
+    },
+    {
+      "id": "multi-tribal",
+      "name": "Multi-Tribal",
+      "emoji": "🏕️",
+      "desc": "Challenge runs, winner is safe — all other tribes each vote someone out independently. Requires 3+ tribes.",
+      "category": "elim",
+      "inCatalog": true,
+      "episodes": [
+        9
+      ]
+    },
+    {
+      "id": "tribe-dissolve",
+      "name": "Tribe Dissolve",
+      "emoji": "💥",
+      "desc": "Tribes reduced by one — all players reshuffled into fewer tribes.",
+      "category": "team",
+      "inCatalog": true,
+      "episodes": [
+        10
+      ]
+    },
+    {
+      "id": "truth-or-shark",
+      "name": "Truth or Shark",
+      "emoji": "🦈",
+      "desc": "Game show trivia — confess embarrassing truths or face the punishment wheel. Fatigue stacks punish serial refusers. Last tribe standing wins.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        10
+      ]
+    },
+    {
+      "id": "hells-kitchen",
+      "name": "Hell's Kitchen",
+      "emoji": "🔥",
+      "desc": "Cooking challenge. Head chef leads the team through 3 courses. Kitchen chaos, sabotage, and food fights determine who serves the best meal.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        11
+      ]
+    },
+    {
+      "id": "poles-apart",
+      "name": "Poles Apart",
+      "emoji": "🏖️",
+      "desc": "Beach tug-of-war melee, best of three rounds. Each team plants 3 holders gripping poles; the rest swarm the rival holders and drag them across the center line. Down all their holders to win the round. Gang-ups, resist moves, and sit-outs. First to two rounds wins immunity.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        12
+      ]
+    },
+    {
+      "id": "finders-creepers",
+      "name": "Finders Creepers",
+      "emoji": "🕷️",
+      "desc": "A found-footage night scavenger hunt across three cursed locations — haunted forest, pet cemetery, and the cave. A mutant spider and booby traps web members out of the hunt. Fewest members lost wins.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        13
+      ]
+    },
+    {
+      "id": "brunch-of-disgustingness",
+      "name": "Brunch of Disgustingness",
+      "emoji": "🤮",
+      "desc": "Boys vs girls eating challenge at merge. 9 courses of disgusting food — every member must eat or the team loses the course. Chain vomiting. Eat-off tiebreaker. Losing team goes to tribal.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        14
+      ]
+    },
+    {
+      "id": "ambassadors",
+      "name": "Ambassadors",
+      "emoji": "🤝",
+      "desc": "Schedule on the merge episode. Each tribe names an ambassador. They meet and must agree on one elimination — or one ambassador draws the wrong rock.",
+      "category": "elim",
+      "inCatalog": true,
+      "episodes": [
+        14
+      ]
+    },
+    {
+      "id": "auction",
+      "name": "Survivor Auction",
+      "emoji": "🏷️",
+      "desc": "Players receive $500 each and bid on food, comfort, advantages, and a blind-bid immunity item.",
+      "category": "advantages",
+      "inCatalog": true,
+      "episodes": [
+        15
+      ]
+    },
+    {
+      "id": "no-tribal",
+      "name": "No Tribal Council",
+      "emoji": "🚫",
+      "desc": "No elimination this episode. A reward is still possible.",
+      "category": "immunity",
+      "inCatalog": true,
+      "episodes": [
+        15
+      ]
+    },
+    {
+      "id": "killer-clown",
+      "name": "Night of the Killer Clown",
+      "emoji": "🤡",
+      "desc": "DC4 night-forest immunity race. Each player is handed a backpack with a map and a dart gun — but half the guns are empty and half the bags hold only the darts, so nobody can fend off the stalking animatronic clown alone. Choose the river route or the mountain route, barter or steal for ammo, grab a flag from the dark and be the first back to camp. The clown drags off the exposed (a heavy time penalty) and can only be stunned for five minutes by a loaded gun. First flag home wins immunity.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        16
+      ]
+    },
+    {
+      "id": "bridal-brawls",
+      "name": "Bridal Brawls",
+      "emoji": "💒",
+      "desc": "Casino slot pairs players. Blindfolded obstacle course, tightrope carry over shark waterfall, customs trivia. Winning pair both get immunity.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        17
+      ]
+    },
+    {
+      "id": "tied-destinies",
+      "name": "Tied Destinies",
+      "emoji": "🔗",
+      "desc": "Players randomly paired. Vote someone out and their partner goes too. Paired immunity challenge. Double elimination.",
+      "category": "elim",
+      "inCatalog": true,
+      "episodes": [
+        17
+      ]
+    },
+    {
+      "id": "hung-out-to-dry",
+      "name": "Hung Out to Dry",
+      "emoji": "🪢",
+      "desc": "Post-merge lie-detector endurance hang. Contestants dangle from a handlebar over a shark tank, three ropes each, wearing polygraph helmets, and interrogate one another. Lie and the helmet cuts a rope; tell the truth and keep every rope — but the honest answer exposes votes, alliances and romances. Lose your grip or your last rope and you fall. Last one hanging wins immunity.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        18
+      ]
+    },
+    {
+      "id": "lucky-hunt",
+      "name": "Lucky Hunt",
+      "emoji": "🗝️",
+      "desc": "Post-merge scavenger hunt. Every player searches for a key. One chest hides immunity — the others hold food, traps, and surprises. Hunt, help, steal, and scheme.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        19
+      ]
+    },
+    {
+      "id": "african-lying-safari",
+      "name": "African Lying Safari",
+      "emoji": "🦁",
+      "desc": "3-phase safari hunt: dodge soccer balls for plums, smash gourds for tranq darts, then track and tranquilize the host across 6 zones. Social events between ticks — help, sabotage, theft, lies.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        20
+      ]
+    },
+    {
+      "id": "reward-twist-challenge",
+      "name": "Reward Twist Challenge",
+      "emoji": "🎁",
+      "desc": "Pick any twist challenge to run as a reward-only episode. No elimination — winner gets a reward.",
+      "category": "advantages",
+      "inCatalog": true,
+      "episodes": [
+        21
+      ]
+    },
+    {
+      "id": "houston",
+      "name": "Houston, We Have a Problem",
+      "emoji": "🚀",
+      "desc": "Space station challenge. Zero-G clue hunt for pod components, RED ALERT crisis with timed pod repair, re-entry shakedown (vomit = eliminated), and station sprint obstacle race. Mole sabotages from the shadows. First to escape the fake Earth station wins immunity.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        22
+      ]
+    },
+    {
+      "id": "jury-house",
+      "name": "Jury House",
+      "emoji": "🏛️",
+      "desc": "A non-elimination interlude. The eliminated players share a fully furnished lodge — grudges, friendships, game talk, and processing their exits. No survival, no challenge, no vote, nobody goes home.",
+      "category": "social",
+      "inCatalog": true,
+      "episodes": [
+        23
+      ]
+    },
+    {
+      "id": "triple-dog-dare",
+      "name": "Triple Dog Dare",
+      "emoji": "🎯",
+      "desc": "Eliminated players dare the tribe. Accept to earn freebies, redirect to spend them. Run out of freebies and fail a dare? You're out. No tribal council.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        24
+      ]
+    },
+    {
+      "id": "disadvantage-vote",
+      "name": "The Disadvantage Vote",
+      "emoji": "⚖️",
+      "desc": "Before the immunity challenge, the field gathers at the elimination area and votes to hand ONE player a disadvantage in that night's challenge. Each player pleads their case — why not them, or who should get it — and a damaging reveal can swing the room. The most-voted player runs the challenge with a ~35% handicap that can cost them immunity. Works with any challenge (twist or generic).",
+      "category": "immunity",
+      "inCatalog": true,
+      "episodes": [
+        25
+      ]
+    },
+    {
+      "id": "say-cheese",
+      "name": "Say Cheese",
+      "emoji": "📸",
+      "desc": "DC4 dawn drop-tower immunity challenge. Bungee off the tower and take a selfie with zero fear on your face — first perfect fearless shot wins immunity, the rest face the jury. Three heights (bottom/halfway/top) escalate the fear; the Disadvantage Vote target is forced to the TOP. Nerve holds composure, snap times a clean shot. Sabotage (rock at the phone, rope-yank, distraction, or a psychological jab about a real showmance/eliminated ally) ruins a shot — break a phone and it's one warning, do it twice and you're disqualified.",
+      "category": "challenge",
+      "inCatalog": true,
+      "episodes": [
+        25
+      ]
+    },
+    {
+      "id": "jury-elimination",
+      "name": "Jury Elimination",
+      "emoji": "⚖️",
+      "desc": "All eliminated players (jury) vote to boot one active player. Immunity winner is safe.",
+      "category": "elim",
+      "inCatalog": true,
+      "episodes": [
+        25
+      ]
+    }
+  ],
+  "ratings": {
+    "v": 1,
+    "score": 66.1,
+    "tier": {
+      "key": "great",
+      "label": "Great",
+      "min": 65
+    },
+    "demos": {
+      "teens": 68.8,
+      "youngAdults": 45.5,
+      "middleAged": 32.7,
+      "older": 27.9
+    },
+    "curve": [
+      42,
+      46.6,
+      46.8,
+      52,
+      58.3,
+      62.3,
+      64.8,
+      65.1,
+      67.6,
+      72.1,
+      69,
+      71.2,
+      73.6,
+      76.3,
+      74.7,
+      75.6,
+      77.9,
+      78.8,
+      73.3,
+      76.2,
+      66.1,
+      67.5,
+      61.2,
+      59.9,
+      61.1,
+      55
+    ]
+  },
+  "seasonNarrative": "This season was defined by institutional instability. The coach format created two games at once: contestants voting, and non-voting mentors shaping who became useful, threatening, or expendable. The early phase was a lesson in mechanics — Save Cards, swaps, Redemption Island, summits and coach votes kept turning simple majorities into puzzles. The middle phase belonged to players who could live inside fractured structures: Natalia, Ara, Sami, Bowie, Gabby, Lake and Julia all had moments where they seemed to be steering the season. The merge blew those structures apart. Bruno, Natalia, Manu, Gabby, Oliwia, Ara, Thom and Nura all left through votes or twists that punished either visibility, loyalty, or bad timing. By the end, the pure strategists remained: Sami, Spencer, Bowie and Julia. Sami ran out of bodies, Bowie ran out of jury goodwill, Spencer ran out of final-challenge execution, and Julia — disliked, targeted, but still armed and adaptive — finally finished the job she came back to do.",
+  "awards": {
+    "bestStrategic": {
+      "name": "Bowie",
+      "playerSlug": "bowie",
+      "description": "Bowie had the cleanest strategic architecture: he built protégés as a coach, converted that into merge capital, and stayed central until the jury itself had to remove him."
+    },
+    "bestSocial": {
+      "name": "Gabby",
+      "playerSlug": "gabby",
+      "description": "Gabby's bonds crossed tribal and faction lines, and her elimination only happened because she was tied to Manu rather than because people wanted her gone."
+    },
+    "bestPhysical": {
+      "name": "Sami",
+      "playerSlug": "sami",
+      "description": "Sami repeatedly used challenge performance to buy safety, authority and time, especially in the late merge when the target should have caught him sooner.",
+      "wins": 3
+    },
+    "mostClutch": {
+      "name": "Julia",
+      "playerSlug": "julia",
+      "description": "Julia saved her best execution for the end, winning the final immunity and then the volcano race when reputation and jury politics no longer mattered."
+    },
+    "mostLoyal": {
+      "name": "Manu",
+      "playerSlug": "manu",
+      "description": "Manu's whole game was defined by protecting his people, even when the game punished that instinct."
+    },
+    "bestUnderdog": {
+      "name": "Nura",
+      "playerSlug": "nura",
+      "description": "Nura turned an early hothead label into a final-five run through restraint, loyalty and timely immunity."
+    },
+    "biggestVillain": {
+      "name": "Julia",
+      "playerSlug": "julia",
+      "description": "Julia was the season's most unapologetic villain: advantage hoarding, replacement naming, late pivots, and zero interest in moral approval."
+    },
+    "mostChaotic": {
+      "name": "Ara",
+      "playerSlug": "ara",
+      "description": "Ara could be brilliant, emotional, observant and reckless in the same afternoon, and half the season's vote math bent around her."
+    },
+    "quietestThreat": {
+      "name": "Lake",
+      "playerSlug": "lake",
+      "description": "Lake's calm hid one of the most dangerous games: a found idol, a successful idol play for someone else, and enough social respect to scare Natalia."
+    },
+    "seasonMVP": {
+      "name": "Julia",
+      "playerSlug": "julia",
+      "description": "Whether loved or hated, Julia was the season's central endgame force and the player who actually converted survival into the win."
+    },
+    "mostTragic": {
+      "name": "Gabby",
+      "playerSlug": "gabby",
+      "description": "Gabby had a winning social game and an advantage, then left as collateral because the twist tied her to the target."
+    },
+    "mostUnlucky": {
+      "name": "Lake",
+      "playerSlug": "lake",
+      "description": "Lake did not get voted out, misplay an idol, or lose a challenge; she drew the wrong rock in a twist negotiation."
+    },
+    "ironPerson": {
+      "name": "Sami",
+      "playerSlug": "sami",
+      "description": "Sami endured targets, fights, challenge pressure, a Vote Steal spotlight and the Triple Dog Dare marathon before finally breaking."
+    },
+    "biggestMeltdown": {
+      "name": "Nura",
+      "playerSlug": "nura",
+      "description": "Nura's final exit speech after the final-five blindside was pure accumulated frustration at Spencer and the room that let it happen.",
+      "episode": 22
+    },
+    "playerOfSeason": {
+      "gold": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "description": "The winner, the returning finalist who survived the target, controlled enough of the late game, and closed physically."
+      },
+      "silver": {
+        "name": "Bowie",
+        "playerSlug": "bowie",
+        "description": "The best strategic architect, cut only when the jury itself got a weapon and used it."
+      }
+    },
+    "heroOfSeason": {
+      "gold": {
+        "name": "Thom",
+        "playerSlug": "thom",
+        "description": "Thom was the season's clearest integrity player: supportive, trusted, and eliminated by chance rather than betrayal."
+      },
+      "silver": {
+        "name": "Lake",
+        "playerSlug": "lake",
+        "description": "Lake's loyalty, idol play for Oliwia, and rock-draw exit made her the season's quiet moral center."
+      }
+    },
+    "villainOfSeason": {
+      "gold": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "description": "Julia won by embracing the villain lane fully and never pretending it was something softer."
+      },
+      "silver": {
+        "name": "Bowie",
+        "playerSlug": "bowie",
+        "description": "Bowie's numbers-first game burned enough people that the jury took personal satisfaction in cutting him."
+      }
+    },
+    "compBeast": {
+      "gold": {
+        "name": "Sami",
+        "playerSlug": "sami",
+        "description": "Sami's challenge record repeatedly changed the vote math and forced people to work around him."
+      },
+      "silver": {
+        "name": "Spencer",
+        "playerSlug": "spencer",
+        "description": "Spencer's Redemption run and late immunity win kept their game alive when the votes did not."
+      }
+    },
+    "socialQueenKing": {
+      "gold": {
+        "name": "Gabby",
+        "playerSlug": "gabby",
+        "description": "Gabby's relationships were the rare kind that made people hesitate even when the math said not to."
+      },
+      "silver": {
+        "name": "Lake",
+        "playerSlug": "lake",
+        "description": "Lake's calm made people confess, align and trust her even when she held power."
+      }
+    },
+    "masterStrategist": {
+      "gold": {
+        "name": "Bowie",
+        "playerSlug": "bowie",
+        "description": "Bowie consistently thought in structures, not moments, and shaped the deepest network of the season."
+      },
+      "silver": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "description": "Julia's strategy was less elegant but more lethal: survive, redirect, and close."
+      }
+    },
+    "mostBrutalExit": {
+      "gold": {
+        "name": "Thom",
+        "playerSlug": "thom",
+        "description": "Thom left by rock draw without receiving a vote, the cleanest example of the season punishing the wrong person."
+      },
+      "silver": {
+        "name": "Lake",
+        "playerSlug": "lake",
+        "description": "Lake's ambassador rock draw was just as cruel, removing a strong player before the merge vote could even happen."
+      }
+    },
+    "advantageKing": {
+      "gold": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "description": "Julia managed an idol, bought an extra vote, used the Save Card era to survive, and leveraged advantages as threat and shield."
+      },
+      "silver": {
+        "name": "Lake",
+        "playerSlug": "lake",
+        "description": "Lake found an idol and used it on Oliwia to flip the Grett vote, the best single idol play of the season."
+      }
+    },
+    "mostRobbedPlayer": {
+      "gold": {
+        "name": "Gabby",
+        "playerSlug": "gabby",
+        "description": "Gabby was not the target and had a credible winning path; Tied Destinies dragged her out with Manu."
+      }
+    },
+    "ftcGame": {
+      "gold": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "description": "Julia's endgame pitch is simple and strong: she survived the biggest returning-player target and won the final race that decided the season."
+      }
+    },
+    "mostRobbedFinalist": {
+      "gold": {
+        "name": "Spencer",
+        "playerSlug": "spencer",
+        "description": "Spencer had a finalist résumé full of votes, Redemption survival and endgame maneuvering, but the final format rewarded Julia's race finish."
+      }
+    },
+    "messiestFeud": {
+      "players": [
+        "Ara",
+        "Spencer"
+      ],
+      "description": "Ara and Spencer fought from swaps to merge to endgame, and their mutual distrust shaped multiple votes, including Spencer's boot, return and Ara's eventual exit."
+    },
+    "biggestBetrayal": {
+      "betrayer": "Julia",
+      "betrayed": "Natalia",
+      "episode": 16,
+      "description": "Julia abandoned Natalia at the merge vote after a ride-or-die promise, joining the live coalition that removed one of her closest shields."
+    },
+    "secondBiggestBetrayal": {
+      "betrayer": "Manu",
+      "betrayed": "Mike",
+      "episode": 8,
+      "description": "Manu broke a confirmed endgame pact with Mike, joining the Anti-Mike Front and helping remove a loyal ally."
+    },
+    "legacyMoment": {
+      "name": "Lake's idol for Oliwia",
+      "episode": 13,
+      "description": "Lake playing an idol on Oliwia and sending Grett home was the cleanest tactical strike of the season and proved the quiet players were not passengers."
+    },
+    "fanFavorite": {
+      "name": "Natalia",
+      "playerSlug": "natalia",
+      "description": "Natalia was the season's most popular player with the fans."
+    }
+  },
+  "emoji": "[AI_FILL]",
+  "villainBoard": {
+    "read": "Julia did the most to other people this season, and Bowie was not far behind.",
+    "sources": [
+      "the record",
+      "the edit"
+    ],
+    "board": [
+      {
+        "name": "Julia",
+        "slug": "julia",
+        "score": 6,
+        "deeds": {
+          "brokenWord": 0,
+          "cutAnAlly": 2,
+          "ranTheWeek": 0,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Voted out Oliwia, who they were aligned with, in episode 18.",
+          "Voted out Ara, who they were aligned with, in episode 19."
+        ]
+      },
+      {
+        "name": "Bowie",
+        "slug": "bowie",
+        "score": 3,
+        "deeds": {
+          "brokenWord": 0,
+          "cutAnAlly": 1,
+          "ranTheWeek": 0,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Voted out Nura, who they were aligned with, in episode 22."
+        ]
+      },
+      {
+        "name": "Manu",
+        "slug": "manu",
+        "score": 3,
+        "deeds": {
+          "brokenWord": 0,
+          "cutAnAlly": 1,
+          "ranTheWeek": 0,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Voted out Bruno, who they were aligned with, in episode 14."
+        ]
+      },
+      {
+        "name": "Sami",
+        "slug": "sami",
+        "score": 3,
+        "deeds": {
+          "brokenWord": 0,
+          "cutAnAlly": 1,
+          "ranTheWeek": 0,
+          "decidingVote": 0,
+          "vetoAsWeapon": 0,
+          "finalCut": 0,
+          "villainScene": 0,
+          "rivalry": 0
+        },
+        "evidence": [
+          "Voted out Oliwia, who they were aligned with, in episode 18."
+        ]
+      }
+    ]
+  }
+}

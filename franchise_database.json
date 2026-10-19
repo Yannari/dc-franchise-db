@@ -1,10 +1,10 @@
 {
   "franchiseStats": {
     "totalSeasons": 15,
-    "totalEpisodes": 260,
-    "uniquePlayers": 169,
-    "totalAppearances": 279,
-    "lastUpdated": "2026-08-23",
+    "totalEpisodes": 286,
+    "uniquePlayers": 196,
+    "totalAppearances": 304,
+    "lastUpdated": "2026-10-19",
     "dataSources": [
       "players_database.json",
       "seasons_database.json",
@@ -185,6 +185,20 @@
       "legacy": "Her legacy is cold, controversial, and undeniable — a winner who survives public blowups, broken alliances, and jury hostility by making the last challenge her final argument.",
       "votesAgainst": 10,
       "format": "total-drama"
+    },
+    {
+      "season": 15,
+      "format": "total-drama",
+      "seasonTitle": "Total Drama Coaches VS New Blood: The Season of Broken Majorities",
+      "emoji": "",
+      "winner": "Julia",
+      "playerSlug": "julia",
+      "finalVote": "",
+      "runnerUp": "Spencer",
+      "keyStats": "Julia wins after entering as a coach, surviving the merge promotion, carrying an idol and an extra vote through the most volatile stretch, and beating Spencer in the final volcano race after taking the last immunity. Her official endgame is strange on paper because the finale was decided by the race rather than a conventional jury vote, but the record still shows a winner who reached the end with power, protection, and agency.",
+      "strategy": "Julia's game was not about being loved; it was about never letting the vote happen to her. Early, she used the coach role to invest selectively, gather information without needing a ballot, and let players expose themselves trying to impress or remove her. Once promoted, she pivoted from mentor to operator: buying the extra vote in public, keeping the idol live, joining and breaking blocs as needed, and repeatedly redirecting heat onto louder targets like Natalia, Manu, Nura, and Bowie. Her most important skill was timing: she rarely needed to be the first name out loud, but she was often the person turning the second name into the real vote. The jury disliked large parts of her game, but the season's final format meant she only had to survive their anger long enough to win the last race.",
+      "legacy": "Julia's win is the defining argument of the season: a returning finalist came back with a reputation, absorbed the target, and still finished the job. It is not a clean social win, and it is not a heroic win; it is a ruthless endgame win built on threat management, advantages, and late challenge execution. Her legacy is that she proved a coach could stop being a shield and become the blade.",
+      "votesAgainst": 10
     }
   ],
   "records": {
@@ -419,6 +433,11 @@
       "season": 14,
       "name": "Zaid",
       "playerSlug": "zaid"
+    },
+    {
+      "season": 15,
+      "name": "Natalia",
+      "playerSlug": "natalia"
     }
   ],
   "multiSeasonPlayers": [
@@ -441,11 +460,12 @@
       "playerSlug": "bowie",
       "seasons": [
         9,
-        10
+        10,
+        15
       ],
-      "seasonsPlayed": 2,
+      "seasonsPlayed": 3,
       "wins": 1,
-      "avgPlacement": 1.5,
+      "avgPlacement": 2,
       "bestPlacement": 1
     },
     {
@@ -475,6 +495,19 @@
       "bestPlacement": 1
     },
     {
+      "name": "Julia",
+      "playerSlug": "julia",
+      "seasons": [
+        9,
+        13,
+        15
+      ],
+      "seasonsPlayed": 3,
+      "wins": 1,
+      "avgPlacement": 3,
+      "bestPlacement": 1
+    },
+    {
       "name": "Riya",
       "playerSlug": "riya",
       "seasons": [
@@ -484,6 +517,18 @@
       "seasonsPlayed": 2,
       "wins": 0,
       "avgPlacement": 3,
+      "bestPlacement": 2
+    },
+    {
+      "name": "Spencer",
+      "playerSlug": "spencer",
+      "seasons": [
+        14,
+        15
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 3.5,
       "bestPlacement": 2
     },
     {
@@ -497,18 +542,6 @@
       "wins": 0,
       "avgPlacement": 4,
       "bestPlacement": 3
-    },
-    {
-      "name": "Julia",
-      "playerSlug": "julia",
-      "seasons": [
-        9,
-        13
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 4,
-      "bestPlacement": 2
     },
     {
       "name": "Carrie",
@@ -685,6 +718,19 @@
       "bestPlacement": 5
     },
     {
+      "name": "Thom",
+      "playerSlug": "thom",
+      "seasons": [
+        11,
+        13,
+        15
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 7,
+      "bestPlacement": 2
+    },
+    {
       "name": "Duncan",
       "playerSlug": "duncan",
       "seasons": [
@@ -722,30 +768,16 @@
       "bestPlacement": 7
     },
     {
-      "name": "Thom",
-      "playerSlug": "thom",
+      "name": "Gabby",
+      "playerSlug": "gabby",
       "seasons": [
         11,
-        13
+        15
       ],
       "seasonsPlayed": 2,
       "wins": 0,
       "avgPlacement": 7.5,
-      "bestPlacement": 2
-    },
-    {
-      "name": "Zoey",
-      "playerSlug": "zoey",
-      "seasons": [
-        4,
-        3,
-        7,
-        10
-      ],
-      "seasonsPlayed": 4,
-      "wins": 0,
-      "avgPlacement": 7.75,
-      "bestPlacement": 2
+      "bestPlacement": 5
     },
     {
       "name": "Lindsay",
@@ -803,18 +835,6 @@
       "seasons": [
         5,
         8
-      ],
-      "seasonsPlayed": 2,
-      "wins": 0,
-      "avgPlacement": 9,
-      "bestPlacement": 6
-    },
-    {
-      "name": "Mike",
-      "playerSlug": "mike",
-      "seasons": [
-        4,
-        3
       ],
       "seasonsPlayed": 2,
       "wins": 0,
@@ -884,6 +904,21 @@
       "wins": 1,
       "avgPlacement": 9.33,
       "bestPlacement": 1
+    },
+    {
+      "name": "Zoey",
+      "playerSlug": "zoey",
+      "seasons": [
+        4,
+        3,
+        7,
+        10,
+        15
+      ],
+      "seasonsPlayed": 5,
+      "wins": 0,
+      "avgPlacement": 9.4,
+      "bestPlacement": 2
     },
     {
       "name": "Heather",
@@ -997,6 +1032,18 @@
       "bestPlacement": 1
     },
     {
+      "name": "Lake",
+      "playerSlug": "lake",
+      "seasons": [
+        12,
+        15
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 10,
+      "bestPlacement": 7
+    },
+    {
       "name": "Geoff",
       "playerSlug": "geoff",
       "seasons": [
@@ -1086,6 +1133,19 @@
       "bestPlacement": 4
     },
     {
+      "name": "Mike",
+      "playerSlug": "mike",
+      "seasons": [
+        4,
+        3,
+        15
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 11,
+      "bestPlacement": 6
+    },
+    {
       "name": "Owen",
       "playerSlug": "owen",
       "seasons": [
@@ -1099,11 +1159,35 @@
       "bestPlacement": 7
     },
     {
+      "name": "James",
+      "playerSlug": "james",
+      "seasons": [
+        12,
+        15
+      ],
+      "seasonsPlayed": 2,
+      "wins": 1,
+      "avgPlacement": 11,
+      "bestPlacement": 1
+    },
+    {
       "name": "Ripper",
       "playerSlug": "ripper",
       "seasons": [
         9,
         13
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 11.5,
+      "bestPlacement": 11
+    },
+    {
+      "name": "Natalia",
+      "playerSlug": "natalia",
+      "seasons": [
+        14,
+        15
       ],
       "seasonsPlayed": 2,
       "wins": 0,
@@ -1283,6 +1367,18 @@
       "bestPlacement": 5
     },
     {
+      "name": "Millie",
+      "playerSlug": "millie",
+      "seasons": [
+        9,
+        15
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 13.5,
+      "bestPlacement": 2
+    },
+    {
       "name": "Brody",
       "playerSlug": "brody",
       "seasons": [
@@ -1294,6 +1390,18 @@
       "wins": 0,
       "avgPlacement": 13.67,
       "bestPlacement": 7
+    },
+    {
+      "name": "Grett",
+      "playerSlug": "grett",
+      "seasons": [
+        11,
+        15
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 14,
+      "bestPlacement": 14
     },
     {
       "name": "Dakota",
@@ -1330,6 +1438,18 @@
       "wins": 0,
       "avgPlacement": 16,
       "bestPlacement": 11
+    },
+    {
+      "name": "Yul",
+      "playerSlug": "yul",
+      "seasons": [
+        12,
+        15
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 16,
+      "bestPlacement": 12
     },
     {
       "name": "Justin",
@@ -1451,6 +1571,11 @@
         "season": 14,
         "strategy": "Jade plays like a quiet knife: gathering loyalty early, spending idols aggressively, cutting social threats before they harden, and letting bigger personalities take the blame until the endgame forces her into the open.",
         "winner": "Jade"
+      },
+      {
+        "season": 15,
+        "strategy": "Julia's game was not about being loved; it was about never letting the vote happen to her. Early, she used the coach role to invest selectively, gather information without needing a ballot, and let players expose themselves trying to impress or remove her. Once promoted, she pivoted from mentor to operator: buying the extra vote in public, keeping the idol live, joining and breaking blocs as needed, and repeatedly redirecting heat onto louder targets like Natalia, Manu, Nura, and Bowie. Her most important skill was timing: she rarely needed to be the first name out loud, but she was often the person turning the second name into the real vote. The jury disliked large parts of her game, but the season's final format meant she only had to survive their anger long enough to win the last race.",
+        "winner": "Julia"
       }
     ],
     "castComposition": [
@@ -1511,6 +1636,10 @@
       {
         "season": 14,
         "composition": "18 players"
+      },
+      {
+        "season": 15,
+        "composition": "25 players"
       }
     ],
     "finaleVoteMargins": [
@@ -1608,6 +1737,15 @@
           "Jade",
           "Logan"
         ]
+      },
+      {
+        "season": 15,
+        "vote": "",
+        "winner": "Julia",
+        "finalists": [
+          "Julia",
+          "Spencer"
+        ]
       }
     ],
     "majorTwists": [
@@ -1666,6 +1804,10 @@
       {
         "season": 14,
         "twist": "Carnival of Chaos is a season where the midway never stops taking payment. The pre-merge is built on unstable shelters, food scarcity, Rescue Island pressure, and alliances that form quickly because nobody feels safe for long. Jade and Spencer begin as mutual respect and end as open hatred; Anastasia and Isabel turn Blue Team into a war zone; Benji, Ivy, Zaid, Hannah, and Marissa prove that showmances and ride-or-die bonds can be both shelter and target. The merge detonates the game: idols wipe votes, extra votes fail to control chaos, the Edge returns Ivy and Richard, and the jury starts tracking who it believes is really running each boot. By the endgame, shields become threats one by one — Richard, Ivy, Zaid, Marissa, Isabel, Spencer, Hannah, and Anastasia all fall as their stories become too visible. The finale strips away the jury vote and asks only who can finish the Carnival Rescue. Jade answers with the same thing that carried her all season: read the pattern, cut through the noise, and do not look back."
+      },
+      {
+        "season": 15,
+        "twist": "This season was defined by institutional instability. The coach format created two games at once: contestants voting, and non-voting mentors shaping who became useful, threatening, or expendable. The early phase was a lesson in mechanics — Save Cards, swaps, Redemption Island, summits and coach votes kept turning simple majorities into puzzles. The middle phase belonged to players who could live inside fractured structures: Natalia, Ara, Sami, Bowie, Gabby, Lake and Julia all had moments where they seemed to be steering the season. The merge blew those structures apart. Bruno, Natalia, Manu, Gabby, Oliwia, Ara, Thom and Nura all left through votes or twists that punished either visibility, loyalty, or bad timing. By the end, the pure strategists remained: Sami, Spencer, Bowie and Julia. Sami ran out of bodies, Bowie ran out of jury goodwill, Spencer ran out of final-challenge execution, and Julia — disliked, targeted, but still armed and adaptive — finally finished the job she came back to do."
       }
     ]
   },
@@ -1706,6 +1848,20 @@
       "playerSlug": "mickey"
     },
     {
+      "category": "Winner with 0 Votes Against",
+      "holder": "Misha",
+      "stat": "0 votes (entire season)",
+      "season": "S1",
+      "playerSlug": "misha"
+    },
+    {
+      "category": "Winner with 0 Votes Against",
+      "holder": "Quin",
+      "stat": "0 votes (entire season)",
+      "season": "S1",
+      "playerSlug": "quin"
+    },
+    {
       "category": "Most Votes Received",
       "holder": "Geoff",
       "stat": "54 total",
@@ -1716,7 +1872,7 @@
       "category": "Most Idols Found",
       "holder": "Julia",
       "stat": "4 total",
-      "season": "S9, S13",
+      "season": "S9, S13, S15",
       "playerSlug": "julia"
     },
     {
@@ -1731,6 +1887,12 @@
       "holder": "S5",
       "stat": "3-3-2 (tiebreak)",
       "season": "Mickey win"
+    },
+    {
+      "category": "Largest Jury",
+      "holder": "S1",
+      "stat": "9 members",
+      "season": ""
     }
   ],
   "careerLeaders": {
@@ -1757,13 +1919,18 @@
           "total": 8
         },
         {
+          "name": "Julia",
+          "playerSlug": "julia",
+          "total": 8
+        },
+        {
           "name": "MacArthur",
           "playerSlug": "macarthur",
           "total": 7
         },
         {
-          "name": "Julia",
-          "playerSlug": "julia",
+          "name": "Ireland",
+          "playerSlug": "ireland",
           "total": 7
         },
         {
@@ -1777,14 +1944,9 @@
           "total": 6
         },
         {
-          "name": "Bridgette",
-          "playerSlug": "bridgette",
-          "total": 5
-        },
-        {
-          "name": "Emma",
-          "playerSlug": "emma",
-          "total": 5
+          "name": "Misha",
+          "playerSlug": "misha",
+          "total": 6
         }
       ],
       "mostImmunityWins": [
@@ -1799,6 +1961,11 @@
           "total": 10
         },
         {
+          "name": "Julia",
+          "playerSlug": "julia",
+          "total": 6
+        },
+        {
           "name": "Gwen",
           "playerSlug": "gwen",
           "total": 5
@@ -1811,11 +1978,6 @@
         {
           "name": "Zoey",
           "playerSlug": "zoey",
-          "total": 5
-        },
-        {
-          "name": "Julia",
-          "playerSlug": "julia",
           "total": 5
         },
         {
@@ -1905,44 +2067,44 @@
           "votesAgainst": 0
         },
         {
-          "name": "Samey",
-          "playerSlug": "samey",
-          "votesAgainst": 1
+          "name": "Misha",
+          "playerSlug": "misha",
+          "votesAgainst": 0
         },
         {
-          "name": "Millie",
-          "playerSlug": "millie",
-          "votesAgainst": 1
+          "name": "Joel",
+          "playerSlug": "joel",
+          "votesAgainst": 0
         },
         {
-          "name": "Connor",
-          "playerSlug": "connor",
-          "votesAgainst": 1
+          "name": "Velvet Vixen",
+          "playerSlug": "velvet-vixen",
+          "votesAgainst": 0
         },
         {
-          "name": "Ella",
-          "playerSlug": "ella",
-          "votesAgainst": 2
+          "name": "Taystee",
+          "playerSlug": "taystee",
+          "votesAgainst": 0
         },
         {
-          "name": "Mary",
-          "playerSlug": "mary",
-          "votesAgainst": 2
+          "name": "Sharon Needles",
+          "playerSlug": "sharon-needles",
+          "votesAgainst": 0
         },
         {
-          "name": "Raj",
-          "playerSlug": "raj",
-          "votesAgainst": 2
+          "name": "Riot",
+          "playerSlug": "riot",
+          "votesAgainst": 0
         },
         {
-          "name": "Thom",
-          "playerSlug": "thom",
-          "votesAgainst": 2
+          "name": "Quin",
+          "playerSlug": "quin",
+          "votesAgainst": 0
         },
         {
-          "name": "Amy",
-          "playerSlug": "amy",
-          "votesAgainst": 3
+          "name": "Paige Turner",
+          "playerSlug": "paige-turner",
+          "votesAgainst": 0
         }
       ],
       "mostJuryVotes": [
@@ -1987,13 +2149,13 @@
           "total": 5
         },
         {
-          "name": "Mickey",
-          "playerSlug": "mickey",
-          "total": 4
+          "name": "Misha",
+          "playerSlug": "misha",
+          "total": 5
         },
         {
-          "name": "Scott",
-          "playerSlug": "scott",
+          "name": "Mickey",
+          "playerSlug": "mickey",
           "total": 4
         }
       ]
@@ -2241,10 +2403,11 @@
     "season8": "Heroes vs. Villains vs. Civilians brought 18 returnees into the franchise's most complex tribal format. The Civilian bloc (Gerry/Jen/Sanders) dominated the merge through Unbreakable Relationships, controlling 75% of post-merge votes and systematically eliminating legends Owen, Leshawna, and MacArthur. Alejandro's physical resurrection (4 individual immunities) combined with Cameron's tactical survival produced a historic 4-4 jury deadlock — the franchise's first Dual Win. Sanders played the most decorated non-winner game in history (2 idols found, 2 played, final immunity). Gerry's psychological destruction of Heather — forcing her to quit while holding the Super Idol — stands as the most stunning advantage waste in Total Drama history.",
     "season9": "18 newbies fight for the title of King of Power — 18 players, won by Bowie over Millie & Chase (5-3-0). Sets the franchise gold standard for advantage mastery at the merge. Proves that ruthless timing plus airtight social insurance can still earn a largely respectful jury win.",
     "season10": "Champions vs Contenders brought 9 returning champions against 9 hungry contenders. Jasmine's pressure reads, loyal shields, and perfectly timed exits from danger carried her past Bowie's relentless scheming. Redemption Island produced its own mythology through Priya's early streak and Sanders's five-duel run. The Oath alliance dominated but fractured as exposure after exposure (Courtney, Scott, Priya) kept unmasking Bowie. The first physical finale (no jury vote) proved that the season's survivor can outrun the season's strategist when there's nowhere left to hide.",
-    "message": "The message across 14 seasons: Different winning strategies — Lindsay S1, Duncan S2, Emma S3, Alejandro S4, Mickey S5, Jacques S6, MacArthur S7, Alejandro & Cameron (Dual Win) S8, Bowie S9, Jasmine S10, Miriam S11, James S12, Wayne S13, Jade S14. Adaptability, jury respect, and understanding when to strike remain essential.",
+    "message": "The message across 15 seasons: Different winning strategies — Lindsay S1, Duncan S2, Emma S3, Alejandro S4, Mickey S5, Jacques S6, MacArthur S7, Alejandro & Cameron (Dual Win) S8, Bowie S9, Jasmine S10, Miriam S11, James S12, Wayne S13, Jade S14, Julia S15. Adaptability, jury respect, and understanding when to strike remain essential.",
     "season11": "A season of fractured alliances, cursed advantages, comeback ghosts, and one underdog who refused to leave before the volcano answered.. Miriam wins (no jury vote) over Thom. Miriam plays a patient pressure game: she lets louder players become shields, builds deep trust with Thom and later Eureka, keeps her Extra Vote long enough to shape early momentum, and repeatedly survives by redirecting attention onto players who appear more volatile. Her best work comes late, when she turns the Thom bond from liability into leverage and beats him at the summit with an emotional mind game instead of raw speed.",
     "season12": "A season of fractured alliances, public betrayals, advantage warfare, and one cold-blooded winner who turned chaos into a résumé.. James wins (7-2) over Riya. James plays a restless, opportunistic game: he builds alliances quickly, abandons them before they can trap him, weaponizes misinformation, and repeatedly turns personal tension into strategic cover. His greatest strength is timing — he knows when to hide behind louder players, when to expose a threat, and when to make the vote feel inevitable.",
     "season13": "A season of rescue roads, broken alliances, and one final race where heart outran control.. Wayne wins (no jury vote) over Julia. Wayne's game is built less on command than gravity: people keep orbiting him because he listens, protects, and makes them feel seen. He loses allies, misfires votes, and gets targeted repeatedly, but his relationships keep opening escape lanes when strategy alone would have failed.",
-    "season14": "A season of rigged games, broken showmances, exposed advantages, and one final challenge where Jade turned calculation into a crown.. Jade wins (no jury vote) over Logan. Jade plays like a quiet knife: gathering loyalty early, spending idols aggressively, cutting social threats before they harden, and letting bigger personalities take the blame until the endgame forces her into the open."
+    "season14": "A season of rigged games, broken showmances, exposed advantages, and one final challenge where Jade turned calculation into a crown.. Jade wins (no jury vote) over Logan. Jade plays like a quiet knife: gathering loyalty early, spending idols aggressively, cutting social threats before they harden, and letting bigger personalities take the blame until the endgame forces her into the open.",
+    "season15": "A post-game strategy audit of a season where coaches became players, alliances became liabilities, and Julia won because the endgame finally rewarded nerve over approval.. Julia wins (no jury vote) over Spencer. Julia's game was not about being loved; it was about never letting the vote happen to her. Early, she used the coach role to invest selectively, gather information without needing a ballot, and let players expose themselves trying to impress or remove her. Once promoted, she pivoted from mentor to operator: buying the extra vote in public, keeping the idol live, joining and breaking blocs as needed, and repeatedly redirecting heat onto louder targets like Natalia, Manu, Nura, and Bowie. Her most important skill was timing: she rarely needed to be the first name out loud, but she was often the person turning the second name into the real vote. The jury disliked large parts of her game, but the season's final format meant she only had to survive their anger long enough to win the last race."
   }
 }

@@ -20,8 +20,9 @@
 import traitorsPack from './traitors.js';
 import dragRacePack from './drag-race.js';
 import perfectMatchPack from './perfect-match.js';
+import ridonculousRacePack from './ridonculous-race.js';
 
-const PACKS = [traitorsPack, dragRacePack, perfectMatchPack];
+const PACKS = [traitorsPack, dragRacePack, perfectMatchPack, ridonculousRacePack];
 
 /** The pack for a format, or null when the shared library serves it. */
 export function packFor(format) {

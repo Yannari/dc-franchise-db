@@ -1,9 +1,9 @@
 // Families 11 and 12 of the catalogue: Don, and the twists as scenes (docs/ridonculous-race-scenes.md
 // §11, §12). Written to docs/rr-writers-brief.md. Id prefix `dt.`. Keys here add to don.js's pools.
 //
-// Don is dry, bored, self-absorbed and a little mean, in plain words: never an announcer, never
-// excited for anybody. His habits (research Part 2): "{place}! Home of A, B, and something that annoys
-// me", "Don't care.", "No sharing.", "Kidding.", the fake-out. His lines carry no voice variants.
+// Don is a slick, vain, upbeat host with puns and jabs aimed at each team (docs/rr-writers-brief.md, corrected
+// 2026-10-19: not the bored deadpan this file first described). His habits: "{place}! Home of A, B, and other
+// things that annoy me", "No sharing.", the fake-out. His lines carry no voice variants.
 //
 // Who is who, as the engine records it (js/rr/chill.js, twists.js, leg.js, script/roles.js):
 //   don-opener, don-demo, don-rule   Don alone, to camera: no team in the scene. {place} is the leg's

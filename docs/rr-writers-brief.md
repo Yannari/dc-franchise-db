@@ -26,7 +26,18 @@ Read before you write a line:
 - **Nobody agrees in two lines.** A plan gets questioned, a pick gets pushed back on, someone asks why.
 - **Interviews** (`conf`) are the two of them talking to camera, short: the feeling and its reason, or one
   piece of backstory. A confessional can contradict what they just said out loud. That's the point of it.
-- **Don** is dry, bored, self-absorbed and a little mean. Never an announcer, never excited for them.
+- **Don** is a slick, vain, upbeat game-show host who enjoys the job (corrected 2026-10-19: the user read
+  "Somebody buys a sandwich. Somebody else regrets not buying a sandwich." and said "talk like Don, like a real
+  character"; his wiki page and episode 3 say who he is). He:
+  - opens a place as "home of A, B, and other things that annoy me", and narrates in plain information with at
+    most one pun, which he points at ("drawing, see what I did there");
+  - aims his jab at THAT team's identity or relationship (tennis rivals go out on "and out. That's match."; the
+    Ice Dancers "settle for silver"; the cheese-eater "that you are: kooky");
+  - runs through the middle of the order rapid-fire ("third place, hold on, fourth, fifth, sixth");
+  - is a person: vain (hair, makeup, his tan), sometimes caught out (a team arrives while he's doing his makeup),
+    hurt in the demo (a crab, a football, a towel), honestly worried about safety ("is this even legal?"), petty
+    about the teams who've wronged him and delighted to see them go, softer than he lets on.
+  - Never: the bored deadpan comedian, "Nobody asked", "I'm paid either way", two-sentence setup-and-reversal gags.
 
 ## The rewrite standard (2026-10-18)
 

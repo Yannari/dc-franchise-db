@@ -14,7 +14,7 @@ import { SCENES } from '../scenes.js';
 import { IDENTITIES } from '../identities.js';
 import { getPlace } from '../places.js';
 import { pronouns } from '../../players.js';
-import { rolesOf, DON } from '../script/roles.js';
+import { rolesOf, DON, teamRef } from '../script/roles.js';
 import { fill } from '../script/write.js';
 import { elderOf } from '../script/facts.js';
 import RECAP from '../script/lines/recap.js';
@@ -29,13 +29,7 @@ export const RECAP_KINDS = [...new Set([...RESULT, ...Object.keys(RECAP).filter(
   .flatMap(k => (k === 'sabotage' ? [...SABOTAGE] : [k]))])];
 export const CLOSE = 'But that was then, and this is The Ridonculous Race!';
 
-// "the Goths" for a team named by its identity, "Alec and Spud" for the rest
-export function teamRef(state, id) {
-  const t = state.teams[id];
-  if (!t) return null;
-  if (t.identity && IDENTITIES[t.identity]?.name === t.name) return `the ${t.name}`;
-  return t.name.replace(/ & /g, ' and ');
-}
+export { teamRef };
 
 // what the two of them are to each other, the way a host introduces them
 const REL_TAG = { cousins: 'cousins', married: 'married couple', dating: 'couple', 'newly-dating': 'brand-new couple',

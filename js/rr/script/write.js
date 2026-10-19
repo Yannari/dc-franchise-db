@@ -94,10 +94,17 @@ export function voicedLine(turn, speaker, { relFam = null, rng = Math.random, le
 }
 
 const TOKEN = /\{(\w+)(?:\.(\w+))?\}/g;
+// a team slot is the team talked about ("the Goths"); spoken to, it's the two of them ("Sorry, Alec and Spud.")
+const TEAM_SLOTS = ['team', 'teamB', 'target'];
 export function fill(text, roles, slots) {
-  return String(text).replace(TOKEN, (m, role, part, at, whole) => {
-    const name = role === 'don' ? DON : roles[role] ?? slots[role];
+  let s = String(text);
+  // "the Lawyers' case", not "the Lawyers's case"
+  for (const k of TEAM_SLOTS) if (/s$/.test(slots[k] || '')) s = s.split(`{${k}}'s`).join(`{${k}}'`);
+  return s.replace(TOKEN, (m, role, part, at, whole) => {
+    let name = role === 'don' ? DON : roles[role] ?? slots[role];
     if (name == null) return m;
+    if (!part && slots[`${role}Voc`] && TEAM_SLOTS.includes(role) && /^[,.!?]/.test(whole.slice(at + m.length))
+      && /(^|[.!?,]\s+)$/.test(whole.slice(0, at))) name = slots[`${role}Voc`];
     const out = part ? pronouns(name)?.[part] ?? m : String(name);
     return /(^|[.!?]\s+)$/.test(whole.slice(0, at)) ? out.charAt(0).toUpperCase() + out.slice(1) : out;
   });
@@ -146,6 +153,8 @@ function keyFor(kind, ending) {
 
 const ORDINAL = ['zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth',
   'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth'];
+const NUMBER = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+  'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen'];
 const speakerName = (by, roles, slots) => (by === 'don' ? DON : by === 'local'
   ? (slots.local ? slots.local.charAt(0).toUpperCase() + slots.local.slice(1) : 'A local') : roles[by]);
 
@@ -156,6 +165,7 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   const key = keyFor(scene.kind, r.ending ?? 'any');
   if (!key) return null;
   if (scene.data?.place != null && ORDINAL[scene.data.place]) r.slots.placing = ORDINAL[scene.data.place];
+  if (scene.data?.place != null && NUMBER[scene.data.place]) r.slots.number = NUMBER[scene.data.place];
   const have = new Set([...Object.keys(r.roles), ...Object.keys(r.slots)]);
   const pools = {};
   const facts = factsFor(scene, r, state);

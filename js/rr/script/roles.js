@@ -35,7 +35,15 @@ const PENALTY = { 'surrender-money': 'hand over all your money', 'surrender-all'
   'speed-bump': 'an extra task next leg', marked: 'thirty minutes on the clock next leg unless you win it',
   departure: 'leaving an hour after everyone else' };
 
-const teamName = (st, id) => st.teams[id]?.name || null;
+// "the Goths" for a team named by its identity, "Alec and Spud" for the rest: the team talked about
+export function teamRef(state, id) {
+  const t = state.teams[id];
+  if (!t) return null;
+  if (t.identity && IDENTITIES[t.identity]?.name === t.name) return `the ${t.name}`;
+  return t.name.replace(/ & /g, ' and ');
+}
+// the team spoken to, by the two of them ("Alec and Spud, you're team number two!")
+const teamVoc = (st, id) => (st.teams[id] ? `${st.teams[id].a} and ${st.teams[id].b}` : null);
 const identityName = (st, id) => {
   const t = st.teams[id];
   if (!t) return null;
@@ -101,14 +109,16 @@ export function rolesOf(scene, state) {
   const s = stretchOf(state, scene);
   const sideLabel = s?.sides?.find(x => x.id === d.snap?.side)?.label || null;
   const slots = {
-    team: teamName(state, tid), teamB: teamName(state, oid),
+    team: teamRef(state, tid), teamB: teamRef(state, oid),
+    teamVoc: teamVoc(state, tid), teamBVoc: teamVoc(state, oid),
     identity: identityName(state, tid), identityB: identityName(state, oid),
     place: PLACES[d.snap?.place]?.name || null,
     task: s?.label || null,
     side: sideLabel,
     partner: roles.a ? partnerOf(state, roles.a) : null,
     crush: kind?.family === 4 ? roles.b : null,
-    target: d.target ? teamName(state, d.target) : null,
+    target: d.target ? teamRef(state, d.target) : null,
+    targetVoc: d.target ? teamVoc(state, d.target) : null,
     reward: d.reward ? REWARD[d.reward] || null : null,
     penalty: d.penalty ? PENALTY[d.penalty] || null : null,
     amount: d.amount ?? d.raised ?? null,
@@ -116,15 +126,17 @@ export function rolesOf(scene, state) {
     // the hint on a Botch or Watch board ("Who's ready to get wet?")
     teaser: s?.teaser || null,
     // a task montage: the teams that got through it together ("Goths, Lawyers and Nurses")
-    teams: d.teamsList?.length ? listNames(d.teamsList.map(id => teamName(state, id))) : null,
+    teams: d.teamsList?.length ? listNames(d.teamsList.map(id => teamRef(state, id))) : null,
     // Don's narration carries its own (director.js): {winners} {count} {gap} {flight} {task} {prevTask} {team}
-    ...(scene.kind === 'don-narrate' ? d.slots || {} : {}),
+    ...(scene.kind === 'don-narrate' ? { teamVoc: null, teamBVoc: null, targetVoc: null, ...d.slots } : {}),
   };
   for (const k of Object.keys(slots)) if (slots[k] == null) delete slots[k];
   return { roles, ending: d.ending ?? 'any', slots };
 }
 
-// "A", "A and B", "A, B and C"
+// "A", "A and B", "A, B and C"; "the Goths, Alec and Spud, and the Nurses" when a name has its own "and"
 function listNames(names) {
-  return names.length <= 1 ? names[0] || null : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+  if (names.length <= 1) return names[0] || null;
+  const serial = names.length > 2 && names.some(n => n.includes(' and ')) ? ',' : '';
+  return `${names.slice(0, -1).join(', ')}${serial} and ${names.at(-1)}`;
 }

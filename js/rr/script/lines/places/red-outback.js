@@ -497,7 +497,7 @@ const shearing = {
     { id: 'rob.sh-f4', when: SH, turns: [
       { by: 'b', say: "Look at it. It looks so much happier now." },
       { by: 'a', say: "It looks so much colder now." },
-      { by: 'b', say: "Happier and colder. Like us after the sauna." },
+      { by: 'b', say: "Happier and colder. Like anyone after a haircut." },
     ] },
   ],
   'task-try.after-fails': [

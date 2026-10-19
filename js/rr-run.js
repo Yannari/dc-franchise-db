@@ -33,6 +33,7 @@ import { buildSchedule } from './rr/schedule.js';
 import { DEFAULT_OPTIONS } from './rr/format.js';
 import { REL } from './rr/state.js';
 import { IDENTITIES } from './rr/identities.js';
+import { teamRef } from './rr/script/roles.js';
 import { TASK_TYPES } from './rr/types.js';
 import { PLACES } from './rr/places.js';
 import { rrLedgerRecord } from './rr/ledger-record.js';
@@ -175,7 +176,9 @@ export function raceRows(result, eps) {
     const ep = eps[i] || { segments: [] };
     for (const id of leg.eliminated || []) out.add(id);
     const exits = (leg.eliminated || []).flatMap(id => [team(id)?.a, team(id)?.b].filter(Boolean)
-      .map(name => ({ name, verb: VERB[leg.how?.[id]] || 'eliminated', channel: leg.how?.[id] || 'last', team: label(id) })));
+      .map(name => ({ name, verb: VERB[leg.how?.[id]] || 'eliminated', channel: leg.how?.[id] || 'last', team: label(id),
+        // the team as the hub says it: "the Chefs" (and who they were), or "Bowie and Brick"
+        label: teamRef(state, id), members: [team(id)?.a, team(id)?.b].filter(Boolean) })));
     const final = leg.kind === 'final';
     const winner = final ? result.winner : null;
     rows.push({

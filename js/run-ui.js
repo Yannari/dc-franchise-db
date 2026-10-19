@@ -288,6 +288,18 @@ const _isCircleRow = ep => !!ep && ep.format === CIRCLE_FORMAT;
 const _isChallengeRow = ep => !!ep && ep.format === CHALLENGE_FORMAT;
 // The Ridonculous Race too (rr-view.js reads the aired segments the row carries).
 const _isRaceRow = ep => !!ep && ep.format === RACE_FORMAT;
+// The teams that left in a round whose exits carry their team (rr-run.js raceRows): { label, who, verb }, once each.
+const _capFirst = s => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
+function _exitTeams(row) {
+  const out = [];
+  for (const x of (row?.exits || [])) {
+    if (!x?.label || out.some(o => o.label === x.label)) continue;
+    const names = (x.members || []).join(' and ');
+    // "The Chefs (Beth and Blaineley)"; a team named after the two of them is just them
+    out.push({ label: x.label, verb: x.verb, who: _capFirst(x.label) + (names && x.label !== names ? ` (${names})` : '') });
+  }
+  return out;
+}
 // Same question for the main stage. A stored drag episode shares none of Total
 // Drama's eighty flags, so running them over it would be eighty reads of
 // fields that are not there; it gets its own card.
@@ -575,7 +587,11 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
      Drama's words instead of "sashayed away", which the registry has always
      been able to supply. `roundExits(row, format)` answers for all four. */
   const _hubExits = latest ? roundExits(latest, _hubFmt) : [];
-  const latestOutcome = _hubExits.length
+  // A show whose players leave as a team (a race: both of them, at once) says it once per team, by the team.
+  const _teamExits = _exitTeams(latest);
+  const latestOutcome = _teamExits.length
+    ? _teamExits.map(x => `${x.who} were ${x.verb}`).join(' · ')
+    : _hubExits.length
     ? _hubExits.map(x => `${x.name} was ${x.verb}`).join(' · ')
     // A final the PUBLIC decided names its winners (the row carries the vote).
     : latest?.pm?.shares?.length && latest.moment === 'final' ? `${[...latest.pm.shares].sort((x, y) => y.share - x.share)[0].couple.join(' & ')} won the public vote`
@@ -607,7 +623,8 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
           }).filter(t => t.members.length || t.coaches.length)
         : [{ name: displayState.phase === 'finale' ? 'Finalists' : 'Merged Cast', color: setting.accent, members: active }];
   const storylines = [];
-  if (latest?.eliminated) storylines.push(`${latest.eliminated}'s exit changes the numbers going into Episode ${nextEpisode}.`);
+  if (_teamExits.length) storylines.push(`${_teamExits.map(x => x.label).join(' and ')} going home changes the race going into ${showWords(_hubFmt).round} ${nextEpisode}.`);
+  else if (latest?.eliminated) storylines.push(`${latest.eliminated}'s exit changes the numbers going into Episode ${nextEpisode}.`);
   if (latest?.isMerge) storylines.push('The merge has redrawn every voting relationship.');
   if ((displayState.riPlayers || []).length) storylines.push(`${displayState.riPlayers.length} eliminated contestant${displayState.riPlayers.length === 1 ? '' : 's'} remain in the second-chance game.`);
   const publicStatuses = [];
@@ -650,7 +667,7 @@ export function renderSeasonHub() {
   // A castle has no tribes and no merge either, so Total Drama's phase names
   // describe nothing about it. What it has is a number of people left.
   const phaseLabel = (_bbSeason || isTraitorsSeason() || isPerfectMatchSeason() || isCircleSeason() || isChallengeSeason() || isRaceSeason())
-    ? (model.phase === 'complete' ? 'Complete' : model.remaining ? 'Final ' + model.remaining : 'Setup')
+    ? (model.phase === 'complete' ? 'Complete' : model.remaining ? (isRaceSeason() ? `${Math.ceil(model.remaining / 2)} teams left` : 'Final ' + model.remaining) : 'Setup')
     : model.phase === 'pre-merge' ? 'Pre-Merge' : model.phase === 'post-merge' ? 'Post-Merge' : model.phase === 'finale' ? 'Finale' : model.phase === 'complete' ? 'Complete' : 'Setup';
   // A castle's season ends with the reunion: until it has aired, the main
   // button airs it; once it has, it is the last tape on the rail.

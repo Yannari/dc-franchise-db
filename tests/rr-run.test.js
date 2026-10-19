@@ -296,3 +296,19 @@ describe('a custom identity can be anything', () => {
     expect(id.bad).toEqual(['brains']);
   });
 });
+
+describe("the hub says a race's exits by team", () => {
+  it('"The Chefs (Beth and Blaineley) were eliminated", once, and a race counts teams, not a Final N', async () => {
+    const { buildSeasonHubModel } = await import('../js/run-ui.js');
+    const { players } = await import('../js/core.js');
+    freshSeason(8);
+    let row;
+    for (let i = 0; i < 12; i++) { row = simulateRaceEpisode(); if (row?.exits?.length && row.rr.kind === 'elim') break; }
+    const model = buildSeasonHubModel(gs, seasonConfig, players);
+    const x = row.exits[0];
+    expect(model.latestOutcome).toContain(x.members.join(' and '));
+    expect(model.latestOutcome.split(' were ').length).toBe(2);
+    expect(model.latestOutcome).not.toMatch(/ was /);
+    expect(model.storylines.join(' ')).not.toMatch(new RegExp(`${x.name}'s exit`));
+  });
+});

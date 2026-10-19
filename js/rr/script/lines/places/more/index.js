@@ -7,5 +7,6 @@ import savannaFalls from './savanna-falls.js';
 import rockNorth from './rock-north.js';
 import greatWallHills from './great-wall-hills.js';
 import ironTowerCity from './iron-tower-city.js';
+import fireMountainIsle from './fire-mountain-isle.js';
 
-export default [redOutback, torchStatueHarbour, tombSands, treasureIsles, savannaFalls, rockNorth, greatWallHills, ironTowerCity];
+export default [redOutback, torchStatueHarbour, tombSands, treasureIsles, savannaFalls, rockNorth, greatWallHills, ironTowerCity, fireMountainIsle];

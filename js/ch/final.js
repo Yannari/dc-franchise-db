@@ -181,7 +181,13 @@ function fireTalk(state, rng) {
 export function playFinal(state, rng) {
   state.day += 1;
   const fin = { finalists: [...state.active], checkpoints: [], instant: [], overnight: [], champions: [], totals: {}, help: [], sabotage: [], lastWords: [] };
-  for (const al of activeAlliances(state)) endAlliance(state, al, 'final');
+  // (a Pairs season: an alliance whose finalists are one pair has nothing to say goodbye to; they race as one. Read
+  // 2026-10-19: partners "stand together for the last time as allies", and "tomorrow I'm going to try to beat him")
+  for (const al of activeAlliances(state)) {
+    const left = al.members.filter(m => state.active.includes(m));
+    const onePair = pairsOn(state) && left.length && left.every(m => membersOf(state, left[0]).includes(m));
+    endAlliance(state, al, 'final', { quiet: onePair });
+  }
   addScene(state, 'final-start', state.active, {}, state.active, 'final');
   const total = Object.fromEntries(state.active.map(n => [n, 0]));
 

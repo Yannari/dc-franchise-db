@@ -169,9 +169,10 @@ export function leave(state, al, name, why, extra = {}) {
   }
 }
 
-export function endAlliance(state, al, why) {
+export function endAlliance(state, al, why, { quiet = false } = {}) {
   if (al.ended) return;
   al.ended = true; al.endedEp = state.ep; al.why = why;
+  if (quiet) return;
   addScene(state, 'alliance-end', al.members.filter(m => state.active.includes(m)), { alliance: al.id, name: al.name, why }, al.members, 'private');
 }
 

@@ -21,8 +21,11 @@ const pop = (n, d) => { gs.popularity ||= {}; gs.popularity[n] = (gs.popularity[
  * Before the loser leaves the Arena. `culprits` are the people who put them there: the voters when they were
  * voted in, the caller when they were called out. Called while the loser is still in state.active.
  */
-export function arenaGoodbye(state, rng, { loser, winner, culprits = [], how = 'voted' }) {
-  const friends = state.active.filter(n => n !== loser && n !== winner && getBond(loser, n) >= 2.5)
+export function arenaGoodbye(state, rng, { loser, winner, culprits = [], how = 'voted', leaving = [], winners = [] }) {
+  // (a Pairs season: the partner going home too is not a friend in the stand, and neither is the other winner; read
+  // 2026-10-19, Ivy came down from the stand to hug Ezekiel, and then Ezekiel ran down to Ivy, both on their way out)
+  const out = new Set([loser, winner, ...leaving, ...winners]);
+  const friends = state.active.filter(n => !out.has(n) && getBond(loser, n) >= 2.5)
     .sort((x, y) => getBond(loser, y) - getBond(loser, x)).slice(0, 2);
   // the parting shot: the culprit they hold the most against, if the nerve and the grudge are there
   const pool = culprits.filter(c => c !== loser && state.active.includes(c));

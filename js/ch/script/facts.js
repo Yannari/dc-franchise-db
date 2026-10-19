@@ -71,6 +71,9 @@ export const CH_FACT_KEYS = [
   // the name at a vote, as it stood then (vote.js houseVote on): two or more wins (dailies and Arenas); never been
   // in the Arena; the biggest bank in the house. A ballot's reason may claim only what is true.
   'proven', 'neverIn', 'richest',
+  // a Pairs season's pick-talk: which of the two pairs talked over ({opt1}: 1, {opt2}: 2) the pair really calls out
+  // (pair-week.js pairPickDay). A scene that settles on one may only air when it is the one picked.
+  'picked',
 ];
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -145,6 +148,7 @@ export function factsFor(scene, roles, state) {
     bounce: !!scene.data?.bounce,
     blamed: !!scene.data?.blamed,
     losing: !!scene.data?.losing,
+    picked: scene.data?.picked ?? null,
   };
   if (a) {
     f.register = registerOf(a);

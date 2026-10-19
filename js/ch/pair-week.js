@@ -160,7 +160,8 @@ export function pairArenaDay(state, { R, epRec, matches, delib, closing }) {
     // the goodbyes at the gate, both of them, while they are still here
     const asVotedIn = loser === a;
     duel.goodbye = losers.map((l, i) => arenaGoodbye(state, R(`bye${k}${i}`), { loser: l, winner: winners[i] || winner,
-      culprits: asVotedIn ? (m.volunteer ? [] : m.voters) : [by], how: asVotedIn ? (m.volunteer ? 'volunteered' : 'voted') : 'calledout' }));
+      culprits: asVotedIn ? (m.volunteer ? [] : m.voters) : [by], how: asVotedIn ? (m.volunteer ? 'volunteered' : 'voted') : 'calledout',
+      leaving: losers, winners }));
     for (const w of winners) for (const l of losers) arenaWon(w, l, state.active, { margin: (duel.upset ? 1.4 : 1) / 2 });
     duel.took = winners.reduce((t, w, i) => t + arenaPurse(state, w, losers[i] || losers[0]), 0);
     for (const w of winners) earnPass(state, w);
@@ -218,7 +219,9 @@ export function pairPickDay(state, rng, m) {
   if (other && A.length === 2) {
     const options = rng() < 0.5 ? [m.b, other] : [other, m.b];
     addBond(A[0], A[1], 0.2);
-    addScene(state, 'pick-talk', A, { options, pair: true }, A, 'private');
+    // (picked: which option is the call-out, so a scene that settles on one says the right one: read 2026-10-19, a pair
+    // agreed on Duncan and MK over breakfast and called out Drea and Tobias that afternoon)
+    addScene(state, 'pick-talk', A, { options, pair: true, picked: options.indexOf(m.b) + 1 }, A, 'private');
   }
   const worried = [...open].sort((x, y) => getBond(m.a, x) - getBond(m.a, y)).slice(0, 2);
   if (worried.length === 2) {

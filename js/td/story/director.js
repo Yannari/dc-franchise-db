@@ -1481,7 +1481,7 @@ function voteTalk(ep, camp, t, next) {
   // scramble or the 'feels safe' scene was the boot's alone whenever no other plan had aired, so the person shown
   // relaxing while a friend kept a secret was always the person who went home. Now a decoy with a vote of their
   // own on them gets the same scene, and which of the two airs first has nothing to do with who goes.
-  const targetScene = (x, step) => {
+  const targetScene = (x, step, noLiar = false) => {
     const mine = ballotOf(x);
     if (!mine || mine === x) return null;
     const onX = ballots.filter(v => v.voted === x && v.voter !== x).map(v => v.voter);
@@ -1501,7 +1501,7 @@ function voteTalk(ep, camp, t, next) {
     }
     // no idea: a friend who is writing their name sits with them, and keeps it from them
     // (never the person they are voting for: they'd be told 'tonight it's you' to their face)
-    const liar = closest(x, onX.filter(v => v !== leader && v !== mine && getBond(x, v) >= 1 && !out.some(o => o.players.includes(v) && o.step === 'plan')));
+    const liar = noLiar ? null : closest(x, onX.filter(v => v !== leader && v !== mine && getBond(x, v) >= 1 && !out.some(o => o.players.includes(v) && o.step === 'plan')));
     const why = [`${x} thinks it's ${mine} tonight.`, `${pronouns(x).Sub} ${pronouns(x).sub === 'they' ? "haven't" : "hasn't"} heard ${pronouns(x).posAdj} own name.`];
     // (fresh ones only, here and below: a spent pool steps aside to the target's own confessional rather than replay a scene
     // from an earlier night; read 2026-10-14, "I'm confident because I counted" 2.5 times a season)
@@ -1515,28 +1515,43 @@ function voteTalk(ep, camp, t, next) {
     return two || sure || item(step, 'story.vote.target', 'safe', { a: x }, { wrote: mine }, base({ a: x }, { why: ballotWhy(ballots.find(v => v.voter === x), ep) }), 'confessional', 'before-tribal', ['Feels Safe', 'blue'], why);
   };
   if (boot === t.gone) {
+    const imm = new Set([].concat(ep.immunityWinner || [], ep.extraImmune || []));
+    const hs = x => { let h = 2166136261; for (const c of `${ep.num}|decoy|${x}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
+    // (somebody not on screen yet first; then anybody, short of the people running plans)
+    const seen = x => out.some(o => o.players.includes(x)) ? 1 : 0;
+    const order = (p, q) => seen(p) - seen(q) || hs(p) - hs(q) || p.localeCompare(q);
+    // (not somebody about to play an Extra Vote or steal one: they have their own scene saying who it's on, and read
+    // 2026-10-14, Tristan told Richard "it's Ivy tonight, both of them", then was scared and asked him for votes on Ivy)
+    const attacking = new Set((ep.idolPlays || []).filter(p => ['extraVote', 'voteSteal'].includes(p.type)).map(p => p.player));
+    // Feeling safe is not the boot's alone, and nothing beside it says the result (the user, 2026-10-18: "the one going
+    // home always has the dialogue saying they're not worried, it spoils me the result"). Measured over 52 boots: the
+    // boot had the "Feels Safe" scene 51 times; the survivor paired with it was sure of the BOOT's name ("Chase is going
+    // home" beside Chase's own "it's Blaineley tonight"), and the boot's own was the friend who sits there and then
+    // tells the camera "I'm writing her name tonight". So the survivor who feels the same is one sure of some other name,
+    // and the friend keeping the secret only airs when the survivor's scene has one too.
+    const calm = o => o?.badgeText === 'Feels Safe';
+    const keeps = o => o?.kind === 'vt2.safe';
+    const free = x => x !== boot && !leads.has(x) && !imm.has(x) && !attacking.has(x) && ballotOf(x) && ballotOf(x) !== x && ballotOf(x) !== boot;
+    const decoyRun = out.some(o => o.step === 'decoy');
+    let own = targetScene(boot, 'target');
     const pair = [];
-    const own = targetScene(boot, 'target');
-    if (own) pair.push(own);
-    // no other plan's target sat there sure it was them (the decoy above): somebody with a vote on them who survives
-    if (own && !out.some(o => o.step === 'decoy')) {
-      const imm = new Set([].concat(ep.immunityWinner || [], ep.extraImmune || []));
-      const hs = x => { let h = 2166136261; for (const c of `${ep.num}|decoy|${x}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
-      // (somebody not on screen yet first; then anybody, short of the people running plans)
-      const seen = x => out.some(o => o.players.includes(x)) ? 1 : 0;
-      // (not somebody about to play an Extra Vote or steal one: they have their own scene saying who it's on, and read
-      // 2026-10-14, Tristan told Richard "it's Ivy tonight, both of them", then was scared and asked him for votes on Ivy)
-      const attacking = new Set((ep.idolPlays || []).filter(p => ['extraVote', 'voteSteal'].includes(p.type)).map(p => p.player));
-      const cands = tribal.filter(x => x !== boot && !leads.has(x) && !imm.has(x) && !attacking.has(x) && ballots.some(v => v.voted === x && v.voter !== x))
-        .sort((p, q) => seen(p) - seen(q) || hs(p) - hs(q) || p.localeCompare(q));
-      for (const x of cands) { const d = targetScene(x, 'decoy'); if (d) { pair.push(d); break; } }
+    if (own) {
+      // somebody with a vote on them who survives, as sure as the boot (no other plan's target sat there yet: any mood)
+      const voted = tribal.filter(x => free(x) && ballots.some(v => v.voted === x && v.voter !== x)).sort(order);
+      if (!decoyRun || calm(own)) for (const x of voted) { const d = targetScene(x, 'decoy'); if (d && (!calm(own) || calm(d))) { pair.push(d); break; } }
+      // ...else anybody who survives it, just as calm about their own name
+      if (calm(own) && !pair.some(calm)) {
+        const rest = tribal.filter(x => free(x) && !voted.includes(x)).sort(order);
+        for (const x of rest) { const d = targetScene(x, 'decoy'); if (calm(d)) { pair.push(d); break; } }
+      }
       // a unanimous night has nobody else with a vote on them: somebody scared, or a plan's name that came to
       // nothing, is as sure as anybody that it's them (vt2.decoy: sure the votes are coming, pushing their own name)
-      if (pair.length < 2) {
+      if (!decoyRun && !pair.length) {
         const scared = x => ['paranoid', 'desperate'].includes(gs.playerStates?.[x]?.emotional);
         const planned = new Set((ep.alliances || []).map(al => al.target));
         const more = tribal.filter(x => x !== boot && !leads.has(x) && !onPlan.has(x) && !imm.has(x) && !attacking.has(x) && (scared(x) || planned.has(x)) && ballotOf(x) && ballotOf(x) !== x)
-          .sort((p, q) => seen(p) - seen(q) || hs(p) - hs(q) || p.localeCompare(q));
+          // (pushing some other name than the boot's, first: "they're coming for me, so it's Staci" names the result)
+          .sort((p, q) => (ballotOf(p) === boot) - (ballotOf(q) === boot) || order(p, q));
         for (const x of more) {
           const friend = closest(x, tribal.filter(y => y !== x && y !== boot && getBond(x, y) >= 1));
           if (!friend) continue;
@@ -1547,7 +1562,15 @@ function voteTalk(ep, camp, t, next) {
           if (d) { pair.push(d); break; }
         }
       }
-      if (pair.length === 2 && hs(boot) % 2) pair.reverse();
+      if (keeps(own) && !pair.some(keeps)) own = targetScene(boot, 'target', true) || own;
+      // ...and some nights the boot's own calm scene steps aside for the survivor's: a blindside often airs with no warning.
+      // A night where nobody who survives is calm about some other name (everybody else is writing the boot's) airs the
+      // boot sitting there sure only one night in three: calm beside somebody scared is the result, said (read
+      // 2026-10-18, seeds 11/22: five boots of 26 were the only person on screen feeling safe)
+      const keepOwn = !calm(own) || (pair.some(calm) ? hs(boot) % 3 !== 0 : hs(boot) % 3 === 0);
+      if (keepOwn) pair.push(own);
+      // which airs first has nothing to do with who goes
+      pair.sort((p, q) => hs(p.players[0] || '') - hs(q.players[0] || ''));
     }
     out.push(...pair);
   }

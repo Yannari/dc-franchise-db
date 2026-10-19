@@ -1282,7 +1282,9 @@ function readVotes(steps, say, V, { tribal, elim, ballots, protectedSet, tie, re
     let line;
     if (d) line = `${v.voted}. Does not count.`;
     else if (deciding) line = `The ${V._nth || 'next'} ${V._who || 'person'} voted out ${V._of}... ${v.voted}.${order.some(o => o.after) ? ` That's ${word(tally[v.voted])} votes. That's enough.` : ''}`;
-    else if (after.length >= 2 && i >= 1) line = `${v.voted}. That's ${word(after[0][1])} vote${after[0][1] === 1 ? '' : 's'} ${after[0][0]}, ${word(after[1][1])} vote${after[1][1] === 1 ? '' : 's'} ${after[1][0]}.`;
+    // the count names everybody with a vote, not the top two (the user, 2026-10-18: "That's three votes Natalia, two
+    // votes Spencer", with two on Julia and one on Ara left out, "it spoils me that it's between Natalia and Spencer")
+    else if (after.length >= 2 && i >= 1) line = `${v.voted}. That's ${after.map(([n, c]) => `${word(c)} vote${c === 1 ? '' : 's'} ${n}`).join(', ')}.`;
     else if (after.length === 1 && tally[v.voted] > 1) line = `${v.voted}. That's ${word(tally[v.voted])} votes ${v.voted}.`;
     else line = `${v.voted}.`;
     steps.push({ k: 'read', vote: v.voted, dead: !!d, deciding: !!deciding, tally: { ...tally }, focus: [v.voted], line, tense: !!deciding || close,

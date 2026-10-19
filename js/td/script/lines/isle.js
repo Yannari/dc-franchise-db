@@ -383,6 +383,19 @@ const STRUGGLING = [
     { beat: '{a} sits shivering by the fire even though it is warm out.' },
     { by: 'a', conf: "I didn't want to say anything. I don't feel good. I haven't for days." },
   ] },
+  { id: 'is.st7', turns: [
+    { beat: '{a} wakes up late, long after the fire has gone out, and lies there a while before moving.' },
+    { by: 'a', conf: "Every morning it takes a little longer to get up. I keep telling myself tomorrow will be easier." },
+  ] },
+  { id: 'is.st8', turns: [
+    { beat: '{a} drinks the last of the water and shakes the bottle, as if more might appear.' },
+    { by: 'a', say: "Whose turn is it to boil more? ...Mine. Of course it's mine." },
+    { by: 'a', conf: "Simple things are hard now. Walking to the water is a whole afternoon." },
+  ] },
+  { id: 'is.st9', turns: [
+    { beat: '{a} sits in the shade with both eyes shut and does not answer when somebody says {a.posAdj} name.' },
+    { by: 'a', conf: "I'm not ignoring anybody. I just don't have the energy to talk and stay upright at the same time." },
+  ] },
   { id: 'is.st6', when: { register: 'competitor' }, turns: [
     { beat: '{a} gets through five push-ups and collapses on the sixth.' },
     { by: 'a', say: "Five. I used to do fifty." },

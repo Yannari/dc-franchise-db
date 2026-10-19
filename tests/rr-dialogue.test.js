@@ -32,7 +32,8 @@ describe('rr dialogue: the rules every pool is held to', () => {
       const known = SCENES[kind] || DIRECTOR_KINDS[kind];
       expect(known, k).toBeTruthy();
       const endings = SCENES[kind]?.endings || DIRECTOR_KINDS[kind];
-      expect(ending === 'any' || endings.includes(ending), k).toBe(true);
+      // 'midmat': the finale's halfway mat, where write.js sends a mat scene whatever its ending
+      expect(ending === 'any' || (ending === 'midmat' && ['don-place', 'don-elim'].includes(kind)) || endings.includes(ending), k).toBe(true);
     }
   });
 

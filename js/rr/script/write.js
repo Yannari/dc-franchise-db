@@ -166,7 +166,8 @@ const speakerName = (by, roles, slots) => (by === 'don' ? DON : by === 'local'
 export function writeScene(state, scene, { roles: given = null } = {}) {
   const r = given || rolesOf(scene, state);
   if (!r) return null;
-  const key = keyFor(scene.kind, r.ending ?? 'any');
+  // the finale's halfway mat has its own lines: nobody there has placed or is safe (lines/rewrite/finale-midmat.js)
+  const key = scene.data?.midmat && POOLS[`${scene.kind}.midmat`] ? `${scene.kind}.midmat` : keyFor(scene.kind, r.ending ?? 'any');
   if (!key) return null;
   if (scene.data?.place != null && ORDINAL[scene.data.place]) r.slots.placing = ORDINAL[scene.data.place];
   if (scene.data?.place != null && NUMBER[scene.data.place]) r.slots.number = NUMBER[scene.data.place];

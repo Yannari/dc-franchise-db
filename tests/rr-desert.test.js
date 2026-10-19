@@ -61,6 +61,62 @@ describe('rr Red Sand Desert, 1:1', () => {
     expect(n).toBeGreaterThan(10);
   });
 
+  it("a team's moment at the spices knows how its picking went", async () => {
+    const { airSeason } = await import('../js/rr/episode.js');
+    const { cast, teams } = raceCast(12, 1);
+    setPlayers(cast);
+    const res = playRaceSeason({ teams, seed: 1 });
+    const right = new Set();
+    for (const ep of airSeason(res)) for (const s of ep.segments.filter(s => s.stretch === 'spices' && s.kind.startsWith('task-'))) {
+      const row = res.state.taskLog.find(r => r.leg === ep.n && r.team === s.teams[0] && r.stretch === 'spices');
+      const want = row.right >= 5 ? 'right' : row.right >= 3 ? 'mostly' : 'wrong';
+      expect(s.picked, `leg ${ep.n} ${s.teams[0]}`).toBe(want);
+      // the picking is the moment: it airs as the try, with how it went (not as arriving at the kiosk)
+      if (s.scene == null && !String(s.beat).endsWith(':arrive')) expect(s.kind, `leg ${ep.n} ${s.teams[0]}`).toBe('task-try');
+      right.add(want);
+    }
+    expect(right.size).toBeGreaterThan(1);
+  });
+
+  it('the first teams at the kiosk are seen arriving there too: the challenge is set up once, then results', async () => {
+    const { airSeason } = await import('../js/rr/episode.js');
+    const { cast, teams } = raceCast(12, 1);
+    setPlayers(cast);
+    const res = playRaceSeason({ teams, seed: 1 });
+    for (const ep of airSeason(res)) {
+      const starts = ep.segments.filter(s => s.stretch === 'spices' && s.kind === 'task-start');
+      if (!ep.segments.some(s => s.stretch === 'spices')) continue;
+      expect(starts.length, `leg ${ep.n}`).toBeGreaterThanOrEqual(1);
+      expect(starts.length, `leg ${ep.n}`).toBeLessThanOrEqual(3);
+      for (const s of starts) {
+        const i = ep.segments.indexOf(s);
+        expect(ep.segments.slice(i + 1).some(x => x.kind === 'task-try' && x.stretch === 'spices' && x.teams[0] === s.teams[0]), `leg ${ep.n}`).toBe(true);
+      }
+    }
+  });
+
+  it('the camel ride is seen: the first teams on it ride on air, the ones it went wrong for have their mishap', async () => {
+    const { airSeason } = await import('../js/rr/episode.js');
+    expect(getPlace('red-sand-desert').stretches.find(s => s.id === 'camel').ride).toBe(true);
+    const { cast, teams } = raceCast(12, 1);
+    setPlayers(cast);
+    const res = playRaceSeason({ teams, seed: 1 });
+    let legs = 0;
+    airSeason(res).forEach((ep, i) => {
+      if (res.legs[i].place !== 'red-sand-desert') return;
+      legs++;
+      const rides = ep.segments.filter(s => s.kind === 'ride' && s.stretch === 'camel');
+      expect(rides.length, `leg ${ep.n}`).toBeGreaterThanOrEqual(1);
+      expect(rides.length, `leg ${ep.n}`).toBeLessThanOrEqual(3);
+      const mishap = new Set(ep.segments.filter(s => s.kind === 'travel-mishap' && s.stretch === 'camel').flatMap(s => s.teams));
+      for (const s of rides) {
+        expect(mishap.has(s.teams[0]), `leg ${ep.n} ${s.teams[0]} rode twice`).toBe(false);
+        expect(s.lines?.length, `leg ${ep.n}`).toBeGreaterThan(0);
+      }
+    });
+    expect(legs).toBeGreaterThan(0);
+  });
+
   it('the camel has its own mishaps, and the Vegans walk beside theirs', () => {
     const camel = getPlace('red-sand-desert').stretches.find(s => s.id === 'camel');
     expect(camel.mishaps.map(m => m[0])).toEqual(expect.arrayContaining(['camel-down', 'camel-stops']));

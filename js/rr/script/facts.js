@@ -77,6 +77,9 @@ function elderOf(team) {
 }
 const registerOf = n => { const t = n ? voiceOf(n)[0] : null; return t ? FAMILY[t] || null : null; };
 
+// how a picking task went (the spices: right picks out of five), in the words the pools gate on
+export const pickedOf = n => (n == null ? null : n >= 5 ? 'right' : n >= 3 ? 'mostly' : 'wrong');
+
 export function factsFor(scene, roles, state) {
   const d = scene.data || {};
   const s = d.snap || {};
@@ -102,7 +105,7 @@ export function factsFor(scene, roles, state) {
     aElder: (() => { const e = elderOf(state.teams[d.team]); const a = roles?.roles?.a; return e && a ? e === a : null; })(),
     fails: !s.fails ? 0 : s.fails === 1 ? 1 : 'many',
     switched: !!(d.switched), quit: !!(d.quit), place: s.place ?? null, taskId: d.stretch ?? null,
-    picked: s.picked == null ? null : s.picked >= 5 ? 'right' : s.picked >= 3 ? 'mostly' : 'wrong',
+    picked: pickedOf(s.picked),
     cause: cause ? cause.kind : null, causeEnding: cause ? cause.data?.ending ?? null : null,
     threadStep: thread ? thread.split(' ')[0] : null,
     register: registerOf(roles?.roles?.a), registerB: registerOf(roles?.roles?.b),

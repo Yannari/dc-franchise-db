@@ -73,7 +73,7 @@ describe('rr director', () => {
 
   it("a task beat casts the one doing a Botch first, names the side, and keeps the task's snapshot", () => {
     const st = res.state;
-    for (const ep of aired) for (const seg of ep.segments.filter(s => s.beat)) {
+    for (const ep of aired) for (const seg of ep.segments.filter(s => String(s.beat || '').startsWith('task:'))) {
       const row = st.taskLog.find(r => `task:${r.leg}:${r.team}:${r.stretch}` === seg.beat.split(':').slice(0, 4).join(':'));
       expect(row, seg.beat).toBeTruthy();
       if (row.kind === 'botch' && row.who) expect(seg.who[0]).toBe(row.who);

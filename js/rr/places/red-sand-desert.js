@@ -12,7 +12,7 @@ export default {
       desc: "At the spice corner, a merchant's kiosk is stacked with dozens of open spice baskets, and the tip says to pick five, ideally cumin, cinnamon, paprika, saffron and ginger. Both partners choose together and buy their five; nobody checks them, so a team that knows its spices can be in and out in minutes while a team that doesn't is left sniffing jars and guessing. The trap comes later: the five go into the stew at the next stop, and every wrong spice makes that bowl harder to finish. The team leaves with its five little bags and the next tip." },
     { id: 'camel', kind: 'travel', mode: 'camel', base: 40, cost: 10, capacity: 4, plate: 'open dunes', label: 'Camel to the desert restaurant',
       // the real leg: a camel collapsed under Father & Son; the Vegans wouldn't ride and walked beside theirs
-      mishaps: [['camel-down', 30], ['camel-stops', 20]], mishapRate: 0.12,
+      ride: true, mishaps: [['camel-down', 30], ['camel-stops', 20]], mishapRate: 0.12,
       refuse: { identities: ['vegans'], kind: 'walks-beside', slow: 1.4 } },
     { id: 'stew', kind: 'botch', types: ['stomach'], base: 12, pass: 0.6, loopCost: 6, chain: { from: 'spices', by: 'picks' }, teaser: "Who's got a cast-iron stomach?", plate: 'stew pot', label: 'Just stew it',
       desc: "At a restaurant in the middle of the desert, the team hands its five spices to the chef, who cooks them into a bowl of the local stew. One partner has to eat every last drop while the other can only watch and is not allowed to help. Every wrong spice makes the bowl hotter and harder to keep down, and anything that comes back up means a fresh bowl from the start. The chef hands over the tip once the bowl is empty, and the team runs on foot for the Chill Zone." },

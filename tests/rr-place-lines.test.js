@@ -6,8 +6,14 @@ import { POOLS } from '../js/rr/script/lines/index.js';
 
 const TASKS = ['allin', 'botch', 'either', 'superteam'];
 // how many of a place's own entries each moment needs, at each of its challenges
-const PER_TASK = { 'don-demo': 2, 'task-start': 2, 'task-try.first-try': 1, 'task-try.after-fails': 1, 'task-try.struggling': 1,
-  'task-done': 1, 'attempt-fail': 2 };
+// (four openings: with twelve teams at a challenge, two run out and the rest fall back on general lines)
+const PER_TASK = { 'don-demo': 2, 'task-start': 4, 'task-try.first-try': 4, 'task-try.after-fails': 4, 'task-try.struggling': 3,
+  'task-done': 3, 'attempt-fail': 3 };
+// a picking task (the spices) can't fail: a line for each way the picking went instead
+const PER_PICK = { 'don-demo': 2, 'task-start': 4, 'task-done': 3 };
+// the Botch or Watch: who does it, the partner watching (each way it can go), the partner who helps when they mustn't
+const PER_BOTCH = { 'whose-botch': 4, 'watching-botch.cheer': 1, 'watching-botch.nerves': 1, 'watching-botch.coach-illegal': 1,
+  'watching-botch.quiet': 1, 'helped-botch': 1 };
 const PER_PLACE = { 'don-opener': 2, 'arrival-awe': 2 };
 
 const entriesFor = (prefix, test) => Object.entries(POOLS)
@@ -31,10 +37,21 @@ describe('rr place lines', () => {
     });
     it(`${p.name}: every challenge has its own lines`, () => {
       for (const s of p.stretches.filter(s => TASKS.includes(s.kind))) {
-        for (const [k, n] of Object.entries(PER_TASK)) expect(entriesFor(k, w => w.taskId === s.id).length, `${s.id} ${k}`).toBeGreaterThanOrEqual(n);
-        if (s.kind === 'botch') expect(entriesFor('whose-botch', w => w.taskId === s.id).length, `${s.id} whose-botch`).toBeGreaterThanOrEqual(2);
+        for (const [k, n] of Object.entries(s.pick ? PER_PICK : PER_TASK)) expect(entriesFor(k, w => w.taskId === s.id).length, `${s.id} ${k}`).toBeGreaterThanOrEqual(n);
+        // twelve teams pick: each way it can go needs enough lines not to repeat inside one episode
+        if (s.pick) for (const how of ['right', 'mostly', 'wrong'])
+          expect(entriesFor('task-try.first-try', w => w.taskId === s.id && [].concat(w.picked).includes(how)).length, `${s.id} picked ${how}`).toBeGreaterThanOrEqual(4);
+        if (s.kind === 'botch') for (const [k, n] of Object.entries(PER_BOTCH))
+          expect(entriesFor(k, w => w.taskId === s.id).length, `${s.id} ${k}`).toBeGreaterThanOrEqual(n);
         if (s.kind === 'either') expect(entriesFor('decide-side', w => w.taskId === s.id).length, `${s.id} decide-side`).toBeGreaterThanOrEqual(2);
       }
+      // a ride that is the leg's signature (the camel) is seen: four rides of its own
+      for (const s of p.stretches.filter(s => s.ride))
+        expect(entriesFor('ride', w => w.taskId === s.id).length, `${s.id} ride`).toBeGreaterThanOrEqual(4);
+      // a stretch with its own mishaps (a camel goes down) or a refusal (the Vegans walk) has words for each
+      for (const s of p.stretches.filter(s => s.mishaps || s.refuse))
+        for (const kind of [...(s.mishaps || []).map(m => m[0]), ...(s.refuse ? [s.refuse.kind] : [])])
+          expect(entriesFor('travel-mishap', w => w.taskId === s.id && w.mishap === kind).length, `${s.id} ${kind}`).toBeGreaterThanOrEqual(1);
     });
   }
 });

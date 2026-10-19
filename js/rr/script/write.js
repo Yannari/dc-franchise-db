@@ -39,6 +39,8 @@ export const DIRECTOR_KINDS = {
   // a big cast (director.js BIG_CAST): Don checks in a team with no story this leg in a line, and the clean
   // runs of teams like it at a task are shown together ({teams} names them)
   'mat-montage': ['any'], 'task-montage': ['any'],
+  // a ride that is the leg's signature (a place's stretch with ride: true, the camel): the first teams on it, riding
+  'ride': ['any'],
 };
 
 const AGE = new Set(['kid', 'teen', 'adult', 'grown']);

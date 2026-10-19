@@ -18,8 +18,10 @@
 // after they rowed; an interview only about a moment that aired; a chained moment brings its cause.
 // The episode runs in clock order: teams at the same minute cut between each other, and the end of
 // a close leg plays as a race.
-import { SCENES, CLASH_KINDS } from '../scenes.js';
+import { SCENES, CLASH_KINDS, relFamOf } from '../scenes.js';
+import { getPlace } from '../places.js';
 import { writeScene, TASK_LINES } from '../script/write.js';
+import { pickedOf } from '../script/facts.js';
 
 export const MUST = new Set(['don-opener', 'don-demo', 'don-place', 'don-crown', 'don-elim', 'don-arrives', 'don-fakeout', 'don-rule', 'don-ruling',
   'boomerang-found', 'boomerang-decide', 'boomerang-hit', 'boomerang-vote', 'yield', 'zip-it', 'save-used', 'medevac-choice',
@@ -84,7 +86,9 @@ function taskBeat(state, row, i, kind = 'task-try') {
   return { id: `task:${row.leg}:${row.team}:${row.stretch}:${i}`, leg: row.leg, kind, who: [a, b], seenBy: [a, b],
     data: { ending: kind === 'task-try' ? taskEnding(row) : 'any', team: row.team, stretch: row.stretch, t: row.from,
       switched: row.switched, quit: row.quit, side: row.side,
-      snap: row.snap ? { ...row.snap, fails: row.fails, side: row.side ?? row.snap.side, botcher: row.who ?? row.snap.botcher } : null } };
+      // a picking task's result is only known after the pick: the beat carries it (the row's snap is from the arrival)
+      snap: row.snap ? { ...row.snap, fails: row.fails, side: row.side ?? row.snap.side, botcher: row.who ?? row.snap.botcher,
+        picked: row.right ?? row.snap.picked } : null } };
 }
 
 // The storylines the season follows: the open threads with the most aired steps, then the oldest.
@@ -143,6 +147,7 @@ export function airLeg(state, leg) {
   const beats = [];
   const rows = (state.taskLog || []).filter(r => r.leg === n);
   const firstOf = {}, lastOf = {};
+  const pickStarts = {};
   rows.forEach((r, i) => { firstOf[r.team] ??= i; lastOf[r.team] = i; });
   rows.forEach((r, i) => {
     const here = scenes.filter(s => s.data?.team === r.team && s.data?.stretch === r.stretch && !s.kind.startsWith('int-'));
@@ -157,9 +162,29 @@ export function airLeg(state, leg) {
     if (best && !(TASK_LINES.has(r.stretch) && plain(best))) { take(best, 1); return; }
     // a clean run says nothing about itself: the first one airs as getting there, the last as getting out
     const clean = !r.fails && !r.switched && !r.quit;
-    const kind = clean && firstOf[r.team] === i ? 'task-start' : clean && lastOf[r.team] === i ? 'task-done' : 'task-try';
+    // a picking task's moment is the picking and how it went (the spices: all five, most, a guess)
+    const kind = r.right != null ? 'task-try' : clean && firstOf[r.team] === i ? 'task-start' : clean && lastOf[r.team] === i ? 'task-done' : 'task-try';
+    // ...and the first three teams there are seen arriving at it first: the challenge is set up once, then results
+    if (r.right != null && (pickStarts[r.stretch] = (pickStarts[r.stretch] || 0) + 1) <= 3) {
+      const arrive = taskBeat(state, r, i, 'task-start');
+      arrive.id += ':arrive';
+      beats.push(arrive);
+    }
     beats.push(taskBeat(state, r, i, kind));
   });
+  // a ride that is the leg's signature (the camel): the first three teams on it are seen riding, unless it went
+  // wrong for them (their mishap already shows them on it)
+  for (const s of (getPlace(leg.place)?.stretches || []).filter(s => s.ride)) {
+    const hit = new Set(scenes.filter(x => x.kind === 'travel-mishap' && x.data?.stretch === s.id).map(x => x.data.team));
+    const on = (leg.log || []).filter(l => l.stretch === s.id && !hit.has(l.id)).sort((x, y) => x.from - y.from || (x.id < y.id ? -1 : 1)).slice(0, 3);
+    for (const l of on) {
+      const tm = state.teams[l.id];
+      if (!tm) continue;
+      beats.push({ id: `ride:${n}:${l.id}:${s.id}`, leg: n, kind: 'ride', who: [tm.a, tm.b], seenBy: [tm.a, tm.b],
+        data: { ending: 'any', team: l.id, stretch: s.id, t: l.from,
+          snap: { leg: n, place: leg.place, rel: tm.rel, relFam: relFamOf(tm.rel), identity: tm.identity ?? null, mode: s.mode } } });
+    }
+  }
   // ...and the followed storylines' steps
   for (const s of inOrder(scenes.filter(s => tierOf(s) === 1 && !picked.has(s.id)))) if (ok(s)) take(s, 1);
 
@@ -265,7 +290,7 @@ export function airLeg(state, leg) {
       who: [...s.who], side: s.data?.snap?.side ?? null, tier, src: s });
   }
   for (const b of beats) segs.push({ scene: null, beat: b.id, kind: b.kind, ending: b.data.ending, stretch: b.data.stretch, t: b.data.t,
-    teams: [b.data.team], who: [...b.who], side: b.data.side ?? null, tier: 1, src: b });
+    teams: [b.data.team], who: [...b.who], side: b.data.side ?? null, picked: pickedOf(b.data.snap?.picked), tier: 1, src: b });
   segs.sort((x, y) => x.t - y.t || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
 
   // write what aired (only now are its words spent), and remember the storylines that moved

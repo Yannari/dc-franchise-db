@@ -19,6 +19,7 @@
 // and take their kinds from this map.
 import { TITLES } from '../ci/transcript.js';
 import { GAMES } from '../ci/games-data.js';
+import { seasonFace } from '../ci/photos.js';
 
 const APT = new Set(['group-chat', 'welcome', 'chat', 'date', 'plead', 'joker-chat', 'life', 'home-video', 'report', 'recognise', 'lurk', 'hack-undone', 'after-party', 'pair-arrival', 'farewell']);
 const ALERT = new Set(['alert', 'power-reveal', 'disrupter', 'hack', 'no-block', 'mission']);
@@ -41,8 +42,9 @@ function subjectOf(s, b) {
 export function faceOf(row, h, as = 'profile') {
   const p = row?.ci?.profiles?.[h];
   if (!p) return null;
-  if (as === 'cam') return p.people?.[0] ? `portrait:${p.people[0]}` : null;
-  return p.face ?? null;
+  // The author's own photos over the portrait (ci/photos.js seasonFace).
+  if (as === 'cam') return p.people?.[0] ? seasonFace(`portrait:${p.people[0]}`, 'cam') : null;
+  return seasonFace(p.face ?? null, 'profile');
 }
 
 export function circleScreens(row) {

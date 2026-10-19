@@ -34,6 +34,16 @@ function current() {
 }
 const whoRef = w => (w.persona ? { persona: w.persona } : { player: w.player, age: w.age });
 const slotsOf = w => slotsFor(whoRef(w), ctx.dealt());
+/** The slot on screen for this person, and the ONLY place that decides it.
+ *  The upload and the delete used to read the last slot clicked on whoever
+ *  came before: "Earned photo" lit up while the file replaced the profile
+ *  photo, and a catfish player (who has only "Real me") had theirs written
+ *  into a slot that is never shown. */
+function kindFor(w) {
+  const kinds = w ? slotsOf(w) : [];
+  const k = W()._ciPhotoKind;
+  return kinds.includes(k) ? k : kinds.includes('earned') ? 'earned' : kinds[0] || null;
+}
 /** A face id as something an <img> can show. */
 function url(face) {
   if (!face) return '';
@@ -75,8 +85,7 @@ export function photosPanelHTML() {
   const nP = ctx.poolNow().length, nC = ctx.cast().length;
   const tray = W()._ciTray || [];
   const kinds = who ? slotsOf(who) : [];
-  let kind = W()._ciPhotoKind;
-  if (!kinds.includes(kind)) kind = kinds.includes('earned') ? 'earned' : kinds[0];
+  const kind = kindFor(who);
   const cur = who && kind ? photoFor(whoRef(who), kind, cfg) : null;
   const main = who ? photoFor(whoRef(who), who.persona ? 'profile' : (kinds.includes('profile') ? 'profile' : 'real'), cfg) : null;
   const mine = who ? kinds.filter(k => photoFor(whoRef(who), k, cfg).own).length : 0;
@@ -151,6 +160,10 @@ export function afterPhotosRender(root) {
 /** Put a kept image in a slot: a persona's in the pool, a player's in ciPhotos. */
 export function ciSetSlotPhoto(who, kind, photoId) {
   const face = photoId ? `photo:${photoId}` : null;
+  // A Catfish face is a real character: their photos are kept under their
+  // name, like a player's (ci/photos.js photoFor). They are not in the pool,
+  // so looking them up there dropped every upload without a word.
+  if (String(who.persona || '').startsWith('face:')) who = { player: who.persona.slice(5) };
   if (who.persona) {
     const p = ctx.ownPool().find(x => x.id === who.persona);
     if (!p) return;
@@ -227,7 +240,7 @@ export function onPhotosClick(b) {
       ciSetSlotPhoto(refOf(who), v, t.id);
       return true;
     }
-  } else if (act === 'ph-del' && who) { ciSetSlotPhoto(refOf(who), W()._ciPhotoKind || 'earned', null); return true; }
+  } else if (act === 'ph-del' && who) { ciSetSlotPhoto(refOf(who), kindFor(who), null); return true; }
   else if (act === 'ph-copy' && who) {
     const txt = document.querySelector('.ci-ph-txt')?.dataset.full;
     try { navigator.clipboard?.writeText(txt); } catch { /* no clipboard */ }
@@ -244,7 +257,7 @@ const readFile = file => shrinkImage(file, 512, true).then(dataUrl => ({ name: f
 export function onPhotosChange(el) {
   if (el.dataset.phbatch != null) { Promise.all([...el.files].map(readFile)).then(ciDropFiles); return true; }
   if (el.dataset.phslot != null) {
-    const { who } = current(); const kind = W()._ciPhotoKind || (who ? slotsOf(who)[0] : null);
+    const { who } = current(); const kind = kindFor(who);
     const file = el.files?.[0];
     if (file && who) readFile(file).then(f => putPhoto(f.dataUrl)).then(id => ciSetSlotPhoto(refOf(who), kind, id));
     return true;

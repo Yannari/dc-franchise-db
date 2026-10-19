@@ -79,10 +79,16 @@ function setCategory(name, role) {
   try { window.saveCast?.(); } catch { /* the page may not have it */ }
 }
 const roleSetOf = name => setupOf(name).role || (['starter', 'newcomer'].includes(categoryKind(faceOf(name)?.tribe)) ? categoryKind(faceOf(name).tribe) : '');
-/** The author's own pool, copied from the default the first time it changes. */
+/** The author's own pool, copied from what was on screen the first time it
+ *  changes: the default pool, or nothing when the Catfish faces were the whole
+ *  pool. Copying the default regardless meant the first "+ New persona" in a
+ *  season of real-character faces also added eight stock strangers. */
 function ownPool() {
   const c = cfg();
-  if (!Array.isArray(c.ciPool)) c.ciPool = DEFAULT_POOL.map(p => JSON.parse(JSON.stringify(p)));
+  if (!Array.isArray(c.ciPool)) {
+    const faces = facePersonas(cast().map(p => p.name), c.ciSetup || {});
+    c.ciPool = faces.length ? [] : DEFAULT_POOL.map(p => JSON.parse(JSON.stringify(p)));
+  }
   return c.ciPool;
 }
 const save = () => { try { window.saveConfig?.(); } catch { /* the page may not have it */ } };

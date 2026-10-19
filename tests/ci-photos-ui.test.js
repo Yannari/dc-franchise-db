@@ -7,6 +7,7 @@ import { renderCircleCastSetup } from '../js/ci-cast-ui.js';
 import { ciDropFiles, ciExportPack, ciImportPack } from '../js/ci-photos-ui.js';
 import { _memoryPhotos, photoURL } from '../js/ci/photo-store.js';
 import { makePlayers } from './helpers/ci-cast.js';
+import { setPlayers } from '../js/core.js';
 
 const root = () => document.getElementById('sec-ci-cast');
 const $ = s => root().querySelector(s);
@@ -134,5 +135,44 @@ describe('the cloud, like the character gallery', () => {
     expect($('.ci-ph-cloud').textContent).toMatch(/cloud/i);
     vi.unstubAllGlobals();
     localStorage.removeItem('studio_api_token');
+  });
+});
+
+const withFace = () => { const list = [...makePlayers(3), { name: 'Ella', gender: 'f', stats: {}, tribe: 'Catfish faces' }]; window.players = list; setPlayers(list); };
+// 2026-10-19, the user: "Circle, send it doesn't work, only for catfish".
+describe('a photo goes where the screen says, for everyone', () => {
+  beforeEach(() => click('[data-act="sub"][data-v="photos"]'));
+
+  it('a catfish player has only Real me: a slot picked on somebody else does not follow them', () => {
+    click('[data-act="ph-slot"][data-v="naughty"]');            // a persona's slot
+    window.gs = { ci: { dealt: { P01: { mode: 'catfish', shown: { name: 'Kayla' } } } } };
+    click('[data-act="ph-tab"][data-v="players"]');
+    window.ciSetSlotPhoto({ player: 'P01' }, 'real', 'r1');
+    renderCircleCastSetup();
+    expect($('.ci-ph-slot.sel').textContent).toMatch(/Real me/);
+    // Delete acts on the slot on screen, not on "naughty".
+    click('[data-act="ph-del"]');
+    expect(window.seasonConfig.ciPhotos.P01.real).toBeUndefined();
+  });
+
+  it('a Catfish face (a real character) keeps their photos under their name', () => {
+    withFace();
+    renderCircleCastSetup();
+    expect($('.ci-ph-card .ci-ph-nm').textContent).toBe('Ella');
+    window.ciSetSlotPhoto({ persona: 'face:Ella' }, 'profile', 'e1');
+    expect(window.seasonConfig.ciPhotos.Ella.profile).toBe('photo:e1');
+    expect($('.ci-ph-cst').textContent).toMatch(/^1 of/);
+    // and writing it did not turn the faces-only pool into the default one
+    expect(window.seasonConfig.ciPool).toBeUndefined();
+    setPlayers([]);
+  });
+
+  it('+ New persona in a faces-only pool adds one persona, not the eight stock ones too', () => {
+    withFace();
+    window._ciSub = 'pool';
+    renderCircleCastSetup();
+    click('[data-act="new"]');
+    expect(window.seasonConfig.ciPool.map(p => p.handle)).toEqual(['New persona']);
+    setPlayers([]);
   });
 });

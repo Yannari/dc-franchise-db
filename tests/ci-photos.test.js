@@ -3,7 +3,7 @@
 // wins a game or who is blocked; every empty slot falls back, so a season
 // never waits on art.
 import { describe, expect, it } from 'vitest';
-import { KINDS, slotsFor, photoFor, promptForSlot, parseDrop, packPhotos, unpackPhotos } from '../js/ci/photos.js';
+import { KINDS, slotsFor, photoFor, promptForSlot, parseDrop, packPhotos, unpackPhotos, seasonFace } from '../js/ci/photos.js';
 import { DEFAULT_POOL } from '../js/ci/default-pool.js';
 
 const sienna = { ...DEFAULT_POOL.find(p => p.id === 'ci-sienna'), face: 'photo:a1', photos: { naughty: 'photo:n1' } };
@@ -95,5 +95,21 @@ describe('a season pack', () => {
   });
   it('refuses a file that is not a pack, in words', async () => {
     await expect(unpackPhotos({ hello: 1 })).rejects.toThrow(/not a Circle photo pack/);
+  });
+});
+
+describe('what a screen draws', () => {
+  const cfg = { ciPhotos: { Mike: { profile: 'photo:m1' }, Zoey: { real: 'photo:z1' } } };
+  it("the author's photo over the portrait: profile for the room, Real me for the camera", () => {
+    expect(seasonFace('portrait:Mike', 'profile', cfg)).toBe('photo:m1');
+    expect(seasonFace('portrait:Zoey', 'cam', cfg)).toBe('photo:z1');
+  });
+  it("the portrait when there is none, and a persona's own photo untouched", () => {
+    expect(seasonFace('portrait:Zoey', 'profile', cfg)).toBe('portrait:Zoey');
+    expect(seasonFace('photo:p9', 'profile', cfg)).toBe('photo:p9');
+    expect(seasonFace(null, 'profile', cfg)).toBe(null);
+  });
+  it("a Catfish face reads the real character's photos", () => {
+    expect(photoFor({ persona: { id: 'face:Mike', fromRoster: 'Mike', face: 'portrait:Mike' } }, 'profile', cfg)).toEqual({ face: 'photo:m1', own: true });
   });
 });

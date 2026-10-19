@@ -47,6 +47,10 @@ export function slotsFor(who, dealt = null) {
 /** What a screen shows for a slot: `{ face, own }` — own is false when it
  *  fell back. face null: nothing to show (the screens draw the initial). */
 export function photoFor(who, kind, cfg = {}) {
+  // A Catfish face is a real character (ci-run.js facePersonas): their photos
+  // are a player's, kept under their name, so the same face is theirs in every
+  // season and every show.
+  if (who.persona?.fromRoster) return photoFor({ player: who.persona.fromRoster }, kind, cfg);
   if (who.persona) {
     const p = who.persona;
     const own = kind === 'profile' ? p.face : p.photos?.[kind];
@@ -59,6 +63,24 @@ export function photoFor(who, kind, cfg = {}) {
   if (kind === 'earned') return { face: mine.profile || portrait, own: false };
   if (kind === 'profile' || kind === 'real') return { face: portrait, own: false };
   return { face: null, own: false };
+}
+
+/**
+ * The face a SCREEN draws, with the author's photos laid over the portrait.
+ *
+ * The season records `portrait:<name>` for anyone showing a real person's
+ * face (a player as themselves, the face of a shared profile, a Catfish face),
+ * and the Photos tab keeps that person's uploads in `ciPhotos[name]`. Until
+ * this, nothing read them: a player's photo was saved and never drawn, so only
+ * a persona's profile photo (on `persona.face`) ever reached a screen. Read at
+ * draw time, so a photo added after a season was played shows on it without
+ * re-running an episode. `as`: 'profile' (what the room sees) or 'cam' (who
+ * is really in the apartment: the "Real me" slot).
+ */
+export function seasonFace(face, as = 'profile', cfg = (typeof window !== 'undefined' && window.seasonConfig) || {}) {
+  if (!String(face || '').startsWith('portrait:')) return face ?? null;
+  const mine = cfg.ciPhotos?.[face.slice(9)] || {};
+  return (as === 'cam' ? mine.real : mine.profile) || face;
 }
 
 // ── Prompts ────────────────────────────────────────────────────────────

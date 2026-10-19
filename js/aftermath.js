@@ -44,6 +44,9 @@ export function generateAftermathShow(ep) {
     if (h.firstEliminated) _allElimFromHistory.push(h.firstEliminated);
     if (h.tiedDestinies?.eliminatedPartner) _allElimFromHistory.push(h.tiedDestinies.eliminatedPartner);
     if (h.ambassadorData?.ambassadorEliminated) _allElimFromHistory.push(h.ambassadorData.ambassadorEliminated);
+    // a coach voted out is on coachElimination, never on eliminated — without this no coach
+    // was ever interviewed, sat in the gallery, or came to the reunion
+    (h.coachElimination || []).forEach(c => { if (c?.coach) _allElimFromHistory.push(c.coach); });
   });
   const allEliminated = [...new Set([...(_allElimFromHistory), ...(gs.eliminated || [])])];
   const prevInterviewed = gs.aftermathHistory?.flatMap(a => a.interviewees) || [];
@@ -84,7 +87,7 @@ export function generateAftermathShow(ep) {
     const pop = gs.popularity?.[name] || 0;
 
     // Find their elimination episode data
-    const elimEp = gs.episodeHistory.find(h => h.eliminated === name || h.firstEliminated === name || h.tiedDestinies?.eliminatedPartner === name);
+    const elimEp = gs.episodeHistory.find(h => h.eliminated === name || h.firstEliminated === name || h.tiedDestinies?.eliminatedPartner === name || (h.coachElimination || []).some(c => c?.coach === name));
     const elimEpNum = elimEp?.num || '?';
     const voters = (elimEp?.votingLog || []).filter(v => v.voted === name).map(v => v.voter);
 

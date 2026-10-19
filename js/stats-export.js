@@ -351,6 +351,9 @@ function _extractPlayerPlacements() {
       ep.emissaryEliminated, ep.hpTiebreakerEliminated, _juryBoot,
       ...(ep.multiTribalElims || []), // double/multi-tribal boots (ep.eliminated only holds the last)
       ep.firemakingResult?.loser,  // fire-making duel loser (else falls to 'Unknown' — the Jacques bug)
+      // a coach voted out never lands on ep.eliminated (coach-episode.js nulls it), so every
+      // coach boot was filed 'Unknown' under the whole cast
+      ...((ep.coachElimination || []).map(c => c?.coach)),
       /* ── AND `exits`, WHICH IS THE ONLY ONE THE NEWER SHOWS WRITE ──
          Every name above it is a Total Drama field. A drag night records who
          left on `row.exits` — {name, verb} — and so does the castle, because
@@ -2664,6 +2667,80 @@ export function mergeDragSeasonsDatabase(existing, seasonDoc) {
 // Extracts stats → calls AI for narratives → merges databases with
 // filled data → downloads everything at the end.
 
+/* ── THE PROMPT HAS A CEILING ──
+   The worker writes every episode's text into ONE instructions string, and the
+   API refuses one over 1,048,576 characters. A 25-player Total Drama season with
+   Redemption Island came to 2,119,299 (2026-10-19) and the whole export died on
+   a 400. What is left of the million after the episodes is the brief itself and
+   the placement table, hence the margin. */
+const NARRATIVE_TEXT_BUDGET = 900000;
+// What the season analysis can do without, cheapest first: lists repeated every
+// episode, the recap of the LAST episode, ratings, and the scripted "as it airs"
+// retellings of a vote that THE VOTES and WHY THIS VOTE HAPPENED already carry.
+const _NARRATIVE_DROP_STAGES = [
+  /^(COLD OPEN|ROSTER AT EPISODE START|ELIMINATED \(PERMANENT\)|TRIBES \(ACTIVE\)|AUDIENCE PULSE|OVERNIGHT RATINGS|WRITER CONTEXT|CAMP ACCESS|CAMP HIERARCHY|SEASON THREADS|.* — AS IT AIRS)/,
+  /^(WHERE THEIR HEADS ARE AT|WHO KNEW WHAT|WHAT SHIFTED THIS EPISODE|JURY PERCEPTION|THE ROOM — AND WHAT LINGERS)/,
+];
+const _OFF_CAMERA_LINE = /^\s*(Off camera:|· )/;
+
+/**
+ * Episodes trimmed until their text fits `budget` characters. A season that
+ * already fits goes out exactly as it was. Otherwise, a stage at a time and only
+ * as far as needed: the low-value sections and the off-camera bullets, then the
+ * read-of-the-room sections, then every long line cut to its first 400
+ * characters, and last every section shortened by the same share — so no
+ * episode loses its vote to a cut that fell on its tail.
+ */
+export function _fitEpisodesToBudget(episodes, budget, onStatus) {
+  const size = eps => eps.reduce((n, e) => n + String(e.summary || '').length + 40, 0);
+  const before = size(episodes);
+  if (before <= budget) return episodes;
+  const split = text => {
+    const secs = [{ head: '', lines: [] }];
+    for (const line of String(text || '').split('\n')) {
+      const m = line.match(/^=== (.+?) ===/);
+      if (m) secs.push({ head: line, name: m[1], lines: [] });
+      else secs[secs.length - 1].lines.push(line);
+    }
+    return secs;
+  };
+  const join = secs => secs.map(s => [s.head, ...s.lines].filter((l, i) => i || l).join('\n')).join('\n');
+  let parsed = episodes.map(e => ({ ...e, secs: split(e.summary) }));
+  const render = () => parsed.map(({ secs, ...e }) => ({ ...e, summary: join(secs) }));
+  const steps = [
+    ...(_NARRATIVE_DROP_STAGES.map((re, i) => () => parsed.forEach(e => {
+      // the cast list stays on episode 1: it is where the worker reads the season's cast from
+      e.secs = e.secs.filter(s => !s.name || !re.test(s.name));
+      if (i === 0) e.secs.forEach(s => { s.lines = s.lines.filter(l => !_OFF_CAMERA_LINE.test(l)); });
+      if (i === 0 && e.episode !== 1) e.secs = e.secs.filter(s => s.name !== 'CAST (ALL)');
+    }))),
+    () => parsed.forEach(e => e.secs.forEach(s => {
+      s.lines = s.lines.map(l => (l.length > 400 ? `${l.slice(0, 400).replace(/\s+\S*$/, '')}…` : l));
+    })),
+  ];
+  let out = episodes;
+  for (const step of steps) {
+    step();
+    out = render();
+    if (size(out) <= budget) break;
+  }
+  // (the cut markers cost length of their own, so it can take a second pass)
+  for (let pass = 0; pass < 6 && size(out) > budget; pass++) {
+    const share = budget / size(out) * 0.95;
+    parsed.forEach(e => e.secs.forEach(s => {
+      const body = s.lines.join('\n').replace(/ …\[cut for length\]$/, '');
+      // a short section (the episode's title, who left) is never worth cutting
+      const keep = Math.max(Math.min(body.length, 600), Math.floor(body.length * share));
+      if (keep < body.length) s.lines = [`${body.slice(0, keep).replace(/\s+\S*$/, '')} …[cut for length]`];
+    }));
+    out = render();
+  }
+  const msg = `Episode text trimmed for the AI writer: ${before.toLocaleString()} → ${size(out).toLocaleString()} characters.`;
+  console.warn(`[narrative-fill] ${msg}`);
+  onStatus?.(msg);
+  return out;
+}
+
 /**
  * Ask the AI worker to fill a season template's narrative fields.
  *
@@ -2720,7 +2797,7 @@ async function _fillNarratives(template, episodes, workerUrl, onStatus,
     body: JSON.stringify({
       mode: 'narrative-fill',
       template,
-      episodes,
+      episodes: _fitEpisodesToBudget(episodes, NARRATIVE_TEXT_BUDGET - String(gameRecord || '').length, onStatus),
       gameRecord,
       season: template.seasonNumber,
       seasonTitle: template.title,

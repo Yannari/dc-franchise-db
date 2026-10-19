@@ -68,6 +68,7 @@ export const SLOW_TESTS = [
   'tr-calibration.test.js',
   'bb-whacktivity-events.test.js',
   'coach-season.test.js',
+  'coach-placements-export.test.js',       // plays a 25-player season
   'bb-invisible-hoh.test.js',
   'bb-plans.test.js',
   'bb-power-shelf.test.js',               // 1014s (CI 2026-08-31)

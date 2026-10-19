@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 import { tdPreviouslyScreen } from '../js/vp-td-ep/twist-screens.js';
-import { tdFinalImmunityScreen, tdFinaleWalkScreen, tdWinnerScreen, tdFinalTribalScreen } from '../js/vp-td-ep/finale.js';
+import { tdFinalImmunityScreen, tdFinaleWalkScreen, tdWinnerScreen, tdFinalTribalScreen, tdReunionScreen } from '../js/vp-td-ep/finale.js';
 
 describe('the finale recap', () => {
   it('recaps the season, then each finalist in turn, and plays as the road to the finale', () => {
@@ -26,7 +26,7 @@ describe('the finale recap', () => {
       const scr = tdPreviouslyScreen(fin, { host: 'Chris', history: core.gs.episodeHistory });
       expect(scr.label).toBe('The Road to the Finale');
       // ...and the text backlog carries the finale's new screens, as they air
-      for (const sec of ['THE ROAD TO THE FINALE', 'THE WALK', 'FINAL IMMUNITY — AS IT AIRS']) expect(fin.summaryText).toContain(sec);
+      for (const sec of ['THE ROAD TO THE FINALE', 'THE WALK', 'FINAL IMMUNITY — AS IT AIRS', 'THE WINNER — AS IT AIRS', 'THE REUNION — AS IT AIRS']) expect(fin.summaryText).toContain(sec);
       expect(scr.steps.some(s => s.k === 'title' && s.name === 'The Road to the Finale')).toBe(true);
     });
   }, 180000);
@@ -77,6 +77,23 @@ describe('the finale recap', () => {
     expect(scr.steps.some(s => s.k === 'say' && s.by === 'Coach Zed')).toBe(true);
     expect(scr.steps.filter(s => s.k === 'read').length).toBe(3);
   });
+
+  // the reunion without an Aftermath show: the cast in the studio, the winner in the hot seat, the awards
+  it('plays a reunion in the studio when the season has no Aftermath', () => {
+    seededRun(() => {
+      runOneSeason({}, 16);
+      const fin = core.gs.episodeHistory.find(h => h.isFinale);
+      const scr = tdReunionScreen(fin, { host: 'Chris', history: core.gs.episodeHistory });
+      expect(scr?.id).toBe('reunion');
+      const text = scr.steps.map(s => s.text || s.name || '').join('\n');
+      expect(text).toContain(`${fin.winner}, come on down!`);
+      expect(text).toContain('The Awards');
+      for (const f of (fin.finaleFinalists || []).filter(f => f !== fin.winner)) expect(scr.steps.some(s => s.k === 'say' && s.by === f)).toBe(true);
+      // everyone who played is in the studio
+      const seen = new Set(scr.steps.filter(s => s.k === 'scene').flatMap(s => Object.keys(s.places || {})));
+      expect(seen.size).toBeGreaterThanOrEqual(15);
+    });
+  }, 180000);
 
   // the walk past everyone the season sent home: a card for each, in the order they went, and a finalist's words
   it('walks past every boot in order, each with a finalist speaking, and no line twice', () => {

@@ -17,7 +17,7 @@ import { generateCampEvents } from './camp-events.js';
 import { reputationModifier } from './reputation.js';
 import { finalizeEditSeason } from './edit-layer.js';
 import { writeFinaleRecap } from './td/story/finale-recap.js';
-import { tdFinaleWalkScreen, tdFinalImmunityScreen } from './vp-td-ep/finale.js';
+import { tdFinaleWalkScreen, tdFinalImmunityScreen, tdWinnerScreen, tdReunionScreen } from './vp-td-ep/finale.js';
 import { tdStepTranscript } from './vp-td-ep/steps.js';
 import { coachStory } from './coaches.js';
 import { makeScene } from './td/script/scene.js';
@@ -2067,7 +2067,10 @@ export function generateFinaleSummaryText(ep) {
   {
     const rec = { ...ep, gsSnapshot: (() => { try { return window.snapshotGameState(); } catch { return null; } })(), immunityNarrationStages: ep.finalChallengeStages || null };
     const o = { host: cfg.host || 'Chris', setting: cfg.setting, history: gs.episodeHistory };
-    for (const [title, build] of [['THE WALK', tdFinaleWalkScreen], ['FINAL IMMUNITY — AS IT AIRS', tdFinalImmunityScreen]]) {
+    const shows = [['THE WALK', tdFinaleWalkScreen], ['FINAL IMMUNITY — AS IT AIRS', tdFinalImmunityScreen], ['THE WINNER — AS IT AIRS', tdWinnerScreen]];
+    // (a season with the Aftermath on gets its reunion from that show; without it, the studio reunion airs)
+    if (cfg.aftermath !== 'enabled') shows.push(['THE REUNION — AS IT AIRS', tdReunionScreen]);
+    for (const [title, build] of shows) {
       const scr = (() => { try { return build(rec, o); } catch { return null; } })();
       if (scr) { sec(title); tdStepTranscript(scr).forEach(l => ln(l)); }
     }

@@ -20,6 +20,7 @@
 import { placeScene, plateKey, venueOf, VENUES, cleanText, seatAll } from './steps.js';
 import { familyOf } from '../td/story/voice-family.js';
 import { TD_MARKS } from './marks.js';
+import { HOST, HOT, HOT2, GALLERY } from './aftermath.js';
 
 const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 const pickBy = (arr, ...k) => arr[hash(k.join('|')) % arr.length];
@@ -959,4 +960,160 @@ export function tdFinaleWalkScreen(ep, o = {}) {
     any: [`Walking past all of them, you realise how long it's been. And how lucky I am to still be here.`, `I made it past every one of those torches. Now I have to make it past the jury.`],
   }, f, 'end', i) }));
   return { id: 'finale-walk', kind: 'camp', venue, ep: ep.num, label: 'The Walk', host, steps };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE REUNION — the whole cast in the studio, when there is no Aftermath show to play it
+// ══════════════════════════════════════════════════════════════════════
+// The classic page was a card with a "Next (0/6)" button over six panels of numbers. A season with the Aftermath
+// on gets its reunion from the engine's show (aftermath.js); one without it gets this: the cast in the studio's
+// gallery, the host on the couch, and the season talked through from its own record. The numbers, the winner and
+// the runners-up in the hot seat, the biggest blindside face to face with the one who ran it, the coaches voted
+// out, the showmance, the awards, and the send-off. Words only: who won what is counted, never decided.
+export function tdReunionScreen(ep, o = {}) {
+  const winner = ep.winner;
+  const plate = plateKey('islands', 'aftermath-studio', 'day');
+  if (!winner || !plate) return null;
+  const host = o.host || 'Chris';
+  const hist = (o.history || globalThis.gs?.episodeHistory || []).filter(h => h.num < ep.num);
+  if (hist.length < 3) return null;
+  const bond = bondOf(ep);
+  const Vo = VOnce();
+  const snap = ep.gsSnapshot || {};
+  const finalists = (ep.finaleFinalists || []).filter(Boolean);
+  const runners = finalists.filter(f => f !== winner);
+  const gone = [...new Set(hist.flatMap(h => [h.firstEliminated, h.eliminated]).filter(Boolean))].filter(n => !finalists.includes(n));
+  const coaches = (ep.finaleCoaches || []).filter(c => c.firedEp).map(c => c.name).filter(n => !gone.includes(n) && !finalists.includes(n));
+  const cast = [...gone, ...coaches, ...finalists];
+  const log = h => (h.votingLog || []).filter(v => v.voter && v.voter !== 'THE GAME' && v.voted);
+  const steps = [];
+  const say = (text, extra = {}) => steps.push({ k: 'say', by: host, host: true, text, ...extra });
+  // the set: the host on the couch, whoever is in the hot seat(s), everybody else in the gallery
+  const set = (guests = [], extra = {}) => {
+    const places = { [host]: HOST };
+    guests.slice(0, 2).forEach((g, i) => { places[g] = i ? HOT2 : HOT; });
+    cast.filter(n => !guests.includes(n)).slice(0, GALLERY.length).forEach((n, i) => { places[n] = GALLERY[i]; });
+    steps.push({ k: 'scene', spot: 'aftermath-studio', tod: 'day', plate, place: 'The Reunion', time: 'Live', card: !steps.some(s => s.k === 'scene'), cut: false, focus: guests, bg: [], places, host, aftermath: true, ...(guests.length ? {} : { wide: true }), ...extra });
+  };
+
+  // ── the opening, and the season in numbers ──
+  set([]);
+  say(pickBy([`Welcome to the reunion! Every single player from this season is here, and we have a lot to talk about.`, `Live, from the studio: the reunion! Everybody's back, and nobody's allowed to leave until we've talked about all of it.`], ep.num, 'r0'));
+  steps.push({ k: 'title', kicker: 'Live', name: 'The Reunion', faces: [winner, ...runners, ...gone].slice(0, 8) });
+  steps.push({ k: 'beat', text: `The whole cast is in the gallery: ${listOf(cast.filter(n => n !== winner))}, and ${winner}, front and centre.`, focus: [], applause: 'big' });
+  const votes = hist.reduce((t, h) => t + log(h).length, 0), idols = hist.reduce((t, h) => t + (h.idolPlays || []).length, 0);
+  const blinds = hist.filter(h => h.tribalStory?.shocking || h.tribalStory?.blindside), ties = hist.filter(h => h.isTie).length;
+  say(`${Cap(word(hist.length + 1))} episodes. ${Cap(word(votes))} votes cast. ${idols ? `${Cap(word(idols))} idol${idols === 1 ? '' : 's'} played. ` : ''}${blinds.length ? `${Cap(word(blinds.length))} blindside${blinds.length === 1 ? '' : 's'}. ` : ''}${ties ? `${Cap(word(ties))} tie${ties === 1 ? '' : 's'}. ` : ''}And one winner.`);
+
+  // ── the winner ──
+  const jr = ep.juryResult?.votes || null;
+  const got = jr ? jr[winner] || 0 : 0, of = jr ? Object.values(jr).reduce((t, x) => t + x, 0) : 0;
+  say(`Let's start with the person holding the cheque. ${winner}, come on down!`, { focus: [winner] });
+  set([winner], { act: { kind: 'arrive', who: [winner], ride: 'walk' } });
+  steps.push({ k: 'beat', text: `The studio is on its feet for ${winner}.`, focus: [winner], applause: 'big' });
+  say(jr ? `${Cap(word(got))} of ${word(of)} jury votes. When did you know you could actually win this?` : `You won the whole thing. When did you know you could actually do it?`, { focus: [winner] });
+  steps.push({ k: 'say', by: winner, focus: [winner], text: Vo(winner, {
+    loud: [`Honestly? Day one! Okay, not day one. But I always thought I could!`], sharp: [`About halfway through, when I realised nobody had worked out what I was doing.`],
+    soft: [`I didn't, until you read my name. I still don't really believe it.`], dry: [`When you read my name. Before that I was mostly hoping.`],
+    any: [`Somewhere around the merge. I looked around and thought, I can beat these people.`],
+  }, 'rw') });
+  // the one in the gallery with something to say about it
+  const sore = cast.filter(n => n !== winner).sort((a, b) => bond(winner, a) - bond(winner, b))[0];
+  if (sore && bond(winner, sore) <= -2) {
+    steps.push({ k: 'say', by: sore, focus: [sore], loud: fam(sore) === 'loud', text: Vo(sore, {
+      loud: [`Robbed! The jury got it wrong and I'll say it on live TV!`], sharp: [`Some of us remember how you got there, ${winner}.`], dry: [`I'm clapping. Inside.`],
+      any: [`I still don't think ${winner} deserved it. Sorry, not sorry.`],
+    }, 'rs') });
+    steps.push({ k: 'say', by: winner, focus: [winner], text: Vo(winner, { sharp: [`And yet, here's the cheque.`], soft: [`That's okay. I'd probably feel the same.`], any: [`Say what you want. I won.`] }, 'rs2') });
+  }
+
+  // ── the runners-up ──
+  for (const f of runners) {
+    const n = jr ? jr[f] || 0 : null;
+    say(n == null ? `${f}, you were right there. What happened?` : n === 0 ? `${f}. Zero jury votes. How does that feel, sitting here tonight?` : `${f}, ${word(n)} vote${n === 1 ? '' : 's'}. So close. Was it the jury, or was it you?`, { focus: [f] });
+    set([f]);
+    steps.push({ k: 'say', by: f, focus: [f], text: n === 0 ? Vo(f, {
+      sharp: [`It feels like the jury didn't watch the same season I played.`], soft: [`It hurt. It still hurts a little. But I'm proud I got there.`], loud: [`Zero! Can you believe that? ZERO!`],
+      any: [`Not great, ${host}. Not great.`, `I made the end. Nobody can take that away. Even if they didn't vote for me.`],
+    }, 'rz', f) : Vo(f, {
+      sharp: [`The jury. I played the better game, and I'll stand by that.`], soft: [`Probably me. I made some choices that hurt people, and they remembered.`], dry: [`Little bit of both. Mostly them.`],
+      any: [`Honestly? A bit of both. I'd still do most of it the same way.`, `I think the jury voted on feelings. I played the game.`],
+    }, 'rn', f) });
+  }
+
+  // ── the blindside nobody's forgotten, face to face ──
+  const big = blinds.slice().sort((a, b) => log(b).length - log(a).length)[blinds.length ? 0 : -1] || null;
+  if (big?.eliminated && cast.includes(big.eliminated)) {
+    const b = big.eliminated;
+    const ran = log(big).filter(v => v.voted === b).map(v => v.voter).filter(n => cast.includes(n) && n !== b)
+      .sort((x, y) => bond(b, x) - bond(b, y))[0];
+    if (ran) {
+      say(`Episode ${word(big.num)}. ${b}, you walked into that vote sure it was somebody else. ${ran}, come sit next to ${b}.`, { focus: [b] });
+      set([b, ran], { act: { kind: 'arrive', who: [ran], ride: 'walk' } });
+      steps.push({ k: 'title', kicker: 'Face to face', name: `${b} and ${ran}`, faces: [b, ran], tone: 'fire' });
+      steps.push({ k: 'say', by: b, focus: [b], tense: true, loud: fam(b) === 'loud', text: Vo(b, {
+        loud: [`You looked me in the eye that afternoon and told me I was safe!`], sharp: [`I've watched it back. You were smiling at me while you planned it.`], soft: [`I just want to know if any of it was real. Our friendship.`],
+        any: [`You told me I was safe. Why?`],
+      }, 'bl1') });
+      steps.push({ k: 'say', by: ran, focus: [ran], text: Vo(ran, {
+        sharp: [`Because you'd have done it to me a week later. I just got there first.`], soft: [`It was real. That's why it was so hard. I'm sorry.`], loud: [`It's a game! I'd do it again!`], dry: [`It was a good move. I'd be lying if I said otherwise.`],
+        any: [`Because if I'd told you, you'd have gone home anyway, and I'd have gone with you.`],
+      }, 'bl2') });
+      say(pickBy([`And that, everybody, is why we do reunions.`, `I love this job.`], ep.num, 'bl3'));
+      steps.push({ k: 'beat', text: bond(b, ran) >= 0 ? `${b} and ${ran} hug it out. The gallery cheers.` : `${b} doesn't shake ${ran}'s hand. The gallery goes "ooooh".`, focus: [b, ran], ...(bond(b, ran) >= 0 ? { act: { kind: 'hug', who: [b, ran] }, applause: 'big' } : { applause: 'boo' }) });
+    }
+  }
+
+  // ── the coaches who never got to play ──
+  for (const c of coaches) {
+    say(`${c}, you coached all of them, and never even got a vote. Would you do it again?`, { focus: [c] });
+    set([c]);
+    steps.push({ k: 'say', by: c, focus: [c], text: Vo(c, {
+      loud: [`Next time I'm playing! I'm done coaching! Done!`], sharp: [`I'd do it again, but next time I'd make sure my team needed me too much to vote me out.`], soft: [`I would. Watching my campers go far meant a lot to me.`],
+      any: [`I'd do it again. I just wouldn't trust my own team so much.`],
+    }, 'co', c) });
+  }
+
+  // ── the showmance ──
+  const sh = (snap.showmances || []).find(s => (s.players || []).every(p => cast.includes(p)));
+  if (sh) {
+    const [a, b] = sh.players;
+    say(`${a}, ${b}. Everybody wants to know. Are you two still together?`, { focus: [a, b] });
+    set([a, b]);
+    const still = sh.phase !== 'broken-up' && bond(a, b) >= 2;
+    steps.push({ k: 'say', by: a, focus: [a, b], text: still ? Vo(a, { soft: [`We are. We actually are.`], loud: [`Yes! Obviously!`], any: [`Still together.`] }, 'sh1') : Vo(a, { sharp: [`No. Next question.`], dry: [`Define "together".`], any: [`We're not. It's fine. It's mostly fine.`] }, 'sh2') });
+    steps.push({ k: 'beat', text: still ? `${b} takes ${a}'s hand. The gallery goes "awww".` : `${b} looks at the floor. The gallery goes very quiet.`, focus: [a, b], ...(still ? { act: { kind: 'hug', who: [a, b] }, applause: 'big' } : {}) });
+  }
+
+  // ── the awards, counted off the season ──
+  const players = [...finalists, ...gone];
+  const wins = n => hist.filter(h => [].concat(h.immunityWinner || []).includes(n)).length;
+  const sided = n => hist.filter(h => h.eliminated && log(h).some(v => v.voter === n && v.voted === h.eliminated)).length;
+  const avgB = n => { const xs = players.filter(x => x !== n).map(x => bond(n, x)); return xs.length ? xs.reduce((t, x) => t + x, 0) / xs.length : 0; };
+  const top = f => [...players].sort((a, b) => f(b) - f(a) || a.localeCompare(b))[0];
+  const awards = [
+    ['Best Strategist', top(sided), n => `${Cap(word(sided(n)))} times on the right side of the vote.`],
+    ['Challenge Beast', top(wins), n => `${Cap(word(wins(n)))} immunity win${wins(n) === 1 ? '' : 's'}.`],
+    ['Most Liked', top(avgB), () => `Nobody in this room has a bad word to say.`],
+    ['Biggest Villain', top(n => -avgB(n)), () => `The one most of this room was happy to see go.`],
+  ].filter(([, n], i, a) => n && (i !== 1 || wins(n) > 0));
+  if (ep.fanFavorite) awards.push(['Fan Favourite', ep.fanFavorite, () => `The people at home chose this one.`]);
+  set([]);
+  say(`And now, the awards. The ones nobody asked for and everybody wants.`);
+  steps.push({ k: 'title', kicker: 'The Reunion', name: 'The Awards', faces: awards.map(a => a[1]).slice(0, 6) });
+  awards.forEach(([label, n, why], i) => {
+    say(`${label}: ${n}! ${why(n)}`, { focus: [n] });
+    steps.push({ k: 'say', by: n, focus: [n], loud: label !== 'Biggest Villain' && fam(n) === 'loud', text: label === 'Biggest Villain' ? Vo(n, {
+      sharp: [`I'll take it. Somebody had to make this season interesting.`], soft: [`Me? Really? I thought I was nice!`], loud: [`Villain?! I was misunderstood!`], dry: [`I'd like to thank nobody.`],
+      any: [`Fine. I'll be the villain. Somebody has to.`],
+    }, 'aw', label) : Vo(n, {
+      loud: [`YES! Put it next to my bed!`], soft: [`Oh! Thank you, that's so sweet.`], sharp: [`Deserved.`], dry: [`Wow. I'll treasure this until at least next week.`],
+      any: [`Thank you! I'll take it!`, `Aw, thanks, everybody.`, `I didn't see that coming. Thank you!`],
+    }, 'aw', label, i) });
+  });
+
+  // ── the send-off ──
+  say(pickBy([`That's our reunion. ${winner}, congratulations one more time. Everybody else: there's always next season.`, `And that's a wrap on the season! ${winner}, you're the champion. Everybody else, maybe next time.`], ep.num, 'r9'), { focus: [winner] });
+  steps.push({ k: 'beat', text: `The whole cast crowds the stage around ${winner} as the lights come up.`, focus: [winner], applause: 'big', act: { kind: 'arrive', who: cast.slice(0, 14) } });
+  return { id: 'reunion', kind: 'aftermath', venue: 'aftermath', ep: ep.num, label: 'The Reunion', host, steps };
 }

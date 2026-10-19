@@ -9,7 +9,7 @@
 // cover yet keeps its classic screen. A Classic switch on every stepped screen lands on the same
 // screen in the classic viewer (localStorage 'td-vp' = 'classic' to stay there).
 import { tdCampScreen, tdTribalScreen, tdTribalStepped, tdDoubleTribalScreen, cleanText, placeScene, plateKey, placeName, venueOf, teamSpot } from './steps.js';
-import { tdFinalTribalScreen, tdFinaleDecisionScreen, tdFanFinaleScreen, tdWinnerScreen, tdBenchesScreen, tdFinalImmunityScreen, tdFinaleWalkScreen } from './finale.js';
+import { tdFinalTribalScreen, tdFinaleDecisionScreen, tdFanFinaleScreen, tdWinnerScreen, tdBenchesScreen, tdFinalImmunityScreen, tdFinaleWalkScreen, tdReunionScreen } from './finale.js';
 import { tdCampMap, tdIslandMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, tdRiDuelScreen } from './twists.js';
 import { tdJuryHouseScreen, isJuryHouse } from './jury-house.js';
@@ -138,6 +138,15 @@ export function tdStepScreens(ep, classic = [], o = {}) {
       else if (id === 'winner-ceremony') r = fin('winner', () => tdWinnerScreen(ep, o));
       // a challenge finale's benches: everybody voted off picks a finalist (the user, 2026-10-15)
       else if (id === 'benches') r = fin('benches', () => tdBenchesScreen(ep, o));
+      // the reunion: the Aftermath's own reunion show where the season has one (it used to air after the statistics,
+      // with the classic card still in this slot), else the cast in the studio (finale.js tdReunionScreen)
+      else if (id === 'reunion') {
+        if (hasAftermath(ep)) {
+          if (aftermathDone) continue;
+          const am = tdAftermathScreen(ep, o);
+          if (am) { aftermathDone = true; out.push(shell(am, { ...S, id: 'aftermath-show', label: am.label }, ep, o)); continue; }
+        } else r = fin('reunion', () => tdReunionScreen(ep, o));
+      }
       if (r) continue;
     }
     // the Aftermath talk show: every classic segment screen becomes one show on the studio stage

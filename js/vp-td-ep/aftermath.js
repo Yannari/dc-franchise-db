@@ -20,10 +20,10 @@ const tagged = (t, host) => { const m = String(t || '').match(/^([A-Z][\w' .-]{1
 const AT = (x, y, o = {}) => ({ u: x / 1600, v: y / 900, ...o });
 // seated tokens are anchored on the seat cushion and sized to the couch (the user, 2026-10-09: "they're
 // not even in the chair, the avatars are too big"): ~11% of the frame on the front couches, smaller further back
-const HOST = AT(560, 562, { s: .1, sit: true, host: true, h: 12 });
-const HOT = AT(1030, 560, { s: .1, sit: true, h: 12 });
-const HOT2 = AT(1125, 560, { s: .1, sit: true, h: 12 });
-const GALLERY = [
+export const HOST = AT(560, 562, { s: .1, sit: true, host: true, h: 12 });
+export const HOT = AT(1030, 560, { s: .1, sit: true, h: 12 });
+export const HOT2 = AT(1125, 560, { s: .1, sit: true, h: 12 });
+export const GALLERY = [
   // the centre couch, then the two back couches, then the stage wings (standing)
   AT(770, 528, { s: .09, sit: true, h: 10.5 }), AT(862, 528, { s: .09, sit: true, h: 10.5 }),
   AT(470, 500, { s: .08, sit: true, h: 9.5 }), AT(590, 500, { s: .08, sit: true, h: 9.5 }), AT(1120, 494, { s: .08, sit: true, h: 9.5 }), AT(1205, 494, { s: .08, sit: true, h: 9.5 }),

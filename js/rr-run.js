@@ -78,8 +78,11 @@ const TIE_REL = { 'parent-child': 'parent-child', grandparent: 'grandparent-gran
 const KIN_REL = { dating: 'dating', partners: 'dating', engaged: 'dating', married: 'married', exes: 'exes', 'old-friends': 'bffs' };
 export function raceHistoryRel(a, b, carried, tie, vets = false) {
   const pair = x => (x.a === a && x.b === b) || (x.a === b && x.b === a);
-  if (tie && TIE_REL[tie.kin]) return { rel: TIE_REL[tie.kin], from: 'family', engaged: tie.kin === 'engaged', kin: tie.kin };
   const k = (carried?.kin || []).find(pair);
+  // a couple's tie is where their life starts; the life layer and later seasons have the last word on a couple (ties.js).
+  // Family stays family.
+  const coupleTie = tie && ['married', 'engaged', 'partners', 'dating', 'exes'].includes(tie.kin);
+  if (tie && TIE_REL[tie.kin] && !(coupleTie && k && KIN_REL[k.kin])) return { rel: TIE_REL[tie.kin], from: 'family', engaged: tie.kin === 'engaged', kin: tie.kin };
   if (k && KIN_REL[k.kin]) return { rel: KIN_REL[k.kin], from: k.from || 'ledger', engaged: k.kin === 'engaged', kin: k.kin };
   const grudge = (carried?.bonds || []).filter(pair).reduce((m, x) => Math.min(m, Number(x.delta) || 0), 0);
   if (grudge <= -4) return { rel: 'enemies', from: 'ledger', engaged: false, kin: 'grudge' };

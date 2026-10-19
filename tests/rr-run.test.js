@@ -337,3 +337,18 @@ describe("a team's relationship comes from its history when nobody set one", () 
     expect(relLabel({ rel: 'bffs', history: { from: 'ledger' } })).toBe('old friends from another show');
   });
 });
+
+describe("a couple's life has the last word over their tie", () => {
+  it('a couple tied as dating who got engaged in their life after the show race as an engaged couple', async () => {
+    const { raceHistoryRel } = await import('../js/rr-run.js');
+    const lifeEngaged = { kin: [{ a: 'A', b: 'B', kin: 'engaged', from: 'life' }], bonds: [] };
+    expect(raceHistoryRel('A', 'B', lifeEngaged, { kin: 'dating' })).toMatchObject({ rel: 'dating', engaged: true, from: 'life' });
+    const lifeExes = { kin: [{ a: 'A', b: 'B', kin: 'exes', from: 'life' }], bonds: [] };
+    expect(raceHistoryRel('A', 'B', lifeExes, { kin: 'married' })).toMatchObject({ rel: 'exes', from: 'life' });
+    // family is family: siblings stay siblings whatever else the ledger says
+    expect(raceHistoryRel('A', 'B', lifeExes, { kin: 'siblings' })).toMatchObject({ rel: 'siblings', from: 'family' });
+    // with no news from life, the tie stands
+    expect(raceHistoryRel('A', 'B', { kin: [], bonds: [] }, { kin: 'engaged' })).toMatchObject({ rel: 'dating', engaged: true, from: 'family' });
+  });
+});
+

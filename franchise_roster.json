@@ -7757,6 +7757,32 @@
       "voice": "#dry #nerdy #anxious #schemer. Checks wording and consequences before replying. Suggests shorter messages, then adds qualifications. Relaxed humor draws on domestic observations. As Mateo, sounds noticeably more formal and cautious. Stress produces exact questions about what was promised.",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Mateo",
+      "slug": "mateo",
+      "gender": "m",
+      "sexuality": "bi",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 8,
+        "endurance": 7,
+        "mental": 1,
+        "social": 8,
+        "strategic": 2,
+        "loyalty": 4,
+        "boldness": 9,
+        "intuition": 4,
+        "temperament": 3
+      },
+      "voice": "#loud#warm #flirty #competitive #goofy. Quick replies, genuine encouragement, teasing questions. Opens up through everyday stories. Flirts spontaneously and resists editing warmth out of messages. Under pressure, promises more than the brothers agreed to offer. #-earnest",
+      "profileSources": {},
+      "ties": [
+        {
+          "name": "Luis",
+          "kin": "siblings"
+        }
+      ]
     }
   ]
 }

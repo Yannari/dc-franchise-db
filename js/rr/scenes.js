@@ -27,7 +27,7 @@ const people = (state, id) => (id && state.teams[id] ? [state.teams[id].a, state
 // (the director drops warm scenes between them; nobody consoles a team they clashed with)
 export const CLASH_KINDS = new Set(['trash-talk', 'gloat', 'shove', 'push', 'accusation', 'confront', 'mock-the-struggle', 'alliance-betrayal', 'deal-broken']);
 
-export const SNAP_KEYS = ['leg', 'phase', 'tod', 'rank', 'band', 'bandX', 'allied', 'rivalry', 'couple', 'rel', 'relFam',
+export const SNAP_KEYS = ['leg', 'fresh', 'phase', 'tod', 'rank', 'band', 'bandX', 'allied', 'rivalry', 'couple', 'rel', 'relFam',
   'identity', 'identityB', 'money', 'broke', 'snapped', 'place', 'stretchKind', 'mode', 'taskTypes', 'fails', 'side', 'lead', 'botcher',
   'relB', 'relFamB', 'brokeB', 'failsB', 'sabKind'];
 const ROMANTIC = ['dating', 'married', 'newly-dating', 'on-off', 'once-engaged'];
@@ -42,6 +42,8 @@ export function snapOf(st, { tid = null, oid = null, stretch = null, t = null, f
   const types = stretch?.types || (stretch?.sides || []).flatMap(s => s.types || []) || [];
   return {
     leg: st.leg,
+    // the first hour of the race (talk.js FRESH_MINUTES): nobody is ahead or behind yet
+    fresh: st.leg === 1 && (t ?? 0) < 60,
     phase: f <= 0.34 ? 'early' : f >= 0.67 ? 'late' : 'mid',
     tod: t == null ? null : ((Math.round((st.clock ?? 420) + t) % 1440) + 1440) % 1440,
     rank: tid ? Math.round(perceivedRank(st, tid) * 100) / 100 : null,

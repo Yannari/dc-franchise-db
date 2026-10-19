@@ -98,7 +98,8 @@ A pool file is a JS module: `export default { '<kind>.<ending>': [entries], '<ki
   "jump"), `mode` (how they travel on this stretch: flight, taxi, foot, drive, camel, boat, bus),
   `matPlace` (at the mat: first, top, mid, bottom, last), `why` (why a lead changed: injury, snap, crush,
   win), `aDid` (an interview: a is the one the moment happened to), `exitHow` (an exit: last, on-location,
-  midpoint), `rule` (the twist Don explains in don-rule: boomerang, yield, boomerang-vote), `byVote` (a team sent back
+  midpoint), `fresh` (the first hour of the race: nobody ahead or behind, nothing been through together yet),
+  `rule` (the twist Don explains in don-rule: boomerang, yield, boomerang-vote), `byVote` (a team sent back
   because everybody picked it, in boomerang-hit), `mishap` (what went wrong on the road in a travel-mishap: flat-tyre, lost-driver, wrong-way), `aElder` (a is a generation older than b — the parent or grandparent — true/false; unknown when
   absent, so gate "when you were little" lines on it), `fails` (0, 1, 'many'), `place`, `cause`,
   `threadStep`, `register`/`registerB` (how a/b talk: sharp/dry/loud/soft/odd). A value can be a list:

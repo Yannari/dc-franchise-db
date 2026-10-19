@@ -134,7 +134,16 @@ function draw(cands, rng) {
 }
 
 // Each candidate's weight at its best moment here (the moment it will be played at).
+// The first hour of the race: nobody has been through anything together yet, so the moments that need
+// time behind them (a thank-you for today, how little anybody has slept, a fight that has built up) wait.
+// What reacts to a task (celebrating, gloating, watching) is fine: the first task is a task.
+export const FRESH_MINUTES = 60;
+export const NOT_FRESH = new Set(['bond-moment', 'small-talk', 'manage-partner', 'snap', 'blame',
+  'pep-talk', 'homesick', 'quit-talk', 'silent-treatment', 'makeup']);
+export const isFresh = (state, t) => state.leg === 1 && (t ?? 0) < FRESH_MINUTES;
+
 function bestMoment(kind, ctx, moments) {
+  if (NOT_FRESH.has(kind.id) && isFresh(ctx.state, ctx.t)) return { w: 0, moment: null };
   let best = 0, at = null;
   for (const m of moments) {
     ctx.moment = m;

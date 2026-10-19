@@ -100,7 +100,20 @@ export function airLeg(state, leg) {
   const picked = new Map();            // id -> tier
   const rowed = new Set(), blew = new Set(), romance = new Set();
   const pairOf = s => s.who.slice(0, 2).sort().join('|');
+  // two teams' first clash this leg (aired or not: they clashed either way); nothing friendly between them after it
+  const clash = new Map();
+  for (const s of scenes) {
+    const k = teamsKey(s);
+    if (!k || !SOUR_X.has(s.kind)) continue;
+    const c = clash.get(k);
+    if (!c || (s.data?.t ?? 0) < (c.data?.t ?? 0) || ((s.data?.t ?? 0) === (c.data?.t ?? 0) && s.id < c.id)) clash.set(k, s);
+  }
+  const afterClash = s => {
+    const c = WARM_X.has(s.kind) && clash.get(teamsKey(s));
+    return !!c && ((c.data?.t ?? 0) < (s.data?.t ?? 0) || ((c.data?.t ?? 0) === (s.data?.t ?? 0) && c.id < s.id));
+  };
   const ok = s => {
+    if (afterClash(s)) return false;
     if (WARM.has(s.kind) && rowed.has(pairOf(s))) return false;
     if (isRow(s) && s.data?.team && blew.has(s.data.team)) return false;
     if (SCENES[s.kind]?.family === 4 && (s.data?.facts?.lovers || []).some(x => romance.has(x))) return false;
@@ -176,14 +189,6 @@ export function airLeg(state, leg) {
     if (s?.kind.startsWith('int-') && s.data?.about != null && !picked.has(s.data.about)) picked.delete(id);
   }
 
-  // two teams who clashed get nothing friendly after it, this leg (a must-air moment always stays)
-  const soured = new Map();
-  for (const id of [...picked.keys()].sort((x, y) => (byId.get(x).data?.t ?? 0) - (byId.get(y).data?.t ?? 0) || x - y)) {
-    const s = byId.get(id), k = teamsKey(s);
-    if (!k) continue;
-    if (WARM_X.has(s.kind) && soured.has(k) && picked.get(id) > 0) { picked.delete(id); continue; }
-    if (SOUR_X.has(s.kind)) soured.set(k, true);
-  }
   // an interview about a moment that just left the cut leaves with it
   for (const [id] of [...picked]) {
     const s = byId.get(id);

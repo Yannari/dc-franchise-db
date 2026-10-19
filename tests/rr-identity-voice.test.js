@@ -35,6 +35,8 @@ describe('rr identity voice', () => {
         if (!l.auto || s.kind.startsWith('int-')) return;
         expect(ls.slice(0, i).some(x => x.kind === 'conf') && ls.slice(i).every(x => x.kind !== 'conf'), `${s.kind}: ${l.text}`).toBe(false);
         if (s.kind === 'task-try' && s.ending === 'after-fails') expect(l.voice).not.toBe('id:struggle');
+        // a gloat is not a win to be proud of (the partner is usually objecting to it)
+        if (s.kind === 'celebrate') expect(s.ending, l.text).not.toBe('gloat-at-others');
       });
     }
   });

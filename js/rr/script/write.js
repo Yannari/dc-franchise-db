@@ -197,7 +197,7 @@ const AUTO_HOOK = {
     : f.idGood ? 'good' : f.idBad ? 'bad' : null),
   'task-start': f => (f.idGood ? 'good' : f.idBad ? 'bad' : null),
   'task-done': f => (f.ahead ? 'win' : null),
-  'celebrate': () => 'win',
+  'celebrate': f => (f.ending === 'gloat-at-others' ? null : 'win'),
   'arrival-awe': () => 'arrive',
   'don-place': f => (f.matPlace === 'first' ? 'mat-first' : f.matPlace === 'last' ? 'mat-last' : null),
   'int-exit': () => 'elim',

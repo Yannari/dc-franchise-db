@@ -441,6 +441,12 @@ function _weekRowsFromDoc(found, name) {
   return rows.length ? rows : null;
 }
 
+/** A portrait filename from the database, or null — never a path or a way out of assets/avatars. */
+function _avatarFileOf(f) {
+  return typeof f === 'string' && f && !/[\/:\\]/.test(f) && !f.includes('..')
+    && /\.(png|webp|jpe?g|gif)$/i.test(f) ? f : null;
+}
+
 /**
  * Their career, one entry per show.
  *
@@ -495,6 +501,8 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [], se
       placement: d.placement,
       status: d.status,
       tribe: d.tribe,
+      // the look they had THAT season (a returnee's second outfit), written by the export
+      avatarFile: _avatarFileOf(d.avatarFile),
       keyMoments: d.keyMoments || [],
       notes: d.notes || [],
       // The season document's own narrative first, then the chapter split out
@@ -735,6 +743,7 @@ export function buildDossier(player, {
   return {
     id: player.id,
     name: player.name,
+    latestAvatarFile: _avatarFileOf(player.latestAvatarFile),
     bio,
     // Stated only when something is actually known, so the page can skip the
     // line rather than printing an empty one.

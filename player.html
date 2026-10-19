@@ -499,12 +499,15 @@ if (!playerId) {
             (p.name && player.name && p.name.toLowerCase() === player.name.toLowerCase())
           );
           if (!match) return;
-          if (match.keyMoments && match.keyMoments.length) sd.keyMoments = match.keyMoments;
-          if (match.story && !sd.story) sd.story = match.story;
-          if (match.gameplayStyle && !sd.gameplayStyle) sd.gameplayStyle = match.gameplayStyle;
+          // A field the AI writer never filled still says "[AI_FILL]" — Zoey's whole TD15 row
+          // did, and the string taken as her key moments took the profile down with it.
+          const _filled = v => v != null && v !== '' && !(typeof v === 'string' && v.trim() === '[AI_FILL]');
+          if (Array.isArray(match.keyMoments) && match.keyMoments.length) sd.keyMoments = match.keyMoments;
+          if (_filled(match.story) && !sd.story) sd.story = match.story;
+          if (_filled(match.gameplayStyle) && !sd.gameplayStyle) sd.gameplayStyle = match.gameplayStyle;
           if (match.alliances && match.alliances.length && (!sd.alliances || !sd.alliances.length)) sd.alliances = match.alliances;
           if (match.rivalries && match.rivalries.length && (!sd.rivalries || !sd.rivalries.length)) sd.rivalries = match.rivalries;
-          if (match.strategicRank && !sd.strategicRank) sd.strategicRank = match.strategicRank;
+          if (_filled(match.strategicRank) && !sd.strategicRank) sd.strategicRank = match.strategicRank;
           // ── THE WEEK-BY-WEEK ROW ──────────────────────────────────
           //
           // A wiki article's most characteristic table is what happened to
@@ -988,7 +991,7 @@ function _renderWiki(player) {
   const format = _wikiShow
     || (chosen && chosen !== 'all' ? chosen : played[0] || 'total-drama');
 
-  host.innerHTML = window.wikiView.renderArticle(dossier, format, { root: '.', allShows: all });
+  host.innerHTML = window.wikiView.renderArticle(dossier, format, { root: '.', allShows: all, faces: window.ppLatestPortrait });
   // Pictures after text. The article draws immediately and the gallery fills
   // in behind it — same Worker the profile tab reads, same listing endpoint.
   window.wikiView.hydrateGalleries?.(host, { base: PP_API });
@@ -2685,7 +2688,7 @@ function renderSeasonDetails(season) {
 
   // Key moments timeline
   // Key Moments — use real ones if available, else build from stats
-  const _moments = (season.keyMoments && season.keyMoments.length) ? season.keyMoments : buildMomentsFromStats(season);
+  const _moments = (Array.isArray(season.keyMoments) && season.keyMoments.length) ? season.keyMoments : buildMomentsFromStats(season);
   if(_moments.length) {
     html += `<div class="pp-pcard"><h3>Key Moments</h3><div class="pp-tl">`;
     _moments.forEach((m,i) => {

@@ -83,7 +83,7 @@ const rxEsc = t => String(t).replace(/[^A-Za-z0-9 ]/g, c => String.fromCharCode(
  * per section and this page is read in pieces — a reader who lands on Trivia
  * should not have to scroll up to find the link.
  */
-function _linker(dossier, root) {
+function _linker(dossier, root, faces = null) {
   const targets = new Map();          // matched text -> href
 
   // ── the seasons ──
@@ -167,8 +167,10 @@ function _linker(dossier, root) {
   const slugOfName = name => slugs.get(name) || slugOf(name);
 
   /** A face. 152 of them exist as files and the article drew none. */
+  // their latest recorded look when the page knows it (a returnee's new outfit), else the default
+  const faceFile = name => faces?.get?.(String(name).toLowerCase()) || `${slugOfName(name)}.png`;
   const avatar = (name, cls = '') => (name
-    ? `<img class="wk-av ${cls}" src="${root}/assets/avatars/${esc(slugOfName(name))}.png"
+    ? `<img class="wk-av ${cls}" src="${root}/assets/avatars/${esc(faceFile(name))}"
          alt="" loading="lazy" onerror="this.classList.add('is-off')">`
     : '');
 
@@ -294,6 +296,10 @@ function infobox(dossier, show, root, L) {
   // ── one block per season, newest first ──
   const seasons = show.seasons.slice().sort((a, b) => b.season - a.season);
   const shortOf = s => `${m.short || m.name}${s.season}`;
+  // the face they had in THAT season: a returnee came back in a new look, and the
+  // article drew {id}.png, their first one, over every season (TD15, 2026-10-19)
+  // (a season recorded before portraits existed keeps the face it always had)
+  const portraitOf = s => `${root}/assets/avatars/${esc(s?.avatarFile || `${dossier.id}.png`)}`;
 
   const seasonBlock = s => {
     const rec = s.record || {};
@@ -354,7 +360,7 @@ function infobox(dossier, show, root, L) {
   const tabs = seasons.length > 1 ? `
     <div class="wk-ib-tabs" role="tablist">
       ${seasons.map((s, i) => `<button type="button" class="wk-ib-tab${i === 0 ? ' is-on' : ''}"
-        role="tab" data-ibx-tab="${s.season}" aria-selected="${i === 0}">${esc(shortOf(s))}</button>`).join('')}
+        role="tab" data-ibx-tab="${s.season}" data-ibx-portrait="${portraitOf(s)}" aria-selected="${i === 0}">${esc(shortOf(s))}</button>`).join('')}
     </div>` : '';
 
   return `
@@ -377,7 +383,7 @@ function infobox(dossier, show, root, L) {
     */ ''}
     ${show.count ? `<div class="wk-ib-show">${m.icon ? `${m.icon} ` : ''}${esc(m.name || m.short || '')}</div>` : ''}
     ${tabs}
-    <img class="wk-ib-portrait" src="${root}/assets/avatars/${esc(dossier.id)}.png" alt=""
+    <img class="wk-ib-portrait" src="${portraitOf(seasons[0])}" alt=""
          onerror="this.style.display='none'">
     ${profile ? `<div class="wk-ib-head">${show.count
       ? `${m.icon} ${esc(m.short || m.name)} Profile`
@@ -764,6 +770,9 @@ export function hydrateInfobox(host) {
       for (const p of panels) {
         p.classList.toggle('is-on', p.getAttribute('data-ibx-panel') === want);
       }
+      const img = box.querySelector('.wk-ib-portrait');
+      const src = tab.getAttribute('data-ibx-portrait');
+      if (img && src) { img.style.display = ''; img.src = src; }
     };
   }
 }
@@ -831,7 +840,7 @@ export function emptyArticle(dossier, format, otherShows, root) {
  *
  * `dossier` comes from js/wiki.js. `format` is the show being read.
  */
-export function renderArticle(dossier, format, { root = '.', allShows = [] } = {}) {
+export function renderArticle(dossier, format, { root = '.', allShows = [], faces = null } = {}) {
   if (!dossier) return '';
   // ── A DEBUT CAST MEMBER STILL HAS AN ARTICLE ───────────────────────
   //
@@ -865,7 +874,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   // Every season and every castmate this article can name, as links and faces.
   // Built once and handed to everything below, including the infobox and the
   // lead, so a name is a link wherever it appears.
-  const L = _linker(dossier, root);
+  const L = _linker(dossier, root, faces);
   // ── THE SECTION TREE ───────────────────────────────────────────────
   //
   // A fandom article is not a flat list of sections: a season is a heading

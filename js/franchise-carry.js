@@ -72,7 +72,8 @@ export function carriedFor(people = [], cfg = {}, { lifeLog = null, lifeSeasons 
       if (!lifeSettled) add(sp.a, sp.b, sp.bondDelta);
       if (decided.has(k)) continue;
       decided.add(k);
-      out.kin.push({ a: sp.a, b: sp.b, kin: sp.kind === 'showmance-broken' ? 'exes' : 'dating', from: 'ledger' });
+      // the stage the season left them at (an engagement on the show), or a couple
+      out.kin.push({ a: sp.a, b: sp.b, kin: sp.kind === 'showmance-broken' ? 'exes' : (LIFE_KIN[sp.stage] || 'dating'), from: 'ledger' });
     } else if (sp.kind === 'allies') {
       add(sp.a, sp.b, sp.bondDelta);
       if (!decided.has(k)) { decided.add(k); out.kin.push({ a: sp.a, b: sp.b, kin: 'old-friends', from: 'ledger' }); }

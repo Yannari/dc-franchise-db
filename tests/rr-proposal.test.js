@@ -50,3 +50,41 @@ describe('rr proposal', () => {
     }
   });
 });
+
+describe('an engagement on the race reaches the franchise', () => {
+  it("the race's record lists a couple team with its stage: engaged after a yes on the mat", async () => {
+    const { rrLedgerRecord } = await import('../js/rr/ledger-record.js');
+    let checked = 0;
+    for (let seed = 1; seed <= 12 && !checked; seed++) {
+      const { res } = coupleSeason(seed);
+      const yes = res.state.scenes.find(s => s.kind === 'proposal' && s.data.ending === 'yes');
+      if (!yes) continue;
+      const t = res.state.teams[yes.data.team];
+      const rec = rrLedgerRecord(res.state, res);
+      const sh = rec.players[t.a].showmances.find(x => x.partner === t.b);
+      expect(sh).toMatchObject({ ended: 'intact', stage: 'engaged' });
+      // a couple who are just dating are recorded as dating
+      const other = Object.values(res.state.teams).find(x => x.id !== t.id && !x.engagedAt);
+      expect(rec.players[other.a].showmances.find(x => x.partner === other.b)).toMatchObject({ stage: 'dating' });
+      checked++;
+    }
+    expect(checked).toBe(1);
+  });
+
+  it('the next show meets them engaged', async () => {
+    const { setFranchiseLedger } = await import('../js/franchise-meta.js');
+    const { carriedFor } = await import('../js/franchise-carry.js');
+    const { seasonConfig, setSeasonConfig } = await import('../js/core.js');
+    setSeasonConfig({ ...seasonConfig, testSeason: false });
+    setFranchiseLedger({ v: 2, active: 'td', franchises: { td: { name: 'Total Drama', seasons: {
+      'rr-1': { format: 'ridonculous-race', source: 'live', seasonName: 'The Ridonculous Race 1', players: {
+        Ann: { placement: 1, winner: true, showmances: [{ partner: 'Bo', ended: 'intact', stage: 'engaged' }] },
+        Bo: { placement: 1, winner: true, showmances: [{ partner: 'Ann', ended: 'intact', stage: 'engaged' }] },
+      } },
+    } } } });
+    // a race season reads the whole franchise's history (shows.js historyFromLedger), once its engine is loaded
+    await import('../js/rr-run.js');
+    const out = carriedFor([{ name: 'Ann' }, { name: 'Bo' }], { format: 'ridonculous-race' }, { lifeLog: [], lifeSeasons: [] });
+    expect(out.kin.find(k => [k.a, k.b].sort().join() === 'Ann,Bo')).toMatchObject({ kin: 'engaged', from: 'ledger' });
+  });
+});

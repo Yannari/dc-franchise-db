@@ -7,12 +7,15 @@
 // franchise-meta.js deriveSeasonRecord), read without knowing which show it came from:
 //   allies      the partner (unless the race broke them), or friends both ways at the end
 //   rivals      a rivalry the race kept feeding, or a bond this low
-//   showmances  every couple the race made: intact unless they split
+//   showmances  every couple the race made: intact unless they split; and a team who are a couple, with the stage
+//               they leave at (dating, engaged after a yes on the mat, married), so the next show meets them so
 //   betrayed    a caught sabotage, a debt dodged, an alliance or a deal broken
 // Computed while the season's relationship layer is live (right after playRaceSeason).
 import { RR_FORMAT } from './format.js';
 import { getBond } from '../bonds.js';
 
+// what a team who are a couple are (rr/state.js REL); 'once-engaged' is two former fiancés, a couple again only on a yes
+const COUPLE_RELS = ['dating', 'newly-dating', 'on-off', 'married'];
 const ALLY_BOND = 3, PARTNER_FLOOR = -3, RIVAL_BOND = -3.5, RIVALRY = 2;
 const pairKey = (a, b) => [a, b].sort().join('|');
 
@@ -68,6 +71,12 @@ export function rrLedgerRecord(state, result = {}, { seasonName = null, archetyp
       const strength = Math.round((Math.max(0, Math.min(10, getBond(n, other))) / 10 * 0.6 + Math.min(1, lasted / 6) * 0.4) * 100) / 100;
       return { partner: other, ended: c.ended ? 'breakup' : 'intact', since: c.since || 0, endedEp: c.ended || null, strength };
     });
+    // the partner, when the two of them are a couple (a team, not a showmance the race made): the stage they leave at
+    const stage = t.engagedAt || t.history?.engaged ? 'engaged' : t.rel === 'married' ? 'married'
+      : COUPLE_RELS.includes(t.rel) ? 'dating' : null;
+    if (stage && partner && !showmances.some(s => s.partner === partner)) {
+      showmances.push({ partner, ended: 'intact', since: 0, endedEp: null, strength: 1, stage, team: true });
+    }
     const betrayed = [...new Set(betrayals.filter(([a]) => a === id).flatMap(([, b]) => people(b)))];
     const betrayedBy = [...new Set(betrayals.filter(([, b]) => b === id).flatMap(([a]) => people(a)))];
     const r = state.rec[id];

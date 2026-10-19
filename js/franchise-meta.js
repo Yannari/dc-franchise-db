@@ -700,7 +700,8 @@ export function buildFranchiseMeta(cast, cfg) {
       }
       for (const rival of rec.rivals || []) add(name, rival, W.bondRivals, `Old rivalry`, 'rivals', false);
       for (const sh of rec.showmances || []) {
-        if (sh.ended === 'intact') add(name, sh.partner, W.bondShowmanceIntact, `Showmance that lasted`, 'showmance-intact', false);
+        // a couple's stage, where the season recorded one (the race's couple teams: dating, engaged, married)
+        if (sh.ended === 'intact') add(name, sh.partner, W.bondShowmanceIntact, `Showmance that lasted`, 'showmance-intact', false, sh.stage ? { stage: sh.stage } : undefined);
         else add(name, sh.partner, W.bondShowmanceBroken, `Showmance that ended badly`, 'showmance-broken', false);
       }
     }

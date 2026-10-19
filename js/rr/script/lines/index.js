@@ -39,6 +39,7 @@ import shareInfo from './rewrite/share-info.js';
 import trashTalk from './rewrite/trash-talk.js';
 import fear from './rewrite/fear.js';
 import snapRw from './rewrite/snap.js';
+import talkRw from './rewrite/talk.js';
 import redSandDesert from './places/red-sand-desert.js';
 
 const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
@@ -47,13 +48,15 @@ const FILES = [partners, partners1, partners2, partners3, partners4, partners5, 
 // The rewrite (lines/rewrite/, docs/rr-writers-brief.md "The rewrite standard"): each file brings its pools and
 // retires the old lines they replace, a whole pool ('mind-game.rattled') or the old interview lines for one kind
 // of moment ({ key: 'int-strategy.proud', cause: 'mind-game' }).
-export const REWRITES = [mindGame, celebrate, shareInfo, trashTalk, fear, snapRw];
+export const REWRITES = [mindGame, celebrate, shareInfo, trashTalk, fear, snapRw, talkRw];
 const retired = (key, e) => REWRITES.some(rw => rw.retire.some(r => (typeof r === 'string' ? r === key
   : r.key === key && [].concat(e.when?.cause).includes(r.cause))));
 
 export const POOLS = {};
 for (const f of FILES) for (const [k, list] of Object.entries(f)) (POOLS[k] ||= []).push(...list.filter(e => !retired(k, e)));
 for (const rw of REWRITES) for (const [k, list] of Object.entries(rw.pools)) (POOLS[k] ||= []).push(...list);
+// a retired pool with nothing left in it is not a pool
+for (const k of Object.keys(POOLS)) if (!POOLS[k].length) delete POOLS[k];
 
 const words = s => String(s).replace(/\{[^}]+\}/g, 'X').split(/\s+/).filter(Boolean).length;
 const sentences = s => String(s).split(/(?<=[.!?])\s+/).filter(Boolean);

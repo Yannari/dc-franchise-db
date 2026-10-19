@@ -28,6 +28,30 @@ Read before you write a line:
   piece of backstory. A confessional can contradict what they just said out loud. That's the point of it.
 - **Don** is dry, bored, self-absorbed and a little mean. Never an announcer, never excited for them.
 
+## The rewrite standard (2026-10-18)
+
+The user read a played episode ("conversations are pretty short", "that's not how they talk in the Ridonculous
+Race", "where's the context") and pasted the real episode 3 as the goal (local copy:
+`.superpowers/reference/rr-ep03-french-is-an-eiffel-language.txt`; read it before writing). The user asked for a
+mix of the real show's pace and longer scenes. Everything in `lines/rewrite/` meets this:
+
+- **Quick hits, 2 to 5 lines**: arrivals, celebrations, a tip, the judge, a ride, the little bits between teams.
+  Dense and specific, the way the real show cuts between teams: the Vegans pedalling the moped to save its fuel,
+  the moped jump through the neighbour's gazebo, the Ice Dancers who smile in their sleep.
+- **Full scenes, 6 to 12 lines**: the story moments (fights, schemes, alliances, betrayals, romance, confrontations,
+  backstories). A setup, a turn where something changes, and a button.
+- **Specific, never generic.** Every exchange is built on something only this kind of team, at this kind of place,
+  doing this kind of thing, would say: their identity (`id:` hooks, `identity` gates), their relationship
+  (`rel:` variants), a backstory, the task, the place. If the lines could be pasted onto any other team or
+  moment, rewrite them.
+- **The scene says where it is**, in its first beat or line, and a line that names where it is is gated on `at`
+  ('airport', 'task', 'road', 'mat'). Write a version for each place the moment can happen, plus a few that fit
+  anywhere.
+- **Lines answer each other and build**: a callback, a misunderstanding that grows, a joke the partner tops.
+- **An interview is about the moment before it**, gated on `cause` (and `causeEnding` when the ending changes it).
+- A rewrite file exports `{ pools, retire }`: `retire` names the old pools it replaces (`'mind-game.rattled'`),
+  or the old interview lines for one kind of moment (`{ key: 'int-strategy.proud', cause: 'mind-game' }`).
+
 ## The user's rules (non-negotiable)
 
 1. **Human, plain spoken English.** Contractions, people trailing off ("I just... okay."), restarting,

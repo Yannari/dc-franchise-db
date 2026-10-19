@@ -30,7 +30,8 @@ function act(state, kindId, tid, oid, rng, ending = null, data = {}) {
 // A team going home: the team closest to it comes over (console), a couple says goodbye,
 // and the team says its last word to camera (int-exit).
 function farewell(state, out, finished, finish, rng, atMat, how = 'last') {
-  const t = finish[out] ?? Math.max(...Object.values(finish));
+  // a team cut at the finale's midpoint says goodbye there, not at the finish
+  const t = how === 'midpoint' && state.midmatAt?.[state.leg] != null ? state.midmatAt[state.leg] : finish[out] ?? Math.max(...Object.values(finish));
   if (!atMat) { const [a, b] = people(state, out); act(state, 'int-exit', out, null, rng, getBond(a, b) >= 0 ? 'grateful' : 'bitter', { t, exitHow: how }); return; }
   const close = (a, b) => people(state, a).reduce((s, x) => s + people(state, b).reduce((u, y) => u + getBond(x, y), 0), 0) / 4;
   // a consoler likes every one of them and hasn't turned on them this leg
@@ -127,6 +128,11 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
   const bandOf = i => (i === 0 ? 'first' : i === N - 1 ? 'last' : i < third ? 'top' : i >= N - third ? 'bottom' : 'mid');
   order.forEach((id, i) => {
     if (result.eliminated.includes(id)) return;
+    if (leg.kind === 'final') {
+      emit(state, 'don-crown', people(state, id), i === 0 ? 'winner' : 'runner-up',
+        { team: id, place: i + 1, t: finish[id] ?? null, stretch: 'mat', effects: [['placed', id, i + 1]] });
+      return;
+    }
     const band = bandOf(i);
     const ending = penalties[id] ? 'penalty-reveal'
       : (state.rec[id].sabotage || 0) >= 1 && rng() < 0.5 ? 'scared-of-them'

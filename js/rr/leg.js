@@ -165,6 +165,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       midmat.push(id);
       if (api.remaining(s.id) === 0 && active.length > 2) {
         (state.midmatOut ||= {})[leg.n] = id;
+        (state.midmatAt ||= {})[leg.n] = t;
         emit(state, 'don-elim', people(state, id), 'accepts', { team: id, t, stretch: s.id, midmat: true });
         return { out: true, end: t };
       }

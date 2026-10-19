@@ -24,6 +24,11 @@ register([
     'scared-of-them': { w: 0.3, fx: (fx, c) => fx.mind(c.A, 'morale', 2) },
     'penalty-reveal': { w: 0.5, fx: (fx, c) => { fx.mind(c.A, 'morale', -6); fx.mind(c.B, 'morale', -6); } },
   } }),
+  // the finale's finish line: Don crowns the winners, then tells the runners-up (chill.js, a final leg only)
+  K({ id: 'don-crown', family: 11, cast: 'don', moments: ['mat'], endings: {
+    winner: { w: 1, fx: (fx, c) => { fx.mind(c.A, 'morale', 20); fx.mind(c.B, 'morale', 20); fx.pop(c.A, 2); fx.pop(c.B, 2); } },
+    'runner-up': { w: 1, fx: (fx, c) => { fx.mind(c.A, 'morale', -5); fx.mind(c.B, 'morale', -5); } },
+  } }),
   K({ id: 'don-fakeout', family: 11, cast: 'don', moments: ['mat'], endings: {
     relief: { w: 3, fx: (fx, c) => { fx.mind(c.A, 'morale', 10); fx.mind(c.B, 'morale', 10); } },
     fury: { w: 0.3, fx: (fx, c) => fx.mind(c.A, 'stress', 10) },

@@ -143,3 +143,18 @@ describe('rr roles and facts', () => {
     expect(JSON.stringify(factsFor(sc, rolesOf(sc, ctx.state), ctx.state))).toBe(before);
   });
 });
+
+describe('rr endings that speak alone', () => {
+  it("a penalty at the mat is never written from the general check-in lines", async () => {
+    const { writeScene, OWN_ONLY } = await import('../js/rr/script/write.js');
+    const { POOLS } = await import('../js/rr/script/lines/index.js');
+    expect(OWN_ONLY.has('don-place.penalty-reveal')).toBe(true);
+    const anyIds = new Set((POOLS['don-place.any'] || []).map(e => e.id));
+    const { cast, teams } = raceCast(12, 5);
+    setPlayers(cast);
+    const st = playRaceSeason({ teams, seed: 5 }).state;
+    const pens = st.scenes.filter(s => s.kind === 'don-place' && s.data.ending === 'penalty-reveal');
+    expect(pens.length).toBeGreaterThan(0);
+    for (const s of pens) { const w = writeScene(st, s); if (w) expect(anyIds.has(w.lineId), w.lineId).toBe(false); }
+  });
+});

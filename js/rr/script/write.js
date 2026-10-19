@@ -108,8 +108,12 @@ function needs(entry) {
   return n;
 }
 
+// Endings the kind's general lines can't speak for (a check-in that never mentions the penalty): their own pool only.
+export const OWN_ONLY = new Set(['don-place.penalty-reveal']);
+
 function keyFor(kind, ending) {
   const own = `${kind}.${ending}`, any = `${kind}.any`;
+  if (OWN_ONLY.has(own) && POOLS[own]) return own;
   if (ending !== 'any' && POOLS[own] && POOLS[any]) return [own, any];
   if (POOLS[own]) return own;
   return POOLS[any] ? any : null;

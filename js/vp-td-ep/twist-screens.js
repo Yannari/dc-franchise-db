@@ -465,21 +465,22 @@ export function tdPreviouslyScreen(ep, o = {}) {
   const steps = [];
   let shown = null;
   const card = (scene, sig) => { if (shown === sig) return; shown = sig; steps.push(scene); };
-  card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Previously on...', time: 'Last time', card: true, focus: [], bg: [], places: {}, wide: true, still: true, board: { mode: 'title' } }, 'title');
-  steps.push({ k: 'title', kicker: `Episode ${ep.num}`, name: 'Previously on...', faces: [] });
+  card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Previously on...', time: ep.isFinale ? 'This season' : 'Last time', card: true, focus: [], bg: [], places: {}, wide: true, still: true, board: { mode: 'title' } }, 'title');
+  // the finale's recap is the whole season (td/story/finale-recap.js), not last week
+  steps.push({ k: 'title', kicker: ep.isFinale ? 'The Finale' : `Episode ${ep.num}`, name: ep.isFinale ? 'The Road to the Finale' : 'Previously on...', faces: [] });
   for (const l of lines) {
     const text = cleanText(l.text);
     if (!text) continue;
     const sh = l.shot || null;
     if (sh?.board) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: `${still.size} left`, time: 'Still in the game', card: false, focus: [], bg: [], places: {}, wide: true, still: true, board }, 'board');
-    else if (sh?.boot) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Eliminated', time: 'Last time', card: false, focus: [], bg: [], places: {}, wide: true, still: true, board: { mode: 'boot', who: sh.boot } }, `boot:${sh.boot}`);
+    else if (sh?.boot) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Eliminated', time: ep.isFinale ? 'This season' : 'Last time', card: false, focus: [], bg: [], places: {}, wide: true, still: true, board: { mode: 'boot', who: sh.boot } }, `boot:${sh.boot}`);
     else if (sh && (sh.players || []).length) {
-      const tb = throwbackScene(sh, venue, ep);
+      const tb = throwbackScene(sh, venue, ep, sh.ep ? `Episode ${sh.ep}` : ep.isFinale ? 'This season' : 'Last time');
       card(tb, `tb:${tb.plate}:${tb.focus.join(',')}`);
-    } else if (shown !== 'title' && !String(shown).startsWith('tb:')) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Previously on...', time: 'Last time', card: false, focus: [], bg: [], places: {}, wide: true, still: true, board: { mode: 'title' } }, 'title');
+    } else if (shown !== 'title' && !String(shown).startsWith('tb:')) card({ k: 'scene', spot: 'recap', tod: 'day', plate: base, place: 'Previously on...', time: ep.isFinale ? 'This season' : 'Last time', card: false, focus: [], bg: [], places: {}, wide: true, still: true, board: { mode: 'title' } }, 'title');
     // the host narrates; a player's own line (a clip from last time) plays inside its throwback
     if (l.clip && l.by && l.by !== host) steps.push({ k: 'say', by: l.by, text, focus: [l.by] });
     else steps.push({ k: 'say', by: host, host: true, text, ...(sh?.boot ? { tense: true } : {}) });
   }
-  return { id: 'previously', kind: 'twist', venue, ep: ep.num, label: 'Previously On', host, steps };
+  return { id: 'previously', kind: 'twist', venue, ep: ep.num, label: ep.isFinale ? 'The Road to the Finale' : 'Previously On', host, steps };
 }

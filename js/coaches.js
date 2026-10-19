@@ -352,3 +352,32 @@ export function tribeHeadcount(tribe, activeNames) {
     : members.length;
   return contestants + coachesOf(name).length;
 }
+
+/**
+ * Every coach the season had, and how each one's season went: the tribe they
+ * coached, who they trained most (a fired coach's training is revoked, so it
+ * is read back from the night they went: ep.coachElimination[].lost), the
+ * episode their team voted them out, or the merge that made them a player and
+ * how far they got after it. Read by the finale (the recap, the jury's stands,
+ * the winner's moment), which otherwise never sees a coach who was voted out:
+ * a coach boot is kept out of gs.eliminated on purpose (eliminateCoach).
+ */
+export function coachStory() {
+  const hist = gs?.episodeHistory || [];
+  const out = [];
+  const add = (name, tribe) => { let c = out.find(x => x.name === name); if (!c) out.push(c = { name, tribe, trained: [], firedEp: null, promotedEp: null, playerOutEp: null }); return c; };
+  for (const c of gs?.coaches || []) add(c.name, c.tribe);
+  for (const c of gs?.coachesEliminated || []) add(c.coach, c.tribe).firedEp = c.ep || null;
+  const weight = per => Object.entries(per || {}).map(([n, s]) => [n, Object.values(s || {}).reduce((t, v) => t + (v > 0 ? v : 0), 0)]);
+  for (const h of hist) {
+    for (const e of h.coachElimination || []) { const c = add(e.coach, e.tribe); c.firedEp ||= h.num; c.lostTo = weight(e.lost); }
+    for (const p of h.coachPromotions || []) add(p.name).promotedEp = h.num;
+    if (h.eliminated && out.some(c => c.name === h.eliminated && c.promotedEp && h.num > c.promotedEp)) out.find(c => c.name === h.eliminated).playerOutEp = h.num;
+  }
+  for (const c of out) {
+    const w = c.lostTo || weight(gs?.coachTraining?.[c.name]);
+    c.trained = w.filter(([n, v]) => v > 0 && n !== c.name).sort((a, b) => b[1] - a[1]).map(([n]) => n);
+    delete c.lostTo;
+  }
+  return out;
+}

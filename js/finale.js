@@ -16,6 +16,8 @@ import { simulateIndividualChallenge } from './challenges-core.js';
 import { generateCampEvents } from './camp-events.js';
 import { reputationModifier } from './reputation.js';
 import { finalizeEditSeason } from './edit-layer.js';
+import { writeFinaleRecap } from './td/story/finale-recap.js';
+import { coachStory } from './coaches.js';
 import { makeScene } from './td/script/scene.js';
 import { scriptEvent } from './td/script/write.js';
 import { rpBuildWinnerCeremony, rpBuildReunion } from './vp-finale.js';
@@ -1928,6 +1930,10 @@ export function simulateFinale() {
     }
   }
 
+  // the finale's cold open: the whole season, and each finalist's road to tonight (td/story/finale-recap.js); and the
+  // coaches' seasons, which the finale's screens read (a coach voted out is in neither gs.eliminated nor the jury)
+  try { ep.finaleCoaches = coachStory(); } catch (e) { ep.finaleCoaches = []; }
+  try { ep.tdPreviously = writeFinaleRecap(ep, { finalists: ep.finaleEntrants || ep.finaleFinalists }); } catch (e) { console.warn('finale recap failed', e); ep.tdPreviously = null; }
   const summaryText = generateFinaleSummaryText(ep);
   ep.summaryText = summaryText;
 
@@ -1985,6 +1991,8 @@ export function simulateFinale() {
     hpRaceData: ep.hpRaceData || null,
     // All players who entered the finale (before fire-making/koh-lanta eliminations)
     finaleEntrants: ep.finaleEntrants || null,
+    tdPreviously: ep.tdPreviously || null,
+    finaleCoaches: ep.finaleCoaches || [],
   });
 
   let _recorded;
@@ -2046,6 +2054,12 @@ export function generateFinaleSummaryText(ep) {
   ln(`Episode: ${ep.num} — FINALE`);
   ln(`Finalists: ${finalists.join(', ')}`);
   ln(`Jury (${jury.length}): ${jury.join(', ')}`);
+
+  // the cold open as it airs (td/story/finale-recap.js), word for word
+  if ((ep.tdPreviously || []).length) {
+    sec('THE ROAD TO THE FINALE');
+    ep.tdPreviously.forEach(l => ln(`${l.by}: "${l.text}"`));
+  }
 
   sec('CAST (ALL)');
   players.forEach(p => ln(p.name));

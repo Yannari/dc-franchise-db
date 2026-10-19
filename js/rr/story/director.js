@@ -374,6 +374,15 @@ export function airLeg(state, leg) {
       src: { ...first, id: `taskm:${n}:${key}`, kind: 'task-montage', data: { ...first.data, ending: 'any', teamsList: ids } } });
   }
 
+  // ...and any other beat that still lands third in the same minute, at the same place, as the same kind (two teams'
+  // struggles that happen to peak together) is shown at the end of its own run instead
+  const still = {};
+  for (const b of beats) (still[`${b.data.stretch}|${b.data.t}|${b.kind}`] ||= []).push(b);
+  for (const group of Object.values(still)) for (const b of group.slice(2)) {
+    const to = Math.round(b.data.to ?? b.data.t);
+    if (to !== b.data.t) b.data.t = to;
+  }
+
   // Don narrating it (the real show: the departure order, the flights, a bridge, the bottom of the leg)
   const narration = narrate(state, leg, scenes);
 

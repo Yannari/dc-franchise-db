@@ -52,7 +52,8 @@ describe('rr: Don, the twists, and fair picking', () => {
       const counts = list.map(e => uses[e.id] || 0);
       const total = counts.reduce((a, b) => a + b, 0);
       if (total < 10) continue;
-      const mean = total / list.length;
+      // against the lines it competed with (a pool also holds every place's own lines, most of which can't air here)
+      const mean = total / Math.max(1, counts.filter(n => n > 0).length);
       for (const [i, n] of counts.entries()) expect(n, `${k} ${list[i].id}: ${n} of ${total}`).toBeLessThanOrEqual(Math.ceil(mean * 3) + 2);
     }
   });

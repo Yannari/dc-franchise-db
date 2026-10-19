@@ -169,11 +169,14 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   // the team's identity, heard at a natural moment (when the entry didn't already call one)
   if (!lines.some(l => String(l.voice || '').startsWith('id:'))) {
     const hook = AUTO_HOOK[scene.kind]?.(facts);
-    const who = r.roles.a;
+    // whoever didn't just speak says it (a, unless a had the last word; then a's partner)
+    const lastBy = [...lines].reverse().find(l => l.kind !== 'beat')?.by;
+    const partner = r.roles.b && partnerOf(state, r.roles.a) === r.roles.b ? r.roles.b : null;
+    const who = lastBy === r.roles.a && partner ? partner : r.roles.a;
     if (hook && who && stableRng(state.seed, 'rr-idhook', scene.id)() < AUTO_SHARE) {
       const said = identityLine(state, who, hook, stableRng(state.seed, 'rr-idline', scene.id));
       if (said) lines.push({ kind: scene.kind.startsWith('int-') ? 'conf' : 'say', by: who,
-        text: fill(said, r.roles, { ...r.slots, partner: partnerOf(state, who) }), voice: `id:${hook}` });
+        text: fill(said, r.roles, { ...r.slots, partner: partnerOf(state, who) }), voice: `id:${hook}`, auto: true });
     }
   }
   return { lines, lineId: entry.id };

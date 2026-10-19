@@ -33,6 +33,10 @@ export const WARM = new Set(['bond-moment', 'celebrate', 'small-talk']);
 export const ROW = new Set(['snap']);
 const ROW_ENDINGS = { blame: ['blow-up'], 'old-wound': ['explodes'], 'silent-treatment': ['breaks'], shove: ['shove'] };
 const isRow = s => ROW.has(s.kind) || (ROW_ENDINGS[s.kind] || []).includes(s.data?.ending);
+// between two teams: after a clash this leg, nothing friendly between them (manual §19.4 "one pair, two moods")
+export const SOUR_X = new Set(['trash-talk', 'gloat', 'shove', 'accusation', 'confront', 'mock-the-struggle', 'alliance-betrayal', 'deal-broken']);
+export const WARM_X = new Set(['small-talk', 'alliance-pitch', 'alliance-check', 'share-info', 'help-offer', 'mentor', 'tag-along']);
+const teamsKey = s => (s.data?.team && s.data?.other ? [s.data.team, s.data.other].sort().join('|') : null);
 
 // beyond what must air and every team at every task (about 40 for twelve teams): the real show runs about 60 moments
 export const legBudget = teams => Math.round(8 + 1.5 * teams);
@@ -121,7 +125,10 @@ export function airLeg(state, leg) {
   rows.forEach((r, i) => {
     const here = scenes.filter(s => s.data?.team === r.team && s.data?.stretch === r.stretch && !s.kind.startsWith('int-'));
     if (here.some(s => picked.has(s.id))) return;
-    const best = here.filter(ok).sort((x, y) => weight(y) - weight(x) || x.id - y.id)[0];
+    // the same kind twice at the same place and minute is enough (three hugs in a row read as a loop)
+    const sameSpot = s => [...picked.keys()].filter(id => { const p = byId.get(id); return p && p.kind === s.kind
+      && p.data?.stretch === s.data?.stretch && (p.data?.t ?? 0) === (s.data?.t ?? 0); }).length;
+    const best = here.filter(ok).filter(s => sameSpot(s) < 2).sort((x, y) => weight(y) - weight(x) || x.id - y.id)[0];
     if (best) { take(best, 1); return; }
     // a clean run says nothing about itself: the first one airs as getting there, the last as getting out
     const clean = !r.fails && !r.switched && !r.quit;
@@ -164,6 +171,20 @@ export function airLeg(state, leg) {
       && (optional[s.kind] || 0) < PER_KIND) { take(s, 2); optional[s.kind] = (optional[s.kind] || 0) + 1; ivSlots--; }
   }
   // an interview whose moment didn't air doesn't either (int-exit is about the exit, which always airs)
+  for (const [id] of [...picked]) {
+    const s = byId.get(id);
+    if (s?.kind.startsWith('int-') && s.data?.about != null && !picked.has(s.data.about)) picked.delete(id);
+  }
+
+  // two teams who clashed get nothing friendly after it, this leg (a must-air moment always stays)
+  const soured = new Map();
+  for (const id of [...picked.keys()].sort((x, y) => (byId.get(x).data?.t ?? 0) - (byId.get(y).data?.t ?? 0) || x - y)) {
+    const s = byId.get(id), k = teamsKey(s);
+    if (!k) continue;
+    if (WARM_X.has(s.kind) && soured.has(k) && picked.get(id) > 0) { picked.delete(id); continue; }
+    if (SOUR_X.has(s.kind)) soured.set(k, true);
+  }
+  // an interview about a moment that just left the cut leaves with it
   for (const [id] of [...picked]) {
     const s = byId.get(id);
     if (s?.kind.startsWith('int-') && s.data?.about != null && !picked.has(s.data.about)) picked.delete(id);

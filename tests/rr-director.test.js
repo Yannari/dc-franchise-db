@@ -116,6 +116,42 @@ describe('rr director', () => {
     for (const ex of st.scenes.filter(s => s.kind === 'int-exit')) expect(['last', 'on-location', 'midpoint']).toContain(factsFor(ex, rolesOf(ex, st), st).exitHow);
   });
 
+  it('two teams who clashed this leg get nothing friendly after it', async () => {
+    const { SOUR_X, WARM_X } = await import('../js/rr/story/director.js');
+    const byId = Object.fromEntries(res.state.scenes.map(s => [s.id, s]));
+    for (const ep of aired) {
+      const sour = new Set();
+      for (const seg of ep.segments) {
+        const sc = byId[seg.scene];
+        if (!sc?.data?.other) continue;
+        const k = [sc.data.team, sc.data.other].sort().join('|');
+        if (WARM_X.has(sc.kind)) expect(sour.has(k), `leg ${ep.n}: ${sc.kind} after a clash`).toBe(false);
+        if (SOUR_X.has(sc.kind)) sour.add(k);
+      }
+    }
+  });
+
+  it('nobody says two lines in a row because of an added identity line', () => {
+    for (const ep of aired) for (const seg of ep.segments) {
+      const ls = seg.lines || [];
+      ls.forEach((l, i) => {
+        if (i && l.auto && ls[i - 1].kind !== 'beat') expect(l.by, `${seg.kind} ${seg.lineId}`).not.toBe(ls[i - 1].by);
+      });
+    }
+  });
+
+  it('the same minute at the same task does not air the same kind three times', () => {
+    for (const ep of aired) {
+      const run = {};
+      for (const seg of ep.segments) {
+        if (seg.kind === 'int-bleachers') continue; // the finale's bleachers: every team out gets its word
+        const k = `${seg.t}|${seg.stretch}|${seg.kind}`;
+        run[k] = (run[k] || 0) + 1;
+        expect(run[k], `leg ${ep.n} ${k}`).toBeLessThanOrEqual(2);
+      }
+    }
+  });
+
   it('an interview airs only after the moment it is about', () => {
     for (const ep of aired) {
       const seen = new Set();

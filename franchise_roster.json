@@ -7718,7 +7718,7 @@
       "name": "Lorraine",
       "slug": "lorraine",
       "gender": "f",
-      "archetype": "wildcard",
+      "archetype": "perceptive-player",
       "stats": {
         "physical": 4,
         "endurance": 5,

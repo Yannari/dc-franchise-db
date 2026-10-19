@@ -599,3 +599,149 @@ export function tdBenchesScreen(ep, o = {}) {
   }
   return { id: 'benches', kind: 'camp', venue: key.split('/')[0], ep: ep.num, label: 'The Benches', host, steps };
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// THE GALLERY — who watches the finale from the stands: the jury, and the coaches voted out
+// ══════════════════════════════════════════════════════════════════════
+// (a coach voted out is kept out of gs.eliminated and the jury on purpose, coach-episode.js eliminateCoach;
+// the user, 2026-10-19: "the coaches got completely skipped at the finale too". They watch and react. No vote.)
+export function finaleGallery(ep) {
+  const jury = [...new Set([...(ep.juryResult?.reasoning || []).map(r => r.juror), ...(ep.gsSnapshot?.jury || [])])];
+  const fired = (ep.finaleCoaches || []).filter(c => c.firedEp && !jury.includes(c.name)).map(c => c.name);
+  return { jury, coaches: fired, all: [...jury, ...fired] };
+}
+// the stands, as many shots of them as the venue's seats need (vp-td-ep/jury-vote.js does the same)
+export function standsOf(ep, o, people) {
+  const J = juryPlates(ep, o);
+  const per = J.wide ? Math.max(1, seatsOn(J.wide)) : 0;
+  const shots = [];
+  if (per) for (let i = 0; i < people.length; i += per) shots.push(people.slice(i, i + per));
+  const scene = (focus, shot = null, time = null) => {
+    const k = shot ?? Math.max(0, shots.findIndex(s => s.includes(focus[0])));
+    return { k: 'scene', spot: 'jury-bleachers', tod: /-night$/.test(J.wide) ? 'night' : 'day', plate: J.wide, place: 'The Stands', time: time || (J.day ? 'Day' : 'Night'), card: false, cut: true,
+      focus, bg: [], places: seatJury(J.wide, shots[k] || []), host: null, wide: true, still: true, ...(J.indoor ? { noWx: true } : {}), ...(J.night ? { nightFrame: true } : {}) };
+  };
+  return { ok: !!J.wide && shots.length > 0, shots, scene };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// FINAL IMMUNITY — the last challenge of the season, on the stage
+// ══════════════════════════════════════════════════════════════════════
+// The classic page was a results table ("Mixed", three question marks, a Reveal button). The engine's record:
+// who won (ep.immunityWinner), the order they fell (ep.immunityNarrationStages: opening, each drop, the
+// head-to-head, the win) and what kind of challenge (endurance or a puzzle). Played at the venue's challenge
+// spot, with the jury and the coaches voted out watching from the stands and answering the drops.
+export function tdFinalImmunityScreen(ep, o = {}) {
+  const stages = ep.immunityNarrationStages || ep.finalChallengeStages || [];
+  const winner = ep.immunityWinner;
+  const finalists = (stages[0]?.remaining || ep.finaleEntrants || []).filter(Boolean);
+  if (!winner || finalists.length < 2 || !stages.length) return null;
+  const host = o.host || 'Chris';
+  const venue = venueOf(ep, o);
+  const spots = { 'hosted-camp': 'challenge-zone', 'film-lot': 'cage-stage', 'world-tour': 'ceremony', 'survival-island': 'volcano', carnival: 'bumper-arena' };
+  const spot = plateKey(venue, spots[venue], 'day') ? spots[venue] : (VENUES[venue]?.public || 'communal-grounds');
+  const key = plateKey(venue, spot, 'day');
+  if (!key) return null;
+  const bond = bondOf(ep);
+  const Vo = VOnce();
+  const G = finaleGallery(ep);
+  const S0 = standsOf(ep, o, G.all);
+  // (a day challenge: the stands' own frame is painted at night only on the island)
+  const S = { ...S0, scene: (f, k = null) => S0.scene(f, k, venue === 'survival-island' ? 'Night' : 'Day') };
+  const steps = [];
+  const say = (text, extra = {}) => steps.push({ k: 'say', by: host, host: true, text, ...extra });
+  const places = placeScene(key, finalists, [], { host });
+  const field = (focus = finalists) => steps.push({ k: 'scene', spot, tod: 'day', plate: key, place: 'Final Immunity', time: 'Day', card: false, cut: true, focus, bg: [], places, host, wide: true });
+  const endurance = !/puzzle/i.test(stages[0]?.text || '');
+  // who in the stands is with whom: each one's warmest finalist, and the one they least want to see win
+  const fan = n => [...finalists].sort((a, b) => bond(n, b) - bond(n, a))[0];
+  const foe = n => [...finalists].sort((a, b) => bond(n, a) - bond(n, b))[0];
+  const cut = !!ep.finalCut, fire = !!ep.firemakingDecision;
+
+  steps.push({ k: 'scene', spot, tod: 'day', plate: key, place: 'Final Immunity', time: 'Day', card: true, focus: finalists, bg: [], places, host, wide: true });
+  say(pickBy([`${listOf(finalists)}. Welcome to the last challenge of the season.`, `This is it. The last challenge you'll ever do out here.`], ep.num, 'open'));
+  say(fire ? `Win it, and you're safe tonight, and you decide who's safe with you. The other two make fire for the last seat.`
+    : cut ? `Win it, and you're safe. And you choose who comes with you to Final Tribal. Everybody else goes home.`
+      : `Win it, and it's the last thing the jury sees you do before they vote. No pressure.`, { focus: finalists });
+  say(endurance ? `Each of you stands on your own post over the water. The posts get smaller as we go. Step off, touch the water, or fall, and you're out. The last one standing wins.`
+    : `Each of you has the same puzzle in front of you. Every piece has to fit, and one wrong piece means taking it apart again. The first one to finish wins.`);
+  steps.push({ k: 'title', kicker: 'The Finale', name: 'Final Immunity', faces: finalists, vs: true });
+  // the stands: everybody who left, watching, and a voice for each finalist
+  if (S.ok) {
+    S.shots.forEach((s, i) => {
+      steps.push(S.scene(s, i));
+      if (i === 0) steps.push({ k: 'beat', text: `In the stands, the jury${G.coaches.length ? ` and ${G.coaches.length === 1 ? 'the coach' : 'the coaches'} who never made the merge` : ''} have come to watch.`, focus: s, act: { kind: 'arrive', who: s } });
+    });
+    const cheered = new Set();
+    finalists.forEach((f, i) => {
+      const n = G.all.filter(x => !cheered.has(x) && fan(x) === f && bond(x, f) >= 2).sort((a, b) => bond(b, f) - bond(a, f))[0];
+      if (!n) return;
+      cheered.add(n);
+      steps.push(S.scene([n]));
+      steps.push({ k: 'say', by: n, focus: [n], loud: fam(n) === 'loud', text: G.coaches.includes(n) ? Vo(n, {
+        loud: [`Come on, ${f}! Everything I taught you! All of it!`], soft: [`You've got this, ${f}. You always did.`], sharp: [`${f}, remember what I told you. Don't look down.`],
+        any: [`That's my camper down there! Let's go, ${f}!`, `${f}, I coached you for this. Go!`],
+      }, f, 'coach') : Vo(n, {
+        loud: [`LET'S GO, ${f.toUpperCase()}!`, `Come on, ${f}! Take it!`], soft: [`Go, ${f}! You can do it!`], dry: [`I'm cheering for ${f}. Quietly. Inside.`], sharp: [`${f}. Win this. Don't embarrass me.`],
+        any: [`Come on, ${f}!`, `${f}! Let's go!`],
+      }, f, 'cheer', i) });
+    });
+    field();
+  }
+
+  // the challenge: each drop, and the stands answering it
+  say(pickBy([`Campers ready? Go!`, `Three, two, one... go!`], ep.num, 'go'), { tense: true });
+  // (the engine's opening restates the rules the host just gave; its drops can repeat one sentence: each said once)
+  steps.push({ k: 'beat', text: endurance ? `${listOf(finalists)} climb onto their posts.` : `${listOf(finalists)} tip their pieces out and start.`, focus: finalists });
+  const told = new Set();
+  const once = (t, d) => { const c = cleanText(t); if (!told.has(c)) { told.add(c); return c; }
+    return pickBy(endurance ? [`${d} can't hold on any longer, and steps down into the water.`, `${d}'s legs give out. Into the water.`] : [`${d} gets one piece wrong, then another, and can't catch up.`, `${d} stops, stares at the board, and knows it's over.`], ep.num, d); };
+  let reacted = 0;
+  for (const st of stages.slice(1)) {
+    if (st.type === 'drop' && st.dropper) {
+      const d = st.dropper;
+      steps.push({ k: 'beat', text: once(st.text, d), focus: [d], act: endurance ? { kind: 'shake', who: [d] } : null, tense: (st.remaining || []).length <= 2 });
+      say(`${d} is out!`, { focus: [d] });
+      steps.push({ k: 'say', by: d, focus: [d], text: Vo(d, {
+        loud: [`NO! No, no, no!`, `Are you kidding me?!`], sharp: [`Fine. It doesn't matter. The jury votes, not the water.`], soft: [`I'm sorry. I gave it everything I had.`], dry: [endurance ? `Well. I'm wet.` : `Well. That piece was not my friend.`],
+        any: [`That's it. I've got nothing left.`, `I tried. I really did.`],
+      }, d, 'drop') });
+      // the stands: somebody who wanted them gone, or somebody who wanted them to win
+      if (S.ok && reacted < 3) {
+        const glad = G.all.filter(x => foe(x) === d && bond(x, d) <= -2).sort((a, b) => bond(a, d) - bond(b, d))[0];
+        const sad = G.all.filter(x => fan(x) === d && bond(x, d) >= 3)[0];
+        const r = glad || sad;
+        if (r) {
+          reacted++;
+          steps.push(S.scene([r]));
+          steps.push({ k: 'say', by: r, focus: [r], feel: { [r]: glad ? 'relief' : 'shock' }, text: glad ? Vo(r, { sharp: [`Bye, ${d}.`], loud: [`HA! Yes! Gone!`], dry: [`I'd like to say I'm sad.`], any: [`Good.`, `One down.`] }, d, 'glad')
+            : Vo(r, { soft: [`Oh, ${d}...`], loud: [`No! Come on!`], any: [`Ugh. So close.`, `No...`] }, d, 'sad') });
+          field();
+        }
+      }
+    } else if (st.type === 'headToHead') {
+      const [a, b] = st.remaining || [];
+      steps.push({ k: 'beat', text: cleanText(st.text), focus: [a, b].filter(Boolean), tense: true, contend: [a, b].filter(Boolean) });
+      if (a && b) say(pickBy([`Two left. ${a} and ${b}. One of you is about to win the last immunity of the season.`, `Down to ${a} and ${b}. Nobody in the stands is breathing.`], ep.num, 'h2h'), { focus: [a, b], tense: true, hold: true, contend: [a, b] });
+    } else if (st.type === 'win') {
+      steps.push({ k: 'beat', text: endurance ? `${winner} is the last one standing.` : `${winner} drops the last piece into place.`, focus: [winner], act: { kind: 'roundwin', who: [winner], lose: finalists.filter(f => f !== winner) } });
+    }
+  }
+  say(`${winner} wins final immunity!`, { focus: [winner] });
+  steps.push({ k: 'title', kicker: 'Final Immunity', name: winner, faces: [winner] });
+  steps.push({ k: 'say', by: winner, focus: [winner], loud: true, text: Vo(winner, {
+    loud: [`YES! I did it! I actually did it!`], sharp: [`Exactly as planned.`], soft: [`Oh my gosh. I can't believe that just happened.`], dry: [`So that's what winning feels like. I could get used to it.`],
+    any: [`I did it! I really did it!`],
+  }, winner, 'won') });
+  // and the stands, one last time: the loudest of the winner's people
+  const happy = G.all.filter(x => fan(x) === winner && bond(x, winner) >= 2)[0];
+  if (S.ok && happy) { steps.push(S.scene([happy])); steps.push({ k: 'beat', text: `${happy} jumps up in the stands and cheers.`, focus: [happy], applause: 'big' }); field([winner]); }
+  // the ones who lost it, to the camera
+  for (const f of finalists.filter(x => x !== winner)) steps.push({ k: 'conf', by: f, text: Vo(f, {
+    sharp: [cut || fire ? `${winner} holds my game in one hand now. I hate that.` : `Losing that one hurts. It doesn't decide anything. The jury does.`],
+    soft: [`I really wanted that one. I'm okay. I think I'm okay.`], loud: [`I was SO close! So close!`],
+    any: cut || fire ? [`Now I have to hope ${winner} wants me next to them at the end.`, `It's out of my hands now. It's in ${winner}'s.`]
+      : [`I didn't win it. But the jury remembers everything else I did.`, `One challenge doesn't win this game. I know that. It still stings.`, `${winner} earned that. Tonight I have to earn the jury.`],
+  }, f, 'lost') });
+  return { id: 'finale-challenge', kind: 'camp', venue, ep: ep.num, label: 'Final Immunity', host, steps };
+}

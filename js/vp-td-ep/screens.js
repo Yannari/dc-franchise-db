@@ -9,7 +9,7 @@
 // cover yet keeps its classic screen. A Classic switch on every stepped screen lands on the same
 // screen in the classic viewer (localStorage 'td-vp' = 'classic' to stay there).
 import { tdCampScreen, tdTribalScreen, tdTribalStepped, tdDoubleTribalScreen, cleanText, placeScene, plateKey, placeName, venueOf, teamSpot } from './steps.js';
-import { tdFinalTribalScreen, tdFinaleDecisionScreen, tdFanFinaleScreen, tdWinnerScreen, tdBenchesScreen } from './finale.js';
+import { tdFinalTribalScreen, tdFinaleDecisionScreen, tdFanFinaleScreen, tdWinnerScreen, tdBenchesScreen, tdFinalImmunityScreen } from './finale.js';
 import { tdCampMap, tdIslandMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, tdRiDuelScreen } from './twists.js';
 import { tdJuryHouseScreen, isJuryHouse } from './jury-house.js';
@@ -130,6 +130,8 @@ export function tdStepScreens(ep, classic = [], o = {}) {
       else if (['firemaking-decision', 'final-cut', 'kl-choice'].includes(id)) r = fin('decision', () => tdFinaleDecisionScreen(ep, o));
       else if (['fan-campaign', 'fan-vote-reveal'].includes(id)) r = fin('fan', () => tdFanFinaleScreen(ep, o));
       else if (['ftc', 'jury-vote'].includes(id)) r = fin('ftc', () => tdFinalTribalScreen(ep, o));
+      // the last immunity of the season, on the stage, with the jury and the coaches voted out in the stands
+      else if (id === 'finale-challenge') r = fin('imm', () => tdFinalImmunityScreen(ep, o));
       else if (id === 'winner-ceremony') r = fin('winner', () => tdWinnerScreen(ep, o));
       // a challenge finale's benches: everybody voted off picks a finalist (the user, 2026-10-15)
       else if (id === 'benches') r = fin('benches', () => tdBenchesScreen(ep, o));

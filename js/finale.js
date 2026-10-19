@@ -3115,12 +3115,12 @@ export function generateFinalChallengeStages(finalists, winner) {
         ? `${dropper} fights longer than anyone expected. The muscles are screaming. The will is there — but the body finally gives out. ${dropper} steps down.`
         : `${dropper} is right on the edge of cracking it. Then one misstep derails everything. ${dropper} is out of the challenge.`;
     } else if (ds.endurance <= 5 && challengeType === 'endurance') {
-      dropText = `${dropper} felt it early. The legs go first. Then the grip. Then the balance. ${dropper} drops — they have no more to give.`;
+      dropText = `${dropper} felt it early. The legs go first, then the grip, then the balance. ${dropper} drops. Nothing left.`;
     } else if (ds.mental <= 5 && challengeType === 'mental') {
       dropText = `${dropper} rushes and makes a critical error. There's no coming back from that kind of mistake under this pressure. ${dropper} is eliminated from the challenge.`;
     } else {
       dropText = challengeType === 'endurance'
-        ? `${dropper} stays as long as they can. Then — quietly, with no drama — they step down. The game narrows.`
+        ? `${dropper} stays up as long as possible, then quietly steps down. No drama at all.`
         : `${dropper} can't find the pattern. Time compounds the pressure. Eventually ${dropper} falters and steps back.`;
     }
     remaining = remaining.filter(p => p !== dropper);

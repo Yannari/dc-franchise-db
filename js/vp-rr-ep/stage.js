@@ -49,7 +49,7 @@ export function createStage(holder, { faceOf, legLabel }) {
     <div id="rr-cam"><div id="rr-lift"><div id="rr-world"><div class="plate" id="rr-pA"></div><div class="plate" id="rr-pB"></div><div class="layer" id="rr-gl"></div>
       <div class="layer" id="rr-under"></div><div class="layer" id="rr-toks"></div><div class="layer" id="rr-fx"></div></div></div></div>
     <div class="vignette"></div><div class="rr-replay"><span>◂◂ LAST TIME</span></div><div class="layer" id="rr-ui"></div><div class="layer" id="rr-amb" style="z-index:31;pointer-events:none"></div>
-    <div class="hud-leg" id="rr-leg"></div><div class="hud-task" id="rr-task"></div>
+    <div class="beatcard" id="rr-beat"></div><div class="hud-leg" id="rr-leg"></div><div class="hud-task" id="rr-task"></div>
   </div>
   <div class="vn" id="rr-vn"><img class="av" id="rr-vnav" alt=""><div class="tx"><span class="nm" id="rr-vnnm"></span><span class="tm" id="rr-vntm"></span><div class="ln" id="rr-vnln"></div></div><div class="more">▼</div></div></div>`;
   const $ = id => holder.querySelector('#' + id);
@@ -190,6 +190,13 @@ export function createStage(holder, { faceOf, legLabel }) {
   function vn(ep, s, step, fresh) {
     const box = $('rr-vn'), av = $('rr-vnav'), L = $('rr-vnln');
     clearInterval(typer);
+    const bc = $('rr-beat');
+    bc.className = 'beatcard';
+    if (step?.part === 'beat' && step.text) {
+      // no speaker: the line is a caption in the middle of the picture, and the bar steps aside
+      bc.textContent = step.text; bc.className = 'beatcard on' + (fresh ? ' fresh' : '');
+      box.className = 'vn'; lastWho = null; L.textContent = ''; $('rr-vnnm').textContent = ''; $('rr-vntm').textContent = ''; return;
+    }
     if (!step || ['card', 'tip'].includes(step.part) || (step.part !== 'pause' && !step.text)) {
       box.className = 'vn'; lastWho = null; L.textContent = ''; $('rr-vnnm').textContent = ''; $('rr-vntm').textContent = ''; return;
     }

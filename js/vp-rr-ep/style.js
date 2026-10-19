@@ -45,6 +45,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 #rr-gl .tdx-gl{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .5s}
 #rr-gl .tdx-gl.on{opacity:1}
 #rr-under,#rr-toks,#rr-fx{z-index:2}
+#rr-lift{position:absolute;inset:0}
 #rr-world{position:absolute;inset:0;transform-origin:50% 60%}
 #rr-world.kb-in{animation:kbIn 20s ease-out forwards} #rr-world.kb-pan{animation:kbPan 20s ease-in-out forwards} #rr-world.kb-out{animation:kbOut 20s ease-out forwards}
 #rr-world.kb-still-kb-in{transform:scale(1.05)} #rr-world.kb-still-kb-pan{transform:scale(1.04) translateX(-1%)} #rr-world.kb-still-kb-out{transform:scale(1.01)}
@@ -61,7 +62,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .stage.replay .rr-replay{display:block}
 .stage.replay .rr-replay::before,.stage.replay .rr-replay::after{content:"";position:absolute;left:0;right:0;background:#000}
 .stage.replay .rr-replay::before{top:0;height:6.5%} .stage.replay .rr-replay::after{bottom:0;height:2.5%}
-.stage.replay .rr-replay span{position:absolute;right:2cqw;bottom:4.5%;font-family:Bungee;font-size:1.3cqw;color:#fff;background:rgba(200,30,30,.85);padding:.2cqw .8cqw;border-radius:.4cqw;animation:blink 1.4s infinite}
+.stage.replay .rr-replay span{position:absolute;left:2cqw;top:8.5%;font-family:Bungee;font-size:1.3cqw;color:#fff;background:rgba(200,30,30,.85);padding:.2cqw .8cqw;border-radius:.4cqw;animation:blink 1.4s infinite}
 .stage.replay #rr-world{filter:saturate(.55) sepia(.18) contrast(1.05)}
 .stage.replay .hud-leg{opacity:0}
 /* HUD */
@@ -100,6 +101,13 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .vn .ln{font-size:max(13px,1.6cqw);line-height:1.34;margin-top:.4cqw}
 .vn.long .ln{font-size:max(12px,1.38cqw)}
 .vn.beat .ln{font-style:italic;color:#cfe0ff;font-size:max(12.5px,1.55cqw)}
+/* a stage direction (no speaker) is a caption card in the middle of the picture, not the speaker's bar */
+.beatcard{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);z-index:48;max-width:62cqw;min-width:30cqw;padding:1.2cqw 2.2cqw;text-align:center;
+  background:linear-gradient(180deg,rgba(14,19,38,.88),rgba(8,11,24,.92));border:2px solid rgba(143,180,255,.45);border-radius:1.2cqw;box-shadow:0 1cqw 3cqw rgba(0,0,0,.5);
+  font:italic 500 max(13px,1.6cqw)/1.4 Rubik;color:#e3ecff;display:none;pointer-events:none}
+.beatcard.on{display:block}
+.beatcard.fresh{animation:beatIn .35s ease-out}
+@keyframes beatIn{from{opacity:0;transform:translate(-50%,-40%)}to{opacity:1;transform:translate(-50%,-50%)}}
 .vn.beat::before{background:#8fb4ff}
 .vn.pause .ln{font-family:Bungee;font-size:3cqw;letter-spacing:.3em;color:var(--gold)}
 .vn .more{position:absolute;right:1.4cqw;bottom:.7cqw;font-size:1.1cqw;color:var(--gold);animation:blink 1s infinite}
@@ -233,14 +241,14 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .iv.fresh{animation:ivIn .35s ease-out both,ivDrift 24s .35s ease-in-out infinite alternate}
 @keyframes ivDrift{from{background-position:46% 50%;background-size:104%}to{background-position:54% 46%;background-size:110%}}
 .iv .compass{position:absolute;left:3.5cqw;bottom:14cqw;width:10cqw;opacity:.75}
-.iv .cf{position:absolute;top:6cqw;width:23cqw;height:23cqw;transform:translateX(-50%)}
+.iv .cf{position:absolute;top:10.5cqw;width:23cqw;height:23cqw;transform:translateX(-50%)}
 .iv.fresh .cf{animation:ivSit .5s cubic-bezier(.2,1.3,.4,1) both}
 .iv .cf img{width:100%;height:100%;border-radius:50%;object-fit:cover;border:.55cqw solid var(--c);background:#0d1a2c;
   box-shadow:0 0 0 .35cqw #07101d,0 2cqw 4cqw rgba(0,0,0,.55);animation:idle 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
 .iv .cf img.speaking{animation:talk .55s ease-in-out infinite}
 .iv .cf img:not(.speaking){filter:brightness(.9)}
 .iv .cf.L{left:31%} .iv .cf.R{left:67%} .iv .cf.solo{left:50%}
-.iv .lower{position:absolute;left:0;top:29.5cqw;width:60%;height:6.6cqw;background:linear-gradient(90deg,rgba(120,200,110,.18),rgba(120,200,110,.42));
+.iv .lower{position:absolute;left:0;top:34cqw;width:60%;height:6.6cqw;background:linear-gradient(90deg,rgba(120,200,110,.18),rgba(120,200,110,.42));
   border-radius:0 .7cqw .7cqw 0;text-align:right;padding:.7cqw 1.6cqw 0 0}
 .iv .lower.fresh{animation:lowerIn .5s .35s cubic-bezier(.2,1,.3,1) both}
 .iv .lower .nm{font:600 1.75cqw Rubik;color:#c9dbe0;letter-spacing:.02em;line-height:1.1}

@@ -14,6 +14,7 @@ const KINDS = {
   previously: '(s) => s.kind === "map"',
   replay: '(s) => !!s.replay',
   chill: '(s) => s.seg === "don-narrate" && s.ending === "chill"',
+  beat: '(s, t) => t.part === "beat" && s.kind === "world"',
   title: '(s) => s.kind === "title"',
   opener: '(s) => s.seg === "don-opener"',
   tip: '(s, t) => t.part === "tip"',

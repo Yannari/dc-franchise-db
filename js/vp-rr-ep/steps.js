@@ -133,8 +133,9 @@ export function episodeScreens(res, eps, i) {
       // which scene each line was said in: the next clipped scene with that speaker in it
       let group = null;
       for (const l of run.lines) {
-        const at = clips.findIndex(id => whoOfClip(st, id).includes(l.by));
-        const id = at >= 0 ? clips.splice(at, 1)[0] : (group?.id ?? null);
+        // a clip line names its scene (previously.js); an older one is matched by who is in it
+        const at = l.scene != null ? clips.indexOf(l.scene) : clips.findIndex(id => whoOfClip(st, id).includes(l.by));
+        const id = l.scene ?? (at >= 0 ? clips.splice(at, 1)[0] : (group?.id ?? null));
         if (!group || group.id !== id) { group = { id, lines: [] }; run.groups = [...(run.groups || []), group]; }
         group.lines.push(l);
       }

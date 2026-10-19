@@ -66,7 +66,7 @@ export default {
     ] },
     { id: 'gb.f7', when: { shot: true }, turns: [
       { beat: '{b} comes down from the stand and wraps {a} up before TJ can say anything.' },
-      { by: 'a', say: "Listen to me. Listen. It was {target}. It was {target} the whole time." },
+      { by: 'a', say: "Listen to me. Listen. {target} did this. {target} has been working against me the whole time." },
       { by: 'b', say: "I know." },
       { by: 'a', say: "Don't trust a word {target} says to you. Not one." },
       { by: 'c', opt: 'c', say: "We hear you. We've got it." },

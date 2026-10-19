@@ -71,6 +71,9 @@ export const CH_FACT_KEYS = [
   // the name at a vote, as it stood then (vote.js houseVote on): two or more wins (dailies and Arenas); never been
   // in the Arena; the biggest bank in the house. A ballot's reason may claim only what is true.
   'proven', 'neverIn', 'richest',
+  // a ballot that changed: the name it changed to is the one the most votes went to (ceremony.js). "I saw where the
+  // votes were going" is said only then (a read, 2026-10-19: the lone vote against fifteen said it).
+  'majority',
   // a Pairs season's pick-talk: which of the two pairs talked over ({opt1}: 1, {opt2}: 2) the pair really calls out
   // (pair-week.js pairPickDay). A scene that settles on one may only air when it is the one picked.
   'picked',
@@ -129,6 +132,7 @@ export function factsFor(scene, roles, state) {
     proven: scene.data?.on ? !!scene.data.on.proven : null,
     neverIn: scene.data?.on ? !!scene.data.on.neverIn : null,
     richest: scene.data?.on ? !!scene.data.on.richest : null,
+    majority: scene.data?.majority ?? null,
     strong: scene.data?.strong ?? null,
     // a Pairs season's scenes (pairs.js, share-keep.js): how the moment went, for the entries written for one way of it
     hesitate: !!scene.data?.hesitate,

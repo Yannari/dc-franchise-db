@@ -314,7 +314,7 @@ export default {
       { by: 'a', say: "And breathe out when you hit. Everybody forgets to breathe." },
       { by: 'b', say: "Why are you showing me this?" },
       { by: 'a', say: "Because I'd rather you were good. Good people are fun to beat." },
-      { by: 'b', conf: "{a} has been on this show more than anybody, and spent ten minutes showing me how to make a fist. I'll take it." },
+      { by: 'b', conf: "{a} has done this show before, and spent ten minutes showing me how to make a fist. I'll take it." },
     ] },
     { id: 'vm.x2', turns: [
       { by: 'b', say: "Can I ask you something? How do you stay calm before a vote?" },

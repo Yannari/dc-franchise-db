@@ -150,7 +150,20 @@ export function dropsPickup(v, base, reply) {
   const vw = [...pickWords(v)];
   return !want.some(w => vw.some(x => x === w || x.startsWith(w.slice(0, 5))));
 }
-export const PRUNED = { fragments: 0, dropped: 0, stock: 0, nameless: 0, pickup: 0 };
+//   filter              the line itself again, in capitals, with "I think" in front or a quip on the end ("Who do you
+//                       beat? Picture it. Picture winning."): it keeps 80% of the line's words in order, so it is the same
+//                       sentence in another tone, the robot the user heard (2026-10-18: "voices = different things to
+//                       say, not filters"). Measured 2026-10-19: 8,115 of 17,338 variants. humanize() lowercases the
+//                       capitals anyway, so most aired as the line itself; the quips aired as a tic.
+const lcsWords = s => String(s).toLowerCase().replace(/\{[^}]+\}/g, 'X').match(/[a-z']+|X/g) || [];
+export function isFilter(v, base) {
+  const b = lcsWords(base), w = lcsWords(v);
+  if (b.length < 4) return false;
+  const d = Array(b.length + 1).fill(0);
+  for (const x of w) { let prev = 0; for (let j = 1; j <= b.length; j++) { const t = d[j]; d[j] = x === b[j - 1] ? prev + 1 : Math.max(d[j], d[j - 1]); prev = t; } }
+  return d[b.length] / b.length >= 0.8;
+}
+export const PRUNED = { fragments: 0, dropped: 0, stock: 0, nameless: 0, pickup: 0, filter: 0 };
 for (const [k, list] of Object.entries(POOLS)) {
   for (const e of list) e.turns.forEach((t, i) => {
     if (!t.v) return;
@@ -160,7 +173,8 @@ for (const [k, list] of Object.entries(POOLS)) {
     const kept = {};
     for (const [tag, vs] of Object.entries(t.v)) {
       const ok = [vs].flat().filter(v => {
-        const why = variantFails(v, base, k.startsWith('ballot') ? 0 : stockUse[v]?.size || 0, t.by) || (dropsPickup(v, base, reply) ? 'pickup' : null);
+        const why = variantFails(v, base, k.startsWith('ballot') ? 0 : stockUse[v]?.size || 0, t.by) || (dropsPickup(v, base, reply) ? 'pickup' : null)
+          || (isFilter(v, base) ? 'filter' : null);
         if (why) PRUNED[why]++;
         return !why;
       });

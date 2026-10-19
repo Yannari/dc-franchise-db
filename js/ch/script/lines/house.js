@@ -788,7 +788,7 @@ export default {
       { by: 'b', say: "Like this?", v: { sharp: ['Like this. Got it.'] } },
       { by: 'b', conf: "{a} didn't have to help me. {a} did anyway. I won't forget that.", v: { sharp: ['{a} helping me is either kindness or strategy. I\'ll take it either way.'] } },
     ] },
-    { id: 'vm.2', turns: [
+    { id: 'vm.2', when: { neverIn: true }, turns: [
       { by: 'a', say: "First Arena is the worst. After that it's just a game.", v: { sharp: ['Don\'t think. Just win.'] } },
       { by: 'b', say: "How do you not panic?", v: { soft: ['I\'m so scared of going in there.'] } },
       { by: 'a', say: "You do panic. You just keep moving while you panic.", v: { odd: ['Everybody\'s scared. You just keep moving.'] } },

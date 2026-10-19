@@ -597,7 +597,10 @@ export const EVENTS = [
       addBond(vet, rookie, 1.4);
       remember(rookie, vet, 'worked-with-me', 1.2);
       nudge(ctx.state, rookie, 'confidence', 0.6);
-      return addScene(ctx.state, 'vet-mentors-rookie', [vet, rookie], {}, [vet, rookie], 'gym');
+      // "your first Arena is the worst" is for a rookie who has never been in one (a Pairs read, 2026-10-19: said to a
+      // rookie who had just won one)
+      const rt = ctx.state.rec?.[rookie] || {};
+      return addScene(ctx.state, 'vet-mentors-rookie', [vet, rookie], { on: { neverIn: !((rt.arenaW || 0) + (rt.arenaL || 0)) } }, [vet, rookie], 'gym');
     } },
   { id: 'scheme-lie', actorCooldown: 2, kind: 'game', cooldown: 4, max: 6,
     // A schemer plants a name: tells b that c is coming for them.

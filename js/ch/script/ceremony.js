@@ -155,13 +155,17 @@ function writeVoteOf(state, epRec, vote, day) {
   const run = {}, used = { has: k => !!day0[k], add: k => { day0[k] = 1; } };
   let sealed = false;
   const need = Math.floor(house / 2) + 1;
+  // the name the most ballots went to, for a changed ballot that says it followed the room
+  const counts = {};
+  for (const x of vote.ballots) counts[x.target] = (counts[x.target] || 0) + 1;
+  const most = Math.max(0, ...Object.values(counts));
   vote.ballots.forEach((b, k) => {
     const own = (WHY[b.why] || 'own') === 'own' && b.reason;
     const pb = pairOfBallot(b);
     const named = pb ? pb.named : b.target;
     const partners = pb && pb.partner ? { [pb.named]: pb.partner } : null;
     const sc = own ? synthetic(state, epRec.ep, day, 'ballot-why', [b.voter, named], { reason: b.reason, house, on: b.on || null }, b.bond, partners)
-      : synthetic(state, epRec.ep, day, 'ballot', [b.voter, named], { why: WHY[b.why] || 'own', flip: b.flip, house }, b.bond, partners);
+      : synthetic(state, epRec.ep, day, 'ballot', [b.voter, named], { why: WHY[b.why] || 'own', flip: b.flip, house, majority: counts[b.target] === most }, b.bond, partners);
     let script = writeScene(state, sc) || (own ? writeScene(state, synthetic(state, epRec.ep, day, 'ballot', [b.voter, named], { why: 'own', house }, b.bond, partners)) : null);
     run[b.target] = (run[b.target] || 0) + 1;
     // the room

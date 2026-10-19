@@ -48,7 +48,6 @@ export default {
     2: { sharp: "Of course you are.", dry: "Of course.", loud: "Of COURSE you are!", soft: "Of course you are.", odd: "Of course you are. I'd be shocked if you weren't." },
     3: { sharp: "{case}. I'm not going to pretend otherwise.", dry: "{case}. I won't pretend otherwise.", loud: "{case}! I'm NOT going to pretend otherwise!", soft: "{case}. I'm not going to pretend otherwise.", odd: "{case}. I'm not going to pretend. I'm bad at pretending." },
     4: { sharp: "And what about {alt}?", dry: "What about {alt}?", loud: "And what about {alt}?!", soft: "And what about {alt}?", odd: "And what about {alt}? Nobody's mentioned {alt}." },
-    5: { sharp: "What about {alt}?", dry: "What about {alt}?", loud: "What ABOUT {alt}?", soft: "What about {alt}?", odd: "What about {alt}? Go on." },
     6: { sharp: "{altcase}. If we're being honest, that's who should go.", dry: "{altcase}. Honestly, that's who should go.", loud: "{altcase}! If we're being HONEST, that's who should go!",
       soft: "{altcase}. If we're being honest, that's who should go.", odd: "{altcase}. If we're being honest, and we're at dinner, so we should be." },
     7: { sharp: "So now there are two names. Great.", dry: "Two names now.", loud: "So now there are TWO names! Great!", soft: "So now there are two names. Okay.", odd: "So now there are two names. Dinner is ruined." },

@@ -59,13 +59,14 @@ const KEEP_CAPS = new Set(['TJ', 'OK', 'MVP', 'DJ']);
 // The first episode is the first day: a line that says time has passed ("You haven't sat next to me all week",
 // "Taylor has been planning this for days", "I've been watching the votes") is never said in it (read 2026-10-18, a
 // premiere). "Last time" stays: a returnee's last season.
-export const FIRST_WEEK = /\b(all week|for days|for weeks|(two|three|four|a few|several) weeks|all season|every week|last week|since day one|the last vote|watching the votes|been voting with|in every daily|the dailies so far|every (night|meal|morning)|floating between groups|haven't sat next to me)\b/i;
+export const FIRST_WEEK = /\b(all week|for days|for weeks|(two|three|four|a few|several) weeks|all season|every week|last week|since day one|the last vote|watching the votes|been voting with|in every daily|the dailies so far|every (night|meal|morning|party)|party nights|floating between groups|haven't sat next to me)\b/i;
 
 export function humanize(text) {
   if (!text) return text;
   const NAMED = { ARENA: 'Arena', CHALLENGE: 'Challenge', VILLA: 'Villa' };
-  // ("TJ'S list" is TJ's list: the possessive is not part of the name)
-  let t = text.replace(/\b[A-Z][A-Z']+\b/g, w => { const own = /'S$/.test(w), stem = own ? w.slice(0, -2) : w; return KEEP_CAPS.has(stem) ? stem + (own ? "'s" : '') : NAMED[w] || w.toLowerCase(); });
+  // ("TJ'S list" is TJ's list: the possessive is not part of the name). A shout ends on a capital, so "TJ's list"
+  // matches TJ and keeps it (2026-10-19: "[A-Z']+" took "TJ'" and printed "Tj's list")
+  let t = text.replace(/\b[A-Z][A-Z']*[A-Z]\b/g, w => { const own = /'S$/.test(w), stem = own ? w.slice(0, -2) : w; return KEEP_CAPS.has(stem) ? stem + (own ? "'s" : '') : NAMED[w] || w.toLowerCase(); });
   t = t.replace(/\bi('|\b)/g, 'I$1');
   // a sentence still starts with a capital, after a brace or a quote too
   t = t.replace(/(^|[.!?]\s+)(["']?)([a-z])/g, (m, a, q, c) => a + q + c.toUpperCase());

@@ -67,9 +67,11 @@ export default {
     6: { sharp: "Why are you showing me this?", dry: "Why are you showing me this?", loud: "Why are you SHOWING me this?", soft: "Why are you showing me this?", odd: "Why are you showing me this? Is this a trap?" },
     7: { sharp: "I'd rather you were good. Good people are fun to beat.", dry: "Because I'd rather you were good. Good people are more fun to beat.", loud: "Because I'd RATHER you were good! Good people are FUN to beat!",
       soft: "Because I'd rather you were good. Good people are fun to beat.", odd: "Because I'd rather you were good. Beating bad people is boring." },
-    8: { sharp: "{a} has been on this show more than anybody and spent ten minutes showing me how to make a fist. I'll take it.", dry: "{a} has more seasons than anybody, and spent ten minutes on my fist. I'll take it.",
-      loud: "{a} has been on this show more than ANYBODY, and spent TEN MINUTES showing me how to make a FIST! I'll TAKE it!", soft: "{a} has been on this show more than anybody, and spent ten minutes showing me how to make a fist. I'll take it.",
-      odd: "{a} has been on this show more than anybody, and just gave me a free boxing lesson. I'm not asking why." },
+    8: { sharp: "{a} didn't have to teach me anything. Either {a} likes me, or {a} wants me owing a favor. I'll find out which.",
+      dry: "A veteran gave me a free boxing lesson. My wrist thanks {a}. My ego is still processing.",
+      loud: "{a} just taught me how to throw a punch! An actual veteran! I'm going to be dangerous now!",
+      soft: "I was so embarrassed when {a} walked in. Then {a} just helped. No jokes, no audience. That meant a lot.",
+      odd: "{a} just gave me a free boxing lesson. I'm not asking why. I'm asking when the next one is." },
   },
   // ── injuries ──
   'st.iq2': {

@@ -38,7 +38,7 @@ export default {
     7: { sharp: "If I'm going home, I'm taking {target}'s sleep with me.", cruel: "I want {target} lying awake tonight. That's my parting gift.", soft: "I'm not proud of it. But {target} needed to hear it, and now everybody has.", loud: "If I'm going home, I'm going home loud! {target} doesn't get to sleep easy tonight!", dry: "I only needed one sentence. Now everybody in that house is looking at {target}." },
   },
   'gb.f7': {
-    1: { sharp: "Listen to me. It was {target}. It was always {target}.", soft: "Please listen. It was {target}. It was {target} the whole time.", loud: "Listen! It was {target}! The whole time!", dry: "Listen carefully. It was {target}. All along." },
+    1: { sharp: "Listen to me. {target} did this. Don't let {target} do it to you next.", soft: "Please, just listen. I'm not angry. But {target} did this to me, and I don't want it happening to you.", loud: "Listen! {target} did this! {target} has been working against me since day one!", dry: "Quick public service announcement. {target} did this. I'd watch your back." },
     3: { sharp: "Don't believe a word out of {target}'s mouth. Not one.", soft: "Please don't trust {target}. Not one word.", loud: "Don't trust a word {target} says! Not one!", dry: "Assume everything {target} tells you is a lie. It saves time." },
     6: { sharp: "I said it loud for one person. {target} heard every word.", soft: "I didn't want to make a scene. But {target} needed to hear it.", loud: "I said it loud on purpose! I wanted {target} to hear every word!", dry: "I said it loud so {target} would hear it. Everybody else hearing it was a bonus." },
   },

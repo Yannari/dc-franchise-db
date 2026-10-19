@@ -24,7 +24,7 @@ export default {
   'cer-open.f': [
     { id: 'co.f1', turns: [{ by: 'tj', say: "Ladies' week! One of you ladies is going into the Arena, and the whole house gets a say. Who's it gonna be?" }] },
     { id: 'co.f2', turns: [{ by: 'tj', say: "It's a women's vote, people. One name each, said nice and loud. I love this part. I'm not supposed to love this part, but I love this part." }] },
-    { id: 'co.f3', turns: [{ by: 'tj', say: "Ladies, one of you is going into the Arena. Fellas, you're voting, so think hard. Let's go around the room." }] },
+    { id: 'co.f3', turns: [{ by: 'tj', say: "Ladies, one of you is going into the Arena. Everybody votes, fellas included, so think hard. Let's go around the room." }] },
   ],
   'cer-open.all': [
     { id: 'co.a1', turns: [{ by: 'tj', say: "Here we go, people. One name each, out loud. Whoever gets the most is going into the Arena." }] },
@@ -168,7 +168,7 @@ export default {
     ] },
   ],
   'ballot.changed': [
-    { id: 'bc.1', turns: [
+    { id: 'bc.1', when: { majority: true }, turns: [
       { by: 'a', say: "I... {b}. I'm going {b}." },
       { by: 'a', conf: "I came in planning to vote for somebody else. Then I heard where everybody was going, and I changed my mind." },
     ] },
@@ -176,9 +176,17 @@ export default {
       { by: 'a', say: "{b}." },
       { by: 'tj', say: "Ooh, I did not see that one coming. Keep going." },
     ] },
-    { id: 'bc.3', turns: [
+    { id: 'bc.3', when: { majority: true }, turns: [
       { by: 'a', say: "I changed my mind. {b}." },
       { by: 'a', conf: "When I saw where the votes were going, I wasn't going to be the one person on the wrong side of it." },
+    ] },
+    { id: 'bc.4', when: { majority: false }, turns: [
+      { by: 'a', say: "I changed my mind. {b}." },
+      { by: 'a', conf: "I know where the room was going. I just couldn't put my name next to it. If I'm the only one, fine." },
+    ] },
+    { id: 'bc.5', when: { majority: false }, turns: [
+      { by: 'a', say: "{b}. Sorry. I know that's not what I said." },
+      { by: 'a', conf: "Everybody went one way, and the more I heard, the less I liked it. So I didn't." },
     ] },
   ],
 
@@ -254,7 +262,7 @@ export default {
       { by: 'b', say: "Of course you are." },
       { by: 'a', say: "{case}. I'm not going to pretend otherwise." },
       { by: 'c', say: "And what about {alt}?" },
-      { by: 'a', say: "What about {alt}?" },
+      { by: 'a', say: "{alt}? Where's that coming from?" },
       { by: 'c', say: "{altcase}. If we're being honest, that's who should go." },
       { by: 'd', say: "So now there are two names. Great." },
       { by: 'y', opt: 1, say: "Two names is better than one name nobody chose." },

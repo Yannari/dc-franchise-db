@@ -7641,7 +7641,6 @@
       "name": "Kad",
       "slug": "kad",
       "gender": "nb",
-      "sexuality": "straight",
       "archetype": "challenge-beast",
       "stats": {
         "physical": 7,
@@ -7654,15 +7653,23 @@
         "intuition": 6,
         "temperament": 3
       },
+      "sexuality": "straight",
       "voice": "#quiet #competitive #proud. Speaks sparingly, listens through an explanation, and gives a short, considered reply. Polite even when annoyed: acknowledges the other person, states his disagreement, and stops. Uses dry, understated humor with people he trusts. Does not fill silence, boast constantly, or turn every exchange into a challenge. Anger tightens his diction and lengthens the pause before his answer. A courteous sentence can carry unmistakable heat without becoming an insult. #-cruel",
       "profileSources": {},
-      "ties": []
+      "age": 22,
+      "birthdate": "2004-05-06",
+      "ethnicity": "Black",
+      "nationality": "Canadian",
+      "hometown": "Toronto",
+      "occupation": "Student Athlete",
+      "descriptor": "The Quiet Competitor",
+      "backstory": "Kad grew up in Toronto playing school basketball and competing with cousins over everything from sprint times to who could finish a puzzle first. A college sports scholarship never materialized, forcing him to build an identity beyond being the athlete in the room. Customer-facing work led to commercial leasing, where preparation and confidence could turn a difficult appointment into a commission. He trains before work and still enters local amateur competitions when his schedule permits. Elijah is one of the relatives who remembers him before his carefully assembled professional image. Malcolm respects his cousin's intelligence, though both have a habit of turning a casual disagreement into a test neither wants to lose. His name, career, and history are new proposed additions.",
+      "personality": "Kad is a reserved competitor who prefers to demonstrate ability rather than announce it. He watches, learns the standard, and puts his energy into meeting it. His manners are deliberate: he lets people finish, thanks them for help, and can disagree without making the exchange personal. That composure takes effort. Losing, being patronized, and seeing someone take credit for another person's work can provoke a quick internal flare of anger. His jaw sets, his replies shorten, and he may need a moment before speaking, but he usually finds a civil way to answer. He is not endlessly unbothered; he simply considers losing control in public another kind of defeat. Frustration can make him overtrain, compete too aggressively, or keep replaying a slight long after the conversation ended. He offers practical support quietly and dislikes having his restraint mistaken for weakness or indifference. Around trusted people, he relaxes into small jokes and unforced affection. He respects opponents who win fairly and accepts a clear correction, although he may need time to stop feeling it. His central tension is learning to express anger honestly before politeness turns it into a private grudge."
     },
     {
       "name": "Lila",
       "slug": "lila",
       "gender": "f",
-      "sexuality": "bi",
       "archetype": "underdog",
       "stats": {
         "physical": 3,
@@ -7675,15 +7682,23 @@
         "intuition": 7,
         "temperament": 5
       },
+      "sexuality": "bi",
       "voice": "#warm #emotional #earnest. Hearts, exclamation marks, and spontaneous “omg.” Responds first to emotional meaning. Remembers small personal details. When suspicious, asks whether someone is upset with her before considering manipulation. Hurt messages lose their emojis and become plain questions. #-schemer",
       "profileSources": {},
-      "ties": []
+      "age": 23,
+      "birthdate": "2003-11-06",
+      "ethnicity": "Mexican American",
+      "nationality": "American",
+      "hometown": "Phoenix, Arizona",
+      "occupation": "Dental assistant",
+      "descriptor": "The Open Heart",
+      "backstory": "Lila grew up in a lively household where people borrowed each other's clothes, argued across rooms, and rarely let anyone eat alone. She chose dental assisting for its practical training and the chance to help anxious patients. She remembers who needs the chair adjusted slowly and who prefers an explanation before every step. She lives with family while saving for an apartment and takes extra shifts when friends propose plans beyond her budget. Her generosity routinely disrupts her savings. Recently she has started doing small things alone, from lunch outings to driving somewhere unfamiliar, trying to discover which preferences belong to her rather than the people she loves.",
+      "personality": "ila feels things openly and assumes emotional honesty will make relationships easier. She is good at noticing embarrassment and making people feel included, but less skilled at distinguishing distress from an attempt to influence her. Enthusiasm makes her generous with promises and quick to imagine lasting friendships. When worried, she seeks reassurance indirectly, apologizing or asking whether she has done something wrong. She sometimes agrees outwardly and becomes resentful later because she never stated a limit. Her anger is usually preceded by hurt and several chances to repair the relationship. Once a pattern becomes undeniable, she can be unexpectedly decisive. She needs affection, but also wants to become someone who can disappoint another person without believing she has become unkind."
     },
     {
       "name": "Lorraine",
       "slug": "lorraine",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "wildcard",
       "stats": {
         "physical": 4,
@@ -7696,6 +7711,7 @@
         "intuition": 7,
         "temperament": 5
       },
+      "sexuality": "straight",
       "voice": "#blunt#warm #goofy #anxious. Naturally conversational and wry. As Jace, inserts “bro” and “stoked” into carefully punctuated prose. Checks whether people have eaten and advises them to rest. Uncertainty about slang makes her explain more, exposing more of Lorraine. #-dry",
       "profileSources": {},
       "ties": [
@@ -7704,7 +7720,16 @@
           "kin": "aunt-uncle",
           "role": "elder"
         }
-      ]
+      ],
+      "age": 52,
+      "birthdate": "1974-08-27",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Tampa, Florida",
+      "occupation": "Real-estate Photographer",
+      "descriptor": "The Lady Photographer",
+      "backstory": "Lorraine built a career in real-estate photography after years as the relative entrusted with everyone's family pictures. She likes solving a bad angle, arranging light, and making an ordinary space feel worth noticing. Two divorces left her more independent and less certain that experience automatically produces wisdom. She has a wide network of acquaintances but fewer people she calls when she feels lonely. Her nephew Jace brings out her affectionate, meddling side. She enjoys linen shirts, ambitious weekend plans, and purchases she describes as investments. Work keeps placing her inside other people's fresh starts while she considers what she wants her own next chapter to contain.",
+      "personality": "Lorraine is adaptable, sociable, and quick to make an unfamiliar environment feel domestic. She asks questions easily and often supplies advice before being invited. Concern can become a way of claiming closeness faster than another person is ready for. She enjoys feeling current and gets embarrassed when a reference exposes her uncertainty. Rather than admit she does not know, she may improvise confidently and explain too much. Her self-deprecating humor is usually warm, though it sometimes asks others to reassure her. She is tougher in a practical crisis than in a conversation about rejection. When she feels accepted without having to entertain or help, her wit becomes more relaxed and her advice less insistent."
     }
   ]
 }

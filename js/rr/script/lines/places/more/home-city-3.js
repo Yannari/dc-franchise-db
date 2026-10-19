@@ -88,22 +88,20 @@ const tower = {
       by('a', "Five seconds."),
       by('b', "Four minutes."),
       by('a', "Get up. I'll carry the water."),
+      beat('{b} gets up, grumbling, and they make it to the top a few minutes later.'),
     ] },
     { id: 'hc3.st-a2', when: STAIRS, turns: [
       by('a', "Which floor is this?"),
       by('b', "There aren't any numbers on this one."),
       by('a', "Then I've decided it's nearly the top."),
       by('b', "That's not how buildings work."),
-    ] },
-    { id: 'hc3.sd-a1', when: DECK, turns: [
-      beat('{a} freezes halfway round the rail. A crew member waves them both back to the start.'),
-      by('a', "Back? We were halfway!"),
-      by('b', "Rules are rules. Back we go. And this time, don't look down."),
+      beat('Three flights later, the stairwell ends at a door marked TOP. {a} looks unbearably smug.'),
     ] },
     { id: 'hc3.sd-a2', when: DECK, turns: [
       by('b', "Second time round. This time we don't stop."),
       by('a', "What if the wind..."),
       by('b', "We don't stop for the wind. The wind doesn't stop for us."),
+      beat("They don't stop, and this time they make it all the way round."),
     ] },
   ],
   'task-done.any': [
@@ -131,6 +129,23 @@ const tower = {
       by('a', "Was that the hardest thing we'll have to do?"),
       by('b', "It's the first thing we've done."),
       by('a', "So, yes. So far."),
+    ] },
+  ],
+};
+
+const failed = {
+  'attempt-fail.any': [
+    { id: 'hc3.sd-a1', when: DECK, turns: [
+      beat('{a} freezes halfway round the rail. A crew member waves them both back to the start.'),
+      by('a', "Back? We were halfway!"),
+      by('b', "Rules are rules. Back we go. And this time, don't look down."),
+    ] },
+    { id: 'hc3.zl-a1', when: ZL, turns: [
+      beat('{a} reaches for the pole, swipes at nothing, and sails on to the end of the line.'),
+      by('a', "I missed it!"),
+      by('b', "Then back up the tower. Again."),
+      by('a', "All of it?"),
+      by('b', "All of it."),
     ] },
   ],
 };
@@ -196,13 +211,6 @@ const zipline = {
     ] },
   ],
   'task-try.after-fails': [
-    { id: 'hc3.zl-a1', when: ZL, turns: [
-      beat('{a} reaches for the pole, swipes at nothing, and sails on to the end of the line.'),
-      by('a', "I missed it!"),
-      by('b', "Then back up the tower. Again."),
-      by('a', "All of it?"),
-      by('b', "All of it."),
-    ] },
     { id: 'hc3.zl-a2', when: ZL, turns: [
       by('b', "You have to grab before you see it. If you can see it, you're already past it."),
       by('a', "That makes no sense."),
@@ -214,6 +222,7 @@ const zipline = {
       by('b', "Noodles can grab things."),
       by('a', "Name one thing a noodle has ever grabbed."),
       by('b', "Just grab the tip!"),
+      beat('On the next run, {a} grabs, and the tip comes away in {a.posAdj} hand.'),
     ] },
     { id: 'hc3.zl-a4', when: ZL, turns: [
       beat('On the next run, {b} comes down the line with one hand out and a face of total focus.'),
@@ -255,4 +264,4 @@ const zipline = {
   ],
 };
 
-export default mergePools(tower, zipline);
+export default mergePools(tower, zipline, failed);

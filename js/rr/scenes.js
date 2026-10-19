@@ -269,7 +269,8 @@ export function interviewAfter(state, sc, rng) {
   const w = weight(sc);
   if (w < MIN_WEIGHT) return null;
   if (rng() >= Math.min(0.7, w * 0.25)) return null;
-  const who = people(state, tid).filter(n => sc.seenBy.includes(n));
+  const subject = sc.who[0];
+  const who = people(state, tid).filter(n => sc.seenBy.includes(n)).sort((x, y) => (y === subject) - (x === subject));
   if (!who.length) return null;
   const kind = SCENES[sc.kind];
   const partnerBond = (sc.data.effects || []).filter(e => e[0] === 'bond' && who.includes(e[1]) && who.includes(e[2])).reduce((s, e) => s + e[3], 0);
@@ -278,7 +279,7 @@ export function interviewAfter(state, sc, rng) {
   const firstTime = !state.scenes.some(x => x.kind.startsWith('int-') && x.data.team === tid);
   if (kind?.family === 4 && lovers.some(n => who.includes(n)) && rng() < 0.5) kindId = 'int-secret';
   else if (kind?.scheme || ['alliance-pitch', 'deal', 'boomerang-decide', 'express-give'].includes(sc.kind)) kindId = 'int-strategy';
-  else if (sc.data.other && [2, 7, 8, 12].includes(kind?.family)) kindId = 'int-about-team';
+  else if (sc.data.other && [2, 4, 7, 8, 12].includes(kind?.family) && kindId !== 'int-secret') kindId = 'int-about-team';
   else if (partnerBond < 0 && who.length === 2 && rng() < 0.4) kindId = 'int-contradict';
   else if (firstTime) kindId = 'int-backstory';                 // the first time a team sits down: who they are
   const ivWho = kindId === 'int-secret' ? [lovers.find(n => who.includes(n)) || who[0]] : who;
@@ -302,10 +303,13 @@ export function interviewAfter(state, sc, rng) {
     const warm = effs.filter(e => e[0] === 'teams' && [e[1], e[2]].includes(o)).reduce((s, e) => s + e[3], 0);
     const feud = effs.filter(e => e[0] === 'rivalry' && [e[1], e[2]].includes(o)).reduce((s, e) => s + e[3], 0);
     const hit = effs.some(e => (e[0] === 'time' || e[0] === 'pending') && e[1] === tid && e[2] > 0);
-    ending = warm > 0 ? 'respect' : feud > 0 || warm < 0 ? 'grudge' : hit ? 'fear' : 'respect';
+    // a crush is a crush; a team that keeps winning legs is feared
+    const strong = (state.rec[o]?.legWins || 0) >= 2;
+    ending = kind?.family === 4 ? 'crush' : warm > 0 ? 'respect' : feud > 0 || warm < 0 ? 'grudge' : hit || strong ? 'fear' : 'respect';
   }
   const iv = playScene(ctx, kindId, rng, { ending: ending || decideEnding(SCENES[kindId], prepare(ctx), rng) });
   iv.data.about = sc.id;
+  iv.data.aDid = ivWho[0] === subject;
   return iv;
 }
 

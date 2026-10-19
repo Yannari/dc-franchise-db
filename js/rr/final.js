@@ -39,7 +39,8 @@ export function playFinal(state, leg, from, to, rng) {
     if (order.length < 2) break;
     const roots = closeness(state, id, order[0]) >= closeness(state, id, order[1]) ? order[0] : order[1];
     bleachers.push({ id, roots });
-    emit(state, 'int-bleachers', people(state, id), 'roots-for', { team: id, other: roots, t: endT });
+    const cares = Math.max(closeness(state, id, order[0]), closeness(state, id, order[1])) > 0;
+    emit(state, 'int-bleachers', people(state, id), cares ? 'roots-for' : 'unimpressed', { team: id, other: roots, t: endT });
   }
   if (midOut && order.length >= 2) {
     const roots = closeness(state, midOut, order[0]) >= closeness(state, midOut, order[1]) ? order[0] : order[1];

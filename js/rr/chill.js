@@ -29,9 +29,9 @@ function act(state, kindId, tid, oid, rng, ending = null, data = {}) {
 
 // A team going home: the team closest to it comes over (console), a couple says goodbye,
 // and the team says its last word to camera (int-exit).
-function farewell(state, out, finished, finish, rng, atMat) {
+function farewell(state, out, finished, finish, rng, atMat, how = 'last') {
   const t = finish[out] ?? Math.max(...Object.values(finish));
-  if (!atMat) { const [a, b] = people(state, out); act(state, 'int-exit', out, null, rng, getBond(a, b) >= 0 ? 'grateful' : 'bitter', { t }); return; }
+  if (!atMat) { const [a, b] = people(state, out); act(state, 'int-exit', out, null, rng, getBond(a, b) >= 0 ? 'grateful' : 'bitter', { t, exitHow: how }); return; }
   const close = (a, b) => people(state, a).reduce((s, x) => s + people(state, b).reduce((u, y) => u + getBond(x, y), 0), 0) / 4;
   const friends = finished.filter(id => id !== out).sort((a, b) => close(b, out) - close(a, out));
   if (friends[0] && close(friends[0], out) >= 1) {
@@ -50,7 +50,7 @@ function farewell(state, out, finished, finish, rng, atMat) {
       present: [out, otherTeam] }, 'goodbye-kiss', rng);
   }
   const [a, b] = people(state, out);
-  act(state, 'int-exit', out, null, rng, getBond(a, b) >= 0 ? 'grateful' : 'bitter', { t });
+  act(state, 'int-exit', out, null, rng, getBond(a, b) >= 0 ? 'grateful' : 'bitter', { t, exitHow: how });
 }
 
 export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
@@ -152,7 +152,7 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     const carry = (state.pending[id] || 0) + (result.nonElim.penalty === 'departure' ? DEPARTURE_PENALTY : 0);
     if (carry) state.carryPenalty[id] = carry;
   }
-  for (const id of result.eliminated) farewell(state, id, finished, finish, rng, finish[id] != null);
+  for (const id of result.eliminated) farewell(state, id, finished, finish, rng, finish[id] != null, result.how[id]);
   for (const id of result.eliminated) if (!state.gone.includes(id)) state.gone.push(id);
 
   rest(state);

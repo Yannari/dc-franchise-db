@@ -35,7 +35,14 @@ export function previouslyFor(state, prevEp, rng = Math.random) {
   const followed = new Set(Object.keys(state.storyAired || {}));
   const cands = prevEp.segments.map(s => byId.get(s.scene)).filter(s => s && clausesFor(s) && rolesOf(s, state));
   if (!cands.length) return null;
-  const picked = cands.sort((x, y) => rank(y, followed) - rank(x, followed) || x.id - y.id).slice(0, MAX)
+  const seenKey = new Set();
+  const once = cands.sort((x, y) => rank(y, followed) - rank(x, followed) || x.id - y.id).filter(s => {
+    const k = `${SABOTAGE.has(s.kind) ? 'sabotage' : s.kind}|${s.data?.team}`;
+    if (seenKey.has(k)) return false;
+    seenKey.add(k);
+    return true;
+  });
+  const picked = once.slice(0, MAX)
     .sort((x, y) => (x.data?.t ?? 0) - (y.data?.t ?? 0) || x.id - y.id);
   const lines = [{ kind: 'say', by: DON, text: 'Previously on The Ridonculous Race...' }];
   const kept = [];

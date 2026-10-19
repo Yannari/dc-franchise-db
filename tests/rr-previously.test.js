@@ -41,6 +41,18 @@ describe('rr previously', () => {
     }
   });
 
+  it('never recaps the same kind of moment for the same team twice', () => {
+    for (const ep of eps.slice(1)) {
+      const seen = new Set();
+      for (const id of ep.previously.scenes) {
+        const sc = res.state.scenes.find(s => s.id === id);
+        const k = `${sc.kind}|${sc.data.team}`;
+        expect(seen.has(k), k).toBe(false);
+        seen.add(k);
+      }
+    }
+  });
+
   it('only recaps kinds it has words for', () => {
     for (const ep of eps.slice(1)) for (const k of ep.previously.kinds) expect(RECAP_KINDS).toContain(k);
   });

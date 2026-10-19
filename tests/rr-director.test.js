@@ -96,6 +96,26 @@ describe('rr director', () => {
     }
   });
 
+  it('interviews make the episode, not only the exits', () => {
+    let n = 0;
+    for (const ep of aired) n += ep.segments.filter(s => s.kind.startsWith('int-') && s.kind !== 'int-exit' && s.kind !== 'int-bleachers').length;
+    expect(n / aired.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('an interview casts the person the moment was about first, and an exit knows how the team went out', async () => {
+    const { factsFor } = await import('../js/rr/script/facts.js');
+    const { rolesOf } = await import('../js/rr/script/roles.js');
+    const st = res.state;
+    const byId = Object.fromEntries(st.scenes.map(s => [s.id, s]));
+    let checked = 0;
+    for (const iv of st.scenes.filter(s => s.kind === 'int-feeling' && s.data.about != null)) {
+      const cause = byId[iv.data.about];
+      if (iv.who.includes(cause.who[0])) { expect(iv.who[0]).toBe(cause.who[0]); expect(factsFor(iv, rolesOf(iv, st), st).aDid).toBe(true); checked++; }
+    }
+    expect(checked).toBeGreaterThan(0);
+    for (const ex of st.scenes.filter(s => s.kind === 'int-exit')) expect(['last', 'on-location', 'midpoint']).toContain(factsFor(ex, rolesOf(ex, st), st).exitHow);
+  });
+
   it('an interview airs only after the moment it is about', () => {
     for (const ep of aired) {
       const seen = new Set();

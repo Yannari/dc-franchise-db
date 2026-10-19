@@ -9,7 +9,7 @@
 // cover yet keeps its classic screen. A Classic switch on every stepped screen lands on the same
 // screen in the classic viewer (localStorage 'td-vp' = 'classic' to stay there).
 import { tdCampScreen, tdTribalScreen, tdTribalStepped, tdDoubleTribalScreen, cleanText, placeScene, plateKey, placeName, venueOf, teamSpot } from './steps.js';
-import { tdFinalTribalScreen, tdFinaleDecisionScreen, tdFanFinaleScreen, tdWinnerScreen, tdBenchesScreen, tdFinalImmunityScreen } from './finale.js';
+import { tdFinalTribalScreen, tdFinaleDecisionScreen, tdFanFinaleScreen, tdWinnerScreen, tdBenchesScreen, tdFinalImmunityScreen, tdFinaleWalkScreen } from './finale.js';
 import { tdCampMap, tdIslandMap, hasMap, MAP_VENUES, openWindow, nextConv, lockedConv, PLACE_LABEL } from './map.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, tdRiDuelScreen } from './twists.js';
 import { tdJuryHouseScreen, isJuryHouse } from './jury-house.js';
@@ -125,7 +125,10 @@ export function tdStepScreens(ep, classic = [], o = {}) {
       if (id === 'finale-camp') {
         const campK = Object.keys(ep.campEvents || {})[0];
         const scr = campK ? tdCampScreen(ep, campK, 'pre', membersOf(ep, campK), o) : null;
-        if (scr) { out.push(shell(scr, S, ep, o)); continue; }
+        // ...and then the walk past everyone the season sent home (finale.js tdFinaleWalkScreen)
+        const walk = (() => { try { return tdFinaleWalkScreen(ep, o); } catch (err) { console.warn('TD finale walk fell back:', err); return null; } })();
+        if (scr) { out.push(shell(scr, S, ep, o)); if (walk) out.push(shell(walk, { ...S, id: 'finale-walk', label: walk.label }, ep, o)); continue; }
+        if (walk) { out.push(shell(walk, { ...S, id: 'finale-walk', label: walk.label }, ep, o)); continue; }
       }
       else if (['firemaking-decision', 'final-cut', 'kl-choice'].includes(id)) r = fin('decision', () => tdFinaleDecisionScreen(ep, o));
       else if (['fan-campaign', 'fan-vote-reveal'].includes(id)) r = fin('fan', () => tdFanFinaleScreen(ep, o));

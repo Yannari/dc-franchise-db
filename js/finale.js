@@ -17,6 +17,8 @@ import { generateCampEvents } from './camp-events.js';
 import { reputationModifier } from './reputation.js';
 import { finalizeEditSeason } from './edit-layer.js';
 import { writeFinaleRecap } from './td/story/finale-recap.js';
+import { tdFinaleWalkScreen, tdFinalImmunityScreen } from './vp-td-ep/finale.js';
+import { tdStepTranscript } from './vp-td-ep/steps.js';
 import { coachStory } from './coaches.js';
 import { makeScene } from './td/script/scene.js';
 import { scriptEvent } from './td/script/write.js';
@@ -2059,6 +2061,16 @@ export function generateFinaleSummaryText(ep) {
   if ((ep.tdPreviously || []).length) {
     sec('THE ROAD TO THE FINALE');
     ep.tdPreviously.forEach(l => ln(`${l.by}: "${l.text}"`));
+  }
+  // the walk and the last immunity as they air (vp-td-ep/finale.js), word for word: the screens read the episode's
+  // record with the season's state as it is right now (the history entry's snapshot is taken from the same state)
+  {
+    const rec = { ...ep, gsSnapshot: (() => { try { return window.snapshotGameState(); } catch { return null; } })(), immunityNarrationStages: ep.finalChallengeStages || null };
+    const o = { host: cfg.host || 'Chris', setting: cfg.setting, history: gs.episodeHistory };
+    for (const [title, build] of [['THE WALK', tdFinaleWalkScreen], ['FINAL IMMUNITY — AS IT AIRS', tdFinalImmunityScreen]]) {
+      const scr = (() => { try { return build(rec, o); } catch { return null; } })();
+      if (scr) { sec(title); tdStepTranscript(scr).forEach(l => ln(l)); }
+    }
   }
 
   sec('CAST (ALL)');

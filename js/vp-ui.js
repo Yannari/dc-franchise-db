@@ -810,7 +810,7 @@ const _BED_CHALLENGE_PREFIXES = [
 const _BED_CAMPNIGHT_EXACT = new Set([
   'voting-plans', 'mole-exposed', 'emissary-scouting', 'relationships',
   'ri-choice', 'ri-life', 'ri-duel', 'rescue-life', 'post-twist',
-  'finale-camp', 'kl-camp', 'kl-choice', 'firemaking-camp', 'firemaking-decision',
+  'finale-camp', 'finale-walk', 'kl-camp', 'kl-choice', 'firemaking-camp', 'firemaking-decision',
   'fanvote-camp', 'jury-life', 'final-cut',
 ]);
 // camp-post-<tribe> = the "After The Challenge" / "After TC" camp-life screens.

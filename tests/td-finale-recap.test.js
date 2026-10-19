@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { runOneSeason, seededRun, core } from './helpers/season-harness.js';
 import { tdPreviouslyScreen } from '../js/vp-td-ep/twist-screens.js';
-import { tdFinalImmunityScreen } from '../js/vp-td-ep/finale.js';
+import { tdFinalImmunityScreen, tdFinaleWalkScreen } from '../js/vp-td-ep/finale.js';
 
 describe('the finale recap', () => {
   it('recaps the season, then each finalist in turn, and plays as the road to the finale', () => {
@@ -25,6 +25,8 @@ describe('the finale recap', () => {
       expect(text).not.toMatch(/nearly ended it: (one|two) votes/);
       const scr = tdPreviouslyScreen(fin, { host: 'Chris', history: core.gs.episodeHistory });
       expect(scr.label).toBe('The Road to the Finale');
+      // ...and the text backlog carries the finale's new screens, as they air
+      for (const sec of ['THE ROAD TO THE FINALE', 'THE WALK', 'FINAL IMMUNITY — AS IT AIRS']) expect(fin.summaryText).toContain(sec);
       expect(scr.steps.some(s => s.k === 'title' && s.name === 'The Road to the Finale')).toBe(true);
     });
   }, 180000);
@@ -44,6 +46,24 @@ describe('the finale recap', () => {
         expect(scr.steps.some(s => s.k === 'say' && s.by === d)).toBe(true);
       }
       expect(said).toContain(`${fin.immunityWinner} wins final immunity!`);
+      expect(new Set(said).size).toBe(said.length);
+    });
+  }, 180000);
+
+  // the walk past everyone the season sent home: a card for each, in the order they went, and a finalist's words
+  it('walks past every boot in order, each with a finalist speaking, and no line twice', () => {
+    seededRun(() => {
+      runOneSeason({}, 16);
+      const fin = core.gs.episodeHistory.find(h => h.isFinale);
+      const scr = tdFinaleWalkScreen(fin, { host: 'Chris', history: core.gs.episodeHistory });
+      expect(scr?.id).toBe('finale-walk');
+      const cards = scr.steps.filter(s => s.k === 'title' && s.tone === 'out').map(s => s.name);
+      const boots = core.gs.episodeHistory.filter(h => h.num < fin.num).flatMap(h => [h.firstEliminated, h.eliminated]).filter(Boolean);
+      expect(cards).toEqual([...new Set(boots)].filter(n => !(fin.finaleEntrants || []).includes(n)));
+      // after every card, a finalist speaks
+      const entrants = fin.finaleEntrants || fin.finaleFinalists;
+      scr.steps.forEach((s, i) => { if (s.k === 'title' && s.tone === 'out') expect(entrants).toContain(scr.steps[i + 1].by); });
+      const said = scr.steps.filter(s => s.k === 'say').map(s => s.text);
       expect(new Set(said).size).toBe(said.length);
     });
   }, 180000);

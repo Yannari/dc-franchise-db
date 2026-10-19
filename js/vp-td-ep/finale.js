@@ -745,3 +745,96 @@ export function tdFinalImmunityScreen(ep, o = {}) {
   }, f, 'lost') });
   return { id: 'finale-challenge', kind: 'camp', venue, ep: ep.num, label: 'Final Immunity', host, steps };
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// THE WALK — the last morning, past everyone the season sent home
+// ══════════════════════════════════════════════════════════════════════
+// The user, 2026-10-19, asked for the finale ritual: the finalists walk a path lined with a torch for every
+// person voted out (and every coach their team fired), in the order they went. Each one gets their card, and
+// a finalist says something to them: whether they wrote that name, whether they miss them, whether it was a
+// blindside, read off the season's own votes and bonds. Words only.
+const WALK = { 'hosted-camp': 'forest-trail', 'survival-island': 'jungle-trail', carnival: 'forest-edge', 'film-lot': 'trailers', 'world-tour': 'economy' };
+export function tdFinaleWalkScreen(ep, o = {}) {
+  const finalists = (ep.finaleEntrants || ep.finaleFinalists || []).filter(Boolean);
+  const hist = (o.history || globalThis.gs?.episodeHistory || []).filter(h => h.num < ep.num);
+  if (finalists.length < 2 || hist.length < 3) return null;
+  const host = o.host || 'Chris';
+  const venue = venueOf(ep, o);
+  const spot = WALK[venue] && plateKey(venue, WALK[venue], 'day') ? WALK[venue] : (VENUES[venue]?.public || 'communal-grounds');
+  const key = plateKey(venue, spot, 'day');
+  if (!key) return null;
+  const bond = bondOf(ep);
+  const Vo = VOnce();
+  const log = h => (h.votingLog || []).filter(v => v.voter && v.voter !== 'THE GAME' && v.voted);
+  // who went, in order: every boot of every night, and the coaches their own teams fired
+  const gone = [];
+  for (const h of hist) {
+    for (const c of h.coachElimination || []) gone.push({ who: c.coach, ep: h.num, coach: true, h });
+    for (const n of [h.firstEliminated, h.eliminated].filter(Boolean)) if (!gone.some(g => g.who === n) && !finalists.includes(n)) gone.push({ who: n, ep: h.num, h });
+    if (h.medevac?.name && !gone.some(g => g.who === h.medevac.name) && !finalists.includes(h.medevac.name)) gone.push({ who: h.medevac.name, ep: h.num, medevac: true, h });
+  }
+  if (gone.length < 2) return null;
+  const steps = [];
+  const places = placeScene(key, finalists, []);
+  const fire = plateKey(venue, 'ceremony', 'night');
+  steps.push({ k: 'scene', spot, tod: 'day', plate: key, place: 'The Walk', time: 'Morning', card: true, focus: finalists, bg: [], places, wide: true });
+  steps.push({ k: 'beat', text: `The finalists find a path they've never walked before, lined with torches. Every torch has a name on it.`, focus: finalists });
+  steps.push({ k: 'title', kicker: 'The Finale', name: 'The Walk', faces: gone.slice(0, 8).map(g => g.who) });
+  steps.push({ k: 'say', by: finalists[0], focus: finalists, text: Vo(finalists[0], {
+    soft: [`Oh. Oh, it's everybody.`], loud: [`Whoa. Is that... it's everybody we voted out!`], dry: [`Well, this isn't going to be emotional at all.`], sharp: [`So this is how they want us to feel before the vote.`],
+    any: [`It's everybody. Everybody who went home.`],
+  }, 'open') });
+  // each torch: the card, and the finalist with the most to say to them
+  const spoke = Object.fromEntries(finalists.map(f => [f, 0]));
+  const usedT = new Set();
+  gone.forEach((g, i) => {
+    const b = g.who, h = g.h;
+    const wrote = f => log(h).some(v => v.voter === f && v.voted === b);
+    const blind = !!(h.tribalStory?.shocking || h.tribalStory?.blindside) && h.eliminated === b;
+    // who speaks: whoever feels the most (a strong bond either way, or the vote), turn and turn about
+    const f = [...finalists].sort((x, y) => (Math.abs(bond(y, b)) + (wrote(y) ? 2 : 0) - spoke[y] * 3) - (Math.abs(bond(x, b)) + (wrote(x) ? 2 : 0) - spoke[x] * 3) || x.localeCompare(y))[0];
+    spoke[f]++;
+    const bb = bond(f, b), n = word(g.ep);
+    steps.push({ k: 'title', kicker: g.coach ? `Coach · episode ${n}` : `Episode ${n}`, name: b, faces: [b], tone: 'out' });
+    const cat = g.coach ? 'coach' : g.medevac ? 'med' : wrote(f) && bb >= 2 ? 'wf' : wrote(f) && bb <= -1 ? 'wr' : blind ? 'bl' : bb >= 3 ? 'miss' : bb <= -3 ? 'foe' : wrote(f) ? 'wn' : 'any';
+    const POOLS = {
+      coach: { soft: [`${b} was our coach. It feels wrong walking past ${b}'s torch.`], any: [`${b} never even got to play. ${b} just coached, and got voted out for it.`, `Coach ${b}. Some of what ${b} taught us got us here.`, `${b} trained us for weeks and never got a turn. That's rough.`] },
+      med: { any: [`${b} didn't get voted out. ${b} got hurt. That's the worst way to go.`, `Nobody voted for ${b}. ${b} just couldn't keep going. That still bothers me.`] },
+      wf: { soft: [`I wrote your name, ${b}. I hated doing it. I'm so sorry.`], sharp: [`${b}, I'd do it again. I just wish it hadn't been you.`],
+        any: [`I voted ${b} out, and ${b} was my friend. That one stays with you.`, `${b}. I wrote that name, and I still think about it.`, `${b}. That was the hardest vote I cast all season.`, `Sorry, ${b}. It was you or me.`] },
+      wr: { sharp: [`No regrets on this one. ${b} would have done it to me first.`, `${b}. Exactly where ${b} belongs.`], loud: [`${b}! Ha! Best vote I ever cast!`, `${b}! Bye again!`], dry: [`${b}. I sleep fine.`, `${b}. Not my favourite torch.`],
+        any: [`${b}. I voted ${b} out, and I'd do it again.`, `${b} was coming for me. I just got there first.`, `${b} and I were never going to the end together.`, `${b}. That one was easy.`] },
+      wn: { any: [`${b}. My vote was on that one. Just the game.`, `I wrote ${b}'s name. Nothing personal, it was just the numbers.`, `${b}. That was a vote I had to make.`] },
+      bl: { any: [`${b} never saw it coming. None of us really did.`, `${b}'s face that night. I'll never forget it.`, `${b} walked in sure it was somebody else.`] },
+      miss: { soft: [`I miss ${b}. Losing ${b} was the worst night out here.`], loud: [`${b}! I wish you were here!`],
+        any: [`${b} should be walking this path with us.`, `I still look for ${b} at camp sometimes.`, `Camp got quieter without ${b}.`, `${b}. I think about that night a lot.`] },
+      foe: { sharp: [`I'm not going to pretend I miss ${b}.`], dry: [`${b}. Moving on.`], any: [`${b} and I never got along. I'm not sorry ${b} is a torch.`, `${b}. We didn't exactly part as friends.`] },
+      any: { dry: [`${b}. Episode ${n}. Feels like a year ago.`], any: [`${b}. That feels like a long time ago now.`, `${b} went home in episode ${n}. I barely remember that week.`, `I didn't really know ${b}. Nobody got the chance to.`, `${b}. Seems like forever ago.`, `I liked ${b}. We just never really talked.`] },
+    };
+    // (a line is said once, whoever it names: a template is remembered by where it sits in its pool)
+    const P0 = POOLS[cat], own = (P0[fam(f)] || []).map((t, j) => [`${cat}:${fam(f)}:${j}`, t]), any = (P0.any || []).map((t, j) => [`${cat}:any:${j}`, t]);
+    const fresh = l => l.filter(([id]) => !usedT.has(id));
+    const from = fresh(own).length ? fresh(own) : fresh(any).length ? fresh(any) : [...own, ...any];
+    const [tid, text] = pickBy(from, f, b, ep.num);
+    usedT.add(tid);
+    steps.push({ k: 'say', by: f, focus: [f], text, ...(bb >= 3 && !wrote(f) ? { feel: { [f]: 'guilty' } } : {}) });
+    // the boot's own last words, now and then: a throwback to the night they went
+    // (a line that stands on its own: "Come here." and "I know you didn't." answer somebody who isn't in the shot)
+    const last = (h.tribalStory?.exit || []).find(l => l.by === b && l.text && l.text.length >= 30 && l.text.length <= 140 && !/^(Come|I know|Okay|Ok|Yeah|No|Yes|Fine|Thanks|Thank|You too|Me too|Same|Sure|Right|Neither|Me neither|So|And|But|Well|Wow|Oh|Hey|Wait)\b/.test(l.text));
+    if (last && i % 3 === 1 && fire) {
+      steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate: fire, place: `Episode ${n}`, time: 'The night they left', card: false, cut: true, focus: [b], bg: [], places: placeScene(fire, [b], []), throwback: true, noWx: true });
+      steps.push({ k: 'say', by: b, focus: [b], text: cleanText(last.text) });
+      steps.push({ ...steps[0], card: false, cut: true });
+    }
+  });
+  // the end of the path
+  steps.push({ k: 'beat', text: `At the end of the path, the three of them look back down the row of torches.`.replace('three', word(finalists.length)), focus: finalists });
+  finalists.forEach((f, i) => steps.push({ k: 'conf', by: f, text: Vo(f, {
+    soft: [`Every one of those torches is a person I lived with. I'm here because they're not. That's a strange thing to feel proud of.`],
+    sharp: [`Every torch on that path is a decision. Some of them were mine. I'd make most of them again.`],
+    loud: [`That walk was a lot! But I'm still here, and I'm going to win this thing!`],
+    dry: [`A path of everyone I outlasted. Very subtle, ${host}.`],
+    any: [`Walking past all of them, you realise how long it's been. And how lucky I am to still be here.`, `I made it past every one of those torches. Now I have to make it past the jury.`],
+  }, f, 'end', i) }));
+  return { id: 'finale-walk', kind: 'camp', venue, ep: ep.num, label: 'The Walk', host, steps };
+}

@@ -88,7 +88,7 @@ export function rosterFactsOf(p = {}) {
   const r = (p.slug && roster.find(x => x.slug === p.slug)) || roster.find(x => x.name === p.name);
   if (!r) return {};
   const out = {};
-  for (const k of ['age', 'birthdate', 'occupation', 'hometown']) if (r[k] != null && r[k] !== '') out[k] = r[k];
+  for (const k of ['age', 'birthdate', 'occupation', 'hometown', 'voice', 'personality']) if (r[k] != null && r[k] !== '') out[k] = r[k];
   return out;
 }
 

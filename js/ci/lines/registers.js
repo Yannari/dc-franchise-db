@@ -167,3 +167,7 @@ export const REGISTER_LINES = {
     blunt: ["{b} is fishing for likes.", "That post is fake, {b}."],
   }, 'react'),
 };
+
+// the two voices added for the roster's authored ones (registers-more.js: goofy, shy), in the same pools
+import { REGISTER_MORE } from './registers-more.js';
+for (const [k, list] of Object.entries(REGISTER_MORE)) (REGISTER_LINES[k] ||= []).push(...list);

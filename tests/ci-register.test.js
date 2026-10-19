@@ -177,3 +177,45 @@ describe('nobody repeats themselves', () => {
     expect(again / first).toBeLessThan(0.2);
   });
 });
+
+// The roster's authored voices decide the register (the user, 2026-10-19: "make sure each finds its fit everywhere",
+// listing every tag): every tag Total Drama reads has a register, every register has its lines in every pool that
+// is written by register, and the characters whose voices the six missed now sound like themselves.
+import { readFileSync } from 'node:fs';
+import { ALL_REGISTERS, VOICE_REGISTER } from '../js/ci/register.js';
+import { WORD_TAGS } from '../js/td/story/voice-words.js';
+import { REGISTER_LINES } from '../js/ci/lines/registers.js';
+import { CHAT_VOICES } from '../js/ci/lines/chat-voices.js';
+
+describe('every voice finds its register', () => {
+  it('maps every one of the voice tags to a register', () => {
+    for (const t of WORD_TAGS) expect(ALL_REGISTERS, t).toContain(VOICE_REGISTER[t]);
+  });
+
+  it('has lines for every register in every pool written by register', () => {
+    for (const [key, list] of Object.entries({ ...REGISTER_LINES, ...CHAT_VOICES })) {
+      const have = new Set(list.map(e => e.when?.register));
+      for (const r of ALL_REGISTERS) expect(have.has(r), `${key} has no ${r} line`).toBe(true);
+    }
+    for (const r of ['goofy', 'shy']) for (const tone of ['charmed', 'annoyed']) expect(POOLS[`style.${r}.${tone}`]?.length, `style.${r}.${tone}`).toBeGreaterThan(0);
+  });
+
+  it('reads the roster\'s own words before archetype and stats', () => {
+    const roster = JSON.parse(readFileSync('franchise_roster.json', 'utf8')).players;
+    const of = n => registerOfPerson(roster.find(p => p.name === n));
+    expect(of('Alejandro')).toBe('flirty');
+    expect(of('Gwen')).toBe('dry');
+    expect(of('Heather')).toBe('blunt');
+    expect(of('Lindsay')).toBe('goofy');
+    expect(of('Owen')).toBe('goofy');
+    expect(of('Izzy')).toBe('goofy');
+    expect(of('Cameron')).toBe('shy');
+    expect(of('Noah')).toBe('dry');
+    // an author's own chatVoice.register still wins over the words
+    expect(registerOfPerson({ ...roster.find(p => p.name === 'Gwen'), chatVoice: { register: 'hype' } })).toBe('hype');
+    // the whole roster: every register is somebody's, and none takes over
+    const n = {};
+    for (const p of roster.filter(p => p.stats)) n[registerOfPerson(p)] = (n[registerOfPerson(p)] || 0) + 1;
+    for (const r of ALL_REGISTERS) expect(n[r] || 0, `${r}: ${JSON.stringify(n)}`).toBeGreaterThan(3);
+  });
+});

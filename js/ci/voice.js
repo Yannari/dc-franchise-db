@@ -56,13 +56,19 @@ const SPELLED = [[/\b(\w+)'s gotta\b/gi, (m, w) => `${w} has to`], [/\b(I|you|we
 const SLANG_LEAD = /^(\s*)(lol|lmao|omg|ngl|tbh|haha)\b[,!.]?\s*/i;
 const SLANG_MID = /\s+(lol|lmao|omg|ngl|tbh|haha)\b/gi;
 const unslang = p => p.replace(SLANG_LEAD, '$1').replace(SLANG_MID, '');
+// A register reshapes the speaker's own words, never a quote inside them ("Did Sam ever send you this: "...""): a
+// message quoted is quoted word for word (tests/ci-twotiming.test.js), whoever is typing it.
+const KEEP = /(\{[et]:[A-Za-z0-9]+\}|"[^"]*")/;
+const kept = p => KEEP.test(p) && /^(\{|")/.test(p);
 function onText(text, f) {
-  return text.split(TOKEN).map(p => (TOKEN.test(p) ? p : f(p))).join('');
+  return text.split(KEEP).map(p => (kept(p) ? p : f(p))).join('');
 }
 function lastText(text, f) {
-  const parts = text.split(TOKEN);
+  const parts = text.split(KEEP);
   for (let i = parts.length - 1; i >= 0; i--) {
-    if (!TOKEN.test(parts[i]) && /[A-Za-z0-9]/.test(parts[i])) { parts[i] = f(parts[i]); break; }
+    // a message that ends on a quote ends on the quote: nothing is added after it, or inside it
+    if (/^"/.test(parts[i])) break;
+    if (!kept(parts[i]) && /[A-Za-z0-9]/.test(parts[i])) { parts[i] = f(parts[i]); break; }
   }
   return parts.join('');
 }
@@ -82,6 +88,19 @@ export function byRegister(text, register, rng = () => 0.5) {
     case 'blunt':
       return firstUp(tidy(onText(text, p => unslang(p.replace(/!{2,}/g, '!'))
         .replace(/^\s*(honestly|omg|okay so|ngl|no offense but),?\s*/i, ''))));
+    // goofy: now and then a message trails off into a "lol" or an extra "!!"; never shouted, never formal
+    case 'goofy':
+      if (rng() >= 0.35) return text;
+      // (only after a word or a full stop: never "know?!!" or "really? lol")
+      return lastText(text, p => p.replace(/([A-Za-z0-9)])\.?(\s*)$/, rng() < 0.5 ? '$1 lol$2' : '$1!!$2'));
+    // shy: lower-case and quieter, a trailing "..." in place of a full stop or "!", now and then a small "um"
+    case 'shy': {
+      let t = onText(text, p => p.replace(/!+/g, '.'));
+      if (rng() < 0.3) t = t.replace(/^(\s*)/, '$1um, ');
+      if (rng() < 0.4 || /^\s*um, /.test(t)) t = t.replace(/^(\s*(?:um, )?)([A-Z])(?=[a-z])/, (m, sp, c) => sp + c.toLowerCase());
+      // (a question stays a question: "holding up?" never becomes "holding up?...")
+      return lastText(t, p => p.replace(/([A-Za-z0-9)])\.?(\s*)$/, '$1...$2'));
+    }
     case 'hype':
       if (rng() >= 0.3) return text;
       return lastText(onText(text, p => p.toUpperCase()), p => p.replace(/\.?(\s*)$/, '!$1').replace(/([!?])!(\s*)$/, '$1$2'));

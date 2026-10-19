@@ -56,7 +56,7 @@ export function styleTraits(state, h) {
   ].filter(Boolean);
   if (out.length) return out;
   const reg = registerOf(state, h);
-  return ['formal', 'hype', 'dry'].includes(reg) ? [{ trait: reg }] : [];
+  return ['formal', 'hype', 'dry', 'goofy', 'shy'].includes(reg) ? [{ trait: reg }] : [];
 }
 
 /** One player notices how another types: charmed or annoyed, or, when a

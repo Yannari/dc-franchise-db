@@ -93,6 +93,10 @@ export function truthOf(player, setup = {}) {
     face: setup.face ?? null, brain: setup.brain ?? null, facts: [...(setup.facts || [])],
     // How they type, if an author wrote it (ci/register.js, voice.js byAuthored).
     chatVoice: setup.chatVoice ?? player.chatVoice ?? null,
+    // How the roster describes them (the same authored voice Total Drama reads, td/story/voice.js): the register
+    // comes from it first (ci/register.js voiceRegister)
+    voiceText: [player.voice ?? setup.from?.voice, player.personality ?? setup.from?.personality].filter(Boolean).join(' ') || null,
+    voiceTags: Array.isArray(player.voiceTags) ? [...player.voiceTags] : null,
     // How ready they are to type like somebody else, 0..1 (ci/cover.js).
     prep: setup.prep ?? 0,
   };

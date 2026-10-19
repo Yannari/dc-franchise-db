@@ -44,7 +44,7 @@ export function personaStyle(persona = {}) {
 
 // Registers on two axes (energy, polish): the distance is how far a person
 // has to travel to type like somebody else.
-const PLACE = { hype: [1, 0.2], flirty: [0.7, 0.3], warm: [0.5, 0.5], blunt: [0.6, 0.4], dry: [0.1, 0.3], formal: [0.2, 1] };
+const PLACE = { hype: [1, 0.2], flirty: [0.7, 0.3], warm: [0.5, 0.5], blunt: [0.6, 0.4], dry: [0.1, 0.3], formal: [0.2, 1], goofy: [0.85, 0.1], shy: [0.15, 0.5] };
 export const registerDistance = (a, b) => Math.abs(PLACE[a][0] - PLACE[b][0]) + Math.abs(PLACE[a][1] - PLACE[b][1]);
 
 export const COVER = { younger: 0.35, older: 0.2, dumbDown: 0.5, fakeUp: 0.9, wear: 40, ease: 0.8, prep: 0.3 };

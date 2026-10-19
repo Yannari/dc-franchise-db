@@ -8,11 +8,46 @@
 //   formal  full sentences, no slang
 //   flirty  "hey you"
 //   blunt   "I don't trust you. Next."
-// Derived from archetype, stats and age; an authored chatVoice.register wins.
-// This picks words, not outcomes: nothing in the engine reads it.
+//   goofy   "wait what were we talking about, I'm eating cereal"
+//   shy     "um. sorry if this is weird"
+// The roster's AUTHORED voice decides first (the same words Total Drama reads, td/story/voice-words.js: every
+// one of its tags has a register here, VOICE_REGISTER); then an authored chatVoice.register; then archetype,
+// stats and age for a player nobody wrote a voice for (the user, 2026-10-19: "make sure each finds its fit
+// everywhere"). Goofy and shy come only from an authored voice: a voice the stats can't describe.
+// This picks words, not outcomes: nothing in the engine reads it (the cover's register gap aside, cover.js).
 import { peopleOf } from './state.js';
+import { readVoiceText } from '../td/story/voice-words.js';
 
+/** The six a stats-only player, or a persona's job, can have. */
 export const REGISTERS = ['warm', 'hype', 'dry', 'formal', 'flirty', 'blunt'];
+/** ...and the two only an authored voice reaches: every register a line can be written for. */
+export const ALL_REGISTERS = [...REGISTERS, 'goofy', 'shy'];
+
+// Every voice tag (td/story/voice-words.js WORDS) and where it types. Their families (td/story/voice-family-map.js)
+// mostly agree: soft is warm or flirty, dry is dry or formal, loud is hype, sharp is blunt or formal, odd is goofy;
+// the two quiet ones of the soft and dry families (anxious, quiet) are shy.
+export const VOICE_REGISTER = {
+  warm: 'warm', earnest: 'warm', emotional: 'warm',
+  flirty: 'flirty',
+  dry: 'dry',
+  calm: 'formal', nerdy: 'formal', schemer: 'formal',
+  loud: 'hype', competitive: 'hype',
+  blunt: 'blunt', cruel: 'blunt', tough: 'blunt', bossy: 'blunt', proud: 'blunt',
+  goofy: 'goofy', ditzy: 'goofy', food: 'goofy', theatrical: 'goofy', chaotic: 'goofy',
+  quiet: 'shy', anxious: 'shy',
+};
+
+const PLAYS = new Set(['schemer']);
+/** The register an authored voice says, or null: the author's hashtags and hand-set tags first, then its words. */
+export function voiceRegister(p) {
+  const read = readVoiceText(p?.voiceText || [p?.voice, p?.personality].filter(Boolean).join(' '));
+  const tags = [...(Array.isArray(p?.voiceTags) ? p.voiceTags : []), ...read.hash, ...read.words].filter(t => !(read.off || []).includes(t));
+  // (schemer says how somebody plays, not how they type: it decides only when the voice says nothing else. Heather is
+  // "manipulative" first and "cruel" next, and types cruel)
+  const typed = tags.filter(t => VOICE_REGISTER[t] && !PLAYS.has(t));
+  const t = typed[0] || tags.find(x => VOICE_REGISTER[x]);
+  return t ? VOICE_REGISTER[t] : null;
+}
 
 const LEAN = {
   warm: ['social-butterfly', 'hero', 'loyal-soldier', 'underdog', 'goat'],
@@ -25,7 +60,9 @@ const LEAN = {
 
 /** One person's register. */
 export function registerOfPerson(p) {
-  if (REGISTERS.includes(p?.chatVoice?.register)) return p.chatVoice.register;
+  if (ALL_REGISTERS.includes(p?.chatVoice?.register)) return p.chatVoice.register;
+  const authored = voiceRegister(p);
+  if (authored) return authored;
   const s = k => p?.stats?.[k] ?? 5;
   const age = p?.age ?? 28;
   const arch = r => (LEAN[r].includes(p?.archetype) ? 1 : 0);

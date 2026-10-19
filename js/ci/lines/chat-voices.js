@@ -228,3 +228,7 @@ export const CHAT_VOICES = {
     ],
   }),
 };
+
+// the two voices added for the roster's authored ones (registers-more.js: goofy, shy), in the same chats
+import { CHAT_MORE } from './registers-more.js';
+for (const [k, list] of Object.entries(CHAT_MORE)) (CHAT_VOICES[k] ||= []).push(...list);

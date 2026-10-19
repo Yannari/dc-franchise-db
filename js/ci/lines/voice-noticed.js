@@ -3,7 +3,7 @@
 //   the one chatting with a (noticed: b caught it).
 // style.<trait>.<tone> — a, in the apartment, reacts to how b types. Traits:
 //   caps, ellipses, stage, greeting ({x}), nicknames, catchphrase ({x}),
-//   formal, hype, dry; tones charmed / annoyed. style.mismatch.suspicious —
+//   formal, hype, dry, goofy, shy; tones charmed / annoyed. style.mismatch.suspicious —
 //   b is a catfish whose voice does not fit the face.
 // {x} sits after a quote mark or a full stop so it keeps the author's case.
 const E = (key, list) => ({ [key]: list.map((x, i) => ({ id: `${key}.${key.startsWith('slip.voice') ? 'c' : ''}${String(i + 1).padStart(2, '0')}`, ...x })) });
@@ -165,6 +165,26 @@ export const VOICE_NOTICED = {
     r1('{b} answers everything like {b.sub}\'s bored of us.'),
     r1('Would it kill {b} to use an exclamation point?'),
     r1('Lowercase, no punctuation. Does {b} even like us?'),
+  ]),
+  ...E('style.goofy.charmed', [
+    r1('{b} just sent a message about a sandwich in the middle of a serious chat. I love {b.obj}.'),
+    r1('Every message from {b} goes somewhere I did not expect. I live for it.'),
+    r1("{b} types like a cartoon. It's the best part of my day."),
+  ]),
+  ...E('style.goofy.annoyed', [
+    r1('{b}, focus. We were talking about the vote, not cereal.'),
+    r1('I asked {b} a real question and got a joke about a fridge.'),
+    r1("Does {b} ever take anything seriously? Anything?"),
+  ]),
+  ...E('style.shy.charmed', [
+    r1("{b} says sorry before every message. It's kind of adorable."),
+    r1('{b} barely types, but every word sounds like {b.sub} means it.'),
+    r1("I want to protect {b}. All those little dots at the end."),
+  ]),
+  ...E('style.shy.annoyed', [
+    r1('Three dots at the end of everything, {b}. Just say it.'),
+    r1("I can't tell what {b} actually thinks. {b.Sub} never really says."),
+    r1('{b} answers everything with "um". I need more than "um".'),
   ]),
   ...E('style.mismatch.suspicious', [
     r1("That's not how somebody {b.posAdj} age texts. Something's off.", { beat: '{a} scrolls back through everything {b} ever posted.' }),

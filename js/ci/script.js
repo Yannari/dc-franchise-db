@@ -1463,7 +1463,7 @@ export const POOL_KEYS = [
   ...[...Object.keys(TOPICS), 'hometown', 'fake', 'circle-life', 'single', 'taken', 'complicated'].map(t => `chat.topic.${t}`),
   ...SLIPS_.flatMap(k => [`slip.${k}.noticed`, `slip.${k}.missed`]),
   ...Object.keys(TOPICS).flatMap(t => [`slip.topic.${t}.noticed`, `slip.topic.${t}.missed`]), 'slip.misread', 'slip.leak.noticed', 'slip.leak.missed',
-  ...['caps', 'ellipses', 'stage', 'greeting', 'nicknames', 'catchphrase', 'formal', 'hype', 'dry']
+  ...['caps', 'ellipses', 'stage', 'greeting', 'nicknames', 'catchphrase', 'formal', 'hype', 'dry', 'goofy', 'shy']
     .flatMap(t => [`style.${t}.charmed`, `style.${t}.annoyed`]), 'style.mismatch.suspicious',
   'status.low', 'status.steady', 'status.high', 'status.react', 'likes.most', 'likes.none',
   'recognise.celebrity', 'recognise.villain', 'recognise.tv', 'circle.first', 'circle.open', 'circle.party', 'circle.final', 'circle.theory',

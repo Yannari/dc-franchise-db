@@ -46,8 +46,6 @@ export const DIRECTOR_KINDS = {
   'don-narrate': ['welcome', 'depart', 'flight-wait', 'first-landed', 'flight-landed', 'bridge', 'chill', 'last-stretch'],
   // the premiere: Don introduces every team as it turns up (director.js, leg one)
   'team-intro': ['any'],
-  // ...and, for a team introduced by its identity, what the two of them are to each other
-  'team-dynamic': ['any'],
 };
 
 const AGE = new Set(['kid', 'teen', 'adult', 'grown']);
@@ -187,7 +185,7 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   const rng = stableRng(state.seed, 'rr-line', scene.id);
   // the premiere's introductions: a team's own identity (or, without one, its relationship) always wins over the
   // general lines, which are only for a team nothing else fits
-  const prefer = scene.kind === 'team-intro' || scene.kind === 'team-dynamic' ? [...PREFER, 'identity', 'rel'] : PREFER;
+  const prefer = scene.kind === 'team-intro' ? [...PREFER, 'identity', 'rel'] : PREFER;
   const entry = pickEntry(state.lineLedger, pools, key, facts, pairKey, rng, speakers, clock, { strong: STRONG, prefer });
   if (!entry) return null;
   const relFam = scene.data?.snap?.relFam || null;

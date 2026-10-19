@@ -25,13 +25,7 @@ describe('rr premiere', () => {
     const last = segs.lastIndexOf(intros.at(-1));
     const opener = segs.findIndex(s => s.kind === 'don-opener');
     expect(opener).toBeGreaterThan(last);
-    expect(segs.slice(1, last + 1).every(s => s.kind === 'team-intro' || s.kind === 'team-dynamic')).toBe(true);
-    // a team introduced by its identity then says what the two of them are to each other, right after
-    for (const s of intros) {
-      const t = res.state.teams[s.teams[0]];
-      const next = segs[segs.indexOf(s) + 1];
-      if (t.identity) { expect(next.kind, t.name).toBe('team-dynamic'); expect(next.teams[0]).toBe(s.teams[0]); expect(next.lines.length).toBeGreaterThan(0); }
-    }
+    expect(segs.slice(1, last + 1).every(s => s.kind === 'team-intro')).toBe(true);
   });
 
   it('every introduction names both of them, in their identity or their relationship', () => {

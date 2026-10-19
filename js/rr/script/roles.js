@@ -129,6 +129,8 @@ export function rolesOf(scene, state) {
     teams: d.teamsList?.length ? listNames(d.teamsList.map(id => teamRef(state, id))) : null,
     // Don's narration carries its own (director.js): {winners} {count} {gap} {flight} {task} {prevTask} {team}
     ...(scene.kind === 'don-narrate' ? { teamVoc: null, teamBVoc: null, targetVoc: null, ...d.slots } : {}),
+    // a premiere introduction: what the two of them are, in Don's words ({relTag}, director.js)
+    ...(scene.kind === 'team-intro' ? d.slots || {} : {}),
   };
   for (const k of Object.keys(slots)) if (slots[k] == null) delete slots[k];
   return { roles, ending: d.ending ?? 'any', slots };

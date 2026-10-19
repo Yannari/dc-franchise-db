@@ -22,7 +22,7 @@ import { SCENES, CLASH_KINDS, relFamOf } from '../scenes.js';
 import { getPlace } from '../places.js';
 import { writeScene, TASK_LINES } from '../script/write.js';
 import { pickedOf } from '../script/facts.js';
-import { teamRef, teamTag } from './previously.js';
+import { teamRef, teamTag, relLabel } from './previously.js';
 
 export const MUST = new Set(['don-opener', 'don-demo', 'don-place', 'don-crown', 'don-elim', 'don-arrives', 'don-fakeout', 'don-rule', 'don-ruling',
   'boomerang-found', 'boomerang-decide', 'boomerang-hit', 'boomerang-vote', 'yield', 'zip-it', 'save-used', 'medevac-choice',
@@ -257,12 +257,7 @@ export function airLeg(state, leg) {
       if (!tm) return;
       // each its own moment, between the welcome (-3) and the rules (0)
       beats.push({ id: `intro:${id}`, leg: n, kind: 'team-intro', who: [tm.a, tm.b], seenBy: [tm.a, tm.b],
-        data: { ending: 'any', team: id, stretch: null, t: -3 + (k + 1) / (arrival.length + 1),
-          snap: { leg: n, place: leg.place, rel: tm.rel, relFam: relFamOf(tm.rel), identity: tm.identity ?? null } } });
-      // ...and a team introduced by its identity says, in an interview, what the two of them are to each other (a
-      // team with none was introduced that way already)
-      if (tm.identity) beats.push({ id: `dyn:${id}`, leg: n, kind: 'team-dynamic', who: [tm.a, tm.b], seenBy: [tm.a, tm.b],
-        data: { ending: 'any', team: id, stretch: null, t: -3 + (k + 1.5) / (arrival.length + 1),
+        data: { ending: 'any', team: id, stretch: null, t: -3 + (k + 1) / (arrival.length + 1), slots: { relTag: relLabel(tm) },
           snap: { leg: n, place: leg.place, rel: tm.rel, relFam: relFamOf(tm.rel), identity: tm.identity ?? null } } });
     });
   }

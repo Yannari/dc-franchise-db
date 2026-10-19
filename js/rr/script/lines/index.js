@@ -36,7 +36,6 @@ import narration from './narration.js';
 import narration2 from './narration-2.js';
 import premiere from './premiere.js';
 import premiereIdentities from './premiere-identities.js';
-import premiereDynamics from './premiere-dynamics.js';
 import mindGame from './rewrite/mind-game.js';
 import celebrate from './rewrite/celebrate.js';
 import shareInfo from './rewrite/share-info.js';
@@ -91,7 +90,7 @@ import redOutback from './places/red-outback.js';
 import placesMore from './places/more/index.js';
 
 const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
-  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, ride, narration, narration2, premiere, premiereIdentities, premiereDynamics, redSandDesert, ironTowerCity, homeCity, skylineFinale, fireMountainIsle, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback, ...placesMore];
+  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, ride, narration, narration2, premiere, premiereIdentities, redSandDesert, ironTowerCity, homeCity, skylineFinale, fireMountainIsle, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback, ...placesMore];
 
 // The rewrite (lines/rewrite/, docs/rr-writers-brief.md "The rewrite standard"): each file brings its pools and
 // retires the old lines they replace, a whole pool ('mind-game.rattled') or the old interview lines for one kind

@@ -56,6 +56,11 @@ function relTag(t) {
   return REL_TAG[t.rel] || 'partners';
 }
 
+// what the two of them are, as Don labels a team at its introduction: "best friends", "a married couple", "father and son"
+const REL_LABEL = { married: 'a married couple', dating: 'a couple', 'newly-dating': 'a brand-new couple', 'on-off': 'an on-again, off-again couple',
+  'once-engaged': 'former fiancés', 'reality-vets': 'reality-show vets' };
+export function relLabel(t) { return REL_LABEL[t?.rel] || relTag(t); }
+
 // "best friends Carrie and Devin", "the Goths, Crimson and Ennui"
 export function teamTag(state, id) {
   const t = state.teams[id];

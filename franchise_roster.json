@@ -7499,11 +7499,11 @@
       "birthdate": "1992-03-13",
       "ethnicity": "Black",
       "nationality": "American",
+      "hometown": "Philadelphia, Pennsylvania",
       "occupation": "UPS Delivery Driver",
       "descriptor": "The Neighborhood Commissioner",
       "backstory": "Curtis became the dependable one early. As the oldest in his family, he learned to arrange rides, stretch a grocery budget, and keep younger relatives out of arguments. Delivery work gave him a steady income and a neighborhood full of familiar faces. He started organizing recreational basketball after a season fell apart over missing fees and disputed calls. He now manages schedules, mediates grudges, and quietly covers registration for people who cannot pay. His reading glasses make him feel older than the heavy lifting does. He wants to establish a permanent youth league, but keeps postponing the paperwork while attending to everyone else's immediate problems.",
-      "personality": "urtis is an organizer by instinct: he remembers preferences, notices absences, and assigns himself responsibility before anyone asks. His warmth is practical rather than sentimental. He brings food, sends reminders, and follows up after difficult conversations. He likes recognition more than he admits, especially when it confirms that people depend on him. Asking for help makes him uncomfortable because usefulness is central to his self-worth. In conflict he first mediates, then starts keeping an exact account of who contributed what. He can become paternalistic when convinced he knows the sensible solution. Betrayal hurts him most when it reveals that someone accepted his care without feeling the obligation he attached to it. He grows closer to people who notice his needs without being prompted.",
-      "ties": []
+      "personality": "urtis is an organizer by instinct: he remembers preferences, notices absences, and assigns himself responsibility before anyone asks. His warmth is practical rather than sentimental. He brings food, sends reminders, and follows up after difficult conversations. He likes recognition more than he admits, especially when it confirms that people depend on him. Asking for help makes him uncomfortable because usefulness is central to his self-worth. In conflict he first mediates, then starts keeping an exact account of who contributed what. He can become paternalistic when convinced he knows the sensible solution. Betrayal hurts him most when it reveals that someone accepted his care without feeling the obligation he attached to it. He grows closer to people who notice his needs without being prompted."
     },
     {
       "name": "Domingo",
@@ -7832,6 +7832,10 @@
       "age": 26,
       "birthdate": "2000-06-08",
       "ethnicity": "Puerto Rican",
+      "nationality": "American",
+      "hometown": "Orlando, Florida",
+      "occupation": "Fitness Influencer",
+      "descriptor": "The Little Brother",
       "backstory": "ateo grew up with an older brother who often anticipated problems before he was allowed to encounter them himself. Fitness gave him a field where other people sought his expertise. As a personal trainer, he enjoys helping clients recover confidence after discouraging experiences. He is good at making a difficult session feel achievable and poor at enforcing cancellation fees. His income fluctuates partly because he spends freely when business is strong. He wants a larger client base and the independence to make his own mistakes. His bond with Luis is affectionate and argumentative, shaped by years of help that sometimes arrived before he had asked for it.",
       "personality": "Mateo is spontaneous, socially confident, and responsive to the mood directly in front of him. Encouragement comes naturally; restraint takes work. He wants people to leave an interaction feeling better and sometimes offers promises he has not considered. Flirting expresses real enjoyment but also reassures him that he is desirable and in control. Being corrected publicly, especially by Luis, makes him defensive even when the correction is fair. He learns best through experience and resents being treated as incapable because he is willing to risk embarrassment. He is more sensitive than his easy smile suggests. Respectful trust motivates him more effectively than supervision, and he is capable of surprising discipline when the goal feels like his own."
     },

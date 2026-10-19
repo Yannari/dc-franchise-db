@@ -157,3 +157,37 @@ describe('the site shows a leg', () => {
     expect(text).not.toMatch(/Tribal|Immunity|voted out/);
   });
 });
+
+describe('setup knows the race', () => {
+  it("Quick Setup's blueprint and ready check speak in teams and legs, never tribes or a jury", async () => {
+    const { blueprintFor, validateQuickSetup } = await import('../js/quick-setup.js');
+    freshSeason(8);
+    const segs = blueprintFor({ format: 'ridonculous-race' }, 16).map(s => s.label).join(' | ');
+    expect(segs).toMatch(/8 teams of two/);
+    expect(segs).toMatch(/\d+ legs/);
+    expect(segs).not.toMatch(/tribe|merge|jury/i);
+    const { list } = cards(8);
+    const rows = validateQuickSetup({ format: 'ridonculous-race' }, list);
+    expect(rows.find(r => r.key === 'cast')).toMatchObject({ ok: true });
+    delete list[3].rrPartner;
+    expect(validateQuickSetup({ format: 'ridonculous-race' }, list).find(r => r.key === 'cast').ok).toBe(false);
+  });
+
+  it("a team made in the Casting Room's Pairs view (the cards' one Partner field) is a race team", () => {
+    freshSeason(8);
+    const { list } = cards(8);
+    for (const p of list) { p.chPartner = p.rrPartner; delete p.rrPartner; }
+    setPlayers(list);
+    expect(raceTeams().length).toBe(8);
+    expect(raceCastProblem()).toBe(null);
+  });
+});
+
+describe('the Visual Player names the leg', () => {
+  it("a race's screens sit in one section, The Leg, never another show's", async () => {
+    // jsdom has no matchMedia, which the player reads as it loads
+    window.matchMedia ||= () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+    const { _vpPhaseForScreen } = await import('../js/vp-ui.js');
+    for (const id of ['rr-watch', 'rr-transcript']) expect(_vpPhaseForScreen(id).label).toBe('The Leg');
+  });
+});

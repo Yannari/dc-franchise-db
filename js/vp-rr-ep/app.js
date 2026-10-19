@@ -52,7 +52,11 @@ function play(seed, nTeams) {
 // page that frames or opened this one (the run tab's player embeds it), else from what the run tab left in storage.
 function simSource() {
   for (const w of [window.parent !== window ? window.parent : null, window.opener]) {
-    try { if (w?.gs?.rr?.teams?.length) return { rr: w.gs.rr, players: w.players || [] }; } catch { /* another origin */ }
+    try {
+      if (w?.gs?.rr?.teams?.length) return { rr: w.gs.rr, players: w.players || [],
+        // how many legs the run tab has aired: the rest are not to be seen yet
+        aired: (w.gs.episodeHistory || []).filter(r => r && r.format === 'ridonculous-race').length };
+    } catch { /* another origin */ }
   }
   try { const s = JSON.parse(localStorage.getItem('rr_sim_season') || 'null'); if (s?.rr?.teams?.length) return s; } catch { /* no storage */ }
   return null;
@@ -68,7 +72,8 @@ function playSim() {
   try { options = r.built ? JSON.parse(r.built).options || {} : {}; } catch { options = {}; }
   const res = playRaceSeason({ teams: r.teams.map(t => ({ ...t })), seed: r.seed, options, carried: r.startOf?.carried || null });
   const eps = airSeason(res);
-  return { seed: r.seed, nTeams: r.teams.length, res, eps, cast, built: [], sim: true };
+  const aired = Number.isFinite(src.aired) ? Math.max(1, src.aired) : eps.length;
+  return { seed: r.seed, nTeams: r.teams.length, res, eps, cast, built: [], sim: true, aired };
 }
 
 function episode(i) {
@@ -101,7 +106,8 @@ function draw(fresh) {
 function next() {
   if (at < flat.length - 1) { at++; draw(true); return; }
   const i = ep.n; // the next episode (0-based index = n)
-  if (i < season.eps.length) show(i, 0, true);
+  // the run tab's season: never past the last leg it has aired
+  if (i < Math.min(season.eps.length, season.aired ?? Infinity)) show(i, 0, true);
 }
 function back() {
   if (at > 0) { at--; draw(false); return; }
@@ -136,12 +142,12 @@ async function start() {
     else { await loadRoster(); season = play(seed, n); }
     faces = Object.fromEntries(season.cast.map(p => [p.name, avatarUrl({ slug: p.slug || p.name, avatarId: p.avatarId, avatarFile: p.avatarFile })]));
     const sel = $('rr-ep');
-    sel.innerHTML = season.res.legs.map((l, i) => `<option value="${i}">Leg ${l.n} · ${l.placeName}${l.kind === 'final' ? ' (final)' : l.kind === 'non' ? ' (non-elim)' : ''}</option>`).join('');
+    sel.innerHTML = season.res.legs.slice(0, season.aired ?? Infinity).map((l, i) => `<option value="${i}">Leg ${l.n} · ${l.placeName}${l.kind === 'final' ? ' (final)' : l.kind === 'non' ? ' (non-elim)' : ''}</option>`).join('');
     const winner = season.res.winner ? season.res.state.teams[season.res.winner].name : '?';
     status(season.sim ? `your season · ${season.nTeams} teams · ${season.res.legs.length} legs` : `seed ${seed} · ${n} teams · ${season.res.legs.length} legs`);
     $('rr-loading').style.display = 'none';
     void winner;
-    const want = Math.max(1, Math.min(season.res.legs.length, parseInt(params.get('ep'), 10) || 1)) - 1;
+    const want = Math.max(1, Math.min(season.aired ?? season.res.legs.length, parseInt(params.get('ep'), 10) || 1)) - 1;
     const step = parseInt(params.get('step'), 10) || 0;
     params.delete('ep'); params.delete('step');
     show(want, step, true);

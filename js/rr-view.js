@@ -47,7 +47,7 @@ export function raceVpScreens(row) {
       <div style="font-weight:800;color:${accent};letter-spacing:.5px">LEG ${esc(row?.num)} · ${esc((r.placeName || '').toUpperCase())}</div>
       <a href="${esc(src)}" target="_blank" rel="opener" style="color:${accent};font-size:12px">Open in its own window ↗</a>
     </div>
-    <iframe src="${esc(src)}" title="The Ridonculous Race, leg ${esc(row?.num)}" style="width:100%;min-height:78vh;flex:1;border:0;border-radius:12px;background:#0b1020" allow="fullscreen"></iframe>
+    <iframe src="${esc(src)}" title="The Ridonculous Race, leg ${esc(row?.num)}" style="width:100%;height:calc(100vh - 150px);min-height:420px;border:0;border-radius:12px;background:#0b1020" allow="fullscreen"></iframe>
   </div>`;
   const read = `<pre style="white-space:pre-wrap;font:13px/1.5 ui-monospace,Consolas,monospace;margin:0">${esc(raceEpisodeText(row))}</pre>`;
   return [

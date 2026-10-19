@@ -471,7 +471,8 @@ function _pairsBodyHTML(shown) {
   const { out: pairs, seen, byName } = _cardPairs();
   const shownIds = new Set(shown.map(_key));
   const waiting = window._crPairWaiting && byName.get(window._crPairWaiting) && !seen.has(window._crPairWaiting) ? byName.get(window._crPairWaiting) : null;
-  const mixed = seasonConfig.chPairShape !== 'same' && seasonConfig.chGenderBlind !== true;
+  // a race's teams are any two people; the man-and-woman rule is The Challenge's
+  const mixed = !_isRace() && seasonConfig.chPairShape !== 'same' && seasonConfig.chGenderBlind !== true;
   const card = p => (shownIds.has(_key(p)) ? _card(p, { draggable: true }) : '');
   const lanes = pairs.map(([a, b], i) => {
     const off = seasonConfig.chGenderBlind === true ? null
@@ -749,6 +750,10 @@ function _isCircle() {
 function _isChallenge() {
   try { return !!window.isChallengeSeason?.(); } catch { return false; }
 }
+// The Ridonculous Race: teams of two, built in the same Pairs view (rr-run.js reads the cards' Partner fields).
+function _isRace() {
+  try { return !!window.isRaceSeason?.(); } catch { return false; }
+}
 // Total Drama: the format the shared tribes belong to (a season with no format set is Total Drama, shows.js)
 function _isTotalDrama() {
   const f = seasonFormat(seasonConfig);
@@ -757,6 +762,7 @@ function _isTotalDrama() {
 // The Challenge's custom Teams and Pairs (the user, 2026-10-18: "a custom mode that uses the teams made with drag and
 // drop, adapted for pairs too, only when one of them is selected"): which one this season is building, or null
 function _chCustom() {
+  if (_isRace()) return 'pairs';
   if (!_isChallenge()) return null;
   if (seasonConfig.chMode === 'teams' && seasonConfig.chTeaming === 'custom') return 'teams';
   if (seasonConfig.chMode === 'pairs' && seasonConfig.chPairing === 'custom') return 'pairs';
@@ -765,7 +771,7 @@ function _chCustom() {
 function _syncViewButtons(room) {
   const villa = _isVilla();
   const circle = _isCircle();
-  const challenge = _isChallenge();
+  const challenge = _isChallenge() || _isRace();
   const custom = _chCustom();
   let view = window._crView || 'grid';
   if ((view === 'villa' && !villa) || (view === 'circle' && !circle)
@@ -901,7 +907,8 @@ export function crPairRest() {
   const { seen } = _cardPairs();
   const left = players.filter(p => !seen.has(p.name));
   window._crPairWaiting = null;
-  const mixed = seasonConfig.chPairShape !== 'same' && seasonConfig.chGenderBlind !== true;
+  // a race's teams are any two people; the man-and-woman rule is The Challenge's
+  const mixed = !_isRace() && seasonConfig.chPairShape !== 'same' && seasonConfig.chGenderBlind !== true;
   const shuffled = [...left].sort(() => Math.random() - 0.5);
   if (mixed) {
     const m = shuffled.filter(p => p.gender === 'm'), f = shuffled.filter(p => p.gender === 'f');

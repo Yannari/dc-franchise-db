@@ -35,6 +35,8 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .rr-ctrl .stepn{font-size:12px;color:#8b95b3;margin-left:auto}
 .rr-ctrl .hint{font-size:12px;color:#6c779a}
 
+/* the picture and its bar fit the window's height too (a short window, or the simulator's frame) */
+.stage-holder{width:100%;max-width:max(560px,calc((100vh - 330px) * 16 / 9));margin:0 auto}
 .stage{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:14px;background:#000;cursor:pointer;
   box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px var(--line);container-type:inline-size;user-select:none}
 .plate{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .7s ease;will-change:opacity,transform}

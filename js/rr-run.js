@@ -65,9 +65,12 @@ export const RACE_RELATIONSHIPS = Object.keys(REL).map(id => ({ id, label: {
 /** The identities a team can race as, for the cast card's picker. */
 export const RACE_IDENTITIES = Object.entries(IDENTITIES).map(([id, x]) => ({ id, label: x.name }));
 
-/** The partners set on the cast cards (`rrPartner`): only two cards that name each other count. */
+/** The partners set on the cast cards: only two cards that name each other count. A card has one Partner field
+ *  (`chPartner`, which the Casting Room's Pairs view writes for The Challenge's pairs and for a race's teams);
+ *  `rrPartner` is the same thing for a cast built in code. */
+const partnerOf = p => p.rrPartner || p.chPartner || null;
 export function racePartnerPins(list = _list()) {
-  const named = Object.fromEntries(list.filter(p => p.rrPartner).map(p => [p.name, p.rrPartner]));
+  const named = Object.fromEntries(list.filter(p => partnerOf(p)).map(p => [p.name, partnerOf(p)]));
   const out = {};
   for (const [a, b] of Object.entries(named)) if (named[b] === a && a !== b) out[a] = b;
   return out;
@@ -133,8 +136,11 @@ function _options(config = seasonConfig) {
 
 /** The legs this cast makes (the Season Timeline reads this): { n, kind } per leg, the finale last. */
 export function raceSeasonShape(list = _list(), config = seasonConfig) {
-  const n = raceTeams(list, config).length;
-  if (n < 3) return [];
+  return raceShapeFor(raceTeams(list, config).length, config);
+}
+/** The legs a race of `n` teams makes, for a screen that only knows the cast size (Quick Setup's blueprint). */
+export function raceShapeFor(n, config = seasonConfig) {
+  if (!(n >= 3)) return [];
   try { return buildSchedule({ teams: n, options: _options(config), seed: gs?.rr?.seed || 1 }).map(l => ({ n: l.n, kind: l.kind })); }
   catch { return []; }
 }
@@ -302,4 +308,22 @@ export function raceVoteShape(row) {
   return `${first} came first · ${last} ${out && out !== 'eliminated' ? out : 'came last and went home'}${where}`;
 }
 
+/** The cast form's race pickers (simulator.html f-rr-rel, f-rr-identity), filled from the engine's own lists so
+ *  they can never drift from what the engine knows. */
+export function raceFillForm() {
+  if (typeof document === 'undefined') return;
+  const fill = (id, first, list) => {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.filled) return;
+    el.innerHTML = `<option value="">${first}</option>` + list.map(x => `<option value="${x.id}">${x.label}</option>`).join('');
+    el.dataset.filled = '1';
+  };
+  fill('f-rr-rel', 'Best friends, unless both have played before', RACE_RELATIONSHIPS);
+  fill('f-rr-identity', 'None: named after the two of them', RACE_IDENTITIES);
+}
+
 if (typeof window !== 'undefined') window._rrRunnable = true;
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', raceFillForm);
+  else raceFillForm();
+}

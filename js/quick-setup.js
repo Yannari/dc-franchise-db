@@ -20,11 +20,12 @@
 
 import { TWIST_CATALOG, twistModeClashes, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
-import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords, HOSTS_BY_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT } from './shows.js';
+import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords, HOSTS_BY_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT, RACE_FORMAT } from './shows.js';
 import { houseStructure } from './bb-run.js';
 import { buildSchedule, defaultRoleSplit } from './pm/schedule.js';
 import { circleCastProblem, circleShapeOf } from './ci-run.js';
 import { challengeCastProblem, challengeSeasonShape, challengeOptions } from './ch-run.js';
+import { raceTeams, raceCastProblem, raceSeasonShape, raceShapeFor } from './rr-run.js';
 import { SEASON_OBJECTIVES } from './franchise-meta.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -84,6 +85,20 @@ export function blueprintFor(config = {}, castSize = 0) {
     const days = circleShapeOf({ cast: names, config }).length;
     segs.push({ label: `${days} days`, ok: days > 0 });
     segs.push({ label: `final ${finalists}, rated by the players`, ok: true });
+    return segs;
+  }
+
+  // ── THE RIDONCULOUS RACE ──────────────────────────────────────────
+  // Teams of two, the legs they make, and the finale: no tribes, no merge, no jury, no vote.
+  if (seasonFormat(config) === RACE_FORMAT) {
+    // pure: the cast size alone, a team being two of them (the cards say who)
+    const teams = Math.floor(N / 2);
+    const ok = teams >= 6 && teams <= 18;
+    segs.push({ label: `${teams} ${teams === 1 ? 'team' : 'teams'} of two`, ok,
+      why: ok ? undefined : 'A race needs six to eighteen teams: pair the cast in Cast › Casting Room › Pairs' });
+    const legs = raceShapeFor(teams, config);
+    segs.push({ label: `${legs.length} legs, ${legs.filter(l => l.kind === 'non').length} non-elimination`, ok: legs.length > 0 });
+    segs.push({ label: 'a finale city crowns one team', ok: true });
     return segs;
   }
 
@@ -231,6 +246,15 @@ export function validateQuickSetup(config = {}, playerList = []) {
   const fmt = config.finaleFormat || 'traditional';
   const sched = (config.twistSchedule || []).filter(Boolean);
 
+  // ── THE RIDONCULOUS RACE ──
+  // Teams of two off the cast cards, judged by the rule the run loop refuses by (js/rr-run.js), in its words.
+  if (seasonFormat(config) === RACE_FORMAT) {
+    const problem = raceCastProblem(playerList, config);
+    const teams = raceTeams(playerList, config).length;
+    rows.push({ key: 'cast', ok: !problem,
+      msg: problem ? `This cast can't start a race: ${problem}.` : `${teams} teams of two, ready to race.` });
+    return rows;
+  }
   // ── THE CHALLENGE ──
   // A cast split into divisions, the episodes it makes, and the final. Judged
   // by the rule the run loop refuses by (js/ch-run.js), in its words.
@@ -579,6 +603,7 @@ const SHOW_TAGS = {
   'perfect-match': 'A villa, recouplings, and the public decides',
   'the-circle': 'Separate apartments, one social network, and nobody knows who is real',
   'the-challenge': 'Alumni and rookies, an open house vote, and the Arena',
+  'ridonculous-race': 'Teams of two race around the world, and the last team in goes home',
 };
 export const SHOWS = Object.keys(SHOW_REGISTRY).map(id => ({
   id, name: showName(id), icon: showIcon(id), tag: SHOW_TAGS[id] || '',
@@ -778,6 +803,20 @@ function _structureCardHTML() {
           </select>
         </label>
       </div>
+    </section>`;
+  }
+
+  // The Ridonculous Race's own card: no tribes, no merge, no jury. The teams are made in the Casting Room's Pairs
+  // view (each card's Partner, relationship, identity and team name), and the legs follow from how many there are.
+  if (_format() === RACE_FORMAT) {
+    const teams = raceTeams(_players(), cfg).length;
+    const legs = raceSeasonShape(_players(), cfg);
+    return `<section class="qs-card">
+      <div class="qs-card-head"><span class="qs-card-icon">▚</span><h3>Structure</h3>
+        <span class="qs-card-hint">Teams of two, one place a leg, and the last team in goes home.</span></div>
+      ${caststrip}
+      <div class="qs-housenote">${teams} ${teams === 1 ? 'team' : 'teams'} of two${legs.length ? ` · ${legs.length} legs, ${legs.filter(l => l.kind === 'non').length} of them non-elimination` : ''}.
+        Pair the cast in <button class="qs-link" onclick="qsGoCast()">Cast › Casting Room › Pairs</button>; each card's Team relationship, identity and name fill in the team.</div>
     </section>`;
   }
 
@@ -1422,7 +1461,11 @@ const CONFIG_SCOPE = {
     // The cast form's two Challenge fields (the castle's Background is the precedent).
     'f-ch-billing':          ['the-challenge'],
     'f-ch-division':         ['the-challenge'],
-    'f-ch-partner':          ['the-challenge'],
+    'f-ch-partner':          ['the-challenge', 'ridonculous-race'],
+    // The Ridonculous Race's team fields on the cast form (js/rr-run.js raceTeams reads each).
+    'f-rr-rel':              ['ridonculous-race'],
+    'f-rr-identity':         ['ridonculous-race'],
+    'f-rr-teamname':         ['ridonculous-race'],
     'sec-tr-divider':        ['traitors'],
     'sec-dr-options':        ['drag-race'],
     'sec-dr-divider':        ['drag-race'],

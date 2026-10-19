@@ -112,8 +112,10 @@ function _chPhaseForScreen(id) { return _CH_PHASE[id.split('-')[1]] || _CH_PHASE
 // Each show's screens name their own sections, found by the screen id's
 // first word (a SCREEN id, never a season id). One table, so a new show adds
 // a row here instead of another prefix comparison (tests/show-list-duplication).
+// The Ridonculous Race's screens are `rr-watch` and `rr-transcript` (js/rr-view.js): one section, the leg.
+const _RR_PHASE = { id:'rr-leg', label:'The Leg', icon:'🏁' };
 const _PHASE_BY_SCREEN = { bb: id => _bbPhaseForScreen(id), villa: id => _pmPhaseForScreen(id),
-  ci: id => _ciPhaseForScreen(id), ch: id => _chPhaseForScreen(id) };
+  ci: id => _ciPhaseForScreen(id), ch: id => _chPhaseForScreen(id), rr: () => _RR_PHASE };
 
 export function _vpPhaseForScreen(id = '') {
   if (_TR_PHASES[id]) return _TR_PHASES[id];

@@ -7879,6 +7879,27 @@
       "descriptor": "The Final Word",
       "backstory": "Ruth spent more than three decades in the postal service, where she developed endurance, a precise memory for excuses, and little patience for people who confuse authority with competence. She and her late husband built a steady life around work, family visits, and church commitments. Widowhood changed her daily routines more than her appetite for independence. She resents being treated as fragile and has become selective about offers of help that arrive with instructions attached. Choir remains a source of friendship and pleasure. Retirement has given her time to reconsider habits she once accepted as duties, including the assumption that every free afternoon should be available to somebody else.",
       "personality": "Ruth is perceptive, controlled, and thoroughly convinced that her judgment deserves more weight than most people's. She notices weakness quickly and decides whether to comfort it, recruit it, or expose it. Her warmth is real but selective; being welcomed into her good graces can make someone feel protected enough to stop questioning her. She likes knowing what people confide when they think they are speaking to the sensible person in the room. In conflict, she prefers to establish the terms of the argument before anyone notices they have accepted them. She rarely needs a direct lie when a carefully chosen truth, omitted detail, or pointed question can produce the same result. She can protect an ally sincerely and later sacrifice them without feeling obliged to apologize for changing priorities. Pride makes her harsh toward people who publicly correct her, and she can mistake personal irritation for moral clarity. Her humor is dry, sometimes affectionate, sometimes deliberately humiliating. Beneath her composure is a competitive appetite she enjoys allowing others to underestimate. She wants influence, respect, and the final say; calling a decision necessary helps her avoid admitting that she also enjoyed making it."
+    },
+    {
+      "name": "Sasha",
+      "slug": "sasha",
+      "gender": "f",
+      "sexuality": "queer",
+      "archetype": "floater",
+      "stats": {
+        "physical": 4,
+        "endurance": 4,
+        "mental": 6,
+        "social": 7,
+        "strategic": 6,
+        "loyalty": 6,
+        "boldness": 8,
+        "intuition": 5,
+        "temperament": 7
+      },
+      "voice": "#chaotic #nerdy #goofy. Caps for emphasis, “NOT the…,” abrupt observations, and callbacks. Notices contradictions before emotional cues. Accurate strategic reads can sound like throwaway jokes. Genuine vulnerability removes the performance: short, specific, slightly awkward sincerity. #-emotional #-schemer #-earnest #-anxious",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

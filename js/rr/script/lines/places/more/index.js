@@ -3,5 +3,6 @@ import redOutback from './red-outback.js';
 import torchStatueHarbour from './torch-statue-harbour.js';
 import tombSands from './tomb-sands.js';
 import treasureIsles from './treasure-isles.js';
+import savannaFalls from './savanna-falls.js';
 
-export default [redOutback, torchStatueHarbour, tombSands, treasureIsles];
+export default [redOutback, torchStatueHarbour, tombSands, treasureIsles, savannaFalls];

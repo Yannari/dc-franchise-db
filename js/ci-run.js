@@ -464,6 +464,9 @@ export function rerunCircleEpisode(epNum) {
   const last = prefix[prefix.length - 1];
   gs.activePlayers = last ? [...(last.ci?.people || [])] : [];
   gs.episode = last ? last.num : 0;
+  // ...and its voices: each episode from N keeps the clips of the lines it still has word for word, later ones go
+  // (vp-ci/voicing.js, the Circle's own folder in the bucket)
+  if (typeof window !== 'undefined') window.ciVoicesAfterRerun?.(N);
   return true;
 }
 

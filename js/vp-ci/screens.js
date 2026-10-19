@@ -25,6 +25,8 @@ import { stageInner, paintStage } from './stage.js';
 import { CIV_CSS, CIV_FONTS } from './style.js';
 import { bedFor, playStep } from './sound.js';
 import { sidebarHtml } from './sidebar.js';
+// the players' own voices (Inworld clips in the audio bucket), when the episode has been voiced
+import { ciVoiceLine, ciVoiceStop, ciVoiceDone } from './voicing.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const reg = () => (typeof window !== 'undefined' ? (window._civ ||= {}) : {});
@@ -133,6 +135,9 @@ function paint(uid, fresh) {
   const count = document.getElementById(`civ-count-${uid}`);
   if (count) count.textContent = `${Math.max(0, S.idx + 1)} / ${S.screen.steps.length}`;
   if (fresh) playStep(S.screen, S.idx);
+  // the line in the voice of whoever said it, when the episode has its clips (voicing.js); a jump is silent
+  if (fresh && S.idx >= 0) ciVoiceLine(S.row, S.screen, S.screen.steps[S.idx]);
+  else ciVoiceStop();
   // The new line is brought into view INSIDE the script box only. This was
   // scrollIntoView, which also scrolls every ancestor: the page jumped down to
   // the script on every click (user: "the screen always scrolls down").
@@ -183,7 +188,10 @@ export function civAuto(uid) {
   const tick = () => {
     if (!S.auto || !document.querySelector(`.civ[data-uid="${uid}"]`)) return;
     civNext(uid);
-    if (S.auto) S.timer = setTimeout(tick, holdFor(S.screen.steps[S.idx]));
+    if (!S.auto) return;
+    // a voiced line is heard to its end before the next one (its clip can outlast the reading pace)
+    const hold = holdFor(S.screen.steps[S.idx]), t0 = Date.now();
+    ciVoiceDone().then(() => { if (S.auto) S.timer = setTimeout(tick, Math.max(400, hold - (Date.now() - t0))); });
   };
   tick();
 }

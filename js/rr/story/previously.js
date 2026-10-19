@@ -80,7 +80,8 @@ function clipOf(ep, sceneId, max = 2) {
     const sc = said.slice(i, i + max).reduce((a, l, k) => a + score(l, i + k), 0);
     if (sc >= bestScore) { best = i; bestScore = sc; }
   }
-  return said.slice(best, best + max).map(l => ({ kind: l.kind, by: l.by, text: l.text, clip: true }));
+  // each clip carries the scene it came from, so the viewer replays it on that scene's own plate
+  return said.slice(best, best + max).map(l => ({ kind: l.kind, by: l.by, text: l.text, clip: true, scene: sceneId }));
 }
 const pick = (list, rng) => list[Math.floor(rng() * list.length) % list.length];
 

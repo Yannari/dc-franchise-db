@@ -12,7 +12,7 @@ import { DON_GOES_AFTER, MARKED_MINUTES, DEPARTURE_PENALTY } from './format.js';
 import { surrender } from './money.js';
 import { useSave } from './twists.js';
 import { rest } from './mind.js';
-import { emit, playScene, SCENES, decideEnding, prepare } from './scenes.js';
+import { emit, playScene, SCENES, decideEnding, prepare, CLASH_KINDS } from './scenes.js';
 import { getBond } from '../bonds.js';
 
 const CASH = 200;
@@ -33,7 +33,12 @@ function farewell(state, out, finished, finish, rng, atMat, how = 'last') {
   const t = finish[out] ?? Math.max(...Object.values(finish));
   if (!atMat) { const [a, b] = people(state, out); act(state, 'int-exit', out, null, rng, getBond(a, b) >= 0 ? 'grateful' : 'bitter', { t, exitHow: how }); return; }
   const close = (a, b) => people(state, a).reduce((s, x) => s + people(state, b).reduce((u, y) => u + getBond(x, y), 0), 0) / 4;
-  const friends = finished.filter(id => id !== out).sort((a, b) => close(b, out) - close(a, out));
+  // a consoler likes every one of them and hasn't turned on them this leg
+  const pair = (x, y) => [x, y].sort().join('|');
+  const clashed = new Set((state.scenes || []).filter(s => s.leg === state.leg && CLASH_KINDS.has(s.kind) && s.data?.other != null)
+    .map(s => pair(s.data.team, s.data.other)));
+  const kind = id => !clashed.has(pair(id, out)) && people(state, id).every(x => people(state, out).every(y => getBond(x, y) >= 0));
+  const friends = finished.filter(id => id !== out && kind(id)).sort((a, b) => close(b, out) - close(a, out));
   if (friends[0] && close(friends[0], out) >= 1) {
     const ctx = { state, team: { id: friends[0] }, other: { id: out }, moment: 'mat', t, stretch: { id: 'mat', kind: 'mat' },
       present: [friends[0], out], event: { consoleTarget: out } };

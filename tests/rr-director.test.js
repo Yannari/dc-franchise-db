@@ -132,6 +132,25 @@ describe('rr director', () => {
     }
   });
 
+  it('no team consoles a team it clashed with that leg', async () => {
+    const { SOUR_X } = await import('../js/rr/story/director.js');
+    expect(SOUR_X.has('push')).toBe(true);
+    let consoles = 0;
+    for (const seed of [1, 2, 3, 4, 5, 6]) {
+      const { cast, teams } = raceCast(12, seed);
+      setPlayers(cast);
+      const st = playRaceSeason({ teams, seed }).state;
+      for (const c of st.scenes.filter(s => s.kind === 'console')) {
+        consoles++;
+        const pair = [c.data.team, c.data.other].sort().join('|');
+        const clash = st.scenes.find(s => s.leg === c.leg && s.id < c.id && SOUR_X.has(s.kind) && [s.data.team, s.data.other].sort().join('|') === pair);
+        expect(clash, `seed ${seed} leg ${c.leg}: ${clash?.kind} then console`).toBeUndefined();
+      }
+    }
+    expect(consoles).toBeGreaterThan(0);
+    setPlayers(raceCast(12, 4).cast);
+  });
+
   it('nobody says two lines in a row because of an added identity line', () => {
     for (const ep of aired) for (const seg of ep.segments) {
       const ls = seg.lines || [];

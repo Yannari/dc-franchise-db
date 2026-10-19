@@ -18,7 +18,7 @@
 // after they rowed; an interview only about a moment that aired; a chained moment brings its cause.
 // The episode runs in clock order: teams at the same minute cut between each other, and the end of
 // a close leg plays as a race.
-import { SCENES } from '../scenes.js';
+import { SCENES, CLASH_KINDS } from '../scenes.js';
 import { writeScene } from '../script/write.js';
 
 export const MUST = new Set(['don-opener', 'don-place', 'don-elim', 'don-arrives', 'don-fakeout', 'don-rule', 'don-ruling',
@@ -34,7 +34,7 @@ export const ROW = new Set(['snap']);
 const ROW_ENDINGS = { blame: ['blow-up'], 'old-wound': ['explodes'], 'silent-treatment': ['breaks'], shove: ['shove'] };
 const isRow = s => ROW.has(s.kind) || (ROW_ENDINGS[s.kind] || []).includes(s.data?.ending);
 // between two teams: after a clash this leg, nothing friendly between them (manual §19.4 "one pair, two moods")
-export const SOUR_X = new Set(['trash-talk', 'gloat', 'shove', 'accusation', 'confront', 'mock-the-struggle', 'alliance-betrayal', 'deal-broken']);
+export const SOUR_X = CLASH_KINDS;
 export const WARM_X = new Set(['small-talk', 'alliance-pitch', 'alliance-check', 'share-info', 'help-offer', 'mentor', 'tag-along', 'watching-together']);
 const teamsKey = s => (s.data?.team && s.data?.other ? [s.data.team, s.data.other].sort().join('|') : null);
 

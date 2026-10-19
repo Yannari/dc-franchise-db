@@ -23,6 +23,10 @@ const people = (state, id) => (id && state.teams[id] ? [state.teams[id].a, state
 
 // ── What a scene may know (the dialogue reads this, never live state; manual §19.2 step 1) ──
 // Taken when the scene is played, BEFORE its ending changes anything: how the two stood, where, when.
+// moments where one team turned on another: after one, the two aren't friendly for the rest of the leg
+// (the director drops warm scenes between them; nobody consoles a team they clashed with)
+export const CLASH_KINDS = new Set(['trash-talk', 'gloat', 'shove', 'push', 'accusation', 'confront', 'mock-the-struggle', 'alliance-betrayal', 'deal-broken']);
+
 export const SNAP_KEYS = ['leg', 'phase', 'tod', 'rank', 'band', 'bandX', 'allied', 'rivalry', 'couple', 'rel', 'relFam',
   'identity', 'identityB', 'money', 'broke', 'snapped', 'place', 'stretchKind', 'mode', 'taskTypes', 'fails', 'side', 'lead', 'botcher',
   'relB', 'relFamB', 'brokeB', 'failsB', 'sabKind'];

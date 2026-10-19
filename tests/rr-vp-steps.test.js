@@ -88,7 +88,7 @@ describe('rr viewer steps', () => {
   it('stands nobody in water, and keeps everybody in the frame', () => {
     const onGround = (plate, [x, y]) => {
       if (plate.spots?.some(sp => Math.abs(sp[0] - x) < 8 && Math.abs(sp[1] - y) < 2)) return true;
-      if (plate.mat && Math.abs(plate.mat[0] - x) < 1 && Math.abs(plate.mat[1] - y) < 1) return true;
+      for (const m of [plate.mat, plate.matPos]) if (m && Math.abs(m[0] - x) < 1 && Math.abs(m[1] - y) < 1) return true;
       const g = Array.isArray(plate.g) ? plate.g : [plate.g, plate.g];
       return y >= Math.min(...g) - 0.5 && y <= Math.max(...g) + 0.5 && x >= plate.x[0] - 0.5 && x <= plate.x[1] + 0.5;
     };

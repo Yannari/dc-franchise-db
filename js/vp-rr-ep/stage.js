@@ -120,7 +120,7 @@ export function createStage(holder, { faceOf, legLabel }) {
     const p = document.createElement('img'); p.className = 'prop'; p.src = src; p.style.left = pos[0] + '%'; p.style.top = pos[1] + '%'; p.style.width = w + 'cqw'; p.style.zIndex = z;
     under.appendChild(p); return p;
   }
-  function stamp(x, y, txt, cls = '') { const s = document.createElement('div'); s.className = 'stamp ' + cls; s.style.left = Math.max(12, Math.min(88, x)) + '%'; s.style.top = y + '%'; s.textContent = txt; ui.appendChild(s); return s; }
+  function stamp(x, y, txt, cls = '') { const s = document.createElement('div'); s.className = 'stamp ' + cls; s.style.left = Math.max(12, Math.min(88, x)) + '%'; y = Math.max(18, y); s.style.top = y + '%'; s.textContent = txt; ui.appendChild(s); return s; }
   function particles(kind, x, y, n = 10, spread = 8) {
     for (let i = 0; i < n; i++) {
       const m = document.createElement('div'); m.className = 'fxp ' + kind;

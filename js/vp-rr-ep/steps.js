@@ -494,7 +494,7 @@ function stageScreen(s, color) {
     }
     void people;
   } else if (s.mode === 'mat') {
-    const mat = plate.mat || [lerp(plate.x[0], plate.x[1], 0.45), groundY(plate, 0)];
+    const mat = plate.mat || plate.matPos || [lerp(plate.x[0], plate.x[1], 0.45), groundY(plate, 0)];
     s.matAt = [...mat];
     const donX = mat[0] + 16 <= plate.x[1] ? mat[0] + 16 : mat[0] - 16;
     s.donAt = [Math.min(plate.x[1], Math.max(plate.x[0], donX)), groundY(plate, 0)];
@@ -527,10 +527,11 @@ function stageScreen(s, color) {
         if (['swim', 'dive'].includes(plate.mode)) {
           // a head in the water is centred on its point, its name under it: both stay above the frame's bottom
           const gap = Math.max(5, s.size * 0.95);
-          pt = [Math.min(100 - M - gap, Math.max(M * 0.6, pt[0])), Math.min(100 - 1.2 * s.size - 1, pt[1] + i * 4)];
+          pt = [Math.min(100 - M - gap, Math.max(M, pt[0])), Math.min(100 - 1.2 * s.size - 2, pt[1] + i * 4)];
         } else if (plate.mode === 'ride') pt = [pt[0], pt[1] + i * 4];
+        // (the slow push on the plate moves the edges out by a few per cent: the margins allow for it)
         // a climber or a jumper is never so high (or so far to the side) that their faces leave the frame
-        else pt = [Math.min(100 - M, Math.max(M, pt[0])), Math.max(s.size * 2.35 + 1, pt[1])];
+        else pt = [Math.min(100 - M, Math.max(M, pt[0])), Math.max(s.size * 2.35 + 7, pt[1])];
         pos[id] = pt;
       });
       s.pos.push(pos);

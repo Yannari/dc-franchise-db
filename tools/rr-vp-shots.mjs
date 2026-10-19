@@ -58,7 +58,7 @@ for (const n of epList.split(',').map(Number)) {
       await page.evaluate(k => { window.__rr.step(Math.max(0, k - 1), false); window.__rr.step(k, true); }, k);
       await page.waitForTimeout(name === 'title' || name === 'logo' ? 1200 : 1700);
       const file = `shots/rr-vp/s${seed}-e${n}-${name}${all ? '-' + k : ''}${process.env.RR_TAG || ''}.png`;
-      await page.screenshot({ path: file, fullPage: true });
+      if (process.env.RR_STAGE) await page.locator('#rr-stage-holder').screenshot({ path: file }); else await page.screenshot({ path: file, fullPage: true });
       console.log(file);
     }
   }

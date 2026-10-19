@@ -73,15 +73,15 @@ function _gatherFacts(active) {
 // `${name} ${reason}` → "Bowie has already won 2 immunities".
 function _threatReasons(n, f) {
   const F = f[n], out = [];
-  if (F.rec.wins >= 1) out.push({ w: 1.5 + F.rec.wins * 0.9, s: `has already won ${F.rec.wins} immunit${F.rec.wins > 1 ? 'ies' : 'y'}`, tag: 'wins' });
-  if (F.alliances.length && F.allies.length >= 2) out.push({ w: 2.6, s: `has ${F.alliances[0].name} voting as a bloc — ${F.allies.length + 1} strong`, tag: 'alliance' });
-  else if (F.allies.length >= 2) out.push({ w: 2, s: `has a tight ${F.allies.length + 1}-person bloc nobody's cracked`, tag: 'bloc' });
-  if (F.partner) out.push({ w: 2.3, s: `is one half of the ${F.partner} pact nobody's addressed`, tag: 'showmance' });
-  if (F.stats.strategic >= 7) out.push({ w: 1.9, s: `has been steering the strategy all season`, tag: 'strategic' });
-  if (F.stats.physical >= 7) out.push({ w: 1.9, s: `is a physical wrecking ball who wins these outright`, tag: 'physical' });
-  if (F.stats.social >= 8) out.push({ w: 1.5, s: `has a friend in every corner of this jury`, tag: 'social' });
-  if (F.rec.podiums >= 2 && F.rec.wins < 1) out.push({ w: 1.6, s: `keeps landing on the podium — a win's coming`, tag: 'podium' });
-  if (!out.length) out.push({ w: 1, s: `is the most dangerous player left standing`, tag: 'general' });
+  if (F.rec.wins >= 1) out.push({ w: 1.5 + F.rec.wins * 0.9, s: `has already won ${F.rec.wins > 1 ? `${F.rec.wins} immunities` : 'an immunity'}`, tag: 'wins' });
+  if (F.alliances.length && F.allies.length >= 2) out.push({ w: 2.6, s: `is in ${F.alliances[0].name}, and that's ${F.allies.length + 1} votes that always go together`, tag: 'alliance' });
+  else if (F.allies.length >= 2) out.push({ w: 2, s: `has ${F.allies.length} friends here who vote however they're told`, tag: 'bloc' });
+  if (F.partner) out.push({ w: 2.3, s: `is with ${F.partner}, and nobody ever says anything about it`, tag: 'showmance' });
+  if (F.stats.strategic >= 7) out.push({ w: 1.9, s: `is behind half the votes in this game`, tag: 'strategic' });
+  if (F.stats.physical >= 7) out.push({ w: 1.9, s: `is strong enough to win this one on ${pronouns(n).posAdj} own`, tag: 'physical' });
+  if (F.stats.social >= 8) out.push({ w: 1.5, s: `is friends with every single person here`, tag: 'social' });
+  if (F.rec.podiums >= 2 && F.rec.wins < 1) out.push({ w: 1.6, s: `keeps finishing near the top, and a win is coming`, tag: 'podium' });
+  if (!out.length) out.push({ w: 1, s: `is playing a much better game than anybody gives ${pronouns(n).obj} credit for`, tag: 'general' });
   return out.sort((a, b) => b.w - a.w);
 }
 // grounded self-defense: a player's real case for why NOT them.
@@ -92,23 +92,25 @@ function _defensePlea(n, f, active) {
   const sr = suggest ? _threatReasons(suggest, f)[0].s : '';
   const goat = F.rec.wins === 0 && F.allies.length < 2 && !F.partner;
   let pool;
+  // Every line is only what the speaker SAYS: the viewer prints it under their name, so no
+  // "X says" or stage directions inside the text (the user, 2026-10-19).
   if (goat) pool = [
-    (x, s) => `${x} keeps it simple. "Be honest — I'm the person every one of you would love to sit next to at the end. No wins, no numbers, no jury locked up. Handing ME the anchor is a gift to whoever I'd lose to.${s ? ` If it's got to be anyone, it's ${s}.` : ''}"`,
-    (x, s) => `"What does slowing me down even buy you?" ${x} asks the circle. "I'm not the one anybody's scared to face at the vote. Spend the disadvantage where it actually changes the math.${s ? ` On ${s}.` : ''}"`,
-    (x, s, r) => `${x} spreads their hands. "I'm the easy vote and we all know it — nobody in this game is losing sleep over me. Wasting the anchor here just protects the person who'd beat you.${s ? ` And that's ${s}, who ${r}.` : ''}"`,
-    (x, s) => `"Give me the disadvantage and you've done the winners a favor," ${x} says flatly. "I've got nothing locked up — no bloc, no immunity run, nothing. I'm not the danger in this circle.${s ? ` ${s} is.` : ''}"`,
+    (x, s) => `Come on. I'm the one you all want to sit next to at the end. Why would you slow me down?${s ? ` If it has to be somebody, it's ${s}.` : ''}`,
+    (x, s) => `What does slowing me down get you? Nobody here is scared of me.${s ? ` Give it to ${s}. That would actually change something.` : ' Give it to somebody who matters.'}`,
+    (x, s, r) => `I'm the easy vote. I know that. But putting this on me just helps whoever beats you.${s ? ` And that's ${s}. ${s} ${r}.` : ''}`,
+    (x, s) => `I don't have an alliance and I don't have a single win. Give it to me and you're doing the winners a favour.${s ? ` ${s} is the danger, not me.` : ''}`,
   ];
   else if (F.rec.wins === 0) pool = [
-    (x, s) => `${x} makes the case plainly. "I haven't won a single immunity out here — not one. Disadvantage me and you've thrown it away, because I was never the one cruising to the end.${s ? ` ${s} was.` : ''}"`,
-    (x, s, r) => `"Look at the record," ${x} says. "Zero immunity wins next to my name. If you're worried about who runs the table, it isn't me — it's ${s || 'someone else'}${s && r ? `, who ${r}` : ''}."`,
-    (x, s) => `${x} shakes their head. "You want to spend the anchor on someone who hasn't won a challenge all season? Be my guest — but you're aiming at the wrong person.${s ? ` The right one is ${s}.` : ''}"`,
-    (x, s) => `"Point at the wins," ${x} says. "I don't have any. That's the whole argument. Slowing me down changes nothing about who's actually built to take this.${s ? ` Look at ${s}.` : ''}"`,
+    (x, s) => `I haven't won immunity once. Not once. Put this on me and you've wasted it.${s ? ` ${s} is the one heading for the end.` : ''}`,
+    (x, s, r) => `Look at my record. No wins. If you're scared of somebody running the table, it isn't me.${s ? ` It's ${s}. ${s} ${r}.` : ''}`,
+    (x, s) => `You want to slow down the person who's never won anything? Go ahead. You're aiming at the wrong person.${s ? ` It should be ${s}.` : ''}`,
+    (x, s) => `I've got no wins. That's my whole argument. Slowing me down changes nothing.${s ? ` Look at ${s}.` : ''}`,
   ];
   else pool = [
-    (x, s) => `${x} doesn't pretend. "Sure, I've had a good run — but a 35% handicap doesn't stop me and deep down you know it. Waste it on me and you've solved nothing.${s ? ` The person you actually have to slow down is ${s}.` : ''}"`,
-    (x, s) => `"Put my name up if you want," ${x} says evenly. "I'll grind through it anyway. If you want the disadvantage to decide something, it goes on ${s || 'the real threat'} — not the person who fights through it regardless."`,
-    (x, s) => `${x} meets every eye in the circle. "I'm not going to insult you and say I'm harmless. But an anchor won't save you from me — it'll just waste a shot you could've used on ${s || 'a bigger problem'}."`,
-    (x, s) => `"Fine, I'm a threat — I'll own it," ${x} says. "But so is ${s || 'half this circle'}, and a handicap on me is a handicap on the person hardest to actually stop. Aim smarter."`,
+    (x, s) => `Yes, I've won some. But a handicap won't stop me, and you know it. Waste it on me and nothing changes.${s ? ` The person you need to slow down is ${s}.` : ''}`,
+    (x, s) => `Vote for me if you want. I'll get through it anyway.${s ? ` If you want this to actually matter, give it to ${s}.` : ' If you want this to matter, give it to somebody it would stop.'}`,
+    (x, s) => `I'm not going to stand here and say I'm harmless. But this won't stop me. It just wastes the one shot you get${s ? ` at ${s}` : ''}.`,
+    (x, s) => `Fine. I'm a threat. I'll say it.${s ? ` So is ${s}, and ${s} is a lot easier to slow down than me.` : ' So is half this circle.'} Think about it.`,
   ];
   return { suggest, text: draw(pool, n, suggest, sr) };
 }
@@ -159,13 +161,13 @@ export function simulateDisadvantageVote(ep) {
     debate.push({ type: 'accuse', speaker: A, target: T,
       text: Agrudge
         ? draw([
-          (a, t, r, al) => `${a} doesn't wait to be called on. "${t} wrote my name at the ${al} vote — so forgive me if I don't hand ${t} a clean shot at the money too. And ${t} ${r}. It's ${t}."`,
-          (a, t, r, al) => `"Let's be honest about who's dangerous," ${a} says, eyes on ${t}. "${t} already burned me at ${al}. And now ${t} ${r}. Slow ${t} down, or you're all getting played like I did."`,
+          (a, t, r, al) => `${t} wrote my name down when we were both in ${al}. So no, I'm not giving ${t} an easy day. ${t} ${r}. It's ${t}.`,
+          (a, t, r, al) => `Let's be honest. ${t} already turned on me once, back in ${al}. And ${t} ${r}. Slow ${t} down, or ${t} does to you what ${t} did to me.`,
         ], A, T, rsn, Agrudge.alliance)
         : draw([
-          (a, t, r) => `${a} won't dance around it. "${t} ${r}. You don't hand the disadvantage to the person least likely to win — you hand it to the person most likely. That's ${t}."`,
-          (a, t, r) => `"I'll say what everyone's thinking," ${a} presses. "${t} ${r}. If ${t} runs this clean, the rest of us are playing for second."`,
-          (a, t, r) => `${a} points across the circle. "We're all doing the same math. ${t} ${r} — that's not a friend you protect, that's a problem you slow down."`,
+          (a, t, r) => `I'll just say it. ${t} ${r}. You don't give this to the person least likely to win. You give it to the one most likely. That's ${t}.`,
+          (a, t, r) => `Everybody's thinking it. ${t} ${r}. If ${t} gets a clean run today, the rest of us are playing for second.`,
+          (a, t, r) => `We can all count. ${t} ${r}. That's not somebody you protect. That's somebody you slow down.`,
         ], A, T, rsn) });
     bump(T, 2.4 + f[A].stats.social * 0.06);
 
@@ -187,16 +189,16 @@ export function simulateDisadvantageVote(ep) {
       usedInClash.add(ally);
       debate.push({ type: 'interject', speaker: ally, target: A,
         text: draw([
-          (p, t, a) => `${p} jumps in for ${t}. "You're really going to pretend YOU'RE not the danger here, ${a}? You pointed at ${t} the second the heat came your way. Nobody's buying it."`,
-          (p, t, a) => `"Convenient," ${p} says, siding with ${t}. "${a} needs everyone staring at ${t} instead of at ${a}. Look closer at who's actually built to win this thing."`,
+          (p, t, a) => `Hang on. ${a}, you pointed at ${t} the second anybody looked at you. Nobody's buying it.`,
+          (p, t, a) => `That's convenient, ${a}. As long as we're all looking at ${t}, nobody's looking at you.`,
         ], ally, T, A) });
       bump(A, 1.1); bump(T, -0.4);
     } else if (rivalOfA) {
       usedInClash.add(rivalOfA);
       debate.push({ type: 'dispute', speaker: rivalOfA, target: A,
         text: draw([
-          (r, a) => `${r} rounds on ${a}. "Don't play innocent. You've had blood on your hands all game, ${a} — you just talk pretty about it. If we're slowing down threats, your name belongs in that hat too."`,
-          (r, a) => `"That's rich coming from you, ${a}," ${r} snaps. "We both know how you got this far. Point all you want — plenty of us would happily hand YOU the anchor instead."`,
+          (r, a) => `Don't act innocent, ${a}. You've voted people out this whole game. You're just nicer about it. If we're slowing down threats, put your name in too.`,
+          (r, a) => `That's rich coming from you, ${a}. We all know how you got this far. A lot of us would be happy to give it to you instead.`,
         ], rivalOfA, A) });
       bump(A, 1.3);
     }
@@ -246,7 +248,7 @@ export function simulateDisadvantageVote(ep) {
 
   // ── T defends themselves, THEN counters: expose a REAL betrayal A committed, or point at A's real threat ──
   function _counterTarget(T, A, facts, activeP) {
-    const def = facts[T].rec.wins === 0 ? `I haven't won a thing out here` : `I'm as beatable as anyone in this circle`;
+    const def = facts[T].rec.wins === 0 ? `I haven't won a thing out here` : `Yes, I've won before`;
     const Def = def.charAt(0).toUpperCase() + def.slice(1);
     // does A have a real betrayal on record? (grounded reveal)
     const aBetrayal = facts[A].betrayedBy[0];
@@ -255,9 +257,9 @@ export function simulateDisadvantageVote(ep) {
       return {
         name: A, reveal: true, expose: aBetrayal,
         text: draw([
-          (t, a, vic, al, d) => `${t} doesn't flinch. "${d} — but let's talk about ${a}. ${a} sat in ${al} and wrote ${vic}'s name after swearing loyalty to ${vic}'s face. THAT'S who's lecturing you about threats. Want the anchor to matter? Put it on ${a}."`,
-          (t, a, vic, al, d) => `"Funny ${a} brings up trust," ${t} shoots back. "${vic} trusted ${a} too — right up until ${a} flipped at ${al} and buried ${vic}. ${d}. ${a} is the most dangerous liar in this circle, not me."`,
-          (t, a, vic, al, d) => `${t} turns to the group. "Before you write my name — ask ${a} about ${al}. Ask whose name ${a} wrote after promising the opposite. ${vic} knows. Now you all do. ${d}."`,
+          (t, a, vic, al, d) => `${d}. But let's talk about ${a}. ${a} was in ${al} with ${vic}, promised ${vic} everything, and then wrote ${vic}'s name down. That's who's lecturing you. Give it to ${a}.`,
+          (t, a, vic, al, d) => `Funny you want to talk about trust, ${a}. ${vic} trusted you too, right up until you turned on ${al} and voted for ${vic}. ${d}. You're the one nobody should trust.`,
+          (t, a, vic, al, d) => `Before you vote for me, ask ${a} about ${al}. Ask whose name ${a} wrote down after promising not to. ${vic} knows. Now you all know too.`,
         ], T, A, aBetrayal.victim, aBetrayal.alliance, Def),
       };
     }
@@ -266,9 +268,9 @@ export function simulateDisadvantageVote(ep) {
     return {
       name: A, reveal: false, expose: null,
       text: draw([
-        (t, a, r, d) => `${t} isn't taking it. "${d}. Look at ${a} — ${a} ${r}. You're pointing at me to keep the target off the person actually built to win. That's ${a}, not me."`,
-        (t, a, r, d) => `"${d}," ${t} counters. "${a}, on the other hand? ${a} ${r}. If we're clipping threats, ${a} goes first."`,
-        (t, a, r, d) => `${t} flips it back. "${d}, and everybody here knows it. But ${a} ${r}. Don't let the finger-pointing fool you about who the real danger is."`,
+        (t, a, r, d) => `No. ${d}. Look at ${a}. ${a} ${r}. You're pointing at me so nobody looks at you, ${a}.`,
+        (t, a, r, d) => `${d}. ${a}, though? ${a} ${r}. If we're slowing down threats, ${a} goes first.`,
+        (t, a, r, d) => `${d}. But ${a} ${r}. Don't let ${a} point you the wrong way.`,
       ], T, A, aRsn, Def),
     };
   }

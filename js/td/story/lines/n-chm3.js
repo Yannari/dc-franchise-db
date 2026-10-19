@@ -79,7 +79,7 @@ export default {
     ] },
   ],
   'chm.taunt.any': [
-    { id: 'nc3.t1', when: { two: true }, turns: [
+    { id: 'nc3.t1', when: { two: true, won: true }, turns: [
       { beat: "{a} is still doing the victory dance from {chal} when {b} walks into the middle of it." },
       { by: 'b', say: "You can stop now. We all saw." },
       { by: 'a', say: "Did you see the part where I won? Because I can do it again, slower." },

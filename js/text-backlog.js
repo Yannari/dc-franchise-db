@@ -859,7 +859,7 @@ export function _textTwists(ep, ln, sec) {
       ln('THE DISADVANTAGE TRIAL');
       ln(`At the elimination area, ${tr.host} tells the field they must argue it out and vote to hand one player a disadvantage in the immunity challenge.`);
       ln('');
-      (tr.debate || []).forEach(b => ln(b.text));
+      (tr.debate || []).forEach(b => ln(`${b.speaker}: "${b.text}"`));
       ln('');
       Object.keys(tr.votes).forEach(v => ln(`- ${v} votes for ${tr.votes[v]}${tr.voteReasons?.[v] ? ` (${tr.voteReasons[v]})` : ''}.`));
       ln('');

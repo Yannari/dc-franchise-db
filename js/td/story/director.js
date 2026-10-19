@@ -2126,6 +2126,9 @@ export function airTdEpisode(ep) {
             // did this camp win the challenge it is talking about? (a team that lost goes to tribal tonight; the user,
             // 2026-10-12: Spencer's "We won, and I should be happy" after his team lost). After the merge there is no team
             teamWon: !(ep.isMerge || gs.isMerged) && !tribalTonight, bLikesA: getBond(b, a) >= 2, bHatesA: getBond(b, a) <= -2,
+            // did a win it outright? (the user, 2026-10-19: Bowie's victory dance 'from Say Cheese', which Bowie lost.
+            // A taunt is read off the moment's badge, and taunting is not winning)
+            won: (ep.isMerge || gs.isMerged) ? [].concat(ep.immunityWinner || []).includes(a) : false,
             physical: ['physical', 'endurance', 'adventure', 'hunt', 'chaos'].includes(style) };
           const w = writeStory(`chm.${m.kind}`, 'any', who, { chal }, facts, { ep: ep.num, camp, phase, n: n++, place: 'aside', draft: true, avoid: ctxAvoid('afternoon'),
             // a moment is colour, not a reason: once its scenes have aired it skips rather than repeats (read: Alejandro's

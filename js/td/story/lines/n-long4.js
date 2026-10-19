@@ -191,7 +191,7 @@ export default {
       { by: 'c', say: "I believe {b.obj}.", opt: true },
       { by: 'b', conf: "{a} cheated, and {a} doesn't even care that I know. Fine. Now I know exactly what kind of player I'm dealing with." },
     ] },
-    { id: 'nl4.b2', when: { two: false }, turns: [
+    { id: 'nl4.b2', when: { two: false, merged: false, teamWon: true }, turns: [
       { by: 'b', say: "Can I ask you something, just between us?" },
       { by: 'a', say: "Sure." },
       { by: 'b', say: "At {chal}, with the other team's stuff. Was that you?" },

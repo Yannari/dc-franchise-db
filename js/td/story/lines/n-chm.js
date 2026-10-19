@@ -8,7 +8,7 @@
 export default {
   // a saved / carried / stood up for b during the challenge
   'chm.saved.any': [
-    { id: 'ncm.s4', when: { merged: true, two: false }, turns: [
+    { id: 'ncm.s4', when: { merged: true, two: false, won: true }, turns: [
       { by: 'b', say: "You were unstoppable at {chal}." },
       { by: 'a', say: "I had a good day, that's all." },
       { by: 'b', say: "That's what worries me. A good day like that, everybody notices." },
@@ -120,7 +120,7 @@ export default {
       { by: 'b', say: "Oh, you're already there." },
       { by: 'b', conf: "{a} rubbed it in my face today in front of everybody. One day soon it's going to be my turn, and I'm going to enjoy it a lot." },
     ] },
-    { id: 'ncm.t2', when: { merged: false, two: false }, turns: [
+    { id: 'ncm.t2', when: { merged: false, two: false, teamWon: true }, turns: [
       { by: 'b', say: "Did you have to celebrate quite that loudly?" },
       { by: 'a', say: "Yes. Yes, I did." },
       { by: 'b', say: "The other team's going to hate you." },

@@ -23,7 +23,9 @@ export function airSeason(result) {
   for (const [i, l] of result.legs.entries()) {
     // "previously on", from what aired last time (before this leg's words spend the ledger)
     const previously = i ? previouslyFor(st, eps[i - 1], stableRng(st.seed, 'previously', l.n)) : null;
-    eps.push({ ...airLeg(st, l), previously });
+    // what the next episode's recap needs from this one: where it was, how many raced, who won and who went
+    eps.push({ ...airLeg(st, l), previously, placeName: l.placeName, teams: l.order.length, order: l.order,
+      eliminated: l.eliminated, how: l.how });
   }
   return eps;
 }

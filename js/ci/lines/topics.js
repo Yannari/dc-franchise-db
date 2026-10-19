@@ -352,8 +352,8 @@ export const TOPIC_LINES = {
     ] },
     { turns: [
       { by: 'a', send: "What do you miss most? Not people. Like a thing" },
-      { by: 'b', send: "My own bed. And being able to Google something. Anything" },
-      { by: 'a', react: "Googling. Yes. I argued with myself about a movie today and nobody could settle it." },
+      { by: 'b', send: "My own bed. And being able to look something up. Anything" },
+      { by: 'a', react: "Looking things up. Yes. I argued with myself about a movie today and nobody could settle it." },
     ] },
     { turns: [
       { by: 'a', send: "Okay rank the apartment. What's the best part" },

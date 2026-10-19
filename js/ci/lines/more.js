@@ -226,7 +226,7 @@ export const MORE_LINES = {
     { turns: [{ by: 'a', react: "I talked to {b} every single day. I think I'm going to cry." }], beat: '{a} is already holding a tissue.' },
     { turns: [{ by: 'a', react: "If {b} calls me out in this video, I'm unplugging the TV." }], beat: '{a} eyes the power cord.' },
     { turns: [{ by: 'a', react: "Let's find out if I was right about {b}." }], beat: '{a} crosses {a.posAdj} arms and waits.' },
-    { turns: [{ by: 'a', react: "Circle, play {b}'s message. Rip the band-aid off." }], beat: '{a} covers {a.posAdj} eyes, then peeks.' },
+    { turns: [{ by: 'a', react: "Circle, play {b}'s message. Just get it over with." }], beat: '{a} covers {a.posAdj} eyes, then peeks.' },
   ]),
   ...M('goodbye.react.surprised', [
     { turns: [{ by: 'a', react: "Wow. Okay. I did not have that on my bingo card." }], beat: '{a} stares at the black screen for a long moment.' },

@@ -33,6 +33,9 @@ import { SCENES_WEAR } from './scenes-wear.js';
 import { REGISTER_LINES } from './registers.js';
 import { REGISTER_PASS2 } from './registers-pass2.js';
 import { VOICES as VOICES_1 } from './voices/batch1.js';
+import { VOICES as VOICES_2A } from './voices/batch2a.js';
+import { VOICES as VOICES_2B } from './voices/batch2b.js';
+import { VOICES as VOICES_2C } from './voices/batch2c.js';
 import { VOICE_NOTICED } from './voice-noticed.js';
 import { FLIRT_ACT } from './flirt-act.js';
 import { TOPIC_LINES } from './topics.js';
@@ -62,10 +65,14 @@ for (const part of [GROUPCHAT_LINES, MORNING_AFTER, AUDIENCE_LINES, PRIZE_LINES,
 export const VOICE_MISSES = [];
 {
   const byId = new Map(Object.values(POOLS).flat().map(e => [e.id, e]));
-  const MAIN = t => ['send', 'post', 'say', 'video', 'react'].find(x => t[x]);
-  for (const [id, at, v] of [...VOICES_1]) {
-    const t = (byId.get(id)?.turns || []).find(x => x[MAIN(x)] === at);
+  const KINDS = ['send', 'post', 'say', 'video', 'react'];
+  for (const [id, at, v] of [...VOICES_1, ...VOICES_2A, ...VOICES_2B, ...VOICES_2C]) {
+    // the turn holding that text, in whichever of its fields (a turn can say something aloud and post something else)
+    let field = null;
+    const t = (byId.get(id)?.turns || []).find(x => (field = KINDS.find(k => x[k] === at)));
     if (!t) { VOICE_MISSES.push(id); continue; }
-    t.v = { ...(t.v || {}), ...v };
+    // each version replaces that field and only that field
+    const mine = Object.fromEntries(Object.entries(v).map(([r, text]) => [r, typeof text === 'string' ? { [field]: text } : text]));
+    for (const [r, o] of Object.entries(mine)) t.v = { ...(t.v || {}), [r]: { ...(t.v?.[r] || {}), ...o } };
   }
 }

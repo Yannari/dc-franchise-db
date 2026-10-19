@@ -21,7 +21,7 @@ const V = (key, byRegister) => ({
 export const REGISTER_MORE = {
   // ── Ratings (said aloud to the Circle) ────────────────────────────────
   ...R('rate.middle', {
-    goofy: ["{b}, you're the cream in the middle of my Oreo. That's a compliment. The middle is the best part.", "Middle for {b}! Wait, is the middle good? Circle, is the middle good? Okay. Middle."],
+    goofy: ["{b}, you're the filling in my sandwich cookie. That's a compliment. The middle is the best part.", "Middle for {b}! Wait, is the middle good? Circle, is the middle good? Okay. Middle."],
     shy: ["Um. {b} in the middle, please. Sorry, {b}. I just don't know you very well yet.", "I'll put {b} in the middle. Is that okay? It's okay. Middle."],
   }),
   ...R('rate.affection.top', {

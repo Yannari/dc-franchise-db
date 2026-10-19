@@ -14,8 +14,9 @@ const WHERE = [
 describe('rr rewrite', () => {
   it('there is a rewrite, and every pool it retires holds only the new lines', () => {
     expect(REWRITES.length).toBeGreaterThan(0);
+    // new lines are any rewrite's (a volume file adds to a pool another rewrite retired); old ones are the files'
+    const mine = new Set(REWRITES.flatMap(rw => Object.values(rw.pools).flat().map(e => e.id)));
     for (const rw of REWRITES) {
-      const mine = new Set(Object.values(rw.pools).flat().map(e => e.id));
       for (const r of rw.retire) {
         const key = typeof r === 'string' ? r : r.key;
         // a place's own lines and a challenge's own lines are never retired by a general rewrite

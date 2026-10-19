@@ -51,7 +51,7 @@ function grounds(ep, o, tod = 'day') {
 const seasonOf = o => o.seasonName || 'this season';
 // where the jury sits (tools/td-camp/venues/zz_zzzzjury.py, the user's frames): the wide shot, and a close
 // one where the venue has it. Null where a venue has none: the jury then stands at the ceremony as before.
-function juryPlates(ep, o) {
+export function juryPlates(ep, o) {
   const venue = venueOf(ep, o);
   // what each frame is: the tiki stage is painted at night, the big top, the cave and the lounge are indoors,
   // the Hawaiian beach is in the day
@@ -60,7 +60,7 @@ function juryPlates(ep, o) {
 }
 // the jury in the stands: the front row first, left to right, then the row behind, each person sized to the
 // gap beside them (placeScene's group seating picks the centre seats of every row, and they overlapped)
-function seatJury(key, names) {
+export function seatJury(key, names) {
   const seats = ((TD_MARKS[key] || {}).m || []).filter(m => m.kind === 'seat' && m.u > .1 && m.u < .9 && m.v > .38 && m.v < .78)
     .sort((a, b) => b.v - a.v || a.u - b.u);
   const out = {};
@@ -72,7 +72,7 @@ function seatJury(key, names) {
   });
   return out;
 }
-const seatsOn = key => ((TD_MARKS[key] || {}).m || []).filter(m => m.kind === 'seat' && m.u > .1 && m.u < .9 && m.v > .38 && m.v < .78).length;
+export const seatsOn = key => ((TD_MARKS[key] || {}).m || []).filter(m => m.kind === 'seat' && m.u > .1 && m.u < .9 && m.v > .38 && m.v < .78).length;
 
 // ══════════════════════════════════════════════════════════════════════
 // FINAL TRIBAL COUNCIL — the case, the questions, the vote, the reasons

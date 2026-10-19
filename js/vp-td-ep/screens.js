@@ -14,7 +14,8 @@ import { tdCampMap, tdIslandMap, hasMap, MAP_VENUES, openWindow, nextConv, locke
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, tdRiDuelScreen } from './twists.js';
 import { tdJuryHouseScreen, isJuryHouse } from './jury-house.js';
 import { tdReturnScreen, tdEmissaryScoutScreen, tdEmissaryChoiceScreen, tdTiedDestiniesScreen, tiedDestiniesTribal } from './returns.js';
-import { openVoteTribal, tdLateArrivalScreen, tdJuryEliminationScreen, tdSpiritIslandScreen, tdFanVoteScreen, tdAmbassadorsScreen } from './twists-more.js';
+import { openVoteTribal, tdLateArrivalScreen, tdSpiritIslandScreen, tdFanVoteScreen, tdAmbassadorsScreen } from './twists-more.js';
+import { tdJuryEliminationScreen } from './jury-vote.js';
 import { tdTwistBlocksScreen, tdMergeScreen, tdMiscTwistScreen, tdPreviouslyScreen } from './twist-screens.js';
 import { tdArrivalScreen, hasArrivals } from './arrival.js';
 import { tdAftermathScreen, hasAftermath } from './aftermath.js';
@@ -156,7 +157,7 @@ export function tdStepScreens(ep, classic = [], o = {}) {
       }
       continue;
     }
-    // the jury elimination twist: its three classic pages are one screen at the ceremony (twists-more.js)
+    // the jury elimination twist: its three classic pages are one stepped Tribal the jury votes at (jury-vote.js)
     if (/^jury-(life|convenes|votes)$/.test(S?.id || '')) {
       if (juryElimDone) continue;
       const je = tdJuryEliminationScreen(ep, o);

@@ -1,6 +1,7 @@
 // js/text-backlog.js - Text backlog generators for non-challenge episode sections
 import { bbStepTranscript } from './vp-bb-ep/steps.js';
 import { tdTribalStepped, tdTribalScreen, tdStepTranscript } from './vp-td-ep/steps.js';
+import { tdJuryEliminationScreen } from './vp-td-ep/jury-vote.js';
 import { coachArrival } from './vp-td-ep/coach-arrive.js';
 import { tdRiChoiceScreen, tdIslandLifeScreen, tdExileScreen, exileOf, exileChooserReason, islandOrder } from './vp-td-ep/twists.js';
 import { tdJuryHouseScreen } from './vp-td-ep/jury-house.js';
@@ -2688,6 +2689,12 @@ export function _textJuryElimination(ep, ln, sec) {
   const jLog = tw.elimLog || [];
   const jVotes = tw.elimVotes || {};
   const jurors = [...new Set(jLog.map(e => e.juror))];
+
+  // Total Drama: the night as the stepped viewer plays it (vp-td-ep/jury-vote.js), word for word
+  if (!ep.format || ep.format === 'total-drama') {
+    const scr = (() => { try { return tdJuryEliminationScreen(ep, { host: seasonConfig.host || 'Chris', setting: seasonConfig.setting, pronouns, history: gs.episodeHistory }); } catch { return null; } })();
+    if (scr) { sec('JURY ELIMINATION — AS IT AIRS'); tdStepTranscript(scr).forEach(l => ln(l)); return; }
+  }
 
   sec('JURY ELIMINATION');
   ln('The eliminated players convene. Tonight the jury votes to remove one active player from the game — no tribal council.');

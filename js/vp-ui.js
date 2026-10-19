@@ -122,7 +122,7 @@ export function _vpPhaseForScreen(id = '') {
   if (id === 'debug') return { id:'debug', label:'Debug', icon:'⚙' };
   if (id === 'cold-open' || id.includes('previous') || id === 'first-impressions') return { id:'previously', label:'Previously On', icon:'◀' };
   if (id === 'votes' || id.startsWith('votes-') || id === 'jury-vote' || id === 'jury-votes' || id === 'ftc') return { id:'reveal', label:'Vote Reveal', icon:'✦' };
-  if (id === 'tribal' || id.startsWith('tribal-') || id === 'jury-convenes') return { id:'tribal', label:'Tribal', icon:'▲' };
+  if (id === 'tribal' || id.startsWith('tribal-') || id === 'jury-convenes' || id === 'jury-elimination') return { id:'tribal', label:'Tribal', icon:'▲' };
   if (id === 'aftermath' || id.startsWith('aftermath-') || id.startsWith('aftermayhem-') || id === 'post-twist' || id === 'reunion' || id === 'season-stats' || id === 'winner-ceremony') return { id:'aftermath', label:'Aftermath', icon:'■' };
   if (id === 'voting-plans' || id.startsWith('voting-plans-') || id === 'mole-exposed' || id === 'final-cut') return { id:'scramble', label:'Scramble', icon:'◆' };
   const bed = bedForScreen(id);
@@ -785,7 +785,7 @@ const _BED_TRAITORS = {
 // Tribal phase: the council, the votes, the jury vote, double-boot re-votes.
 const _BED_TRIBAL_EXACT = new Set([
   'tribal', 'votes', 'votes-2', 'voting-plans-2', 'ftc', 'jury-vote', 'jury-votes',
-  'jury-convenes', 'fan-vote', 'fan-vote-reveal', 'fan-campaign', 'no-tribal',
+  'jury-convenes', 'jury-elimination', 'fan-vote', 'fan-vote-reveal', 'fan-campaign', 'no-tribal',
   'emissary-choice', 'surprise',
 ]);
 const _BED_TRIBAL_PREFIX = ['tribal-', 'votes-'];     // multi-tribal per-tribe screens

@@ -144,45 +144,7 @@ export function tdLateArrivalScreen(ep, o = {}) {
   return { id: 'late-arrival', kind: 'camp', venue: C.venue, ep: ep.num, label: 'A New Arrival', host, steps, team: a.tribe || null };
 }
 
-// ══════════════════════════════════════════════════════════════════════
-// THE JURY ELIMINATION — the voted-out come back and vote one of them out
-// ══════════════════════════════════════════════════════════════════════
-export function tdJuryEliminationScreen(ep, o = {}) {
-  const tw = (ep.twists || []).find(t => t.type === 'jury-elimination' && t.juryBooted);
-  if (!tw) return null;
-  const host = o.host || 'Chris';
-  const venue = venueOf(ep, o);
-  const key = plateKey(venue, 'ceremony', 'night') || plateKey(venue, VENUES[venue]?.public || 'communal-grounds', 'night');
-  if (!key) return null;
-  const bond = bondOf(ep);
-  const jurors = [...new Set((tw.elimLog || []).map(e => e.juror))];
-  const active = (ep.gsSnapshot?.activePlayers || []).concat(tw.juryBooted).filter((n, i, a) => a.indexOf(n) === i);
-  const booted = tw.juryBooted;
-  const steps = [];
-  const say = (text, extra = {}) => steps.push({ k: 'say', by: host, host: true, text, ...extra });
-  steps.push({ k: 'scene', spot: 'ceremony', tod: 'night', plate: key, place: 'The Jury Returns', time: 'Night', card: true, focus: [], bg: [], places: placeScene(key, [...active.slice(0, 5), ...jurors.slice(0, 4)], [], { host }), host, wide: true });
-  say(`Tonight, you don't vote. They do.`);
-  steps.push({ k: 'beat', text: `${listOf(jurors.slice(0, 6))} walk in and take their places. Every one of them was voted out by somebody sitting here.`, focus: jurors.slice(0, 5), act: { kind: 'arrive', who: jurors.slice(0, 5) } });
-  steps.push({ k: 'title', kicker: 'Twist', name: 'The Jury Votes', faces: jurors.slice(0, 8) });
-  say(`The jury will vote one of you out of this game. ${ep.immunityWinner ? `${ep.immunityWinner} is safe. Everybody else, ` : ''}it's out of your hands.`, { tense: true });
-  (tw.elimLog || []).forEach((e, i) => {
-    const b = bond(e.juror, e.votedOut);
-    steps.push({ k: 'say', by: e.juror, focus: [e.juror, e.votedOut], text: b <= -2 ? V(e.juror, {
-      loud: [`${e.votedOut}. You know why.`], sharp: [`${e.votedOut}. I've been looking forward to this.`], soft: [`${e.votedOut}. After what you did to me, I can't vote any other way.`], any: [`${e.votedOut}. This one's personal.`],
-    }, 'je', ep.num, i) : V(e.juror, {
-      dry: [`${e.votedOut}. Biggest threat left. Nothing personal.`], soft: [`I'm so sorry, ${e.votedOut}. You're too dangerous to leave in there.`], any: [`${e.votedOut}. You're the one I can't let win.`, `My vote goes to ${e.votedOut}.`],
-    }, 'je2', ep.num, i), side: [{ tab: 'tally', voter: e.juror, target: e.votedOut }] });
-  });
-  const n = (tw.elimVotes || {})[booted] || 0;
-  if (tw.juryTie) say(`The jury tied. They had to talk it out. And they chose ${booted}.`, { tense: true, focus: [booted] });
-  say(`${n} vote${n === 1 ? '' : 's'}. ${booted}, the jury has voted you out.`, { focus: [booted] });
-  steps.push({ k: 'say', by: booted, focus: [booted], loud: true, act: { kind: 'shake', who: [booted] }, text: V(booted, {
-    loud: ["You're kidding me! I didn't even get to vote!"], sharp: ["Bitter people with a vote. What a combination."], soft: ["I guess I deserved some of that."], dry: ['Voted out by the people I voted out. Poetic.'],
-    any: ["I didn't see that coming.", "Wow. Okay."],
-  }, 'jeo', ep.num) });
-  steps.push({ k: 'out', who: booted, focus: [booted] });
-  return { id: 'jury-elimination', kind: 'tribal', venue, ep: ep.num, label: 'The Jury Votes', host, steps };
-}
+// (the jury elimination: jury-vote.js)
 
 // ══════════════════════════════════════════════════════════════════════
 // SPIRIT ISLAND — one of the voted-out comes back to camp for a day

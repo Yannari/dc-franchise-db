@@ -682,7 +682,7 @@ const IDOL_SAY = p => p.type === 'voteBlock' ? `${p.player} blocks ${p.blockedPl
 // The night's clock only runs forward (read 2026-10-14: the ceremony at 9:30 after a revote, then the Dock of Shame at
 // 9:10). Each scene's time is a fixed label; when one is earlier than the scene before it, it and every later one move on
 // by the same amount, so the gaps between them stay as written. Labels that are not a clock time ("Later") are left alone.
-function forwardClock(steps) {
+export function forwardClock(steps) {
   const parse = t => { const m = /^(\d{1,2}):(\d{2}) ([AP]M)$/.exec(t || ''); return m ? ((+m[1] % 12) + (m[3] === 'PM' ? 12 : 0)) * 60 + +m[2] : null; };
   const show = n => { const h = Math.floor(n / 60) % 24, mm = n % 60; return `${h % 12 || 12}:${String(mm).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`; };
   let last = -1, shift = 0;
@@ -1023,6 +1023,20 @@ export function tdTribalScreen(ep, o = {}) {
   // (a night the card decided: the last words are the card's own when td/story/tribal.js wrote them for it, story.card;
   // an older saved night's were written for somebody voted out the ordinary way, and stay off)
   const coachLeft = !!coachNight?.coachOut || (cardDecided && !story?.card);
+  walkOut(steps, say, { ep, venue, elim, host, story, coachLeft, lineStep, will, willed, confPlate });
+  return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps: forwardClock(steps), elim };
+}
+
+// The walk out after a boot, at every venue: the host and the boot at the exit (their person beside them when
+// td/story/tribal.js wrote one), the venue's own way off (the Boat of Losers, the Lame-o-sine, the hatch, the
+// clown boat), the Legacy Advantage left behind (will), the confessionals after, and where the voted-out go.
+// story: { exit, exitWith, exitKind, after } (td/story/tribal.js; the jury elimination writes its own).
+export function walkOut(steps, say, { ep, venue, elim, host, story = null, coachLeft = false, lineStep = null, will = () => {}, willed = [], confPlate = null }) {
+  const V = VENUES[venue];
+  lineStep ||= l => (l.kind === 'beat' ? { k: 'beat', text: cleanText(l.text), focus: [] }
+    : l.kind === 'conf' ? { k: 'conf', by: l.by, text: cleanText(l.text), cap: l.cap || null, stage: l.stage || null }
+      : { k: 'say', by: l.by, text: cleanText(l.text), focus: [l.by], loud: loud(l.text), shock: shock(l.text) });
+  confPlate ||= plateKey(venue, 'confessional', 'night') || plateKey(venue, 'confessional', 'day');
   // the host walks them out (the Dock of Shame, the red carpet, the hatch): both on screen
   const exitPlate = plateKey(venue, 'exit', 'night');
   const exitPlaces = { [elim]: { u: .6, v: .74, s: .24 } };
@@ -1115,7 +1129,6 @@ export function tdTribalScreen(ep, o = {}) {
     steps.push({ k: 'scene', spot: 'motel', tod: 'night', plate: motel, place: 'The Motel', time: 'Later that night', card: true, focus: [elim], bg: [], places: placeScene(motel, [elim], []) });
     steps.push({ k: 'beat', text: `${elim} checks in at the Motel.`, focus: [elim] });
   }
-  return { id: 'tribal', kind: 'tribal', venue, ep: ep.num, label: V.ceremony.replace(/^The /, ''), team, host, steps: forwardClock(steps), elim };
 }
 
 function handout(steps, say, V, { tribal, elim, counts, immune, tie, revote, rocks, host, alsoOut = null, hold = false, rv = null, sup = null, shielded = new Set() }) {

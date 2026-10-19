@@ -418,7 +418,8 @@ export function hudHtml(screen, L, fresh, o = {}) {
   if (wx) h += `<div class="tdx-wx"><svg viewBox="0 0 24 24">${WX_ICON[clearNight ? 'night' : wx] || ''}</svg>${esc(clearNight ? 'Clear night' : WEATHER_LABEL[wx])}</div>`;
   if (screen.team && !L.conf) h += `<div class="tdx-team" style="--tc:${esc(o.teamColor || '#4fb84a')}">${esc(screen.team)}</div>`;
   if (screen.kind === 'tribal' && !sc.exit) {
-    if (VENUE_ITEM[screen.venue]) {
+    // (a night read out loud whatever the venue hands out: the jury elimination, screen.readTally)
+    if (VENUE_ITEM[screen.venue] && !screen.readTally) {
       const total = (L.scene?.seated || []).length - 1;
       const got = L.safe.length;
       h += `<div class="tdx-plateh">${esc(VENUE_ITEM[screen.venue])} ${Array.from({ length: Math.max(total, 0) }, (_, i) => `<i class="${i < got ? 'gone' : ''}"></i>`).join('')}</div>`;

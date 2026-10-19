@@ -306,11 +306,14 @@ export function episodeScreens(res, eps, i) {
       const t1 = s.t == null || s.t < 0 ? null : Math.min(s.t + 12, Math.max(s.t + 2, next?.t ?? s.t + 6));
       planCrowd(s, { rows, tries, place, aired, t1, members: membersOf, teamOf, introduced, racing: st.order.filter(id => racing.includes(id)), first: leg.n === 1 });
       if (s.seg === 'team-intro') introduced.push(...s.teams.filter(id => !introduced.includes(id)));
+      declutterCrowd(s);
       relift(s);
       planEnter(s, screens, si);
       planReact(s, teamOf, membersOf);
       planCrowdReact(s);
       planCamera(s);
+      planHide(s);
+      planStamps(s);
     } else if (s.steps) {
       s.steps.forEach(x => { x.cam = { shot: 'wide', s: 1, x: 0, y: 0 }; });
       if (s.kind === 'iv') planIvReact(s);
@@ -476,6 +479,15 @@ function spread(plate, n, avoid = [], margin = 0) {
   return free.slice(0, n).map((x, i) => [x, groundY(plate, i)]);
 }
 
+// n places on the ground clear of everything in `avoid` ([x, half-width]), left to right; spread() when they do not fit
+// (the layout is then tried again smaller)
+function placeRow(plate, n, avoid, half, margin) {
+  if (!n) return [];
+  const got = freeSpots(plate, n, avoid, half, 0.1, margin);
+  if (got.length < n) return spread(plate, n, avoid.map(a => a[0]), margin);
+  return got.sort((a, b) => a[0] - b[0]);
+}
+
 function sizeFor(n, mode) {
   if (mode === 'cabin') return 13;
   if (n <= 1) return 11;
@@ -498,27 +510,73 @@ function progressPlan(n, ending) {
   return { p: out };
 }
 
+// Nobody stands on anybody: a standing shot whose people would overlap is laid out again a little smaller, down to a
+// floor; a crowded plane cabin moves to the galley, where the teams stand in two rows (by the cart, and down the
+// aisle), and a cabin that cannot hold everyone at the floor keeps the ones the scene is about (the user, 2026-10-19:
+// "a crowded same-flight galley overlaps").
+export const OVERLAP_OK = 0.08;                 // two faces may touch by this much of the smaller one, no more
+const STAGED = ['marks', 'as', 'pos', 'plan', 'swimmers', 'inset', 'donStand', 'localAt', 'boxAt', 'matAt', 'donAt', 'hiddenUntil', 'onMatAt', 'work', 'lift', 'liftAt'];
+function overlapsAt(s, k) {
+  const f = facesAt(s, k);
+  for (let a = 0; a < f.length; a++) for (let b = a + 1; b < f.length; b++) if (f[a].key !== f[b].key && overlapOf(f[a].box, f[b].box) > OVERLAP_OK) return true;
+  return false;
+}
 function stageScreen(s, color) {
   s.color = color;
   if (s.kind !== 'world' || !s.plate) return;
+  if ((s.mode === 'cabin' || s.kind === 'flight') && s.plate.seats && s.teams.length + s.locals.length + (s.don ? 1 : 0) > 1) s.plate = { ...RACE.galley, race: true };
+  const base = (s.plate?.scale || 1) * sizeFor(s.teams.length + (s.don ? 0.5 : 0), s.mode);
+  const floor = s.mode === 'cabin' ? 7 : Math.max(4.5, base * 0.62);
+  for (let z = base; ; z *= 0.94) {
+    for (const key of STAGED) delete s[key];
+    layout(s, Math.max(floor, z));
+    const clash = !s.pos && s.steps.some((_, k) => overlapsAt(s, k) || facesAt(s, k).some(f => { const b = padOf(f, f.z); return b[0] < EDGE || b[2] > 100 - EDGE; }));
+    if (!clash) break;
+    if (z > floor) continue;
+    // at the floor and still too many: a cabin keeps the teams the scene is about and lets the others sit out of the shot
+    const need = new Set([...s.steps.map(x => x.team), s.teams[0]].filter(Boolean));
+    const spare = s.teams.filter(id => !need.has(id));
+    if (s.mode !== 'cabin' || !spare.length) break;
+    s.teams = s.teams.filter(id => id !== spare.at(-1));
+    z = base / 0.94;
+  }
+}
+function layout(s, size) {
   const plate = s.plate;
   const n = s.teams.length;
-  s.size = (plate?.scale || 1) * sizeFor(n + (s.don ? 0.5 : 0), s.mode);
+  s.size = Math.round(size * 100) / 100;
   const marks = {};
   const as = {};
   const ps = s.steps.length;
-  const M = s.size * 0.95 + 1;
+  const M = Math.max(s.size * 0.95 + 1, s.size * 0.86 + EDGE + 0.7);
   // Don and the Don Box stand on the ground too
   const extras = [];
   if (s.mode === 'cabin' || s.kind === 'flight') {
     const seats = plate?.seats;
-    const people = s.teams.flatMap(id => [id]);
     if (seats && n <= 1) s.teams.forEach((id, i) => { marks[id] = seats[i]; as[id] = 'seat'; });
-    else {
+    else if (plate.rows) {
+      // the galley: rows at two depths, front row first, everybody side by side (Don and a local too)
+      const who = [...(s.don ? ['Don'] : []), ...s.locals, ...s.teams];
+      const per = Math.ceil(who.length / plate.rows.length);
+      const half = w => (w === 'Don' || s.locals.includes(w) ? 0.55 : 0.8) * s.size;
+      plate.rows.forEach((row, r) => {
+        const here = who.slice(r * per, r * per + per);
+        const x0 = Math.max(row.x[0], 1), x1 = Math.min(row.x[1], 99);
+        const hs = here.map(half), room = x1 - x0 - hs.reduce((a, b) => a + 2 * b, 0);
+        const gap = here.length ? Math.max(0, room) / (here.length + 1) : 0;
+        let x = x0 + gap;
+        here.forEach((w, i) => {
+          const at = [Math.round((x + hs[i]) * 10) / 10, row.g];
+          x += 2 * hs[i] + gap;
+          if (w === 'Don') s.donStand = at;
+          else if (s.locals.includes(w)) (s.localAt ||= {})[w] = at;
+          else { marks[w] = at; as[w] = 'stand'; }
+        });
+      });
+    } else {
       const pts = spread(plate || RACE.galley, n, [], M);
       s.teams.forEach((id, i) => { marks[id] = pts[i]; as[id] = 'stand'; });
     }
-    void people;
   } else if (s.mode === 'mat') {
     const mat = plate.mat || plate.matPos || [lerp(plate.x[0], plate.x[1], 0.45), groundY(plate, 0)];
     s.matAt = [...mat];
@@ -526,11 +584,13 @@ function stageScreen(s, color) {
     s.donAt = [Math.min(plate.x[1], Math.max(plate.x[0], donX)), groundY(plate, 0)];
     const arriving = (s.arriving || []).filter(id => s.teams.includes(id));
     const others = s.teams.filter(id => !arriving.includes(id));
-    const pts = spread(plate, others.length, [mat[0], s.donAt[0]], M);
+    // the others stand clear of the mat and of Don (spread() only nudged them off by a few per cent)
+    const z = s.size, obst = [[mat[0], 0.8 * z], [s.donAt[0], 0.55 * z]];
+    const pts = placeRow(plate, others.length, obst, 0.8 * z, M);
     others.forEach((id, i) => { marks[id] = pts[i]; as[id] = 'stand'; });
     // a montage: each team steps on the mat in turn and then stands aside
     if (arriving.length > 1) {
-      const aside = spread(plate, arriving.length + others.length, [mat[0], s.donAt[0]], M).slice(others.length);
+      const aside = placeRow(plate, arriving.length, obst.concat(pts.map(p => [p[0], 0.8 * z])), 0.8 * z, M);
       arriving.forEach((id, i) => { marks[id] = aside[i]; as[id] = 'stand'; });
       // nobody is at the Chill Zone before Don checks them in
       s.hiddenUntil = {};
@@ -614,7 +674,7 @@ export function extentOf(s) {
   const one = (as, [, y]) => {
     if (as === 'swim' || as === 'dive') add(y + 1.2 * z, y - 0.8 * z);
     else if (as === 'ride') add(y + 0.5 * z, y - 2.6 * z);
-    else add(y, y - 2.35 * z);
+    else add(y, y - (s.mode === 'mat' ? 2.75 * z + 1.5 : 2.35 * z));
   };
   for (const [id, m] of Object.entries(s.marks || {})) one(s.as?.[id], m);
   for (const pos of s.pos || []) for (const [id, m] of Object.entries(pos)) one(s.as?.[id], m);
@@ -650,7 +710,7 @@ function relift(s) {
 function liftFor(s) {
   const { bottom, top } = extentOf(s);
   if (!bottom) return 0;
-  const need = bottom + 2 - (100 - BAR);           // (+2: the plate's slow push moves the bottom out a little)
+  const need = bottom + 3 - (100 - BAR);           // (+3: the plate's slow push moves the bottom out a little, DRIFT)
   return Math.round(Math.max(0, Math.min(need, top - 2)) * 10) / 10;
 }
 
@@ -700,12 +760,13 @@ export function attemptAt(row, tk) {
 const groundTop = plate => (Array.isArray(plate.g) ? Math.min(...plate.g) : plate.g);
 // n free places on the ground, as far as possible from where the shot's own people stand
 // `avoid`: [x, half-width] of everybody already there; a crowd token needs its own width clear of each of them
-function freeSpots(plate, n, avoid, half, pack = 1) {
+// `pack`: how far a token may tuck behind another, as a share of a third of its half-width (0.2: barely touching)
+function freeSpots(plate, n, avoid, half, pack = 0.2, margin = 0) {
   if (plate.spots?.length) {
-    const free = plate.spots.filter(sp => !avoid.some(([a, h]) => Math.abs(a - sp[0]) < (h + half) * 0.85));
+    const free = plate.spots.filter(sp => !avoid.some(([a, h]) => Math.abs(a - sp[0]) < (h + half) * 0.97));
     return free.slice(0, n).map(sp => [sp[0], sp[1]]);
   }
-  const x0 = Math.max(plate.x[0], half + 0.6), x1 = Math.min(plate.x[1], 100 - half - 0.6);
+  const x0 = Math.max(plate.x[0], half * 1.08 + EDGE + 0.7, margin), x1 = Math.min(plate.x[1], 100 - Math.max(half * 1.08 + EDGE + 0.7, margin));
   if (x1 <= x0) return [];
   const out = [], taken = [...avoid];
   for (let i = 0; i < n; i++) {
@@ -733,8 +794,12 @@ function planCrowd(s, ctx) {
     ...s.steps.map(x => (x.by ? ctx.teamOf?.[x.by] : null)).filter(Boolean)]);
   // the premiere: every team at the start line in front of Don, and each team arriving finds the ones before it waiting
   const lineUp = (ids, zz, work = 'wait') => {
-    const spots = freeSpots(s.plate, ids.length, fgX, zz * 0.775, 2.4);
+    // side by side, never one on another: smaller until they all fit (the start line holds every team)
+    let spots = freeSpots(s.plate, ids.length, fgX, zz * 0.8);
+    while (spots.length < ids.length && zz > 3) { zz = Math.max(3, zz * 0.92); spots = freeSpots(s.plate, ids.length, fgX, zz * 0.8); }
     if (!spots.length) return;
+    spots.sort((a, b) => a[0] - b[0]);
+    ids = ids.slice(0, spots.length);
     s.crowdSize = zz;
     s.crowd = spots.map((at, i) => ({ team: ids[i], as: 'stand', work, pos: s.steps.map(() => at), st: s.steps.map(() => work) }));
   };
@@ -785,7 +850,7 @@ function planCrowd(s, ctx) {
   const within = (r, tk) => tk >= r.from - 1 && tk <= r.to + 1;
   s.crowdSize = z;
   s.crowdT = T.map(t => Math.round(t * 10) / 10);
-  const M = z * 0.95 + 1;
+  const M = Math.max(z * 0.95 + 1, z * 0.86 + EDGE + 0.7);
   const fgRow = ctx.rows.find(r => r.id === s.teams[0] && r.stretch === s.stretch);
   s.crowd = [];
   here.forEach(({ r, tr }, i) => {
@@ -830,7 +895,7 @@ function planCrowd(s, ctx) {
       const ks = pos.map((p, k) => (p === 'run' ? k : -1)).filter(k => k >= 0);
       const start = ks[0];
       const span = ks.filter(k => k >= start).slice(0, 3);
-      const gx0 = Math.max(plate.x[0], half + 0.6), gx1 = Math.min(plate.x[1], 100 - half - 0.6);
+      const gx0 = Math.max(plate.x[0], half + EDGE + 0.3), gx1 = Math.min(plate.x[1], 100 - half - EDGE - 0.3);
       const ltr = true;
       const fr = span.length === 1 ? [0.5] : span.length === 2 ? [0.25, 0.75] : [0.12, 0.5, 0.88];
       pos.forEach((p, k) => {
@@ -1042,24 +1107,29 @@ const FOLLOW = new Set(['climb', 'zip', 'para']);
 export function boxOf(s, who, k) {
   const z = s.size || 8;
   if (s.offAt && s.teams?.includes(who) && !onStage(s, who, k)) return null;     // walked off
-  if (who === 'Don') { const d = s.donStand; return d ? [d[0] - 0.55 * z, d[1] - 2.1 * z, d[0] + 0.55 * z, d[1]] : null; }
-  if (s.localAt?.[who]) { const d = s.localAt[who]; return [d[0] - 0.5 * z, d[1] - 2.0 * z, d[0] + 0.5 * z, d[1]]; }
+  if (who === 'Don') { const d = s.donStand; return d ? [d[0] - 0.56 * z - 0.4, d[1] - 2.3 * z - 1.9, d[0] + 0.56 * z + 0.4, d[1]] : null; }
+  if (s.localAt?.[who]) { const d = s.localAt[who]; return [d[0] - 0.5 * z - 0.4, d[1] - 2.1 * z - 1.9, d[0] + 0.5 * z + 0.4, d[1]]; }
   const at = s.pos?.[k]?.[who] || (s.hiddenUntil?.[who] != null && k === s.hiddenUntil[who] ? s.matAt : null) || s.marks?.[who];
   if (!at) return null;
   const as = s.as?.[who];
   if (as === 'swim' || as === 'dive') { const gap = Math.max(5, z * 0.95); const n = s.swimmers?.[who]?.length || 1; return [at[0] - 0.6 * z, at[1] - 0.9 * z, at[0] + (n - 1) * gap + 0.6 * z, at[1] + 1.25 * z]; }
   if (as === 'ride') return [at[0] - 1.3 * z, at[1] - 2.7 * z, at[0] + 1.3 * z, at[1] + 0.6 * z];
-  return [at[0] - 0.8 * z, at[1] - 2.4 * z, at[0] + 0.8 * z, at[1] + 0.3];
+  // at the Chill Zone a placed team wears its rank above its heads (style.js .tok .rank): the frame holds it too
+  // (with the face's own bounce, padOf: a talking face jumps and leans)
+  return [at[0] - 0.86 * z - 0.3, at[1] - (s.mode === 'mat' ? 2.75 * z + 1.9 : 2.42 * z + 1.9), at[0] + 0.86 * z + 0.3, at[1] + 0.3];
 }
 export function inView(cam, b, bar = BAR) {
   if (!b) return true;
-  const w = 100 / cam.s, hTop = cam.y, hBottom = cam.y + (100 - bar) / cam.s;
-  return b[0] >= cam.x - 0.6 && b[2] <= cam.x + w + 0.6 && b[1] >= hTop - 0.6 && b[3] <= hBottom + 0.6;
+  // what the shot holds whatever the plate's slow push is doing (DRIFT)
+  const r = safeRect(viewRect(cam, bar));
+  return b[0] >= r[0] - 0.05 && b[2] <= r[2] + 0.05 && b[1] >= r[1] - 0.05 && b[3] <= r[3] + 0.05;
 }
 function frameOn(s, k, who, maxS, shot) {
   const boxes = who.map(w => boxOf(s, w, k)).filter(Boolean);
   if (!boxes.length) return null;
-  const b = [Math.min(...boxes.map(x => x[0])) - 2.5, Math.min(...boxes.map(x => x[1])) - 3, Math.max(...boxes.map(x => x[2])) + 2.5, Math.max(...boxes.map(x => x[3])) + 2];
+  // the margins hold the plate's slow push (DRIFT) and a talking bounce
+  const z = s.size || 8, mx = 3.3, mt = 3.4, mb = 3.2;          // boxOf has the bounce; these hold the DRIFT
+  const b = [Math.min(...boxes.map(x => x[0])) - mx, Math.min(...boxes.map(x => x[1])) - mt, Math.max(...boxes.map(x => x[2])) + mx, Math.max(...boxes.map(x => x[3])) + mb];
   const w = b[2] - b[0], h = b[3] - b[1];
   let sc = Math.min(maxS, 100 / (w * 1.15), (100 - BAR) / (h * 1.12));
   if (sc < 1.12) return null;
@@ -1071,8 +1141,46 @@ function frameOn(s, k, who, maxS, shot) {
   y = Math.max(0, Math.min(100 - vh, Math.min(y, b[1])));
   // a subject the frame cannot hold whole above the bar gets no close-up (the shot stays wide)
   if (b[1] < y - 0.3 || b[3] > y + vh + 0.3 || b[0] < x - 0.3 || b[2] > x + vw + 0.3) return null;
+  // slide along (the subject still whole) to where the frame's edge cuts the fewest of the others: the ones it still
+  // cuts fade out of the shot (planHide)
+  const mine = new Set(who.map(keyOf(s)));
+  const others = facesAt(s, k).filter(f => !mine.has(f.key));
+  if (others.length) {
+    const lo = Math.max(0, b[2] - vw), hi = Math.min(100 - vw, b[0]);
+    const cost = cx => {
+      const r = [cx, y, cx + vw, y + vh];
+      let c = Math.abs(cx - x) * 0.01;
+      for (const f of others) if (meets(f.box, r) && !inRect(f.box, r, 0)) c += f.kind === 'crowd' ? 1 : 3;
+      return c;
+    };
+    let best = x, bc = cost(x);
+    for (let cx = lo; cx <= hi + 1e-6; cx += 0.5) { const c = cost(cx); if (c < bc - 1e-9) { bc = c; best = cx; } }
+    x = best;
+  }
   const r = (v, max) => Math.min(Math.floor(max * 100) / 100, Math.round(v * 10) / 10);
   return { shot, on: who, s: sc, x: r(x, 100 - vw), y: r(y, 100 - vh) };
+}
+// the facesAt key of a camera subject (a team id, Don, a local's name)
+const keyOf = s => w => (w === 'Don' || s.localAt?.[w] ? 'p:' + w : 't:' + w);
+
+// ── nobody is cut by the frame: whoever a shot cannot hold whole fades out of it ──
+// The user (2026-10-19): "close-ups crop the crowd". A close-up or a two-shot frames its subjects whole; anybody else
+// it would cut at its edge, or leave behind the dialogue bar, fades out while the camera is in and back when it pulls
+// out (st.hide: facesAt keys). A wide shot hides only what it cannot hold (a rider half in at the side). A speaker is
+// never hidden (the camera always holds the one talking); a reaction by somebody hidden is not played.
+export function planHide(s) {
+  s.steps.forEach((st, k) => {
+    delete st.hide;
+    if (!st.cam) return;
+    const r = safeRect(viewRect(st.cam));
+    const hide = new Set();
+    for (const f of facesAt(s, k)) if (!inRect(padOf(f, f.z), r, 0)) hide.add(f.key);
+    const sp = st.by === 'Don' ? 'p:Don' : st.team ? 't:' + st.team : st.by && s.localAt?.[st.by] ? 'p:' + st.by : null;
+    if (sp) hide.delete(sp);
+    if (hide.size) st.hide = [...hide];
+    if (st.react && !st.react.who && hide.has('t:' + st.react.team)) delete st.react;
+    if (st.react?.who && hide.has('t:' + st.react.team)) delete st.react;
+  });
 }
 function planCamera(s) {
   const steps = s.steps;
@@ -1111,6 +1219,218 @@ function planCamera(s) {
     else held++;
     const { force, ...shot } = cur; void force;
     st.cam = shot;
+  });
+}
+
+// ── every face on the picture: what the camera, the overlays and the checks all measure ──
+// A face box is the rectangle of an avatar's portrait (both of a pair), in % of the plate: x of its width, y of its
+// height. The shapes were measured on the stage (stage.js draws them; tools/rr-vp-check.mjs measures them again in
+// the browser): a token's pair of faces sits above its feet and its name, Don's and a local's single face the same,
+// a swimmer's head is centred on its point. Units of the avatar's own size (cqw).
+export const FACE = {
+  stand: [-0.8, -2.3, 0.8, -0.35], ride: [-0.8, -2.65, 0.8, -0.7], one: [-0.53, -2.3, 0.53, -0.35],
+  person: [-0.53, -2.27, 0.53, -0.35], swim: [-0.55, -1.2, 0.55, 0.72], cswim: [-0.55, -1.02, 0.55, 0.93],
+};
+const fbox = (f, [x, y], z, dx = 0) => [x + f[0] * z + dx, y + f[1] * z, x + f[2] * z + dx, y + f[3] * z];
+/** Where team `id` stands at step k (as the stage draws it), or null. */
+export function teamAt(s, id, k) {
+  if (s.pos?.[k]?.[id]) return s.pos[k][id];
+  if (s.hiddenUntil?.[id] != null) {
+    if (k < s.hiddenUntil[id]) return null;
+    if (k === s.hiddenUntil[id]) return s.matAt;
+  }
+  return s.marks?.[id] || null;
+}
+/**
+ * Every face drawn at step k of a world screen: { key, kind, team?, who?, box }. `key` names what the stage hides as
+ * one: 'p:<name>' (Don, a local), 't:<team>' (a team in the shot), 'c:<team>' (a team behind it).
+ */
+export function facesAt(s, k) {
+  const out = [];
+  if (s.kind !== 'world' || !s.plate) return out;
+  const z = s.size || 8;
+  if (s.don && s.donStand) out.push({ key: 'p:Don', kind: 'person', who: 'Don', z: z * 0.95, box: fbox(FACE.person, s.donStand, z * 0.95) });
+  for (const [nm, at] of Object.entries(s.localAt || {})) out.push({ key: 'p:' + nm, kind: 'person', who: nm, z: z * 0.85, box: fbox(FACE.person, at, z * 0.85) });
+  if (s.exitAt != null && k > s.exitAt) return out;
+  for (const id of s.teams || []) {
+    const at = teamAt(s, id, k);
+    if (!at) continue;
+    const off = offOf(s, id, k);
+    if (off === 'team') continue;
+    const gone = Array.isArray(off) ? off : [];
+    if (s.swimmers?.[id]) {
+      const zs = Math.max(5, z * 0.85), gap = Math.max(5, z * 0.95);
+      s.swimmers[id].filter(n => !gone.includes(n)).forEach((n, j) => out.push({ key: 't:' + id, kind: 'team', team: id, who: n, z: zs,
+        box: fbox(FACE.swim, [at[0] + j * gap, at[1] + j * 1.5], zs) }));
+      continue;
+    }
+    const as = s.as?.[id];
+    const dx = as === 'ride' && s.mode === 'act' && /^rickshaw/.test(s.plate.prop || '') ? 0.45 * z : 0;
+    const f = as === 'ride' ? FACE.ride : gone.length ? FACE.one : FACE.stand;
+    const work = s.work ? (s.teams[0] === id ? s.work : 'watch') : null;
+    out.push({ key: 't:' + id, kind: 'team', team: id, z, work, box: fbox(f, at, z, dx) });
+  }
+  const zc = s.crowdSize || z * CROWD_SCALE;
+  for (const c of s.crowd || []) if (c.pos[k]) for (const box of crowdBoxes(s, c, c.pos[k])) out.push({ key: 'c:' + c.team, kind: 'crowd', team: c.team, z: zc, work: c.as === 'run' ? 'run' : c.work, box });
+  return out;
+}
+/** The faces of a team behind the shot standing (or swimming) at `at`. */
+export function crowdBoxes(s, c, at) {
+  const zc = s.crowdSize || (s.size || 8) * CROWD_SCALE;
+  if (c.as === 'swim' || c.as === 'dive') {
+    const zs = Math.max(3.5, zc * 0.85), gap = Math.max(4, zc * 0.95);
+    return [0, 1].map(j => fbox(FACE.cswim, [at[0] + j * gap, at[1] + j * 1.2], zs));
+  }
+  const b = fbox(c.as === 'ride' ? FACE.ride : FACE.stand, at, zc);
+  // a runner drifts on while the step plays (style.js driftR): its box runs with it
+  if (c.as === 'run') { if (c.ltr === false) b[0] -= 4; else b[2] += 4; }
+  return [b];
+}
+
+// ── the teams behind never stand on anybody: moved along to a clear place, or out of that picture ──
+function declutterCrowd(s) {
+  if (!s.crowd?.length) return;
+  const own = { ...s, crowd: null };
+  s.steps.forEach((_, k) => {
+    const taken = facesAt(own, k).map(f => f.box);
+    for (const c of s.crowd) {
+      const at = c.pos[k];
+      if (!at) continue;
+      const boxes = crowdBoxes(s, c, at);
+      // off the picture (a rider still to come in): nobody to stand on
+      if (boxes.every(b => b[2] <= 0 || b[0] >= 100)) continue;
+      const clear = bs => bs.every(b => { const p = padOf({ box: b, work: c.as === 'run' ? 'run' : c.work }, s.crowdSize || (s.size || 8) * CROWD_SCALE); return taken.every(t => overlapOf(p, t) <= OVERLAP_OK); });
+      // and whole in the wide picture, its work loop and the plate's slow push included (a face half out would fade)
+      const zc = s.crowdSize || (s.size || 8) * CROWD_SCALE, work = c.as === 'run' ? 'run' : c.work;
+      const inside = bs => bs.every(b => { const p = padOf({ box: b, work }, zc); return p[0] >= EDGE && p[2] <= 100 - EDGE; });
+      if (clear(boxes) && inside(boxes)) { taken.push(...boxes); continue; }
+      const ground = ['stand', 'run'].includes(c.as) && s.plate?.x ? s.plate.x : [0, 100];
+      // a runner keeps running one way: never back behind where it already was
+      const before = c.as === 'run' ? c.pos.slice(0, k).filter(Boolean).at(-1) : null;
+      let best = null;
+      for (let d = 0.5; d <= 45 && !best; d += 0.5) for (const dx of [d, -d]) {
+        const x = at[0] + dx;
+        if (before && (c.ltr === false ? x > before[0] : x < before[0])) continue;
+        const bs = boxes.map(b => [b[0] + dx, b[1], b[2] + dx, b[3]]);
+        if (x < ground[0] || x > ground[1] || !inside(bs)) continue;
+        if (clear(bs)) { best = [Math.round(x * 10) / 10, at[1]]; break; }
+      }
+      if (best) { c.pos[k] = best; taken.push(...crowdBoxes(s, c, best)); } else { c.pos[k] = null; c.st[k] = 'off'; }
+    }
+  });
+  s.crowd = s.crowd.filter(c => c.pos.some(Boolean));
+  if (!s.crowd.length) { delete s.crowd; delete s.crowdT; }
+}
+// The plate never stands still (style.js kbIn/kbPan/kbOut: a slow push between these scales, a pan this far), and the
+// people stand on it: what a shot shows for certain is its view shrunk by that push, toward the plate's middle.
+export const DRIFT = { lo: 1.025, hi: 1.045, t: 0.75 };
+export const EDGE = 50 - (50 - DRIFT.t) / DRIFT.hi + 0.1;        // ~2.9: how close to the plate's edge a face may come
+/** The part of a view (plate %) that stays in the picture whatever the drift is doing. */
+export function safeRect(r) {
+  const inv = v => [DRIFT.lo, DRIFT.hi].flatMap(sc => [-DRIFT.t, DRIFT.t].map(t => 50 + (v - 50 - t) / sc));
+  return [Math.max(...inv(r[0])), Math.max(...inv(r[1])), Math.min(...inv(r[2])), Math.min(...inv(r[3]))];
+}
+/** A box as the drift can carry it: everywhere it may be, in plate %. */
+export function driftBox(b) {
+  const at = v => [DRIFT.lo, DRIFT.hi].flatMap(sc => [-DRIFT.t, DRIFT.t].map(t => 50 + (v - 50) * sc + t));
+  return [Math.min(...at(b[0])), Math.min(...at(b[1])), Math.max(...at(b[2])), Math.max(...at(b[3]))];
+}
+// how far a face moves on its own: the idle bob and the talking bounce, and the work loops (style.js wChase, wLean...)
+const WORK_PAD = { chase: [0, 0, 3, 0], lean: [0, 0, 1.1, 0], dunk: [0, 0, 0, 2.9], headbang: [0.4, 0.6, 0.4, 0.6], dig: [0.3, 0.5, 0.3, 1.3], eat: [0.6, 0.3, 0.6, 0.4],
+  draw: [0.4, 0, 0.4, 0], sweat: [0.2, 0, 0.5, 0.6], build: [0.2, 1.1, 0.2, 0.4], shear: [0, 0, 0.4, 0], run: [0.3, 1.7, 0.3, 0] };
+export function padOf(f, z) {
+  const w = WORK_PAD[f.work] || [0, 0, 0, 0];
+  return [f.box[0] - 0.06 * z - 0.3 - w[0], f.box[1] - 0.12 * z - 1.9 - w[1], f.box[2] + 0.06 * z + 0.3 + w[2], f.box[3] + 0.5 + w[3]];
+}
+/** The part of the picture a shot shows clear of the dialogue bar, in plate %: [x0, y0, x1, y1]. */
+export function viewRect(cam, bar = BAR) {
+  const s = cam?.s || 1, x = cam?.x || 0, y = cam?.y || 0;
+  return [x, y, x + 100 / s, y + (100 - bar) / s];
+}
+export const inRect = (b, r, tol = 0.3) => b[0] >= r[0] - tol && b[2] <= r[2] + tol && b[1] >= r[1] - tol && b[3] <= r[3] + tol;
+const meets = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
+/** How much of the smaller of two boxes the other covers (0..1). */
+export function overlapOf(a, b) {
+  const w = Math.min(a[2], b[2]) - Math.max(a[0], b[0]), h = Math.min(a[3], b[3]) - Math.max(a[1], b[1]);
+  if (w <= 0 || h <= 0) return 0;
+  const area = r => (r[2] - r[0]) * (r[3] - r[1]);
+  return (w * h) / Math.min(area(a), area(b));
+}
+/** A box in plate % as it lands on the screen under a shot (screen % of the stage). */
+export function toScreen(b, cam) {
+  const s = cam?.s || 1, x = cam?.x || 0, y = cam?.y || 0;
+  return [(b[0] - x) * s, (b[1] - y) * s, (b[2] - x) * s, (b[3] - y) * s];
+}
+
+// ── the stamps and the slams never sit on a face ──
+// The user (2026-10-19): "the TRY AGAIN stamp can sit over a face". A stamp (TRY AGAIN, QUIT, DONE!) goes above its
+// team, or beside it, inside the picture, under the HUD and over the bar; a slam (ELIMINATED, BOOMERANG) keeps its
+// place in the middle unless a face is there, and then moves up (or down) to where none is. All in screen % of the
+// stage: x of its width, y of its height.
+export const HUD_H = 9;                            // the leg and the task pills along the top
+const CQ_H = 16 / 9;                               // a cqw is this many % of the stage's height
+/** The screen boxes of the faces a shot shows at step k (the hidden ones are not there). */
+export function screenFaces(s, k, cam) {
+  const hidden = new Set(s.steps[k]?.hide || []);
+  return facesAt(s, k).filter(f => !hidden.has(f.key)).map(f => ({ ...f, box: toScreen(driftBox(padOf(f, f.z)), cam) }));
+}
+// A stamp's size on screen (style.js .stamp: Bungee 2.2cqw, padded, turned 12 degrees), as [width %, height %].
+export function stampSize(text) {
+  const w = String(text).length * 2.2 * 0.86 + 2.8, h = 2.2 * 1.25 + 1.2;            // cqw
+  const a = 12 * Math.PI / 180;
+  return [w * Math.cos(a) + h * Math.sin(a), (w * Math.sin(a) + h * Math.cos(a)) * CQ_H];
+}
+/**
+ * Where an overlay of [w, h] goes: the first of `prefer` (centres) that covers no face once kept inside the picture,
+ * else the nearest place on a sweep of the picture that covers none, else the one that covers least.
+ */
+export function placeOverlay([w, h], faces, prefer, { top = HUD_H, bottom = 100 - BAR } = {}) {
+  const fit = ([cx, cy]) => [Math.min(100 - w / 2 - 0.8, Math.max(w / 2 + 0.8, cx)), Math.min(bottom - h / 2 - 0.5, Math.max(top + h / 2, cy))];
+  const rect = ([cx, cy]) => [cx - w / 2 - 0.3, cy - h / 2 - 0.3, cx + w / 2 + 0.3, cy + h / 2 + 0.3];     // a hair clear
+  const covers = c => { const r = rect(c); return faces.reduce((a, f) => a + overlapOf(r, f.box || f), 0); };
+  const tries = prefer.map(fit);
+  const [px, py] = tries[0];
+  for (let dy = 0; dy <= 100; dy += 2) for (const sy of dy ? [-1, 1] : [1]) for (const dx of [0, -10, 10, -20, 20, -30, 30, -40, 40]) tries.push(fit([px + dx, py + sy * dy]));
+  let best = tries[0], bc = Infinity;
+  for (const c of tries) { const v = covers(c); if (v === 0) return c.map(n => Math.round(n * 10) / 10); if (v < bc) { bc = v; best = c; } }
+  return best.map(n => Math.round(n * 10) / 10);
+}
+/** The stamp of step k at its place under a shot: above its team, or beside it. */
+export function stampSpot(s, k, cam, size, opts) {
+  const st = s.steps[k]?.stamp;
+  if (!st) return null;
+  const faces = screenFaces(s, k, cam);
+  const [w, h] = size || stampSize(st.text);
+  const mine = faces.filter(f => f.key === 't:' + st.team).map(f => f.box);
+  const fb = mine.length ? [Math.min(...mine.map(b => b[0])), Math.min(...mine.map(b => b[1])), Math.max(...mine.map(b => b[2])), Math.max(...mine.map(b => b[3]))] : [45, 40, 55, 60];
+  const cx = (fb[0] + fb[2]) / 2, cy = (fb[1] + fb[3]) / 2;
+  return placeOverlay([w, h], faces, [[cx, fb[1] - h / 2 - 1], [fb[2] + w / 2 + 1, cy], [fb[0] - w / 2 - 1, cy], [fb[2] + w / 2, fb[1] - h / 2], [fb[0] - w / 2, fb[1] - h / 2]], opts);
+}
+// The size of a slam (style.js .slam: Bungee 5.4cqw in a band, the boomerang under it), [width %, height %].
+export function slamSize(slam) {
+  const w = String(slam.text).length * 5.4 * 0.86 + 5.2, h = (5.4 + 1.4 + 0.6) * CQ_H + (slam.cls === 'boom' ? 21 * CQ_H : 0);
+  return [Math.min(98, w), h];
+}
+/** The centre of step k's slam under a shot: its place in the middle, up or down off any face. */
+export function slamSpot(s, k, cam, size, opts) {
+  const sl = s.steps[k]?.slam;
+  if (!sl) return null;
+  const faces = s.kind === 'world' ? screenFaces(s, k, cam) : [];
+  const [w, h] = size || slamSize(sl);
+  return placeOverlay([w, h], faces, [[50, 34]], opts);
+}
+// which steps stamp what: a failed try, a quit, the task done
+function planStamps(s) {
+  const last = s.steps.length - 1;
+  s.steps.forEach((st, k) => {
+    delete st.stamp;
+    const team = s.teams[0];
+    if (team == null) return;
+    if (s.plan?.fail === k) st.stamp = { text: 'TRY AGAIN', cls: '', team };
+    else if (s.plan?.quit === k) st.stamp = { text: 'QUIT', cls: '', team };
+    else if (k === last && s.mode === 'act' && (s.seg === 'task-done' || (s.seg === 'task-try' && !['quit', 'struggling'].includes(s.ending)))) st.stamp = { text: 'DONE!', cls: 'gold', team };
+    // (a team still struggling at the end of its scene is not through: no DONE! over "back we go")
+    if (st.stamp) st.stamp.at = stampSpot(s, k, st.cam);
   });
 }
 

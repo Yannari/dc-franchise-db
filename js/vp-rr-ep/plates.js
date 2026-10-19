@@ -35,7 +35,8 @@ export const RACE = {
   dir: 'race',
   gate: p('gate', 93, [8, 62]),
   cabin: p('cabin', 62, [8, 46], { seats: [[13.5, 62], [33, 62]] }),
-  galley: p('galley', 96, [26, 96]),
+  // two rows: by the cart at the front, down the aisle behind (the aisle's floor is higher in the picture)
+  galley: p('galley', [87, 96], [26, 96], { rows: [{ g: 96, x: [24, 63] }, { g: 87, x: [63, 96] }] }),
   sky: p('sky', 0, [0, 0], { people: false }),
   runway: p('runway', 97, [6, 60]),
   map: 'worldmap',

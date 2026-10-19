@@ -137,8 +137,8 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .tok .shadow{position:absolute;left:50%;bottom:calc(var(--sz)*-.12);width:calc(var(--sz)*1.1);height:calc(var(--sz)*.18);transform:translateX(-50%);background:radial-gradient(rgba(0,0,0,.45),transparent 70%)}
 .tok.out .pair img{filter:grayscale(1) brightness(.7)} .tok.out .lab{background:#777}
 .tok.dim{opacity:.72}
-.tok .rank{position:absolute;right:-.6cqw;top:-1cqw;font-family:Bungee;font-size:calc(var(--sz)*.2);background:var(--paper);color:var(--red);border:.22cqw solid var(--red);
-  border-radius:.5cqw;padding:0 .4cqw;transform:rotate(10deg);z-index:3}
+.tok .rank{position:absolute;left:50%;bottom:calc(100% + .35cqw);font-family:Bungee;font-size:calc(var(--sz)*.2);background:var(--paper);color:var(--red);border:.22cqw solid var(--red);
+  border-radius:.5cqw;padding:0 .4cqw;transform:translateX(-50%) rotate(-4deg);z-index:3;white-space:nowrap}
 .tok .rank.fresh{animation:thumpR .4s cubic-bezier(.2,1.8,.4,1) both}
 .tok .rank.gold{color:#9a6400;border-color:#c98b00}
 .tok .rank.out{color:#fff;background:#333;border-color:#999}
@@ -215,7 +215,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .rr-snd .snd-music.off{opacity:.45;text-decoration:line-through}
 @keyframes climb{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-.4cqw) rotate(5deg)}}
 @keyframes rideBob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-.3cqw)}}
-@keyframes thumpR{from{transform:rotate(10deg) scale(3);opacity:0}to{transform:rotate(10deg);opacity:1}}
+@keyframes thumpR{from{transform:translateX(-50%) rotate(-4deg) scale(3);opacity:0}to{transform:translateX(-50%) rotate(-4deg);opacity:1}}
 @keyframes pop{from{transform:translateX(-50%) scale(0)}to{transform:translateX(-50%) scale(1)}}
 
 /* swimmers: a head in the water, bobbing, splashing */
@@ -281,6 +281,9 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .stamp{position:absolute;font-family:Bungee;color:var(--red);border:.4cqw solid var(--red);border-radius:.8cqw;padding:.2cqw 1cqw;font-size:2.2cqw;
   transform:translate(-50%,-50%) rotate(-12deg);z-index:35;background:rgba(255,248,230,.94);animation:thump .45s cubic-bezier(.2,1.8,.4,1) both;pointer-events:none;white-space:nowrap}
 .stamp.gold{color:#9a6400;border-color:#c98b00}
+.stamp.still{animation:none}
+/* out of the shot (steps.js planHide): whoever a close-up would cut fades out while it is in */
+#rr-stage .offcam{opacity:0}
 @keyframes thump{from{transform:translate(-50%,-50%) rotate(-12deg) scale(3);opacity:0}to{opacity:1}}
 
 /* fx */

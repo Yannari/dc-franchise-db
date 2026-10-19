@@ -9,7 +9,7 @@
 // slam. Every avatar idles; whoever is talking bounces.
 import { plateUrl, raceUrl, propUrl } from './plates.js';
 import { PLACES } from '../rr/places.js';
-import { intelAt, offOf } from './steps.js';
+import { intelAt, offOf, stampSpot, slamSpot, placeOverlay, screenFaces, BAR, HUD_H } from './steps.js';
 import { plateLife } from './life.js';
 
 const ORD = ['', '1ST', '2ND', '3RD', '4TH', '5TH', '6TH', '7TH', '8TH', '9TH', '10TH', '11TH', '12TH', '13TH', '14TH'];
@@ -149,7 +149,24 @@ export function createStage(holder, { faceOf, legLabel }) {
     const p = document.createElement('img'); p.className = 'prop'; p.src = src; p.style.left = pos[0] + '%'; p.style.top = pos[1] + '%'; p.style.width = w + 'cqw'; p.style.zIndex = z;
     under.appendChild(p); return p;
   }
-  function stamp(x, y, txt, cls = '') { const s = document.createElement('div'); s.className = 'stamp ' + cls; s.style.left = Math.max(12, Math.min(88, x)) + '%'; y = Math.max(18, y); s.style.top = y + '%'; s.textContent = txt; ui.appendChild(s); return s; }
+  // a stamp (steps.js planStamps decides which, stampSpot where): above or beside its team, never on a face
+  function stamp(s, k, view, fresh) {
+    const st = s.steps[k]?.stamp;
+    if (!st) return null;
+    const e = document.createElement('div'); e.className = 'stamp ' + (st.cls || '') + (fresh ? '' : ' still'); e.textContent = st.text;
+    e.style.visibility = 'hidden'; ui.appendChild(e);
+    const at = stampSpot(s, k, view, turnedSize(e, 12), bounds(view));
+    e.style.left = at[0] + '%'; e.style.top = at[1] + '%'; e.style.visibility = '';
+    if (fresh && st.text === 'DONE!') e.style.animationDelay = '.3s';
+    return e;
+  }
+  // an overlay's size on the stage in % (width of its width, height of its height), turned `deg` degrees
+  function turnedSize(e, deg = 0) {
+    const W = stage.clientWidth || 1, H = stage.clientHeight || 1, a = deg * Math.PI / 180;
+    const w = e.offsetWidth, h = e.offsetHeight;
+    return [(w * Math.cos(a) + h * Math.sin(a)) / W * 100, (w * Math.sin(a) + h * Math.cos(a)) / H * 100];
+  }
+  const bounds = view => ({ top: HUD_H, bottom: view.overlaid ? 100 - BAR : 100 });
   function particles(kind, x, y, n = 10, spread = 8) {
     for (let i = 0; i < n; i++) {
       const m = document.createElement('div'); m.className = 'fxp ' + kind;
@@ -200,12 +217,17 @@ export function createStage(holder, { faceOf, legLabel }) {
   // Wide is the whole plate lifted clear of the bar; a close-up frames its subject above the bar. Under the picture
   // (a narrow window, the bar below it) a wide shot is not lifted and a close-up keeps inside the plate.
   let curCam = '';
-  function camera(s, k, fresh) {
+  // the shot as it is really framed in this window: the planned one, or (the bar under the picture) not lifted
+  function viewOf(s, k) {
     const c = (s.kind === 'world' && s.steps[k]?.cam) || { shot: 'wide', s: 1, x: 0, y: 0 };
     const overlaid = getComputedStyle($('rr-vn')).position === 'absolute';
     const sc = c.s || 1;
     let { x, y } = c;
     if (!overlaid) y = c.shot === 'wide' ? 0 : Math.max(0, Math.min(100 - 100 / sc, y));
+    return { c, s: sc, x, y, overlaid };
+  }
+  function camera(s, k, fresh) {
+    const { c, s: sc, x, y } = viewOf(s, k);
     const t = `translate(${(-sc * x).toFixed(2)}%,${(-sc * y).toFixed(2)}%) scale(${sc})`;
     const key = t;
     cam.dataset.s = String(sc);
@@ -224,8 +246,9 @@ export function createStage(holder, { faceOf, legLabel }) {
     clearInterval(typer);
     const bc = $('rr-beat');
     bc.className = 'beatcard';
-    if (step?.part === 'beat' && step.text) {
-      // no speaker: the line is a caption in the middle of the picture, and the bar steps aside
+    // no speaker: the line is a caption in the middle of the picture, and the bar steps aside. In a narrow window (the
+    // bar under the picture) a caption would fill the picture and sit on the faces: it is read in the bar instead
+    if (step?.part === 'beat' && step.text && getComputedStyle(box).position === 'absolute') {
       bc.textContent = step.text; bc.className = 'beatcard on' + (fresh ? ' fresh' : '');
       box.className = 'vn'; lastWho = null; L.textContent = ''; $('rr-vnnm').textContent = ''; $('rr-vntm').textContent = ''; return;
     }
@@ -523,18 +546,11 @@ export function createStage(holder, { faceOf, legLabel }) {
     // a slip on a failed try, a quit
     if (s.plan?.fail === k) {
       const id = s.teams[0], at = posAt(s, id, k) || s.marks[id];
-      if (at) { stamp(at[0], Math.max(10, at[1] - 22), 'TRY AGAIN'); }
       toks.querySelectorAll(`[data-team="${id}"]`).forEach(e => e.animate([{ transform: 'translate(-50%,-100%) rotate(0)' }, { transform: 'translate(-54%,-100%) rotate(-8deg)' }, { transform: 'translate(-46%,-100%) rotate(8deg)' }, { transform: 'translate(-50%,-100%) rotate(0)' }], { duration: 420, iterations: 2 }));
       if (pl.fx === 'splash' || ['swim', 'dive', 'hop'].includes(pl.mode)) splash(at?.[0] ?? 50, (at?.[1] ?? 70), 14);
     }
-    if (s.plan?.quit === k) { const at = s.marks[s.teams[0]]; if (at) stamp(at[0], Math.max(10, at[1] - 22), 'QUIT'); }
     // the work, on every beat of an in-place task (the cooking, the search, the build)
     if (k > 0 && s.work && (step.part === 'beat' || k === s.steps.length - 1)) workFx(s, s.marks[s.teams[0]]);
-    // done
-    if (k === s.steps.length - 1 && s.mode === 'act' && ['task-done'].includes(s.seg) || (k === s.steps.length - 1 && s.seg === 'task-try' && s.ending !== 'quit' && s.mode === 'act')) {
-      const id = s.teams[0], at = posAt(s, id, k);
-      if (at) later(300, () => stamp(at[0], Math.max(10, at[1] - 22), 'DONE!', 'gold'));
-    }
     // the mat: a team steps on as Don checks it in
     if (s.mode === 'mat' && step?.arrive && s.hiddenUntil) {
       const id = step.arrive, e = toks.querySelector(`[data-team="${id}"]`);
@@ -637,8 +653,9 @@ export function createStage(holder, { faceOf, legLabel }) {
   }
   const lerpPos = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 
-  function overlays(ep, s, k, fresh) {
+  function overlays(ep, s, k, fresh, view) {
     const step = s.steps[k];
+    stamp(s, k, view, fresh);
     if (step?.part === 'tip' && step.tip) {
       const t = step.tip;
       const c = document.createElement('div'); c.className = 'tipcard' + (fresh ? '' : ' still');
@@ -648,8 +665,13 @@ export function createStage(holder, { faceOf, legLabel }) {
     if (step?.slam) {
       const sl = document.createElement('div'); sl.className = `slam ${step.slam.cls || ''}${fresh ? ' fresh' : ''}`;
       sl.innerHTML = `<div class="band"><div class="big">${esc(step.slam.text)}</div></div>${step.slam.cls === 'boom' ? `<br><img src="${raceUrl('c-boomerang')}" alt="">` : ''}`;
-      ui.appendChild(sl);
-      if (fresh) { const at = s.matAt || [50, 50]; if (step.slam.cls === 'gold') for (let q = 0; q < 3; q++) later(q * 250, () => particles('spark', 30 + Math.random() * 40, 30, 14, 14)); else flash(at[0], 30); }
+      sl.style.visibility = 'hidden'; ui.appendChild(sl);
+      // in the middle, unless a face is there: then up or down to where none is (steps.js slamSpot)
+      const sz = turnedSize(sl);
+      if (step.slam.cls === 'boom') sz[1] = Math.max(sz[1], (5.4 + 2 + 21) * 16 / 9);          // the boomerang may not have loaded yet
+      const at = slamSpot(s, k, view, sz, bounds(view));
+      sl.style.left = at[0] + '%'; sl.style.top = at[1] + '%'; sl.style.visibility = '';
+      if (fresh) { if (step.slam.cls === 'gold') for (let q = 0; q < 3; q++) later(q * 250, () => particles('spark', 30 + Math.random() * 40, 30, 14, 14)); else flash((s.matAt || [50])[0], 30); }
     }
     ui.querySelectorAll('.clip').forEach(e => e.remove());
     if (step?.clip && s.kind === 'map') {
@@ -664,6 +686,28 @@ export function createStage(holder, { faceOf, legLabel }) {
     }
   }
 
+
+  // ── nobody cut by the frame: whoever the shot cannot hold whole (steps.js planHide) fades out while it is in ──
+  function cutAway(s, k, fresh) {
+    const hid = new Set(s.steps[k]?.hide || []), was = new Set(k > 0 ? s.steps[k - 1]?.hide || [] : []);
+    const keyed = [...toks.querySelectorAll('[data-team]')].map(e => [e, (e.dataset.crowd ? 'c:' : 't:') + e.dataset.team])
+      .concat([...fx.querySelectorAll('.don[data-p]')].map(e => [e, 'p:' + e.dataset.p]));
+    for (const [e, key] of keyed) {
+      const off = hid.has(key);
+      e.classList.toggle('offcam', off);
+      // out of the shot and staying out: no entrance or walk plays it back into view
+      if (off && !(fresh && !was.has(key))) e.getAnimations().forEach(x => x.cancel());
+      if (fresh && off !== was.has(key)) e.animate(off ? [{ opacity: 1 }, { opacity: 0 }] : [{ opacity: 0 }, { opacity: 1 }], { duration: 700, easing: 'ease-in-out' });
+    }
+  }
+  // the stage direction's card: in the middle of the picture, unless a face is there
+  function placeBeat(s, k, view) {
+    const bc = $('rr-beat');
+    bc.style.left = ''; bc.style.top = '';
+    if (!bc.classList.contains('on') || s.kind !== 'world') return;
+    const at = placeOverlay(turnedSize(bc, 1.4), screenFaces(s, k, view), [[50, 37]], bounds(view));
+    bc.style.left = at[0] + '%'; bc.style.top = at[1] + '%';
+  }
 
   // ── the one entry point ──
   function paint(ep, si, k, fresh = false) {
@@ -702,8 +746,11 @@ export function createStage(holder, { faceOf, legLabel }) {
       animateStep(ep, s, k);
     }
     const step = s.steps[k];
-    overlays(ep, s, k, fresh);
+    const view = viewOf(s, k);
+    if (s.kind === 'world') cutAway(s, k, stepFresh);
+    overlays(ep, s, k, fresh, view);
     vn(ep, s, step, fresh);
+    placeBeat(s, k, view);
     speaking(step?.part === 'pause' ? 'Don' : step?.by);
     if (s.kind === 'iv') ivFocus(s, step);
     camera(s, k, stepFresh);

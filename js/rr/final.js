@@ -11,14 +11,11 @@ import { playLeg } from './leg.js';
 import { emit } from './scenes.js';
 import { getBond } from '../bonds.js';
 
-const MEMORY_PER_LEG = 2;          // minutes of memory task per leg the season ran
 const people = (st, id) => [st.teams[id].a, st.teams[id].b];
 const closeness = (st, a, b) => people(st, a).reduce((s, x) => s + people(st, b).reduce((u, y) => u + getBond(x, y), 0), 0);
 
 export function playFinal(state, leg, from, to, rng) {
-  const legsRun = state.legs.length + 1;
-  const place = { ...to, stretches: to.stretches.map(s => (s.id === 'memory' || (s.types?.includes('brains') && s.kind !== 'travel')
-    ? { ...s, base: s.base + MEMORY_PER_LEG * legsRun } : { ...s })) };
+  const place = { ...to, stretches: to.stretches.map(s => ({ ...s })) };
 
   // the footrace: tired legs cost twice what they cost anywhere else
   const adjust = (team, s, t, res) => {

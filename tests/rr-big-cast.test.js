@@ -23,7 +23,9 @@ describe('rr big cast', () => {
     let quick = 0;
     eps.forEach((ep, i) => {
       const order = res.legs[i].order, N = order.length;
-      for (const s of ep.segments.filter(s => s.kind === 'mat-montage')) {
+      // a check-in run (two or more mid-pack teams in a row, any cast) is how Don does the mat, not a hurried team:
+      // rr-checkin-run.test.js holds it
+      for (const s of ep.segments.filter(s => s.kind === 'mat-montage' && !s.checkinRun)) {
         expect(N, `leg ${ep.n}`).toBeGreaterThan(BIG_CAST);
         for (const id of s.teams) {
           const at = order.indexOf(id);
@@ -35,7 +37,7 @@ describe('rr big cast', () => {
         }
         expect(s.lines?.length, `leg ${ep.n}`).toBeGreaterThanOrEqual(s.teams.length);
       }
-      if (N <= BIG_CAST) expect(ep.segments.some(s => s.kind === 'mat-montage' || s.kind === 'task-montage'), `leg ${ep.n}`).toBe(false);
+      if (N <= BIG_CAST) expect(ep.segments.some(s => (s.kind === 'mat-montage' && !s.checkinRun) || s.kind === 'task-montage'), `leg ${ep.n}`).toBe(false);
     });
   });
 
@@ -53,7 +55,7 @@ describe('rr big cast', () => {
   it('at least ten teams get their full scenes in every episode, and the quiet ones rotate', () => {
     const quickBy = {};
     eps.forEach((ep, i) => {
-      const quick = new Set(ep.segments.filter(s => s.kind === 'mat-montage').flatMap(s => s.teams));
+      const quick = new Set(ep.segments.filter(s => s.kind === 'mat-montage' && !s.checkinRun).flatMap(s => s.teams));
       expect(res.legs[i].order.length - quick.size, `leg ${ep.n}`).toBeGreaterThanOrEqual(Math.min(BIG_CAST, res.legs[i].order.length));
       for (const id of quick) quickBy[id] = (quickBy[id] || 0) + 1;
     });

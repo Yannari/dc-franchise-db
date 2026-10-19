@@ -383,6 +383,32 @@ export function airLeg(state, leg) {
         src: { ...first, id: `taskm:${n}:${stretch}`, kind: 'task-montage', data: { ...first.data, ending: 'any', teamsList: ids } } });
     }
   }
+  // Don runs through the middle of the pack like the show ("third... hold on... fourth, fifth"): two or more mid-pack
+  // teams with no penalty checking in back to back are one run, in a cast of any size. Their racing airs in full; only
+  // the check-in is quick (measured 2026-10-19: Don's mid-pack check-ins were 15 repeats a season of a hundred).
+  {
+    const mids = [...picked.keys()].map(id => byId.get(id))
+      .filter(s => s.kind === 'don-place' && !s.data?.midmat && s.data?.matPlace === 'mid' && ['plain', 'bored'].includes(s.data?.ending)
+        && !(leg.penalties?.[s.data?.team])
+        // never the top three or the bottom three: they have their own moment on the mat
+        && leg.order.indexOf(s.data?.team) >= 3 && leg.order.indexOf(s.data?.team) < leg.order.length - 3)
+      .sort((x, y) => (x.data.place ?? 0) - (y.data.place ?? 0));
+    let run = [];
+    const flush = () => {
+      if (run.length >= 2) {
+        for (const s of run) picked.delete(s.id);
+        montages.push({ scene: run[0].id, scenes: run.map(s => s.id), kind: 'mat-montage', ending: 'any', stretch: 'mat',
+          t: run[0].data?.t ?? 0, teams: run.map(s => s.data.team), who: run.flatMap(s => s.who), side: null, tier: 0, checkinRun: true,
+          srcs: run.map(s => ({ ...s, kind: 'mat-montage', data: { ...s.data, ending: 'any' } })) });
+      }
+      run = [];
+    };
+    for (const s of mids) {
+      if (run.length && s.data.place !== run.at(-1).data.place + 1) flush();
+      run.push(s);
+    }
+    flush();
+  }
 
   // three or more teams through the same challenge the same way in the same minute (they queued for it to open):
   // the first airs on its own, the rest share one beat

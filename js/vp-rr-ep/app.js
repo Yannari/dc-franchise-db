@@ -17,6 +17,7 @@ import { createSidebar } from './sidebar.js';
 import { RR_CSS } from './style.js';
 import { playStep, soundControlsHtml, wireSoundControls } from './sound.js';
 import { initAudio } from '../audio.js';
+import { RACE_FORMAT } from '../shows.js';
 
 const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -57,7 +58,7 @@ function simSource() {
     try {
       if (w?.gs?.rr?.teams?.length) return { rr: w.gs.rr, players: w.players || [],
         // how many legs the run tab has aired: the rest are not to be seen yet
-        aired: (w.gs.episodeHistory || []).filter(r => r && r.format === 'ridonculous-race').length };
+        aired: (w.gs.episodeHistory || []).filter(r => r && r.format === RACE_FORMAT).length };
     } catch { /* another origin */ }
   }
   try { const s = JSON.parse(localStorage.getItem('rr_sim_season') || 'null'); if (s?.rr?.teams?.length) return s; } catch { /* no storage */ }

@@ -30,7 +30,7 @@ describe('rr place lines', () => {
   });
 
   // the places written so far (the place library is being written one at a time; this list goes when all are in)
-  const WRITTEN = new Set(['red-sand-desert', 'iron-tower-city', 'home-city', 'skyline-finale', 'fire-mountain-isle', 'great-wall-hills', 'rock-north', 'savanna-falls', 'treasure-isles', 'tomb-sands']);
+  const WRITTEN = new Set(['red-sand-desert', 'iron-tower-city', 'home-city', 'skyline-finale', 'fire-mountain-isle', 'great-wall-hills', 'rock-north', 'savanna-falls', 'treasure-isles', 'tomb-sands', 'torch-statue-harbour']);
   for (const p of Object.values(PLACES).filter(p => WRITTEN.has(p.id))) {
     it(`${p.name} has its own opener and arrival`, () => {
       for (const [k, n] of Object.entries(PER_PLACE)) expect(entriesFor(k, w => w.place === p.id).length, `${p.id} ${k}`).toBeGreaterThanOrEqual(n);
@@ -66,7 +66,10 @@ describe('rr place lines on air', () => {
     const { raceCast } = await import('./helpers/rr-cast.js');
     const { cast, teams } = raceCast(12, 1);
     setPlayers(cast);
-    res = playRaceSeason({ teams, seed: 1 });
+    // a route through every place, Red Sand first (a drawn route visits only some of a growing library)
+    const route = ['home-city', 'red-sand-desert', 'iron-tower-city', 'great-wall-hills', 'rock-north', 'savanna-falls', 'treasure-isles',
+      'tomb-sands', 'torch-statue-harbour', 'fire-mountain-isle', 'red-sand-desert', 'iron-tower-city', 'skyline-finale'];
+    res = playRaceSeason({ teams, seed: 1, options: { route } });
     eps = airSeason(res);
   };
 

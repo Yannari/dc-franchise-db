@@ -71,9 +71,10 @@ import volNerve from './rewrite/vol-nerve.js';
 import volInterviews from './rewrite/vol-interviews.js';
 import volDonMat from './rewrite/vol-don-mat.js';
 import redSandDesert from './places/red-sand-desert.js';
+import ironTowerCity from './places/iron-tower-city.js';
 
 const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
-  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, ride, narration, redSandDesert];
+  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, ride, narration, redSandDesert, ironTowerCity];
 
 // The rewrite (lines/rewrite/, docs/rr-writers-brief.md "The rewrite standard"): each file brings its pools and
 // retires the old lines they replace, a whole pool ('mind-game.rattled') or the old interview lines for one kind

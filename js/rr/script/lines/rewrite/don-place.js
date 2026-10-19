@@ -62,7 +62,7 @@ export default {
       { id: 'dp2.m1', when: { matPlace: 'mid' }, turns: [
         don("{team}, you're the {placing} team. Right in the middle."),
         { by: 'b', ...V("Is the middle good, or is it bad?", "Good or bad, the middle?", "Is that good or bad?", "Is the middle GOOD, or is it BAD?", "Is the middle good or bad, though?", "Is the middle good? Is it bad? Is it a feeling?") },
-        don("It's the middle. It isn't anything. That's the whole point of the middle."),
+        don("It's safe! Safe is good. Safe is how you get to the end. Next!"),
       ] },
       { id: 'dp2.m2', when: { matPlace: 'mid' }, turns: [
         don("{team}. {placing}. Water's over there."),

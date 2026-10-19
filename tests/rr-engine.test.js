@@ -35,7 +35,8 @@ describe('rr engine', () => {
         if (leg.kind === 'elim') expect(leg.eliminated, `leg ${leg.n}`).toHaveLength(1);
         else expect(leg.eliminated, `leg ${leg.n}`).toHaveLength(0);
       }
-      const left = s.legs.flatMap(l => l.eliminated).length + (s.state.medevacs || []).filter(m => !m.returned).length
+      // a medevaced team leaves either way; a team brought back in its place comes back
+      const left = s.legs.flatMap(l => l.eliminated).length + (s.state.medevacs || []).length
         + Object.keys(s.state.quitting || {}).length - (s.state.medevacs || []).filter(m => m.returned).length;
       expect(left).toBe(12 - 3 + 1);     // nine before the final, and the midpoint team
     }

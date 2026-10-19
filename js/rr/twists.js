@@ -161,6 +161,9 @@ export function useExpress(state, team, stretch, stretches = []) {
   }
   if (state.expressPlan[key] !== stretch.id) return false;
   state.passes[id].express--;
+  // a picking task skipped with the pass still feeds the task after it (the stew is cooked with something): the
+  // pass hands over the right ones
+  if (stretch.pick) (state.picks ||= {})[id] = { leg: state.leg, stretch: stretch.id, of: stretch.pick.of, right: stretch.pick.of };
   addScene(state, 'express-used', people(state, id), { team: id, stretch: stretch.id, effects: [['express', id, stretch.id]],
     snap: snapOf(state, { tid: id, stretch, who: people(state, id) }) });
   return true;

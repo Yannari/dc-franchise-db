@@ -128,8 +128,14 @@ function taskEnding(row) {
 function taskBeat(state, row, i, kind = 'task-try') {
   const [x, y] = people(state, row.team);
   const [a, b] = row.kind === 'botch' && row.who && [x, y].includes(row.who) ? [row.who, row.who === x ? y : x] : [x, y];
+  const ending = kind === 'task-try' ? taskEnding(row) : 'any';
+  // a try that took more than one go is a moment in the middle of it, not at the start (teams who arrived together
+  // struggle on their own clocks)
+  // ...and getting out of it is the end of it
+  const t = (kind === 'task-done' || (kind === 'task-try' && row.right != null)) && row.to > row.from ? Math.round(row.to)
+    : kind === 'task-try' && ending !== 'first-try' && row.to > row.from ? Math.round((row.from + row.to) / 2) : row.from;
   return { id: `task:${row.leg}:${row.team}:${row.stretch}:${i}`, leg: row.leg, kind, who: [a, b], seenBy: [a, b],
-    data: { ending: kind === 'task-try' ? taskEnding(row) : 'any', team: row.team, stretch: row.stretch, t: row.from,
+    data: { ending, team: row.team, stretch: row.stretch, t, from: row.from, to: row.to,
       switched: row.switched, quit: row.quit, side: row.side,
       // a picking task's result is only known after the pick: the beat carries it (the row's snap is from the arrival)
       snap: row.snap ? { ...row.snap, fails: row.fails, side: row.side ?? row.snap.side, botcher: row.who ?? row.snap.botcher,
@@ -210,7 +216,9 @@ export function airLeg(state, leg) {
     // a picking task's moment is the picking and how it went (the spices: all five, most, a guess)
     const kind = r.right != null ? 'task-try' : clean && firstOf[r.team] === i ? 'task-start' : clean && lastOf[r.team] === i ? 'task-done' : 'task-try';
     // ...and the first three teams there are seen arriving at it first: the challenge is set up once, then results
-    if (r.right != null && (pickStarts[r.stretch] = (pickStarts[r.stretch] || 0) + 1) <= 3) {
+    // (two at most in the same minute: teams who queued for the opening all arrive at once)
+    const sameMinute = beats.filter(b => b.id.endsWith(':arrive') && b.data.stretch === r.stretch && b.data.t === r.from).length;
+    if (r.right != null && sameMinute < 2 && (pickStarts[r.stretch] = (pickStarts[r.stretch] || 0) + 1) <= 3) {
       const arrive = taskBeat(state, r, i, 'task-start');
       arrive.id += ':arrive';
       beats.push(arrive);
@@ -240,23 +248,32 @@ export function airLeg(state, leg) {
   // an episode airs at most two of the same optional kind (the third small talk is the one a viewer notices)
   const PER_KIND = 2;
   const optional = {};
+  // a chained moment brings its cause, and the pair costs two (both inside the budget, or neither); a cause whose
+  // kind already aired twice stays off, and the moment's own lines say what it was
+  const causeOf = s => {
+    const c = s?.data?.cause != null && !s.kind.startsWith('int-') ? byId.get(s.data.cause) : null;
+    return c && !picked.has(c.id) && (optional[c.kind] || 0) < PER_KIND ? c : null;
+  };
+  const takeCause = c => { take(c, 2); optional[c.kind] = (optional[c.kind] || 0) + 1; };
   for (const tier of [2, 3]) {
     const cands = scenes.filter(s => !picked.has(s.id) && tierOf(s) === tier && !s.kind.startsWith('int-'))
       .sort((x, y) => weight(y) - weight(x) || x.id - y.id);
     for (const s of cands) {
       if (budget <= 0) break;
-      if (!ok(s) || (optional[s.kind] || 0) >= PER_KIND) continue;
+      if (picked.has(s.id) || !ok(s) || (optional[s.kind] || 0) >= PER_KIND) continue;
+      const c = causeOf(s);
+      if (c && budget < 2) continue;
       take(s, tier);
       optional[s.kind] = (optional[s.kind] || 0) + 1;
       budget--;
+      if (c) { takeCause(c); budget--; }
     }
   }
-  // a chained moment brings its cause
+  // ...and a moment that had to air brings its cause too, while the budget lasts
   for (const [id] of [...picked]) {
-    const s = byId.get(id);
-    const c = s?.data?.cause != null && !s.kind.startsWith('int-') ? byId.get(s.data.cause) : null;
-    // the cause comes with its chain; if its kind is already aired twice, the chain carries a recap beat instead (writer)
-    if (c && !picked.has(c.id) && (optional[c.kind] || 0) < PER_KIND) { take(c, 2); optional[c.kind] = (optional[c.kind] || 0) + 1; }
+    if (budget <= 0) break;
+    const c = causeOf(byId.get(id));
+    if (c) { takeCause(c); budget--; }
   }
   // interviews about what aired, in their own slots
   let ivSlots = INTERVIEWS;
@@ -324,6 +341,32 @@ export function airLeg(state, leg) {
         teams: ids, who: group.flatMap(b => b.who), side: null, tier: 1,
         src: { ...first, id: `taskm:${n}:${stretch}`, kind: 'task-montage', data: { ...first.data, ending: 'any', teamsList: ids } } });
     }
+  }
+
+  // three or more teams through the same challenge the same way in the same minute (they queued for it to open):
+  // the first airs on its own, the rest share one beat
+  // (a picking task's result is each team's own: how many it got right is its story, so it never merges)
+  const CLEAN_BEAT = b => b.data.snap?.picked == null
+    && (b.kind === 'task-start' || b.kind === 'task-done' || (b.kind === 'task-try' && b.data.ending === 'first-try'));
+  const spot = {};
+  for (const b of beats) if (CLEAN_BEAT(b)) (spot[`${b.data.stretch}|${b.data.t}|${b.kind}`] ||= []).push(b);
+  for (const [key, group] of Object.entries(spot)) {
+    if (group.length < 3) continue;
+    // a small cast keeps every team in full: the third one there that minute is seen at the other end of its run
+    if (N <= BIG_CAST) {
+      for (const b of group.slice(2)) {
+        if (b.kind === 'task-start' || b.kind === 'task-try') { b.kind = 'task-done'; b.data.ending = 'any'; b.data.t = Math.round(b.data.to ?? b.data.t); }
+        else { b.kind = 'task-start'; b.data.t = b.data.from ?? b.data.t; }
+      }
+      continue;
+    }
+    const rest = group.slice(1);
+    for (const b of rest) beats.splice(beats.indexOf(b), 1);
+    const first = rest[0];
+    const ids = rest.map(b => b.data.team);
+    montages.push({ scene: null, beat: `taskm:${n}:${key}`, kind: 'task-montage', ending: 'any', stretch: first.data.stretch, t: first.data.t,
+      teams: ids, who: rest.flatMap(b => b.who), side: null, tier: 1,
+      src: { ...first, id: `taskm:${n}:${key}`, kind: 'task-montage', data: { ...first.data, ending: 'any', teamsList: ids } } });
   }
 
   // Don narrating it (the real show: the departure order, the flights, a bridge, the bottom of the leg)

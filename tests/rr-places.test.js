@@ -4,8 +4,8 @@ import { PLACES, validatePlace, getPlace } from '../js/rr/places.js';
 import { drawRoute } from '../js/rr/route.js';
 
 describe('rr places', () => {
-  it('the four starter places are valid', () => {
-    expect(Object.keys(PLACES).sort()).toEqual(['fire-mountain-isle', 'home-city', 'red-sand-desert', 'skyline-finale']);
+  it('the four starter places are in the library, and every place is valid', () => {
+    expect(Object.keys(PLACES)).toEqual(expect.arrayContaining(['fire-mountain-isle', 'home-city', 'red-sand-desert', 'skyline-finale']));
     for (const p of Object.values(PLACES)) expect(validatePlace(p), p.id).toEqual([]);
     expect(getPlace('home-city').start).toBe(true);
     expect(getPlace('skyline-finale').finale).toBe(true);

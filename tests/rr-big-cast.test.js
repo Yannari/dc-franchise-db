@@ -37,6 +37,16 @@ describe('rr big cast', () => {
       }
       if (N <= BIG_CAST) expect(ep.segments.some(s => s.kind === 'mat-montage' || s.kind === 'task-montage'), `leg ${ep.n}`).toBe(false);
     });
+  });
+
+  it('quiet teams do get checked in together, across seasons (one season can have a story for every team)', () => {
+    let quick = 0;
+    for (const seed of [1, 2, 3, 4, 5, 6]) {
+      const { cast, teams } = raceCast(18, seed);
+      setPlayers(cast);
+      for (const ep of airSeason(playRaceSeason({ teams, seed })))
+        quick += ep.segments.filter(s => s.kind === 'mat-montage').flatMap(s => s.teams).length;
+    }
     expect(quick).toBeGreaterThan(0);
   });
 

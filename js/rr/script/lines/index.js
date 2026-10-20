@@ -110,13 +110,18 @@ import neonDesert from './places/neon-desert.js';
 import pyramidCoast from './places/pyramid-coast.js';
 import stiltRiver from './places/stilt-river.js';
 import frozenMine from './places/frozen-mine.js';
+import teaHills from './places/tea-hills.js';
+import pampasRanch from './places/pampas-ranch.js';
+import gameShowCity from './places/game-show-city.js';
+import iceRiver from './places/ice-river.js';
 
 const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
   localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, ride, narration, narration2, premiere, premiereIdentities, customIntros, redSandDesert, ironTowerCity, homeCity, skylineFinale, fireMountainIsle, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback, ...placesMore,
   coastPalace, geyserIsland, carnivalRainforest, hauntedCastle,
   leiIsland, glassTowerGulf, swampPrison, outbackFarm,
   fjordPeaks, prairieRanch, iceFloe, dragonIsle,
-  neonDesert, pyramidCoast, stiltRiver, frozenMine];
+  neonDesert, pyramidCoast, stiltRiver, frozenMine,
+  teaHills, pampasRanch, gameShowCity, iceRiver];
 
 // The rewrite (lines/rewrite/, docs/rr-writers-brief.md "The rewrite standard"): each file brings its pools and
 // retires the old lines they replace, a whole pool ('mind-game.rattled') or the old interview lines for one kind

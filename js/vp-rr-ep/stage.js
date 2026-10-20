@@ -150,13 +150,14 @@ export function createStage(holder, { faceOf, legLabel }) {
     }
     return e;
   }
-  function personEl(name, pos, sz, { local = false, label = null } = {}) {
+  function personEl(name, pos, sz, { local = false, label = null, face = null } = {}) {
     const d = document.createElement('div');
     d.className = 'don' + (local ? ' local' : '');
     d.dataset.p = name;
     d.style.setProperty('--sz', sz + 'cqw');
     d.style.left = pos[0] + '%'; d.style.top = pos[1] + '%';
-    d.innerHTML = (local ? LOCAL_SVG : `<img src="${raceUrl('don')}" alt="">`) + `<span class="lab">${esc(label || name)}</span>`;
+    // (a local with an avatar the user made shows it; the crowd keeps the silhouette)
+    d.innerHTML = (local && !face ? LOCAL_SVG : `<img src="${face || raceUrl('don')}" alt="">`) + `<span class="lab">${esc(label || name)}</span>`;
     fx.appendChild(d);
     return d;
   }
@@ -283,10 +284,10 @@ export function createStage(holder, { faceOf, legLabel }) {
     box.style.setProperty('--c', c);
     av.style.display = iv || beat ? 'none' : '';
     if (!iv && !beat) {
-      av.src = by === 'Don' ? raceUrl('don') : team ? faceOf(by) : 'data:image/svg+xml;utf8,' + encodeURIComponent(LOCAL_SVG);
+      av.src = by === 'Don' ? raceUrl('don') : team ? faceOf(by) : s.localFaces?.[by]?.url || 'data:image/svg+xml;utf8,' + encodeURIComponent(LOCAL_SVG);
       if (fresh) { av.classList.remove('pop'); void av.offsetWidth; av.classList.add('pop'); }
     }
-    $('rr-vnnm').textContent = beat ? '' : String(by || '').toUpperCase();
+    $('rr-vnnm').textContent = beat ? '' : String((!team && by !== 'Don' && s.localFaces?.[by]?.name) || by || '').toUpperCase();
     $('rr-vnnm').style.display = beat ? 'none' : '';
     $('rr-vntm').textContent = beat ? '' : iv ? 'interview' : by === 'Don' ? 'host' : team ? teamOf(ep, team).name : 'local';
     const text = step.text || '';
@@ -435,7 +436,10 @@ export function createStage(holder, { faceOf, legLabel }) {
     }
     // Don and the locals
     if (s.don && s.donStand) personEl('Don', s.donStand, (s.size || 8) * 0.95);
-    for (const [nm, at] of Object.entries(s.localAt || {})) personEl(nm, at, (s.size || 8) * 0.85, { local: true, label: nm.replace(/^(A|The) /i, '') });
+    for (const [nm, at] of Object.entries(s.localAt || {})) {
+      const f = s.localFaces?.[nm];
+      personEl(nm, at, (s.size || 8) * 0.85, { local: true, face: f?.url || null, label: (f?.name || nm).replace(/^(A|The) /i, '') });
+    }
     // the rest of the race, behind them
     if (!(s.exitAt === k && !fresh)) for (const c of s.crowd || []) crowdEl(ep, s, c, k);
     // the teams

@@ -21,6 +21,7 @@
 // its money and leader as recorded in that scene, a placement, an exit, a storyline beat).
 // The side panel folds them up to the current step (intelAt), never reading live state.
 import { PLACES } from '../rr/places.js';
+import { LOCALS, LOCAL_PROPS, localFor, placeLocal } from './locals.js';
 import { PLACE_PLATES, RACE, stretchPlates, standable } from './plates.js';
 
 export const TEAM_COLORS = ['#ff6fae', '#39c0ff', '#ffb020', '#4fd18b', '#b78cff', '#ff7a4a', '#5ee0d6', '#f2e94e', '#ff4f6d', '#8fb4ff', '#c7f464', '#e0a3ff',
@@ -298,10 +299,19 @@ export function episodeScreens(res, eps, i) {
       const speakerTeams = run.lines.map(l => teamOf[l.by]).filter(Boolean);
       const teams = [...new Set([...segTeams, ...speakerTeams])];
       const locals = [...new Set(run.lines.filter(l => l.by && l.by !== 'Don' && !teamOf[l.by]).map(l => l.by))];
+      // the place's own local stands at their challenge as it starts and as a team gets through it (the fisherman at
+      // the welcome rite), unless the plate already has a cut-out of them
+      const own = placeLocal(placeId, seg.stretch);
+      const cutOf = pl => !!(pl?.judge || LOCAL_PROPS.has(pl?.prop));
+      const cutHere = cutOf(plate) || cutOf(stretchPlates(placeId, seg.stretch, seg.side)?.act);
+      // (in a talk shot, where the teams and the local are spread out together; the action shots place their own)
+      if (own && mode === 'talk' && standable(plate) && !plate?.closed && ['task-start', 'task-done'].includes(k) && !cutHere && !locals.some(n => localFor(n, placeId, seg.stretch)?.id === own)) locals.push(LOCALS[own]);
+      // each local's face (the user's avatars): who a speaking "A local" or "The judge" is, here
+      const localFaces = Object.fromEntries(locals.map(n => [n, localFor(n, placeId, seg.stretch, seg.scene ?? seg.t)]).filter(([, f]) => f));
       const donSpeaks = run.lines.some(l => l.by === 'Don');
       const scr = {
         kind: mode === 'flight' ? 'flight' : 'world', seg: k, ending: seg.ending, mode, place: placeId, stretch: seg.stretch, side: seg.side,
-        plate, teams, locals, don: donSpeaks && !['narrate', 'flight', 'landing'].includes(mode) || ['mat', 'demo', 'don'].includes(mode),
+        plate, teams, locals, localFaces, don: donSpeaks && !['narrate', 'flight', 'landing'].includes(mode) || ['mat', 'demo', 'don'].includes(mode),
         narrator: donSpeaks && ['narrate', 'flight', 'landing'].includes(mode),
         hud: { task: hudTask, clock }, timecard: first ? timecard : null, steps,
         from: prevLeg?.place || null, to: placeId, who: [...(seg.who || [])], stretchKind: stretch?.kind || null,

@@ -50,6 +50,9 @@ const FIND = {
   reveal: '(s, t, k) => s.seg === "boomerang-reveal" && k >= 2',
   duel: '(s, t, k) => s.seg === "head-to-head" && k >= 1',
   intersect: '(s, t, k) => s.seg === "superteam-pick" && k >= 1',
+  // the locals (2026-10-20): one speaking, one standing at their challenge
+  localsays: '(s, t, k) => s.localFaces && t.by && s.localFaces[t.by]',
+  localstands: '(s, t, k) => s.localFaces && Object.keys(s.localFaces).length && !s.steps.some(x => s.localFaces[x.by]) && t.by && k >= 1',
 };
 // RR_PLATES=task-9436302,task-22412499: a talk step on each of those plates
 for (const f of (process.env.RR_PLATES || '').split(',').filter(Boolean)) FIND['plate-' + f] = `(s, t, k) => s.kind === "world" && s.plate?.f === "${f}" && t.by && k >= 1`;

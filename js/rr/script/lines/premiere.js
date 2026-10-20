@@ -16,15 +16,15 @@ const g = (id, ...turns) => ({ id, turns: turns.map(x => (typeof x === 'string' 
 export default {
   // Don opens the season, before anyone has arrived: the city, the show, himself
   'don-narrate.welcome': [
-    n('nw.1', beat('Don stands on the steps of the old train station, the city tower behind him, and flashes the camera a perfect smile.'),
+    n('nwl.1', beat('Don stands on the steps of the old train station, the city tower behind him, and flashes the camera a perfect smile.'),
       "This is Home City! The oldest city in the world, if you don't check. Birthplace of the revolving door, and home of the angriest geese on the planet.",
       "Teams are arriving at this historic station to start a race around the world. I'm your host, Don, and this is the Ridonculous Race!"),
-    n('nw.2', "Home City! Inventor of the traffic jam, holder of the world record for most umbrellas lost in one afternoon, and the city that named me its most handsome resident. I filled in the form myself.",
+    n('nwl.2', "Home City! Inventor of the traffic jam, holder of the world record for most umbrellas lost in one afternoon, and the city that named me its most handsome resident. I filled in the form myself.",
       "Teams of two are about to race around the world for one million dollars. I'm Don. Welcome to the Ridonculous Race!"),
-    n('nw.3', beat('Don strolls along the station platform, pigeons scattering out of his way.'),
+    n('nwl.3', beat('Don strolls along the station platform, pigeons scattering out of his way.'),
       "Welcome to Home City, where the tower is tall, the lake is cold, and the pigeons are, I'm told, protected by law.",
       "This is where the Ridonculous Race begins. Let's meet the teams who are about to regret signing up."),
-    n('nw.4', "This is Home City. Home of the city tower, home of the world's largest doughnut, briefly, and home, today, of the start of a race around the world.",
+    n('nwl.4', "This is Home City. Home of the city tower, home of the world's largest doughnut, briefly, and home, today, of the start of a race around the world.",
       "I'm Don, and this is the Ridonculous Race! Here come our teams."),
   ],
 

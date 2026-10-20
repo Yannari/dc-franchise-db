@@ -55,6 +55,14 @@ describe('rr dialogue: the rules every pool is held to', () => {
     }
   });
 
+  // a line is remembered by its id (what aired this season, what not to repeat): two pools sharing one id block each
+  // other. Found 2026-10-20: Don's premiere welcome (premiere.js) reused his flight-wait ids nw.1-nw.4 (narration.js)
+  it('every line id in the library is unique', () => {
+    const seen = {};
+    for (const [k, list] of Object.entries(POOLS)) for (const e of list) (seen[e.id] ||= []).push(k);
+    expect(Object.entries(seen).filter(([, ks]) => ks.length > 1).map(([id, ks]) => `${id}: ${ks.join(' | ')}`)).toEqual([]);
+  });
+
   it('no real place, no vote words, no head counts in a room, nobody says their own name', () => {
     for (const [k, list] of Object.entries(POOLS)) {
       const group = SCENES[k.split('.')[0]]?.cast === 'group';

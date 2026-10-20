@@ -53,6 +53,11 @@ const FIND = {
   // the locals (2026-10-20): one speaking, one standing at their challenge
   // a lifted shot with the bar stepped aside (a beat card): what shows under the plate
   liftbeat: '(s, t, k) => s.kind === "world" && t.part === "beat" && (s.lift || 0) > 3 && s.plate?.f === "arrive-9434588"',
+  present: '(s, t, k) => s.seg === "place-present"',
+  opener: '(s, t, k) => s.seg === "don-opener" && k >= 1',
+  parked: '(s, t, k) => s.parked && t.by',
+  demo: '(s, t, k) => s.seg === "don-demo" && k >= 1',
+  roomtalk: '(s, t, k) => s.stretch === "tango" && s.mode === "talk" && t.by',
   localsays: '(s, t, k) => s.localFaces && t.by && s.localFaces[t.by]',
   localstands: '(s, t, k) => s.localFaces && Object.keys(s.localFaces).length && !s.steps.some(x => s.localFaces[x.by]) && t.by && k >= 1',
 };

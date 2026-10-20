@@ -68,8 +68,16 @@ export const PLACE_LOCALS = {
   'cliff-pool-isle': { 'falls-dive': 'cliff-guide' },
 };
 
-// the action cut-outs that ARE the local (the dance teacher dancing with them, the elders judging on the stage)
-export const LOCAL_PROPS = new Set(['instructor', 'judges']);
+// The full-body cut-outs of people, per place: their avatar stands there instead (the user, 2026-10-20: "the cutout
+// use is still the fullbody"; the race is avatars, people never full-body sprites)
+export const PERSON_PROPS = {
+  'coast-palace': { surfer: 'surfer-boy' }, 'carnival-rainforest': { dancer: 'carnival-dancer' },
+  'haunted-castle': { coach: 'gym-coach' }, 'swamp-prison': { guard: 'prison-guard' }, 'outback-farm': { farmer: 'farmer' },
+  'ice-floe': { local: 'parka-local' }, 'tea-hills': { picker: 'tea-picker' }, 'twin-tower-bridge': { warden: 'tower-warden' },
+  'fishing-cove': { fisherman: 'fisherman' }, 'red-sand-desert': { merchant: 'spice-merchant', chef: 'stew-chef' },
+  'great-wall-hills': { vendor: 'street-cook' }, 'pampas-ranch': { instructor: 'tango-instructor' }, 'fjord-peaks': { judges: 'dance-elder' },
+};
+export const personOf = (place, key) => (key && PERSON_PROPS[place]?.[String(key).split('@')[0]]) || null;
 
 export const localUrl = id => `assets/avatars/rr-locals/${id}.webp`;
 export const placeLocal = (place, stretch) => PLACE_LOCALS[place]?.[stretch] || null;

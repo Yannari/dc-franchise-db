@@ -15,10 +15,6 @@ export const MORE = {
   ],
   "views": [
    {
-    "f": "chill-22411653",
-    "at": "mat"
-   },
-   {
     "f": "chill-22412021",
     "at": "mat"
    },
@@ -114,8 +110,161 @@ export const MORE = {
       "fx": "splash"
      }
     ]
+   },
+   "sled": {
+    "wide": [
+     {
+      "f": "task-22411924",
+      "g": 86,
+      "x": [
+       6,
+       94
+      ],
+      "deco": [
+       [
+        "bear",
+        72,
+        70,
+        4,
+        {
+         "move": "wander",
+         "span": 14,
+         "dur": 22
+        }
+       ]
+      ]
+     },
+     {
+      "f": "present-22411651",
+      "g": 88,
+      "x": [
+       20,
+       94
+      ]
+     }
+    ],
+    "alt": [
+     {
+      "f": "task-22411924",
+      "g": 0,
+      "x": [
+       0,
+       0
+      ],
+      "water": true,
+      "mode": "ride",
+      "prop": "sled",
+      "path": [
+       [
+        -12,
+        88
+       ],
+       [
+        40,
+        86
+       ],
+       [
+        80,
+        84
+       ],
+       [
+        114,
+        82
+       ]
+      ],
+      "fx": "snow",
+      "deco": [
+       [
+        "bear",
+        72,
+        70,
+        4,
+        {
+         "move": "wander",
+         "span": 14,
+         "dur": 22
+        }
+       ]
+      ]
+     },
+     {
+      "f": "present-22411651",
+      "g": 0,
+      "x": [
+       0,
+       0
+      ],
+      "water": true,
+      "mode": "ride",
+      "prop": "sled",
+      "path": [
+       [
+        10,
+        94
+       ],
+       [
+        38,
+        84
+       ],
+       [
+        66,
+        80
+       ],
+       [
+        110,
+        86
+       ]
+      ],
+      "fx": "snow"
+     },
+     {
+      "f": "present-22411652",
+      "g": 0,
+      "x": [
+       0,
+       0
+      ],
+      "water": true,
+      "mode": "ride",
+      "prop": "sled",
+      "path": [
+       [
+        47,
+        40
+       ],
+       [
+        43,
+        58
+       ],
+       [
+        41,
+        74
+       ],
+       [
+        38,
+        92
+       ]
+      ],
+      "fx": "snow"
+     }
+    ]
    }
-  }
+  },
+  "mat": [
+   {
+    "f": "chill-22411653",
+    "g": 60,
+    "x": [
+     6,
+     62
+    ],
+    "matPos": [
+     44,
+     62
+    ],
+    "scale": 0.7
+   }
+  ]
  },
  "fire-mountain-isle": {
   "arrive": [
@@ -1267,7 +1416,10 @@ export const MORE = {
         "narwhal",
         74,
         78,
-        15
+        15,
+        {
+         "move": "surface"
+        }
        ]
       ]
      }
@@ -1944,7 +2096,10 @@ export const MORE = {
        "plane",
        68,
        24,
-       13
+       13,
+       {
+        "move": "fly"
+       }
       ]
      ]
     }
@@ -1969,9 +2124,14 @@ export const MORE = {
      "deco": [
       [
        "croc",
-       86,
+       82,
        64,
-       13
+       13,
+       {
+        "move": "wander",
+        "span": 8,
+        "dur": 20
+       }
       ]
      ]
     }
@@ -2222,9 +2382,13 @@ export const MORE = {
      "deco": [
       [
        "panda",
-       82,
+       70,
        74,
-       10
+       10,
+       {
+        "move": "wander",
+        "span": 14
+       }
       ],
       [
        "candy",
@@ -2297,9 +2461,6 @@ export const MORE = {
 };
 
 export const LEFT_OUT = {
- "ice-river": {
-  "task-22411924": "a team on a sled is painted in, far off on the lake"
- },
  "fire-mountain-isle": {
   "task-22425114": "a bare cliff wall: on screen it reads as nothing, not the falls",
   "task-22425831": "another stop in those episodes (a train's caboose on a plain), not the volcano island",

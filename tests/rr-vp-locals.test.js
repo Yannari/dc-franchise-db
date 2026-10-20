@@ -8,8 +8,7 @@ import { playRaceSeason } from '../js/rr/season.js';
 import { setPlayers } from '../js/core.js';
 import { raceCast } from './helpers/rr-cast.js';
 import { episodeScreens } from '../js/vp-rr-ep/steps.js';
-import { LOCALS, PLACE_LOCALS, LOCAL_PROPS, localUrl, localFor } from '../js/vp-rr-ep/locals.js';
-import { stretchPlates } from '../js/vp-rr-ep/plates.js';
+import { LOCALS, PLACE_LOCALS, localUrl, localFor } from '../js/vp-rr-ep/locals.js';
 import { PLACES } from '../js/rr/places.js';
 
 let eps = [];
@@ -52,18 +51,17 @@ describe('rr viewer: the locals', () => {
     expect(standing).toBeGreaterThan(10);
   });
 
-  it("a place's own local stands at their challenge when the plate has no cut-out of them", () => {
+  // (their full-body cut-outs come off now: the avatar always stands there, 2026-10-20)
+  it("a place's own local stands at their challenge", () => {
     const at = {};
     for (const ep of eps) for (const s of ep.screens) {
       const own = PLACE_LOCALS[s.place]?.[s.stretch];
       if (!own || s.kind !== 'world' || s.mode !== 'talk' || s.plate?.closed || s.plate?.water || !['task-start', 'task-done'].includes(s.seg)) continue;
       const key = `${s.place}/${s.stretch}`;
-      at[key] ||= { shown: 0, cut: 0 };
-      const cutOf = pl => !!(pl?.judge || LOCAL_PROPS.has(pl?.prop));
-      if (cutOf(s.plate) || cutOf(stretchPlates(s.place, s.stretch, s.side)?.act)) at[key].cut++;
-      else if (Object.values(s.localFaces || {}).some(f => f.id === own)) at[key].shown++;
+      at[key] ||= { shown: 0 };
+      if (Object.values(s.localFaces || {}).some(f => f.id === own)) at[key].shown++;
     }
     expect(Object.keys(at).length).toBeGreaterThan(5);
-    for (const [k, v] of Object.entries(at)) expect(v.shown + v.cut, k).toBeGreaterThan(0);
+    for (const [k, v] of Object.entries(at)) expect(v.shown, k).toBeGreaterThan(0);
   });
 });

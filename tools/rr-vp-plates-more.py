@@ -51,7 +51,7 @@ for line in open(src, encoding='utf-8'):
     st = pl.setdefault('st', {}).setdefault(stretch, {})
     if side:
         st = st.setdefault('sides', {}).setdefault(side, {})
-    key = 'talk' if kind == 'talk' else ('alt2' if second else 'alt')
+    key = kind if kind in ('talk', 'wide') else ('alt2' if second else 'alt')
     st.setdefault(key, []).append(plate)
 for place, ps in props.items():
     more.setdefault(place, {})['props'] = ps

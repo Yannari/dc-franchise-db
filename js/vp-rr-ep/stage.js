@@ -99,6 +99,8 @@ export function createStage(holder, { faceOf, legLabel }) {
     let veh = '';
     const pl = s.plate || {};
     if (VEH.has(as) && pl.prop && s.mode === 'act') veh = `<img class="veh" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
+    // before and after the race, the team stands beside its vehicle (the sled was there only while they rode it)
+    else if (s.parked && s.mode === 'talk' && !opts.extraCls?.includes('crowd')) veh = `<img class="veh parked" src="${propUrl(s.plate.place || s.place, s.parked)}" alt="">`;
     // what the team rides in place (the mechanical bull): under them, bucking with them
     if (pl.under && pl.prop && s.mode === 'act' && s.work && s.teams?.[0] === id && !opts.extraCls?.includes('crowd')) veh = `<img class="veh mount" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
     if (pl.prop && String(pl.prop).match(/^(camel|emu|horse|bus|heli|boat|train|ute|sled|chariot)(@|$)/)) e.classList.add(pl.prop.split('@')[0]);
@@ -428,18 +430,46 @@ export function createStage(holder, { faceOf, legLabel }) {
     }
     // scenery a plate stands in its shot (`deco`: [cut-out, x, y, width, flip]): the polar bear out on the snow plain,
     // breathing, so it reads as an animal and not a sticker (2026-10-20, the user: a cut-out that's made goes in)
-    for (const [key, x, y, w, flip] of pl.deco || []) {
+    // (`[key, x, y, w, { flip, move, span }]`; move: 'wander' walks to and fro across `span`, 'surface' bobs up out of
+    // the water and back, 'fly' crosses the sky; the rest breathe. The phase runs on the wall clock, so a click doesn't
+    // send the bear back to the start of its walk.)
+    for (const [key, x, y, w, o0] of pl.deco || []) {
+      const o = typeof o0 === 'object' && o0 ? o0 : { flip: !!o0 };
       const d = prop(propUrl(pl.place || s.place, key), [x, y], w, 6);
       d.classList.add('deco');
-      const base = `translate(-50%,-100%)${flip ? ' scaleX(-1)' : ''}`;
+      const base = `translate(-50%,-100%)${o.flip ? ' scaleX(-1)' : ''}`;
       d.style.transform = base;
-      if (fresh) d.animate([{ transform: base }, { transform: `${base} scaleY(1.025)` }], { duration: 1800, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
+      const now = performance.now();
+      if (o.move === 'wander') {
+        const span = o.span ?? 12, dur = (o.dur ?? 14) * 1000, kf = [];
+        for (let i = 0; i <= 40; i++) {
+          const t = i / 40, out = t < 0.5, f = out ? t / 0.5 : (1 - t) / 0.5;
+          const bob = Math.abs(Math.sin(t * Math.PI * 16)) * -1.2;
+          const face = (out ? 1 : -1) * (o.flip ? -1 : 1);
+          kf.push({ left: `${x + span * f}%`, transform: `translate(-50%,calc(-100% + ${bob}%)) scaleX(${face})`, offset: t });
+        }
+        d.animate(kf, { duration: dur, iterations: Infinity, delay: -(now % dur) });
+      } else if (o.move === 'surface') {
+        const dur = (o.dur ?? 5) * 1000;
+        d.animate([{ transform: `${base} translateY(40%)`, opacity: 0 }, { transform: base, opacity: 1, offset: 0.25 }, { transform: base, opacity: 1, offset: 0.6 },
+          { transform: `${base} translateY(40%)`, opacity: 0, offset: 0.85 }, { transform: `${base} translateY(40%)`, opacity: 0 }], { duration: dur, iterations: Infinity, delay: -(now % dur) });
+      } else if (o.move === 'fly') {
+        const dur = (o.dur ?? 9) * 1000;
+        d.animate([{ left: '-15%' }, { left: '115%' }], { duration: dur, iterations: Infinity, delay: -(now % dur) });
+      } else if (fresh) d.animate([{ transform: base }, { transform: `${base} scaleY(1.025)` }], { duration: 1800, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
     }
     // Don and the locals
     if (s.don && s.donStand) personEl('Don', s.donStand, (s.size || 8) * 0.95);
     for (const [nm, at] of Object.entries(s.localAt || {})) {
       const f = s.localFaces?.[nm];
-      personEl(nm, at, (s.size || 8) * 0.85, { local: true, face: f?.url || null, label: (f?.name || nm).replace(/^(A|The) /i, '') });
+      const pe = personEl(nm, at, (s.size || 8) * 0.85, { local: true, face: f?.url || null, label: (f?.name || nm).replace(/^(A|The) /i, '') });
+      // a local is never just there: they watch, shake their head at a failed try, and cheer a team through
+      const img = pe.querySelector('img');
+      if (img && fresh) {
+        if (s.plan?.fail === k) img.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(-9deg)' }, { transform: 'rotate(9deg)' }, { transform: 'rotate(0)' }], { duration: 520, iterations: 2, delay: 250 });
+        else if (s.seg === 'task-done' && k === s.steps.length - 1) img.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-22%)' }, { transform: 'translateY(0)' }], { duration: 420, iterations: 2, delay: 200 });
+        else img.animate([{ transform: 'rotate(-2deg)' }, { transform: 'rotate(2deg)' }], { duration: 2400, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out', delay: -(performance.now() % 2400) });
+      }
     }
     // the rest of the race, behind them
     if (!(s.exitAt === k && !fresh)) for (const c of s.crowd || []) crowdEl(ep, s, c, k);

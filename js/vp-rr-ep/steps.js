@@ -21,7 +21,8 @@
 // its money and leader as recorded in that scene, a placement, an exit, a storyline beat).
 // The side panel folds them up to the current step (intelAt), never reading live state.
 import { PLACES } from '../rr/places.js';
-import { LOCALS, LOCAL_PROPS, localFor, placeLocal } from './locals.js';
+import { LOCALS, localFor, localUrl, placeLocal, personOf } from './locals.js';
+import { aboutOf } from './about.js';
 import { PLACE_PLATES, RACE, stretchPlates, standable } from './plates.js';
 
 export const TEAM_COLORS = ['#ff6fae', '#39c0ff', '#ffb020', '#4fd18b', '#b78cff', '#ff7a4a', '#5ee0d6', '#f2e94e', '#ff4f6d', '#8fb4ff', '#c7f464', '#e0a3ff',
@@ -99,6 +100,7 @@ export function episodeScreens(res, eps, i) {
     .map(s => ({ teams: s.data.teams || [], departs: s.data.t, lands: s.data.lands }));
   const clock0 = leg.clockStart ?? 420;
   const used = {};                  // plate rotation: the nth scene at a stretch gets its nth plate
+  const opened = new Set();         // the challenges (stretch|side) already seen this leg: the first moment there opens wide
   const nth = key => (used[key] = (used[key] ?? -1) + 1);
   const named = new Set();          // teams captioned in the confessional already this episode
   const screens = [];
@@ -173,7 +175,7 @@ export function episodeScreens(res, eps, i) {
     const sideLabel = seg.side && stretch?.sides ? stretch.sides.find(x => x.id === seg.side)?.label : null;
 
     // where it is shot
-    let mode = 'talk', plate = null, hudTask = stretch?.label?.toUpperCase() || '';
+    let mode = 'talk', plate = null, hudTask = stretch?.label?.toUpperCase() || '', parked = null;
     let placeFor = placeId;
     const k = seg.kind;
     if (k === 'don-narrate') {
@@ -192,15 +194,29 @@ export function episodeScreens(res, eps, i) {
         const v = (plates.views || []).filter(x => x.at !== 'mat'), n = nth(`${placeId}|views`);
         plate = v.length && n % 2 === 0 ? pick(v, n / 2) : (lastPlate?.place === placeId ? lastPlate : plates.opener); mode = 'narrate';
       }
-    } else if (k === 'don-opener') { plate = leg.n === 1 ? plates.opener : (prevLeg ? matPlate(prevLeg.place) : plates.opener); placeFor = leg.n === 1 ? placeId : (prevLeg?.place || placeId); mode = 'don'; hudTask = 'THE START'; }
+    } else if (k === 'don-opener') {
+      // the place, presented (2026-10-20, the user: "we need presentation of the actual place with a description and
+      // image by don"): Don says what it is over its own wide shots, one line a shot; then he opens the leg standing
+      // there (it was shot at the last leg's Chill Zone while he described the new place)
+      for (const { plate: pp, text } of aboutOf(placeId)) {
+        push({ kind: 'world', seg: 'place-present', ending: null, mode: 'narrate', place: placeId, stretch: null, side: null,
+          plate: { ...pp, place: placeId }, parked: null, teams: [], locals: [], localFaces: {}, don: false, narrator: true,
+          hud: { task: (leg.placeName || place?.name || '').toUpperCase(), clock: null }, timecard: null,
+          steps: [{ by: 'Don', part: 'say', text, team: null, intel: {}, viewer: true }], from: prevLeg?.place || null, to: placeId, who: [],
+          stretchKind: null, members: {}, t: seg.t });
+      }
+      plate = plates.opener; placeFor = placeId; mode = 'don'; hudTask = 'THE START';
+    }
     // the pick-a-team Boomerang happens at the start too, where the opener is, before anybody leaves
     else if (k === 'boomerang-vote' || (k === 'don-rule' && !seg.stretch)) {
       plate = leg.n === 1 ? plates.opener : (prevLeg ? matPlate(prevLeg.place) : plates.opener);
       placeFor = leg.n === 1 ? placeId : (prevLeg?.place || placeId); hudTask = 'THE START';
     }
     else if (k === 'don-demo') {
+      // Don shows the challenge wide (the whole course), else in the room it is done in, else where its moments are
       const sp = stretchPlates(placeId, seg.stretch, null);
-      plate = pick(sp?.talk, 0) || plates.opener; mode = 'demo';
+      const room = sp?.act && standable(sp.act) && IN_PLACE.has(sp.act.mode) ? sp.act : null;
+      plate = pick((sp?.wide || []).filter(standable), 0) || room || pick(sp?.talk, 0) || plates.opener; mode = 'demo';
     } else if (k === 'same-flight' || (seg.stretch === 'airport' && airportPhase(flights, segTeams[0], seg.t) === 'air')) {
       plate = { ...(RACE[k === 'same-flight' && segTeams.length > 2 ? 'galley' : 'cabin']), race: true }; mode = 'cabin'; hudTask = 'IN THE AIR';
       if (plate.seats && seg.who.length > 2) plate = { ...RACE.galley, race: true };
@@ -228,7 +244,19 @@ export function episodeScreens(res, eps, i) {
         const acts = [sp.act, ...(sp.alt || [])], acts2 = sp.act2 ? [sp.act2, ...(sp.alt2 || [])] : [];
         plate = (k === 'task-done' && acts2.length && acts2[ti % acts2.length]) || acts[ti % acts.length]; mode = 'act';
       }
-      else plate = pick(sp?.talk, nth(`${placeId}|${seg.stretch}|${seg.side || ''}`)) || sp?.act || (lastPlate?.place === placeId ? lastPlate : plates.opener);
+      else {
+        // (2026-10-20, the user: "the shots u are using are too close sometimes", "they dont even enter that dance
+        // academy"): a challenge opens wide (the first moment there this leg) and a crowd of teams is shot wide; a
+        // challenge done in one room has its moments in that room; else the stretch's own standing shots
+        const key = `${seg.stretch}|${seg.side || ''}`;
+        const wides = TASKS.has(stretch.kind) ? (sp?.wide || []).filter(standable) : [];
+        const room = TASKS.has(stretch.kind) && sp?.act && standable(sp.act) && IN_PLACE.has(sp.act.mode)
+          ? [sp.act, ...(sp.alt || []).filter(a => standable(a) && IN_PLACE.has(a.mode))] : [];
+        if (wides.length && (!opened.has(key) || segTeams.length >= 3)) plate = pick(wides, nth(`${placeId}|${key}|wide`));
+        else if (room.length) plate = pick(room, nth(`${placeId}|${key}|room`));
+        else plate = pick(sp?.talk, nth(`${placeId}|${key}`)) || sp?.act || (lastPlate?.place === placeId ? lastPlate : plates.opener);
+        opened.add(key);
+      }
       if (!standable(plate) && mode !== 'act') plate = pick(sp?.talk?.filter(standable), 0) || plates.opener;
       // a narrow corner (a stair landing) holds two teams: three or more go to the stretch's widest standing plate
       if (mode === 'talk' && segTeams.length > 2 && plate?.x && plate.x[1] - plate.x[0] < 11 * segTeams.length) {
@@ -236,6 +264,8 @@ export function episodeScreens(res, eps, i) {
         if (wide && wide.x[1] - wide.x[0] > plate.x[1] - plate.x[0]) plate = wide;
       }
       if (sideLabel) hudTask += ` · ${sideLabel.toUpperCase()}`;
+      // a team at a ride challenge stands beside its vehicle before and after the race (the sled, the rickshaw)
+      if (mode === 'talk' && TASKS.has(stretch.kind) && sp?.act?.prop && ['ride', 'push'].includes(sp.act.mode) && !personOf(placeId, sp.act.prop)) parked = sp.act.prop;
     } else if (seg.stretch === 'board' || seg.stretch === 'speed-bump' || seg.stretch === 'zip') {
       plate = (lastPlate?.place === placeId ? lastPlate : plates.opener);
       hudTask = { board: 'THE BOARD', 'speed-bump': 'SPEED BUMP', zip: 'THE ZIP-IT' }[seg.stretch];
@@ -299,19 +329,32 @@ export function episodeScreens(res, eps, i) {
       const speakerTeams = run.lines.map(l => teamOf[l.by]).filter(Boolean);
       const teams = [...new Set([...segTeams, ...speakerTeams])];
       const locals = [...new Set(run.lines.filter(l => l.by && l.by !== 'Don' && !teamOf[l.by]).map(l => l.by))];
+      // people are avatars (2026-10-20, the user: "the cutout use is still the fullbody"): a plate's full-body cut-out
+      // of a local (the farmer judging, the tango teacher dancing) comes off, and their avatar stands there instead
+      const persons = [];
+      if (plate) {
+        const pj = personOf(placeId, plate.judge?.[0]), pp = personOf(placeId, plate.prop);
+        const deco = (plate.deco || []).filter(d => !personOf(placeId, d[0]));
+        for (const d of plate.deco || []) if (personOf(placeId, d[0])) persons.push(personOf(placeId, d[0]));
+        if (pj || pp || deco.length !== (plate.deco || []).length) {
+          plate = { ...plate, ...(pj ? { judge: null } : {}), ...(pp ? { prop: null } : {}), deco };
+          if (pj) persons.push(pj);
+          if (pp) persons.push(pp);
+        }
+      }
       // the place's own local stands at their challenge as it starts and as a team gets through it (the fisherman at
-      // the welcome rite), unless the plate already has a cut-out of them
+      // the welcome rite), in a shot where the teams and the local are spread out together
       const own = placeLocal(placeId, seg.stretch);
-      const cutOf = pl => !!(pl?.judge || LOCAL_PROPS.has(pl?.prop));
-      const cutHere = cutOf(plate) || cutOf(stretchPlates(placeId, seg.stretch, seg.side)?.act);
-      // (in a talk shot, where the teams and the local are spread out together; the action shots place their own)
-      if (own && mode === 'talk' && standable(plate) && !plate?.closed && ['task-start', 'task-done'].includes(k) && !cutHere && !locals.some(n => localFor(n, placeId, seg.stretch)?.id === own)) locals.push(LOCALS[own]);
+      if (own && mode === 'talk' && standable(plate) && !plate?.closed && ['task-start', 'task-done'].includes(k)) persons.push(own);
+      for (const id of new Set(persons)) if (!locals.some(n => localFor(n, placeId, seg.stretch)?.id === id)) locals.push(LOCALS[id]);
       // each local's face (the user's avatars): who a speaking "A local" or "The judge" is, here
       const localFaces = Object.fromEntries(locals.map(n => [n, localFor(n, placeId, seg.stretch, seg.scene ?? seg.t)]).filter(([, f]) => f));
+      // (the people a plate stands there are exactly who they are, whatever their title says)
+      for (const id of new Set(persons)) localFaces[LOCALS[id]] = { id, name: LOCALS[id], url: localUrl(id) };
       const donSpeaks = run.lines.some(l => l.by === 'Don');
       const scr = {
         kind: mode === 'flight' ? 'flight' : 'world', seg: k, ending: seg.ending, mode, place: placeId, stretch: seg.stretch, side: seg.side,
-        plate, teams, locals, localFaces, don: donSpeaks && !['narrate', 'flight', 'landing'].includes(mode) || ['mat', 'demo', 'don'].includes(mode),
+        plate, parked, teams, locals, localFaces, don: donSpeaks && !['narrate', 'flight', 'landing'].includes(mode) || ['mat', 'demo', 'don'].includes(mode),
         narrator: donSpeaks && ['narrate', 'flight', 'landing'].includes(mode),
         hud: { task: hudTask, clock }, timecard: first ? timecard : null, steps,
         from: prevLeg?.place || null, to: placeId, who: [...(seg.who || [])], stretchKind: stretch?.kind || null,

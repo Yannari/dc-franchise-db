@@ -1,10 +1,8 @@
 # The user's plates the viewer had left out, each looked at (2026-10-20) and given its place: see
 # tools/rr-vp-plates-more.py. place | file | slot | g | x | more-json
 ice-river | arrive-22411592 | arrive | 88 | 6,94 |
-ice-river | chill-22411653 | views | | | {"at":"mat"}
 ice-river | chill-22412021 | views | | | {"at":"mat"}
 ice-river | task-22411747 | alt:ice-floes | 0 | 0,0 | {"water":true,"mode":"swim","path":[[8,62],[30,60],[55,62],[82,60]],"fx":"splash"}
-ice-river | task-22411924 | skip:a team on a sled is painted in, far off on the lake |
 ice-river | task-22412015 | views | | |
 ice-river | task-22412146 | alt:ice-floes | 0 | 0,0 | {"water":true,"mode":"hop","spots":[[14,48],[34,62],[52,52],[70,70],[88,56]],"path":[[14,48],[34,62],[52,52],[70,70],[88,56]],"fx":"splash"}
 fire-mountain-isle | arrive-22426227 | arrive | 90 | 4,42 |
@@ -132,7 +130,7 @@ swamp-prison | task-9442424 | talk:swamp-raft | 95 | 24,90 |
 swamp-prison | task-9442475 | alt:swamp-raft | 0 | 0,0 | {"water":true,"mode":"ride","prop":"raft","path":[[-14,82],[50,80],[114,82]],"fx":"splash"}
 swamp-prison | travel-9442151 | views | | |
 ice-floe | chill-9444869 | talk:igloo | 92 | 6,94 |
-ice-floe | task-9444616 | talk:narwhal | 92 | 6,60 | {"deco":[["narwhal",74,78,15]]}
+ice-floe | task-9444616 | talk:narwhal | 92 | 6,60 | {"deco":[["narwhal",74,78,15,{"move":"surface"}]]}
 ice-floe | task-9444866 | views | | |
 ice-floe | task-9445108 | talk:floe-run | 92 | 6,94 |
 pyramid-coast | chill-9446835 | skip:somebody is standing at the left edge | | |
@@ -250,12 +248,12 @@ home-city | - | patch:tower/skydeck:act | | | {"deco":[["helmet",90,49,3.5]]}
 red-sand-desert | - | patch:spices:act | | | {"judge":["merchant",0.9]}
 red-sand-desert | - | patch:stew:act | | | {"judge":["chef",0.9]}
 great-wall-hills | - | patch:skewers:act | | | {"judge":["vendor",0.9]}
-great-wall-hills | - | patch:skydive:act | | | {"deco":[["plane",68,24,13]]}
+great-wall-hills | - | patch:skydive:act | | | {"deco":[["plane",68,24,13,{"move":"fly"}]]}
 rock-north | - | patch:air-guitar:act | | | {"deco":[["meter",11,82,16]]}
 savanna-falls | - | patch:rhino:act | | | {"judge":["camera",0.35]}
 treasure-isles | - | patch:doubloons:talk0 | | | {"deco":[["mask",45,71,4]]}
 skyline-finale | - | patch:tower-stairs:act | | | {"deco":[["briefcase",50,36,6]]}
-tomb-sands | - | patch:reed-boat:act | | | {"deco":[["croc",86,64,13]]}
+tomb-sands | - | patch:reed-boat:act | | | {"deco":[["croc",82,64,13,{"move":"wander","span":8,"dur":20}]]}
 red-outback | - | patch:shearing:act | | | {"judge":["shears",0.35]}
 fire-mountain-isle | - | patch:statue:act | | | {"judge":["pineapple",0.3]}
 geyser-island | - | patch:feast-fossil/fossil:act | | | {"prop":"fossil"}
@@ -271,7 +269,7 @@ stilt-river | - | alt:catfish | | | {"like":"act","prop":"branded"}
 frozen-mine | - | patch:borehole:act | | | {"deco":[["ball",50,92,3]]}
 frozen-mine | - | patch:sauna-run:act | | | {"deco":[["donbox",88,94,7]]}
 tea-hills | - | patch:tea-basket:act | | | {"deco":[["basket",72,93,6]]}
-game-show-city | - | patch:pinball:act | | | {"deco":[["panda",82,74,10],["candy",14,92,6]]}
+game-show-city | - | patch:pinball:act | | | {"deco":[["panda",70,74,10,{"move":"wander","span":14}],["candy",14,92,6]]}
 glass-pyramid-city | - | alt:broken-statue | | | {"like":"act","prop":"head"}
 glass-pyramid-city | - | alt:broken-statue | | | {"like":"act","prop":"legs"}
 fishing-cove | - | patch:welcome-rite:act | | | {"deco":[["vinegar",34,92,3]]}
@@ -286,3 +284,12 @@ props | marble-temple-hill | | | | {"hurdle":null}
 props | grass-savanna | | | | {"gourd":null}
 marble-temple-hill | cutout/hurdle | skip:the hurdles are painted across the stadium track: the cut-out drew them twice |
 grass-savanna | cutout/gourd-on-post | skip:the gourds on their posts are painted into the gourds plate: the cut-out drew them twice |
+# Ice River, redone with the user (2026-10-20: "why dont u use more wide shot for the sledge race", "u could use both"
+# for the finish): the sled race opens and crowds on the wide plain, and races across it on three wide angles; the
+# Chill Zone on both finish-line plates
+ice-river | task-22411924 | wide:sled | 86 | 6,94 | {"deco":[["bear",72,70,4,{"move":"wander","span":14,"dur":22}]]}
+ice-river | present-22411651 | wide:sled | 88 | 20,94 |
+ice-river | task-22411924 | alt:sled | 0 | 0,0 | {"water":true,"mode":"ride","prop":"sled","path":[[-12,88],[40,86],[80,84],[114,82]],"fx":"snow","deco":[["bear",72,70,4,{"move":"wander","span":14,"dur":22}]]}
+ice-river | present-22411651 | alt:sled | 0 | 0,0 | {"water":true,"mode":"ride","prop":"sled","path":[[10,94],[38,84],[66,80],[110,86]],"fx":"snow"}
+ice-river | present-22411652 | alt:sled | 0 | 0,0 | {"water":true,"mode":"ride","prop":"sled","path":[[47,40],[43,58],[41,74],[38,92]],"fx":"snow"}
+ice-river | chill-22411653 | mat | 60 | 6,62 | {"matPos":[44,62],"scale":0.7}

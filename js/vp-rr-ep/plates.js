@@ -679,8 +679,8 @@ export const PLACE_PLATES = {
           path: [[12, 85], [30, 62], [50, 78], [68, 58], [88, 74]], fx: 'splash' }) },
       // one pulls the sled, the other rides it, past the bear
       // (the polar bear the rules and the lines talk about stands out on the plain: 2026-10-20, never on screen before)
-      sled: { talk: [p('task-22411840', 92, [6, 90], { deco: [['bear', 30, 52, 7]] })],
-        act: p('task-22411840', 92, [6, 94], { mode: 'ride', prop: 'sled', path: [[-14, 92], [50, 91], [114, 92]], fx: 'snow', deco: [['bear', 30, 52, 7]] }) },
+      sled: { talk: [p('task-22411840', 92, [6, 90], { deco: [['bear', 30, 52, 7, { move: 'wander', span: 16 }]] })],
+        act: p('task-22411840', 92, [6, 94], { mode: 'ride', prop: 'sled', path: [[-14, 92], [50, 91], [114, 92]], fx: 'snow', deco: [['bear', 30, 52, 7, { move: 'wander', span: 16 }]] }) },
       mat: { talk: [p('chill-22411602', 92, [6, 94], { matPos: [50, 92] })] },
     },
   },
@@ -978,6 +978,7 @@ for (const [id, m] of Object.entries(MORE)) {
     const s = (pl.st[sid] ||= { talk: [] });
     const merge = (into, add, base) => {
       if (add.talk) into.talk = [...(into.talk || []), ...add.talk.map(fill)];
+      if (add.wide) into.wide = [...(into.wide || []), ...add.wide.map(fill)];
       for (const k of ['alt', 'alt2']) if (add[k]) into[k] = [...(into[k] || []), ...add[k].map(a => (a.like ? { ...(k === 'alt2' ? base.act2 : base.act), ...a, like: undefined } : fill(a)))];
     };
     merge(s, sm, s);
@@ -1021,7 +1022,9 @@ export function stretchPlates(placeId, stretchId, side = null) {
   if (!s) return null;
   const sd = side && s.sides?.[side];
   return { talk: sd?.talk || s.talk || [], act: sd?.act ?? s.act ?? null, act2: sd?.act2 ?? s.act2 ?? null,
-    alt: (sd?.act ? sd.alt : s.alt) || sd?.alt || [], alt2: (sd?.act2 ? sd.alt2 : s.alt2) || sd?.alt2 || [] };
+    alt: (sd?.act ? sd.alt : s.alt) || sd?.alt || [], alt2: (sd?.act2 ? sd.alt2 : s.alt2) || sd?.alt2 || [],
+    // the challenge's wide shots: how it opens, and where a crowd of teams is shot (2026-10-20)
+    wide: sd?.wide || s.wide || [] };
 }
 
 export const standable = plate => plate && plate.people !== false && !plate.water;

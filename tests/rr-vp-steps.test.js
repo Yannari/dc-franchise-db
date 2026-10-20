@@ -45,7 +45,8 @@ describe('rr viewer steps', () => {
     each((ep, p, i) => {
       const e = p.eps[i];
       const aired = [...(e.previously?.lines || []), ...e.segments.filter(s => s.lines?.length).flatMap(s => s.lines)].map(l => l.text);
-      const shown = ep.screens.flatMap(s => s.steps).filter(s => ['say', 'beat', 'conf'].includes(s.part)).map(s => s.text);
+      // (the viewer's own: Don presenting the place over its wide shots, written in about.js, not aired by the engine)
+      const shown = ep.screens.flatMap(s => s.steps).filter(s => ['say', 'beat', 'conf'].includes(s.part) && !s.viewer).map(s => s.text);
       expect(shown).toEqual(aired);
     });
   });

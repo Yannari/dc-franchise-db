@@ -23,7 +23,8 @@
 import { PLACES } from '../rr/places.js';
 import { LOCALS, localFor, localUrl, placeLocal, personOf } from './locals.js';
 import { aboutOf } from './about.js';
-import { PLACE_PLATES, RACE, stretchPlates, standable } from './plates.js';
+import { OPENER_SHOTS } from './opener-shots.js';
+import { PLACE_PLATES, RACE, stretchPlates, standable, findPlate } from './plates.js';
 
 export const TEAM_COLORS = ['#ff6fae', '#39c0ff', '#ffb020', '#4fd18b', '#b78cff', '#ff7a4a', '#5ee0d6', '#f2e94e', '#ff4f6d', '#8fb4ff', '#c7f464', '#e0a3ff',
   '#7fe3a0', '#ffc1a1'];
@@ -205,7 +206,15 @@ export function episodeScreens(res, eps, i) {
           steps: [{ by: 'Don', part: 'say', text, team: null, intel: {}, viewer: true }], from: prevLeg?.place || null, to: placeId, who: [],
           stretchKind: null, members: {}, t: seg.t });
       }
-      plate = plates.opener; placeFor = placeId; mode = 'don'; hudTask = 'THE START';
+      // ...shot where the opener says Don is (opener-shots.js): a plate the place has, a made job, with the cut-outs
+      // he is with (a hammock, a sunlounger)
+      const os = (seg.lineId || '').split(',').map(id => OPENER_SHOTS[id]).find(Boolean);
+      let op = plates.opener;
+      if (os?.job) op = { f: os.job, g: 90, x: [10, 90] };
+      else if (os?.f) { try { op = findPlate(placeId, os.f); } catch { op = plates.opener; } }
+      if (op.water || op.people === false) op = { ...op, water: false, people: undefined, g: op.g || 90, x: op.x?.[1] > op.x?.[0] ? op.x : [10, 90] };
+      if (os?.deco) op = { ...op, deco: [...(op.deco || []), ...os.deco] };
+      plate = op; placeFor = placeId; mode = 'don'; hudTask = 'THE START';
     }
     // the pick-a-team Boomerang happens at the start too, where the opener is, before anybody leaves
     else if (k === 'boomerang-vote' || (k === 'don-rule' && !seg.stretch)) {
@@ -225,8 +234,13 @@ export function episodeScreens(res, eps, i) {
       if (ph === 'arrive') { plate = pick(plates.arrive, nth(`${placeId}|arrive`)) || plates.opener; hudTask = 'ARRIVAL'; }
       else { plate = { ...RACE.gate, race: true }; hudTask = 'THE AIRPORT'; }
     } else if (seg.stretch === 'duel') {
-      // the Head-to-Head stands just short of the mat
-      plate = matPlate(placeId, 0, false); hudTask = 'HEAD-TO-HEAD';
+      // the Head-to-Head stands just short of the mat: on the last stretch before it, never on the Chill Zone (the
+      // user, 2026-10-20: "make no sense that they are on the mat before the course is over")
+      const ss = place?.stretches || [];
+      const before = ss.slice(0, Math.max(0, ss.findIndex(x => x.kind === 'mat'))).reverse();
+      const matFiles = new Set((stretchPlates(placeId, 'mat', null)?.talk || []).map(p => p.f));
+      const pickFrom = st0 => { const sp0 = stretchPlates(placeId, st0.id, null); return [...(sp0?.talk || []), sp0?.act].filter(p => p && standable(p) && !p.closed && !p.mat && !matFiles.has(p.f)); };
+      plate = before.map(pickFrom).find(l => l.length)?.[0] || plates.opener; hudTask = 'HEAD-TO-HEAD';
     } else if (MAT_KINDS.has(k) || seg.stretch === 'mat' || seg.stretch === 'midmat') {
       const mid = seg.stretch === 'midmat' || !!scene?.data?.midmat;
       // (the finale's mat is the finish line: the race ends on a stage, not at a Chill Zone)

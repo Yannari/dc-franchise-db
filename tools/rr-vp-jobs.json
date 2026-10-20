@@ -238,6 +238,230 @@
       "new": true,
       "ref": "task-9439713",
       "why": "the rooftop tennis court at court level, without the launcher (task-9439713 has it painted tiny on the far court, so the teams stand at its scale; then the robot is the cut-out across the net)"
+    },
+    {
+      "place": "ice-river",
+      "src": "31-ice-river",
+      "file": "don-log-cabin",
+      "new": true,
+      "ref": "task-22411840",
+      "why": "Don's opener says he is here (inside a small log cabin: a stone fireplace with a roaring fire, a cosy armchair with a footstool, a mug of cocoa on a side table, a frosted window looking out on snow); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "bamboo-wall-hills",
+      "src": "44-bamboo-wall-hills",
+      "file": "don-tea-room",
+      "new": true,
+      "ref": "present-22422729",
+      "why": "Don's opener says he is here (a little tea room built into an ancient stone wall: low wooden table, a teapot and tiny cups, a bowl of dumplings, a window over misty green hills and bamboo); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "fishing-cove",
+      "src": "36-fishing-cove",
+      "file": "don-fish-kitchen",
+      "new": true,
+      "ref": "chill-22416099",
+      "why": "Don's opener says he is here (a cosy fisherman's kitchen: wooden table with a mug of tea and a plate of fried fish, rain streaming down the window, oilskins on a hook); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "fjord-sea",
+      "src": "42-fjord-sea",
+      "file": "don-fjord-cabin",
+      "new": true,
+      "ref": "arrive-22420234",
+      "why": "Don's opener says he is here (inside a red wooden cabin by a fjord: a fire in a cast-iron stove, a woolly blanket on a chair, a window over dark blue water and mountains); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "game-show-city",
+      "src": "30-game-show-city",
+      "file": "don-neon-crossing",
+      "new": true,
+      "ref": "arrive-22411160",
+      "why": "Don's opener says he is here (a giant street crossing at night under dozens of huge glowing video screens and neon signs, the crossing stripes empty); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "game-show-city",
+      "src": "30-game-show-city",
+      "file": "don-capsule-hotel",
+      "new": true,
+      "ref": "task-22411100",
+      "why": "Don's opener says he is here (a capsule hotel: a wall of small sleeping pods stacked two high, each with a little round door, soft blue lights); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "geyser-island",
+      "src": "06-geyser-island",
+      "file": "don-hot-spring",
+      "new": true,
+      "ref": "task-9437137",
+      "why": "Don's opener says he is here (a steaming natural hot spring pool among dark lava rocks, snowy mountains behind, steam rising); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "glass-pyramid-city",
+      "src": "35-glass-pyramid-city",
+      "file": "don-pavement-cafe",
+      "new": true,
+      "ref": "chill-22415411",
+      "why": "Don's opener says he is here (a pavement caf\u00e9 on a city street: little round tables and wicker chairs, a striped awning, the glass pyramid in the distance); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "glass-tower-gulf",
+      "src": "10-glass-tower-gulf",
+      "file": "don-rooftop-pool",
+      "new": true,
+      "ref": "present-9439561",
+      "why": "Don's opener says he is here (a rooftop infinity pool at the top of a sail-shaped glass tower, sun loungers, the desert sea and skyscrapers far below); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "great-falls",
+      "src": "43-great-falls",
+      "file": "don-honeymoon-suite",
+      "new": true,
+      "ref": "present-22421498",
+      "why": "Don's opener says he is here (a honeymoon hotel suite: a heart-shaped hot tub, rose petals, a big window with the great waterfalls outside); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "haunted-castle",
+      "src": "08-haunted-castle",
+      "file": "don-castle-hall",
+      "new": true,
+      "ref": "present-9438456",
+      "why": "Don's opener says he is here (the great hall of a gothic castle at night: a red velvet throne-like chair, candelabras, a long table, tall arched windows with a full moon); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "ice-floe",
+      "src": "18-ice-floe",
+      "file": "don-heated-tent",
+      "new": true,
+      "ref": "present-9444530",
+      "why": "Don's opener says he is here (inside a heated expedition tent on the ice: a little heater glowing orange, a camping stove with a pot of soup, thick blankets, the flap open on snow); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "neon-desert",
+      "src": "20-neon-desert",
+      "file": "don-neon-strip",
+      "new": true,
+      "ref": "task-9445798",
+      "why": "Don's opener says he is here (a night strip in a desert city: a wall of flashing neon signs and casino lights, a wedding chapel across the street with a glowing sign); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "neon-desert",
+      "src": "20-neon-desert",
+      "file": "don-card-table",
+      "new": true,
+      "ref": "task-9445798",
+      "why": "Don's opener says he is here (inside a casino: an empty green card table under a hanging lamp, chips stacked, slot machines glowing behind); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "secret-base-desert",
+      "src": "40-secret-base-desert",
+      "file": "don-trailer-roof",
+      "new": true,
+      "ref": "present-22418966",
+      "why": "Don's opener says he is here (an old trailer in the night desert under a sky full of stars, a deckchair on its flat roof, a bent antenna); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "snow-peaks",
+      "src": "33-snow-peaks",
+      "file": "don-mountain-hut",
+      "new": true,
+      "ref": "present-22413727",
+      "why": "Don's opener says he is here (inside a wooden mountain hut: a table by the window with a fondue pot bubbling, long forks, snowy peaks outside); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "tea-hills",
+      "src": "24-tea-hills",
+      "file": "don-veranda",
+      "new": true,
+      "ref": "present-9448187",
+      "why": "Don's opener says he is here (a wooden veranda of an old plantation house over green tea terraces in the mist: a wicker chair, a teapot and a plate of biscuits); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "tomb-sands",
+      "src": "29-tomb-sands",
+      "file": "don-palm-shade",
+      "new": true,
+      "ref": "present-22410404",
+      "why": "Don's opener says he is here (a palm tree by the river on the edge of the desert, deep shade under it, the great pyramid far behind); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "twin-tower-bridge",
+      "src": "38-twin-tower-bridge",
+      "file": "don-pub",
+      "new": true,
+      "ref": "present-22417609",
+      "why": "Don's opener says he is here (inside a cosy old pub at night: a crackling fireplace, a leather armchair, a small table with a cup of tea and a biscuit, dark wood and brass); no plate shows it (2026-10-20)"
+    },
+    {
+      "place": "race",
+      "src": "00-show",
+      "file": "hammock",
+      "new": true,
+      "kind": "cutout",
+      "prop": "hammock",
+      "why": "a Don opener has him with it: a striped hammock hanging empty between two posts, seen from the side (2026-10-20)"
+    },
+    {
+      "place": "race",
+      "src": "00-show",
+      "file": "sunlounger",
+      "new": true,
+      "kind": "cutout",
+      "prop": "sunlounger",
+      "why": "a Don opener has him with it: an empty white beach sunlounger, side view (2026-10-20)"
+    },
+    {
+      "place": "race",
+      "src": "00-show",
+      "file": "lifeguard-chair",
+      "new": true,
+      "kind": "cutout",
+      "prop": "lifeguard-chair",
+      "why": "a Don opener has him with it: an empty tall wooden lifeguard chair, side view (2026-10-20)"
+    },
+    {
+      "place": "race",
+      "src": "00-show",
+      "file": "hay-bale",
+      "new": true,
+      "kind": "cutout",
+      "prop": "hay-bale",
+      "why": "a Don opener has him with it: a single round hay bale (2026-10-20)"
+    },
+    {
+      "place": "race",
+      "src": "00-show",
+      "file": "camping-chair",
+      "new": true,
+      "kind": "cutout",
+      "prop": "camping-chair",
+      "why": "a Don opener has him with it: an empty folding camping chair, three-quarter view (2026-10-20)"
+    },
+    {
+      "place": "race",
+      "src": "00-show",
+      "file": "hot-tub",
+      "new": true,
+      "kind": "cutout",
+      "prop": "hot-tub",
+      "why": "a Don opener has him with it: an outdoor wooden hot tub, steaming, empty, a little snow on the rim (2026-10-20)"
+    },
+    {
+      "place": "race",
+      "src": "00-show",
+      "file": "make-up-chair",
+      "new": true,
+      "kind": "cutout",
+      "prop": "make-up-chair",
+      "why": "a Don opener has him with it: an empty tall director-style make-up chair, black canvas (2026-10-20)"
+    },
+    {
+      "place": "race",
+      "src": "00-show",
+      "file": "rocking-chair",
+      "new": true,
+      "kind": "cutout",
+      "prop": "rocking-chair",
+      "why": "a Don opener has him with it: an empty wooden rocking chair on its rockers, side view (2026-10-20)"
     }
   ]
 }

@@ -44,14 +44,16 @@ describe('rr viewer repaint jobs', () => {
   it('has every job (tools/rr-vp-jobs.json) wired: its repaint once it is back, a stand-in until then', () => {
     const jobs = JSON.parse(readFileSync('tools/rr-vp-jobs.json', 'utf8')).jobs;
     const src = readFileSync('js/vp-rr-ep/plates.js', 'utf8');
+    // (Don's openers' jobs are wired where his openers are shot, 2026-10-20)
+    const openers = readFileSync('js/vp-rr-ep/opener-shots.js', 'utf8');
     expect(jobs.length).toBeGreaterThan(0);
     for (const j of jobs) {
       // a view by repaint(), a cut-out by REPAINTED.has() (its prop or judge switched on)
-      expect(src.includes(`repaint('${j.file}'`) || src.includes(`REPAINTED.has('${j.file}')`), j.file).toBe(true);
+      expect(src.includes(`repaint('${j.file}'`) || src.includes(`REPAINTED.has('${j.file}')`) || openers.includes(`'${j.file}'`), j.file).toBe(true);
       // a repaint of an existing frame is hashed; a NEW view or cut-out switches on when its file appears
       if (!j.new) expect(j.sha256, `${j.file}: run python tools/rr-vp-repaints.py --jobs`).toMatch(/^[0-9a-f]{64}$/);
       else expect(j.why, j.file).toBeTruthy();
-      expect(PLACE_PLATES[j.place], j.place).toBeTruthy();
+      expect(PLACE_PLATES[j.place] || j.place === 'race', j.place).toBeTruthy();
     }
   });
 });

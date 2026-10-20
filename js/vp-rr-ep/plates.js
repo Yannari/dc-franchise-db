@@ -989,9 +989,10 @@ for (const [id, m] of Object.entries(MORE)) {
 // Each stage of a staged challenge, its own shot (2026-10-20: challenges built in stages, js/rr/places `stages`):
 // { label, plate, alt?, fail? } per stage: `plate` (and `alt`, a team's own angle) for the stage passed, `fail` for
 // where it goes wrong there. A plate here is one the place already has, by file, with what this stage changes.
+export const findPlate = (id, f, over = {}) => plateOf(id, f, over);
 const plateOf = (id, f, over = {}) => {
   const pl = PLACE_PLATES[id];
-  const all = [pl.opener, ...(pl.arrive || []), ...(pl.views || []), ...Object.values(pl.st).flatMap(s => [...(s.talk || []), s.act, s.act2, ...(s.alt || []), ...(s.wide || []),
+  const all = [pl.opener, ...(pl.arrive || []), ...(pl.title ? [{ f: pl.title, g: 92, x: [10, 90] }] : []), ...(pl.views || []), ...Object.values(pl.st).flatMap(s => [...(s.talk || []), s.act, s.act2, ...(s.alt || []), ...(s.wide || []),
     ...Object.values(s.sides || {}).flatMap(d => [...(d.talk || []), d.act, ...(d.alt || [])])])].filter(Boolean);
   // (the shot doing that thing first: the emu throw, not the plain fence shot of the same plate)
   const found = (over.mode && all.find(x => x.f === f && x.mode === over.mode)) || all.find(x => x.f === f && !x.mode) || all.find(x => x.f === f);

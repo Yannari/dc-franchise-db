@@ -27,6 +27,15 @@ spec = importlib.util.spec_from_file_location('up', os.path.join(ROOT, 'tools', 
 up = importlib.util.module_from_spec(spec); spec.loader.exec_module(up)
 
 
+def in_edit(stem):
+    # a job's result saved beside its prompt in its own edit/ folder (edit/don-openers/<job>/<job>.png, 2026-10-20)
+    for root, _, files in os.walk(os.path.join(FRAMES, 'edit')):
+        for f in files:
+            if os.path.splitext(f)[0] == stem and f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+                return os.path.join(root, f)
+    return None
+
+
 def sha(p):
     return hashlib.sha256(open(p, 'rb').read()).hexdigest()
 
@@ -153,7 +162,7 @@ def main():
     for j in data['jobs']:
         if j.get('new') and j.get('kind') == 'cutout':
             # a new cut-out: trimmed to what is drawn, up to 1280 wide, as the place's c-<prop>.webp
-            src = find(os.path.join(FRAMES, 'done', j['src'], 'cutout'), j['file'])
+            src = find(os.path.join(FRAMES, 'done', j['src'], 'cutout'), j['file']) or in_edit(j['file'])
             if not src:
                 continue
             im = Image.open(src).convert('RGBA')
@@ -167,8 +176,8 @@ def main():
             print('cut-out back:', j['place'], j['file'], '->', os.path.relpath(dst, ROOT))
             continue
         if j.get('new'):
-            # a new view: switched on as soon as it is in done/
-            src = find(os.path.join(FRAMES, 'done', j['src']), j['file'])
+            # a new view: switched on as soon as it is in done/ (or saved beside its prompt anywhere in edit/)
+            src = find(os.path.join(FRAMES, 'done', j['src']), j['file']) or in_edit(j['file'])
             if not src:
                 continue
             im = Image.open(src).convert('RGB')

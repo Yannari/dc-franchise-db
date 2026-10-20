@@ -121,4 +121,28 @@ describe('rr new twists', () => {
     expect(rules['head-to-head']).toMatch(/Head-to-Head/);
     expect(rules.intersection).toMatch(/Intersection/);
   }, 400000);
+
+  // the user, 2026-10-20: "make no sense that they are on the mat before the course is over": the duel was shot on the
+  // Chill Zone with its mat, teams standing on it before they had checked in
+  it('shoots the Head-to-Head short of the mat: never on the Chill Zone', async () => {
+    const { episodeScreens } = await import('../js/vp-rr-ep/steps.js');
+    const { stretchPlates } = await import('../js/vp-rr-ep/plates.js');
+    let n = 0;
+    for (const [seed, pins] of [[41, { 5: 'head-to-head' }], [42, { 3: 'head-to-head' }]]) {
+      const { cast, teams } = raceCast(12, seed);
+      setPlayers(cast);
+      const res = playRaceSeason({ teams, seed, options: { twistPins: pins } });
+      const aired = airSeason(res);
+      aired.forEach((_, i) => {
+        for (const s of episodeScreens(res, aired, i).screens) {
+          if (s.stretch !== 'duel' || s.kind !== 'world') continue;
+          n++;
+          const mats = new Set((stretchPlates(s.place, 'mat')?.talk || []).map(p => p.f));
+          expect(mats.has(s.plate.f), `${s.id} ${s.plate.f}`).toBe(false);
+          expect(s.plate.mat ?? null).toBeNull();
+        }
+      });
+    }
+    expect(n).toBeGreaterThan(0);
+  }, 400000);
 });

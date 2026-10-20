@@ -74,7 +74,8 @@ describe('rr place lines on air', () => {
 
   it("a place's own opener airs when it has one, and Don shows every challenge", async () => {
     await setup();
-    const i = eps.findIndex(ep => ep.segments.some(s => s.kind === 'don-opener' && String(s.lineId).startsWith('rsd.')));
+    // (its own: rsd.* or dt.op6, both written for it; one waits for its plate, opener-shots.js)
+    const i = eps.findIndex(ep => ep.segments.some(s => s.kind === 'don-opener' && /^(rsd\.|dt\.op6)/.test(String(s.lineId))));
     expect(i, 'Red Sand Desert opened with its own lines').toBeGreaterThanOrEqual(0);
     const ep = eps[i];
     for (const task of ['spices', 'stew']) expect(ep.segments.some(s => s.kind === 'don-demo' && s.stretch === task), task).toBe(true);
@@ -82,7 +83,7 @@ describe('rr place lines on air', () => {
 
   it('at a challenge with its own lines, most teams are seen doing the challenge', async () => {
     await setup();
-    const ep = eps.find(ep => ep.segments.some(s => s.kind === 'don-opener' && String(s.lineId).startsWith('rsd.')));
+    const ep = eps.find((ep, i) => res.legs[i].place === 'red-sand-desert');
     for (const task of ['spices', 'stew']) {
       const at = ep.segments.filter(s => s.stretch === task);
       const teams = new Set(at.flatMap(s => s.teams));

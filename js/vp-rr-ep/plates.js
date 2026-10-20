@@ -441,6 +441,87 @@ export const PLACE_PLATES = {
       mat: { talk: [p('present-9442909', 88, [12, 88], { mat: [41, 79] })] },
     },
   },
+  // ── batch 3 (LEGS.txt 16-19) ──
+  'fjord-peaks': {
+    src: '16-fjord-peaks', title: 'travel-9443418', opener: p('arrive-9443367', 84, [6, 94]),
+    arrive: [p('arrive-9443367', 84, [6, 94])],
+    props: { harness: 'bungee-harness', fish: 'native-fish', judges: 'dance-judges' },
+    st: {
+      // on the platform beside the train (a ride once the train's cut-out is back from Coast Palace's job)
+      'junction-train': { talk: [p('arrive-9443358', 92, [6, 94])],
+        act: repaint('train-carriage', p('travel-9443450', 90, [6, 94], { mode: 'ride', prop: 'train@coast-palace', path: [[-20, 90], [50, 89], [120, 90]] }), undefined) },
+      'jump-dance': {
+        talk: [p('chill-9443649', 90, [20, 80])],
+        sides: {
+          // off the bridge on the cord, a fish caught bare-handed at the bottom
+          jump: { talk: [p('task-9443374', 84, [6, 94])],
+            act: p('task-9443534', 86, [6, 94], { mode: 'bungee', prop: 'harness', propW: 0.8, fx: 'splash' }) },
+          // the war dance on the stage, the elders judging
+          dance: { talk: [p('task-9443648', 90, [20, 80])],
+            act: p('task-9443382', 90, [6, 94], { mode: 'dance', prop: 'judges', propW: 1.3, fx: 'dust' }) },
+        },
+      },
+      'lake-run': { talk: [p('task-9443766', 92, [6, 94])],
+        act: p('task-9443766', 92, [6, 94], { mode: 'run', path: [[12, 92], [50, 92], [88, 92]], fx: 'dust' }) },
+      mat: { talk: [p('chill-9443386', 82, [6, 70], { mat: [35, 79] }), p('chill-9443672', 82, [6, 80], { mat: [44, 79] })] },
+    },
+  },
+  'prairie-ranch': {
+    src: '17-prairie-ranch', title: 'present-9443998', opener: p('present-9444391', 92, [6, 94]),
+    arrive: [p('arrive-9444012', 92, [6, 94])],
+    props: { bull: 'Empty mechanical rodeo bull-6', timer: 'Red 00_08 Digital Timer-3', pot: 'Teal stockpot filled with pork and beans-5' },
+    st: {
+      'ranch-pickup': { talk: [p('arrive-9443918', 92, [6, 94])],
+        act: p('arrive-9443918', 92, [6, 94], { mode: 'ride', prop: 'jeep@savanna-falls', path: [[-16, 93], [50, 92], [116, 93]], fx: 'dust' }) },
+      // the beans table on the cliff top is a job (edit/); meanwhile the rocks by the cliff
+      beans: { talk: [repaint('task-beans-table', p('task-beans-table', 92, [6, 94]), p('task-9444112', 94, [44, 94]))],
+        act: repaint('task-beans-table', p('task-beans-table', 92, [6, 94], { mode: 'eat', prop: 'pot', propW: 0.9, fx: 'steam' }),
+          p('task-9444112', 94, [44, 94], { mode: 'eat', prop: 'pot', propW: 0.9, fx: 'steam' })) },
+      // eight seconds on the bull, the clock on the wall of the barn
+      bull: { talk: [p('task-9444253', 95, [6, 94], { closed: true })],
+        act: p('task-9444232', 95, [6, 94], { closed: true, mode: 'bull', prop: 'bull', under: true, judge: ['timer', 1.0], fx: 'dust' }) },
+      'cliff-run': { talk: [p('present-9444391', 92, [6, 94])],
+        act: p('present-9444391', 92, [6, 94], { mode: 'run', path: [[12, 92], [50, 92], [88, 92]], fx: 'dust' }) },
+      mat: { talk: [p('chill-9444113', 56, [6, 62], { mat: [42, 54], scale: 0.7 })] },
+    },
+  },
+  'ice-floe': {
+    src: '18-ice-floe', title: 'present-9444530', opener: p('present-9445072', 92, [6, 94]),
+    arrive: [p('arrive-9444551', 92, [24, 94])],
+    props: { plane: 'Cartoon bush plane with snow skis-3', blocks: 'Cartoon cyan snow-ice building block-5', narwhal: 'Cartoon narwhal with a tapered tusk-8',
+      local: 'Fur-hooded parka cartoon character-7', ring: 'Golden Cartoon Toss Ring-9', igloo: 'Pale Cyan Igloo Cutout-4', saw: 'Scalloped Ice Saw Cartoon Cutout-6' },
+    st: {
+      'tundra-hop': { talk: [p('arrive-9444551', 92, [24, 94])],
+        act: p('present-9444732', 0, [0, 0], { water: true, mode: 'ride', prop: 'plane', path: [[-22, 44], [50, 38], [122, 30]] }) },
+      // rings found in the snow, thrown at the narwhals' tusks in the open water
+      narwhal: { talk: [p('task-9444662', 90, [6, 94])],
+        act: p('task-9444731', 92, [6, 94], { mode: 'toss', prop: 'ring', propW: 0.45, fx: 'splash' }) },
+      // blocks sawn and stacked: the igloo grows with the work, the local judging it
+      igloo: { talk: [p('task-9445014', 93, [6, 94])],
+        act: p('task-9444815', 56, [6, 94], { mode: 'saw', prop: 'igloo', judge: ['local', 0.6], fx: 'snow' }) },
+      'floe-run': { talk: [p('task-9444662', 90, [6, 94])],
+        act: p('task-9444662', 90, [6, 94], { mode: 'run', path: [[12, 90], [50, 90], [88, 90]], fx: 'snow' }) },
+      // the ice Chill Zone is a job (edit/); meanwhile the igloo with the mat put down in front of it
+      mat: { talk: [repaint('chill-ice-mat', p('chill-ice-mat', 92, [6, 94], { matPos: [50, 90] }), p('chill-9444869', 94, [6, 94], { matPos: [50, 93] }))] },
+    },
+  },
+  'dragon-isle': {
+    src: '19-dragon-isle', title: 'travel-9445205', opener: p('task-9445378', 90, [6, 94]),
+    arrive: [p('arrive-9445165', 78, [40, 94])],
+    props: { textiles: 'Colorful woven textile stack-4', komodo: 'Stocky Komodo Dragon Side Profile-5', vial: 'Stylized green saliva vial-3' },
+    st: {
+      'isle-boat': { talk: [p('arrive-9445165', 78, [40, 94])],
+        act: p('arrive-9445132', 0, [0, 0], { water: true, mode: 'ride', prop: 'boat@coast-palace', path: [[-18, 76], [44, 74], [118, 76]], fx: 'splash' }) },
+      // the dragons under the stilt huts: a vial of drool, slowly
+      venom: { talk: [p('task-9445378', 90, [6, 94])],
+        act: p('task-9445138', 93, [6, 94], { mode: 'venom', prop: 'vial', propW: 0.38 }) },
+      rugs: { talk: [p('task-9445351', 93, [6, 94])],
+        act: p('task-9445496', 92, [22, 78], { mode: 'search', prop: 'textiles', fx: 'dust' }) },
+      'hill-run': { talk: [p('travel-9445205', 92, [6, 60])],
+        act: p('travel-9445205', 92, [6, 94], { mode: 'run', path: [[12, 92], [50, 92], [88, 92]], fx: 'dust' }) },
+      mat: { talk: [p('chill-9445670', 88, [6, 94], { matPos: [50, 86] })] },
+    },
+  },
 };
 
 // All the plate files a place needs (the asset copier and the tests read this)

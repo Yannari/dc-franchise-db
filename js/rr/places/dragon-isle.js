@@ -5,8 +5,6 @@
 export default {
   id: 'dragon-isle', name: 'Dragon Isle', recap: 'collecting dragon drool and digging through a mountain of rugs',
   region: 'far-east', map: { x: 82, y: 58 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['boat', 'foot'],
   stretches: [
     { id: 'isle-boat', kind: 'travel', mode: 'boat', base: 40, cost: 20, plate: 'harbour, wooden boat', label: 'Boat to the island',

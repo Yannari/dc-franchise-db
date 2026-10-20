@@ -521,6 +521,8 @@ const STAGED = ['marks', 'as', 'pos', 'plan', 'swimmers', 'inset', 'donStand', '
 // The work's cut-out beside the team doing it (a sand palace, a mitten, a platter), on the side with more room, and the
 // local who judges it (the surfer boy, the carnival dancer, the coach) beyond it, as tall as a racer: placed here so
 // the teams behind the shot keep clear of them (planCrowd) and the stage only draws them.
+// the works whose cut-out is built up by the work (a sand palace, an igloo): drawn growing, a third of it at the start
+export const GROWS = new Set(['sculpt', 'saw']);
 function placeWorkProps(s, marks) {
   const pl = s.plate;
   if (!s.work || !pl?.prop) return;
@@ -528,10 +530,11 @@ function placeWorkProps(s, marks) {
   const z = s.size || 8, off = z * 1.9 + 4;
   const others = s.teams.slice(1).map(id => marks[id]?.[0]).filter(x => x != null);
   const room = dir => { const x = anchor[0] + dir * off; return Math.min(x - 4, 96 - x, ...others.map(o => Math.abs(o - x))); };
-  const px = Math.max(6, Math.min(94, anchor[0] + (room(-1) > room(1) ? -off : off)));
+  // (`under`: the cut-out is what they ride or stand on, a mechanical bull: right under them)
+  const px = pl.under ? anchor[0] : Math.max(6, Math.min(94, anchor[0] + (room(-1) > room(1) ? -off : off)));
   const gy = Array.isArray(pl.g) ? pl.g[1] : pl.g;
   // (`propW`: a plate's own scale for its cut-out, a racket smaller than a sand palace)
-  const w = z * 1.5 * (s.work === 'sculpt' ? 1.5 : 1) * (pl.propW || 1);
+  const w = z * 1.5 * (GROWS.has(s.work) ? 1.5 : 1) * (pl.propW || 1);
   s.workProp = { at: [Math.round(px * 10) / 10, gy], w };
   if (pl.judge) {
     const [, ja] = pl.judge, jw = z * 1.35 * ja, side = px >= anchor[0] ? 1 : -1;
@@ -762,7 +765,9 @@ function liftFor(s) {
 // the beam and the vault; a swing on a vine, a coffin pushed)
 // (batch 2: a squeegee on the glass, a tennis serve, a spoon at a cell wall; over the hot coals in grass skirts)
 const IN_PLACE = new Set(['search', 'eat', 'draw', 'sweat', 'guitar', 'photo', 'bob', 'chase', 'build', 'shear', 'bungee', 'sculpt', 'chip', 'mitten', 'sew', 'beam',
-  'squeegee', 'serve', 'spoon']);
+  'squeegee', 'serve', 'spoon',
+  // (batch 3: the war dance, the mechanical bull, rings at a narwhal, sawing ice for an igloo, a vial of dragon drool)
+  'dance', 'bull', 'toss', 'saw', 'venom']);
 const PATH_MODES = new Set(['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride', 'swing', 'push', 'coals']);
 const TASK_KINDS = new Set(['either', 'botch', 'allin', 'route', 'superteam']);
 export const MAX_CROWD = 2;
@@ -822,7 +827,7 @@ function planCrowd(s, ctx) {
   const fgX = Object.values(s.marks || {}).map(m => [m[0], fz]).concat([s.donStand, s.boxAt, ...Object.values(s.localAt || {})].filter(Boolean).map(m => [m[0], fz * 0.7]))
     .concat(s.matAt ? [[s.matAt[0], (s.size || 8) * 1.4]] : [])
     // the work's cut-out and its judge: nobody behind the shot stands in front of them
-    .concat([s.workProp, s.judgeAt].filter(Boolean).map(p => [p.at[0], p.w / 2]));
+    .concat([s.workProp, s.judgeAt].filter(p => p && !(p === s.workProp && s.plate?.under)).map(p => [p.at[0], p.w / 2]));
   if (closedShot(s)) return;
   // everybody in the scene is in front of it: a team that talks or is part of it is never an extra
   const inScene = new Set([...s.teams, ...(s.who || []).map(n => ctx.teamOf?.[n]).filter(Boolean),
@@ -1392,7 +1397,8 @@ export function driftBox(b) {
 const WORK_PAD = { chase: [0, 0, 3, 0], lean: [0, 0, 1.1, 0], dunk: [0, 0, 0, 2.9], headbang: [0.4, 0.6, 0.4, 0.6], dig: [0.3, 0.5, 0.3, 1.3], eat: [0.6, 0.3, 0.6, 0.4],
   draw: [0.4, 0, 0.4, 0], sweat: [0.2, 0, 0.5, 0.6], build: [0.2, 1.1, 0.2, 0.4], shear: [0, 0, 0.4, 0], run: [0.3, 1.7, 0.3, 0],
   swing: [0.5, 0.3, 0.5, 0.3], coals: [0.3, 1.6, 0.3, 0], squeegee: [0.6, 0.4, 0.6, 0.2], serve: [0.6, 0.8, 0.6, 0.3], spoon: [0.3, 0.5, 0.3, 1.3],
-  sculpt: [0.3, 0.3, 0.3, 1.3], chip: [0.2, 1.1, 0.2, 0.4], mitten: [0.6, 0.5, 0.6, 0.5], sew: [0.4, 0, 0.4, 0], beam: [0.6, 1.3, 0.6, 0.4] };
+  sculpt: [0.3, 0.3, 0.3, 1.3], dance: [0.6, 1.2, 0.6, 0.2], bull: [0.9, 1.4, 0.9, 0.4], toss: [0.3, 0.6, 0.6, 0.2], saw: [0.4, 0.2, 0.4, 0.3],
+  venom: [0.6, 0.2, 0.6, 0.6], chip: [0.2, 1.1, 0.2, 0.4], mitten: [0.6, 0.5, 0.6, 0.5], sew: [0.4, 0, 0.4, 0], beam: [0.6, 1.3, 0.6, 0.4] };
 export function padOf(f, z) {
   // a coffin pushed in front takes its own room ahead of the faces (style.js .tok.push .veh)
   const w = f.work === 'push' ? [0, 0, 1.6 * z, 0] : WORK_PAD[f.work] || [0, 0, 0, 0];

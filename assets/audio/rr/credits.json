@@ -1718,5 +1718,325 @@
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
   "cut": "0s + 40s",
   "lift": 3.4
+ },
+ "fjord-peaks/opener.mp3": {
+  "title": "Magistar",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900003",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Magistar.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "fjord-peaks/travel.mp3": {
+  "title": "Ascending the Vale",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600064",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ascending%20the%20Vale.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "fjord-peaks/challenge.mp3": {
+  "title": "Killers",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600024",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Killers.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "fjord-peaks/struggle.mp3": {
+  "title": "Lost Frontier",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300039",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Lost%20Frontier.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.4
+ },
+ "fjord-peaks/chill-zone.mp3": {
+  "title": "Heart of Nowhere",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400045",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heart%20of%20Nowhere.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "fjord-peaks/elimination.mp3": {
+  "title": "Night Vigil",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900047",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Night%20Vigil.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.9
+ },
+ "fjord-peaks/recap.mp3": {
+  "title": "Burnt Spirit",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700053",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Burnt%20Spirit.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "fjord-peaks/interview.mp3": {
+  "title": "Ever Mindful",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700033",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ever%20Mindful.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "prairie-ranch/opener.mp3": {
+  "title": "Guts and Bourbon",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400032",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Guts%20and%20Bourbon.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "prairie-ranch/travel.mp3": {
+  "title": "Hyperfun",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400038",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Hyperfun.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "prairie-ranch/challenge.mp3": {
+  "title": "Robo-Western",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100675",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Robo-Western.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "prairie-ranch/struggle.mp3": {
+  "title": "Smoking Gun",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100345",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Smoking%20Gun.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.0
+ },
+ "prairie-ranch/chill-zone.mp3": {
+  "title": "Drankin Song",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500021",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Drankin%20Song.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "prairie-ranch/elimination.mp3": {
+  "title": "Pale Rider",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100798",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Pale%20Rider.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.0
+ },
+ "prairie-ranch/recap.mp3": {
+  "title": "Cowboy Sting",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400015",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cowboy%20Sting.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "prairie-ranch/interview.mp3": {
+  "title": "Neo Western",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100615",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Neo%20Western.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 3.7
+ },
+ "ice-floe/opener.mp3": {
+  "title": "Thunderbird",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600017",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Thunderbird.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "ice-floe/travel.mp3": {
+  "title": "Mirage",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100877",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mirage.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "ice-floe/challenge.mp3": {
+  "title": "Static Motion",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200062",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Static%20Motion.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "ice-floe/struggle.mp3": {
+  "title": "Controlled Chaos",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200059",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Controlled%20Chaos.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "ice-floe/chill-zone.mp3": {
+  "title": "New Direction",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100677",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/New%20Direction.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "ice-floe/elimination.mp3": {
+  "title": "Virtutes Instrumenti",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100801",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Virtutes%20Instrumenti.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 2.2
+ },
+ "ice-floe/recap.mp3": {
+  "title": "Thunder Dreams",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200063",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Thunder%20Dreams.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 5.0
+ },
+ "ice-floe/interview.mp3": {
+  "title": "Drone in D",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200044",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Drone%20in%20D.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "dragon-isle/opener.mp3": {
+  "title": "Mystic Force",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500060",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mystic%20Force.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "dragon-isle/travel.mp3": {
+  "title": "Artifact",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100324",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Artifact.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "dragon-isle/challenge.mp3": {
+  "title": "Blue Scorpion",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100304",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Blue%20Scorpion.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "dragon-isle/struggle.mp3": {
+  "title": "Confused State",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100453",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Confused%20State.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 3.4
+ },
+ "dragon-isle/chill-zone.mp3": {
+  "title": "Finding Movement",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100693",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Finding%20Movement.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 3.3
+ },
+ "dragon-isle/elimination.mp3": {
+  "title": "Immersed",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600010",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Immersed.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": -0.0
+ },
+ "dragon-isle/recap.mp3": {
+  "title": "Trouble with Tribals",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000002",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Trouble%20with%20Tribals.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "dragon-isle/interview.mp3": {
+  "title": "Eastminster",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100719",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Eastminster.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 4.8
  }
 }

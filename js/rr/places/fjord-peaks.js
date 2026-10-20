@@ -5,8 +5,6 @@
 export default {
   id: 'fjord-peaks', name: 'Fjord Peaks', recap: 'bungee jumping for a fish or learning a war dance at the gorge',
   region: 'far-east', map: { x: 93, y: 80 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['train', 'foot'],
   stretches: [
     { id: 'junction-train', kind: 'travel', mode: 'train', base: 45, cost: 20, plate: 'station platform', label: 'Train to the junction',

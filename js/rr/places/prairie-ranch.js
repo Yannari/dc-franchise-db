@@ -5,8 +5,6 @@
 export default {
   id: 'prairie-ranch', name: 'Prairie Ranch', recap: 'eating a whole pot of beans and riding a mechanical bull',
   region: 'north', map: { x: 18, y: 26 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['drive', 'foot'],
   stretches: [
     { id: 'ranch-pickup', kind: 'travel', mode: 'drive', base: 40, cost: 20, plate: 'prairie road', label: 'Pickup to the ranch',

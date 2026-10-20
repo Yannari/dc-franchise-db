@@ -66,6 +66,17 @@ FORCE_WATER.update({
     'swamp-prison/task-9442410': [(0, .22, 1, 1, 160, 200)],
     'swamp-prison/chill-9442555': [(0, .76, 1, 1, 160, 215)],
 })
+# from batch 3 on, the colour rule for leaves is off: in these plates green is mostly hills and lawns. A plate's leaves
+# move only when it is listed here (checked by eye)
+STRICT_WIND = {'fjord-peaks', 'prairie-ranch', 'ice-floe', 'dragon-isle', 'neon-desert', 'pyramid-coast', 'stilt-river', 'frozen-mine',
+               'tea-hills', 'pampas-ranch', 'game-show-city', 'ice-river', 'snow-peaks', 'jungle-ruins', 'glass-pyramid-city', 'fishing-cove',
+               'cliff-pool-isle', 'twin-tower-bridge', 'marble-temple-hill', 'secret-base-desert', 'fjord-sea', 'great-falls',
+               'bamboo-wall-hills', 'grass-savanna', 'stone-head-island', 'badlands'}
+YES_WIND = {'dragon-isle/task-9445496'}
+NO_WATER |= {'prairie-ranch/present-9444391', 'ice-floe/arrive-9444551'}
+# (a 7th number: the darkest the water is, so the ice's pale blue stays still)
+FORCE_WATER.update({'ice-floe/task-9444731': [(0, .5, 1, .9, 205, 245, .45)], 'ice-floe/task-9444616': [(0, .5, 1, .95, 205, 245, .45)],
+                    'ice-floe/present-9445072': [(0, .5, 1, .9, 205, 245, .45)]})
 LAVA_PLACES = {'fire-mountain-isle'}
 SKIP = {'confess', 'worldmap', 'gate', 'cabin', 'galley', 'logo', 'sky', 'runway', 'don', 'plane'}
 
@@ -96,7 +107,7 @@ def life(path, key, place):
     h, s, v = hsv(im)
     y = np.linspace(0, 1, H)[:, None] * np.ones((1, W))
     wind = np.zeros((H, W), bool)
-    if key not in NO_WIND:
+    if key not in NO_WIND and (place not in STRICT_WIND or key in YES_WIND):
         leaves = (h > 70) & (h < 160) & (s > .3) & (v > .2) & (y < .78)
         wind = big(leaves, .006)
     water = np.zeros((H, W), bool)
@@ -108,10 +119,10 @@ def life(path, key, place):
             if sl[0].start < .36 * H:
                 wet[lab == i] = False
         water = big(wet, .02)
-    for x0, y0, x1, y1, h0, h1 in FORCE_WATER.get(key, []):
+    for x0, y0, x1, y1, h0, h1, *vmax in FORCE_WATER.get(key, []):
         box = np.zeros((H, W), bool)
         box[int(y0 * H):int(y1 * H), int(x0 * W):int(x1 * W)] = True
-        water |= box & (h > h0) & (h < h1) & (s > .25) & (v > .25)
+        water |= box & (h > h0) & (h < h1) & (s > .25) & (v > (.1 if vmax else .25)) & (v < (vmax[0] if vmax else 2))
     lava = np.zeros((H, W), bool)
     if place in LAVA_PLACES:
         lava = big((h < 36) & (s > .7) & (v > .78), .004)

@@ -231,6 +231,19 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .tok.coals .veh{bottom:calc(var(--sz)*-.2);width:calc(var(--sz)*1.25);z-index:-1}
 .tok.coals .pair{animation:wHot .34s ease-in-out infinite}
 @keyframes wHot{0%,100%{transform:translateY(0)}50%{transform:translateY(-.9cqw)}}
+/* batch 3: the war dance (stamp and slap), the bull (bucking under them), a ring thrown, sawing ice, creeping up on a
+   dragon with a vial */
+.tok.w-dance .pair{animation:wDance .5s ease-in-out infinite}
+@keyframes wDance{0%,100%{transform:translateY(0) scaleY(1)}25%{transform:translateY(.5cqw) scaleY(.92) rotate(-4deg)}50%{transform:translateY(-.7cqw)}75%{transform:translateY(.5cqw) scaleY(.92) rotate(4deg)}}
+.tok.w-bull .pair{animation:wBuck .6s ease-in-out infinite}
+.tok .veh.mount{bottom:calc(var(--sz)*-.15);width:calc(var(--sz)*2.3);z-index:-1;transform-origin:50% 100%;animation:wBuckProp .6s ease-in-out infinite}
+@keyframes wBuck{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-1.2cqw) rotate(8deg)}}
+@keyframes wBuckProp{0%,100%{transform:translateX(-50%) rotate(-5deg)}50%{transform:translateX(-50%) rotate(6deg)}}
+.tok.w-toss .pair{animation:wServe 1.6s ease-in-out infinite}
+.tok.w-saw .pair{animation:wSaw .45s ease-in-out infinite}
+@keyframes wSaw{0%,100%{transform:translateX(-.5cqw)}50%{transform:translateX(.5cqw)}}
+.tok.w-venom .pair{animation:wCreep 2.6s ease-in-out infinite}
+@keyframes wCreep{0%,100%{transform:translateX(0)}40%{transform:translateX(.6cqw) translateY(.3cqw) scaleY(.94)}60%{transform:translateX(.6cqw) translateY(.3cqw) scaleY(.94)}75%{transform:translateX(-.5cqw) rotate(-6deg)}}
 @keyframes wWait{0%,100%{transform:translateY(0)}20%{transform:translateY(-.45cqw)}40%{transform:translateY(0)}60%{transform:translateY(-.25cqw) rotate(-3deg)}}
 @keyframes wDig{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(.7cqw) rotate(10deg)}50%{transform:translateY(-.25cqw) rotate(-5deg)}75%{transform:translateY(.55cqw) rotate(8deg)}}
 @keyframes wEat{0%,40%,100%{transform:scaleY(1)}10%,30%{transform:scaleY(.94) translateY(.2cqw)}20%{transform:scaleY(1.03)}60%{transform:translateX(-.4cqw) rotate(-6deg) scaleY(.92)}66%{transform:translateX(.4cqw) rotate(6deg) scaleY(.92)}72%{transform:translateX(-.3cqw) rotate(-4deg)}}

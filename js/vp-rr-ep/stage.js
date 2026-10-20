@@ -9,7 +9,7 @@
 // slam. Every avatar idles; whoever is talking bounces.
 import { plateUrl, raceUrl, propUrl } from './plates.js';
 import { PLACES } from '../rr/places.js';
-import { intelAt, offOf, stampSpot, slamSpot, tipSpot, fitOverlay, screenFaces, BAR, HUD_H } from './steps.js';
+import { intelAt, offOf, stampSpot, slamSpot, tipSpot, fitOverlay, screenFaces, BAR, HUD_H, GROWS } from './steps.js';
 import { plateLife } from './life.js';
 
 const ORD = ['', '1ST', '2ND', '3RD', '4TH', '5TH', '6TH', '7TH', '8TH', '9TH', '10TH', '11TH', '12TH', '13TH', '14TH'];
@@ -94,6 +94,8 @@ export function createStage(holder, { faceOf, legLabel }) {
     let veh = '';
     const pl = s.plate || {};
     if (VEH.has(as) && pl.prop && s.mode === 'act') veh = `<img class="veh" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
+    // what the team rides in place (the mechanical bull): under them, bucking with them
+    if (pl.under && pl.prop && s.mode === 'act' && s.work && s.teams?.[0] === id && !opts.extraCls?.includes('crowd')) veh = `<img class="veh mount" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
     if (pl.prop && String(pl.prop).match(/^(camel|emu|horse|bus|heli|boat)(@|$)/)) e.classList.add(pl.prop.split('@')[0]);
     // a vehicle drawn facing left (the horse, the helicopter) is turned to face the way it goes
     if (pl.flip && s.mode === 'act') e.classList.add('flipveh');
@@ -402,10 +404,10 @@ export function createStage(holder, { faceOf, legLabel }) {
     }
     if (s.work && pl.prop && s.workProp) {
       // where steps.js placeWorkProps put it; a sand palace grows with the work: a third at the start, whole when done
-      const grow = s.work === 'sculpt' ? 0.35 + 0.65 * Math.max(0, Math.min(1, s.plan?.p?.[k] ?? 1)) : 1;
-      const pp = prop(propUrl(pl.place || s.place, pl.prop), s.workProp.at, s.workProp.w * grow, 7);
+      const grow = GROWS.has(s.work) ? 0.35 + 0.65 * Math.max(0, Math.min(1, s.plan?.p?.[k] ?? 1)) : 1;
+      const pp = pl.under ? document.createElement('i') : prop(propUrl(pl.place || s.place, pl.prop), s.workProp.at, s.workProp.w * grow, 7);
       if (s.work === 'chase' && fresh) pp.animate([{ transform: 'translate(-50%,-100%)' }, { transform: 'translate(-30%,-104%) scaleX(-1)' }, { transform: 'translate(-50%,-100%)' }], { duration: 900, iterations: 3 });
-      if (s.work === 'sculpt' && fresh && k > 0) pp.animate([{ transform: 'translate(-50%,-100%) scale(.92)' }, { transform: 'translate(-50%,-100%) scale(1)' }], { duration: 700, easing: 'cubic-bezier(.3,1.6,.5,1)' });
+      if (GROWS.has(s.work) && fresh && k > 0) pp.animate([{ transform: 'translate(-50%,-100%) scale(.92)' }, { transform: 'translate(-50%,-100%) scale(1)' }], { duration: 700, easing: 'cubic-bezier(.3,1.6,.5,1)' });
       // the local who judges it (the surfer boy, the carnival dancer, the coach)
       if (pl.judge && s.judgeAt) {
         const jp = prop(propUrl(pl.place || s.place, pl.judge[0]), s.judgeAt.at, s.judgeAt.w, 7);

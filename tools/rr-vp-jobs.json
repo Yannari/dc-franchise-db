@@ -88,6 +88,22 @@
       "kind": "cutout",
       "prop": "ute",
       "why": "the ute to the farm (the coordinator's list: a ute); meanwhile the safari jeep"
+    },
+    {
+      "place": "prairie-ranch",
+      "src": "17-prairie-ranch",
+      "file": "task-beans-table",
+      "new": true,
+      "ref": "chill-9444113",
+      "why": "the beans table on the cliff top (LEGS.txt: NEW, in edit; stand-in: the rocks by the cliff, task-9444112)"
+    },
+    {
+      "place": "ice-floe",
+      "src": "18-ice-floe",
+      "file": "chill-ice-mat",
+      "new": true,
+      "ref": "chill-9444869",
+      "why": "the ice Chill Zone (LEGS.txt: NEW, in edit; stand-in: the igloo with the mat put down in front, chill-9444869)"
     }
   ]
 }

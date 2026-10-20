@@ -55,6 +55,15 @@ export const LIFE = {
  "assets/sets/rr/coast-palace/travel-9436860.webp": [
   "water"
  ],
+ "assets/sets/rr/dragon-isle/arrive-9445132.webp": [
+  "water"
+ ],
+ "assets/sets/rr/dragon-isle/arrive-9445165.webp": [
+  "water"
+ ],
+ "assets/sets/rr/dragon-isle/task-9445496.webp": [
+  "wind"
+ ],
  "assets/sets/rr/fire-mountain-isle/present-22425124.webp": [
   "water"
  ],
@@ -79,6 +88,12 @@ export const LIFE = {
  ],
  "assets/sets/rr/fire-mountain-isle/task-22426413.webp": [
   "lava"
+ ],
+ "assets/sets/rr/fjord-peaks/chill-9443386.webp": [
+  "water"
+ ],
+ "assets/sets/rr/fjord-peaks/chill-9443672.webp": [
+  "water"
  ],
  "assets/sets/rr/geyser-island/arrive-9436846.webp": [
   "water"
@@ -141,6 +156,15 @@ export const LIFE = {
  ],
  "assets/sets/rr/home-city/task-9435028.webp": [
   "wind",
+  "water"
+ ],
+ "assets/sets/rr/ice-floe/present-9445072.webp": [
+  "water"
+ ],
+ "assets/sets/rr/ice-floe/task-9444731.webp": [
+  "water"
+ ],
+ "assets/sets/rr/ice-floe/task-9444815.webp": [
   "water"
  ],
  "assets/sets/rr/iron-tower-city/travel-9436549.webp": [

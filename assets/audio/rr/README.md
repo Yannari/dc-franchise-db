@@ -7,7 +7,7 @@ Every place has its own sound and every moment of a leg its own track there (the
 the race-wide bed for that moment (`race/<moment>.mp3`) if there is one, then an ambience already
 in the repo where it really fits the place, and otherwise silence. A Total Drama bed never plays.
 
-**Filled: 172 of 172 slots.**
+**Filled: 204 of 204 slots.**
 
 **The rules for a file**
 - Royalty-free only: CC0 or public domain, the Pixabay Content License, or CC-BY with the credit in
@@ -375,3 +375,67 @@ A race-wide bed for a moment (`race/opener.mp3`, `race/struggle.mp3`...) is the 
 | `outback-farm/elimination.mp3` | elimination | slow, sombre pipes; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | bush band, folk, sombre and short | [x] "Hidden Past" (Kevin MacLeod), 274 KB |
 | `outback-farm/recap.mp3` | recap | a quick hammered dulcimer and whistle; quick, punchy, recap energy, the place still in it | 30-40 s loop | bush band, folk, quick | [x] "Celtic Impulse" (Kevin MacLeod), 235 KB |
 | `outback-farm/interview.mp3` | interview | soft percussion, a world groove under the voice; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | bush band, folk, light | [x] "Lotus" (Kevin MacLeod), 313 KB |
+
+## Fjord Peaks (`fjord-peaks/`)
+
+**Sound of the place**: the mountains over the gorge: soaring strings, horns and a low choir.  
+**Search**: epic strings, choir, mountains, mystical.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `fjord-peaks/opener.mp3` | opener | a big choir and brass rising over the peaks; bright, confident, the place in its first bars | 40-60 s loop | epic strings, choir, bright | [x] "Magistar" (Kevin MacLeod), 352 KB |
+| `fjord-peaks/travel.mp3` | travel | harp, choir and flute on the train through the valleys; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | epic strings, choir, moving | [x] "Ascending the Vale" (Kevin MacLeod), 391 KB |
+| `fjord-peaks/challenge.mp3` | challenge | driving strings and choir: the bridge and the dance stage; driving, building, percussion forward, 110-140 bpm | 60 s loop | epic strings, choir, driving | [x] "Killers" (Kevin MacLeod), 391 KB |
+| `fjord-peaks/struggle.mp3` | struggle | eerie strings and a low choir: the drop below; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | epic strings, choir, tense | [x] "Lost Frontier" (Kevin MacLeod), 352 KB |
+| `fjord-peaks/chill-zone.mp3` | chill-zone | lush, calm voices by the lake; relief and a little swagger, mid-tempo, warm | 45 s loop | epic strings, choir, relief and a little swagger | [x] "Heart of Nowhere" (Kevin MacLeod), 352 KB |
+| `fjord-peaks/elimination.mp3` | elimination | a solemn choir and cellos; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | epic strings, choir, sombre and short | [x] "Night Vigil" (Kevin MacLeod), 274 KB |
+| `fjord-peaks/recap.mp3` | recap | quick percussion, brass and choir; quick, punchy, recap energy, the place still in it | 30-40 s loop | epic strings, choir, quick | [x] "Burnt Spirit" (Kevin MacLeod), 235 KB |
+| `fjord-peaks/interview.mp3` | interview | soft strings and a distant choir; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | epic strings, choir, light | [x] "Ever Mindful" (Kevin MacLeod), 313 KB |
+
+## Prairie Ranch (`prairie-ranch/`)
+
+**Sound of the place**: a ranch on the prairie: honky-tonk piano, country guitars and a western edge.  
+**Search**: country, western, honky-tonk, saloon, cowboy.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `prairie-ranch/opener.mp3` | opener | fast, upbeat country guitars and mandolin; bright, confident, the place in its first bars | 40-60 s loop | country, western, bright | [x] "Guts and Bourbon" (Kevin MacLeod), 352 KB |
+| `prairie-ranch/travel.mp3` | travel | a saloon ragtime romp down the prairie road; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | country, western, moving | [x] "Hyperfun" (Kevin MacLeod), 391 KB |
+| `prairie-ranch/challenge.mp3` | challenge | a driving, grooving western: beans and the bull; driving, building, percussion forward, 110-140 bpm | 60 s loop | country, western, driving | [x] "Robo-Western" (Kevin MacLeod), 391 KB |
+| `prairie-ranch/struggle.mp3` | struggle | a dark, tense western guitar; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | country, western, tense | [x] "Smoking Gun" (Kevin MacLeod), 352 KB |
+| `prairie-ranch/chill-zone.mp3` | chill-zone | a slow country sing-along on the cliff top; relief and a little swagger, mid-tempo, warm | 45 s loop | country, western, relief and a little swagger | [x] "Drankin Song" (Kevin MacLeod), 352 KB |
+| `prairie-ranch/elimination.mp3` | elimination | a lonely western harp; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | country, western, sombre and short | [x] "Pale Rider" (Kevin MacLeod), 274 KB |
+| `prairie-ranch/recap.mp3` | recap | a short western sting; quick, punchy, recap energy, the place still in it | 30-40 s loop | country, western, quick | [x] "Cowboy Sting" (Kevin MacLeod), 235 KB |
+| `prairie-ranch/interview.mp3` | interview | big drums and an exposed western guitar; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | country, western, light | [x] "Neo Western" (Kevin MacLeod), 313 KB |
+
+## Ice Floe (`ice-floe/`)
+
+**Sound of the place**: the ice at the top of the world: sparse glassy ambient, drones, the wind.  
+**Search**: ambient, drone, cold, sparse, mysterious.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `ice-floe/opener.mp3` | opener | a slow, mystical bass flute over the ice; bright, confident, the place in its first bars | 40-60 s loop | ambient, drone, bright | [x] "Thunderbird" (Kevin MacLeod), 352 KB |
+| `ice-floe/travel.mp3` | travel | a drifting drone, the plane over the tundra; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | ambient, drone, moving | [x] "Mirage" (Kevin MacLeod), 391 KB |
+| `ice-floe/challenge.mp3` | challenge | sharp subtle percussion: the rings and the igloo; driving, building, percussion forward, 110-140 bpm | 60 s loop | ambient, drone, driving | [x] "Static Motion" (Kevin MacLeod), 391 KB |
+| `ice-floe/struggle.mp3` | struggle | dark, unsettled synths: the cold getting in; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | ambient, drone, tense | [x] "Controlled Chaos" (Kevin MacLeod), 352 KB |
+| `ice-floe/chill-zone.mp3` | chill-zone | a calm, shimmering ambience; relief and a little swagger, mid-tempo, warm | 45 s loop | ambient, drone, relief and a little swagger | [x] "New Direction" (Kevin MacLeod), 352 KB |
+| `ice-floe/elimination.mp3` | elimination | a slow viol over a drone; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | ambient, drone, sombre and short | [x] "Virtutes Instrumenti" (Kevin MacLeod), 274 KB |
+| `ice-floe/recap.mp3` | recap | a chordal, dark soundscape; quick, punchy, recap energy, the place still in it | 30-40 s loop | ambient, drone, quick | [x] "Thunder Dreams" (Kevin MacLeod), 235 KB |
+| `ice-floe/interview.mp3` | interview | a soft, long drone; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | ambient, drone, light | [x] "Drone in D" (Kevin MacLeod), 313 KB |
+
+## Dragon Isle (`dragon-isle/`)
+
+**Sound of the place**: the island of dragons: gamelan, marimba and kalimba over tense jungle drums.  
+**Search**: gamelan, marimba, kalimba, jungle percussion, mysterious.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `dragon-isle/opener.mp3` | opener | a mystical gamelan; bright, confident, the place in its first bars | 40-60 s loop | gamelan, marimba, bright | [x] "Mystic Force" (Kevin MacLeod), 352 KB |
+| `dragon-isle/travel.mp3` | travel | a dark grooving marimba and kalimba; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | gamelan, marimba, moving | [x] "Artifact" (Kevin MacLeod), 391 KB |
+| `dragon-isle/challenge.mp3` | challenge | aggressive drums and kalimba: the dragons; driving, building, percussion forward, 110-140 bpm | 60 s loop | gamelan, marimba, driving | [x] "Blue Scorpion" (Kevin MacLeod), 391 KB |
+| `dragon-isle/struggle.mp3` | struggle | a confused, unnerving percussion groove; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | gamelan, marimba, tense | [x] "Confused State" (Kevin MacLeod), 352 KB |
+| `dragon-isle/chill-zone.mp3` | chill-zone | a calm koto and strings at sunset; relief and a little swagger, mid-tempo, warm | 45 s loop | gamelan, marimba, relief and a little swagger | [x] "Finding Movement" (Kevin MacLeod), 352 KB |
+| `dragon-isle/elimination.mp3` | elimination | a minimal, droning piano; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | gamelan, marimba, sombre and short | [x] "Immersed" (Kevin MacLeod), 274 KB |
+| `dragon-isle/recap.mp3` | recap | quick tribal percussion and voices; quick, punchy, recap energy, the place still in it | 30-40 s loop | gamelan, marimba, quick | [x] "Trouble with Tribals" (Kevin MacLeod), 235 KB |
+| `dragon-isle/interview.mp3` | interview | soft plucked strings and rain; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | gamelan, marimba, light | [x] "Eastminster" (Kevin MacLeod), 313 KB |

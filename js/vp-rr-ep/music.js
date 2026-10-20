@@ -325,6 +325,62 @@ export const PLACE_MUSIC = {
       interview: 'soft percussion, a world groove under the voice',
     },
   },
+  'fjord-peaks': {
+    name: "Fjord Peaks", feel: "the mountains over the gorge: soaring strings, horns and a low choir",
+    search: "epic strings, choir, mountains, mystical",
+    moments: {
+      opener: "a big choir and brass rising over the peaks",
+      travel: "harp, choir and flute on the train through the valleys",
+      challenge: "driving strings and choir: the bridge and the dance stage",
+      struggle: "eerie strings and a low choir: the drop below",
+      'chill-zone': "lush, calm voices by the lake",
+      elimination: "a solemn choir and cellos",
+      recap: "quick percussion, brass and choir",
+      interview: "soft strings and a distant choir",
+    },
+  },
+  'prairie-ranch': {
+    name: "Prairie Ranch", feel: "a ranch on the prairie: honky-tonk piano, country guitars and a western edge",
+    search: "country, western, honky-tonk, saloon, cowboy",
+    moments: {
+      opener: "fast, upbeat country guitars and mandolin",
+      travel: "a saloon ragtime romp down the prairie road",
+      challenge: "a driving, grooving western: beans and the bull",
+      struggle: "a dark, tense western guitar",
+      'chill-zone': "a slow country sing-along on the cliff top",
+      elimination: "a lonely western harp",
+      recap: "a short western sting",
+      interview: "big drums and an exposed western guitar",
+    },
+  },
+  'ice-floe': {
+    name: "Ice Floe", feel: "the ice at the top of the world: sparse glassy ambient, drones, the wind",
+    search: "ambient, drone, cold, sparse, mysterious",
+    moments: {
+      opener: "a slow, mystical bass flute over the ice",
+      travel: "a drifting drone, the plane over the tundra",
+      challenge: "sharp subtle percussion: the rings and the igloo",
+      struggle: "dark, unsettled synths: the cold getting in",
+      'chill-zone': "a calm, shimmering ambience",
+      elimination: "a slow viol over a drone",
+      recap: "a chordal, dark soundscape",
+      interview: "a soft, long drone",
+    },
+  },
+  'dragon-isle': {
+    name: "Dragon Isle", feel: "the island of dragons: gamelan, marimba and kalimba over tense jungle drums",
+    search: "gamelan, marimba, kalimba, jungle percussion, mysterious",
+    moments: {
+      opener: "a mystical gamelan",
+      travel: "a dark grooving marimba and kalimba",
+      challenge: "aggressive drums and kalimba: the dragons",
+      struggle: "a confused, unnerving percussion groove",
+      'chill-zone': "a calm koto and strings at sunset",
+      elimination: "a minimal, droning piano",
+      recap: "quick tribal percussion and voices",
+      interview: "soft plucked strings and rain",
+    },
+  },
 };
 
 export const PLACE_IDS = Object.keys(PLACE_MUSIC);

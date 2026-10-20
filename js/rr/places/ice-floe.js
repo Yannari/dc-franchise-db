@@ -5,8 +5,6 @@
 export default {
   id: 'ice-floe', name: 'Ice Floe', recap: 'ringing a narwhal and building an igloo at the top of the world',
   region: 'north', map: { x: 30, y: 6 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['plane', 'foot'],
   stretches: [
     { id: 'tundra-hop', kind: 'travel', mode: 'plane', base: 50, cost: 0, plate: 'tundra airstrip', label: 'Small plane to the tundra',

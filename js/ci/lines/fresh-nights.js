@@ -170,6 +170,27 @@ export const FRESH_NIGHTS = {
     S("Okay. It's done. I can't take it back."),
   ]),
 
+  // The audience blocked {b}; a, an Influencer, only put {b} up.
+  ...F('block.after.audience', [
+    S("I put {b} up there. The audience did the rest. I still feel it."),
+    S("It wasn't my vote at the end. But it was my name on the list."),
+    S("The audience chose. I just gave them the choice. That's not nothing."),
+    S("I'm glad it wasn't all on me. I'm not glad it was {b}."),
+    S("I keep telling myself the audience decided. I still feel awful.", '{a} rubs {a.posAdj} face with both hands.'),
+    S("I picked two names, and the audience picked one. Poor {b}."),
+    S("Part of me hoped the audience would save {b}. They didn't."),
+    S("That's on me and on everybody at home. Mostly me."),
+  ]),
+  // Two of them in the alliance: no vote, one ends it with the other (alliances.js afterRatings).
+  ...F('group.kick.pair', [
+    T(['a', 'send', "I saw where I landed tonight. I don't think you had my back"], ['b', 'send', "What? I did!"], ['a', 'send', "I can't do {game} anymore. I'm sorry"]),
+    T(['a', 'send', "Be honest with me. Did you put me low?"], ['b', 'send', "No! Why would I?"], ['a', 'send', "Because somebody did. And there were only two of us. We're done"]),
+    B(T(['a', 'send', "{game} is over. I can't trust it after tonight"], ['b', 'react', "Over? Just like that?"]), '{b} reads it three times.'),
+    T(['a', 'send', "I thought we were solid. The ratings say we weren't"], ['b', 'send', "The ratings are wrong. I'm not"], ['a', 'send', "Maybe. I can't risk it. Bye"]),
+    B(T(['a', 'send', "I'm out of {game}. That's it. That's the message"], ['b', 'react', "Wow. I didn't even get a chance."]), '{b} stares at the chat until it closes.'),
+    T(['a', 'send', "I trusted you, and I ended up way down there. That's not a coincidence"], ['b', 'send', "It is! I swear it is"], ['a', 'send', "Then I'm sorry. But I'm done"]),
+  ]),
+
   // ── the visit ─────────────────────────────────────────────────────────
   ...F('visit.wait.catfish', [
     R("If {b} comes here, everything I built is gone.", '{a} sits very still on the couch.'),

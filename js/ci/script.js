@@ -656,7 +656,8 @@ const BLOCKS = {
       return out;
     }
     // An alliance coming apart (alliances.js): treason, a double agent, a walk-out.
-    if (s.data.event === 'kick') return [{ key: 'group.kick', cast: { a: s.data.by[0], b: s.data.kicked, text: { game: x } } }];
+    // Two of them: nobody votes, one of them ends it.
+    if (s.data.event === 'kick') return [{ key: s.who.length <= 2 ? 'group.kick.pair' : 'group.kick', cast: { a: s.data.by[0], b: s.data.kicked, text: { game: x } } }];
     if (s.data.event === 'confront') return [{ key: `group.confront.${s.data.kicked ? 'out' : 'stay'}`, cast: { a: s.data.by, b: s.data.agent, text: { game: x, q: s.data.other } } }];
     if (s.data.event === 'leave') return [{ key: 'group.leave', cast: { a: s.data.left, b: s.data.to, text: { game: x } } }];
     if (s.data.formed !== false && s.data.accepted) {
@@ -1033,10 +1034,13 @@ const BLOCKS = {
       out.push(...hangoutFlashback(state, s, target));
     }
     if (s.data.mission && s.data.mission.target === target) out.push({ key: 'mission.success', cast: { a: s.data.mission.holder, b: target } });
+    // The audience chose: the blocked player took it in when the votes came in, and the
+    // Influencers only put them up (the user, 2026-10-20: "It had to be Jace" from an Influencer the audience overruled).
+    const after = s.data.channel === 'audience' ? 'block.after.audience' : 'block.after';
     out.push(
-      { key: 'block.react.self', cast: { a: target }, extra: { self: true } },
-      ...(announcer ? [{ key: 'block.after', cast: { a: announcer, b: target } }] : []),
-      ...s.data.by.filter(i => i !== announcer).slice(0, 2).map(i => ({ key: 'block.after', cast: { a: i, b: target } })));
+      ...(s.data.channel === 'audience' ? [] : [{ key: 'block.react.self', cast: { a: target }, extra: { self: true } }]),
+      ...(announcer ? [{ key: after, cast: { a: announcer, b: target } }] : []),
+      ...s.data.by.filter(i => i !== announcer).slice(0, 2).map(i => ({ key: after, cast: { a: i, b: target } })));
     const friend = others.find(h => rel(h, target, 'affection') > 3);
     const rival = others.find(h => rel(h, target, 'resentment') > 3 && h !== friend);
     if (friend) out.push({ key: 'block.react.friend', cast: { a: friend, b: target } });
@@ -1620,7 +1624,7 @@ export const POOL_KEYS = [
   'race.win', 'race.lose', 'newparty.throw', 'newparty.guest', 'newparty.left', 'lurk.watch', 'lurk.reveal',
   'chosen.offer', 'chosen.pick', 'chosen.thanks', 'pairarrival.chat', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',
-  ...BLOCK_WHY_.map(r => `block.announce.${r}`), 'block.react.self', 'block.react.friend', 'block.react.rival', 'block.react.relief',
+  ...BLOCK_WHY_.map(r => `block.announce.${r}`), 'block.react.self', 'block.react.friend', 'block.react.rival', 'block.react.relief', 'block.after.audience', 'group.kick.pair',
   ...MOTIVES_.filter(m => m !== 'confront').flatMap(m => [`visit.choose.${m}`, `visit.talk.${m}`]), 'visit.choose.confront', 'visit.wait', 'visit.wait.catfish',
   // Playing two people, and getting caught (twotiming.js, lines/twotiming.js).
   // Family, partners and old friends in the cast (ci/kin.js, lines/kin.js).

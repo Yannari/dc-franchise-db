@@ -35,7 +35,8 @@ export { faceUrl, themeFor, starsText };
 // ── where we are (user: "I don't know if they're in their private profile or
 // in the chat"): a label in the corner of every screen, and in the apartments
 // a chat window that stays on screen with the thread so far.
-const CHATWIN = new Set(['group-chat', 'welcome', 'chat', 'date', 'plead', 'joker-chat', 'after-party']);
+// What the visit 'said' is a private chat too (the user, 2026-10-20: it had no close-up to read the messages).
+const CHATWIN = new Set(['group-chat', 'welcome', 'chat', 'date', 'plead', 'joker-chat', 'after-party', 'report']);
 const WHERE = { chat: 'PRIVATE CHAT', date: 'A DATE', plead: 'THE LAST TWO', 'joker-chat': 'THE JOKER', 'after-party': 'THE AFTER-PARTY',
   life: 'IN THE APARTMENT', 'home-video': 'A VIDEO FROM HOME', report: 'AFTER THE VISIT', recognise: 'A FACE THEY KNOW',
   lurk: 'WATCHING IN SECRET', 'hack-undone': 'COMPARING NOTES', 'circle-chat': 'CIRCLE CHAT · EVERYONE', likes: 'THE NEWSFEED',

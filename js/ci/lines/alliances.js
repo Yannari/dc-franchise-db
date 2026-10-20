@@ -33,7 +33,7 @@ export const ALLIANCE_LINES = {
   ]),
   ...E('group.kick', [
     { turns: [
-      { by: 'a', send: "We need to talk about last night's ratings, {b}" },
+      { by: 'a', send: "We need to talk about the ratings, {b}" },
       { by: 'b', send: "What about them?" },
       { by: 'a', send: "Some of us ended up a lot lower than we should have. We know what that means" },
       { by: 'b', react: "They think it was me.", send: "It wasn't me! I swear" },

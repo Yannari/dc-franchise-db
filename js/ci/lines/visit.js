@@ -350,9 +350,9 @@ export const VISIT = {
       { by: 'b', say: "Thank you. For all of it." },
     ] },
     { id: 'visit.bye.06', turns: [
-      { by: 'b', say: "Text me when you're out. I mean it." },
-      { by: 'a', say: "You don't even have a phone." },
-      { by: 'b', say: "I will someday!" },
+      { by: 'b', say: "Find me the second this is over. I mean it." },
+      { by: 'a', say: "First thing. Before I even eat." },
+      { by: 'b', say: "Okay, now I know you mean it." },
     ], beat: 'The door shuts on both of them laughing.' },
     // (six more: a visit airs most nights, and the same goodbye two nights running was read twice, 2026-10-19)
     { id: 'visit.bye.07', turns: [

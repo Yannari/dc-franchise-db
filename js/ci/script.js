@@ -1105,6 +1105,8 @@ const BLOCKS = {
     const bestie = viewers.filter(v => rel(h, v, 'affection') > 3).sort((x, y) => rel(h, y, 'affection') - rel(h, x, 'affection'))[0];
     if (bestie && !p.ai) out.push({ key: 'goodbye.shout', cast: { a: h, b: bestie } });
     // Every goodbye ends the same way on the show: a lesson, then good luck (spec 11.2).
+    // With nobody to call out, the video says what the game taught them (most real goodbyes do).
+    if (!s.data.warning && !p.ai) out.push({ key: 'goodbye.video.lesson', cast: { a: h } });
     out.push({ key: 'goodbye.video.close', cast: { a: h } });
     if (s.data.warning) {
       const { kind, about } = s.data.warning;
@@ -1131,7 +1133,7 @@ const BLOCKS = {
     const waited = viewers.slice(0, 4);
     const others = viewers.filter(x => ![guilty, warned, suspecter].includes(x))
       .sort((x, y) => waited.includes(y) - waited.includes(x));
-    for (const v of others.slice(0, Math.max(3, others.filter(x => waited.includes(x)).length))) {
+    for (const v of others.slice(0, Math.max(warned ? 3 : 5, others.filter(x => waited.includes(x)).length))) {
       out.push({ key: 'goodbye.react.surprised', cast: { a: v, b: h } });
     }
     const friend = viewers.filter(v => rel(v, h, 'affection') > 2).sort((x, y) => rel(y, h, 'affection') - rel(x, h, 'affection'))[0];
@@ -1593,7 +1595,7 @@ export const POOL_KEYS = [
   'hangout.open.trio', 'hangout.trio.agree', 'hangout.trio.outvoted', 'visit.inperson.bye', 'visit.inperson.after',
   ...['save-two', 'plead', 'room-vote', 'forced'].map(f => `alert.${f}`), 'block.announce.unsaved', 'block.announce.vote',
   'block.announce.statement', 'plead.open', 'plead.pitch', 'plead.listen', 'vote.open', 'vote.cast', 'vote.result',
-  'statement.open', 'statement.say', 'statement.named', 'save.wait', 'alert.instant', 'alert.double', 'block.announce.instant', 'goodbye.video.close',
+  'statement.open', 'statement.say', 'statement.named', 'save.wait', 'alert.instant', 'alert.double', 'block.announce.instant', 'goodbye.video.close', 'goodbye.video.lesson',
   'block.react.numbers', 'block.react.unsaved', 'visit.choose.power', 'visit.talk.power', 'visit.talk2.power',
   ...['immunity', 'hacker', 'joker', 'burner'].map(k => `visit.power.${k}`), ...['immunity', 'joker', 'hacker'].map(k => `power.reveal.${k}`),
   'hack.send', 'hack.read', 'hack.undone', 'joker.chat', 'joker.pick', 'burner.exposed',

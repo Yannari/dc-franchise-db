@@ -247,7 +247,14 @@ export function goodbyeVideo(state, rng, h) {
   const all = [...state.active];
   const sc = addScene(state, 'goodbye', [h], { mode: state.profiles[h].mode, warning: null }, all);
   for (const o of all) revealTo(state, o, h, sc);
-  const top = all.map(o => [o, rel(h, o, 'resentment') + (1 - belief(state, h, o).real) * 3])
+  // Who the goodbye calls out: somebody the leaver resents or doubts, more likely one who blocked them, never a
+  // friend who didn't (the user, 2026-10-20: "why would they attack their friend in their goodbye video... a friend
+  // that didn't even block u"; 9 of 129 warnings in 20 seasons did). Fondness counts against it.
+  const blockers = new Set(state.blocked.find(x => x.handle === h)?.by || []);
+  const friend = o => rel(h, o, 'affection') > Math.max(0, rel(h, o, 'resentment'));
+  const top = all.filter(o => blockers.has(o) || !friend(o))
+    .map(o => [o, rel(h, o, 'resentment') + (1 - belief(state, h, o).real) * 3 + (blockers.has(o) ? 2 : 0)
+      - Math.max(0, rel(h, o, 'affection')) * 0.8])
     .sort((a, b) => b[1] - a[1])[0];
   if (top && top[1] > 3) {
     const o = top[0];

@@ -112,6 +112,41 @@
       "new": true,
       "ref": "chill-9447963",
       "why": "the steam house (sauna) Chill Zone (LEGS.txt: NEW, in edit; stand-in: the sauna's benches with the mat put down, chill-9447963)"
+    },
+    {
+      "place": "glass-pyramid-city",
+      "src": "35-glass-pyramid-city",
+      "file": "task-museum-runway",
+      "new": true,
+      "ref": "task-22415170",
+      "why": "the museum runway / catwalk (LEGS.txt: NEW, in edit; stand-in: the museum hall, task-22415034 and task-22415170)"
+    },
+    {
+      "place": "snow-peaks",
+      "src": "33-snow-peaks",
+      "file": "cable-car",
+      "new": true,
+      "kind": "cutout",
+      "prop": "cablecar",
+      "why": "the cable car up the mountain (the coordinator's list); meanwhile the zipline trolley on the cable"
+    },
+    {
+      "place": "jungle-ruins",
+      "src": "34-jungle-ruins",
+      "file": "canoe",
+      "new": true,
+      "kind": "cutout",
+      "prop": "canoe",
+      "why": "the canoe up the river (the coordinator's list); meanwhile the yellow raft"
+    },
+    {
+      "place": "jungle-ruins",
+      "src": "34-jungle-ruins",
+      "file": "golden-idol",
+      "new": true,
+      "kind": "cutout",
+      "prop": "idol",
+      "why": "the one real golden idol at the foot of the ruins (LEGS.txt needs golden-idol); meanwhile the search alone"
     }
   ]
 }

@@ -493,6 +493,62 @@ export const PLACE_MUSIC = {
       interview: "a soft harp and pennywhistle",
     },
   },
+  'snow-peaks': {
+    name: "Snow Peaks", feel: "the alpine slopes: oompah brass, accordion and tuba polkas",
+    search: "polka, oompah, accordion, tuba, alpine",
+    moments: {
+      opener: "a bouncing accordion and tuba oompah",
+      travel: "a peppy polka up the cable car",
+      challenge: "a manic polka: the sausage and the goats",
+      struggle: "a dark little polka",
+      'chill-zone': "a swinging snare polka at the finish",
+      elimination: "a slow, happy-sad polka",
+      recap: "an EDM polka",
+      interview: "a bright four-beer polka",
+    },
+  },
+  'jungle-ruins': {
+    name: "Jungle Ruins", feel: "mountain ruins over the jungle: flutes over drums, mysterious and driving",
+    search: "flute, drums, jungle, ancient, mysterious",
+    moments: {
+      opener: "a calm flute and drums, our ancestors' sky",
+      travel: "a driving guitar and flute up the river",
+      challenge: "a mysterious flute and percussion: the trail and the idol",
+      struggle: "a moody flute over dark synths",
+      'chill-zone': "a bright flute and vibraphone on the ruins",
+      elimination: "a sombre pennywhistle and lute",
+      recap: "dark, driving flutes and strings",
+      interview: "soft guitar, flute and xylophone",
+    },
+  },
+  'glass-pyramid-city': {
+    name: "Glass Pyramid City", feel: "the museum city at night: a caf\u00e9 waltz, then a runway's electro beat",
+    search: "waltz, cafe, electro, runway, club",
+    moments: {
+      opener: "a grand dark waltz at the glass pyramid",
+      travel: "a light piano waltz down the boulevard",
+      challenge: "a driving electro beat: statues and the runway",
+      struggle: "a dark, grooving synth",
+      'chill-zone': "a 1960s club jazz under the lights",
+      elimination: "a slow gymnop\u00e9die waltz",
+      recap: "a bright, fast EDM hit",
+      interview: "an easy electro groove",
+    },
+  },
+  'fishing-cove': {
+    name: "Fishing Cove", feel: "a fishing cove at the edge of the sea: tin whistle and fiddle jigs, a sea shanty",
+    search: "jig, reel, tin whistle, shanty, sea",
+    moments: {
+      opener: "a bouncing tin-whistle tune",
+      travel: "a salty sea ditty at the oars",
+      challenge: "a solid village jig: the welcome rite",
+      struggle: "a dark accordion and whistle shanty",
+      'chill-zone': "a relaxed groove with uilleann pipes by the shack",
+      elimination: "a slow little flute and glockenspiel waltz",
+      recap: "a quick, poofy reel",
+      interview: "a medieval minstrel round",
+    },
+  },
 };
 
 export const PLACE_IDS = Object.keys(PLACE_MUSIC);

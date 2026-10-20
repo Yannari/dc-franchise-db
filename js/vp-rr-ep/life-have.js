@@ -89,6 +89,18 @@ export const LIFE = {
  "assets/sets/rr/fire-mountain-isle/task-22426413.webp": [
   "lava"
  ],
+ "assets/sets/rr/fishing-cove/arrive-22415810.webp": [
+  "water"
+ ],
+ "assets/sets/rr/fishing-cove/chill-22416099.webp": [
+  "water"
+ ],
+ "assets/sets/rr/fishing-cove/present-22415793.webp": [
+  "water"
+ ],
+ "assets/sets/rr/fishing-cove/task-22415657.webp": [
+  "water"
+ ],
  "assets/sets/rr/fjord-peaks/chill-9443386.webp": [
   "water"
  ],
@@ -108,6 +120,9 @@ export const LIFE = {
   "water"
  ],
  "assets/sets/rr/geyser-island/task-9437341.webp": [
+  "water"
+ ],
+ "assets/sets/rr/glass-pyramid-city/task-22415208.webp": [
   "water"
  ],
  "assets/sets/rr/glass-tower-gulf/arrive-9439709.webp": [
@@ -175,6 +190,9 @@ export const LIFE = {
  ],
  "assets/sets/rr/iron-tower-city/travel-9436549.webp": [
   "wind"
+ ],
+ "assets/sets/rr/jungle-ruins/task-22414389.webp": [
+  "water"
  ],
  "assets/sets/rr/lei-island/present-9439148.webp": [
   "wind",

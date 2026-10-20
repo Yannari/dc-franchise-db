@@ -7,7 +7,7 @@ Every place has its own sound and every moment of a leg its own track there (the
 the race-wide bed for that moment (`race/<moment>.mp3`) if there is one, then an ambience already
 in the repo where it really fits the place, and otherwise silence. A Total Drama bed never plays.
 
-**Filled: 268 of 268 slots.**
+**Filled: 300 of 300 slots.**
 
 **The rules for a file**
 - Royalty-free only: CC0 or public domain, the Pixabay Content License, or CC-BY with the credit in
@@ -567,3 +567,67 @@ A race-wide bed for a moment (`race/opener.mp3`, `race/struggle.mp3`...) is the 
 | `ice-river/elimination.mp3` | elimination | a slow bassoon and harp; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | low brass, harp, sombre and short | [x] "Plaint" (Kevin MacLeod), 274 KB |
 | `ice-river/recap.mp3` | recap | a quick epic horn and hurdy-gurdy; quick, punchy, recap energy, the place still in it | 30-40 s loop | low brass, harp, quick | [x] "Strength of the Titans" (Kevin MacLeod), 235 KB |
 | `ice-river/interview.mp3` | interview | a soft harp and pennywhistle; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | low brass, harp, light | [x] "Decline" (Kevin MacLeod), 313 KB |
+
+## Snow Peaks (`snow-peaks/`)
+
+**Sound of the place**: the alpine slopes: oompah brass, accordion and tuba polkas.  
+**Search**: polka, oompah, accordion, tuba, alpine.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `snow-peaks/opener.mp3` | opener | a bouncing accordion and tuba oompah; bright, confident, the place in its first bars | 40-60 s loop | polka, oompah, bright | [x] "Meanwhile in Bavaria" (Kevin MacLeod), 352 KB |
+| `snow-peaks/travel.mp3` | travel | a peppy polka up the cable car; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | polka, oompah, moving | [x] "No Spam Polka" (Kevin MacLeod), 391 KB |
+| `snow-peaks/challenge.mp3` | challenge | a manic polka: the sausage and the goats; driving, building, percussion forward, 110-140 bpm | 60 s loop | polka, oompah, driving | [x] "Manic Polka" (Kevin MacLeod), 391 KB |
+| `snow-peaks/struggle.mp3` | struggle | a dark little polka; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | polka, oompah, tense | [x] "Dvorak Polka" (Kevin MacLeod), 352 KB |
+| `snow-peaks/chill-zone.mp3` | chill-zone | a swinging snare polka at the finish; relief and a little swagger, mid-tempo, warm | 45 s loop | polka, oompah, relief and a little swagger | [x] "Snare Bounce Polka" (Kevin MacLeod), 352 KB |
+| `snow-peaks/elimination.mp3` | elimination | a slow, happy-sad polka; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | polka, oompah, sombre and short | [x] "Double Polka" (Kevin MacLeod), 274 KB |
+| `snow-peaks/recap.mp3` | recap | an EDM polka; quick, punchy, recap energy, the place still in it | 30-40 s loop | polka, oompah, quick | [x] "Ultra Polka" (Kevin MacLeod), 235 KB |
+| `snow-peaks/interview.mp3` | interview | a bright four-beer polka; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | polka, oompah, light | [x] "Four Beers' Polka" (Kevin MacLeod), 313 KB |
+
+## Jungle Ruins (`jungle-ruins/`)
+
+**Sound of the place**: mountain ruins over the jungle: flutes over drums, mysterious and driving.  
+**Search**: flute, drums, jungle, ancient, mysterious.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `jungle-ruins/opener.mp3` | opener | a calm flute and drums, our ancestors' sky; bright, confident, the place in its first bars | 40-60 s loop | flute, drums, bright | [x] "The Sky of our Ancestors" (Kevin MacLeod), 352 KB |
+| `jungle-ruins/travel.mp3` | travel | a driving guitar and flute up the river; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | flute, drums, moving | [x] "Fearless First" (Kevin MacLeod), 391 KB |
+| `jungle-ruins/challenge.mp3` | challenge | a mysterious flute and percussion: the trail and the idol; driving, building, percussion forward, 110-140 bpm | 60 s loop | flute, drums, driving | [x] "River of Io" (Kevin MacLeod), 391 KB |
+| `jungle-ruins/struggle.mp3` | struggle | a moody flute over dark synths; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | flute, drums, tense | [x] "Crypto" (Kevin MacLeod), 352 KB |
+| `jungle-ruins/chill-zone.mp3` | chill-zone | a bright flute and vibraphone on the ruins; relief and a little swagger, mid-tempo, warm | 45 s loop | flute, drums, relief and a little swagger | [x] "On My Way" (Kevin MacLeod), 352 KB |
+| `jungle-ruins/elimination.mp3` | elimination | a sombre pennywhistle and lute; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | flute, drums, sombre and short | [x] "Heavy Heart" (Kevin MacLeod), 274 KB |
+| `jungle-ruins/recap.mp3` | recap | dark, driving flutes and strings; quick, punchy, recap energy, the place still in it | 30-40 s loop | flute, drums, quick | [x] "Malicious" (Kevin MacLeod), 235 KB |
+| `jungle-ruins/interview.mp3` | interview | soft guitar, flute and xylophone; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | flute, drums, light | [x] "Carpe Diem" (Kevin MacLeod), 313 KB |
+
+## Glass Pyramid City (`glass-pyramid-city/`)
+
+**Sound of the place**: the museum city at night: a café waltz, then a runway's electro beat.  
+**Search**: waltz, cafe, electro, runway, club.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `glass-pyramid-city/opener.mp3` | opener | a grand dark waltz at the glass pyramid; bright, confident, the place in its first bars | 40-60 s loop | waltz, cafe, bright | [x] "Grand Dark Waltz Allegro" (Kevin MacLeod), 352 KB |
+| `glass-pyramid-city/travel.mp3` | travel | a light piano waltz down the boulevard; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | waltz, cafe, moving | [x] "Starting Out Waltz Allegretto" (Kevin MacLeod), 391 KB |
+| `glass-pyramid-city/challenge.mp3` | challenge | a driving electro beat: statues and the runway; driving, building, percussion forward, 110-140 bpm | 60 s loop | waltz, cafe, driving | [x] "Realizer" (Kevin MacLeod), 391 KB |
+| `glass-pyramid-city/struggle.mp3` | struggle | a dark, grooving synth; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | waltz, cafe, tense | [x] "Fantasia Fantasia" (Kevin MacLeod), 352 KB |
+| `glass-pyramid-city/chill-zone.mp3` | chill-zone | a 1960s club jazz under the lights; relief and a little swagger, mid-tempo, warm | 45 s loop | waltz, cafe, relief and a little swagger | [x] "Deuces" (Kevin MacLeod), 352 KB |
+| `glass-pyramid-city/elimination.mp3` | elimination | a slow gymnopédie waltz; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | waltz, cafe, sombre and short | [x] "Valse Gymnopedie" (Kevin MacLeod), 274 KB |
+| `glass-pyramid-city/recap.mp3` | recap | a bright, fast EDM hit; quick, punchy, recap energy, the place still in it | 30-40 s loop | waltz, cafe, quick | [x] "Cloud Dancer" (Kevin MacLeod), 235 KB |
+| `glass-pyramid-city/interview.mp3` | interview | an easy electro groove; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | waltz, cafe, light | [x] "Getting it Done" (Kevin MacLeod), 313 KB |
+
+## Fishing Cove (`fishing-cove/`)
+
+**Sound of the place**: a fishing cove at the edge of the sea: tin whistle and fiddle jigs, a sea shanty.  
+**Search**: jig, reel, tin whistle, shanty, sea.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `fishing-cove/opener.mp3` | opener | a bouncing tin-whistle tune; bright, confident, the place in its first bars | 40-60 s loop | jig, reel, bright | [x] "Music to Delight" (Kevin MacLeod), 352 KB |
+| `fishing-cove/travel.mp3` | travel | a salty sea ditty at the oars; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | jig, reel, moving | [x] "Salty Ditty" (Kevin MacLeod), 391 KB |
+| `fishing-cove/challenge.mp3` | challenge | a solid village jig: the welcome rite; driving, building, percussion forward, 110-140 bpm | 60 s loop | jig, reel, driving | [x] "Thatched Villagers" (Kevin MacLeod), 391 KB |
+| `fishing-cove/struggle.mp3` | struggle | a dark accordion and whistle shanty; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | jig, reel, tense | [x] "Netherworld Shanty" (Kevin MacLeod), 352 KB |
+| `fishing-cove/chill-zone.mp3` | chill-zone | a relaxed groove with uilleann pipes by the shack; relief and a little swagger, mid-tempo, warm | 45 s loop | jig, reel, relief and a little swagger | [x] "Cold Sober" (Kevin MacLeod), 352 KB |
+| `fishing-cove/elimination.mp3` | elimination | a slow little flute and glockenspiel waltz; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | jig, reel, sombre and short | [x] "Teddy Bear Waltz" (Kevin MacLeod), 274 KB |
+| `fishing-cove/recap.mp3` | recap | a quick, poofy reel; quick, punchy, recap energy, the place still in it | 30-40 s loop | jig, reel, quick | [x] "Poofy Reel" (Kevin MacLeod), 235 KB |
+| `fishing-cove/interview.mp3` | interview | a medieval minstrel round; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | jig, reel, light | [x] "Minstrel Guild" (Kevin MacLeod), 313 KB |

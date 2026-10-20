@@ -2678,5 +2678,325 @@
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
   "cut": "0s + 40s",
   "lift": 0.0
+ },
+ "snow-peaks/opener.mp3": {
+  "title": "Meanwhile in Bavaria",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500057",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Meanwhile%20in%20Bavaria.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "snow-peaks/travel.mp3": {
+  "title": "No Spam Polka",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100132",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/No%20Spam%20Polka.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "snow-peaks/challenge.mp3": {
+  "title": "Manic Polka",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100168",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Manic%20Polka.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 1.3
+ },
+ "snow-peaks/struggle.mp3": {
+  "title": "Dvorak Polka",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100249",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dvorak%20Polka.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.1
+ },
+ "snow-peaks/chill-zone.mp3": {
+  "title": "Snare Bounce Polka",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100069",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Snare%20Bounce%20Polka.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 2.9
+ },
+ "snow-peaks/elimination.mp3": {
+  "title": "Double Polka",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100253",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Double%20Polka.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.4
+ },
+ "snow-peaks/recap.mp3": {
+  "title": "Ultra Polka",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500069",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ultra%20Polka.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "snow-peaks/interview.mp3": {
+  "title": "Four Beers' Polka",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100225",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Four%20Beers%20Polka.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 1.2
+ },
+ "jungle-ruins/opener.mp3": {
+  "title": "The Sky of our Ancestors",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700056",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Sky%20of%20our%20Ancestors.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "jungle-ruins/travel.mp3": {
+  "title": "Fearless First",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600058",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fearless%20First.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": -0.0
+ },
+ "jungle-ruins/challenge.mp3": {
+  "title": "River of Io",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600065",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/River%20of%20Io.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "jungle-ruins/struggle.mp3": {
+  "title": "Crypto",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600013",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Crypto.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "jungle-ruins/chill-zone.mp3": {
+  "title": "On My Way",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600062",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/On%20My%20Way.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "jungle-ruins/elimination.mp3": {
+  "title": "Heavy Heart",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600002",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heavy%20Heart.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.6
+ },
+ "jungle-ruins/recap.mp3": {
+  "title": "Malicious",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700045",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Malicious.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "jungle-ruins/interview.mp3": {
+  "title": "Carpe Diem",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600023",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carpe%20Diem.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "glass-pyramid-city/opener.mp3": {
+  "title": "Grand Dark Waltz Allegro",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100020",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Grand%20Dark%20Waltz%20Allegro.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.2
+ },
+ "glass-pyramid-city/travel.mp3": {
+  "title": "Starting Out Waltz Allegretto",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100023",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Starting%20Out%20Waltz%20Allegretto.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "glass-pyramid-city/challenge.mp3": {
+  "title": "Realizer",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900024",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Realizer.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "glass-pyramid-city/struggle.mp3": {
+  "title": "Fantasia Fantasia",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1800006",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fantasia%20Fantasia.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "glass-pyramid-city/chill-zone.mp3": {
+  "title": "Deuces",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700075",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deuces.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "glass-pyramid-city/elimination.mp3": {
+  "title": "Valse Gymnopedie",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100012",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Valse%20Gymnopedie.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 3.2
+ },
+ "glass-pyramid-city/recap.mp3": {
+  "title": "Cloud Dancer",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2300007",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cloud%20Dancer.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 1.1
+ },
+ "glass-pyramid-city/interview.mp3": {
+  "title": "Getting it Done",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1800004",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Getting%20it%20Done.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "fishing-cove/opener.mp3": {
+  "title": "Music to Delight",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200023",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Music%20to%20Delight.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "fishing-cove/travel.mp3": {
+  "title": "Salty Ditty",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600053",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Salty%20Ditty.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 1.8
+ },
+ "fishing-cove/challenge.mp3": {
+  "title": "Thatched Villagers",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100720",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Thatched%20Villagers.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "fishing-cove/struggle.mp3": {
+  "title": "Netherworld Shanty",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100138",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Netherworld%20Shanty.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "fishing-cove/chill-zone.mp3": {
+  "title": "Cold Sober",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700025",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cold%20Sober.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "fishing-cove/elimination.mp3": {
+  "title": "Teddy Bear Waltz",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700064",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Teddy%20Bear%20Waltz.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.0
+ },
+ "fishing-cove/recap.mp3": {
+  "title": "Poofy Reel",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100003",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Poofy%20Reel.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 3.8
+ },
+ "fishing-cove/interview.mp3": {
+  "title": "Minstrel Guild",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200098",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Minstrel%20Guild.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
  }
 }

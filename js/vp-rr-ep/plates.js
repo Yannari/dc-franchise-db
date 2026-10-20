@@ -668,6 +668,79 @@ export const PLACE_PLATES = {
       mat: { talk: [p('chill-22411602', 92, [6, 94], { matPos: [50, 92] })] },
     },
   },
+  // ── batch 6 (LEGS.txt 33-36) ──
+  'snow-peaks': {
+    src: '33-snow-peaks', title: 'present-22413727', opener: p('present-22413612', 90, [6, 94]),
+    arrive: [p('present-22413613', 92, [30, 94])],
+    props: { goat: 'Angry mountain goat cartoon cutout-4', sausage: 'Giant Sausage Sled Cutout-2', grinder: 'Industrial Meat Grinder Cartoon Prop-3',
+      pad: 'Total Drama arcade dance pad-1', ...(REPAINTED.has('cable-car') ? { cablecar: 'cable-car' } : {}) },
+    st: {
+      // the cable car is a job (edit/); meanwhile the zipline trolley on the cable
+      'cable-car': { talk: [p('present-22413613', 92, [30, 94])],
+        act: p('present-22413727', 0, [0, 0], { water: true, mode: 'zip', prop: REPAINTED.has('cable-car') ? 'cablecar' : 'trolley@home-city', path: [[10, 42], [50, 36], [90, 30]] }) },
+      // the meat ground into a giant sausage, the goat glaring; done, down the slope on it
+      sausage: { talk: [p('task-22413818', 92, [40, 94])],
+        act: p('present-22413613', 92, [30, 94], { mode: 'build', prop: 'grinder', judge: ['goat', 0.9], fx: 'snow' }),
+        act2: p('present-22413612', 0, [0, 0], { water: true, mode: 'ride', prop: 'sausage', path: [[-14, 66], [50, 80], [114, 92]], fx: 'snow' }) },
+      // the slap dance on the shocking pads
+      'slap-dance': { talk: [p('chill-22413853', 92, [6, 94])],
+        act: p('task-22414020', 88, [20, 76], { mode: 'dance', fx: 'sparkle' }) },
+      mat: { talk: [p('chill-22413855', 88, [6, 94], { matPos: [55, 84] })] },
+    },
+  },
+  'jungle-ruins': {
+    src: '34-jungle-ruins', title: 'present-22414265', opener: p('task-22414262', 90, [6, 94]),
+    arrive: [p('arrive-22414257', 90, [6, 94])],
+    props: { caterpillar: 'Complete Olive Green Caterpillar Character-3', ...(REPAINTED.has('canoe') ? { canoe: 'canoe' } : {}),
+      ...(REPAINTED.has('golden-idol') ? { idol: 'golden-idol' } : {}) },
+    st: {
+      // the canoe is a job (edit/); meanwhile the raft
+      'river-canoe': { talk: [p('arrive-22414257', 90, [6, 94])],
+        act: p('task-22414389', 0, [0, 0], { water: true, mode: 'ride', prop: REPAINTED.has('canoe') ? 'canoe' : 'raft@savanna-falls', path: [[-16, 72], [50, 70], [116, 72]], fx: 'splash' }) },
+      // through the jungle, the caterpillars in the way
+      'jungle-trail': { talk: [p('task-22414793', 90, [6, 94])],
+        act: p('task-22414456', 92, [44, 94], { mode: 'chase', prop: 'caterpillar', propW: 0.8, fx: 'dust' }) },
+      // the one real golden treasure at the foot of the ruins (the idol is a job; meanwhile the search alone)
+      'golden-idol': { talk: [p('task-22414655', 95, [6, 94], { closed: true })],
+        act: p('task-22414655', 95, [6, 94], { closed: true, mode: 'search', ...(REPAINTED.has('golden-idol') ? { prop: 'idol', propW: 0.6 } : {}), fx: 'dust' }) },
+      'ruin-climb': { talk: [p('task-22414262', 90, [6, 94])],
+        act: p('present-22414265', 96, [10, 90], { mode: 'climb', path: [[50, 98], [54, 78], [57, 58], [60, 40]], fx: 'dust' }) },
+      mat: { talk: [p('chill-22414582', 68, [14, 86], { matPos: [50, 66], scale: 0.75 })] },
+    },
+  },
+  'glass-pyramid-city': {
+    src: '35-glass-pyramid-city', title: 'present-22414919', opener: p('chill-22415411', 92, [6, 94]),
+    arrive: [p('arrive-22414920', 92, [6, 94])],
+    props: { torso: 'Stylized Marble Statue Torso-8', head: 'Detached cream marble statue head-5', legs: 'Seated marble statue legs and base-3',
+      bear: 'Brown museum bear cutout-7' },
+    st: {
+      'museum-taxi': { talk: [p('arrive-22414920', 92, [6, 94])],
+        act: p('arrive-22414920', 92, [6, 94], { mode: 'ride', prop: 'taxi@glass-tower-gulf', flip: true, path: [[-14, 93], [50, 92], [114, 93]] }) },
+      // the statue put back together, the loose bear watching
+      'broken-statue': { talk: [p('task-22415179', 92, [6, 94], { closed: true })],
+        act: p('task-22415175', 92, [6, 94], { closed: true, mode: 'build', prop: 'torso', propW: 0.8, judge: ['bear', 0.8], fx: 'dust' }) },
+      // the museum runway is a job (edit/); meanwhile the museum hall
+      runway: { talk: [repaint('task-museum-runway', p('task-museum-runway', 92, [6, 94], { closed: true }), p('task-22415034', 94, [6, 94], { closed: true }))],
+        act: repaint('task-museum-runway', p('task-museum-runway', 92, [6, 94], { closed: true, mode: 'walk', path: [[10, 92], [50, 92], [90, 92]], fx: 'sparkle' }),
+          p('task-22415170', 92, [6, 94], { closed: true, mode: 'walk', path: [[10, 92], [50, 92], [90, 92]], fx: 'sparkle' })) },
+      mat: { talk: [p('task-22415208', 92, [6, 94], { matPos: [42, 90] })] },
+    },
+  },
+  'fishing-cove': {
+    src: '36-fishing-cove', title: 'present-22415793', opener: p('chill-22416099', 88, [6, 60]),
+    arrive: [p('arrive-22415810', 90, [6, 60])],
+    props: { boat: 'rowboat', cod: 'codfish', fisherman: 'fisherman-local', vinegar: 'vinegar-bottle' },
+    st: {
+      rowboat: { talk: [p('arrive-22415810', 90, [6, 60])],
+        act: p('task-22415657', 0, [0, 0], { water: true, mode: 'ride', prop: 'boat', path: [[-16, 82], [50, 80], [116, 82]], fx: 'splash' }) },
+      // the vinegar, the local's words, and the cod to kiss, the fisherman watching
+      'welcome-rite': { talk: [p('arrive-22415967', 92, [6, 94])],
+        act: p('arrive-22415967', 92, [6, 94], { mode: 'eat', prop: 'cod', propW: 0.7, judge: ['fisherman', 0.5], fx: 'splash' }) },
+      'beach-run': { talk: [p('chill-22416099', 88, [6, 60])],
+        act: p('chill-22416099', 88, [6, 60], { mode: 'run', path: [[10, 88], [32, 88], [56, 88]] }) },
+      mat: { talk: [p('chill-22416099', 88, [6, 60], { matPos: [40, 84] })] },
+    },
+  },
 };
 
 // All the plate files a place needs (the asset copier and the tests read this)

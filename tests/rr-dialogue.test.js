@@ -1,7 +1,7 @@
 // The Ridonculous Race: the writer, and the rules every pool is held to (dialogue plan, Task 3).
 import { describe, it, expect } from 'vitest';
 import { POOLS, PRUNED, variantFails } from '../js/rr/script/lines/index.js';
-import { KITS, identityLine } from '../js/rr/script/identity.js';
+import { KITS, identityLine, kitText } from '../js/rr/script/identity.js';
 import { writeScene, DIRECTOR_KINDS } from '../js/rr/script/write.js';
 import { RR_FACT_KEYS } from '../js/rr/script/facts.js';
 import { SCENES, playScene, emit } from '../js/rr/scenes.js';
@@ -128,14 +128,14 @@ describe('rr dialogue: the writer', () => {
     const ctx = fixtureCtx('tip-read');
     const t = ctx.state.teams[ctx.team.id];
     t.identity = builtIn;
-    const all = new Set([...Object.values(kit.voice).flat(), ...Object.values(kit.specific).flat()]);
+    const all = new Set([...Object.values(kit.voice).flat(), ...Object.values(kit.specific).flat()].map(kitText));
     for (let i = 0; i < 20; i++) {
       const line = identityLine(ctx.state, t.a, 'good', () => i / 20);
       if (line) expect(all.has(line)).toBe(true);
     }
     t.identity = null;
     t.custom = { name: 'Synchronized Swimmers', voice: builtIn, strength: builtIn };
-    const voice = new Set(Object.values(kit.voice).flat());
+    const voice = new Set(Object.values(kit.voice).flat().map(kitText));
     for (let i = 0; i < 20; i++) {
       const line = identityLine(ctx.state, t.a, 'good', () => i / 20);
       if (line) expect(voice.has(line)).toBe(true);

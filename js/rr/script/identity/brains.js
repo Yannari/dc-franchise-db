@@ -6,7 +6,7 @@ export default {
   geniuses: {
     voice: {
       good: ["Oh, I've got this. Give me thirty seconds and don't talk to me, I'm almost there.",
-        "It's the order they're in. Look, it's obvious once you see it, and I see it."],
+        { for: ['brains'], s: "It's the order they're in. Look, it's obvious once you see it, and I see it." }],
       bad: ["This is heavier than me. I'm not exaggerating, {partner}, I really think it's heavier than me.",
         "I'm not brave, I'm just good at working out everything that could go wrong, and all of it could go wrong."],
       win: ["We're ahead, and it's because we stopped and thought about it first. I knew that would work.",
@@ -31,8 +31,8 @@ export default {
         "That's it. Okay. I'm allowed to be sad about this, right? Because I'm going to be sad about it."],
     },
     specific: {
-      good: ["It's a logic problem, {partner}. I've been doing these since before I could ride a bike.",
-        "I memorised the whole map while you were asleep. Left here, then two rights, and then it's straight on."],
+      good: [{ for: ['brains'], s: "It's a logic problem, {partner}. I've been doing these since before I could ride a bike." },
+        { for: ['travel'], s: "I memorised the whole map while you were asleep. Left here, then two rights, and then it's straight on." }],
       bad: ["This weighs more than I do. I've done the maths, and it weighs more than both of us.",
         "I skipped two grades, {partner}, and I skipped gym in both of them. This is why."],
       win: ["This is like the regional maths final. Everyone else is still reading the question and we're done.",
@@ -60,7 +60,7 @@ export default {
 
   'debate-team': {
     voice: {
-      good: ["Let me talk to him. Three things: we're polite, we're in a hurry, and we'll be gone in five minutes.",
+      good: [{ for: ['people'], s: "Let me talk to him. Three things: we're polite, we're in a hurry, and we'll be gone in five minutes." },
         "I've got this. Give me thirty seconds and I'll make it make sense, I promise."],
       bad: ["We prepared for everything, {partner}. We did not prepare for this.",
         "I can argue my way out of anything except this, apparently. Come on, come on!"],
@@ -142,7 +142,7 @@ export default {
     },
     specific: {
       good: ["It's just like setting up an experiment. Steady hands, one step at a time, and write everything down.",
-        "I've done fiddlier things than this with a pipette at two in the morning. Hold it still, {partner}."],
+        { for: ['hands'], s: "I've done fiddlier things than this with a pipette at two in the morning. Hold it still, {partner}." }],
       bad: ["We spend all day in a lab with nobody watching us, {partner}. This is the opposite of a lab.",
         "I know exactly what's in this, and that's the problem. I've looked at stuff like this under a microscope."],
       win: ["This is like the day the experiment finally worked after six months. Don't touch anything.",
@@ -170,8 +170,8 @@ export default {
 
   lawyers: {
     voice: {
-      good: ["We're not asking him for a favour. We're offering him a deal, and there's a difference.",
-        "Let me read it again, slowly. The answer's in the wording, it always is."],
+      good: [{ for: ['people'], s: "We're not asking him for a favour. We're offering him a deal, and there's a difference." },
+        { for: ['brains'], s: "Let me read it again, slowly. The answer's in the wording, it always is." }],
       bad: ["Nobody agreed to this, {partner}. I certainly didn't agree to this.",
         "I'm going to do it, and I'd like it noted that I'm doing it under protest."],
       win: ["We're ahead, and we're ahead because we read the details everyone else skipped.",
@@ -196,8 +196,8 @@ export default {
         "That's it, {partner}. We made our case. It just wasn't enough this time."],
     },
     specific: {
-      good: ["This is just a negotiation, {partner}. I do six of these before lunch on a slow day.",
-        "I've read contracts longer than this whole race. Give me the fine print."],
+      good: [{ for: ['people'], s: "This is just a negotiation, {partner}. I do six of these before lunch on a slow day." },
+        { for: ['brains'], s: "I've read contracts longer than this whole race. Give me the fine print." }],
       bad: ["There's no clause for this. Nobody signs up for this, {partner}.",
         "I've cross-examined people who frightened me less than this. I'd like a short recess, please."],
       win: ["We're winning this like a case the other side should have settled. Keep going.",

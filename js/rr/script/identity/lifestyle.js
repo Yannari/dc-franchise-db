@@ -62,7 +62,7 @@ export default {
   'rich-kids': {
     voice: {
       good: ["Leave this to me. I've done this kind of thing my whole life, and honestly, I'm really good at it.",
-        "Book the earlier one. Yes, it costs more. No, wait, we can't do that here. Ugh."],
+        { for: ['travel'], s: "Book the earlier one. Yes, it costs more. No, wait, we can't do that here. Ugh." }],
       bad: ["I've never done anything like this, {partner}, and honestly I'm not sure I'm supposed to.",
         "Is there someone we can get to do this for us? There's always someone."],
       win: ["We're winning? Of course we're winning. Did anybody really think we wouldn't?",
@@ -87,8 +87,8 @@ export default {
         "That's it, {partner}. Okay. Honestly, I'll miss this. Even the awful parts."],
     },
     specific: {
-      good: ["I've had a travel agent on speed dial since I was twelve. Trust me on the connections, {partner}.",
-        "I've done the speech at Daddy's charity gala three years running. This is nothing."],
+      good: [{ for: ['travel'], s: "I've had a travel agent on speed dial since I was twelve. Trust me on the connections, {partner}." },
+        { for: ['perform'], s: "I've done the speech at Daddy's charity gala three years running. This is nothing." }],
       bad: ["I've never eaten anything I didn't pick off a menu, {partner}. I'm not starting now.",
         "Our gardener does this kind of thing. Can we call the gardener?"],
       win: ["This is like getting the good table at the club without a reservation.",
@@ -117,7 +117,7 @@ export default {
   retirees: {
     voice: {
       good: ["Slow and steady. Everybody else is rushing and doing it twice.",
-        "Let me talk to him. People will tell you anything if you just ask nicely and listen."],
+        { for: ['people'], s: "Let me talk to him. People will tell you anything if you just ask nicely and listen." }],
       bad: ["My knees have opinions about this, {partner}, and they're not good ones.",
         "I'll do it. I'll just do it slowly, and I'll complain the entire time."],
       win: ["Look at us, {partner}! Everybody wrote us off, and here we are.",
@@ -143,7 +143,7 @@ export default {
     },
     specific: {
       good: ["I've waited three hours at the doctor's with nothing but a magazine from last year. I can wait.",
-        "I've talked my way out of a parking ticket and into the front of the line at the bank. Let me ask him."],
+        { for: ['people'], s: "I've talked my way out of a parking ticket and into the front of the line at the bank. Let me ask him." }],
       bad: ["My hip's been replaced once already, {partner}. I'd like to keep this one.",
         "My doctor told me no ladders. He'd have a fit if he could see me now."],
       win: ["We're beating the young ones! Wait till I tell the bridge club.",
@@ -226,8 +226,8 @@ export default {
 
   'party-animals': {
     voice: {
-      good: ["Down in one! Come on, {partner}, we've done worse than this at much worse times.",
-        "Leave him to me. I'll have him laughing in two minutes and telling us everything."],
+      good: [{ for: ['stomach'], s: "Down in one! Come on, {partner}, we've done worse than this at much worse times." },
+        { for: ['people'], s: "Leave him to me. I'll have him laughing in two minutes and telling us everything." }],
       bad: ["Which way was it? Left? Right? It was a direction. I definitely remember it was a direction.",
         "How much longer do we have to wait? I'm losing my mind, {partner}. I need to move."],
       win: ["We're crushing it! Let's go! Whoo!",
@@ -252,8 +252,8 @@ export default {
         "That's it, {partner}. Okay, hug. Big hug. The best one."],
     },
     specific: {
-      good: ["Down in one. We've done this at four in the morning, so we can do it now.",
-        "I've talked my way past every bouncer in town, {partner}. One more person isn't going to stop me."],
+      good: [{ for: ['stomach'], s: "Down in one. We've done this at four in the morning, so we can do it now." },
+        { for: ['people'], s: "I've talked my way past every bouncer in town, {partner}. One more person isn't going to stop me." }],
       bad: ["I can't even find my way home after a night out. You think I can find this?",
         "Waiting in line? I don't wait in lines. I know the bouncer. There's always a bouncer."],
       win: ["This is like the best night out of the year, {partner}! Everything's going right!",
@@ -281,7 +281,7 @@ export default {
 
   'church-choir': {
     voice: {
-      good: ["Find the note, {partner}. Breathe from down here, and don't rush it.",
+      good: [{ for: ['perform'], s: "Find the note, {partner}. Breathe from down here, and don't rush it." },
         "Nice and steady. We do this together, on the same beat, like always."],
       bad: ["Oh, I don't like this one bit. Hold my hand, {partner}, and don't let go.",
         "I'm trying, I really am. I'm just trying with my eyes shut."],
@@ -307,7 +307,7 @@ export default {
         "That's it. Come here. We'll go home and tell everyone all about it."],
     },
     specific: {
-      good: ["Find the note, {partner}. Breathe from down here. We sing to a full hall every Sunday.",
+      good: [{ for: ['perform'], s: "Find the note, {partner}. Breathe from down here. We sing to a full hall every Sunday." },
         "I've sat through three-hour rehearsals for one song. I can wait as long as this takes."],
       bad: ["I'm praying. Quietly. Out loud would only scare everybody.",
         "This is worse than the potluck where somebody brought the fish casserole, {partner}."],

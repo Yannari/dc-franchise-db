@@ -5,7 +5,7 @@
 export default {
   teachers: {
     voice: {
-      good: ["Excuse me, sir? Hi. Two quick questions and then we'll leave you alone, I promise.",
+      good: [{ for: ['people'], s: "Excuse me, sir? Hi. Two quick questions and then we'll leave you alone, I promise." },
         "Okay, one step at a time. Nobody rushes, nobody panics, and we check our work."],
       bad: ["I'm not okay with this, {partner}. I'm doing it, but I'm not okay with it.",
         "I'd like a minute, please. Just one minute to work myself up to it."],
@@ -32,7 +32,7 @@ export default {
     },
     specific: {
       good: ["I get twenty-eight eight-year-olds to sit still every morning. I can get through this.",
-        "I've done parents' night with the angriest dad in the whole district. This guy's nothing."],
+        { for: ['people'], s: "I've done parents' night with the angriest dad in the whole district. This guy's nothing." }],
       bad: ["I've eaten in a school cafeteria for twelve years and this is still the worst thing I've ever put in my mouth.",
         "I can keep a classroom calm with the fire alarm going off. I can't keep myself calm through this."],
       win: ["This is like the day the whole class passed the test. Keep going, {partner}.",
@@ -115,7 +115,7 @@ export default {
 
   'construction-workers': {
     voice: {
-      good: ["Grab the other end. On three. Lift with your legs, {partner}, not your back.",
+      good: [{ for: ['strength'], s: "Grab the other end. On three. Lift with your legs, {partner}, not your back." },
         "Easy. Just like any other day. One piece at a time and keep moving."],
       bad: ["Give me something to lift and I'm fine. Give me something to figure out and I'm lost.",
         "I'm not doing that in front of people, {partner}. Absolutely not."],
@@ -141,8 +141,8 @@ export default {
         "That's it, {partner}. Shake my hand. Good working with you."],
     },
     specific: {
-      good: ["It's just scaffolding without the scaffolding. Clip in and don't look at your feet.",
-        "I carry bags of cement up three flights every morning before coffee. Give it here."],
+      good: [{ for: ['heights'], s: "It's just scaffolding without the scaffolding. Clip in and don't look at your feet." },
+        { for: ['strength'], s: "I carry bags of cement up three flights every morning before coffee. Give it here." }],
       bad: ["Give me a hammer and I'll build you a house. Give me a riddle and I'll hand it right back to you.",
         "I've never sung anywhere but in the truck with the radio up, {partner}."],
       win: ["We're ahead of schedule, {partner}. That never happens on a real job.",
@@ -170,8 +170,8 @@ export default {
 
   servers: {
     voice: {
-      good: ["Smile, be quick, and don't drop anything. That's all there is to it.",
-        "Let me talk to him. I can tell what somebody wants before they open their mouth."],
+      good: [{ for: ['hands'], s: "Smile, be quick, and don't drop anything. That's all there is to it." },
+        { for: ['people'], s: "Let me talk to him. I can tell what somebody wants before they open their mouth." }],
       bad: ["I'm not good with this kind of thing, {partner}. Give me something to carry and somebody to talk to.",
         "Okay, I'm doing it, but I'm not happy about it, and I want you to know that."],
       win: ["We're doing great. Keep moving, keep smiling, don't stop.",
@@ -196,8 +196,8 @@ export default {
         "That's it. Let's go home and put our feet up for about a week."],
     },
     specific: {
-      good: ["Six plates, two arms, nothing spills. I've worked a wedding for three hundred people.",
-        "I can get a table of twelve to agree on dessert in under a minute. Let me talk to him."],
+      good: [{ for: ['hands'], s: "Six plates, two arms, nothing spills. I've worked a wedding for three hundred people." },
+        { for: ['people'], s: "I can get a table of twelve to agree on dessert in under a minute. Let me talk to him." }],
       bad: ["I spend my whole life carrying water to people. I've never once had to get in it.",
         "I can't even split a bill without the calculator on my phone, {partner}."],
       win: ["This is like a Saturday night where every single table tips twenty percent.",
@@ -225,7 +225,7 @@ export default {
 
   truckers: {
     voice: {
-      good: ["Left up here, then it's straight for a good while. I can feel a shortcut coming.",
+      good: [{ for: ['travel'], s: "Left up here, then it's straight for a good while. I can feel a shortcut coming." },
         "We're in no hurry. Hurrying is how you end up doing it twice."],
       bad: ["I've never done anything like this in front of people, and I don't plan to start now.",
         "Don't ask me to figure this out, {partner}. Point me somewhere and I'll get us there."],
@@ -251,7 +251,7 @@ export default {
         "That's it. Let's head home. I miss the quiet."],
     },
     specific: {
-      good: ["Left at the water tower, then it's straight for six miles. I can feel a shortcut coming.",
+      good: [{ for: ['travel'], s: "Left at the water tower, then it's straight for six miles. I can feel a shortcut coming." },
         "I've sat outside a loading dock for eleven hours waiting on a pallet. I can wait."],
       bad: ["Twenty years on the road and I've never sung anywhere somebody could hear me.",
         "Give me a map and a full tank and I'm fine. Give me a riddle and I'm stuck at the rest stop."],
@@ -306,7 +306,7 @@ export default {
         "That's it, {partner}. Okay, hug. Then food. Then sleep."],
     },
     specific: {
-      good: ["We cook noodles in a kettle in our dorm room. This is nothing.",
+      good: [{ for: ['stomach'], s: "We cook noodles in a kettle in our dorm room. This is nothing." },
         "I pulled an all-nighter before my chem final and still got a B plus. I can figure this out."],
       bad: ["I've never booked a flight. My mom books the flight. Mom isn't here.",
         "I can't even wait for the microwave to finish. I open it at four seconds every single time."],

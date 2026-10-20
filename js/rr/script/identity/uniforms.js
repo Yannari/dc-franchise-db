@@ -5,7 +5,7 @@
 export default {
   'police-cadets': {
     voice: {
-      good: ["Grid it out. You take the left half, I take the right, and nobody skips anything.",
+      good: [{ for: ['search'], s: "Grid it out. You take the left half, I take the right, and nobody skips anything." },
         "Stay calm, follow the steps, and we'll get it done. That's what we trained for."],
       bad: ["There's nothing in the rules about this, and I checked twice.",
         "I'm going to be honest, {partner}, I'm not comfortable with this. I'm doing it, but I want that noted."],
@@ -31,7 +31,7 @@ export default {
         "That's the end of it, so shake my hand, {partner}. I'm proud to have done this with you."],
     },
     specific: {
-      good: ["Grid search. You take rows one to ten, I take eleven to twenty, and nobody skips a square.",
+      good: [{ for: ['search'], s: "Grid search. You take rows one to ten, I take eleven to twenty, and nobody skips a square." },
         "This is the academy all over again, {partner}. Hard work, eyes open, and nobody slacks off."],
       bad: ["There's nothing in the academy manual about this, and I've read the whole manual.",
         "The sergeant never trained us for this. He trained us to stand still and look serious, {partner}."],
@@ -86,7 +86,7 @@ export default {
         "That's it, so shake my hand. It was an honour."],
     },
     specific: {
-      good: ["We've done twenty-mile marches with a full pack on, so it's map, compass, and move.",
+      good: [{ for: ['travel'], s: "We've done twenty-mile marches with a full pack on, so it's map, compass, and move." },
         "This is just a field exercise, {partner}. Carry what needs carrying and keep to the route."],
       bad: ["I'd rather do basic training all over again than stand up and put on a show for these people.",
         "They never covered this in basic. They covered marching, shouting and digging, and that's it."],
@@ -142,7 +142,7 @@ export default {
     },
     specific: {
       good: ["I've carried a grown man down four flights of stairs in full gear, so this is easy, {partner}.",
-        "It's just like a drill at the station. Get up there, get hold of it, and get it down."],
+        { for: ['heights'], s: "It's just like a drill at the station. Get up there, get hold of it, and get it down." }],
       bad: ["If this was on fire, I'd know exactly what to do, but it's not on fire, and I don't know what to do.",
         "Give me a hose and a ladder and I'm fine, but give me tiny pieces and a puzzle and I'm useless."],
       win: ["That's a textbook rescue, {partner}! The chief would be proud.",
@@ -281,7 +281,7 @@ export default {
   'flight-attendants': {
     voice: {
       good: ["Leave this to me. I've done this a thousand times, and I can do it smiling.",
-        "Stay calm and stay polite, {partner}, because you'd be amazed how far that gets you."],
+        { for: ['people'], s: "Stay calm and stay polite, {partner}, because you'd be amazed how far that gets you." }],
       bad: ["I'm calm about almost everything, but I am not calm about this.",
         "I can smile through nearly anything, {partner}, but I can't smile through this one."],
       win: ["Lovely, everything's going exactly to plan, so keep going.",
@@ -307,7 +307,7 @@ export default {
     },
     specific: {
       good: ["I've rebooked two hundred passengers off a cancelled flight with a smile on my face, so I can do this.",
-        "This is just boarding a full plane, {partner}. Be friendly, be firm, and keep everybody moving."],
+        { for: ['people'], s: "This is just boarding a full plane, {partner}. Be friendly, be firm, and keep everybody moving." }],
       bad: ["I'm calm in turbulence, but I am not calm about this.",
         "I can lift a carry-on into the overhead bin and keep a straight face in turbulence, and this is past both of those."],
       win: ["We're right on schedule, {partner}, with smooth skies all the way.",

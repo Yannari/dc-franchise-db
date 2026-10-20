@@ -5,8 +5,8 @@
 export default {
   influencers: {
     voice: {
-      good: ["Okay, big smile, {partner}. Everybody loves us, we just have to remind them.",
-        "This is literally what we do every single day. Be cute, be friendly, and get what we want."],
+      good: [{ for: ['people'], s: "Okay, big smile, {partner}. Everybody loves us, we just have to remind them." },
+        { for: ['people'], s: "This is literally what we do every single day. Be cute, be friendly, and get what we want." }],
       bad: ["No, no, no, I can't. This is literally my worst nightmare, and I've had a lot of nightmares.",
         "How long is this going to take? I'm not built for this, I'm built for, like, quick."],
       win: ["We're killing it! Okay, nobody look, but we're totally killing it.",
@@ -31,7 +31,7 @@ export default {
         "That's it, okay, so group hug, and then I need, like, a week to process."],
     },
     specific: {
-      good: ["Hi, big fan! Can you help us out real quick? We'll tag you.",
+      good: [{ for: ['people'], s: "Hi, big fan! Can you help us out real quick? We'll tag you." },
         "Just pretend we're filming a story, {partner}. Big smile, big energy, and the followers love it."],
       bad: ["If I post myself doing this, I lose half my followers, maybe all of them.",
         "My followers probably think I'm dead. That's how long we've been at this, and that's how bad it is."],
@@ -60,7 +60,7 @@ export default {
 
   'fashion-bloggers': {
     voice: {
-      good: ["Let me do it, you always do it too tight. Give it here.",
+      good: [{ for: ['hands'], s: "Let me do it, you always do it too tight. Give it here." },
         "Leave this to me, {partner}. I know exactly how to make this look good."],
       bad: ["I'm doing it, but I want it on record that I hate every single part of it.",
         "Absolutely not. Okay, absolutely yes, because we have to, but absolutely not."],
@@ -86,7 +86,7 @@ export default {
         "That's it, so head up, shoulders back, and walk out like you meant it."],
     },
     specific: {
-      good: ["This is a fitting, {partner}. Pin it, tuck it, compliment them, and they'll do anything you want.",
+      good: [{ for: ['people'], s: "This is a fitting, {partner}. Pin it, tuck it, compliment them, and they'll do anything you want." },
         "I've hemmed a dress backstage in four minutes and talked my way past three doors to get there, so this is easy."],
       bad: ["This outfit was not made for this, {partner}, and neither was I.",
         "I didn't pack for this. Nobody packs a look for this."],
@@ -115,7 +115,7 @@ export default {
 
   vloggers: {
     voice: {
-      good: ["This is so our thing. Big energy, and I've already spotted half of what we need.",
+      good: [{ for: ['search'], s: "This is so our thing. Big energy, and I've already spotted half of what we need." },
         "Watch this, {partner}, because I'm good at this, I'm really, actually good at this."],
       bad: ["Okay, how long are we going to be here? Because my brain is already somewhere else.",
         "I don't get it. I've been staring at it and I still don't get it, so can we skip it?"],

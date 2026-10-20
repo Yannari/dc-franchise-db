@@ -5,7 +5,7 @@
 export default {
   podcasters: {
     voice: {
-      good: ["Let me do the talking. I can talk to anybody about anything for two hours, you know I can.",
+      good: [{ for: ['people'], s: "Let me do the talking. I can talk to anybody about anything for two hours, you know I can." },
         "Okay, I actually know this. I went way too deep on this exact thing once and you made fun of me for it."],
       bad: ["I'm going to describe what I'm doing in my head so it feels like it's happening to somebody else. Okay. I'm doing it.",
         "I'm a talker, {partner}, not a doer. I'm going to try, but please don't expect much."],
@@ -32,7 +32,7 @@ export default {
     },
     specific: {
       good: ["I did a two-hour episode on exactly this kind of thing. I know it cold, {partner}, let me do it.",
-        "Talking to strangers is literally our job. Treat him like a guest on the show and let him tell his story."],
+        { for: ['people'], s: "Talking to strangers is literally our job. Treat him like a guest on the show and let him tell his story." }],
       bad: ["Our listeners think we're fearless. Our listeners have never seen me anywhere near something like this.",
         "The heaviest thing I carry in a normal week is the mic bag, {partner}, and you usually carry the mic bag."],
       win: ["This is the best episode we've ever made, and nobody's even recording it.",
@@ -60,7 +60,7 @@ export default {
 
   streamers: {
     voice: {
-      good: ["Quick hands, {partner}, that's the whole thing. Give it here and let me do it.",
+      good: [{ for: ['hands'], s: "Quick hands, {partner}, that's the whole thing. Give it here and let me do it." },
         "Oh, I know this. I've done stuff like this a thousand times at three in the morning."],
       bad: ["Can you talk to him? I'm way better with people when they can't actually see me.",
         "My arms are giving up already. I sit down for a living, basically, so I'm not built for this."],
@@ -86,8 +86,8 @@ export default {
         "That's it, {partner}. Good game. I mean it, really good game."],
     },
     specific: {
-      good: ["Quick hands, that's the whole job. I've done harder stuff than this live with ten thousand people watching.",
-        "This is just a puzzle level, {partner}. Chat would've solved it by now, so let's be faster than chat."],
+      good: [{ for: ['hands'], s: "Quick hands, that's the whole job. I've done harder stuff than this live with ten thousand people watching." },
+        { for: ['brains'], s: "This is just a puzzle level, {partner}. Chat would've solved it by now, so let's be faster than chat." }],
       bad: ["Can you talk to him? I'm better with people when there's a chat box between us.",
         "I haven't lifted anything heavier than my monitor since I bought it. And I had help with the monitor."],
       win: ["If I was streaming this right now, chat would be going absolutely nuts.",
@@ -115,7 +115,7 @@ export default {
 
   'reality-tv-pros': {
     voice: {
-      good: ["Let me handle this. Smile, make it personal, and leave them thinking it was their idea.",
+      good: [{ for: ['people'], s: "Let me handle this. Smile, make it personal, and leave them thinking it was their idea." },
         "Watch me. I've talked my way into and out of worse than this, {partner}."],
       bad: ["I don't do fiddly, {partner}. Give me a person to talk to, not a thing to fix.",
         "How long do we have to wait here? I'm not built for sitting still, and everybody knows it."],

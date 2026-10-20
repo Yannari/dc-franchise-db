@@ -249,17 +249,28 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   // the team's identity, heard at a natural moment (when the entry didn't already call one)
   if (!lines.some(l => String(l.voice || '').startsWith('id:'))) {
     const hook = AUTO_HOOK[scene.kind]?.(facts);
-    // whoever didn't just speak says it (a, unless a had the last word; then a's partner)
-    let end = lines.length;
-    if (!scene.kind.startsWith('int-')) while (end > 0 && lines[end - 1].kind === 'conf') end--;
-    const lastBy = lines.slice(0, end).reverse().find(l => l.kind !== 'beat')?.by;
+    // at a challenge it opens the moment, said by whoever doesn't speak first: a task beat is a tight exchange that ends
+    // on its button, and a line after the button answers nothing (2026-10-20 read: "Please don't. People walk on it." /
+    // "This is a highlight run, Luis.")
+    const opens = OPENS.has(scene.kind);
     const partner = r.roles.b && partnerOf(state, r.roles.a) === r.roles.b ? r.roles.b : null;
-    const who = lastBy === r.roles.a && partner ? partner : r.roles.a;
+    let who;
+    if (opens) {
+      const firstBy = lines.find(l => l.kind === 'say')?.by;
+      who = firstBy === r.roles.a && partner ? partner : r.roles.a;
+    } else {
+      // elsewhere whoever didn't just speak says it (a, unless a had the last word; then a's partner)
+      let end = lines.length;
+      if (!scene.kind.startsWith('int-')) while (end > 0 && lines[end - 1].kind === 'conf') end--;
+      const lastBy = lines.slice(0, end).reverse().find(l => l.kind !== 'beat')?.by;
+      who = lastBy === r.roles.a && partner ? partner : r.roles.a;
+    }
     if (hook && who && stableRng(state.seed, 'rr-idhook', scene.id)() < AUTO_SHARE) {
-      const said = identityLine(state, who, hook, stableRng(state.seed, 'rr-idline', scene.id));
-      // said in the scene: before the closing interview, if the scene ends on one
+      const said = identityLine(state, who, hook, stableRng(state.seed, 'rr-idline', scene.id), { types: scene.data?.snap?.taskTypes });
+      // said in the scene: before the closing interview, if the scene ends on one; at a challenge, after the opening beats
       let at = lines.length;
-      if (!scene.kind.startsWith('int-')) while (at > 0 && lines[at - 1].kind === 'conf') at--;
+      if (opens) { at = lines.findIndex(l => l.kind !== 'beat'); if (at < 0) at = lines.length; }
+      else if (!scene.kind.startsWith('int-')) while (at > 0 && lines[at - 1].kind === 'conf') at--;
       if (said && at > 0) lines.splice(at, 0, { kind: scene.kind.startsWith('int-') ? 'conf' : 'say', by: who,
         text: fill(said, r.roles, { ...r.slots, partner: partnerOf(state, who) }), voice: `id:${hook}`, auto: true });
     }
@@ -271,6 +282,8 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
 // when a task keeps failing or is given up, on arriving somewhere new, first or last on the mat, going home,
 // at a rival in trash talk, at a friend in good small talk.
 const AUTO_SHARE = 0.5;
+// the moments at a challenge, where the identity line opens the exchange instead of following it
+const OPENS = new Set(['task-start', 'task-try', 'task-done', 'attempt-fail']);
 const AUTO_HOOK = {
   // after-fails is the try that finally worked: no struggle line over it. A 'bad' line reacts to a struggle ("this is
   // why"), so it isn't said at the start or over a first-try success (2026-10-20 read: "I skipped gym. This is why." at

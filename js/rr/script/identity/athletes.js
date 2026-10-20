@@ -60,7 +60,7 @@ export default {
 
   'ice-dancers': {
     voice: {
-      good: ["Count us in, five, six, seven, eight. And smile, {partner}, they're watching.",
+      good: [{ for: ['perform'], s: "Count us in, five, six, seven, eight. And smile, {partner}, they're watching." },
         "We've drilled this kind of thing for years, so keep it clean and precise and don't waste a single movement."],
       bad: ["I'm not being dramatic, I actually physically can't do this. My body doesn't work like that.",
         "We trained for years so we'd never look like this, and now we look like this."],
@@ -86,7 +86,7 @@ export default {
         "It's over, so hold my hand and keep your chin up. We're walking out of here properly."],
     },
     specific: {
-      good: ["This is just like the footwork sequence. Small, clean movements, and smile like the judges are sitting right there.",
+      good: [{ for: ['perform'], s: "This is just like the footwork sequence. Small, clean movements, and smile like the judges are sitting right there." },
         "We've done harder lifts than this on bad ice at six in the morning, so keep your hands steady, {partner}."],
       bad: ["I can't. We have a weigh-in in three weeks, and our coach is going to see this on television.",
         "Our coach said never do anything that could pull a muscle before the season, and this is exactly that thing."],
@@ -197,7 +197,7 @@ export default {
     },
     specific: {
       good: ["You've been on top of a pyramid with a whole stadium watching, so this is nothing. Up on three!",
-        "This is just like the halftime routine. Hit your marks, sell it to the crowd, and stick the landing."],
+        { for: ['perform'], s: "This is just like the halftime routine. Hit your marks, sell it to the crowd, and stick the landing." }],
       bad: ["Coach never made us do anything like this. She made us do backflips, so can we do backflips instead?",
         "I'll tumble until I'm dizzy, but this isn't a cheer, {partner}. I can't clap my way through it."],
       win: ["This is a competition-winning routine right here! Keep that energy, {partner}, the judges love it!",

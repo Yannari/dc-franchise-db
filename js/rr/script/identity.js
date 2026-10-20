@@ -12,7 +12,8 @@
 // nothing to say there (no identity, no line for the hook), the turn's own `say` speaks.
 // Hooks: good, bad (a task the identity is good / bad at), win, struggle, lose, quit,
 // about-friction, about-friend, arrive, mat-first, mat-last, elim.
-// Kit lines may name {partner} (the speaker's partner), {identity}, {teamB}, {identityB}.
+// Kit lines may name {partner} (the speaker's partner), {identity}, {teamB}, {identityB}. A good line about one kind of
+// task is { for: [task types], s: "..." } ("Let me talk to him": for: ['people']), said only at a task of that kind.
 import athletes from './identity/athletes.js';
 import performers from './identity/performers.js';
 import subcultures from './identity/subcultures.js';
@@ -32,7 +33,12 @@ const teamOfName = (st, n) => Object.values(st.teams).find(t => t.a === n || t.b
 
 // The line a speaker's team says at a hook, or null. A built-in identity draws from both kinds;
 // a custom one only from its voice identity's voice lines.
-export function identityLine(state, speaker, hook, rng = Math.random) {
+// A kit line is a string (said at any task of the hook), or { for: [task types], s } for a line about one kind of task
+// ("Let me talk to him" is for a task with people in it, not for catching an emu): said only when the task is that kind.
+const lineFits = (l, types) => typeof l === 'string' || (types || []).some(x => l.for.includes(x));
+export const kitText = l => (typeof l === 'string' ? l : l.s);
+
+export function identityLine(state, speaker, hook, rng = Math.random, { types } = {}) {
   const t = teamOfName(state, speaker);
   if (!t) return null;
   // a line the user wrote for this team at this moment (the Pairs view), before anything from a kit
@@ -49,7 +55,7 @@ export function identityLine(state, speaker, hook, rng = Math.random) {
   const used = (state.kitLedger[t.id ?? t.name] ||= []);
   const ownFresh = mine.filter(l => !used.includes(l));
   if (ownFresh.length) { used.push(ownFresh[0]); return ownFresh[0]; }
-  const fresh = lines.filter(l => !used.includes(l));
+  const fresh = lines.filter(l => lineFits(l, types)).map(kitText).filter(l => !used.includes(l));
   if (!fresh.length) return null;
   const pick = fresh[Math.floor(rng() * fresh.length) % fresh.length];
   used.push(pick);

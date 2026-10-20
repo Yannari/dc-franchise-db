@@ -30,7 +30,7 @@ export default {
         "That's it. Let's go home. There's plenty of work waiting there anyway."],
     },
     specific: {
-      good: ["Feet apart, let the axe do the work. Don't swing at it, swing through it.",
+      good: [{ for: ['strength'], s: "Feet apart, let the axe do the work. Don't swing at it, swing through it." },
         "It's just like stacking cordwood, {partner}. Big ones on the bottom, and keep it square."],
       bad: ["Out in the woods I always know where I am. Here I'm lost, and I'm not ashamed to say it.",
         "Nobody said there'd be singing. I'd have stayed in the woods."],
@@ -86,7 +86,7 @@ export default {
     },
     specific: {
       good: ["You've cleaned out worse, {partner}. Remember the pig barn in August?",
-        "We haul hay bales all summer long. Give it here, this is nothing."],
+        { for: ['strength'], s: "We haul hay bales all summer long. Give it here, this is nothing." }],
       bad: ["Taxi, bus, train. We've got a truck at home, {partner}. One truck.",
         "The only place I've ever sung is in the barn to the cows, and they didn't like it either."],
       win: ["This is like getting the whole field in before the rain comes. Keep going.",
@@ -141,7 +141,7 @@ export default {
     },
     specific: {
       good: ["I've spent a week alone in the backcountry with a knife and a tarp. This is nothing.",
-        "Read it like a trail, {partner}. A broken branch, a footprint, something out of place. It's here."],
+        { for: ['search'], s: "Read it like a trail, {partner}. A broken branch, a footprint, something out of place. It's here." }],
       bad: ["Give me a compass and a river and I'll get us anywhere. Give me a bus timetable and I'm lost.",
         "Out in the bush, nobody asks you how your day's going. I'm not good at the talking part."],
       win: ["We're moving like it's a long trek in good weather. Keep that pace.",
@@ -169,7 +169,7 @@ export default {
 
   chefs: {
     voice: {
-      good: ["Smaller. Smaller. No, that's not small, that's medium. Give it to me.",
+      good: [{ for: ['hands'], s: "Smaller. Smaller. No, that's not small, that's medium. Give it to me." },
         "I've had worse than this and I've made worse than this. Just get it done, {partner}."],
       bad: ["How long are we supposed to stand here? I don't do standing around, I go crazy.",
         "I hate this, {partner}. I can't rush it and I can't control it."],
@@ -195,8 +195,8 @@ export default {
         "That's it, {partner}. When we get home I'm making you the best meal of your life. You've earned it."],
     },
     specific: {
-      good: ["Mince, don't chop. Smaller. That's a chop, I said mince.",
-        "I've eaten worse than this at the end of a double shift, standing over the bins. Chew and swallow."],
+      good: [{ for: ['hands'], s: "Mince, don't chop. Smaller. That's a chop, I said mince." },
+        { for: ['stomach'], s: "I've eaten worse than this at the end of a double shift, standing over the bins. Chew and swallow." }],
       bad: ["I've waited in kitchens for a sauce to reduce. This is worse.",
         "The only water I like is the water in my stockpot, {partner}."],
       win: ["This is a perfect service, {partner}. Every plate out on time and nothing sent back.",
@@ -224,8 +224,8 @@ export default {
 
   mechanics: {
     voice: {
-      good: ["Give it here. I'll have it working in two minutes. Don't watch me, it makes me slow.",
-        "I'll get us there. You just tell me when to turn, and tell me early."],
+      good: [{ for: ['hands'], s: "Give it here. I'll have it working in two minutes. Don't watch me, it makes me slow." },
+        { for: ['travel'], s: "I'll get us there. You just tell me when to turn, and tell me early." }],
       bad: ["I fix things. I don't talk people into things. You talk.",
         "Don't make me do it in front of people, {partner}. I'll freeze, you know I'll freeze."],
       win: ["It's working. Don't touch anything, it's working.",
@@ -250,8 +250,8 @@ export default {
         "That's it. Let's go home. I've got a pile of work waiting anyway."],
     },
     specific: {
-      good: ["Give me the keys. I'll drive, you navigate, and keep your eyes on the signs.",
-        "It's just like a carburettor, {partner}. Pull it apart, clean it, and put it back the right way."],
+      good: [{ for: ['travel'], s: "Give me the keys. I'll drive, you navigate, and keep your eyes on the signs." },
+        { for: ['hands'], s: "It's just like a carburettor, {partner}. Pull it apart, clean it, and put it back the right way." }],
       bad: ["Talking to people's the worst part of the job. That's why I'm under the car and you're at the counter.",
         "I'll rebuild an engine in front of anybody. I won't sing in front of anybody."],
       win: ["We're running like a tuned engine, {partner}. Keep your foot down.",
@@ -279,7 +279,7 @@ export default {
 
   fishers: {
     voice: {
-      good: ["Easy, {partner}. Pull steady, not hard. Hard just wears you out.",
+      good: [{ for: ['water'], s: "Easy, {partner}. Pull steady, not hard. Hard just wears you out." },
         "Just wait. It'll come to us. It always does if you're patient."],
       bad: ["I'd rather do just about anything than get up in front of people.",
         "I don't know where we are, {partner}. I never know where we are unless somebody tells me."],
@@ -305,7 +305,7 @@ export default {
         "That's it. Good trip, though. I'd do it again."],
     },
     specific: {
-      good: ["Stay low in the boat and let me row. Pulling hard won't help, you've got to pull steady.",
+      good: [{ for: ['water'], s: "Stay low in the boat and let me row. Pulling hard won't help, you've got to pull steady." },
         "I've sat in a boat for nine hours waiting for one bite. I can wait out anything."],
       bad: ["I'd rather gut a hundred fish than sing one song.",
         "Out on the water I always know where I am. On land I'm turned around in five minutes."],

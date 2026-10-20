@@ -87,7 +87,7 @@ export default {
     },
     specific: {
       good: ["It's a pattern, every third one repeats, and we've beaten harder levels than this.",
-        "This is just a hidden-object level, {partner}. Scan left to right, top to bottom, and don't skip anything."],
+        { for: ['search'], s: "This is just a hidden-object level, {partner}. Scan left to right, top to bottom, and don't skip anything." }],
       bad: ["My character can swim and lift stuff, but I can't. That's why I have a character.",
         "I've got a high score in every sports game ever made, and none of it is helping me right now."],
       win: ["We're speedrunning this, {partner}, no mistakes and no wasted moves, so keep going.",
@@ -252,7 +252,7 @@ export default {
     },
     specific: {
       good: ["This is like a drum circle, {partner}. Everybody finds the beat if you're patient enough.",
-        "It's the same as back at the commune. Smile, share, and don't rush anybody, because people open up when you don't rush them."],
+        { for: ['people'], s: "It's the same as back at the commune. Smile, share, and don't rush anybody, because people open up when you don't rush them." }],
       bad: ["We don't really do maps, man. Back at the commune we just go where it feels right.",
         "I've walked barefoot across a whole festival field and never once known where I was, and this is that, but heavier."],
       win: ["The energy is so good right now, it's like the full moon is on our side, {partner}.",

@@ -171,7 +171,7 @@ export default {
   dancers: {
     voice: {
       good: ["Watch me, not the clock. Copy what I do and you'll have it by the third try.",
-        "Breathe and find the rhythm of it, {partner}. Once you've got the rhythm, your body does the rest."],
+        { for: ['perform'], s: "Breathe and find the rhythm of it, {partner}. Once you've got the rhythm, your body does the rest." }],
       bad: ["I'm going to be sick, I just know it, and everybody's going to watch it happen.",
         "My body knows a lot of things, but it doesn't know this, and my head doesn't either."],
       win: ["We're totally in sync right now, so don't think, just keep moving with me.",
@@ -196,8 +196,8 @@ export default {
         "That's it, and I'm proud of every step we took out here, every single one."],
     },
     specific: {
-      good: ["Watch my feet, not the music. Copy my feet and you'll have it by the third try.",
-        "This is just choreography, {partner}, so five, six, seven, eight, and hit every mark."],
+      good: [{ for: ['perform'], s: "Watch my feet, not the music. Copy my feet and you'll have it by the third try." },
+        { for: ['perform'], s: "This is just choreography, {partner}, so five, six, seven, eight, and hit every mark." }],
       bad: ["I can learn a two-minute routine in an hour, but I can't do this, not with my stomach and not with my head.",
         "My dance teacher used to say my brain lives in my feet, and my feet can't help me here, {partner}."],
       win: ["This is like the night the whole recital went perfectly, so don't miss a count.",
@@ -251,8 +251,8 @@ export default {
         "We're out, {partner}, so smile, wave, and don't let anybody see it hurts."],
     },
     specific: {
-      good: ["It's a cheap lock, so give me ten seconds and don't watch. It's a trade secret.",
-        "This is just a card trick with bigger cards, {partner}. Distract them, palm it, and find it again."],
+      good: [{ for: ['hands'], s: "It's a cheap lock, so give me ten seconds and don't watch. It's a trade secret." },
+        { for: ['hands'], s: "This is just a card trick with bigger cards, {partner}. Distract them, palm it, and find it again." }],
       bad: ["I've held my breath in a tank for two minutes, but the tank was rigged, and this isn't rigged.",
         "My assistant always does the heavy part, so you're my assistant today, {partner}. Go."],
       win: ["This is like the trick where the whole room gasps, so keep going, I can practically hear them.",
@@ -280,7 +280,7 @@ export default {
 
   'beauty-queens': {
     voice: {
-      good: ["Smile and ask nicely, because that works better than yelling nine times out of ten.",
+      good: [{ for: ['people'], s: "Smile and ask nicely, because that works better than yelling nine times out of ten." },
         "Posture, {partner}, chin up and a big smile. Act like you belong and everybody believes you do."],
       bad: ["This is going to be ugly, and I'm going to do it anyway, so keep smiling, {partner}, and keep going.",
         "I'm smiling, but I want you to know I'm not okay. I'm really not okay."],
@@ -306,7 +306,7 @@ export default {
         "That's it, and I'm not crying. Fine, I'm crying, but I'm crying beautifully."],
     },
     specific: {
-      good: ["This is just the interview round, {partner}. Eye contact, a warm smile, and answer like you mean it.",
+      good: [{ for: ['people'], s: "This is just the interview round, {partner}. Eye contact, a warm smile, and answer like you mean it." },
         "We've walked a stage in six-inch heels in front of a thousand people, so this is easy."],
       bad: ["There's mud in my shoes and mud in my hair, and I've worn a crown, {partner}. I've worn a crown.",
         "I've never lifted anything heavier than a crown, or eaten anything I couldn't eat in front of the judges."],

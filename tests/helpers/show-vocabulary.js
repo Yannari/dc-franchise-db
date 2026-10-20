@@ -176,6 +176,10 @@ export function forbiddenFor(format) {
 export const PROPER_NOUNS = [
   'murder on the dancefloor',
   'make out, marry, murder',   // a real Circle game (US 7 Ep 5)
+  // a Ridonculous Race place (js/rr/places/haunted-castle.js): the race's feed says "won the leg in Haunted Castle",
+  // and the bare word "castle" is The Traitors'. Checked against every place name in the library 2026-10-19: this is
+  // the only one that holds another show's word.
+  'haunted castle',
 ];
 
 export function foreignWordsIn(text, format) {

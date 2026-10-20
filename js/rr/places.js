@@ -29,10 +29,15 @@ import leiIsland from './places/lei-island.js';
 import glassTowerGulf from './places/glass-tower-gulf.js';
 import swampPrison from './places/swamp-prison.js';
 import outbackFarm from './places/outback-farm.js';
+import fjordPeaks from './places/fjord-peaks.js';
+import prairieRanch from './places/prairie-ranch.js';
+import iceFloe from './places/ice-floe.js';
+import dragonIsle from './places/dragon-isle.js';
 
 export const PLACES = Object.fromEntries([homeCity, redSandDesert, fireMountainIsle, skylineFinale, ironTowerCity, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback,
   coastPalace, geyserIsland, carnivalRainforest, hauntedCastle,
-  leiIsland, glassTowerGulf, swampPrison, outbackFarm].map(p => [p.id, p]));
+  leiIsland, glassTowerGulf, swampPrison, outbackFarm,
+  fjordPeaks, prairieRanch, iceFloe, dragonIsle].map(p => [p.id, p]));
 
 export const getPlace = id => PLACES[id] || null;
 

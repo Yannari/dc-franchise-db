@@ -173,3 +173,6 @@ import { REGISTER_MORE } from './registers-more.js';
 for (const [k, list] of Object.entries(REGISTER_MORE)) (REGISTER_LINES[k] ||= []).push(...list);
 import { REGISTER_MORE2 } from './registers-more2.js';
 for (const [k, list] of Object.entries(REGISTER_MORE2)) (REGISTER_LINES[k] ||= []).push(...list);
+// ...and calm, split from chill (registers-calm.js)
+import { REGISTER_CALM } from './registers-calm.js';
+for (const [k, list] of Object.entries(REGISTER_CALM)) (REGISTER_LINES[k] ||= []).push(...list);

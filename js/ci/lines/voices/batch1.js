@@ -7,7 +7,7 @@ export const VOICES = [
   ['chat.close.warm.01', "Okay I have to go but this was the best chat of my day", {
     hype: "Gotta go but that was the BEST chat of the whole day {e:fire}", dry: "I have to go. That was, annoyingly, the best part of my day",
     blunt: "Have to go. Best chat I've had today. That's a fact", goofy: "I have to go but this chat was better than the cereal I had for lunch, and that cereal was great",
-    shy: "Um, I have to go. But this was really nice. The nicest part of today", chill: "Gotta bounce, dude. Best chat of my day though",
+    shy: "Um, I have to go. But this was really nice. The nicest part of today", chill: "Gotta bounce. Best chat of my day though",
     catty: "I have to go. You were easily the least irritating person I talked to today", diva: "I must go, darling, but that was the highlight of my day. Possibly my week",
     stoic: "Have to go. Best talk today" }],
   ['chat.close.warm.02', "Talk later?", {
@@ -17,7 +17,7 @@ export const VOICES = [
   ['chat.close.warm.03', "I'm really glad we're friends in here", {
     hype: "I'm SO glad we're friends in here, seriously!!", dry: "For the record, I'm glad we're friends. Don't make it weird",
     blunt: "I'm glad we're friends. I don't say that to everyone", goofy: "We're friends now. It's official. I'm making us matching imaginary bracelets",
-    shy: "I'm really glad we're friends. I didn't think I'd make any", chill: "Glad we're buds in here, dude. For real",
+    shy: "I'm really glad we're friends. I didn't think I'd make any", chill: "Glad we're buds in here. For real",
     catty: "I'm glad we're friends. You're one of the few in here worth it", diva: "Darling, our friendship is the best storyline of this season",
     stoic: "Glad we're friends" }],
   ['chat.close.warm.04', "Same time tomorrow? Lol", {
@@ -28,19 +28,19 @@ export const VOICES = [
   ['chat.close.warm.05', "You always make me feel better", {
     hype: "You ALWAYS make me feel better! Every time!", dry: "Somehow you always make me feel better. It's suspicious",
     blunt: "You make me feel better. Every time. Thanks", goofy: "You make me feel better than a warm blanket fresh out of the dryer",
-    shy: "You always make me feel better. I don't know how to say thank you enough", chill: "You always calm me down, dude. Appreciate it",
+    shy: "You always make me feel better. I don't know how to say thank you enough", chill: "You always calm me down, man. Appreciate it",
     catty: "You're the only one in here who makes me feel better. Don't let it go to your head", diva: "Darling, you're my remedy. My medicine. My standing ovation",
     stoic: "You help. Thank you" }],
   ['chat.close.warm.06', "Okay going before I tell you all my secrets", {
     hype: "Okay I'm going before I tell you EVERYTHING lol", dry: "Leaving before I overshare. Too late, probably",
     blunt: "I'm going. I've said too much already", goofy: "Leaving before I tell you about the time I got stuck in a waterslide",
-    shy: "I should go before I say something embarrassing", chill: "Gotta go before I spill everything, dude",
+    shy: "I should go before I say something embarrassing", chill: "Gotta go before I spill everything",
     catty: "I'm going. You've heard enough of my secrets for one day", diva: "I must leave before I reveal my entire tragic backstory, darling",
     stoic: "Going. Before I say too much" }],
   ['chat.close.warm.07', "Thank you for this. Really", {
     hype: "Thank you for this!! Seriously, thank you!!", dry: "Thanks for this. I mean it, which is rare",
     blunt: "Thank you. That helped", goofy: "Thank you for this. I'd give you a trophy if I had one. I have a spoon. Here's a spoon",
-    shy: "Thank you. Really. That meant a lot to me", chill: "Thanks for this, dude. Needed it",
+    shy: "Thank you. Really. That meant a lot to me", chill: "Thanks for this. Needed it",
     catty: "Thank you. Genuinely. Don't tell anyone I said that", diva: "Thank you, darling. You've given me a beautiful moment", stoic: "Thank you" }],
   ['chat.close.warm.08', "Okay, back to the madness {e:laugh}", {
     hype: "Back to the madness! Let's GO {e:laugh}", dry: "Back to the madness. Wish me luck", blunt: "Back to it. Later",
@@ -50,28 +50,28 @@ export const VOICES = [
   ['chat.close.warm.09', "This was exactly what I needed", {
     hype: "This was EXACTLY what I needed! Thank you!", dry: "That was what I needed. I won't admit it twice",
     blunt: "I needed that. Thanks", goofy: "This was exactly what I needed, like a nap but with words", shy: "This was exactly what I needed. I didn't know until now",
-    chill: "That was exactly the vibe I needed, dude", catty: "That was exactly what I needed. A conversation with someone sane",
+    chill: "That was exactly the vibe I needed", catty: "That was exactly what I needed. A conversation with someone sane",
     diva: "Darling, that was exactly the intermission I needed", stoic: "Needed that" }],
   ['chat.close.warm.10', "Okay, I'm smiling at my screen like an idiot", {
     hype: "I'm SMILING at my screen like an idiot right now lol", dry: "I'm smiling at a screen. Gross. Your fault",
     blunt: "I'm smiling at my screen. That's on you", goofy: "I'm smiling so hard my face is going to get stuck like this {e:laugh}",
-    shy: "Um, I'm smiling at my screen now. That's embarrassing", chill: "I'm grinning at the screen, dude. Good chat",
+    shy: "Um, I'm smiling at my screen now. That's embarrassing", chill: "I'm grinning at the screen. Good chat",
     catty: "I'm smiling at my screen, and I never smile at anything in here", diva: "I'm beaming at my screen, darling. Somebody get the cameras",
     stoic: "I'm smiling. That's rare" }],
   ['chat.close.warm.11', "Let's do this again soon", {
     hype: "We're doing this again SOON! That's a promise!", dry: "Let's do this again. Soon-ish", blunt: "We'll do this again. Soon",
     goofy: "Let's do this again soon! Same time, same channel, same pajamas", shy: "Could we do this again soon? I'd really like that",
-    chill: "Let's do this again sometime, dude", catty: "We'll do this again. You're one of the few I'd say that to",
+    chill: "Let's do this again sometime", catty: "We'll do this again. You're one of the few I'd say that to",
     diva: "An encore! We must have an encore, darling", stoic: "Again soon" }],
   ['chat.close.warm.12', "Okay I'm off. Love this chat", {
     hype: "I'm off! LOVE this chat!", dry: "I'm off. This chat was tolerable. High praise", blunt: "I'm off. Good chat",
     goofy: "I'm off! Love this chat more than I love dessert, and I REALLY love dessert", shy: "I'm going to go. I loved this chat",
-    chill: "Alright, I'm out. Love this chat, dude", catty: "I'm off. This was the only good chat in here today",
+    chill: "Alright, I'm out. Love this chat", catty: "I'm off. This was the only good chat in here today",
     diva: "I'm off, darling! What a scene that was!", stoic: "Off. Good chat" }],
   ['chat.close.warm.13', "Thanks for always being real with me", {
     hype: "Thank you for ALWAYS being real with me!!", dry: "Thanks for being real with me. Nobody else in here is",
     blunt: "Thanks for being straight with me. I respect it", goofy: "Thanks for being real with me. Realer than the fake plant in my apartment",
-    shy: "Thank you for always being honest with me. It helps", chill: "Thanks for keeping it real, dude",
+    shy: "Thank you for always being honest with me. It helps", chill: "Thanks for keeping it real",
     catty: "Thank you for being real. It's rarer in here than you'd think", diva: "Thank you for your honesty, darling. It's a rare gift in this production",
     stoic: "Thanks for being honest" }],
   ['chat.close.warm.14', "Okay, I'll leave you be", {
@@ -82,27 +82,27 @@ export const VOICES = [
   ['chat.close.warm.15', "Glad I messaged you", {
     hype: "SO glad I messaged you!!", dry: "Glad I messaged you. Good call, past me", blunt: "Glad I messaged you",
     goofy: "Glad I messaged you instead of my fridge. The fridge never answers",
-    shy: "I'm glad I messaged you. I almost didn't", chill: "Glad I hit you up, dude",
+    shy: "I'm glad I messaged you. I almost didn't", chill: "Glad I hit you up, man",
     catty: "Glad I messaged you. The alternatives were dire", diva: "So glad I graced your inbox, darling", stoic: "Glad I did" }],
   // ── closing a chat, neutral ───────────────────────────────────────────
   ['chat.close.neutral.01', "Okay, talk soon", {
     hype: "Talk soon! Byeee!", dry: "Okay. Talk soon. Probably", blunt: "Talk soon", goofy: "Talk soon! Or later! Or soon-later!",
-    shy: "Okay, um, talk soon", chill: "Talk soon, dude", catty: "Talk soon, I suppose", diva: "Until next time, darling", stoic: "Later" }],
+    shy: "Okay, um, talk soon", chill: "Talk soon", catty: "Talk soon, I suppose", diva: "Until next time, darling", stoic: "Later" }],
   ['chat.close.neutral.02', "Anyway, I'll let you go", {
     hype: "Anyway! I'll let you go! Bye!", dry: "Anyway. I'll let you go. You're free", blunt: "I'll let you go",
     goofy: "Anyway, I'll let you go. Fly, little bird", shy: "I'll let you go now. Sorry for keeping you", chill: "Anyway, I'll let you get on with it",
     catty: "Anyway, I'm sure you have very important things to do", diva: "I'll release you now, darling", stoic: "Okay. Go" }],
   ['chat.close.neutral.03', "Alright, good chat", {
     hype: "Good chat! Great chat actually!", dry: "Good chat. Shockingly", blunt: "Good chat", goofy: "Good chat! Ten out of ten, would chat again",
-    shy: "That was a good chat. Thank you", chill: "Good chat, dude", catty: "That was fine. Good chat", diva: "Good chat, darling. A solid performance", stoic: "Good talk" }],
+    shy: "That was a good chat. Thank you", chill: "Good chat", catty: "That was fine. Good chat", diva: "Good chat, darling. A solid performance", stoic: "Good talk" }],
   ['chat.close.neutral.04', "I'll let you get back to it", {
     hype: "I'll let you get back to it! Have a great one!", dry: "Back to your thrilling day you go", blunt: "Get back to it",
     goofy: "I'll let you get back to whatever you're doing. I assume it's eating", shy: "Okay, I'll let you get back to it. Bye",
-    chill: "I'll let you get back to it, dude", catty: "I'll let you get back to whatever it is you do all day",
+    chill: "I'll let you get back to it", catty: "I'll let you get back to whatever it is you do all day",
     diva: "Back to your scene, darling. I'll return to mine", stoic: "Back to it" }],
   ['chat.close.neutral.05', "Okay cool. Bye for now", {
     hype: "Cool cool! Bye for now!", dry: "Cool. Bye for now", blunt: "Okay. Bye", goofy: "Cool beans. Bye for now",
-    shy: "Okay, cool. Um, bye", chill: "Cool, later dude", catty: "Lovely. Bye for now", diva: "Farewell for now, darling", stoic: "Bye" }],
+    shy: "Okay, cool. Um, bye", chill: "Cool, later", catty: "Lovely. Bye for now", diva: "Farewell for now, darling", stoic: "Bye" }],
   ['chat.close.neutral.06', "Anyway. Good talk", {
     hype: "Anyway! Great talk!", dry: "Anyway. Good talk. Truly riveting", blunt: "Good talk", goofy: "Anyway. Good talk. Big talk. Massive talk",
     shy: "Anyway, this was nice", chill: "Anyway, good talk, man", catty: "Anyway. That was a talk", diva: "Anyway. A charming little scene, darling", stoic: "Good talk" }],
@@ -113,24 +113,24 @@ export const VOICES = [
   ['chat.close.neutral.08', "Okay, gotta go do Circle things", {
     hype: "Gotta go do Circle things! Busy busy!", dry: "Off to do Circle things. Whatever those are", blunt: "Got stuff to do. Later",
     goofy: "Gotta go do very important Circle things. Like napping", shy: "I have to go do some Circle things. Bye",
-    chill: "Gotta go do Circle stuff, dude", catty: "I have Circle things to attend to. Very important ones",
+    chill: "Gotta go do Circle stuff", catty: "I have Circle things to attend to. Very important ones",
     diva: "Duty calls, darling. The Circle needs me", stoic: "Have to go" }],
   ['chat.close.neutral.09', "That's all I had. See you around", {
     hype: "That's all I had! See you around!", dry: "That's all I had. It wasn't much", blunt: "That's it. See you",
     goofy: "That's all I had! My brain is empty now, like a sad little bucket", shy: "That's all I wanted to say. See you around",
-    chill: "That's all, dude. See you around", catty: "That's all. Don't miss me too much", diva: "That's my whole monologue, darling. Exit", stoic: "That's all" }],
+    chill: "That's all. See you around", catty: "That's all. Don't miss me too much", diva: "That's my whole monologue, darling. Exit", stoic: "That's all" }],
   ['chat.close.neutral.10', "Okay, signing off", {
     hype: "Signing off! Peace!", dry: "Signing off. Dramatic, I know", blunt: "Signing off", goofy: "Signing off! Beep boop, robot noises",
-    shy: "Okay, I'm signing off now", chill: "Signing off, dude. Easy", catty: "Signing off. You're welcome", diva: "And the star signs off! Goodnight, darling", stoic: "Off" }],
+    shy: "Okay, I'm signing off now", chill: "Signing off. Easy", catty: "Signing off. You're welcome", diva: "And the star signs off! Goodnight, darling", stoic: "Off" }],
   ['chat.close.neutral.11', "I should probably go", {
     hype: "I should go! But this was fun!", dry: "I should probably go. Apparently that's a thing people do", blunt: "I'm going",
-    goofy: "I should probably go. My couch is getting lonely", shy: "Um, I should probably go", chill: "I should probably bounce, dude",
+    goofy: "I should probably go. My couch is getting lonely", shy: "Um, I should probably go", chill: "I should probably bounce",
     catty: "I really should go. Places to be. Not really", diva: "I must go, darling. My public awaits", stoic: "Going" }],
   // ── the deep talk ─────────────────────────────────────────────────────
   ['chat.deep.01', "Can I ask you something real? Why are you here? Like actually", {
     hype: "Real question! Why are you HERE? Like what's the actual reason!", dry: "Serious question, and I don't ask many. Why are you actually here",
     blunt: "Why are you here? The real answer", goofy: "Okay serious time, no jokes. Why are you here? I'm here because I wanted free snacks. Kidding. Mostly",
-    shy: "Can I ask something personal? Why did you come here? You don't have to answer", chill: "Real talk, dude. Why'd you come here?",
+    shy: "Can I ask something personal? Why did you come here? You don't have to answer", chill: "Real talk, man. Why'd you come here?",
     catty: "Tell me the real reason you're here. Not the one you tell everyone else", diva: "Darling, what brought you to this stage? Tell me your origin story",
     stoic: "Why are you here?" }],
   ['chat.deep.02', "What do you miss most from home?", {
@@ -147,7 +147,7 @@ export const VOICES = [
   ['chat.deep.04', "What would you do with the money if you won?", {
     hype: "What would you do with the money?? Dream BIG!", dry: "What would you do with the money. Be honest, not inspiring",
     blunt: "If you win, what's the money for?", goofy: "What would you do with the money? I'd buy a hot tub full of cheese. That's a joke. Probably",
-    shy: "Can I ask what you'd do with the money? If you won?", chill: "What would you do with the cash if you won, dude?",
+    shy: "Can I ask what you'd do with the money? If you won?", chill: "What would you do with the cash if you won?",
     catty: "What would you do with the money? And don't say charity, nobody believes that", diva: "What would you do with the prize, darling? I'd buy a fountain. Of myself",
     stoic: "The money. What's it for?" }],
   ['chat.deep.05', "Who's waiting for you at home?", {
@@ -158,23 +158,23 @@ export const VOICES = [
   ['chat.deep.06', "Not weird. I feel it too", {
     hype: "Not weird at all! I feel it too!", dry: "Not weird. I feel it too. Gross, but true", blunt: "Not weird. Same",
     goofy: "Not weird! Weird would be if I said I feel it in my elbow. I feel it in my heart", shy: "It's not weird. I feel it too. I just didn't want to say",
-    chill: "Nah, not weird, dude. I feel it too", catty: "It's not weird. I feel it too, and I don't feel things", diva: "Not weird, darling. Poetic. I feel it too", stoic: "Not weird. Same" }],
+    chill: "Nah, not weird. I feel it too", catty: "It's not weird. I feel it too, and I don't feel things", diva: "Not weird, darling. Poetic. I feel it too", stoic: "Not weird. Same" }],
   ['chat.deep.07', "What's the hardest part of this for you?", {
     hype: "What's the HARDEST part for you? Be real!", dry: "What's the hardest part of this. For me it's the silence. And everyone",
     blunt: "What's the hardest part?", goofy: "What's the hardest part for you? Mine is not knowing what day it is. Is it Tuesday? It feels like a Tuesday",
-    shy: "Can I ask what's hardest for you in here?", chill: "What's been the toughest part for you, dude?",
+    shy: "Can I ask what's hardest for you in here?", chill: "What's been the toughest part for you?",
     catty: "What's the hardest part of this for you? Besides the company", diva: "What's your greatest struggle in here, darling? Mine is the lighting",
     stoic: "Hardest part for you?" }],
   ['chat.deep.08', "When this is over we're getting coffee. Real coffee. In person", {
     hype: "When this is over we're getting coffee! In PERSON! It's happening!", dry: "When this is over, coffee. In person. I'll even put on real clothes",
     blunt: "When we're out, coffee. In person. That's happening", goofy: "When this is over we're getting coffee. And a muffin. Maybe nine muffins",
-    shy: "Um, when this is over, could we get coffee? In person?", chill: "When we're out, let's grab coffee, dude. For real",
+    shy: "Um, when this is over, could we get coffee? In person?", chill: "When we're out, let's grab coffee. For real",
     catty: "When this is over, coffee. I'll even let you pick the place", diva: "When this is over, darling, we're having coffee somewhere fabulous",
     stoic: "Coffee when we're out" }],
   ['chat.deep.09', "Talk to me. What's going on in that head?", {
     hype: "Talk to me! What's going on in there!", dry: "What's going on in your head. Take your time. I'm not going anywhere",
     blunt: "What's going on with you? Say it", goofy: "Talk to me! What's going on in that head? Is it soup? It's usually soup in mine",
-    shy: "Are you okay? You can talk to me if you want", chill: "What's on your mind, dude? Talk to me",
+    shy: "Are you okay? You can talk to me if you want", chill: "What's on your mind? Talk to me",
     catty: "Something's bothering you. Tell me, I won't judge. Much", diva: "Speak, darling. What's the drama in that head of yours?", stoic: "What's on your mind?" }],
   ['chat.deep.10', "Okay, deep question. What's something people always get wrong about you?", {
     hype: "DEEP QUESTION! What do people always get wrong about you?!", dry: "Deep question. What do people get wrong about you. Mine: I'm not grumpy. I'm just tired",
@@ -191,7 +191,7 @@ export const VOICES = [
   ['circle.more.m02', "Confession: I've talked to my TV more than to any of you", {
     hype: "Confession: I've talked to my TV more than ALL of you combined!", dry: "Confession: my TV and I are close now. It's a better listener than most",
     blunt: "I've talked to my TV more than to any of you. Fix that", goofy: "Confession: I've talked to my TV more than to any of you. It's very supportive",
-    shy: "Um, confession, I've talked to my TV more than to anyone in here", chill: "Real talk, my TV's my best friend in here, dude",
+    shy: "Um, confession, I've talked to my TV more than to anyone in here", chill: "Real talk, my TV's my best friend in here",
     catty: "Confession: my TV is better company than some of you", diva: "Confession, darlings: my reflection and I have been rehearsing all day",
     stoic: "I talk to my TV more than to you all" }],
   ['circle.more.m03', "Who's the early bird in here? Be honest", {
@@ -202,24 +202,24 @@ export const VOICES = [
   ['circle.more.m04', "Weirdest thing you've eaten in here so far. Go", {
     hype: "WEIRDEST thing you've eaten in here! GO!", dry: "Weirdest thing you've eaten in here. Mine: sadness. And toast",
     blunt: "Weirdest thing you've eaten here. Go", goofy: "Weirdest thing you've eaten? I had ketchup on a cracker. It was a mistake. I'd do it again",
-    shy: "Um, what's the weirdest thing you've eaten in here?", chill: "What's the weirdest thing you've eaten in here, dude?",
+    shy: "Um, what's the weirdest thing you've eaten in here?", chill: "What's the weirdest thing you've eaten in here?",
     catty: "Weirdest thing you've eaten in here. Judging will happen", diva: "Darlings, the weirdest thing you've eaten in here? I've only eaten caviar. Pretend caviar",
     stoic: "Weirdest thing you've eaten here?" }],
   ['circle.more.m05', "If we all met at a party right now, who's on the dance floor first?", {
     hype: "PARTY QUESTION! Who's on the dance floor first?? Me! Obviously!", dry: "Party question. Who's dancing first. Not me. I'm by the snacks",
     blunt: "At a party, who's dancing first? Answer", goofy: "Party question! Who's dancing first? Me, but badly. Like a confused octopus",
-    shy: "If we were at a party, who would dance first? Not me, haha", chill: "If we all hit a party, who's dancing first, dude?",
+    shy: "If we were at a party, who would dance first? Not me, haha", chill: "If we all hit a party, who's dancing first, man?",
     catty: "If we were at a party, who's embarrassing themselves on the dance floor first?", diva: "At a party, darlings, who would take center stage? Trick question. Me",
     stoic: "Party. Who dances first?" }],
   ['circle.more.m06', "Rate your day out of ten. I'm a solid six", {
     hype: "Rate your day out of ten! I'm a TEN! Okay, an eight!", dry: "Rate your day out of ten. I'm a five. Generous", blunt: "Rate your day out of ten. Six for me",
     goofy: "Rate your day out of ten! I'm a six and a half. The half is a sandwich", shy: "Um, rate your day out of ten? I'm maybe a six",
-    chill: "Rate your day out of ten. I'm a chill seven, dude", catty: "Rate your day out of ten. Mine would be higher without some of you",
+    chill: "Rate your day out of ten. I'm a chill seven", catty: "Rate your day out of ten. Mine would be higher without some of you",
     diva: "Rate your day, darlings! Mine is a standing ovation out of ten", stoic: "Rate your day. Six" }],
   ['circle.more.m07', "Okay who else sings to the Circle when nobody's listening", {
     hype: "WHO ELSE SINGS TO THE CIRCLE?? I'm doing it right now!", dry: "Who else sings to the Circle. I'm asking for a friend. The friend is me",
     blunt: "Who sings in here when nobody's listening? Be honest", goofy: "Who else sings to the Circle? I just did a whole musical for my lamp",
-    shy: "Does anyone else sing when nobody's listening? Just me?", chill: "Who else sings in here when no one's around, dude?",
+    shy: "Does anyone else sing when nobody's listening? Just me?", chill: "Who else sings in here when no one's around?",
     catty: "Who sings to the Circle? Some of you should stop", diva: "Darlings, I sing to the Circle constantly. It's the only audience that deserves me",
     stoic: "Anyone else sing in here?" }],
   ['circle.more.m08', "Unpopular opinion time. Mine: breakfast for dinner is the best dinner", {
@@ -231,29 +231,29 @@ export const VOICES = [
   ['circle.more.m09', "What's everybody wearing right now? I'm in pajamas at 4pm", {
     hype: "What's everybody wearing?? I'm in pajamas and I'm THRIVING", dry: "What's everyone wearing. I'm in pajamas. It's afternoon. No regrets",
     blunt: "What's everyone wearing? Pajamas here", goofy: "What's everybody wearing? I'm in pajamas with dinosaurs on them. The dinosaurs are happy",
-    shy: "Um, what's everyone wearing? I'm still in pajamas", chill: "What's everyone wearing? Pajamas all day, dude",
+    shy: "Um, what's everyone wearing? I'm still in pajamas", chill: "What's everyone wearing? Pajamas all day",
     catty: "What's everybody wearing? Please say not sweatpants. Again", diva: "What's everyone wearing, darlings? I'm in a full look. For nobody",
     stoic: "Pajamas. You?" }],
   ['circle.more.m10', "Shout out to whoever keeps the vibes good in here. You know who you are", {
     hype: "SHOUT OUT to whoever keeps the vibes good! You know who you are!", dry: "Shout out to whoever keeps the vibes good. Not me. Someone else",
     blunt: "Shout out to whoever keeps this place decent", goofy: "Shout out to the good vibes people! You're like the sprinkles on this donut",
-    shy: "Um, thank you to whoever keeps the vibes good in here", chill: "Shout out to the good vibes crew, dude",
+    shy: "Um, thank you to whoever keeps the vibes good in here", chill: "Shout out to the good vibes crew",
     catty: "Shout out to the good vibes people. You know who you are. So do I. It's a short list", diva: "A bouquet to whoever keeps the vibes good, darlings. Second only to me",
     stoic: "Thanks to whoever keeps things good" }],
   ['circle.more.01', "Okay but who's cooking tonight because it's not me lol", {
     hype: "Who's cooking tonight?? NOT ME lol!", dry: "Who's cooking tonight. Not me. Cereal is a meal", blunt: "Who's cooking? Not me",
     goofy: "Who's cooking tonight? Not me, I set fire to toast once. Okay, twice", shy: "Is anyone cooking tonight? I don't really know how",
-    chill: "Who's cooking tonight, dude? Not me lol", catty: "Who's cooking tonight? Not me. I don't do kitchens", diva: "Who's cooking, darlings? Stars don't cook. Stars are cooked for",
+    chill: "Who's cooking tonight? Not me lol", catty: "Who's cooking tonight? Not me. I don't do kitchens", diva: "Who's cooking, darlings? Stars don't cook. Stars are cooked for",
     stoic: "Who's cooking?" }],
   ['circle.more.02', "Real talk, how is everybody holding up?", {
     hype: "Real talk! How is EVERYBODY holding up??", dry: "Real talk. How's everyone holding up. Honestly", blunt: "How's everyone holding up? Honest answers",
     goofy: "Real talk, how's everybody? I'm holding up like a very tired sock", shy: "Um, is everybody okay? Just checking",
-    chill: "How's everybody holding up, dude?", catty: "How is everyone holding up? Some of you look rough in your pictures", diva: "Darlings, how are we all holding up? I'm magnificent, thank you",
+    chill: "How's everybody holding up?", catty: "How is everyone holding up? Some of you look rough in your pictures", diva: "Darlings, how are we all holding up? I'm magnificent, thank you",
     stoic: "Everyone holding up?" }],
   ['circle.more.03', "Shoutout to everybody still in here. We made it this far {e:clap}", {
     hype: "SHOUT OUT to everybody still in here! We MADE IT! {e:clap}", dry: "Shout out to everyone still in here. We survived. Somehow {e:clap}",
     blunt: "Everyone still in here: good job. Keep going {e:clap}", goofy: "Shout out to everyone still here! We made it! Somebody get balloons {e:clap}",
-    shy: "Um, good job everyone, for making it this far {e:clap}", chill: "Props to everyone still here, dude {e:clap}",
+    shy: "Um, good job everyone, for making it this far {e:clap}", chill: "Props to everyone still here {e:clap}",
     catty: "Congratulations to everyone still here. Even the ones who shouldn't be {e:clap}", diva: "A round of applause for everyone still standing, darlings {e:clap}",
     stoic: "We made it this far {e:clap}" }],
   ['circle.more.04', "Can we play a game in here? Two truths and a lie. Go", {
@@ -280,7 +280,7 @@ export const VOICES = [
   ['circle.more.w01', "Is anybody else's apartment freezing or is it just me", {
     hype: "Is everyone else FREEZING or is it just me?!", dry: "Is anyone else's apartment freezing. Or is mine just like this", blunt: "My apartment is freezing. Yours?",
     goofy: "Is anyone else freezing? I'm wearing three socks. On one foot", shy: "Is anyone else cold? Or is it just me?",
-    chill: "Anyone else's place freezing, dude?", catty: "Is anyone else freezing, or is it just the vibe in here", diva: "Is anyone else freezing, darlings? I'm a delicate flower",
+    chill: "Anyone else's place freezing, man?", catty: "Is anyone else freezing, or is it just the vibe in here", diva: "Is anyone else freezing, darlings? I'm a delicate flower",
     stoic: "Anyone else cold?" }],
   ['circle.more.w02', "What's everybody doing later {e:eyes}", {
     hype: "What's everybody doing LATER?! {e:eyes}", dry: "What's everyone doing later. I'm doing nothing. Again {e:eyes}", blunt: "What's everyone doing later? {e:eyes}",
@@ -294,23 +294,23 @@ export const VOICES = [
     stoic: "Day, 1 to 10. Go" }],
   ['circle.more.w04', "Okay who's the early riser in here", {
     hype: "Who's the EARLY RISER?! Show yourselves!", dry: "Who's the early riser. I need to know who to resent", blunt: "Who gets up early in here?",
-    goofy: "Who's the early riser? I rose early once. Never again", shy: "Um, is anyone an early riser?", chill: "Who's up early in here? Not me, dude",
+    goofy: "Who's the early riser? I rose early once. Never again", shy: "Um, is anyone an early riser?", chill: "Who's up early in here? Not me",
     catty: "Who's the early riser? I need to know who to avoid", diva: "Who rises early, darlings? Stars need their beauty sleep", stoic: "Who's up early?" }],
   ['circle.more.w05', "Group workout tomorrow? Everybody in their own apartment lol", {
     hype: "GROUP WORKOUT TOMORROW! Everybody in! No excuses!", dry: "Group workout tomorrow. Everyone in their own apartment. I'll be watching. From bed",
     blunt: "Workout tomorrow. Everyone. Own apartments", goofy: "Group workout tomorrow! I'll be doing the noodle stretch. It's mostly lying down",
-    shy: "Would anyone want to do a workout tomorrow? Each in our own place?", chill: "Group workout tomorrow? Low key though, dude",
+    shy: "Would anyone want to do a workout tomorrow? Each in our own place?", chill: "Group workout tomorrow? Low key though",
     catty: "Group workout tomorrow. Some of you could use it", diva: "Group workout tomorrow, darlings! I'll lead. With choreography", stoic: "Workout tomorrow. Who's in?" }],
   ['circle.more.w06', "Does anybody else talk to the Circle like it's a person", {
     hype: "Does anyone else talk to the Circle like it's a PERSON?!", dry: "Does anyone else talk to the Circle like a person. It's a good listener. Never interrupts",
     blunt: "Who else talks to the Circle like it's a person?", goofy: "Does anyone else talk to the Circle like it's a person? I told it a joke. It didn't laugh",
-    shy: "Does anyone else talk to the Circle like a person? Is that weird?", chill: "Anyone else chat with the Circle like it's a buddy, dude?",
+    shy: "Does anyone else talk to the Circle like a person? Is that weird?", chill: "Anyone else chat with the Circle like it's a buddy?",
     catty: "Who else talks to the Circle like a person? It's the only one in here with any sense", diva: "Who else talks to the Circle, darlings? It's my closest confidant",
     stoic: "Anyone else talk to the Circle?" }],
   ['circle.more.w07', "Just wanna say this group is weirdly wholesome", {
     hype: "Just gotta say this group is SO wholesome!", dry: "Just want to say this group is weirdly wholesome. It's unsettling", blunt: "This group is weirdly wholesome. I said it",
     goofy: "This group is so wholesome it's like a big warm bowl of soup", shy: "I just wanted to say this group is really nice",
-    chill: "This group's got good vibes, dude. Wholesome", catty: "This group is weirdly wholesome. Give it a week", diva: "This group is wholesome, darlings. A heartwarming ensemble cast",
+    chill: "This group's got good vibes. Wholesome", catty: "This group is weirdly wholesome. Give it a week", diva: "This group is wholesome, darlings. A heartwarming ensemble cast",
     stoic: "This group is good" }],
   ['circle.more.w08', "Okay real question. Pineapple on pizza. Yes or no", {
     hype: "REAL QUESTION! Pineapple on pizza! YES OR NO!", dry: "Real question. Pineapple on pizza. Choose wisely, your rating depends on it",
@@ -326,13 +326,13 @@ export const VOICES = [
   ['circle.open.02', "Okay who else is sick of their own cooking already {e:laugh}", {
     hype: "WHO ELSE is sick of their own cooking?! {e:laugh}", dry: "Who else is sick of their own cooking. My cooking is sick of me too {e:laugh}",
     blunt: "Who's sick of their own cooking? I am {e:laugh}", goofy: "Who else is sick of their own cooking? I made spaghetti and it looked at me {e:laugh}",
-    shy: "Is anyone else tired of their own cooking? {e:laugh}", chill: "Anyone else tired of their own cooking, dude? {e:laugh}",
+    shy: "Is anyone else tired of their own cooking? {e:laugh}", chill: "Anyone else tired of their own cooking? {e:laugh}",
     catty: "Who else is sick of their own cooking? Or is it just those of us with standards {e:laugh}", diva: "Who else is sick of their own cooking, darlings? I need a private chef {e:laugh}",
     stoic: "Sick of my own cooking {e:laugh}" }],
   ['circle.open.03', "Can we just take a second and say we're all doing great in here {e:heart} {t:CircleFam}", {
     hype: "Can we just say we're ALL doing amazing in here {e:heart} {t:CircleFam}", dry: "Let's take a second and say we're all doing fine. Fine is good {e:heart} {t:CircleFam}",
     blunt: "We're all doing well in here. Say it {e:heart} {t:CircleFam}", goofy: "Can we all take a second and say we're doing great? Group hug, but with typing {e:heart} {t:CircleFam}",
-    shy: "Um, can we say we're all doing great? I think we are {e:heart} {t:CircleFam}", chill: "Can we just say we're all doing great, dude {e:heart} {t:CircleFam}",
+    shy: "Um, can we say we're all doing great? I think we are {e:heart} {t:CircleFam}", chill: "Can we just say we're all doing great {e:heart} {t:CircleFam}",
     catty: "Let's all take a moment to say we're doing great. Some of us more than others {e:heart} {t:CircleFam}", diva: "Darlings, let's take a moment to applaud ourselves {e:heart} {t:CircleFam}",
     stoic: "We're doing well {e:heart} {t:CircleFam}" }],
   ['circle.open.04', "Question for the group. Best thing you've done in here so far?", {
@@ -391,12 +391,12 @@ export const VOICES = [
   ['circle.open.e2', "Okay who's already in bed?", {
     hype: "Who's ALREADY in bed?! It's party time!", dry: "Who's already in bed. Me. Obviously", blunt: "Who's in bed already?",
     goofy: "Who's already in bed? I'm in bed with a bowl of cereal. It's a whole situation", shy: "Is anyone already in bed? I am",
-    chill: "Who's already in bed? I'm getting there, dude", catty: "Who's already in bed? The boring ones, I assume", diva: "Who's in bed already, darlings? The star never sleeps",
+    chill: "Who's already in bed? I'm getting there", catty: "Who's already in bed? The boring ones, I assume", diva: "Who's in bed already, darlings? The star never sleeps",
     stoic: "Who's in bed?" }],
   ['circle.open.e3', "Late night Circle Chat?? I'm here for it {e:eyes}", {
     hype: "LATE NIGHT CIRCLE CHAT! I'm SO here for it {e:eyes}", dry: "Late night Circle Chat. I'm here. Against my better judgment {e:eyes}",
     blunt: "Late night chat. I'm in {e:eyes}", goofy: "Late night Circle Chat! I'm here in my pajamas and a towel turban {e:eyes}",
-    shy: "Late night chat? I'm here too {e:eyes}", chill: "Late night chat? I'm here for it, dude {e:eyes}",
+    shy: "Late night chat? I'm here too {e:eyes}", chill: "Late night chat? I'm here for it {e:eyes}",
     catty: "Late night Circle Chat. This is when people say what they really think {e:eyes}", diva: "Late night Circle Chat, darlings! The after-party {e:eyes}",
     stoic: "Late chat. I'm here {e:eyes}" }],
   ['circle.open.e4', "Dinner check. What did everybody make tonight?", {

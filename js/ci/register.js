@@ -10,6 +10,8 @@
 //   blunt   "I don't trust you. Next."
 //   goofy   "wait what were we talking about, I'm eating cereal"
 //   shy     "um. sorry if this is weird"
+//   chill   laid-back, slangy, nothing is a big deal (the surfer and party bros)
+//   calm    composed and unhurried, full sentences, no slang (a mentor, a peacemaker)
 // The roster's AUTHORED voice decides first (the same words Total Drama reads, td/story/voice-words.js: every
 // one of its tags has a register here, VOICE_REGISTER); then an authored chatVoice.register; then archetype,
 // stats and age for a player nobody wrote a voice for (the user, 2026-10-19: "make sure each finds its fit
@@ -21,11 +23,16 @@ import { readVoiceText } from '../td/story/voice-words.js';
 /** The six a stats-only player, or a persona's job, can have. */
 export const REGISTERS = ['warm', 'hype', 'dry', 'formal', 'flirty', 'blunt'];
 /** ...and the two only an authored voice reaches: every register a line can be written for. */
-export const ALL_REGISTERS = [...REGISTERS, 'goofy', 'shy', 'chill', 'catty', 'diva', 'stoic'];
+export const ALL_REGISTERS = [...REGISTERS, 'goofy', 'shy', 'chill', 'calm', 'catty', 'diva', 'stoic'];
+/** The registers a voice can name outright with a hashtag, in the Circle only ("#diva", "#calm"): the ones Total
+ *  Drama's voice words have no tag for. (#calm is one of theirs, and reads as calm unless the words are laid-back.) */
+export const CIRCLE_VOICE_TAGS = ['chill', 'catty', 'diva', 'stoic', 'hype', 'formal', 'shy'];
 
 // Every voice tag (td/story/voice-words.js WORDS) and where it types on its own. Read against the roster (2026-10-19),
 // a tag on its own still misplaces some voices, so the tags around it decide too (inContext below):
-//   calm      laid-back is chill (the surfer bros), unless the voice is a brainy one: formal
+//   calm      calm (composed, unhurried), unless it is the laid-back kind, with the words to prove it (surfer, party
+//             or rocker bro, slacker, stoner): chill; or a brainy one: formal. The user, 2026-10-20: "all calm people
+//             don't say dude every sentence"
 //   quiet     confident-quiet is stoic (B, Chase, Hicks), but quiet AND nervous or soft is shy (Maggy, Drew)
 //   proud     the vain and condescending are catty, but a tough one (Duncan) is blunt
 //   theatrical  a diva, unless the voice is a silly one (food, goofy, ditzy): goofy
@@ -44,8 +51,9 @@ export const VOICE_REGISTER = {
   anxious: 'shy',
   quiet: 'stoic',
 };
-function inContext(t, has) {
-  if (t === 'calm') return has('nerdy') ? 'formal' : 'chill';
+const LAID_BACK = /\b(bro|dude|surfer|stoner|slacker|rocker|party|laid[- ]back|goes with the flow|vibes?)\b/i;
+function inContext(t, has, text = '') {
+  if (t === 'calm') return has('nerdy') ? 'formal' : LAID_BACK.test(text) ? 'chill' : 'calm';
   if (t === 'quiet') return has('anxious') || has('warm') || has('emotional') ? 'shy' : 'stoic';
   if (t === 'proud') return has('tough') ? 'blunt' : 'catty';
   if (t === 'theatrical') return has('goofy') || has('food') || has('ditzy') ? 'goofy' : 'diva';
@@ -56,13 +64,17 @@ function inContext(t, has) {
 const PLAYS = new Set(['schemer']);
 /** The register an authored voice says, or null: the author's hashtags and hand-set tags first, then its words. */
 export function voiceRegister(p) {
-  const read = readVoiceText(p?.voiceText || [p?.voice, p?.personality].filter(Boolean).join(' '));
+  const raw = p?.voiceText || [p?.voice, p?.personality].filter(Boolean).join(' ');
+  // A Circle voice named outright ("#calm", "#diva") is the register, whatever else the words say.
+  const own = String(raw).toLowerCase().match(new RegExp(`#(${CIRCLE_VOICE_TAGS.join('|')})\\b`));
+  if (own) return own[1];
+  const read = readVoiceText(raw);
   const tags = [...(Array.isArray(p?.voiceTags) ? p.voiceTags : []), ...read.hash, ...read.words].filter(t => !(read.off || []).includes(t));
   // (schemer says how somebody plays, not how they type: it decides only when the voice says nothing else. Heather is
   // "manipulative" first and "cruel" next, and types cruel)
   const typed = tags.filter(t => VOICE_REGISTER[t] && !PLAYS.has(t));
   const t = typed[0] || tags.find(x => VOICE_REGISTER[x]);
-  return t ? inContext(t, x => tags.includes(x)) : null;
+  return t ? inContext(t, x => tags.includes(x), raw) : null;
 }
 
 const LEAN = {

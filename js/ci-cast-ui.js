@@ -59,6 +59,14 @@ const SAMPLE = {
   formal: "Good morning, everyone. I hope you all slept well. I'm looking forward to getting to know each of you.",
   blunt: "Ok I'll just say it. Somebody in here isn't who they say they are.",
   dry: "cool so we're all just gonna pretend yesterday didn't happen. love that for us",
+  // ...and the seven an authored voice can have (ci/register.js ALL_REGISTERS), so a persona can type like them too
+  goofy: "Okay who else just tried to make toast and set off the smoke alarm?? Asking for me 😂",
+  shy: "um, hi everyone... sorry, still figuring out how this works. nice to meet you all 🙂",
+  chill: "hey all. just hanging out over here. no stress, good vibes",
+  calm: "Good morning, everyone. No rush today. I hope you're all taking care of yourselves.",
+  catty: "Love how everyone's being SO nice today. Really. It's adorable.",
+  diva: "Darlings, I've arrived. You may now continue your little conversations ✨",
+  stoic: "Morning. Here if anyone needs me.",
 };
 
 /** The pool the season will play: the author's (or the default), and the

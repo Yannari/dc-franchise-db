@@ -88,12 +88,17 @@ export function byRegister(text, register, rng = () => 0.5) {
     case 'blunt':
       return firstUp(tidy(onText(text, p => unslang(p.replace(/!{2,}/g, '!'))
         .replace(/^\s*(honestly|omg|okay so|ngl|no offense but),?\s*/i, ''))));
-    // chill: relaxed, no shouting; now and then a lower-case start, a "dude" on the end
+    // chill: relaxed, no shouting; now and then a lower-case start. The "dude" is in the written lines, now and then;
+    // adding one here too put it on a fifth of every message (the user, 2026-10-20)
     case 'chill': {
       let t = onText(text, p => p.replace(/!{2,}/g, '!'));
       if (rng() < 0.35) t = t.replace(/^(\s*)([A-Z])(?=[a-z])/, (m, sp, c) => sp + c.toLowerCase());
-      if (rng() < 0.2) t = lastText(t, p => p.replace(/([A-Za-z0-9)])\.?(\s*)$/, '$1, dude$2'));
       return t;
+    }
+    // calm: composed; no shouting, no all-caps, an exclamation mark softened to a full stop, no slang
+    case 'calm': {
+      const t = tidy(onText(text, p => unslang(p.replace(/!+/g, '.')).replace(/\b([A-Z]{3,})\b/g, m => m.charAt(0) + m.slice(1).toLowerCase())));
+      return firstUp(t);
     }
     // stoic: no filler, no exclamation marks, a full stop at the end
     case 'stoic': {

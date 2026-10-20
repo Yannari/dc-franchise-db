@@ -32,7 +32,9 @@ import { writerEndpoint } from './social/writer.js';
 // Studio runs in, and reading it there left the portrait panel's show dropdown
 // with nothing in it but "All shows".
 import { SHOWS } from './shows.js';
+import { CIRCLE_FORMAT } from './shows.js';
 import { readVoiceText, WORD_TAGS } from './td/story/voice-words.js';
+import { voiceRegister, CIRCLE_VOICE_TAGS } from './ci/register.js';
 import { HAND_KITS, handGround } from './td/story/kits/index.js';
 import { GROUND } from './td/story/kits/kits-ground.js';
 
@@ -349,6 +351,7 @@ function _kitOut(d) {
 const _kitCount = d => { const o = _kitOut(d); return o ? Object.keys(o).length : 0; };
 const _tdSelected = () => { try { const f = window.seasonConfig?.format; return !f || f === 'total-drama'; } catch { return true; } };
 const _bbSelected = () => { try { return window.seasonConfig?.format === 'big-brother'; } catch { return false; } };
+const _ciSelected = () => { try { return window.seasonConfig?.format === CIRCLE_FORMAT; } catch { return false; } };
 
 function _blankChar() {
   return {
@@ -1330,7 +1333,16 @@ function _voiceReadHtml(text) {
     + (kind === 'off' ? `<s>${t}</s>${x(t, 'on', 'put it back')}` : `${kind === 'own' ? '#' : ''}${t}${x(t, 'off', 'remove this tag')}`) + '</b>';
   const got = [...hash.map(t => chip(t, 'own')), ...words.map(t => chip(t, 'word'))].join(' ') || '<i>nothing yet</i>';
   const gone = off.length ? `<br>Removed: ${off.map(t => chip(t, 'off')).join(' ')}` : '';
-  return `Simulator reads: ${got}${gone}<br>Set one outright with a hashtag in the text: ${WORD_TAGS.map(t => '#' + t).join(' ')}. Remove one with its ×, or #-tag (it also overrides the archetype and stats)`;
+  return `Simulator reads: ${got}${gone}<br>Set one outright with a hashtag in the text: ${WORD_TAGS.map(t => '#' + t).join(' ')}. Remove one with its ×, or #-tag (it also overrides the archetype and stats)`
+    + (_ciSelected() ? _circleVoiceHtml(text) : '');
+}
+// The Circle types in voices of its own (ci/register.js): #chill is not #calm, and Total Drama has no #diva, #catty
+// or #stoic at all (the user, 2026-10-20). Shown only while the Circle is the show selected.
+function _circleVoiceHtml(text) {
+  const reg = voiceRegister({ voice: text || '' });
+  return `<br>The Circle types as: <b style="padding:1px 6px;border-radius:8px;background:rgba(120,220,180,.22)">${reg || 'from archetype and stats'}</b>`
+    + ` · its own voices, set with a hashtag: ${['calm', ...CIRCLE_VOICE_TAGS].map(t => '#' + t).join(' ')}`
+    + ' (#chill is laid-back and slangy; #calm is composed, no slang)';
 }
 /** The voice text with a tag removed (act 'off') or put back ('on'). */
 function _voiceToggleTag(text, tag, act) {

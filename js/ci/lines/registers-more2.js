@@ -21,13 +21,13 @@ const V = (key, byRegister) => ({
 
 export const REGISTER_MORE2 = {
   ...R('rate.middle', {
-    chill: ["{b}, middle. No stress, dude. Middle's a good place to hang out.", "Middle for {b}. We're cool. We're just not that cool yet."],
+    chill: ["{b}, middle. No stress. Middle's a good place to hang out.", "Middle for {b}. We're cool. We're just not that cool yet."],
     catty: ["{b} goes in the middle. Which is generous, honestly.", "Middle, {b}. Not bad. Not memorable either."],
     diva: ["{b}, darling, the middle. Not everyone can be the star. I would know.", "Middle for {b}. The chorus is very important. Somebody has to stand behind me."],
     stoic: ["{b}. Middle.", "Middle. {b}. For now."],
   }),
   ...R('rate.affection.top', {
-    chill: ["{b} first. Easy call, dude. {b.Sub}'s good people.", "Top spot, {b}. Good vibes only, and {b.sub} brings the good vibes."],
+    chill: ["{b} first. Easy call. {b.Sub}'s good people.", "Top spot, {b}. Good vibes only, and {b.sub} brings the good vibes."],
     catty: ["{b} first. Don't get excited, {b}. Everyone else is just worse.", "First place goes to {b}, the only one in here I can stand. Congratulations."],
     diva: ["{b}, first! My leading co-star! We were made for the same poster!", "First place is {b}. I don't give that out. I am usually first."],
     stoic: ["{b}. First.", "First is {b}. Earned it."],
@@ -45,13 +45,13 @@ export const REGISTER_MORE2 = {
     stoic: ["{b} is the strongest. First.", "First. {b}. Better with {b.obj} than against."],
   }),
   ...R('rate.threat.bottom', {
-    chill: ["{b} last. Nothing personal, bro. {b.Sub}'s just too good at this.", "Gotta put {b} at the bottom. It's the move. Sorry, dude."],
+    chill: ["{b} last. Nothing personal, bro. {b.Sub}'s just too good at this.", "Gotta put {b} at the bottom. It's the move. Sorry."],
     catty: ["{b} last. Somebody had to knock {b.obj} down a peg. Happy to help.", ["{b} has been on top long enough. Last.", null, { early: false }]],
     diva: ["{b}, last. You were stealing my spotlight, and I simply cannot allow it.", "Bottom for {b}. There is only room for one lead in this production."],
     stoic: ["{b}. Too dangerous. Last.", "Last. {b}. It has to be."],
   }),
   ...R('rate.suspicion.bottom', {
-    chill: ["{b}'s story is kind of wobbly, dude. Last. Just a feeling.", "Something's off with {b}. Not mad about it. Just last."],
+    chill: ["{b}'s story is kind of wobbly, man. Last. Just a feeling.", "Something's off with {b}. Not mad about it. Just last."],
     catty: ["{b} is a catfish, and not even a convincing one. Last.", "Last, {b}. I don't believe those pictures for a second."],
     diva: ["{b} is playing a role, darling, and I know acting when I see it. Last.", "Last for {b}. I can smell a performance a mile away. I invented performances."],
     stoic: ["{b}'s story doesn't hold. Last.", "Last. {b}. Not real."],
@@ -75,25 +75,25 @@ export const REGISTER_MORE2 = {
     stoic: [["Sent.", '{a} puts the tablet down.'], ["Done.", "{a} doesn't look at it again."]],
   }),
   ...R('block.wait', {
-    chill: ["Whatever happens, man. It's all good. Okay, it's mostly good.", "Just breathe. Just breathe, dude."],
+    chill: ["Whatever happens, man. It's all good. Okay, it's mostly good.", "Just breathe. Just breathe."],
     catty: ["If it's me, at least they're showing some backbone. Finally.", "Go on. Type it. I'm not going anywhere."],
     diva: ["The suspense! The drama! I feel faint!", "If it's me, I'm going out like a legend."],
     stoic: ["...", "Just say it."],
   }, 'react'),
   ...R('block.react.relief', {
-    chill: ["Not me. Phew. Sorry, {b}. Rough one, man.", "Oh, {b}. That's harsh, dude."],
+    chill: ["Not me. Phew. Sorry, {b}. Rough one, man.", "Oh, {b}. That's harsh."],
     catty: ["{b}. Well. It was always going to be {b}.", "Not me. Of course not me. Bye, {b}."],
     diva: ["I survive! The audience gasps! {b}, I will never forget you!", "Not me. The show must go on, {b}. Without you, sadly."],
     stoic: ["{b}.", "Not me. Okay."],
   }, 'react'),
   ...R('block.after', {
-    chill: ["That was heavy. I need a walk. Or a swim. Can I swim in here?", "Hope {b} lands somewhere good. No hard feelings, dude."],
+    chill: ["That was heavy. I need a walk. Or a swim. Can I swim in here?", "Hope {b} lands somewhere good. No hard feelings."],
     catty: ["{b} is gone and the Circle is already prettier.", "Some people just aren't built for this. {b} was one of them."],
     diva: ["What a scene. Somebody should film that. Oh, they did.", "I had to be the villain tonight. Every great story needs one, and every villain needs good lighting."],
     stoic: ["Done.", "{b} had to go."],
   }),
   ...R('block.react.self', {
-    chill: ["Me? Whoa. Okay. That's a plot twist, dude.", ["Blocked. Huh. Okay. It was a good run.", '{a} laughs, a little sadly.']],
+    chill: ["Me? Whoa. Okay. That's a plot twist.", ["Blocked. Huh. Okay. It was a good run.", '{a} laughs, a little sadly.']],
     catty: ["Me? They'll be sorry. Every single one of them.", ["Blocked. By these people. Unbelievable.", '{a} picks up {a.posAdj} bag with great dignity.']],
     diva: ["ME?! The star of this show?! This is an outrage!", ["Blocked. Fine. They can't afford me anyway.", '{a} throws a scarf over {a.posAdj} shoulder and stands.']],
     stoic: ["Me. Okay.", ["Blocked.", '{a} stands up without a word and picks up {a.posAdj} bag.']],
@@ -105,7 +105,7 @@ export const REGISTER_MORE2 = {
     stoic: [["Let {b} come.", '{a} sits facing the door.'], ["Whatever happens.", "{a} doesn't move."]],
   }, 'react'),
   ...R('goodbye.guess', {
-    chill: [["Okay, {b}. Let's hear it. Be nice, dude.", "{a} settles in with a bag of chips."], ["Goodbye video. This is gonna be a whole thing.", "{a} kicks back on the couch."]],
+    chill: [["Okay, {b}. Let's hear it. Be nice.", "{a} settles in with a bag of chips."], ["Goodbye video. This is gonna be a whole thing.", "{a} kicks back on the couch."]],
     catty: [["Let's see what {b} has to say. This should be fun.", "{a} leans forward with a small smile."], ["{b}'s goodbye. I hope it's long. I want to enjoy this.", "{a} pours {a.ref} a drink."]],
     diva: [["A farewell speech! The final act! I adore a farewell speech!", "{a} clutches a pillow to {a.posAdj} chest."], ["Let's see if {b} can deliver a line. Most people can't.", "{a} folds {a.posAdj} arms like a critic."]],
     stoic: [["Okay, {b}.", "{a} watches without blinking."], ["Let's see.", "{a} sits forward."]],
@@ -117,13 +117,13 @@ export const REGISTER_MORE2 = {
     stoic: [["Good exit.", '{a} nods once.'], ["Bye, {b}.", '{a} turns the screen off.']],
   }, 'react'),
   ...R('circle.react', {
-    chill: ["{b} said that like it was nothing. Love that energy, dude.", "Okay, {b}'s chill. I like {b}."],
+    chill: ["{b} said that like it was nothing. Love that energy.", "Okay, {b}'s chill. I like {b}."],
     catty: ["Oh, {b} thinks {b.sub}'s funny. Adorable.", "{b} really thought that was a good message."],
     diva: ["{b} is trying to steal my scene in the chat. I see you, {b}.", "Oh, {b}. Such a supporting character."],
     stoic: ["Hm. {b}.", "{b} means that."],
   }, 'react'),
   ...R('status.react', {
-    chill: ["Nice post, {b}. Good vibes, dude.", "{b} posted. Cool. Liking it."],
+    chill: ["Nice post, {b}. Good vibes.", "{b} posted. Cool. Liking it."],
     catty: ["{b} posted that on purpose. Bless.", "That filter is working very hard for {b}."],
     diva: ["{b}'s post is fine. Mine was better. Mine is always better.", "Oh, {b} posted. How brave. How very brave."],
     stoic: ["{b}. Okay.", "Smart post, {b}."],
@@ -169,7 +169,7 @@ export const CHAT_MORE2 = {
   }),
   ...V('chat.bond.cold', {
     chill: [
-      [['a', "Hey, we good? Feels like there's a weird vibe. Just checking, dude"], ['b', "We're fine"], ['a', "Cool cool. Door's open whenever"]],
+      [['a', "Hey, we good? Feels like there's a weird vibe. Just checking, man"], ['b', "We're fine"], ['a', "Cool cool. Door's open whenever"]],
       [['a', "Not trying to make it a thing. Just saying hey"], ['b', "Hey"], ['a', "Alright. Later, man"]],
     ],
     catty: [
@@ -187,7 +187,7 @@ export const CHAT_MORE2 = {
   }),
   ...V('chat.checkin.warm', {
     chill: [
-      [['a', "Hey, saw the ratings. Don't sweat it, dude. It's one night"], ['b', "Thanks. I needed that"], ['a', "Anytime. Deep breaths"]],
+      [['a', "Hey, saw the ratings. Don't sweat it. It's one night"], ['b', "Thanks. I needed that"], ['a', "Anytime. Deep breaths"]],
       [['a', "You good? Rough day. Wanna just talk about nothing for a bit?"], ['b', "Yes please"], ['a', "Okay. So. Favorite cereal. Go"]],
     ],
     catty: [
@@ -223,7 +223,7 @@ export const CHAT_MORE2 = {
   }),
   ...V('chat.flirt.warm', {
     chill: [
-      [['a', "Not gonna lie, talking to you is like the best part of my day, dude {e:smile}"], ['b', "Okay that's cute"], ['a', "You're cute. I'm just chill about it"]],
+      [['a', "Not gonna lie, talking to you is like the best part of my day {e:smile}"], ['b', "Okay that's cute"], ['a', "You're cute. I'm just chill about it"]],
       [['a', "When we're out of here, we're going somewhere sunny. You and me. No pressure {e:wink}"], ['b', "I'd like that"], ['a', "Sweet. It's a date. Like, a chill date"]],
     ],
     catty: [

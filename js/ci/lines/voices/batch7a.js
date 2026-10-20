@@ -4,15 +4,15 @@ export const VOICES = [
   // ── a new player arrives ──────────────────────────────────────────────
   ['arrival.react.01', "'A new Player has entered the Circle'? Now? Who is it?", {
     hype: "'A new Player has entered the Circle'?! NOW?! WHO is it?!", dry: "'A new Player has entered the Circle.' Now. Who is it.", blunt: "'A new Player has entered the Circle'? Who?",
-    goofy: "'A new Player has entered the Circle'? Now? Who is it? Is it a dog? Please be a dog!", shy: "'A new Player has entered the Circle'? Now? Who is it?", chill: "'A new Player has entered the Circle'? Now? Who is it, dude?",
+    goofy: "'A new Player has entered the Circle'? Now? Who is it? Is it a dog? Please be a dog!", shy: "'A new Player has entered the Circle'? Now? Who is it?", chill: "'A new Player has entered the Circle'? Now? Who is it?",
     catty: "'A new Player has entered the Circle'? Now? Who is it? This better be good.", diva: "'A new Player has entered the Circle'? Now, darling? Who is it?", stoic: "'A new Player has entered the Circle.' Who?" }],
   ['arrival.react.02', "A new player. Great. Just when I figured this place out.", {
     hype: "A NEW player?! GREAT! Just when I FIGURED this place OUT!", dry: "A new player. Great. Just when I figured this place out.", blunt: "New player. Just when I figured it out.",
-    goofy: "A new player! Great! Just when I figured this place out! I didn't figure it out!", shy: "A new player. Okay. Just when I figured this place out.", chill: "New player, dude. Just when I figured this place out.",
+    goofy: "A new player! Great! Just when I figured this place out! I didn't figure it out!", shy: "A new player. Okay. Just when I figured this place out.", chill: "New player. Just when I figured this place out.",
     catty: "A new player. Great. Just when I had everyone figured out.", diva: "A new cast member, darling. Just when I'd learned my blocking.", stoic: "New player. Great." }],
   ['arrival.react.03', "Oh, {b} looks fun. Or {b} looks like a threat. One of the two.", {
     hype: "Oh, {b} looks FUN! Or {b} looks like a THREAT! One of the TWO!", dry: "{b} looks fun. Or a threat. One of the two.", blunt: "{b}. Fun or a threat.",
-    goofy: "Oh, {b} looks fun! Or {b} looks like a threat! Or a fun threat! A threatening fun!", shy: "Oh, {b} looks fun. Or maybe a threat. One of the two.", chill: "{b} looks fun, dude. Or a threat. One of the two.",
+    goofy: "Oh, {b} looks fun! Or {b} looks like a threat! Or a fun threat! A threatening fun!", shy: "Oh, {b} looks fun. Or maybe a threat. One of the two.", chill: "{b} looks fun, man. Or a threat. One of the two.",
     catty: "Oh, {b} looks fun. Or {b} looks like a threat. I'll decide which.", diva: "{b} looks fun, darling. Or dangerous. One of the two.", stoic: "{b}. Fun or threat." }],
   ['arrival.react.04', "New people are safe at the next blocking. So {b} is safe and I'm not. Great.", {
     hype: "New people are SAFE at the next blocking! So {b} is SAFE and I'm NOT! GREAT!", dry: "New people are safe at the next blocking. So {b} is safe. I'm not. Great.", blunt: "{b}'s safe. I'm not.",
@@ -20,23 +20,23 @@ export const VOICES = [
     catty: "New people are safe at the next blocking. So {b} is safe and I'm not. Fair.", diva: "{b} is safe at the next blocking, darling, and I am not. How unfair.", stoic: "{b}'s safe. I'm not." }],
   ['arrival.react.crush.01', "Oh. Oh, hello. Who are YOU?", {
     hype: "OH! Oh, HELLO! Who are YOU?!", dry: "Oh. Hello. Who are you.", blunt: "Hello. Who are you?",
-    goofy: "Oh! Oh, hello! Who are YOU? Are you real? Are you a painting?", shy: "Oh. Oh. Hello. Who are you?", chill: "Oh. Hello there. Who are you, dude?",
+    goofy: "Oh! Oh, hello! Who are YOU? Are you real? Are you a painting?", shy: "Oh. Oh. Hello. Who are you?", chill: "Oh. Hello there. Who are you?",
     catty: "Oh. Hello. Who are you? I'm interested.", diva: "Oh, hello, darling. And who are YOU?", stoic: "Hello. Who are you?" }],
   ['arrival.react.crush.02', "Okay, {b} is cute. Like, actually cute. This changes things.", {
     hype: "Okay, {b} is CUTE! Like, ACTUALLY cute! This CHANGES things!", dry: "{b} is cute. Actually cute. That changes things. Unfortunately.", blunt: "{b}'s cute. That changes things.",
-    goofy: "Okay, {b} is cute! Like, actually cute! This changes things! My heart did a cartwheel!", shy: "Okay, {b} is cute. Like, actually cute. This changes things.", chill: "{b}'s cute, dude. Actually cute. This changes things.",
+    goofy: "Okay, {b} is cute! Like, actually cute! This changes things! My heart did a cartwheel!", shy: "Okay, {b} is cute. Like, actually cute. This changes things.", chill: "{b}'s cute. Actually cute. This changes things.",
     catty: "Okay, {b} is cute. Actually cute. That's inconvenient.", diva: "{b} is gorgeous, darling. This changes the plot.", stoic: "{b}'s cute. Changes things." }],
   ['arrival.react.crush.03', "{b}? I'm sorry, {b} can stay as long as {b.sub} wants.", {
     hype: "{b}?! I'm SORRY, {b} can stay as LONG as {b.sub} wants!", dry: "{b}. Sorry. {b} can stay as long as {b.sub} wants.", blunt: "{b} can stay.",
-    goofy: "{b}? I'm sorry, {b} can stay as long as {b.sub} wants! Forever! Bring a toothbrush!", shy: "{b}? Um. {b} can stay as long as {b.sub} wants.", chill: "{b}? {b} can stay as long as {b.sub} wants, dude.",
+    goofy: "{b}? I'm sorry, {b} can stay as long as {b.sub} wants! Forever! Bring a toothbrush!", shy: "{b}? Um. {b} can stay as long as {b.sub} wants.", chill: "{b}? {b} can stay as long as {b.sub} wants.",
     catty: "{b}? I'm sorry, {b} can stay as long as {b.sub} wants. Some of the others can go.", diva: "{b}, darling? {b} may stay as long as {b.sub} likes.", stoic: "{b} can stay." }],
   ['arrival.react.crush.04', "I came here to play a game. I did not come here to get a crush on {b}. And yet.", {
     hype: "I came here to PLAY A GAME! I did NOT come here to get a CRUSH on {b}! And YET!", dry: "I came here to play a game. Not to get a crush on {b}. And yet.", blunt: "Came to play. Not to crush on {b}. And yet.",
-    goofy: "I came here to play a game! I did not come here to get a crush on {b}! And yet! Here we are! Blushing!", shy: "I came here to play a game. I didn't come here to get a crush on {b}. And yet.", chill: "Came here to play a game, dude. Not to crush on {b}. And yet.",
+    goofy: "I came here to play a game! I did not come here to get a crush on {b}! And yet! Here we are! Blushing!", shy: "I came here to play a game. I didn't come here to get a crush on {b}. And yet.", chill: "Came here to play a game. Not to crush on {b}. And yet.",
     catty: "I came here to play a game. Not to get a crush on {b}. And yet. Annoying.", diva: "I came to play, darling, not to fall for {b}. And yet.", stoic: "Came to play. Not for {b}. And yet." }],
   ['arrival.react.crush.05', "Somebody fan me. {b} just walked in.", {
     hype: "SOMEBODY FAN ME! {b} just WALKED IN!", dry: "Somebody fan me. {b} just walked in. Inconvenient.", blunt: "{b} walked in. Wow.",
-    goofy: "Somebody fan me! {b} just walked in! I'm fanning myself with a pillow!", shy: "Somebody fan me. {b} just walked in.", chill: "Somebody fan me, dude. {b} just walked in.",
+    goofy: "Somebody fan me! {b} just walked in! I'm fanning myself with a pillow!", shy: "Somebody fan me. {b} just walked in.", chill: "Somebody fan me. {b} just walked in.",
     catty: "Somebody fan me. {b} just walked in. Competition.", diva: "Fan me, darling! {b} has made an entrance!", stoic: "{b} walked in." }],
   ['arrival.react.threat.01', "{b} walks in fresh, with no enemies and no history. That's dangerous.", {
     hype: "{b} walks in FRESH, with NO enemies and NO history! That's DANGEROUS!", dry: "{b} walks in fresh. No enemies, no history. That's dangerous.", blunt: "{b}. No enemies. Dangerous.",
@@ -44,23 +44,23 @@ export const VOICES = [
     catty: "{b} walks in fresh, with no enemies and no history. Not for long.", diva: "{b} enters fresh, darling. No enemies. No history. Dangerous.", stoic: "No enemies. No history. Dangerous." }],
   ['arrival.react.threat.02', "Everybody's going to love {b} for a week. I need to make sure it's only a week.", {
     hype: "EVERYBODY'S gonna love {b} for a WEEK! I need to make sure it's ONLY a week!", dry: "Everybody will love {b} for a week. I'll make sure it's only a week.", blunt: "They'll love {b} a week. Only a week.",
-    goofy: "Everybody's going to love {b} for a week! I need to make sure it's only a week! Six days! Five!", shy: "Everybody's going to love {b} for a week. I need to make sure it's only a week.", chill: "Everyone's gonna love {b} for a week, dude. Only a week.",
+    goofy: "Everybody's going to love {b} for a week! I need to make sure it's only a week! Six days! Five!", shy: "Everybody's going to love {b} for a week. I need to make sure it's only a week.", chill: "Everyone's gonna love {b} for a week. Only a week.",
     catty: "Everybody's going to love {b} for a week. I'll make sure it's only a week.", diva: "They'll adore {b} for a week, darling. I'll make sure that's all.", stoic: "A week. Only a week." }],
   ['arrival.react.threat.03', "Great. Another player. Another person who could rate me last.", {
     hype: "GREAT! ANOTHER player! Another person who could rate me LAST!", dry: "Great. Another player. Another person to rate me last.", blunt: "Another player. Another vote against me.",
-    goofy: "Great! Another player! Another person who could rate me last! Or first! Probably last!", shy: "Great. Another player. Another person who could rate me last.", chill: "Another player, dude. Another person who could rate me last.",
+    goofy: "Great! Another player! Another person who could rate me last! Or first! Probably last!", shy: "Great. Another player. Another person who could rate me last.", chill: "Another player. Another person who could rate me last.",
     catty: "Great. Another player. Another person who could rate me last. They wouldn't dare.", diva: "Another player, darling. Another critic.", stoic: "Another player. Another vote." }],
   ['arrival.react.threat.04', "{b} is safe at the next blocking. That makes {b.obj} the most powerful person in here right now.", {
     hype: "{b} is SAFE at the next blocking! That makes {b.obj} the MOST POWERFUL person in here!", dry: "{b} is safe at the next blocking. That makes {b.obj} the most powerful person here. Fun.", blunt: "{b}'s safe. Most powerful in here.",
-    goofy: "{b} is safe at the next blocking! That makes {b.obj} the most powerful person in here! Like a king! A new king!", shy: "{b} is safe at the next blocking. That makes {b.obj} the most powerful person in here right now.", chill: "{b}'s safe at the next blocking, dude. Most powerful person in here.",
+    goofy: "{b} is safe at the next blocking! That makes {b.obj} the most powerful person in here! Like a king! A new king!", shy: "{b} is safe at the next blocking. That makes {b.obj} the most powerful person in here right now.", chill: "{b}'s safe at the next blocking, man. Most powerful person in here.",
     catty: "{b} is safe at the next blocking. That makes {b.obj} the most powerful person in here. For now.", diva: "{b} is safe, darling. The most powerful player here.", stoic: "{b}'s safe. Most powerful." }],
   ['arrival.react.threat.05', "I'll be nice to {b}. Very nice. Nice is how you keep a threat close.", {
     hype: "I'll be NICE to {b}! VERY nice! Nice is how you keep a threat CLOSE!", dry: "I'll be nice to {b}. Very nice. That's how you keep a threat close.", blunt: "I'll be nice to {b}. Keep the threat close.",
-    goofy: "I'll be nice to {b}! Very nice! Nice is how you keep a threat close! Like a cat with a laser pointer!", shy: "I'll be nice to {b}. Very nice. That's how you keep a threat close.", chill: "I'll be nice to {b}, dude. Keep the threat close.",
+    goofy: "I'll be nice to {b}! Very nice! Nice is how you keep a threat close! Like a cat with a laser pointer!", shy: "I'll be nice to {b}. Very nice. That's how you keep a threat close.", chill: "I'll be nice to {b}. Keep the threat close.",
     catty: "I'll be nice to {b}. Very nice. Nice is how you keep a threat close.", diva: "I'll be lovely to {b}, darling. Keep your threats close.", stoic: "Nice to {b}. Keep {b.obj} close." }],
   ['arrival.react.suspicious.01', "Hm. {b}. Something about that profile is too perfect.", {
     hype: "Hm! {b}! Something about that profile is TOO perfect!", dry: "Hm. {b}. That profile is too perfect.", blunt: "{b}'s profile is too perfect.",
-    goofy: "Hm! {b}! Something about that profile is too perfect! Like a cake in a window!", shy: "Hm. {b}. Something about that profile seems too perfect.", chill: "{b}. That profile's too perfect, dude.",
+    goofy: "Hm! {b}! Something about that profile is too perfect! Like a cake in a window!", shy: "Hm. {b}. Something about that profile seems too perfect.", chill: "{b}. That profile's too perfect.",
     catty: "Hm. {b}. That profile is too perfect. Nobody's that perfect. Except me.", diva: "{b}, darling. That profile is far too perfect.", stoic: "{b}. Too perfect." }],
   ['arrival.react.suspicious.02', "Wait. Zoom in on that picture. Is that even real?", {
     hype: "WAIT! ZOOM IN on that picture! Is that even REAL?!", dry: "Wait. Zoom in. Is that even real.", blunt: "Zoom in. Is that real?",
@@ -68,23 +68,23 @@ export const VOICES = [
     catty: "Wait. Zoom in on that picture. That is not real.", diva: "Zoom in, darling. Is that even real?", stoic: "Zoom in. Real?" }],
   ['arrival.react.suspicious.03', "New people always come in with a story. I want to know what {b}'s really is.", {
     hype: "New people ALWAYS come in with a story! I want to know what {b}'s REALLY is!", dry: "New people always come in with a story. I want to know {b}'s real one.", blunt: "{b} has a story. I want the real one.",
-    goofy: "New people always come in with a story! I want to know what {b}'s really is! Is it a mystery novel?", shy: "New people always come in with a story. I want to know what {b}'s really is.", chill: "New people always come in with a story, dude. Want to know {b}'s real one.",
+    goofy: "New people always come in with a story! I want to know what {b}'s really is! Is it a mystery novel?", shy: "New people always come in with a story. I want to know what {b}'s really is.", chill: "New people always come in with a story. Want to know {b}'s real one.",
     catty: "New people always come in with a story. I want to know what {b}'s really is. I'll find out.", diva: "Every newcomer has a backstory, darling. I want {b}'s real one.", stoic: "{b}'s real story?" }],
   ['arrival.react.suspicious.04', "I'm not saying {b} is a catfish. I'm just not saying {b.sub} isn't.", {
     hype: "I'm NOT saying {b} is a catfish! I'm just NOT saying {b.sub} ISN'T!", dry: "Not saying {b} is a catfish. Not saying {b.sub} isn't.", blunt: "{b} might be a catfish.",
-    goofy: "I'm not saying {b} is a catfish! I'm just not saying {b.sub} isn't! Glub glub!", shy: "I'm not saying {b} is a catfish. I'm just not saying {b.sub} isn't.", chill: "Not saying {b}'s a catfish, dude. Just not saying {b.sub} isn't.",
+    goofy: "I'm not saying {b} is a catfish! I'm just not saying {b.sub} isn't! Glub glub!", shy: "I'm not saying {b} is a catfish. I'm just not saying {b.sub} isn't.", chill: "Not saying {b}'s a catfish. Just not saying {b.sub} isn't.",
     catty: "I'm not saying {b} is a catfish. I'm just not saying {b.sub} isn't. Wink.", diva: "I'm not saying {b} is a catfish, darling. I'm not saying {b.sub} isn't.", stoic: "Maybe a catfish." }],
   ['arrival.react.suspicious.05', "That bio was written by a team. Nobody talks like that.", {
     hype: "That bio was written by a TEAM! NOBODY talks like that!", dry: "That bio was written by a team. Nobody talks like that.", blunt: "Nobody writes a bio like that.",
-    goofy: "That bio was written by a team! Nobody talks like that! A team of poets! Tiny poets!", shy: "That bio sounds like it was written by a team. Nobody talks like that.", chill: "That bio was written by a team, dude. Nobody talks like that.",
+    goofy: "That bio was written by a team! Nobody talks like that! A team of poets! Tiny poets!", shy: "That bio sounds like it was written by a team. Nobody talks like that.", chill: "That bio was written by a team. Nobody talks like that.",
     catty: "That bio was written by a team. Nobody talks like that. Nobody real.", diva: "That bio had writers, darling. Nobody talks like that.", stoic: "Nobody talks like that." }],
   ['arrival.react.ally.01', "A new face! Somebody who hasn't picked a side yet. I'm getting there first.", {
     hype: "A NEW FACE! Somebody who hasn't PICKED A SIDE yet! I'm getting there FIRST!", dry: "A new face. Hasn't picked a side yet. I'm getting there first.", blunt: "New face. No side yet. I'm first.",
-    goofy: "A new face! Somebody who hasn't picked a side yet! I'm getting there first! Out of my way! Nobody's in my way!", shy: "A new face. Somebody who hasn't picked a side yet. I should get there first.", chill: "New face, dude. Hasn't picked a side. Getting there first.",
+    goofy: "A new face! Somebody who hasn't picked a side yet! I'm getting there first! Out of my way! Nobody's in my way!", shy: "A new face. Somebody who hasn't picked a side yet. I should get there first.", chill: "New face. Hasn't picked a side. Getting there first.",
     catty: "A new face. Hasn't picked a side yet. I'm getting there first. Before the vultures.", diva: "A new face, darling! No side chosen yet. I'll get there first.", stoic: "New face. No side. Me first." }],
   ['arrival.react.ally.02', "Yes! Fresh energy! I love it. I'm messaging {b} immediately.", {
     hype: "YES! FRESH ENERGY! I LOVE it! I'm messaging {b} IMMEDIATELY!", dry: "Fresh energy. I love it. Messaging {b} now.", blunt: "Fresh energy. Messaging {b} now.",
-    goofy: "Yes! Fresh energy! I love it! I'm messaging {b} immediately! With so many emojis!", shy: "Yes. Fresh energy. I love it. I'm going to message {b}.", chill: "Fresh energy, dude! Love it. Messaging {b} now.",
+    goofy: "Yes! Fresh energy! I love it! I'm messaging {b} immediately! With so many emojis!", shy: "Yes. Fresh energy. I love it. I'm going to message {b}.", chill: "Fresh energy! Love it. Messaging {b} now.",
     catty: "Fresh energy. I love it. I'm messaging {b} immediately. First impressions matter.", diva: "Fresh energy, darling! I'm messaging {b} at once!", stoic: "Fresh energy. Messaging {b}." }],
   ['arrival.react.ally.03', "{b} doesn't know anybody. Which means {b} needs a friend. Hi. It's me.", {
     hype: "{b} doesn't KNOW anybody! Which means {b} NEEDS a friend! HI! It's ME!", dry: "{b} doesn't know anybody. Needs a friend. Hi. It's me.", blunt: "{b} needs a friend. Me.",
@@ -92,23 +92,23 @@ export const VOICES = [
     catty: "{b} doesn't know anybody. Which means {b} needs a friend. Hi. It's me. The right one.", diva: "{b} knows no one, darling. {b} needs a friend. Enter me.", stoic: "{b} needs a friend. Me." }],
   ['arrival.react.ally.04', "This is a chance. Get to {b} before the others get in {b.posAdj} ear.", {
     hype: "This is a CHANCE! Get to {b} BEFORE the others get in {b.posAdj} ear!", dry: "This is a chance. Get to {b} before the others get in {b.posAdj} ear.", blunt: "Get to {b} first.",
-    goofy: "This is a chance! Get to {b} before the others get in {b.posAdj} ear! Whisper first! Whisper loud!", shy: "This is a chance. I should get to {b} before the others get in {b.posAdj} ear.", chill: "This is a chance, dude. Get to {b} before the others do.",
+    goofy: "This is a chance! Get to {b} before the others get in {b.posAdj} ear! Whisper first! Whisper loud!", shy: "This is a chance. I should get to {b} before the others get in {b.posAdj} ear.", chill: "This is a chance, man. Get to {b} before the others do.",
     catty: "This is a chance. Get to {b} before the others get in {b.posAdj} ear. They'll lie.", diva: "A chance, darling. Reach {b} before the others whisper in {b.posAdj} ear.", stoic: "Get to {b} first." }],
   ['arrival.react.ally.05', "{b} looks so nice. I hope we click.", {
     hype: "{b} looks SO nice! I HOPE we click!", dry: "{b} looks nice. Hope we click.", blunt: "{b} looks nice. Hope we click.",
-    goofy: "{b} looks so nice! I hope we click! Click click! Like a seatbelt!", shy: "{b} looks so nice. I really hope we click.", chill: "{b} looks so nice, dude. Hope we click.",
+    goofy: "{b} looks so nice! I hope we click! Click click! Like a seatbelt!", shy: "{b} looks so nice. I really hope we click.", chill: "{b} looks so nice. Hope we click.",
     catty: "{b} looks so nice. I hope we click. I'm picky.", diva: "{b} looks lovely, darling. I hope we click.", stoic: "{b} looks nice." }],
   ['arrival.react.worried.01', "Great. The new person is safe and I'm still at the bottom. Love that for me.", {
     hype: "GREAT! The new person is SAFE and I'm STILL at the BOTTOM! LOVE that for me!", dry: "Great. New person's safe. I'm still at the bottom. Love that for me.", blunt: "New person's safe. I'm still at the bottom.",
-    goofy: "Great! The new person is safe and I'm still at the bottom! Love that for me! I'll decorate the bottom!", shy: "Great. The new person is safe and I'm still at the bottom.", chill: "New person's safe and I'm still at the bottom, dude. Great.",
+    goofy: "Great! The new person is safe and I'm still at the bottom! Love that for me! I'll decorate the bottom!", shy: "Great. The new person is safe and I'm still at the bottom.", chill: "New person's safe and I'm still at the bottom. Great.",
     catty: "Great. The new person is safe and I'm still at the bottom. Love that for me.", diva: "The new arrival is safe, darling, and I'm still at the bottom. Marvelous.", stoic: "New person's safe. I'm at the bottom." }],
   ['arrival.react.worried.02', "Another person to rate me. Just what I needed.", {
     hype: "ANOTHER person to rate me! JUST what I needed!", dry: "Another person to rate me. Just what I needed.", blunt: "Another rating against me.",
-    goofy: "Another person to rate me! Just what I needed! I'll bake the new person cookies! Virtual cookies!", shy: "Another person to rate me. Just what I needed.", chill: "Another person to rate me, dude. Just what I needed.",
+    goofy: "Another person to rate me! Just what I needed! I'll bake the new person cookies! Virtual cookies!", shy: "Another person to rate me. Just what I needed.", chill: "Another person to rate me. Just what I needed.",
     catty: "Another person to rate me. Just what I needed. Another critic.", diva: "Another critic, darling. Just what I needed.", stoic: "Another rater." }],
   ['arrival.react.worried.03', "Every new player is one more vote I don't have.", {
     hype: "EVERY new player is ONE MORE vote I DON'T have!", dry: "Every new player is one more vote I don't have.", blunt: "One more vote I don't have.",
-    goofy: "Every new player is one more vote I don't have! I'm running out of votes! Like a jar of jellybeans!", shy: "Every new player is one more vote I don't have.", chill: "Every new player's one more vote I don't have, dude.",
+    goofy: "Every new player is one more vote I don't have! I'm running out of votes! Like a jar of jellybeans!", shy: "Every new player is one more vote I don't have.", chill: "Every new player's one more vote I don't have.",
     catty: "Every new player is one more vote I don't have. Yet.", diva: "Every new arrival is one more vote I don't have, darling.", stoic: "One more vote I don't have." }],
   ['arrival.react.worried.04', "If {b} likes everybody else more than me, I'm done.", {
     hype: "If {b} likes EVERYBODY else more than ME, I'm DONE!", dry: "If {b} likes everybody else more than me, I'm done.", blunt: "{b} likes others more, I'm done.",
@@ -116,7 +116,7 @@ export const VOICES = [
     catty: "If {b} likes everybody else more than me, I'm done. {b} won't, though.", diva: "If {b} prefers everyone else, darling, I'm finished.", stoic: "{b} likes others more, I'm done." }],
   ['arrival.react.worried.05', "Can the new person please just be nice to me? Please?", {
     hype: "Can the new person PLEASE just be NICE to me? PLEASE?!", dry: "Can the new person please just be nice to me. Please.", blunt: "New person, be nice to me.",
-    goofy: "Can the new person please just be nice to me? Please? I'll be so nice back! The nicest!", shy: "Can the new person please just be nice to me? Please?", chill: "Can the new person just be nice to me, dude? Please?",
+    goofy: "Can the new person please just be nice to me? Please? I'll be so nice back! The nicest!", shy: "Can the new person please just be nice to me? Please?", chill: "Can the new person just be nice to me? Please?",
     catty: "Can the new person please just be nice to me? It would be smart of them.", diva: "Can the newcomer please be kind to me, darling? Please?", stoic: "Be nice to me." }],
   // ── a check-in, typed ─────────────────────────────────────────────────
   ['chat.checkin.warm.01', "Hey. How are you holding up after last night? {e:hug}", {

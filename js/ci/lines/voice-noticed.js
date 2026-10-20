@@ -199,3 +199,5 @@ export const VOICE_NOTICED = {
 // chill, catty, diva and stoic, noticed (registers-more2.js)
 import { NOTICED_MORE2 } from './registers-more2.js';
 Object.assign(VOICE_NOTICED, NOTICED_MORE2);
+import { NOTICED_CALM } from './registers-calm.js';
+Object.assign(VOICE_NOTICED, NOTICED_CALM);

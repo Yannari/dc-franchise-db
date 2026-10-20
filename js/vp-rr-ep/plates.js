@@ -959,11 +959,21 @@ for (const [id, m] of Object.entries(MORE)) {
   const pl = PLACE_PLATES[id];
   if (!pl) continue;
   const fill = x => ({ g: 90, x: [12, 88], ...x });
-  if (m.props) pl.props = { ...pl.props, ...m.props };
+  if (m.props) { pl.props = { ...pl.props, ...m.props }; for (const [k, v] of Object.entries(m.props)) if (v == null) delete pl.props[k]; }
   if (m.arrive) pl.arrive = [...(pl.arrive || []), ...m.arrive.map(fill)];
   // (a view is Don's: nobody is stood on it, and a scene after it doesn't fall back to it)
   if (m.views) pl.views = [...(pl.views || []), ...m.views.map(v => ({ ...fill(v), people: false }))];
   if (m.mat?.length && pl.st.mat) pl.st.mat.talk = [...(pl.st.mat.talk || []), ...m.mat.map(fill)];
+  // a shot the challenge already had, changed so a cut-out the user made is in it (2026-10-20: 39 were never drawn); before the
+  // alternates, so an alternate copied from the action shot keeps it
+  for (const { stretch, side, which, set } of m.patch || []) {
+    const s = pl.st[stretch], at = side ? s?.sides?.[side] : s;
+    const plate = which.startsWith('talk') ? at?.talk?.[Number(which.slice(4)) || 0] : at?.[which];
+    if (!plate) throw new Error(`plates-more: no ${id}/${stretch}${side ? '/' + side : ''} ${which}`);
+    const { deco, ...rest } = set;
+    Object.assign(plate, rest);
+    if (deco) plate.deco = [...(plate.deco || []), ...deco];
+  }
   for (const [sid, sm] of Object.entries(m.st || {})) {
     const s = (pl.st[sid] ||= { talk: [] });
     const merge = (into, add, base) => {

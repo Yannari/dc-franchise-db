@@ -132,7 +132,7 @@ swamp-prison | task-9442424 | talk:swamp-raft | 95 | 24,90 |
 swamp-prison | task-9442475 | alt:swamp-raft | 0 | 0,0 | {"water":true,"mode":"ride","prop":"raft","path":[[-14,82],[50,80],[114,82]],"fx":"splash"}
 swamp-prison | travel-9442151 | views | | |
 ice-floe | chill-9444869 | talk:igloo | 92 | 6,94 |
-ice-floe | task-9444616 | talk:narwhal | 92 | 6,60 |
+ice-floe | task-9444616 | talk:narwhal | 92 | 6,60 | {"deco":[["narwhal",74,78,15]]}
 ice-floe | task-9444866 | views | | |
 ice-floe | task-9445108 | talk:floe-run | 92 | 6,94 |
 pyramid-coast | chill-9446835 | skip:somebody is standing at the left edge | | |
@@ -243,3 +243,46 @@ red-sand-desert | cutout/reed-boat | skip:Tomb Sands' reed boat (used there, fro
 great-falls | cutout/slot-machine | skip:replaced by slot-machine-v2 | | |
 fishing-cove | cutout/fisherman-local-Don | skip:the fisherman with Don's face, an earlier try; fisherman-local is used | | |
 secret-base-desert | cutout/Don in olive military gear-1 | skip:Don in costume: the viewer draws Don as his avatar | | |
+
+# every cut-out the user made is drawn (2026-10-20: 39 were listed and never placed, the polar bear's story again):
+# each goes where its challenge's rules put it
+home-city | - | patch:tower/skydeck:act | | | {"deco":[["helmet",90,49,3.5]]}
+red-sand-desert | - | patch:spices:act | | | {"judge":["merchant",0.9]}
+red-sand-desert | - | patch:stew:act | | | {"judge":["chef",0.9]}
+great-wall-hills | - | patch:skewers:act | | | {"judge":["vendor",0.9]}
+great-wall-hills | - | patch:skydive:act | | | {"deco":[["plane",68,24,13]]}
+rock-north | - | patch:air-guitar:act | | | {"deco":[["meter",11,82,16]]}
+savanna-falls | - | patch:rhino:act | | | {"judge":["camera",0.35]}
+treasure-isles | - | patch:doubloons:talk0 | | | {"deco":[["mask",45,71,4]]}
+skyline-finale | - | patch:tower-stairs:act | | | {"deco":[["briefcase",50,36,6]]}
+tomb-sands | - | patch:reed-boat:act | | | {"deco":[["croc",86,64,13]]}
+red-outback | - | patch:shearing:act | | | {"judge":["shears",0.35]}
+fire-mountain-isle | - | patch:statue:act | | | {"judge":["pineapple",0.3]}
+geyser-island | - | patch:feast-fossil/fossil:act | | | {"prop":"fossil"}
+carnival-rainforest | - | patch:costume:act | | | {"deco":[["tail",12,95,8]]}
+haunted-castle | - | patch:gym:act | | | {"deco":[["vault",86,94,13]]}
+outback-farm | - | patch:bunnies:act | | | {"deco":[["sack",90,94,7]]}
+outback-farm | - | alt:bunnies | | | {"like":"act","prop":"albino"}
+fjord-peaks | - | patch:jump-dance/jump:act | | | {"judge":["fish",0.4]}
+ice-floe | - | patch:igloo:act | | | {"deco":[["blocks",30,57,7],["saw",40,57,5]]}
+dragon-isle | - | patch:venom:act | | | {"judge":["komodo",1.4]}
+neon-desert | - | patch:buggy-magic/buggy:act | | | {"deco":[["remote",8,95,4],["pennant",36,90,3],["pennant",66,90,3]]}
+stilt-river | - | alt:catfish | | | {"like":"act","prop":"branded"}
+frozen-mine | - | patch:borehole:act | | | {"deco":[["ball",50,92,3]]}
+frozen-mine | - | patch:sauna-run:act | | | {"deco":[["donbox",88,94,7]]}
+tea-hills | - | patch:tea-basket:act | | | {"deco":[["basket",72,93,6]]}
+game-show-city | - | patch:pinball:act | | | {"deco":[["panda",82,74,10],["candy",14,92,6]]}
+glass-pyramid-city | - | alt:broken-statue | | | {"like":"act","prop":"head"}
+glass-pyramid-city | - | alt:broken-statue | | | {"like":"act","prop":"legs"}
+fishing-cove | - | patch:welcome-rite:act | | | {"deco":[["vinegar",34,92,3]]}
+marble-temple-hill | - | patch:high-jump:act | | | {"prop":"highjump"}
+badlands | - | patch:oil-barrel:act | | | {"deco":[["rig",12,93,14]]}
+# the two painted in already: the cut-out would draw it twice
+props | glass-tower-gulf | | | | {"gondola":null}
+props | snow-peaks | | | | {"pad":null}
+glass-tower-gulf | cutout/Empty Window-Cleaning Gondola-3 | skip:the window-cleaning platform is painted into the squeegee plate: the cut-out would draw it twice |
+snow-peaks | cutout/Total Drama arcade dance pad-1 | skip:the dance pads are painted into the slap-dance stage: the cut-out would draw them twice |
+props | marble-temple-hill | | | | {"hurdle":null}
+props | grass-savanna | | | | {"gourd":null}
+marble-temple-hill | cutout/hurdle | skip:the hurdles are painted across the stadium track: the cut-out drew them twice |
+grass-savanna | cutout/gourd-on-post | skip:the gourds on their posts are painted into the gourds plate: the cut-out drew them twice |

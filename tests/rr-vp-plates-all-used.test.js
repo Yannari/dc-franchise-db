@@ -34,6 +34,24 @@ describe('rr viewer: every finished plate is used', () => {
     expect(unaccounted).toEqual([]);
   });
 
+  // listed is not shown: the polar bear was in Ice River's cut-outs from the start and no shot ever drew it (2026-10-20,
+  // the user: "how are u suppose to include a cutout of a polar bear if u dont tweak the challenge"); 39 more were the same
+  it('every cut-out a place lists is drawn by one of its shots (a prop, a judge, a passer-by or scenery)', () => {
+    const placed = new Set();
+    const add = (id, k) => { if (!k) return; const [key, at] = String(k).split('@'); placed.add(`${at || id}/${key}`); };
+    for (const [id, pl] of Object.entries(PLACE_PLATES)) {
+      const all = [pl.opener, ...(pl.arrive || []), ...(pl.views || [])];
+      for (const s of Object.values(pl.st)) {
+        all.push(...(s.talk || []), s.act, s.act2, ...(s.alt || []), ...(s.alt2 || []));
+        for (const sd of Object.values(s.sides || {})) all.push(...(sd.talk || []), sd.act, sd.act2, ...(sd.alt || []), ...(sd.alt2 || []));
+      }
+      for (const p of all.filter(Boolean)) { add(id, p.prop); add(id, p.judge?.[0]); add(id, p.pass); for (const d of p.deco || []) add(id, d[0]); }
+    }
+    const never = [];
+    for (const [id, pl] of Object.entries(PLACE_PLATES)) for (const k of Object.keys(pl.props || {})) if (!placed.has(`${id}/${k}`)) never.push(`${id}/${k}`);
+    expect(never).toEqual([]);
+  });
+
   it('a reason given for leaving one out is a sentence, not a shrug', () => {
     for (const [id, m] of Object.entries(LEFT_OUT)) for (const [f, why] of Object.entries(m)) expect(why.length, `${id}/${f}`).toBeGreaterThan(15);
   });

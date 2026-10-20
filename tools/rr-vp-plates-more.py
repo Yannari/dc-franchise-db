@@ -9,6 +9,8 @@
 # The list: one plate a line, `place | file | slot | g | x | more-json`; slot is talk:<stretch>, alt:<stretch>,
 # arrive, mat, views, or skip:<why>. A `more` with "side" puts it on that side of an Either/Or; "second" makes an alt
 # an angle on the second half (act2); "like": "act" copies the stretch's action plate (a cut-out swapped in).
+# slot patch:<stretch>[/<side>]:<act|act2|talkN> changes a shot the stretch already has: more-json sets its fields
+# ("judge", "prop") and adds to its "deco" (scenery cut-outs). A `props` line with a null drops a cut-out from the place.
 import json, os, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,6 +26,11 @@ for line in open(src, encoding='utf-8'):
     extra = json.loads(extra) if extra else {}
     if place == 'props':
         props.setdefault(f, {}).update(extra)
+        continue
+    if slot.startswith('patch:'):
+        _, where, which = slot.split(':')
+        stretch, _, side = where.partition('/')
+        more.setdefault(place, {}).setdefault('patch', []).append({'stretch': stretch, 'side': side or None, 'which': which, 'set': extra})
         continue
     if slot.startswith('skip:'):
         left.setdefault(place, {})[f] = slot[5:]

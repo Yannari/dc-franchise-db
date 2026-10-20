@@ -276,6 +276,19 @@ export const MORE = {
     ]
    }
   },
+  "patch": [
+   {
+    "stretch": "statue",
+    "side": null,
+    "which": "act",
+    "set": {
+     "judge": [
+      "pineapple",
+      0.3
+     ]
+    }
+   }
+  ],
   "props": {
    "statue2": "log-statue-v2"
   }
@@ -331,6 +344,14 @@ export const MORE = {
      {
       "like": "act",
       "prop": "standHead"
+     },
+     {
+      "like": "act",
+      "prop": "head"
+     },
+     {
+      "like": "act",
+      "prop": "legs"
      }
     ]
    }
@@ -412,6 +433,23 @@ export const MORE = {
      70
     ]
    }
+  ],
+  "patch": [
+   {
+    "stretch": "oil-barrel",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "rig",
+       12,
+       93,
+       14
+      ]
+     ]
+    }
+   }
   ]
  },
  "skyline-finale": {
@@ -453,7 +491,24 @@ export const MORE = {
      }
     ]
    }
-  }
+  },
+  "patch": [
+   {
+    "stretch": "tower-stairs",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "briefcase",
+       50,
+       36,
+       6
+      ]
+     ]
+    }
+   }
+  ]
  },
  "savanna-falls": {
   "views": [
@@ -569,6 +624,19 @@ export const MORE = {
      80
     ]
    }
+  ],
+  "patch": [
+   {
+    "stretch": "rhino",
+    "side": null,
+    "which": "act",
+    "set": {
+     "judge": [
+      "camera",
+      0.35
+     ]
+    }
+   }
   ]
  },
  "treasure-isles": {
@@ -673,6 +741,23 @@ export const MORE = {
   "views": [
    {
     "f": "task-9449658"
+   }
+  ],
+  "patch": [
+   {
+    "stretch": "doubloons",
+    "side": null,
+    "which": "talk0",
+    "set": {
+     "deco": [
+      [
+       "mask",
+       45,
+       71,
+       4
+      ]
+     ]
+    }
    }
   ]
  },
@@ -779,6 +864,23 @@ export const MORE = {
      94
     ]
    }
+  ],
+  "patch": [
+   {
+    "stretch": "gym",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "vault",
+       86,
+       94,
+       13
+      ]
+     ]
+    }
+   }
   ]
  },
  "fjord-peaks": {
@@ -850,6 +952,19 @@ export const MORE = {
    {
     "f": "travel-9443264"
    }
+  ],
+  "patch": [
+   {
+    "stretch": "jump-dance",
+    "side": "jump",
+    "which": "act",
+    "set": {
+     "judge": [
+      "fish",
+      0.4
+     ]
+    }
+   }
   ]
  },
  "great-falls": {
@@ -892,7 +1007,34 @@ export const MORE = {
    {
     "f": "task-9442855"
    }
-  ]
+  ],
+  "patch": [
+   {
+    "stretch": "bunnies",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "sack",
+       90,
+       94,
+       7
+      ]
+     ]
+    }
+   }
+  ],
+  "st": {
+   "bunnies": {
+    "alt": [
+     {
+      "like": "act",
+      "prop": "albino"
+     }
+    ]
+   }
+  }
  },
  "prairie-ranch": {
   "views": [
@@ -982,6 +1124,30 @@ export const MORE = {
      6,
      94
     ]
+   }
+  ],
+  "patch": [
+   {
+    "stretch": "spices",
+    "side": null,
+    "which": "act",
+    "set": {
+     "judge": [
+      "merchant",
+      0.9
+     ]
+    }
+   },
+   {
+    "stretch": "stew",
+    "side": null,
+    "which": "act",
+    "set": {
+     "judge": [
+      "chef",
+      0.9
+     ]
+    }
    }
   ]
  },
@@ -1095,6 +1261,14 @@ export const MORE = {
       "x": [
        6,
        60
+      ],
+      "deco": [
+       [
+        "narwhal",
+        74,
+        78,
+        15
+       ]
       ]
      }
     ]
@@ -1115,6 +1289,29 @@ export const MORE = {
   "views": [
    {
     "f": "task-9444866"
+   }
+  ],
+  "patch": [
+   {
+    "stretch": "igloo",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "blocks",
+       30,
+       57,
+       7
+      ],
+      [
+       "saw",
+       40,
+       57,
+       5
+      ]
+     ]
+    }
    }
   ]
  },
@@ -1176,6 +1373,23 @@ export const MORE = {
    },
    {
     "f": "task-22415804"
+   }
+  ],
+  "patch": [
+   {
+    "stretch": "welcome-rite",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "vinegar",
+       34,
+       92,
+       3
+      ]
+     ]
+    }
    }
   ]
  },
@@ -1247,6 +1461,23 @@ export const MORE = {
    },
    {
     "f": "travel-9435210"
+   }
+  ],
+  "patch": [
+   {
+    "stretch": "tower",
+    "side": "skydeck",
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "helmet",
+       90,
+       49,
+       3.5
+      ]
+     ]
+    }
    }
   ]
  },
@@ -1321,7 +1552,24 @@ export const MORE = {
      }
     ]
    }
-  }
+  },
+  "patch": [
+   {
+    "stretch": "air-guitar",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "meter",
+       11,
+       82,
+       16
+      ]
+     ]
+    }
+   }
+  ]
  },
  "red-outback": {
   "views": [
@@ -1336,6 +1584,19 @@ export const MORE = {
    },
    {
     "f": "task-22419612"
+   }
+  ],
+  "patch": [
+   {
+    "stretch": "shearing",
+    "side": null,
+    "which": "act",
+    "set": {
+     "judge": [
+      "shears",
+      0.35
+     ]
+    }
    }
   ]
  },
@@ -1409,7 +1670,10 @@ export const MORE = {
    {
     "f": "task-9439719"
    }
-  ]
+  ],
+  "props": {
+   "gondola": null
+  }
  },
  "neon-desert": {
   "views": [
@@ -1424,6 +1688,35 @@ export const MORE = {
    },
    {
     "f": "task-9446132"
+   }
+  ],
+  "patch": [
+   {
+    "stretch": "buggy-magic",
+    "side": "buggy",
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "remote",
+       8,
+       95,
+       4
+      ],
+      [
+       "pennant",
+       36,
+       90,
+       3
+      ],
+      [
+       "pennant",
+       66,
+       90,
+       3
+      ]
+     ]
+    }
    }
   ]
  },
@@ -1467,6 +1760,10 @@ export const MORE = {
        ]
       ],
       "fx": "splash"
+     },
+     {
+      "like": "act",
+      "prop": "branded"
      }
     ]
    },
@@ -1490,6 +1787,38 @@ export const MORE = {
    {
     "f": "chill-9447963",
     "at": "mat"
+   }
+  ],
+  "patch": [
+   {
+    "stretch": "borehole",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "ball",
+       50,
+       92,
+       3
+      ]
+     ]
+    }
+   },
+   {
+    "stretch": "sauna-run",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "donbox",
+       88,
+       94,
+       7
+      ]
+     ]
+    }
    }
   ]
  },
@@ -1527,6 +1856,23 @@ export const MORE = {
   "views": [
    {
     "f": "task-9448429"
+   }
+  ],
+  "patch": [
+   {
+    "stretch": "tea-basket",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "basket",
+       72,
+       93,
+       6
+      ]
+     ]
+    }
    }
   ]
  },
@@ -1575,6 +1921,34 @@ export const MORE = {
    {
     "f": "task-9440340"
    }
+  ],
+  "patch": [
+   {
+    "stretch": "skewers",
+    "side": null,
+    "which": "act",
+    "set": {
+     "judge": [
+      "vendor",
+      0.9
+     ]
+    }
+   },
+   {
+    "stretch": "skydive",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "plane",
+       68,
+       24,
+       13
+      ]
+     ]
+    }
+   }
   ]
  },
  "tomb-sands": {
@@ -1584,6 +1958,23 @@ export const MORE = {
    },
    {
     "f": "task-22410503"
+   }
+  ],
+  "patch": [
+   {
+    "stretch": "reed-boat",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "croc",
+       86,
+       64,
+       13
+      ]
+     ]
+    }
    }
   ]
  },
@@ -1597,6 +1988,23 @@ export const MORE = {
    },
    {
     "f": "task-9437898"
+   }
+  ],
+  "patch": [
+   {
+    "stretch": "costume",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "tail",
+       12,
+       95,
+       8
+      ]
+     ]
+    }
    }
   ]
  },
@@ -1698,12 +2106,35 @@ export const MORE = {
    {
     "f": "arrive-9437005"
    }
+  ],
+  "patch": [
+   {
+    "stretch": "feast-fossil",
+    "side": "fossil",
+    "which": "act",
+    "set": {
+     "prop": "fossil"
+    }
+   }
   ]
  },
  "dragon-isle": {
   "views": [
    {
     "f": "task-9445351"
+   }
+  ],
+  "patch": [
+   {
+    "stretch": "venom",
+    "side": null,
+    "which": "act",
+    "set": {
+     "judge": [
+      "komodo",
+      1.4
+     ]
+    }
    }
   ]
  },
@@ -1781,7 +2212,30 @@ export const MORE = {
      }
     ]
    }
-  }
+  },
+  "patch": [
+   {
+    "stretch": "pinball",
+    "side": null,
+    "which": "act",
+    "set": {
+     "deco": [
+      [
+       "panda",
+       82,
+       74,
+       10
+      ],
+      [
+       "candy",
+       14,
+       92,
+       6
+      ]
+     ]
+    }
+   }
+  ]
  },
  "grass-savanna": {
   "st": {
@@ -1797,6 +2251,9 @@ export const MORE = {
      }
     ]
    }
+  },
+  "props": {
+   "gourd": null
   }
  },
  "stone-head-island": {
@@ -1818,7 +2275,23 @@ export const MORE = {
    }
   },
   "props": {
-   "grinder2": "Steel-blue grinder nozzle update-5"
+   "grinder2": "Steel-blue grinder nozzle update-5",
+   "pad": null
+  }
+ },
+ "marble-temple-hill": {
+  "patch": [
+   {
+    "stretch": "high-jump",
+    "side": null,
+    "which": "act",
+    "set": {
+     "prop": "highjump"
+    }
+   }
+  ],
+  "props": {
+   "hurdle": null
   }
  }
 };
@@ -1919,7 +2392,8 @@ export const LEFT_OUT = {
   "present-9445130": "the show's credits are burned into it"
  },
  "snow-peaks": {
-  "present-22413694": "somebody is at the right edge"
+  "present-22413694": "somebody is at the right edge",
+  "cutout/Total Drama arcade dance pad-1": "the dance pads are painted into the slap-dance stage: the cut-out would draw them twice"
  },
  "red-sand-desert": {
   "cutout/camel-2": "a second camel; the camel ride uses the first",
@@ -1932,5 +2406,14 @@ export const LEFT_OUT = {
  },
  "secret-base-desert": {
   "cutout/Don in olive military gear-1": "Don in costume: the viewer draws Don as his avatar"
+ },
+ "glass-tower-gulf": {
+  "cutout/Empty Window-Cleaning Gondola-3": "the window-cleaning platform is painted into the squeegee plate: the cut-out would draw it twice"
+ },
+ "marble-temple-hill": {
+  "cutout/hurdle": "the hurdles are painted across the stadium track: the cut-out drew them twice"
+ },
+ "grass-savanna": {
+  "cutout/gourd-on-post": "the gourds on their posts are painted into the gourds plate: the cut-out drew them twice"
  }
 };

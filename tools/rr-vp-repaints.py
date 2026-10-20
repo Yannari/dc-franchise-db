@@ -50,7 +50,8 @@ def strays(src_dir, jobs):
     d = os.path.join(FRAMES, 'edit', src_dir)
     if not os.path.isdir(d):
         return []
-    given = {j['file'] for j in jobs}
+    # only a repaint job hands a frame out; a new view saved under the job's own name is its result
+    given = {j['file'] for j in jobs if not j.get('new')}
     out = []
     for f in sorted(os.listdir(d)):
         stem, ext = os.path.splitext(f)

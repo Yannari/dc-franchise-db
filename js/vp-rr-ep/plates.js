@@ -399,10 +399,10 @@ export const PLACE_PLATES = {
           // in the gondola on the tower's glass; the squeegee and its bucket are a job (edit/), meanwhile the glass alone
           squeegee: { talk: [p('task-9439718', 92, [14, 86], { closed: true })],
             act: p('task-9439718', 92, [14, 86], { closed: true, mode: 'squeegee', ...(REPAINTED.has('squeegee-bucket') ? { prop: 'squeegee' } : {}), fx: 'splash' }) },
-          // the launcher robot is painted small on the far court: the teams stand on the court at its scale, beside it
-          // (a court-level view without it is a job, edit/; then the robot is the cut-out across from them)
+          // the court at court level (the user's view, 2026-10-20): the launcher robot is the cut-out across the net,
+          // small with the distance; before it, task-9439713 had it painted tiny on the far court and the teams stood at its scale
           serve: { talk: [repaint('task-tennis-court', p('task-tennis-court', 92, [6, 94]), p('task-9439713', 41, [6, 56], { scale: 0.6, spots: [[13, 41], [23, 41], [45, 41], [54, 40]] }))],
-            act: repaint('task-tennis-court', p('task-tennis-court', 92, [6, 94], { mode: 'serve', prop: 'racket', propW: 0.55, judge: ['robot', 1.0], fx: 'sparkle' }),
+            act: repaint('task-tennis-court', p('task-tennis-court', 92, [6, 94], { mode: 'serve', prop: 'racket', propW: 0.55, judge: ['robot', 0.45], judgeAt: [50, 44], fx: 'sparkle' }),
               p('task-9439713', 41, [6, 56], { scale: 0.6, spots: [[13, 41], [23, 41], [45, 41], [54, 40]], mode: 'serve', prop: 'racket', propW: 0.55, fx: 'sparkle' })) },
         },
       },

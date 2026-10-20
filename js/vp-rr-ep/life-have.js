@@ -173,6 +173,9 @@ export const LIFE = {
  "assets/sets/rr/glass-tower-gulf/task-9439713.webp": [
   "water"
  ],
+ "assets/sets/rr/glass-tower-gulf/task-tennis-court.webp": [
+  "wind"
+ ],
  "assets/sets/rr/glass-tower-gulf/travel-9439786.webp": [
   "wind",
   "water"

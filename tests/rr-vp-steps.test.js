@@ -364,3 +364,20 @@ describe('rr viewer sound', () => {
   });
 });
 
+
+describe('rr viewer judge at a fixed spot', () => {
+  // a judge who belongs somewhere on the plate (the launcher robot across the net) stands there, not beside the team
+  it('puts a plate-placed judge where the plate says, on every act shot', () => {
+    const { cast, teams } = raceCast(8, 5);
+    setPlayers(cast);
+    const res = playRaceSeason({ teams, seed: 5, options: { pins: { 2: 'glass-tower-gulf' } } });
+    const eps = airSeason(res);
+    const shots = eps.flatMap((_, i) => episodeScreens(res, eps, i).screens).filter(s => s.mode === 'act' && s.plate?.f === 'task-tennis-court');
+    expect(shots.length).toBeGreaterThan(0);
+    for (const s of shots) {
+      expect(s.plate.judgeAt, 'the tennis plate places its robot').toBeTruthy();
+      expect(s.judgeAt.at).toEqual(s.plate.judgeAt);
+      expect(s.judgeAt.flip).toBe(false);
+    }
+  }, 240000);
+});

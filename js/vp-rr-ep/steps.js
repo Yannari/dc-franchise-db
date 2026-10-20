@@ -541,7 +541,10 @@ function placeWorkProps(s, marks) {
   // (`propW`: a plate's own scale for its cut-out, a racket smaller than a sand palace)
   const w = z * 1.5 * (GROWS.has(s.work) ? 1.5 : 1) * (pl.propW || 1);
   s.workProp = { at: [Math.round(px * 10) / 10, gy], w };
-  if (pl.judge) {
+  if (pl.judge && pl.judgeAt) {
+    // (`judgeAt`: a judge the plate itself places, the launcher robot across the net; its width is of the plate, in cqw)
+    s.judgeAt = { at: pl.judgeAt, w: z * 1.35 * pl.judge[1], flip: false };
+  } else if (pl.judge) {
     const [, ja] = pl.judge, jw = z * 1.35 * ja, side = px >= anchor[0] ? 1 : -1;
     const jx = Math.max(jw / 2 + 2, Math.min(98 - jw / 2, px + side * (w / 2 + jw / 2 + 1.5)));
     s.judgeAt = { at: [Math.round(jx * 10) / 10, gy], w: jw, flip: side < 0 };

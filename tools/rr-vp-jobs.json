@@ -147,6 +147,40 @@
       "kind": "cutout",
       "prop": "idol",
       "why": "the one real golden idol at the foot of the ruins (LEGS.txt needs golden-idol); meanwhile the search alone"
+    },
+    {
+      "place": "twin-tower-bridge",
+      "src": "38-twin-tower-bridge",
+      "file": "chill-fog-mat",
+      "new": true,
+      "ref": "task-22417943",
+      "why": "the foggy street Chill Zone (LEGS.txt: NEW, in edit; stand-in: the lamplit street, task-22417943)"
+    },
+    {
+      "place": "secret-base-desert",
+      "src": "40-secret-base-desert",
+      "file": "chill-desert-night-mat",
+      "new": true,
+      "ref": "task-22419058",
+      "why": "the night desert Chill Zone (LEGS.txt: NEW, in edit; stand-in: the desert by the base, task-22419058)"
+    },
+    {
+      "place": "cliff-pool-isle",
+      "src": "37-cliff-pool-isle",
+      "file": "treasure-chest",
+      "new": true,
+      "kind": "cutout",
+      "prop": "chest",
+      "why": "the little treasure chest dived for under the falls (LEGS.txt needs treasure-chest); meanwhile the dive alone"
+    },
+    {
+      "place": "marble-temple-hill",
+      "src": "39-marble-temple-hill",
+      "file": "chariot",
+      "new": true,
+      "kind": "cutout",
+      "prop": "chariot",
+      "why": "the two-horse chariot (LEGS.txt needs chariot); meanwhile on horseback"
     }
   ]
 }

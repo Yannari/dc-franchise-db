@@ -7,7 +7,7 @@ Every place has its own sound and every moment of a leg its own track there (the
 the race-wide bed for that moment (`race/<moment>.mp3`) if there is one, then an ambience already
 in the repo where it really fits the place, and otherwise silence. A Total Drama bed never plays.
 
-**Filled: 300 of 300 slots.**
+**Filled: 332 of 332 slots.**
 
 **The rules for a file**
 - Royalty-free only: CC0 or public domain, the Pixabay Content License, or CC-BY with the credit in
@@ -631,3 +631,67 @@ A race-wide bed for a moment (`race/opener.mp3`, `race/struggle.mp3`...) is the 
 | `fishing-cove/elimination.mp3` | elimination | a slow little flute and glockenspiel waltz; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | jig, reel, sombre and short | [x] "Teddy Bear Waltz" (Kevin MacLeod), 274 KB |
 | `fishing-cove/recap.mp3` | recap | a quick, poofy reel; quick, punchy, recap energy, the place still in it | 30-40 s loop | jig, reel, quick | [x] "Poofy Reel" (Kevin MacLeod), 235 KB |
 | `fishing-cove/interview.mp3` | interview | a medieval minstrel round; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | jig, reel, light | [x] "Minstrel Guild" (Kevin MacLeod), 313 KB |
+
+## Cliff Pool Isle (`cliff-pool-isle/`)
+
+**Sound of the place**: an island resort under the falls: reggae offbeat guitar, organ and steel drums.  
+**Search**: reggae, ska, steel drum, island, dub.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `cliff-pool-isle/opener.mp3` | opener | a bouncing, uplifting reggae; bright, confident, the place in its first bars | 40-60 s loop | reggae, ska, bright | [x] "Montego" (Kevin MacLeod), 352 KB |
+| `cliff-pool-isle/travel.mp3` | travel | a relaxed reggae groove round the coast; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | reggae, ska, moving | [x] "Maccary Bay" (Kevin MacLeod), 391 KB |
+| `cliff-pool-isle/challenge.mp3` | challenge | fast ska horns: the falls and the bobsled; driving, building, percussion forward, 110-140 bpm | 60 s loop | reggae, ska, driving | [x] "Upbeat Forever" (Kevin MacLeod), 391 KB |
+| `cliff-pool-isle/struggle.mp3` | struggle | a dark, wah-wah reggae; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | reggae, ska, tense | [x] "Yallahs" (Kevin MacLeod), 352 KB |
+| `cliff-pool-isle/chill-zone.mp3` | chill-zone | steel drum and marimba by the pool; relief and a little swagger, mid-tempo, warm | 45 s loop | reggae, ska, relief and a little swagger | [x] "Chee Zee Beach" (Kevin MacLeod), 352 KB |
+| `cliff-pool-isle/elimination.mp3` | elimination | an easy-going guitar and piano; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | reggae, ska, sombre and short | [x] "Clear Air" (Kevin MacLeod), 274 KB |
+| `cliff-pool-isle/recap.mp3` | recap | a slow ska loop; quick, punchy, recap energy, the place still in it | 30-40 s loop | reggae, ska, quick | [x] "Slow Ska Game Loop" (Kevin MacLeod), 235 KB |
+| `cliff-pool-isle/interview.mp3` | interview | a calm dark dub; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | reggae, ska, light | [x] "Dub Feral" (Kevin MacLeod), 313 KB |
+
+## Twin Tower Bridge (`twin-tower-bridge/`)
+
+**Sound of the place**: an old city in the fog: dark waltzes, strings and a mystery's pizzicato.  
+**Search**: dark waltz, strings, pizzicato, mystery, foggy.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `twin-tower-bridge/opener.mp3` | opener | a grand dark waltz by the bridge; bright, confident, the place in its first bars | 40-60 s loop | dark waltz, strings, bright | [x] "Grand Dark Waltz Allegretto" (Kevin MacLeod), 352 KB |
+| `twin-tower-bridge/travel.mp3` | travel | a driving mystery groove on the bus; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | dark waltz, strings, moving | [x] "Half Mystery" (Kevin MacLeod), 391 KB |
+| `twin-tower-bridge/challenge.mp3` | challenge | a sneaking pizzicato march: the kidnapper's clues; driving, building, percussion forward, 110-140 bpm | 60 s loop | dark waltz, strings, driving | [x] "March of the Spoons" (Kevin MacLeod), 391 KB |
+| `twin-tower-bridge/struggle.mp3` | struggle | dark, mysterious cello and violin; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | dark waltz, strings, tense | [x] "Magic Forest" (Kevin MacLeod), 352 KB |
+| `twin-tower-bridge/chill-zone.mp3` | chill-zone | a stately waltz in the fog; relief and a little swagger, mid-tempo, warm | 45 s loop | dark waltz, strings, relief and a little swagger | [x] "Devonshire Waltz Moderato" (Kevin MacLeod), 352 KB |
+| `twin-tower-bridge/elimination.mp3` | elimination | a calm piano and violin; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | dark waltz, strings, sombre and short | [x] "Crinoline Dreams" (Kevin MacLeod), 274 KB |
+| `twin-tower-bridge/recap.mp3` | recap | a quick, bright waltz; quick, punchy, recap energy, the place still in it | 30-40 s loop | dark waltz, strings, quick | [x] "Fox Tale Waltz Part 1 Instrumental" (Kevin MacLeod), 235 KB |
+| `twin-tower-bridge/interview.mp3` | interview | a dark little piano-trio waltz; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | dark waltz, strings, light | [x] "Grand Dark Waltz Trio Allegro" (Kevin MacLeod), 313 KB |
+
+## Marble Temple Hill (`marble-temple-hill/`)
+
+**Sound of the place**: the old games on the marble hill: bouzouki, heroic strings and a games fanfare.  
+**Search**: bouzouki, heroic, fanfare, epic, ancient games.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `marble-temple-hill/opener.mp3` | opener | a driving bouzouki tune; bright, confident, the place in its first bars | 40-60 s loop | bouzouki, heroic, bright | [x] "Greko (Sketch)" (Kevin MacLeod), 352 KB |
+| `marble-temple-hill/travel.mp3` | travel | a bright call to adventure up the marble road; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | bouzouki, heroic, moving | [x] "Call to Adventure" (Kevin MacLeod), 391 KB |
+| `marble-temple-hill/challenge.mp3` | challenge | a heroic horn charge: hurdles, the bar, the chariots; driving, building, percussion forward, 110-140 bpm | 60 s loop | bouzouki, heroic, driving | [x] "Take a Chance" (Kevin MacLeod), 268 KB |
+| `marble-temple-hill/struggle.mp3` | struggle | an intense, suspenseful string theme; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | bouzouki, heroic, tense | [x] "Rynos Theme" (Kevin MacLeod), 352 KB |
+| `marble-temple-hill/chill-zone.mp3` | chill-zone | a calm, regal woodwind piece by the ruins; relief and a little swagger, mid-tempo, warm | 45 s loop | bouzouki, heroic, relief and a little swagger | [x] "Royal Coupling" (Kevin MacLeod), 352 KB |
+| `marble-temple-hill/elimination.mp3` | elimination | a sombre, uplifting strings and flute; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | bouzouki, heroic, sombre and short | [x] "Tempting Secrets" (Kevin MacLeod), 274 KB |
+| `marble-temple-hill/recap.mp3` | recap | a fanfare; quick, punchy, recap energy, the place still in it | 30-40 s loop | bouzouki, heroic, quick | [x] "Fanfare for Space" (Kevin MacLeod), 235 KB |
+| `marble-temple-hill/interview.mp3` | interview | a soaring calm synth; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | bouzouki, heroic, light | [x] "Soaring" (Kevin MacLeod), 313 KB |
+
+## Secret Base Desert (`secret-base-desert/`)
+
+**Sound of the place**: a secret base in the night desert: sci-fi synths, an eerie theremin feel, a march.  
+**Search**: sci-fi, space, eerie, synth, military.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `secret-base-desert/opener.mp3` | opener | an eerie phantom from space; bright, confident, the place in its first bars | 40-60 s loop | sci-fi, space, bright | [x] "Phantom from Space" (Kevin MacLeod), 352 KB |
+| `secret-base-desert/travel.mp3` | travel | a cool, driving synth on the desert highway; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | sci-fi, space, moving | [x] "Jerry Five" (Kevin MacLeod), 391 KB |
+| `secret-base-desert/challenge.mp3` | challenge | a dark, driving action synth: the fence and the hangar; driving, building, percussion forward, 110-140 bpm | 60 s loop | sci-fi, space, driving | [x] "The Complex" (Kevin MacLeod), 391 KB |
+| `secret-base-desert/struggle.mp3` | struggle | eerie, unnerving synths; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | sci-fi, space, tense | [x] "Shadowlands 5 - Antechamber" (Kevin MacLeod), 352 KB |
+| `secret-base-desert/chill-zone.mp3` | chill-zone | a calm retro space groove; relief and a little swagger, mid-tempo, warm | 45 s loop | sci-fi, space, relief and a little swagger | [x] "Space 1990-B" (Kevin MacLeod), 352 KB |
+| `secret-base-desert/elimination.mp3` | elimination | a clean, quiet electric piano; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | sci-fi, space, sombre and short | [x] "Clean Soul" (Kevin MacLeod), 274 KB |
+| `secret-base-desert/recap.mp3` | recap | a funny android sock hop; quick, punchy, recap energy, the place still in it | 30-40 s loop | sci-fi, space, quick | [x] "Android Sock Hop" (Kevin MacLeod), 235 KB |
+| `secret-base-desert/interview.mp3` | interview | a slow retro space pad; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | sci-fi, space, light | [x] "Space 1990" (Kevin MacLeod), 313 KB |

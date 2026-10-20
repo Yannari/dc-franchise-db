@@ -5,8 +5,6 @@
 export default {
   id: 'jungle-ruins', name: 'Jungle Ruins', recap: 'racing past piranhas and finding the one real golden idol in the ruins',
   region: 'ocean', map: { x: 24, y: 66 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['canoe', 'foot'],
   stretches: [
     { id: 'river-canoe', kind: 'travel', mode: 'canoe', base: 35, cost: 10, plate: 'jungle river, canoes', label: 'Canoe up the river',

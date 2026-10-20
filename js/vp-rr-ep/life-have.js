@@ -34,6 +34,27 @@ export const LIFE = {
  "assets/sets/rr/carnival-rainforest/task-9438128.webp": [
   "wind"
  ],
+ "assets/sets/rr/cliff-pool-isle/arrive-22416267.webp": [
+  "water"
+ ],
+ "assets/sets/rr/cliff-pool-isle/chill-22416513.webp": [
+  "water"
+ ],
+ "assets/sets/rr/cliff-pool-isle/present-22416327.webp": [
+  "water"
+ ],
+ "assets/sets/rr/cliff-pool-isle/present-22416412.webp": [
+  "water"
+ ],
+ "assets/sets/rr/cliff-pool-isle/task-22416440.webp": [
+  "water"
+ ],
+ "assets/sets/rr/cliff-pool-isle/task-22416594.webp": [
+  "water"
+ ],
+ "assets/sets/rr/cliff-pool-isle/task-22416652.webp": [
+  "water"
+ ],
  "assets/sets/rr/coast-palace/arrive-9436621.webp": [
   "water"
  ],

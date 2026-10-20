@@ -5,8 +5,6 @@
 export default {
   id: 'snow-peaks', name: 'Snow Peaks', recap: 'sledding down a mountain on a giant sausage and slap-dancing on shocking pads',
   region: 'old-coast', map: { x: 51, y: 30 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['cable-car', 'foot'],
   stretches: [
     { id: 'cable-car', kind: 'travel', mode: 'cable-car', base: 30, cost: 15, plate: 'cable car over the peaks', label: 'Cable car up the mountain',

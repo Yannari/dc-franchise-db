@@ -250,6 +250,9 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .tok.roll .veh{bottom:calc(var(--sz)*-.25);width:calc(var(--sz)*1.9);opacity:.55;z-index:2;animation:wRoll 1s linear infinite}
 @keyframes wRoll{to{transform:translateX(-50%) rotate(360deg)}}
 .fxp.leaf{width:1cqw;height:.6cqw;border-radius:60% 0;background:#3f8f3a}
+/* batch 7: grappling (lean in, shove, stagger) */
+.tok.w-wrestle .pair{animation:wWrestle 1.3s ease-in-out infinite}
+@keyframes wWrestle{0%,100%{transform:none}30%{transform:translateX(.8cqw) rotate(10deg)}45%{transform:translateX(-.4cqw) rotate(-6deg)}60%{transform:translateX(.6cqw) rotate(8deg)}}
 .tok.w-lever .pair{animation:wLever 1.8s ease-in-out infinite}
 @keyframes wLever{0%,100%{transform:none}40%{transform:translateY(.6cqw) rotate(10deg)}55%{transform:translateY(.6cqw) rotate(10deg)}}
 @keyframes wCreep{0%,100%{transform:translateX(0)}40%{transform:translateX(.6cqw) translateY(.3cqw) scaleY(.94)}60%{transform:translateX(.6cqw) translateY(.3cqw) scaleY(.94)}75%{transform:translateX(-.5cqw) rotate(-6deg)}}

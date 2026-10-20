@@ -88,6 +88,12 @@ FORCE_WATER.update({'ice-river/task-22411646': [(0, 0, 1, 1, 185, 215, .75)], 'i
 FORCE_WATER.update({'fishing-cove/task-22415657': [(0, .3, 1, 1, 180, 215)], 'fishing-cove/task-22415659': [(0, .38, 1, 1, 180, 215)],
                     'fishing-cove/task-22415709': [(0, .3, 1, 1, 180, 215)], 'fishing-cove/chill-22416099': [(.55, .55, 1, 1, 195, 225)],
                     'jungle-ruins/task-22414389': [(0, 0, 1, 1, 150, 190)], 'jungle-ruins/task-22414359': [(0, .3, .7, 1, 160, 195)]})
+# batch 7: the lagoon, the falls, the pool, the sea behind the bobsled track
+FORCE_WATER.update({'cliff-pool-isle/task-22416440': [(0, .2, 1, 1, 170, 200)], 'cliff-pool-isle/present-22416327': [(.2, .4, 1, 1, 170, 200)],
+                    'cliff-pool-isle/present-22416412': [(.2, .4, 1, 1, 170, 200)], 'cliff-pool-isle/chill-22416513': [(.15, .2, .85, .85, 170, 205)],
+                    'cliff-pool-isle/task-22416594': [(0, 0, 1, 1, 170, 200)], 'cliff-pool-isle/arrive-22416267': [(0, .4, .7, .7, 170, 200)]})
+NO_WIND |= {'cliff-pool-isle/chill-22416513', 'cliff-pool-isle/task-22416652', 'marble-temple-hill/chill-22418530'}
+NO_WATER |= {'secret-base-desert/present-22418960'}
 LAVA_PLACES = {'fire-mountain-isle'}
 SKIP = {'confess', 'worldmap', 'gate', 'cabin', 'galley', 'logo', 'sky', 'runway', 'don', 'plane'}
 

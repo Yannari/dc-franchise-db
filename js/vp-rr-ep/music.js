@@ -549,6 +549,62 @@ export const PLACE_MUSIC = {
       interview: "a medieval minstrel round",
     },
   },
+  'cliff-pool-isle': {
+    name: "Cliff Pool Isle", feel: "an island resort under the falls: reggae offbeat guitar, organ and steel drums",
+    search: "reggae, ska, steel drum, island, dub",
+    moments: {
+      opener: "a bouncing, uplifting reggae",
+      travel: "a relaxed reggae groove round the coast",
+      challenge: "fast ska horns: the falls and the bobsled",
+      struggle: "a dark, wah-wah reggae",
+      'chill-zone': "steel drum and marimba by the pool",
+      elimination: "an easy-going guitar and piano",
+      recap: "a slow ska loop",
+      interview: "a calm dark dub",
+    },
+  },
+  'twin-tower-bridge': {
+    name: "Twin Tower Bridge", feel: "an old city in the fog: dark waltzes, strings and a mystery's pizzicato",
+    search: "dark waltz, strings, pizzicato, mystery, foggy",
+    moments: {
+      opener: "a grand dark waltz by the bridge",
+      travel: "a driving mystery groove on the bus",
+      challenge: "a sneaking pizzicato march: the kidnapper's clues",
+      struggle: "dark, mysterious cello and violin",
+      'chill-zone': "a stately waltz in the fog",
+      elimination: "a calm piano and violin",
+      recap: "a quick, bright waltz",
+      interview: "a dark little piano-trio waltz",
+    },
+  },
+  'marble-temple-hill': {
+    name: "Marble Temple Hill", feel: "the old games on the marble hill: bouzouki, heroic strings and a games fanfare",
+    search: "bouzouki, heroic, fanfare, epic, ancient games",
+    moments: {
+      opener: "a driving bouzouki tune",
+      travel: "a bright call to adventure up the marble road",
+      challenge: "a heroic horn charge: hurdles, the bar, the chariots",
+      struggle: "an intense, suspenseful string theme",
+      'chill-zone': "a calm, regal woodwind piece by the ruins",
+      elimination: "a sombre, uplifting strings and flute",
+      recap: "a fanfare",
+      interview: "a soaring calm synth",
+    },
+  },
+  'secret-base-desert': {
+    name: "Secret Base Desert", feel: "a secret base in the night desert: sci-fi synths, an eerie theremin feel, a march",
+    search: "sci-fi, space, eerie, synth, military",
+    moments: {
+      opener: "an eerie phantom from space",
+      travel: "a cool, driving synth on the desert highway",
+      challenge: "a dark, driving action synth: the fence and the hangar",
+      struggle: "eerie, unnerving synths",
+      'chill-zone': "a calm retro space groove",
+      elimination: "a clean, quiet electric piano",
+      recap: "a funny android sock hop",
+      interview: "a slow retro space pad",
+    },
+  },
 };
 
 export const PLACE_IDS = Object.keys(PLACE_MUSIC);

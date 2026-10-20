@@ -5,8 +5,6 @@
 export default {
   id: 'fishing-cove', name: 'Fishing Cove', recap: 'rowing ashore and kissing a cod to become an honorary local',
   region: 'north', map: { x: 31, y: 24 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['rowboat', 'foot'],
   stretches: [
     { id: 'rowboat', kind: 'travel', mode: 'rowboat', base: 40, cost: 0, plate: 'open sea, rowboats', label: 'Row to the shore',

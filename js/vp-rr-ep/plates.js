@@ -741,6 +741,86 @@ export const PLACE_PLATES = {
       mat: { talk: [p('chill-22416099', 88, [6, 60], { matPos: [40, 84] })] },
     },
   },
+  // ── batch 7 (LEGS.txt 37-40) ──
+  'cliff-pool-isle': {
+    src: '37-cliff-pool-isle', title: 'present-22416412', opener: p('arrive-22416267', 90, [6, 94]),
+    arrive: [p('arrive-22416267', 90, [6, 94])],
+    props: { sled: 'Tan two-person sled with red wheels', ...(REPAINTED.has('treasure-chest') ? { chest: 'treasure-chest' } : {}) },
+    st: {
+      'coast-minibus': { talk: [p('arrive-22416267', 90, [6, 94])],
+        act: p('arrive-22416267', 90, [6, 94], { mode: 'ride', prop: 'bus@geyser-island', path: [[-20, 90], [50, 89], [120, 90]], fx: 'dust' }) },
+      // off the falls into the lagoon for a little treasure chest (the chest is a job; meanwhile the dive alone)
+      'falls-dive': { talk: [p('present-22416327', 92, [62, 94])],
+        act: p('task-22416440', 0, [0, 0], { water: true, mode: 'dive', ...(REPAINTED.has('treasure-chest') ? { prop: 'chest' } : {}), path: [[14, 80], [34, 70], [56, 82], [78, 72]], fx: 'bubbles', inset: 'ON THE CLIFF' }) },
+      // three runs down the wooden track in the sled
+      bobsled: { talk: [p('chill-22416513', 92, [10, 94])],
+        act: p('task-22416594', 0, [0, 0], { water: true, mode: 'ride', prop: 'sled', path: [[-14, 74], [50, 70], [114, 76]], fx: 'dust' }) },
+      'pool-walk': { talk: [p('task-22416652', 92, [6, 94])],
+        act: p('task-22416652', 92, [6, 94], { mode: 'run', path: [[12, 92], [50, 92], [88, 92]] }) },
+      mat: { talk: [p('chill-22416513', 92, [10, 94], { matPos: [52, 90] })] },
+    },
+  },
+  'twin-tower-bridge': {
+    src: '38-twin-tower-bridge', title: 'present-22417609', opener: p('task-22417943', 92, [6, 94]),
+    arrive: [p('arrive-22417628', 92, [6, 94])],
+    props: { bus: 'Red Double-Decker Bus Side View-3', warden: 'Elderly tower warden in red uniform-4', kidnapper: 'Masked cloaked figure in magenta-trimmed hat-2' },
+    st: {
+      'double-decker': { talk: [p('arrive-22417628', 92, [6, 94])],
+        act: p('task-22417943', 92, [6, 94], { mode: 'ride', prop: 'bus', path: [[-20, 93], [50, 92], [120, 93]] }) },
+      // the fortress searched for the masked kidnapper's clues, the warden standing guard
+      kidnapper: { talk: [p('task-22417886', 92, [6, 94], { closed: true })],
+        act: p('task-22417886', 92, [6, 94], { closed: true, mode: 'search', prop: 'kidnapper', propW: 0.5, judge: ['warden', 0.45], fx: 'dust' }) },
+      'crown-jewel': { talk: [p('task-22417892', 95, [6, 94], { closed: true })],
+        act: p('task-22417865', 96, [6, 94], { closed: true, mode: 'search', fx: 'sparkle' }) },
+      'fog-walk': { talk: [p('task-22417943', 92, [6, 94])],
+        act: p('task-22417943', 92, [6, 94], { mode: 'run', path: [[12, 92], [50, 92], [88, 92]] }) },
+      // the foggy street Chill Zone is a job (edit/); meanwhile the lamplit street
+      mat: { talk: [repaint('chill-fog-mat', p('chill-fog-mat', 92, [6, 94], { matPos: [50, 90] }), p('task-22417943', 92, [6, 94], { matPos: [50, 92] }))] },
+    },
+  },
+  'marble-temple-hill': {
+    src: '39-marble-temple-hill', title: 'present-22418524', opener: p('Ancient temple with empty stone steps', 92, [6, 94]),
+    arrive: [p('Empty Temple Steps Amid Ancient Ruins', 90, [6, 94])],
+    props: { highjump: 'Cartoon coral high-jump setup-1', wreath: 'Golden laurel wreath crown-2', hurdle: 'hurdle',
+      ...(REPAINTED.has('chariot') ? { chariot: 'chariot' } : {}) },
+    st: {
+      'stadium-taxi': { talk: [p('Empty Temple Steps Amid Ancient Ruins', 90, [6, 94])],
+        act: p('Empty Temple Steps Amid Ancient Ruins', 90, [6, 94], { mode: 'ride', prop: 'taxi@glass-tower-gulf', flip: true, path: [[-14, 91], [50, 90], [114, 91]], fx: 'dust' }) },
+      hurdles: { talk: [p('chill-22418530', 90, [6, 94])],
+        act: p('task-22418528', 90, [6, 94], { mode: 'run', path: [[8, 90], [50, 90], [92, 90]], fx: 'dust' }) },
+      // the bar cleared with a flip
+      'high-jump': { talk: [p('chill-22418530', 90, [6, 94])],
+        act: p('task-22418529', 92, [6, 94], { mode: 'beam', fx: 'dust' }) },
+      'ancient-games': {
+        talk: [p('task-22418324', 92, [6, 94])],
+        sides: {
+          // the chariot is a job (edit/); meanwhile on horseback
+          chariot: { talk: [p('task-22418324', 92, [6, 94])],
+            act: p('task-22418325', 92, [6, 94], { mode: 'ride', prop: REPAINTED.has('chariot') ? 'chariot' : 'horse@haunted-castle', flip: !REPAINTED.has('chariot'), path: [[-14, 92], [50, 91], [114, 92]], fx: 'dust' }) },
+          // grappling in the ring, the laurel wreath waiting
+          wrestle: { talk: [p('task-22418328', 92, [6, 94])],
+            act: p('task-22418328', 92, [6, 94], { mode: 'wrestle', prop: 'wreath', propW: 0.5, fx: 'dust' }) },
+        },
+      },
+      mat: { talk: [p('chill-22418530', 90, [6, 94], { matPos: [55, 84] })] },
+    },
+  },
+  'secret-base-desert': {
+    src: '40-secret-base-desert', title: 'present-22418960', opener: p('chill-22419058', 90, [6, 94]),
+    arrive: [p('arrive-22418994', 94, [6, 94])],
+    props: { soldier: 'Full-body cartoon soldier in olive uniform', artifact: 'alien-artifact' },
+    st: {
+      'desert-pickup': { talk: [p('chill-22419058', 90, [6, 94])],
+        act: p('chill-22419058', 90, [6, 94], { mode: 'ride', prop: 'ute@outback-farm', path: [[-16, 91], [50, 90], [116, 91]], fx: 'dust' }) },
+      // creeping past the guard to the fence
+      'sneak-in': { talk: [p('task-22419058', 90, [6, 94])],
+        act: p('task-22419058', 90, [6, 94], { mode: 'venom', prop: 'soldier', propW: 0.4, fx: 'dust' }) },
+      artifact: { talk: [p('task-22419328', 92, [6, 94], { closed: true })],
+        act: p('task-22419433', 94, [6, 94], { closed: true, mode: 'search', prop: 'artifact', propW: 0.5, fx: 'sparkle' }) },
+      // the night desert Chill Zone is a job (edit/); meanwhile the desert by the base
+      mat: { talk: [repaint('chill-desert-night-mat', p('chill-desert-night-mat', 92, [6, 94], { matPos: [50, 90] }), p('task-22419058', 90, [6, 94], { matPos: [50, 88] }))] },
+    },
+  },
 };
 
 // All the plate files a place needs (the asset copier and the tests read this)

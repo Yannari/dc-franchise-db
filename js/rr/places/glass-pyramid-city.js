@@ -6,8 +6,6 @@
 export default {
   id: 'glass-pyramid-city', name: 'Glass Pyramid City', recap: 'rebuilding a broken statue in a museum and strutting a runway',
   region: 'old-coast', map: { x: 47, y: 29 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['taxi', 'foot'],
   stretches: [
     { id: 'museum-taxi', kind: 'travel', mode: 'taxi', base: 30, cost: 20, plate: 'boulevard, cafés', label: 'Taxi to the museum',

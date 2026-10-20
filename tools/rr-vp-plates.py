@@ -1,6 +1,6 @@
 # The Ridonculous Race viewer's art: the plates and cut-outs js/vp-rr-ep/plates.js names,
 # copied from the user's edits into assets/sets/rr/<place>/ as webp (1920 wide plates,
-# 640 wide cut-outs), plus the race-wide pieces from mockup/rr-leg/.
+# cut-outs up to 1280 wide, quality 92: 2026-10-20, 640 wide at 80 was soft), plus the race-wide pieces from mockup/rr-leg/.
 #
 #   node tools/rr-vp-plates.mjs > need.json      (what plates.js asks for)
 #   python tools/rr-vp-plates.py need.json       (copies what is missing; --force redoes all)
@@ -45,13 +45,13 @@ for pid, p in need['places'].items():
         if not src:
             missing.append(f'{pid}/{stem}')
             continue
-        made += save(src, os.path.join(OUT, pid, slug + '.webp'), 1920, 72)
+        made += save(src, os.path.join(OUT, pid, slug + '.webp'), 1920, 92)
     for key, stem in p['props']:
         src = find(os.path.join(folder, 'cutout'), stem)
         if not src:
             missing.append(f'{pid}/cutout/{stem}')
             continue
-        made += save(src, os.path.join(OUT, pid, 'c-' + key + '.webp'), 640, 80, alpha=True)
+        made += save(src, os.path.join(OUT, pid, 'c-' + key + '.webp'), 1280, 92, alpha=True)
 for stem in need['race']:
     src = find(MOCK, stem) or find(os.path.join(MOCK, 'p'), stem)
     if not src:

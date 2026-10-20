@@ -5,11 +5,14 @@
 #     the one tools/td-camp/clean.py uses: set ESRGAN to its folder, default %TEMP%/esr), then down to 1920 x 1080;
 #   * a frame that is not 16:9 is cropped to it around its centre (never stretched);
 #   * CROP below takes a stray edge off a frame (a person cut by the frame's edge) before that.
-# Saved as webp at quality 84 (painted plates stay well under 150 KB).
+# Saved as webp at quality 92 (2026-10-20, the user: "theyre not hd": quality 84 smeared the black outlines).
+# --sharp puts EVERY frame through Real-ESRGAN, not only the small ones: a broadcast frame at 1920 x 1080 is soft,
+# and the anime model's x4 brought back down to 1920 gives clean, hard outlines.
 #
 #   node tools/rr-vp-plate-roles.mjs > roles.json
 #   python tools/rr-vp-upscale.py roles.json            (the plates under 1920 x 1080, and those in CROP)
 #   python tools/rr-vp-upscale.py roles.json --all      (every plate in use)
+#   python tools/rr-vp-upscale.py roles.json --all --sharp   (every plate in use, every one through ESRGAN)
 import json, os, subprocess, sys, tempfile
 from PIL import Image
 
@@ -100,6 +103,7 @@ def main():
     srcs = json.loads(subprocess.run(['node', '-e', "import('./js/vp-rr-ep/plates.js').then(m=>console.log(JSON.stringify(Object.fromEntries(Object.entries(m.PLACE_PLATES).map(([k,v])=>[k,v.src])))))"],
                                      cwd=ROOT, capture_output=True, text=True, check=True).stdout)
     every = '--all' in sys.argv
+    sharp = '--sharp' in sys.argv
     done = []
     for r in rows:
         if r['place'] == 'race':
@@ -113,9 +117,9 @@ def main():
         if not src:
             print('no source for', key); continue
         im = Image.open(src).convert('RGB')
-        if im.width < W or im.height < H:
+        if sharp or im.width < W or im.height < H:
             im = Image.open(esrgan(src)).convert('RGB')
-        to_plate(im, key).save(dst, 'WEBP', quality=84, method=6)
+        to_plate(im, key).save(dst, 'WEBP', quality=92, method=6)
         done.append((key, os.path.getsize(dst) // 1024))
     for k, kb in done:
         print(f'{k}  {kb} KB')

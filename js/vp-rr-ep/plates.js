@@ -25,6 +25,7 @@
 // no ground), task-22412644 (a bare olive ground: the sewer talks on the sewer's ledge, the big apple at the park pond).
 
 import { REPAINTED } from './repainted.js';
+import { MORE } from './plates-more.js';
 
 const p = (f, g = 90, x = [12, 88], more = {}) => ({ f, g, x, ...more });
 // A plate out of use until the user repaints it (tools/rr-vp-jobs.json; the job is in their frames folder's edit/):
@@ -150,7 +151,7 @@ export const PLACE_PLATES = {
       jeep: { talk: [p('task-9441526', 93, [6, 94])],
         act: p('present-9441461', 94, [6, 96], { mode: 'ride', prop: 'jeep', path: [[-16, 95], [50, 94], [116, 95]], fx: 'dust' }) },
       'falls-selfie': { talk: [p('task-9441526', 93, [6, 94])],
-        act: p('task-9441568', 0, [0, 0], { water: true, mode: 'swim', prop: 'camera', path: [[8, 92], [30, 90], [52, 86], [70, 84]], fx: 'splash' }) },
+        act: p('task-9441568', 0, [0, 0], { water: true, mode: 'ride', prop: 'raft', path: [[8, 92], [30, 90], [52, 86], [70, 84]], fx: 'splash' }) },
       rhino: { talk: [p('task-9441524', 97, [6, 94])],
         act: p('task-9441524', 97, [6, 94], { mode: 'photo', prop: 'rhino', fx: 'flash' }) },
       'village-run': { talk: [p('task-9441526', 93, [6, 94])] },
@@ -224,10 +225,14 @@ export const PLACE_PLATES = {
     st: {
       'harbour-boat': { talk: [p('arrive-22412323', 46, [6, 46])],
         act: p('present-22413470', 0, [0, 0], { water: true, mode: 'ride', prop: 'raft@savanna-falls', path: [[-12, 90], [50, 88], [114, 88]], fx: 'splash' }) },
+      // up the statue, then down the rope line in the baby carriage (2026-10-20: the carriage was never on screen)
       'statue-climb': { talk: [p('present-22412601', 96, [40, 96])],
-        act: p('task-22412320', 0, [0, 0], { water: true, mode: 'climb', prop: 'carriage', path: [[52, 96], [52, 76], [51, 50], [50, 26]] }) },
+        act: p('task-22412320', 0, [0, 0], { water: true, mode: 'climb', path: [[52, 96], [52, 76], [51, 50], [50, 26]] }),
+        act2: p('task-22412320', 0, [0, 0], { water: true, mode: 'ride', prop: 'carriage', path: [[34, 52], [48, 62], [62, 72], [76, 82]], fx: 'wind' }) },
+      // one partner pushes the other in the baby carriage through the ankle-deep sewer, past the alligator
       sewer: { talk: [p('task-22412499', 62, [6, 70])],
-        act: p('task-22412499', 0, [0, 0], { water: true, mode: 'swim', prop: 'gator', path: [[4, 84], [30, 82], [56, 84], [80, 82]], fx: 'splash', inset: 'AT THE DRAIN' }) },
+        act: p('task-22412499', 0, [0, 0], { water: true, mode: 'push', prop: 'carriage', path: [[4, 80], [30, 80], [56, 80], [80, 80]], fx: 'splash',
+          deco: [['gator', 9, 77, 10]] }) },
       'big-apple': { talk: [p('chill-22413471', 86, [20, 80])],
         act: p('chill-22413471', 86, [20, 80], { mode: 'bob', prop: 'apple', fx: 'splash' }) },
       mat: { talk: [p('chill-22413471', 86, [20, 80], { matPos: [50, 84] })] },
@@ -379,7 +384,9 @@ export const PLACE_PLATES = {
         act: p('task-9439101', 0, [0, 0], { water: true, mode: 'dive', prop: 'ring', path: [[12, 84], [30, 76], [52, 86], [78, 78]], fx: 'bubbles', inset: 'ON THE PIER' }) },
       // in grass skirts and leis, across the hot coals
       'fire-walk': { talk: [p('task-9439223', 76, [6, 94])],
-        act: p('task-9439223', 86, [6, 94], { mode: 'coals', prop: 'hula', path: [[8, 86], [30, 86], [56, 86], [84, 86]], fx: 'embers' }) },
+        // (the bed of hot coals they walk is laid along the path: 2026-10-20, the cut-out was never placed)
+        act: p('task-9439223', 78, [6, 94], { mode: 'coals', prop: 'hula', path: [[8, 78], [30, 78], [56, 78], [84, 78]], fx: 'embers',
+          deco: [['coals', 12, 81, 20], ['coals', 30, 81, 20], ['coals', 48, 81, 20], ['coals', 66, 81, 20], ['coals', 84, 81, 20]] }) },
       'hut-run': { talk: [p('chill-9439397', 92, [6, 94])],
         act: p('chill-9439397', 92, [6, 94], { mode: 'run', path: [[14, 92], [50, 92], [86, 92]] }) },
       mat: { talk: [p('chill-9439226', 76, [28, 84], { mat: [47, 70] })] },
@@ -671,8 +678,9 @@ export const PLACE_PLATES = {
         act: p('task-22411646', 0, [0, 0], { water: true, mode: 'hop', spots: [[12, 85], [30, 62], [50, 78], [68, 58], [88, 74]],
           path: [[12, 85], [30, 62], [50, 78], [68, 58], [88, 74]], fx: 'splash' }) },
       // one pulls the sled, the other rides it, past the bear
-      sled: { talk: [p('task-22411840', 92, [6, 90])],
-        act: p('task-22411840', 92, [6, 94], { mode: 'ride', prop: 'sled', path: [[-14, 92], [50, 91], [114, 92]], fx: 'snow' }) },
+      // (the polar bear the rules and the lines talk about stands out on the plain: 2026-10-20, never on screen before)
+      sled: { talk: [p('task-22411840', 92, [6, 90], { deco: [['bear', 30, 52, 7]] })],
+        act: p('task-22411840', 92, [6, 94], { mode: 'ride', prop: 'sled', path: [[-14, 92], [50, 91], [114, 92]], fx: 'snow', deco: [['bear', 30, 52, 7]] }) },
       mat: { talk: [p('chill-22411602', 92, [6, 94], { matPos: [50, 92] })] },
     },
   },
@@ -943,6 +951,30 @@ export const PLACE_PLATES = {
   },
 };
 
+// The user's plates that were left out (plates-more.js, 2026-10-20: a third of the finished plates never reached the
+// screen): more standing shots at a challenge, more angles on the action (`alt`, a team's own; `alt2` for the second
+// half), more arrivals and Chill Zone angles, and the `views` Don narrates over. An alt `like: 'act'` is the stretch's
+// action plate with another cut-out (an updated version the user made).
+for (const [id, m] of Object.entries(MORE)) {
+  const pl = PLACE_PLATES[id];
+  if (!pl) continue;
+  const fill = x => ({ g: 90, x: [12, 88], ...x });
+  if (m.props) pl.props = { ...pl.props, ...m.props };
+  if (m.arrive) pl.arrive = [...(pl.arrive || []), ...m.arrive.map(fill)];
+  // (a view is Don's: nobody is stood on it, and a scene after it doesn't fall back to it)
+  if (m.views) pl.views = [...(pl.views || []), ...m.views.map(v => ({ ...fill(v), people: false }))];
+  if (m.mat?.length && pl.st.mat) pl.st.mat.talk = [...(pl.st.mat.talk || []), ...m.mat.map(fill)];
+  for (const [sid, sm] of Object.entries(m.st || {})) {
+    const s = (pl.st[sid] ||= { talk: [] });
+    const merge = (into, add, base) => {
+      if (add.talk) into.talk = [...(into.talk || []), ...add.talk.map(fill)];
+      for (const k of ['alt', 'alt2']) if (add[k]) into[k] = [...(into[k] || []), ...add[k].map(a => (a.like ? { ...(k === 'alt2' ? base.act2 : base.act), ...a, like: undefined } : fill(a)))];
+    };
+    merge(s, sm, s);
+    for (const [side, sd] of Object.entries(sm.sides || {})) { s.sides ||= {}; merge((s.sides[side] ||= { talk: [] }), sd, s.sides[side]); }
+  }
+}
+
 // All the plate files a place needs (the asset copier and the tests read this)
 export function placeFiles(id) {
   const pl = PLACE_PLATES[id];
@@ -951,9 +983,10 @@ export function placeFiles(id) {
   const add = x => { if (x?.f) out.add(x.f); };
   add(pl.opener);
   (pl.arrive || []).forEach(add);
+  (pl.views || []).forEach(add);
   for (const s of Object.values(pl.st)) {
-    (s.talk || []).forEach(add); add(s.act); add(s.act2);
-    for (const side of Object.values(s.sides || {})) { (side.talk || []).forEach(add); add(side.act); add(side.act2); }
+    (s.talk || []).forEach(add); add(s.act); add(s.act2); (s.alt || []).forEach(add); (s.alt2 || []).forEach(add);
+    for (const side of Object.values(s.sides || {})) { (side.talk || []).forEach(add); add(side.act); add(side.act2); (side.alt || []).forEach(add); (side.alt2 || []).forEach(add); }
   }
   return [...out];
 }
@@ -977,7 +1010,8 @@ export function stretchPlates(placeId, stretchId, side = null) {
   const s = pl?.st?.[stretchId];
   if (!s) return null;
   const sd = side && s.sides?.[side];
-  return { talk: sd?.talk || s.talk || [], act: sd?.act ?? s.act ?? null, act2: sd?.act2 ?? s.act2 ?? null };
+  return { talk: sd?.talk || s.talk || [], act: sd?.act ?? s.act ?? null, act2: sd?.act2 ?? s.act2 ?? null,
+    alt: (sd?.act ? sd.alt : s.alt) || sd?.alt || [], alt2: (sd?.act2 ? sd.alt2 : s.alt2) || sd?.alt2 || [] };
 }
 
 export const standable = plate => plate && plate.people !== false && !plate.water;

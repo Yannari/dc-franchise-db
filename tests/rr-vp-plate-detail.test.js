@@ -13,7 +13,9 @@ import fs from 'node:fs';
 import sharp from 'sharp';
 import { PLACE_PLATES, plateUrl } from '../js/vp-rr-ep/plates.js';
 
-export const DETAIL_FLOOR = 0.013;
+// (0.013 until 2026-10-20; every plate through ESRGAN sharpens its edges: the bare jungle floor found by eye went from
+// under 0.013 to 0.0136, the lowest real places to 0.0140)
+export const DETAIL_FLOOR = 0.0138;
 
 // reviewed: low on edges, but a real place with ground (the scan, 2026-10-20). place/file: why it is fine
 const REVIEWED = {

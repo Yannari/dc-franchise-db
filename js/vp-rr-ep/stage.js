@@ -424,6 +424,15 @@ export function createStage(holder, { faceOf, legLabel }) {
         if (s.judgeAt.flip) jp.style.transform = 'translate(-50%,-100%) scaleX(-1)';
       }
     }
+    // scenery a plate stands in its shot (`deco`: [cut-out, x, y, width, flip]): the polar bear out on the snow plain,
+    // breathing, so it reads as an animal and not a sticker (2026-10-20, the user: a cut-out that's made goes in)
+    for (const [key, x, y, w, flip] of pl.deco || []) {
+      const d = prop(propUrl(pl.place || s.place, key), [x, y], w, 6);
+      d.classList.add('deco');
+      const base = `translate(-50%,-100%)${flip ? ' scaleX(-1)' : ''}`;
+      d.style.transform = base;
+      if (fresh) d.animate([{ transform: base }, { transform: `${base} scaleY(1.025)` }], { duration: 1800, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
+    }
     // Don and the locals
     if (s.don && s.donStand) personEl('Don', s.donStand, (s.size || 8) * 0.95);
     for (const [nm, at] of Object.entries(s.localAt || {})) personEl(nm, at, (s.size || 8) * 0.85, { local: true, label: nm.replace(/^(A|The) /i, '') });

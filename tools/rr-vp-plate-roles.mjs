@@ -15,13 +15,17 @@ for (const [id, pl] of Object.entries(PLACE_PLATES)) {
   add(id, { f: pl.title }, 'title');
   add(id, pl.opener, 'opener');
   (pl.arrive || []).forEach(p => add(id, p, 'arrive'));
+  (pl.views || []).forEach(p => add(id, p, 'view'));
   for (const [sid, s] of Object.entries(pl.st)) {
     (s.talk || []).forEach(p => add(id, p, `${sid} talk`));
     if (s.act) add(id, s.act, `${sid} act (${s.act.mode})`);
     if (s.act2) add(id, s.act2, `${sid} act2 (${s.act2.mode})`);
+    (s.alt || []).forEach(p => add(id, p, `${sid} alt (${p.mode})`));
+    (s.alt2 || []).forEach(p => add(id, p, `${sid} alt2 (${p.mode})`));
     for (const [side, sd] of Object.entries(s.sides || {})) {
       (sd.talk || []).forEach(p => add(id, p, `${sid}/${side} talk`));
       if (sd.act) add(id, sd.act, `${sid}/${side} act (${sd.act.mode})`);
+      (sd.alt || []).forEach(p => add(id, p, `${sid}/${side} alt (${p.mode})`));
     }
   }
 }

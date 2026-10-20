@@ -178,11 +178,19 @@ export function episodeScreens(res, eps, i) {
     if (k === 'don-narrate') {
       if (seg.ending === 'depart') { placeFor = prevLeg?.place || placeId; plate = prevLeg ? matPlate(prevLeg.place) : plates.opener; hudTask = 'DEPARTURE'; mode = 'narrate'; }
       else if (seg.ending === 'flight-wait') { mode = 'flight'; hudTask = 'IN THE AIR'; }
-      else if (/landed/.test(seg.ending || '')) { plate = pick(plates.arrive, 0) || plates.opener; mode = 'landing'; hudTask = 'ARRIVAL'; }
-      else if (seg.ending === 'last-stretch') { plate = matPlate(placeId); mode = 'narrate'; hudTask = 'CHILL ZONE'; }
+      // (each landing on another of the place's arrivals, each last stretch on another view of the Chill Zone)
+      else if (/landed/.test(seg.ending || '')) { plate = pick(plates.arrive, nth(`${placeId}|arrive`)) || plates.opener; mode = 'landing'; hudTask = 'ARRIVAL'; }
+      else if (seg.ending === 'last-stretch') {
+        const v = (plates.views || []).filter(x => x.at === 'mat'), n = nth(`${placeId}|matviews`);
+        plate = v.length && n % 2 === 0 ? pick(v, n / 2) : matPlate(placeId); mode = 'narrate'; hudTask = 'CHILL ZONE';
+      }
       // Don at the mat, before the first team reaches it, introducing the Chill Zone
       else if (seg.ending === 'chill') { plate = matPlate(placeId); mode = 'mat'; hudTask = 'CHILL ZONE'; }
-      else { plate = (lastPlate?.place === placeId ? lastPlate : plates.opener); mode = 'narrate'; }
+      // Don over the place: every other time one of its views (the user's wide shots), else where the race is
+      else {
+        const v = (plates.views || []).filter(x => x.at !== 'mat'), n = nth(`${placeId}|views`);
+        plate = v.length && n % 2 === 0 ? pick(v, n / 2) : (lastPlate?.place === placeId ? lastPlate : plates.opener); mode = 'narrate';
+      }
     } else if (k === 'don-opener') { plate = leg.n === 1 ? plates.opener : (prevLeg ? matPlate(prevLeg.place) : plates.opener); placeFor = leg.n === 1 ? placeId : (prevLeg?.place || placeId); mode = 'don'; hudTask = 'THE START'; }
     // the pick-a-team Boomerang happens at the start too, where the opener is, before anybody leaves
     else if (k === 'boomerang-vote' || (k === 'don-rule' && !seg.stretch)) {
@@ -205,14 +213,20 @@ export function episodeScreens(res, eps, i) {
     } else if (MAT_KINDS.has(k) || seg.stretch === 'mat' || seg.stretch === 'midmat') {
       const mid = seg.stretch === 'midmat' || !!scene?.data?.midmat;
       // (the finale's mat is the finish line: the race ends on a stage, not at a Chill Zone)
-      plate = matPlate(placeId, 0, mid); mode = 'mat'; hudTask = mid ? 'THE MIDPOINT' : leg.kind === 'final' ? 'THE FINISH LINE' : 'CHILL ZONE';
+      // (each team's check-in on another of the Chill Zone's angles: the first one only, always, left the rest unseen)
+      plate = matPlate(placeId, Math.max(0, st.order.indexOf(segTeams[0])), mid); mode = 'mat'; hudTask = mid ? 'THE MIDPOINT' : leg.kind === 'final' ? 'THE FINISH LINE' : 'CHILL ZONE';
     } else if (k.startsWith('int-')) {
       mode = 'iv';
     } else if (stretch) {
       const sp = stretchPlates(placeId, seg.stretch, seg.side);
       const wantsAct = (TASKS.has(stretch.kind) && ACT_KINDS.has(k)) || (stretch.kind === 'travel' && RIDE_KINDS.has(k));
       // a task done in two halves (over the gorge, then the coconut pile) shows its second half when it is done
-      if (wantsAct && sp?.act) { plate = (k === 'task-done' && sp.act2) || sp.act; mode = 'act'; }
+      // a team's own angle on the action: the stretch's action plate, or another the user made of it (alt)
+      if (wantsAct && sp?.act) {
+        const ti = Math.max(0, st.order.indexOf(segTeams[0]));
+        const acts = [sp.act, ...(sp.alt || [])], acts2 = sp.act2 ? [sp.act2, ...(sp.alt2 || [])] : [];
+        plate = (k === 'task-done' && acts2.length && acts2[ti % acts2.length]) || acts[ti % acts.length]; mode = 'act';
+      }
       else plate = pick(sp?.talk, nth(`${placeId}|${seg.stretch}|${seg.side || ''}`)) || sp?.act || (lastPlate?.place === placeId ? lastPlate : plates.opener);
       if (!standable(plate) && mode !== 'act') plate = pick(sp?.talk?.filter(standable), 0) || plates.opener;
       // a narrow corner (a stair landing) holds two teams: three or more go to the stretch's widest standing plate
@@ -650,7 +664,9 @@ function layout(s, size) {
     const ride = plate.mode === 'ride';
     // teams on the same path keep a face's width and more apart along it (the path's length in % of the frame)
     const plen = plate.path.slice(1).reduce((a, q, j) => a + Math.hypot(q[0] - plate.path[j][0], q[1] - plate.path[j][1]), 0) || 1;
-    const gapF = Math.max(0.12, (s.size || 8) * 1.9 / plen);
+    // (a ride keeps a vehicle's length apart: the sled, the raft, the jeep is wider than the faces on it; 2026-10-20,
+    // two teams' sleds drawn one on top of the other)
+    const gapF = Math.max(0.12, (s.size || 8) * (ride && plate.prop ? 1.9 + 1.6 * (plate.propW || 1) : 1.9) / plen);
     for (let k = 0; k < ps; k++) {
       const pos = {};
       s.teams.forEach((id, i) => {
@@ -894,7 +910,8 @@ function planCrowd(s, ctx) {
   const stretch = ctx.place?.stretches.find(x => x.id === s.stretch) || null;
   const task = !!stretch && TASK_KINDS.has(stretch.kind);
   const sps = stretchPlates(s.place, s.stretch, s.side);
-  const actPlate = (sps?.act2 && sps.act2.f === plate.f ? sps.act2 : sps?.act) || null;
+  // (on the action itself, the plate IS the action plate: a team's own angle, or a cut-out swapped in)
+  const actPlate = s.mode === 'act' ? plate : (sps?.act2 && sps.act2.f === plate.f ? sps.act2 : sps?.act) || null;
   const act = s.mode === 'act' && plate.path && PATH_MODES.has(plate.mode) ? plate.mode : null;
   const work = s.work || actPlate?.mode || null;
   // what the teams behind can be doing in this picture

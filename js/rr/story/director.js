@@ -226,7 +226,9 @@ export function airLeg(state, leg) {
     const best = here.filter(ok).filter(s => sameSpot(s) < 2).sort((x, y) => weight(y) - weight(x) || x.id - y.id)[0];
     // a challenge with its own lines is seen being done: a team's plain moment there (a hug, a pep talk) gives way
     // to the challenge itself; a story (another team, a storyline step, a cause) keeps its place
-    const plain = s => !s.data?.other && !s.data?.threadIds?.length && s.data?.cause == null;
+    // (a failed try isn't a plain moment: it IS the challenge being done, and it's the only beat that shows the miss;
+    // it counted as plain and never aired, 2026-10-20)
+    const plain = s => s.kind !== 'attempt-fail' && !s.data?.other && !s.data?.threadIds?.length && s.data?.cause == null;
     // ...and at a challenge with its own lines, a team with a story there is still seen doing the challenge
     if (best && !(TASK_LINES.has(r.stretch) && plain(best))) { take(best, 1); if (!TASK_LINES.has(r.stretch)) return; }
     // a clean run says nothing about itself: the first one airs as getting there, the last as getting out
@@ -241,7 +243,11 @@ export function airLeg(state, leg) {
       arrive.id += ':arrive';
       beats.push(arrive);
     }
-    beats.push(taskBeat(state, r, i, kind));
+    const beat = taskBeat(state, r, i, kind);
+    // the failure airs before how it ended: the team's result comes after its failed try
+    if (best?.kind === 'attempt-fail' && picked.has(best.id) && beat.data.t <= (best.data?.t ?? -Infinity))
+      beat.data.t = Math.min(Math.max(beat.data.t, Math.round(best.data.t) + 1), Math.max(Math.round(best.data.t) + 1, Math.round(r.to)));
+    beats.push(beat);
   });
   // a ride that is the leg's signature (the camel): the first three teams on it are seen riding, unless it went
   // wrong for them (their mishap already shows them on it)

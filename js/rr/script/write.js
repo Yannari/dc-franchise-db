@@ -272,10 +272,14 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
 // at a rival in trash talk, at a friend in good small talk.
 const AUTO_SHARE = 0.5;
 const AUTO_HOOK = {
-  // after-fails is the try that finally worked: no struggle line over it
+  // after-fails is the try that finally worked: no struggle line over it. A 'bad' line reacts to a struggle ("this is
+  // why"), so it isn't said at the start or over a first-try success (2026-10-20 read: "I skipped gym. This is why." at
+  // the catfish before anyone had got wet); the struggling and failing moments have it
   'task-try': f => (f.ending === 'quit' ? 'quit' : f.ending === 'struggling' ? 'struggle' : f.ending === 'after-fails' ? null
-    : f.idGood ? 'good' : f.idBad ? 'bad' : null),
-  'task-start': f => (f.idGood ? 'good' : f.idBad ? 'bad' : null),
+    : f.idGood ? 'good' : null),
+  'task-start': f => (f.idGood ? 'good' : null),
+  // a try that just failed: the identity at the thing it's bad at
+  'attempt-fail': f => (f.idBad ? 'bad' : null),
   'task-done': f => (f.ahead ? 'win' : null),
   'celebrate': f => (f.ending === 'gloat-at-others' ? null : 'win'),
   'arrival-awe': () => 'arrive',

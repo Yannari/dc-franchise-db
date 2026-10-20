@@ -244,6 +244,12 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 @keyframes wSaw{0%,100%{transform:translateX(-.5cqw)}50%{transform:translateX(.5cqw)}}
 .tok.w-venom .pair{animation:wCreep 2.6s ease-in-out infinite}
 .tok.w-remote .pair{animation:wWatch 1.2s ease-in-out infinite}
+/* batch 5: picking tea (reach and drop), rolling in a giant ball (the ball behind the faces, turning) */
+.tok.w-pick .pair{animation:wPick 1.1s ease-in-out infinite}
+@keyframes wPick{0%,100%{transform:none}35%{transform:translate(.5cqw,-.4cqw) rotate(8deg)}65%{transform:translate(-.3cqw,.3cqw) rotate(-4deg)}}
+.tok.roll .veh{bottom:calc(var(--sz)*-.25);width:calc(var(--sz)*1.9);opacity:.55;z-index:2;animation:wRoll 1s linear infinite}
+@keyframes wRoll{to{transform:translateX(-50%) rotate(360deg)}}
+.fxp.leaf{width:1cqw;height:.6cqw;border-radius:60% 0;background:#3f8f3a}
 .tok.w-lever .pair{animation:wLever 1.8s ease-in-out infinite}
 @keyframes wLever{0%,100%{transform:none}40%{transform:translateY(.6cqw) rotate(10deg)}55%{transform:translateY(.6cqw) rotate(10deg)}}
 @keyframes wCreep{0%,100%{transform:translateX(0)}40%{transform:translateX(.6cqw) translateY(.3cqw) scaleY(.94)}60%{transform:translateX(.6cqw) translateY(.3cqw) scaleY(.94)}75%{transform:translateX(-.5cqw) rotate(-6deg)}}

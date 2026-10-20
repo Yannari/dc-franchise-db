@@ -7,7 +7,7 @@ Every place has its own sound and every moment of a leg its own track there (the
 the race-wide bed for that moment (`race/<moment>.mp3`) if there is one, then an ambience already
 in the repo where it really fits the place, and otherwise silence. A Total Drama bed never plays.
 
-**Filled: 236 of 236 slots.**
+**Filled: 268 of 268 slots.**
 
 **The rules for a file**
 - Royalty-free only: CC0 or public domain, the Pixabay Content License, or CC-BY with the credit in
@@ -503,3 +503,67 @@ A race-wide bed for a moment (`race/opener.mp3`, `race/struggle.mp3`...) is the 
 | `frozen-mine/elimination.mp3` | elimination | a slow harp meditation; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | harp, zither, sombre and short | [x] "Elf Meditation" (Kevin MacLeod), 274 KB |
 | `frozen-mine/recap.mp3` | recap | a quick lute and strings; quick, punchy, recap energy, the place still in it | 30-40 s loop | harp, zither, quick | [x] "Industrious Ferret" (Kevin MacLeod), 235 KB |
 | `frozen-mine/interview.mp3` | interview | a soft harp and pads; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | harp, zither, light | [x] "Ancient Winds" (Kevin MacLeod), 313 KB |
+
+## Tea Hills (`tea-hills/`)
+
+**Sound of the place**: tea terraces in the morning: sitar, tabla and bansuri, a steam train chuffing.  
+**Search**: sitar, tabla, bansuri, raga, morning.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `tea-hills/opener.mp3` | opener | a grooving sitar, tambura and bansuri; bright, confident, the place in its first bars | 40-60 s loop | sitar, tabla, bright | [x] "Vadodora" (Kevin MacLeod), 352 KB |
+| `tea-hills/travel.mp3` | travel | a super-groovy sitar and percussion up the hill road; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | sitar, tabla, moving | [x] "Jalandhar" (Kevin MacLeod), 391 KB |
+| `tea-hills/challenge.mp3` | challenge | driving drums and shakers: the baskets and the train; driving, building, percussion forward, 110-140 bpm | 60 s loop | sitar, tabla, driving | [x] "Cretaceous Dawn" (Kevin MacLeod), 391 KB |
+| `tea-hills/struggle.mp3` | struggle | an intense, psychedelic sitar; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | sitar, tabla, tense | [x] "Psychedelic Crater" (Kevin MacLeod), 352 KB |
+| `tea-hills/chill-zone.mp3` | chill-zone | drums and harp at the station; relief and a little swagger, mid-tempo, warm | 45 s loop | sitar, tabla, relief and a little swagger | [x] "Truth in the Stones" (Kevin MacLeod), 352 KB |
+| `tea-hills/elimination.mp3` | elimination | a sarod melody over a drone; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | sitar, tabla, sombre and short | [x] "Dhaka" (Kevin MacLeod), 274 KB |
+| `tea-hills/recap.mp3` | recap | four big drums; quick, punchy, recap energy, the place still in it | 30-40 s loop | sitar, tabla, quick | [x] "Big Drumming" (Kevin MacLeod), 235 KB |
+| `tea-hills/interview.mp3` | interview | a soft tongue drum and strings; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | sitar, tabla, light | [x] "Ethereal Relaxation" (Kevin MacLeod), 313 KB |
+
+## Pampas Ranch (`pampas-ranch/`)
+
+**Sound of the place**: a tango city and the grasslands: piano and accordion tango, open acoustic guitars.  
+**Search**: tango, accordion, acoustic guitar, folk, grasslands.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `pampas-ranch/opener.mp3` | opener | a tango in two chords; bright, confident, the place in its first bars | 40-60 s loop | tango, accordion, bright | [x] "Tango de Manzana" (Kevin MacLeod), 352 KB |
+| `pampas-ranch/travel.mp3` | travel | flowing acoustic guitars out to the grasslands; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | tango, accordion, moving | [x] "Porch Swing Days - faster" (Kevin MacLeod), 391 KB |
+| `pampas-ranch/challenge.mp3` | challenge | an intense guitar waltz: the dance and the emu; driving, building, percussion forward, 110-140 bpm | 60 s loop | tango, accordion, driving | [x] "Feral Angel Waltz" (Kevin MacLeod), 391 KB |
+| `pampas-ranch/struggle.mp3` | struggle | a dark folk round on guitar and violin; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | tango, accordion, tense | [x] "Folk Round" (Kevin MacLeod), 352 KB |
+| `pampas-ranch/chill-zone.mp3` | chill-zone | slower, warm acoustic guitars at the cliff; relief and a little swagger, mid-tempo, warm | 45 s loop | tango, accordion, relief and a little swagger | [x] "Porch Swing Days - slower" (Kevin MacLeod), 352 KB |
+| `pampas-ranch/elimination.mp3` | elimination | an intimate guitar dance; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | tango, accordion, sombre and short | [x] "Sardana" (Kevin MacLeod), 274 KB |
+| `pampas-ranch/recap.mp3` | recap | a bright little guitar groove; quick, punchy, recap energy, the place still in it | 30-40 s loop | tango, accordion, quick | [x] "Happy Alley" (Kevin MacLeod), 235 KB |
+| `pampas-ranch/interview.mp3` | interview | an easy guitar waltz; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | tango, accordion, light | [x] "Joey's Formal Waltz - Unscented" (Kevin MacLeod), 313 KB |
+
+## Game Show City (`game-show-city/`)
+
+**Sound of the place**: a giant game show: hyper chiptune jingles, arcade synths and a studio band.  
+**Search**: chiptune, arcade, game show, synth pop.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `game-show-city/opener.mp3` | opener | a bright, uplifting arcade synth; bright, confident, the place in its first bars | 40-60 s loop | chiptune, arcade, bright | [x] "Neon Laser Horizon" (Kevin MacLeod), 352 KB |
+| `game-show-city/travel.mp3` | travel | a chiptune groove on the bullet train; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | chiptune, arcade, moving | [x] "Voxel Revolution" (Kevin MacLeod), 391 KB |
+| `game-show-city/challenge.mp3` | challenge | a manic balloon-game loop: human pinball; driving, building, percussion forward, 110-140 bpm | 60 s loop | chiptune, arcade, driving | [x] "Balloon Game" (Kevin MacLeod), 391 KB |
+| `game-show-city/struggle.mp3` | struggle | a pulsing synth groove; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | chiptune, arcade, tense | [x] "Brain Dance" (Kevin MacLeod), 352 KB |
+| `game-show-city/chill-zone.mp3` | chill-zone | a relaxed space jazz on the stage; relief and a little swagger, mid-tempo, warm | 45 s loop | chiptune, arcade, relief and a little swagger | [x] "Space Jazz" (Kevin MacLeod), 352 KB |
+| `game-show-city/elimination.mp3` | elimination | a calm synth canon; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | chiptune, arcade, sombre and short | [x] "Canon In D Interstellar Mix" (Kevin MacLeod), 274 KB |
+| `game-show-city/recap.mp3` | recap | a frantic game-show band; quick, punchy, recap energy, the place still in it | 30-40 s loop | chiptune, arcade, quick | [x] "Happy Happy Game Show" (Kevin MacLeod), 235 KB |
+| `game-show-city/interview.mp3` | interview | a blip-bloop screen saver; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | chiptune, arcade, light | [x] "Screen Saver" (Kevin MacLeod), 313 KB |
+
+## Ice River (`ice-river/`)
+
+**Sound of the place**: a frozen river at the edge of the world: low brass, plucked harps and cold, sparse strings.  
+**Search**: low brass, harp, sparse, cold, somber.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `ice-river/opener.mp3` | opener | a dark, mysterious tuba and horns; bright, confident, the place in its first bars | 40-60 s loop | low brass, harp, bright | [x] "Mary Celeste" (Kevin MacLeod), 352 KB |
+| `ice-river/travel.mp3` | travel | a harp solo over the snow; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | low brass, harp, moving | [x] "Enchanted Journey" (Kevin MacLeod), 391 KB |
+| `ice-river/challenge.mp3` | challenge | a comic plucked-strings plan: floes and the sled; driving, building, percussion forward, 110-140 bpm | 60 s loop | low brass, harp, driving | [x] "Marty Gots a Plan" (Kevin MacLeod), 391 KB |
+| `ice-river/struggle.mp3` | struggle | dark, eerie strings and clarinet; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | low brass, harp, tense | [x] "Vanishing" (Kevin MacLeod), 352 KB |
+| `ice-river/chill-zone.mp3` | chill-zone | a mystical autoharp at the finish; relief and a little swagger, mid-tempo, warm | 45 s loop | low brass, harp, relief and a little swagger | [x] "Dama-May" (Kevin MacLeod), 352 KB |
+| `ice-river/elimination.mp3` | elimination | a slow bassoon and harp; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | low brass, harp, sombre and short | [x] "Plaint" (Kevin MacLeod), 274 KB |
+| `ice-river/recap.mp3` | recap | a quick epic horn and hurdy-gurdy; quick, punchy, recap energy, the place still in it | 30-40 s loop | low brass, harp, quick | [x] "Strength of the Titans" (Kevin MacLeod), 235 KB |
+| `ice-river/interview.mp3` | interview | a soft harp and pennywhistle; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | low brass, harp, light | [x] "Decline" (Kevin MacLeod), 313 KB |

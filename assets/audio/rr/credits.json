@@ -2358,5 +2358,325 @@
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
   "cut": "0s + 40s",
   "lift": 0.7
+ },
+ "tea-hills/opener.mp3": {
+  "title": "Vadodora",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400049",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Vadodora.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "tea-hills/travel.mp3": {
+  "title": "Jalandhar",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400018",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Jalandhar.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "tea-hills/challenge.mp3": {
+  "title": "Cretaceous Dawn",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2500001",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cretaceous%20Dawn.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "tea-hills/struggle.mp3": {
+  "title": "Psychedelic Crater",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100445",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Psychedelic%20Crater.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.4
+ },
+ "tea-hills/chill-zone.mp3": {
+  "title": "Truth in the Stones",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700059",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Truth%20in%20the%20Stones.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.5
+ },
+ "tea-hills/elimination.mp3": {
+  "title": "Dhaka",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400003",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dhaka.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 3.5
+ },
+ "tea-hills/recap.mp3": {
+  "title": "Big Drumming",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100000",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Big%20Drumming.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "tea-hills/interview.mp3": {
+  "title": "Ethereal Relaxation",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100031",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ethereal%20Relaxation.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "pampas-ranch/opener.mp3": {
+  "title": "Tango de Manzana",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100404",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Tango%20de%20Manzana.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.7
+ },
+ "pampas-ranch/travel.mp3": {
+  "title": "Porch Swing Days - faster",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100716",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Porch%20Swing%20Days%20-%20faster.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "pampas-ranch/challenge.mp3": {
+  "title": "Feral Angel Waltz",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100010",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Feral%20Angel%20Waltz%20.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 3.5
+ },
+ "pampas-ranch/struggle.mp3": {
+  "title": "Folk Round",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100357",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Folk%20Round.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 2.2
+ },
+ "pampas-ranch/chill-zone.mp3": {
+  "title": "Porch Swing Days - slower",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100715",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Porch%20Swing%20Days%20-%20slower.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "pampas-ranch/elimination.mp3": {
+  "title": "Sardana",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400055",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sardana.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 4.1
+ },
+ "pampas-ranch/recap.mp3": {
+  "title": "Happy Alley",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100482",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Happy%20Alley.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "pampas-ranch/interview.mp3": {
+  "title": "Joey's Formal Waltz - Unscented",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100014",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Joey%27s%20Formal%20Waltz%20-%20Unscented.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "game-show-city/opener.mp3": {
+  "title": "Neon Laser Horizon",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000023",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Neon%20Laser%20Horizon.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "game-show-city/travel.mp3": {
+  "title": "Voxel Revolution",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000025",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Voxel%20Revolution.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "game-show-city/challenge.mp3": {
+  "title": "Balloon Game",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700063",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Balloon%20Game.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "game-show-city/struggle.mp3": {
+  "title": "Brain Dance",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2300006",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Brain%20Dance.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 2.9
+ },
+ "game-show-city/chill-zone.mp3": {
+  "title": "Space Jazz",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100030",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Space%20Jazz.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "game-show-city/elimination.mp3": {
+  "title": "Canon In D Interstellar Mix",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000018",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Canon%20In%20D%20Interstellar%20Mix.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.0
+ },
+ "game-show-city/recap.mp3": {
+  "title": "Happy Happy Game Show",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600006",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Happy%20Happy%20Game%20Show.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "game-show-city/interview.mp3": {
+  "title": "Screen Saver",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900046",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Screen%20Saver.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.2
+ },
+ "ice-river/opener.mp3": {
+  "title": "Mary Celeste",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500016",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mary%20Celeste.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "ice-river/travel.mp3": {
+  "title": "Enchanted Journey",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100799",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Enchanted%20Journey.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 4.3
+ },
+ "ice-river/challenge.mp3": {
+  "title": "Marty Gots a Plan",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500015",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Marty%20Gots%20a%20Plan.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 5.2
+ },
+ "ice-river/struggle.mp3": {
+  "title": "Vanishing",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600050",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Vanishing.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.6
+ },
+ "ice-river/chill-zone.mp3": {
+  "title": "Dama-May",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200086",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dama-May.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": -0.0
+ },
+ "ice-river/elimination.mp3": {
+  "title": "Plaint",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300009",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Plaint.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.0
+ },
+ "ice-river/recap.mp3": {
+  "title": "Strength of the Titans",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900052",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Strength%20of%20the%20Titans.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": -0.0
+ },
+ "ice-river/interview.mp3": {
+  "title": "Decline",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300016",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Decline.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
  }
 }

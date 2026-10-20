@@ -167,6 +167,12 @@ export const LIFE = {
  "assets/sets/rr/ice-floe/task-9444815.webp": [
   "water"
  ],
+ "assets/sets/rr/ice-river/arrive-22411593.webp": [
+  "water"
+ ],
+ "assets/sets/rr/ice-river/task-22411646.webp": [
+  "water"
+ ],
  "assets/sets/rr/iron-tower-city/travel-9436549.webp": [
   "wind"
  ],

@@ -45,7 +45,7 @@ const AMBIENT = { 'rock-north': 'snow', 'red-sand-desert': 'mote', 'tomb-sands':
 
 // the ways of going that carry their cut-out with them: a vehicle under them, a zip trolley, a canopy or a hang
 // glider over them, a vine to swing on, a coffin pushed in front
-const VEH = new Set(['ride', 'zip', 'para', 'swing', 'push', 'coals']);
+const VEH = new Set(['ride', 'zip', 'para', 'swing', 'push', 'coals', 'roll']);
 
 export function createStage(holder, { faceOf, legLabel }) {
   holder.innerHTML = `<div class="rr-frame" id="rr-frame"><div class="stage" id="rr-stage">
@@ -196,7 +196,7 @@ export function createStage(holder, { faceOf, legLabel }) {
   }
   function flash(x, y) { const f = document.createElement('div'); f.className = 'flash'; f.style.setProperty('--x', x + '%'); f.style.setProperty('--y', y + '%'); fx.appendChild(f); later(800, () => f.remove()); }
   const FXK = { splash: 'drop', steam: 'steam', dust: 'dust', sparkle: 'spark', embers: 'ember', notes: 'note', bubbles: 'bubble', wool: 'wool', logs: 'log', spice: 'dust', sweat: 'drop', wind: 'dust', snow: 'snow', darts: 'spark',
-    ants: 'ant', ice: 'snow' };
+    ants: 'ant', ice: 'snow', leaves: 'leaf' };
   function workFx(s, pos) {
     const k = s.plate?.fx; if (!k || !pos) return;
     if (k === 'splash') splash(pos[0], pos[1] - 1, 8);

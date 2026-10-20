@@ -26,7 +26,7 @@ beforeAll(() => {
 });
 const each = fn => { for (const p of played) p.built.forEach((ep, i) => fn(ep, p, i)); };
 const TASK_KINDS = new Set(['either', 'botch', 'allin', 'route', 'superteam']);
-const PATH = new Set(['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride', 'swing', 'push', 'coals']);
+const PATH = new Set(['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride', 'swing', 'push', 'coals', 'roll']);
 const premiere = s => s.seg === 'don-opener' || s.seg === 'team-intro';
 
 describe('rr viewer: the rest of the race behind a shot', () => {

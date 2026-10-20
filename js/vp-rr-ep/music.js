@@ -437,6 +437,62 @@ export const PLACE_MUSIC = {
       interview: "a soft harp and pads",
     },
   },
+  'tea-hills': {
+    name: "Tea Hills", feel: "tea terraces in the morning: sitar, tabla and bansuri, a steam train chuffing",
+    search: "sitar, tabla, bansuri, raga, morning",
+    moments: {
+      opener: "a grooving sitar, tambura and bansuri",
+      travel: "a super-groovy sitar and percussion up the hill road",
+      challenge: "driving drums and shakers: the baskets and the train",
+      struggle: "an intense, psychedelic sitar",
+      'chill-zone': "drums and harp at the station",
+      elimination: "a sarod melody over a drone",
+      recap: "four big drums",
+      interview: "a soft tongue drum and strings",
+    },
+  },
+  'pampas-ranch': {
+    name: "Pampas Ranch", feel: "a tango city and the grasslands: piano and accordion tango, open acoustic guitars",
+    search: "tango, accordion, acoustic guitar, folk, grasslands",
+    moments: {
+      opener: "a tango in two chords",
+      travel: "flowing acoustic guitars out to the grasslands",
+      challenge: "an intense guitar waltz: the dance and the emu",
+      struggle: "a dark folk round on guitar and violin",
+      'chill-zone': "slower, warm acoustic guitars at the cliff",
+      elimination: "an intimate guitar dance",
+      recap: "a bright little guitar groove",
+      interview: "an easy guitar waltz",
+    },
+  },
+  'game-show-city': {
+    name: "Game Show City", feel: "a giant game show: hyper chiptune jingles, arcade synths and a studio band",
+    search: "chiptune, arcade, game show, synth pop",
+    moments: {
+      opener: "a bright, uplifting arcade synth",
+      travel: "a chiptune groove on the bullet train",
+      challenge: "a manic balloon-game loop: human pinball",
+      struggle: "a pulsing synth groove",
+      'chill-zone': "a relaxed space jazz on the stage",
+      elimination: "a calm synth canon",
+      recap: "a frantic game-show band",
+      interview: "a blip-bloop screen saver",
+    },
+  },
+  'ice-river': {
+    name: "Ice River", feel: "a frozen river at the edge of the world: low brass, plucked harps and cold, sparse strings",
+    search: "low brass, harp, sparse, cold, somber",
+    moments: {
+      opener: "a dark, mysterious tuba and horns",
+      travel: "a harp solo over the snow",
+      challenge: "a comic plucked-strings plan: floes and the sled",
+      struggle: "dark, eerie strings and clarinet",
+      'chill-zone': "a mystical autoharp at the finish",
+      elimination: "a slow bassoon and harp",
+      recap: "a quick epic horn and hurdy-gurdy",
+      interview: "a soft harp and pennywhistle",
+    },
+  },
 };
 
 export const PLACE_IDS = Object.keys(PLACE_MUSIC);

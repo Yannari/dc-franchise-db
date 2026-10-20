@@ -81,6 +81,9 @@ FORCE_WATER.update({'ice-floe/task-9444731': [(0, .5, 1, .9, 205, 245, .45)], 'i
 NO_WATER |= {'frozen-mine/arrive-9447691', 'frozen-mine/task-9447678', 'frozen-mine/task-9447861', 'frozen-mine/present-9447601'}
 FORCE_WATER.update({'stilt-river/present-9447233': [(0, .74, 1, 1, 150, 200)], 'stilt-river/task-9447243': [(0, .4, 1, .75, 150, 200)],
                     'pyramid-coast/task-9446588': [(0, 0, 1, .72, 160, 200)], 'neon-desert/task-9446121': [(.4, .75, 1, .95, 170, 200)]})
+# batch 5: blue mountains are not water; the river and the floes are
+NO_WATER |= {'tea-hills/present-9448248', 'tea-hills/present-9448586'}
+FORCE_WATER.update({'ice-river/task-22411646': [(0, 0, 1, 1, 185, 215, .75)], 'ice-river/task-22412146': [(0, 0, 1, 1, 185, 215, .75)]})
 LAVA_PLACES = {'fire-mountain-isle'}
 SKIP = {'confess', 'worldmap', 'gate', 'cabin', 'galley', 'logo', 'sky', 'runway', 'don', 'plane'}
 

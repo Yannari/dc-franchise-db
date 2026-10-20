@@ -230,7 +230,7 @@ describe('rr viewer steps', () => {
           expect(onSpot || (at[1] >= Math.min(...g) - 0.5 && at[1] <= Math.max(...g) + 0.5), `${s.id} ${c.team} at ${at} off the ground of ${s.plate.f}`).toBe(true);
           expect(onSpot || (at[0] >= s.plate.x[0] - 0.5 && at[0] <= s.plate.x[1] + 0.5), `${s.id} ${c.team} at x=${at[0]} off the ground of ${s.plate.f}`).toBe(true);
           expect(at[0], `${s.id} ${c.team} cut by the frame`).toBeGreaterThanOrEqual(half(s) - 0.7);
-        } else if (s.plate.water) expect(['swim', 'dive', 'ride', 'hop', 'zip', 'para', 'climb', 'swing'], `${s.id} ${c.team} ${c.as} in water`).toContain(c.as);
+        } else if (s.plate.water) expect(['swim', 'dive', 'ride', 'hop', 'zip', 'para', 'climb', 'swing', 'roll'], `${s.id} ${c.team} ${c.as} in water`).toContain(c.as);
       });
     });
   });

@@ -601,6 +601,73 @@ export const PLACE_PLATES = {
       mat: { talk: [repaint('chill-sauna-mat', p('chill-sauna-mat', 92, [6, 94], { closed: true, matPos: [50, 90] }), p('chill-9447963', 96, [6, 70], { closed: true, matPos: [40, 95] }))] },
     },
   },
+  // ── batch 5 (LEGS.txt 24, 25, 30, 31) ──
+  'tea-hills': {
+    src: '24-tea-hills', title: 'present-9448187', opener: p('present-9448586', 92, [6, 94]),
+    arrive: [p('arrive-9448231', 92, [20, 94])],
+    props: { basket: 'Empty Tea Harvesting Basket-7', full: 'Leaf-filled wicker tea basket-6', picker: 'Tea Plantation Lady in Purple Sari-5' },
+    st: {
+      'hill-jeep': { talk: [p('arrive-9448236', 90, [6, 94])],
+        act: p('present-9448586', 92, [6, 94], { mode: 'ride', prop: 'jeep@savanna-falls', path: [[-16, 93], [50, 92], [116, 93]], fx: 'dust' }) },
+      // leaves picked into the basket on the terraces; the old picker weighs it
+      'tea-basket': { talk: [p('task-9448188', 95, [6, 94], { closed: true })],
+        act: p('present-9448248', 92, [60, 94], { mode: 'pick', prop: 'full', propW: 0.75, judge: ['picker', 0.5], fx: 'leaves' }) },
+      // aboard the little train in the hills and up to the front carriage
+      'toy-train': { talk: [p('task-9448379', 88, [6, 94])],
+        act: p('task-9448388', 92, [6, 94], { mode: 'walk', path: [[8, 92], [34, 92], [62, 92], [90, 92]], fx: 'steam' }) },
+      mat: { talk: [p('chill-9448671', 92, [6, 94], { matPos: [72, 92] })] },
+    },
+  },
+  'pampas-ranch': {
+    src: '25-pampas-ranch', title: 'present-9449000', opener: p('arrive-9448812', 96, [6, 94]),
+    arrive: [p('arrive-9448887', 92, [6, 70])],
+    props: { horse: 'Angular brown ranch horse-6', emu: 'Lively cartoon emu in profile-7', instructor: 'Stylized tango instructor in red-8',
+      bolas: 'Three-ball boleadoras with central knot-5' },
+    st: {
+      'academy-taxi': { talk: [p('task-9449003', 94, [6, 70])],
+        act: p('task-9449201', 90, [6, 94], { mode: 'ride', prop: 'taxi@glass-tower-gulf', flip: true, path: [[-14, 91], [50, 90], [114, 91]] }) },
+      // the dance at the academy, the instructor watching
+      tango: { talk: [p('task-9449004', 94, [6, 70])],
+        act: p('task-9448962', 93, [6, 94], { closed: true, mode: 'dance', prop: 'instructor', propW: 0.6 }) },
+      // the boleadoras thrown at the emu by the ranch fence
+      emu: { talk: [p('task-9449177', 92, [6, 94])],
+        act: p('task-9449177', 92, [6, 94], { mode: 'toss', prop: 'bolas', propW: 0.8, judge: ['emu', 0.6], fx: 'dust' }) },
+      'emu-walk': { talk: [p('travel-9449305', 92, [6, 94])],
+        act: p('present-9449278', 92, [6, 94], { mode: 'ride', prop: 'horse', flip: true, path: [[-12, 92], [44, 90], [112, 92]], fx: 'dust' }) },
+      mat: { talk: [p('chill-9449230', 66, [6, 62], { mat: [52, 64], scale: 0.65 })] },
+    },
+  },
+  'game-show-city': {
+    src: '30-game-show-city', title: 'task-22411100', opener: p('arrive-22411016', 96, [6, 94]),
+    arrive: [p('arrive-22411160', 90, [6, 94])],
+    props: { ball: 'pinball', panda: 'panda', candy: 'candy-box' },
+    st: {
+      'bullet-train': { talk: [p('arrive-22411160', 90, [6, 94])],
+        act: repaint('train-carriage', p('arrive-22411160', 90, [6, 94], { mode: 'ride', prop: 'train@coast-palace', path: [[-20, 90], [50, 89], [120, 90]] }), undefined) },
+      // inside the giant ball, rolled round the table among the bumpers
+      pinball: { talk: [p('task-22411046', 92, [6, 94])],
+        act: p('task-22411122', 0, [0, 0], { water: true, mode: 'roll', prop: 'ball', path: [[10, 90], [25, 52], [48, 70], [64, 46], [86, 80]], fx: 'sparkle' }) },
+      'neon-run': { talk: [p('arrive-22411160', 90, [6, 94])],
+        act: p('arrive-22411160', 90, [6, 94], { mode: 'run', path: [[12, 90], [50, 90], [88, 90]] }) },
+      mat: { talk: [p('chill-22411042', 92, [6, 70], { matPos: [36, 90] })] },
+    },
+  },
+  'ice-river': {
+    src: '31-ice-river', title: 'present-22411652', opener: p('present-22411651', 92, [6, 94]),
+    arrive: [p('arrive-22411593', 86, [6, 94])],
+    props: { sled: 'sled', bear: 'polar-bear' },
+    st: {
+      'river-hop': { talk: [p('arrive-22411593', 86, [6, 94])],
+        act: p('present-22412013', 0, [0, 0], { water: true, mode: 'ride', prop: 'plane@ice-floe', path: [[-22, 54], [50, 48], [122, 42]] }) },
+      'ice-floes': { talk: [p('task-22411751', 92, [40, 94])],
+        act: p('task-22411646', 0, [0, 0], { water: true, mode: 'hop', spots: [[12, 85], [30, 62], [50, 78], [68, 58], [88, 74]],
+          path: [[12, 85], [30, 62], [50, 78], [68, 58], [88, 74]], fx: 'splash' }) },
+      // one pulls the sled, the other rides it, past the bear
+      sled: { talk: [p('task-22411840', 92, [6, 90])],
+        act: p('task-22411840', 92, [6, 94], { mode: 'ride', prop: 'sled', path: [[-14, 92], [50, 91], [114, 92]], fx: 'snow' }) },
+      mat: { talk: [p('chill-22411602', 92, [6, 94], { matPos: [50, 92] })] },
+    },
+  },
 };
 
 // All the plate files a place needs (the asset copier and the tests read this)

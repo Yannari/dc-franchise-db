@@ -214,9 +214,8 @@ export function airLeg(state, leg) {
   // 1: every team at every task it ran; a moment there of its own if it has one, else a task beat
   const beats = [];
   const rows = (state.taskLog || []).filter(r => r.leg === n);
-  const firstOf = {}, lastOf = {};
+  const cleanAt = {};
   const pickStarts = {};
-  rows.forEach((r, i) => { firstOf[r.team] ??= i; lastOf[r.team] = i; });
   rows.forEach((r, i) => {
     const here = scenes.filter(s => s.data?.team === r.team && s.data?.stretch === r.stretch && !s.kind.startsWith('int-'));
     if (here.some(s => picked.has(s.id))) return;
@@ -231,10 +230,13 @@ export function airLeg(state, leg) {
     const plain = s => s.kind !== 'attempt-fail' && !s.data?.other && !s.data?.threadIds?.length && s.data?.cause == null;
     // ...and at a challenge with its own lines, a team with a story there is still seen doing the challenge
     if (best && !(TASK_LINES.has(r.stretch) && plain(best))) { take(best, 1); if (!TASK_LINES.has(r.stretch)) return; }
-    // a clean run says nothing about itself: the first one airs as getting there, the last as getting out
+    // a clean run says nothing about itself: at each task, the teams through it clean are seen getting there and
+    // getting out by turns (the first arrives, the second finishes, the third arrives...). By the team's first and last
+    // row of the LEG, nobody was ever seen finishing a leg's first task or arriving at its second (2026-10-20)
     const clean = !r.fails && !r.switched && !r.quit;
+    const nthClean = clean ? (cleanAt[r.stretch] = (cleanAt[r.stretch] || 0) + 1) : 0;
     // a picking task's moment is the picking and how it went (the spices: all five, most, a guess)
-    const kind = r.right != null ? 'task-try' : clean && firstOf[r.team] === i ? 'task-start' : clean && lastOf[r.team] === i ? 'task-done' : 'task-try';
+    const kind = r.right != null ? 'task-try' : clean ? (nthClean % 2 ? 'task-start' : 'task-done') : 'task-try';
     // ...and the first three teams there are seen arriving at it first: the challenge is set up once, then results
     // (two at most in the same minute: teams who queued for the opening all arrive at once)
     const sameMinute = beats.filter(b => b.id.endsWith(':arrive') && b.data.stretch === r.stretch && b.data.t === r.from).length;

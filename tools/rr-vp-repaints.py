@@ -33,6 +33,16 @@ def main():
     data = json.load(open(JOBS, encoding='utf8'))
     if '--jobs' in sys.argv:
         for j in data['jobs']:
+            if j.get('new'):
+                # a view or a cut-out still to be made: its reference frame (if any) beside the prompt, nothing to hash
+                if j.get('ref'):
+                    ref = find(os.path.join(FRAMES, 'done', j['src']), j['ref'])
+                    dst_dir = os.path.join(FRAMES, 'edit', j['src'])
+                    os.makedirs(dst_dir, exist_ok=True)
+                    if ref and not os.path.exists(os.path.join(dst_dir, 'reference-' + os.path.basename(ref))):
+                        shutil.copy2(ref, os.path.join(dst_dir, 'reference-' + os.path.basename(ref)))
+                print('new job', j['src'], j['file'])
+                continue
             src = find(os.path.join(FRAMES, 'done', j['src']), j['file'])
             if not j.get('sha256'):
                 j['sha256'] = sha(src)
@@ -46,6 +56,34 @@ def main():
         return
     back = []
     for j in data['jobs']:
+        if j.get('new') and j.get('kind') == 'cutout':
+            # a new cut-out: trimmed to what is drawn, 640 wide, as the place's c-<prop>.webp
+            src = find(os.path.join(FRAMES, 'done', j['src'], 'cutout'), j['file'])
+            if not src:
+                continue
+            im = Image.open(src).convert('RGBA')
+            if im.split()[-1].getbbox():
+                im = im.crop(im.split()[-1].getbbox())
+            if im.width > 640:
+                im = im.resize((640, round(im.height * 640 / im.width)), Image.LANCZOS)
+            dst = os.path.join(ROOT, 'assets', 'sets', 'rr', j['place'], 'c-' + j['prop'] + '.webp')
+            im.save(dst, 'WEBP', quality=80, method=6)
+            back.append(j['file'])
+            print('cut-out back:', j['place'], j['file'], '->', os.path.relpath(dst, ROOT))
+            continue
+        if j.get('new'):
+            # a new view: switched on as soon as it is in done/
+            src = find(os.path.join(FRAMES, 'done', j['src']), j['file'])
+            if not src:
+                continue
+            im = Image.open(src).convert('RGB')
+            if im.width < up.W or im.height < up.H:
+                im = Image.open(up.esrgan(src)).convert('RGB')
+            dst = os.path.join(ROOT, 'assets', 'sets', 'rr', j['place'], j['file'] + '.webp')
+            up.to_plate(im, f"{j['place']}/{j['file']}").save(dst, 'WEBP', quality=84, method=6)
+            back.append(j['file'])
+            print('new view back:', j['place'], j['file'], '->', os.path.relpath(dst, ROOT))
+            continue
         src = find(os.path.join(FRAMES, 'done', j['src']), j['file'])
         if not src or not j.get('sha256') or sha(src) == j['sha256']:
             continue

@@ -46,6 +46,39 @@ def esrgan(src):
     return out
 
 
+# touch-ups on the finished 1920 x 1080 plate (pixel boxes on it), checked by eye:
+#   ('rowfill', box)                      a stray figure on flat ground painted out: each row of the box takes the
+#                                         colour just left of it (the ground's bands run across the frame)
+#   ('plain', box, sample)                a flag's stripes made one plain colour (the colour at `sample`): no real
+#                                         country's flag on screen
+FIX = {
+    'geyser-island/task-9437322': [('rowfill', (1540, 822, 1579, 916))],   # a Don Box figurine on the helipad: the viewer draws its own
+    'haunted-castle/task-9438652': [('plain', (800, 280, 1172, 502), (1100, 380))],   # a tricolour on the gym's tent
+}
+
+
+def touch_up(im, key):
+    for op in FIX.get(key, []):
+        if op[0] == 'rowfill':
+            x0, y0, x1, y1 = op[1]
+            px = im.load()
+            for y in range(y0, y1):
+                c = px[x0 - 3, y]
+                for x in range(x0, x1):
+                    px[x, y] = c
+        elif op[0] == 'plain':
+            x0, y0, x1, y1 = op[1]
+            c = im.getpixel(op[2])
+            px = im.load()
+            for y in range(y0, y1):
+                for x in range(x0, x1):
+                    r, g, b = px[x, y]
+                    # the stripes, not the black hem or the dividers between them
+                    if max(r, g, b) > 45:
+                        px[x, y] = c
+    return im
+
+
 def to_plate(im, key):
     l, t, r, b = CROP.get(key, (0, 0, 0, 0))
     w, h = im.size
@@ -56,7 +89,7 @@ def to_plate(im, key):
         nw = round(h * 16 / 9); x = (w - nw) // 2; im = im.crop((x, 0, x + nw, h))
     else:
         nh = round(w * 9 / 16); y = (h - nh) // 2; im = im.crop((0, y, w, y + nh))
-    return im.resize((W, H), Image.LANCZOS)
+    return touch_up(im.resize((W, H), Image.LANCZOS), key)
 
 
 def main():

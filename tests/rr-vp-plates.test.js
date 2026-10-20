@@ -47,7 +47,9 @@ describe('rr viewer repaint jobs', () => {
     expect(jobs.length).toBeGreaterThan(0);
     for (const j of jobs) {
       expect(src, j.file).toContain(`repaint('${j.file}'`);
-      expect(j.sha256, `${j.file}: run python tools/rr-vp-repaints.py --jobs`).toMatch(/^[0-9a-f]{64}$/);
+      // a repaint of an existing frame is hashed; a NEW view or cut-out switches on when its file appears
+      if (!j.new) expect(j.sha256, `${j.file}: run python tools/rr-vp-repaints.py --jobs`).toMatch(/^[0-9a-f]{64}$/);
+      else expect(j.why, j.file).toBeTruthy();
       expect(PLACE_PLATES[j.place], j.place).toBeTruthy();
     }
   });

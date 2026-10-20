@@ -1078,5 +1078,325 @@
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
   "cut": "0s + 40s",
   "lift": 0.0
+ },
+ "coast-palace/opener.mp3": {
+  "title": "Backbay Lounge",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700068",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Backbay%20Lounge.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "coast-palace/travel.mp3": {
+  "title": "Zazie",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700062",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Zazie.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "coast-palace/challenge.mp3": {
+  "title": "Surf Shimmy",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700018",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Surf%20Shimmy.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "coast-palace/struggle.mp3": {
+  "title": "Spy Groove",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100372",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Spy%20Groove.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "coast-palace/chill-zone.mp3": {
+  "title": "Bossa Antigua",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700069",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bossa%20Antigua.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.5
+ },
+ "coast-palace/elimination.mp3": {
+  "title": "Danse Morialta",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200026",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Danse%20Morialta.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 1.2
+ },
+ "coast-palace/recap.mp3": {
+  "title": "Beach Bum",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100347",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Beach%20Bum.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 5.4
+ },
+ "coast-palace/interview.mp3": {
+  "title": "BossaBossa",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600055",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/BossaBossa.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 1.8
+ },
+ "geyser-island/opener.mp3": {
+  "title": "The Snow Queen",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100872",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Snow%20Queen.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.7
+ },
+ "geyser-island/travel.mp3": {
+  "title": "Ice Flow",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200088",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ice%20Flow.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "geyser-island/challenge.mp3": {
+  "title": "Krampus Workshop",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900029",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Krampus%20Workshop.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 3.7
+ },
+ "geyser-island/struggle.mp3": {
+  "title": "Myst on the Moor",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600007",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Myst%20on%20the%20Moor.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.5
+ },
+ "geyser-island/chill-zone.mp3": {
+  "title": "Northern Glade",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1800017",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Magic%20Scout%20-%20Nothern%20Glade.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "geyser-island/elimination.mp3": {
+  "title": "The Ice Giants",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900053",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Ice%20Giants.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.0
+ },
+ "geyser-island/recap.mp3": {
+  "title": "The Path of the Goblin King v2",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100874",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Path%20of%20the%20Goblin%20King%20v2.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.7
+ },
+ "geyser-island/interview.mp3": {
+  "title": "Enchanted Valley",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200093",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Enchanted%20Valley.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "carnival-rainforest/opener.mp3": {
+  "title": "Leblon",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100866",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Leblon.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "carnival-rainforest/travel.mp3": {
+  "title": "Lagoa v1",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100864",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Lagoa%20v1.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "carnival-rainforest/challenge.mp3": {
+  "title": "Lagoa v2",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100865",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Lagoa%20v2.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "carnival-rainforest/struggle.mp3": {
+  "title": "Suvaco do Cristo",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100867",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Suvaco%20do%20Cristo.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "carnival-rainforest/chill-zone.mp3": {
+  "title": "Samba Isobel",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700071",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Samba%20Isobel.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "carnival-rainforest/elimination.mp3": {
+  "title": "Sancho Panza gets a Latte",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100088",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sancho%20Panza%20gets%20a%20Latte.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.0
+ },
+ "carnival-rainforest/recap.mp3": {
+  "title": "Peppy Pepe",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100115",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Peppy%20Pepe.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 1.1
+ },
+ "carnival-rainforest/interview.mp3": {
+  "title": "Modern Jazz Samba",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100153",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Modern%20Jazz%20Samba.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 1.6
+ },
+ "haunted-castle/opener.mp3": {
+  "title": "Toccata and Fugue in D Minor",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100350",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Toccata%20and%20Fugue%20in%20D%20Minor.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "haunted-castle/travel.mp3": {
+  "title": "Graveyard Shift",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700044",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Graveyard%20Shift.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "haunted-castle/challenge.mp3": {
+  "title": "Grim Idol",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700043",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Grim%20Idol.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "haunted-castle/struggle.mp3": {
+  "title": "Gloom Horizon",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100813",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Gloom%20Horizon.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.5
+ },
+ "haunted-castle/chill-zone.mp3": {
+  "title": "Moonlight Hall",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200095",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Moonlight%20Hall.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.3
+ },
+ "haunted-castle/elimination.mp3": {
+  "title": "Ghost Dance",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100573",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ghost%20Dance.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 5.5
+ },
+ "haunted-castle/recap.mp3": {
+  "title": "Unholy Knight",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700052",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Unholy%20Knight.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 2.2
+ },
+ "haunted-castle/interview.mp3": {
+  "title": "Ghost Story",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300034",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ghost%20Story.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
  }
 }

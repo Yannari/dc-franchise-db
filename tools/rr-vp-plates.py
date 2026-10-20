@@ -27,6 +27,8 @@ def save(src, dst, width, quality, alpha=False):
         return False
     im = Image.open(src)
     im = im.convert('RGBA' if alpha or im.mode in ('RGBA', 'LA', 'P') else 'RGB')
+    if alpha and im.mode == 'RGBA' and im.split()[-1].getbbox():
+        im = im.crop(im.split()[-1].getbbox())     # a cut-out is drawn at its width: no empty margin around it
     if im.width > width:
         im = im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
     os.makedirs(os.path.dirname(dst), exist_ok=True)

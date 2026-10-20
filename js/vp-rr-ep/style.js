@@ -105,7 +105,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .vn.long .ln{font-size:max(12px,1.38cqw)}
 .vn.beat .ln{font-style:italic;color:#cfe0ff;font-size:max(12.5px,1.55cqw)}
 /* a stage direction (no speaker) is a caption card in the middle of the picture, not the speaker's bar */
-.beatcard{position:absolute;left:50%;top:37%;transform:translate(-50%,-50%) rotate(-1.4deg);z-index:48;max-width:56cqw;min-width:26cqw;
+.beatcard{position:absolute;left:50%;top:37%;transform:translate(-50%,-50%) rotate(-1.4deg) scale(var(--k,1));z-index:48;max-width:56cqw;min-width:26cqw;
   padding:1.7cqw 2.6cqw 1.5cqw;text-align:center;color:#1b2033;display:none;pointer-events:none;
   background:radial-gradient(circle at 1px 1px,rgba(15,20,36,.07) 1px,transparent 1.2px) 0 0/.55cqw .55cqw,linear-gradient(175deg,#fffdf4,#fff1cf);
   border:max(2px,.32cqw) solid #0f1424;border-radius:.5cqw;box-shadow:.65cqw .75cqw 0 #0f1424,0 1.6cqw 3.2cqw rgba(0,0,0,.4);
@@ -117,7 +117,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .beatcard::after{right:-1.6cqw;transform:rotate(22deg)}
 .beatcard.on{display:block}
 .beatcard.fresh{animation:beatIn .42s cubic-bezier(.2,1.4,.4,1)}
-@keyframes beatIn{0%{opacity:0;transform:translate(-50%,-90%) rotate(-7deg) scale(.92)}60%{opacity:1;transform:translate(-50%,-46%) rotate(.6deg) scale(1.01)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-1.4deg) scale(1)}}
+@keyframes beatIn{0%{opacity:0;transform:translate(-50%,-90%) rotate(-7deg) scale(.92)}60%{opacity:1;transform:translate(-50%,-46%) rotate(.6deg) scale(1.01)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-1.4deg) scale(var(--k,1))}}
 .vn.beat::before{background:#8fb4ff}
 .vn.pause .ln{font-family:Bungee;font-size:3cqw;letter-spacing:.3em;color:var(--gold)}
 .vn .more{position:absolute;right:1.4cqw;bottom:.7cqw;font-size:1.1cqw;color:var(--gold);animation:blink 1s infinite}
@@ -193,6 +193,30 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .tok.w-chill .pair{animation:wChill 4.2s ease-in-out infinite}
 .tok.w-watch .pair{animation:wWatch 3.4s ease-in-out infinite}
 .tok.w-wait .pair{animation:wWait 1.3s ease-in-out infinite;animation-delay:var(--d,0s)}
+/* batch 1 of the 46 places: pat a sand palace into shape, chip at ice, a hand in a mitten of ants (still, then a flinch),
+   sew a costume, the beam and the vault */
+.tok.w-sculpt .pair{animation:wPat .7s ease-in-out infinite}
+.tok.w-chip .pair{animation:wHammer .5s ease-in-out infinite}
+.tok.w-mitten .pair{animation:wFlinch 2.2s ease-in-out infinite}
+.tok.w-mitten .pair img:first-child{animation:wCringe 2.2s ease-in-out infinite}
+.tok.w-sew .pair{animation:wScribble .3s linear infinite}
+.tok.w-beam .pair{animation:wBeam 2.4s ease-in-out infinite}
+@keyframes wPat{0%,100%{transform:translateY(0)}45%{transform:translateY(.55cqw) scaleY(.95)}60%{transform:translateY(0)}}
+@keyframes wFlinch{0%,62%,100%{transform:none}66%{transform:translate(-.7cqw,-.3cqw) rotate(-11deg)}70%{transform:translate(.5cqw,0) rotate(9deg)}74%{transform:translate(-.3cqw,-.2cqw) rotate(-5deg)}80%{transform:none}}
+@keyframes wBeam{0%,100%{transform:rotate(0)}20%{transform:rotate(-7deg)}40%{transform:rotate(6deg)}62%{transform:translateY(0)}72%{transform:translateY(-1.6cqw) rotate(-180deg)}82%{transform:translateY(-1.1cqw) rotate(-360deg)}90%{transform:translateY(0) rotate(-360deg) scaleY(.9)}}
+/* the rides of batch 1: a vehicle drawn facing left turned round; the horse a little smaller; swinging from a vine;
+   pushing a coffin in front */
+.tok.flipveh .veh{transform:translateX(-50%) scaleX(-1)}
+.tok.ride.horse .veh{width:calc(var(--sz)*2.3)}
+.tok.ride.bus .veh{width:calc(var(--sz)*3.6)} .tok.ride.heli .veh{width:calc(var(--sz)*3.4)} .tok.ride.boat .veh{width:calc(var(--sz)*3.2)}
+.tok.swing .veh{bottom:auto;top:calc(var(--sz)*-2.7);width:calc(var(--sz)*.9);z-index:1}
+.tok.swing .pair{transform-origin:50% -40%;animation:wSwing 1.5s ease-in-out infinite}
+@keyframes wSwing{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+.tok.push .veh{left:auto;right:calc(var(--sz)*-1.5);bottom:calc(var(--sz)*-.15);width:calc(var(--sz)*1.5);transform:none;z-index:1}
+.tok.push .pair{animation:wPush .5s ease-in-out infinite}
+@keyframes wPush{0%,100%{transform:translateX(0) rotate(4deg)}50%{transform:translateX(.3cqw) rotate(8deg)}}
+.prop.passer{z-index:9;transform:translate(-50%,-50%)}
+.fxp.ant{width:.45cqw;height:.3cqw;background:#1b0d06;border-radius:40%}
 @keyframes wWait{0%,100%{transform:translateY(0)}20%{transform:translateY(-.45cqw)}40%{transform:translateY(0)}60%{transform:translateY(-.25cqw) rotate(-3deg)}}
 @keyframes wDig{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(.7cqw) rotate(10deg)}50%{transform:translateY(-.25cqw) rotate(-5deg)}75%{transform:translateY(.55cqw) rotate(8deg)}}
 @keyframes wEat{0%,40%,100%{transform:scaleY(1)}10%,30%{transform:scaleY(.94) translateY(.2cqw)}20%{transform:scaleY(1.03)}60%{transform:translateX(-.4cqw) rotate(-6deg) scaleY(.92)}66%{transform:translateX(.4cqw) rotate(6deg) scaleY(.92)}72%{transform:translateX(-.3cqw) rotate(-4deg)}}

@@ -7,6 +7,8 @@ import { mkdirSync } from 'node:fs';
 const [seed = '8', teams = '12', epList = '2,5'] = process.argv.slice(2).filter(a => !a.startsWith('--'));
 const all = process.argv.includes('--all');
 const base = process.env.RR_URL || 'http://127.0.0.1:8765/rr.html';
+// RR_PINS=2:coast-palace,3:geyser-island books those legs (rr.html ?pins=): a place being built plays only when booked
+const PINS = process.env.RR_PINS ? '&pins=' + encodeURIComponent(process.env.RR_PINS) : '';
 mkdirSync('shots/rr-vp', { recursive: true });
 
 const KINDS = {
@@ -53,7 +55,7 @@ page.on('pageerror', e => errors.push(String(e)));
 page.on('response', r => { if (r.status() >= 400 && !/favicon/.test(r.url())) errors.push(r.status() + ' ' + r.url()); });
 page.on('console', m => { if (m.type() === 'error' && !/favicon/.test(m.text())) errors.push(m.text()); });
 for (const n of epList.split(',').map(Number)) {
-  await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=${n}&step=0&intel=${process.env.RR_INTEL || '0'}`);
+  await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=${n}&step=0&intel=${process.env.RR_INTEL || '0'}${PINS}`);
   await page.waitForFunction(() => window.__rr?.ep, null, { timeout: 60000 });
   const only = process.env.RR_KINDS ? process.env.RR_KINDS.split(',') : null;
   for (const [name, fn] of Object.entries(KINDS).filter(([n]) => !only || only.includes(n))) {

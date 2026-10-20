@@ -276,6 +276,95 @@ export const PLACE_PLATES = {
       mat: { talk: [p('chill-22425933', 86, [10, 92])] },
     },
   },
+  // ── batch 1 of the 46 places (LEGS.txt 05-08, 2026-10-19). `judge`: [prop, width/height of its cut-out], a local who
+  // stands by the work and passes judgement; `pass`: a cut-out that swims past the one in the water; `flip`: a vehicle
+  // drawn facing left, turned to face the way it goes. Jobs in the user's frames folder (edit/, tools/rr-vp-jobs.json)
+  // switch on when they come back: repaint() below.
+  'coast-palace': {
+    src: '05-coast-palace', title: 'present-9436727', opener: p('present-9436927', 92, [40, 94]),
+    arrive: [p('arrive-9436638', 96, [44, 96])],
+    props: { shark: 'Cartoon Shark with Travel Tip Card-12', palace: 'Cartoon sand palace cutout-10', surfer: 'Blond Surfer Boy Cartoon Cutout-13',
+      boat: 'Cream Speedboat with Cyan Windshield-9', ...(REPAINTED.has('train-carriage') ? { train: 'train-carriage' } : {}) },
+    st: {
+      // on the train along the coast (a ride once the train's cut-out comes back from edit/)
+      'coast-train': { talk: [p('arrive-9436621', 96, [6, 94], { closed: true })],
+        act: repaint('train-carriage', p('arrive-9436621', 96, [6, 94], { closed: true, mode: 'ride', prop: 'train', path: [[-20, 96], [50, 95], [120, 96]] }), undefined) },
+      // the boat's deck off the cliffs is a job; meanwhile the beach looking out to sea
+      shark: { talk: [repaint('task-shark-deck', p('task-shark-deck', 92, [6, 94]), p('arrive-9436638', 96, [44, 96]))],
+        act: p('task-9436629', 0, [0, 0], { water: true, mode: 'swim', pass: 'shark', path: [[20, 82], [36, 84], [62, 84], [76, 82]], fx: 'splash', inset: 'ON THE BOAT' }) },
+      'sand-palace': { talk: [p('task-9436921', 93, [6, 94]), p('task-9436639', 93, [6, 94])],
+        act: p('task-9436921', 93, [6, 94], { mode: 'sculpt', prop: 'palace', judge: ['surfer', 0.97], fx: 'dust' }) },
+      motorboat: { talk: [p('travel-9436860', 61, [10, 40], { scale: 0.6 })],
+        act: p('task-9436826', 0, [0, 0], { water: true, mode: 'ride', prop: 'boat', path: [[-18, 86], [50, 84], [118, 86]], fx: 'splash' }) },
+      mat: { talk: [p('chill-9436953', 78, [6, 94], { matPos: [50, 77] })] },
+    },
+  },
+  'geyser-island': {
+    src: '06-geyser-island', title: 'present-9437594', opener: p('travel-9437713', 92, [6, 94]),
+    arrive: [p('travel-9437713', 92, [6, 94]), p('arrive-9436846', 70, [18, 94])],
+    props: { bus: 'tour-bus', heli: 'helicopter', platter: 'meal-platter', fossil: 'fossil-in-ice' },
+    st: {
+      'park-bus': { talk: [p('arrive-9437123', 92, [46, 94])],
+        act: p('travel-9437713', 92, [6, 94], { mode: 'ride', prop: 'bus', path: [[-20, 92], [50, 91], [120, 92]] }) },
+      // through the geysers' steam to the local, to say the phrase back
+      telephone: { talk: [p('task-9437137', 92, [6, 94])],
+        act: p('task-9437137', 92, [6, 94], { mode: 'walk', path: [[8, 93], [30, 90], [56, 92], [84, 90]], fx: 'steam' }) },
+      helicopter: { talk: [p('task-9437322', 90, [6, 94])],
+        act: p('present-9437594', 0, [0, 0], { water: true, mode: 'ride', prop: 'heli', flip: true, path: [[-22, 36], [50, 32], [122, 28]] }) },
+      'feast-fossil': {
+        talk: [p('task-9437341', 76, [8, 60])],
+        sides: {
+          // the hut by the canyon river is a job; meanwhile the river bank in the canyon
+          feast: { talk: [repaint('task-feast-hut', p('task-feast-hut', 92, [6, 94]), p('task-9437341', 76, [8, 60]))],
+            act: repaint('task-feast-hut', p('task-feast-hut', 92, [6, 94], { mode: 'eat', prop: 'platter', fx: 'steam' }),
+              p('task-9437341', 76, [8, 60], { mode: 'eat', prop: 'platter', fx: 'steam' })) },
+          fossil: { talk: [p('task-9437332', 66, [6, 94])],
+            act: p('task-9437548', 94, [24, 68], { closed: true, mode: 'chip', fx: 'ice' }) },
+        },
+      },
+      mat: { talk: [p('chill-9437338', 88, [6, 94], { mat: [62, 86] }), p('chill-9436909', 86, [8, 94], { mat: [60, 85] })] },
+    },
+  },
+  'carnival-rainforest': {
+    src: '07-carnival-rainforest', title: 'present-9438215', opener: p('arrive-9437915', 88, [22, 82]),
+    arrive: [p('arrive-9437915', 88, [22, 82])],
+    props: { mitten: 'Ant-Crawling Red Oven Mitt-4', tail: 'Belt-mounted cyan and purple feather fan-6', head: 'Blue-Purple Feathered Carnival Headpiece-5',
+      coconut: 'Cracked coconut reveals a travel tip-7', vine: 'Curving cartoon jungle vine-8', glider: 'Empty Coral-Striped Hang Glider-9',
+      dancer: 'Feathered Purple Carnival Dancer-10' },
+    st: {
+      ants: { talk: [p('task-9437989', 92, [6, 94])],
+        act: p('task-9438117', 92, [6, 94], { mode: 'mitten', prop: 'mitten', fx: 'ants' }) },
+      // over the gorge on the vines; done, the coconut pile
+      gorge: { talk: [p('task-9437972', 70, [36, 94]), p('task-9437837', 94, [6, 94])],
+        act: p('task-9437835', 0, [0, 0], { water: true, mode: 'swing', prop: 'vine', path: [[14, 46], [30, 60], [50, 66], [70, 60], [86, 46]] }),
+        act2: p('task-9437837', 94, [6, 94], { mode: 'search', prop: 'coconut', fx: 'dust' }) },
+      costume: { talk: [p('task-9438128', 95, [6, 94])],
+        act: p('task-9438128', 95, [6, 94], { mode: 'sew', prop: 'head', judge: ['dancer', 0.67], fx: 'sparkle' }) },
+      glide: { talk: [p('task-9438189', 62, [46, 94])],
+        act: p('present-9438171', 0, [0, 0], { water: true, mode: 'para', prop: 'glider', path: [[8, 18], [34, 36], [62, 56], [84, 74]] }) },
+      mat: { talk: [p('chill-9438092', 84, [8, 84], { matPos: [46, 82] })] },
+    },
+  },
+  'haunted-castle': {
+    src: '08-haunted-castle', title: 'present-9438456', opener: p('present-9438407', 94, [8, 92]),
+    arrive: [p('arrive-9438405', 94, [6, 94]), p('arrive-9438402', 92, [6, 78])],
+    props: { coffin: 'coffin', horse: 'Dark Horse with Jagged Mane-3', vault: 'Gymnastics vault and springboard-2', beam: 'balance-beam', coach: 'gym-coach' },
+    st: {
+      'castle-road': { talk: [p('present-9438407', 94, [8, 92])],
+        act: p('present-9438407', 94, [8, 92], { mode: 'ride', prop: 'taxi@red-sand-desert', path: [[-14, 95], [50, 94], [114, 95]] }) },
+      // the coffin on its stand in the castle; pushed (a partner in it) out through the graveyard gate
+      coffin: { talk: [p('task-9438457', 97, [6, 94], { closed: true, spots: [[13, 97], [87, 97], [24, 98], [76, 98]] })],
+        act: p('task-9438461', 93, [6, 94], { mode: 'push', prop: 'coffin', path: [[8, 94], [32, 92], [58, 93], [82, 92]] }) },
+      ride: { talk: [p('task-9438688', 94, [8, 90])],
+        act: p('present-9438330', 86, [8, 92], { mode: 'ride', prop: 'horse', flip: true, path: [[-14, 86], [44, 84], [114, 86]] }) },
+      gym: { talk: [p('task-9438652', 98, [6, 94])],
+        act: p('task-9438665', 94, [6, 94], { mode: 'beam', prop: 'beam', judge: ['coach', 0.45] }) },
+      'night-run': { talk: [p('present-9438407', 94, [8, 92])],
+        act: p('present-9438407', 94, [8, 92], { mode: 'run', path: [[20, 94], [50, 94], [80, 94]] }) },
+      // the night Chill Zone by the castle is a job; meanwhile the graveyard gate in the rain
+      mat: { talk: [repaint('chill-night-mat', p('chill-night-mat', 92, [6, 94], { matPos: [50, 90] }), p('chill-9438461', 92, [6, 94], { matPos: [50, 92] }))] },
+    },
+  },
 };
 
 // All the plate files a place needs (the asset copier and the tests read this)
@@ -287,8 +376,8 @@ export function placeFiles(id) {
   add(pl.opener);
   (pl.arrive || []).forEach(add);
   for (const s of Object.values(pl.st)) {
-    (s.talk || []).forEach(add); add(s.act);
-    for (const side of Object.values(s.sides || {})) { (side.talk || []).forEach(add); add(side.act); }
+    (s.talk || []).forEach(add); add(s.act); add(s.act2);
+    for (const side of Object.values(s.sides || {})) { (side.talk || []).forEach(add); add(side.act); add(side.act2); }
   }
   return [...out];
 }
@@ -312,7 +401,7 @@ export function stretchPlates(placeId, stretchId, side = null) {
   const s = pl?.st?.[stretchId];
   if (!s) return null;
   const sd = side && s.sides?.[side];
-  return { talk: sd?.talk || s.talk || [], act: sd?.act ?? s.act ?? null };
+  return { talk: sd?.talk || s.talk || [], act: sd?.act ?? s.act ?? null, act2: sd?.act2 ?? s.act2 ?? null };
 }
 
 export const standable = plate => plate && plate.people !== false && !plate.water;

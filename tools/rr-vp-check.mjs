@@ -11,6 +11,8 @@ import { chromium } from 'playwright';
 
 const [seed = '8', teams = '12', epList = '2,5,9'] = process.argv.slice(2);
 const base = process.env.RR_URL || 'http://127.0.0.1:8765/rr.html';
+// RR_PINS=2:coast-palace,3:geyser-island books those legs (rr.html ?pins=): a place being built plays only when booked
+const PINS = process.env.RR_PINS ? '&pins=' + encodeURIComponent(process.env.RR_PINS) : '';
 const SIZES = process.env.RR_SIZES ? JSON.parse(process.env.RR_SIZES) : [[1600, 1000], [1280, 760], [1024, 700], [820, 1180], [390, 844]];
 const browser = await chromium.launch();
 let bad = 0, checked = 0;
@@ -18,7 +20,7 @@ for (const [w, h] of SIZES) {
   for (const intel of ['0', '1']) {
     const page = await browser.newPage({ viewport: { width: w, height: h } });
     for (const n of epList.split(',').map(Number)) {
-      await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=${n}&step=0&intel=${intel}`);
+      await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=${n}&step=0&intel=${intel}${PINS}`);
       await page.waitForFunction(() => window.__rr?.ep, null, { timeout: 60000 });
       const total = await page.evaluate(() => window.__rr.flat.length);
       // every 7th click through the episode, plus every mat and every confessional's first line
@@ -99,7 +101,7 @@ for (const [w, h] of SIZES) {
 }
 // and the plates do run their shader
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
-await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=5&step=0`);
+await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=5&step=0${PINS}`);
 await page.waitForFunction(() => window.__rr?.ep, null, { timeout: 60000 });
 // a step on a plate with water or leaves (life-have.js): its canvas runs; a plate without stays the crisp painting
 const k = await page.evaluate(async () => {

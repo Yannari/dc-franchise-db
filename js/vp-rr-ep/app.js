@@ -38,12 +38,20 @@ async function loadRoster() {
   return roster;
 }
 
+// ?pins=2:coast-palace,3:geyser-island books those places on those legs (a place still being built plays only when
+// booked); the rest of the route is drawn as usual
+function pinsParam() {
+  const out = {};
+  for (const part of String(params.get('pins') || '').split(',')) { const [n, id] = part.split(':'); if (n && id) out[Number(n)] = id.trim(); }
+  return Object.keys(out).length ? out : null;
+}
 function play(seed, nTeams) {
-  const key = `${seed}|${nTeams}`;
+  const pins = pinsParam();
+  const key = `${seed}|${nTeams}|${JSON.stringify(pins)}`;
   if (cache.has(key)) return cache.get(key);
   const { cast, teams } = castFromRoster(roster, nTeams, seed);
   setPlayers(cast);
-  const res = playRaceSeason({ teams, seed });
+  const res = playRaceSeason({ teams, seed, ...(pins ? { options: { pins } } : {}) });
   const eps = airSeason(res);
   const out = { seed, nTeams, res, eps, cast, built: [] };
   cache.set(key, out);

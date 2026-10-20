@@ -6,13 +6,15 @@ import { chromium } from 'playwright';
 
 const [seed = '8', teams = '12', epList = '1,2,5'] = process.argv.slice(2);
 const base = process.env.RR_URL || 'http://127.0.0.1:8765/rr.html';
+// RR_PINS=2:coast-palace,3:geyser-island books those legs (rr.html ?pins=): a place being built plays only when booked
+const PINS = process.env.RR_PINS ? '&pins=' + encodeURIComponent(process.env.RR_PINS) : '';
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
 const errors = [];
 page.on('pageerror', e => errors.push(String(e.stack || e)));
 page.on('console', m => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errors.push(m.text()); });
 for (const n of epList.split(',').map(Number)) {
-  await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=${n}&step=0`);
+  await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=${n}&step=0${PINS}`);
   await page.waitForFunction(() => window.__rr?.ep, null, { timeout: 60000 });
   const r = await page.evaluate(async () => {
     const R = window.__rr, out = { steps: R.flat.length, crowd: 0, close: 0, two: 0, follow: 0, react: 0, maxCrowd: 0 };

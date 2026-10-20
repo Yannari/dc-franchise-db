@@ -1,6 +1,60 @@
 // Made by tools/rr-vp-motion.py: the plates with something that moves (leaves, water, lava) and so a
 // <plate>-life.webp map beside them. Every other plate is the painted plate under the camera's slow drift.
 export const LIFE = {
+ "assets/sets/rr/carnival-rainforest/arrive-9437915.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/carnival-rainforest/chill-9438092.webp": [
+  "wind",
+  "water"
+ ],
+ "assets/sets/rr/carnival-rainforest/present-9438171.webp": [
+  "wind",
+  "water"
+ ],
+ "assets/sets/rr/carnival-rainforest/present-9438215.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/carnival-rainforest/task-9437835.webp": [
+  "wind",
+  "water"
+ ],
+ "assets/sets/rr/carnival-rainforest/task-9437837.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/carnival-rainforest/task-9437972.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/carnival-rainforest/task-9437989.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/carnival-rainforest/task-9438117.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/carnival-rainforest/task-9438128.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/coast-palace/arrive-9436621.webp": [
+  "water"
+ ],
+ "assets/sets/rr/coast-palace/arrive-9436638.webp": [
+  "water"
+ ],
+ "assets/sets/rr/coast-palace/chill-9436953.webp": [
+  "water"
+ ],
+ "assets/sets/rr/coast-palace/present-9436927.webp": [
+  "water"
+ ],
+ "assets/sets/rr/coast-palace/task-9436629.webp": [
+  "water"
+ ],
+ "assets/sets/rr/coast-palace/task-9436826.webp": [
+  "water"
+ ],
+ "assets/sets/rr/coast-palace/travel-9436860.webp": [
+  "water"
+ ],
  "assets/sets/rr/fire-mountain-isle/present-22425124.webp": [
   "water"
  ],
@@ -25,6 +79,21 @@ export const LIFE = {
  ],
  "assets/sets/rr/fire-mountain-isle/task-22426413.webp": [
   "lava"
+ ],
+ "assets/sets/rr/geyser-island/arrive-9436846.webp": [
+  "water"
+ ],
+ "assets/sets/rr/geyser-island/chill-9436909.webp": [
+  "water"
+ ],
+ "assets/sets/rr/geyser-island/chill-9437338.webp": [
+  "water"
+ ],
+ "assets/sets/rr/geyser-island/task-9437137.webp": [
+  "water"
+ ],
+ "assets/sets/rr/geyser-island/task-9437341.webp": [
+  "water"
  ],
  "assets/sets/rr/great-wall-hills/chill-9440467.webp": [
   "wind"

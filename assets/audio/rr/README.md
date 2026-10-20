@@ -7,7 +7,7 @@ Every place has its own sound and every moment of a leg its own track there (the
 the race-wide bed for that moment (`race/<moment>.mp3`) if there is one, then an ambience already
 in the repo where it really fits the place, and otherwise silence. A Total Drama bed never plays.
 
-**Filled: 108 of 108 slots.**
+**Filled: 140 of 140 slots.**
 
 **The rules for a file**
 - Royalty-free only: CC0 or public domain, the Pixabay Content License, or CC-BY with the credit in
@@ -247,3 +247,67 @@ A race-wide bed for a moment (`race/opener.mp3`, `race/struggle.mp3`...) is the 
 | `skyline-finale/elimination.mp3` | elimination | a slow, bittersweet orchestral cue; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | epic, orchestral, sombre and short | [x] "Rumination" (Kevin MacLeod), 274 KB |
 | `skyline-finale/recap.mp3` | recap | a quick epic montage; quick, punchy, recap energy, the place still in it | 30-40 s loop | epic, orchestral, quick | [x] "Heroic Age" (Kevin MacLeod), 235 KB |
 | `skyline-finale/interview.mp3` | interview | a soft cinematic pad; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | epic, orchestral, light | [x] "Airship Serenity" (Kevin MacLeod), 313 KB |
+
+## Coast Palace (`coast-palace/`)
+
+**Sound of the place**: the glamorous coast: lounge piano and bossa guitars on a yacht deck, a surf-rock twang for the sharks.  
+**Search**: lounge, bossa nova, riviera, surf rock, cocktail jazz.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `coast-palace/opener.mp3` | opener | a bright, grooving lounge piano: the palace gates and the sea; bright, confident, the place in its first bars | 40-60 s loop | lounge, bossa nova, bright | [x] "Backbay Lounge" (Kevin MacLeod), 352 KB |
+| `coast-palace/travel.mp3` | travel | a bouncy café groove along the coast; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | lounge, bossa nova, moving | [x] "Zazie" (Kevin MacLeod), 391 KB |
+| `coast-palace/challenge.mp3` | challenge | surf-rock guitar and organ: the shark and the sand palace; driving, building, percussion forward, 110-140 bpm | 60 s loop | lounge, bossa nova, driving | [x] "Surf Shimmy" (Kevin MacLeod), 391 KB |
+| `coast-palace/struggle.mp3` | struggle | a dark spy groove: a fin going past, a palace slumping; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | lounge, bossa nova, tense | [x] "Spy Groove" (Kevin MacLeod), 352 KB |
+| `coast-palace/chill-zone.mp3` | chill-zone | a relaxed bossa guitar on the harbour; relief and a little swagger, mid-tempo, warm | 45 s loop | lounge, bossa nova, relief and a little swagger | [x] "Bossa Antigua" (Kevin MacLeod), 352 KB |
+| `coast-palace/elimination.mp3` | elimination | a simple, sombre solo piano; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | lounge, bossa nova, sombre and short | [x] "Danse Morialta" (Kevin MacLeod), 274 KB |
+| `coast-palace/recap.mp3` | recap | a quick surf-guitar riff; quick, punchy, recap energy, the place still in it | 30-40 s loop | lounge, bossa nova, quick | [x] "Beach Bum" (Kevin MacLeod), 235 KB |
+| `coast-palace/interview.mp3` | interview | a soft bossa nova under the voice; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | lounge, bossa nova, light | [x] "BossaBossa" (Kevin MacLeod), 313 KB |
+
+## Geyser Island (`geyser-island/`)
+
+**Sound of the place**: the icy north: celesta and cold strings, glass marimba and low brass, eerie and clear as ice.  
+**Search**: ice, frost, celesta, eerie, nordic, mystical, cold.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `geyser-island/opener.mp3` | opener | a mysterious celesta and strings theme, snow on the peaks; bright, confident, the place in its first bars | 40-60 s loop | ice, frost, bright | [x] "The Snow Queen" (Kevin MacLeod), 352 KB |
+| `geyser-island/travel.mp3` | travel | a cold, grooving synth pulse on the mountain road; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | ice, frost, moving | [x] "Ice Flow" (Kevin MacLeod), 391 KB |
+| `geyser-island/challenge.mp3` | challenge | a dark, driving, slightly comic orchestra: the geysers and the feast; driving, building, percussion forward, 110-140 bpm | 60 s loop | ice, frost, driving | [x] "Krampus Workshop" (Kevin MacLeod), 391 KB |
+| `geyser-island/struggle.mp3` | struggle | eerie glass marimba and flutes: steam, ice and a phrase nobody remembers; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | ice, frost, tense | [x] "Myst on the Moor" (Kevin MacLeod), 352 KB |
+| `geyser-island/chill-zone.mp3` | chill-zone | a calm, bright northern pad; relief and a little swagger, mid-tempo, warm | 45 s loop | ice, frost, relief and a little swagger | [x] "Northern Glade" (Kevin MacLeod), 352 KB |
+| `geyser-island/elimination.mp3` | elimination | slow, somber low brass; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | ice, frost, sombre and short | [x] "The Ice Giants" (Kevin MacLeod), 274 KB |
+| `geyser-island/recap.mp3` | recap | quick dark strings and celesta; quick, punchy, recap energy, the place still in it | 30-40 s loop | ice, frost, quick | [x] "The Path of the Goblin King v2" (Kevin MacLeod), 235 KB |
+| `geyser-island/interview.mp3` | interview | a light, mystical celesta and clarinet; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | ice, frost, light | [x] "Enchanted Valley" (Kevin MacLeod), 313 KB |
+
+## Carnival Rainforest (`carnival-rainforest/`)
+
+**Sound of the place**: carnival in the rainforest: samba percussion, surdo and tamborim, a parade with horns.  
+**Search**: samba, carnival, batucada, latin percussion, salsa.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `carnival-rainforest/opener.mp3` | opener | a bright carnival samba; bright, confident, the place in its first bars | 40-60 s loop | samba, carnival, bright | [x] "Leblon" (Kevin MacLeod), 352 KB |
+| `carnival-rainforest/travel.mp3` | travel | a laid-back samba groove through the jungle; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | samba, carnival, moving | [x] "Lagoa v1" (Kevin MacLeod), 391 KB |
+| `carnival-rainforest/challenge.mp3` | challenge | carnival percussion at full tempo: vines, coconuts, costumes; driving, building, percussion forward, 110-140 bpm | 60 s loop | samba, carnival, driving | [x] "Lagoa v2" (Kevin MacLeod), 391 KB |
+| `carnival-rainforest/struggle.mp3` | struggle | a deep, dark, thick samba: the ants; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | samba, carnival, tense | [x] "Suvaco do Cristo" (Kevin MacLeod), 352 KB |
+| `carnival-rainforest/chill-zone.mp3` | chill-zone | a classy samba piano on the beach; relief and a little swagger, mid-tempo, warm | 45 s loop | samba, carnival, relief and a little swagger | [x] "Samba Isobel" (Kevin MacLeod), 352 KB |
+| `carnival-rainforest/elimination.mp3` | elimination | an acoustic guitar and soft latin percussion, slow; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | samba, carnival, sombre and short | [x] "Sancho Panza gets a Latte" (Kevin MacLeod), 274 KB |
+| `carnival-rainforest/recap.mp3` | recap | a hideously happy latin parade; quick, punchy, recap energy, the place still in it | 30-40 s loop | samba, carnival, quick | [x] "Peppy Pepe" (Kevin MacLeod), 235 KB |
+| `carnival-rainforest/interview.mp3` | interview | a soft jazz samba under the voice; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | samba, carnival, light | [x] "Modern Jazz Samba" (Kevin MacLeod), 313 KB |
+
+## Haunted Castle (`haunted-castle/`)
+
+**Sound of the place**: a gothic castle at night: pipe organ, dark strings, a theremin in the graveyard.  
+**Search**: pipe organ, gothic, spooky, halloween, dark strings, horror comedy.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `haunted-castle/opener.mp3` | opener | a great pipe organ toccata: the castle on the hill; bright, confident, the place in its first bars | 40-60 s loop | pipe organ, gothic, bright | [x] "Toccata and Fugue in D Minor" (Kevin MacLeod), 352 KB |
+| `haunted-castle/travel.mp3` | travel | a comedically spooky organ and theremin groove; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | pipe organ, gothic, moving | [x] "Graveyard Shift" (Kevin MacLeod), 391 KB |
+| `haunted-castle/challenge.mp3` | challenge | dark, driving strings and organs: coffins and horses; driving, building, percussion forward, 110-140 bpm | 60 s loop | pipe organ, gothic, driving | [x] "Grim Idol" (Kevin MacLeod), 391 KB |
+| `haunted-castle/struggle.mp3` | struggle | mournful, tense strings: the beam, the vault, the coach; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | pipe organ, gothic, tense | [x] "Gloom Horizon" (Kevin MacLeod), 352 KB |
+| `haunted-castle/chill-zone.mp3` | chill-zone | a mysterious celesta and tuba waltz under the moon; relief and a little swagger, mid-tempo, warm | 45 s loop | pipe organ, gothic, relief and a little swagger | [x] "Moonlight Hall" (Kevin MacLeod), 352 KB |
+| `haunted-castle/elimination.mp3` | elimination | a sparse, dark piano; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | pipe organ, gothic, sombre and short | [x] "Ghost Dance" (Kevin MacLeod), 274 KB |
+| `haunted-castle/recap.mp3` | recap | quick organ, choir and orchestra; quick, punchy, recap energy, the place still in it | 30-40 s loop | pipe organ, gothic, quick | [x] "Unholy Knight" (Kevin MacLeod), 235 KB |
+| `haunted-castle/interview.mp3` | interview | a soft, spooky vibraphone; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | pipe organ, gothic, light | [x] "Ghost Story" (Kevin MacLeod), 313 KB |

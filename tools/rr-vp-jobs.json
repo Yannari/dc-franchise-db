@@ -1,5 +1,5 @@
 {
-  "_": "Plates out of use until the user repaints them (Downloads/RidonculousRace-frames/edit/<src>/, prompt.txt there). tools/rr-vp-repaints.py notices a repaint in done/ (its file no longer matches sha256 below), makes it a plate and switches it on (js/vp-rr-ep/repainted.js).",
+  "_": "Plates out of use until the user repaints them (Downloads/RidonculousRace-frames/edit/<src>/, prompt.txt there). tools/rr-vp-repaints.py notices a repaint in done/ (its file no longer matches sha256 below), makes it a plate and switches it on (js/vp-rr-ep/repainted.js). A NEW job (\"new\": true) is a view or a cut-out that does not exist yet: it switches on when a file of that name appears in done/<src>/ (a cut-out: done/<src>/cutout/), and plates.js uses a stand-in until then.",
   "jobs": [
     {
       "place": "home-city",
@@ -28,6 +28,39 @@
       "file": "task-9435484",
       "why": "the stew: one bowl on a shelf does not read as a place",
       "sha256": "4c57afcdde99b727d1bf0e29222bb10a4d68bb42ae9016e86f7fd220cc466682"
+    },
+    {
+      "place": "coast-palace",
+      "src": "05-coast-palace",
+      "file": "task-shark-deck",
+      "new": true,
+      "ref": "task-9436629",
+      "why": "the shark Botch's talk: the team's boat off the cliffs with a deck to stand on (stand-in: the beach looking out to sea, arrive-9436638)"
+    },
+    {
+      "place": "coast-palace",
+      "src": "05-coast-palace",
+      "file": "train-carriage",
+      "new": true,
+      "kind": "cutout",
+      "prop": "train",
+      "why": "the train along the coast: a side-on carriage cut-out, so the ride shows (meanwhile the scenes are in the carriage, arrive-9436621)"
+    },
+    {
+      "place": "geyser-island",
+      "src": "06-geyser-island",
+      "file": "task-feast-hut",
+      "new": true,
+      "ref": "task-9437341",
+      "why": "the Feast side: the hut by the canyon river with a long table (stand-in: the river bank in the canyon, task-9437341)"
+    },
+    {
+      "place": "haunted-castle",
+      "src": "08-haunted-castle",
+      "file": "chill-night-mat",
+      "new": true,
+      "ref": "chill-9438461",
+      "why": "the night Chill Zone near the castle (LEGS.txt: NEW, in edit; stand-in: the graveyard gate in the rain, chill-9438461)"
     }
   ]
 }

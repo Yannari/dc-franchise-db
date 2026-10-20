@@ -41,6 +41,20 @@ NO_WATER = {
     'treasure-isles/arrive-9449512', 'iron-tower-city/present-9436193', 'iron-tower-city/chill-9436288',
     'rock-north/present-9440796', 'rock-north/present-9440799', 'rock-north/task-9440922', 'rock-north/task-9440800',
 }
+# batch 1 of the 46 places (2026-10-19), checked by eye: grassy hills that are not leaves, blue mountains and ice that
+# are not water
+NO_WIND |= {'geyser-island/arrive-9436846', 'geyser-island/chill-9436909'}
+NO_WATER |= {'geyser-island/task-9437322', 'geyser-island/task-9437332', 'geyser-island/task-9437548'}
+# water the rule above cannot see (a deep sea that meets the sky, a waterfall, the steam of a geyser): within each box
+# (fractions of the frame), the pixels of that hue
+FORCE_WATER = {
+    'coast-palace/task-9436629': [(0, .48, 1, 1, 190, 236)], 'coast-palace/task-9436826': [(0, .6, 1, 1, 190, 236)],
+    'coast-palace/arrive-9436638': [(0, .55, 1, 1, 190, 236)], 'coast-palace/present-9436927': [(0, .1, .5, 1, 190, 236)],
+    'coast-palace/travel-9436860': [(0, .5, 1, 1, 190, 236)], 'coast-palace/chill-9436953': [(0, .78, 1, 1, 190, 236)],
+    'coast-palace/arrive-9436621': [(0, .38, .52, .6, 190, 236)],
+    'carnival-rainforest/task-9437835': [(.44, .36, .58, 1, 160, 200)],
+    'geyser-island/task-9437137': [(.04, 0, .68, .72, 160, 200)],
+}
 LAVA_PLACES = {'fire-mountain-isle'}
 SKIP = {'confess', 'worldmap', 'gate', 'cabin', 'galley', 'logo', 'sky', 'runway', 'don', 'plane'}
 
@@ -83,6 +97,10 @@ def life(path, key, place):
             if sl[0].start < .36 * H:
                 wet[lab == i] = False
         water = big(wet, .02)
+    for x0, y0, x1, y1, h0, h1 in FORCE_WATER.get(key, []):
+        box = np.zeros((H, W), bool)
+        box[int(y0 * H):int(y1 * H), int(x0 * W):int(x1 * W)] = True
+        water |= box & (h > h0) & (h < h1) & (s > .25) & (v > .25)
     lava = np.zeros((H, W), bool)
     if place in LAVA_PLACES:
         lava = big((h < 36) & (s > .7) & (v > .78), .004)

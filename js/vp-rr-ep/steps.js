@@ -202,7 +202,8 @@ export function episodeScreens(res, eps, i) {
     } else if (stretch) {
       const sp = stretchPlates(placeId, seg.stretch, seg.side);
       const wantsAct = (TASKS.has(stretch.kind) && ACT_KINDS.has(k)) || (stretch.kind === 'travel' && RIDE_KINDS.has(k));
-      if (wantsAct && sp?.act) { plate = sp.act; mode = 'act'; }
+      // a task done in two halves (over the gorge, then the coconut pile) shows its second half when it is done
+      if (wantsAct && sp?.act) { plate = (k === 'task-done' && sp.act2) || sp.act; mode = 'act'; }
       else plate = pick(sp?.talk, nth(`${placeId}|${seg.stretch}|${seg.side || ''}`)) || sp?.act || (lastPlate?.place === placeId ? lastPlate : plates.opener);
       if (!standable(plate) && mode !== 'act') plate = pick(sp?.talk?.filter(standable), 0) || plates.opener;
       if (sideLabel) hudTask += ` · ${sideLabel.toUpperCase()}`;
@@ -515,7 +516,28 @@ function progressPlan(n, ending) {
 // aisle), and a cabin that cannot hold everyone at the floor keeps the ones the scene is about (the user, 2026-10-19:
 // "a crowded same-flight galley overlaps").
 export const OVERLAP_OK = 0.08;                 // two faces may touch by this much of the smaller one, no more
-const STAGED = ['marks', 'as', 'pos', 'plan', 'swimmers', 'inset', 'donStand', 'localAt', 'boxAt', 'matAt', 'donAt', 'hiddenUntil', 'onMatAt', 'work', 'lift', 'liftAt'];
+const STAGED = ['marks', 'as', 'pos', 'plan', 'swimmers', 'inset', 'donStand', 'localAt', 'boxAt', 'matAt', 'donAt', 'hiddenUntil', 'onMatAt', 'work', 'lift', 'liftAt',
+  'workProp', 'judgeAt'];
+// The work's cut-out beside the team doing it (a sand palace, a mitten, a platter), on the side with more room, and the
+// local who judges it (the surfer boy, the carnival dancer, the coach) beyond it, as tall as a racer: placed here so
+// the teams behind the shot keep clear of them (planCrowd) and the stage only draws them.
+function placeWorkProps(s, marks) {
+  const pl = s.plate;
+  if (!s.work || !pl?.prop) return;
+  const anchor = marks[s.teams[0]] || [50, groundY(pl, 0)];
+  const z = s.size || 8, off = z * 1.9 + 4;
+  const others = s.teams.slice(1).map(id => marks[id]?.[0]).filter(x => x != null);
+  const room = dir => { const x = anchor[0] + dir * off; return Math.min(x - 4, 96 - x, ...others.map(o => Math.abs(o - x))); };
+  const px = Math.max(6, Math.min(94, anchor[0] + (room(-1) > room(1) ? -off : off)));
+  const gy = Array.isArray(pl.g) ? pl.g[1] : pl.g;
+  const w = z * 1.5 * (s.work === 'sculpt' ? 1.5 : 1);
+  s.workProp = { at: [Math.round(px * 10) / 10, gy], w };
+  if (pl.judge) {
+    const [, ja] = pl.judge, jw = z * 1.35 * ja, side = px >= anchor[0] ? 1 : -1;
+    const jx = Math.max(jw / 2 + 2, Math.min(98 - jw / 2, px + side * (w / 2 + jw / 2 + 1.5)));
+    s.judgeAt = { at: [Math.round(jx * 10) / 10, gy], w: jw, flip: side < 0 };
+  }
+}
 function overlapsAt(s, k) {
   const f = facesAt(s, k);
   for (let a = 0; a < f.length; a++) for (let b = a + 1; b < f.length; b++) if (f[a].key !== f[b].key && overlapOf(f[a].box, f[b].box) > OVERLAP_OK) return true;
@@ -598,16 +620,19 @@ function layout(s, size) {
       s.onMatAt = Object.fromEntries(Object.entries(s.hiddenUntil));
     } else arriving.forEach(id => { marks[id] = [...mat]; as[id] = 'stand'; });
     s.donStand = s.donAt;
-  } else if (s.mode === 'act' && plate?.path && ['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride'].includes(plate.mode)) {
+  } else if (s.mode === 'act' && plate?.path && PATH_MODES.has(plate.mode)) {
     const plan = progressPlan(ps, s.ending === 'any' && s.seg === 'task-done' ? 'done' : s.ending);
     s.plan = plan;
     s.pos = [];
     const ride = plate.mode === 'ride';
+    // teams on the same path keep a face's width and more apart along it (the path's length in % of the frame)
+    const plen = plate.path.slice(1).reduce((a, q, j) => a + Math.hypot(q[0] - plate.path[j][0], q[1] - plate.path[j][1]), 0) || 1;
+    const gapF = Math.max(0.12, (s.size || 8) * 1.9 / plen);
     for (let k = 0; k < ps; k++) {
       const pos = {};
       s.teams.forEach((id, i) => {
         let f = ride ? (k === 0 ? 0.5 : 0.5 + 0.12 * k / Math.max(1, ps - 1)) : plan.p[k];
-        f = Math.max(0, Math.min(1, f - i * 0.12));
+        f = Math.max(0, Math.min(1, f - i * gapF));
         let pt = pathAt(plate.path, f);
         if (plate.mode === 'hop') { const idx = Math.round(f * (plate.path.length - 1)); pt = [...plate.path[idx]]; }
         if (['swim', 'dive'].includes(plate.mode)) {
@@ -643,7 +668,7 @@ function layout(s, size) {
     if (s.don) { s.donStand = pts[j++]; }
     s.locals.forEach(nm => { (s.localAt ||= {})[nm] = pts[j++]; });
     s.teams.forEach(id => { marks[id] = pts[j++]; as[id] = 'stand'; });
-    if (s.mode === 'act' && plate?.mode) { s.work = plate.mode; s.plan = progressPlan(ps, s.ending); }
+    if (s.mode === 'act' && plate?.mode) { s.work = plate.mode; s.plan = progressPlan(ps, s.ending); placeWorkProps(s, marks); }
     if (s.donBox) s.boxAt = [lerp(plate.x[0], plate.x[1], s.don ? 0.3 : 0.5), groundY(plate, 0)];
   }
   if (s.don && !s.donStand && s.mode !== 'mat') {
@@ -729,8 +754,10 @@ function liftFor(s) {
 //   * two teams at most (the start line, where every team is, is the one exception), never a team in the scene;
 //   * reacting to a big moment in front: a glance, a cheer, a wince (planCrowdReact).
 // At the Chill Zone the teams already checked in on screen wait to one side; never a rank on the crowd.
-const IN_PLACE = new Set(['search', 'eat', 'draw', 'sweat', 'guitar', 'photo', 'bob', 'chase', 'build', 'shear', 'bungee']);
-const PATH_MODES = new Set(['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride']);
+// (batch 1 of the 46 places, 2026-10-19: sculpting sand, chipping ice, a hand in a mitten of ants, sewing a costume,
+// the beam and the vault; a swing on a vine, a coffin pushed)
+const IN_PLACE = new Set(['search', 'eat', 'draw', 'sweat', 'guitar', 'photo', 'bob', 'chase', 'build', 'shear', 'bungee', 'sculpt', 'chip', 'mitten', 'sew', 'beam']);
+const PATH_MODES = new Set(['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride', 'swing', 'push']);
 const TASK_KINDS = new Set(['either', 'botch', 'allin', 'route', 'superteam']);
 export const MAX_CROWD = 2;
 export const CROWD_SCALE = 0.7;
@@ -787,7 +814,9 @@ function planCrowd(s, ctx) {
   const z = (s.size || 8) * CROWD_SCALE, half = z * 0.775;
   const fz = (s.size || 8) * 0.8;
   const fgX = Object.values(s.marks || {}).map(m => [m[0], fz]).concat([s.donStand, s.boxAt, ...Object.values(s.localAt || {})].filter(Boolean).map(m => [m[0], fz * 0.7]))
-    .concat(s.matAt ? [[s.matAt[0], (s.size || 8) * 1.4]] : []);
+    .concat(s.matAt ? [[s.matAt[0], (s.size || 8) * 1.4]] : [])
+    // the work's cut-out and its judge: nobody behind the shot stands in front of them
+    .concat([s.workProp, s.judgeAt].filter(Boolean).map(p => [p.at[0], p.w / 2]));
   if (closedShot(s)) return;
   // everybody in the scene is in front of it: a team that talks or is part of it is never an extra
   const inScene = new Set([...s.teams, ...(s.who || []).map(n => ctx.teamOf?.[n]).filter(Boolean),
@@ -828,7 +857,8 @@ function planCrowd(s, ctx) {
   const plate = s.plate;
   const stretch = ctx.place?.stretches.find(x => x.id === s.stretch) || null;
   const task = !!stretch && TASK_KINDS.has(stretch.kind);
-  const actPlate = stretchPlates(s.place, s.stretch, s.side)?.act || null;
+  const sps = stretchPlates(s.place, s.stretch, s.side);
+  const actPlate = (sps?.act2 && sps.act2.f === plate.f ? sps.act2 : sps?.act) || null;
   const act = s.mode === 'act' && plate.path && PATH_MODES.has(plate.mode) ? plate.mode : null;
   const work = s.work || actPlate?.mode || null;
   // what the teams behind can be doing in this picture
@@ -1103,7 +1133,7 @@ function planIvReact(s) {
 //   * a shot holds for at least two lines unless the next speaker is out of it (nobody talks from off screen).
 const MIN_HOLD = 2;
 const PUNCH = /[!?]\s*$|!\s|\.\.\.|—|\b(no|what|ugh|seriously|wow|great|perfect|never|love|hate|dead|kill|run|go)\b/i;
-const FOLLOW = new Set(['climb', 'zip', 'para']);
+const FOLLOW = new Set(['climb', 'zip', 'para', 'swing']);
 export function boxOf(s, who, k) {
   const z = s.size || 8;
   if (s.offAt && s.teams?.includes(who) && !onStage(s, who, k)) return null;     // walked off
@@ -1283,11 +1313,11 @@ export function facesAt(s, k) {
     const as = s.as?.[id];
     const dx = as === 'ride' && s.mode === 'act' && /^rickshaw/.test(s.plate.prop || '') ? 0.45 * z : 0;
     const f = as === 'ride' ? FACE.ride : gone.length ? FACE.one : FACE.stand;
-    const work = s.work ? (s.teams[0] === id ? s.work : 'watch') : null;
+    const work = s.work ? (s.teams[0] === id ? s.work : 'watch') : as === 'swing' ? 'swing' : null;
     out.push({ key: 't:' + id, kind: 'team', team: id, z, work, box: fbox(f, at, z, dx) });
   }
   const zc = s.crowdSize || z * CROWD_SCALE;
-  for (const c of s.crowd || []) if (c.pos[k]) for (const box of crowdBoxes(s, c, c.pos[k])) out.push({ key: 'c:' + c.team, kind: 'crowd', team: c.team, z: zc, work: c.as === 'run' ? 'run' : c.work, box });
+  for (const c of s.crowd || []) if (c.pos[k]) for (const box of crowdBoxes(s, c, c.pos[k])) out.push({ key: 'c:' + c.team, kind: 'crowd', team: c.team, z: zc, work: c.as === 'run' || c.as === 'swing' ? c.as : c.work, box });
   return out;
 }
 /** The faces of a team behind the shot standing (or swimming) at `at`. */
@@ -1308,16 +1338,17 @@ function declutterCrowd(s) {
   if (!s.crowd?.length) return;
   const own = { ...s, crowd: null };
   s.steps.forEach((_, k) => {
-    const taken = facesAt(own, k).map(f => f.box);
+    // (a team pushing a coffin keeps its coffin's room too)
+    const taken = facesAt(own, k).map(f => (f.kind === 'team' && s.as?.[f.team] === 'push' ? [f.box[0], f.box[1], f.box[2] + 1.6 * f.z, f.box[3]] : f.box));
     for (const c of s.crowd) {
       const at = c.pos[k];
       if (!at) continue;
       const boxes = crowdBoxes(s, c, at);
       // off the picture (a rider still to come in): nobody to stand on
       if (boxes.every(b => b[2] <= 0 || b[0] >= 100)) continue;
-      const clear = bs => bs.every(b => { const p = padOf({ box: b, work: c.as === 'run' ? 'run' : c.work }, s.crowdSize || (s.size || 8) * CROWD_SCALE); return taken.every(t => overlapOf(p, t) <= OVERLAP_OK); });
+      const clear = bs => bs.every(b => { const p = padOf({ box: b, work: ['run', 'swing', 'push'].includes(c.as) ? c.as : c.work }, s.crowdSize || (s.size || 8) * CROWD_SCALE); return taken.every(t => overlapOf(p, t) <= OVERLAP_OK); });
       // and whole in the wide picture, its work loop and the plate's slow push included (a face half out would fade)
-      const zc = s.crowdSize || (s.size || 8) * CROWD_SCALE, work = c.as === 'run' ? 'run' : c.work;
+      const zc = s.crowdSize || (s.size || 8) * CROWD_SCALE, work = c.as === 'run' || c.as === 'swing' ? c.as : c.work;
       const inside = bs => bs.every(b => { const p = padOf({ box: b, work }, zc); return p[0] >= EDGE && p[2] <= 100 - EDGE; });
       if (clear(boxes) && inside(boxes)) { taken.push(...boxes); continue; }
       const ground = ['stand', 'run'].includes(c.as) && s.plate?.x ? s.plate.x : [0, 100];
@@ -1353,9 +1384,11 @@ export function driftBox(b) {
 }
 // how far a face moves on its own: the idle bob and the talking bounce, and the work loops (style.js wChase, wLean...)
 const WORK_PAD = { chase: [0, 0, 3, 0], lean: [0, 0, 1.1, 0], dunk: [0, 0, 0, 2.9], headbang: [0.4, 0.6, 0.4, 0.6], dig: [0.3, 0.5, 0.3, 1.3], eat: [0.6, 0.3, 0.6, 0.4],
-  draw: [0.4, 0, 0.4, 0], sweat: [0.2, 0, 0.5, 0.6], build: [0.2, 1.1, 0.2, 0.4], shear: [0, 0, 0.4, 0], run: [0.3, 1.7, 0.3, 0] };
+  draw: [0.4, 0, 0.4, 0], sweat: [0.2, 0, 0.5, 0.6], build: [0.2, 1.1, 0.2, 0.4], shear: [0, 0, 0.4, 0], run: [0.3, 1.7, 0.3, 0],
+  swing: [0.5, 0.3, 0.5, 0.3], sculpt: [0.3, 0.3, 0.3, 1.3], chip: [0.2, 1.1, 0.2, 0.4], mitten: [0.6, 0.5, 0.6, 0.5], sew: [0.4, 0, 0.4, 0], beam: [0.6, 1.3, 0.6, 0.4] };
 export function padOf(f, z) {
-  const w = WORK_PAD[f.work] || [0, 0, 0, 0];
+  // a coffin pushed in front takes its own room ahead of the faces (style.js .tok.push .veh)
+  const w = f.work === 'push' ? [0, 0, 1.6 * z, 0] : WORK_PAD[f.work] || [0, 0, 0, 0];
   return [f.box[0] - 0.06 * z - 0.3 - w[0], f.box[1] - 0.12 * z - 1.9 - w[1], f.box[2] + 0.06 * z + 0.3 + w[2], f.box[3] + 0.5 + w[3]];
 }
 /** The part of the picture a shot shows clear of the dialogue bar, in plate %: [x0, y0, x1, y1]. */

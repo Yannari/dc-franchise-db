@@ -156,8 +156,11 @@ describe('rr viewer steps', () => {
     });
   });
 
+  // a place still being built (js/rr/places: draft: true) has its plates and music when its batch lands; every other
+  // place has them, and so does a draft that has its plates already
+  const built = id => !PLACES[id].draft || !!PLACE_PLATES[id];
   it('resolves every plate and cut-out to a file that exists', () => {
-    for (const id of Object.keys(PLACES)) {
+    for (const id of Object.keys(PLACES).filter(built)) {
       expect(PLACE_PLATES[id], id).toBeTruthy();
       for (const f of placeFiles(id)) expect(existsSync(plateUrl(id, f)), `${id}/${slugFile(f)}`).toBe(true);
       for (const { key } of propFiles(id)) expect(existsSync(propUrl(id, key)), `${id} prop ${key}`).toBe(true);
@@ -227,7 +230,7 @@ describe('rr viewer steps', () => {
           expect(onSpot || (at[1] >= Math.min(...g) - 0.5 && at[1] <= Math.max(...g) + 0.5), `${s.id} ${c.team} at ${at} off the ground of ${s.plate.f}`).toBe(true);
           expect(onSpot || (at[0] >= s.plate.x[0] - 0.5 && at[0] <= s.plate.x[1] + 0.5), `${s.id} ${c.team} at x=${at[0]} off the ground of ${s.plate.f}`).toBe(true);
           expect(at[0], `${s.id} ${c.team} cut by the frame`).toBeGreaterThanOrEqual(half(s) - 0.7);
-        } else if (s.plate.water) expect(['swim', 'dive', 'ride', 'hop', 'zip', 'para', 'climb'], `${s.id} ${c.team} ${c.as} in water`).toContain(c.as);
+        } else if (s.plate.water) expect(['swim', 'dive', 'ride', 'hop', 'zip', 'para', 'climb', 'swing'], `${s.id} ${c.team} ${c.as} in water`).toContain(c.as);
       });
     });
   });
@@ -319,7 +322,7 @@ describe('rr viewer sound', () => {
     }
     for (const name of Object.keys(RACE_SOUNDS)) expect(existsSync(raceFile(name)), name).toBe(true);
     for (const f of HAVE) expect(existsSync(f), f).toBe(true);
-    expect(Object.keys(PLACE_MUSIC).sort()).toEqual(Object.keys(PLACES).sort());
+    expect(Object.keys(PLACE_MUSIC).sort()).toEqual(Object.keys(PLACES).filter(id => !PLACES[id].draft || PLACE_MUSIC[id]).sort());
     // different music in each place: no track twice
     const titles = Object.values(credits).map(c => c.title);
     expect(new Set(titles).size).toBe(titles.length);

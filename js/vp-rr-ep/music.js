@@ -213,6 +213,62 @@ export const PLACE_MUSIC = {
       interview: 'a soft cinematic pad',
     },
   },
+  'coast-palace': {
+    name: 'Coast Palace', feel: 'the glamorous coast: lounge piano and bossa guitars on a yacht deck, a surf-rock twang for the sharks',
+    search: 'lounge, bossa nova, riviera, surf rock, cocktail jazz',
+    moments: {
+      opener: 'a bright, grooving lounge piano: the palace gates and the sea',
+      travel: 'a bouncy café groove along the coast',
+      challenge: 'surf-rock guitar and organ: the shark and the sand palace',
+      struggle: 'a dark spy groove: a fin going past, a palace slumping',
+      'chill-zone': 'a relaxed bossa guitar on the harbour',
+      elimination: 'a simple, sombre solo piano',
+      recap: 'a quick surf-guitar riff',
+      interview: 'a soft bossa nova under the voice',
+    },
+  },
+  'geyser-island': {
+    name: 'Geyser Island', feel: 'the icy north: celesta and cold strings, glass marimba and low brass, eerie and clear as ice',
+    search: 'ice, frost, celesta, eerie, nordic, mystical, cold',
+    moments: {
+      opener: 'a mysterious celesta and strings theme, snow on the peaks',
+      travel: 'a cold, grooving synth pulse on the mountain road',
+      challenge: 'a dark, driving, slightly comic orchestra: the geysers and the feast',
+      struggle: 'eerie glass marimba and flutes: steam, ice and a phrase nobody remembers',
+      'chill-zone': 'a calm, bright northern pad',
+      elimination: 'slow, somber low brass',
+      recap: 'quick dark strings and celesta',
+      interview: 'a light, mystical celesta and clarinet',
+    },
+  },
+  'carnival-rainforest': {
+    name: 'Carnival Rainforest', feel: 'carnival in the rainforest: samba percussion, surdo and tamborim, a parade with horns',
+    search: 'samba, carnival, batucada, latin percussion, salsa',
+    moments: {
+      opener: 'a bright carnival samba',
+      travel: 'a laid-back samba groove through the jungle',
+      challenge: 'carnival percussion at full tempo: vines, coconuts, costumes',
+      struggle: 'a deep, dark, thick samba: the ants',
+      'chill-zone': 'a classy samba piano on the beach',
+      elimination: 'an acoustic guitar and soft latin percussion, slow',
+      recap: 'a hideously happy latin parade',
+      interview: 'a soft jazz samba under the voice',
+    },
+  },
+  'haunted-castle': {
+    name: 'Haunted Castle', feel: 'a gothic castle at night: pipe organ, dark strings, a theremin in the graveyard',
+    search: 'pipe organ, gothic, spooky, halloween, dark strings, horror comedy',
+    moments: {
+      opener: 'a great pipe organ toccata: the castle on the hill',
+      travel: 'a comedically spooky organ and theremin groove',
+      challenge: 'dark, driving strings and organs: coffins and horses',
+      struggle: 'mournful, tense strings: the beam, the vault, the coach',
+      'chill-zone': 'a mysterious celesta and tuba waltz under the moon',
+      elimination: 'a sparse, dark piano',
+      recap: 'quick organ, choir and orchestra',
+      interview: 'a soft, spooky vibraphone',
+    },
+  },
 };
 
 export const PLACE_IDS = Object.keys(PLACE_MUSIC);

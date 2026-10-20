@@ -26,7 +26,7 @@ beforeAll(() => {
 });
 const each = fn => { for (const p of played) p.built.forEach((ep, i) => fn(ep, p, i)); };
 const TASK_KINDS = new Set(['either', 'botch', 'allin', 'route', 'superteam']);
-const PATH = new Set(['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride']);
+const PATH = new Set(['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride', 'swing', 'push']);
 const premiere = s => s.seg === 'don-opener' || s.seg === 'team-intro';
 
 describe('rr viewer: the rest of the race behind a shot', () => {
@@ -66,7 +66,9 @@ describe('rr viewer: the rest of the race behind a shot', () => {
         if (s.kind !== 'world' || premiere(s) || s.mode === 'mat') continue;
         const stretch = PLACES[s.place]?.stretches.find(x => x.id === s.stretch);
         const task = stretch && TASK_KINDS.has(stretch.kind);
-        const act = stretchPlates(s.place, s.stretch, s.side)?.act;
+        // (a task done in two halves shows its second half's work on its own plate)
+        const sp = stretchPlates(s.place, s.stretch, s.side);
+        const act = sp?.act2 && sp.act2.f === s.plate.f ? sp.act2 : sp?.act;
         for (const c of s.crowd || []) {
           if (task) {
             // on the task's own path (a climb, a swim, the final footrace) they do what the path is; anywhere else at

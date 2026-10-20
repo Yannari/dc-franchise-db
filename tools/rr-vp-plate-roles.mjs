@@ -18,6 +18,7 @@ for (const [id, pl] of Object.entries(PLACE_PLATES)) {
   for (const [sid, s] of Object.entries(pl.st)) {
     (s.talk || []).forEach(p => add(id, p, `${sid} talk`));
     if (s.act) add(id, s.act, `${sid} act (${s.act.mode})`);
+    if (s.act2) add(id, s.act2, `${sid} act2 (${s.act2.mode})`);
     for (const [side, sd] of Object.entries(s.sides || {})) {
       (sd.talk || []).forEach(p => add(id, p, `${sid}/${side} talk`));
       if (sd.act) add(id, sd.act, `${sid}/${side} act (${sd.act.mode})`);

@@ -9,7 +9,7 @@
 // slam. Every avatar idles; whoever is talking bounces.
 import { plateUrl, raceUrl, propUrl } from './plates.js';
 import { PLACES } from '../rr/places.js';
-import { intelAt, offOf, stampSpot, slamSpot, tipSpot, placeOverlay, screenFaces, BAR, HUD_H } from './steps.js';
+import { intelAt, offOf, stampSpot, slamSpot, tipSpot, fitOverlay, screenFaces, BAR, HUD_H } from './steps.js';
 import { plateLife } from './life.js';
 
 const ORD = ['', '1ST', '2ND', '3RD', '4TH', '5TH', '6TH', '7TH', '8TH', '9TH', '10TH', '11TH', '12TH', '13TH', '14TH'];
@@ -41,7 +41,11 @@ function globeSVG(seed = 7) {
 }
 
 const AMBIENT = { 'rock-north': 'snow', 'red-sand-desert': 'mote', 'tomb-sands': 'mote', 'red-outback': 'mote', 'fire-mountain-isle': 'ember',
-  'great-wall-hills': 'mote', 'savanna-falls': 'mote', 'treasure-isles': 'spark', 'torch-statue-harbour': 'mote', 'iron-tower-city': 'spark', 'skyline-finale': 'mote', 'home-city': 'mote' };
+  'great-wall-hills': 'mote', 'savanna-falls': 'mote', 'geyser-island': 'snow', 'treasure-isles': 'spark', 'torch-statue-harbour': 'mote', 'iron-tower-city': 'spark', 'skyline-finale': 'mote', 'home-city': 'mote' };
+
+// the ways of going that carry their cut-out with them: a vehicle under them, a zip trolley, a canopy or a hang
+// glider over them, a vine to swing on, a coffin pushed in front
+const VEH = new Set(['ride', 'zip', 'para', 'swing', 'push']);
 
 export function createStage(holder, { faceOf, legLabel }) {
   holder.innerHTML = `<div class="rr-frame" id="rr-frame"><div class="stage" id="rr-stage">
@@ -89,8 +93,10 @@ export function createStage(holder, { faceOf, legLabel }) {
     e.style.left = pos[0] + '%'; e.style.top = pos[1] + '%';
     let veh = '';
     const pl = s.plate || {};
-    if (['ride', 'zip', 'para'].includes(as) && pl.prop && s.mode === 'act') veh = `<img class="veh" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
-    if (pl.prop && String(pl.prop).match(/^(camel|emu)/)) e.classList.add(pl.prop.split('@')[0]);
+    if (VEH.has(as) && pl.prop && s.mode === 'act') veh = `<img class="veh" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
+    if (pl.prop && String(pl.prop).match(/^(camel|emu|horse|bus|heli|boat)(@|$)/)) e.classList.add(pl.prop.split('@')[0]);
+    // a vehicle drawn facing left (the horse, the helicopter) is turned to face the way it goes
+    if (pl.flip && s.mode === 'act') e.classList.add('flipveh');
     // a rickshaw is pulled at a run; a raft on a walk is carried over their heads
     if (as === 'ride' && /^rickshaw/.test(pl.prop || '') && s.mode === 'act') e.classList.add('rickshaw', 'running', 'ltr');
     if (as === 'walk' && /^raft/.test(pl.prop || '') && s.mode === 'act') veh = `<img class="veh carry" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
@@ -130,7 +136,7 @@ export function createStage(holder, { faceOf, legLabel }) {
       extraCls: `crowd st-${st}${c.as === 'run' ? ' running ' + (c.ltr ? 'ltr' : 'rtl') : ''}` });
     e.dataset.crowd = '1';
     e.querySelectorAll('img[data-p]').forEach(i => { i.dataset.c = i.dataset.p; delete i.dataset.p; });
-    if (['ride', 'zip', 'para'].includes(c.as) && s.plate?.prop && !e.querySelector('.veh')) {
+    if (VEH.has(c.as) && s.plate?.prop && !e.querySelector('.veh')) {
       const v = document.createElement('img'); v.className = 'veh'; v.src = propUrl(s.plate.place || s.place, s.plate.prop); v.alt = ''; e.appendChild(v);
     }
     return e;
@@ -186,7 +192,8 @@ export function createStage(holder, { faceOf, legLabel }) {
     w.animate([{ width: '2cqw', opacity: 0.9 }, { width: '9cqw', opacity: 0 }], { duration: 1100, fill: 'forwards' }).finished.then(() => w.remove()).catch(() => {});
   }
   function flash(x, y) { const f = document.createElement('div'); f.className = 'flash'; f.style.setProperty('--x', x + '%'); f.style.setProperty('--y', y + '%'); fx.appendChild(f); later(800, () => f.remove()); }
-  const FXK = { splash: 'drop', steam: 'steam', dust: 'dust', sparkle: 'spark', embers: 'ember', notes: 'note', bubbles: 'bubble', wool: 'wool', logs: 'log', spice: 'dust', sweat: 'drop', wind: 'dust', snow: 'snow', darts: 'spark' };
+  const FXK = { splash: 'drop', steam: 'steam', dust: 'dust', sparkle: 'spark', embers: 'ember', notes: 'note', bubbles: 'bubble', wool: 'wool', logs: 'log', spice: 'dust', sweat: 'drop', wind: 'dust', snow: 'snow', darts: 'spark',
+    ants: 'ant', ice: 'snow' };
   function workFx(s, pos) {
     const k = s.plate?.fx; if (!k || !pos) return;
     if (k === 'splash') splash(pos[0], pos[1] - 1, 8);
@@ -392,12 +399,18 @@ export function createStage(holder, { faceOf, legLabel }) {
       const b = prop(raceUrl(opened ? 'c-donbox-tip' : 'c-donbox'), s.boxAt, (s.size || 8) * 0.42, 9);
       if (fresh && k === 0) b.animate([{ transform: 'translate(-50%,-260%)' }, { transform: 'translate(-50%,-92%)', offset: 0.7 }, { transform: 'translate(-50%,-104%)', offset: 0.85 }, { transform: 'translate(-50%,-100%)' }], { duration: 900, easing: 'ease-in' });
     }
-    if (s.work && pl.prop) {
-      const anchor = s.marks[s.teams[0]] || [50, pl.g];
-      const off = (s.size || 8) * 1.9 + 4;
-      const px = anchor[0] + (anchor[0] > 55 ? -off : off);
-      const pp = prop(propUrl(pl.place || s.place, pl.prop), [Math.max(6, Math.min(94, px)), Array.isArray(pl.g) ? pl.g[1] : pl.g], (s.size || 8) * 1.5, 7);
+    if (s.work && pl.prop && s.workProp) {
+      // where steps.js placeWorkProps put it; a sand palace grows with the work: a third at the start, whole when done
+      const grow = s.work === 'sculpt' ? 0.35 + 0.65 * Math.max(0, Math.min(1, s.plan?.p?.[k] ?? 1)) : 1;
+      const pp = prop(propUrl(pl.place || s.place, pl.prop), s.workProp.at, s.workProp.w * grow, 7);
       if (s.work === 'chase' && fresh) pp.animate([{ transform: 'translate(-50%,-100%)' }, { transform: 'translate(-30%,-104%) scaleX(-1)' }, { transform: 'translate(-50%,-100%)' }], { duration: 900, iterations: 3 });
+      if (s.work === 'sculpt' && fresh && k > 0) pp.animate([{ transform: 'translate(-50%,-100%) scale(.92)' }, { transform: 'translate(-50%,-100%) scale(1)' }], { duration: 700, easing: 'cubic-bezier(.3,1.6,.5,1)' });
+      // the local who judges it (the surfer boy, the carnival dancer, the coach)
+      if (pl.judge && s.judgeAt) {
+        const jp = prop(propUrl(pl.place || s.place, pl.judge[0]), s.judgeAt.at, s.judgeAt.w, 7);
+        jp.classList.add('judge');
+        if (s.judgeAt.flip) jp.style.transform = 'translate(-50%,-100%) scaleX(-1)';
+      }
     }
     // Don and the locals
     if (s.don && s.donStand) personEl('Don', s.donStand, (s.size || 8) * 0.95);
@@ -543,6 +556,24 @@ export function createStage(holder, { faceOf, legLabel }) {
         tgt?.animate(kf, { duration: step.crowdReact === 'glance' ? 1700 : 950, delay: 300 + i * 140, easing: 'ease-in-out', iterations: step.crowdReact === 'cheer' ? 2 : 1 });
       });
     }
+    // something swims past the one in the water (the shark with the tip on its fin): a pass on every step
+    if (pl.pass && s.swimmers) {
+      const id = s.teams[0], at = posAt(s, id, k);
+      if (at) {
+        const sh = document.createElement('img'); sh.className = 'prop passer'; sh.src = propUrl(pl.place || s.place, pl.pass);
+        sh.style.width = (s.size || 8) * 2.6 + 'cqw'; sh.style.top = (at[1] + 2) + '%'; sh.style.left = '115%';
+        under.appendChild(sh);
+        sh.animate([{ left: '115%' }, { left: (at[0] + 4) + '%', offset: 0.5 }, { left: '-25%' }], { duration: 3200, delay: 200, easing: 'linear', fill: 'both' })
+          .finished.then(() => sh.remove()).catch(() => {});
+        later(1700, () => splash(at[0] + 2, at[1], 8));
+        toks.querySelectorAll(`[data-team="${id}"]:not([data-crowd])`).forEach(e => e.animate([{ transform: 'translate(-50%,-50%)' }, { transform: 'translate(-30%,-62%)', offset: 0.5 }, { transform: 'translate(-50%,-50%)' }], { duration: 600, delay: 1500 }));
+      }
+    }
+    // through the steam: puffs along the way
+    if (k > 0 && s.pos && pl.fx === 'steam') for (const id of s.teams) {
+      const a = s.pos[k - 1]?.[id], b = s.pos[k]?.[id];
+      if (a && b) for (let q = 0; q < 5; q++) later(q * 260, () => { const p = lerpPos(a, b, q / 5); particles('steam', p[0], p[1] - (s.size || 8) * 1.2, 4, 3); });
+    }
     // a slip on a failed try, a quit
     if (s.plan?.fail === k) {
       const id = s.teams[0], at = posAt(s, id, k) || s.marks[id];
@@ -575,7 +606,7 @@ export function createStage(holder, { faceOf, legLabel }) {
         { left: (at[0] + 13) + '%', top: (at[1] + 6) + '%', offset: 0.62 }, { left: (at[0] + 13) + '%', top: Math.min(97, at[1] + 20) + '%', offset: 0.78 }, { left: at[0] + '%', top: at[1] + '%' }], { duration: 2600, easing: 'ease-in-out' });
     }
     // done: a jump for joy; a celebration scene starts with one
-    if ((s.seg === 'celebrate' && k === 0) || (k === s.steps.length - 1 && s.seg === 'task-done')) {
+    if (s.kind === 'world' && ((s.seg === 'celebrate' && k === 0) || (k === s.steps.length - 1 && s.seg === 'task-done'))) {
       toks.querySelectorAll(`[data-team="${s.teams[0]}"]:not([data-crowd]) .pair`).forEach(p => p.animate(JUMP, { duration: 900, delay: 200, iterations: 2 }));
       const at = posAt(s, s.teams[0], k); if (at) later(300, () => particles('spark', at[0], at[1] - (s.size || 8) * 1.4, 12, 6));
     }
@@ -708,10 +739,16 @@ export function createStage(holder, { faceOf, legLabel }) {
   // the stage direction's card: in the middle of the picture, unless a face is there
   function placeBeat(s, k, view) {
     const bc = $('rr-beat');
-    bc.style.left = ''; bc.style.top = '';
+    bc.style.left = ''; bc.style.top = ''; bc.style.width = ''; bc.style.removeProperty('--k');
     if (!bc.classList.contains('on') || s.kind !== 'world') return;
-    const at = placeOverlay(turnedSize(bc, 1.4), screenFaces(s, k, view), [[50, 37]], bounds(view));
+    // measured where it has the whole width to lay out in, then held at that width (an absolute box wraps narrower,
+    // and so taller, the nearer it is put to the right edge)
+    bc.style.left = '0'; bc.style.boxSizing = 'border-box';
+    bc.style.width = bc.offsetWidth + 'px';
+    // in the middle if it is clear of every face, else elsewhere, else a little smaller (steps.js fitOverlay)
+    const { at, k: kk } = fitOverlay(turnedSize(bc, 1.4), screenFaces(s, k, view), () => [[50, 37]], bounds(view), [1, 0.86, 0.74, 0.64]);
     bc.style.left = at[0] + '%'; bc.style.top = at[1] + '%';
+    if (kk < 1) bc.style.setProperty('--k', kk);
   }
 
   // ── the one entry point ──

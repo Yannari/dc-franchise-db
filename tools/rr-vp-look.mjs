@@ -8,6 +8,8 @@ import { mkdirSync } from 'node:fs';
 
 const [seed = '8', teams = '12', kindArg = 'company,alone,elevator,cabin,confess,confess2,intro,exit'] = process.argv.slice(2);
 const base = process.env.RR_URL || 'http://127.0.0.1:8765/rr.html';
+// RR_PINS=2:coast-palace,3:geyser-island books those legs (rr.html ?pins=): a place being built plays only when booked
+const PINS = process.env.RR_PINS ? '&pins=' + encodeURIComponent(process.env.RR_PINS) : '';
 mkdirSync('shots/rr-vp', { recursive: true });
 const FIND = {
   company: '(s, t, k) => s.kind === "world" && s.mode !== "mat" && s.seg !== "don-opener" && s.seg !== "team-intro" && (s.crowd || []).some(c => c.pos[k] && c.work) && t.by',
@@ -35,14 +37,18 @@ const FIND = {
 };
 // RR_PLATES=task-9436302,task-22412499: a talk step on each of those plates
 for (const f of (process.env.RR_PLATES || '').split(',').filter(Boolean)) FIND['plate-' + f] = `(s, t, k) => s.kind === "world" && s.plate?.f === "${f}" && t.by && k >= 1`;
-const kinds = [...kindArg.split(',').filter(k => FIND[k]), ...Object.keys(FIND).filter(k => k.startsWith('plate-'))];
+// RR_MODES=sculpt,swing: a step of each kind of work or ride, on its act plate (RR_ACT_PLATE=f picks the plate)
+for (const m of (process.env.RR_MODES || '').split(',').filter(Boolean)) FIND['mode-' + m] = `(s, t, k) => s.kind === "world" && s.mode === "act" && s.plate?.mode === "${m}" && k >= 1`;
+// RR_ACTS=task-9436826,present-9437594: a step of the ride or the task shot on each of those act plates
+for (const f of (process.env.RR_ACTS || '').split(',').filter(Boolean)) FIND['act-' + f] = `(s, t, k) => s.kind === "world" && s.mode === "act" && s.plate?.f === "${f}" && k >= 1`;
+const kinds = [...kindArg.split(',').filter(k => FIND[k]), ...Object.keys(FIND).filter(k => k.startsWith('plate-') || k.startsWith('mode-') || k.startsWith('act-'))];
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 const errors = [];
 page.on('pageerror', e => errors.push(String(e)));
 page.on('console', m => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errors.push(m.text()); });
 page.on('response', r => { if (r.status() >= 400 && !/favicon/.test(r.url())) errors.push(r.status() + ' ' + r.url()); });
-await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=1&step=0`);
+await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=1&step=0${PINS}`);
 await page.waitForFunction(() => window.__rr?.ep, null, { timeout: 60000 });
 const legs = await page.evaluate(() => document.querySelectorAll('#rr-ep option').length);
 for (const kind of kinds) {

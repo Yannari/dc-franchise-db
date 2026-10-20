@@ -29,6 +29,9 @@ export function playedTo(row, screens, si, idx) {
     if (s.stage === 'arrive') for (const x of seen) if (x.entry && x.about && x.who === x.about && !inRoom.includes(x.about)) inRoom.push(x.about);
     if (s.kind === 'ratings' && s.d && seen.some(x => CROWN.test(x.key || ''))) influencers = [...s.d.influencers];
     if (s.kind === 'blocking' && s.d?.target && seen.some(x => NAMED.test(x.key || ''))) out.add(s.d.target);
+    // Ride or Die: the partner who takes the blocked player's place, once they say so.
+    // (A choice scene is [goes, stays], ci/twists.js.)
+    if (s.kind === 'sacrifice' && seen.some(x => x.key === 'sacrifice.go')) { out.delete(s.who[1]); out.add(s.who[0]); }
   });
   return { start, inRoom, influencers, out };
 }

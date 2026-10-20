@@ -85,8 +85,6 @@ export function standardBlocking(state, rng, ratingRow, { format = 'standard', s
   let channel = 'influencers';
   const pick = d.target;
   if (decide) { const r = decide(d); if (r.target !== d.target || r.channel) { d.target = r.target; channel = r.channel || channel; } }
-  // Ride or Die (US 6): a blocked player's partner may go in their place.
-  { const r = rideOrDieTarget(state, rng, d.target); if (r.target !== d.target) { d.target = r.target; channel = r.channel || channel; } }
   // The Hangout scene keeps the Influencers' own pick: a twist that overrules
   // it (the audience, a mission, Ride or Die) airs as its own scene.
   Object.assign(hangout.data, d, { target: pick });
@@ -94,13 +92,22 @@ export function standardBlocking(state, rng, ratingRow, { format = 'standard', s
   const announcement = addScene(state, 'blocking', [d.announcer, d.target],
     { by: infl, target: d.target, reason: d.reason, channel, format,
       ...(secret ? { secret: true } : {}), ...(inPerson ? { inPerson: true } : {}), ...mark }, [...state.active]);
-  applyBlock(state, d.target, channel, channel === 'influencers' ? infl : [], announcement, { secret });
+  // Ride or Die (US 6): the name is announced FIRST, then the blocked player's
+  // partner is offered their place (user: "ride or die choice happen before
+  // the blocking ... the logic is kinda weird"; the show told Kyle and Paul
+  // they were blocked, then gave them the choice). The announcement keeps the
+  // name the Influencers typed; `gone` is who actually leaves.
+  const rod = rideOrDieTarget(state, rng, d.target);
+  const gone = rod.target;
+  if (gone !== d.target) announcement.data.gone = gone;
+  // Nobody blocked a partner who chose to go: they owe the Influencers no grudge.
+  applyBlock(state, gone, rod.channel || channel, rod.channel ? [] : channel === 'influencers' ? infl : [], announcement, { secret });
   // A super influencer delivers it in person, and that meeting is the visit
   // (US 1 Ep 10). A secret one is nobody the blocked player can go and ask.
-  const visit = inPerson ? runVisit(state, rng, d.target, infl, { to: infl[0], inPerson: true })
-    : runVisit(state, rng, d.target, secret ? [] : infl);
-  state.pendingGoodbyes.push(d.target);
-  return { target: d.target, hangout, announcement, visit };
+  const visit = inPerson && !rod.channel ? runVisit(state, rng, gone, infl, { to: infl[0], inPerson: true })
+    : runVisit(state, rng, gone, secret || rod.channel ? [] : infl);
+  state.pendingGoodbyes.push(gone);
+  return { target: gone, hangout, announcement, visit };
 }
 
 // A visit that turns into an argument (user, 2026-10-02: "is it possible we

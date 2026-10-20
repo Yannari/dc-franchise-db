@@ -982,15 +982,15 @@ export const IDENTITY_LINES = {
   ]),
   // rod.alert — the rules, read aloud: a reads the alert, b takes it in.
   ...E('rod.alert', [
-    { turns: [{ by: 'a', react: "'Alert! Every Player has a secret Ride or Die: the Player you're most compatible with.' A partner? In here?" },
+    { turns: [{ by: 'a', react: "'Alert! For the next Ratings and blocking, every Player has a secret Ride or Die: the Player you're most compatible with.' A partner? In here?" },
       { by: 'a', react: "'If your Ride or Die is rated number one, you become an Influencer with them. If one of you is blocked, the other can go home in their place.'" },
       { by: 'b', react: "So whoever I get, their night is my night. Please be somebody good." }] },
-    { turns: [{ by: 'a', react: "'Ride or Die. Your answers to It's Personal have paired you with one other Player. Only the two of you will know.'" },
+    { turns: [{ by: 'a', react: "'Ride or Die. Your answers to It's Personal have paired you with one other Player, until the next blocking. Only the two of you will know.'" },
       { by: 'a', react: "'The top-rated Player's Ride or Die joins them as an Influencer. And when one of you is blocked, the other may choose to leave instead.'" },
       { by: 'b', say: "So I could end up an Influencer without anyone rating me. Or go home for somebody else." }],
       beat: '{b} sits down very slowly.' },
     { turns: [{ by: 'a', react: "'Alert! The Ride or Die twist.' Okay, what is that?" },
-      { by: 'a', react: "'You are now secretly paired. If your partner comes first in the Ratings, you are an Influencer too. If your partner is blocked, you can take their place.'" },
+      { by: 'a', react: "'Until the next blocking, you are secretly paired. If your partner comes first in the Ratings, you are an Influencer too. If your partner is blocked, you can take their place.'" },
       { by: 'b', react: "I'm tied to somebody and I don't know who yet. Love that. Hate that." }] },
   ]),
   // result.rod — the ratings are read: a came first, and b, a's Ride or Die,
@@ -1009,6 +1009,16 @@ export const IDENTITY_LINES = {
     { turns: [{ by: 'a', react: "'Your Ride or Die is {b}.' Oh, I can work with that." }], beat: '{a} smiles at the screen.' },
     { turns: [{ by: 'a', react: '{b}? My Ride or Die is {b}? I did not see that coming.' }] },
     { turns: [{ by: 'a', say: "If {b} goes down, I might have to go down with {b.obj}. I need to think about that." }] },
+  ]),
+  // sacrifice.alert — straight after the blocking: a has just been blocked,
+  // and the Circle offers a's Ride or Die, b, the chance to go instead.
+  ...E('sacrifice.alert', [
+    { turns: [{ by: 'b', react: "'Alert! {a} has been blocked. As {a}'s Ride or Die, you can choose to leave The Circle in {a.posAdj} place.'" },
+      { by: 'b', react: "Wait. It's on me? I decide if {a} stays?" }], beat: '{b} stands up, then sits right back down.' },
+    { turns: [{ by: 'a', react: "Wait. Another alert? I'm already blocked." },
+      { by: 'b', react: "'{b}, your Ride or Die {a} has been blocked. You may go home instead.' Oh, no. No, no, no." }] },
+    { turns: [{ by: 'b', react: "'Alert! Your Ride or Die has been blocked. Do you want to take {a.posAdj} place?'" },
+      { by: 'b', say: "This is the part of the twist nobody wanted." }], beat: '{b} stares at the two buttons on the screen.' },
   ]),
   ...E('sacrifice.go', [
     { turns: [{ by: 'a', say: "I'll go. Keep {b} in. {b} has more game left than I do." }], beat: '{a} presses the button before {a.sub} can change {a.posAdj} mind.' },

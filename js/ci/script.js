@@ -751,10 +751,14 @@ const BLOCKS = {
     return [{ key: 'rod.alert', cast: { a: a0, b: b0 } },
       ...s.data.pairs.slice(0, 2).flatMap(([a, b]) => [{ key: 'rod.partner', cast: { a, b } }])];
   },
+  // After the blocking is announced (blocking.js): the Circle offers the
+  // blocked player's Ride or Die their place, and the partner answers.
   sacrifice(state, s) {
     const { goes, stays, chose } = s.data;
-    return chose ? [{ key: 'sacrifice.go', cast: { a: goes, b: stays } }, { key: 'sacrifice.saved', cast: { a: goes, b: stays } }]
-      : [{ key: 'sacrifice.kept', cast: { a: stays, b: goes } }];
+    const [named, partner] = chose ? [stays, goes] : [goes, stays];
+    return [{ key: 'sacrifice.alert', cast: { a: named, b: partner } },
+      ...(chose ? [{ key: 'sacrifice.go', cast: { a: goes, b: stays } }, { key: 'sacrifice.saved', cast: { a: goes, b: stays } }]
+        : [{ key: 'sacrifice.kept', cast: { a: stays, b: goes } }])];
   },
   // Powers (Plan 3b Task 8).
   'power-reveal'(state, s) {
@@ -1386,7 +1390,7 @@ function sharedExplain(state, h) {
 
 // The night's scenes that can open a day (season.js: the blocking follows the
 // ratings into the next episode).
-const NIGHT_KINDS = new Set(['hangout', 'blocking', 'save', 'plead', 'vote', 'offer', 'visit', 'antivirus', 'no-block']);
+const NIGHT_KINDS = new Set(['hangout', 'blocking', 'sacrifice', 'save', 'plead', 'vote', 'offer', 'visit', 'antivirus', 'no-block']);
 
 /** Script every aired scene of the day, and open the day with the host. */
 export function writeDay(state, day) {
@@ -1501,7 +1505,7 @@ export const POOL_KEYS = [
   'hack.send', 'hack.read', 'hack.undone', 'joker.chat', 'joker.pick', 'burner.exposed',
   'alert.public-super', 'alert.none', 'block.react.guess', 'noblock.alert', 'noblock.influencer', 'noblock.relief', 'mission.given', 'mission.success',
   'block.announce.mission', 'swap.told', 'swap.back', 'clone.alert', 'clone.plea.old', 'clone.plea.new', 'clone.vote.new', 'clone.vote.old',
-  'clone.host.intro', 'clone.host.caught', 'clone.host.fooled', 'clone.out.caught', 'clone.out.fooled', 'alert.most-human', 'rate.human.top', 'rate.human.bottom', 'goodbye.video.ai', 'meet.arrive.ai', 'secondchance.back', 'secondchance.react', 'secondchance.recognize', 'egg.intro', 'egg.vote.first', 'egg.vote.second', 'egg.stays', 'egg.goes', 'rod.alert', 'rod.partner', 'sacrifice.go', 'sacrifice.kept', 'sacrifice.saved', 'disrupter.alert', 'disrupter.win.immunity', 'disrupter.win.pick', 'disrupter.slow', 'disrupter.pick', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
+  'clone.host.intro', 'clone.host.caught', 'clone.host.fooled', 'clone.out.caught', 'clone.out.fooled', 'alert.most-human', 'rate.human.top', 'rate.human.bottom', 'goodbye.video.ai', 'meet.arrive.ai', 'secondchance.back', 'secondchance.react', 'secondchance.recognize', 'egg.intro', 'egg.vote.first', 'egg.vote.second', 'egg.stays', 'egg.goes', 'rod.alert', 'rod.partner', 'sacrifice.alert', 'sacrifice.go', 'sacrifice.kept', 'sacrifice.saved', 'disrupter.alert', 'disrupter.win.immunity', 'disrupter.win.pick', 'disrupter.slow', 'disrupter.pick', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
   'race.win', 'race.lose', 'newparty.throw', 'newparty.guest', 'newparty.left', 'lurk.watch', 'lurk.reveal',
   'chosen.offer', 'chosen.pick', 'chosen.thanks', 'pairarrival.chat', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',

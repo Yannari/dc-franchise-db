@@ -11,7 +11,8 @@
 //   clone        a blocked player comes back wearing an active profile's
 //                name and photos; the room votes which is real; whoever is
 //                voted fake leaves (US 3, UK 3 — US 3 voted out the real one)
-//   ride-or-die  secret compatibility pairs (US 6): a blocked member's
+//   ride-or-die  secret compatibility pairs (US 6), for the next Ratings and
+//                blocking only: a blocked member's
 //                partner may go in their place; the top player's partner is
 //                the second Influencer, wherever they were rated (the
 //                results say so: script.js result.rod). (The real rule blocks both
@@ -160,7 +161,8 @@ const partnerOf = (state, h) => {
   return other && state.active.includes(other) ? other : null;
 };
 
-/** At a blocking: a Ride or Die partner may go instead. Loyalty and love decide. */
+/** Straight after a blocking is announced: a Ride or Die partner may go
+ *  instead. Loyalty and love decide. */
 export const SACRIFICE = { scale: 0.08 };
 export function rideOrDieTarget(state, rng, target) {
   const partner = partnerOf(state, target);
@@ -172,6 +174,11 @@ export function rideOrDieTarget(state, rng, target) {
   if (goes === partner) { bump(target, partner, 'obligation', 3); bump(target, partner, 'affection', 2); }
   return { target: goes, channel: goes === partner ? 'sacrifice' : null };
 }
+
+/** ONE night (user: "why do we have ride or die 2 week in a row"; the show
+ *  played it once, on Kyle and Paul): the pairs end with the first blocking
+ *  after they were made, whatever its format (season.js). */
+export function endRideOrDie(state) { if (state.rideOrDie) state.rideOrDie.until = Math.min(state.rideOrDie.until, state.day - 1); }
 
 /** The top player's partner is the second Influencer (US 6). */
 export function rideOrDieInfluencers(state, influencers) {

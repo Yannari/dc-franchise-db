@@ -55,7 +55,7 @@ describe('comparing notes', () => {
         ? state.scenes.find(s => s.kind === 'ratings' && s.day === sc.day - 1)
         : state.scenes.find(s => s.day === sc.day && (sc.data.topic === 'warning'
           ? s.kind === 'goodbye' && s.data.warning?.about === sc.data.about
-          : s.kind === 'blocking' && s.data.target === sc.data.about));
+          : s.kind === 'blocking' && (s.data.gone ?? s.data.target) === sc.data.about));
       expect(source, `${sc.data.topic} ${sc.data.about}`).toBeTruthy();
       expect(seenBoth(source, a, b)).toBe(true);
     }

@@ -1312,7 +1312,7 @@ export const TWIST_CATALOG = [
     desc:'Two new players arrive hidden behind eggs instead of profile pictures. Each gives the building a short introduction, and then everyone votes on which egg gets to stay. The other one is blocked on the spot, before anyone has seen their face. Needs two arrivals on the same day; the timeline pulls a later newcomer forward if it has to.' },
   { id:'ci-ride-or-die', emoji:'\u{1F91D}', name:'Ride or Die', format:'the-circle',
     category:'social', phase:'any', engineType:'ci-ride-or-die', ciTwist:'ride-or-die',
-    desc:'Secret compatibility answers pair every player with a Ride or Die. Until the final ratings, if one of a pair is blocked, their partner can choose to go in their place, and the top-rated player\'s partner becomes a secret second Influencer. Players learn who their own partner is and nobody else\'s, so every blocking is also a question of who would take the fall for whom.' },
+    desc:'Secret compatibility answers pair every player with a Ride or Die. It lasts for one Ratings and one blocking. At the Ratings, the top-rated player\'s partner becomes the second Influencer, wherever they were rated. At the blocking, once the name is announced, the blocked player\'s partner can choose to go home in their place. Players learn who their own partner is and nobody else\'s, so that blocking is also a question of who would take the fall for whom.' },
   /* ── THE CIRCLE'S ARRIVALS (Plan 3b Task 7) ──
      How a newcomer comes in, booked on an arrival day by slot (a slot's
      booking may list a blocking and an arrival) or drawn by how many arrive.

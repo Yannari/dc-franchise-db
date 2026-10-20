@@ -84,7 +84,7 @@ describe('the rhythm is not the same every season', () => {
 });
 
 describe('the host opens the episode on the cliffhanger, and says good morning after the night', () => {
-  const NIGHT = ['hangout', 'blocking', 'save', 'plead', 'vote', 'offer', 'visit', 'antivirus', 'no-block'];
+  const NIGHT = ['hangout', 'blocking', 'sacrifice', 'save', 'plead', 'vote', 'offer', 'visit', 'antivirus', 'no-block'];
   it('a day that opens on last night: host.cold.night first; the morning cold comes after the night, never before a blocking', () => {
     for (const seed of [1, 2, 3]) {
       const { rows } = season(seed);

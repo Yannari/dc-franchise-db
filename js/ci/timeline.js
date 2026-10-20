@@ -150,7 +150,9 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {},
     if (idsAt(bookings, d.slot).includes('ci-disrupter') || (!fixed && d.slot.startsWith('social') && rng() < DISRUPTER_CHANCE)) d.disrupter = true;
   }
   // Identity twists (spec 14): booked on a day, or drawn now and then.
-  let rodDrawn = false;
+  // Ride or Die plays once a season: a booked one is never drawn again on
+  // another night (seed 4 booked it on rating3 and drew it on rating2 too).
+  let rodDrawn = out.some(d => d.twist === 'ride-or-die' || idsAt(bookings, d.slot).map(twistOfId).includes('ride-or-die'));
   for (const d of out) {
     if (d.final || d.finale || d.day === 1) continue;
     if (d.twist || d.twistFellBack) continue;       // placed in the first pass

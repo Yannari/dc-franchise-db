@@ -38,7 +38,7 @@ import { FORMATS, prepareNight, runBlocking } from './formats.js';
 import { bookSeason } from './timeline.js';
 import { arrive, chooseNewcomer } from './arrivals.js';
 import { powersMorning, jokerMeets, runDisrupter } from './powers.js';
-import { runEvent, endSwap } from './twists.js';
+import { runEvent, endSwap, endRideOrDie } from './twists.js';
 import { addAI } from './ai.js';
 import { openLedger, noteJoin, airDay, fanFavorite, publicPick, publicSnapshot, publicStanding } from './public.js';
 import { buildSchedule, rhythmOf } from './schedule.js';
@@ -86,7 +86,7 @@ export const STAGE_DATA = {
   hangout: d => ({ atRisk: d.atRisk || [], target: d.target ?? null, runnerUp: d.runnerUp?.handle ?? null, format: d.format || null }),
   // The visit: why they came, and, if it turned into an argument, how (blocking.js clash).
   visit: d => ({ motive: d.motive || null, clash: d.clash || null }),
-  blocking: d => ({ target: d.target ?? null, by: d.by || [], channel: d.channel || null, secret: !!d.secret, reason: d.reason || null }),
+  blocking: d => ({ target: d.target ?? null, ...(d.gone ? { gone: d.gone } : {}), by: d.by || [], channel: d.channel || null, secret: !!d.secret, reason: d.reason || null }),
   // The seats are in the order they arrived: the screen's layout must never hint at the result.
   reunion: d => ({ seats: d.seats || null, talks: (d.talks || []).map(t => [t.a, t.b]) }),
   reveal: d => ({ placements: (d.placements || []).map(p => ({ profile: p.profile, place: p.place })), seats: d.seats || null, fan: d.fan || null }),
@@ -233,6 +233,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
         // An audience vote reads the audience's standing, handed in here (formats.js).
         state.publicStanding = String(tonight.night?.format || '').startsWith('audience-') ? publicStanding(state) : null;
         runBlocking(state, ds(`block:${d.day}`), tonight.rating, tonight.night);
+        endRideOrDie(state);
         tonight = null;
       }
       // The goodbye video plays in the episode of the blocking, after the visit.
@@ -332,6 +333,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       // ends the episode on the ratings and blocks at the start of the next.
       if (night.format === 'instant') {
         runBlocking(state, rng, rating, night);
+        endRideOrDie(state);
         for (const h of state.pendingGoodbyes.splice(0)) goodbyeVideo(state, rng, h);
       } else tonight = { rating, night };
     }

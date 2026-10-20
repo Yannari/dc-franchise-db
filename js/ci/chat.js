@@ -270,7 +270,8 @@ export function contextFor(state, day) {
       topics.push({ topic: 'warning', about: s.data.warning.about, by: s.who[0], kind: s.data.warning.kind, seen: s.seenBy });
       accused[s.data.warning.about] = { by: s.who[0], kind: s.data.warning.kind, seen: s.seenBy };
     }
-    if (s.kind === 'blocking' && s.data.target && !live(s.data.target)) topics.push({ topic: 'blocked', about: s.data.target, seen: s.seenBy });
+    { const gone = s.kind === 'blocking' && (s.data.gone ?? s.data.target); // a Ride or Die may have gone instead
+      if (gone && !live(gone)) topics.push({ topic: 'blocked', about: gone, seen: s.seenBy }); }
   }
   if (lastRating && !lastRating.hidden) {
     const top = lastRating.results[0]?.profile;

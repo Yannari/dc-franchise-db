@@ -47,7 +47,7 @@ export function sceneApproval(state, sc) {
     }
     case 'circle-chat': for (const t of sc.data.theories || []) add(t.by, APPROVAL.theory); break;
     case 'blocking': {
-      const t = sc.data.target;
+      const t = sc.data.gone ?? sc.data.target;
       add(t, sc.data.reason === 'fake' && state.profiles[t].mode !== 'catfish' ? APPROVAL.wronglyBlocked : APPROVAL.blocked);
       for (const br of sc.data.betrayed || []) add(br.betrayer, APPROVAL.allianceBetrayal);
       break;

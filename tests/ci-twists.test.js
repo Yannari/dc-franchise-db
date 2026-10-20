@@ -15,7 +15,7 @@ function booked(slot, id, seed = 5) {
   const day = d.day;
   // A night's Hangout, blocking and visit open the next day (the show's
   // cliffhanger); its ratings and a day twist stay on the day itself.
-  const NIGHT = new Set(['hangout', 'blocking', 'save', 'plead', 'vote', 'offer', 'visit', 'antivirus', 'no-block']);
+  const NIGHT = new Set(['hangout', 'blocking', 'sacrifice', 'save', 'plead', 'vote', 'offer', 'visit', 'antivirus', 'no-block']);
   const nightDay = d.night?.format === 'instant' ? day : day + 1;
   const on = kind => out.state.scenes.filter(s => s.kind === kind && s.day === (NIGHT.has(kind) ? nightDay : day));
   return { ...out, day, on };
@@ -95,6 +95,33 @@ describe('Ride or Die (US 6)', () => {
       const gone = state.blocked.filter(b => b.day === s.day).map(b => b.handle);
       expect(gone).toContain(s.data.goes);
       expect(gone).not.toContain(s.data.stays);
+    }
+  });
+
+  it('the blocking is announced first, then the partner chooses (the show: blocked, then the choice)', () => {
+    let seen = 0;
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
+      const { state } = booked('rating3', 'ci-ride-or-die', seed);
+      for (const s of state.scenes.filter(x => x.kind === 'sacrifice')) {
+        seen++;
+        const named = s.data.chose ? s.data.stays : s.data.goes;
+        const block = [...state.scenes].reverse().find(x => x.kind === 'blocking' && x.id < s.id);
+        expect(block?.day, `seed ${seed}`).toBe(s.day);
+        // the Influencers typed the name they chose, not the partner's
+        expect(block.data.target).toBe(named);
+        expect(block.data.gone ?? block.data.target).toBe(s.data.goes);
+        // somebody who chose to leave was blocked by nobody
+        if (s.data.chose) expect(state.blocked.find(b => b.handle === s.data.goes)).toMatchObject({ channel: 'sacrifice', by: [] });
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+
+  it('lasts one Ratings and one blocking, never two weeks in a row', () => {
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
+      const { state } = booked('rating3', 'ci-ride-or-die', seed);
+      expect(state.scenes.filter(s => s.kind === 'sacrifice').length, `seed ${seed}`).toBeLessThanOrEqual(1);
+      expect(state.scenes.filter(s => s.kind === 'ratings' && s.data.named === 'rod').length, `seed ${seed}`).toBeLessThanOrEqual(1);
     }
   });
 

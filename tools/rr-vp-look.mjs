@@ -51,6 +51,8 @@ const FIND = {
   duel: '(s, t, k) => s.seg === "head-to-head" && k >= 1',
   intersect: '(s, t, k) => s.seg === "superteam-pick" && k >= 1',
   // the locals (2026-10-20): one speaking, one standing at their challenge
+  // a lifted shot with the bar stepped aside (a beat card): what shows under the plate
+  liftbeat: '(s, t, k) => s.kind === "world" && t.part === "beat" && (s.lift || 0) > 3 && s.plate?.f === "arrive-9434588"',
   localsays: '(s, t, k) => s.localFaces && t.by && s.localFaces[t.by]',
   localstands: '(s, t, k) => s.localFaces && Object.keys(s.localFaces).length && !s.steps.some(x => s.localFaces[x.by]) && t.by && k >= 1',
 };

@@ -42,7 +42,8 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .plate{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .7s ease}
 .plate.on{opacity:1}
 #rr-gl{z-index:1;pointer-events:none}
-.plate-skirt{position:absolute;left:0;right:0;top:100%;height:34%;background-size:100% 294%;background-position:center bottom;transform:scaleY(-1);filter:brightness(.5) saturate(.8) blur(1.5px);pointer-events:none}
+.plate-skirt{position:absolute;left:0;right:0;top:100%;height:34%;background-size:100% 3000%;background-position:center bottom;filter:brightness(.55) saturate(.85) blur(5px);pointer-events:none}
+.plate-skirt::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.15),rgba(0,0,0,.55))}
 #rr-gl .rr-life{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .6s}
 #rr-gl .rr-life.on{opacity:1}
 #rr-under,#rr-toks,#rr-fx{z-index:2}

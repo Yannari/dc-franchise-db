@@ -74,7 +74,8 @@ export function createStage(holder, { faceOf, legLabel }) {
     if ((b.dataset.url || '') === (url || '') && b.classList.contains('on')) return;
     flip = !flip;
     a.className = 'plate'; a.dataset.url = url || ''; a.style.backgroundImage = url ? `url("${url}")` : 'none';
-    // under the plate's bottom edge (what a lifted shot shows beneath the bar): its own ground, mirrored and dimmed
+    // under the plate's bottom edge (what a lifted shot shows beneath the bar): its last strip of ground stretched on,
+    // in shadow (2026-10-20: mirrored, it showed the street again upside down)
     $('rr-skirt').style.backgroundImage = url ? `url("${url}")` : 'none';
     void a.offsetWidth; a.className = 'plate on'; b.classList.remove('on');
     // the plate's slow life (life.js): only its real leaves, water and lava move, and slowly

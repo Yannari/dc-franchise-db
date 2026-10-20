@@ -37,7 +37,9 @@ function scriptHtml(row, screen) {
   const nameOf = h => row.ci.profiles?.[h]?.name || String(h || '').replace(/^@/, '');
   return screen.steps.map((st, i) => {
     const k = st.clip ? (st.clip.aloud ? 'ALOUD' : 'SENT') : st.host ? 'THE CIRCLE' : PART[st.part] || '';
-    const who = st.who ? `<b>${esc(nameOf(st.who))}</b> ` : st.clip ? `<b>${esc(st.clip.real)}</b> ` : '';
+    // Out loud it is the person (one of a shared profile's two); a message goes out under the profile's name.
+    const aloud = st.person && (st.part === 'say' || st.part === 'react' || st.part === 'video');
+    const who = st.who ? `<b>${esc(aloud ? st.person : nameOf(st.who))}</b> ` : st.clip ? `<b>${esc(st.clip.real)}</b> ` : '';
     return `<p class="civ-ln ${esc(st.part)}" data-s="${i}" data-text="${esc(st.text)}">${k ? `<span class="k">${k}</span>` : ''}${who}${esc(st.text)}</p>`;
   }).join('');
 }

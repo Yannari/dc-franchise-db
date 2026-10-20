@@ -17,7 +17,7 @@
 // a line said aloud or a reaction as it is, and on a profile-swap day the person behind the profile that day
 // speaks. The Circle's own lines (its alerts, its announcements) are the voice named "The Circle".
 import { audio as engine } from '../audio.js';
-import { circleScreens } from './steps.js';
+import { circleScreens, personNamed } from './steps.js';
 import { withTeasers } from './teasers.js';
 import { webScreen } from './web-stage.js';
 
@@ -55,7 +55,8 @@ export function spokenLine(row, screen, st) {
   // a teaser's clip: a cut of a line from another day, said by whoever really said it
   if (st.clip) { const by = String(st.clip.real || '').split(' & ')[0]; return by ? { by, text: String(st.text).trim() } : null; }
   if (!st.who || !SPOKEN.has(st.part)) return null;
-  const by = personOf(screen?.rowView || row, st.who);
+  // one of a shared profile's two, when the line says which (vp-ci/steps.js personNamed)
+  const by = personNamed(screen?.rowView || row, st.who, st.person) || personOf(screen?.rowView || row, st.who);
   if (!by) return null;
   // a message or a post is voiced as it was dictated to the Circle, not as the text that arrived
   const text = String((st.part === 'send' || st.part === 'post') && st.spoken ? st.spoken : st.text).trim();

@@ -31,6 +31,19 @@ export function speakerLabel(state, h) {
 }
 
 const shownName = (state, h) => (state.profiles[h]?.shown?.name || realName(state, h)).toUpperCase();
+// One of a shared profile's two: "LUIS (with MATEO)", and the profile when it is neither of them. A swapped
+// profile's typist: "IVY (for RIPPER)".
+function personLabel(state, h, person, shownAs) {
+  const P = person.toUpperCase();
+  const players = state.profiles[h]?.players || [];
+  const mine = players.find(n => n.split(' ')[0].toUpperCase() === P);
+  if (mine && players.length > 1) {
+    const others = players.filter(n => n !== mine).map(n => n.split(' ')[0].toUpperCase()).join(' & ');
+    const firsts = players.map(n => n.split(' ')[0].toUpperCase());
+    return `${P} (with ${others}${firsts.includes(shownAs) ? '' : `, as ${shownAs}`})`;
+  }
+  return P === shownAs ? shownAs : `${P} (for ${shownAs})`;
+}
 
 export function blockText(state, block) {
   const out = [];
@@ -39,8 +52,7 @@ export function blockText(state, block) {
   let dictated = false;
   for (const l of block.lines) {
     const shownAs = shownName(state, l.who);
-    const who = !l.person ? speakerLabel(state, l.who)
-      : l.person.toUpperCase() === shownAs ? shownAs : `${l.person.toUpperCase()} (for ${shownAs})`;
+    const who = !l.person ? speakerLabel(state, l.who) : personLabel(state, l.who, l.person, shownAs);
     if (l.kind === 'stage') out.push(`  [${l.text}]`);
     else if (l.kind === 'say') out.push(`  ${who}, aloud: "${l.text}"`);
     else if (l.kind === 'video') out.push(`  ${who} (on video): "${l.text}"`);

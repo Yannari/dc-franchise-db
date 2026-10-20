@@ -5,7 +5,7 @@
 // Faces, ring colours, names (the profile's and the real person's), the
 // apartments' themes, captions and the profile card. js/vp-ci/stage.js and
 // js/vp-ci/moments.js both import from here, never from each other.
-import { faceOf } from './steps.js';
+import { faceOf, personNamed } from './steps.js';
 import { photoSrc } from '../ci/photo-store.js';
 import { playerAvatarUrl } from '../players.js';
 
@@ -25,7 +25,17 @@ export function faceUrl(face) {
 export const RINGS = ['#2f7bff', '#ff4fb4', '#3fd88f', '#ffd23f', '#b35cff', '#ff9f2f', '#3fd8ff', '#ff6b6b', '#8fe36b', '#c28bff', '#ffa3d7', '#5ee0c8', '#ffb84f'];
 export const ringOf = (row, h) => RINGS[Math.max(0, Object.keys(row.ci.profiles || {}).indexOf(h)) % RINGS.length];
 export const nameOf = (row, h) => row.ci.profiles?.[h]?.name || String(h || '').replace(/^@/, '');
-export const realOf = (row, h) => (row.ci.profiles?.[h]?.people || []).join(' & ') || nameOf(row, h);
+export const realOf = (row, h, person = null) => personNamed(row, h, person) || (row.ci.profiles?.[h]?.people || []).join(' & ') || nameOf(row, h);
+/** The plate over a line: who said it, and the profile they said it for when that is not just them. */
+function plateOf(row, h, person) {
+  const p = row.ci.profiles?.[h];
+  const who = personNamed(row, h, person);
+  if (who && (p?.people || []).length > 1 && p.people.includes(who)) {
+    return `${esc(who)} <i>· with ${esc(p.people.filter(n => n !== who).map(n => n.split(' ')[0]).join(' & '))}</i>`;
+  }
+  if (who && !(p?.people || []).includes(who)) return `${esc(who)} <i>· as ${esc(nameOf(row, h))}</i>`;
+  return `${esc(realOf(row, h))}${isCatfish(row, h) ? ` <i>· as ${esc(nameOf(row, h))}</i>` : ''}`;
+}
 export const isCatfish = (row, h) => row.ci.profiles?.[h]?.mode === 'catfish';
 export const bg = url => (url ? ` style="background-image:url('${esc(url)}')"` : '');
 /** One style attribute for a ring colour and a photo (two style attributes and the browser drops the photo). */
@@ -94,17 +104,17 @@ export function dlg(row, st, fresh, cls = '') {
   if (!st) return '';
   if (st.host) return captionHtml(st, fresh, 'foot');
   if (!st.who) return `<div class="civ-dlg ${cls}${fresh ? ' new' : ''}"><div class="civ-line stage">${esc(st.text)}</div></div>`;
-  const plate = `<div class="civ-plate">${esc(realOf(row, st.who))}${isCatfish(row, st.who) ? ` <i>· as ${esc(nameOf(row, st.who))}</i>` : ''}</div>`;
+  const plate = `<div class="civ-plate">${plateOf(row, st.who, st.person)}</div>`;
   // The Hangout is private: a message there goes to the other Influencer.
   const body = st.part === 'send' ? `<span class="civ-chip cmd">${/^hangout\./.test(st.key || '') ? 'IN THE HANGOUT' : 'TO THE CIRCLE'}</span><span class="civ-cmd">${hashify(st.text)}</span>`
     : `<span class="civ-chip say">${CHIP[st.part] || 'SAYS'}</span>${hashify(st.text)}`;
   return `<div class="civ-dlg ${cls}${fresh ? ' new' : ''}">${plate}<div class="civ-line">${body}</div></div>`;
 }
 /** The real person on their apartment camera. */
-export function cam(row, h, cls = '', label = null) {
+export function cam(row, h, cls = '', label = null, person = null) {
   if (!h) return '';
-  const url = faceUrl(faceOf(row, h, 'cam'));
-  const real = realOf(row, h);
+  const url = faceUrl(faceOf(row, h, 'cam', person));
+  const real = realOf(row, h, person);
   return `<div class="civ-mcam ${cls}" data-cam="${esc(label ?? `CAM ${aptNo(row, h)} · ${real.toUpperCase()}`)}" style="--glow:${ringOf(row, h)}${url ? `;background-image:url('${esc(url)}')` : ''}">${url ? '' : esc(real[0] || '?')}</div>`;
 }
 /** A profile as the room sees it: photo and name. */

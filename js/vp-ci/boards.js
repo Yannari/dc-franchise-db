@@ -244,6 +244,6 @@ export function gameStage(row, screen, idx, fresh) {
   return `<div class="civ-layer civ-game fam-${esc(g.family)}">${bgUi}
     <div class="civ-gtitle"><b>${esc(g.name.toUpperCase())}</b>${PRIZE[prizeOf(g)] ? `<span>${PRIZE[prizeOf(g)]}</span>` : ''}</div>
     <div class="civ-gboard${fresh ? ' fresh' : ''}">${board}</div>
-    ${talking && st?.part !== 'send' ? cam(row, talking, `side${fresh ? ' in' : ''}`) : ''}
+    ${talking && st?.part !== 'send' ? cam(row, talking, `side${fresh ? ' in' : ''}`, null, talking === st?.who ? st.person : null) : ''}
     ${where(`A GAME · ${g.name.toUpperCase()}`)}${dlg(row, st, fresh, 'right')}</div>`;
 }

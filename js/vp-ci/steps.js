@@ -39,11 +39,20 @@ function subjectOf(s, b) {
 
 /** A face for a profile: what the room sees (`profile`), or who is really in
  *  the apartment (`cam`: the first player behind it, on the apartment camera). */
-export function faceOf(row, h, as = 'profile') {
+/** The full name behind a line's first name (`person`): one of a shared profile's two, or whoever typed for a
+ *  swapped one that day. Null when the line names nobody. */
+export function personNamed(row, h, first) {
+  if (!first) return null;
+  const all = [...(row?.ci?.profiles?.[h]?.people || []), ...Object.keys(row?.ci?.cast || {})];
+  return all.find(n => n.split(' ')[0] === first) || null;
+}
+
+export function faceOf(row, h, as = 'profile', person = null) {
   const p = row?.ci?.profiles?.[h];
   if (!p) return null;
-  // The author's own photos over the portrait (ci/photos.js seasonFace).
-  if (as === 'cam') return p.people?.[0] ? seasonFace(`portrait:${p.people[0]}`, 'cam') : null;
+  // The author's own photos over the portrait (ci/photos.js seasonFace). On camera it is the person talking: one of
+  // a shared profile's two, not always the first (the user, 2026-10-20: "I only see 1 person talking").
+  if (as === 'cam') { const n = personNamed(row, h, person) || p.people?.[0]; return n ? seasonFace(`portrait:${n}`, 'cam') : null; }
   return seasonFace(p.face ?? null, 'profile');
 }
 
@@ -60,7 +69,7 @@ export function circleScreens(row) {
       const first = steps.length;
       for (const l of b.lines || []) {
         steps.push({ who: l.who && l.who !== 'host' ? l.who : null, host: l.who === 'host' || l.kind === 'host',
-          part: l.kind, text: l.text, ...(l.spoken ? { spoken: l.spoken } : {}), ...tag });
+          part: l.kind, text: l.text, ...(l.spoken ? { spoken: l.spoken } : {}), ...(l.person ? { person: l.person } : {}), ...tag });
       }
       if (b.beat) steps.push({ who: null, part: 'stage', text: b.beat, ...tag });
       if (arrive && steps[first]) steps[first].entry = true;

@@ -100,10 +100,10 @@ function uiStage(row, screen, idx, fresh) {
   const steps = screen.steps, st = steps[idx] || null;
   const talking = st?.who || null;
   const pip = st && st.who && !MSG.has(st.part) ? (() => {
-    const cam = faceUrl(faceOf(row, st.who, 'cam'));
+    const cam = faceUrl(faceOf(row, st.who, 'cam', st.person));
     const label = st.part === 'react' ? 'reacts' : 'says aloud';
-    return `<div class="civ-pip${fresh ? ' new' : ''}" style="--glow:${ringOf(row, st.who)}"><div class="cam"${bg(cam)}>${cam ? '' : esc(realOf(row, st.who)[0])}</div>
-      <div class="bub"><span class="civ-chip say">${esc(realOf(row, st.who).toUpperCase())} ${label.toUpperCase()}</span>${esc(st.text)}</div></div>`;
+    return `<div class="civ-pip${fresh ? ' new' : ''}" style="--glow:${ringOf(row, st.who)}"><div class="cam"${bg(cam)}>${cam ? '' : esc(realOf(row, st.who, st.person)[0])}</div>
+      <div class="bub"><span class="civ-chip say">${esc(realOf(row, st.who, st.person).toUpperCase())} ${label.toUpperCase()}</span>${esc(st.text)}</div></div>`;
   })() : '';
   const cap = st && !st.who ? captionHtml(st, fresh) : '';
   const typingSend = fresh && st?.part === 'send';
@@ -145,14 +145,15 @@ function aptStage(row, screen, idx, fresh) {
   const real = (row.ci.profiles?.[h]?.people || [])[0] || nameOf(row, h);
   const t = themeFor(real);
   const peer = screen.cast.find(x => x !== h) || h;
-  const cam = faceUrl(faceOf(row, h, 'cam'));
+  // A shared apartment's camera finds whichever of the two is talking.
+  const cam = faceUrl(faceOf(row, h, 'cam', st?.who === h ? st.person : null));
   const prevOwner = idx > 0 ? aptOwner(screen, idx - 1) : null;
   const cut = fresh && idx > 0 && prevOwner !== h;
   const sending = fresh && st?.part === 'send' && st.who === h;
   // The other TV pings: a message landed from the apartment we just left.
   const ping = cut && steps[idx - 1]?.part === 'send';
   const catfish = isCatfish(row, h) ? `<div class="civ-catfish"><span class="mini"${bg(faceUrl(faceOf(row, h, 'profile')))}></span>Playing as "${esc(nameOf(row, h))}" · catfish</div>` : '';
-  const plate = st?.who ? `<div class="civ-plate">${esc(real)}${isCatfish(row, st.who) ? ` <i>· as ${esc(nameOf(row, st.who))}</i>` : ''}</div>` : '';
+  const plate = st?.who ? `<div class="civ-plate">${esc(st.person ? realOf(row, st.who, st.person) : real)}${isCatfish(row, st.who) ? ` <i>· as ${esc(nameOf(row, st.who))}</i>` : ''}</div>` : '';
   const line = !st ? '' : st.part === 'send'
     ? `<div class="civ-line"><span class="civ-chip cmd">TO THE CIRCLE</span><span class="civ-cmd">${esc(st.spoken || `Message: "${st.text}" Send.`)}</span></div>`
     : st.who ? `<div class="civ-line"><span class="civ-chip say">${st.part === 'react' ? 'REACTS' : 'SAYS ALOUD'}</span>${esc(st.text)}</div>`
@@ -259,9 +260,9 @@ function arriveStage(row, screen, idx, fresh) {
     return `<div class="civ-layer civ-arrive rest">${bgl}<div class="civ-arrtitle${fresh && idx === 0 ? ' new' : ''}">${title}<small>${esc(screen.kind === 'profiles' ? `${order.length} strangers · one building · nobody can see anybody` : 'A new Player has entered the Circle')}</small></div>
       ${roll}${where}${st ? captionHtml(st, fresh) : ''}</div>`;
   }
-  const cam = faceUrl(faceOf(row, react ? speaker : about, 'cam'));
+  const cam = faceUrl(faceOf(row, react ? speaker : about, 'cam', react ? st?.person : null));
   const camOf = react ? speaker : about;
-  const real = realOf(row, camOf);
+  const real = realOf(row, camOf, react ? st?.person : null);
   const plate = `<div class="civ-plate">${esc(real)}${react ? ' <i>· sees the new profile</i>' : ''}</div>`;
   const line = !st.who ? `<div class="civ-line stage">${esc(st.text)}</div>`
     : `<div class="civ-line"><span class="civ-chip say">${st.part === 'react' ? 'REACTS' : 'SAYS ALOUD'}</span>${esc(st.text)}</div>`;

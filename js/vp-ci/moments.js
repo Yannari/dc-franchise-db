@@ -61,7 +61,7 @@ function rateStage(row, screen, idx, fresh) {
     }).join('');
     return `<div class="civ-layer civ-rate reveal">${bgUi}
       <div class="civ-board${d.results.length > 7 ? ' two' : ''}"><div class="hd">${title}</div>${rows}</div>
-      ${cam(row, who, 'side')}${where(`${title} · THE RESULTS`)}${dlg(row, st, fresh, 'right')}
+      ${cam(row, who, 'side', null, who === st?.who ? st.person : null)}${where(`${title} · THE RESULTS`)}${dlg(row, st, fresh, 'right')}
       ${crowned && fresh && st && [...PAIR, 'result.sole'].includes(st.key) ? '<div class="civ-confetti"></div>' : ''}</div>`;
   }
   // A voter's ranking screen: slots fill as they name them.
@@ -84,7 +84,7 @@ function rateStage(row, screen, idx, fresh) {
         : '<div class="civ-mtile row hidden"><div class="ph">?</div><div class="n">· · ·</div></div>'}</div>`;
   }).join('');
   return `<div class="civ-layer civ-rate">${bgUi}
-    ${cam(row, who, 'side')}
+    ${cam(row, who, 'side', null, who === st?.who ? st.person : null)}
     <div class="civ-board${n > 7 ? ' two' : ''}"><div class="hd">${ballot ? `${esc(nameOf(row, who).toUpperCase())} RATES` : 'RATE YOUR FELLOW PLAYERS'}</div>${slots || `<div class="civ-boardnote">${esc(final ? 'For the last time, rate your fellow Players.' : 'The top two will become Influencers.')}</div>`}
       ${sent ? '<div class="civ-stamp">SENT</div>' : ''}</div>
     ${where(title)}${dlg(row, st, fresh, 'right')}</div>`;
@@ -203,7 +203,7 @@ function blockedStage(row, screen, idx, fresh) {
   const speaker = st?.who && st.part !== 'send' ? st.who : st?.part === 'stage' ? speakerAt(screen, idx) : null;
   return `<div class="civ-layer civ-blocked${named ? ' done' : ''}"><div class="civ-uibg"></div><div class="civ-redwash"></div>
     <div class="civ-bstack"><div class="civ-bgrid">${tiles}</div>${msg}</div>
-    ${speaker ? cam(row, speaker, `side${fresh ? ' in' : ''}`) : ''}
+    ${speaker ? cam(row, speaker, `side${fresh ? ' in' : ''}`, null, speaker === st?.who ? st.person : null) : ''}
     ${slam ? `<div class="civ-slam"><span>BLOCKED</span><small>${esc(nameOf(row, target).toUpperCase())}</small></div><div class="civ-flash red"></div>` : ''}
     ${where('THE BLOCKING')}${st && st.part !== 'send' ? dlg(row, st, fresh, speaker ? 'right' : '') : ''}</div>`;
 }
@@ -263,7 +263,7 @@ function videoStage(row, screen, idx, fresh) {
   const watcher = !playing && last && last !== h ? last : null;
   return `<div class="civ-layer civ-video${after ? ' after' : ''}">${bgUi}
     <div class="civ-bigtv">${screenInner}</div>
-    ${watcher ? cam(row, watcher, `side${fresh ? ' in' : ''}`) : ''}
+    ${watcher ? cam(row, watcher, `side${fresh ? ' in' : ''}`, null, watcher === st?.who ? st.person : null) : ''}
     ${where('THE GOODBYE VIDEO')}${playing ? '' : dlg(row, st, fresh, watcher ? 'right' : '')}</div>`;
 }
 

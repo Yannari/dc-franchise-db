@@ -17,7 +17,7 @@ import { THEORY_LINE } from './slips.js';
 import { styleOf } from './ratings.js';
 import { isRevealed } from './reveal.js';
 import { styleMessage, displayText, dictation, byAuthored } from './voice.js';
-import { nicknameFor } from './register.js';
+import { nicknameFor, registerOf } from './register.js';
 import { shownRegister, shownVoice, crackOf } from './cover.js';
 import { POOLS } from './lines/index.js';
 import { pickEntry as pickShared, matches, SAME_DAY, SAID_AGAIN, USED_DECAY, RECENT } from '../script/pick.js';
@@ -241,6 +241,85 @@ export function renderEntry(state, entry, cast, rng, ctx = {}) {
     }
   });
   return { id: entry.id, lines, beat: entry.beat ? fill(state, entry.beat, cast, 'narration') : null };
+}
+
+// ── Two people, one profile ───────────────────────────────────────────────
+// The user, 2026-10-20: "multi person profiles are weird cause I only see 1 person talking". A shared profile's
+// lines all came out as one voice under both names. Now each line names who of the two said it; after some of
+// them the other one answers out loud, in their own voice (pair.answer.<moment>); some messages are worked out
+// between them before they go (pair.cowrite), and then the one who won the argument types it. Who types a chat's
+// messages changes from chat to chat. Writing only: nothing here moves a result.
+const PAIR_MOMENT = [
+  [/^(result\.bottom|likes\.none|block\.react\.self|block\.fear|status\.low|ratings\.react\.low)/, 'down'],
+  [/^(result\.(top|middle)|likes\.most|block\.react\.relief|ratings\.react\.(high|top))/, 'up'],
+  [/^rate\./, 'rate'],
+  [/^(ratings\.(wait|open)|block\.(wait|typing)|visit\.wait|goodbye\.guess)/, 'wait'],
+  [/^(aside\.|hangout\.view|group\.(form|plan))/, 'plan'],
+  [/^(circle\.react|status\.react|goodbye\.react|arrival\.react|recognise|style\.|game\.(answer|results|comment|item|reply|react))/, 'react'],
+];
+const PAIR_WRITES = /^(chat\.|circle\.|welcome\.|group\.|hangout\.|callback\.)/;
+const PAIR_REL = { couple: 'couple', married: 'couple', siblings: 'siblings', twins: 'siblings', cousins: 'siblings', parent: 'parent', friends: 'friends' };
+// How many times a scene lets a pair talk between themselves: a scene where every line got an answer would be all them.
+const PAIR_PER_SCENE = 3;
+const firstName = n => String(n || '').split(' ')[0];
+function pairTalk(state, block, cast, rng, ctx) {
+  const out = [];
+  const typist = {};   // who types this block's messages, per shared profile
+  let sent = false;    // has anybody sent a message in this block yet
+  block.lines.forEach((l, li) => {
+    const p = l.who && l.who !== 'host' && state.profiles[l.who];
+    if (!p || p.players.length < 2 || p.home) { if (l.kind === 'send') sent = true; out.push(l); return; }
+    const [x, y] = p.players;
+    if (l.kind === 'send' || l.kind === 'post') {
+      typist[l.who] ||= firstName(rng() < 0.5 ? x : y);
+      // A message that opens the conversation is sometimes argued over first: two lines out loud, then the winner
+      // types it. Never a reply in the middle of a chat ("should we ask about last night?", then "stop it, you're
+      // making me blush").
+      const left = (ctx.pairLeft ??= PAIR_PER_SCENE);
+      const opens = !sent;
+      sent = sent || l.kind === 'send';
+      if (opens && !l.person && left > 0 && !typist[`${l.who}:cowrote`] && l.kind === 'send' && PAIR_WRITES.test(block.key) && rng() < 0.45) {
+        const rel = PAIR_REL[p.relation] || null;
+        const keys = [rel && `pair.cowrite.${rel}`, 'pair.cowrite'].filter(k => k && POOLS[k]?.length);
+        const entry = pickEntry(state, keys, {}, `pair:${l.who}`, rng, l.who);
+        if (entry) {
+          const said = renderEntry(state, entry, { a: l.who }, rng, ctx).lines;
+          const won = p.roles?.[entry.wins] || p.players[0];
+          out.push(...said);
+          typist[l.who] = firstName(won);
+          typist[`${l.who}:cowrote`] = true;
+          ctx.pairLeft = left - 1;
+        }
+      }
+      if (!l.person) l.person = typist[l.who];
+      out.push(l);
+      return;
+    }
+    if (l.kind !== 'react' && l.kind !== 'say') { out.push(l); return; }
+    // Said out loud: by one of them (the face, unless the line says who).
+    if (!l.person) l.person = firstName(p.roles?.face || x);
+    out.push(l);
+    const left = (ctx.pairLeft ??= PAIR_PER_SCENE);
+    if (left <= 0 || typist[`${l.who}:answered`] || rng() >= 0.45) return;
+    // The two are already talking to each other (the next line is theirs too): never cut in.
+    const next = block.lines[li + 1];
+    if (next && next.who === l.who && (next.kind === 'say' || next.kind === 'react')) return;
+    const other = p.players.find(n => firstName(n) !== l.person);
+    if (!other) return;
+    // Only a moment the other one has something to say about.
+    const moment = (PAIR_MOMENT.find(([re]) => re.test(block.key)) || [])[1];
+    if (!moment) return;
+    // What the first line was about: whoever else the block is about.
+    const about = ['a', 'b', 'c'].map(k => cast?.[k]).find(h => typeof h === 'string' && h !== l.who && state.profiles[h]);
+    if (moment === 'rate' && !about) return;
+    const entry = pickEntry(state, `pair.answer.${moment}`, { register: registerOf(state, l.who, other) }, `pair:${l.who}`, rng, l.who);
+    if (!entry) return;
+    const said = fill(state, entry.turns[0].react, { a: l.who, b: about, personA: other }, 'a');
+    out.push({ who: l.who, kind: 'react', text: said, person: firstName(other) });
+    typist[`${l.who}:answered`] = true;
+    ctx.pairLeft = left - 1;
+  });
+  block.lines = out;
 }
 
 // ── Scenes → blocks ──────────────────────────────────────────────────────
@@ -1309,8 +1388,11 @@ function writeSceneNow(state, scene) {
     // name on the ranking slot, the tile at risk, the place on the board).
     const on = ON_STAGE.has(scene.kind)
       ? Object.fromEntries(['a', 'b', 'c'].filter(k => typeof b.cast[k] === 'string').map(k => [k, b.cast[k]])) : null;
-    blocks.push({ key: from, ...(b.phase ? { phase: b.phase } : {}), ...(b.round != null ? { round: b.round } : {}),
-      ...(on ? { on } : {}), ...(b.bi != null ? { bi: b.bi } : {}), ...renderEntry(state, entry, b.cast, rng, ctx) });
+    const block = { key: from, ...(b.phase ? { phase: b.phase } : {}), ...(b.round != null ? { round: b.round } : {}),
+      ...(on ? { on } : {}), ...(b.bi != null ? { bi: b.bi } : {}), ...renderEntry(state, entry, b.cast, rng, ctx) };
+    // Two people behind one profile talk to each other (pairTalk), on their own dice.
+    pairTalk(state, block, b.cast, streamFor(state.seed, `pair:${scene.id}:${i}`), ctx);
+    blocks.push(block);
   });
   // A slip happens inside the conversation: weave it into the chat before the
   // chat's closing beat, rather than printing it as a second scene.
@@ -1571,6 +1653,8 @@ export const POOL_KEYS = [
   ...['reply', 'react', 'observe'].map(k => `game.rival.${k}`),
   ...['practice', 'answer', 'react', 'vote', 'date'].map(k => `game.flirt.${k}`),
   ...['props', 'plan', 'draft', 'mic', 'joke', 'laugh', 'last', 'tally', 'winner', 'sting'].map(k => `game.roast.${k}`),
+  ...['down', 'up', 'rate', 'wait', 'plan', 'react'].map(k => `pair.answer.${k}`),
+  'pair.cowrite', ...['parent', 'couple', 'siblings', 'friends'].map(k => `pair.cowrite.${k}`),
   'game.team.pick', 'game.team.last', 'game.team.result', 'game.gift.round', 'game.gift.none',
   'game.rival.round', 'game.flirt.round', ...['party', 'photo', 'video', 'immunity', 'gift', 'trophy', 'trophy.react'].map(k => `game.prize.${k}`),
   'party.open', 'party.nhie', 'party.nhie.none',

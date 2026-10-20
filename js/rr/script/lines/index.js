@@ -114,6 +114,10 @@ import teaHills from './places/tea-hills.js';
 import pampasRanch from './places/pampas-ranch.js';
 import gameShowCity from './places/game-show-city.js';
 import iceRiver from './places/ice-river.js';
+import snowPeaks from './places/snow-peaks.js';
+import jungleRuins from './places/jungle-ruins.js';
+import glassPyramidCity from './places/glass-pyramid-city.js';
+import fishingCove from './places/fishing-cove.js';
 
 const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
   localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, ride, narration, narration2, premiere, premiereIdentities, customIntros, redSandDesert, ironTowerCity, homeCity, skylineFinale, fireMountainIsle, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback, ...placesMore,
@@ -121,7 +125,8 @@ const FILES = [partners, partners1, partners2, partners3, partners4, partners5, 
   leiIsland, glassTowerGulf, swampPrison, outbackFarm,
   fjordPeaks, prairieRanch, iceFloe, dragonIsle,
   neonDesert, pyramidCoast, stiltRiver, frozenMine,
-  teaHills, pampasRanch, gameShowCity, iceRiver];
+  teaHills, pampasRanch, gameShowCity, iceRiver,
+  snowPeaks, jungleRuins, glassPyramidCity, fishingCove];
 
 // The rewrite (lines/rewrite/, docs/rr-writers-brief.md "The rewrite standard"): each file brings its pools and
 // retires the old lines they replace, a whole pool ('mind-game.rattled') or the old interview lines for one kind

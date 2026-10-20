@@ -41,13 +41,18 @@ import teaHills from './places/tea-hills.js';
 import pampasRanch from './places/pampas-ranch.js';
 import gameShowCity from './places/game-show-city.js';
 import iceRiver from './places/ice-river.js';
+import snowPeaks from './places/snow-peaks.js';
+import jungleRuins from './places/jungle-ruins.js';
+import glassPyramidCity from './places/glass-pyramid-city.js';
+import fishingCove from './places/fishing-cove.js';
 
 export const PLACES = Object.fromEntries([homeCity, redSandDesert, fireMountainIsle, skylineFinale, ironTowerCity, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback,
   coastPalace, geyserIsland, carnivalRainforest, hauntedCastle,
   leiIsland, glassTowerGulf, swampPrison, outbackFarm,
   fjordPeaks, prairieRanch, iceFloe, dragonIsle,
   neonDesert, pyramidCoast, stiltRiver, frozenMine,
-  teaHills, pampasRanch, gameShowCity, iceRiver].map(p => [p.id, p]));
+  teaHills, pampasRanch, gameShowCity, iceRiver,
+  snowPeaks, jungleRuins, glassPyramidCity, fishingCove].map(p => [p.id, p]));
 
 export const getPlace = id => PLACES[id] || null;
 

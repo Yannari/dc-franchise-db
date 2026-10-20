@@ -25,6 +25,7 @@ import { stageInner, paintStage } from './stage.js';
 import { CIV_CSS, CIV_FONTS } from './style.js';
 import { bedFor, playStep } from './sound.js';
 import { sidebarHtml } from './sidebar.js';
+import { withTwistAlerts } from './twist-alert.js';
 // the players' own voices (Inworld clips in the audio bucket), when the episode has been voiced
 import { ciVoiceLine, ciVoiceStop, ciVoiceDone } from './voicing.js';
 
@@ -46,7 +47,8 @@ function scriptHtml(row, screen) {
 
 /** `prev` / `next`: the neighbouring episodes, for Previously and Next time (teasers.js). */
 export function circleVpScreens(row, { prev = null, next = null, debug = false } = {}) {
-  const screens = withTeasers(row, circleScreens(row), { prev, next, screensOf: circleScreens });
+  // Every twist is announced by an alert that says how it works (twist-alert.js).
+  const screens = withTeasers(row, withTwistAlerts(row, circleScreens(row)), { prev, next, screensOf: circleScreens });
   // The last screen of the episode (before Debug): the Circle web.
   const web = webScreen(row, prev);
   if (web) screens.push(web);

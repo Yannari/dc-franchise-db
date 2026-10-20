@@ -160,7 +160,7 @@ export function soundFor(screen, idx) {
   if (screen.stage === 'web') return { cue: st.change ? 'ci-tick' : null, bed: null };
   // A teaser: every clip cuts in on a whoosh.
   if (screen.stage === 'teaser') return { cue: st.clip ? 'ci-whoosh' : null, bed: null };
-  if (screen.stage === 'alert' && idx === 0) return { cue: 'ci-alert', bed: null };
+  if ((screen.stage === 'alert' || screen.stage === 'explain') && idx === 0) return { cue: 'ci-alert', bed: null };
   if (screen.kind === 'blocking') {
     if (st.fb === 'flashback-open') return { cue: 'ci-whoosh', bed: 'ci-drama' };
     if (NAMED.test(k) && first(NAMED)) return { cue: 'ci-blocked', bed: 'ci-after-block' };

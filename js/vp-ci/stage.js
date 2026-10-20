@@ -197,6 +197,25 @@ function alertStage(row, screen, idx, fresh) {
     <div class="civ-flash"></div>${building}<div class="civ-where">ALERT</div></div>`;
 }
 
+// ── A TWIST, EXPLAINED (vp-ci/twist-alert.js) ──────────────────────────
+// ALERT! slams in on the first step; the twist's card holds its name and, a
+// click at a time, how it works.
+function explainStage(row, screen, idx, fresh) {
+  const go = fresh && idx === 0;
+  // Every sentence is laid out from the start, the ones not said yet invisible, so the card is sized for the whole
+  // explanation and nothing moves as it fills in; paintStage fits the text to the card (fitTwistCards).
+  const all = screen.steps.slice(1);
+  const said = Math.max(0, idx);
+  const chars = all.reduce((n, s) => n + String(s.text || '').length, 0);
+  const tw = Math.min(3, Math.max(1.4, 36.5 / Math.sqrt(Math.max(1, chars)))).toFixed(2);
+  const card = idx >= 0 ? `<div class="civ-twistcard${go ? ' in' : ''}" style="--tw:${tw}cqw"><small>NEW TWIST</small><b>${esc(screen.d?.name || '')}</b>
+      <ol>${all.map((s, i) => `<li class="${i >= said ? 'wait' : i === said - 1 && fresh ? 'new' : ''}">${hashify(s.text)}</li>`).join('')}</ol></div>` : '';
+  return `<div class="civ-layer civ-alert explain${go ? ' go' : ''}${idx > 0 ? ' read' : ''}"><div class="civ-alertbg"></div>
+    <div class="civ-aurora big" style="left:50%;top:44%;width:62%;aspect-ratio:1;margin:-31% 0 0 -31%"></div>
+    <div class="civ-shock"></div><div class="civ-alertTxt">ALERT!</div>${card}
+    <div class="civ-flash"></div><div class="civ-where">ALERT · ${esc((screen.d?.name || 'A TWIST').toUpperCase())}</div></div>`;
+}
+
 // ── MEET THE PLAYERS ───────────────────────────────────────────────────
 // A player walks in. The viewer is told who they really are (their name, age,
 // job, hometown and fame, from Create Character) and what they plan to be,
@@ -283,8 +302,25 @@ export function stageInner(row, screen, idx, fresh = false) {
   if (MOMENTS[screen.stage]) return MOMENTS[screen.stage](row, screen, idx, fresh);
   if (screen.stage === 'arrive') return arriveStage(row, screen, idx, fresh);
   if (screen.stage === 'alert') return alertStage(row, screen, idx, fresh);
+  if (screen.stage === 'explain') return explainStage(row, screen, idx, fresh);
   if (screen.stage === 'apt') return aptStage(row, screen, idx, fresh);
   return uiStage(row, screen, idx, fresh);
+}
+
+/** A twist's card: the biggest text that still fits, so the words use the whole card (the user, 2026-10-20: "use
+ *  all the square for the text, not just a part"). Measured, because how a sentence wraps can't be guessed. */
+export function fitTwistCards(el) {
+  for (const card of el.querySelectorAll('.civ-twistcard')) {
+    if (!card.clientHeight) continue;
+    let lo = 1.2, hi = 3.6;
+    for (let i = 0; i < 9; i++) {
+      const mid = (lo + hi) / 2;
+      card.style.setProperty('--tw', `${mid.toFixed(3)}cqw`);
+      if (card.scrollHeight <= card.clientHeight + 1) lo = mid; else hi = mid;
+    }
+    // a little under the edge: a line can wrap differently once the fonts settle
+    card.style.setProperty('--tw', `${(lo * 0.96).toFixed(3)}cqw`);
+  }
 }
 
 /** Draw it, and type any dictated message into its input bar. */
@@ -298,6 +334,7 @@ export function paintStage(el, row, screen, idx, fresh = false) {
   // down the hallway, visit-stage.js): the new layout gets the same element.
   const keep = Object.fromEntries([...el.querySelectorAll('video[data-keep]')].map(v => [v.dataset.keep, v]));
   el.innerHTML = stageInner(row, screen, idx, fresh);
+  fitTwistCards(el);
   for (const v of el.querySelectorAll('video[data-keep]')) if (keep[v.dataset.keep]) v.replaceWith(keep[v.dataset.keep]);
   const feeds = [...el.querySelectorAll(FEEDS)];
   feeds.forEach((f, i) => {

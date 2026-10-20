@@ -322,7 +322,8 @@ describe('an aired episode can be watched and read', () => {
     const all = buildVPScreens(row);
     // The edit's teasers (vp-ci/teasers.js) sit around the aired scenes:
     // episode 2 opens on Previously and closes on Next time.
-    const TEASER = /^ci-(previously|comingup|nexttime|web)-/;
+    // ...and a twist's alert, which explains it before it plays (vp-ci/twist-alert.js).
+    const TEASER = /^ci-(previously|comingup|nexttime|web|twist)-/;
     expect(all[0].id).toMatch(/^ci-previously-/);
     // ...then Next time, and the Circle web is the very last screen.
     expect(all.at(-2).id).toMatch(/^ci-nexttime-/);

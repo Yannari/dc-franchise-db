@@ -91,6 +91,9 @@ export const STAGE_DATA = {
   reunion: d => ({ seats: d.seats || null, talks: (d.talks || []).map(t => [t.a, t.b]) }),
   reveal: d => ({ placements: (d.placements || []).map(p => ({ profile: p.profile, place: p.place })), seats: d.seats || null, fan: d.fan || null }),
   party: d => ({ theme: d.theme, props: d.props || [] }),
+  // A twist's own kind, for the alert that explains it (vp-ci/twist-alert.js).
+  arrival: d => ({ entry: d.entry || null }),
+  'power-reveal': d => ({ power: d.kind || null }),
   // The Newsfeed: how many likes each player's post got this morning.
   likes: d => ({ counts: likeCounts(d.likes) }),
   'group-chat': d => ({ name: d.name, formed: !!d.formed, declined: d.declined || [], plan: d.plan || null, event: d.event || null }),

@@ -95,6 +95,19 @@ export const CIV_CSS = `
 .civ-shock{position:absolute;left:50%;top:44%;width:10px;height:10px;border-radius:50%;border:3px solid #9fd8ff;transform:translate(-50%,-50%);opacity:0}
 .civ-alert.go .civ-shock{animation:civShock 1.1s .6s ease-out}
 @keyframes civShock{0%{opacity:1;width:10px;height:10px}100%{opacity:0;width:140%;height:250%}}
+/* a twist, explained (vp-ci/twist-alert.js): ALERT! moves up, the card holds the rules */
+.civ-alert.explain .civ-alertTxt{top:20%;font-size:8cqw}
+.civ-alert.explain.read .civ-alertTxt{animation:none;opacity:.55}
+.civ-twistcard{position:absolute;left:7%;right:7%;top:31%;bottom:6%;display:flex;flex-direction:column;padding:2cqw 2.6cqw;border-radius:1.2cqw;background:linear-gradient(160deg,rgba(26,21,96,.92),rgba(10,9,48,.95));border:1px solid rgba(139,92,255,.6);box-shadow:0 0 4cqw rgba(139,92,255,.35);overflow:auto}
+.civ-twistcard.in{animation:civTwistIn .7s 1s both}
+@keyframes civTwistIn{from{opacity:0;transform:translateY(2cqw)}to{opacity:1;transform:none}}
+.civ-twistcard small{display:block;font-weight:900;font-size:.85cqw;letter-spacing:.22em;color:#9fe6ff}
+.civ-twistcard b{display:block;font-size:3.4cqw;font-weight:900;margin:.3cqw 0 1.2cqw;color:#fff}
+/* the words fill the card: sized for the whole explanation (--tw, set from its length in stage.js) */
+.civ-twistcard ol{margin:0;padding-left:2.2cqw;display:flex;flex-direction:column;gap:calc(var(--tw,2cqw) * .5);flex:1}
+.civ-twistcard li{font-size:var(--tw,2cqw);line-height:1.4;color:#dfe6ff}
+.civ-twistcard li.new{animation:civTwistIn .45s both;color:#fff}
+.civ-twistcard li.wait{visibility:hidden}
 .civ-alertSub{position:absolute;left:6%;right:6%;top:64%;text-align:center;font-weight:600;font-size:1.9cqw;line-height:1.45;color:#dfe6ff}
 .civ-alertSub.new{animation:civUp .6s both}
 .civ-alert.go .civ-alertSub{animation-delay:1.2s}

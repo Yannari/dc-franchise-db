@@ -16,6 +16,7 @@
 // Plan 6.
 import { changesOf } from './web-data.js';
 import { snapshotEnd } from './snapshot.js';
+import { pairDay, pairNight } from './shared.js';
 import { formAlliance, checkIn, activeAlliances, afterRatings, doubleAgents, drift } from './alliances.js';
 import { gs, setGs, players } from '../core.js';
 import { streamFor } from '../dr/rng.js';
@@ -221,6 +222,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
   let tonight = null;
   for (const d of schedule) {
     state.day = d.day;
+    // Two people, one profile: a day settles how they get along (ci/shared.js).
+    if (d.day > 1) pairDay(state);
     const start = roomAt(state);
     // A re-run turns this day's dice once more (options.rerolls[day]); every
     // other day keeps its own, so earlier episodes come back identical.
@@ -332,6 +335,8 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
       rating = runRating(state, rng, { seats: f.seats ?? 2, pick: f.pick, hidden: !!f.hidden, human: !!f.human });
       // Did an ally rate me low? (alliances.js: the group may vote them out.)
       afterRatings(state, ds(`ally-rate:${d.day}`), rating);
+      // ...and a pair takes the night together: a falling-out, a making-up or one of them taking over airs.
+      for (const c of pairNight(state, rating)) addScene(state, 'life', [c.h], { habit: 'pair', event: 'pair.shift', from: c.from, to: c.to, low: c.low }, [c.h]);
       // An instant block happens on the spot (US 1 Ep 9); every other night
       // ends the episode on the ratings and blocks at the start of the next.
       if (night.format === 'instant') {

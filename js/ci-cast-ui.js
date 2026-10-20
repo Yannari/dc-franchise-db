@@ -182,6 +182,7 @@ function planRow(p, autoRole, auto = { rep: 'none', stars: null }) {
         <select class="ci-in" data-field="partner"><option value="">nobody</option>${others.map(o =>
           `<option value="${esc(o.name)}"${s.partner === o.name ? ' selected' : ''}>${esc(o.name)}</option>`).join('')}</select></label>
       ${s.partner ? kinField(p.name, s) : ''}
+      ${s.partner ? dynamicField(s) : ''}
     </div>
     ${drawResult(p.name)}
   </div>`;
@@ -191,7 +192,7 @@ function planRow(p, autoRole, auto = { rep: 'none', stars: null }) {
 // Tabs for everyone / Day 1 / newcomers, a row of faces whose badges say the
 // state at a glance (what is pinned; after the deal, what they got), one
 // player's card, and "Everyone at a glance" for the whole cast in a table.
-const PIN_KEYS = ['role', 'catfish', 'persona', 'mode', 'age', 'job', 'jobCost', 'status', 'hometown', 'rep', 'partner', 'relation'];
+const PIN_KEYS = ['role', 'catfish', 'persona', 'mode', 'age', 'job', 'jobCost', 'status', 'hometown', 'rep', 'partner', 'relation', 'dynamic'];
 // What two people sharing an apartment are to each other (ci/shared.js RELATIONS).
 // "They are" IS the cast's Relationships tab (core.js REL_KINSHIP): one row
 // for the two of them, which Big Brother and Perfect Match read too, so the
@@ -214,6 +215,19 @@ function kinField(name, s) {
   return `<label class="ci-fld"><span class="ci-k">They are</span>
     <select class="ci-in" data-kin="${esc(partner)}"><option value="none">not said</option>${opts}</select>
     <span class="ci-small">${esc(note)}</span></label>`;
+}
+/** How the two get along (ci/shared.js startPair): Auto reads it from what they are and their stats. */
+const DYNAMIC_NOTES = {
+  '': 'Auto: from what they are to each other, how even-tempered and loyal they are, and how differently bold. It changes over the season: a bad night can start a fight, a good one can make up for it.',
+  close: "Close: they finish each other's messages and pick each other up after a bad night. A run of bad nights can still wear it down.",
+  bickering: "Bickering: every message is a fight and every bad night is somebody's fault. Who wins an argument is more of a coin flip.",
+  lead: 'One leads: the bolder one runs the profile and wins most arguments. The other goes along with it, unless they run out of patience.',
+};
+function dynamicField(s) {
+  return `<label class="ci-fld"><span class="ci-k">They get along</span>
+    <select class="ci-in" data-field="dynamic">${[['', 'Auto'], ['close', 'Close'], ['bickering', 'Bickering'], ['lead', 'One leads']].map(([v, l]) =>
+      `<option value="${v}"${(s.dynamic || '') === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
+    <span class="ci-small">${esc(DYNAMIC_NOTES[s.dynamic || ''])}</span></label>`;
 }
 /** Write the pair's row on the Relationships tab (and drop the Circle-only setting). */
 function setKin(name, partner, kin) {

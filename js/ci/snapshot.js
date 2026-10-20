@@ -44,5 +44,8 @@ export function snapshotEnd(state, pub = {}) {
       founder: a.founder, day: a.day, plan: a.plan ? { ...a.plan } : null, brokenBy: a.brokenBy ? [...a.brokenBy] : null })),
     pacts: (state.pacts || []).map(p => ({ kind: p.kind, a: p.a, b: p.b, day: p.day, kept: (p.kept || []).map(k => k.kept) })),
     jealous: (state.jealous || []).filter(j => j.day === state.day).map(j => ({ ...j })),
+    // How each pair sharing a profile gets along (ci/shared.js): the web says when it changes.
+    pairs: Object.fromEntries(people.filter(h => state.profiles[h]?.pair).map(h => [h, { mood: state.profiles[h].pair.mood,
+      names: state.profiles[h].players.map(n => n.split(' ')[0]), boss: state.profiles[h].pair.boss.split(' ')[0] }])),
   };
 }

@@ -100,6 +100,16 @@ export function changesOf(prev, cur, nameOf) {
     if (!present.has(t.a) || !present.has(t.b)) continue;
     if (!tiesOf(cur).some(x => key(x) === key(t)) && t.kind === 'bond') out.push({ kind: 'cooled', a: t.a, b: t.b, text: `${N(t.a)} and ${N(t.b)} have cooled off.`, rank: 7 });
   }
+  // Two people behind one profile: how they get along changed.
+  for (const [h, now] of Object.entries(cur.pairs || {})) {
+    const was = prev?.pairs?.[h];
+    if (!was || was.mood === now.mood) continue;
+    const [x, y] = now.names, other = now.names.find(n => n !== now.boss);
+    const text = now.mood === 'bickering' ? `${x} and ${y} are bickering.`
+      : now.mood === 'lead' ? `${now.boss} is calling the shots now, and ${other} is going along with it.`
+      : now.mood === 'close' ? `${x} and ${y} are on the same page again.` : `${x} and ${y} have settled down.`;
+    out.push({ kind: 'pair', a: h, text, rank: 5 });
+  }
   // At most two crush lines: the night's other moves get room.
   let crushes = 0;
   return out.sort((x, y) => x.rank - y.rank || (y.by || 0) - (x.by || 0))

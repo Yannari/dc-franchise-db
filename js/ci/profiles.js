@@ -12,7 +12,7 @@
 // All weights are proportional (stat × factor). MOTIVE_LINE is a gameplay
 // constant tuned by audit:ci-spec so that a pool big enough gives roughly a
 // third of the cast a persona (spec §2.2: about a third of real casts).
-import { rolesFor, pairRoles, RELATIONS } from './shared.js';
+import { rolesFor, pairRoles, RELATIONS, PAIR_DYNAMICS, startPair } from './shared.js';
 import { clamp, personMayScheme } from './state.js';
 import { jobOf, tellsOf } from './persona-data.js';
 import { placeOf } from './topics.js';
@@ -85,6 +85,8 @@ export function truthOf(player, setup = {}) {
     persona: setup.persona ?? legacyPin ?? null,
     partner: setup.partner || null,
     relation: RELATIONS.includes(setup.relation) ? setup.relation : null,
+    // How a pair gets along, if the author picked it (ci/shared.js startPair); else from them.
+    dynamic: PAIR_DYNAMICS.includes(setup.dynamic) ? setup.dynamic : null,
     // The Profile Plan's mode pin for a player without a persona: 'honest',
     // 'polished' or 'edited'; null lets the motive decide (spec 4.2).
     mode: ['honest', 'polished', 'edited'].includes(setup.mode) ? setup.mode : null,
@@ -273,6 +275,7 @@ export function buildProfiles(state, truths, draw, pool, rng) {
       // What they are to each other, set on either of them.
       p.relation = t.relation || state.people[t.partner]?.relation || null;
       p.roles = { ...rolesFor(state, p.players), ...pairRoles(state, p.players, p.relation) };
+      startPair(state, partnerHandle);
       // An honest pair shows the face: their name, their photos.
       if (p.mode === 'shared' && p.roles.face !== p.players[0]) {
         const f = state.people[p.roles.face];

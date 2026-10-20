@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { playCircleSeason } from '../js/ci/season.js';
-import { distance, leadFor, RELATIONS } from '../js/ci/shared.js';
+import { distance, leadFor, RELATIONS, pairNight, pairMood } from '../js/ci/shared.js';
 import { renderEntry, writeScene } from '../js/ci/script.js';
 import { addScene } from '../js/ci/state.js';
 import { POOLS } from '../js/ci/lines/index.js';
@@ -25,7 +25,7 @@ function pairSeason(relation, seed = 7, stats = {}) {
   const names = cast.map(p => p.name);
   const setup = circleSetup(names, { newcomers: 5 });
   Object.assign(setup.Mateo, { catfish: 'never' });
-  Object.assign(setup.Luis, { catfish: 'never', partner: 'Mateo', ...(relation ? { relation } : {}) });
+  Object.assign(setup.Luis, { catfish: 'never', partner: 'Mateo', ...(relation ? { relation } : {}), ...(stats.dynamic ? { dynamic: stats.dynamic } : {}) });
   return playCircleSeason({ cast: names, setup, pool: makePool(6, seed), seed, options: { script: false } });
 }
 const pairOf = state => Object.entries(state.profiles).find(([, p]) => p.players.length > 1);
@@ -103,3 +103,40 @@ describe('it changes the words', () => {
     expect(out.lines.map(l => l.person)).toEqual(['Luis', 'Mateo']);
   });
 });
+
+// How the two get along (the user, 2026-10-20: "duo profiles, do they have interactions between each other depending
+// on their relationship?"): a bond and a lean on the pair, read as a mood for the words.
+describe('how the two get along', () => {
+  it("starts where the author put it, and an author's pick is the mood on day one", () => {
+    for (const d of ['close', 'bickering', 'lead']) {
+      const { state } = pairSeason('friends', 7, { dynamic: d });
+      const [, p] = pairOf(state);
+      expect(p.pair.log[0]?.from ?? p.pair.mood, d).toBe(d);
+    }
+  });
+  it('a boss wins more of the arguments than the same pair with no lean', () => {
+    const wins = d => {
+      const { state } = pairSeason('friends', 7, { dynamic: d });
+      const [h, p] = pairOf(state);
+      p.pair.bond = 6; p.pair.lean = d === 'lead' ? 1 : 0;
+      let n = 0;
+      for (let i = 0; i < 400; i++) if (leadFor(state, h, 'pitch', streamFor(i, 'lead')) === p.pair.boss) n++;
+      return n;
+    };
+    expect(wins('lead')).toBeGreaterThan(wins('close') + 60);
+  });
+  it('a bad night costs the bond and a good one pays it, and a mood that changes is logged', () => {
+    const { state } = pairSeason('friends', 7);
+    const [h, p] = pairOf(state);
+    p.pair.bond = 3.8; p.pair.lean = 0; p.pair.mood = pairMood(p);
+    const others = Object.keys(state.profiles).filter(x => x !== h).slice(0, 5);
+    const row = profile => ({ results: [...others, profile].map((x, i) => ({ profile: x, place: x === profile ? 6 : i + 1 })) });
+    const changed = pairNight(state, row(h));
+    expect(p.pair.bond).toBeLessThan(3.8);
+    expect(changed.map(c => c.to)).toEqual(['bickering']);
+    const before = p.pair.bond;
+    pairNight(state, { results: [h, ...others].map((x, i) => ({ profile: x, place: i + 1 })) });
+    expect(p.pair.bond).toBeGreaterThan(before);
+  });
+});
+

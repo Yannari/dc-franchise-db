@@ -35,9 +35,9 @@ const kinTone = kin => (TENSE.has(kin) ? 'tense' : 'warm');
 
 // 'face' and 'brain': the two people behind a shared profile, speaking to
 // each other in their own apartment (spec §14.8).
-export const ROLES = ['a', 'b', 'c', 'host', 'face', 'brain', 'older', 'younger', 'parent', 'kid'];
+export const ROLES = ['a', 'b', 'c', 'host', 'face', 'brain', 'older', 'younger', 'parent', 'kid', 'boss', 'follower'];
 // The two people behind a shared profile, by the part they play in a line.
-const PAIR_ROLES = new Set(['face', 'brain', 'older', 'younger', 'parent', 'kid']);
+const PAIR_ROLES = new Set(['face', 'brain', 'older', 'younger', 'parent', 'kid', 'boss', 'follower']);
 export const FACT_KEYS = ['time', 'intent', 'ending', 'result', 'known', 'early', 'late', 'catfish', 'outed',
   'suspects', 'theory', 'pact', 'friends', 'rivals', 'flirty', 'newcomer', 'mood', 'group', 'style',
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
@@ -261,6 +261,8 @@ const PAIR_WRITES = /^(chat\.|circle\.|welcome\.|group\.|hangout\.|callback\.)/;
 const PAIR_REL = { couple: 'couple', married: 'couple', siblings: 'siblings', twins: 'siblings', cousins: 'siblings', parent: 'parent', friends: 'friends' };
 // How many times a scene lets a pair talk between themselves: a scene where every line got an answer would be all them.
 const PAIR_PER_SCENE = 3;
+// How often a pair's mood (close, bickering, one leads) picks their words over the general lines.
+export const PAIR_MOOD_SHARE = 0.6;
 const firstName = n => String(n || '').split(' ')[0];
 function pairTalk(state, block, cast, rng, ctx) {
   const out = [];
@@ -280,7 +282,9 @@ function pairTalk(state, block, cast, rng, ctx) {
       sent = sent || l.kind === 'send';
       if (opens && !l.person && left > 0 && !typist[`${l.who}:cowrote`] && l.kind === 'send' && PAIR_WRITES.test(block.key) && rng() < 0.45) {
         const rel = PAIR_REL[p.relation] || null;
-        const keys = [rel && `pair.cowrite.${rel}`, 'pair.cowrite'].filter(k => k && POOLS[k]?.length);
+        // How they get along picks the words most of the time (ci/shared.js pairMood).
+        const mood = p.pair?.mood && p.pair.mood !== 'steady' && POOLS[`pair.cowrite.mood.${p.pair.mood}`]?.length && rng() < PAIR_MOOD_SHARE ? p.pair.mood : null;
+        const keys = mood ? [`pair.cowrite.mood.${mood}`] : [rel && `pair.cowrite.${rel}`, 'pair.cowrite'].filter(k => k && POOLS[k]?.length);
         const entry = pickEntry(state, keys, {}, `pair:${l.who}`, rng, l.who);
         if (entry) {
           const said = renderEntry(state, entry, { a: l.who }, rng, ctx).lines;
@@ -312,7 +316,10 @@ function pairTalk(state, block, cast, rng, ctx) {
     // What the first line was about: whoever else the block is about.
     const about = ['a', 'b', 'c'].map(k => cast?.[k]).find(h => typeof h === 'string' && h !== l.who && state.profiles[h]);
     if (moment === 'rate' && !about) return;
-    const entry = pickEntry(state, `pair.answer.${moment}`, { register: registerOf(state, l.who, other) }, `pair:${l.who}`, rng, l.who);
+    const moodKey = p.pair?.mood && p.pair.mood !== 'steady' ? `pair.answer.${moment}.${p.pair.mood}` : null;
+    const entry = moodKey && POOLS[moodKey]?.length && rng() < PAIR_MOOD_SHARE
+      ? pickEntry(state, moodKey, {}, `pair:${l.who}`, rng, l.who)
+      : pickEntry(state, `pair.answer.${moment}`, { register: registerOf(state, l.who, other) }, `pair:${l.who}`, rng, l.who);
     if (!entry) return;
     const said = fill(state, entry.turns[0].react, { a: l.who, b: about, personA: other }, 'a');
     out.push({ who: l.who, kind: 'react', text: said, person: firstName(other) });
@@ -520,8 +527,14 @@ const BLOCKS = {
         : rel ? `shared.argue.${won}.${rel}` : null;
       // The relationship's own lines alongside the general ones: a pair argues
       // before nearly every message, so one small pool would repeat in days.
-      out.push(relKey && POOLS[relKey]?.length ? { key: relKey, keys: [relKey, `shared.argue.${won}`], cast: { a, b } }
-        : { key: `shared.argue.${won}`, cast: { a, b } });
+      // ...and how they get along: a bickering pair snipes, a close one barely argues, a boss decides.
+      // (by who won it: a boss, or for once the other one; a close or bickering pair, the face or the brain)
+      const m = pa.pair?.mood;
+      const mk = m === 'lead' ? `shared.argue.mood.lead.${s.data.lead === pa.pair.boss ? 'boss' : 'follower'}` : m && m !== 'steady' ? `shared.argue.mood.${m}.${won}` : null;
+      const moodKey = mk && POOLS[mk]?.length ? mk : null;
+      const argueKeys = [relKey && POOLS[relKey]?.length ? relKey : null, moodKey, `shared.argue.${won}`].filter(Boolean);
+      out.push(moodKey && streamFor(state.seed, `argue:${s.id}`)() < PAIR_MOOD_SHARE ? { key: moodKey, cast: { a, b } }
+        : { key: argueKeys[0], keys: argueKeys.filter(k => k !== moodKey), cast: { a, b } });
     }
     // After a third of chats, a says one thing to the empty apartment, in the
     // head of their archetype (the real person; lines/asides.js).
@@ -1338,10 +1351,14 @@ const BLOCKS = {
     if (s.data.event === 'final.morning') return [{ key: s.data.about ? 'final.morning.friend' : 'final.morning', cast: { a: s.who[0], b: s.data.about || undefined } }];
     if (s.data.event === 'final.leave') return [{ key: 'final.leave', cast: { a: s.who[0] } }];
     // Finding out a partner kissed somebody at the door (twotiming.js kissFallout).
+    // Two people behind one profile, after a night that changed how they get along (ci/shared.js pairNight).
+    if (s.data.event === 'pair.shift') return [{ key: `life.pair.shift.${s.data.to}${s.data.to === 'bickering' && s.data.low ? '.low' : ''}`, keys: [...new Set([`life.pair.shift.${s.data.to}${s.data.to === 'bickering' && s.data.low ? '.low' : ''}`, `life.pair.shift.${s.data.to}`])], cast: { a: s.who[0] } }];
     if (s.data.event === 'cheated') return [{ key: 'kin.cheated.react', cast: { a: s.who[0], b: s.data.about, c: s.data.with, text: kinText(state, s.who[0], s.data.about) } }];
     // A pair that is something to each other: often it's the two of them.
     const p = state.profiles[s.who[0]];
     const hs = [...`${s.id}:pair`].reduce((x, ch) => (x * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    const mood = p?.pair?.mood && p.pair.mood !== 'steady' && POOLS[`life.pair.mood.${p.pair.mood}`]?.length ? p.pair.mood : null;
+    if (mood && p.players.length > 1 && hs % 100 < PAIR_LIFE && (!p.relation || (hs >>> 8) % 100 < PAIR_MOOD_SHARE * 100)) return [{ key: `life.pair.mood.${mood}`, cast: { a: s.who[0] } }];
     if (p?.relation && p.players.length > 1 && hs % 100 < PAIR_LIFE) return [{ key: `life.pair.${p.relation}`, cast: { a: s.who[0] } }];
     return [{ key: `life.${s.data.habit}`, cast: { a: s.who[0], personA: s.data.person } }];
   },
@@ -1547,7 +1564,10 @@ const BRIDGES = { chat: 'host.chat', status: 'host.status', 'circle-chat': 'host
 function bridge(state, aired) {
   let since = 0;
   for (const s of aired) {
-    const key = BRIDGES[s.kind];
+    // Two people behind one profile, at home: the host names both, and says what kind of night it is.
+    const pairKey = s.kind === 'life' && s.data?.event === 'pair.shift' ? `host.pair.shift.${s.data.to}`
+      : s.kind === 'life' && s.script?.blocks?.[0]?.key?.startsWith('life.pair') ? 'host.pair' : null;
+    const key = pairKey && POOLS[pairKey]?.length ? pairKey : BRIDGES[s.kind];
     const light = key && s.data?.intent !== 'confess' && s.script?.blocks?.length;
     if (light && since >= HOST_EVERY) {
       const cast = { a: s.who[0], b: s.who[1] };
@@ -1676,11 +1696,17 @@ export const POOL_KEYS = [
   ...['props', 'plan', 'draft', 'mic', 'joke', 'laugh', 'last', 'tally', 'winner', 'sting'].map(k => `game.roast.${k}`),
   ...['down', 'up', 'rate', 'wait', 'plan', 'react'].map(k => `pair.answer.${k}`),
   'pair.cowrite', ...['parent', 'couple', 'siblings', 'friends'].map(k => `pair.cowrite.${k}`),
+  // How a pair gets along (ci/shared.js pairMood): their own words for each mood, and the night it changes.
+  ...['close', 'bickering', 'lead'].flatMap(m => [`pair.cowrite.mood.${m}`, `life.pair.mood.${m}`]),
+  ...['close', 'bickering'].flatMap(m => [`shared.argue.mood.${m}.faceWins`, `shared.argue.mood.${m}.brainWins`,
+    ...['down', 'up', 'wait', 'plan', 'react'].map(k => `pair.answer.${k}.${m}`)]),
+  'shared.argue.mood.lead.boss', 'shared.argue.mood.lead.follower',
+  ...['close', 'bickering', 'lead', 'steady'].map(m => `life.pair.shift.${m}`), 'life.pair.shift.bickering.low',
   'game.team.pick', 'game.team.last', 'game.team.result', 'game.gift.round', 'game.gift.none',
   'game.rival.round', 'game.flirt.round', ...['party', 'photo', 'video', 'immunity', 'gift', 'trophy', 'trophy.react'].map(k => `game.prize.${k}`),
   'party.open', 'party.nhie', 'party.nhie.none',
   ...['workout', 'skincare', 'cooking', 'reading', 'singing', 'plushie', 'praying', 'pacing'].map(h => `life.${h}`),
-  'home.video', 'host.game', 'host.life', 'shared.argue.faceWins', 'shared.argue.brainWins',
+  'home.video', 'host.game', 'host.life', 'host.pair', ...['close', 'bickering', 'lead', 'steady'].map(m => `host.pair.shift.${m}`), 'shared.argue.faceWins', 'shared.argue.brainWins',
   ...['couple', 'married', 'siblings', 'twins', 'friends', 'cousins'].flatMap(k => [`shared.argue.faceWins.${k}`, `shared.argue.brainWins.${k}`]),
   'shared.argue.parentWins.parent', 'shared.argue.kidWins.parent',
   ...['couple', 'married', 'siblings', 'twins', 'parent', 'friends', 'cousins'].flatMap(k => [`life.pair.${k}`, `meet.explain.shared.${k}`, `goodbye.pair.${k}`]),

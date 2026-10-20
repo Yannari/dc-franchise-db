@@ -106,7 +106,7 @@ export function webStage(row, screen, idx, fresh) {
   }
   const changes = d.changes || [];
   const seen = changes.slice(0, Math.max(0, idx + 1));
-  const TAG = { blocked: 'OUT', formed: 'NEW', broken: 'BROKE', left: 'LEFT', mutual: '♥ BOTH', crush: 'CRUSH', grudge: 'GRUDGE', bond: 'CLOSE', closer: 'CLOSER', cooled: 'COOLED' };
+  const TAG = { blocked: 'OUT', formed: 'NEW', broken: 'BROKE', left: 'LEFT', mutual: '♥ BOTH', crush: 'CRUSH', grudge: 'GRUDGE', bond: 'CLOSE', closer: 'CLOSER', cooled: 'COOLED', pair: 'THE TWO' };
   const list = seen.map((c, i) => `<div class="cw-chg k-${c.kind}${i === idx && fresh ? ' new' : ''}"><span class="t">${TAG[c.kind] || 'Δ'}</span>${esc(c.text)}</div>`).join('')
     || `<div class="cw-empty">${changes.length ? 'Click to run the changes ▸' : 'Nothing moved tonight.'}</div>`;
   const al = alliances.map(a => `<div class="cw-al"><i style="background:${colorOf(a.id)}"></i><b>${esc(a.name)}</b><small>${a.members.filter(m => cur.people?.includes(m)).map(m => esc(nameOf(row, m))).join(' · ')}</small></div>`).join('')

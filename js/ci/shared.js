@@ -80,8 +80,10 @@ export function leadFor(state, h, intent, rng) {
   let best = names[0], top = -Infinity;
   for (const n of names) {
     const rel = state.profiles[h].relation;
+    // How they get along (pairPull): the boss's pull, and a coin flip that grows as the bond falls.
+    const dyn = pairPull(state, h, n);
     let pull = S(state, h, 'boldness', { who: n }) * 0.3 + S(state, h, 'strategic', { who: n }) * 0.2
-      + rng() * (rel === 'siblings' ? 2 + SIBLING_CHAOS : 2);
+      + rng() * ((rel === 'siblings' ? 2 + SIBLING_CHAOS : 2) + dyn.chaos) + dyn.pull;
     if (rel === 'parent' && n === roles.parent) pull += PARENT_RANK;
     if (n === roles.face && FACE_INTENTS.has(intent)) pull += 2;
     if (n === roles.brain && BRAIN_INTENTS.has(intent)) pull += 2;
@@ -125,4 +127,100 @@ export function noticeInconsistency(state, obs, h, scene) {
     nudgeBelief(state, obs, h, 'real', -INCONSISTENT_COST * S(state, obs, 'intuition') / 10, scene);
   }
   return row[h];
+}
+
+// ── How the two get along (the user, 2026-10-20: "duo profiles, do they have
+// interactions between each other depending on their relationship?") ──
+// What they are to each other picked their words; how well they get along did
+// not: two siblings who adore each other talked like two who can't stand each
+// other. Now each pair has a bond (0-10) and a lean (0-1, how much one of them
+// runs the profile). Where it starts: what they are, how even-tempered and
+// loyal the two are, and how unlike their boldness is; or the author's pick.
+// It moves: a low night costs it (more for a short temper), a good one pays it,
+// and a boss who always wins wears the other down unless they are loyal; every
+// day it settles back toward where it started. It decides who wins an
+// argument over a message and how much of a coin flip that is. The mood (close,
+// bickering, one-leads, or steady) is a reading of those numbers for the words.
+export const PAIR_DYNAMICS = ['close', 'bickering', 'lead'];
+export const PAIR_BASE = { couple: 6, married: 6, twins: 7, siblings: 3.5, cousins: 4.5, parent: 5, friends: 6 };
+export const PAIR_SWING = 2.4;      // bond a whole night's swing costs or pays, top place to last
+export const PAIR_SETTLE = 0.15;    // share of the gap back to the start, each day
+export const PAIR_WEAR = 0.25;      // bond a day of always losing costs a follower with no loyalty
+export const LEAD_PULL = 3.5;       // argument pull the boss gets at full lean
+export const PAIR_CHAOS = 2.5;      // extra coin-flip in an argument at bond 0
+const avg = (state, names, k) => names.reduce((s, n) => s + (state.people[n]?.stats?.[k] ?? 5), 0) / names.length;
+const bossScore = (state, n) => (state.people[n]?.stats?.boldness ?? 5) * 0.6 + (state.people[n]?.stats?.strategic ?? 5) * 0.4;
+
+/** The pair's starting bond and lean, and who runs it. Called once the second person joins. */
+export function startPair(state, h) {
+  const p = state.profiles[h];
+  if (!p || p.players.length < 2) return null;
+  const names = p.players.slice(0, 2);
+  const authored = names.map(n => state.people[n]?.dynamic).find(d => PAIR_DYNAMICS.includes(d)) || null;
+  const [x, y] = names;
+  // A parent pulls rank (PARENT_RANK): the parent runs it, however bold the kid.
+  const boss = p.relation === 'parent' && p.roles?.parent ? p.roles.parent : bossScore(state, y) > bossScore(state, x) ? y : x;
+  const gap = Math.abs(bossScore(state, x) - bossScore(state, y));
+  let bond = (PAIR_BASE[p.relation] ?? 5) + (avg(state, names, 'temperament') - 5) * 0.4 + (avg(state, names, 'loyalty') - 5) * 0.3
+    - Math.abs((state.people[x]?.stats?.boldness ?? 5) - (state.people[y]?.stats?.boldness ?? 5)) * 0.2;
+  let lean = clampTo(gap / 6, 0, 1) * (p.relation === 'parent' ? 1.3 : 1);
+  if (authored === 'close') bond = Math.max(bond, 8);
+  if (authored === 'bickering') bond = Math.min(bond, 2);
+  if (authored === 'lead') lean = Math.max(lean, 0.75);
+  if (authored === 'close' || authored === 'bickering') lean = Math.min(lean, 0.4);
+  bond = clampTo(bond, 0, 10);
+  lean = clampTo(lean, 0, 1);
+  p.pair = { bond, start: bond, lean, boss, authored, mood: null, log: [] };
+  p.roles = { ...(p.roles || {}), boss, follower: names.find(n => n !== boss) };
+  p.pair.mood = pairMood(p);
+  return p.pair;
+}
+const clampTo = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+/** A reading of the numbers, for the words only. */
+export function pairMood(p) {
+  const d = p?.pair;
+  if (!d) return null;
+  if (d.bond < 3.5) return 'bickering';
+  if (d.lean >= 0.5) return 'lead';
+  if (d.bond >= 6.5) return 'close';
+  return 'steady';
+}
+
+/** Each day: settle toward where they started; a boss who always wins wears the other one down. */
+export function pairDay(state) {
+  for (const h of state.active) {
+    const p = state.profiles[h], d = p?.pair;
+    if (!d) continue;
+    const loyal = state.people[p.roles?.follower]?.stats?.loyalty ?? 5;
+    d.bond = clampTo(d.bond + (d.start - d.bond) * PAIR_SETTLE - d.lean * PAIR_WEAR * (1 - loyal / 10), 0, 10);
+  }
+}
+
+/** After the ratings: where they landed moves the bond, more for a short temper. Returns the pairs whose mood changed. */
+export function pairNight(state, row) {
+  const out = [];
+  if (!row || row.hidden || !row.results?.length) return out;
+  const n = row.results.length;
+  for (const r of row.results) {
+    const p = state.profiles[r.profile], d = p?.pair;
+    if (!d) continue;
+    const frac = n > 1 ? (r.place - 1) / (n - 1) : 0.5;
+    const temper = avg(state, p.players.slice(0, 2), 'temperament');
+    const was = d.mood;
+    d.bond = clampTo(d.bond + (0.5 - frac) * PAIR_SWING * (1.5 - temper / 10), 0, 10);
+    d.mood = pairMood(p);
+    if (d.mood !== was) {
+      d.log.push({ day: state.day, from: was, to: d.mood, place: r.place });
+      out.push({ h: r.profile, from: was, to: d.mood, low: frac > 0.5 });
+    }
+  }
+  return out;
+}
+
+/** The boss's pull in an argument and how much of a coin flip it is. */
+export function pairPull(state, h, n) {
+  const d = state.profiles[h]?.pair;
+  if (!d) return { pull: 0, chaos: 0 };
+  return { pull: n === d.boss ? d.lean * LEAD_PULL : 0, chaos: (10 - d.bond) / 10 * PAIR_CHAOS };
 }

@@ -20,7 +20,7 @@ const variants = t => Object.values(t.v || {}).flatMap(v => (typeof v === 'strin
 const turnTexts = e => (e.turns || []).flatMap(t => [...KINDS.filter(x => t[x]).map(x => [t.by, x, t[x]]), ...variants(t)]);
 const allTexts = e => [e.stage, e.beat, ...turnTexts(e).map(t => t[2])].filter(Boolean);
 const SLOT = /\{([^}]*)\}/g;
-const OK_SLOT = /^([abc])(\.(real|aka|face|brain|older|younger|parent|kid|parentWord|kidWord|olderSib|youngerSib|sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj))?$|^([et]):([A-Za-z0-9]+)$|^(q|game|ans|x|n|topic|town)$/;
+const OK_SLOT = /^([abc])(\.(real|aka|face|brain|older|younger|parent|kid|boss|follower|parentWord|kidWord|olderSib|youngerSib|sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj))?$|^([et]):([A-Za-z0-9]+)$|^(q|game|ans|x|n|topic|town)$/;
 
 describe('the pools are well-formed', () => {
   // a voice version is the same moment said another way: its registers are real ones, and it names nobody the line

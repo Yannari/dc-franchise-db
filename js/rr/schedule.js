@@ -22,14 +22,20 @@ export function buildSchedule({ teams, options = DEFAULT_OPTIONS, seed = 1 }) {
   for (let i = 0; i < 4; i++) rng();   // dr/rng.js: a fresh stream's first draws are poorly mixed
 
   const elimLegs = Math.max(0, teams - 3);
-  const nonLegs = Math.round(o.nonElimShare * elimLegs);
+  // legs pinned on the Season Timeline (leg number -> 'non' | 'elim'): a pinned non-elimination leg is one, and the
+  // season has at least as many as are pinned (it grows to hold them)
+  const kinds = o.legKinds || {};
+  const pinNon = Object.keys(kinds).filter(n => kinds[n] === 'non').map(Number);
+  const pinElim = new Set(Object.keys(kinds).filter(n => kinds[n] === 'elim').map(Number));
+  const nonLegs = Math.max(Math.round(o.nonElimShare * elimLegs), pinNon.length);
   const total = elimLegs + nonLegs + 1;
 
   // Non-elimination legs: anywhere from leg 2 to leg total−2 (the last two are the
   // semi-final and the final).
+  const pinnedNon = pinNon.filter(n => n >= 2 && n <= total - 2);
   const eligible = [];
-  for (let n = 2; n <= total - 2; n++) eligible.push(n);
-  const nonAt = new Set(shuffle(eligible, rng).slice(0, nonLegs));
+  for (let n = 2; n <= total - 2; n++) if (!pinElim.has(n) && !pinnedNon.includes(n)) eligible.push(n);
+  const nonAt = new Set([...pinnedNon, ...shuffle(eligible, rng).slice(0, nonLegs - pinnedNon.length)]);
 
   // Zero-money legs: never the first, never the final.
   const middle = [];

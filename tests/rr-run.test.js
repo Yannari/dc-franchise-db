@@ -369,3 +369,18 @@ describe('Engaged, picked in the Pairs view', () => {
     expect(REL_TAGS.engaged.length).toBeGreaterThanOrEqual(3);
   });
 });
+
+describe('the Season Timeline counts the racers starting each leg', () => {
+  // the user, 2026-10-19: "why i got ep1 18 left and ep2 18 left then ep3 16 left when the non elimination sign is on
+  // ep2": the tile counted who was left AFTER the leg, so the count fell a leg late
+  it('a leg after a non-elimination leg starts with as many as it did', async () => {
+    const { raceEpisodeMap } = await import('../js/rr-run.js');
+    freshSeason(10);
+    const map = raceEpisodeMap();
+    expect(map[0].active).toBe(20);
+    for (let i = 1; i < map.length; i++) {
+      const prev = map[i - 1];
+      expect(map[i].active, `leg ${map[i].ep}`).toBe(prev.nonElim ? prev.active : prev.active - 2);
+    }
+  });
+});

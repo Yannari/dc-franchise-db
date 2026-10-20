@@ -606,6 +606,9 @@ export const SHOWS = {
       fanWords: ['the Chill Zone', 'the Don Box', 'Botch or Watch', 'Either/Or', 'the Boomerang', 'non-elimination leg',
         'Express Pass', 'the finale', 'Don'],
       host: 'Don',
+      // the hub before the premiere, and a spoiler-free result: a race has no vote
+      premiereNote: 'Nobody has raced yet. The first Don Box opens at the start line, and the first team home tonight takes the first leg.',
+      resultsHidden: 'Results hidden',
     },
     // PROVISIONAL until a season has been played and the signals printed
     // (ADDING-A-SHOW §2.5). The race sells mess, travel disasters and team

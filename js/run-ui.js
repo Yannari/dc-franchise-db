@@ -32,7 +32,7 @@ import { challengeDailyList, challengeDrawnDailies } from './ch-run.js';
 import { isChallengeSeason, simulateChallengeEpisode, challengeCanRerun, lastChallengeRefusal, rerunChallengeEpisode,
   challengePendingChange, challengeEpisodeMap, challengeVoteShape } from './ch-run.js';
 import { isRaceSeason, simulateRaceEpisode, raceCanRerun, lastRaceRefusal, racePendingChange, raceEpisodeMap,
-  raceVoteShape, rerunRaceEpisode } from './rr-run.js';
+  raceVoteShape, rerunRaceEpisode, racePlaceList, racePlaceName, raceDrawnRoute, raceSetPin } from './rr-run.js';
 import { raceEpisodeText } from './rr-view.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
@@ -785,7 +785,7 @@ export function renderSeasonHub() {
     <header class="hub-headline"><div><div class="hub-kicker">${model.setting.icon} ${_hubEsc(model.setting.label)} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><div class="hub-headline-right"><button type="button" class="hub-sf${_spoilerFree ? ' is-on' : ''}" role="switch" aria-checked="${_spoilerFree}" onclick="toggleSpoilerFree(${!_spoilerFree})" title="${_spoilerFree ? 'Results are hidden until you watch the episode' : 'Results are shown on this screen as soon as an episode is simulated'}"><span class="hub-sf-track"><span class="hub-sf-knob"></span></span><span class="hub-sf-label">Spoiler-free<small>${_spoilerFree ? 'On · outcomes hidden' : 'Off · outcomes shown'}</small></span></button><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></div></header>
     ${secondaryActions}
     <div class="hub-progress${_spoilerFree && model.latest ? ' hub-progress-hidden' : ''}" role="progressbar" aria-label="${_spoilerFree && model.latest ? 'Season progress hidden' : 'Season progress'}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${_spoilerFree && model.latest ? 0 : model.progress}"><span style="width:${_spoilerFree && model.latest ? 100 : model.progress}%"></span></div>
-    ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_onReunion ? '' : _spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : `<span class="hub-no-boot">${_hubEsc(showWords(seasonFormat(seasonConfig)).noExitLine || 'No elimination')}</span>`}</div><div class="hub-last-copy"><strong>${_onReunion ? 'Everybody back, nothing left to hide' : _spoilerFree ? 'Outcome hidden until you watch' : _hubEsc(model.latestOutcome)}</strong><span>${_onReunion ? `Episode ${_reunionRow.num + 1} · The Reunion` : `Episode ${model.latest.num}`}${!_onReunion && !_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_onReunion ? '' : _spoilerFree ? '<em>Votes hidden</em>' : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${_watchArg(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>Nobody has voted yet. Opening bonds and first impressions will finally become consequences.</span></section>`}
+    ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_onReunion ? '' : _spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : `<span class="hub-no-boot">${_hubEsc(showWords(seasonFormat(seasonConfig)).noExitLine || 'No elimination')}</span>`}</div><div class="hub-last-copy"><strong>${_onReunion ? 'Everybody back, nothing left to hide' : _spoilerFree ? 'Outcome hidden until you watch' : _hubEsc(model.latestOutcome)}</strong><span>${_onReunion ? `Episode ${_reunionRow.num + 1} · The Reunion` : `Episode ${model.latest.num}`}${!_onReunion && !_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_onReunion ? '' : _spoilerFree ? `<em>${_hubEsc(showWords(seasonFormat(seasonConfig)).resultsHidden || 'Votes hidden')}</em>` : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${_watchArg(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>${_hubEsc(showWords(seasonFormat(seasonConfig)).premiereNote || 'Nobody has voted yet. Opening bonds and first impressions will finally become consequences.')}</span></section>`}
     ${aftermathHtml}
     <div class="hub-grid"><div class="hub-main-column"><div class="hub-section-title"><span>${_spoilerFree && model.latest ? 'Cast after the episode' : 'Cast still in the game'}</span><small>${_spoilerFree && model.latest ? 'Hidden' : `${model.remaining} remaining`}</small></div><div class="hub-tribes">${castHtml}</div></div><aside class="hub-briefing"><div class="hub-section-title"><span>Going forward</span><small>Public context</small></div><div class="hub-next-card"><label>Next episode</label><strong>${_spoilerFree && model.latest ? 'Available after revealing the outcome' : _hubEsc(model.twistLabel)}</strong></div><div class="hub-story-list">${publicStorylines.map((line, index) => `<div><b>${String(index + 1).padStart(2, '0')}</b><span>${_hubEsc(line)}</span></div>`).join('')}</div></aside></div>
   </section>`;
@@ -3987,6 +3987,44 @@ const _CH_SHAPE = { solo: 'Solo', pairs: 'Partners', teams: 'Teams' };
 function _chDailyEntry(ep) {
   return (seasonConfig.chDailySchedule || []).find(t => t && Number(t.episode) === Number(ep));
 }
+// The race's two pickers on a leg's tile: its place (the start and the finale are fixed) and its kind.
+function _rrLegPickers(ep, isFinale) {
+  const n = Number(ep);
+  const route = raceDrawnRoute();
+  const legs = route.length;
+  const pins = seasonConfig.rrRoutePins || {}, kinds = seasonConfig.rrLegKinds || {};
+  const placeName = id => racePlaceName(id);
+  const lab = (text, on) => `<label style="display:flex;align-items:center;gap:4px;flex:1 1 100%;min-width:0;font-size:9.5px;letter-spacing:.5px;color:${
+    on ? '#f2b705' : 'var(--muted,#7d8590)'}" onclick="event.stopPropagation()"><span style="flex:0 0 auto">${text}</span>`;
+  const sel = (on, change) => `<select onchange="event.stopPropagation();${change}" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:${
+    on ? '#ffe6a3' : '#8b949e'};border:1px solid rgba(242,183,5,${on ? '0.6' : '0.22'});border-radius:3px;padding:1px 2px;flex:1 1 auto;min-width:0;max-width:100%">`;
+  let h = '';
+  if (n === 1 || isFinale || n >= legs) {
+    h += `<div style="font-size:9.5px;letter-spacing:.5px;color:var(--muted,#7d8590)">PLACE <span style="color:#c9d1d9">${_hubEsc(isFinale || n >= legs ? 'the finale' : `${placeName(route[0])} (the start)`)}</span></div>`;
+  } else {
+    const chosen = pins[n] || '';
+    h += lab('PLACE', !!chosen) + sel(!!chosen, `_setRrPin(${n},'place',this.value)`);
+    h += `<option value="" ${!chosen ? 'selected' : ''}>${_hubEsc(chosen ? 'Auto (draw one)' : `Auto (drawn: ${placeName(route[n - 1])})`)}</option>`;
+    for (const p of racePlaceList()) h += `<option value="${p.id}" ${p.id === chosen ? 'selected' : ''}>${_hubEsc(p.name)}</option>`;
+    h += `</select></label>`;
+  }
+  // the kind: the first leg and the last two (the semi-final and the final) can't be non-elimination legs
+  if (n >= 2 && n <= legs - 2) {
+    const k = kinds[n] || '';
+    const drawn = raceEpisodeMap().find(x => x.ep === n)?.nonElim ? 'Non-elimination' : 'Elimination';
+    h += lab('LEG', !!k) + sel(!!k, `_setRrPin(${n},'kind',this.value)`);
+    h += `<option value="" ${!k ? 'selected' : ''}>${_hubEsc(k ? 'Auto (draw it)' : `Auto (drawn: ${drawn})`)}</option>`;
+    h += `<option value="elim" ${k === 'elim' ? 'selected' : ''}>Elimination</option>`;
+    h += `<option value="non" ${k === 'non' ? 'selected' : ''}>Non-elimination</option>`;
+    h += `</select></label>`;
+  }
+  return h;
+}
+export function _setRrPin(ep, field, value) {
+  raceSetPin(ep, field, value);
+  renderTimeline();
+}
+
 function _chDailyPicker(ep) {
   const list = challengeDailyList();
   if (!list.length) return '';
@@ -4868,6 +4906,14 @@ export function renderTimeline() {
           </div>`
       : '';
 
+    // The race: each leg's place and whether it eliminates, pinned or drawn (the user, 2026-10-19: "how do i choose the
+    // country... why cant i choose where the non elimination happens")
+    const raceRow = isRaceSeason()
+      ? `<div class="fd-ep-comps" style="display:flex;gap:4px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(242,183,5,0.18)">
+            ${_rrLegPickers(ep, isFinale)}
+          </div>`
+      : '';
+
     const missionRow = (isTraitorsSeason() && !isFinale)
       ? `<div class="fd-ep-comps" style="display:flex;gap:4px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(201,162,74,0.14)">
             ${_trMissionPicker(ep)}${_trShieldTick(ep)}
@@ -4970,7 +5016,7 @@ export function renderTimeline() {
         <span class="${markerClass}">${markerText}</span>
       </div>
       ${twistTags ? `<div class="fd-ep-twists">${twistTags}</div>` : ''}
-      ${compRow}${dailyRow}${missionRow}${stageRow}${villaRow}
+      ${compRow}${dailyRow}${raceRow}${missionRow}${stageRow}${villaRow}
     </div>`;
   });
 

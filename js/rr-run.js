@@ -30,6 +30,7 @@ import { RACE_FORMAT } from './shows.js';
 import { playRaceSeason } from './rr/season.js';
 import { airSeason } from './rr/episode.js';
 import { buildSchedule } from './rr/schedule.js';
+import { drawRoute } from './rr/route.js';
 import { DEFAULT_OPTIONS } from './rr/format.js';
 import { REL } from './rr/state.js';
 import { IDENTITIES } from './rr/identities.js';
@@ -192,7 +193,32 @@ function _options(config = seasonConfig) {
     // a Surprise twists switch, as on The Circle: off means only what's booked happens (spec §2)
     surprises: config?.rrSurprises !== false,
     nonElimShare: Number.isFinite(Number(config?.rrNonElimShare)) && config?.rrNonElimShare !== '' && config?.rrNonElimShare != null
-      ? Math.min(0.6, Math.max(0, Number(config.rrNonElimShare))) : DEFAULT_OPTIONS.nonElimShare };
+      ? Math.min(0.6, Math.max(0, Number(config.rrNonElimShare))) : DEFAULT_OPTIONS.nonElimShare,
+    // the Season Timeline's pins: a leg's place, and whether it eliminates
+    ...(config?.rrRoutePins && Object.keys(config.rrRoutePins).length ? { pins: { ...config.rrRoutePins } } : {}),
+    ...(config?.rrLegKinds && Object.keys(config.rrLegKinds).length ? { legKinds: { ...config.rrLegKinds } } : {}) };
+}
+
+/** The places a middle leg can be pinned to (the Season Timeline's Place picker): id and name, by name. */
+export function racePlaceList() {
+  return Object.values(PLACES).filter(p => !p.start && !p.finale).map(p => ({ id: p.id, name: p.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+/** A place's name, for any place (the start and the finale too). */
+export const racePlaceName = id => PLACES[id]?.name || id || '';
+/** The route the season will run as set up now (pins kept, the rest drawn): leg n's place is [n - 1]. */
+export function raceDrawnRoute(config = seasonConfig) {
+  const legs = raceSeasonShape(_list(), config).length;
+  if (!legs) return [];
+  try { return drawRoute({ legs, seed: gs?.rr?.seed || 1, options: _options(config) }); } catch { return []; }
+}
+/** The Season Timeline's pins: a leg's place ('' = drawn), and its kind ('non' | 'elim' | '' = drawn). */
+export function raceSetPin(ep, field, value) {
+  const key = field === 'kind' ? 'rrLegKinds' : 'rrRoutePins';
+  const pins = { ...(seasonConfig[key] || {}) };
+  if (value) pins[Number(ep)] = value; else delete pins[Number(ep)];
+  seasonConfig[key] = pins;
+  try { localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); } catch { /* fine */ }
 }
 
 /** The legs this cast makes (the Season Timeline reads this): { n, kind } per leg, the finale last. */
@@ -346,12 +372,15 @@ export function raceEpisodesLeft() { return Array.isArray(gs?._rrQueue) ? gs._rr
 /** The Season Timeline's tiles: one per leg, with how many racers are still in. */
 export function raceEpisodeMap() {
   const aired = new Map((gs?.episodeHistory || []).filter(r => r?.format === RACE_FORMAT).map(r => [r.num, r]));
+  // each tile counts the racers STARTING the leg (the user, 2026-10-19: counting who was left after it made the count
+  // fall a leg late, so the leg after a non-elimination leg looked like the one where nobody went home)
   let n = raceTeams().length * 2;
   return raceSeasonShape().map(d => {
+    const starting = n;
     const row = aired.get(d.n);
     if (row?.rr?.people) n = row.rr.people.length;
     else if (d.kind === 'elim') n = Math.max(0, n - 2);
-    return { ep: d.n, active: n, phase: d.kind === 'final' ? 'finale' : 'main', engineType: null, tribes: 1,
+    return { ep: d.n, active: starting, phase: d.kind === 'final' ? 'finale' : 'main', engineType: null, tribes: 1,
       double: false, nonElim: d.kind === 'non' };
   });
 }

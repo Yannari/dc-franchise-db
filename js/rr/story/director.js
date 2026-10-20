@@ -172,6 +172,21 @@ function taskBeat(state, row, i, kind = 'task-try') {
         picked: row.right ?? row.snap.picked } : null } };
 }
 
+// A followed team's run at a staged challenge, stage by stage (the show follows a few teams all the way through:
+// 2026-10-20, the user: challenges were "super short with barely anything to do"): one beat a stage passed, and the
+// fails where they happened (two at most: a third fall in the river is the same moment again).
+const STAGE_FAILS = 2;
+const FOLLOW_AT_TASK = 3;
+function stageBeats(state, row, i) {
+  const [x, y] = people(state, row.team);
+  const [a, b] = row.kind === 'botch' && row.who && [x, y].includes(row.who) ? [row.who, row.who === x ? y : x] : [x, y];
+  let fails = 0;
+  return row.stages.filter(e => e.ok || ++fails <= STAGE_FAILS).map((e, j) => ({
+    id: `stage:${row.leg}:${row.team}:${row.stretch}:${i}:${j}`, leg: row.leg, kind: 'task-stage', who: [a, b], seenBy: [a, b],
+    data: { ending: e.ok ? 'ok' : 'fail', team: row.team, stretch: row.stretch, stage: e.id, t: Math.round(e.t), from: row.from, to: row.to,
+      side: row.side, snap: row.snap ? { ...row.snap, fails: row.fails, side: row.side ?? row.snap.side, botcher: row.who ?? row.snap.botcher } : null } }));
+}
+
 // The storylines the season follows: the open threads with the most aired steps, then the oldest.
 function followed(state) {
   const aired = state.storyAired || {};
@@ -229,7 +244,25 @@ export function airLeg(state, leg) {
   const rows = (state.taskLog || []).filter(r => r.leg === n);
   const cleanAt = {};
   const pickStarts = {};
+  // at a staged challenge, the teams followed all the way through: the first one there, the one it went worst for,
+  // and a team with a story this leg (a storyline step or a chosen moment), up to three
+  const followAt = {};
+  for (const r of rows.filter(r => r.stages?.length)) (followAt[r.stretch] ||= []).push(r);
+  for (const [sid, rs] of Object.entries(followAt)) {
+    const first = [...rs].sort((x, y) => x.from - y.from)[0];
+    const worst = [...rs].sort((x, y) => y.fails - x.fails || x.from - y.from)[0];
+    const storied = rs.find(r => scenes.some(s => picked.has(s.id) && s.data?.team === r.team));
+    followAt[sid] = new Set([first, worst, storied].filter(Boolean).map(r => r.team).slice(0, FOLLOW_AT_TASK));
+  }
   rows.forEach((r, i) => {
+    if (r.stages?.length && followAt[r.stretch]?.has(r.team)) {
+      // (their own moment there still airs: a story at the challenge is part of their run)
+      const own = scenes.filter(s => s.data?.team === r.team && s.data?.stretch === r.stretch && !s.kind.startsWith('int-') && !picked.has(s.id)).filter(ok)
+        .sort((x, y) => weight(y) - weight(x) || x.id - y.id)[0];
+      if (own && own.kind !== 'attempt-fail') take(own, 1);
+      beats.push(...stageBeats(state, r, i));
+      return;
+    }
     const here = scenes.filter(s => s.data?.team === r.team && s.data?.stretch === r.stretch && !s.kind.startsWith('int-'));
     if (here.some(s => picked.has(s.id))) return;
     // the same kind twice at the same place and minute is enough (three hugs in a row read as a loop)
@@ -484,7 +517,7 @@ export function airLeg(state, leg) {
     segs.push({ scene: s.id, kind: s.kind, ending: s.data?.ending ?? null, stretch: s.data?.stretch ?? null, t: s.data?.t ?? 0, teams,
       who: namesOnly(s) ? s.who.filter(x => teams.includes(teamOf(state, x))) : [...s.who], side: s.data?.snap?.side ?? null, tier, src: s });
   }
-  for (const b of beats) segs.push({ scene: null, beat: b.id, kind: b.kind, ending: b.data.ending, stretch: b.data.stretch, t: b.data.t,
+  for (const b of beats) segs.push({ scene: null, beat: b.id, kind: b.kind, ending: b.data.ending, stretch: b.data.stretch, t: b.data.t, stage: b.data.stage ?? null,
     teams: [b.data.team], who: [...b.who], side: b.data.side ?? null, picked: pickedOf(b.data.snap?.picked), tier: 1, src: b });
   // in the same minute a team finishes its challenge before it checks in
   const phase = k => (k.startsWith('task-') ? 0 : 1);

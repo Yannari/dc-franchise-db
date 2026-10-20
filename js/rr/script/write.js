@@ -33,6 +33,8 @@ export const DIRECTOR_KINDS = {
   'task-start': ['any'],
   'task-try': ['first-try', 'after-fails', 'struggling', 'switched', 'quit'],
   'task-done': ['any'],
+  // a stage of a staged challenge (director.js stageBeats): passed, or where it went wrong
+  'task-stage': ['ok', 'fail'],
   // the system's own moments (tasks.js, travel.js, twists.js): one ending each
   'attempt-fail': ['any'], 'quit-task': ['any'], 'helped-botch': ['any'], 'allin-alone': ['any'],
   'travel-mishap': ['any'], 'found-flight': ['any'], 'same-flight': ['any'], 'express-used': ['any'],
@@ -141,7 +143,7 @@ export const TASK_LINES = new Set(Object.values(POOLS).flatMap(l => l.map(e => e
 const TASK_TALK = /\b(task|judge)\b/i;
 const TASKY = new Set(Object.values(POOLS).flat().filter(e => e.turns.some(t => TASK_TALK.test([t.say, t.conf, t.beat].join(' ')))));
 // kinds that are about a task whatever stretch they're filed under (Don explaining it, a team doing it)
-export const KIND_AT_TASK = new Set(['task-start', 'task-try', 'task-done', 'attempt-fail', 'quit-task', 'helped-botch', 'allin-alone',
+export const KIND_AT_TASK = new Set(['task-stage', 'task-start', 'task-try', 'task-done', 'attempt-fail', 'quit-task', 'helped-botch', 'allin-alone',
   'whose-botch', 'watching-botch', 'decide-side', 'don-demo', 'don-rule', 'don-ruling', 'judge-yes', 'identity-moment']);
 // the interviews that are about the moment before them: only a line written for that kind of moment will do
 const ABOUT_INTERVIEWS = new Set(['int-feeling', 'int-strategy', 'int-about-team', 'int-contradict']);
@@ -290,7 +292,7 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
 // at a rival in trash talk, at a friend in good small talk.
 const AUTO_SHARE = 0.5;
 // the moments at a challenge, where the identity line opens the exchange instead of following it
-const OPENS = new Set(['task-start', 'task-try', 'task-done', 'attempt-fail']);
+const OPENS = new Set(['task-start', 'task-try', 'task-done', 'attempt-fail', 'task-stage']);
 const AUTO_HOOK = {
   // after-fails is the try that finally worked: no struggle line over it. A 'bad' line reacts to a struggle ("this is
   // why"), so it isn't said at the start or over a first-try success (2026-10-20 read: "I skipped gym. This is why." at

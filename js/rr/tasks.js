@@ -13,6 +13,7 @@ import { teamLevel, spreadOf } from './skill.js';
 import { PENALTIES } from './format.js';
 import { gs } from '../core.js';
 import { snapOf } from './scenes.js';
+import { streamFor } from '../dr/rng.js';
 
 export const attemptChance = (level, pass) => Math.min(0.95, Math.max(0.05, pass + 0.08 * (level - 5)));
 
@@ -54,6 +55,38 @@ function runPick(state, id, task, stretchId, t, level, spread, rng) {
   return { end: t + dur, attempts: 1, quit: false, data: { attempts: 1, fails: 0, p: 1, right } };
 }
 
+// A challenge in stages (the user, 2026-10-20: challenges "not constructed well enough like in the show"). A stretch
+// lists its `stages` from its own rules ({ id, share, risk }: the sled's harness, flag course, bear, swap, ice cliff):
+// each failed try is placed AT a stage that can go wrong (by its `risk`), and the run is kept as the stages in order,
+// a fail where it happened, every stage passed once, across the team's real time at the task. Its own stream: the
+// stages tell the run, they never change it.
+export function stageRun(state, id, task, stretchId, from, to, fails, quit = false) {
+  const stages = task.stages || [];
+  if (!stages.length) return null;
+  const rng = streamFor(Number(state.seed) || 1, `stages|${state.leg}|${id}|${stretchId}|${task.side || ''}`);
+  for (let i = 0; i < 4; i++) rng();
+  const risky = stages.filter(x => x.risk > 0), sum = risky.reduce((a, x) => a + x.risk, 0);
+  const at = {};
+  for (let i = 0; i < fails && sum > 0; i++) {
+    let r = rng() * sum, hit = risky.at(-1);
+    for (const x of risky) { r -= x.risk; if (r <= 0) { hit = x; break; } }
+    at[hit.id] = (at[hit.id] || 0) + 1;
+  }
+  // a quit ends at the stage it gave up on
+  const last = quit ? stages.findLastIndex(x => at[x.id]) : stages.length - 1;
+  const units = stages.map(x => (x.share ?? 1) * (1 + 0.6 * (at[x.id] || 0)));
+  const total = units.slice(0, last + 1).reduce((a, u) => a + u, 0) || 1;
+  const out = [];
+  let cum = 0;
+  stages.slice(0, last + 1).forEach((x, i) => {
+    const n = at[x.id] || 0;
+    for (let f = 0; f < n; f++) out.push({ id: x.id, ok: false, t: from + (to - from) * (cum + units[i] * (f + 0.6) / (n + 1)) / total });
+    cum += units[i];
+    if (!(quit && i === last)) out.push({ id: x.id, ok: true, t: from + (to - from) * cum / total });
+  });
+  return out;
+}
+
 // One run at a task (a side of an Either/Or is a task too). `who` is 'both' or a name.
 // `onFail(attempt, row)` lets a Botch decide to quit or a watcher to step in; it returns
 // 'quit' to stop.
@@ -89,6 +122,7 @@ export function runTask(state, team, task, t, api, rng, who = 'both', { stretchI
   }
   let start = t;
   if (task.capacity && api?.slot) start = api.slot(stretchId + (task.side ? ':' + task.side : ''), task.capacity, t, dur);
+  if (task.stages) row.stages = stageRun(state, id, task, stretchId, start, start + dur, row.fails || 0, quit);
   return { end: start + dur, attempts, quit, data: { attempts, fails: row.fails || 0, p } };
 }
 
@@ -224,7 +258,8 @@ export function resolveTask(state, team, stretch, t, api, rng) {
   const row = state.attempts?.[team.id]?.[stretch.id] || {};
   keepRun(state, team.id, stretch, t, r.end, { snap,
     side: r.data?.side ?? row.side ?? null, who: r.data?.who ?? null, attempts: row.attempts || 0, fails: row.fails || 0,
-    switched: !!r.data?.switched, quit: !!(r.quit || r.data?.quit), ...(r.data?.right != null ? { right: r.data.right } : {}) });
+    switched: !!r.data?.switched, quit: !!(r.quit || r.data?.quit), ...(r.data?.right != null ? { right: r.data.right } : {}),
+    ...(row.stages ? { stages: row.stages } : {}) });
   return r;
 }
 

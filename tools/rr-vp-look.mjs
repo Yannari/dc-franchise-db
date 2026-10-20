@@ -67,7 +67,7 @@ for (const f of (process.env.RR_PLATES || '').split(',').filter(Boolean)) FIND['
 for (const m of (process.env.RR_MODES || '').split(',').filter(Boolean)) FIND['mode-' + m] = `(s, t, k) => s.kind === "world" && s.mode === "act" && s.plate?.mode === "${m}" && k >= 1`;
 // RR_ACTS=task-9436826,present-9437594: a step of the ride or the task shot on each of those act plates
 for (const f of (process.env.RR_ACTS || '').split(',').filter(Boolean)) FIND['act-' + f] = `(s, t, k) => s.kind === "world" && s.mode === "act" && s.plate?.f === "${f}" && k >= 1`;
-const kinds = [...kindArg.split(',').filter(k => FIND[k]), ...Object.keys(FIND).filter(k => k.startsWith('plate-') || k.startsWith('mode-') || k.startsWith('act-'))];
+const kinds = [...kindArg.split(',').filter(k => FIND[k] || k.startsWith('stage:')).map(k => { if (k.startsWith('stage:')) { const [, st, end] = k.split(':'); FIND[k] = `(s, t, k) => s.seg === "task-stage" && s.stage === "${st}"${end ? ` && s.ending === "${end}"` : ''} && k >= 1`; } return k; }), ...Object.keys(FIND).filter(k => k.startsWith('plate-') || k.startsWith('mode-') || k.startsWith('act-'))];
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 const errors = [];
@@ -90,7 +90,7 @@ for (const kind of kinds) {
     return `leg ${e + 1} click ${k} ${s.id} ${s.seg} ${s.plate?.f || ''} | ${t.by || ''}: ${String(t.text || '').slice(0, 90)}`; }, found);
   for (const [i, ms] of [[0, 350], [1, 1600]]) {
     await page.waitForTimeout(ms);
-    const file = `shots/rr-vp/look-${kind}${i ? '' : '-mid'}.png`;
+    const file = `shots/rr-vp/look-${kind.replace(/:/g, "-")}${i ? "" : "-mid"}.png`;
     await page.locator('#rr-stage-holder').screenshot({ path: file });
     if (i) console.log(file, '\n   ', info);
   }

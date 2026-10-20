@@ -986,6 +986,56 @@ for (const [id, m] of Object.entries(MORE)) {
   }
 }
 
+// Each stage of a staged challenge, its own shot (2026-10-20: challenges built in stages, js/rr/places `stages`):
+// { label, plate, alt?, fail? } per stage: `plate` (and `alt`, a team's own angle) for the stage passed, `fail` for
+// where it goes wrong there. A plate here is one the place already has, by file, with what this stage changes.
+const plateOf = (id, f, over = {}) => {
+  const pl = PLACE_PLATES[id];
+  const all = [pl.opener, ...(pl.arrive || []), ...(pl.views || []), ...Object.values(pl.st).flatMap(s => [...(s.talk || []), s.act, s.act2, ...(s.alt || []), ...(s.wide || []),
+    ...Object.values(s.sides || {}).flatMap(d => [...(d.talk || []), d.act, ...(d.alt || [])])])].filter(Boolean);
+  // (the shot doing that thing first: the emu throw, not the plain fence shot of the same plate)
+  const found = (over.mode && all.find(x => x.f === f && x.mode === over.mode)) || all.find(x => x.f === f && !x.mode) || all.find(x => x.f === f);
+  if (!found) throw new Error(`stage shot: ${id} has no plate ${f}`);
+  return { ...found, ...over };
+};
+const BEAR_CLOSE = [['bear', 74, 84, 11, { move: 'wander', span: 8, dur: 10 }]];
+const STAGE_SHOTS = {
+  'ice-river': {
+    'ice-floes': {
+      'first-floe': { label: 'THE FIRST FLOE', plate: ['task-22411751'], fail: ['task-22411747', { mode: 'swim' }] },
+      'mid-river': { label: 'MID-RIVER', plate: ['task-22411646', { mode: 'hop' }], alt: [['task-22412146', { mode: 'hop' }]], fail: ['task-22411747', { mode: 'swim' }] },
+      'last-jump': { label: 'THE LAST JUMP', plate: ['task-22412146', { mode: 'hop' }], fail: ['task-22411747', { mode: 'swim' }] },
+      'far-bank': { label: 'THE FAR BANK', plate: ['task-22411751'] },
+    },
+    sled: {
+      harness: { label: 'THE START FLAG', plate: ['task-22411840', { mode: undefined, path: undefined, prop: undefined }] },
+      flags: { label: 'THE FLAG COURSE', plate: ['present-22411651', { mode: 'ride' }], alt: [['task-22411924', { mode: 'ride' }]], fail: ['task-22411924', { mode: undefined, prop: undefined, path: undefined, water: false, g: 86, x: [6, 94] }] },
+      bear: { label: 'THE BEAR', plate: ['task-22411840', { mode: 'ride', deco: BEAR_CLOSE }], fail: ['task-22411840', { mode: undefined, path: undefined, prop: undefined, deco: BEAR_CLOSE }] },
+      swap: { label: 'SWAP!', plate: ['task-22411924', { mode: undefined, prop: undefined, path: undefined, water: false, g: 86, x: [6, 94] }] },
+      cliff: { label: 'THE ICE CLIFF', plate: ['present-22411652', { mode: 'ride', path: [[38, 92], [41, 74], [43, 58], [47, 42]] }], fail: ['present-22411652', { mode: 'ride', path: [[46, 44], [43, 58], [41, 74], [38, 92]] }] },
+    },
+  },
+  'pampas-ranch': {
+    tango: {
+      lesson: { label: 'THE LESSON', plate: ['task-dance-academy', { mode: undefined, prop: undefined }] },
+      practice: { label: 'AT THE BARRE', plate: ['task-dance-academy', { mode: 'dance', prop: undefined, x: [6, 46] }] },
+      routine: { label: 'THE ROUTINE', plate: ['task-dance-academy', { mode: 'dance', prop: undefined }] },
+      verdict: { label: 'THE VERDICT', plate: ['task-dance-academy', { mode: undefined, prop: undefined }] },
+    },
+    emu: {
+      bolas: { label: 'THE BOLAS', plate: ['task-9449177', { mode: undefined, judge: null }] },
+      'ride-out': { label: 'RIDING OUT', plate: ['present-9449278', { mode: 'ride', prop: 'horse', flip: true, path: [[-12, 92], [44, 90], [112, 92]], fx: 'dust', deco: [['emu', 82, 88, 7, { move: 'wander', span: 10, dur: 6 }]] }] },
+      throw: { label: 'THE THROW', plate: ['task-9449177', { mode: 'toss' }] },
+      'lead-back': { label: 'BACK TO THE FENCE', plate: ['task-9449177', { mode: undefined, judge: null, deco: [['emu', 30, 90, 7, { move: 'wander', span: 6, dur: 12 }]] }] },
+    },
+  },
+};
+for (const [id, byStretch] of Object.entries(STAGE_SHOTS)) for (const [sid, stages] of Object.entries(byStretch)) {
+  const s = PLACE_PLATES[id].st[sid];
+  s.stages = Object.fromEntries(Object.entries(stages).map(([k, v]) => [k, { label: v.label, plate: plateOf(id, ...v.plate),
+    alt: (v.alt || []).map(a => plateOf(id, ...a)), fail: v.fail ? plateOf(id, ...v.fail) : null }]));
+}
+
 // All the plate files a place needs (the asset copier and the tests read this)
 export function placeFiles(id) {
   const pl = PLACE_PLATES[id];
@@ -1024,7 +1074,9 @@ export function stretchPlates(placeId, stretchId, side = null) {
   return { talk: sd?.talk || s.talk || [], act: sd?.act ?? s.act ?? null, act2: sd?.act2 ?? s.act2 ?? null,
     alt: (sd?.act ? sd.alt : s.alt) || sd?.alt || [], alt2: (sd?.act2 ? sd.alt2 : s.alt2) || sd?.alt2 || [],
     // the challenge's wide shots: how it opens, and where a crowd of teams is shot (2026-10-20)
-    wide: sd?.wide || s.wide || [] };
+    wide: sd?.wide || s.wide || [],
+    // its stages' own shots (a staged challenge)
+    stages: sd?.stages || s.stages || null };
 }
 
 export const standable = plate => plate && plate.people !== false && !plate.water;

@@ -272,7 +272,8 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       // every team in the group ran it: each keeps the shared run, so the episode can show them at it (a minute after
       // they're put together, so the formation airs first)
       const shared = state.attempts?.[superBy[k]]?.[s.id] || {};
-      keepRun(state, id, s, v.departs + 1, superEnd[k], { attempts: shared.attempts || 0, fails: shared.fails || 0 });
+      keepRun(state, id, s, v.departs + 1, superEnd[k], { attempts: shared.attempts || 0, fails: shared.fails || 0,
+        ...(shared.stages ? { stages: shared.stages } : {}) });
       res = { end: superEnd[k] };
     } else if (s.kind === 'midmat') {
       // the finale's halfway mat: the last team to reach it is out where it stands

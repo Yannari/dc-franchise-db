@@ -239,7 +239,16 @@ export function episodeScreens(res, eps, i) {
       const wantsAct = (TASKS.has(stretch.kind) && ACT_KINDS.has(k)) || (stretch.kind === 'travel' && RIDE_KINDS.has(k));
       // a task done in two halves (over the gorge, then the coconut pile) shows its second half when it is done
       // a team's own angle on the action: the stretch's action plate, or another the user made of it (alt)
-      if (wantsAct && sp?.act) {
+      // a stage of a staged challenge: the stage's own shot (where it went wrong: its fail shot), a team's own angle
+      const sg = k === 'task-stage' ? sp?.stages?.[seg.stage] : null;
+      if (sg) {
+        const ti = Math.max(0, st.order.indexOf(segTeams[0]));
+        const opts = seg.ending === 'fail' && sg.fail ? [sg.fail] : [sg.plate, ...(sg.alt || [])];
+        plate = opts[ti % opts.length];
+        mode = plate.mode && (plate.path || IN_PLACE.has(plate.mode)) ? 'act' : 'talk';
+        hudTask += ` · ${sg.label}`;
+        opened.add(`${seg.stretch}|${seg.side || ''}`);
+      } else if (wantsAct && sp?.act) {
         const ti = Math.max(0, st.order.indexOf(segTeams[0]));
         const acts = [sp.act, ...(sp.alt || [])], acts2 = sp.act2 ? [sp.act2, ...(sp.alt2 || [])] : [];
         plate = (k === 'task-done' && acts2.length && acts2[ti % acts2.length]) || acts[ti % acts.length]; mode = 'act';
@@ -345,7 +354,9 @@ export function episodeScreens(res, eps, i) {
       // the place's own local stands at their challenge as it starts and as a team gets through it (the fisherman at
       // the welcome rite), in a shot where the teams and the local are spread out together
       const own = placeLocal(placeId, seg.stretch);
-      if (own && mode === 'talk' && standable(plate) && !plate?.closed && ['task-start', 'task-done'].includes(k)) persons.push(own);
+      // (not out where the teams travel a path: the rancher stays at the fence while they ride the plain)
+      // (a stage in a room has its local in it: the instructor in the academy)
+      if (own && ((mode === 'talk' && ['task-start', 'task-done'].includes(k) && !plate?.closed) || (k === 'task-stage' && !plate?.path)) && standable(plate)) persons.push(own);
       for (const id of new Set(persons)) if (!locals.some(n => localFor(n, placeId, seg.stretch)?.id === id)) locals.push(LOCALS[id]);
       // each local's face (the user's avatars): who a speaking "A local" or "The judge" is, here
       const localFaces = Object.fromEntries(locals.map(n => [n, localFor(n, placeId, seg.stretch, seg.scene ?? seg.t)]).filter(([, f]) => f));
@@ -354,7 +365,7 @@ export function episodeScreens(res, eps, i) {
       const donSpeaks = run.lines.some(l => l.by === 'Don');
       const scr = {
         kind: mode === 'flight' ? 'flight' : 'world', seg: k, ending: seg.ending, mode, place: placeId, stretch: seg.stretch, side: seg.side,
-        plate, parked, teams, locals, localFaces, don: donSpeaks && !['narrate', 'flight', 'landing'].includes(mode) || ['mat', 'demo', 'don'].includes(mode),
+        plate, parked, stage: seg.stage ?? null, teams, locals, localFaces, don: donSpeaks && !['narrate', 'flight', 'landing'].includes(mode) || ['mat', 'demo', 'don'].includes(mode),
         narrator: donSpeaks && ['narrate', 'flight', 'landing'].includes(mode),
         hud: { task: hudTask, clock }, timecard: first ? timecard : null, steps,
         from: prevLeg?.place || null, to: placeId, who: [...(seg.who || [])], stretchKind: stretch?.kind || null,
@@ -584,6 +595,8 @@ function sizeFor(n, mode) {
 // Progress through a task over a screen's steps: up, a slip back on a failed try, through.
 function progressPlan(n, ending) {
   const out = [];
+  // (a stage where it went wrong plays like a try after fails: on its way, then back to the start of the stage)
+  if (ending === 'fail') ending = 'after-fails';
   if (ending === 'after-fails' || ending === 'struggling') {
     const fail = Math.max(1, Math.floor(n / 2));
     for (let i = 0; i < n; i++) out.push(i < fail ? 0.15 + 0.5 * (i + 1) / fail : i === fail ? 0 : (i - fail) / Math.max(1, n - 1 - fail));
@@ -764,6 +777,12 @@ function layout(s, size) {
     s.locals.forEach(nm => { (s.localAt ||= {})[nm] = pts[j++]; });
     s.teams.forEach(id => { marks[id] = pts[j++]; as[id] = 'stand'; });
     if (s.mode === 'act' && plate?.mode) { s.work = plate.mode; s.plan = progressPlan(ps, s.ending); placeWorkProps(s, marks); }
+    // a local keeps clear of the work and of what is judged (the rancher stood in front of the emu, 2026-10-20)
+    if (s.localAt && (s.workProp || s.judgeAt)) {
+      const avoid = [...Object.values(marks).map(m => m[0]), s.workProp?.at[0], s.judgeAt?.at[0], s.donStand?.[0]].filter(x => x != null);
+      const pts = spread(plate, s.locals.length, avoid, M);
+      s.locals.forEach((nm, i) => { if (pts[i]) s.localAt[nm] = pts[i]; });
+    }
     if (s.donBox) s.boxAt = [lerp(plate.x[0], plate.x[1], s.don ? 0.3 : 0.5), groundY(plate, 0)];
   }
   if (s.don && !s.donStand && s.mode !== 'mat') {

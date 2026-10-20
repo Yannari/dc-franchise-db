@@ -11,8 +11,15 @@ import { raceCast } from './helpers/rr-cast.js';
 import { PLACES } from '../js/rr/places.js';
 import { episodeScreens } from '../js/vp-rr-ep/steps.js';
 import { stretchPlates } from '../js/vp-rr-ep/plates.js';
+const stretchPlatesFor = (p, s, side) => stretchPlates(p, s, side);
 
-const STAGED = [['ice-river', 'ice-floes'], ['ice-river', 'sled'], ['pampas-ranch', 'tango'], ['pampas-ranch', 'emu']];
+import { POOLS } from '../js/rr/script/lines/index.js';
+
+// every place built in stages so far (a stretch's own `stages`, or each side's on a choose-one task)
+const stagesOf = (p, s, side = null) => { const st = PLACES[p].stretches.find(x => x.id === s);
+  return (side && st.sides?.find(x => x.id === side)?.stages) || st.stages || null; };
+const STAGED = Object.values(PLACES).flatMap(pl => pl.stretches.filter(s => s.stages || s.sides?.some(d => d.stages)).map(s => [pl.id, s.id]));
+const sidesOf = (p, s) => { const st = PLACES[p].stretches.find(x => x.id === s); return st.sides ? st.sides.map(d => d.id) : [null]; };
 const runs = [];
 beforeAll(() => {
   for (const seed of [41, 42, 43]) {
@@ -26,24 +33,27 @@ beforeAll(() => {
 
 describe('rr challenges in stages', () => {
   it('every staged challenge lists its stages, and a fail can only happen at a stage that can go wrong', () => {
-    for (const [p, s] of STAGED) {
-      const st = PLACES[p].stretches.find(x => x.id === s);
-      expect(st.stages?.length, `${p}/${s}`).toBeGreaterThanOrEqual(3);
-      expect(st.stages.some(x => x.risk > 0)).toBe(true);
+    expect(STAGED.length).toBeGreaterThanOrEqual(4);
+    for (const [p, s] of STAGED) for (const side of sidesOf(p, s)) {
+      const stages = stagesOf(p, s, side);
+      expect(stages?.length, `${p}/${s}/${side}`).toBeGreaterThanOrEqual(3);
+      expect(stages.some(x => x.risk > 0)).toBe(true);
     }
   });
 
   it("keeps each team's run stage by stage: every stage passed once, in order, the fails at risky stages", () => {
     let n = 0;
     for (const { res } of runs) for (const r of res.state.taskLog || []) {
-      const st = PLACES[res.legs[r.leg - 1]?.place]?.stretches.find(x => x.id === r.stretch);
-      if (!st?.stages || r.quit) continue;
+      const pid = res.legs[r.leg - 1]?.place;
+      const st = PLACES[pid]?.stretches.find(x => x.id === r.stretch);
+      const stages = st && stagesOf(pid, r.stretch, r.side);
+      if (!stages || r.quit) continue;
       n++;
       const ok = r.stages.filter(e => e.ok).map(e => e.id);
-      expect(ok, `${r.team} ${r.stretch}`).toEqual(st.stages.map(x => x.id));
+      expect(ok, `${r.team} ${r.stretch}`).toEqual(stages.map(x => x.id));
       const fails = r.stages.filter(e => !e.ok);
       expect(fails.length).toBe(r.fails);
-      for (const f of fails) expect(st.stages.find(x => x.id === f.id).risk, f.id).toBeGreaterThan(0);
+      for (const f of fails) expect(stages.find(x => x.id === f.id).risk, f.id).toBeGreaterThan(0);
       r.stages.forEach((e, i) => { if (i) expect(e.t).toBeGreaterThanOrEqual(r.stages[i - 1].t); expect(e.t).toBeGreaterThanOrEqual(r.from - 0.01); expect(e.t).toBeLessThanOrEqual(r.to + 0.01); });
     }
     expect(n).toBeGreaterThan(30);
@@ -58,9 +68,9 @@ describe('rr challenges in stages', () => {
         const teams = [...new Set(segs.map(x => x.teams[0]))];
         expect(teams.length, `leg ${ep.n} ${s}`).toBeGreaterThanOrEqual(1);
         expect(teams.length).toBeLessThanOrEqual(3);
-        const stages = PLACES[p].stretches.find(x => x.id === s).stages.map(x => x.id);
         for (const tm of teams) {
           const mine = segs.filter(x => x.teams[0] === tm);
+          const stages = stagesOf(p, s, mine[0].side);
           expect(new Set(mine.map(x => x.stage)).size, `${s} ${tm}`).toBeGreaterThanOrEqual(Math.min(3, stages.length));
         }
         const first = (res.state.taskLog || []).filter(r => r.leg === res.legs[i].n && r.stretch === s).sort((x, y) => x.from - y.from)[0];
@@ -81,6 +91,17 @@ describe('rr challenges in stages', () => {
       expect(files, s.id).toContain(s.plate.f);
     }
     expect(seen).toBeGreaterThan(20);
+  });
+
+  it('writes lines for every stage of its own: a few for each stage passed, and for each stage that can go wrong', () => {
+    const lines = (kind, p, s, id) => (POOLS[kind] || []).filter(e => e.when?.taskId === s && e.when?.stage === id && !e.id.startsWith('any.')).length;
+    const short = [];
+    for (const [p, s] of STAGED) for (const side of sidesOf(p, s)) for (const x of stagesOf(p, s, side)) {
+      if (lines('task-stage.ok', p, s, x.id) < 2) short.push(`${p}/${s} ${x.id} ok`);
+      if (x.risk > 0 && lines('task-stage.fail', p, s, x.id) < 2) short.push(`${p}/${s} ${x.id} fail`);
+      if (!stretchPlatesFor(p, s, side)?.stages?.[x.id]) short.push(`${p}/${s} ${x.id} shot`);
+    }
+    expect(short).toEqual([]);
   });
 
   it('changes no result: the same race finishes in the same order with the stages as without', async () => {

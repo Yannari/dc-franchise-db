@@ -673,7 +673,9 @@ export function createStage(holder, { faceOf, legLabel }) {
   // puffs of dust along a run (a plate of water gets a splash instead)
   function dustTrail(a, b, dur, delay) {
     if (!a || !b) return;
-    const water = cur.ep && cur.ep.screens[cur.si]?.plate?.water;
+    const pl = cur.ep && cur.ep.screens[cur.si]?.plate;
+    if (['zip', 'para', 'swing'].includes(pl?.mode)) return;   // (in the air: nothing kicked up)
+    const water = pl?.water;
     for (let q = 1; q <= 4; q++) later(delay + dur * q / 5, () => {
       const p = lerpPos(a, b, q / 5);
       if (p[0] < -2 || p[0] > 102) return;
@@ -685,7 +687,8 @@ export function createStage(holder, { faceOf, legLabel }) {
     for (const c of s.crowd || []) {
       const a = k > 0 ? c.pos[k - 1] : null, b = c.pos[k];
       const els = [...toks.querySelectorAll(`[data-team="${c.team}"][data-crowd]`)];
-      const water = ['swim', 'dive'].includes(c.as) || s.plate?.water;
+      // (a team in the air over the water, on a zipline or a canopy, doesn't splash)
+      const water = ['swim', 'dive'].includes(c.as) || (s.plate?.water && !['zip', 'para', 'swing'].includes(c.as));
       if (b && els.length) {
         let from = a;
         if (!from) {

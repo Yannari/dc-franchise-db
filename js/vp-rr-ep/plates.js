@@ -1003,8 +1003,30 @@ const plateOf = (id, f, over = {}) => {
   if (!found) throw new Error(`stage shot: ${id} has no plate ${f}`);
   return { ...found, ...over };
 };
+// the cable down to the island airport, the tip hanging off it halfway
+const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
+  path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
 const BEAR_CLOSE = [['bear', 74, 84, 11, { move: 'wander', span: 8, dur: 10 }]];
 const STAGE_SHOTS = {
+  'home-city': {
+    // (Stairs or Sky-deck: each side's stages on the one stretch, their ids apart)
+    tower: {
+      stairwell: { label: 'THE STAIRWELL', plate: ['task-9434855', { mode: 'climb', path: [[33, 96], [60, 77], [35, 50]] }] },
+      burn: { label: 'FLIGHT AFTER FLIGHT', plate: ['task-9434855', { mode: 'climb' }], fail: ['task-9434855', { mode: undefined, path: undefined, fx: undefined }] },
+      'last-flights': { label: 'THE LAST FLIGHTS', plate: ['task-9434855', { mode: 'climb', path: [[35, 50], [62, 27], [40, 6]] }], fail: ['task-9434855', { mode: undefined, path: undefined, fx: undefined }] },
+      'stairs-top': { label: 'THE TOP', plate: ['task-9434868', {}] },
+      elevator: { label: 'THE ELEVATOR', plate: ['task-9434876', {}] },
+      'clip-on': { label: 'CLIP ON', plate: ['task-9434868', { deco: [['helmet', 80, 90, 4]] }], fail: ['task-9434868', { deco: [['helmet', 80, 90, 4]] }] },
+      rail: { label: 'THE OUTSIDE DECK', plate: ['task-9434827', { mode: 'walk' }], fail: ['task-9434827', { mode: undefined, path: undefined }] },
+      'deck-top': { label: 'THE TIP', plate: ['task-9434868', {}] },
+    },
+    zipline: {
+      'clip-in': { label: 'CLIP IN', plate: ['task-9434827', { mode: undefined, path: undefined, fx: 'wind', deco: [['trolley', 86, 62, 5]] }], fail: ['task-9434827', { mode: undefined, path: undefined, fx: 'wind', deco: [['trolley', 86, 62, 5]] }] },
+      'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
+      'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
+      landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
   'ice-river': {
     'ice-floes': {
       'first-floe': { label: 'THE FIRST FLOE', plate: ['task-22411751'], fail: ['task-22411747', { mode: 'swim' }] },

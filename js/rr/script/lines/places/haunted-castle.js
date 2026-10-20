@@ -46,8 +46,8 @@ const place = {
       by('a', "That's just films."),
     ] },
     { id: 'hcs.ar2', when: P, turns: [
-      beat('A long row of coffins stands in the great hall, each one with a name painted on the lid.'),
-      by('b', "That one's got our names on it."),
+      beat('The taxi passes a hearse coming down the mountain road. In the back, a row of empty coffins, each with a name painted on the lid.'),
+      by('b', "Did that one say our names? On the lid?"),
       by('a', "That's the creepiest thing I've ever seen with my name on it."),
     ] },
   ],

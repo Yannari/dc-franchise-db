@@ -143,9 +143,9 @@ export default {
         { by: 'a', say: "Nice of you to show up. We've been here for ages." },
         { by: 'c', say: "Ages? You got here two minutes ago. We watched you run in." },
         { by: 'b', ...V("Two minutes is ages when you're winning.", "Two minutes is ages when you're winning.", "Ages, when you're winning.", "Two minutes is AGES when you're WINNING!", "Two minutes feels like ages when you're winning.", "Time moves slowly up here at the top.") },
-        { by: 'd', say: "You're not winning. You're second." },
-        { by: 'a', say: "Second is winning, compared to you." },
-        { by: 'c', say: "Enjoy second. It's the closest you'll get." },
+        { by: 'd', say: "You're not winning. Nobody's winning until the mat." },
+        { by: 'a', say: "We're winning right now. Compared to you." },
+        { by: 'c', say: "Enjoy right now. It's the closest you'll get." },
       ] },
       { id: 'vf.t2', turns: [
         { by: 'c', say: "Did you two finally learn to read a map?" },

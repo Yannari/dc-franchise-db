@@ -57,9 +57,9 @@ const place = {
       by('a', "That's what I was afraid of."),
     ] },
     { id: 'drg.ad2', when: P, turns: [
-      beat("A lizard on the path ahead of them opens its mouth wide, very slowly, and closes it again."),
+      beat("As the boat pulls in, a lizard lying on the jetty opens its mouth wide, very slowly, and closes it again."),
       by('b', "Was that a yawn? Or a warning?"),
-      by('a', "Let's not find out. Go round."),
+      by('a', "Let's not find out. Get off at the other end."),
     ] },
   ],
 };

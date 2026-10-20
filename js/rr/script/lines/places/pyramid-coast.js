@@ -56,9 +56,9 @@ const place = {
       by('a', "There's an arrow between them."),
     ] },
     { id: 'pyc.ad2', when: P, turns: [
-      beat("{a} looks over the edge of the cliff at the waves crashing far below."),
+      beat("From the taxi window, {a} watches somebody jump off the sea cliffs, fall for a very long time, and splash."),
       by('a', "That's a long way down."),
-      by('b', "That's the high ledge. There are lower ones."),
+      by('b', "The tip says there are lower ledges. For the people who ate the hot peppers."),
     ] },
   ],
 };

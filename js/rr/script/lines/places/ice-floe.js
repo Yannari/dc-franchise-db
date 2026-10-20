@@ -44,7 +44,7 @@ const place = {
       by('a', "It's the coldest nothing I've ever seen."),
     ] },
     { id: 'ifl.ar2', when: P, turns: [
-      beat("A long spiral tusk rises out of the water by the ice edge, and a narwhal breathes out, a puff of mist."),
+      beat("Out of the little plane's window, a long spiral tusk rises out of the water by the ice edge, and a narwhal breathes out, a puff of mist."),
       by('b', "Is that a unicorn? Of the sea?"),
       by('a', "It's a narwhal. They're real. I didn't know they were real."),
     ] },

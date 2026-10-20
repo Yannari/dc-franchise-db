@@ -134,8 +134,8 @@ export default {
       ] },
       { id: 'ce.g-mat2', when: { at: 'mat' }, turns: [
         { by: 'a', ...V("Somebody bring us a cushion. Champions need cushions.", "Cushion, please. Champions.", "A cushion for the champions, please.", "Somebody bring us a CUSHION! CHAMPIONS need cushions!", "Could somebody bring us a cushion? We're champions now.", "A cushion. For the champions. Velvet, if you have it.") },
-        { by: 'b', say: "We came in fourth." },
-        { by: 'a', say: "Fourth is a kind of champion." },
+        { by: 'b', say: "We didn't come first." },
+        { by: 'a', say: "Not coming first is a kind of champion." },
       ] },
       { id: 'ce.g-any1', turns: [
         { by: 'a', ...V("Do you think they saw us win? I want them to have seen us win.", "Did they see us win? I want them to have.", "I hope they saw us win. I really do.", "Do you think they SAW us win? I want them to have SEEN it!",

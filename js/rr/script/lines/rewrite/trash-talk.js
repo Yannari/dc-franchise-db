@@ -47,11 +47,12 @@ export default {
           "You two are still here? I honestly thought you'd be on a plane home by now.", "Still here? I already wrote your goodbye card.") },
         { by: 'd', ...V("We thought the same about you. Disappointing for everyone.", "We thought the same about you. Disappointing.", "Same. Disappointing for everyone.", "We thought the SAME about you! DISAPPOINTING for everyone!",
           "We thought the same about you. It's disappointing for everybody.", "We hoped the same. The universe let us both down.") },
-        { by: 'b', say: "At least we've won a leg." },
-        { by: 'c', ...V("You came first once because everybody else got food poisoning.", "You won once, when everyone had food poisoning.", "Once. When everybody else was poisoned.", "You came FIRST ONCE because everybody ELSE got FOOD POISONING!",
-          "You came first once because everybody else had food poisoning, though.", "You won once, during a plague. History has an asterisk.") },
-        { by: 'a', say: "A win is a win." },
-        { by: 'd', say: "A win is a win when the other teams can stand up." },
+        // (no claim about what happened earlier in the race: nothing gates this on a win, a loss or a leg)
+        { by: 'b', say: "We're still faster than you." },
+        { by: 'c', say: "You say that every time you see us. It's never once been true." },
+        { by: 'a', say: "It's been true. Loads of times." },
+        { by: 'd', say: "Name one." },
+        { beat: '{a} and {b} look at each other for a long moment, then walk off without a word.' },
       ] },
       { id: 'tt.x-any2', when: { identityB: ['goths', 'gamers', 'cosplayers', 'punks', 'hippies', 'cowboys', 'rockers', 'rappers', 'magicians', 'surfers', 'skateboarders', 'cheerleaders', 'wrestlers'] }, turns: [
         { by: 'a', ...V("So what do {identityB} actually do all day? Genuinely asking.", "What do {identityB} actually do all day?", "What do {identityB} do all day? Asking.", "So what do {identityB} actually DO all day? GENUINELY asking!",

@@ -46,9 +46,9 @@ const place = {
       by('a', "I've never wanted to dance so much in my life."),
     ] },
     { id: 'pmp.ar2', when: P, turns: [
-      beat("Out on the grassland, the sky is enormous, the grass is gold, and in the distance, a line of emus is running."),
-      by('b', "Look at them go. They're so fast."),
-      by('a', "And we have to catch one. On a horse."),
+      beat('On a street corner, an old couple dances slowly to a radio, as if there is nobody else in the city.'),
+      by('b', "Look at them. They've been dancing together for fifty years. You can tell."),
+      by('a', "And we've got about an hour to look like that."),
     ] },
   ],
   'arrival-awe.dread': [

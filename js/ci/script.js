@@ -1410,10 +1410,21 @@ export function writeDay(state, day) {
     if (entry) aired[0].script.blocks.unshift({ key: 'host.cold.night', ...renderEntry(state, entry, { a: aired[0].who[0] }, rng) });
   }
   const yesterday = state.scenes.filter(s => s.day === day - 1);
+  // Yesterday's blocking was "last night" only if it came at the END of
+  // yesterday. The one that OPENED yesterday (last-but-one night's Ratings)
+  // was already picked up then; the day after it said "last night's blocking
+  // is over" two nights late.
+  const yAired = yesterday.filter(s => s.aired);
+  let yMorning = 0;
+  while (yMorning < yAired.length && NIGHT_KINDS.has(yAired[yMorning].kind)) yMorning++;
+  const lateBlock = yAired.slice(yMorning).some(s => s.kind === 'blocking');
+  // A day with no Ratings at its end says so (ci/schedule.js social days).
+  const plan = (state.schedule || []).find(d => d.day === day);
+  const rest = !!plan && !plan.block && !plan.final && !plan.finale && day > 1;
   // The last day and finale day open on what they are, not on last night.
   const today = new Set(state.scenes.filter(s => s.day === day).map(s => s.kind));
-  const tone = today.has('farewell') ? 'finale' : today.has('final-ratings') ? 'final' : day === 1 ? 'first' : (morning > 0 ? blockedToday : yesterday.some(s => s.kind === 'blocking')) ? 'blocking'
-    : yesterday.some(s => s.kind === 'arrival') ? 'arrival' : 'quiet';
+  const tone = today.has('farewell') ? 'finale' : today.has('final-ratings') ? 'final' : day === 1 ? 'first' : (morning > 0 ? blockedToday : lateBlock) ? 'blocking'
+    : rest ? (plan.gaveBack ? 'giveback' : 'rest') : yesterday.some(s => s.kind === 'arrival') ? 'arrival' : 'quiet';
   const first = aired[morning];
   if (first) {
     const key = `host.cold.${tone}`;
@@ -1539,7 +1550,7 @@ export const POOL_KEYS = [
   ...WHY_.map(w => `goodbye.video.catfish.${w}`), 'goodbye.warning.catfish', 'goodbye.warning.distrusts', 'goodbye.warning.seen',
   'goodbye.react.guilty', 'goodbye.react.warned', 'goodbye.react.vindicated', 'goodbye.react.surprised',
   'meet.arrive.real', 'meet.arrive.catfish', 'meet.found', 'meet.both', ...WHY_.map(w => `meet.explain.${w}`),
-  'reveal.place', 'reveal.winner', 'goodbye.shout', ...['first', 'blocking', 'arrival', 'quiet', 'night', 'final', 'finale'].map(t => `host.cold.${t}`), 'host.chat', 'host.status', 'host.circle',
+  'reveal.place', 'reveal.winner', 'goodbye.shout', ...['first', 'blocking', 'arrival', 'quiet', 'rest', 'giveback', 'night', 'final', 'finale'].map(t => `host.cold.${t}`), 'host.chat', 'host.status', 'host.circle',
   // Plan 3a: games, parties, apartment life, videos from home.
   'game.open', 'game.statement.agree', 'game.statement.disagree', 'game.statement.lone',
   'game.name.good', 'game.name.bad', 'game.name.funny',

@@ -56,6 +56,23 @@ export const HOST = {
     { id: 'host.cold.quiet.07', turns: [{ by: 'host', say: "Good morning, Players! Nothing happened last night, and they're all going to spend today making something happen." }] },
     { id: 'host.cold.quiet.08', turns: [{ by: 'host', say: "It's a brand-new day in the Circle, and {a} has already changed outfits twice." }] },
   ],
+  // A day with no Ratings at the end of it (ci/schedule.js social days; real
+  // seasons have them, US 2 episodes 3, 5 and 9). Said out loud, so a day
+  // without a blocking does not read as the game having stopped.
+  'host.cold.rest': [
+    { id: 'host.cold.rest.01', turns: [{ by: 'host', say: "Good morning, Circle! No Ratings tonight, so today nobody is getting blocked. They don't know that yet, so they're all being very nice anyway." }] },
+    { id: 'host.cold.rest.02', turns: [{ by: 'host', say: "Rise and shine, Players. There are no Ratings today. Just games, chats, and {a} trying to make friends before the next ones." }] },
+    { id: 'host.cold.rest.03', turns: [{ by: 'host', say: "Morning, everybody! Today is a day off from Ratings. Nobody goes home tonight, but everything they say still counts next time." }] },
+    { id: 'host.cold.rest.04', turns: [{ by: 'host', say: "It's a no-Ratings day in the Circle, which means one thing: {a} has time to get into trouble." }] },
+    { id: 'host.cold.rest.05', turns: [{ by: 'host', say: "Welcome back! No Ratings and no blocking today. The Players get to just play. Let's see what they do with it." }] },
+  ],
+  // A Ratings night the season gave back: a double blocking (or another night
+  // that removed two) put it a blocking ahead (ci/timeline.js gaveBack).
+  'host.cold.giveback': [
+    { id: 'host.cold.giveback.01', turns: [{ by: 'host', say: "Good morning, Circle! Two Players went home in one night, so the Circle is a blocking ahead. That means no Ratings tonight." }] },
+    { id: 'host.cold.giveback.02', turns: [{ by: 'host', say: "Rise and shine. After that double blocking, the Circle doesn't need Ratings tonight. Nobody goes home today, and {a} doesn't know it yet." }] },
+    { id: 'host.cold.giveback.03', turns: [{ by: 'host', say: "Morning, Players. Two blocked in one night bought everybody a day off: no Ratings, no blocking, just the game." }] },
+  ],
   'host.chat': [
     { id: 'host.chat.01', turns: [{ by: 'host', say: "Meanwhile, {a} is ready to private chat {b}." }] },
     { id: 'host.chat.02', turns: [{ by: 'host', say: "Over in the next apartment, {a} has something to say to {b}, and a blanket to say it from." }] },

@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   SLOTS, airKey, byAirDate, airLabel, ageAt, latestAired, yearsBetween, nextWindowFor, nextAllStarsWindow,
+  nowDate, finaleDate, premiereDate,
 } from '../js/franchise-calendar.js';
 import { SHOWS } from '../js/shows.js';
 
@@ -195,7 +196,8 @@ describe('home quarters', () => {
   });
 
   it("places a show's first season in its home quarter, alongside what is airing", () => {
-    expect(nextWindowFor(fx, 'traitors')).toEqual({ airYear: 2027, airSlot: 'winter' });
+    // Winter 2027 has already gone: Drag Race's finale is in March.
+    expect(nextWindowFor(fx, 'traitors')).toEqual({ airYear: 2028, airSlot: 'winter' });
     expect(nextWindowFor(fx, 'the-circle')).toEqual({ airYear: 2027, airSlot: 'spring' });
     expect(nextWindowFor(fx, 'perfect-match')).toEqual({ airYear: 2027, airSlot: 'summer' });
     expect(nextWindowFor(fx, 'the-challenge')).toEqual({ airYear: 2027, airSlot: 'fall' });
@@ -205,6 +207,60 @@ describe('home quarters', () => {
     expect(nextWindowFor(fx, 'total-drama')).toEqual({ airYear: 2027, airSlot: 'spring' });
     expect(nextWindowFor(fx, 'big-brother')).toEqual({ airYear: 2027, airSlot: 'summer' });
     expect(nextWindowFor(fx, 'drag-race')).toEqual({ airYear: 2028, airSlot: 'winter' });
+  });
+});
+
+describe('never before now (the user, 2026-10-20)', () => {
+  // TD 15: 26 episodes from April, so the franchise is at its September finale.
+  const td15 = s(2027, 'spring', { format: 'total-drama', seasonNumber: 15, episodeCount: 26 });
+
+  it('now is the latest FINALE, so a short season exported later does not walk it back', () => {
+    const short = s(2027, 'spring', { format: 'the-circle', seasonNumber: 1, episodeCount: 12 });
+    expect(latestAired([td15, short])).toBe(td15);
+    expect(latestAired([short, td15])).toBe(td15);
+    expect(nowDate([short, td15]).toISOString().slice(0, 10)).toBe('2027-09-27');
+  });
+
+  it('a season nobody has played moves to its next home quarter after the latest finale', () => {
+    // Not booked: the Circle's SECOND season, Big Brother's third.
+    expect(nextWindowFor([td15], 'the-circle', { number: 2 })).toEqual({ airYear: 2028, airSlot: 'spring' });
+    expect(nextWindowFor([td15], 'big-brother', { number: 3 })).toEqual({ airYear: 2028, airSlot: 'summer' });
+    // The fall premiere is after the September finale, so it stays.
+    expect(nextWindowFor([td15], 'total-drama', { number: 17 })).toEqual({ airYear: 2027, airSlot: 'fall' });
+  });
+
+  it('every projected window premieres at or after now', () => {
+    const db = JSON.parse(readFileSync('seasons_database.json', 'utf8')).seasons
+      .map(r => ({ ...r, format: r.format || 'total-drama' }));
+    const now = nowDate(db);
+    for (const format of Object.keys(SHOWS)) {
+      const mine = db.filter(r => r.format === format && !r.allStars);
+      const number = Math.max(0, ...mine.map(r => Number(r.seasonNumber) || 0)) + 101;
+      const w = nextWindowFor(db, format, { number });
+      expect(premiereDate(w, format) >= now, `${format}: ${airLabel(w)}`).toBe(true);
+    }
+  });
+
+  it('keeps the 2027 seasons that were already on the calendar (the one exception)', () => {
+    const db = JSON.parse(readFileSync('seasons_database.json', 'utf8')).seasons
+      .map(r => ({ ...r, format: r.format || 'total-drama' }));
+    for (const [format, byNumber] of Object.entries(SHOWS).map(([f, sh]) => [f, sh.booked || {}])) {
+      for (const [number, w] of Object.entries(byNumber)) {
+        if (db.some(r => r.format === format && Number(r.seasonNumber) === Number(number))) continue;
+        expect(nextWindowFor(db, format, { number: Number(number) }), `${format} ${number}`).toEqual(w);
+      }
+    }
+    // ...and nothing else: the Traitors' first season follows the rule.
+    expect(nextWindowFor(db, 'traitors')).toEqual({ airYear: 2028, airSlot: 'winter' });
+  });
+
+  it('a booking never moves a season LATER than the rule would', () => {
+    const early = [s(2020, 'fall', { format: 'total-drama', seasonNumber: 2 })];
+    expect(nextWindowFor(early, 'the-circle')).toEqual({ airYear: 2021, airSlot: 'spring' });
+  });
+
+  it('a finale is the premiere plus one week per episode', () => {
+    expect(finaleDate(td15).toISOString().slice(0, 10)).toBe('2027-09-27');
   });
 });
 

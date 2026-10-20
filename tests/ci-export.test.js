@@ -189,6 +189,18 @@ describe('The Circle exporter', () => {
     expect({ airYear: row.airYear, airSlot: row.airSlot }).toEqual({ airYear: 2027, airSlot: 'spring' });
   });
 
+  it('keeps the window the season fixed when it started (js/air-watch.js), whatever was exported since', () => {
+    const { doc } = season(4);
+    gs.airWindow = { airYear: 2029, airSlot: 'spring' };
+    try {
+      const sdb = mergeCircleSeasonsDatabase({ seasons: [
+        { seasonNumber: 1, format: 'drag-race', seasonId: 'dr-1', airYear: 2028, airSlot: 'winter', episodeCount: 16 },
+      ] }, doc);
+      const row = sdb.seasons.find(s => s.format === CIRCLE_FORMAT && s.seasonNumber === 3);
+      expect({ airYear: row.airYear, airSlot: row.airSlot }).toEqual({ airYear: 2029, airSlot: 'spring' });
+    } finally { delete gs.airWindow; }
+  });
+
   it('names a blocking format once, on the night it decided, and never the default arrival', () => {
     let formats = 0;
     for (const k of Object.keys(played)) {

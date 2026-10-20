@@ -99,17 +99,56 @@ export function ageAt(birthdate, season) {
   return age >= 0 && age < 130 ? age : null;
 }
 
+/** How many episodes a season is drawn with when its row does not say. */
+export const DEFAULT_RUN = 12;
+
+/** A season's finale, as a UTC Date: its premiere, then one episode a week. */
+export function finaleDate(season, format = season?.format) {
+  const n = Number(season?.episodeCount) > 0 ? Number(season.episodeCount) : DEFAULT_RUN;
+  return episodeAirDates(season, n, format).pop() || null;
+}
+
 /**
  * The latest season aired — the franchise's "now".
  *
  * Everything between-seasons is measured from here, and it is deliberately
  * derived rather than stored: a stored "current year" is a second clock, and
  * two clocks disagree.
+ *
+ * LATEST BY FINALE, NOT BY SLOT. A 26-episode spring season runs into
+ * September; a 12-episode one exported after it in the same spring ends in
+ * June. Sorted by slot alone, exporting the short one walked "now" back three
+ * months.
  */
 export function latestAired(seasons = []) {
   const placed = seasons.filter(s => airKey(s) != null);
   if (!placed.length) return null;
-  return placed.slice().sort(byAirDate)[placed.length - 1];
+  const end = s => finaleDate(s)?.getTime() ?? 0;
+  return placed.slice().sort((a, b) => end(a) - end(b) || byAirDate(a, b))[placed.length - 1];
+}
+
+/** The date "now" is: the latest finale. Null with nothing aired. */
+export function nowDate(seasons = []) {
+  const s = latestAired(seasons);
+  return s ? finaleDate(s) : null;
+}
+
+/**
+ * THE 2027 EXCEPTION (the user, 2026-10-20). Six seasons were already on the
+ * calendar for 2027 when the rule below came in (a season can't premiere
+ * before "now"), and Total Drama 15's 26-week run had already carried "now"
+ * to September 2027 before any of them was played. Under the rule all six
+ * would have moved a year, and the user asked to keep their 2027. So they keep
+ * the windows they had (`booked` on their show's registry entry), whatever
+ * order they are played in.
+ *
+ * Nothing else is ever added: from now on the Run tab and the export warn when
+ * a season is due (js/air-watch.js), so a season starts before it can slip.
+ */
+/** A booked window for this show's season `number`, or null. */
+export function bookedWindow(format, number) {
+  const w = SHOWS[format]?.booked?.[number];
+  return w ? { ...w } : null;
 }
 
 /**
@@ -152,10 +191,27 @@ export function yearsBetween(from, to) {
  * season would have landed in whatever quarter followed Drag Race, and every
  * season after it would have continued that accident.
  *
+ * ── NEVER BEFORE "NOW" (the user, 2026-10-20) ──
+ *
+ * "Now" is the latest finale (nowDate). A season nobody has played yet cannot
+ * have premiered before it: Total Drama 15 ran 26 weeks into September 2027,
+ * and the Circle's first season, played after it, still sat in that April —
+ * a "projected" bar drawn in the past. So the window found above moves on to
+ * the first one whose premiere is at or after now. A show's own quarters
+ * still win: the Circle waits for the next spring rather than taking the fall.
+ *
+ * That makes the ORDER seasons are exported in matter, which is why a season's
+ * window is fixed when it starts (`gs.airWindow`, js/air-watch.js) and why the
+ * Run tab warns when another show is due. A `booked` window, above, is the
+ * one exception.
+ *
+ * `number` is the season being placed (default: the show's next one), for
+ * the bookings.
+ *
  * Returns { airYear, airSlot }, or null when the franchise has no dated season
  * to reason from — in which case nothing is written and nothing is guessed.
  */
-export function nextWindowFor(seasons = [], format = null) {
+export function nextWindowFor(seasons = [], format = null, { number = null } = {}) {
   const quarters = s => { const k = airKey(s); return k == null ? null : Math.floor(k / 10) * 4 + (k % 10); };
   const at = q => ({ airYear: Math.floor(q / 4), airSlot: SLOTS[((q % 4) + 4) % 4] });
 
@@ -167,21 +223,35 @@ export function nextWindowFor(seasons = [], format = null) {
   // winter season a year late every time one aired.
   const mine = format ? dated.filter(s => (s.format || null) === format && !s.allStars) : dated;
 
+  const next = number ?? (mine.length ? Math.max(...mine.map(s => Number(s.seasonNumber) || 0), mine.length) + 1 : 1);
+  // A booking only ever keeps a season EARLIER than the rule would put it: it
+  // is the exception to "never before now", not a schedule of its own.
+  const booked = format ? bookedWindow(format, next) : null;
+  const pick = w => (booked && airKey(booked) < airKey(w) ? booked : w);
+
+  const now = nowDate(dated);
+  const open = q => !now || premiereDate(at(q), format) >= now;
+
   const home = (format && SHOWS[format]?.airSlots || []).map(s => SLOTS.indexOf(s)).filter(i => i >= 0);
   if (home.length) {
     const from = mine.length ? quarters(mine[mine.length - 1]) + 1 : quarters(dated[dated.length - 1]);
-    for (let q = from; q < from + 4; q++) if (home.includes(((q % 4) + 4) % 4)) return at(q);
+    for (let q = from; q < from + 16; q++) if (home.includes(((q % 4) + 4) % 4) && open(q)) return pick(at(q));
   }
 
-  if (!mine.length) return at(quarters(dated[dated.length - 1]) + 1);
-  if (mine.length === 1) return at(quarters(mine[0]) + 4);
-
-  const last = quarters(mine[mine.length - 1]);
-  const step = last - quarters(mine[mine.length - 2]);
-  // A step of zero or a negative one means two seasons share a slot or the rows
-  // are out of order; half a year is the franchise's commonest cadence and a
-  // safer answer than repeating a date that already exists.
-  return at(last + (step > 0 && step <= 8 ? step : 2));
+  let q;
+  let step = 1;
+  if (!mine.length) q = quarters(dated[dated.length - 1]) + 1;
+  else if (mine.length === 1) { q = quarters(mine[0]) + 4; step = 4; } else {
+    const last = quarters(mine[mine.length - 1]);
+    const gap = last - quarters(mine[mine.length - 2]);
+    // A step of zero or a negative one means two seasons share a slot or the rows
+    // are out of order; half a year is the franchise's commonest cadence and a
+    // safer answer than repeating a date that already exists.
+    step = gap > 0 && gap <= 8 ? gap : 2;
+    q = last + step;
+  }
+  for (let i = 0; i < 16 && !open(q); i++) q += step;
+  return pick(at(q));
 }
 
 /**
@@ -213,7 +283,10 @@ export function nextAllStarsWindow(seasons = [], format = null) {
   if (!dated.length) return null;
   const mine = dated.filter(s => (s.format || null) === format);
   const stars = mine.filter(s => s.allStars);
-  if (stars.length) return { ...at(slotAfter(quarters(stars[stars.length - 1]))), number: stars.length + 1, bridge: [] };
+  // Never before "now", like a flagship season (nextWindowFor).
+  const now = nowDate(dated);
+  const open = q0 => { let q = q0; for (let i = 0; i < 16 && now && premiereDate(at(q), format) < now; i++) q = slotAfter(q); return q; };
+  if (stars.length) return { ...at(open(slotAfter(quarters(stars[stars.length - 1])))), number: stars.length + 1, bridge: [] };
 
   const need = Math.max(1, Number(cfg.after) || 1);
   const flagships = mine.filter(s => !s.allStars);
@@ -227,7 +300,7 @@ export function nextAllStarsWindow(seasons = [], format = null) {
     flagships.push(row);
     rows = [...rows, row].sort(byAirDate);
   }
-  return { ...at(slotAfter(quarters(flagships[need - 1]))), number: 1, bridge };
+  return { ...at(open(slotAfter(quarters(flagships[need - 1])))), number: 1, bridge };
 }
 
 // ── THE FRANCHISE'S PRESENT, SET ONCE ────────────────────────────────

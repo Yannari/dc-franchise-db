@@ -838,6 +838,8 @@ export function renderRunTab() {
   try { if (isPerfectMatchSeason()) window.renderPerfectMatchCastSetup?.(); } catch { /* optional chrome */ }
   renderGameState();
   renderSeasonHub();
+  // What else is due on the franchise calendar while this season airs.
+  import('./air-watch.js').then(m => m.renderAirWatch(gs, seasonConfig)).catch(() => {});
   const empty   = document.getElementById('run-empty');
   const content = document.getElementById('run-content');
 

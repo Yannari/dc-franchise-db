@@ -25,6 +25,11 @@ export const SHOWS = {
     // and Perfect Match in summer, Total Drama and The Challenge in fall.
     // nextWindowFor places a show's first season and every next one here.
     airSlots: ['spring', 'fall'],
+    // THE 2027 EXCEPTION (js/franchise-calendar.js bookedWindow): seasons
+    // already on the calendar for 2027 when the rule "never before the latest
+    // finale" came in (the user, 2026-10-20). They keep that window whatever
+    // order they are played in. Never added to: the Run tab warns instead.
+    booked: { 16: { airYear: 2027, airSlot: 'fall' } },
     // Where the roster header says the cast is still: STILL IN THE <place>.
     // A camp has none -- its header names the people instead.
     rosterPlace: null,
@@ -125,6 +130,7 @@ export const SHOWS = {
     runnableFlag: '_bbRunnable',
     airNight: 3,
     airSlots: ['summer'],
+    booked: { 2: { airYear: 2027, airSlot: 'summer' } },
     rosterPlace: 'HOUSE',
     hasJury: true,
     roundsPath: 'bb.weeks',
@@ -400,6 +406,7 @@ export const SHOWS = {
     historyFromLedger: true,
     airNight: 6,
     airSlots: ['summer'],
+    booked: { 1: { airYear: 2027, airSlot: 'summer' } },
     rosterPlace: 'VILLA',
     hasJury: false,
     roundsPath: 'episodeHistory',
@@ -469,6 +476,7 @@ export const SHOWS = {
     historyFromLedger: true,
     airNight: 3,
     airSlots: ['spring'],
+    booked: { 1: { airYear: 2027, airSlot: 'spring' } },
     rosterPlace: 'APARTMENTS',
     hasJury: false,
     roundsPath: 'episodeHistory',
@@ -531,6 +539,7 @@ export const SHOWS = {
     historyFromLedger: true,
     airNight: 2,
     airSlots: ['fall'],
+    booked: { 1: { airYear: 2027, airSlot: 'fall' } },
     rosterPlace: 'VILLA',
     hasJury: false,
     roundsPath: 'episodeHistory',
@@ -590,6 +599,7 @@ export const SHOWS = {
     // show of the quarter beside Total Drama (Mon) and The Challenge (Tue).
     airNight: 3,
     airSlots: ['fall'],
+    booked: { 1: { airYear: 2027, airSlot: 'fall' } },
     rosterPlace: 'RACE',
     hasJury: false,
     roundsPath: 'episodeHistory',

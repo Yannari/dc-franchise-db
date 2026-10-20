@@ -2263,11 +2263,18 @@ function _airWindowFor(db, format, seasonNum, { allStars = false } = {}) {
   if (prior && prior.airYear && prior.airSlot) {
     return { airYear: prior.airYear, airSlot: prior.airSlot };
   }
+  // The window this season was given when it STARTED (js/air-watch.js
+  // stampAirWindow). A season exported in the meantime has moved "now", and
+  // re-deriving here would push this one past it.
+  // Only for the season in the simulator: a merge of some other document must
+  // not take the live season's date.
+  const locked = (seasonFormat(seasonConfig) || DEFAULT_FORMAT) === format ? gs?.airWindow : null;
+  if (locked && locked.airYear && locked.airSlot) return { airYear: locked.airYear, airSlot: locked.airSlot };
   const others = rows.filter(s => s !== prior);
   // An All Stars season keeps its own quarter, not the flagship's next one.
   const star = allStars ? nextAllStarsWindow(others, format) : null;
   if (star) return { airYear: star.airYear, airSlot: star.airSlot };
-  return nextWindowFor(others, format) || {};
+  return nextWindowFor(others, format, { number: seasonNum }) || {};
 }
 
 function _mergeSeasonsDatabase(existing, rawStats, template) {
@@ -4446,6 +4453,18 @@ export function mergeCircleSeasonsDatabase(existing, seasonDoc) {
 registerSeasonExporter(CIRCLE_FORMAT, exportCircleSeason);
 
 export async function exportSeason(onStatus) {
+  // A season that premieres while this one airs, and has not started, would
+  // move a year once this export carries "now" past it (js/air-watch.js).
+  // Asked, not refused: the user decides.
+  try {
+    const { loadSeasonsDb, liveSeason, exportWarning } = await import('./air-watch.js');
+    const seasons = await loadSeasonsDb();
+    const ask = exportWarning(seasons, liveSeason(gs, seasonConfig, seasons));
+    if (ask && typeof confirm === 'function' && !confirm(ask)) {
+      (onStatus || (() => {}))('Export cancelled');
+      throw new Error('Export cancelled: a season due on the calendar has not started.');
+    }
+  } catch (e) { if (/Export cancelled/.test(e?.message || '')) throw e; }
   const out = await seasonExporterFor(seasonFormat(seasonConfig) || DEFAULT_FORMAT)(onStatus);
   // The prose comes after the record, because the fill patches the committed
   // document. A failure here never fails the export — the season is already

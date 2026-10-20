@@ -325,9 +325,15 @@ names a show and nothing there needs editing.
    `seasons_database` row. Every registered exporter does this; copy any of
    them. `_airWindowFor` honours, in order: the air-window dropdown in the
    season setup (how you move one season by hand), the window a previous export
-   already wrote (re-exporting never moves a season), then `nextWindowFor`:
-   the show's next home quarter after its last season, or for a first season,
-   its first home quarter at or after the latest aired. **Forget the spread and
+   already wrote (re-exporting never moves a season), the window the season
+   fixed when it STARTED (`gs.airWindow`, stamped by `saveGameState` through
+   `js/air-watch.js`), then `nextWindowFor`: the show's next home quarter after
+   its last season, or for a first season, its first home quarter at or after
+   the latest aired, and in both cases never premiering before "now" (the
+   latest FINALE, 2026-10-20). Because that makes export order matter, the Run
+   tab warns (`#air-watch`) and the export asks when another show's season
+   premieres while this one airs and has not started. `booked` on a show's
+   registry entry is the one-time 2027 exception. **Forget the spread and
    the season is undated:** it drops off the calendar, sorts last in every
    cross-show ordering, and has no age for anyone in it, with no error
    anywhere.

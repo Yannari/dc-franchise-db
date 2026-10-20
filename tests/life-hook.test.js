@@ -42,8 +42,10 @@ beforeEach(() => { vi.restoreAllMocks(); });
 
 describe('placing a new season on the calendar', () => {
   it('continues the show own cadence rather than inventing a schedule', () => {
-    // Total Drama alternates spring and fall; the next one is half a year on.
-    expect(nextWindowFor(SEASONS, 'total-drama')).toEqual({ airYear: 2021, airSlot: 'spring' });
+    // Total Drama alternates spring and fall. Half a year on is spring 2021,
+    // but bb-1 has carried "now" to September 2021 and a season nobody has
+    // played can't premiere before it, so it is the fall.
+    expect(nextWindowFor(SEASONS, 'total-drama')).toEqual({ airYear: 2021, airSlot: 'fall' });
   });
 
   it('repeats annually when a show has aired only once', () => {

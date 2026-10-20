@@ -23,8 +23,9 @@
 
 import { SHOWS, DEFAULT_FORMAT } from './shows.js';
 import {
-  airKey, airLabel, latestAired, nextWindowFor, nextAllStarsWindow, episodeAirDates, airDateLabel,
+  airKey, airLabel, latestAired, nextWindowFor, nextAllStarsWindow, episodeAirDates, airDateLabel, bookedWindow, DEFAULT_RUN,
 } from './franchise-calendar.js';
+import { readSavedGame, readLocks, liveSeason } from './air-watch.js';
 
 const DAY = 86400000;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -88,7 +89,7 @@ function subtitleOf(title, show) {
 function runOf(season, projected = false, key = null) {
   const format = season.format || DEFAULT_FORMAT;
   const show = SHOWS[format] || { name: format, short: '?', emoji: '📺', accent: '#9b6dff', prefix: '?' };
-  const count = Number(season.episodeCount) > 0 ? Number(season.episodeCount) : 12;
+  const count = Number(season.episodeCount) > 0 ? Number(season.episodeCount) : DEFAULT_RUN;
   const dates = episodeAirDates(season, count, format);
   if (!dates.length) return null;
   const ref = season.seasonId || (show.prefix === 'td' ? season.seasonNumber : `${show.prefix}-${season.seasonNumber}`);
@@ -105,7 +106,15 @@ function runOf(season, projected = false, key = null) {
   };
 }
 
-function buildModel(seasons) {
+/** What a not-yet-exported bar is: being played, started, possible or projected. */
+const tagOf = r => (r.live ? 'playing now' : r.started ? 'started' : r.possible ? 'possible' : 'projected');
+
+/**
+ * `live` is the season in the simulator (air-watch.js liveSeason) and `locks`
+ * the windows of seasons that have started; both sit on their show's next bar
+ * instead of the rule's guess.
+ */
+function buildModel(seasons, { live = null, locks = {} } = {}) {
   const dated = seasons.filter(s => airKey(s) != null);
   // Each aired All Stars learns which one it was, in air order.
   const starCount = {};
@@ -125,15 +134,25 @@ function buildModel(seasons) {
     // A show with nothing aired still has a first season to place when it has
     // home quarters; without them there is no rhythm to continue.
     if (!mine.length && !show.airSlots?.length) continue;
-    const w = nextWindowFor(dated.map(s => ({ ...s, format: s.format || DEFAULT_FORMAT })), format);
-    if (!w) continue;
     const last = mine.slice().sort((a, b) => airKey(a) - airKey(b)).pop();
     const n = last ? (Number(last.seasonNumber) || mine.length) + 1 : 1;
+    const playing = live && live.format === format && live.number === n ? live : null;
+    const lock = locks[`${format}#${n}`] || null;
+    const w = playing?.window || lock || nextWindowFor(dated.map(s => ({ ...s, format: s.format || DEFAULT_FORMAT })), format, { number: n });
+    if (!w) continue;
     const run = runOf({
       format, seasonNumber: n, title: `${show.name} ${n}`,
-      airYear: w.airYear, airSlot: w.airSlot, episodeCount: last?.episodeCount,
+      airYear: w.airYear, airSlot: w.airSlot, episodeCount: playing ? playing.total : last?.episodeCount,
     }, true);
-    if (run) { run.lengthGuessed = !last?.episodeCount; ghosts.push(run); }
+    if (run) {
+      run.lengthGuessed = !playing && !last?.episodeCount;
+      run.live = !!playing;
+      run.aired = playing?.aired || 0;
+      run.started = !!(lock || playing?.locked);
+      const b = bookedWindow(format, n);
+      run.booked = !!b && b.airYear === w.airYear && b.airSlot === w.airSlot;
+      ghosts.push(run);
+    }
 
     // ALL STARS — possible, on its own quarter. Before the first one, the
     // flagship seasons it waits on are drawn too (the `bridge`), so the bar
@@ -294,6 +313,8 @@ function css() {
   border:1.5px dashed color-mix(in srgb,var(--ac) 80%,#fff 10%);box-shadow:none;color:color-mix(in srgb,var(--ac) 40%,#fff)}
 .fc-bar.ghost::before{display:none}
 .fc-bar.ghost .tag{font-size:9px;letter-spacing:.12em;text-transform:uppercase;border:1px solid currentColor;border-radius:5px;padding:1px 4px;font-weight:800}
+.fc-bar.ghost.live{border-style:solid;border-color:#4ade80;color:#fff}
+.fc-bar.ghost.live .tag{background:#4ade80;color:#052e16;border-color:#4ade80}
 .fc-bar.is-now{box-shadow:0 0 0 2px rgba(74,222,128,.75),0 8px 26px color-mix(in srgb,var(--ac) 50%,transparent)}
 
 .fc-nowline{position:absolute;top:52px;bottom:0;width:2px;margin-left:-1px;z-index:5;pointer-events:none;
@@ -423,6 +444,7 @@ function barHtml(r, year, i) {
   if (r.start.getTime() < a) cls.push('from-prev');
   if (r.finale.getTime() + DAY > b) cls.push('to-next');
   if (r.projected) cls.push('ghost');
+  if (r.live || r.started) cls.push('live');
   if (state.model.nowRun === r) cls.push('is-now');
   if (state.selected === r.key) cls.push('sel');
   // A bar clipped to a few weeks at the edge of a year has room for its label
@@ -430,10 +452,10 @@ function barHtml(r, year, i) {
   const roomy = width >= 14;
   const winner = roomy && !r.projected && r.season.winner?.name ? `<span class="crown">👑 ${esc(r.season.winner.name)}</span>` : '';
   const sub = width >= 11 && r.sub ? `<span>${esc(r.sub)}</span>` : '';
-  const tip = `${r.short}${r.sub ? ' · ' + r.sub : ''} — ${airDateLabel(r.start)} to ${airDateLabel(r.finale)}${r.possible ? ' (possible)' : r.projected ? ' (projected)' : ''}`;
+  const tip = `${r.short}${r.sub ? ' · ' + r.sub : ''} — ${airDateLabel(r.start)} to ${airDateLabel(r.finale)}${r.projected ? ` (${tagOf(r)})` : ''}`;
   return `<button type="button" class="${cls.join(' ')}" data-key="${esc(r.key)}" title="${esc(tip)}"
     style="left:${left}%;width:${width}%;--ac:${r.show.accent};--wk:calc(100% / ${weeks.toFixed(2)});animation-delay:${120 + i * 90}ms">
-    <b>${esc(r.short)}</b>${r.projected ? (width >= 8 ? `<span class="tag">${r.possible ? 'possible' : 'projected'}</span>` : '') : sub}${winner}</button>`;
+    <b>${esc(r.short)}</b>${r.projected ? (width >= 8 ? `<span class="tag">${tagOf(r)}</span>` : '') : sub}${winner}</button>`;
 }
 
 function boardHtml(year) {
@@ -482,22 +504,27 @@ function detailHtml() {
   const { prev, next } = neighbours(r);
   const night = NIGHTS[r.show.airNight ?? 5] || '';
   const isNow = state.model.nowRun === r;
-  const status = r.possible ? 'Possible · not scheduled yet' : r.projected ? 'Projected · not scheduled yet' : isNow ? 'Latest to air · the franchise is here' : 'Aired';
+  const status = r.live ? `Playing now · ${r.aired} of ${r.count} episodes aired · not exported yet`
+    : r.started ? 'Started · its date is fixed · not exported yet'
+      : r.possible ? 'Possible · not scheduled yet' : r.projected ? 'Projected · not scheduled yet' : isNow ? 'Latest to air · the franchise is here' : 'Aired';
   const stars = r.show.allStars;
   const which = r.season.allStars && stars ? `${stars.label} ${r.season.asNumber || ''}` : `Season ${r.season.seasonNumber}`;
   const starSlots = (stars?.airSlots || []).map(s => s[0].toUpperCase() + s.slice(1)).join(' and ');
   const winner = r.season.winner?.name
     ? ` · Won by <b>${esc(r.season.winner.name)}</b>${r.season.winner.runnerUp ? ` over ${esc(r.season.winner.runnerUp)}` : ''}` : '';
   const home = (r.show.airSlots || []).map(s => s[0].toUpperCase() + s.slice(1)).join(' and ');
+  const booked = r.booked ? "<p>Kept in 2027 by the one-time exception: it was on the calendar before the rule that a season can't premiere before the latest finale.</p>" : '';
   const why = !r.projected ? ''
+    : r.live ? `<p>Being played in the simulator. Its date is fixed once it has aired an episode, so exporting another season first won't move it. It's scheduled for real once it's exported.</p>${booked}`
+    : r.started ? `<p>Started in the simulator and saved; its date was fixed when it started. It's scheduled for real once it's exported.</p>${booked}`
     : r.possible
       ? `<p>A possible ${esc(r.show.name)} ${esc(stars.label)}. ${r.season.asNumber === 1
         ? `The first can follow ${esc(r.show.name)} ${esc(stars.after)}, in ${esc(starSlots)}`
         : `One a year, in ${esc(starSlots)}`}, after that winter's season has crowned its winner. It isn't scheduled; play it and it lands here.</p>`
     : r.season.seasonNumber === 1
-      ? `<p>Not played yet. ${esc(r.show.name)} airs in ${esc(home || 'its slot')}, so its first season lands here when it's exported. The episode count is a placeholder until then.</p>`
-      : `<p>Where the next season lands${home ? ` (${esc(r.show.name)} airs in ${esc(home)})` : ' if the show keeps its rhythm'}, the same rule the export uses to date a new season. It isn't scheduled yet.</p>`;
-  const nb = (label, x) => x ? `<button type="button" data-key="${esc(x.key)}">${label} ${x.show.emoji} ${esc(x.short)}${x.possible ? ' (possible)' : x.projected ? ' (projected)' : ''}</button>` : '';
+      ? `<p>Not played yet. ${esc(r.show.name)} airs in ${esc(home || 'its slot')}, and never before the latest finale, so its first season lands here unless something else is exported first. The episode count is a placeholder until then.</p>${booked}`
+      : `<p>Where the next season lands${home ? ` (${esc(r.show.name)} airs in ${esc(home)})` : ' if the show keeps its rhythm'}, never before the latest finale: the same rule the export uses to date a new season. It isn't scheduled yet.</p>${booked}`;
+  const nb = (label, x) => x ? `<button type="button" data-key="${esc(x.key)}">${label} ${x.show.emoji} ${esc(x.short)}${x.projected ? ` (${tagOf(x)})` : ''}</button>` : '';
   const open = r.projected ? '' : `<a class="fc-open" href="season_ref.html?season=${encodeURIComponent(r.ref)}">Open season →</a>`;
   return `<div class="fc-dcard" style="--ac:${r.show.accent}">
     <div class="big">${r.show.emoji}</div>
@@ -524,7 +551,7 @@ function chronoHtml() {
     if (state.selected === r.key) cls.push('sel');
     out.push(`<button type="button" class="${cls.join(' ')}" data-key="${esc(r.key)}" style="--ac:${r.show.accent};animation-delay:${Math.min(i * 45, 1200)}ms"
       title="${esc(r.season.title || r.short)}"><span class="dot">${r.show.emoji}</span><b>${esc(r.short)}</b>
-      <small>${esc(airLabel(r.season))}${r.possible ? '<br>possible' : r.projected ? '<br>projected' : ''}</small></button>`);
+      <small>${esc(airLabel(r.season))}${r.projected ? `<br>${tagOf(r)}` : ''}</small></button>`);
   });
   return `<div class="fc-rail">${out.join('')}</div>`;
 }
@@ -537,7 +564,7 @@ function cardsHtml() {
   const card = (cls, r, label, line) => r ? `<div class="fc-card ${cls}" data-key="${esc(r.key)}" style="--ac:${r.show.accent}">
     <small>${label}</small><b>${r.show.emoji} ${esc(r.season.title || r.short)}</b><span>${line}</span></div>` : '';
   return card('now', nowRun, 'Now', nowRun ? `${esc(airLabel(nowRun.season))} · finale ${esc(airDateLabel(nowRun.finale))}` : '')
-    + card('next', upNext, 'Up next · projected', upNext ? `${esc(airLabel(upNext.season))} · premieres ${esc(shortDate(upNext.start))}` : '');
+    + card('next', upNext, upNext ? `Up next · ${tagOf(upNext)}` : '', upNext ? `${esc(airLabel(upNext.season))} · premieres ${esc(shortDate(upNext.start))}` : '');
 }
 
 function setYear(year, dir = 0) {
@@ -630,7 +657,13 @@ export async function mountCalendar(root) {
   if (!state.built) {
     state.built = true;
     root.innerHTML = '<div class="fc-hint">Loading the franchise calendar…</div>';
-    state.model = buildModel(await loadSeasons());
+    const seasons = await loadSeasons();
+    // The season in the simulator, and the ones started and saved: their bars
+    // sit at the date they fixed, tagged, instead of the rule's guess.
+    const saved = await readSavedGame().catch(() => null);
+    const rows = seasons.map(s => ({ ...s, format: s.format || DEFAULT_FORMAT }));
+    const live = saved ? liveSeason(saved.gs, saved.cfg, rows) : null;
+    state.model = buildModel(seasons, { live, locks: readLocks() });
     if (!state.model.all.length) {
       root.innerHTML = '<div class="fc-hint">No season has an air date yet. Add <code>airYear</code> and <code>airSlot</code> to seasons_database.json.</div>';
       return;

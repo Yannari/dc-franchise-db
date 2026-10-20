@@ -10,6 +10,7 @@ import { setFranchiseLedger, franchiseLedger, buildFranchiseMeta, META_WEIGHTS }
 import { lifeSeeds } from './life-cast.js';
 import { addCoach } from './coaches.js';
 import { cloudMirror, cloudMirrorDelete } from './cloud-backup.js';
+import { stampAirWindow } from './air-watch.js';
 
 // ── IndexedDB wrapper (replaces localStorage for gs + checkpoints) ──
 const DB_NAME = 'dc_franchise_db';
@@ -140,6 +141,8 @@ export async function persistFranchiseLedger() {
 }
 
 export function saveGameState() {
+  // A season's air date is fixed the first time it saves an aired episode.
+  try { stampAirWindow(gs, seasonConfig); } catch { /* the calendar is not the save */ }
   prepGsForSave(gs);
   // Store as structured clone (parsed object, not string) — IndexedDB handles cloning
   _idbPut('gs', JSON.parse(JSON.stringify(gs)));

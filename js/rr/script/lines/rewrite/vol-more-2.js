@@ -120,7 +120,8 @@ export default {
       ] },
     ],
     'spy.copies': [
-      { id: 'sc2.1', when: { at: 'task' }, turns: [
+      // a grip and a stance are about a task done with the hands or the body (it aired at a dance, 2026-10-20)
+      { id: 'sc2.1', when: { at: 'task', taskType: ['hands', 'strength', 'search'] }, turns: [
         { beat: '{a} and {b} pretend to read their tip, very slowly, while watching {c} and {d} work.' },
         { by: 'b', say: "They're holding it with two hands. Not one." },
         { by: 'a', say: "Does that matter?" },
@@ -137,7 +138,7 @@ export default {
         { by: 'a', say: "We turn round, but casually. Like we meant to." },
         { beat: '{a} and {b} turn round very casually and follow {c} and {d} at a distance.' },
       ] },
-      { id: 'sc2.3', when: { at: 'task' }, turns: [
+      { id: 'sc2.3', when: { at: 'task', taskType: ['strength', 'nerve', 'water', 'heights'] }, turns: [
         { by: 'b', say: "What are they doing with their feet?" },
         { by: 'a', say: "They're standing wide. Like this." },
         { by: 'b', say: "That looks silly." },

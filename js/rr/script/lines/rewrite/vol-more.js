@@ -258,7 +258,8 @@ export default {
       ] },
     ],
     'help-offer.accepted': [
-      { id: 'ho2.1', turns: [
+      // the help shows one physical action, so it plays at a task done with the hands or the body (2026-10-20 read)
+      { id: 'ho2.1', when: { at: 'task', taskType: ['strength', 'hands'] }, turns: [
         { beat: '{c} and {d} are trying to lift something far too heavy for two people.' },
         { by: 'a', say: "Hold on. We'll take a corner." },
         { by: 'c', say: "You don't have to." },
@@ -286,7 +287,7 @@ export default {
         { by: 'c', say: "Thank you. Really." },
         { by: 'a', say: "Just don't overtake us. That's all we ask." },
       ] },
-      { id: 'ho2.4', when: { at: 'task' }, turns: [
+      { id: 'ho2.4', when: { at: 'task', taskType: ['hands', 'strength', 'brains'] }, turns: [
         { by: 'd', say: "Do you know how this works? We can't figure it out." },
         { by: 'a', say: "Sort of. Turn the handle, then pull. Not the other way round." },
         { by: 'c', say: "We've been pulling first this whole time." },

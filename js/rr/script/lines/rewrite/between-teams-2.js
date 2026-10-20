@@ -104,7 +104,8 @@ export default {
       ] },
     ],
     'help-offer.accepted': [
-      { id: 'bt2.ha1', turns: [
+      // the help shows one physical action, so it plays at a task done with the hands or the body (2026-10-20 read)
+      { id: 'bt2.ha1', when: { at: 'task', taskType: ['hands', 'brains', 'search'] }, turns: [
         { by: 'a', say: "Hey. Can I show you something? You're turning it the wrong way." },
         { by: 'c', ...V("You'd help us? Why would you help us?", "Why would you help us?", "You'd help? Why?", "You'd HELP us? WHY would you help us?", "You'd actually help us? Why?", "Help? From a rival? Is this a trap?") },
         { by: 'b', say: "Because we were stuck on it for an hour, and nobody helped us." },
@@ -112,7 +113,7 @@ export default {
         { beat: 'It works first time. {c} looks at {a} like {a.sub}\'s just performed a miracle.' },
         { by: 'd', say: "We owe you. We really owe you." },
       ] },
-      { id: 'bt2.ha2', turns: [
+      { id: 'bt2.ha2', when: { at: 'task', taskType: ['strength', 'hands'] }, turns: [
         { by: 'b', say: "You two look like you could use a hand." },
         { by: 'd', ...V("We could use about four hands. We've been here forever.", "We could use four hands.", "Four hands, at least.", "We could use about FOUR hands! We've been here FOREVER!", "We could use about four hands, honestly. We've been here forever.", "We need hands. All the hands. Any hands.") },
         { by: 'a', say: "Then here's two. Grab that end." },

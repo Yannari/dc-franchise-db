@@ -6,8 +6,6 @@
 export default {
   id: 'twin-tower-bridge', name: 'Twin Tower Bridge', recap: 'chasing a masked kidnapper through a fortress and picking the real crown jewel',
   region: 'old-coast', map: { x: 45, y: 25 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['bus', 'foot'],
   stretches: [
     { id: 'double-decker', kind: 'travel', mode: 'bus', base: 30, cost: 15, plate: 'double-decker bus, night street', label: 'Double-decker bus to the fortress',

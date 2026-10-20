@@ -5,8 +5,6 @@
 export default {
   id: 'marble-temple-hill', name: 'Marble Temple Hill', recap: 'running hurdles, clearing a high jump and racing a chariot at the old games',
   region: 'old-coast', map: { x: 56, y: 36 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['taxi', 'foot'],
   stretches: [
     { id: 'stadium-taxi', kind: 'travel', mode: 'taxi', base: 30, cost: 20, plate: 'marble hill road', label: 'Taxi to the old stadium',

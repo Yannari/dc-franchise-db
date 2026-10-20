@@ -5,8 +5,6 @@
 export default {
   id: 'secret-base-desert', name: 'Secret Base Desert', recap: 'sneaking into a secret base and stealing back an alien artifact',
   region: 'north', map: { x: 12, y: 38 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['drive', 'foot'],
   stretches: [
     { id: 'desert-pickup', kind: 'travel', mode: 'drive', base: 45, cost: 20, plate: 'empty desert highway', label: 'Drive into the desert',

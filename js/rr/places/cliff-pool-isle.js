@@ -6,8 +6,6 @@
 export default {
   id: 'cliff-pool-isle', name: 'Cliff Pool Isle', recap: 'diving off a waterfall for treasure and bobsledding on a tropical island',
   region: 'ocean', map: { x: 26, y: 49 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['bus', 'foot'],
   stretches: [
     { id: 'coast-minibus', kind: 'travel', mode: 'bus', base: 35, cost: 15, plate: 'coast road, palms', label: 'Minibus round the coast',

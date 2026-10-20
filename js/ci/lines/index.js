@@ -53,6 +53,7 @@ import { VOICES as VOICES_6A } from './voices/batch6a.js';
 import { VOICES as VOICES_6B } from './voices/batch6b.js';
 import { VOICES as VOICES_7A } from './voices/batch7a.js';
 import { VOICES as VOICES_7B } from './voices/batch7b.js';
+import { VOICES as VOICES_8A } from './voices/batch8a.js';
 import { VOICE_NOTICED } from './voice-noticed.js';
 import { FLIRT_ACT } from './flirt-act.js';
 import { TOPIC_LINES } from './topics.js';
@@ -83,7 +84,7 @@ export const VOICE_MISSES = [];
 {
   const byId = new Map(Object.values(POOLS).flat().map(e => [e.id, e]));
   const KINDS = ['send', 'post', 'say', 'video', 'react'];
-  for (const [id, at, v] of [...VOICES_1, ...VOICES_2A, ...VOICES_2B, ...VOICES_2C, ...VOICES_3A, ...VOICES_3B, ...VOICES_3C, ...VOICES_4A, ...VOICES_4B, ...VOICES_5A, ...VOICES_5B, ...VOICES_6A, ...VOICES_6B, ...VOICES_7A, ...VOICES_7B]) {
+  for (const [id, at, v] of [...VOICES_1, ...VOICES_2A, ...VOICES_2B, ...VOICES_2C, ...VOICES_3A, ...VOICES_3B, ...VOICES_3C, ...VOICES_4A, ...VOICES_4B, ...VOICES_5A, ...VOICES_5B, ...VOICES_6A, ...VOICES_6B, ...VOICES_7A, ...VOICES_7B, ...VOICES_8A]) {
     // the turn holding that text, in whichever of its fields (a turn can say something aloud and post something else)
     let field = null;
     const t = (byId.get(id)?.turns || []).find(x => (field = KINDS.find(k => x[k] === at)));

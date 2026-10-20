@@ -165,18 +165,23 @@ describe('rr season read (2026-10-18)', () => {
     expect(second).toBeGreaterThan((first + second) * 0.25);
   });
 
+  // seasons pooled until four Botch moments are in hand: how many Botch or Watch legs one season visits depends on its
+  // route, and seed 2 alone fell to three once batch 7's places joined the draw (2026-10-20); every moment met is checked
   it('a Botch moment knows who did the Botch', () => {
-    const { cast, teams } = raceCast(10, 2);
-    setPlayers(cast);
-    const r = playRaceSeason({ teams, seed: 2 });
-    const st = r.state;
-    const scs = st.scenes.filter(s => ['watching-botch', 'whose-botch'].includes(s.kind));
-    expect(scs.length).toBeGreaterThan(3);
-    for (const sc of scs) {
-      const t = st.teams[sc.data.team];
-      expect([t.a, t.b]).toContain(sc.data.snap.botcher);
+    let seen = 0;
+    for (let seed = 2; seed <= 20 && seen <= 3; seed++) {
+      const { cast, teams } = raceCast(10, seed);
+      setPlayers(cast);
+      const st = playRaceSeason({ teams, seed }).state;
+      const scs = st.scenes.filter(s => ['watching-botch', 'whose-botch'].includes(s.kind));
+      seen += scs.length;
+      for (const sc of scs) {
+        const t = st.teams[sc.data.team];
+        expect([t.a, t.b], `seed ${seed}`).toContain(sc.data.snap.botcher);
+      }
     }
-  });
+    expect(seen).toBeGreaterThan(3);
+  }, 240000);
 
   it('in a room: only a schemer lies about the flight, boos are for a team that was caught, the arriving team is first at the mat', async () => {
     const { SCENES, whenOf, prepare } = await import('../js/rr/scenes.js');

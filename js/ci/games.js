@@ -224,6 +224,59 @@ const RUN = {
     sc.data.results = { quality, likes, winner: argmax(all, h => likes[h] + quality[h] / 100) };
   },
 
+  /**
+   * A roast (US 4×6, the Circle Roast): each Player writes a joke about the
+   * next one round the room and sends it to every screen with their name on
+   * it; the likes judge. The edge follows the writer. A schemer who resents
+   * the target goes savage, and that is a public jab, as in a portrait game.
+   * A writer fond of the target and short of nerve can't do it and sends a
+   * compliment, which the room did not come for. Everyone else teases. What
+   * the joke is about is the target's own record in here (`angleFor`).
+   */
+  roast(state, rng, game, sc, all) {
+    const p = game.prompts[0];
+    const quality = Object.fromEntries(all.map(h =>
+      [h, p.stats.reduce((s, k) => s + S(state, h, k), 0) / p.stats.length + rng() * 3]));
+    const answers = {}, tones = {}, angles = {}, jobs = {}, used = {};
+    const order = shuffled(all, rng);
+    order.forEach((maker, i) => {
+      const subject = order[(i + 1) % order.length];
+      answers[maker] = subject;
+      const savage = schemeEligible(state, maker) && rel(maker, subject, 'resentment') > rel(maker, subject, 'affection');
+      // Too fond to go for it: the fonder, and the less bold, the likelier.
+      const soft = !savage && rng() < clamp(rel(maker, subject, 'affection') / 10, 0, 1) * (10 - S(state, maker, 'boldness')) / 10;
+      tones[maker] = savage ? 'savage' : soft ? 'soft' : 'tease';
+      angles[maker] = soft ? 'soft' : angleFor(state, subject, rng, used);
+      used[angles[maker]] = (used[angles[maker]] || 0) + 1;
+      if (angles[maker] === 'job') jobs[maker] = state.profiles[subject]?.shown?.job;
+      // A compliment is not a roast: the room laughs less.
+      if (soft) quality[maker] *= 0.75;
+    });
+    const likes = Object.fromEntries(all.map(h => [h, 0]));
+    for (const liker of all) {
+      all.filter(o => o !== liker).map(o => [o, quality[o] + rel(liker, o, 'affection') * 0.3])
+        .sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([o]) => { likes[o]++; });
+    }
+    for (const [maker, subject] of Object.entries(answers)) {
+      const q = quality[maker];
+      if (tones[maker] === 'savage') {
+        // Said with a name on it: everyone saw who went for whom.
+        const c = makeClaim(state, { kind: 'distrusts', holder: maker, about: subject, truth: true, secrecy: 'public', by: maker });
+        for (const obs of all) if (obs !== maker) learn(state, obs, c, maker, sc);
+        bump(subject, maker, 'resentment', 1);
+        // ...and the harder the room laughed, the more it stung.
+        feel(state, subject, 'stress', clamp((q - 4) / 4, 0, 1));
+      } else {
+        // A tease that lands is a compliment with a punchline.
+        bump(subject, maker, 'affection', tones[maker] === 'soft' ? 0.6 : 0.5 * clamp((q - 3) / 5, 0, 1));
+      }
+      // A joke that dies in front of everybody costs its writer.
+      feel(state, maker, 'stress', clamp((5 - q) / 5, 0, 0.6));
+    }
+    sc.data.rounds.push({ promptId: p.id, answers, tones, angles, jobs });
+    sc.data.results = { quality, likes, winner: argmax(all, h => likes[h] + quality[h] / 100) };
+  },
+
   /** Post a photo; the room reacts (1×05 Hashtag This). */
   photo(state, rng, game, sc, all) {
     const answers = {}, likes = Object.fromEntries(all.map(h => [h, 0]));
@@ -339,11 +392,42 @@ const RUN = {
   },
 };
 
+/**
+ * What a roast joke is about: the target's record in here, weighted by how
+ * much material it gives. Narrative only (it picks the joke, never a result).
+ */
+function angleFor(state, h, rng, used = {}) {
+  const others = state.active.filter(o => o !== h);
+  const shown = state.profiles[h]?.shown || {};
+  // How much of the room doubts this profile is real.
+  const doubt = others.map(o => state.beliefs[o]?.[h]).filter(Boolean).map(b => 1 - b.real);
+  const suspected = doubt.length ? doubt.reduce((a, b) => a + b, 0) / doubt.length : 0;
+  const crushes = others.filter(o => rel(h, o, 'attraction') > 3).length;
+  const last = (state.ratings || []).filter(r => !r.hidden && !r.final && r.results?.length).at(-1)?.results || [];
+  const place = last.findIndex(r => r.profile === h);
+  const age = Number(shown.age) || null;
+  const options = [
+    ['catfish', suspected > 0.3 ? 3 : 0],
+    ['flirt', crushes >= 2 ? 2.5 : crushes === 1 ? 1 : 0],
+    ['power', state.influencerCount?.[h] ? 2 : 0],
+    ['bottom', place >= 0 && place >= last.length * 2 / 3 ? 2 : 0],
+    ['quiet', S(state, h, 'social') <= 4 ? 1.5 : 0],
+    ['chatty', S(state, h, 'social') >= 7 ? 1.5 : 0],
+    ['old', age && age >= 40 ? 1.2 : 0],
+    ['young', age && age <= 23 ? 1.2 : 0],
+    ['job', shown.job ? 1.5 : 0],
+    ['general', 0.6],
+  ].filter(([, w]) => w > 0);
+  // Five flirting jokes in one roast is one joke told five times: an angle
+  // already used tonight is far less likely.
+  return weightedPick(options, ([a, w]) => w / (1 + 3 * (used[a] || 0)), rng)[0];
+}
+
 /** Who takes the game's prize, by family. */
 function winnersOf(state, game, sc, all) {
   const r = sc.data.results || {};
   switch (game.family) {
-    case 'make': case 'photo': return [r.winner];
+    case 'make': case 'photo': case 'roast': return [r.winner];
     // A video from home skips a captain who joined today (1×07: "Captain Sean
     // won't get one because she's literally been here like 12 minutes").
     case 'team': return r.teams[r.winner].filter(h => game.prize !== 'video' || state.joinedDay?.[h] !== state.day);
@@ -374,7 +458,7 @@ function winnersOf(state, game, sc, all) {
  */
 // A judged contest with no other prize gives the winner a trophy at the door
 // (US 2 Poetry Slam's golden quill, US 3's rap battle): a reward, no power.
-const TROPHY_FAMILIES = new Set(['make', 'photo']);
+const TROPHY_FAMILIES = new Set(['make', 'photo', 'roast']);
 export const prizeOf = game => (game.prize && game.prize !== 'none' ? game.prize : TROPHY_FAMILIES.has(game.family) ? 'trophy' : null);
 export function awardPrize(state, rng, game, winners, sc) {
   const kind = prizeOf(game);

@@ -24,6 +24,7 @@ export const DEPTH = {
   gift: { lines: 35, phases: ['announce', 'prep', 'reveal', 'aftermath'] },
   rival: { lines: 40, phases: ['announce', 'round', 'aftermath'] },
   flirt: { lines: 35, phases: ['announce', 'prep', 'round', 'verdict'] },
+  roast: { lines: 40, phases: ['announce', 'prep', 'reveal', 'verdict'] },
 };
 
 /** A season with the transcript harness's cast, including a shared pair. */

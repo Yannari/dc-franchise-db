@@ -18,9 +18,10 @@
 // the game's `say` is the two answer words, spoken aloud};
 // name {id, text, tone good|bad|funny}; guess {id, text — a fact every player
 // answers about themselves}; team {id, text — a category}; make {id, text,
-// stats, about — the work portrays another player}.
+// stats, about — the work portrays another player}; roast {id, text, stats —
+// a joke about another player, said in public with a name on it}.
 
-export const FAMILIES = ['statement', 'name', 'ask', 'guess', 'make', 'photo', 'team', 'gift', 'rival', 'flirt'];
+export const FAMILIES = ['statement', 'name', 'ask', 'guess', 'make', 'photo', 'team', 'gift', 'rival', 'flirt', 'roast'];
 export const PURPOSES = ['bond', 'learn', 'catfish', 'divide'];
 export const PRIZES = ['party', 'photo', 'video', 'immunity', 'gift', 'none'];
 
@@ -242,8 +243,12 @@ export const GAMES = [
   { id: 'head-to-head', name: 'Head to Head', family: 'make', purpose: 'divide', prize: 'immunity', source: 'US 3 Ep 5',
     rules: ['Players will go head to head: each writes a diss track about another Player, and The Circle will vote for the best one.'],
     prompts: [{ id: 'diss', text: 'A diss track about the other Player.', stats: ['boldness', 'mental'], about: true }] },
-  { id: 'roast', name: 'Roast', family: 'make', purpose: 'divide', prize: 'none', source: 'US 4 Ep 6',
-    rules: ['Tonight, The Circle is holding a roast. You must write a roast joke about another Player. The best one wins.'],
+  // A joke is not a painting (user, 2026-10-20: "the roast joke game doesn't
+  // even have roast, it plays like a drawing game"): its own family, where
+  // every joke is sent with a name on it and the room laughs or doesn't.
+  // US 4×6, the Circle Roast: each Player wrote roast jokes about the others.
+  { id: 'roast', name: 'Roast', family: 'roast', purpose: 'divide', prize: 'none', source: 'US 4 Ep 6',
+    rules: ['Tonight, The Circle is holding a roast. You must write a roast joke about another Player, and it goes up on every screen with your name on it. The best one wins.'],
     prompts: [{ id: 'roast', text: 'A roast joke about another Player.', stats: ['boldness', 'social'], about: true }] },
   { id: 'single-pringles', name: 'Single Pringles', family: 'make', purpose: 'learn', prize: 'none', source: 'US 5 Ep 4',
     rules: ['The Circle is going to give you all a brand-new dating profile page.', 'You will be making a dating profile for another Player. Your dating profiles are now going live.'],

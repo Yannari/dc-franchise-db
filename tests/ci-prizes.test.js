@@ -13,7 +13,7 @@ describe('the prize at the door', () => {
   it('a judged contest with no other prize gives a trophy; a game with its own prize keeps it; the rest give none', () => {
     for (const g of GAMES) {
       if (g.prize && g.prize !== 'none') expect(prizeOf(g)).toBe(g.prize);
-      else if (['make', 'photo'].includes(g.family)) expect(prizeOf(g)).toBe('trophy');
+      else if (['make', 'photo', 'roast'].includes(g.family)) expect(prizeOf(g)).toBe('trophy');
       else expect(prizeOf(g)).toBeNull();
     }
   });

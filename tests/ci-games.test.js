@@ -92,6 +92,7 @@ describe('which game', () => {
 import { runGame } from '../js/ci/games.js';
 import { rel } from '../js/ci/state.js';
 import { mood } from '../js/ci/mind.js';
+import { writeScene } from '../js/ci/script.js';
 
 const game = id => GAMES.find(g => g.id === id);
 
@@ -248,7 +249,7 @@ describe('making things, photos, teams, flirting — and the prizes', () => {
       const s = room(5, seed);
       for (const n of Object.keys(s.people)) Object.assign(s.people[n], { archetype: 'villain' });
       for (const a of s.active) for (const b of s.active) if (a !== b) bump(a, b, 'resentment', 5);
-      const sc = runGame(s, streamFor(seed, 'make'), game('roast'));
+      const sc = runGame(s, streamFor(seed, 'make'), game('rap-it-up'));
       for (const [maker, how] of Object.entries(sc.data.rounds[0].portrayals)) {
         if (how !== 'jab') continue;
         jabs++;
@@ -257,6 +258,40 @@ describe('making things, photos, teams, flirting — and the prizes', () => {
       }
     }
     expect(jabs).toBeGreaterThan(0);
+  });
+
+  // The user, 2026-10-20: "the roast joke game doesn't even have roast, it
+  // plays like a drawing game". It aired the make family's lines: "It's art
+  // now", "it looks nothing like me", uploads and frames, and not one joke.
+  it('a roast: every joke is sent with a name on it and answered; a savage one is a public jab; nothing is painted', () => {
+    let savage = 0;
+    const ART = /\b(art|paint|draw|portrait|canvas|upload|frame|looks nothing like me|made this)\b/i;
+    for (let seed = 1; seed <= 10; seed++) {
+      const s = room(6, seed);
+      for (const n of Object.keys(s.people)) Object.assign(s.people[n], { archetype: 'villain' });
+      for (const a of s.active) for (const b of s.active) if (a !== b) bump(a, b, 'resentment', 5);
+      const sc = runGame(s, streamFor(seed, 'roast'), game('roast'));
+      const r = sc.data.rounds[0];
+      for (const [maker, tone] of Object.entries(r.tones)) {
+        expect(['tease', 'savage', 'soft']).toContain(tone);
+        expect(r.angles[maker], maker).toBeTruthy();
+        if (tone !== 'savage') continue;
+        savage++;
+        expect(s.claims.some(c => c.kind === 'distrusts' && c.holder === maker && c.about === r.answers[maker] && c.secrecy === 'public')).toBe(true);
+      }
+      writeScene(s, sc);
+      const jokes = sc.script.blocks.filter(b => b.key === 'game.roast.joke');
+      expect(jokes.length, `seed ${seed}`).toBeGreaterThanOrEqual(5);
+      for (const b of jokes) {
+        // The joke is a sent message, and the one it's about answers out loud.
+        expect(b.lines[0].kind, b.id).toBe('send');
+        expect(b.lines[1].kind, b.id).toBe('react');
+        expect(b.lines[0].text, b.id).toContain(s.profiles[b.lines[1].who]?.shown?.name);
+      }
+      const said = sc.script.blocks.flatMap(b => b.lines.map(l => l.text || '')).join('\n');
+      expect(said, `seed ${seed}`).not.toMatch(ART);
+    }
+    expect(savage).toBeGreaterThan(0);
   });
 
   it('a team game: two newcomers captain, teammates bond, the last pick feels it', () => {

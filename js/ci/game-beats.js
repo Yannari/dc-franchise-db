@@ -187,6 +187,44 @@ const FAMILY = {
     remember(state, sc, 'won', R.winner, null, game.id);
   },
 
+  /**
+   * A roast airs like a roast: who's going after whom, a few drafts, then
+   * every joke sent to every screen with its writer's name, the target's
+   * face, and somebody else's laugh (or silence). Least-liked first, the
+   * winner last.
+   */
+  roast(state, rng, game, sc, all, push) {
+    const r = sc.data.rounds[0];
+    const R = sc.data.results;
+    const q = R.quality;
+    // Did it land? Read off the same quality the likes came from.
+    const tier = h => (q[h] < 5 ? 'bombed' : q[h] > 7.5 ? 'killed' : 'ok');
+    push({ phase: 'prep', kind: 'props', by: pick(all, rng) });
+    const writers = shuffled(all, rng).slice(0, Math.min(5, all.length));
+    for (const h of writers) push({ phase: 'prep', kind: 'plan', by: h, about: r.answers[h], tone: r.tones[h] });
+    for (const h of writers.slice(0, 3)) push({ phase: 'prep', kind: 'draft', by: h, about: r.answers[h], tone: r.tones[h], tier: tier(h) });
+    push({ phase: 'reveal', kind: 'mic', by: pick(all, rng) });
+    const order = by(all, h => -R.likes[h]).slice(-Math.min(8, all.length));
+    const stung = [];
+    for (const maker of order) {
+      const subject = r.answers[maker];
+      const tone = r.tones[maker];
+      push({ phase: 'reveal', kind: 'joke', by: maker, about: subject, tone, angle: r.angles[maker],
+        x: r.jobs?.[maker], n: R.likes[maker], tier: tier(maker) });
+      const laugher = pick(all.filter(h => h !== maker && h !== subject), rng);
+      if (laugher) push({ phase: 'reveal', kind: 'laugh', by: laugher, about: maker, tone, tier: tier(maker), n: R.likes[maker] });
+      remember(state, sc, tone === 'savage' ? 'roasted' : 'roast-kind', maker, subject, game.id);
+      if (tone === 'savage') stung.push([subject, maker]);
+    }
+    const loser = by(all, h => -R.likes[h] - q[h] / 100)[0];
+    if (loser !== R.winner) push({ phase: 'verdict', kind: 'last', by: loser, n: R.likes[loser], tier: tier(loser) });
+    push({ phase: 'verdict', kind: 'tally', by: pick(all.filter(h => h !== R.winner), rng), about: R.winner, n: R.likes[R.winner] });
+    push({ phase: 'verdict', kind: 'winner', by: R.winner, about: pick(all.filter(h => h !== R.winner), rng) });
+    remember(state, sc, 'won', R.winner, null, game.id);
+    // The ones who got roasted for real don't laugh it off once it's over.
+    for (const [subject, maker] of stung.slice(0, 2)) push({ phase: 'aftermath', kind: 'sting', by: subject, about: maker });
+  },
+
   photo(state, rng, game, sc, all, push) {
     const R = sc.data.results;
     for (const h of shuffled(all, rng).slice(0, 2)) push({ phase: 'prep', kind: 'choose', by: h });

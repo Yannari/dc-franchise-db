@@ -2,7 +2,7 @@
 // vp-ci/boards.js — a board for every Circle game (Plan 5, spec 18.3)
 // ══════════════════════════════════════════════════════════════════════
 //
-// One board per game family (48 games, 10 families), titled with the game's
+// One board per game family (48 games, 11 families), titled with the game's
 // own name and fed by the game's beats (the row keeps them: season.js
 // STAGE_DATA.game). A written block remembers its beat (`bi`), so the board
 // at step N draws exactly the beats whose lines have aired: an answer drops
@@ -19,6 +19,7 @@
 //   gift      — the gifts piling up at each recipient
 //   flirt     — the lines, then the hearts
 //   rival     — the hot seat and everyone stating their case
+//   roast     — who's roasting whom, then each joke up on the screen, its likes
 import { prizeOf } from '../ci/games.js';
 import { GAMES } from '../ci/games-data.js';
 import { FACTS } from '../ci/games-content.js';
@@ -54,7 +55,7 @@ const who = (row, h) => `<b style="color:${ringOf(row, h)}">${esc(nameOf(row, h)
 const card = (label, text, cls = '') => `<div class="civ-gcard ${cls}"><small>${esc(label)}</small>${hashify(text)}</div>`;
 const rules = g => card('THE RULES', g.rules?.[0] || '', 'rules');
 
-// ── the ten boards ─────────────────────────────────────────────────────
+// ── the boards ────────────────────────────────────────────────────────
 const BOARDS = {
   statement(row, g, { list, cur }) {
     const r = roundOf(list, cur);
@@ -209,6 +210,28 @@ const BOARDS = {
       <div class="civ-gring">${st.map(b => `<span class="${b.i === now?.i ? 'now' : ''}${b.mutual ? ' mutual' : ''}">${mini(row, b.by)}<i>→</i>${mini(row, b.about)}</span>`).join('')}</div>
       ${now ? `<div class="civ-gqtext">“${hashify(textOf(now.i))}”</div>` : ''}`;
   },
+};
+
+// A roast is jokes, not frames: who's going after whom while they write, then
+// the joke on screen now, writer ON target, and every joke so far with its likes.
+BOARDS.roast = (row, g, { list, cur, textOf }) => {
+  const jokes = list.filter(b => b.kind === 'joke');
+  const winner = list.find(b => b.kind === 'winner')?.by;
+  if (!jokes.length) {
+    const plans = list.filter(b => b.kind === 'plan');
+    if (!plans.length) return rules(g);
+    const drafted = {};
+    for (const b of list.filter(x => x.kind === 'draft')) drafted[b.by] = b.tier;
+    const WORD = { killed: 'KILLER', ok: 'SOLID', bombed: 'BOMBING' };
+    const CLS = { killed: 'proud', bombed: 'disaster' };
+    return `${card(g.name.toUpperCase(), g.rules?.[0] || '')}<div class="civ-gplans">${plans.map(b =>
+      `<div class="civ-grow">${mini(row, b.by)} <span>is roasting</span> ${mini(row, b.about)}${drafted[b.by] ? `<em class="${CLS[drafted[b.by]] || ''}">${WORD[drafted[b.by]]}</em>` : ''}</div>`).join('')}</div>`;
+  }
+  // The joke on screen: the one just sent, or the one the room is laughing at.
+  const now = (cur?.kind === 'laugh' && jokes.find(j => j.by === cur.about)) || (cur?.kind === 'joke' ? cur : jokes.at(-1));
+  const words = textOf(now.i);
+  return `${card(`${nameOf(row, now.by).toUpperCase()} ON ${nameOf(row, now.about).toUpperCase()}`, words ? `“${words}”` : '…', now.tone === 'savage' ? 'bad' : 'funny')}
+    <div class="civ-gplans">${jokes.map(b => `<div class="civ-grow${b.i === now.i ? ' now' : ''}${b.by === winner ? ' won' : ''}">${mini(row, b.by)} <span>on</span> ${mini(row, b.about)}<b>${b.by === winner ? '♛ ' : ''}♥ ${b.n ?? 0}</b></div>`).join('')}</div>`;
 };
 
 export function gameStage(row, screen, idx, fresh) {

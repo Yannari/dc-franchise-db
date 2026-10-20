@@ -49,10 +49,6 @@ export const G_MAKE = {
     s1("A diss track about {b}. I have to go hard or go home."),
     s1("{b}. I got {b}. I have material."),
   ]),
-  ...E('g.roast.plan', [
-    s1("I'm roasting {b}. Lovingly. Mostly lovingly."),
-    s1("{b} has given me so much material this week."),
-  ]),
   ...E('g.single-pringles.plan', [
     s1("{b}'s dating profile. What does {b} actually want in a person?"),
     s1("I'm gonna make {b} sound irresistible. Or hilarious. We'll see."),
@@ -391,31 +387,6 @@ export const G_MAKE = {
   ...E('g.head-to-head.jab', [
     two("'{b} plays nice in the chat, but I've seen the stats…' Mic drop.", "Oh, it's on. It is on."),
     two("I held nothing back. Nothing.", "Wow. {a} went there. {a} actually went there."),
-  ]),
-  // ── Roast (4×6) ───────────────────────────────────────────────────────
-  ...E('g.roast.props', [
-    r1("A roast. Tonight, nobody's safe."),
-    r1("I have to write a roast joke about somebody. Oh, I have material."),
-  ]),
-  ...E('g.roast.build.disaster', [
-    s1("Every joke I write about {b} is too mean or not funny. There's no middle."),
-    s1("I'm not a comedian. I'm a person with a pen and fear."),
-  ]),
-  ...E('g.roast.build.ok', [
-    s1("It's a little mean. It's roast mean. That's allowed."),
-    s1("One joke. One good joke. That's all you need."),
-  ]),
-  ...E('g.roast.build.proud', [
-    s1("This joke is going to destroy {b}. Lovingly."),
-    s1("I've been saving this one since day one."),
-  ]),
-  ...E('g.roast.kind', [
-    two("'{b} is so nice, the Circle had to invent a word for it.'", "Is that a roast? That's a compliment!"),
-    two("A gentle roast. For {b}. With love.", "Ha! Okay, that was cute."),
-  ]),
-  ...E('g.roast.jab', [
-    two("'{b}'s profile picture has more filters than a water plant.'", "Oh, that one stung. That one stung."),
-    two("'{b} has been in the Circle five days and still hasn't said anything real.'", "Wow. The whole building heard that."),
   ]),
   // ── Single Pringles (5×4): a dating profile for another Player ─────────
   ...E('g.single-pringles.props', [

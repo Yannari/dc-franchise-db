@@ -43,7 +43,7 @@ export const FACT_KEYS = ['time', 'intent', 'ending', 'result', 'known', 'early'
   'hurt', 'influencer', 'reason', 'motive', 'mode', 'reasonKind', 'band', 'kiss', 'claim', 'lie',
   'tone', 'party', 'final', 'slip', 'noticed', 'place', 'self', 'likesC', 'misread', 'anon',
   'answer', 'strong', 'split', 'qkind', 'right', 'off', 'odd', 'failed', 'barbed', 'slipped', 'mutual', 'warm',
-  'everyone', 'fresh', 'tier', 'many', 'jab', 'register', 'crack', 'sole', 'blocks', 'infl', 'warnKind'];
+  'everyone', 'fresh', 'tier', 'many', 'jab', 'register', 'crack', 'sole', 'blocks', 'infl', 'warnKind', 'angle'];
 
 export const hostName = () => showWords('the-circle').host || 'Host';
 
@@ -263,7 +263,7 @@ function bandOf(place, n) {
 // never from earlier the same day (the chats come before the game); each
 // memory once per pair.
 export const CALLBACK_KINDS = ['named-bad', 'named-good', 'rival', 'gift', 'picked-last', 'jab', 'portrait-kind',
-  'flirted', 'asked-barbed', 'asked-catfish'];
+  'flirted', 'asked-barbed', 'asked-catfish', 'roasted', 'roast-kind'];
 export const CALLBACK_DAYS = 3;
 export function gameCallback(state, a, b, scene, { sameDay = false, kinds = CALLBACK_KINDS, dir = null } = {}) {
   const mem = state.gameMemory || [];
@@ -289,7 +289,7 @@ export function gameCallback(state, a, b, scene, { sameDay = false, kinds = CALL
 // Which pool a game beat draws from (the family pool; game- and prompt-
 // specific pools, `g.<game>.<prompt?>.<suffix>`, take precedence).
 const GAME_FACTS = ['tone', 'answer', 'strong', 'split', 'qkind', 'result', 'anon', 'right', 'off', 'odd', 'failed',
-  'barbed', 'slipped', 'mutual', 'warm', 'everyone', 'fresh', 'tier', 'misread', 'many', 'jab'];
+  'barbed', 'slipped', 'mutual', 'warm', 'everyone', 'fresh', 'tier', 'misread', 'many', 'jab', 'angle'];
 function gameKey(family, b) {
   const k = b.kind;
   if (k === 'open') return 'game.open';
@@ -643,9 +643,9 @@ const BLOCKS = {
       if (mid) { middles++; out.push({ key: 'rate.middle', cast: { a: b.voter, b: mid } }); }
       if (last && last !== first) out.push({ key: `rate.${b.reasons.at(-1)}.bottom`, cast: { a: b.voter, b: last }, extra: { band: 'bottom' } });
       const bad = last && gameCallback(state, b.voter, last, s, { sameDay: true, dir: 'theirs',
-        kinds: ['named-bad', 'rival', 'jab', 'asked-barbed', 'picked-last', 'asked-catfish'] });
+        kinds: ['named-bad', 'rival', 'jab', 'asked-barbed', 'picked-last', 'asked-catfish', 'roasted'] });
       if (bad) out.push({ key: 'rate.callback.bad', cast: { a: b.voter, b: last, text: { game: bad.game } } });
-      const good = first && gameCallback(state, b.voter, first, s, { sameDay: true, dir: 'theirs', kinds: ['gift', 'named-good', 'portrait-kind'] });
+      const good = first && gameCallback(state, b.voter, first, s, { sameDay: true, dir: 'theirs', kinds: ['gift', 'named-good', 'portrait-kind', 'roast-kind'] });
       if (good) out.push({ key: 'rate.callback.good', cast: { a: b.voter, b: first, text: { game: good.game } } });
     }
     // Rankings sent; the waiting before the results.
@@ -1182,8 +1182,9 @@ const BLOCKS = {
       const trivia = b.qid ? Object.values(TRIVIA).flat().find(t => t.id === b.qid) : null;
       const fact = b.factId && promptId ? (FACTS[promptId] || []).find(f => f.id === b.factId) : null;
       const q = trivia?.q ?? prompt?.text ?? (b.kind === 'open' ? g.rules[0] : undefined);
-      const x = trivia ? (b.right ? trivia.a : trivia.wrong) : fact?.text;
-      const suffix = key.replace(/^game\.(statement|name|ask|guess|make|photo|team|gift|rival|flirt)\./, '').replace(/^game\./, '');
+      // A beat can carry its own words too (a roast's target's job).
+      const x = trivia ? (b.right ? trivia.a : trivia.wrong) : fact?.text ?? b.x;
+      const suffix = key.replace(/^game\.(statement|name|ask|guess|make|photo|team|gift|rival|flirt|roast)\./, '').replace(/^game\./, '');
       const keys = [promptId && `g.${g.id}.${promptId}.${suffix}`, `g.${g.id}.${suffix}`, key].filter(k => k && POOLS[k]?.length);
       const ans = b.answer ? (g.say || ['Agree', 'Disagree'])[b.answer === 'agree' ? 0 : 1] : undefined;
       const extra = {};
@@ -1569,6 +1570,7 @@ export const POOL_KEYS = [
   ...['choose', 'thanks', 'noticed'].map(k => `game.gift.${k}`),
   ...['reply', 'react', 'observe'].map(k => `game.rival.${k}`),
   ...['practice', 'answer', 'react', 'vote', 'date'].map(k => `game.flirt.${k}`),
+  ...['props', 'plan', 'draft', 'mic', 'joke', 'laugh', 'last', 'tally', 'winner', 'sting'].map(k => `game.roast.${k}`),
   'game.team.pick', 'game.team.last', 'game.team.result', 'game.gift.round', 'game.gift.none',
   'game.rival.round', 'game.flirt.round', ...['party', 'photo', 'video', 'immunity', 'gift', 'trophy', 'trophy.react'].map(k => `game.prize.${k}`),
   'party.open', 'party.nhie', 'party.nhie.none',
@@ -1580,6 +1582,6 @@ export const POOL_KEYS = [
   'circle.more', 'circle.react', 'ratings.done', 'ratings.wait', 'final.open', 'final.done', 'block.wait', 'block.typing',
   ...['friend', 'answers', 'truth', 'apology', 'crush', 'family'].map(m => `visit.talk2.${m}`), 'visit.after', 'goodbye.after',
   'meet.first', 'meet.react', 'meet.settle', 'meet.arrive.shared', 'meet.found.shared', 'meet.react.shared', 'meet.explain.shared', 'circle.leave', 'circle.final.look', 'block.after', 'visit.walk', 'visit.sit', 'rate.middle', 'party.dance', 'party.photo', 'party.jealous', 'party.flirt', 'party.banter', 'party.end',
-  ...['named-bad', 'named-good', 'rival', 'gift', 'picked-last', 'jab', 'portrait-kind', 'flirted', 'asked-barbed', 'asked-catfish']
-    .flatMap(k => [`callback.${k}.mine`, `callback.${k}.theirs`]), 'rate.callback.bad', 'rate.callback.good',
+  ...['named-bad', 'named-good', 'rival', 'gift', 'picked-last', 'jab', 'portrait-kind', 'flirted', 'asked-barbed', 'asked-catfish',
+    'roasted', 'roast-kind'].flatMap(k => [`callback.${k}.mine`, `callback.${k}.theirs`]), 'rate.callback.bad', 'rate.callback.good',
 ];

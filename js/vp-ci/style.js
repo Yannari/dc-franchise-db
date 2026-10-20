@@ -422,6 +422,7 @@ export const CIV_CSS = `
 .civ-grow.won{background:rgba(255,210,63,.18);box-shadow:0 0 2cqw rgba(255,210,63,.35)}.civ-grow.won.bad{background:rgba(255,42,74,.22);box-shadow:0 0 2cqw rgba(255,42,74,.4)}
 .civ-grow em{margin-left:auto;font-style:normal;font-weight:900;font-size:.75cqw;letter-spacing:.14em;padding:.2cqw .5cqw;border-radius:.3cqw;background:rgba(255,255,255,.12)}
 .civ-grow em.proud{color:#3fd88f}.civ-grow em.disaster{color:#ff5b7a}
+.civ-grow.now{background:rgba(255,159,47,.16);box-shadow:inset .25cqw 0 0 #ff9f2f}
 .civ-gvotes{display:flex;gap:.25cqw;flex-wrap:wrap}
 .civ-grest{display:flex;flex-wrap:wrap;gap:.35cqw;margin-top:.2cqw}
 .civ-grest.land .civ-gchip{animation:civUp .45s both}

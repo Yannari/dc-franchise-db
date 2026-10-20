@@ -344,6 +344,8 @@ function bandOf(place, n) {
 export const CALLBACK_KINDS = ['named-bad', 'named-good', 'rival', 'gift', 'picked-last', 'jab', 'portrait-kind',
   'flirted', 'asked-barbed', 'asked-catfish', 'roasted', 'roast-kind'];
 export const CALLBACK_DAYS = 3;
+// A memory that stung, as against one that was kind: how the chat moves on from it.
+const SORE_CALLBACKS = new Set(['named-bad', 'rival', 'picked-last', 'jab', 'asked-barbed', 'asked-catfish', 'roasted']);
 export function gameCallback(state, a, b, scene, { sameDay = false, kinds = CALLBACK_KINDS, dir = null } = {}) {
   const mem = state.gameMemory || [];
   const used = (usage(state).callbacks ||= []);
@@ -498,7 +500,12 @@ const BLOCKS = {
         extra: { slip: sl.kind, noticed: sl.noticedBy.length > 0, ...(sl.kind === 'voice' && !sl.leak ? { crack: crackOf(state, sl.by) } : {}) } });
     }
     const cb = gameCallback(state, a, b, s);
-    if (cb) out.push({ key: `callback.${cb.kind}.${cb.dir}`, cast: { a, b, text: { game: cb.game } } });
+    if (cb) {
+      out.push({ key: `callback.${cb.kind}.${cb.dir}`, cast: { a, b, text: { game: cb.game } } });
+      // Then a moves the conversation on, so the chat's own opening doesn't
+      // land as a second hello (the user, 2026-10-20: "they mostly merge into another").
+      out.push({ key: SORE_CALLBACKS.has(cb.kind) ? 'chat.bridge.sore' : 'chat.bridge.sweet', cast: { a, b } });
+    }
     // A shared profile argues over the message before it goes (spec §14.8).
     const pa = state.profiles[a];
     // A couple sharing a profile: a flirty message is a game move, or the other one objects (twotiming.js).
@@ -1410,11 +1417,19 @@ function writeSceneNow(state, scene) {
   // before the message itself.
   // The hello opens the conversation itself (its lines join the chat's
   // block, which stays the chat's main block).
+  // A remembered game comes after the hello, and the bridge after it, before the chat's own opening.
   const hello = scene.kind === 'chat' ? blocks.findIndex(x => x.key.startsWith('chat.hello')) : -1;
-  if (hello > 0) { const [h] = blocks.splice(hello, 1); blocks[0].lines.unshift(...h.lines); (blocks[0].hello ||= h.key); }
+  const greet = hello > 0 ? blocks.splice(hello, 1)[0] : null;
+  const bridge = blocks.findIndex(x => x.key.startsWith('chat.bridge.'));
+  const moveOn = bridge > 0 ? blocks.splice(bridge, 1)[0] : null;
+  if (moveOn) blocks[0].lines.unshift(...moveOn.lines);
   for (const prefix of ['callback.', 'shared.argue.', 'couple.flirt.']) {
     const at = blocks.findIndex(x => x.key.startsWith(prefix));
     if (at > 0) blocks.unshift(...blocks.splice(at, 1));
+  }
+  if (greet) {
+    const opens = blocks.find(x => x.key.startsWith('callback.')) || blocks.find(x => x.key.startsWith('chat.')) || blocks[0];
+    opens.lines.unshift(...greet.lines); opens.hello ||= greet.key;
   }
   scene.script = { blocks };
   if (scene.kind === 'chat' && scene.data.copyOf) copyPaste(state, scene);
@@ -1559,7 +1574,7 @@ export const POOL_KEYS = [
   // the audience votes (lines/audience.js)
   'alert.audience-block', 'alert.audience-immunity', 'hangout.sealed.audience', 'hangout.solo.sealed.audience', 'audience.open.block', 'audience.open.immunity', 'audience.wait', 'audience.wait.immunity', 'audience.result.block', 'audience.result.immunity', 'audience.react.saved', 'audience.react.blocked', 'audience.react.immune', 'audience.react.missed', 'block.announce.audience',
   // a chat that builds (lines/chat-depth.js)
-  'chat.hello', 'chat.hello.serious', 'chat.hello.cool', 'chat.close.warm', 'chat.close.neutral', 'chat.deep',
+  'chat.hello', 'chat.hello.serious', 'chat.hello.cool', 'chat.bridge.sore', 'chat.bridge.sweet', 'chat.close.warm', 'chat.close.neutral', 'chat.deep',
   // the group chats that are not alliances (lines/groupchats.js)
   'group.squad.open', 'group.squad.banter', 'group.squad.share', 'group.peace.open', 'group.peace.warm', 'group.peace.neutral', 'group.peace.cold',
   'group.plan.pitch', 'group.plan.agree', 'group.plan.decline', 'group.plan.seal',

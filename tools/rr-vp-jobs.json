@@ -214,6 +214,30 @@
       "kind": "cutout",
       "prop": "zebra",
       "why": "the animal tracked through the tall grass on the safari; meanwhile the emu from the outback"
+    },
+    {
+      "place": "pampas-ranch",
+      "src": "25-pampas-ranch",
+      "file": "task-dance-academy",
+      "new": true,
+      "ref": "task-9449004",
+      "why": "the dance academy interior for the tango (task-9448962 is a close-up of a red wall: no floor, no room; stand-in: dancing on the pavement outside the academy, task-9449003)"
+    },
+    {
+      "place": "dragon-isle",
+      "src": "19-dragon-isle",
+      "file": "task-rug-clearing",
+      "new": true,
+      "ref": "task-9445378",
+      "why": "the jungle clearing with the mountain of woven rugs and the weaver at her loom (task-9445351 is a close-up of a tree trunk and a log: no ground, no rugs; stand-in: the jungle floor, task-9445378)"
+    },
+    {
+      "place": "glass-tower-gulf",
+      "src": "10-glass-tower-gulf",
+      "file": "task-tennis-court",
+      "new": true,
+      "ref": "task-9439713",
+      "why": "the rooftop tennis court at court level, without the launcher (task-9439713 has it painted tiny on the far court, so the teams stand at its scale; then the robot is the cut-out across the net)"
     }
   ]
 }

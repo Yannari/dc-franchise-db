@@ -352,9 +352,9 @@ export const PLACE_PLATES = {
     st: {
       'castle-road': { talk: [p('present-9438407', 94, [8, 92])],
         act: p('present-9438407', 94, [8, 92], { mode: 'ride', prop: 'taxi@red-sand-desert', path: [[-14, 95], [50, 94], [114, 95]] }) },
-      // the coffin on its stand in the castle; pushed (a partner in it) out through the graveyard gate
+      // the coffin on its stand in the castle; pushed on its wheels (a partner in it) up the hill road under the castle
       coffin: { talk: [p('task-9438457', 97, [6, 94], { closed: true, spots: [[13, 97], [87, 97], [24, 98], [76, 98]] })],
-        act: p('task-9438461', 93, [6, 94], { mode: 'push', prop: 'coffin', path: [[8, 94], [32, 92], [58, 93], [82, 92]] }) },
+        act: p('present-9438407', 94, [6, 90], { mode: 'push', prop: 'coffin', path: [[8, 95], [30, 91], [52, 86], [74, 81]] }) },
       ride: { talk: [p('task-9438688', 94, [8, 90])],
         act: p('present-9438330', 86, [8, 92], { mode: 'ride', prop: 'horse', flip: true, path: [[-14, 86], [44, 84], [114, 86]] }) },
       gym: { talk: [p('task-9438652', 98, [6, 94])],
@@ -393,13 +393,16 @@ export const PLACE_PLATES = {
       'tower-taxi': { talk: [p('arrive-9439709', 86, [22, 70])],
         act: p('present-9439562', 93, [6, 94], { mode: 'ride', prop: 'taxi', flip: true, path: [[-14, 94], [50, 93], [114, 94]] }) },
       'squeegee-serve': {
-        talk: [p('task-9439713', 56, [8, 62], { scale: 0.8 })],
+        talk: [p('task-9439713', 41, [6, 56], { scale: 0.6, spots: [[13, 41], [23, 41], [45, 41], [54, 40]] })],
         sides: {
           // in the gondola on the tower's glass; the squeegee and its bucket are a job (edit/), meanwhile the glass alone
           squeegee: { talk: [p('task-9439718', 92, [14, 86], { closed: true })],
             act: p('task-9439718', 92, [14, 86], { closed: true, mode: 'squeegee', ...(REPAINTED.has('squeegee-bucket') ? { prop: 'squeegee' } : {}), fx: 'splash' }) },
-          serve: { talk: [p('task-9439713', 56, [8, 62], { scale: 0.8 })],
-            act: p('task-9439713', 56, [8, 62], { scale: 0.8, mode: 'serve', prop: 'racket', propW: 0.55, fx: 'sparkle' }) },
+          // the launcher robot is painted small on the far court: the teams stand on the court at its scale, beside it
+          // (a court-level view without it is a job, edit/; then the robot is the cut-out across from them)
+          serve: { talk: [repaint('task-tennis-court', p('task-tennis-court', 92, [6, 94]), p('task-9439713', 41, [6, 56], { scale: 0.6, spots: [[13, 41], [23, 41], [45, 41], [54, 40]] }))],
+            act: repaint('task-tennis-court', p('task-tennis-court', 92, [6, 94], { mode: 'serve', prop: 'racket', propW: 0.55, judge: ['robot', 1.0], fx: 'sparkle' }),
+              p('task-9439713', 41, [6, 56], { scale: 0.6, spots: [[13, 41], [23, 41], [45, 41], [54, 40]], mode: 'serve', prop: 'racket', propW: 0.55, fx: 'sparkle' })) },
         },
       },
       'market-taxi': { talk: [p('travel-9439786', 96, [6, 94])],
@@ -515,7 +518,8 @@ export const PLACE_PLATES = {
       // the dragons under the stilt huts: a vial of drool, slowly
       venom: { talk: [p('task-9445378', 90, [6, 94])],
         act: p('task-9445138', 93, [6, 94], { mode: 'venom', prop: 'vial', propW: 0.38 }) },
-      rugs: { talk: [p('task-9445351', 93, [6, 94])],
+      // the rug clearing is a job (edit/: task-9445351 was a tree trunk and a log, no ground); meanwhile the jungle floor
+      rugs: { talk: [repaint('task-rug-clearing', p('task-rug-clearing', 92, [6, 94]), p('task-9445378', 90, [6, 94]))],
         act: p('task-9445496', 92, [22, 78], { mode: 'search', prop: 'textiles', fx: 'dust' }) },
       'hill-run': { talk: [p('travel-9445205', 92, [6, 60])],
         act: p('travel-9445205', 92, [6, 94], { mode: 'run', path: [[12, 92], [50, 92], [88, 92]], fx: 'dust' }) },
@@ -627,9 +631,11 @@ export const PLACE_PLATES = {
     st: {
       'academy-taxi': { talk: [p('task-9449003', 94, [6, 70])],
         act: p('task-9449201', 90, [6, 94], { mode: 'ride', prop: 'taxi@glass-tower-gulf', flip: true, path: [[-14, 91], [50, 90], [114, 91]] }) },
-      // the dance at the academy, the instructor watching
+      // the dance at the academy, the instructor watching (the academy floor is a job, edit/: task-9448962 was a red
+      // wall with no floor; meanwhile they dance on the pavement outside it)
       tango: { talk: [p('task-9449004', 94, [6, 70])],
-        act: p('task-9448962', 93, [6, 94], { closed: true, mode: 'dance', prop: 'instructor', propW: 0.6 }) },
+        act: repaint('task-dance-academy', p('task-dance-academy', 92, [6, 94], { closed: true, mode: 'dance', prop: 'instructor', propW: 0.6 }),
+          p('task-9449003', 94, [6, 60], { mode: 'dance', prop: 'instructor', propW: 0.6 })) },
       // the boleadoras thrown at the emu by the ranch fence
       emu: { talk: [p('task-9449177', 92, [6, 94])],
         act: p('task-9449177', 92, [6, 94], { mode: 'toss', prop: 'bolas', propW: 0.8, judge: ['emu', 0.6], fx: 'dust' }) },

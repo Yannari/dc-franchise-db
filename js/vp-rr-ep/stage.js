@@ -46,6 +46,10 @@ const AMBIENT = { 'rock-north': 'snow', 'red-sand-desert': 'mote', 'tomb-sands':
 // the ways of going that carry their cut-out with them: a vehicle under them, a zip trolley, a canopy or a hang
 // glider over them, a vine to swing on, a coffin pushed in front
 const VEH = new Set(['ride', 'zip', 'para', 'swing', 'push', 'coals', 'roll']);
+// two spoked iron wheels under a pushed coffin (a cart, so it reads as pushed, not carried)
+const WHEEL = cx => `<g transform="translate(${cx} 22)"><circle r="17" fill="#2b2622" stroke="#0d0b0a" stroke-width="3"/><circle r="11" fill="none" stroke="#6b6158" stroke-width="2.5"/>`
+  + [0, 45, 90, 135].map(a => `<line x1="0" y1="-11" x2="0" y2="11" stroke="#6b6158" stroke-width="2.5" transform="rotate(${a})"/>`).join('') + `<circle r="3.5" fill="#a39686"/></g>`;
+const WHEELS = `<svg class="wheels" viewBox="0 0 160 44" aria-hidden="true"><rect x="16" y="16" width="128" height="7" rx="3" fill="#3a332d" stroke="#0d0b0a" stroke-width="2"/>${WHEEL(34)}${WHEEL(126)}</svg>`;
 
 export function createStage(holder, { faceOf, legLabel }) {
   holder.innerHTML = `<div class="rr-frame" id="rr-frame"><div class="stage" id="rr-stage">
@@ -102,6 +106,8 @@ export function createStage(holder, { faceOf, legLabel }) {
     // a rickshaw is pulled at a run; a raft on a walk is carried over their heads
     if (as === 'ride' && /^rickshaw/.test(pl.prop || '') && s.mode === 'act') e.classList.add('rickshaw', 'running', 'ltr');
     if (as === 'walk' && /^raft/.test(pl.prop || '') && s.mode === 'act') veh = `<img class="veh carry" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
+    // a coffin pushed in front rolls on a pair of iron wheels
+    if (as === 'push' && veh) veh += WHEELS;
     e.innerHTML = `<div class="pair">${[t.a, t.b].map(n => `<img data-p="${esc(n)}" src="${faceOf(n)}" alt="">`).join('')}</div>${veh}<div class="shadow"></div><div class="lab">${esc(t.name)}</div>`;
     toks.appendChild(e);
     return e;
@@ -140,6 +146,7 @@ export function createStage(holder, { faceOf, legLabel }) {
     e.querySelectorAll('img[data-p]').forEach(i => { i.dataset.c = i.dataset.p; delete i.dataset.p; });
     if (VEH.has(c.as) && s.plate?.prop && !e.querySelector('.veh')) {
       const v = document.createElement('img'); v.className = 'veh'; v.src = propUrl(s.plate.place || s.place, s.plate.prop); v.alt = ''; e.appendChild(v);
+      if (c.as === 'push') e.insertAdjacentHTML('beforeend', WHEELS);
     }
     return e;
   }

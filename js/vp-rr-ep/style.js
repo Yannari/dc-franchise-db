@@ -214,7 +214,10 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .tok.swing .veh{bottom:auto;top:calc(var(--sz)*-2.7);width:calc(var(--sz)*.9);z-index:1}
 .tok.swing .pair{transform-origin:50% -40%;animation:wSwing 1.5s ease-in-out infinite}
 @keyframes wSwing{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
-.tok.push .veh{left:auto;right:calc(var(--sz)*-1.5);bottom:calc(var(--sz)*-.15);width:calc(var(--sz)*1.5);transform:none;z-index:1}
+.tok.push .veh{left:auto;right:calc(var(--sz)*-1.6);bottom:calc(var(--sz)*.05);width:calc(var(--sz)*1.6);transform:none;z-index:1}
+.tok.push .wheels{position:absolute;right:calc(var(--sz)*-1.5);bottom:calc(var(--sz)*-.2);width:calc(var(--sz)*1.4);z-index:2;overflow:visible}
+.tok.push .wheels g{animation:wRoll 1s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes wRoll{to{rotate:360deg}}
 .tok.push .pair{animation:wPush .5s ease-in-out infinite}
 @keyframes wPush{0%,100%{transform:translateX(0) rotate(4deg)}50%{transform:translateX(.3cqw) rotate(8deg)}}
 .prop.passer{z-index:9;transform:translate(-50%,-50%)}

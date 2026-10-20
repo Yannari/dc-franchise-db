@@ -362,6 +362,7 @@ function _commit(built, inputs, rerolls, airedCount) {
   gs.relationshipDimensions = built.inner.relationshipDimensions || {};
   gs.bonds = built.inner.bonds || {};
   gs.perceivedBonds = built.inner.perceivedBonds || {};
+  _builtNow.add(gs.ci);
 }
 
 let _lastNotice = null;
@@ -389,12 +390,63 @@ function _refreshQueue() {
   return true;
 }
 
+// ── AN EPISODE ALREADY SHOWN IS NEVER SHOWN AGAIN (ADDING-A-SHOW §N) ──
+// The queue rides along in every save, so loading one at episode 3 and
+// pressing Simulate handed back the very episode 4 the viewer had already
+// watched (user, 2026-10-20: "simulating new episode just use an episode
+// already simulated before instead of creating a different one"). Every
+// aired day is remembered here by seed and dice, in this browser and outside
+// any save; a day about to air with dice already seen is dealt again.
+const SEEN_KEY = 'dc_ci_seen';
+const _dealKey = (num, rerolls) => `${gs.ci.seed}|${num}|${Object.keys(rerolls || {})
+  .filter(d => Number(d) <= num).sort((a, b) => a - b).map(d => `${d}:${rerolls[d]}`).join(',')}`;
+function _readSeen() { try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch { return []; } }
+function _noteSeen(key) {
+  try {
+    const seen = _readSeen().filter(k => k !== key);
+    seen.push(key);
+    localStorage.setItem(SEEN_KEY, JSON.stringify(seen.slice(-3000)));
+  } catch { /* storage full or blocked: the next rewind re-airs, as before */ }
+}
+// The queue a save carries was written by the code of the day it was played.
+// Once per season loaded, it is played again on the same dice with the code
+// running now, so the episodes still to come get the newest lines.
+const _builtNow = new WeakSet();
+
+function _bringUpToDate() {
+  const head = gs._ciQueue?.[0];
+  if (!head || !gs.ci?.seed) return;
+  const rerolls = { ...(gs.ci.rerolls || {}) };
+  const seen = new Set(_readSeen());
+  const again = seen.has(_dealKey(head.num, rerolls));
+  if (!again && _builtNow.has(gs.ci)) return;
+  if (again) {
+    do rerolls[head.num] = (rerolls[head.num] || 0) + 1;
+    while (seen.has(_dealKey(head.num, rerolls)) && rerolls[head.num] < 500);
+  }
+  // The inputs the queue was built with, so a change waiting on an aired
+  // episode (gs.ci.deferred) stays waiting.
+  let inputs;
+  try { inputs = JSON.parse(gs.ci.built); } catch { inputs = null; }
+  inputs ||= _inputs();
+  const built = _build(inputs, rerolls);
+  const aired = (gs.episodeHistory || []).filter(r => r && r.format === CIRCLE_FORMAT);
+  // The code changed what already aired: keep the queue rather than play a
+  // future that follows a different past.
+  if (!built || _firstChanged(aired, built.rows) != null) { _builtNow.add(gs.ci); return; }
+  const deferred = gs.ci.deferred;
+  _commit(built, inputs, rerolls, aired.length);
+  if (deferred) gs.ci.deferred = deferred;
+}
+
 /** Air the next episode, or null when the season is over (or cannot start). */
 export function simulateCircleEpisode() {
   if (!gs) return null;
   if (!_refreshQueue()) return null;
+  _bringUpToDate();
   const row = gs._ciQueue.shift();
   if (!row) { gs.phase = 'complete'; return null; }
+  _noteSeen(_dealKey(row.num, gs.ci.rerolls));
   (gs.episodeHistory ||= []).push(row);
   gs.activePlayers = [...(row.ci?.people || [])];
   gs.episode = row.num;
@@ -468,6 +520,52 @@ export function rerunCircleEpisode(epNum) {
   // (vp-ci/voicing.js, the Circle's own folder in the bucket)
   if (typeof window !== 'undefined') window.ciVoicesAfterRerun?.(N);
   return true;
+}
+
+/** Re-WRITE episode N and every aired one after it: the same dice, so the
+ *  same days happen, written by the code running now (a fix to the lines
+ *  shows up on an episode already watched). Where the new code plays a day
+ *  differently, that day and the ones after it are cleared to be simulated
+ *  again. Returns { rewritten, clearedFrom } or false (lastCircleRefusal). */
+export function rewriteCircleEpisode(epNum) {
+  _lastRefusal = null;
+  if (!gs?.ci?.seed) return _refuse('this season has no stored seed, so its episodes could not be played again');
+  const N = Math.max(1, Number(epNum) || 1);
+  const aired = (gs.episodeHistory || []).filter(r => r && r.format === CIRCLE_FORMAT);
+  if (!aired.some(r => r.num === N)) return _refuse(`episode ${N} has not aired`);
+  let inputs;
+  try { inputs = JSON.parse(gs.ci.built); } catch { inputs = null; }
+  inputs ||= _inputs();
+  const rerolls = { ...(gs.ci.rerolls || {}) };
+  const built = _build(inputs, rerolls);
+  if (!built) return false;
+  const changed = _firstChanged(aired.filter(r => r.num < N), built.rows);
+  if (changed != null) return _refuse(`the code running now plays episode ${changed}, before episode ${N}, differently. Re-write episode ${changed} instead`);
+  const fresh = new Map(built.rows.map(r => [r.num, r]));
+  let clearedFrom = null, rewritten = 0;
+  const history = [];
+  for (const r of gs.episodeHistory || []) {
+    if (!(r && r.format === CIRCLE_FORMAT && r.num >= N)) { history.push(r); continue; }
+    if (clearedFrom != null) continue;
+    const next = fresh.get(r.num);
+    if (!next || _fingerprint(next) !== _fingerprint(r)) { clearedFrom = r.num; continue; }
+    history.push({ ...next, gsSnapshot: r.gsSnapshot });
+    rewritten++;
+  }
+  gs.episodeHistory = history;
+  const kept = history.filter(r => r && r.format === CIRCLE_FORMAT).length;
+  const deferred = gs.ci.deferred;
+  _commit(built, inputs, rerolls, kept);
+  if (deferred) gs.ci.deferred = deferred;
+  if (clearedFrom != null) {
+    delete gs.ciWinners;
+    gs.phase = 'circle';
+    const last = history.filter(r => r && r.format === CIRCLE_FORMAT).at(-1);
+    gs.activePlayers = last ? [...(last.ci?.people || [])] : [];
+    gs.episode = last ? last.num : 0;
+  }
+  if (typeof window !== 'undefined') window.ciVoicesAfterRerun?.(N);
+  return { rewritten, clearedFrom };
 }
 
 if (typeof window !== 'undefined') window._ciRunnable = true;

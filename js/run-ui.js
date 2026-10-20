@@ -27,7 +27,7 @@ import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun
 import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES, CHALLENGE_NIGHTS as PM_CHALLENGE_NIGHTS } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { circleRandomDraw, isCircleSeason, simulateCircleEpisode, circleCanRerun, lastCircleRefusal, rerunCircleEpisode,
-  circlePendingChange, circleSeasonShape, circleEpisodeMap, circleTimelineDays, circleBlockShape } from './ci-run.js';
+  rewriteCircleEpisode, circlePendingChange, circleSeasonShape, circleEpisodeMap, circleTimelineDays, circleBlockShape } from './ci-run.js';
 import { challengeDailyList, challengeDrawnDailies } from './ch-run.js';
 import { isChallengeSeason, simulateChallengeEpisode, challengeCanRerun, lastChallengeRefusal, rerunChallengeEpisode,
   challengePendingChange, challengeEpisodeMap, challengeVoteShape } from './ch-run.js';
@@ -1716,9 +1716,14 @@ export function renderEpisodeHistory() {
     const aucTag = _hasAuction ? `<span class="ep-hist-tag" style="background:rgba(233,196,106,0.15);color:#e9c46a">Auction</span>` : '';
     const ncTag = ep.noChallenge && !_hasAuction ? `<span class="ep-hist-tag" style="background:rgba(240,163,90,0.15);color:#f0a35a">No Challenge</span>` : '';
     const hasCheckpoint = _canReplay(ep.num);
-    const replayBtn = hasCheckpoint
-      ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
-      : '';
+    const replayBtn = (hasCheckpoint
+      ? `<button class="ep-hist-replay" title="${_isCircleRow(ep) ? 'Re-run this episode: the day is dealt again and plays out differently' : 'Re-run this episode'}" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
+      : '')
+      // The Circle can also play a day again on the SAME dice: what happens
+      // stays, the lines are the newest (ci-run.js rewriteCircleEpisode).
+      + (hasCheckpoint && _isCircleRow(ep)
+        ? `<button class="ep-hist-replay ep-hist-rewrite" title="Re-write this episode: the same day happens again, with the newest lines" onclick="event.stopPropagation();rewriteEpisode(${ep.num})">✎</button>`
+        : '');
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???'
@@ -2528,8 +2533,8 @@ function _replayRaceEpisode(epNum) {
 function _replayCircleEpisode(epNum) {
   const laterEps = (gs.episodeHistory || []).filter(e => e.num > epNum);
   const msg = laterEps.length
-    ? `Re-run Episode ${epNum}?\n\nEpisode ${epNum} will be dealt again, and Episodes ${epNum + 1}–${epNum + laterEps.length} will be cleared — simulate them again from there. Every earlier episode stays exactly as it is.`
-    : `Re-run Episode ${epNum} into a different day?`;
+    ? `Re-run Episode ${epNum}?\n\nEpisode ${epNum} will be dealt again and play out differently, and Episodes ${epNum + 1}–${epNum + laterEps.length} will be cleared — simulate them again from there. Every earlier episode stays exactly as it is.\n\nTo keep what happened and only get the newest lines, use ✎ Re-write instead.`
+    : `Re-run Episode ${epNum} into a different day?\n\nTo keep what happened and only get the newest lines, use ✎ Re-write instead.`;
   if (!confirm(msg)) return;
   const before = snapshotGs();
   let ep = null, failure = null, refused = null;
@@ -2549,6 +2554,29 @@ function _replayCircleEpisode(epNum) {
   _refreshFeed();
   viewingEpNum = ep.num;
   renderRunTab();
+}
+
+/** The Circle's ✎: the same day again, written by the code running now. */
+export function rewriteEpisode(epNum) {
+  if (!isCircleSeason()) return;
+  const later = (gs.episodeHistory || []).filter(e => e.num > epNum).length;
+  if (!confirm(`Re-write Episode ${epNum}${later ? ` and the ${later} after it` : ''}?\n\nThe same things happen on the same days (same Ratings, same blockings); only the writing is redone with the newest lines. If the newest code plays a day differently, that day and the ones after it are cleared to simulate again.`)) return;
+  const before = snapshotGs();
+  let out = false, failure = null;
+  try { out = rewriteCircleEpisode(epNum); } catch (e) { failure = e; }
+  if (!out) {
+    gs = before;
+    repairGsSets(gs);
+    try { renderRunTab(); } catch { /* state is already back */ }
+    const why = failure ? (failure.message || String(failure)) : lastCircleRefusal();
+    alert(`Episode ${epNum} could not be re-written, so nothing was changed.${why ? `\n\n${why}` : ''}`);
+    return;
+  }
+  saveGameState();
+  _refreshFeed();
+  viewingEpNum = (gs.episodeHistory || []).some(e => e.num === epNum) ? epNum : (gs.episode || null);
+  renderRunTab();
+  if (out.clearedFrom != null) alert(`Re-wrote ${out.rewritten} episode${out.rewritten === 1 ? '' : 's'}. The newest code plays Episode ${out.clearedFrom} differently, so it and the ones after it were cleared: simulate them again from there.`);
 }
 
 function _replayVillaEpisode(epNum) {

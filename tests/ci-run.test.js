@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { gs, setGs, players, setPlayers, seasonConfig, formatIsRunnable } from '../js/core.js';
 import { isCircleSeason, simulateCircleEpisode, circleEpisodesLeft, circleCastProblem, lastCircleRefusal,
-  circleCanRerun, rerunCircleEpisode, circleSeasonShape, circleBookings } from '../js/ci-run.js';
+  circleCanRerun, rerunCircleEpisode, rewriteCircleEpisode, circleSeasonShape, circleBookings } from '../js/ci-run.js';
 import { makePlayers } from './helpers/ci-cast.js';
 import { setFranchiseLedger, activeSeasons, seasonKey } from '../js/franchise-meta.js';
 
@@ -16,6 +16,8 @@ function freshSeason(n = 13, extra = {}) {
   setGs({ initialized: true, episodeHistory: [], popularity: {}, activePlayers: [], ci: { seed: 505 } });
   // A finished season writes the franchise ledger; each test starts from an empty one.
   setFranchiseLedger({ v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {} } } });
+  // What this browser has already been shown (ci-run.js SEEN_KEY): every test starts unseen.
+  localStorage.removeItem('dc_ci_seen');
 }
 function playAll() {
   const aired = [];
@@ -178,6 +180,61 @@ describe('re-running an episode', () => {
     const again = simulateCircleEpisode();
     expect(again.num).toBe(4);
     expect(JSON.stringify(gs.episodeHistory.slice(0, 3).map(r => r.ci.blocked))).toBe(before);
+  });
+});
+
+// ADDING-A-SHOW §N on the Circle. The user, 2026-10-20: "when i use a
+// savestate to return at episode 3 simulating new episode just use an episode
+// already simulated before instead of creating a different one". The save
+// carried the queue, episode 4 at its head.
+describe('an episode already shown is never shown again', () => {
+  const said = r => JSON.stringify(r.ci.aired);
+  it('loading a save from episode 3 and pressing Simulate deals a new episode 4, every time', () => {
+    freshSeason();
+    for (let i = 0; i < 3; i++) simulateCircleEpisode();
+    const save = JSON.stringify(gs);
+    const before3 = said(gs.episodeHistory[2]);
+    const shown = new Set([said(simulateCircleEpisode())]);
+    simulateCircleEpisode();
+    for (let k = 0; k < 3; k++) {
+      setGs(JSON.parse(save));
+      const four = simulateCircleEpisode();
+      expect(four.num).toBe(4);
+      expect(shown.has(said(four)), `load ${k + 1}`).toBe(false);
+      shown.add(said(four));
+      expect(said(gs.episodeHistory[2]), 'what aired before the save stays').toBe(before3);
+    }
+  });
+
+  it('three re-runs of one episode are three different episodes', () => {
+    freshSeason();
+    for (let i = 0; i < 5; i++) simulateCircleEpisode();
+    const shown = new Set([said(gs.episodeHistory[3])]);
+    for (let k = 0; k < 3; k++) {
+      expect(rerunCircleEpisode(4)).toBe(true);
+      shown.add(said(simulateCircleEpisode()));
+    }
+    expect(shown.size).toBe(4);
+  });
+});
+
+describe('re-writing an episode', () => {
+  it('the same days happen again: nothing changes when the code has not', () => {
+    freshSeason();
+    for (let i = 0; i < 6; i++) simulateCircleEpisode();
+    const before = JSON.stringify(gs.episodeHistory.map(r => [r.num, r.ci.blocked, r.ci.aired]));
+    const left = circleEpisodesLeft();
+    expect(rewriteCircleEpisode(4)).toEqual({ rewritten: 3, clearedFrom: null });
+    expect(JSON.stringify(gs.episodeHistory.map(r => [r.num, r.ci.blocked, r.ci.aired]))).toBe(before);
+    expect(circleEpisodesLeft()).toBe(left);
+    expect(simulateCircleEpisode().num).toBe(7);
+  });
+
+  it('refuses an episode that has not aired', () => {
+    freshSeason();
+    simulateCircleEpisode();
+    expect(rewriteCircleEpisode(5)).toBe(false);
+    expect(lastCircleRefusal()).toMatch(/has not aired/);
   });
 });
 

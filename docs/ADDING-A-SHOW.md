@@ -1642,6 +1642,26 @@ Two of them, stacked.
    first bakes the count into the checkpoint, which is what makes it survive.
    The measurement is the whole diagnosis — press it three times and count the
    distinct nights.
+3. **The save carries the queue too.** Not only a checkpoint: EVERY save does,
+   because the queue lives on `gs`. The Circle re-ran honestly from its own ↺,
+   but loading a season saved at episode 3 and pressing Simulate handed back
+   the episode 4 already watched (user, 2026-10-20: "simulating new episode just
+   use an episode already simulated before instead of creating a different
+   one"). A save cannot know it is being rewound, so the fix is outside it:
+   `js/ci-run.js` remembers every aired day by seed and dice in localStorage
+   (`dc_ci_seen`), and a day about to air on dice already seen is dealt again
+   (`_bringUpToDate`). That covers every way back — the save list, a file
+   import, a cloud restore — without touching any of them. **Any show that
+   queues its season has this bug until it does the same**; check it by
+   saving at 3, playing to 6, loading, and pressing Simulate twice.
+
+   Its twin: a queued episode is WRITTEN by the code of the night it was built.
+   A fix to the lines never reaches a queue saved before it, and a re-run, being
+   new dice, cannot show the fix on the day it was reported. The Circle rebuilds
+   a loaded season's queue once on the same dice (what happens stays, the lines
+   are today's), and ✎ Re-write does the same for episodes already aired —
+   keeping each one whose blockings and room come out the same, clearing from
+   the first that does not.
 
 ### O. A re-run that rebuilds the season reads state from the future
 

@@ -1474,6 +1474,36 @@ function planStamps(s) {
   });
 }
 
+const CHAPTER_TASK = new Set(['either', 'botch', 'allin', 'route', 'superteam', 'midmat']);
+// ── the chapters of a leg: the start, then each new task the race's front reaches, then the Chill Zone ──
+/** [{ key, name, from, to }]: screen ranges (vp.js shows one per chapter; sound.js switches music at each). */
+export function chaptersOf(e, placeId) {
+  const place = PLACES[placeId];
+  const order = new Map((place?.stretches || []).map((s, k) => [s.id, k]));
+  const label = new Map((place?.stretches || []).map(s => [s.id, s.label || s.called || s.id]));
+  const milestone = new Map((place?.stretches || []).filter(s => CHAPTER_TASK.has(s.kind) || s.kind === 'mat').map(s => [s.id, s]));
+  const matId = (place?.stretches || []).find(s => s.kind === 'mat')?.id || 'mat';
+  const chapters = [];
+  let front = -1;
+  e.screens.forEach((s, si) => {
+    const task = String(s.hud?.task || '').toUpperCase();
+    let key = null, name = null;
+    if (!chapters.length && (task === 'PREVIOUSLY' || task === 'LAST TIME')) { key = 'previously'; name = 'Previously'; }
+    else if (!chapters.length || (chapters.length === 1 && chapters[0].key === 'previously' && task !== 'PREVIOUSLY' && task !== 'LAST TIME')) {
+      key = 'start'; name = e.kind === 'final' ? 'The Finale' : 'The Start';
+    }
+    const stretch = s.stretch || (task === 'CHILL ZONE' ? matId : null);
+    if (!key && stretch && milestone.has(stretch) && (order.get(stretch) ?? -1) > front) {
+      front = order.get(stretch);
+      key = stretch;
+      name = stretch === matId ? 'The Chill Zone' : label.get(stretch);
+    }
+    if (key) chapters.push({ key, name, from: si, to: si });
+    else chapters.at(-1).to = si;
+  });
+  return chapters;
+}
+
 // ── navigation and what has aired ──────────────────────────────────────
 export function flatSteps(screens) {
   const out = [];

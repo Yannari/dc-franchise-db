@@ -16,7 +16,7 @@
 import { RACE_FORMAT } from '../shows.js';
 import { PLACES } from '../rr/places.js';
 import { avatarUrl } from '../avatar-registry.js';
-import { episodeScreens, flatSteps } from './steps.js';
+import { episodeScreens, flatSteps, chaptersOf } from './steps.js';
 import { createStage } from './stage.js';
 import { createSidebar } from './sidebar.js';
 import { RR_CSS } from './style.js';
@@ -24,7 +24,6 @@ import { playStep, soundAt, registerBed, soundControlsHtml, wireSoundControls } 
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const reg = () => (typeof window !== 'undefined' ? (window._rrx ||= {}) : (globalThis._rrx ||= {}));
-const TASK = new Set(['either', 'botch', 'allin', 'route', 'superteam', 'midmat']);
 
 // ── the look, scoped: the viewer's rules sit under .rrx so none of its generic class names (.stage, .title, .slam)
 //    reach the simulator's own, and its keyframes are renamed so none replaces one of the page's ──
@@ -97,33 +96,7 @@ const EXTRA = `
 @media (max-width:1000px){.rrx .rrx-body,.rrx.intel-open .rrx-body{grid-template-columns:minmax(0,1fr)}.rrx .rrx-tab{writing-mode:horizontal-tb;height:auto;width:100%}}
 `;
 
-// ── the chapters ──
-function chaptersOf(e, placeId) {
-  const place = PLACES[placeId];
-  const order = new Map((place?.stretches || []).map((s, k) => [s.id, k]));
-  const label = new Map((place?.stretches || []).map(s => [s.id, s.label || s.called || s.id]));
-  const milestone = new Map((place?.stretches || []).filter(s => TASK.has(s.kind) || s.kind === 'mat').map(s => [s.id, s]));
-  const matId = (place?.stretches || []).find(s => s.kind === 'mat')?.id || 'mat';
-  const chapters = [];
-  let front = -1;
-  e.screens.forEach((s, si) => {
-    const task = String(s.hud?.task || '').toUpperCase();
-    let key = null, name = null;
-    if (!chapters.length && (task === 'PREVIOUSLY' || task === 'LAST TIME')) { key = 'previously'; name = 'Previously'; }
-    else if (!chapters.length || (chapters.length === 1 && chapters[0].key === 'previously' && task !== 'PREVIOUSLY' && task !== 'LAST TIME')) {
-      key = 'start'; name = e.kind === 'final' ? 'The Finale' : 'The Start';
-    }
-    const stretch = s.stretch || (task === 'CHILL ZONE' ? matId : null);
-    if (!key && stretch && milestone.has(stretch) && (order.get(stretch) ?? -1) > front) {
-      front = order.get(stretch);
-      key = stretch;
-      name = stretch === matId ? 'The Chill Zone' : label.get(stretch);
-    }
-    if (key) chapters.push({ key, name, from: si, to: si });
-    else chapters.at(-1).to = si;
-  });
-  return chapters;
-}
+// ── the chapters: steps.js chaptersOf (the music plan reads the same ones) ──
 
 // ── the screens ──
 const ICONS = { previously: '◀', start: '✈', mat: '🏁' };

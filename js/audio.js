@@ -413,9 +413,59 @@ export class AudioEngine {
     if (g.setValueAtTime) g.setValueAtTime(duckGain(1, true), now); else g.value = duckGain(1, true);
     if (g.linearRampToValueAtTime) g.linearRampToValueAtTime(1, now + 0.8);
   }
-  ambient(name) {
+  // `opts` (opt-in; the Ridonculous Race's beds also carry it on their catalog entry as `opts`): { fade, curve, resume }.
+  // Without it every bed behaves exactly as before: a 1.2 s linear crossfade, the new track from its top, the old
+  // one stopped as soon as the new one is asked for. With it: the old bed plays on until the new one is ready and the
+  // two overlap over `fade` seconds on a smooth curve (setTargetAtTime), a bed fading out from an earlier switch is
+  // taken down quickly (never three sounding), and with `resume` each bed comes back where it left off.
+  ambient(name, opts) {
     this._desiredBed = name;   // remember the scene's bed even if music is off
+    this._reqOpts = opts || null;
     this._applyAmbient();
+  }
+  // The current bed's level, as a share of its own volume, eased (opt-in callers only: a confessional ducks the
+  // music under the words without changing it). Later opt-in beds start at this level while it is set.
+  setBedLevel(level = 1, ramp = 0.8) {
+    this._bedLevel = level;
+    const n = this._bedNodes;
+    if (!n || !n.opts || !this._ctx) return;
+    try {
+      const g = n.gain.gain, now = this._ctx.currentTime;
+      if (g.cancelScheduledValues) g.cancelScheduledValues(now);
+      if (g.setValueAtTime) g.setValueAtTime(g.value, now);
+      if (g.setTargetAtTime) g.setTargetAtTime(Math.max(0.0001, n.target * level), now, ramp / 3); else g.value = n.target * level;
+    } catch (e) { /* a level is never worth an error */ }
+  }
+  // Fetch and decode a bed into the cache ahead of its switch, so the switch never waits on the network.
+  preloadBed(name) {
+    const bed = name ? resolveBed(name) : null;
+    if (!bed || !bed.file || !this._ctx) return;
+    this._loadBed(name, bed).catch(() => {});
+  }
+  _loadBed(name, bed) {
+    if (this._bedBufCache && this._bedBufCache[name]) return Promise.resolve(this._bedBufCache[name]);
+    if (!this._bedLoading) this._bedLoading = {};
+    if (this._bedLoading[name]) return this._bedLoading[name];
+    const ctx = this._ctx;
+    let p;
+    try { p = fetch(bed.file); } catch (e) { return Promise.reject(e); }
+    if (!p || !p.then) return Promise.reject(new Error('no fetch'));
+    const done = p.then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.arrayBuffer(); })
+      .then(buf => ctx.decodeAudioData(buf))
+      .then(decoded => { if (!this._bedBufCache) this._bedBufCache = {}; this._bedBufCache[name] = decoded; delete this._bedLoading[name]; return decoded; },
+        e => { delete this._bedLoading[name]; throw e; });
+    this._bedLoading[name] = done;
+    return done;
+  }
+  // a bed on its way out, fading over `fade`; with opts, any bed still fading from before goes quickly
+  _retire(nodes, now, fade, opts) {
+    if (!nodes) return;
+    if (opts) {
+      for (const old of this._fading || []) { try { old.stop(now, 0); } catch (e) {} }
+      this._fading = [];
+    }
+    try { nodes.stop(now, fade); } catch (e) {}
+    if (opts) this._fading.push(nodes);
   }
 
   // Reconcile playback with the desired bed + music-on state. When music is off,
@@ -426,15 +476,28 @@ export class AudioEngine {
     if (!this._unlocked || !this._ctx) { this._pendingBed = this._desiredBed; return; }
     if (this._currentBed === name) return;
     const now = this._ctx.currentTime;
-    if (this._bedNodes) { try { this._bedNodes.stop(now); } catch (e) {} this._bedNodes = null; }
+    const bed = name ? resolveBed(name) : null;
+    const opts = this._reqOpts || (bed && bed.opts) || (!name && this._bedNodes && this._bedNodes.opts) || null;
+    // (opt-in) asked away and straight back while the other was loading: the bed still sounding simply stays
+    if (opts && name && this._bedNodes && this._bedNodes.name === name) {
+      this._currentBed = name; this._bedToken = (this._bedToken || 0) + 1;
+      this.setBedLevel(this._bedLevel == null ? 1 : this._bedLevel);
+      return;
+    }
+    // (opt-in) a file bed takes over from the old one only when it is ready (_playBedFile): no gap of silence
+    const overlap = !!(opts && bed && bed.file);
+    if (this._bedNodes && !overlap) {
+      if (opts) this._retire(this._bedNodes, now, opts.fade || 1.2, opts);
+      else { try { this._bedNodes.stop(now); } catch (e) {} }
+      this._bedNodes = null;
+    }
     this._currentBed = null;
     this._bedToken = (this._bedToken || 0) + 1;   // a file still loading for the old bed must not start
     if (!name) return;
-    const bed = resolveBed(name);
     if (!bed) return;
     this._currentBed = name;
     // Prefer the bed's mp3 file; only fall back to the synth pad when no file is set.
-    if (bed.file) this._playBedFile(name, bed);
+    if (bed.file) this._playBedFile(name, bed, opts);
     else this._playBedSynth(now, bed, 0.18);
   }
 
@@ -452,39 +515,64 @@ export class AudioEngine {
   // Fetch + decode + loop the bed's mp3 through the bed-gain channel. Decoded
   // buffers are cached. On any failure (missing file, decode error, no fetch),
   // the bed stays SILENT — never throws, never falls back to the synth pad.
-  _playBedFile(name, bed) {
+  _playBedFile(name, bed, opts = null) {
     const ctx = this._ctx;
     const target = typeof bed.volume === 'number' ? bed.volume : 0.4;
+    const fade = opts && opts.fade ? opts.fade : 1.2, smooth = !!(opts && opts.curve === 'smooth');
+    const level = opts && this._bedLevel != null ? this._bedLevel : 1;
     // Only the latest request may start. Asked for A, then B, then A again while A was still loading,
     // both loads of A used to start, and the first loop was no longer referenced: it played on under
     // every later bed and through a closed Viewing Party (the user, 2026-10-16: "the sound doesn't stop").
     const token = this._bedToken = (this._bedToken || 0) + 1;
     const start = (buffer) => {
       if (token !== this._bedToken || this._currentBed !== name || !this._ctx) return; // switched (or re-asked) mid-load
-      if (this._bedNodes) { try { this._bedNodes.stop(ctx.currentTime, 0.3); } catch (e) {} this._bedNodes = null; }
+      if (this._bedNodes) {
+        if (opts) this._retire(this._bedNodes, ctx.currentTime, fade, opts);
+        else { try { this._bedNodes.stop(ctx.currentTime, 0.3); } catch (e) {} }
+        this._bedNodes = null;
+      }
       try {
         const src = ctx.createBufferSource();
         src.buffer = buffer; src.loop = true;
         const g = ctx.createGain();
         const now = ctx.currentTime;
+        const peak = target * level;
         if (g.gain.setValueAtTime) g.gain.setValueAtTime(0.0001, now); else g.gain.value = 0.0001;
-        if (g.gain.linearRampToValueAtTime) g.gain.linearRampToValueAtTime(target, now + 1.2); else g.gain.value = target;
+        if (smooth && g.gain.setTargetAtTime) g.gain.setTargetAtTime(peak, now, fade / 4);
+        else if (g.gain.linearRampToValueAtTime) g.gain.linearRampToValueAtTime(peak, now + fade); else g.gain.value = peak;
         src.connect(g); g.connect(this._bedGain);
-        src.start(0);
+        // (opt-in) back where this bed left off, not its intro again
+        const dur = buffer.duration || 0;
+        const offset = opts && opts.resume && dur && this._bedPos && this._bedPos[name] ? this._bedPos[name] % dur : 0;
+        if (offset) src.start(0, offset); else src.start(0);
+        const began = now;
+        let stopped = false;
         this._bedNodes = {
-          gain: g,
-          stop: (t0, fade = 1.2) => {
+          gain: g, name, opts, target,
+          stop: (t0, out = 1.2) => {
             try {
+              // (opt-in) where it was when it began to go (a second, quicker stop does not move it on)
+              if (opts && opts.resume && dur && !stopped) { if (!this._bedPos) this._bedPos = {}; this._bedPos[name] = (offset + Math.max(0, t0 - began)) % dur; }
+              stopped = true;
               if (g.gain.cancelScheduledValues) g.gain.cancelScheduledValues(t0);
               if (g.gain.setValueAtTime) g.gain.setValueAtTime(g.gain.value, t0);
-              if (g.gain.linearRampToValueAtTime) g.gain.linearRampToValueAtTime(0.0001, t0 + fade); else g.gain.value = 0.0001;
-              if (src.stop) src.stop(t0 + fade + 0.05);
+              if (smooth && g.gain.setTargetAtTime) g.gain.setTargetAtTime(0.0001, t0, out / 5);
+              else if (g.gain.linearRampToValueAtTime) g.gain.linearRampToValueAtTime(0.0001, t0 + out); else g.gain.value = 0.0001;
+              if (src.stop) src.stop(out ? t0 + out + 0.05 : t0);   // (0: a bed already faded most of the way, cut so that never three sound)
             } catch (e) { /* node already stopped */ }
           },
         };
       } catch (e) { /* node graph unavailable — stay silent */ }
     };
     if (this._bedBufCache && this._bedBufCache[name]) { start(this._bedBufCache[name]); return; }
+    if (opts) {
+      // (opt-in) one load per bed, shared with preloadBed; a bed that cannot load leaves silence, as before
+      this._loadBed(name, bed).then(start).catch(() => {
+        this._warnBedOnce(name, bed.file);
+        if (token === this._bedToken && this._bedNodes) { this._retire(this._bedNodes, ctx.currentTime, fade, opts); this._bedNodes = null; }
+      });
+      return;
+    }
     let p;
     try { p = fetch(bed.file); } catch (e) { this._warnBedOnce(name, bed.file); return; }
     if (!p || !p.then) { this._warnBedOnce(name, bed.file); return; }

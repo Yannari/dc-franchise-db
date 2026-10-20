@@ -16,6 +16,7 @@
 import { audio as engine, BED_CATALOG, CUE_CATALOG } from '../audio.js';
 import { PLACE_MUSIC, RACE_SOUNDS, AMBIENCE, placeFile, raceFile } from './music.js';
 import { HAVE, LIFT } from './music-have.js';
+import { flatSteps, chaptersOf } from './steps.js';
 
 const MUSIC_VOL = 0.3, UNDER_VOICE = 0.2, AMB_VOL = 0.18, STING_VOL = 0.55, STING_DUCK = 0.22;
 const TASKS = new Set(['either', 'botch', 'allin', 'route', 'superteam', 'midmat']);
@@ -92,12 +93,95 @@ export function soundAt(ep, si, k) {
   return { moment: m, bed: fileFor(m), sting: stingAt(s, k) };
 }
 
+// ── the bed plan: when the music actually changes (pure: the tests read it) ──
+// The user (2026-10-19): "the music switch the transition is not good". The moment of every step (momentAt) changes
+// every few clicks: the road, the task, a slip, a confessional, the task again. Played as it stands, the music
+// flipped back and forth and every flip started a track from its intro. So the leg is planned once:
+//   * HARD moments always change it: a chapter's first step (chaptersOf), a new place, the opener, the Don Box's
+//     demo, the Chill Zone, the elimination, the recap, the flight, the finale, the theme;
+//   * SOFT moments (the road, a task, a struggle) change it only if the new music would last SOFT_MIN steps; a
+//     shorter stretch keeps the music on;
+//   * a confessional keeps the music on, eased down under the words (UNDER_VOICE); the interview's own bed plays only
+//     for a long run of them or one that opens a chapter, and the music after it changes back at once;
+//   * so no A, B, A within SOFT_MIN steps.
+export const SOFT_MIN = 6;
+export const DUCK = UNDER_VOICE / MUSIC_VOL;
+const HARD = new Set(['opener', 'chill-zone', 'elimination', 'recap']);
+const keyOfBed = b => (b ? b.file : 'none');
+const PLANS = new WeakMap();
+/** The leg's music, step by step (flatSteps order): [{ si, k, bed, level, moment, change, hard }]. */
+export function planBeds(ep) {
+  const flat = flatSteps(ep.screens);
+  const starts = new Set(chaptersOf(ep, ep.place).map(c => c.from));
+  const raw = flat.map(f => {
+    const s = ep.screens[f.si], x = soundAt(ep, f.si, f.idx), m = x.moment;
+    const first = f.idx === 0;
+    const hard = (first && starts.has(f.si)) || !!m?.race || HARD.has(m?.moment) || (first && s.mode === 'demo');
+    return { si: f.si, k: f.idx, bed: x.bed, moment: m, conf: s.kind === 'iv' || s.mode === 'iv', chapter: first && starts.has(f.si), hard, place: m?.place || null };
+  });
+  const out = [];
+  let cur, curPlace = null, conf = null, heard = new Set(), lastChange = -Infinity;
+  // how long bed `key` would play from step i on (confessionals in between do not break it)
+  const lasts = (i, key) => { let n = 0; for (let j = i; j < raw.length; j++) { if (raw[j].conf) continue; if (keyOfBed(raw[j].bed) !== key) break; n++; } return n; };
+  // a run of confessionals from step i; the world steps from i up to the next confessional
+  const confRun = i => { let j = i; while (j < raw.length && raw[j].conf) j++; return j - i; };
+  const worldRun = i => { let j = i; while (j < raw.length && !raw[j].conf) j++; return j - i; };
+  // a run of confessionals that gets the interview's own bed: a long one, or one that opens a chapter
+  const ownAt = i => !!raw[i]?.conf && (confRun(i) >= SOFT_MIN || raw[i].chapter);
+  raw.forEach((r, i) => {
+    let change = false, level = 1;
+    const key = keyOfBed(r.bed);
+    if (cur === undefined) change = true;
+    else if (r.conf) {
+      // a run of confessionals: decided at its first step
+      // (an interview scene's stage directions are part of it: the run's first bed plays through)
+      const opens = conf === null;
+      if (opens) conf = ownAt(i) ? 'own' : 'duck';
+      if (conf === 'own') change = opens && key !== keyOfBed(cur);
+      else level = DUCK;
+    } else {
+      // a hard moment comes back within a chapter (the Chill Zone between cutaways to the teams still racing): the
+      // second time, it is a soft one
+      if (r.chapter) heard = new Set();
+      const again = r.hard && !r.chapter && heard.has(key) && r.moment?.moment !== 'elimination';
+      if (r.hard) heard.add(key);
+      const fromOwn = conf === 'own';
+      conf = null;
+      // a flight cutaway of one step between two stretches of the same music is not worth a change
+      const brief = r.moment?.race === 'flight' && lasts(i, key) < 2;
+      if (key === keyOfBed(cur)) change = false;
+      // the music after a long interview comes straight back, unless a few lines lead into another long one
+      else if (fromOwn) { const L = worldRun(i); change = !(L < SOFT_MIN && ownAt(i + L)); }
+      else if (r.hard && !again && !brief) change = true;
+      else if (r.place && curPlace && r.place !== curPlace && lasts(i, key) >= 2) change = true;
+      // a soft change: the new music must last, and the music on now must have had its turn
+      else change = lasts(i, key) >= SOFT_MIN && i - lastChange >= SOFT_MIN;
+    }
+    if (change) { cur = r.bed; lastChange = i; if (r.place && !r.conf) curPlace = r.place; }
+    out.push({ si: r.si, k: r.k, bed: cur, level, moment: r.moment, change, hard: r.hard });
+  });
+  return out;
+}
+/** The plan of a leg, made once per episode object; `at[si][k]` its index. */
+export function planOf(ep) {
+  let p = PLANS.get(ep);
+  if (!p) {
+    const steps = planBeds(ep), at = {};
+    steps.forEach((x, i) => { (at[x.si] ||= {})[x.k] = i; });
+    p = { steps, at };
+    PLANS.set(ep, p);
+  }
+  return p;
+}
+
 // ── playing it ─────────────────────────────────────────────────────────
+// the race's beds cross over slowly on a smooth curve, overlap, and come back where they left off (js/audio.js)
+export const RACE_BED_OPTS = { fade: 2.5, curve: 'smooth', resume: true };
 const bedId = f => 'rr:' + f;
 /** The engine's id for a bed (registered on first use): what the simulator pane's data-ambient names. */
 export function registerBed(b) {
   const id = bedId(b.file);
-  if (!BED_CATALOG[id]) BED_CATALOG[id] = { build: null, file: b.file, volume: Math.min(1, Math.round(b.vol * 10 ** ((LIFT[b.file] || 0) / 20) * 100) / 100) };
+  if (!BED_CATALOG[id]) BED_CATALOG[id] = { build: null, file: b.file, volume: Math.min(1, Math.round(b.vol * 10 ** ((LIFT[b.file] || 0) / 20) * 100) / 100), opts: RACE_BED_OPTS };
   return id;
 }
 const buffers = {};
@@ -145,18 +229,28 @@ function setBed(id) {
   if (id === (engine._desiredBed ?? null)) return;
   // the very first bed (nothing playing yet) starts at once
   const wait = engine._desiredBed == null && !engine._currentBed ? 0 : SETTLE_MS;
-  bedTimer = setTimeout(() => { bedTimer = null; try { engine.ambient(wantBed); } catch { /* fine */ } }, wait);
+  bedTimer = setTimeout(() => { bedTimer = null; try { engine.ambient(wantBed, RACE_BED_OPTS); } catch { /* fine */ } }, wait);
 }
 
-/** Play step k of screen si: its bed (always), its sting (only on a click: `sting`). */
+/** Play step k of screen si: the leg's planned bed and level (always), its sting (only on a click: `sting`). */
 export function playStep(ep, si, k, sting = true) {
   if (!engine) return;
   const vp = typeof document !== 'undefined' ? document.getElementById('visual-player') : null;
   if (vp && vp.style.display === 'none') return;
   try {
     warm();
-    const { bed, sting: cue } = soundAt(ep, si, k);
+    const plan = planOf(ep), i = plan.at[si]?.[k];
+    const p = i != null ? plan.steps[i] : null;
+    const bed = p ? p.bed : soundAt(ep, si, k).bed;
     setBed(bed ? registerBed(bed) : null);
+    // a confessional eases the music down under the words, and the next line brings it back up
+    engine.setBedLevel?.(p ? p.level : 1, 0.9);
+    // the next two changes the plan makes are fetched and decoded now, so a change never waits on the network
+    if (i != null) {
+      let n = 0;
+      for (let j = i + 1; j < plan.steps.length && n < 2; j++) if (plan.steps[j].change && plan.steps[j].bed) { engine.preloadBed?.(registerBed(plan.steps[j].bed)); n++; }
+    }
+    const cue = stingAt(ep.screens[si], k);
     if (sting && cue && HAVE.has(raceFile(cue))) engine.sfx('rr-' + cue);
   } catch { /* sound must never break a screen */ }
 }

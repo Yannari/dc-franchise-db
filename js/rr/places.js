@@ -33,11 +33,16 @@ import fjordPeaks from './places/fjord-peaks.js';
 import prairieRanch from './places/prairie-ranch.js';
 import iceFloe from './places/ice-floe.js';
 import dragonIsle from './places/dragon-isle.js';
+import neonDesert from './places/neon-desert.js';
+import pyramidCoast from './places/pyramid-coast.js';
+import stiltRiver from './places/stilt-river.js';
+import frozenMine from './places/frozen-mine.js';
 
 export const PLACES = Object.fromEntries([homeCity, redSandDesert, fireMountainIsle, skylineFinale, ironTowerCity, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback,
   coastPalace, geyserIsland, carnivalRainforest, hauntedCastle,
   leiIsland, glassTowerGulf, swampPrison, outbackFarm,
-  fjordPeaks, prairieRanch, iceFloe, dragonIsle].map(p => [p.id, p]));
+  fjordPeaks, prairieRanch, iceFloe, dragonIsle,
+  neonDesert, pyramidCoast, stiltRiver, frozenMine].map(p => [p.id, p]));
 
 export const getPlace = id => PLACES[id] || null;
 

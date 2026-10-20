@@ -106,12 +106,17 @@ import fjordPeaks from './places/fjord-peaks.js';
 import prairieRanch from './places/prairie-ranch.js';
 import iceFloe from './places/ice-floe.js';
 import dragonIsle from './places/dragon-isle.js';
+import neonDesert from './places/neon-desert.js';
+import pyramidCoast from './places/pyramid-coast.js';
+import stiltRiver from './places/stilt-river.js';
+import frozenMine from './places/frozen-mine.js';
 
 const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
   localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, ride, narration, narration2, premiere, premiereIdentities, customIntros, redSandDesert, ironTowerCity, homeCity, skylineFinale, fireMountainIsle, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback, ...placesMore,
   coastPalace, geyserIsland, carnivalRainforest, hauntedCastle,
   leiIsland, glassTowerGulf, swampPrison, outbackFarm,
-  fjordPeaks, prairieRanch, iceFloe, dragonIsle];
+  fjordPeaks, prairieRanch, iceFloe, dragonIsle,
+  neonDesert, pyramidCoast, stiltRiver, frozenMine];
 
 // The rewrite (lines/rewrite/, docs/rr-writers-brief.md "The rewrite standard"): each file brings its pools and
 // retires the old lines they replace, a whole pool ('mind-game.rattled') or the old interview lines for one kind

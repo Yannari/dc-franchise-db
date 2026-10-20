@@ -1,0 +1,22 @@
+// Bamboo Wall Hills (LEGS.txt 44-BAMBOO-WALL-HILLS), the World Tour's wall-race-and-banquet leg as the frames show it: a
+// bus through the bamboo hills; both partners race the length of a section of the ancient wall, up and down its steps,
+// before the monk at the end strikes the gong (All-In); then the partner who didn't do the last Botch or Watch eats a
+// bowl of the hills' strangest delicacies, every bite (Botch or Watch); the Chill Zone is at the end of the wall.
+export default {
+  id: 'bamboo-wall-hills', name: 'Bamboo Wall Hills', recap: 'racing the ancient wall before the gong and eating a bowl of delicacies',
+  region: 'far-east', map: { x: 81, y: 40 },
+  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
+  draft: true,
+  arrive: 'airport', local: ['bus', 'foot'],
+  stretches: [
+    { id: 'bamboo-bus', kind: 'travel', mode: 'bus', base: 40, cost: 15, plate: 'bamboo forest road', label: 'Bus through the bamboo hills',
+      mishaps: [['panda-in-the-road', 15]], mishapRate: 0.08 },
+    { id: 'wall-race', called: 'the wall', kind: 'allin', types: ['strength', 'patience'], base: 35, pass: 0.55, loopCost: 12, opens: 360, closes: 1080,
+      plate: 'wall walkway', label: 'All-In: the wall before the gong',
+      desc: "A section of the ancient wall snakes along the ridge of the hills, all steep stone steps up to one watchtower and down to the next. Both partners have to run the whole section, together, and reach the last watchtower before the monk standing there strikes his gong, which he does on a timer only he knows. Reaching the tower after the gong, or arriving without the partner, means walking back to the start of the section and running it again. Both partners in the tower before the gong earns the next tip." },
+    { id: 'delicacies', called: 'the banquet table', kind: 'botch', types: ['stomach', 'nerve'], base: 15, pass: 0.45, loopCost: 6,
+      teaser: 'Who will eat anything?', plate: 'eating table', label: 'Botch or Watch: the bowl of delicacies',
+      desc: "At a long banquet table by the wall, a cook sets down a bowl of the hills' most unusual delicacies: thousand-year eggs, fried scorpions on sticks, a soup with things floating in it, and one item the cook won't name. The partner who didn't do the last Botch or Watch eats every bite in the bowl. Leaving anything, or bringing anything back up, means a new bowl. The other partner can only watch. An empty bowl, shown to the cook, earns the next tip." },
+    { id: 'mat', kind: 'mat', plate: 'wall at sunrise', label: 'The Chill Zone' },
+  ],
+};

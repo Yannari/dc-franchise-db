@@ -98,10 +98,15 @@ import coastPalace from './places/coast-palace.js';
 import geyserIsland from './places/geyser-island.js';
 import carnivalRainforest from './places/carnival-rainforest.js';
 import hauntedCastle from './places/haunted-castle.js';
+import leiIsland from './places/lei-island.js';
+import glassTowerGulf from './places/glass-tower-gulf.js';
+import swampPrison from './places/swamp-prison.js';
+import outbackFarm from './places/outback-farm.js';
 
 const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
   localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, ride, narration, narration2, premiere, premiereIdentities, customIntros, redSandDesert, ironTowerCity, homeCity, skylineFinale, fireMountainIsle, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback, ...placesMore,
-  coastPalace, geyserIsland, carnivalRainforest, hauntedCastle];
+  coastPalace, geyserIsland, carnivalRainforest, hauntedCastle,
+  leiIsland, glassTowerGulf, swampPrison, outbackFarm];
 
 // The rewrite (lines/rewrite/, docs/rr-writers-brief.md "The rewrite standard"): each file brings its pools and
 // retires the old lines they replace, a whole pool ('mind-game.rattled') or the old interview lines for one kind

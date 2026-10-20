@@ -25,9 +25,14 @@ import coastPalace from './places/coast-palace.js';
 import geyserIsland from './places/geyser-island.js';
 import carnivalRainforest from './places/carnival-rainforest.js';
 import hauntedCastle from './places/haunted-castle.js';
+import leiIsland from './places/lei-island.js';
+import glassTowerGulf from './places/glass-tower-gulf.js';
+import swampPrison from './places/swamp-prison.js';
+import outbackFarm from './places/outback-farm.js';
 
 export const PLACES = Object.fromEntries([homeCity, redSandDesert, fireMountainIsle, skylineFinale, ironTowerCity, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback,
-  coastPalace, geyserIsland, carnivalRainforest, hauntedCastle].map(p => [p.id, p]));
+  coastPalace, geyserIsland, carnivalRainforest, hauntedCastle,
+  leiIsland, glassTowerGulf, swampPrison, outbackFarm].map(p => [p.id, p]));
 
 export const getPlace = id => PLACES[id] || null;
 

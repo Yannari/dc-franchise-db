@@ -57,6 +57,8 @@ export const RR_FACT_KEYS = [
   'mishap',
   // the twist Don explains (don-rule): boomerang, yield, boomerang-vote; a team sent back because everybody picked it
   'rule', 'byVote',
+  // a Blind Boomerang (the board doesn't say who threw it)
+  'blind',
   // an interview: a is the one the moment happened to (froze, got hurt, schemed); an exit: how the team went out
   // (last on the mat, on-location where Don found them, midpoint in the finale)
   'aDid', 'exitHow',
@@ -126,7 +128,7 @@ export function factsFor(scene, roles, state) {
     stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null,
     side: s.side ?? null,
     at: atOf(s, d),
-    matPlace: d.matPlace ?? null, why: d.why ?? null, rule: d.rule ?? null, byVote: !!d.byVote,
+    matPlace: d.matPlace ?? null, why: d.why ?? null, rule: d.rule ?? null, byVote: !!d.byVote, blind: !!d.blind,
     aDid: !!d.aDid, exitHow: d.exitHow ?? null, mishap: scene.kind === 'travel-mishap' ? d.kind ?? null : null,
     aElder: (() => { const e = elderOf(state.teams[d.team]); const a = roles?.roles?.a; return e && a ? e === a : null; })(),
     fails: !s.fails ? 0 : s.fails === 1 ? 1 : 'many',

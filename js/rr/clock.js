@@ -63,9 +63,15 @@ export function runLeg({ teams, stretches, resolve }) {
       f[k] = start + dur;
       return start;
     },
-    remaining(stretchId) {
+    // the teams still to reach (or still at) a stretch, other than this one and `except`
+    remaining(stretchId, except = []) {
       const at = idxOf(stretchId);
-      return alive().filter(r => r.id !== current?.id && r.i <= at).length;
+      return alive().filter(r => r.id !== current?.id && !except.includes(r.id) && r.i <= at).length;
+    },
+    // a team held at a stretch goes again at minute t (a Head-to-Head decided while it waited)
+    wake(id, t) {
+      const r = byId[id];
+      if (r && !r.done) r.t = Math.min(r.t, Math.max(t, api.now));
     },
     vehicle(stretchId, { waitFor = 1, maxWait = 60 } = {}, id, t) {
       const list = (groups[stretchId] ||= []);

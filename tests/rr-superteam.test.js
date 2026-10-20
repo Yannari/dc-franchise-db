@@ -18,7 +18,8 @@ describe('rr superteam', () => {
       const eps = airSeason(res);
       const leg = res.legs.findIndex(l => l.place === 'stilt-river');
       expect(leg).toBeGreaterThan(-1);
-      const picks = res.state.scenes.filter(s => s.kind === 'superteam-pick');
+      // (this leg's: an Intersection on another leg forms groups too)
+      const picks = res.state.scenes.filter(s => s.kind === 'superteam-pick' && s.leg === res.legs[leg].n);
       formed += picks.length;
       const aired = new Set(eps[leg].segments.filter(s => s.kind === 'superteam-pick').map(s => s.scene));
       for (const p of picks) expect(aired.has(p.id), `seed ${seed}: superteam ${p.who.join(', ')} formed and never aired`).toBe(true);

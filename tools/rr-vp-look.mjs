@@ -9,7 +9,9 @@ import { mkdirSync } from 'node:fs';
 const [seed = '8', teams = '12', kindArg = 'company,alone,elevator,cabin,confess,confess2,intro,exit'] = process.argv.slice(2);
 const base = process.env.RR_URL || 'http://127.0.0.1:8765/rr.html';
 // RR_PINS=2:coast-palace,3:geyser-island books those legs (rr.html ?pins=): a place being built plays only when booked
-const PINS = process.env.RR_PINS ? '&pins=' + encodeURIComponent(process.env.RR_PINS) : '';
+const PINS = (process.env.RR_PINS ? '&pins=' + encodeURIComponent(process.env.RR_PINS) : '')
+  // RR_TWISTS=3:head-to-head,5:boomerang-blind books those twists (rr.html ?twists=)
+  + (process.env.RR_TWISTS ? '&twists=' + encodeURIComponent(process.env.RR_TWISTS) : '');
 mkdirSync('shots/rr-vp', { recursive: true });
 const FIND = {
   company: '(s, t, k) => s.kind === "world" && s.mode !== "mat" && s.seg !== "don-opener" && s.seg !== "team-intro" && (s.crowd || []).some(c => c.pos[k] && c.work) && t.by',
@@ -44,6 +46,10 @@ const FIND = {
   zip: '(s, t, k) => s.seg === "zip-it" && t.by && k >= 1',
   sentback: '(s, t, k) => s.seg === "boomerang-hit" && t.by && k >= 1',
   yielded: '(s, t, k) => s.seg === "yield" && k >= 1',
+  blindhit: '(s, t, k) => s.seg === "boomerang-hit" && s.ending === "blind-guess" && k >= 1',
+  reveal: '(s, t, k) => s.seg === "boomerang-reveal" && k >= 2',
+  duel: '(s, t, k) => s.seg === "head-to-head" && k >= 1',
+  intersect: '(s, t, k) => s.seg === "superteam-pick" && k >= 1',
 };
 // RR_PLATES=task-9436302,task-22412499: a talk step on each of those plates
 for (const f of (process.env.RR_PLATES || '').split(',').filter(Boolean)) FIND['plate-' + f] = `(s, t, k) => s.kind === "world" && s.plate?.f === "${f}" && t.by && k >= 1`;

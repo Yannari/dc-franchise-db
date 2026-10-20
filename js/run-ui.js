@@ -4059,7 +4059,8 @@ function _rrLegPickers(ep, isFinale) {
   return h;
 }
 // the race's leg twists, as the tile names them (js/rr/schedule.js LEG_TWISTS)
-const _RR_TWIST = { boomerang: 'Boomerang', yield: 'Yield', 'zip-it': 'Zip-It', 'boomerang-vote': 'Boomerang (teams pick)' };
+const _RR_TWIST = { boomerang: 'Boomerang', yield: 'Yield', 'zip-it': 'Zip-It', 'boomerang-vote': 'Boomerang (teams pick)',
+  'boomerang-blind': 'Blind Boomerang', 'head-to-head': 'Head-to-Head', intersection: 'Intersection' };
 export function _setRrPin(ep, field, value) {
   raceSetPin(ep, field, value);
   renderTimeline();

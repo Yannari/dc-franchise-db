@@ -26,6 +26,7 @@ import { teamRef, teamTag, relLabel } from './previously.js';
 
 export const MUST = new Set(['proposal', 'don-opener', 'don-demo', 'don-place', 'don-crown', 'don-elim', 'don-arrives', 'don-fakeout', 'don-rule', 'don-ruling',
   'boomerang-found', 'boomerang-decide', 'boomerang-hit', 'boomerang-vote', 'yield', 'zip-it', 'save-used', 'medevac-choice',
+  'boomerang-reveal', 'head-to-head',
   'speed-bump', 'surrender', 'reward', 'call-home', 'int-exit', 'console', 'goodbye-kiss', 'int-bleachers',
   'confession', 'breakup', 'back-together', 'alliance-betrayal', 'deal-broken', 'leader-shift', 'quit-task', 'snap',
   'push', 'ram', 'steal', 'kidnap-pet', 'course-sabotage', 'fake-shortcut', 'mind-game', 'admin-sabotage', 'revenge',
@@ -45,7 +46,7 @@ export const WARM_X = new Set(['small-talk', 'alliance-pitch', 'alliance-check',
 // the team they'd Boomeranged swore to find out who did it): the thrower passed long ago, the target isn't here yet,
 // the Zip-It's winner is at the mat. Only a standoff at the board has both teams in it.
 const NAMES_ONLY = new Set(['boomerang-hit', 'boomerang-decide', 'yield', 'zip-it']);
-const namesOnly = s => NAMES_ONLY.has(s.kind) && s.data?.ending !== 'standoff' && !!s.data?.team;
+const namesOnly = s => !!s.data?.team && ((NAMES_ONLY.has(s.kind) && s.data?.ending !== 'standoff') || (s.kind === 'boomerang-reveal' && !!s.data?.away));
 const teamsKey = s => (s.data?.team && s.data?.other ? [s.data.team, s.data.other].sort().join('|') : null);
 
 // A big cast airs like the show, and at least BIG_CAST teams always get their full scenes (the user, 2026-10-18).
@@ -574,6 +575,22 @@ export function airLeg(state, leg) {
     for (const src of seg.srcs || [seg.src]) for (const id of src.data?.threadIds || []) state.storyAired[id] = (state.storyAired[id] || 0) + 1;
     delete seg.src;
     delete seg.srcs;
+  }
+  // a leg airs a confessional: when the one picked had no words left (its only line already said this season), the next
+  // interview about a moment that aired takes its place (found 2026-10-20: seed 5 leg 9 aired none)
+  const isIv = k => k.startsWith('int-') && k !== 'int-exit' && k !== 'int-bleachers';
+  if (!segs.some(x => x.lines && isIv(x.kind))) {
+    const airedIds = new Set(segs.filter(x => x.lines && typeof x.scene === 'number').map(x => x.scene));
+    const cands = scenes.filter(x => isIv(x.kind) && airedIds.has(x.data?.about) && !airedIds.has(x.id) && canVoice(state, x))
+      .sort((x, y) => airWeight(byId.get(y.data.about)) - airWeight(byId.get(x.data.about)) || x.id - y.id);
+    for (const iv of cands) {
+      const w = writeScene(state, iv);
+      if (!w?.lines?.length) continue;
+      const about = segs.find(x => x.scene === iv.data.about);
+      segs.splice(segs.indexOf(about) + 1, 0, { scene: iv.id, kind: iv.kind, ending: iv.data?.ending ?? null, stretch: iv.data?.stretch ?? null,
+        t: about.t, teams: iv.data?.team ? [iv.data.team] : about.teams.slice(0, 1), who: [...iv.who], side: null, tier: 2, lines: w.lines, lineId: w.lineId || null });
+      break;
+    }
   }
   // an interview nobody has written for its moment doesn't air (a generic one reads as a random scene)
   // ...and nothing airs without words (`unwritten` keeps the list for the read)

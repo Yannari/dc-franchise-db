@@ -11,7 +11,7 @@
 import { payStipend, repayDebts } from './money.js';
 import { flightStretches, resolveTravel, boardFlightScenes } from './travel.js';
 import { resolveTask, runTask, keepRun } from './tasks.js';
-import { handOut, pickBoomerang, resolveBoard, useExpress, zipTask } from './twists.js';
+import { handOut, pickBoomerang, resolveBoard, useExpress, zipTask, revealBlind } from './twists.js';
 import { runLeg } from './clock.js';
 import { talkAtStretch, talkAtOverlap, talkAtWait, closeLegTalk } from './talk.js';
 import { snapCheck, makeupCheck, leaderCheck } from './team.js';
@@ -33,6 +33,8 @@ const DAY = 1440;
 const NIGHT = 180;                                  // a closed wait this long is a night, and Don says so
 // the Zip-It: the place's hardest kind of task, longer and harder to pass (the first team through skips to the mat)
 const ZIP = { base: 1.4, pass: -0.1 };
+// the Head-to-Head: a short duel at the mat; a team waits this long for somebody to face before it goes on alone
+const DUEL = { min: 8, spread: 10, edge: 0.08, hold: 240 };
 
 const people = (st, id) => [st.teams[id].a, st.teams[id].b];
 
@@ -42,10 +44,23 @@ function buildRoute(state, leg, from, to, rng, nTeams) {
   const air = from ? flightStretches(from, to, nTeams, rng, { book: !!leg.book }) : [];
   const own = to.stretches.map((s, i) => ({ ...s, first: i === 0 }));
   const out = [...air, ...own];
-  if (['boomerang', 'yield', 'boomerang-vote'].includes(leg.twist)) {
+  if (['boomerang', 'yield', 'boomerang-vote', 'boomerang-blind'].includes(leg.twist)) {
     const k = out.findIndex(s => TASKS.includes(s.kind));
     if (k >= 0) out.splice(k + 1, 0, { id: 'board', kind: 'board', after: out[k].id,
       label: leg.twist === 'yield' ? 'The Yield board' : 'The Boomerang board' });
+  }
+  // the Head-to-Head stands at the mat: the place's last challenge's kind of contest, one team against another
+  if (leg.twist === 'head-to-head') {
+    const mat = out.findIndex(s => s.kind === 'mat');
+    const last = [...own].reverse().find(s => TASKS.includes(s.kind));
+    if (mat >= 0 && last) out.splice(mat, 0, { id: 'duel', kind: 'duel', label: 'The Head-to-Head',
+      types: last.types || last.sides?.[0]?.types || ['strength'] });
+  }
+  // the Intersection: two teams at a time do one of the place's challenges together (its first plain one)
+  if (leg.twist === 'intersection') {
+    // (never a picking task: what it picks feeds the challenge after it)
+    const k = out.findIndex(s => !s.air && ['route', 'allin'].includes(s.kind) && s.types?.length && !s.pick);
+    if (k >= 0) out[k] = { ...out[k], kind: 'superteam', intersect: true };
   }
   // the Zip-It sits before the place's first task: a team takes it on instead of the leg, or goes past it
   if (leg.twist === 'zip-it') {
@@ -90,6 +105,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   const superEnd = {};
   const superBy = {};                 // group -> the team whose run the group shares (its attempts are everyone's)
   const superFormed = {};              // stretch -> groups put together there so far
+  const superAt = {};                  // `${stretch}|${minute}` -> groups put together in that minute
   const midmat = [];
   const legStart = state.scenes.length;
   // the Chill Zone keeps the teams that checked in: those who arrived in the last two hours are there
@@ -114,6 +130,42 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
     const again = Object.keys(state.rulesRead).length > 0 && rng() < 0.2;
     state.rulesRead[leg.twist] = leg.n;
     emit(state, 'don-rule', [], again ? 'grudging-repeat' : 'explained', { t, stretch, rule: leg.twist, effects: [['rule', leg.twist]] });
+  }
+
+  // The Head-to-Head: a team that finds another waiting duels it; the winner goes to the mat, the loser waits for the
+  // next team, and a loser with nobody left to face goes in last. `duelRes` is the result handed to the team that was
+  // waiting (woken when its duel is decided).
+  let duelWait = null;
+  const duelRes = {};
+  function duelAt(id, s, t, api) {
+    const mine = duelRes[id];
+    if (mine) { delete duelRes[id]; if (mine.won) return { end: mine.end }; }
+    if (duelWait && duelWait !== id) {
+      const o = duelWait;
+      duelWait = null;
+      const lv = x => teamLevel(state, x, s.types || []);
+      const p = Math.min(0.85, Math.max(0.15, 0.5 + DUEL.edge * (lv(id) - lv(o))));
+      const [w, l] = rng() < p ? [id, o] : [o, id];
+      const end = t + Math.round(DUEL.min + rng() * DUEL.spread);
+      const last = api.remaining(s.id, [id, o]) === 0;
+      const close = Math.abs(lv(w) - lv(l)) < 1;
+      const ctx = { state, team: { id: w }, other: { id: l }, moment: 'twist', present: [w, l], stretch: s, t: end };
+      playScene(ctx, 'head-to-head', rng, { ending: last ? 'final' : close ? 'close' : 'rout' });
+      if (o === w) { duelRes[o] = { won: true, end }; api.wake(o, end); }
+      if (id === w) return { end };
+      // this team lost: it waits for the next one, or goes in last
+      if (last) return { end: end + 2 };
+      duelWait = id;
+      return { hold: end + DUEL.hold };
+    }
+    if (duelWait === id || api.remaining(s.id) === 0) {
+      // nobody came (or nobody is left to come): on to the mat
+      if (duelWait === id && api.remaining(s.id) > 0) return { hold: t + DUEL.hold };
+      if (duelWait === id) duelWait = null;
+      return { end: t + 1 };
+    }
+    duelWait = id;
+    return { hold: t + DUEL.hold };
   }
 
   const resolve = (team, s, t, api) => {
@@ -150,7 +202,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       demoed.add(s.id);
       emit(state, 'don-demo', [], rng() < 0.67 ? 'gag' : 'dry', { t, stretch: s.id, effects: [['demo', s.id]] });
     }
-    if ((s.kind === 'board' || s.kind === 'zip') && leg.twist && !state.rulesRead[leg.twist]) readRule(t, s.id);
+    if ((s.kind === 'board' || s.kind === 'zip' || s.kind === 'duel' || s.intersect) && leg.twist && !state.rulesRead[leg.twist]) readRule(t, s.id);
 
     // a place that's closed: wait for it to open, with whoever else is waiting
     const until = closedUntil(state, s, t);
@@ -187,6 +239,10 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
         const road = stretches[mat - 1]?.kind === 'travel' && mat - 1 > idx(s.id) ? mat - 1 : mat;
         res.skip = Math.max(0, road - idx(s.id) - 1);
       }
+    } else if (s.kind === 'duel') {
+      const d = duelAt(id, s, t, api);
+      if (d.hold != null) return d;
+      res = d;
     } else if (s.kind === 'superteam') {
       const v = api.vehicle(s.id, { waitFor: 2, maxWait: SUPER_WAIT }, id, t);
       if (v.departs == null) return { hold: v.group.first + SUPER_WAIT };
@@ -206,7 +262,10 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
           superFormed[s.id] = before + 1;
           const rivals = ms.some((x, i) => ms.slice(i + 1).some(y => (state.rivalry[pairKey(x, y)] || 0) >= SUPER_ENEMIES));
           const last = before > 0 && api.remaining(s.id) <= ms.length - 1;
-          const ctx = { state, team: { id: ms[0] }, other: { id: ms[1] }, moment: 'superteam', present: ms, stretch: s, t: v.departs };
+          // (groups put together in the same minute are told a moment apart: three at once is one scene three times)
+          const at = `${s.id}|${v.departs}`;
+          const slot = (superAt[at] = (superAt[at] ?? -1) + 1);
+          const ctx = { state, team: { id: ms[0] }, other: { id: ms[1] }, moment: 'superteam', present: ms, stretch: s, t: v.departs + 0.3 * Math.floor(slot / 2) };
           playScene(ctx, 'superteam-pick', rng, { ending: rivals ? 'forced-with-enemies' : last ? 'left-over' : 'chosen' });
         }
       }
@@ -290,6 +349,8 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   closeLegTalk(state, leg.n, rng, { places: prelim, at: lastAt });
 
   const result = checkIn(state, leg, run.finish, run.out, rng);
+  // a Blind Boomerang's thrower, told at the mat to the team it sent back
+  revealBlind(state, leg, { ...run.finish, ...(result.times || {}) }, matAt, rng);
   interviewFloor(state, leg.n, result, rng);
   result.log = run.log;
   result.stretchKinds = Object.fromEntries(stretches.map(s => [s.id, s.kind]));

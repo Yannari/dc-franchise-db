@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════
-// rr/twists.js — Boomerang (and its vote), Yield, Express Pass, Zip-It, Save
+// rr/twists.js — Boomerang (its vote, its blind version), Yield, Express Pass, Zip-It, Save
 // ══════════════════════════════════════════════════════════════════════
 //
 // Spec §5 (the twists table) and docs/ridonculous-race-scenes.md §12. A twist decides
@@ -64,9 +64,11 @@ const reached = (state, stretch) => ((state.board ||= {})[boardKey(state, stretc
 export function handOut(state, leg, rng, { pick = true } = {}) {
   const ids = active(state);
   if (!ids.length) return;
-  if (leg.twist === 'boomerang' || leg.twist === 'yield') {
+  if (leg.twist === 'boomerang' || leg.twist === 'yield' || leg.twist === 'boomerang-blind') {
     const id = ids[Math.floor(rng() * ids.length)];
-    const key = leg.twist === 'boomerang' ? 'boomerang' : 'yield';
+    const key = leg.twist === 'yield' ? 'yield' : 'boomerang';
+    // a Blind Boomerang: the board never says who threw it (Don says, at the mat)
+    if (leg.twist === 'boomerang-blind') (state.blind ||= {})[leg.n] = true;
     state.passes[id][key] = (state.passes[id][key] || 0) + 1;
     if (key === 'boomerang') act(state, 'boomerang-found', id, null, rng, { t: 0 });
     else addScene(state, 'yield-found', people(state, id), { team: id, effects: [['pass', id, 'yield']], snap: snapOf(state, { tid: id, who: people(state, id) }) });
@@ -114,6 +116,16 @@ export function resolveBoard(state, team, stretch, t, api, rng) {
   if (u && !u.served) {
     u.served = true;
     redo = u.stretch || stretch.after;
+    if (u.blind) {
+      // nobody's name on it: they blame the team they believe did it, one already through the board (a rival, a grudge)
+      const through = seen.filter(x => x !== id && !state.gone.includes(x));
+      const suspect = through.length ? weightedPick(through.map(x => ({ id: x,
+        w: 0.3 + 2 * (state.rivalry[pairKey(id, x)] || 0) + Math.max(0, -avgBond(state, id, x)) })), rng).id : null;
+      u.suspect = suspect;
+      act(state, 'boomerang-hit', id, suspect, rng, { t, stretch, ending: suspect ? 'blind-guess' : 'fury',
+        data: { blind: true, suspect, event: { by: u.by } } });
+      return { end, redo };
+    }
     // (a team the cards picked knows why: no guessing who did it)
     act(state, 'boomerang-hit', id, u.by !== 'vote' ? u.by : null, rng, { t, stretch, ending: u.by === 'vote' ? 'fury' : null,
       data: { byVote: u.by === 'vote' } });
@@ -138,11 +150,12 @@ export function resolveBoard(state, team, stretch, t, api, rng) {
         continue;
       }
       const target = weightedPick(aimWeights(state, id, targets), rng).id;
-      (state.uturn ||= {})[target] = { by: id, stretch: stretch.after };
+      const blind = !!state.blind?.[state.leg];
+      (state.uturn ||= {})[target] = { by: id, stretch: stretch.after, ...(blind ? { blind: true, leg: state.leg } : {}) };
       state.boomeranged[target] = id;
       act(state, 'boomerang-decide', id, target, rng,
         { t, stretch, ending: (state.rivalry[pairKey(id, target)] || 0) >= 1 ? 'target-rival' : 'target-threat',
-          data: { target, rankGap: Math.round(Math.abs(perceivedRank(state, id) - perceivedRank(state, target)) * 100) / 100 } });
+          data: { blind, target, rankGap: Math.round(Math.abs(perceivedRank(state, id) - perceivedRank(state, target)) * 100) / 100 } });
     } else if (targets.length) {
       const target = weightedPick(aimWeights(state, id, targets), rng).id;
       (state.yielded ||= {})[target] = id;
@@ -151,6 +164,19 @@ export function resolveBoard(state, team, stretch, t, api, rng) {
     }
   }
   return { end, redo };
+}
+
+// ── A Blind Boomerang, told at the mat: Don says who threw it, to the team it sent back ──
+// `at`: when the team was on the mat; `matAt`: when each team got there (the thrower is there, or not yet)
+export function revealBlind(state, leg, at, matAt, rng) {
+  for (const [id, u] of Object.entries(state.uturn || {})) {
+    if (!u.blind || u.leg !== leg.n || !u.served || u.told) continue;
+    u.told = true;
+    const t = (at[id] ?? Math.max(0, ...Object.values(at))) + 0.5;
+    act(state, 'boomerang-reveal', id, u.by, rng, { t, stretch: { id: 'mat' }, ending: u.suspect === u.by ? 'guessed-right' : 'guessed-wrong',
+      present: matAt[u.by] != null && matAt[u.by] <= t ? [id, u.by] : [id],
+      data: { suspect: u.suspect ?? null, away: !(matAt[u.by] != null && matAt[u.by] <= t), event: { suspect: u.suspect ?? null } } });
+  }
 }
 
 // ── Express Pass: skip the task the team rates worst this leg (decided once, at the first stretch) ──

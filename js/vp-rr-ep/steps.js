@@ -199,6 +199,9 @@ export function episodeScreens(res, eps, i) {
       const ph = airportPhase(flights, segTeams[0], seg.t);
       if (ph === 'arrive') { plate = pick(plates.arrive, nth(`${placeId}|arrive`)) || plates.opener; hudTask = 'ARRIVAL'; }
       else { plate = { ...RACE.gate, race: true }; hudTask = 'THE AIRPORT'; }
+    } else if (seg.stretch === 'duel') {
+      // the Head-to-Head stands just short of the mat
+      plate = matPlate(placeId, 0, false); hudTask = 'HEAD-TO-HEAD';
     } else if (MAT_KINDS.has(k) || seg.stretch === 'mat' || seg.stretch === 'midmat') {
       const mid = seg.stretch === 'midmat' || !!scene?.data?.midmat;
       // (the finale's mat is the finish line: the race ends on a stage, not at a Chill Zone)
@@ -432,6 +435,7 @@ function decorate(scr, seg, scene, leg, ctx) {
     }
   }
   const SLAM = { 'boomerang-hit': ['BOOMERANG!', 'boom'], 'boomerang-found': ['BOOMERANG', 'boom'], yield: ['YIELD', 'red'], 'zip-it': ['ZIP IT', 'red'],
+    'head-to-head': ['HEAD-TO-HEAD', 'red'], 'boomerang-reveal': ['WHO DID IT', 'boom'],
     'speed-bump': ['SPEED BUMP', 'red'], 'don-ruling': ['PENALTY', 'red'], 'save-used': ['SAVE', 'gold'], 'medevac-choice': ['MEDEVAC', 'red'] };
   if (SLAM[k] && scr.steps.length) {
     const at = k === 'don-ruling' ? Math.max(0, scr.steps.findIndex(s => /minute|penalt|stopwatch|clock/i.test(s.text))) : 0;

@@ -49,6 +49,15 @@ export default {
       ] },
     ],
     'boomerang-decide.target-rival': [
+      // a Blind Boomerang: nobody will see who threw it
+      { id: 'tw.dbr', when: { blind: true }, turns: [
+        { by: 'a', say: "Nobody sees who does it. Nobody ever has to know." },
+        { by: 'b', ...V("Then it's {teamB}. And they'll never know it was us.", "{teamB}. They'll never know.", "{teamB}.", "Then it's {teamB}! And they'll NEVER know it was US!", "Then it's {teamB}... and they won't ever know it was us.", "{teamB}. In secret. Like a ninja with a grudge.") },
+        { beat: "{b} slides the Boomerang onto {teamB}'s photo and steps back fast." },
+        { by: 'a', say: "Act natural." },
+        { by: 'b', say: "I am acting natural." },
+        { by: 'a', say: "Natural people don't whistle." },
+      ] },
       { id: 'tw.dr1', turns: [
         { beat: '{a} and {b} stand at the Boomerang board, looking at the photos of every team behind them.' },
         { by: 'a', ...V("Is there any doubt? Is there any doubt at all?", "Any doubt at all?", "Any doubt?", "Is there ANY doubt? Is there ANY doubt at ALL?", "Is there any doubt? Any doubt at all?", "Is there a single doubt in your body?") },
@@ -68,6 +77,14 @@ export default {
       ] },
     ],
     'boomerang-decide.target-threat': [
+      { id: 'tw.dbt', when: { blind: true }, turns: [
+        { by: 'b', say: "A blind one. Nobody finds out till the mat." },
+        { by: 'a', ...V("Then it goes to whoever scares us most. That's {teamB}.", "{teamB}. They scare me.", "{teamB}.", "Then it goes to whoever SCARES us most! That's {teamB}!", "Then I think it should be {teamB}. They scare me a bit.", "{teamB}. They frighten me in a strategic way.") },
+        { by: 'b', say: "And when Don tells them it was us?" },
+        { by: 'a', say: "By then we'll be a leg ahead." },
+        { beat: "The Boomerang goes up on {teamB}'s photo. Nobody signs it." },
+        { by: 'b', say: "This is the sneakiest thing I've ever done." },
+      ] },
       { id: 'tw.dt1', turns: [
         { by: 'a', say: "It's not about who we like. It's about who can beat us." },
         { by: 'b', ...V("Then it's {c} and {d}. They've been in the top three every single leg.", "Then {c} and {d}. Top three every leg.", "{c} and {d}. Top three, every leg.", "Then it's {c} and {d}! They've been in the TOP THREE every SINGLE leg!", "Then it's {c} and {d}. They've been in the top three every leg.", "Then it's {c} and {d}. They're machines. Friendly, terrifying machines.") },
@@ -206,6 +223,122 @@ export default {
         { by: 'a', say: "I've got a lot of time. Somebody just gave us a whole extra hour." },
         { beat: '{a} sets off back down the course with {a.posAdj} eyes narrowed.' },
         { by: 'b', say: "Remind me never to Boomerang you." },
+      ] },
+    ],
+    // a Blind Boomerang: no name on the board. {teamB}, {c} and {d} are the team they BELIEVE did it (not there)
+    'boomerang-hit.blind-guess': [
+      { id: 'tw.hb1', turns: [
+        { beat: '{a} and {b} reach the board. Their photo has a Boomerang through it, and no name underneath. Just a question mark.' },
+        { by: 'a', ...V("No name? They don't even tell you who?", "No name. Of course.", "No name.", "NO NAME?! They don't even TELL you WHO?!", "No name... they don't even tell you who it was?", "No name. Just a question mark. The race has turned into a mystery novel.") },
+        { by: 'b', say: "They don't have to. It was {teamB}." },
+        { by: 'a', say: "You don't know that." },
+        { by: 'b', say: "{c} smiled at me at the last challenge. Nobody smiles at the last challenge." },
+        { beat: 'They turn round and run back the way they came.' },
+        { by: 'a', say: "If it was them, Don will say so at the mat." },
+      ] },
+      { id: 'tw.hb2', turns: [
+        { by: 'b', say: "A blind one. Whoever did this is hiding." },
+        { by: 'a', ...V("Hiding badly. It was {teamB}. It's always {teamB}.", "It was {teamB}. Obviously.", "{teamB}.", "Hiding BADLY! It was {teamB}! It's ALWAYS {teamB}!", "I think it was {teamB}. It usually is.", "It was {teamB}. I can feel it in my knees.") },
+        { by: 'b', say: "We can't prove that." },
+        { by: 'a', say: "We don't need to prove it. We just need to beat them." },
+        { beat: '{a} sets off back down the course, already muttering about {teamB}.' },
+        { by: 'b', say: "And if it wasn't them?" },
+        { by: 'a', say: "Then they'll have deserved it for something else." },
+      ] },
+    ],
+    // Don tells them who threw it. a and b were sent back; {teamB} threw it
+    'boomerang-reveal.guessed-right': [
+      { id: 'tw.rr1', turns: [
+        { by: 'don', say: "{team}, before you go. That Blind Boomerang that sent you back today?" },
+        { beat: 'He turns a card round. It says {teamB}.' },
+        { by: 'don', say: "It was {teamB}." },
+        { by: 'a', ...V("I knew it. I said it at the board. Didn't I say it?", "Knew it. Said so at the board.", "Knew it.", "I KNEW it! I SAID it at the BOARD!", "I knew it... I said it at the board, didn't I?", "I knew it. My knees knew it first.") },
+        { by: 'b', say: "You said it at the board." },
+        { by: 'a', say: "Next leg, they get it back." },
+        { by: 'don', say: "Ooh. A grudge match. I love a grudge match." },
+      ] },
+      { id: 'tw.rr2', turns: [
+        { by: 'don', say: "Quick bit of news, {team}. Want to know who Boomeranged you?" },
+        { by: 'b', say: "We already know. It was {teamB}." },
+        { by: 'don', say: "It was... {teamB}. Huh. You're no fun." },
+        { beat: '{a} and {b} share a look that says this is not over.' },
+        { by: 'a', say: "Thank you, Don." },
+        { by: 'b', say: "We'll take it from here." },
+      ] },
+    ],
+    'boomerang-reveal.guessed-wrong': [
+      { id: 'tw.rw1', turns: [
+        { by: 'don', say: "{team}! Remember that Blind Boomerang? Want to know who threw it?" },
+        { by: 'b', say: "We've been glaring at the wrong people all day, haven't we." },
+        { by: 'don', say: "You have! It was {teamB}." },
+        { by: 'a', ...V("{teamB}? Seriously? They looked us right in the eye!", "{teamB}. They looked us in the eye.", "{teamB}. Wow.", "{teamB}?! They looked us RIGHT in the EYE!", "{teamB}? But they looked us right in the eye...", "{teamB}. Eye contact and everything. The nerve.") },
+        { by: 'b', say: "We owe somebody an apology." },
+        { by: 'a', say: "And {teamB} owe us a whole challenge." },
+      ] },
+      { id: 'tw.rw2', turns: [
+        { by: 'don', say: "Bad news and worse news, {team}. That Blind Boomerang wasn't who you thought." },
+        { by: 'a', say: "Then who was it?" },
+        { by: 'don', say: "{teamB}. Surprise!" },
+        { beat: '{a} stares at the mat for a long moment.' },
+        { by: 'b', ...V("So we spent the whole day blaming the wrong team.", "Wrong team. All day.", "Wrong team.", "So we spent the WHOLE day blaming the WRONG team!", "So we spent all day blaming the wrong team...", "So we've been feuding with the wrong people. That's a lot of wasted feuding.") },
+        { by: 'a', say: "I need to say sorry to some people. And then I need to get even with some others." },
+      ] },
+    ],
+    // the Head-to-Head at the mat: a and b won it, c and d lost it
+    'head-to-head.close': [
+      { id: 'tw.h2c1', turns: [
+        { beat: '{a} and {b} face {c} and {d} across the Head-to-Head. It goes back and forth, and back again.' },
+        { by: 'c', say: "Come on, come on, come on!" },
+        { by: 'a', ...V("Got it! We've got it!", "Got it. Just.", "Got it.", "GOT IT! We've GOT IT!", "We got it... just about.", "Got it! By a whisker! A small, sweaty whisker!") },
+        { beat: 'By the smallest margin, {a} and {b} win it.' },
+        { by: 'd', say: "That close. It was that close." },
+        { by: 'b', say: "Good duel. Honestly. Good luck with the next one." },
+      ] },
+      { id: 'tw.h2c2', turns: [
+        { by: 'a', say: "Okay. One of us goes to the mat, and one of us waits. No hard feelings." },
+        { by: 'c', ...V("All the feelings. Every feeling. Let's go.", "Plenty of feelings. Go.", "Feelings. Go.", "ALL the feelings! EVERY feeling! Let's GO!", "Some feelings, honestly. Okay. Let's go.", "Every feeling there is, plus two I made up. Go.") },
+        { beat: 'It is close the whole way, and it comes down to the last second.' },
+        { by: 'b', say: "That's us! That's us!" },
+        { by: 'd', say: "Ugh. Fine. Go." },
+        { by: 'c', say: "We'll beat whoever comes next. Watch." },
+      ] },
+    ],
+    'head-to-head.rout': [
+      { id: 'tw.h2r1', turns: [
+        { beat: 'The Head-to-Head is over almost as soon as it starts. {a} and {b} make it look easy.' },
+        { by: 'c', say: "Was that... was that it?" },
+        { by: 'a', ...V("That was it. Sorry. Not sorry.", "That was it.", "Done.", "That was IT! Sorry! Not SORRY!", "That was it, I'm afraid. Sorry.", "That was it. We're sorry. We're also very, very good.") },
+        { by: 'd', say: "Best two out of three?" },
+        { by: 'b', say: "It's not best two out of three." },
+        { by: 'd', say: "Best three out of five, then." },
+      ] },
+      { id: 'tw.h2r2', turns: [
+        { by: 'c', say: "Okay, we've got this. We've totally got this." },
+        { beat: 'They do not have this. {a} and {b} win it at a canter.' },
+        { by: 'b', say: "Good game! Good luck with the next team!" },
+        { by: 'd', ...V("Don't be nice to us. It makes it worse.", "Don't be nice. It's worse.", "Don't.", "Don't be NICE to us! It makes it WORSE!", "Please don't be nice to us, it makes it worse.", "Don't be nice. Kindness from the winners is a special kind of pain.") },
+        { by: 'a', say: "Sorry. Bad luck, then!" },
+        { by: 'd', say: "Better." },
+      ] },
+    ],
+    // the last duel of the leg: the losers have nobody left to face, and walk to the mat last
+    'head-to-head.final': [
+      { id: 'tw.h2f1', turns: [
+        { beat: 'The last Head-to-Head of the leg. Whoever loses this one has nobody left to face.' },
+        { by: 'c', say: "This is it. Lose this and we're last." },
+        { by: 'a', ...V("Then we'd better not lose it.", "Then we don't lose.", "Don't lose.", "Then we'd BETTER not LOSE it!", "Then let's really, really try not to lose it.", "Then we simply won't. Simple. Easy. Terrifying.") },
+        { beat: 'It goes all the way, and {a} and {b} take it.' },
+        { by: 'd', say: "No. No, no, no." },
+        { by: 'b', say: "I'm sorry. I really am." },
+        { by: 'c', say: "Go. Go and stand on the mat. We'll be right behind you." },
+      ] },
+      { id: 'tw.h2f2', turns: [
+        { by: 'd', say: "Whoever loses this walks to the mat last. Everybody know that?" },
+        { by: 'b', say: "We know that." },
+        { beat: '{a} and {b} win it, and the waiting is over for {c} and {d}, the bad way.' },
+        { by: 'a', ...V("We did it. I'm sorry. We did it.", "We did it. Sorry.", "Did it.", "We DID it! I'm SORRY! We DID it!", "We did it... I'm sorry, we really did it.", "We won. I feel terrible. I feel amazing. Both.") },
+        { by: 'c', say: "Don't be sorry. Just go." },
+        { by: 'd', say: "We'll see you at the mat. Last, with dignity." },
       ] },
     ],
     'boomerang-vote.decided': [

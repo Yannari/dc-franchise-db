@@ -17,6 +17,21 @@ register([
   K({ id: 'boomerang-hit', family: 12, moments: ['twist'], endings: {
     fury: { w: 2, fx: (fx, c) => { fx.mind(c.A, 'stress', 10); if (c.oid) fx.rivalry(c.tid, c.oid, 2); } },
     'guess-who': { w: 1, fx: (fx, c) => fx.believe([c.A, c.B], { about: 'boomerang', claim: 'by', value: c.oid || null, truth: !!c.oid }) },
+    // a Blind Boomerang: the other team is the one they BELIEVE did it, and the grudge lands there, right or wrong
+    'blind-guess': { w: 0, fx: (fx, c) => { fx.mind(c.A, 'stress', 10); fx.rivalry(c.tid, c.oid, 2);
+      fx.believe([c.A, c.B], { about: 'boomerang', claim: 'by', value: c.oid, truth: c.oid === c.event?.by }); } },
+  } }),
+  // Don tells the team a Blind Boomerang sent back who threw it (the thrower is on the mat, or named)
+  K({ id: 'boomerang-reveal', family: 12, cast: 'don', moments: ['twist'], endings: {
+    'guessed-right': { w: 0, fx: (fx, c) => fx.rivalry(c.tid, c.oid, 1) },
+    // the grudge moves: to the team that did it, and the team they blamed is owed something
+    'guessed-wrong': { w: 0, fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 2); if (c.event?.suspect) fx.teams(c.tid, c.event.suspect, 1); } },
+  } }),
+  // the Head-to-Head at the mat: a is the winner's team, c the loser's; 'final' is the duel that decides who is last
+  K({ id: 'head-to-head', family: 12, cast: 'teams', moments: ['twist'], endings: {
+    close: { w: 0, fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 1); fx.mind(c.A, 'morale', 4); fx.mind(c.C, 'stress', 4); } },
+    rout: { w: 0, fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 1); fx.mind(c.A, 'morale', 6); fx.mind(c.C, 'morale', -6); } },
+    final: { w: 0, fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 2); fx.mind(c.A, 'morale', 8); fx.mind(c.C, 'stress', 10); } },
   } }),
   K({ id: 'boomerang-vote', family: 12, cast: 'group', moments: ['twist'], endings: {
     decided: { w: 2, fx: (fx, c) => fx.note(`vote:${c.state.leg}`, c.event?.target || null) },

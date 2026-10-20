@@ -66,10 +66,13 @@ export function buildSchedule({ teams, options = DEFAULT_OPTIONS, seed = 1 }) {
 // The season's twists (found 2026-10-20: built, tested, and on no leg at all). Never the first leg (nobody has a record
 // to aim at), never the last two (the semi-final and the final run their own shape); a Boomerang about every fifth
 // leg, one Yield, one Zip-It, and the pick-a-team Boomerang once the teams have a record to judge (the back half).
+// The Amazing Race's other three come some seasons, not every one (each OPTIONAL's chance): the Blind Boomerang, the
+// Head-to-Head at the mat, and the Intersection that pairs teams at a challenge.
 // The Season Timeline's pins (`twistPins`: leg -> twist, or 'none') come first and count toward the season; with
 // surprises off only the pins happen. Drawn on its own stream, so the legs, money and rewards are the ones a season
 // drew before twists were.
-export const LEG_TWISTS = ['boomerang', 'yield', 'zip-it', 'boomerang-vote'];
+export const LEG_TWISTS = ['boomerang', 'yield', 'zip-it', 'boomerang-vote', 'boomerang-blind', 'head-to-head', 'intersection'];
+const OPTIONAL = { 'boomerang-blind': 0.6, 'head-to-head': 0.6, intersection: 0.6 };
 function drawTwists(legs, o, seed) {
   const total = legs.length;
   const pins = o.twistPins || {};
@@ -98,5 +101,12 @@ function drawTwists(legs, o, seed) {
       if (!can.length) break;
       can[Math.floor(rng() * can.length)].twist = k;
     }
+  }
+  // (drawn after the others, so a season's Boomerangs, Yield and Zip-It are where they always were)
+  for (const [k, p] of Object.entries(OPTIONAL)) {
+    const roll = rng(), at = rng();
+    if (has(k) || roll >= p || total < 7) continue;
+    const can = open.filter(l => !l.twist && fits(l, k));
+    if (can.length) can[Math.floor(at * can.length)].twist = k;
   }
 }

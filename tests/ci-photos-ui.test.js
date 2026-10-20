@@ -175,4 +175,17 @@ describe('a photo goes where the screen says, for everyone', () => {
     expect(window.seasonConfig.ciPool.map(p => p.handle)).toEqual(['New persona']);
     setPlayers([]);
   });
+
+  it('+ New persona opens the file picker on the new persona', () => {
+    withFace();
+    window._ciSub = 'pool';
+    renderCircleCastSetup();
+    let opened = null;
+    const spy = function () { opened = this.dataset.photo; };
+    const orig = HTMLInputElement.prototype.click;
+    HTMLInputElement.prototype.click = spy;
+    try { click('[data-act="new"]'); } finally { HTMLInputElement.prototype.click = orig; }
+    expect(opened).toBe(window.seasonConfig.ciPool[0].id);
+    setPlayers([]);
+  });
 });

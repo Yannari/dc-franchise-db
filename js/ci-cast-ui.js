@@ -436,7 +436,11 @@ function onClick(ev) {
   if (act === 'new') {
     const p = { id: newId(), handle: 'New persona', face: null, age: 25, gender: 'f', sexuality: 'straight', jobId: 'college-student', status: 'Single',
       hometown: null, details: [], photo: { hair: 'long-dark', style: 'casual', setting: 'home' }, reasons: ['strategic', 'protective'], bio: null, fits: {} };
-    ownPool().push(p); window._ciEditing = p.id; return done();
+    ownPool().push(p); window._ciEditing = p.id; done();
+    // The image comes first (user): open the file picker on the new persona's
+    // slot, still inside this click so the browser allows it.
+    document.querySelector(`#sec-ci-cast .ci-editor [data-photo="${p.id}"]`)?.click();
+    return;
   }
   if (act === 'close') { window._ciEditing = null; return done(); }
   const { id, persona } = personaIn(b);

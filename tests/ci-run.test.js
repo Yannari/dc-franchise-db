@@ -232,6 +232,28 @@ describe('re-writing an episode', () => {
     expect(simulateCircleEpisode().num).toBe(7);
   });
 
+  // The user's season, 2026-10-20: episode 3 aired on older code (Ride or Die
+  // before the blocking) and made Domingo and Lila Influencers; a reload
+  // rebuilt it on newer code, which blocked the same Curtis but crowned
+  // Domingo and Sasha, and episode 4 opened on their Hangout. "Who was
+  // blocked" matched, so nothing noticed.
+  it('a day whose Ratings came out differently is played again, and the episode after it stays', () => {
+    globalThis.__dcSeenEpisodesOff = false;
+    freshSeason();
+    for (let i = 0; i < 4; i++) simulateCircleEpisode();
+    const three = gs.episodeHistory[2];
+    const four = JSON.stringify(gs.episodeHistory[3].ci.aired);
+    expect(three.ci.rating?.influencers?.length, 'day 3 has a Ratings night').toBeGreaterThan(0);
+    const real = JSON.stringify(three.ci.rating);
+    // Episode 3 as older code aired it: the same blocking, other Influencers.
+    three.ci.rating = { ...three.ci.rating, influencers: [...three.ci.rating.influencers].reverse().concat('@older') };
+    expect(rewriteCircleEpisode(3)).toEqual({ rewritten: 0, clearedFrom: 3 });
+    expect(gs.episodeHistory.map(r => r.num)).toEqual([1, 2]);
+    // ...and the two cleared days air on the same dice, not as "already shown".
+    expect(JSON.stringify(simulateCircleEpisode().ci.rating)).toBe(real);
+    expect(JSON.stringify(simulateCircleEpisode().ci.aired)).toBe(four);
+  });
+
   it('refuses an episode that has not aired', () => {
     freshSeason();
     simulateCircleEpisode();

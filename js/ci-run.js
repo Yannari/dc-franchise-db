@@ -298,7 +298,16 @@ function _inputs() {
   return { setup: circleSetup(), pool: [...pool, ...faces], options: _options() };
 }
 const _sig = inputs => JSON.stringify(inputs);
-const _fingerprint = r => JSON.stringify([r?.num, r?.ci?.blocked, r?.ci?.active]);
+// What the engine decided about a day, never the words: who was blocked, who
+// is in, who arrived, the night's format, the Ratings and the Influencers they
+// made, and which scenes aired with whom. Who went home alone is the signature
+// ADDING-A-SHOW §O warns about: a rebuild on newer code blocked the same
+// Curtis on day 3 but crowned different Influencers, and episode 4 opened on a
+// Hangout episode 3 never set up (user, 2026-10-20: "kinda ignore the twist of
+// my ep3").
+const _fingerprint = r => JSON.stringify([r?.num, r?.ci?.blocked, r?.ci?.active, r?.ci?.people, r?.ci?.arrivals,
+  r?.ci?.night?.format ?? null, r?.ci?.rating?.influencers ?? null, (r?.ci?.rating?.results || []).map(x => x?.profile),
+  (r?.ci?.aired || []).map(s => [s.kind, s.who])]);
 function _firstChanged(aired, rows) {
   for (let i = 0; i < aired.length; i++) if (_fingerprint(aired[i]) !== _fingerprint(rows[i])) return aired[i].num;
   return null;
@@ -412,6 +421,13 @@ function _noteSeen(key) {
     seen.push(key);
     localStorage.setItem(SEEN_KEY, JSON.stringify(seen.slice(-3000)));
   } catch { /* storage full or blocked: the next rewind re-airs, as before */ }
+}
+function _forgetSeen(keys) {
+  if (seenOff() || !keys.length) return;
+  try {
+    const drop = new Set(keys);
+    localStorage.setItem(SEEN_KEY, JSON.stringify(_readSeen().filter(k => !drop.has(k))));
+  } catch { /* nothing to do */ }
 }
 // The queue a save carries was written by the code of the day it was played.
 // Once per season loaded, it is played again on the same dice with the code
@@ -563,6 +579,10 @@ export function rewriteCircleEpisode(epNum) {
   _commit(built, inputs, rerolls, kept);
   if (deferred) gs.ci.deferred = deferred;
   if (clearedFrom != null) {
+    // The cleared days are to air again on these SAME dice, played by the
+    // code running now: that is the re-write asked for, so they are not
+    // "already shown" (which would deal them fresh instead).
+    _forgetSeen(aired.filter(r => r.num >= clearedFrom).map(r => _dealKey(r.num, rerolls)));
     delete gs.ciWinners;
     gs.phase = 'circle';
     const last = history.filter(r => r && r.format === CIRCLE_FORMAT).at(-1);

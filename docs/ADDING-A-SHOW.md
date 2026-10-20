@@ -1728,6 +1728,18 @@ at "who went home" passes while the season underneath it has changed.
 `tests/dr-rebook.test.js` is the version that missed it, because it never
 looked at `dr.returned`.
 
+The Circle missed it the same way, and the first thing to trip it was a code
+change rather than a re-run. Its `_fingerprint` (js/ci-run.js) was who was
+blocked and who was in. A season loaded after the Ride or Die fix was rebuilt
+on the new code: day 3 blocked the same Curtis, so the rebuild was accepted,
+but its Ratings crowned Domingo and Sasha where the aired episode had crowned
+Domingo and Lila, and episode 4 opened on a Hangout episode 3 never set up.
+The fingerprint now carries everything the engine decides about a day and
+none of the words: the people, the arrivals, the night's format, the Ratings
+and their Influencers, and which scenes aired with whom. The Ratings are what
+the NEXT episode is built on, which is why "who went home" can never be
+enough on a show where tonight's result is decided by last night's.
+
 **And a related trap, on the same button.** Freezing an aired week freezes what
 it was BOOKED with, not what it PRODUCED. The drag schedule records that a week
 brought somebody back and, if an author asked for one by name, who they asked

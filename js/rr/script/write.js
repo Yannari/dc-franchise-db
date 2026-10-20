@@ -44,7 +44,7 @@ export const DIRECTOR_KINDS = {
   'ride': ['any'],
   // Don narrating the episode (director.js): the departure order, the flights, a bridge between the leaders and the
   // rest, the bottom of an elimination leg
-  'don-narrate': ['welcome', 'depart', 'flight-wait', 'first-landed', 'flight-landed', 'bridge', 'chill', 'last-stretch'],
+  'don-narrate': ['welcome', 'depart', 'flight-wait', 'first-landed', 'flight-landed', 'bridge', 'chill', 'last-stretch', 'overnight'],
   // the premiere: Don introduces every team as it turns up (director.js, leg one)
   'team-intro': ['any'],
 };
@@ -242,7 +242,12 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
     if (tags?.length) {
       const lastBy = [...lines].reverse().find(l => l.kind === 'conf')?.by;
       const who = lastBy === t.a ? t.b : t.a;
-      const text = tags[Math.floor(stableRng(state.seed, 'rr-reltag', scene.id)() * tags.length) % tags.length];
+      // (one line per team: the next one not yet said in the premiere, from this team's own start in the list; two
+      // couples saying "I'm winning us" in one episode was the bug, 2026-10-20)
+      const used = (state.relTagsSaid ||= []);
+      const from = Math.floor(stableRng(state.seed, 'rr-reltag', scene.id)() * tags.length) % tags.length;
+      const text = tags.map((_, k) => tags[(from + k) % tags.length]).find(x => !used.includes(x)) || tags[from];
+      used.push(text);
       lines.push({ kind: 'conf', by: who, text: fill(text, r.roles, { ...r.slots, partner: partnerOf(state, who) }), voice: null });
     }
   }
@@ -267,11 +272,12 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
     }
     if (hook && who && stableRng(state.seed, 'rr-idhook', scene.id)() < AUTO_SHARE) {
       const said = identityLine(state, who, hook, stableRng(state.seed, 'rr-idline', scene.id), { types: scene.data?.snap?.taskTypes });
-      // said in the scene: before the closing interview, if the scene ends on one; at a challenge, after the opening beats
+      // said in the scene: before the closing interview, if the scene ends on one; at a challenge, first of all (after
+      // an action line it splits the action from the reaction to it)
       let at = lines.length;
-      if (opens) { at = lines.findIndex(l => l.kind !== 'beat'); if (at < 0) at = lines.length; }
+      if (opens) at = 0;
       else if (!scene.kind.startsWith('int-')) while (at > 0 && lines[at - 1].kind === 'conf') at--;
-      if (said && at > 0) lines.splice(at, 0, { kind: scene.kind.startsWith('int-') ? 'conf' : 'say', by: who,
+      if (said && lines.length && (at > 0 || opens)) lines.splice(at, 0, { kind: scene.kind.startsWith('int-') ? 'conf' : 'say', by: who,
         text: fill(said, r.roles, { ...r.slots, partner: partnerOf(state, who) }), voice: `id:${hook}`, auto: true });
     }
   }

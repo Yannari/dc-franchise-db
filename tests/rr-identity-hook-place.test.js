@@ -21,11 +21,12 @@ describe('rr identity lines at a challenge', () => {
       setPlayers(cast);
       for (const ep of airSeason(playRaceSeason({ teams, seed }))) for (const s of ep.segments) {
         if (!TASK.has(s.kind)) continue;
-        const spoken = s.lines.filter(l => l.kind === 'say');
-        const at = spoken.findIndex(l => l.auto);
+        // (first of all: after an action line it splits the action from the reaction to it, "(a picker fills her basket
+        // without looking)" / "Six plates, two arms" / "She's not even looking")
+        const at = s.lines.findIndex(l => l.auto);
         if (at < 0) continue;
         n++;
-        if (at > 0) late.push(`leg ${ep.n} ${s.kind} ${s.lineId}: "${spoken[at].text}" after "${spoken[at - 1].text}"`);
+        if (at > 0) late.push(`leg ${ep.n} ${s.kind} ${s.lineId}: "${s.lines[at].text}" after "${s.lines[at - 1].text}"`);
       }
     }
     expect(n).toBeGreaterThan(10);

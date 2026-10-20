@@ -10,6 +10,16 @@ const HC = 'home-city', RSD = 'red-sand-desert', ITC = 'iron-tower-city', GWH = 
   FMI = 'fire-mountain-isle';
 
 export default {
+  // a challenge shut for the night on teams still racing ({task}: where, 'the frozen lake'); the next thing on screen
+  // is the morning
+  'don-narrate.overnight': [
+    n('no.1', "And {task} is closed for the night. Everybody still out here gets to sleep on it. Literally, on the ground."),
+    n('no.2', "It's dark, and {task} is shut. It doesn't care who's still waiting. See you all in the morning."),
+    n('no.3', "Closed! {task} is done for the day, so the teams still out here bed down and start again at first light."),
+    n('no.4', "Bad news for the back of the pack: {task} is closed till morning. Good news for me: I get to watch them sleep outside."),
+    n('no.5', "That's it for {task} until tomorrow. A long, cold, uncomfortable night. My favourite kind."),
+    n('no.6', "And that's it for today at {task}. Whoever's still out there is sleeping rough and racing again in the morning."),
+  ],
   'don-narrate.bridge': [
     n('nb2.1', "{team} reach {task}. Meanwhile, at {prevTask}, the back of the pack is having a very different day."),
     n('nb2.2', "And just like that, {team} are at {task}. Behind them, {prevTask} is still eating teams alive."),

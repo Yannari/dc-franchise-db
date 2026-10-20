@@ -17,6 +17,7 @@ export function airSeason(result) {
   const st = result.state;
   st.lineLedger = null;            // a fresh season of words
   st.kitLedger = null;
+  st.relTagsSaid = null;           // the premiere's relationship lines (write.js), one per team
   st.quickCount = {};
   st.storyAired = {};
   const eps = [];

@@ -30,6 +30,7 @@ const SUPER_WAIT = 60;
 // a Superteam of two teams this much at odds is 'stuck with the enemy' (one sour moment is not a feud)
 const SUPER_ENEMIES = 2;
 const DAY = 1440;
+const NIGHT = 180;                                  // a closed wait this long is a night, and Don says so
 
 const people = (st, id) => [st.teams[id].a, st.teams[id].b];
 
@@ -131,6 +132,10 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
     // a place that's closed: wait for it to open, with whoever else is waiting
     const until = closedUntil(state, s, t);
     if (until != null) {
+      // a night's wait (a challenge shut till morning) is told on screen: the clock jumps across it (director narrate)
+      // (only a closure that starts in the evening or the night: a challenge shut till the afternoon is no night)
+      const tod = ((state.clock + t) % DAY + DAY) % DAY;
+      if (until - t >= NIGHT && (tod >= 17 * 60 || tod < 6 * 60)) (state.nights ||= []).push({ leg: state.leg, stretch: s.id, t, until, team: id });
       const here = api.here(s.id, t).map(x => x.id).filter(x => x !== id);
       talkAtWait(state, [id, ...here], { ...s, closed: true }, t, api, rng, 'closed');
       return { hold: until };

@@ -89,7 +89,9 @@ export function soundAt(ep, si, k) {
   const s = ep.screens[si];
   const prevScreen = si > 0 ? ep.screens[si - 1] : null;
   const prev = prevScreen ? momentAt(prevScreen, prevScreen.steps.length - 1, null) : null;
-  const m = momentAt(s, k, prev);
+  // once the winners are crowned, the mat is theirs: the anthem plays on (a proposal there is no Chill Zone check-in)
+  const crowned = s.mode === 'mat' && ep.screens.slice(0, si).some(x => x.seg === 'don-crown');
+  const m = crowned ? { race: 'finale' } : momentAt(s, k, prev);
   return { moment: m, bed: fileFor(m), sting: stingAt(s, k) };
 }
 
@@ -117,7 +119,10 @@ export function planBeds(ep) {
     const s = ep.screens[f.si], x = soundAt(ep, f.si, f.idx), m = x.moment;
     const first = f.idx === 0;
     const hard = (first && starts.has(f.si)) || !!m?.race || HARD.has(m?.moment) || (first && s.mode === 'demo');
-    return { si: f.si, k: f.idx, bed: x.bed, moment: m, conf: s.kind === 'iv' || s.mode === 'iv', chapter: first && starts.has(f.si), hard, place: m?.place || null };
+    // (the end card and the logo always change: the finale's winners' card after a proposal on the mat was held on the
+    // Chill Zone's music as "A, B, back to A", 2026-10-20)
+    const forced = first && (s.kind === 'end' || s.kind === 'logo');
+    return { si: f.si, k: f.idx, bed: x.bed, moment: m, conf: s.kind === 'iv' || s.mode === 'iv', chapter: first && starts.has(f.si), hard, forced, place: m?.place || null };
   });
   const out = [];
   let cur, curPlace = null, conf = null, heard = new Set(), lastChange = -Infinity, before;
@@ -144,7 +149,7 @@ export function planBeds(ep) {
       // a hard moment comes back within a chapter (the Chill Zone between cutaways to the teams still racing): the
       // second time, it is a soft one
       if (r.chapter) heard = new Set();
-      const again = r.hard && !r.chapter && heard.has(key) && r.moment?.moment !== 'elimination';
+      const again = r.hard && !r.chapter && !r.forced && heard.has(key) && r.moment?.moment !== 'elimination';
       if (r.hard) heard.add(key);
       const fromOwn = conf === 'own';
       conf = null;
@@ -160,7 +165,7 @@ export function planBeds(ep) {
       else change = lasts(i, key) >= SOFT_MIN && i - lastChange >= SOFT_MIN;
     }
     // never A, B and straight back to A: the music stays on B (a chapter's opening and the verdict excepted)
-    if (change && cur !== undefined && key === keyOfBed(before) && i - lastChange < SOFT_MIN && !r.chapter && r.moment?.moment !== 'elimination') change = false;
+    if (change && cur !== undefined && key === keyOfBed(before) && i - lastChange < SOFT_MIN && !r.chapter && !r.forced && r.moment?.moment !== 'elimination') change = false;
     if (change) { before = cur; cur = r.bed; lastChange = i; if (r.place && !r.conf) curPlace = r.place; }
     out.push({ si: r.si, k: r.k, bed: cur, level, moment: r.moment, change, hard: r.hard });
   });

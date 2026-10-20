@@ -117,6 +117,13 @@ function narrate(state, leg, scenes) {
     const behind = tasks.slice(0, i).reverse().find(p => rows.some(r => r.stretch === p.id && r.to > here.from));
     if (behind) add('bridge', here.from, { team: teamRef(state, here.team), task: s.called, prevTask: behind.called });
   });
+  // a challenge shut for the night on teams still racing: Don says so as the first of them gets there (the clock jumps
+  // to the morning after it; 2026-10-20 read: 18:49, then 08:28 with nothing between)
+  const night = (state.nights || []).filter(x => x.leg === n).sort((x, y) => x.t - y.t)[0];
+  if (night) {
+    const s = (place?.stretches || []).find(x => x.id === night.stretch);
+    add('overnight', night.t + 0.5, { task: s?.called || 'the challenge' });
+  }
   // Don presents the Chill Zone just before the first team reaches it (not at the finale: its end is the stage)
   // (a team with a penalty steps onto the mat, hears it, and serves it before anybody checks in: that's the first one)
   if (leg.kind !== 'final' && leg.times && leg.order[0] && leg.times[leg.order[0]] != null) {
@@ -505,6 +512,26 @@ export function airLeg(state, leg) {
     }
     segs.sort((x, y) => x.t - y.t || phase(x.kind) - phase(y.kind)
       || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
+    // once the winners are crowned the race is over on screen: what the runners-up still had to run is cut in just
+    // before the crown, the way the show intercuts the chase, and after it come only the runners-up being named, the
+    // winners' own moments (a proposal on the mat) and the interviews (2026-10-20 read, seed 43: crowned at 22:50, then
+    // the runners-up's next morning at the buoys, a hug and the footrace, and only then second place)
+    const crown = segs.find(x => x.kind === 'don-crown' && x.ending === 'winner');
+    if (crown) {
+      const won = crown.teams[0];
+      // (Don's lines about the runners-up's race, a flight landing or a challenge shut for the night, mean nothing once
+      // the race is won: they don't air)
+      for (let i = segs.length - 1; i >= 0; i--) if (segs[i].kind === 'don-narrate' && segs[i].t > crown.t) segs.splice(i, 1);
+      const chase = segs.filter(x => x.t > crown.t && x.kind !== 'don-crown' && !x.kind.startsWith('int-') && !x.teams.includes(won));
+      const lo = Math.max(crown.t - 1, ...segs.filter(x => x.t < crown.t && !chase.includes(x)).map(x => x.t));
+      chase.forEach((x, i) => { x.t = lo + ((crown.t - lo) * (i + 1)) / (chase.length + 1); });
+      // ...and a team whose chase was cut in is named straight after the crown, not hours later on the clock
+      const chased = new Set(chase.flatMap(x => x.teams));
+      segs.filter(x => x.kind === 'don-crown' && x !== crown && x.teams.some(id => chased.has(id))).sort((x, y) => x.t - y.t)
+        .forEach((x, i) => { x.t = crown.t + 0.2 * (i + 1); });
+      segs.sort((x, y) => x.t - y.t || phase(x.kind) - phase(y.kind)
+        || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
+    }
   }
   // once Don has sent a team home, the episode doesn't go back to them racing: what happened before the exit airs
   // before it, anything after it (an on-location exit leaves a team out on the road) doesn't air at all

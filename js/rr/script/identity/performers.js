@@ -170,7 +170,7 @@ export default {
 
   dancers: {
     voice: {
-      good: ["Watch me, not the clock. Copy what I do and you'll have it by the third try.",
+      good: [{ for: ['perform'], s: "Watch me, not the clock. Copy what I do and you'll have it by the third try." },
         { for: ['perform'], s: "Breathe and find the rhythm of it, {partner}. Once you've got the rhythm, your body does the rest." }],
       bad: ["I'm going to be sick, I just know it, and everybody's going to watch it happen.",
         "My body knows a lot of things, but it doesn't know this, and my head doesn't either."],

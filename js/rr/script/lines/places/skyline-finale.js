@@ -371,7 +371,7 @@ const footrace = {
     ] },
     { id: 'sky.fr-s2', when: FR, turns: [
       { by: 'b', say: "Don't stop. Whatever happens, don't stop running." },
-      { by: 'a', ...V("I won't stop. I'll never stop. I'll be running in my sleep for a year.", "I won't stop.", "Not stopping.", "I WON'T stop! I'll NEVER stop!", "I won't stop. I'll probably be running in my sleep for a year.", "I'll run until the end of time. Or the stage.") },
+      { by: 'a', ...V("I won't stop. I'll never stop. I'll be running in my sleep for a year.", "I won't stop.", "Not stopping.", "I WON'T stop! I'll NEVER stop!", "I won't stop. I'll probably be running in my sleep for a year.", "I won't stop. Not till the stage. Not till the end of time."), keep: ['stop'] },
       { by: 'b', say: "Good. Neither will I. Go!" },
     ] },
   ],

@@ -1502,7 +1502,8 @@ export function beatCardBox(text) {
   const w = Math.max(26, Math.min(56, chars * 1.6 * 0.5 + 5.2));
   const lines = Math.max(1, Math.ceil(chars * 1.6 * 0.5 / lineW));
   const h = (lines * 1.6 * 1.42 + 3.2 + 1.9) * CQ_H;
-  return [50 - w / 2, 37 - h / 2, 50 + w / 2, 37 + h / 2];
+  // (the gold tape holding it down sticks out 1.6cqw past each side; a stamp against the tape reads as under the card)
+  return [50 - w / 2 - 2.4, 37 - h / 2 - 1.5, 50 + w / 2 + 2.4, 37 + h / 2 + 1.5];
 }
 /** The stamp of step k at its place under a shot: above its team, or beside it, off the beat card on the same click. */
 export function stampSpot(s, k, cam, size, opts) {

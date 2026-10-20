@@ -4,8 +4,6 @@
 export default {
   id: 'ice-river', name: 'Ice River', recap: 'hopping across melting ice floes and dragging a partner on a sled',
   region: 'north', map: { x: 9, y: 16 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['plane', 'foot'],
   stretches: [
     { id: 'river-hop', kind: 'travel', mode: 'plane', base: 40, cost: 0, plate: 'snow airstrip', label: 'Bush plane to the river',

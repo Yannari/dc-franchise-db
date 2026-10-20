@@ -6,8 +6,6 @@
 export default {
   id: 'pampas-ranch', name: 'Pampas Ranch', recap: 'learning a sultry dance and catching an emu with throwing ropes',
   region: 'ocean', map: { x: 30, y: 82 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['taxi', 'horse', 'foot'],
   stretches: [
     { id: 'academy-taxi', kind: 'travel', mode: 'taxi', base: 25, cost: 20, plate: 'old city street', label: 'Taxi to the dance academy',

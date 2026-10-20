@@ -288,9 +288,9 @@ export const PLACE_PLATES = {
     st: {
       // on the train along the coast (a ride once the train's cut-out comes back from edit/)
       'coast-train': { talk: [p('arrive-9436621', 96, [6, 94], { closed: true })],
-        act: repaint('train-carriage', p('arrive-9436621', 96, [6, 94], { closed: true, mode: 'ride', prop: 'train', path: [[-20, 96], [50, 95], [120, 96]] }), undefined) },
+        act: repaint('train-carriage', p('present-9436927', 92, [40, 94], { mode: 'ride', prop: 'train', path: [[-24, 92], [50, 91], [124, 92]] }), undefined) },
       // the boat's deck off the cliffs is a job; meanwhile the beach looking out to sea
-      shark: { talk: [repaint('task-shark-deck', p('task-shark-deck', 92, [6, 94]), p('arrive-9436638', 96, [44, 96]))],
+      shark: { talk: [repaint('task-shark-deck', p('task-shark-deck', 90, [6, 94]), p('arrive-9436638', 96, [44, 96]))],
         act: p('task-9436629', 0, [0, 0], { water: true, mode: 'swim', pass: 'shark', path: [[20, 82], [36, 84], [62, 84], [76, 82]], fx: 'splash', inset: 'ON THE BOAT' }) },
       'sand-palace': { talk: [p('task-9436921', 93, [6, 94]), p('task-9436639', 93, [6, 94])],
         act: p('task-9436921', 93, [6, 94], { mode: 'sculpt', prop: 'palace', judge: ['surfer', 0.97], fx: 'dust' }) },
@@ -362,7 +362,7 @@ export const PLACE_PLATES = {
       'night-run': { talk: [p('present-9438407', 94, [8, 92])],
         act: p('present-9438407', 94, [8, 92], { mode: 'run', path: [[20, 94], [50, 94], [80, 94]] }) },
       // the night Chill Zone by the castle is a job; meanwhile the graveyard gate in the rain
-      mat: { talk: [repaint('chill-night-mat', p('chill-night-mat', 92, [6, 94], { matPos: [50, 90] }), p('chill-9438461', 92, [6, 94], { matPos: [50, 92] }))] },
+      mat: { talk: [repaint('chill-night-mat', p('chill-night-mat', 92, [6, 94], { mat: [40, 84] }), p('chill-9438461', 92, [6, 94], { matPos: [50, 92] }))] },
     },
   },
   // ── batch 2 (LEGS.txt 09, 10, 14, 15) ──
@@ -435,7 +435,7 @@ export const PLACE_PLATES = {
         act: p('present-9442822', 92, [6, 94], { mode: 'ride', prop: REPAINTED.has('ute') ? 'ute' : 'jeep@savanna-falls', path: [[-16, 93], [50, 92], [116, 93]], fx: 'dust' }) },
       // ten rabbits loose in the wheat; the farmer is a job, meanwhile the sack stands by
       bunnies: { talk: [p('task-9442852', 94, [6, 94]), p('task-9442843', 94, [6, 94])],
-        act: p('task-9442851', 94, [6, 94], { mode: 'chase', prop: 'bunny', judge: REPAINTED.has('farmer') ? ['farmer', 0.45] : ['sack', 0.9], fx: 'dust' }) },
+        act: p('task-9442851', 94, [6, 94], { mode: 'chase', prop: 'bunny', propW: 0.6, judge: REPAINTED.has('farmer') ? ['farmer', 0.55] : ['sack', 0.9], fx: 'dust' }) },
       'valley-glide': { talk: [p('task-9442875', 90, [6, 94])],
         act: p('travel-9443065', 0, [0, 0], { water: true, mode: 'ride', prop: 'glider', path: [[-20, 46], [50, 40], [120, 34]] }) },
       mat: { talk: [p('present-9442909', 88, [12, 88], { mat: [41, 79] })] },
@@ -472,7 +472,7 @@ export const PLACE_PLATES = {
     props: { bull: 'Empty mechanical rodeo bull-6', timer: 'Red 00_08 Digital Timer-3', pot: 'Teal stockpot filled with pork and beans-5' },
     st: {
       'ranch-pickup': { talk: [p('arrive-9443918', 92, [6, 94])],
-        act: p('arrive-9443918', 92, [6, 94], { mode: 'ride', prop: 'jeep@savanna-falls', path: [[-16, 93], [50, 92], [116, 93]], fx: 'dust' }) },
+        act: p('arrive-9443918', 92, [6, 94], { mode: 'ride', prop: 'ute@outback-farm', path: [[-16, 93], [50, 92], [116, 93]], fx: 'dust' }) },
       // the beans table on the cliff top is a job (edit/); meanwhile the rocks by the cliff
       beans: { talk: [repaint('task-beans-table', p('task-beans-table', 92, [6, 94]), p('task-9444112', 94, [44, 94]))],
         act: repaint('task-beans-table', p('task-beans-table', 92, [6, 94], { mode: 'eat', prop: 'pot', propW: 0.9, fx: 'steam' }),
@@ -502,7 +502,7 @@ export const PLACE_PLATES = {
       'floe-run': { talk: [p('task-9444662', 90, [6, 94])],
         act: p('task-9444662', 90, [6, 94], { mode: 'run', path: [[12, 90], [50, 90], [88, 90]], fx: 'snow' }) },
       // the ice Chill Zone is a job (edit/); meanwhile the igloo with the mat put down in front of it
-      mat: { talk: [repaint('chill-ice-mat', p('chill-ice-mat', 92, [6, 94], { matPos: [50, 90] }), p('chill-9444869', 94, [6, 94], { matPos: [50, 93] }))] },
+      mat: { talk: [repaint('chill-ice-mat', p('chill-ice-mat', 90, [6, 94], { mat: [38, 56] }), p('chill-9444869', 94, [6, 94], { matPos: [50, 93] }))] },
     },
   },
   'dragon-isle': {
@@ -598,7 +598,7 @@ export const PLACE_PLATES = {
       'sauna-run': { talk: [p('task-9447866', 94, [6, 60])],
         act: p('task-9447866', 94, [6, 94], { mode: 'run', path: [[12, 94], [40, 94], [60, 94]], fx: 'snow' }) },
       // the steam house is a job (edit/); meanwhile the sauna's benches with the mat put down
-      mat: { talk: [repaint('chill-sauna-mat', p('chill-sauna-mat', 92, [6, 94], { closed: true, matPos: [50, 90] }), p('chill-9447963', 96, [6, 70], { closed: true, matPos: [40, 95] }))] },
+      mat: { talk: [repaint('chill-sauna-mat', p('chill-sauna-mat', 92, [6, 94], { closed: true, mat: [50, 75] }), p('chill-9447963', 96, [6, 70], { closed: true, matPos: [40, 95] }))] },
     },
   },
   // ── batch 5 (LEGS.txt 24, 25, 30, 31) ──

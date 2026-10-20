@@ -5,8 +5,6 @@
 export default {
   id: 'game-show-city', name: 'Game Show City', recap: 'being the ball on a giant pinball table on a game show set',
   region: 'far-east', map: { x: 87, y: 35 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['train', 'foot'],
   stretches: [
     { id: 'bullet-train', kind: 'travel', mode: 'train', base: 25, cost: 20, plate: 'bullet train platform', label: 'Bullet train into the city',

@@ -9,6 +9,11 @@
 #
 #   python tools/rr-vp-repaints.py           (what came back; prints what it switched on)
 #   python tools/rr-vp-repaints.py --jobs    (set up: record the originals' sha256 and copy them into edit/ once)
+#
+# The user often saves a result beside its prompt in edit/<src>/ rather than in done/<src>/: a job whose file is not
+# in done/ but that has a new image in edit/<src>/ (not a reference-*, not the frame given to repaint, not prompt.txt)
+# is picked up from there when it is the only job open for that place, and reported loudly otherwise. Once every job
+# of a place is back, its edit/<src>/ folder is emptied of the job's files (edit/ holds only what still waits).
 import hashlib, importlib.util, json, os, shutil, subprocess, sys
 from PIL import Image
 
@@ -29,10 +34,72 @@ def find(folder, stem):
     return up.find(folder, stem)
 
 
+IMG = ('.png', '.jpg', '.jpeg', '.webp')
+
+
+def is_back(j):
+    if j.get('new'):
+        return bool(find(os.path.join(FRAMES, 'done', j['src'], 'cutout') if j.get('kind') == 'cutout' else os.path.join(FRAMES, 'done', j['src']), j['file']))
+    src = find(os.path.join(FRAMES, 'done', j['src']), j['file'])
+    return bool(src and j.get('sha256') and sha(src) != j['sha256'])
+
+
+def strays(src_dir, jobs):
+    # new images the user left in edit/<src>/ (not a reference frame, not the frame given out to repaint)
+    d = os.path.join(FRAMES, 'edit', src_dir)
+    if not os.path.isdir(d):
+        return []
+    given = {j['file'] for j in jobs}
+    out = []
+    for f in sorted(os.listdir(d)):
+        stem, ext = os.path.splitext(f)
+        if ext.lower() not in IMG or f.startswith('reference-') or stem in given:
+            continue
+        out.append(os.path.join(d, f))
+    return out
+
+
+def adopt(data):
+    # results saved in edit/ instead of done/: one open job for that place takes the one new image there
+    by_src = {}
+    for j in data['jobs']:
+        by_src.setdefault(j['src'], []).append(j)
+    for src_dir, jobs in by_src.items():
+        open_jobs = [j for j in jobs if not is_back(j)]
+        found = strays(src_dir, jobs)
+        if not open_jobs or not found:
+            continue
+        if len(open_jobs) == 1 and len(found) == 1:
+            j = open_jobs[0]
+            to_dir = os.path.join(FRAMES, 'done', src_dir, 'cutout' if j.get('kind') == 'cutout' else '')
+            os.makedirs(to_dir, exist_ok=True)
+            ext = os.path.splitext(found[0])[1]
+            shutil.copy2(found[0], os.path.join(to_dir, j['file'] + ext))
+            print(f'PICKED UP from edit/: {os.path.relpath(found[0], FRAMES)} -> done/{src_dir}/{j["file"]}{ext}')
+        else:
+            print(f'!!! edit/{src_dir} has {len(found)} new image(s) and {len(open_jobs)} open job(s): name them by hand into done/{src_dir}/')
+            for f in found:
+                print('      ', os.path.basename(f))
+
+
+def tidy(data):
+    # a place whose jobs are all back keeps nothing in edit/: the prompt, the frames and the results go
+    by_src = {}
+    for j in data['jobs']:
+        by_src.setdefault(j['src'], []).append(j)
+    for src_dir, jobs in by_src.items():
+        d = os.path.join(FRAMES, 'edit', src_dir)
+        if os.path.isdir(d) and all(is_back(j) for j in jobs):
+            shutil.rmtree(d)
+            print(f'edit/{src_dir}: all its jobs are back, folder removed')
+
+
 def main():
     data = json.load(open(JOBS, encoding='utf8'))
     if '--jobs' in sys.argv:
         for j in data['jobs']:
+            if is_back(j):
+                continue                    # back already: nothing to hand out again
             if j.get('new'):
                 # a view or a cut-out still to be made: its reference frame (if any) beside the prompt, nothing to hash
                 if j.get('ref'):
@@ -54,6 +121,7 @@ def main():
             print('job', j['src'], os.path.basename(src))
         json.dump(data, open(JOBS, 'w', encoding='utf8', newline='\n'), indent=2)
         return
+    adopt(data)
     back = []
     for j in data['jobs']:
         if j.get('new') and j.get('kind') == 'cutout':
@@ -99,6 +167,8 @@ def main():
           'export const REPAINTED = new Set(' + json.dumps(sorted(back)) + ');\n')
     open(OUT_JS, 'w', encoding='utf8', newline='\n').write(js)
     subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'rr-vp-motion.py')], check=True)
+    if '--keep-edit' not in sys.argv:
+        tidy(data)
     print(f'{len(back)} of {len(data["jobs"])} jobs back' + ('' if back else ' (nothing new in done/)'))
 
 

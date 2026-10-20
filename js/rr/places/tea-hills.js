@@ -5,8 +5,6 @@
 export default {
   id: 'tea-hills', name: 'Tea Hills', recap: 'picking tea on the terraces and fighting through a crowded steam train',
   region: 'far-east', map: { x: 71, y: 41 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['drive', 'foot'],
   stretches: [
     { id: 'hill-jeep', kind: 'travel', mode: 'drive', base: 45, cost: 20, plate: 'hill road, terraces', label: 'Jeep up the hill road',

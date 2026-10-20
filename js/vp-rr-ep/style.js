@@ -208,7 +208,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
    pushing a coffin in front */
 .tok.flipveh .veh{transform:translateX(-50%) scaleX(-1)}
 .tok.ride.horse .veh{width:calc(var(--sz)*2.3)}
-.tok.ride.bus .veh{width:calc(var(--sz)*3.6)} .tok.ride.heli .veh{width:calc(var(--sz)*3.4)} .tok.ride.boat .veh{width:calc(var(--sz)*3.2)}
+.tok.ride.bus .veh{width:calc(var(--sz)*3.6)} .tok.ride.train .veh{width:calc(var(--sz)*5.2)} .tok.ride.ute .veh{width:calc(var(--sz)*3.2)} .tok.ride.heli .veh{width:calc(var(--sz)*3.4)} .tok.ride.boat .veh{width:calc(var(--sz)*3.2)}
 .tok.swing .veh{bottom:auto;top:calc(var(--sz)*-2.7);width:calc(var(--sz)*.9);z-index:1}
 .tok.swing .pair{transform-origin:50% -40%;animation:wSwing 1.5s ease-in-out infinite}
 @keyframes wSwing{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}

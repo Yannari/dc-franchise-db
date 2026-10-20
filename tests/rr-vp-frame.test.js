@@ -13,7 +13,7 @@ import { setPlayers } from '../js/core.js';
 import { raceCast } from './helpers/rr-cast.js';
 import {
   episodeScreens, facesAt, padOf, viewRect, safeRect, inRect, overlapOf, OVERLAP_OK, screenFaces, stampSpot, slamSpot,
-  stampSize, slamSize, placeOverlay, HUD_H, BAR, boxOf, inView, tipSpot, TIP_SIZE, coverOf,
+  stampSize, slamSize, placeOverlay, beatCardBox, HUD_H, BAR, boxOf, inView, tipSpot, TIP_SIZE, coverOf,
 } from '../js/vp-rr-ep/steps.js';
 
 const SEASONS = [[12, 8], [8, 3], [6, 5]];
@@ -140,6 +140,22 @@ describe('rr viewer: no stamp or slam on a face', () => {
       for (const f of screenFaces(s, k, st.cam)) if (overlapOf(r, f.box) > 0) bad.push(`${s.id} ${s.seg} step ${k} ${st.stamp.text} on ${f.key}`);
     }));
     expect(n).toBeGreaterThan(40);
+    expect(bad).toEqual([]);
+  });
+
+  // the beat card (style.js .beatcard: the centre of the picture) is not a face, and a stamp went under it (the user,
+  // 2026-10-20: TRY AGAIN half under the card at the hurdles and the catfish swim)
+  it('keeps a stamp off the beat card shown on the same click', () => {
+    const bad = [];
+    let n = 0;
+    worlds(s => s.steps.forEach((st, k) => {
+      if (!st.stamp || st.part !== 'beat' || !st.text) return;
+      n++;
+      const [w0, h0] = stampSize(st.stamp.text), kk = st.stamp.at.k ?? 1, [w, h] = [w0 * kk, h0 * kk];
+      const [x, y] = st.stamp.at;
+      if (overlapOf([x - w / 2, y - h / 2, x + w / 2, y + h / 2], beatCardBox(st.text)) > 0) bad.push(`${s.id} ${s.seg} step ${k} ${st.stamp.text} under the card`);
+    }));
+    expect(n).toBeGreaterThan(5);
     expect(bad).toEqual([]);
   });
 

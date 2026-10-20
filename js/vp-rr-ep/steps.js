@@ -1495,11 +1495,21 @@ export function tipSpot(s, k, cam, size = TIP_SIZE, opts) {
   const top = opts?.top ?? HUD_H;
   return fitOverlay(size, faces, ([w, h]) => [[50, top + h / 2 + 0.5], [w / 2 + 1, top + h / 2 + 0.5], [100 - w / 2 - 1, top + h / 2 + 0.5]], opts);
 }
-/** The stamp of step k at its place under a shot: above its team, or beside it. */
+// The beat card's box on the picture (style.js .beatcard: centred at 50%, 37%; Rubik 1.6cqw in up to 56cqw, padded),
+// [x0, y0, x1, y1] in %: what a stamp on the same click keeps off, estimated from the text's length.
+export function beatCardBox(text) {
+  const chars = String(text || '').length, lineW = 56 - 5.2;
+  const w = Math.max(26, Math.min(56, chars * 1.6 * 0.5 + 5.2));
+  const lines = Math.max(1, Math.ceil(chars * 1.6 * 0.5 / lineW));
+  const h = (lines * 1.6 * 1.42 + 3.2 + 1.9) * CQ_H;
+  return [50 - w / 2, 37 - h / 2, 50 + w / 2, 37 + h / 2];
+}
+/** The stamp of step k at its place under a shot: above its team, or beside it, off the beat card on the same click. */
 export function stampSpot(s, k, cam, size, opts) {
   const st = s.steps[k]?.stamp;
   if (!st) return null;
-  const faces = screenFaces(s, k, cam);
+  const step = s.steps[k];
+  const faces = screenFaces(s, k, cam).concat(step.part === 'beat' && step.text ? [{ key: 'card', box: beatCardBox(step.text) }] : []);
   const [w, h] = size || stampSize(st.text);
   const mine = faces.filter(f => f.key === 't:' + st.team).map(f => f.box);
   const fb = mine.length ? [Math.min(...mine.map(b => b[0])), Math.min(...mine.map(b => b[1])), Math.max(...mine.map(b => b[2])), Math.max(...mine.map(b => b[3]))] : [45, 40, 55, 60];

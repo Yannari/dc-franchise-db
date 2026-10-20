@@ -21,6 +21,8 @@ export default defineConfig({
   test: {
     include: SLOW_GLOBS,
     environment: 'jsdom',
+    // A fresh localStorage memory of aired episodes per test (js/seen-episodes.js).
+    setupFiles: ['tests/setup/forget-seen.js'],
     // Matches vitest.config.js. Several of these play 8-20 seasons in a single
     // test; a timeout tuned to a fast machine is how this suite failed in CI
     // before.

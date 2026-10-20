@@ -32,6 +32,7 @@ import { fameStarsFor } from './alumni.js';
 import { DEFAULT_POOL } from './ci/default-pool.js';
 import { categoryKind, isFace, reasonFromKin } from './ci/categories.js';
 import { ageFrom, unknownAge } from './ci/profiles.js';
+import { seenOff } from './seen-episodes.js';
 
 export const isCircleSeason = () => seasonFormat(seasonConfig) === CIRCLE_FORMAT;
 
@@ -400,8 +401,12 @@ function _refreshQueue() {
 const SEEN_KEY = 'dc_ci_seen';
 const _dealKey = (num, rerolls) => `${gs.ci.seed}|${num}|${Object.keys(rerolls || {})
   .filter(d => Number(d) <= num).sort((a, b) => a - b).map(d => `${d}:${rerolls[d]}`).join(',')}`;
-function _readSeen() { try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch { return []; } }
+function _readSeen() {
+  if (seenOff()) return [];
+  try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch { return []; }
+}
 function _noteSeen(key) {
+  if (seenOff()) return;
   try {
     const seen = _readSeen().filter(k => k !== key);
     seen.push(key);

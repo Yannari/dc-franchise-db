@@ -21,6 +21,7 @@
 // `formatIsRunnable()` reads.
 import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG } from './core.js';
 import { CHALLENGE_FORMAT, SHOWS } from './shows.js';
+import { dealUnseen, noteShown, rerollKey } from './seen-episodes.js';
 import { playChallengeSeason, liveTwists, pairsFinal } from './ch/season.js';
 import { airSeason } from './ch/story/director.js';
 import { buildSchedule } from './ch/schedule.js';
@@ -572,8 +573,12 @@ function _refreshQueue() {
 export function simulateChallengeEpisode() {
   if (!gs) return null;
   if (!_refreshQueue()) return null;
+  // An episode this browser already aired (a save loaded from before it) is dealt again (seen-episodes.js).
+  const key = n => rerollKey(gs.ch.seed, n, gs.ch.rerolls);
+  dealUnseen(CHALLENGE_FORMAT, { next: () => gs._chQueue?.[0]?.num ?? null, keyOf: key, redeal: rerunChallengeEpisode });
   const row = gs._chQueue.shift();
   if (!row) { gs.phase = 'complete'; return null; }
+  noteShown(CHALLENGE_FORMAT, key(row.num));
   (gs.episodeHistory ||= []).push(row);
   gs.activePlayers = [...(row.ch?.people || [])];
   gs.episode = row.num;

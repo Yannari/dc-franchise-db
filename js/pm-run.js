@@ -22,6 +22,7 @@
 // silently un-ships with every test still green.
 import { gs, setGs, players, seasonConfig, seasonFormat, twistsForFormat, relationships } from './core.js';
 import { PERFECT_MATCH_FORMAT } from './shows.js';
+import { dealUnseen, noteShown, rerollKey } from './seen-episodes.js';
 import { playPerfectMatchSeason, perfectMatchScheduleFor } from './pm/season.js';
 import { assignRoles, buildSchedule, withPicks, withBookings } from './pm/schedule.js';
 import { DIALECTS } from './pm/lines/dialect.js';
@@ -458,8 +459,12 @@ function _refreshQueue() {
 export function simulatePerfectMatchEpisode() {
   if (!gs) return null;
   if (!_refreshQueue()) return null;
+  // An episode this browser already aired (a save loaded from before it) is dealt again (seen-episodes.js).
+  const key = n => rerollKey(gs.pm.seed, n, gs.pm.rerolls);
+  dealUnseen(PERFECT_MATCH_FORMAT, { next: () => gs._pmQueue?.[0]?.num ?? null, keyOf: key, redeal: rerunPerfectMatchEpisode });
   const row = gs._pmQueue.shift();
   if (!row) { gs.phase = 'complete'; return null; }
+  noteShown(PERFECT_MATCH_FORMAT, key(row.num));
   (gs.episodeHistory ||= []).push(row);
   gs.activePlayers = [...(row.pm?.villa || [])];
   gs.episode = row.num;

@@ -51,6 +51,8 @@ export default defineConfig({
       ...SLOW_GLOBS,
     ],
     environment: 'jsdom',
+    // A fresh localStorage memory of aired episodes per test (js/seen-episodes.js).
+    setupFiles: ['tests/setup/forget-seen.js'],
     // Several suites here play whole seasons rather than asserting on a
     // fixture — the season audits, and the Big Brother libraries, which are
     // checked by running 8-20 seasons and counting what actually fired. That

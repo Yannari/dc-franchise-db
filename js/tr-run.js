@@ -31,6 +31,8 @@
 import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG, kinshipPairs } from './core.js';
 import { tieStartBonds } from './ties.js';
 import { playTraitorsSeason } from './tr/headless.js';
+import { TRAITORS_FORMAT } from './shows.js';
+import { dealUnseen, noteShown } from './seen-episodes.js';
 import { trLedgerRecord } from './tr/ledger-record.js';
 import { recordBuiltSeason } from './franchise-meta.js';
 import { carriedFor } from './franchise-carry.js';
@@ -347,11 +349,14 @@ export function simulateTraitorsEpisode() {
       gs._trRerolls || null)) return null;
     if (aired > 0 && Array.isArray(gs._trQueue)) gs._trQueue = gs._trQueue.slice(aired);
   }
+  // A night this browser already aired (a save loaded from before it) is re-rolled (seen-episodes.js).
+  dealUnseen(TRAITORS_FORMAT, { next: () => gs._trQueue?.[0]?.num ?? null, keyOf: _trDiceKey, redeal: rerunTraitorsEpisode });
   const row = (gs._trQueue || []).shift();
   if (!row) {
     gs.phase = 'complete';
     return null;
   }
+  noteShown(TRAITORS_FORMAT, _trDiceKey(row.num));
   (gs.episodeHistory ||= []).push(row);
   // The room as it stood at the END of this episode, which is what the row
   // recorded. Everything on the run tab that counts people — the hub, the
@@ -402,6 +407,10 @@ function _rerollChain(n, seed) {
   return [...(gs._trRerolls || []).filter(r => r && Number(r.fromEp) < n),
     { fromEp: n, seed }];
 }
+
+/** What decides night `n`: the base seed and every re-roll from it or before it. */
+const _trDiceKey = n => `${gs._trSeed}|${n}|${(gs._trRerolls || [])
+  .filter(r => r && Number(r.fromEp) <= Number(n)).map(r => `${r.fromEp}:${r.seed}`).join(',')}`;
 
 export function rerunTraitorsEpisode(epNum) {
   _lastRefusal = null;

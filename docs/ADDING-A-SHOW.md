@@ -1655,6 +1655,26 @@ Two of them, stacked.
    queues its season has this bug until it does the same**; check it by
    saving at 3, playing to 6, loading, and pressing Simulate twice.
 
+   The other five queued shows do it through `js/seen-episodes.js`: before the
+   head of the queue airs, `dealUnseen` asks whether its dice were shown and,
+   while they were, calls the show's OWN re-run on that episode. Each show
+   only names what decides an episode: Perfect Match, The Challenge and the
+   race a count per episode (`rerollKey`); the castle its seed plus the chain
+   of re-rolls at or before the night (`_trDiceKey`, because its nonce only
+   ever rises and a loaded save carries an older one, so a re-run after a
+   rewind could land on a night already watched); drag the latest re-roll
+   (`_drDiceKey`), checked before the queue is rebuilt because its re-run
+   drops the queue. Big Brother and Total Drama play each week live on
+   `Math.random`, so a rewind is already a new week. `tests/seen-episodes.test.js`
+   is the measurement for all five, and fails all five with the memory off.
+
+   **The suite switches the memory off** (`tests/setup/forget-seen.js`,
+   registered as `setupFiles` in the three jsdom configs). The suites replay one
+   fixed seed on purpose, often twice in one test, to prove a season
+   reproduces; with the memory on, the second play is "already shown" and
+   becomes a different season. A test OF the memory sets
+   `globalThis.__dcSeenEpisodesOff = false` first.
+
    Its twin: a queued episode is WRITTEN by the code of the night it was built.
    A fix to the lines never reaches a queue saved before it, and a re-run, being
    new dice, cannot show the fix on the day it was reported. The Circle rebuilds

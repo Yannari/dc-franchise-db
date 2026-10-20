@@ -22,6 +22,8 @@ export default defineConfig({
   test: {
     include: ['tests/**/*-audit.test.js'],
     environment: 'jsdom',
+    // A fresh localStorage memory of aired episodes per test (js/seen-episodes.js).
+    setupFiles: ['tests/setup/forget-seen.js'],
     // Same ceilings as the main config, and they matter more here: these are
     // the files that genuinely take a minute or two.
     testTimeout: 90000,

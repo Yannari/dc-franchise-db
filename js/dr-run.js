@@ -38,6 +38,7 @@
 // test still green.
 import { gs, gsCheckpoints, players, relationships, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
 import { DRAG_FORMAT } from './shows.js';
+import { dealUnseen, noteShown } from './seen-episodes.js';
 import { activeSeasons, seasonKeyParts, recordBuiltSeason } from './franchise-meta.js';
 import { drLedgerRecord } from './dr/ledger-record.js';
 import { seasonsFromDocs } from './dr/history.js';
@@ -858,7 +859,14 @@ function _playWholeSeason(resume = null) {
  * Split out of `simulateDragEpisode` so the resume path and the rebuild path
  * air an episode the same way rather than each growing their own copy of it.
  */
+/** What decides week `n`: the seed and the latest re-roll, when it starts at or before `n`. */
+const _drDiceKey = n => {
+  const r = gs._drReroll && Number(gs._drReroll.from) <= Number(n) ? `${gs._drReroll.from}:${gs._drReroll.nonce}` : '';
+  return `${gs._drSeed}|${n}|${r}`;
+};
+
 function _airDragRow(row) {
+  noteShown(DRAG_FORMAT, _drDiceKey(row.num));
   (gs.episodeHistory ||= []).push(row);
   if (gs.dr) (gs.dr.episodes ||= []).push(row);
   // Set BEFORE the edit layer runs: it bills screen time against the active
@@ -1144,6 +1152,13 @@ export function _stateFromHistory() {
 /** One episode onto the history. Returns the row, or null when the season is over. */
 export function simulateDragEpisode() {
   if (!gs) return null;
+  // A week this browser already aired (a save loaded from before it) is dealt
+  // again (seen-episodes.js): the re-run turns its dice and drops the queue,
+  // and the queue is rebuilt below on the new ones.
+  dealUnseen(DRAG_FORMAT, {
+    next: () => (gs._drQueue ? gs._drQueue[0]?.num ?? null : (gs.episodeHistory || []).length + 1),
+    keyOf: _drDiceKey, redeal: rerunDragEpisode,
+  });
 
   if (!Array.isArray(gs._drQueue)) {
     /* No queue: a reload, an older save, or a pin changed on the timeline and

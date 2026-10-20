@@ -27,6 +27,7 @@
 // `formatIsRunnable()` reads.
 import { gs, setGs, players, seasonConfig, seasonFormat } from './core.js';
 import { RACE_FORMAT } from './shows.js';
+import { dealUnseen, noteShown, rerollKey } from './seen-episodes.js';
 import { playRaceSeason } from './rr/season.js';
 import { airSeason } from './rr/episode.js';
 import { buildSchedule } from './rr/schedule.js';
@@ -347,8 +348,12 @@ function _refreshQueue() {
 export function simulateRaceEpisode() {
   if (!gs) return null;
   if (!_refreshQueue()) return null;
+  // A leg this browser already aired (a save loaded from before it) is dealt again (seen-episodes.js).
+  const key = n => rerollKey(gs.rr.seed, n, gs.rr.rerolls);
+  dealUnseen(RACE_FORMAT, { next: () => gs._rrQueue?.[0]?.num ?? null, keyOf: key, redeal: rerunRaceEpisode });
   const row = gs._rrQueue.shift();
   if (!row) { gs.phase = 'complete'; return null; }
+  noteShown(RACE_FORMAT, key(row.num));
   (gs.episodeHistory ||= []).push(row);
   gs.activePlayers = [...(row.rr?.people || [])];
   gs.episode = row.num;

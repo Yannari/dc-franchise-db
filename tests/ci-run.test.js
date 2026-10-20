@@ -1,7 +1,7 @@
 // ci-run.test.js — the Circle is REACHABLE from the run tab (Plan 4 Task 1).
 // Every guard here is on the path the run tab takes: the flag, the queue, a
 // reload, a re-run, and what gets saved.
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { gs, setGs, players, setPlayers, seasonConfig, formatIsRunnable } from '../js/core.js';
 import { isCircleSeason, simulateCircleEpisode, circleEpisodesLeft, circleCastProblem, lastCircleRefusal,
   circleCanRerun, rerunCircleEpisode, rewriteCircleEpisode, circleSeasonShape, circleBookings } from '../js/ci-run.js';
@@ -188,6 +188,8 @@ describe('re-running an episode', () => {
 // already simulated before instead of creating a different one". The save
 // carried the queue, episode 4 at its head.
 describe('an episode already shown is never shown again', () => {
+  // The suite switches the memory off (tests/setup/forget-seen.js); these are its tests.
+  beforeEach(() => { globalThis.__dcSeenEpisodesOff = false; });
   const said = r => JSON.stringify(r.ci.aired);
   it('loading a save from episode 3 and pressing Simulate deals a new episode 4, every time', () => {
     freshSeason();

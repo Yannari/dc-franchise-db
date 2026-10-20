@@ -671,6 +671,8 @@ export const PLACE_PLATES = {
     src: '31-ice-river', title: 'present-22411652', opener: p('present-22411651', 92, [6, 94]),
     arrive: [p('arrive-22411593', 86, [6, 94])],
     props: { sled: 'sled', bear: 'polar-bear' },
+    // (a shot only its stage plays on, never rotated into the rest of the challenge)
+    stageOnly: [p('task-22411840', 92, [6, 94])],
     st: {
       'river-hop': { talk: [p('arrive-22411593', 86, [6, 94])],
         act: p('present-22412013', 0, [0, 0], { water: true, mode: 'ride', prop: 'plane@ice-floe', path: [[-22, 54], [50, 48], [122, 42]] }) },
@@ -679,8 +681,10 @@ export const PLACE_PLATES = {
           path: [[12, 85], [30, 62], [50, 78], [68, 58], [88, 74]], fx: 'splash' }) },
       // one pulls the sled, the other rides it, past the bear
       // (the polar bear the rules and the lines talk about stands out on the plain: 2026-10-20, never on screen before)
-      sled: { talk: [p('task-22411840', 92, [6, 90], { deco: [['bear', 30, 52, 7, { move: 'wander', span: 16 }]] })],
-        act: p('task-22411840', 92, [6, 94], { mode: 'ride', prop: 'sled', path: [[-14, 92], [50, 91], [114, 92]], fx: 'snow', deco: [['bear', 30, 52, 7, { move: 'wander', span: 16 }]] }) },
+      // (the race itself is on the open plain; the close shot of the bear on the ice is one stage of it, the bear, in
+      // STAGE_SHOTS: the user, 2026-10-20, "its too close maybe make it a part of the race and not almost the full race")
+      sled: { talk: [p('task-22411924', 86, [6, 94], { deco: [['bear', 72, 70, 4, { move: 'wander', span: 14, dur: 22 }]] })],
+        act: p('task-22411924', 0, [0, 0], { water: true, mode: 'ride', prop: 'sled', path: [[-12, 88], [40, 86], [80, 84], [114, 82]], fx: 'snow', deco: [['bear', 72, 70, 4, { move: 'wander', span: 14, dur: 22 }]] }) },
       mat: { talk: [p('chill-22411602', 92, [6, 94], { matPos: [50, 92] })] },
     },
   },
@@ -992,7 +996,7 @@ for (const [id, m] of Object.entries(MORE)) {
 export const findPlate = (id, f, over = {}) => plateOf(id, f, over);
 const plateOf = (id, f, over = {}) => {
   const pl = PLACE_PLATES[id];
-  const all = [pl.opener, ...(pl.arrive || []), ...(pl.title ? [{ f: pl.title, g: 92, x: [10, 90] }] : []), ...(pl.views || []), ...Object.values(pl.st).flatMap(s => [...(s.talk || []), s.act, s.act2, ...(s.alt || []), ...(s.wide || []),
+  const all = [pl.opener, ...(pl.arrive || []), ...(pl.title ? [{ f: pl.title, g: 92, x: [10, 90] }] : []), ...(pl.views || []), ...(pl.stageOnly || []), ...Object.values(pl.st).flatMap(s => [...(s.talk || []), s.act, s.act2, ...(s.alt || []), ...(s.wide || []),
     ...Object.values(s.sides || {}).flatMap(d => [...(d.talk || []), d.act, ...(d.alt || [])])])].filter(Boolean);
   // (the shot doing that thing first: the emu throw, not the plain fence shot of the same plate)
   const found = (over.mode && all.find(x => x.f === f && x.mode === over.mode)) || all.find(x => x.f === f && !x.mode) || all.find(x => x.f === f);
@@ -1009,7 +1013,7 @@ const STAGE_SHOTS = {
       'far-bank': { label: 'THE FAR BANK', plate: ['task-22411751'] },
     },
     sled: {
-      harness: { label: 'THE START FLAG', plate: ['task-22411840', { mode: undefined, path: undefined, prop: undefined }] },
+      harness: { label: 'THE START FLAG', plate: ['present-22411651', { mode: undefined, prop: undefined, path: undefined, water: false, g: 88, x: [20, 94] }] },
       flags: { label: 'THE FLAG COURSE', plate: ['present-22411651', { mode: 'ride' }], alt: [['task-22411924', { mode: 'ride' }]], fail: ['task-22411924', { mode: undefined, prop: undefined, path: undefined, water: false, g: 86, x: [6, 94] }] },
       bear: { label: 'THE BEAR', plate: ['task-22411840', { mode: 'ride', deco: BEAR_CLOSE }], fail: ['task-22411840', { mode: undefined, path: undefined, prop: undefined, deco: BEAR_CLOSE }] },
       swap: { label: 'SWAP!', plate: ['task-22411924', { mode: undefined, prop: undefined, path: undefined, water: false, g: 86, x: [6, 94] }] },
@@ -1046,6 +1050,7 @@ export function placeFiles(id) {
   add(pl.opener);
   (pl.arrive || []).forEach(add);
   (pl.views || []).forEach(add);
+  (pl.stageOnly || []).forEach(add);
   for (const s of Object.values(pl.st)) {
     (s.talk || []).forEach(add); add(s.act); add(s.act2); (s.alt || []).forEach(add); (s.alt2 || []).forEach(add);
     for (const side of Object.values(s.sides || {})) { (side.talk || []).forEach(add); add(side.act); add(side.act2); (side.alt || []).forEach(add); (side.alt2 || []).forEach(add); }

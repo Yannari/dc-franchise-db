@@ -86,6 +86,19 @@ describe('rr viewer: how a challenge is shot', () => {
     expect([...plates].some(f => /present-22411651|present-22411652|task-22411924/.test(f))).toBe(true);
   });
 
+  // (the user, 2026-10-20, on the close shot of the bear on the ice: "its a race and ur using a close map for a sled
+  // race its too close maybe make it a part of the race and not almost the full race")
+  it('keeps the close bear shot for the bear stage; the rest of the sled race is out on the plain', () => {
+    let close = 0, all = 0;
+    for (const { s } of screens()) {
+      if (s.place !== 'ice-river' || s.stretch !== 'sled') continue;
+      all++;
+      if (/task-22411840/.test(s.plate?.f || '')) { close++; expect(s.stage, `${s.id} close shot outside the bear`).toBe('bear'); }
+    }
+    expect(all).toBeGreaterThan(20);
+    expect(close / all).toBeLessThan(0.25);
+  });
+
   it('presents each place after its title: Don says what it is over its own wide shots, then opens the leg there', () => {
     for (const { ep, leg } of eps) {
       const t = ep.screens.findIndex(s => s.kind === 'title');

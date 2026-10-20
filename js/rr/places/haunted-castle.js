@@ -5,8 +5,6 @@
 export default {
   id: 'haunted-castle', name: 'Haunted Castle', recap: 'pushing each other through a graveyard in coffins and doing the splits for a very hard-to-please coach',
   region: 'old-coast', map: { x: 54, y: 30 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['taxi', 'horse', 'foot'],
   stretches: [
     { id: 'castle-road', kind: 'travel', mode: 'taxi', base: 40, cost: 25, plate: 'castle road', label: 'Taxi to the castle',

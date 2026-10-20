@@ -5,8 +5,6 @@
 export default {
   id: 'swamp-prison', name: 'Swamp Prison', recap: 'breaking out of jail with a spoon and sailing home on a raft made of junk',
   region: 'ocean', map: { x: 23, y: 40 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['taxi', 'boat', 'foot'],
   stretches: [
     { id: 'bayou-taxi', kind: 'travel', mode: 'taxi', base: 40, cost: 25, plate: 'swamp road', label: 'Taxi to the old prison',

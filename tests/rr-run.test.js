@@ -1,6 +1,6 @@
 // rr-run.test.js — The Ridonculous Race is REACHABLE from the run tab: the flag, the teams read off the cast cards,
 // one leg per press, a reload, what the hub reads, and what the franchise keeps.
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { gs, setGs, setPlayers, seasonConfig, formatIsRunnable } from '../js/core.js';
 import { SHOWS } from '../js/shows.js';
 import { isRaceSeason, raceTeams, raceCastProblem, simulateRaceEpisode, raceEpisodesLeft, lastRaceRefusal,
@@ -129,6 +129,12 @@ describe('the franchise keeps it', () => {
 });
 
 describe('the site shows a leg', () => {
+  // the site's modules (run-ui pulls in nearly the whole simulator) load cold once, here, on their own clock: in a full
+  // parallel run that first import alone could eat the 90s a test gets, and the hub test timed out on it (2026-10-19)
+  beforeAll(async () => {
+    await Promise.all(['../js/run-ui.js', '../js/vp-screens.js', '../js/text-backlog.js', '../js/vp-rr-ep/steps.js'].map(m => import(m)));
+  }, 240000);
+
   it('the hub says who won the leg and who went home, in race words; the eliminated are both of them', async () => {
     const { getEpisodeEliminations, buildHubAftermath } = await import('../js/run-ui.js');
     freshSeason(8);

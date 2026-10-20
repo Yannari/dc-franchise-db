@@ -5,8 +5,6 @@
 export default {
   id: 'lei-island', name: 'Lei Island', recap: 'diving for wedding rings and carrying each other over hot coals in grass skirts',
   region: 'ocean', map: { x: 6, y: 42 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['taxi', 'foot'],
   stretches: [
     { id: 'pier-taxi', kind: 'travel', mode: 'taxi', base: 30, cost: 20, plate: 'coast road, palms', label: 'Taxi to the pier',

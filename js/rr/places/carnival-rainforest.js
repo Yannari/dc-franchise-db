@@ -5,8 +5,6 @@
 export default {
   id: 'carnival-rainforest', name: 'Carnival Rainforest', recap: 'putting a hand in a mitten of bullet ants, swinging over a gorge and dressing for carnival',
   region: 'ocean', map: { x: 33, y: 62 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['taxi', 'foot', 'glider'],
   stretches: [
     { id: 'ants', called: 'the forest floor', kind: 'botch', types: ['nerve', 'stomach'], base: 12, pass: 0.5, loopCost: 8,

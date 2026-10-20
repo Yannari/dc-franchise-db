@@ -5,8 +5,6 @@
 export default {
   id: 'geyser-island', name: 'Geyser Island', recap: 'mangling a phrase across a field of geysers and eating things nobody should eat',
   region: 'north', map: { x: 42, y: 18 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['bus', 'helicopter', 'foot'],
   stretches: [
     { id: 'park-bus', kind: 'travel', mode: 'bus', base: 45, cost: 15, plate: 'bus on the mountain road', label: 'Bus to the park',

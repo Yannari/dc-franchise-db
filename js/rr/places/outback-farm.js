@@ -4,8 +4,6 @@
 export default {
   id: 'outback-farm', name: 'Outback Farm', recap: 'chasing rabbits through the wheat and gliding over a valley',
   region: 'far-east', map: { x: 88, y: 72 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['drive', 'glider', 'foot'],
   stretches: [
     { id: 'ute-drive', kind: 'travel', mode: 'drive', base: 40, cost: 20, plate: 'dirt road, gum trees', label: 'Drive the ute to the farm',

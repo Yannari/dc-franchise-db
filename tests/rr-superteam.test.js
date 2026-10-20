@@ -31,8 +31,11 @@ describe('rr superteam', () => {
   // teams in are what's left over, anyone else is glad of who they got. Found 2026-10-19: leg.js forced 'chosen' on every
   // group, so rivals came out of the river allied and every line said "we pick you".
   it('a formation says what was true: rivals stuck together, the last teams in left over, the rest glad', () => {
+    // every formation in every season played is checked; seasons keep coming (up to 24) until the last-teams-in ending has
+    // been seen, so a change to the place library that reshuffles the seeds can't hide that branch (the agent's flag-drop,
+    // 2026-10-19: four fixed seeds stopped producing it the moment eight more places could be drawn)
     const endings = {};
-    for (const seed of [3, 5, 11, 17]) {
+    for (let seed = 3, played = 0; played < 4 || (!endings['left-over'] && seed < 27); seed++, played++) {
       const { cast, teams } = raceCast(12, seed);
       setPlayers(cast);
       const res = playRaceSeason({ teams, seed, options: { pins: { 6: 'stilt-river' } } });

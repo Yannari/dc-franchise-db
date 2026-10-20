@@ -41,6 +41,8 @@ describe('rr big cast', () => {
     });
   });
 
+  // six whole seasons of a big cast: 50-75s alone on this machine, so the 90s default is too close in a full parallel
+  // run (it timed out there, 2026-10-19); the ceiling sits well above the worst case, as vitest.config.js asks
   it('quiet teams do get checked in together, across seasons (one season can have a story for every team)', () => {
     let quick = 0;
     for (const seed of [1, 2, 3, 4, 5, 6]) {
@@ -50,7 +52,7 @@ describe('rr big cast', () => {
         quick += ep.segments.filter(s => s.kind === 'mat-montage').flatMap(s => s.teams).length;
     }
     expect(quick).toBeGreaterThan(0);
-  });
+  }, 240000);
 
   it('at least ten teams get their full scenes in every episode, and the quiet ones rotate', () => {
     const quickBy = {};

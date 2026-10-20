@@ -5,8 +5,6 @@
 export default {
   id: 'glass-tower-gulf', name: 'Glass Tower Gulf', recap: 'washing a skyscraper from the outside and losing at tennis to a machine',
   region: 'desert', map: { x: 63, y: 42 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['taxi', 'foot'],
   stretches: [
     { id: 'tower-taxi', kind: 'travel', mode: 'taxi', base: 35, cost: 30, plate: 'desert highway, skyline', label: 'Taxi to the glass tower',

@@ -5,8 +5,6 @@
 export default {
   id: 'coast-palace', name: 'Coast Palace', recap: 'pulling tips off a shark and building sand palaces for a very strict little surfer',
   region: 'old-coast', map: { x: 49, y: 33 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['train', 'taxi', 'foot', 'boat'],
   stretches: [
     { id: 'coast-train', kind: 'travel', mode: 'train', base: 50, cost: 20, plate: 'shoreline', label: 'Train along the coast',

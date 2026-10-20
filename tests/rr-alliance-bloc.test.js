@@ -10,6 +10,8 @@ import { raceCast } from './helpers/rr-cast.js';
 const MAX_BLOC = 3;
 
 describe('rr alliance blocs', () => {
+  // a run of whole seasons: 40-65s alone on this machine, so the 90s default is too close in a full parallel
+  // run (it timed out there, 2026-10-19); the ceiling sits well above the worst case, as vitest.config.js asks
   it(`a bloc a team pitches or meets its way into is at most ${MAX_BLOC} teams`, () => {
     for (let seed = 1; seed <= 20; seed++) {
       const { cast, teams } = raceCast(12, seed);
@@ -17,7 +19,7 @@ describe('rr alliance blocs', () => {
       const res = playRaceSeason({ teams, seed });
       for (const al of res.state.alliances) expect(al.teams.length, `seed ${seed}`).toBeLessThanOrEqual(MAX_BLOC);
     }
-  });
+  }, 240000);
 
   it('a team already in an alliance asks the next team to join it, not to be the only one', () => {
     let joins = 0;

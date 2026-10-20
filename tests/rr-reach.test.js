@@ -44,7 +44,16 @@ describe('rr reach', () => {
     expect(missing).toEqual([]);
   }, 180000);
 
+  // a switch comes in about half of all seasons (20 in 96 Either/Or legs over 30 seasons, measured 2026-10-20); the eight
+  // above all missed it once batch 6's places joined the draw, which measured the sample, not the reach (§11.5). Search
+  // on to 30, stopping at the first (thirty misses in a row is about one in ten billion).
   it('teams sometimes switch sides of an Either/Or', () => {
-    expect(switches).toBeGreaterThan(0);
-  });
+    let more = switches;
+    for (let s = 9; s <= 30 && !more; s++) {
+      const { cast, teams } = raceCast(12, s);
+      setPlayers(cast);
+      more += (playRaceSeason({ teams, seed: s, options: { twists: { 3: 'boomerang' } } }).state.switches || []).length;
+    }
+    expect(more).toBeGreaterThan(0);
+  }, 240000);
 });

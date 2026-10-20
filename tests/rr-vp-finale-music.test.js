@@ -21,5 +21,7 @@ describe('rr viewer: the finale after the crown', () => {
     const after = ep.screens.map((s, si) => ({ s, si })).filter(({ s, si }) => si > crown && s.mode === 'mat');
     expect(after.length, 'a scene on the mat after the crown (the proposal)').toBeGreaterThan(0);
     for (const { s, si } of after) expect(soundAt(ep, si, 0).moment, `${s.seg}`).toEqual({ race: 'finale' });
+    // ...and the finale's mat is the finish line, not a Chill Zone
+    expect(ep.screens[crown].hud?.task).toBe('THE FINISH LINE');
   }, 240000);
 });

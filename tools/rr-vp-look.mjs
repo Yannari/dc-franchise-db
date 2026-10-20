@@ -34,6 +34,10 @@ const FIND = {
   tip: '(s, t) => t.part === "tip"',
   galleyclose: '(s, t) => s.mode === "cabin" && s.plate?.f === "galley" && t.by && t.cam && t.cam.shot !== "wide"',
   talkclose: '(s, t) => s.mode === "talk" && s.teams.length >= 2 && t.by && t.cam && t.cam.shot !== "wide"',
+  // the finale (2026-10-20): the runners-up's chase cut in before the crown, the crown, a proposal on the winners' mat
+  chase: '(s, t, k) => s.kind === "world" && s.stretch === "footrace" && t.by && k >= 1',
+  crown: '(s, t) => s.seg === "don-crown" && t.by',
+  propose: '(s, t, k) => s.seg === "proposal" && t.by && k >= 2',
 };
 // RR_PLATES=task-9436302,task-22412499: a talk step on each of those plates
 for (const f of (process.env.RR_PLATES || '').split(',').filter(Boolean)) FIND['plate-' + f] = `(s, t, k) => s.kind === "world" && s.plate?.f === "${f}" && t.by && k >= 1`;

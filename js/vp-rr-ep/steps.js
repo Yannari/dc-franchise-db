@@ -196,7 +196,8 @@ export function episodeScreens(res, eps, i) {
       else { plate = { ...RACE.gate, race: true }; hudTask = 'THE AIRPORT'; }
     } else if (MAT_KINDS.has(k) || seg.stretch === 'mat' || seg.stretch === 'midmat') {
       const mid = seg.stretch === 'midmat' || !!scene?.data?.midmat;
-      plate = matPlate(placeId, 0, mid); mode = 'mat'; hudTask = mid ? 'THE MIDPOINT' : 'CHILL ZONE';
+      // (the finale's mat is the finish line: the race ends on a stage, not at a Chill Zone)
+      plate = matPlate(placeId, 0, mid); mode = 'mat'; hudTask = mid ? 'THE MIDPOINT' : leg.kind === 'final' ? 'THE FINISH LINE' : 'CHILL ZONE';
     } else if (k.startsWith('int-')) {
       mode = 'iv';
     } else if (stretch) {
@@ -1569,11 +1570,11 @@ export function chaptersOf(e, placeId) {
     else if (!chapters.length || (chapters.length === 1 && chapters[0].key === 'previously' && task !== 'PREVIOUSLY' && task !== 'LAST TIME')) {
       key = 'start'; name = e.kind === 'final' ? 'The Finale' : 'The Start';
     }
-    const stretch = s.stretch || (task === 'CHILL ZONE' ? matId : null);
+    const stretch = s.stretch || (task === 'CHILL ZONE' || task === 'THE FINISH LINE' ? matId : null);
     if (!key && stretch && milestone.has(stretch) && (order.get(stretch) ?? -1) > front) {
       front = order.get(stretch);
       key = stretch;
-      name = stretch === matId ? 'The Chill Zone' : label.get(stretch);
+      name = stretch === matId ? (e.kind === 'final' ? 'The Finish Line' : 'The Chill Zone') : label.get(stretch);
     }
     if (key) chapters.push({ key, name, from: si, to: si });
     else chapters.at(-1).to = si;

@@ -381,6 +381,62 @@ export const PLACE_MUSIC = {
       interview: "soft plucked strings and rain",
     },
   },
+  'neon-desert': {
+    name: "Neon Desert", feel: "a neon strip in the desert: lounge brass, ska horns, a slot-machine shimmer",
+    search: "lounge, brass, ska, cocktail, strip",
+    moments: {
+      opener: "a TV street-party brass band",
+      travel: "a driving sax and synth theme off the strip",
+      challenge: "bright, bouncing ska horns: the buggy and the lion",
+      struggle: "an uneasy lounge groove, vibraphone and trumpet",
+      'chill-zone': "a relaxed tremolo-guitar lounge",
+      elimination: "a dark, somber acoustic guitar",
+      recap: "a quick funky horn hit",
+      interview: "a light swinging beat",
+    },
+  },
+  'pyramid-coast': {
+    name: "Pyramid Coast", feel: "the coast below the step pyramid: trumpets and guitars, accordion and marimba",
+    search: "trumpet, latin guitar, accordion, marimba, festive",
+    moments: {
+      opener: "a sleepy, bouncing trumpet band",
+      travel: "accordion and marimba along the coast road",
+      challenge: "a driving, intense guitar: peppers and the cliff",
+      struggle: "a dark guitar and sax",
+      'chill-zone': "laid-back reverbed guitars at the pyramid",
+      elimination: "a guitar and lute by the fire",
+      recap: "a quick, dark brass circus",
+      interview: "a soft classical guitar and harp",
+    },
+  },
+  'stilt-river': {
+    name: "Stilt River", feel: "a river of stilt villages and temples: marimba and bells, hand drums, flute over the water",
+    search: "marimba, bells, hand drum, flute, river, mystical",
+    moments: {
+      opener: "a mysterious club groove of marimba and bells",
+      travel: "hand drums, bells and a river flute up the river",
+      challenge: "a bright marimba groove: the catfish",
+      struggle: "a mysterious marimba waltz and choir: the tunnels",
+      'chill-zone': "a calm marimba at the temple",
+      elimination: "slow drums and bells",
+      recap: "a quick, mischievous dulcimer and xylophone",
+      interview: "a soft flute over running water",
+    },
+  },
+  'frozen-mine': {
+    name: "Frozen Mine", feel: "a mine on a frozen lake: plucked harps and zither, glockenspiel, cold pads",
+    search: "harp, zither, plucked strings, glockenspiel, cold",
+    moments: {
+      opener: "a bright, mystical glockenspiel and harp",
+      travel: "a grooving zither and strings on the snowy road",
+      challenge: "an adventurous harp and bassoon: the yachts and the shaft",
+      struggle: "a dark little xylophone and bassoon",
+      'chill-zone': "a calm autoharp in the sauna",
+      elimination: "a slow harp meditation",
+      recap: "a quick lute and strings",
+      interview: "a soft harp and pads",
+    },
+  },
 };
 
 export const PLACE_IDS = Object.keys(PLACE_MUSIC);

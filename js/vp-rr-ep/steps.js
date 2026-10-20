@@ -646,7 +646,7 @@ function layout(s, size) {
           // a head in the water is centred on its point, its name under it: both stay above the frame's bottom
           const gap = Math.max(5, s.size * 0.95);
           pt = [Math.min(100 - M - gap, Math.max(M, pt[0])), Math.min(100 - 1.2 * s.size - 2, pt[1] + i * 4)];
-        } else if (plate.mode === 'ride') pt = [pt[0], pt[1] + i * 4];
+        } else if (plate.mode === 'ride') pt = [pt[0], Math.max(s.size * 2.9 + 6, pt[1] + i * 4)];    // a high flier's faces stay in
         // (the slow push on the plate moves the edges out by a few per cent: the margins allow for it)
         // a climber or a jumper is never so high (or so far to the side) that their faces leave the frame
         else pt = [Math.min(100 - M, Math.max(M, pt[0])), Math.max(s.size * 2.45 + 7, pt[1])];
@@ -767,7 +767,9 @@ function liftFor(s) {
 const IN_PLACE = new Set(['search', 'eat', 'draw', 'sweat', 'guitar', 'photo', 'bob', 'chase', 'build', 'shear', 'bungee', 'sculpt', 'chip', 'mitten', 'sew', 'beam',
   'squeegee', 'serve', 'spoon',
   // (batch 3: the war dance, the mechanical bull, rings at a narwhal, sawing ice for an igloo, a vial of dragon drool)
-  'dance', 'bull', 'toss', 'saw', 'venom']);
+  'dance', 'bull', 'toss', 'saw', 'venom',
+  // (batch 4: a buggy driven by remote, the lever that opens the lion's cage)
+  'remote', 'lever']);
 const PATH_MODES = new Set(['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride', 'swing', 'push', 'coals']);
 const TASK_KINDS = new Set(['either', 'botch', 'allin', 'route', 'superteam']);
 export const MAX_CROWD = 2;
@@ -1398,7 +1400,7 @@ const WORK_PAD = { chase: [0, 0, 3, 0], lean: [0, 0, 1.1, 0], dunk: [0, 0, 0, 2.
   draw: [0.4, 0, 0.4, 0], sweat: [0.2, 0, 0.5, 0.6], build: [0.2, 1.1, 0.2, 0.4], shear: [0, 0, 0.4, 0], run: [0.3, 1.7, 0.3, 0],
   swing: [0.5, 0.3, 0.5, 0.3], coals: [0.3, 1.6, 0.3, 0], squeegee: [0.6, 0.4, 0.6, 0.2], serve: [0.6, 0.8, 0.6, 0.3], spoon: [0.3, 0.5, 0.3, 1.3],
   sculpt: [0.3, 0.3, 0.3, 1.3], dance: [0.6, 1.2, 0.6, 0.2], bull: [0.9, 1.4, 0.9, 0.4], toss: [0.3, 0.6, 0.6, 0.2], saw: [0.4, 0.2, 0.4, 0.3],
-  venom: [0.6, 0.2, 0.6, 0.6], chip: [0.2, 1.1, 0.2, 0.4], mitten: [0.6, 0.5, 0.6, 0.5], sew: [0.4, 0, 0.4, 0], beam: [0.6, 1.3, 0.6, 0.4] };
+  venom: [0.6, 0.2, 0.6, 0.6], remote: [0.4, 0.4, 0.4, 0.3], lever: [0.5, 0.6, 0.5, 0.6], chip: [0.2, 1.1, 0.2, 0.4], mitten: [0.6, 0.5, 0.6, 0.5], sew: [0.4, 0, 0.4, 0], beam: [0.6, 1.3, 0.6, 0.4] };
 export function padOf(f, z) {
   // a coffin pushed in front takes its own room ahead of the faces (style.js .tok.push .veh)
   const w = f.work === 'push' ? [0, 0, 1.6 * z, 0] : WORK_PAD[f.work] || [0, 0, 0, 0];

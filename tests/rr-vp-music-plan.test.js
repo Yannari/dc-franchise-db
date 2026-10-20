@@ -37,12 +37,14 @@ describe('rr music: the plan', () => {
     expect(planned).toBeLessThan(raw * 0.6);
   });
 
-  it('never goes A, B, A within a few steps', () => {
+  it('never goes A, B, A within a few steps (unless two chapters open one after the other)', () => {
     const bad = [];
-    for (const { n, i, plan } of legs) {
+    for (const { n, i, ep, plan } of legs) {
+      const starts = new Set(chaptersOf(ep, ep.place).map(c => c.from));
+      const opens = j => plan[j].k === 0 && starts.has(plan[j].si);
       const ch = plan.map((x, j) => ({ j, b: key(x.bed) })).filter((x, j) => plan[x.j].change && j >= 0);
       for (let c = 2; c < ch.length; c++) {
-        if (ch[c].b === ch[c - 2].b && ch[c].j - ch[c - 1].j < SOFT_MIN) bad.push(`season ${n} leg ${i + 1}: ${ch[c - 2].b} -> ${ch[c - 1].b} -> back after ${ch[c].j - ch[c - 1].j} steps (step ${ch[c].j})`);
+        if (ch[c].b === ch[c - 2].b && ch[c].j - ch[c - 1].j < SOFT_MIN && !(opens(ch[c].j) && opens(ch[c - 1].j))) bad.push(`season ${n} leg ${i + 1}: ${ch[c - 2].b} -> ${ch[c - 1].b} -> back after ${ch[c].j - ch[c - 1].j} steps (step ${ch[c].j})`);
       }
     }
     expect(bad).toEqual([]);

@@ -77,6 +77,10 @@ NO_WATER |= {'prairie-ranch/present-9444391', 'ice-floe/arrive-9444551'}
 # (a 7th number: the darkest the water is, so the ice's pale blue stays still)
 FORCE_WATER.update({'ice-floe/task-9444731': [(0, .5, 1, .9, 205, 245, .45)], 'ice-floe/task-9444616': [(0, .5, 1, .95, 205, 245, .45)],
                     'ice-floe/present-9445072': [(0, .5, 1, .9, 205, 245, .45)]})
+# batch 4: ice and windows that are not water; the stilt river, the cove under the cliff
+NO_WATER |= {'frozen-mine/arrive-9447691', 'frozen-mine/task-9447678', 'frozen-mine/task-9447861', 'frozen-mine/present-9447601'}
+FORCE_WATER.update({'stilt-river/present-9447233': [(0, .74, 1, 1, 150, 200)], 'stilt-river/task-9447243': [(0, .4, 1, .75, 150, 200)],
+                    'pyramid-coast/task-9446588': [(0, 0, 1, .72, 160, 200)], 'neon-desert/task-9446121': [(.4, .75, 1, .95, 170, 200)]})
 LAVA_PLACES = {'fire-mountain-isle'}
 SKIP = {'confess', 'worldmap', 'gate', 'cabin', 'galley', 'logo', 'sky', 'runway', 'don', 'plane'}
 

@@ -2038,5 +2038,325 @@
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
   "cut": "0s + 40s",
   "lift": 4.8
+ },
+ "neon-desert/opener.mp3": {
+  "title": "Street Party",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700087",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Street%20Party.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "neon-desert/travel.mp3": {
+  "title": "Miami Nights - Extended Theme",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700078",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Miami%20Nights%20-%20Extended%20Theme.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 1.8
+ },
+ "neon-desert/challenge.mp3": {
+  "title": "Blue Ska",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600011",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Blue%20Ska.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "neon-desert/struggle.mp3": {
+  "title": "Port Horizon",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700015",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Port%20Horizon.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 3.4
+ },
+ "neon-desert/chill-zone.mp3": {
+  "title": "Bummin on Tremelo",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700032",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bummin%20on%20Tremelo.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.5
+ },
+ "neon-desert/elimination.mp3": {
+  "title": "Just As Soon",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100185",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Just%20As%20Soon.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 1.9
+ },
+ "neon-desert/recap.mp3": {
+  "title": "I Got a Stick Arr Bryan Teoh",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2200004",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/I%20Got%20a%20Stick%20Arr%20Bryan%20Teoh.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "neon-desert/interview.mp3": {
+  "title": "Vicious",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600026",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Vicious.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "pyramid-coast/opener.mp3": {
+  "title": "Mariachi Snooze",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100166",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mariachi%20Snooze.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 3.8
+ },
+ "pyramid-coast/travel.mp3": {
+  "title": "Del Rio Bravo",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900031",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Del%20Rio%20Bravo.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "pyramid-coast/challenge.mp3": {
+  "title": "El Magicia",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100242",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/El%20Magicia.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.1
+ },
+ "pyramid-coast/struggle.mp3": {
+  "title": "As I Figure",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100323",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/As%20I%20Figure.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.8
+ },
+ "pyramid-coast/chill-zone.mp3": {
+  "title": "Laid Back Guitars",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100181",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Laid%20Back%20Guitars.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "pyramid-coast/elimination.mp3": {
+  "title": "Midnight Tale",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900004",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Midnight%20Tale.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 0.0
+ },
+ "pyramid-coast/recap.mp3": {
+  "title": "Circus of Freaks",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900051",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Circus%20of%20Freaks.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 1.6
+ },
+ "pyramid-coast/interview.mp3": {
+  "title": "Morning",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2300003",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Morning.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.0
+ },
+ "stilt-river/opener.mp3": {
+  "title": "Ethernight Club",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100002",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ethernight%20Club.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.0
+ },
+ "stilt-river/travel.mp3": {
+  "title": "River Fire",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700055",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/River%20Fire.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 7.6
+ },
+ "stilt-river/challenge.mp3": {
+  "title": "Ave Marimba",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700024",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ave%20Marimba.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "stilt-river/struggle.mp3": {
+  "title": "Ancient Mystery Waltz (Allegro)",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100005",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ancient%20Mystery%20Waltz%20Allegro.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.9
+ },
+ "stilt-river/chill-zone.mp3": {
+  "title": "Silver Flame",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700058",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Silver%20Flame.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 5.1
+ },
+ "stilt-river/elimination.mp3": {
+  "title": "Spirit of the Girl",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700057",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Spirit%20of%20the%20Girl.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 7.9
+ },
+ "stilt-river/recap.mp3": {
+  "title": "Mischief Maker",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700009",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mischief%20Maker.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.0
+ },
+ "stilt-river/interview.mp3": {
+  "title": "River Flute",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900005",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/River%20Flute.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 1.0
+ },
+ "frozen-mine/opener.mp3": {
+  "title": "Aquarium",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900026",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Aquarium.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.3
+ },
+ "frozen-mine/travel.mp3": {
+  "title": "Morgana Rides",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1800010",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Morgana%20Rides.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "frozen-mine/challenge.mp3": {
+  "title": "Adventures in Adventureland",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2100029",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Adventures%20in%20Adventureland.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 50s",
+  "lift": 0.0
+ },
+ "frozen-mine/struggle.mp3": {
+  "title": "Holiday Weasel",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900028",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Holiday%20Weasel.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 0.5
+ },
+ "frozen-mine/chill-zone.mp3": {
+  "title": "Canon in D for Autoharp",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2000016",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Canon%20in%20D%20for%20Autoharp.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 45s",
+  "lift": 1.5
+ },
+ "frozen-mine/elimination.mp3": {
+  "title": "Elf Meditation",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900035",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Elf%20Meditation.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 35s",
+  "lift": 1.6
+ },
+ "frozen-mine/recap.mp3": {
+  "title": "Industrious Ferret",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700067",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Industrious%20Ferret.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 30s",
+  "lift": 0.2
+ },
+ "frozen-mine/interview.mp3": {
+  "title": "Ancient Winds",
+  "author": "Kevin MacLeod",
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1900043",
+  "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ancient%20Winds.mp3",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "cut": "0s + 40s",
+  "lift": 0.7
  }
 }

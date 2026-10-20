@@ -5,8 +5,6 @@
 export default {
   id: 'stilt-river', name: 'Stilt River', recap: 'catching catfish with bare hands and crawling through booby-trapped tunnels',
   region: 'far-east', map: { x: 78, y: 50 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['boat', 'foot'],
   stretches: [
     { id: 'longtail-boat', kind: 'travel', mode: 'boat', base: 35, cost: 15, plate: 'river, stilt village', label: 'Long-tail boat up the river',

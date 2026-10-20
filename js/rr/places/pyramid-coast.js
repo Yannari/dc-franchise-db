@@ -5,8 +5,6 @@
 export default {
   id: 'pyramid-coast', name: 'Pyramid Coast', recap: 'eating fiery peppers, cliff diving for milk and riding burros to a pyramid',
   region: 'north', map: { x: 16, y: 46 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['taxi', 'burro', 'foot'],
   stretches: [
     { id: 'cliff-taxi', kind: 'travel', mode: 'taxi', base: 30, cost: 20, plate: 'coast road, cactus', label: 'Taxi to the cliffs',

@@ -406,6 +406,8 @@ export function createStage(holder, { faceOf, legLabel }) {
       // where steps.js placeWorkProps put it; a sand palace grows with the work: a third at the start, whole when done
       const grow = GROWS.has(s.work) ? 0.35 + 0.65 * Math.max(0, Math.min(1, s.plan?.p?.[k] ?? 1)) : 1;
       const pp = pl.under ? document.createElement('i') : prop(propUrl(pl.place || s.place, pl.prop), s.workProp.at, s.workProp.w * grow, 7);
+      // a buggy driven by remote: off round the course and back
+      if (s.work === 'remote' && fresh) pp.animate([{ transform: 'translate(-50%,-100%)' }, { transform: 'translate(40%,-100%)', offset: 0.4 }, { transform: 'translate(40%,-100%) scaleX(-1)', offset: 0.5 }, { transform: 'translate(-50%,-100%) scaleX(-1)', offset: 0.9 }, { transform: 'translate(-50%,-100%)' }], { duration: 2600, iterations: 2 });
       if (s.work === 'chase' && fresh) pp.animate([{ transform: 'translate(-50%,-100%)' }, { transform: 'translate(-30%,-104%) scaleX(-1)' }, { transform: 'translate(-50%,-100%)' }], { duration: 900, iterations: 3 });
       if (GROWS.has(s.work) && fresh && k > 0) pp.animate([{ transform: 'translate(-50%,-100%) scale(.92)' }, { transform: 'translate(-50%,-100%) scale(1)' }], { duration: 700, easing: 'cubic-bezier(.3,1.6,.5,1)' });
       // the local who judges it (the surfer boy, the carnival dancer, the coach)

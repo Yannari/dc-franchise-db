@@ -104,12 +104,20 @@ const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 await page.goto(`${base}?seed=${seed}&teams=${teams}&ep=5&step=0${PINS}`);
 await page.waitForFunction(() => window.__rr?.ep, null, { timeout: 60000 });
 // a step on a plate with water or leaves (life-have.js): its canvas runs; a plate without stays the crisp painting
-const k = await page.evaluate(async () => {
+// (the first leg from 5 on, then back from 4, that has one: a leg may be all ice and rock, with nothing to move)
+const findLife = () => page.evaluate(async () => {
   const { LIFE } = await import('./js/vp-rr-ep/life-have.js');
   const { plateUrl } = await import('./js/vp-rr-ep/plates.js');
   const r = window.__rr;
   return r.flat.findIndex(f => { const s = r.ep.screens[f.si]; return s.kind === 'world' && s.plate?.f && !s.plate.race && LIFE[plateUrl(s.plate.place || s.place, s.plate.f)]; });
 });
+let k = await findLife();
+const legs = await page.evaluate(() => document.querySelectorAll('#rr-ep option').length);
+for (const e of [...Array(legs).keys()].map(i => (i + 4) % legs)) {
+  if (k >= 0) break;
+  await page.evaluate(e => window.__rr.goto(e, 0), e);
+  k = await findLife();
+}
 await page.evaluate(k => window.__rr.step(k, false), Math.max(0, k));
 await page.waitForTimeout(2500);
 const gl = k >= 0 && await page.evaluate(() => !!document.querySelector('#rr-gl canvas.rr-life.on'));

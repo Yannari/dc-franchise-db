@@ -104,6 +104,14 @@
       "new": true,
       "ref": "chill-9444869",
       "why": "the ice Chill Zone (LEGS.txt: NEW, in edit; stand-in: the igloo with the mat put down in front, chill-9444869)"
+    },
+    {
+      "place": "frozen-mine",
+      "src": "23-frozen-mine",
+      "file": "chill-sauna-mat",
+      "new": true,
+      "ref": "chill-9447963",
+      "why": "the steam house (sauna) Chill Zone (LEGS.txt: NEW, in edit; stand-in: the sauna's benches with the mat put down, chill-9447963)"
     }
   ]
 }

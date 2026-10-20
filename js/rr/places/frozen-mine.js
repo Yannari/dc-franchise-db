@@ -5,8 +5,6 @@
 export default {
   id: 'frozen-mine', name: 'Frozen Mine', recap: 'ice sailing in swimsuits and going down the deepest hole on earth for a ball',
   region: 'north', map: { x: 56, y: 12 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['taxi', 'foot'],
   stretches: [
     { id: 'lake-taxi', kind: 'travel', mode: 'taxi', base: 30, cost: 20, plate: 'snowy forest road', label: 'Taxi to the frozen lake',

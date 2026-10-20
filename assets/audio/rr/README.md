@@ -7,7 +7,7 @@ Every place has its own sound and every moment of a leg its own track there (the
 the race-wide bed for that moment (`race/<moment>.mp3`) if there is one, then an ambience already
 in the repo where it really fits the place, and otherwise silence. A Total Drama bed never plays.
 
-**Filled: 204 of 204 slots.**
+**Filled: 236 of 236 slots.**
 
 **The rules for a file**
 - Royalty-free only: CC0 or public domain, the Pixabay Content License, or CC-BY with the credit in
@@ -439,3 +439,67 @@ A race-wide bed for a moment (`race/opener.mp3`, `race/struggle.mp3`...) is the 
 | `dragon-isle/elimination.mp3` | elimination | a minimal, droning piano; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | gamelan, marimba, sombre and short | [x] "Immersed" (Kevin MacLeod), 274 KB |
 | `dragon-isle/recap.mp3` | recap | quick tribal percussion and voices; quick, punchy, recap energy, the place still in it | 30-40 s loop | gamelan, marimba, quick | [x] "Trouble with Tribals" (Kevin MacLeod), 235 KB |
 | `dragon-isle/interview.mp3` | interview | soft plucked strings and rain; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | gamelan, marimba, light | [x] "Eastminster" (Kevin MacLeod), 313 KB |
+
+## Neon Desert (`neon-desert/`)
+
+**Sound of the place**: a neon strip in the desert: lounge brass, ska horns, a slot-machine shimmer.  
+**Search**: lounge, brass, ska, cocktail, strip.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `neon-desert/opener.mp3` | opener | a TV street-party brass band; bright, confident, the place in its first bars | 40-60 s loop | lounge, brass, bright | [x] "Street Party" (Kevin MacLeod), 352 KB |
+| `neon-desert/travel.mp3` | travel | a driving sax and synth theme off the strip; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | lounge, brass, moving | [x] "Miami Nights - Extended Theme" (Kevin MacLeod), 391 KB |
+| `neon-desert/challenge.mp3` | challenge | bright, bouncing ska horns: the buggy and the lion; driving, building, percussion forward, 110-140 bpm | 60 s loop | lounge, brass, driving | [x] "Blue Ska" (Kevin MacLeod), 391 KB |
+| `neon-desert/struggle.mp3` | struggle | an uneasy lounge groove, vibraphone and trumpet; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | lounge, brass, tense | [x] "Port Horizon" (Kevin MacLeod), 352 KB |
+| `neon-desert/chill-zone.mp3` | chill-zone | a relaxed tremolo-guitar lounge; relief and a little swagger, mid-tempo, warm | 45 s loop | lounge, brass, relief and a little swagger | [x] "Bummin on Tremelo" (Kevin MacLeod), 352 KB |
+| `neon-desert/elimination.mp3` | elimination | a dark, somber acoustic guitar; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | lounge, brass, sombre and short | [x] "Just As Soon" (Kevin MacLeod), 274 KB |
+| `neon-desert/recap.mp3` | recap | a quick funky horn hit; quick, punchy, recap energy, the place still in it | 30-40 s loop | lounge, brass, quick | [x] "I Got a Stick Arr Bryan Teoh" (Kevin MacLeod), 221 KB |
+| `neon-desert/interview.mp3` | interview | a light swinging beat; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | lounge, brass, light | [x] "Vicious" (Kevin MacLeod), 313 KB |
+
+## Pyramid Coast (`pyramid-coast/`)
+
+**Sound of the place**: the coast below the step pyramid: trumpets and guitars, accordion and marimba.  
+**Search**: trumpet, latin guitar, accordion, marimba, festive.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `pyramid-coast/opener.mp3` | opener | a sleepy, bouncing trumpet band; bright, confident, the place in its first bars | 40-60 s loop | trumpet, latin guitar, bright | [x] "Mariachi Snooze" (Kevin MacLeod), 296 KB |
+| `pyramid-coast/travel.mp3` | travel | accordion and marimba along the coast road; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | trumpet, latin guitar, moving | [x] "Del Rio Bravo" (Kevin MacLeod), 391 KB |
+| `pyramid-coast/challenge.mp3` | challenge | a driving, intense guitar: peppers and the cliff; driving, building, percussion forward, 110-140 bpm | 60 s loop | trumpet, latin guitar, driving | [x] "El Magicia" (Kevin MacLeod), 391 KB |
+| `pyramid-coast/struggle.mp3` | struggle | a dark guitar and sax; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | trumpet, latin guitar, tense | [x] "As I Figure" (Kevin MacLeod), 352 KB |
+| `pyramid-coast/chill-zone.mp3` | chill-zone | laid-back reverbed guitars at the pyramid; relief and a little swagger, mid-tempo, warm | 45 s loop | trumpet, latin guitar, relief and a little swagger | [x] "Laid Back Guitars" (Kevin MacLeod), 352 KB |
+| `pyramid-coast/elimination.mp3` | elimination | a guitar and lute by the fire; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | trumpet, latin guitar, sombre and short | [x] "Midnight Tale" (Kevin MacLeod), 274 KB |
+| `pyramid-coast/recap.mp3` | recap | a quick, dark brass circus; quick, punchy, recap energy, the place still in it | 30-40 s loop | trumpet, latin guitar, quick | [x] "Circus of Freaks" (Kevin MacLeod), 235 KB |
+| `pyramid-coast/interview.mp3` | interview | a soft classical guitar and harp; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | trumpet, latin guitar, light | [x] "Morning" (Kevin MacLeod), 313 KB |
+
+## Stilt River (`stilt-river/`)
+
+**Sound of the place**: a river of stilt villages and temples: marimba and bells, hand drums, flute over the water.  
+**Search**: marimba, bells, hand drum, flute, river, mystical.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `stilt-river/opener.mp3` | opener | a mysterious club groove of marimba and bells; bright, confident, the place in its first bars | 40-60 s loop | marimba, bells, bright | [x] "Ethernight Club" (Kevin MacLeod), 352 KB |
+| `stilt-river/travel.mp3` | travel | hand drums, bells and a river flute up the river; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | marimba, bells, moving | [x] "River Fire" (Kevin MacLeod), 391 KB |
+| `stilt-river/challenge.mp3` | challenge | a bright marimba groove: the catfish; driving, building, percussion forward, 110-140 bpm | 60 s loop | marimba, bells, driving | [x] "Ave Marimba" (Kevin MacLeod), 391 KB |
+| `stilt-river/struggle.mp3` | struggle | a mysterious marimba waltz and choir: the tunnels; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | marimba, bells, tense | [x] "Ancient Mystery Waltz (Allegro)" (Kevin MacLeod), 352 KB |
+| `stilt-river/chill-zone.mp3` | chill-zone | a calm marimba at the temple; relief and a little swagger, mid-tempo, warm | 45 s loop | marimba, bells, relief and a little swagger | [x] "Silver Flame" (Kevin MacLeod), 352 KB |
+| `stilt-river/elimination.mp3` | elimination | slow drums and bells; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | marimba, bells, sombre and short | [x] "Spirit of the Girl" (Kevin MacLeod), 274 KB |
+| `stilt-river/recap.mp3` | recap | a quick, mischievous dulcimer and xylophone; quick, punchy, recap energy, the place still in it | 30-40 s loop | marimba, bells, quick | [x] "Mischief Maker" (Kevin MacLeod), 235 KB |
+| `stilt-river/interview.mp3` | interview | a soft flute over running water; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | marimba, bells, light | [x] "River Flute" (Kevin MacLeod), 313 KB |
+
+## Frozen Mine (`frozen-mine/`)
+
+**Sound of the place**: a mine on a frozen lake: plucked harps and zither, glockenspiel, cold pads.  
+**Search**: harp, zither, plucked strings, glockenspiel, cold.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `frozen-mine/opener.mp3` | opener | a bright, mystical glockenspiel and harp; bright, confident, the place in its first bars | 40-60 s loop | harp, zither, bright | [x] "Aquarium" (Kevin MacLeod), 352 KB |
+| `frozen-mine/travel.mp3` | travel | a grooving zither and strings on the snowy road; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | harp, zither, moving | [x] "Morgana Rides" (Kevin MacLeod), 391 KB |
+| `frozen-mine/challenge.mp3` | challenge | an adventurous harp and bassoon: the yachts and the shaft; driving, building, percussion forward, 110-140 bpm | 60 s loop | harp, zither, driving | [x] "Adventures in Adventureland" (Kevin MacLeod), 391 KB |
+| `frozen-mine/struggle.mp3` | struggle | a dark little xylophone and bassoon; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | harp, zither, tense | [x] "Holiday Weasel" (Kevin MacLeod), 352 KB |
+| `frozen-mine/chill-zone.mp3` | chill-zone | a calm autoharp in the sauna; relief and a little swagger, mid-tempo, warm | 45 s loop | harp, zither, relief and a little swagger | [x] "Canon in D for Autoharp" (Kevin MacLeod), 352 KB |
+| `frozen-mine/elimination.mp3` | elimination | a slow harp meditation; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | harp, zither, sombre and short | [x] "Elf Meditation" (Kevin MacLeod), 274 KB |
+| `frozen-mine/recap.mp3` | recap | a quick lute and strings; quick, punchy, recap energy, the place still in it | 30-40 s loop | harp, zither, quick | [x] "Industrious Ferret" (Kevin MacLeod), 235 KB |
+| `frozen-mine/interview.mp3` | interview | a soft harp and pads; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | harp, zither, light | [x] "Ancient Winds" (Kevin MacLeod), 313 KB |

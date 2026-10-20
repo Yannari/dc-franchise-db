@@ -125,6 +125,7 @@ export function planBeds(ep) {
   const lasts = (i, key) => { let n = 0; for (let j = i; j < raw.length; j++) { if (raw[j].conf) continue; if (keyOfBed(raw[j].bed) !== key) break; n++; } return n; };
   // a run of confessionals from step i; the world steps from i up to the next confessional
   const confRun = i => { let j = i; while (j < raw.length && raw[j].conf) j++; return j - i; };
+  const backSoon = (i, curKey) => { for (let j = i + 1; j < Math.min(raw.length, i + SOFT_MIN); j++) if (raw[j].chapter) return keyOfBed(raw[j].bed) === curKey; return false; };
   const worldRun = i => { let j = i; while (j < raw.length && !raw[j].conf) j++; return j - i; };
   // a run of confessionals that gets the interview's own bed: a long one, or one that opens a chapter
   const ownAt = i => !!raw[i]?.conf && (confRun(i) >= SOFT_MIN || raw[i].chapter);
@@ -152,7 +153,8 @@ export function planBeds(ep) {
       if (key === keyOfBed(cur)) change = false;
       // the music after a long interview comes straight back, unless a few lines lead into another long one
       else if (fromOwn) { const L = worldRun(i); change = !(L < SOFT_MIN && ownAt(i + L)); }
-      else if (r.hard && !again && !brief) change = true;
+      // (a hard moment that the next chapter cuts short, back to the music on now, is let go: no A, B, A)
+      else if (r.hard && !again && !brief && (r.chapter || !backSoon(i, keyOfBed(cur)))) change = true;
       else if (r.place && curPlace && r.place !== curPlace && lasts(i, key) >= 2) change = true;
       // a soft change: the new music must last, and the music on now must have had its turn
       else change = lasts(i, key) >= SOFT_MIN && i - lastChange >= SOFT_MIN;

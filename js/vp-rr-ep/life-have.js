@@ -183,6 +183,12 @@ export const LIFE = {
  "assets/sets/rr/outback-farm/task-9442843.webp": [
   "wind"
  ],
+ "assets/sets/rr/pyramid-coast/present-9446346.webp": [
+  "water"
+ ],
+ "assets/sets/rr/pyramid-coast/task-9446588.webp": [
+  "water"
+ ],
  "assets/sets/rr/red-outback/people-free-cartoon-campsite-2.webp": [
   "water"
  ],
@@ -243,6 +249,12 @@ export const LIFE = {
  ],
  "assets/sets/rr/savanna-falls/task-9441761.webp": [
   "wind"
+ ],
+ "assets/sets/rr/stilt-river/present-9447233.webp": [
+  "water"
+ ],
+ "assets/sets/rr/stilt-river/task-9447243.webp": [
+  "water"
  ],
  "assets/sets/rr/swamp-prison/arrive-9442029.webp": [
   "wind"

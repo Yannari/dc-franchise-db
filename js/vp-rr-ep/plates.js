@@ -492,7 +492,7 @@ export const PLACE_PLATES = {
       local: 'Fur-hooded parka cartoon character-7', ring: 'Golden Cartoon Toss Ring-9', igloo: 'Pale Cyan Igloo Cutout-4', saw: 'Scalloped Ice Saw Cartoon Cutout-6' },
     st: {
       'tundra-hop': { talk: [p('arrive-9444551', 92, [24, 94])],
-        act: p('present-9444732', 0, [0, 0], { water: true, mode: 'ride', prop: 'plane', path: [[-22, 44], [50, 38], [122, 30]] }) },
+        act: p('present-9444732', 0, [0, 0], { water: true, mode: 'ride', prop: 'plane', path: [[-22, 54], [50, 48], [122, 42]] }) },
       // rings found in the snow, thrown at the narwhals' tusks in the open water
       narwhal: { talk: [p('task-9444662', 90, [6, 94])],
         act: p('task-9444731', 92, [6, 94], { mode: 'toss', prop: 'ring', propW: 0.45, fx: 'splash' }) },
@@ -520,6 +520,85 @@ export const PLACE_PLATES = {
       'hill-run': { talk: [p('travel-9445205', 92, [6, 60])],
         act: p('travel-9445205', 92, [6, 94], { mode: 'run', path: [[12, 92], [50, 92], [88, 92]], fx: 'dust' }) },
       mat: { talk: [p('chill-9445670', 88, [6, 94], { matPos: [50, 86] })] },
+    },
+  },
+  // ── batch 4 (LEGS.txt 20-23) ──
+  'neon-desert': {
+    src: '20-neon-desert', title: 'present-9446140', opener: p('present-9445996', 90, [6, 94]),
+    arrive: [p('arrive-9445777', 93, [6, 94])],
+    props: { lion: 'Angular-maned cartoon lion on transparent background-6', remote: 'Charcoal remote transmitter with blue screen-4', flag: 'Clean red pennant on gray pole-5',
+      cage: 'Empty magician cage with floor lever-8', buggy: 'Empty red-orange dune buggy-7', pennant: 'Red triangular course pennant-2' },
+    st: {
+      'strip-taxi': { talk: [p('arrive-9446147', 90, [6, 60])],
+        act: p('present-9446140', 88, [6, 94], { mode: 'ride', prop: 'taxi@glass-tower-gulf', flip: true, path: [[-14, 89], [50, 88], [114, 89]], fx: 'dust' }) },
+      'buggy-magic': {
+        talk: [p('task-9445874', 90, [6, 94])],
+        sides: {
+          // one drives the little buggy by remote round the course, the other grabs the flags
+          buggy: { talk: [p('task-9445796', 92, [6, 60])],
+            act: p('task-9445891', 94, [6, 94], { mode: 'remote', prop: 'buggy', propW: 0.9, judge: ['flag', 0.35], fx: 'dust' }) },
+          // one locked in the cage with the lion, the other at the lever
+          magic: { talk: [p('chill-9446241', 92, [6, 94])],
+            act: p('task-9445798', 95, [6, 94], { mode: 'lever', prop: 'cage', propW: 1.4, judge: ['lion', 1.05] }) },
+        },
+      },
+      'theatre-run': { talk: [p('task-9446122', 92, [6, 94])],
+        act: p('task-9446122', 92, [6, 94], { mode: 'run', path: [[12, 92], [50, 92], [88, 92]], fx: 'dust' }) },
+      mat: { talk: [p('chill-9446241', 92, [6, 94], { matPos: [50, 93] })] },
+    },
+  },
+  'pyramid-coast': {
+    src: '21-pyramid-coast', title: 'present-9446346', opener: p('present-9446663', 92, [6, 94]),
+    arrive: [p('arrive-9446385', 94, [6, 94])],
+    props: { flags: 'Green, orange, and red hand flags-5', peppers: 'Green, orange, and red pepper trio-6', canteen: 'Sage Green Milk Canteen Cutout-4',
+      burro: 'Sleepy Grey Burro Prop-3' },
+    st: {
+      'cliff-taxi': { talk: [p('arrive-9446431', 92, [44, 94])],
+        act: p('present-9446663', 92, [6, 94], { mode: 'ride', prop: 'taxi@glass-tower-gulf', flip: true, path: [[-14, 93], [50, 92], [114, 93]], fx: 'dust' }) },
+      // a pepper eaten at the cart and its flag waved; done, the jump off the cliff for the milk
+      'pepper-cliff': { talk: [p('task-9446542', 94, [6, 94])],
+        act: p('task-9446542', 94, [6, 94], { mode: 'eat', prop: 'peppers', propW: 0.75, judge: ['flags', 0.9], fx: 'steam' }),
+        act2: p('task-9446588', 0, [0, 0], { water: true, mode: 'swim', prop: 'canteen', path: [[16, 46], [36, 54], [60, 50], [80, 58]], fx: 'bubbles', inset: 'ON THE CLIFF' }) },
+      'burro-ride': { talk: [p('present-9446663', 92, [6, 94])],
+        act: p('task-9446799', 94, [6, 94], { mode: 'ride', prop: 'burro', path: [[-12, 94], [44, 92], [112, 94]], fx: 'dust' }) },
+      mat: { talk: [p('chill-9446872', 64, [8, 92], { mat: [33, 61], scale: 0.75 })] },
+    },
+  },
+  'stilt-river': {
+    src: '22-stilt-river', title: 'present-9447233', opener: p('arrive-9447023', 92, [30, 94]),
+    arrive: [p('arrive-9447004', 92, [6, 94])],
+    props: { catfish: 'Angular Whiskered Catfish-2', torch: 'Burning hand torch icon-4', branded: 'Cartoon catfish with globe-airplane emblem-1',
+      boat: 'Reddish-Brown River Fishing Boat-3' },
+    st: {
+      'longtail-boat': { talk: [p('arrive-9447014', 79, [6, 94])],
+        act: p('present-9447233', 0, [0, 0], { water: true, mode: 'ride', prop: 'boat', path: [[-18, 90], [50, 88], [118, 90]], fx: 'splash' }) },
+      // a superteam on the bank: both teams together, six catfish by hand, the branded one skips ahead
+      catfish: { talk: [p('task-9447243', 94, [6, 94])],
+        act: p('task-9447243', 94, [6, 94], { mode: 'chase', prop: 'catfish', propW: 0.8, judge: ['branded', 1.0], fx: 'splash' }) },
+      tunnels: { talk: [p('task-9447354', 92, [6, 94])],
+        act: p('task-9447366', 94, [6, 94], { closed: true, mode: 'search', prop: 'torch', propW: 0.45, fx: 'dust' }) },
+      'temple-run': { talk: [p('chill-9447520', 92, [6, 94])],
+        act: p('chill-9447520', 92, [6, 94], { mode: 'run', path: [[12, 92], [50, 92], [88, 92]], fx: 'dust' }) },
+      mat: { talk: [p('present-9447043', 90, [14, 86], { mat: [43, 88] })] },
+    },
+  },
+  'frozen-mine': {
+    src: '23-frozen-mine', title: 'present-9447601', opener: p('arrive-9447661', 92, [6, 94]),
+    arrive: [p('arrive-9447661', 92, [6, 94])],
+    props: { donbox: 'Centered Don Box cartoon machine-4', winch: 'Rugged winch reel with hanging harness-5', ball: 'Small red ball with seam arcs-6',
+      yacht: 'Yellow ice yacht with globe sail-2' },
+    st: {
+      'lake-taxi': { talk: [p('arrive-9447691', 95, [6, 44])],
+        act: p('arrive-9447661', 92, [6, 94], { mode: 'ride', prop: 'taxi@glass-tower-gulf', flip: true, path: [[-14, 93], [50, 92], [114, 93]], fx: 'snow' }) },
+      'ice-yacht': { talk: [p('task-9447726', 92, [6, 40])],
+        act: p('task-9447678', 0, [0, 0], { water: true, mode: 'ride', prop: 'yacht', path: [[-18, 90], [50, 88], [118, 90]], fx: 'snow' }) },
+      // lowered down the shaft on the winch to find the red ball
+      borehole: { talk: [p('task-9447861', 95, [6, 94])],
+        act: p('task-9447790', 0, [0, 0], { water: true, closed: true, mode: 'zip', prop: 'winch', path: [[50, 34], [50, 52], [50, 70], [50, 90]], fx: 'dust', inset: 'AT THE WINCH' }) },
+      'sauna-run': { talk: [p('task-9447866', 94, [6, 60])],
+        act: p('task-9447866', 94, [6, 94], { mode: 'run', path: [[12, 94], [40, 94], [60, 94]], fx: 'snow' }) },
+      // the steam house is a job (edit/); meanwhile the sauna's benches with the mat put down
+      mat: { talk: [repaint('chill-sauna-mat', p('chill-sauna-mat', 92, [6, 94], { closed: true, matPos: [50, 90] }), p('chill-9447963', 96, [6, 70], { closed: true, matPos: [40, 95] }))] },
     },
   },
 };

@@ -6,8 +6,6 @@
 export default {
   id: 'neon-desert', name: 'Neon Desert', recap: 'racing toy dune buggies and vanishing out of a cage with a lion',
   region: 'north', map: { x: 14, y: 37 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['taxi', 'foot'],
   stretches: [
     { id: 'strip-taxi', kind: 'travel', mode: 'taxi', base: 30, cost: 25, plate: 'neon strip at dusk', label: 'Taxi off the strip',

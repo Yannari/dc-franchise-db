@@ -243,6 +243,9 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .tok.w-saw .pair{animation:wSaw .45s ease-in-out infinite}
 @keyframes wSaw{0%,100%{transform:translateX(-.5cqw)}50%{transform:translateX(.5cqw)}}
 .tok.w-venom .pair{animation:wCreep 2.6s ease-in-out infinite}
+.tok.w-remote .pair{animation:wWatch 1.2s ease-in-out infinite}
+.tok.w-lever .pair{animation:wLever 1.8s ease-in-out infinite}
+@keyframes wLever{0%,100%{transform:none}40%{transform:translateY(.6cqw) rotate(10deg)}55%{transform:translateY(.6cqw) rotate(10deg)}}
 @keyframes wCreep{0%,100%{transform:translateX(0)}40%{transform:translateX(.6cqw) translateY(.3cqw) scaleY(.94)}60%{transform:translateX(.6cqw) translateY(.3cqw) scaleY(.94)}75%{transform:translateX(-.5cqw) rotate(-6deg)}}
 @keyframes wWait{0%,100%{transform:translateY(0)}20%{transform:translateY(-.45cqw)}40%{transform:translateY(0)}60%{transform:translateY(-.25cqw) rotate(-3deg)}}
 @keyframes wDig{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(.7cqw) rotate(10deg)}50%{transform:translateY(-.25cqw) rotate(-5deg)}75%{transform:translateY(.55cqw) rotate(8deg)}}

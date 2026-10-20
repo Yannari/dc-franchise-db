@@ -22,10 +22,13 @@ import { checkIn } from './chill.js';
 import { emit, playScene, interviewAfter } from './scenes.js';
 import { addScene } from './state.js';
 import { DON_GOES_AFTER } from './format.js';
+import { pairKey } from './scenes/registry.js';
 
 const TASKS = ['either', 'botch', 'allin', 'route', 'superteam'];
 const SPEED_BUMP = { base: 25, pass: 0.6, loopCost: 5 };
 const SUPER_WAIT = 60;
+// a Superteam of two teams this much at odds is 'stuck with the enemy' (one sour moment is not a feud)
+const SUPER_ENEMIES = 2;
 const DAY = 1440;
 
 const people = (st, id) => [st.teams[id].a, st.teams[id].b];
@@ -71,6 +74,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   const talked = new Set();            // `${team}|${stretch}`: the overlap talk happens once, even after a hold
   const matAt = {};                    // team -> minute it reached the mat
   const superEnd = {};
+  const superFormed = {};              // stretch -> groups put together there so far
   const midmat = [];
   const legStart = state.scenes.length;
   // the Chill Zone keeps the teams that checked in: those who arrived in the last two hours are there
@@ -155,8 +159,14 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
         const task = { ...s, pass: s.pass + 0.08 * (mean - own), base: s.base * own / Math.max(0.5, mean) };
         superEnd[k] = runTask(state, team, task, v.departs, api, rng).end;
         if (ms.length > 1) {
+          // teams are put together as they arrive (nobody picks): rivals are stuck with each other, the last teams in
+          // are what's left once the others have formed, anyone else is glad of who they got
+          const before = superFormed[s.id] || 0;
+          superFormed[s.id] = before + 1;
+          const rivals = ms.some((x, i) => ms.slice(i + 1).some(y => (state.rivalry[pairKey(x, y)] || 0) >= SUPER_ENEMIES));
+          const last = before > 0 && api.remaining(s.id) <= ms.length - 1;
           const ctx = { state, team: { id: ms[0] }, other: { id: ms[1] }, moment: 'superteam', present: ms, stretch: s, t: v.departs };
-          playScene(ctx, 'superteam-pick', rng, { ending: 'chosen' });
+          playScene(ctx, 'superteam-pick', rng, { ending: rivals ? 'forced-with-enemies' : last ? 'left-over' : 'chosen' });
         }
       }
       res = { end: superEnd[k] };

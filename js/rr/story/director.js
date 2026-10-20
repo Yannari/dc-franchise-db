@@ -29,7 +29,9 @@ export const MUST = new Set(['proposal', 'don-opener', 'don-demo', 'don-place', 
   'speed-bump', 'surrender', 'reward', 'call-home', 'int-exit', 'console', 'goodbye-kiss', 'int-bleachers',
   'confession', 'breakup', 'back-together', 'alliance-betrayal', 'deal-broken', 'leader-shift', 'quit-task', 'snap',
   'push', 'ram', 'steal', 'kidnap-pet', 'course-sabotage', 'fake-shortcut', 'mind-game', 'admin-sabotage', 'revenge',
-  'comeuppance', 'save-your-enemy', 'rescue']);
+  'comeuppance', 'save-your-enemy', 'rescue',
+  // a Superteam's teams put together: the challenge's own story (a formed group that never airs is a system with no screen)
+  'superteam-pick']);
 // two people who rowed this leg don't get a warm scene after it (making up is not warm, it's the repair)
 export const WARM = new Set(['bond-moment', 'celebrate', 'small-talk']);
 // kinds that are always a blow-up

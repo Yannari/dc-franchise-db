@@ -94,6 +94,8 @@ FORCE_WATER.update({'cliff-pool-isle/task-22416440': [(0, .2, 1, 1, 170, 200)], 
                     'cliff-pool-isle/task-22416594': [(0, 0, 1, 1, 170, 200)], 'cliff-pool-isle/arrive-22416267': [(0, .4, .7, .7, 170, 200)]})
 NO_WIND |= {'cliff-pool-isle/chill-22416513', 'cliff-pool-isle/task-22416652', 'marble-temple-hill/chill-22418530'}
 NO_WATER |= {'secret-base-desert/present-22418960'}
+# batch 8: the swan-boat water and the falls behind the tightrope
+FORCE_WATER.update({'great-falls/task-22421517': [(0, .4, 1, 1, 165, 200)], 'great-falls/task-22421939': [(0, 0, 1, 1, 165, 200)]})
 LAVA_PLACES = {'fire-mountain-isle'}
 SKIP = {'confess', 'worldmap', 'gate', 'cabin', 'galley', 'logo', 'sky', 'runway', 'don', 'plane'}
 

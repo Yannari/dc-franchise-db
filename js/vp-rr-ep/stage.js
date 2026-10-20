@@ -96,7 +96,7 @@ export function createStage(holder, { faceOf, legLabel }) {
     if (VEH.has(as) && pl.prop && s.mode === 'act') veh = `<img class="veh" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
     // what the team rides in place (the mechanical bull): under them, bucking with them
     if (pl.under && pl.prop && s.mode === 'act' && s.work && s.teams?.[0] === id && !opts.extraCls?.includes('crowd')) veh = `<img class="veh mount" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
-    if (pl.prop && String(pl.prop).match(/^(camel|emu|horse|bus|heli|boat|train|ute|sled)(@|$)/)) e.classList.add(pl.prop.split('@')[0]);
+    if (pl.prop && String(pl.prop).match(/^(camel|emu|horse|bus|heli|boat|train|ute|sled|chariot)(@|$)/)) e.classList.add(pl.prop.split('@')[0]);
     // a vehicle drawn facing left (the horse, the helicopter) is turned to face the way it goes
     if (pl.flip && s.mode === 'act') e.classList.add('flipveh');
     // a rickshaw is pulled at a run; a raft on a walk is carried over their heads

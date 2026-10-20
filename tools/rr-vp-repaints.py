@@ -13,7 +13,8 @@
 # The user often saves a result beside its prompt in edit/<src>/ rather than in done/<src>/: a job whose file is not
 # in done/ but that has a new image in edit/<src>/ (not a reference-*, not the frame given to repaint, not prompt.txt)
 # is picked up from there when it is the only job open for that place, and reported loudly otherwise. Once every job
-# of a place is back, its edit/<src>/ folder is emptied of the job's files (edit/ holds only what still waits).
+# of a place is back, its edit/<src>/ folder is emptied of the job's files (edit/ holds only what still waits); a file
+# that is not a job's (an alternative version, say) is kept, never swept.
 import hashlib, importlib.util, json, os, shutil, subprocess, sys
 from PIL import Image
 
@@ -83,14 +84,39 @@ def adopt(data):
 
 
 def tidy(data):
-    # a place whose jobs are all back keeps nothing in edit/: the prompt, the frames and the results go
+    # a place whose jobs are all back keeps nothing of the JOBS' in edit/: the prompt, the reference frames, the frame
+    # given out and any result already copied into done/ go. Anything else (an alternative version the user made, a
+    # file nobody has named yet) stays where it is, and the folder with it; it is never deleted by a sweep.
     by_src = {}
     for j in data['jobs']:
         by_src.setdefault(j['src'], []).append(j)
     for src_dir, jobs in by_src.items():
         d = os.path.join(FRAMES, 'edit', src_dir)
-        if os.path.isdir(d) and all(is_back(j) for j in jobs):
-            shutil.rmtree(d)
+        if not (os.path.isdir(d) and all(is_back(j) for j in jobs)):
+            continue
+        given = {j['file'] for j in jobs}
+        done_dirs = [os.path.join(FRAMES, 'done', src_dir), os.path.join(FRAMES, 'done', src_dir, 'cutout')]
+        done_shas = {sha(os.path.join(dd, f)) for dd in done_dirs if os.path.isdir(dd)
+                     for f in os.listdir(dd) if os.path.isfile(os.path.join(dd, f))}
+        kept = []
+        for root, _dirs, files in os.walk(d):
+            for f in files:
+                fp = os.path.join(root, f)
+                stem = os.path.splitext(f)[0]
+                if f == 'prompt.txt' or f.startswith('reference-') or stem in given or sha(fp) in done_shas:
+                    os.remove(fp)
+                else:
+                    kept.append(os.path.relpath(fp, d))
+        for root, dirs, _files in os.walk(d, topdown=False):
+            for x in dirs:
+                try:
+                    os.rmdir(os.path.join(root, x))
+                except OSError:
+                    pass
+        if kept:
+            print(f'edit/{src_dir}: all its jobs are back; kept (not a job file): {", ".join(kept)}')
+        else:
+            os.rmdir(d)
             print(f'edit/{src_dir}: all its jobs are back, folder removed')
 
 

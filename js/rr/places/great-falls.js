@@ -6,8 +6,6 @@
 export default {
   id: 'great-falls', name: 'Great Falls', recap: 'paddling a swan boat, playing a wedding slot machine and walking a tightrope over the falls',
   region: 'north', map: { x: 25, y: 30 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['swan-boat', 'foot'],
   stretches: [
     { id: 'swan-boat', kind: 'travel', mode: 'swan-boat', base: 30, cost: 0, plate: 'falls, swan boats', label: 'Paddle the swan boat',

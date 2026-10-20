@@ -206,6 +206,11 @@ export function episodeScreens(res, eps, i) {
       if (wantsAct && sp?.act) { plate = (k === 'task-done' && sp.act2) || sp.act; mode = 'act'; }
       else plate = pick(sp?.talk, nth(`${placeId}|${seg.stretch}|${seg.side || ''}`)) || sp?.act || (lastPlate?.place === placeId ? lastPlate : plates.opener);
       if (!standable(plate) && mode !== 'act') plate = pick(sp?.talk?.filter(standable), 0) || plates.opener;
+      // a narrow corner (a stair landing) holds two teams: three or more go to the stretch's widest standing plate
+      if (mode === 'talk' && segTeams.length > 2 && plate?.x && plate.x[1] - plate.x[0] < 11 * segTeams.length) {
+        const wide = (sp?.talk || []).filter(standable).sort((a, b) => (b.x[1] - b.x[0]) - (a.x[1] - a.x[0]))[0];
+        if (wide && wide.x[1] - wide.x[0] > plate.x[1] - plate.x[0]) plate = wide;
+      }
       if (sideLabel) hudTask += ` · ${sideLabel.toUpperCase()}`;
     } else if (seg.stretch === 'board' || seg.stretch === 'speed-bump') {
       plate = (lastPlate?.place === placeId ? lastPlate : plates.opener); hudTask = seg.stretch === 'board' ? 'THE BOARD' : 'SPEED BUMP';

@@ -7,7 +7,7 @@ Every place has its own sound and every moment of a leg its own track there (the
 the race-wide bed for that moment (`race/<moment>.mp3`) if there is one, then an ambience already
 in the repo where it really fits the place, and otherwise silence. A Total Drama bed never plays.
 
-**Filled: 332 of 332 slots.**
+**Filled: 380 of 380 slots.**
 
 **The rules for a file**
 - Royalty-free only: CC0 or public domain, the Pixabay Content License, or CC-BY with the credit in
@@ -695,3 +695,99 @@ A race-wide bed for a moment (`race/opener.mp3`, `race/struggle.mp3`...) is the 
 | `secret-base-desert/elimination.mp3` | elimination | a clean, quiet electric piano; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | sci-fi, space, sombre and short | [x] "Clean Soul" (Kevin MacLeod), 274 KB |
 | `secret-base-desert/recap.mp3` | recap | a funny android sock hop; quick, punchy, recap energy, the place still in it | 30-40 s loop | sci-fi, space, quick | [x] "Android Sock Hop" (Kevin MacLeod), 235 KB |
 | `secret-base-desert/interview.mp3` | interview | a slow retro space pad; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | sci-fi, space, light | [x] "Space 1990" (Kevin MacLeod), 313 KB |
+
+## Fjord Sea (`fjord-sea/`)
+
+**Sound of the place**: longships on a cold fjord: old folk tunes, lute and recorder, drums and pipes.  
+**Search**: folk, medieval, tavern, lute, pipes, drums.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `fjord-sea/opener.mp3` | opener | a tavern folk tune; bright, confident, the place in its first bars | 40-60 s loop | folk, medieval, bright | [x] "The Britons" (Kevin MacLeod), 352 KB |
+| `fjord-sea/travel.mp3` | travel | a bright village consort on the shore road; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | folk, medieval, moving | [x] "Village Consort" (Kevin MacLeod), 391 KB |
+| `fjord-sea/challenge.mp3` | challenge | crumhorns and a driving beat: the longship and the cannon; driving, building, percussion forward, 110-140 bpm | 60 s loop | folk, medieval, driving | [x] "Crunk Knight" (Kevin MacLeod), 391 KB |
+| `fjord-sea/struggle.mp3` | struggle | dark horns and axes; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | folk, medieval, tense | [x] "Death and Axes" (Kevin MacLeod), 352 KB |
+| `fjord-sea/chill-zone.mp3` | chill-zone | a feast-hall jig by the buoy; relief and a little swagger, mid-tempo, warm | 45 s loop | folk, medieval, relief and a little swagger | [x] "Master of the Feast" (Kevin MacLeod), 352 KB |
+| `fjord-sea/elimination.mp3` | elimination | a lone lute; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | folk, medieval, sombre and short | [x] "Suonatore di Liuto" (Kevin MacLeod), 274 KB |
+| `fjord-sea/recap.mp3` | recap | a bouncing bagpipe groove; quick, punchy, recap energy, the place still in it | 30-40 s loop | folk, medieval, quick | [x] "Club Seamus" (Kevin MacLeod), 235 KB |
+| `fjord-sea/interview.mp3` | interview | a mysterious lute and flute; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | folk, medieval, light | [x] "Lord of the Land" (Kevin MacLeod), 313 KB |
+
+## Great Falls (`great-falls/`)
+
+**Sound of the place**: a wedding town by the roaring falls: harps, romantic strings and a little comedy.  
+**Search**: harp, romantic, strings, wedding, calm.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `great-falls/opener.mp3` | opener | a canon for two harps; bright, confident, the place in its first bars | 40-60 s loop | harp, romantic, bright | [x] "Canon in D for Two Harps" (Kevin MacLeod), 352 KB |
+| `great-falls/travel.mp3` | travel | a bright guitar, cello and oboe on the swan boats; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | harp, romantic, moving | [x] "Evening" (Kevin MacLeod), 391 KB |
+| `great-falls/challenge.mp3` | challenge | a comic harp and strings: the wedding slot machine; driving, building, percussion forward, 110-140 bpm | 60 s loop | harp, romantic, driving | [x] "Thinking Music" (Kevin MacLeod), 391 KB |
+| `great-falls/struggle.mp3` | struggle | dark, driving strings over the tightrope; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | harp, romantic, tense | [x] "Crossing the Chasm" (Kevin MacLeod), 352 KB |
+| `great-falls/chill-zone.mp3` | chill-zone | a bright, light woodwind and strings piece on the rim; relief and a little swagger, mid-tempo, warm | 45 s loop | harp, romantic, relief and a little swagger | [x] "Ashton Manor" (Kevin MacLeod), 323 KB |
+| `great-falls/elimination.mp3` | elimination | a bittersweet cello and piano; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | harp, romantic, sombre and short | [x] "Bittersweet" (Kevin MacLeod), 274 KB |
+| `great-falls/recap.mp3` | recap | a bouncy, silly flute and strings; quick, punchy, recap energy, the place still in it | 30-40 s loop | harp, romantic, quick | [x] "Monkeys Spinning Monkeys" (Kevin MacLeod), 235 KB |
+| `great-falls/interview.mp3` | interview | a smooth, warm groove; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | harp, romantic, light | [x] "Smooth Lovin" (Kevin MacLeod), 313 KB |
+
+## Bamboo Wall Hills (`bamboo-wall-hills/`)
+
+**Sound of the place**: the long wall over the bamboo hills: plucked strings, metals, a koto and a gong.  
+**Search**: eastern, koto, erhu, metals, gong, zen.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `bamboo-wall-hills/opener.mp3` | opener | a relaxed eastern piece of strings and metals; bright, confident, the place in its first bars | 40-60 s loop | eastern, koto, bright | [x] "Eastern Thought" (Kevin MacLeod), 352 KB |
+| `bamboo-wall-hills/travel.mp3` | travel | a dark erhu groove through the bamboo; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | eastern, koto, moving | [x] "Tea Roots" (Kevin MacLeod), 391 KB |
+| `bamboo-wall-hills/challenge.mp3` | challenge | a driving, intense beat: the race along the wall; driving, building, percussion forward, 110-140 bpm | 60 s loop | eastern, koto, driving | [x] "Ujangong Mix" (Kevin MacLeod), 391 KB |
+| `bamboo-wall-hills/struggle.mp3` | struggle | a dark chanter; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | eastern, koto, tense | [x] "Chanter" (Kevin MacLeod), 352 KB |
+| `bamboo-wall-hills/chill-zone.mp3` | chill-zone | a warm koto at sunrise; relief and a little swagger, mid-tempo, warm | 45 s loop | eastern, koto, relief and a little swagger | [x] "Senbazuru" (Kevin MacLeod), 352 KB |
+| `bamboo-wall-hills/elimination.mp3` | elimination | a bowl drum and strings; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | eastern, koto, sombre and short | [x] "That Zen Moment" (Kevin MacLeod), 274 KB |
+| `bamboo-wall-hills/recap.mp3` | recap | a quick marimba and clarinet; quick, punchy, recap energy, the place still in it | 30-40 s loop | eastern, koto, quick | [x] "Monkoto" (Kevin MacLeod), 235 KB |
+| `bamboo-wall-hills/interview.mp3` | interview | a calm piano; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | eastern, koto, light | [x] "Moonstone" (Kevin MacLeod), 313 KB |
+
+## Grass Savanna (`grass-savanna/`)
+
+**Sound of the place**: the open plains: voices, marimba and hand drums.  
+**Search**: marimba, percussion, voices, choir, plains.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `grass-savanna/opener.mp3` | opener | voices and horn at the shore of the plains; bright, confident, the place in its first bars | 40-60 s loop | marimba, percussion, bright | [x] "At The Shore" (Kevin MacLeod), 273 KB |
+| `grass-savanna/travel.mp3` | travel | a sparse marimba and choir on the jeep track; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | marimba, percussion, moving | [x] "Bumba Crossing" (Kevin MacLeod), 391 KB |
+| `grass-savanna/challenge.mp3` | challenge | a marimba and percussion groove: the plums, the gourds, the safari; driving, building, percussion forward, 110-140 bpm | 60 s loop | marimba, percussion, driving | [x] "Digya" (Kevin MacLeod), 391 KB |
+| `grass-savanna/struggle.mp3` | struggle | a dark, suspenseful marimba; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | marimba, percussion, tense | [x] "Constance" (Kevin MacLeod), 352 KB |
+| `grass-savanna/chill-zone.mp3` | chill-zone | slow, simple polyrhythms on the plain; relief and a little swagger, mid-tempo, warm | 45 s loop | marimba, percussion, relief and a little swagger | [x] "Slow Heat" (Kevin MacLeod), 352 KB |
+| `grass-savanna/elimination.mp3` | elimination | a choir and percussion; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | marimba, percussion, sombre and short | [x] "Adding the Sun" (Kevin MacLeod), 274 KB |
+| `grass-savanna/recap.mp3` | recap | a jaunty marimba; quick, punchy, recap energy, the place still in it | 30-40 s loop | marimba, percussion, quick | [x] "Jaunty Gumption" (Kevin MacLeod), 235 KB |
+| `grass-savanna/interview.mp3` | interview | a light, easy guitar and marimba; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | marimba, percussion, light | [x] "Easy Lemon" (Kevin MacLeod), 313 KB |
+
+## Stone Head Island (`stone-head-island/`)
+
+**Sound of the place**: the stone heads on a windy island: drums, wind and an ancient feel.  
+**Search**: percussion, drums, wind, ancient, island.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `stone-head-island/opener.mp3` | opener | a driving, mystical brass and percussion; bright, confident, the place in its first bars | 40-60 s loop | percussion, drums, bright | [x] "Naraina" (Kevin MacLeod), 352 KB |
+| `stone-head-island/travel.mp3` | travel | a windswept guitar and strings; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | percussion, drums, moving | [x] "Windswept" (Kevin MacLeod), 391 KB |
+| `stone-head-island/challenge.mp3` | challenge | percussion beats: the painted eggs; driving, building, percussion forward, 110-140 bpm | 60 s loop | percussion, drums, driving | [x] "Tafi Maradi no voice" (Kevin MacLeod), 391 KB |
+| `stone-head-island/struggle.mp3` | struggle | a haunting tribal drum; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | percussion, drums, tense | [x] "Bump in the Night" (Kevin MacLeod), 352 KB |
+| `stone-head-island/chill-zone.mp3` | chill-zone | an ancient harp and flute on the dune; relief and a little swagger, mid-tempo, warm | 45 s loop | percussion, drums, relief and a little swagger | [x] "Temple of the Manes" (Kevin MacLeod), 352 KB |
+| `stone-head-island/elimination.mp3` | elimination | a soothing guitar; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | percussion, drums, sombre and short | [x] "Summer Day" (Kevin MacLeod), 274 KB |
+| `stone-head-island/recap.mp3` | recap | a funny little town loop; quick, punchy, recap energy, the place still in it | 30-40 s loop | percussion, drums, quick | [x] "Townie Loop" (Kevin MacLeod), 235 KB |
+| `stone-head-island/interview.mp3` | interview | a mysterious marimba waltz; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | percussion, drums, light | [x] "Ancient Mystery Waltz (Vivace)" (Kevin MacLeod), 313 KB |
+
+## Badlands (`badlands/`)
+
+**Sound of the place**: dusty badlands and dinosaur bones: banjo, twelve-string guitar, a jaunty piano and a campfire.  
+**Search**: banjo, guitar, western, dusty, campfire.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `badlands/opener.mp3` | opener | a dark banjo and twelve-string; bright, confident, the place in its first bars | 40-60 s loop | banjo, guitar, bright | [x] "Southern Gothic" (Kevin MacLeod), 352 KB |
+| `badlands/travel.mp3` | travel | a jaunty, quick piano down the hoodoo road; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | banjo, guitar, moving | [x] "Wagon Wheel" (Kevin MacLeod), 391 KB |
+| `badlands/challenge.mp3` | challenge | snare, timpani and gong: the dig and the drill; driving, building, percussion forward, 110-140 bpm | 60 s loop | banjo, guitar, driving | [x] "Western Streets" (Kevin MacLeod), 391 KB |
+| `badlands/struggle.mp3` | struggle | a dark diddley bow and flute; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | banjo, guitar, tense | [x] "Crowd Hammer" (Kevin MacLeod), 352 KB |
+| `badlands/chill-zone.mp3` | chill-zone | guitars by the campfire; relief and a little swagger, mid-tempo, warm | 45 s loop | banjo, guitar, relief and a little swagger | [x] "Almost Bliss" (Kevin MacLeod), 352 KB |
+| `badlands/elimination.mp3` | elimination | a dark, calm guitar and clarinet; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | banjo, guitar, sombre and short | [x] "Anamalie" (Kevin MacLeod), 274 KB |
+| `badlands/recap.mp3` | recap | a bouncy organ groove; quick, punchy, recap energy, the place still in it | 30-40 s loop | banjo, guitar, quick | [x] "Funin and Sunin" (Kevin MacLeod), 235 KB |
+| `badlands/interview.mp3` | interview | a bright, calm guitar; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | banjo, guitar, light | [x] "Inspired" (Kevin MacLeod), 313 KB |

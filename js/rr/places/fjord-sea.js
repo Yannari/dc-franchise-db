@@ -5,8 +5,6 @@
 export default {
   id: 'fjord-sea', name: 'Fjord Sea', recap: 'building a longship from a flat pack and firing meatballs from a cannon',
   region: 'north', map: { x: 52, y: 17 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['taxi', 'foot'],
   stretches: [
     { id: 'shore-taxi', kind: 'travel', mode: 'taxi', base: 30, cost: 20, plate: 'fjord road, red cabins', label: 'Taxi to the shore',

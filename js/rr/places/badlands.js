@@ -6,8 +6,6 @@
 export default {
   id: 'badlands', name: 'Badlands', recap: 'digging up dinosaur bones and building a skeleton, then hunting for buried barrels',
   region: 'north', map: { x: 15, y: 27 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['drive', 'foot'],
   stretches: [
     { id: 'hoodoo-pickup', kind: 'travel', mode: 'drive', base: 40, cost: 20, plate: 'badlands road, hoodoos', label: 'Pickup into the badlands',

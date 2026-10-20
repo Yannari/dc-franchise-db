@@ -6,8 +6,6 @@
 export default {
   id: 'grass-savanna', name: 'Grass Savanna', recap: 'picking plums under fire, smashing gourds and tracking an animal through the tall grass',
   region: 'desert', map: { x: 59, y: 58 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['drive', 'foot'],
   stretches: [
     { id: 'safari-jeep', kind: 'travel', mode: 'drive', base: 40, cost: 20, plate: 'dirt track, acacias', label: 'Jeep onto the plains',

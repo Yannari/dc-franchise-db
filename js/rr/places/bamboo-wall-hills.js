@@ -5,8 +5,6 @@
 export default {
   id: 'bamboo-wall-hills', name: 'Bamboo Wall Hills', recap: 'racing the ancient wall before the gong and eating a bowl of delicacies',
   region: 'far-east', map: { x: 81, y: 40 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['bus', 'foot'],
   stretches: [
     { id: 'bamboo-bus', kind: 'travel', mode: 'bus', base: 40, cost: 15, plate: 'bamboo forest road', label: 'Bus through the bamboo hills',

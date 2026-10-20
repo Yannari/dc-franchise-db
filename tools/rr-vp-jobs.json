@@ -181,6 +181,39 @@
       "kind": "cutout",
       "prop": "chariot",
       "why": "the two-horse chariot (LEGS.txt needs chariot); meanwhile on horseback"
+    },
+    {
+      "place": "fjord-sea",
+      "src": "42-fjord-sea",
+      "file": "chill-buoy-mat",
+      "new": true,
+      "ref": "chill-22420517",
+      "why": "the Chill Zone at the buoy: a floating deck to stand on (the buoy frame is all water; stand-in: the wreck shore, task-22420282)"
+    },
+    {
+      "place": "great-falls",
+      "src": "43-great-falls",
+      "file": "chill-falls-mat",
+      "new": true,
+      "ref": "chill-22421792",
+      "why": "the Chill Zone on the falls rim: a wide deck with the booths (the booth platforms are too small to stand on; stand-in: the landing beach, task-22421519)"
+    },
+    {
+      "place": "bamboo-wall-hills",
+      "src": "44-bamboo-wall-hills",
+      "file": "task-eating-table",
+      "new": true,
+      "ref": "task-22422501",
+      "why": "the eating table (LEGS.txt: NEW, in edit; stand-in: the counter of bowls, task-22422501)"
+    },
+    {
+      "place": "grass-savanna",
+      "src": "45-grass-savanna",
+      "file": "zebra",
+      "new": true,
+      "kind": "cutout",
+      "prop": "zebra",
+      "why": "the animal tracked through the tall grass on the safari; meanwhile the emu from the outback"
     }
   ]
 }

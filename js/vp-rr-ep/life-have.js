@@ -128,6 +128,18 @@ export const LIFE = {
  "assets/sets/rr/fjord-peaks/chill-9443672.webp": [
   "water"
  ],
+ "assets/sets/rr/fjord-sea/arrive-22420234.webp": [
+  "water"
+ ],
+ "assets/sets/rr/fjord-sea/chill-buoy-mat.webp": [
+  "water"
+ ],
+ "assets/sets/rr/fjord-sea/task-22420473.webp": [
+  "water"
+ ],
+ "assets/sets/rr/fjord-sea/task-22420516.webp": [
+  "water"
+ ],
  "assets/sets/rr/geyser-island/arrive-9436846.webp": [
   "water"
  ],
@@ -163,6 +175,21 @@ export const LIFE = {
  ],
  "assets/sets/rr/glass-tower-gulf/travel-9439786.webp": [
   "wind",
+  "water"
+ ],
+ "assets/sets/rr/great-falls/present-22421490.webp": [
+  "water"
+ ],
+ "assets/sets/rr/great-falls/present-22421498.webp": [
+  "water"
+ ],
+ "assets/sets/rr/great-falls/task-22421517.webp": [
+  "water"
+ ],
+ "assets/sets/rr/great-falls/task-22421519.webp": [
+  "water"
+ ],
+ "assets/sets/rr/great-falls/task-22421939.webp": [
   "water"
  ],
  "assets/sets/rr/great-wall-hills/chill-9440467.webp": [
@@ -299,6 +326,15 @@ export const LIFE = {
   "water"
  ],
  "assets/sets/rr/stilt-river/task-9447243.webp": [
+  "water"
+ ],
+ "assets/sets/rr/stone-head-island/arrive-22423541.webp": [
+  "water"
+ ],
+ "assets/sets/rr/stone-head-island/present-22423539.webp": [
+  "water"
+ ],
+ "assets/sets/rr/stone-head-island/task-22423848.webp": [
   "water"
  ],
  "assets/sets/rr/swamp-prison/arrive-9442029.webp": [

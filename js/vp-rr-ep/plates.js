@@ -572,9 +572,10 @@ export const PLACE_PLATES = {
     st: {
       'longtail-boat': { talk: [p('arrive-9447014', 79, [6, 94])],
         act: p('present-9447233', 0, [0, 0], { water: true, mode: 'ride', prop: 'boat', path: [[-18, 90], [50, 88], [118, 90]], fx: 'splash' }) },
-      // a superteam on the bank: both teams together, six catfish by hand, the branded one skips ahead
-      catfish: { talk: [p('task-9447243', 94, [6, 94])],
-        act: p('task-9447243', 94, [6, 94], { mode: 'chase', prop: 'catfish', propW: 0.8, judge: ['branded', 1.0], fx: 'splash' }) },
+      // a superteam: the teams meet on the track by the river, then wade into the shallows together and catch six
+      // catfish by hand (the shallows are water: they swim it, nobody stands on it)
+      catfish: { talk: [p('arrive-9447023', 92, [30, 94])],
+        act: p('task-9447243', 0, [0, 0], { water: true, mode: 'swim', prop: 'catfish', path: [[8, 80], [30, 77], [56, 80], [82, 77]], fx: 'splash' }) },
       tunnels: { talk: [p('task-9447354', 92, [6, 94])],
         act: p('task-9447366', 94, [6, 94], { closed: true, mode: 'search', prop: 'torch', propW: 0.45, fx: 'dust' }) },
       'temple-run': { talk: [p('chill-9447520', 92, [6, 94])],
@@ -775,7 +776,7 @@ export const PLACE_PLATES = {
       'fog-walk': { talk: [p('task-22417943', 92, [6, 94])],
         act: p('task-22417943', 92, [6, 94], { mode: 'run', path: [[12, 92], [50, 92], [88, 92]] }) },
       // the foggy street Chill Zone is a job (edit/); meanwhile the lamplit street
-      mat: { talk: [repaint('chill-fog-mat', p('chill-fog-mat', 92, [6, 94], { matPos: [50, 90] }), p('task-22417943', 92, [6, 94], { matPos: [50, 92] }))] },
+      mat: { talk: [repaint('chill-fog-mat', p('chill-fog-mat', 93, [6, 94], { mat: [49, 79] }), p('task-22417943', 92, [6, 94], { matPos: [50, 92] }))] },
     },
   },
   'marble-temple-hill': {
@@ -818,7 +819,119 @@ export const PLACE_PLATES = {
       artifact: { talk: [p('task-22419328', 92, [6, 94], { closed: true })],
         act: p('task-22419433', 94, [6, 94], { closed: true, mode: 'search', prop: 'artifact', propW: 0.5, fx: 'sparkle' }) },
       // the night desert Chill Zone is a job (edit/); meanwhile the desert by the base
-      mat: { talk: [repaint('chill-desert-night-mat', p('chill-desert-night-mat', 92, [6, 94], { matPos: [50, 90] }), p('task-22419058', 90, [6, 94], { matPos: [50, 88] }))] },
+      mat: { talk: [repaint('chill-desert-night-mat', p('chill-desert-night-mat', 90, [6, 94], { mat: [50, 58] }), p('task-22419058', 90, [6, 94], { matPos: [50, 88] }))] },
+    },
+  },
+  // ── batch 8 (LEGS.txt 42-47) ──
+  'fjord-sea': {
+    src: '42-fjord-sea', title: 'arrive-22420234', opener: p('task-22420282', 93, [6, 94]),
+    arrive: [p('task-22420282', 93, [6, 94])],
+    props: { longship: 'longship', boat: 'longship', cannon: 'cannon', meatballs: 'meatball-pile' },
+    st: {
+      'shore-taxi': { talk: [p('task-22420282', 93, [6, 94])],
+        act: p('task-22420280', 94, [6, 94], { mode: 'ride', prop: 'taxi@glass-tower-gulf', flip: true, path: [[-14, 95], [50, 94], [114, 95]], fx: 'dust' }) },
+      // the longship put back together from the wreck pile; done, it sails across the fjord
+      longship: { talk: [p('task-22420280', 93, [6, 94])],
+        act: p('task-22420282', 93, [6, 94], { mode: 'build', prop: 'longship', fx: 'logs' }),
+        act2: p('task-22420473', 0, [0, 0], { water: true, mode: 'ride', prop: 'boat', path: [[-18, 90], [50, 88], [118, 90]], fx: 'splash' }) },
+      // meatballs loaded into the cannon on the shore and fired at the target out on the fjord
+      'meatball-cannon': { talk: [p('task-22420282', 93, [6, 94])],
+        act: p('task-22420280', 93, [6, 94], { mode: 'toss', prop: 'meatballs', propW: 0.5, judge: ['cannon', 0.8], fx: 'dust' }) },
+      'buoy-row': { talk: [p('task-22420280', 93, [6, 94])],
+        act: p('task-22420516', 0, [0, 0], { water: true, mode: 'ride', prop: 'boat', path: [[-18, 88], [50, 86], [118, 88]], fx: 'splash' }) },
+      // the buoy finish is a job (edit/): a floating deck by the buoy; meanwhile the shore
+      mat: { talk: [repaint('chill-buoy-mat', p('chill-buoy-mat', 85, [6, 94], { mat: [50, 74] }), p('task-22420282', 93, [6, 94], { matPos: [50, 92] }))] },
+    },
+  },
+  'great-falls': {
+    src: '43-great-falls', title: 'present-22421498', opener: p('present-22421490', 60, [6, 94]),
+    arrive: [p('present-22421490', 60, [6, 94])],
+    props: { boat: 'Empty white swan pedal boat-2', pole: 'Long brown balance pole-1', slots: 'slot-machine-v2', dress: 'wedding-dress' },
+    st: {
+      // pedalled away from the roar of the falls to the landing
+      'swan-boat': { talk: [p('present-22421490', 60, [6, 94])],
+        act: p('task-22421517', 0, [0, 0], { water: true, mode: 'ride', prop: 'boat', path: [[-18, 84], [50, 82], [118, 84]], fx: 'splash' }) },
+      // the slot machine pulled until it lands three hearts; then the one dress on the rails
+      'wedding-slots': { talk: [p('task-22421563', 96, [6, 94], { closed: true })],
+        act: p('task-22421546', 95, [6, 94], { closed: true, mode: 'lever', prop: 'slots', propW: 1.1, judge: ['dress', 0.6] }),
+        act2: p('task-22421563', 96, [6, 94], { closed: true, mode: 'search', prop: 'dress', propW: 0.6, fx: 'sparkle' }) },
+      // the tightrope across the falls with a balance pole
+      tightrope: { talk: [p('task-22421519', 50, [6, 94])],
+        act: p('task-22421939', 77, [4, 96], { mode: 'walk', prop: 'pole', path: [[4, 77], [30, 77], [56, 77], [84, 77]], fx: 'wind' }) },
+      // the rim deck with its booths is a job (edit/); meanwhile the landing beach
+      mat: { talk: [repaint('chill-falls-mat', p('chill-falls-mat', 93, [6, 94], { mat: [56, 84] }), p('task-22421519', 50, [6, 94], { matPos: [50, 48] }))] },
+    },
+  },
+  'bamboo-wall-hills': {
+    src: '44-bamboo-wall-hills', title: 'present-22422729', opener: p('present-22422201', 90, [28, 94]),
+    arrive: [p('arrive-22422216', 92, [30, 94])],
+    props: { bowl: 'delicacy-bowl', gong: 'gong' },
+    st: {
+      'bamboo-bus': { talk: [p('arrive-22422216', 92, [30, 94])],
+        act: p('present-22422201', 92, [6, 94], { mode: 'ride', prop: 'bus@geyser-island', path: [[-20, 93], [50, 92], [120, 93]], fx: 'dust' }) },
+      // along the top of the wall before the gong sounds
+      'wall-race': { talk: [p('task-22422301', 94, [6, 94])],
+        act: p('task-22422384', 93, [6, 94], { mode: 'run', path: [[8, 93], [50, 93], [92, 93]], fx: 'dust' }),
+        act2: p('task-22422303', 93, [6, 94], { mode: 'lever', prop: 'gong', propW: 0.9 }) },
+      // the eating table is a job (edit/); meanwhile the counter of bowls
+      delicacies: { talk: [p('task-22424807', 93, [6, 94])],
+        act: repaint('task-eating-table', p('task-eating-table', 92, [6, 94], { closed: true, mode: 'eat', prop: 'bowl', fx: 'steam' }),
+          p('task-22422501', 96, [6, 94], { closed: true, mode: 'eat', prop: 'bowl', fx: 'steam' })) },
+      mat: { talk: [p('task-22422303', 93, [6, 94], { matPos: [50, 90] })] },
+    },
+  },
+  'grass-savanna': {
+    src: '45-grass-savanna', title: 'present-22423390', opener: p('present-22423205', 88, [6, 94]),
+    arrive: [p('arrive-22422818', 92, [48, 96])],
+    props: { crate: 'plum-crate', ball: 'Minimalist black-and-white soccer ball', bat: 'cricket-bat', gourd: 'gourd-on-post',
+      ...(REPAINTED.has('zebra') ? { zebra: 'zebra' } : {}) },
+    st: {
+      'safari-jeep': { talk: [p('arrive-22422818', 92, [48, 96])],
+        act: p('present-22423042', 72, [6, 94], { mode: 'ride', prop: 'ute@outback-farm', path: [[-16, 73], [50, 72], [116, 73]], fx: 'dust' }) },
+      // plums into the crate, footballs kicked at the pickers
+      plums: { talk: [p('arrive-22422915', 92, [6, 80])],
+        act: p('task-22422865', 95, [6, 94], { mode: 'pick', prop: 'crate', propW: 0.7, judge: ['ball', 0.3], fx: 'dust' }) },
+      // the gourds smashed off their posts with a cricket bat
+      gourds: { talk: [p('present-22423205', 88, [6, 94])],
+        act: p('task-22422938', 95, [6, 94], { mode: 'serve', prop: 'bat', propW: 0.55, fx: 'dust' }) },
+      // tracking the animal through the tall grass (the zebra is a job; meanwhile the bird from the outback)
+      safari: { talk: [p('task-22423089', 92, [6, 94])],
+        act: p('task-22423157', 93, [6, 94], { mode: 'chase', prop: REPAINTED.has('zebra') ? 'zebra' : 'emu@red-outback', propW: 0.8, fx: 'dust' }) },
+      mat: { talk: [p('chill-22423238', 90, [6, 94], { matPos: [56, 86] })] },
+    },
+  },
+  'stone-head-island': {
+    src: '46-stone-head-island', title: 'present-22424060', opener: p('present-22423539', 95, [6, 94]),
+    arrive: [p('arrive-22423541', 95, [6, 94])],
+    props: { eggs: 'colour-eggs', basket: 'Lavender Eggs in a Wicker Basket', condor: 'condor' },
+    st: {
+      'island-jeep': { talk: [p('arrive-22423541', 95, [6, 94])],
+        act: p('present-22423539', 95, [6, 94], { mode: 'ride', prop: 'ute@outback-farm', path: [[-16, 96], [50, 95], [116, 96]], fx: 'dust' }) },
+      // three painted eggs hunted among the stone heads
+      eggs: { talk: [p('task-22423725', 95, [6, 94])],
+        act: p('task-22423574', 92, [28, 96], { mode: 'search', prop: 'eggs', propW: 0.5, fx: 'sparkle' }) },
+      // the eggs carried up the spire to the condor's nest
+      'condor-nest': { talk: [p('task-22423652', 93, [6, 94])],
+        act: p('task-22423848', 96, [20, 80], { mode: 'climb', prop: 'basket', path: [[50, 98], [53, 76], [49, 54], [52, 32]], fx: 'wind' }),
+        act2: p('task-22423652', 93, [6, 94], { mode: 'toss', prop: 'basket', propW: 0.5, judge: ['condor', 0.9], fx: 'wind' }) },
+      mat: { talk: [p('task-22423611', 92, [30, 96], { matPos: [64, 88] })] },
+    },
+  },
+  badlands: {
+    src: '47-badlands', title: 'arrive-22424402', opener: p('task-22424403', 93, [6, 94]),
+    arrive: [p('arrive-22424402', 93, [6, 94])],
+    props: { bone: 'dino-bone', skeleton: 'Stylized theropod skeleton cutout-1', pickaxe: 'pickaxe', barrel: 'oil-barrel', rig: 'Angular yellow auger rig-2' },
+    st: {
+      'hoodoo-pickup': { talk: [p('arrive-22424402', 93, [6, 94])],
+        act: p('task-22424403', 93, [6, 94], { mode: 'ride', prop: 'ute@outback-farm', path: [[-16, 94], [50, 93], [116, 94]], fx: 'dust' }) },
+      // bones dug out of the plain, then the dinosaur built from them
+      dino: { talk: [p('Dinosaur skeleton among desert rocks-8', 93, [6, 94])],
+        act: p('task-22424409', 93, [6, 94], { mode: 'search', prop: 'bone', propW: 0.6, fx: 'dust' }),
+        act2: p('present-22424203', 93, [6, 94], { mode: 'build', prop: 'skeleton', fx: 'dust' }) },
+      // digging at the drill site for the buried barrel
+      'oil-barrel': { talk: [p('task-22424515', 93, [6, 94])],
+        act: p('Empty quarry, jet, barrels, and drill rig-9', 94, [6, 94], { mode: 'chip', prop: 'pickaxe', judge: ['barrel', 0.45], fx: 'dust' }) },
+      mat: { talk: [p('Lantern-Lit Fossil Campfire-1', 90, [14, 86], { matPos: [50, 87] })] },
     },
   },
 };

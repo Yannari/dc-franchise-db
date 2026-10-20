@@ -21,6 +21,7 @@ W, H = 1920, 1080
 CROP = {
     'red-outback/task-22419889': (0.035, 0.0, 0.0, 0.0),     # somebody's legs at the left edge
     'lei-island/task-9439428': (0.0, 0.0, 0.1, 0.0),          # somebody's legs at the right edge
+    'great-falls/task-22421939': (0.0, 0.5, 0.0, 0.0),        # the tightrope sits under the dialogue bar: bring it up
 }
 
 

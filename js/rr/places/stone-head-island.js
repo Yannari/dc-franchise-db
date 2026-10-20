@@ -6,8 +6,6 @@
 export default {
   id: 'stone-head-island', name: 'Stone Head Island', recap: 'hunting painted eggs among giant stone heads and returning them to a condor',
   region: 'ocean', map: { x: 4, y: 66 },
-  // a place being built: playable when booked, never drawn or offered until its lines, plates and music are in
-  draft: true,
   arrive: 'airport', local: ['drive', 'foot'],
   stretches: [
     { id: 'island-jeep', kind: 'travel', mode: 'drive', base: 30, cost: 15, plate: 'island track, grass', label: 'Jeep across the island',

@@ -150,6 +150,8 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 /* the rickshaw: the pair runs in front of it, pulling; a raft is carried over their heads */
 .tok.ride.rickshaw .veh{left:-35%;width:calc(var(--sz)*2.3);animation:rideBob .32s ease-in-out infinite}
 .tok.ride.rickshaw .pair{transform:translateX(calc(var(--sz)*.45))}
+/* the chariot's car is behind the horses: the pair rides in the car, not on the horses */
+.tok.ride.chariot .pair{transform:translate(calc(var(--sz)*-.5),calc(var(--sz)*-.2))}
 .tok .veh.carry{bottom:auto;top:calc(var(--sz)*-.55);width:calc(var(--sz)*2.2);z-index:3;animation:carryBob .5s ease-in-out infinite}
 @keyframes carryBob{0%,100%{transform:translateX(-50%) translateY(0) rotate(-2deg)}50%{transform:translateX(-50%) translateY(-.35cqw) rotate(2deg)}}
 .tok.para .veh{bottom:auto;top:calc(var(--sz)*-2.1);width:calc(var(--sz)*3)}
@@ -208,7 +210,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
    pushing a coffin in front */
 .tok.flipveh .veh{transform:translateX(-50%) scaleX(-1)}
 .tok.ride.horse .veh{width:calc(var(--sz)*2.3)}
-.tok.ride.bus .veh{width:calc(var(--sz)*3.6)} .tok.ride.train .veh{width:calc(var(--sz)*5.2)} .tok.ride.ute .veh{width:calc(var(--sz)*3.2)} .tok.ride.heli .veh{width:calc(var(--sz)*3.4)} .tok.ride.boat .veh{width:calc(var(--sz)*3.2)}
+.tok.ride.bus .veh{width:calc(var(--sz)*3.6)} .tok.ride.train .veh{width:calc(var(--sz)*5.2)} .tok.ride.ute .veh{width:calc(var(--sz)*3.2)} .tok.ride.heli .veh{width:calc(var(--sz)*3.4)} .tok.ride.boat .veh{width:calc(var(--sz)*3.2)} .tok.ride.sled .veh{width:calc(var(--sz)*3.2)} .tok.ride.chariot .veh{width:calc(var(--sz)*3.6)}
 .tok.swing .veh{bottom:auto;top:calc(var(--sz)*-2.7);width:calc(var(--sz)*.9);z-index:1}
 .tok.swing .pair{transform-origin:50% -40%;animation:wSwing 1.5s ease-in-out infinite}
 @keyframes wSwing{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}

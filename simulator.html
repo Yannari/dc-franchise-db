@@ -1080,6 +1080,17 @@
               </div>
             </div>
             <!-- /ch-options -->
+            <!-- THE RIDONCULOUS RACE'S OPTIONS. Read by js/rr-run.js _options(); each leg's place, kind and twist are
+                 pinned on its Season Timeline tile, never here. -->
+            <div class="divider" id="sec-rr-divider"></div>
+            <div class="setup-section-label" id="sec-rr-options">RACE OPTIONS</div>
+            <div id="rr-options-body">
+              <div class="form-group">
+                <label class="form-label"><input type="checkbox" id="cfg-rr-surprises" onchange="saveConfig(); renderTimeline && renderTimeline()"> Surprise twists</label>
+                <div class="hint hint-tight">On: the season draws its own twists, the way the show spreads them: a Boomerang every few legs, a Yield, a Zip-It, and late in the race a Boomerang the teams pick by card. A twist pinned on a leg's Season Timeline tile always happens. Off: only the pinned twists happen.</div>
+              </div>
+            </div>
+            <!-- /rr-options -->
             <div class="divider" id="sec-tr-divider"></div>
             <div class="setup-section-label" id="sec-tr-options">CASTLE OPTIONS</div>
             <div class="bbopt-fixed" id="sec-tr-fixed-ties">

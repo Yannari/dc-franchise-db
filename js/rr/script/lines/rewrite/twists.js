@@ -140,7 +140,7 @@ export default {
       ] },
     ],
     'boomerang-hit.fury': [
-      { id: 'tw.hf1', turns: [
+      { id: 'tw.hf1', when: { byVote: false }, turns: [
         { beat: '{a} and {b} reach the board and find their own photo with a Boomerang pinned to it.' },
         { by: 'a', ...V("No. No, no, no. We have to go back? All the way back?", "No. All the way back?", "All the way back?", "NO! NO, NO, NO! We have to go BACK? ALL the way BACK?", "No, no, no. We have to go all the way back?", "No. Back? To the beginning? To the dark place?") },
         { by: 'b', say: "We did it once. We can do it again." },
@@ -148,13 +148,46 @@ export default {
         { beat: '{a} rips the photo off the board and stuffs it in {a.posAdj} pocket.' },
         { by: 'b', say: "Come on. Being angry is slower than running." },
       ] },
-      { id: 'tw.hf2', turns: [
+      { id: 'tw.hf2', when: { byVote: false }, turns: [
         { by: 'b', say: "That's us. That's our picture. Somebody Boomeranged us." },
         { by: 'a', ...V("I'm going to find out who. And then they're going to wish they'd never been born.", "I'll find out who. They'll regret it.", "I'll find out. They'll regret it.", "I'm GOING to find out WHO! And then they're going to WISH they'd never been BORN!", "I'm going to find out who did this. And they're going to regret it.", "I'll find them. And I'll be very, very disappointed in them. Loudly.") },
         { by: 'b', say: "Later. Right now we've got the whole thing to do again." },
         { by: 'a', say: "And I'll do it angry. I'm fast when I'm angry." },
         { beat: 'They run back the way they came, {a} muttering the whole way.' },
         { by: 'b', say: "You really are fast when you're angry." },
+      ] },
+      // (for any Boomerang, thrown or picked by card: nobody asks who)
+      { id: 'tw.hf5', turns: [
+        { beat: '{a} and {b} reach the board and find their own photo with a Boomerang through it.' },
+        { by: 'a', ...V("Back. We're going back.", "Back. We go back.", "Back.", "BACK! We're going BACK!", "Back... we're going back.", "Back. Backwards. The direction of shame.") },
+        { by: 'b', say: "All of it? The whole thing again?" },
+        { by: 'a', say: "The whole thing again." },
+        { beat: '{b} takes one long breath, and starts running.' },
+        { by: 'b', say: "Don't talk to me until we're done." },
+      ] },
+      { id: 'tw.hf6', turns: [
+        { by: 'b', say: "Is that our photo?" },
+        { by: 'a', ...V("That's our photo. With a Boomerang through the middle of it.", "Our photo. Boomerang through it.", "Ours.", "That's OUR photo! With a BOOMERANG through the MIDDLE of it!", "That's our photo... with a Boomerang right through it.", "Our photo. Skewered, like a kebab of bad news.") },
+        { by: 'b', say: "It's not even a good photo." },
+        { by: 'a', say: "Focus. We've got it all to do again." },
+        { beat: 'They run back the way they came.' },
+        { by: 'b', say: "I'm getting a better photo taken. Out of principle." },
+      ] },
+      { id: 'tw.hf3', when: { byVote: true }, turns: [
+        { beat: '{a} and {b} reach the board. Their photo is there with the Boomerang through it, and the cards pinned underneath.' },
+        { by: 'a', ...V("So that's what the cards were for. Us.", "That's what the cards were for. Us.", "The cards. Us.", "So THAT'S what the cards were for! US!", "So that's what the cards were for... us.", "So that's what the cards were for. Us. We're famous, in the worst way.") },
+        { by: 'b', say: "That's what happens when you keep winning." },
+        { by: 'a', say: "Then I'm going to keep winning. Just to annoy them." },
+        { beat: 'They turn round and run back the way they came.' },
+        { by: 'b', say: "They'll want to pick us again next time. Let's give them a reason." },
+      ] },
+      { id: 'tw.hf4', when: { byVote: true }, turns: [
+        { by: 'b', say: "So that's what they were all writing at the start." },
+        { by: 'a', ...V("I knew it. I saw them smiling when Don read the cards out.", "Knew it. They were smiling at the cards.", "Knew it.", "I KNEW it! I SAW them smiling when Don read the CARDS!", "I knew it. I saw them smiling when Don read the cards out.", "I knew it. Nobody smiles that much at a piece of card.") },
+        { by: 'b', say: "Back we go, then." },
+        { by: 'a', say: "Back we go. And every team gets a wave when we pass them again." },
+        { beat: '{a} is already practising the wave as they run.' },
+        { by: 'b', say: "Make it a small wave. A smug one." },
       ] },
     ],
     'boomerang-hit.guess-who': [
@@ -305,8 +338,8 @@ export default {
     ],
     'zip-it.beaten-to-it': [
       { id: 'tw.zb1', turns: [
-        { by: 'a', say: "We're nearly done! One more and it's ours!" },
-        { beat: 'A whistle blows. Another team holds up the ticket.' },
+        { by: 'a', say: "Done! It's done! Where's the ticket?" },
+        { beat: 'The hook where the ticket hung is empty. Another team took it a while ago.' },
         { by: 'b', ...V("No. No! We were so close! We were right there!", "No! We were so close!", "No. So close.", "NO! NO! We were SO close! We were RIGHT there!", "No, no! We were so close! We were right there!", "No! Robbed by seconds, by the width of a sandwich!") },
         { by: 'a', say: "And now we've got to do the whole leg anyway." },
         { by: 'b', say: "Having wasted an hour on this." },

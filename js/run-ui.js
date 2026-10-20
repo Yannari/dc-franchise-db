@@ -4047,9 +4047,19 @@ function _rrLegPickers(ep, isFinale) {
     h += `<option value="elim" ${k === 'elim' ? 'selected' : ''}>Elimination</option>`;
     h += `<option value="non" ${k === 'non' ? 'selected' : ''}>Non-elimination</option>`;
     h += `</select></label>`;
+    // the twist (2026-10-20): drawn by the season unless Surprise twists is off; pinned here, or kept off this leg
+    const tw = (seasonConfig.rrTwistPins || {})[n] || '';
+    const drawnTw = raceEpisodeMap().find(x => x.ep === n)?.twist || null;
+    h += lab('TWIST', !!tw) + sel(!!tw, `_setRrPin(${n},'twist',this.value)`);
+    h += `<option value="" ${!tw ? 'selected' : ''}>${_hubEsc(tw ? 'Auto (draw it)' : `Auto (${drawnTw ? `drawn: ${_RR_TWIST[drawnTw]}` : 'none drawn'})`)}</option>`;
+    h += `<option value="none" ${tw === 'none' ? 'selected' : ''}>No twist</option>`;
+    for (const [id, name] of Object.entries(_RR_TWIST)) h += `<option value="${id}" ${tw === id ? 'selected' : ''}>${_hubEsc(name)}</option>`;
+    h += `</select></label>`;
   }
   return h;
 }
+// the race's leg twists, as the tile names them (js/rr/schedule.js LEG_TWISTS)
+const _RR_TWIST = { boomerang: 'Boomerang', yield: 'Yield', 'zip-it': 'Zip-It', 'boomerang-vote': 'Boomerang (teams pick)' };
 export function _setRrPin(ep, field, value) {
   raceSetPin(ep, field, value);
   renderTimeline();

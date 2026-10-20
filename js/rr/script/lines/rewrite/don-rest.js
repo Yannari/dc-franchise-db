@@ -149,7 +149,7 @@ export default {
       ] },
     ],
     'don-rule.explained': [
-      { id: 'dr.re1', turns: [
+      { id: 'dr.re1', when: { rule: ['boomerang', 'yield', 'boomerang-vote'] }, turns: [
         { beat: 'Don pats the top of the Don Box.' },
         { by: 'don', say: "Okay, teams, new rule! Some legs, there's a little surprise at the Don Box." },
         { by: 'don', say: "A Boomerang sends a team back to do the last challenge all over again. A Yield makes a team stand right here and wait." },
@@ -157,7 +157,7 @@ export default {
         { beat: 'He leans on the box, very pleased with himself.' },
         { by: 'don', say: "Which one is it today? You'll find out! I love a surprise." },
       ] },
-      { id: 'dr.re2', turns: [
+      { id: 'dr.re2', when: { rule: ['boomerang', 'yield'] }, turns: [
         { beat: 'Don holds up a tip and turns it round so the back faces the camera.' },
         { by: 'don', say: "See this? Sometimes the back of a tip has a Boomerang on it, or a Yield." },
         { by: 'don', say: "Boomerang: you pick a team that isn't here yet, and they go back and do the last challenge again." },
@@ -165,7 +165,7 @@ export default {
         { by: 'don', say: "It's sneaky! It's mean! Friendships end over it!" },
         { by: 'don', say: "It's my favourite part of the whole race." },
       ] },
-      { id: 'dr.re3', turns: [
+      { id: 'dr.re3', when: { rule: ['boomerang', 'yield'] }, turns: [
         { by: 'don', say: "Quick rule, teams, and I'm only saying it once." },
         { beat: 'He holds up one finger.' },
         { by: 'don', say: "On this leg, a team can be sent back to do a challenge again, or made to wait at the box while everybody runs past." },
@@ -173,9 +173,50 @@ export default {
         { by: 'don', say: "If it's all of them, that's probably your fault." },
         { by: 'don', say: "Good luck!" },
       ] },
+      // (two for any twist, the pool's rule: a twist with no lines of its own yet gets these; a written one always wins)
+      { id: 'dr.reg1', turns: [
+        { beat: 'Don taps the Don Box.' },
+        { by: 'don', say: "New rule on this leg, teams. Read your tip, and then read it again." },
+        { by: 'don', say: "There's a twist out there today, and it's not on my side or yours. It's on the side of television." },
+        { by: 'don', say: "That's all I'm saying." },
+        { beat: 'He mimes zipping his lips, then unzips them straight away.' },
+        { by: 'don', say: "Okay, one more thing. Good luck. You'll need it." },
+      ] },
+      { id: 'dr.reg2', turns: [
+        { by: 'don', say: "Teams! Little twist today. It's written on your tip, so I don't have to explain it." },
+        { beat: 'He waves a tip at the camera.' },
+        { by: 'don', say: "I mean, I could explain it. I'm great at explaining." },
+        { by: 'don', say: "But I'm on a break. Read the tip." },
+        { beat: 'He sits down on the Don Box.' },
+        { by: 'don', say: "Go on, then! The clock doesn't care about my break." },
+      ] },
+      { id: 'dr.rz1', when: { rule: 'zip-it' }, turns: [
+        { beat: 'Don stands beside a little board with one ticket clipped to it.' },
+        { by: 'don', say: "New thing, teams! Somewhere on this leg, there's a Zip-It." },
+        { by: 'don', say: "Do the Zip-It task, and you skip everything else today. Straight to the Chill Zone." },
+        { by: 'don', say: "There's one ticket. One. The first team through takes it, and everybody after them did it for nothing." },
+        { beat: 'He taps the ticket.' },
+        { by: 'don', say: "Is it worth the gamble? No idea. I'm not the one gambling. Good luck!" },
+      ] },
+      { id: 'dr.rz2', when: { rule: 'zip-it' }, turns: [
+        { by: 'don', say: "Teams, see this little ticket? That's a Zip-It." },
+        { beat: 'He waves it under the camera.' },
+        { by: 'don', say: "One team gets it, and that team skips every challenge left on this leg and comes straight to me." },
+        { by: 'don', say: "Anybody who tries it and gets there second goes back to the regular route, a long way behind." },
+        { by: 'don', say: "And you only get one try at it the whole race. So choose wisely." },
+        { by: 'don', say: "Or don't! It makes better television." },
+      ] },
+      { id: 'dr.rv1', when: { rule: 'boomerang-vote' }, turns: [
+        { beat: 'Don stands by the Don Box with a stack of blank cards.' },
+        { by: 'don', say: "Hold it, teams! Before anybody goes anywhere, everybody gets a card." },
+        { by: 'don', say: "Write down one team. Not yourselves, nice try. The team on the most cards gets a Boomerang today." },
+        { by: 'don', say: "When they reach the board, they go back and do the last challenge all over again." },
+        { beat: 'He fans the cards out like a magician.' },
+        { by: 'don', say: "Be honest. Be strategic. Be mean. I'm reading them out loud, so write neatly." },
+      ] },
     ],
     'don-rule.grudging-repeat': [
-      { id: 'dr.rg1', turns: [
+      { id: 'dr.rg1', when: { rule: ['boomerang', 'yield', 'boomerang-vote'] }, turns: [
         { by: 'don', say: "Okay, I've explained this already, but one more time, for the people at the back." },
         { beat: 'He clears his throat.' },
         { by: 'don', say: "A Boomerang sends a team back to redo the last challenge." },
@@ -183,13 +224,37 @@ export default {
         { by: 'don', say: "That's it! That's the whole rule!" },
         { by: 'don', say: "If anybody asks me again, they're getting a Yield from me personally." },
       ] },
-      { id: 'dr.rg2', turns: [
+      { id: 'dr.rg2', when: { rule: ['boomerang', 'yield', 'boomerang-vote'] }, turns: [
         { by: 'don', say: "Okay, again, because somebody wasn't listening." },
         { beat: 'He holds up the tip and points at each word as he says it.' },
         { by: 'don', say: "Somebody can send you back. Somebody can make you wait. And you can do it to somebody else." },
         { by: 'don', say: "That's the whole twist! It fits on one card!" },
         { by: 'don', say: "Write it on your hand if you have to." },
         { by: 'don', say: "Write it on your partner's hand. They weren't listening either." },
+      ] },
+      { id: 'dr.rgg1', turns: [
+        { by: 'don', say: "Another twist? Yes. Another twist." },
+        { beat: 'He sighs, very theatrically.' },
+        { by: 'don', say: "I explain these so well, and nobody ever thanks me." },
+        { by: 'don', say: "It's on your tip. Read it slowly. Move your lips if you need to." },
+        { by: 'don', say: "No shame. Okay, a little shame." },
+        { by: 'don', say: "Go!" },
+      ] },
+      { id: 'dr.rgg2', turns: [
+        { by: 'don', say: "Okay, rule time again. Everybody pretend you're listening." },
+        { beat: 'Nobody pretends very hard.' },
+        { by: 'don', say: "It's on the back of your tip. Same idea as last time, different twist." },
+        { by: 'don', say: "If you're confused, ask your partner." },
+        { by: 'don', say: "If your partner's confused, that's a you problem." },
+        { by: 'don', say: "Off you go!" },
+      ] },
+      { id: 'dr.rzg1', when: { rule: 'zip-it' }, turns: [
+        { by: 'don', say: "Yes, another twist. I'm full of them." },
+        { beat: 'He holds up a single ticket.' },
+        { by: 'don', say: "This is a Zip-It. Finish the Zip-It task first, and you skip the rest of the leg." },
+        { by: 'don', say: "One ticket, one team, and one try each for the whole race." },
+        { by: 'don', say: "Write it on your hand, next to the other rules." },
+        { by: 'don', say: "Or don't. I love it when people forget." },
       ] },
     ],
     'don-ruling.no-sharing': [

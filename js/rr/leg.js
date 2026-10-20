@@ -11,7 +11,7 @@
 import { payStipend, repayDebts } from './money.js';
 import { flightStretches, resolveTravel, boardFlightScenes } from './travel.js';
 import { resolveTask, runTask, keepRun } from './tasks.js';
-import { handOut, resolveBoard, useExpress } from './twists.js';
+import { handOut, pickBoomerang, resolveBoard, useExpress, zipTask } from './twists.js';
 import { runLeg } from './clock.js';
 import { talkAtStretch, talkAtOverlap, talkAtWait, closeLegTalk } from './talk.js';
 import { snapCheck, makeupCheck, leaderCheck } from './team.js';
@@ -31,6 +31,8 @@ const SUPER_WAIT = 60;
 const SUPER_ENEMIES = 2;
 const DAY = 1440;
 const NIGHT = 180;                                  // a closed wait this long is a night, and Don says so
+// the Zip-It: the place's hardest kind of task, longer and harder to pass (the first team through skips to the mat)
+const ZIP = { base: 1.4, pass: -0.1 };
 
 const people = (st, id) => [st.teams[id].a, st.teams[id].b];
 
@@ -44,6 +46,17 @@ function buildRoute(state, leg, from, to, rng, nTeams) {
     const k = out.findIndex(s => TASKS.includes(s.kind));
     if (k >= 0) out.splice(k + 1, 0, { id: 'board', kind: 'board', after: out[k].id,
       label: leg.twist === 'yield' ? 'The Yield board' : 'The Boomerang board' });
+  }
+  // the Zip-It sits before the place's first task: a team takes it on instead of the leg, or goes past it
+  if (leg.twist === 'zip-it') {
+    const k = out.findIndex(s => !s.air && TASKS.includes(s.kind));
+    const like = k >= 0 ? out[k] : null;
+    if (like) {
+      const types = like.types || like.sides?.[0]?.types || ['nerve'];
+      const base = like.base || like.sides?.[0]?.base || 30, pass = like.pass ?? like.sides?.[0]?.pass ?? 0.5;
+      out.splice(k, 0, { id: 'zip', kind: 'zip', label: 'The Zip-It', types, base: Math.round(base * ZIP.base),
+        pass: Math.max(0.2, pass + ZIP.pass), loopCost: like.loopCost || like.sides?.[0]?.loopCost || 10 });
+    }
   }
   return { stretches: out, air: air[0] || null };
 }
@@ -67,7 +80,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   payStipend(state, leg);
   const broke = active.filter(id => !(state.money[id] > 0));
   repayDebts(state);
-  handOut(state, leg, rng);
+  handOut(state, leg, rng, { pick: false });
 
   const { stretches, air } = buildRoute(state, leg, from, to, rng, active.length);
   const idx = id => stretches.findIndex(s => s.id === id);
@@ -88,7 +101,20 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   emit(state, 'don-opener', [], rng() < 0.67 ? 'annoyed' : 'bored', { t: 0, place: to.id, effects: [['opener', leg.n, to.id]] });
   const demoed = new Set();
   state.rulesRead ||= {};
+  // the pick-a-team Boomerang happens here, at the start: Don says what the cards are for (the first time), then the
+  // teams write them (read 2026-10-20: the cards were written before the opener, and the rule came hours later)
+  if (leg.twist === 'boomerang-vote') {
+    if (!state.rulesRead[leg.twist]) readRule(0, null);
+    pickBoomerang(state, leg, rng, 0);
+  }
   const starters = [...state.lastOrder.filter(id => active.includes(id)), ...active.filter(id => !state.lastOrder.includes(id))];
+
+  // a twist's rule, the first time the season meets it (he can only grumble about saying it again once he has said one)
+  function readRule(t, stretch) {
+    const again = Object.keys(state.rulesRead).length > 0 && rng() < 0.2;
+    state.rulesRead[leg.twist] = leg.n;
+    emit(state, 'don-rule', [], again ? 'grudging-repeat' : 'explained', { t, stretch, rule: leg.twist, effects: [['rule', leg.twist]] });
+  }
 
   const resolve = (team, s, t, api) => {
     const id = team.id;
@@ -124,10 +150,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       demoed.add(s.id);
       emit(state, 'don-demo', [], rng() < 0.67 ? 'gag' : 'dry', { t, stretch: s.id, effects: [['demo', s.id]] });
     }
-    if (s.kind === 'board' && leg.twist && !state.rulesRead[leg.twist]) {
-      state.rulesRead[leg.twist] = leg.n;
-      emit(state, 'don-rule', [], rng() < 0.2 ? 'grudging-repeat' : 'explained', { t, stretch: s.id, rule: leg.twist, effects: [['rule', leg.twist]] });
-    }
+    if ((s.kind === 'board' || s.kind === 'zip') && leg.twist && !state.rulesRead[leg.twist]) readRule(t, s.id);
 
     // a place that's closed: wait for it to open, with whoever else is waiting
     const until = closedUntil(state, s, t);
@@ -153,6 +176,17 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       const b = resolveBoard(state, team, s, t, api, rng);
       if (b.redo) return { end: b.end, back: idx(s.id) - idx(b.redo) };
       res = { end: b.end };
+    } else if (s.kind === 'zip') {
+      // most teams go straight past it; one that takes it on and is first through skips the rest of the leg's tasks
+      // (to the last road into the mat, or the mat)
+      const z = zipTask(state, team, s, t, api, rng);
+      if (!z.tried) return { end: t };
+      res = { end: z.end };
+      if (z.won) {
+        const mat = stretches.findIndex(x => x.kind === 'mat');
+        const road = stretches[mat - 1]?.kind === 'travel' && mat - 1 > idx(s.id) ? mat - 1 : mat;
+        res.skip = Math.max(0, road - idx(s.id) - 1);
+      }
     } else if (s.kind === 'superteam') {
       const v = api.vehicle(s.id, { waitFor: 2, maxWait: SUPER_WAIT }, id, t);
       if (v.departs == null) return { hold: v.group.first + SUPER_WAIT };

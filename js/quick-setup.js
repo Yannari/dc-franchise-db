@@ -1420,6 +1420,10 @@ const CONFIG_SCOPE = {
     'sec-ch-divider':        ['the-challenge'],
     'sec-ch-options':        ['the-challenge'],
     'ch-options-body':       ['the-challenge'],
+    // The race's heading and container (the bb-options-body lesson).
+    'sec-rr-divider':        ['ridonculous-race'],
+    'sec-rr-options':        ['ridonculous-race'],
+    'rr-options-body':       ['ridonculous-race'],
     'sec-pm-divider':        ['perfect-match'],
     // The whole villa options block. Its selects were scoped and the cards
     // around them were not, so "Night one" and "The final" (headings and
@@ -1448,6 +1452,7 @@ const CONFIG_SCOPE = {
     'cfg-ci-pick-by':        ['the-circle'],
     'cfg-ci-ai':             ['the-circle'],
     'cfg-ci-surprises':      ['the-circle'],
+    'cfg-rr-surprises':      ['ridonculous-race'],
     // The Challenge's options, each read by js/ch-run.js challengeOptions().
     'cfg-ch-gender-blind':   ['the-challenge'],
     'cfg-ch-finalists':      ['the-challenge'],

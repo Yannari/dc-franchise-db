@@ -196,7 +196,9 @@ function _options(config = seasonConfig) {
       ? Math.min(0.6, Math.max(0, Number(config.rrNonElimShare))) : DEFAULT_OPTIONS.nonElimShare,
     // the Season Timeline's pins: a leg's place, and whether it eliminates
     ...(config?.rrRoutePins && Object.keys(config.rrRoutePins).length ? { pins: { ...config.rrRoutePins } } : {}),
-    ...(config?.rrLegKinds && Object.keys(config.rrLegKinds).length ? { legKinds: { ...config.rrLegKinds } } : {}) };
+    ...(config?.rrLegKinds && Object.keys(config.rrLegKinds).length ? { legKinds: { ...config.rrLegKinds } } : {}),
+    // ...and its twist ('none' = no twist on that leg)
+    ...(config?.rrTwistPins && Object.keys(config.rrTwistPins).length ? { twistPins: { ...config.rrTwistPins } } : {}) };
 }
 
 /** The places a middle leg can be pinned to (the Season Timeline's Place picker): id and name, by name. */
@@ -212,9 +214,10 @@ export function raceDrawnRoute(config = seasonConfig) {
   if (!legs) return [];
   try { return drawRoute({ legs, seed: gs?.rr?.seed || 1, options: _options(config) }); } catch { return []; }
 }
-/** The Season Timeline's pins: a leg's place ('' = drawn), and its kind ('non' | 'elim' | '' = drawn). */
+/** The Season Timeline's pins: a leg's place ('' = drawn), its kind ('non' | 'elim' | '' = drawn), and its twist
+ *  (a twist, 'none', or '' = drawn). */
 export function raceSetPin(ep, field, value) {
-  const key = field === 'kind' ? 'rrLegKinds' : 'rrRoutePins';
+  const key = field === 'kind' ? 'rrLegKinds' : field === 'twist' ? 'rrTwistPins' : 'rrRoutePins';
   const pins = { ...(seasonConfig[key] || {}) };
   if (value) pins[Number(ep)] = value; else delete pins[Number(ep)];
   seasonConfig[key] = pins;
@@ -228,7 +231,7 @@ export function raceSeasonShape(list = _list(), config = seasonConfig) {
 /** The legs a race of `n` teams makes, for a screen that only knows the cast size (Quick Setup's blueprint). */
 export function raceShapeFor(n, config = seasonConfig) {
   if (!(n >= 3)) return [];
-  try { return buildSchedule({ teams: n, options: _options(config), seed: gs?.rr?.seed || 1 }).map(l => ({ n: l.n, kind: l.kind })); }
+  try { return buildSchedule({ teams: n, options: _options(config), seed: gs?.rr?.seed || 1 }).map(l => ({ n: l.n, kind: l.kind, twist: l.twist || null })); }
   catch { return []; }
 }
 
@@ -381,7 +384,7 @@ export function raceEpisodeMap() {
     if (row?.rr?.people) n = row.rr.people.length;
     else if (d.kind === 'elim') n = Math.max(0, n - 2);
     return { ep: d.n, active: starting, phase: d.kind === 'final' ? 'finale' : 'main', engineType: null, tribes: 1,
-      double: false, nonElim: d.kind === 'non' };
+      double: false, nonElim: d.kind === 'non', twist: row?.rr ? row.rr.twist || null : d.twist || null };
   });
 }
 

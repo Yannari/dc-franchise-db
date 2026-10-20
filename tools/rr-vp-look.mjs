@@ -38,6 +38,12 @@ const FIND = {
   chase: '(s, t, k) => s.kind === "world" && s.stretch === "footrace" && t.by && k >= 1',
   crown: '(s, t) => s.seg === "don-crown" && t.by',
   propose: '(s, t, k) => s.seg === "proposal" && t.by && k >= 2',
+  // the twists (2026-10-20): the cards, Don's rule, the Zip-It, a team sent back, a Yield
+  cards: '(s, t, k) => s.seg === "boomerang-vote" && k >= 1',
+  rule: '(s, t, k) => s.seg === "don-rule" && k >= 1',
+  zip: '(s, t, k) => s.seg === "zip-it" && t.by && k >= 1',
+  sentback: '(s, t, k) => s.seg === "boomerang-hit" && t.by && k >= 1',
+  yielded: '(s, t, k) => s.seg === "yield" && k >= 1',
 };
 // RR_PLATES=task-9436302,task-22412499: a talk step on each of those plates
 for (const f of (process.env.RR_PLATES || '').split(',').filter(Boolean)) FIND['plate-' + f] = `(s, t, k) => s.kind === "world" && s.plate?.f === "${f}" && t.by && k >= 1`;

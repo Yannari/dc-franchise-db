@@ -84,8 +84,9 @@ describe('rr leg', () => {
       const r = playLeg(st, { n: 2, kind: 'elim', money: 100, reward: null, twist: 'boomerang' },
         PLACES['red-sand-desert'], PLACES['fire-mountain-isle'], streamFor(s, 'boom'));
       const target = Object.keys(st.uturn || {})[0];
-      // a target can be stopped before the board (a place closed for the night, then Don): look for one that got there
-      if (!target || !r.log.some(l => l.id === target && l.stretch === 'board')) continue;
+      // a target can be stopped before the board, or on its way back (a place closed for the night, then Don): look for
+      // one that got there and finished the leg
+      if (!target || !r.log.some(l => l.id === target && l.stretch === 'board') || !r.log.some(l => l.id === target && l.stretch === 'mat')) continue;
       found = true;
       const redo = st.uturn[target].stretch;
       expect(r.log.filter(l => l.id === target && l.stretch === redo)).toHaveLength(2);

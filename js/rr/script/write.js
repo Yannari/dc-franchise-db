@@ -131,8 +131,9 @@ function needs(entry) {
 // Facts that decide how a scene sounds, weighed four times an ordinary one: what caused it, the storyline it moves,
 // and where it is: a place's own lines and a challenge's own lines win over the general ones when they fit.
 export const STRONG = ['cause', 'threadStep', 'place', 'taskId'];
-// ...and a place's or a challenge's own line, when one fits, always wins (it airs once a visit; the ledger stops repeats)
-export const PREFER = ['place', 'taskId'];
+// ...and a place's or a challenge's own line, when one fits, always wins (it airs once a visit; the ledger stops repeats);
+// so does Don's rule speech written for the twist he is explaining (the general ones are for a twist with none)
+export const PREFER = ['place', 'taskId', 'rule'];
 // the challenges that have their own lines (the director airs the challenge itself for them)
 export const TASK_LINES = new Set(Object.values(POOLS).flatMap(l => l.map(e => e.when?.taskId)).filter(Boolean));
 

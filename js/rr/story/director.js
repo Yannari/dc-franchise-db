@@ -41,6 +41,11 @@ const isRow = s => ROW.has(s.kind) || (ROW_ENDINGS[s.kind] || []).includes(s.dat
 // between two teams: after a clash this leg, nothing friendly between them (manual §19.4 "one pair, two moods")
 export const SOUR_X = CLASH_KINDS;
 export const WARM_X = new Set(['small-talk', 'alliance-pitch', 'alliance-check', 'share-info', 'help-offer', 'mentor', 'tag-along', 'watching-together']);
+// A twist names the other team without it being there (2026-10-20 screenshots: the Magicians stood at the board while
+// the team they'd Boomeranged swore to find out who did it): the thrower passed long ago, the target isn't here yet,
+// the Zip-It's winner is at the mat. Only a standoff at the board has both teams in it.
+const NAMES_ONLY = new Set(['boomerang-hit', 'boomerang-decide', 'yield', 'zip-it']);
+const namesOnly = s => NAMES_ONLY.has(s.kind) && s.data?.ending !== 'standoff' && !!s.data?.team;
 const teamsKey = s => (s.data?.team && s.data?.other ? [s.data.team, s.data.other].sort().join('|') : null);
 
 // A big cast airs like the show, and at least BIG_CAST teams always get their full scenes (the user, 2026-10-18).
@@ -347,7 +352,8 @@ export function airLeg(state, leg) {
   }
 
   // a big cast: the teams with no story this leg check in together, and their clean runs at a task air together
-  const teamsIn = s => [...new Set([s.data?.team, s.data?.other, ...s.who.map(x => teamOf(state, x))].filter(Boolean))];
+  const teamsIn = s => (namesOnly(s) ? [s.data.team]
+    : [...new Set([s.data?.team, s.data?.other, ...s.who.map(x => teamOf(state, x))].filter(Boolean))]);
   const montages = [];
   const N = leg.order.length;
   if (N > BIG_CAST) {
@@ -475,7 +481,7 @@ export function airLeg(state, leg) {
     const s = byId.get(id);
     const teams = teamsIn(s);
     segs.push({ scene: s.id, kind: s.kind, ending: s.data?.ending ?? null, stretch: s.data?.stretch ?? null, t: s.data?.t ?? 0, teams,
-      who: [...s.who], side: s.data?.snap?.side ?? null, tier, src: s });
+      who: namesOnly(s) ? s.who.filter(x => teams.includes(teamOf(state, x))) : [...s.who], side: s.data?.snap?.side ?? null, tier, src: s });
   }
   for (const b of beats) segs.push({ scene: null, beat: b.id, kind: b.kind, ending: b.data.ending, stretch: b.data.stretch, t: b.data.t,
     teams: [b.data.team], who: [...b.who], side: b.data.side ?? null, picked: pickedOf(b.data.snap?.picked), tier: 1, src: b });

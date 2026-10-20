@@ -389,4 +389,27 @@ describe('the Season Timeline counts the racers starting each leg', () => {
       expect(map[i].active, `leg ${map[i].ep}`).toBe(prev.nonElim ? prev.active : prev.active - 2);
     }
   });
+
+  // the twists on the Season Timeline (2026-10-20: built, and on no leg): each tile shows the twist the season drew, a
+  // pin sets one, 'none' clears one, and with Surprise twists off only the pins happen
+  it("a leg's twist is drawn, pinned on its tile, or cleared, and the Surprise twists switch keeps only the pins", async () => {
+    const { raceSetPin } = await import('../js/rr-run.js');
+    freshSeason(10);
+    Object.assign(seasonConfig, { rrTwistPins: {}, rrSurprises: true });
+    const drawn = raceEpisodeMap().map(x => x.twist);
+    expect(drawn.filter(Boolean).length).toBeGreaterThan(1);
+    raceSetPin(3, 'twist', 'zip-it');
+    const free = drawn.findIndex((x, i) => x && i !== 2);
+    raceSetPin(free + 1, 'twist', 'none');
+    const pinned = raceEpisodeMap().map(x => x.twist);
+    expect(pinned[2]).toBe('zip-it');
+    expect(pinned[free]).toBeNull();
+    seasonConfig.rrSurprises = false;
+    expect(raceEpisodeMap().map(x => x.twist).filter(Boolean)).toEqual(['zip-it']);
+    // and the season played is the one the tiles show
+    for (let i = 0; i < 40; i++) if (!simulateRaceEpisode()) break;
+    const legs = gs.episodeHistory.filter(r => r.rr).map(r => r.rr.twist || null);
+    expect(legs.filter(Boolean)).toEqual(['zip-it']);
+    Object.assign(seasonConfig, { rrTwistPins: {}, rrSurprises: true });
+  }, 240000);
 });

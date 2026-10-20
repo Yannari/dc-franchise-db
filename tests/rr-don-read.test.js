@@ -25,7 +25,7 @@ describe('rr: Don, the twists, and fair picking', () => {
     const st = res.state;
     const rules = st.scenes.filter(s => s.kind === 'don-rule');
     expect(rules.length).toBeGreaterThan(0);
-    for (const s of rules) expect(['boomerang', 'yield', 'boomerang-vote']).toContain(factsFor(s, rolesOf(s, st), st).rule);
+    for (const s of rules) expect(['boomerang', 'yield', 'boomerang-vote', 'zip-it']).toContain(factsFor(s, rolesOf(s, st), st).rule);
   });
 
   it('when everybody picks one team, that team is cast first, and its trip back knows why', () => {

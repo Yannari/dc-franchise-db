@@ -59,5 +59,44 @@ export function buildSchedule({ teams, options = DEFAULT_OPTIONS, seed = 1 }) {
         : NON_ELIM_PENALTIES[Math.floor(rng() * NON_ELIM_PENALTIES.length)];
     legs.push({ n, kind, money, reward, twist: o.twists?.[n] ?? null, nonElimPenalty });
   }
+  drawTwists(legs, o, seed);
   return legs;
+}
+
+// The season's twists (found 2026-10-20: built, tested, and on no leg at all). Never the first leg (nobody has a record
+// to aim at), never the last two (the semi-final and the final run their own shape); a Boomerang about every fifth
+// leg, one Yield, one Zip-It, and the pick-a-team Boomerang once the teams have a record to judge (the back half).
+// The Season Timeline's pins (`twistPins`: leg -> twist, or 'none') come first and count toward the season; with
+// surprises off only the pins happen. Drawn on its own stream, so the legs, money and rewards are the ones a season
+// drew before twists were.
+export const LEG_TWISTS = ['boomerang', 'yield', 'zip-it', 'boomerang-vote'];
+function drawTwists(legs, o, seed) {
+  const total = legs.length;
+  const pins = o.twistPins || {};
+  const open = [];
+  for (const l of legs) {
+    const pin = pins[l.n];
+    if (l.n < 2 || l.n > total - 2) continue;
+    if (pin === 'none') { l.twist = null; continue; }
+    if (LEG_TWISTS.includes(pin)) { l.twist = pin; continue; }
+    if (!l.twist) open.push(l);
+  }
+  if (o.surprises === false) return;
+  const rng = streamFor(seed, 'twists');
+  for (let i = 0; i < 4; i++) rng();
+  const has = k => legs.filter(l => l.twist === k).length;
+  const want = [
+    ['boomerang', Math.max(1, Math.round((total - 3) / 5))], ['yield', 1], ['zip-it', 1],
+    ['boomerang-vote', total >= 8 ? 1 : 0],
+  ];
+  const lateFrom = Math.floor(total / 2);
+  // the same twist two legs running is one twist too many
+  const fits = (l, k) => legs[l.n - 2]?.twist !== k && legs[l.n]?.twist !== k && (k !== 'boomerang-vote' || l.n >= lateFrom);
+  for (const [k, n] of want) {
+    for (let i = has(k); i < n; i++) {
+      const can = open.filter(l => !l.twist && fits(l, k));
+      if (!can.length) break;
+      can[Math.floor(rng() * can.length)].twist = k;
+    }
+  }
 }

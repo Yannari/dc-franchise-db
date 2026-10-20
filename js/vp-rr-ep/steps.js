@@ -184,6 +184,11 @@ export function episodeScreens(res, eps, i) {
       else if (seg.ending === 'chill') { plate = matPlate(placeId); mode = 'mat'; hudTask = 'CHILL ZONE'; }
       else { plate = (lastPlate?.place === placeId ? lastPlate : plates.opener); mode = 'narrate'; }
     } else if (k === 'don-opener') { plate = leg.n === 1 ? plates.opener : (prevLeg ? matPlate(prevLeg.place) : plates.opener); placeFor = leg.n === 1 ? placeId : (prevLeg?.place || placeId); mode = 'don'; hudTask = 'THE START'; }
+    // the pick-a-team Boomerang happens at the start too, where the opener is, before anybody leaves
+    else if (k === 'boomerang-vote' || (k === 'don-rule' && !seg.stretch)) {
+      plate = leg.n === 1 ? plates.opener : (prevLeg ? matPlate(prevLeg.place) : plates.opener);
+      placeFor = leg.n === 1 ? placeId : (prevLeg?.place || placeId); hudTask = 'THE START';
+    }
     else if (k === 'don-demo') {
       const sp = stretchPlates(placeId, seg.stretch, null);
       plate = pick(sp?.talk, 0) || plates.opener; mode = 'demo';
@@ -213,8 +218,9 @@ export function episodeScreens(res, eps, i) {
         if (wide && wide.x[1] - wide.x[0] > plate.x[1] - plate.x[0]) plate = wide;
       }
       if (sideLabel) hudTask += ` · ${sideLabel.toUpperCase()}`;
-    } else if (seg.stretch === 'board' || seg.stretch === 'speed-bump') {
-      plate = (lastPlate?.place === placeId ? lastPlate : plates.opener); hudTask = seg.stretch === 'board' ? 'THE BOARD' : 'SPEED BUMP';
+    } else if (seg.stretch === 'board' || seg.stretch === 'speed-bump' || seg.stretch === 'zip') {
+      plate = (lastPlate?.place === placeId ? lastPlate : plates.opener);
+      hudTask = { board: 'THE BOARD', 'speed-bump': 'SPEED BUMP', zip: 'THE ZIP-IT' }[seg.stretch];
     } else {
       plate = (lastPlate?.place === placeId ? lastPlate : plates.opener);
     }
@@ -793,7 +799,7 @@ export function closedShot(s) {
   if (!s || s.kind !== 'world' || !s.plate) return true;
   if (['cabin', 'narrate', 'landing', 'flight'].includes(s.mode)) return true;
   if (s.plate.race || s.plate.closed) return true;
-  if (['airport', 'board', 'speed-bump'].includes(s.stretch)) return true;
+  if (['airport', 'board', 'speed-bump', 'zip'].includes(s.stretch)) return true;
   return false;
 }
 

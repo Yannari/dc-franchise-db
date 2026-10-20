@@ -30,9 +30,10 @@ const avgBond = (st, a, b) => {
   return s / 4;
 };
 
-function act(state, kindId, tid, oid, rng, { ending = null, data = {}, present = null } = {}) {
+// (`t` and `stretch`: when and where it happens, so the episode airs it there, not at the end of the leg)
+function act(state, kindId, tid, oid, rng, { ending = null, data = {}, present = null, t = null, stretch = null } = {}) {
   const ctx = { state, team: { id: tid }, other: oid ? { id: oid } : null, moment: 'twist',
-    present: present || [tid, oid].filter(Boolean), event: data.event || null };
+    present: present || [tid, oid].filter(Boolean), event: data.event || null, ...(t != null ? { t } : {}), ...(stretch ? { stretch } : {}) };
   const e = ending || decideEnding(SCENES[kindId], prepare(ctx), rng);
   const sc = playScene(ctx, kindId, rng, { ending: e });
   if (sc) Object.assign(sc.data, data);
@@ -59,17 +60,24 @@ const boardKey = (state, stretch) => `${state.leg}|${stretch.id}`;
 const reached = (state, stretch) => ((state.board ||= {})[boardKey(state, stretch)] ||= []);
 
 // ── At the start of a leg ──
-export function handOut(state, leg, rng) {
+// (`pick: false`: the leg holds the pick-a-team Boomerang until Don has opened the leg and said what the cards are for)
+export function handOut(state, leg, rng, { pick = true } = {}) {
   const ids = active(state);
   if (!ids.length) return;
   if (leg.twist === 'boomerang' || leg.twist === 'yield') {
     const id = ids[Math.floor(rng() * ids.length)];
     const key = leg.twist === 'boomerang' ? 'boomerang' : 'yield';
     state.passes[id][key] = (state.passes[id][key] || 0) + 1;
-    if (key === 'boomerang') act(state, 'boomerang-found', id, null, rng);
+    if (key === 'boomerang') act(state, 'boomerang-found', id, null, rng, { t: 0 });
     else addScene(state, 'yield-found', people(state, id), { team: id, effects: [['pass', id, 'yield']], snap: snapOf(state, { tid: id, who: people(state, id) }) });
   }
-  if (leg.twist === 'boomerang-vote') {
+  if (pick) pickBoomerang(state, leg, rng);
+}
+
+// The pick-a-team Boomerang: every team writes one team on a card, and the team on the most cards is sent back.
+export function pickBoomerang(state, leg, rng, t = 0) {
+  const ids = active(state);
+  if (leg.twist === 'boomerang-vote' && ids.length) {
     const pos = id => state.lastOrder.indexOf(id);
     const ballots = [];
     for (const v of ids) {
@@ -88,7 +96,7 @@ export function handOut(state, leg, rng) {
     (state.uturn ||= {})[target] = { by: 'vote', stretch: null };
     state.boomeranged[target] = 'vote';
     const split = tally[target] <= ballots.length / 2;
-    act(state, 'boomerang-vote', target, null, rng, { ending: split ? 'split' : 'decided', present: [target, ...ids.filter(x => x !== target)],
+    act(state, 'boomerang-vote', target, null, rng, { t, ending: split ? 'split' : 'decided', present: [target, ...ids.filter(x => x !== target)],
       data: { event: { target }, ballots, target } });
   }
 }
@@ -106,14 +114,16 @@ export function resolveBoard(state, team, stretch, t, api, rng) {
   if (u && !u.served) {
     u.served = true;
     redo = u.stretch || stretch.after;
-    act(state, 'boomerang-hit', id, u.by !== 'vote' ? u.by : null, rng, { data: { byVote: u.by === 'vote' } });
+    // (a team the cards picked knows why: no guessing who did it)
+    act(state, 'boomerang-hit', id, u.by !== 'vote' ? u.by : null, rng, { t, stretch, ending: u.by === 'vote' ? 'fury' : null,
+      data: { byVote: u.by === 'vote' } });
     return { end, redo };
   }
   // A yielded team waits.
   if (state.yielded?.[id] && !state.yieldServed?.[id]) {
     (state.yieldServed ||= {})[id] = true;
     end += YIELD_MINUTES;
-    act(state, 'yield', id, state.yielded[id], rng, { ending: 'courtesy-of' });
+    act(state, 'yield', id, state.yielded[id], rng, { t, stretch, ending: 'courtesy-of' });
   }
   if (!seen.includes(id)) seen.push(id);
 
@@ -124,14 +134,14 @@ export function resolveBoard(state, team, stretch, t, api, rng) {
     const targets = active(state).filter(x => x !== id && !seen.includes(x) && !state.uturn?.[x]);
     if (key === 'boomerang') {
       if (!targets.length) {
-        act(state, 'boomerang-decide', id, null, rng, { ending: 'wasted', data: { wasted: true } });
+        act(state, 'boomerang-decide', id, null, rng, { t, stretch, ending: 'wasted', data: { wasted: true } });
         continue;
       }
       const target = weightedPick(aimWeights(state, id, targets), rng).id;
       (state.uturn ||= {})[target] = { by: id, stretch: stretch.after };
       state.boomeranged[target] = id;
       act(state, 'boomerang-decide', id, target, rng,
-        { ending: (state.rivalry[pairKey(id, target)] || 0) >= 1 ? 'target-rival' : 'target-threat',
+        { t, stretch, ending: (state.rivalry[pairKey(id, target)] || 0) >= 1 ? 'target-rival' : 'target-threat',
           data: { target, rankGap: Math.round(Math.abs(perceivedRank(state, id) - perceivedRank(state, target)) * 100) / 100 } });
     } else if (targets.length) {
       const target = weightedPick(aimWeights(state, id, targets), rng).id;
@@ -189,6 +199,6 @@ export function zipTask(state, team, stretch, t, api, rng) {
   state.zipWon ||= {};
   const won = !r.quit && state.zipWon[state.leg] == null;
   if (won) state.zipWon[state.leg] = id;
-  act(state, 'zip-it', id, won ? null : state.zipWon[state.leg], rng, { ending: won ? 'takes-it' : 'beaten-to-it' });
+  act(state, 'zip-it', id, won ? null : state.zipWon[state.leg], rng, { t: r.end, stretch, ending: won ? 'takes-it' : 'beaten-to-it' });
   return { tried: true, won, end: r.end };
 }

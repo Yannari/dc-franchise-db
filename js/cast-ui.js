@@ -1374,7 +1374,7 @@ export function saveConfig() {
   // what a coach may find is only on screen while the coaches section shows its list: saved from boxes that
   // aren't there, every power came back off (the user, 2026-10-11: all twelve unticked). Keep them as they were.
   const _coachAdvPrev = seasonConfig?.coachAdvantages || null;
-  const _coachAdvShown = !!g('coach-adv-' + ADVANTAGES[0].key);
+  const _coachAdvShown = !!ADVANTAGES[0] && !!g('coach-adv-' + ADVANTAGES[0].key);
   seasonConfig = {
     name:        g('cfg-name')?.value.trim() || '',
     seasonNumber: parseInt(g('cfg-season-number')?.value) || 0,
@@ -1426,6 +1426,12 @@ export function saveConfig() {
     ciAI: g('cfg-ci-ai') ? g('cfg-ci-ai').checked : seasonConfig.ciAI === true,
     // On unless switched off (an older save has no setting: the draws it always had).
     ciSurprises: g('cfg-ci-surprises') ? g('cfg-ci-surprises').checked : seasonConfig.ciSurprises !== false,
+    // The race's (js/rr-run.js _options): on unless switched off
+    rrSurprises: g('cfg-rr-surprises') ? g('cfg-rr-surprises').checked : seasonConfig.rrSurprises !== false,
+    // ...and what its Season Timeline pins (a leg's place, kind and twist), written by the tiles, never read off the
+    // page: carried forward, or every save wiped them (found 2026-10-20)
+    ...Object.fromEntries(['rrRoutePins', 'rrLegKinds', 'rrTwistPins', 'rrNonElimShare', 'rrTeams']
+      .filter(k => seasonConfig?.[k] != null).map(k => [k, seasonConfig[k]])),
     // The Challenge's (js/ch-run.js challengeOptions reads each). Each
     // player's division and rookie billing are carried, like ciSetup.
     chSetup: seasonConfig.chSetup || {},
@@ -1657,6 +1663,7 @@ export function renderConfig() {
   if (g('cfg-ci-pick-by')) g('cfg-ci-pick-by').value = seasonConfig.ciPickBy === 'random' ? 'random' : 'stats';
   if (g('cfg-ci-ai')) g('cfg-ci-ai').checked = seasonConfig.ciAI === true;
   if (g('cfg-ci-surprises')) g('cfg-ci-surprises').checked = seasonConfig.ciSurprises !== false;
+  if (g('cfg-rr-surprises')) g('cfg-rr-surprises').checked = seasonConfig.rrSurprises !== false;
   if (g('cfg-ch-gender-blind')) g('cfg-ch-gender-blind').checked = seasonConfig.chGenderBlind === true;
   if (g('cfg-ch-finalists')) g('cfg-ch-finalists').value = [6, 10].includes(Number(seasonConfig.chFinalists)) ? String(seasonConfig.chFinalists) : '8';
   if (g('cfg-ch-party')) g('cfg-ch-party').checked = seasonConfig.chPartyNights !== false;

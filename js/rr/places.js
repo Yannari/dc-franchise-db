@@ -45,6 +45,10 @@ import snowPeaks from './places/snow-peaks.js';
 import jungleRuins from './places/jungle-ruins.js';
 import glassPyramidCity from './places/glass-pyramid-city.js';
 import fishingCove from './places/fishing-cove.js';
+import cliffPoolIsle from './places/cliff-pool-isle.js';
+import twinTowerBridge from './places/twin-tower-bridge.js';
+import marbleTempleHill from './places/marble-temple-hill.js';
+import secretBaseDesert from './places/secret-base-desert.js';
 
 export const PLACES = Object.fromEntries([homeCity, redSandDesert, fireMountainIsle, skylineFinale, ironTowerCity, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback,
   coastPalace, geyserIsland, carnivalRainforest, hauntedCastle,
@@ -52,7 +56,8 @@ export const PLACES = Object.fromEntries([homeCity, redSandDesert, fireMountainI
   fjordPeaks, prairieRanch, iceFloe, dragonIsle,
   neonDesert, pyramidCoast, stiltRiver, frozenMine,
   teaHills, pampasRanch, gameShowCity, iceRiver,
-  snowPeaks, jungleRuins, glassPyramidCity, fishingCove].map(p => [p.id, p]));
+  snowPeaks, jungleRuins, glassPyramidCity, fishingCove,
+  cliffPoolIsle, twinTowerBridge, marbleTempleHill, secretBaseDesert].map(p => [p.id, p]));
 
 export const getPlace = id => PLACES[id] || null;
 

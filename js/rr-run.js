@@ -201,7 +201,7 @@ function _options(config = seasonConfig) {
 
 /** The places a middle leg can be pinned to (the Season Timeline's Place picker): id and name, by name. */
 export function racePlaceList() {
-  return Object.values(PLACES).filter(p => !p.start && !p.finale).map(p => ({ id: p.id, name: p.name }))
+  return Object.values(PLACES).filter(p => !p.start && !p.finale && !p.draft).map(p => ({ id: p.id, name: p.name }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 /** A place's name, for any place (the start and the finale too). */

@@ -94,9 +94,14 @@ import tombSands from './places/tomb-sands.js';
 import torchStatueHarbour from './places/torch-statue-harbour.js';
 import redOutback from './places/red-outback.js';
 import placesMore from './places/more/index.js';
+import coastPalace from './places/coast-palace.js';
+import geyserIsland from './places/geyser-island.js';
+import carnivalRainforest from './places/carnival-rainforest.js';
+import hauntedCastle from './places/haunted-castle.js';
 
 const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
-  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, ride, narration, narration2, premiere, premiereIdentities, customIntros, redSandDesert, ironTowerCity, homeCity, skylineFinale, fireMountainIsle, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback, ...placesMore];
+  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, ride, narration, narration2, premiere, premiereIdentities, customIntros, redSandDesert, ironTowerCity, homeCity, skylineFinale, fireMountainIsle, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback, ...placesMore,
+  coastPalace, geyserIsland, carnivalRainforest, hauntedCastle];
 
 // The rewrite (lines/rewrite/, docs/rr-writers-brief.md "The rewrite standard"): each file brings its pools and
 // retires the old lines they replace, a whole pool ('mind-game.rattled') or the old interview lines for one kind

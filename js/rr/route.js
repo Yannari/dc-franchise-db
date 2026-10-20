@@ -21,7 +21,8 @@ export function drawRoute({ legs, seed = 1, options = {} }) {
     if (p && !p.start && !p.finale && Number(n) > 1 && Number(n) < legs) pins[Number(n)] = id;
   }
   const pinned = new Set(Object.values(pins));
-  const middle = all.filter(p => !p.start && !p.finale && !pinned.has(p.id)).map(p => p.id);
+  // a place still being built (draft) plays only when it's booked
+  const middle = all.filter(p => !p.start && !p.finale && !p.draft && !pinned.has(p.id)).map(p => p.id);
   const rng = streamFor(seed, 'route');
   for (let i = 0; i < 4; i++) rng();
   const route = [start];

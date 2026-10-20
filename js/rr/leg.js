@@ -10,7 +10,7 @@
 // team is skipped for being late, and a team only stops when Don goes to find it.
 import { payStipend, repayDebts } from './money.js';
 import { flightStretches, resolveTravel, boardFlightScenes } from './travel.js';
-import { resolveTask, runTask } from './tasks.js';
+import { resolveTask, runTask, keepRun } from './tasks.js';
 import { handOut, resolveBoard, useExpress } from './twists.js';
 import { runLeg } from './clock.js';
 import { talkAtStretch, talkAtOverlap, talkAtWait, closeLegTalk } from './talk.js';
@@ -74,6 +74,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   const talked = new Set();            // `${team}|${stretch}`: the overlap talk happens once, even after a hold
   const matAt = {};                    // team -> minute it reached the mat
   const superEnd = {};
+  const superBy = {};                 // group -> the team whose run the group shares (its attempts are everyone's)
   const superFormed = {};              // stretch -> groups put together there so far
   const midmat = [];
   const legStart = state.scenes.length;
@@ -158,6 +159,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
         const own = Math.max(0.5, levels[ms.indexOf(id)]);
         const task = { ...s, pass: s.pass + 0.08 * (mean - own), base: s.base * own / Math.max(0.5, mean) };
         superEnd[k] = runTask(state, team, task, v.departs, api, rng).end;
+        superBy[k] = id;
         if (ms.length > 1) {
           // teams are put together as they arrive (nobody picks): rivals are stuck with each other, the last teams in
           // are what's left once the others have formed, anyone else is glad of who they got
@@ -169,6 +171,10 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
           playScene(ctx, 'superteam-pick', rng, { ending: rivals ? 'forced-with-enemies' : last ? 'left-over' : 'chosen' });
         }
       }
+      // every team in the group ran it: each keeps the shared run, so the episode can show them at it (a minute after
+      // they're put together, so the formation airs first)
+      const shared = state.attempts?.[superBy[k]]?.[s.id] || {};
+      keepRun(state, id, s, v.departs + 1, superEnd[k], { attempts: shared.attempts || 0, fails: shared.fails || 0 });
       res = { end: superEnd[k] };
     } else if (s.kind === 'midmat') {
       // the finale's halfway mat: the last team to reach it is out where it stands

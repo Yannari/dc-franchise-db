@@ -26,6 +26,26 @@ describe('rr superteam', () => {
     expect(formed).toBeGreaterThan(0);
   });
 
+  // The challenge itself airs too. Found by the 2026-10-20 season read: leg.js ran a Superteam through runTask, which keeps
+  // no taskLog row, so the director (which shows every team at every task from those rows) had nothing to show at the
+  // catfish: Don explained it and then not one team was seen catching a fish, while the tunnels after it aired ten scenes.
+  it('every team through a Superteam has its run kept, and the episode shows teams at it', () => {
+    for (const seed of [3, 11]) {
+      const { cast, teams } = raceCast(12, seed);
+      setPlayers(cast);
+      const res = playRaceSeason({ teams, seed, options: { pins: { 2: 'stilt-river' } } });
+      const leg = res.legs.findIndex(l => l.place === 'stilt-river');
+      const n = res.legs[leg].n;
+      const ran = new Set(res.legs[leg].log.filter(x => x.stretch === 'catfish').map(x => x.id));
+      const rows = (res.state.taskLog || []).filter(r => r.leg === n && r.stretch === 'catfish');
+      expect(ran.size, `seed ${seed}`).toBeGreaterThan(0);
+      expect(new Set(rows.map(r => r.team)), `seed ${seed}`).toEqual(ran);
+      for (const r of rows) expect(r.kind).toBe('superteam');
+      const segs = airSeason(res)[leg].segments.filter(s => s.stretch === 'catfish' && /^(task-|attempt-fail)/.test(s.kind));
+      expect(segs.length, `seed ${seed}: teams seen at the catfish`).toBeGreaterThan(2);
+    }
+  }, 240000);
+
   // Teams are put together in the order they reach the challenge (as on the show: nobody picks). The moment says what was
   // true when they were: two rival teams are stuck with each other (and stay rivals, no alliance out of it), the last
   // teams in are what's left over, anyone else is glad of who they got. Found 2026-10-19: leg.js forced 'chosen' on every

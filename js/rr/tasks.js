@@ -222,9 +222,17 @@ export function resolveTask(state, team, stretch, t, api, rng) {
   const snap = snapOf(state, { tid: team.id, stretch, t, who: people(state, team.id) });
   const r = runAny(state, team, stretch, t, api, rng);
   const row = state.attempts?.[team.id]?.[stretch.id] || {};
-  (state.taskLog ||= []).push({ leg: state.leg, team: team.id, stretch: stretch.id, kind: stretch.kind,
+  keepRun(state, team.id, stretch, t, r.end, { snap,
     side: r.data?.side ?? row.side ?? null, who: r.data?.who ?? null, attempts: row.attempts || 0, fails: row.fails || 0,
-    switched: !!r.data?.switched, quit: !!(r.quit || r.data?.quit), from: t, to: r.end, snap,
-    ...(r.data?.right != null ? { right: r.data.right } : {}) });
+    switched: !!r.data?.switched, quit: !!(r.quit || r.data?.quit), ...(r.data?.right != null ? { right: r.data.right } : {}) });
   return r;
+}
+
+// The record of one team's run at a task, for the episode. A run that doesn't go through resolveTask (a Superteam's
+// teams share one run) keeps its row here too, or the director has no team to show at it.
+export function keepRun(state, teamId, stretch, t, end, { snap = null, side = null, who = null, attempts = 0, fails = 0,
+  switched = false, quit = false, ...more } = {}) {
+  (state.taskLog ||= []).push({ leg: state.leg, team: teamId, stretch: stretch.id, kind: stretch.kind,
+    side, who, attempts, fails, switched, quit, from: t, to: end,
+    snap: snap || snapOf(state, { tid: teamId, stretch, t, who: people(state, teamId) }), ...more });
 }

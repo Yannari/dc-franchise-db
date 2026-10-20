@@ -352,9 +352,10 @@ export const PLACE_PLATES = {
     st: {
       'castle-road': { talk: [p('present-9438407', 94, [8, 92])],
         act: p('present-9438407', 94, [8, 92], { mode: 'ride', prop: 'taxi@red-sand-desert', path: [[-14, 95], [50, 94], [114, 95]] }) },
-      // the coffin on its stand in the castle; pushed on its wheels (a partner in it) up the hill road under the castle
+      // the coffin on its stand in the castle; pushed on its wheels (a partner in it) out of the gate and DOWN the hill road
+      // to the graveyard, as the place and its lines say (it climbed the road for a day, 2026-10-20)
       coffin: { talk: [p('task-9438457', 97, [6, 94], { closed: true, spots: [[13, 97], [87, 97], [24, 98], [76, 98]] })],
-        act: p('present-9438407', 94, [6, 90], { mode: 'push', prop: 'coffin', path: [[8, 95], [30, 91], [52, 86], [74, 81]] }) },
+        act: p('present-9438407', 94, [6, 90], { mode: 'push', prop: 'coffin', flip: true, path: [[74, 81], [52, 86], [30, 91], [8, 95]] }) },
       ride: { talk: [p('task-9438688', 94, [8, 90])],
         act: p('present-9438330', 86, [8, 92], { mode: 'ride', prop: 'horse', flip: true, path: [[-14, 86], [44, 84], [114, 86]] }) },
       gym: { talk: [p('task-9438652', 98, [6, 94])],

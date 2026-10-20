@@ -217,6 +217,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .tok.push .veh{left:auto;right:calc(var(--sz)*-1.6);bottom:calc(var(--sz)*.05);width:calc(var(--sz)*1.6);transform:none;z-index:1}
 .tok.push .wheels{position:absolute;right:calc(var(--sz)*-1.5);bottom:calc(var(--sz)*-.2);width:calc(var(--sz)*1.4);z-index:2;overflow:visible}
 .tok.push .wheels g{animation:wRoll 1s linear infinite;transform-box:fill-box;transform-origin:center}
+.tok.push.flipveh .veh{right:auto;left:calc(var(--sz)*-1.6);transform:scaleX(-1)} .tok.push.flipveh .wheels{right:auto;left:calc(var(--sz)*-1.5)} .tok.push.flipveh .wheels g{animation-direction:reverse}
 @keyframes wRoll{to{rotate:360deg}}
 .tok.push .pair{animation:wPush .5s ease-in-out infinite}
 @keyframes wPush{0%,100%{transform:translateX(0) rotate(4deg)}50%{transform:translateX(.3cqw) rotate(8deg)}}

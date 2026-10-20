@@ -24,6 +24,11 @@ import { voteStage } from './vote-stage.js';
 
 // ── THE RATINGS ────────────────────────────────────────────────────────
 const RESULT = /^result\./;
+// The lines that crown: a pair (two kinds of twist among them), a sole one, a hidden one.
+const PAIR = ['result.influencers', 'result.rod', 'result.picked'];
+const CROWN = [...PAIR, 'result.sole', 'result.super', 'result.secret'];
+// Why a twist's second Influencer is there (ci/ratings.js `named`).
+const TWIST_SEAT = { rod: 'RIDE OR DIE', picked: 'CHOSEN' };
 function rateStage(row, screen, idx, fresh) {
   const d = screen.d || { ballots: [], results: [], influencers: [] };
   const final = screen.kind === 'final-ratings';
@@ -38,20 +43,26 @@ function rateStage(row, screen, idx, fresh) {
     for (const x of seen) {
       if (!RESULT.test(x.key || '')) continue;
       if (x.on?.a) shown.add(x.on.a);
-      if (x.key === 'result.influencers' && x.on?.b) shown.add(x.on.b);
+      if (PAIR.includes(x.key) && x.on?.b) shown.add(x.on.b);
     }
-    const crowned = seen.some(x => ['result.influencers', 'result.sole', 'result.super', 'result.secret'].includes(x.key));
-    const newest = st && RESULT.test(st.key || '') ? new Set([st.on?.a, st.key === 'result.influencers' ? st.on?.b : null]) : new Set();
+    const crowned = seen.some(x => CROWN.includes(x.key));
+    // Once the Influencers are read the whole board is known: every place
+    // opens. (A season played before the reveal followed a twist never read
+    // out the place a Ride or Die's pick took, so it stayed "?".) Hidden
+    // nights keep their places hidden.
+    const all = crowned && !d.hidden && seen.some(x => PAIR.includes(x.key) || x.key === 'result.sole');
+    const newest = st && RESULT.test(st.key || '') ? new Set([st.on?.a, PAIR.includes(st.key) ? st.on?.b : null]) : new Set();
     const rows = [...d.results].sort((a, b) => a.place - b.place).map(r => {
-      const open = shown.has(r.profile);
+      const open = all || shown.has(r.profile);
       const infl = crowned && d.influencers.includes(r.profile);
+      const why = infl && d.named && r.profile === d.influencers[1] ? `<span class="civ-badge">${TWIST_SEAT[d.named]}</span>` : '';
       return `<div class="civ-slot${open ? ' open' : ''}${infl ? ' crown' : ''}${open && fresh && newest.has(r.profile) ? ' land' : ''}">
-        <b>${r.place}</b>${open ? tile(row, r.profile, 'row', infl ? '<span class="civ-badge">INFLUENCER</span>' : '') : '<div class="civ-mtile row hidden"><div class="ph">?</div><div class="n">· · ·</div></div>'}</div>`;
+        <b>${r.place}</b>${open ? tile(row, r.profile, 'row', infl ? `${why}<span class="civ-badge">INFLUENCER</span>` : '') : '<div class="civ-mtile row hidden"><div class="ph">?</div><div class="n">· · ·</div></div>'}</div>`;
     }).join('');
     return `<div class="civ-layer civ-rate reveal">${bgUi}
       <div class="civ-board${d.results.length > 7 ? ' two' : ''}"><div class="hd">${title}</div>${rows}</div>
       ${cam(row, who, 'side')}${where(`${title} · THE RESULTS`)}${dlg(row, st, fresh, 'right')}
-      ${crowned && fresh && st && ['result.influencers', 'result.sole'].includes(st.key) ? '<div class="civ-confetti"></div>' : ''}</div>`;
+      ${crowned && fresh && st && [...PAIR, 'result.sole'].includes(st.key) ? '<div class="civ-confetti"></div>' : ''}</div>`;
   }
   // A voter's ranking screen: slots fill as they name them.
   const ballot = d.ballots.find(b => b.voter === who);

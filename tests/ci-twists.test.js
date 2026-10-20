@@ -97,6 +97,23 @@ describe('Ride or Die (US 6)', () => {
       expect(gone).not.toContain(s.data.stays);
     }
   });
+
+  it('a Ride or Die seated as Influencer is said to be one, and the place they took is still read out', () => {
+    let seen = 0;
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
+      const { state } = booked('rating3', 'ci-ride-or-die', seed);
+      for (const s of state.scenes.filter(x => x.kind === 'ratings' && x.data.named === 'rod')) {
+        seen++;
+        const [i1, i2] = s.data.influencers;
+        const second = s.data.results.find(r => r.place === 2 && r.profile !== i1)?.profile;
+        expect(i2, `seed ${seed}`).not.toBe(second);
+        // every place gets read: the real #2 among the results, the partner with the Influencers
+        expect(s.data.reveal.flat().sort(), `seed ${seed}`).toEqual(s.data.results.map(r => r.profile).sort());
+        expect(s.data.reveal.at(-1).sort()).toEqual([i1, i2].sort());
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
 });
 
 // ── 9b part 2: twists that change the count ─────────────────────────────

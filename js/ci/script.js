@@ -666,7 +666,9 @@ const BLOCKS = {
         }
       }
       const [i1, i2] = s.data.influencers;
-      out.push(i2 ? { key: 'result.influencers', cast: { a: i1, b: i2 } } : { key: 'result.sole', cast: { a: i1 } });
+      // A twist's second Influencer (the Joker's pick, a Ride or Die) was not
+      // rated there: their own lines, never "top two".
+      out.push(!i2 ? { key: 'result.sole', cast: { a: i1 } } : { key: s.data.named ? `result.${s.data.named}` : 'result.influencers', cast: { a: i1, b: i2 } });
     }
     return out;
   },
@@ -744,7 +746,10 @@ const BLOCKS = {
     return out;
   },
   'ride-or-die'(state, s) {
-    return s.data.pairs.slice(0, 2).flatMap(([a, b]) => [{ key: 'rod.partner', cast: { a, b } }]);
+    // The rules first (user: "it wasnt explained to me at all"), then two pairs learning who they got.
+    const [a0, b0] = s.data.pairs[0];
+    return [{ key: 'rod.alert', cast: { a: a0, b: b0 } },
+      ...s.data.pairs.slice(0, 2).flatMap(([a, b]) => [{ key: 'rod.partner', cast: { a, b } }])];
   },
   sacrifice(state, s) {
     const { goes, stays, chose } = s.data;
@@ -1478,7 +1483,7 @@ export const POOL_KEYS = [
   ...['honest', 'polished', 'edited', 'catfish', 'shared'].map(m => `profile.${m}`),
   'recognise', 'arrival', 'arrival.react', 'afterparty',
   'ratings.open', ...REASONS_.flatMap(r => [`rate.${r}.top`, `rate.${r}.bottom`]),
-  'result.bottom', 'result.middle', 'result.top', 'result.influencers', 'result.sole',
+  'result.bottom', 'result.middle', 'result.top', 'result.influencers', 'result.sole', 'result.picked', 'result.rod',
   // No alliance on the final night (ratings.js: final -> 0): the winner is who deserves it.
   ...REASONS_.filter(r => r !== 'alliance').map(r => `final.rate.${r}`),
   'hangout.open', ...BLOCK_WHY_.map(r => `hangout.view.${r}.cut`), 'hangout.view.noBond.keep',
@@ -1496,7 +1501,7 @@ export const POOL_KEYS = [
   'hack.send', 'hack.read', 'hack.undone', 'joker.chat', 'joker.pick', 'burner.exposed',
   'alert.public-super', 'alert.none', 'block.react.guess', 'noblock.alert', 'noblock.influencer', 'noblock.relief', 'mission.given', 'mission.success',
   'block.announce.mission', 'swap.told', 'swap.back', 'clone.alert', 'clone.plea.old', 'clone.plea.new', 'clone.vote.new', 'clone.vote.old',
-  'clone.host.intro', 'clone.host.caught', 'clone.host.fooled', 'clone.out.caught', 'clone.out.fooled', 'alert.most-human', 'rate.human.top', 'rate.human.bottom', 'goodbye.video.ai', 'meet.arrive.ai', 'secondchance.back', 'secondchance.react', 'secondchance.recognize', 'egg.intro', 'egg.vote.first', 'egg.vote.second', 'egg.stays', 'egg.goes', 'rod.partner', 'sacrifice.go', 'sacrifice.kept', 'sacrifice.saved', 'disrupter.alert', 'disrupter.win.immunity', 'disrupter.win.pick', 'disrupter.slow', 'disrupter.pick', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
+  'clone.host.intro', 'clone.host.caught', 'clone.host.fooled', 'clone.out.caught', 'clone.out.fooled', 'alert.most-human', 'rate.human.top', 'rate.human.bottom', 'goodbye.video.ai', 'meet.arrive.ai', 'secondchance.back', 'secondchance.react', 'secondchance.recognize', 'egg.intro', 'egg.vote.first', 'egg.vote.second', 'egg.stays', 'egg.goes', 'rod.alert', 'rod.partner', 'sacrifice.go', 'sacrifice.kept', 'sacrifice.saved', 'disrupter.alert', 'disrupter.win.immunity', 'disrupter.win.pick', 'disrupter.slow', 'disrupter.pick', 'date.pick', 'date.chat', 'date.gift', 'date.passed', 'invites.first', 'invites.next', 'invites.last',
   'race.win', 'race.lose', 'newparty.throw', 'newparty.guest', 'newparty.left', 'lurk.watch', 'lurk.reveal',
   'chosen.offer', 'chosen.pick', 'chosen.thanks', 'pairarrival.chat', 'alert.antivirus', 'antivirus.open', 'antivirus.pass', 'antivirus.got', 'antivirus.left', 'block.announce.antivirus',
   'hangout.agree', 'hangout.yield', 'hangout.trade', 'hangout.pact',

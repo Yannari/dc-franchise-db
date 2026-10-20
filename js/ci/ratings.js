@@ -123,8 +123,10 @@ export function influencersFrom(res) {
   return res.filter(r => r.avg <= second).map(r => r.profile);
 }
 
-export function revealOrder(res) {
-  const infl = influencersFrom(res);
+/** Who is read out when, from the bottom up, the Influencers last. `infl`: the
+ *  night's real Influencers, so a twist that seats somebody the ratings did not
+ *  (the Joker's pick, a Ride or Die) still reads out the place they took. */
+export function revealOrder(res, infl = influencersFrom(res)) {
   const rest = [...res].reverse().filter(r => !infl.includes(r.profile)).map(r => r.profile);
   const groups = [];
   let i = 0;
@@ -163,9 +165,16 @@ export function runRating(state, rng, { final = false, seats = Infinity, pick = 
   // A format seats its own number of Influencers (a sole influencer: one).
   let influencers = final ? [] : (pick ? pick(res, state) : influencersFrom(res).slice(0, seats));
   // The Joker names the second Influencer of an ordinary night (US 2).
-  if (!final && !hidden && seats === 2 && !pick) influencers = rideOrDieInfluencers(state, jokerPick(state, influencers));
+  let named = null;
+  if (!final && !hidden && seats === 2 && !pick) {
+    const top = influencers, joker = jokerPick(state, top);
+    influencers = rideOrDieInfluencers(state, joker);
+    // A second Influencer the ratings did not choose: the results say who put them there.
+    if (influencers[1] && influencers[1] !== top[1]) named = influencers[1] === joker[1] ? 'picked' : 'rod';
+  }
+  const reveal = revealOrder(res, influencers.length ? influencers : undefined);
   const sc = addScene(state, final ? 'final-ratings' : 'ratings', voters,
-    { ballots, results: res, influencers, reveal: revealOrder(res), ...(hidden ? { hidden: true } : {}), ...(human ? { human: true } : {}) }, [...state.active]);
+    { ballots, results: res, influencers, reveal, ...(named ? { named } : {}), ...(hidden ? { hidden: true } : {}), ...(human ? { human: true } : {}) }, [...state.active]);
   for (const r of res) state.firstPlaces[r.profile] = (state.firstPlaces[r.profile] || 0) + r.firsts;
   for (const i of influencers) state.influencerCount[i] = (state.influencerCount[i] || 0) + 1;
   for (const p of state.pacts.filter(x => x.kind === 'rate')) {
@@ -181,7 +190,7 @@ export function runRating(state, rng, { final = false, seats = Infinity, pick = 
   if (hidden) {
     for (const h of state.active) delete state.unratedNext[h];
     const row = { day: state.day, final, voters, targets, ballots, results: res, influencers, hidden: true,
-      reveal: revealOrder(res), inferred: [], sceneId: sc.id };
+      reveal, inferred: [], sceneId: sc.id };
     sc.data.inferred = [];
     state.ratings.push(row);
     return row;
@@ -201,7 +210,7 @@ export function runRating(state, rng, { final = false, seats = Infinity, pick = 
   sc.data.inferred = inferred;
   for (const h of state.active) delete state.unratedNext[h];
   const row = { day: state.day, final, voters, targets, ballots, results: res, influencers,
-    reveal: revealOrder(res), inferred, sceneId: sc.id };
+    reveal, inferred, sceneId: sc.id };
   state.ratings.push(row);
   return row;
 }

@@ -784,6 +784,17 @@ export const POWER_LINES = {
     { turns: [{ by: 'a', say: '{b}. You are an Influencer tonight. You just do not know why.' }] },
     { turns: [{ by: 'a', say: "It's {b}. I trust {b} with this more than anyone." }] },
   ]),
+  // result.picked — the ratings are read; a came first, and b (nowhere near the
+  // top) is the second Influencer because the Joker or the Disrupter chose them.
+  ...E('result.picked', [
+    { turns: [{ by: 'a', react: "'You are the top-rated Player.' Number one! Me!" },
+      { by: 'b', react: "'You have been chosen as tonight's second Influencer.' Chosen? I wasn't in the top two. Who did this?" }] },
+    { turns: [{ by: 'a', react: "First place. Okay. Who's with me?" },
+      { by: 'b', react: "Me? The ratings didn't put me in the top two, and I'm an Influencer anyway? Somebody in here picked me." }],
+      beat: '{b} reads the alert twice before it sinks in.' },
+    { turns: [{ by: 'a', react: "Top of the ratings. And {b} is the other Influencer? {b} wasn't up there." },
+      { by: 'b', react: "Somebody gave me this. Not the ratings. Somebody. Now I owe a person I can't even name." }] },
+  ]),
   ...E('burner.exposed', [
     { turns: [{ by: 'a', react: "That second profile is {b}. It has to be. Same typos, same jokes." }, { by: 'b', react: 'They found it. Oh no.' }],
       beat: '{b} closes the second login with shaking hands.' },
@@ -968,6 +979,31 @@ export const IDENTITY_LINES = {
     { turns: [{ by: 'a', react: 'They picked the other one. They think I am the fake.' }], beat: '{a} stares at the screen, stunned.' },
     { turns: [{ by: 'a', react: 'After all of that, the room believed the copy.' }], beat: '{a} sits down slowly on the floor.' },
     { turns: [{ by: 'a', react: 'Blocked as a fake. I was the real one the whole time.' }] },
+  ]),
+  // rod.alert — the rules, read aloud: a reads the alert, b takes it in.
+  ...E('rod.alert', [
+    { turns: [{ by: 'a', react: "'Alert! Every Player has a secret Ride or Die: the Player you're most compatible with.' A partner? In here?" },
+      { by: 'a', react: "'If your Ride or Die is rated number one, you become an Influencer with them. If one of you is blocked, the other can go home in their place.'" },
+      { by: 'b', react: "So whoever I get, their night is my night. Please be somebody good." }] },
+    { turns: [{ by: 'a', react: "'Ride or Die. Your answers to It's Personal have paired you with one other Player. Only the two of you will know.'" },
+      { by: 'a', react: "'The top-rated Player's Ride or Die joins them as an Influencer. And when one of you is blocked, the other may choose to leave instead.'" },
+      { by: 'b', say: "So I could end up an Influencer without anyone rating me. Or go home for somebody else." }],
+      beat: '{b} sits down very slowly.' },
+    { turns: [{ by: 'a', react: "'Alert! The Ride or Die twist.' Okay, what is that?" },
+      { by: 'a', react: "'You are now secretly paired. If your partner comes first in the Ratings, you are an Influencer too. If your partner is blocked, you can take their place.'" },
+      { by: 'b', react: "I'm tied to somebody and I don't know who yet. Love that. Hate that." }] },
+  ]),
+  // result.rod — the ratings are read: a came first, and b, a's Ride or Die,
+  // is the second Influencer because of it, wherever b was rated.
+  ...E('result.rod', [
+    { turns: [{ by: 'a', react: "'You are the top-rated Player.' Number one!" },
+      { by: 'b', react: "'As {a}'s Ride or Die, you are now an Influencer too.' I wasn't even in the top two! {a} just carried me in." }] },
+    { turns: [{ by: 'a', react: "First! And that means my Ride or Die comes with me. {b}, get up here." },
+      { by: 'b', react: "Not in the top two and an Influencer anyway. That's what a Ride or Die is for, I guess." }],
+      beat: '{b} laughs out loud at the screen.' },
+    { turns: [{ by: 'a', react: "Top of the ratings. I did not see that coming." },
+      { by: 'b', react: "'Your Ride or Die came first, so you are an Influencer.' The room didn't put me here. {a} did." },
+      { by: 'b', say: "Everybody's going to wonder why I'm in the Hangout. Let them wonder." }] },
   ]),
   ...E('rod.partner', [
     { turns: [{ by: 'a', react: "'Your Ride or Die is {b}.' Oh, I can work with that." }], beat: '{a} smiles at the screen.' },

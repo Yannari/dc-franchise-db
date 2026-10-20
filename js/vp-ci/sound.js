@@ -167,7 +167,7 @@ export function soundFor(screen, idx) {
     if (k === 'block.typing') return { cue: 'ci-typing', bed: null };
   }
   if (screen.stage === 'rate') {
-    if (k === 'result.influencers' || k === 'result.sole' || k === 'result.super' || k === 'result.secret') return { cue: 'ci-crown', bed: null };
+    if (k === 'result.influencers' || k === 'result.rod' || k === 'result.picked' || k === 'result.sole' || k === 'result.super' || k === 'result.secret') return { cue: 'ci-crown', bed: null };
     if (/^result\./.test(k) && st === screen.steps.find(x => x.key === k && x.on?.a === st.on?.a)) return { cue: 'ci-reveal', bed: screen.kind === 'ratings' && first(/^result\./) ? 'ci-results' : null };
     if (/^(rate|final\.rate)\./.test(k)) return { cue: 'ci-tick', bed: null };
   }

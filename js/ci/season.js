@@ -72,7 +72,7 @@ export function applyCarried(state, carried) {
 // What the big moments' screens draw (js/vp-ci/moments.js), kept small: a
 // ranking board, the names at risk, who was blocked, the finale board.
 const board = d => ({ ballots: (d.ballots || []).map(b => ({ voter: b.voter, order: b.order, ...(b.reasons ? { reasons: b.reasons } : {}) })),
-  results: (d.results || []).map(r => ({ profile: r.profile, place: r.place })), influencers: d.influencers || [] });
+  results: (d.results || []).map(r => ({ profile: r.profile, place: r.place })), influencers: d.influencers || [], ...(d.named ? { named: d.named } : {}) });
 const BEAT_KEEP = new Set(['phase', 'round', 'kind', 'by', 'about', 'c', 'n', 'answer', 'right', 'promptId', 'factId', 'qid',
   'tone', 'qkind', 'anon', 'tier', 'split', 'strong', 'everyone', 'mutual', 'many', 'warm', 'off', 'all', 'votes']);
 /** Likes received, from a likes scene's record (liker -> the profiles they liked). */

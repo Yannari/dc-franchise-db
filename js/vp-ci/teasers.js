@@ -144,7 +144,7 @@ export function withTeasers(row, screens, { prev = null, next = null, screensOf 
     const named = block?.steps.find(x => /^block\.announce\./.test(x.key || '') && x.part === 'send' && x.who && x.text);
     // No blocking (the night carried over): end on the Influencers crowned.
     const rated = !named && ps.find(s => s.kind === 'ratings' || s.kind === 'final-ratings');
-    const crowned = rated && rated.steps.find(x => /^result\.(influencers|sole|super|secret)$/.test(x.key || '') && x.text);
+    const crowned = rated && rated.steps.find(x => /^result\.(influencers|rod|picked|sole|super|secret)$/.test(x.key || '') && x.text);
     const tail = named ? { ...clipOf(prev, block, named, false), key: 'teaser.ended' }
       : crowned?.who ? { ...clipOf(prev, rated, crowned, false), key: 'teaser.ended' }
         : crowned ? { part: 'teaser', who: null, host: true, key: 'teaser.ended', text: crowned.text } : null;

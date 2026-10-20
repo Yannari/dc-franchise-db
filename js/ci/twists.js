@@ -13,7 +13,8 @@
 //                voted fake leaves (US 3, UK 3 — US 3 voted out the real one)
 //   ride-or-die  secret compatibility pairs (US 6): a blocked member's
 //                partner may go in their place; the top player's partner is
-//                a secret second Influencer. (The real rule blocks both
+//                the second Influencer, wherever they were rated (the
+//                results say so: script.js result.rod). (The real rule blocks both
 //                unless one sacrifices; here someone always goes, so the
 //                season still loses exactly the players it must.)
 import { rel, bump, S, addScene, noteIdentity, moveIn } from './state.js';
@@ -172,7 +173,7 @@ export function rideOrDieTarget(state, rng, target) {
   return { target: goes, channel: goes === partner ? 'sacrifice' : null };
 }
 
-/** The top player's partner is a secret second Influencer (US 6). */
+/** The top player's partner is the second Influencer (US 6). */
 export function rideOrDieInfluencers(state, influencers) {
   const partner = influencers[0] && partnerOf(state, influencers[0]);
   return partner && influencers.length === 2 ? [influencers[0], partner] : influencers;

@@ -14,7 +14,7 @@ import { esc, faceUrl, ringOf, nameOf, realOf, isCatfish, bg } from './parts.js'
 import { faceOf } from './steps.js';
 
 const NAMED = /^(block\.announce\.|vote\.result|block\.inperson\.tell)/;
-const CROWN = /^result\.(influencers|sole|super|secret)$/;
+const CROWN = /^result\.(influencers|rod|picked|sole|super|secret)$/;
 
 /** What has happened on screen by step `idx` of screen `si`. */
 export function playedTo(row, screens, si, idx) {

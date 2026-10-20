@@ -116,6 +116,12 @@ import frozenMine from './places/frozen-mine.js';
 import teaHills from './places/tea-hills.js';
 import pampasRanch from './places/pampas-ranch.js';
 import gameShowCity from './places/game-show-city.js';
+import donOpeners from './don-rewrite/openers.js';
+import donPlaceA from './don-rewrite/place-a.js';
+import donPlaceB from './don-rewrite/place-b.js';
+import donDemos from './don-rewrite/demos.js';
+import donNarrate from './don-rewrite/narrate.js';
+import donMoments from './don-rewrite/moments.js';
 import stagesAny from './stages/_any.js';
 import stagesIceRiver from './stages/ice-river.js';
 import stagesPampasRanch from './stages/pampas-ranch.js';
@@ -161,6 +167,15 @@ for (const f of FILES) for (const [k, list] of Object.entries(f)) (POOLS[k] ||= 
 for (const rw of REWRITES) for (const [k, list] of Object.entries(rw.pools)) (POOLS[k] ||= []).push(...list);
 // a retired pool with nothing left in it is not a pool
 for (const k of Object.keys(POOLS)) if (!POOLS[k].length) delete POOLS[k];
+
+// Don in whole sentences, the joke built before it lands (the user, 2026-10-20: "speak with actual sentence not cut
+// bs ... dont start with the punchline"): his rewritten lines, by entry id and turn (lines/don-rewrite/)
+export const DON_BEFORE = {};
+export const DON_REWRITE = { ...donOpeners, ...donPlaceA, ...donPlaceB, ...donDemos, ...donNarrate, ...donMoments };
+for (const list of Object.values(POOLS)) for (const e of list) e.turns.forEach((t, i) => {
+  const now = DON_REWRITE[`${e.id}:${i}`];
+  if (now != null && t.by === 'don') { DON_BEFORE[`${e.id}:${i}`] = t.say; t.say = now; delete t.v; }
+});
 
 const words = s => String(s).replace(/\{[^}]+\}/g, 'X').split(/\s+/).filter(Boolean).length;
 const sentences = s => String(s).split(/(?<=[.!?])\s+/).filter(Boolean);

@@ -16,23 +16,23 @@ export default {
     "Last time on The Ridonculous Race, after {summary}, our teams discovered their inner artists. Their inner artists were terrible.",
   ],
   'great-wall-hills': [
-    "Last time on The Ridonculous Race, after {summary}, our teams had bugs for lunch. I had the noodles. Better choice.",
+    "Last time on The Ridonculous Race, after {summary}, our teams had bugs for lunch, while I had the noodles, which was the better choice.",
     "Last time on The Ridonculous Race, after {summary}, our teams learned that anything tastes like chicken if you're scared enough.",
   ],
   'rock-north': [
     "Last time on The Ridonculous Race, after {summary}, our teams were boiled, frozen, and booed. In that order.",
-    "Last time on The Ridonculous Race, after {summary}, our teams found out they're not rock stars. Mostly. One of them was. A bit.",
+    "Last time on The Ridonculous Race, after {summary}, our teams found out they're not rock stars, mostly, although one of them was, a little bit.",
   ],
   'savanna-falls': [
     "Last time on The Ridonculous Race, after {summary}, our teams got very, very close to nature. Closer than nature wanted.",
     "Last time on The Ridonculous Race, after {summary}, our teams screamed so loud the rhinos complained.",
   ],
   'treasure-isles': [
-    "Last time on The Ridonculous Race, after {summary}, our teams went full pirate. I went full sunbathing. We all had a nice time.",
-    "Last time on The Ridonculous Race, after {summary}, our teams found treasure. It was chocolate. They were thrilled anyway.",
+    "Last time on The Ridonculous Race, after {summary}, our teams went full pirate while I went full sunbathing, and we all had a lovely time.",
+    "Last time on The Ridonculous Race, after {summary}, our teams found treasure, which turned out to be chocolate, and they were thrilled anyway.",
   ],
   'tomb-sands': [
-    "Last time on The Ridonculous Race, after {summary}, our teams got sand in places sand should never go. I checked. From a distance.",
+    "Last time on The Ridonculous Race, after {summary}, our teams got sand in places sand should never go, which I checked, from a distance.",
     "Last time on The Ridonculous Race, after {summary}, our teams survived a tomb, a camel and a crocodile. The camel was the worst.",
   ],
   'torch-statue-harbour': [
@@ -45,7 +45,7 @@ export default {
   ],
   'fire-mountain-isle': [
     "Last time on The Ridonculous Race, after {summary}, our teams were singed, soaked and very, very tired. Classic island holiday.",
-    "Last time on The Ridonculous Race, after {summary}, our teams fed a volcano. The volcano is fine. The teams are less fine.",
+    "Last time on The Ridonculous Race, after {summary}, our teams fed a volcano, and the volcano is fine, but the teams are a little less fine.",
   ],
   'coast-palace': [
     "Last time on The Ridonculous Race, after {summary}, our teams learned that sharks and surfers are equally hard to please. I spent the day on a yacht. Very easy to please.",
@@ -53,11 +53,11 @@ export default {
   ],
   'geyser-island': [
     "Last time on The Ridonculous Race, after {summary}, our teams learned three words in a brand-new language. All three of them wrong.",
-    "Last time on The Ridonculous Race, after {summary}, our teams found out what's on a traditional feast. They're still not sure. Neither am I.",
+    "Last time on The Ridonculous Race, after {summary}, our teams found out what's on a traditional feast, and they're still not sure, and neither am I.",
   ],
   'carnival-rainforest': [
     "Last time on The Ridonculous Race, after {summary}, our teams felt pain, fear and feathers. Mostly feathers.",
-    "Last time on The Ridonculous Race, after {summary}, our teams learned that bullet ants don't do high fives. Or low fives. Or any fives.",
+    "Last time on The Ridonculous Race, after {summary}, our teams learned that bullet ants don't do high fives, or low fives, or any fives at all.",
   ],
   'haunted-castle': [
     "Last time on The Ridonculous Race, after {summary}, our teams had a frightfully good time. Heavy on the frightfully.",
@@ -69,14 +69,14 @@ export default {
   ],
   'glass-tower-gulf': [
     "Last time on The Ridonculous Race, after {summary}, our teams were very high up and very low on dignity.",
-    "Last time on The Ridonculous Race, after {summary}, our teams found out the machine never misses. Unlike them. And the windows are still streaky.",
+    "Last time on The Ridonculous Race, after {summary}, our teams found out the machine never misses, unlike them, and the windows are still streaky.",
   ],
   'swamp-prison': [
     "Last time on The Ridonculous Race, after {summary}, our teams did hard time, then floated off on a pile of junk. Freedom has never smelled worse.",
     "Last time on The Ridonculous Race, after {summary}, our teams proved you can escape anything with a spoon. Except the mosquitoes.",
   ],
   'outback-farm': [
-    "Last time on The Ridonculous Race, after {summary}, our teams were outsmarted by rabbits. Then they flew. Some of them even meant to.",
+    "Last time on The Ridonculous Race, after {summary}, our teams were outsmarted by rabbits and then flew, and some of them even meant to.",
     "Last time on The Ridonculous Race, after {summary}, our teams learned that a rabbit in a sack is still a rabbit. And it is not happy about it.",
   ],
   'fjord-peaks': [
@@ -88,19 +88,19 @@ export default {
     "Last time on The Ridonculous Race, after {summary}, our teams learned that eight seconds lasts a very long time. Especially after beans.",
   ],
   'ice-floe': [
-    "Last time on The Ridonculous Race, after {summary}, our teams got very cold and very cosy. Igloos are like that. I stayed in the plane, with the heater.",
-    "Last time on The Ridonculous Race, after {summary}, our teams found out that ice is cold. Who knew? Everybody. Everybody knew.",
+    "Last time on The Ridonculous Race, after {summary}, our teams got very cold and very cosy, the way igloos make you, while I stayed in the plane with the heater.",
+    "Last time on The Ridonculous Race, after {summary}, our teams found out that ice is cold, which, as it turns out, everybody already knew.",
   ],
   'dragon-isle': [
     "Last time on The Ridonculous Race, after {summary}, our teams got up close with a giant lizard. Closer than he wanted, honestly.",
-    "Last time on The Ridonculous Race, after {summary}, our teams learned that one rug looks a lot like another rug. And another. And another.",
+    "Last time on The Ridonculous Race, after {summary}, our teams learned that one rug looks a lot like another rug, and another, and another.",
   ],
   'neon-desert': [
     "Last time on The Ridonculous Race, after {summary}, our teams found out a lion doesn't care for magic. Or for being woken up.",
     "Last time on The Ridonculous Race, after {summary}, our teams pulled off some real disappearing acts. Their dignity went first.",
   ],
   'pyramid-coast': [
-    "Last time on The Ridonculous Race, after {summary}, our teams felt the burn. Inside and out. Mostly inside.",
+    "Last time on The Ridonculous Race, after {summary}, our teams felt the burn, inside and out, but mostly inside.",
     "Last time on The Ridonculous Race, after {summary}, our teams learned that milk cures a fiery pepper, and nothing cures a burro.",
   ],
   'stilt-river': [
@@ -108,7 +108,7 @@ export default {
     "Last time on The Ridonculous Race, after {summary}, our teams discovered that catfish bite back, and tunnels don't come with a map.",
   ],
   'frozen-mine': [
-    "Last time on The Ridonculous Race, after {summary}, our teams froze on the lake and then went down a hole. Way down. Which is also where their spirits went.",
+    "Last time on The Ridonculous Race, after {summary}, our teams froze on the lake and then went way down a hole, which is also where their spirits went.",
     "Last time on The Ridonculous Race, after {summary}, our teams found out a swimsuit is not winter wear. I could have told them. I didn't.",
   ],
   'tea-hills': [
@@ -120,7 +120,7 @@ export default {
     "Last time on The Ridonculous Race, after {summary}, our teams twirled, dipped and roped. The emus were not impressed.",
   ],
   'game-show-city': [
-    "Last time on The Ridonculous Race, after {summary}, our teams bounced off everything in that studio. Including each other. And a panda.",
+    "Last time on The Ridonculous Race, after {summary}, our teams bounced off everything in that studio, including each other, and a panda.",
     "Last time on The Ridonculous Race, after {summary}, our teams found out what it's like to be a ball. Loud, painful, and great television.",
   ],
   'ice-river': [
@@ -132,7 +132,7 @@ export default {
     "Last time on The Ridonculous Race, after {summary}, our teams learned a slap dance hurts a lot more when you get it wrong.",
   ],
   'jungle-ruins': [
-    "Last time on The Ridonculous Race, after {summary}, our teams kept all their toes. Most of them. Probably.",
+    "Last time on The Ridonculous Race, after {summary}, our teams kept all their toes, or most of them, probably.",
     "Last time on The Ridonculous Race, after {summary}, our teams found out most golden idols are fake. Like most smiles on television. Not mine, obviously.",
   ],
   'glass-pyramid-city': [
@@ -140,7 +140,7 @@ export default {
     "Last time on The Ridonculous Race, after {summary}, our teams got a little culture. Mostly by breaking it, fixing it and strutting past it.",
   ],
   'fishing-cove': [
-    "Last time on The Ridonculous Race, after {summary}, our teams kissed a fish. On camera. Forever.",
+    "Last time on The Ridonculous Race, after {summary}, our teams kissed a fish, on camera, and that's going to be out there forever.",
     "Last time on The Ridonculous Race, after {summary}, our teams became honorary locals. The cod is still recovering.",
   ],
   'cliff-pool-isle': [
@@ -148,11 +148,11 @@ export default {
     "Last time on The Ridonculous Race, after {summary}, our teams found out a bobsled works on a tropical island. Sort of.",
   ],
   'twin-tower-bridge': [
-    "Last time on The Ridonculous Race, after {summary}, our teams solved a mystery, chased a villain and annoyed a royal guard. He didn't move. Not once.",
+    "Last time on The Ridonculous Race, after {summary}, our teams solved a mystery, chased a villain and annoyed a royal guard, who didn't move once.",
     "Last time on The Ridonculous Race, after {summary}, our teams met the toughest crowd in the world: a guard who won't smile. Even I couldn't crack him.",
   ],
   'marble-temple-hill': [
-    "Last time on The Ridonculous Race, after {summary}, our teams went for gold. A few got bronze. Most got bruises.",
+    "Last time on The Ridonculous Race, after {summary}, our teams went for gold, and a few of them got bronze, but most of them got bruises.",
     "Last time on The Ridonculous Race, after {summary}, our teams found out the old games were hard. That's why nobody plays them any more.",
   ],
   'secret-base-desert': [
@@ -165,7 +165,7 @@ export default {
   ],
   'great-falls': [
     "Last time on The Ridonculous Race, after {summary}, our teams found out love is a gamble. So is a tightrope.",
-    "Last time on The Ridonculous Race, after {summary}, our teams rolled the dice and walked the line. Romance isn't dead. It's just very wet.",
+    "Last time on The Ridonculous Race, after {summary}, our teams rolled the dice and walked the line, and it turns out romance isn't dead, it's just very wet.",
   ],
   'bamboo-wall-hills': [
     "Last time on The Ridonculous Race, after {summary}, our teams climbed a lot of steps and then ate things that looked back at them. Big day.",

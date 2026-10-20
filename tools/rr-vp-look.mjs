@@ -59,6 +59,7 @@ const FIND = {
   demo: '(s, t, k) => s.seg === "don-demo" && k >= 1',
   roomtalk: '(s, t, k) => s.stretch === "tango" && s.mode === "talk" && t.by',
   duelshot: '(s, t, k) => s.stretch === "duel" && s.kind === "world" && k >= 1',
+  openerjob: '(s, t, k) => s.seg === "don-opener" && /^don-/.test(s.plate?.f || "") && t.by',
   localsays: '(s, t, k) => s.localFaces && t.by && s.localFaces[t.by]',
   localstands: '(s, t, k) => s.localFaces && Object.keys(s.localFaces).length && !s.steps.some(x => s.localFaces[x.by]) && t.by && k >= 1',
 };

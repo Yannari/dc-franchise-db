@@ -471,7 +471,8 @@ function decorate(scr, seg, scene, leg, ctx) {
     scr.steps[1].intel = {};
     scr.donBox = true;
   }
-  if (k === 'don-opener') scr.donBox = true;
+  // (not indoors: Don by his fire, in his tea room, in the pub; the Don Box is out on the course)
+  if (k === 'don-opener' && !/^don-/.test(scr.plate?.f || '')) scr.donBox = true;
   if (k === 'don-place' && scene?.data?.team) {
     const team = scene.data.team, place = scene.data.place;
     scr.arriving = [team];

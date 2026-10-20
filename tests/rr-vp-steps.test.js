@@ -179,6 +179,8 @@ describe('rr viewer steps', () => {
     each(ep => {
       for (const s of ep.screens) {
         if (!s.plate?.f || s.plate.race) continue;
+        // (Don's own settings for his openers, made from jobs: the place's folder holds them, opener-shots.js)
+        if (/^don-/.test(s.plate.f)) { expect(existsSync(plateUrl(s.plate.place, s.plate.f)), `${s.id} ${s.plate.f}`).toBe(true); continue; }
         expect(placeFiles(s.plate.place), `${s.id} ${s.seg}: ${s.plate.f} is not a plate of ${s.plate.place}`).toContain(s.plate.f);
         expect(existsSync(plateUrl(s.plate.place, s.plate.f)), `${s.id} ${s.plate.place}/${s.plate.f}`).toBe(true);
       }

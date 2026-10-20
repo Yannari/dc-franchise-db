@@ -227,6 +227,9 @@ export const LIFE = {
  "assets/sets/rr/geyser-island/chill-9437338.webp": [
   "water"
  ],
+ "assets/sets/rr/geyser-island/don-hot-spring.webp": [
+  "water"
+ ],
  "assets/sets/rr/geyser-island/task-9437137.webp": [
   "water"
  ],
@@ -243,6 +246,10 @@ export const LIFE = {
   "water"
  ],
  "assets/sets/rr/glass-tower-gulf/chill-9440146.webp": [
+  "water"
+ ],
+ "assets/sets/rr/glass-tower-gulf/don-rooftop-pool.webp": [
+  "wind",
   "water"
  ],
  "assets/sets/rr/glass-tower-gulf/present-9439561.webp": [
@@ -525,6 +532,9 @@ export const LIFE = {
  ],
  "assets/sets/rr/swamp-prison/travel-9442151.webp": [
   "wind"
+ ],
+ "assets/sets/rr/tomb-sands/don-palm-shade.webp": [
+  "water"
  ],
  "assets/sets/rr/tomb-sands/task-22410542.webp": [
   "wind"

@@ -209,6 +209,8 @@ const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 function speakText(s) {
   return tidy(s)
     .replace(/\s*(\.\.\.|…)/g, ', dot, dot, dot.')
+    // "?!" is one mark said twice, never "question mark., exclamation point" (a hype voice adds the "!")
+    .replace(/\?+!+|!+\?+/g, m => (m[0] === '?' ? ', question mark, exclamation point.' : ', exclamation point, question mark.'))
     .replace(/!+/g, ', exclamation point.')
     .replace(/\?+/g, ', question mark.')
     .replace(/\.\.$/, '.')

@@ -269,6 +269,62 @@ export const PLACE_MUSIC = {
       interview: 'a soft, spooky vibraphone',
     },
   },
+  'lei-island': {
+    name: 'Lei Island', feel: 'the island of flower garlands: ukulele, marimba, tongue drum and slack-key guitar',
+    search: 'ukulele, island, marimba, tropical, relaxed',
+    moments: {
+      opener: 'a bright marimba and ukulele morning',
+      travel: 'a cheery mid-tempo ukulele along the coast road',
+      challenge: 'a driving tongue drum and percussion: the ring, the coals',
+      struggle: 'a mysterious island groove: deep water, hot coals',
+      'chill-zone': 'a calm ukulele by the tiki hut',
+      elimination: 'a slow, sad ukulele and flutes',
+      recap: 'quick ukulele and glockenspiel',
+      interview: 'a soft, flowing guitar and ukulele',
+    },
+  },
+  'glass-tower-gulf': {
+    name: 'Glass Tower Gulf', feel: 'the glass city in the desert: sleek electronic pop, a saz-like pluck, cool downtempo',
+    search: 'electronic, techno-pop, downtempo, desert city, sleek',
+    moments: {
+      opener: 'a bright, fast techno-pop skyline',
+      travel: 'a light synth groove on the desert highway',
+      challenge: 'driving electronic percussion: the gondola and the tennis machine',
+      struggle: 'a cool downtempo with heavy percussion: heights and a robot that never misses',
+      'chill-zone': 'a dark, grooving piano electronica at the gold market',
+      elimination: 'a calm, slow electric piano',
+      recap: 'a quick saz-and-bass groove',
+      interview: 'a slow, mystical dub under the voice',
+    },
+  },
+  'swamp-prison': {
+    name: 'Swamp Prison', feel: 'the old prison in the swamp: blues, a harmonica, slide guitar and a slow organ',
+    search: 'blues, harmonica, deep south, swamp, slide',
+    moments: {
+      opener: 'a grooving harmonica blues: the old prison',
+      travel: 'a deep-south harmonica and accordion along the swamp road',
+      challenge: 'a rolling blues riff: the cell and the raft',
+      struggle: 'a slow, mysterious blues: a spoon against a wall',
+      'chill-zone': 'a relaxed slow blues on the dock',
+      elimination: 'a lonely guitar and harmonica',
+      recap: 'a quick boogie-woogie',
+      interview: 'a basic, relaxed 12-bar blues',
+    },
+  },
+  'outback-farm': {
+    name: 'Outback Farm', feel: 'a farm in the bush: a bush band, banjo and fiddle, flute, a didgeridoo drone',
+    search: 'bush band, folk, banjo, fiddle, didgeridoo',
+    moments: {
+      opener: 'a bouncy banjo and flute: the farm',
+      travel: 'a bright banjo and fiddle swing down the dirt road',
+      challenge: 'a comedic banjo romp: ten rabbits loose',
+      struggle: 'a dark didgeridoo drone and strings',
+      'chill-zone': 'a calm fiddle and harp over the valley',
+      elimination: 'slow, sombre pipes',
+      recap: 'a quick hammered dulcimer and whistle',
+      interview: 'soft percussion, a world groove under the voice',
+    },
+  },
 };
 
 export const PLACE_IDS = Object.keys(PLACE_MUSIC);

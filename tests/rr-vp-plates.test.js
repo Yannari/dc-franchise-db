@@ -46,7 +46,8 @@ describe('rr viewer repaint jobs', () => {
     const src = readFileSync('js/vp-rr-ep/plates.js', 'utf8');
     expect(jobs.length).toBeGreaterThan(0);
     for (const j of jobs) {
-      expect(src, j.file).toContain(`repaint('${j.file}'`);
+      // a view by repaint(), a cut-out by REPAINTED.has() (its prop or judge switched on)
+      expect(src.includes(`repaint('${j.file}'`) || src.includes(`REPAINTED.has('${j.file}')`), j.file).toBe(true);
       // a repaint of an existing frame is hashed; a NEW view or cut-out switches on when its file appears
       if (!j.new) expect(j.sha256, `${j.file}: run python tools/rr-vp-repaints.py --jobs`).toMatch(/^[0-9a-f]{64}$/);
       else expect(j.why, j.file).toBeTruthy();

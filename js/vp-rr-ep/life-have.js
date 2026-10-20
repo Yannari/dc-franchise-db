@@ -95,6 +95,25 @@ export const LIFE = {
  "assets/sets/rr/geyser-island/task-9437341.webp": [
   "water"
  ],
+ "assets/sets/rr/glass-tower-gulf/arrive-9439709.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/glass-tower-gulf/chill-9440146.webp": [
+  "water"
+ ],
+ "assets/sets/rr/glass-tower-gulf/present-9439561.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/glass-tower-gulf/present-9439562.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/glass-tower-gulf/task-9439713.webp": [
+  "water"
+ ],
+ "assets/sets/rr/glass-tower-gulf/travel-9439786.webp": [
+  "wind",
+  "water"
+ ],
  "assets/sets/rr/great-wall-hills/chill-9440467.webp": [
   "wind"
  ],
@@ -125,6 +144,19 @@ export const LIFE = {
   "water"
  ],
  "assets/sets/rr/iron-tower-city/travel-9436549.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/lei-island/present-9439148.webp": [
+  "wind",
+  "water"
+ ],
+ "assets/sets/rr/lei-island/task-9439101.webp": [
+  "water"
+ ],
+ "assets/sets/rr/outback-farm/present-9442822.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/outback-farm/task-9442843.webp": [
   "wind"
  ],
  "assets/sets/rr/red-outback/people-free-cartoon-campsite-2.webp": [
@@ -187,6 +219,25 @@ export const LIFE = {
  ],
  "assets/sets/rr/savanna-falls/task-9441761.webp": [
   "wind"
+ ],
+ "assets/sets/rr/swamp-prison/arrive-9442029.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/swamp-prison/chill-9442481.webp": [
+  "wind",
+  "water"
+ ],
+ "assets/sets/rr/swamp-prison/chill-9442555.webp": [
+  "wind",
+  "water"
+ ],
+ "assets/sets/rr/swamp-prison/task-9442410.webp": [
+  "wind",
+  "water"
+ ],
+ "assets/sets/rr/swamp-prison/travel-9442134.webp": [
+  "wind",
+  "water"
  ],
  "assets/sets/rr/tomb-sands/task-22410542.webp": [
   "wind"

@@ -45,7 +45,7 @@ const AMBIENT = { 'rock-north': 'snow', 'red-sand-desert': 'mote', 'tomb-sands':
 
 // the ways of going that carry their cut-out with them: a vehicle under them, a zip trolley, a canopy or a hang
 // glider over them, a vine to swing on, a coffin pushed in front
-const VEH = new Set(['ride', 'zip', 'para', 'swing', 'push']);
+const VEH = new Set(['ride', 'zip', 'para', 'swing', 'push', 'coals']);
 
 export function createStage(holder, { faceOf, legLabel }) {
   holder.innerHTML = `<div class="rr-frame" id="rr-frame"><div class="stage" id="rr-stage">
@@ -163,6 +163,7 @@ export function createStage(holder, { faceOf, legLabel }) {
     e.style.visibility = 'hidden'; ui.appendChild(e);
     const at = stampSpot(s, k, view, turnedSize(e, 12), bounds(view));
     e.style.left = at[0] + '%'; e.style.top = at[1] + '%'; e.style.visibility = '';
+    if (at.k < 1) e.style.setProperty('--k', at.k);
     if (fresh && st.text === 'DONE!') e.style.animationDelay = '.3s';
     return e;
   }
@@ -707,6 +708,7 @@ export function createStage(holder, { faceOf, legLabel }) {
       if (step.slam.cls === 'boom') sz[1] = Math.max(sz[1], (5.4 + 2 + 21) * 16 / 9);          // the boomerang may not have loaded yet
       const at = slamSpot(s, k, view, sz, bounds(view));
       sl.style.left = at[0] + '%'; sl.style.top = at[1] + '%'; sl.style.visibility = '';
+      if (at.k < 1) sl.style.setProperty('--k', at.k);
       if (fresh) { if (step.slam.cls === 'gold') for (let q = 0; q < 3; q++) later(q * 250, () => particles('spark', 30 + Math.random() * 40, 30, 14, 14)); else flash((s.matAt || [50])[0], 30); }
     }
     ui.querySelectorAll('.clip').forEach(e => e.remove());

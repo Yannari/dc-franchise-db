@@ -61,6 +61,33 @@
       "new": true,
       "ref": "chill-9438461",
       "why": "the night Chill Zone near the castle (LEGS.txt: NEW, in edit; stand-in: the graveyard gate in the rain, chill-9438461)"
+    },
+    {
+      "place": "glass-tower-gulf",
+      "src": "10-glass-tower-gulf",
+      "file": "squeegee-bucket",
+      "new": true,
+      "kind": "cutout",
+      "prop": "squeegee",
+      "why": "the window-cleaning side: a squeegee and its bucket (LEGS.txt needs squeegee-bucket); meanwhile the gondola on the glass alone"
+    },
+    {
+      "place": "outback-farm",
+      "src": "15-outback-farm",
+      "file": "farmer",
+      "new": true,
+      "kind": "cutout",
+      "prop": "farmer",
+      "why": "the farmer whose rabbits are loose (LEGS.txt needs farmer); meanwhile the wriggling sack stands by"
+    },
+    {
+      "place": "outback-farm",
+      "src": "15-outback-farm",
+      "file": "ute",
+      "new": true,
+      "kind": "cutout",
+      "prop": "ute",
+      "why": "the ute to the farm (the coordinator's list: a ute); meanwhile the safari jeep"
     }
   ]
 }

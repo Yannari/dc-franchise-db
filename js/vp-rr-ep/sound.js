@@ -120,7 +120,7 @@ export function planBeds(ep) {
     return { si: f.si, k: f.idx, bed: x.bed, moment: m, conf: s.kind === 'iv' || s.mode === 'iv', chapter: first && starts.has(f.si), hard, place: m?.place || null };
   });
   const out = [];
-  let cur, curPlace = null, conf = null, heard = new Set(), lastChange = -Infinity;
+  let cur, curPlace = null, conf = null, heard = new Set(), lastChange = -Infinity, before;
   // how long bed `key` would play from step i on (confessionals in between do not break it)
   const lasts = (i, key) => { let n = 0; for (let j = i; j < raw.length; j++) { if (raw[j].conf) continue; if (keyOfBed(raw[j].bed) !== key) break; n++; } return n; };
   // a run of confessionals from step i; the world steps from i up to the next confessional
@@ -157,7 +157,9 @@ export function planBeds(ep) {
       // a soft change: the new music must last, and the music on now must have had its turn
       else change = lasts(i, key) >= SOFT_MIN && i - lastChange >= SOFT_MIN;
     }
-    if (change) { cur = r.bed; lastChange = i; if (r.place && !r.conf) curPlace = r.place; }
+    // never A, B and straight back to A: the music stays on B (a chapter's opening and the verdict excepted)
+    if (change && cur !== undefined && key === keyOfBed(before) && i - lastChange < SOFT_MIN && !r.chapter && r.moment?.moment !== 'elimination') change = false;
+    if (change) { before = cur; cur = r.bed; lastChange = i; if (r.place && !r.conf) curPlace = r.place; }
     out.push({ si: r.si, k: r.k, bed: cur, level, moment: r.moment, change, hard: r.hard });
   });
   return out;

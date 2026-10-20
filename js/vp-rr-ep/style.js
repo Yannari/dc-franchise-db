@@ -217,6 +217,20 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 @keyframes wPush{0%,100%{transform:translateX(0) rotate(4deg)}50%{transform:translateX(.3cqw) rotate(8deg)}}
 .prop.passer{z-index:9;transform:translate(-50%,-50%)}
 .fxp.ant{width:.45cqw;height:.3cqw;background:#1b0d06;border-radius:40%}
+/* the faces sit at the same height above the feet in every window: the token's box is fixed (the name under it may
+   overflow); in a narrow window the browser's smallest font made the name taller and lifted the faces off steps.js's
+   FACE shapes, so a stamp or a slam placed off a face could land on it */
+.tok{height:calc(var(--sz)*1.29)} .don{height:calc(var(--sz)*1.277)} .swim:not(.crowd){height:calc(var(--sz)*1.35)} .swim.crowd{height:calc(var(--sz)*1.147)}
+/* batch 2: a squeegee wiped across the glass, a tennis serve, a spoon scraping at a wall; over the hot coals in grass
+   skirts (the costume worn under the faces, quick hot-footed hops) */
+.tok.w-squeegee .pair{animation:wWipe 1.1s ease-in-out infinite}
+.tok.w-serve .pair{animation:wServe 1.4s ease-in-out infinite}
+.tok.w-spoon .pair{animation:wDig .55s ease-in-out infinite}
+@keyframes wWipe{0%,100%{transform:translateX(-.6cqw) rotate(-4deg)}50%{transform:translateX(.6cqw) rotate(4deg)}}
+@keyframes wServe{0%,55%,100%{transform:none}65%{transform:translateY(-.8cqw) rotate(-14deg)}75%{transform:translateY(0) rotate(12deg)}85%{transform:rotate(0)}}
+.tok.coals .veh{bottom:calc(var(--sz)*-.2);width:calc(var(--sz)*1.25);z-index:-1}
+.tok.coals .pair{animation:wHot .34s ease-in-out infinite}
+@keyframes wHot{0%,100%{transform:translateY(0)}50%{transform:translateY(-.9cqw)}}
 @keyframes wWait{0%,100%{transform:translateY(0)}20%{transform:translateY(-.45cqw)}40%{transform:translateY(0)}60%{transform:translateY(-.25cqw) rotate(-3deg)}}
 @keyframes wDig{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(.7cqw) rotate(10deg)}50%{transform:translateY(-.25cqw) rotate(-5deg)}75%{transform:translateY(.55cqw) rotate(8deg)}}
 @keyframes wEat{0%,40%,100%{transform:scaleY(1)}10%,30%{transform:scaleY(.94) translateY(.2cqw)}20%{transform:scaleY(1.03)}60%{transform:translateX(-.4cqw) rotate(-6deg) scaleY(.92)}66%{transform:translateX(.4cqw) rotate(6deg) scaleY(.92)}72%{transform:translateX(-.3cqw) rotate(-4deg)}}
@@ -277,7 +291,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .tipcard .os{display:flex;gap:.6cqw}
 .tipcard .o{flex:1;font-family:Bungee;font-size:1.3cqw;background:#c9d9ff;border-radius:.6cqw;padding:.4cqw .8cqw;text-align:center}
 @keyframes cardIn{from{transform:translateX(-50%) translateY(40cqw) rotate(-14deg) scale(.4);opacity:0}to{opacity:1}}
-.slam{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);z-index:45;text-align:center;pointer-events:none}
+.slam{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%) scale(var(--k,1));z-index:45;text-align:center;pointer-events:none}
 .slam .band{display:inline-block;background:#08080e;border-radius:1.4cqw;padding:.5cqw 2.6cqw .9cqw;
   box-shadow:0 0 0 .3cqw #0c0c14,0 0 0 .55cqw #5cc8ff,0 0 2.4cqw .6cqw rgba(60,170,255,.75)}
 .slam.red .band{box-shadow:0 0 0 .3cqw #0c0c14,0 0 0 .55cqw #ff5a4a,0 0 2.4cqw .6cqw rgba(255,70,50,.75)}
@@ -287,7 +301,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .slam img{width:30cqw;filter:drop-shadow(0 1.4cqw 2cqw rgba(0,0,0,.55));margin-top:1cqw}
 .slam.fresh{animation:slam .7s cubic-bezier(.2,1.6,.4,1) both}
 .slam.boom.fresh img{animation:boomIn .8s cubic-bezier(.2,1.4,.4,1) both}
-@keyframes slam{from{transform:translate(-50%,-50%) scale(2.6) rotate(-6deg);opacity:0}to{transform:translate(-50%,-50%);opacity:1}}
+@keyframes slam{from{transform:translate(-50%,-50%) scale(2.6) rotate(-6deg);opacity:0}to{transform:translate(-50%,-50%) scale(var(--k,1));opacity:1}}
 @keyframes boomIn{from{transform:rotate(-540deg) scale(.1);opacity:0}to{opacity:1}}
 .title{position:absolute;left:0;right:0;top:12%;text-align:center;z-index:25;pointer-events:none}
 .title .globe{position:absolute;left:50%;top:-1cqw;width:22cqw;opacity:.92;transform:translateX(-50%);filter:drop-shadow(0 0 1.2cqw #49b8ff)}
@@ -310,6 +324,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 /* out of the shot (steps.js planHide): whoever a close-up would cut fades out while it is in */
 #rr-stage .offcam{opacity:0}
 @keyframes thump{from{transform:translate(-50%,-50%) rotate(-12deg) scale(3);opacity:0}to{opacity:1}}
+.stamp{transform:translate(-50%,-50%) rotate(-12deg) scale(var(--k,1))}
 
 /* fx */
 .fxp{position:absolute;z-index:27;pointer-events:none;border-radius:50%}

@@ -133,7 +133,7 @@ describe('rr viewer: no stamp or slam on a face', () => {
     worlds(s => s.steps.forEach((st, k) => {
       if (!st.stamp) return;
       n++;
-      const [w, h] = stampSize(st.stamp.text);
+      const [w0, h0] = stampSize(st.stamp.text), kk = st.stamp.at.k ?? 1, [w, h] = [w0 * kk, h0 * kk];
       const [x, y] = st.stamp.at;
       const r = [x - w / 2, y - h / 2, x + w / 2, y + h / 2];
       expect(r[0] >= 0 && r[2] <= 100 && r[1] >= HUD_H - 0.1 && r[3] <= 100 - BAR + 0.1, `${s.id} step ${k} stamp off the picture [${r}]`).toBe(true);
@@ -149,7 +149,7 @@ describe('rr viewer: no stamp or slam on a face', () => {
     worlds(s => s.steps.forEach((st, k) => {
       if (!st.slam) return;
       n++;
-      const [w, h] = slamSize(st.slam), [x, y] = slamSpot(s, k, st.cam);
+      const spot = slamSpot(s, k, st.cam), [w, h] = slamSize(st.slam).map(v => v * (spot.k ?? 1)), [x, y] = spot;
       const r = [x - w / 2, y - h / 2, x + w / 2, y + h / 2];
       for (const f of screenFaces(s, k, st.cam)) if (overlapOf(r, f.box) > 0) bad.push(`${s.id} ${s.seg} step ${k} ${st.slam.text} on ${f.key}`);
     }));
@@ -192,7 +192,7 @@ describe('rr viewer: no stamp or slam on a face', () => {
     worlds(s => s.steps.forEach((st, k) => {
       if (!st.stamp) return;
       const cam = st.cam.shot === 'wide' ? { ...st.cam, y: 0 } : st.cam;
-      const [w, h] = stampSize(st.stamp.text), [x, y] = stampSpot(s, k, cam, null, { top: HUD_H, bottom: 100 });
+      const spot = stampSpot(s, k, cam, null, { top: HUD_H, bottom: 100 }), [w, h] = stampSize(st.stamp.text).map(v => v * (spot.k ?? 1)), [x, y] = spot;
       const r = [x - w / 2, y - h / 2, x + w / 2, y + h / 2];
       for (const f of screenFaces(s, k, cam)) expect(overlapOf(r, f.box), `${s.id} step ${k}`).toBe(0);
     }));

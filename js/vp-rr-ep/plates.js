@@ -365,6 +365,82 @@ export const PLACE_PLATES = {
       mat: { talk: [repaint('chill-night-mat', p('chill-night-mat', 92, [6, 94], { matPos: [50, 90] }), p('chill-9438461', 92, [6, 94], { matPos: [50, 92] }))] },
     },
   },
+  // ── batch 2 (LEGS.txt 09, 10, 14, 15) ──
+  'lei-island': {
+    src: '09-lei-island', title: 'present-9439460', opener: p('present-9439148', 92, [6, 94]),
+    arrive: [p('arrive-9439038', 92, [6, 94])],
+    props: { ring: 'wedding-ring', hula: 'hula-costume', coals: 'hot-coals' },
+    st: {
+      'pier-taxi': { talk: [p('arrive-9439038', 92, [6, 94])],
+        act: p('arrive-9439038', 92, [6, 94], { mode: 'ride', prop: 'taxi@glass-tower-gulf', flip: true, path: [[-14, 93], [50, 92], [114, 93]] }) },
+      // the ring thrown in the lagoon under the pier: the one who dives, the other on the pier
+      'ring-dive': { talk: [p('task-9439428', 92, [6, 90])],
+        act: p('task-9439101', 0, [0, 0], { water: true, mode: 'dive', prop: 'ring', path: [[12, 84], [30, 76], [52, 86], [78, 78]], fx: 'bubbles', inset: 'ON THE PIER' }) },
+      // in grass skirts and leis, across the hot coals
+      'fire-walk': { talk: [p('task-9439223', 76, [6, 94])],
+        act: p('task-9439223', 86, [6, 94], { mode: 'coals', prop: 'hula', path: [[8, 86], [30, 86], [56, 86], [84, 86]], fx: 'embers' }) },
+      'hut-run': { talk: [p('chill-9439397', 92, [6, 94])],
+        act: p('chill-9439397', 92, [6, 94], { mode: 'run', path: [[14, 92], [50, 92], [86, 92]] }) },
+      mat: { talk: [p('chill-9439226', 76, [28, 84], { mat: [47, 70] })] },
+    },
+  },
+  'glass-tower-gulf': {
+    src: '10-glass-tower-gulf', title: 'present-9439561', opener: p('arrive-9439667', 92, [6, 94]),
+    arrive: [p('arrive-9439582', 95, [6, 64]), p('travel-9439785', 95, [6, 94])],
+    props: { taxi: 'Yellow city taxi in profile-4', racket: 'Cream and red cartoon tennis racket-6', robot: 'Domed tennis ball launcher robot-5',
+      gondola: 'Empty Window-Cleaning Gondola-3', ...(REPAINTED.has('squeegee-bucket') ? { squeegee: 'squeegee-bucket' } : {}) },
+    st: {
+      'tower-taxi': { talk: [p('arrive-9439709', 86, [22, 70])],
+        act: p('present-9439562', 93, [6, 94], { mode: 'ride', prop: 'taxi', flip: true, path: [[-14, 94], [50, 93], [114, 94]] }) },
+      'squeegee-serve': {
+        talk: [p('task-9439713', 56, [8, 62], { scale: 0.8 })],
+        sides: {
+          // in the gondola on the tower's glass; the squeegee and its bucket are a job (edit/), meanwhile the glass alone
+          squeegee: { talk: [p('task-9439718', 92, [14, 86], { closed: true })],
+            act: p('task-9439718', 92, [14, 86], { closed: true, mode: 'squeegee', ...(REPAINTED.has('squeegee-bucket') ? { prop: 'squeegee' } : {}), fx: 'splash' }) },
+          serve: { talk: [p('task-9439713', 56, [8, 62], { scale: 0.8 })],
+            act: p('task-9439713', 56, [8, 62], { scale: 0.8, mode: 'serve', prop: 'racket', propW: 0.55, fx: 'sparkle' }) },
+        },
+      },
+      'market-taxi': { talk: [p('travel-9439786', 96, [6, 94])],
+        act: p('present-9439561', 94, [6, 94], { mode: 'ride', prop: 'taxi', flip: true, path: [[-14, 95], [50, 94], [114, 95]] }) },
+      mat: { talk: [p('chill-9440146', 95, [6, 94], { matPos: [80, 94] })] },
+    },
+  },
+  'swamp-prison': {
+    src: '14-swamp-prison', title: 'present-9442102', opener: p('present-9442604', 95, [6, 94]),
+    arrive: [p('arrive-9442029', 92, [6, 80])],
+    props: { spoon: 'escape-spoon', raft: 'homemade-raft', guard: 'prison-guard' },
+    st: {
+      'bayou-taxi': { talk: [p('travel-9442134', 96, [6, 94])],
+        act: p('present-9442604', 95, [6, 94], { mode: 'ride', prop: 'taxi@glass-tower-gulf', flip: true, path: [[-14, 96], [50, 95], [114, 96]] }) },
+      // locked in a cell: out by the spoon, a guard looking on
+      'prison-cell': { talk: [p('task-9442108', 95, [28, 90], { closed: true }), p('task-9442206', 95, [8, 92], { closed: true })],
+        act: p('task-9442257', 94, [10, 86], { closed: true, mode: 'spoon', prop: 'spoon', judge: ['guard', 0.43], fx: 'dust' }) },
+      // the raft built on the bank; done, it sails down the river
+      'swamp-raft': { talk: [p('task-9442380', 92, [6, 94])],
+        act: p('task-9442380', 92, [6, 94], { mode: 'build', prop: 'raft', fx: 'logs' }),
+        act2: p('task-9442410', 0, [0, 0], { water: true, mode: 'ride', prop: 'raft', path: [[-16, 82], [50, 80], [116, 82]], fx: 'splash' }) },
+      mat: { talk: [p('chill-9442481', 76, [40, 96], { matPos: [68, 76] }), p('chill-9442555', 80, [32, 88], { matPos: [60, 80] })] },
+    },
+  },
+  'outback-farm': {
+    src: '15-outback-farm', title: 'present-9442701', opener: p('present-9442822', 92, [6, 94]),
+    arrive: [p('present-9442822', 92, [6, 94])],
+    props: { glider: 'Red-accented white glider-6', bunny: 'Seated grey lavender bunny with curly tail-4', albino: 'Stylized Albino Bunny with Red Eyes-3',
+      sack: 'Wriggling Tied Burlap Sack-5', ...(REPAINTED.has('farmer') ? { farmer: 'farmer' } : {}), ...(REPAINTED.has('ute') ? { ute: 'ute' } : {}) },
+    st: {
+      // the ute is a job (edit/); meanwhile the safari jeep
+      'ute-drive': { talk: [p('task-9442837', 94, [6, 94])],
+        act: p('present-9442822', 92, [6, 94], { mode: 'ride', prop: REPAINTED.has('ute') ? 'ute' : 'jeep@savanna-falls', path: [[-16, 93], [50, 92], [116, 93]], fx: 'dust' }) },
+      // ten rabbits loose in the wheat; the farmer is a job, meanwhile the sack stands by
+      bunnies: { talk: [p('task-9442852', 94, [6, 94]), p('task-9442843', 94, [6, 94])],
+        act: p('task-9442851', 94, [6, 94], { mode: 'chase', prop: 'bunny', judge: REPAINTED.has('farmer') ? ['farmer', 0.45] : ['sack', 0.9], fx: 'dust' }) },
+      'valley-glide': { talk: [p('task-9442875', 90, [6, 94])],
+        act: p('travel-9443065', 0, [0, 0], { water: true, mode: 'ride', prop: 'glider', path: [[-20, 46], [50, 40], [120, 34]] }) },
+      mat: { talk: [p('present-9442909', 88, [12, 88], { mat: [41, 79] })] },
+    },
+  },
 };
 
 // All the plate files a place needs (the asset copier and the tests read this)

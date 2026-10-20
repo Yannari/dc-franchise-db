@@ -55,6 +55,17 @@ FORCE_WATER = {
     'carnival-rainforest/task-9437835': [(.44, .36, .58, 1, 160, 200)],
     'geyser-island/task-9437137': [(.04, 0, .68, .72, 160, 200)],
 }
+# batch 2: hills and a tennis court that are not leaves; a glass dome, a blue tree and blue mountains that are not water
+NO_WIND |= {'lei-island/arrive-9439038', 'lei-island/chill-9439397', 'lei-island/task-9439223', 'glass-tower-gulf/task-9439713',
+            'swamp-prison/task-9442380', 'outback-farm/present-9442909'}
+NO_WATER |= {'glass-tower-gulf/travel-9439785', 'swamp-prison/present-9442102', 'outback-farm/travel-9443065',
+             'glass-tower-gulf/task-9439718', 'swamp-prison/chill-9442555'}
+NO_WIND |= {'lei-island/chill-9439226'}
+FORCE_WATER.update({
+    'lei-island/task-9439101': [(0, .35, 1, 1, 160, 200)], 'glass-tower-gulf/task-9439713': [(0, 0, 1, 1, 165, 200)],
+    'swamp-prison/task-9442410': [(0, .22, 1, 1, 160, 200)],
+    'swamp-prison/chill-9442555': [(0, .76, 1, 1, 160, 215)],
+})
 LAVA_PLACES = {'fire-mountain-isle'}
 SKIP = {'confess', 'worldmap', 'gate', 'cabin', 'galley', 'logo', 'sky', 'runway', 'don', 'plane'}
 

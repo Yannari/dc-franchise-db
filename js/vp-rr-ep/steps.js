@@ -530,7 +530,8 @@ function placeWorkProps(s, marks) {
   const room = dir => { const x = anchor[0] + dir * off; return Math.min(x - 4, 96 - x, ...others.map(o => Math.abs(o - x))); };
   const px = Math.max(6, Math.min(94, anchor[0] + (room(-1) > room(1) ? -off : off)));
   const gy = Array.isArray(pl.g) ? pl.g[1] : pl.g;
-  const w = z * 1.5 * (s.work === 'sculpt' ? 1.5 : 1);
+  // (`propW`: a plate's own scale for its cut-out, a racket smaller than a sand palace)
+  const w = z * 1.5 * (s.work === 'sculpt' ? 1.5 : 1) * (pl.propW || 1);
   s.workProp = { at: [Math.round(px * 10) / 10, gy], w };
   if (pl.judge) {
     const [, ja] = pl.judge, jw = z * 1.35 * ja, side = px >= anchor[0] ? 1 : -1;
@@ -632,8 +633,11 @@ function layout(s, size) {
       const pos = {};
       s.teams.forEach((id, i) => {
         let f = ride ? (k === 0 ? 0.5 : 0.5 + 0.12 * k / Math.max(1, ps - 1)) : plan.p[k];
-        f = Math.max(0, Math.min(1, f - i * gapF));
+        // three or more on one path go two abreast (side by side, then the next pair behind them)
+        const abreast = s.teams.length > 2 && !ride && !['swim', 'dive', 'hop'].includes(plate.mode);
+        f = Math.max(0, Math.min(1, f - (abreast ? i >> 1 : i) * gapF));
         let pt = pathAt(plate.path, f);
+        if (abreast) pt = [pt[0] + (i % 2 ? 1 : -1) * 0.95 * s.size, pt[1]];
         if (plate.mode === 'hop') { const idx = Math.round(f * (plate.path.length - 1)); pt = [...plate.path[idx]]; }
         if (['swim', 'dive'].includes(plate.mode)) {
           // a head in the water is centred on its point, its name under it: both stay above the frame's bottom
@@ -642,7 +646,7 @@ function layout(s, size) {
         } else if (plate.mode === 'ride') pt = [pt[0], pt[1] + i * 4];
         // (the slow push on the plate moves the edges out by a few per cent: the margins allow for it)
         // a climber or a jumper is never so high (or so far to the side) that their faces leave the frame
-        else pt = [Math.min(100 - M, Math.max(M, pt[0])), Math.max(s.size * 2.35 + 7, pt[1])];
+        else pt = [Math.min(100 - M, Math.max(M, pt[0])), Math.max(s.size * 2.45 + 7, pt[1])];
         pos[id] = pt;
       });
       s.pos.push(pos);
@@ -697,20 +701,20 @@ export function extentOf(s) {
   const add = (b, t) => { bottom = Math.max(bottom, b); top = Math.min(top, t); };
   const z = s.size || 8;
   const one = (as, [, y]) => {
-    if (as === 'swim' || as === 'dive') add(y + 1.2 * z, y - 0.8 * z);
-    else if (as === 'ride') add(y + 0.5 * z, y - 2.6 * z);
-    else add(y, y - (s.mode === 'mat' ? 2.75 * z + 1.5 : 2.35 * z));
+    if (as === 'swim' || as === 'dive') add(y + 1.2 * z, y - 1.15 * z);
+    else if (as === 'ride') add(y + 0.5 * z, y - 2.8 * z);
+    else add(y, y - (s.mode === 'mat' ? 2.8 * z + 1.5 : 2.45 * z));
   };
   for (const [id, m] of Object.entries(s.marks || {})) one(s.as?.[id], m);
   for (const pos of s.pos || []) for (const [id, m] of Object.entries(pos)) one(s.as?.[id], m);
-  for (const d of [s.donStand, ...Object.values(s.localAt || {})].filter(Boolean)) add(d[1], d[1] - 2.1 * z);
-  if (s.matAt) add(s.matAt[1] + 1, s.matAt[1] - 2.35 * z);
+  for (const d of [s.donStand, ...Object.values(s.localAt || {})].filter(Boolean)) add(d[1], d[1] - 2.25 * z);
+  if (s.matAt) add(s.matAt[1] + 1, s.matAt[1] - 2.45 * z);
   // the rest of the race behind them: smaller, but just as clear of the bar
   const zc = s.crowdSize || z * CROWD_SCALE;
   for (const c of s.crowd || []) for (const p of c.pos) if (p && p[0] > -2 && p[0] < 102) {
-    if (c.as === 'swim' || c.as === 'dive') add(p[1] + 1.2 * zc, p[1] - 0.8 * zc);
-    else if (c.as === 'ride') add(p[1] + 0.5 * zc, p[1] - 2.6 * zc);
-    else add(p[1], p[1] - 2.35 * zc);
+    if (c.as === 'swim' || c.as === 'dive') add(p[1] + 1.2 * zc, p[1] - 0.9 * zc);
+    else if (c.as === 'ride') add(p[1] + 0.5 * zc, p[1] - 2.8 * zc);
+    else add(p[1], p[1] - 2.45 * zc);
   }
   return { bottom, top };
 }
@@ -756,8 +760,10 @@ function liftFor(s) {
 // At the Chill Zone the teams already checked in on screen wait to one side; never a rank on the crowd.
 // (batch 1 of the 46 places, 2026-10-19: sculpting sand, chipping ice, a hand in a mitten of ants, sewing a costume,
 // the beam and the vault; a swing on a vine, a coffin pushed)
-const IN_PLACE = new Set(['search', 'eat', 'draw', 'sweat', 'guitar', 'photo', 'bob', 'chase', 'build', 'shear', 'bungee', 'sculpt', 'chip', 'mitten', 'sew', 'beam']);
-const PATH_MODES = new Set(['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride', 'swing', 'push']);
+// (batch 2: a squeegee on the glass, a tennis serve, a spoon at a cell wall; over the hot coals in grass skirts)
+const IN_PLACE = new Set(['search', 'eat', 'draw', 'sweat', 'guitar', 'photo', 'bob', 'chase', 'build', 'shear', 'bungee', 'sculpt', 'chip', 'mitten', 'sew', 'beam',
+  'squeegee', 'serve', 'spoon']);
+const PATH_MODES = new Set(['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride', 'swing', 'push', 'coals']);
 const TASK_KINDS = new Set(['either', 'botch', 'allin', 'route', 'superteam']);
 export const MAX_CROWD = 2;
 export const CROWD_SCALE = 0.7;
@@ -1137,16 +1143,16 @@ const FOLLOW = new Set(['climb', 'zip', 'para', 'swing']);
 export function boxOf(s, who, k) {
   const z = s.size || 8;
   if (s.offAt && s.teams?.includes(who) && !onStage(s, who, k)) return null;     // walked off
-  if (who === 'Don') { const d = s.donStand; return d ? [d[0] - 0.56 * z - 0.4, d[1] - 2.3 * z - 1.9, d[0] + 0.56 * z + 0.4, d[1]] : null; }
+  if (who === 'Don') { const d = s.donStand; return d ? [d[0] - 0.56 * z - 0.4, d[1] - 2.35 * z - 1.9, d[0] + 0.56 * z + 0.4, d[1]] : null; }
   if (s.localAt?.[who]) { const d = s.localAt[who]; return [d[0] - 0.5 * z - 0.4, d[1] - 2.1 * z - 1.9, d[0] + 0.5 * z + 0.4, d[1]]; }
   const at = s.pos?.[k]?.[who] || (s.hiddenUntil?.[who] != null && k === s.hiddenUntil[who] ? s.matAt : null) || s.marks?.[who];
   if (!at) return null;
   const as = s.as?.[who];
-  if (as === 'swim' || as === 'dive') { const gap = Math.max(5, z * 0.95); const n = s.swimmers?.[who]?.length || 1; return [at[0] - 0.6 * z, at[1] - 0.9 * z, at[0] + (n - 1) * gap + 0.6 * z, at[1] + 1.25 * z]; }
-  if (as === 'ride') return [at[0] - 1.3 * z, at[1] - 2.7 * z, at[0] + 1.3 * z, at[1] + 0.6 * z];
+  if (as === 'swim' || as === 'dive') { const gap = Math.max(5, z * 0.95); const n = s.swimmers?.[who]?.length || 1; return [at[0] - 0.6 * z, at[1] - 1.2 * z - 1.9, at[0] + (n - 1) * gap + 0.6 * z, at[1] + 1.25 * z]; }
+  if (as === 'ride') return [at[0] - 1.3 * z, at[1] - 2.9 * z - 1.9, at[0] + 1.3 * z, at[1] + 0.6 * z];
   // at the Chill Zone a placed team wears its rank above its heads (style.js .tok .rank): the frame holds it too
   // (with the face's own bounce, padOf: a talking face jumps and leans)
-  return [at[0] - 0.86 * z - 0.3, at[1] - (s.mode === 'mat' ? 2.75 * z + 1.9 : 2.42 * z + 1.9), at[0] + 0.86 * z + 0.3, at[1] + 0.3];
+  return [at[0] - 0.86 * z - 0.3, at[1] - (s.mode === 'mat' ? 2.8 * z + 1.9 : 2.52 * z + 1.9), at[0] + 0.86 * z + 0.3, at[1] + 0.3];
 }
 export function inView(cam, b, bar = BAR) {
   if (!b) return true;
@@ -1274,8 +1280,8 @@ function planCamera(s) {
 // the browser): a token's pair of faces sits above its feet and its name, Don's and a local's single face the same,
 // a swimmer's head is centred on its point. Units of the avatar's own size (cqw).
 export const FACE = {
-  stand: [-0.8, -2.3, 0.8, -0.35], ride: [-0.8, -2.65, 0.8, -0.7], one: [-0.53, -2.3, 0.53, -0.35],
-  person: [-0.53, -2.27, 0.53, -0.35], swim: [-0.55, -1.2, 0.55, 0.72], cswim: [-0.55, -1.02, 0.55, 0.93],
+  stand: [-0.8, -2.4, 0.8, -0.45], ride: [-0.8, -2.75, 0.8, -0.8], one: [-0.53, -2.4, 0.53, -0.45],
+  person: [-0.53, -2.32, 0.53, -0.44], swim: [-0.55, -1.29, 0.55, 0.66], cswim: [-0.55, -1.02, 0.55, 0.93],
 };
 const fbox = (f, [x, y], z, dx = 0) => [x + f[0] * z + dx, y + f[1] * z, x + f[2] * z + dx, y + f[3] * z];
 /** Where team `id` stands at step k (as the stage draws it), or null. */
@@ -1313,7 +1319,7 @@ export function facesAt(s, k) {
     const as = s.as?.[id];
     const dx = as === 'ride' && s.mode === 'act' && /^rickshaw/.test(s.plate.prop || '') ? 0.45 * z : 0;
     const f = as === 'ride' ? FACE.ride : gone.length ? FACE.one : FACE.stand;
-    const work = s.work ? (s.teams[0] === id ? s.work : 'watch') : as === 'swing' ? 'swing' : null;
+    const work = s.work ? (s.teams[0] === id ? s.work : 'watch') : as === 'swing' || as === 'coals' ? as : null;
     out.push({ key: 't:' + id, kind: 'team', team: id, z, work, box: fbox(f, at, z, dx) });
   }
   const zc = s.crowdSize || z * CROWD_SCALE;
@@ -1385,7 +1391,8 @@ export function driftBox(b) {
 // how far a face moves on its own: the idle bob and the talking bounce, and the work loops (style.js wChase, wLean...)
 const WORK_PAD = { chase: [0, 0, 3, 0], lean: [0, 0, 1.1, 0], dunk: [0, 0, 0, 2.9], headbang: [0.4, 0.6, 0.4, 0.6], dig: [0.3, 0.5, 0.3, 1.3], eat: [0.6, 0.3, 0.6, 0.4],
   draw: [0.4, 0, 0.4, 0], sweat: [0.2, 0, 0.5, 0.6], build: [0.2, 1.1, 0.2, 0.4], shear: [0, 0, 0.4, 0], run: [0.3, 1.7, 0.3, 0],
-  swing: [0.5, 0.3, 0.5, 0.3], sculpt: [0.3, 0.3, 0.3, 1.3], chip: [0.2, 1.1, 0.2, 0.4], mitten: [0.6, 0.5, 0.6, 0.5], sew: [0.4, 0, 0.4, 0], beam: [0.6, 1.3, 0.6, 0.4] };
+  swing: [0.5, 0.3, 0.5, 0.3], coals: [0.3, 1.6, 0.3, 0], squeegee: [0.6, 0.4, 0.6, 0.2], serve: [0.6, 0.8, 0.6, 0.3], spoon: [0.3, 0.5, 0.3, 1.3],
+  sculpt: [0.3, 0.3, 0.3, 1.3], chip: [0.2, 1.1, 0.2, 0.4], mitten: [0.6, 0.5, 0.6, 0.5], sew: [0.4, 0, 0.4, 0], beam: [0.6, 1.3, 0.6, 0.4] };
 export function padOf(f, z) {
   // a coffin pushed in front takes its own room ahead of the faces (style.js .tok.push .veh)
   const w = f.work === 'push' ? [0, 0, 1.6 * z, 0] : WORK_PAD[f.work] || [0, 0, 0, 0];
@@ -1477,7 +1484,11 @@ export function stampSpot(s, k, cam, size, opts) {
   const mine = faces.filter(f => f.key === 't:' + st.team).map(f => f.box);
   const fb = mine.length ? [Math.min(...mine.map(b => b[0])), Math.min(...mine.map(b => b[1])), Math.max(...mine.map(b => b[2])), Math.max(...mine.map(b => b[3]))] : [45, 40, 55, 60];
   const cx = (fb[0] + fb[2]) / 2, cy = (fb[1] + fb[3]) / 2;
-  return placeOverlay([w, h], faces, [[cx, fb[1] - h / 2 - 1], [fb[2] + w / 2 + 1, cy], [fb[0] - w / 2 - 1, cy], [fb[2] + w / 2, fb[1] - h / 2], [fb[0] - w / 2, fb[1] - h / 2]], opts);
+  // above it or beside it; with no room (a narrow window, a crowded shot) a little smaller: `at.k` is the scale
+  const r = fitOverlay([w, h], faces, ([ww, hh]) => [[cx, fb[1] - hh / 2 - 1], [fb[2] + ww / 2 + 1, cy], [fb[0] - ww / 2 - 1, cy], [fb[2] + ww / 2, fb[1] - hh / 2], [fb[0] - ww / 2, fb[1] - hh / 2]],
+    opts, [1, 0.85, 0.72, 0.6]);
+  const at = r.at; at.k = r.k;
+  return at;
 }
 // The size of a slam (style.js .slam: Bungee 5.4cqw in a band, the boomerang under it), [width %, height %].
 export function slamSize(slam) {
@@ -1490,7 +1501,9 @@ export function slamSpot(s, k, cam, size, opts) {
   if (!sl) return null;
   const faces = s.kind === 'world' ? screenFaces(s, k, cam) : [];
   const [w, h] = size || slamSize(sl);
-  return placeOverlay([w, h], faces, [[50, 34]], opts);
+  const r = fitOverlay([w, h], faces, () => [[50, 34]], opts, [1, 0.85, 0.72, 0.6]);
+  const at = r.at; at.k = r.k;
+  return at;
 }
 // which steps stamp what: a failed try, a quit, the task done
 function planStamps(s) {

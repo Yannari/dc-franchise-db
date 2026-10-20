@@ -7,7 +7,7 @@ Every place has its own sound and every moment of a leg its own track there (the
 the race-wide bed for that moment (`race/<moment>.mp3`) if there is one, then an ambience already
 in the repo where it really fits the place, and otherwise silence. A Total Drama bed never plays.
 
-**Filled: 140 of 140 slots.**
+**Filled: 172 of 172 slots.**
 
 **The rules for a file**
 - Royalty-free only: CC0 or public domain, the Pixabay Content License, or CC-BY with the credit in
@@ -311,3 +311,67 @@ A race-wide bed for a moment (`race/opener.mp3`, `race/struggle.mp3`...) is the 
 | `haunted-castle/elimination.mp3` | elimination | a sparse, dark piano; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | pipe organ, gothic, sombre and short | [x] "Ghost Dance" (Kevin MacLeod), 274 KB |
 | `haunted-castle/recap.mp3` | recap | quick organ, choir and orchestra; quick, punchy, recap energy, the place still in it | 30-40 s loop | pipe organ, gothic, quick | [x] "Unholy Knight" (Kevin MacLeod), 235 KB |
 | `haunted-castle/interview.mp3` | interview | a soft, spooky vibraphone; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | pipe organ, gothic, light | [x] "Ghost Story" (Kevin MacLeod), 313 KB |
+
+## Lei Island (`lei-island/`)
+
+**Sound of the place**: the island of flower garlands: ukulele, marimba, tongue drum and slack-key guitar.  
+**Search**: ukulele, island, marimba, tropical, relaxed.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `lei-island/opener.mp3` | opener | a bright marimba and ukulele morning; bright, confident, the place in its first bars | 40-60 s loop | ukulele, island, bright | [x] "Rainbows" (Kevin MacLeod), 352 KB |
+| `lei-island/travel.mp3` | travel | a cheery mid-tempo ukulele along the coast road; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | ukulele, island, moving | [x] "Life of Riley" (Kevin MacLeod), 391 KB |
+| `lei-island/challenge.mp3` | challenge | a driving tongue drum and percussion: the ring, the coals; driving, building, percussion forward, 110-140 bpm | 60 s loop | ukulele, island, driving | [x] "Journey To Ascend" (Kevin MacLeod), 391 KB |
+| `lei-island/struggle.mp3` | struggle | a mysterious island groove: deep water, hot coals; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | ukulele, island, tense | [x] "Secret of Tiki Island" (Kevin MacLeod), 352 KB |
+| `lei-island/chill-zone.mp3` | chill-zone | a calm ukulele by the tiki hut; relief and a little swagger, mid-tempo, warm | 45 s loop | ukulele, island, relief and a little swagger | [x] "Daily Beetle" (Kevin MacLeod), 352 KB |
+| `lei-island/elimination.mp3` | elimination | a slow, sad ukulele and flutes; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | ukulele, island, sombre and short | [x] "Leaving Home" (Kevin MacLeod), 274 KB |
+| `lei-island/recap.mp3` | recap | quick ukulele and glockenspiel; quick, punchy, recap energy, the place still in it | 30-40 s loop | ukulele, island, quick | [x] "Glitter Blast" (Kevin MacLeod), 235 KB |
+| `lei-island/interview.mp3` | interview | a soft, flowing guitar and ukulele; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | ukulele, island, light | [x] "Fretless" (Kevin MacLeod), 313 KB |
+
+## Glass Tower Gulf (`glass-tower-gulf/`)
+
+**Sound of the place**: the glass city in the desert: sleek electronic pop, a saz-like pluck, cool downtempo.  
+**Search**: electronic, techno-pop, downtempo, desert city, sleek.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `glass-tower-gulf/opener.mp3` | opener | a bright, fast techno-pop skyline; bright, confident, the place in its first bars | 40-60 s loop | electronic, techno-pop, bright | [x] "Shiny Tech" (Kevin MacLeod), 352 KB |
+| `glass-tower-gulf/travel.mp3` | travel | a light synth groove on the desert highway; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | electronic, techno-pop, moving | [x] "Aerosol of my Love" (Kevin MacLeod), 391 KB |
+| `glass-tower-gulf/challenge.mp3` | challenge | driving electronic percussion: the gondola and the tennis machine; driving, building, percussion forward, 110-140 bpm | 60 s loop | electronic, techno-pop, driving | [x] "Blown Away" (Kevin MacLeod), 391 KB |
+| `glass-tower-gulf/struggle.mp3` | struggle | a cool downtempo with heavy percussion: heights and a robot that never misses; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | electronic, techno-pop, tense | [x] "Severe Tire Damage" (Kevin MacLeod), 352 KB |
+| `glass-tower-gulf/chill-zone.mp3` | chill-zone | a dark, grooving piano electronica at the gold market; relief and a little swagger, mid-tempo, warm | 45 s loop | electronic, techno-pop, relief and a little swagger | [x] "Thinking Out Loud" (Kevin MacLeod), 352 KB |
+| `glass-tower-gulf/elimination.mp3` | elimination | a calm, slow electric piano; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | electronic, techno-pop, sombre and short | [x] "Mana Two - Part 3" (Kevin MacLeod), 274 KB |
+| `glass-tower-gulf/recap.mp3` | recap | a quick saz-and-bass groove; quick, punchy, recap energy, the place still in it | 30-40 s loop | electronic, techno-pop, quick | [x] "Cantina Blues" (Kevin MacLeod), 235 KB |
+| `glass-tower-gulf/interview.mp3` | interview | a slow, mystical dub under the voice; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | electronic, techno-pop, light | [x] "Dub Eastern" (Kevin MacLeod), 313 KB |
+
+## Swamp Prison (`swamp-prison/`)
+
+**Sound of the place**: the old prison in the swamp: blues, a harmonica, slide guitar and a slow organ.  
+**Search**: blues, harmonica, deep south, swamp, slide.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `swamp-prison/opener.mp3` | opener | a grooving harmonica blues: the old prison; bright, confident, the place in its first bars | 40-60 s loop | blues, harmonica, bright | [x] "Matt's Blues" (Kevin MacLeod), 352 KB |
+| `swamp-prison/travel.mp3` | travel | a deep-south harmonica and accordion along the swamp road; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | blues, harmonica, moving | [x] "Bama Country" (Kevin MacLeod), 391 KB |
+| `swamp-prison/challenge.mp3` | challenge | a rolling blues riff: the cell and the raft; driving, building, percussion forward, 110-140 bpm | 60 s loop | blues, harmonica, driving | [x] "Hustle" (Kevin MacLeod), 391 KB |
+| `swamp-prison/struggle.mp3` | struggle | a slow, mysterious blues: a spoon against a wall; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | blues, harmonica, tense | [x] "Dirt Rhodes" (Kevin MacLeod), 352 KB |
+| `swamp-prison/chill-zone.mp3` | chill-zone | a relaxed slow blues on the dock; relief and a little swagger, mid-tempo, warm | 45 s loop | blues, harmonica, relief and a little swagger | [x] "Nile's Blues" (Kevin MacLeod), 352 KB |
+| `swamp-prison/elimination.mp3` | elimination | a lonely guitar and harmonica; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | blues, harmonica, sombre and short | [x] "Porch Blues" (Kevin MacLeod), 274 KB |
+| `swamp-prison/recap.mp3` | recap | a quick boogie-woogie; quick, punchy, recap energy, the place still in it | 30-40 s loop | blues, harmonica, quick | [x] "Boogie Party" (Kevin MacLeod), 235 KB |
+| `swamp-prison/interview.mp3` | interview | a basic, relaxed 12-bar blues; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | blues, harmonica, light | [x] "OctoBlues" (Kevin MacLeod), 313 KB |
+
+## Outback Farm (`outback-farm/`)
+
+**Sound of the place**: a farm in the bush: a bush band, banjo and fiddle, flute, a didgeridoo drone.  
+**Search**: bush band, folk, banjo, fiddle, didgeridoo.
+
+| File | Moment | Look for | Length | Search | Filled |
+|---|---|---|---|---|---|
+| `outback-farm/opener.mp3` | opener | a bouncy banjo and flute: the farm; bright, confident, the place in its first bars | 40-60 s loop | bush band, folk, bright | [x] "Kings of Tara" (Kevin MacLeod), 352 KB |
+| `outback-farm/travel.mp3` | travel | a bright banjo and fiddle swing down the dirt road; moving, steady pulse, 100-130 bpm, never heavy | 60 s loop | bush band, folk, moving | [x] "Hillbilly Swing" (Kevin MacLeod), 391 KB |
+| `outback-farm/challenge.mp3` | challenge | a comedic banjo romp: ten rabbits loose; driving, building, percussion forward, 110-140 bpm | 60 s loop | bush band, folk, driving | [x] "DarxieLand" (Kevin MacLeod), 391 KB |
+| `outback-farm/struggle.mp3` | struggle | a dark didgeridoo drone and strings; tense, low, ticking, unresolved (strings or the place's drums, minor) | 45 s loop | bush band, folk, tense | [x] "Dragon and Toast" (Kevin MacLeod), 352 KB |
+| `outback-farm/chill-zone.mp3` | chill-zone | a calm fiddle and harp over the valley; relief and a little swagger, mid-tempo, warm | 45 s loop | bush band, folk, relief and a little swagger | [x] "Skye Cuillin" (Kevin MacLeod), 352 KB |
+| `outback-farm/elimination.mp3` | elimination | slow, sombre pipes; sombre and short, slow, sparse, one or two instruments | 30-45 s loop | bush band, folk, sombre and short | [x] "Hidden Past" (Kevin MacLeod), 274 KB |
+| `outback-farm/recap.mp3` | recap | a quick hammered dulcimer and whistle; quick, punchy, recap energy, the place still in it | 30-40 s loop | bush band, folk, quick | [x] "Celtic Impulse" (Kevin MacLeod), 235 KB |
+| `outback-farm/interview.mp3` | interview | soft percussion, a world groove under the voice; light, low, under a voice: soft pulse, no melody fighting the words | 40 s loop | bush band, folk, light | [x] "Lotus" (Kevin MacLeod), 313 KB |

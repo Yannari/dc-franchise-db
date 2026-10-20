@@ -20,6 +20,7 @@ W, H = 1920, 1080
 # fraction of the frame to take off each side (left, top, right, bottom) before the 16:9 crop
 CROP = {
     'red-outback/task-22419889': (0.035, 0.0, 0.0, 0.0),     # somebody's legs at the left edge
+    'lei-island/task-9439428': (0.0, 0.0, 0.1, 0.0),          # somebody's legs at the right edge
 }
 
 

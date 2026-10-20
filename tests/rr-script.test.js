@@ -150,12 +150,19 @@ describe('rr endings that speak alone', () => {
     const { POOLS } = await import('../js/rr/script/lines/index.js');
     expect(OWN_ONLY.has('don-place.penalty-reveal')).toBe(true);
     const anyIds = new Set((POOLS['don-place.any'] || []).map(e => e.id));
-    const { cast, teams } = raceCast(12, 5);
-    setPlayers(cast);
-    const st = playRaceSeason({ teams, seed: 5 }).state;
-    const pens = st.scenes.filter(s => s.kind === 'don-place' && s.data.ending === 'penalty-reveal');
-    expect(pens.length).toBeGreaterThan(0);
-    for (const s of pens) { const w = writeScene(st, s); if (w) expect(anyIds.has(w.lineId), w.lineId).toBe(false); }
+    // seasons keep coming until one has a penalty (a penalty is rare, and the seeds reshuffle every time the place library
+    // grows: seed 5 alone stopped having one when four more places could be drawn, 2026-10-19); every penalty in every
+    // season played is checked
+    let seen = 0;
+    for (let seed = 5; seed < 30 && !seen; seed++) {
+      const { cast, teams } = raceCast(12, seed);
+      setPlayers(cast);
+      const st = playRaceSeason({ teams, seed }).state;
+      const pens = st.scenes.filter(s => s.kind === 'don-place' && s.data.ending === 'penalty-reveal');
+      seen += pens.length;
+      for (const s of pens) { const w = writeScene(st, s); if (w) expect(anyIds.has(w.lineId), `seed ${seed}: ${w.lineId}`).toBe(false); }
+    }
+    expect(seen).toBeGreaterThan(0);
   });
 });
 

@@ -22,7 +22,8 @@ describe('rr Red Sand Desert, 1:1', () => {
       const { cast, teams } = raceCast(12, seed);
       teams[0].identity = 'vegans';
       setPlayers(cast);
-      // every other leg in the desert (the library has grown: a drawn route visits it once or twice a season)
+      // every other leg in the desert (the library has grown: a drawn route visits it once or twice a season, and with
+      // forty-six places often not at all; every season in this file books it)
       states.push(playRaceSeason({ teams, seed, options: { route: DESERT_ROUTE } }).state);
     }
   });
@@ -71,7 +72,7 @@ describe('rr Red Sand Desert, 1:1', () => {
     const { airSeason } = await import('../js/rr/episode.js');
     const { cast, teams } = raceCast(12, 1);
     setPlayers(cast);
-    const res = playRaceSeason({ teams, seed: 1 });
+    const res = playRaceSeason({ teams, seed: 1, options: { route: DESERT_ROUTE } });
     const right = new Set();
     for (const ep of airSeason(res)) for (const s of ep.segments.filter(s => s.stretch === 'spices' && s.kind.startsWith('task-'))) {
       const row = res.state.taskLog.find(r => r.leg === ep.n && r.team === s.teams[0] && r.stretch === 'spices');
@@ -88,7 +89,7 @@ describe('rr Red Sand Desert, 1:1', () => {
     const { airSeason } = await import('../js/rr/episode.js');
     const { cast, teams } = raceCast(12, 1);
     setPlayers(cast);
-    const res = playRaceSeason({ teams, seed: 1 });
+    const res = playRaceSeason({ teams, seed: 1, options: { route: DESERT_ROUTE } });
     for (const ep of airSeason(res)) {
       const starts = ep.segments.filter(s => s.stretch === 'spices' && s.kind === 'task-start');
       if (!ep.segments.some(s => s.stretch === 'spices')) continue;
@@ -106,7 +107,7 @@ describe('rr Red Sand Desert, 1:1', () => {
     expect(getPlace('red-sand-desert').stretches.find(s => s.id === 'camel').ride).toBe(true);
     const { cast, teams } = raceCast(12, 1);
     setPlayers(cast);
-    const res = playRaceSeason({ teams, seed: 1 });
+    const res = playRaceSeason({ teams, seed: 1, options: { route: DESERT_ROUTE } });
     let legs = 0;
     airSeason(res).forEach((ep, i) => {
       if (res.legs[i].place !== 'red-sand-desert') return;

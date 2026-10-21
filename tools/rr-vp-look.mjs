@@ -69,7 +69,9 @@ for (const f of (process.env.RR_PLATES || '').split(',').filter(Boolean)) FIND['
 for (const m of (process.env.RR_MODES || '').split(',').filter(Boolean)) FIND['mode-' + m] = `(s, t, k) => s.kind === "world" && s.mode === "act" && s.plate?.mode === "${m}" && k >= 1`;
 // RR_ACTS=task-9436826,present-9437594: a step of the ride or the task shot on each of those act plates
 for (const f of (process.env.RR_ACTS || '').split(',').filter(Boolean)) FIND['act-' + f] = `(s, t, k) => s.kind === "world" && s.mode === "act" && s.plate?.f === "${f}" && k >= 1`;
-const kinds = [...kindArg.split(',').filter(k => FIND[k] || k.startsWith('stage:')).map(k => { if (k.startsWith('stage:')) { const [, st, end] = k.split(':'); FIND[k] = `(s, t, k) => s.seg === "task-stage" && s.stage === "${st}"${end ? ` && s.ending === "${end}"` : ''} && k >= 1`; } return k; }), ...Object.keys(FIND).filter(k => k.startsWith('plate-') || k.startsWith('mode-') || k.startsWith('act-'))];
+// RR_SEGS=boomerang-found,boomerang-hit: every step of the first screen of each of those segment kinds
+for (const k of (process.env.RR_SEGS || '').split(',').filter(Boolean)) FIND['seg-' + k] = `(s, t, k) => s.seg === "${k}"`;
+const kinds = [...kindArg.split(',').filter(k => FIND[k] || k.startsWith('stage:')).map(k => { if (k.startsWith('stage:')) { const [, st, end] = k.split(':'); FIND[k] = `(s, t, k) => s.seg === "task-stage" && s.stage === "${st}"${end ? ` && s.ending === "${end}"` : ''} && k >= 1`; } return k; }), ...Object.keys(FIND).filter(k => k.startsWith('plate-') || k.startsWith('mode-') || k.startsWith('act-') || k.startsWith('seg-'))];
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 const errors = [];

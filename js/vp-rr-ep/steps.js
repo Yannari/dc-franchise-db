@@ -535,6 +535,13 @@ function decorate(scr, seg, scene, leg, ctx) {
   if (SLAM[k] && scr.steps.length) {
     const at = k === 'don-ruling' ? Math.max(0, scr.steps.findIndex(s => /minute|penalt|stopwatch|clock/i.test(s.text))) : 0;
     scr.steps[at].slam = { text: SLAM[k][0], cls: SLAM[k][1] };
+    // a Boomerang never just appears (2026-10-20, the user): the one found comes out of the tip into the finders' hands,
+    // and they hold it from then on; the one used flies in and hits its team. The board lands after it does (stage.js).
+    if ((k === 'boomerang-found' || k === 'boomerang-hit') && scr.teams?.[0]) {
+      const team = scr.teams[0];
+      scr.steps[at].boom = { kind: k === 'boomerang-found' ? 'found' : 'hit', team };
+      if (k === 'boomerang-found') for (const x of scr.steps.slice(at + 1)) x.held = team;
+    }
   }
 }
 
@@ -1678,6 +1685,17 @@ export function stampSpot(s, k, cam, size, opts) {
 export function slamSize(slam) {
   const w = String(slam.text).length * 5.4 * 0.86 + 5.2, h = (5.4 + 1.4 + 0.6) * CQ_H + (slam.cls === 'boom' ? 21 * CQ_H : 0);
   return [Math.min(98, w), h];
+}
+/** What the beat card on step k keeps off: every face in the shot, and the slam on the same click (the BOOMERANG board
+ *  and the card both wanted the top middle, and the card hid half the board). */
+export function overlayObstacles(s, k, cam, opts) {
+  const out = s.kind === 'world' ? screenFaces(s, k, cam) : [];
+  const sl = s.steps[k]?.slam;
+  if (sl) {
+    const spot = slamSpot(s, k, cam, undefined, opts), [w, h] = slamSize(sl).map(v => v * (spot.k ?? 1));
+    out.push({ key: 'slam', kind: 'slam', box: [spot[0] - w / 2, spot[1] - h / 2, spot[0] + w / 2, spot[1] + h / 2] });
+  }
+  return out;
 }
 /** The centre of step k's slam under a shot: its place in the middle, up or down off any face. */
 export function slamSpot(s, k, cam, size, opts) {

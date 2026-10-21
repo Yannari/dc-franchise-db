@@ -9,7 +9,7 @@
 // slam. Every avatar idles; whoever is talking bounces.
 import { plateUrl, raceUrl, propUrl } from './plates.js';
 import { PLACES } from '../rr/places.js';
-import { intelAt, offOf, stampSpot, slamSpot, tipSpot, fitOverlay, screenFaces, BAR, HUD_H, GROWS } from './steps.js';
+import { intelAt, offOf, stampSpot, slamSpot, tipSpot, fitOverlay, screenFaces, overlayObstacles, BAR, HUD_H, GROWS } from './steps.js';
 import { plateLife } from './life.js';
 
 const ORD = ['', '1ST', '2ND', '3RD', '4TH', '5TH', '6TH', '7TH', '8TH', '9TH', '10TH', '11TH', '12TH', '13TH', '14TH'];
@@ -205,6 +205,10 @@ export function createStage(holder, { faceOf, legLabel }) {
     const w = document.createElement('div'); w.className = 'wake'; w.style.left = x + '%'; w.style.top = (y + 1.5) + '%'; fx.appendChild(w);
     w.animate([{ width: '2cqw', opacity: 0.9 }, { width: '9cqw', opacity: 0 }], { duration: 1100, fill: 'forwards' }).finished.then(() => w.remove()).catch(() => {});
   }
+  // a little wooden Boomerang (the red board, c-boomerang, is the sign; this is the thing in their hands)
+  const BOOM_SVG = '<svg viewBox="0 0 100 60" aria-hidden="true"><path d="M7 13C22 5 40 28 50 39C60 28 78 5 93 13C98 16 97 22 92 24C76 31 62 46 52 54C50 56 48 56 46 54C36 46 22 31 8 24C3 22 2 16 7 13Z" fill="#c98a45" stroke="#3a2412" stroke-width="3.2" stroke-linejoin="round"/>'
+    + '<path d="M12 16C26 12 40 30 50 43C60 30 74 12 88 16" fill="none" stroke="#e8b673" stroke-width="3" stroke-linecap="round"/>'
+    + '<path d="M24 22l5 7M71 22l-5 7" stroke="#c8202a" stroke-width="5" stroke-linecap="round"/></svg>';
   function flash(x, y) { const f = document.createElement('div'); f.className = 'flash'; f.style.setProperty('--x', x + '%'); f.style.setProperty('--y', y + '%'); fx.appendChild(f); later(800, () => f.remove()); }
   const FXK = { splash: 'drop', steam: 'steam', dust: 'dust', sparkle: 'spark', embers: 'ember', notes: 'note', bubbles: 'bubble', wool: 'wool', logs: 'log', spice: 'dust', sweat: 'drop', wind: 'dust', snow: 'snow', darts: 'spark',
     ants: 'ant', ice: 'snow', leaves: 'leaf' };
@@ -744,9 +748,50 @@ export function createStage(holder, { faceOf, legLabel }) {
   }
   const lerpPos = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 
+  // A Boomerang never just appears (2026-10-20, the user): the one found spins out of the tip into the finders' hands
+  // and stays there; the one used curves in from the side, hits its team and drops. Returns how long it takes, so the
+  // BOOMERANG board can land after it.
+  function boomerang(s, k, step, fresh) {
+    const hold = id => {
+      const t = toks.querySelector(`.tok[data-team="${id}"]`);
+      if (t && !t.querySelector('.boomheld')) { const b = document.createElement('div'); b.className = 'boomheld'; b.innerHTML = BOOM_SVG; t.appendChild(b); return b; }
+      return null;
+    };
+    if (step?.held) hold(step.held);
+    const bm = step?.boom;
+    if (!bm) return 0;
+    if (!fresh) { if (bm.kind === 'found') hold(bm.team); return 0; }
+    const at = posAt(s, bm.team, k), tok = toks.querySelector(`.tok[data-team="${bm.team}"]`);
+    if (!at || !tok) { if (bm.kind === 'found') hold(bm.team); return 0; }
+    const z = s.size || 8, h = z * 16 / 9, [x, y] = at;
+    // (a team still walking into the shot gets there first: the Boomerang waits for them)
+    const lead = Math.min(1600, Math.max(0, ...tok.getAnimations().map(a => { const t = a.effect?.getComputedTiming?.(); return t && Number.isFinite(t.endTime) ? t.endTime - (a.currentTime || 0) : 0; })));
+    const f = document.createElement('div'); f.className = 'boomfly'; f.innerHTML = BOOM_SVG;
+    f.style.setProperty('--sz', (bm.kind === 'hit' ? z * 1.25 : z) + 'cqw'); f.style.opacity = '0'; toks.appendChild(f);
+    const P = (px, py, r, sc = 1, o = {}) => ({ left: px + '%', top: py + '%', transform: `translate(-50%,-50%) rotate(${r}deg) scale(${sc})`, ...o });
+    if (bm.kind === 'found') {
+      // out of the tip above them, a spin up and over, into their hands
+      const a = f.animate([P(x, y - h * 2.1, 0, 0.3, { opacity: 0 }), P(x + z * 0.4, y - h * 2.5, 300, 0.9, { opacity: 1, offset: 0.3 }),
+        P(x + z * 0.9, y - h * 1.6, 720, 1, { opacity: 1 }), P(x + z * 0.62, y - h * 0.5, 1060, 1, { opacity: 1 })], { duration: 1150, delay: lead, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'both' });
+      a.onfinish = () => { f.remove(); const b = hold(bm.team); b?.animate([{ transform: 'rotate(-20deg) scale(1.35)' }, { transform: 'rotate(-20deg) scale(1)' }], { duration: 380, easing: 'cubic-bezier(.3,1.6,.5,1)' }); particles('spark', x + z * 0.62, y - h * 0.5, 8, 4); };
+      return lead + 1250;
+    }
+    // in from off the right, curving high, spinning, and into them
+    const a = f.animate([P(112, y - h * 1.4, 0, 1.1, { opacity: 1 }), P(x + 30, y - h * 2.6, 540, 1.1, { opacity: 1, offset: 0.45 }), P(x + 6, y - h * 1.2, 1100, 1.05, { opacity: 1, offset: 0.8 }),
+      P(x, y - h * 0.55, 1440, 1, { opacity: 1 })], { duration: 1000, delay: lead, easing: 'ease-in', fill: 'both' });
+    a.onfinish = () => {
+      tok.animate([{ transform: 'translate(-50%,-100%)' }, { transform: 'translate(-58%,-100%) rotate(-6deg)' }, { transform: 'translate(-44%,-100%) rotate(5deg)' },
+        { transform: 'translate(-53%,-100%) rotate(-2deg)' }, { transform: 'translate(-50%,-100%)' }], { duration: 520, easing: 'ease-out' });
+      particles('spark', x, y - h * 0.55, 10, 6);
+      f.animate([P(x, y - h * 0.55, 1440, 1, { opacity: 1 }), P(x + z * 1.3, y - h * 0.9, 1600, 0.95, { opacity: 1, offset: 0.35 }), P(x + z * 1.8, y - 1, 1820, 0.9, { opacity: 0 })],
+        { duration: 700, easing: 'ease-in', fill: 'forwards' }).onfinish = () => f.remove();
+    };
+    return lead + 1050;
+  }
   function overlays(ep, s, k, fresh, view) {
     const step = s.steps[k];
     stamp(s, k, view, fresh);
+    const boomWait = s.kind === 'world' ? boomerang(s, k, step, fresh) : 0;
     if (step?.part === 'tip' && step.tip) {
       const t = step.tip;
       const c = document.createElement('div'); c.className = 'tipcard' + (fresh ? '' : ' still');
@@ -758,7 +803,8 @@ export function createStage(holder, { faceOf, legLabel }) {
       c.style.setProperty('--k', kk);
       c.style.left = at[0] + '%'; c.style.top = (at[1] - sz[1] * kk / 2) + '%'; c.style.visibility = '';
     }
-    if (step?.slam) {
+    // (any other slam lands at once, as it always has)
+    if (step?.slam) (boomWait ? fn => later(boomWait, fn) : fn => fn())(() => {
       const sl = document.createElement('div'); sl.className = `slam ${step.slam.cls || ''}${fresh ? ' fresh' : ''}`;
       sl.innerHTML = `<div class="band"><div class="big">${esc(step.slam.text)}</div></div>${step.slam.cls === 'boom' ? `<br><img src="${raceUrl('c-boomerang')}" alt="">` : ''}`;
       sl.style.visibility = 'hidden'; ui.appendChild(sl);
@@ -769,7 +815,7 @@ export function createStage(holder, { faceOf, legLabel }) {
       sl.style.left = at[0] + '%'; sl.style.top = at[1] + '%'; sl.style.visibility = '';
       if (at.k < 1) sl.style.setProperty('--k', at.k);
       if (fresh) { if (step.slam.cls === 'gold') for (let q = 0; q < 3; q++) later(q * 250, () => particles('spark', 30 + Math.random() * 40, 30, 14, 14)); else flash((s.matAt || [50])[0], 30); }
-    }
+    });
     ui.querySelectorAll('.clip').forEach(e => e.remove());
     if (step?.clip && s.kind === 'map') {
       // last time, on screen: the one saying it, framed as a clip over the map
@@ -807,7 +853,8 @@ export function createStage(holder, { faceOf, legLabel }) {
     bc.style.left = '0'; bc.style.boxSizing = 'border-box';
     bc.style.width = bc.offsetWidth + 'px';
     // in the middle if it is clear of every face, else elsewhere, else a little smaller (steps.js fitOverlay)
-    const { at, k: kk } = fitOverlay(turnedSize(bc, 1.4), screenFaces(s, k, view), () => [[50, 37]], bounds(view), [1, 0.86, 0.74, 0.64]);
+    // (and off the slam on the same click: the BOOMERANG board was half under it)
+    const { at, k: kk } = fitOverlay(turnedSize(bc, 1.4), overlayObstacles(s, k, view, bounds(view)), () => [[50, 37]], bounds(view), [1, 0.86, 0.74, 0.64]);
     bc.style.left = at[0] + '%'; bc.style.top = at[1] + '%';
     if (kk < 1) bc.style.setProperty('--k', kk);
   }

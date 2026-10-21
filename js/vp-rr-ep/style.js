@@ -324,6 +324,10 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .tipcard .os{display:flex;gap:.6cqw}
 .tipcard .o{flex:1;font-family:Bungee;font-size:1.3cqw;background:#c9d9ff;border-radius:.6cqw;padding:.4cqw .8cqw;text-align:center}
 @keyframes cardIn{from{transform:translateX(-50%) translateY(40cqw) rotate(-14deg) scale(.4);opacity:0}to{opacity:1}}
+/* the wooden Boomerang: flying in (stage.js boomerang), then held at the team's side */
+.boomfly{position:absolute;width:calc(var(--sz)*0.95);z-index:30;pointer-events:none;filter:drop-shadow(0 .3cqw .2cqw rgba(0,0,0,.45))}
+.boomfly svg,.tok .boomheld svg{display:block;width:100%;height:auto}
+.tok .boomheld{position:absolute;right:-6%;bottom:34%;width:46%;transform:rotate(-20deg);z-index:3;filter:drop-shadow(0 .25cqw .15cqw rgba(0,0,0,.45))}
 .slam{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%) scale(var(--k,1));z-index:45;text-align:center;pointer-events:none}
 .slam .band{display:inline-block;background:#08080e;border-radius:1.4cqw;padding:.5cqw 2.6cqw .9cqw;
   box-shadow:0 0 0 .3cqw #0c0c14,0 0 0 .55cqw #5cc8ff,0 0 2.4cqw .6cqw rgba(60,170,255,.75)}

@@ -1072,6 +1072,33 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'fire-mountain-isle': {
+    // (the canyon by the lava river and its stepping stones; the waterfall; the tiki clearing; the lagoon and its mine;
+    // the log pile; the volcano path; the crater)
+    'lava-falls': {
+      'lava-bank': { label: 'THE LAVA', plate: ['task-22425117', {}] },
+      'stepping-stones': { label: 'THE STEPPING STONES', plate: ['task-22426413', { mode: 'hop' }],
+        fail: ['task-22426413', { mode: 'hop', path: [[19, 46], [27.5, 59], [19, 46]] }], stamp: 'SLIPPED' },
+      'lava-clearing': { label: 'THE CLEARING', plate: ['task-22425118', {}] },
+      'river-raft': { label: 'THE RAFT', plate: ['task-22425199', { mode: 'walk' }], fail: ['task-22425199', { mode: undefined, prop: undefined, deco: [['raft', 70, 93, 12]] }], stamp: 'TIPPED OVER' },
+      'behind-the-falls': { label: 'BEHIND THE FALLS', plate: ['task-22425199', { mode: 'walk', prop: undefined, path: [[10, 92], [40, 91], [72, 92]] }],
+        fail: ['task-22425199', { mode: 'walk', prop: undefined, path: [[30, 92], [40, 91], [34, 92]] }], stamp: 'SLIPPED' },
+      'falls-clearing': { label: 'THE CLEARING', plate: ['task-22425118', {}] },
+    },
+    lagoon: {
+      'lagoon-wade': { label: 'INTO THE LAGOON', plate: ['present-22424825', {}] },
+      'the-mine': { label: 'THE SEA MINE', plate: ['task-22425972', { mode: 'swim' }],
+        fail: ['task-22425972', { mode: 'swim', path: [[16, 72], [34, 75], [44, 76], [20, 73]] }], stamp: 'TOUCHED THE MINE' },
+      'far-rocks': { label: 'THE FAR ROCKS', plate: ['task-22426225', { mode: 'swim' }] },
+    },
+    statue: {
+      'log-pile': { label: 'THE LOG PILE', plate: ['task-22426261', { mode: undefined, prop: undefined, judge: null }] },
+      'the-statue': { label: 'THE STATUE', plate: ['task-22426261', { mode: 'build' }], fail: ['task-22426261', { mode: 'build' }], stamp: 'FELL APART' },
+      'up-the-volcano': { label: 'UP THE VOLCANO', plate: ['present-22426355', { mode: 'climb', prop: 'statue', path: [[20, 98], [34, 78], [46, 58]] }],
+        fail: ['present-22426355', { mode: 'climb', prop: undefined, path: [[34, 78], [40, 68], [28, 90]], deco: [['statue', 44, 98, 6]] }], stamp: 'DROPPED IT' },
+      'the-crater': { label: 'INTO THE CRATER', plate: ['chill-22426500', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'walk', crowd: false, path: [[98, 56], [90, 53], [82, 52]], fx: 'embers', deco: [['statue', 62, 46, 12]] }] },
+    },
+  },
   badlands: {
     // (the dig among the rocks; the striped plain; the skeleton frame; the finished skeletons on display; the drill site
     // with its rig; the barrel in its pit)

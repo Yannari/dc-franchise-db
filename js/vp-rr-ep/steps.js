@@ -778,7 +778,9 @@ function layout(s, size) {
       const watching = [];
       for (const id of s.teams) {
         const pair = s.members[id] || [];
-        const doer = s.stretchKind === 'botch' ? (pair.find(x => s.who.includes(x)) || pair[0]) : null;
+        // (a stage moment names the one doing it first, then the partner watching: director.js stageBeats)
+        const doer = s.stretchKind !== 'botch' ? null
+          : (s.seg === 'task-stage' && pair.includes(s.who[0]) ? s.who[0] : pair.find(x => s.who.includes(x)) || pair[0]);
         s.swimmers[id] = doer ? [doer] : pair;
         if (doer) watching.push(...pair.filter(x => x !== doer));
       }

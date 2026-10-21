@@ -25,7 +25,7 @@ beforeAll(() => {
   for (const seed of [41, 42, 43]) {
     const { cast, teams } = raceCast(12, seed);
     setPlayers(cast);
-    const res = playRaceSeason({ teams, seed, options: { pins: { 2: 'ice-river', 3: 'pampas-ranch', 4: 'red-sand-desert', 5: 'iron-tower-city' } } });
+    const res = playRaceSeason({ teams, seed, options: { pins: { 2: 'ice-river', 3: 'pampas-ranch', 4: 'red-sand-desert', 5: 'iron-tower-city', 6: 'coast-palace' } } });
     const aired = airSeason(res);
     runs.push({ seed, res, aired, screens: aired.map((_, i) => episodeScreens(res, aired, i)) });
   }
@@ -92,6 +92,18 @@ describe('rr challenges in stages', () => {
       expect(files, s.id).toContain(s.plate.f);
     }
     expect(seen).toBeGreaterThan(20);
+  });
+
+  // (the shark: the partner on the boat was drawn in the water, and the one in the water in the ON THE BOAT box)
+  it('puts the one doing a Botch in the water at every stage, and the partner watching on the boat', () => {
+    let n = 0;
+    for (const { screens } of runs) for (const ep of screens) for (const s of ep.screens) {
+      if (s.seg !== 'task-stage' || s.stretchKind !== 'botch' || !s.swimmers) continue;
+      n++;
+      expect(s.swimmers[s.teams[0]], s.id).toEqual([s.who[0]]);
+      expect(s.inset?.people, s.id).toEqual([s.who[1]]);
+    }
+    expect(n).toBeGreaterThan(0);
   });
 
   // (a wrong spice isn't tried again: nobody checks the five, the stew finds out later)

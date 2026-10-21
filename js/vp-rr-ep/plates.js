@@ -1031,6 +1031,22 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'coast-palace': {
+    // (the boat's deck and the open water where the fin goes by; the plan in the sand, the palaces, the strict judge)
+    shark: {
+      'suit-up': { label: 'MASK ON', plate: ['task-shark-deck', {}], fail: ['task-shark-deck', {}], stamp: 'BACK UP!' },
+      'in-the-water': { label: 'IN THE WATER', plate: ['task-9436629', { mode: 'swim' }], fail: ['task-9436629', { mode: 'swim' }], stamp: 'PANIC' },
+      'the-pass': { label: 'THE FIN GOES BY', plate: ['task-9436629', { mode: 'swim' }], fail: ['task-9436629', { mode: 'swim' }], stamp: 'MISSED' },
+      'back-aboard': { label: 'BACK ABOARD', plate: ['task-shark-deck', {}] },
+    },
+    'sand-palace': {
+      'the-plan': { label: 'THE PLAN IN THE SAND', plate: ['task-9436639', {}] },
+      walls: { label: 'THE WALLS', plate: ['task-9436921', { mode: 'sculpt', judge: null }], fail: ['task-9436921', { mode: 'sculpt', judge: null }], stamp: 'SLUMPED' },
+      towers: { label: 'THE TOWERS', plate: ['task-9436921', { mode: 'sculpt', judge: null }], fail: ['task-9436921', { mode: 'sculpt', judge: null }], stamp: 'WASHED AWAY' },
+      'the-verdict': { label: 'THE VERDICT', plate: ['task-9436921', { mode: 'sculpt' }], fail: ['task-9436921', { mode: 'sculpt' }], stamp: 'NO!' },
+      'the-nod': { label: 'THE NOD', plate: ['task-9436921', { mode: undefined, prop: undefined, judge: null, deco: [['palace', 50, 93, 16]] }] },
+    },
+  },
   'iron-tower-city': {
     // (the easel at the foot of the tower; the catacombs from the manhole in the park, through the tunnels, out on
     // the quay where the cheese goes in the river)

@@ -1061,6 +1061,28 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'cliff-pool-isle': {
+    // (the falls from the beach and from the top; the lagoon; the bobsled track, its loop and its end; the board)
+    'falls-dive': {
+      'the-edge': { label: 'THE EDGE', plate: ['task-22416404', { mode: undefined, prop: undefined, path: undefined, water: false, g: 64, x: [4, 30] }],
+        fail: ['task-22416404', { mode: undefined, prop: undefined, path: undefined, water: false, g: 64, x: [4, 30] }], stamp: 'NOT JUMPING' },
+      'the-jump': { label: 'THE JUMP', plate: ['task-22416404', { mode: 'dive', inset: 'ON THE CLIFF', path: [[24, 50], [40, 64], [56, 80], [62, 92]] }] },
+      'the-bottom': { label: 'THE CHESTS', plate: ['task-22416440', { mode: 'dive' }], fail: ['task-22416440', { mode: 'dive' }], stamp: 'NO CHEST' },
+      'cliff-path': { label: 'BACK UP THE CLIFF', plate: ['present-22416327', { deco: [['chest', 50, 92, 5]] }],
+        fail: ['present-22416327', { deco: [['chest', 50, 92, 5]] }], stamp: 'DROPPED IT' },
+      'chest-up': { label: 'THE TOP', plate: ['task-22416404', { mode: undefined, prop: undefined, path: undefined, water: false, g: 64, x: [4, 26], deco: [['chest', 34, 64, 5]] }] },
+    },
+    bobsled: {
+      'push-off': { label: 'PUSH OFF', plate: ['task-22416594', { mode: 'ride', path: [[-14, 74], [10, 72], [24, 72]] }],
+        fail: ['task-22416594', { mode: 'ride', path: [[-14, 74], [0, 73], [6, 73]] }], stamp: 'TOO LATE' },
+      'run-one': { label: 'RUN ONE', plate: ['task-22416594', { mode: 'ride' }], fail: ['task-22416594', { mode: 'ride' }], stamp: 'SLOW' },
+      'the-loop': { label: 'THE LOOP', plate: ['task-22416502', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'ride', prop: 'sled', path: [[60, 74], [70, 40], [84, 30], [92, 60]], fx: 'dust' }],
+        fail: ['task-22416502', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'ride', prop: 'sled', path: [[60, 74], [70, 50], [74, 78]], fx: 'dust' }], stamp: 'TIPPED' },
+      'run-three': { label: 'RUN THREE', plate: ['task-22416600', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'ride', prop: 'sled', path: [[94, 30], [80, 46], [66, 60]], fx: 'splash' }],
+        fail: ['task-22416600', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'ride', prop: 'sled', path: [[94, 30], [80, 46], [66, 60]], fx: 'splash' }], stamp: 'TOO SLOW' },
+      'the-board': { label: 'UNDER THE TARGET', plate: ['chill-22416513', { deco: [['sled', 30, 92, 12]] }] },
+    },
+  },
   'fishing-cove': {
     // (the fisherman's shack: inside is a job, the shack from outside stands in)
     'welcome-rite': {

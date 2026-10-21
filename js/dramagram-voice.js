@@ -361,6 +361,28 @@ export const FALLBACK = {
   },
 };
 
+/** The same, for bad news: says as little, and nothing about it being good. */
+export const HARD_FALLBACK = {
+  major: {
+    warm: ['a hard few months. thank you for the messages 🤍', 'taking some time. back soon.'],
+    sharp: ['not discussing it here.', 'it happened. that is all.'],
+    plain: ['rough time', 'not a good year'],
+    loud: ['not posting for a bit.', 'TOUGH ONE. STILL HERE.'],
+  },
+  notable: {
+    warm: ['not the week i wanted 🤍', 'one of those weeks. we go again.'],
+    sharp: ['well. that happened.', 'noted, and filed under no.'],
+    plain: ['bad week', 'could be better'],
+    loud: ['WORST. WEEK.', 'NOPE.'],
+  },
+  minor: {
+    warm: ['🤍', 'onwards'],
+    sharp: ['.', 'fine.'],
+    plain: ['—', 'meh'],
+    loud: ['UGH', 'OK.'],
+  },
+};
+
 // ─── the comments ──────────────────────────────────────────────────────────
 //
 // COMMENTS[relation][significance] -> string[]
@@ -442,8 +464,12 @@ const fill = (t, { name, whom, season }) => String(t)
 export function captionFor(event, { archetype = '', names = {}, season = '' } = {}) {
   const tone = toneFor(archetype);
   const sig = event?._sig || 'notable';
+  // Hard news with no bank of its own must not borrow FALLBACK, which is written
+  // for good news: "big news 🤍 something has changed and it's good" under an
+  // accident or an arrest.
   const bank = CAPTIONS[event?.kind]?.[tone]
     || CAPTIONS[event?.kind]?.plain
+    || (HARD_NEWS.has(event?.kind) ? HARD_FALLBACK[sig]?.[tone] : null)
     || FALLBACK[sig]?.[tone]
     || FALLBACK.notable.plain;
   const line = pickFrom(bank, `${event?.player}|${event?.kind}|${event?.afterSeason}|${event?.seq}`);
@@ -479,6 +505,9 @@ const HARD_NEWS = new Set([
   'lawsuit', 'arrested', 'charges-dropped', 'scandal', 'cancelled',
   'lost-money', 'bankruptcy', 'bad-investment',
   'laid-off', 'business-folded', 'dropped-out', 'production-fallout', 'feud',
+  // the kinds added 2026-10-21
+  'pet-died', 'break-in', 'hospital-stay', 'broken-bone', 'diagnosis', 'accident',
+  'lost-licence', 'settled', 'leaked', 'scammed', 'tax-bill', 'lost-home',
 ]);
 
 /** The generic bank for a room that has just read bad news. */

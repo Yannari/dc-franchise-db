@@ -366,3 +366,30 @@ describe('whose pronouns a sentence uses', () => {
       .toBe('Brick quit.');
   });
 });
+
+// The user, 2026-10-21: more variety, "but the weight stay the same, I don't want it to be bloated". RATES decide
+// how many things happen; a kind only decides what a draw lands on, so what has to hold is each pool's share of
+// minor / notable / major (the resolver draws uniformly over a pool, a kind's weight as copies of it). The
+// numbers are the pools as they stood before 49 kinds were added; a new kind that tips one goes in with a partner.
+describe('more kinds, the same weight', () => {
+  const POOLS = { everyday: ['career', 'home', 'small'], public: ['public', 'franchise'], rare: ['health', 'legal', 'money'] };
+  const BEFORE = { everyday: [66.7, 33.3, 0], public: [65.9, 32.9, 1.2], rare: [20.0, 53.8, 26.3] };
+  for (const [pool, tracks] of Object.entries(POOLS)) {
+    it(`the ${pool} pool keeps its minor / notable / major split`, () => {
+      const c = { minor: 0, notable: 0, major: 0 };
+      for (const k of KINDS.filter(x => tracks.includes(x.track) && !x.terminal)) c[k.sig] += Math.max(1, Math.round((k.weight ?? 1) * 4));
+      const all = c.minor + c.notable + c.major;
+      ['minor', 'notable', 'major'].forEach((s, i) => expect(Math.abs(100 * c[s] / all - BEFORE[pool][i]), `${pool} ${s}`).toBeLessThan(1.5));
+    });
+  }
+  it('a hard kind never gets a good-news caption', async () => {
+    const { captionFor, FALLBACK } = await import('../js/dramagram-voice.js');
+    const good = new Set(Object.values(FALLBACK).flatMap(t => Object.values(t).flat()));
+    for (const kind of ['accident', 'pet-died', 'scammed', 'illness', 'arrested']) {
+      for (const archetype of ['hero', 'villain', 'floater', 'hothead']) {
+        const cap = captionFor({ kind, player: 'a', seq: 1, _sig: significanceOf(kind) }, { archetype });
+        expect(good.has(cap), `${kind}: "${cap}"`).toBe(false);
+      }
+    }
+  });
+});

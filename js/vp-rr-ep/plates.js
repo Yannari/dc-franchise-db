@@ -1017,6 +1017,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const CROCS = [['croc', 74, 76, 22, { move: 'wander', span: 10, dur: 14 }]];
 const DECK = repaint('task-observation-deck', 'task-observation-deck', 'task-9450082'), DECK_G = repaint('task-observation-deck', 92, 95);
 const TERRACES = repaint('task-tea-terraces', 'task-tea-terraces', 'present-9448248'), TERRACES_G = repaint('task-tea-terraces', 92, 92);
 const TRAIN_IN = repaint('task-train-inside', 'task-train-inside', 'task-9448388'), TRAIN_G = 92;
@@ -1044,6 +1045,31 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'tomb-sands': {
+    // (Over or Under, their ids apart: the pyramid's face; the tomb's door, its three doorways, the dart corridor, the
+    // scarab room; the reeds, the paddles, the river with its crocodiles)
+    pyramid: {
+      'pyramid-foot': { label: 'THE GREAT PYRAMID', plate: ['present-22409867', { mode: undefined, path: undefined }] },
+      'the-steps': { label: 'THE STEPS', plate: ['present-22409867', { mode: 'climb', path: [[40, 96], [44, 78], [48, 60], [52, 42]] }],
+        fail: ['present-22409867', { mode: 'climb', path: [[48, 60], [44, 78], [40, 96]] }], stamp: 'SLIPPED' },
+      'the-top': { label: 'THE TOP', plate: ['present-22409867', { mode: 'climb', path: [[52, 42], [54, 30], [56, 22]] }] },
+      'down-the-side': { label: 'DOWN THE FAR SIDE', plate: ['present-22409867', { mode: 'climb', path: [[56, 22], [62, 44], [68, 70], [74, 96]] }],
+        fail: ['present-22409867', { mode: 'climb', path: [[56, 22], [64, 52], [74, 96]] }], stamp: 'TUMBLE' },
+      'over-tip': { label: 'THE FAR SIDE', plate: ['task-22410503', { people: undefined, g: 94, x: [6, 60] }] },
+      'tomb-door': { label: 'THE TOMB', plate: ['task-22410049', {}], fail: ['task-22410049', {}], stamp: 'NOT IN THERE' },
+      'three-doors': { label: 'THREE DOORS', plate: ['task-22409901', {}], fail: ['task-22409901', {}], stamp: 'WRONG DOOR' },
+      'dart-trap': { label: 'THE CORRIDOR', plate: ['task-22409957', { mode: 'walk' }], fail: ['task-22409957', { mode: 'walk' }], stamp: 'DARTS!' },
+      'scarab-room': { label: 'THE SCARABS', plate: ['task-22409944', {}], fail: ['task-22409944', {}], stamp: 'SCARABS!' },
+      'way-out': { label: 'THE WAY OUT', plate: ['task-22409920', { people: undefined, g: 96, x: [6, 94] }] },
+    },
+    'reed-boat': {
+      'the-reeds': { label: 'THE REEDS', plate: ['task-22410534', {}] },
+      'tie-it': { label: 'TIE IT TOGETHER', plate: ['task-22410542', { deco: [['reed', 30, 97, 14]] }], fail: ['task-22410542', { deco: [['reed', 30, 97, 14]] }], stamp: 'FELL APART' },
+      'cast-off': { label: 'CAST OFF', plate: ['task-22410673', { mode: 'ride', deco: [] }], fail: ['task-22410673', { mode: 'swim', prop: undefined, path: [[54, 66], [32, 68], [10, 70]], deco: [] }], stamp: 'SINKING' },
+      'the-crocs': { label: 'THE CROCODILES', plate: ['task-22410673', { mode: 'ride', deco: CROCS }], fail: ['task-22410673', { mode: 'ride', deco: CROCS }], stamp: 'CROC!' },
+      'far-bank': { label: 'THE FAR BANK', plate: ['chill-22410379', { deco: [['reed', 24, 94, 14]] }] },
     },
   },
   'skyline-finale': {

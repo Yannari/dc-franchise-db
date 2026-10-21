@@ -1021,6 +1021,8 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const MUSEUM_BEAR = [['bear', 90, 88, 13, { move: 'wander', span: -4, dur: 12 }]];
+const RUNWAY = repaint('task-museum-runway', 'task-museum-runway', 'task-22415170'), RUNWAY_G = repaint('task-museum-runway', 82, 88);
 const LOG = repaint('task-piranha-log', 'task-piranha-log', 'task-22414793'), LOG_G = repaint('task-piranha-log', 66, 90);
 const SLOPE_GOAT = [['goat', 26, 74, 10, { move: 'wander', span: 8, dur: 10 }]];
 const GATOR = [['gator', 70, 82, 16, { move: 'wander', span: -14, dur: 9 }]];
@@ -1054,6 +1056,27 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'glass-pyramid-city': {
+    // (the hall with the smashed statue; the galleries, the mummy room, the paintings; the runway in the grand hall)
+    'broken-statue': {
+      'the-plinth': { label: 'THE BROKEN STATUE', plate: ['task-22415175', { mode: undefined, prop: undefined, judge: null }] },
+      galleries: { label: 'THE GALLERIES', plate: ['task-22415179', { mode: 'search', deco: [['head', 90, 92, 6]] }],
+        fail: ['task-22415034', { mode: 'search' }], stamp: 'NOT A PIECE' },
+      'the-bear': { label: 'THE BEAR', plate: ['task-22415170', { deco: MUSEUM_BEAR }], fail: ['task-22415170', { mode: 'run', path: [[60, 88], [36, 88], [10, 88]], deco: MUSEUM_BEAR }], stamp: 'RUN!' },
+      'fit-it': { label: 'PUT IT TOGETHER', plate: ['task-22415175', { mode: 'build', judge: null }], fail: ['task-22415175', { mode: 'build', judge: null }], stamp: 'UPSIDE DOWN' },
+      'curator-nod': { label: 'WHOLE AGAIN', plate: ['task-22415175', { mode: undefined, judge: null, deco: [['torso', 50, 92, 8]] }] },
+    },
+    runway: {
+      'the-outfit': { label: 'THE OUTFIT', plate: ['task-22415034', {}], fail: ['task-22415034', {}], stamp: "DOESN'T FIT" },
+      'the-walk': { label: 'THE WALK', plate: [RUNWAY, { mode: 'walk', solo: true, inset: 'WATCHING', path: [[10, RUNWAY_G], [34, RUNWAY_G], [58, RUNWAY_G]] }],
+        fail: [RUNWAY, { mode: 'walk', solo: true, inset: 'WATCHING', path: [[10, RUNWAY_G], [24, RUNWAY_G], [30, RUNWAY_G]] }], stamp: 'TRIPPED' },
+      'the-pose': { label: 'POSE', plate: [RUNWAY, { mode: 'walk', solo: true, inset: 'WATCHING', path: [[58, RUNWAY_G], [76, RUNWAY_G], [86, RUNWAY_G]], fx: 'sparkle' }],
+        fail: [RUNWAY, { mode: 'walk', solo: true, inset: 'WATCHING', path: [[58, RUNWAY_G], [76, RUNWAY_G], [86, RUNWAY_G]] }], stamp: 'GIGGLED' },
+      'walk-back': { label: 'AND BACK', plate: [RUNWAY, { mode: 'walk', solo: true, inset: 'WATCHING', path: [[86, RUNWAY_G], [58, RUNWAY_G], [30, RUNWAY_G]] }],
+        fail: [RUNWAY, { mode: 'walk', solo: true, inset: 'WATCHING', path: [[86, RUNWAY_G], [74, RUNWAY_G], [70, RUNWAY_G]] }], stamp: 'WOBBLE' },
+      applause: { label: 'APPLAUSE', plate: [RUNWAY, { mode: undefined, path: undefined, fx: 'sparkle' }] },
     },
   },
   'jungle-ruins': {

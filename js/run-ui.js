@@ -49,7 +49,7 @@ import { SONGS as DR_SONGS } from './dr/data/songs.js';
 import { GROUP_THEMES as DR_GG_THEMES } from './dr/chal/girl-group.js';
 import { roundExits, exitVerbs, SHOWS, showWords, showName, DEFAULT_FORMAT, DRAG_FORMAT, TRAITORS_FORMAT,
   PERFECT_MATCH_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT, RACE_FORMAT } from './shows.js';
-import { seasonFormat } from './core.js';
+import { seasonFormat, hasCheckpoint, checkpointKeys, dropCheckpoint, loadCheckpoint } from './core.js';
 import { loadRankingBoards } from './ranking-boards.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
 
@@ -769,7 +769,7 @@ export function renderSeasonHub() {
     <footer><span>Public consequence summary</span><button type="button" onclick="openVisualPlayer(${_watchArg(model.latest.num)})">Open the full episode breakdown →</button></footer>
   </section>` : '';
   const canBatch = !model.isHistorical && model.lifecycle !== 'complete' && model.phase !== 'finale';
-  const canReplay = !!(model.latest && typeof gsCheckpoints !== 'undefined' && gsCheckpoints[model.latest.num]);
+  const canReplay = !!(model.latest && hasCheckpoint(model.latest.num));
   const secondaryActions = model.lifecycle === 'setup' ? '' : `<nav class="hub-secondary-actions" aria-label="Secondary season actions">
     <button type="button" onclick="openVisualPlayer(${_watchArg(model.latest?.num || model.liveEpisode)})" ${model.latest ? '' : 'disabled'}>Watch latest</button>
     <button type="button" onclick="simulateMultipleEpisodes(5)" ${canBatch ? '' : 'disabled'}>Sim 5</button>
@@ -2162,10 +2162,10 @@ function _canReplay(epNum) {
      started failing. The real question is whether the aired nights can be
      reproduced — seed plus recorded schedule — and dragCanRerun answers it. */
   if (isDragSeason()) return dragCanRerun();
-  return !!gsCheckpoints[epNum];
+  return hasCheckpoint(epNum);
 }
 
-export function replayEpisode(epNum) {
+export async function replayEpisode(epNum) {
   // The castle re-runs FOR REAL and off its base seed — no checkpoint needed,
   // so it works after a reload too, and every earlier episode reproduces
   // exactly while this night onward is a genuinely different season.
@@ -2182,7 +2182,9 @@ export function replayEpisode(epNum) {
      a reload and a browser that never managed to write a checkpoint. The
      checkpoint is still USED when there is one — it is a better rollback
      than a reconstruction — but it is no longer the price of the button. */
-  const checkpoint = gsCheckpoints[epNum];
+  // Read from this browser's storage now rather than held in memory since the page opened (core.js loadCheckpoint):
+  // the same checkpoint, fetched when it is wanted.
+  const checkpoint = gsCheckpoints[epNum] || await loadCheckpoint(epNum);
   if (!checkpoint && !(isDragSeason() && dragCanRerun())) {
     alert(isDragSeason()
       ? `Episode ${epNum} cannot be re-run: this season has no stored running `
@@ -2210,8 +2212,9 @@ export function replayEpisode(epNum) {
   //
   // Now the rollback is reversible until the replacement is in hand.
   const before = snapshotGs();
-  const droppedKeys = Object.keys(gsCheckpoints).filter(k => Number(k) >= epNum);
-  const droppedCps = droppedKeys.map(k => [k, gsCheckpoints[k]]);
+  const droppedKeys = checkpointKeys().filter(k => Number(k) >= epNum);
+  // (the ones in memory; one never read is still in storage, untouched until the new episode exists)
+  const droppedCps = droppedKeys.map(k => [k, gsCheckpoints[k]]).filter(([, cp]) => cp);
 
   let ep = null;
   let failure = null;
@@ -2271,7 +2274,7 @@ export function replayEpisode(epNum) {
 
   // It worked. Only now are the old checkpoints past this point unreachable.
   for (const k of droppedKeys) {
-    if (Number(k) > ep.num) { delete gsCheckpoints[k]; _idbDelete('cp_' + k); }
+    if (Number(k) > ep.num) { dropCheckpoint(k); _idbDelete('cp_' + k); }
   }
   // Same rule as simulateNext: the castle has no Total Drama episode for
   // `updatePopularity` to read, and keeps its own ledgers.
@@ -2603,8 +2606,8 @@ Episode ${epNum} will be dealt again, with your current picks and cast setup, an
 ${why}` : ''}`);
     return;
   }
-  for (const k of Object.keys(gsCheckpoints)) {
-    if (Number(k) >= epNum) { delete gsCheckpoints[k]; _idbDelete('cp_' + k); }
+  for (const k of checkpointKeys()) {
+    if (Number(k) >= epNum) { dropCheckpoint(k); _idbDelete('cp_' + k); }
   }
   _refreshFeed({ rebuild: true });
   _autoRevealSpoiler(ep.num);
@@ -2669,8 +2672,8 @@ function _replayTraitorsEpisode(epNum) {
   }
   // A re-run rewrites this episode and everything after it, so the checkpoints
   // for those episodes no longer describe a night that happened.
-  for (const k of Object.keys(gsCheckpoints)) {
-    if (Number(k) >= epNum) { delete gsCheckpoints[k]; _idbDelete('cp_' + k); }
+  for (const k of checkpointKeys()) {
+    if (Number(k) >= epNum) { dropCheckpoint(k); _idbDelete('cp_' + k); }
   }
   _refreshFeed({ rebuild: true });
   _autoRevealSpoiler(ep.num);

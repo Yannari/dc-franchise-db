@@ -239,7 +239,7 @@ describe('js/dr-run.js', () => {
   it('run-ui bumps the re-run counter before it re-saves the checkpoint', () => {
     const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..',
       'js', 'run-ui.js'), 'utf8');
-    const body = src.slice(src.indexOf('export function replayEpisode'));
+    const body = src.slice(src.search(/export (async )?function replayEpisode/));
     const bump = body.indexOf('rerunDragEpisode(epNum)');
     const save = body.indexOf('_saveEpisodeCheckpoint()');
     expect(bump, 'replayEpisode no longer calls rerunDragEpisode').toBeGreaterThan(-1);

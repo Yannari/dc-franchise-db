@@ -2259,7 +2259,29 @@ export function setRelationships(v) { relationships = v; }
 export function setEditingRelId(v) { editingRelId = v; }
 export function setActiveRelType(v) { activeRelType = v; }
 export function setGs(v) { gs = v; }
-export function setGsCheckpoints(v) { gsCheckpoints = v; }
+export function setGsCheckpoints(v) { gsCheckpoints = v; checkpointNums.clear(); }
+// The checkpoints stored in IndexedDB (episode numbers), read or not: gsCheckpoints holds only the ones read.
+export const checkpointNums = new Set();
+/** Is there a checkpoint for this episode (in memory, or stored and not read yet)? */
+export function hasCheckpoint(n) { return !!gsCheckpoints[n] || checkpointNums.has(Number(n)); }
+/** Every checkpoint's episode number, as the string keys gsCheckpoints uses. */
+export function checkpointKeys() { return [...new Set([...Object.keys(gsCheckpoints || {}).filter(k => gsCheckpoints[k]), ...[...checkpointNums].map(String)])]; }
+/** Forget a checkpoint everywhere it is remembered (the caller deletes it from IndexedDB). */
+export function dropCheckpoint(k) { delete gsCheckpoints[k]; checkpointNums.delete(Number(k)); }
+/** Read one checkpoint when it is needed (a replay), repaired, and keep it. */
+export async function loadCheckpoint(n) {
+  if (gsCheckpoints[n]) return gsCheckpoints[n];
+  if (!checkpointNums.has(Number(n))) return null;
+  try {
+    const { _idbGet } = await import('./savestate.js');
+    const cp = await _idbGet('cp_' + n);
+    if (!cp) return null;
+    repairGsSets(cp);
+    if (_hasAccented(cp)) _fixAccentedDeep(cp, ACCENTED_NAME_FIXES);
+    gsCheckpoints[n] = cp;
+    return cp;
+  } catch { return null; }
+}
 export function setViewingEpNum(v) { viewingEpNum = v; }
 export function setSelectedEpisodes(v) { selectedEpisodes = v; }
 export function setCurrentTwistFilter(v) { currentTwistFilter = v; }
@@ -2390,6 +2412,12 @@ function _hasAccented(obj) {
 }
 
 export function normalizeAccentedNames() {
+  // The check turns the whole season into one string; on a big save that was seconds at every start, to find a
+  // spelling that was fixed long ago. Once a browser has been checked clean it is not checked again (a season
+  // save that is loaded later heals on its own path, and a checkpoint heals when loadCheckpoint reads it).
+  let clean = false;
+  try { clean = localStorage.getItem('dc_accents_clean') === '1'; } catch { /* storage blocked */ }
+  if (clean) return;
   if (Array.isArray(players) && _hasAccented(players)) {
     players = _fixAccentedDeep(players, ACCENTED_NAME_FIXES);
     try { localStorage.setItem('simulator_cast', JSON.stringify(players)); } catch {}
@@ -2400,8 +2428,9 @@ export function normalizeAccentedNames() {
     try { localStorage.setItem('simulator_rels', JSON.stringify(relationships)); } catch {}
   }
   for (const k of Object.keys(gsCheckpoints || {})) {
-    if (_hasAccented(gsCheckpoints[k])) _fixAccentedDeep(gsCheckpoints[k], ACCENTED_NAME_FIXES);
+    if (gsCheckpoints[k] && _hasAccented(gsCheckpoints[k])) _fixAccentedDeep(gsCheckpoints[k], ACCENTED_NAME_FIXES);
   }
+  try { localStorage.setItem('dc_accents_clean', '1'); } catch { /* storage blocked */ }
 }
 
 export async function loadAll() {
@@ -2429,16 +2458,17 @@ export async function loadAll() {
       }
     }
 
-    // ── Checkpoints: load from IndexedDB, fall back to localStorage for migration ──
+    // ── Checkpoints: which exist, not what is in them ──
+    // Each one is a whole copy of the season before that episode, history and all, so a long season holds the
+    // season n times over; reading every one at start, before anything was drawn, is what kept the simulator
+    // blank for minutes on a big save (the user, 2026-10-21: "i got the same loading issue in my simulator.html
+    // and i never manage to fix it"). Only a replay needs one, and loadCheckpoint fetches it then. Episode 1's
+    // is small and the drag rebuild reads it synchronously, so it is read now.
     const idbKeys = await _idbKeys();
     const cpKeys = idbKeys.filter(k => typeof k === 'string' && k.startsWith('cp_'));
-    for (const key of cpKeys) {
-      const epNum = Number(key.replace('cp_', ''));
-      if (epNum) {
-        const cpData = await _idbGet(key);
-        if (cpData) { gsCheckpoints[epNum] = cpData; repairGsSets(gsCheckpoints[epNum]); }
-      }
-    }
+    checkpointNums.clear();
+    for (const key of cpKeys) { const n = Number(key.replace('cp_', '')); if (n) checkpointNums.add(n); }
+    if (checkpointNums.has(1)) await loadCheckpoint(1);
     // Migration: check localStorage for old checkpoint keys
     if (cpKeys.length === 0) {
       for (let i = 0; i < localStorage.length; i++) {

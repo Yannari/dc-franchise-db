@@ -10,47 +10,47 @@ export default {
   'task-stage.ok': [
     { id: 'of.st.fa1', when: at('bunnies', 'the-farmer'), turns: [
       beat('At the farm gate, the farmer hands them an empty sack and points at the wheat field, which is twitching all over with rabbits.'),
-      by('b', "They're everywhere. The whole field is moving."),
-      by('a', "Ten of them. How hard can it be to catch ten bunnies?"),
+      by('b', "They're everywhere."),
+      by('a', "Ten rabbits. How hard can it be?"),
     ] },
     { id: 'of.st.fa2', when: at('bunnies', 'the-farmer'), turns: [
       by('a', "There's a white one? And it's worth all ten?"),
       beat('The farmer nods, holds up one finger, and then all ten fingers.'),
-      by('b', "Then we're catching the white one. Forget the other nine."),
+      by('b', "Then we're getting the white one."),
     ] },
     { id: 'of.st.wh1', when: at('bunnies', 'into-wheat'), turns: [
       beat('They dive into the wheat, and the rabbits scatter in every direction, zigzagging through the stalks.'),
-      by('a', "Got one! Got one! I've got... a handful of wheat."),
-      by('b', "Corner them! Herd them towards me!"),
+      by('a', "Got one! Oh. No. That's just wheat."),
+      by('b', "Chase them this way!"),
     ] },
     { id: 'of.st.wh2', when: at('bunnies', 'into-wheat'), turns: [
-      by('b', "Low and slow. Like a cat."),
+      by('b', "Slowly. Like a cat."),
       beat('{b} creeps through the wheat on all fours, freezes, and pounces. When {b} stands up, there is a rabbit in each hand.'),
-      by('b', "Two! I'm a cat! I'm the best cat!"),
+      by('b', "Two! I got two!"),
     ] },
     { id: 'of.st.wh3', when: at('bunnies', 'into-wheat'), turns: [
       beat('{a} runs after one rabbit for so long, round and round in circles through the wheat, that it eventually just sits down, exhausted, and lets itself be picked up.'),
-      by('a', "I wore it out. That's a strategy."),
-      by('b', "That's not a strategy. That's just running in a circle for ten minutes."),
+      by('a', "I tired it out."),
+      by('b', "You ran in a circle for ten minutes."),
     ] },
     { id: 'of.st.wr1', when: at('bunnies', 'white-rabbit'), turns: [
       beat('Down by the water, sitting on the end of an old wooden jetty, is a little white rabbit, washing its ears.'),
       by('b', "There it is. The white one. Don't scare it."),
-      by('a', "Here, bunny. Here, very valuable bunny."),
+      by('a', "Hi, bunny. Stay there. Good bunny."),
     ] },
     { id: 'of.st.wr2', when: at('bunnies', 'white-rabbit'), turns: [
-      by('a', "It's on the jetty. It can't go anywhere but us."),
+      by('a', "It's on the jetty. It's got nowhere to go."),
       beat('They creep out onto the jetty from both ends of the bank, and the white rabbit looks from one to the other, trapped.'),
-      by('b', "Sorry, little one. You're worth too much."),
+      by('b', "Sorry, little guy."),
     ] },
     { id: 'of.st.sk1', when: at('bunnies', 'the-sack'), turns: [
       beat('{a} drops the rabbits into the sack one at a time, and {b} ties the top shut with a knot, and another knot, and another.'),
-      by('b', "Nobody's getting out of that. That's a prison knot."),
-      by('a', "We just escaped from... never mind. Count them."),
+      by('b', "Nothing's getting out of that."),
+      by('a', "Good. Count them."),
     ] },
     { id: 'of.st.sk2', when: at('bunnies', 'the-sack'), turns: [
-      by('b', "The sack's wriggling. It's a wriggling sack."),
-      by('a', "That means they're all in there. Hold it shut."),
+      by('b', "The sack's moving."),
+      by('a', "That's good. That means they're in there. Hold it shut."),
       beat('{b} holds the top of the wriggling sack with both hands and won\'t let go for anything.'),
     ] },
     { id: 'of.st.ct1', when: at('bunnies', 'the-count'), turns: [
@@ -60,7 +60,7 @@ export default {
     ] },
     { id: 'of.st.ct2', when: at('bunnies', 'the-count'), turns: [
       by('b', "\"Glide over the valley to the Chill Zone.\" A glider!"),
-      by('a', "I'm sure gliding is easier than rabbits. Everything is easier than rabbits."),
+      by('a', "Anything's easier than rabbits."),
       beat('They brush the wheat out of their hair and run for the hill.'),
     ] },
   ],
@@ -68,33 +68,33 @@ export default {
   'task-stage.fail': [
     { id: 'of.sf.wh1', when: at('bunnies', 'into-wheat'), turns: [
       beat('{a} dives at a rabbit, misses, and lands face first in the dirt. The rabbit stops a metre away and looks back at {a.obj}.'),
-      by('a', "It's laughing at me. I can tell."),
+      by('a', "It's just looking at me."),
       by('b', "Get up! It's going!"),
     ] },
     { id: 'of.sf.wh2', when: at('bunnies', 'into-wheat'), turns: [
       by('b', "It went left! No, right! No, it went under you!"),
       beat('{a} spins round so many times chasing one rabbit that {a.sub} falls over in a dizzy heap.'),
-      by('a', "Where am I? Is it still there?"),
+      by('a', "I'm so dizzy. Did it go?"),
     ] },
     { id: 'of.sf.wr1', when: at('bunnies', 'white-rabbit'), turns: [
       beat('{a} reaches for the white rabbit, and it hops neatly off the end of the jetty and swims away to the other bank.'),
       by('a', "It can swim! Since when can rabbits swim?"),
-      by('b', "Since now, apparently. Back to the normal ones."),
+      by('b', "Apparently. Okay, back to the normal ones."),
     ] },
     { id: 'of.sf.wr2', when: at('bunnies', 'white-rabbit'), turns: [
       by('b', "Grab it!"),
       beat('They both grab at the same moment, bump heads, and the white rabbit hops away between their legs.'),
-      by('a', "Ow. And it's gone. And my head hurts."),
+      by('a', "Ow. And it's gone."),
     ] },
     { id: 'of.sf.sk1', when: at('bunnies', 'the-sack'), turns: [
       beat('{b} opens the sack to put one more rabbit in, and three rabbits hop straight back out.'),
-      by('b', "No! Get back in! Get back in the sack!"),
-      by('a', "Start counting again. From whatever's left."),
+      by('b', "No! Get back in!"),
+      by('a', "Count again. How many are left?"),
     ] },
     { id: 'of.sf.sk2', when: at('bunnies', 'the-sack'), turns: [
       by('a', "Why is the sack getting lighter?"),
       beat('There is a hole in the bottom of the sack. Rabbits are dropping out of it one by one, like sand out of an hourglass.'),
-      by('b', "That's why they kept giving it to us so happily."),
+      by('b', "There's a hole in it. Great."),
     ] },
   ],
 };

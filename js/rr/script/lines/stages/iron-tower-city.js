@@ -14,62 +14,62 @@ export default {
       beat('At the foot of the iron tower, the artist hands {a} a stick of charcoal and taps the blank sheet on the easel.'),
       by('a', "A caricature. So, a drawing of you, but worse."),
       by('b', "Why does it have to be worse?"),
-      by('a', "Because that's the rule, and because it's me drawing it."),
+      by('a', "Because that's the rule. And because I'm drawing it."),
     ] },
     { id: 'itc.st.ea2', when: at('caricature', 'the-easel'), turns: [
       beat('The artist holds up four fingers and points at {b}\'s face, one feature at a time: the nose, the ears, the chin, the hair.'),
-      by('a', "Four exaggerations. Got it. Make the big things bigger."),
+      by('a', "Four exaggerations. Okay. So I make the big things bigger."),
       by('b', "What big things? I don't have any big things."),
       by('a', "Sit down, please."),
     ] },
     { id: 'itc.st.po1', when: at('caricature', 'the-pose'), turns: [
       beat('{b} sits on the little stool, lifts {b.posAdj} chin, and gazes off into the distance like a statue of someone important.'),
       by('a', "What is that face?"),
-      by('b', "It's my noble face. I want to look noble."),
-      by('a', "It's a caricature. Nobody looks noble in a caricature."),
+      by('b', "It's my good side."),
+      by('a', "There's no good side in a caricature."),
     ] },
     { id: 'itc.st.po2', when: at('caricature', 'the-pose'), turns: [
       by('a', "Just sit still and look normal."),
       beat('{b} tries to look normal, which turns out to be very hard when someone is staring at you with a stick of charcoal.'),
       by('b', "Is this normal? This feels weird. Is my mouth weird?"),
-      by('a', "It is now, so thanks for that."),
+      by('a', "It is now."),
     ] },
     { id: 'itc.st.sk1', when: at('caricature', 'sketch'), turns: [
       beat('{a} draws fast, glancing up and down, the charcoal squeaking on the paper.'),
       by('b', "Can I see it?"),
-      by('a', "No. You can see it when it's finished and it's too late to be offended."),
+      by('a', "No. You can see it when it's done."),
     ] },
     { id: 'itc.st.sk2', when: at('caricature', 'sketch'), turns: [
-      by('a', "Okay. The head is a big circle, and the body is a tiny little bean underneath it."),
+      by('a', "Okay. Big round head, tiny little body."),
       by('b', "Why am I a bean?"),
-      by('a', "Because caricatures are always a big head on a tiny body. I've seen them on boardwalks."),
+      by('a', "That's how caricatures work. Big head, tiny body."),
       beat('Over {a}\'s shoulder, the artist gives a small, interested nod.'),
     ] },
     { id: 'itc.st.sk3', when: at('caricature', 'sketch'), turns: [
       beat('{a} rubs out a line with a thumb, smudges charcoal across {a.posAdj} cheek without noticing, and keeps drawing.'),
       by('b', "You've got charcoal on your face."),
-      by('a', "That's fine. I'm an artist now. We're supposed to look like this."),
+      by('a', "Good. That means I'm working."),
     ] },
     { id: 'itc.st.ft1', when: at('caricature', 'four-things'), turns: [
       by('a', "Big nose. That's one. Giant ears, that's two."),
       by('b', "My ears are a perfectly normal size."),
-      by('a', "Not on paper, they're not. Three, the eyebrows, and four... the hair. The hair is going to be enormous."),
+      by('a', "Not anymore. Three, eyebrows. And four... the hair. Huge hair."),
       beat('{a} draws the hair so big that it runs right off the top of the sheet.'),
     ] },
     { id: 'itc.st.ft2', when: at('caricature', 'four-things'), turns: [
       beat('{a} holds the drawing up next to {b}\'s actual face and squints at the two of them.'),
       by('a', "The chin needs to be bigger. Much bigger. Like a shovel."),
       by('b', "I'm right here. I can hear you."),
-      by('a', "Good, because I need you to stick it out a bit more."),
+      by('a', "Good. Stick it out a bit more."),
     ] },
     { id: 'itc.st.ft3', when: at('caricature', 'four-things'), turns: [
       by('b', "You're enjoying this way too much."),
-      by('a', "I've wanted to draw your forehead like this for years, and now I'm allowed. It's the best day of my life."),
+      by('a', "Honestly? A little bit, yeah."),
       beat('{a} adds a fourth exaggeration, a pair of teeth like piano keys, and steps back.'),
     ] },
     { id: 'itc.st.al1', when: at('caricature', 'artist-laughs'), turns: [
       beat('The artist studies the drawing for a long moment, then snorts, then laughs out loud and slaps the easel.'),
-      by('a', "Is that good? I think that's good!"),
+      by('a', "Is that good? That's good, right?"),
       beat('The artist hands over the tip, still laughing, and points at {b} as if to say: that\'s exactly you.'),
     ] },
     { id: 'itc.st.al2', when: at('caricature', 'artist-laughs'), turns: [
@@ -82,13 +82,13 @@ export default {
     { id: 'itc.st.mh1', when: at('catacombs', 'manhole'), turns: [
       beat('In the park, the manhole cover is off, and an iron ladder runs down into total darkness.'),
       by('b', "We're going down there? On purpose?"),
-      by('a', "The tip says follow your nose, and my nose says the cheese is down there."),
+      by('a', "The tip says follow your nose. My nose says down there."),
       beat('{a} climbs down first, and the darkness swallows {a.obj} up.'),
     ] },
     { id: 'itc.st.mh2', when: at('catacombs', 'manhole'), turns: [
       by('a', "It's just a ladder. Ladders are fine."),
       by('b', "It's a ladder into a hole full of skeletons."),
-      by('a', "Well, when you put it like that, it's a lot worse, so let's just stop talking and climb."),
+      by('a', "Okay, don't say it like that. Just climb."),
     ] },
     { id: 'itc.st.tu1', when: at('catacombs', 'tunnels'), turns: [
       beat('The tunnels are narrow and cold, and the walls are stacked from the floor to the ceiling with old bones and rows of grinning skulls.'),
@@ -104,25 +104,25 @@ export default {
     ] },
     { id: 'itc.st.tu3', when: at('catacombs', 'tunnels'), turns: [
       beat('{a} and {b} walk with their noses in the air, turning left whenever the smell gets stronger and right whenever it gets weaker.'),
-      by('b', "We look like two dogs looking for a sandwich."),
-      by('a', "We are two dogs looking for a sandwich, and the sandwich is a million dollars."),
+      by('b', "We look like two dogs sniffing for a sandwich."),
+      by('a', "A million-dollar sandwich. Keep sniffing."),
     ] },
     { id: 'itc.st.de1', when: at('catacombs', 'dead-end'), turns: [
       beat('The tunnel ends in a solid wall of skulls.'),
       by('a', "Dead end."),
-      by('b', "Literally. That's the deadest end I've ever seen."),
+      by('b', "Like, actually dead. Look at all the skulls."),
       beat('They turn around straight away and take the other tunnel, which smells much more strongly of cheese.'),
     ] },
     { id: 'itc.st.de2', when: at('catacombs', 'dead-end'), turns: [
       by('b', "Left or right?"),
       beat('{a} sniffs the left tunnel, then the right one, then the left one again.'),
-      by('a', "Right. Left smells like bones. Right smells like lunch."),
+      by('a', "Right. Left just smells like bones."),
       beat('Right is the correct choice.'),
     ] },
     { id: 'itc.st.ch1', when: at('catacombs', 'the-cheese'), turns: [
       beat('The tunnel opens into a little chamber, and there, stacked up against the bones, is a pile of huge golden cheese wheels.'),
-      by('b', "Cheese! I've never been so happy to see cheese in my whole life."),
-      by('a', "And I've never smelled anything so strong in my whole life. My eyes are watering."),
+      by('b', "Cheese! Oh, I've never been so happy to see cheese."),
+      by('a', "It's so strong. My eyes are watering."),
     ] },
     { id: 'itc.st.ch2', when: at('catacombs', 'the-cheese'), turns: [
       by('a', "One wheel each. The tip's tucked in the middle of the pile."),
@@ -133,17 +133,17 @@ export default {
     { id: 'itc.st.ch3', when: at('catacombs', 'the-cheese'), turns: [
       beat('{b} reads the tip by the light of a wall lamp.'),
       by('b', "\"Ride your cheese down the river to the museum.\" Ride it? It's a cheese."),
-      by('a', "It's a cheese boat now. Come on, start rolling."),
+      by('a', "I guess it's a boat now. Come on, start rolling."),
     ] },
     { id: 'itc.st.wo1', when: at('catacombs', 'way-out'), turns: [
       beat('{a} and {b} roll their wheels up a ramp and out into the night air, right on the stone quay beside the river.'),
-      by('b', "Fresh air! Air that doesn't smell like feet!"),
-      by('a', "It still smells like feet. That's us now. We smell like cheese."),
+      by('b', "Fresh air! Finally!"),
+      by('a', "Not really. I think it's us. We smell like the cheese now."),
     ] },
     { id: 'itc.st.wo2', when: at('catacombs', 'way-out'), turns: [
-      by('a', "There's the river, and there's the museum, all lit up at the end of it."),
+      by('a', "There's the river. And look, the museum, all lit up."),
       beat('{b} gives {b.posAdj} cheese wheel a little pat, as if it were a horse.'),
-      by('b', "Okay, cheese. It's just you and me now. Don't sink."),
+      by('b', "Okay, cheese. Please don't sink."),
     ] },
   ],
 
@@ -151,12 +151,12 @@ export default {
     // ── the caricature: torn up, a fresh sheet ──
     { id: 'itc.sf.sk1', when: at('caricature', 'sketch'), turns: [
       beat('{a} turns the easel round proudly. The artist looks at the drawing for one second and tears it in half.'),
-      by('a', "What? Why? That looks exactly like {b}!"),
+      by('a', "What? Why? That looks just like {b}!"),
       beat('The artist nods, points at the word on the rules card, REALISTIC, crosses it out, and clips a fresh sheet to the easel.'),
     ] },
     { id: 'itc.sf.sk2', when: at('caricature', 'sketch'), turns: [
       by('b', "Why does it look like a potato?"),
-      by('a', "It's not supposed to look like a potato. It's supposed to look like you."),
+      by('a', "It's not a potato. It's you."),
       beat('The artist agrees with neither of them, tears the potato off the easel, and hands {a} a clean sheet.'),
     ] },
     { id: 'itc.sf.sk3', when: at('caricature', 'sketch'), turns: [
@@ -170,16 +170,16 @@ export default {
       beat('They aren\'t, really. The drawing is torn up, and {a} starts again from the top.'),
     ] },
     { id: 'itc.sf.ft2', when: at('caricature', 'four-things'), turns: [
-      by('b', "Don't make the nose that big. Please. My mum is going to watch this."),
+      by('b', "Don't make the nose that big. My mum's going to see this."),
       beat('{a} feels bad and shrinks the nose back down to normal, and the artist rips the whole drawing up on the spot.'),
-      by('a', "Okay. Sorry. Your nose is going to be huge."),
+      by('a', "Okay, sorry. Big nose it is."),
     ] },
 
     // ── the catacombs ──
     { id: 'itc.sf.mh1', when: at('catacombs', 'manhole'), turns: [
       beat('{b} gets three rungs down the ladder, looks down into the dark, and climbs straight back up again.'),
-      by('b', "Nope. I need a minute. I need a big minute."),
-      by('a', "Take your minute, but take it quickly, because I can hear another team coming."),
+      by('b', "Nope. I need a minute."),
+      by('a', "Quick minute. There's another team coming."),
     ] },
     { id: 'itc.sf.mh2', when: at('catacombs', 'manhole'), turns: [
       by('b', "What if the ladder breaks? What if there's a rat?"),
@@ -190,12 +190,12 @@ export default {
       beat('{a} stops in front of a skull with a chip out of its forehead.'),
       by('a', "I know this skull. We've passed this skull."),
       by('b', "How many times?"),
-      by('a', "Three. We've been walking in a circle for ten minutes."),
+      by('a', "Three. We've been going in circles."),
     ] },
     { id: 'itc.sf.tu2', when: at('catacombs', 'tunnels'), turns: [
-      by('b', "I can't smell the cheese anymore. I can't smell anything. My nose has given up."),
+      by('b', "I can't smell the cheese anymore. I can't smell anything."),
       beat('They stand at a fork in the tunnel, sniffing hopelessly, while the faint sound of another team\'s footsteps fades away somewhere ahead.'),
-      by('a', "Follow the footsteps, then. Our noses are useless."),
+      by('a', "Then follow the footsteps."),
     ] },
     { id: 'itc.sf.tu3', when: at('catacombs', 'tunnels'), turns: [
       beat('The wall lamps run out, and for a few long, horrible steps, it is completely dark.'),
@@ -206,18 +206,18 @@ export default {
     { id: 'itc.sf.de1', when: at('catacombs', 'dead-end'), turns: [
       beat('The smell gets stronger and stronger, and then the tunnel ends in a wall of skulls.'),
       by('b', "But the cheese smell is right here!"),
-      by('a', "It's on the other side of the wall. We're going to have to go all the way round."),
+      by('a', "It's behind the wall. We have to go all the way round."),
       beat('They turn back the way they came.'),
     ] },
     { id: 'itc.sf.de2', when: at('catacombs', 'dead-end'), turns: [
       by('a', "Dead end. Again."),
-      by('b', "That's our third dead end. I'm starting to think the skulls are moving the walls."),
+      by('b', "That's three. I swear these walls keep moving."),
       beat('They walk all the way back to the last fork and try again.'),
     ] },
     { id: 'itc.sf.de3', when: at('catacombs', 'dead-end'), turns: [
       beat('{a} runs round a corner at full speed, straight into a wall of bones, and bounces off.'),
       by('a', "Who puts a wall at the end of a tunnel?"),
-      by('b', "Everybody. That's what the end of a tunnel is."),
+      by('b', "That's... kind of what a dead end is."),
     ] },
   ],
 };

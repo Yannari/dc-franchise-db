@@ -25,16 +25,16 @@ export default {
       by('b', "Perfect. Use that."),
     ] },
     { id: 'pmp.st.ls3', when: at('tango', 'lesson'), turns: [
-      by('a', "It's just walking. Fancy walking. We walk all the time."),
+      by('a', "It's basically just walking, right?"),
       beat('The instructor demonstrates. It is not walking. It is something legs are not usually asked to do.'),
       by('b', "That's not walking."),
-      by('a', "That's walking in a much angrier way."),
+      by('a', "Okay. Angry walking."),
     ] },
     { id: 'pmp.st.pr1', when: at('tango', 'practice'), turns: [
       beat('At the barre in front of the mirrors, {a} and {b} practise the steps over and over, counting under their breath.'),
       by('a', "Slow, slow, quick-quick..."),
       by('b', "...turn. And we didn't fall over."),
-      by('a', "We didn't fall over! That's the best we've ever done!"),
+      by('a', "We didn't fall over! That's a first!"),
     ] },
     { id: 'pmp.st.pr2', when: at('tango', 'practice'), turns: [
       by('b', "Watch the mirror. We look good. We actually look good."),
@@ -78,7 +78,7 @@ export default {
     { id: 'pmp.st.vd3', when: at('tango', 'verdict'), turns: [
       beat('The instructor nods, very slightly, and something in his face nearly becomes a smile.'),
       by('a', "Did you see that? He almost smiled."),
-      by('b', "We made a statue almost smile. Take the tip. Run."),
+      by('b', "That's as close as he gets. Take the tip. Let's go."),
     ] },
     // ── the emu ──
     { id: 'pmp.st.bl1', when: at('emu', 'bolas'), turns: [
@@ -89,18 +89,18 @@ export default {
     ] },
     { id: 'pmp.st.bl2', when: at('emu', 'bolas'), turns: [
       by('b', "You've done this before, right?"),
-      by('a', "I've thrown a lot of things. This is just a thing with more things on it."),
+      by('a', "No. But how hard can it be?"),
       beat('{a} spins the bolas over their head, slowly at first, then faster, and doesn\'t let go of it. Progress.'),
     ] },
     { id: 'pmp.st.bl3', when: at('emu', 'bolas'), turns: [
       beat('The rancher shows {a} the throw once, wraps a fence post in one smooth swing, and walks off.'),
       by('a', "He made it look easy."),
-      by('b', "He's been doing it for forty years. You've been doing it for forty seconds."),
+      by('b', "He's been doing this for forty years."),
     ] },
     { id: 'pmp.st.ro1', when: at('emu', 'ride-out'), turns: [
       beat('{a} climbs onto the horse, which turns its head and looks at {a} with deep suspicion.'),
       by('b', "It likes you! I think it likes you!"),
-      by('a', "It doesn't like me. It's making a list."),
+      by('a', "It does not like me."),
       beat('The horse sets off across the grass at a trot, and {a} holds on with everything.'),
     ] },
     { id: 'pmp.st.ro2', when: at('emu', 'ride-out'), turns: [
@@ -109,8 +109,8 @@ export default {
       by('a', "I'm not scaring it! It's scaring me!"),
     ] },
     { id: 'pmp.st.ro3', when: at('emu', 'ride-out'), turns: [
-      by('b', "Ride! You're riding! You're actually riding a horse!"),
-      by('a', "The horse is riding! I'm just here!"),
+      by('b', "You're riding! You're actually riding!"),
+      by('a', "The horse is doing all of it! I'm just holding on!"),
       beat('{a} and the horse thunder across the grass towards the emu, which starts to run.'),
     ] },
     { id: 'pmp.st.th1', when: at('emu', 'throw'), turns: [
@@ -126,8 +126,8 @@ export default {
     ] },
     { id: 'pmp.st.th3', when: at('emu', 'throw'), turns: [
       beat('{a} leans out of the saddle and throws. It\'s a perfect throw. Even the rancher nods.'),
-      by('a', "I'm a natural. I'm a natural at catching birds."),
-      by('b', "Put that on your business card."),
+      by('a', "Who knew I was good at catching birds?"),
+      by('b', "Not me."),
     ] },
     { id: 'pmp.st.lb1', when: at('emu', 'lead-back'), turns: [
       beat('{a} leads the emu back to the fence on a rope. It walks beside the horse like it planned the whole thing.'),
@@ -152,17 +152,17 @@ export default {
     { id: 'pmp.sf.pr1', when: at('tango', 'practice'), turns: [
       beat('Quick-quick turns into quick-quick-ow. {a} has stepped on {b}\'s foot for the fourth time.'),
       by('b', "Same foot! Every time, the same foot!"),
-      by('a', "It's a very easy foot to find!"),
+      by('a', "It's right there! It's always right there!"),
       beat('The instructor taps the floor with his cane. Back to the barre. From the beginning.'),
     ] },
     { id: 'pmp.sf.pr2', when: at('tango', 'practice'), turns: [
       beat('{a} and {b} try the turn at full speed and go round one and a half times instead of once.'),
       beat('They end up facing the mirror, then each other, then the floor, in that order.'),
       by('b', "We turned too much."),
-      by('a', "We turned with passion."),
+      by('a', "We were feeling it."),
     ] },
     { id: 'pmp.sf.pr3', when: at('tango', 'practice'), turns: [
-      by('a', "I can't do the leg flick. My leg doesn't flick. My leg has never flicked."),
+      by('a', "I can't do the leg flick. My leg won't do it."),
       by('b', "Just kick a bit. Kick softly."),
       beat('{a} kicks softly. It still knocks over the instructor\'s little table. The gramophone stops.'),
     ] },
@@ -188,18 +188,18 @@ export default {
     { id: 'pmp.sf.bl1', when: at('emu', 'bolas'), turns: [
       beat('{a} spins the bolas for a practice throw. The cords wrap round {a}\'s own legs, neatly, and {a} sits down in the grass.'),
       by('b', "You caught yourself!"),
-      by('a', "I know! I'm a very slow emu!"),
+      by('a', "I know! I tripped over the rope!"),
     ] },
     { id: 'pmp.sf.bl2', when: at('emu', 'bolas'), turns: [
       by('b', "Careful, careful..."),
       beat('{a} lets go too early. The bolas fly backwards over the fence and land in the rancher\'s hat.'),
-      by('a', "That counts as a hat trick, right?"),
+      by('a', "Does that count?"),
       beat('The rancher hands them back without a word.'),
     ] },
     { id: 'pmp.sf.ro1', when: at('emu', 'ride-out'), turns: [
       beat('The horse stops dead at the edge of the long grass. {a} doesn\'t. {a} goes over its head into the grass.'),
       by('b', "Are you okay?"),
-      by('a', "The horse is okay! The horse is great! I'm in a bush!"),
+      by('a', "The horse is fine! I'm in a bush!"),
       beat('{a} walks the horse back to the fence to start again.'),
     ] },
     { id: 'pmp.sf.ro2', when: at('emu', 'ride-out'), turns: [
@@ -210,7 +210,7 @@ export default {
     { id: 'pmp.sf.th1', when: at('emu', 'throw'), turns: [
       beat('{a} throws. The bolas miss the emu by a mile and wrap round a fence post instead.'),
       by('b', "You caught a post!"),
-      by('a', "It was standing very still! It was easy!"),
+      by('a', "It was standing still! It looked like an emu!"),
       beat('{a} rides back for the ropes. The emu watches, chewing.'),
     ] },
     { id: 'pmp.sf.th2', when: at('emu', 'throw'), turns: [
@@ -223,13 +223,13 @@ export default {
     { id: 'pmp.sf.th3', when: at('emu', 'throw'), turns: [
       beat('The emu runs in a perfect circle round {a}\'s horse while {a} spins the bolas, waiting for a clean throw.'),
       by('a', "It won't stop moving!"),
-      by('b', "That's what running is!"),
+      by('b', "It's an emu! That's what they do!"),
       beat('{a} throws at the wrong moment. Miss. Back for the ropes.'),
     ] },
     { id: 'pmp.sf.lb1', when: at('emu', 'lead-back'), turns: [
       beat('Halfway back, the emu shakes off the cords, gives {a} a look, and sprints off across the plain.'),
       by('b', "It's escaping! Your emu is escaping!"),
-      by('a', "It's not my emu! It doesn't want to be anybody's emu!"),
+      by('a', "It doesn't want to come!"),
       beat('{a} rides after it to catch it all over again.'),
     ] },
     { id: 'pmp.sf.lb2', when: at('emu', 'lead-back'), turns: [

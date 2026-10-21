@@ -7,7 +7,7 @@ export default {
     { id: 'stg.ok1', turns: [
       by('a', "That's one part done. Keep going."),
       by('b', "Is it the hard part?"),
-      by('a', "Every part is the hard part."),
+      by('a', "Every part's the hard part."),
     ] },
     { id: 'stg.ok2', turns: [
       beat('{a} and {b} get through it and stop for one breath, no more.'),

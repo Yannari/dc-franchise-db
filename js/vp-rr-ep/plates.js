@@ -1024,6 +1024,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const EAT_TABLE = REPAINTED.has('task-eating-table') ? 'task-eating-table' : 'task-22422501';
 const FJORD_TARGET = (REPAINTED.has('fjord-target') ? [['target', 80, 86, 7]] : []);
 const CORRAL_EMU = [['emu', 70, 94, 9, { move: 'wander', span: 14, dur: 5 }]];
 const PATROL = [['soldier', 92, 90, 13, { move: 'wander', span: -6, dur: 10 }]];
@@ -1064,6 +1065,24 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'bamboo-wall-hills': {
+    // (the wall from the start, its steep stretch, tower to tower, the last tower and its gong; the banquet table)
+    'wall-race': {
+      'wall-start': { label: 'THE START', plate: ['task-22422301', {}] },
+      'wall-steps': { label: 'THE STEPS', plate: ['task-22422376', { mode: 'run', path: [[2, 72], [40, 85], [72, 95]], fx: 'dust' }],
+        fail: ['task-22422376', { mode: 'run', path: [[24, 80], [34, 83], [38, 84]] }], stamp: 'OUT OF BREATH' },
+      'tower-to-tower': { label: 'TOWER TO TOWER', plate: ['task-22422384', { mode: 'run' }], fail: ['task-22422384', { mode: undefined, prop: undefined }], stamp: 'LEFT BEHIND' },
+      'the-gong': { label: 'THE GONG', plate: ['task-22422303', { mode: 'run', prop: undefined, path: [[6, 93], [30, 93], [52, 93]], deco: [['gong', 80, 93, 10]] }],
+        fail: ['task-22422303', { mode: undefined, prop: undefined, deco: [['gong', 80, 93, 10]] }], stamp: 'TOO LATE' },
+    },
+    delicacies: {
+      'the-bowl': { label: 'THE BOWL', plate: [EAT_TABLE, { mode: undefined, prop: undefined, deco: [['bowl', 50, 93, 9]] }] },
+      'the-eggs': { label: 'THOUSAND-YEAR EGGS', plate: [EAT_TABLE, { mode: 'eat', solo: true, inset: 'WATCHING' }], fail: [EAT_TABLE, { mode: 'eat', solo: true, inset: 'WATCHING' }], stamp: 'SPAT IT OUT' },
+      'the-scorpions': { label: 'FRIED SCORPIONS', plate: [EAT_TABLE, { mode: 'eat', solo: true, inset: 'WATCHING' }], fail: [EAT_TABLE, { mode: 'eat', solo: true, inset: 'WATCHING' }], stamp: 'GAGGED' },
+      'the-soup': { label: 'THE SOUP', plate: [EAT_TABLE, { mode: 'eat', solo: true, inset: 'WATCHING' }], fail: [EAT_TABLE, { mode: 'eat', solo: true, inset: 'WATCHING' }], stamp: 'NEW BOWL' },
+      'bowl-empty': { label: 'EMPTY BOWL', plate: [EAT_TABLE, { mode: undefined, prop: undefined, fx: 'sparkle' }] },
     },
   },
   'great-falls': {

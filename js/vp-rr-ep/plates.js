@@ -1019,6 +1019,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const SLOPE_GOAT = [['goat', 26, 74, 10, { move: 'wander', span: 8, dur: 10 }]];
 const GATOR = [['gator', 70, 82, 16, { move: 'wander', span: -14, dur: 9 }]];
 const POND = repaint('task-park-pond', 'task-park-pond', 'chill-22413471'), POND_G = repaint('task-park-pond', 88, 86);
 const PANDA = [['panda', 60, 66, 9, { move: 'wander', span: 12, dur: 8 }]];
@@ -1050,6 +1051,26 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'snow-peaks': {
+    // (the grinder in the snow at the top; the slope; the finish banner; the dance pads)
+    sausage: {
+      'the-meat': { label: 'THE MEAT', plate: ['present-22413613', { mode: undefined, prop: undefined, judge: null, deco: [['grinder', 64, 92, 10]] }] },
+      'the-grinder': { label: 'CRANK IT', plate: ['present-22413613', { mode: 'build', judge: null }], fail: ['present-22413613', { mode: 'build', judge: null }], stamp: 'SPLIT' },
+      'tie-off': { label: 'TIE IT OFF', plate: ['present-22413613', { mode: undefined, prop: undefined, deco: [['sausage', 66, 92, 18]] }],
+        fail: ['present-22413613', { mode: undefined, prop: undefined, deco: [['sausage', 66, 92, 18]] }], stamp: 'BURST' },
+      'sausage-ride': { label: 'DOWN THE SLOPE', plate: ['present-22413612', { mode: 'ride', deco: SLOPE_GOAT }],
+        fail: ['present-22413612', { mode: 'ride', path: [[-14, 66], [30, 74], [52, 82]], deco: SLOPE_GOAT }], stamp: 'CRASHED' },
+      'bottom-line': { label: 'THE BOTTOM', plate: ['chill-22413853', { local: false, deco: [['sausage', 30, 92, 18]] }] },
+    },
+    'slap-dance': {
+      lederhosen: { label: 'LEDERHOSEN', plate: ['chill-22413853', {}], fail: ['chill-22413853', {}], stamp: 'NO WAY' },
+      'first-verse': { label: 'THE FIRST VERSE', plate: ['task-22414020', { mode: 'dance', solo: true, inset: 'WATCHING' }],
+        fail: ['task-22414020', { mode: 'dance', solo: true, inset: 'WATCHING', fx: 'sparkle' }], stamp: 'BZZT!' },
+      'fast-part': { label: 'THE FAST PART', plate: ['task-22414020', { mode: 'dance', solo: true, inset: 'WATCHING' }],
+        fail: ['task-22414020', { mode: 'dance', solo: true, inset: 'WATCHING', fx: 'sparkle' }], stamp: 'THREE MISSES' },
+      'last-beat': { label: 'THE LAST BEAT', plate: ['task-22414020', { mode: undefined }] },
     },
   },
   'torch-statue-harbour': {

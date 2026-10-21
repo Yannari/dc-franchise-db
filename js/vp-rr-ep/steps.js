@@ -815,6 +815,18 @@ function layout(s, size) {
     s.locals.forEach(nm => { (s.localAt ||= {})[nm] = pts[j++]; });
     s.teams.forEach(id => { marks[id] = pts[j++]; as[id] = 'stand'; });
     if (s.mode === 'act' && plate?.mode) { s.work = plate.mode; s.plan = progressPlan(ps, s.ending); placeWorkProps(s, marks); }
+    // (`solo` in place: one partner does it on the spot, the slap dance on the pad, the other in the box)
+    if (s.mode === 'act' && plate?.solo && s.seg === 'task-stage') {
+      s.away = {};
+      const watching = [];
+      for (const id of s.teams) {
+        const pair = s.members[id] || [];
+        const doer = pair.includes(s.who[0]) ? s.who[0] : pair[0];
+        s.away[id] = pair.filter(x => x !== doer);
+        watching.push(...s.away[id]);
+      }
+      if (watching.length) s.inset = { title: plate.inset || 'WATCHING', people: watching };
+    }
     // a local keeps clear of the work and of what is judged (the rancher stood in front of the emu, 2026-10-20)
     if (s.localAt && (s.workProp || s.judgeAt)) {
       const avoid = [...Object.values(marks).map(m => m[0]), s.workProp?.at[0], s.judgeAt?.at[0], s.donStand?.[0]].filter(x => x != null);

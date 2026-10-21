@@ -2,7 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 15,
-    "totalPlayers": 196,
+    "totalPlayers": 211,
     "description": "Total Drama franchise statistics and season data"
   },
   "seasons": [
@@ -854,6 +854,38 @@
       "status": "Complete",
       "castPhotoPath": "assets/cast/s15-cast.png",
       "emoji": "",
+      "airYear": 2027,
+      "airSlot": "spring"
+    },
+    {
+      "seasonNumber": 1,
+      "format": "the-circle",
+      "seasonId": "ci-1",
+      "title": "The Circle 1",
+      "subtitle": "",
+      "castSize": 15,
+      "episodeCount": 14,
+      "winner": {
+        "name": "Lila",
+        "playerSlug": "lila",
+        "runnerUp": "Sasha"
+      },
+      "winners": [
+        {
+          "name": "Lila",
+          "playerSlug": "lila"
+        }
+      ],
+      "awards": {
+        "fanFavorite": {
+          "name": "Hector",
+          "playerSlug": "hector"
+        }
+      },
+      "theme": "",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/ci-1-cast.png",
+      "emoji": "⭕",
       "airYear": 2027,
       "airSlot": "spring"
     }

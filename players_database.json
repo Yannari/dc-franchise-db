@@ -2,7 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 15,
-    "totalPlayers": 196,
+    "totalPlayers": 211,
     "description": "Total Drama franchise player statistics and performance data"
   },
   "players": [
@@ -17385,6 +17385,1091 @@
         }
       },
       "latestAvatarFile": "sami.png"
+    },
+    {
+      "id": "lila",
+      "name": "Lila",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [
+        "CI1 Winner"
+      ],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 1,
+          "status": "Winner",
+          "exit": null,
+          "exitEpisode": null,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "underdog",
+          "alliances": [
+            "Barbie",
+            "Derek",
+            "Domingo",
+            "Elijah",
+            "Hector",
+            "Sasha"
+          ],
+          "rivalries": [],
+          "unbreakableBonds": [],
+          "betrayed": [],
+          "betrayedBy": [
+            "Derek",
+            "Elijah"
+          ],
+          "showmance": "Luis",
+          "showmanceEnded": "intact",
+          "showmances": [
+            {
+              "partner": "Luis",
+              "ended": "intact"
+            },
+            {
+              "partner": "Mateo",
+              "ended": "intact"
+            }
+          ],
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 3,
+            "firstPlaces": 5,
+            "blocksMade": 2,
+            "catfishSeasons": 0,
+            "profile": "Lila",
+            "mode": "polished",
+            "avgRating": 3.22
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 1,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 3,
+          "totalFirstPlaceRatings": 5,
+          "totalBlocksMade": 2,
+          "totalCatfishSeasons": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "sasha",
+      "name": "Sasha",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 2,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 2,
+          "status": "Finalist",
+          "exit": null,
+          "exitEpisode": null,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "wildcard",
+          "alliances": [
+            "Derek",
+            "Hector",
+            "Lila"
+          ],
+          "rivalries": [
+            "Anais",
+            "Domingo",
+            "Dr.Ines"
+          ],
+          "unbreakableBonds": [],
+          "betrayed": [],
+          "betrayedBy": [],
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 3,
+            "firstPlaces": 2,
+            "blocksMade": 3,
+            "catfishSeasons": 0,
+            "profile": "Sasha",
+            "mode": "edited",
+            "avgRating": 4.22
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 2,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 3,
+          "totalFirstPlaceRatings": 2,
+          "totalBlocksMade": 3,
+          "totalCatfishSeasons": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "derek",
+      "name": "Derek",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 3,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 3,
+          "status": "Finalist",
+          "exit": null,
+          "exitEpisode": null,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "mastermind",
+          "alliances": [
+            "Barbie",
+            "Curtis",
+            "Domingo",
+            "Hector",
+            "Lila",
+            "Sasha"
+          ],
+          "rivalries": [],
+          "unbreakableBonds": [],
+          "betrayed": [
+            "Hector",
+            "Lila"
+          ],
+          "betrayedBy": [],
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 3,
+            "firstPlaces": 1,
+            "blocksMade": 2,
+            "catfishSeasons": 1,
+            "profile": "Brooke",
+            "mode": "catfish",
+            "playedAs": "Brooke",
+            "avgRating": 3.33
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 3,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 3,
+          "totalFirstPlaceRatings": 1,
+          "totalBlocksMade": 2,
+          "totalCatfishSeasons": 1
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "barbie",
+      "name": "Barbie",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 4,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 4,
+          "status": "Finalist",
+          "exit": null,
+          "exitEpisode": null,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "schemer",
+          "alliances": [
+            "Derek",
+            "Domingo",
+            "Elijah",
+            "Hector",
+            "Lila",
+            "Luis",
+            "Mateo"
+          ],
+          "rivalries": [],
+          "unbreakableBonds": [],
+          "betrayed": [],
+          "betrayedBy": [],
+          "showmance": "Wyatt",
+          "showmanceEnded": "intact",
+          "showmances": [
+            {
+              "partner": "Luis",
+              "ended": "broken"
+            },
+            {
+              "partner": "Mateo",
+              "ended": "broken"
+            },
+            {
+              "partner": "Wyatt",
+              "ended": "intact"
+            }
+          ],
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 0,
+            "firstPlaces": 0,
+            "blocksMade": 0,
+            "catfishSeasons": 0,
+            "profile": "Barbie",
+            "mode": "edited",
+            "avgRating": 4.83
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 4,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 0,
+          "totalFirstPlaceRatings": 0,
+          "totalBlocksMade": 0,
+          "totalCatfishSeasons": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "elijah",
+      "name": "Elijah",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 5,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 5,
+          "status": "Finalist",
+          "exit": null,
+          "exitEpisode": null,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "chaos-agent",
+          "alliances": [
+            "Barbie",
+            "Domingo",
+            "Hector",
+            "Lila",
+            "Lorraine"
+          ],
+          "rivalries": [],
+          "unbreakableBonds": [],
+          "betrayed": [
+            "Hector",
+            "Lila"
+          ],
+          "betrayedBy": [],
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 1,
+            "firstPlaces": 1,
+            "blocksMade": 1,
+            "catfishSeasons": 1,
+            "profile": "Kad",
+            "mode": "catfish",
+            "playedAs": "Kad",
+            "avgRating": 3.5
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 5,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 1,
+          "totalFirstPlaceRatings": 1,
+          "totalBlocksMade": 1,
+          "totalCatfishSeasons": 1
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "hector",
+      "name": "Hector",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 6,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 6,
+          "status": "Blocked",
+          "exit": "blocked",
+          "exitEpisode": 13,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "social-butterfly",
+          "alliances": [
+            "Barbie",
+            "Derek",
+            "Elijah",
+            "Lila",
+            "Sasha",
+            "Wyatt"
+          ],
+          "rivalries": [
+            "Domingo",
+            "Ruth"
+          ],
+          "unbreakableBonds": [],
+          "betrayed": [],
+          "betrayedBy": [
+            "Derek",
+            "Elijah"
+          ],
+          "fanFavourite": true,
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 5,
+            "firstPlaces": 3,
+            "blocksMade": 4,
+            "catfishSeasons": 1,
+            "profile": "Nadiya",
+            "mode": "catfish",
+            "playedAs": "Nadiya",
+            "avgRating": 2.89
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 6,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 5,
+          "totalFirstPlaceRatings": 3,
+          "totalBlocksMade": 4,
+          "totalCatfishSeasons": 1
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "luis",
+      "name": "Luis",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 7,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 7,
+          "status": "Blocked",
+          "exit": "blocked",
+          "exitEpisode": 12,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "schemer",
+          "alliances": [
+            "Barbie"
+          ],
+          "rivalries": [],
+          "unbreakableBonds": [],
+          "betrayed": [],
+          "betrayedBy": [],
+          "showmance": "Lila",
+          "showmanceEnded": "intact",
+          "showmances": [
+            {
+              "partner": "Barbie",
+              "ended": "broken"
+            },
+            {
+              "partner": "Lila",
+              "ended": "intact"
+            }
+          ],
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 0,
+            "firstPlaces": 0,
+            "blocksMade": 0,
+            "catfishSeasons": 0,
+            "profile": "Mateo",
+            "mode": "shared",
+            "sharedWith": [
+              "Mateo"
+            ],
+            "avgRating": 7.5
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 7,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 0,
+          "totalFirstPlaceRatings": 0,
+          "totalBlocksMade": 0,
+          "totalCatfishSeasons": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "mateo",
+      "name": "Mateo",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 7,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 7,
+          "status": "Blocked",
+          "exit": "blocked",
+          "exitEpisode": 12,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "showmancer",
+          "alliances": [
+            "Barbie"
+          ],
+          "rivalries": [],
+          "unbreakableBonds": [],
+          "betrayed": [],
+          "betrayedBy": [],
+          "showmance": "Lila",
+          "showmanceEnded": "intact",
+          "showmances": [
+            {
+              "partner": "Barbie",
+              "ended": "broken"
+            },
+            {
+              "partner": "Lila",
+              "ended": "intact"
+            }
+          ],
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 0,
+            "firstPlaces": 0,
+            "blocksMade": 0,
+            "catfishSeasons": 0,
+            "profile": "Mateo",
+            "mode": "shared",
+            "sharedWith": [
+              "Luis"
+            ],
+            "avgRating": 7.5
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 7,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 0,
+          "totalFirstPlaceRatings": 0,
+          "totalBlocksMade": 0,
+          "totalCatfishSeasons": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "domingo",
+      "name": "Domingo",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 9,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 9,
+          "status": "Blocked",
+          "exit": "blocked",
+          "exitEpisode": 11,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "showmancer",
+          "alliances": [
+            "Barbie",
+            "Derek",
+            "Dr.Ines",
+            "Elijah",
+            "Lila"
+          ],
+          "rivalries": [
+            "Anais",
+            "Hector",
+            "Sasha"
+          ],
+          "unbreakableBonds": [],
+          "betrayed": [],
+          "betrayedBy": [],
+          "showmance": "Dr.Ines",
+          "showmanceEnded": "broken",
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 2,
+            "firstPlaces": 1,
+            "blocksMade": 2,
+            "catfishSeasons": 0,
+            "profile": "Domingo",
+            "mode": "polished",
+            "avgRating": 3.71
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 9,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 2,
+          "totalFirstPlaceRatings": 1,
+          "totalBlocksMade": 2,
+          "totalCatfishSeasons": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "lorraine",
+      "name": "Lorraine",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 10,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 10,
+          "status": "Blocked",
+          "exit": "blocked",
+          "exitEpisode": 9,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "perceptive-player",
+          "alliances": [
+            "Elijah"
+          ],
+          "rivalries": [],
+          "unbreakableBonds": [],
+          "betrayed": [],
+          "betrayedBy": [],
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 0,
+            "firstPlaces": 0,
+            "blocksMade": 0,
+            "catfishSeasons": 1,
+            "profile": "Jace",
+            "mode": "catfish",
+            "playedAs": "Jace",
+            "avgRating": 7
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 10,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 0,
+          "totalFirstPlaceRatings": 0,
+          "totalBlocksMade": 0,
+          "totalCatfishSeasons": 1
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "dr-ines",
+      "name": "Dr.Ines",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 11,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 11,
+          "status": "Blocked",
+          "exit": "blocked",
+          "exitEpisode": 8,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "perceptive-player",
+          "alliances": [
+            "Domingo"
+          ],
+          "rivalries": [
+            "Sasha"
+          ],
+          "unbreakableBonds": [],
+          "betrayed": [],
+          "betrayedBy": [],
+          "showmance": "Domingo",
+          "showmanceEnded": "broken",
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 0,
+            "firstPlaces": 0,
+            "blocksMade": 0,
+            "catfishSeasons": 0,
+            "profile": "Dr.Ines",
+            "mode": "edited",
+            "avgRating": 7
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 11,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 0,
+          "totalFirstPlaceRatings": 0,
+          "totalBlocksMade": 0,
+          "totalCatfishSeasons": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "wyatt",
+      "name": "Wyatt",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 12,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 12,
+          "status": "Blocked",
+          "exit": "blocked",
+          "exitEpisode": 5,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "loyal-soldier",
+          "alliances": [
+            "Hector"
+          ],
+          "rivalries": [],
+          "unbreakableBonds": [],
+          "betrayed": [],
+          "betrayedBy": [],
+          "showmance": "Anais",
+          "showmanceEnded": "intact",
+          "showmances": [
+            {
+              "partner": "Anais",
+              "ended": "intact"
+            },
+            {
+              "partner": "Barbie",
+              "ended": "intact"
+            }
+          ],
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 1,
+            "firstPlaces": 1,
+            "blocksMade": 0,
+            "catfishSeasons": 0,
+            "profile": "Wyatt",
+            "mode": "edited",
+            "avgRating": 4.25
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 12,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 1,
+          "totalFirstPlaceRatings": 1,
+          "totalBlocksMade": 0,
+          "totalCatfishSeasons": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "anais",
+      "name": "Anais",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 13,
+          "status": "Blocked",
+          "exit": "blocked",
+          "exitEpisode": 4,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "underdog",
+          "alliances": [],
+          "rivalries": [
+            "Domingo",
+            "Sasha"
+          ],
+          "unbreakableBonds": [],
+          "betrayed": [],
+          "betrayedBy": [],
+          "showmance": "Wyatt",
+          "showmanceEnded": "intact",
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 0,
+            "firstPlaces": 0,
+            "blocksMade": 0,
+            "catfishSeasons": 0,
+            "profile": "Anais",
+            "mode": "polished",
+            "avgRating": 6
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 13,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 0,
+          "totalFirstPlaceRatings": 0,
+          "totalBlocksMade": 0,
+          "totalCatfishSeasons": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "curtis",
+      "name": "Curtis",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 14,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 14,
+          "status": "Blocked",
+          "exit": "blocked",
+          "exitEpisode": 3,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "challenge-beast",
+          "alliances": [
+            "Derek"
+          ],
+          "rivalries": [],
+          "unbreakableBonds": [],
+          "betrayed": [],
+          "betrayedBy": [],
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 0,
+            "firstPlaces": 0,
+            "blocksMade": 0,
+            "catfishSeasons": 0,
+            "profile": "Curtis",
+            "mode": "polished",
+            "avgRating": 4
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 14,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 0,
+          "totalFirstPlaceRatings": 0,
+          "totalBlocksMade": 0,
+          "totalCatfishSeasons": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "ruth",
+      "name": "Ruth",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 15,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 15,
+          "status": "Blocked",
+          "exit": "blocked",
+          "exitEpisode": 2,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "archetype": "villain",
+          "alliances": [],
+          "rivalries": [
+            "Hector"
+          ],
+          "unbreakableBonds": [],
+          "betrayed": [],
+          "betrayedBy": [],
+          "popularity": 0,
+          "ci": {
+            "influencerTimes": 0,
+            "firstPlaces": 0,
+            "blocksMade": 0,
+            "catfishSeasons": 0,
+            "profile": "Ruth",
+            "mode": "edited",
+            "avgRating": 2
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "the-circle",
+          "seasonId": "ci-1"
+        }
+      ],
+      "avgPlacement": 15,
+      "byShow": {
+        "the-circle": {
+          "seasons": 1,
+          "totalInfluencerTimes": 0,
+          "totalFirstPlaceRatings": 0,
+          "totalBlocksMade": 0,
+          "totalCatfishSeasons": 0
+        }
+      },
+      "latestAvatarFile": ""
     }
   ]
 }

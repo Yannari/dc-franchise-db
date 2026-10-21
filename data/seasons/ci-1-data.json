@@ -1,0 +1,1932 @@
+{
+  "seasonNumber": 1,
+  "format": "the-circle",
+  "seasonId": "ci-1",
+  "title": "The Circle 1",
+  "castSize": 15,
+  "episodeCount": 14,
+  "winners": [
+    {
+      "name": "Lila",
+      "playerSlug": "lila",
+      "runnerUp": "Sasha"
+    }
+  ],
+  "winner": {
+    "name": "Lila",
+    "playerSlug": "lila",
+    "vote": null,
+    "runnerUp": "Sasha"
+  },
+  "finalRatings": [
+    {
+      "profile": "Lila",
+      "people": [
+        "Lila"
+      ],
+      "place": 1,
+      "avg": 1.75
+    },
+    {
+      "profile": "Brooke",
+      "people": [
+        "Derek"
+      ],
+      "place": 2,
+      "avg": 2.25
+    },
+    {
+      "profile": "Sasha",
+      "people": [
+        "Sasha"
+      ],
+      "place": 2,
+      "avg": 2.25
+    },
+    {
+      "profile": "Barbie",
+      "people": [
+        "Barbie"
+      ],
+      "place": 4,
+      "avg": 3
+    },
+    {
+      "profile": "Kad",
+      "people": [
+        "Elijah"
+      ],
+      "place": 5,
+      "avg": 3.25
+    }
+  ],
+  "fanFavourite": {
+    "name": "Hector",
+    "playerSlug": "hector"
+  },
+  "catfish": [
+    {
+      "name": "Derek",
+      "profile": "Brooke",
+      "playedAs": "Brooke",
+      "placement": 3
+    },
+    {
+      "name": "Elijah",
+      "profile": "Kad",
+      "playedAs": "Kad",
+      "placement": 5
+    },
+    {
+      "name": "Hector",
+      "profile": "Nadiya",
+      "playedAs": "Nadiya",
+      "placement": 6
+    },
+    {
+      "name": "Lorraine",
+      "profile": "Jace",
+      "playedAs": "Jace",
+      "placement": 10
+    }
+  ],
+  "placements": [
+    {
+      "name": "Lila",
+      "playerSlug": "lila",
+      "placement": 1,
+      "status": "Winner",
+      "exit": null,
+      "exitEpisode": null,
+      "archetype": "underdog",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 3,
+        "firstPlaces": 5,
+        "blocksMade": 2,
+        "catfishSeasons": 0,
+        "profile": "Lila",
+        "mode": "polished",
+        "avgRating": 3.22
+      },
+      "alliances": [
+        "Barbie",
+        "Derek",
+        "Domingo",
+        "Elijah",
+        "Hector",
+        "Sasha"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [
+        "Derek",
+        "Elijah"
+      ],
+      "showmance": "Luis",
+      "showmanceEnded": "intact",
+      "showmances": [
+        {
+          "partner": "Luis",
+          "ended": "intact"
+        },
+        {
+          "partner": "Mateo",
+          "ended": "intact"
+        }
+      ],
+      "popularity": 0,
+      "lead": "During her time on The Circle 1, Lila proved to be a well-connected and resilient competitor, becoming an influencer three times and making two blocks. She worked through overlapping groups with Barbie, Derek, Domingo, Elijah, Hector, and Sasha, while also maintaining a showmance with Luis. Despite being warned about as a threat and having to protect allies without making it obvious, she stayed central to the game through the final ratings. In the end, Lila placed first and won the season, beating Sasha.",
+      "personality": "Lila came across as quick, expressive, and openly reactive, often talking back to the Circle with jokes, panic, or delight in the same breath. She attached strongly to Barbie and Luis, but she also showed a strategic side when she tried to protect Barbie quietly and when she made blunt ranking calls aloud. By the end, she still had the same lively energy, but it was paired with sharper suspicion toward catfish and other players' angles.",
+      "quotes": [
+        {
+          "text": "\"'Alert!' Oh no. Oh yes. Oh no. A NEW PLAYER?\"",
+          "context": "reacting to a new player alert"
+        },
+        {
+          "text": "\"I have to protect Barbie without making it obvious.\"",
+          "context": "thinking through Barbie's safety"
+        },
+        {
+          "text": "\"Catfish! I called it! Did everybody hear me call it?\"",
+          "context": "after a catfish reveal"
+        }
+      ],
+      "trivia": [
+        "Lila described herself as a 23-year-old dental assistant from Phoenix, Arizona, playing as herself with her best photos.",
+        "She repeatedly narrated her ratings aloud, including calling Wyatt last place \"a compliment\" and saying Brooke was \"just not love either.\"",
+        "She greeted the Circle with messages like \"Good morning sunshine ☀️\" and openly cheered on Kad's photo angle."
+      ]
+    },
+    {
+      "name": "Sasha",
+      "playerSlug": "sasha",
+      "placement": 2,
+      "status": "Finalist",
+      "exit": null,
+      "exitEpisode": null,
+      "archetype": "wildcard",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 3,
+        "firstPlaces": 2,
+        "blocksMade": 3,
+        "catfishSeasons": 0,
+        "profile": "Sasha",
+        "mode": "edited",
+        "avgRating": 4.22
+      },
+      "alliances": [
+        "Derek",
+        "Hector",
+        "Lila"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [
+        "Anais",
+        "Domingo",
+        "Dr.Ines"
+      ],
+      "betrayed": [],
+      "betrayedBy": [],
+      "popularity": 0,
+      "lead": "During her time on The Circle 1, Sasha became a finalist after serving as an influencer three times and making three blocks. She was part of Derek's group with Lila, Barbie, Hector, Domingo, and Curtis, Hector's group with Lila, Derek, Barbie, Elijah, and Wyatt, and Lila's group with Derek, Barbie, Elijah, Hector, and Domingo. Her game also included rivalries with Anais, Domingo, and Dr.Ines, which kept her positioned in several of the season's conflicts. She ultimately placed second, losing to Lila.",
+      "personality": "Sasha was anxious, funny, and extremely verbal about her nerves, turning pressure into jokes about rugs, cookies, dots, and dinner-party forks. She often sounded like she was coaching herself through the game in real time, especially when chats slowed down or the ratings got tense. Her humor did not make her passive; when she needed movement, she pushed herself to get into chats and play actively.",
+      "quotes": [
+        {
+          "text": "\"Let's not waste a block on Wyatt!! Blocks are precious. Like the last cookie\"",
+          "context": "arguing against blocking Wyatt"
+        },
+        {
+          "text": "\"I'm pacing so much I've worn a path in the rug.\"",
+          "context": "during a tense moment"
+        },
+        {
+          "text": "\"The dots! The dots are my enemy! Type faster, dots!\"",
+          "context": "waiting on a Circle message"
+        }
+      ],
+      "trivia": [
+        "Sasha was introduced as a 25-year-old stand-up comic from Los Angeles, California, playing as herself with a few changes to her job and age.",
+        "She compared Lila's energy to \"a puppy that found a stick.\"",
+        "Elijah, playing as Kad, called her popularity a problem when he ranked her last."
+      ]
+    },
+    {
+      "name": "Derek",
+      "playerSlug": "derek",
+      "placement": 3,
+      "status": "Finalist",
+      "exit": null,
+      "exitEpisode": null,
+      "archetype": "mastermind",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 3,
+        "firstPlaces": 1,
+        "blocksMade": 2,
+        "catfishSeasons": 1,
+        "profile": "Brooke",
+        "mode": "catfish",
+        "playedAs": "Brooke",
+        "avgRating": 3.33
+      },
+      "alliances": [
+        "Barbie",
+        "Curtis",
+        "Domingo",
+        "Hector",
+        "Lila",
+        "Sasha"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [
+        "Hector",
+        "Lila"
+      ],
+      "betrayedBy": [],
+      "popularity": 0,
+      "lead": "During his time on The Circle 1, Derek reached the finale as a strategic catfish, playing as Brooke. He became an influencer three times and made two blocks while working across groups connected to Barbie, Domingo, Hector, Lila, Sasha, and Curtis. His Brooke profile drew trust from players including Curtis and Barbie, even as he privately worried about Lila's answers and the worsening pressure of rankings. Derek ultimately placed third as a finalist.",
+      "personality": "Derek was seen more through the Brooke profile than through direct confessionals, so his presence came across as careful, controlled, and strategic rather than emotionally open. He built trust with soft messages, but the footage also showed him second-guessing Lila, exiting chats abruptly, and eating ice cream straight from the tub when stressed. His quietness made Brooke seem warm to others while keeping Derek himself comparatively guarded on camera.",
+      "trivia": [
+        "Derek was introduced as a 28-year-old warehouse shift manager from Pittsburgh, Pennsylvania, playing Brooke, a 25-year-old nursing student.",
+        "He made a private chat to tell others he thought Nadiya was playing everyone.",
+        "After one tense stretch, Derek went to the kitchen and ate ice cream straight from the tub."
+      ]
+    },
+    {
+      "name": "Barbie",
+      "playerSlug": "barbie",
+      "placement": 4,
+      "status": "Finalist",
+      "exit": null,
+      "exitEpisode": null,
+      "archetype": "schemer",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Barbie",
+        "mode": "edited",
+        "avgRating": 4.83
+      },
+      "alliances": [
+        "Derek",
+        "Domingo",
+        "Elijah",
+        "Hector",
+        "Lila",
+        "Luis",
+        "Mateo"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Wyatt",
+      "showmanceEnded": "intact",
+      "showmances": [
+        {
+          "partner": "Luis",
+          "ended": "broken"
+        },
+        {
+          "partner": "Mateo",
+          "ended": "broken"
+        },
+        {
+          "partner": "Wyatt",
+          "ended": "intact"
+        }
+      ],
+      "popularity": 0,
+      "lead": "During her time on The Circle 1, Barbie reached the finale by staying socially tied to several major groups. She was connected to Derek's group with Lila, Sasha, Hector, Domingo, and Curtis, Domingo's group with Lila, Derek, Elijah, and Dr.Ines, Elijah's group with Lila, Hector, Domingo, and Lorraine, Hector's group with Lila, Sasha, Derek, Elijah, and Wyatt, and Lila's group with Sasha, Derek, Elijah, Hector, and Domingo. She also had direct ties to Luis and Mateo and a showmance with Wyatt, while questioning whether Brooke was really Brooke. Barbie ultimately placed fourth as a finalist.",
+      "personality": "Barbie was warm, image-conscious, and openly emotional, frequently admitting when the game got to her. She liked being kind, but she also noticed when kindness might be dangerous, especially with Wyatt and Brooke. As the season went on, she became more willing to make bold moves, summing up that shift with a blunt \"Go big or go home.\"",
+      "quotes": [
+        {
+          "text": "\"A game called Night of Endless Heartbreak. That sounds harmless. Circle, open it.\"",
+          "context": "opening a Circle game"
+        },
+        {
+          "text": "\"Is Brooke really Brooke? I'm starting to wonder.\"",
+          "context": "questioning Brooke's identity"
+        },
+        {
+          "text": "\"It's me! It's really me!\"",
+          "context": "at the finale reveal"
+        }
+      ],
+      "trivia": [
+        "Barbie was introduced as a 36-year-old fashion content creator from Atlanta, Georgia, playing as herself with a few changes to her job and fame.",
+        "She had a skincare-focused aside: \"Nobody can see me. Doesn't matter. The skin knows.\"",
+        "She described one image as \"not a cat\" but \"a potato\" and loved it anyway."
+      ]
+    },
+    {
+      "name": "Elijah",
+      "playerSlug": "elijah",
+      "placement": 5,
+      "status": "Finalist",
+      "exit": null,
+      "exitEpisode": null,
+      "archetype": "chaos-agent",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 1,
+        "firstPlaces": 1,
+        "blocksMade": 1,
+        "catfishSeasons": 1,
+        "profile": "Kad",
+        "mode": "catfish",
+        "playedAs": "Kad",
+        "avgRating": 3.5
+      },
+      "alliances": [
+        "Barbie",
+        "Domingo",
+        "Hector",
+        "Lila",
+        "Lorraine"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [
+        "Hector",
+        "Lila"
+      ],
+      "betrayedBy": [],
+      "popularity": 0,
+      "lead": "During his time on The Circle 1, Elijah entered as a catfish, playing Kad, and reached the finale. He became an influencer once and made one block while working through Barbie's group with Lila, Derek, Hector, Luis, Mateo, and Domingo, Domingo's group with Lila, Derek, Barbie, and Dr.Ines, Hector's group with Lila, Sasha, Derek, Barbie, and Wyatt, and Lila's group with Sasha, Derek, Barbie, Hector, and Domingo. He also had a tie to Lorraine, whose profile did not match her in person. Elijah ultimately placed fifth as a finalist.",
+      "personality": "Elijah was seen mostly through the performance of Kad, a high-energy catfish who leaned into athletic bravado, emojis, and playful posing. The limited footage showed him being physical and expressive, squeezing a pillow, dancing with his shoulders, and posting about finding his angle. Because he barely spoke on camera, his personality was defined less by confessionals and more by the exaggerated Kad persona he sent into the Circle.",
+      "trivia": [
+        "Elijah was introduced as a 26-year-old content creator from Toronto and a celebrity, playing Kad, a 22-year-old student athlete.",
+        "As Kad, he asked who was doing push-ups and answered himself: nobody but him.",
+        "He posted the status \"FOUND MY ANGLE, exclamation point\" with sparkle and fire emojis."
+      ]
+    },
+    {
+      "name": "Hector",
+      "playerSlug": "hector",
+      "placement": 6,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 13,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Brooke",
+        "Kad"
+      ],
+      "archetype": "social-butterfly",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "fanFavourite": true,
+      "ci": {
+        "influencerTimes": 5,
+        "firstPlaces": 3,
+        "blocksMade": 4,
+        "catfishSeasons": 1,
+        "profile": "Nadiya",
+        "mode": "catfish",
+        "playedAs": "Nadiya",
+        "avgRating": 2.89
+      },
+      "alliances": [
+        "Barbie",
+        "Derek",
+        "Elijah",
+        "Lila",
+        "Sasha",
+        "Wyatt"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [
+        "Domingo",
+        "Ruth"
+      ],
+      "betrayed": [],
+      "betrayedBy": [
+        "Derek",
+        "Elijah"
+      ],
+      "popularity": 0,
+      "lead": "During his time on The Circle 1, Hector played as Nadiya and became one of the season's most powerful players, serving as an influencer five times and making four blocks. He was connected to groups around Barbie, Derek, Elijah, Lila, Sasha, and Wyatt, while also having rivalries with Domingo and Ruth. His Nadiya profile embraced the idea of being the fun villain and continued to draw attention from allies and skeptics alike. Hector was voted out in episode 13 and placed sixth.",
+      "personality": "Hector's Nadiya was bolder than the man behind the profile was shown to be, openly leaning into villain language and power chats. He seemed comfortable stirring the game through messages, but the footage also caught moments of uncertainty, such as being surprised that people liked his post and squinting at Mateo's profile. Since he barely spoke on camera outside the Nadiya persona, his personality read as strategic performance first and private calculation second.",
+      "trivia": [
+        "Hector was introduced as a 25-year-old wedding photographer from Dearborn, Michigan, playing Nadiya, a 27-year-old model.",
+        "As Nadiya, he sent the message: \"Somebody has to be the villain. Might as well be the fun one.\"",
+        "He once pulled up Mateo's profile and squinted at it."
+      ]
+    },
+    {
+      "name": "Luis",
+      "playerSlug": "luis",
+      "placement": 7,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 12,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Lila",
+        "Nadiya"
+      ],
+      "archetype": "schemer",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Mateo",
+        "mode": "shared",
+        "sharedWith": [
+          "Mateo"
+        ],
+        "avgRating": 7.5
+      },
+      "alliances": [
+        "Barbie"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Lila",
+      "showmanceEnded": "intact",
+      "showmances": [
+        {
+          "partner": "Barbie",
+          "ended": "broken"
+        },
+        {
+          "partner": "Lila",
+          "ended": "intact"
+        }
+      ],
+      "popularity": 0,
+      "lead": "During his time on The Circle 1, Luis entered as part of a two-player profile with Mateo. He was part of Barbie's group with Lila, Derek, Elijah, Hector, Mateo, and Domingo, and he shared a showmance with Lila. His run was defined by the joint profile's late-game loyalty decisions and the pull between strategy and heart. Luis was voted out in episode 12 and placed seventh.",
+      "personality": "Luis was only lightly shown, and most of his presence came through the shared profile with Mateo. In the few moments credited to him, he sounded emotionally invested and disappointed when a day he thought had gone well turned against them. He functioned as the quieter half of the pair, with Mateo more often voicing the profile's decisions aloud.",
+      "trivia": [
+        "Luis entered alongside Mateo as part of a two-player profile.",
+        "He was present when Mateo emphasized making sure Barbie remembered their loyalty.",
+        "His one clearly credited reaction was frustration: he really thought the day had gone well."
+      ]
+    },
+    {
+      "name": "Mateo",
+      "playerSlug": "mateo",
+      "placement": 7,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 12,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Lila",
+        "Nadiya"
+      ],
+      "archetype": "showmancer",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Mateo",
+        "mode": "shared",
+        "sharedWith": [
+          "Luis"
+        ],
+        "avgRating": 7.5
+      },
+      "alliances": [
+        "Barbie"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Lila",
+      "showmanceEnded": "intact",
+      "showmances": [
+        {
+          "partner": "Barbie",
+          "ended": "broken"
+        },
+        {
+          "partner": "Lila",
+          "ended": "intact"
+        }
+      ],
+      "popularity": 0,
+      "lead": "During his time on The Circle 1, Mateo entered as part of a two-player profile with Luis. He was part of Barbie's group with Lila, Derek, Elijah, Hector, Luis, and Domingo, and he shared a showmance with Lila. His late game centered on loyalty to Barbie and an emotional pull toward Lila. Mateo was voted out in episode 12 and placed seventh.",
+      "personality": "Mateo came across as the more openly verbal half of the Luis-and-Mateo profile, often naming their priorities and feelings directly. He mixed dry humor with sincerity, joking that his mom would have liked an unpopular choice while also admitting sadness about not finishing the game. When cornered, he leaned toward emotion over pure strategy, saying he was going where his heart was.",
+      "trivia": [
+        "Mateo entered with Luis as one profile.",
+        "He ranked Barbie number one with the phrase \"Loyalty for loyalty.\"",
+        "After being blocked, he said he was not mad, just sad he did not get to finish it."
+      ]
+    },
+    {
+      "name": "Domingo",
+      "playerSlug": "domingo",
+      "placement": 9,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 11,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Nadiya",
+        "Sasha"
+      ],
+      "archetype": "showmancer",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 2,
+        "firstPlaces": 1,
+        "blocksMade": 2,
+        "catfishSeasons": 0,
+        "profile": "Domingo",
+        "mode": "polished",
+        "avgRating": 3.71
+      },
+      "alliances": [
+        "Barbie",
+        "Derek",
+        "Dr.Ines",
+        "Elijah",
+        "Lila"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [
+        "Anais",
+        "Hector",
+        "Sasha"
+      ],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Dr.Ines",
+      "showmanceEnded": "broken",
+      "popularity": 0,
+      "lead": "During his time on The Circle 1, Domingo became an influencer twice and made two blocks while building several important connections. He worked in Barbie's group with Lila, Derek, Elijah, Hector, Luis, and Mateo, Derek's group with Lila, Sasha, Barbie, Hector, and Curtis, Elijah's group with Lila, Barbie, Hector, and Lorraine, and Lila's group with Sasha, Derek, Barbie, Elijah, and Hector. He also had a showmance with Dr.Ines and rivalries with Anais, Hector, and Sasha, which made his position increasingly contested. Domingo was voted out in episode 11 and placed ninth.",
+      "personality": "Domingo was personable, self-aware, and often funny under pressure, reacting to threats with snacks, hair jokes, and nervous requests for easy games. He valued trust strongly, especially with Dr.Ines, but he also noticed when people were judging him or when Lila seemed to be flirting. His warmth made him easy to like, while his caution made him aware that the Circle's opinion of him could turn quickly.",
+      "quotes": [
+        {
+          "text": "\"If Anais comes here, at least I did my hair.\"",
+          "context": "waiting to see who would visit"
+        },
+        {
+          "text": "\"Okay. If it's me, I'm offering Wyatt a snack. Everybody likes a snack.\"",
+          "context": "thinking through a possible visit"
+        },
+        {
+          "text": "\"You're the only one in here I trust. You know that, right?\"",
+          "context": "speaking privately in the Circle"
+        }
+      ],
+      "trivia": [
+        "Domingo was introduced as a 29-year-old barber from The Bronx, New York, playing as himself with his best photos.",
+        "He hugged a box in episode 3.",
+        "His status once read: \"Taking it slow today. Tomorrow's a new day ☀️\""
+      ]
+    },
+    {
+      "name": "Lorraine",
+      "playerSlug": "lorraine",
+      "placement": 10,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 9,
+      "blockedBy": "audience",
+      "archetype": "perceptive-player",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 1,
+        "profile": "Jace",
+        "mode": "catfish",
+        "playedAs": "Jace",
+        "avgRating": 7
+      },
+      "alliances": [
+        "Elijah"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [],
+      "popularity": 0,
+      "lead": "During her time on The Circle 1, Lorraine entered as Jace, a catfish profile. She was connected to Elijah's group with Lila, Barbie, Hector, and Domingo. Her short run was marked by the contrast between her energetic Jace persona and the later reveal that neither she nor Elijah looked like their profile pictures. Lorraine was voted out in episode 9 and placed tenth.",
+      "personality": "Lorraine's limited screen time showed her as playful and game for the performance of Jace, posting late-night party energy and dancing even when no one could see her. She also had a practical, slightly comic nervousness about being exposed, asking others to keep their voice down when admitting she was Jace. Because she barely spoke on camera, her personality was mostly conveyed through the lively mismatch between Lorraine and the young surf-instructor profile she played.",
+      "trivia": [
+        "Lorraine was introduced as a 52-year-old real-estate photographer from Tampa, Florida, playing Jace, a 24-year-old surf instructor.",
+        "As Jace, she posted the status \"WHO'S STILL UP, question mark\" with eyes and party emojis.",
+        "When Elijah opened the door to her, neither of them looked like a profile picture."
+      ]
+    },
+    {
+      "name": "Dr.Ines",
+      "playerSlug": "dr-ines",
+      "placement": 11,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 8,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Sasha",
+        "Domingo"
+      ],
+      "archetype": "perceptive-player",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Dr.Ines",
+        "mode": "edited",
+        "avgRating": 7
+      },
+      "alliances": [
+        "Domingo"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [
+        "Sasha"
+      ],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Domingo",
+      "showmanceEnded": "broken",
+      "popularity": 0,
+      "lead": "During her time on The Circle 1, Dr.Ines played as herself with changes to her age and job. She was part of Domingo's group with Lila, Derek, Barbie, and Elijah, and she developed a showmance with Domingo. Her position was complicated by Sasha as a rival and by Domingo questioning whether something about her felt real. Dr.Ines was voted out in episode 8 and placed eleventh.",
+      "personality": "Dr.Ines was cautious and hesitant in the footage, often softening her messages with \"um\" and keeping conversations polite. She noticed evasiveness in others, especially when she called \"Whatever\" a dodge rather than a job, but she did not dominate the screen. Her small amount of camera time made her seem guarded, careful, and a little unsure of how much to reveal.",
+      "trivia": [
+        "Dr.Ines was introduced as a 45-year-old pediatrician from Miami, Florida, playing as herself with changes to her age and job.",
+        "One of her messages began, \"Um, hey. Something's been bugging me, dot, dot, dot.\"",
+        "Domingo later questioned whether something about Dr.Ines felt real."
+      ]
+    },
+    {
+      "name": "Wyatt",
+      "playerSlug": "wyatt",
+      "placement": 12,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 5,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Lila",
+        "Nadiya"
+      ],
+      "archetype": "loyal-soldier",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 1,
+        "firstPlaces": 1,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Wyatt",
+        "mode": "edited",
+        "avgRating": 4.25
+      },
+      "alliances": [
+        "Hector"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Anais",
+      "showmanceEnded": "intact",
+      "showmances": [
+        {
+          "partner": "Anais",
+          "ended": "intact"
+        },
+        {
+          "partner": "Barbie",
+          "ended": "intact"
+        }
+      ],
+      "popularity": 0,
+      "lead": "During his time on The Circle 1, Wyatt became an influencer once and built a showmance with Anais. He was part of Hector's group with Lila, Sasha, Derek, Barbie, and Elijah, and was repeatedly treated as a comforting or likable presence by other players. His run included early attention from Anais and a growing connection with Barbie before the game turned against him. Wyatt was voted out in episode 5 and placed twelfth.",
+      "personality": "Wyatt was blunt, loyal, and dryly funny, often responding to Circle chaos with short, plainspoken reactions. He could be tender, especially with Anais, but he also had a skeptical streak, calling out Brooke and immediately suspecting lies when he landed at the bottom. His style was understated compared with louder players, which made his moments of warmth and irritation stand out.",
+      "quotes": [
+        {
+          "text": "\"No. If you get canceled, so what? We can't take you anywhere, but you're still my friend.\"",
+          "context": "answering a loyalty question"
+        },
+        {
+          "text": "\"There is a box at my door. A gift? From Anais?\"",
+          "context": "receiving a gift"
+        },
+        {
+          "text": "\"Bottom? Somebody here is a liar.\"",
+          "context": "reacting to a low position"
+        }
+      ],
+      "trivia": [
+        "Wyatt was introduced as a 47-year-old ranch hand from Miles City, Montana, playing as himself with a change to his age.",
+        "His message to Anais began, \"Checking in on my favorite person.\"",
+        "Hector, playing Nadiya, said talking to Wyatt always made him feel better."
+      ]
+    },
+    {
+      "name": "Anais",
+      "playerSlug": "anais",
+      "placement": 13,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 4,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Domingo",
+        "Sasha"
+      ],
+      "archetype": "underdog",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Anais",
+        "mode": "polished",
+        "avgRating": 6
+      },
+      "alliances": [],
+      "unbreakableBonds": [],
+      "rivalries": [
+        "Domingo",
+        "Sasha"
+      ],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Wyatt",
+      "showmanceEnded": "intact",
+      "popularity": 0,
+      "lead": "During her time on The Circle 1, Anais entered as herself and quickly became tied to Wyatt through a showmance. She also developed rivalries with Domingo and Sasha, with Domingo describing her as someone running the game. Her short run included a first date choice, a painful low rating, and one final attempt to leave with a real moment. Anais was voted out in episode 4 and placed thirteenth.",
+      "personality": "Anais was eager, romantic, and emotionally transparent from the moment she arrived, celebrating compliments and taking rejection visibly hard. She moved quickly toward Wyatt, sending check-ins and promising a real date when the game was over. When cornered, she did not retreat into jokes; she confronted the moment directly and tried to make it meaningful before leaving.",
+      "quotes": [
+        {
+          "text": "\"'A new Player has entered the Circle.' That's me! That's me!\"",
+          "context": "entering the Circle"
+        },
+        {
+          "text": "\"If I'm leaving, I'm leaving with one real moment.\"",
+          "context": "after being blocked"
+        },
+        {
+          "text": "\"When this is over, I'm taking you on a real date.\"",
+          "context": "speaking about Wyatt"
+        }
+      ],
+      "trivia": [
+        "Anais was introduced as a 22-year-old agricultural business student and family dairy-farm worker from Marshfield, Wisconsin.",
+        "Her early status read: \"Full outfit. Nowhere to go. No regrets\".",
+        "She sent Wyatt a message just to say hi and hope he was doing okay, with a heart emoji."
+      ]
+    },
+    {
+      "name": "Curtis",
+      "playerSlug": "curtis",
+      "placement": 14,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 3,
+      "blockedBy": "sacrifice",
+      "archetype": "challenge-beast",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Curtis",
+        "mode": "polished",
+        "avgRating": 4
+      },
+      "alliances": [
+        "Derek"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [],
+      "popularity": 0,
+      "lead": "During his time on The Circle 1, Curtis played as himself and became part of Derek's group with Lila, Sasha, Barbie, Hector, and Domingo. His game was closely tied to Brooke, Derek's catfish profile, whom he saw as his person in the Circle. He also tried to build connections with Nadiya and Anais during his brief stay. Curtis was voted out in episode 3 and placed fourteenth.",
+      "personality": "Curtis was open, friendly, and quick to feel the emotional weight of other players' blocks. He trusted Brooke strongly and reacted with genuine distress when Brooke appeared to be in danger. His humor was gentle rather than cutting, and even when ranking Nadiya in the middle, he framed it as needing more time rather than dismissing her.",
+      "quotes": [
+        {
+          "text": "\"Brooke always knows what to say in there. That's either sweet or scary.\"",
+          "context": "reacting to Brooke"
+        },
+        {
+          "text": "\"No! Not Brooke! Brooke was my person in here!\"",
+          "context": "when Brooke was at risk"
+        },
+        {
+          "text": "\"Nadiya, sweetheart, you're in the middle. I just need more time with you.\"",
+          "context": "ranking Nadiya aloud"
+        }
+      ],
+      "trivia": [
+        "Curtis was introduced as a 35-year-old UPS delivery driver from Philadelphia, Pennsylvania, playing as himself with his best photos.",
+        "He messaged another player to ask the first thing they would do after getting out of the Circle.",
+        "Anais and Curtis hugged in the doorway after his block."
+      ]
+    },
+    {
+      "name": "Ruth",
+      "playerSlug": "ruth",
+      "placement": 15,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 2,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Nadiya",
+        "Brooke"
+      ],
+      "archetype": "villain",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Ruth",
+        "mode": "edited",
+        "avgRating": 2
+      },
+      "alliances": [],
+      "unbreakableBonds": [],
+      "rivalries": [
+        "Hector"
+      ],
+      "betrayed": [],
+      "betrayedBy": [],
+      "popularity": 0,
+      "lead": "During her time on The Circle 1, Ruth played as herself with changes to her age and status. Her short run included a rivalry with Hector, whose Nadiya profile helped move the block toward her. She approached the game as a numbers problem and left warning that players should talk to everybody. Ruth was voted out in episode 2 and placed fifteenth.",
+      "personality": "Ruth was sharp, skeptical, and practical, treating the Circle as a game that required information and numbers. She had a dry sense of humor, especially around suspicious questions and typing dots, but she also pushed back firmly when she felt misunderstood. Her exit made that worldview explicit: talk to everybody, because that was the whole game.",
+      "quotes": [
+        {
+          "text": "\"It's game time. I need numbers.\"",
+          "context": "starting to strategize"
+        },
+        {
+          "text": "\"Don't tell me what I'd have done. You don't know me.\"",
+          "context": "pushing back during her exit episode"
+        },
+        {
+          "text": "\"Talk to everybody. That is the whole game. Good luck.\"",
+          "context": "in her goodbye video"
+        }
+      ],
+      "trivia": [
+        "Ruth was introduced as a 65-year-old retired postal worker from Birmingham, Alabama, playing as herself with changes to her age and status.",
+        "She called the question about lying about age for a date \"suspiciously easy.\"",
+        "She joked about typing dots as \"My favorite\" just before being blocked."
+      ]
+    }
+  ],
+  "votingHistory": [
+    {
+      "episode": 1,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "exits": [],
+      "votes": [],
+      "night": "standard",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 1,
+            "avg": 3
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 2,
+            "avg": 3.429
+          },
+          {
+            "profile": "Ruth",
+            "people": [
+              "Ruth"
+            ],
+            "place": 2,
+            "avg": 3.429
+          },
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 4,
+            "avg": 3.714
+          },
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 5,
+            "avg": 4
+          },
+          {
+            "profile": "Curtis",
+            "people": [
+              "Curtis"
+            ],
+            "place": 6,
+            "avg": 4.571
+          },
+          {
+            "profile": "Wyatt",
+            "people": [
+              "Wyatt"
+            ],
+            "place": 6,
+            "avg": 4.571
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 8,
+            "avg": 5.286
+          }
+        ],
+        "influencers": [
+          "Nadiya",
+          "Brooke"
+        ]
+      }
+    },
+    {
+      "episode": 2,
+      "eliminated": "Ruth",
+      "eliminatedSlug": "ruth",
+      "exits": [
+        {
+          "name": "Ruth",
+          "slug": "ruth",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Ruth",
+          "by": [
+            "Nadiya",
+            "Brooke"
+          ]
+        }
+      ],
+      "votes": [],
+      "night": "standard",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Wyatt",
+            "people": [
+              "Wyatt"
+            ],
+            "place": 1,
+            "avg": 2.143
+          },
+          {
+            "profile": "Curtis",
+            "people": [
+              "Curtis"
+            ],
+            "place": 2,
+            "avg": 3
+          },
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 3,
+            "avg": 3.429
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 4,
+            "avg": 3.857
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 5,
+            "avg": 4
+          },
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 6,
+            "avg": 4.143
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 7,
+            "avg": 4.429
+          }
+        ],
+        "influencers": [
+          "Wyatt",
+          "Nadiya"
+        ]
+      }
+    },
+    {
+      "episode": 3,
+      "eliminated": "Curtis",
+      "eliminatedSlug": "curtis",
+      "exits": [
+        {
+          "name": "Curtis",
+          "slug": "curtis",
+          "verb": "blocked",
+          "channel": "sacrifice",
+          "profile": "Curtis",
+          "by": []
+        }
+      ],
+      "votes": [],
+      "night": "standard",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 1,
+            "avg": 3
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 2,
+            "avg": 3.143
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 3,
+            "avg": 3.429
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 3,
+            "avg": 3.429
+          },
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 5,
+            "avg": 3.571
+          },
+          {
+            "profile": "Anais",
+            "people": [
+              "Anais"
+            ],
+            "place": 6,
+            "avg": 4
+          },
+          {
+            "profile": "Wyatt",
+            "people": [
+              "Wyatt"
+            ],
+            "place": 7,
+            "avg": 4.429
+          }
+        ],
+        "influencers": [
+          "Domingo",
+          "Sasha"
+        ]
+      }
+    },
+    {
+      "episode": 4,
+      "eliminated": "Anais",
+      "eliminatedSlug": "anais",
+      "exits": [
+        {
+          "name": "Anais",
+          "slug": "anais",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Anais",
+          "by": [
+            "Domingo",
+            "Sasha"
+          ]
+        }
+      ],
+      "votes": [],
+      "night": "standard",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 1,
+            "avg": 2.571
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 1,
+            "avg": 2.571
+          },
+          {
+            "profile": "Wyatt",
+            "people": [
+              "Wyatt"
+            ],
+            "place": 3,
+            "avg": 2.857
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 4,
+            "avg": 3.286
+          },
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 5,
+            "avg": 4.286
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 6,
+            "avg": 4.571
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 7,
+            "avg": 4.857
+          }
+        ],
+        "influencers": [
+          "Lila",
+          "Nadiya"
+        ]
+      }
+    },
+    {
+      "episode": 5,
+      "eliminated": "Wyatt",
+      "eliminatedSlug": "wyatt",
+      "exits": [
+        {
+          "name": "Wyatt",
+          "slug": "wyatt",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Wyatt",
+          "by": [
+            "Lila",
+            "Nadiya"
+          ]
+        }
+      ],
+      "votes": [],
+      "night": null
+    },
+    {
+      "episode": 6,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "exits": [],
+      "votes": [],
+      "night": null
+    },
+    {
+      "episode": 7,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "exits": [],
+      "votes": [],
+      "night": "plead",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 1,
+            "avg": 2.875
+          },
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 2,
+            "avg": 3.25
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 3,
+            "avg": 3.375
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 3,
+            "avg": 3.375
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 5,
+            "avg": 3.5
+          },
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 6,
+            "avg": 4.125
+          },
+          {
+            "profile": "Dr.Ines",
+            "people": [
+              "Dr.Ines"
+            ],
+            "place": 7,
+            "avg": 4.875
+          }
+        ],
+        "influencers": [
+          "Sasha",
+          "Domingo"
+        ]
+      }
+    },
+    {
+      "episode": 8,
+      "eliminated": "Dr.Ines",
+      "eliminatedSlug": "dr-ines",
+      "exits": [
+        {
+          "name": "Dr.Ines",
+          "slug": "dr-ines",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Dr.Ines",
+          "by": [
+            "Sasha",
+            "Domingo"
+          ]
+        }
+      ],
+      "votes": [],
+      "night": "audience-block",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 1,
+            "avg": 3.25
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 2,
+            "avg": 3.5
+          },
+          {
+            "profile": "Kad",
+            "people": [
+              "Elijah"
+            ],
+            "place": 3,
+            "avg": 3.75
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 3,
+            "avg": 3.75
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 5,
+            "avg": 4
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 5,
+            "avg": 4
+          },
+          {
+            "profile": "Jace",
+            "people": [
+              "Lorraine"
+            ],
+            "place": 7,
+            "avg": 4.75
+          },
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 8,
+            "avg": 5.5
+          }
+        ],
+        "influencers": [
+          "Lila",
+          "Brooke"
+        ]
+      }
+    },
+    {
+      "episode": 9,
+      "eliminated": "Lorraine",
+      "eliminatedSlug": "lorraine",
+      "exits": [
+        {
+          "name": "Lorraine",
+          "slug": "lorraine",
+          "verb": "blocked",
+          "channel": "audience",
+          "profile": "Jace",
+          "by": []
+        }
+      ],
+      "votes": [],
+      "night": null
+    },
+    {
+      "episode": 10,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "exits": [],
+      "votes": [],
+      "night": "standard",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 1,
+            "avg": 3.143
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 1,
+            "avg": 3.143
+          },
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 3,
+            "avg": 3.571
+          },
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 3,
+            "avg": 3.571
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 5,
+            "avg": 3.714
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 6,
+            "avg": 3.857
+          },
+          {
+            "profile": "Kad",
+            "people": [
+              "Elijah"
+            ],
+            "place": 7,
+            "avg": 5.286
+          },
+          {
+            "profile": "Mateo",
+            "people": [
+              "Luis",
+              "Mateo"
+            ],
+            "place": 8,
+            "avg": 5.714
+          }
+        ],
+        "influencers": [
+          "Nadiya",
+          "Sasha"
+        ]
+      }
+    },
+    {
+      "episode": 11,
+      "eliminated": "Domingo",
+      "eliminatedSlug": "domingo",
+      "exits": [
+        {
+          "name": "Domingo",
+          "slug": "domingo",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Domingo",
+          "by": [
+            "Nadiya",
+            "Sasha"
+          ]
+        }
+      ],
+      "votes": [],
+      "night": "secret",
+      "ratings": {
+        "final": false,
+        "hidden": true,
+        "results": [
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 1,
+            "avg": 2.667
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 2,
+            "avg": 3
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 3,
+            "avg": 3.5
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 3,
+            "avg": 3.5
+          },
+          {
+            "profile": "Kad",
+            "people": [
+              "Elijah"
+            ],
+            "place": 3,
+            "avg": 3.5
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 6,
+            "avg": 3.667
+          },
+          {
+            "profile": "Mateo",
+            "people": [
+              "Luis",
+              "Mateo"
+            ],
+            "place": 7,
+            "avg": 4.667
+          }
+        ],
+        "influencers": [
+          "Lila",
+          "Nadiya"
+        ]
+      }
+    },
+    {
+      "episode": 12,
+      "eliminated": "Luis",
+      "eliminatedSlug": "luis",
+      "exits": [
+        {
+          "name": "Luis",
+          "slug": "luis",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Mateo",
+          "by": [
+            "Lila",
+            "Nadiya"
+          ],
+          "secret": true
+        },
+        {
+          "name": "Mateo",
+          "slug": "mateo",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Mateo",
+          "by": [
+            "Lila",
+            "Nadiya"
+          ],
+          "secret": true
+        }
+      ],
+      "votes": [],
+      "night": "standard",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 1,
+            "avg": 2.8
+          },
+          {
+            "profile": "Kad",
+            "people": [
+              "Elijah"
+            ],
+            "place": 1,
+            "avg": 2.8
+          },
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 1,
+            "avg": 2.8
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 4,
+            "avg": 3
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 5,
+            "avg": 3.2
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 6,
+            "avg": 3.4
+          }
+        ],
+        "influencers": [
+          "Brooke",
+          "Kad"
+        ]
+      }
+    },
+    {
+      "episode": 13,
+      "eliminated": "Hector",
+      "eliminatedSlug": "hector",
+      "exits": [
+        {
+          "name": "Hector",
+          "slug": "hector",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Nadiya",
+          "by": [
+            "Brooke",
+            "Kad"
+          ]
+        }
+      ],
+      "votes": [],
+      "night": null,
+      "ratings": {
+        "final": true,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 1,
+            "avg": 1.75
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 2,
+            "avg": 2.25
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 2,
+            "avg": 2.25
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 4,
+            "avg": 3
+          },
+          {
+            "profile": "Kad",
+            "people": [
+              "Elijah"
+            ],
+            "place": 5,
+            "avg": 3.25
+          }
+        ],
+        "influencers": []
+      }
+    },
+    {
+      "episode": 14,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "exits": [],
+      "votes": [],
+      "night": null
+    }
+  ],
+  "twists": [
+    {
+      "episode": 2,
+      "type": "ci-ride-or-die",
+      "name": "Ride or Die"
+    },
+    {
+      "episode": 2,
+      "type": "ci-arrive-date",
+      "name": "A Date With One of Three"
+    },
+    {
+      "episode": 3,
+      "type": "ci-arrive-date",
+      "name": "A Date With One of Three"
+    },
+    {
+      "episode": 4,
+      "type": "ci-arrive-party",
+      "name": "The Newcomer Throws a Party"
+    },
+    {
+      "episode": 5,
+      "type": "ci-arrive-pair",
+      "name": "Arrive as a Pair"
+    },
+    {
+      "episode": 7,
+      "type": "ci-save-then-plead",
+      "name": "Save Then Plead"
+    },
+    {
+      "episode": 8,
+      "type": "ci-audience-block",
+      "name": "America's Block"
+    },
+    {
+      "episode": 11,
+      "type": "ci-secret-influencers",
+      "name": "Secret Influencers"
+    }
+  ],
+  "emoji": "⭕",
+  "exitVerbs": [
+    "blocked"
+  ],
+  "gameHistory": [
+    {
+      "n": 1,
+      "word": "Episode",
+      "title": "Profiles and first ratings",
+      "prose": "The original players entered The Circle and set up a mix of honest profiles, polished versions of themselves, and outright catfish, with Derek playing as Brooke and Hector playing as Nadiya. Early chats were cautious, with Brooke probing Curtis, Nadiya working quickly to get close to Domingo, and Ruth, Wyatt, and others testing where they stood. A private plan formed against Lila, while Wyatt noticed enough to know a plan existed. The game For Real For Real gave the players their first chance to read each other under pressure and left several of them, especially Ruth and Nadiya, with new suspicions. In the first ratings, players balanced genuine connections against threat management, and Nadiya ended the round with power."
+    },
+    {
+      "n": 2,
+      "word": "Episode",
+      "title": "Ruth goes home",
+      "prose": "With Brooke and Nadiya in power, the Influencers treated the first blocking as a strategic move rather than a personal one. Brooke argued that Ruth was too well liked to keep, and Nadiya accepted that somebody had to take the blame for removing a social threat. Ruth was blocked, then left with a goodbye message that admitted some details of her profile were changed and warned the others about Brooke. Brooke immediately tried to control the damage by claiming Nadiya was not on the others' side, while Nadiya began worrying about where Wyatt fit into the fallout. Anais entered as a new player, Nadiya tried to reach her first, and the rest of the round was shaped by awards, flirting, suspicion of Nadiya, and another tense set of ratings."
+    },
+    {
+      "n": 3,
+      "word": "Episode",
+      "title": "Curtis leaves quietly",
+      "prose": "The block was framed around strong social players and who could become loyal afterward, with Lila discussed as someone worth keeping. Curtis was blocked, despite several players fearing that Brooke or another visible threat could be the target. His goodbye video confirmed he had played as himself with his best side forward, and he specifically told Brooke he wanted her in the final. Brooke took Curtis's exit hard, posting about trying to stay positive while also keeping track of who had held power. Barbie then entered, watched the group before fully joining it, and the next ratings showed Brooke that she still had people willing to back her."
+    },
+    {
+      "n": 4,
+      "word": "Episode",
+      "title": "Anais is targeted",
+      "prose": "Sasha pushed to protect Nadiya and argued that Wyatt was not worth using a block on, but Domingo steered the decision toward Anais. Anais was blocked because she was seen as one of the strongest players in the game, and Domingo accepted that he had made a winning move rather than a friendly one. Anais's goodbye video confirmed she was real, thanked Sasha, and warned everyone to watch Domingo. Dr.Ines entered afterward and immediately had to work out where she fit into an already connected group. The round settled into new one-on-one chats, suspicion around Nadiya, Barbie bonding with Lila, and ratings in which several players used the bottom spot to target people they saw as threats or unknowns."
+    },
+    {
+      "n": 5,
+      "word": "Episode",
+      "title": "Wyatt is exposed",
+      "prose": "Lila opened the blocking discussion by naming Brooke as a dangerous front-runner, but Nadiya pushed the idea that Wyatt would be unsafe to leave in power. Wyatt was blocked, with the public explanation again focusing on a player being too loved and too dangerous to keep. He chose to visit Barbie before leaving, then revealed in his goodbye video that his face and name were real but some details were kept back. Wyatt also warned everyone to watch Nadiya, leaving Hector guilty because Nadiya had helped send him out. Kad and Jace then entered as new catfish profiles, and the round shifted into fresh flirting, a roast, and a party where old suspicions mixed with new connections."
+    },
+    {
+      "n": 6,
+      "word": "Episode",
+      "title": "Risky answers linger",
+      "prose": "The players tried to reset after a rough night with status updates and morning chat, but even harmless messages were read for possible digs. Jace struggled to get traction in one-on-one conversation, while Dr.Ines grew closer to Domingo but noticed when he dodged a question. Kad created The Boys with Jace and Domingo, keeping the tone light before warning them to watch Lila. Risky Quizness put the players' past choices on display, and Lila's answers stood out enough that both Dr.Ines and Brooke kept thinking about them. A later party briefly lifted the mood, though Dr.Ines admitted she was having a hard day and Nadiya found the sudden kindness suspicious."
+    },
+    {
+      "n": 7,
+      "word": "Episode",
+      "title": "Inner Circle forms",
+      "prose": "Brooke, Domingo, and Barbie all posted vulnerable status updates, and Nadiya enjoyed being near the top of the Newsfeed. Domingo continued building personal connections, including a flirtier bond, while Brooke directly asked Barbie if she had her top spot and treated the answer as a survival vote. Jace kept trying to entertain and connect, Sasha flirted openly, and Dr.Ines asked for support ahead of the ratings. Kad created The Inner Circle and tried to set up a structure where others would compete for influence inside it. The ratings left Dr.Ines at the bottom, shocking one apartment into a scream and another into silence."
+    },
+    {
+      "n": 8,
+      "word": "Episode",
+      "title": "Dr.Ines is blocked",
+      "prose": "After the ratings, Sasha used the blocking discussion to argue that Barbie was running the game, while others tried to protect their own relationships. Dr.Ines was blocked because the Influencers said they could not shake the feeling that she was not who she claimed to be. Her goodbye video admitted that her listed job was not exactly true, thanked Domingo for making the game feel like home, and warned that somebody in the Circle was lying. Mateo entered with Luis behind the profile, immediately shifting attention as a new vote and a new possible ally. The round ended with Circle Scenarios, a failed push to put Domingo at the bottom, and ratings that made Brooke an Influencer."
+    },
+    {
+      "n": 9,
+      "word": "Episode",
+      "title": "Jace is revealed",
+      "prose": "Brooke used her power to protect Nadiya and Sasha while arguing that Jace needed to go. Lorraine was blocked as Jace, accepted that being herself through the profile had not been enough, and chose to visit Kad. When she arrived, both Lorraine and Elijah realized neither of them looked like their profile, and Lorraine's goodbye video revealed Jace was a catfish while warning everyone that Kad was one too. Kad tried to redirect the warning by claiming his visit had warned him about Lila and Brooke, while the remaining players processed the loss through status posts and private chats. A gift exchange and party followed, but the night still carried paranoia about who was protecting whom and who was lying."
+    },
+    {
+      "n": 10,
+      "word": "Episode",
+      "title": "Alliance breaks down",
+      "prose": "Nadiya thanked Sasha for her support during Night of Endless Heartbreak and proposed that they officially stick together. Brooke kept working her social ties, while Mateo and Luis struggled to keep one voice behind their profile and openly argued over how Mateo should sound. Nadiya tried to build a group that could run the game, but Mateo refused to move against Lila, showing that the alliance would not be simple. In the ratings, several players placed Mateo at the bottom, while Kad and Brooke continued targeting each other as threats. Afterward, The Inner Circle voted Nadiya out of her own alliance, and Brooke warned Sasha that some players had ended up much lower than they should have."
+    },
+    {
+      "n": 11,
+      "word": "Episode",
+      "title": "Domingo becomes target",
+      "prose": "Nadiya and Sasha handled the blocking, with Nadiya wanting to keep Brooke useful and refusing to consider Lila. Sasha argued that Domingo was like the final boss and that a universally liked player had to be removed. Nadiya chose not to fight her and Domingo was blocked. His goodbye video confirmed he was real, warned that somebody was lying, and specifically told the others to watch Sasha. The rest of the round moved through emotional posts, renewed chats, the Batter Up pancake challenge, a party, family messages, and ratings where players knew the next Influencers could be anyone."
+    },
+    {
+      "n": 12,
+      "word": "Episode",
+      "title": "Mateo was two",
+      "prose": "The blocking conversation cleared Sasha quickly, and the players moved toward removing Mateo. Luis and Mateo were blocked, ending their shared run behind the Mateo profile. Mateo chose to visit Lila, where she learned in person that she had been talking to two siblings, and their goodbye video revealed the same to everyone. After the reveal, Brooke quietly missed Mateo, Sasha sought new security, Kad tried to formalize teams, and Nadiya admitted she liked Kad beyond the game. The ratings that followed were the most openly endgame-focused yet, with Brooke putting Barbie first, Sasha trusting Brooke, and Kad putting Sasha last because everybody loved her."
+    },
+    {
+      "n": 13,
+      "word": "Episode",
+      "title": "Nadiya unmasked",
+      "prose": "Brooke and Kad entered the blocking discussion with different targets, as Brooke argued strategically for Nadiya while Kad was angry at Barbie. Kad eventually announced that Nadiya was being blocked because she was too strong to face in the final, and Hector was blocked. Hector felt betrayed by people he had trusted, especially Brooke, and apologized during his final visit before revealing that Nadiya had been played with a family member's photos. His goodbye video told the truth, promised Lila coffee outside the game, and warned everyone that Brooke was not who they thought. Brooke then tried to repair the damage one person at a time before the final ratings, while Kad pushed The Fam to rate Brooke low and the finalists made their last strategic choices."
+    },
+    {
+      "n": 14,
+      "word": "Episode",
+      "title": "Final face reveal",
+      "prose": "The finalists sent their last messages to The Circle, with Lila thanking the game for Sasha, Sasha saying she was leaving with Brooke, Kad admitting to Lila that only the face had been false, and Brooke confessing fear that Sasha would soon learn the truth. They left their apartments one by one and met face to face, where Elijah revealed he had played Kad using his cousin's photos and Derek revealed he had been Brooke all along. The finalists reacted with shock, but Sasha still called Derek her person, Lila accepted that his messages had been real, and Barbie embraced both Derek and Elijah. The blocked players then joined them, leading to reunions, apologies, and jokes about the lies everyone had told. The finale ended with the room celebrating Lila's win, while she thanked her family and told Sasha she loved her."
+    }
+  ]
+}

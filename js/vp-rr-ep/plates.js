@@ -1038,6 +1038,24 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'ice-floe': {
+    // (the snow at the ice edge where the rings are buried; the open water and the tusks; the snow blocks, the half-built
+    // igloo, the finished one)
+    narwhal: {
+      'dig-ring': { label: 'DIG FOR A RING', plate: ['task-9444616', {}], fail: ['task-9444616', {}], stamp: 'NO RING' },
+      'the-line': { label: 'THE LINE', plate: ['task-9444731', { mode: undefined, prop: undefined }] },
+      'the-throw': { label: 'THE THROW', plate: ['task-9444731', { mode: 'toss' }], fail: ['task-9444731', { mode: 'toss' }], stamp: 'SPLASH' },
+      ringed: { label: 'RINGED!', plate: ['task-9444731', { mode: undefined, prop: undefined, deco: [['ring', 24, 68, 3]] }] },
+    },
+    igloo: {
+      'saw-blocks': { label: 'SAW THE BLOCKS', plate: ['task-9444866', { people: undefined, g: 97, x: [34, 94], deco: [['saw', 70, 97, 5]] }],
+        fail: ['task-9444866', { people: undefined, g: 97, x: [34, 94], deco: [['saw', 70, 97, 5]] }], stamp: 'CRACKED' },
+      'first-ring': { label: 'THE FIRST RING', plate: ['task-9444815', { mode: 'saw', judge: null }], fail: ['task-9444815', { mode: 'saw', judge: null }], stamp: 'COLLAPSED' },
+      'the-dome': { label: 'THE DOME', plate: ['task-9444815', { mode: 'saw' }], fail: ['task-9444815', { mode: undefined, prop: undefined, judge: null, deco: [['blocks', 30, 57, 7], ['blocks', 42, 57, 7]] }], stamp: 'CAVED IN' },
+      'local-test': { label: 'THE TEST', plate: ['chill-9444869', {}], fail: ['chill-9444869', {}], stamp: 'GAP!' },
+      'igloo-tip': { label: 'THE TIP', plate: ['task-9445014', {}] },
+    },
+  },
   'prairie-ranch': {
     // (the long table on the cliff top with its pots; the barn, wide by the hay and close at the bull)
     beans: {

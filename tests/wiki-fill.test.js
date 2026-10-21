@@ -216,3 +216,23 @@ describe('the round ledger', () => {
     expect(rounds[0].episode).toMatch(/LIVING ROOM/);
   });
 });
+
+// The user, 2026-10-21: the wiki said a catfish "barely spoke on camera outside the Nadiya persona". The Circle's
+// transcript labels speakers `HECTOR (as NADIYA), aloud:` and messages `▸ NADIYA:`, and none of it was read.
+describe('The Circle transcript', () => {
+  const ep = { episode: 1, transcript: [
+    '  HECTOR (as NADIYA), aloud: "Keep it cool. Sound sure."',
+    '  HECTOR (as NADIYA) dictates: Message: I think we should team up. Send.',
+    '      ▸ NADIYA: I think we should team up',
+    '      ▸ LILA: Officially? Okay',
+    '  LILA: "That felt good."',
+    '  LUIS (with MATEO): "Ask about the hometown."',
+  ].join('\n') };
+  it('files a catfish\'s lines and messages under the person, and a shared profile\'s under whoever spoke', () => {
+    const t = Object.fromEntries(sliceCastThreads([ep], ['Hector', 'Lila', 'Luis', 'Mateo'], { aliases: { Nadiya: 'Hector' } }).map(x => [x.name, x]));
+    expect(t.Hector.totals.lines).toBe(3);
+    expect(t.Lila.totals.lines).toBe(2);
+    expect(t.Luis.totals.lines).toBe(1);
+    expect(t.Hector.lines.map(l => l.text)).toContain('Keep it cool. Sound sure.');
+  });
+});

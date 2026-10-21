@@ -83,10 +83,14 @@ export function ciLedgerRecord(rows = [], state = null, { cast = null, winners =
       .flatMap(peopleOfAll).filter(o => !allies.includes(o));
     // A romance both felt and acted on; a kiss at the door is acting on it, flirts or not.
     // A couple sharing a profile flirts as a game move: their romance is each other.
-    const showmances = others(h).filter(o => !romanticPair(state, h) && !romanticPair(state, o)
+    // Two people behind one profile: the romance is the face's, the name and pictures it was had with, never
+    // both of them (the user, 2026-10-21: the site named Luis as Lila's showmance; it was Mateo, his brother).
+    const lover = o => { const p = state.profiles[o]; return p?.players.length > 1 ? [p.roles?.face || p.players[0]] : peopleOfAll(o); };
+    const mine = !(state.profiles[h]?.players.length > 1) || lover(h).includes(n);
+    const showmances = (mine ? others(h) : []).filter(o => !romanticPair(state, h) && !romanticPair(state, o)
       && ((rel(h, o, 'attraction') >= ROMANCE_ATTRACTION && rel(o, h, 'attraction') >= ROMANCE_ATTRACTION
         && (flirts.get(pairKey(h, o)) || 0) >= ROMANCE_FLIRTS) || kissed.has(pairKey(h, o))))
-      .flatMap(o => peopleOfAll(o).map(partner => ({ partner,
+      .flatMap(o => lover(o).map(partner => ({ partner,
         ended: (met.has(h) && met.has(o)) || kissed.has(pairKey(h, o)) ? 'intact' : 'breakup' })));
     rec.players[n] = {
       placement: personPlace.get(n) || 0,

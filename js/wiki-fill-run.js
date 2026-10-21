@@ -253,6 +253,10 @@ export function attachRecords(doc, threads, format) {
     if (!row) continue;
     const bits = [`placed ${row.placement}`];
     if (row.status) bits.push(String(row.status).toLowerCase());
+    // Who they played behind, said outright so the writer never mistakes the persona for a second person
+    // (the user, 2026-10-21: "idk if ... the ai can differentiate the real person from the catfish").
+    if (row.ci?.mode === 'catfish' && row.ci.profile) bits.push(`played the whole season as the catfish profile "${row.ci.profile}" (a fake identity: messages signed ${row.ci.profile} were typed by ${row.name}, and the room only learned the truth when ${row.name} left or at the finale)`);
+    else if (row.ci?.sharedWith?.length) bits.push(`shared one profile${row.ci.profile ? `, "${row.ci.profile}",` : ''} with ${row.ci.sharedWith.join(' and ')}: messages from that profile were written by both of them`);
     // Only what actually happened: a zero is not a fact worth a clause, and a
     // list of them is how a paragraph ends up about what somebody did not do.
     for (const [path, label] of statPaths) {
@@ -344,7 +348,11 @@ export async function runCharacterFill({ season, format, root = '', onStatus = (
       + 'has not been deployed since the mode was added)' };
   }
 
-  const threads = sliceCastThreads(episodes, cast);
+  // The Circle: a message is signed with the profile it went out under, which for a catfish is
+  // somebody else's name. Mapped back to the person, so their thread has their own words in it.
+  const aliases = Object.fromEntries((doc.placements || []).filter(p => p.ci?.mode === 'catfish' && p.ci.profile && p.ci.profile !== p.name)
+    .map(p => [p.ci.profile, p.name]));
+  const threads = sliceCastThreads(episodes, cast, { aliases });
 
   attachRecords(doc, threads, format);
 

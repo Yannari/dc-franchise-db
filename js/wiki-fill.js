@@ -53,6 +53,23 @@ export function readTranscript(text) {
       continue;
     }
 
+    // THE CIRCLE'S TRANSCRIPT (js/ci/transcript.js blockText) labels a speaker by the
+    // real person and the profile they play: `HECTOR (as NADIYA), aloud: "..."`,
+    // `LUIS (with MATEO): "..."`, `LILA (on video): "..."`, and a message by the
+    // profile it went out under, `▸ NADIYA: text`. The plain reading below takes
+    // none of them, so a catfish's whole season read as somebody who "barely spoke
+    // on camera" (the user, 2026-10-21). The person is who said it; a message is
+    // filed under its profile, which sliceCastThreads maps back to the person.
+    const ci0 = line.match(/^([A-Z][A-Z'\-]+(?: [A-Z][A-Z'\-]+)?)( \((?:as|with|for) [^)]*\))?(, aloud| \(on video\)| dictates| posts)?:\s*(.+)$/);
+    // (only a Circle label: a profile in brackets, a way of saying it, or a quoted line; any other show's
+    // `Name: words` keeps the plain reading)
+    const ci = ci0 && (ci0[2] || ci0[3] || /^"/.test(ci0[4])) ? [ci0[0], ci0[1], ci0[4]] : null;
+    const msg = !ci && line.match(/^▸\s*([^:]+):\s*(.+)$/);
+    if (ci || msg) {
+      const m = ci || msg;
+      out.push({ kind: msg ? 'message' : 'dialogue', who: m[1].trim(), text: m[2].trim().replace(/^"(.*)"$/, '$1') });
+      continue;
+    }
     const dlg = line.match(DIALOGUE);
     if (dlg) {
       const who = dlg[1].trim();
@@ -113,15 +130,22 @@ function spread(items, cap) {
  */
 export function sliceCastThreads(episodes = [], cast = [], {
   confPerPlayer = 14, linePerPlayer = 16, mentionPerPlayer = 6,
+  // A name somebody spoke or typed under that is not their own: The Circle's profiles ({ "nadiya": "Hector" }).
+  aliases = {},
 } = {}) {
   const byName = new Map(cast.map(n => [n.toLowerCase(), n]));
+  // Also a person's first name alone, the way the Circle's transcript labels them.
+  for (const n of cast) { const f = n.split(' ')[0].toLowerCase(); if (!byName.has(f)) byName.set(f, n); }
+  const byAlias = new Map(Object.entries(aliases).map(([k, v]) => [k.toLowerCase(), v]));
   const threads = new Map(cast.map(n => [n, { name: n, confessionals: [], lines: [], mentions: [] }]));
 
   for (const ep of episodes) {
     const num = ep.episode ?? ep.num ?? null;
     for (const beat of readTranscript(ep.transcript || ep.text || '')) {
       if (beat.who) {
-        const real = byName.get(beat.who.toLowerCase());
+        const low = beat.who.toLowerCase();
+        // A message goes out under the profile: the person behind it typed it.
+        const real = beat.kind === 'message' ? (byAlias.get(low) || byName.get(low)) : byName.get(low);
         if (!real) continue;                       // a host, or somebody not cast
         const t = threads.get(real);
         const entry = { ep: num, text: beat.text };

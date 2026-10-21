@@ -32,6 +32,20 @@ describe('what each ratings night is', () => {
     for (const p of Object.keys(NIGHT_DRAWS)) expect(['first', 'early', 'middle', 'late', 'last']).toContain(p);
   });
 
+  // The user, 2026-10-21: "forbid a surprise twist from happening twice in the same season".
+  it('never draws the same surprise twice in a season: formats, powers, the Disrupter, swaps, ways in', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const s = bookSeason(skeleton(), streamFor(seed, 'timeline'), { total: 13, finalists: 5 });
+      const twice = xs => xs.filter((x, i) => xs.indexOf(x) !== i);
+      // (a double the season needs to catch up is the count, not a surprise)
+      expect(twice(s.filter(d => d.night && !['standard', 'double'].includes(d.night.format)).map(d => d.night.format)), `seed ${seed}`).toEqual([]);
+      expect(twice(s.map(d => d.night?.power).filter(Boolean)), `seed ${seed}`).toEqual([]);
+      expect(s.filter(d => d.disrupter).length, `seed ${seed}`).toBeLessThanOrEqual(1);
+      expect(twice(s.map(d => d.twist).filter(Boolean)), `seed ${seed}`).toEqual([]);
+      expect(twice(s.map(d => d.entry).filter(e => e && e !== 'snoop')), `seed ${seed}`).toEqual([]);
+    }
+  });
+
   it('plays what the author booked, by slot', () => {
     const s = bookSeason(skeleton(), streamFor(1, 'timeline'), { total: 13, finalists: 5, bookings: { rating3: 'ci-sole-influencer' } });
     expect(s.find(d => d.slot === 'rating3').night).toMatchObject({ format: 'sole', booked: true });

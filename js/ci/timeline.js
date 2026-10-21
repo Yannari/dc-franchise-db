@@ -27,9 +27,10 @@ export const NIGHT_DRAWS = {
   last: [['standard', 6], ['super', 3]],
 };
 
-// A special format already used this season is that much less likely again:
-// drawn night by night, a season could run America's Save twice in three days.
-export const SEEN_AGAIN = 0.3;
+// A surprise never happens twice in a season (the user, 2026-10-21: "forbid a
+// surprise twist from happening twice in the same season"): a special format,
+// a power, the Disrupter, a swap or clone, a way in, once each, and never one
+// the author already booked. Only a booking can repeat one.
 
 export function positionOf(i, n) {
   if (i === 0) return 'first';
@@ -94,7 +95,10 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {},
   const nights = out.filter(d => d.block);
   const n = nights.length;
   let need = total - finalists, removed = 0;
-  const used = new Set();
+  // Everything booked anywhere in the season counts as used before anything is drawn.
+  const allIds = out.flatMap(d => idsAt(bookings, d.slot));
+  const used = new Set(allIds.map(formatOfTwist).filter(Boolean));
+  const usedPowers = new Set(allIds.map(powerOfTwist).filter(Boolean));
   nights.forEach((d, i) => {
     if (!d.block) return;                          // given back to a double earlier
     for (const e of deltas.filter(x => !x.applied && x.day <= d.day)) {
@@ -124,15 +128,17 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {},
     else if (bookedId) night = { format: mustDouble && fits('double') ? 'double' : 'standard', fellBack: booked || bookedId };
     else if (!surprises) night = { format: mustDouble && fits('double') ? 'double' : 'standard' };
     else {
-      const options = (NIGHT_DRAWS[ctx.position] || [['standard', 1]]).filter(([f]) => fits(f))
-        .map(([f, w]) => [f, f !== 'standard' && used.has(f) ? w * SEEN_AGAIN : w]);
+      const options = (NIGHT_DRAWS[ctx.position] || [['standard', 1]]).filter(([f]) => fits(f) && (f === 'standard' || !used.has(f)));
       night = { format: options.length ? weighted(rng, options) : mustDouble ? 'double' : 'standard' };
     }
     night.position = ctx.position;
     used.add(night.format);
     const bookedPower = ids.map(powerOfTwist).find(Boolean);
     if (bookedPower) night.power = bookedPower;
-    else if (!fixed && (ctx.position === 'middle' || ctx.position === 'late') && rng() < POWER_DRAWS.chance) night.power = weighted(rng, POWER_DRAWS.kinds);
+    else if (!fixed && (ctx.position === 'middle' || ctx.position === 'late') && rng() < POWER_DRAWS.chance) {
+      const kinds = POWER_DRAWS.kinds.filter(([k]) => !usedPowers.has(k));
+      if (kinds.length) { night.power = weighted(rng, kinds); usedPowers.add(night.power); }
+    }
     d.night = night;
     // Give back the later nights the season no longer needs (latest first,
     // never the last): a double ahead of schedule frees one; a double that
@@ -144,39 +150,46 @@ export function bookSeason(schedule, rng, { total, finalists = 5, bookings = {},
     need -= FORMATS[night.format].removes;
     removed += FORMATS[night.format].removes;
   });
-  // Disrupter alerts (US 7): booked on a day, or drawn on some social days.
+  // Disrupter alerts (US 7): booked on a day, or drawn on a social day, once a season.
+  let disrupted = allIds.includes('ci-disrupter');
   for (const d of out) {
     if (d.block || d.final || d.finale || d.day === 1) continue;
-    if (idsAt(bookings, d.slot).includes('ci-disrupter') || (!fixed && d.slot.startsWith('social') && rng() < DISRUPTER_CHANCE)) d.disrupter = true;
+    if (idsAt(bookings, d.slot).includes('ci-disrupter')) d.disrupter = true;
+    else if (!fixed && !disrupted && d.slot.startsWith('social') && rng() < DISRUPTER_CHANCE) { d.disrupter = true; disrupted = true; }
   }
   // Identity twists (spec 14): booked on a day, or drawn now and then.
   // Ride or Die plays once a season: a booked one is never drawn again on
   // another night (seed 4 booked it on rating3 and drew it on rating2 too).
-  let rodDrawn = out.some(d => d.twist === 'ride-or-die' || idsAt(bookings, d.slot).map(twistOfId).includes('ride-or-die'));
+  const twisted = new Set([...out.map(d => d.twist), ...allIds.map(twistOfId)].filter(Boolean));
   for (const d of out) {
     if (d.final || d.finale || d.day === 1) continue;
     if (d.twist || d.twistFellBack) continue;       // placed in the first pass
     const booked = idsAt(bookings, d.slot).map(twistOfId).find(Boolean);
     if (booked) { d.twist = booked; continue; }
     if (fixed) continue;
-    if (d.slot.startsWith('social') && rng() < TWIST_DRAWS.swap) d.twist = 'swap';
-    else if (d.block && d.night?.position === 'middle' && rng() < TWIST_DRAWS.clone) d.twist = 'clone';
-    else if (!rodDrawn && d.day <= Math.ceil(out.length / 2) && rng() < TWIST_DRAWS['ride-or-die']) { d.twist = 'ride-or-die'; rodDrawn = true; }
+    if (!twisted.has('swap') && d.slot.startsWith('social') && rng() < TWIST_DRAWS.swap) d.twist = 'swap';
+    else if (!twisted.has('clone') && d.block && d.night?.position === 'middle' && rng() < TWIST_DRAWS.clone) d.twist = 'clone';
+    else if (!twisted.has('ride-or-die') && d.day <= Math.ceil(out.length / 2) && rng() < TWIST_DRAWS['ride-or-die']) d.twist = 'ride-or-die';
+    if (d.twist) twisted.add(d.twist);
   }
   // Arrival days: booked by slot, or drawn by how many arrive. A pair on a
   // one-arrival day pulls a newcomer forward from the last later arrival day
   // (a 13-player season spreads its newcomers one a day, and the real show
   // still brought two in together: US 3 Ep 3).
+  // A newcomer who just snoops is the usual way in; every other way is a surprise, once a season.
+  const entered = new Set(allIds.map(entryOfTwist).filter(Boolean));
   for (const d of out) {
     if (!(d.arrivals > 0) || d.entry === 'egg') continue;
     const booked = idsAt(bookings, d.slot).map(entryOfTwist).find(x => x && x !== 'egg');
-    let entry = booked || (surprises ? weighted(rng, ENTRY_DRAWS[d.arrivals >= 2 ? 'more' : 'one']) : 'snoop');
+    const ways = ENTRY_DRAWS[d.arrivals >= 2 ? 'more' : 'one'].filter(([e]) => e === 'snoop' || !entered.has(e));
+    let entry = booked || (surprises ? weighted(rng, ways) : 'snoop');
     if (entry === 'pair' && d.arrivals < 2) {
       const from = out.filter(x => x.day > d.day && x.arrivals > 0).at(-1);
       if (from) { from.arrivals--; d.arrivals++; d.pulledFrom = from.slot; }
       else entry = 'snoop';
     }
     d.entry = entry;
+    entered.add(entry);
     if (booked) d.entryBooked = true;
   }
   return out;

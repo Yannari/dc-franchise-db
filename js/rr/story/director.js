@@ -184,7 +184,8 @@ function stageBeats(state, row, i) {
   return row.stages.filter(e => e.ok || ++fails <= STAGE_FAILS).map((e, j) => ({
     id: `stage:${row.leg}:${row.team}:${row.stretch}:${i}:${j}`, leg: row.leg, kind: 'task-stage', who: [a, b], seenBy: [a, b],
     data: { ending: e.ok ? 'ok' : 'fail', team: row.team, stretch: row.stretch, stage: e.id, t: Math.round(e.t), from: row.from, to: row.to,
-      side: row.side, snap: row.snap ? { ...row.snap, fails: row.fails, side: row.side ?? row.snap.side, botcher: row.who ?? row.snap.botcher } : null } }));
+      side: row.side, snap: row.snap ? { ...row.snap, fails: row.fails, side: row.side ?? row.snap.side, botcher: row.who ?? row.snap.botcher,
+        picked: row.right ?? row.snap.picked } : null } }));
 }
 
 // The storylines the season follows: the open threads with the most aired steps, then the oldest.

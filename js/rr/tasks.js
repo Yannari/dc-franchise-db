@@ -50,8 +50,10 @@ function runPick(state, id, task, stretchId, t, level, spread, rng) {
   let right = 0;
   for (let i = 0; i < task.pick.of; i++) if (rng() < q) right++;
   (state.picks ||= {})[id] = { leg: state.leg, stretch: stretchId, of: task.pick.of, right };
-  record(state, id, stretchId, { attempts: 1, fails: 0, right });
+  const row = record(state, id, stretchId, { attempts: 1, fails: 0, right });
   const dur = task.base * (1 + spread * 0.3 * (rng() - 0.5)) / (level / 5);
+  // (told in stages, a wrong spice is where it was grabbed: nobody tells them, the stew does)
+  if (task.stages) row.stages = stageRun(state, id, task, stretchId, t, t + dur, task.pick.of - right);
   return { end: t + dur, attempts: 1, quit: false, data: { attempts: 1, fails: 0, p: 1, right } };
 }
 

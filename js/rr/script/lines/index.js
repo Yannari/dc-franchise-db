@@ -126,6 +126,7 @@ import stagesAny from './stages/_any.js';
 import stagesIceRiver from './stages/ice-river.js';
 import stagesPampasRanch from './stages/pampas-ranch.js';
 import stagesHomeCity from './stages/home-city.js';
+import stagesRedSandDesert from './stages/red-sand-desert.js';
 import iceRiver from './places/ice-river.js';
 import snowPeaks from './places/snow-peaks.js';
 import jungleRuins from './places/jungle-ruins.js';
@@ -150,7 +151,7 @@ const FILES = [partners, partners1, partners2, partners3, partners4, partners5, 
   neonDesert, pyramidCoast, stiltRiver, frozenMine,
   teaHills, pampasRanch, gameShowCity, iceRiver,
   // the staged challenges, stage by stage (2026-10-20)
-  stagesAny, stagesIceRiver, stagesPampasRanch, stagesHomeCity,
+  stagesAny, stagesIceRiver, stagesPampasRanch, stagesHomeCity, stagesRedSandDesert,
   snowPeaks, jungleRuins, glassPyramidCity, fishingCove,
   cliffPoolIsle, twinTowerBridge, marbleTempleHill, secretBaseDesert,
   fjordSea, greatFalls, bambooWallHills, grassSavanna, stoneHeadIsland, badlands];

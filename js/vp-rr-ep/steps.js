@@ -176,7 +176,7 @@ export function episodeScreens(res, eps, i) {
     const sideLabel = seg.side && stretch?.sides ? stretch.sides.find(x => x.id === seg.side)?.label : null;
 
     // where it is shot
-    let mode = 'talk', plate = null, hudTask = stretch?.label?.toUpperCase() || '', parked = null;
+    let mode = 'talk', plate = null, hudTask = stretch?.label?.toUpperCase() || '', parked = null, failStamp = null;
     let placeFor = placeId;
     const k = seg.kind;
     if (k === 'don-narrate') {
@@ -261,6 +261,7 @@ export function episodeScreens(res, eps, i) {
         plate = opts[ti % opts.length];
         mode = plate.mode && (plate.path || IN_PLACE.has(plate.mode)) ? 'act' : 'talk';
         hudTask += ` · ${sg.label}`;
+        if (seg.ending === 'fail' && sg.stamp) failStamp = sg.stamp;
         opened.add(`${seg.stretch}|${seg.side || ''}`);
       } else if (wantsAct && sp?.act) {
         const ti = Math.max(0, st.order.indexOf(segTeams[0]));
@@ -379,7 +380,7 @@ export function episodeScreens(res, eps, i) {
       const donSpeaks = run.lines.some(l => l.by === 'Don');
       const scr = {
         kind: mode === 'flight' ? 'flight' : 'world', seg: k, ending: seg.ending, mode, place: placeId, stretch: seg.stretch, side: seg.side,
-        plate, parked, stage: seg.stage ?? null, teams, locals, localFaces, don: donSpeaks && !['narrate', 'flight', 'landing'].includes(mode) || ['mat', 'demo', 'don'].includes(mode),
+        plate, parked, stage: seg.stage ?? null, ...(failStamp ? { failStamp } : {}), teams, locals, localFaces, don: donSpeaks && !['narrate', 'flight', 'landing'].includes(mode) || ['mat', 'demo', 'don'].includes(mode),
         narrator: donSpeaks && ['narrate', 'flight', 'landing'].includes(mode),
         hud: { task: hudTask, clock }, timecard: first ? timecard : null, steps,
         from: prevLeg?.place || null, to: placeId, who: [...(seg.who || [])], stretchKind: stretch?.kind || null,
@@ -1658,7 +1659,7 @@ function planStamps(s) {
     delete st.stamp;
     const team = s.teams[0];
     if (team == null) return;
-    if (s.plan?.fail === k) st.stamp = { text: 'TRY AGAIN', cls: '', team };
+    if (s.plan?.fail === k) st.stamp = { text: s.failStamp || 'TRY AGAIN', cls: '', team };
     else if (s.plan?.quit === k) st.stamp = { text: 'QUIT', cls: '', team };
     else if (k === last && s.mode === 'act' && (s.seg === 'task-done' || (s.seg === 'task-try' && !['quit', 'struggling'].includes(s.ending)))) st.stamp = { text: 'DONE!', cls: 'gold', team };
     // (a team still struggling at the end of its scene is not through: no DONE! over "back we go")

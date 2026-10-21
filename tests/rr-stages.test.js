@@ -25,7 +25,7 @@ beforeAll(() => {
   for (const seed of [41, 42, 43]) {
     const { cast, teams } = raceCast(12, seed);
     setPlayers(cast);
-    const res = playRaceSeason({ teams, seed, options: { pins: { 2: 'ice-river', 3: 'pampas-ranch' } } });
+    const res = playRaceSeason({ teams, seed, options: { pins: { 2: 'ice-river', 3: 'pampas-ranch', 4: 'red-sand-desert' } } });
     const aired = airSeason(res);
     runs.push({ seed, res, aired, screens: aired.map((_, i) => episodeScreens(res, aired, i)) });
   }
@@ -52,7 +52,8 @@ describe('rr challenges in stages', () => {
       const ok = r.stages.filter(e => e.ok).map(e => e.id);
       expect(ok, `${r.team} ${r.stretch}`).toEqual(stages.map(x => x.id));
       const fails = r.stages.filter(e => !e.ok);
-      expect(fails.length).toBe(r.fails);
+      // (a picking task fails by its wrong picks: the jar that smelled like cumin and wasn't)
+      expect(fails.length).toBe(r.right != null ? st.pick.of - r.right : r.fails);
       for (const f of fails) expect(stages.find(x => x.id === f.id).risk, f.id).toBeGreaterThan(0);
       r.stages.forEach((e, i) => { if (i) expect(e.t).toBeGreaterThanOrEqual(r.stages[i - 1].t); expect(e.t).toBeGreaterThanOrEqual(r.from - 0.01); expect(e.t).toBeLessThanOrEqual(r.to + 0.01); });
     }
@@ -91,6 +92,19 @@ describe('rr challenges in stages', () => {
       expect(files, s.id).toContain(s.plate.f);
     }
     expect(seen).toBeGreaterThan(20);
+  });
+
+  // (a wrong spice isn't tried again: nobody checks the five, the stew finds out later)
+  it('stamps a wrong spice WRONG SPICE, never TRY AGAIN', () => {
+    let n = 0;
+    for (const { screens } of runs) for (const ep of screens) for (const s of ep.screens) {
+      if (s.seg !== 'task-stage' || s.stretch !== 'spices' || s.ending !== 'fail') continue;
+      n++;
+      const stamps = s.steps.map(x => x.stamp?.text).filter(Boolean);
+      expect(stamps, s.id).toContain('WRONG SPICE');
+      expect(stamps, s.id).not.toContain('TRY AGAIN');
+    }
+    expect(n).toBeGreaterThan(0);
   });
 
   it('writes lines for every stage of its own: a few for each stage passed, and for each stage that can go wrong', () => {

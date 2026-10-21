@@ -1027,6 +1027,24 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'red-sand-desert': {
+    // (the alley of stalls, then the merchant's kiosk up close; the restaurant's kitchen under its awning)
+    spices: {
+      'the-alley': { label: 'THE SPICE CORNER', plate: ['task-9435287', {}] },
+      // (`stamp`: what a fail here is called: a wrong spice isn't tried again, nobody checks the five)
+      sniff: { label: 'SNIFF AND GUESS', plate: ['task-9435287', { mode: 'search' }], fail: ['task-9435287', { mode: 'search' }], stamp: 'WRONG SPICE' },
+      'the-kiosk': { label: "THE MERCHANT'S KIOSK", plate: ['task-9435344', { mode: 'search', prop: 'jars', fx: 'spice' }],
+        fail: ['task-9435344', { mode: 'search', prop: 'jars', fx: 'spice' }], stamp: 'WRONG SPICE' },
+      'pay-up': { label: 'FIVE LITTLE BAGS', plate: ['task-9435344', {}] },
+    },
+    stew: {
+      'the-chef': { label: 'THE CHEF COOKS', plate: ['task-9435484', { fx: 'steam' }] },
+      'first-spoon': { label: 'THE FIRST SPOONFUL', plate: ['task-9435484', { mode: 'eat' }], fail: ['task-9435484', { mode: 'eat' }] },
+      'half-bowl': { label: 'HALFWAY DOWN', plate: ['task-9435484', { mode: 'eat' }], fail: ['task-9435484', { mode: undefined, prop: undefined, fx: 'steam' }] },
+      'last-drop': { label: 'THE LAST DROPS', plate: ['task-9435484', { mode: 'eat' }], fail: ['task-9435484', { mode: undefined, prop: undefined, fx: 'steam' }] },
+      'empty-bowl': { label: 'THE EMPTY BOWL', plate: ['task-9435484', {}] },
+    },
+  },
   'ice-river': {
     'ice-floes': {
       'first-floe': { label: 'THE FIRST FLOE', plate: ['task-22411751'], fail: ['task-22411747', { mode: 'swim' }] },
@@ -1060,7 +1078,7 @@ const STAGE_SHOTS = {
 for (const [id, byStretch] of Object.entries(STAGE_SHOTS)) for (const [sid, stages] of Object.entries(byStretch)) {
   const s = PLACE_PLATES[id].st[sid];
   s.stages = Object.fromEntries(Object.entries(stages).map(([k, v]) => [k, { label: v.label, plate: plateOf(id, ...v.plate),
-    alt: (v.alt || []).map(a => plateOf(id, ...a)), fail: v.fail ? plateOf(id, ...v.fail) : null }]));
+    alt: (v.alt || []).map(a => plateOf(id, ...a)), fail: v.fail ? plateOf(id, ...v.fail) : null, ...(v.stamp ? { stamp: v.stamp } : {}) }]));
 }
 
 // All the plate files a place needs (the asset copier and the tests read this)

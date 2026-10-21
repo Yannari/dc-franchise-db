@@ -78,8 +78,8 @@ describe('rr Red Sand Desert, 1:1', () => {
       const row = res.state.taskLog.find(r => r.leg === ep.n && r.team === s.teams[0] && r.stretch === 'spices');
       const want = row.right >= 5 ? 'right' : row.right >= 3 ? 'mostly' : 'wrong';
       expect(s.picked, `leg ${ep.n} ${s.teams[0]}`).toBe(want);
-      // the picking is the moment: it airs as the try, with how it went (not as arriving at the kiosk)
-      if (s.scene == null && !String(s.beat).endsWith(':arrive')) expect(s.kind, `leg ${ep.n} ${s.teams[0]}`).toBe('task-try');
+      // the picking is the moment: it airs as the try, or as its stages, with how it went (not as arriving at the kiosk)
+      if (s.scene == null && !String(s.beat).endsWith(':arrive')) expect(['task-try', 'task-stage'], `leg ${ep.n} ${s.teams[0]}`).toContain(s.kind);
       right.add(want);
     }
     expect(right.size).toBeGreaterThan(1);

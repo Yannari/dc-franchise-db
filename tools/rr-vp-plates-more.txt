@@ -244,7 +244,6 @@ secret-base-desert | cutout/Don in olive military gear-1 | skip:Don in costume: 
 
 # every cut-out the user made is drawn (2026-10-20: 39 were listed and never placed, the polar bear's story again):
 # each goes where its challenge's rules put it
-home-city | - | patch:tower/skydeck:act | | | {"deco":[["helmet",90,49,3.5]]}
 red-sand-desert | - | patch:spices:act | | | {"judge":["merchant",0.9]}
 red-sand-desert | - | patch:stew:act | | | {"judge":["chef",0.9]}
 great-wall-hills | - | patch:skewers:act | | | {"judge":["vendor",0.9]}

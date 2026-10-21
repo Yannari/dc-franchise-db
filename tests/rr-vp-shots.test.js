@@ -121,7 +121,8 @@ describe('rr viewer: how a challenge is shot', () => {
 
   it('presents every place, on its own plates', () => {
     for (const id of Object.keys(PLACE_PLATES)) {
-      expect(ABOUT[id]?.length, id).toBeGreaterThanOrEqual(2);
+      expect(ABOUT[id], id).toBeTruthy();
+      expect(aboutOf(id).length, id).toBeGreaterThanOrEqual(2);
       for (const { plate } of aboutOf(id)) expect(existsSync(plateUrl(id, plate.f)), `${id} ${plate.f}`).toBe(true);
     }
   });

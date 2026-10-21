@@ -1604,23 +1604,6 @@ export const MORE = {
    {
     "f": "travel-9435210"
    }
-  ],
-  "patch": [
-   {
-    "stretch": "tower",
-    "side": "skydeck",
-    "which": "act",
-    "set": {
-     "deco": [
-      [
-       "helmet",
-       90,
-       49,
-       3.5
-      ]
-     ]
-    }
-   }
   ]
  },
  "rock-north": {

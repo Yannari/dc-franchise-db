@@ -108,7 +108,10 @@ export function createStage(holder, { faceOf, legLabel }) {
     if (as === 'walk' && /^raft/.test(pl.prop || '') && s.mode === 'act') veh = `<img class="veh carry" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
     // a coffin pushed in front rolls on a pair of iron wheels
     if (as === 'push' && veh) veh += WHEELS;
-    e.innerHTML = `<div class="pair">${[t.a, t.b].map(n => `<img data-p="${esc(n)}" src="${faceOf(n)}" alt="">`).join('')}</div>${veh}<div class="shadow"></div><div class="lab">${esc(t.name)}</div>`;
+    // what the challenge has them wear (the helmets on the deck and the zipline: the user, 2026-10-21, "the helmet isnt
+    // even on their head"), on both their heads
+    const wear = pl.wear ? `<span class="wear w0"><img src="${propUrl(pl.place || s.place, pl.wear)}" alt=""></span><span class="wear w1"><img src="${propUrl(pl.place || s.place, pl.wear)}" alt=""></span>` : '';
+    e.innerHTML = `<div class="pair">${[t.a, t.b].map(n => `<img data-p="${esc(n)}" src="${faceOf(n)}" alt="">`).join('')}${wear}</div>${veh}<div class="shadow"></div><div class="lab">${esc(t.name)}</div>`;
     toks.appendChild(e);
     return e;
   }
@@ -351,6 +354,19 @@ export function createStage(holder, { faceOf, legLabel }) {
     if (s.kind === 'end' && T.pre === 'NEXT TIME') return `<div class="title ${fresh ? 'fresh' : ''}" style="top:8%"><img class="logo" src="${raceUrl('logo')}" alt=""><div class="sub">${T.big ? 'Next leg · ' + esc(T.big) : ''}</div></div>`;
     return `<div class="title ${fresh ? 'fresh' : ''}">${globeSVG(seed)}<div class="stack"><div class="pre">${esc(T.pre)}</div><br><div class="band"><div class="big">${esc(T.big)}</div></div><div class="sub">${esc(T.sub)}</div></div></div>`;
   }
+
+  // A place's opening card (steps.js place-card): its name big, a pin on the race map, a line about it, three facts,
+  // each fact landing a beat after the last
+  function placeCard(s, fresh) {
+    const c = s.card, m = c.map || { x: 50, y: 50 };
+    const facts = (c.facts || []).map((f, i) => `<li style="--d:${(0.55 + i * 0.35).toFixed(2)}s"><b>${i + 1}</b><span>${esc(f)}</span></li>`).join('');
+    return `<div class="pcard ${fresh ? 'fresh' : ''}"><div class="pc-map" style="background-image:url('${raceUrl('worldmap')}')">
+      <div class="pc-pin" style="left:${m.x}%;top:${m.y}%"></div><div class="pc-ring" style="left:${m.x}%;top:${m.y}%"></div></div>
+      <div class="pc-body"><div class="pc-leg">${c.final ? 'THE FINAL LEG' : `LEG ${c.leg}`}</div><div class="pc-name">${esc(c.name.toUpperCase())}</div>
+      <div class="pc-tag">${esc(c.tag)}</div><ol class="pc-facts">${facts}</ol></div></div>`;
+  }
+  // a shot of the place, captioned the way a travel show says what you're looking at
+  const placeCaption = (s, fresh) => `<div class="pcap ${fresh ? 'fresh' : ''}"><span class="pc-where">${esc((s.hud?.task || '').toUpperCase())}</span><span class="pc-what">${esc(s.caption)}</span></div>`;
 
   function mapScreen(ep, s, fresh) {
     const from = PLACES[s.from]?.map, to = PLACES[s.to]?.map || { x: 50, y: 50 };
@@ -877,6 +893,8 @@ export function createStage(holder, { faceOf, legLabel }) {
       else { setPlate(plateOf(s), !same ? kb : undefined); }
       if (['logo', 'title', 'end'].includes(s.kind)) ui.innerHTML = titleCard(s, screenFresh, hash(ep.place) % 1000 + 3);
       if (s.kind === 'world') world(ep, s, k, screenFresh);
+      if (s.card) ui.insertAdjacentHTML('beforeend', placeCard(s, screenFresh));
+      if (s.caption) ui.insertAdjacentHTML('beforeend', placeCaption(s, screenFresh));
       if (s.mode === 'landing') {
         const pl = document.createElement('img'); pl.className = 'prop'; pl.src = raceUrl('plane'); pl.style.cssText += 'left:50%;top:40%;width:7cqw;z-index:12';
         fx.appendChild(pl);

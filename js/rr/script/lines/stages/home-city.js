@@ -63,7 +63,7 @@ export default {
       by('b', "You were looking at that step like it was a bed."),
     ] },
     { id: 'hc.st.st1', when: at('tower', 'stairs-top'), turns: [
-      beat('They stagger out of the stairwell into the bright glass room at the top. The whole city lies far below.'),
+      beat('They stagger out of the stairwell into the corridor at the top, where a window shows the whole city far below.'),
       by('b', "Look at that view."),
       by('a', "Later. Where's the tip?"),
       beat('The tip box sits by the window. {a} grabs one.'),
@@ -126,7 +126,7 @@ export default {
       by('a', "It is. Can we go inside now?"),
     ] },
     { id: 'hc.st.dt1', when: at('tower', 'deck-top'), turns: [
-      beat('They unclip at the far door and fall through it into the warm glass room.'),
+      beat('They unclip at the far door and stumble back inside, out of the wind.'),
       by('a', "Floor. Real floor."),
       by('b', "Tip first. Then you can lie on it."),
     ] },

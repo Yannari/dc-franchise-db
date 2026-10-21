@@ -49,7 +49,7 @@ describe('rr viewer: every finished plate is used', () => {
       for (const byStage of Object.values(STAGE_SHOTS[id] || {})) for (const sh of Object.values(byStage)) {
         for (const pl2 of [sh.plate, sh.fail, sh.alt].filter(Boolean)) all.push(pl2[1] || {});
       }
-      for (const p of all.filter(Boolean)) { add(id, p.prop); add(id, p.judge?.[0]); add(id, p.pass); for (const d of p.deco || []) add(id, d[0]); }
+      for (const p of all.filter(Boolean)) { add(id, p.prop); add(id, p.judge?.[0]); add(id, p.pass); add(id, p.wear); for (const d of p.deco || []) add(id, d[0]); }
     }
     const never = [];
     for (const [id, pl] of Object.entries(PLACE_PLATES)) for (const k of Object.keys(pl.props || {})) if (!placed.has(`${id}/${k}`)) never.push(`${id}/${k}`);

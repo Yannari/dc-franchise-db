@@ -22,7 +22,7 @@
 // The side panel folds them up to the current step (intelAt), never reading live state.
 import { PLACES } from '../rr/places.js';
 import { LOCALS, localFor, localUrl, placeLocal, personOf } from './locals.js';
-import { aboutOf } from './about.js';
+import { aboutOf, cardOf } from './about.js';
 import { OPENER_SHOTS } from './opener-shots.js';
 import { PLACE_PLATES, RACE, stretchPlates, standable, findPlate } from './plates.js';
 
@@ -224,8 +224,18 @@ export function episodeScreens(res, eps, i) {
       // the place, presented (2026-10-20, the user: "we need presentation of the actual place with a description and
       // image by don"): Don says what it is over its own wide shots, one line a shot; then he opens the leg standing
       // there (it was shot at the last leg's Chill Zone while he described the new place)
-      for (const { plate: pp, text } of aboutOf(placeId)) {
-        push({ kind: 'world', seg: 'place-present', ending: null, mode: 'narrate', place: placeId, stretch: null, side: null,
+      // ...first its card: the name, a pin on the race map, a line about it and three facts (2026-10-21, the user: "more
+      // text showing more images more descriptions"); then its shots, each with a caption ("keep the challenges a
+      // surprise": a look at where they are, never what they are)
+      const card = cardOf(placeId);
+      if (card?.plate) push({ kind: 'world', seg: 'place-card', ending: null, mode: 'narrate', place: placeId, stretch: null, side: null,
+        plate: { ...card.plate, place: placeId }, parked: null, teams: [], locals: [], localFaces: {}, don: false, narrator: true,
+        card: { name: leg.placeName || place?.name || '', tag: card.tag, facts: card.facts, map: place?.map || null, leg: leg.n, final: leg.kind === 'final' },
+        hud: { task: (leg.placeName || place?.name || '').toUpperCase(), clock: null }, timecard: null,
+        steps: [{ by: 'Don', part: 'say', text: card.say, team: null, intel: {}, viewer: true }], from: prevLeg?.place || null, to: placeId, who: [],
+        stretchKind: null, members: {}, t: seg.t });
+      for (const { plate: pp, text, cap } of aboutOf(placeId)) {
+        push({ kind: 'world', seg: 'place-present', ending: null, mode: 'narrate', place: placeId, stretch: null, side: null, caption: cap || null,
           plate: { ...pp, place: placeId }, parked: null, teams: [], locals: [], localFaces: {}, don: false, narrator: true,
           hud: { task: (leg.placeName || place?.name || '').toUpperCase(), clock: null }, timecard: null,
           steps: [{ by: 'Don', part: 'say', text, team: null, intel: {}, viewer: true }], from: prevLeg?.place || null, to: placeId, who: [],

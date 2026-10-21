@@ -921,7 +921,7 @@ export const PLACE_PLATES = {
     src: '45-grass-savanna', title: 'present-22423390', opener: p('present-22423205', 88, [6, 94]),
     arrive: [p('arrive-22422818', 92, [48, 96])],
     props: { crate: 'plum-crate', ball: 'Minimalist black-and-white soccer ball', bat: 'cricket-bat', gourd: 'gourd-on-post',
-      ...(REPAINTED.has('zebra') ? { zebra: 'zebra' } : {}) },
+      ...(REPAINTED.has('zebra') ? { zebra: 'zebra' } : {}), ...(REPAINTED.has('blowpipe') ? { blowpipe: 'blowpipe' } : {}) },
     st: {
       'safari-jeep': { talk: [p('arrive-22422818', 92, [48, 96])],
         act: p('present-22423042', 72, [6, 94], { mode: 'ride', prop: 'ute@outback-farm', path: [[-16, 73], [50, 72], [116, 73]], fx: 'dust' }) },
@@ -1024,6 +1024,9 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const BALLS = [['ball', 84, 88, 3, { move: 'wander', span: -30, dur: 2 }], ['ball', 12, 84, 3, { move: 'wander', span: 26, dur: 2.6 }]];
+const SAVANNA_BEAST = [REPAINTED.has('zebra') ? 'zebra' : 'emu@red-outback', 88, 93, 15];
+const BLOWPIPE = REPAINTED.has('blowpipe') ? [['blowpipe', 46, 94, 6]] : [];
 const EAT_TABLE = REPAINTED.has('task-eating-table') ? 'task-eating-table' : 'task-22422501';
 const FJORD_TARGET = (REPAINTED.has('fjord-target') ? [['target', 80, 86, 7]] : []);
 const CORRAL_EMU = [['emu', 70, 94, 9, { move: 'wander', span: 14, dur: 5 }]];
@@ -1065,6 +1068,30 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'grass-savanna': {
+    // (the village huts; the plum crate; the gourd posts; the tracks in the mud, the tall grass, the clearing)
+    plums: {
+      'plum-trees': { label: 'THE PLUM TREES', plate: ['arrive-22422915', {}] },
+      'plum-picking': { label: 'PICKING', plate: ['task-22422865', { mode: 'pick', judge: null }], fail: ['task-22422865', { mode: 'pick', judge: null }], stamp: 'SQUASHED' },
+      footballs: { label: 'THE FOOTBALLS', plate: ['task-22422865', { mode: 'pick', judge: null, deco: BALLS }],
+        fail: ['task-22422865', { mode: undefined, judge: null, deco: BALLS }], stamp: 'KNOCKED OVER' },
+      'full-basket': { label: 'THE ELDER', plate: ['arrive-22422915', { deco: [['crate', 50, 93, 13]] }] },
+    },
+    gourds: {
+      'gourd-row': { label: 'THE ROW', plate: ['task-22422938', { mode: undefined, prop: undefined }] },
+      'first-swings': { label: 'FIRST SWINGS', plate: ['task-22422938', { mode: 'serve', solo: true, inset: 'WATCHING' }], fail: ['task-22422938', { mode: 'serve', solo: true, inset: 'WATCHING' }], stamp: 'MISSED' },
+      'last-gourds': { label: 'THE LAST GOURDS', plate: ['task-22422938', { mode: 'serve', solo: true, inset: 'WATCHING' }], fail: ['task-22422938', { mode: 'serve', solo: true, inset: 'WATCHING' }], stamp: 'IT WOBBLED' },
+      'ten-for-ten': { label: 'TEN FOR TEN', plate: ['task-22422938', { mode: undefined, prop: undefined, fx: 'sparkle' }] },
+    },
+    safari: {
+      'the-tracks': { label: 'THE TRACKS', plate: ['task-22423089', { g: 92, x: [6, 94], mode: 'search', prop: undefined }],
+        fail: ['task-22423089', { g: 92, x: [6, 94], mode: 'search', prop: undefined }], stamp: 'WRONG TRACKS' },
+      'tall-grass': { label: 'THE TALL GRASS', plate: ['task-22423157', { mode: 'chase' }], fail: ['task-22423157', { mode: undefined, prop: undefined }], stamp: 'SPOOKED' },
+      'sleepy-dart': { label: 'THE SLEEPY-DART', plate: ['task-22423107', { deco: [SAVANNA_BEAST, ...BLOWPIPE] }],
+        fail: ['task-22423107', { deco: [[SAVANNA_BEAST[0], 82, 93, 15, { move: 'wander', span: 10, dur: 3 }], ...BLOWPIPE] }], stamp: 'MISSED' },
+      'the-tag': { label: 'THE TAG', plate: ['task-22423107', { fx: 'sparkle', deco: [SAVANNA_BEAST] }] },
     },
   },
   'bamboo-wall-hills': {

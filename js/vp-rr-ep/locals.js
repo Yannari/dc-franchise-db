@@ -62,7 +62,7 @@ export const PLACE_LOCALS = {
   'fjord-sea': { longship: 'longship-captain', 'meatball-cannon': 'longship-captain' },
   'great-falls': { 'wedding-slots': 'minister' },
   'bamboo-wall-hills': { 'wall-race': 'monk', delicacies: 'delicacies-cook' },
-  'grass-savanna': { plums: 'savanna-elder' },
+  'grass-savanna': { plums: 'savanna-elder', safari: 'savanna-ranger' },
   'stone-head-island': { eggs: 'egg-judge' },
   'lei-island': { 'fire-walk': 'fire-dancer' },
   'cliff-pool-isle': { 'falls-dive': 'cliff-guide' },

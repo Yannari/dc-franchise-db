@@ -12,12 +12,24 @@ export default {
       mishaps: [['elephants-crossing', 20]], mishapRate: 0.1 },
     { id: 'plums', called: 'the village', kind: 'allin', types: ['search', 'nerve'], base: 25, pass: 0.55, loopCost: 10, opens: 420, closes: 1140,
       plate: 'huts, crate of berries', label: 'All-In: the plums',
+      // the plum trees by the huts; picking into the basket; the children's footballs (the basket knocked over: pick
+      // them all up again); the full basket to the elder
+      stages: [{ id: 'plum-trees', share: 0.2, risk: 0 }, { id: 'plum-picking', share: 0.8, risk: 0.3 }, { id: 'footballs', share: 0.6, risk: 1 },
+        { id: 'full-basket', share: 0.2, risk: 0 }],
       desc: "In the village, the plum trees are heavy with fruit, and both partners have to pick enough to fill a woven basket, while the village children, laughing, kick footballs at them from every direction. A ball that knocks the basket over spills the plums, and every plum on the ground has to be picked up or picked again. A basket filled to the brim and carried to the village elder earns the next tip." },
     { id: 'gourds', called: 'the gourd posts', kind: 'botch', types: ['hands', 'strength'], base: 15, pass: 0.45, loopCost: 6,
       teaser: 'Who can swing a bat?', plate: 'fruit on posts', label: 'Botch or Watch: the gourds',
+      // the row of posts; the first swings (a miss: the row goes back up); the last gourds (one that wobbles and stays);
+      // ten for ten. a swings, b watches
+      stages: [{ id: 'gourd-row', share: 0.2, risk: 0 }, { id: 'first-swings', share: 0.6, risk: 0.6 }, { id: 'last-gourds', share: 0.6, risk: 1 },
+        { id: 'ten-for-ten', share: 0.2, risk: 0 }],
       desc: "A row of ten wooden posts stands in a clearing, a hard round gourd balanced on each. The partner who didn't do the last Botch or Watch takes a cricket bat and has to smash every gourd off its post, one swing each, in order, without missing. A miss, or a gourd that wobbles but stays, means the gourds go back up and they start the row again. The other partner can only watch. Ten gourds smashed in ten swings earns the next tip." },
     { id: 'safari', called: 'the tall grass', kind: 'allin', types: ['search', 'nerve'], base: 35, pass: 0.45, loopCost: 12, opens: 420, closes: 1140,
       plate: 'tall grass', label: 'All-In: the safari',
+      // the tracks in the mud (the wrong tracks); creeping up through the tall grass (spooked it, or the wrong animal);
+      // the sleepy-dart (missed); the ranger tags its ear
+      stages: [{ id: 'the-tracks', share: 0.6, risk: 0.4 }, { id: 'tall-grass', share: 0.8, risk: 0.8 }, { id: 'sleepy-dart', share: 0.4, risk: 1 },
+        { id: 'the-tag', share: 0.2, risk: 0 }],
       desc: "A ranger points both partners into the tall grass where a wild animal the rangers need to tag is hiding. Following tracks, broken stalks and the ranger's whistles, they have to creep close enough to hit it with a sleepy-dart from a blowpipe, so it naps long enough for the ranger to tag its ear. A missed dart, a spooked animal or creeping up on the wrong animal entirely means falling back and tracking it again. A tagged, sleeping animal earns the next tip." },
     { id: 'mat', kind: 'mat', plate: 'savanna open plain', label: 'The Chill Zone' },
   ],

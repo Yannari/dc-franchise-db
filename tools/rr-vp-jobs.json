@@ -546,6 +546,16 @@
       "prop": "target",
       "ref": "task-22420516",
       "why": "the meatball cannon in stages (2026-10-21): a round painted archery-style target (red and white rings, a bullseye) on a little wooden raft, floating, seen side-on, as a cut-out on a plain background; the cannon fires at it out on the fjord; no cut-out of one (meanwhile the cannon fires from the shore with no target in frame)"
+    },
+    {
+      "place": "grass-savanna",
+      "src": "45-grass-savanna",
+      "file": "blowpipe",
+      "new": true,
+      "kind": "cutout",
+      "prop": "blowpipe",
+      "ref": "task-22423157",
+      "why": "the safari in stages (2026-10-21): a long thin wooden blowpipe with a little feathered sleepy-dart beside it, lying flat, as a cut-out; the racers shoot the animal with it; no cut-out of one (meanwhile the dart stage shows no blowpipe)"
     }
   ]
 }

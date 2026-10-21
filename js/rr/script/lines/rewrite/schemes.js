@@ -428,7 +428,7 @@ export default {
         { by: 'a', ...V("Half? For directions? No. Absolutely not.", "Half? No.", "Half our money? No.", "HALF? For DIRECTIONS? NO! Absolutely NOT!", "Half our money, for directions? No, absolutely not.", "Half our money? For words? We have our own words.") },
         { by: 'c', say: "Then good luck finding it." },
         { by: 'b', say: "We'll find it ourselves." },
-        { beat: 'They do find it themselves, much later, two streets away from where they started.' },
+        { beat: 'They do find it themselves. It takes them a lot longer than it would have.' },
         { by: 'b', say: "We should've paid the half." },
       ] },
     ],

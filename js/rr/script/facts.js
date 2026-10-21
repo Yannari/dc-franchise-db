@@ -15,8 +15,8 @@ export const RR_FACT_KEYS = [
   'ending',
   // how far into the season
   'phase', 'early', 'late',
-  // the first hour of the race: nobody ahead or behind, nothing been through together yet
-  'fresh',
+  // the first hour of the race: nobody ahead or behind, nothing been through together yet; the first leg: no leg before
+  'fresh', 'firstLeg',
   // how the two stood: inside the team (band) and across two teams (bandX)
   'band', 'bandX', 'allied', 'rival', 'couple',
   // the team: its relationship, its family of relationship, its identity (and the other team's)
@@ -123,7 +123,7 @@ export function factsFor(scene, roles, state) {
     custom: !!state.teams[d.team]?.custom?.name, customB: !!state.teams[d.other]?.custom?.name,
     ownIntro: !!(state.teams[d.team]?.lines?.introA && state.teams[d.team]?.lines?.introB),
     idGood: !!(id && types.some(x => id.good.includes(x))), idBad: !!(id && types.some(x => id.bad.includes(x))),
-    fresh: !!s.fresh,
+    fresh: !!s.fresh, firstLeg: s.leg === 1,
     behind: !s.fresh && s.rank != null && s.rank > 0.66, ahead: !s.fresh && s.rank != null && s.rank < 0.33,
     broke: !!s.broke, snapped: !!s.snapped,
     tod: todWord(s.tod),

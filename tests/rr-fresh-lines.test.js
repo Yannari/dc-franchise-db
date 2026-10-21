@@ -16,8 +16,10 @@ const HISTORY = [/(?<!since )yesterday/i, /every (single )?day/i, /\b(an hour|ho
   /broke down/i, /\bthe bus\b|\bmost buses\b/i, /last (night|time|leg|week)\b/i, /we passed you/i,
   /all (week|race long)/i, /\bso far ahead\b/i, /\bagain\b.*\b(lost|wrong|late|last)\b/i];
 const FRESH = 60;
+// ...and on the first leg, any time: no earlier leg, no night on the road, no camel ridden
+const PAST = [/last leg/i, /since leg/i, /leg (one|two|three|four|five)/i, /every leg/i, /(?<!since )yesterday/i, /last night/i, /the camel/i];
 
-const found = [];
+const found = [], past = [];
 beforeAll(() => {
   for (const seed of [8, 13, 21, 34, 55, 89]) for (const vets of [false, true]) {
     const { cast, teams } = raceCast(12, seed);
@@ -26,6 +28,7 @@ beforeAll(() => {
     const res = playRaceSeason({ teams, seed });
     const ep = airSeason(res)[0];
     for (const s of ep.segments) {
+      if (s.kind !== 'team-intro') for (const l of s.lines || []) if (PAST.some(re => re.test(l.text))) past.push(`${s.lineId}: ${l.text}`);
       if ((s.t ?? 0) >= FRESH || ['team-intro', 'don-narrate', 'don-opener'].includes(s.kind)) continue;
       for (const l of s.lines || []) if (HISTORY.some(re => re.test(l.text))) found.push(`${s.lineId}: ${l.text}`);
     }
@@ -35,6 +38,9 @@ beforeAll(() => {
 describe('rr lines: the first hour of the race', () => {
   it('never talks about a race that has not happened yet', () => {
     expect([...new Set(found)]).toEqual([]);
+  });
+  it('never talks on the first leg about legs, nights or camels that came before it', () => {
+    expect([...new Set(past)]).toEqual([]);
   });
   it('knows the lines from the user\'s Home City transcript for what they are', () => {
     const byText = t => Object.values(POOLS).flat().find(e => (e.turns || []).some(x => [x.say, x.conf, x.beat].includes(t)));

@@ -58,7 +58,7 @@ export function createStage(holder, { faceOf, legLabel }) {
   <div class="vn" id="rr-vn"><img class="av" id="rr-vnav" alt=""><div class="tx"><span class="nm" id="rr-vnnm"></span><span class="tm" id="rr-vntm"></span><div class="ln" id="rr-vnln"></div></div><div class="more">▼</div></div></div>`;
   const $ = id => holder.querySelector('#' + id);
   const stage = $('rr-stage'), frame = $('rr-frame'), cam = $('rr-cam'), under = $('rr-under'), toks = $('rr-toks'), fx = $('rr-fx'), ui = $('rr-ui'), amb = $('rr-amb');
-  let curLift = 0, timers = [], flip = false, cur = { ep: null, si: -1, idx: -1 }, typer = null, side = 'left', lastWho = null, ambTimer = null;
+  let curLift = 0, timers = [], flip = false, cur = { ep: null, si: -1, idx: -1 }, typer = null, lastWho = null, ambTimer = null;
   const later = (ms, fn) => timers.push(setTimeout(fn, ms));
   const clearTimers = () => { timers.forEach(clearTimeout); timers = []; clearInterval(typer); };
 
@@ -284,10 +284,10 @@ export function createStage(holder, { faceOf, legLabel }) {
     const by = step.by;
     const team = step.team;
     const c = by === 'Don' ? '#f7c948' : team ? ep.color[team] : '#c9d3ea';
-    if (by !== lastWho) side = by === 'Don' ? 'left' : (lastWho && side === 'left' ? 'right' : 'left');
+    // every face on the left of the box, whoever speaks (2026-10-21, the user: the faces flipping sides "doesnt read really well")
     lastWho = by;
     const beat = step.part === 'beat';
-    box.className = `vn on ${iv || beat ? '' : side}${beat ? ' beat' : ''}${step.part === 'pause' ? ' pause' : ''}${fresh ? ' fresh' : ''}`;
+    box.className = `vn on ${iv || beat ? '' : 'left'}${beat ? ' beat' : ''}${step.part === 'pause' ? ' pause' : ''}${fresh ? ' fresh' : ''}`;
     box.style.setProperty('--c', c);
     av.style.display = iv || beat ? 'none' : '';
     if (!iv && !beat) {
@@ -883,7 +883,7 @@ export function createStage(holder, { faceOf, legLabel }) {
       // draw the screen from scratch, as it stands after step k
       toks.innerHTML = ''; fx.innerHTML = ''; under.innerHTML = ''; ui.innerHTML = '';
       stage.querySelectorAll('.timecard').forEach(e => e.remove());
-      if (!same) { lastWho = null; side = 'left'; }
+      if (!same) lastWho = null;
       cur = { ep, si, idx: k };
       hud(ep, s);
       stage.classList.toggle('replay', !!s.replay);

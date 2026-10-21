@@ -235,12 +235,17 @@ function draw(R, fresh) {
   const n = R.root.querySelector('.stepn');
   if (n) n.textContent = `${R.c.name} · ${R.at + 1} of ${R.flat.length}`;
   const end = R.at >= R.flat.length - 1, nx = R.root.querySelector('.rrx-btn.go');
-  if (nx) { nx.textContent = end ? 'End of this part' : 'Next ▶'; nx.classList.toggle('done', end); }
+  if (nx) { nx.textContent = end ? 'Next part ▶' : 'Next ▶'; nx.classList.remove('done'); }
 }
-// (the player stays on its screen: at the end it stops, and the pane's list moves on)
+// (the bar, Back and the skips stay on this screen; a click or Next on its last line moves on to the next one, and Auto
+// keeps playing there: 2026-10-21, the user: "clicking just advance u to the next screen if u are at the end")
 function next(R) {
   if (R.at < R.flat.length - 1) { R.at++; draw(R, true); return; }
+  const wasAuto = !!R.auto;
   stopAuto(R);
+  if (typeof window === 'undefined' || typeof window.vpNext !== 'function') return;
+  window.vpNext();
+  if (wasAuto) setTimeout(() => { const nx = document.querySelector('.rrx[data-key]'); if (nx && nx !== R.root) rrxAuto(nx); }, 700);
 }
 function back(R) {
   stopAuto(R);

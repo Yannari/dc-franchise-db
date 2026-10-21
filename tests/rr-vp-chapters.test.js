@@ -74,13 +74,17 @@ describe('rr viewer: a screen for every step of a challenge', () => {
 describe('rr viewer: the player plays its own screen', () => {
   const src = readFileSync('js/vp-rr-ep/vp.js', 'utf8');
   const body = name => { const m = src.match(new RegExp(`function ${name}\\(R[^)]*\\) \\{[\\s\\S]*?\\n\\}`)); return m ? m[0] : ''; };
-  it('stops at the end of the screen and at its start: Next, Back and the skips never leave it', () => {
-    for (const fn of ['next', 'back']) {
-      expect(body(fn), fn).not.toBe('');
-      expect(body(fn), fn).not.toMatch(/vpNext|vpPrev|openVisualPlayer|goToPart/);
-    }
+  it('stops at the start of the screen: Back and the skips never leave it', () => {
+    expect(body('back')).not.toBe('');
+    expect(body('back')).not.toMatch(/vpNext|vpPrev|openVisualPlayer|goToPart/);
     const skip = src.match(/export function rrxSkip[\s\S]*?\n\}/)[0];
     expect(skip).not.toMatch(/goToPart|vpNext|vpPrev/);
+  });
+  // (2026-10-21, the user: "clicking just advance u to the next screen if u are at the end of ur current screen")
+  it('a click or Next on the last line of a screen moves on to the next screen, and Auto keeps playing there', () => {
+    const nx = body('next');
+    expect(nx).toMatch(/R\.at < R\.flat\.length - 1[\s\S]*window\.vpNext\(\)/);
+    expect(nx).toMatch(/rrxAuto/);
   });
   it('draws a media bar of this screen only, a piece per shot in it, never the whole leg', () => {
     expect(src).not.toMatch(/R\.chapters\.map\(\(x, k\) =>\s*`<i data-k/);

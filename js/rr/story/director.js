@@ -180,8 +180,12 @@ const FOLLOW_AT_TASK = 3;
 function stageBeats(state, row, i) {
   const [x, y] = people(state, row.team);
   const [a, b] = row.kind === 'botch' && row.who && [x, y].includes(row.who) ? [row.who, row.who === x ? y : x] : [x, y];
+  // (one fail a stage, two at most; a team that gives up always airs the moment it gave up: Coast Palace's fin, three
+  // misses, and the quit itself was the one cut)
   let fails = 0;
-  return row.stages.filter(e => e.ok || ++fails <= STAGE_FAILS).map((e, j) => ({
+  const last = row.stages.length - 1, seen = new Set();
+  const keep = (e, j) => e.ok || (row.quit && j === last) || (!seen.has(e.id) && (seen.add(e.id), ++fails <= STAGE_FAILS));
+  return row.stages.filter(keep).map((e, j) => ({
     id: `stage:${row.leg}:${row.team}:${row.stretch}:${i}:${j}`, leg: row.leg, kind: 'task-stage', who: [a, b], seenBy: [a, b],
     data: { ending: e.ok ? 'ok' : 'fail', team: row.team, stretch: row.stretch, stage: e.id, t: Math.round(e.t), from: row.from, to: row.to,
       side: row.side, snap: row.snap ? { ...row.snap, fails: row.fails, side: row.side ?? row.snap.side, botcher: row.who ?? row.snap.botcher,

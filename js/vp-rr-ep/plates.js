@@ -1043,6 +1043,23 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'treasure-isles': {
+    // (the museum wide and the map shop close; the dock; the water from above; the reef, the tunnels, the cave)
+    'pirate-map': {
+      'the-museum': { label: 'THE PIRATE MUSEUM', plate: ['task-9449549', {}] },
+      'unroll-maps': { label: 'MAP AFTER MAP', plate: ['task-9449621', { mode: 'search', prop: 'map' }], fail: ['task-9449621', { mode: 'search', prop: 'map' }], stamp: 'PLAIN MAP' },
+      'tug-of-war': { label: 'MINE!', plate: ['task-9449549', { deco: [['map', 50, 97, 5]] }], fail: ['task-9449549', { deco: [['map', 50, 97, 5]] }], stamp: 'LOST IT' },
+      'logo-map': { label: 'THE RIGHT MAP', plate: ['task-9449621', { deco: [['map', 40, 98, 6]] }] },
+    },
+    doubloons: {
+      'tank-on': { label: 'TANK ON', plate: ['task-9449601', { mode: undefined, prop: undefined, path: undefined, water: false, g: 74, x: [10, 40], deco: [['mask', 34, 74, 4]] }],
+        fail: ['task-9449601', { mode: undefined, prop: undefined, path: undefined, water: false, g: 74, x: [10, 40], deco: [['mask', 34, 74, 4]] }], stamp: 'NOT YET' },
+      'going-under': { label: 'UNDER', plate: ['task-9449592', { mode: 'dive', inset: 'IN THE BOAT' }] },
+      'the-tunnels': { label: 'THE TUNNELS', plate: ['task-9449762', { mode: 'swim', inset: 'IN THE BOAT' }], fail: ['task-9449762', { mode: 'swim', inset: 'IN THE BOAT' }], stamp: 'LOW ON AIR' },
+      'the-gold': { label: 'THE GOLD', plate: ['task-9449759', { mode: 'dive' }], fail: ['task-9449759', { mode: 'dive' }], stamp: 'OUT OF AIR' },
+      surface: { label: 'GOLD!', plate: ['task-9449601', { mode: undefined, prop: undefined, path: undefined, water: false, g: 74, x: [10, 40], deco: [['doubloons', 14, 74, 5]] }] },
+    },
+  },
   'tea-hills': {
     // (the terraces and the inside of a carriage are jobs in edit/: the hills and the carriage from outside stand in)
     'tea-basket': {

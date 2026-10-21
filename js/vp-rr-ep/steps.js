@@ -1733,6 +1733,11 @@ export function chaptersOf(e, placeId) {
   const matId = (place?.stretches || []).find(s => s.kind === 'mat')?.id || 'mat';
   const chapters = [];
   let front = -1;
+  // a challenge in stages: each stage the leaders reach opens its own chapter (2026-10-20, the user: "1 screen for 1
+  // step of the challenge"); a team behind on an earlier stage cuts in where it is, as the teams behind always have
+  const stagesOfStretch = (id, side) => { const st = place?.stretches.find(x => x.id === id);
+    return (side && st?.sides?.find(d => d.id === side)?.stages) || st?.stages || null; };
+  const stageFront = {};
   e.screens.forEach((s, si) => {
     const task = String(s.hud?.task || '').toUpperCase();
     let key = null, name = null;
@@ -1746,7 +1751,17 @@ export function chaptersOf(e, placeId) {
       key = stretch;
       name = stretch === matId ? (e.kind === 'final' ? 'The Finish Line' : 'The Chill Zone') : label.get(stretch);
     }
-    if (key) chapters.push({ key, name, from: si, to: si });
+    let stage = false;
+    if (!key && s.seg === 'task-stage' && s.stage && (order.get(s.stretch) ?? -1) === front) {
+      const list = stagesOfStretch(s.stretch, s.side), k = (list || []).findIndex(x => x.id === s.stage);
+      if (k > (stageFront[s.stretch] ?? -1)) {
+        stageFront[s.stretch] = k;
+        const sg = stretchPlates(placeId, s.stretch, s.side)?.stages?.[s.stage];
+        const nice = String(sg?.label || s.stage.replace(/-/g, ' ')).toLowerCase().replace(/(^|\s)\S/g, m => m.toUpperCase());
+        key = `${s.stretch}:${s.stage}`; name = `${label.get(s.stretch)} · ${nice}`; stage = true;
+      }
+    }
+    if (key) chapters.push({ key, name, from: si, to: si, ...(stage ? { stage: true } : {}) });
     else chapters.at(-1).to = si;
   });
   return chapters;

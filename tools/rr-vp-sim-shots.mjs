@@ -48,8 +48,11 @@ for (const name of kindList.split(',')) {
     return out[Math.floor(out.length / 2)] || null;
   }, KINDS[name]);
   if (!where) { console.log('no', name); continue; }
-  await page.evaluate(({ ci, at }) => { const key = document.querySelector('.rrx[data-key]').dataset.key; window._rrx[key].pending = { ci, at: Math.max(0, at - 1) }; window.vpGoTo(ci); }, where);
+  // (the player stays in its part: open the part, then skip to the line before inside it)
+  await page.evaluate(({ ci }) => window.vpGoTo(ci), where);
   await page.waitForTimeout(900);
+  await page.evaluate(({ at }) => window.rrxSkip(document.querySelector('.rrx .rrx-btn.go'), Math.max(0, at - 1)), where);
+  await page.waitForTimeout(300);
   await page.evaluate(() => window.rrxNext(document.querySelector('.rrx .rrx-btn.go')));
   await page.waitForTimeout(1700);
   const file = `shots/rr-vp/sim-s${seed}-l${leg}-${name}.png`;

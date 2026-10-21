@@ -62,7 +62,8 @@ describe('rr music: the plan', () => {
 
   it('still changes on every hard moment: a chapter, the Don Box, the elimination, the end', () => {
     for (const { ep, plan } of legs) {
-      const starts = new Set(chaptersOf(ep, ep.place).map(c => c.from));
+      // (a challenge's chapter; each of its stages has one too, and keeps the challenge's music on: tests/rr-vp-chapters)
+      const starts = new Set(chaptersOf(ep, ep.place).filter(c => !c.stage).map(c => c.from));
       plan.forEach(x => {
         const s = ep.screens[x.si], raw = soundAt(ep, x.si, x.k).bed;
         const where = `${s.id} ${s.seg || s.kind} step ${x.k}`;

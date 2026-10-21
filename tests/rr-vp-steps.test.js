@@ -367,7 +367,7 @@ describe('rr viewer sound', () => {
   it('tells the simulator pane to play the race own bed, the one already on, never one of its own', () => {
     const src = readFileSync('js/vp-rr-ep/vp.js', 'utf8');
     expect(src).toMatch(/class="rrx"[^>]*data-ambient="\$\{esc\(bed\)\}"/);
-    expect(src).toMatch(/soundAt\(e, c\.from, 0\)\.bed/);
+    expect(src).toMatch(/plan\.find\(x => x\.si === c\.from && x\.k === 0\)/);
   });
 });
 

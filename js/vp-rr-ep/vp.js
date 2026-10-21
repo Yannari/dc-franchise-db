@@ -7,7 +7,10 @@
 // leaders reach it, The Chill Zone. A chapter starts the first time the race's front reaches a new challenge (or the
 // mat); the cutaways to the teams behind stay in the chapter they interrupt. The readout (rr-view.js) is one button
 // away on every screen and the choice is remembered; a leg picker and "Next leg" move between the legs that aired
-// without leaving the player.
+// without leaving the player. Each stage of a challenge is a chapter of its own (steps.js chaptersOf), and the player
+// plays the screen it is on, nothing more (2026-10-20, the user: "dont let the media player navigate the whole episode
+// only navigate their screen"): its bar is this screen's shots, and Next, Back and the skips stop at its ends; the
+// pane's own list and arrows move between screens.
 //
 // The race is the one the run tab built, played again in this page (rr-run.js racePlayed: the same teams, seed and
 // history give the same race), cut into screens by the viewer's own pure steps (steps.js). The pane re-renders a
@@ -20,7 +23,7 @@ import { episodeScreens, flatSteps, chaptersOf } from './steps.js';
 import { createStage } from './stage.js';
 import { createSidebar } from './sidebar.js';
 import { RR_CSS } from './style.js';
-import { playStep, soundAt, registerBed, soundControlsHtml, wireSoundControls } from './sound.js';
+import { playStep, soundAt, planBeds, registerBed, soundControlsHtml, wireSoundControls } from './sound.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const reg = () => (typeof window !== 'undefined' ? (window._rrx ||= {}) : (globalThis._rrx ||= {}));
@@ -76,6 +79,7 @@ const EXTRA = `
 .rrx .rrx-btn{font:800 13px Rubik;padding:7px 12px;border-radius:10px;border:0;background:#1d2747;color:#fff;cursor:pointer}
 .rrx .rrx-btn.go{background:#f7c948;color:#0f1424}
 .rrx .rrx-btn.on{background:#39c0ff;color:#0f1424}
+.rrx .rrx-btn.go.done{background:#2a3354;color:#8b95b3;cursor:default}
 .rrx .rrx-ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
 .rrx .rrx-ctrl .stepn{margin-left:auto;font-size:12px;color:#8b95b3}
 .rrx .rrx-body{display:grid;grid-template-columns:minmax(0,1fr) 36px;gap:12px}
@@ -108,17 +112,23 @@ export function raceStepVpScreens(row, { played, aired = [] } = {}) {
   const e = { ...episodeScreens(played.res, played.eps, i), res: played.res };
   const chapters = chaptersOf(e, played.res.legs[i].place);
   const key = `rr${row.num}`;
-  const all = flatSteps(e.screens);
-  const sizes = chapters.map(c => all.filter(f => f.si >= c.from && f.si <= c.to).length);
-  reg()[key] = { row, e, chapters, sizes, aired: aired.map(r => ({ num: r.num, place: r.rr?.placeName || '' })), pending: null };
+  reg()[key] = { row, e, chapters, aired: aired.map(r => ({ num: r.num, place: r.rr?.placeName || '' })) };
   const phase = { id: 'rr-leg', label: `Leg ${row.num} · ${row.rr?.placeName || ''}`, icon: '🏁' };
   // each chapter names the bed its first step plays, so the pane asks for the music that is already on (never
   // silence and a restart of the same track at every chapter: an overlap of the track with itself)
-  const bedOf = c => { try { const b = soundAt(e, c.from, 0).bed; return b ? registerBed(b) : 'none'; } catch { return 'none'; } };
+  // (the music plan's: a stage's chapter keeps the challenge's music on, so it names that, not a fresh start)
+  const plan = (() => { try { return planBeds(e); } catch { return []; } })();
+  const bedOf = c => { try { const b = (plan.find(x => x.si === c.from && x.k === 0) || {}).bed ?? soundAt(e, c.from, 0).bed; return b ? registerBed(b) : 'none'; } catch { return 'none'; } };
   return chapters.map((c, ci) => ({ id: `rr-c${ci}`, label: c.name, html: shell(key, ci, c, row, bedOf(c)), phase,
     icon: ICONS[c.key] || (c.name === 'The Chill Zone' ? ICONS.mat : '⚑') }));
 }
 
+// the shots of a chapter, for its bar: [{ si, n: its lines, name }]
+function shotsOf(R, c) {
+  const out = [];
+  for (let si = c.from; si <= c.to; si++) { const sc = R.e.screens[si]; if (sc?.steps?.length) out.push({ si, n: sc.steps.length, name: sc.hud?.task || sc.seg || '' }); }
+  return out;
+}
 function shell(key, ci, c, row, bed = 'none') {
   const R = reg()[key];
   const legs = R.aired.map(a => `<option value="${a.num}"${a.num === row.num ? ' selected' : ''}>Leg ${a.num} · ${esc(a.place)}</option>`).join('');
@@ -130,8 +140,8 @@ function shell(key, ci, c, row, bed = 'none') {
     <button type="button" class="rrx-btn" onclick="rrxSwitchViewer('readout')" title="Every line of the leg as text">Transcript</button></div>
   <div class="rrx-body">
     <div><div class="stage-holder rrx-holder" style="position:relative"></div>
-      <div class="rrx-scrub" title="Click or drag to go anywhere in the leg">${R.chapters.map((x, k) =>
-        `<i data-k="${k}" style="flex:${Math.max(1, R.sizes[k])}" title="${esc(x.name)}"><b></b></i>`).join('')}<span class="knob"></span></div>
+      <div class="rrx-scrub" title="Click or drag to go anywhere in this part">${shotsOf(R, c).map((x, k) =>
+        `<i data-k="${k}" style="flex:${Math.max(1, x.n)}" title="${esc(x.name)}"><b></b></i>`).join('')}<span class="knob"></span></div>
       <div class="rrx-ctrl">
         <button type="button" class="rrx-btn" onclick="rrxSkip(this,-1e9)" title="Back to the start of this part">⏮</button>
         <button type="button" class="rrx-btn" onclick="rrxSkip(this,-10)" title="Ten lines back">⏪ 10</button>
@@ -168,7 +178,7 @@ function runner(root) {
   let open = false;
   try { open = localStorage.getItem(INTEL_KEY) === '1'; } catch { open = false; }
   root.classList.toggle('intel-open', open);
-  const R = { root, R0, c, flat, at: -1, stage, side, auto: null, ci: Number(root.dataset.ci), last: Number(root.dataset.ci) === R0.chapters.length - 1 };
+  const R = { root, R0, c, flat, shots: shotsOf(R0, c), at: -1, stage, side, auto: null, ci: Number(root.dataset.ci) };
   stage.el.addEventListener('click', () => next(R));
   wireSoundControls(root.querySelector('.rrx-snd'));
   scrubber(R);
@@ -176,7 +186,7 @@ function runner(root) {
   RUNNERS.add(R);
   return R;
 }
-// the media bar: the whole leg, a segment per part; a click or a drag goes there, into another part too
+// the media bar: this part, a piece per shot; a click or a drag goes there, and never out of the part
 function scrubber(R) {
   const bar = R.root.querySelector('.rrx-scrub');
   if (!bar) return;
@@ -186,37 +196,32 @@ function scrubber(R) {
     if (!el) el = x < segs[0].getBoundingClientRect().left ? segs[0] : segs[segs.length - 1];
     const k = Number(el.dataset.k), r = el.getBoundingClientRect();
     const f = Math.max(0, Math.min(0.999, (x - r.left) / Math.max(1, r.width)));
-    return { ci: k, at: Math.floor(f * Math.max(1, R.R0.sizes[k])) };
+    const before = R.shots.slice(0, k).reduce((a, x2) => a + x2.n, 0);
+    return Math.min(R.flat.length - 1, before + Math.floor(f * Math.max(1, R.shots[k]?.n || 1)));
   };
   let dragging = false;
-  const seek = x => {
-    const t = target(x);
-    if (t.ci === R.ci) { if (t.at !== R.at) { R.at = t.at; draw(R, false); } return; }
-    if (dragging) return;            // a drag stays in this part; a click goes to the other one
-    goToPart(R, t.ci, t.at);
-  };
-  bar.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); stopAuto(R); const t = target(e.clientX); if (t.ci !== R.ci) { goToPart(R, t.ci, t.at); return; } dragging = true; try { bar.setPointerCapture(e.pointerId); } catch { /* old browsers */ } seek(e.clientX); });
+  const seek = x => { const at = target(x); if (at !== R.at) { R.at = at; draw(R, false); } };
+  bar.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); stopAuto(R); dragging = true; try { bar.setPointerCapture(e.pointerId); } catch { /* old browsers */ } seek(e.clientX); });
   bar.addEventListener('pointermove', e => { if (dragging) seek(e.clientX); });
   const drop = e => { if (!dragging) return; dragging = false; try { bar.releasePointerCapture(e.pointerId); } catch { /* fine */ } };
   bar.addEventListener('pointerup', drop);
   bar.addEventListener('pointercancel', drop);
   bar.addEventListener('click', e => e.stopPropagation());
 }
-function goToPart(R, ci, at) {
-  R.R0.pending = { ci, at };
-  if (typeof window.vpGoTo === 'function') window.vpGoTo(ci);
-}
 function paintBar(R) {
   const segs = R.root.querySelectorAll('.rrx-scrub i');
-  segs.forEach((sg, k) => {
-    sg.classList.toggle('cur', k === R.ci);
+  // which shot the line is in, and how far into it
+  let k = 0, into = R.at;
+  while (k < R.shots.length - 1 && into >= R.shots[k].n) { into -= R.shots[k].n; k++; }
+  segs.forEach((sg, j) => {
+    sg.classList.toggle('cur', j === k);
     const b = sg.querySelector('b');
-    if (b) b.style.width = k < R.ci ? '100%' : k > R.ci ? '0%' : `${((R.at + 1) / Math.max(1, R.flat.length)) * 100}%`;
+    if (b) b.style.width = j < k ? '100%' : j > k ? '0%' : `${((into + 1) / Math.max(1, R.shots[j].n)) * 100}%`;
   });
-  const cur = segs[R.ci], knob = R.root.querySelector('.rrx-scrub .knob'), bar = R.root.querySelector('.rrx-scrub');
+  const cur = segs[k], knob = R.root.querySelector('.rrx-scrub .knob'), bar = R.root.querySelector('.rrx-scrub');
   if (cur && knob && bar) {
     const r = cur.getBoundingClientRect(), b = bar.getBoundingClientRect();
-    knob.style.left = `${r.left - b.left + r.width * ((R.at + 0.5) / Math.max(1, R.flat.length))}px`;
+    knob.style.left = `${r.left - b.left + r.width * ((into + 0.5) / Math.max(1, R.shots[k].n))}px`;
   }
 }
 function draw(R, fresh) {
@@ -228,37 +233,28 @@ function draw(R, fresh) {
   playStep(R.R0.e, f.si, f.idx, fresh);
   R.side.paint(R.R0.e, f.si, f.idx, { speaking: R.R0.e.screens[f.si].steps[f.idx]?.team || null });
   const n = R.root.querySelector('.stepn');
-  const before = R.R0.sizes.slice(0, R.ci).reduce((a, x) => a + x, 0), total = R.R0.sizes.reduce((a, x) => a + x, 0);
-  if (n) n.textContent = `${R.c.name} · ${before + R.at + 1} of ${total}`;
-  const nx = R.root.querySelector('.rrx-btn.go');
-  if (nx) nx.textContent = R.at >= R.flat.length - 1 ? (R.last ? (nextLeg(R) ? 'Next leg ▶' : 'The end') : 'Next part ▶') : 'Next ▶';
+  if (n) n.textContent = `${R.c.name} · ${R.at + 1} of ${R.flat.length}`;
+  const end = R.at >= R.flat.length - 1, nx = R.root.querySelector('.rrx-btn.go');
+  if (nx) { nx.textContent = end ? 'End of this part' : 'Next ▶'; nx.classList.toggle('done', end); }
 }
-function nextLeg(R) { const a = R.R0.aired; const k = a.findIndex(x => x.num === R.R0.row.num); return k >= 0 ? a[k + 1] || null : null; }
+// (the player stays on its screen: at the end it stops, and the pane's list moves on)
 function next(R) {
   if (R.at < R.flat.length - 1) { R.at++; draw(R, true); return; }
   stopAuto(R);
-  if (!R.last) { if (typeof window.vpNext === 'function') window.vpNext(); return; }
-  const n = nextLeg(R);
-  if (n && typeof window.openVisualPlayer === 'function') window.openVisualPlayer(n.num);
 }
 function back(R) {
   stopAuto(R);
-  if (R.at > 0) { R.at--; draw(R, false); return; }
-  if (typeof window.vpPrev === 'function') window.vpPrev();
+  if (R.at > 0) { R.at--; draw(R, false); }
 }
 function stopAuto(R) { if (R.auto) { clearTimeout(R.auto); R.auto = null; R.root.querySelector('.rrx-auto')?.classList.remove('on'); } }
 
 export function rrxNext(el) { const R = runner(rootOf(el)); if (R) next(R); }
-/** Jump n lines on (or back), across parts; -1e9 is the start of this part. */
+/** Jump n lines on (or back) inside this part; -1e9 is its start. */
 export function rrxSkip(el, n) {
   const R = runner(rootOf(el)); if (!R) return;
   stopAuto(R);
-  if (n <= -1e8) { R.at = 0; draw(R, false); return; }
-  const to = R.at + n;
-  if (to >= 0 && to < R.flat.length) { R.at = to; draw(R, false); return; }
-  if (to < 0 && R.ci > 0) { const k = R.ci - 1; goToPart(R, k, Math.max(0, R.R0.sizes[k] + to)); return; }
-  if (to >= R.flat.length && !R.last) { goToPart(R, R.ci + 1, Math.min(R.R0.sizes[R.ci + 1] - 1, to - R.flat.length)); return; }
-  R.at = Math.max(0, Math.min(R.flat.length - 1, to)); draw(R, false);
+  R.at = n <= -1e8 ? 0 : Math.max(0, Math.min(R.flat.length - 1, R.at + n));
+  draw(R, false);
 }
 export function rrxBack(el) { const R = runner(rootOf(el)); if (R) back(R); }
 export function rrxAuto(el) {
@@ -305,9 +301,7 @@ if (typeof document !== 'undefined') {
       if (!root) return;
       const R = runner(root);
       if (!R) return;
-      const p = R.R0.pending;
-      if (p && p.ci === R.ci) { R.R0.pending = null; R.at = Math.max(0, Math.min(R.flat.length - 1, p.at)); draw(R, true); }
-      else if (R.at < 0) { R.at = 0; draw(R, true); }
+      if (R.at < 0) { R.at = 0; draw(R, true); }
     }, 0);
   });
   document.addEventListener('keydown', e => {

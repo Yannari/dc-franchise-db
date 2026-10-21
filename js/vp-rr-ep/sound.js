@@ -114,7 +114,8 @@ const PLANS = new WeakMap();
 /** The leg's music, step by step (flatSteps order): [{ si, k, bed, level, moment, change, hard }]. */
 export function planBeds(ep) {
   const flat = flatSteps(ep.screens);
-  const starts = new Set(chaptersOf(ep, ep.place).map(c => c.from));
+  // (a challenge's own chapter changes the music; each of its stages has a chapter too, and is no reason to)
+  const starts = new Set(chaptersOf(ep, ep.place).filter(c => !c.stage).map(c => c.from));
   const raw = flat.map(f => {
     const s = ep.screens[f.si], x = soundAt(ep, f.si, f.idx), m = x.moment;
     const first = f.idx === 0;

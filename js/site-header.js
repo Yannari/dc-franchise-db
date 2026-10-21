@@ -32,7 +32,6 @@ export const NAV_LINKS = [
   { href: 'index.html',            icon: '🏠',  label: 'Home' },
   { href: 'current-season.html',   icon: '📊',  label: 'Current Season' },
   { href: 'social.html',           icon: '💬',  label: 'Social' },
-  { href: 'voting-analytics.html', icon: '🧾',  label: 'Voting Analytics' },
   { href: 'franchise.html',        icon: '🏛️', label: 'Franchise' },
   // ONE ENTRY FOR FOUR PAGES.
   //

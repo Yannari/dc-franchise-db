@@ -412,11 +412,11 @@ describe('the pages that read a winner off the document', () => {
     expect(src).toContain('${_won.map(x=>{');
   });
 
-  it('voting-analytics captions every winner, not placements[0]', () => {
-    const src = readFileSync(join(process.cwd(), 'voting-analytics.html'), 'utf8');
-    const code = stmt(src, 'const winners = placements.filter', ".join(' & ');");
-    const run = (placements, data) =>
-      new Function('placements', 'data', `${code} return [winners, winner];`)(placements, data);
+  it('the voting chart captions every winner, not placements[0]', async () => {
+    // Moved from voting-analytics.html into js/vote-chart.js with the chart (2026-10-21).
+    const { winnersOf } = await import('../js/vote-chart.js');
+    const src = readFileSync(join(process.cwd(), 'js/vote-chart.js'), 'utf8');
+    const run = (placements, data) => { const r = winnersOf(placements, data); return [r.winners, r.winner]; };
     const [ws, caption] = run(SPLIT.placements, SPLIT);
     expect(ws).toEqual(['B', 'C', 'D', 'E']);
     expect(caption).toBe('B & C & D & E');

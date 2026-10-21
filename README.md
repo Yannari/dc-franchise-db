@@ -24,7 +24,7 @@ Live site: hosted on GitHub Pages.
 /
 ├── index.html               # Home page
 ├── current-season.html      # Live season tracker + AI tools
-├── voting-analytics.html    # Vote charts and breakdowns
+├── voting-analytics.html    # Redirect: vote charts live in each TD season's Vote History tab (js/vote-chart.js)
 ├── franchise.html           # All-time franchise stats
 ├── player.html              # Individual player profiles (query: ?player=slug)
 ├── seasons.html             # Season history list

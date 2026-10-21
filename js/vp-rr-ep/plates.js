@@ -184,7 +184,7 @@ export const PLACE_PLATES = {
   'skyline-finale': {
     src: '27-skyline-finale', title: 'present-9450080', opener: p('present-9450040', 97, [20, 80]),
     // (the observation deck, a job in edit/: only the stairs' last stage, once it's back)
-    stageOnly: [repaint('task-observation-deck', p('task-observation-deck', 92, [6, 94]), null)].filter(Boolean),
+    stageOnly: [repaint('task-observation-deck', p('task-observation-deck', 92, [12, 94]), null)].filter(Boolean),
     arrive: [p('arrive-9450078', 98, [4, 96])],
     props: { taxi: 'Bright Yellow Cartoon Taxi Side View-2', briefcase: 'Cartoon briefcase with taped gold clue card-3', buoy: 'Orange-capped lattice navigation buoy-1' },
     st: {
@@ -228,7 +228,7 @@ export const PLACE_PLATES = {
   'torch-statue-harbour': {
     src: '32-torch-statue-harbour', title: 'present-22412488', opener: p('present-22412601', 96, [40, 96]),
     // (the park pond, a job in edit/: only the apple's stages, once it's back)
-    stageOnly: [repaint('task-park-pond', p('task-park-pond', 92, [6, 94]), null)].filter(Boolean),
+    stageOnly: [repaint('task-park-pond', p('task-park-pond', 88, [6, 94]), null)].filter(Boolean),
     arrive: [p('arrive-22412323', 46, [6, 46])],
     props: { carriage: 'baby-carriage', apple: 'giant-apple', gator: 'sewer-alligator' },
     st: {
@@ -629,7 +629,7 @@ export const PLACE_PLATES = {
   'tea-hills': {
     src: '24-tea-hills', title: 'present-9448187', opener: p('present-9448586', 92, [6, 94]),
     // (the terraces and the inside of a carriage, jobs in edit/: only the stages use them once they're back)
-    stageOnly: [repaint('task-tea-terraces', p('task-tea-terraces', 92, [6, 94]), null), repaint('task-train-inside', p('task-train-inside', 92, [6, 94]), null)].filter(Boolean),
+    stageOnly: [repaint('task-tea-terraces', p('task-tea-terraces', 90, [8, 92]), null), repaint('task-train-inside', p('task-train-inside', 92, [6, 94]), null)].filter(Boolean),
     arrive: [p('arrive-9448231', 92, [20, 94])],
     props: { basket: 'Empty Tea Harvesting Basket-7', full: 'Leaf-filled wicker tea basket-6', picker: 'Tea Plantation Lady in Purple Sari-5' },
     st: {
@@ -1020,11 +1020,11 @@ const plateOf = (id, f, over = {}) => {
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
 const GATOR = [['gator', 70, 82, 16, { move: 'wander', span: -14, dur: 9 }]];
-const POND = repaint('task-park-pond', 'task-park-pond', 'chill-22413471'), POND_G = repaint('task-park-pond', 92, 86);
+const POND = repaint('task-park-pond', 'task-park-pond', 'chill-22413471'), POND_G = repaint('task-park-pond', 88, 86);
 const PANDA = [['panda', 60, 66, 9, { move: 'wander', span: 12, dur: 8 }]];
 const CROCS = [['croc', 74, 76, 22, { move: 'wander', span: 10, dur: 14 }]];
-const DECK = repaint('task-observation-deck', 'task-observation-deck', 'task-9450082'), DECK_G = repaint('task-observation-deck', 92, 95);
-const TERRACES = repaint('task-tea-terraces', 'task-tea-terraces', 'present-9448248'), TERRACES_G = repaint('task-tea-terraces', 92, 92);
+const DECK = repaint('task-observation-deck', 'task-observation-deck', 'task-9450082'), DECK_G = repaint('task-observation-deck', 92, 92);
+const TERRACES = repaint('task-tea-terraces', 'task-tea-terraces', 'present-9448248'), TERRACES_G = repaint('task-tea-terraces', 90, 92);
 const TRAIN_IN = repaint('task-train-inside', 'task-train-inside', 'task-9448388'), TRAIN_G = 92;
 const RUGS = repaint('task-rug-clearing', 'task-rug-clearing', 'task-9445378'), RUGS_G = repaint('task-rug-clearing', 92, 90);
 const BEANS = repaint('task-beans-table', 'task-beans-table', 'task-9444112'), BEANS_G = repaint('task-beans-table', 92, 94);
@@ -1073,7 +1073,7 @@ const STAGE_SHOTS = {
     },
     'big-apple': {
       'wade-in': { label: 'THE POND', plate: [POND, { mode: undefined, prop: undefined }], fail: [POND, { mode: undefined, prop: undefined }], stamp: 'COLD!' },
-      'mouth-only': { label: 'NO HANDS', plate: [POND, { mode: 'bob' }], fail: [POND, { mode: 'bob' }], stamp: 'HANDS!' },
+      'mouth-only': { label: 'NO HANDS', plate: [POND, { mode: 'bob', prop: 'apple', fx: 'splash' }], fail: [POND, { mode: 'bob', prop: 'apple', fx: 'splash' }], stamp: 'HANDS!' },
       'load-up': { label: 'INTO THE CARRIAGE', plate: [POND, { mode: undefined, prop: undefined, deco: [['carriage', 89, POND_G, 11], ['apple', 89, POND_G - 8, 6]] }],
         fail: [POND, { mode: undefined, prop: undefined, deco: [['carriage', 89, POND_G, 11], ['apple', 78, POND_G, 6]] }], stamp: 'DROPPED' },
       'push-it': { label: 'TO THE FOUNTAIN', plate: ['task-22412326', { mode: 'push', prop: 'carriage', path: [[10, 90], [34, 89], [58, 88]], deco: [['apple', 40, 70, 4]] }],

@@ -555,6 +555,9 @@ export const LIFE = {
  "assets/sets/rr/torch-statue-harbour/task-22412506.webp": [
   "water"
  ],
+ "assets/sets/rr/torch-statue-harbour/task-park-pond.webp": [
+  "water"
+ ],
  "assets/sets/rr/treasure-isles/arrive-9449512.webp": [
   "wind"
  ],

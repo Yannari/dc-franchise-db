@@ -27,6 +27,7 @@ import { resolveVetoRules, isDiamond } from './veto-rules.js';
 import { applyVetoDrawTwist } from './veto-draw.js';
 import { runPrizeExchange } from './prize-exchange.js';
 import { sendToCamp, runCampComeback, campers, CAMP_SIZE } from './camp-comeback.js';
+import { recordBBExits } from './exit-interview.js';
 import { duosActive, duosSittingOut, duoNominees, grantGoldenKey, expireKeys,
   announceDuos, keyHolders, repairOrphans, duosWeekLife, duoBlock,
   duoSafeWith, duoReplacementBlock, duoKinLabel, duoDoubleBlock, duoVoteResult,
@@ -6541,6 +6542,8 @@ export function simulateBBWeek(options = {}) {
   // bump made the counter jump 4 -> 6 and every episode after it was misnumbered
   // for the rest of the season. The second segment is the same night.
   if (Number(options.segment || 1) <= 1) gs.episode = (gs.episode || 0) + 1;
+    // Kristal-talKs: the one who walked (or was walked out) sits down this week.
+    recordBBExits(week, { rng });
     return week;
   }
 
@@ -7993,6 +7996,11 @@ export function simulateBBWeek(options = {}) {
   // stretch they caused. Merging two of them carried `hackerBlame` onto the
   // real post-noms stretch, the viewing party's existing fold suppressed it
   // as a stub, and the whole stretch vanished from the week.
+
+  // Kristal-talKs: whoever left for good tonight records an exit interview,
+  // and whoever is out and allowed to hears what has aired (js/bb/exit-interview.js).
+  // Outside the game — no screen — but the fans and the bonds it moves are real.
+  recordBBExits(week, { rng });
 
   return week;
 }

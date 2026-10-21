@@ -29,6 +29,7 @@ import { BB_COMPETITIONS } from './bb-comps/index.js';
 import { generateBBFinaleHouse } from './bb/finale-house.js';
 import { generateBBEvictionInterview, bbHostName } from './bb-aftermath.js';
 import { freshPick } from './bb/line-memory.js';
+import { recordBBFinaleExits } from './bb/exit-interview.js';
 
 // ── the last pitch ──────────────────────────────────────────────────────
 //
@@ -835,6 +836,11 @@ export function simulateBBFinale(rng = Math.random) {
   let favourite = null;
   try { favourite = runAmericasFavourite({ finalTwo, rng }); } catch { favourite = null; }
   if (favourite) acts.push({ type: 'americas-favourite', ...favourite });
+
+  // Kristal-talKs, after the result: the final three each record their own
+  // exit interview, and the jury — the vote now in — hears everything it was
+  // kept from. After America's Favourite, so tonight's hour moves no prize.
+  recordBBFinaleExits({ week: week.num, cut, winner, runnerUp, rng });
 
   _themeFinale('crown', { finalists: [...finalTwo], winner });
 

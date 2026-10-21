@@ -126,7 +126,8 @@ describe('numbers no page can disagree about', () => {
 //
 // "dont u think the episode will be repetitive ... its shallow" — v2's answer
 // is styles, presses, continuity and fact slots, and these hold each down.
-import { styleOf, voiceOf, composeEpisode, episodeComments, podcastAftermath, STYLES } from '../js/kristal-voice.js';
+import { styleOf, voiceOf, composeEpisode, episodeComments, podcastAftermath, STYLES, parseMoment } from '../js/kristal-voice.js';
+import { BEATS, MOMENT_BEATS } from '../js/kristal-lines.js';
 
 describe('the voice styles', () => {
   it('lets stats override the archetype — a villain with no temper control is a hothead first', () => {
@@ -176,10 +177,13 @@ describe('layered contestant voices', () => {
   });
 
   it('keeps exact archetypes audible when their fallback cadence is identical', () => {
+    // Same cadence, different worldview: the advice for the next cast is the archetype's own.
     const hero = voiceOf({ archetype: 'hero', stats: { loyalty: 7 } });
     const soldier = voiceOf({ archetype: 'loyal-soldier', stats: { loyalty: 7 } });
     expect(hero.cadence).toBe(soldier.cadence);
-    expect(episode(hero).exchanges[0].a).not.toBe(episode(soldier).exchanges[0].a);
+    const advice = v => episode(v).exchanges.find(x => x.topic === 'the-advice')?.a;
+    expect(advice(hero)).toBeTruthy();
+    expect(advice(hero)).not.toBe(advice(soldier));
   });
 
   it('uses high and low values across all nine stats as voice traits', () => {
@@ -193,8 +197,8 @@ describe('layered contestant voices', () => {
     } });
     expect(high.traits).toHaveLength(9);
     expect(low.traits).toHaveLength(9);
-    expect(episode(high).exchanges[0].a).not.toBe(episode(low).exchanges[0].a);
-    expect(episode(high).exchanges[2].a).not.toBe(episode(low).exchanges[2].a);
+    // Stats move the cadence (mental 2 rambles, strategic 9 audits): the whole hour reads differently.
+    expect(JSON.stringify(episode(high).exchanges)).not.toBe(JSON.stringify(episode(low).exchanges));
   });
 });
 
@@ -217,6 +221,7 @@ describe('the press', () => {
     const ep = { id: 'life-probe', kind: 'life', style: 'bomb', guestName: 'X',
       tier: 'solid', season: { format: 'big-brother', title: 'S' },
       facts: { season: 'S', votes: '8' },
+      story: { life: [{ kind: 'cancelled', line: 'X was widely condemned online.' }] },
       topics: [{ id: 'the-life', line: 'X was cancelled.' }, { id: 'behind-the-scenes' }] };
     const t = composeEpisode(ep, { words: {} });
     const pressed = t.exchanges.find(x => x.crack);
@@ -271,175 +276,177 @@ describe('the room under an episode', () => {
   });
 });
 
-describe('evidence-driven interviews', () => {
-  const receiptEpisode = tier => {
-    const voice = voiceOf({ archetype: 'mastermind', stats: {
-      strategic: 9, social: 7, loyalty: 5, intuition: 8, temperament: 6,
-    } });
-    const ep = { id: `receipts-${tier}`, kind: 'debrief', tier, voice,
-      guest: 'x', guestName: 'X', mentioned: 'r', season: { format: 'big-brother', title: 'S' },
-      facts: { season: 'S', placement: '5th', votes: '7', rival: 'R', rivalName: 'R' },
-      topics: [{ id: 'the-boot' }, { id: 'the-rivalry', about: 'R' },
-        { id: 'behind-the-scenes' }],
-      receipts: [
-        { id: 'votes-1', type: 'votes', statement: 'You received 7 votes across the season.', weight: 4 },
-        { id: 'challenge-1', type: 'challenges', statement: 'You won 3 challenges.', weight: 3 },
-        { id: 'moment-1', type: 'moment', statement: 'You changed sides at the final six.', weight: 4 },
-        { id: 'jury-1', type: 'jury', statement: 'The final vote was 5-2.', weight: 4 },
-      ],
-    };
-    Object.assign(ep, composeEpisode(ep, {
-      words: { player: 'houseguest', players: 'houseguests', exit: 'evicted' },
-    }));
-    ep.aftermath = podcastAftermath(ep);
-    return ep;
-  };
+// ── v3: the record, read into beats (the user, 2026-10-21: "they barely respond to the host's
+// question, never naming names, it's just boring and repetitive") ──
 
-  it('puts published receipts into the conversation with explicit response behavior', () => {
-    const ep = receiptEpisode('viral');
-    const receipts = ep.exchanges.filter(x => x.receipt);
-    expect(receipts.length).toBeGreaterThanOrEqual(3);
-    expect(receipts.every(x => x.q.includes(x.receipt.statement))).toBe(true);
-    expect(receipts.every(x => ['own', 'explain', 'justify', 'dispute', 'deflect', 'reframe', 'apologize']
-      .includes(x.behavior))).toBe(true);
+const VOICES = ['bomb', 'analyst', 'hothead', 'charmer', 'earnest', 'deadpan', 'chaos', 'rambler'];
+const storyEp = (id, story, extra = {}) => ({
+  id, kind: 'debrief', tier: 'viral', style: 'analyst', guestName: story.guest,
+  season: { format: 'total-drama', title: 'Camp' },
+  story: { season: 'Camp', format: 'total-drama', place: '5th', placement: 5, castNames: [], allies: [], rivals: [],
+    rivalOf: [], betrayed: [], betrayedBy: [], moments: [], aboutYou: [], stats: [], life: [], ...story },
+  ...extra,
+});
+
+describe('every question is answered by an answer written for it', () => {
+  // The first v3 draft pooled a beat's answers, and "When did you find out?" was answered "I'd answer, and
+  // I'd ask about Misha's mother first" — the answer to "If they called you tonight". So each angle carries
+  // its own answers, and its own press with its own cracks, in every voice.
+  const angles = [...Object.entries(BEATS), ...Object.entries(MOMENT_BEATS).map(([k, v]) => [`moment:${k}`, v])];
+  it('answers every angle in all eight voices', () => {
+    for (const [beat, list] of angles) for (const g of list) {
+      for (const v of VOICES) {
+        const bank = g.byRel ? Object.values(g.byRel).map(b => b[v]) : [g.a[v]];
+        for (const b of bank) expect(b?.length, `${beat}/${g.k} has no ${v} answer`).toBeGreaterThan(0);
+      }
+      for (const p of g.press || []) for (const v of VOICES) {
+        expect(p.c[v]?.length, `${beat}/${g.k} press "${p.p}" has no ${v} crack`).toBeGreaterThan(0);
+      }
+    }
   });
-
-  it('answers an early conflict receipt as a conflict, not as a generic strategic choice', () => {
-    const voice = voiceOf({ archetype: 'villain', stats: {
-      strategic: 8, social: 6, loyalty: 2, temperament: 4,
-    } });
-    const ep = { id: 'isabel-marissa-receipt', kind: 'debrief', tier: 'solid', voice,
-      guest: 'isabel', guestName: 'Isabel', season: { format: 'total-drama', title: 'S' },
-      facts: { season: 'S', placement: '6th' },
-      topics: [{ id: 'the-boot' }, { id: 'behind-the-scenes' }],
-      receipts: [{ id: 'moment-1', type: 'moment', weight: 4,
-        statement: "Episode 1: Clashed with Marissa immediately, setting up one of the season's earliest hero-villain dynamics." }],
-    };
-    const out = composeEpisode(ep, {
-      words: { player: 'contestant', players: 'contestants', exit: 'voted out' },
-    });
-    const receipt = out.exchanges.find(x => x.receipt);
-    expect(receipt.q).toContain('Clashed with Marissa immediately');
-    expect(receipt.a).toMatch(/yes|clash|disagreed|distrust/i);
-    expect(receipt.a).toMatch(/tension|conflict|relationship/i);
-    expect(receipt.a).not.toMatch(/best option|several earlier decisions|isolated scene/i);
+  it('never asks a question about somebody the angle cannot name', () => {
+    for (const [beat, list] of angles) for (const g of list) {
+      const usesX = g.q.some(q => q.includes('{x}'));
+      if (g.need !== 'x') expect(usesX, `${beat}/${g.k} asks about {x} without needing one`).toBe(false);
+    }
   });
+});
 
+describe('reading who did what to whom', () => {
+  const cast = ['Sami', 'Spencer', 'Julia', 'Misha', 'Joel', 'Oliwia', 'Aiden', 'Logan', 'Aubrey', 'Bowie', 'Jane'];
+  it('puts every name after "blindsided by" on the doing side', () => {
+    const m = parseMoment('Episode 16: Blindsided by Sami, Spencer and Julia.', cast);
+    expect(m.cls).toBe('by');
+    expect(m.doers).toEqual(['Sami', 'Spencer', 'Julia']);
+    expect(m.ep).toBe('Episode 16');
+  });
+  it('reads "after Aiden flips onto him" as Aiden doing it', () => {
+    const m = parseMoment('Episode 7: Is voted out 5-1 after Aiden flips onto him.', cast);
+    expect(m.cls).toBe('by');
+    expect(m.x).toBe('Aiden');
+  });
+  it('does not read a kindness or a warning as a betrayal', () => {
+    expect(parseMoment('Finale: Chosen by Misha over Joel, then lost 5-4.', cast).cls).not.toBe('by');
+    expect(parseMoment("Episode 19: Played her idol after Logan's warning, nullifying votes.", cast).cls).not.toBe('by');
+  });
+  it('gives an exit to the person who left, not the one who stayed', () => {
+    expect(parseMoment('Episode 18: Survived cross-pressure while Oliwia went home.', cast).cls).not.toBe('exit');
+  });
+  it('reads a betrayal by its subject', () => {
+    const m = parseMoment('Broke the Aubrey final-three pact to protect Bowie.', cast);
+    expect(m.cls).toBe('betrayal');
+    expect(m.x).toBe('Aubrey');
+  });
+});
+
+describe('the interview reads the record', () => {
+  it('reads the betrayal out and asks about the person in it, by name', () => {
+    const m = parseMoment('Episode 3: Broke the Aubrey final-three pact to protect Bowie.', ['Aubrey', 'Bowie']);
+    const out = composeEpisode(storyEp('kt-betrayal', { guest: 'Spencer', betrayed: ['Aubrey'], why: { Aubrey: m },
+      moments: [m], castNames: ['Aubrey', 'Bowie'] }), { words: {} });
+    const x = out.exchanges.find(e => e.topic === 'the-betrayal');
+    expect(x.q).toContain('Broke the Aubrey final-three pact');
+    expect(x.q).toContain('Aubrey');
+    expect(x.a).toContain('Aubrey');
+  });
+  it('asks what was said in a fight, and the answer says who said it', () => {
+    const m = parseMoment("Episode 1: Clashed with Marissa immediately, setting up one of the season's earliest hero-villain dynamics.", ['Marissa']);
+    expect(m.cls).toBe('fight');
+    for (const style of VOICES) {
+      const out = composeEpisode(storyEp(`kt-fight-${style}`, { guest: 'Isabel', moments: [m], castNames: ['Marissa'] }, { style }), { words: {} });
+      const x = out.exchanges.find(e => e.topic === 'the-moment');
+      expect(x.q).toContain('Clashed with Marissa');
+      expect(x.a, style).toContain('Marissa');
+    }
+  });
+  it('does not read a summary line out as a moment', () => {
+    const m = parseMoment('Winner - 7 jury votes (7-1-0)', []);
+    const out = composeEpisode(storyEp('kt-summary', { guest: 'Jacques', moments: [m] }), { words: {} });
+    expect(out.exchanges.some(e => e.q.includes('7-1-0'))).toBe(false);
+  });
+  it('asks a finalist what cost them the end, never about the night they were voted out', () => {
+    const out = composeEpisode(storyEp('kt-final', { guest: 'Riya', placement: 2, place: '2nd', finalist: true, winner: 'James' }), { words: {} });
+    expect(out.exchanges.some(e => e.topic === 'the-loss')).toBe(true);
+    expect(out.exchanges.some(e => e.topic === 'the-boot')).toBe(false);
+  });
+  it('names the person in nearly every answer when the record has people in it', () => {
+    const out = composeEpisode(storyEp('kt-names', { guest: 'Ara', winner: 'Julia', rivals: ['Bowie'], betrayedBy: ['Spencer'],
+      allies: ['Gabby'], partner: 'Ernesto', partnerOver: true, castNames: ['Julia', 'Bowie', 'Spencer', 'Gabby', 'Ernesto'] }), { words: {} });
+    const said = out.exchanges.filter(e => /Julia|Bowie|Spencer|Gabby|Ernesto/.test(e.a + (e.crack || '')));
+    expect(said.length / out.exchanges.length).toBeGreaterThan(0.6);
+    expect(out.rapid.every(r => /Julia|Bowie|Spencer|Gabby|Ernesto|Me\b/.test(r.q + r.a))).toBe(true);
+  });
+  it('presses with a follow-up and answers that follow-up', () => {
+    const out = composeEpisode(storyEp('kt-press', { guest: 'Ara', rivals: ['Bowie'], betrayedBy: ['Spencer'] }), { words: {} });
+    const pressed = out.exchanges.filter(e => e.press);
+    expect(pressed.length).toBeGreaterThan(0);
+    for (const e of pressed) {
+      const g = BEATS[e.topic].find(a => (a.press || []).some(p => p.p.replace('{x}', 'Bowie') === e.press || p.p.replace('{x}', 'Spencer') === e.press));
+      expect(g, `${e.press} is not one of ${e.topic}'s presses`).toBeTruthy();
+    }
+  });
   it('scales the interview with the importance of the episode', () => {
-    expect(receiptEpisode('viral').exchanges.length)
-      .toBeGreaterThan(receiptEpisode('quiet').exchanges.length);
+    const story = { guest: 'Ara', winner: 'Julia', rivals: ['Bowie'], betrayedBy: ['Spencer'], betrayed: ['Oliwia'],
+      allies: ['Gabby'], partner: 'Ernesto', rivalOf: ['Lake'], castNames: ['Julia', 'Bowie', 'Spencer', 'Oliwia', 'Gabby', 'Ernesto', 'Lake'] };
+    const viral = composeEpisode(storyEp('kt-scale', story), { words: {} });
+    const quiet = composeEpisode(storyEp('kt-scale', story, { tier: 'quiet' }), { words: {} });
+    expect(viral.exchanges.length).toBeGreaterThan(quiet.exchanges.length);
   });
-
   it('derives fallout without mutating the season record', () => {
-    const ep = receiptEpisode('viral');
-    expect(ep.aftermath.receiptsTested).toBeGreaterThan(0);
+    const ep = storyEp('kt-fallout', { guest: 'Ara', rivals: ['Bowie'] }, { mentioned: 'bowie' });
+    const story = JSON.stringify(ep.story);
+    Object.assign(ep, composeEpisode(ep, { words: {} }));
+    ep.aftermath = podcastAftermath(ep);
     expect(ep.aftermath.controversy).toBeGreaterThan(0);
-    expect(['strengthened', 'credible', 'mixed', 'damaged']).toContain(ep.aftermath.credibility);
-    expect(ep.aftermath.relationship?.with).toBe('r');
+    expect(ep.aftermath.relationship?.with).toBe('bowie');
+    expect(JSON.stringify(ep.story)).toBe(story);
   });
-
-  it('cuts a strong episode around human mess before abstract totals', () => {
-    const voice = voiceOf({ archetype: 'showmancer', stats: {
-      social: 9, loyalty: 7, boldness: 8, temperament: 5,
-    } });
-    const out = composeEpisode({
-      id: 'mess-before-math', kind: 'debrief', tier: 'solid', voice,
-      guest: 'jules', guestName: 'Jules', season: { format: 'big-brother', title: 'House' },
-      facts: { season: 'House', placement: '2nd', votes: '6', jury: '4', partner: 'Stella' },
-      topics: [{ id: 'the-loss' }, { id: 'the-showmance', about: 'Stella' },
-        { id: 'the-target' }, { id: 'behind-the-scenes' }],
-      receipts: [
-        { id: 'jury-1', type: 'jury', statement: 'You received 4 jury votes at the end.', weight: 4 },
-        { id: 'votes-1', type: 'votes', statement: 'You received 6 votes across the season.', weight: 3 },
-        { id: 'moment-1', type: 'moment', statement: 'After Stella left, you cried in the storage room and kissed her hoodie before nominations.', weight: 4 },
-      ],
-    }, { words: { player: 'houseguest', players: 'houseguests', exit: 'evicted' } });
-    const receiptStatements = out.exchanges.filter(x => x.receipt)
-      .map(x => x.receipt.statement);
-    expect(receiptStatements[0]).toContain('cried in the storage room');
+  it('plays a clip only when it says the guest’s name', () => {
+    const earlier = [{ guest: 'b', guestName: 'Bowie', exchanges: [{ a: 'Gabby was my emotional support.' }] }];
+    const none = composeEpisode(storyEp('kt-clip-0', { guest: 'Ara' }, { guest: 'a' }), { words: {}, earlier });
+    expect(none.exchanges.some(e => e.topic === 'the-response')).toBe(false);
+    earlier[0].exchanges.push({ a: 'Ara lied to me on day two.' });
+    const some = composeEpisode(storyEp('kt-clip-1', { guest: 'Ara' }, { guest: 'a' }), { words: {}, earlier });
+    const rx = some.exchanges.find(e => e.topic === 'the-response');
+    expect(rx.q).toContain('Ara lied to me on day two.');
+    expect(rx.q).toContain('Bowie');
   });
+});
 
-  it('makes a showmancer answer a personal receipt like a person, not a press release', () => {
-    const voice = voiceOf({ archetype: 'showmancer', stats: {
-      social: 9, loyalty: 7, boldness: 8, temperament: 5,
-    } });
-    const out = composeEpisode({
-      id: 'showmancer-mess', kind: 'debrief', tier: 'viral', voice,
-      guest: 'jules', guestName: 'Jules', season: { format: 'big-brother', title: 'House' },
-      facts: { season: 'House', placement: '2nd', partner: 'Stella' },
-      topics: [{ id: 'the-showmance', about: 'Stella' }],
-      receipts: [{ id: 'moment-1', type: 'moment', weight: 5,
-        statement: 'After Stella left, you slept in her hoodie and admitted you were jealous of Misha.' }],
-    }, { words: { player: 'houseguest', players: 'houseguests', exit: 'evicted' } });
-    const answer = out.exchanges.find(x => x.receipt)?.a || '';
-    expect(answer).toMatch(/Stella|hoodie|jealous|wanted|missed|kiss|relationship/i);
-    expect(answer).not.toMatch(/record is accurate|context still matters|describe it differently/i);
+describe('the catch-up asks about the year as itself', () => {
+  it('quotes the headline and answers in its mood, then presses on how they really are', () => {
+    const ep = storyEp('kt-life', { guest: 'Kelly', life: [{ kind: 'rehab', line: 'Kelly went into treatment.' }], winner: 'Wayne' },
+      { kind: 'life', tier: 'solid', style: 'bomb' });
+    const out = composeEpisode(ep, { words: {} });
+    expect(out.exchanges[0].topic).toBe('the-life');
+    expect(out.exchanges[0].q).toContain('Kelly went into treatment.');
+    expect(out.exchanges[0].crack).not.toMatch(/votes/i);
   });
-
-  it('does not clip the same answer twice under different questions', () => {
-    const voice = voiceOf({ archetype: 'showmancer', stats: { strategic: 2, social: 9 } });
-    const out = composeEpisode({
-      id: 'no-repeat-answer', kind: 'debrief', tier: 'solid', voice,
-      guestName: 'Jules', season: { format: 'big-brother', title: 'House' },
-      facts: { season: 'House', placement: '2nd', votes: '6', partner: 'Stella' },
-      topics: [{ id: 'the-loss' }, { id: 'the-target' }, { id: 'behind-the-scenes' }],
-      receipts: [],
-    }, { words: { player: 'houseguest', players: 'houseguests', exit: 'evicted' } });
-    const answers = out.exchanges.map(x => x.a);
-    expect(new Set(answers).size).toBe(answers.length);
+  it('skips a headline with no mood of its own', () => {
+    const ep = storyEp('kt-life-2', { guest: 'Kelly', life: [{ kind: 'promoted', line: 'Kelly was promoted.' }], rivals: ['Gerry'] },
+      { kind: 'life', tier: 'solid' });
+    expect(composeEpisode(ep, { words: {} }).exchanges.some(e => /promoted/.test(e.q))).toBe(false);
   });
 });
 
 describe('rapid fire, after the heartbeat bug', () => {
-  // "Best liar you ever shared a room with?" was answered "In a heartbeat." —
-  // twice in one episode — because answers were a style pool drawn blind.
-  const probe = style => composeEpisode({
-    id: 'rf-' + style, kind: 'debrief', style, guestName: 'X', tier: 'viral',
-    season: { format: 'total-drama', title: 'S' },
-    facts: { season: 'S', placement: '5th', votes: '6', rival: 'Rana', rivalName: 'Rana',
-      partner: 'Pat', winner: 'Wes' },
-    topics: [{ id: 'the-boot' }, { id: 'behind-the-scenes' }],
-  }, { words: {} }).rapid;
+  // "Best liar you ever shared a room with?" was answered "In a heartbeat." — twice in one episode.
+  const probe = style => composeEpisode(storyEp('rf-' + style, { guest: 'X', rivals: ['Rana'], winner: 'Wes',
+    partner: 'Pat', allies: ['Al'], castNames: ['Rana', 'Wes', 'Pat', 'Al'] }, { style }), { words: {} }).rapid;
 
   it('never repeats an answer inside one episode', () => {
-    for (const style of STYLES) {
+    for (const style of VOICES) {
       const answers = probe(style).map(r => r.a);
       expect(new Set(answers).size, style).toBe(answers.length);
     }
   });
-
-  it('answers the question that was asked', () => {
-    // Every answer must come from its own question's bank — the return
-    // question's signature line can never appear under any other question.
-    for (const style of STYLES) {
-      for (const r of probe(style)) {
-        if (r.a === 'In a heartbeat.') expect(r.q).toBe('Would you return tomorrow?');
-        expect(r.a).not.toMatch(/\{|undefined/);
-      }
-    }
+  it('fills every slot', () => {
+    for (const style of VOICES) for (const r of probe(style)) expect(r.q + r.a).not.toMatch(/\{|undefined/);
   });
-
-  it('names a name when the record has one to name', () => {
-    // With a rival and a winner in the facts, "Best liar" has eligible
-    // name-bearing variants — over the styles, at least one must use them.
-    let named = 0;
-    for (const style of STYLES) {
-      const liar = probe(style).find(r => r.q.startsWith('Best liar'));
-      if (liar && /Rana|Wes/.test(liar.a)) named++;
-    }
-    expect(named).toBeGreaterThan(0);
-  });
-
-  it('gives a well-rated showmancer at least one question with romantic danger', () => {
-    const out = composeEpisode({
-      id: 'rf-messy-showmancer', kind: 'debrief', tier: 'solid',
-      voice: voiceOf({ archetype: 'showmancer', stats: { social: 9, boldness: 8 } }),
-      guestName: 'Jules', season: { format: 'big-brother', title: 'House' },
-      facts: { season: 'House', placement: '2nd', partner: 'Stella', rival: 'Misha' },
-      topics: [{ id: 'the-showmance', about: 'Stella' }],
-    }, { words: {} });
-    expect(out.rapid.some(r => /love|lust|kiss|jealous|hooked up|cameras/i.test(r.q))).toBe(true);
-    expect(out.rapid.every(r => r.a && !/[{}]|undefined/.test(r.a))).toBe(true);
+  it('gives somebody with a showmance at least one question about it', () => {
+    const out = composeEpisode(storyEp('rf-messy', { guest: 'Jules', partner: 'Stella', rivals: ['Misha'],
+      castNames: ['Stella', 'Misha'] }, { style: 'charmer' }), { words: {} });
+    expect(out.rapid.some(r => /Stella|love|cameras/i.test(r.q))).toBe(true);
   });
 });
 

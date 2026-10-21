@@ -39,7 +39,7 @@ import { airKey, airLabel, byAirDate } from './franchise-calendar.js';
 import { significanceOf, lineFor } from './life-events.js';
 import { fameOf } from './life-resolver.js';
 import { showWords } from './shows.js';
-import { styleOf, voiceOf, composeEpisode, podcastAftermath } from './kristal-voice.js';
+import { styleOf, voiceOf, composeEpisode, podcastAftermath, parseMoment } from './kristal-voice.js';
 
 export const KRISTAL = { slug: 'kristal', name: 'Kristal' };
 
@@ -133,49 +133,119 @@ function factsFor(detail, season, names, careers) {
   };
 }
 
-/** Published facts Kristal can put on the table. A receipt is evidence, not
- *  an accusation: every sentence is built from a field already in the career
- *  record, and missing fields produce no receipt. */
-function receiptsFor(detail, season) {
-  const out = [];
-  const add = (type, statement, weight = 1, data = {}) => {
-    if (!statement) return;
-    out.push({ id: `${type}-${out.length + 1}`, type, statement, weight, ...data });
-  };
-  const votes = Number(detail.votesReceived) || 0;
-  const challenges = Number(detail.challengeWins) || 0;
-  const immunities = Number(detail.immunityWins) || 0;
-  const idols = Number(detail.idolsFound) || 0;
-  const jury = Number(detail.juryVotes) || 0;
-  if (votes) add('votes', `You received ${votes} vote${votes === 1 ? '' : 's'} across the season.`,
-    Math.min(5, 1 + votes / 3), { count: votes });
-  if (challenges) add('challenges', `You won ${challenges} challenge${challenges === 1 ? '' : 's'}.`,
-    Math.min(4, 1 + challenges / 2), { count: challenges });
-  if (immunities && immunities !== challenges) add('immunity',
-    `${immunities} of those wins gave you immunity.`, Math.min(4, 1 + immunities / 2), { count: immunities });
-  if (idols) add('idols', `You found ${idols} idol${idols === 1 ? '' : 's'}.`, 3, { count: idols });
-  if (jury) add('jury', `You received ${jury} jury vote${jury === 1 ? '' : 's'} at the end.`, 4, { count: jury });
-  if (detail.finalVote) add('jury', `The final vote was ${detail.finalVote}.`, 4,
-    { finalVote: String(detail.finalVote) });
-  const alliances = (detail.alliances || detail.unbreakableBonds || [])
-    .map(a => typeof a === 'string' ? a : a?.name || a?.label)
-    .filter(Boolean);
-  if (alliances.length) add('relationships',
-    `Your published record identifies ${alliances.slice(0, 3).join(', ')} as central to your game.`, 3,
-    { names: alliances.slice(0, 3) });
-  for (const [i, moment] of (detail.keyMoments || []).slice(0, 3).entries()) {
-    add('moment', String(moment), i ? 2 : 4, { source: 'key moment' });
+/** Names out of a record list, whatever shape it holds them in. */
+const namesIn = list => (list || [])
+  .map(v => typeof v === 'string' ? v : v?.name || v?.label || v?.partner || null)
+  .filter(Boolean);
+const uniq = xs => [...new Set(xs)];
+
+const REL_STATUS = {
+  dating: 'you and {x} were seeing each other', 'went-public': 'you and {x} went public',
+  'moved-in': 'you and {x} moved in together', engaged: 'you and {x} got engaged',
+  wedding: 'you and {x} got married', 'broke-up': 'you and {x} broke up',
+  'quietly-ended': 'you and {x} quietly stopped seeing each other', separated: 'you and {x} separated',
+  divorced: 'you and {x} divorced',
+};
+const REL_OVER = new Set(['broke-up', 'quietly-ended', 'separated', 'divorced']);
+
+/**
+ * A season's name as somebody says it out loud. "Biggest liar of Total Drama
+ * Coaches VS New Blood: The Season of Broken Majorities?" is a title card, not
+ * a question: the part a host would say is "Coaches VS New Blood".
+ */
+export function spokenTitle(title) {
+  let t = String(title || '').trim();
+  if (t.includes(':')) {
+    const [a, b] = t.split(':').map(x => x.trim());
+    t = /^total drama$/i.test(a) && b ? b : a;
   }
-  // Notes are evidence too, but only fill a thin record; repeating a key
-  // moment as a note would make Kristal pretend she has two receipts.
-  const used = new Set(out.map(r => r.statement.toLowerCase()));
-  for (const note of (detail.notes || []).slice(0, 2)) {
-    const statement = String(note);
-    if (![...used].some(x => x.includes(statement.toLowerCase()) || statement.toLowerCase().includes(x))) {
-      add('note', statement, 1, { source: 'season note' });
+  return t.replace(/^Total Drama\s+(?=\D)/, '');
+}
+
+/**
+ * Everything Kristal can ask about, off the published record and the approved
+ * life log: the people in this guest's season and where they stand with each
+ * of them. Names, not slugs — the record names people by name, and so does a
+ * podcast.
+ *
+ * `cast` is [{ c: career, d: that season's detail }] for the whole season.
+ * `lifeUpTo` is the approved log up to and including this gap.
+ */
+function storyFor({ slug, detail, season, cast, nameOf, slugOf, lifeUpTo }) {
+  const guest = nameOf(slug);
+  const castNames = cast.map(x => x.c.name).filter(n => n && n !== guest);
+  const inCast = n => castNames.includes(n);
+  const moments = uniq([...(detail.keyMoments || []), ...(detail.notes || [])].map(String))
+    .map(m => parseMoment(m, castNames)).filter(Boolean);
+  const allies = uniq([...namesIn(detail.unbreakableBonds), ...namesIn(detail.alliances)]).filter(inCast);
+  const rivals = namesIn(detail.rivalries).filter(inCast);
+  const rivalOf = cast.filter(x => x.c.id !== slug && namesIn(x.d.rivalries).includes(guest))
+    .map(x => x.c.name).filter(n => !rivals.includes(n));
+  const betrayed = namesIn(detail.betrayed).filter(inCast);
+  const betrayedBy = namesIn(detail.betrayedBy).filter(inCast);
+  // The record line that shows each blindside, so Kristal reads out the right one.
+  const why = {};
+  const note = (list, name, m) => { if (!list.includes(name)) list.push(name); if (!why[name]) why[name] = m; };
+  for (const m of moments) {
+    if (m.cls === 'by' && m.x) note(betrayedBy, m.x, m);
+    if (m.cls === 'betrayal' && m.x) note(betrayed, m.x, m);
+  }
+  // A castmate's own record that names this guest — their side of it.
+  const aboutYou = [];
+  for (const x of cast) {
+    if (x.c.id === slug) continue;
+    const others = [...castNames.filter(n => n !== x.c.name), guest];
+    for (const raw of x.d.keyMoments || []) {
+      const m = parseMoment(raw, others);
+      if (!m || !m.names.includes(guest)) continue;
+      aboutYou.push({ ...m, by: x.c.name });
+      // Which way it went. In Aubrey's record, "Spencer broke their final-three
+      // pact" has Spencer doing it and "Flipped onto Spencer" has Aubrey doing
+      // it; in Natalia's, "Blindsided by Sami, Spencer, Bowie and Julia" has
+      // every name after the "by" doing it to Natalia.
+      // A "by" sentence where this guest is only a bystander ("Evicted over
+      // Jules after Jane flipped") is about somebody else.
+      if (m.cls === 'by' && m.doers.includes(guest)) note(betrayed, x.c.name, { ...m, by: x.c.name });
+      if (m.cls === 'betrayal') note(m.lead === guest ? betrayed : betrayedBy, x.c.name, { ...m, by: x.c.name });
     }
   }
-  return out.sort((a, b) => b.weight - a.weight || a.id.localeCompare(b.id)).slice(0, 6);
+  // The showmance, and where it stands now: the life log is later than the
+  // season, so a couple the season left broken who got back together is together.
+  const partner = detail.showmance || (detail.showmances || [])[0]?.partner || null;
+  let partnerOver = detail.showmanceEnded === 'broken';
+  let partnerStatus = null;
+  const pslug = slugOf(partner);
+  if (pslug) {
+    const rel = lifeUpTo.filter(e => REL_STATUS[e.kind]
+      && ((e.player === slug && e.whom === pslug) || (e.player === pslug && e.whom === slug))).pop();
+    if (rel) {
+      partnerOver = REL_OVER.has(rel.kind);
+      partnerStatus = REL_STATUS[rel.kind].replace('{x}', partner);
+    }
+  }
+  const second = cast.filter(x => x.d.placement === 2).map(x => x.c.name)[0] || null;
+  const winnerName = season?.winner?.playerSlug ? nameOf(season.winner.playerSlug) : season?.winner?.name || null;
+  // The number with somebody behind it, loudest first.
+  const stats = [];
+  const n = v => Number(v) || 0;
+  const fmt = season?.format;
+  if ((fmt === 'total-drama' || fmt === 'big-brother') && n(detail.votesReceived) >= 3) stats.push({ type: 'votes', n: n(detail.votesReceived) });
+  if (n(detail.bb?.timesNominated) >= 2) stats.push({ type: 'noms', n: n(detail.bb.timesNominated) });
+  if (n(detail.dr?.bottoms) >= 2) stats.push({ type: 'bottoms', n: n(detail.dr.bottoms) });
+  if (n(detail.ci?.blocksMade) >= 1) stats.push({ type: 'blocks', n: n(detail.ci.blocksMade) });
+  const wins = fmt === 'big-brother' ? n(detail.bb?.hohWins) + n(detail.bb?.vetoWins)
+    : fmt === 'drag-race' ? n(detail.dr?.wins) : n(detail.challengeWins);
+  if (wins >= 2) stats.push({ type: 'wins', n: wins });
+  if (n(detail.idolsFound) >= 1) stats.push({ type: 'idols', n: n(detail.idolsFound) });
+  return {
+    guest, season: spokenTitle(season?.title) || season?.seasonId, format: fmt,
+    placement: detail.placement || null, place: detail.placement ? nth(detail.placement) : null,
+    won: detail.placement === 1, winner: winnerName, runnerUp: second,
+    // A finalist was not voted out: the end was the final vote, and that is a different question.
+    finalist: detail.placement !== 1 && (detail.placement === 2 || /final/i.test(String(detail.status || ''))),
+    castNames, allies, rivals, rivalOf, betrayed, betrayedBy, why, moments, aboutYou,
+    partner: partner && inCast(partner) ? partner : null, partnerOver, partnerStatus, stats, life: [],
+  };
 }
 
 const TITLES = {
@@ -184,11 +254,16 @@ const TITLES = {
     '{guest}: the whole story',
     'What {guest} won’t say anywhere else',
     '{guest}, unedited',
+    '{guest} on {hook}',
+    '{guest} names names',
+    '{guest} and the {hook} question',
+    'So, {hook}. With {guest}',
   ],
   life: [
     'Catching up with {guest}',
     '{guest}: life after the cameras',
     'Where {guest} has been',
+    '{guest} tells it',
   ],
 };
 
@@ -234,9 +309,6 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
       + Math.round(chance(ep.id + '|len') * 12));
     if (ep.mentioned) ep.mentionedName = nameOf(ep.mentioned);
     const salt = proseSalts[ep.afterSeason] || '';
-    ep.title = (pickFrom(TITLES[ep.kind], ep.id + (salt ? '~' + salt : '') + '|title') || '')
-      .replace('{guest}', ep.guestName)
-      .replace('{season}', ep.season?.title || ep.afterSeason);
     // ── the transcript ──
     //
     // Continuity: if the person this episode's mess is about already sat in
@@ -247,9 +319,17 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
       : null;
     const visit = (visits.get(ep.guest) || 0) + 1;
     visits.set(ep.guest, visit);
+    // Anybody who sat down earlier this gap and said this guest's name gets played to them.
+    const earlier = episodes.filter(p => p.afterSeason === ep.afterSeason);
     const t = composeEpisode(ep, {
-      words: showWords(ep.season?.format), prior, visit, salt,
+      words: showWords(ep.season?.format), prior, earlier, visit, salt,
     });
+    // The title names the episode's loudest person when it has one.
+    const titles = (TITLES[ep.kind] || []).filter(x => t.hook || !x.includes('{hook}'));
+    ep.title = (pickFrom(titles, ep.id + (salt ? '~' + salt : '') + '|title') || '')
+      .replace('{guest}', ep.guestName)
+      .replace('{hook}', t.hook || '')
+      .replace('{season}', ep.season?.title || ep.afterSeason);
     ep.coldOpen = t.coldOpen;
     ep.exchanges = t.exchanges;
     ep.rapid = t.rapid;
@@ -258,13 +338,20 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
     episodes.push(ep);
   };
 
+  const rankOf = new Map(aired.map((s, i) => [s.seasonId, i]));
+  const castOf = sid => careers
+    .map(c => ({ c, d: (c.details || []).find(x => x.seasonId === sid) }))
+    .filter(x => x.d);
+  // The life log as it stood at the end of a gap, oldest first.
+  const lifeUpTo = sid => approved
+    .filter(e => (rankOf.get(e.afterSeason) ?? Infinity) <= rankOf.get(sid))
+    .sort((a, b) => rankOf.get(a.afterSeason) - rankOf.get(b.afterSeason) || (a.seq || 0) - (b.seq || 0));
+
   for (const season of aired) {
     const sid = season.seasonId;
 
     // ── the debrief: this season's own cast, right after its finale ──
-    const cast = careers
-      .map(c => ({ c, d: (c.details || []).find(x => x.seasonId === sid) }))
-      .filter(x => x.d);
+    const cast = castOf(sid);
     const ranked = cast
       .map(x => ({ ...x, score: storyScore(x.d, season, x.c.id) }))
       .sort((a, b) => b.score - a.score || String(a.c.name).localeCompare(b.c.name));
@@ -294,7 +381,8 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
         guest: slug, guestName: nameOf(slug),
         archetype: prof.archetype || '', style: styleOf(prof), voice: voiceOf(prof),
         facts: factsFor(guest.d, season, names, careers),
-        topics, receipts: receiptsFor(guest.d, season), listeners,
+        story: storyFor({ slug, detail: guest.d, season, cast, nameOf, slugOf, lifeUpTo: lifeUpTo(sid) }),
+        topics, listeners,
         // Who a viral episode lands on: the messiest topic's other party.
         mentioned: slugOf((topics.find(t => t.id === 'the-breakup')
           || topics.find(t => t.id === 'the-rivalry'))?.about) || null,
@@ -323,6 +411,19 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
       // A catch-up still reaches into the guest's PLAYED record: the year is
       // the headline, the career is the follow-up material.
       const lastDetail = (c.details || [])[c.details.length - 1] || {};
+      const lastSeason = seasons.find(x => x.seasonId === lastDetail.seasonId) || season;
+      const story = storyFor({ slug, detail: lastDetail, season: lastSeason,
+        cast: castOf(lastDetail.seasonId), nameOf, slugOf, lifeUpTo: lifeUpTo(sid) });
+      // The year itself: the majors first, then whatever else they posted about.
+      const sig = { major: 0, notable: 1, minor: 2 };
+      story.life = approved.filter(e => e.afterSeason === sid && (e.player === slug || e.whom === slug)
+        && significanceOf(e.kind) !== 'minor')
+        .sort((a, b) => sig[significanceOf(a.kind)] - sig[significanceOf(b.kind)] || (a.seq || 0) - (b.seq || 0))
+        .slice(0, 2)
+        .map(e => {
+          const other = e.player === slug ? e.whom : e.player;
+          return { kind: e.kind, whomName: other ? nameOf(other) : null, line: lineFor(e, names, slug) };
+        });
       finish({
         id: `kt-${sid}-life-${slug}`, num: ++epNum, kind: 'life',
         afterSeason: sid, when: airLabel(season), season,
@@ -335,9 +436,7 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
         },
         topics: [{ id: 'the-life', about: null,
           line: lineFor(events[0], names, slug) }, { id: 'behind-the-scenes', about: null }],
-        receipts: receiptsFor(lastDetail,
-          seasons.find(x => x.seasonId === lastDetail.seasonId) || season),
-        listeners, mentioned: slugOf(events[0]?.whom) || null,
+        story, listeners, mentioned: slugOf(events[0]?.whom) || null,
       });
     }
   }

@@ -227,6 +227,8 @@ export const PLACE_PLATES = {
   },
   'torch-statue-harbour': {
     src: '32-torch-statue-harbour', title: 'present-22412488', opener: p('present-22412601', 96, [40, 96]),
+    // (the park pond, a job in edit/: only the apple's stages, once it's back)
+    stageOnly: [repaint('task-park-pond', p('task-park-pond', 92, [6, 94]), null)].filter(Boolean),
     arrive: [p('arrive-22412323', 46, [6, 46])],
     props: { carriage: 'baby-carriage', apple: 'giant-apple', gator: 'sewer-alligator' },
     st: {
@@ -1017,6 +1019,8 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const GATOR = [['gator', 70, 82, 16, { move: 'wander', span: -14, dur: 9 }]];
+const POND = repaint('task-park-pond', 'task-park-pond', 'chill-22413471'), POND_G = repaint('task-park-pond', 92, 86);
 const PANDA = [['panda', 60, 66, 9, { move: 'wander', span: 12, dur: 8 }]];
 const CROCS = [['croc', 74, 76, 22, { move: 'wander', span: 10, dur: 14 }]];
 const DECK = repaint('task-observation-deck', 'task-observation-deck', 'task-9450082'), DECK_G = repaint('task-observation-deck', 92, 95);
@@ -1046,6 +1050,35 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'torch-statue-harbour': {
+    // (the statue's foot by the boats; the crown with its ropes; the harbour drain; the sewer; the pipe out into the park;
+    // the pond (a job: the fountain plaza stands in); the fountain)
+    'statue-climb': {
+      'statue-foot': { label: 'THE STATUE', plate: ['arrive-22412323', {}] },
+      'the-climb': { label: 'UP TO THE CROWN', plate: ['task-22412320', { mode: 'climb' }], fail: ['task-22412320', { mode: 'climb', path: [[51, 50], [52, 76], [52, 96]] }], stamp: 'BACK DOWN' },
+      'haul-carriage': { label: 'THE CARRIAGE', plate: ['task-22412320', { mode: 'climb', path: [[50, 30], [50, 28], [50, 26]], deco: [['carriage', 22, 56, 12]] }],
+        fail: ['task-22412320', { mode: 'climb', path: [[50, 30], [50, 28], [50, 26]], deco: [['carriage', 22, 56, 12]] }], stamp: 'TANGLED' },
+      'rope-ride': { label: 'DOWN THE ROPE', plate: ['task-22412320', { mode: 'ride', prop: 'carriage', path: [[34, 52], [48, 62], [62, 72], [76, 82]], fx: 'wind' }],
+        fail: ['task-22412320', { mode: 'ride', prop: 'carriage', path: [[34, 52], [42, 58], [46, 62]], fx: 'wind' }], stamp: 'LET GO' },
+      'the-landing': { label: 'THE LANDING', plate: ['arrive-22412323', { deco: [['carriage', 12, 46, 7]] }] },
+    },
+    sewer: {
+      'into-drain': { label: 'THE DRAIN', plate: ['task-22412479', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'push', prop: 'carriage', path: [[70, 74], [80, 74], [88, 74]], fx: 'splash' }],
+        fail: ['task-22412479', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'push', prop: 'carriage', path: [[70, 74], [74, 74], [70, 74]], fx: 'splash' }], stamp: 'NOPE' },
+      'the-tunnels': { label: 'THE TUNNELS', plate: ['task-22412499', { mode: 'push', deco: [] }], fail: ['task-22412499', { mode: 'push', path: [[80, 80], [56, 80], [30, 80], [4, 80]], deco: [] }], stamp: 'WRONG TURN' },
+      'the-gator': { label: 'SOMETHING IN THE WATER', plate: ['task-22412499', { mode: 'push', deco: GATOR }], fail: ['task-22412499', { mode: 'push', path: [[56, 80], [30, 80], [4, 80]], deco: GATOR }], stamp: 'GATOR!' },
+      'the-ladder': { label: 'UP INTO THE PARK', plate: ['task-22412506', { people: undefined, g: 92, x: [6, 50], deco: [['carriage', 30, 92, 9]] }] },
+    },
+    'big-apple': {
+      'wade-in': { label: 'THE POND', plate: [POND, { mode: undefined, prop: undefined }], fail: [POND, { mode: undefined, prop: undefined }], stamp: 'COLD!' },
+      'mouth-only': { label: 'NO HANDS', plate: [POND, { mode: 'bob' }], fail: [POND, { mode: 'bob' }], stamp: 'HANDS!' },
+      'load-up': { label: 'INTO THE CARRIAGE', plate: [POND, { mode: undefined, prop: undefined, deco: [['carriage', 89, POND_G, 11], ['apple', 89, POND_G - 8, 6]] }],
+        fail: [POND, { mode: undefined, prop: undefined, deco: [['carriage', 89, POND_G, 11], ['apple', 78, POND_G, 6]] }], stamp: 'DROPPED' },
+      'push-it': { label: 'TO THE FOUNTAIN', plate: ['task-22412326', { mode: 'push', prop: 'carriage', path: [[10, 90], [34, 89], [58, 88]], deco: [['apple', 40, 70, 4]] }],
+        fail: ['task-22412326', { deco: [['carriage', 30, 88, 9], ['apple', 44, 88, 5]] }], stamp: 'ROLLED OUT' },
+      'the-fountain': { label: 'THE FOUNTAIN', plate: ['chill-22413471', { deco: [['carriage', 89, 86, 11], ['apple', 89, 78, 6]] }] },
     },
   },
   'game-show-city': {

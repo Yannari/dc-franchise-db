@@ -502,6 +502,14 @@
       "new": true,
       "ref": "present-9450374",
       "why": "the finale's stairs in stages (2026-10-21): the open-air observation deck at the top of the skyscraper, a railing and the whole city skyline below, a floor to stand on; no plate shows the top (stand-in: the stairwell, task-9450082)"
+    },
+    {
+      "place": "torch-statue-harbour",
+      "src": "32-torch-statue-harbour",
+      "file": "task-park-pond",
+      "new": true,
+      "ref": "task-22412326",
+      "why": "the big apple in stages (2026-10-21): a pond in the city park, the skyline behind the trees, the water across the middle, a grassy bank along the front to stand on; no plate shows the pond (stand-in: the fountain plaza, task-22412326)"
     }
   ]
 }

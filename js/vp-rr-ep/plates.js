@@ -763,6 +763,8 @@ export const PLACE_PLATES = {
   },
   'fishing-cove': {
     src: '36-fishing-cove', title: 'present-22415793', opener: p('chill-22416099', 88, [6, 60]),
+    // (inside the shack, a job in edit/: only the rite's stages, once it's back)
+    stageOnly: [repaint('task-shack-inside', p('task-shack-inside', 92, [6, 94]), null)].filter(Boolean),
     arrive: [p('arrive-22415810', 90, [6, 60])],
     props: { boat: 'rowboat', cod: 'codfish', fisherman: 'fisherman-local', vinegar: 'vinegar-bottle' },
     st: {
@@ -1021,6 +1023,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const SHACK = repaint('task-shack-inside', 'task-shack-inside', 'arrive-22415967');
 const MUSEUM_BEAR = [['bear', 90, 88, 13, { move: 'wander', span: -4, dur: 12 }]];
 const RUNWAY = repaint('task-museum-runway', 'task-museum-runway', 'task-22415170'), RUNWAY_G = repaint('task-museum-runway', 82, 88);
 const LOG = repaint('task-piranha-log', 'task-piranha-log', 'task-22414793'), LOG_G = repaint('task-piranha-log', 66, 90);
@@ -1056,6 +1059,16 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'fishing-cove': {
+    // (the fisherman's shack: inside is a job, the shack from outside stands in)
+    'welcome-rite': {
+      'the-shack': { label: "THE FISHERMAN'S SHACK", plate: [SHACK, { mode: undefined, prop: undefined, judge: null, deco: [['vinegar', 46, 92, 3], ['cod', 52, 92, 7]] }] },
+      'the-glass': { label: 'THE GLASS', plate: [SHACK, { mode: 'eat', prop: 'vinegar', judge: null }], fail: [SHACK, { mode: 'eat', prop: 'vinegar', judge: null }], stamp: 'SPAT IT OUT' },
+      'the-words': { label: 'SAY IT BACK', plate: [SHACK, { mode: undefined, prop: undefined, judge: null }], fail: [SHACK, { mode: undefined, prop: undefined, judge: null }], stamp: 'WRONG WORD' },
+      'kiss-the-cod': { label: 'KISS THE COD', plate: [SHACK, { mode: 'eat', prop: 'cod', judge: null }], fail: [SHACK, { mode: 'eat', prop: 'cod', judge: null }], stamp: 'PULLED AWAY' },
+      'honorary-locals': { label: 'HONORARY LOCALS', plate: [SHACK, { mode: undefined, prop: undefined, judge: null, fx: 'sparkle' }] },
     },
   },
   'glass-pyramid-city': {

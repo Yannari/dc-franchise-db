@@ -11,6 +11,10 @@ export default {
       mishaps: [['oar-overboard', 25]], mishapRate: 0.12 },
     { id: 'welcome-rite', called: 'the fisherman\'s shack', kind: 'allin', types: ['stomach', 'people'], base: 25, pass: 0.5, loopCost: 10, opens: 420, closes: 1260,
       plate: 'shack interior table', label: 'All-In: the welcome rite',
+      // into the shack and the fisherman at his table; the glass of what tastes like vinegar (spat out); the sentence in
+      // the dialect (a word wrong); the cod's lips (pulled away); honorary locals. Any slip: the rite from the start
+      stages: [{ id: 'the-shack', share: 0.2, risk: 0 }, { id: 'the-glass', share: 0.5, risk: 0.7 }, { id: 'the-words', share: 0.6, risk: 1 },
+        { id: 'kiss-the-cod', share: 0.4, risk: 0.8 }, { id: 'honorary-locals', share: 0.2, risk: 0 }],
       desc: "In a little fisherman's shack by the water, the old fisherman sits at a table with a bottle, a glass and a very large, very dead cod. To be welcomed to the cove, both partners have to drink a full glass of something that tastes exactly like vinegar, repeat back, word for word, a sentence he says in the cove's thick local dialect, and then kiss the cod full on the lips. Spitting out the drink, getting a word wrong or pulling away from the fish means starting the rite again. When the fisherman declares them honorary locals, the team gets the next tip." },
     { id: 'beach-run', kind: 'travel', mode: 'foot', base: 10, cost: 0, plate: 'pebble beach', label: 'Run along the beach' },
     { id: 'mat', kind: 'mat', plate: 'red shack on the beach', label: 'The Chill Zone' },

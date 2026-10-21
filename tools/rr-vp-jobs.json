@@ -518,6 +518,14 @@
       "new": true,
       "ref": "task-22414793",
       "why": "the jungle trail in stages (2026-10-21): a fallen log across a muddy jungle stream, seen side-on, the water below it; people walk along the log; no plate shows the crossing (stand-in: the jungle trail, task-22414793)"
+    },
+    {
+      "place": "fishing-cove",
+      "src": "36-fishing-cove",
+      "file": "task-shack-inside",
+      "new": true,
+      "ref": "arrive-22415967",
+      "why": "the welcome rite in stages (2026-10-21): inside the old fisherman's shack, a wooden table with a bottle and glasses, nets and floats on the walls, a window onto the grey sea, a wooden floor to stand on; no plate shows the inside (stand-in: the red shack from outside, arrive-22415967)"
     }
   ]
 }

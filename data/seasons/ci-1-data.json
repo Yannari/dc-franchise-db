@@ -1,0 +1,1629 @@
+{
+  "seasonNumber": 1,
+  "format": "the-circle",
+  "seasonId": "ci-1",
+  "title": "The Circle 1",
+  "castSize": 15,
+  "episodeCount": 14,
+  "winners": [
+    {
+      "name": "Lila",
+      "playerSlug": "lila",
+      "runnerUp": "Sasha"
+    }
+  ],
+  "winner": {
+    "name": "Lila",
+    "playerSlug": "lila",
+    "vote": null,
+    "runnerUp": "Sasha"
+  },
+  "finalRatings": [
+    {
+      "profile": "Lila",
+      "people": [
+        "Lila"
+      ],
+      "place": 1,
+      "avg": 1.75
+    },
+    {
+      "profile": "Brooke",
+      "people": [
+        "Derek"
+      ],
+      "place": 2,
+      "avg": 2.25
+    },
+    {
+      "profile": "Sasha",
+      "people": [
+        "Sasha"
+      ],
+      "place": 2,
+      "avg": 2.25
+    },
+    {
+      "profile": "Barbie",
+      "people": [
+        "Barbie"
+      ],
+      "place": 4,
+      "avg": 3
+    },
+    {
+      "profile": "Kad",
+      "people": [
+        "Elijah"
+      ],
+      "place": 5,
+      "avg": 3.25
+    }
+  ],
+  "fanFavourite": {
+    "name": "Hector",
+    "playerSlug": "hector"
+  },
+  "catfish": [
+    {
+      "name": "Derek",
+      "profile": "Brooke",
+      "playedAs": "Brooke",
+      "placement": 3
+    },
+    {
+      "name": "Elijah",
+      "profile": "Kad",
+      "playedAs": "Kad",
+      "placement": 5
+    },
+    {
+      "name": "Hector",
+      "profile": "Nadiya",
+      "playedAs": "Nadiya",
+      "placement": 6
+    },
+    {
+      "name": "Lorraine",
+      "profile": "Jace",
+      "playedAs": "Jace",
+      "placement": 10
+    }
+  ],
+  "placements": [
+    {
+      "name": "Lila",
+      "playerSlug": "lila",
+      "placement": 1,
+      "status": "Winner",
+      "exit": null,
+      "exitEpisode": null,
+      "archetype": "underdog",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 3,
+        "firstPlaces": 5,
+        "blocksMade": 2,
+        "catfishSeasons": 0,
+        "profile": "Lila",
+        "mode": "polished",
+        "avgRating": 3.22
+      },
+      "alliances": [
+        "Barbie",
+        "Derek",
+        "Domingo",
+        "Elijah",
+        "Hector",
+        "Sasha"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [
+        "Derek",
+        "Elijah"
+      ],
+      "showmance": "Luis",
+      "showmanceEnded": "intact",
+      "showmances": [
+        {
+          "partner": "Luis",
+          "ended": "intact"
+        },
+        {
+          "partner": "Mateo",
+          "ended": "intact"
+        }
+      ],
+      "popularity": 0
+    },
+    {
+      "name": "Sasha",
+      "playerSlug": "sasha",
+      "placement": 2,
+      "status": "Finalist",
+      "exit": null,
+      "exitEpisode": null,
+      "archetype": "wildcard",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 3,
+        "firstPlaces": 2,
+        "blocksMade": 3,
+        "catfishSeasons": 0,
+        "profile": "Sasha",
+        "mode": "edited",
+        "avgRating": 4.22
+      },
+      "alliances": [
+        "Derek",
+        "Hector",
+        "Lila"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [
+        "Anais",
+        "Domingo",
+        "Dr.Ines"
+      ],
+      "betrayed": [],
+      "betrayedBy": [],
+      "popularity": 0
+    },
+    {
+      "name": "Derek",
+      "playerSlug": "derek",
+      "placement": 3,
+      "status": "Finalist",
+      "exit": null,
+      "exitEpisode": null,
+      "archetype": "mastermind",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 3,
+        "firstPlaces": 1,
+        "blocksMade": 2,
+        "catfishSeasons": 1,
+        "profile": "Brooke",
+        "mode": "catfish",
+        "playedAs": "Brooke",
+        "avgRating": 3.33
+      },
+      "alliances": [
+        "Barbie",
+        "Curtis",
+        "Domingo",
+        "Hector",
+        "Lila",
+        "Sasha"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [
+        "Hector",
+        "Lila"
+      ],
+      "betrayedBy": [],
+      "popularity": 0
+    },
+    {
+      "name": "Barbie",
+      "playerSlug": "barbie",
+      "placement": 4,
+      "status": "Finalist",
+      "exit": null,
+      "exitEpisode": null,
+      "archetype": "schemer",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Barbie",
+        "mode": "edited",
+        "avgRating": 4.83
+      },
+      "alliances": [
+        "Derek",
+        "Domingo",
+        "Elijah",
+        "Hector",
+        "Lila",
+        "Luis",
+        "Mateo"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Wyatt",
+      "showmanceEnded": "intact",
+      "showmances": [
+        {
+          "partner": "Luis",
+          "ended": "broken"
+        },
+        {
+          "partner": "Mateo",
+          "ended": "broken"
+        },
+        {
+          "partner": "Wyatt",
+          "ended": "intact"
+        }
+      ],
+      "popularity": 0
+    },
+    {
+      "name": "Elijah",
+      "playerSlug": "elijah",
+      "placement": 5,
+      "status": "Finalist",
+      "exit": null,
+      "exitEpisode": null,
+      "archetype": "chaos-agent",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 1,
+        "firstPlaces": 1,
+        "blocksMade": 1,
+        "catfishSeasons": 1,
+        "profile": "Kad",
+        "mode": "catfish",
+        "playedAs": "Kad",
+        "avgRating": 3.5
+      },
+      "alliances": [
+        "Barbie",
+        "Domingo",
+        "Hector",
+        "Lila",
+        "Lorraine"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [
+        "Hector",
+        "Lila"
+      ],
+      "betrayedBy": [],
+      "popularity": 0
+    },
+    {
+      "name": "Hector",
+      "playerSlug": "hector",
+      "placement": 6,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 13,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Brooke",
+        "Kad"
+      ],
+      "archetype": "social-butterfly",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "fanFavourite": true,
+      "ci": {
+        "influencerTimes": 5,
+        "firstPlaces": 3,
+        "blocksMade": 4,
+        "catfishSeasons": 1,
+        "profile": "Nadiya",
+        "mode": "catfish",
+        "playedAs": "Nadiya",
+        "avgRating": 2.89
+      },
+      "alliances": [
+        "Barbie",
+        "Derek",
+        "Elijah",
+        "Lila",
+        "Sasha",
+        "Wyatt"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [
+        "Domingo",
+        "Ruth"
+      ],
+      "betrayed": [],
+      "betrayedBy": [
+        "Derek",
+        "Elijah"
+      ],
+      "popularity": 0
+    },
+    {
+      "name": "Luis",
+      "playerSlug": "luis",
+      "placement": 7,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 12,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Lila",
+        "Nadiya"
+      ],
+      "archetype": "schemer",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Mateo",
+        "mode": "shared",
+        "sharedWith": [
+          "Mateo"
+        ],
+        "avgRating": 7.5
+      },
+      "alliances": [
+        "Barbie"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Lila",
+      "showmanceEnded": "intact",
+      "showmances": [
+        {
+          "partner": "Barbie",
+          "ended": "broken"
+        },
+        {
+          "partner": "Lila",
+          "ended": "intact"
+        }
+      ],
+      "popularity": 0
+    },
+    {
+      "name": "Mateo",
+      "playerSlug": "mateo",
+      "placement": 7,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 12,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Lila",
+        "Nadiya"
+      ],
+      "archetype": "showmancer",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Mateo",
+        "mode": "shared",
+        "sharedWith": [
+          "Luis"
+        ],
+        "avgRating": 7.5
+      },
+      "alliances": [
+        "Barbie"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Lila",
+      "showmanceEnded": "intact",
+      "showmances": [
+        {
+          "partner": "Barbie",
+          "ended": "broken"
+        },
+        {
+          "partner": "Lila",
+          "ended": "intact"
+        }
+      ],
+      "popularity": 0
+    },
+    {
+      "name": "Domingo",
+      "playerSlug": "domingo",
+      "placement": 9,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 11,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Nadiya",
+        "Sasha"
+      ],
+      "archetype": "showmancer",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 2,
+        "firstPlaces": 1,
+        "blocksMade": 2,
+        "catfishSeasons": 0,
+        "profile": "Domingo",
+        "mode": "polished",
+        "avgRating": 3.71
+      },
+      "alliances": [
+        "Barbie",
+        "Derek",
+        "Dr.Ines",
+        "Elijah",
+        "Lila"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [
+        "Anais",
+        "Hector",
+        "Sasha"
+      ],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Dr.Ines",
+      "showmanceEnded": "broken",
+      "popularity": 0
+    },
+    {
+      "name": "Lorraine",
+      "playerSlug": "lorraine",
+      "placement": 10,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 9,
+      "blockedBy": "audience",
+      "archetype": "perceptive-player",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 1,
+        "profile": "Jace",
+        "mode": "catfish",
+        "playedAs": "Jace",
+        "avgRating": 7
+      },
+      "alliances": [
+        "Elijah"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [],
+      "popularity": 0
+    },
+    {
+      "name": "Dr.Ines",
+      "playerSlug": "dr-ines",
+      "placement": 11,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 8,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Sasha",
+        "Domingo"
+      ],
+      "archetype": "perceptive-player",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Dr.Ines",
+        "mode": "edited",
+        "avgRating": 7
+      },
+      "alliances": [
+        "Domingo"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [
+        "Sasha"
+      ],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Domingo",
+      "showmanceEnded": "broken",
+      "popularity": 0
+    },
+    {
+      "name": "Wyatt",
+      "playerSlug": "wyatt",
+      "placement": 12,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 5,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Lila",
+        "Nadiya"
+      ],
+      "archetype": "loyal-soldier",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 1,
+        "firstPlaces": 1,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Wyatt",
+        "mode": "edited",
+        "avgRating": 4.25
+      },
+      "alliances": [
+        "Hector"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Anais",
+      "showmanceEnded": "intact",
+      "showmances": [
+        {
+          "partner": "Anais",
+          "ended": "intact"
+        },
+        {
+          "partner": "Barbie",
+          "ended": "intact"
+        }
+      ],
+      "popularity": 0
+    },
+    {
+      "name": "Anais",
+      "playerSlug": "anais",
+      "placement": 13,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 4,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Domingo",
+        "Sasha"
+      ],
+      "archetype": "underdog",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Anais",
+        "mode": "polished",
+        "avgRating": 6
+      },
+      "alliances": [],
+      "unbreakableBonds": [],
+      "rivalries": [
+        "Domingo",
+        "Sasha"
+      ],
+      "betrayed": [],
+      "betrayedBy": [],
+      "showmance": "Wyatt",
+      "showmanceEnded": "intact",
+      "popularity": 0
+    },
+    {
+      "name": "Curtis",
+      "playerSlug": "curtis",
+      "placement": 14,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 3,
+      "blockedBy": "sacrifice",
+      "archetype": "challenge-beast",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Curtis",
+        "mode": "polished",
+        "avgRating": 4
+      },
+      "alliances": [
+        "Derek"
+      ],
+      "unbreakableBonds": [],
+      "rivalries": [],
+      "betrayed": [],
+      "betrayedBy": [],
+      "popularity": 0
+    },
+    {
+      "name": "Ruth",
+      "playerSlug": "ruth",
+      "placement": 15,
+      "status": "Blocked",
+      "exit": "blocked",
+      "exitEpisode": 2,
+      "blockedBy": "influencers",
+      "blockedByProfiles": [
+        "Nadiya",
+        "Brooke"
+      ],
+      "archetype": "villain",
+      "challengeWins": 0,
+      "votesReceived": 0,
+      "ci": {
+        "influencerTimes": 0,
+        "firstPlaces": 0,
+        "blocksMade": 0,
+        "catfishSeasons": 0,
+        "profile": "Ruth",
+        "mode": "edited",
+        "avgRating": 2
+      },
+      "alliances": [],
+      "unbreakableBonds": [],
+      "rivalries": [
+        "Hector"
+      ],
+      "betrayed": [],
+      "betrayedBy": [],
+      "popularity": 0
+    }
+  ],
+  "votingHistory": [
+    {
+      "episode": 1,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "exits": [],
+      "votes": [],
+      "night": "standard",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 1,
+            "avg": 3
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 2,
+            "avg": 3.429
+          },
+          {
+            "profile": "Ruth",
+            "people": [
+              "Ruth"
+            ],
+            "place": 2,
+            "avg": 3.429
+          },
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 4,
+            "avg": 3.714
+          },
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 5,
+            "avg": 4
+          },
+          {
+            "profile": "Curtis",
+            "people": [
+              "Curtis"
+            ],
+            "place": 6,
+            "avg": 4.571
+          },
+          {
+            "profile": "Wyatt",
+            "people": [
+              "Wyatt"
+            ],
+            "place": 6,
+            "avg": 4.571
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 8,
+            "avg": 5.286
+          }
+        ],
+        "influencers": [
+          "Nadiya",
+          "Brooke"
+        ]
+      }
+    },
+    {
+      "episode": 2,
+      "eliminated": "Ruth",
+      "eliminatedSlug": "ruth",
+      "exits": [
+        {
+          "name": "Ruth",
+          "slug": "ruth",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Ruth",
+          "by": [
+            "Nadiya",
+            "Brooke"
+          ]
+        }
+      ],
+      "votes": [],
+      "night": "standard",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Wyatt",
+            "people": [
+              "Wyatt"
+            ],
+            "place": 1,
+            "avg": 2.143
+          },
+          {
+            "profile": "Curtis",
+            "people": [
+              "Curtis"
+            ],
+            "place": 2,
+            "avg": 3
+          },
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 3,
+            "avg": 3.429
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 4,
+            "avg": 3.857
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 5,
+            "avg": 4
+          },
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 6,
+            "avg": 4.143
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 7,
+            "avg": 4.429
+          }
+        ],
+        "influencers": [
+          "Wyatt",
+          "Nadiya"
+        ]
+      }
+    },
+    {
+      "episode": 3,
+      "eliminated": "Curtis",
+      "eliminatedSlug": "curtis",
+      "exits": [
+        {
+          "name": "Curtis",
+          "slug": "curtis",
+          "verb": "blocked",
+          "channel": "sacrifice",
+          "profile": "Curtis",
+          "by": []
+        }
+      ],
+      "votes": [],
+      "night": "standard",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 1,
+            "avg": 3
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 2,
+            "avg": 3.143
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 3,
+            "avg": 3.429
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 3,
+            "avg": 3.429
+          },
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 5,
+            "avg": 3.571
+          },
+          {
+            "profile": "Anais",
+            "people": [
+              "Anais"
+            ],
+            "place": 6,
+            "avg": 4
+          },
+          {
+            "profile": "Wyatt",
+            "people": [
+              "Wyatt"
+            ],
+            "place": 7,
+            "avg": 4.429
+          }
+        ],
+        "influencers": [
+          "Domingo",
+          "Sasha"
+        ]
+      }
+    },
+    {
+      "episode": 4,
+      "eliminated": "Anais",
+      "eliminatedSlug": "anais",
+      "exits": [
+        {
+          "name": "Anais",
+          "slug": "anais",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Anais",
+          "by": [
+            "Domingo",
+            "Sasha"
+          ]
+        }
+      ],
+      "votes": [],
+      "night": "standard",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 1,
+            "avg": 2.571
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 1,
+            "avg": 2.571
+          },
+          {
+            "profile": "Wyatt",
+            "people": [
+              "Wyatt"
+            ],
+            "place": 3,
+            "avg": 2.857
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 4,
+            "avg": 3.286
+          },
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 5,
+            "avg": 4.286
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 6,
+            "avg": 4.571
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 7,
+            "avg": 4.857
+          }
+        ],
+        "influencers": [
+          "Lila",
+          "Nadiya"
+        ]
+      }
+    },
+    {
+      "episode": 5,
+      "eliminated": "Wyatt",
+      "eliminatedSlug": "wyatt",
+      "exits": [
+        {
+          "name": "Wyatt",
+          "slug": "wyatt",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Wyatt",
+          "by": [
+            "Lila",
+            "Nadiya"
+          ]
+        }
+      ],
+      "votes": [],
+      "night": null
+    },
+    {
+      "episode": 6,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "exits": [],
+      "votes": [],
+      "night": null
+    },
+    {
+      "episode": 7,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "exits": [],
+      "votes": [],
+      "night": "plead",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 1,
+            "avg": 2.875
+          },
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 2,
+            "avg": 3.25
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 3,
+            "avg": 3.375
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 3,
+            "avg": 3.375
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 5,
+            "avg": 3.5
+          },
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 6,
+            "avg": 4.125
+          },
+          {
+            "profile": "Dr.Ines",
+            "people": [
+              "Dr.Ines"
+            ],
+            "place": 7,
+            "avg": 4.875
+          }
+        ],
+        "influencers": [
+          "Sasha",
+          "Domingo"
+        ]
+      }
+    },
+    {
+      "episode": 8,
+      "eliminated": "Dr.Ines",
+      "eliminatedSlug": "dr-ines",
+      "exits": [
+        {
+          "name": "Dr.Ines",
+          "slug": "dr-ines",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Dr.Ines",
+          "by": [
+            "Sasha",
+            "Domingo"
+          ]
+        }
+      ],
+      "votes": [],
+      "night": "audience-block",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 1,
+            "avg": 3.25
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 2,
+            "avg": 3.5
+          },
+          {
+            "profile": "Kad",
+            "people": [
+              "Elijah"
+            ],
+            "place": 3,
+            "avg": 3.75
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 3,
+            "avg": 3.75
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 5,
+            "avg": 4
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 5,
+            "avg": 4
+          },
+          {
+            "profile": "Jace",
+            "people": [
+              "Lorraine"
+            ],
+            "place": 7,
+            "avg": 4.75
+          },
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 8,
+            "avg": 5.5
+          }
+        ],
+        "influencers": [
+          "Lila",
+          "Brooke"
+        ]
+      }
+    },
+    {
+      "episode": 9,
+      "eliminated": "Lorraine",
+      "eliminatedSlug": "lorraine",
+      "exits": [
+        {
+          "name": "Lorraine",
+          "slug": "lorraine",
+          "verb": "blocked",
+          "channel": "audience",
+          "profile": "Jace",
+          "by": []
+        }
+      ],
+      "votes": [],
+      "night": null
+    },
+    {
+      "episode": 10,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "exits": [],
+      "votes": [],
+      "night": "standard",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 1,
+            "avg": 3.143
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 1,
+            "avg": 3.143
+          },
+          {
+            "profile": "Domingo",
+            "people": [
+              "Domingo"
+            ],
+            "place": 3,
+            "avg": 3.571
+          },
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 3,
+            "avg": 3.571
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 5,
+            "avg": 3.714
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 6,
+            "avg": 3.857
+          },
+          {
+            "profile": "Kad",
+            "people": [
+              "Elijah"
+            ],
+            "place": 7,
+            "avg": 5.286
+          },
+          {
+            "profile": "Mateo",
+            "people": [
+              "Luis",
+              "Mateo"
+            ],
+            "place": 8,
+            "avg": 5.714
+          }
+        ],
+        "influencers": [
+          "Nadiya",
+          "Sasha"
+        ]
+      }
+    },
+    {
+      "episode": 11,
+      "eliminated": "Domingo",
+      "eliminatedSlug": "domingo",
+      "exits": [
+        {
+          "name": "Domingo",
+          "slug": "domingo",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Domingo",
+          "by": [
+            "Nadiya",
+            "Sasha"
+          ]
+        }
+      ],
+      "votes": [],
+      "night": "secret",
+      "ratings": {
+        "final": false,
+        "hidden": true,
+        "results": [
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 1,
+            "avg": 2.667
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 2,
+            "avg": 3
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 3,
+            "avg": 3.5
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 3,
+            "avg": 3.5
+          },
+          {
+            "profile": "Kad",
+            "people": [
+              "Elijah"
+            ],
+            "place": 3,
+            "avg": 3.5
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 6,
+            "avg": 3.667
+          },
+          {
+            "profile": "Mateo",
+            "people": [
+              "Luis",
+              "Mateo"
+            ],
+            "place": 7,
+            "avg": 4.667
+          }
+        ],
+        "influencers": [
+          "Lila",
+          "Nadiya"
+        ]
+      }
+    },
+    {
+      "episode": 12,
+      "eliminated": "Luis",
+      "eliminatedSlug": "luis",
+      "exits": [
+        {
+          "name": "Luis",
+          "slug": "luis",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Mateo",
+          "by": [
+            "Lila",
+            "Nadiya"
+          ],
+          "secret": true
+        },
+        {
+          "name": "Mateo",
+          "slug": "mateo",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Mateo",
+          "by": [
+            "Lila",
+            "Nadiya"
+          ],
+          "secret": true
+        }
+      ],
+      "votes": [],
+      "night": "standard",
+      "ratings": {
+        "final": false,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 1,
+            "avg": 2.8
+          },
+          {
+            "profile": "Kad",
+            "people": [
+              "Elijah"
+            ],
+            "place": 1,
+            "avg": 2.8
+          },
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 1,
+            "avg": 2.8
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 4,
+            "avg": 3
+          },
+          {
+            "profile": "Nadiya",
+            "people": [
+              "Hector"
+            ],
+            "place": 5,
+            "avg": 3.2
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 6,
+            "avg": 3.4
+          }
+        ],
+        "influencers": [
+          "Brooke",
+          "Kad"
+        ]
+      }
+    },
+    {
+      "episode": 13,
+      "eliminated": "Hector",
+      "eliminatedSlug": "hector",
+      "exits": [
+        {
+          "name": "Hector",
+          "slug": "hector",
+          "verb": "blocked",
+          "channel": "influencers",
+          "profile": "Nadiya",
+          "by": [
+            "Brooke",
+            "Kad"
+          ]
+        }
+      ],
+      "votes": [],
+      "night": null,
+      "ratings": {
+        "final": true,
+        "hidden": false,
+        "results": [
+          {
+            "profile": "Lila",
+            "people": [
+              "Lila"
+            ],
+            "place": 1,
+            "avg": 1.75
+          },
+          {
+            "profile": "Brooke",
+            "people": [
+              "Derek"
+            ],
+            "place": 2,
+            "avg": 2.25
+          },
+          {
+            "profile": "Sasha",
+            "people": [
+              "Sasha"
+            ],
+            "place": 2,
+            "avg": 2.25
+          },
+          {
+            "profile": "Barbie",
+            "people": [
+              "Barbie"
+            ],
+            "place": 4,
+            "avg": 3
+          },
+          {
+            "profile": "Kad",
+            "people": [
+              "Elijah"
+            ],
+            "place": 5,
+            "avg": 3.25
+          }
+        ],
+        "influencers": []
+      }
+    },
+    {
+      "episode": 14,
+      "eliminated": null,
+      "eliminatedSlug": "",
+      "exits": [],
+      "votes": [],
+      "night": null
+    }
+  ],
+  "twists": [
+    {
+      "episode": 2,
+      "type": "ci-ride-or-die",
+      "name": "Ride or Die"
+    },
+    {
+      "episode": 2,
+      "type": "ci-arrive-date",
+      "name": "A Date With One of Three"
+    },
+    {
+      "episode": 3,
+      "type": "ci-arrive-date",
+      "name": "A Date With One of Three"
+    },
+    {
+      "episode": 4,
+      "type": "ci-arrive-party",
+      "name": "The Newcomer Throws a Party"
+    },
+    {
+      "episode": 5,
+      "type": "ci-arrive-pair",
+      "name": "Arrive as a Pair"
+    },
+    {
+      "episode": 7,
+      "type": "ci-save-then-plead",
+      "name": "Save Then Plead"
+    },
+    {
+      "episode": 8,
+      "type": "ci-audience-block",
+      "name": "America's Block"
+    },
+    {
+      "episode": 11,
+      "type": "ci-secret-influencers",
+      "name": "Secret Influencers"
+    }
+  ],
+  "emoji": "⭕",
+  "exitVerbs": [
+    "blocked"
+  ]
+}

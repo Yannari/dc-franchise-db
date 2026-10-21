@@ -1800,43 +1800,67 @@
   "twists": [
     {
       "episode": 2,
+      "episodes": [
+        2
+      ],
       "type": "ci-ride-or-die",
-      "name": "Ride or Die"
+      "name": "Ride or Die",
+      "desc": "Secret compatibility answers pair every player with a Ride or Die. It lasts for one Ratings and one blocking. At the Ratings, the top-rated player's partner becomes the second Influencer, wherever they were rated. At the blocking, once the name is announced, the blocked player's partner can choose to go home in their place. Players learn who their own partner is and nobody else's, so that blocking is also a question of who would take the fall for whom."
     },
     {
       "episode": 2,
+      "episodes": [
+        2,
+        3
+      ],
       "type": "ci-arrive-date",
-      "name": "A Date With One of Three"
-    },
-    {
-      "episode": 3,
-      "type": "ci-arrive-date",
-      "name": "A Date With One of Three"
+      "name": "A Date With One of Three",
+      "desc": "The Circle shows the newcomer three players and tells them to take one on a virtual dinner date and send them a gift. The newcomer picks, the date happens in a private chat, and the gift arrives at the chosen player's door. The whole building hears who was picked, and the two who were offered and passed over feel it."
     },
     {
       "episode": 4,
+      "episodes": [
+        4
+      ],
       "type": "ci-arrive-party",
-      "name": "The Newcomer Throws a Party"
+      "name": "The Newcomer Throws a Party",
+      "desc": "The newcomer has to throw a party on their first night and choose who is invited. About half the building gets a message and a good time, and a first bond with the host. The other half sees the party happening without them, and every one of them notices exactly who was left out, including themselves."
     },
     {
       "episode": 5,
+      "episodes": [
+        5
+      ],
       "type": "ci-arrive-pair",
-      "name": "Arrive as a Pair"
+      "name": "Arrive as a Pair",
+      "desc": "Two newcomers arrive on the same night, and before either meets anyone else the Circle puts them in a private chat with each other. They walk into the building already knowing one person, and usually already allied: two new votes that can move together from day one."
     },
     {
       "episode": 7,
+      "episodes": [
+        7
+      ],
       "type": "ci-save-then-plead",
-      "name": "Save Then Plead"
+      "name": "Save Then Plead",
+      "desc": "The two Influencers take turns saving players in public until only two are left. Those two then have to plead their case to the Influencers face to face on video, and a good plea can change a mind that seemed made up. The Influencers go to the Hangout and choose between the two; the other one is safe. The blocked player gets to meet one person before they leave."
     },
     {
       "episode": 8,
+      "episodes": [
+        8
+      ],
       "type": "ci-audience-block",
-      "name": "America's Block"
+      "name": "America's Block",
+      "desc": "Everyone rates as usual and the top two become Influencers, but tonight they do not block anybody: in the Hangout they nominate two players instead. The audience at home then votes to save one of the two, by who they have liked watching, and the live vote is shown on screen with the share each one got. The player with the smaller share is blocked, and both nominees know the Influencers put them there."
     },
     {
       "episode": 11,
+      "episodes": [
+        11
+      ],
       "type": "ci-secret-influencers",
-      "name": "Secret Influencers"
+      "name": "Secret Influencers",
+      "desc": "Everyone rates as usual, but tonight nobody is shown the results: not their own place, and not who came top. The two top-rated players are told privately that they are the Influencers, and they meet in the Hangout without anyone else knowing it is them. The Circle announces the blocked name, not who chose it, so the whole building spends the next day guessing, and the blocked player has no idea whose door to knock on. They still get to meet one person before they leave."
     }
   ],
   "emoji": "⭕",

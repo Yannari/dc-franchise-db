@@ -19,18 +19,26 @@ and a season of them becomes a story of its own.
 
 - **Every boot gets an exit interview**, on every show, the week they leave.
   Not only the ones with a story; the user decided "every boot gets one".
-- **Only people out of the game for good talk during the season.** Anyone
-  who is still part of the game waits for the debrief after the finale:
+- **Jurors get theirs the week they leave too.** The user, 2026-10-21: "juror
+  still have exit interview, the finalists just have interview at the same
+  time." Every boot talks the week they go, jury or not; the FINALISTS each
+  get their own interview, all released on finale night, after the result.
+- **Only a player who can still come back waits** (my call, not yet confirmed
+  by the user): someone on a return path is still in the game, so their
+  interview waits until that path closes.
 
-  | Show | Talks during the season | Waits for the finale |
+  | Show | Talks the week they leave | Waits |
   |---|---|---|
-  | Big Brother | evictees before the jury | jurors (sequestered) |
-  | Total Drama | boots before the jury | jurors; anyone on Rescue Island / Edge of Extinction or another return path |
+  | Big Brother | every evictee, jurors included | — |
+  | Total Drama | every boot, jurors included | anyone on Rescue Island / Edge of Extinction or another return path, until it closes |
   | Perfect Match | every dumped islander | — |
   | The Traitors | every banished or murdered player | — |
-  | Drag Race | every eliminated queen | any queen with a return still open (All Stars return, Battle Back) |
+  | Drag Race | every eliminated queen | any queen with a return still open (All Stars return, Battle Back), until it closes |
   | The Circle | every blocked player | — |
-  | The Challenge / Ridonculous Race | every eliminated pair or team | anyone who can still re-enter |
+  | The Challenge / Ridonculous Race | every eliminated pair or team | anyone who can still re-enter, until they can't |
+
+  Every show: each finalist gets their own interview, all released together on
+  finale night, after the result (the user: separate, not one shared table).
 
   A player who comes back (a TD return, a DR return) and leaves again gets a
   second interview; the first stays aired.
@@ -46,9 +54,10 @@ and a season of them becomes a story of its own.
     fan vote at the finale.
   - **Relationships move when the person HEARS it, not when it is said.**
     Already out: they hear it the week it airs. Still in: they hear it the week
-    they leave. Sequestered (jury, return paths): at the finale, AFTER the
-    final vote — as on the real shows, a pre-jury podcast never reaches a
-    juror's ballot (my call; it keeps the jury vote a game decision).
+    they leave. Jurors and anyone on a return path are sequestered: a juror
+    still RECORDS the week they leave, but hears nobody else's until finale
+    night, AFTER the final vote — so a podcast never reaches a juror's ballot
+    (my call; it keeps the jury vote a game decision).
   - **Later episodes reference it.** The dragged person's own interview opens on
     "I just heard what you said about me" and answers back. Feuds between boots
     can run across a season, then into the debrief.

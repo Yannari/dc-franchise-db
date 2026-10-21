@@ -526,6 +526,16 @@
       "new": true,
       "ref": "arrive-22415967",
       "why": "the welcome rite in stages (2026-10-21): inside the old fisherman's shack, a wooden table with a bottle and glasses, nets and floats on the walls, a window onto the grey sea, a wooden floor to stand on; no plate shows the inside (stand-in: the red shack from outside, arrive-22415967)"
+    },
+    {
+      "place": "twin-tower-bridge",
+      "src": "38-twin-tower-bridge",
+      "file": "royal-guard",
+      "new": true,
+      "kind": "cutout",
+      "prop": "guard",
+      "ref": "present-22417669",
+      "why": "the kidnapper's last clue names a royal guard in a tall fur hat who holds the tip (2026-10-21); no cut-out of one; meanwhile the guards are not shown"
     }
   ]
 }

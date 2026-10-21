@@ -800,7 +800,8 @@ export const PLACE_PLATES = {
   'twin-tower-bridge': {
     src: '38-twin-tower-bridge', title: 'present-22417609', opener: p('task-22417943', 92, [6, 94]),
     arrive: [p('arrive-22417628', 92, [6, 94])],
-    props: { bus: 'Red Double-Decker Bus Side View-3', warden: 'Elderly tower warden in red uniform-4', kidnapper: 'Masked cloaked figure in magenta-trimmed hat-2' },
+    props: { bus: 'Red Double-Decker Bus Side View-3', warden: 'Elderly tower warden in red uniform-4', kidnapper: 'Masked cloaked figure in magenta-trimmed hat-2',
+      ...(REPAINTED.has('royal-guard') ? { guard: 'royal-guard' } : {}) },
     st: {
       'double-decker': { talk: [p('arrive-22417628', 92, [6, 94])],
         act: p('task-22417943', 92, [6, 94], { mode: 'ride', prop: 'bus', path: [[-20, 93], [50, 92], [120, 93]] }) },
@@ -1023,6 +1024,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const GUARDS = REPAINTED.has('royal-guard') ? [['guard', 72, 96, 7], ['guard', 82, 96, 7], ['guard', 92, 96, 7]] : [];
 const SHACK = repaint('task-shack-inside', 'task-shack-inside', 'arrive-22415967');
 const MUSEUM_BEAR = [['bear', 90, 88, 13, { move: 'wander', span: -4, dur: 12 }]];
 const RUNWAY = repaint('task-museum-runway', 'task-museum-runway', 'task-22415170'), RUNWAY_G = repaint('task-museum-runway', 82, 88);
@@ -1059,6 +1061,24 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'twin-tower-bridge': {
+    // (the fortress at night; its battlements; the dungeon; the jewel vault and its table)
+    kidnapper: {
+      'first-note': { label: 'THE FIRST NOTE', plate: ['present-22417669', { people: undefined, g: 96, x: [30, 70] }] },
+      battlements: { label: 'THE BATTLEMENTS', plate: ['task-22417670', { people: undefined, g: 96, x: [6, 94] }], fail: ['task-22417670', { people: undefined, g: 96, x: [6, 94] }], stamp: 'WRONG CLUE' },
+      'the-dungeon': { label: 'THE DUNGEON', plate: ['task-22417886', { mode: 'search', judge: null }], fail: ['task-22417886', { mode: 'search', judge: null }], stamp: 'WRONG CELL' },
+      // (the royal guards are a cut-out job in edit/: they line up here once it's back)
+      'the-guards': { label: 'THE GUARDS', plate: ['present-22417669', { people: undefined, g: 96, x: [30, 62], deco: GUARDS }], fail: ['present-22417669', { people: undefined, g: 96, x: [30, 62], deco: GUARDS }], stamp: 'WRONG GUARD' },
+      'guard-tip': { label: 'THE TIP', plate: ['present-22417669', { people: undefined, g: 96, x: [30, 62], deco: GUARDS }] },
+    },
+    'crown-jewel': {
+      'the-vault': { label: 'THE JEWEL VAULT', plate: ['task-22417892', {}] },
+      'the-table': { label: 'TWENTY CROWNS', plate: ['task-22417865', { mode: 'search', solo: true, inset: 'AT THE ROPE' }], fail: ['task-22417865', { mode: 'search', solo: true, inset: 'AT THE ROPE' }], stamp: 'NO IDEA' },
+      'the-pick': { label: 'THIS ONE', plate: ['task-22417865', { mode: undefined }] },
+      'the-light': { label: 'TO THE LIGHT', plate: ['task-22417892', { fx: 'sparkle' }], fail: ['task-22417892', {}], stamp: 'GLASS' },
+      'real-jewel': { label: 'THE REAL ONE', plate: ['task-22417892', { fx: 'sparkle' }] },
     },
   },
   'cliff-pool-isle': {

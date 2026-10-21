@@ -1072,6 +1072,24 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  badlands: {
+    // (the dig among the rocks; the striped plain; the skeleton frame; the finished skeletons on display; the drill site
+    // with its rig; the barrel in its pit)
+    dino: {
+      'bone-dig': { label: 'DIGGING', plate: ['task-22424409', { mode: 'search' }], fail: ['task-22424409', { mode: 'search' }], stamp: 'SNAPPED' },
+      'carry-bones': { label: 'THE BONES', plate: ['task-22424403', { mode: 'run', prop: undefined, path: [[8, 93], [34, 93], [60, 93]] }],
+        fail: ['task-22424403', { mode: undefined, prop: undefined, deco: [['bone', 50, 95, 8]] }], stamp: 'DROPPED' },
+      'the-frame': { label: 'THE SKELETON', plate: ['present-22424203', { mode: 'build' }], fail: ['present-22424203', { mode: 'build' }], stamp: 'WRONG PLACE' },
+      inspection: { label: 'THE INSPECTION', plate: ['Dinosaur skeletons in a fossil display-7', { fx: 'sparkle' }],
+        fail: ['Dinosaur skeletons in a fossil display-7', {}], stamp: 'A BONE MISSING' },
+    },
+    'oil-barrel': {
+      'old-map': { label: 'THE MAP', plate: ['Empty quarry, jet, barrels, and drill rig-9', { mode: undefined, prop: undefined, judge: null }] },
+      digging: { label: 'DIGGING', plate: ['Empty quarry, jet, barrels, and drill rig-9', { mode: 'chip', solo: true, inset: 'AT THE RIG', judge: null }], fail: ['Empty quarry, jet, barrels, and drill rig-9', { mode: 'chip', solo: true, inset: 'AT THE RIG', judge: null }], stamp: 'EMPTY HOLE' },
+      'barrel-stuck': { label: 'THE BARREL', plate: ['task-22424515', { mode: 'chip', solo: true, inset: 'AT THE RIG' }], fail: ['task-22424515', { mode: 'chip', solo: true, inset: 'AT THE RIG' }], stamp: 'STUCK' },
+      'rolled-out': { label: 'ROLLED OUT', plate: ['Empty quarry, jet, barrels, and drill rig-9', { mode: undefined, prop: undefined, judge: null, fx: 'sparkle', deco: [['barrel', 66, 94, 7]] }] },
+    },
+  },
   'stone-head-island': {
     // (the heads on the beach, the fallen heads in the sand; the spire; the nest at the top against the sky)
     eggs: {

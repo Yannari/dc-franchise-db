@@ -1032,6 +1032,31 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'carnival-rainforest': {
+    // (the forest floor and the mitten; the gorge's edge, the vines, the river at the bottom, the coconut pile; the
+    // costume table)
+    ants: {
+      'the-mitten': { label: 'THE MITTEN', plate: ['task-9437989', { deco: [['mitten', 30, 92, 10]] }], fail: ['task-9437989', { deco: [['mitten', 30, 92, 10]] }], stamp: 'NOPE' },
+      'hand-in': { label: 'HAND IN', plate: ['task-9438117', { mode: 'mitten' }], fail: ['task-9438117', { mode: 'mitten' }], stamp: 'EMPTY' },
+      'ant-tip': { label: 'THE TIP', plate: ['task-9438117', { mode: 'mitten' }], fail: ['task-9438117', { mode: 'mitten' }], stamp: 'DROPPED' },
+      swollen: { label: 'THE HAND', plate: ['task-9437989', {}] },
+    },
+    gorge: {
+      'gorge-edge': { label: 'THE EDGE', plate: ['task-9437972', {}], fail: ['task-9437972', {}], stamp: 'FROZEN' },
+      'the-swing': { label: 'THE VINE', plate: ['task-9437835', { mode: 'swing' }],
+        fail: ['task-9437898', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'swim', path: [[36, 74], [50, 76], [64, 74]], fx: 'splash', inset: undefined }],
+        stamp: 'SPLASH!' },
+      'coconut-pile': { label: 'THE COCONUTS', plate: ['task-9437837', { mode: 'search' }], fail: ['task-9437837', { mode: 'search' }], stamp: 'JUST MILK' },
+      'the-coconut': { label: 'THE RIGHT ONE', plate: ['task-9437837', { mode: undefined, prop: undefined, deco: [['coconut', 22, 94, 5]] }] },
+    },
+    costume: {
+      feathers: { label: 'FEATHERS', plate: ['task-9438128', { mode: 'sew', judge: null }], fail: ['task-9438128', { mode: 'sew', judge: null }], stamp: 'STUCK' },
+      headpiece: { label: 'THE HEADPIECE', plate: ['task-9438128', { mode: 'sew', judge: null }], fail: ['task-9438128', { mode: 'sew', judge: null }], stamp: 'COLLAPSED' },
+      tailpiece: { label: 'THE TAILPIECE', plate: ['task-9438128', { mode: 'sew', prop: 'tail', judge: null }], fail: ['task-9438128', { mode: 'sew', prop: 'tail', judge: null }], stamp: 'MOULTING' },
+      'the-parade': { label: 'THE PARADE', plate: ['task-9438128', { mode: 'dance', prop: undefined }], fail: ['task-9438128', { mode: 'dance', prop: undefined }], stamp: 'MORE!' },
+      'judge-cheers': { label: 'THE JUDGE CHEERS', plate: ['task-9438128', { mode: undefined, prop: undefined, judge: null, deco: [['head', 22, 95, 6], ['tail', 32, 95, 7]] }] },
+    },
+  },
   'geyser-island': {
     // (the geyser field with Don's speaker box at the near edge and the local at the far side; the feast hut; the ice cave)
     telephone: {

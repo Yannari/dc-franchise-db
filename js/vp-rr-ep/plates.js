@@ -863,7 +863,7 @@ export const PLACE_PLATES = {
   'fjord-sea': {
     src: '42-fjord-sea', title: 'arrive-22420234', opener: p('task-22420282', 93, [6, 94]),
     arrive: [p('task-22420282', 93, [6, 94])],
-    props: { longship: 'longship', boat: 'longship', cannon: 'cannon', meatballs: 'meatball-pile' },
+    props: { longship: 'longship', boat: 'longship', cannon: 'cannon', meatballs: 'meatball-pile', ...(REPAINTED.has('fjord-target') ? { target: 'fjord-target' } : {}) },
     st: {
       'shore-taxi': { talk: [p('task-22420282', 93, [6, 94])],
         act: p('task-22420280', 94, [6, 94], { mode: 'ride', prop: 'taxi@glass-tower-gulf', flip: true, path: [[-14, 95], [50, 94], [114, 95]], fx: 'dust' }) },
@@ -1024,6 +1024,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const FJORD_TARGET = (REPAINTED.has('fjord-target') ? [['target', 80, 86, 7]] : []);
 const CORRAL_EMU = [['emu', 70, 94, 9, { move: 'wander', span: 14, dur: 5 }]];
 const PATROL = [['soldier', 92, 90, 13, { move: 'wander', span: -6, dur: 10 }]];
 const GUARDS = REPAINTED.has('royal-guard') ? [['guard', 72, 96, 7], ['guard', 82, 96, 7], ['guard', 92, 96, 7]] : [];
@@ -1063,6 +1064,24 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'fjord-sea': {
+    // (the wreck heap on the shore; the fjord water; the cannon on the shore)
+    longship: {
+      'the-heap': { label: 'THE HEAP', plate: ['task-22420280', {}] },
+      'the-hull': { label: 'THE HULL', plate: ['task-22420282', { mode: 'build' }], fail: ['task-22420282', { mode: 'build' }], stamp: 'WRONG WAY ROUND' },
+      'mast-and-sail': { label: 'MAST AND SAIL', plate: ['task-22420282', { mode: 'build' }], fail: ['task-22420282', { mode: 'build' }], stamp: 'UPSIDE DOWN' },
+      'the-crossing': { label: 'ACROSS THE FJORD', plate: ['task-22420473', { mode: 'ride' }],
+        fail: ['task-22420473', { mode: 'swim', prop: undefined, path: [[56, 86], [34, 88], [12, 90]] }], stamp: 'LEAKING' },
+      'far-shore': { label: 'THE FAR SHORE', plate: ['task-22420280', { deco: [['longship', 87, 96, 28]] }] },
+    },
+    'meatball-cannon': {
+      'load-up': { label: 'LOAD IT', plate: ['task-22420280', { mode: 'toss', solo: true, inset: 'WATCHING' }], fail: ['task-22420280', { mode: 'toss', solo: true, inset: 'WATCHING' }], stamp: 'SPILLED' },
+      // (the target out on the water is a cut-out job, fjord-target; meanwhile the cannon fires from the shore)
+      'take-aim': { label: 'AIM', plate: ['task-22420280', { mode: undefined, prop: undefined, judge: null, deco: [['cannon', 13, 93, 10], ...FJORD_TARGET] }] },
+      fire: { label: 'FIRE!', plate: ['task-22420280', { mode: 'toss', solo: true, inset: 'WATCHING', fx: 'splash' }], fail: ['task-22420280', { mode: 'toss', solo: true, inset: 'WATCHING', fx: 'splash' }], stamp: 'MISSED' },
+      bullseye: { label: 'BULLSEYE', plate: ['task-22420280', { mode: undefined, prop: undefined, judge: null, fx: 'sparkle', deco: [['cannon', 13, 93, 10], ...FJORD_TARGET] }] },
     },
   },
   'red-outback': {

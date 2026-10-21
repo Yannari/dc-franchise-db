@@ -86,7 +86,10 @@ function factsFor(name, week, { how = 'evicted', placement = null, withName = nu
   const again = records.some(r => r.guest === name);
   return {
     show: 'big-brother', week: Number(week?.num) || 0, guest: name, with: withName, how, placement,
-    juror: how !== 'finalist' && isJuror(name), firstBoot: !again && how === 'evicted' && !records.length,
+    // First boot is read off the house, not the interviews: a season saved
+    // before exit interviews existed has none, and is not on its first boot.
+    juror: how !== 'finalist' && isJuror(name), firstBoot: !again && how === 'evicted'
+      && !(gs.eliminated || []).some(n => n !== name && n !== withName),
     again, blindside, backdoor: how === 'evicted'
       // initialNominees, not `nominees`: that one is only written on a cancelled week.
       && (week?.initialNominees || []).length > 0

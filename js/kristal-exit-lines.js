@@ -104,7 +104,7 @@ export const JUROR = [
   'One thing first: {guest} is on the jury, which means after tonight {guest} hears nothing until the finale. No podcast, no clips, nothing. So whatever gets said today, {guest} won’t hear the replies.',
   'And a reminder: {guest} is heading to the jury house after this. Anything the other {players} say about {guest} on this show, {guest} finds out at the finale.',
   'Quick note: as a juror, {guest} goes dark after this recording until the finale, so no answering back. Make it count.',
-  '{guest} has a jury vote now, by the way, and goes into sequester tonight. Everyone still playing should listen carefully.',
+  '{guest} has a jury vote now, by the way, and goes into sequester tonight. Everyone still playing should be a little nervous.',
 ];
 
 // ── the first question, by kind, and the answer by mood ─────────────────

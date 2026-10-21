@@ -117,6 +117,12 @@ describe('the odd nights', () => {
     expect(r.guest).toBe('A');
   });
 
+  it('a save from before exit interviews does not call week five a first boot', () => {
+    gs.eliminated = ['Z', 'A'];
+    const [r] = recordBBExits({ num: 5, evicted: 'A', ballots: [] });
+    expect(r.kind).not.toBe('first-boot');
+  });
+
   it('somebody back in the house records nothing', () => {
     gs.activePlayers.push('A');
     expect(recordBBExits({ num: 2, evicted: 'A', ballots: [] })).toEqual([]);

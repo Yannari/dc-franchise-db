@@ -205,7 +205,10 @@ export function episodeScreens(res, eps, i) {
     let placeFor = placeId;
     const k = seg.kind;
     if (k === 'don-narrate') {
-      if (seg.ending === 'depart') { placeFor = prevLeg?.place || placeId; plate = prevLeg ? matPlate(prevLeg.place) : plates.opener; hudTask = 'DEPARTURE'; mode = 'narrate'; }
+      // the season's first words: Don, on camera at the start line ("I'm your host, Don"), not a voice over an empty
+      // street (2026-10-21, the user: "why is don avatar just not here in this shot")
+      if (seg.ending === 'welcome') { plate = plates.opener; mode = 'don'; hudTask = 'THE START'; }
+      else if (seg.ending === 'depart') { placeFor = prevLeg?.place || placeId; plate = prevLeg ? matPlate(prevLeg.place) : plates.opener; hudTask = 'DEPARTURE'; mode = 'narrate'; }
       else if (seg.ending === 'flight-wait') { mode = 'flight'; hudTask = 'IN THE AIR'; }
       // (each landing on another of the place's arrivals, each last stretch on another view of the Chill Zone)
       else if (/landed/.test(seg.ending || '')) { plate = pick(plates.arrive, nth(`${placeId}|arrive`)) || plates.opener; mode = 'landing'; hudTask = 'ARRIVAL'; }

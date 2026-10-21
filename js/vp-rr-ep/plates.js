@@ -1309,10 +1309,15 @@ export const STAGE_SHOTS = {
     'falls-dive': {
       'the-edge': { label: 'THE EDGE', plate: ['task-22416404', { mode: undefined, prop: undefined, path: undefined, water: false, local: false, g: 64, x: [4, 30] }],
         fail: ['task-22416404', { mode: undefined, prop: undefined, path: undefined, water: false, local: false, g: 64, x: [4, 30] }], stamp: 'NOT JUMPING' },
-      'the-jump': { label: 'THE JUMP', plate: ['task-22416404', { mode: 'dive', inset: 'ON THE CLIFF', path: [[24, 50], [40, 64], [56, 80], [62, 92]] }] },
+      // (the falls from the beach: off the top on the line that says so, out and down into the lagoon; 2026-10-21, the
+      // user: "theres no animation for jumping from a cliff")
+      'the-jump': { label: 'THE JUMP', plate: ['present-22416327', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'dive', leap: true, inset: 'ON THE CLIFF',
+        path: [[47, 30], [62, 72]] }] },
       'the-bottom': { label: 'THE CHESTS', plate: ['task-22416440', { mode: 'dive' }], fail: ['task-22416440', { mode: 'dive' }], stamp: 'NO CHEST' },
-      'cliff-path': { label: 'BACK UP THE CLIFF', plate: ['present-22416327', { deco: [['chest', 50, 92, 5]] }],
-        fail: ['present-22416327', { deco: [['chest', 50, 92, 5]] }], stamp: 'DROPPED IT' },
+      // (up the rocks at the side of the falls, the chest in their arms: "sami isnt even hauling or near the chest")
+      'cliff-path': { label: 'BACK UP THE CLIFF', plate: ['present-22416327', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'climb', carry: 'chest', solo: true, crowd: false, inset: 'ON THE CLIFF',
+        path: [[30, 90], [18, 80], [10, 62], [14, 46], [22, 31]] }],
+        fail: ['present-22416327', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'climb', carry: 'chest', solo: true, crowd: false, inset: 'ON THE CLIFF', path: [[30, 90], [18, 80], [12, 70], [20, 86]] }], stamp: 'DROPPED IT' },
       'chest-up': { label: 'THE TOP', plate: ['task-22416404', { mode: undefined, prop: undefined, path: undefined, water: false, local: false, g: 64, x: [4, 26], deco: [['chest', 34, 64, 5]] }] },
     },
     bobsled: {

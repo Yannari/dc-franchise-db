@@ -9,7 +9,7 @@
 // slam. Every avatar idles; whoever is talking bounces.
 import { plateUrl, raceUrl, propUrl } from './plates.js';
 import { PLACES } from '../rr/places.js';
-import { intelAt, offOf, stampSpot, slamSpot, tipSpot, fitOverlay, screenFaces, overlayObstacles, weatherOf, BAR, HUD_H, GROWS } from './steps.js';
+import { intelAt, offOf, stampSpot, slamSpot, tipSpot, fitOverlay, screenFaces, overlayObstacles, weatherOf, BAR, HUD_H, GROWS, framed, barShown } from './steps.js';
 import { plateLife } from './life.js';
 
 const ORD = ['', '1ST', '2ND', '3RD', '4TH', '5TH', '6TH', '7TH', '8TH', '9TH', '10TH', '11TH', '12TH', '13TH', '14TH'];
@@ -106,6 +106,9 @@ export function createStage(holder, { faceOf, legLabel }) {
     // a rickshaw is pulled at a run; a raft on a walk is carried over their heads
     if (as === 'ride' && /^rickshaw/.test(pl.prop || '') && s.mode === 'act') e.classList.add('rickshaw', 'running', 'ltr');
     if (as === 'walk' && /^raft/.test(pl.prop || '') && s.mode === 'act') veh = `<img class="veh carry" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
+    // (`carry`: what the one doing it holds in their arms, the chest up the cliff path; 2026-10-21, the user: "sami isnt
+    // even hauling or near the chest")
+    if (pl.carry && s.mode === 'act' && !opts.extraCls?.includes('crowd')) veh = `<img class="veh carry arms" src="${propUrl(s.plate.place || s.place, pl.carry)}" alt="">`;
     // a coffin pushed in front rolls on a pair of iron wheels
     if (as === 'push' && veh) veh += WHEELS;
     // what the challenge has them wear (the helmets on the deck and the zipline: the user, 2026-10-21, "the helmet isnt
@@ -200,6 +203,26 @@ export function createStage(holder, { faceOf, legLabel }) {
         { duration: 900 + Math.random() * 900, delay: i * 40, easing: 'cubic-bezier(.2,.7,.4,1)', fill: 'forwards' }).finished.then(() => m.remove()).catch(() => {});
     }
   }
+  function leapFx(s, k) {
+    const pl = s.plate;
+    for (const id of s.teams) {
+      const b = s.pos[k]?.[id];
+      if (!b) continue;
+      const a = k > 0 ? s.pos[k - 1]?.[id] || pl.path[0] : pl.path[0];
+      const top = [a[0] + (b[0] - a[0]) * 0.32, a[1] - 9];
+      toks.querySelectorAll(`.swim[data-team="${id}"]:not([data-crowd])`).forEach((e, j) => {
+        const off = [j * Math.max(5, (s.size || 8) * 0.95), j * 1.5];
+        const at = p => ({ left: p[0] + off[0] + '%', top: p[1] + off[1] + '%' });
+        e.classList.add('flying');
+        e.animate([{ ...at(a), offset: 0, easing: 'cubic-bezier(.2,.7,.4,1)' }, { ...at(top), offset: 0.3, easing: 'cubic-bezier(.55,0,.9,.5)' }, { ...at(b), offset: 1 }],
+          { duration: 1150, fill: 'backwards' });
+        e.querySelector('img')?.animate([{ transform: 'rotate(0deg) scale(1)' }, { transform: 'rotate(200deg) scale(1.08)', offset: 0.5 }, { transform: 'rotate(360deg) scale(1)' }],
+          { duration: 1150, easing: 'ease-in' });
+        later(1150, () => e.classList.remove('flying'));
+      });
+      later(1100, () => { splash(b[0] + 1.5, b[1] - 1, 18); particles('bubble', b[0], b[1] - 3, 10); });
+    }
+  }
   function splash(x, y, n = 9) {
     particles('drop', x, y, n, 4);
     const w = document.createElement('div'); w.className = 'wake'; w.style.left = x + '%'; w.style.top = (y + 1.5) + '%'; fx.appendChild(w);
@@ -246,9 +269,8 @@ export function createStage(holder, { faceOf, legLabel }) {
   function viewOf(s, k) {
     const c = (s.kind === 'world' && s.steps[k]?.cam) || { shot: 'wide', s: 1, x: 0, y: 0 };
     const overlaid = getComputedStyle($('rr-vn')).position === 'absolute';
-    const sc = c.s || 1;
-    let { x, y } = c;
-    if (!overlaid) y = c.shot === 'wide' ? 0 : Math.max(0, Math.min(100 - 100 / sc, y));
+    // (lifted only while the bar is over the picture: a narration card has none)
+    const { s: sc, x, y } = framed(c, overlaid && (s.kind !== 'world' || barShown(s.steps[k])));
     return { c, s: sc, x, y, overlaid };
   }
   function camera(s, k, fresh) {
@@ -502,7 +524,10 @@ export function createStage(holder, { faceOf, legLabel }) {
       // (`away`: the partner of a Botch on a line, up in the box rather than on it)
       const gone = [...(Array.isArray(off) && !leaving ? off : []), ...(s.away?.[id] || [])];
       if (s.swimmers?.[id]) {
-        s.swimmers[id].filter(n => !gone.includes(n)).forEach((n, j) => swimmerEl(ep, s, id, n, at, j));
+        s.swimmers[id].filter(n => !gone.includes(n)).forEach((n, j) => {
+          const e = swimmerEl(ep, s, id, n, at, j);
+          if (s.leapAt != null && k < s.leapAt) e.classList.add('edge');
+        });
         continue;
       }
       const e = tokenEl(ep, s, id, at, { extraCls: it.out[id] ? 'out' : '' });
@@ -542,6 +567,7 @@ export function createStage(holder, { faceOf, legLabel }) {
         let from;
         if (s.mode === 'act' && pl.mode === 'ride') from = [pl.path[0][0] < 0 ? pl.path[0][0] : -14, to[1]];
         else if (s.mode === 'act' && pl.mode === 'para') from = [to[0] - 10, -10];
+        else if (s.mode === 'act' && pl.leap) { if (s.leapAt === 0) return; from = null; }   // (a leap on the first line is its own entrance)
         else if (s.mode === 'act') from = pl.path ? pl.path[0] : to;
         else if (s.mode === 'mat' && (s.arriving || []).includes(id)) from = [-10, to[1]];
         else if (s.enter?.[id]) from = [s.enter[id] === 'right' ? 110 : -10, to[1]];
@@ -560,8 +586,11 @@ export function createStage(holder, { faceOf, legLabel }) {
       });
       if (s.work) later(500, () => workFx(s, s.marks[s.teams[0]]));
     }
+    // a leap off the top: up and out from the edge, a turn in the air, faster and faster down, and a big splash where
+    // they go in (2026-10-21, the user: "theres no animation for jumping from a cliff we said animate everything")
+    if (pl.leap && s.pos && s.leapAt === k) leapFx(s, k);
     // the move from the step before
-    if (k > 0 && s.pos) {
+    if (k > 0 && s.pos && !pl.leap) {
       for (const id of s.teams) {
         const a = s.pos[k - 1]?.[id], b = s.pos[k]?.[id];
         if (!a || !b || (a[0] === b[0] && a[1] === b[1])) continue;

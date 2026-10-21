@@ -686,7 +686,7 @@ function progressPlan(n, ending) {
 // "a crowded same-flight galley overlaps").
 export const OVERLAP_OK = 0.08;                 // two faces may touch by this much of the smaller one, no more
 const STAGED = ['marks', 'as', 'pos', 'plan', 'swimmers', 'away', 'inset', 'donStand', 'localAt', 'boxAt', 'matAt', 'donAt', 'hiddenUntil', 'onMatAt', 'work', 'lift', 'liftAt',
-  'workProp', 'judgeAt'];
+  'workProp', 'judgeAt', 'leapAt'];
 // The work's cut-out beside the team doing it (a sand palace, a mitten, a platter), on the side with more room, and the
 // local who judges it (the surfer boy, the carnival dancer, the coach) beyond it, as tall as a racer: placed here so
 // the teams behind the shot keep clear of them (planCrowd) and the stage only draws them.
@@ -806,10 +806,16 @@ function layout(s, size) {
     // (a ride keeps a vehicle's length apart: the sled, the raft, the jeep is wider than the faces on it; 2026-10-20,
     // two teams' sleds drawn one on top of the other)
     const gapF = Math.max(0.12, (s.size || 8) * (ride && plate.prop ? 1.9 + 1.6 * (plate.propW || 1) : 1.9) / plen);
+    // a leap off the top (`leap`): on the edge until the line that has them jump (else the second line), in the water
+    // from then on; the stage draws the jump itself (2026-10-21, the user: "theres no animation for jumping from a cliff")
+    if (plate.leap) {
+      const j = s.steps.findIndex(x => x.part === 'beat' && LEAPS.test(x.text || ''));
+      s.leapAt = j < 0 ? Math.min(1, ps - 1) : j;
+    }
     for (let k = 0; k < ps; k++) {
       const pos = {};
       s.teams.forEach((id, i) => {
-        let f = ride ? (k === 0 ? 0.5 : 0.5 + 0.12 * k / Math.max(1, ps - 1)) : plan.p[k];
+        let f = plate.leap ? (k < s.leapAt ? 0 : 1) : ride ? (k === 0 ? 0.5 : 0.5 + 0.12 * k / Math.max(1, ps - 1)) : plan.p[k];
         // three or more on one path go two abreast (side by side, then the next pair behind them)
         const abreast = s.teams.length > 2 && !ride && !['swim', 'dive', 'hop'].includes(plate.mode);
         f = Math.max(0, Math.min(1, f - (abreast ? i >> 1 : i) * gapF));
@@ -988,6 +994,7 @@ const IN_PLACE = new Set(['search', 'eat', 'draw', 'sweat', 'guitar', 'photo', '
   'pick',
   // (batch 7: wrestling in the ring)
   'wrestle']);
+const LEAPS = /\b(jumps?|leaps?|drops?|dives?|steps off)\b/i;
 const PATH_MODES = new Set(['climb', 'walk', 'hop', 'run', 'zip', 'para', 'swim', 'dive', 'ride', 'swing', 'push', 'coals', 'roll']);
 const TASK_KINDS = new Set(['either', 'botch', 'allin', 'route', 'superteam']);
 export const MAX_CROWD = 2;
@@ -1626,6 +1633,17 @@ export function padOf(f, z) {
   // a coffin pushed in front takes its own room ahead of the faces (style.js .tok.push .veh)
   const w = f.work === 'push' ? [0, 0, 1.6 * z, 0] : WORK_PAD[f.work] || [0, 0, 0, 0];
   return [f.box[0] - 0.06 * z - 0.3 - w[0], f.box[1] - 0.12 * z - 1.9 - w[1], f.box[2] + 0.06 * z + 0.3 + w[2], f.box[3] + 0.5 + w[3]];
+}
+/** Is the dialogue bar over the picture on this step (a line, a pause), or stepped aside (a narration card, a tip)? */
+export const barShown = step => !!step && !['card', 'tip', 'beat'].includes(step.part) && (step.part === 'pause' || !!step.text);
+/** A shot as framed: lifted for the bar only while the bar is over the picture; without it a wide shot comes back down
+ *  and a close-up keeps inside the plate, so nothing under the plate is ever shown (2026-10-21, the user: "what is this
+ *  black bar in all the screens?"). */
+export function framed(c, barOver) {
+  const s = c?.s || 1;
+  let x = c?.x || 0, y = c?.y || 0;
+  if (!barOver) y = c?.shot === 'wide' ? 0 : Math.max(0, Math.min(100 - 100 / s, y));
+  return { s, x, y };
 }
 /** The part of the picture a shot shows clear of the dialogue bar, in plate %: [x0, y0, x1, y1]. */
 export function viewRect(cam, bar = BAR) {

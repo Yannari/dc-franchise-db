@@ -299,6 +299,8 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .swim .lab{display:block;font:800 calc(var(--sz)*.18) Rubik;background:var(--c);color:#0b0b14;border-radius:99px;padding:0 .4cqw;margin-top:.1cqw;white-space:nowrap}
 .swim .ripple{position:absolute;left:50%;top:70%;width:calc(var(--sz)*1.8);height:calc(var(--sz)*.45);transform:translate(-50%,-50%);border-radius:50%;border:.18cqw solid rgba(255,255,255,.7);animation:ripple 1.4s ease-out infinite}
 .swim.dive img{border-style:dashed}
+.swim.edge .ripple,.swim.flying .ripple{display:none} .swim.edge img,.swim.flying img{border-style:solid;animation:none}
+.tok .veh.carry.arms{top:auto;bottom:calc(var(--sz)*.02);width:calc(var(--sz)*.95);z-index:4}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-.45cqw) rotate(6deg)}}
 @keyframes ripple{from{opacity:.9;transform:translate(-50%,-50%) scale(.6)}to{opacity:0;transform:translate(-50%,-50%) scale(1.4)}}
 

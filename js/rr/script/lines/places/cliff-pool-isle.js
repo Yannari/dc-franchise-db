@@ -132,9 +132,10 @@ const falls = {
       by('b', "Trust me. Hold your nose."),
     ] },
     { id: 'cpi.fd-s3', when: FD, turns: [
-      beat("{a} counts to three, jumps on two, and drops into the lagoon with a huge splash."),
-      by('b', "Are you okay? Come up! Say something!"),
-      beat("{a} pops up, gasping and grinning, and dives straight back under."),
+      // (the jump is its own stage, drawn there: the start stays at the edge; 2026-10-21)
+      beat("{a} counts to three out loud, gets to two, and stops dead at the edge."),
+      by('b', "What happened to three?"),
+      by('a', "Three's the scary one. Give me a second."),
     ] },
     { id: 'cpi.fd-s4', when: FD, turns: [
       by('a', "How deep is the lagoon?"),

@@ -1063,6 +1063,32 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'marble-temple-hill': {
+    // (the old track and its hurdles; the high jump bar; the temple columns, the chariot track, the wrestling sand)
+    hurdles: {
+      'on-the-line': { label: 'ON THE LINE', plate: ['task-22418528', { mode: undefined, path: undefined, x: [6, 30] }] },
+      'first-hurdles': { label: 'THE HURDLES', plate: ['task-22418528', { mode: 'run', path: [[8, 90], [30, 90], [52, 90]] }],
+        fail: ['task-22418528', { mode: 'run', path: [[8, 90], [20, 90], [26, 90]] }], stamp: 'KNOCKED IT' },
+      'last-stretch': { label: 'THE LAST STRETCH', plate: ['task-22418528', { mode: 'run', path: [[52, 90], [72, 90], [92, 90]] }],
+        fail: ['task-22418528', { mode: 'run', path: [[52, 90], [60, 90], [64, 90]] }], stamp: 'LEFT BEHIND' },
+      'finish-line': { label: 'THE FINISH', plate: ['chill-22418530', { local: false }] },
+    },
+    'high-jump': {
+      'run-up': { label: 'THE RUN-UP', plate: ['task-22418529', { mode: 'beam', solo: true, inset: 'WATCHING' }], fail: ['task-22418529', { mode: 'beam', solo: true, inset: 'WATCHING' }], stamp: 'STOPPED' },
+      'the-leap': { label: 'THE JUMP', plate: ['task-22418529', { mode: 'beam', solo: true, inset: 'WATCHING' }], fail: ['task-22418529', { mode: 'beam', solo: true, inset: 'WATCHING' }], stamp: 'KNOCKED THE BAR' },
+      'the-mat': { label: 'CLEAN!', plate: ['task-22418529', { mode: undefined, fx: 'sparkle' }] },
+    },
+    'ancient-games': {
+      reins: { label: 'THE REINS', plate: ['task-22418324', {}], fail: ['task-22418324', {}], stamp: 'NOT READY' },
+      'first-bend': { label: 'THE FIRST BEND', plate: ['task-22418325', { mode: 'ride' }], fail: ['task-22418325', { mode: 'ride', path: [[-14, 92], [30, 91], [44, 94]] }], stamp: 'TIPPED' },
+      'far-side': { label: 'THE FAR SIDE', plate: ['task-22418325', { mode: 'ride' }], fail: ['task-22418325', { mode: 'ride', path: [[30, 92], [56, 91], [60, 92]] }], stamp: 'WHEEL OFF' },
+      'full-lap': { label: 'A FULL LAP', plate: ['task-22418324', { deco: [['wreath', 52, 92, 5]] }] },
+      'the-circle': { label: 'THE SAND CIRCLE', plate: ['task-22418328', { mode: undefined, prop: undefined }], fail: ['task-22418328', { mode: undefined, prop: undefined }], stamp: 'NERVES' },
+      'first-fall': { label: 'THE FIRST FALL', plate: ['task-22418328', { mode: 'wrestle', solo: true, inset: 'WATCHING' }], fail: ['task-22418328', { mode: 'wrestle', solo: true, inset: 'WATCHING' }], stamp: 'PINNED' },
+      'three-falls': { label: 'THREE FALLS', plate: ['task-22418328', { mode: 'wrestle', solo: true, inset: 'WATCHING' }], fail: ['task-22418328', { mode: 'wrestle', solo: true, inset: 'WATCHING' }], stamp: 'LOST THE BOUT' },
+      'the-wreath': { label: 'THE WREATH', plate: ['task-22418328', { mode: undefined, prop: undefined, deco: [['wreath', 52, 92, 5]] }] },
+    },
+  },
   'twin-tower-bridge': {
     // (the fortress at night; its battlements; the dungeon; the jewel vault and its table)
     kidnapper: {

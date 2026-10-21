@@ -106,7 +106,10 @@ describe('rr viewer steps', () => {
             expect(onGround(s.plate, m), `${s.id} ${s.seg} ${team} at ${m} off the ground of ${s.plate.f}`).toBe(true);
           }
         }
-        for (const d of [s.donStand, ...Object.values(s.localAt || {})].filter(Boolean)) {
+        // (Don in the seat his opener puts him in, a hammock or a rocking chair: the seat is on the ground, he is on it)
+        const seat = s.seg === 'don-opener' && (s.plate.deco || []).find(x => /@race$/.test(x[0]) && s.donStand && Math.abs(x[1] - s.donStand[0]) < 1);
+        if (seat) expect(onGround(s.plate, [seat[1], seat[2]]), `${s.id} Don's ${seat[0]} off the ground`).toBe(true);
+        for (const d of [seat ? null : s.donStand, ...Object.values(s.localAt || {})].filter(Boolean)) {
           expect(s.plate.water, `${s.id} Don or a local in water`).toBeFalsy();
           expect(onGround(s.plate, d), `${s.id} Don/local at ${d}`).toBe(true);
         }

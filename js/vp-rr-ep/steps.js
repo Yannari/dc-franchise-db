@@ -786,10 +786,14 @@ function layout(s, size) {
     }
   } else {
     // standing scenes; an in-place task (search, cook, build) plays its work beside them
-    const avoid = s.don ? [] : [];
+    // (an opener that puts Don with a cut-out, a hammock or a rocking chair (opener-shots.js), seats him on it: the
+    // teams and the Don Box keep off it)
+    const seat = s.mode === 'don' && s.don && (plate?.deco || []).find(d => /@race$/.test(d[0]));
+    const avoid = seat ? [seat[1] - seat[3] / 3, seat[1], seat[1] + seat[3] / 3] : [];
     const pts = spread(plate, n + (s.don ? 1 : 0) + s.locals.length, avoid, M);
     let j = 0;
     if (s.don) { s.donStand = pts[j++]; }
+    if (seat) s.donStand = [seat[1], seat[2] - seat[3] * 0.4];
     s.locals.forEach(nm => { (s.localAt ||= {})[nm] = pts[j++]; });
     s.teams.forEach(id => { marks[id] = pts[j++]; as[id] = 'stand'; });
     if (s.mode === 'act' && plate?.mode) { s.work = plate.mode; s.plan = progressPlan(ps, s.ending); placeWorkProps(s, marks); }
@@ -799,7 +803,8 @@ function layout(s, size) {
       const pts = spread(plate, s.locals.length, avoid, M);
       s.locals.forEach((nm, i) => { if (pts[i]) s.localAt[nm] = pts[i]; });
     }
-    if (s.donBox) s.boxAt = [lerp(plate.x[0], plate.x[1], s.don ? 0.3 : 0.5), groundY(plate, 0)];
+    if (s.donBox) s.boxAt = seat ? [spread(plate, 1, [...avoid, ...Object.values(marks).map(m => m[0])], M)[0][0], groundY(plate, 0)]
+      : [lerp(plate.x[0], plate.x[1], s.don ? 0.3 : 0.5), groundY(plate, 0)];
   }
   if (s.don && !s.donStand && s.mode !== 'mat') {
     const pts = spread(plate, 1, Object.values(marks).map(m => m[0]));

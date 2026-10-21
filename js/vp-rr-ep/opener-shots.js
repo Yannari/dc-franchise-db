@@ -56,7 +56,7 @@ export const OPENER_SHOTS = {
   'snp.op1': { f: 'present-22413727' }, 'snp.op2': { f: 'present-22413727' }, 'snp.op3': { job: 'don-mountain-hut' },
   'str.op1': { f: 'present-9447233' }, 'str.op2': { f: 'present-9447233' }, 'str.op3': { f: 'arrive-9447023', ...HAMMOCK(60) },
   'shi.op1': { f: 'present-22423539' }, 'shi.op2': { f: 'present-22423539' }, 'shi.op3': { f: 'task-22423725' },
-  'swp.op1': { f: 'task-9442380' }, 'swp.op2': { f: 'task-9442380' }, 'swp.op3': { f: 'task-9442380', deco: [[R('rocking-chair'), 32, 92, 10]], need: ['rocking-chair'] },
+  'swp.op1': { f: 'task-9442380' }, 'swp.op2': { f: 'task-9442380' }, 'swp.op3': { f: 'task-9442380', deco: [[R('rocking-chair'), 32, 92, 19]], need: ['rocking-chair'] },
   'tea.op1': { f: 'present-9448187' }, 'tea.op2': { f: 'present-9448586' }, 'tea.op3': { job: 'don-veranda' },
   'tms.op1': { f: 'present-22410404' }, 'tms.op2': { f: 'present-22410572' }, 'tms.op3': { job: 'don-palm-shade' },
   'tsh.op1': { f: 'present-22412488' }, 'tsh.op2': { f: 'present-22412601' }, 'tsh.op3': { f: 'chill-22413471' },

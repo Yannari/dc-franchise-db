@@ -22,7 +22,6 @@ const REVIEWED = {
   'dragon-isle/task-9445378': 'the jungle floor, soft-focus: packed earth across the whole lower half, rocks and leaves behind',
   'tomb-sands/present-22410572': 'open dunes under the sky: sand to stand on from edge to edge',
   'snow-peaks/present-22413612': 'a snowfield with a rock and the peaks behind: snow to stand on from edge to edge',
-  'ice-river/task-22411751': 'one ice floe on the dark river: they stand on the floe (x 40-94), the plain ice is the place',
   'secret-base-desert/task-22419058': 'the desert at night by the base: flat ground, cacti and mesas, dark so few edges',
   'secret-base-desert/chill-22419058': 'the same night desert frame, its Chill Zone copy',
 };

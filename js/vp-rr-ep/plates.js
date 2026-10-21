@@ -582,7 +582,8 @@ export const PLACE_PLATES = {
       'cliff-taxi': { talk: [p('arrive-9446431', 92, [44, 94])],
         act: p('present-9446663', 92, [6, 94], { mode: 'ride', prop: 'taxi@glass-tower-gulf', flip: true, path: [[-14, 93], [50, 92], [114, 93]], fx: 'dust' }) },
       // a pepper eaten at the cart and its flag waved; done, the jump off the cliff for the milk
-      'pepper-cliff': { talk: [p('task-9446542', 94, [6, 94])],
+      // (the cart is a close shot: the talk there goes back and forth with the canyon road, never the cart all leg)
+      'pepper-cliff': { talk: [p('task-9446542', 94, [6, 94]), p('task-9446799', 94, [6, 94])],
         act: p('task-9446542', 94, [6, 94], { mode: 'eat', prop: 'peppers', propW: 0.75, judge: ['flags', 0.9], fx: 'steam' }),
         act2: p('task-9446588', 0, [0, 0], { water: true, mode: 'swim', prop: 'canteen', path: [[16, 46], [36, 54], [60, 50], [80, 58]], fx: 'bubbles', inset: 'ON THE CLIFF' }) },
       'burro-ride': { talk: [p('present-9446663', 92, [6, 94])],
@@ -677,7 +678,8 @@ export const PLACE_PLATES = {
       'bullet-train': { talk: [p('arrive-22411160', 90, [6, 94])],
         act: repaint('train-carriage', p('arrive-22411160', 90, [6, 94], { mode: 'ride', prop: 'train@coast-palace', path: [[-20, 90], [50, 89], [120, 90]] }), undefined) },
       // inside the giant ball, rolled round the table among the bumpers
-      pinball: { talk: [p('task-22411046', 92, [6, 94])],
+      // (the flippers' end is a close shot: the talk goes back and forth with the whole table)
+      pinball: { talk: [p('task-22411118', 92, [6, 94]), p('task-22411046', 92, [6, 94])],
         act: p('task-22411122', 0, [0, 0], { water: true, mode: 'roll', prop: 'ball', path: [[10, 90], [25, 52], [48, 70], [64, 46], [86, 80]], fx: 'sparkle' }) },
       'neon-run': { talk: [p('arrive-22411160', 90, [6, 94])],
         act: p('arrive-22411160', 90, [6, 94], { mode: 'run', path: [[12, 90], [50, 90], [88, 90]] }) },
@@ -689,11 +691,13 @@ export const PLACE_PLATES = {
     arrive: [p('arrive-22411593', 86, [6, 94])],
     props: { sled: 'sled', bear: 'polar-bear' },
     // (a shot only its stage plays on, never rotated into the rest of the challenge)
-    stageOnly: [p('task-22411840', 92, [6, 94])],
+    stageOnly: [p('task-22411840', 92, [6, 94]), p('task-22411751', 92, [40, 94])],
     st: {
       'river-hop': { talk: [p('arrive-22411593', 86, [6, 94])],
         act: p('present-22412013', 0, [0, 0], { water: true, mode: 'ride', prop: 'plane@ice-floe', path: [[-22, 54], [50, 48], [122, 42]] }) },
-      'ice-floes': { talk: [p('task-22411751', 92, [40, 94])],
+      // (the wide field of floes: the close shot of one floe is THE FIRST FLOE's alone; the user, 2026-10-21, "ur using
+      // this too much this bg its too close")
+      'ice-floes': { talk: [p('task-22412146', 92, [6, 94]), p('task-22411646', 92, [6, 94])],
         act: p('task-22411646', 0, [0, 0], { water: true, mode: 'hop', spots: [[12, 85], [30, 62], [50, 78], [68, 58], [88, 74]],
           path: [[12, 85], [30, 62], [50, 78], [68, 58], [88, 74]], fx: 'splash' }) },
       // one pulls the sled, the other rides it, past the bear
@@ -1444,7 +1448,7 @@ export const STAGE_SHOTS = {
   'game-show-city': {
     // (the flippers end of the table; the bumpers close and wide; the scoreboard)
     pinball: {
-      'padded-suit': { label: 'THE PADDED SUIT', plate: ['task-22411046', {}], fail: ['task-22411046', {}], stamp: 'STUCK' },
+      'padded-suit': { label: 'THE PADDED SUIT', plate: ['task-22411046', {}], alt: [['task-22411118', {}]], fail: ['task-22411046', {}], stamp: 'STUCK' },
       'the-launch': { label: 'LAUNCH!', plate: ['task-22411122', { mode: 'roll', solo: true, inset: 'AT THE FLIPPERS', path: [[10, 90], [18, 70], [25, 52]] }] },
       'the-bumpers': { label: 'THE BUMPERS', plate: ['task-22411048', { mode: 'roll', solo: true, inset: 'AT THE FLIPPERS' }], fail: ['task-22411048', { mode: 'roll', solo: true, inset: 'AT THE FLIPPERS', path: [[50, 48], [44, 70], [40, 96], [40, 110]] }], stamp: 'DRAINED' },
       'the-panda': { label: 'THE PANDA', plate: ['task-22411118', { mode: 'roll', solo: true, inset: 'AT THE FLIPPERS', deco: PANDA }], fail: ['task-22411118', { mode: 'roll', solo: true, inset: 'AT THE FLIPPERS', deco: PANDA }], stamp: 'PANDA!' },
@@ -1919,10 +1923,10 @@ export const STAGE_SHOTS = {
   },
   'ice-river': {
     'ice-floes': {
-      'first-floe': { label: 'THE FIRST FLOE', plate: ['task-22411751'], fail: ['task-22411747', { mode: 'swim' }] },
+      'first-floe': { label: 'THE FIRST FLOE', plate: ['task-22411751'], alt: [['task-22412146', { mode: undefined }]], fail: ['task-22411747', { mode: 'swim' }] },
       'mid-river': { label: 'MID-RIVER', plate: ['task-22411646', { mode: 'hop' }], alt: [['task-22412146', { mode: 'hop' }]], fail: ['task-22411747', { mode: 'swim' }] },
       'last-jump': { label: 'THE LAST JUMP', plate: ['task-22412146', { mode: 'hop' }], fail: ['task-22411747', { mode: 'swim' }] },
-      'far-bank': { label: 'THE FAR BANK', plate: ['task-22411751'] },
+      'far-bank': { label: 'THE FAR BANK', plate: ['task-22411924', { mode: undefined, prop: undefined, path: undefined, water: false, g: 86, x: [6, 94] }] },
     },
     sled: {
       harness: { label: 'THE START FLAG', plate: ['present-22411651', { mode: undefined, prop: undefined, path: undefined, water: false, g: 88, x: [20, 94] }] },

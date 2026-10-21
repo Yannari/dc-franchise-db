@@ -1112,9 +1112,17 @@ const BLOCKS = {
     // An argument (blocking.js clash): it opens by how the host meets it,
     // and its second half is how it ends.
     const cl = s.data.clash;
-    out.push({ key: cl ? `visit.talk.confront.${cl.style}` : `visit.talk.${s.data.motive}`, cast: { a: h, b: to, ...kt }, extra: { motive: s.data.motive, sole } });
-    // The conversation keeps going: on the real show a visit is a sit-down.
-    out.push({ key: cl ? `visit.talk2.confront.${cl.end}` : `visit.talk2.${s.data.motive}`, cast: { a: h, b: to, ...kt }, extra: { motive: s.data.motive, sole } });
+    // Two catfish at one door: nobody gets to blame anybody for lying (the user, 2026-10-21). It still goes well or
+    // badly: an argument, or no warmth between them, is the cold version.
+    if (door === 'both') {
+      const tone = cl || rel(h, to, 'affection') <= 0 ? 'cold' : 'warm';
+      out.push({ key: `visit.talk.bothfake.${tone}`, cast: { a: h, b: to }, extra: { motive: s.data.motive, sole } });
+      out.push({ key: `visit.talk2.bothfake.${tone}`, cast: { a: h, b: to }, extra: { motive: s.data.motive, sole } });
+    } else {
+      out.push({ key: cl ? `visit.talk.confront.${cl.style}` : `visit.talk.${s.data.motive}`, cast: { a: h, b: to, ...kt }, extra: { motive: s.data.motive, sole } });
+      // The conversation keeps going: on the real show a visit is a sit-down.
+      out.push({ key: cl ? `visit.talk2.confront.${cl.end}` : `visit.talk2.${s.data.motive}`, cast: { a: h, b: to, ...kt }, extra: { motive: s.data.motive, sole } });
+    }
     if (s.data.power) out.push({ key: `visit.power.${s.data.power}`, cast: { a: h, b: to } });
     if (s.data.handed) {
       const c0 = claimOf(state, s.data.handed);
@@ -1127,7 +1135,9 @@ const BLOCKS = {
     return out;
   },
   report(state, s) {
-    return [{ key: 'report', cast: { a: s.who[0], b: s.who[1], c: s.data.rival }, extra: { lie: true, claim: 'visitSaid' } }];
+    // {q}: the visitor, by the name the room knew (the goodbye video has already aired).
+    const q = state.profiles[s.data.blocked]?.shown?.name || realFirst(state, s.data.blocked);
+    return [{ key: 'report', cast: { a: s.who[0], b: s.who[1], c: s.data.rival, text: { q } }, extra: { lie: true, claim: 'visitSaid' } }];
   },
   goodbye(state, s) {
     const [h] = s.who;
@@ -1146,7 +1156,8 @@ const BLOCKS = {
     if (bestie && !p.ai) out.push({ key: 'goodbye.shout', cast: { a: h, b: bestie } });
     // Every goodbye ends the same way on the show: a lesson, then good luck (spec 11.2).
     // With nobody to call out, the video says what the game taught them (most real goodbyes do).
-    if (!s.data.warning && !p.ai) out.push({ key: 'goodbye.video.lesson', cast: { a: h } });
+    // Two of them on the video: one says what the game taught them even with a warning still to come.
+    if ((!s.data.warning || pair) && !p.ai) out.push({ key: 'goodbye.video.lesson', cast: { a: h } });
     out.push({ key: 'goodbye.video.close', cast: { a: h } });
     if (s.data.warning) {
       const { kind, about } = s.data.warning;
@@ -1173,9 +1184,14 @@ const BLOCKS = {
     const waited = viewers.slice(0, 4);
     const others = viewers.filter(x => ![guilty, warned, suspecter].includes(x))
       .sort((x, y) => waited.includes(y) - waited.includes(x));
-    // Two people on the video: the first of the room to react says so.
+    // Two people on the video: the first of the room to react says so. A friend says whether it was really them, and
+    // the real name (the user, 2026-10-21: "acknowledge a little if theyre a catfish or no ... their real name too").
+    const friendKey = !pair && !p.ai ? `goodbye.react.friend.${p.mode === 'catfish' ? 'catfish' : 'real'}` : null;
+    let friends = 0;
     others.slice(0, Math.max(warned ? 3 : 5, others.filter(x => waited.includes(x)).length)).forEach((v, i) => {
-      out.push({ key: pair && i < 2 ? 'goodbye.react.pair' : 'goodbye.react.surprised', cast: { a: v, b: h } });
+      const fr = friendKey && friends < 2 && rel(v, h, 'affection') > 3;
+      if (fr) friends++;
+      out.push({ key: pair && i < 2 ? 'goodbye.react.pair' : fr ? friendKey : 'goodbye.react.surprised', cast: { a: v, b: h } });
     });
     const friend = viewers.filter(v => rel(v, h, 'affection') > 2).sort((x, y) => rel(y, h, 'affection') - rel(x, h, 'affection'))[0];
     if (friend) out.push({ key: 'goodbye.after', cast: { a: friend, b: h } });
@@ -1653,6 +1669,8 @@ export const POOL_KEYS = [
   'block.announce.statement', 'plead.open', 'plead.pitch', 'plead.listen', 'vote.open', 'vote.cast', 'vote.result',
   'statement.open', 'statement.say', 'statement.named', 'save.wait', 'alert.instant', 'alert.double', 'block.announce.instant', 'goodbye.video.close', 'goodbye.video.lesson',
   'profile.pair', 'profile.pair.catfish', 'arrival.pair', 'goodbye.video.pair', 'goodbye.video.catfish.pair', 'goodbye.react.pair',
+  'goodbye.react.friend.real', 'goodbye.react.friend.catfish',
+  ...['warm', 'cold'].flatMap(t => [`visit.talk.bothfake.${t}`, `visit.talk2.bothfake.${t}`]),
   'block.react.numbers', 'block.react.unsaved', 'visit.choose.power', 'visit.talk.power', 'visit.talk2.power',
   ...['immunity', 'hacker', 'joker', 'burner'].map(k => `visit.power.${k}`), ...['immunity', 'joker', 'hacker'].map(k => `power.reveal.${k}`),
   'hack.send', 'hack.read', 'hack.undone', 'joker.chat', 'joker.pick', 'burner.exposed',

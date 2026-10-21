@@ -300,7 +300,7 @@ export const FRESH_SMALL = {
     S("That conversation is going to change how I play.", '{a} paces slowly across the room.'),
     R("I need to lie down. I need to lie down right now."),
     S("Do I tell anybody? I don't think I tell anybody."),
-    R("{b} was so real. That's the craziest part."),
+    R("Meeting {b} for real. That's the craziest part."),
     S("I'll never forget this day. Not ever.", '{a} stares at the door for a long time.'),
     S("Back to the game. But nothing feels the same."),
     R("My heart is still going. Is it ever going to stop?"),

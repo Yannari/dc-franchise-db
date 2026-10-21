@@ -33,7 +33,7 @@ export const GOODBYE = {
       { by: 'a', video: "I played with my heart, and maybe that's why I'm out. I'd do it again." },
     ] },
     { id: 'goodbye.video.honest.03', turns: [
-      { by: 'a', video: "So this is me. Same face, same name, same everything." },
+      { by: 'a', video: "So this is me, {a}. Same face, same name, same everything. No catfish here." },
       { by: 'a', video: "I'm gonna miss talking to you all through a TV. Love you. Bye!" },
     ] },
   ],
@@ -43,7 +43,7 @@ export const GOODBYE = {
       { by: 'a', video: "It was a crazy ride. Be good to each other." },
     ] },
     { id: 'goodbye.video.polished.02', turns: [
-      { by: 'a', video: "Hi, everybody. It's really me. Maybe with a little less makeup than my profile." },
+      { by: 'a', video: "Hi, everybody. It's really me, {a}. Maybe with a little less makeup than my profile." },
       { by: 'a', video: "I had the best time. Good luck. You'll need it." },
     ] },
     { id: 'goodbye.video.polished.03', turns: [
@@ -57,7 +57,7 @@ export const GOODBYE = {
       { by: 'a', video: "It was my face and my name. The rest, I kept for myself. I hope you understand." },
     ] },
     { id: 'goodbye.video.edited.02', turns: [
-      { by: 'a', video: "Okay. Confession time. That job on my profile? Not exactly my job." },
+      { by: 'a', video: "Okay, it's {a}, and this is my real face. Confession time, though. That job on my profile? Not exactly my job." },
       { by: 'a', video: "I wanted you to know me before you knew that. Good luck, everybody." },
     ] },
     { id: 'goodbye.video.edited.03', turns: [

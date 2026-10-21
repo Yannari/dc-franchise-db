@@ -74,6 +74,8 @@ describe('arguments in played seasons', () => {
         if (!cl) continue;
         clashes++; ends.add(cl.end); styles.add(cl.style);
         const keys = s.script.blocks.map(b => b.key);
+        // Two catfish at one door argue about the game, not about lying (visit.talk.bothfake.cold).
+        if (keys.includes('visit.door.both')) { expect(keys).toContain('visit.talk.bothfake.cold'); continue; }
         expect(keys).toContain(`visit.talk.confront.${cl.style}`);
         expect(keys).toContain(`visit.talk2.confront.${cl.end}`);
         expect(keys).not.toContain('visit.kiss');

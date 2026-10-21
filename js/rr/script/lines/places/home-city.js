@@ -84,7 +84,7 @@ const tower = {
     ] },
   ],
   'decide-side.agree': [
-    { id: 'hc.tw-dc1', when: TW, turns: [
+    { id: 'hc.tw-dc1', when: { ...TW, side: 'stairs' }, turns: [
       { by: 'a', say: "Stairs or deck?" },
       { by: 'b', ...V("Stairs. I'm not walking round the outside of anything.", "Stairs. Nothing outside.", "Stairs.", "STAIRS! I'm NOT walking round the OUTSIDE of anything!", "Stairs, please. I'm not walking round the outside of anything.", "Stairs. My feet stay on the inside of buildings.") },
       { by: 'a', say: "One hundred and forty-four flights?" },
@@ -92,7 +92,7 @@ const tower = {
     ] },
   ],
   'decide-side.overruled': [
-    { id: 'hc.tw-dc2', when: TW, turns: [
+    { id: 'hc.tw-dc2', when: { ...TW, side: 'skydeck' }, turns: [
       { by: 'b', say: "Stairs. Please. Stairs." },
       { by: 'a', say: "The elevator's faster. We're doing the deck." },
       { by: 'b', ...V("You're going to make me walk round the outside of a tower on the first day.", "On the first day? The outside?", "The outside. On day one.", "You're going to make me walk round the OUTSIDE of a TOWER on the FIRST DAY!", "You're really going to make me walk round the outside of a tower on day one?", "Day one, and you're dangling me off a building.") },
@@ -100,7 +100,7 @@ const tower = {
     ] },
   ],
   'decide-side.swayed-by-watching': [
-    { id: 'hc.tw-dc3', when: TW, turns: [
+    { id: 'hc.tw-dc3', when: { ...TW, side: 'stairs' }, turns: [
       { beat: 'A queue of teams has formed in front of the single slow elevator.' },
       { by: 'a', say: "Look at that line. We'll be waiting an hour." },
       { by: 'b', say: "Stairs, then. Everyone else is too lazy to take the stairs." },
@@ -122,13 +122,13 @@ const tower = {
       { by: 'a', say: "Does anybody else's ears pop when they go up fast?" },
       { by: 'b', ...V("Everybody's ears pop. That's what ears do.", "Everyone's ears pop.", "All ears pop.", "EVERYBODY'S ears pop! That's WHAT ears DO!", "Everybody's ears pop, that's just what ears do.", "Ears love a good pop.") },
     ] },
+  ],
+  'task-try.first-try': [
     { id: 'hc.sd-s2', when: SD, turns: [
       { beat: 'At the top, a crew member clips {a} and {b} onto a rail on the outside of the deck. The wind hits them at once.' },
       { by: 'b', say: "Oh. Oh, it's windy. Nobody said it would be this windy." },
       { by: 'a', say: "Don't look down. Look at the rail." },
     ] },
-  ],
-  'task-try.first-try': [
     { id: 'hc.st-f1', when: ST, turns: [
       { beat: '{a} and {b} keep a steady pace, flight after flight, passing two teams sitting on the landings.' },
       { by: 'a', say: "Slow and steady. Slow and steady." },

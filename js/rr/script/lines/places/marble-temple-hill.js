@@ -429,19 +429,19 @@ const games = {
     ] },
   ],
   'decide-side.agree': [
-    { id: 'mth.ag-c1', when: AG, turns: [
+    { id: 'mth.ag-c1', when: { ...AG, side: 'chariot' }, turns: [
       by('a', "Chariot. Horses don't hit back."),
       by('b', "Horses kick."),
       by('a', "Horses don't wrestle. Chariot."),
     ] },
-    { id: 'mth.ag-c2', when: AG, turns: [
+    { id: 'mth.ag-c2', when: { ...AG, side: 'wrestle' }, turns: [
       by('b', "Wrestle. It's just pushing. How hard can pushing be?"),
       by('a', "Look at him. He's built like a door."),
       by('b', "Doors can be pushed."),
     ] },
   ],
   'decide-side.overruled': [
-    { id: 'mth.ag-c3', when: AG, turns: [
+    { id: 'mth.ag-c3', when: { ...AG, side: 'wrestle' }, turns: [
       by('a', "I really don't want to wrestle that man."),
       by('b', "The chariot horses look angry. We're wrestling."),
       by('a', "He looks angrier than the horses."),

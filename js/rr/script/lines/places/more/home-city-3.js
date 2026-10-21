@@ -58,11 +58,17 @@ const tower = {
       by('b', "And then we walk around the outside of the building."),
       by('a', "I stopped listening after 'elevator'."),
     ] },
-    { id: 'hc3.sd-s3', when: DECK, turns: [
-      beat('A crew member clips {b} to the rail and gives the harness one sharp tug.'),
-      by('b', "Is that the test? A tug?"),
-      by('a', "He tugged it, and it held. That's science."),
-      by('b', "That's a tug."),
+    { id: 'hc3.sd-s6', when: DECK, turns: [
+      by('a', "We picked this one because it's faster."),
+      by('b', "We picked this one because you can't count past fifty stairs."),
+      by('a', "Both reasons. Mostly the first one."),
+    ] },
+  ],
+  'task-try.first-try': [
+    { id: 'hc3.sd-s5', when: DECK, turns: [
+      beat('The elevator doors open onto the deck, and the wind gets in before they do.'),
+      by('b', "My hair. My hair is going sideways."),
+      by('a', "Everything is going sideways. Clip in."),
     ] },
     { id: 'hc3.sd-s4', when: DECK, turns: [
       by('a', "How high up are we?"),
@@ -70,15 +76,11 @@ const tower = {
       by('a', "I'm asking for the view."),
       by('b', "Then the answer is 'very nice'. Keep walking."),
     ] },
-    { id: 'hc3.sd-s5', when: DECK, turns: [
-      beat('The elevator doors open onto the deck, and the wind gets in before they do.'),
-      by('b', "My hair. My hair is going sideways."),
-      by('a', "Everything is going sideways. Clip in."),
-    ] },
-    { id: 'hc3.sd-s6', when: DECK, turns: [
-      by('a', "We picked this one because it's faster."),
-      by('b', "We picked this one because you can't count past fifty stairs."),
-      by('a', "Both reasons. Mostly the first one."),
+    { id: 'hc3.sd-s3', when: DECK, turns: [
+      beat('A crew member clips {b} to the rail and gives the harness one sharp tug.'),
+      by('b', "Is that the test? A tug?"),
+      by('a', "He tugged it, and it held. That's science."),
+      by('b', "That's a tug."),
     ] },
   ],
   'task-try.after-fails': [

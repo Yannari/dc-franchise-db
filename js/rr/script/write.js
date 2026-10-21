@@ -177,6 +177,21 @@ export function canVoice(state, scene) {
   return [].concat(key).some(k => (POOLS[k] || []).some(e => e.when?.cause != null && [].concat(e.when.cause).includes(about.kind)));
 }
 
+// The first hour of the race has no history yet (talk.js FRESH_MINUTES): a line that needs time behind it waits (the
+// user's Home City transcript, 2026-10-21, at 07:00: "every SINGLE day of this RACE", "our cab broke down", "Nice of
+// you to finally show up", "you're the ones who sang on the bus").
+export const HISTORY = [/(?<!since )yesterday/i, /every (single )?day/i, /\b(an hour|hours|ages) ago\b/i, /for ages\b/i, /finally (show|turn)/i,
+  /broke down/i, /\bthe bus\b|\bmost buses\b|\bwhole bus\b/i, /last (night|time|leg|week)\b/i, /we passed you/i, /all (week|race long)/i,
+  /\b(so|miles) (far )?ahead\b/i, /\bagain\b.*\b(lost|wrong|late|last)\b/i, /been (wrong|right|lost|late) (all|every)/i];
+const historyCache = new WeakMap();
+export function talksHistory(entry) {
+  if (historyCache.has(entry)) return historyCache.get(entry);
+  const texts = (entry.turns || []).flatMap(t => [t.say, t.conf, t.beat, ...Object.values(t.v || {}).flat()]).filter(x => typeof x === 'string');
+  const hit = texts.some(x => HISTORY.some(re => re.test(x)));
+  historyCache.set(entry, hit);
+  return hit;
+}
+
 /** { lines: [{ kind, by, text, voice }], lineId } or null when the kind has no pool (or no entry fits). */
 export function writeScene(state, scene, { roles: given = null } = {}) {
   const r = given || rolesOf(scene, state);
@@ -195,7 +210,8 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   const aboutIt = e => !ABOUT_INTERVIEWS.has(scene.kind) || scene.data?.about == null || e.when?.cause != null;
   // (an opener whose setting isn't made yet waits for its plate: vp-rr-ep/opener-shots.js, the user 2026-10-20)
   const shot = e => scene.kind !== 'don-opener' || openerReady(e.id);
-  for (const k of [].concat(key)) pools[k] = (POOLS[k] || []).filter(e => [...needs(e)].every(n => have.has(n)) && placed(e) && aboutIt(e) && shot(e));
+  const early = e => !facts.fresh || !talksHistory(e);
+  for (const k of [].concat(key)) pools[k] = (POOLS[k] || []).filter(e => [...needs(e)].every(n => have.has(n)) && placed(e) && aboutIt(e) && shot(e) && early(e));
   // the premiere's introductions: the one the user wrote for a team airs; else a custom identity's own (written for any
   // name) over the relationship lines, which would never say what the team is
   if (scene.kind === 'team-intro') {

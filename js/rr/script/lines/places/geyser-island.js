@@ -231,19 +231,19 @@ const feastFossil = {
     ] },
   ],
   'decide-side.agree': [
-    { id: 'gyi.ff-c1', when: FF, turns: [
+    { id: 'gyi.ff-c1', when: { ...FF, side: 'fossil' }, turns: [
       by('a', "Fossil. We're doing the fossil. I am not eating a sheep's face."),
       by('b', "Agreed. Completely agreed. Never been so sure of anything."),
       by('a', "To the cave!"),
     ] },
-    { id: 'gyi.ff-c2', when: FF, turns: [
+    { id: 'gyi.ff-c2', when: { ...FF, side: 'feast' }, turns: [
       by('b', "Feast. How bad can it be? It's food."),
       by('a', "It's fermented shark. It's been buried for months."),
       by('b', "And then dug up again. So it's fine now."),
     ] },
   ],
   'decide-side.overruled': [
-    { id: 'gyi.ff-c3', when: FF, turns: [
+    { id: 'gyi.ff-c3', when: { ...FF, side: 'feast' }, turns: [
       by('a', "I want the cave."),
       by('b', "The cave is slow. We're eating."),
       by('a', "If I throw up, I'm throwing up on you."),

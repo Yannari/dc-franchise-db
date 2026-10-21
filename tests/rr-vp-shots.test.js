@@ -88,12 +88,17 @@ describe('rr viewer: how a challenge is shot', () => {
 
   // (the user, 2026-10-20, on the close shot of the bear on the ice: "its a race and ur using a close map for a sled
   // race its too close maybe make it a part of the race and not almost the full race")
+  // (and a team's own moment while it is at the bear is at the bear: tests/rr-vp-stage-talk.test.js)
   it('keeps the close bear shot for the bear stage; the rest of the sled race is out on the plain', () => {
     let close = 0, all = 0;
-    for (const { s } of screens()) {
+    for (const { s, res, leg } of screens()) {
       if (s.place !== 'ice-river' || s.stretch !== 'sled') continue;
       all++;
-      if (/task-22411840/.test(s.plate?.f || '')) { close++; expect(s.stage, `${s.id} close shot outside the bear`).toBe('bear'); }
+      if (!/task-22411840/.test(s.plate?.f || '')) continue;
+      close++;
+      const row = (res.state.taskLog || []).filter(r => r.leg === leg.n && r.team === s.teams?.[0] && r.stretch === 'sled').find(r => r.from <= s.t + 0.5 && s.t <= r.to + 0.5);
+      const at = row?.stages?.find(x => x.t >= s.t - 0.5)?.id;
+      expect(s.stage ?? at, `${s.id} close shot outside the bear`).toBe('bear');
     }
     expect(all).toBeGreaterThan(20);
     expect(close / all).toBeLessThan(0.25);

@@ -91,19 +91,19 @@ const gorge = {
     ] },
   ],
   'decide-side.agree': [
-    { id: 'fjp.jd-c1', when: JD, turns: [
+    { id: 'fjp.jd-c1', when: { ...JD, side: 'jump' }, turns: [
       by('a', "Jump. One jump, one fish, done. Fastest way."),
       by('b', "You'd jump off a bridge for a fish?"),
       by('a', "I'd jump off a bridge for the money. The fish is just in the way."),
     ] },
-    { id: 'fjp.jd-c2', when: JD, turns: [
+    { id: 'fjp.jd-c2', when: { ...JD, side: 'dance' }, turns: [
       by('b', "Dance. Nobody's falling off anything if we dance."),
       by('a', "We can't dance."),
       by('b', "We can't fly either, and that's the other choice."),
     ] },
   ],
   'decide-side.overruled': [
-    { id: 'fjp.jd-c3', when: JD, turns: [
+    { id: 'fjp.jd-c3', when: { ...JD, side: 'jump' }, turns: [
       by('a', "I really want to do the dance."),
       by('b', "We're jumping. It's faster. You'll be fine."),
       by('a', "Fine, but if I die, you're doing my eulogy, and it had better be good."),

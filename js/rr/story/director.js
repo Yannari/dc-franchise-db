@@ -524,8 +524,9 @@ export function airLeg(state, leg) {
   }
   for (const b of beats) segs.push({ scene: null, beat: b.id, kind: b.kind, ending: b.data.ending, stretch: b.data.stretch, t: b.data.t, stage: b.data.stage ?? null,
     teams: [b.data.team], who: [...b.who], side: b.data.side ?? null, picked: pickedOf(b.data.snap?.picked), tier: 1, src: b });
-  // in the same minute a team finishes its challenge before it checks in
-  const phase = k => (k.startsWith('task-') ? 0 : 1);
+  // in the same minute a team finishes its challenge before it checks in; Don explains a challenge before anybody
+  // chooses a side of it, and a team chooses before it starts
+  const phase = k => (k === 'don-demo' ? -2 : k === 'decide-side' ? -1 : k.startsWith('task-') ? 0 : 1);
   segs.sort((x, y) => x.t - y.t || phase(x.kind) - phase(y.kind)
     || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
   // the finale's third team is cut at the halfway mat before the final dash, the way the show cuts it (the user,

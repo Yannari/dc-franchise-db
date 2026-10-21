@@ -91,7 +91,7 @@ export default {
         { by: 'd', say: "It's fine. Don't listen to them. It's fine." },
       ] },
       { id: 'tt.o-task1', when: { at: 'task' }, turns: [
-        { beat: '{c} is struggling with the task. {a} and {b} watch, with their tip already in hand.' },
+        { beat: '{c} is struggling with the task, and {a} and {b} stop to watch.' },
         { by: 'a', ...V("Take your time. Seriously, no rush. We'll tell everyone at the Chill Zone you said hi.", "No rush. We'll say hi to everyone for you.", "Take your time. We'll say hi at the Chill Zone.", "Take your TIME, no RUSH, we'll tell everyone at the Chill Zone you said HI!",
           "Take your time, honestly, no rush. We'll tell everyone at the Chill Zone you said hi.", "Take your time. We'll keep your seat at the Chill Zone warm. Very warm.") },
         { by: 'b', say: "Come on. Let them work." },

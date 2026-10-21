@@ -298,10 +298,21 @@ export function episodeScreens(res, eps, i) {
         // academy"): a challenge opens wide (the first moment there this leg) and a crowd of teams is shot wide; a
         // challenge done in one room has its moments in that room; else the stretch's own standing shots
         const key = `${seg.stretch}|${seg.side || ''}`;
+        // a challenge in stages: a team's own moment is shot where the team is at that minute, at the stage it is at
+        // (the user, 2026-10-21, on Home City: "theyre not even in the staircase nor climbing it", a deck walker's fear
+        // in the elevator)
+        // (a challenge a place's own local runs starts and ends with them: the guide at the cliff, the farmer's sack)
+        const withLocal = ['task-start', 'task-done'].includes(k) && placeLocal(placeId, seg.stretch, seg.side);
+        const row = TASKS.has(stretch.kind) && !withLocal && segTeams.length && segTeams.length <= 2 ? (st.taskLog || [])
+          .filter(r => r.leg === leg.n && r.team === segTeams[0] && r.stretch === seg.stretch).find(r => r.from <= seg.t + 0.5 && seg.t <= r.to + 0.5) : null;
+        const stageNow = row?.stages?.find(x => x.t >= seg.t - 0.5)?.id;
+        const sgNow = stageNow ? sp?.stages?.[stageNow] : null;
+        const here = sgNow ? [sgNow.plate, ...(sgNow.alt || [])].filter(standable) : [];
         const wides = TASKS.has(stretch.kind) ? (sp?.wide || []).filter(standable) : [];
         const room = TASKS.has(stretch.kind) && sp?.act && standable(sp.act) && IN_PLACE.has(sp.act.mode)
           ? [sp.act, ...(sp.alt || []).filter(a => standable(a) && IN_PLACE.has(a.mode))] : [];
-        if (wides.length && (!opened.has(key) || segTeams.length >= 3)) plate = pick(wides, nth(`${placeId}|${key}|wide`));
+        if (here.length) plate = pick(here, nth(`${placeId}|${key}|${stageNow}`));
+        else if (wides.length && (!opened.has(key) || segTeams.length >= 3)) plate = pick(wides, nth(`${placeId}|${key}|wide`));
         else if (room.length) plate = pick(room, nth(`${placeId}|${key}|room`));
         else plate = pick(sp?.talk, nth(`${placeId}|${key}`)) || sp?.act || (lastPlate?.place === placeId ? lastPlate : plates.opener);
         opened.add(key);

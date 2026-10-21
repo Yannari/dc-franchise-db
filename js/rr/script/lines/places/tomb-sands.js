@@ -82,21 +82,21 @@ const pyramid = {
     ] },
   ],
   'decide-side.agree': [
-    { id: 'tms.py-dc1', when: PY, turns: [
+    { id: 'tms.py-dc1', when: { ...PY, side: 'over' }, turns: [
       { by: 'a', say: "Over or under?" },
       { by: 'b', ...V("Over. I'm not going into a tomb. Tombs are for the dead.", "Over. Tombs are for the dead.", "Over. No tombs.", "OVER! I'm NOT going into a TOMB! Tombs are for the DEAD!", "Over, please. I'm not going into a tomb, tombs are for the dead.", "Over. Under is where the curses live.") },
       { by: 'a', say: "Over it is. Up we go." },
     ] },
   ],
   'decide-side.overruled': [
-    { id: 'tms.py-dc2', when: PY, turns: [
+    { id: 'tms.py-dc2', when: { ...PY, side: 'under' }, turns: [
       { by: 'b', say: "Over. Over, over, over." },
       { by: 'a', say: "Under's quicker if we pick the right door. We're going under." },
       { by: 'b', say: "If a mummy grabs me, I'm blaming you for the rest of eternity." },
     ] },
   ],
   'decide-side.swayed-by-watching': [
-    { id: 'tms.py-dc3', when: PY, turns: [
+    { id: 'tms.py-dc3', when: { ...PY, side: 'over' }, turns: [
       { beat: 'A team comes running out of the tomb, screaming, covered in beetles.' },
       { by: 'a', say: "Did you see that? They were covered in bugs." },
       { by: 'b', say: "Over. We're going over." },

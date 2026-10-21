@@ -92,19 +92,19 @@ const desert = {
     ] },
   ],
   'decide-side.agree': [
-    { id: 'nde.bm-c1', when: BM, turns: [
+    { id: 'nde.bm-c1', when: { ...BM, side: 'buggy' }, turns: [
       by('a', "Buggy. Definitely buggy. A toy car has never eaten anybody."),
       by('b', "Not that we know of."),
       by('a', "Buggy."),
     ] },
-    { id: 'nde.bm-c2', when: BM, turns: [
+    { id: 'nde.bm-c2', when: { ...BM, side: 'magic' }, turns: [
       by('b', "Magic. The lion's asleep. It's basically a big cat having a nap."),
       by('a', "A big cat that eats people."),
       by('b', "Only when it's awake."),
     ] },
   ],
   'decide-side.overruled': [
-    { id: 'nde.bm-c3', when: BM, turns: [
+    { id: 'nde.bm-c3', when: { ...BM, side: 'magic' }, turns: [
       by('a', "I really, really don't want to be in a cage with a lion."),
       by('b', "It's faster. And you're the one who fits in the cage."),
       by('a', "That's the worst reason I've ever heard."),

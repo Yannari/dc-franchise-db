@@ -16,7 +16,7 @@ export default {
         { by: 'a', say: "Almost. Have a lovely time back here." },
         { beat: '{c} and {d} watch them go, and say nothing they could say on television.' },
       ] },
-      { id: 'vk.g2', turns: [
+      { id: 'vk.g2', when: { at: 'task' }, turns: [
         { beat: '{a} and {b} jog past {c} and {d}, waving their tip in the air.' },
         { by: 'b', say: "Got it! First try! Have you got yours yet?" },
         { by: 'd', say: "Does it look like we've got it?" },

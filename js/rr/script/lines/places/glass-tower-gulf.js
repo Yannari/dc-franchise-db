@@ -98,19 +98,19 @@ const tower = {
     ] },
   ],
   'decide-side.agree': [
-    { id: 'gtg.ss-c1', when: SS, turns: [
+    { id: 'gtg.ss-c1', when: { ...SS, side: 'serve' }, turns: [
       by('a', "Serve. One ball. How hard can one ball be?"),
       by('b', "It dented the fence."),
       by('a', "Then we don't stand where the fence is."),
     ] },
-    { id: 'gtg.ss-c2', when: SS, turns: [
+    { id: 'gtg.ss-c2', when: { ...SS, side: 'squeegee' }, turns: [
       by('b', "Squeegee. Slow but sure. Windows can't fire back at you."),
       by('a', "Windows are on the outside of the tallest hotel in the world."),
       by('b', "They still can't fire back."),
     ] },
   ],
   'decide-side.overruled': [
-    { id: 'gtg.ss-c3', when: SS, turns: [
+    { id: 'gtg.ss-c3', when: { ...SS, side: 'squeegee' }, turns: [
       by('a', "I want to do the tennis."),
       by('b', "You've never played tennis. We're cleaning windows."),
       by('a', "I've watched a lot of tennis."),

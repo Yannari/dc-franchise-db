@@ -247,7 +247,7 @@ export default {
         { by: 'b', say: "Then let's get to the best thing." },
         { beat: 'A long, long pause. Then {a} nods, and starts.' },
       ] },
-      { id: 'fe2.5', turns: [
+      { id: 'fe2.5', when: { stretchKind: 'botch' }, turns: [
         { beat: '{a} has been standing at the start for five whole minutes without moving.' },
         { by: 'b', say: "Do you want me to do it instead?" },
         { by: 'a', say: "You can't. It's my turn." },

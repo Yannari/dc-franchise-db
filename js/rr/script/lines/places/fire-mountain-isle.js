@@ -84,21 +84,21 @@ const lavaFalls = {
     ] },
   ],
   'decide-side.agree': [
-    { id: 'fmi.lf-dc1', when: LF, turns: [
+    { id: 'fmi.lf-dc1', when: { ...LF, side: 'falls' }, turns: [
       { by: 'a', say: "Lava or falls?" },
       { by: 'b', ...V("Falls. I'm not hopping over lava. I'm not a frog.", "Falls. I'm not a frog.", "Falls.", "FALLS! I'm NOT hopping over LAVA! I'm not a FROG!", "Falls, please. I'm not hopping over lava like a frog.", "Falls. Lava is for dragons and fools.") },
       { by: 'a', say: "Falls it is. Wet is better than on fire." },
     ] },
   ],
   'decide-side.overruled': [
-    { id: 'fmi.lf-dc2', when: LF, turns: [
+    { id: 'fmi.lf-dc2', when: { ...LF, side: 'lava' }, turns: [
       { by: 'b', say: "Falls. Please. Falls." },
       { by: 'a', say: "Lava's faster. We're doing lava." },
       { by: 'b', say: "If I fall in, I'm haunting you. Forever." },
     ] },
   ],
   'decide-side.swayed-by-watching': [
-    { id: 'fmi.lf-dc3', when: LF, turns: [
+    { id: 'fmi.lf-dc3', when: { ...LF, side: 'falls' }, turns: [
       { beat: 'A team ahead of them slips off a stepping stone and has to scramble back to the bank, their shoes smoking.' },
       { by: 'a', say: "Their shoes are smoking. Actual smoke." },
       { by: 'b', say: "Falls. We're doing the falls." },

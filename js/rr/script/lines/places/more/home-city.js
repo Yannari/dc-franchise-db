@@ -26,13 +26,13 @@ const tower = {
       { by: 'a', say: "Don't look down. Look at the doors." },
       { by: 'b', say: "The doors are glass too!" },
     ] },
+  ],
+  'task-try.first-try': [
     { id: 'hc2.sd-s2', when: DECK, turns: [
       { by: 'a', say: "We picked the elevator. The easy one." },
       { by: 'b', say: "Then why is a man strapping me to a rope?" },
       { by: 'a', say: "Because the easy one has a catch." },
     ] },
-  ],
-  'task-try.first-try': [
     { id: 'hc2.st-f1', when: STAIRS, turns: [
       { beat: '{a} and {b} run every flight with the same steady stomp, never stopping, never talking.' },
       { by: 'b', say: "What floor?" },
@@ -197,9 +197,9 @@ const zipline = {
       { by: 'b', say: "Then I'm keeping it for one more minute." },
     ] },
     { id: 'hc2.zl-dn5', when: ZL, turns: [
-      { by: 'a', say: "One leg down." },
-      { by: 'b', say: "How many to go?" },
-      { by: 'a', say: "Don't ask. Just enjoy the one we did." },
+      { by: 'a', say: "The tower and the zipline. Both done." },
+      { by: 'b', say: "How many more of those are there?" },
+      { by: 'a', say: "Don't ask. Just enjoy these two." },
     ] },
   ],
 };

@@ -23,7 +23,7 @@ import { airKey, byAirDate } from './franchise-calendar.js';
 import { kindOf, significanceOf, approvedFor, lineFor, stateOf } from './life-events.js';
 import { fameOf } from './life-resolver.js';
 import { imageUrl } from './gallery-io.js';
-import { podcastFor, PODCAST_FOLLOWERS, MENTIONED_HIT } from './kristal.js';
+import { podcastFor, PODCAST_FOLLOWERS, MENTIONED_HIT, exitFollowerDelta } from './kristal.js';
 
 /** Everything tunable about the number, in one place. */
 export const FOLLOWERS = {
@@ -173,7 +173,8 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
   for (const ep of podcast) {
     if (ep.guest === slug) {
       const l = podAfter.get(ep.afterSeason) || { gain: 0, hits: 0 };
-      l.gain += PODCAST_FOLLOWERS[ep.tier] || 0;
+      // An in-season exit interview pays less, and a cold one costs.
+      l.gain += ep.kind === 'exit' ? exitFollowerDelta(ep) : (PODCAST_FOLLOWERS[ep.tier] || 0);
       podAfter.set(ep.afterSeason, l);
     } else if (ep.mentioned === slug && ep.tier === 'viral') {
       const l = podAfter.get(ep.afterSeason) || { gain: 0, hits: 0 };
@@ -301,7 +302,7 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
     }
     const pod = podAfter.get(season.seasonId);
     if (pod?.gain) {
-      n += pod.gain;
+      n = Math.max(FOLLOWERS.floor, n + pod.gain);
       steps.push({ season, why: 'Kristal-talKs', delta: pod.gain });
     }
     if (pod?.hits) {

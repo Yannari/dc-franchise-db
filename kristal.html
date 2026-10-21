@@ -198,7 +198,7 @@
 
 <script type="module" src="js/site-header.js"></script>
 <script type="module">
-import { podcastFor, PODCAST_FOLLOWERS, MENTIONED_HIT } from './js/kristal.js';
+import { podcastFor, PODCAST_FOLLOWERS, MENTIONED_HIT, exitFollowerDelta } from './js/kristal.js';
 import { episodeComments } from './js/kristal-voice.js';
 import { careersIn } from './js/records.js';
 import { socialGraph } from './js/life-resolver.js';
@@ -276,14 +276,16 @@ function transcript(ep) {
     ${ep.exchanges.map((x, i) => `<div class="kt-seg">
       <span class="kt-ts">${ts.at(i)}${x.topic === 'the-response' ? ' · THE CLIP' : ''}</span>
       ${x.receipt ? `<div><span class="kt-receipt">record · ${esc(x.receipt.type)}</span><span class="kt-behavior">${esc(x.behavior)}</span></div>` : ''}
-      <div class="kt-q">${esc(x.q)}</div>
-      <div class="kt-a">${esc(ep.guestName)}: &ldquo;${esc(x.a)}&rdquo;</div>
+      ${x.q ? `<div class="kt-q">${esc(x.q)}</div>` : ''}
+      ${x.a ? `<div class="kt-a">${esc(x.speaker || ep.guestName)}: &ldquo;${esc(x.a)}&rdquo;</div>` : ''}
+      ${x.reply ? `<div class="kt-a">${esc(ep.guestName)}: &ldquo;${esc(x.reply)}&rdquo;</div>` : ''}
       ${x.press ? `<div class="kt-press">${esc(x.press)}</div>
         <div class="kt-crack">${esc(ep.guestName)}: &ldquo;${esc(x.crack)}&rdquo;</div>` : ''}
     </div>`).join('')}
-    <div class="kt-seg"><span class="kt-ts">${ts.rapid} · RAPID FIRE</span>
+    ${ep.rapid.length ? `<div class="kt-seg"><span class="kt-ts">${ts.rapid} · RAPID FIRE</span>
       <div class="kt-rf">${ep.rapid.map(r =>
-        `<div><b>${esc(r.q)}</b><span>${esc(r.a)}</span></div>`).join('')}</div></div>
+        `<div><b>${esc(r.q)}</b><span>${esc(r.a)}</span></div>`).join('')}</div></div>` : ''}
+    ${ep.outro ? `<div class="kt-seg"><div class="kt-cold">${esc(ep.outro)}</div></div>` : ''}
     ${ep.mentionedName && ep.tier === 'viral'
       ? `<div class="kt-clip">THE CLIP EVERYONE SHARED was about <b>${esc(ep.mentionedName)}</b>,
          who was not in the room to answer it — see the comments.</div>` : ''}
@@ -292,7 +294,11 @@ function transcript(ep) {
          of a viral one — shown here so the economics are never a secret. -->
     <div class="kt-aftermath">
       <b>THE AFTERMATH</b>
-      <span>${esc(ep.guestName)} <em class="up">+${short(PODCAST_FOLLOWERS[ep.tier] || 0)} followers</em></span>
+      ${(() => {
+        // An exit interview can cost followers; a debrief only ever pays.
+        const n = ep.kind === 'exit' ? exitFollowerDelta(ep) : (PODCAST_FOLLOWERS[ep.tier] || 0);
+        return `<span>${esc(ep.guestName)} <em class="${n < 0 ? 'down' : 'up'}">${n < 0 ? '−' : '+'}${short(Math.abs(n))} followers</em></span>`;
+      })()}
       ${ep.mentionedName && ep.tier === 'viral'
         ? `<span>${esc(ep.mentionedName)} <em class="down">−${Math.round(Math.abs(MENTIONED_HIT) * 1000) / 10}% of theirs</em></span>` : ''}
       ${ep.aftermath ? `<span>credibility <em>${esc(ep.aftermath.credibility)}</em></span>
@@ -316,7 +322,8 @@ function card(ep) {
       <span class="kt-play"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 1l9 5-9 5z" fill="currentColor"/></svg></span>
       <span class="kt-art">${avatar('kristal', 'host')}${avatar(ep.guest, 'guest')}</span>
       <span class="kt-ep-meta">
-        <span class="kt-ep-num">EP ${ep.num} · ${esc(ep.kind === 'debrief' ? 'THE DEBRIEF' : 'THE CATCH-UP')}</span><br>
+        <span class="kt-ep-num">EP ${ep.num} · ${esc(ep.kind === 'debrief' ? 'THE DEBRIEF'
+          : ep.kind === 'exit' ? `EXIT INTERVIEW · WEEK ${ep.record?.week ?? ''}` : 'THE CATCH-UP')}</span><br>
         <span class="kt-ep-title">${esc(ep.title)}</span>
         <span class="kt-ep-sub">
           <span>${mmss(ep.minutes)}</span>
@@ -330,11 +337,20 @@ function card(ep) {
   </article>`;
 }
 
+// In-season exit interviews have their own period (`<season>:live`); every
+// other episode is filed under the gap after the season it follows.
+const periodOf = e => e.period || e.afterSeason;
+
 function render() {
-  const list = episodes.filter(e => e.afterSeason === period).slice().reverse();
+  const list = episodes.filter(e => periodOf(e) === period).slice().reverse();
   const debriefs = list.filter(e => e.kind === 'debrief').length;
   const s = list[0]?.season;
-  $('#kt-slate').innerHTML = list.length
+  const live = String(period).endsWith(':live');
+  $('#kt-slate').innerHTML = list.length && live
+    ? `During <b>${esc(s?.title || period)}</b>: <b>${list.length} exit interview${list.length === 1 ? '' : 's'}</b>,
+       one for everyone who left, newest first.
+       <button class="kt-remix" id="kt-remix" title="Same guests, same numbers — every word re-rolled.">↻ remix the cut</button>`
+    : list.length
     ? `This period: <b>${list.length} episode${list.length === 1 ? '' : 's'}</b> —
        ${debriefs} debrief${debriefs === 1 ? '' : 's'} on <b>${esc(s?.title || period)}</b>
        and ${list.length - debriefs} catch-up${list.length - debriefs === 1 ? '' : 's'}.
@@ -382,7 +398,7 @@ function render() {
     careers, seasons: sdb.seasons || [], lifeEvents: life.events || [],
     // archetype AND stats, so the voice styles have both to choose from.
     profiles: Object.fromEntries(rows.filter(r => r.slug)
-      .map(r => [r.slug, { archetype: r.archetype, stats: r.stats }])),
+      .map(r => [r.slug, { archetype: r.archetype, stats: r.stats, gender: r.gender }])),
     names: namesBySlug,
   };
   episodes = podcastFor({ ...buildInputs, proseSalts: salts });
@@ -391,12 +407,14 @@ function render() {
     <b>${short(total)}</b> lifetime listens ·
     <b>${episodes.filter(e => e.tier === 'viral').length}</b> everyone heard`;
 
-  const gaps = [...new Set(episodes.map(e => e.afterSeason))].reverse();
+  const gaps = [...new Set(episodes.map(periodOf))].reverse();
   period = gaps[0] || null;
   $('#kt-periods').innerHTML = gaps.map(g => {
-    const eps = episodes.filter(e => e.afterSeason === g);
+    const eps = episodes.filter(e => periodOf(e) === g);
+    // An in-season tab ("During Summer 2027") sits just before that season's debrief tab.
+    const live = String(g).endsWith(':live');
     return `<button role="tab" data-period="${esc(g)}" aria-pressed="${g === period}">
-      ${esc(eps[0].when)}<small>${esc(eps[0].season?.title || g)} · ${eps.length} ep</small>
+      ${live ? 'During ' : ''}${esc(eps[0].when)}<small>${esc(eps[0].season?.title || g)} · ${eps.length} ${live ? 'exit' : 'ep'}</small>
     </button>`;
   }).join('');
   $('#kt-periods').querySelectorAll('[data-period]').forEach(b => {

@@ -30,6 +30,7 @@
 
 import { BEATS, MOMENT_BEATS, NUMBERS, NUMBER_A, COLD, ADVICE_Q, ADVICE, RAPID, MOOD, LIFE, LIFE_PRESS,
   LIFE_CRACK, FUTURE_Q, FUTURE_A } from './kristal-lines.js';
+import { PLAYBACK_Q, PLAYBACK_A } from './kristal-exit-lines.js';
 
 // Deterministic pick — the same episode reads the same way forever.
 function hash(key) {
@@ -412,6 +413,15 @@ export function composeEpisode(ep, { words = {}, prior = null, earlier = [], vis
       behavior: stanceFor('the-future', style, voice) });
   } else {
     // ── the debrief ──
+    // The guest sat down during the season too, and named a winner: play it back.
+    const pd = story.prediction;
+    if (pd && pd.said && story.winner && story.winner !== story.guest && pd.said !== story.guest) {
+      const f = { week: String(pd.week || ''), said: pd.said, winner: story.winner };
+      const which = pd.right ? 'right' : 'wrong';
+      const q = pickLine(PLAYBACK_Q[which], `${K}|pbq`, f, 'said');
+      const a = pickLine(PLAYBACK_A[which], `${K}|pba`, f, 'said');
+      if (q && a) exchanges.push({ topic: 'the-prediction', q, a, behavior: pd.right ? 'own' : 'reframe', who: pd.said });
+    }
     const beats = beatsFor(story, clip);
     // The loudest beats, one per person where the record allows: the same
     // name three times is an interview about one person, which is fine only

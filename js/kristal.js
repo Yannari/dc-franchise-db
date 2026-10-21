@@ -40,6 +40,7 @@ import { significanceOf, lineFor } from './life-events.js';
 import { fameOf } from './life-resolver.js';
 import { showWords } from './shows.js';
 import { styleOf, voiceOf, composeEpisode, podcastAftermath, parseMoment } from './kristal-voice.js';
+import { composeExit, pronounsFor } from './kristal-exit.js';
 
 export const KRISTAL = { slug: 'kristal', name: 'Kristal' };
 
@@ -58,6 +59,15 @@ export const PODCAST_FOLLOWERS = { quiet: 1200, solid: 4500, viral: 14000 };
 /** And what a viral episode costs whoever it was ABOUT. Proportional, like
  *  every loss in the follower model. */
 export const MENTIONED_HIT = -0.015;
+
+/** An in-season exit interview is worth less than a debrief — every boot gets
+ *  one, so leaving early must not buy a following by itself — and it can
+ *  cost: a guest the fans turned on loses followers for it. */
+export const EXIT_FOLLOWERS = { quiet: 500, solid: 1800, viral: 6000 };
+export const EXIT_RECEPTION = { warm: 1, mixed: 0.35, cold: -0.6 };
+export function exitFollowerDelta(ep) {
+  return Math.round((EXIT_FOLLOWERS[ep.tier] || 0) * (EXIT_RECEPTION[ep.reception] ?? 0.35));
+}
 
 const chance = key => {
   let h = 2166136261;
@@ -248,7 +258,25 @@ function storyFor({ slug, detail, season, cast, nameOf, slugOf, lifeUpTo }) {
   };
 }
 
+/** What a debrief guest told Kristal during the season about who would win. */
+function withPrediction(story, live, slug) {
+  const said = live.find(e => e.guest === slug && e.record?.prediction && e.record.kind !== 'finalist');
+  if (said && story.winner) {
+    story.prediction = { said: said.record.prediction, week: said.record.week,
+      right: said.record.prediction === story.winner };
+  }
+  return story;
+}
+
 const TITLES = {
+  exit: [
+    '{guest}, fresh out',
+    'Week {week}: {guest}',
+    'The {guest} exit interview',
+    '{guest} on getting out',
+    '{guest} and the {hook} question',
+    '{guest} names {hook}',
+  ],
   debrief: [
     '{guest} answers for {season}',
     '{guest}: the whole story',
@@ -347,8 +375,60 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
     .filter(e => (rankOf.get(e.afterSeason) ?? Infinity) <= rankOf.get(sid))
     .sort((a, b) => rankOf.get(a.afterSeason) - rankOf.get(b.afterSeason) || (a.seq || 0) - (b.seq || 0));
 
+  // ── during the season: every boot's exit interview, in the order they left ──
+  //
+  // Decided by the simulator (js/exit-interview/core.js) and published on the
+  // season row; only the words are written here. Numbers come from the record
+  // and the career, never the words, like every other episode on this feed.
+  const exitEpisodes = season => {
+    const sid = season.seasonId;
+    const out = [];
+    const used = new Set();
+    const words = showWords(season.format);
+    for (const rec of (season.exitInterviews || []).slice().sort((a, b) => (a.week || 0) - (b.week || 0))) {
+      if (!rec?.guest) continue;
+      const slug = slugOf(rec.guest) || rec.guest;
+      const prof = profileOf(slug);
+      const career = bySlug.get(slug);
+      const fame = career ? fameOf(career) : 0.2;
+      const listeners = Math.round((10 + (Number(rec.heat) || 0) * 5) * (0.5 + fame)
+        * (0.8 + chance(`${sid}|${rec.id}|luck`) * 0.5)) * 1000;
+      const loud = (rec.named || []).filter(n => n.still && (n.stance === 'drag' || n.stance === 'blame'))
+        .sort((a, b) => b.heat - a.heat)[0];
+      const ep = {
+        id: `kt-${sid}-x-${rec.id}`, num: ++epNum, kind: 'exit',
+        afterSeason: sid, period: `${sid}:live`, when: airLabel(season), season,
+        guest: slug, guestName: rec.guest, archetype: prof.archetype || '', style: styleOf(prof),
+        record: rec, reception: rec.reception || 'mixed', listeners,
+        pronouns: pronounsFor(prof.gender),
+        mentioned: loud ? slugOf(loud.who) : null,
+      };
+      const k = ep.listeners / 1000;
+      const tier = [...RECEPTION].reverse().find(x => k >= x.min) || RECEPTION[0];
+      ep.tier = tier.tier;
+      ep.tierLabel = tier.label;
+      ep.minutes = Math.min(70, 22 + Math.round(ep.listeners / 3000) + Math.round(chance(ep.id + '|len') * 10));
+      if (ep.mentioned) ep.mentionedName = nameOf(ep.mentioned);
+      const salt = proseSalts[`${sid}:live`] || '';
+      const t = composeExit(ep, { words, earlier: out, salt, used });
+      const titles = TITLES.exit.filter(x => t.hook || !x.includes('{hook}'));
+      ep.title = (pickFrom(titles, ep.id + (salt ? '~' + salt : '') + '|title') || '')
+        .replace('{guest}', ep.guestName).replace('{hook}', t.hook || '').replace('{week}', String(rec.week || ''));
+      Object.assign(ep, { coldOpen: t.coldOpen, exchanges: t.exchanges, rapid: t.rapid, outro: t.outro });
+      ep.aftermath = podcastAftermath(ep);
+      ep.followers = exitFollowerDelta(ep);
+      const visit = (visits.get(slug) || 0) + 1;
+      visits.set(slug, visit);
+      ep.visit = visit;
+      out.push(ep);
+    }
+    return out;
+  };
+
   for (const season of aired) {
     const sid = season.seasonId;
+    const live = exitEpisodes(season);
+    episodes.push(...live);
 
     // ── the debrief: this season's own cast, right after its finale ──
     const cast = castOf(sid);
@@ -381,7 +461,7 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
         guest: slug, guestName: nameOf(slug),
         archetype: prof.archetype || '', style: styleOf(prof), voice: voiceOf(prof),
         facts: factsFor(guest.d, season, names, careers),
-        story: storyFor({ slug, detail: guest.d, season, cast, nameOf, slugOf, lifeUpTo: lifeUpTo(sid) }),
+        story: withPrediction(storyFor({ slug, detail: guest.d, season, cast, nameOf, slugOf, lifeUpTo: lifeUpTo(sid) }), live, slug),
         topics, listeners,
         // Who a viral episode lands on: the messiest topic's other party.
         mentioned: slugOf((topics.find(t => t.id === 'the-breakup')

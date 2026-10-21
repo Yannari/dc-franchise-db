@@ -4308,7 +4308,24 @@ export async function exportCircleSeason(onStatus) {
   if (!seasonNum) return;
   _status('Building the season document...');
   const { buildCircleSeasonDocument } = await import('./ci/export.js');
-  const doc = buildCircleSeasonDocument(rows, gs.ci.record, { seasonNumber: seasonNum, title: seasonConfig?.name || null });
+  // The cast-setup photos go to R2 first (gallery/circle-photos), so the published record can name them by id and
+  // every page in every browser can draw them. Never fails the export: without a token they stay in this browser.
+  try {
+    const { backUpPhotos } = await import('./ci/photo-store.js');
+    let token = '';
+    try { token = localStorage.getItem('studio_api_token') || ''; } catch { /* private mode */ }
+    const pool = Array.isArray(seasonConfig.ciPool) ? seasonConfig.ciPool : [];
+    const faces = [...pool.flatMap(p => [p.face, ...Object.values(p.photos || {})]),
+      ...Object.values(seasonConfig.ciPhotos || {}).flatMap(s => Object.values(s || {}))].filter(f => String(f || '').startsWith('photo:'));
+    if (!faces.length) { /* nothing made */ }
+    else if (!token) _status(`Photos: ${faces.length} stay in this browser only (no studio token to put them in the cloud).`);
+    else {
+      const r = await backUpPhotos(faces, token);
+      _status(`Photos: ${r.uploaded} put in the cloud, ${r.already} already there${r.failed ? `, ${r.failed} missing from this browser` : ''}.`);
+    }
+  } catch (e) { _status(`Photos: could not reach the cloud (${e.message || e}); they stay in this browser.`); }
+  const doc = buildCircleSeasonDocument(rows, gs.ci.record, { seasonNumber: seasonNum, title: seasonConfig?.name || null,
+    photos: { ciPhotos: seasonConfig.ciPhotos || {}, pool: Array.isArray(seasonConfig.ciPool) ? seasonConfig.ciPool : [] } });
   _status(`Built ${doc.seasonId}: ${doc.castSize} players, ${doc.episodeCount} episodes.`);
 
   // Every episode's transcript, where the wiki fills look for it (episode-store.js, ci_episode_sN_eM). Never

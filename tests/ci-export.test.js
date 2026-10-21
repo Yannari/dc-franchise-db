@@ -242,3 +242,20 @@ describe('a showmance with a shared profile', () => {
     expect(p.Mateo.showmance).toBe('Lila');
   });
 });
+
+// The user, 2026-10-21: "can u store those photo in R2 cloudfare like the rest?" The record names each player's
+// photos by id (kept in R2), so every page in every browser can find them.
+describe('the published photos', () => {
+  it('a player\'s own photos and the catfish profile the room saw, by id; never a roster face', async () => {
+    const { ciPlacements } = await import('../js/ci/export.js');
+    const rows = [{ num: 1, ci: { profiles: { '@nadiya': { name: 'Nadiya', people: ['Hector'], mode: 'catfish', personaId: 'p1' },
+      '@lila': { name: 'Lila', people: ['Lila'], mode: 'honest' } }, aired: [] } }];
+    const record = { players: { Hector: { placement: 2 }, Lila: { placement: 1, winner: true } } };
+    const photos = { ciPhotos: { Lila: { throwback: 'photo:t1', profile: 'portrait:Lila' }, Hector: { real: 'photo:r1' } },
+      pool: [{ id: 'p1', handle: 'Nadiya', face: 'photo:n1', photos: { naughty: 'photo:n2' } }] };
+    const p = Object.fromEntries(ciPlacements(rows, record, photos).map(x => [x.name, x]));
+    expect(p.Lila.ci.photos).toEqual({ own: { throwback: 'photo:t1' }, persona: {} });
+    expect(p.Hector.ci.photos).toEqual({ own: { real: 'photo:r1' }, persona: { profile: 'photo:n1', naughty: 'photo:n2' } });
+    expect(ciPlacements(rows, record).find(x => x.name === 'Lila').ci.photos).toBeUndefined();
+  });
+});

@@ -160,7 +160,19 @@ function mainShowmance(list = []) {
 }
 
 /** placements[], from the ledger record (§8.4: the canon loader compares them place for place). */
-export function ciPlacements(rows = [], record = null) {
+// The author's photos for a player, as published (`ci.photos`): their own slots, and the catfish profile the
+// room saw. Ids only (`photo:<id>`, kept in R2 under gallery/circle-photos), so any browser can find them: the
+// Dramagram button reads them here rather than from the simulator's config in one browser.
+const onlyPhotos = o => Object.fromEntries(Object.entries(o || {}).filter(([, f]) => String(f || '').startsWith('photo:')));
+function photosOfPlayer(name, c, photos) {
+  if (!photos) return null;
+  const own = onlyPhotos(photos.ciPhotos?.[name]);
+  const persona = c.catfish && c.personaId ? (photos.pool || []).find(p => p?.id === c.personaId) : null;
+  const theirs = persona && !persona.fromRoster ? onlyPhotos({ profile: persona.face, ...(persona.photos || {}) }) : {};
+  return Object.keys(own).length || Object.keys(theirs).length ? { own, persona: theirs } : null;
+}
+
+export function ciPlacements(rows = [], record = null, photos = null) {
   const recPlayers = record?.players || {};
   const history = ciVotingHistory(rows);
   const lastExit = new Map();
@@ -213,6 +225,7 @@ export function ciPlacements(rows = [], record = null) {
         ...(r.playedAs ? { playedAs: r.playedAs } : {}),
         ...(c.sharedWith.length ? { sharedWith: [...c.sharedWith] } : {}),
         avgRating: avg,
+        ...(() => { const ph = photosOfPlayer(n, c, photos); return ph ? { photos: ph } : {}; })(),
       },
       // who they were to the others: the ledger's own judgement, for careers and the life layer
       alliances: [...(r.allies || [])],
@@ -229,8 +242,8 @@ export function ciPlacements(rows = [], record = null) {
 }
 
 /** The season document. */
-export function buildCircleSeasonDocument(rows = [], record = null, { seasonNumber = 1, title = null } = {}) {
-  const placements = ciPlacements(rows, record);
+export function buildCircleSeasonDocument(rows = [], record = null, { seasonNumber = 1, title = null, photos = null } = {}) {
+  const placements = ciPlacements(rows, record, photos);
   const champions = placements.filter(p => p.status === 'Winner');
   const runnerUp = placements.find(p => p.status !== 'Winner')?.name || null;
   const winners = champions.map(c => ({ name: c.name, playerSlug: c.playerSlug, runnerUp }));

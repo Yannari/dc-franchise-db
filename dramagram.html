@@ -626,11 +626,15 @@ async function sendCirclePhotos(slug, t) {
   let cfg = {};
   try { cfg = JSON.parse(localStorage.getItem('simulator_config') || '{}'); } catch { /* none */ }
   const name = namesBySlug[slug] || slug;
-  const pool = Array.isArray(cfg.ciPool) ? cfg.ciPool : [];
   let plan = [];
   for (const d of circleSeasons(slug)) {
-    const persona = d.ci?.mode === 'catfish' ? pool.find(p => p.handle === d.ci.profile) : null;
-    plan = plan.concat(photosToSync({ cast: [name], ciPhotos: cfg.ciPhotos || {}, pool,
+    // The published record names the photos (ci.photos, in R2) and works in any browser; a season exported
+    // before that falls back to this browser's cast setup.
+    const pub = d.ci?.photos;
+    const pool = pub ? [{ id: 'published', face: pub.persona?.profile || null, photos: pub.persona || {} }]
+      : (Array.isArray(cfg.ciPool) ? cfg.ciPool : []);
+    const persona = d.ci?.mode === 'catfish' ? (pub ? pool[0] : pool.find(p => p.handle === d.ci.profile)) : null;
+    plan = plan.concat(photosToSync({ cast: [name], ciPhotos: pub ? { [name]: pub.own || {} } : (cfg.ciPhotos || {}), pool,
       dealt: { [name]: { mode: d.ci?.mode || 'honest', personaId: persona ? persona.id : null } },
       playersDb: { players: [{ id: slug, name, seasonDetails: [] }] }, synced: new Set([...readSynced(), ...plan.map(x => x.key)]) }));
   }

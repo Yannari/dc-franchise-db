@@ -141,7 +141,8 @@ export default {
         { by: 'b', say: "Great. You've given them confidence." },
         { by: 'a', say: "That is not what I gave them." },
       ] },
-      { id: 'mg.s-task1', when: { at: 'task' }, turns: [
+      // (the other team has failed it more than once: "twice already")
+      { id: 'mg.s-task1', when: { at: 'task', failsB: 'many' }, turns: [
         { beat: '{c} has failed this task twice already when {a} wanders over.' },
         { by: 'a', ...V("That's going really badly. Do you want to just stop? We'd understand.", "That's going badly. Want to stop? We'd understand.", "Going badly. You could stop. We'd understand.", "That's going SO badly! Do you want to just STOP? We'd UNDERSTAND!",
           "That's going really badly. Do you maybe want to stop? We'd totally understand.", "That's going badly. You could stop. Nobody would think less of you. We already do.") },

@@ -198,7 +198,8 @@ export const PLACE_PLATES = {
       midmat: { talk: [p('chill-9450538', 94, [16, 84], { matPos: [50, 88], bronze: true })] },
       boathouse: { talk: [p('task-9450434', 86, [4, 84])] },
       buoys: { talk: [p('task-9450434', 86, [4, 84])],
-        act: p('chill-9450523', 0, [0, 0], { water: true, mode: 'swim', prop: 'buoy', path: [[4, 92], [28, 86], [52, 84], [76, 86]], fx: 'splash' }) },
+        // (the buoys float out where they swim to: never a cut-out nobody sees)
+        act: p('chill-9450523', 0, [0, 0], { water: true, mode: 'swim', deco: [['buoy', 64, 84, 4.5], ['buoy', 90, 86, 4.5]], path: [[4, 92], [28, 86], [52, 84], [76, 86]], fx: 'splash' }) },
       footrace: { talk: [p('present-9450040', 97, [20, 80])],
         act: p('chill-9450538', 94, [16, 84], { mode: 'run', path: [[30, 94], [50, 94], [70, 94]], fx: 'dust' }) },
       mat: { talk: [p('present-9450040', 97, [20, 80], { matPos: [50, 95] })] },
@@ -217,7 +218,7 @@ export const PLACE_PLATES = {
           over: { talk: [p('task-22410049', 96, [6, 60], { closed: true })],
             act: p('present-22409867', 96, [6, 94], { mode: 'climb', path: [[40, 96], [46, 70], [52, 44], [56, 22]], fx: 'dust' }) },
           under: { talk: [p('task-22409901', 94, [10, 90]), p('task-22409944', 96, [6, 94])],
-            act: p('task-22409957', 94, [6, 94], { mode: 'walk', prop: 'mummy', path: [[14, 94], [34, 94], [60, 92], [86, 94]], fx: 'darts' }) },
+            act: p('task-22409957', 94, [6, 94], { mode: 'walk', deco: [['mummy', 91, 94, 6]], path: [[14, 94], [34, 94], [60, 92], [80, 94]], fx: 'darts' }) },
         },
       },
       'tomb-camel': { talk: [p('present-22410491', 94, [6, 60])],
@@ -600,7 +601,8 @@ export const PLACE_PLATES = {
       // a superteam: the teams meet on the track by the river, then wade into the shallows together and catch six
       // catfish by hand (the shallows are water: they swim it, nobody stands on it)
       catfish: { talk: [p('arrive-9447023', 92, [30, 94])],
-        act: p('task-9447243', 0, [0, 0], { water: true, mode: 'swim', prop: 'catfish', path: [[8, 80], [30, 77], [56, 80], [82, 77]], fx: 'splash' }) },
+        // (the catfish come up and go under round them in the shallows)
+        act: p('task-9447243', 0, [0, 0], { water: true, mode: 'swim', deco: [['catfish', 70, 84, 8, { move: 'surface' }], ['catfish', 40, 88, 7, { move: 'surface', dur: 6, flip: true }]], path: [[8, 80], [30, 77], [56, 80], [82, 77]], fx: 'splash' }) },
       tunnels: { talk: [p('task-9447354', 92, [6, 94])],
         act: p('task-9447366', 94, [6, 94], { closed: true, mode: 'search', prop: 'torch', propW: 0.45, fx: 'dust' }) },
       'temple-run': { talk: [p('chill-9447520', 92, [6, 94])],
@@ -896,7 +898,7 @@ export const PLACE_PLATES = {
         act2: p('task-22421563', 96, [6, 94], { closed: true, mode: 'search', prop: 'dress', propW: 0.6, fx: 'sparkle' }) },
       // the tightrope across the falls with a balance pole
       tightrope: { talk: [p('task-22421519', 50, [6, 94])],
-        act: p('task-22421939', 77, [4, 96], { mode: 'walk', prop: 'pole', path: [[4, 77], [30, 77], [56, 77], [84, 77]], fx: 'wind' }) },
+        act: p('task-22421939', 77, [4, 96], { mode: 'walk', prop: 'pole', propW: 2.4, path: [[4, 77], [30, 77], [56, 77], [84, 77]], fx: 'wind' }) },
       // the rim deck with its booths is a job (edit/); meanwhile the landing beach
       mat: { talk: [repaint('chill-falls-mat', p('chill-falls-mat', 93, [6, 94], { mat: [56, 84] }), p('task-22421519', 50, [6, 94], { matPos: [50, 48] }))] },
     },
@@ -1014,6 +1016,15 @@ for (const [id, m] of Object.entries(MORE)) {
 // { label, plate, alt?, fail? } per stage: `plate` (and `alt`, a team's own angle) for the stage passed, `fail` for
 // where it goes wrong there. A plate here is one the place already has, by file, with what this stage changes.
 export const findPlate = (id, f, over = {}) => plateOf(id, f, over);
+// What a challenge has them hold (2026-10-21, the user, at the dragon drool: "theyre not even holding the bottle i told u
+// to make sure your cutout are used and placed correctly for all the challenges"): `<place>/<cut-out>`. At a work it is
+// drawn in the hands of the one doing it (steps.js placeWorkProps), on a walk or a climb carried (stage.js tokenEl), in
+// the water held up by the swimmer; never stood on the ground beside them like a sand palace.
+export const HELD = new Set(['dragon-isle/vial', 'fishing-cove/vinegar', 'fishing-cove/cod', 'badlands/pickaxe', 'glass-tower-gulf/racket',
+  'grass-savanna/bat', 'great-falls/pole', 'iron-tower-city/pad', 'ice-floe/ring', 'pampas-ranch/bolas', 'stilt-river/torch', 'swamp-prison/spoon',
+  'great-wall-hills/skewers', 'pyramid-coast/peppers', 'pyramid-coast/canteen', 'red-sand-desert/stew', 'bamboo-wall-hills/bowl', 'treasure-isles/map',
+  'secret-base-desert/artifact', 'carnival-rainforest/mitten', 'tea-hills/full', 'stone-head-island/basket']);
+export const heldProp = (place, plate) => (plate?.prop && HELD.has(`${plate.place || place}/${plate.prop}`) ? plate.prop : null);
 const plateOf = (id, f, over = {}) => {
   const pl = PLACE_PLATES[id];
   const all = [pl.opener, ...(pl.arrive || []), ...(pl.title ? [{ f: pl.title, g: 92, x: [10, 90] }] : []), ...(pl.views || []), ...(pl.stageOnly || []), ...Object.values(pl.st).flatMap(s => [...(s.talk || []), s.act, s.act2, ...(s.alt || []), ...(s.wide || []),
@@ -1097,7 +1108,7 @@ export const STAGE_SHOTS = {
     statue: {
       'log-pile': { label: 'THE LOG PILE', plate: ['task-22426261', { mode: undefined, prop: undefined, judge: null }] },
       'the-statue': { label: 'THE STATUE', plate: ['task-22426261', { mode: 'build' }], fail: ['task-22426261', { mode: 'build' }], stamp: 'FELL APART' },
-      'up-the-volcano': { label: 'UP THE VOLCANO', plate: ['present-22426355', { mode: 'climb', prop: 'statue', path: [[20, 98], [34, 78], [46, 58]] }],
+      'up-the-volcano': { label: 'UP THE VOLCANO', plate: ['present-22426355', { mode: 'climb', prop: 'statue', carry: 'statue', path: [[20, 98], [34, 78], [46, 58]] }],
         fail: ['present-22426355', { mode: 'climb', prop: undefined, path: [[34, 78], [40, 68], [28, 90]], deco: [['statue', 44, 98, 6]] }], stamp: 'DROPPED IT' },
       'the-crater': { label: 'INTO THE CRATER', plate: ['chill-22426500', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'walk', crowd: false, path: [[98, 56], [90, 53], [82, 52]], fx: 'embers', deco: [['statue', 62, 46, 12]] }] },
     },
@@ -1368,7 +1379,7 @@ export const STAGE_SHOTS = {
     'jungle-trail': {
       'painted-stones': { label: 'THE PAINTED STONES', plate: ['task-22414793', {}], fail: ['task-22414793', {}], stamp: 'LOST' },
       'piranha-log': { label: 'THE LOG', plate: [LOG, { mode: 'walk', path: [[6, LOG_G], [34, LOG_G], [62, LOG_G], [92, LOG_G]] }],
-        fail: ['task-22414389', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'swim', path: [[60, 60], [40, 64], [14, 70]], fx: 'splash' }], stamp: 'SPLASH!' },
+        fail: ['task-22414389', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'swim', prop: undefined, path: [[60, 60], [40, 64], [14, 70]], fx: 'splash' }], stamp: 'SPLASH!' },
       caterpillars: { label: 'THE CATERPILLARS', plate: ['task-22414456', { mode: 'chase' }], fail: ['task-22414456', { mode: 'chase' }], stamp: 'NOPE' },
       'ruins-foot': { label: 'THE RUINS', plate: ['present-22414264', { people: undefined, g: 96, x: [30, 94] }] },
     },

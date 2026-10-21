@@ -7,7 +7,7 @@
 // the newest step animates: the team walking onto the mat, the hop to the next stone, the
 // swim with its splashes, the cab driving in, the tip card flying out of the Don Box, the
 // slam. Every avatar idles; whoever is talking bounces.
-import { plateUrl, raceUrl, propUrl } from './plates.js';
+import { plateUrl, raceUrl, propUrl, heldProp } from './plates.js';
 import { PLACES } from '../rr/places.js';
 import { intelAt, offOf, stampSpot, slamSpot, tipSpot, fitOverlay, screenFaces, overlayObstacles, weatherOf, BAR, HUD_H, GROWS, framed, barShown } from './steps.js';
 import { plateLife } from './life.js';
@@ -108,7 +108,9 @@ export function createStage(holder, { faceOf, legLabel }) {
     if (as === 'walk' && /^raft/.test(pl.prop || '') && s.mode === 'act') veh = `<img class="veh carry" src="${propUrl(s.plate.place || s.place, pl.prop)}" alt="">`;
     // (`carry`: what the one doing it holds in their arms, the chest up the cliff path; 2026-10-21, the user: "sami isnt
     // even hauling or near the chest")
-    if (pl.carry && s.mode === 'act' && !opts.extraCls?.includes('crowd')) veh = `<img class="veh carry arms" src="${propUrl(s.plate.place || s.place, pl.carry)}" alt="">`;
+    // ...and what a walk or a climb has them carry (plates.js HELD: the balance pole, the eggs up the spire)
+    const carried = pl.carry || (['walk', 'climb', 'run', 'hop'].includes(as) && s.mode === 'act' ? heldProp(s.place, pl) : null);
+    if (carried && s.mode === 'act' && !opts.extraCls?.includes('crowd')) veh = `<img class="veh carry arms${pl.propW > 1.5 ? ' long' : ''}" style="width:calc(var(--sz)*${(0.95 * (pl.carry ? 1 : pl.propW || 1)).toFixed(2)})" src="${propUrl(s.plate.place || s.place, carried)}" alt="">`;
     // a coffin pushed in front rolls on a pair of iron wheels
     if (as === 'push' && veh) veh += WHEELS;
     // what the challenge has them wear (the helmets on the deck and the zipline: the user, 2026-10-21, "the helmet isnt
@@ -124,7 +126,8 @@ export function createStage(holder, { faceOf, legLabel }) {
     e.dataset.team = id;
     e.style.setProperty('--c', c); e.style.setProperty('--sz', Math.max(5, (s.size || 8) * 0.85) + 'cqw');
     const gap = Math.max(5, (s.size || 8) * 0.95); e.style.left = (pos[0] + k * gap) + '%'; e.style.top = (pos[1] + k * 1.5) + '%';
-    e.innerHTML = `<div class="ripple"></div><img data-p="${esc(name)}" src="${faceOf(name)}" alt=""><span class="lab">${esc(name)}</span>`;
+    const up = s.plate.mode === 'swim' && heldProp(s.place, s.plate);
+    e.innerHTML = `<div class="ripple"></div><img data-p="${esc(name)}" src="${faceOf(name)}" alt="">${up ? `<img class="held-up" src="${propUrl(s.plate.place || s.place, up)}" alt="">` : ''}<span class="lab">${esc(name)}</span>`;
     toks.appendChild(e);
     return e;
   }
@@ -456,6 +459,8 @@ export function createStage(holder, { faceOf, legLabel }) {
       // where steps.js placeWorkProps put it; a sand palace grows with the work: a third at the start, whole when done
       const grow = GROWS.has(s.work) ? 0.35 + 0.65 * Math.max(0, Math.min(1, s.plan?.p?.[k] ?? 1)) : 1;
       const pp = pl.under ? document.createElement('i') : prop(propUrl(pl.place || s.place, pl.prop), s.workProp.at, s.workProp.w * grow, 7);
+      // (held: in their hands, so in front of them: in the faces' own layer, above them, moving as they do)
+      if (s.workProp.held) { pp.classList.add('held'); pp.style.zIndex = 11; toks.appendChild(pp); }
       // a buggy driven by remote: off round the course and back
       if (s.work === 'remote' && fresh) pp.animate([{ transform: 'translate(-50%,-100%)' }, { transform: 'translate(40%,-100%)', offset: 0.4 }, { transform: 'translate(40%,-100%) scaleX(-1)', offset: 0.5 }, { transform: 'translate(-50%,-100%) scaleX(-1)', offset: 0.9 }, { transform: 'translate(-50%,-100%)' }], { duration: 2600, iterations: 2 });
       if (s.work === 'chase' && fresh) pp.animate([{ transform: 'translate(-50%,-100%)' }, { transform: 'translate(-30%,-104%) scaleX(-1)' }, { transform: 'translate(-50%,-100%)' }], { duration: 900, iterations: 3 });

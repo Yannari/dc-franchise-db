@@ -95,7 +95,10 @@ describe('rr Red Sand Desert, 1:1', () => {
     for (const ep of airSeason(res)) {
       const starts = ep.segments.filter(s => s.stretch === 'spices' && s.kind === 'task-start');
       if (!ep.segments.some(s => s.stretch === 'spices')) continue;
-      expect(starts.length, `leg ${ep.n}`).toBeGreaterThanOrEqual(1);
+      // (a team followed through the kiosk's stages is seen arriving at its first stage: with few teams left, all of
+      // them can be, and nobody needs a separate arrival)
+      const staged = ep.segments.some(s => s.stretch === 'spices' && s.kind === 'task-stage');
+      expect(starts.length + (staged ? 1 : 0), `leg ${ep.n}`).toBeGreaterThanOrEqual(1);
       expect(starts.length, `leg ${ep.n}`).toBeLessThanOrEqual(3);
       for (const s of starts) {
         const i = ep.segments.indexOf(s);

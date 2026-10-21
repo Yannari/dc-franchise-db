@@ -188,8 +188,11 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       const now = api.here(s.id, tt).filter(x => x.id !== id && !met.has(x.id) && state.teams[x.id] && spotOf(x.id, s, tt, x.from) === mine).map(x => x.id);
       if (!now.length) continue;
       now.forEach(x => met.add(x));
-      extra += talkAtOverlap(state, id, now, s, tt, api, rng).extra || 0;
-      if (!watched && now.length >= 2) { watched = true; talkAtWait(state, [id, ...now], s, tt, api, rng, 'watching'); }
+      // (at its start nobody has begun: they can talk, but nobody has watched anybody at it yet; 2026-10-21, a
+      // meeting there aired "they've been at it for an hour" and "has failed this task twice already")
+      const atStart = mine === 'start';
+      extra += talkAtOverlap(state, id, now, s, tt, api, rng, { atStart }).extra || 0;
+      if (!watched && !atStart && now.length >= 2) { watched = true; talkAtWait(state, [id, ...now], s, tt, api, rng, 'watching'); }
     }
     return extra;
   };

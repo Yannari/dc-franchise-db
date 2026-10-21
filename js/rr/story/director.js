@@ -626,11 +626,21 @@ export function airLeg(state, leg) {
 
   // the episode, in clock order
   const segs = [...montages, ...narration];
+  // two teams who took different sides of an Either/Or met at its start, before they split (leg.js meetInside): the
+  // moment is on no side (2026-10-21, the user: a team "in the elevator and the stairs at the same time for 2
+  // confrontations with another team": each was shot on the other team's side)
+  const sideAt = (id, sid) => rows.find(r => r.team === id && r.stretch === sid)?.side ?? null;
+  const sideFor = (s, teams) => {
+    const side = s.data?.snap?.side ?? null;
+    if (!side || teams.length < 2) return side;
+    return new Set(teams.map(id => sideAt(id, s.data?.stretch)).filter(Boolean)).size > 1 ? null : side;
+  };
   for (const [id, tier] of picked) {
     const s = byId.get(id);
     const teams = teamsIn(s);
+    const side = sideFor(s, teams), split = !side && !!s.data?.snap?.side;
     segs.push({ scene: s.id, kind: s.kind, ending: s.data?.ending ?? null, stretch: s.data?.stretch ?? null, t: s.data?.t ?? 0, teams,
-      who: namesOnly(s) ? s.who.filter(x => teams.includes(teamOf(state, x))) : [...s.who], side: s.data?.snap?.side ?? null, tier, src: s });
+      who: namesOnly(s) ? s.who.filter(x => teams.includes(teamOf(state, x))) : [...s.who], side, ...(split ? { split: true } : {}), tier, src: s });
   }
   for (const b of beats) segs.push({ scene: null, beat: b.id, kind: b.kind, ending: b.data.ending, stretch: b.data.stretch, t: b.data.t, stage: b.data.stage ?? null,
     teams: [b.data.team], who: [...b.who], side: b.data.side ?? null, picked: pickedOf(b.data.snap?.picked), tier: 1, src: b });

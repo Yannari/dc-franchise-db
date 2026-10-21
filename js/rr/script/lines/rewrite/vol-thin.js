@@ -259,7 +259,8 @@ export default {
         { by: 'a', say: "What's the difference?" },
         { by: 'c', say: "Gossip is fun. Secrets get people hurt." },
       ] },
-      { id: 'vt.ds4', turns: [
+      // (a cab waiting: on the road, never at a challenge)
+      { id: 'vt.ds4', when: { at: 'road' }, turns: [
         { by: 'a', say: "We've got a cab waiting. There's room in the back." },
         { by: 'c', say: "For us? Why?" },
         { by: 'b', say: "Because one day soon, we'll need something from you." },

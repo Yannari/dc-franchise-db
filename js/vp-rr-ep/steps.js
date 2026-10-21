@@ -24,7 +24,7 @@ import { PLACES } from '../rr/places.js';
 import { LOCALS, localFor, localUrl, placeLocal, personOf } from './locals.js';
 import { aboutOf, cardOf } from './about.js';
 import { OPENER_SHOTS } from './opener-shots.js';
-import { PLACE_PLATES, RACE, stretchPlates, standable, findPlate } from './plates.js';
+import { PLACE_PLATES, RACE, stretchPlates, standable, findPlate, heldProp } from './plates.js';
 
 export const TEAM_COLORS = ['#ff6fae', '#39c0ff', '#ffb020', '#4fd18b', '#b78cff', '#ff7a4a', '#5ee0d6', '#f2e94e', '#ff4f6d', '#8fb4ff', '#c7f464', '#e0a3ff',
   '#7fe3a0', '#ffc1a1'];
@@ -316,7 +316,10 @@ export function episodeScreens(res, eps, i) {
         // in the elevator)
         // (a challenge a place's own local runs starts and ends with them: the guide at the cliff, the farmer's sack)
         const withLocal = ['task-start', 'task-done'].includes(k) && placeLocal(placeId, seg.stretch, seg.side);
-        const row = TASKS.has(stretch.kind) && !withLocal && segTeams.length && segTeams.length <= 2 ? (st.taskLog || [])
+        // (two teams of different sides meeting at an Either/Or's start, before either took a side: no stage yet;
+        // director.js marks it `split`)
+        const atStart = !!seg.split;
+        const row = TASKS.has(stretch.kind) && !withLocal && !atStart && segTeams.length && segTeams.length <= 2 ? (st.taskLog || [])
           .filter(r => r.leg === leg.n && r.team === segTeams[0] && r.stretch === seg.stretch).find(r => r.from <= seg.t + 0.5 && seg.t <= r.to + 0.5) : null;
         const stageNow = row?.stages?.find(x => x.t >= seg.t - 0.5)?.id;
         const sgNow = stageNow ? sp?.stages?.[stageNow] : null;
@@ -429,7 +432,7 @@ export function episodeScreens(res, eps, i) {
       for (const id of new Set(persons)) localFaces[LOCALS[id]] = { id, name: LOCALS[id], url: localUrl(id) };
       const donSpeaks = run.lines.some(l => l.by === 'Don');
       const scr = {
-        kind: mode === 'flight' ? 'flight' : 'world', seg: k, ending: seg.ending, mode, place: placeId, stretch: seg.stretch, side: seg.side,
+        kind: mode === 'flight' ? 'flight' : 'world', seg: k, ending: seg.ending, mode, place: placeId, stretch: seg.stretch, side: seg.side, ...(seg.split ? { split: true } : {}),
         plate, parked, stage: seg.stage ?? null, ...(failStamp ? { failStamp } : {}), teams, locals, localFaces, don: donSpeaks && !['narrate', 'flight', 'landing'].includes(mode) || ['mat', 'demo', 'don'].includes(mode),
         narrator: donSpeaks && ['narrate', 'flight', 'landing'].includes(mode),
         hud: { task: hudTask, clock }, timecard: first ? timecard : null, steps,
@@ -697,6 +700,17 @@ function placeWorkProps(s, marks) {
   if (!s.work || !pl?.prop) return;
   const anchor = marks[s.teams[0]] || [50, groundY(pl, 0)];
   const z = s.size || 8, off = z * 1.9 + 4;
+  // a thing they hold (HELD: the vial, the racket, the bowl) is in their hands, in front of them at chest height
+  if (heldProp(s.place, pl)) {
+    s.workProp = { at: [Math.round((anchor[0] + z * 0.45) * 10) / 10, Math.round((anchor[1] - z * 0.55) * 10) / 10], w: z * 0.55 * (pl.heldW || 1), held: true };
+    if (pl.judge && pl.judgeAt) s.judgeAt = { at: pl.judgeAt, w: z * 1.35 * pl.judge[1], flip: false };
+    else if (pl.judge) {
+      const [, ja] = pl.judge, jw = z * 1.35 * ja, gy0 = Array.isArray(pl.g) ? pl.g[1] : pl.g;
+      const side = anchor[0] < 50 ? 1 : -1;
+      s.judgeAt = { at: [Math.max(jw / 2 + 2, Math.min(98 - jw / 2, anchor[0] + side * (z * 1.9 + jw / 2))), gy0], w: jw, flip: side < 0 };
+    }
+    return;
+  }
   const others = s.teams.slice(1).map(id => marks[id]?.[0]).filter(x => x != null);
   const room = dir => { const x = anchor[0] + dir * off; return Math.min(x - 4, 96 - x, ...others.map(o => Math.abs(o - x))); };
   // (`under`: the cut-out is what they ride or stand on, a mechanical bull: right under them)

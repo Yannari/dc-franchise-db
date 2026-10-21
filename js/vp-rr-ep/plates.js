@@ -1066,6 +1066,26 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'great-falls': {
+    // (the theatre hall with the slot machine; the stage under the spotlights with the rails of dresses; the falls with
+    // the tightrope)
+    'wedding-slots': {
+      'the-lever': { label: 'THE LEVER', plate: ['task-22421546', { mode: 'lever', solo: true, inset: 'IN THE PEWS', judge: null, local: false }],
+        fail: ['task-22421546', { mode: 'lever', solo: true, inset: 'IN THE PEWS', judge: null, local: false }], stamp: 'NO HEARTS' },
+      'three-hearts': { label: 'THREE HEARTS', plate: ['task-22421546', { mode: undefined, prop: undefined, judge: null, local: false, fx: 'sparkle', deco: [['slots', 30, 95, 11]] }] },
+      'the-rails': { label: 'THE DRESSES', plate: ['task-22421563', { mode: 'search', solo: true, inset: 'IN THE PEWS' }],
+        fail: ['task-22421563', { mode: 'search', solo: true, inset: 'IN THE PEWS' }], stamp: 'WRONG DRESS' },
+      'the-minister': { label: 'THE MINISTER', plate: ['task-22421563', { mode: undefined, prop: undefined, deco: [['dress', 58, 96, 9]] }] },
+    },
+    tightrope: {
+      'the-harness': { label: 'THE HARNESS', plate: ['task-22421939', { path: [[-6, 77], [0, 77], [5, 77]] }] },
+      'first-steps': { label: 'FIRST STEPS', plate: ['task-22421939', { path: [[4, 77], [18, 77], [30, 77]] }],
+        fail: ['task-22421939', { path: [[4, 77], [14, 77], [10, 77]] }], stamp: 'WOBBLE' },
+      'the-spray': { label: 'THE SPRAY', plate: ['task-22421939', { path: [[30, 77], [44, 77], [58, 77]] }],
+        fail: ['task-22421939', { mode: 'zip', prop: undefined, path: [[44, 77], [44, 88], [44, 84], [10, 77]] }], stamp: 'IN THE HARNESS' },
+      'far-rim': { label: 'THE FAR RIM', plate: ['task-22421939', { path: [[58, 77], [78, 77], [96, 77]] }] },
+    },
+  },
   'fjord-sea': {
     // (the wreck heap on the shore; the fjord water; the cannon on the shore)
     longship: {

@@ -291,6 +291,8 @@ import { uploadMany, deleteImage, imageUrl, GALLERY_MAX,
   galleryFull, setImageMeta, postPhoto, fetchPins }
   from './js/gallery-io.js';
 import { fillFromWiki } from './js/wiki-art.js';
+import { photosToSync, syncDramagram, readSynced } from './js/dramagram-sync.js';
+import { photoURL } from './js/ci/photo-store.js';
 import { careersIn } from './js/records.js';
 import { airLabel, latestAired } from './js/franchise-calendar.js';
 import { currentShow } from './js/show-switcher.js';
@@ -530,6 +532,9 @@ function renderManage(slug, gal) {
     // cap. One shared implementation in js/wiki-art.js, asked in this page's
     // own voice.
     '<button class="dg-fill" id="dg-fill">Fill from wiki</button>',
+    // The Circle: the photos made for them in the simulator's cast setup (this browser's), their catfish
+    // profile included. Shown only to somebody who has played The Circle.
+    circleSeasons(slug).length ? ' <button class="dg-fill" id="dg-circle">Add Circle photos</button>' : '',
     '<div class="dg-lib" id="dg-lib"></div>',
     '<p class="dg-note" id="dg-note">Pin one as the profile picture, set a mood ',
     'to tell the captions what a picture is, and new posts claim photos from ',
@@ -575,6 +580,22 @@ function renderManage(slug, gal) {
       fillBtn.textContent = 'Fill from wiki';
     }
   };
+  const circleBtn = box.querySelector('#dg-circle');
+  if (circleBtn) circleBtn.onclick = async () => {
+    const t = token();
+    if (!t) return;
+    circleBtn.disabled = true; circleBtn.textContent = 'Sending…';
+    const note = $('#dg-note');
+    try {
+      const r = await sendCirclePhotos(slug, t);
+      if (note) note.textContent = r.text;
+      if (r.sent) await renderProfile(slug, { archive: false });
+    } catch (err) {
+      if (note) note.textContent = 'Circle photos failed — ' + err.message;
+    } finally {
+      circleBtn.disabled = false; circleBtn.textContent = 'Add Circle photos';
+    }
+  };
   drawLibrary(slug);
 
   const zone = box.querySelector('#dg-drop');
@@ -589,6 +610,36 @@ function renderManage(slug, gal) {
     doUpload(slug, [...(e.dataTransfer ? e.dataTransfer.files : [])]
       .filter(f => f.type.startsWith('image/')));
   };
+}
+
+/** This character's Circle seasons, off the published record. */
+function circleSeasons(slug) {
+  const c = allCareers.find(x => x.id === slug);
+  return (c?.details || []).filter(d => d.format === 'the-circle');
+}
+/**
+ * The photos made for them in the simulator (the user, 2026-10-21: "can we have the button in the profile
+ * dramagram next to fill from wiki"). Cast setup lives in this browser: its config (localStorage) names each
+ * photo, the photo store holds the pictures. A catfish's profile is found by the name the room saw.
+ */
+async function sendCirclePhotos(slug, t) {
+  let cfg = {};
+  try { cfg = JSON.parse(localStorage.getItem('simulator_config') || '{}'); } catch { /* none */ }
+  const name = namesBySlug[slug] || slug;
+  const pool = Array.isArray(cfg.ciPool) ? cfg.ciPool : [];
+  let plan = [];
+  for (const d of circleSeasons(slug)) {
+    const persona = d.ci?.mode === 'catfish' ? pool.find(p => p.handle === d.ci.profile) : null;
+    plan = plan.concat(photosToSync({ cast: [name], ciPhotos: cfg.ciPhotos || {}, pool,
+      dealt: { [name]: { mode: d.ci?.mode || 'honest', personaId: persona ? persona.id : null } },
+      playersDb: { players: [{ id: slug, name, seasonDetails: [] }] }, synced: new Set([...readSynced(), ...plan.map(x => x.key)]) }));
+  }
+  if (!plan.length) {
+    return { sent: 0, text: 'No Circle photos to add: none were made for ' + name + " in this browser's cast setup, "
+      + 'or they are already here. (The photos live in the browser the simulator was used in.)' };
+  }
+  const r = await syncDramagram(plan, { token: t, photoURL });
+  return { sent: r.sent, text: r.reason.charAt(0).toUpperCase() + r.reason.slice(1) + '.' };
 }
 
 async function drawLibrary(slug) {

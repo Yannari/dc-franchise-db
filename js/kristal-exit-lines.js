@@ -26,6 +26,8 @@
 // guest only through {sub} {obj} {pos} (he/she, and they only for a nonbinary
 // guest — the user's rule). A line whose slot is empty is never picked.
 //
+// A line opening "[J]" is a juror's only ("my jury vote"); the marker is stripped.
+//
 // Slots: {guest} {week} {votes} {x} (the person this beat is about) {flippers}
 // {suspect} {with} {partner} {a} {b} {c} {place} {players} {player} {exit}
 // {caller} {quote} {sub} {obj} {pos}.
@@ -33,59 +35,58 @@
 // ── the cold open, by kind ──────────────────────────────────────────────
 export const COLD = {
   'first-boot': [
-    'First one out. {guest} was {exit} in week {week}, and I don’t think the rest of the {players} learned how to spell that name. Let’s fix that.',
-    'Somebody has to go first, and this season it was {guest}. Week {week}, {votes}. Let’s hear the version nobody got to air.',
-    'Week {week}, and the first person through the door is sitting across from me. {guest}, welcome to Kristal-talKs.',
-    'Nobody plans to be the first one {exit}. {guest} didn’t either. {votes}, week {week}, and here we are.',
-    'The first eviction of the season is always the cruellest. {guest} got it, {votes}, and {sub} came straight here.',
+    'First one out. {guest} was {exit} in {when}, and I don’t think the rest of the {players} learned how to spell that name. Let’s fix that.',
+    'Somebody has to go first, and this season it was {guest}. {when}, {votes}. Let’s hear the version nobody got to air.',
+    '{when}, and the first person through the door is sitting across from me. {guest}, welcome to Kristal-talKs.',
+    'Nobody plans to be the first one {exit}. {guest} didn’t either. {votes}, {when}, and here we are.',
+    'The first {exitNoun} of the season is always the cruellest. {guest} got it, {votes}, and {sub} came straight here.',
   ],
   blindside: [
-    '{guest} walked into that vote thinking it was somebody else’s night. It was {votes}. Week {week}. Let’s talk about it.',
-    'If you watched week {week}, you saw {guest}’s face when the votes were read. I want to know what was going on behind it.',
+    '{guest} walked into that vote thinking it was somebody else’s night. It was {votes}. {when}. Let’s talk about it.',
+    'If you watched {when}, you saw {guest}’s face when the votes were read. I want to know what was going on behind it.',
     '{votes}, and {guest} did not see it coming. Some of those votes came from people {guest} trusted, and we’re going to name them.',
-    'Week {week} had a blindside in it, and the person it landed on is in my studio. {guest}, how are you holding up?',
-    '{guest} thought the numbers were there. They weren’t. Week {week}, {votes}, and a lot of questions.',
-    'There’s getting evicted, and there’s what happened to {guest} in week {week}. {votes}. Pull up a chair.',
+    '{when} had a blindside in it, and the person it landed on is in my studio. {guest}, how are you holding up?',
+    '{guest} thought the numbers were there. They weren’t. {when}, {votes}, and a lot of questions.',
+    'There’s getting {exit}, and there’s what happened to {guest} in {when}. {votes}. Pull up a chair.',
   ],
   'seen-it-coming': [
-    '{guest} knew. Everybody knew. It still went {votes} in week {week}, and knowing doesn’t make it hurt less.',
-    'Week {week}. {guest} sat on that block, campaigned, and went out {votes}. Let’s go through it.',
-    'Some evictions are a surprise and some are a countdown. {guest}’s was a countdown. Week {week}, {votes}.',
-    '{guest} is here, week {week}, {votes}. No blindside this time. {guest} saw it coming for days.',
-    'Week {week}, {votes}. {guest} spent the whole week as the target, and {sub} is going to tell us what that was like.',
+    '{guest} knew. Everybody knew. It still went {votes} in {when}, and knowing doesn’t make it hurt less.',
+    'Some {exitNoun}s are a surprise and some are a countdown. {guest}’s was a countdown. {when}, {votes}.',
+    '{guest} is here, {when}, {votes}. No blindside this time. {guest} saw it coming for days.',
+    '{when}, {votes}. {guest} spent days as the target, and {sub} is going to tell us what that was like.',
   ],
   backdoor: [
-    '{guest} was never on the block until the veto made room. Week {week}, {votes}. That is a backdoor, and we’re going to talk about who opened it.',
-    'Week {week}: {guest} went from safe to {exit} in about two days. {votes}. Pull up a chair.',
-    'A backdoor needs a plan and a key. In week {week}, somebody had both, and {guest} was on the other side of the door.',
-    '{guest} watched the veto come off and the replacement go up. Week {week}, {votes}. This one was planned.',
+    '{guest} was never on the block until the veto made room. {when}, {votes}. That is a backdoor, and we’re going to talk about who opened it.',
+    '{when}: {guest} went from safe to {exit} in about two days. {votes}. Pull up a chair.',
+    'A backdoor needs a plan and a key. In {when}, somebody had both, and {guest} was on the other side of the door.',
+    '{guest} watched the veto come off and the replacement go up. {when}, {votes}. This one was planned.',
   ],
   walked: [
-    '{guest} left on {pos} own terms in week {week}. Nobody voted, nobody pushed. This is the first time {guest} is telling it.',
-    'There was no vote in week {week}. {guest} just decided it was over. I want to understand why.',
-    'Week {week}, and {guest} walked out the door. Not {exit}, walked. Let’s talk about the last day in there.',
+    '{guest} left on {pos} own terms in {when}. Nobody voted, nobody pushed. This is the first time {guest} is telling it.',
+    'There was no vote in {when}. {guest} just decided it was over. I want to understand why.',
+    '{when}, and {guest} walked out the door. Not {exit}, walked. Let’s talk about the last day in there.',
   ],
   expelled: [
-    '{guest} didn’t get a vote in week {week}. Production made the decision. I have questions and so does everyone listening.',
-    'Week {week} ended with {guest} removed from the game. {guest} is here to tell {pos} side, and I’m going to push.',
+    '{guest} didn’t get a vote in {when}. Production made the decision. I have questions and so does everyone listening.',
+    '{when} ended with {guest} removed from the game. {guest} is here to tell {pos} side, and I’m going to push.',
   ],
   medical: [
-    '{guest} didn’t lose a vote in week {week}. {guest} lost the game to a doctor’s call. First of all, how are you?',
-    'Week {week}, and {guest} had to leave for {pos} health. No strategy talk to start. Just how it happened.',
+    '{guest} didn’t lose a vote in {when}. {guest} lost the game to a doctor’s call. First of all, how are you?',
+    '{when}, and {guest} had to leave for {pos} health. No strategy talk to start. Just how it happened.',
   ],
   showmance: [
-    '{guest} is out, and {partner} is still in there. Week {week}, {votes}. I can already tell this one’s going to be emotional.',
-    'Week {week}. {guest} got {exit} {votes}, and the person {guest} was falling for is still playing. Let’s talk about {partner}.',
-    'Half a showmance is sitting in my studio. {guest}, week {week}, {votes}. {partner} is still in there.',
+    '{guest} is out, and {partner} is still in there. {when}, {votes}. I can already tell this one’s going to be emotional.',
+    '{when}. {guest} got {exit} {votes}, and the person {guest} was falling for is still playing. Let’s talk about {partner}.',
+    'Half a showmance is sitting in my studio. {guest}, {when}, {votes}. {partner} is still in there.',
   ],
   double: [
-    'Two {players} out in one night, {guest} and {with}. Week {week}, and {guest} is first in the chair.',
-    'Week {week} took {guest} and {with} at once. {guest} goes first, and {with} gets an hour too.',
-    'Double night in week {week}. {guest} and {with} left together, and only one of them is in my chair right now.',
+    'Two {players} out in one night, {guest} and {with}. {when}, and {guest} is first in the chair.',
+    '{when} took {guest} and {with} at once. {guest} goes first, and {with} gets an hour too.',
+    'Double night in {when}. {guest} and {with} left together, and only one of them is in my chair right now.',
   ],
   again: [
-    'I’ve had {guest} in this chair before. {guest} got back in, and in week {week} got {exit} a second time. {votes}.',
-    'Second time out, second time on the show. {guest}, week {week}, {votes}. Was it worth going back?',
+    'I’ve had {guest} in this chair before. {guest} got back in, and in {when} got {exit} a second time. {votes}.',
+    'Second time out, second time on the show. {guest}, {when}, {votes}. Was it worth going back?',
   ],
   winner: [
     'The season’s over, and {guest} won it. This is the first conversation since the confetti.',
@@ -102,7 +103,7 @@ export const COLD = {
 /** Said after the cold open when the guest is going to the jury. */
 export const JUROR = [
   'One thing first: {guest} is on the jury, which means after tonight {guest} hears nothing until the finale. No podcast, no clips, nothing. So whatever gets said today, {guest} won’t hear the replies.',
-  'And a reminder: {guest} is heading to the jury house after this. Anything the other {players} say about {guest} on this show, {guest} finds out at the finale.',
+  'And a reminder: {guest} is heading to the jury after this. Anything the other {players} say about {guest} on this show, {guest} finds out at the finale.',
   'Quick note: as a juror, {guest} goes dark after this recording until the finale, so no answering back. Make it count.',
   '{guest} has a jury vote now, by the way, and goes into sequester tonight. Everyone still playing should be a little nervous.',
 ];
@@ -127,20 +128,18 @@ export const OPEN_Q = {
     'You knew for days. What does that week feel like from the inside?',
     'What did you do with the time, once you knew?',
     'Was there any part of you that still thought you’d stay?',
-    'Take me through the week on the block.',
-    'How do you sit in a house that has already decided?',
+    'How do you sit there when everyone has already decided?',
   ],
   backdoor: [
     'When the veto came off and the replacement went up, what went through your head?',
     'Talk me through the veto meeting.',
-    'You weren’t even nominated at the start of the week. How did that feel?',
     'How fast did you work out it was a backdoor?',
   ],
   walked: ['What was the moment you decided you were done?', 'Do you regret walking out of there?', 'Take me through the last day.'],
   expelled: ['Tell me what happened, in your words.', 'Do you think production made the right call?'],
   medical: ['How are you feeling now?', 'Did you fight to stay, or did you know it was time?'],
   showmance: ['Let’s start with {partner}. How did you say goodbye?', 'Do you trust {partner} to play without you?', 'What happens with {partner} now?'],
-  double: ['You and {with} out on the same night. What was that like?', 'How fast did that double eviction go, from the inside?'],
+  double: ['You and {with} out on the same night. What was that like?', 'How fast did that double night go, from the inside?'],
   again: ['You got a second chance. What did you do differently, and what didn’t you?', 'Was it worth going back in?'],
   finalist: ['How does it feel, right now, tonight?', 'Take me through the last week.', 'What is the first thing you want to do now?', 'How are you feeling?'],
 };
@@ -172,7 +171,7 @@ export const OPEN_A = {
       'I was angry before they finished reading. I knew exactly whose handwriting I was looking at.',
       'I had the votes. I counted them three times. Somebody lied to my face that afternoon.',
       'Honestly, I still think the count was wrong. I had promises from more than enough people.',
-      'I kept my face still for the cameras, but inside I was already working out who I’d be talking to at the finale.',
+      '[J]I kept my face still for the cameras, but inside I was already working out who I’d be talking to at the finale.',
       'My first thought was, who? My second thought was, how many of them? I still don’t like the answer.',
     ],
     soft: [
@@ -190,7 +189,6 @@ export const OPEN_A = {
   },
   'seen-it-coming': {
     hot: [
-      'I spent four days campaigning to people who had already decided. They just let me keep talking.',
       'Everybody told me what I wanted to hear and then voted the way they were always going to.',
       'It was a done deal by Tuesday, and they still made me go through the whole week like it wasn’t.',
       'The worst part was how polite they all were about it. I’d rather they had just said it.',
@@ -200,7 +198,7 @@ export const OPEN_A = {
       'I knew, and I made my peace with it midweek. I just wanted to go out with my head up.',
       'It’s strange, but knowing helped. I said everything I wanted to say before I left.',
       'I tried. I pitched to everyone, I didn’t burn anything, and the numbers just weren’t there.',
-      'I spent the last few days just enjoying the house. You can’t do much else when the votes are gone.',
+      'I spent the last few days just enjoying it. You can’t do much else when the votes are gone.',
       'Honestly, I was ready. You can only be the target for so long before you want it to end.',
     ],
     hurt: [
@@ -248,7 +246,7 @@ export const OPEN_A = {
     hurt: ['I didn’t get to say a proper goodbye to {partner}. That’s the part I keep replaying.', 'Leaving {partner} in there is the worst feeling I’ve ever had.'],
   },
   double: {
-    hot: ['Two in one night means nobody has time to think, and the house took the cheap shot.', 'A double is a chaos night, and they used the chaos to get rid of me without a campaign.'],
+    hot: ['Two in one night means nobody has time to think, and they took the cheap shot.', 'A double is a chaos night, and they used the chaos to get rid of me without a campaign.'],
     soft: ['It goes so fast. One minute you’re watching {with} go and the next it’s your name.', 'Honestly, I’m glad I didn’t have to sit through a week of being the target.'],
     hurt: ['Watching {with} leave and then going myself an hour later, I didn’t even have time to be sad for {with}.'],
   },
@@ -302,7 +300,7 @@ export const TAPE_A = {
       'No. No way. {flippers}? I would have bet my life on {flippers}. I need a minute.',
       'Then I owe {suspect} an apology, and I want a word with {flippers}.',
       'That’s actually worse. I spent my last week fighting the wrong person.',
-      '{flippers}. Okay. That changes how I’m voting at the finale, I’ll tell you that.',
+      '[J]{flippers}. Okay. That changes how I’m voting at the finale, I’ll tell you that.',
     ],
     soft: [
       'Wow. Okay. Good for {flippers}, honestly. That’s a move I didn’t see.',
@@ -363,7 +361,7 @@ export const NAMED_Q = {
     'Who was your person in there?',
     'Tell me about {x}. It looked like a real friendship.',
     'Who are you rooting for now?',
-    'Who would you trust outside the house?',
+    'Who would you trust outside the game?',
     'Who made it bearable?',
   ],
   miss: [
@@ -378,7 +376,7 @@ export const NAMED_A = {
     hot: [
       'It was {x}, and {x} will tell everyone it wasn’t. That’s exactly how {x} plays.',
       '{x}. It always comes back to {x}.',
-      'I’ve thought about it all night, and it’s {x}. I’d bet my jury vote on it.',
+      '[J]I’ve thought about it all night, and it’s {x}. I’d bet my jury vote on it.',
       '{x} had been working on it for days. I just didn’t see it until it was too late.',
       'Put it on {x}. {x} can thank me later for the screen time.',
     ],
@@ -437,7 +435,7 @@ export const NAMED_A = {
       '{x}, without question. {x} kept me sane in there.',
       '{x} is the real thing. If {x} wins, I’ll be the loudest one cheering.',
       '{x}. We’d talk for hours about everything except the game.',
-      'I’d trust {x} with my life outside of that house.',
+      'I’d trust {x} with my life outside of the game.',
       '{x} is the only person in there I never had to second-guess.',
     ],
     hot: ['{x} was the only honest person in there. Everyone else can keep their apologies.', '{x}. The one person who never lied to me.'],
@@ -471,7 +469,7 @@ export const AFTER_TAPE_A = {
     '{x}, you looked me in the eye. Enjoy the next few weeks, because I’ll be at the finale.',
     'I have nothing to say to {x} that you could put on a podcast.',
     '{x} knows what {x} did. I just want everyone at home to know it too.',
-    'Honestly? Good luck to {x}. {x} is going to need it once the house finds out.',
+    'Honestly? Good luck to {x}. {x} is going to need it once everyone finds out.',
   ],
   hurt: [
     '{x}, I would have taken you to the end. I hope it was worth it.',
@@ -492,14 +490,14 @@ export const NAMED_IN = {
     hot: [
       'I’m going to say it once: {x} is not who you think. Watch the next few weeks.',
       'If anyone in there is still trusting {x}, they’re next.',
-      '{x} won’t last. The house is starting to see it.',
+      '{x} won’t last. {crowd} is starting to see it.',
     ],
     soft: ['{x} will get there, or {x} won’t. I’m just glad I don’t have to live with it any more.'],
-    hurt: ['I hope the house sees {x} the way I saw {x}, before it’s too late for them.'],
+    hurt: ['I hope {crowd} sees {x} the way I saw {x}, before it’s too late.'],
   },
   warn: {
-    soft: ['If I were still in there, {x} would be my target.', 'Everybody left in that house should be watching {x}.'],
-    hot: ['If anyone in there is still trusting {x}, they’re next.', '{x} is coming for the whole house. You heard it here.'],
+    soft: ['If I were still in there, {x} would be my target.', 'Everybody left {inside} should be watching {x}.'],
+    hot: ['If anyone in there is still trusting {x}, they’re next.', '{x} is coming for everyone left. You heard it here.'],
     hurt: ['Somebody please look out for {x}’s next target.'],
   },
   praise: {
@@ -511,10 +509,10 @@ export const NAMED_IN = {
 
 // ── answering back: what they heard was said about them ─────────────────
 export const BACK_Q = [
-  '{x} sat in this chair after week {week}. I have the clip. “{quote}”',
+  '{x} sat in this chair after {when}. I have the clip. “{quote}”',
   'You’ve heard what {x} said about you on this show. For everyone else: “{quote}”',
   'Before we go on, I have to play you something {x} said in this chair. “{quote}”',
-  'Week {week}, {x}, this chair: “{quote}” You’ve had time to think about it.',
+  '{when}, {x}, this chair: “{quote}” You’ve had time to think about it.',
 ];
 export const BACK_A = {
   drag: {
@@ -544,7 +542,7 @@ export const BACK_A = {
   },
   praise: {
     soft: ['{x} said that? I’m going to cry. {x} was my favourite person in there.', 'That’s {x}. Kind even when there’s nothing to gain.'],
-    hot: ['At least somebody in that house had manners.'],
+    hot: ['At least somebody {inside} had manners.'],
     hurt: ['I miss {x}. Hearing that makes it worse, in a good way.'],
   },
   miss: {
@@ -557,7 +555,7 @@ export const BACK_A = {
 // ── the segments ────────────────────────────────────────────────────────
 export const FAN_Q = {
   warm: [
-    'I have to read you one of these. “{guest} deserved so much better, that house doesn’t know what it lost.”',
+    'I have to read you one of these. “{guest} deserved so much better, {crowd} doesn’t know what it lost.”',
     'The comments this week are mostly love. Somebody wrote, “{guest} was the only one I actually liked.”',
     'Listener mail. “Please put {guest} on another season immediately.”',
     'Your mentions are very kind this week. Top comment: “Justice for {guest}.”',
@@ -574,13 +572,13 @@ export const FAN_Q = {
     'I’ll be honest, the fans are not kind this week. Top comment: “{guest} got exactly what {guest} deserved.”',
     'I’m going to read you one, and you’re not going to like it. “Bye {guest}, nobody will miss the attitude.”',
     'The internet has decided you were the villain. How do you feel about that?',
-    'Your comments are rough. One person wrote, “Finally, some peace in that house.”',
+    'Your comments are rough. One person wrote, “Finally, some peace {inside}.”',
     'A listener wants to know why you were so hard on everybody.',
   ],
 };
 export const FAN_A = {
   warm: {
-    hot: ['Good. At least somebody was paying attention.', 'See, the people at home get it. The house didn’t.'],
+    hot: ['Good. At least somebody was paying attention.', 'See, the people at home get it. {crowd} didn’t.'],
     soft: ['That’s so kind. I really didn’t expect anyone to be in my corner.', 'I’ll take it. Honestly, I needed to hear that today.', 'Stop, I’m going to cry on your podcast.'],
     hurt: ['That’s nice. It doesn’t make it hurt less, but it’s nice.', 'I’m going to read every one of those tonight and cry.'],
   },
@@ -600,7 +598,7 @@ export const RANK_Q = [
   'Rank who’s left. Top three.',
   'Give me your power ranking, top three, no hesitating.',
   'Who’s running that game right now? Top three.',
-  'Top three threats left in the house. Go.',
+  'Top three threats left {inside}. Go.',
 ];
 export const RANK_A = [
   '{a}, {b}, then {c}. And {a} is a long way ahead.',
@@ -610,7 +608,7 @@ export const RANK_A = [
 ];
 
 export const MESSAGE_Q = [
-  'You get one message into the house. Who’s it for?',
+  'You get one message in to somebody still playing. Who’s it for?',
   'If {x} could hear you right now, what would you say?',
   'Say something to {x}. {x} won’t hear it for a while, but say it.',
   'One message, one person still in there. Go.',
@@ -655,9 +653,9 @@ export const CALLER_REPLY = {
     'We can talk about this off the air, {caller}.', 'I’m not doing this with you right now, {caller}.'],
 };
 
-export const NEXT_Q = ['Who goes next?', 'Next eviction. One name.', 'Who should be packing tonight?', 'Who’s on the block next week?'];
+export const NEXT_Q = ['Who goes next?', 'Next {exitNoun}. One name.', 'Who should be packing tonight?', 'Who’s in trouble next?'];
 export const NEXT_A = {
-  hot: ['{x}. And I’ll be watching.', '{x}, if there is any justice.', '{x}. The house will wake up eventually.'],
+  hot: ['{x}. And I’ll be watching.', '{x}, if there is any justice.', '{x}. {crowd} will wake up eventually.'],
   soft: ['Probably {x}. The numbers are moving that way.', '{x}, I think, but I’ve been wrong before.', 'My gut says {x}.'],
   hurt: ['I don’t want anyone to go. If I have to say, {x}.', '{x}, I suppose. I hope I’m wrong.'],
 };
@@ -676,7 +674,7 @@ export const PREDICT_A = {
 };
 
 export const CLOSE = {
-  bitter: ['That’s {guest}. Not done being angry, and honestly, I don’t blame {obj}.', 'That was {guest}. I think a few people in that house will be hearing this one.', '{guest}, everybody. Somebody check on the jury.'],
+  bitter: ['That’s {guest}. Not done being angry, and honestly, I don’t blame {obj}.', 'That was {guest}. I think a few people {inside} will be hearing this one, eventually.', '[J]{guest}, everybody. Somebody check on the jury.'],
   denial: ['That’s {guest}, still not convinced it really happened. We’ll check in at the finale.', '{guest}, everybody. Give it a week, I think it’ll land.'],
   gracious: ['That’s {guest}, taking it better than most would. Thank you for coming in.', '{guest}, everybody. Class act.', 'Thank you, {guest}. That was a generous hour.'],
   relieved: ['That’s {guest}, home and sleeping in a real bed tonight. Good for {obj}.'],
@@ -690,20 +688,95 @@ export const PLACE = { 1: 'first', 2: 'second', 3: 'third' };
 // Slots: {week} {said} (who they picked) {winner}.
 export const PLAYBACK_Q = {
   right: [
-    'In week {week} you sat in this chair and told me {said} would win. {said} won. Take your bow.',
-    'I have the tape from week {week}. You said {said}. You were right.',
+    'In {when} you sat in this chair and told me {said} would win. {said} won. Take your bow.',
+    'I have the tape from {when}. You said {said}. You were right.',
   ],
   wrong: [
-    'In week {week}, right here, you told me {said} would win. {winner} won. What happened?',
-    'I’m going to play you week {week}. You said {said}. It was {winner}.',
-    'You picked {said} in week {week}. Do you want to take that back now that {winner} has the money?',
+    'In {when}, right here, you told me {said} would win. {winner} won. What happened?',
+    'I’m going to play you {when}. You said {said}. It was {winner}.',
+    'You picked {said} in {when}. Do you want to take that back now that {winner} has the money?',
   ],
 };
 export const PLAYBACK_A = {
-  right: ['I called it. I want that on the record.', 'I knew in week {week} and I know now.', 'Nobody listened to me, and I was right.'],
+  right: ['I called it. I want that on the record.', 'I knew in {when} and I know now.', 'Nobody listened to me, and I was right.'],
   wrong: [
     '{said} had it, and then {said} didn’t. I still don’t understand how.',
     'Okay, I was wrong. {winner} played a better back half than any of us saw.',
     'Don’t play me that. I was very emotional that week.',
   ],
+};
+
+
+// ── what belongs to one show ────────────────────────────────────────────
+// Merged over the shared banks for that show only (js/kristal-exit.js
+// bankFor). A kind that only one show has (Big Brother's backdoor, Total
+// Drama's lost challenge) lives here whole.
+export const SHOW = {
+  'big-brother': {
+    COLD: {
+      'seen-it-coming': [
+        '{when}. {guest} sat on that block, campaigned, and went out {votes}. Let’s go through it.',
+        '{guest} spent all of {when} on the block. {votes}. Let’s go through it.',
+      ],
+    },
+    OPEN_Q: {
+      'seen-it-coming': ['Take me through the week on the block.', 'What does a week on the block feel like from the inside?'],
+    },
+    OPEN_A: {
+      'seen-it-coming': {
+        hot: ['I spent four days campaigning to people who had already decided. They just let me keep talking.'],
+        soft: ['I campaigned to everybody. I didn’t burn a single bridge on the way out, and I’m proud of that.'],
+      },
+    },
+    NEXT_Q: ['Who’s on the block next week?', 'Next eviction. One name.'],
+  },
+  'total-drama': {
+    COLD: {
+      blindside: [
+        '{guest} walked into tribal thinking it was somebody else’s night. It was {votes}. {when}.',
+        '{when}, and the votes came out with {guest}’s name on them, {votes}. {guest} did not see it.',
+        'If you watched {when}, you saw {guest}’s face at the votes. I want to know what was going on behind it.',
+      ],
+      'seen-it-coming': [
+        '{guest} knew going into tribal. {votes}, {when}, and knowing didn’t make it hurt less.',
+        '{when}, {votes}. {guest} spent the whole day scrambling and walked into tribal with nothing.',
+        '{guest} is here, {when}, {votes}. Camp had made up its mind before the challenge was over.',
+      ],
+      'lost-duel': [
+        '{guest} got voted out, fought on the island, and lost the duel in {when}. Two goodbyes in one season. Let’s talk.',
+        'The island finally closed on {guest} in {when}. {guest} was so close to coming back.',
+        '{when}: {guest} lost the duel, and the way back in with it.',
+      ],
+      'lost-challenge': [
+        'No vote for {guest} in {when}. The challenge decided it, and the challenge doesn’t listen to pitches.',
+        '{guest} went out on a challenge in {when}. Nobody wrote a name down, which somehow makes it worse.',
+        '{when}: the challenge took {guest}. Let’s talk about it.',
+      ],
+    },
+    OPEN_Q: {
+      blindside: ['Walk me through tribal.', 'What went through your head when they read the votes?', 'When did you know?'],
+      'seen-it-coming': ['Take me through the last day at camp.', 'Was there anything left to try before tribal?', 'What does that day feel like?'],
+      'lost-challenge': ['Take me through the challenge.', 'What happened out there?', 'Is it better or worse than being voted out?'],
+      'lost-duel': ['What was the island like?', 'Take me through the duel.', 'Which one hurt more, the vote or the duel?'],
+    },
+    OPEN_A: {
+      'seen-it-coming': {
+        hot: ['I spent the afternoon pitching to people who had already decided. They just let me keep talking.', 'Everybody told me it was going to be someone else. Everybody.'],
+        soft: ['I tried everything. I talked to everyone at camp, and the numbers just weren’t there.', 'I knew, and I made my peace with it on the walk to tribal.'],
+        hurt: ['The walk to tribal was the longest walk of my life.'],
+      },
+      'lost-duel': {
+        hot: ['I outlasted everybody on that island and lost on one bad round. That’s the part I can’t take.', 'They voted me out, and then the island did it again. I’ve been sent home twice by the same people.'],
+        soft: ['The island taught me more than camp did. I’m almost glad I got to go there.', 'I fought for every day out there. I lost to someone who wanted it a bit more.'],
+        hurt: ['I could see the way back. I was that close, and then it was gone.'],
+      },
+      'lost-challenge': {
+        hot: ['I wasn’t beaten by a person. I was beaten by a bad draw and a stopwatch.', 'Put me in front of a vote any day. That challenge was rigged against me.'],
+        soft: ['I gave it everything and it wasn’t enough. I can live with that.', 'Honestly, I’d rather go out fighting than go out on a vote.'],
+        hurt: ['I was so close. I keep seeing the moment I slipped.'],
+      },
+    },
+    NEXT_Q: ['Who gets snuffed next?', 'Next one voted out. One name.'],
+    FAN_Q: { mixed: ['The fan forums are split on you. Half say you played too hard, half say not hard enough.'] },
+  },
 };

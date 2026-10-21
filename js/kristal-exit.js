@@ -21,12 +21,13 @@ const SLOT_RE = /\{(\w+)\}/g;
 const slotsOf = t => [...String(t).matchAll(SLOT_RE)].map(m => m[1]);
 const has = (f, k) => f[k] !== undefined && f[k] !== null && f[k] !== '';
 const capFirst = s => s.replace(/(^|[.?!]\s+)([a-z])/g, (m, a, b) => a + b.toUpperCase());
-const fill = (t, f) => capFirst(String(t).replace(SLOT_RE, (_, k) => f[k] ?? ''));
+const fill = (t, f) => capFirst(String(t).replace(/^\[J\]/, '').replace(SLOT_RE, (_, k) => f[k] ?? ''));
 
 /** A line whose every slot is fillable, picked by key; the season-wide `used`
  *  set steers away from a line already said this season. */
 function pick(bank, key, f, used) {
-  const ok = (bank || []).filter(t => slotsOf(t).every(k => has(f, k)));
+  // "[J]" lines are a juror's: somebody with no jury vote cannot bet theirs.
+  const ok = (bank || []).filter(t => slotsOf(t).every(k => has(f, k)) && (!t.startsWith('[J]') || f.juror));
   if (!ok.length) return '';
   const fresh = used ? ok.filter(t => !used.has(t)) : ok;
   const from = fresh.length ? fresh : ok;
@@ -47,6 +48,8 @@ function votesText(v) {
   if (v.total === 1) return 'a single vote';
   if (v.against * 2 === v.total) return `a ${word(v.against)}-${word(v.against)} tie`;
   if (v.against === v.total) return `${word(v.total)} votes to nothing`;
+  // Out on a minority — an idol cancelled the rest, or the room split three ways.
+  if (v.against * 2 < v.total) return `just ${word(v.against)} vote${v.against === 1 ? '' : 's'} out of ${word(v.total)}`;
   return `${word(v.against)} vote${v.against === 1 ? '' : 's'} to ${word(v.total - v.against)}`;
 }
 
@@ -61,6 +64,18 @@ export function pronounsFor(gender) {
 }
 
 const POSITIVE = new Set(['praise', 'miss', 'respect']);
+
+/** Where the game is played, per show: the room as a crowd, and being in it. */
+const PLACE = {
+  'big-brother': { crowd: 'the house', inside: 'in that house', exitNoun: 'eviction' },
+  'total-drama': { crowd: 'camp', inside: 'at camp', exitNoun: 'boot' },
+  traitors: { crowd: 'the castle', inside: 'in that castle', exitNoun: 'banishment' },
+  'perfect-match': { crowd: 'the villa', inside: 'in that villa', exitNoun: 'dumping' },
+  'drag-race': { crowd: 'the werk room', inside: 'in that werk room', exitNoun: 'elimination' },
+  'the-circle': { crowd: 'the Circle', inside: 'in the Circle', exitNoun: 'blocking' },
+  'the-challenge': { crowd: 'the house', inside: 'in that house', exitNoun: 'elimination' },
+  'ridonculous-race': { crowd: 'the race', inside: 'in that race', exitNoun: 'elimination' },
+};
 const ORDER = { blame: 0, drag: 1, warn: 2, respect: 3, praise: 4, miss: 5 };
 
 /**
@@ -76,8 +91,20 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   const g = GROUP[r.mood] || 'soft';
   const guest = ep.guestName || r.guest;
   const pr = ep.pronouns || PRONOUNS.other;
+  const fmt = ep.season?.format || r.show || 'big-brother';
+  const place = PLACE[fmt] || PLACE['big-brother'];
+  // Shared lines, then this show's own (L.SHOW) on top.
+  const S = L.SHOW?.[fmt] || {};
+  const B = (name, ...path) => {
+    let a = L[name], b = S[name];
+    for (const k of path) { a = a?.[k]; b = b?.[k]; }
+    return [...(Array.isArray(a) ? a : []), ...(Array.isArray(b) ? b : [])];
+  };
+  const round = String(words.round || 'Week').toLowerCase();
   const base = {
-    guest, week: r.week ? String(r.week) : null, votes: votesText(r.votes), with: r.with,
+    guest, week: r.week ? String(r.week) : null, when: r.week ? `${round} ${r.week}` : null,
+    crowd: place.crowd, inside: place.inside, exitNoun: place.exitNoun, juror: r.juror ? 'yes' : null,
+    votes: votesText(r.votes), with: r.with,
     partner: r.partner, place: L.PLACE[r.placement] || null,
     players: words.players || 'players', player: words.player || 'player', exit: words.exit || 'eliminated',
     sub: pr.sub, obj: pr.obj, pos: pr.pos,
@@ -87,14 +114,14 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
 
   // ── the cold open ──
   const kind = r.kind === 'finalist' && r.placement === 1 ? 'winner' : r.kind;
-  let coldOpen = pick(L.COLD[kind] || L.COLD['seen-it-coming'], `${K}|cold`, base, used)
+  let coldOpen = pick(B('COLD', kind).length ? B('COLD', kind) : B('COLD', 'seen-it-coming'), `${K}|cold`, base, used)
     || `Welcome to Kristal-talKs. ${guest} is here.`;
   if (r.juror && r.kind !== 'finalist') coldOpen += ' ' + pick(L.JUROR, `${K}|jury`, base, used);
 
   // ── how it ended ──
-  const openKind = r.kind in L.OPEN_Q ? r.kind : 'seen-it-coming';
-  push('the-exit', pick(L.OPEN_Q[openKind], `${K}|oq`, base, used),
-    pick(L.OPEN_A[openKind]?.[g] || L.OPEN_A[openKind]?.soft, `${K}|oa`, base, used));
+  const openKind = B('OPEN_Q', r.kind).length ? r.kind : 'seen-it-coming';
+  const oa = B('OPEN_A', openKind, g).length ? B('OPEN_A', openKind, g) : B('OPEN_A', openKind, 'soft');
+  push('the-exit', pick(B('OPEN_Q', openKind), `${K}|oq`, base, used), pick(oa, `${K}|oa`, base, used));
 
   // ── the people they name, written once and placed below ──
   const t = r.truth;
@@ -136,9 +163,10 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   for (const [i, a] of (r.answerBack || []).entries()) {
     const src = earlier.find(e => e.record?.id === a.id);
     // What they said ABOUT this guest when asked about them, before any other line naming them.
-    const about = (src?.exchanges || []).filter(x => x.who === guest && x.a);
-    const quote = (about.find(x => x.topic === 'named') || about[0])?.a || null;
-    const f = { ...base, x: a.who, quote, week: src?.record?.week ? String(src.record.week) : base.week };
+    const about = (src?.exchanges || []).filter(x => x.who === guest && x.a && x.topic === 'named');
+    const quote = about[0]?.a || null;
+    const w = src?.record?.week;
+    const f = { ...base, x: a.who, quote, week: w ? String(w) : base.week, when: w ? `${round} ${w}` : base.when };
     const q = quote ? pick(L.BACK_Q, `${K}|bq|${i}`, f, used)
       : `${a.who} talked about you on this show while you were still in there. You’ve heard it now.`;
     // Answered by what was SAID about them; the response stance is the effect.
@@ -150,7 +178,9 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   // ── the people they name ──
   const named = (r.named || []).filter(n => !backTo.has(n.who) && n !== suspectBeat)
     .sort((a, b) => (ORDER[a.stance] ?? 9) - (ORDER[b.stance] ?? 9) || b.heat - a.heat);
-  const room = (ep.tier === 'viral' ? 4 : ep.tier === 'solid' ? 3 : 2) - (suspectBeat ? 1 : 0);
+  // Everyone the simulator decided they named is named on air: a later guest
+  // answers that line, and the bond it moved was moved by something said.
+  const room = named.length;
   // A friend the tape exposed comes first after it; then the loudest.
   const ordered = [...named.filter(n => flipped.has(n.who)), ...named.filter(n => !flipped.has(n.who))];
   for (const [i, n] of ordered.slice(0, Math.max(1, room)).entries()) push(...namedLine(n, i, tapeOn));
@@ -161,7 +191,7 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   for (const seg of r.segments || []) {
     if (seg === 'fan-mail') {
       const rc = L.FAN_Q[r.reception] ? r.reception : 'mixed';
-      push('fan-mail', pick(L.FAN_Q[rc], `${K}|fq`, base, used), pick(L.FAN_A[rc][g], `${K}|fa`, base, used));
+      push('fan-mail', pick(B('FAN_Q', rc), `${K}|fq`, base, used), pick(L.FAN_A[rc][g], `${K}|fa`, base, used));
     } else if (seg === 'rank-them' && still.length >= 3) {
       const top = [r.prediction, ...order].filter((x, i, a) => x && a.indexOf(x) === i).slice(0, 3);
       const f = { ...base, a: top[0], b: top[1], c: top[2] };
@@ -184,7 +214,7 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
       const x = (r.rivals || []).find(n => still.includes(n)) || order.find(n => n !== r.prediction);
       if (!x) continue;
       const f = { ...base, x };
-      push('who-next', pick(L.NEXT_Q, `${K}|xq`, f, used), pick(L.NEXT_A[g], `${K}|xa`, f, used), { who: x });
+      push('who-next', pick(B('NEXT_Q'), `${K}|xq`, f, used), pick(L.NEXT_A[g], `${K}|xa`, f, used), { who: x });
     }
   }
 

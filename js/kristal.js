@@ -271,11 +271,11 @@ function withPrediction(story, live, slug) {
 const TITLES = {
   exit: [
     '{guest}, fresh out',
-    'Week {week}: {guest}',
+    '{When}: {guest}',
     'The {guest} exit interview',
     '{guest} on getting out',
     '{guest} names {hook}',
-    '{guest}, week {week}',
+    '{guest}, {when}',
     'Out: {guest}',
   ],
   debrief: [
@@ -414,7 +414,9 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
       const t = composeExit(ep, { words, earlier: out, salt, used });
       const titles = TITLES.exit.filter(x => t.hook || !x.includes('{hook}'));
       ep.title = (pickFrom(titles, ep.id + (salt ? '~' + salt : '') + '|title') || '')
-        .replace('{guest}', ep.guestName).replace('{hook}', t.hook || '').replace('{week}', String(rec.week || ''));
+        .replace('{guest}', ep.guestName).replace('{hook}', t.hook || '')
+        .replace('{When}', `${words.round || 'Week'} ${rec.week || ''}`)
+        .replace('{when}', `${String(words.round || 'week').toLowerCase()} ${rec.week || ''}`);
       Object.assign(ep, { coldOpen: t.coldOpen, exchanges: t.exchanges, rapid: t.rapid, outro: t.outro });
       ep.aftermath = podcastAftermath(ep);
       ep.followers = exitFollowerDelta(ep);

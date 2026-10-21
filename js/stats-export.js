@@ -16,6 +16,7 @@ import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
 import { nextWindowFor, nextAllStarsWindow } from './franchise-calendar.js';
 import { ratingsForSeason } from './ratings.js';
 import { publishedExitInterviews } from './bb/exit-interview.js';
+import { publishedTDExitInterviews } from './td/exit-interview.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -1594,6 +1595,8 @@ export function extractSeasonTemplate() {
     finalTribalCouncil: _extractFinalTribalCouncil(),
     twists: _extractTwists(),
     ratings: _extractRatings(),
+    // Kristal-talKs' in-season exit interviews (js/td/exit-interview.js).
+    exitInterviews: publishedTDExitInterviews(),
     seasonNarrative: '[AI_FILL]',
     awards: '[AI_FILL]',
     emoji: '[AI_FILL]'
@@ -2349,6 +2352,7 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
     status: 'Complete',
     castPhotoPath: `assets/cast/s${seasonNum}-cast.png`,
     emoji: _clean(template.emoji),
+    exitInterviews: Array.isArray(template.exitInterviews) ? template.exitInterviews : [],
     ...airWindow
   });
 

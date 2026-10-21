@@ -15,14 +15,12 @@
 // Comeback camper is still in the game, so records nothing and hears nothing
 // until the camp resolves.
 
-import { gs, players, seasonConfig } from '../core.js';
-import { getPerceivedBond, addBond } from '../bonds.js';
-import { pStats } from '../players.js';
+import { gs } from '../core.js';
 import { isSeatedJuror } from './jury.js';
 import { campers } from './camp-comeback.js';
-import { decideExitInterview, applyRecording, deliverInterviews, heardAbout } from '../exit-interview/core.js';
+import { deliverInterviews } from '../exit-interview/core.js';
+import { exitStore as store, HOUSE_OPS as OPS, houseFacts, recordHouseExit, publishedExits } from '../exit-interview/house.js';
 
-const store = () => (gs.exitInterviews ||= []);
 const active = () => gs.activePlayers || [];
 const camp = () => { try { return campers(); } catch { return []; } };
 const isJuror = name => { try { return isSeatedJuror(name) || (gs.jury || []).includes(name); } catch { return (gs.jury || []).includes(name); } };
@@ -30,89 +28,18 @@ const sequestered = name => isJuror(name) || camp().includes(name);
 const goneForGood = name => !!name && !active().includes(name) && !camp().includes(name);
 const canHearNow = name => goneForGood(name) && (gs.eliminated || []).includes(name) && !sequestered(name);
 
-const OPS = {
-  addBond: (a, b, d) => addBond(a, b, d),
-  addPopularity: (name, d) => {
-    if (seasonConfig?.popularityEnabled === false) return;
-    gs.popularity ||= {};
-    gs.popularity[name] = (gs.popularity[name] || 0) + d;
-  },
-  popularityOf: name => Number(gs.popularity?.[name]) || 0,
-  statsOf: name => pStats(name),
-};
-
-const perceived = (a, b) => { try { return getPerceivedBond(a, b); } catch { return 0; } };
-const archetypeOf = name => players.find(p => p.name === name)?.archetype || '';
-const showmancePartner = name => {
-  const sh = (gs.showmances || []).find(s => (s.players || []).includes(name) && s.phase !== 'broken-up');
-  return sh ? sh.players.find(p => p !== name) || null : null;
-};
-
-/** Everything the guest could know the night they left. */
-function factsFor(name, week, { how = 'evicted', placement = null, withName = null } = {}) {
-  const records = store();
-  // The game is over for a finalist: nobody is still in it to message or rank.
-  const stillIn = how === 'finalist' ? [] : active().filter(n => n !== name);
-  const ballots = (week?.ballots || []).filter(b => b && b.voter);
-  const against = ballots.filter(b => b.evict === name).map(b => b.voter);
-  const voters = ballots.map(b => b.voter).filter(v => v !== name);
-  const byRead = list => list.slice().sort((a, b) => perceived(name, a) - perceived(name, b));
-  // They know the count, not the names: they suspect the voters they read
-  // worst, as many as the count says (two at most) — and they can be wrong.
-  const suspected = how === 'evicted'
-    ? byRead(voters).filter(v => perceived(name, v) < 1.5).slice(0, Math.min(2, against.length))
-    : [];
-  // The Head of Household put them there; that one is no guess.
-  if (how === 'evicted' && week?.hoh && week.hoh !== name && perceived(name, week.hoh) < 1.5
-    && !suspected.includes(week.hoh)) suspected.unshift(week.hoh);
-  const flippers = against.filter(v => perceived(name, v) >= 1.5);
-  // A blindside is a count they got wrong: going in, they read a majority of
-  // the room as theirs. The first season read had nearly every eviction as a
-  // "blindside", because SOME friend nearly always votes against you.
-  const readAsMine = voters.filter(v => perceived(name, v) >= 1).length;
-  const blindside = how === 'evicted' && against.length > 0 && flippers.length > 0
-    && readAsMine * 2 > ballots.length;
-  const partner = showmancePartner(name);
-  const everyone = [...new Set([...active(), ...(gs.eliminated || [])])].filter(n => n !== name);
-  // A finalist's people are the whole cast; anyone else's are those still playing.
-  const allies = (how === 'finalist' ? everyone : stillIn).filter(n => perceived(name, n) >= 2)
-    .sort((a, b) => perceived(name, b) - perceived(name, a)).slice(0, 2);
-  const rivals = everyone.filter(n => perceived(name, n) <= -2)
-    .sort((a, b) => perceived(name, a) - perceived(name, b)).slice(0, 2);
-  const wins = n => (gs.bb?.stats?.[n]?.hohWins || 0) + (gs.bb?.stats?.[n]?.vetoWins || 0);
-  // Who they think wins: the people they rate, and the people who keep winning.
-  const predictFrom = stillIn.map(n => [n, 1 + Math.max(0, perceived(name, n)) * 0.3 + wins(n) * 0.5]);
-  const answered = new Set(records.filter(r => r.guest === name).flatMap(r => (r.answerBack || []).map(a => a.id)));
-  const again = records.some(r => r.guest === name);
-  return {
-    show: 'big-brother', week: Number(week?.num) || 0, guest: name, with: withName, how, placement,
-    // First boot is read off the house, not the interviews: a season saved
-    // before exit interviews existed has none, and is not on its first boot.
-    juror: how !== 'finalist' && isJuror(name), firstBoot: !again && how === 'evicted'
-      && !(gs.eliminated || []).some(n => n !== name && n !== withName),
-    again, blindside, backdoor: how === 'evicted'
-      // initialNominees, not `nominees`: that one is only written on a cancelled week.
-      && (week?.initialNominees || []).length > 0
+function record(name, week, rng, { how = 'evicted', placement = null, withName = null } = {}) {
+  return recordHouseExit(houseFacts({
+    show: 'big-brother', round: week?.num, name, how, placement, withName,
+    ballots: (week?.ballots || []).map(b => ({ voter: b?.voter, target: b?.evict })),
+    // The Head of Household put them there; that one is no guess.
+    nominator: week?.hoh || null,
+    // initialNominees, not `nominees`: that one is only written on a cancelled week.
+    backdoor: (week?.initialNominees || []).length > 0
       && !week.initialNominees.includes(name) && (week?.finalNominees || []).includes(name),
-    votesAgainst: against.length, votesTotal: ballots.length, flippers, suspected,
-    partner, partnerStillIn: !!partner && stillIn.includes(partner),
-    allies, rivals, stillIn,
-    outNow: (gs.eliminated || []).filter(n => n !== name && canHearNow(n)),
-    heardAboutMe: heardAbout(records, name).filter(h => !answered.has(h.id)),
-    profile: { archetype: archetypeOf(name), stats: { ...pStats(name) } },
-    predictFrom,
-  };
-}
-
-function record(name, week, rng, opts) {
-  const records = store();
-  const rec = decideExitInterview(factsFor(name, week, opts), {
-    rng, earlier: records.filter(r => r.show === 'big-brother'),
-  });
-  if (records.some(r => r.id === rec.id)) rec.id += `-${records.length}`;
-  applyRecording(rec, OPS);
-  records.push(rec);
-  return rec;
+    isJuror, canHear: canHearNow,
+    wins: n => (gs.bb?.stats?.[n]?.hohWins || 0) + (gs.bb?.stats?.[n]?.vetoWins || 0),
+  }), rng);
 }
 
 /**
@@ -177,6 +104,5 @@ export function recordBBFinaleExits({ week = 0, cut = null, winner = null, runne
 
 /** What the season publishes: the decisions, without the hearing stamps. */
 export function publishedExitInterviews(list = gs.exitInterviews) {
-  return (list || []).filter(r => r && r.show === 'big-brother')
-    .map(({ heardBy, ...r }) => JSON.parse(JSON.stringify({ ...r, heard: Object.keys(heardBy || {}) })));
+  return publishedExits('big-brother', list);
 }

@@ -416,7 +416,8 @@ export function composeEpisode(ep, { words = {}, prior = null, earlier = [], vis
     // The guest sat down during the season too, and named a winner: play it back.
     const pd = story.prediction;
     if (pd && pd.said && story.winner && story.winner !== story.guest && pd.said !== story.guest) {
-      const f = { week: String(pd.week || ''), said: pd.said, winner: story.winner };
+      const f = { week: String(pd.week || ''), said: pd.said, winner: story.winner,
+        when: pd.week ? `${String(words.round || 'week').toLowerCase()} ${pd.week}` : null };
       const which = pd.right ? 'right' : 'wrong';
       const q = pickLine(PLAYBACK_Q[which], `${K}|pbq`, f, 'said');
       const a = pickLine(PLAYBACK_A[which], `${K}|pba`, f, 'said');

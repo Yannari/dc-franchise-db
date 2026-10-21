@@ -1,5 +1,5 @@
 // js/finale.js - Finale simulation: final challenge, jury vote, fan campaign, fan vote
-import { gs, gsCheckpoints, seasonConfig, players, repairGsSets, snapshotGs } from './core.js';
+import { gs, gsCheckpoints, seasonConfig, players, repairGsSets, snapshotGs, seasonFormat } from './core.js';
 import { engagement } from './ratings.js';
 import { audienceBoard } from './audience.js';
 import { _idbPut } from './savestate.js';
@@ -24,6 +24,7 @@ import { makeScene } from './td/script/scene.js';
 import { scriptEvent } from './td/script/write.js';
 import { rpBuildWinnerCeremony, rpBuildReunion } from './vp-finale.js';
 import { rpBuildHPChallenge, rpBuildHPTiebreaker, rpBuildHPJoust, rpBuildHPVolcanoRace, rpBuildHPSummit, rpBuildHPEndings } from './chal/hawaiian-punch.js';
+import { tdOutForGood, recordTDFinaleExits } from './td/exit-interview.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
@@ -145,7 +146,17 @@ export function generateFinaleCampOverride(ep, finalists) {
   ep.campEvents = { [campKey]: override };
 }
 
+// Kristal-talKs: after the result, each finalist records an exit interview
+// and the jury hears what it was kept from (js/td/exit-interview.js).
 export function simulateFinale() {
+  const tdShow = seasonFormat(seasonConfig) === 'total-drama';
+  const before = tdShow ? tdOutForGood() : null;
+  const ep = simulateFinaleBody();
+  if (tdShow && ep) recordTDFinaleExits(before, ep);
+  return ep;
+}
+
+function simulateFinaleBody() {
   const cfg = seasonConfig;
   // Fire-making / Koh-Lanta override — ensure F4 even if loaded from save
   if ((cfg.firemaking || cfg.finaleFormat === 'fire-making' || cfg.finaleFormat === 'koh-lanta') && cfg.finaleSize < 4) cfg.finaleSize = 4;

@@ -131,6 +131,7 @@ import { simulateIceIceBaby } from './chal/ice-ice-baby.js';
 import { simulateFindersCreepers } from './chal/finders-creepers.js';
 import { simulateBackstabbersAhoy } from './chal/backstabbers-ahoy.js';
 import { simulateProjectRunaway } from './chal/project-runaway.js';
+import { tdOutForGood, tdWaiting, recordTDExits } from './td/exit-interview.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
 //   patchEpisodeHistory, saveGameState, snapshotGameState, buildCrashout
@@ -1179,7 +1180,20 @@ export function handleExileFormat(ep) {
   ep.exileFormatData = { exiled: _exiled, chooser: _chooser, chooserTribe: _chooserTribe, chooserMembers: _chooserMembers, exileFound: null };
 }
 
+// Kristal-talKs exit interviews (js/td/exit-interview.js): whoever this
+// episode put out for good records one, by comparing before and after —
+// Total Drama has too many doors out to hook each of them. Outside the game:
+// nothing is drawn, but the fans and the bonds it moves are real.
 export function simulateEpisode() {
+  const tdShow = seasonFormat(seasonConfig) === 'total-drama';
+  const before = tdShow && gs?.initialized ? tdOutForGood() : null;
+  const waiting = before ? tdWaiting() : null;
+  const ep = simulateEpisodeBody();
+  if (before && ep) recordTDExits(before, ep, { waiting });
+  return ep;
+}
+
+function simulateEpisodeBody() {
   if (!gs?.initialized || !players.length) return null;
   // Franchise meta self-heal: seasons initialized before the async ledger load
   // (or before history was imported) carry franchiseMeta = null — rebuild at

@@ -90,6 +90,7 @@ export const SLOW_TESTS = [
   'bb-broken-promise.test.js',             // 390s
   'bb-season-export.test.js',              // 278s
   'bb-exit-interview.test.js',             //  56s, plays three seasons
+  'td-exit-interview.test.js',             //  plays three Total Drama seasons
   'bb-team-america.test.js',               // 247s
   'bb-jury-bubble.test.js',                // 212s
   'bb-pandora-events.test.js',             // 205s

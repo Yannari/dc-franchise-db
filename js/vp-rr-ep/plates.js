@@ -723,6 +723,8 @@ export const PLACE_PLATES = {
   },
   'jungle-ruins': {
     src: '34-jungle-ruins', title: 'present-22414265', opener: p('task-22414262', 90, [6, 94]),
+    // (the log over the piranha stream, a job in edit/: only its stage, once it's back)
+    stageOnly: [repaint('task-piranha-log', p('task-piranha-log', 66, [6, 94]), null)].filter(Boolean),
     arrive: [p('arrive-22414257', 90, [6, 94])],
     props: { caterpillar: 'Complete Olive Green Caterpillar Character-3', ...(REPAINTED.has('canoe') ? { canoe: 'canoe' } : {}),
       ...(REPAINTED.has('golden-idol') ? { idol: 'golden-idol' } : {}) },
@@ -1019,6 +1021,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const LOG = repaint('task-piranha-log', 'task-piranha-log', 'task-22414793'), LOG_G = repaint('task-piranha-log', 66, 90);
 const SLOPE_GOAT = [['goat', 26, 74, 10, { move: 'wander', span: 8, dur: 10 }]];
 const GATOR = [['gator', 70, 82, 16, { move: 'wander', span: -14, dur: 9 }]];
 const POND = repaint('task-park-pond', 'task-park-pond', 'chill-22413471'), POND_G = repaint('task-park-pond', 88, 86);
@@ -1051,6 +1054,25 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'jungle-ruins': {
+    // (the trail; the log over the stream (a job: the trail stands in) and the water under it; the caterpillar trees;
+    // the foot of the ruins; the carved wall of idols)
+    'jungle-trail': {
+      'painted-stones': { label: 'THE PAINTED STONES', plate: ['task-22414793', {}], fail: ['task-22414793', {}], stamp: 'LOST' },
+      'piranha-log': { label: 'THE LOG', plate: [LOG, { mode: 'walk', path: [[6, LOG_G], [34, LOG_G], [62, LOG_G], [92, LOG_G]] }],
+        fail: ['task-22414389', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'swim', path: [[60, 60], [40, 64], [14, 70]], fx: 'splash' }], stamp: 'SPLASH!' },
+      caterpillars: { label: 'THE CATERPILLARS', plate: ['task-22414456', { mode: 'chase' }], fail: ['task-22414456', { mode: 'chase' }], stamp: 'NOPE' },
+      'ruins-foot': { label: 'THE RUINS', plate: ['present-22414264', { people: undefined, g: 96, x: [30, 94] }] },
+    },
+    'golden-idol': {
+      'idol-wall': { label: 'THE WALL OF IDOLS', plate: ['task-22414655', { mode: undefined, prop: undefined }] },
+      carvings: { label: 'THE CARVINGS', plate: ['task-22414655', { mode: 'search' }], fail: ['task-22414655', { mode: 'search' }], stamp: 'NO IDEA' },
+      'pick-one': { label: 'THIS ONE', plate: ['task-22414655', { mode: undefined, prop: undefined, deco: [['idol', 46, 95, 6]] }] },
+      'scratch-test': { label: 'THE SCRATCH TEST', plate: ['task-22414655', { mode: undefined, prop: undefined, deco: [['idol', 46, 95, 6]] }],
+        fail: ['task-22414655', { mode: undefined, prop: undefined, deco: [['idol', 46, 95, 6]] }], stamp: 'FAKE!' },
+      'real-gold': { label: 'REAL GOLD', plate: ['task-22414655', { mode: undefined, prop: undefined, fx: 'sparkle', deco: [['idol', 46, 95, 7]] }] },
     },
   },
   'snow-peaks': {

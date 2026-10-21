@@ -6,8 +6,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Motivator.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "9.10s + 45.71s, looped where it repeats (match 0.83)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   46.713651
+  ]
  },
  "home-city/travel.mp3": {
   "title": "Delay Rock",
@@ -16,8 +20,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Delay%20Rock.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "61.16s + 38.57s, looped where it repeats (match 0.97)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   39.571406
+  ]
  },
  "home-city/challenge.mp3": {
   "title": "Hotrock",
@@ -26,8 +34,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Hotrock.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.4
+  "cut": "35.46s + 30.00s, looped where it repeats (match 0.91)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   31.0
+  ]
  },
  "home-city/struggle.mp3": {
   "title": "I Can Feel it Coming",
@@ -36,8 +48,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/I%20Can%20Feel%20it%20Coming.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "44.12s + 45.97s, looped where it repeats (match 0.67)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   46.973628
+  ]
  },
  "home-city/chill-zone.mp3": {
   "title": "Funky Chunk",
@@ -46,8 +62,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Funky%20Chunk.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "22.04s + 66.78s, looped where it repeats (match 0.83)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   67.782517
+  ]
  },
  "home-city/elimination.mp3": {
   "title": "Heartbreaking",
@@ -56,8 +76,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heartbreaking.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 6.2
+  "cut": "14.33s + 27.62s, looped where it repeats (match 0.74)",
+  "lift": 4.9,
+  "loop": [
+   1.0,
+   28.61585
+  ]
  },
  "home-city/recap.mp3": {
   "title": "Chipper",
@@ -66,8 +90,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chipper.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "7.15s + 36.92s, looped where it repeats (match 0.96)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.922902
+  ]
  },
  "home-city/interview.mp3": {
   "title": "Chill Wave",
@@ -76,8 +104,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chill%20Wave.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "45.33s + 38.40s, looped where it repeats (match 0.85)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   39.4
+  ]
  },
  "red-sand-desert/opener.mp3": {
   "title": "Tabuk",
@@ -86,8 +118,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Tabuk.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.6
+  "cut": "30.23s + 26.95s, looped where it repeats (match 0.40)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   27.948934
+  ]
  },
  "red-sand-desert/travel.mp3": {
   "title": "Finding the Balance",
@@ -96,8 +132,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Finding%20the%20Balance.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "27.21s + 32.00s, looped where it repeats (match 0.57)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   33.0
+  ]
  },
  "red-sand-desert/challenge.mp3": {
   "title": "Ibn Al-Noor",
@@ -106,8 +146,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ibn%20Al-Noor.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "42.10s + 32.35s, looped where it repeats (match 0.45)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   33.353175
+  ]
  },
  "red-sand-desert/struggle.mp3": {
   "title": "Old Road",
@@ -116,8 +160,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Old%20Road.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "35.60s + 32.54s, looped where it repeats (match 0.88)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   33.542313
+  ]
  },
  "red-sand-desert/chill-zone.mp3": {
   "title": "Desert City",
@@ -126,8 +174,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Desert%20City.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "9.82s + 44.65s, looped where it repeats (match 0.71)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   45.651156
+  ]
  },
  "red-sand-desert/elimination.mp3": {
   "title": "Teller of the Tales",
@@ -136,8 +188,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Teller%20of%20the%20Tales.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 3.1
+  "cut": "8.43s + 42.43s, looped where it repeats (match 0.61)",
+  "lift": 3.3,
+  "loop": [
+   1.0,
+   43.433039
+  ]
  },
  "red-sand-desert/recap.mp3": {
   "title": "Derp Nugget",
@@ -146,8 +202,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Derp%20Nugget.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "22.38s + 26.18s, looped where it repeats (match 0.84)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   27.181633
+  ]
  },
  "red-sand-desert/interview.mp3": {
   "title": "Vadodora Chill Mix",
@@ -156,8 +216,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Vadodora%20Chill%20Mix.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "51.06s + 39.59s, looped where it repeats (match 0.95)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   40.587483
+  ]
  },
  "iron-tower-city/opener.mp3": {
   "title": "Bushwick Tarantella",
@@ -166,8 +230,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bushwick%20Tarantella.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.4
+  "cut": "28.24s + 41.19s, looped where it repeats (match 0.84)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   42.194172
+  ]
  },
  "iron-tower-city/travel.mp3": {
   "title": "Sidewalk Shade",
@@ -176,8 +244,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sidewalk%20Shade.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "9.36s + 67.50s, looped where it repeats (match 0.65)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   68.503401
+  ]
  },
  "iron-tower-city/challenge.mp3": {
   "title": "Le Grand Chase",
@@ -186,8 +258,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Le%20Grand%20Chase.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.4
+  "cut": "26.47s + 46.27s, looped where it repeats (match 0.74)",
+  "lift": 0.9,
+  "loop": [
+   1.0,
+   47.272585
+  ]
  },
  "iron-tower-city/struggle.mp3": {
   "title": "Miri's Magic Dance",
@@ -196,8 +272,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Miris%20Magic%20Dance.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 2.0
+  "cut": "28.28s + 36.00s, looped where it repeats (match 0.84)",
+  "lift": 1.9,
+  "loop": [
+   1.0,
+   37.0
+  ]
  },
  "iron-tower-city/chill-zone.mp3": {
   "title": "Suave Standpipe",
@@ -206,8 +286,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Suave%20Standpipe.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "30.00s + 51.20s, looped where it repeats (match 0.89)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   52.200023
+  ]
  },
  "iron-tower-city/elimination.mp3": {
   "title": "Duet Musette",
@@ -216,8 +300,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Duet%20Musette.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.7
+  "cut": "30.63s + 36.35s, looped where it repeats (match 0.55)",
+  "lift": 1.7,
+  "loop": [
+   1.0,
+   37.350499
+  ]
  },
  "iron-tower-city/recap.mp3": {
   "title": "One-eyed Maestro",
@@ -226,8 +314,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/One-eyed%20Maestro.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "24.26s + 28.24s, looped where it repeats (match 0.48)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   29.235306
+  ]
  },
  "iron-tower-city/interview.mp3": {
   "title": "Parisian",
@@ -236,8 +328,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Parisian.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 1.6
+  "cut": "7.04s + 28.55s, looped where it repeats (match 0.23)",
+  "lift": 1.7,
+  "loop": [
+   1.0,
+   29.552676
+  ]
  },
  "great-wall-hills/opener.mp3": {
   "title": "Shenyang",
@@ -246,8 +342,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Shenyang.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.5
+  "cut": "32.51s + 59.08s, looped where it repeats (match 0.73)",
+  "lift": 0.4,
+  "loop": [
+   1.0,
+   60.076916
+  ]
  },
  "great-wall-hills/travel.mp3": {
   "title": "Guzheng City",
@@ -256,8 +356,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Guzheng%20City.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 3.4
+  "cut": "15.14s + 38.48s, looped where it repeats (match 0.57)",
+  "lift": 3.0,
+  "loop": [
+   1.0,
+   39.476213
+  ]
  },
  "great-wall-hills/challenge.mp3": {
   "title": "Mountain Emperor",
@@ -266,8 +370,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mountain%20Emperor.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.4
+  "cut": "20.76s + 48.00s, looped where it repeats (match 0.87)",
+  "lift": 0.3,
+  "loop": [
+   1.0,
+   49.0
+  ]
  },
  "great-wall-hills/struggle.mp3": {
   "title": "Asian Drums",
@@ -276,8 +384,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Asian%20Drums.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 3.3
+  "cut": "22.96s + 48.00s, looped where it repeats (match 0.56)",
+  "lift": 7.2,
+  "loop": [
+   1.0,
+   48.999977
+  ]
  },
  "great-wall-hills/chill-zone.mp3": {
   "title": "Ishikari Lore",
@@ -286,8 +398,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ishikari%20Lore.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 3.3
+  "cut": "26.17s + 46.83s, looped where it repeats (match 0.86)",
+  "lift": 6.0,
+  "loop": [
+   1.0,
+   47.829274
+  ]
  },
  "great-wall-hills/elimination.mp3": {
   "title": "Nu Flute",
@@ -296,8 +412,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Nu%20Flute.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "17.53s + 31.06s, looped where it repeats (match 0.91)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   32.064354
+  ]
  },
  "great-wall-hills/recap.mp3": {
   "title": "Big Mojo",
@@ -306,8 +426,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Big%20Mojo.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 14.2
+  "cut": "47.93s + 25.26s, looped where it repeats (match 0.92)",
+  "lift": 2.9,
+  "loop": [
+   1.0,
+   26.263197
+  ]
  },
  "great-wall-hills/interview.mp3": {
   "title": "Ripples",
@@ -316,8 +440,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ripples.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 2.2
+  "cut": "15.14s + 32.84s, looped where it repeats (match 0.80)",
+  "lift": 1.8,
+  "loop": [
+   1.0,
+   33.836259
+  ]
  },
  "rock-north/opener.mp3": {
   "title": "Achaidh Cheide",
@@ -326,8 +454,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Achaidh%20Cheide.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 2.7
+  "cut": "29.19s + 42.67s, looped where it repeats (match 0.90)",
+  "lift": 1.1,
+  "loop": [
+   1.0,
+   43.666667
+  ]
  },
  "rock-north/travel.mp3": {
   "title": "Fiddles McGinty",
@@ -336,8 +468,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fiddles%20McGinty.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "32.37s + 44.14s, looped where it repeats (match 0.87)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   45.137937
+  ]
  },
  "rock-north/challenge.mp3": {
   "title": "Burn The World Waltz",
@@ -346,8 +482,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Burn%20The%20World%20Waltz%20.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 2.5
+  "cut": "108.37s + 45.26s, looped where it repeats (match 0.65)",
+  "lift": 3.0,
+  "loop": [
+   1.0,
+   46.257143
+  ]
  },
  "rock-north/struggle.mp3": {
   "title": "Spider Eyes",
@@ -356,8 +496,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Spider%20Eyes.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 2.6
+  "cut": "43.93s + 27.00s, looped where it repeats (match 0.68)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   27.997007
+  ]
  },
  "rock-north/chill-zone.mp3": {
   "title": "Galway",
@@ -366,8 +510,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Galway.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "30.12s + 61.13s, looped where it repeats (match 0.45)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   62.125578
+  ]
  },
  "rock-north/elimination.mp3": {
   "title": "Moorland",
@@ -376,8 +524,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Moorland.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 1.4
+  "cut": "29.84s + 23.99s, looped where it repeats (match 0.62)",
+  "lift": 3.3,
+  "loop": [
+   1.0,
+   24.989388
+  ]
  },
  "rock-north/recap.mp3": {
   "title": "Metalmania",
@@ -386,8 +538,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Metalmania.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "29.30s + 19.19s, looped where it repeats (match 0.58)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   20.190884
+  ]
  },
  "rock-north/interview.mp3": {
   "title": "Frost Waltz",
@@ -396,8 +552,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Frost%20Waltz.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.2
+  "cut": "20.76s + 29.09s, looped where it repeats (match 0.63)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   30.091134
+  ]
  },
  "savanna-falls/opener.mp3": {
   "title": "AngloZulu",
@@ -406,8 +566,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/AngloZulu.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "29.14s + 30.07s, looped where it repeats (match 0.18)",
+  "lift": 0.1,
+  "loop": [
+   1.0,
+   31.07161
+  ]
  },
  "savanna-falls/travel.mp3": {
   "title": "Allada",
@@ -416,8 +580,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Allada.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 1.3
+  "cut": "12.42s + 31.20s, looped where it repeats (match 0.63)",
+  "lift": 1.0,
+  "loop": [
+   1.0,
+   32.197324
+  ]
  },
  "savanna-falls/challenge.mp3": {
   "title": "Sauropod Spotting",
@@ -426,8 +594,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sauropod%20Spotting.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "61.14s + 73.14s, looped where it repeats (match 0.81)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   74.143719
+  ]
  },
  "savanna-falls/struggle.mp3": {
   "title": "Drums of the Deep",
@@ -436,8 +608,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Drums%20of%20the%20Deep.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 5.3
+  "cut": "8.61s + 31.36s, looped where it repeats (match 0.65)",
+  "lift": 5.4,
+  "loop": [
+   1.0,
+   32.363243
+  ]
  },
  "savanna-falls/chill-zone.mp3": {
   "title": "Zanzibar",
@@ -446,8 +622,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Zanzibar.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "40.61s + 27.39s, looped where it repeats (match 0.68)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   28.391723
+  ]
  },
  "savanna-falls/elimination.mp3": {
   "title": "Kalimba Relaxation Music",
@@ -456,8 +636,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Kalimba%20Relaxation%20Music.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 2.2
+  "cut": "51.92s + 21.62s, looped where it repeats (match 0.55)",
+  "lift": 0.9,
+  "loop": [
+   1.0,
+   22.617052
+  ]
  },
  "savanna-falls/recap.mp3": {
   "title": "Dentaneosuchus Hunt",
@@ -466,8 +650,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dentaneosuchus%20Hunt.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "14.74s + 23.12s, looped where it repeats (match 0.69)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   24.124195
+  ]
  },
  "savanna-falls/interview.mp3": {
   "title": "Expeditionary",
@@ -476,8 +664,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Expeditionary.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 4.6
+  "cut": "28.79s + 25.26s, looped where it repeats (match 0.45)",
+  "lift": 1.0,
+  "loop": [
+   1.0,
+   26.262086
+  ]
  },
  "treasure-isles/opener.mp3": {
   "title": "Beachfront Celebration",
@@ -486,8 +678,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Beachfront%20Celebration.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "13.75s + 40.00s, looped where it repeats (match 0.76)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   41.0
+  ]
  },
  "treasure-isles/travel.mp3": {
   "title": "Island Meet and Greet",
@@ -496,8 +692,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Island%20Meet%20and%20Greet.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "36.27s + 38.41s, looped where it repeats (match 0.81)",
+  "lift": 0.3,
+  "loop": [
+   1.0,
+   39.414966
+  ]
  },
  "treasure-isles/challenge.mp3": {
   "title": "Arroz Con Pollo",
@@ -506,8 +706,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Arroz%20Con%20Pollo.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "25.50s + 67.20s, looped where it repeats (match 0.87)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   68.2
+  ]
  },
  "treasure-isles/struggle.mp3": {
   "title": "Invariance",
@@ -516,8 +720,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Invariance.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "32.62s + 35.54s, looped where it repeats (match 0.82)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   36.541088
+  ]
  },
  "treasure-isles/chill-zone.mp3": {
   "title": "Paradise Found",
@@ -526,8 +734,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Paradise_Found.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "106.07s + 36.57s, looped where it repeats (match 0.93)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.571429
+  ]
  },
  "treasure-isles/elimination.mp3": {
   "title": "With the Sea",
@@ -536,8 +748,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/With%20the%20Sea.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 7.3
+  "cut": "7.17s + 23.19s, looped where it repeats (match 0.73)",
+  "lift": 2.9,
+  "loop": [
+   1.0,
+   24.186803
+  ]
  },
  "treasure-isles/recap.mp3": {
   "title": "Notanico Merengue",
@@ -546,8 +762,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Notanico%20Merengue.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.5
+  "cut": "41.56s + 32.00s, looped where it repeats (match 0.70)",
+  "lift": 0.6,
+  "loop": [
+   1.0,
+   33.0
+  ]
  },
  "treasure-isles/interview.mp3": {
   "title": "Beach Party",
@@ -556,8 +776,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Beach%20Party.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "13.28s + 26.35s, looped where it repeats (match 0.49)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   27.35458
+  ]
  },
  "tomb-sands/opener.mp3": {
   "title": "Return of the Mummy",
@@ -566,8 +790,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Return%20of%20the%20Mummy.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "28.00s + 54.86s, looped where it repeats (match 0.79)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   55.857143
+  ]
  },
  "tomb-sands/travel.mp3": {
   "title": "Desert of Lost Souls",
@@ -576,8 +804,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Desert%20of%20Lost%20Souls.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 2.4
+  "cut": "39.03s + 50.15s, looped where it repeats (match 0.76)",
+  "lift": 2.6,
+  "loop": [
+   1.0,
+   51.149297
+  ]
  },
  "tomb-sands/challenge.mp3": {
   "title": "Curse of the Scarab",
@@ -586,8 +818,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Curse%20of%20the%20Scarab.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 1.2
+  "cut": "23.01s + 33.82s, looped where it repeats (match 0.48)",
+  "lift": 1.4,
+  "loop": [
+   1.0,
+   34.819433
+  ]
  },
  "tomb-sands/struggle.mp3": {
   "title": "Hidden Wonders",
@@ -596,8 +832,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Hidden%20Wonders.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.7
+  "cut": "7.04s + 35.26s, looped where it repeats (match 0.68)",
+  "lift": 1.7,
+  "loop": [
+   1.0,
+   36.263401
+  ]
  },
  "tomb-sands/chill-zone.mp3": {
   "title": "Opium",
@@ -606,8 +846,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Opium.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "20.18s + 29.37s, looped where it repeats (match 0.73)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   30.365805
+  ]
  },
  "tomb-sands/elimination.mp3": {
   "title": "Ancient Rite",
@@ -616,8 +860,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ancient%20Rite.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.8
+  "cut": "44.63s + 27.43s, looped where it repeats (match 0.96)",
+  "lift": 0.7,
+  "loop": [
+   1.0,
+   28.428571
+  ]
  },
  "tomb-sands/recap.mp3": {
   "title": "East of Tunesia",
@@ -626,8 +874,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/East%20of%20Tunesia.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 3.8
+  "cut": "14.72s + 36.57s, looped where it repeats (match 0.93)",
+  "lift": 3.8,
+  "loop": [
+   1.0,
+   37.571451
+  ]
  },
  "tomb-sands/interview.mp3": {
   "title": "Mystery Bazaar",
@@ -636,8 +888,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mystery%20Bazaar.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 3.5
+  "cut": "7.06s + 51.20s, looped where it repeats (match 0.82)",
+  "lift": 3.6,
+  "loop": [
+   1.0,
+   52.2
+  ]
  },
  "torch-statue-harbour/opener.mp3": {
   "title": "Highlight Reel",
@@ -646,8 +902,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Highlight%20Reel.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 2.2
+  "cut": "13.98s + 63.95s, looped where it repeats (match 0.96)",
+  "lift": 1.6,
+  "loop": [
+   1.0,
+   64.954308
+  ]
  },
  "torch-statue-harbour/travel.mp3": {
   "title": "Style Funk",
@@ -656,8 +916,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/StyleFunk.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 3.1
+  "cut": "36.59s + 52.80s, looped where it repeats (match 0.96)",
+  "lift": 3.6,
+  "loop": [
+   1.0,
+   53.8
+  ]
  },
  "torch-statue-harbour/challenge.mp3": {
   "title": "Sax, Rock, and Roll",
@@ -666,8 +930,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sax%20Rock%20and%20Roll.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "35.39s + 30.00s, looped where it repeats (match 0.91)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   31.000181
+  ]
  },
  "torch-statue-harbour/struggle.mp3": {
   "title": "Griphop",
@@ -676,8 +944,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Griphop.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "17.97s + 53.33s, looped where it repeats (match 0.96)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   54.333333
+  ]
  },
  "torch-statue-harbour/chill-zone.mp3": {
   "title": "Jazz Brunch",
@@ -686,8 +958,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Jazz%20Brunch.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.6
+  "cut": "13.65s + 38.40s, looped where it repeats (match 0.66)",
+  "lift": 1.3,
+  "loop": [
+   1.0,
+   39.401406
+  ]
  },
  "torch-statue-harbour/elimination.mp3": {
   "title": "Night on the Docks - Sax",
@@ -696,8 +972,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Night%20on%20the%20Docks%20-%20Sax.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.9
+  "cut": "54.13s + 26.66s, looped where it repeats (match 0.63)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   27.664649
+  ]
  },
  "torch-statue-harbour/recap.mp3": {
   "title": "Private Eye",
@@ -706,8 +986,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Private%20Eye.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "10.82s + 21.74s, looped where it repeats (match 0.70)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   22.7422
+  ]
  },
  "torch-statue-harbour/interview.mp3": {
   "title": "Cool Vibes",
@@ -716,8 +1000,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cool%20Vibes.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.7
+  "cut": "9.71s + 46.26s, looped where it repeats (match 0.60)",
+  "lift": 1.0,
+  "loop": [
+   1.0,
+   47.261769
+  ]
  },
  "red-outback/opener.mp3": {
   "title": "Lord of the Rangs",
@@ -726,8 +1014,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Lord%20of%20the%20Rangs.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.3
+  "cut": "11.56s + 55.38s, looped where it repeats (match 0.68)",
+  "lift": 0.7,
+  "loop": [
+   1.0,
+   56.384626
+  ]
  },
  "red-outback/travel.mp3": {
   "title": "Still Pickin",
@@ -736,8 +1028,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Still%20Pickin.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "9.43s + 57.60s, looped where it repeats (match 0.75)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   58.6
+  ]
  },
  "red-outback/challenge.mp3": {
   "title": "River Valley Breakdown",
@@ -746,8 +1042,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/River%20Valley%20Breakdown.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "19.64s + 44.31s, looped where it repeats (match 0.46)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   45.307642
+  ]
  },
  "red-outback/struggle.mp3": {
   "title": "Chee Zee Jungle",
@@ -756,8 +1056,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chee%20Zee%20Jungle.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "28.75s + 40.42s, looped where it repeats (match 0.78)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   41.421043
+  ]
  },
  "red-outback/chill-zone.mp3": {
   "title": "Fireflies and Stardust",
@@ -766,8 +1070,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fireflies%20and%20Stardust.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "8.87s + 41.16s, looped where it repeats (match 0.71)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   42.15644
+  ]
  },
  "red-outback/elimination.mp3": {
   "title": "Crossing the Divide",
@@ -776,8 +1084,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Crossing%20the%20Divide.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.5
+  "cut": "10.19s + 24.17s, looped where it repeats (match 0.62)",
+  "lift": 0.3,
+  "loop": [
+   1.0,
+   25.172789
+  ]
  },
  "red-outback/recap.mp3": {
   "title": "Corncob",
@@ -786,8 +1098,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Corncob.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": -0.0
+  "cut": "22.13s + 19.56s, looped where it repeats (match 0.88)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   20.560204
+  ]
  },
  "red-outback/interview.mp3": {
   "title": "Cattails",
@@ -796,8 +1112,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cattails.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "19.67s + 24.94s, looped where it repeats (match 0.68)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   25.935079
+  ]
  },
  "fire-mountain-isle/opener.mp3": {
   "title": "Carefree",
@@ -806,8 +1126,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carefree.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.2
+  "cut": "26.33s + 40.00s, looped where it repeats (match 0.87)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   40.999909
+  ]
  },
  "fire-mountain-isle/travel.mp3": {
   "title": "Rite of Passage",
@@ -816,8 +1140,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Rite%20of%20Passage.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 2.3
+  "cut": "18.16s + 45.71s, looped where it repeats (match 0.79)",
+  "lift": 1.7,
+  "loop": [
+   1.0,
+   46.714286
+  ]
  },
  "fire-mountain-isle/challenge.mp3": {
   "title": "Firebrand",
@@ -826,8 +1154,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Firebrand.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "28.05s + 46.27s, looped where it repeats (match 0.76)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   47.265079
+  ]
  },
  "fire-mountain-isle/struggle.mp3": {
   "title": "Tikopia",
@@ -836,8 +1168,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Tikopia.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.5
+  "cut": "19.02s + 57.74s, looped where it repeats (match 0.83)",
+  "lift": 0.8,
+  "loop": [
+   1.0,
+   58.744376
+  ]
  },
  "fire-mountain-isle/chill-zone.mp3": {
   "title": "Tiki Bar Mixer",
@@ -846,8 +1182,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Tiki%20Bar%20Mixer.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.3
+  "cut": "49.02s + 29.53s, looped where it repeats (match 0.81)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   30.529138
+  ]
  },
  "fire-mountain-isle/elimination.mp3": {
   "title": "When The Wind Blows",
@@ -856,8 +1196,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/When%20The%20Wind%20Blows.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 1.5
+  "cut": "14.81s + 32.00s, looped where it repeats (match 0.77)",
+  "lift": 2.5,
+  "loop": [
+   1.0,
+   32.999932
+  ]
  },
  "fire-mountain-isle/recap.mp3": {
   "title": "Arcane",
@@ -866,8 +1210,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Arcane.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "40.38s + 18.08s, looped where it repeats (match 0.76)",
+  "lift": 1.3,
+  "loop": [
+   1.0,
+   19.079229
+  ]
  },
  "fire-mountain-isle/interview.mp3": {
   "title": "Moonlight Beach",
@@ -876,8 +1224,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Moonlight%20Beach.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.4
+  "cut": "15.44s + 32.58s, looped where it repeats (match 0.70)",
+  "lift": 0.6,
+  "loop": [
+   1.0,
+   33.575646
+  ]
  },
  "skyline-finale/opener.mp3": {
   "title": "Our Story Begins",
@@ -886,8 +1238,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Our%20Story%20Begins.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "29.79s + 28.43s, looped where it repeats (match 0.46)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   29.430045
+  ]
  },
  "skyline-finale/travel.mp3": {
   "title": "Hiding Your Reality",
@@ -896,8 +1252,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Hiding%20Your%20Reality.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.4
+  "cut": "18.69s + 35.89s, looped where it repeats (match 0.49)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   36.887664
+  ]
  },
  "skyline-finale/challenge.mp3": {
   "title": "Five Armies",
@@ -906,8 +1266,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Five%20Armies.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "9.61s + 61.12s, looped where it repeats (match 0.61)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   62.115147
+  ]
  },
  "skyline-finale/struggle.mp3": {
   "title": "Impending Boom",
@@ -916,8 +1280,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Impending%20Boom.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "39.59s + 31.73s, looped where it repeats (match 0.58)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   32.728435
+  ]
  },
  "skyline-finale/chill-zone.mp3": {
   "title": "Pennsylvania Rose",
@@ -926,8 +1294,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Pennsylvania%20Rose.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.9
+  "cut": "10.54s + 32.43s, looped where it repeats (match 0.34)",
+  "lift": 1.5,
+  "loop": [
+   1.0,
+   33.430249
+  ]
  },
  "skyline-finale/elimination.mp3": {
   "title": "Rumination",
@@ -936,8 +1308,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Rumination.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 7.4
+  "cut": "50.41s + 20.97s, looped where it repeats (match 0.81)",
+  "lift": 0.1,
+  "loop": [
+   1.0,
+   21.966893
+  ]
  },
  "skyline-finale/recap.mp3": {
   "title": "Heroic Age",
@@ -946,8 +1322,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heroic%20Age.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.3
+  "cut": "58.26s + 18.46s, looped where it repeats (match 0.77)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   19.461542
+  ]
  },
  "skyline-finale/interview.mp3": {
   "title": "Airship Serenity",
@@ -956,8 +1336,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Airship%20Serenity.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "13.19s + 25.96s, looped where it repeats (match 0.91)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   26.962834
+  ]
  },
  "race/logo.mp3": {
   "title": "Discovery Hit",
@@ -1056,8 +1440,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Airport%20Lounge.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "18.20s + 36.92s, looped where it repeats (match 0.70)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.92195
+  ]
  },
  "race/finale.mp3": {
   "title": "At Launch",
@@ -1066,8 +1454,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/At%20Launch.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.4
+  "cut": "7.55s + 32.89s, looped where it repeats (match 0.68)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   33.886417
+  ]
  },
  "race/theme.mp3": {
   "title": "Cool Rock",
@@ -1076,8 +1468,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cool%20Rock.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "22.89s + 29.77s, looped where it repeats (match 0.85)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   30.769002
+  ]
  },
  "coast-palace/opener.mp3": {
   "title": "Backbay Lounge",
@@ -1086,8 +1482,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Backbay%20Lounge.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "25.52s + 64.00s, looped where it repeats (match 0.59)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   64.999569
+  ]
  },
  "coast-palace/travel.mp3": {
   "title": "Zazie",
@@ -1096,8 +1496,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Zazie.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "46.37s + 42.67s, looped where it repeats (match 0.91)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   43.666667
+  ]
  },
  "coast-palace/challenge.mp3": {
   "title": "Surf Shimmy",
@@ -1106,8 +1510,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Surf%20Shimmy.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "8.66s + 45.18s, looped where it repeats (match 0.88)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   46.176463
+  ]
  },
  "coast-palace/struggle.mp3": {
   "title": "Spy Groove",
@@ -1116,8 +1524,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Spy%20Groove.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "31.28s + 33.39s, looped where it repeats (match 0.85)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   34.391383
+  ]
  },
  "coast-palace/chill-zone.mp3": {
   "title": "Bossa Antigua",
@@ -1126,8 +1538,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bossa%20Antigua.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.5
+  "cut": "46.81s + 27.45s, looped where it repeats (match 0.70)",
+  "lift": 1.5,
+  "loop": [
+   1.0,
+   28.449819
+  ]
  },
  "coast-palace/elimination.mp3": {
   "title": "Danse Morialta",
@@ -1136,8 +1552,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Danse%20Morialta.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 1.2
+  "cut": "11.96s + 23.12s, looped where it repeats (match 0.68)",
+  "lift": 1.1,
+  "loop": [
+   1.0,
+   24.12034
+  ]
  },
  "coast-palace/recap.mp3": {
   "title": "Beach Bum",
@@ -1146,8 +1566,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Beach%20Bum.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 5.4
+  "cut": "22.38s + 18.60s, looped where it repeats (match 0.86)",
+  "lift": 5.3,
+  "loop": [
+   1.0,
+   19.604626
+  ]
  },
  "coast-palace/interview.mp3": {
   "title": "BossaBossa",
@@ -1156,8 +1580,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/BossaBossa.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 1.8
+  "cut": "37.01s + 37.16s, looped where it repeats (match 0.62)",
+  "lift": 0.5,
+  "loop": [
+   1.0,
+   38.162608
+  ]
  },
  "geyser-island/opener.mp3": {
   "title": "The Snow Queen",
@@ -1166,8 +1594,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Snow%20Queen.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.7
+  "cut": "22.50s + 50.00s, looped where it repeats (match 0.77)",
+  "lift": 1.5,
+  "loop": [
+   1.0,
+   51.0
+  ]
  },
  "geyser-island/travel.mp3": {
   "title": "Ice Flow",
@@ -1176,8 +1608,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ice%20Flow.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "16.23s + 48.00s, looped where it repeats (match 0.90)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   49.0
+  ]
  },
  "geyser-island/challenge.mp3": {
   "title": "Krampus Workshop",
@@ -1186,8 +1622,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Krampus%20Workshop.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 3.7
+  "cut": "13.49s + 62.01s, looped where it repeats (match 0.57)",
+  "lift": 3.3,
+  "loop": [
+   1.0,
+   63.007846
+  ]
  },
  "geyser-island/struggle.mp3": {
   "title": "Myst on the Moor",
@@ -1196,8 +1636,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Myst%20on%20the%20Moor.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.5
+  "cut": "61.51s + 33.12s, looped where it repeats (match 0.68)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   34.117664
+  ]
  },
  "geyser-island/chill-zone.mp3": {
   "title": "Northern Glade",
@@ -1206,8 +1650,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Magic%20Scout%20-%20Nothern%20Glade.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "87.68s + 47.99s, looped where it repeats (match 0.86)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   48.992925
+  ]
  },
  "geyser-island/elimination.mp3": {
   "title": "The Ice Giants",
@@ -1216,8 +1664,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Ice%20Giants.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "10.63s + 25.60s, looped where it repeats (match 0.56)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   26.597914
+  ]
  },
  "geyser-island/recap.mp3": {
   "title": "The Path of the Goblin King v2",
@@ -1226,8 +1678,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Path%20of%20the%20Goblin%20King%20v2.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.7
+  "cut": "30.95s + 20.97s, looped where it repeats (match 0.71)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   21.971066
+  ]
  },
  "geyser-island/interview.mp3": {
   "title": "Enchanted Valley",
@@ -1236,8 +1692,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Enchanted%20Valley.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "11.73s + 49.25s, looped where it repeats (match 0.44)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   50.252449
+  ]
  },
  "carnival-rainforest/opener.mp3": {
   "title": "Leblon",
@@ -1246,8 +1706,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Leblon.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "8.34s + 47.21s, looped where it repeats (match 0.88)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   48.213107
+  ]
  },
  "carnival-rainforest/travel.mp3": {
   "title": "Lagoa v1",
@@ -1256,8 +1720,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Lagoa%20v1.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "11.80s + 52.84s, looped where it repeats (match 0.90)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   53.844036
+  ]
  },
  "carnival-rainforest/challenge.mp3": {
   "title": "Lagoa v2",
@@ -1266,8 +1734,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Lagoa%20v2.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "9.66s + 44.31s, looped where it repeats (match 0.85)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   45.30771
+  ]
  },
  "carnival-rainforest/struggle.mp3": {
   "title": "Suvaco do Cristo",
@@ -1276,8 +1748,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Suvaco%20do%20Cristo.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "30.77s + 34.29s, looped where it repeats (match 0.93)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   35.285714
+  ]
  },
  "carnival-rainforest/chill-zone.mp3": {
   "title": "Samba Isobel",
@@ -1286,8 +1762,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Samba%20Isobel.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "54.10s + 40.42s, looped where it repeats (match 0.68)",
+  "lift": 0.2,
+  "loop": [
+   1.0,
+   41.421066
+  ]
  },
  "carnival-rainforest/elimination.mp3": {
   "title": "Sancho Panza gets a Latte",
@@ -1296,8 +1776,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sancho%20Panza%20gets%20a%20Latte.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "31.39s + 22.86s, looped where it repeats (match 0.70)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   23.857166
+  ]
  },
  "carnival-rainforest/recap.mp3": {
   "title": "Peppy Pepe",
@@ -1306,8 +1790,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Peppy%20Pepe.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 1.1
+  "cut": "25.66s + 38.70s, looped where it repeats (match 0.90)",
+  "lift": 3.5,
+  "loop": [
+   1.0,
+   39.704626
+  ]
  },
  "carnival-rainforest/interview.mp3": {
   "title": "Modern Jazz Samba",
@@ -1316,8 +1804,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Modern%20Jazz%20Samba.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 1.6
+  "cut": "50.90s + 33.88s, looped where it repeats (match 0.77)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   34.882313
+  ]
  },
  "haunted-castle/opener.mp3": {
   "title": "Toccata and Fugue in D Minor",
@@ -1326,8 +1818,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Toccata%20and%20Fugue%20in%20D%20Minor.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "17.46s + 30.72s, looped where it repeats (match 0.80)",
+  "lift": 0.1,
+  "loop": [
+   1.0,
+   31.721859
+  ]
  },
  "haunted-castle/travel.mp3": {
   "title": "Graveyard Shift",
@@ -1336,8 +1832,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Graveyard%20Shift.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "46.67s + 41.11s, looped where it repeats (match 0.38)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   42.109478
+  ]
  },
  "haunted-castle/challenge.mp3": {
   "title": "Grim Idol",
@@ -1346,8 +1846,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Grim%20Idol.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "41.80s + 54.86s, looped where it repeats (match 0.85)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   55.857143
+  ]
  },
  "haunted-castle/struggle.mp3": {
   "title": "Gloom Horizon",
@@ -1356,8 +1860,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Gloom%20Horizon.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.5
+  "cut": "42.17s + 27.63s, looped where it repeats (match 0.59)",
+  "lift": 0.5,
+  "loop": [
+   1.0,
+   28.625828
+  ]
  },
  "haunted-castle/chill-zone.mp3": {
   "title": "Moonlight Hall",
@@ -1366,8 +1874,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Moonlight%20Hall.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.3
+  "cut": "45.70s + 27.30s, looped where it repeats (match 0.30)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   28.304422
+  ]
  },
  "haunted-castle/elimination.mp3": {
   "title": "Ghost Dance",
@@ -1376,8 +1888,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ghost%20Dance.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 5.5
+  "cut": "19.48s + 25.24s, looped where it repeats (match 0.50)",
+  "lift": 1.8,
+  "loop": [
+   1.0,
+   26.24
+  ]
  },
  "haunted-castle/recap.mp3": {
   "title": "Unholy Knight",
@@ -1386,8 +1902,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Unholy%20Knight.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 2.2
+  "cut": "30.21s + 18.38s, looped where it repeats (match 0.55)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   19.382789
+  ]
  },
  "haunted-castle/interview.mp3": {
   "title": "Ghost Story",
@@ -1396,8 +1916,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ghost%20Story.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "32.35s + 24.16s, looped where it repeats (match 0.53)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   25.155578
+  ]
  },
  "lei-island/opener.mp3": {
   "title": "Rainbows",
@@ -1406,8 +1930,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Rainbows.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.3
+  "cut": "24.47s + 34.91s, looped where it repeats (match 0.92)",
+  "lift": 0.7,
+  "loop": [
+   1.0,
+   35.909093
+  ]
  },
  "lei-island/travel.mp3": {
   "title": "Life of Riley",
@@ -1416,8 +1944,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Life%20of%20Riley.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "59.21s + 37.61s, looped where it repeats (match 0.82)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   38.611429
+  ]
  },
  "lei-island/challenge.mp3": {
   "title": "Journey To Ascend",
@@ -1426,8 +1958,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Journey%20To%20Ascend.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "39.47s + 57.93s, looped where it repeats (match 0.64)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   58.932268
+  ]
  },
  "lei-island/struggle.mp3": {
   "title": "Secret of Tiki Island",
@@ -1436,8 +1972,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Secret%20of%20Tiki%20Island.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.7
+  "cut": "8.82s + 32.02s, looped where it repeats (match 0.79)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   33.023673
+  ]
  },
  "lei-island/chill-zone.mp3": {
   "title": "Daily Beetle",
@@ -1446,8 +1986,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Daily%20Beetle.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 3.5
+  "cut": "29.40s + 38.40s, looped where it repeats (match 0.82)",
+  "lift": 2.3,
+  "loop": [
+   1.0,
+   39.399728
+  ]
  },
  "lei-island/elimination.mp3": {
   "title": "Leaving Home",
@@ -1456,8 +2000,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Leaving%20Home.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "36.78s + 39.19s, looped where it repeats (match 0.69)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   40.18966
+  ]
  },
  "lei-island/recap.mp3": {
   "title": "Glitter Blast",
@@ -1466,8 +2014,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Glitter%20Blast.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "15.70s + 38.40s, looped where it repeats (match 0.95)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   39.4
+  ]
  },
  "lei-island/interview.mp3": {
   "title": "Fretless",
@@ -1476,8 +2028,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fretless.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 2.8
+  "cut": "28.68s + 38.40s, looped where it repeats (match 0.84)",
+  "lift": 2.9,
+  "loop": [
+   1.0,
+   39.4
+  ]
  },
  "glass-tower-gulf/opener.mp3": {
   "title": "Shiny Tech",
@@ -1486,8 +2042,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Shiny%20Tech.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "25.17s + 34.78s, looped where it repeats (match 0.85)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   35.782653
+  ]
  },
  "glass-tower-gulf/travel.mp3": {
   "title": "Aerosol of my Love",
@@ -1496,8 +2056,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Aerosol%20of%20my%20Love.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.8
+  "cut": "43.49s + 48.00s, looped where it repeats (match 0.89)",
+  "lift": 0.9,
+  "loop": [
+   1.0,
+   49.0
+  ]
  },
  "glass-tower-gulf/challenge.mp3": {
   "title": "Blown Away",
@@ -1506,8 +2070,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Blown%20Away.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "29.19s + 39.52s, looped where it repeats (match 0.62)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   40.518866
+  ]
  },
  "glass-tower-gulf/struggle.mp3": {
   "title": "Severe Tire Damage",
@@ -1516,8 +2084,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Severe%20Tire%20Damage.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "41.26s + 51.89s, looped where it repeats (match 0.79)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   52.891882
+  ]
  },
  "glass-tower-gulf/chill-zone.mp3": {
   "title": "Thinking Out Loud",
@@ -1526,8 +2098,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Thinking%20Out%20Loud.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "16.49s + 27.10s, looped where it repeats (match 0.79)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   28.097755
+  ]
  },
  "glass-tower-gulf/elimination.mp3": {
   "title": "Mana Two - Part 3",
@@ -1536,8 +2112,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mana%20Two%20-%20Part%203.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 1.3
+  "cut": "7.48s + 40.72s, looped where it repeats (match 0.51)",
+  "lift": 1.4,
+  "loop": [
+   1.0,
+   41.722426
+  ]
  },
  "glass-tower-gulf/recap.mp3": {
   "title": "Cantina Blues",
@@ -1546,8 +2126,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cantina%20Blues.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "19.23s + 24.00s, looped where it repeats (match 0.67)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   25.003107
+  ]
  },
  "glass-tower-gulf/interview.mp3": {
   "title": "Dub Eastern",
@@ -1556,8 +2140,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dub%20Eastern.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.7
+  "cut": "29.61s + 27.44s, looped where it repeats (match 0.74)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   28.439546
+  ]
  },
  "swamp-prison/opener.mp3": {
   "title": "Matt's Blues",
@@ -1566,8 +2154,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Matts%20Blues.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.4
+  "cut": "24.64s + 32.00s, looped where it repeats (match 0.73)",
+  "lift": 1.6,
+  "loop": [
+   1.0,
+   32.999002
+  ]
  },
  "swamp-prison/travel.mp3": {
   "title": "Bama Country",
@@ -1576,8 +2168,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bama%20Country.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.9
+  "cut": "11.42s + 57.60s, looped where it repeats (match 0.67)",
+  "lift": 0.9,
+  "loop": [
+   1.0,
+   58.6
+  ]
  },
  "swamp-prison/challenge.mp3": {
   "title": "Hustle",
@@ -1586,8 +2182,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Hustle.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "31.11s + 32.04s, looped where it repeats (match 0.74)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   33.036757
+  ]
  },
  "swamp-prison/struggle.mp3": {
   "title": "Dirt Rhodes",
@@ -1596,8 +2196,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dirt%20Rhodes.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "20.41s + 46.83s, looped where it repeats (match 0.90)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   47.828617
+  ]
  },
  "swamp-prison/chill-zone.mp3": {
   "title": "Nile's Blues",
@@ -1606,8 +2210,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Niles%20Blues.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "23.13s + 49.09s, looped where it repeats (match 0.83)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   50.090907
+  ]
  },
  "swamp-prison/elimination.mp3": {
   "title": "Porch Blues",
@@ -1616,8 +2224,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Porch%20Blues.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 4.5
+  "cut": "33.69s + 36.00s, looped where it repeats (match 0.77)",
+  "lift": 0.9,
+  "loop": [
+   1.0,
+   37.000023
+  ]
  },
  "swamp-prison/recap.mp3": {
   "title": "Boogie Party",
@@ -1626,8 +2238,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Boogie%20Party.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "85.38s + 32.36s, looped where it repeats (match 0.66)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   33.359365
+  ]
  },
  "swamp-prison/interview.mp3": {
   "title": "OctoBlues",
@@ -1636,8 +2252,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/OctoBlues.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.5
+  "cut": "17.67s + 31.96s, looped where it repeats (match 0.68)",
+  "lift": 0.1,
+  "loop": [
+   1.0,
+   32.962018
+  ]
  },
  "outback-farm/opener.mp3": {
   "title": "Kings of Tara",
@@ -1646,8 +2266,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Kings%20of%20Tara.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "13.58s + 62.55s, looped where it repeats (match 0.76)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   63.553515
+  ]
  },
  "outback-farm/travel.mp3": {
   "title": "Hillbilly Swing",
@@ -1656,8 +2280,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Hillbilly%20Swing.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "17.07s + 52.97s, looped where it repeats (match 0.75)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   53.966077
+  ]
  },
  "outback-farm/challenge.mp3": {
   "title": "DarxieLand",
@@ -1666,8 +2294,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/DarxieLand.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 3.2
+  "cut": "50.20s + 46.55s, looped where it repeats (match 0.64)",
+  "lift": 3.1,
+  "loop": [
+   1.0,
+   47.545442
+  ]
  },
  "outback-farm/struggle.mp3": {
   "title": "Dragon and Toast",
@@ -1676,8 +2308,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dragon%20and%20Toast.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.3
+  "cut": "14.54s + 57.60s, looped where it repeats (match 0.71)",
+  "lift": 0.7,
+  "loop": [
+   1.0,
+   58.6
+  ]
  },
  "outback-farm/chill-zone.mp3": {
   "title": "Skye Cuillin",
@@ -1686,8 +2322,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Skye%20Cuillin.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "29.07s + 28.05s, looped where it repeats (match 0.57)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   29.045442
+  ]
  },
  "outback-farm/elimination.mp3": {
   "title": "Hidden Past",
@@ -1696,8 +2336,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Hidden%20Past.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "24.31s + 41.12s, looped where it repeats (match 0.65)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   42.122971
+  ]
  },
  "outback-farm/recap.mp3": {
   "title": "Celtic Impulse",
@@ -1706,8 +2350,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Celtic%20Impulse.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 1.7
+  "cut": "7.41s + 40.00s, looped where it repeats (match 0.85)",
+  "lift": 1.4,
+  "loop": [
+   1.0,
+   41.0
+  ]
  },
  "outback-farm/interview.mp3": {
   "title": "Lotus",
@@ -1716,8 +2364,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Lotus.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 3.4
+  "cut": "10.43s + 29.39s, looped where it repeats (match 0.69)",
+  "lift": 3.4,
+  "loop": [
+   1.0,
+   30.390272
+  ]
  },
  "fjord-peaks/opener.mp3": {
   "title": "Magistar",
@@ -1726,8 +2378,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Magistar.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "39.98s + 36.46s, looped where it repeats (match 0.45)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.455692
+  ]
  },
  "fjord-peaks/travel.mp3": {
   "title": "Ascending the Vale",
@@ -1736,8 +2392,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ascending%20the%20Vale.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "46.30s + 50.57s, looped where it repeats (match 0.81)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   51.566916
+  ]
  },
  "fjord-peaks/challenge.mp3": {
   "title": "Killers",
@@ -1746,8 +2406,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Killers.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "7.04s + 30.58s, looped where it repeats (match 0.60)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   31.58195
+  ]
  },
  "fjord-peaks/struggle.mp3": {
   "title": "Lost Frontier",
@@ -1756,8 +2420,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Lost%20Frontier.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.4
+  "cut": "23.34s + 30.31s, looped where it repeats (match 0.64)",
+  "lift": 0.9,
+  "loop": [
+   1.0,
+   31.307279
+  ]
  },
  "fjord-peaks/chill-zone.mp3": {
   "title": "Heart of Nowhere",
@@ -1766,8 +2434,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heart%20of%20Nowhere.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "23.36s + 57.15s, looped where it repeats (match 0.66)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   58.150023
+  ]
  },
  "fjord-peaks/elimination.mp3": {
   "title": "Night Vigil",
@@ -1776,8 +2448,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Night%20Vigil.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.9
+  "cut": "43.51s + 21.07s, looped where it repeats (match 0.65)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   22.072222
+  ]
  },
  "fjord-peaks/recap.mp3": {
   "title": "Burnt Spirit",
@@ -1786,8 +2462,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Burnt%20Spirit.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "18.60s + 41.14s, looped where it repeats (match 0.69)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   42.142857
+  ]
  },
  "fjord-peaks/interview.mp3": {
   "title": "Ever Mindful",
@@ -1796,8 +2476,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ever%20Mindful.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "42.28s + 44.53s, looped where it repeats (match 0.87)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   45.532608
+  ]
  },
  "prairie-ranch/opener.mp3": {
   "title": "Guts and Bourbon",
@@ -1806,8 +2490,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Guts%20and%20Bourbon.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "27.75s + 60.63s, looped where it repeats (match 0.97)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   61.631587
+  ]
  },
  "prairie-ranch/travel.mp3": {
   "title": "Hyperfun",
@@ -1816,8 +2504,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Hyperfun.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "42.28s + 38.40s, looped where it repeats (match 0.66)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   39.399977
+  ]
  },
  "prairie-ranch/challenge.mp3": {
   "title": "Robo-Western",
@@ -1826,8 +2518,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Robo-Western.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "9.66s + 31.48s, looped where it repeats (match 0.32)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   32.47542
+  ]
  },
  "prairie-ranch/struggle.mp3": {
   "title": "Smoking Gun",
@@ -1836,8 +2532,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Smoking%20Gun.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.0
+  "cut": "16.67s + 54.58s, looped where it repeats (match 0.57)",
+  "lift": 0.8,
+  "loop": [
+   1.0,
+   55.576712
+  ]
  },
  "prairie-ranch/chill-zone.mp3": {
   "title": "Drankin Song",
@@ -1846,8 +2546,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Drankin%20Song.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "45.42s + 51.48s, looped where it repeats (match 0.85)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   52.477166
+  ]
  },
  "prairie-ranch/elimination.mp3": {
   "title": "Pale Rider",
@@ -1856,8 +2560,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Pale%20Rider.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "7.04s + 35.60s, looped where it repeats (match 0.67)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   36.601519
+  ]
  },
  "prairie-ranch/recap.mp3": {
   "title": "Cowboy Sting",
@@ -1866,8 +2574,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cowboy%20Sting.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "9.57s + 32.56s, looped where it repeats (match 0.96)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   33.560499
+  ]
  },
  "prairie-ranch/interview.mp3": {
   "title": "Neo Western",
@@ -1876,8 +2588,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Neo%20Western.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 3.7
+  "cut": "7.76s + 28.56s, looped where it repeats (match 0.46)",
+  "lift": 3.5,
+  "loop": [
+   1.0,
+   29.56034
+  ]
  },
  "ice-floe/opener.mp3": {
   "title": "Thunderbird",
@@ -1886,8 +2602,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Thunderbird.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "32.02s + 62.32s, looped where it repeats (match 0.42)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   63.31898
+  ]
  },
  "ice-floe/travel.mp3": {
   "title": "Mirage",
@@ -1896,8 +2616,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mirage.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "7.52s + 46.80s, looped where it repeats (match 0.88)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   47.800113
+  ]
  },
  "ice-floe/challenge.mp3": {
   "title": "Static Motion",
@@ -1906,8 +2630,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Static%20Motion.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "44.28s + 32.56s, looped where it repeats (match 0.69)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   33.559478
+  ]
  },
  "ice-floe/struggle.mp3": {
   "title": "Controlled Chaos",
@@ -1916,8 +2644,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Controlled%20Chaos.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "7.55s + 51.99s, looped where it repeats (match 0.40)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   52.989524
+  ]
  },
  "ice-floe/chill-zone.mp3": {
   "title": "New Direction",
@@ -1926,8 +2658,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/New%20Direction.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "35.46s + 29.41s, looped where it repeats (match 0.45)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   30.409093
+  ]
  },
  "ice-floe/elimination.mp3": {
   "title": "Virtutes Instrumenti",
@@ -1936,8 +2672,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Virtutes%20Instrumenti.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 2.2
+  "cut": "23.78s + 50.48s, looped where it repeats (match 0.60)",
+  "lift": 2.1,
+  "loop": [
+   1.0,
+   51.48458
+  ]
  },
  "ice-floe/recap.mp3": {
   "title": "Thunder Dreams",
@@ -1946,8 +2686,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Thunder%20Dreams.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 5.0
+  "cut": "41.40s + 33.28s, looped where it repeats (match 0.69)",
+  "lift": 1.0,
+  "loop": [
+   1.0,
+   34.277642
+  ]
  },
  "ice-floe/interview.mp3": {
   "title": "Drone in D",
@@ -1956,8 +2700,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Drone%20in%20D.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "28.70s + 28.42s, looped where it repeats (match 0.65)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   29.424172
+  ]
  },
  "dragon-isle/opener.mp3": {
   "title": "Mystic Force",
@@ -1966,8 +2714,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mystic%20Force.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "20.99s + 65.08s, looped where it repeats (match 0.73)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   66.084739
+  ]
  },
  "dragon-isle/travel.mp3": {
   "title": "Artifact",
@@ -1976,8 +2728,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Artifact.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "39.80s + 33.10s, looped where it repeats (match 0.56)",
+  "lift": 0.7,
+  "loop": [
+   1.0,
+   34.103424
+  ]
  },
  "dragon-isle/challenge.mp3": {
   "title": "Blue Scorpion",
@@ -1986,8 +2742,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Blue%20Scorpion.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "35.99s + 33.23s, looped where it repeats (match 0.74)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   34.230771
+  ]
  },
  "dragon-isle/struggle.mp3": {
   "title": "Confused State",
@@ -1996,8 +2756,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Confused%20State.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 3.4
+  "cut": "25.05s + 27.79s, looped where it repeats (match 0.79)",
+  "lift": 2.4,
+  "loop": [
+   1.0,
+   28.789478
+  ]
  },
  "dragon-isle/chill-zone.mp3": {
   "title": "Finding Movement",
@@ -2006,8 +2770,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Finding%20Movement.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 3.3
+  "cut": "34.44s + 37.69s, looped where it repeats (match 0.49)",
+  "lift": 0.1,
+  "loop": [
+   1.0,
+   38.690113
+  ]
  },
  "dragon-isle/elimination.mp3": {
   "title": "Immersed",
@@ -2016,8 +2784,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Immersed.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": -0.0
+  "cut": "39.94s + 22.53s, looped where it repeats (match 0.60)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   23.532789
+  ]
  },
  "dragon-isle/recap.mp3": {
   "title": "Trouble with Tribals",
@@ -2026,8 +2798,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Trouble%20with%20Tribals.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "9.15s + 27.43s, looped where it repeats (match 0.62)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   28.428571
+  ]
  },
  "dragon-isle/interview.mp3": {
   "title": "Eastminster",
@@ -2036,8 +2812,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Eastminster.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 4.8
+  "cut": "37.41s + 33.04s, looped where it repeats (match 0.51)",
+  "lift": 2.0,
+  "loop": [
+   1.0,
+   34.042653
+  ]
  },
  "neon-desert/opener.mp3": {
   "title": "Street Party",
@@ -2046,8 +2826,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Street%20Party.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "27.14s + 33.68s, looped where it repeats (match 0.85)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   34.68424
+  ]
  },
  "neon-desert/travel.mp3": {
   "title": "Miami Nights - Extended Theme",
@@ -2056,8 +2840,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Miami%20Nights%20-%20Extended%20Theme.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 1.8
+  "cut": "41.56s + 36.57s, looped where it repeats (match 0.82)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.571587
+  ]
  },
  "neon-desert/challenge.mp3": {
   "title": "Blue Ska",
@@ -2066,8 +2854,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Blue%20Ska.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "22.20s + 69.82s, looped where it repeats (match 0.87)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   70.818209
+  ]
  },
  "neon-desert/struggle.mp3": {
   "title": "Port Horizon",
@@ -2076,8 +2868,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Port%20Horizon.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 3.4
+  "cut": "55.19s + 40.00s, looped where it repeats (match 0.65)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   41.000385
+  ]
  },
  "neon-desert/chill-zone.mp3": {
   "title": "Bummin on Tremelo",
@@ -2086,8 +2882,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bummin%20on%20Tremelo.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.5
+  "cut": "32.14s + 59.96s, looped where it repeats (match 0.63)",
+  "lift": 0.5,
+  "loop": [
+   1.0,
+   60.963515
+  ]
  },
  "neon-desert/elimination.mp3": {
   "title": "Just As Soon",
@@ -2096,8 +2896,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Just%20As%20Soon.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 1.9
+  "cut": "35.36s + 39.31s, looped where it repeats (match 0.57)",
+  "lift": 0.9,
+  "loop": [
+   1.0,
+   40.307868
+  ]
  },
  "neon-desert/recap.mp3": {
   "title": "I Got a Stick Arr Bryan Teoh",
@@ -2106,8 +2910,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/I%20Got%20a%20Stick%20Arr%20Bryan%20Teoh.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "7.04s + 17.97s, looped where it repeats (match 0.52)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   18.966485
+  ]
  },
  "neon-desert/interview.mp3": {
   "title": "Vicious",
@@ -2116,8 +2924,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Vicious.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "27.47s + 48.00s, looped where it repeats (match 0.94)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   49.001655
+  ]
  },
  "pyramid-coast/opener.mp3": {
   "title": "Mariachi Snooze",
@@ -2126,8 +2938,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mariachi%20Snooze.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 3.8
+  "cut": "7.04s + 26.95s, looped where it repeats (match -1.29)",
+  "lift": 3.1,
+  "loop": [
+   1.0,
+   27.945034
+  ]
  },
  "pyramid-coast/travel.mp3": {
   "title": "Del Rio Bravo",
@@ -2136,8 +2952,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Del%20Rio%20Bravo.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "11.42s + 60.00s, looped where it repeats (match 0.80)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   61.0
+  ]
  },
  "pyramid-coast/challenge.mp3": {
   "title": "El Magicia",
@@ -2146,8 +2966,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/El%20Magicia.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.1
+  "cut": "12.24s + 32.59s, looped where it repeats (match 0.90)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   33.592222
+  ]
  },
  "pyramid-coast/struggle.mp3": {
   "title": "As I Figure",
@@ -2156,8 +2980,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/As%20I%20Figure.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.8
+  "cut": "22.29s + 32.00s, looped where it repeats (match 0.66)",
+  "lift": 2.2,
+  "loop": [
+   1.0,
+   33.0
+  ]
  },
  "pyramid-coast/chill-zone.mp3": {
   "title": "Laid Back Guitars",
@@ -2166,8 +2994,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Laid%20Back%20Guitars.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "34.90s + 32.50s, looped where it repeats (match 0.82)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   33.495215
+  ]
  },
  "pyramid-coast/elimination.mp3": {
   "title": "Midnight Tale",
@@ -2176,8 +3008,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Midnight%20Tale.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "7.06s + 52.19s, looped where it repeats (match 0.92)",
+  "lift": 0.4,
+  "loop": [
+   1.0,
+   53.191791
+  ]
  },
  "pyramid-coast/recap.mp3": {
   "title": "Circus of Freaks",
@@ -2186,8 +3022,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Circus%20of%20Freaks.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 1.6
+  "cut": "22.80s + 22.59s, looped where it repeats (match 0.33)",
+  "lift": 0.2,
+  "loop": [
+   1.0,
+   23.588231
+  ]
  },
  "pyramid-coast/interview.mp3": {
   "title": "Morning",
@@ -2196,8 +3036,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Morning.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "25.54s + 48.37s, looped where it repeats (match 0.94)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   49.373401
+  ]
  },
  "stilt-river/opener.mp3": {
   "title": "Ethernight Club",
@@ -2206,8 +3050,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ethernight%20Club.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "105.77s + 36.92s, looped where it repeats (match 0.73)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.923061
+  ]
  },
  "stilt-river/travel.mp3": {
   "title": "River Fire",
@@ -2216,8 +3064,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/River%20Fire.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 7.6
+  "cut": "34.20s + 60.01s, looped where it repeats (match 0.80)",
+  "lift": 4.2,
+  "loop": [
+   1.0,
+   61.006712
+  ]
  },
  "stilt-river/challenge.mp3": {
   "title": "Ave Marimba",
@@ -2226,8 +3078,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ave%20Marimba.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "44.70s + 41.17s, looped where it repeats (match 0.76)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   42.167596
+  ]
  },
  "stilt-river/struggle.mp3": {
   "title": "Ancient Mystery Waltz (Allegro)",
@@ -2236,8 +3092,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ancient%20Mystery%20Waltz%20Allegro.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.9
+  "cut": "68.82s + 51.00s, looped where it repeats (match 0.82)",
+  "lift": 0.3,
+  "loop": [
+   1.0,
+   52.003605
+  ]
  },
  "stilt-river/chill-zone.mp3": {
   "title": "Silver Flame",
@@ -2246,8 +3106,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Silver%20Flame.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 5.1
+  "cut": "56.54s + 35.55s, looped where it repeats (match 0.91)",
+  "lift": 4.2,
+  "loop": [
+   1.0,
+   36.545329
+  ]
  },
  "stilt-river/elimination.mp3": {
   "title": "Spirit of the Girl",
@@ -2256,8 +3120,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Spirit%20of%20the%20Girl.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 7.9
+  "cut": "34.92s + 35.55s, looped where it repeats (match 0.71)",
+  "lift": 9.5,
+  "loop": [
+   1.0,
+   36.5539
+  ]
  },
  "stilt-river/recap.mp3": {
   "title": "Mischief Maker",
@@ -2266,8 +3134,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mischief%20Maker.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "27.54s + 38.40s, looped where it repeats (match 0.84)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   39.4
+  ]
  },
  "stilt-river/interview.mp3": {
   "title": "River Flute",
@@ -2276,8 +3148,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/River%20Flute.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 1.0
+  "cut": "33.32s + 29.43s, looped where it repeats (match 0.78)",
+  "lift": 1.4,
+  "loop": [
+   1.0,
+   30.428005
+  ]
  },
  "frozen-mine/opener.mp3": {
   "title": "Aquarium",
@@ -2286,8 +3162,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Aquarium.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.3
+  "cut": "25.29s + 43.52s, looped where it repeats (match 0.82)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   44.523946
+  ]
  },
  "frozen-mine/travel.mp3": {
   "title": "Morgana Rides",
@@ -2296,8 +3176,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Morgana%20Rides.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "12.59s + 33.11s, looped where it repeats (match 0.63)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   34.106122
+  ]
  },
  "frozen-mine/challenge.mp3": {
   "title": "Adventures in Adventureland",
@@ -2306,8 +3190,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Adventures%20in%20Adventureland.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "23.36s + 56.47s, looped where it repeats (match 0.80)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   57.47059
+  ]
  },
  "frozen-mine/struggle.mp3": {
   "title": "Holiday Weasel",
@@ -2316,8 +3204,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Holiday%20Weasel.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.5
+  "cut": "11.17s + 39.38s, looped where it repeats (match 0.63)",
+  "lift": 0.2,
+  "loop": [
+   1.0,
+   40.380023
+  ]
  },
  "frozen-mine/chill-zone.mp3": {
   "title": "Canon in D for Autoharp",
@@ -2326,8 +3218,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Canon%20in%20D%20for%20Autoharp.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.5
+  "cut": "15.23s + 38.89s, looped where it repeats (match 0.62)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   39.892177
+  ]
  },
  "frozen-mine/elimination.mp3": {
   "title": "Elf Meditation",
@@ -2336,8 +3232,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Elf%20Meditation.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 1.6
+  "cut": "15.42s + 26.23s, looped where it repeats (match 0.48)",
+  "lift": 1.7,
+  "loop": [
+   1.0,
+   27.23322
+  ]
  },
  "frozen-mine/recap.mp3": {
   "title": "Industrious Ferret",
@@ -2346,8 +3246,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Industrious%20Ferret.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.2
+  "cut": "13.51s + 30.32s, looped where it repeats (match 0.70)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   31.323719
+  ]
  },
  "frozen-mine/interview.mp3": {
   "title": "Ancient Winds",
@@ -2356,8 +3260,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ancient%20Winds.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.7
+  "cut": "29.02s + 33.82s, looped where it repeats (match 0.37)",
+  "lift": 0.7,
+  "loop": [
+   1.0,
+   34.819093
+  ]
  },
  "tea-hills/opener.mp3": {
   "title": "Vadodora",
@@ -2366,8 +3274,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Vadodora.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "7.20s + 29.69s, looped where it repeats (match 0.81)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   30.690703
+  ]
  },
  "tea-hills/travel.mp3": {
   "title": "Jalandhar",
@@ -2376,8 +3288,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Jalandhar.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "38.57s + 53.33s, looped where it repeats (match 0.90)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   54.333333
+  ]
  },
  "tea-hills/challenge.mp3": {
   "title": "Cretaceous Dawn",
@@ -2386,8 +3302,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cretaceous%20Dawn.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "56.59s + 60.00s, looped where it repeats (match 0.66)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   61.001701
+  ]
  },
  "tea-hills/struggle.mp3": {
   "title": "Psychedelic Crater",
@@ -2396,8 +3316,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Psychedelic%20Crater.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.4
+  "cut": "16.18s + 36.00s, looped where it repeats (match 0.63)",
+  "lift": 0.6,
+  "loop": [
+   1.0,
+   37.000272
+  ]
  },
  "tea-hills/chill-zone.mp3": {
   "title": "Truth in the Stones",
@@ -2406,8 +3330,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Truth%20in%20the%20Stones.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.5
+  "cut": "42.96s + 53.34s, looped where it repeats (match 0.82)",
+  "lift": 1.8,
+  "loop": [
+   1.0,
+   54.344104
+  ]
  },
  "tea-hills/elimination.mp3": {
   "title": "Dhaka",
@@ -2416,8 +3344,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dhaka.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 3.5
+  "cut": "12.68s + 21.35s, looped where it repeats (match 0.43)",
+  "lift": 2.5,
+  "loop": [
+   1.0,
+   22.347732
+  ]
  },
  "tea-hills/recap.mp3": {
   "title": "Big Drumming",
@@ -2426,8 +3358,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Big%20Drumming.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "11.38s + 20.45s, looped where it repeats (match 0.43)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   21.454898
+  ]
  },
  "tea-hills/interview.mp3": {
   "title": "Ethereal Relaxation",
@@ -2436,8 +3372,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ethereal%20Relaxation.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "52.96s + 32.47s, looped where it repeats (match 0.76)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   33.465215
+  ]
  },
  "pampas-ranch/opener.mp3": {
   "title": "Tango de Manzana",
@@ -2446,8 +3386,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Tango%20de%20Manzana.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.7
+  "cut": "41.45s + 30.25s, looped where it repeats (match 0.70)",
+  "lift": 1.4,
+  "loop": [
+   1.0,
+   31.249728
+  ]
  },
  "pampas-ranch/travel.mp3": {
   "title": "Porch Swing Days - faster",
@@ -2456,8 +3400,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Porch%20Swing%20Days%20-%20faster.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "32.18s + 36.95s, looped where it repeats (match 0.43)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.952993
+  ]
  },
  "pampas-ranch/challenge.mp3": {
   "title": "Feral Angel Waltz",
@@ -2466,8 +3414,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Feral%20Angel%20Waltz%20.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 3.5
+  "cut": "85.47s + 63.96s, looped where it repeats (match 0.74)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   64.963469
+  ]
  },
  "pampas-ranch/struggle.mp3": {
   "title": "Folk Round",
@@ -2476,8 +3428,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Folk%20Round.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 2.2
+  "cut": "12.70s + 58.78s, looped where it repeats (match 0.69)",
+  "lift": 1.4,
+  "loop": [
+   1.0,
+   59.775488
+  ]
  },
  "pampas-ranch/chill-zone.mp3": {
   "title": "Porch Swing Days - slower",
@@ -2486,8 +3442,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Porch%20Swing%20Days%20-%20slower.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "26.96s + 34.59s, looped where it repeats (match 0.78)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   35.594558
+  ]
  },
  "pampas-ranch/elimination.mp3": {
   "title": "Sardana",
@@ -2496,8 +3456,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sardana.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 4.1
+  "cut": "41.31s + 48.02s, looped where it repeats (match 0.75)",
+  "lift": 2.0,
+  "loop": [
+   1.0,
+   49.023333
+  ]
  },
  "pampas-ranch/recap.mp3": {
   "title": "Happy Alley",
@@ -2506,8 +3470,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Happy%20Alley.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "27.65s + 34.44s, looped where it repeats (match 0.93)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   35.438639
+  ]
  },
  "pampas-ranch/interview.mp3": {
   "title": "Joey's Formal Waltz - Unscented",
@@ -2516,8 +3484,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Joey%27s%20Formal%20Waltz%20-%20Unscented.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "7.48s + 36.05s, looped where it repeats (match 0.82)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.053424
+  ]
  },
  "game-show-city/opener.mp3": {
   "title": "Neon Laser Horizon",
@@ -2526,8 +3498,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Neon%20Laser%20Horizon.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "71.56s + 61.50s, looped where it repeats (match 0.89)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   62.5
+  ]
  },
  "game-show-city/travel.mp3": {
   "title": "Voxel Revolution",
@@ -2536,8 +3512,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Voxel%20Revolution.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "7.99s + 62.95s, looped where it repeats (match 0.95)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   63.950884
+  ]
  },
  "game-show-city/challenge.mp3": {
   "title": "Balloon Game",
@@ -2546,8 +3526,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Balloon%20Game.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "35.64s + 36.57s, looped where it repeats (match 0.77)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.571429
+  ]
  },
  "game-show-city/struggle.mp3": {
   "title": "Brain Dance",
@@ -2556,8 +3540,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Brain%20Dance.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 2.9
+  "cut": "40.63s + 46.45s, looped where it repeats (match 0.64)",
+  "lift": 3.5,
+  "loop": [
+   1.0,
+   47.45161
+  ]
  },
  "game-show-city/chill-zone.mp3": {
   "title": "Space Jazz",
@@ -2566,8 +3554,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Space%20Jazz.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "17.16s + 64.69s, looped where it repeats (match 0.60)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   65.688866
+  ]
  },
  "game-show-city/elimination.mp3": {
   "title": "Canon In D Interstellar Mix",
@@ -2576,8 +3568,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Canon%20In%20D%20Interstellar%20Mix.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "41.61s + 30.00s, looped where it repeats (match 0.74)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   30.999819
+  ]
  },
  "game-show-city/recap.mp3": {
   "title": "Happy Happy Game Show",
@@ -2586,8 +3582,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Happy%20Happy%20Game%20Show.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "44.88s + 41.74s, looped where it repeats (match 0.62)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   42.739161
+  ]
  },
  "game-show-city/interview.mp3": {
   "title": "Screen Saver",
@@ -2596,8 +3596,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Screen%20Saver.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.2
+  "cut": "11.98s + 27.01s, looped where it repeats (match 0.46)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   28.007914
+  ]
  },
  "ice-river/opener.mp3": {
   "title": "Mary Celeste",
@@ -2606,8 +3610,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mary%20Celeste.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "37.59s + 28.54s, looped where it repeats (match 0.27)",
+  "lift": 0.6,
+  "loop": [
+   1.0,
+   29.540952
+  ]
  },
  "ice-river/travel.mp3": {
   "title": "Enchanted Journey",
@@ -2616,8 +3624,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Enchanted%20Journey.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 4.3
+  "cut": "16.53s + 33.82s, looped where it repeats (match 0.68)",
+  "lift": 3.0,
+  "loop": [
+   1.0,
+   34.817234
+  ]
  },
  "ice-river/challenge.mp3": {
   "title": "Marty Gots a Plan",
@@ -2626,8 +3638,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Marty%20Gots%20a%20Plan.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 5.2
+  "cut": "40.94s + 54.84s, looped where it repeats (match 0.79)",
+  "lift": 3.9,
+  "loop": [
+   1.0,
+   55.835147
+  ]
  },
  "ice-river/struggle.mp3": {
   "title": "Vanishing",
@@ -2636,8 +3652,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Vanishing.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.6
+  "cut": "41.17s + 43.90s, looped where it repeats (match 0.65)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   44.899955
+  ]
  },
  "ice-river/chill-zone.mp3": {
   "title": "Dama-May",
@@ -2646,8 +3666,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dama-May.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": -0.0
+  "cut": "14.84s + 47.99s, looped where it repeats (match 0.54)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   48.993878
+  ]
  },
  "ice-river/elimination.mp3": {
   "title": "Plaint",
@@ -2656,8 +3680,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Plaint.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "16.32s + 36.99s, looped where it repeats (match 0.47)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.985057
+  ]
  },
  "ice-river/recap.mp3": {
   "title": "Strength of the Titans",
@@ -2666,8 +3694,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Strength%20of%20the%20Titans.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": -0.0
+  "cut": "15.05s + 37.23s, looped where it repeats (match 0.69)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   38.228277
+  ]
  },
  "ice-river/interview.mp3": {
   "title": "Decline",
@@ -2676,8 +3708,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Decline.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "20.09s + 32.44s, looped where it repeats (match 0.78)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   33.435533
+  ]
  },
  "snow-peaks/opener.mp3": {
   "title": "Meanwhile in Bavaria",
@@ -2686,8 +3722,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Meanwhile%20in%20Bavaria.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "18.67s + 60.31s, looped where it repeats (match 0.87)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   61.313832
+  ]
  },
  "snow-peaks/travel.mp3": {
   "title": "No Spam Polka",
@@ -2696,8 +3736,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/No%20Spam%20Polka.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "36.41s + 50.09s, looped where it repeats (match 0.99)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   51.086939
+  ]
  },
  "snow-peaks/challenge.mp3": {
   "title": "Manic Polka",
@@ -2706,8 +3750,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Manic%20Polka.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 1.3
+  "cut": "39.01s + 48.00s, looped where it repeats (match 0.98)",
+  "lift": 0.2,
+  "loop": [
+   1.0,
+   49.0
+  ]
  },
  "snow-peaks/struggle.mp3": {
   "title": "Dvorak Polka",
@@ -2716,8 +3764,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dvorak%20Polka.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.1
+  "cut": "18.11s + 50.09s, looped where it repeats (match 0.92)",
+  "lift": 1.4,
+  "loop": [
+   1.0,
+   51.086961
+  ]
  },
  "snow-peaks/chill-zone.mp3": {
   "title": "Snare Bounce Polka",
@@ -2726,8 +3778,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Snare%20Bounce%20Polka.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 2.9
+  "cut": "7.69s + 36.57s, looped where it repeats (match 0.99)",
+  "lift": 3.0,
+  "loop": [
+   1.0,
+   37.571429
+  ]
  },
  "snow-peaks/elimination.mp3": {
   "title": "Double Polka",
@@ -2736,8 +3792,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Double%20Polka.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.4
+  "cut": "23.55s + 26.92s, looped where it repeats (match 0.98)",
+  "lift": 1.0,
+  "loop": [
+   1.0,
+   27.915896
+  ]
  },
  "snow-peaks/recap.mp3": {
   "title": "Ultra Polka",
@@ -2746,8 +3806,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ultra%20Polka.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "9.64s + 25.60s, looped where it repeats (match 0.75)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   26.6
+  ]
  },
  "snow-peaks/interview.mp3": {
   "title": "Four Beers' Polka",
@@ -2756,8 +3820,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Four%20Beers%20Polka.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 1.2
+  "cut": "9.15s + 30.97s, looped where it repeats (match 0.94)",
+  "lift": 1.3,
+  "loop": [
+   1.0,
+   31.967596
+  ]
  },
  "jungle-ruins/opener.mp3": {
   "title": "The Sky of our Ancestors",
@@ -2766,8 +3834,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Sky%20of%20our%20Ancestors.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "38.52s + 35.54s, looped where it repeats (match 0.87)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   36.544649
+  ]
  },
  "jungle-ruins/travel.mp3": {
   "title": "Fearless First",
@@ -2776,8 +3848,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fearless%20First.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": -0.0
+  "cut": "14.05s + 52.17s, looped where it repeats (match 0.91)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   53.173923
+  ]
  },
  "jungle-ruins/challenge.mp3": {
   "title": "River of Io",
@@ -2786,8 +3862,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/River%20of%20Io.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "14.05s + 36.92s, looped where it repeats (match 0.75)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.923061
+  ]
  },
  "jungle-ruins/struggle.mp3": {
   "title": "Crypto",
@@ -2796,8 +3876,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Crypto.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "40.03s + 36.00s, looped where it repeats (match 0.61)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.0
+  ]
  },
  "jungle-ruins/chill-zone.mp3": {
   "title": "On My Way",
@@ -2806,8 +3890,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/On%20My%20Way.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "17.67s + 60.95s, looped where it repeats (match 0.94)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   61.952404
+  ]
  },
  "jungle-ruins/elimination.mp3": {
   "title": "Heavy Heart",
@@ -2816,8 +3904,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heavy%20Heart.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.6
+  "cut": "22.94s + 21.64s, looped where it repeats (match 0.62)",
+  "lift": 2.8,
+  "loop": [
+   1.0,
+   22.63941
+  ]
  },
  "jungle-ruins/recap.mp3": {
   "title": "Malicious",
@@ -2826,8 +3918,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Malicious.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "61.07s + 20.53s, looped where it repeats (match 0.54)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   21.533492
+  ]
  },
  "jungle-ruins/interview.mp3": {
   "title": "Carpe Diem",
@@ -2836,8 +3932,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carpe%20Diem.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "43.68s + 50.00s, looped where it repeats (match 0.96)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   51.0
+  ]
  },
  "glass-pyramid-city/opener.mp3": {
   "title": "Grand Dark Waltz Allegro",
@@ -2846,8 +3946,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Grand%20Dark%20Waltz%20Allegro.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.2
+  "cut": "38.01s + 47.60s, looped where it repeats (match 0.98)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   48.603311
+  ]
  },
  "glass-pyramid-city/travel.mp3": {
   "title": "Starting Out Waltz Allegretto",
@@ -2856,8 +3960,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Starting%20Out%20Waltz%20Allegretto.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "43.84s + 44.54s, looped where it repeats (match 0.99)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   45.536077
+  ]
  },
  "glass-pyramid-city/challenge.mp3": {
   "title": "Realizer",
@@ -2866,8 +3974,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Realizer.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "7.73s + 61.44s, looped where it repeats (match 0.99)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   62.44
+  ]
  },
  "glass-pyramid-city/struggle.mp3": {
   "title": "Fantasia Fantasia",
@@ -2876,8 +3988,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fantasia%20Fantasia.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "52.80s + 32.52s, looped where it repeats (match 0.77)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   33.516893
+  ]
  },
  "glass-pyramid-city/chill-zone.mp3": {
   "title": "Deuces",
@@ -2886,8 +4002,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deuces.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "21.41s + 40.42s, looped where it repeats (match 0.61)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   41.421066
+  ]
  },
  "glass-pyramid-city/elimination.mp3": {
   "title": "Valse Gymnopedie",
@@ -2896,8 +4016,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Valse%20Gymnopedie.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 3.2
+  "cut": "7.66s + 28.04s, looped where it repeats (match 0.79)",
+  "lift": 2.9,
+  "loop": [
+   1.0,
+   29.04
+  ]
  },
  "glass-pyramid-city/recap.mp3": {
   "title": "Cloud Dancer",
@@ -2906,8 +4030,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cloud%20Dancer.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 1.1
+  "cut": "49.53s + 44.86s, looped where it repeats (match 0.83)",
+  "lift": 0.8,
+  "loop": [
+   1.0,
+   45.859819
+  ]
  },
  "glass-pyramid-city/interview.mp3": {
   "title": "Getting it Done",
@@ -2916,8 +4044,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Getting%20it%20Done.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "9.01s + 56.91s, looped where it repeats (match 0.83)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   57.911224
+  ]
  },
  "fishing-cove/opener.mp3": {
   "title": "Music to Delight",
@@ -2926,8 +4058,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Music%20to%20Delight.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "9.94s + 36.91s, looped where it repeats (match 0.69)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.908345
+  ]
  },
  "fishing-cove/travel.mp3": {
   "title": "Salty Ditty",
@@ -2936,8 +4072,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Salty%20Ditty.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 1.8
+  "cut": "21.66s + 64.01s, looped where it repeats (match 0.95)",
+  "lift": 1.5,
+  "loop": [
+   1.0,
+   65.005873
+  ]
  },
  "fishing-cove/challenge.mp3": {
   "title": "Thatched Villagers",
@@ -2946,8 +4086,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Thatched%20Villagers.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "41.82s + 30.64s, looped where it repeats (match 0.72)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   31.638322
+  ]
  },
  "fishing-cove/struggle.mp3": {
   "title": "Netherworld Shanty",
@@ -2956,8 +4100,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Netherworld%20Shanty.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "25.54s + 48.00s, looped where it repeats (match 0.67)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   49.0
+  ]
  },
  "fishing-cove/chill-zone.mp3": {
   "title": "Cold Sober",
@@ -2966,8 +4114,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cold%20Sober.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "13.03s + 48.00s, looped where it repeats (match 0.60)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   48.999569
+  ]
  },
  "fishing-cove/elimination.mp3": {
   "title": "Teddy Bear Waltz",
@@ -2976,8 +4128,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Teddy%20Bear%20Waltz.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "18.65s + 25.62s, looped where it repeats (match 0.41)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   26.615601
+  ]
  },
  "fishing-cove/recap.mp3": {
   "title": "Poofy Reel",
@@ -2986,8 +4142,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Poofy%20Reel.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 3.8
+  "cut": "7.66s + 28.39s, looped where it repeats (match 0.67)",
+  "lift": 4.0,
+  "loop": [
+   1.0,
+   29.387098
+  ]
  },
  "fishing-cove/interview.mp3": {
   "title": "Minstrel Guild",
@@ -2996,8 +4156,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Minstrel%20Guild.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "31.79s + 42.21s, looped where it repeats (match 0.68)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   43.206009
+  ]
  },
  "cliff-pool-isle/opener.mp3": {
   "title": "Montego",
@@ -3006,8 +4170,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Montego.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "7.92s + 64.86s, looped where it repeats (match 0.87)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   65.864853
+  ]
  },
  "cliff-pool-isle/travel.mp3": {
   "title": "Maccary Bay",
@@ -3016,8 +4184,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Maccary%20Bay.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "9.26s + 35.98s, looped where it repeats (match 0.73)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   36.980635
+  ]
  },
  "cliff-pool-isle/challenge.mp3": {
   "title": "Upbeat Forever",
@@ -3026,8 +4198,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Upbeat%20Forever.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "9.66s + 70.24s, looped where it repeats (match 0.97)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   71.243832
+  ]
  },
  "cliff-pool-isle/struggle.mp3": {
   "title": "Yallahs",
@@ -3036,8 +4212,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Yallahs.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "16.67s + 42.35s, looped where it repeats (match 0.95)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   43.352948
+  ]
  },
  "cliff-pool-isle/chill-zone.mp3": {
   "title": "Chee Zee Beach",
@@ -3046,8 +4226,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chee%20Zee%20Beach.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "14.49s + 45.18s, looped where it repeats (match 0.97)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   46.176485
+  ]
  },
  "cliff-pool-isle/elimination.mp3": {
   "title": "Clear Air",
@@ -3056,8 +4240,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Clear%20Air.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 2.2
+  "cut": "12.26s + 28.23s, looped where it repeats (match 0.92)",
+  "lift": 2.2,
+  "loop": [
+   1.0,
+   29.230136
+  ]
  },
  "cliff-pool-isle/recap.mp3": {
   "title": "Slow Ska Game Loop",
@@ -3066,8 +4254,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Slow%20Ska%20Game%20Loop.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "7.04s + 21.71s, looped where it repeats (match 0.79)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   22.705669
+  ]
  },
  "cliff-pool-isle/interview.mp3": {
   "title": "Dub Feral",
@@ -3076,8 +4268,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dub%20Feral.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.3
+  "cut": "39.36s + 34.27s, looped where it repeats (match 0.61)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   35.27093
+  ]
  },
  "twin-tower-bridge/opener.mp3": {
   "title": "Grand Dark Waltz Allegretto",
@@ -3086,8 +4282,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Grand%20Dark%20Waltz%20Allegretto.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.4
+  "cut": "40.63s + 55.38s, looped where it repeats (match 0.97)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   56.384626
+  ]
  },
  "twin-tower-bridge/travel.mp3": {
   "title": "Half Mystery",
@@ -3096,8 +4296,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Half%20Mystery.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "10.45s + 60.00s, looped where it repeats (match 0.99)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   61.0
+  ]
  },
  "twin-tower-bridge/challenge.mp3": {
   "title": "March of the Spoons",
@@ -3106,8 +4310,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/March%20of%20the%20Spoons.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 3.4
+  "cut": "44.16s + 45.18s, looped where it repeats (match 0.64)",
+  "lift": 3.2,
+  "loop": [
+   1.0,
+   46.176485
+  ]
  },
  "twin-tower-bridge/struggle.mp3": {
   "title": "Magic Forest",
@@ -3116,8 +4324,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Magic%20Forest.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.4
+  "cut": "14.93s + 41.29s, looped where it repeats (match 0.53)",
+  "lift": 0.3,
+  "loop": [
+   1.0,
+   42.294399
+  ]
  },
  "twin-tower-bridge/chill-zone.mp3": {
   "title": "Devonshire Waltz Moderato",
@@ -3126,8 +4338,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Devonshire%20Waltz%20Moderato.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "48.27s + 61.94s, looped where it repeats (match 0.95)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   62.935488
+  ]
  },
  "twin-tower-bridge/elimination.mp3": {
   "title": "Crinoline Dreams",
@@ -3136,8 +4352,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Crinoline%20Dreams.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "29.42s + 48.00s, looped where it repeats (match 0.66)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   49.0
+  ]
  },
  "twin-tower-bridge/recap.mp3": {
   "title": "Fox Tale Waltz Part 1 Instrumental",
@@ -3146,8 +4366,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fox%20Tale%20Waltz%20Part%201%20Instrumental.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 2.7
+  "cut": "87.24s + 31.14s, looped where it repeats (match 0.92)",
+  "lift": 2.1,
+  "loop": [
+   1.0,
+   32.135147
+  ]
  },
  "twin-tower-bridge/interview.mp3": {
   "title": "Grand Dark Waltz Trio Allegro",
@@ -3156,8 +4380,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Grand%20Dark%20Waltz%20Trio%20Allegro.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "51.04s + 46.45s, looped where it repeats (match 0.96)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   47.45161
+  ]
  },
  "marble-temple-hill/opener.mp3": {
   "title": "Greko (Sketch)",
@@ -3166,8 +4394,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Greko%20Sketch.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "20.34s + 53.33s, looped where it repeats (match 0.98)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   54.333333
+  ]
  },
  "marble-temple-hill/travel.mp3": {
   "title": "Call to Adventure",
@@ -3176,8 +4408,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Call%20to%20Adventure.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.9
+  "cut": "26.24s + 39.05s, looped where it repeats (match 0.49)",
+  "lift": 1.2,
+  "loop": [
+   1.0,
+   40.05381
+  ]
  },
  "marble-temple-hill/challenge.mp3": {
   "title": "Take a Chance",
@@ -3186,8 +4422,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Take%20a%20Chance.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "7.04s + 26.13s, looped where it repeats (match 0.34)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   27.131134
+  ]
  },
  "marble-temple-hill/struggle.mp3": {
   "title": "Rynos Theme",
@@ -3196,8 +4436,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Rynos%20Theme.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "31.60s + 26.95s, looped where it repeats (match 0.64)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   27.948073
+  ]
  },
  "marble-temple-hill/chill-zone.mp3": {
   "title": "Royal Coupling",
@@ -3206,8 +4450,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Royal%20Coupling.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "19.16s + 48.00s, looped where it repeats (match 0.50)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   48.999977
+  ]
  },
  "marble-temple-hill/elimination.mp3": {
   "title": "Tempting Secrets",
@@ -3216,8 +4464,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Tempting%20Secrets.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "20.53s + 23.80s, looped where it repeats (match 0.63)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   24.802426
+  ]
  },
  "marble-temple-hill/recap.mp3": {
   "title": "Fanfare for Space",
@@ -3226,8 +4478,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fanfare%20for%20Space.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "21.85s + 29.77s, looped where it repeats (match 0.88)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   30.770952
+  ]
  },
  "marble-temple-hill/interview.mp3": {
   "title": "Soaring",
@@ -3236,8 +4492,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Soaring.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "10.33s + 25.67s, looped where it repeats (match 0.75)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   26.670952
+  ]
  },
  "secret-base-desert/opener.mp3": {
   "title": "Phantom from Space",
@@ -3246,8 +4506,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Phantom%20from%20Space.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "54.98s + 39.63s, looped where it repeats (match 0.56)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   40.631633
+  ]
  },
  "secret-base-desert/travel.mp3": {
   "title": "Jerry Five",
@@ -3256,8 +4520,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Jerry%20Five.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.2
+  "cut": "16.00s + 64.00s, looped where it repeats (match 0.91)",
+  "lift": 1.1,
+  "loop": [
+   1.0,
+   65.0
+  ]
  },
  "secret-base-desert/challenge.mp3": {
   "title": "The Complex",
@@ -3266,8 +4534,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Complex.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 1.4
+  "cut": "7.08s + 36.92s, looped where it repeats (match 0.52)",
+  "lift": 1.3,
+  "loop": [
+   1.0,
+   37.922834
+  ]
  },
  "secret-base-desert/struggle.mp3": {
   "title": "Shadowlands 5 - Antechamber",
@@ -3276,8 +4548,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Shadowlands%205%20-%20Antechamber.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "13.91s + 55.17s, looped where it repeats (match 0.52)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   56.171474
+  ]
  },
  "secret-base-desert/chill-zone.mp3": {
   "title": "Space 1990-B",
@@ -3286,8 +4562,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Space%201990-B.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "7.20s + 28.57s, looped where it repeats (match 0.78)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   29.571202
+  ]
  },
  "secret-base-desert/elimination.mp3": {
   "title": "Clean Soul",
@@ -3296,8 +4576,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Clean%20Soul.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "39.24s + 36.34s, looped where it repeats (match 0.82)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.344989
+  ]
  },
  "secret-base-desert/recap.mp3": {
   "title": "Android Sock Hop",
@@ -3306,8 +4590,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Android%20Sock%20Hop.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": -0.0
+  "cut": "18.83s + 19.59s, looped where it repeats (match 0.71)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   20.592404
+  ]
  },
  "secret-base-desert/interview.mp3": {
   "title": "Space 1990",
@@ -3316,8 +4604,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Space%201990.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "7.43s + 43.28s, looped where it repeats (match 0.87)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   44.275397
+  ]
  },
  "fjord-sea/opener.mp3": {
   "title": "The Britons",
@@ -3326,8 +4618,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Britons.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "13.68s + 32.00s, looped where it repeats (match 0.76)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   32.999955
+  ]
  },
  "fjord-sea/travel.mp3": {
   "title": "Village Consort",
@@ -3336,8 +4632,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Village%20Consort.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "24.22s + 50.53s, looped where it repeats (match 0.94)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   51.526327
+  ]
  },
  "fjord-sea/challenge.mp3": {
   "title": "Crunk Knight",
@@ -3346,8 +4646,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Crunk%20Knight.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "41.26s + 55.38s, looped where it repeats (match 0.71)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   56.384603
+  ]
  },
  "fjord-sea/struggle.mp3": {
   "title": "Death and Axes",
@@ -3356,8 +4660,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Death%20and%20Axes.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "14.68s + 41.14s, looped where it repeats (match 0.42)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   42.142902
+  ]
  },
  "fjord-sea/chill-zone.mp3": {
   "title": "Master of the Feast",
@@ -3366,8 +4674,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Master%20of%20the%20Feast.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 2.4
+  "cut": "22.69s + 31.48s, looped where it repeats (match 0.51)",
+  "lift": 2.1,
+  "loop": [
+   1.0,
+   32.477438
+  ]
  },
  "fjord-sea/elimination.mp3": {
   "title": "Suonatore di Liuto",
@@ -3376,8 +4688,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Suonatore%20di%20Liuto.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 3.3
+  "cut": "31.02s + 25.71s, looped where it repeats (match 0.50)",
+  "lift": 0.8,
+  "loop": [
+   1.0,
+   26.709161
+  ]
  },
  "fjord-sea/recap.mp3": {
   "title": "Club Seamus",
@@ -3386,8 +4702,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Club%20Seamus.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": -0.0
+  "cut": "10.40s + 34.29s, looped where it repeats (match 0.94)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   35.285714
+  ]
  },
  "fjord-sea/interview.mp3": {
   "title": "Lord of the Land",
@@ -3396,8 +4716,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Lord%20of%20the%20Land.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 2.1
+  "cut": "59.98s + 34.27s, looped where it repeats (match 0.61)",
+  "lift": 3.2,
+  "loop": [
+   1.0,
+   35.270408
+  ]
  },
  "great-falls/opener.mp3": {
   "title": "Canon in D for Two Harps",
@@ -3406,8 +4730,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Canon%20in%20D%20for%20Two%20Harps.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "7.04s + 26.94s, looped where it repeats (match 0.52)",
+  "lift": 0.2,
+  "loop": [
+   1.0,
+   27.939977
+  ]
  },
  "great-falls/travel.mp3": {
   "title": "Evening",
@@ -3416,8 +4744,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Evening.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "32.07s + 50.04s, looped where it repeats (match 0.75)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   51.039002
+  ]
  },
  "great-falls/challenge.mp3": {
   "title": "Thinking Music",
@@ -3426,8 +4758,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Thinking%20Music.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 5.1
+  "cut": "7.36s + 46.03s, looped where it repeats (match 0.84)",
+  "lift": 5.2,
+  "loop": [
+   1.0,
+   47.025714
+  ]
  },
  "great-falls/struggle.mp3": {
   "title": "Crossing the Chasm",
@@ -3436,8 +4772,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Crossing%20the%20Chasm.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "39.10s + 57.64s, looped where it repeats (match 0.54)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   58.636327
+  ]
  },
  "great-falls/chill-zone.mp3": {
   "title": "Ashton Manor",
@@ -3446,8 +4786,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ashton%20Manor.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "8.85s + 27.02s, looped where it repeats (match 0.40)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   28.018753
+  ]
  },
  "great-falls/elimination.mp3": {
   "title": "Bittersweet",
@@ -3456,8 +4800,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bittersweet.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "11.66s + 31.02s, looped where it repeats (match 0.82)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   32.021451
+  ]
  },
  "great-falls/recap.mp3": {
   "title": "Monkeys Spinning Monkeys",
@@ -3466,8 +4814,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Monkeys%20Spinning%20Monkeys.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 1.0
+  "cut": "24.43s + 26.67s, looped where it repeats (match 0.89)",
+  "lift": 2.1,
+  "loop": [
+   1.0,
+   27.667846
+  ]
  },
  "great-falls/interview.mp3": {
   "title": "Smooth Lovin",
@@ -3476,8 +4828,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Smooth%20Lovin.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.9
+  "cut": "33.90s + 25.60s, looped where it repeats (match 0.60)",
+  "lift": 2.2,
+  "loop": [
+   1.0,
+   26.595828
+  ]
  },
  "bamboo-wall-hills/opener.mp3": {
   "title": "Eastern Thought",
@@ -3486,8 +4842,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Eastern%20Thought.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 4.5
+  "cut": "40.87s + 32.71s, looped where it repeats (match 0.53)",
+  "lift": 1.0,
+  "loop": [
+   1.0,
+   33.709184
+  ]
  },
  "bamboo-wall-hills/travel.mp3": {
   "title": "Tea Roots",
@@ -3496,8 +4856,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Tea%20Roots.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.1
+  "cut": "32.95s + 39.45s, looped where it repeats (match 0.83)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   40.451905
+  ]
  },
  "bamboo-wall-hills/challenge.mp3": {
   "title": "Ujangong Mix",
@@ -3506,8 +4870,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ujangong%20Mix.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "35.74s + 37.89s, looped where it repeats (match 0.84)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   38.894739
+  ]
  },
  "bamboo-wall-hills/struggle.mp3": {
   "title": "Chanter",
@@ -3516,8 +4884,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Chanter.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "45.56s + 28.76s, looped where it repeats (match 0.73)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   29.763946
+  ]
  },
  "bamboo-wall-hills/chill-zone.mp3": {
   "title": "Senbazuru",
@@ -3526,8 +4898,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Senbazuru.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.4
+  "cut": "30.98s + 35.12s, looped where it repeats (match 0.65)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   36.119592
+  ]
  },
  "bamboo-wall-hills/elimination.mp3": {
   "title": "That Zen Moment",
@@ -3536,8 +4912,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/That%20Zen%20Moment.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 2.8
+  "cut": "50.32s + 36.15s, looped where it repeats (match 0.67)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.149932
+  ]
  },
  "bamboo-wall-hills/recap.mp3": {
   "title": "Monkoto",
@@ -3546,8 +4926,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Monkoto.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 1.2
+  "cut": "20.69s + 24.64s, looped where it repeats (match 0.87)",
+  "lift": 3.4,
+  "loop": [
+   1.0,
+   25.638798
+  ]
  },
  "bamboo-wall-hills/interview.mp3": {
   "title": "Moonstone",
@@ -3556,8 +4940,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Moonstone.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 7.2
+  "cut": "12.77s + 32.85s, looped where it repeats (match 0.85)",
+  "lift": 6.0,
+  "loop": [
+   1.0,
+   33.85059
+  ]
  },
  "grass-savanna/opener.mp3": {
   "title": "At The Shore",
@@ -3566,8 +4954,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/At%20The%20Shore.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "7.80s + 26.79s, looped where it repeats (match -0.36)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   27.794649
+  ]
  },
  "grass-savanna/travel.mp3": {
   "title": "Bumba Crossing",
@@ -3576,8 +4968,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bumba%20Crossing.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "25.80s + 31.30s, looped where it repeats (match 0.79)",
+  "lift": -0.0,
+  "loop": [
+   1.0,
+   32.304785
+  ]
  },
  "grass-savanna/challenge.mp3": {
   "title": "Digya",
@@ -3586,8 +4982,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Digya.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.1
+  "cut": "15.37s + 61.27s, looped where it repeats (match 0.59)",
+  "lift": 0.8,
+  "loop": [
+   1.0,
+   62.274989
+  ]
  },
  "grass-savanna/struggle.mp3": {
   "title": "Constance",
@@ -3596,8 +4996,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Constance.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "14.05s + 57.83s, looped where it repeats (match 0.76)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   58.830839
+  ]
  },
  "grass-savanna/chill-zone.mp3": {
   "title": "Slow Heat",
@@ -3606,8 +5010,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Slow%20Heat.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 6.3
+  "cut": "39.06s + 37.24s, looped where it repeats (match 0.81)",
+  "lift": 7.1,
+  "loop": [
+   1.0,
+   38.242381
+  ]
  },
  "grass-savanna/elimination.mp3": {
   "title": "Adding the Sun",
@@ -3616,8 +5024,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Adding%20the%20Sun.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.2
+  "cut": "7.76s + 21.33s, looped where it repeats (match 0.80)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   22.333333
+  ]
  },
  "grass-savanna/recap.mp3": {
   "title": "Jaunty Gumption",
@@ -3626,8 +5038,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Jaunty%20Gumption.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "27.89s + 39.45s, looped where it repeats (match 0.89)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   40.452177
+  ]
  },
  "grass-savanna/interview.mp3": {
   "title": "Easy Lemon",
@@ -3636,8 +5052,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Easy%20Lemon.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "8.50s + 46.83s, looped where it repeats (match 0.61)",
+  "lift": 0.6,
+  "loop": [
+   1.0,
+   47.829297
+  ]
  },
  "stone-head-island/opener.mp3": {
   "title": "Naraina",
@@ -3646,8 +5066,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Naraina.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "53.10s + 35.58s, looped where it repeats (match 0.98)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   36.57712
+  ]
  },
  "stone-head-island/travel.mp3": {
   "title": "Windswept",
@@ -3656,8 +5080,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Windswept.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 2.0
+  "cut": "39.61s + 36.44s, looped where it repeats (match 0.76)",
+  "lift": 1.3,
+  "loop": [
+   1.0,
+   37.441769
+  ]
  },
  "stone-head-island/challenge.mp3": {
   "title": "Tafi Maradi no voice",
@@ -3666,8 +5094,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Tafi%20Maradi%20no%20voice.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 0.0
+  "cut": "10.73s + 63.16s, looped where it repeats (match 0.95)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   64.157891
+  ]
  },
  "stone-head-island/struggle.mp3": {
   "title": "Bump in the Night",
@@ -3676,8 +5108,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Bump%20in%20the%20Night.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "8.80s + 30.00s, looped where it repeats (match 0.63)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   31.0
+  ]
  },
  "stone-head-island/chill-zone.mp3": {
   "title": "Temple of the Manes",
@@ -3686,8 +5122,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Temple%20of%20the%20Manes.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "7.04s + 59.98s, looped where it repeats (match 0.39)",
+  "lift": 1.0,
+  "loop": [
+   1.0,
+   60.977868
+  ]
  },
  "stone-head-island/elimination.mp3": {
   "title": "Summer Day",
@@ -3696,8 +5136,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Summer%20Day.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": 0.0
+  "cut": "24.47s + 48.06s, looped where it repeats (match 0.67)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   49.06161
+  ]
  },
  "stone-head-island/recap.mp3": {
   "title": "Townie Loop",
@@ -3706,8 +5150,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Townie%20Loop.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "70.01s + 21.33s, looped where it repeats (match 0.67)",
+  "lift": 0.8,
+  "loop": [
+   1.0,
+   22.333696
+  ]
  },
  "stone-head-island/interview.mp3": {
   "title": "Ancient Mystery Waltz (Vivace)",
@@ -3716,8 +5164,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ancient%20Mystery%20Waltz%20Vivace.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 1.1
+  "cut": "57.68s + 42.67s, looped where it repeats (match 0.76)",
+  "lift": 0.4,
+  "loop": [
+   1.0,
+   43.666871
+  ]
  },
  "badlands/opener.mp3": {
   "title": "Southern Gothic",
@@ -3726,8 +5178,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Southern%20Gothic.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 1.9
+  "cut": "36.25s + 45.72s, looped where it repeats (match 0.70)",
+  "lift": 1.4,
+  "loop": [
+   1.0,
+   46.716122
+  ]
  },
  "badlands/travel.mp3": {
   "title": "Wagon Wheel",
@@ -3736,8 +5192,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Wagon%20Wheel.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 2.1
+  "cut": "11.54s + 31.00s, looped where it repeats (match 0.65)",
+  "lift": 1.3,
+  "loop": [
+   1.0,
+   32.001451
+  ]
  },
  "badlands/challenge.mp3": {
   "title": "Western Streets",
@@ -3746,8 +5206,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Western%20Streets.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 50s",
-  "lift": 5.5
+  "cut": "11.33s + 34.67s, looped where it repeats (match 0.62)",
+  "lift": 5.7,
+  "loop": [
+   1.0,
+   35.667279
+  ]
  },
  "badlands/struggle.mp3": {
   "title": "Crowd Hammer",
@@ -3756,8 +5220,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Crowd%20Hammer.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "12.86s + 36.48s, looped where it repeats (match 0.62)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   37.48449
+  ]
  },
  "badlands/chill-zone.mp3": {
   "title": "Almost Bliss",
@@ -3766,8 +5234,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Almost%20Bliss.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 45s",
-  "lift": 0.0
+  "cut": "16.76s + 53.33s, looped where it repeats (match 0.95)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   54.333333
+  ]
  },
  "badlands/elimination.mp3": {
   "title": "Anamalie",
@@ -3776,8 +5248,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Anamalie.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 35s",
-  "lift": -0.0
+  "cut": "69.73s + 24.62s, looped where it repeats (match 0.42)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   25.615714
+  ]
  },
  "badlands/recap.mp3": {
   "title": "Funin and Sunin",
@@ -3786,8 +5262,12 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Funin%20and%20Sunin.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 30s",
-  "lift": 0.0
+  "cut": "15.58s + 35.56s, looped where it repeats (match 0.80)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   36.555714
+  ]
  },
  "badlands/interview.mp3": {
   "title": "Inspired",
@@ -3796,7 +5276,11 @@
   "file": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Inspired.mp3",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-  "cut": "0s + 40s",
-  "lift": 0.0
+  "cut": "28.49s + 48.00s, looped where it repeats (match 0.82)",
+  "lift": 0.0,
+  "loop": [
+   1.0,
+   49.003991
+  ]
  }
 }

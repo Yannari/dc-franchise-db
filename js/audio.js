@@ -534,6 +534,10 @@ export class AudioEngine {
       try {
         const src = ctx.createBufferSource();
         src.buffer = buffer; src.loop = true;
+        // (opt-in) `bed.loop: [start, end]` in seconds: loop there, not over the file's ends (an mp3 starts and ends on
+        // the encoder's silence; the Ridonculous Race cuts each bed with music before and after its loop)
+        const lp = Array.isArray(bed.loop) && bed.loop[1] > bed.loop[0] ? bed.loop : null;
+        if (lp) { src.loopStart = lp[0]; src.loopEnd = lp[1]; }
         const g = ctx.createGain();
         const now = ctx.currentTime;
         const peak = target * level;
@@ -543,7 +547,10 @@ export class AudioEngine {
         src.connect(g); g.connect(this._bedGain);
         // (opt-in) back where this bed left off, not its intro again
         const dur = buffer.duration || 0;
-        const offset = opts && opts.resume && dur && this._bedPos && this._bedPos[name] ? this._bedPos[name] % dur : 0;
+        // where a position falls once the music has gone round (inside the loop, for a bed that has one)
+        const wrap = p => (lp ? (p < lp[1] ? p : lp[0] + ((p - lp[0]) % (lp[1] - lp[0]))) : (dur ? p % dur : 0));
+        const back = opts && opts.resume && dur && this._bedPos && this._bedPos[name];
+        const offset = back ? wrap(this._bedPos[name]) : (lp ? lp[0] : 0);
         if (offset) src.start(0, offset); else src.start(0);
         const began = now;
         let stopped = false;
@@ -552,7 +559,7 @@ export class AudioEngine {
           stop: (t0, out = 1.2) => {
             try {
               // (opt-in) where it was when it began to go (a second, quicker stop does not move it on)
-              if (opts && opts.resume && dur && !stopped) { if (!this._bedPos) this._bedPos = {}; this._bedPos[name] = (offset + Math.max(0, t0 - began)) % dur; }
+              if (opts && opts.resume && dur && !stopped) { if (!this._bedPos) this._bedPos = {}; this._bedPos[name] = wrap(offset + Math.max(0, t0 - began)); }
               stopped = true;
               if (g.gain.cancelScheduledValues) g.gain.cancelScheduledValues(t0);
               if (g.gain.setValueAtTime) g.gain.setValueAtTime(g.gain.value, t0);

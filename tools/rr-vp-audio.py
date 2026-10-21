@@ -322,6 +322,81 @@ def decode(path, seconds):
     pass
   return np.concatenate(out).astype(np.float32) if out else np.zeros(0, np.float32)
 
+# ── where the music repeats (2026-10-21) ─────────────────────────────────
+# A bed used to be the track's first `len` seconds with its tail blended over its intro: two passages out of time with
+# each other for 3 s every time round, and the encoder's silence at both ends of the mp3 (no gapless header) a hole
+# on top. Now the loop is found: the stretch of the track whose end sounds like its start (the bands of the spectrum
+# a few seconds either side, compared at every start and every length near `len`), then set to the sample where the
+# two line up. The file carries a second of the music before the loop and the loop's own first second after it, and
+# the viewer loops between the two points (music-have.js LOOP), so the decoder's silence is never played.
+HOP, NFFT, PRE = 1024, 4096, 1.0
+
+def _bands(x):
+  win = np.hanning(NFFT).astype(np.float32)
+  edges = np.unique(np.round(np.geomspace(60, 9000, 49) * NFFT / SR).astype(int))
+  out, nfr = [], max(0, (len(x) - NFFT) // HOP)
+  for c in range(0, nfr, 512):
+    idx = (np.arange(c, min(nfr, c + 512)) * HOP)[:, None] + np.arange(NFFT)[None, :]
+    p = np.abs(np.fft.rfft(x[idx] * win, axis=1)) ** 2
+    out.append(np.stack([p[:, lo:hi].sum(1) for lo, hi in zip(edges[:-1], edges[1:])], 1))
+  f = np.log(np.concatenate(out) + 1e-6) if out else np.zeros((0, 1))
+  return f
+
+def find_loop(x, target, at=0.0, window=3.0):
+  """(start, length) in samples: the loop of about `target` seconds whose end runs on into its start."""
+  F = _bands(x)
+  e = F.mean(1)
+  F = F - F.mean(0)
+  F /= np.linalg.norm(F, axis=1, keepdims=True) + 1e-9
+  n, W = len(F), int(window * SR / HOP)
+  a_min = int(max(at, 4.0, PRE + 0.5) * SR / HOP) + W
+  loud = e > np.median(e) - 3.0                                     # never a quiet stretch matching a quiet stretch
+  best = (-9, 0, 0)
+  lo, hi = int(target * 0.6 * SR / HOP), int(target * 1.5 * SR / HOP)
+  hi = min(hi, n - W - a_min - int(PRE * SR / HOP) - 2)
+  lo = min(lo, hi)
+  if hi < int(15 * SR / HOP): raise ValueError('too short for a loop')
+  for L in range(lo, hi + 1):
+    s = np.sum(F[:n - L] * F[L:], 1)                                # how alike t and t+L sound
+    c = np.concatenate([[0], np.cumsum(s)])
+    t = np.arange(a_min, n - L - W)
+    if not len(t): continue
+    # (the second either side of the loop point counts as much as the few seconds around it)
+    w = max(1, W // 3)
+    score = 0.5 * (c[t + W] - c[t - W]) / (2 * W) + 0.5 * (c[t + w] - c[t - w]) / (2 * w) - 0.04 * abs(L * HOP / SR / target - 1)
+    score = np.where(loud[t] & loud[t + L], score, score - 1)        # (a quiet match only when nothing else)
+    k = int(np.argmax(score))
+    if score[k] > best[0]: best = (score[k], int(t[k]), L)
+  _, a, L = best
+  if not L: raise ValueError('no loop found')
+  find_loop.score = float(best[0])
+  a0, L0 = a * HOP + NFFT // 2, L * HOP
+  # to the sample: where the music at the end lines up with the music at the start
+  N, R = int(0.4 * SR), 2 * HOP
+  ref = x[a0 - N:a0 + N].astype(np.float64)
+  seg = x[a0 + L0 - R - N:a0 + L0 + R + N].astype(np.float64)
+  m = len(seg) + len(ref)
+  cor = np.fft.irfft(np.fft.rfft(seg, m) * np.conj(np.fft.rfft(ref, m)), m)[:len(seg) - len(ref) + 1]
+  en = np.sqrt(np.convolve(seg ** 2, np.ones(len(ref)), 'valid')) + 1e-9
+  d = int(np.argmax(cor / en)) - R
+  return a0, L0 + d
+
+def make_bed(x, a, n, xf=0.12):
+  """The file and its loop points (s): a second of the music before the loop, the loop, the loop's first second again."""
+  r, f = int(PRE * SR), int(xf * SR)
+  body = x[a:a + n].copy()
+  ramp = np.linspace(0, 1, f, dtype=np.float32)
+  # the last moment of the loop eases into what comes just before its start, so going round is the music going on
+  body[n - f:] = x[a + n - f:a + n] * (1 - ramp) + x[a - f:a] * ramp
+  y = np.concatenate([x[a - r:a], body, body[:r]]).astype(np.float32)
+  return y, (r / SR, (r + n) / SR)
+
+def seam_off(y, loop, h=int(0.05 * SR)):
+  """dB the last 0.6 s of the loop is off from the music that leads into its start (0: going round sounds like the piece)."""
+  i, j = round(loop[0] * SR), round(loop[1] * SR)
+  r = lambda v: 20 * np.log10(np.sqrt(np.mean(v ** 2)) + 1e-9)
+  return float(np.mean([abs(r(y[i - m * h:i - (m - 1) * h]) - r(y[j - m * h:j - (m - 1) * h])) for m in range(1, 13)]))
+
 def level(x, target_db):
   rms = np.sqrt(np.mean(x ** 2)) + 1e-9
   g = 10 ** (target_db / 20) / rms
@@ -350,10 +425,10 @@ def main():
     seconds = pick[2] if len(pick) > 2 else LEN.get(name, 45)
     p = pieces.get(title)
     if not p: print('NO SUCH PIECE', slot, title); continue
-    xf = 0 if sting else 3.0
     try:
       raw = fetch(cache, p['filename'], 3_200_000)
-      x = decode(raw, at + seconds + xf + 1)[int(at * SR):]
+      # a sting is cut from `at`; a bed is looked for in all of what was fetched, from `at` on
+      x = decode(raw, at + seconds + 1)[int(at * SR):] if sting else decode(raw, 300)
     except Exception as e:
       print('FAILED', slot, title, e); continue
     if len(x) < SR * 3: print('TOO SHORT', slot, title, len(x) / SR); continue
@@ -361,20 +436,23 @@ def main():
       x = x[: int(seconds * SR)]
       n = min(len(x), int(0.6 * SR)); x[-n:] *= np.linspace(1, 0, n) ** 2
       x, lift = level(x, -14)
+      loop, cut = None, f'{at}s + {seconds}s'
     else:
-      body = int(min(seconds, len(x) / SR - xf) * SR); t = int(xf * SR)
-      y = x[:body].copy()
-      if len(x) >= body + t and t:
-        # the tail after the cut fades out over the start, which fades in under it: the loop point is seamless
-        ramp = np.linspace(0, 1, t, dtype=np.float32)
-        y[:t] = x[:t] * np.sqrt(ramp) + x[body:body + t] * np.sqrt(1 - ramp)
+      try:
+        a, n = find_loop(x, seconds, at)
+      except ValueError as e:
+        print('NO LOOP', slot, title, len(x) / SR, e); continue
+      # (music that never quite comes round again is eased into its start over a beat or two, not cut on the sample)
+      y, loop = make_bed(x, a, n, 0.12 if find_loop.score >= 0.6 else 1.5)
+      if find_loop.score >= 0.6 and seam_off(y, loop) > 3: y, loop = make_bed(x, a, n, 1.5)
       x, lift = level(y, -17)
+      cut = f'{a / SR:.2f}s + {n / SR:.2f}s, looped where it repeats (match {find_loop.score:.2f})'
     lift = float(round(float(lift), 1))
     out = os.path.join(OUT, slot + '.mp3')
     encode(x, out)
     credits[slot + '.mp3'] = {'title': title, 'author': 'Kevin MacLeod', 'source': 'https://incompetech.com/music/royalty-free/index.html?isrc=' + (p.get('isrc') or ''),
       'file': SRC + urllib.parse.quote(p['filename']), 'license': 'CC BY 4.0', 'licenseUrl': 'https://creativecommons.org/licenses/by/4.0/',
-      'cut': f'{at}s + {seconds}s', 'lift': lift}
+      'cut': cut, 'lift': lift, **({'loop': [round(loop[0], 6), round(loop[1], 6)]} if loop else {})}
     print(f'{slot:34} {title:30} {len(x) / SR:5.1f}s {os.path.getsize(out) // 1024:4d} KB lift {lift}')
     json.dump(credits, open(cpath, 'w', encoding='utf8'), indent=1)
   # the credits, readable
@@ -388,4 +466,5 @@ def main():
     lines.append(f"| `{f}` | \"{c['title']}\" | {c['author']} (incompetech.com) | {c['file']} | [{c['license']}]({c['licenseUrl']}) | {c['cut']} |")
   open(os.path.join(OUT, 'CREDITS.md'), 'w', encoding='utf8').write('\n'.join(lines) + '\n')
 
-main()
+if __name__ == "__main__":
+  main()

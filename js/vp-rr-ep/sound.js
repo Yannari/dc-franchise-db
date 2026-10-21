@@ -15,7 +15,7 @@
 // Mix: music > voices > ambience; a confessional's bed sits lower, under the words.
 import { audio as engine, BED_CATALOG, CUE_CATALOG } from '../audio.js';
 import { PLACE_MUSIC, RACE_SOUNDS, AMBIENCE, placeFile, raceFile } from './music.js';
-import { HAVE, LIFT } from './music-have.js';
+import { HAVE, LIFT, LOOP } from './music-have.js';
 import { flatSteps, chaptersOf } from './steps.js';
 
 const MUSIC_VOL = 0.3, UNDER_VOICE = 0.2, AMB_VOL = 0.18, STING_VOL = 0.55, STING_DUCK = 0.22;
@@ -191,7 +191,7 @@ const bedId = f => 'rr:' + f;
 /** The engine's id for a bed (registered on first use): what the simulator pane's data-ambient names. */
 export function registerBed(b) {
   const id = bedId(b.file);
-  if (!BED_CATALOG[id]) BED_CATALOG[id] = { build: null, file: b.file, volume: Math.min(1, Math.round(b.vol * 10 ** ((LIFT[b.file] || 0) / 20) * 100) / 100), opts: RACE_BED_OPTS };
+  if (!BED_CATALOG[id]) BED_CATALOG[id] = { build: null, file: b.file, volume: Math.min(1, Math.round(b.vol * 10 ** ((LIFT[b.file] || 0) / 20) * 100) / 100), opts: RACE_BED_OPTS, ...(LOOP[b.file] ? { loop: LOOP[b.file] } : {}) };
   return id;
 }
 const buffers = {};

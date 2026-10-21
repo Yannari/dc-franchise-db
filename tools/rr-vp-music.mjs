@@ -61,5 +61,7 @@ writeFileSync('js/vp-rr-ep/music-have.js', `// Written by tools/rr-vp-music.mjs:
 export const HAVE = new Set(${JSON.stringify(all.filter(f => existsSync(f)).concat(Object.values(AMBIENCE).filter(f => existsSync(f))), null, 1)});
 // dB a file could not be raised by without clipping (tools/rr-vp-audio.py), given back on playback
 export const LIFT = ${JSON.stringify(Object.fromEntries(Object.entries(credits).filter(([, c]) => c.lift > 0.5).map(([f, c]) => ['assets/audio/rr/' + f, c.lift])), null, 1)};
+// where a bed loops, in seconds (tools/rr-vp-audio.py cuts it where the music repeats, with music either side)
+export const LOOP = ${JSON.stringify(Object.fromEntries(Object.entries(credits).filter(([, c]) => Array.isArray(c.loop)).map(([f, c]) => ['assets/audio/rr/' + f, c.loop])))};
 `);
 console.log(`README: ${filled}/${all.length} filled`);

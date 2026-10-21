@@ -116,7 +116,7 @@ twin-tower-bridge | task-22417670 | views | | |
 twin-tower-bridge | task-22417781 | skip:the masked kidnapper is painted in | | |
 twin-tower-bridge | task-22417960 | views | | |
 twin-tower-bridge | task-22417962 | views | | |
-red-sand-desert | chill-22410379 | mat | 90 | 34,94 |
+red-sand-desert | chill-22410379 | skip:Tomb Sands' Chill Zone (the pyramid tomb, a 2241xxxx frame), not this oasis: the desert's mat cut between two Chill Zones | | |
 red-sand-desert | travel-9435906 | views | | |
 red-sand-desert | travel-9435946 | arrive | 90 | 6,94 |
 iron-tower-city | arrive-9435851 | arrive | 90 | 4,48 |

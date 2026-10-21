@@ -57,3 +57,16 @@ describe('rr viewer repaint jobs', () => {
     }
   });
 });
+
+// (2026-10-20, the user: "is it normal that red sand desert has 2 differents chill zone?": Tomb Sands' pyramid Chill
+// Zone had been filed with the desert's frames, so the desert's mat cut between its oasis and the pyramid)
+describe('rr viewer Chill Zones', () => {
+  it("never shows another place's Chill Zone at a place's mat", () => {
+    const owner = new Map(), bad = [];
+    for (const [id, pl] of Object.entries(PLACE_PLATES)) for (const x of pl.st?.mat?.talk || []) {
+      if (owner.has(x.f) && owner.get(x.f) !== id) bad.push(`${x.f}: the Chill Zone of ${owner.get(x.f)} and of ${id}`);
+      owner.set(x.f, id);
+    }
+    expect(bad).toEqual([]);
+  });
+});

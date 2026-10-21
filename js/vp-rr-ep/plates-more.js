@@ -1250,16 +1250,6 @@ export const MORE = {
   ]
  },
  "red-sand-desert": {
-  "mat": [
-   {
-    "f": "chill-22410379",
-    "g": 90,
-    "x": [
-     34,
-     94
-    ]
-   }
-  ],
   "views": [
    {
     "f": "travel-9435906"
@@ -2525,6 +2515,13 @@ export const LEFT_OUT = {
  "twin-tower-bridge": {
   "task-22417781": "the masked kidnapper is painted in"
  },
+ "red-sand-desert": {
+  "chill-22410379": "Tomb Sands' Chill Zone (the pyramid tomb, a 2241xxxx frame), not this oasis: the desert's mat cut between two Chill Zones",
+  "cutout/camel-2": "a second camel; the camel ride uses the first",
+  "cutout/crocodile": "Tomb Sands' crocodile (used there, from its own folder)",
+  "cutout/mummy": "Tomb Sands' mummy (used there, from its own folder)",
+  "cutout/reed-boat": "Tomb Sands' reed boat (used there, from its own folder)"
+ },
  "pyramid-coast": {
   "chill-9446835": "somebody is standing at the left edge",
   "task-9446458": "somebody is standing at the stall"
@@ -2555,12 +2552,6 @@ export const LEFT_OUT = {
  "snow-peaks": {
   "present-22413694": "somebody is at the right edge",
   "cutout/Total Drama arcade dance pad-1": "the dance pads are painted into the slap-dance stage: the cut-out would draw them twice"
- },
- "red-sand-desert": {
-  "cutout/camel-2": "a second camel; the camel ride uses the first",
-  "cutout/crocodile": "Tomb Sands' crocodile (used there, from its own folder)",
-  "cutout/mummy": "Tomb Sands' mummy (used there, from its own folder)",
-  "cutout/reed-boat": "Tomb Sands' reed boat (used there, from its own folder)"
  },
  "fishing-cove": {
   "cutout/fisherman-local-Don": "the fisherman with Don's face, an earlier try; fisherman-local is used"

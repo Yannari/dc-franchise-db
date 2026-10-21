@@ -30,6 +30,7 @@
 // credited to the people behind the profile the room saw.
 import { SHOWS, seasonId, exitVerbs, CIRCLE_FORMAT } from '../shows.js';
 import { TWIST_CATALOG } from '../core.js';
+import { sentencesOf } from '../vp-ci/twist-alert.js';
 
 export const CIRCLE = CIRCLE_FORMAT;
 const slug = n => String(n || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -91,7 +92,14 @@ const POWER_SCENE = { hacker: 'hack', joker: 'joker-pick', burner: 'burner-expos
 export function ciTwistsPlayed(rows = []) {
   const mine = TWIST_CATALOG.filter(t => t.format === CIRCLE);
   const out = [];
-  const add = (episode, t) => { if (t && !out.some(o => o.episode === episode && o.type === t.id)) out.push({ episode, type: t.id, name: t.name }); };
+  // One entry per twist, with every episode it ran in and how it works in the room's words (the wiki printed
+  // "No description is recorded for this twist", once per episode).
+  const add = (episode, t) => {
+    if (!t) return;
+    const o = out.find(x => x.type === t.id);
+    if (!o) out.push({ episode, episodes: [episode], type: t.id, name: t.name, desc: sentencesOf(t.desc).join(' ') });
+    else if (!o.episodes.includes(episode)) o.episodes.push(episode);
+  };
   for (const [i, r] of rows.entries()) {
     const kinds = new Set((r.ci?.aired || []).map(s => s.kind));
     if (r.ci?.night) {

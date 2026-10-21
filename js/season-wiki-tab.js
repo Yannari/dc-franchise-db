@@ -1027,6 +1027,39 @@ export function buildWikiTab(s, { face = null, seasonRow = null } = {}) {
          the "never" claim below needs BOTH sources to say never, because a
          claim about zero is the one thing the grid can falsify outright. */
       const votesAgainst = p => (Number(p.votesReceived) || drawnAgainst(p));
+      /* THE CIRCLE HAS NO VOTES AND NO IMMUNITY (the user, 2026-10-21: "its the circle not
+         total drama find better trivia"). It printed "reached the end without ever having a
+         vote cast against them" and "won with 0 game wins and 0 votes". Its record is the
+         Ratings, the Influencers, and who played behind somebody else's face. */
+      if (fmt === 'the-circle') {
+        const ci = p => p.ci || {};
+        const finalist = p => p.status === 'Winner' || p.status === 'Finalist';
+        const times = n => (n === 1 ? 'once' : n === 2 ? 'twice' : `${n} times`);
+        const join = xs => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`);
+        const topInf = most(cast.map(p => ({ name: p.name, n: ci(p).influencerTimes || 0 })));
+        if (topInf?.n) trivia.push(`${esc(topInf.name)} was an Influencer more than anybody else (${times(topInf.n)}).`);
+        const topFirst = most(cast.map(p => ({ name: p.name, n: ci(p).firstPlaces || 0 })));
+        if (topFirst?.n > 1) trivia.push(`${esc(topFirst.name)} topped the ratings ${times(topFirst.n)}, more than anybody else.`);
+        const topBlocks = most(cast.map(p => ({ name: p.name, n: ci(p).blocksMade || 0 })));
+        if (topBlocks?.n > 1) trivia.push(`${esc(topBlocks.name)} had a hand in ${topBlocks.n} blockings, the most of anyone.`);
+        const cats = cast.filter(p => ci(p).mode === 'catfish' && ci(p).profile);
+        if (cats.length) trivia.push(`${cats.length === 1 ? 'One player' : `${cats.length} players`} played as somebody else: ${
+          join(cats.map(p => `${esc(p.name)} (as ${esc(ci(p).profile)})`))}.`);
+        const catFinal = cats.filter(finalist);
+        if (catFinal.length) trivia.push(`${join(catFinal.map(p => esc(p.name)))} made it to the finale behind ${
+          catFinal.length === 1 ? 'a catfish profile' : 'catfish profiles'}.`);
+        const pairs = [...new Set(cast.filter(p => (ci(p).sharedWith || []).length)
+          .map(p => [p.name, ...ci(p).sharedWith].sort().join(' and ')))];
+        for (const pr of pairs) trivia.push(`${esc(pr)} played the whole season as one profile.`);
+        const never = cast.filter(p => finalist(p) && p.ci && !ci(p).influencerTimes);
+        if (never.length) trivia.push(`${join(never.map(p => esc(p.name)))} reached the finale without ever being an Influencer.`);
+        const w = winnerName && cast.find(p => p.name === winnerName);
+        if (w?.ci) {
+          const inf = ci(w).influencerTimes || 0, fp = ci(w).firstPlaces || 0;
+          trivia.push(`${esc(winnerName)} won ${ci(w).mode === 'catfish' ? `as the catfish ${esc(ci(w).profile)}, ` : ''}${
+            inf ? `having been an Influencer ${times(inf)}` : 'without ever being an Influencer'}${fp ? ` and top-rated ${times(fp)}` : ''}.`);
+        }
+      } else {
       const comps = cast.map(p => ({ name: p.name, n: hasBlock
         ? (p.bb?.hohWins || 0) + (p.bb?.vetoWins || 0) + (p.bb?.blockBusterWins || 0)
         : shape === 'placements' ? (p.dr?.wins || 0)
@@ -1128,6 +1161,7 @@ export function buildWikiTab(s, { face = null, seasonRow = null } = {}) {
             win${wins === 1 ? '' : 's'} and ${vs}
             vote${vs === 1 ? '' : 's'} cast against them.`);
         }
+      }
       }
 
       /* A wiki section: an id, a heading with a rule under it, and an entry

@@ -4492,6 +4492,7 @@ export async function exportSeason(onStatus) {
       cast, seasonId: seasonId(fmt, _getSeasonNumber()),
       ciPhotos: fmt === CIRCLE_FORMAT ? (seasonConfig.ciPhotos || null) : null,
       dealt: fmt === CIRCLE_FORMAT ? (gs?.ci?.dealt || {}) : {},
+      pool: fmt === CIRCLE_FORMAT ? (Array.isArray(seasonConfig.ciPool) ? seasonConfig.ciPool : []) : [],
       portraitOf: name => { const p = (players || []).find(x => x?.name === name); return p ? { file: p.avatarFile || '', url: playerAvatarUrl(p) } : null; },
       token: studioToken(false), onStatus: m => (onStatus || (() => {}))(`Dramagram: ${m}`), photoURL,
     });

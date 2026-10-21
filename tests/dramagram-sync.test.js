@@ -16,6 +16,12 @@ describe('what goes to Dramagram', () => {
       dealt: { Hector: { mode: 'catfish' } } });
     expect(plan.map(p => [p.slug, p.kind, p.mood])).toEqual([['lila', 'throwback', 'nostalgic'], ['lila', 'naughty', 'flirty'], ['hector', 'real', null]]);
   });
+  it('a catfish\'s Circle profile goes up as a look back, never a Catfish face from the roster', () => {
+    const pool = [{ id: 'p1', face: 'photo:n1', photos: { throwback: 'photo:n2' } }, { id: 'face:Courtney', fromRoster: 'Courtney', face: 'portrait:Courtney' }];
+    const plan = photosToSync({ cast: ['Hector', 'Lila'], seasonId: 'ci-1', playersDb, pool,
+      dealt: { Hector: { mode: 'catfish', personaId: 'p1' }, Lila: { mode: 'catfish', personaId: 'face:Courtney' } } });
+    expect(plan.map(p => [p.slug, p.kind, p.mood])).toEqual([['hector', 'persona-profile', 'nostalgic'], ['hector', 'persona-throwback', 'nostalgic']]);
+  });
   it('a returnee\'s portrait only when no earlier season used it, and never twice', () => {
     const portraitOf = n => ({ Courtney: { file: 'courtney-ci.png', url: 'assets/avatars/courtney-ci.png' }, Lila: { file: 'lila.png', url: 'assets/avatars/lila.png' } })[n];
     const plan = photosToSync({ cast: ['Courtney', 'Lila'], seasonId: 'ci-2', playersDb, portraitOf });

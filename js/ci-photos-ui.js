@@ -101,6 +101,7 @@ export function photosPanelHTML() {
         <div class="ci-ph-cloud">${hasToken() ? '&#9729; New photos go to the cloud, like the character gallery' : '&#9679; Only in this browser until you back them up'}</div></div>
       <div class="ci-ph-acts"><button type="button" class="ci-btn" data-act="ph-backup">Circle, back up to the cloud</button>
         <button type="button" class="ci-btn" data-act="ph-export">Circle, export the pack</button>
+        <button type="button" class="ci-btn" data-act="ph-dramagram" title="Each player's own photos go on their Dramagram (a catfish persona's pictures never do). The export does this too.">Circle, send to Dramagram</button>
         <label class="ci-btn">Circle, import a pack<input type="file" accept="application/json,.json" data-phimport hidden></label></div>
     </div>
     ${W()._ciAlert ? `<div class="ci-ph-alert"><b>ALERT!</b><span>${esc(W()._ciAlert)}</span></div>` : ''}
@@ -247,6 +248,7 @@ export function onPhotosClick(b) {
     return true;
   } else if (act === 'ph-export') { ciExportPack(); return true; }
   else if (act === 'ph-backup') { ciBackUpPhotos(); return true; }
+  else if (act === 'ph-dramagram') { ciSendToDramagram(); return true; }
   ctx.done(false);
   return true;
 }
@@ -300,5 +302,25 @@ export async function ciBackUpPhotos() {
   ctx.done(false);
 }
 
-if (typeof window !== 'undefined') Object.assign(window, { ciSetSlotPhoto, ciDropFiles, ciExportPack, ciImportPack, ciBackUpPhotos });
+/** Each player's own photos onto their Dramagram now, without waiting for an export (js/dramagram-sync.js). */
+export async function ciSendToDramagram() {
+  let token = '';
+  try { token = localStorage.getItem('studio_api_token') || ''; } catch { /* private mode */ }
+  if (!token && typeof prompt === 'function') {
+    token = (prompt('Paste your studio token to post the photos on Dramagram. It is the same token the gallery and the Casting Studio use, and it is remembered on this device.') || '').trim();
+    if (token) { try { localStorage.setItem('studio_api_token', token); } catch { /* this session only */ } }
+  }
+  if (!token) return;
+  W()._ciAlert = 'Sending the photos to Dramagram…'; ctx.done(false);
+  try {
+    const { photosToSync, syncDramagram, readSynced } = await import('./dramagram-sync.js');
+    const playersDb = await fetch('players_database.json', { cache: 'no-store' }).then(r => r.json()).catch(() => null);
+    const plan = photosToSync({ cast: ctx.cast().map(p => p.name), ciPhotos: ctx.cfg().ciPhotos || {}, dealt: ctx.dealt() || {}, pool: ctx.poolNow(), playersDb, synced: readSynced() });
+    const r = await syncDramagram(plan, { token, photoURL });
+    W()._ciAlert = plan.length ? `${r.reason}.` : 'Nothing new to send: every player photo is already on Dramagram (or no player has a photo of their own yet).';
+  } catch (e) { W()._ciAlert = `Dramagram said no: ${e.message}`; }
+  ctx.done(false);
+}
+
+if (typeof window !== 'undefined') Object.assign(window, { ciSetSlotPhoto, ciDropFiles, ciExportPack, ciImportPack, ciBackUpPhotos, ciSendToDramagram });
 export { KINDS };

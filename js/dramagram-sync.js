@@ -35,7 +35,7 @@ const baseName = f => String(f || '').split(/[\\/]/).pop();
  * persona (their own slots are not theirs to post); `playersDb` the published record, for earlier seasons'
  * portraits; `portraitOf(name)` this season's { file, url }; `synced` what this browser already sent.
  */
-export function photosToSync({ cast = [], seasonId = null, ciPhotos = null, dealt = {}, playersDb = null, portraitOf = () => null, synced = new Set() } = {}) {
+export function photosToSync({ cast = [], seasonId = null, ciPhotos = null, dealt = {}, pool = [], playersDb = null, portraitOf = () => null, synced = new Set() } = {}) {
   const rows = playersDb?.players || playersDb || [];
   const out = [];
   const add = item => { if (!synced.has(item.key) && !out.some(o => o.key === item.key)) out.push(item); };
@@ -49,6 +49,15 @@ export function photosToSync({ cast = [], seasonId = null, ciPhotos = null, deal
       if (!String(face || '').startsWith('photo:') || (catfish && kind !== 'real')) continue;
       add({ slug, key: `${slug}|${face}`, kind, face, mood: SLOT_MOOD[kind] ?? null });
     }
+    // ...and a catfish's profile, the one the room saw: posted as a look back at the catfish era (the user,
+    // 2026-10-21: "i dont see pics from their circle profile in dramagram"). Never a Catfish face from the roster:
+    // that is another character's own portrait.
+    const persona = catfish ? (pool || []).find(x => x?.id === dealt[name].personaId) : null;
+    if (persona && !persona.fromRoster) {
+      for (const [kind, face] of Object.entries({ profile: persona.face, ...(persona.photos || {}) })) {
+        if (String(face || '').startsWith('photo:')) add({ slug, key: `${slug}|${face}`, kind: `persona-${kind}`, face, mood: 'nostalgic' });
+      }
+    }
     // A returnee's new look: a portrait none of their earlier seasons used.
     const now = portraitOf(name);
     const earlier = (rec?.seasonDetails || []).filter(d => d && d.seasonId !== seasonId);
@@ -61,7 +70,7 @@ export function photosToSync({ cast = [], seasonId = null, ciPhotos = null, deal
   return out;
 }
 
-function readSynced() {
+export function readSynced() {
   try { return new Set(JSON.parse(localStorage.getItem(SYNCED_KEY) || '[]')); } catch { return new Set(); }
 }
 function writeSynced(set) {
@@ -103,8 +112,8 @@ export async function syncDramagram(plan, { token, onStatus = () => {}, photoURL
 }
 
 /** The export's call: plan from the season just exported, then send. */
-export async function syncAfterExport({ cast, seasonId, ciPhotos = null, dealt = {}, portraitOf, token, onStatus, photoURL }) {
+export async function syncAfterExport({ cast, seasonId, ciPhotos = null, dealt = {}, pool = [], portraitOf, token, onStatus, photoURL }) {
   const playersDb = await fetch('players_database.json', { cache: 'no-store' }).then(r => r.json()).catch(() => null);
-  const plan = photosToSync({ cast, seasonId, ciPhotos, dealt, playersDb, portraitOf, synced: readSynced() });
+  const plan = photosToSync({ cast, seasonId, ciPhotos, dealt, pool, playersDb, portraitOf, synced: readSynced() });
   return syncDramagram(plan, { token, onStatus, photoURL });
 }

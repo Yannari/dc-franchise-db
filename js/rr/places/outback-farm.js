@@ -10,6 +10,10 @@ export default {
       mishaps: [['kangaroo-in-the-road', 15]], mishapRate: 0.1 },
     { id: 'bunnies', called: 'the farm', kind: 'allin', types: ['search', 'strength'], base: 30, pass: 0.5, loopCost: 10, opens: 360, closes: 1200,
       plate: 'wheat field, barn', label: 'All-In: the rabbits',
+      // the farmer and the sack at the fence; into the wheat after them (they zigzag away); the white one, spotted down on
+      // the jetty (it gets away); the sack (badly tied: they escape, count again); the farmer's count
+      stages: [{ id: 'the-farmer', share: 0.3, risk: 0 }, { id: 'into-wheat', share: 1, risk: 0.6 }, { id: 'white-rabbit', share: 0.6, risk: 0.6 },
+        { id: 'the-sack', share: 0.8, risk: 0.8 }, { id: 'the-count', share: 0.3, risk: 0 }],
       desc: "The farmer's wheat field is overrun with rabbits, and both partners have to catch ten of them and put them in a sack. Rabbits are fast, they zigzag, and they slip out of a badly tied sack, so a team that lets them escape counts again from the rabbits still in the bag. One rare white rabbit lives in the field, and catching it counts as all ten at once. When the farmer has counted ten in the sack, or seen the white one, he hands over the next tip." },
     { id: 'valley-glide', kind: 'travel', mode: 'glider', base: 25, cost: 0, plate: 'valley glider launch', label: 'Glide over the valley',
       mishaps: [['loses-the-thermal', 15]], mishapRate: 0.1 },

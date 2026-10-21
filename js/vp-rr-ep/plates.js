@@ -1037,6 +1037,17 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'outback-farm': {
+    // (the farm fence; the wheat; the jetty where the white one sits; the burnt field with the sack; the hill and the sack)
+    bunnies: {
+      'the-farmer': { label: 'THE SACK', plate: ['task-9442837', { deco: [['sack', 56, 94, 6]] }] },
+      'into-wheat': { label: 'INTO THE WHEAT', plate: ['task-9442851', { mode: 'chase', judge: null }], fail: ['task-9442851', { mode: 'chase', judge: null }], stamp: 'MISSED' },
+      'white-rabbit': { label: 'THE WHITE ONE', plate: ['task-9442855', { people: undefined, g: 50, x: [6, 28] }], fail: ['task-9442855', { people: undefined, g: 50, x: [6, 28] }], stamp: 'GONE' },
+      'the-sack': { label: 'IN THE SACK', plate: ['task-9442852', { deco: [['sack', 88, 94, 7]] }],
+        fail: ['task-9442852', { deco: [['sack', 88, 94, 7], ['bunny', 30, 94, 3, { move: 'wander', span: -20, dur: 2 }], ['bunny', 46, 94, 3, { move: 'wander', span: 24, dur: 2.4 }]] }], stamp: 'ESCAPED' },
+      'the-count': { label: 'THE COUNT', plate: ['task-9442875', {}] },
+    },
+  },
   'swamp-prison': {
     // (the cell, its cracked wall, the hole dug through; the prison gate; the junk on the bank, the river, the dock)
     'prison-cell': {

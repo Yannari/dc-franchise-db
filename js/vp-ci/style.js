@@ -483,6 +483,10 @@ export const CIV_CSS = `
 .civ-gpost .by{font-weight:900;font-size:.78cqw;letter-spacing:.08em;margin-top:.3cqw;display:flex}.civ-gpost .by em{margin-left:auto;font-style:normal;color:#ff4fb4}
 .civ-gpost .cap{font-size:.75cqw;line-height:1.3;color:#cfd6ff;max-height:2cqw;overflow:hidden}
 .civ-gpost .tags{display:flex;flex-wrap:wrap;gap:.2cqw;margin-top:.2cqw}.civ-gpost .tags span{font-size:.7cqw;padding:.1cqw .35cqw;border-radius:99px;background:rgba(58,168,255,.2)}
+/* the author's posted photos (boards.js): Two Faced side by side, Flashback's childhood photo over the card */
+.civ-gpost.two .phs{display:grid;grid-template-columns:1fr 1fr;gap:.3cqw}
+.civ-gpost.two .ph{position:relative}.civ-gpost.two .ph small{position:absolute;left:.3cqw;bottom:.3cqw;font-size:.55cqw;font-weight:900;letter-spacing:.1em;background:rgba(0,0,0,.6);padding:.1cqw .3cqw;border-radius:.2cqw}
+.civ-gkid{width:46%;aspect-ratio:1;margin:0 auto .8cqw;border-radius:.6cqw;background:#2a2d6a center/cover;border:.25cqw solid #fff;box-shadow:0 .6cqw 1.6cqw rgba(0,0,0,.45);filter:sepia(.25) saturate(.85)}
 .civ-gpost.won{box-shadow:0 0 2.4cqw rgba(255,210,63,.7);border-color:#ffd23f}
 .civ-gscore{display:flex;align-items:center;justify-content:center;gap:1.4cqw}
 .civ-gscore>div{display:flex;align-items:center;gap:.3cqw}.civ-gscore b{font-weight:900;font-size:3.4cqw;margin:0 .8cqw;color:#ffd23f}

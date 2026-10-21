@@ -25,6 +25,7 @@ import { GAMES } from '../ci/games-data.js';
 import { FACTS } from '../ci/games-content.js';
 import { esc, hashify, nameOf, ringOf, faceUrl, bg, ringBg, dlg, cam, tile, where, speakerAt, bgUi } from './parts.js';
 import { faceOf } from './steps.js';
+import { postedPhoto } from '../ci/photos.js';
 
 const PRIZE = { immunity: 'PRIZE · IMMUNITY', video: 'PRIZE · A VIDEO FROM HOME', party: 'PRIZE · A PARTY', photo: 'PRIZE · A NEW PHOTO', trophy: 'PRIZE · A TROPHY' };
 const TONE = { good: 'good', bad: 'bad', funny: 'funny' };
@@ -124,7 +125,9 @@ const BOARDS = {
     const words = (FACTS[fact.promptId] || []).find(f => f.id === fact.factId)?.text || '';
     const guessers = after.filter(b => b.kind === 'guessed').map(b =>
       `<div class="civ-grow">${tile(row, b.by, 'row')}<b class="${owner ? (b.right ? 'right' : 'wrong') : ''}">${owner ? (b.right ? '✓' : '✗') : '…'}</b></div>`).join('');
-    return `${card(promptText(g, fact.promptId) || `ROUND ${r + 1}`, words ? `“${words}”` : 'Who wrote this?', 'fact')}
+    // Flashback: the childhood photo itself, when the author made it (whose it is stays hidden until the owner).
+    const kid = (g.photos || []).includes('childhood') ? faceUrl(postedPhoto(row.ci.profiles?.[fact.about], 'childhood')) : '';
+    return `${kid ? `<div class="civ-gkid"${bg(kid)}></div>` : ''}${card(promptText(g, fact.promptId) || `ROUND ${r + 1}`, words ? `“${words}”` : 'Who wrote this?', 'fact')}
       <div class="civ-gowner">${owner ? tile(row, owner.by, 'land won', '<span class="civ-badge">IT WAS THEM</span>') : '<div class="civ-mtile row hidden"><div class="ph">?</div><div class="n">WHO WROTE IT?</div></div>'}</div>${guessers}`;
   },
   make(row, g, { list, cur, textOf }) {
@@ -155,8 +158,18 @@ const BOARDS = {
     const posts = list.filter(b => b.kind === 'post');
     if (!posts.length) return rules(g);
     const winner = list.find(b => b.kind === 'winner')?.by;
+    // The photo the game asked for, when the author made it (Two Faced: the naughty and the nice side by side);
+    // else the profile photo.
+    const kinds = g.photos || [];
     return `<div class="civ-gfeed">${posts.map(p => {
-      const url = faceUrl(faceOf(row, p.by, 'profile'));
+      const prof = row.ci.profiles?.[p.by];
+      const shots = (g.id === 'two-faced' ? kinds : [kinds.map(k => postedPhoto(prof, k)).find(Boolean) ? kinds.find(k => postedPhoto(prof, k)) : null])
+        .map(k => k && faceUrl(postedPhoto(prof, k))).filter(Boolean);
+      const url = shots[0] || faceUrl(faceOf(row, p.by, 'profile'));
+      if (shots.length > 1) return `<div class="civ-gpost two${p.i === cur?.i ? ' land' : ''}${p.by === winner ? ' won' : ''}">
+        <div class="phs">${shots.map((u, i) => `<div class="ph"${bg(u)}><small>${i ? 'NICE' : 'NAUGHTY'}</small></div>`).join('')}</div>
+        <div class="by">${esc(nameOf(row, p.by).toUpperCase())} <em>♥ ${p.n ?? 0}</em></div>
+        <div class="cap">${hashify(textOf(p.i).slice(0, 120))}</div><div class="tags">${list.filter(b => b.kind === 'tag' && b.about === p.by).map(b => `<span>${hashify(textOf(b.i))}</span>`).join('')}</div></div>`;
       const tags = list.filter(b => b.kind === 'tag' && b.about === p.by).map(b => `<span>${hashify(textOf(b.i))}</span>`).join('');
       return `<div class="civ-gpost${p.i === cur?.i ? ' land' : ''}${p.by === winner ? ' won' : ''}">
         <div class="ph"${bg(url)}>${url ? '' : esc(nameOf(row, p.by)[0])}</div>

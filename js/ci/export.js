@@ -167,7 +167,23 @@ export function ciPlacements(rows = [], record = null) {
   for (const h of history) for (const x of h.exits) lastExit.set(x.name, { ...x, episode: h.episode });
   const counts = ciCounts(rows);
   const fan = record?.fanFavorite || null;
-  const out = Object.entries(recPlayers).map(([n, r]) => {
+  // Two people on one profile: a romance with it is its face's (the name and pictures it was had with). A record
+  // built before that rule gave it to both (the site had Luis as Lila's showmance; it was Mateo), so it is put
+  // right here too, from the rows: the partner becomes the face, and the other one of the two has none.
+  const faceOf = new Map();
+  for (const r of rows) for (const p of Object.values(r.ci?.profiles || {})) {
+    if ((p.people || []).length < 2) continue;
+    const face = p.people.find(x => x.split(' ')[0] === p.name) || p.people[0];
+    for (const x of p.people) faceOf.set(x, face);
+  }
+  const romances = (n, list = []) => {
+    if (faceOf.has(n) && faceOf.get(n) !== n) return [];
+    const out = [];
+    for (const s of list) { const partner = faceOf.get(s.partner) || s.partner; if (!out.some(o => o.partner === partner)) out.push({ ...s, partner }); }
+    return out;
+  };
+  const out = Object.entries(recPlayers).map(([n, r0]) => {
+    const r = { ...r0, showmances: romances(n, r0.showmances) };
     const c = counts[n] || { influencerTimes: 0, firstPlaces: 0, blocksMade: 0, catfish: false, places: [], sharedWith: [] };
     const x = lastExit.get(n);
     const winner = !!r.winner;

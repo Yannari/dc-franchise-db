@@ -141,7 +141,7 @@ export const GAMES = [
       nm('murder', 'And the one who has to go.', 'bad'),
       nm('friend', 'And one to keep as a friend forever.', 'good'),
     ] },
-  { id: 'naughty-nice', name: 'Naughty and Nice', family: 'name', purpose: 'divide', prize: 'photo', source: 'US 6 Ep 9',
+  { id: 'naughty-nice', photos: ['naughty', 'nice'], name: 'Naughty and Nice', family: 'name', purpose: 'divide', prize: 'photo', source: 'US 6 Ep 9',
     rules: ['Players have posted a naughty photo and a nice photo. Everyone will then vote for the naughtiest and the nicest Player.'],
     prompts: [
       nm('naughtiest', 'The naughtiest Player.', 'funny'),
@@ -194,7 +194,7 @@ export const GAMES = [
       q('morning', 'Your morning routine takes…'),
       q('text', 'When you get a text, you reply…'),
     ] },
-  { id: 'flashback', name: 'Flashback Photos & Quiz', family: 'guess', purpose: 'learn', prize: 'party', source: 'US 3 Ep 3',
+  { id: 'flashback', photos: ['childhood'], name: 'Flashback Photos & Quiz', family: 'guess', purpose: 'learn', prize: 'party', source: 'US 3 Ep 3',
     rules: ['Players have shared their childhood photos. You must guess which Player is in each photo. The winner will be invited to a party.'],
     prompts: [
       q('baby', 'A baby photo.'),
@@ -255,13 +255,13 @@ export const GAMES = [
     prompts: [{ id: 'dating', text: 'A dating profile for another Player.', stats: ['social', 'intuition'], about: true }] },
 
   // ── photo: post it, the room reacts ───────────────────────────────────
-  { id: 'hashtag-this', name: 'Hashtag This', family: 'photo', purpose: 'learn', prize: 'none', source: 'US 1 Ep 5',
+  { id: 'hashtag-this', photos: ['nice', 'means'], name: 'Hashtag This', family: 'photo', purpose: 'learn', prize: 'none', source: 'US 1 Ep 5',
     rules: ['Players must post a photo to the Newsfeed. The rest of The Circle will give it a hashtag.'] },
-  { id: 'two-faced', name: 'Two Faced', family: 'photo', purpose: 'learn', prize: 'none', source: 'US 2 Ep 5',
+  { id: 'two-faced', photos: ['naughty', 'nice'], name: 'Two Faced', family: 'photo', purpose: 'learn', prize: 'none', source: 'US 2 Ep 5',
     rules: ['Players must post two photos: a naughty one and a nice one, with a hashtag for each.'] },
-  { id: 'throwback-thirsty', name: 'Throwback Thirsty', family: 'photo', purpose: 'bond', prize: 'none', source: 'US 7 Ep 2',
+  { id: 'throwback-thirsty', photos: ['throwback'], name: 'Throwback Thirsty', family: 'photo', purpose: 'bond', prize: 'none', source: 'US 7 Ep 2',
     rules: ["It's Throwback Thirsty. Post your steamiest old photo, and the other Players will react with an emoji."] },
-  { id: 'this-is-me', name: 'This Is Me', family: 'photo', purpose: 'learn', prize: 'none', source: 'US 3 Ep 2',
+  { id: 'this-is-me', photos: ['means'], name: 'This Is Me', family: 'photo', purpose: 'learn', prize: 'none', source: 'US 3 Ep 2',
     rules: ['Players must share a photo that means something to them, and tell the story behind it.'] },
 
   // ── team: captains pick, teams compete ────────────────────────────────

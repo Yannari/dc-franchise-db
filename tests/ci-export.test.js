@@ -224,3 +224,21 @@ describe('The Circle exporter', () => {
     for (const r of rows) expect(episodeText(r).length, `episode ${r.num}`).toBeGreaterThan(200);
   });
 });
+
+// The user, 2026-10-21: the site had Luis as Lila's showmance; it was Mateo, the face of the profile the brothers
+// shared. A record built before the rule gave the romance to both; the export puts it right from the rows.
+describe('a showmance with a shared profile', () => {
+  it('is the face\'s, and the other one of the two has none', async () => {
+    const { ciPlacements } = await import('../js/ci/export.js');
+    const rows = [{ num: 1, ci: { profiles: { '@mateo': { name: 'Mateo', people: ['Mateo', 'Luis'] }, '@lila': { name: 'Lila', people: ['Lila'] } }, aired: [] } }];
+    const record = { players: {
+      Lila: { placement: 1, winner: true, showmances: [{ partner: 'Mateo', ended: 'intact' }, { partner: 'Luis', ended: 'intact' }] },
+      Luis: { placement: 7, showmances: [{ partner: 'Lila', ended: 'intact' }] },
+      Mateo: { placement: 7, showmances: [{ partner: 'Lila', ended: 'intact' }] } } };
+    const p = Object.fromEntries(ciPlacements(rows, record).map(x => [x.name, x]));
+    expect(p.Lila.showmance).toBe('Mateo');
+    expect(p.Lila.showmances).toBeUndefined();
+    expect(p.Luis.showmance).toBeUndefined();
+    expect(p.Mateo.showmance).toBe('Lila');
+  });
+});

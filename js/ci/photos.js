@@ -83,6 +83,22 @@ export function seasonFace(face, as = 'profile', cfg = (typeof window !== 'undef
   return (as === 'cam' ? mine.real : mine.profile) || face;
 }
 
+/** A profile's posted photo of a kind (a game's post, the earned photo), as the row describes the profile:
+ *  the persona's slot when it is a catfish, the player's own otherwise (a shared profile: its face's). null when
+ *  the author made none, and the screen keeps the profile photo. */
+export function postedPhoto(prof, kind, cfg = (typeof window !== 'undefined' && window.seasonConfig) || {}) {
+  if (!prof) return null;
+  if (prof.mode === 'catfish' && prof.personaId) {
+    const id = String(prof.personaId);
+    if (id.startsWith('face:')) return cfg.ciPhotos?.[id.slice(5)]?.[kind] || null;
+    const persona = (cfg.ciPool || []).find(x => x.id === prof.personaId);
+    return (persona && kind !== 'profile' && persona.photos?.[kind]) || null;
+  }
+  const people = prof.people || [];
+  const n = people.find(x => x.split(' ')[0] === prof.name) || people[0];
+  return (n && cfg.ciPhotos?.[n]?.[kind]) || null;
+}
+
 // ── Prompts ────────────────────────────────────────────────────────────
 // What each photo is, in words an image model takes. A persona's are built
 // from its picks, so every photo of it is the same person.

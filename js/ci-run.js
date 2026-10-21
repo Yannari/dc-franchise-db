@@ -167,6 +167,10 @@ function _options() {
     fixed: (seasonConfig.twistSchedule || []).some(b => b?.random && _circleIds().has(b.type)),
     // Surprise twists off: only what is on the timeline happens (ci/timeline.js).
     surprises: seasonConfig.ciSurprises !== false,
+    // Which posted photos each player has (the Photos panel): a game that shows them is drawn more (ci/games.js photoShare).
+    photos: Object.fromEntries(Object.entries(seasonConfig.ciPhotos || {})
+      .map(([n, s]) => [n, Object.keys(s || {}).filter(k => s[k] && k !== 'profile' && k !== 'real').sort()])
+      .filter(([, ks]) => ks.length)),
   };
 }
 

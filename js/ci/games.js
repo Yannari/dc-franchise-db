@@ -467,7 +467,11 @@ export function awardPrize(state, rng, game, winners, sc) {
   const all = sc.seenBy;
   for (const w of winners) {
     if (game.prize === 'party') state.partyNext = true;
-    if (game.prize === 'photo') for (const o of all) if (o !== w) bump(o, w, 'affection', 0.2);
+    if (game.prize === 'photo') {
+      for (const o of all) if (o !== w) bump(o, w, 'affection', 0.2);
+      // The new photo goes up from the next episode (vp-ci/steps.js faceOf: the earned slot).
+      if (state.profiles[w] && state.profiles[w].earnedDay == null) state.profiles[w].earnedDay = state.day;
+    }
     if (game.prize === 'video') (state.homeVideoFor ||= []).push(w);
     if (game.prize === 'immunity') state.immuneNext[w] = true;
     // A trophy: the winner glows, and the room starts to see them as a threat.
@@ -513,6 +517,25 @@ function mutualSpark(state) {
     && rel(x, y, 'attraction') > 3 && rel(y, x, 'attraction') > 3));
 }
 
+/** How many of the room have the author's photos for this game (0..1): a persona's own slots, a player's
+ *  (options.photos, from the Photos panel). The user, 2026-10-21: "there was no game where they were asking for
+ *  other photos so nobody uses those photos". A photo prize asks for the earned photo. */
+export function photoShare(state, game) {
+  const kinds = [...(game.photos || []), ...(game.prize === 'photo' ? ['earned'] : [])];
+  if (!kinds.length || !state.active.length) return 0;
+  const mine = state.options?.photos || {};
+  const has = h => {
+    const p = state.profiles[h];
+    if (p.mode === 'catfish' && p.personaId) {
+      const persona = (state.pool || []).find(x => x.id === p.personaId);
+      const own = persona?.photos || (String(p.personaId).startsWith('face:') ? Object.fromEntries((mine[p.personaId.slice(5)] || []).map(k => [k, 1])) : {});
+      return kinds.some(k => own[k]);
+    }
+    return kinds.some(k => (mine[p.players[0]] || []).includes(k));
+  };
+  return state.active.filter(has).length / state.active.length;
+}
+
 /** Can this game be played by the room as it is today? */
 export function playable(state, game) {
   const n = state.active.length;
@@ -540,6 +563,8 @@ export function pickGame(state, rng, { days = 13 } = {}) {
     if (g.purpose === 'catfish') w *= 1 + susp * 3;
     if (g.purpose === 'divide' && state.day > days * 2 / 3) w *= 2;
     if (g.purpose === last.at(-1)) w *= 0.3;
+    // Photos the author made for a game bring it on: with the whole room's, about eight times as likely.
+    w *= 1 + photoShare(state, g) * 7;
     return [g, w];
   });
   const total = weighted.reduce((s, [, w]) => s + w, 0);

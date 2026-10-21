@@ -382,7 +382,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
           // `portrait:<name>`, or null); age/job for the profile card. The
           // screens read these (js/vp-ci), never the engine's state.
           [h, { name: p.shown?.name, people: [...p.players], mode: p.mode, face: p.shown?.face ?? null, room: state.rooms?.[h] ?? null,
-            age: p.shown?.age ?? null, job: p.shown?.job ?? null, personaId: p.personaId ?? null,
+            age: p.shown?.age ?? null, job: p.shown?.job ?? null, personaId: p.personaId ?? null, earnedDay: p.earnedDay ?? null,
             status: p.shown?.status ?? null, reason: p.reason ?? null, edits: [...(p.edits || [])],
             bio: (() => { const pr = p.personaId && state.pool.find(x => x.id === p.personaId); return pr ? (pr.bio || bioFor(pr)) : null; })() }])),
         // Who each player really is (the arrival screens): the viewer is

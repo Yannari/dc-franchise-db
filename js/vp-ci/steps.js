@@ -19,7 +19,7 @@
 // and take their kinds from this map.
 import { TITLES } from '../ci/transcript.js';
 import { GAMES } from '../ci/games-data.js';
-import { seasonFace } from '../ci/photos.js';
+import { seasonFace, postedPhoto } from '../ci/photos.js';
 
 const APT = new Set(['group-chat', 'welcome', 'chat', 'date', 'plead', 'joker-chat', 'life', 'home-video', 'report', 'recognise', 'lurk', 'hack-undone', 'after-party', 'pair-arrival', 'farewell']);
 const ALERT = new Set(['alert', 'power-reveal', 'disrupter', 'hack', 'no-block', 'mission']);
@@ -53,6 +53,8 @@ export function faceOf(row, h, as = 'profile', person = null) {
   // The author's own photos over the portrait (ci/photos.js seasonFace). On camera it is the person talking: one of
   // a shared profile's two, not always the first (the user, 2026-10-20: "I only see 1 person talking").
   if (as === 'cam') { const n = personNamed(row, h, person) || p.people?.[0]; return n ? seasonFace(`portrait:${n}`, 'cam') : null; }
+  // A photo prize won in an earlier episode: the new photo is the profile photo now.
+  if (as === 'profile' && p.earnedDay != null && p.earnedDay < (row.day ?? Infinity)) { const e = postedPhoto(p, 'earned'); if (e) return e; }
   return seasonFace(p.face ?? null, 'profile');
 }
 

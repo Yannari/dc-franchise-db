@@ -18,12 +18,12 @@ export const VISIT = {
       { by: 'a', say: "I just want to meet my friend. That's it. No game." },
     ], beat: '{a} grabs a jacket on the way out.' },
     { id: 'visit.choose.friend.03', turns: [
-      { by: 'a', say: "Somebody in here needs to know I'm rooting for them. In person." },
+      { by: 'a', say: "Somebody in here needs to know I'm rooting for {b.obj}. In person." },
     ] },
   ],
   'visit.choose.answers': [
     { id: 'visit.choose.answers.01', turns: [
-      { by: 'a', say: "Somebody blocked me. I want to look them in the eye and hear why." },
+      { by: 'a', say: "Somebody blocked me. I want to look {b.obj} in the eye and hear why." },
     ], beat: '{a} walks out of the apartment without looking back.' },
     { id: 'visit.choose.answers.02', turns: [
       { by: 'a', react: "Oh, I'm going to see an Influencer. You'd better believe it." },
@@ -37,7 +37,7 @@ export const VISIT = {
     ], beat: '{a} puts on shoes without sitting down.' },
     { id: 'visit.choose.answers.05', turns: [
       { by: 'a', react: "I know who's getting a knock on the door tonight." },
-      { by: 'a', say: "And they're gonna explain this to my face." },
+      { by: 'a', say: "And {b.sub} can explain this to my face." },
     ] },
     { id: 'visit.choose.answers.06', turns: [
       { by: 'a', say: "They made this decision. They can own it. Face to face." },
@@ -56,18 +56,18 @@ export const VISIT = {
   ],
   'visit.choose.apology': [
     { id: 'visit.choose.apology.01', turns: [
-      { by: 'a', say: "Somebody deserves to hear it from me, face to face. I owe them that." },
+      { by: 'a', say: "Somebody deserves to hear it from me, face to face. I owe {b.obj} that." },
     ] },
     { id: 'visit.choose.apology.02', turns: [
       { by: 'a', say: "I have one more thing to do. I need to say sorry before I go." },
     ], beat: '{a} takes a breath at the door before opening it.' },
     { id: 'visit.choose.apology.03', turns: [
-      { by: 'a', say: "Somebody was nothing but good to me, and I wasn't always straight with them. That changes tonight." },
+      { by: 'a', say: "Somebody was nothing but good to me, and I wasn't always straight with {b.obj}. That changes tonight." },
     ] },
   ],
   'visit.wait': [
     { id: 'visit.wait.01', turns: [
-      { by: 'a', react: "'The blocked Player is on their way to visit one of you.' Oh no. Oh no, no, no." },
+      { by: 'a', react: "'The blocked Player will now visit one of you in person.' Oh no. Oh no, no, no." },
     ], beat: '{a} runs around the apartment picking up clothes from the floor.' },
     { id: 'visit.wait.02', turns: [
       { by: 'a', react: "Is {b} coming here? Please don't come here." },

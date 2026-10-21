@@ -104,7 +104,7 @@ export const FRESH_DAYS = {
     T(['a', 'send', "Let's not let people pile on {c} after that"], ['b', 'send', "I'll defend {c}. Promise"]),
     T(['a', 'send', "Honestly, I trust {c} more after that video, not less"], ['b', 'send', "Same. It felt like a last-minute attack"]),
     T(['a', 'send', "Did that goodbye change how you see {c}?"], ['b', 'send', "No. One video doesn't erase everything {c} has done"], ['a', 'send', "That's what I needed to hear"]),
-    T(['a', 'send', "Whoever left shouldn't get to decide who we trust"], ['b', 'send', "Right? We know {c}. They're gone"]),
+    T(['a', 'send', "Whoever left shouldn't get to decide who we trust"], ['b', 'send', "Right? We know {c}. One video doesn't change that"]),
     T(['a', 'send', "I feel bad for {c}. That was a lot to hear in front of everybody"], ['b', 'send', "Let's both message {c} later. Show some love"], ['a', 'send', "Love that idea {e:heart}"]),
     T(['a', 'send', "That video felt like it was about getting blocked, not about {c}"], ['b', 'send', "Exactly. Sour grapes"]),
     T(['a', 'send', "I'm sticking with {c}. Are you?"], ['b', 'send', "One hundred percent"]),

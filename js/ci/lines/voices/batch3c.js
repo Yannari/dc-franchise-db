@@ -182,7 +182,7 @@ export const VOICES = [
     hype: "{b}'s answers are ALL I can think about right now!", dry: "{b}'s answers are all I can think about.", blunt: "Can't stop thinking about {b}'s answers.",
     goofy: "{b}'s answers are all I can think about right now! They're stuck in my head! Like a song!", shy: "{b}'s answers are all I can think about right now.", chill: "{b}'s answers are all I can think about.",
     catty: "{b}'s answers are all I can think about right now. Every single one.", diva: "{b}'s answers consume me, darling.", stoic: "Thinking about {b}'s answers." }],
-  ['game.statement.conclusion.04', "{b} was on their own again and again. That's raising some flags in my head.", {
+  ['game.statement.conclusion.04', "{b} was on {b.posAdj} own again and again. That's raising some flags in my head.", {
     hype: "{b} stood ALONE again and AGAIN! That's raising FLAGS!", dry: "{b} stood alone again and again. That's raising flags.", blunt: "{b} stood alone again and again. Red flags.",
     goofy: "{b} stood alone again and again! That's raising flags in my head! Little red flags! Waving!", shy: "{b} stood alone again and again. That's raising some flags for me.", chill: "{b} stood alone again and again. Raising some flags.",
     catty: "{b} stood alone again and again. That's raising flags. Lots of them.", diva: "{b} stood alone again and again, darling. Flags are raised.", stoic: "{b} alone again. Flags." }],

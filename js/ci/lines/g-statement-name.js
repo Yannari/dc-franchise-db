@@ -80,7 +80,7 @@ export const G_STATEMENT_NAME = {
     e('game.statement.conclusion.01', [{ by: 'a', say: "I learned more about {b} in ten minutes than in two days." }]),
     e('game.statement.conclusion.02', [{ by: 'a', say: "That game was fun. And a little too honest." }]),
     e('game.statement.conclusion.03', [{ by: 'a', say: "{b}'s answers are all I can think about right now." }]),
-    e('game.statement.conclusion.04', [{ by: 'a', say: "{b} was on their own again and again. That's raising some flags in my head." }], { when: { odd: true } }),
+    e('game.statement.conclusion.04', [{ by: 'a', say: "{b} was on {b.posAdj} own again and again. That's raising some flags in my head." }], { when: { odd: true } }),
     e('game.statement.conclusion.05', [{ by: 'a', say: "Everybody's answers matched their profiles. Except {b}'s." }], { when: { odd: true, suspects: true } }),
     e('game.statement.conclusion.06', [{ by: 'a', say: "Honestly, {b} is my kind of person. Same answers, same energy." }], { when: { friends: true } }),
     e('game.statement.conclusion.07', [{ by: 'a', say: "Games like that are how you find out who's real. Noted, {b}." }]),

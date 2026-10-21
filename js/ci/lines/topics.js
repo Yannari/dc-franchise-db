@@ -385,8 +385,8 @@ export const TOPIC_LINES = {
     ] },
     { turns: [
       { by: 'a', send: "Okay single person question. Worst date you've ever been on?" },
-      { by: 'b', send: "They brought their mom. To the date. She ordered for both of us" },
-      { by: 'a', react: "They brought their MOM.", send: "Absolutely not. I'm screaming" },
+      { by: 'b', send: "A blind date where the mom came too. She ordered for both of us" },
+      { by: 'a', react: "The MOM came.", send: "Absolutely not. I'm screaming" },
     ] },
     { turns: [
       { by: 'a', send: "What's your type? Asking for the building" },
@@ -398,16 +398,16 @@ export const TOPIC_LINES = {
     { turns: [
       { by: 'a', send: "Your profile says you're taken. Is your person watching right now?" },
       { by: 'b', send: "Oh definitely. Probably yelling at the TV every time I flirt with anyone lol" },
-      { by: 'a', send: "Tell them I'm harmless {e:halo}" },
+      { by: 'a', send: "Tell your person I'm harmless {e:halo}" },
     ] },
     { turns: [
       { by: 'a', send: "How did you two meet? I love a story" },
-      { by: 'b', send: "At a gas station. I dropped my coffee on them. They still stuck around {e:heart}" },
+      { by: 'b', send: "At a gas station. I spilled my coffee everywhere and walked out with a phone number {e:heart}" },
       { by: 'a', react: "Stop. That's a movie." },
     ] },
     { turns: [
-      { by: 'a', send: "Is it hard being away from them?" },
-      { by: 'b', send: "Harder than I thought. I keep turning around to tell them something" },
+      { by: 'a', send: "Is it hard being away from your person?" },
+      { by: 'b', send: "Harder than I thought. I keep turning around to tell my person something" },
       { by: 'a', send: "That's really sweet honestly {e:heart}" },
     ] },
   ]),
@@ -424,7 +424,7 @@ export const TOPIC_LINES = {
     ] },
     { turns: [
       { by: 'a', send: "Does your complicated person know you're in here?" },
-      { by: 'b', send: "They know. They're definitely watching. I'm being on my best behavior {e:halo}" },
+      { by: 'b', send: "Oh, I'm being watched right now for sure. Best behavior {e:halo}" },
       { by: 'a', react: "Best behavior. In the Circle. Good luck with that." },
     ] },
   ]),

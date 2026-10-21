@@ -36,6 +36,15 @@ describe('names and pronouns', () => {
     expect(fill(s, '{b} puts the kettle on. {b.Sub} looks at the screen.', cast, 'narration'))
       .toBe('Seaburn puts the kettle on. He looks at the screen.');
   });
+  // Once a player has found out who is behind a profile, they talk about the person they now know; the rest of the
+  // room still has the persona, and the catfish talking about the face they used means the persona too.
+  it('a player who has learned the truth says the real pronoun', () => {
+    const s = room();
+    s.revealed['@shubham'] = { '@rebecca': true };
+    expect(fill(s, '{b} said {b.sub} was tired.', { a: '@shubham', b: '@rebecca' }, 'a')).toBe('Rebecca said he was tired.');
+    expect(fill(s, '{b} said {b.sub} was tired.', { a: '@sammie', b: '@rebecca' }, 'a')).toBe('Rebecca said she was tired.');
+    expect(fill(s, 'I hope I made {a.obj} proud.', { a: '@rebecca' }, 'a')).toBe('I hope I made her proud.');
+  });
 });
 
 describe('facts', () => {

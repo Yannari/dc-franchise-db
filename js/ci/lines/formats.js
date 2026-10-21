@@ -477,7 +477,7 @@ export const GOODBYE_CLOSE = {
   ...E('goodbye.video.close', [
     { turns: [{ by: 'a', video: "Trust your gut in there. Mine was right more than I let it be. Good luck, everybody." }] },
     { turns: [{ by: 'a', video: 'Play hard, but be nice to each other. It is still just people in there. Good luck.' }] },
-    { turns: [{ by: 'a', video: 'Somebody in there is not who they say they are. Be careful. Good luck.' }] },
+    { turns: [{ by: 'a', video: 'Not every profile in there is real. Be careful. Good luck.' }] },
     { turns: [{ by: 'a', video: "I don't regret a single message. Okay, maybe one. Good luck, everybody." }], beat: '{a} laughs and waves at the camera.' },
     { turns: [{ by: 'a', video: 'Talk to everybody. That is the whole game. Good luck.' }] },
     { turns: [{ by: 'a', video: "I'm going to miss this weird little building. Win it for me." }], beat: '{a} blows a kiss at the camera.' },
@@ -696,8 +696,8 @@ export const ARRIVAL_LINES = {
 export const POWER_LINES = {
   ...E('visit.choose.power', [
     { turns: [{ by: 'a', react: "'You have a power to give away.' So I'm not leaving empty-handed." },
-      { by: 'a', say: "There's only one person I'd trust with it. And they have no idea I'm coming." }], beat: '{a} is already putting on shoes.' },
-    { turns: [{ by: 'a', say: "I can't win anymore. But somebody in here still can. They get it." }] },
+      { by: 'a', say: "There's only one person I'd trust with it. I'm going straight to {b.posAdj} door." }], beat: '{a} is already putting on shoes.' },
+    { turns: [{ by: 'a', say: "I can't win anymore. But somebody in here still can. It goes to {b.obj}." }] },
     { turns: [{ by: 'a', say: 'This is my last move in this game, and I know exactly who it goes to.' }], beat: '{a} takes a deep breath at the door.' },
   ]),
   ...E('visit.talk.power', [

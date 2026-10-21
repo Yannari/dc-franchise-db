@@ -54,9 +54,9 @@ export const BLOCKING_BUILD = {
 
   ...E('block.build.clue.fake', [
     send("The person being blocked is someone who never felt completely real to us"),
-    send("This person might be lovely. But something about their profile never added up"),
+    send("This person might be lovely. But something about that profile never added up"),
     send("It's someone whose answers kept changing every time we asked"),
-    send("It's someone who, honestly, might not be who they say they are"),
+    send("It's someone whose profile, honestly, might not be the whole truth"),
   ]),
   ...E('block.build.clue.threat', [
     send("The person being blocked is playing this game better than any of us"),
@@ -66,7 +66,7 @@ export const BLOCKING_BUILD = {
   ]),
   ...E('block.build.clue.grudge', [
     send("This one is personal, and we're not going to pretend it isn't"),
-    send("The person being blocked knows exactly what they did"),
+    send("The person being blocked knows exactly why"),
     send("It's someone who came after one of us. And it didn't go unnoticed"),
     send("It's someone we never got past a bad first impression with"),
   ]),

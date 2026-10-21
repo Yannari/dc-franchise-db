@@ -9,9 +9,10 @@
 import { peopleOf } from './state.js';
 import { hostName } from './script.js';
 import { GAMES } from './games-data.js';
+import { pronounsOf } from '../pronouns-of.js';
 
 export const TITLES = {
-  profiles: 'Setting up the profiles', recognise: 'A face they know', status: 'Status update',
+  profiles: 'Setting up the profiles', recognise: 'A familiar face', status: 'Status update',
   likes: 'The Newsfeed', chat: 'Private chat', 'circle-chat': 'Circle Chat', arrival: 'A new Player', welcome: 'Welcome to The Circle', 'group-chat': 'A group chat', audience: 'America votes',
   'after-party': 'The after-party', ratings: 'The Ratings', hangout: 'The Hangout', alert: 'An alert', save: 'A save', offer: 'The offer', plead: 'The last two', vote: 'The vote', statement: 'Who would you block?', antivirus: 'The antivirus', date: 'A date', invites: 'The invitations', race: 'The race to message', newparty: "The newcomer's party", lurk: 'Watching in secret', chosen: 'Chosen by the Influencers', 'pair-arrival': 'Two new Players', 'power-reveal': 'News from the Circle', hack: 'The Hacker', 'hack-undone': 'Comparing notes', 'joker-chat': 'The Joker', 'joker-pick': "The Joker's pick", 'burner-exposed': 'The burner', 'no-block': 'No blocking', mission: 'A secret task', disrupter: 'First to respond', swap: 'The profile swap', 'swap-back': 'The swap ends', clone: 'The clone', 'ride-or-die': 'Ride or Die', sacrifice: 'Ride or Die: the choice', 'second-chance': 'A second chance', egg: 'The eggs',
   blocking: 'The blocking', visit: 'The visit', report: 'What the visit "said"', goodbye: 'The goodbye video',
@@ -73,8 +74,9 @@ export function blockText(state, block) {
 // first lines, who they really are and what they are playing as. The viewer
 // is told; the room is not.
 const FAME_WORDS = { celebrity: 'A celebrity', villain: 'A known villain', threat: 'A big threat', known: 'Seen on TV' };
-const PLAN_WORDS = { honest: 'Playing as themselves', polished: 'Playing as themselves, best photos only',
-  edited: 'Playing as themselves, with a few things changed', shared: 'Two players, one profile' };
+// "Playing as herself": the real person's own pronoun (an old row without a gender says themselves).
+const PLAN_WORDS = self => ({ honest: `Playing as ${self}`, polished: `Playing as ${self}, best photos only`,
+  edited: `Playing as ${self}, with a few things changed`, shared: 'Two players, one profile' });
 const stars = n => (n > 0 ? '★'.repeat(Math.floor(n)) + (n % 1 >= 0.5 ? '½' : '') : '');
 export function introText(row, h) {
   const p = row?.ci?.profiles?.[h];
@@ -85,7 +87,7 @@ export function introText(row, h) {
   const fame = FAME_WORDS[t.rep] ? `${FAME_WORDS[t.rep]}${t.stars > 0 ? ` (${stars(t.stars)})` : ''}.` : '';
   const plan = p.mode === 'catfish'
     ? `Playing as ${[p.name, p.age, p.job].filter(x => x != null).join(', ')}: a catfish${p.reason ? ` (${p.reason})` : ''}.`
-    : `${PLAN_WORDS[people.length > 1 ? 'shared' : p.mode] || PLAN_WORDS.honest}${p.mode === 'edited' && p.edits?.length ? ` (${p.edits.join(', ')})` : ''}.`;
+    : `${(w => w[people.length > 1 ? 'shared' : p.mode] || w.honest)(PLAN_WORDS(pronounsOf(t.gender).ref))}${p.mode === 'edited' && p.edits?.length ? ` (${p.edits.join(', ')})` : ''}.`;
   const head = `MEET ${people.join(' AND ').toUpperCase() || String(p.name).toUpperCase()}`;
   return `  ▸ ${head}${facts.length ? `: ${facts.join(', ')}.` : ':'} ${[fame, plan].filter(Boolean).join(' ')}`;
 }
@@ -128,8 +130,9 @@ export function castText(state) {
     if (p.clone) return `  ${real} — back after being blocked, as a copy of ${state.profiles[p.clone]?.shown?.name || p.shown.name} (the clone)`;
     if (p.mode === 'catfish') return `  ${real} — playing as ${p.shown.name}, ${p.shown.age} (catfish, ${p.reason || 'no reason given'})`;
     if (p.mode === 'shared') return `  ${real} — sharing one profile as ${p.shown.name}`;
-    if (p.mode === 'edited') return `  ${real} — as themselves, but edited (${p.edits.join(', ')})`;
-    return `  ${real} — as themselves (${p.mode})`;
+    const self = pronounsOf(state.people[p.players[0]]?.gender).ref;
+    if (p.mode === 'edited') return `  ${real} — as ${self}, but edited (${p.edits.join(', ')})`;
+    return `  ${real} — as ${self} (${p.mode})`;
   }).join('\n');
 }
 

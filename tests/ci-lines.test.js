@@ -152,6 +152,21 @@ describe('the pools talk like the show', () => {
     expect(bad).toEqual([]);
   });
 
+  // The user, 2026-10-20: "dont use they unless theyre nonbinary". One person in a line is {b.obj}, {b.posAdj}...,
+  // which fill() turns into the gender the speaker knows (the persona's, or the real one once revealed). Found:
+  // "{b} poured their heart out", "{a} put their heart into that", "could have cost them the game".
+  it('says he or she about one person, never their or them', () => {
+    // a name, then their/them in the same clause, with no second person ("{a} and {b} kick their shoes off")
+    const ONE = /\{[abc]\}[^.!?,]*\b(their|theirs|them|themselves|themself)\b/;
+    const TWO = /\{[abc]\}[^.!?,]*\b(and|of)\b/;
+    const THINGS = /\bin them\b/;   // "the good days had {b} in them"
+    const bad = [];
+    for (const [, e] of ENTRIES) for (const x of allTexts(e)) {
+      if (ONE.test(x) && !TWO.test(x) && !THINGS.test(x)) bad.push(`${e.id}: ${x}`);
+    }
+    expect(bad).toEqual([]);
+  });
+
   // Only a MESSAGE needs an answer. A question said out loud to yourself
   // ('Getting old?') is how people talk; the transcripts are full of them.
   it('answers every question: a question is followed by the other speaker, or the asker leaves', () => {

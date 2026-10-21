@@ -167,7 +167,11 @@ export function fill(state, text, cast, speakerRole) {
     if (prop === 'aka') return p.mode === 'catfish' || p.players.length > 1
       ? `${shown}, aka ${realFirst(state, h)},` : shown;
     if (PRONOUN_KEYS.includes(prop)) {
-      const knowsTruth = speakerRole === 'host' || speakerRole === 'narration';
+      // A player who has found out who is behind a profile (a visit, a goodbye
+      // video, the finale meet) talks about the person they now know.
+      const speaker = PAIR_ROLES.has(speakerRole) ? cast.a : cast[speakerRole];
+      const knowsTruth = speakerRole === 'host' || speakerRole === 'narration'
+        || (typeof speaker === 'string' && speaker !== h && isRevealed(state, speaker, h));
       const g = speakerRole === 'narration' && onScreen ? state.people[onScreen].gender
         : knowsTruth ? realGender(state, h) : (p.shown?.gender || realGender(state, h));
       return pronounsOf(g)[prop];

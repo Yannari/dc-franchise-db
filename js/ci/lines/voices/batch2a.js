@@ -310,7 +310,7 @@ export const VOICES = [
   ['rate.affection.bottom.06', "Bottom of my list is {b}. {b} hasn't said ten words to me.", {
     hype: "Bottom is {b}! {b} hasn't said TEN WORDS to me!", dry: "Bottom, {b}. Hasn't said ten words to me. I counted. Nine.", blunt: "{b} bottom. Hasn't said ten words to me.",
     goofy: "Bottom of my list is {b}! {b} hasn't said ten words to me! I'd settle for five!", shy: "Bottom of my list is {b}. {b} hasn't really talked to me.",
-    chill: "{b} at the bottom. Barely said ten words to me.", catty: "Bottom, {b}. Hasn't said ten words to me. I don't miss them.", diva: "Bottom of my list, {b}. Not ten words to the star, darling.",
+    chill: "{b} at the bottom. Barely said ten words to me.", catty: "Bottom, {b}. Hasn't said ten words to me. I don't miss {b.obj}.", diva: "Bottom of my list, {b}. Not ten words to the star, darling.",
     stoic: "{b} bottom. Barely spoke to me." }],
   ['rate.affection.bottom.w01', "{b}, it's not hate. It's just not love either. Last.", {
     hype: "{b}, it's NOT hate! It's just not love either! Last!", dry: "{b}. Not hate. Not love. Beige. Last.", blunt: "{b}, not hate. Not love. Last.",

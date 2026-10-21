@@ -267,7 +267,7 @@ export const SCENES_MORE = {
     s1("My heart is pounding. Why is my heart pounding? I'm the one who got blocked."),
     s1("Which door is it? Please let me pick the right door."),
     s1("I've seen this place on a screen for days. It's smaller in person."),
-    s1("Okay. Whoever's behind this door, I hope they're happy to see me."),
+    s1("Okay. I just hope {b.posAdj} face lights up when this door opens."),
     s1("One last thing before I go. This is it."),
     s1("I practiced what I'm gonna say. I've already forgotten all of it."),
   ]),

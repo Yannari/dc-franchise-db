@@ -271,7 +271,7 @@ export const VOICES = [
     goofy: "{b}'s profile says 'always learning.' I like always learning! I'm always learning too! Mostly about snacks!", shy: "{b}'s profile says 'always learning.' I like that.", chill: "{b}'s profile says 'always learning.' I like that, man.",
     catty: "{b}'s profile says 'always learning.' Let's hope {b} has learned something.", diva: "{b}'s profile says 'always learning,' darling. I like that.", stoic: "{b}'s profile says 'always learning.' Good." }],
   ['game.team.scout.want.06', "{b}. Smart eyes. I want smart eyes.", {
-    hype: "{b}! SMART EYES! I want SMART EYES!", dry: "{b}. Smart eyes. I want smart eyes.", blunt: "{b}. Smart eyes. Want them.",
+    hype: "{b}! SMART EYES! I want SMART EYES!", dry: "{b}. Smart eyes. I want smart eyes.", blunt: "{b}. Smart eyes. Want those.",
     goofy: "{b}! Smart eyes! I want smart eyes! Mine are snack eyes!", shy: "{b}. Smart eyes. I want smart eyes.", chill: "{b}. Smart eyes. Want those.",
     catty: "{b}. Smart eyes. Rare in here.", diva: "{b}, darling. Intelligent eyes.", stoic: "{b}. Smart eyes." }],
   ['game.team.scout.pass.01', "{b}? Looks like {b} is trying a little hard. I don't know.", {

@@ -497,8 +497,8 @@ export function simulateCircleEpisode() {
 const CHANNEL_WORDS = {
   instant: 'Lowest rated, blocked on the spot', egg: 'The room chose which egg stayed',
   clone: 'The room found the fake clone', mission: 'A secret task decided it',
-  antivirus: 'Never got the antivirus', unsaved: 'Nobody saved them', statement: 'Named by the room',
-  vote: 'The players chose', sacrifice: "Took their Ride or Die's place",
+  antivirus: 'Never got the antivirus', unsaved: 'Left unsaved', statement: 'Named by the room',
+  vote: 'The players chose', sacrifice: 'Went home for a Ride or Die',
 };
 export function circleBlockShape(exits = []) {
   if (!exits.length) return 'No blocking';

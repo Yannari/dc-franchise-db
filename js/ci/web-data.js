@@ -69,7 +69,7 @@ export function changesOf(prev, cur, nameOf) {
     if (!was) continue;
     const gone = was.members.filter(m => !al.members.includes(m));
     const out1 = gone.filter(m => !(cur.leftToday || []).includes(m)), blocked1 = gone.filter(m => (cur.leftToday || []).includes(m));
-    if (was.status === 'active' && al.status === 'broken') out.push({ kind: 'broken', alliance: al.id, a: al.brokenBy?.[0], text: `${al.name} broke: ${N(al.brokenBy?.[0])} turned on their own.`, rank: 1 });
+    if (was.status === 'active' && al.status === 'broken') out.push({ kind: 'broken', alliance: al.id, a: al.brokenBy?.[0], text: `${al.name} broke: ${N(al.brokenBy?.[0])} turned on the group.`, rank: 1 });
     else if (was.status === 'active' && al.status === 'over') {
       // One event, one line: why it ended.
       out.push({ kind: 'broken', alliance: al.id, a: out1[0] || blocked1[0], text: out1.length ? `${N(out1[0])} is out of ${al.name}, and that's the end of it.`

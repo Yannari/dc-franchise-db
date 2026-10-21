@@ -141,7 +141,7 @@ export const FRESH_NIGHTS = {
     M("This is someone we think could go all the way"),
   ]),
   ...F('block.announce.threat', [
-    M("This person is a huge threat, and we'd never beat them at the end. We are blocking... {c}", 'Every apartment waits on the dots.'),
+    M("This person is a huge threat, and we'd never beat {c.obj} at the end. We are blocking... {c}", 'Every apartment waits on the dots.'),
     M("It's not personal. It's the game. We are blocking... {c}"),
     M("This person has a friend in every chat, and that's the problem. We are blocking... {c}"),
     M("We love this person. That's why it hurts. We are blocking... {c}", 'The dots appear, disappear, and appear again.'),

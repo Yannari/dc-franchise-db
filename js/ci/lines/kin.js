@@ -166,7 +166,7 @@ export const KIN_LINES = {
     { turns: [{ by: 'a', video: "{b}, you know what you mean to me. Finish what we started." }] },
   ]),
   ...E('goodbye.kin.hidden', [
-    { turns: [{ by: 'a', video: "And to someone in there who knows exactly who they are: I'm so proud of you. Keep going." }] },
+    { turns: [{ by: 'a', video: "And to someone in there who knows exactly who I mean: I'm so proud of you. Keep going." }] },
     { turns: [{ by: 'a', video: "There's a person in there I'd do anything for. You know who you are. Win it." }] },
     { turns: [{ by: 'a', video: "To my secret in there: keep your head down. I love you." }] },
   ]),

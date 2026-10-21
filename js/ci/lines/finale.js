@@ -160,12 +160,12 @@ export const FINALE = {
   ],
   'meet.explain.family': [
     { id: 'meet.explain.family.01', turns: [
-      { by: 'a', say: "I'm {a.real}. Those pictures are someone in my family. I played as them." },
+      { by: 'a', say: "I'm {a.real}. Those pictures are someone in my family. I played as {a.obj}." },
       { by: 'b', say: "That's actually really sweet." },
     ] },
     { id: 'meet.explain.family.02', turns: [
       { by: 'b', say: "So who's in the pictures?" },
-      { by: 'a', say: "Someone I love. I know them better than anybody, so I could play them." },
+      { by: 'a', say: "Someone I love. I know {a.obj} better than anybody, so I could pull it off." },
     ] },
     { id: 'meet.explain.family.03', turns: [
       { by: 'a', say: "My name is {a.real}, and {a} is real. {a} is at home, watching." },
@@ -183,11 +183,11 @@ export const FINALE = {
     { id: 'meet.explain.family.kin.02', turns: [
       { by: 'a', say: "I'm {a.real}. {a} is my {q}. Real person, real pictures, just not me." },
       { by: 'b', say: "So everything I liked about {a}..." },
-      { by: 'a', say: "...is my {q}. I'll tell them you said hi." },
+      { by: 'a', say: "...is my {q}. I'll tell {a.obj} you said hi." },
     ] },
     { id: 'meet.explain.family.kin.03', turns: [
       { by: 'b', say: "Wait. Who is that on your profile?" },
-      { by: 'a', say: "My {q}. Nobody knows them better than I do, so I could play them." },
+      { by: 'a', say: "My {q}. Nobody knows {a.obj} better than I do, so I could pull it off." },
       { by: 'b', react: "That's the sweetest catfish I've ever heard of." },
     ] },
   ],

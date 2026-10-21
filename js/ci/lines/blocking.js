@@ -8,7 +8,7 @@ export const BLOCKING = {
       { by: 'a', say: "Message: 'This was the hardest decision.' No. Just say it.", send: "We've decided to block someone we don't believe is being real with us. The person we are blocking is... {c}" },
     ], beat: 'Every apartment waits on the dots.' },
     { id: 'block.announce.fake.02', turns: [
-      { by: 'a', send: "We just couldn't shake the feeling that this person wasn't who they said they were. We are blocking... {c}" },
+      { by: 'a', send: "We just couldn't shake the feeling that this person's profile wasn't the truth. We are blocking... {c}" },
     ] },
     { id: 'block.announce.fake.03', turns: [
       { by: 'a', say: "Dot, dot, dot. Make them sweat.", send: "The Circle is about being real. We're sorry, but we're blocking... {c} {e:fish}" },

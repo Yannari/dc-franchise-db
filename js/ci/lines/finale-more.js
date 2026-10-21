@@ -33,7 +33,7 @@ export const FINALE_MORE = {
   ]),
   ...M('final.rate.protection', [
     say("Every time I was in danger, {b} stepped in. First place."),
-    say("{b} protected me when it could have cost them the game. That's first."),
+    say("{b} protected me when it could have cost {b.obj} the game. That's first."),
     say("I'm still here because {b} kept me here. {b}, first."),
     say("{b} was my shield in this game. First position."),
   ]),
@@ -44,10 +44,10 @@ export const FINALE_MORE = {
     say("{b} was a step ahead of all of us. First position."),
   ]),
   ...M('final.rate.suspicion', [
-    say("I've never been sure {b} is who they say. Still, {b} played the best. First."),
+    say("I've never been sure {b}'s pictures were real. Still, {b} played the best. First."),
     say("Catfish or not, {b} ran this game. First place."),
     say("Something about {b} never added up. And {b} still beat everyone. First."),
-    say("Whoever {b} really is, they earned it. First."),
+    say("Whoever {b} really is, {b.sub} earned it. First."),
   ]),
   ...M('final.rate.grudge', [
     say("{b} and I clashed. A lot. But I'm not petty. First place."),
@@ -124,13 +124,13 @@ export const FINALE_MORE = {
     { turns: [{ by: 'a', say: "I'm {a.real}. I was curious if people would be kinder to {a}." }, { by: 'b', say: "And were we?" }, { by: 'a', say: "Much kinder. We need to talk about that." }] },
   ]),
   ...M('meet.explain.family', [
-    { turns: [{ by: 'a', say: "I'm {a.real}. Those are pictures of someone in my family. I wanted to make them proud." }, { by: 'b', react: "That's so sweet." }] },
-    { turns: [{ by: 'b', say: "So whose face is it?" }, { by: 'a', say: "Someone I grew up with. I know how they talk, how they joke. So I played them." }] },
-    { turns: [{ by: 'a', say: "My name is {a.real}. I played as someone I love, and I tried to do them justice." }, { by: 'b', say: "You did. Trust me." }] },
+    { turns: [{ by: 'a', say: "I'm {a.real}. Those are pictures of someone in my family. I wanted to make {a.obj} proud." }, { by: 'b', react: "That's so sweet." }] },
+    { turns: [{ by: 'b', say: "So whose face is it?" }, { by: 'a', say: "Someone I grew up with. I know the jokes, the way of talking, all of it. So I played {a.obj}." }] },
+    { turns: [{ by: 'a', say: "My name is {a.real}. I played as someone I love, and I tried to do {a.obj} justice." }, { by: 'b', say: "You did. Trust me." }] },
   ]),
   ...M('meet.explain.family.kin', [
     { turns: [{ by: 'a', say: "I'm {a.real}. That's my {q} in the pictures. My {q} is going to be so famous now." }, { by: 'b', react: "Your {q}!" }] },
-    { turns: [{ by: 'b', say: "Who is that in your profile?" }, { by: 'a', say: "My {q}. I know my {q} better than anybody, so I played as them." }] },
+    { turns: [{ by: 'b', say: "Who is that in your profile?" }, { by: 'a', say: "My {q}. I know my {q} better than anybody, so I played as {a.obj}." }] },
     { turns: [{ by: 'a', say: "My name is {a.real}, and that face belongs to my {q}." }, { by: 'b', react: "Oh my God, that's adorable." }] },
   ]),
   ...M('meet.settle', [

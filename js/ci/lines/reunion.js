@@ -79,7 +79,7 @@ export const REUNION_LINES = {
   ]),
   ...E('reunion.ask.blocker', [
     host("{a}, you're sitting across from the person who blocked you."),
-    host("{a}, {b} sent you home. Anything you want to say to them?"),
+    host("{a}, {b} sent you home. Anything you want to say to {b.obj}?"),
     host("{b}, you blocked {a}. Do you want to explain?"),
     host("{a}, did you know it was {b}?"),
     host("{a}, you've had weeks to think about this. Here's {b}."),
@@ -128,7 +128,7 @@ export const REUNION_LINES = {
   ...E('reunion.ask.knewit', [
     host("{a}, you said from the start that {b} was a catfish."),
     host("{a}, you were suspicious of {b} the whole time. Were you right?"),
-    host("{b}, {a} had your number, didn't they?"),
+    host("{b}, {a} had your number, didn't {a.sub}?"),
     host("{a}, here's {b}. Tell us what you thought."),
     host("{a}, you called it early on {b}."),
     host("Let's talk about {a}'s detective work."),
@@ -336,7 +336,7 @@ export const REUNION_LINES = {
     { turns: [{ by: 'a', send: "Thank you, Circle, for {b}. That's the best thing I'm taking home." }], beat: '{a} wipes {a.posAdj} eyes.' },
     { turns: [{ by: 'a', send: "{b}, I can't wait to hug you for real. Like, right now." }] },
     { turns: [{ by: 'a', send: "I came for the money, and I'm leaving with {b}. Not a bad trade." }] },
-    { turns: [{ by: 'a', send: "Circle, whatever happens, make sure {b} knows I'm proud of them." }] },
+    { turns: [{ by: 'a', send: "Circle, whatever happens, make sure {b} knows I'm proud of {b.obj}." }] },
   ]),
   ...E('farewell.word.crush', [
     { turns: [{ by: 'a', send: "Circle, my last message is a wink. {b} knows what it means." }] },

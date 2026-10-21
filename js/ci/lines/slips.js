@@ -133,7 +133,7 @@ export const SLIPS = {
     ], beat: '{b} writes something down.' },
     { id: 'slip.overreach.noticed.03', turns: [
       { by: 'a', send: "I can't stop thinking about the blocking, I'm devastated" },
-      { by: 'b', react: "Devastated? {a.Sub} barely talked to them." },
+      { by: 'b', react: "Devastated? {a.Sub} barely talked to the one who left." },
     ], beat: '{b} closes the chat with one eyebrow up.' },
   ],
   'slip.overreach.missed': [

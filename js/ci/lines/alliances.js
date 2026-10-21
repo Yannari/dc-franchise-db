@@ -43,7 +43,7 @@ export const ALLIANCE_LINES = {
       { by: 'a', say: "Somebody in {game} put me near the bottom. I know it.", send: "{b}, be honest. Where did you rate us?" },
       { by: 'b', send: "High! Why would I lie?" },
       { by: 'a', send: "The numbers don't add up. We're done" },
-    ], beat: '{b} watches the chat close without them.' },
+    ], beat: '{b} watches the chat close without {b.obj}.' },
     { turns: [
       { by: 'a', send: "Real talk. The ratings told us everything. {b}, you're not one of us anymore" },
       { by: 'b', react: "Wow. Okay. Wow." },

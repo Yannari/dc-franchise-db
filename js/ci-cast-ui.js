@@ -27,6 +27,7 @@ import { REL_KINSHIP, relationships, setRelationships, kinshipBetween } from './
 import { relationFromKin, KIN_OF } from './ci/shared.js';
 import { ageFrom } from './ci/profiles.js';
 import { fameTerm } from './fame.js';
+import { pronounsOf } from './pronouns-of.js';
 import { putPhoto, photoURL, cachedPhoto, photoSrc, shrinkImage } from './ci/photo-store.js';
 import { playerAvatarUrl } from './players.js';
 import { setPhotoContext, photosPanelHTML, afterPhotosRender, onPhotosClick, onPhotosChange, onPhotosDrop } from './ci-photos-ui.js';
@@ -35,6 +36,8 @@ const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 const cfg = () => window.seasonConfig || {};
 // The people who play: a Catfish face is in the cast to be played AS (ci/categories.js).
 const cast = () => (window.players || []).filter(p => p && p.name && !isFace(p));
+// A player's own pronouns, for the sentences that describe them.
+const prOf = name => pronounsOf((window.players || []).find(p => p?.name === name)?.gender);
 const faceOf = name => (window.players || []).find(p => p && p.name === name);
 // A persona's picture: the author's kept image, or a roster character's portrait.
 const personaPic = f => (String(f || '').startsWith('portrait:') ? safeAvatar(faceOf(f.slice(9)) || f.slice(9)) : photoSrc(f));
@@ -51,6 +54,11 @@ const REASON_WORDS = {
   family: 'Family: playing someone from their own life.',
   experimental: 'Experimental: to see how the room treats somebody else.',
 };
+// The same, about one player in their own pronouns.
+const reasonFor = (reason, pr) => ({
+  protective: `Protective: so nobody judges ${pr.obj} for who ${pr.sub} really ${pr.sub === 'they' ? 'are' : 'is'}.`,
+  family: `Family: playing someone from ${pr.posAdj} own life.`,
+})[reason] || REASON_WORDS[reason] || '';
 // A sample message in each register, so the author hears the job they picked.
 const SAMPLE = {
   warm: "Hiii everyone!! 🥰 How is everybody's night going? Sending hugs to every apartment 💕",
@@ -120,12 +128,12 @@ function drawResult(name) {
     const pinned = setupOf(name).catfish === d.personaId;
     return `<div class="ci-draw ci-cat">${face(personaPic(persona?.face), (s.name || '?')[0], 'var(--ci-pk)')}<div>
       <div class="ci-dk">Plays as${pinned ? ' <span class="ci-pin">Pinned</span>' : ''}</div><div class="ci-dn">${esc(s.name)}, ${esc(s.age)}</div>
-      <div class="ci-dm">${esc(line)}</div><div class="ci-why">${esc(REASON_WORDS[d.reason] || '')}</div></div></div>`;
+      <div class="ci-dm">${esc(line)}</div><div class="ci-why">${esc(reasonFor(d.reason, prOf(name)))}</div></div></div>`;
   }
   const label = { edited: 'Edited', polished: 'Polished', honest: 'Themselves', shared: 'Shares a profile' }[d.mode] || d.mode;
   const why = d.mode === 'edited' ? `Keeps the face, changes: ${d.edits.join(', ')}.`
     : d.mode === 'shared' ? `With ${d.with.join(', ')}.`
-      : d.mode === 'polished' ? 'Plays as themselves, on their best behavior.' : 'Plays as themselves, as they are.';
+      : (pr => d.mode === 'polished' ? `Plays as ${pr.ref}, on ${pr.posAdj} best behavior.` : `Plays as ${pr.ref}, no changes.`)(prOf(name));
   return `<div class="ci-draw ci-self">${face(safeAvatar(name), name[0])}<div><div class="ci-dk">${esc(label)}</div>
     <div class="ci-dn">${esc(s.name)}, ${esc(s.age)}</div><div class="ci-dm">${esc(line)}</div><div class="ci-why">${esc(why)}</div></div></div>`;
 }
@@ -176,8 +184,8 @@ function planRow(p, autoRole, auto = { rep: 'none', stars: null }) {
       <label class="ci-fld ci-wide"><span class="ci-k">Already famous?</span>
         ${seg('rep', s.rep || '', [['', 'Auto'], ...Object.entries(REP_LABEL)])}
         <span class="ci-small ci-rep-auto">${s.rep ? 'How the room might already know them. The more famous, the more reason to hide behind a persona.'
-          : autoRep === 'none' ? 'Auto: a first-timer, so nobody has seen them before. The more famous, the more reason to hide behind a persona.'
-            : `Auto: ${REP_WORDS[autoRep]}${auto?.stars > 0 ? ` (${starsText(auto.stars)})` : ''}, from their fame and past seasons. The more famous, the more reason to hide behind a persona.`}</span></label>
+          : autoRep === 'none' ? `Auto: a first-timer, so nobody has seen ${prOf(p.name).obj} before. The more famous, the more reason to hide behind a persona.`
+            : `Auto: ${autoRep === 'none' ? `nobody has seen ${prOf(p.name).obj} before` : REP_WORDS[autoRep]}${auto?.stars > 0 ? ` (${starsText(auto.stars)})` : ''}, from ${prOf(p.name).posAdj} fame and past seasons. The more famous, the more reason to hide behind a persona.`}</span></label>
       <label class="ci-fld"><span class="ci-k">Shares an apartment with</span>
         <select class="ci-in" data-field="partner"><option value="">nobody</option>${others.map(o =>
           `<option value="${esc(o.name)}"${s.partner === o.name ? ' selected' : ''}>${esc(o.name)}</option>`).join('')}</select></label>
@@ -264,7 +272,7 @@ const RELATION_NOTES = {
 const pinsOf = name => PIN_KEYS.filter(k => { const v = setupOf(name)[k]; return v != null && v !== '' && !(k === 'jobCost' && !v); }).length;
 function badgeOf(name) {
   const d = dealt()?.[name];
-  if (d) return d.mode === 'catfish' ? ['cat', `as ${d.shown?.name}`] : d.mode === 'edited' ? ['edit', 'edited'] : ['self', 'themselves'];
+  if (d) return d.mode === 'catfish' ? ['cat', `as ${d.shown?.name}`] : d.mode === 'edited' ? ['edit', 'edited'] : ['self', prOf(name).ref];
   const n = pinsOf(name);
   return n ? ['pin', `${n} pinned`] : ['auto', 'Auto'];
 }

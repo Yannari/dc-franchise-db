@@ -388,7 +388,7 @@ export function playCircleSeason({ cast, setup = {}, pool = [], options = {}, se
         // Who each player really is (the arrival screens): the viewer is
         // told; the room is not.
         cast: Object.fromEntries(Object.values(state.people).map(t => [t.name,
-          { age: t.age ?? null, job: t.job ?? null, hometown: t.hometown ?? null, rep: t.rep || 'none', stars: t.stars ?? null }])),
+          { age: t.age ?? null, gender: t.gender ?? null, job: t.job ?? null, hometown: t.hometown ?? null, rep: t.rep || 'none', stars: t.stars ?? null }])),
         // The room as the day began (the screens' live sidebar): nothing in
         // it can spoil the episode, which the sidebar then plays forward.
         start,

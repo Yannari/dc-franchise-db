@@ -117,7 +117,7 @@ export const VOICES = [
   ['arrival.react.worried.05', "Can the new person please just be nice to me? Please?", {
     hype: "Can the new person PLEASE just be NICE to me? PLEASE?!", dry: "Can the new person please just be nice to me. Please.", blunt: "New person, be nice to me.",
     goofy: "Can the new person please just be nice to me? Please? I'll be so nice back! The nicest!", shy: "Can the new person please just be nice to me? Please?", chill: "Can the new person just be nice to me? Please?",
-    catty: "Can the new person please just be nice to me? It would be smart of them.", diva: "Can the newcomer please be kind to me, darling? Please?", stoic: "Be nice to me." }],
+    catty: "Can the new person please just be nice to me? That would be the smart move.", diva: "Can the newcomer please be kind to me, darling? Please?", stoic: "Be nice to me." }],
   // ── a check-in, typed ─────────────────────────────────────────────────
   ['chat.checkin.warm.01', "Hey. How are you holding up after last night? {e:hug}", {
     hype: "HEY!! How are you HOLDING UP after last night?? {e:hug}", dry: "hey. how are you holding up after last night", blunt: "How are you after last night?",

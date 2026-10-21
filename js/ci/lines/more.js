@@ -211,7 +211,7 @@ export const MORE_LINES = {
   ...M('visit.wait', [
     R("If there's a knock, I'm hiding in the shower."),
     R("Please walk past my door. Please keep walking."),
-    { turns: [{ by: 'a', react: "Somebody's in the hallway. I can hear them. Or I'm imagining it." }], beat: '{a} presses an ear to the door.' },
+    { turns: [{ by: 'a', react: "Somebody's in the hallway. I can hear {b.obj}. Or I'm imagining it." }], beat: '{a} presses an ear to the door.' },
     R("I've been nothing but nice to {b}. That's either very good or very bad right now."),
     R("Okay. If it's me, I'm offering {b} a snack. Everybody likes a snack."),
   ]),
@@ -231,7 +231,7 @@ export const MORE_LINES = {
   ...M('goodbye.react.surprised', [
     { turns: [{ by: 'a', react: "Wow. Okay. I did not have that on my bingo card." }], beat: '{a} stares at the black screen for a long moment.' },
     { turns: [{ by: 'a', react: "{b}, you really got me with that one." }], beat: '{a} wipes {a.posAdj} eyes and laughs at {a.ref}.' },
-    { turns: [{ by: 'a', react: "I'm going to miss {b}. I didn't know how much until now." }], beat: '{a} scrolls back through their old chats.' },
+    { turns: [{ by: 'a', react: "I'm going to miss {b}. I didn't know how much until now." }], beat: '{a} scrolls back through {a.posAdj} old chats.' },
     { turns: [{ by: 'a', react: "That's one less voice in Circle Chat. It's going to feel quiet." }], beat: '{a} looks at the empty spot on the Circle.' },
     { turns: [{ by: 'a', react: "{b} was the real deal. What a goodbye." }], beat: '{a} claps at the TV, alone, for a while.' },
   ]),
@@ -337,7 +337,7 @@ export const MORE_LINES = {
   ...M('aside.schemer.neutral', [
     "{b} is harder to read than {b.sub} looks. Interesting.",
     "No harm done. I'll come back when {b} needs me.",
-    "Patience. {b} will come around. They always do.",
+    "Patience. {b} will come around. People always do.",
     "Keep it light. Keep them guessing.",
   ]),
   ...M('aside.schemer.cold', [

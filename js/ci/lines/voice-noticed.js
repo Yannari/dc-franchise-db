@@ -55,7 +55,7 @@ export const VOICE_NOTICED = {
     { turns: [{ by: 'a', send: "Okay but seriously. That's a big deal" },
       { by: 'b', react: '{a} sounds like a different person today.' }] },
     { turns: [{ by: 'a', send: 'Understood. Talk later' },
-      { by: 'b', react: "That doesn't sound like {a}. At all." }], beat: '{b} scrolls back through their old messages.' },
+      { by: 'b', react: "That doesn't sound like {a}. At all." }], beat: '{b} scrolls back through {b.posAdj} old messages.' },
     { turns: [{ by: 'a', send: 'Anyway. How are you' },
       { by: 'b', react: 'Something about the way {a} types today is different.' }], beat: '{b} tilts {b.posAdj} head at the screen.' },
   ]),

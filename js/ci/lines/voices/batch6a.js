@@ -6,15 +6,15 @@ export const VOICES = [
   ['visit.wait.m01', "If there's a knock, I'm hiding in the shower.", {
     hype: "If there's a KNOCK, I'm HIDING in the SHOWER!", dry: "If there's a knock, I'm hiding in the shower. With the curtain closed.", blunt: "Knock, and I'm in the shower.",
     goofy: "If there's a knock, I'm hiding in the shower! With a rubber duck! For protection!", shy: "If there's a knock, I might just hide in the shower.", chill: "If there's a knock, I'm hiding in the shower.",
-    catty: "If there's a knock, I'm hiding in the shower. Let them knock.", diva: "If there's a knock, darling, I'm making my exit. Into the shower.", stoic: "Knock means shower." }],
+    catty: "If there's a knock, I'm hiding in the shower. Knock all you want.", diva: "If there's a knock, darling, I'm making my exit. Into the shower.", stoic: "Knock means shower." }],
   ['visit.wait.m02', "Please walk past my door. Please keep walking.", {
     hype: "PLEASE walk past my door! PLEASE keep WALKING!", dry: "Please walk past my door. Keep walking. Lovely hallway, isn't it.", blunt: "Walk past my door.",
     goofy: "Please walk past my door! Keep walking! The next door is nicer! It has a plant!", shy: "Please walk past my door. Please keep walking.", chill: "Walk past my door. Keep walking.",
     catty: "Please walk past my door. There are better doors.", diva: "Walk on, darling. Past my door. Please.", stoic: "Keep walking." }],
-  ['visit.wait.m03', "Somebody's in the hallway. I can hear them. Or I'm imagining it.", {
-    hype: "Somebody's in the HALLWAY! I can HEAR them! Or I'm IMAGINING it!", dry: "Somebody's in the hallway. Or I'm imagining it. Fifty-fifty.", blunt: "Someone's in the hallway. Maybe.",
-    goofy: "Somebody's in the hallway! I can hear them! Or it's my stomach! It's my stomach!", shy: "Somebody's in the hallway. I can hear them. Or I'm imagining it.", chill: "Somebody's in the hallway, man. Or I'm imagining it.",
-    catty: "Somebody's in the hallway. I can hear them. Not very stealthy.", diva: "Footsteps in the hallway, darling. Or my imagination.", stoic: "Someone's in the hallway." }],
+  ['visit.wait.m03', "Somebody's in the hallway. I can hear {b.obj}. Or I'm imagining it.", {
+    hype: "Somebody's in the HALLWAY! I can HEAR {b.obj}! Or I'm IMAGINING it!", dry: "Somebody's in the hallway. Or I'm imagining it. Fifty-fifty.", blunt: "Someone's in the hallway. Maybe.",
+    goofy: "Somebody's in the hallway! I can hear {b.obj}! Or it's my stomach! It's my stomach!", shy: "Somebody's in the hallway. I can hear {b.obj}. Or I'm imagining it.", chill: "Somebody's in the hallway, man. Or I'm imagining it.",
+    catty: "Somebody's in the hallway. I can hear {b.obj}. Not very stealthy.", diva: "Footsteps in the hallway, darling. Or my imagination.", stoic: "Someone's in the hallway." }],
   ['visit.wait.m04', "I've been nothing but nice to {b}. That's either very good or very bad right now.", {
     hype: "I've been NOTHING but nice to {b}! That's either VERY good or VERY bad!", dry: "I've been nothing but nice to {b}. Very good or very bad. Can't tell.", blunt: "I've been nice to {b}. Good or bad, we'll see.",
     goofy: "I've been nothing but nice to {b}! That's either very good or very bad! Like a coin flip!", shy: "I've been nothing but nice to {b}. That's either very good or very bad right now.", chill: "I've been nothing but nice to {b}. Good or bad, who knows.",
@@ -23,10 +23,10 @@ export const VOICES = [
     hype: "Okay! If it's me, I'm offering {b} a SNACK! EVERYBODY likes a snack!", dry: "If it's me, I'm offering {b} a snack. Everybody likes a snack. Supposedly.", blunt: "If it's me, {b} gets a snack.",
     goofy: "Okay! If it's me, I'm offering {b} a snack! Everybody likes a snack! It's science!", shy: "Okay. If it's me, I'll offer {b} a snack. Everybody likes a snack.", chill: "If it's me, I'm offering {b} a snack. Everybody likes snacks.",
     catty: "If it's me, I'm offering {b} a snack. It's hard to yell with your mouth full.", diva: "If it's me, darling, I'll offer {b} refreshments.", stoic: "If it's me, a snack." }],
-  ['visit.wait.01', "'The blocked Player is on their way to visit one of you.' Oh no. Oh no, no, no.", {
-    hype: "'The blocked Player is on their way to visit one of you.' OH NO! OH NO, NO, NO!", dry: "'The blocked Player is on their way to visit one of you.' Oh no. Wonderful.", blunt: "'The blocked Player is on their way to visit one of you.' Oh no.",
-    goofy: "'The blocked Player is on their way to visit one of you.' Oh no! Oh no, no, no! I'm under the table!", shy: "'The blocked Player is on their way to visit one of you.' Oh no. Oh no, no, no.", chill: "'The blocked Player is on their way to visit one of you.' Oh no, dude.",
-    catty: "'The blocked Player is on their way to visit one of you.' Oh, this should be fun.", diva: "'The blocked Player is on their way to visit one of you.' Oh no, darling. Oh no.", stoic: "'The blocked Player is on their way to visit one of you.' Okay." }],
+  ['visit.wait.01', "'The blocked Player will now visit one of you in person.' Oh no. Oh no, no, no.", {
+    hype: "'The blocked Player will now visit one of you in person.' OH NO! OH NO, NO, NO!", dry: "'The blocked Player will now visit one of you in person.' Oh no. Wonderful.", blunt: "'The blocked Player will now visit one of you in person.' Oh no.",
+    goofy: "'The blocked Player will now visit one of you in person.' Oh no! Oh no, no, no! I'm under the table!", shy: "'The blocked Player will now visit one of you in person.' Oh no. Oh no, no, no.", chill: "'The blocked Player will now visit one of you in person.' Oh no, dude.",
+    catty: "'The blocked Player will now visit one of you in person.' Oh, this should be fun.", diva: "'The blocked Player will now visit one of you in person.' Oh no, darling. Oh no.", stoic: "'The blocked Player will now visit one of you in person.' Okay." }],
   ['visit.wait.02', "Is {b} coming here? Please don't come here.", {
     hype: "Is {b} coming HERE?! PLEASE don't come here!", dry: "Is {b} coming here. Please don't come here.", blunt: "{b} coming here? Don't.",
     goofy: "Is {b} coming here? Please don't come here! I haven't vacuumed! I don't have a vacuum!", shy: "Is {b} coming here? Please don't come here.", chill: "Is {b} coming here? Please don't.",
@@ -106,11 +106,11 @@ export const VOICES = [
   ['visit.wait.catfish.w03', "Please. Anybody but me. My face is not my profile.", {
     hype: "PLEASE! ANYBODY but me! My face is NOT my profile!", dry: "Please. Anybody but me. My face is not my profile.", blunt: "Not me. My face isn't my profile.",
     goofy: "Please! Anybody but me! My face is not my profile! My face is a surprise!", shy: "Please. Anybody but me. My face is not my profile.", chill: "Anybody but me. My face isn't my profile.",
-    catty: "Please. Anybody but me. My face is not my profile. Unfortunately for them.", diva: "Anyone but me, darling. My face is not the face on my profile.", stoic: "Not me. Wrong face." }],
+    catty: "Please. Anybody but me. My face is not my profile. Bad luck for whoever's knocking.", diva: "Anyone but me, darling. My face is not the face on my profile.", stoic: "Not me. Wrong face." }],
   ['visit.wait.catfish.w04', "If it's me, I'm explaining everything. Fast.", {
     hype: "If it's me, I'm explaining EVERYTHING! FAST!", dry: "If it's me, I'm explaining everything. Fast.", blunt: "If it's me, I explain. Fast.",
     goofy: "If it's me, I'm explaining everything! Fast! Like an auctioneer!", shy: "If it's me, I'm explaining everything. Fast.", chill: "If it's me, I'm explaining everything. Fast.",
-    catty: "If it's me, I'm explaining everything. Fast. Before they can think.", diva: "If it's me, darling, I'll explain everything. Swiftly.", stoic: "If it's me, I explain." }],
+    catty: "If it's me, I'm explaining everything. Fast. Before anybody can think.", diva: "If it's me, darling, I'll explain everything. Swiftly.", stoic: "If it's me, I explain." }],
   ['visit.wait.catfish.w05', "All this work, and one knock could end it.", {
     hype: "ALL this work, and ONE KNOCK could END it!", dry: "All this work, and one knock could end it.", blunt: "One knock ends it.",
     goofy: "All this work, and one knock could end it! Knock knock! Who's there? Disaster!", shy: "All this work, and one knock could end it.", chill: "All this work, and one knock could end it.",

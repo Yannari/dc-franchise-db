@@ -34,7 +34,7 @@ export const CHAT_B = {
       { by: 'a', send: "Who's close with who right now? I feel like I'm missing something" },
       { by: 'b', send: "I'm pretty sure {c} has a group chat going. You didn't hear it from me" },
       { by: 'a', react: "A group chat. Without me.", send: "Noted. Thank you {e:detective}" },
-    ], beat: '{a} leaves the chat and says "of course they do" to nobody.' },
+    ], beat: '{a} leaves the chat and mutters "of course" to nobody.' },
     { id: 'chat.pump.warm.06', turns: [
       { by: 'a', say: "{b} talks to everybody. If anyone knows what's going on, it's {b}.", send: "Okay be honest. What's everybody saying in here?" },
       { by: 'b', react: "Should I tell {a.obj}? Okay, a little.", send: "Lol a lot. People are starting to pick sides" },

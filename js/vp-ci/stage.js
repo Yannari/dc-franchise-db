@@ -28,6 +28,7 @@ import { esc, hashify, faceUrl, ringOf, nameOf, realOf, isCatfish, bg, ringBg, a
   captionHtml, profileCard, starsText, facts } from './parts.js';
 import { MOMENTS } from './moments.js';
 import { PARTY_THEMES } from '../ci/games-data.js';
+import { pronounsOf } from '../pronouns-of.js';
 
 export { faceUrl, themeFor, starsText };
 
@@ -223,24 +224,25 @@ function explainStage(row, screen, idx, fresh) {
 // and watches the TV build the profile the room will see. A reaction is the
 // other side: somebody else's apartment, and on their TV only the PROFILE.
 const FAME = { celebrity: 'CELEBRITY', villain: 'KNOWN VILLAIN', threat: 'A BIG THREAT', known: 'SEEN ON TV' };
+// In the player's own pronouns (pr: pronounsOf their gender).
 const REASON_WHY = {
-  strategic: 'Strategic: a different face will get further in this room.',
-  protective: 'Protective: so nobody judges them for who they really are.',
-  family: 'Family: playing someone from their own life.',
-  experimental: 'Experimental: to see how the room treats somebody else.',
+  strategic: () => 'Strategic: a different face will get further in this room.',
+  protective: pr => `Protective: so nobody judges ${pr.obj} for who ${pr.sub} really ${pr.sub === 'they' ? 'are' : 'is'}.`,
+  family: pr => `Family: playing someone from ${pr.posAdj} own life.`,
+  experimental: () => 'Experimental: to see how the room treats somebody else.',
 };
 const EDIT_WORDS = { age: 'age', job: 'job', status: 'relationship status' };
 
-function planOf(p) {
+function planOf(p, pr) {
   if (p.mode === 'catfish') {
     return { chip: `<span class="civ-planchip cat">CATFISH · Playing as ${esc([p.name, p.age, p.job].filter(x => x != null).join(', '))}</span>`,
-      why: REASON_WHY[p.reason] || '' };
+      why: REASON_WHY[p.reason]?.(pr) || '' };
   }
-  const who = p.people.length > 1 ? 'TWO PLAYERS, ONE PROFILE' : 'PLAYING AS THEMSELVES';
+  const who = p.people.length > 1 ? 'TWO PLAYERS, ONE PROFILE' : `PLAYING AS ${pr.ref.toUpperCase()}`;
   if (p.mode === 'edited') {
     const changed = (p.edits || []).map(e => EDIT_WORDS[e]).filter(Boolean);
     const why = [changed.length ? `Changed on the profile: ${changed.join(', ')}.` : '',
-      (p.edits || []).includes('fame') ? 'Left their TV past off it.' : ''].filter(Boolean).join(' ');
+      (p.edits || []).includes('fame') ? `Left ${pr.posAdj} TV past off it.` : ''].filter(Boolean).join(' ');
     return { chip: `<span class="civ-planchip edit">${who} · A FEW THINGS CHANGED</span>`, why };
   }
   if (p.mode === 'polished') return { chip: `<span class="civ-planchip">${who} · BEST PHOTOS ONLY</span>`, why: '' };
@@ -252,8 +254,8 @@ function idCard(row, h) {
   const t = row.ci.cast?.[reals[0]] || {};
   const known = FAME[t.rep];
   const fame = known ? `<div class="civ-fame"><b>${known}</b>${t.stars > 0 ? ` <span class="st">${starsText(t.stars)}</span>` : ''}
-    <small>${p.mode === 'catfish' || (p.edits || []).includes('fame') ? 'Hiding it from the room' : 'The room may recognise them'}</small></div>` : '';
-  const plan = planOf(p);
+    <small>${p.mode === 'catfish' || (p.edits || []).includes('fame') ? 'Hiding it from the room' : `The room may recognise ${pronounsOf(t.gender).obj}`}</small></div>` : '';
+  const plan = planOf(p, pronounsOf(reals.length > 1 ? 'nb' : t.gender));
   return `<div class="civ-id"><div class="nm">${esc(reals.join(' & ') || nameOf(row, h))}</div>
     <div class="fx">${reals.length > 1 ? '' : facts(t.age, t.job, t.hometown)}</div>${fame}${plan.chip}
     ${plan.why ? `<div class="civ-why">${esc(plan.why)}</div>` : ''}</div>`;

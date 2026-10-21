@@ -361,7 +361,7 @@ export const G_MAKE = {
   ]),
   ...E('g.poetry-slam.item', [
     two("'Choose me from the others, and an ally you will make.'", "Okay, {a}. That was actually beautiful."),
-    two("Here goes nothing. Here goes my whole game.", "{a} put their heart into that."),
+    two("Here goes nothing. Here goes my whole game.", "{a} put {a.posAdj} heart into that."),
   ]),
   // ── Head to Head (3×5): diss tracks ───────────────────────────────────
   ...E('g.head-to-head.props', [

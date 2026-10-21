@@ -25,7 +25,7 @@ export const VOICES = [
     catty: "Be honest. What did you think when {c} came up in that video? I know what I thought", diva: "Be honest, darling. What did you think when {c} came up?", stoic: "When {c} came up. Thoughts?" }],
   ['chat.debrief.warning.agree.warm.06', "Goodbye messages don't lie. Somebody's last chance to warn us went to {c}", {
     hype: "Goodbye messages DON'T LIE!! Somebody's LAST chance to warn us went to {c}", dry: "goodbye messages don't lie. somebody's last chance to warn us went to {c}. that means something", blunt: "Goodbyes don't lie. The last warning was {c}",
-    goofy: "Goodbye messages don't lie!! Somebody's last chance to warn us went to {c}. That's like a message in a bottle", shy: "Goodbye messages don't lie. Somebody used their last chance to warn us about {c}", chill: "goodbye messages don't lie. somebody's last warning went to {c}",
+    goofy: "Goodbye messages don't lie!! Somebody's last chance to warn us went to {c}. That's like a message in a bottle", shy: "Goodbye messages don't lie. That was a last word, and it was a warning about {c}", chill: "goodbye messages don't lie. somebody's last warning went to {c}",
     catty: "Goodbye messages don't lie. Somebody's last chance to warn us went to {c}. Telling", diva: "Goodbyes don't lie, darling. The final warning went to {c}", stoic: "Goodbyes don't lie. {c}" }],
   ['chat.debrief.warning.agree.warm.07', "That video was a wake-up call about {c}", {
     hype: "That video was a WAKE-UP CALL about {c}!!", dry: "that video was a wake-up call about {c}. i was already awake", blunt: "That video was a wake-up call on {c}",

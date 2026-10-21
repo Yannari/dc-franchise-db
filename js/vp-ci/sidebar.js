@@ -12,6 +12,7 @@
 // The viewer is told who is really behind every profile; the room is not.
 import { esc, faceUrl, ringOf, nameOf, realOf, isCatfish, bg } from './parts.js';
 import { faceOf } from './steps.js';
+import { pronounsOf } from '../pronouns-of.js';
 
 const NAMED = /^(block\.announce\.|vote\.result|block\.inperson\.tell)/;
 const CROWN = /^result\.(influencers|rod|picked|sole|super|secret)$/;
@@ -44,7 +45,7 @@ export function sidebarHtml(row, screens, si, idx) {
     return `<div class="civ-sp${out.has(h) ? ' out' : ''}" data-h="${esc(h)}" style="--ring:${ringOf(row, h)}">
       <div class="ph"${bg(url)}>${url ? '' : esc(nameOf(row, h)[0] || '?')}</div>
       <div class="t"><b>${esc(nameOf(row, h))}</b>${influencers.includes(h) ? '<span class="civ-crown">♛</span>' : ''}${out.has(h) ? '<span class="civ-x">BLOCKED</span>' : ''}
-        <small>${fake ? `<i>catfish</i> · really ${esc(realOf(row, h))}` : row.ci.profiles[h].people?.length > 1 ? `shared · ${esc(realOf(row, h))}` : 'playing as themselves'}</small></div></div>`;
+        <small>${fake ? `<i>catfish</i> · really ${esc(realOf(row, h))}` : row.ci.profiles[h].people?.length > 1 ? `shared · ${esc(realOf(row, h))}` : `playing as ${pronounsOf(row.ci.cast?.[row.ci.profiles[h].people?.[0]]?.gender).ref}`}</small></div></div>`;
   }).join('');
   const who = h => `<b style="color:${ringOf(row, h)}">${esc(nameOf(row, h))}</b>`;
   const live = h => inRoom.includes(h) && !out.has(h);

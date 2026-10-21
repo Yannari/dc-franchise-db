@@ -174,13 +174,13 @@ export const VOICES = [
     hype: "Be nice! Be fast! Be nice!", dry: "Be kind. Be quick. Try not to be a monster.",
     blunt: "Kind and quick.", goofy: "Be kind. Be quick. Be a nice little message.",
     shy: "Just be kind. Please be kind.", chill: "Keep it kind. Keep it quick.",
-    calm: "Kind first. Then quick.", catty: "Be kind. They'll still hate us.",
+    calm: "Kind first. Then quick.", catty: "Be kind. Quick and kind.",
     diva: "Gracious, swift, unforgettable. That's how it's done.", stoic: "Kind. Quick.", formal: "Be kind, and keep it brief." }],
   ['block.typing.f04', "This is the hardest message I'll send in here.", {
     hype: "This is the hardest message EVER!", dry: "Hardest message I'll send in here. And I've sent some.",
     blunt: "Hardest message yet.", goofy: "This is harder than texting my ex. And that was hard.",
     shy: "This is so hard. The hardest thing yet.", chill: "Toughest message I'll send. No doubt.",
-    calm: "This is the hardest message I'll send. I'll take my time.", catty: "The hardest message. For them, mostly.",
+    calm: "This is the hardest message I'll send. I'll take my time.", catty: "The hardest message I will ever type.",
     diva: "The most difficult message of my career.", stoic: "Hardest one.", formal: "This is undoubtedly the hardest message I'll send here." }],
   ['block.typing.f05', "I'm going to make them wait. Not because I want to. Because I'm scared.", {
     hype: "I'm stalling! I'm scared! I'm totally stalling!", dry: "I'm making them wait. Not drama. Cowardice. Honest cowardice.",
@@ -302,7 +302,7 @@ export const VOICES = [
     hype: "{b} is going to see a total stranger! That's insane!", dry: "{b} knocks, finds a stranger. That'll be a fun chat.",
     blunt: "{b} will see a stranger.", goofy: "{b} is going to knock and see a total stranger. Hi, I'm the stranger.",
     shy: "{b} won't even know who I am.", chill: "{b} is gonna knock and see somebody new. Wild.",
-    calm: "{b} would be meeting someone they've never seen. I'd owe them the truth.", catty: "{b} would see a stranger. A better-looking one, honestly.",
+    calm: "{b} would be meeting a stranger. I'd owe {b.obj} the truth.", catty: "{b} would see a stranger. A better-looking one, honestly.",
     diva: "{b} would meet the real star of this story.", stoic: "{b} sees a stranger.", formal: "{b} would find a complete stranger behind this door." }],
 
   // ── the goodbye video ─────────────────────────────────────────────────
@@ -353,12 +353,12 @@ export const VOICES = [
     blunt: "{b} was emotional.", goofy: "{b} was so emotional. Now I'm emotional. Pass the tissues.",
     shy: "{b} was really emotional. It made me sad.", chill: "{b} got real emotional. That's cool.",
     calm: "{b} let us see how much it meant. That took courage.", catty: "{b} was very emotional. Quite the performance.",
-    diva: "{b} poured their heart out. A beautiful scene.", stoic: "{b} felt it.", formal: "{b} was far more emotional than I expected." }],
+    diva: "{b} poured {b.posAdj} heart out. A beautiful scene.", stoic: "{b} felt it.", formal: "{b} was far more emotional than I expected." }],
   ['goodbye.react.surprised.f03', "That was classy. {b} really went out with class.", {
     hype: "That was SO classy! {b} nailed it!", dry: "Classy. {b} went out with class. Rare in here.",
     blunt: "Classy exit, {b}.", goofy: "That was classy. {b} left like a butler in a movie.",
     shy: "That was really classy of {b}.", chill: "Classy move, {b}. Respect.",
-    calm: "That was gracious. {b} left the right way.", catty: "Classy. I didn't think {b} had it in them. Good for {b}.",
+    calm: "That was gracious. {b} left the right way.", catty: "Classy. I didn't think {b} had it in {b.obj}. Good for {b}.",
     diva: "A classy exit. {b} learned from the best.", stoic: "Classy.", formal: "That was very classy of {b}." }],
   ['goodbye.react.surprised.f04', "Okay, I was not ready for that.", {
     hype: "I was NOT ready for that!", dry: "Not ready for that. Nobody warned me.",
@@ -403,11 +403,11 @@ export const VOICES = [
     calm: "{b} is gone. Let's see where things settle.", catty: "{b} is gone. Now it gets interesting.",
     diva: "{b} has left the stage. A new act begins.", stoic: "{b}'s gone. Adjust.", formal: "{b} has left. Everything will change now." }],
   ['goodbye.after.f05', "I didn't think I'd get this emotional over somebody I've never met.", {
-    hype: "I'm so emotional, and I've never even met them!", dry: "Emotional over somebody I've never met. That's the Circle for you.",
-    blunt: "Never met them. Still emotional.", goofy: "I've never met them, and I'm crying into a bowl of cereal.",
-    shy: "I've never even met them. Why am I this sad?", chill: "Never even met them. Still hits.",
-    calm: "I've never met them, but it still matters.", catty: "Emotional over a stranger. This place has broken me.",
-    diva: "Such emotion over a stranger. My heart is simply too big.", stoic: "Never met them. Still hurts.", formal: "I'm surprised how emotional I am about someone I've never met." }],
+    hype: "I'm so emotional, and we never even met!", dry: "Emotional over somebody I've never met. That's the Circle for you.",
+    blunt: "Never met. Still emotional.", goofy: "I've never met this person, and I'm crying into a bowl of cereal.",
+    shy: "We never even met. Why am I this sad?", chill: "Never even met. Still hits.",
+    calm: "We never met, but it still matters.", catty: "Emotional over a stranger. This place has broken me.",
+    diva: "Such emotion over a stranger. My heart is simply too big.", stoic: "Never met. Still hurts.", formal: "I'm surprised how emotional I am about someone I've never met." }],
   ['goodbye.after.f06', "I'm going to play the rest of this for {b}.", {
     hype: "I'm playing the rest of this for {b}! Let's go!", dry: "I'm playing for {b} now. No pressure on me at all.",
     blunt: "I play for {b} now.", goofy: "I'm playing for {b} now. I'll even wear {b}'s favorite socks. If I knew them.",

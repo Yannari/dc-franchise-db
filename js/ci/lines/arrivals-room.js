@@ -67,7 +67,7 @@ export const ARRIVAL_ROOM = {
       { by: 'a', send: "Everybody was nervous. You're in good hands" },
     ], beat: '{b} reads it twice and smiles.' },
     { turns: [
-      { by: 'a', send: "Okay, the new person is here and they have a GREAT profile" },
+      { by: 'a', send: "Okay {b}, your profile is GREAT. Welcome!" },
       { by: 'b', react: "A compliment in my first five minutes. I'll take it.", send: "Haha thank you! You're the first person to message me" },
       { by: 'a', send: "Good. I wanted to be {e:wink}" },
     ] },

@@ -256,10 +256,10 @@ export const VOICES = [
     hype: "WELCOME {b}!! It's A LOT in here at first, but you're gonna be GREAT {e:fire}", dry: "welcome {b}. it's a lot in here at first. you'll be fine. probably great", blunt: "Welcome {b}. It's a lot. You'll be fine",
     goofy: "Welcome {b}!! It's a lot in here at first, but you're gonna be great. Like a duckling in a pond {e:heart}", shy: "Welcome {b}! It's a lot in here at first, but I think you're going to be great", chill: "welcome {b}! it's a lot in here at first, but you're gonna be great",
     catty: "Welcome {b}. It's a lot in here at first. Stick with me and you'll be great", diva: "Welcome, {b}, darling! It's a lot at first, but you'll be fabulous {e:sparkle}", stoic: "Welcome {b}. You'll be fine" }],
-  ['welcome.warm.03', "Okay, the new person is here and they have a GREAT profile", {
-    hype: "OKAY!! The new person is HERE and they have a GREAT profile {e:fire}", dry: "ok, the new person is here and they have a great profile. annoyingly", blunt: "New person's here. Great profile",
-    goofy: "Okay!! The new person is here and they have a GREAT profile. Better than mine. Rude {e:laugh}", shy: "Okay, the new person is here and they have a really great profile", chill: "ok, the new person's here and they've got a great profile",
-    catty: "Okay, the new person is here and they have a great profile. Competition", diva: "The new arrival is here, darlings, and the profile is GREAT {e:sparkle}", stoic: "New person. Good profile" }],
+  ['welcome.warm.03', "Okay {b}, your profile is GREAT. Welcome!", {
+    hype: "OKAY {b}!! Your profile is GREAT {e:fire}", dry: "ok {b}, your profile is great. annoyingly", blunt: "{b}. Great profile",
+    goofy: "Okay {b}!! Your profile is GREAT. Better than mine. Rude {e:laugh}", shy: "Hi {b}! Your profile is really great", chill: "ok {b}, great profile. welcome",
+    catty: "Okay {b}, your profile is great. Competition", diva: "{b}, darling, your profile is GREAT {e:sparkle}", stoic: "{b}. Good profile" }],
   ['welcome.warm.04', "Hey {b}! Just wanted you to know you've got a friend in here already", {
     hype: "HEY {b}!! Just wanted you to know you've got a FRIEND in here already {e:heart}", dry: "hey {b}. just so you know, you've got a friend in here already. it's me", blunt: "Hey {b}. You've got a friend in here",
     goofy: "Hey {b}!! Just wanted you to know you've got a friend in here already. It's me. Hi {e:heart}", shy: "Hey {b}! Just wanted you to know you've got a friend in here already {e:heart}", chill: "hey {b}! just wanted you to know you've got a friend in here already",

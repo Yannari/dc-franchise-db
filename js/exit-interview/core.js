@@ -43,7 +43,11 @@ const VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
 const NO_VOTE = new Set(['walked', 'expelled', 'medical', 'finalist']);
 
 /** How hard each stance lands on the person who hears it, before temperament. */
-const STANCE_BOND = { blame: -1.2, drag: -1.6, warn: -0.6, praise: 1.0, miss: 0.8, respect: 0.6 };
+// Calibrated on five seeded twelve-person Big Brother seasons (2026-10-21):
+// at the first draft (drag -1.6) a season's hearings summed to about -35 and
+// added up to five pairs past the export's bad-blood line (-5). A podcast is a
+// lighter touch than a week in the house, so it is roughly half that now.
+const STANCE_BOND = { blame: -0.7, drag: -1.0, warn: -0.35, praise: 0.6, miss: 0.5, respect: 0.35 };
 /** What fans make of what was said about somebody still playing, per unit of heat. */
 const STANCE_POP = { blame: -0.3, drag: -0.4, warn: -0.2, praise: 0.3, miss: 0.15, respect: 0.2 };
 /** What fans make of the guest, by how the hour went. */
@@ -236,7 +240,7 @@ export function applyRecording(record, ops) {
   const t = record.truth;
   if (t) {
     for (const who of t.flippers.filter(x => !t.suspected.includes(x))) {
-      const d = r2(-1.5 * fuse(stats));
+      const d = r2(-1.0 * fuse(stats));
       ops.addBond(record.guest, who, d);
       record.effects.bonds.push({ a: record.guest, b: who, delta: d, when: 'recorded' });
     }

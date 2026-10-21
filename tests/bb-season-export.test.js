@@ -381,3 +381,22 @@ describe('the relationships a season produced', () => {
     expect(Array.isArray(doc.rivalries)).toBe(true);
   });
 });
+
+describe('the in-season exit interviews ride the season out', () => {
+  beforeEach(() => { playSeason(); seasonConfig.seasonNumber = 1; });
+
+  it('the document and the seasons row carry the decisions, without the hearing stamps', () => {
+    expect(gs.exitInterviews.length).toBeGreaterThan(0);
+    const doc = buildBigBrotherSeasonDocument(1);
+    expect(doc.exitInterviews.length).toBe(gs.exitInterviews.length);
+    expect(doc.exitInterviews[0].heardBy).toBeUndefined();
+    const row = mergeBigBrotherSeasonsDatabase({ seasons: [] }, doc).seasons[0];
+    expect(row.exitInterviews).toEqual(doc.exitInterviews);
+  });
+
+  it('a document from before exit interviews publishes an empty list', () => {
+    const doc = buildBigBrotherSeasonDocument(1);
+    delete doc.exitInterviews;
+    expect(mergeBigBrotherSeasonsDatabase({ seasons: [] }, doc).seasons[0].exitInterviews).toEqual([]);
+  });
+});

@@ -15,6 +15,7 @@ import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
 import { nextWindowFor, nextAllStarsWindow } from './franchise-calendar.js';
 import { ratingsForSeason } from './ratings.js';
+import { publishedExitInterviews } from './bb/exit-interview.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -2436,6 +2437,8 @@ export function mergeBigBrotherSeasonsDatabase(existing, seasonDoc) {
     status: 'Complete',
     castPhotoPath: `assets/cast/${seasonId('big-brother', seasonNum)}-cast.png`,
     emoji: _clean(seasonDoc.emoji),
+    // On the row because kristal.html and the follower model both read rows.
+    exitInterviews: Array.isArray(seasonDoc.exitInterviews) ? seasonDoc.exitInterviews : [],
     ...airWindow,
   });
 
@@ -3163,6 +3166,9 @@ export function buildBigBrotherSeasonDocument(seasonNumber) {
   if (doc.winner) {
     doc.winner.vote = finalists.map(n => `${n} ${Number(votes[n]) || 0}`).join(' — ');
   }
+  // Kristal-talKs' in-season exit interviews: the decisions the simulator
+  // made, which kristal.html writes into words (js/kristal-exit.js).
+  doc.exitInterviews = publishedExitInterviews();
   return _attachVillainBoard(doc);
 }
 

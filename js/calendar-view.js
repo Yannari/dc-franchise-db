@@ -23,9 +23,9 @@
 
 import { SHOWS, DEFAULT_FORMAT } from './shows.js';
 import {
-  airKey, airLabel, latestAired, nextWindowFor, nextAllStarsWindow, episodeAirDates, airDateLabel, bookedWindow, DEFAULT_RUN,
+  airKey, airLabel, latestAired, nextWindowFor, nextAllStarsWindow, episodeAirDates, airDateLabel, bookedWindow, DEFAULT_RUN, projectedRun,
 } from './franchise-calendar.js';
-import { readSavedGame, readLocks, liveSeason } from './air-watch.js';
+import { readSavedGame, readLocks, liveSeason, setupSeason } from './air-watch.js';
 
 const DAY = 86400000;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -85,6 +85,17 @@ function subtitleOf(title, show) {
   return t;
 }
 
+/** Why an unaired season is drawn this long, said in the detail panel. */
+const lengthWhy = r => !r.lengthGuessed ? ''
+  : r.lengthBasis === 'cast' && r.cast ? ` (from its ${r.cast}-person cast)`
+    : r.lengthBasis === 'typical' ? ' (the show’s usual length)'
+      : r.lengthBasis === 'last' ? ' (as long as the last one)' : '';
+
+/** The simulator's setup when there is no saved game to read it from. */
+function readConfig() {
+  try { return JSON.parse(localStorage.getItem('simulator_config') || 'null'); } catch { return null; }
+}
+
 /** One season as a run of weekly dates, or null when it has no window. */
 function runOf(season, projected = false, key = null) {
   const format = season.format || DEFAULT_FORMAT;
@@ -114,7 +125,7 @@ const tagOf = r => (r.live ? 'playing now' : r.started ? 'started' : r.possible 
  * the windows of seasons that have started; both sit on their show's next bar
  * instead of the rule's guess.
  */
-function buildModel(seasons, { live = null, locks = {} } = {}) {
+function buildModel(seasons, { live = null, setup = null, locks = {} } = {}) {
   const dated = seasons.filter(s => airKey(s) != null);
   // Each aired All Stars learns which one it was, in air order.
   const starCount = {};
@@ -140,12 +151,19 @@ function buildModel(seasons, { live = null, locks = {} } = {}) {
     const lock = locks[`${format}#${n}`] || null;
     const w = playing?.window || lock || nextWindowFor(dated.map(s => ({ ...s, format: s.format || DEFAULT_FORMAT })), format, { number: n });
     if (!w) continue;
+    // How long it runs: played (its queue), from the cast set up for it, or the
+    // show's usual length — never just the last season's (franchise-calendar.js projectedRun).
+    const cast = playing?.cast || (setup && setup.format === format && setup.number === n ? setup.castSize : null);
+    const guess = playing && playing.basis === 'played' ? { count: playing.total, basis: 'played' }
+      : playing ? { count: playing.total, basis: playing.basis, cast } : projectedRun(format, mine, cast);
     const run = runOf({
       format, seasonNumber: n, title: `${show.name} ${n}`,
-      airYear: w.airYear, airSlot: w.airSlot, episodeCount: playing ? playing.total : last?.episodeCount,
+      airYear: w.airYear, airSlot: w.airSlot, episodeCount: guess.count,
     }, true);
     if (run) {
-      run.lengthGuessed = !playing && !last?.episodeCount;
+      run.lengthGuessed = guess.basis !== 'played';
+      run.lengthBasis = guess.basis;
+      run.cast = guess.cast || cast || null;
       run.live = !!playing;
       run.aired = playing?.aired || 0;
       run.started = !!(lock || playing?.locked);
@@ -165,18 +183,18 @@ function buildModel(seasons, { live = null, locks = {} } = {}) {
       k++;
       const bridge = runOf({
         format, seasonNumber: k, title: `${show.name} ${k}`,
-        airYear: b.airYear, airSlot: b.airSlot, episodeCount: last?.episodeCount,
+        airYear: b.airYear, airSlot: b.airSlot, episodeCount: projectedRun(format, mine).count,
       }, true, `next-${format}-${k}`);
-      if (bridge) { bridge.lengthGuessed = !last?.episodeCount; ghosts.push(bridge); }
+      if (bridge) { bridge.lengthGuessed = true; bridge.lengthBasis = projectedRun(format, mine).basis; ghosts.push(bridge); }
     }
     const lastStar = mine.filter(s => s.allStars).sort((a, b) => airKey(a) - airKey(b)).pop();
-    const count = lastStar?.episodeCount || last?.episodeCount;
+    const count = lastStar?.episodeCount || projectedRun(format, mine).count;
     const star = runOf({
       format, allStars: true, asNumber: as.number, seasonNumber: as.number,
       title: `${show.name} ${show.allStars.label} ${as.number}`,
       airYear: as.airYear, airSlot: as.airSlot, episodeCount: count,
     }, true, `next-${format}-as`);
-    if (star) { star.lengthGuessed = !count; star.possible = true; ghosts.push(star); }
+    if (star) { star.lengthGuessed = true; star.lengthBasis = lastStar ? 'last' : projectedRun(format, mine).basis; star.possible = true; ghosts.push(star); }
   }
   ghosts.sort((a, b) => a.start - b.start);
 
@@ -531,7 +549,7 @@ function detailHtml() {
     <div>
       <small>${esc(r.show.name)} · ${esc(which)} · ${status}</small>
       <h4>${esc(r.season.title || r.short)}</h4>
-      <p><b>${esc(airLabel(r.season))}</b> · ${esc(airDateLabel(r.start))} → ${esc(airDateLabel(r.finale))} · ${r.lengthGuessed ? '~' : ''}${r.count} episodes on ${night}${winner}</p>
+      <p><b>${esc(airLabel(r.season))}</b> · ${esc(airDateLabel(r.start))} → ${esc(airDateLabel(r.finale))} · ${r.lengthGuessed ? '~' : ''}${r.count} episodes${lengthWhy(r)} on ${night}${winner}</p>
       ${why}
       <div class="fc-nb">${nb('← Before:', prev)}${nb('After:', next)}</div>
     </div>
@@ -663,7 +681,9 @@ export async function mountCalendar(root) {
     const saved = await readSavedGame().catch(() => null);
     const rows = seasons.map(s => ({ ...s, format: s.format || DEFAULT_FORMAT }));
     const live = saved ? liveSeason(saved.gs, saved.cfg, rows) : null;
-    state.model = buildModel(seasons, { live, locks: readLocks() });
+    // A season cast but not started yet: its bar runs as long as its cast.
+    const setup = setupSeason(saved?.gs || null, saved?.cfg || readConfig(), rows);
+    state.model = buildModel(seasons, { live, setup, locks: readLocks() });
     if (!state.model.all.length) {
       root.innerHTML = '<div class="fc-hint">No season has an air date yet. Add <code>airYear</code> and <code>airSlot</code> to seasons_database.json.</div>';
       return;

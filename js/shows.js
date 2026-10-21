@@ -19,6 +19,9 @@ export const SHOWS = {
     // The night this show goes out on (0 = Sunday); js/franchise-calendar.js
     // dates every episode from it.
     airNight: 1,
+    // Episodes per player, for drawing an unaired season's length on the calendar
+    // (franchise-calendar.js projectedRun) until this show has aired seasons of its own: aired seasons 1-15: median 0.89.
+    runPerPlayer: 0.9,
     // The quarters this show airs in, every year (js/franchise-calendar.js
     // SLOTS). Two shows to a quarter, never on the same night: Drag Race and
     // The Traitors in winter, Total Drama and The Circle in spring, Big Brother
@@ -129,6 +132,9 @@ export const SHOWS = {
     // Set at the bottom of js/bb-run.js. Read by formatIsRunnable().
     runnableFlag: '_bbRunnable',
     airNight: 3,
+    // Episodes per player, for drawing an unaired season's length on the calendar
+    // (franchise-calendar.js projectedRun) until this show has aired seasons of its own: season 1: 16 episodes from 17 houseguests.
+    runPerPlayer: 0.95,
     airSlots: ['summer'],
     booked: { 2: { airYear: 2027, airSlot: 'summer' } },
     rosterPlace: 'HOUSE',
@@ -201,6 +207,9 @@ export const SHOWS = {
     // Set at the bottom of js/tr-run.js. Read by formatIsRunnable().
     runnableFlag: '_trRunnable',
     airNight: 4,
+    // Episodes per player, for drawing an unaired season's length on the calendar
+    // (franchise-calendar.js projectedRun) until this show has aired seasons of its own: played 16 and 22: 8 and 10 episodes.
+    runPerPlayer: 0.48,
     airSlots: ['winter'],
     rosterPlace: 'CASTLE',
     roundsPath: 'tr.rounds',
@@ -317,6 +326,9 @@ export const SHOWS = {
     // is deliberate: the setup screen must refuse a show with no engine.
     runnableFlag: '_drRunnable',
     airNight: 5,
+    // Episodes per player, for drawing an unaired season's length on the calendar
+    // (franchise-calendar.js projectedRun) until this show has aired seasons of its own: season 1: 16 episodes from 14 queens.
+    runPerPlayer: 1.14,
     airSlots: ['winter'],
     // ALL STARS, ON ITS OWN SCHEDULE. Possible from the year of the third
     // flagship season, then one a year. Summer rather than spring: a 16-week
@@ -405,6 +417,9 @@ export const SHOWS = {
     // earlier villa) walks in as one (js/pm-run.js _carried, pm/kin.js).
     historyFromLedger: true,
     airNight: 6,
+    // Episodes per player, for drawing an unaired season's length on the calendar
+    // (franchise-calendar.js projectedRun) until this show has aired seasons of its own: played 16 and 22: 16 and 25 episodes.
+    runPerPlayer: 1.07,
     airSlots: ['summer'],
     booked: { 1: { airYear: 2027, airSlot: 'summer' } },
     rosterPlace: 'VILLA',
@@ -475,6 +490,9 @@ export const SHOWS = {
     // Past seasons count: an alum walks in with their reputation and grudges.
     historyFromLedger: true,
     airNight: 3,
+    // Episodes per player, for drawing an unaired season's length on the calendar
+    // (franchise-calendar.js projectedRun) until this show has aired seasons of its own: played 10 and 13: 11 and 13 episodes.
+    runPerPlayer: 1.05,
     airSlots: ['spring'],
     booked: { 1: { airYear: 2027, airSlot: 'spring' } },
     rosterPlace: 'APARTMENTS',
@@ -538,6 +556,9 @@ export const SHOWS = {
     // A crossover: everybody's past on any show walks in with them.
     historyFromLedger: true,
     airNight: 2,
+    // Episodes per player, for drawing an unaired season's length on the calendar
+    // (franchise-calendar.js projectedRun) until this show has aired seasons of its own: played 16 and 24: 8 and 15 episodes.
+    runPerPlayer: 0.57,
     airSlots: ['fall'],
     booked: { 1: { airYear: 2027, airSlot: 'fall' } },
     rosterPlace: 'VILLA',
@@ -598,6 +619,9 @@ export const SHOWS = {
     // Fall, Wednesday: the slot pencilled with the user (2026-10-17), the third
     // show of the quarter beside Total Drama (Mon) and The Challenge (Tue).
     airNight: 3,
+    // Episodes per player, for drawing an unaired season's length on the calendar
+    // (franchise-calendar.js projectedRun) until this show has aired seasons of its own: played 8 and 12 teams: 8 and 13 legs, per person.
+    runPerPlayer: 0.52,
     airSlots: ['fall'],
     booked: { 1: { airYear: 2027, airSlot: 'fall' } },
     rosterPlace: 'RACE',

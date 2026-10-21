@@ -25,8 +25,16 @@
 // without the simulator.
 import { SHOWS, DEFAULT_FORMAT } from './shows.js';
 import {
-  airKey, airLabel, airDateLabel, episodeAirDates, nextWindowFor, premiereDate,
+  airKey, airLabel, airDateLabel, episodeAirDates, nextWindowFor, premiereDate, projectedRun,
 } from './franchise-calendar.js';
+
+/** How many people are in the cast the simulator holds (its saved cast list), or null. */
+export function storedCastSize() {
+  try {
+    const cast = JSON.parse(localStorage.getItem('simulator_cast') || 'null');
+    return Array.isArray(cast) && cast.length ? cast.length : null;
+  } catch { return null; }
+}
 
 const LOCKS_KEY = 'dc_air_locks';
 const QUEUES = ['_trQueue', '_drQueue', '_pmQueue', '_ciQueue', '_chQueue', '_rrQueue'];
@@ -83,6 +91,19 @@ function rowOf(seasons, format, number) {
   return seasons.find(s => s.format === format && Number(s.seasonNumber) === Number(number)) || null;
 }
 
+/**
+ * The season the simulator is SET UP for but has not started: its show and
+ * number off the saved config, and how many people are in its cast. Null when
+ * a season is already being played (liveSeason has it) or nothing is cast.
+ */
+export function setupSeason(gs, cfg, seasons, { castSize = storedCastSize() } = {}) {
+  if ((gs?.episodeHistory || []).some(Boolean) || !castSize || !seasons) return null;
+  const format = formatOf(cfg);
+  const number = Number(cfg?.seasonNumber) || nextNumber(seasons, format);
+  if (rowOf(seasons, format, number)) return null;
+  return { format, number, castSize };
+}
+
 /** The show's next season number on the calendar. */
 export function nextNumber(seasons, format) {
   const mine = seasons.filter(s => s.format === format && !s.allStars);
@@ -129,7 +150,7 @@ export function stampAirWindow(gs, cfg) {
  * first press (their rows queue); a Total Drama or Big Brother season is
  * measured against its last season's length until it ends.
  */
-export function liveSeason(gs, cfg, seasons) {
+export function liveSeason(gs, cfg, seasons, { castSize = storedCastSize() } = {}) {
   const rows = (gs?.episodeHistory || []).filter(Boolean);
   if (!rows.length || !seasons) return null;
   const format = formatOf(cfg);
@@ -138,14 +159,17 @@ export function liveSeason(gs, cfg, seasons) {
   const queued = QUEUES.reduce((n, k) => n + (Array.isArray(gs[k]) ? gs[k].length : 0), 0);
   const aired = rows.length;
   const done = gs.phase === 'complete' || (queued === 0 && QUEUES.some(k => Array.isArray(gs[k])));
-  const last = seasons.filter(s => s.format === format && !s.allStars && Number(s.episodeCount) > 0).pop();
-  const total = done || queued ? aired + queued : Math.max(aired, Number(last?.episodeCount) || 12);
+  // A queued season knows its length exactly. One being played without a queue
+  // is estimated from its cast, not from whatever the last season happened to run.
+  const guess = projectedRun(format, seasons, castSize);
+  const total = done || queued ? aired + queued : Math.max(aired, guess.count);
   const window = gs.airWindow || windowOf(seasons, format, number);
   if (!window) return null;
   const dates = episodeAirDates(window, total, format);
   return {
     format, number, show: SHOWS[format], short: shortOf(format, number),
     aired, total, done, window, locked: !!gs.airWindow,
+    basis: done || queued ? 'played' : guess.basis, cast: castSize || null,
     premiere: dates[0], current: dates[Math.min(aired, total) - 1], finale: dates[dates.length - 1],
   };
 }

@@ -102,6 +102,42 @@ export function ageAt(birthdate, season) {
 /** How many episodes a season is drawn with when its row does not say. */
 export const DEFAULT_RUN = 12;
 
+const median = xs => {
+  const s = xs.slice().sort((a, b) => a - b);
+  return s.length ? (s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2) : null;
+};
+
+/**
+ * How long a season that has not aired will run, in weekly episodes.
+ *
+ * The user, 2026-10-21: the calendar drew the next Total Drama at 26 episodes,
+ * spring into fall, because the season before it ran 26 — "a 15 episode season
+ * of total drama would probably not go from fall to winter". A season's length
+ * follows its CAST: a show sends roughly the same share of its players home per
+ * episode every season. So, measured from that show's own aired seasons:
+ *
+ *   a cast size     -> cast x the show's median episodes-per-player
+ *                      (Total Drama: 0.89, so 15 players run 13 weeks)
+ *   no cast yet     -> the show's median season length, never the last one
+ *                      alone (one 26-episode season is not the rhythm)
+ *   no history      -> one episode per player, or DEFAULT_RUN
+ *
+ * Returns { count, basis: 'cast' | 'typical' | 'default', cast }.
+ */
+export function projectedRun(format, seasons = [], castSize = null) {
+  const mine = (seasons || []).filter(s => (s.format || 'total-drama') === format && !s.allStars
+    && Number(s.episodeCount) > 0);
+  const cast = Number(castSize) > 0 ? Number(castSize) : null;
+  if (cast) {
+    // The show's own aired seasons first; the registry's measured rate for a show with none.
+    const ratio = median(mine.filter(s => Number(s.castSize) > 0).map(s => Number(s.episodeCount) / Number(s.castSize)))
+      ?? SHOWS[format]?.runPerPlayer ?? 1;
+    return { count: Math.max(4, Math.min(40, Math.round(cast * ratio))), basis: 'cast', cast };
+  }
+  const typical = median(mine.map(s => Number(s.episodeCount)));
+  return typical ? { count: Math.round(typical), basis: 'typical', cast: null } : { count: DEFAULT_RUN, basis: 'default', cast: null };
+}
+
 /** A season's finale, as a UTC Date: its premiere, then one episode a week. */
 export function finaleDate(season, format = season?.format) {
   const n = Number(season?.episodeCount) > 0 ? Number(season.episodeCount) : DEFAULT_RUN;

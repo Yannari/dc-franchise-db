@@ -174,7 +174,9 @@ section: what a new show must supply for exit interviews.
 
 - The exact shape of the stored decision record and the season-document field.
 - How the in-season episodes sit on `kristal.html` (same episode cards, marked
-  as exit interviews; my call: in the period whose dates they aired in).
+  as exit interviews; my call: a "During <season>" tab of their own, just
+  before that season's debrief tab — periods are keyed by season, and two
+  shows airing at once made "the period whose dates they aired in" ambiguous).
 - Line banks and their size, within the variety rules above.
 - The follower and popularity constants, calibrated by measurement across
   seasons, not guessed.

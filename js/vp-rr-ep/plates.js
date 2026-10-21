@@ -1037,6 +1037,24 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'swamp-prison': {
+    // (the cell, its cracked wall, the hole dug through; the prison gate; the junk on the bank, the river, the dock)
+    'prison-cell': {
+      'locked-in': { label: 'LOCKED IN', plate: ['task-9442108', {}] },
+      'way-out': { label: 'FIND A WAY OUT', plate: ['task-9442206', {}], fail: ['task-9442206', {}], stamp: 'DEAD END' },
+      'the-dig': { label: 'THE SPOON', plate: ['task-9442257', { mode: 'spoon', judge: null }], fail: ['task-9442257', { mode: 'spoon', judge: null }], stamp: 'SOLID ROCK' },
+      'the-gate': { label: 'THE GATE', plate: ['present-9442105', { people: undefined, g: 98, x: [6, 94] }], fail: ['task-9442108', {}], stamp: 'CAUGHT' },
+      'fence-tip': { label: 'THE TIP', plate: ['present-9442105', { people: undefined, g: 98, x: [6, 94], deco: [['tip@race', 30, 90, 3]] }] },
+    },
+    'swamp-raft': {
+      'the-junk': { label: 'THE JUNK PILE', plate: ['task-9442424', {}], fail: ['task-9442424', {}], stamp: 'NOT THAT' },
+      'lash-it': { label: 'LASH IT TOGETHER', plate: ['task-9442380', { mode: 'build' }], fail: ['task-9442380', { mode: 'build' }], stamp: 'FELL APART' },
+      launch: { label: 'THE LAUNCH', plate: ['task-9442475', { mode: 'ride', path: [[-14, 82], [16, 81], [34, 80]] }],
+        fail: ['task-9442410', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'swim', path: [[56, 80], [40, 84], [20, 88]], fx: 'splash' }], stamp: 'SUNK' },
+      downriver: { label: 'DOWN THE RIVER', plate: ['task-9442475', { mode: 'ride' }], fail: ['task-9442475', { mode: 'ride', path: [[-14, 82], [30, 84], [60, 92]] }], stamp: 'IN THE REEDS' },
+      'the-dock': { label: 'THE DOCK', plate: ['chill-9442481', { deco: [['raft', 24, 86, 18]] }] },
+    },
+  },
   'savanna-falls': {
     // (the river above the falls, the drop down the cliff, the basin below; the waterhole, the long grass)
     'falls-selfie': {

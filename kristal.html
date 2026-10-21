@@ -144,6 +144,7 @@
   .kt-c i{font-style:normal;color:var(--kt-dim)}
   .kt-c[data-rel="subject"] b{color:var(--kt-hot)}
   .kt-c[data-rel="subject"]{background:rgba(232,67,147,.05);border-radius:8px;padding:6px 8px}
+  .kt-c[data-rel="named"] b{color:var(--kt-hot)}
   .kt-replies{margin:6px 0 2px 34px;padding-left:10px;border-left:2px solid var(--kt-line)}
   .kt-reply{display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:12px;color:var(--kt-dim)}
   .kt-reply img{width:22px;height:22px;border-radius:50%;object-fit:cover;flex:none}
@@ -253,7 +254,7 @@ function stamps(ep) {
 function transcript(ep) {
   const ts = stamps(ep);
   const comments = episodeComments(ep, {
-    ties: graph ? tiesFor(ep.guest, graph) : [], names: namesBySlug });
+    ties: graph ? tiesFor(ep.guest, graph) : [], names: namesBySlug, profiles: buildInputs?.profiles || {} });
   // The scrub thumb sits somewhere seeded — a paused listen, not a progress claim.
   let h = 0;
   for (let i = 0; i < ep.id.length; i++) h = (h * 33 + ep.id.charCodeAt(i)) >>> 0;
@@ -302,7 +303,7 @@ function transcript(ep) {
     </div>
     ${comments.length ? `<div class="kt-comments">${comments.map(c =>
       `<div class="kt-c" data-rel="${c.relation}">${avatar(c.slug)}
-        <span><b>${esc(c.name)}</b>${c.relation === 'subject' ? ' <i>· the subject</i>' : ''}
+        <span><b>${esc(c.name)}</b>${c.relation === 'subject' ? ' <i>· the subject</i>' : c.relation === 'named' ? ' <i>· named in it</i>' : ''}
         <br>${esc(c.text)}</span></div>
         ${(c.replies || []).length ? `<div class="kt-replies">${c.replies.map(r =>
           `<div class="kt-reply">${avatar(r.slug)}<span><b>${esc(r.name)}</b><br>${esc(r.text)}</span></div>`).join('')}</div>` : ''}`).join('')}</div>` : ''}

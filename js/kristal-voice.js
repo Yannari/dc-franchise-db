@@ -335,7 +335,9 @@ function exchangeFor(b, ctx, pressed = false) {
     if (b.type === 'the-record') receipt = { type: 'note', statement: b.moment.text };
   }
   if (!q || !a) return null;
-  const x = { topic: b.type, q, a, behavior: stanceFor(b.type, style, voice) };
+  // `who`: the person this exchange named — they turn up in the comments (js/kristal-comments.js).
+  const named = b.x && [q, a, crack].some(t => t && t.includes(b.x));
+  const x = { topic: b.type, q, a, behavior: stanceFor(b.type, style, voice), who: named ? b.x : null };
   if (press && crack) { x.press = press; x.crack = crack; }
   if (receipt) x.receipt = receipt;
   x._facts = facts;
@@ -388,7 +390,7 @@ export function composeEpisode(ep, { words = {}, prior = null, earlier = [], vis
       const q = pickLine(LIFE[mood].q, `${K}|lq|${i}`, f, 'whom');
       const a = pickLine(LIFE[mood].a[style], `${K}|la|${i}`, f, 'whom');
       if (!q || !a) continue;
-      const x = { topic: 'the-life', q, a, behavior: stanceFor('the-life', style, voice), _facts: f };
+      const x = { topic: 'the-life', q, a, behavior: stanceFor('the-life', style, voice), who: ev.whomName || null, mood, _facts: f };
       if (!exchanges.length) {
         x.press = pickFrom(LIFE_PRESS, `${K}|lp`);
         x.crack = pickFrom(LIFE_CRACK[style] || LIFE_CRACK.deadpan, `${K}|lc`);
@@ -453,7 +455,7 @@ export function composeEpisode(ep, { words = {}, prior = null, earlier = [], vis
     const closeA = g ? pickLine(g.a[style], `${K}|ca`, f, 'y') : '';
     // Half the closes are the advice, so the last question is not always the same one.
     if (closeQ && closeA && hash(`${K}|close-kind`) % 2) {
-      exchanges.push({ topic: 'behind-the-scenes', q: closeQ, a: closeA, behavior: stanceFor('behind-the-scenes', style, voice) });
+      exchanges.push({ topic: 'behind-the-scenes', q: closeQ, a: closeA, behavior: stanceFor('behind-the-scenes', style, voice), who: f.y });
     } else {
       exchanges.push({ topic: 'the-advice', q: pickFrom(ADVICE_Q, `${K}|aq`),
         a: ADVICE[voice.archetype] || ADVICE.custom, behavior: 'own' });
@@ -542,72 +544,5 @@ export function podcastAftermath(ep) {
     responseRequested, receiptsTested: receipts.length, tags };
 }
 
-// ── the room under an episode ────────────────────────────────────────────
-// {guest}, {mentioned} and {season} are filled; a line naming somebody the
-// episode has not got is not eligible.
-
-const SUBJECT_COMMENTS = [
-  'I was not in the room to answer any of this. Noted.',
-  'Interesting that my name carried the whole hour.',
-  'Half of that is not how it happened, and the half that is sounds worse out of context.',
-  '{guest}, call me. Not the podcast. Me.',
-  'I’ll be booking my own episode, thanks.',
-];
-
-const LISTENER_COMMENTS = {
-  close: ['I knew most of this already and it still hit differently hearing it all together.',
-    'Called {guest} after this dropped. We talked for two hours.',
-    'This is the most honest I’ve heard {guest} be about {season}.',
-    'The bit about {mentioned} made me scream.'],
-  friend: ['Genuinely a good conversation.', 'Kristal asked the question we were all thinking.',
-    '{guest} sounds exactly like this off camera, for the record.',
-    'I need {mentioned}’s side now.'],
-  rival: ['That is a generous version of what happened.', 'Interesting how much is still missing.',
-    'The follow-up was the first honest answer in the hour.',
-    '{guest} remembers {season} very differently from the rest of us.'],
-};
-
-const GUEST_REPLIES = {
-  subject: ['I knew you’d disagree. I’m willing to have the full conversation if you are.',
-    'You deserved to hear it from me directly. We should talk.',
-    'I stand by what I said, but I’ll listen to your side.'],
-  close: ['Thank you for being there before and after the microphones.',
-    'You heard the version that never made the episode. Thank you for keeping me honest.'],
-  friend: ['I appreciate this. There was more I wanted to say.',
-    'Thank you. I was nervous about how this one would land.'],
-  rival: ['You’re allowed to disagree. The record is there for both of us.',
-    'Then come on the podcast and tell the part you think I missed.'],
-};
-
-export function episodeComments(ep, { ties = [], names = {} } = {}) {
-  const f = { guest: ep.guestName, mentioned: ep.mentionedName, season: ep.season?.title };
-  const say = (bank, key) => pickLine(bank, key, f, 'mentioned');
-  const out = [];
-  if (ep.tier === 'viral' && ep.mentioned) {
-    out.push({ slug: ep.mentioned, name: ep.mentionedName || names[ep.mentioned] || ep.mentioned,
-      relation: 'subject', text: say(SUBJECT_COMMENTS, ep.id + '|subj') });
-  }
-  const ranked = ties.slice().sort((a, b) => Math.abs(b.weight) - Math.abs(a.weight));
-  const limit = ep.tier === 'viral' ? 7 : ep.tier === 'solid' ? 5 : 3;
-  for (const t of ranked) {
-    if (out.length >= limit) break;
-    if (t.slug === ep.mentioned || t.slug === ep.guest) continue;
-    const relation = t.weight >= 3 ? 'close' : t.weight > 0 ? 'friend' : 'rival';
-    if (relation === 'rival' && hash(`${ep.id}|${t.slug}|skip`) % 2) continue;
-    out.push({ slug: t.slug, name: names[t.slug] || t.slug, relation,
-      text: say(LISTENER_COMMENTS[relation], `${ep.id}|lc|${t.slug}`) });
-  }
-  // A thread is a consequence, not decorative filler. The guest answers the
-  // subject or strongest challenge once; quieter comments remain standalone.
-  const challenged = out.find(c => c.relation === 'subject') || out.find(c => c.relation === 'rival');
-  if (challenged && ep.tier !== 'quiet') {
-    challenged.replies = [{ slug: ep.guest, name: ep.guestName, relation: 'guest',
-      text: pickFrom(GUEST_REPLIES[challenged.relation], `${ep.id}|reply|${challenged.slug}`) }];
-  }
-  const supported = out.find(c => c.relation === 'close');
-  if (supported && ep.tier === 'viral') {
-    supported.replies = [{ slug: ep.guest, name: ep.guestName, relation: 'guest',
-      text: pickFrom(GUEST_REPLIES.close, `${ep.id}|reply|close`) }];
-  }
-  return out;
-}
+// ── the room under an episode: js/kristal-comments.js (rebuilt 2026-10-21) ──
+export { episodeComments } from './kristal-comments.js';

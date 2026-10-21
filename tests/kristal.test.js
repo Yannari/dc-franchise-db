@@ -476,3 +476,42 @@ describe('the remix', () => {
     }
   });
 });
+
+// The user, 2026-10-21: "kristal talk comment are all boring generic and repetitive".
+describe('the comments come from the people the hour was about', () => {
+  const ep = { id: 'cm', tier: 'viral', guest: 'ara', guestName: 'Ara', mentioned: 'bowie', mentionedName: 'Bowie',
+    season: { title: 'Camp' },
+    exchanges: [
+      { topic: 'the-rivalry', q: 'Bowie. Go.', a: 'Bowie lied to me on day two and then acted surprised that I remembered.', press: 'p', crack: 'c', who: 'Bowie' },
+      { topic: 'the-betrayal', q: 'Has Oliwia forgiven you?', a: 'Forgiven me? Oliwia hasn’t even said hello to me.', who: 'Oliwia' },
+      { topic: 'the-ally', q: 'Real friend?', a: 'Gabby is the only one who never lied to me. So yes. Real.', who: 'Gabby' },
+    ] };
+  const names = { ara: 'Ara', bowie: 'Bowie', oliwia: 'Oliwia', gabby: 'Gabby', thom: 'Thom' };
+  const out = episodeComments(ep, { names, ties: [{ slug: 'thom', weight: -5 }, { slug: 'gabby', weight: 6 }] });
+  it('seats everybody the episode named, each answering their own part', () => {
+    expect(out.map(c => c.slug).slice(0, 3)).toEqual(['bowie', 'oliwia', 'gabby']);
+    expect(out.find(c => c.slug === 'gabby').role).toBe('the-ally');
+  });
+  it('quotes back only a line that says their name', () => {
+    for (const c of out) {
+      const q = c.text.match(/“([^”]+)”/);
+      if (q && c.relation !== 'rival' && c.relation !== 'friend' && c.relation !== 'close') expect(q[1]).toContain(c.name);
+    }
+  });
+  it('has the guest answer the people they talked about', () => {
+    expect(out.some(c => (c.replies || []).some(r => r.slug === 'ara'))).toBe(true);
+  });
+  it('never says one comment twice under one episode', () => {
+    const texts = out.flatMap(c => [c.text, ...(c.replies || []).map(r => r.text)]);
+    expect(new Set(texts).size).toBe(texts.length);
+  });
+  it('does not have the room "go after" somebody the guest was talking about lovingly', () => {
+    const love = { id: 'cm-love', tier: 'solid', guest: 'chase', guestName: 'Chase', season: { title: 'S' },
+      exchanges: [{ topic: 'the-life', mood: 'engaged', q: 'q', a: 'Nichelle asked.', who: 'Nichelle', press: 'p', crack: 'c' }] };
+    for (let i = 0; i < 12; i++) {
+      const cs = episodeComments({ ...love, id: 'cm-love-' + i }, { names: { chase: 'Chase', nichelle: 'Nichelle', a: 'A', b: 'B' },
+        ties: [{ slug: 'a', weight: 2 }, { slug: 'b', weight: -3 }] });
+      for (const c of cs) expect(c.text).not.toMatch(/going after|villain|apology|right of reply/);
+    }
+  });
+});

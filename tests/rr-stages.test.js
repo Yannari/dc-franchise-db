@@ -137,6 +137,18 @@ describe('rr challenges in stages', () => {
     expect(swims + ledges).toBeGreaterThan(0);
   });
 
+  // (Frozen Mine: both partners went down the borehole on the winch; the one at the winch stays up top)
+  it('sends only the one doing a Botch up or down a line, the partner in the box', () => {
+    let n = 0;
+    for (const { screens } of runs) for (const ep of screens) for (const s of ep.screens) {
+      if (s.seg !== 'task-stage' || s.stretchKind !== 'botch' || !['zip', 'para', 'swing'].includes(s.plate?.mode) || s.mode !== 'act') continue;
+      n++;
+      expect(s.away?.[s.teams[0]], s.id).toEqual([s.who[1]]);
+      expect(s.inset?.people, s.id).toContain(s.who[1]);
+    }
+    expect(n).toBeGreaterThan(0);
+  });
+
   // (a wrong spice isn't tried again: nobody checks the five, the stew finds out later)
   it('stamps a wrong spice WRONG SPICE, never TRY AGAIN', () => {
     let n = 0;

@@ -482,7 +482,8 @@ export function createStage(holder, { faceOf, legLabel }) {
       // a line sent them away (steps.js planExits): drawn on the step they leave (to walk off), gone after it
       const off = offOf(s, id, k), leaving = fresh && (s.leaveAt?.[k] || []).includes(id);
       if (off === 'team' && !leaving) continue;
-      const gone = Array.isArray(off) && !leaving ? off : [];
+      // (`away`: the partner of a Botch on a line, up in the box rather than on it)
+      const gone = [...(Array.isArray(off) && !leaving ? off : []), ...(s.away?.[id] || [])];
       if (s.swimmers?.[id]) {
         s.swimmers[id].filter(n => !gone.includes(n)).forEach((n, j) => swimmerEl(ep, s, id, n, at, j));
         continue;

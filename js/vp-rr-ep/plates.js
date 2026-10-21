@@ -1039,6 +1039,24 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'frozen-mine': {
+    // (the lake edge; the ice yachts; the mine's pit; the winch on the snow; the cavern under the ice by headlamp)
+    'ice-yacht': {
+      swimsuits: { label: 'SWIMSUITS', plate: ['task-9447726', {}], fail: ['task-9447726', {}], stamp: 'TOO COLD' },
+      'push-off': { label: 'PUSH OFF', plate: ['task-9447678', { mode: 'ride', path: [[-18, 90], [8, 90], [24, 89]] }], fail: ['task-9447678', { mode: undefined, prop: undefined, path: undefined, water: false, g: 92, x: [6, 40] }], stamp: 'STUCK' },
+      'across-ice': { label: 'ACROSS THE LAKE', plate: ['task-9447678', { mode: 'ride' }], fail: ['task-9447678', { mode: 'ride', path: [[30, 88], [50, 92], [36, 96]] }], stamp: 'SPUN OUT' },
+      'mine-gate': { label: 'THE MINE', plate: ['task-9447861', {}] },
+    },
+    borehole: {
+      'the-harness': { label: 'THE HARNESS', plate: ['task-9447866', { people: undefined, g: 94, x: [6, 50] }], fail: ['task-9447866', { people: undefined, g: 94, x: [6, 50] }], stamp: 'NOT YET' },
+      'going-down': { label: 'DOWN THE HOLE', plate: ['task-9447790', { mode: 'zip' }] },
+      'ball-search': { label: 'FIND THE RED ONE', plate: ['task-9447790', { mode: 'zip', path: [[50, 80], [46, 84], [54, 86], [50, 90]] }],
+        fail: ['task-9447790', { mode: 'zip', path: [[50, 80], [46, 84], [54, 86], [50, 90]] }], stamp: 'WHITE BALL' },
+      'winch-up': { label: 'WINCH UP', plate: ['task-9447790', { mode: 'zip', path: [[50, 90], [50, 70], [50, 52], [50, 34]] }],
+        fail: ['task-9447790', { mode: 'zip', path: [[50, 90], [50, 70], [50, 80], [50, 90]] }], stamp: 'DROPPED IT' },
+      'red-ball': { label: 'THE RED BALL', plate: ['task-9447861', { deco: [['ball', 40, 95, 3]] }] },
+    },
+  },
   'stilt-river': {
     // (the shallows and the mud under them; the bank with the basket; the tunnel mouth, the dark inside, the way out)
     catfish: {

@@ -629,7 +629,7 @@ function progressPlan(n, ending) {
 // aisle), and a cabin that cannot hold everyone at the floor keeps the ones the scene is about (the user, 2026-10-19:
 // "a crowded same-flight galley overlaps").
 export const OVERLAP_OK = 0.08;                 // two faces may touch by this much of the smaller one, no more
-const STAGED = ['marks', 'as', 'pos', 'plan', 'swimmers', 'inset', 'donStand', 'localAt', 'boxAt', 'matAt', 'donAt', 'hiddenUntil', 'onMatAt', 'work', 'lift', 'liftAt',
+const STAGED = ['marks', 'as', 'pos', 'plan', 'swimmers', 'away', 'inset', 'donStand', 'localAt', 'boxAt', 'matAt', 'donAt', 'hiddenUntil', 'onMatAt', 'work', 'lift', 'liftAt',
   'workProp', 'judgeAt'];
 // The work's cut-out beside the team doing it (a sand palace, a mitten, a platter), on the side with more room, and the
 // local who judges it (the surfer boy, the carnival dancer, the coach) beyond it, as tall as a racer: placed here so
@@ -786,6 +786,18 @@ function layout(s, size) {
           : (s.seg === 'task-stage' && pair.includes(s.who[0]) ? s.who[0] : pair.find(x => s.who.includes(x)) || pair[0]);
         s.swimmers[id] = doer ? [doer] : pair;
         if (doer) watching.push(...pair.filter(x => x !== doer));
+      }
+      if (watching.length) s.inset = { title: plate.inset || 'WATCHING', people: watching };
+    } else if (['zip', 'para', 'swing'].includes(plate.mode) && s.stretchKind === 'botch' && s.seg === 'task-stage') {
+      // on a line, a canopy or a rope in a Botch: the one doing it goes, the partner stays behind in the box (the winch
+      // at the top of the borehole)
+      s.away = {};
+      const watching = [];
+      for (const id of s.teams) {
+        const pair = s.members[id] || [];
+        const doer = pair.includes(s.who[0]) ? s.who[0] : pair[0];
+        s.away[id] = pair.filter(x => x !== doer);
+        watching.push(...s.away[id]);
       }
       if (watching.length) s.inset = { title: plate.inset || 'WATCHING', people: watching };
     }

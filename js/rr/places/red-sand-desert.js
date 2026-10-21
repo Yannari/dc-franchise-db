@@ -18,7 +18,7 @@ export default {
       // the real leg: a camel collapsed under Father & Son; the Vegans wouldn't ride and walked beside theirs
       ride: true, mishaps: [['camel-down', 30], ['camel-stops', 20]], mishapRate: 0.12,
       refuse: { identities: ['vegans'], kind: 'walks-beside', slow: 1.4 } },
-    { id: 'stew', called: 'the restaurant', kind: 'botch', types: ['stomach'], base: 12, pass: 0.6, loopCost: 6, chain: { from: 'spices', by: 'picks' }, teaser: "Who's got a cast-iron stomach?", plate: 'stew pot', label: 'Just stew it',
+    { id: 'stew', judge: true, called: 'the restaurant', kind: 'botch', types: ['stomach'], base: 12, pass: 0.6, loopCost: 6, chain: { from: 'spices', by: 'picks' }, teaser: "Who's got a cast-iron stomach?", plate: 'stew pot', label: 'Just stew it',
       // the chef cooks the five spices; the first spoonful; the middle of the bowl, where the heat builds (it comes back
       // up: a fresh bowl); the last drops; the empty bowl and the tip. The partner watches and can't help
       stages: [{ id: 'the-chef', share: 0.5, risk: 0 }, { id: 'first-spoon', share: 0.6, risk: 0.4 }, { id: 'half-bowl', share: 1.5, risk: 1 },

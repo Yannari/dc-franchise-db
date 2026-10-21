@@ -21,7 +21,7 @@ export default {
       stages: [{ id: 'gorge-edge', share: 0.4, risk: 0.2 }, { id: 'the-swing', share: 1.2, risk: 1 }, { id: 'coconut-pile', share: 1.2, risk: 0.7 },
         { id: 'the-coconut', share: 0.3, risk: 0 }],
       desc: "A deep gorge cuts across the trail, and teams have to get across by any means: most swing on the vines hanging over it, one at a time, and hope. A missed swing drops you into the river below and back to the start of the climb. On the far side waits a mountain of coconuts, and only one of them has the travel tip inside; both partners dig, shake and crack until they find it. The right coconut is the next tip." },
-    { id: 'costume', called: 'the costume tent', kind: 'allin', types: ['hands', 'perform'], base: 30, pass: 0.5, loopCost: 12, opens: 480, closes: 1260,
+    { id: 'costume', judge: true, called: 'the costume tent', kind: 'allin', types: ['hands', 'perform'], base: 30, pass: 0.5, loopCost: 12, opens: 480, closes: 1260,
       plate: 'costume-making table in the jungle', label: 'All-In: carnival costume',
       // the feathers; the headpiece (it collapses); the tailpiece; the parade for the judge (it just stands there: more!);
       // the judge cheers

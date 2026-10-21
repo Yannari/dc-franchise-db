@@ -10,7 +10,7 @@ export default {
   stretches: [
     { id: 'hoodoo-pickup', kind: 'travel', mode: 'drive', base: 40, cost: 20, plate: 'badlands road, hoodoos', label: 'Pickup into the badlands',
       mishaps: [['flat-in-the-canyon', 20]], mishapRate: 0.1 },
-    { id: 'dino', called: 'the dig site', kind: 'allin', types: ['search', 'brains'], base: 40, pass: 0.45, loopCost: 15, opens: 420, closes: 1200,
+    { id: 'dino', judge: true, called: 'the dig site', kind: 'allin', types: ['search', 'brains'], base: 40, pass: 0.45, loopCost: 15, opens: 420, closes: 1200,
       plate: 'badlands plain + skeletons', label: 'All-In: build a dinosaur',
       // digging the bones out with picks and brushes (one snapped); carrying them to the frame (dropped); building it,
       // skull to tail (a bone in the wrong place); the palaeontologist's inspection (a bone missing, or it collapses)

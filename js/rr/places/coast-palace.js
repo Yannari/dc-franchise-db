@@ -16,7 +16,7 @@ export default {
       stages: [{ id: 'suit-up', share: 0.4, risk: 0.3 }, { id: 'in-the-water', share: 0.7, risk: 0.4 }, { id: 'the-pass', share: 1, risk: 1 },
         { id: 'back-aboard', share: 0.4, risk: 0 }],
       desc: "Off the cliffs, a boat takes each team out to open water where a great white circles with a travel tip clipped to its dorsal fin. The partner who didn't do the last Botch or Watch climbs down into the water and has to grab the tip off the fin as the shark swims past, while the other watches from the boat and can only shout. Grabbing too early, too late or panicking back up the ladder means waiting for the shark to come round again. The tip in hand, back on the boat, earns the next one." },
-    { id: 'sand-palace', called: 'the beach', kind: 'allin', types: ['hands', 'patience'], base: 35, pass: 0.5, loopCost: 15, opens: 420, closes: 1200,
+    { id: 'sand-palace', judge: true, called: 'the beach', kind: 'allin', types: ['hands', 'patience'], base: 35, pass: 0.5, loopCost: 15, opens: 420, closes: 1200,
       plate: 'sandcastle beach', label: 'All-In: the sand palace',
       // the plan scratched in the sand from the photo; the walls (they slump); the towers (one falls, a wave comes); the
       // surfer boy's verdict (rebuild what he points at); his nod and the tip

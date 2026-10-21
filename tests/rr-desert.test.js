@@ -75,9 +75,11 @@ describe('rr Red Sand Desert, 1:1', () => {
     const res = playRaceSeason({ teams, seed: 1, options: { route: DESERT_ROUTE } });
     const right = new Set();
     for (const ep of airSeason(res)) for (const s of ep.segments.filter(s => s.stretch === 'spices' && s.kind.startsWith('task-'))) {
-      const row = res.state.taskLog.find(r => r.leg === ep.n && r.team === s.teams[0] && r.stretch === 'spices');
-      const want = row.right >= 5 ? 'right' : row.right >= 3 ? 'mostly' : 'wrong';
-      expect(s.picked, `leg ${ep.n} ${s.teams[0]}`).toBe(want);
+      // (a team sent back to the kiosk picks again: the moment is one of its runs there)
+      const rows = res.state.taskLog.filter(r => r.leg === ep.n && r.team === s.teams[0] && r.stretch === 'spices');
+      const tierOf = row => (row.right >= 5 ? 'right' : row.right >= 3 ? 'mostly' : 'wrong');
+      expect(rows.map(tierOf), `leg ${ep.n} ${s.teams[0]}`).toContain(s.picked);
+      const want = s.picked;
       // the picking is the moment: it airs as the try, or as its stages, with how it went (not as arriving at the kiosk)
       if (s.scene == null && !String(s.beat).endsWith(':arrive')) expect(['task-try', 'task-stage'], `leg ${ep.n} ${s.teams[0]}`).toContain(s.kind);
       right.add(want);

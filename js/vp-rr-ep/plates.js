@@ -1028,12 +1028,12 @@ const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zi
 const CONDOR = [['condor', 64, 70, 13, { move: 'wander', span: -8, dur: 3 }]];
 const BALLS = [['ball', 84, 88, 3, { move: 'wander', span: -30, dur: 2 }], ['ball', 12, 84, 3, { move: 'wander', span: 26, dur: 2.6 }]];
 const SAVANNA_BEAST = [REPAINTED.has('zebra') ? 'zebra' : 'emu@red-outback', 88, 93, 15];
-const BLOWPIPE = REPAINTED.has('blowpipe') ? [['blowpipe', 46, 94, 6]] : [];
+const BLOWPIPE = REPAINTED.has('blowpipe') ? [['blowpipe', 50, 91, 13]] : [];
 const EAT_TABLE = REPAINTED.has('task-eating-table') ? 'task-eating-table' : 'task-22422501';
-const FJORD_TARGET = (REPAINTED.has('fjord-target') ? [['target', 80, 86, 7]] : []);
+const FJORD_TARGET = (REPAINTED.has('fjord-target') ? [['target', 80, 86, 10]] : []);
 const CORRAL_EMU = [['emu', 70, 94, 9, { move: 'wander', span: 14, dur: 5 }]];
 const PATROL = [['soldier', 92, 90, 13, { move: 'wander', span: -6, dur: 10 }]];
-const GUARDS = REPAINTED.has('royal-guard') ? [['guard', 72, 96, 7], ['guard', 82, 96, 7], ['guard', 92, 96, 7]] : [];
+const GUARDS = REPAINTED.has('royal-guard') ? [['guard', 72, 96, 12], ['guard', 82, 96, 12], ['guard', 92, 96, 12]] : [];
 const SHACK = repaint('task-shack-inside', 'task-shack-inside', 'arrive-22415967');
 const MUSEUM_BEAR = [['bear', 90, 88, 13, { move: 'wander', span: -4, dur: 12 }]];
 const RUNWAY = repaint('task-museum-runway', 'task-museum-runway', 'task-22415170'), RUNWAY_G = repaint('task-museum-runway', 82, 88);
@@ -1052,7 +1052,7 @@ const COURT = repaint('task-tennis-court', 'task-tennis-court', 'task-9439713');
 const FEAST = repaint('task-feast-hut', 'task-feast-hut', 'task-9437341'), FEAST_G = repaint('task-feast-hut', 92, 76);
 const CATACOMBS = repaint('task-catacombs', 'task-catacombs', 'task-9436279');
 const BEAR_CLOSE = [['bear', 74, 84, 11, { move: 'wander', span: 8, dur: 10 }]];
-const STAGE_SHOTS = {
+export const STAGE_SHOTS = {
   'home-city': {
     // (Stairs or Sky-deck: each side's stages on the one stretch, their ids apart)
     tower: {

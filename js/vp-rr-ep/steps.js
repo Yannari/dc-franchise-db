@@ -29,6 +29,31 @@ import { PLACE_PLATES, RACE, stretchPlates, standable, findPlate } from './plate
 export const TEAM_COLORS = ['#ff6fae', '#39c0ff', '#ffb020', '#4fd18b', '#b78cff', '#ff7a4a', '#5ee0d6', '#f2e94e', '#ff4f6d', '#8fb4ff', '#c7f464', '#e0a3ff',
   '#7fe3a0', '#ffc1a1'];
 
+// The weather a place drifts across its shots (stage.js ambient), and the plates it never falls on: inside (the user,
+// 2026-10-21, on Home City's stairwell and glass elevator: "and why is it snowing inside").
+export const AMBIENT = { 'rock-north': 'snow', 'red-sand-desert': 'mote', 'tomb-sands': 'mote', 'red-outback': 'mote', 'fire-mountain-isle': 'ember',
+  'great-wall-hills': 'mote', 'savanna-falls': 'mote', 'geyser-island': 'snow', 'treasure-isles': 'spark', 'torch-statue-harbour': 'mote', 'iron-tower-city': 'spark', 'skyline-finale': 'mote', 'home-city': 'mote' };
+export const INDOOR = new Set([
+  'home-city/task-9434855', 'home-city/task-9434868', 'home-city/task-9434876',
+  'rock-north/chill-9441059', 'rock-north/task-9440800', 'rock-north/task-9441040', 'rock-north/task-9441122', 'rock-north/task-9441310',
+  'red-sand-desert/travel-9435906',
+  'tomb-sands/task-22409901', 'tomb-sands/task-22409920', 'tomb-sands/task-22409944', 'tomb-sands/task-22409957',
+  'great-wall-hills/task-plane-door',
+  'geyser-island/task-feast-hut', 'geyser-island/task-9437332', 'geyser-island/task-9437548',
+  'treasure-isles/task-9449549', 'treasure-isles/task-9449621', 'treasure-isles/task-9449592', 'treasure-isles/task-9449759', 'treasure-isles/task-9449762',
+  'torch-statue-harbour/task-22412499',
+  'iron-tower-city/task-9436194', 'iron-tower-city/task-catacombs', 'iron-tower-city/travel-9436570', 'iron-tower-city/travel-9436604',
+  'skyline-finale/task-9450082', 'skyline-finale/task-9450185',
+]);
+/** The weather over a shot: its place's, unless the plate is indoors (or the shot is a map, an interview...). */
+export function weatherOf(s) {
+  if (!s || !['world', 'title'].includes(s.kind)) return null;
+  const place = s.plate?.place || s.place;
+  const kind = AMBIENT[place];
+  if (!kind || (s.plate?.f && INDOOR.has(`${place}/${s.plate.f}`))) return null;
+  return kind;
+}
+
 const hhmm = m => { const d = ((Math.round(m) % 1440) + 1440) % 1440; return `${String(Math.floor(d / 60)).padStart(2, '0')}:${String(d % 60).padStart(2, '0')}`; };
 const TASKS = new Set(['either', 'botch', 'allin', 'route', 'superteam']);
 const KIND_NAME = { either: 'Either/Or', botch: 'Botch or Watch', allin: 'All-In', route: 'Route Info', superteam: 'Superteam' };

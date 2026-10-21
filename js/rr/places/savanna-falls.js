@@ -10,7 +10,7 @@ export default {
   stretches: [
     { id: 'jeep', kind: 'travel', mode: 'drive', base: 45, cost: 20, plate: 'savanna track, jeep', label: 'Drive a jeep to the falls',
       mishaps: [['lost-in-the-bush', 25], ['stuck-in-mud', 20]], mishapRate: 0.16 },
-    { id: 'falls-selfie', called: 'the falls', kind: 'allin', types: ['water', 'nerve'], base: 20, pass: 0.55, loopCost: 15, opens: 420, closes: 1080,
+    { id: 'falls-selfie', judge: true, called: 'the falls', kind: 'allin', types: ['water', 'nerve'], base: 20, pass: 0.55, loopCost: 15, opens: 420, closes: 1080,
       plate: 'river above the falls, falls cliff', label: 'All-In: selfie over the edge',
       // into the raft upriver; racing for the edge (spun round backwards); over the falls with the camera up (blurry: haul
       // the raft back up); the crew checks the camera at the bottom (one face, all spray: back up); the tip

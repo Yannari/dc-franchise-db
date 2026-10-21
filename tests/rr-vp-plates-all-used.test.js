@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
-import { PLACE_PLATES, placeFiles, propFiles, stretchPlates } from '../js/vp-rr-ep/plates.js';
+import { PLACE_PLATES, STAGE_SHOTS, placeFiles, propFiles, stretchPlates } from '../js/vp-rr-ep/plates.js';
 import { LEFT_OUT } from '../js/vp-rr-ep/plates-more.js';
 import { REPAINTED } from '../js/vp-rr-ep/repainted.js';
 
@@ -44,6 +44,10 @@ describe('rr viewer: every finished plate is used', () => {
       for (const s of Object.values(pl.st)) {
         all.push(...(s.talk || []), s.act, s.act2, ...(s.alt || []), ...(s.alt2 || []));
         for (const sd of Object.values(s.sides || {})) all.push(...(sd.talk || []), sd.act, sd.act2, ...(sd.alt || []), ...(sd.alt2 || []));
+      }
+      // (a challenge's stage shots: the guards at the tower, the target out on the fjord, the blowpipe in the grass)
+      for (const byStage of Object.values(STAGE_SHOTS[id] || {})) for (const sh of Object.values(byStage)) {
+        for (const pl2 of [sh.plate, sh.fail, sh.alt].filter(Boolean)) all.push(pl2[1] || {});
       }
       for (const p of all.filter(Boolean)) { add(id, p.prop); add(id, p.judge?.[0]); add(id, p.pass); for (const d of p.deco || []) add(id, d[0]); }
     }

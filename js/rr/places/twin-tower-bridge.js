@@ -17,7 +17,7 @@ export default {
       stages: [{ id: 'first-note', share: 0.2, risk: 0 }, { id: 'battlements', share: 0.6, risk: 0.5 }, { id: 'the-dungeon', share: 0.8, risk: 0.6 },
         { id: 'the-guards', share: 0.5, risk: 1 }, { id: 'guard-tip', share: 0.2, risk: 0 }],
       desc: "Inside the old stone fortress, a masked kidnapper has left a trail of notes, each one a riddle pointing to the next hiding place: a cannon, a cobbled lane, a cell in the dungeon. Both partners follow the notes by lantern until the last one tells them which of the royal guards in tall fur hats is holding their tip. The guards will not move, speak or smile. Pick the wrong guard, or misread a note, and it's back to the last clue. The right guard, named and stood in front of, hands over the tip without a word." },
-    { id: 'crown-jewel', called: 'the treasure table', kind: 'botch', types: ['brains', 'search'], base: 15, pass: 0.4, loopCost: 8,
+    { id: 'crown-jewel', judge: true, called: 'the treasure table', kind: 'botch', types: ['brains', 'search'], base: 15, pass: 0.4, loopCost: 8,
       teaser: 'Who has an eye for sparkle?', plate: 'treasure table, chest', label: 'Botch or Watch: the crown jewel',
       // into the jewel vault; studying the table; picking one; the keeper holds it to the light (glass: put it back); the
       // real one. a picks, b watches from the rope

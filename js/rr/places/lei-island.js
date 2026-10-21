@@ -16,7 +16,7 @@ export default {
       stages: [{ id: 'the-pier', share: 0.3, risk: 0 }, { id: 'dive-down', share: 0.6, risk: 0.4 }, { id: 'search-sand', share: 1.2, risk: 1 },
         { id: 'ring-up', share: 0.4, risk: 0.3 }, { id: 'ring-tip', share: 0.3, risk: 0 }],
       desc: "Under the old pier, the bay is famous for one thing: newlyweds throw their rings into it for luck. The partner who didn't do the last Botch or Watch dives down to the sandy bottom and searches for a wedding ring among the shells and the seaweed, while the other waits on the pier and may only shout directions. Come up with a shell, a bottle cap or nothing at all, and it's back down again. A real ring, handed up onto the pier, earns the next tip." },
-    { id: 'fire-walk', called: 'the fire walk', kind: 'allin', types: ['nerve', 'strength'], base: 20, pass: 0.55, loopCost: 10, opens: 420, closes: 1260,
+    { id: 'fire-walk', judge: true, called: 'the fire walk', kind: 'allin', types: ['nerve', 'strength'], base: 20, pass: 0.55, loopCost: 10, opens: 420, closes: 1260,
       plate: 'jungle path (fire walk)', label: 'All-In: the fire walk',
       // grass skirts and leis (one falls off); the lift onto a back or into arms (can't); across the coals (a stop, a step
       // off, a drop: back to the start); the fire dancer at the far end

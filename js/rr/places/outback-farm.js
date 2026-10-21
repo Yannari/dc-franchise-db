@@ -8,7 +8,7 @@ export default {
   stretches: [
     { id: 'ute-drive', kind: 'travel', mode: 'drive', base: 40, cost: 20, plate: 'dirt road, gum trees', label: 'Drive the ute to the farm',
       mishaps: [['kangaroo-in-the-road', 15]], mishapRate: 0.1 },
-    { id: 'bunnies', called: 'the farm', kind: 'allin', types: ['search', 'strength'], base: 30, pass: 0.5, loopCost: 10, opens: 360, closes: 1200,
+    { id: 'bunnies', judge: true, called: 'the farm', kind: 'allin', types: ['search', 'strength'], base: 30, pass: 0.5, loopCost: 10, opens: 360, closes: 1200,
       plate: 'wheat field, barn', label: 'All-In: the rabbits',
       // the farmer and the sack at the fence; into the wheat after them (they zigzag away); the white one, spotted down on
       // the jetty (it gets away); the sack (badly tied: they escape, count again); the farmer's count

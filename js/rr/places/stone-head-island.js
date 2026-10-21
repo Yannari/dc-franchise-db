@@ -10,7 +10,7 @@ export default {
   stretches: [
     { id: 'island-jeep', kind: 'travel', mode: 'drive', base: 30, cost: 15, plate: 'island track, grass', label: 'Jeep across the island',
       mishaps: [['wild-horses', 20]], mishapRate: 0.1 },
-    { id: 'eggs', called: 'the stone heads', kind: 'allin', types: ['search', 'patience'], base: 30, pass: 0.5, loopCost: 10, opens: 420, closes: 1200,
+    { id: 'eggs', judge: true, called: 'the stone heads', kind: 'allin', types: ['search', 'patience'], base: 30, pass: 0.5, loopCost: 10, opens: 420, closes: 1200,
       plate: 'stone heads on the beach', label: 'All-In: the painted eggs',
       // the rows of heads; the cracks, chins and ears (another team's colour: put it back); dug out of the sand (cracked);
       // three in the basket, shown to the judge

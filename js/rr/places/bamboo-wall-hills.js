@@ -16,7 +16,7 @@ export default {
       stages: [{ id: 'wall-start', share: 0.2, risk: 0 }, { id: 'wall-steps', share: 1, risk: 0.6 }, { id: 'tower-to-tower', share: 0.8, risk: 0.6 },
         { id: 'the-gong', share: 0.3, risk: 1 }],
       desc: "A section of the ancient wall snakes along the ridge of the hills, all steep stone steps up to one watchtower and down to the next. Both partners have to run the whole section, together, and reach the last watchtower before the monk standing there strikes his gong, which he does on a timer only he knows. Reaching the tower after the gong, or arriving without the partner, means walking back to the start of the section and running it again. Both partners in the tower before the gong earns the next tip." },
-    { id: 'delicacies', called: 'the banquet table', kind: 'botch', types: ['stomach', 'nerve'], base: 15, pass: 0.45, loopCost: 6,
+    { id: 'delicacies', judge: true, called: 'the banquet table', kind: 'botch', types: ['stomach', 'nerve'], base: 15, pass: 0.45, loopCost: 6,
       teaser: 'Who will eat anything?', plate: 'eating table', label: 'Botch or Watch: the bowl of delicacies',
       // the bowl set down; the thousand-year eggs; the fried scorpions; the soup and the thing the cook won't name (left
       // any, or brought it back up: a new bowl); the empty bowl. a eats, b watches

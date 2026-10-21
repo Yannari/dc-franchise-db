@@ -45,12 +45,21 @@ export function canAlly(st, t1, t2) {
   return ((A || B)?.teams.length || 1) + 1 <= MAX_BLOC;
 }
 
+// What a task asks of this team: an Either/Or asks what the side they're on asks (the stairs are not the deck), or
+// both sides' before they've chosen.
+export function taskTypesFor(st, tid, stretch) {
+  if (stretch?.types) return stretch.types;
+  const side = tid && stretch?.id ? st.attempts?.[tid]?.[stretch.id]?.side : null;
+  const mine = side && (stretch?.sides || []).find(s => s.id === side);
+  return mine ? mine.types || [] : (stretch?.sides || []).flatMap(s => s.types || []);
+}
+
 export function snapOf(st, { tid = null, oid = null, stretch = null, t = null, fails = 0, who = [] } = {}) {
   const [A, B] = people(st, tid), [C, D] = people(st, oid);
   const total = st.totalLegs || Math.max(1, st.leg);
   const f = st.leg / total;
   const across = oid && A ? [A, B].flatMap(x => [C, D].map(y => getBond(x, y))) : null;
-  const types = stretch?.types || (stretch?.sides || []).flatMap(s => s.types || []) || [];
+  const types = taskTypesFor(st, tid, stretch);
   return {
     leg: st.leg,
     // the first hour of the race (talk.js FRESH_MINUTES): nobody is ahead or behind yet

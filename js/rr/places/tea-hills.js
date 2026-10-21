@@ -9,7 +9,7 @@ export default {
   stretches: [
     { id: 'hill-jeep', kind: 'travel', mode: 'drive', base: 45, cost: 20, plate: 'hill road, terraces', label: 'Jeep up the hill road',
       mishaps: [['landslide-on-the-road', 20]], mishapRate: 0.1 },
-    { id: 'tea-basket', called: 'the tea terraces', kind: 'allin', types: ['patience', 'hands'], base: 35, pass: 0.55, loopCost: 12, opens: 360, closes: 1080,
+    { id: 'tea-basket', judge: true, called: 'the tea terraces', kind: 'allin', types: ['patience', 'hands'], base: 35, pass: 0.55, loopCost: 12, opens: 360, closes: 1080,
       plate: 'tea terraces', label: 'All-In: the tea basket',
       // baskets on at the terraces; picking the top two leaves and the bud (old leaves, stalks); filling it to the top (not
       // full); the old picker tips it out (rejected: back up the terraces); the tip

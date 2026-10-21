@@ -10,7 +10,7 @@ export default {
   stretches: [
     { id: 'academy-taxi', kind: 'travel', mode: 'taxi', base: 25, cost: 20, plate: 'old city street', label: 'Taxi to the dance academy',
       mishaps: [['parade-in-the-street', 20]], mishapRate: 0.08 },
-    { id: 'tango', called: 'the dance academy', kind: 'allin', types: ['perform', 'patience'], base: 35, pass: 0.5, loopCost: 12, opens: 540, closes: 1380,
+    { id: 'tango', judge: true, called: 'the dance academy', kind: 'allin', types: ['perform', 'patience'], base: 35, pass: 0.5, loopCost: 12, opens: 540, closes: 1380,
       plate: 'dance school', label: 'All-In: the dance',
       // the instructor shows them; practice at the barre (toes trodden on, a turn that ends in a heap); the whole
       // routine for her (the dip on the floor: she stops the music, more lessons); her verdict

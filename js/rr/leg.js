@@ -30,6 +30,7 @@ const SUPER_WAIT = 60;
 // a Superteam of two teams this much at odds is 'stuck with the enemy' (one sour moment is not a feud)
 const SUPER_ENEMIES = 2;
 const DAY = 1440;
+const MEET_START = 5;                               // minutes at a task's start where every team arriving is in one spot
 const NIGHT = 180;                                  // a closed wait this long is a night, and Don says so
 // the Zip-It: the place's hardest kind of task, longer and harder to pass (the first team through skips to the mat)
 const ZIP = { base: 1.4, pass: -0.1 };
@@ -137,6 +138,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   // waiting (woken when its duel is decided).
   let duelWait = null;
   const duelRes = {};
+  const duelDone = {};       // team -> when its last duel ended: a team still mid-duel can't start the next one
   function duelAt(id, s, t, api) {
     const mine = duelRes[id];
     if (mine) { delete duelRes[id]; if (mine.won) return { end: mine.end }; }
@@ -146,7 +148,8 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       const lv = x => teamLevel(state, x, s.types || []);
       const p = Math.min(0.85, Math.max(0.15, 0.5 + DUEL.edge * (lv(id) - lv(o))));
       const [w, l] = rng() < p ? [id, o] : [o, id];
-      const end = t + Math.round(DUEL.min + rng() * DUEL.spread);
+      const end = Math.max(t, duelDone[o] ?? -Infinity) + Math.round(DUEL.min + rng() * DUEL.spread);
+      duelDone[o] = duelDone[id] = end;
       const last = api.remaining(s.id, [id, o]) === 0;
       const close = Math.abs(lv(w) - lv(l)) < 1;
       const ctx = { state, team: { id: w }, other: { id: l }, moment: 'twist', present: [w, l], stretch: s, t: end };
@@ -168,6 +171,65 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
     return { hold: t + DUEL.hold };
   }
 
+  // Where a team is at an Either/Or at minute tt: at its start (the Don Box: everybody arriving is there), or on the
+  // side it chose. Two teams meet only in the same spot (the user, 2026-10-21, on Home City: teams on the deck met teams
+  // on the stairs, "randomly finding thom and spencer who havent even take the elevator yet but bowie and sami did").
+  // (A side is one place, whatever stage each team is at: the teams on the stairs pass each other on the landings.)
+  const spotOf = (o, s, tt, from) => {
+    if (tt - from <= MEET_START) return 'start';
+    return state.attempts?.[o]?.[s.id]?.side || 'task';
+  };
+  // an Either/Or: the team meets whoever is with it, where and when, through its run
+  const meetInside = (id, s, from, to, api) => {
+    let extra = 0, watched = false;
+    const met = new Set();
+    for (let tt = from; tt <= to; tt += 2) {
+      const mine = spotOf(id, s, tt, from);
+      const now = api.here(s.id, tt).filter(x => x.id !== id && !met.has(x.id) && state.teams[x.id] && spotOf(x.id, s, tt, x.from) === mine).map(x => x.id);
+      if (!now.length) continue;
+      now.forEach(x => met.add(x));
+      extra += talkAtOverlap(state, id, now, s, tt, api, rng).extra || 0;
+      if (!watched && now.length >= 2) { watched = true; talkAtWait(state, [id, ...now], s, tt, api, rng, 'watching'); }
+    }
+    return extra;
+  };
+  // Once the clock has run: a team's run at a task is as long as it really was, after every minute won or lost to
+  // moments and to other teams' pushes. Its stages fit inside it (a minute won once had the zipline's stages still
+  // playing after the team had checked in), its moments there too, and the one about passing comes as it leaves.
+  // (a team can be at one task twice, sent back to it: each run fits its own visit, each moment the visit it was in)
+  const settleRuns = log => {
+    const visits = (id, stretch) => log.filter(x => x.id === id && x.stretch === stretch);
+    const fitted = new Set();
+    for (const row of (state.taskLog || []).filter(r => r.leg === state.leg)) {
+      const vs = visits(row.team, row.stretch);
+      // (the visit the run was in: the clock's visit starts on arrival, the run after any wait at a closed task)
+      const l = vs.find(x => x.from <= row.from + 0.5 && row.from <= x.to + 0.5);
+      if (!l || !(l.to >= row.from)) continue;
+      row.to = l.to;
+      if (!row.stages?.length || fitted.has(row.stages)) continue;
+      fitted.add(row.stages);
+      const from = row.from, last = Math.max(...row.stages.map(x => x.t));
+      if (last > from) for (const x of row.stages) x.t = from + (Math.max(from, x.t) - from) * (l.to - from) / (last - from);
+    }
+    for (const sc of state.scenes) {
+      if (sc.leg !== state.leg || !sc.data?.stretch || !sc.data.team || sc.data.t == null) continue;
+      const st = stretches.find(x => x.id === sc.data.stretch);
+      if (!st || !TASKS.includes(st.kind)) continue;
+      const vs = visits(sc.data.team, sc.data.stretch);
+      const l = [...vs].reverse().find(x => x.from <= sc.data.t + 0.5) || vs[0];
+      if (!l || !(l.to >= l.from)) continue;
+      if (['pass', 'tip'].includes(sc.data.moment)) sc.data.t = l.to;
+      else sc.data.t = Math.min(l.to, Math.max(l.from, sc.data.t));
+    }
+    // an interview is about a moment: it comes after it, wherever that moment now is
+    const byId = new Map(state.scenes.filter(x => x.leg === state.leg).map(x => [x.id, x]));
+    for (const iv of state.scenes) {
+      if (iv.leg !== state.leg || !iv.kind.startsWith('int-') || iv.data?.about == null || iv.data.t == null) continue;
+      const ab = byId.get(iv.data.about);
+      if (ab?.data?.t != null && iv.data.t < ab.data.t) iv.data.t = ab.data.t;
+    }
+  };
+
   const resolve = (team, s, t, api) => {
     const id = team.id;
     const key = `${id}|${s.id}`;
@@ -180,8 +242,10 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       return { out: true, end: t };
     }
 
-    // the teams already here: one moment for each pair, once
-    if (!talked.has(key)) {
+    // the teams already here: one moment for each pair, once (at an Either/Or, through the run: below)
+    const inside = TASKS.includes(s.kind) && !!s.sides;
+    const meetLater = inside && !talked.has(key);
+    if (!talked.has(key) && !inside) {
       talked.add(key);
       const here = api.here(s.id, t).map(x => x.id).filter(x => x !== id);
       if (here.length && s.kind !== 'mat') extra += talkAtOverlap(state, id, here, s, t, api, rng).extra || 0;
@@ -273,7 +337,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       // they're put together, so the formation airs first)
       const shared = state.attempts?.[superBy[k]]?.[s.id] || {};
       keepRun(state, id, s, v.departs + 1, superEnd[k], { attempts: shared.attempts || 0, fails: shared.fails || 0,
-        ...(shared.stages ? { stages: shared.stages } : {}) });
+        ...(shared.stages ? { stages: shared.stages.map(x => ({ ...x })) } : {}) });   // its own copy: each team's clock fits its own
       res = { end: superEnd[k] };
     } else if (s.kind === 'midmat') {
       // the finale's halfway mat: the last team to reach it is out where it stands
@@ -308,10 +372,11 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
     }
 
     if (adjust) res = adjust(team, s, t, res) || res;
+    if (meetLater) { talked.add(key); if (res.end != null) extra += meetInside(id, s, t, res.end, api); }
 
     // after the stretch: the partners talk, tempers and the clock in their legs
     if (s.kind !== 'mat') {
-      const said = talkAtStretch(state, id, s, t, api, rng);
+      const said = talkAtStretch(state, id, s, t, api, rng, res.end ?? null);
       extra += said.extra || 0;
       // a hurt partner hands over the lead
       const hurt = said.find(x => x.kind === 'injury' && x.data.ending !== 'minor');
@@ -330,6 +395,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   };
 
   const run = runLeg({ teams: starters.map(id => ({ id, t: depart[id] || 0 })), stretches, resolve });
+  settleRuns(run.log);
 
   // the plane: one room per flight with three or more teams
   if (air) {

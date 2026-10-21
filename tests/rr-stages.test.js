@@ -79,7 +79,10 @@ describe('rr challenges in stages', () => {
         for (const tm of teams) {
           const mine = segs.filter(x => x.teams[0] === tm);
           const stages = stagesOf(p, s, mine[0].side);
-          expect(new Set(mine.map(x => x.stage)).size, `${s} ${tm}`).toBeGreaterThanOrEqual(Math.min(3, stages.length));
+          // (a team that gives up gets only as far as it got: the high jump's leap, three misses and out)
+          const reached = (res.state.taskLog || []).filter(r => r.leg === res.legs[i].n && r.team === tm && r.stretch === s)
+            .some(r => r.quit) ? new Set(mine.map(x => x.stage)).size : Math.min(3, stages.length);
+          expect(new Set(mine.map(x => x.stage)).size, `${s} ${tm}`).toBeGreaterThanOrEqual(reached);
         }
         const first = (res.state.taskLog || []).filter(r => r.leg === res.legs[i].n && r.stretch === s).sort((x, y) => x.from - y.from)[0];
         expect(teams, `leg ${ep.n} ${s}: the first team there is followed`).toContain(first.team);

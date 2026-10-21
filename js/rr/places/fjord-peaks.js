@@ -19,7 +19,7 @@ export default {
             { id: 'reel-up', share: 0.4, risk: 0.4 }, { id: 'fish-tip', share: 0.2, risk: 0 }] },
         // the steps from an elder (the wrong foot); the chant and the faces (too quiet, too polite); the dance for the elders
         // (more practice); their nod
-        { id: 'dance', label: 'Jump Around', types: ['perform', 'patience'], base: 35, pass: 0.65, loopCost: 10,
+        { id: 'dance', judge: true, label: 'Jump Around', types: ['perform', 'patience'], base: 35, pass: 0.65, loopCost: 10,
           stages: [{ id: 'dance-lesson', share: 0.8, risk: 0.3 }, { id: 'the-chant', share: 0.8, risk: 0.5 }, { id: 'for-the-elders', share: 0.8, risk: 1 },
             { id: 'elders-nod', share: 0.2, risk: 0 }] },
       ] },

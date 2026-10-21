@@ -5,6 +5,11 @@ import { teamLevel } from '../skill.js';
 
 const tr = c => teamLevel(c.state, c.tid, ['travel']);
 const pe = c => teamLevel(c.state, c.tid, ['people']);
+// a task somebody judges (places: `judge: true`, on the task or on one side of it): the artist, the surfer boy, the
+// coach. Nobody else hands down a verdict (the user, 2026-10-21: "in the home city leg they talking about a judge but
+// they were no judge").
+const judged = c => { const st = c.stretch; const side = st?.sides?.find(x => x.id === c.state.attempts?.[c.tid]?.[st.id]?.side);
+  return !!(side?.judge ?? st?.judge); };
 
 register([
   K({ id: 'driver', family: 5, cast: 'local', moments: ['travel'], when: c => (['taxi'].includes(c.stretch?.mode) ? 0.5 : 0), endings: {
@@ -24,12 +29,12 @@ register([
     strict: { w: 1, fx: (fx, c) => fx.mind(c.lead, 'stress', 3) },
     intimidated: { w: c => (c.S(c.lead, 'boldness') > 7 ? 0.5 : 0.1), fx: (fx, c) => { fx.time(c.tid, 10); fx.pop(c.lead, -1); } },
   } }),
-  K({ id: 'judge-no', family: 5, cast: 'local', moments: ['fail'], when: c => (c.fails >= 1 ? 0.5 : 0), endings: {
+  K({ id: 'judge-no', family: 5, cast: 'local', moments: ['fail'], when: c => (c.fails >= 1 && judged(c) ? 0.5 : 0), endings: {
     explains: { w: 1, fx: (fx, c) => fx.pass(c.tid, 0.05) },
     'stone-faced': { w: 1, fx: (fx, c) => fx.mind(c.lead, 'stress', 5) },
     slaps: { w: 0.1, fx: (fx, c) => fx.mind(c.A, 'morale', -4) },
   } }),
-  K({ id: 'judge-yes', family: 5, cast: 'local', moments: ['pass'], endings: {
+  K({ id: 'judge-yes', family: 5, cast: 'local', moments: ['pass'], when: c => (judged(c) ? 1 : 0), endings: {
     approved: { w: 2, fx: (fx, c) => fx.mind(c.lead, 'morale', 3) },
     grudging: { w: 1, fx: (fx, c) => fx.mind(c.lead, 'morale', 1) },
   } }),

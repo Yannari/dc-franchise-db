@@ -18,7 +18,7 @@ export default {
       desc: "Deep in the castle, a hall full of coffins waits, and each team has to find the one with their names on it. Whoever is holding the tip then pushes their partner, lying inside the coffin, out of the castle and down the hill to the graveyard. Tip the coffin over, lose the lid or take the wrong path, and it's back to the castle gate to start the push again. At the graveyard, a grave digger hands over the next tip once the coffin reaches its grave." },
     { id: 'ride', kind: 'travel', mode: 'horse', base: 30, cost: 0, plate: 'graveyard', label: 'On horseback to the gym',
       mishaps: [['horse-wanders-off', 20]], mishapRate: 0.12 },
-    { id: 'gym', called: 'the gym', kind: 'botch', types: ['perform', 'nerve'], base: 15, pass: 0.5, loopCost: 8,
+    { id: 'gym', judge: true, called: 'the gym', kind: 'botch', types: ['perform', 'nerve'], base: 15, pass: 0.5, loopCost: 8,
       teaser: "Who's flexible?", plate: 'gymnastics hall', label: 'Botch or Watch: the routine',
       // the warm-up by the bench; the split on the beam (a wobble, a fall); the run and the somersault onto the vault (a
       // crash); the coach's nod. a performs, b watches from the bench

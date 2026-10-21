@@ -9,7 +9,7 @@
 // slam. Every avatar idles; whoever is talking bounces.
 import { plateUrl, raceUrl, propUrl } from './plates.js';
 import { PLACES } from '../rr/places.js';
-import { intelAt, offOf, stampSpot, slamSpot, tipSpot, fitOverlay, screenFaces, overlayObstacles, BAR, HUD_H, GROWS } from './steps.js';
+import { intelAt, offOf, stampSpot, slamSpot, tipSpot, fitOverlay, screenFaces, overlayObstacles, weatherOf, BAR, HUD_H, GROWS } from './steps.js';
 import { plateLife } from './life.js';
 
 const ORD = ['', '1ST', '2ND', '3RD', '4TH', '5TH', '6TH', '7TH', '8TH', '9TH', '10TH', '11TH', '12TH', '13TH', '14TH'];
@@ -39,9 +39,6 @@ function globeSVG(seed = 7) {
   return `<svg class="globe" viewBox="0 0 100 100"><defs><clipPath id="gc${seed}"><circle cx="50" cy="50" r="47"/></clipPath></defs>
     <circle cx="50" cy="50" r="47" fill="#fff"/><g clip-path="url(#gc${seed})">${panes}</g><circle cx="50" cy="50" r="47" fill="none" stroke="#bfe8ff" stroke-width="2.4"/></svg>`;
 }
-
-const AMBIENT = { 'rock-north': 'snow', 'red-sand-desert': 'mote', 'tomb-sands': 'mote', 'red-outback': 'mote', 'fire-mountain-isle': 'ember',
-  'great-wall-hills': 'mote', 'savanna-falls': 'mote', 'geyser-island': 'snow', 'treasure-isles': 'spark', 'torch-statue-harbour': 'mote', 'iron-tower-city': 'spark', 'skyline-finale': 'mote', 'home-city': 'mote' };
 
 // the ways of going that carry their cut-out with them: a vehicle under them, a zip trolley, a canopy or a hang
 // glider over them, a vine to swing on, a coffin pushed in front
@@ -219,9 +216,9 @@ export function createStage(holder, { faceOf, legLabel }) {
     else particles(FXK[k] || 'spark', pos[0], pos[1] - (s.size || 8) * 0.8, k === 'notes' ? 6 : 10);
   }
 
-  function ambient(placeId) {
+  // `kind`: steps.js weatherOf (none indoors)
+  function ambient(kind) {
     clearInterval(ambTimer); amb.innerHTML = '';
-    const kind = AMBIENT[placeId];
     if (!kind) return;
     ambTimer = setInterval(() => {
       if (document.hidden) return;
@@ -886,7 +883,7 @@ export function createStage(holder, { faceOf, legLabel }) {
         pl.animate([{ left: '-8%', top: '6%', transform: 'translate(-50%,-50%) rotate(118deg) scale(.6)' }, { left: '50%', top: '40%', transform: 'translate(-50%,-50%) rotate(100deg) scale(1)', offset: 0.7 },
           { left: '96%', top: '46%', transform: 'translate(-50%,-50%) rotate(90deg) scale(1.1)', opacity: 0 }], { duration: screenFresh ? 3400 : 1, fill: 'forwards', easing: 'ease-out' });
       }
-      if (!same) ambient(s.kind === 'world' || s.kind === 'title' ? (s.plate?.place || s.place) : null);
+      if (!same) ambient(weatherOf(s));
       if (screenFresh) animateStep(ep, s, 0);
     } else {
       cur.idx = k;

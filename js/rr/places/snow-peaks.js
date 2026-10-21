@@ -16,7 +16,7 @@ export default {
       stages: [{ id: 'the-meat', share: 0.2, risk: 0 }, { id: 'the-grinder', share: 1, risk: 0.5 }, { id: 'tie-off', share: 0.3, risk: 0.3 },
         { id: 'sausage-ride', share: 0.8, risk: 1 }, { id: 'bottom-line', share: 0.2, risk: 0 }],
       desc: "In a hut at the top of the slope, a mountain of meat waits beside a hand-cranked grinder. Both partners crank the meat through into one sausage skin until it's long enough for both of them to sit on, tie it off, and then ride it down the snow slope like a sled, steering round the mountain goats on the way. A sausage that splits, a crash into a goat or a fall off the back means climbing back up and grinding a new one. Both partners crossing the bottom line on their sausage earns the next tip." },
-    { id: 'slap-dance', called: 'the dance pads', kind: 'botch', types: ['perform', 'nerve'], base: 20, pass: 0.45, loopCost: 6,
+    { id: 'slap-dance', judge: true, called: 'the dance pads', kind: 'botch', types: ['perform', 'nerve'], base: 20, pass: 0.45, loopCost: 6,
       teaser: 'Who has rhythm?', plate: 'dance pads on the snow', label: 'Botch or Watch: the slap dance',
       // into the lederhosen (won't); the first verse (a buzz); the fast part (three misses: the song again); the last
       // beat. a dances, b watches

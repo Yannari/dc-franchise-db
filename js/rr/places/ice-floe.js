@@ -16,7 +16,7 @@ export default {
       stages: [{ id: 'dig-ring', share: 0.6, risk: 0.3 }, { id: 'the-line', share: 0.3, risk: 0 }, { id: 'the-throw', share: 1, risk: 1 },
         { id: 'ringed', share: 0.2, risk: 0 }],
       desc: "At the edge of the ice, where the sea is still open, a narwhal surfaces now and then with its long spiral tusk pointing at the sky. The partner who didn't do the last Botch or Watch digs through the snow until they find a ring, then throws it from behind the line and tries to land it over the tusk. A ring that misses sinks, so a miss means digging for another one. The other partner can only watch. A ring that lands on the tusk earns the next tip." },
-    { id: 'igloo', called: 'the igloo village', kind: 'allin', types: ['hands', 'strength'], base: 40, pass: 0.55, loopCost: 15, opens: 420, closes: 1200,
+    { id: 'igloo', judge: true, called: 'the igloo village', kind: 'allin', types: ['hands', 'strength'], base: 40, pass: 0.55, loopCost: 15, opens: 420, closes: 1200,
       plate: 'igloo village', label: 'All-In: the igloo',
       // sawing blocks out of the snow (one cracks); the first ring (it slumps); closing the dome (it caves in); the local's
       // inspection, crawling in (a gap: build it again); the local stays inside

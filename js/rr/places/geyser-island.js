@@ -9,7 +9,7 @@ export default {
   stretches: [
     { id: 'park-bus', kind: 'travel', mode: 'bus', base: 45, cost: 15, plate: 'bus on the mountain road', label: 'Bus to the park',
       mishaps: [['bus-breaks-down', 25]], mishapRate: 0.1 },
-    { id: 'telephone', called: 'the geyser field', kind: 'allin', types: ['brains', 'people'], base: 20, pass: 0.5, loopCost: 10, opens: 480, closes: 1140,
+    { id: 'telephone', judge: true, called: 'the geyser field', kind: 'allin', types: ['brains', 'people'], base: 20, pass: 0.5, loopCost: 10, opens: 480, closes: 1140,
       plate: 'geyser field', label: 'All-In: broken telephone',
       // Don's phrase on the speaker box (they can't even say it to each other); the run through the geysers (soaked, the
       // words knocked out of their heads); the phrase to the local (one word wrong: back to the speaker); the tip

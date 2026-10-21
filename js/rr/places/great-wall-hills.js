@@ -16,7 +16,7 @@ export default {
       stages: [{ id: 'the-door', share: 0.4, risk: 0.4 }, { id: 'the-jump', share: 0.4, risk: 0 }, { id: 'the-drift', share: 1, risk: 1 },
         { id: 'the-landing', share: 0.5, risk: 0.3 }, { id: 'centre-tip', share: 0.3, risk: 0 }],
       desc: "At the airfield, each team is strapped to two instructors and taken up in a small prop plane, and both partners must make a tandem skydive into the great stadium below. The tip is waiting on the stadium field. The wind is the problem: a team that drifts off course lands in a park or a car park outside the stadium and has to run the rest of the way in, losing valuable time. The team that lands inside and reaches the centre of the field first takes the tip." },
-    { id: 'skewers', called: 'the food stall', kind: 'allin', types: ['stomach', 'hands'], base: 18, pass: 0.55, loopCost: 8,
+    { id: 'skewers', judge: true, called: 'the food stall', kind: 'allin', types: ['stomach', 'hands'], base: 18, pass: 0.55, loopCost: 8,
       plate: 'street food stall', label: 'All-In: on a stick',
       // the tray of creatures (one is still moving); threading them on skewers (one escapes); the fryer (burnt); eating the
       // set (it comes back up: a fresh set); the empty sticks

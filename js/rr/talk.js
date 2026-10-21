@@ -11,7 +11,7 @@
 //
 // Each function returns the scenes it played; `scenes.extra` is the minutes the team at
 // the centre lost (or won) to them, for the resolver to add to its stretch.
-import { SCENES, playScene, whenOf, prepare, interviewAfter, pairKey } from './scenes.js';
+import { SCENES, playScene, whenOf, prepare, interviewAfter, pairKey, taskTypesFor } from './scenes.js';
 import { threadSteps, advanceThreads } from './threads.js';
 import { see } from './knowledge.js';
 import { getBond } from '../bonds.js';
@@ -116,6 +116,7 @@ function tryPlay(state, ctx, kindId, rng, out, { gate = true } = {}) {
   const sc = playScene(ctx, kindId, rng, { ending });
   if (!sc) return null;
   sc.data.talk = true;
+  if (ctx.moment && sc.data.moment == null) sc.data.moment = ctx.moment;
   out.push(sc);
   out.extra = (out.extra || 0) + (ctx.extra || 0);      // may be negative: a gain
   ctx.extra = 0;
@@ -153,7 +154,6 @@ function bestMoment(kind, ctx, moments) {
   return { w: best, moment: at };
 }
 
-function typesOf(stretch) { return stretch?.types || (stretch?.sides || []).flatMap(s => s.types || []); }
 
 function momentsAt(state, id, stretch) {
   const m = [];
@@ -174,7 +174,7 @@ function momentsAt(state, id, stretch) {
   if (at?.fails >= 1) m.push('fail');
   if (at && at.attempts > at.fails) m.push('pass');
   const t = state.teams[id];
-  if (typesOf(stretch).some(x => ['nerve', 'heights', 'water'].includes(x)) && Math.min(S(t.a, 'boldness'), S(t.b, 'boldness')) < 6) m.push('fear');
+  if (taskTypesFor(state, id, stretch).some(x => ['nerve', 'heights', 'water'].includes(x)) && Math.min(S(t.a, 'boldness'), S(t.b, 'boldness')) < 6) m.push('fear');
   return m;
 }
 
@@ -209,8 +209,25 @@ function playChain(state, c, id, stretch, t, api, rng, out, present) {
   return tryPlay(state, ctx, c.kind, rng, out, { gate: kind.family === 4 });
 }
 
+// The minute a moment at a task happens, within the team's time there [t, end]: choosing a side or reading what to do
+// at the start, a fear on the way in, passing it (and the tip they
+// get for it) at the end, a failed try in the middle (the user's Home City transcript, 2026-10-21: a judge handed over the tip at 07:14, before
+// the team had opened the stairwell door at 07:21).
+const TASK_KINDS = new Set(['either', 'botch', 'allin', 'task', 'route', 'superteam']);
+export function momentTime(state, id, stretch, moment, t, end) {
+  if (end == null || !(end > t) || !TASK_KINDS.has(stretch?.kind)) return t;
+  const span = end - t;
+  switch (moment) {
+    case 'pass': case 'tip': return end;
+    case 'fail': return t + span * 0.5;
+    case 'fear': return t + span * 0.15;
+    case 'botch-watch': return t + span * 0.5;
+    default: return t;
+  }
+}
+
 // ── The partners, at a stretch ──
-export function talkAtStretch(state, team, stretch, t, api, rng) {
+export function talkAtStretch(state, team, stretch, t, api, rng, end = null) {
   const id = idOf(team);
   const out = [];
   out.extra = 0;
@@ -221,7 +238,9 @@ export function talkAtStretch(state, team, stretch, t, api, rng) {
   const mine = people(state, id);
   const played = new Set();
   // who else is here (a gloat needs an audience; a side can be chosen by watching)
-  const present = [id, ...((api?.here?.(stretch?.id, t)) || []).map(x => x.id).filter(x => x !== id && state.teams[x])];
+  // (at an Either/Or, only who is at its start with them: the others are up the tower, out on the deck)
+  const inside = TASK_KINDS.has(stretch?.kind) && !!stretch?.sides;
+  const present = [id, ...((api?.here?.(stretch?.id, t)) || []).filter(x => !inside || t - x.from <= 5).map(x => x.id).filter(x => x !== id && state.teams[x])];
   for (let k = 0; k < n; k++) {
     const cands = [];
     for (const kind of Object.values(SCENES)) {
@@ -245,7 +264,7 @@ export function talkAtStretch(state, team, stretch, t, api, rng) {
       const c = draw(cands, rng);
       if (!c) break;
       cands.splice(cands.indexOf(c), 1);
-      const ctx = baseCtx(state, id, null, stretch, t, api, c.people ? { people: c.people, present } : { present, flip: !!c.flip });
+      const ctx = baseCtx(state, id, null, stretch, momentTime(state, id, stretch, c.moment, t, end), api, c.people ? { people: c.people, present } : { present, flip: !!c.flip });
       ctx.moment = c.moment;
       if (tryPlay(state, ctx, c.kind, rng, out)) { played.add(c.kind); break; }
     }

@@ -10,7 +10,7 @@ export default {
   arrive: 'airport', local: ['taxi', 'foot', 'boat'],
   stretches: [
     { id: 'tower-cab', kind: 'travel', mode: 'taxi', base: 35, cost: 30, plate: 'boulevard, cabs', label: 'Cab to the iron tower' },
-    { id: 'caricature', called: 'the iron tower', kind: 'botch', types: ['hands', 'people'], base: 14, pass: 0.5, loopCost: 7, opens: 480, closes: 1200,
+    { id: 'caricature', judge: true, called: 'the iron tower', kind: 'botch', types: ['hands', 'people'], base: 14, pass: 0.5, loopCost: 7, opens: 480, closes: 1200,
       teaser: 'Who can draw?', plate: 'base of the iron tower, park', label: 'Botch or Watch: draw me',
       // the artist's rules at the easel; the partner sits and poses; the sketch (too realistic: torn up); the four
       // exaggerations (only three: torn up); the artist laughs and hands over the tip. a draws, b sits.

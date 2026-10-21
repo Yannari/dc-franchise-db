@@ -9,7 +9,7 @@ export default {
   stretches: [
     { id: 'rowboat', kind: 'travel', mode: 'rowboat', base: 40, cost: 0, plate: 'open sea, rowboats', label: 'Row to the shore',
       mishaps: [['oar-overboard', 25]], mishapRate: 0.12 },
-    { id: 'welcome-rite', called: 'the fisherman\'s shack', kind: 'allin', types: ['stomach', 'people'], base: 25, pass: 0.5, loopCost: 10, opens: 420, closes: 1260,
+    { id: 'welcome-rite', judge: true, called: 'the fisherman\'s shack', kind: 'allin', types: ['stomach', 'people'], base: 25, pass: 0.5, loopCost: 10, opens: 420, closes: 1260,
       plate: 'shack interior table', label: 'All-In: the welcome rite',
       // into the shack and the fisherman at his table; the glass of what tastes like vinegar (spat out); the sentence in
       // the dialect (a word wrong); the cod's lips (pulled away); honorary locals. Any slip: the rite from the start

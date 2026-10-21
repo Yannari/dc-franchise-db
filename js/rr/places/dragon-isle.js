@@ -9,7 +9,7 @@ export default {
   stretches: [
     { id: 'isle-boat', kind: 'travel', mode: 'boat', base: 40, cost: 20, plate: 'harbour, wooden boat', label: 'Boat to the island',
       mishaps: [['engine-cuts-out', 20]], mishapRate: 0.08 },
-    { id: 'venom', called: 'the stilt huts', kind: 'allin', types: ['nerve', 'patience'], base: 25, pass: 0.5, loopCost: 10, opens: 420, closes: 1200,
+    { id: 'venom', judge: true, called: 'the stilt huts', kind: 'allin', types: ['nerve', 'patience'], base: 25, pass: 0.5, loopCost: 10, opens: 420, closes: 1200,
       plate: 'lizards under the stilt huts', label: 'All-In: the dragon drool',
       // the ranger hands over the stick, the sponge and the vial; one holds the lizard's eye with the stick (it hisses: back
       // off); the other creeps in with the sponge (it wakes and charges: run); squeezing it into the vial (spilled); the tip

@@ -643,41 +643,41 @@ const more = {
   // the partner watching the stew: cheering, nerves, too quiet, and helping when they mustn't
   'watching-botch.cheer': [
     { id: 'rsd.st-wc1', when: ST, turns: [
-      { by: 'a', ...V("You're doing it! Look at you! Spoon, swallow, spoon, swallow!", "You're doing it. Spoon, swallow, spoon, swallow.", "Look at you. Spoon, swallow, spoon, swallow.", "You're DOING it, look at YOU, spoon, swallow, SPOON, swallow!",
+      { by: 'b', ...V("You're doing it! Look at you! Spoon, swallow, spoon, swallow!", "You're doing it. Spoon, swallow, spoon, swallow.", "Look at you. Spoon, swallow, spoon, swallow.", "You're DOING it, look at YOU, spoon, swallow, SPOON, swallow!",
         "You're doing it! Look at you go! Spoon, swallow, spoon, swallow!", "You're doing it, you're a stew champion, spoon and swallow!") },
-      { by: 'b', ...V("Stop counting my spoons.", "Stop counting my spoons.", "Please stop counting my spoons.", "STOP counting my SPOONS!", "Can you please stop counting my spoons?", "Stop counting. The spoons can hear you.") },
-      { by: 'a', ...V("Spoon! Swallow! I'm so proud of you!", "Spoon. Swallow. Proud of you.", "Spoon, swallow. I'm so proud of you.", "SPOON, SWALLOW, I'm SO proud of you!",
+      { by: 'a', ...V("Stop counting my spoons.", "Stop counting my spoons.", "Please stop counting my spoons.", "STOP counting my SPOONS!", "Can you please stop counting my spoons?", "Stop counting. The spoons can hear you.") },
+      { by: 'b', ...V("Spoon! Swallow! I'm so proud of you!", "Spoon. Swallow. Proud of you.", "Spoon, swallow. I'm so proud of you.", "SPOON, SWALLOW, I'm SO proud of you!",
         "Spoon, swallow. I'm so proud of you, honestly.", "Spoon and swallow, and I'm going to write a song about this!") },
     ] },
   ],
   'watching-botch.nerves': [
     { id: 'rsd.st-wn1', when: ST, turns: [
-      { beat: '{a} watches {b} eat through the gaps between {a.posAdj} fingers.' },
-      { by: 'a', ...V("I can't look. Tell me when it's over. Actually don't, I'll look.", "Can't look. Tell me when it's over. No, I'll look.", "I can't look. Tell me when it's done. Actually, I'll look.", "I CAN'T look, tell me when it's OVER, actually DON'T, I'll look!",
+      { beat: '{b} watches {a} eat through the gaps between {b.posAdj} fingers.' },
+      { by: 'b', ...V("I can't look. Tell me when it's over. Actually don't, I'll look.", "Can't look. Tell me when it's over. No, I'll look.", "I can't look. Tell me when it's done. Actually, I'll look.", "I CAN'T look, tell me when it's OVER, actually DON'T, I'll look!",
         "I can't look. Tell me when it's over. Actually, no, I'll look.", "I can't watch. I can't not watch. This is torture for both of us.") },
-      { by: 'b', ...V("You're making it worse. Please go and look at a camel.", "You're making it worse. Go look at a camel.", "You're making it worse. Go and look at a camel.", "You're making it WORSE, go and look at a CAMEL!",
+      { by: 'a', ...V("You're making it worse. Please go and look at a camel.", "You're making it worse. Go look at a camel.", "You're making it worse. Go and look at a camel.", "You're making it WORSE, go and look at a CAMEL!",
         "You're kind of making it worse. Could you go and look at a camel?", "You're making it worse. Go and bond with a camel.") },
-      { beat: '{a} goes and looks at a camel. The camel looks back.' },
+      { beat: '{b} goes and looks at a camel. The camel looks back.' },
     ] },
   ],
   'watching-botch.coach-illegal': [
     { id: 'rsd.st-wi1', when: ST, turns: [
-      { by: 'a', ...V("Less chewing. More swallowing. Tilt the bowl, tilt it!", "Less chewing. More swallowing. Tilt the bowl.", "Chew less, swallow more. Tilt the bowl.", "Less CHEWING, more SWALLOWING, tilt the bowl, TILT it!",
+      { by: 'b', ...V("Less chewing. More swallowing. Tilt the bowl, tilt it!", "Less chewing. More swallowing. Tilt the bowl.", "Chew less, swallow more. Tilt the bowl.", "Less CHEWING, more SWALLOWING, tilt the bowl, TILT it!",
         "Try chewing less and swallowing more. Tilt the bowl, maybe?", "Less chewing. More swallowing. Tilt the bowl like a cup.") },
-      { by: 'b', ...V("You're not allowed to tell me how to eat!", "You can't tell me how to eat.", "You're not allowed to tell me how to eat.", "You're NOT allowed to tell me how to EAT!",
+      { by: 'a', ...V("You're not allowed to tell me how to eat!", "You can't tell me how to eat.", "You're not allowed to tell me how to eat.", "You're NOT allowed to tell me how to EAT!",
         "I don't think you're allowed to tell me how to eat!", "You're not allowed to coach my eating!") },
       { beat: 'A crew member at the edge of the tent writes something down.' },
-      { by: 'a', ...V("Was that coaching? That wasn't coaching. That was cheering with details.", "That wasn't coaching. That was detailed cheering.", "That wasn't coaching. It was cheering with details.", "Was that COACHING? That was CHEERING with DETAILS!",
+      { by: 'b', ...V("Was that coaching? That wasn't coaching. That was cheering with details.", "That wasn't coaching. That was detailed cheering.", "That wasn't coaching. It was cheering with details.", "Was that COACHING? That was CHEERING with DETAILS!",
         "Was that coaching? I thought it was just cheering with details.", "That was not coaching. That was enthusiastic narration.") },
     ] },
   ],
   'watching-botch.quiet': [
     { id: 'rsd.st-wq1', when: ST, turns: [
-      { beat: '{a} sits on a cushion across from {b} and says nothing at all, just watching.' },
-      { by: 'b', ...V("You're very quiet.", "You're quiet.", "You're very quiet over there.", "You're VERY quiet!", "You're being very quiet.", "You're very quiet. It's unsettling.") },
-      { by: 'a', ...V("If I talk, you'll answer, and if you answer, you'll stop eating.", "If I talk, you'll stop eating.", "If I talk, you'll answer, and then you'll stop eating.", "If I TALK, you'll ANSWER, and then you'll STOP eating!",
+      { beat: '{b} sits on a cushion across from {a} and says nothing at all, just watching.' },
+      { by: 'a', ...V("You're very quiet.", "You're quiet.", "You're very quiet over there.", "You're VERY quiet!", "You're being very quiet.", "You're very quiet. It's unsettling.") },
+      { by: 'b', ...V("If I talk, you'll answer, and if you answer, you'll stop eating.", "If I talk, you'll stop eating.", "If I talk, you'll answer, and then you'll stop eating.", "If I TALK, you'll ANSWER, and then you'll STOP eating!",
         "If I talk, you'll answer me, and then you'll stop eating.", "If I speak, you'll speak, and the stew will win.") },
-      { beat: '{b} nods and keeps eating.' },
+      { beat: '{a} nods and keeps eating.' },
     ] },
   ],
 };

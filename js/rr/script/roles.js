@@ -95,9 +95,11 @@ export function rolesOf(scene, state) {
     const pair = t ? [t.a, t.b] : who.slice(0, 2);
     const botcher = d.snap?.botcher && pair.includes(d.snap.botcher) ? d.snap.botcher : null;
     const watcher = botcher ? pair.find(n => n !== botcher) : null;
-    // the Botch: a is the one in the water, unless the partner pushed them in (pushed) or is the one watching
+    // the Botch: a is the one in the water (b watches), unless the partner pushed them in (pushed: a is the pusher)
+    // (watching-botch had a as the watcher, against every place's lines and the engine's own B: 2026-10-21, the user:
+    // "sami was the one jumping why is bowie the one who needs help")
     const a = scene.kind === 'whose-botch' && botcher ? (d.ending === 'pushed' ? watcher : botcher)
-      : scene.kind === 'watching-botch' && watcher ? watcher
+      : scene.kind === 'watching-botch' && botcher ? botcher
       : LEAD_KINDS.has(scene.kind) && lead && pair.includes(lead) ? lead : who.find(n => pair.includes(n)) || pair[0];
     if (a) roles.a = a;
     const b = pair.find(n => n !== a);

@@ -295,6 +295,11 @@ export async function resolveAfterSeason({ seasonId = null, seasonNumber = null,
     loadLifeLog(),
   ]);
 
+  // Family ties (married, siblings) start a character's relationship track (js/ties.js registers it), and the
+  // export path never loaded them, so a character married on the roster could be rolled into dating somebody.
+  // life.html already does this.
+  try { (await import('./ties.js')).useRoster(roster); } catch { /* ties are an extra */ }
+
   const seasons = sdb.seasons || [];
   const season = seasons.find(s => (seasonId && s.seasonId === seasonId)
     || (seasonNumber != null && s.seasonNumber === seasonNumber

@@ -465,6 +465,10 @@ function _bootReport() {
     box.appendChild(document.createTextNode(lines.join('\n')));
     box.querySelector('button').onclick = () => box.remove();
     document.body.appendChild(box);
+    // Closes itself after 8 seconds; a mouse over it keeps it open to read.
+    let close = setTimeout(() => box.remove(), 8000);
+    box.onmouseenter = () => clearTimeout(close);
+    box.onmouseleave = () => { close = setTimeout(() => box.remove(), 3000); };
   }, 20000);
 }
 

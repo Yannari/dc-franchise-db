@@ -35,11 +35,20 @@ describe('the alert screen', () => {
     expect(twistOf({ ci: {} }, { kind: 'power-reveal', d: { power: 'joker' } })?.id).toBe('ci-power-joker');
   });
 
-  it('a twist with a scene of its own is explained once a day; an in-world alert is read first, then explained', () => {
+  // The user, 2026-10-20: "im getting 2 different alert screen now fix that keep the new one remove the old one".
+  it('one alert screen per twist: the explained one; a scene that was an alert plays after it in the apartment', () => {
     const swap = { kind: 'swap', stage: 'ui', steps: [] };
     const out = withTwistAlerts({ ci: {} }, [swap, { ...swap }]);
     expect(out.map(s => s.kind)).toEqual(['twist', 'swap', 'swap']);
     const disrupter = { kind: 'disrupter', stage: 'alert', steps: [] };
-    expect(withTwistAlerts({ ci: {} }, [disrupter]).map(s => s.kind)).toEqual(['disrupter', 'twist']);
+    const d = withTwistAlerts({ ci: {} }, [disrupter]);
+    expect(d.map(s => [s.kind, s.stage])).toEqual([['twist', 'explain'], ['disrupter', 'apt']]);
+  });
+
+  it('the Circle\'s old one-line alert for a night\'s format gives way to the explained one, and the Ratings get no second', () => {
+    const old = { kind: 'alert', stage: 'alert', steps: [{ text: "'The top-rated Player will block alone.'" }] };
+    const out = withTwistAlerts({ ci: { night: { format: 'secret' } } }, [old, { kind: 'chat', stage: 'apt', steps: [] }, rate]);
+    expect(out.map(s => s.kind)).toEqual(['twist', 'chat', 'ratings']);
+    expect(out.filter(s => s.stage === 'alert' || s.stage === 'explain')).toHaveLength(1);
   });
 });

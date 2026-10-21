@@ -37,23 +37,27 @@ export function twistOf(row, screen) {
   if (BY_SCENE[screen.kind]) return byId(BY_SCENE[screen.kind]);
   if (screen.kind === 'arrival' && screen.d?.entry && screen.d.entry !== 'snoop') return byField('ciEntry', screen.d.entry);
   if (screen.kind === 'power-reveal') return byField('ciPower', screen.d?.power);
-  if (screen.kind === 'ratings') {
+  // A night that isn't the usual: its Ratings, and the Circle's own alert earlier that day.
+  if (screen.kind === 'ratings' || screen.kind === 'alert') {
     const f = row?.ci?.night?.format;
     return f && f !== 'standard' ? byField('ciFormat', f) : null;
   }
   return null;
 }
 
-/** The episode's screens with an alert for each twist's first scene (one per twist a day): before it, or, when the
- *  scene is itself an alert the players read (the Disrupter, a mission), straight after it, never two slams in a row. */
+/** The episode's screens with an alert for each twist's first scene (one per twist a day), before it. One alert
+ *  screen per twist (the user, 2026-10-20: "im getting 2 different alert screen now ... keep the new one remove the
+ *  old one"): the Circle's old one-line alert for a night's format goes, the explained one takes its place; a scene
+ *  that was itself an alert (the Disrupter, a mission, a power) plays after it in the apartment, without a second slam. */
 export function withTwistAlerts(row, screens) {
   const out = [], seen = new Set();
   for (const screen of screens) {
     const c = twistOf(row, screen);
     const alert = c && !seen.has(c.id) ? explainScreen(c) : null;
     if (alert) seen.add(c.id);
-    if (alert && screen.stage === 'alert') out.push(screen, alert);
-    else out.push(...(alert ? [alert] : []), screen);
+    if (c && screen.kind === 'alert') { if (alert) out.push(alert); continue; }
+    if (alert) out.push(alert);
+    out.push(c && screen.stage === 'alert' ? { ...screen, stage: 'apt' } : screen);
   }
   return out;
 }

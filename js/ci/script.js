@@ -303,6 +303,13 @@ function pairTalk(state, block, cast, rng, ctx) {
       out.push(l);
       return;
     }
+    // On the goodbye video the two of them take turns, whoever the line was written for.
+    if (l.kind === 'video') {
+      if (!l.person) l.person = firstName(ctx[`vid:${l.who}`] = ctx[`vid:${l.who}`] === (p.roles?.face || x) ? p.players.find(n => n !== (p.roles?.face || x)) : (p.roles?.face || x));
+      else ctx[`vid:${l.who}`] = p.players.find(n => firstName(n) === l.person) || ctx[`vid:${l.who}`];
+      out.push(l);
+      return;
+    }
     if (l.kind !== 'react' && l.kind !== 'say') { out.push(l); return; }
     // Said out loud: by one of them (the face, unless the line says who).
     if (!l.person) l.person = firstName(p.roles?.face || x);
@@ -609,7 +616,9 @@ const BLOCKS = {
     return out;
   },
   profiles(state, s) {
-    return s.who.map(a => ({ key: `profile.${state.profiles[a].mode}`, cast: { a },
+    // Two people behind one profile move in together and introduce each other (lines/pair-entry.js).
+    const keyOf = p => (p.players.length > 1 ? (p.mode === 'catfish' ? 'profile.pair.catfish' : 'profile.pair') : `profile.${p.mode}`);
+    return s.who.map(a => ({ key: keyOf(state.profiles[a]), cast: { a },
       extra: { reasonKind: state.profiles[a].reason || undefined } }));
   },
   recognise(state, s) {
@@ -632,7 +641,7 @@ const BLOCKS = {
     const reader = reactions[0]?.by || s.seenBy.find(h => h !== a);
     const out = [];
     if (reader) out.push({ key: 'arrival.alert', cast: { a: reader } });
-    out.push({ key: 'arrival', cast: { a } });
+    out.push({ key: state.profiles[a]?.players.length > 1 ? 'arrival.pair' : 'arrival', cast: { a } });
     for (const r of reactions) out.push({ key: `arrival.react.${r.kind}`, cast: { a: r.by, b: a } });
     if (!reactions.length) { const other = s.seenBy.find(h => h !== a); if (other) out.push({ key: 'arrival.react', cast: { a: other, b: a } }); }
     return out;
@@ -1125,10 +1134,13 @@ const BLOCKS = {
     const p = state.profiles[h];
     const viewers = s.seenBy.filter(x => x !== h);
     const out = viewers.slice(0, 4).map(v => ({ key: 'goodbye.guess', cast: { a: v, b: h } }));
-    out.push({ key: p.ai ? 'goodbye.video.ai' : p.mode === 'catfish' ? `goodbye.video.catfish.${p.reason || 'strategic'}` : `goodbye.video.${p.mode}`,
+    // A pair is both of them on the video (the user, 2026-10-21: "i only see 1 person"): behind a persona, the two
+    // of them owning up to it; honest, as what they are to each other when there are lines for that.
+    const pair = p.players.length > 1;
+    const relKey = pair && p.relation && POOLS[`goodbye.pair.${p.relation}`]?.length ? `goodbye.pair.${p.relation}` : null;
+    out.push({ key: p.ai ? 'goodbye.video.ai' : pair ? (p.mode === 'catfish' ? 'goodbye.video.catfish.pair' : relKey || 'goodbye.video.pair')
+      : p.mode === 'catfish' ? `goodbye.video.catfish.${p.reason || 'strategic'}` : `goodbye.video.${p.mode}`,
       cast: { a: h }, extra: { mode: p.mode, reasonKind: p.reason || undefined } });
-    // A pair that is something to each other says goodbye as that.
-    if (p.relation && p.players.length > 1 && POOLS[`goodbye.pair.${p.relation}`]?.length) out.push({ key: `goodbye.pair.${p.relation}`, cast: { a: h } });
     // A shout-out to their closest friend still in the building, when there is one.
     const bestie = viewers.filter(v => rel(h, v, 'affection') > 3).sort((x, y) => rel(h, y, 'affection') - rel(h, x, 'affection'))[0];
     if (bestie && !p.ai) out.push({ key: 'goodbye.shout', cast: { a: h, b: bestie } });
@@ -1161,9 +1173,10 @@ const BLOCKS = {
     const waited = viewers.slice(0, 4);
     const others = viewers.filter(x => ![guilty, warned, suspecter].includes(x))
       .sort((x, y) => waited.includes(y) - waited.includes(x));
-    for (const v of others.slice(0, Math.max(warned ? 3 : 5, others.filter(x => waited.includes(x)).length))) {
-      out.push({ key: 'goodbye.react.surprised', cast: { a: v, b: h } });
-    }
+    // Two people on the video: the first of the room to react says so.
+    others.slice(0, Math.max(warned ? 3 : 5, others.filter(x => waited.includes(x)).length)).forEach((v, i) => {
+      out.push({ key: pair && i < 2 ? 'goodbye.react.pair' : 'goodbye.react.surprised', cast: { a: v, b: h } });
+    });
     const friend = viewers.filter(v => rel(v, h, 'affection') > 2).sort((x, y) => rel(y, h, 'affection') - rel(x, h, 'affection'))[0];
     if (friend) out.push({ key: 'goodbye.after', cast: { a: friend, b: h } });
     return out;
@@ -1639,6 +1652,7 @@ export const POOL_KEYS = [
   ...['save-two', 'plead', 'room-vote', 'forced'].map(f => `alert.${f}`), 'block.announce.unsaved', 'block.announce.vote',
   'block.announce.statement', 'plead.open', 'plead.pitch', 'plead.listen', 'vote.open', 'vote.cast', 'vote.result',
   'statement.open', 'statement.say', 'statement.named', 'save.wait', 'alert.instant', 'alert.double', 'block.announce.instant', 'goodbye.video.close', 'goodbye.video.lesson',
+  'profile.pair', 'profile.pair.catfish', 'arrival.pair', 'goodbye.video.pair', 'goodbye.video.catfish.pair', 'goodbye.react.pair',
   'block.react.numbers', 'block.react.unsaved', 'visit.choose.power', 'visit.talk.power', 'visit.talk2.power',
   ...['immunity', 'hacker', 'joker', 'burner'].map(k => `visit.power.${k}`), ...['immunity', 'joker', 'hacker'].map(k => `power.reveal.${k}`),
   'hack.send', 'hack.read', 'hack.undone', 'joker.chat', 'joker.pick', 'burner.exposed',

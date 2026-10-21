@@ -188,6 +188,10 @@ export const CIV_CSS = `
 .civ-cam:after,.civ-watch:after{content:attr(data-cam);position:absolute;left:.7cqw;top:.7cqw;font-weight:800;font-size:.8cqw;letter-spacing:.14em;background:rgba(0,0,0,.6);padding:.3cqw .5cqw;border-radius:.3cqw;color:#fff}
 .civ-cam:before,.civ-watch:before{content:"";position:absolute;right:.9cqw;top:.9cqw;width:.7cqw;height:.7cqw;border-radius:50%;background:#ff4a6a;box-shadow:0 0 8px #ff4a6a;animation:civBlink 1.2s infinite}
 .civ-arrive.enter .civ-cam,.civ-arrive.enter .civ-watch{animation:civWalkIn .9s cubic-bezier(.2,1.2,.3,1) both}
+/* two people behind one profile walk in together (stage.js arriveStage) */
+.civ-cam.duo{width:9.3cqw;transition:opacity .3s,box-shadow .3s}.civ-cam.duo.b{left:calc(3% + 9.8cqw)}
+.civ-cam.duo:not(.talk){opacity:.82}.civ-cam.duo.talk{box-shadow:0 0 1.4cqw var(--glow)}
+.civ-cam.duo:after{font-size:.62cqw}.civ-arrive.enter .civ-cam.duo.b{animation-delay:.15s}
 @keyframes civWalkIn{from{transform:translateX(-120%) rotate(-8deg);opacity:0}}
 .civ-id{position:absolute;left:3%;top:52%;width:44%;z-index:7}
 .civ-arrive .civ-id{left:24.5%;top:14%;width:28%}
@@ -355,6 +359,10 @@ export const CIV_CSS = `
 .civ-vid{position:absolute;inset:0;background-color:#161a4a;background-position:center;background-size:contain;background-repeat:no-repeat;display:grid;place-items:center;font-weight:900;font-size:12cqw;filter:saturate(.9)}
 .civ-vid:after{content:"\\25CF  REC";position:absolute;left:1.4cqw;top:1.2cqw;font-weight:800;font-size:1cqw;letter-spacing:.16em;color:#ff4a6a;animation:civBlink 1.2s infinite}
 .civ-vid.play{animation:civVidIn .8s both}
+/* a goodbye video from two people: both in the frame (moments.js videoStage) */
+.civ-vid.duo{display:flex;gap:.5cqw;padding:.5cqw;background:#161a4a}
+.civ-vid.duo i{flex:1;background:#1b1f45 center 22%/cover no-repeat;display:grid;place-items:center;font-style:normal;font-size:8cqw;opacity:.85;transition:opacity .3s,filter .3s}
+.civ-vid.duo i.talk{opacity:1;filter:brightness(1.08)}
 @keyframes civVidIn{from{filter:brightness(3) blur(10px)}}
 .civ-vidname{position:absolute;left:1.4cqw;top:3.2cqw;font-weight:900;font-size:1.6cqw;letter-spacing:.08em;text-shadow:0 2px 8px #000}
 .civ-vidname i{font-style:normal;font-weight:600;font-size:1.1cqw;color:#ff9fd6}

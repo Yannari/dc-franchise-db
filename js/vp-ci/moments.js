@@ -253,10 +253,19 @@ function videoStage(row, screen, idx, fresh) {
   const after = played > 0 && !playing;
   const url = faceUrl(faceOf(row, h, 'cam'));
   const pic = faceUrl(faceOf(row, h, 'profile'));
+  // Two people behind the profile: both of them in the frame, the one talking lit (the user, 2026-10-21).
+  const people = row.ci.profiles?.[h]?.people || [];
+  const duo = people.length > 1;
+  const frame = duo
+    ? `<div class="civ-vid duo${playing ? ' play' : ''}">${people.map(n => {
+      const f = n.split(' ')[0], u = faceUrl(faceOf(row, h, 'cam', f));
+      return `<i class="${playing && st.person === f ? 'talk' : ''}"${bg(u)}>${u ? '' : esc(f[0])}</i>`;
+    }).join('')}</div>`
+    : `<div class="civ-vid${playing ? ' play' : ''}"${bg(url)}>${url ? '' : esc(realOf(row, h)[0])}</div>`;
   const screenInner = played
-    ? `<div class="civ-vid${playing ? ' play' : ''}"${bg(url)}>${url ? '' : esc(realOf(row, h)[0])}</div>
+    ? `${frame}
        <div class="civ-vidname">${esc(realOf(row, h).toUpperCase())}${isCatfish(row, h) ? ` <i>· the real face behind "${esc(nameOf(row, h))}"</i>` : ''}</div>
-       ${playing ? `<div class="civ-sub">${esc(st.text)}</div>` : ''}
+       ${playing ? `<div class="civ-sub">${duo && st.person ? `<b>${esc(st.person)}:</b> ` : ''}${esc(st.text)}</div>` : ''}
        <div class="civ-bar"><i style="width:${Math.round(played / Math.max(1, vids.length) * 100)}%"></i></div>`
     : `<div class="civ-vidcard"><div class="ph"${bg(pic)}>${pic ? '' : esc(nameOf(row, h)[0])}</div><div>A VIDEO MESSAGE FROM<br><b>${esc(nameOf(row, h).toUpperCase())}</b></div><div class="civ-play">▶</div></div>`;
   const last = st?.part === 'stage' ? speakerAt(screen, idx) : st?.who;

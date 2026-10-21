@@ -284,13 +284,19 @@ function arriveStage(row, screen, idx, fresh) {
   }
   const cam = faceUrl(faceOf(row, react ? speaker : about, 'cam', react ? st?.person : null));
   const camOf = react ? speaker : about;
-  const real = realOf(row, camOf, react ? st?.person : null);
+  // Two people behind the new profile walk in together: two cameras, the one talking lit (the user, 2026-10-21).
+  const duo = !react ? (row.ci.profiles?.[about]?.people || []) : [];
+  const real = realOf(row, camOf, react || duo.length > 1 ? st?.person : null);
   const plate = `<div class="civ-plate">${esc(real)}${react ? ' <i>· sees the new profile</i>' : ''}</div>`;
   const line = !st.who ? `<div class="civ-line stage">${esc(st.text)}</div>`
     : `<div class="civ-line"><span class="civ-chip say">${st.part === 'react' ? 'REACTS' : 'SAYS ALOUD'}</span>${esc(st.text)}</div>`;
   const enter = fresh && st.entry;
   return `<div class="civ-layer civ-arrive${build ? ' build' : ''}${react ? ' react' : ''}${enter ? ' enter' : ''}">${bgl}
-    <div class="${react ? 'civ-watch' : 'civ-cam'}" data-cam="CAM ${aptNo(row, camOf)} · ${esc(real.toUpperCase())}" style="--glow:${ringOf(row, camOf)}${cam ? `;background-image:url('${esc(cam)}')` : ''}">${cam ? '' : esc(real[0] || '?')}</div>
+    ${duo.length > 1 ? duo.map((n, i) => {
+      const f = n.split(' ')[0], u = faceUrl(faceOf(row, about, 'cam', f));
+      return `<div class="civ-cam duo${i ? ' b' : ''}${st.person === f ? ' talk' : ''}" data-cam="CAM ${aptNo(row, about)} · ${esc(f.toUpperCase())}" style="--glow:${ringOf(row, about)}${u ? `;background-image:url('${esc(u)}')` : ''}">${u ? '' : esc(f[0])}</div>`;
+    }).join('')
+    : `<div class="${react ? 'civ-watch' : 'civ-cam'}" data-cam="CAM ${aptNo(row, camOf)} · ${esc(real.toUpperCase())}" style="--glow:${ringOf(row, camOf)}${cam ? `;background-image:url('${esc(cam)}')` : ''}">${cam ? '' : esc(real[0] || '?')}</div>`}
     ${react ? `<div class="civ-watchnote">APARTMENT ${aptNo(row, camOf)}<b>${esc(real)}</b>sees a new face on the Circle</div>` : idCard(row, about)}
     <div class="civ-tvframe" style="--bias:${ringOf(row, about)}">${profileCard(row, about, react ? 'A NEW PLAYER' : 'THE PROFILE THE ROOM WILL SEE')}</div>
     ${roll}${where}

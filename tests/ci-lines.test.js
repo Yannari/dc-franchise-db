@@ -66,13 +66,16 @@ describe('the pools are well-formed', () => {
   });
 
   it('uses only real slots, and the truth only in the host\'s mouth or the staging', () => {
-    for (const [, e] of ENTRIES) {
+    // ...or once the room has been told it: a goodbye video says the real name, a visit opens the door on it, the
+    // finale is everyone in one room (the user, 2026-10-21: the reactions should "acknowledge their real name too").
+    const TOLD = /^(goodbye\.(react|after)|visit\.|meet\.|reunion\.|report)/;
+    for (const [k, e] of ENTRIES) {
       for (const x of allTexts(e)) for (const [, s] of x.matchAll(SLOT)) expect(s, `${e.id}: {${s}}`).toMatch(OK_SLOT);
       for (const [by, , x] of turnTexts(e)) {
         // A player knows one real name: their own ("Hi, I'm Seaburn" on a goodbye video).
         if (by === 'host') continue;
         if (by !== 'face' && by !== 'brain') expect(x, `${e.id}: only the pair name each other`).not.toMatch(/\{[abc]\.(face|brain)\}/);
-        if (by === 'face' || by === 'brain') continue;
+        if (by === 'face' || by === 'brain' || TOLD.test(k)) continue;
         const others = new RegExp(`\\{(?!${by}\\.real\\})[abc]\\.(real|aka)\\}`);
         expect(x, `${e.id}: a player cannot know the real name`).not.toMatch(others);
       }

@@ -3516,3 +3516,47 @@ the engine. Use it when a format wants its own billing but not its own rules.
 Before building any of these, do §16.9 and §17.8, build the dialogue by §19 and
 the viewer by §18.4, and check the real show's rules on its wiki before
 designing a mechanic.
+
+## 21. Kristal-talKs exit interviews: what a new show supplies
+
+Spec: `docs/superpowers/specs/2026-10-21-kristal-exit-interviews-design.md`.
+Every boot records an exit interview the week they leave, every finalist one on
+finale night; the simulator decides it and the effects are real (fans, and the
+bond with each person named once that person HEARS it); `kristal.html` writes
+the words after the season is published. Nothing is shown in the simulator —
+the user's decision, 2026-10-21. Big Brother is the reference port.
+
+**Shared, show-blind — reuse, do not copy:**
+- `js/exit-interview/core.js` — `decideExitInterview(facts, { rng, earlier })`,
+  `applyRecording(record, ops)`, `deliverInterviews(records, { at, canHear, ops })`,
+  `heardAbout(records, name)`.
+- `js/kristal-exit.js` + `js/kristal-exit-lines.js` — the words. Lines are
+  Big Brother-voiced today (block, veto, house); a show whose exits are not
+  votes needs its own `OPEN_Q/OPEN_A` kinds and cold opens added there.
+- `js/kristal.js` reads `season.exitInterviews` off the seasons row; Dramagram
+  pays `exitFollowerDelta` (less than a debrief, negative when the fans turned).
+
+**What the new show writes — one adapter file, like `js/bb/exit-interview.js`:**
+1. **Facts from what the guest could KNOW** the night they left: the vote count
+   (not the names), who they *suspect* from their PERCEIVED bonds, the truth
+   only as `flippers` (people they trusted who voted against them — the
+   audience saw the ballots, Kristal plays it to them), allies/rivals still in,
+   a showmance partner, and `blindside` as "they read a majority of the room as
+   theirs". A Traitors Faithful never learns who the Traitors are from this.
+2. **Who waits.** `canHear(name)`: out for good and not sequestered. Jurors
+   record but hear nothing until the final vote is in; anybody with a return
+   still open (Rescue Island, Edge of Extinction, a Battle Back camp) records
+   nothing until it closes.
+3. **Two hooks**: the end of every round that removes someone (and every early
+   return path in it), and finale night AFTER the result and any audience vote.
+4. **The ops**: the show's own popularity store and bond function.
+5. **Publish**: the season document and the seasons row carry
+   `exitInterviews` (decisions only; strip `heardBy`).
+
+**Measure before shipping** (what the Big Brother port measured):
+- the bad-blood pair count with and without the hooks (the first draft added up
+  to five feuds a season; `STANCE_BOND` was halved);
+- a season read of every transcript: kinds are a mix, not all "blindside"
+  (the first port read `week.nominees`, which is only written on a cancelled
+  week, and called two thirds of all exits backdoors); no guest line twice in
+  a season; nobody messaged, ranked or predicted who is no longer playing.

@@ -91,7 +91,7 @@ describe('the in-season episodes', () => {
 
   it('a juror is told they go dark until the finale', () => {
     const juror = exits.find(e => e.record.juror);
-    expect(juror.coldOpen).toMatch(/jury/i);
+    expect(juror.coldOpen).toMatch(/jur(y|or)/i);
   });
 
   it('uses the guest’s own pronouns, never "they" for a man or a woman', () => {

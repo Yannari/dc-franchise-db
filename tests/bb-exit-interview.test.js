@@ -1,6 +1,6 @@
 // Kristal-talKs exit interviews on a real Big Brother season (played path).
 // Spec: docs/superpowers/specs/2026-10-21-kristal-exit-interviews-design.md
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { gs, players, seasonConfig } from '../js/core.js';
 import { pStats, pronouns } from '../js/players.js';
 import { getBond, getPerceivedBond } from '../js/bonds.js';
@@ -39,7 +39,7 @@ function playSeason(seed) {
 describe('a whole season of exit interviews', () => {
   for (const seed of [11, 23, 47]) {
     describe(`seed ${seed}`, () => {
-      beforeEach(() => playSeason(seed));
+      beforeAll(() => playSeason(seed));
 
       it('every evictee records one the week they leave, and each finalist one on finale night', () => {
         const recs = gs.exitInterviews;

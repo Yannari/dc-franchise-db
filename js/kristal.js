@@ -274,8 +274,9 @@ const TITLES = {
     'Week {week}: {guest}',
     'The {guest} exit interview',
     '{guest} on getting out',
-    '{guest} and the {hook} question',
     '{guest} names {hook}',
+    '{guest}, week {week}',
+    'Out: {guest}',
   ],
   debrief: [
     '{guest} answers for {season}',

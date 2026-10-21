@@ -95,24 +95,30 @@ function moodOf(f, kind, rng) {
   ]) || 'gracious';
 }
 
-/** Who gets named and how. One stance per person, the loudest. */
-function namedOf(f, kind, mood, nice) {
+/** Who gets named and how. One stance per person, the loudest. A friend the
+ *  tape shows voted against them is blamed now — they learn it on the air. */
+function namedOf(f, kind, mood, nice, truth = null) {
   const out = new Map();
-  const put = (who, stance, still) => {
+  const exposed = new Set((truth?.flippers || []).filter(x => !(f.suspected || []).includes(x)));
+  const put = (who, stance, still, force = false) => {
     if (!who || who === f.guest || who === f.with) return;
     if (nice && stance === 'drag') stance = 'warn';
     const prev = out.get(who);
-    if (prev && STANCE_HEAT[prev.stance] >= STANCE_HEAT[stance]) return;
-    out.set(who, { who, stance, still: !!still, heat: 0 });
+    // What the tape showed them overrides how they felt walking in.
+    if (prev && (prev.forced || (!force && STANCE_HEAT[prev.stance] >= STANCE_HEAT[stance]))) return;
+    out.set(who, force ? { who, stance, still: !!still, heat: 0, forced: true } : { who, stance, still: !!still, heat: 0 });
   };
   const inGame = new Set(f.stillIn || []);
   if (!NO_VOTE.has(kind)) {
     for (const who of (f.suspected || []).slice(0, 2)) put(who, mood === 'gracious' ? 'respect' : 'blame', inGame.has(who));
   }
+  for (const who of [...exposed].slice(0, 2)) {
+    put(who, mood === 'gracious' || mood === 'relieved' ? 'respect' : 'blame', inGame.has(who), true);
+  }
   for (const who of (f.rivals || []).slice(0, 2)) put(who, mood === 'gracious' ? 'warn' : 'drag', inGame.has(who));
   for (const who of (f.allies || []).slice(0, 2)) put(who, mood === 'gutted' ? 'miss' : 'praise', inGame.has(who));
   if (f.partner) put(f.partner, 'miss', inGame.has(f.partner));
-  const named = [...out.values()].slice(0, 4);
+  const named = [...out.values()].slice(0, 4).map(({ forced, ...n }) => n);
   for (const n of named) n.heat = Math.round(STANCE_HEAT[n.stance] * (MOOD_HEAT[mood] || 1) * 100) / 100;
   return named;
 }
@@ -140,7 +146,9 @@ function segmentsOf(f, kind, truth, rng, earlier) {
   const picked = [];
   const left = pool.slice();
   while (picked.length < want && left.length) {
-    const g = weighted(rng, left.map(s => [s, recent.includes(s) ? 0.35 : 1]));
+    // A caller is an event, not a fixture: it would otherwise air most weeks
+    // once the outside fills up (the first season read: seven in ten).
+    const g = weighted(rng, left.map(s => [s, (recent.includes(s) ? 0.35 : 1) * (s === 'caller' ? 0.5 : 1)]));
     picked.push(g);
     left.splice(left.indexOf(g), 1);
   }
@@ -171,7 +179,7 @@ export function decideExitInterview(f, { rng = Math.random, earlier = [] } = {})
     ? { flippers: [...(f.flippers || [])], suspected: [...(f.suspected || [])],
       right: !(f.flippers || []).length || (f.flippers || []).some(x => (f.suspected || []).includes(x)) }
     : null;
-  const named = namedOf(f, kind, mood, nice);
+  const named = namedOf(f, kind, mood, nice, truth);
   const answerBack = (f.heardAboutMe || []).slice(0, 2).map(h => {
     const stance = nice && answerStance(h.stance, mood) === 'drag' ? 'warn' : answerStance(h.stance, mood);
     return { id: h.id, who: h.from, stance, was: h.stance };
@@ -189,9 +197,12 @@ export function decideExitInterview(f, { rng = Math.random, earlier = [] } = {})
     caller = (linked.length ? linked : out)[Math.floor(rng() * (linked.length ? linked : out).length)] || null;
   }
   const still = new Set(f.stillIn || []);
+  // Nobody roots for the friend the tape just exposed — unless they took it well.
+  const forgiving = mood === 'gracious' || mood === 'relieved';
+  const burned = new Set(forgiving ? [] : (truth?.flippers || []));
   const prediction = kind === 'finalist' ? null
-    : weighted(rng, (f.predictFrom || []).filter(([n]) => still.has(n)))
-      || (f.stillIn || [])[0] || null;
+    : weighted(rng, (f.predictFrom || []).filter(([n]) => still.has(n) && !burned.has(n)))
+      || (f.stillIn || []).find(n => !burned.has(n)) || (f.stillIn || [])[0] || null;
   const heat = Math.min(10, Math.round((named.reduce((n, x) => n + x.heat, 0)
     + (kind === 'blindside' || kind === 'backdoor' ? 2 : 0)
     + (mood === 'bitter' || mood === 'denial' ? 1.5 : 0)

@@ -51,7 +51,8 @@ const showmancePartner = name => {
 /** Everything the guest could know the night they left. */
 function factsFor(name, week, { how = 'evicted', placement = null, withName = null } = {}) {
   const records = store();
-  const stillIn = active().filter(n => n !== name);
+  // The game is over for a finalist: nobody is still in it to message or rank.
+  const stillIn = how === 'finalist' ? [] : active().filter(n => n !== name);
   const ballots = (week?.ballots || []).filter(b => b && b.voter);
   const against = ballots.filter(b => b.evict === name).map(b => b.voter);
   const voters = ballots.map(b => b.voter).filter(v => v !== name);
@@ -65,9 +66,16 @@ function factsFor(name, week, { how = 'evicted', placement = null, withName = nu
   if (how === 'evicted' && week?.hoh && week.hoh !== name && perceived(name, week.hoh) < 1.5
     && !suspected.includes(week.hoh)) suspected.unshift(week.hoh);
   const flippers = against.filter(v => perceived(name, v) >= 1.5);
+  // A blindside is a count they got wrong: going in, they read a majority of
+  // the room as theirs. The first season read had nearly every eviction as a
+  // "blindside", because SOME friend nearly always votes against you.
+  const readAsMine = voters.filter(v => perceived(name, v) >= 1).length;
+  const blindside = how === 'evicted' && against.length > 0 && flippers.length > 0
+    && readAsMine * 2 > ballots.length;
   const partner = showmancePartner(name);
-  const everyone = [...new Set([...stillIn, ...(gs.eliminated || [])])].filter(n => n !== name);
-  const allies = stillIn.filter(n => perceived(name, n) >= 2)
+  const everyone = [...new Set([...active(), ...(gs.eliminated || [])])].filter(n => n !== name);
+  // A finalist's people are the whole cast; anyone else's are those still playing.
+  const allies = (how === 'finalist' ? everyone : stillIn).filter(n => perceived(name, n) >= 2)
     .sort((a, b) => perceived(name, b) - perceived(name, a)).slice(0, 2);
   const rivals = everyone.filter(n => perceived(name, n) <= -2)
     .sort((a, b) => perceived(name, a) - perceived(name, b)).slice(0, 2);
@@ -79,8 +87,10 @@ function factsFor(name, week, { how = 'evicted', placement = null, withName = nu
   return {
     show: 'big-brother', week: Number(week?.num) || 0, guest: name, with: withName, how, placement,
     juror: how !== 'finalist' && isJuror(name), firstBoot: !again && how === 'evicted' && !records.length,
-    again, blindside: flippers.length > 0, backdoor: how === 'evicted'
-      && !(week?.nominees || []).includes(name) && (week?.finalNominees || []).includes(name),
+    again, blindside, backdoor: how === 'evicted'
+      // initialNominees, not `nominees`: that one is only written on a cancelled week.
+      && (week?.initialNominees || []).length > 0
+      && !week.initialNominees.includes(name) && (week?.finalNominees || []).includes(name),
     votesAgainst: against.length, votesTotal: ballots.length, flippers, suspected,
     partner, partnerStillIn: !!partner && stillIn.includes(partner),
     allies, rivals, stillIn,

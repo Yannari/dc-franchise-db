@@ -43,8 +43,11 @@ const listOf = xs => xs.length <= 1 ? (xs[0] || '') : `${xs.slice(0, -1).join(',
 
 function votesText(v) {
   if (!v || !v.total) return '';
+  // The final four is one vote, cast by one person.
+  if (v.total === 1) return 'a single vote';
+  if (v.against * 2 === v.total) return `a ${word(v.against)}-${word(v.against)} tie`;
   if (v.against === v.total) return `${word(v.total)} votes to nothing`;
-  return `${word(v.against)} votes to ${word(v.total - v.against)}`;
+  return `${word(v.against)} vote${v.against === 1 ? '' : 's'} to ${word(v.total - v.against)}`;
 }
 
 const PRONOUNS = {
@@ -93,9 +96,34 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   push('the-exit', pick(L.OPEN_Q[openKind], `${K}|oq`, base, used),
     pick(L.OPEN_A[openKind]?.[g] || L.OPEN_A[openKind]?.soft, `${K}|oa`, base, used));
 
-  // ── the tape ──
+  // ── the people they name, written once and placed below ──
   const t = r.truth;
-  if ((r.segments || []).includes('the-tape') && t && t.flippers.length) {
+  const tapeOn = (r.segments || []).includes('the-tape') && t && t.flippers.length;
+  let blamed = 0;
+  const flipped = new Set(tapeOn ? t.flippers : []);
+  const namedLine = (n, i, afterTape = false) => {
+    const f = { ...base, x: n.who };
+    // One person is THE one; anyone else blamed is "who else", and a friend
+    // the tape just exposed is asked about as that.
+    const second = n.stance === 'blame' && !(afterTape && flipped.has(n.who)) && blamed++ > 0;
+    const q = afterTape && flipped.has(n.who) ? pick(L.AFTER_TAPE_Q, `${K}|aq|${i}`, f, used)
+      : second ? pick(L.BLAME2_Q, `${K}|b2q|${i}`, f, used)
+        : pick(L.NAMED_Q[n.stance], `${K}|nq|${i}`, f, used);
+    const exposed = afterTape && flipped.has(n.who) && n.stance === 'blame';
+    const lines = exposed ? (L.AFTER_TAPE_A[g] || [])
+      : second ? (L.BLAME2_A[g] || [])
+      : [...(L.NAMED_A[n.stance]?.[g] || []), ...(n.still ? (L.NAMED_IN[n.stance]?.[g] || []) : [])];
+    return ['named', q, pick(lines.length ? lines : (L.NAMED_A[n.stance]?.soft || []), `${K}|na|${i}`, f, used),
+      { who: n.who, stance: n.stance }];
+  };
+  // When the tape plays, they get to name their suspect first — Kristal can
+  // only say "you said X" after they have said it.
+  const suspectBeat = tapeOn && t.suspected.length
+    ? (r.named || []).find(n => n.who === t.suspected[0]) : null;
+  if (suspectBeat) push(...namedLine(suspectBeat, 's'));
+
+  // ── the tape ──
+  if (tapeOn) {
     const which = !t.suspected.length ? 'nosuspect' : t.right ? 'right' : 'wrong';
     const f = { ...base, flippers: listOf(t.flippers), suspect: t.suspected[0] };
     push('the-tape', pick(L.TAPE_Q[which], `${K}|tq`, f, used),
@@ -107,43 +135,41 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   const backTo = new Set();
   for (const [i, a] of (r.answerBack || []).entries()) {
     const src = earlier.find(e => e.record?.id === a.id);
-    const quote = src ? (src.exchanges || []).filter(x => x.who === guest).map(x => x.a).find(Boolean) : null;
+    // What they said ABOUT this guest when asked about them, before any other line naming them.
+    const about = (src?.exchanges || []).filter(x => x.who === guest && x.a);
+    const quote = (about.find(x => x.topic === 'named') || about[0])?.a || null;
     const f = { ...base, x: a.who, quote, week: src?.record?.week ? String(src.record.week) : base.week };
     const q = quote ? pick(L.BACK_Q, `${K}|bq|${i}`, f, used)
       : `${a.who} talked about you on this show while you were still in there. You’ve heard it now.`;
-    push('the-response', q, pick(L.BACK_A[a.stance]?.[g] || L.BACK_A[a.stance]?.soft, `${K}|ba|${i}`, f, used), { who: a.who });
+    // Answered by what was SAID about them; the response stance is the effect.
+    const said = L.BACK_A[a.was] || L.BACK_A[a.stance];
+    push('the-response', q, pick(said?.[g] || said?.soft, `${K}|ba|${i}`, f, used), { who: a.who });
     backTo.add(a.who);
   }
 
   // ── the people they name ──
-  const tapeWho = new Set(t && (r.segments || []).includes('the-tape') ? t.flippers : []);
-  const named = (r.named || []).filter(n => !backTo.has(n.who))
+  const named = (r.named || []).filter(n => !backTo.has(n.who) && n !== suspectBeat)
     .sort((a, b) => (ORDER[a.stance] ?? 9) - (ORDER[b.stance] ?? 9) || b.heat - a.heat);
-  const room = ep.tier === 'viral' ? 4 : ep.tier === 'solid' ? 3 : 2;
-  for (const [i, n] of named.slice(0, room).entries()) {
-    // The tape already put a flipper's name in the room: blame becomes the follow-up.
-    const f = { ...base, x: n.who };
-    const q = tapeWho.has(n.who) && n.stance === 'blame'
-      ? `And now that you know it was ${n.who}?` : pick(L.NAMED_Q[n.stance], `${K}|nq|${i}`, f, used);
-    push('named', q, pick(L.NAMED_A[n.stance]?.[g] || L.NAMED_A[n.stance]?.soft
-      || L.NAMED_A[n.stance]?.hot, `${K}|na|${i}`, f, used), { who: n.who, stance: n.stance });
-  }
+  const room = (ep.tier === 'viral' ? 4 : ep.tier === 'solid' ? 3 : 2) - (suspectBeat ? 1 : 0);
+  // A friend the tape exposed comes first after it; then the loudest.
+  const ordered = [...named.filter(n => flipped.has(n.who)), ...named.filter(n => !flipped.has(n.who))];
+  for (const [i, n] of ordered.slice(0, Math.max(1, room)).entries()) push(...namedLine(n, i, tapeOn));
 
   // ── the rotating segments ──
   const still = r.stillIn || [];
   const order = still.slice().sort((a, b) => hash(`${K}|o|${a}`) - hash(`${K}|o|${b}`));
   for (const seg of r.segments || []) {
     if (seg === 'fan-mail') {
-      push('fan-mail', pick(L.FAN_Q[r.reception] || L.FAN_Q.mixed, `${K}|fq`, base, used),
-        pick(L.FAN_A[g], `${K}|fa`, base, used));
+      const rc = L.FAN_Q[r.reception] ? r.reception : 'mixed';
+      push('fan-mail', pick(L.FAN_Q[rc], `${K}|fq`, base, used), pick(L.FAN_A[rc][g], `${K}|fa`, base, used));
     } else if (seg === 'rank-them' && still.length >= 3) {
       const top = [r.prediction, ...order].filter((x, i, a) => x && a.indexOf(x) === i).slice(0, 3);
       const f = { ...base, a: top[0], b: top[1], c: top[2] };
       push('rank-them', pick(L.RANK_Q, `${K}|rq`, f, used), pick(L.RANK_A, `${K}|ra`, f, used), { who: top[0] });
     } else if (seg === 'message-in') {
-      const x = (r.partner && still.includes(r.partner) ? r.partner : null)
-        || (r.named || []).find(n => n.still && POSITIVE.has(n.stance))?.who
-        || (r.allies || []).find(a => still.includes(a));
+      const x = (r.partner && still.includes(r.partner) && !flipped.has(r.partner) ? r.partner : null)
+        || (r.named || []).find(n => n.still && POSITIVE.has(n.stance) && !flipped.has(n.who))?.who
+        || (r.allies || []).find(a => still.includes(a) && !flipped.has(a));
       if (!x) continue;
       const f = { ...base, x };
       push('message-in', pick(L.MESSAGE_Q, `${K}|mq`, f, used), pick(L.MESSAGE_A[g], `${K}|ma`, f, used), { who: x });
@@ -170,7 +196,8 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
 
   // ── rapid fire: a few names ──
   const rapid = [];
-  const friend = (r.named || []).find(n => POSITIVE.has(n.stance))?.who || (r.allies || [])[0];
+  const friend = (r.named || []).find(n => POSITIVE.has(n.stance) && !flipped.has(n.who))?.who
+    || (r.allies || []).find(a => !flipped.has(a));
   const foe = (r.named || []).find(n => !POSITIVE.has(n.stance))?.who || (r.rivals || [])[0];
   if (friend) rapid.push({ q: 'Best friend in there?', a: `${friend}.` });
   if (foe && foe !== friend) rapid.push({ q: 'Least trusted?', a: `${foe}.` });

@@ -17,6 +17,7 @@ import { nextWindowFor, nextAllStarsWindow } from './franchise-calendar.js';
 import { ratingsForSeason } from './ratings.js';
 import { publishedExitInterviews } from './bb/exit-interview.js';
 import { publishedTDExitInterviews } from './td/exit-interview.js';
+import { publishedExits } from './exit-interview/house.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -2675,6 +2676,8 @@ export function mergeDragSeasonsDatabase(existing, seasonDoc) {
     status: 'Complete',
     castPhotoPath: `assets/cast/${seasonId(DRAG_FORMAT, seasonNum)}-cast.png`,
     emoji: _clean(seasonDoc.emoji),
+    // Kristal-talKs' in-season exit interviews (js/exit-interview/aired.js).
+    exitInterviews: Array.isArray(seasonDoc?.exitInterviews) ? seasonDoc.exitInterviews : [],
     ...airWindow,
   });
 
@@ -3461,6 +3464,7 @@ export async function exportTraitorsSeason(onStatus) {
   });
   _status(`Built ${doc.seasonId}: ${doc.castSize} players, ${doc.episodeCount} episodes.`);
   doc = await _fillTraitorsNarratives(doc, rows, _status);
+  doc.exitInterviews = publishedExits('traitors');
 
   _status('Merging databases...');
   let playersDb = null; let seasonsDb = null;
@@ -3664,6 +3668,8 @@ export function mergeTraitorsSeasonsDatabase(existing, seasonDoc) {
     status: 'Complete',
     castPhotoPath: `assets/cast/${seasonId(TRAITORS_FORMAT, seasonNum)}-cast.png`,
     emoji: _clean(seasonDoc.emoji),
+    // Kristal-talKs' in-season exit interviews (js/exit-interview/aired.js).
+    exitInterviews: Array.isArray(seasonDoc?.exitInterviews) ? seasonDoc.exitInterviews : [],
     ...airWindow,
   });
 
@@ -3727,6 +3733,7 @@ export async function exportDragRaceSeason(onStatus) {
     twists: (seasonConfig.drSchedule || []).filter(Boolean),
     congeniality: gs.dr?.congeniality || null,
   });
+  doc.exitInterviews = publishedExits('drag-race');
 
   _status(`Built ${doc.seasonId}: ${doc.castSize} queens, ${doc.episodeCount} episodes.`);
 
@@ -3806,6 +3813,7 @@ export async function exportPerfectMatchSeason(onStatus) {
   if (!seasonNum) return;
   _status('Building the season document...');
   const doc = buildPerfectMatchSeasonDocument(rows, { seasonNumber: seasonNum });
+  doc.exitInterviews = publishedExits('perfect-match');
   _status(`Built ${doc.seasonId}: ${doc.castSize} islanders, ${doc.episodeCount} episodes.`);
 
   _status('Merging databases...');
@@ -3929,6 +3937,8 @@ export function mergePerfectMatchSeasonsDatabase(existing, seasonDoc) {
     status: 'Complete',
     castPhotoPath: `assets/cast/${seasonId(PERFECT_MATCH_FORMAT, seasonNum)}-cast.png`,
     emoji: _clean(seasonDoc.emoji),
+    // Kristal-talKs' in-season exit interviews (js/exit-interview/aired.js).
+    exitInterviews: Array.isArray(seasonDoc?.exitInterviews) ? seasonDoc.exitInterviews : [],
     ...airWindow,
   });
   db.franchise = db.franchise || {};
@@ -3969,6 +3979,7 @@ export async function exportChallengeSeason(onStatus) {
   try { options = JSON.parse(gs.ch.built || '{}').options || {}; } catch { options = {}; }
   const doc = buildChallengeSeasonDocument(rows, gs.ch.record, { seasonNumber: seasonNum, options,
     title: seasonConfig?.name || null });
+  doc.exitInterviews = publishedExits('the-challenge');
   _status(`Built ${doc.seasonId}: ${doc.castSize} players, ${doc.episodeCount} episodes.`);
 
   // Every episode's screenplay, where the wiki fills look for it (episode-store.js, ch_episode_sN_eM). The
@@ -4109,6 +4120,8 @@ export function mergeChallengeSeasonsDatabase(existing, seasonDoc) {
     status: 'Complete',
     castPhotoPath: `assets/cast/${seasonId(CHALLENGE_FORMAT, seasonNum)}-cast.png`,
     emoji: _clean(seasonDoc.emoji),
+    // Kristal-talKs' in-season exit interviews (js/exit-interview/aired.js).
+    exitInterviews: Array.isArray(seasonDoc?.exitInterviews) ? seasonDoc.exitInterviews : [],
     ...airWindow,
   });
   db.franchise = db.franchise || {};
@@ -4336,6 +4349,7 @@ export async function exportCircleSeason(onStatus) {
   } catch (e) { _status(`Photos: could not reach the cloud (${e.message || e}); they stay in this browser.`); }
   const doc = buildCircleSeasonDocument(rows, gs.ci.record, { seasonNumber: seasonNum, title: seasonConfig?.name || null,
     photos: { ciPhotos: seasonConfig.ciPhotos || {}, pool: Array.isArray(seasonConfig.ciPool) ? seasonConfig.ciPool : [] } });
+  doc.exitInterviews = publishedExits('the-circle');
   _status(`Built ${doc.seasonId}: ${doc.castSize} players, ${doc.episodeCount} episodes.`);
 
   // Every episode's transcript, where the wiki fills look for it (episode-store.js, ci_episode_sN_eM). Never
@@ -4471,6 +4485,8 @@ export function mergeCircleSeasonsDatabase(existing, seasonDoc) {
     status: 'Complete',
     castPhotoPath: `assets/cast/${seasonId(CIRCLE_FORMAT, seasonNum)}-cast.png`,
     emoji: _clean(seasonDoc.emoji),
+    // Kristal-talKs' in-season exit interviews (js/exit-interview/aired.js).
+    exitInterviews: Array.isArray(seasonDoc?.exitInterviews) ? seasonDoc.exitInterviews : [],
     ...airWindow,
   });
   db.franchise = db.franchise || {};

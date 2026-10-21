@@ -35,6 +35,8 @@ import { voicedLine } from './ch/script/write.js';
 import { stableRng } from './script/rng.js';
 import { recordBuiltSeason, activeSeasons, seasonKeyParts, hasFranchiseHistory, careerOf, careerFor } from './franchise-meta.js';
 
+import { airedEpisode } from './exit-interview/aired.js';
+import { airedAdapter } from './exit-interview/shows.js';
 export const isChallengeSeason = () => seasonFormat(seasonConfig) === CHALLENGE_FORMAT;
 
 let _lastRefusal = null;
@@ -570,7 +572,9 @@ function _refreshQueue() {
 }
 
 /** Air the next episode, or null when the season is over (or cannot start). */
-export function simulateChallengeEpisode() {
+// Kristal-talKs: whoever this row put out records an exit interview as it
+// airs (js/exit-interview/aired.js). Outside the game — nothing is drawn.
+export const simulateChallengeEpisode = airedEpisode('the-challenge', function simulateChallengeEpisodeBody() {
   if (!gs) return null;
   if (!_refreshQueue()) return null;
   // An episode this browser already aired (a save loaded from before it) is dealt again (seen-episodes.js).
@@ -600,7 +604,7 @@ export function simulateChallengeEpisode() {
     ? window.snapshotGameState()
     : { initialized: true, activePlayers: [...gs.activePlayers], episode: gs.episode, phase: gs.phase };
   return row;
-}
+}, airedAdapter);
 
 /** Every daily, for the Season Timeline's picker: id, name, and the shapes it plays in (solo, pairs, teams). */
 export function challengeDailyList() { return DAILIES.map(d => ({ id: d.id, name: d.name, modes: [...d.modes] })); }

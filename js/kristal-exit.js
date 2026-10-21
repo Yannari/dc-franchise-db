@@ -25,14 +25,17 @@ const fill = (t, f) => capFirst(String(t).replace(/^\[J\]/, '').replace(SLOT_RE,
 
 /** A line whose every slot is fillable, picked by key; the season-wide `used`
  *  set steers away from a line already said this season. */
-function pick(bank, key, f, used) {
+function pick(bank, key, f, used, mine = used?.mine || null) {
   // "[J]" lines are a juror's: somebody with no jury vote cannot bet theirs.
   const ok = (bank || []).filter(t => slotsOf(t).every(k => has(f, k)) && (!t.startsWith('[J]') || f.juror));
   if (!ok.length) return '';
-  const fresh = used ? ok.filter(t => !used.has(t)) : ok;
-  const from = fresh.length ? fresh : ok;
+  // Never twice in one hour; then, as far as the bank allows, never twice in a season.
+  const notMine = mine ? ok.filter(t => !mine.has(t)) : ok;
+  const fresh = used ? notMine.filter(t => !used.has(t)) : notMine;
+  const from = fresh.length ? fresh : notMine.length ? notMine : ok;
   const line = from[hash(key) % from.length];
   if (used) used.add(line);
+  if (mine && mine !== used?.mine) mine.add(line);
   return fill(line, f);
 }
 
@@ -88,6 +91,9 @@ const ORDER = { blame: 0, drag: 1, warn: 2, respect: 3, praise: 4, miss: 5 };
 export function composeExit(ep, { words = {}, earlier = [], salt = '', used = null } = {}) {
   const r = ep.record || {};
   const K = salt ? `${ep.id}~${salt}` : ep.id;
+  const mine = new Set();
+  const seasonUsed = used;
+  used = { has: t => !!seasonUsed?.has(t), add: t => { seasonUsed?.add(t); mine.add(t); }, mine };
   const g = GROUP[r.mood] || 'soft';
   const guest = ep.guestName || r.guest;
   const pr = ep.pronouns || PRONOUNS.other;

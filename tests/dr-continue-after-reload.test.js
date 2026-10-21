@@ -534,3 +534,19 @@ describe('changing the timeline on a season with no queue', () => {
       'a pin rewrote an episode that had already aired').toEqual(straight.slice(0, 3));
   });
 });
+
+describe('Kristal-talKs records every queen who sashays away', () => {
+  it('each exit sits down the week she leaves, with no vote to ask about', () => {
+    fresh();
+    play(30);
+    const recs = (gsRef.exitInterviews || []).filter(r => r.show === 'drag-race');
+    const gone = gsRef.episodeHistory.flatMap(r => (r.exits || r.dr?.exits || []).map(x => ({ name: x.name, ep: r.num })));
+    expect(gone.length).toBeGreaterThan(3);
+    for (const g of gone) {
+      const r = recs.find(x => x.guest === g.name && x.week === g.ep);
+      expect(r, `${g.name} ep${g.ep}`).toBeTruthy();
+      expect(['lip-sync', 'walked', 'again']).toContain(r.kind);
+      expect(r.truth).toBeNull();
+    }
+  });
+});

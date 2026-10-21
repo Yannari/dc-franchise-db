@@ -31,7 +31,8 @@
 // deliverInterviews stamps `heardBy` so nothing is heard twice.
 
 export const EXIT_KINDS = ['first-boot', 'blindside', 'seen-it-coming', 'backdoor', 'walked',
-  'expelled', 'medical', 'lost-challenge', 'lost-duel', 'showmance', 'double', 'finalist', 'again'];
+  'expelled', 'medical', 'lost-challenge', 'lost-duel', 'murdered', 'lip-sync', 'dumped', 'blocked',
+  'lost-elimination', 'showmance', 'double', 'finalist', 'again'];
 export const MOODS = ['bitter', 'gracious', 'denial', 'relieved', 'gutted', 'elated'];
 export const SEGMENTS = ['the-tape', 'answer-back', 'fan-mail', 'rank-them', 'message-in',
   'caller', 'who-next'];
@@ -43,7 +44,11 @@ const VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
 // `lost-challenge`: a show that eliminates by challenge (Total Drama's
 // sudden death, a duel) — nobody wrote a name down.
 // `lost-duel`: voted out earlier, then beaten on a return path (Redemption Island).
-const NO_VOTE = new Set(['walked', 'expelled', 'medical', 'lost-challenge', 'lost-duel', 'finalist']);
+// The other shows' doors, none of them a vote the guest lost: murdered in the
+// night (The Traitors), sent home after a lip sync (Drag Race), dumped (Perfect
+// Match), blocked (The Circle), beaten in an elimination (The Challenge).
+const NO_VOTE = new Set(['walked', 'expelled', 'medical', 'lost-challenge', 'lost-duel', 'finalist',
+  'murdered', 'lip-sync', 'dumped', 'blocked', 'lost-elimination']);
 
 /** How hard each stance lands on the person who hears it, before temperament. */
 // Calibrated on five seeded twelve-person Big Brother seasons (2026-10-21):

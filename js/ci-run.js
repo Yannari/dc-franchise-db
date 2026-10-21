@@ -34,6 +34,8 @@ import { categoryKind, isFace, reasonFromKin } from './ci/categories.js';
 import { ageFrom, unknownAge } from './ci/profiles.js';
 import { seenOff } from './seen-episodes.js';
 
+import { airedEpisode } from './exit-interview/aired.js';
+import { airedAdapter } from './exit-interview/shows.js';
 export const isCircleSeason = () => seasonFormat(seasonConfig) === CIRCLE_FORMAT;
 
 let _lastRefusal = null;
@@ -465,7 +467,9 @@ function _bringUpToDate() {
 }
 
 /** Air the next episode, or null when the season is over (or cannot start). */
-export function simulateCircleEpisode() {
+// Kristal-talKs: whoever this row put out records an exit interview as it
+// airs (js/exit-interview/aired.js). Outside the game — nothing is drawn.
+export const simulateCircleEpisode = airedEpisode('the-circle', function simulateCircleEpisodeBody() {
   if (!gs) return null;
   if (!_refreshQueue()) return null;
   _bringUpToDate();
@@ -494,7 +498,7 @@ export function simulateCircleEpisode() {
     ? window.snapshotGameState()
     : { initialized: true, activePlayers: [...gs.activePlayers], episode: gs.episode, phase: gs.phase };
   return row;
-}
+}, airedAdapter);
 
 // How a night's blocking was decided, for the hub's corner (the place a
 // voting show prints its tally). By channel (js/ci/blocking.js, formats.js).

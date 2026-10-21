@@ -3553,6 +3553,22 @@ the user's decision, 2026-10-21. Big Brother is the reference port.
 5. **Publish**: the season document and the seasons row carry
    `exitInterviews` (decisions only; strip `heardBy`).
 
+**A show that plays its season from a seed and airs it from a queue** (The
+Traitors, Drag Race, Perfect Match, The Circle, The Challenge — every show but
+the two on the shared `gs`) does not write a facts file. It adds an entry to
+`AIRED_ADAPTERS` in `js/exit-interview/shows.js` (`howOf` — its door as a kind,
+`ballots` if the audience saw them, `publicVotes` if the room did, `startRoom`
+for the first night, `finalists`, `winners`) and wraps its "air the next row"
+function with `airedEpisode(show, body, airedAdapter)` (js/exit-interview/
+aired.js). Interviews are then recorded as each row AIRS, with their own dice:
+nothing may reach inside a season block that re-runs by replaying it, so on
+these shows the podcast moves fans, bonds and Dramagram but cannot change a
+season already generated. Its door needs a kind in `core.js` NO_VOTE and lines
+under `SHOW[format]` in `js/kristal-exit-lines.js`; its export adds
+`doc.exitInterviews = publishedExits(show)` and its seasons-row merge passes it
+on. Never start the first night from the whole cast: Perfect Match opens with
+half its islanders, and somebody who has not arrived has not left.
+
 **Measure before shipping** (what the Big Brother port measured):
 - the bad-blood pair count with and without the hooks (the first draft added up
   to five feuds a season; `STANCE_BOND` was halved);

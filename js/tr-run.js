@@ -41,6 +41,8 @@ import { bespokeMissionsEnabled, _setBespokeMissionsEnabled } from './tr/mission
 // the cast builder uses, so the season and the panel cannot disagree.
 import { snapshotTraitorsBackgrounds, traitorsBackgroundBlockers } from './tr/state.js';
 
+import { airedEpisode } from './exit-interview/aired.js';
+import { airedAdapter } from './exit-interview/shows.js';
 /** Is the season on the setup screen a castle? */
 export const isTraitorsSeason = () => seasonFormat(seasonConfig) === 'traitors';
 
@@ -326,7 +328,9 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null, rerolls = null
  * Returns the episode record, exactly as `simulateBBEpisode` and
  * `simulateEpisode` do, so `simulateNext` can treat all three the same way.
  */
-export function simulateTraitorsEpisode() {
+// Kristal-talKs: whoever this row put out records an exit interview as it
+// airs (js/exit-interview/aired.js). Outside the game — nothing is drawn.
+export const simulateTraitorsEpisode = airedEpisode('traitors', function simulateTraitorsEpisodeBody() {
   if (!gs) return null;
   if (!Array.isArray(gs._trQueue)) {
     // The queue was lost (a reload that dropped it, an older save). Rebuild it —
@@ -382,7 +386,7 @@ export function simulateTraitorsEpisode() {
     gs.phase = 'castle';
   }
   return row;
-}
+}, airedAdapter);
 
 /**
  * Re-run episode `epNum` for real — a genuinely different night, with every

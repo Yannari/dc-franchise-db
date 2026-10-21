@@ -722,3 +722,19 @@ describe('the Seer', () => {
     }
   });
 });
+
+describe('Kristal-talKs records the castle\'s exits as they air', () => {
+  it('every banished and murdered player sits down, and the endgame survivors on the last night', () => {
+    airWholeSeason(SEEDS[0]);
+    const recs = (gsRef.exitInterviews || []).filter(r => r.show === 'traitors');
+    const gone = gsRef.episodeHistory.flatMap(r => (r.exits || []).map(x => ({ name: x.name, channel: x.channel, ep: r.num })));
+    expect(gone.length).toBeGreaterThan(3);
+    for (const g of gone) {
+      const r = recs.find(x => x.guest === g.name && x.kind !== 'finalist');
+      expect(r, `${g.name} (${g.channel}) ep${g.ep}`).toBeTruthy();
+      // A murder has no vote to ask about; a banishment's slates were public.
+      if (g.channel === 'murder') { expect(r.kind).toBe('murdered'); expect(r.truth).toBeNull(); }
+    }
+    expect(recs.filter(r => r.kind === 'finalist').length).toBeGreaterThan(0);
+  });
+});

@@ -438,7 +438,8 @@ export const NAMED_A = {
       'I’d trust {x} with my life outside of the game.',
       '{x} is the only person in there I never had to second-guess.',
     ],
-    hot: ['{x} was the only honest person in there. Everyone else can keep their apologies.', '{x}. The one person who never lied to me.'],
+    hot: ['{x} was the only honest person in there. Everyone else can keep their apologies.', '{x}. The one person who never lied to me.',
+      '{x}, and that’s the only nice thing I’ll say about anybody today.', '{x} had my back when nobody else did.', 'Just {x}. Everyone else was playing a part.'],
     hurt: ['{x}. I already miss {x} more than I miss the game.', '{x}, always. That’s the friendship I’m taking home.'],
   },
   miss: {
@@ -778,5 +779,107 @@ export const SHOW = {
     },
     NEXT_Q: ['Who gets snuffed next?', 'Next one voted out. One name.'],
     FAN_Q: { mixed: ['The fan forums are split on you. Half say you played too hard, half say not hard enough.'] },
+  },
+  traitors: {
+    COLD: {
+      'seen-it-coming': [
+        'The round table wrote {guest}’s name in {when}, {votes}. Every slate turned over, one after another.',
+        '{guest} watched the slates go round in {when}, {votes}, and knew halfway through.',
+      ],
+      blindside: [
+        '{guest} sat down at that table sure it was somebody else’s night. {votes}, {when}. Let’s talk about the slates.',
+        'In {when} the table turned on {guest}, {votes}, and some of those slates came from friends.',
+      ],
+      murdered: [
+        '{guest} didn’t get a round table. {guest} got a letter under the door in {when}. Murdered in the night.',
+        'The Traitors came for {guest} in {when}. No vote, no goodbye speech, just an empty seat at breakfast.',
+        'Breakfast in {when}, and {guest} never walked in. The Traitors murdered {obj} overnight.',
+      ],
+    },
+    OPEN_Q: {
+      murdered: ['When did you find out?', 'Why do you think they chose you?', 'Who do you think did it?'],
+    },
+    OPEN_A: {
+      murdered: {
+        hot: ['They murdered me because I was getting close. That’s the only reason.', 'I was a threat to them, and I’ll take that as a compliment.'],
+        soft: ['Honestly, it’s a relief not to be banished by my friends.', 'Being murdered means they were scared of me. I’ll take it.'],
+        hurt: ['I didn’t get to say goodbye to anybody. One night I was there and then I wasn’t.'],
+      },
+    },
+    NEXT_Q: ['Who goes at the next round table?', 'Who gets murdered next?'],
+  },
+  'drag-race': {
+    COLD: {
+      'lip-sync': [
+        '{guest} lip synced for {pos} life in {when} and sashayed away. Tonight {sub} gets the last word.',
+        'The bottom two, the song, the decision. {when} ended with {guest} walking off that stage.',
+        '{guest} left it all on the stage in {when}. It wasn’t enough. Let’s talk about it.',
+      ],
+    },
+    OPEN_Q: {
+      'lip-sync': ['Take me back to the lip sync.', 'When did you know?', 'Did you know the song?', 'What went through your head when they said your name?'],
+    },
+    OPEN_A: {
+      'lip-sync': {
+        hot: ['I lip synced better and everyone in that room knows it.', 'I shouldn’t have been in the bottom in the first place. The critique was wrong.'],
+        soft: ['I gave it everything. She was better tonight, and I can say that.', 'I didn’t know the second verse. That’s on me.'],
+        hurt: ['I wanted that crown since I was a kid. I can’t believe it’s over.'],
+      },
+    },
+    NEXT_Q: ['Who’s in the bottom next week?', 'Who lip syncs next?'],
+  },
+  'perfect-match': {
+    COLD: {
+      dumped: [
+        '{guest} has been dumped from the villa in {when}. The bags are packed, and the tan isn’t even finished.',
+        'The villa said goodbye to {guest} in {when}. Let’s talk about the couples left behind.',
+        '{guest} came looking for love and left in {when}. Pull up a sun lounger.',
+      ],
+    },
+    OPEN_Q: { dumped: ['Did you see it coming?', 'How are you feeling, now it’s over?', 'Did you find what you came for?'] },
+    OPEN_A: {
+      dumped: {
+        hot: ['They picked looks over chemistry and I’m the one who pays for it.', 'I was the realest person in that villa and that’s why I’m gone.'],
+        soft: ['I came for love and I made real friends. I’ll take that.', 'It wasn’t my time. My person wasn’t in there.'],
+        hurt: ['I really thought it was going somewhere. I feel stupid now.'],
+      },
+    },
+    NEXT_Q: ['Who gets dumped next?', 'Which couple won’t make it?'],
+  },
+  'the-circle': {
+    COLD: {
+      blocked: [
+        '{guest} got blocked in {when}. One message on a screen, and it was over.',
+        'The Influencers sent {guest} home in {when}. Now, finally, we get to talk face to face.',
+        '{guest} was blocked in {when}, and walked into one last room on the way out.',
+      ],
+    },
+    OPEN_Q: { blocked: ['How did it feel to see your name on that screen?', 'What went through your head when you read that message?', 'Was your profile the real you?'] },
+    OPEN_A: {
+      blocked: {
+        hot: ['The Influencers blocked the biggest threat. That’s all that was.', 'I played honest in a game full of catfish, and honest lost.'],
+        soft: ['It’s a ratings game. I wasn’t in the top, so I can’t argue.', 'I loved my time in there. I’d do it all again tomorrow.'],
+        hurt: ['I thought I had real friends in there. Now I don’t know who any of them really are.'],
+      },
+    },
+    NEXT_Q: ['Who gets blocked next?', 'Who’s at the bottom of the next ratings?'],
+  },
+  'the-challenge': {
+    COLD: {
+      'lost-elimination': [
+        '{guest} went into the elimination in {when} and came out on the wrong side. Let’s talk.',
+        'The arena took {guest} in {when}. No vote can save you in there.',
+        '{guest} lost the elimination in {when}. We’re going to talk about who sent {obj} in.',
+      ],
+    },
+    OPEN_Q: { 'lost-elimination': ['Take me through the elimination.', 'Who sent you in?', 'Did you think you’d win it?'] },
+    OPEN_A: {
+      'lost-elimination': {
+        hot: ['They threw me in because they were scared to face me in a final.', 'I got the worst elimination for me and they knew it.'],
+        soft: ['I got beat. On another day it goes the other way.', 'I left everything in that arena. I’m proud of that.'],
+        hurt: ['I was so close. I can still feel it slipping.'],
+      },
+    },
+    NEXT_Q: ['Who goes in next?', 'Who’s the next one in the arena?'],
   },
 };

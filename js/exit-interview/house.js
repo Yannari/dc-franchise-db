@@ -39,7 +39,14 @@ const showmancePartner = name => {
  */
 export function houseFacts({ show, round, name, how = 'evicted', placement = null, withName = null,
   ballots = [], nominator = null, backdoor = false, isJuror = () => false, canHear = () => false,
-  wins = () => 0 }) {
+  wins = () => 0,
+  // Who was already out before this guest. Default: the shared gs's list; a
+  // show that keeps none (the queue-aired shows) passes its own.
+  gone = null,
+  // The room voted in public (The Traitors' round table): they know exactly
+  // who wrote their name, so there is nobody to suspect and no tape to play.
+  publicVotes = false }) {
+  const out = gone || gs.eliminated || [];
   const records = exitStore();
   const active = gs.activePlayers || [];
   // The game is over for a finalist: nobody is still in it to message or rank.
@@ -50,20 +57,21 @@ export function houseFacts({ show, round, name, how = 'evicted', placement = nul
   const byRead = list => list.slice().sort((a, b) => perceived(name, a) - perceived(name, b));
   // They know the count, not the names: they suspect the voters they read
   // worst, as many as the count says (two at most) — and they can be wrong.
-  const suspected = how === 'evicted'
-    ? byRead([...new Set(voters)]).filter(v => perceived(name, v) < 1.5).slice(0, Math.min(2, against.length))
-    : [];
+  const suspected = how !== 'evicted' ? []
+    : publicVotes ? byRead([...new Set(against)]).slice(0, 2)
+      : byRead([...new Set(voters)]).filter(v => perceived(name, v) < 1.5).slice(0, Math.min(2, against.length));
   if (how === 'evicted' && nominator && nominator !== name && perceived(name, nominator) < 1.5
     && !suspected.includes(nominator)) suspected.unshift(nominator);
-  const flippers = [...new Set(against.filter(v => perceived(name, v) >= 1.5))];
+  const flippers = publicVotes ? [] : [...new Set(against.filter(v => perceived(name, v) >= 1.5))];
   // A blindside is a count they got wrong: going in, they read a majority of
   // the room as theirs. The first season read had nearly every eviction as a
   // "blindside", because SOME friend nearly always votes against you.
   const readAsMine = voters.filter(v => perceived(name, v) >= 1).length;
-  const blindside = how === 'evicted' && against.length > 0 && flippers.length > 0
+  const blindside = how === 'evicted' && against.length > 0
+    && (publicVotes ? against.some(v => perceived(name, v) >= 1.5) : flippers.length > 0)
     && readAsMine * 2 > cast.length;
   const partner = showmancePartner(name);
-  const everyone = [...new Set([...active, ...(gs.eliminated || [])])].filter(n => n !== name);
+  const everyone = [...new Set([...active, ...out])].filter(n => n !== name);
   // A finalist's people are the whole cast; anyone else's are those still playing.
   const allies = (how === 'finalist' ? everyone : stillIn).filter(n => perceived(name, n) >= 2)
     .sort((a, b) => perceived(name, b) - perceived(name, a)).slice(0, 2);
@@ -78,12 +86,13 @@ export function houseFacts({ show, round, name, how = 'evicted', placement = nul
     // First boot is read off who has left, not the interviews: a season saved
     // before exit interviews existed has none, and is not on its first boot.
     juror: how !== 'finalist' && isJuror(name),
-    firstBoot: !again && how === 'evicted' && !(gs.eliminated || []).some(n => n !== name && n !== withName),
+    firstBoot: !again && !['finalist', 'walked', 'expelled', 'medical'].includes(how)
+      && !out.some(n => n !== name && n !== withName),
     again, blindside, backdoor: how === 'evicted' && !!backdoor,
     votesAgainst: against.length, votesTotal: cast.length, flippers, suspected,
     partner, partnerStillIn: !!partner && stillIn.includes(partner),
     allies, rivals, stillIn,
-    outNow: (gs.eliminated || []).filter(n => n !== name && canHear(n)),
+    outNow: out.filter(n => n !== name && canHear(n)),
     heardAboutMe: heardAbout(records, name).filter(h => !answered.has(h.id)),
     profile: { archetype: archetypeOf(name), stats: { ...pStats(name) } },
     predictFrom,

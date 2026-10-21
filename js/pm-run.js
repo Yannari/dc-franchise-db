@@ -30,6 +30,8 @@ import { pmLedgerRecord } from './pm/ledger-record.js';
 import { recordBuiltSeason } from './franchise-meta.js';
 import { carriedFor } from './franchise-carry.js';
 
+import { airedEpisode } from './exit-interview/aired.js';
+import { airedAdapter } from './exit-interview/shows.js';
 export const isPerfectMatchSeason = () => seasonFormat(seasonConfig) === PERFECT_MATCH_FORMAT;
 
 let _lastRefusal = null;
@@ -456,7 +458,9 @@ function _refreshQueue() {
  * `lastPerfectMatchRefusal()` says why). Returns the row, as
  * `simulateEpisode` does, so `simulateNext` treats every show the same way.
  */
-export function simulatePerfectMatchEpisode() {
+// Kristal-talKs: whoever this row put out records an exit interview as it
+// airs (js/exit-interview/aired.js). Outside the game — nothing is drawn.
+export const simulatePerfectMatchEpisode = airedEpisode('perfect-match', function simulatePerfectMatchEpisodeBody() {
   if (!gs) return null;
   if (!_refreshQueue()) return null;
   // An episode this browser already aired (a save loaded from before it) is dealt again (seen-episodes.js).
@@ -481,7 +485,7 @@ export function simulatePerfectMatchEpisode() {
     } catch (e) { console.warn('Franchise ledger record failed:', e); }
   }
   return row;
-}
+}, airedAdapter);
 
 export function perfectMatchEpisodesLeft() {
   return Array.isArray(gs?._pmQueue) ? gs._pmQueue.length : null;

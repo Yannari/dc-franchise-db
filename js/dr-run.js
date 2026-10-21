@@ -55,6 +55,8 @@ import { rngFor } from './dr/rng.js';
 import { dragRelationsFrom } from './dr/family.js';
 import { updateEditLayer } from './edit-layer.js';
 
+import { airedEpisode } from './exit-interview/aired.js';
+import { airedAdapter } from './exit-interview/shows.js';
 export const isDragSeason = () => seasonFormat(seasonConfig) === 'drag-race';
 
 function _seed() {
@@ -1150,7 +1152,9 @@ export function _stateFromHistory() {
 }
 
 /** One episode onto the history. Returns the row, or null when the season is over. */
-export function simulateDragEpisode() {
+// Kristal-talKs: whoever this row put out records an exit interview as it
+// airs (js/exit-interview/aired.js). Outside the game — nothing is drawn.
+export const simulateDragEpisode = airedEpisode('drag-race', function simulateDragEpisodeBody() {
   if (!gs) return null;
   // A week this browser already aired (a save loaded from before it) is dealt
   // again (seen-episodes.js): the re-run turns its dice and drops the queue,
@@ -1253,7 +1257,7 @@ export function simulateDragEpisode() {
     return null;
   }
   return _airDragRow(row);
-}
+}, airedAdapter);
 
 export function dragEpisodesLeft() {
   return Array.isArray(gs?._drQueue) ? gs._drQueue.length : 0;

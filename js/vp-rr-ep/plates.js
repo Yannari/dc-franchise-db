@@ -624,6 +624,8 @@ export const PLACE_PLATES = {
   // ── batch 5 (LEGS.txt 24, 25, 30, 31) ──
   'tea-hills': {
     src: '24-tea-hills', title: 'present-9448187', opener: p('present-9448586', 92, [6, 94]),
+    // (the terraces and the inside of a carriage, jobs in edit/: only the stages use them once they're back)
+    stageOnly: [repaint('task-tea-terraces', p('task-tea-terraces', 92, [6, 94]), null), repaint('task-train-inside', p('task-train-inside', 92, [6, 94]), null)].filter(Boolean),
     arrive: [p('arrive-9448231', 92, [20, 94])],
     props: { basket: 'Empty Tea Harvesting Basket-7', full: 'Leaf-filled wicker tea basket-6', picker: 'Tea Plantation Lady in Purple Sari-5' },
     st: {
@@ -1013,6 +1015,8 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const TERRACES = repaint('task-tea-terraces', 'task-tea-terraces', 'present-9448248'), TERRACES_G = repaint('task-tea-terraces', 92, 92);
+const TRAIN_IN = repaint('task-train-inside', 'task-train-inside', 'task-9448388'), TRAIN_G = 92;
 const RUGS = repaint('task-rug-clearing', 'task-rug-clearing', 'task-9445378'), RUGS_G = repaint('task-rug-clearing', 92, 90);
 const BEANS = repaint('task-beans-table', 'task-beans-table', 'task-9444112'), BEANS_G = repaint('task-beans-table', 92, 94);
 const COURT = repaint('task-tennis-court', 'task-tennis-court', 'task-9439713');
@@ -1037,6 +1041,24 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'tea-hills': {
+    // (the terraces and the inside of a carriage are jobs in edit/: the hills and the carriage from outside stand in)
+    'tea-basket': {
+      'baskets-on': { label: 'BASKETS ON', plate: [TERRACES, { deco: [['basket', 30, TERRACES_G, 5]] }] },
+      picking: { label: 'TWO LEAVES AND A BUD', plate: [TERRACES, { mode: 'pick', judge: null }], fail: [TERRACES, { mode: 'pick', judge: null }], stamp: 'WRONG LEAVES' },
+      'fill-up': { label: 'FILL IT UP', plate: [TERRACES, { mode: 'pick', judge: null }], fail: [TERRACES, { mode: 'pick', judge: null }], stamp: 'NOT FULL' },
+      'the-check': { label: 'THE CHECK', plate: ['task-9448188', {}], fail: ['task-9448188', {}], stamp: 'REJECTED' },
+      'tea-tip': { label: 'THE TIP', plate: ['task-9448188', {}] },
+    },
+    'toy-train': {
+      'catch-train': { label: 'CATCH THE TRAIN', plate: ['task-9448609', {}], fail: ['task-9448609', {}], stamp: 'MISSED IT' },
+      'back-carriage': { label: 'ON AT THE BACK', plate: [TRAIN_IN, { mode: undefined, path: undefined }] },
+      'squeeze-through': { label: 'SQUEEZE THROUGH', plate: [TRAIN_IN, { mode: 'walk', path: [[8, TRAIN_G], [34, TRAIN_G], [62, TRAIN_G], [90, TRAIN_G]] }],
+        fail: [TRAIN_IN, { mode: undefined, path: undefined }], stamp: 'STUCK' },
+      'front-carriage': { label: 'THE FRONT CARRIAGE', plate: [TRAIN_IN, { mode: undefined, path: undefined }], fail: ['chill-9448396', {}], stamp: 'WRONG STOP' },
+      'off-train': { label: 'THE STATION', plate: ['chill-9448657', {}] },
     },
   },
   'frozen-mine': {

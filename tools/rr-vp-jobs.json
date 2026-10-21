@@ -478,6 +478,22 @@
       "new": true,
       "ref": "present-9440276",
       "why": "the skydive in stages (2026-10-21): inside the small prop plane, the side door open on the sky, the city and the round stadium far below, a floor to stand on by the door; no plate shows the inside of the plane (stand-in: the aerial view past the wing strut, present-9440276)"
+    },
+    {
+      "place": "tea-hills",
+      "src": "24-tea-hills",
+      "file": "task-tea-terraces",
+      "new": true,
+      "ref": "present-9448248",
+      "why": "the tea basket in stages (2026-10-21): steep green tea terraces on a hillside, rows of bushes in curving steps, a flat path along the front terrace to stand on; no plate shows the terraces (stand-in: the hills behind the Don Box, present-9448248)"
+    },
+    {
+      "place": "tea-hills",
+      "src": "24-tea-hills",
+      "file": "task-train-inside",
+      "new": true,
+      "ref": "task-9448388",
+      "why": "the steam train in stages (2026-10-21): inside one old wooden carriage, side-on, packed with passengers' things (sacks of rice, baskets, a goat, crates of chickens), the door to the next carriage at the end, a floor to stand on; no plate shows the inside (stand-in: the carriage from outside, task-9448388)"
     }
   ]
 }

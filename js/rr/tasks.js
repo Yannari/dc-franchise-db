@@ -137,12 +137,16 @@ function expected(state, id, side, rng) {
   return ((side.base / (lv / 5)) / p + side.loopCost * (1 / p - 1)) * noise;
 }
 
+// A side a team's identity won't do (the Vegans and a feast of shark and sheep's head): never chosen, never switched to.
+const refuses = (state, id, side) => !!side?.refuse?.identities?.includes(state.teams?.[id]?.identity);
+
 export function chooseSide(state, team, stretch, t, api, rng) {
   const id = team.id;
   const lead = state.lead[id];
   const others = (api?.here?.(stretch.id, t) || []).map(x => x.id);
   let best = null, bestCost = Infinity;
-  for (const side of stretch.sides) {
+  const open = stretch.sides.filter(s => !refuses(state, id, s));
+  for (const side of open.length ? open : stretch.sides) {
     let cost = expected(state, id, side, rng);
     const there = others.filter(o => state.attempts?.[o]?.[stretch.id]?.side === side.id);
     if (there.some(o => (state.attempts[o][stretch.id].fails || 0) >= 2)) cost *= 1.25;   // watching them suffer
@@ -162,6 +166,7 @@ export function runEither(state, team, stretch, t, api, rng, { side = null } = {
     onFail: (n, row) => {
       if (switched || row.fails < 2) return null;
       const other = stretch.sides.find(s => s.id !== pick);
+      if (refuses(state, id, other)) return null;
       const here = sideOf(pick);
       const lv = Math.max(0.5, teamLevel(state, id, here.types));
       const remaining = (here.base / (lv / 5)) / attemptChance(lv, here.pass);

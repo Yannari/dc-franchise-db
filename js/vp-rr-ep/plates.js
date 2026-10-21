@@ -1009,6 +1009,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const FEAST = repaint('task-feast-hut', 'task-feast-hut', 'task-9437341'), FEAST_G = repaint('task-feast-hut', 92, 76);
 const CATACOMBS = repaint('task-catacombs', 'task-catacombs', 'task-9436279');
 const BEAR_CLOSE = [['bear', 74, 84, 11, { move: 'wander', span: 8, dur: 10 }]];
 const STAGE_SHOTS = {
@@ -1029,6 +1030,32 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'geyser-island': {
+    // (the geyser field with Don's speaker box at the near edge and the local at the far side; the feast hut; the ice cave)
+    telephone: {
+      'the-speaker': { label: "DON'S PHRASE", plate: ['task-9437137', { mode: undefined, path: undefined, deco: [['donbox@race', 12, 92, 6]] }],
+        fail: ['task-9437137', { mode: undefined, path: undefined, deco: [['donbox@race', 12, 92, 6]] }], stamp: 'SAY WHAT?' },
+      'the-geysers': { label: 'THROUGH THE GEYSERS', plate: ['task-9437137', { mode: 'walk' }], fail: ['task-9437137', { mode: 'walk' }], stamp: 'SOAKED' },
+      'the-local': { label: 'SAY IT BACK', plate: ['task-9437137', { mode: undefined, path: undefined, x: [40, 94] }],
+        fail: ['task-9437137', { mode: undefined, path: undefined, x: [40, 94] }], stamp: 'WRONG WORD' },
+      'phrase-tip': { label: 'THE TIP', plate: ['task-9437137', { mode: undefined, path: undefined, x: [40, 94] }] },
+    },
+    // (Feast or Fossil: each side's stages on the one stretch, their ids apart)
+    'feast-fossil': {
+      // the feast, dish by dish
+      'the-shark': { label: 'FERMENTED SHARK', plate: [FEAST, { mode: 'eat' }], fail: [FEAST, { mode: undefined, prop: undefined }], stamp: 'NEW PLATE' },
+      'sheeps-head': { label: "SHEEP'S HEAD", plate: [FEAST, { mode: 'eat' }], fail: [FEAST, { mode: undefined, prop: undefined }], stamp: 'NEW PLATE' },
+      'the-ram': { label: "SOUR RAM'S TESTICLES", plate: [FEAST, { mode: 'eat' }], fail: [FEAST, { mode: undefined, prop: undefined }], stamp: 'NEW PLATE' },
+      'the-shot': { label: 'THE SHOT', plate: [FEAST, { mode: 'eat' }], fail: [FEAST, { mode: undefined, prop: undefined }], stamp: 'NEW PLATE' },
+      'clean-plate': { label: 'A CLEAN PLATE', plate: [FEAST, { mode: undefined, prop: undefined, deco: [['platter', 28, FEAST_G, 9]] }] },
+      // the fossil: the cave mouth, the wall of ice, the fossil in its block
+      'ice-cave': { label: 'THE ICE CAVE', plate: ['task-9437332', {}] },
+      'find-fossil': { label: 'FIND THE FOSSIL', plate: ['task-9437332', {}], fail: ['task-9437332', {}], stamp: 'NOTHING' },
+      chip: { label: 'CHIP IT OUT', plate: ['task-9437548', { mode: 'chip' }], fail: ['task-9437548', { mode: 'chip' }], stamp: 'CRACKED' },
+      'lift-out': { label: 'LIFT IT OUT', plate: ['task-9437548', { mode: undefined }], fail: ['task-9437548', { mode: undefined }], stamp: 'DROPPED' },
+      'fossil-out': { label: 'OUT OF THE CAVE', plate: ['task-9437332', { deco: [['fossil', 24, 66, 7]] }] },
     },
   },
   'coast-palace': {

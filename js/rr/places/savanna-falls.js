@@ -12,9 +12,17 @@ export default {
       mishaps: [['lost-in-the-bush', 25], ['stuck-in-mud', 20]], mishapRate: 0.16 },
     { id: 'falls-selfie', called: 'the falls', kind: 'allin', types: ['water', 'nerve'], base: 20, pass: 0.55, loopCost: 15, opens: 420, closes: 1080,
       plate: 'river above the falls, falls cliff', label: 'All-In: selfie over the edge',
+      // into the raft upriver; racing for the edge (spun round backwards); over the falls with the camera up (blurry: haul
+      // the raft back up); the crew checks the camera at the bottom (one face, all spray: back up); the tip
+      stages: [{ id: 'into-raft', share: 0.3, risk: 0 }, { id: 'the-edge', share: 0.6, risk: 0.3 }, { id: 'over-falls', share: 0.8, risk: 1 },
+        { id: 'the-check', share: 0.4, risk: 0.6 }, { id: 'selfie-tip', share: 0.3, risk: 0 }],
       desc: "Above the great falls, each team climbs into a two-person raft with a waterproof camera and rides it over the edge. On the way down, both partners have to be in the shot: one clear team selfie, faces in frame, taken while they're falling. A blurry photo, a photo of one face, or a photo of nothing but spray means hauling the raft back up the path and going over again. A crew member checks the camera at the bottom, and a good selfie earns the next tip." },
     { id: 'rhino', called: 'the national park', kind: 'botch', types: ['nerve', 'people'], base: 15, pass: 0.55, loopCost: 10,
       teaser: 'Who wants a portrait?', plate: 'savanna waterhole, white rhino', label: 'Botch or Watch: say cheese',
+      // the ranger's line; creeping up through the long grass (it snorts: back off); the pose beside it (it charges: run);
+      // the photo (not both in frame); the tip. a poses, b holds the camera behind the line
+      stages: [{ id: 'the-ranger', share: 0.3, risk: 0 }, { id: 'creep-up', share: 0.8, risk: 0.5 }, { id: 'rhino-pose', share: 0.8, risk: 1 },
+        { id: 'the-photo', share: 0.4, risk: 0.5 }, { id: 'rhino-tip', share: 0.2, risk: 0 }],
       desc: "In the national park, a white rhino grazes near the waterhole. The partner who didn't do the last Botch or Watch must walk up close and pose beside the rhino while the other takes the picture from behind the ranger's line. Get too close, move too fast or say something rude, and the rhino charges, so the poser has to run for it and start again once it settles. A clear photo of partner and rhino together, both in frame, earns the next tip." },
     { id: 'village-run', kind: 'travel', mode: 'foot', base: 20, cost: 0, plate: 'savanna path', label: 'Run to the village',
       // the real leg: a rhino followed one racer all the way to the Chill Zone and threw him onto the mat

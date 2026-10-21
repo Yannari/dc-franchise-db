@@ -1037,6 +1037,26 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'savanna-falls': {
+    // (the river above the falls, the drop down the cliff, the basin below; the waterhole, the long grass)
+    'falls-selfie': {
+      'into-raft': { label: 'INTO THE RAFT', plate: ['task-9441568', { mode: 'ride', path: [[-10, 92], [14, 92], [26, 91]] }] },
+      'the-edge': { label: 'TO THE EDGE', plate: ['task-9441609', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'ride', prop: 'raft', path: [[6, 86], [34, 76], [62, 70]], fx: 'splash' }],
+        fail: ['task-9441609', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'ride', prop: 'raft', flip: true, path: [[62, 76], [40, 80], [20, 84]], fx: 'splash' }], stamp: 'BACKWARDS' },
+      'over-falls': { label: 'SAY CHEESE!', plate: ['task-9441555', { mode: 'ride', fx: 'flash' }], fail: ['task-9441555', { mode: 'ride' }], stamp: 'BLURRY' },
+      'the-check': { label: 'THE CAMERA', plate: ['task-9441900', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'ride', prop: 'raft', path: [[10, 92], [20, 91], [28, 90]] }],
+        fail: ['task-9441900', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'ride', prop: 'raft', path: [[10, 92], [20, 91], [28, 90]] }], stamp: 'ONE FACE' },
+      'selfie-tip': { label: 'THE TIP', plate: ['task-9441526', { deco: [['raft', 24, 93, 14]] }] },
+    },
+    rhino: {
+      'the-ranger': { label: "THE RANGER'S LINE", plate: ['task-9441524', {}] },
+      'creep-up': { label: 'THE LONG GRASS', plate: ['task-9441761', { people: undefined, g: 98, x: [30, 90] }], fail: ['task-9441761', { people: undefined, g: 98, x: [30, 90] }], stamp: 'SNORT' },
+      'rhino-pose': { label: 'THE POSE', plate: ['task-9441524', { mode: 'photo' }],
+        fail: ['task-9441524', { mode: 'run', prop: undefined, path: [[64, 97], [36, 97], [8, 97]], fx: 'dust', deco: [['rhino', 76, 97, 16, { move: 'wander', span: -18, dur: 3 }]] }], stamp: 'CHARGE!' },
+      'the-photo': { label: 'CLICK', plate: ['task-9441524', { mode: 'photo', fx: 'flash' }], fail: ['task-9441524', { mode: 'photo', fx: 'flash' }], stamp: 'NOT IN FRAME' },
+      'rhino-tip': { label: 'THE TIP', plate: ['task-9441524', { deco: [['rhino', 82, 97, 14, { move: 'wander', span: 6, dur: 16 }]] }] },
+    },
+  },
   'rock-north': {
     // (the sauna hut and its bench by the stove; the river's floes and the open water; backstage and the outdoor stage)
     sauna: {

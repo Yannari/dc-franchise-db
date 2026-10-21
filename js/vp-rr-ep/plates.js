@@ -1017,6 +1017,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const PANDA = [['panda', 60, 66, 9, { move: 'wander', span: 12, dur: 8 }]];
 const CROCS = [['croc', 74, 76, 22, { move: 'wander', span: 10, dur: 14 }]];
 const DECK = repaint('task-observation-deck', 'task-observation-deck', 'task-9450082'), DECK_G = repaint('task-observation-deck', 92, 95);
 const TERRACES = repaint('task-tea-terraces', 'task-tea-terraces', 'present-9448248'), TERRACES_G = repaint('task-tea-terraces', 92, 92);
@@ -1045,6 +1046,17 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'game-show-city': {
+    // (the flippers end of the table; the bumpers close and wide; the scoreboard)
+    pinball: {
+      'padded-suit': { label: 'THE PADDED SUIT', plate: ['task-22411046', {}], fail: ['task-22411046', {}], stamp: 'STUCK' },
+      'the-launch': { label: 'LAUNCH!', plate: ['task-22411122', { mode: 'roll', solo: true, inset: 'AT THE FLIPPERS', path: [[10, 90], [18, 70], [25, 52]] }] },
+      'the-bumpers': { label: 'THE BUMPERS', plate: ['task-22411048', { mode: 'roll', solo: true, inset: 'AT THE FLIPPERS' }], fail: ['task-22411048', { mode: 'roll', solo: true, inset: 'AT THE FLIPPERS', path: [[50, 48], [44, 70], [40, 96], [40, 110]] }], stamp: 'DRAINED' },
+      'the-panda': { label: 'THE PANDA', plate: ['task-22411118', { mode: 'roll', solo: true, inset: 'AT THE FLIPPERS', deco: PANDA }], fail: ['task-22411118', { mode: 'roll', solo: true, inset: 'AT THE FLIPPERS', deco: PANDA }], stamp: 'PANDA!' },
+      'last-target': { label: 'THE LAST TARGET', plate: ['task-22411122', { mode: 'roll', solo: true, inset: 'AT THE FLIPPERS' }], fail: ['task-22411122', { mode: 'roll', solo: true, inset: 'AT THE FLIPPERS' }], stamp: 'TIME!' },
+      'five-lit': { label: 'FIVE!', plate: ['task-22411046', { fx: 'sparkle' }] },
     },
   },
   'tomb-sands': {

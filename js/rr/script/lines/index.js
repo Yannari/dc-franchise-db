@@ -151,6 +151,7 @@ import stagesTeaHills from './stages/tea-hills.js';
 import stagesTreasureIsles from './stages/treasure-isles.js';
 import stagesSkylineFinale from './stages/skyline-finale.js';
 import stagesTombSands from './stages/tomb-sands.js';
+import stagesGameShowCity from './stages/game-show-city.js';
 import iceRiver from './places/ice-river.js';
 import snowPeaks from './places/snow-peaks.js';
 import jungleRuins from './places/jungle-ruins.js';
@@ -175,7 +176,7 @@ const FILES = [partners, partners1, partners2, partners3, partners4, partners5, 
   neonDesert, pyramidCoast, stiltRiver, frozenMine,
   teaHills, pampasRanch, gameShowCity, iceRiver,
   // the staged challenges, stage by stage (2026-10-20)
-  stagesAny, stagesIceRiver, stagesPampasRanch, stagesHomeCity, stagesRedSandDesert, stagesIronTowerCity, stagesCoastPalace, stagesGeyserIsland, stagesCarnivalRainforest, stagesHauntedCastle, stagesLeiIsland, stagesGlassTowerGulf, stagesGreatWallHills, stagesRockNorth, stagesSavannaFalls, stagesSwampPrison, stagesOutbackFarm, stagesFjordPeaks, stagesPrairieRanch, stagesIceFloe, stagesDragonIsle, stagesNeonDesert, stagesPyramidCoast, stagesStiltRiver, stagesFrozenMine, stagesTeaHills, stagesTreasureIsles, stagesSkylineFinale, stagesTombSands,
+  stagesAny, stagesIceRiver, stagesPampasRanch, stagesHomeCity, stagesRedSandDesert, stagesIronTowerCity, stagesCoastPalace, stagesGeyserIsland, stagesCarnivalRainforest, stagesHauntedCastle, stagesLeiIsland, stagesGlassTowerGulf, stagesGreatWallHills, stagesRockNorth, stagesSavannaFalls, stagesSwampPrison, stagesOutbackFarm, stagesFjordPeaks, stagesPrairieRanch, stagesIceFloe, stagesDragonIsle, stagesNeonDesert, stagesPyramidCoast, stagesStiltRiver, stagesFrozenMine, stagesTeaHills, stagesTreasureIsles, stagesSkylineFinale, stagesTombSands, stagesGameShowCity,
   snowPeaks, jungleRuins, glassPyramidCity, fishingCove,
   cliffPoolIsle, twinTowerBridge, marbleTempleHill, secretBaseDesert,
   fjordSea, greatFalls, bambooWallHills, grassSavanna, stoneHeadIsland, badlands];

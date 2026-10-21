@@ -141,7 +141,8 @@ describe('rr challenges in stages', () => {
   it('sends only the one doing a Botch up or down a line, the partner in the box', () => {
     let n = 0;
     for (const { screens } of runs) for (const ep of screens) for (const s of ep.screens) {
-      if (s.seg !== 'task-stage' || s.stretchKind !== 'botch' || !['zip', 'para', 'swing'].includes(s.plate?.mode) || s.mode !== 'act') continue;
+      // (and a turn-taking All-In: one is the pinball, the other on the flippers)
+      if (s.seg !== 'task-stage' || s.mode !== 'act' || !((s.stretchKind === 'botch' && ['zip', 'para', 'swing'].includes(s.plate?.mode)) || s.plate?.solo)) continue;
       n++;
       expect(s.away?.[s.teams[0]], s.id).toEqual([s.who[1]]);
       expect(s.inset?.people, s.id).toContain(s.who[1]);

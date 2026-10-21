@@ -788,7 +788,8 @@ function layout(s, size) {
         if (doer) watching.push(...pair.filter(x => x !== doer));
       }
       if (watching.length) s.inset = { title: plate.inset || 'WATCHING', people: watching };
-    } else if (['zip', 'para', 'swing'].includes(plate.mode) && s.stretchKind === 'botch' && s.seg === 'task-stage') {
+    } else if (((['zip', 'para', 'swing'].includes(plate.mode) && s.stretchKind === 'botch') || plate.solo) && s.seg === 'task-stage') {
+      // (`solo`: an All-In where they take turns, one the pinball while the other works the flippers)
       // on a line, a canopy or a rope in a Botch: the one doing it goes, the partner stays behind in the box (the winch
       // at the top of the borehole)
       s.away = {};

@@ -355,6 +355,8 @@ export const PLACE_PLATES = {
   },
   'haunted-castle': {
     src: '08-haunted-castle', title: 'present-9438456', opener: p('present-9438407', 94, [8, 92]),
+    // (the graveyard gate in the rain: only the coffin's stage at the gate)
+    stageOnly: [p('chill-9438461', 92, [6, 94])],
     arrive: [p('arrive-9438405', 94, [6, 94]), p('arrive-9438402', 92, [6, 78])],
     props: { coffin: 'coffin', horse: 'Dark Horse with Jagged Mane-3', vault: 'Gymnastics vault and springboard-2', beam: 'balance-beam', coach: 'gym-coach' },
     st: {
@@ -1030,6 +1032,22 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'haunted-castle': {
+    // (the hall of coffins; the hill road down; the graveyard gate and the graves; the gym, the bench by the stairs)
+    coffin: {
+      'find-coffin': { label: 'FIND YOUR COFFIN', plate: ['task-9438457', {}], fail: ['task-9438457', {}], stamp: 'OCCUPIED' },
+      'climb-in': { label: 'IN YOU GET', plate: ['task-9438457', {}], fail: ['task-9438457', {}], stamp: 'NO WAY' },
+      'the-push': { label: 'DOWN THE HILL', plate: ['present-9438407', { mode: 'push' }], fail: ['present-9438407', { mode: 'push' }], stamp: 'TIPPED OVER' },
+      'graveyard-gate': { label: 'THE GRAVEYARD', plate: ['chill-9438461', { deco: [['coffin', 30, 92, 9]] }], fail: ['chill-9438461', { deco: [['coffin', 30, 92, 9]] }], stamp: 'WRONG WAY' },
+      'grave-digger': { label: 'THE GRAVE', plate: ['task-9438688', {}] },
+    },
+    gym: {
+      'warm-up': { label: 'THE WARM-UP', plate: ['task-9438736', { people: undefined, g: 92, x: [6, 56] }] },
+      'the-split': { label: 'THE SPLIT', plate: ['task-9438665', { mode: 'beam' }], fail: ['task-9438665', { mode: 'beam' }], stamp: 'WOBBLE' },
+      'the-vault': { label: 'THE VAULT', plate: ['task-9438665', { mode: 'beam', prop: 'vault' }], fail: ['task-9438665', { mode: 'beam', prop: 'vault' }], stamp: 'CRASH' },
+      'coach-nods': { label: 'THE COACH', plate: ['task-9438665', { mode: undefined, prop: undefined, judge: null }] },
     },
   },
   'carnival-rainforest': {

@@ -1011,6 +1011,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const COURT = repaint('task-tennis-court', 'task-tennis-court', 'task-9439713');
 const FEAST = repaint('task-feast-hut', 'task-feast-hut', 'task-9437341'), FEAST_G = repaint('task-feast-hut', 92, 76);
 const CATACOMBS = repaint('task-catacombs', 'task-catacombs', 'task-9436279');
 const BEAR_CLOSE = [['bear', 74, 84, 11, { move: 'wander', span: 8, dur: 10 }]];
@@ -1032,6 +1033,22 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'glass-tower-gulf': {
+    // (Squeegee or Serve: each side's stages on the one stretch, their ids apart. The roof's edge, the platform on the
+    // glass, the tower's face from outside; the rooftop court at court level, and wide with the launcher across it)
+    'squeegee-serve': {
+      'harness-up': { label: 'THE EDGE', plate: ['task-9439716', { people: undefined, g: 97, x: [10, 90] }], fail: ['task-9439716', { people: undefined, g: 97, x: [10, 90] }], stamp: 'NOT YET' },
+      'the-drop': { label: 'OVER THE SIDE', plate: ['task-9439718', { mode: undefined, prop: undefined, fx: 'wind' }], fail: ['task-9439718', { mode: undefined, prop: undefined, fx: 'wind' }], stamp: 'SWAYING' },
+      wash: { label: 'THE WASH', plate: ['task-9439718', { mode: 'squeegee' }], fail: ['task-9439718', { mode: 'squeegee' }], stamp: 'STREAKY' },
+      'the-column': { label: 'THE WHOLE COLUMN', plate: ['present-9439891', { people: undefined, g: 58, x: [14, 36], fx: 'wind', deco: [['gondola', 25, 64, 26]] }],
+        fail: ['present-9439891', { people: undefined, g: 58, x: [14, 36], fx: 'wind', deco: [['gondola', 25, 64, 26]] }], stamp: 'MISSED A PANE' },
+      'squeegee-tip': { label: 'BACK ON THE ROOF', plate: ['task-9439716', { people: undefined, g: 97, x: [10, 90] }] },
+      'racket-up': { label: 'THE COURT', plate: [COURT, { mode: undefined, prop: undefined }] },
+      'the-serve': { label: 'THE SERVE', plate: [COURT, { mode: 'serve' }], fail: [COURT, { mode: 'serve' }], stamp: 'ACE' },
+      'the-return': { label: 'THE RETURN', plate: [COURT, { mode: 'serve' }], fail: [COURT, { mode: 'serve' }], stamp: 'OUT!' },
+      'serve-tip': { label: 'THE TIP', plate: ['task-9439713', {}] },
     },
   },
   'lei-island': {

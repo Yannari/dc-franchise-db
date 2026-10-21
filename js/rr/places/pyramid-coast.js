@@ -11,6 +11,11 @@ export default {
       mishaps: [['goats-on-the-road', 20]], mishapRate: 0.08 },
     { id: 'pepper-cliff', called: 'the cliff top', kind: 'allin', types: ['stomach', 'heights'], base: 25, pass: 0.5, loopCost: 10, opens: 420, closes: 1260,
       plate: 'chilli cart + cliff top', label: 'All-In: the pepper and the jump',
+      // picking the pepper at the cart; eating the whole thing (can't finish: pick again); the partner on the ledge (won't
+      // jump); the jump; swimming the milk back (the canteen lost in the swell); the milk to the burning mouth. a eats,
+      // b jumps
+      stages: [{ id: 'pick-pepper', share: 0.3, risk: 0 }, { id: 'eat-pepper', share: 0.8, risk: 0.8 }, { id: 'the-ledge', share: 0.4, risk: 0.6 },
+        { id: 'cliff-jump', share: 0.4, risk: 0 }, { id: 'milk-swim', share: 0.8, risk: 0.5 }, { id: 'milk-delivered', share: 0.3, risk: 0 }],
       desc: "At a chilli cart on top of the sea cliffs, one partner picks a pepper, mild, hot or fiery, eats the whole thing and waves its coloured flag. The other partner climbs down to the ledge with that same colour and jumps into the sea: a mild pepper means the highest ledge, a fiery one the lowest. At the bottom they grab a canteen of milk and swim it back up to the eater. A pepper not finished, or a jump refused, means picking again. Milk delivered to a burning mouth earns the next tip." },
     { id: 'burro-ride', kind: 'travel', mode: 'burro', base: 40, cost: 0, plate: 'coast trail, burros', label: 'Ride the burros to the pyramid',
       mishaps: [['burro-sits-down', 25]], mishapRate: 0.12 },

@@ -126,6 +126,17 @@ describe('rr challenges in stages', () => {
     }
   });
 
+  // (Pyramid Coast: the vendor stood on the cliff ledge, and both partners swam for the milk when only the jumper goes in)
+  it("keeps a stall's local at the stall, and sends only the jumper into the sea", () => {
+    let swims = 0, ledges = 0;
+    for (const { screens } of runs) for (const ep of screens) for (const s of ep.screens) {
+      if (s.seg !== 'task-stage' || s.place !== 'pyramid-coast') continue;
+      if (s.stage === 'the-ledge') { ledges++; expect(Object.values(s.localFaces || {}).map(f => f.id), s.id).not.toContain('pepper-vendor'); }
+      if (['cliff-jump', 'milk-swim'].includes(s.stage)) { swims++; expect(s.swimmers?.[s.teams[0]], s.id).toEqual([s.who[1]]); }
+    }
+    expect(swims + ledges).toBeGreaterThan(0);
+  });
+
   // (a wrong spice isn't tried again: nobody checks the five, the stew finds out later)
   it('stamps a wrong spice WRONG SPICE, never TRY AGAIN', () => {
     let n = 0;

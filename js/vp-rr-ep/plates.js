@@ -1039,6 +1039,18 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'pyramid-coast': {
+    // (the chilli cart; the ledge at the cliff's edge; the spire over the sea; the water under it)
+    'pepper-cliff': {
+      'pick-pepper': { label: 'MILD, HOT OR FIERY', plate: ['task-9446542', { mode: undefined, prop: undefined }] },
+      'eat-pepper': { label: 'EAT IT ALL', plate: ['task-9446542', { mode: 'eat' }], fail: ['task-9446542', { mode: 'eat' }], stamp: 'NOT FINISHED' },
+      'the-ledge': { label: 'THE LEDGE', plate: ['present-9446604', { people: undefined, local: false, g: 74, x: [4, 40], deco: [['flags', 34, 74, 4]] }],
+        fail: ['present-9446604', { people: undefined, local: false, g: 74, x: [4, 40], deco: [['flags', 34, 74, 4]] }], stamp: 'NOT JUMPING' },
+      'cliff-jump': { label: 'THE JUMP', plate: ['task-9446545', { mode: 'dive', swimmer: 'b', inset: 'AT THE CART' }] },
+      'milk-swim': { label: 'THE MILK', plate: ['task-9446588', { mode: 'swim', swimmer: 'b', inset: 'AT THE CART' }], fail: ['task-9446588', { mode: 'swim', swimmer: 'b', inset: 'AT THE CART' }], stamp: 'LOST IT' },
+      'milk-delivered': { label: 'MILK!', plate: ['task-9446542', { mode: undefined, prop: undefined, deco: [['canteen', 44, 94, 4]] }] },
+    },
+  },
   'neon-desert': {
     // (Buggy or Magic, their ids apart: the remote booth, the flag course over the dunes, the finish; the magic theatre's
     // stage with the cage and the lion)

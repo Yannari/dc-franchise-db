@@ -371,7 +371,8 @@ export function episodeScreens(res, eps, i) {
       const own = placeLocal(placeId, seg.stretch, seg.side);
       // (not out where the teams travel a path: the rancher stays at the fence while they ride the plain)
       // (a stage in a room has its local in it: the instructor in the academy)
-      if (own && ((mode === 'talk' && ['task-start', 'task-done'].includes(k) && !plate?.closed) || (k === 'task-stage' && !plate?.path)) && standable(plate)) persons.push(own);
+      // (`local: false`: a stage away from the local's post, the cliff ledge far from the pepper cart)
+      if (own && plate?.local !== false && ((mode === 'talk' && ['task-start', 'task-done'].includes(k) && !plate?.closed) || (k === 'task-stage' && !plate?.path)) && standable(plate)) persons.push(own);
       for (const id of new Set(persons)) if (!locals.some(n => localFor(n, placeId, seg.stretch, '', seg.side)?.id === id)) locals.push(LOCALS[id]);
       // each local's face (the user's avatars): who a speaking "A local" or "The judge" is, here
       const localFaces = Object.fromEntries(locals.map(n => [n, localFor(n, placeId, seg.stretch, seg.scene ?? seg.t, seg.side)]).filter(([, f]) => f));
@@ -779,7 +780,9 @@ function layout(s, size) {
       for (const id of s.teams) {
         const pair = s.members[id] || [];
         // (a stage moment names the one doing it first, then the partner watching: director.js stageBeats)
-        const doer = s.stretchKind !== 'botch' ? null
+        // (`swimmer: 'b'`: an All-In where only one goes in, the partner who jumps for the milk while the eater waits)
+        const doer = s.seg === 'task-stage' && plate.swimmer === 'b' && pair.includes(s.who[1]) ? s.who[1]
+          : s.stretchKind !== 'botch' ? null
           : (s.seg === 'task-stage' && pair.includes(s.who[0]) ? s.who[0] : pair.find(x => s.who.includes(x)) || pair[0]);
         s.swimmers[id] = doer ? [doer] : pair;
         if (doer) watching.push(...pair.filter(x => x !== doer));

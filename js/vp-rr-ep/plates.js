@@ -1013,6 +1013,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const RUGS = repaint('task-rug-clearing', 'task-rug-clearing', 'task-9445378'), RUGS_G = repaint('task-rug-clearing', 92, 90);
 const BEANS = repaint('task-beans-table', 'task-beans-table', 'task-9444112'), BEANS_G = repaint('task-beans-table', 92, 94);
 const COURT = repaint('task-tennis-court', 'task-tennis-court', 'task-9439713');
 const FEAST = repaint('task-feast-hut', 'task-feast-hut', 'task-9437341'), FEAST_G = repaint('task-feast-hut', 92, 76);
@@ -1036,6 +1037,24 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'dragon-isle': {
+    // (the jungle floor where the ranger waits; the lizards under the stilt huts; the rug mountain and the cloth piles)
+    venom: {
+      'the-ranger': { label: 'STICK, SPONGE, VIAL', plate: ['task-9445378', { deco: [['vial', 52, 90, 3]] }] },
+      distraction: { label: 'EYES ON THE STICK', plate: ['task-9445138', { mode: 'venom' }], fail: ['task-9445138', { mode: 'venom' }], stamp: 'HISS!' },
+      'the-sponge': { label: 'THE SPONGE', plate: ['task-9445138', { mode: 'venom' }],
+        fail: ['task-9445138', { mode: 'run', prop: undefined, judge: null, path: [[50, 93], [26, 94], [4, 95]], fx: 'dust' }], stamp: 'RUN!' },
+      'fill-vial': { label: 'FILL THE VIAL', plate: ['task-9445138', { mode: 'venom' }], fail: ['task-9445138', { mode: 'venom' }], stamp: 'SPILLED' },
+      'vial-tip': { label: 'THE TIP', plate: ['task-9445378', { deco: [['vial', 52, 90, 3]] }] },
+    },
+    rugs: {
+      'rug-mountain': { label: 'THE RUG MOUNTAIN', plate: [RUGS, {}] },
+      'dig-in': { label: 'DIG IN', plate: ['task-9445496', { mode: 'search' }], fail: ['task-9445496', { mode: 'search' }], stamp: 'BURIED' },
+      unroll: { label: 'UNROLL', plate: [RUGS, { mode: 'search', prop: 'textiles' }], fail: [RUGS, { mode: 'search', prop: 'textiles' }], stamp: 'NOT IT' },
+      'the-weaver': { label: 'THE WEAVER', plate: [RUGS, { deco: [['textiles', 64, RUGS_G, 10]] }], fail: [RUGS, { deco: [['textiles', 64, RUGS_G, 10]] }], stamp: 'WRONG RUG' },
+      'rug-tip': { label: 'THE TIP', plate: [RUGS, {}] },
     },
   },
   'ice-floe': {

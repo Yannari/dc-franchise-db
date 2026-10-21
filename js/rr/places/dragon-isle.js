@@ -11,9 +11,17 @@ export default {
       mishaps: [['engine-cuts-out', 20]], mishapRate: 0.08 },
     { id: 'venom', called: 'the stilt huts', kind: 'allin', types: ['nerve', 'patience'], base: 25, pass: 0.5, loopCost: 10, opens: 420, closes: 1200,
       plate: 'lizards under the stilt huts', label: 'All-In: the dragon drool',
+      // the ranger hands over the stick, the sponge and the vial; one holds the lizard's eye with the stick (it hisses: back
+      // off); the other creeps in with the sponge (it wakes and charges: run); squeezing it into the vial (spilled); the tip
+      stages: [{ id: 'the-ranger', share: 0.3, risk: 0 }, { id: 'distraction', share: 0.7, risk: 0.5 }, { id: 'the-sponge', share: 1, risk: 1 },
+        { id: 'fill-vial', share: 0.5, risk: 0.5 }, { id: 'vial-tip', share: 0.2, risk: 0 }],
       desc: "Under the stilt huts of the village, giant monitor lizards lie in the shade, and both partners have to fill a small glass vial with their drool. One partner holds the lizard's attention with a long forked stick while the other creeps in with a sponge on a pole, dabs its lip and squeezes the drool into the vial. A lizard that wakes up, hisses or charges sends the team running, and a spilled vial means starting again. A full vial shown to the ranger earns the next tip." },
     { id: 'rugs', called: 'the cloth pile', kind: 'allin', types: ['search', 'patience'], base: 30, pass: 0.45, loopCost: 10, opens: 420, closes: 1260,
       plate: 'log pile in the jungle', label: 'All-In: the race rug',
+      // the mountain of rugs; digging in (it slides down on them); unrolling them one by one (not it); the rug laid at the
+      // weaver's feet (the wrong one: back to the pile); the tip
+      stages: [{ id: 'rug-mountain', share: 0.3, risk: 0 }, { id: 'dig-in', share: 1.2, risk: 0.5 }, { id: 'unroll', share: 0.8, risk: 0.6 },
+        { id: 'the-weaver', share: 0.5, risk: 1 }, { id: 'rug-tip', share: 0.2, risk: 0 }],
       desc: "In a clearing in the jungle sits a mountain of hand-woven rugs, hundreds of them, every colour and every pattern. Somewhere in the pile is one rug woven with the race's own mark, and both partners have to dig through, unroll and check them one by one until they find it. Bringing the weaver the wrong rug means going back to the pile. The right rug, unrolled at the weaver's feet, earns the next tip." },
     { id: 'hill-run', kind: 'travel', mode: 'foot', base: 20, cost: 0, plate: 'jungle trail', label: 'Run up the hill' },
     { id: 'mat', kind: 'mat', plate: 'hill mat at sunset', label: 'The Chill Zone' },

@@ -1013,6 +1013,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const BEANS = repaint('task-beans-table', 'task-beans-table', 'task-9444112'), BEANS_G = repaint('task-beans-table', 92, 94);
 const COURT = repaint('task-tennis-court', 'task-tennis-court', 'task-9439713');
 const FEAST = repaint('task-feast-hut', 'task-feast-hut', 'task-9437341'), FEAST_G = repaint('task-feast-hut', 92, 76);
 const CATACOMBS = repaint('task-catacombs', 'task-catacombs', 'task-9436279');
@@ -1035,6 +1036,22 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'prairie-ranch': {
+    // (the long table on the cliff top with its pots; the barn, wide by the hay and close at the bull)
+    beans: {
+      'the-pot': { label: 'THE POT', plate: [BEANS, { mode: undefined, prop: undefined, deco: [['pot', 52, BEANS_G, 7]] }] },
+      'first-half': { label: 'SPOON AFTER SPOON', plate: [BEANS, { mode: 'eat' }], fail: [BEANS, { mode: 'eat' }], stamp: 'TOPPED UP' },
+      'bean-wall': { label: 'THE BEAN WALL', plate: [BEANS, { mode: 'eat' }], fail: [BEANS, { mode: undefined, prop: undefined, deco: [['pot', 52, BEANS_G, 7]] }], stamp: 'TOPPED UP' },
+      'the-bottom': { label: 'THE BOTTOM', plate: [BEANS, { mode: 'eat' }], fail: [BEANS, { mode: 'eat' }], stamp: 'NOT CLEAN' },
+      'beans-tip': { label: 'THE TIP', plate: [BEANS, { mode: undefined, prop: undefined, deco: [['pot', 52, BEANS_G, 7]] }] },
+    },
+    bull: {
+      'saddle-up': { label: 'GET ON', plate: ['task-9444134', {}], fail: ['task-9444134', {}], stamp: 'SLIPPED' },
+      'slow-start': { label: 'NICE AND SLOW', plate: ['task-9444232', { mode: 'bull' }], fail: ['task-9444232', { mode: 'bull' }], stamp: 'THROWN' },
+      'full-buck': { label: 'FULL BUCK', plate: ['task-9444232', { mode: 'bull' }], fail: ['task-9444232', { mode: 'bull' }], stamp: 'THROWN' },
+      'eight-seconds': { label: 'EIGHT SECONDS', plate: ['task-9444232', { mode: undefined, prop: undefined, under: undefined }] },
     },
   },
   'fjord-peaks': {

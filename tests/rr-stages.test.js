@@ -21,15 +21,21 @@ const stagesOf = (p, s, side = null) => { const st = PLACES[p].stretches.find(x 
 const STAGED = Object.values(PLACES).flatMap(pl => pl.stretches.filter(s => s.stages || s.sides?.some(d => d.stages)).map(s => [pl.id, s.id]));
 const sidesOf = (p, s) => { const st = PLACES[p].stretches.find(x => x.id === s); return st.sides ? st.sides.map(d => d.id) : [null]; };
 const runs = [];
+// every staged place is booked into a season, ten to a season from leg 2 (a 12-team season runs about a dozen legs:
+// a place booked past its end never plays), and the first chunk twice more on other seeds
+const BOOKED = [...new Set(STAGED.map(([p]) => p))].filter(p => !PLACES[p].start);
+const CHUNKS = [];
+for (let i = 0; i < BOOKED.length; i += 10) CHUNKS.push(BOOKED.slice(i, i + 10));
 beforeAll(() => {
-  for (const seed of [41, 42, 43]) {
+  const plan = [...CHUNKS.map((c, i) => [41 + i * 7, c]), [42, CHUNKS[0]], [43, CHUNKS[0]]];
+  for (const [seed, chunk] of plan) {
     const { cast, teams } = raceCast(12, seed);
     setPlayers(cast);
-    const res = playRaceSeason({ teams, seed, options: { pins: { 2: 'ice-river', 3: 'pampas-ranch', 4: 'red-sand-desert', 5: 'iron-tower-city', 6: 'coast-palace', 7: 'geyser-island', 8: 'carnival-rainforest', 9: 'haunted-castle', 10: 'lei-island', 11: 'glass-tower-gulf', 12: 'great-wall-hills', 13: 'rock-north', 14: 'savanna-falls', 15: 'swamp-prison', 16: 'outback-farm', 17: 'fjord-peaks' } } });
+    const res = playRaceSeason({ teams, seed, options: { pins: Object.fromEntries(chunk.map((p, k) => [k + 2, p])) } });
     const aired = airSeason(res);
     runs.push({ seed, res, aired, screens: aired.map((_, i) => episodeScreens(res, aired, i)) });
   }
-}, 400000);
+}, 600000);
 
 describe('rr challenges in stages', () => {
   it('every staged challenge lists its stages, and a fail can only happen at a stage that can go wrong', () => {

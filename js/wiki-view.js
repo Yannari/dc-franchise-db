@@ -636,7 +636,20 @@ function lead(dossier, show, root, L) {
       : '';
 
     const opener = [];
-    if (calibre) {
+    // THE CIRCLE HAS NO IMMUNITY. Its record is the Ratings: how often the room put
+    // them on top and made them an Influencer, and whose face they played behind
+    // (the user, 2026-10-21: "Sasha played The Circle 1 without winning a game,
+    // well theres no immunity here").
+    const ci = show.format === 'the-circle' ? (rec.ci || null) : null;
+    const times = n => (n === 1 ? 'once' : n === 2 ? 'twice' : `${num(n)} times`);
+    if (ci) {
+      const inf = ci.influencerTimes || 0, tops = ci.firstPlaces || 0;
+      const persona = ci.mode === 'catfish' && ci.profile ? ` as the catfish profile <em>${esc(ci.profile)}</em>`
+        : ci.mode === 'shared' && ci.profile ? ` sharing the profile <em>${esc(ci.profile)}</em>` : '';
+      opener.push(inf
+        ? `${first} played ${link(notable)}${persona}, becoming an Influencer ${times(inf)}${tops ? ` and topping the ratings ${times(tops)}` : ''}`
+        : `${first} played ${link(notable)}${persona} without ever being made an Influencer${tops ? `, though the room put ${P.obj} first ${times(tops)}` : ''}`);
+    } else if (calibre) {
       opener.push(`${first} proved to be ${calibre} in ${link(notable)}, winning ${
         num(comps)} ${compWord}${comps === 1 ? '' : 's'}`);
     } else {

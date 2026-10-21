@@ -430,3 +430,25 @@ describe('the pages that read a winner off the document', () => {
     expect(src).not.toContain("placements[0]?.name");
   });
 });
+
+// The user, 2026-10-21: the Franchise page showed a Circle season through Total Drama's records ("Most Idols
+// Found", "Fewest Votes to Win: 0 votes"). The Circle has no challenges or votes: its record is the Ratings.
+describe('The Circle keeps its own records', () => {
+  const ci = (name, placement, c) => ({ id: name.toLowerCase(), name,
+    seasonDetails: [{ format: 'the-circle', season: 1, seasonId: 'ci-1', placement, challengeWins: 0, votesReceived: 0, ci: c }] });
+  const players = { players: [
+    ci('Lila', 1, { influencerTimes: 3, firstPlaces: 5, blocksMade: 2, mode: 'polished', profile: 'Lila', avgRating: 3.2 }),
+    ci('Hector', 2, { influencerTimes: 5, firstPlaces: 3, blocksMade: 4, mode: 'catfish', profile: 'Nadiya', avgRating: 2.9 }),
+  ] };
+  const seasonsDb = { seasons: [{ seasonNumber: 1, seasonId: 'ci-1', format: 'the-circle', title: 'The Circle 1', winner: { name: 'Lila' } }] };
+  it('boards, single-season records and trivia read the Ratings, never immunity, idols or votes', () => {
+    const r = franchiseRecords({ players, seasonsDb, format: 'the-circle' });
+    const labels = r.boards.map(b => b.label).join(' | ');
+    expect(labels).toMatch(/Times Influencer/);
+    expect(labels).not.toMatch(/Immunity|Idols|Jury|Votes/);
+    expect(r.boards.find(b => b.key === 'influencer').rows[0].name).toBe('Hector');
+    expect(r.milestones.map(m => m.category).join(' | ')).not.toMatch(/Votes|Idols|Immunity/);
+    expect(r.trivia.map(t => t.fact)).toContain('Most times an Influencer, career');
+    expect(r.trivia.map(t => t.fact).join(' | ')).not.toMatch(/voted|votes|challenge/i);
+  });
+});

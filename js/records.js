@@ -66,6 +66,19 @@ function careerIn(player, format) {
       ? Math.round((placements.reduce((a, b) => a + b, 0) / placements.length) * 100) / 100
       : null,
     seasons: ds.map(d => num(d.season)).sort((a, b) => a - b),
+    // The Circle's record is the Ratings, not challenges (seasonDetails[].ci, js/ci/export.js).
+    ci: (() => {
+      const cs = ds.map(d => d.ci).filter(Boolean);
+      if (!cs.length) return null;
+      const rated = cs.map(c => Number(c.avgRating)).filter(Number.isFinite);
+      return {
+        influencerTimes: cs.reduce((n, c) => n + num(c.influencerTimes), 0),
+        firstPlaces: cs.reduce((n, c) => n + num(c.firstPlaces), 0),
+        blocksMade: cs.reduce((n, c) => n + num(c.blocksMade), 0),
+        catfishSeasons: cs.filter(c => c.mode === 'catfish').length,
+        avgRating: rated.length ? Math.round(rated.reduce((a, b) => a + b, 0) / rated.length * 100) / 100 : null,
+      };
+    })(),
     details: ds,
   };
 }
@@ -77,8 +90,8 @@ export function careersIn(players, format = 'all') {
     .filter(Boolean);
 }
 
-/** The eight career boards the Franchise page draws. */
-export function careerBoards(careers) {
+/** The eight career boards the Franchise page draws (The Circle's own eight: it has no challenges or votes). */
+export function careerBoards(careers, format = 'all') {
   const board = (key, label, pick, sub, better = 'higher', min = 0) => {
     const rows = careers
       .filter(c => c.seasonsPlayed >= min && pick(c) !== null)
@@ -87,6 +100,20 @@ export function careerBoards(careers) {
         || a.name.localeCompare(b.name));
     return { key, label, rows, value: pick, sub };
   };
+  if (format === 'the-circle') {
+    const ci = (k, nul = 0) => c => (c.ci ? c.ci[k] ?? nul : nul);
+    return [
+      board('wins', '🏆 Most Wins', c => c.wins, c => `${c.seasonsPlayed} seasons`),
+      board('seasons', '🔄 Most Seasons', c => c.seasonsPlayed, c => `${c.wins} wins`),
+      board('influencer', '👑 Most Times Influencer', ci('influencerTimes'), c => `${ci('firstPlaces')(c)} first places`),
+      board('firsts', '🥇 Most First Places in the Ratings', ci('firstPlaces'), c => `${ci('influencerTimes')(c)} times Influencer`),
+      board('blocks', '⛔ Most Blockings Made', ci('blocksMade'), c => `${c.seasonsPlayed} seasons`),
+      board('rating', '⭐ Best Average Rating', ci('avgRating', null), c => `${c.seasonsPlayed} seasons`, 'lower'),
+      board('catfish', '🎭 Most Seasons as a Catfish', ci('catfishSeasons'), c => `${c.seasonsPlayed} seasons`),
+      board('avgPlace', '📊 Best Avg Placement (2+ seasons)', c => c.avgPlacement,
+        c => `${c.seasonsPlayed} seasons`, 'lower', 2),
+    ];
+  }
   return [
     board('wins', '🏆 Most Wins', c => c.wins, c => `${c.seasonsPlayed} seasons`),
     board('seasons', '🔄 Most Seasons', c => c.seasonsPlayed, c => `${c.wins} wins`),
@@ -226,6 +253,15 @@ export function milestonesIn(careers, format = 'all') {
     });
   };
 
+  if (format === 'the-circle') {
+    best('Most Times Influencer (Season)', d => num(d.ci?.influencerTimes) || null, v => `${v} times`);
+    best('Most First Places (Season)', d => num(d.ci?.firstPlaces) || null, v => `${v} first places`);
+    best('Most Blockings Made (Season)', d => num(d.ci?.blocksMade) || null, v => `${v} blockings`);
+    best('Best Average Rating (Season)', d => (Number.isFinite(Number(d.ci?.avgRating)) && d.ci?.avgRating != null ? Number(d.ci.avgRating) : null), v => `${v} average`, 'lower');
+    best('Lowest-Rated Winner', d => (num(d.placement) === 1 && d.ci?.avgRating != null ? Number(d.ci.avgRating) : null), v => `${v} average`);
+    best('Winner with the Fewest Times Influencer', d => (num(d.placement) === 1 && d.ci ? num(d.ci.influencerTimes) : null), v => `${v} time${v === 1 ? '' : 's'}`, 'lower');
+    return rows;
+  }
   best('Most Challenge Wins (Season)', d => num(d.challengeWins) || null, v => `${v} wins`);
   best('Most Immunity Wins (Season)', d => num(d.immunityWins) || null, v => `${v} wins`);
   best('Most Votes Against (Season)', d => num(d.votesReceived) || null, v => `${v} votes`);
@@ -293,6 +329,22 @@ export function triviaIn(careers, seasonsDb, format = 'all', bios = {}) {
     if (repeat) say('First to win twice', repeat.name, `${repeat.wins} wins in ${repeat.seasonsPlayed} seasons`);
   }
 
+  // The Circle: the Ratings and the catfish, never votes or challenges it doesn't have.
+  if (format === 'the-circle') {
+    const byInf = [...careers].sort((a, b) => (b.ci?.influencerTimes || 0) - (a.ci?.influencerTimes || 0))[0];
+    if (byInf?.ci?.influencerTimes) say('Most times an Influencer, career', byInf.name, `${byInf.ci.influencerTimes} times`);
+    const byTop = [...careers].sort((a, b) => (b.ci?.firstPlaces || 0) - (a.ci?.firstPlaces || 0))[0];
+    if (byTop?.ci?.firstPlaces) say('Most first places in the Ratings, career', byTop.name, `${byTop.ci.firstPlaces} first places`);
+    const catWin = careers.filter(c => c.details.some(d => num(d.placement) === 1 && d.ci?.mode === 'catfish'))
+      .sort((a, b) => Math.min(...a.details.filter(d => num(d.placement) === 1 && d.ci?.mode === 'catfish').map(d => num(d.season)))
+        - Math.min(...b.details.filter(d => num(d.placement) === 1 && d.ci?.mode === 'catfish').map(d => num(d.season))))[0];
+    if (catWin) {
+      const d = catWin.details.find(x => num(x.placement) === 1 && x.ci?.mode === 'catfish');
+      say('First catfish to win', catWin.name, `season ${d.season}, as ${d.ci.profile || 'a catfish'}`);
+    }
+    const neverInf = careers.find(c => c.details.some(d => num(d.placement) === 1 && d.ci && !num(d.ci.influencerTimes)));
+    if (neverInf) say('Won without ever being an Influencer', neverInf.name, `season ${neverInf.details.find(d => num(d.placement) === 1).season}`);
+  } else {
   // A winner the house never wrote down once.
   const clean = careers.find(c => c.details.some(d => num(d.placement) === 1 && num(d.votesReceived) === 0));
   if (clean) {
@@ -305,6 +357,7 @@ export function triviaIn(careers, seasonsDb, format = 'all', bios = {}) {
   if (byChal?.challengeWins) say('Most challenge wins, career', byChal.name, `${byChal.challengeWins} wins`);
   const byVotes = [...careers].sort((a, b) => b.votesAgainst - a.votesAgainst)[0];
   if (byVotes?.votesAgainst) say('Most votes against, career', byVotes.name, `${byVotes.votesAgainst} votes`);
+  }
 
   // ── demographic, only where the data exists ──
   const withBio = careers
@@ -425,7 +478,7 @@ export function franchiseRecords({ players, seasonsDb, roster, voices, format = 
     seasons,
     careers,
     champions: championsIn(seasonsDb, format),
-    boards: careerBoards(careers),
+    boards: careerBoards(careers, format),
     milestones: milestonesIn(careers, format),
     returnees: returneesIn(careers),
     ...triviaIn(careers, seasonsDb, format, bios),

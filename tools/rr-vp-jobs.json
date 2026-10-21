@@ -470,6 +470,14 @@
       "new": true,
       "ref": "task-9436279",
       "why": "the catacombs in stages (2026-10-20): a narrow underground tunnel with its walls stacked with old bones and skulls, a dead end, a floor to stand on; no plate shows bones (stand-in: the lamp-lit tunnel under the quay, task-9436279)"
+    },
+    {
+      "place": "great-wall-hills",
+      "src": "11-great-wall-hills",
+      "file": "task-plane-door",
+      "new": true,
+      "ref": "present-9440276",
+      "why": "the skydive in stages (2026-10-21): inside the small prop plane, the side door open on the sky, the city and the round stadium far below, a floor to stand on by the door; no plate shows the inside of the plane (stand-in: the aerial view past the wing strut, present-9440276)"
     }
   ]
 }

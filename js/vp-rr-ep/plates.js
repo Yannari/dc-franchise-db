@@ -109,6 +109,8 @@ export const PLACE_PLATES = {
   },
   'great-wall-hills': {
     src: '11-great-wall-hills', title: 'present-9440465', opener: p('task-9440558', 96, [8, 92]),
+    // (inside the plane at its open door: a job in edit/; only the skydive's first stage)
+    stageOnly: [repaint('task-plane-door', p('task-plane-door', 90, [8, 60]), null)].filter(Boolean),
     arrive: [p('arrive-9440243', 93, [40, 96])],
     props: { skewers: 'Cartoon Deep-Fried Bug Skewers-3', vendor: 'Elderly food vendor character cutout-7', rickshaw: 'Empty red-seated cartoon rickshaw-5',
       chute: 'Inflated tandem parachute canopy cutout-4', plane: 'Total Drama single-prop plane-6' },
@@ -1033,6 +1035,34 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'great-wall-hills': {
+    // (the plane's door, the stadium from the air, the field; the food stall and its fryer; the mountain road, the wall)
+    skydive: {
+      'the-door': { label: 'THE DOOR', ...repaint('task-plane-door',
+        { plate: ['task-plane-door', {}], fail: ['task-plane-door', {}] },
+        { plate: ['present-9440276', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'para', prop: 'chute', path: [[80, -8], [74, 10], [68, 26]] }],
+          fail: ['present-9440276', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'para', prop: 'chute', path: [[80, -8], [74, 10], [68, 26]] }] }), stamp: 'FROZEN' },
+      'the-jump': { label: 'THE JUMP', plate: ['present-9440276', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'para', prop: 'chute', path: [[70, -6], [60, 24], [52, 48]] }] },
+      'the-drift': { label: 'STEER FOR THE STADIUM', plate: ['present-9440425', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'para', prop: 'chute', path: [[30, 4], [36, 26], [42, 44]] }],
+        fail: ['present-9440425', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'para', prop: 'chute', path: [[40, 4], [62, 34], [88, 70]] }], stamp: 'OFF COURSE' },
+      'the-landing': { label: 'THE LANDING', plate: ['task-9440310', { mode: 'para' }], fail: ['task-9440310', { mode: 'para' }], stamp: 'TUMBLE' },
+      'centre-tip': { label: 'THE TIP', plate: ['task-9440310', { deco: [['tip@race', 50, 94, 3]] }] },
+    },
+    skewers: {
+      'the-tray': { label: 'THE TRAY', plate: ['task-9440338', {}], fail: ['task-9440338', {}], stamp: 'IT MOVED' },
+      'thread-em': { label: 'ON THE STICKS', plate: ['task-9440338', { deco: [['skewers', 40, 97, 7]] }], fail: ['task-9440338', { deco: [['skewers', 40, 97, 7]] }], stamp: 'ESCAPED' },
+      'the-fryer': { label: 'THE FRYER', plate: ['task-9440339', { fx: 'steam' }], fail: ['task-9440339', { fx: 'steam' }], stamp: 'BURNT' },
+      'eat-em': { label: 'EAT THEM', plate: ['task-9440339', { mode: 'eat' }], fail: ['task-9440339', { mode: 'eat' }], stamp: 'NEW BATCH' },
+      'empty-sticks': { label: 'EMPTY STICKS', plate: ['task-9440338', {}] },
+    },
+    rickshaw: {
+      'pick-up': { label: 'THE RICKSHAW', plate: ['task-9440527', { mode: undefined, prop: undefined, path: undefined, fx: undefined, deco: [['rickshaw', 30, 93, 16]] }] },
+      'the-climb': { label: 'UPHILL', plate: ['task-9440527', { mode: 'ride' }], fail: ['task-9440527', { mode: undefined, prop: undefined, path: undefined, fx: undefined, deco: [['rickshaw', 46, 93, 16]] }], stamp: 'STALLED' },
+      'the-bump': { label: 'THE BROKEN ROAD', plate: ['task-9440758', { mode: 'ride', prop: 'rickshaw', path: [[-14, 93], [40, 92], [114, 93]], fx: 'dust' }],
+        fail: ['task-9440758', { deco: [['rickshaw', 40, 93, 16]] }], stamp: 'WHEEL OFF' },
+      'the-wall': { label: 'THE WALL', plate: ['task-9440558', {}] },
     },
   },
   'glass-tower-gulf': {

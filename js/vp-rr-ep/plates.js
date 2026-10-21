@@ -1037,6 +1037,27 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'rock-north': {
+    // (the sauna hut and its bench by the stove; the river's floes and the open water; backstage and the outdoor stage)
+    sauna: {
+      'sauna-door': { label: 'THE SAUNA', plate: ['task-9440922', { fx: 'steam' }] },
+      'the-heat': { label: 'THE HEAT', plate: ['task-9440800', { mode: 'sweat' }], fail: ['task-9440800', { mode: undefined, prop: undefined, fx: 'steam' }], stamp: 'STEPPED OUT' },
+      'the-melt': { label: 'MELTING', plate: ['task-9440800', { mode: 'sweat' }], fail: ['task-9440800', { mode: undefined, prop: undefined, fx: 'steam' }], stamp: 'STEPPED OUT' },
+      'timer-rings': { label: 'TIME!', plate: ['task-9440800', { mode: undefined, prop: undefined, fx: 'steam' }] },
+    },
+    'ice-river': {
+      'river-bank': { label: 'THE BANK', plate: ['task-9440922', { fx: 'steam' }], fail: ['task-9440922', { fx: 'steam' }], stamp: 'NOT YET' },
+      'floe-hop': { label: 'FLOE TO FLOE', plate: ['task-9440942', { mode: 'hop' }], fail: ['task-9440980', { mode: 'swim' }], stamp: 'SPLASH!' },
+      'the-gap': { label: 'THE LAST GAP', plate: ['task-9440980', { mode: 'swim' }], fail: ['task-9440980', { mode: 'swim' }], stamp: 'TOO COLD' },
+      'far-bank-box': { label: 'THE FAR BANK', plate: ['task-9440922', { fx: 'snow', deco: [['donbox@race', 80, 94, 6]] }] },
+    },
+    'air-guitar': {
+      backstage: { label: 'BACKSTAGE', plate: ['task-9441040', {}], fail: ['task-9441040', {}], stamp: 'STAGE FRIGHT' },
+      'the-riff': { label: 'THE RIFF', plate: ['task-9441025', { mode: 'guitar' }], fail: ['task-9441025', { mode: 'guitar' }], stamp: 'BOO!' },
+      'the-meter': { label: 'THE METER', plate: ['task-9441025', { mode: 'guitar' }], fail: ['task-9441025', { mode: 'guitar' }], stamp: 'NEXT SONG' },
+      encore: { label: 'ENCORE', plate: ['task-9441310', {}] },
+    },
+  },
   'great-wall-hills': {
     // (the plane's door, the stadium from the air, the field; the food stall and its fryer; the mountain road, the wall)
     skydive: {

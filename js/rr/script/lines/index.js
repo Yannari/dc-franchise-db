@@ -135,6 +135,7 @@ import stagesHauntedCastle from './stages/haunted-castle.js';
 import stagesLeiIsland from './stages/lei-island.js';
 import stagesGlassTowerGulf from './stages/glass-tower-gulf.js';
 import stagesGreatWallHills from './stages/great-wall-hills.js';
+import stagesRockNorth from './stages/rock-north.js';
 import iceRiver from './places/ice-river.js';
 import snowPeaks from './places/snow-peaks.js';
 import jungleRuins from './places/jungle-ruins.js';
@@ -159,7 +160,7 @@ const FILES = [partners, partners1, partners2, partners3, partners4, partners5, 
   neonDesert, pyramidCoast, stiltRiver, frozenMine,
   teaHills, pampasRanch, gameShowCity, iceRiver,
   // the staged challenges, stage by stage (2026-10-20)
-  stagesAny, stagesIceRiver, stagesPampasRanch, stagesHomeCity, stagesRedSandDesert, stagesIronTowerCity, stagesCoastPalace, stagesGeyserIsland, stagesCarnivalRainforest, stagesHauntedCastle, stagesLeiIsland, stagesGlassTowerGulf, stagesGreatWallHills,
+  stagesAny, stagesIceRiver, stagesPampasRanch, stagesHomeCity, stagesRedSandDesert, stagesIronTowerCity, stagesCoastPalace, stagesGeyserIsland, stagesCarnivalRainforest, stagesHauntedCastle, stagesLeiIsland, stagesGlassTowerGulf, stagesGreatWallHills, stagesRockNorth,
   snowPeaks, jungleRuins, glassPyramidCity, fishingCove,
   cliffPoolIsle, twinTowerBridge, marbleTempleHill, secretBaseDesert,
   fjordSea, greatFalls, bambooWallHills, grassSavanna, stoneHeadIsland, badlands];

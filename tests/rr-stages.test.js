@@ -67,7 +67,7 @@ describe('rr challenges in stages', () => {
     expect(n).toBeGreaterThan(30);
   });
 
-  it('follows a few teams through every stage of a staged challenge, the first one there among them', () => {
+  it('follows a few teams through every stage of a staged challenge', () => {
     for (const { res, aired } of runs) aired.forEach((ep, i) => {
       const place = res.legs[i].place;
       for (const [p, s] of STAGED) {
@@ -76,16 +76,20 @@ describe('rr challenges in stages', () => {
         const teams = [...new Set(segs.map(x => x.teams[0]))];
         expect(teams.length, `leg ${ep.n} ${s}`).toBeGreaterThanOrEqual(1);
         expect(teams.length).toBeLessThanOrEqual(3);
+        // the first two followed go through every stage; a third is seen at its trouble and its finish (director.js
+        // stageBeats `brief`: a stage's own lines are written for two teams)
+        let full = 0;
         for (const tm of teams) {
           const mine = segs.filter(x => x.teams[0] === tm);
           const stages = stagesOf(p, s, mine[0].side);
           // (a team that gives up gets only as far as it got: the high jump's leap, three misses and out)
           const reached = (res.state.taskLog || []).filter(r => r.leg === res.legs[i].n && r.team === tm && r.stretch === s)
             .some(r => r.quit) ? new Set(mine.map(x => x.stage)).size : Math.min(3, stages.length);
-          expect(new Set(mine.map(x => x.stage)).size, `${s} ${tm}`).toBeGreaterThanOrEqual(reached);
+          expect(new Set(mine.map(x => x.stage)).size, `${s} ${tm}`).toBeGreaterThanOrEqual(1);
+          if (new Set(mine.map(x => x.stage)).size >= reached) full++;
         }
-        const first = (res.state.taskLog || []).filter(r => r.leg === res.legs[i].n && r.stretch === s).sort((x, y) => x.from - y.from)[0];
-        expect(teams, `leg ${ep.n} ${s}: the first team there is followed`).toContain(first.team);
+        expect(full, `leg ${ep.n} ${s}: a team through every stage`).toBeGreaterThanOrEqual(1);
+        // (which teams: a different set at each challenge, rr-focus.test.js; no longer always the first one there)
       }
     });
   });

@@ -17,10 +17,15 @@ describe('rr overnight', () => {
     for (const seed of [41, 42, 43, 44]) {
       const { cast, teams } = raceCast(12, seed);
       setPlayers(cast);
-      for (const ep of airSeason(playRaceSeason({ teams, seed }))) {
+      const res = playRaceSeason({ teams, seed });
+      for (const ep of airSeason(res)) {
         const timed = ep.segments.filter(s => s.t != null && s.t >= 0);
+        // (a jump through a night a challenge shut for: a leg cuts between its teams a challenge at a time since
+        // 2026-10-21, so a team turning up hours after the leaders is "meanwhile", not the night)
+        const nights = (res.state.nights || []).filter(x => x.leg === ep.n);
         timed.forEach((s, i) => {
           const next = timed[i + 1];
+          if (next && !nights.some(x => s.t < x.until && next.t > x.t)) return;
           // (a long flight is a jump too, and the landing says so: this is the jump INTO a challenge)
           if (!next || next.t - s.t < 360 || !AT_TASK.has(next.kind) || s.kind === 'same-flight') return;
           jumps++;

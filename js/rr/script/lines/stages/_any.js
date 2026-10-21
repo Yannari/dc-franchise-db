@@ -1,30 +1,84 @@
-// A stage of a staged challenge with no lines of its own yet (each place's stage lines win: lines/stages/<place>.js).
+// A stage of a staged challenge with no lines of its own yet, or whose own lines a team before has already said (each
+// place's stage lines win: lines/stages/<place>.js). Since a challenge in stages follows a different set of teams each
+// time (2026-10-21: the director's fair share), a third team through a stage is common, so these are many and work
+// whether one partner is doing it (a Botch or Watch) or both are. Whole sentences, said the way people talk (the
+// user, 2026-10-21: "speak like a human").
 const by = (b, say) => ({ by: b, say });
 const beat = s => ({ beat: s });
 
 export default {
   'task-stage.ok': [
     { id: 'stg.ok1', turns: [
-      by('a', "That's one part done. Keep going."),
-      by('b', "Is it the hard part?"),
-      by('a', "Every part's the hard part."),
+      by('a', "Okay, that's one part done."),
+      by('b', "Please tell me that was the hard part."),
+      by('a', "I don't think there is an easy part."),
     ] },
     { id: 'stg.ok2', turns: [
-      beat('{a} and {b} get through it and stop for one breath, no more.'),
-      by('b', "Next bit. Don't think. Next bit."),
-      by('a', "Not thinking. Going."),
+      beat('{a} gets through it and takes a second to catch {a.posAdj} breath.'),
+      by('b', "You're good, keep going, you're doing great."),
+      by('a', "Yeah, yeah, I'm going."),
+    ] },
+    { id: 'stg.ok3', turns: [
+      by('b', "Okay, that part's done."),
+      by('a', "Don't get excited yet, there's still more to do."),
+      by('b', "I'm not excited, I'm just glad it's over."),
+    ] },
+    { id: 'stg.ok4', turns: [
+      beat('{a} gets it on the first try and looks back at {b}, surprised.'),
+      by('a', "Wait, did that actually work?"),
+      by('b', "It did, so don't think about it, just keep moving."),
+    ] },
+    { id: 'stg.ok5', turns: [
+      by('a', "How are we doing on time?"),
+      by('b', "I have no idea, but that was faster than the last part."),
+      by('a', "Okay, I'll take that."),
+    ] },
+    { id: 'stg.ok6', turns: [
+      by('b', "That's one down. Just keep doing what you're doing."),
+      by('a', "I'm trying really hard not to think about the next one."),
+      by('b', "Then don't think about it, just go."),
+    ] },
+    { id: 'stg.ok7', turns: [
+      by('a', "I honestly can't believe that worked."),
+      by('b', "Me neither, but I'm not complaining."),
+      by('a', "Let's keep going before our luck runs out."),
+    ] },
+    { id: 'stg.ok8', turns: [
+      by('b', "We're actually doing this."),
+      by('a', "Are we doing it well, though?"),
+      by('b', "We're doing it, and right now that's good enough."),
     ] },
   ],
   'task-stage.fail': [
     { id: 'stg.f1', turns: [
-      beat('It goes wrong, all at once.'),
-      by('b', "Back. We go back and do it again."),
-      by('a', "I know. I know. Don't say it twice."),
+      beat('It all goes wrong at once.'),
+      by('b', "Okay, we have to go back and do it again."),
+      by('a', "I know, you don't have to tell me twice."),
     ] },
     { id: 'stg.f2', turns: [
-      by('a', "That was nearly it."),
-      by('b', "Nearly isn't it. Again."),
-      beat('{a} and {b} go back to the start of that part and try it again.'),
+      by('a', "That was so close."),
+      by('b', "Close doesn't count, we have to do it again."),
+      beat('{a} goes back to the start of that part and tries it again.'),
+    ] },
+    { id: 'stg.f3', turns: [
+      by('a', "No, no, no, come on!"),
+      by('b', "It's okay, it's fine, just try it again."),
+      by('a', "It's not fine, but okay, I'll try it again."),
+    ] },
+    { id: 'stg.f4', turns: [
+      beat('{b} watches it go wrong and puts both hands on {b.posAdj} head.'),
+      by('b', "We were so close!"),
+      by('a', "Then next time we'll get it. Come on."),
+    ] },
+    { id: 'stg.f5', turns: [
+      by('a', "Okay, I'm going to go slower this time."),
+      by('b', "Yeah, slower is good, take your time."),
+      beat('{a} lets out a long breath and goes back to try it again.'),
+    ] },
+    { id: 'stg.f6', turns: [
+      by('b', "What happened there?"),
+      by('a', "I rushed it, I know I rushed it."),
+      by('b', "Then stop and pace yourself. We've got time... well, kinda."),
     ] },
   ],
 };

@@ -20,6 +20,7 @@ export function airSeason(result) {
   st.relTagsSaid = null;           // the premiere's relationship lines (write.js), one per team
   st.quickCount = {};
   st.storyAired = {};
+  st.followCount = {};             // who a challenge in stages has followed this season (director.js)
   const eps = [];
   for (const [i, l] of result.legs.entries()) {
     // "previously on", from what aired last time (before this leg's words spend the ledger)

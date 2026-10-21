@@ -71,6 +71,10 @@ const teamOf = (st, n) => Object.keys(st.teams).find(id => st.teams[id].a === n 
 
 // what a confessional about a moment adds to its claim on the airtime (about two small bond moves)
 const IV_BONUS = 2;
+// a fair share (ten teams or fewer): what a moment gains for each moment its least-seen team is behind the average, and
+// for being between two teams
+const FAIR = 0.35;
+const BETWEEN = 0.75;
 
 // how much a moment changed (what makes one task moment worth more than another)
 function weight(sc) {
@@ -93,8 +97,9 @@ const gapWords = m => (m < 40 ? 'half an hour' : m < 75 ? 'an hour' : m < 105 ? 
 const TASK_STRETCH = ['allin', 'botch', 'either', 'superteam', 'route'];
 function narrate(state, leg, scenes) {
   const n = leg.n, out = [];
-  const add = (ending, t, slots) => out.push({ scene: null, beat: `narr:${n}:${ending}:${out.length}`, kind: 'don-narrate', ending, stretch: null,
-    t, teams: [], who: [], side: null, tier: 0,
+  // (`at`: the challenge a line is about, which places it in that challenge's part of the leg: cutByChallenge)
+  const add = (ending, t, slots, at = null) => out.push({ scene: null, beat: `narr:${n}:${ending}:${out.length}`, kind: 'don-narrate', ending, stretch: null,
+    t, teams: [], who: [], side: null, tier: 0, at,
     src: { id: `narr:${n}:${ending}:${out.length}`, leg: n, kind: 'don-narrate', who: [], seenBy: [], data: { ending, t, slots, snap: { place: leg.place } } } });
   // the premiere: Don's welcome, before the first team turns up (the introductions follow it, then his rules)
   if (n === 1) add('welcome', -3, {});
@@ -121,14 +126,14 @@ function narrate(state, leg, scenes) {
     const here = rows.filter(r => r.stretch === s.id).sort((x, y) => x.from - y.from)[0];
     if (!here) return;
     const behind = tasks.slice(0, i).reverse().find(p => rows.some(r => r.stretch === p.id && r.to > here.from));
-    if (behind) add('bridge', here.from, { team: teamRef(state, here.team), task: s.called, prevTask: behind.called });
+    if (behind) add('bridge', here.from, { team: teamRef(state, here.team), task: s.called, prevTask: behind.called }, s.id);
   });
   // a challenge shut for the night on teams still racing: Don says so as the first of them gets there (the clock jumps
   // to the morning after it; 2026-10-20 read: 18:49, then 08:28 with nothing between)
   const night = (state.nights || []).filter(x => x.leg === n).sort((x, y) => x.t - y.t)[0];
   if (night) {
     const s = (place?.stretches || []).find(x => x.id === night.stretch);
-    add('overnight', night.t + 0.5, { task: s?.called || 'the challenge' });
+    add('overnight', night.t + 0.5, { task: s?.called || 'the challenge' }, night.stretch);
   }
   // Don presents the Chill Zone just before the first team reaches it (not at the finale: its end is the stage)
   // (a team with a penalty steps onto the mat, hears it, and serves it before anybody checks in: that's the first one)
@@ -177,14 +182,17 @@ function taskBeat(state, row, i, kind = 'task-try') {
 // fails where they happened (two at most: a third fall in the river is the same moment again).
 const STAGE_FAILS = 2;
 const FOLLOW_AT_TASK = 3;
-function stageBeats(state, row, i) {
+const FOLLOW_MAX = 3;
+// (`brief`: the third team followed through a challenge is seen at its trouble and its finish, not at every stage: a
+// stage has its own lines for two teams, and a third through all of it heard the general ones seven times a season)
+function stageBeats(state, row, i, brief = false) {
   const [x, y] = people(state, row.team);
   const [a, b] = row.kind === 'botch' && row.who && [x, y].includes(row.who) ? [row.who, row.who === x ? y : x] : [x, y];
   // (one fail a stage, two at most; a team that gives up always airs the moment it gave up: Coast Palace's fin, three
   // misses, and the quit itself was the one cut)
   let fails = 0;
   const last = row.stages.length - 1, seen = new Set();
-  const keep = (e, j) => e.ok || (row.quit && j === last) || (!seen.has(e.id) && (seen.add(e.id), ++fails <= STAGE_FAILS));
+  const keep = (e, j) => (e.ok ? !brief || j === last : (row.quit && j === last) || (!seen.has(e.id) && (seen.add(e.id), ++fails <= STAGE_FAILS)));
   return row.stages.filter(keep).map((e, j) => ({
     id: `stage:${row.leg}:${row.team}:${row.stretch}:${i}:${j}`, leg: row.leg, kind: 'task-stage', who: [a, b], seenBy: [a, b],
     data: { ending: e.ok ? 'ok' : 'fail', team: row.team, stretch: row.stretch, stage: e.id, t: Math.round(e.t), from: row.from, to: row.to,
@@ -197,6 +205,68 @@ function followed(state) {
   const aired = state.storyAired || {};
   return new Set((state.threads || []).filter(t => !t.closed)
     .sort((x, y) => (aired[y.id] || 0) - (aired[x.id] || 0) || x.since - y.since).slice(0, FOLLOWED).map(t => t.id));
+}
+
+// The leg as the show cuts it, a challenge at a time (2026-10-21, the user: "the show focusing a lot on the first of the
+// race ... they share much focus until the last screen (chill zone) where all the screens are gathered"). In clock order
+// the leaders were always first to a challenge and the teams behind turned up only once the leaders were through it;
+// half the field was first seen racing after the first check-in. So each challenge is a part of its own: every team's
+// run of it, and the road that leads on from it, before anybody's next challenge ("meanwhile, back at the dive..."),
+// each part in clock order. The Chill Zone cuts back to the teams still out at the last challenge: a team's first
+// moment there airs in that challenge's part, and what it still has to do once the mat is open is intercut with the
+// check-ins, for the suspense of who is left out there.
+const MAT_KINDS = new Set(['don-place', 'mat-montage', 'don-elim', 'don-arrives', 'don-fakeout']);
+function cutByChallenge(segs, leg) {
+  const st = getPlace(leg.place)?.stretches || [];
+  const order = new Map(st.map((s, k) => [s.id, k]));
+  const tasks = st.filter(s => TASK_STRETCH.includes(s.kind)).map(s => order.get(s.id));
+  const M = tasks.length;
+  if (!M) return;
+  const matIds = new Set(st.filter(s => s.kind === 'mat').map(s => s.id).concat('mat'));
+  // the part of the leg a stretch is in: 0 the start and the road to the first challenge, k the k-th challenge and the
+  // road on from it, M + 1 the Chill Zone
+  const partOf = id => (id == null ? null : matIds.has(id) ? M + 1 : order.has(id) ? tasks.filter(k => k <= order.get(id)).length : null);
+  const runs = {};
+  for (const l of leg.log || []) (runs[l.id] ||= []).push(l);
+  for (const r of Object.values(runs)) r.sort((x, y) => x.from - y.from);
+  // where a team was at minute t (before its first stretch: at the start); a stop the place doesn't list (the Boomerang
+  // board, the airport) is part of the road it is on
+  const whereAt = (id, t) => {
+    const r = (runs[id] || []).filter(l => partOf(l.stretch) != null);
+    let at = r[0]?.stretch ?? null;
+    for (const l of r) if (l.from <= t + 0.01) at = l.stretch;
+    return at;
+  };
+  const START = new Set(['welcome', 'depart', 'flight-wait', 'first-landed', 'flight-landed']);
+  const part = new Map();
+  for (const x of segs) {
+    let p = partOf(x.stretch);
+    if (p == null && x.kind === 'don-narrate') p = x.at ? partOf(x.at) : START.has(x.ending) ? 0 : ['chill', 'last-stretch'].includes(x.ending) ? M + 1 : null;
+    if (p == null && x.teams.length) p = partOf(whereAt(x.teams[0], x.t));
+    if (p == null) p = partOf(whereAt(leg.order[0], x.t)) ?? 0;
+    part.set(x, p);
+  }
+  // an interview airs in the part of the moment it is about
+  const byScene = new Map(segs.filter(x => typeof x.scene === 'number').map(x => [x.scene, x]));
+  const aboutOf = x => (x.kind.startsWith('int-') ? byScene.get(x.src?.data?.about) : null);
+  // the Chill Zone cuts back: what a team still does in the last challenge's part once the mat is open (its first
+  // moment there excepted) is intercut with the check-ins
+  const opens = Math.min(...segs.filter(x => MAT_KINDS.has(x.kind)).map(x => x.t));
+  if (Number.isFinite(opens)) {
+    const lastTask = st.find(s => order.get(s.id) === tasks[M - 1])?.id;
+    // (its first moment at the challenge itself, not on the road to it; what came before that stays before it)
+    const firstThere = new Map();
+    segs.forEach((x, i) => { if (x.stretch === lastTask && x.teams.length && !firstThere.has(x.teams[0])) firstThere.set(x.teams[0], i); });
+    segs.forEach((x, i) => {
+      if (part.get(x) !== M || !x.teams.length || x.kind === 'don-narrate' || aboutOf(x)) return;
+      const first = firstThere.get(x.teams[0]);
+      if (first != null && i > first && x.t > opens) part.set(x, M + 1);
+    });
+  }
+  for (const x of segs) { const a = aboutOf(x); if (a) part.set(x, part.get(a)); }
+  // (a stable sort: within a part the clock order stands)
+  const idx = new Map(segs.map((x, i) => [x, i]));
+  segs.sort((x, y) => part.get(x) - part.get(y) || idx.get(x) - idx.get(y));
 }
 
 export function airLeg(state, leg) {
@@ -249,15 +319,32 @@ export function airLeg(state, leg) {
   const rows = (state.taskLog || []).filter(r => r.leg === n);
   const cleanAt = {};
   const pickStarts = {};
-  // at a staged challenge, the teams followed all the way through: the first one there, the one it went worst for,
-  // and a team with a story this leg (a storyline step or a chosen moment), up to three
+  // at a staged challenge, the teams followed all the way through, a different set at each one (2026-10-21, the user:
+  // "the show focusing a lot on the first of the race"; it followed the first team there through every challenge):
+  // the one it went worst for, a team with a story this leg, then the teams followed least this season, the back of
+  // the field before the front; nobody twice in a leg, and enough of them that a small field is nearly all seen
   const followAt = {};
   for (const r of rows.filter(r => r.stages?.length)) (followAt[r.stretch] ||= []).push(r);
-  for (const [sid, rs] of Object.entries(followAt)) {
-    const first = [...rs].sort((x, y) => x.from - y.from)[0];
-    const worst = [...rs].sort((x, y) => y.fails - x.fails || x.from - y.from)[0];
-    const storied = rs.find(r => scenes.some(s => picked.has(s.id) && s.data?.team === r.team));
-    followAt[sid] = new Set([first, worst, storied].filter(Boolean).map(r => r.team).slice(0, FOLLOW_AT_TASK));
+  {
+    const stretchOrder = new Map((getPlace(leg.place)?.stretches || []).map((s, k) => [s.id, k]));
+    const staged = Object.keys(followAt).sort((x, y) => (stretchOrder.get(x) ?? 0) - (stretchOrder.get(y) ?? 0));
+    const per = Math.max(FOLLOW_AT_TASK, Math.min(FOLLOW_MAX, Math.ceil(leg.order.length / Math.max(1, staged.length))));
+    const used = new Set();
+    state.followCount ||= {};
+    const storied = id => scenes.some(s => picked.has(s.id) && (s.data?.team === id || s.data?.other === id));
+    for (const sid of staged) {
+      // (a small field late in the season: when every team was followed at an earlier challenge, they all may be again)
+      const rs = followAt[sid].some(r => !used.has(r.team)) ? followAt[sid].filter(r => !used.has(r.team)) : followAt[sid];
+      const back = [...rs].sort((x, y) => y.from - x.from);
+      const pick = [];
+      const add = r => { if (r && !pick.includes(r) && pick.length < per) pick.push(r); };
+      add([...rs].filter(r => r.fails > 0).sort((x, y) => y.fails - x.fails || y.from - x.from)[0]);
+      add(back.find(r => storied(r.team)));
+      for (const r of [...back].sort((x, y) => (state.followCount[x.team] || 0) - (state.followCount[y.team] || 0))) add(r);
+      for (const r of pick) { used.add(r.team); state.followCount[r.team] = (state.followCount[r.team] || 0) + 1; }
+      followAt[sid] = new Set(pick.map(r => r.team));
+      followAt[sid].brief = new Set(pick.slice(2).map(r => r.team));
+    }
   }
   rows.forEach((r, i) => {
     if (r.stages?.length && followAt[r.stretch]?.has(r.team)) {
@@ -265,7 +352,7 @@ export function airLeg(state, leg) {
       const own = scenes.filter(s => s.data?.team === r.team && s.data?.stretch === r.stretch && !s.kind.startsWith('int-') && !picked.has(s.id)).filter(ok)
         .sort((x, y) => weight(y) - weight(x) || x.id - y.id)[0];
       if (own && own.kind !== 'attempt-fail') take(own, 1);
-      beats.push(...stageBeats(state, r, i));
+      beats.push(...stageBeats(state, r, i, followAt[r.stretch].brief?.has(r.team)));
       return;
     }
     const here = scenes.filter(s => s.data?.team === r.team && s.data?.stretch === r.stretch && !s.kind.startsWith('int-'));
@@ -350,18 +437,41 @@ export function airLeg(state, leg) {
   // were the ones cut, and a leg could air none (read 2026-10-19: four interviews played, none aired)
   const talkedAbout = new Set(scenes.filter(s => s.kind.startsWith('int-') && s.data?.about != null).map(s => s.data.about));
   const airWeight = s => weight(s) + (talkedAbout.has(s.id) ? IV_BONUS : 0);
+  // ten teams or fewer: a fair share (2026-10-21, the user: "every teams should get some focus ... maybe more inter team
+  // interactions"). Each spare moment goes to the strongest one left, raised for every moment the least-seen team in it
+  // is behind the field's average, and raised again when it is between two teams
+  const fair = leg.order.length <= BIG_CAST;
+  const sceneTeams = s => [...new Set([s.data?.team, s.data?.other, ...s.who.map(x => teamOf(state, x))].filter(id => id && leg.order.includes(id)))];
+  const seen = {};
+  const count = s => { for (const id of sceneTeams(s)) seen[id] = (seen[id] || 0) + 1; };
+  for (const [id] of picked) { const s = byId.get(id); if (s && !BACKGROUND.has(s.kind)) count(s); }
+  for (const b of beats) count(b);
+  const score = s => {
+    if (!fair) return airWeight(s);
+    const ts = sceneTeams(s);
+    const avg = leg.order.reduce((a, id) => a + (seen[id] || 0), 0) / leg.order.length;
+    const least = ts.length ? Math.min(...ts.map(id => seen[id] || 0)) : avg;
+    return airWeight(s) + FAIR * (avg - least) + (s.data?.other && ts.length > 1 ? BETWEEN : 0);
+  };
   for (const tier of [2, 3]) {
     const cands = scenes.filter(s => !picked.has(s.id) && tierOf(s) === tier && !s.kind.startsWith('int-'))
       .sort((x, y) => airWeight(y) - airWeight(x) || x.id - y.id);
-    for (const s of cands) {
-      if (budget <= 0) break;
-      if (picked.has(s.id) || !ok(s) || (optional[s.kind] || 0) >= PER_KIND) continue;
+    while (budget > 0) {
+      let s = null, best = -Infinity;
+      for (const x of cands) {
+        if (picked.has(x.id) || !ok(x) || (optional[x.kind] || 0) >= PER_KIND) continue;
+        if (causeOf(x) && budget < 2) continue;
+        const v = score(x);
+        if (v > best) { best = v; s = x; }
+        if (!fair) break;
+      }
+      if (!s) break;
       const c = causeOf(s);
-      if (c && budget < 2) continue;
       take(s, tier);
+      count(s);
       optional[s.kind] = (optional[s.kind] || 0) + 1;
       budget--;
-      if (c) { takeCause(c); budget--; }
+      if (c) { takeCause(c); count(c); budget--; }
     }
   }
   // ...and a moment that had to air brings its cause too, while the budget lasts
@@ -529,6 +639,7 @@ export function airLeg(state, leg) {
   const phase = k => (k === 'don-demo' ? -2 : k === 'decide-side' ? -1 : k.startsWith('task-') ? 0 : 1);
   segs.sort((x, y) => x.t - y.t || phase(x.kind) - phase(y.kind)
     || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
+  if (leg.kind !== 'final') cutByChallenge(segs, leg);
   // the finale's third team is cut at the halfway mat before the final dash, the way the show cuts it (the user,
   // 2026-10-19: it aired after the winners were crowned, because that's when the team got there): the cut airs just
   // after the second finalist leaves the halfway mat, their own racing before it, their goodbye after it

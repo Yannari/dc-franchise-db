@@ -35,10 +35,19 @@ describe('rr director', () => {
     });
   });
 
-  it('runs in clock order', () => {
-    for (const ep of aired) {
-      const ts = ep.segments.map(s => s.t).filter(t => t != null);
-      for (let i = 1; i < ts.length; i++) expect(ts[i]).toBeGreaterThanOrEqual(ts[i - 1]);
+  // (a leg cuts between its teams a challenge at a time, so the episode's clock goes back for "meanwhile": each team's
+  // own story still runs forward; rr-focus.test.js holds the parts. The finale keeps one clock)
+  it('runs each team\'s own story in clock order', () => {
+    for (const [i, ep] of aired.entries()) {
+      if (res.legs[i].kind === 'final') {
+        const ts = ep.segments.map(s => s.t).filter(t => t != null);
+        for (let k = 1; k < ts.length; k++) expect(ts[k]).toBeGreaterThanOrEqual(ts[k - 1]);
+        continue;
+      }
+      for (const id of res.legs[i].order) {
+        const ts = ep.segments.filter(s => s.teams[0] === id && !s.kind.startsWith('int-') && !s.kind.startsWith('don-')).map(s => s.t);
+        for (let k = 1; k < ts.length; k++) expect(ts[k], `leg ${ep.n} ${id} #${k}`).toBeGreaterThanOrEqual(ts[k - 1]);
+      }
     }
   });
 

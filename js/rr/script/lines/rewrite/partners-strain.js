@@ -95,7 +95,7 @@ export default {
         { by: 'a', ...V("He said it was a special price.", "He said special price.", "It was a special price.", "He SAID it was a SPECIAL price!", "He told me it was a special price.", "He said special price. I believed in him.") },
         { by: 'b', say: "It was special. It was specially twice as much." },
         { by: 'a', say: "Well, you were asleep in the back. You can't blame the awake one." },
-        { by: 'b', say: "I can blame the awake one for being awake and bad at maths." },
+        { by: 'b', say: "I can blame you for paying double. I was asleep, not stupid." },
         { beat: 'They count what\'s left. It does not take long.' },
       ] },
     ],

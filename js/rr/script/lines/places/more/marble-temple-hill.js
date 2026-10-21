@@ -57,7 +57,7 @@ const hurdles = {
       { beat: 'This time {a} and {b} walk the whole track first, counting out loud between every hurdle, then run it back to the start and go.' },
       { by: 'a', say: "Five, jump, five, jump, five, jump!" },
       { beat: 'Five steps, jump, all the way down, and every hurdle is still standing at the end.' },
-      { by: 'b', say: "Maths! We beat the hurdles with maths!" },
+      { by: 'b', say: "It worked! We counted our way down and it actually worked!" },
     ] },
   ],
   'task-try.struggling': [

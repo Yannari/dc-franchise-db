@@ -1435,7 +1435,7 @@ export default {
           odd: "One reason each. The better reason wins. No arguing after. Like a tiny court." } },
       { by: 'b', say: "Fine. Mine's shorter. Shorter means we finish faster.",
         v: { sharp: "Fine. Mine's shorter, so we finish faster.", dry: "Mine's shorter. We finish faster.", loud: "FINE! Mine's SHORTER, and shorter means we finish FASTER!",
-          soft: "Okay. Mine's shorter, and shorter means we finish faster.", odd: "Fine. Mine's shorter. Shorter is faster. That's maths." } },
+          soft: "Okay. Mine's shorter, and shorter means we finish faster.", odd: "Fine. Mine's shorter. So, you know. Faster." } },
       { by: 'a', say: "Mine was... okay, yours is better. Fine. Yours.",
         v: { sharp: "Mine was... fine, yours is better. Yours.", dry: "Yours is better. Yours.", loud: "Mine WAS... OKAY, yours is better! FINE, we do yours!",
           soft: "Mine was... okay, yours is better. Fine. Let's do yours.", odd: "Mine was... no, yours is better. Court has decided. Yours." } },
@@ -1969,7 +1969,7 @@ export default {
         v: { sharp: "Ten each is twenty. It's not hard to work out. I just didn't.", dry: "Ten each. That's twenty. Not hard. I didn't work it out.",
           loud: "TEN EACH, that's TWENTY! It's not HARD to work out, I just DIDN'T!",
           soft: "Ten each. That's twenty. It's really not hard to work out, I just didn't work it out.",
-          odd: "Ten each. Twenty. It's simple maths. My brain was on a break." } },
+          odd: "Ten each. That's twenty. I don't know where my head was." } },
     ] },
     { id: 'm2.69', turns: [
       { by: 'b', say: "We've got... hang on, let me see what we've got.",
@@ -4130,7 +4130,7 @@ export default {
         v: { sharp: "It wasn't personal with {c} and {d}. That made it worse, somehow.", dry: "Not personal with {c} and {d}. Somehow worse.",
           loud: "It WASN'T personal with {c} and {d}! Somehow that made it feel WORSE!",
           soft: "It wasn't personal with {c} and {d}. Somehow that made it feel even worse.",
-          odd: "It wasn't personal with {c} and {d}. Just maths. Somehow maths feels worse than spite." } },
+          odd: "It wasn't personal with {c} and {d}. It was just the numbers, and that's almost worse." } },
     ] },
     { id: 'm2.158', when: { relFam: 'romantic' }, turns: [
       { by: 'b', say: "Babe, I know you like {c}. I like {c} too.",

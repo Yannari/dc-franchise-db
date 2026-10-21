@@ -111,7 +111,7 @@ const stairs = {
     { id: 'sky.ts-s2', when: TS, turns: [
       { by: 'b', say: "Eighty-six flights. Less than the first tower." },
       { by: 'a', say: "We're a lot more tired than we were on the first tower." },
-      { by: 'b', say: "Don't do maths. Just climb." },
+      { by: 'b', say: "Then stop counting and climb." },
     ] },
     { id: 'sky.ts-s3', when: TS, turns: [
       { beat: '{a} stretches {a.posAdj} calves on the bottom step.' },

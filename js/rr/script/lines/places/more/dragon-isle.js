@@ -155,7 +155,7 @@ const rugs = {
     { id: 'drg2.ru-t2', when: RU, turns: [
       { beat: '{a} and {b} sit on top of the mountain of rugs, sweating, surrounded by unrolled cloth in every direction.' },
       { by: 'b', say: "We've made it bigger. The pile was smaller when we got here." },
-      { by: 'a', say: "Unrolled rugs take up more room. That's maths." },
+      { by: 'a', say: "Yeah. Turns out rugs get bigger when you unroll them." },
     ] },
   ],
   'attempt-fail.any': [

@@ -13,7 +13,7 @@ const tower = {
       { beat: 'A sign by the first step says "1". {a} and {b} look up the stairwell. It disappears into the dark.' },
       { by: 'b', say: "One. We've done one." },
       { by: 'a', say: "Only a hundred and forty-three to go." },
-      { by: 'b', say: "Don't do maths at me." },
+      { by: 'b', say: "Why would you tell me that?" },
     ] },
     { id: 'hc2.st-s2', when: STAIRS, turns: [
       { by: 'a', ...V("Elevators are for people who want to lose. We're climbing.", "Elevators are for losers.", "We climb.", "ELEVATORS are for LOSERS! We're CLIMBING!", "I think elevators are for people who want to lose, so we're climbing.", "The stairs are honest. The elevator lies.") },

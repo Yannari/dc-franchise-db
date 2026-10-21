@@ -368,7 +368,7 @@ const gorge = {
     { id: 'cvr.go-t2', when: GO, turns: [
       by('b', "That's fifty coconuts. Fifty coconuts, and nothing."),
       by('a', "There are nine hundred and fifty to go."),
-      by('b', "Please don't do the maths out loud."),
+      by('b', "Okay, I didn't need to hear that."),
     ] },
     { id: 'cvr.go-t3', when: GO, turns: [
       beat('{a} climbs out of the river for the third time, dripping, covered in leaves.'),

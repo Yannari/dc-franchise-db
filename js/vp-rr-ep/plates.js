@@ -1024,6 +1024,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const CORRAL_EMU = [['emu', 70, 94, 9, { move: 'wander', span: 14, dur: 5 }]];
 const PATROL = [['soldier', 92, 90, 13, { move: 'wander', span: -6, dur: 10 }]];
 const GUARDS = REPAINTED.has('royal-guard') ? [['guard', 72, 96, 7], ['guard', 82, 96, 7], ['guard', 92, 96, 7]] : [];
 const SHACK = repaint('task-shack-inside', 'task-shack-inside', 'arrive-22415967');
@@ -1062,6 +1063,30 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'red-outback': {
+    // (the emu corral; the bungee platform on the rock, the rock face, the sheep pen below; the shearing pen)
+    'emu-catch': {
+      'the-corral': { label: 'THE CORRAL', plate: ['task-22419889', { mode: undefined, prop: undefined, deco: CORRAL_EMU }] },
+      'emu-chase': { label: 'THE CHASE', plate: ['task-22419889', { mode: 'chase' }], fail: ['task-22419889', { mode: undefined, prop: undefined, deco: CORRAL_EMU }], stamp: 'FACE IN THE DIRT' },
+      'the-halter': { label: 'THE HALTER', plate: ['task-22419889', { mode: 'chase' }], fail: ['task-22419889', { mode: undefined, prop: undefined, deco: CORRAL_EMU }], stamp: 'BOLTED' },
+      mounted: { label: 'MOUNTED', plate: ['task-22419889', { mode: 'ride', prop: 'emu', path: [[30, 94], [48, 94], [64, 94]], fx: 'dust' }] },
+    },
+    'sheep-bungee': {
+      'the-platform': { label: 'THE PLATFORM', plate: ['task-22419968', { mode: undefined, prop: undefined, path: undefined }], fail: ['task-22419968', { mode: undefined, prop: undefined, path: undefined }], stamp: 'NOT JUMPING' },
+      'the-drop': { label: 'THE DROP', plate: ['task-22419612', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', inset: 'ON THE ROCK', path: [[64, -6], [64, 30], [64, 66], [64, 92]] }] },
+      'sheep-grab': { label: 'GRAB A SHEEP', plate: ['task-22419761', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', inset: 'ON THE ROCK', path: [[50, -6], [50, 40], [50, 80], [50, 40]] }],
+        fail: ['task-22419761', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', inset: 'ON THE ROCK', path: [[50, -6], [50, 40], [50, 80], [50, 20]] }], stamp: 'NO SHEEP' },
+      'pulled-up': { label: 'BACK UP', plate: ['task-22419611', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'sheep', inset: 'ON THE ROCK', path: [[50, 96], [50, 60], [50, 24], [50, -6]] }],
+        fail: ['task-22419611', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', inset: 'ON THE ROCK', path: [[50, 96], [50, 60], [50, 24], [50, -6]] }], stamp: 'DROPPED IT' },
+    },
+    shearing: {
+      'hold-still': { label: 'HOLD STILL', plate: ['task-22419762', { mode: undefined, prop: undefined, judge: null, deco: [['sheep', 74, 97, 8]] }],
+        fail: ['task-22419762', { mode: undefined, prop: undefined, judge: null, deco: [['sheep', 80, 97, 7, { move: 'wander', span: -20, dur: 3 }]] }], stamp: 'IT KICKED' },
+      'the-clippers': { label: 'THE CLIPPERS', plate: ['task-22419762', { mode: 'shear' }], fail: ['task-22419762', { mode: 'shear' }], stamp: 'OUCH' },
+      'bald-sheep': { label: 'ANY BRAND?', plate: ['task-22419762', { mode: 'shear' }], fail: ['task-22419762', { mode: 'shear' }], stamp: 'NO BRAND' },
+      'the-brand': { label: 'THE BRAND', plate: ['task-22419761', { fx: 'sparkle' }] },
     },
   },
   'secret-base-desert': {

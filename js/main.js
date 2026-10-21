@@ -434,10 +434,46 @@ window.CHALLENGES = {
 // INIT
 // ══════════════════════════════════════════════════════════════════════
 
+// ── HOW LONG THE START TOOK, AND WHERE ──
+// The user, 2026-10-21: "i got the same loading issue in my simulator.html and i never manage to fix it". A
+// clean browser opens in seconds; theirs takes minutes, and the difference is their save, which only their
+// browser has. So the start times itself: each step, and the freezes after the page is up (a long task is the
+// page not answering). When it was slow, a box says where the time went, to screenshot.
+const _bootT0 = performance.now();          // the scripts are already downloaded and run by here
+const _boot = [['download and run the scripts', Math.round(_bootT0)]];
+let _bootLast = _bootT0;
+const _bootStep = label => { const t = performance.now(); _boot.push([label, Math.round(t - _bootLast)]); _bootLast = t; };
+const _freezes = [];
+try {
+  new PerformanceObserver(l => { for (const e of l.getEntries()) _freezes.push([Math.round(e.startTime), Math.round(e.duration)]); })
+    .observe({ type: 'longtask', buffered: true });
+} catch { /* not every browser has it */ }
+function _bootReport() {
+  const ready = Math.round(performance.now());
+  setTimeout(() => {
+    const after = _freezes.filter(([at]) => at > ready);
+    const frozen = after.reduce((n, [, d]) => n + d, 0);
+    if (ready < 6000 && frozen < 5000) return;
+    const s = ms => `${(ms / 1000).toFixed(1)}s`;
+    const lines = [`Ready after ${s(ready)}.`, ..._boot.filter(([, ms]) => ms >= 300).sort((a, b) => b[1] - a[1]).map(([k, ms]) => `${s(ms)}  ${k}`)];
+    if (frozen >= 1000) lines.push(`Then frozen ${s(frozen)} in the next 20 seconds (longest ${s(Math.max(...after.map(([, d]) => d)))} at ${s(after.sort((a, b) => b[1] - a[1])[0][0])}).`);
+    console.info('[startup]\n' + lines.join('\n'));
+    const box = document.createElement('div');
+    box.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:9999;max-width:420px;padding:10px 12px;background:var(--surface,#141c26);color:var(--text,#e2e8f0);'
+      + 'border:1px solid #f59e0b;box-shadow:0 12px 30px rgba(0,0,0,.45);font:12px/1.45 var(--font-body,system-ui);white-space:pre-wrap';
+    box.innerHTML = '<b>Slow start: where the time went</b><button type="button" style="float:right;background:none;border:0;color:inherit;cursor:pointer">✕</button>\n';
+    box.appendChild(document.createTextNode(lines.join('\n')));
+    box.querySelector('button').onclick = () => box.remove();
+    document.body.appendChild(box);
+  }, 20000);
+}
+
 async function init() {
   buildStatSliders();
   buildAdvantageList();
+  _bootStep('build the setup controls');
   await loadAll();
+  _bootStep('read the saved season and its checkpoint list');
   // Load persistent cross-season history ledger (never blocks the sim); refresh the
   // history panel once it lands so imported/persisted seasons show without a reload.
   // Then the published seasons are laid over it (js/legacy-canon.js): a replay
@@ -456,8 +492,10 @@ async function init() {
   renderRelList();
   renderAllianceList();
   renderPresetList();
+  _bootStep('draw the cast, setup and relationships');
   await _migrateSeasonSavesFromLS();
   renderSeasonSaveList();
+  _bootStep('list the saved seasons');
   // Every save also goes to the cloud (js/cloud-backup.js). Starts quietly a
   // few seconds in, after the page is up.
   cloudBackupMod.startCloudBackup({
@@ -488,6 +526,7 @@ async function init() {
     showTab(_savedTab);
   }
 
+  _bootStep('open the last tab (the Season Hub draws the season)');
   // Initialize the audio engine (first-gesture unlock + window exposure)
   audioMod.initAudio();
   // Broadcast channel bar: ON-AIR state, live clock, theme (light/dark)
@@ -500,6 +539,8 @@ async function init() {
   // A finished season restored straight from localStorage never passes
   // through the season-save loader, so the ledger heal runs here too.
   try { franchiseMetaMod.healLedgerRecord(); } catch { /* boot must not care */ }
+  _bootStep('the rest of the start');
+  _bootReport();
 
   // ── WHAT THE CAST HAVE BEEN DOING SINCE ──────────────────────────────
   //

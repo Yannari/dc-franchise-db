@@ -4481,6 +4481,21 @@ export async function exportSeason(onStatus) {
         seasonFormat(seasonConfig) || DEFAULT_FORMAT);
     } catch (e) { (onStatus || (() => {}))(`Life resolver failed: ${e.message || e}`); }
   }
+  // The season's photos onto the cast's Dramagram: the Circle photos each player was given in cast setup, and a
+  // returning player's new portrait (js/dramagram-sync.js). Never able to fail the export either.
+  try {
+    const fmt = seasonFormat(seasonConfig) || DEFAULT_FORMAT;
+    const [{ syncAfterExport }, { studioToken }, { playerAvatarUrl }, { photoURL }] = await Promise.all([
+      import('./dramagram-sync.js'), import('./life-hook.js'), import('./players.js'), import('./ci/photo-store.js')]);
+    const cast = (players || []).map(p => p?.name).filter(Boolean);
+    await syncAfterExport({
+      cast, seasonId: seasonId(fmt, _getSeasonNumber()),
+      ciPhotos: fmt === CIRCLE_FORMAT ? (seasonConfig.ciPhotos || null) : null,
+      dealt: fmt === CIRCLE_FORMAT ? (gs?.ci?.dealt || {}) : {},
+      portraitOf: name => { const p = (players || []).find(x => x?.name === name); return p ? { file: p.avatarFile || '', url: playerAvatarUrl(p) } : null; },
+      token: studioToken(false), onStatus: m => (onStatus || (() => {}))(`Dramagram: ${m}`), photoURL,
+    });
+  } catch (e) { (onStatus || (() => {}))(`Dramagram: could not add the season's photos (${e.message || e})`); }
   return out;
 }
 

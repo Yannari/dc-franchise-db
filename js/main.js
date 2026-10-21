@@ -198,6 +198,7 @@ import * as statsExportMod from './stats-export.js';
 import * as audioMod from './audio.js';
 import * as recapMod from './recap.js';
 import * as broadcastMod from './broadcast.js';
+import * as seasonSwitchMod from './season-switcher.js';
 import * as franchiseMetaMod from './franchise-meta.js';
 import * as franchiseUiMod from './franchise-ui.js';
 import * as socialSessionMod from './social/session.js';
@@ -296,6 +297,7 @@ const extractedModules = [
   audioMod,
   recapMod,
   broadcastMod,
+  seasonSwitchMod,
   franchiseMetaMod,
   franchiseUiMod,
   socialSessionMod,

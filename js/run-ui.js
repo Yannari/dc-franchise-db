@@ -840,6 +840,8 @@ export function renderRunTab() {
   renderSeasonHub();
   // What else is due on the franchise calendar while this season airs.
   import('./air-watch.js').then(m => m.renderAirWatch(gs, seasonConfig)).catch(() => {});
+  // The other seasons on air, one click away (js/season-switcher.js).
+  window.renderSeasonSwitch?.().catch?.(() => {});
   const empty   = document.getElementById('run-empty');
   const content = document.getElementById('run-content');
 

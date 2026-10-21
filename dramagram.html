@@ -534,7 +534,8 @@ function renderManage(slug, gal) {
     '<button class="dg-fill" id="dg-fill">Fill from wiki</button>',
     // The Circle: the photos made for them in the simulator's cast setup (this browser's), their catfish
     // profile included. Shown only to somebody who has played The Circle.
-    circleSeasons(slug).length ? ' <button class="dg-fill" id="dg-circle">Add Circle photos</button>' : '',
+    circleSeasons(slug).length ? ' <button class="dg-fill" id="dg-circle">Add Circle photos</button>'
+      + '<div class="dg-note" id="dg-circle-msg" style="margin:.4em 0;font-weight:600"></div>' : '',
     '<div class="dg-lib" id="dg-lib"></div>',
     '<p class="dg-note" id="dg-note">Pin one as the profile picture, set a mood ',
     'to tell the captions what a picture is, and new posts claim photos from ',
@@ -585,11 +586,14 @@ function renderManage(slug, gal) {
     const t = token();
     if (!t) return;
     circleBtn.disabled = true; circleBtn.textContent = 'Sending…';
-    const note = $('#dg-note');
+    // Said right under the button: the note at the bottom of the box was where it went, and a click that wrote
+    // there looked like a click that did nothing (the user, 2026-10-21).
+    const note = $('#dg-circle-msg');
     try {
       const r = await sendCirclePhotos(slug, t);
       if (note) note.textContent = r.text;
-      if (r.sent) await renderProfile(slug, { archive: false });
+      // The profile redraws with the new photos; the message is said again on the new box.
+      if (r.sent) { await renderProfile(slug, { archive: false }); const again = $('#dg-circle-msg'); if (again) again.textContent = r.text; }
     } catch (err) {
       if (note) note.textContent = 'Circle photos failed — ' + err.message;
     } finally {

@@ -100,13 +100,13 @@ export async function syncDramagram(plan, { token, onStatus = () => {}, photoURL
         await putImage(slug, slots[i], { blob, ext, type: blob.type || 'image/jpeg' }, token);
         if (it.mood) { try { await setImageMeta(slug, `${slots[i]}.${ext}`, { mood: it.mood }, token); } catch { /* the photo is up; the mood is extra */ } }
         synced.add(it.key); res.sent++;
-      } catch { res.failed++; }
+      } catch (e) { res.failed++; res.why ||= /HTTP 404|no image/.test(e?.message || '') ? 'the picture is not in this browser or the cloud' : (e?.message || 'unknown'); }
     }
   }
   writeSynced(synced);
   const parts = [`${res.sent} photo${res.sent === 1 ? '' : 's'} sent to Dramagram`];
   if (res.full) parts.push(`${res.full} skipped (gallery full)`);
-  if (res.failed) parts.push(`${res.failed} failed`);
+  if (res.failed) parts.push(`${res.failed} failed (${res.why || 'unknown'})`);
   onStatus(parts.join(', '));
   return { ...res, reason: parts.join(', ') };
 }

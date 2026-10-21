@@ -138,6 +138,17 @@ export function short(n) {
  * because a number nobody can explain is one nobody trusts. Each step says what
  * moved it and when.
  */
+// The franchise's whole podcast, built once for the same three documents. followerHistory asks for it per
+// person, and the directory asks for every person: 210 rebuilds of a 0.1s list kept Dramagram blank for 26s
+// (two minutes on a slower machine, the user, 2026-10-21).
+let _pod = null;
+function podcastOnce(careers, seasons, events) {
+  if (_pod && _pod.careers === careers && _pod.seasons === seasons && _pod.events === events) return _pod.list;
+  const list = podcastFor({ careers, seasons, lifeEvents: events });
+  _pod = { careers, seasons, events, list };
+  return list;
+}
+
 export function followerHistory(slug, { careers = [], seasons = [], events = [] } = {}) {
   const career = careers.find(c => c.id === slug);
   const bySeasonId = new Map(seasons.map(s => [s.seasonId, s]));
@@ -157,7 +168,7 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
   // in the clip everyone shared — costs, proportionally like every loss here.
   // Names and archetypes are deliberately not passed: the count must be the
   // same whichever page computes it, and the roster is not always in hand.
-  const podcast = podcastFor({ careers, seasons, lifeEvents: events });
+  const podcast = podcastOnce(careers, seasons, events);
   const podAfter = new Map();
   for (const ep of podcast) {
     if (ep.guest === slug) {

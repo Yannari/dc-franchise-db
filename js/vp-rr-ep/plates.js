@@ -1064,17 +1064,17 @@ const STAGE_SHOTS = {
   'cliff-pool-isle': {
     // (the falls from the beach and from the top; the lagoon; the bobsled track, its loop and its end; the board)
     'falls-dive': {
-      'the-edge': { label: 'THE EDGE', plate: ['task-22416404', { mode: undefined, prop: undefined, path: undefined, water: false, g: 64, x: [4, 30] }],
-        fail: ['task-22416404', { mode: undefined, prop: undefined, path: undefined, water: false, g: 64, x: [4, 30] }], stamp: 'NOT JUMPING' },
+      'the-edge': { label: 'THE EDGE', plate: ['task-22416404', { mode: undefined, prop: undefined, path: undefined, water: false, local: false, g: 64, x: [4, 30] }],
+        fail: ['task-22416404', { mode: undefined, prop: undefined, path: undefined, water: false, local: false, g: 64, x: [4, 30] }], stamp: 'NOT JUMPING' },
       'the-jump': { label: 'THE JUMP', plate: ['task-22416404', { mode: 'dive', inset: 'ON THE CLIFF', path: [[24, 50], [40, 64], [56, 80], [62, 92]] }] },
       'the-bottom': { label: 'THE CHESTS', plate: ['task-22416440', { mode: 'dive' }], fail: ['task-22416440', { mode: 'dive' }], stamp: 'NO CHEST' },
       'cliff-path': { label: 'BACK UP THE CLIFF', plate: ['present-22416327', { deco: [['chest', 50, 92, 5]] }],
         fail: ['present-22416327', { deco: [['chest', 50, 92, 5]] }], stamp: 'DROPPED IT' },
-      'chest-up': { label: 'THE TOP', plate: ['task-22416404', { mode: undefined, prop: undefined, path: undefined, water: false, g: 64, x: [4, 26], deco: [['chest', 34, 64, 5]] }] },
+      'chest-up': { label: 'THE TOP', plate: ['task-22416404', { mode: undefined, prop: undefined, path: undefined, water: false, local: false, g: 64, x: [4, 26], deco: [['chest', 34, 64, 5]] }] },
     },
     bobsled: {
-      'push-off': { label: 'PUSH OFF', plate: ['task-22416594', { mode: 'ride', path: [[-14, 74], [10, 72], [24, 72]] }],
-        fail: ['task-22416594', { mode: 'ride', path: [[-14, 74], [0, 73], [6, 73]] }], stamp: 'TOO LATE' },
+      'push-off': { label: 'PUSH OFF', plate: ['task-22416594', { mode: 'ride', path: [[14, 74], [26, 72], [38, 72]] }],
+        fail: ['task-22416594', { mode: 'ride', path: [[14, 74], [18, 73], [20, 73]] }], stamp: 'TOO LATE' },
       'run-one': { label: 'RUN ONE', plate: ['task-22416594', { mode: 'ride' }], fail: ['task-22416594', { mode: 'ride' }], stamp: 'SLOW' },
       'the-loop': { label: 'THE LOOP', plate: ['task-22416502', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'ride', prop: 'sled', path: [[60, 74], [70, 40], [84, 30], [92, 60]], fx: 'dust' }],
         fail: ['task-22416502', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'ride', prop: 'sled', path: [[60, 74], [70, 50], [74, 78]], fx: 'dust' }], stamp: 'TIPPED' },

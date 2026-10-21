@@ -17469,7 +17469,9 @@
           "totalCatfishSeasons": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "sasha",
@@ -17538,7 +17540,9 @@
           "totalCatfishSeasons": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "derek",
@@ -17610,7 +17614,9 @@
           "totalCatfishSeasons": 1
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "barbie",
@@ -17695,7 +17701,9 @@
           "totalCatfishSeasons": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "elijah",
@@ -17766,7 +17774,9 @@
           "totalCatfishSeasons": 1
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "hector",
@@ -17842,7 +17852,9 @@
           "totalCatfishSeasons": 1
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "luis",
@@ -17920,7 +17932,9 @@
           "totalCatfishSeasons": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "mateo",
@@ -17998,7 +18012,9 @@
           "totalCatfishSeasons": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "domingo",
@@ -18071,7 +18087,9 @@
           "totalCatfishSeasons": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "lorraine",
@@ -18135,7 +18153,9 @@
           "totalCatfishSeasons": 1
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "dr-ines",
@@ -18202,7 +18222,9 @@
           "totalCatfishSeasons": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "wyatt",
@@ -18277,7 +18299,9 @@
           "totalCatfishSeasons": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "anais",
@@ -18343,7 +18367,9 @@
           "totalCatfishSeasons": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "curtis",
@@ -18406,7 +18432,9 @@
           "totalCatfishSeasons": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "ruth",
@@ -18469,7 +18497,9 @@
           "totalCatfishSeasons": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     }
   ]
 }

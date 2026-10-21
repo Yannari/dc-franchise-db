@@ -1039,6 +1039,22 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'stilt-river': {
+    // (the shallows and the mud under them; the bank with the basket; the tunnel mouth, the dark inside, the way out)
+    catfish: {
+      'wade-in': { label: 'INTO THE SHALLOWS', plate: ['task-9447243', { mode: 'swim' }], fail: ['task-9447243', { mode: 'swim' }], stamp: 'SLIPPED' },
+      'feel-around': { label: 'FEEL FOR THEM', plate: ['task-9447033', { mode: 'swim' }], fail: ['task-9447033', { mode: 'swim' }], stamp: 'SLIPPED AWAY' },
+      'the-basket': { label: 'THE BASKET', plate: ['arrive-9447023', { deco: [['catfish', 60, 92, 9]] }], fail: ['task-9447243', { mode: 'swim' }], stamp: 'ESCAPED' },
+      'six-fish': { label: 'SIX!', plate: ['arrive-9447023', { deco: [['catfish', 60, 92, 9]] }] },
+    },
+    tunnels: {
+      'in-the-dark': { label: 'THE TUNNEL', plate: ['task-9447354', {}], fail: ['task-9447354', {}], stamp: 'NOT IN THERE' },
+      'the-traps': { label: 'THE TRAPS', plate: ['task-9447366', { mode: 'search' }], fail: ['task-9447366', { mode: 'search' }], stamp: 'TRAP!' },
+      'tunnel-ends': { label: 'WHICH WAY', plate: ['task-9447366', { mode: 'search' }], fail: ['task-9447366', { mode: 'search' }], stamp: 'DEAD END' },
+      'map-box': { label: 'THE MAP', plate: ['task-9447366', { mode: undefined, prop: undefined, deco: [['donbox@race', 30, 94, 6]] }] },
+      daylight: { label: 'DAYLIGHT', plate: ['task-9447315', {}] },
+    },
+  },
   'pyramid-coast': {
     // (the chilli cart; the ledge at the cliff's edge; the spire over the sea; the water under it)
     'pepper-cliff': {

@@ -150,6 +150,17 @@ describe('rr challenges in stages', () => {
     expect(n).toBeGreaterThan(0);
   });
 
+  // (the condor's nest is a shot of sky: nobody else is up there, so no other team climbs past in the air)
+  it('keeps the rest of the race off a shot that is marked for one team alone', () => {
+    let n = 0;
+    for (const { screens } of runs) for (const ep of screens) for (const s of ep.screens) {
+      if (s.kind !== 'world' || s.plate?.crowd !== false) continue;
+      n++;
+      expect(s.crowd, s.id).toBeUndefined();
+    }
+    expect(n).toBeGreaterThan(0);
+  });
+
   // (a wrong spice isn't tried again: nobody checks the five, the stew finds out later)
   it('stamps a wrong spice WRONG SPICE, never TRY AGAIN', () => {
     let n = 0;

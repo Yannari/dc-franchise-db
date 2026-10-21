@@ -1028,6 +1028,8 @@ function planCrowd(s, ctx) {
   }
   if (!s.stretch || ['mat', 'midmat'].includes(s.stretch) || s.t == null || s.t < 0 || ctx.t1 == null || s.replay) return;
   if (['don', 'demo'].includes(s.mode)) return;
+  // a shot for one team alone (the condor's nest up in the sky: nobody else is up there)
+  if (s.plate?.crowd === false) return;
   s.crowdWin = [s.t, ctx.t1];
   const plate = s.plate;
   const stretch = ctx.place?.stretches.find(x => x.id === s.stretch) || null;

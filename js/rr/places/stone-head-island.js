@@ -12,9 +12,17 @@ export default {
       mishaps: [['wild-horses', 20]], mishapRate: 0.1 },
     { id: 'eggs', called: 'the stone heads', kind: 'allin', types: ['search', 'patience'], base: 30, pass: 0.5, loopCost: 10, opens: 420, closes: 1200,
       plate: 'stone heads on the beach', label: 'All-In: the painted eggs',
+      // the rows of heads; the cracks, chins and ears (another team's colour: put it back); dug out of the sand (cracked);
+      // three in the basket, shown to the judge
+      stages: [{ id: 'the-heads', share: 0.2, risk: 0 }, { id: 'cracks-and-chins', share: 0.8, risk: 0.8 }, { id: 'in-the-sand', share: 0.6, risk: 0.6 },
+        { id: 'three-eggs', share: 0.2, risk: 0 }],
       desc: "Along the beach stand rows of giant stone heads, taller than a barn, staring out to sea. Hidden in the cracks, under the chins, behind the ears and buried in the sand around them are dozens of eggs, and only three are painted in the team's colour. Both partners search head by head, and put each one they find in a padded basket. A cracked egg, or an egg in another team's colour, means putting it back and searching again. Three unbroken eggs in their own colour earns the next tip." },
     { id: 'condor-nest', called: 'the rock spire', kind: 'botch', types: ['heights', 'nerve'], base: 20, pass: 0.45, loopCost: 10,
       teaser: 'Who can climb?', plate: 'rock spire + giant nest', label: 'Botch or Watch: the condor nest',
+      // the foot of the spire; up the spire (a slip into the harness); the condor swooping near the top (a retreat); the
+      // eggs into the nest (one cracked); back down. a climbs, b watches from the bottom
+      stages: [{ id: 'spire-foot', share: 0.2, risk: 0 }, { id: 'up-the-spire', share: 1, risk: 0.6 }, { id: 'the-condor', share: 0.5, risk: 1 },
+        { id: 'eggs-in', share: 0.3, risk: 0.4 }, { id: 'climb-down', share: 0.4, risk: 0 }],
       desc: "On top of a tall rock spire sits a giant nest, and the three painted eggs belong in it. The partner who didn't do the last Botch or Watch climbs the spire with the eggs in a pouch, places them in the nest and climbs back down, while a huge condor circles overhead and swoops at anyone who takes too long. A cracked egg, a slip into the harness or a retreat from the condor means climbing down and starting again. The other partner can only watch from the bottom. Three eggs in the nest and both feet back on the ground earns the next tip." },
     { id: 'mat', kind: 'mat', plate: 'grass dune', label: 'The Chill Zone' },
   ],

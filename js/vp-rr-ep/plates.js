@@ -1024,6 +1024,8 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+// (the climb camera follows the climber in close: the condor swoops near them, not off in the corner of the sky)
+const CONDOR = [['condor', 64, 70, 13, { move: 'wander', span: -8, dur: 3 }]];
 const BALLS = [['ball', 84, 88, 3, { move: 'wander', span: -30, dur: 2 }], ['ball', 12, 84, 3, { move: 'wander', span: 26, dur: 2.6 }]];
 const SAVANNA_BEAST = [REPAINTED.has('zebra') ? 'zebra' : 'emu@red-outback', 88, 93, 15];
 const BLOWPIPE = REPAINTED.has('blowpipe') ? [['blowpipe', 46, 94, 6]] : [];
@@ -1068,6 +1070,26 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'stone-head-island': {
+    // (the heads on the beach, the fallen heads in the sand; the spire; the nest at the top against the sky)
+    eggs: {
+      'the-heads': { label: 'THE STONE HEADS', plate: ['task-22423574', { mode: undefined, prop: undefined }] },
+      'cracks-and-chins': { label: 'CRACKS AND CHINS', plate: ['task-22423574', { mode: 'search' }], fail: ['task-22423574', { mode: 'search' }], stamp: 'WRONG COLOUR' },
+      'in-the-sand': { label: 'IN THE SAND', plate: ['arrive-22423541', { mode: 'search', prop: 'eggs', propW: 0.5 }],
+        fail: ['arrive-22423541', { mode: 'search', prop: 'eggs', propW: 0.5 }], stamp: 'CRACKED' },
+      'three-eggs': { label: 'THREE EGGS', plate: ['task-22423725', { deco: [['basket', 48, 95, 7]] }] },
+    },
+    'condor-nest': {
+      'spire-foot': { label: 'THE SPIRE', plate: ['task-22423848', { mode: undefined, prop: undefined, path: undefined }] },
+      'up-the-spire': { label: 'UP THE SPIRE', plate: ['task-22423848', { solo: true, inset: 'AT THE BOTTOM' }],
+        fail: ['task-22423848', { solo: true, inset: 'AT THE BOTTOM', path: [[50, 98], [53, 70], [52, 62], [50, 90]] }], stamp: 'SLIPPED' },
+      'the-condor': { label: 'THE CONDOR', plate: ['present-22424060', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'climb', prop: 'basket', solo: true, inset: 'AT THE BOTTOM', crowd: false, path: [[40, 99], [41, 92], [42, 86]], deco: CONDOR }],
+        fail: ['present-22424060', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'climb', prop: 'basket', solo: true, inset: 'AT THE BOTTOM', crowd: false, path: [[42, 86], [41, 93], [40, 99]], deco: CONDOR }], stamp: 'SWOOPED' },
+      'eggs-in': { label: 'INTO THE NEST', plate: ['present-22424060', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'climb', solo: true, inset: 'AT THE BOTTOM', crowd: false, path: [[40, 98], [42, 86], [44, 78]], fx: 'sparkle', deco: [['eggs', 60, 64, 6]] }],
+        fail: ['present-22424060', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'climb', solo: true, inset: 'AT THE BOTTOM', crowd: false, path: [[40, 98], [42, 86], [44, 78]], deco: [['eggs', 60, 64, 6]] }], stamp: 'CRACKED' },
+      'climb-down': { label: 'BACK DOWN', plate: ['task-22423848', { solo: true, inset: 'AT THE BOTTOM', prop: undefined, path: [[52, 32], [49, 54], [53, 76], [50, 98]] }] },
     },
   },
   'grass-savanna': {

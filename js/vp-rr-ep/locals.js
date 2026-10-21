@@ -45,10 +45,10 @@ export const PLACE_LOCALS = {
   'savanna-falls': { rhino: 'savanna-ranger' },
   'treasure-isles': { 'pirate-map': 'pirate-captain', doubloons: 'pirate-captain' },
   'geyser-island': { telephone: 'telephone-local' },
-  'fjord-peaks': { 'jump-dance': 'dance-elder' },
+  'fjord-peaks': { 'jump-dance:dance': 'dance-elder' },
   'prairie-ranch': { beans: 'chuckwagon-cook', bull: 'cowboy' },
   'dragon-isle': { venom: 'dragon-ranger' },
-  'neon-desert': { 'buggy-magic': 'magician' },
+  'neon-desert': { 'buggy-magic:magic': 'magician' },
   'pyramid-coast': { 'pepper-cliff': 'pepper-vendor' },
   'stilt-river': { catfish: 'catfish-fisherman' },
   'frozen-mine': { borehole: 'mine-guide', 'ice-yacht': 'mine-guide' },
@@ -80,17 +80,19 @@ export const PERSON_PROPS = {
 export const personOf = (place, key) => (key && PERSON_PROPS[place]?.[String(key).split('@')[0]]) || null;
 
 export const localUrl = id => `assets/avatars/rr-locals/${id}.webp`;
-export const placeLocal = (place, stretch) => PLACE_LOCALS[place]?.[stretch] || null;
+// (`stretch:side`: a choose-one challenge's local stands only at their own side: the magician in the theatre, not out on
+// the buggy course)
+export const placeLocal = (place, stretch, side = null) => (side && PLACE_LOCALS[place]?.[`${stretch}:${side}`]) || PLACE_LOCALS[place]?.[stretch] || null;
 
 const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 // the role a speaker's name says (the writer's words: roles.js LOCAL)
 const ROLE = { 'the driver': 'driver', 'the ticket agent': 'ticket-agent', 'the judge': 'judge', 'the vendor': 'vendor' };
 
 /** The local a speaker is: { id, name, url } (null for the crowd). `speaker` is the line's name; `seed` keeps "a local" the same face all scene. */
-export function localFor(speaker, place = null, stretch = null, seed = '') {
+export function localFor(speaker, place = null, stretch = null, seed = '', side = null) {
   const key = String(speaker || '').toLowerCase();
   if (key === 'the crowd') return null;          // a crowd has no one face
-  const own = placeLocal(place, stretch);
+  const own = placeLocal(place, stretch, side);
   // the one running a challenge is that challenge's own local (the judge at the eggs is the egg judge)
   if (own && (key === 'the judge' || key === 'the vendor' || key === 'a local' || key === 'the local' || key === LOCALS[own].toLowerCase())) return { id: own, name: LOCALS[own], url: localUrl(own) };
   const id = ROLE[key] || (hash(`${seed}|${key}`) % 2 ? 'local-woman' : 'local-man');

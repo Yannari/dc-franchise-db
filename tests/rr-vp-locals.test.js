@@ -8,7 +8,7 @@ import { playRaceSeason } from '../js/rr/season.js';
 import { setPlayers } from '../js/core.js';
 import { raceCast } from './helpers/rr-cast.js';
 import { episodeScreens } from '../js/vp-rr-ep/steps.js';
-import { LOCALS, PLACE_LOCALS, localUrl, localFor } from '../js/vp-rr-ep/locals.js';
+import { LOCALS, PLACE_LOCALS, localUrl, localFor, placeLocal } from '../js/vp-rr-ep/locals.js';
 import { PLACES } from '../js/rr/places.js';
 
 let eps = [];
@@ -25,7 +25,13 @@ beforeAll(() => {
 describe('rr viewer: the locals', () => {
   it('has an avatar for every local, and every challenge it names exists', () => {
     for (const id of Object.keys(LOCALS)) expect(existsSync(localUrl(id)), id).toBe(true);
-    for (const [p, m] of Object.entries(PLACE_LOCALS)) for (const s of Object.keys(m)) expect(PLACES[p].stretches.some(x => x.id === s), `${p}/${s}`).toBe(true);
+    // (`stretch:side` keys name a side of a choose-one challenge)
+    for (const [p, m] of Object.entries(PLACE_LOCALS)) for (const k of Object.keys(m)) {
+      const [s, side] = k.split(':');
+      const st = PLACES[p].stretches.find(x => x.id === s);
+      expect(st, `${p}/${k}`).toBeTruthy();
+      if (side) expect(st.sides?.some(d => d.id === side), `${p}/${k}`).toBe(true);
+    }
   });
 
   it('the one running a challenge is its own local; anyone else is the role, the same face all scene', () => {
@@ -55,7 +61,7 @@ describe('rr viewer: the locals', () => {
   it("a place's own local stands at their challenge", () => {
     const at = {};
     for (const ep of eps) for (const s of ep.screens) {
-      const own = PLACE_LOCALS[s.place]?.[s.stretch];
+      const own = placeLocal(s.place, s.stretch, s.side);
       if (!own || s.kind !== 'world' || s.mode !== 'talk' || s.plate?.closed || s.plate?.water || !['task-start', 'task-done'].includes(s.seg)) continue;
       const key = `${s.place}/${s.stretch}`;
       at[key] ||= { shown: 0 };

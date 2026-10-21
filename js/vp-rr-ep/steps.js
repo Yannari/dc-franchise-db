@@ -368,13 +368,13 @@ export function episodeScreens(res, eps, i) {
       }
       // the place's own local stands at their challenge as it starts and as a team gets through it (the fisherman at
       // the welcome rite), in a shot where the teams and the local are spread out together
-      const own = placeLocal(placeId, seg.stretch);
+      const own = placeLocal(placeId, seg.stretch, seg.side);
       // (not out where the teams travel a path: the rancher stays at the fence while they ride the plain)
       // (a stage in a room has its local in it: the instructor in the academy)
       if (own && ((mode === 'talk' && ['task-start', 'task-done'].includes(k) && !plate?.closed) || (k === 'task-stage' && !plate?.path)) && standable(plate)) persons.push(own);
-      for (const id of new Set(persons)) if (!locals.some(n => localFor(n, placeId, seg.stretch)?.id === id)) locals.push(LOCALS[id]);
+      for (const id of new Set(persons)) if (!locals.some(n => localFor(n, placeId, seg.stretch, '', seg.side)?.id === id)) locals.push(LOCALS[id]);
       // each local's face (the user's avatars): who a speaking "A local" or "The judge" is, here
-      const localFaces = Object.fromEntries(locals.map(n => [n, localFor(n, placeId, seg.stretch, seg.scene ?? seg.t)]).filter(([, f]) => f));
+      const localFaces = Object.fromEntries(locals.map(n => [n, localFor(n, placeId, seg.stretch, seg.scene ?? seg.t, seg.side)]).filter(([, f]) => f));
       // (the people a plate stands there are exactly who they are, whatever their title says)
       for (const id of new Set(persons)) localFaces[LOCALS[id]] = { id, name: LOCALS[id], url: localUrl(id) };
       const donSpeaks = run.lines.some(l => l.by === 'Don');

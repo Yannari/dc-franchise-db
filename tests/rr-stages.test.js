@@ -14,6 +14,7 @@ import { stretchPlates } from '../js/vp-rr-ep/plates.js';
 const stretchPlatesFor = (p, s, side) => stretchPlates(p, s, side);
 
 import { POOLS } from '../js/rr/script/lines/index.js';
+import { placeLocal } from '../js/vp-rr-ep/locals.js';
 
 // every place built in stages so far (a stretch's own `stages`, or each side's on a choose-one task)
 const stagesOf = (p, s, side = null) => { const st = PLACES[p].stretches.find(x => x.id === s);
@@ -110,6 +111,19 @@ describe('rr challenges in stages', () => {
       expect(s.inset?.people, s.id).toEqual([s.who[1]]);
     }
     expect(n).toBeGreaterThan(0);
+  });
+
+  // (the magician stood at the buggy course, the dance elder on the bungee bridge: a side's local is that side's)
+  it("stands a choose-one challenge's local only at the side that's theirs", () => {
+    expect(placeLocal('neon-desert', 'buggy-magic', 'magic')).toBe('magician');
+    expect(placeLocal('neon-desert', 'buggy-magic', 'buggy')).toBe(null);
+    expect(placeLocal('fjord-peaks', 'jump-dance', 'dance')).toBe('dance-elder');
+    expect(placeLocal('fjord-peaks', 'jump-dance', 'jump')).toBe(null);
+    for (const { screens } of runs) for (const ep of screens) for (const s of ep.screens) {
+      if (s.seg !== 'task-stage' || !s.side) continue;
+      const own = placeLocal(s.place, s.stretch, s.side);
+      for (const f of Object.values(s.localFaces || {})) if (['magician', 'dance-elder'].includes(f.id)) expect(f.id, s.id).toBe(own);
+    }
   });
 
   // (a wrong spice isn't tried again: nobody checks the five, the stew finds out later)

@@ -1039,6 +1039,25 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'neon-desert': {
+    // (Buggy or Magic, their ids apart: the remote booth, the flag course over the dunes, the finish; the magic theatre's
+    // stage with the cage and the lion)
+    'buggy-magic': {
+      'the-remote': { label: 'THE REMOTE', plate: ['task-9445821', { people: undefined, g: 60, x: [26, 64], deco: [['remote', 46, 60, 4]] }] },
+      'first-flag': { label: 'THE FIRST FLAG', plate: ['task-9445891', { mode: 'remote' }], fail: ['task-9445891', { mode: 'remote' }], stamp: 'MISSED' },
+      'the-dunes': { label: 'OVER THE DUNES', plate: ['task-9446121', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'ride', prop: 'buggy', path: [[-14, 84], [20, 80], [44, 86]], fx: 'dust' }],
+        fail: ['task-9446121', { people: undefined, g: 92, x: [6, 50], deco: [['buggy', 30, 92, 14, { flip: true }]] }], stamp: 'CRASHED' },
+      'last-flag': { label: 'THE LAST FLAG', plate: ['task-9446132', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'ride', prop: 'buggy', path: [[-14, 92], [30, 92], [60, 92]], fx: 'dust' }],
+        fail: ['task-9446132', { people: undefined, g: 96, x: [40, 94] }], stamp: 'TIME!' },
+      'buggy-tip': { label: 'THE TIP', plate: ['task-9445874', {}] },
+      'into-cage': { label: 'INTO THE CAGE', plate: ['task-9445798', { mode: undefined }], fail: ['task-9445798', { mode: undefined }], stamp: 'NOPE' },
+      // (the lion is the one painted asleep in the cage: no second lion out on the stage)
+      'the-levers': { label: 'THE LEVERS', plate: ['task-9445798', { mode: 'lever', judge: null }], fail: ['task-9445798', { mode: 'lever', judge: null }], stamp: 'WRONG LEVER' },
+      'lion-stirs': { label: 'THE LION STIRS', plate: ['task-9445798', { mode: 'lever', judge: null }], fail: ['task-9445798', { mode: undefined, judge: null }], stamp: 'IT WOKE' },
+      vanished: { label: 'VANISHED!', plate: ['task-9445798', { mode: undefined, fx: 'sparkle' }] },
+      'magic-tip': { label: 'THE TIP', plate: ['chill-9446241', {}] },
+    },
+  },
   'dragon-isle': {
     // (the jungle floor where the ranger waits; the lizards under the stilt huts; the rug mountain and the cloth piles)
     venom: {

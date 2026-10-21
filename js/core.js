@@ -369,6 +369,8 @@ export const TWIST_CATEGORIES = [
   { id: 'advantages', label: 'Advantages' },
   { id: 'social', label: 'Social' },
   { id: 'challenge', label: 'Challenge' },
+  // The Ridonculous Race's leg twists (js/rr/schedule.js LEG_TWISTS): a Boomerang, a Yield, the Zip-It...
+  { id: 'race', label: 'Race Twists' },
   { id: 'murder', label: 'Murder Twists' },
   /* TWO SHELVES THE BIG BROTHER CATALOGUE WAS ALREADY FILING UNDER and this
      list did not have. A twist whose `category` is not an id here has no
@@ -1025,6 +1027,24 @@ export const TWIST_CATALOG = [
   // `episodeField` names the config key each one writes on `drSchedule`, so
   // the designer can book it against an episode number the same way a swap or
   // a double eviction is booked.
+  // ── THE RIDONCULOUS RACE: the leg twists (js/rr/schedule.js LEG_TWISTS; js/rr/twists.js, js/rr/leg.js) ──
+  // Booked here, they pin the leg's twist, the same pin as the TWIST picker on a leg's tile (js/rr-run.js
+  // raceBookTwist). Never the first leg (nobody has a record to aim at) or the last two (the semi-final and the final).
+  // Surprise twists on, the season draws the rest itself. (2026-10-21, the user: "add them in Available Twists")
+  { id:'rr-boomerang', emoji:'\u{1FA83}', name:'Boomerang', format:'ridonculous-race', category:'race', phase:'any', raceTwist:'boomerang',
+    desc:'One team finds a Boomerang in its first tip of the leg. At the Boomerang board, just after the leg\'s first challenge, it can send one team still behind it back to do that challenge again before it may go on. Whom it sends back is its own call: a rival, a team it holds a grudge against, or the one it thinks is closest behind. If every other team is already past the board, the Boomerang is wasted.' },
+  { id:'rr-yield', emoji:'\u270B', name:'Yield', format:'ridonculous-race', category:'race', phase:'any', raceTwist:'yield',
+    desc:'One team finds a Yield in its first tip of the leg. At the Yield board after the leg\'s first challenge, it can hold up one team that has not reached the board yet: when that team gets there, it has to stand and wait thirty minutes before it may go on. The team held up sees whose picture is on the board, and remembers it.' },
+  { id:'rr-zip-it', emoji:'\u26A1', name:'Zip-It', format:'ridonculous-race', category:'race', phase:'any', raceTwist:'zip-it',
+    desc:'Just before the leg\'s first challenge, a harder version of it waits as the Zip-It. A team can take it on instead of running the rest of the leg: the first team through it goes straight to the Chill Zone, and any team after that has spent the time for nothing. Each team tries it only once a season, and the boldest teams are the ones who try.' },
+  { id:'rr-boomerang-vote', emoji:'\u{1F0CF}', name:'Boomerang (teams pick)', format:'ridonculous-race', category:'race', phase:'any', raceTwist:'boomerang-vote',
+    desc:'At the start line every team writes the name of one other team on a card, and the team named on the most cards is sent back to do the leg\'s first challenge again before it may go on. Teams write down the ones winning legs, the ones they hold a grudge against and the ones just ahead of them. It plays best once the teams have a record to judge, in the second half of the season.' },
+  { id:'rr-boomerang-blind', emoji:'\u{1F648}', name:'Blind Boomerang', format:'ridonculous-race', category:'race', phase:'any', raceTwist:'boomerang-blind',
+    desc:'A Boomerang with no name on it. One team finds it and uses it at the board after the first challenge as usual, but the team it sends back is never told who threw it: it has to guess, and it may blame the wrong team. Don tells it who really did it once it reaches the Chill Zone, with the thrower standing right there or not there yet.' },
+  { id:'rr-head-to-head', emoji:'\u{1F93C}', name:'Head-to-Head', format:'ridonculous-race', category:'race', phase:'any', raceTwist:'head-to-head',
+    desc:'A contest stands in front of the Chill Zone, in the kind of challenge the leg\'s last one was. A team arriving finds another waiting there and takes it on, one team against one: the winner checks in, and the loser waits for the next team to arrive and faces it. A team that loses with nobody left to face checks in last.' },
+  { id:'rr-intersection', emoji:'\u{1F500}', name:'Intersection', format:'ridonculous-race', category:'race', phase:'any', raceTwist:'intersection',
+    desc:'At one of the leg\'s challenges (its first plain one, never one where teams pick their answers), teams are paired off as they arrive: two teams at a time have to do it together as one group of four, and neither may leave until both are through. Whoever turns up together works together, rivals or not.' },
   { id:'dr-no-elimination', emoji:'\u{1F6AB}', name:'No Elimination', format:'drag-race',
     category:'elim', phase:'any', engineType:'dr-no-elimination', episodeField:'noElimination',
     desc:'The host tells the room before the challenge that nobody is going home, and the song changes with it: the TOP two lip sync FOR THE WIN instead of the bottom two singing for their lives, because there is no life to sing for. The winner of that song takes the week. The two the room put last are still named and made to stand there, and then told they are not singing. It is not a double shantay — that is the host deciding in the moment that two performances were too good to lose. This is production announcing beforehand that the door stays shut, and the season runs ONE EPISODE LONGER for it: fourteen queens go back to fourteen.',

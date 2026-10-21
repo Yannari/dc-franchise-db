@@ -32,7 +32,7 @@ import { challengeDailyList, challengeDrawnDailies } from './ch-run.js';
 import { isChallengeSeason, simulateChallengeEpisode, challengeCanRerun, lastChallengeRefusal, rerunChallengeEpisode,
   challengePendingChange, challengeEpisodeMap, challengeVoteShape } from './ch-run.js';
 import { isRaceSeason, simulateRaceEpisode, raceCanRerun, lastRaceRefusal, racePendingChange, raceEpisodeMap,
-  raceVoteShape, rerunRaceEpisode, racePlaceList, racePlaceName, raceDrawnRoute, raceSetPin } from './rr-run.js';
+  raceVoteShape, rerunRaceEpisode, racePlaceList, racePlaceName, raceDrawnRoute, raceSetPin, raceBookTwist } from './rr-run.js';
 import { raceEpisodeText } from './rr-view.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
   dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
@@ -5281,6 +5281,13 @@ export function assignTwist(twistId) {
     return;
   }
   const twist    = TWIST_CATALOG.find(t => t.id === twistId);
+  // a race twist is the leg's own twist pin (the tile's TWIST picker), not a line in the twist schedule
+  if (twist?.raceTwist) {
+    const { refused } = raceBookTwist([...selectedEpisodes], twistId);
+    if (refused.length) alert(`"${twist.name}" can't go on leg${refused.length > 1 ? 's' : ''} ${refused.join(', ')}: the first leg and the last two run without twists.`);
+    renderTimeline();
+    return;
+  }
   // Refuse outright: this clash is with the season itself, so no episode is a
   // legal home for it and blocking per-episode below would say nothing useful.
   const seasonClashes = twistModeClashes(twist, seasonConfig);

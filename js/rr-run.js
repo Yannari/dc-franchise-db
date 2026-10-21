@@ -225,6 +225,24 @@ export function raceSetPin(ep, field, value) {
   try { localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); } catch { /* fine */ }
 }
 
+/** Available Twists (js/run-ui.js assignTwist): book a race twist's card (`rr-<twist>`) on the legs selected, as each
+ *  leg's twist pin (the tile's TWIST picker reads the same pin). The first leg and the last two can't have one.
+ *  Returns { booked, refused }: the legs it went on, and the ones it couldn't. */
+export function raceBookTwist(eps, cardId, legs = raceSeasonShape().length, config = seasonConfig) {
+  const twist = String(cardId || '').replace(/^rr-/, '');
+  const booked = [], refused = [];
+  const pins = { ...(config.rrTwistPins || {}) };
+  for (const ep of [...eps].map(Number).sort((x, y) => x - y)) {
+    // (no cast yet, so no legs to count: only the first leg is ruled out)
+    if (ep < 2 || (legs > 0 && ep > legs - 2)) { refused.push(ep); continue; }
+    pins[ep] = twist;
+    booked.push(ep);
+  }
+  config.rrTwistPins = pins;
+  if (config === seasonConfig) try { localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); } catch { /* fine */ }
+  return { booked, refused };
+}
+
 /** The legs this cast makes (the Season Timeline reads this): { n, kind } per leg, the finale last. */
 export function raceSeasonShape(list = _list(), config = seasonConfig) {
   return raceShapeFor(raceTeams(list, config).length, config);

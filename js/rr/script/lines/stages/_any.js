@@ -48,6 +48,46 @@ export default {
       by('a', "Are we doing it well, though?"),
       by('b', "We're doing it, and right now that's good enough."),
     ] },
+    { id: 'stg.ok-1', turns: [
+      { by: 'a', say: "Okay, that's done. What's next?" },
+      { by: 'b', say: "I don't want to know what's next, honestly." },
+      { by: 'a', say: "Well, we're about to find out." },
+    ] },
+    { id: 'stg.ok-2', turns: [
+      { beat: '{a} gets through it and lets out a long breath.' },
+      { by: 'a', say: "I really didn't think that was going to work." },
+      { by: 'b', say: "Neither did I, but it did, so let's keep going." },
+    ] },
+    { id: 'stg.ok-3', turns: [
+      { by: 'b', say: "That was way easier than it looked." },
+      { by: 'a', say: "Please don't say that. You'll jinx the next part." },
+      { by: 'b', say: "Fine, it was really hard, and the next part will be easy." },
+    ] },
+    { id: 'stg.ok-4', turns: [
+      { by: 'a', say: "Are we doing okay? I can't tell anymore." },
+      { by: 'b', say: "We're doing fine. Just keep going like that." },
+      { by: 'a', say: "Okay. I can do this. I think I can do this." },
+    ] },
+    { id: 'stg.ok-5', turns: [
+      { beat: '{a} gets it done and turns round to look for {b}.' },
+      { by: 'b', say: "Yes! That's it! Keep going!" },
+      { by: 'a', say: "I'm going, I'm going, stop shouting!" },
+    ] },
+    { id: 'stg.ok-6', turns: [
+      { by: 'b', say: "Did you see that? We actually got it right." },
+      { by: 'a', say: "I saw. I'm just as surprised as you are." },
+      { by: 'b', say: "Let's not get used to it. On to the next part." },
+    ] },
+    { id: 'stg.ok-7', turns: [
+      { by: 'a', say: "I'm exhausted, but that's one more part done." },
+      { by: 'b', say: "You can tell me how tired you are later." },
+      { by: 'a', say: "Oh, I will. For days." },
+    ] },
+    { id: 'stg.ok-8', turns: [
+      { by: 'b', say: "How far behind the others do you think we are?" },
+      { by: 'a', say: "I don't know, and I'm not going to look." },
+      { by: 'b', say: "Good idea. Let's just keep moving." },
+    ] },
   ],
   'task-stage.fail': [
     { id: 'stg.f1', turns: [
@@ -79,6 +119,36 @@ export default {
       by('b', "What happened there?"),
       by('a', "I rushed it, I know I rushed it."),
       by('b', "Then stop and pace yourself. We've got time... well, kinda."),
+    ] },
+    { id: 'stg.f-1', turns: [
+      { by: 'a', say: "No! I had it, I really had it!" },
+      { by: 'b', say: "I know you did. Just go back and do it again." },
+      { beat: '{a} shakes it off and goes back to the start of that part.' },
+    ] },
+    { id: 'stg.f-2', turns: [
+      { beat: 'It goes wrong right at the very end.' },
+      { by: 'b', say: "That's so unfair. You were nearly there." },
+      { by: 'a', say: "Nearly doesn't count. I'm going again." },
+    ] },
+    { id: 'stg.f-3', turns: [
+      { by: 'b', say: "What happened? It looked fine from here." },
+      { by: 'a', say: "It wasn't fine from here, trust me." },
+      { by: 'b', say: "Okay, take a breath and try it one more time." },
+    ] },
+    { id: 'stg.f-4', turns: [
+      { by: 'a', say: "I can't believe I messed that up again." },
+      { by: 'b', say: "Don't beat yourself up about it. Everyone's messing it up." },
+      { by: 'a', say: "That makes me feel a little bit better, actually." },
+    ] },
+    { id: 'stg.f-5', turns: [
+      { beat: '{b} winces as it all goes wrong.' },
+      { by: 'b', say: "Okay, that one wasn't great." },
+      { by: 'a', say: "Thanks, that's really helpful. I'm going again." },
+    ] },
+    { id: 'stg.f-6', turns: [
+      { by: 'a', say: "Why does it keep doing that?" },
+      { by: 'b', say: "I don't know. Try going a bit slower this time." },
+      { by: 'a', say: "Okay, I'll go slower. I can do slower." },
     ] },
   ],
 };

@@ -25,7 +25,7 @@ beforeAll(() => {
   for (const seed of [41, 42, 43]) {
     const { cast, teams } = raceCast(12, seed);
     setPlayers(cast);
-    const res = playRaceSeason({ teams, seed, options: { pins: { 2: 'ice-river', 3: 'pampas-ranch', 4: 'red-sand-desert', 5: 'iron-tower-city', 6: 'coast-palace', 7: 'geyser-island', 8: 'carnival-rainforest', 9: 'haunted-castle', 10: 'lei-island', 11: 'glass-tower-gulf', 12: 'great-wall-hills', 13: 'rock-north', 14: 'savanna-falls', 15: 'swamp-prison', 16: 'outback-farm' } } });
+    const res = playRaceSeason({ teams, seed, options: { pins: { 2: 'ice-river', 3: 'pampas-ranch', 4: 'red-sand-desert', 5: 'iron-tower-city', 6: 'coast-palace', 7: 'geyser-island', 8: 'carnival-rainforest', 9: 'haunted-castle', 10: 'lei-island', 11: 'glass-tower-gulf', 12: 'great-wall-hills', 13: 'rock-north', 14: 'savanna-falls', 15: 'swamp-prison', 16: 'outback-farm', 17: 'fjord-peaks' } } });
     const aired = airSeason(res);
     runs.push({ seed, res, aired, screens: aired.map((_, i) => episodeScreens(res, aired, i)) });
   }

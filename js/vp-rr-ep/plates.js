@@ -1037,6 +1037,21 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'fjord-peaks': {
+    // (Jump Down or Jump Around, their ids apart: the bridge deck, the gorge with the bridge high above, the river at the
+    // bottom; the dance stage, wide and close)
+    'jump-dance': {
+      harness: { label: 'THE HARNESS', plate: ['task-9443374', { deco: [['harness', 30, 84, 5]] }], fail: ['task-9443374', { deco: [['harness', 30, 84, 5]] }], stamp: 'NOT YET' },
+      'the-leap': { label: 'THE LEAP', plate: ['task-9443600', { mode: 'bungee' }] },
+      'the-grab': { label: 'THE GRAB', plate: ['task-9443640', { mode: 'dive' }], fail: ['task-9443640', { mode: 'dive' }], stamp: 'NO FISH' },
+      'reel-up': { label: 'BACK UP', plate: ['task-9443600', { mode: 'bungee' }], fail: ['task-9443600', { mode: 'bungee' }], stamp: 'SLIPPERY' },
+      'fish-tip': { label: 'THE TIP', plate: ['task-9443374', { deco: [['fish', 34, 84, 4]] }] },
+      'dance-lesson': { label: 'THE STEPS', plate: ['task-9443648', {}], fail: ['task-9443648', {}], stamp: 'WRONG FOOT' },
+      'the-chant': { label: 'THE CHANT', plate: ['task-9443382', { mode: 'dance', prop: undefined }], fail: ['task-9443382', { mode: 'dance', prop: undefined }], stamp: 'TOO QUIET' },
+      'for-the-elders': { label: 'FOR THE ELDERS', plate: ['task-9443382', { mode: 'dance' }], fail: ['task-9443382', { mode: 'dance' }], stamp: 'MORE PRACTICE' },
+      'elders-nod': { label: 'THE NOD', plate: ['task-9443648', {}] },
+    },
+  },
   'outback-farm': {
     // (the farm fence; the wheat; the jetty where the white one sits; the burnt field with the sack; the hill and the sack)
     bunnies: {

@@ -97,8 +97,10 @@ export const PLACE_PLATES = {
       caricature: { talk: [p('task-9435855', 95, [8, 92]), p('present-9435854', 95, [8, 92])],
         act: p('task-9435855', 95, [8, 92], { mode: 'draw', prop: 'pad', fx: 'sparkle' }) },
       'catacomb-walk': { talk: [p('task-9436001', 90, [10, 88])] },
-      catacombs: { talk: [p('task-9436279', 96, [6, 94])],
-        act: p('task-9436279', 96, [6, 94], { mode: 'search', prop: 'skull', fx: 'dust' }) },
+      // (the bone-lined tunnel is a job in edit/: until it is back, the lamp-lit tunnel under the quay stands in)
+      catacombs: { talk: [repaint('task-catacombs', p('task-catacombs', 96, [6, 94]), p('task-9436279', 96, [6, 94]))],
+        act: repaint('task-catacombs', p('task-catacombs', 96, [6, 94], { mode: 'search', prop: 'skull', fx: 'dust' }),
+          p('task-9436279', 96, [6, 94], { mode: 'search', prop: 'skull', fx: 'dust' })) },
       'cheese-raft': { talk: [p('task-9436302', 48, [4, 96])],
         act: p('task-9436198', 0, [0, 0], { water: true, mode: 'ride', prop: 'cheese', path: [[-12, 84], [45, 82], [112, 80]], fx: 'splash' }) },
       mat: { talk: [p('chill-9436288', 82, [6, 94], { mat: [50, 78] })] },
@@ -1006,6 +1008,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const CATACOMBS = repaint('task-catacombs', 'task-catacombs', 'task-9436279');
 const BEAR_CLOSE = [['bear', 74, 84, 11, { move: 'wander', span: 8, dur: 10 }]];
 const STAGE_SHOTS = {
   'home-city': {
@@ -1025,6 +1028,26 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'iron-tower-city': {
+    // (the easel at the foot of the tower; the catacombs from the manhole in the park, through the tunnels, out on
+    // the quay where the cheese goes in the river)
+    caricature: {
+      'the-easel': { label: 'THE EASEL', plate: ['task-9435855', {}] },
+      'the-pose': { label: 'SIT STILL', plate: ['present-9435854', {}] },
+      sketch: { label: 'THE SKETCH', plate: ['task-9435855', { mode: 'draw' }], fail: ['task-9435855', { mode: 'draw' }], stamp: 'TORN UP' },
+      'four-things': { label: 'FOUR EXAGGERATIONS', plate: ['present-9435854', { mode: 'draw', prop: 'pad', fx: 'sparkle' }],
+        fail: ['present-9435854', { mode: 'draw', prop: 'pad', fx: 'sparkle' }], stamp: 'TORN UP' },
+      'artist-laughs': { label: 'THE ARTIST LAUGHS', plate: ['task-9435855', { deco: [['pad', 50, 95, 6]] }] },
+    },
+    catacombs: {
+      manhole: { label: 'THE MANHOLE', plate: ['task-9436001', {}], fail: ['task-9436001', {}] },
+      tunnels: { label: 'THE TUNNELS', plate: [CATACOMBS, { mode: 'search' }], fail: [CATACOMBS, { mode: 'search', deco: [['skull', 50, 96, 4]] }], stamp: 'LOST' },
+      'dead-end': { label: 'A DEAD END', plate: [CATACOMBS, { deco: [['skull', 30, 96, 4], ['skull', 72, 96, 4]] }],
+        fail: [CATACOMBS, { mode: undefined, prop: undefined, deco: [['skull', 30, 96, 4], ['skull', 72, 96, 4]] }], stamp: 'DEAD END' },
+      'the-cheese': { label: 'THE CHEESE', plate: [CATACOMBS, { mode: undefined, prop: undefined, deco: [['cheese', 74, 96, 9], ['cheese', 86, 96, 9]] }] },
+      'way-out': { label: 'OUT BY THE RIVER', plate: ['task-9436302', { deco: [['cheese', 80, 48, 8]] }] },
     },
   },
   'red-sand-desert': {

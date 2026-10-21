@@ -25,7 +25,7 @@ beforeAll(() => {
   for (const seed of [41, 42, 43]) {
     const { cast, teams } = raceCast(12, seed);
     setPlayers(cast);
-    const res = playRaceSeason({ teams, seed, options: { pins: { 2: 'ice-river', 3: 'pampas-ranch', 4: 'red-sand-desert' } } });
+    const res = playRaceSeason({ teams, seed, options: { pins: { 2: 'ice-river', 3: 'pampas-ranch', 4: 'red-sand-desert', 5: 'iron-tower-city' } } });
     const aired = airSeason(res);
     runs.push({ seed, res, aired, screens: aired.map((_, i) => episodeScreens(res, aired, i)) });
   }

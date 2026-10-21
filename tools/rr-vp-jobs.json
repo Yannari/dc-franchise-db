@@ -462,6 +462,14 @@
       "kind": "cutout",
       "prop": "rocking-chair",
       "why": "a Don opener has him with it: an empty wooden rocking chair on its rockers, side view (2026-10-20)"
+    },
+    {
+      "place": "iron-tower-city",
+      "src": "04-iron-tower-city",
+      "file": "task-catacombs",
+      "new": true,
+      "ref": "task-9436279",
+      "why": "the catacombs in stages (2026-10-20): a narrow underground tunnel with its walls stacked with old bones and skulls, a dead end, a floor to stand on; no plate shows bones (stand-in: the lamp-lit tunnel under the quay, task-9436279)"
     }
   ]
 }

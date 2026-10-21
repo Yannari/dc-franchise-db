@@ -12,10 +12,19 @@ export default {
     { id: 'tower-cab', kind: 'travel', mode: 'taxi', base: 35, cost: 30, plate: 'boulevard, cabs', label: 'Cab to the iron tower' },
     { id: 'caricature', called: 'the iron tower', kind: 'botch', types: ['hands', 'people'], base: 14, pass: 0.5, loopCost: 7, opens: 480, closes: 1200,
       teaser: 'Who can draw?', plate: 'base of the iron tower, park', label: 'Botch or Watch: draw me',
+      // the artist's rules at the easel; the partner sits and poses; the sketch (too realistic: torn up); the four
+      // exaggerations (only three: torn up); the artist laughs and hands over the tip. a draws, b sits.
+      stages: [{ id: 'the-easel', share: 0.4, risk: 0 }, { id: 'the-pose', share: 0.4, risk: 0 }, { id: 'sketch', share: 1.5, risk: 1 },
+        { id: 'four-things', share: 0.8, risk: 0.8 }, { id: 'artist-laughs', share: 0.3, risk: 0 }],
       desc: "At the foot of the iron tower, a local artist sits at an easel with paper and charcoal. The partner who didn't do the last Botch or Watch must draw a caricature of the other, who sits and poses, and the artist only approves a real caricature: at least four exaggerations, nothing flattering. A drawing that is too realistic, too polite or just plain bad is torn up, and the artist starts a fresh sheet. When the artist finally laughs, the team gets the next tip." },
     { id: 'catacomb-walk', kind: 'travel', mode: 'foot', base: 15, cost: 0, plate: 'stone steps down', label: 'Down to the catacombs' },
     { id: 'catacombs', called: 'the catacombs', kind: 'allin', types: ['search', 'nerve'], base: 30, pass: 0.45, loopCost: 15, opens: 420, closes: 1260,
       plate: 'catacombs, bone walls', label: 'All-In: follow your nose',
+      // down the manhole in the park (a nervous partner freezes on the ladder); the bone-lined tunnels, following the
+      // smell (lost: in circles past the same skull); a dead end (back the way they came); the cheese wheels; out by
+      // the river with one wheel each
+      stages: [{ id: 'manhole', share: 0.4, risk: 0.2 }, { id: 'tunnels', share: 1.5, risk: 0.8 }, { id: 'dead-end', share: 1, risk: 1 },
+        { id: 'the-cheese', share: 0.6, risk: 0 }, { id: 'way-out', share: 0.4, risk: 0 }],
       desc: "Under the city, the catacombs are a maze of narrow tunnels lined with old bones and skulls. Both partners go in together, and the only clue is a smell: the next tip is hidden among a pile of strong, cave-aged cheese wheels, so teams must follow their noses to the right exit. A dead end means going back the way they came, and the tunnels all look the same, so teams lose time walking in circles past the same skull. The team that finds the cheese takes one wheel each and the tip." },
     { id: 'cheese-raft', kind: 'travel', mode: 'boat', base: 30, cost: 0, plate: 'river, cheese rafts', label: 'Sail the cheese to the museum',
       // the real leg: one team forgot their oars; one partner ate the raft (twenty minutes); the Tennis Rivals carried

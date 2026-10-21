@@ -76,7 +76,9 @@ describe('rr viewer: the rest of the race behind a shot', () => {
             if (s.mode === 'act' && s.plate.path && PATH.has(s.plate.mode)) expect(c.as, `${s.id}: ${c.team} is not doing the task`).toBe(s.plate.mode);
             else {
               expect(c.as, `${s.id} ${s.seg}: ${c.team} runs through a task area`).not.toBe('run');
-              expect(c.work, `${s.id}: ${c.team} stands about at a task`).toBe(act?.mode); working++;
+              // (a stage's own shot: the teams behind do what that stage shows, creeping past the guards with the artifact)
+              const want = (s.seg === 'task-stage' && s.mode === 'act' && s.plate.mode) || act?.mode;
+              expect(c.work, `${s.id}: ${c.team} stands about at a task`).toBe(want); working++;
             }
           } else if (c.as === 'run') {
             // a road: one pass through, never back and forth

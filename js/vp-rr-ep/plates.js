@@ -1024,6 +1024,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const PATROL = [['soldier', 92, 90, 13, { move: 'wander', span: -6, dur: 10 }]];
 const GUARDS = REPAINTED.has('royal-guard') ? [['guard', 72, 96, 7], ['guard', 82, 96, 7], ['guard', 92, 96, 7]] : [];
 const SHACK = repaint('task-shack-inside', 'task-shack-inside', 'arrive-22415967');
 const MUSEUM_BEAR = [['bear', 90, 88, 13, { move: 'wander', span: -4, dur: 12 }]];
@@ -1061,6 +1062,22 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'secret-base-desert': {
+    // (the night desert outside the base; the fence and its wire; the hangar door; inside among the crates)
+    'sneak-in': {
+      'off-the-road': { label: 'OFF THE ROAD', plate: ['task-22419058', { mode: undefined, prop: undefined }] },
+      searchlights: { label: 'THE SEARCHLIGHTS', plate: ['task-22419058', { mode: 'venom', deco: PATROL }], fail: ['task-22419058', { mode: undefined, prop: undefined, deco: PATROL }], stamp: 'SPOTTED' },
+      'the-fence': { label: 'THE FENCE', plate: ['task-22419053', { people: undefined, g: 96, x: [6, 94] }], fail: ['task-22419053', { people: undefined, g: 96, x: [6, 94], fx: 'sparkle' }], stamp: 'BZZT!' },
+      'hangar-door': { label: 'THE HANGAR DOOR', plate: ['task-22419328', {}] },
+    },
+    artifact: {
+      'the-hangar': { label: 'THE HANGAR', plate: ['task-22419433', { mode: undefined, prop: undefined }] },
+      'the-crates': { label: 'THE CRATES', plate: ['task-22419433', { mode: 'search', prop: undefined }], fail: ['task-22419433', { mode: 'search', prop: undefined }], stamp: 'EMPTY' },
+      'lift-it': { label: 'THE ARTIFACT', plate: ['task-22419433', { mode: 'search' }], fail: ['task-22419433', { mode: 'search' }], stamp: 'DROPPED' },
+      'past-guards': { label: 'PAST THE GUARDS', plate: ['task-22419058', { mode: 'venom', prop: 'artifact', deco: PATROL }], fail: ['task-22419058', { mode: undefined, prop: undefined, deco: PATROL }], stamp: 'CAUGHT' },
+      'the-agent': { label: 'THE AGENT', plate: ['task-22419053', { people: undefined, g: 96, x: [6, 94], deco: [['artifact', 40, 96, 4]] }] },
     },
   },
   'marble-temple-hill': {

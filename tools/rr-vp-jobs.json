@@ -494,6 +494,14 @@
       "new": true,
       "ref": "task-9448388",
       "why": "the steam train in stages (2026-10-21): inside one old wooden carriage, side-on, packed with passengers' things (sacks of rice, baskets, a goat, crates of chickens), the door to the next carriage at the end, a floor to stand on; no plate shows the inside (stand-in: the carriage from outside, task-9448388)"
+    },
+    {
+      "place": "skyline-finale",
+      "src": "27-skyline-finale",
+      "file": "task-observation-deck",
+      "new": true,
+      "ref": "present-9450374",
+      "why": "the finale's stairs in stages (2026-10-21): the open-air observation deck at the top of the skyscraper, a railing and the whole city skyline below, a floor to stand on; no plate shows the top (stand-in: the stairwell, task-9450082)"
     }
   ]
 }

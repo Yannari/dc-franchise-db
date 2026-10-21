@@ -183,6 +183,8 @@ export const PLACE_PLATES = {
   },
   'skyline-finale': {
     src: '27-skyline-finale', title: 'present-9450080', opener: p('present-9450040', 97, [20, 80]),
+    // (the observation deck, a job in edit/: only the stairs' last stage, once it's back)
+    stageOnly: [repaint('task-observation-deck', p('task-observation-deck', 92, [6, 94]), null)].filter(Boolean),
     arrive: [p('arrive-9450078', 98, [4, 96])],
     props: { taxi: 'Bright Yellow Cartoon Taxi Side View-2', briefcase: 'Cartoon briefcase with taped gold clue card-3', buoy: 'Orange-capped lattice navigation buoy-1' },
     st: {
@@ -1015,6 +1017,7 @@ const plateOf = (id, f, over = {}) => {
 // the cable down to the island airport, the tip hanging off it halfway
 const ZIP_AIRPORT = { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', prop: 'trolley', fx: 'wind',
   path: [[-6, 11], [20, 23], [46, 36], [72, 48], [104, 63]], deco: [['tip@race', 47, 31, 2.6]] };   // (the riders hang below it)
+const DECK = repaint('task-observation-deck', 'task-observation-deck', 'task-9450082'), DECK_G = repaint('task-observation-deck', 92, 95);
 const TERRACES = repaint('task-tea-terraces', 'task-tea-terraces', 'present-9448248'), TERRACES_G = repaint('task-tea-terraces', 92, 92);
 const TRAIN_IN = repaint('task-train-inside', 'task-train-inside', 'task-9448388'), TRAIN_G = 92;
 const RUGS = repaint('task-rug-clearing', 'task-rug-clearing', 'task-9445378'), RUGS_G = repaint('task-rug-clearing', 92, 90);
@@ -1041,6 +1044,26 @@ const STAGE_SHOTS = {
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip' }], fail: ['task-9435028', { mode: 'zip' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
+    },
+  },
+  'skyline-finale': {
+    // (the lobby; the stairwell; the deck at the top (a job: the stairwell stands in); the boathouse dock; the buoys wide
+    // and one up close)
+    'tower-stairs': {
+      'the-lobby': { label: 'THE LOBBY', plate: ['task-9450185', {}] },
+      'first-flights': { label: 'EIGHTY-SIX FLIGHTS', plate: ['task-9450082', { mode: 'climb', path: [[34, 96], [60, 78], [30, 60]] }],
+        fail: ['task-9450082', { mode: undefined, path: undefined, fx: undefined }], stamp: 'RESTING' },
+      'last-flights': { label: 'THE LAST FLIGHTS', plate: ['task-9450082', { mode: 'climb', path: [[30, 60], [60, 42], [34, 26]] }],
+        fail: ['task-9450082', { mode: undefined, path: undefined, fx: undefined }], stamp: 'SAT DOWN' },
+      'the-briefcase': { label: 'THE BRIEFCASE', plate: [DECK, { mode: undefined, path: undefined, fx: undefined, deco: [['briefcase', 22, DECK_G, 6]] }] },
+    },
+    buoys: {
+      'row-out': { label: 'THE BOATHOUSE', plate: ['task-9450434', {}], fail: ['task-9450434', {}], stamp: 'WRONG BOATHOUSE' },
+      'buoy-hunt': { label: 'THE BUOYS', plate: ['chill-9450523', { mode: 'swim' }], fail: ['chill-9450523', { mode: 'swim' }], stamp: 'WRONG NUMBER' },
+      'read-number': { label: 'READ IT', plate: ['task-9450504', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'swim', path: [[20, 88], [34, 86], [44, 88]] }],
+        fail: ['task-9450504', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'swim', path: [[20, 88], [34, 86], [44, 88]] }], stamp: 'MISREAD' },
+      'the-lock': { label: 'THE LOCK', plate: ['task-9450434', { deco: [['briefcase', 24, 86, 6]] }], fail: ['task-9450434', { deco: [['briefcase', 24, 86, 6]] }], stamp: 'WRONG CODE' },
+      'case-open': { label: 'OPEN!', plate: ['task-9450434', { deco: [['briefcase', 24, 86, 6]] }] },
     },
   },
   'treasure-isles': {

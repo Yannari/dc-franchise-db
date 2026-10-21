@@ -1034,6 +1034,24 @@ const STAGE_SHOTS = {
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },
     },
   },
+  'lei-island': {
+    // (the old pier over the bay; the dive down from the surface and the sandy bottom under the pilings; the coal bed on
+    // the jungle path)
+    'ring-dive': {
+      'the-pier': { label: 'THE OLD PIER', plate: ['present-9439132', { people: undefined, g: 94, x: [6, 40] }] },
+      'dive-down': { label: 'DOWN', plate: ['task-9439253', { inset: 'ON THE PIER', mode: 'dive' }], fail: ['task-9439253', { inset: 'ON THE PIER', mode: 'dive', path: [[50, 58], [50, 50], [50, 44]] }], stamp: 'AIR!' },
+      'search-sand': { label: 'THE BOTTOM', plate: ['task-9439101', { mode: 'dive' }], fail: ['task-9439101', { mode: 'dive' }], stamp: 'NOT A RING' },
+      'ring-up': { label: 'HAND IT UP', plate: ['task-9439253', { inset: 'ON THE PIER', mode: 'dive', path: [[50, 80], [50, 66], [50, 52], [50, 44]] }],
+        fail: ['task-9439253', { inset: 'ON THE PIER', mode: 'dive' }], stamp: 'DROPPED' },
+      'ring-tip': { label: 'THE TIP', plate: ['present-9439132', { people: undefined, g: 94, x: [6, 40], deco: [['ring', 30, 94, 3]] }] },
+    },
+    'fire-walk': {
+      'grass-skirts': { label: 'GRASS SKIRTS', plate: ['task-9439223', { deco: [['hula', 18, 76, 6]] }], fail: ['task-9439223', { deco: [['hula', 18, 76, 6]] }], stamp: 'WARDROBE!' },
+      'the-lift': { label: 'THE LIFT', plate: ['task-9439223', {}], fail: ['task-9439223', {}], stamp: 'TOO HEAVY' },
+      'the-coals': { label: 'THE COALS', plate: ['task-9439223', { mode: 'coals' }], fail: ['task-9439223', { mode: 'coals' }], stamp: 'HOT!' },
+      'fire-dancer': { label: 'THE FIRE DANCER', plate: ['task-9439223', { x: [50, 94] }] },
+    },
+  },
   'haunted-castle': {
     // (the hall of coffins; the hill road down; the graveyard gate and the graves; the gym, the bench by the stairs)
     coffin: {

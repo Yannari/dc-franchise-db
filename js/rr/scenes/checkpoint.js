@@ -16,10 +16,12 @@ register([
     'count-ahead': { w: c => (c.event?.box === 'ahead' ? 2 : 0), fx: (fx, c) => { both(fx, c, 'morale', 4); fx.believe([c.A, c.B], { about: 'rank', claim: 'ahead', value: c.event?.left ?? null }); } },
     'count-behind': { w: c => (c.event?.box === 'behind' ? 2 : 0), fx: (fx, c) => { both(fx, c, 'stress', 6); fx.believe([c.A, c.B], { about: 'rank', claim: 'behind', value: c.event?.left ?? null }); } },
   } }),
-  // two teams at the box in the same minute (a and b the team that acts, c and d the other)
+  // two teams at the box (a and b the team that acts, c and d the other): reaching for it, or giving way, only when they
+  // got there at the same moment; a team already holding its tip can only be read over (2026-10-22, the user: "x slide
+  // in front of and grab a tip before either of them but last slide it said the tip was already grabbed")
   K({ id: 'box-grab', family: 2, cast: 'teams', moments: ['box'], when: c => (c.rivalry() >= 1 ? 0.7 : 0.25), endings: {
-    snatched: { w: c => c.S(c.A, 'boldness') / 5, fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 1); fx.time(c.oid, 2); fx.pop(c.A, -1); } },
-    'after-you': { w: c => c.S(c.A, 'social') / 6 + Math.max(0, c.teamBond()) / 4, fx: (fx, c) => { fx.teams(c.tid, c.oid, 0.6); fx.pop(c.A, 1); } },
+    snatched: { w: c => (c.event?.together ? c.S(c.A, 'boldness') / 5 : 0), fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 1); fx.time(c.oid, 2); fx.pop(c.A, -1); } },
+    'after-you': { w: c => (c.event?.together ? c.S(c.A, 'social') / 6 + Math.max(0, c.teamBond()) / 4 : 0), fx: (fx, c) => { fx.teams(c.tid, c.oid, 0.6); fx.pop(c.A, 1); } },
     'read-over-shoulder': { w: c => c.S(c.A, 'intuition') / 8, fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 1); fx.believe([c.A, c.B], { about: 'side', claim: 'watched', value: c.stretch?.id }); } },
   } }),
 ]);

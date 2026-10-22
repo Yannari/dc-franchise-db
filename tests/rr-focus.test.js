@@ -31,7 +31,10 @@ beforeAll(() => {
 }, 600000);
 
 const tasksOf = place => (PLACES[place]?.stretches || []).filter(s => TASKS.has(s.kind)).map(s => s.id);
-const BEATS = new Set(['task-start', 'task-try', 'task-done', 'task-stage', 'task-montage', 'ride', 'don-place', 'mat-montage', 'team-intro']);
+// (the checkpoint, a team taking its clue and choosing its side, is a beat of every challenge like its start: not a
+// spare moment, rr-checkpoint)
+const BEATS = new Set(['task-start', 'task-try', 'task-done', 'task-stage', 'task-montage', 'ride', 'don-place', 'mat-montage', 'team-intro',
+  'clue', 'clue-montage', 'decide-side']);
 const own = seg => !BEATS.has(seg.kind) && !seg.kind.startsWith('don-');
 
 describe('rr: the leg cuts between its teams', () => {

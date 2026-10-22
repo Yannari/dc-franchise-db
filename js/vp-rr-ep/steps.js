@@ -66,11 +66,14 @@ function checkpointOf(k, seg, steps, from, stretch, rows) {
   const teams = seg.teams || [];
   const grab = {};
   if (k === 'clue-montage') steps.forEach((_, i) => { if (teams[Math.min(i, teams.length - 1)] != null) grab[i] = teams[Math.min(i, teams.length - 1)]; });
-  else if (k === 'clue' || k === 'box-grab') grab[0] = teams[0];
-  const out = { from, grab, holding: k === 'decide-side' ? [teams[0]] : [] };
+  // (reading over a shoulder: the other team is reading the tip it already has, and nobody is handed one)
+  else if (k === 'clue' || (k === 'box-grab' && seg.ending !== 'read-over-shoulder')) grab[0] = teams[0];
+  const out = { from, grab, holding: k === 'decide-side' ? [teams[0]] : k === 'box-grab' && seg.ending === 'read-over-shoulder' ? teams.slice(1, 2) : [] };
   if (k === 'clue') out.card = { kind: (KIND_NAME[stretch.kind] || 'Route Info').toUpperCase(), label: stretch.label, sides: (stretch.sides || []).map(x => x.label) };
   if (k === 'decide-side') {
-    const side = rows.find(r => r.team === teams[0] && r.stretch === seg.stretch)?.side;
+    // (the side they went for at the box: a team that switched later still chose this one here)
+    const row = rows.find(r => r.team === teams[0] && r.stretch === seg.stretch);
+    const side = row?.switched ? (stretch.sides || []).find(x => x.id !== row.side)?.id : row?.side;
     const label = (stretch.sides || []).find(x => x.id === side)?.label;
     if (label) out.chose = label.toUpperCase();
   }

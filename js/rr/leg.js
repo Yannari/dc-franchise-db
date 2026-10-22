@@ -286,8 +286,9 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       const frac = (nth - 1) / Math.max(1, active.length - 1);
       // (at the box with it: the teams that got there in the same couple of minutes; one there five minutes is already in
       // the elevator, on the stairs)
-      const mates = api.here(s.id, t).filter(x => x.id !== id && t - x.from <= BOX_TOGETHER).map(x => x.id);
-      extra += talkAtCheckpoint(state, id, mates, s, t, api, rng, { box: frac <= 0.34 ? 'ahead' : frac >= 0.66 ? 'behind' : 'mid', left: active.length - nth }).extra || 0;
+      const near = api.here(s.id, t).filter(x => x.id !== id && t - x.from <= BOX_TOGETHER);
+      const mates = near.map(x => x.id), together = near.filter(x => t - x.from < 1).map(x => x.id);
+      extra += talkAtCheckpoint(state, id, mates, s, t, api, rng, { together, box: frac <= 0.34 ? 'ahead' : frac >= 0.66 ? 'behind' : 'mid', left: active.length - nth }).extra || 0;
     }
     const inside = TASKS.includes(s.kind) && !!s.sides;
     const meetLater = inside && !talked.has(key);
@@ -409,6 +410,13 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       if (useExpress(state, team, s, stretches, t)) res = { end: t + 1 };
       else {
         res = resolveTask(state, team, s, t, api, rng);
+        // the side decided at the checkpoint is the side they went for first (the scene was played before they chose it,
+        // and the lines are written for one side or the other: "Stairs. I'm not walking round the outside of anything")
+        if (s.sides) {
+          const row = (state.taskLog || []).findLast(r => r.leg === state.leg && r.team === id && r.stretch === s.id);
+          const went = row?.switched ? s.sides.find(x => x.id !== row.side)?.id : row?.side;
+          for (const sc of state.scenes) if (sc.leg === state.leg && sc.kind === 'decide-side' && sc.data?.team === id && sc.data?.stretch === s.id && sc.data.snap && sc.data.snap.side == null) sc.data.snap.side = went ?? null;
+        }
         // the Speed Bump: one extra task for last leg's non-elimination team, after the first task
         if (s.id === firstTask && state.speedBump[id] === leg.n) {
           const bump = { id: 'speed-bump', kind: 'route', types: s.types || s.sides?.[0]?.types || ['hands'], ...SPEED_BUMP };

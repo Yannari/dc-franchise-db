@@ -58,6 +58,19 @@ describe('rr: every challenge is a checkpoint', () => {
     }
   });
 
+  // (2026-10-22, the user: "someone got the tip then right after it said x slide in front of and grab a tip before
+  // either of them but last slide it said the tip was already grabbed")
+  it('grabs at the box only with a team that got there at the same moment: one already holding its tip is read over', () => {
+    let n = 0;
+    for (const { seed, res } of seasons) for (const g of res.state.scenes.filter(s => s.kind === 'box-grab')) {
+      const theirs = res.state.scenes.find(s => s.kind === 'clue' && s.leg === g.leg && s.data.team === g.data.other && s.data.stretch === g.data.stretch);
+      const together = theirs && Math.abs(theirs.data.t - g.data.t) < 1;
+      if (!together) expect(g.data.ending, `seed ${seed} leg ${g.leg} ${g.data.team}/${g.data.other}`).toBe('read-over-shoulder');
+      n++;
+    }
+    expect(n).toBeGreaterThan(5);
+  });
+
   it('shows each team taking its clue before it shows it at the challenge', () => {
     let full = 0, quick = 0;
     for (const { seed, res, aired } of seasons) res.legs.forEach((leg, i) => {

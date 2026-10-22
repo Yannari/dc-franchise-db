@@ -232,6 +232,12 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
     const tier = facts.ownIntro ? 'ownIntro' : facts.custom ? 'custom' : null;
     if (tier) for (const k of Object.keys(pools)) { const mine = pools[k].filter(e => e.when?.[tier]); if (mine.length) pools[k] = mine; }
   }
+  // an Either/Or's choice in its own words, the stairs or the deck, the lava or the falls (the user, 2026-10-22: "dont use
+  // generic dialogue but specific per challenge"): where the challenge has lines of its own, only those
+  if (scene.kind === 'decide-side' && facts.taskId) for (const k of Object.keys(pools)) {
+    const mine = pools[k].filter(e => [].concat(e.when?.taskId ?? []).includes(facts.taskId));
+    if (mine.length) pools[k] = mine;
+  }
   state.lineLedger ||= newLedger();
   const clock = scene.leg ?? state.leg;
   const speakers = Object.entries(r.roles).filter(([k]) => k !== 'don' && k !== 'local').map(([, n]) => n);

@@ -276,7 +276,8 @@ export function talkAtStretch(state, team, stretch, t, api, rng, end = null) {
 // ── The checkpoint: a team reaching a challenge takes its clue and reads it (scenes/checkpoint.js) ──
 // At an Either/Or it decides its side there, once; a team at the box with it in the same minute may grab, give way, or
 // read over a shoulder. `box`: 'ahead' / 'mid' / 'behind', where the envelopes left say the team is; `left`: how many.
-export function talkAtCheckpoint(state, team, others, stretch, t, api, rng, { box = 'mid', left = null } = {}) {
+// `together`: the teams that got to the box the same minute (the others have their tip already, and are reading it)
+export function talkAtCheckpoint(state, team, others, stretch, t, api, rng, { box = 'mid', left = null, together = [] } = {}) {
   const id = idOf(team);
   const out = [];
   out.extra = 0;
@@ -284,7 +285,7 @@ export function talkAtCheckpoint(state, team, others, stretch, t, api, rng, { bo
   tryPlay(state, baseCtx(state, id, null, stretch, t, api, { moment: 'clue', event: { ...eventAt(state, id, stretch), box, left } }), 'clue', rng, out, { gate: false });
   if (stretch?.sides) tryPlay(state, baseCtx(state, id, null, stretch, t, api, { moment: 'either', present: [id, ...ids] }), 'decide-side', rng, out, { gate: false });
   for (const o of ids) {
-    if (tryPlay(state, baseCtx(state, id, o, stretch, t, api, { moment: 'box', arriving: id }), 'box-grab', rng, out)) break;
+    if (tryPlay(state, baseCtx(state, id, o, stretch, t, api, { moment: 'box', arriving: id, event: { ...eventAt(state, id, stretch), together: together.includes(o) } }), 'box-grab', rng, out)) break;
   }
   return out;
 }

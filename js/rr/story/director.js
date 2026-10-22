@@ -286,7 +286,8 @@ function cutByChallenge(segs, leg) {
     if (EXIT_KINDS.has(x.kind) || x.kind === 'int-exit' || (AFTER_EXIT.has(x.kind) && x.kind !== 'don-narrate')) part.set(x, M + 2);
     // (the challenge they were at when Don came still airs, unfinished; one they only got to afterwards doesn't)
     else if (!aboutOf(x) && x.t > exitAt(x.teams[0]) + 0.01 && !(x.kind.startsWith('task-') && reached(x.teams[0]).has(x.stretch))) gone.add(x);
-    else if (Number.isFinite(opens) && x.t > opens && !aboutOf(x)) part.set(x, M + 1);
+    // (its arrival at the challenge, the clue at the checkpoint, stays where it got there, with the teams there with it)
+    else if (Number.isFinite(opens) && x.t > opens && !aboutOf(x) && !CHECKPOINT.has(x.kind)) part.set(x, M + 1);
   }
   for (const x of segs) { const a = aboutOf(x); if (a) part.set(x, part.get(a)); }
   // (a stable sort: within a part the clock order stands)

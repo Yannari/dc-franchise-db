@@ -32,6 +32,7 @@ import more4 from './more-4.js';
 import finale from './finale.js';
 import montage from './montage.js';
 import checkpoint from './checkpoint.js';
+import eitherChoices from './places/either-choices.js';
 import ride from './ride.js';
 import narration from './narration.js';
 import narration2 from './narration-2.js';
@@ -188,7 +189,7 @@ import stoneHeadIsland from './places/stone-head-island.js';
 import badlands from './places/badlands.js';
 
 const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
-  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, checkpoint, ride, narration, narration2, premiere, premiereIdentities, customIntros, redSandDesert, ironTowerCity, homeCity, skylineFinale, fireMountainIsle, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback, ...placesMore, chillNew,
+  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, checkpoint, eitherChoices, ride, narration, narration2, premiere, premiereIdentities, customIntros, redSandDesert, ironTowerCity, homeCity, skylineFinale, fireMountainIsle, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback, ...placesMore, chillNew,
   coastPalace, geyserIsland, carnivalRainforest, hauntedCastle,
   leiIsland, glassTowerGulf, swampPrison, outbackFarm,
   fjordPeaks, prairieRanch, iceFloe, dragonIsle,

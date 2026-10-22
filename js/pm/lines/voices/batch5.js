@@ -5,32 +5,32 @@ export const BATCH5 = [
   // ── shared one-liners ──
   T('Is that bad?', {
     earnest: "Is that bad? Tell me honestly.", warm: "Is that bad? Be gentle.", calm: "Is that bad?", quiet: "Bad?", dry: "Is that bad?", nerdy: "Is that bad, objectively?",
-    loud: "Is that BAD?", blunt: "Bad?", tough: "That bad?", competitive: "Is that bad? Worse than everyone else?", chaotic: "Is that bad? Is it? Is it bad?", schemer: "Is that bad? Or useful?",
+    loud: "Is that bad?", blunt: "Bad?", tough: "That bad?", competitive: "Is that bad? Worse than everyone else?", chaotic: "Is that bad? Is it? Is it bad?", schemer: "Is that bad? Or useful?",
     cruel: "Is that bad? I don't really care.", bossy: "Is that bad? Tell me straight.", proud: "Is that bad? I doubt it.", flirty: "Is that bad? Tell me it isn't.",
     anxious: "Is that bad? Oh God, is that bad?", goofy: "Is that bad? Scale of one to disaster?", ditzy: "Is that bad? I can't tell.", theatrical: "Is that terrible? Is it a catastrophe?" }),
   T('Can we talk about something else?', {
     earnest: "Can we talk about something else? Please.", warm: "Can we talk about something else? Something nice.", calm: "Let's talk about something else.", quiet: "Something else?", dry: "Can we talk about something else?", nerdy: "Can we change the subject?",
-    loud: "Can we PLEASE talk about something else?", blunt: "Change the subject.", tough: "Drop it. Talk about something else.", competitive: "Can we talk about something else? I'm done with this one.", chaotic: "Something else! Anything else!", schemer: "Let's talk about something else. For now.",
+    loud: "Can we please talk about something else?", blunt: "Change the subject.", tough: "Drop it. Talk about something else.", competitive: "Can we talk about something else? I'm done with this one.", chaotic: "Something else! Anything else!", schemer: "Let's talk about something else. For now.",
     cruel: "Can we talk about something else? This is boring.", bossy: "New subject. Now.", proud: "Can we talk about something else? Something more interesting.", flirty: "Can we talk about something else? Like you?",
     anxious: "Can we talk about something else? This is making me nervous.", goofy: "Can we talk about something else? Like dogs.", ditzy: "Can we talk about something else? I've lost track.", theatrical: "Please, for the love of everything, another subject!" }),
   T('Why not?', {
     earnest: "Why not? I want to understand.", warm: "Why not? You can tell me.", calm: "Why not?", quiet: "Why not?", dry: "Why not?", nerdy: "Why not? What's stopping you?",
-    loud: "Why NOT?", blunt: "Why not?", tough: "Why not?", competitive: "Why not? Scared?", chaotic: "Why not?! Why not?!", schemer: "Why not? What's really going on?",
+    loud: "Why not?", blunt: "Why not?", tough: "Why not?", competitive: "Why not? Scared?", chaotic: "Why not?! Why not?!", schemer: "Why not? What's really going on?",
     cruel: "Why not? Too scared?", bossy: "Why not? Give me a reason.", proud: "Why not? Everyone else would.", flirty: "Why not? What's stopping you?",
     anxious: "Why not? Did I do something?", goofy: "Why not? Give me one good reason. Or a bad one.", ditzy: "Why not? Oh, is it a rule?", theatrical: "Why not?! Give me a reason!" }),
   T('I was going to tell you.', {
     earnest: "I was going to tell you. I swear I was.", warm: "I was going to tell you. I just didn't want to upset you.", calm: "I was going to tell you.", quiet: "I was going to tell you.", dry: "I was going to tell you.", nerdy: "I was going to tell you. I was waiting for the right moment.",
-    loud: "I was GOING to tell you!", blunt: "I was going to tell you.", tough: "I was going to tell you.", competitive: "I was going to tell you first. Honestly.", chaotic: "I was going to tell you! I just forgot! Then remembered! Then forgot!", schemer: "I was going to tell you. When the time was right.",
+    loud: "I was going to tell you!", blunt: "I was going to tell you.", tough: "I was going to tell you.", competitive: "I was going to tell you first. Honestly.", chaotic: "I was going to tell you! I just forgot! Then remembered! Then forgot!", schemer: "I was going to tell you. When the time was right.",
     cruel: "I was going to tell you. Eventually.", bossy: "I was going to tell you. Calm down.", proud: "I was going to tell you. Obviously.", flirty: "I was going to tell you. I promise.",
     anxious: "I was going to tell you. I was just scared to.", goofy: "I was going to tell you. I was building suspense.", ditzy: "I was going to tell you! I think?", theatrical: "I was going to tell you! I swear it on my life!" }),
   T('What about you?', {
     earnest: "What about you? Honestly?", warm: "What about you? How are you doing?", calm: "And you?", quiet: "You?", dry: "What about you?", nerdy: "What about you? Same question.",
-    loud: "What about YOU?", blunt: "You?", tough: "You?", competitive: "What about you? Bet I win.", chaotic: "What about you?! Your turn!", schemer: "What about you? Your turn to share.",
+    loud: "What about you?", blunt: "You?", tough: "You?", competitive: "What about you? Bet I win.", chaotic: "What about you?! Your turn!", schemer: "What about you? Your turn to share.",
     cruel: "What about you? Or are you hiding something?", bossy: "Your turn. What about you?", proud: "What about you? Not that it'll top mine.", flirty: "What about you? I want to know everything.",
     anxious: "What about you? If you want to say.", goofy: "What about you? Spill.", ditzy: "What about you? Wait, what was the question?", theatrical: "And you? Your turn to bare your soul!" }),
   T('Seven.', {
     earnest: "Seven. Honestly.", warm: "Seven. Mostly because of you.", calm: "Seven.", quiet: "Seven.", dry: "Seven. Generous.", nerdy: "Seven. Maybe seven and a half.",
-    loud: "SEVEN!", blunt: "Seven.", tough: "Seven.", competitive: "Seven. Tomorrow's a ten.", chaotic: "Seven! No, eight! Seven!", schemer: "Seven. Could be higher.",
+    loud: "Seven!", blunt: "Seven.", tough: "Seven.", competitive: "Seven. Tomorrow's a ten.", chaotic: "Seven! No, eight! Seven!", schemer: "Seven. Could be higher.",
     cruel: "Seven. Lunch dragged it down.", bossy: "Seven. Could be better.", proud: "Seven. I've had better.", flirty: "Seven. You could make it a ten.",
     anxious: "Seven? Is that okay?", goofy: "Seven. Out of ten. Or eleven.", ditzy: "Seven? Out of what?", theatrical: "Seven! A solid, glorious seven!" }),
   T('Straight away.', {
@@ -40,7 +40,7 @@ export const BATCH5 = [
     anxious: "Straight away. Gently, though.", goofy: "Straight away. With a big sign.", ditzy: "Straight away! Probably!", theatrical: "In an instant!" }),
   T('Just nice?', {
     earnest: "Just nice?", warm: "Just nice? Aw.", calm: "Just nice?", quiet: "Just nice?", dry: "Just nice?", nerdy: "Just nice? Can you be more specific?",
-    loud: "Just NICE?", blunt: "Just nice?", tough: "Just nice?", competitive: "Just nice? I can do better than nice.", chaotic: "Just nice?! Only nice?!", schemer: "Just nice? Hm.",
+    loud: "Just nice?", blunt: "Just nice?", tough: "Just nice?", competitive: "Just nice? I can do better than nice.", chaotic: "Just nice?! Only nice?!", schemer: "Just nice? Hm.",
     cruel: "Just nice? Wow. Thanks.", bossy: "Just nice? Try again.", proud: "Just nice? I'm insulted.", flirty: "Just nice? I was going for amazing.",
     anxious: "Just nice? Was it not good?", goofy: "Just nice? I'm demanding a review.", ditzy: "Just nice? Is nice good?", theatrical: "Merely nice?!" }),
   T('Everything okay?', {
@@ -50,7 +50,7 @@ export const BATCH5 = [
     anxious: "Everything okay? Is it me?", goofy: "Everything okay? You've got your thinking face on.", ditzy: "Everything okay? I think it is?", theatrical: "Is everything all right? Speak to me!" }),
   T("It wasn't like that.", {
     earnest: "It wasn't like that. I promise.", warm: "It wasn't like that, honestly.", calm: "It wasn't like that.", quiet: "It wasn't like that.", dry: "It wasn't like that.", nerdy: "It wasn't like that. Let me explain.",
-    loud: "It WASN'T like that!", blunt: "Not like that.", tough: "It wasn't like that.", competitive: "It wasn't like that, and you know it.", chaotic: "It wasn't like that! It was different! Totally different!", schemer: "It wasn't like that. Let me explain.",
+    loud: "It wasn't like that!", blunt: "Not like that.", tough: "It wasn't like that.", competitive: "It wasn't like that, and you know it.", chaotic: "It wasn't like that! It was different! Totally different!", schemer: "It wasn't like that. Let me explain.",
     cruel: "It wasn't like that. You're overreacting.", bossy: "It wasn't like that. Listen.", proud: "It wasn't like that. I wouldn't.", flirty: "It wasn't like that, I promise.",
     anxious: "It wasn't like that! I swear it wasn't.", goofy: "It wasn't like that. Okay, a little bit like that.", ditzy: "It wasn't like that! Was it?", theatrical: "It was nothing like that! Nothing!" }),
   T('Friends?', {
@@ -60,7 +60,7 @@ export const BATCH5 = [
     anxious: "Friends? Can we be?", goofy: "Friends? Pinky swear?", ditzy: "Friends? Are we friends?", theatrical: "Friends? Let bygones be bygones!" }),
   T('How?', {
     earnest: "How? Tell me.", warm: "How? What happened?", calm: "How?", quiet: "How?", dry: "How?", nerdy: "How, exactly?",
-    loud: "HOW?", blunt: "How?", tough: "How?", competitive: "How? Show me.", chaotic: "How?! How?!", schemer: "How did that happen?",
+    loud: "How?", blunt: "How?", tough: "How?", competitive: "How? Show me.", chaotic: "How?! How?!", schemer: "How did that happen?",
     cruel: "How? Explain that.", bossy: "How? Step by step.", proud: "How? I'd never manage that.", flirty: "How? Tell me.",
     anxious: "How? Is that bad?", goofy: "How? Magic?", ditzy: "How? I'm confused.", theatrical: "How?! It's impossible!" }),
   T('If you want.', {
@@ -71,7 +71,7 @@ export const BATCH5 = [
   // ── friendship scenes ──
   T('You said "I\'m fine" to the toaster. I heard you.', {
     earnest: "You said \"I'm fine\" to the toaster. I heard you. You're not fine.", warm: "You said \"I'm fine\" to the toaster. Come on. Talk to me.", calm: "You told the toaster you're fine. I heard.", quiet: "You told the toaster.",
-    dry: "You said \"I'm fine\" to the toaster. I was there.", nerdy: "You told the toaster you're fine. That's not a reliable sign.", loud: "You said you're fine to the TOASTER! I heard you!", blunt: "You told the toaster you're fine. You're not.",
+    dry: "You said \"I'm fine\" to the toaster. I was there.", nerdy: "You told the toaster you're fine. That's not a reliable sign.", loud: "You said you're fine to the toaster! I heard you!", blunt: "You told the toaster you're fine. You're not.",
     tough: "You told the toaster you're fine. Come on.", competitive: "You said \"I'm fine\" to the toaster. Not very convincing.", chaotic: "You told the toaster! I heard! The toaster knows!", schemer: "You said \"I'm fine\" to the toaster. I notice things.",
     cruel: "You said \"I'm fine\" to the toaster. Even the toaster didn't believe you.", bossy: "You told the toaster you're fine. Sit down and tell me properly.", proud: "You told the toaster you're fine. You can't fool me.", flirty: "You said \"I'm fine\" to the toaster. Tell me instead.",
     anxious: "You said \"I'm fine\" to the toaster. I was worried.", goofy: "You told the toaster you're fine. The toaster's worried too.", ditzy: "Were you talking to the toaster? You said you're fine.", theatrical: "You confided in the toaster! I heard every word!" }),
@@ -95,7 +95,7 @@ export const BATCH5 = [
     anxious: "Has {pb} said anything yet? About being exclusive?", goofy: "Has {pb} popped the exclusive question yet?", ditzy: "Has {pb} said anything? About the exclusive thing?", theatrical: "Has {pb} declared exclusivity yet?" }),
   T("I feel a lot better for that.", {
     earnest: "I feel a lot better for that. Thank you.", warm: "I feel so much better. Thank you.", calm: "I feel better.", quiet: "Better.",
-    dry: "I feel a lot better for that.", nerdy: "I feel a lot better. Talking helps.", loud: "I feel SO much better!", blunt: "Better.",
+    dry: "I feel a lot better for that.", nerdy: "I feel a lot better. Talking helps.", loud: "I feel so much better!", blunt: "Better.",
     tough: "Feel better.", competitive: "I feel better. Ready for anything now.", chaotic: "I feel so much better! Amazing!", schemer: "I feel better. Clearer.",
     cruel: "I feel better. Surprisingly.", bossy: "I feel better. Good chat.", proud: "I feel better. Back to normal.", flirty: "I feel a lot better for that.",
     anxious: "I feel a lot better for that. Thank you for listening.", goofy: "I feel a lot better. New person.", ditzy: "I feel better! Why did I feel bad?", theatrical: "I feel reborn!" }),
@@ -107,7 +107,7 @@ export const BATCH5 = [
     anxious: "Good. I'm so glad.", goofy: "Good. Therapy's free today.", ditzy: "Good! What was the idea?", theatrical: "Good! Job done!" }),
   T("Is it bad that I don't miss my phone at all?", {
     earnest: "Is it bad that I don't miss my phone at all?", warm: "Is it bad I don't miss my phone at all?", calm: "I don't miss my phone. Is that bad?", quiet: "I don't miss my phone.",
-    dry: "I don't miss my phone at all. Worrying.", nerdy: "I don't miss my phone at all. Is that bad?", loud: "I don't miss my phone AT ALL! Is that bad?", blunt: "I don't miss my phone.",
+    dry: "I don't miss my phone at all. Worrying.", nerdy: "I don't miss my phone at all. Is that bad?", loud: "I don't miss my phone at all! Is that bad?", blunt: "I don't miss my phone.",
     tough: "Don't miss my phone. At all.", competitive: "I don't miss my phone. Bet you do.", chaotic: "I don't miss my phone! At all! What's happening to me?", schemer: "I don't miss my phone. No distractions.",
     cruel: "I don't miss my phone. Or half the people on it.", bossy: "I don't miss my phone. At all.", proud: "I don't miss my phone. I'm above it.", flirty: "I don't miss my phone at all. Too busy.",
     anxious: "Is it bad that I don't miss my phone? I thought I'd panic.", goofy: "I don't miss my phone. I've evolved.", ditzy: "Is it bad I forgot I even had a phone?", theatrical: "I don't miss my phone at all! I'm free!" }),
@@ -125,7 +125,7 @@ export const BATCH5 = [
     anxious: "Let's go and see what everyone's doing. In case we're missing something.", goofy: "Let's go and see what everyone's doing. Gossip patrol.", ditzy: "Let's go and see what everyone's doing! Where is everyone?", theatrical: "Let's go and see what the villa is up to!" }),
   T("Let's go and cause trouble.", {
     earnest: "Let's go and have some fun.", warm: "Let's go and cause a little bit of trouble.", calm: "Let's cause some trouble.", quiet: "Let's cause trouble.",
-    dry: "Let's go and cause trouble.", nerdy: "Let's go and cause some carefully planned trouble.", loud: "Let's go and cause TROUBLE!", blunt: "Let's cause trouble.",
+    dry: "Let's go and cause trouble.", nerdy: "Let's go and cause some carefully planned trouble.", loud: "Let's go and cause trouble!", blunt: "Let's cause trouble.",
     tough: "Let's cause trouble.", competitive: "Let's go and cause more trouble than anyone.", chaotic: "Trouble! Let's go cause trouble!", schemer: "Let's go and cause a bit of trouble.",
     cruel: "Let's go and cause trouble. Someone deserves it.", bossy: "Let's go and cause trouble. Follow me.", proud: "Let's go and cause trouble. Stylishly.", flirty: "Let's go and cause some trouble.",
     anxious: "Let's go and cause trouble? Small trouble?", goofy: "Let's go and cause trouble. Mild chaos.", ditzy: "Let's go and cause trouble! What kind?", theatrical: "Let's go and cause havoc!" }),
@@ -137,7 +137,7 @@ export const BATCH5 = [
     anxious: "Do you think {pa} is as into it as I am? I'm scared {pa} isn't.", goofy: "Do you think {pa} is as into it as I am? Scale of one to obsessed?", ditzy: "Do you think {pa} likes me? As much as I like {pa.obj}?", theatrical: "Does {pa} feel what I feel? Tell me truly!" }),
   T("I think {pa} lights up when you walk in.", {
     earnest: "I think {pa} lights up when you walk in. Honestly.", warm: "{pa} lights up every time you walk in.", calm: "{pa} lights up when you walk in.", quiet: "{pa} lights up. When you walk in.",
-    dry: "{pa} lights up when you walk in. It's a bit much.", nerdy: "{pa} lights up when you walk in. I've noticed it every time.", loud: "{pa} LIGHTS UP when you walk in!", blunt: "{pa} lights up when you walk in.",
+    dry: "{pa} lights up when you walk in. It's a bit much.", nerdy: "{pa} lights up when you walk in. I've noticed it every time.", loud: "{pa} lights up when you walk in!", blunt: "{pa} lights up when you walk in.",
     tough: "{pa} lights up when you walk in. Trust me.", competitive: "{pa} lights up for you more than anyone in here.", chaotic: "{pa} lights up! Like a lamp! Every time!", schemer: "{pa} lights up when you walk in. I watch these things.",
     cruel: "{pa} lights up when you walk in. It's almost sweet.", bossy: "{pa} lights up when you walk in. Stop worrying.", proud: "{pa} lights up when you walk in. Of course {pa} does.", flirty: "{pa} lights up when you walk in.",
     anxious: "I think {pa} lights up when you walk in. Really, I do.", goofy: "{pa} lights up when you walk in. Like a puppy.", ditzy: "{pa} lights up when you walk in! I've seen it!", theatrical: "{pa} lights up like a sunrise when you walk in!" }),
@@ -149,25 +149,25 @@ export const BATCH5 = [
     anxious: "Who are you picking tonight? I can't stop thinking about it.", goofy: "Who are you picking tonight? Eeny, meeny?", ditzy: "Who are you picking tonight? Is it tonight?", theatrical: "Who will you choose tonight?" }),
   T("Why am I always the last to know things in here?", {
     earnest: "Why am I always the last to know things in here?", warm: "Why am I always the last to know?", calm: "Why am I always the last to know?", quiet: "Why am I always last to know?",
-    dry: "Why am I always the last to know anything in here?", nerdy: "Why am I always the last to hear things? It's every time.", loud: "Why am I ALWAYS the last to know things in here?!", blunt: "Why am I always last to know?",
+    dry: "Why am I always the last to know anything in here?", nerdy: "Why am I always the last to hear things? It's every time.", loud: "Why am I always the last to know things in here?!", blunt: "Why am I always last to know?",
     tough: "Why am I always last to know?", competitive: "Why am I always the last to know? I hate that.", chaotic: "Why am I always last?! Every time! Why?!", schemer: "Why am I always the last to know? That needs to change.",
     cruel: "Why am I always the last to know? Who's keeping things from me?", bossy: "Why am I always the last to know? I want to know first.", proud: "Why am I the last to know? I should be the first.", flirty: "Why am I always the last to know things in here?",
     anxious: "Why am I always the last to know? Are people hiding things from me?", goofy: "Why am I always the last to know? Do I need a newsletter?", ditzy: "Why am I always the last to know? Wait, know what?", theatrical: "Why am I always the last to know?!" }),
   T("What's the first thing you're eating when you get out?", {
     earnest: "What's the first thing you're eating when you get out?", warm: "What's the first thing you'll eat when you get home?", calm: "First thing you'll eat when you're out?", quiet: "First thing you'll eat? Outside?",
-    dry: "What's the first thing you're eating when you get out?", nerdy: "What's the first meal you're having when you get out?", loud: "What's the FIRST thing you're eating when you get out?!", blunt: "First thing you'll eat outside?",
+    dry: "What's the first thing you're eating when you get out?", nerdy: "What's the first meal you're having when you get out?", loud: "What's the first thing you're eating when you get out?!", blunt: "First thing you'll eat outside?",
     tough: "First thing you're eating outside?", competitive: "What's the first thing you're eating? Bet mine's better.", chaotic: "Food! Outside! What's the first thing you're eating?!", schemer: "What's the first thing you're eating when you get out?",
     cruel: "What's the first thing you're eating when you get out? Something without sand in it?", bossy: "First thing you're eating when you get out. Go.", proud: "What's the first thing you're eating when you get out? I know mine.", flirty: "What's the first thing you're eating when you get out?",
     anxious: "What's the first thing you're eating when you get out? I keep thinking about food.", goofy: "What's the first thing you're eating when you get out? I'm dreaming of chips.", ditzy: "What's the first thing you'll eat? When do we get out?", theatrical: "What will be your first glorious meal on the outside?" }),
   T("A roast dinner. The full thing.", {
     earnest: "A roast dinner. The full thing.", warm: "A roast dinner. My family's.", calm: "A roast. The full thing.", quiet: "A roast.",
-    dry: "A roast dinner. All of it.", nerdy: "A roast dinner. Every element. Yorkshire puddings included.", loud: "A ROAST DINNER! The full thing!", blunt: "A roast.",
+    dry: "A roast dinner. All of it.", nerdy: "A roast dinner. Every element. Yorkshire puddings included.", loud: "A roast dinner! The full thing!", blunt: "A roast.",
     tough: "A roast. Full plate.", competitive: "A roast dinner. Biggest plate you've ever seen.", chaotic: "A roast! Everything! All the gravy!", schemer: "A roast dinner. The full thing.",
     cruel: "A roast dinner. Real food. Not what they feed us in here.", bossy: "A roast dinner. The full thing. No arguments.", proud: "A roast dinner. My own. I'm a brilliant cook.", flirty: "A roast dinner. The full thing.",
     anxious: "A roast dinner. Is that weird?", goofy: "A roast dinner. With a side of roast dinner.", ditzy: "A roast dinner! Is that what it's called?", theatrical: "A roast dinner! The whole glorious spread!" }),
   T("In the middle of summer. With gravy.", {
     earnest: "In the middle of summer. With gravy.", warm: "In the middle of summer. With gravy. Don't judge me.", calm: "Summer or not. With gravy.", quiet: "With gravy.",
-    dry: "In the middle of summer. With gravy.", nerdy: "Summer is irrelevant. Gravy is essential.", loud: "In the middle of summer! WITH GRAVY!", blunt: "Yes. With gravy.",
+    dry: "In the middle of summer. With gravy.", nerdy: "Summer is irrelevant. Gravy is essential.", loud: "In the middle of summer! With gravy!", blunt: "Yes. With gravy.",
     tough: "Middle of summer. With gravy.", competitive: "In the middle of summer. Extra gravy.", chaotic: "Summer! Gravy! Both!", schemer: "In the middle of summer. With gravy.",
     cruel: "In the middle of summer. With gravy. Try and stop me.", bossy: "Summer, with gravy. Final answer.", proud: "In the middle of summer. With gravy. I have taste.", flirty: "In the middle of summer. With gravy.",
     anxious: "In the middle of summer. With gravy. Is that bad?", goofy: "In the middle of summer. Swimming in gravy.", ditzy: "Is it summer? With gravy, anyway!", theatrical: "In the height of summer! Drowning in gravy!" }),
@@ -185,19 +185,19 @@ export const BATCH5 = [
     anxious: "Do we look happy? From the outside? I can't tell anymore.", goofy: "Do we look happy? Or like two people sharing a sunbed?", ditzy: "Do we look happy? We feel happy. I think.", theatrical: "Do we look happy? Do we look in love?" }),
   T("What's the worst date you've ever been on?", {
     earnest: "What's the worst date you've ever been on?", warm: "What's the worst date you've ever been on?", calm: "Worst date you've been on?", quiet: "Worst date?",
-    dry: "What's the worst date you've ever been on?", nerdy: "What's the worst date you've ever been on? Details, please.", loud: "What's the WORST date you've ever been on?!", blunt: "Worst date?",
+    dry: "What's the worst date you've ever been on?", nerdy: "What's the worst date you've ever been on? Details, please.", loud: "What's the worst date you've ever been on?!", blunt: "Worst date?",
     tough: "Worst date. Go.", competitive: "Worst date you've been on? Bet mine was worse.", chaotic: "Worst date! Go! Tell me!", schemer: "What's the worst date you've ever been on?",
     cruel: "What's the worst date you've ever been on? Apart from the ones in here.", bossy: "Worst date. Tell me.", proud: "What's the worst date you've been on? I've never had a bad one.", flirty: "What's the worst date you've ever been on?",
     anxious: "What's the worst date you've been on? Mine was so awkward.", goofy: "What's the worst date you've ever been on? I need a laugh.", ditzy: "What's the worst date you've been on? Like, ever?", theatrical: "Tell me of your most catastrophic date!" }),
   T("They brought their ex.", {
     earnest: "They brought their ex.", warm: "They brought their ex. I'm not joking.", calm: "They brought their ex.", quiet: "Their ex came.",
-    dry: "They brought their ex.", nerdy: "They brought their ex. Along. Deliberately.", loud: "They brought their EX!", blunt: "They brought their ex.",
+    dry: "They brought their ex.", nerdy: "They brought their ex. Along. Deliberately.", loud: "They brought their ex!", blunt: "They brought their ex.",
     tough: "Brought their ex.", competitive: "They brought their ex. Beat that.", chaotic: "They brought their ex! Their ex!", schemer: "They brought their ex.",
     cruel: "They brought their ex. I should've left.", bossy: "They brought their ex.", proud: "They brought their ex. To a date with me.", flirty: "They brought their ex.",
     anxious: "They brought their ex. I didn't know what to do.", goofy: "They brought their ex. Bonus guest.", ditzy: "They brought their ex! I thought it was a friend!", theatrical: "They brought their ex!" }),
   T("To the date. As a friend.", {
     earnest: "To the date. As a friend.", warm: "To the date. As a friend. I felt awful for them.", calm: "To the date. As a friend.", quiet: "As a friend.",
-    dry: "To the date. As a friend. Apparently.", nerdy: "To the date. Described as a friend.", loud: "To the DATE! As a FRIEND!", blunt: "To the date. As a friend.",
+    dry: "To the date. As a friend. Apparently.", nerdy: "To the date. Described as a friend.", loud: "To the date! As a friend!", blunt: "To the date. As a friend.",
     tough: "As a friend. Supposedly.", competitive: "To the date. As a friend. Worst date ever.", chaotic: "To the date! As a friend! Can you believe it?!", schemer: "To the date. As a friend. Sure.",
     cruel: "To the date. As a friend. I'm sure.", bossy: "To the date. As a friend. I left.", proud: "To the date. As a friend. With me.", flirty: "To the date. As a friend.",
     anxious: "To the date. As a friend. I didn't say anything.", goofy: "To the date. As a friend. Very supportive friend.", ditzy: "To the date. As a friend! I believed it!", theatrical: "To the date! As a 'friend'!" }),
@@ -215,24 +215,24 @@ export const BATCH5 = [
     anxious: "Every day. If you don't get bored of me.", goofy: "Every day. Same sunbed, same us.", ditzy: "Every day! Which day is it?", theatrical: "Every day until the end!" }),
   T('Again.', {
     earnest: "Again.", warm: "Again. Please.", calm: "Again.", quiet: "Again.", dry: "Again.", nerdy: "Again. For research.",
-    loud: "AGAIN!", blunt: "Again.", tough: "Again.", competitive: "Again. That one doesn't count.", chaotic: "Again! Again! Again!", schemer: "Again.",
+    loud: "Again!", blunt: "Again.", tough: "Again.", competitive: "Again. That one doesn't count.", chaotic: "Again! Again! Again!", schemer: "Again.",
     cruel: "Again. Do it better.", bossy: "Again. Now.", proud: "Again. You liked it.", flirty: "Again. Slower.",
     anxious: "Again? If that's okay.", goofy: "Again. Encore.", ditzy: "Again! Wait, again?", theatrical: "Again! Encore!" }),
   T("When this is all over, it's going to be so strange waking up without you.", {
     earnest: "When this is over, it's going to be so strange waking up without you.", warm: "When this is all over, I'm going to miss waking up next to you.", calm: "It'll be strange waking up without you, after this.", quiet: "It'll be strange. Waking up without you.",
-    dry: "When this is over, waking up without you is going to be weird.", nerdy: "When this ends, I'll have to get used to waking up without you. It'll take weeks.", loud: "It's going to be SO weird waking up without you!", blunt: "Waking up without you will be strange.",
+    dry: "When this is over, waking up without you is going to be weird.", nerdy: "When this ends, I'll have to get used to waking up without you. It'll take weeks.", loud: "It's going to be so weird waking up without you!", blunt: "Waking up without you will be strange.",
     tough: "Going to be weird waking up without you.", competitive: "Waking up without you is going to be the hardest bit.", chaotic: "When we get out, who do I wake up next to?! It'll be so weird!", schemer: "When this is over, it'll be strange not seeing you first thing.",
     cruel: "When this is over, it'll be strange waking up without you. Quieter, though.", bossy: "When this is over, you're calling me every morning.", proud: "When this is over, you'll miss waking up to me.", flirty: "When this is over, I'm going to miss waking up with you.",
     anxious: "When this is over, it's going to be so strange. What if we drift?", goofy: "When this is over, who's going to steal my pillow?", ditzy: "When this is over… wait, we won't wake up together?", theatrical: "When this ends, how will I ever wake up without you?" }),
   T("I'll call you every morning. You'll be sick of me.", {
     earnest: "I'll call you every morning. I promise.", warm: "I'll call you every morning. You'll be sick of me.", calm: "I'll call you every morning.", quiet: "I'll call. Every morning.",
-    dry: "I'll call you every morning. You'll regret it.", nerdy: "I'll call you every morning. Eight o'clock. You'll be sick of me.", loud: "I'll call you EVERY morning! You'll be sick of me!", blunt: "I'll call every morning.",
+    dry: "I'll call you every morning. You'll regret it.", nerdy: "I'll call you every morning. Eight o'clock. You'll be sick of me.", loud: "I'll call you every morning! You'll be sick of me!", blunt: "I'll call every morning.",
     tough: "I'll ring you every morning.", competitive: "I'll call you every morning. Before anyone else.", chaotic: "I'll call every morning! And every night! And lunch!", schemer: "I'll call you every morning.",
     cruel: "I'll call you every morning. You'll beg me to stop.", bossy: "I'll call you every morning. You'll answer.", proud: "I'll call you every morning. Lucky you.", flirty: "I'll call you every morning. And every night.",
     anxious: "I'll call you every morning. Is that too much?", goofy: "I'll call you every morning. With a weather report.", ditzy: "I'll call you every morning! What's your number?", theatrical: "I'll call you every single morning!" }),
   T("Do you want the last biscuit?", {
     earnest: "Do you want the last biscuit?", warm: "Do you want the last biscuit? It's yours.", calm: "Last biscuit?", quiet: "Last biscuit?",
-    dry: "Do you want the last biscuit?", nerdy: "Do you want the last biscuit? I'm asking out of politeness.", loud: "Do you want the LAST biscuit?", blunt: "Last biscuit. Want it?",
+    dry: "Do you want the last biscuit?", nerdy: "Do you want the last biscuit? I'm asking out of politeness.", loud: "Do you want the last biscuit?", blunt: "Last biscuit. Want it?",
     tough: "Last biscuit?", competitive: "Do you want the last biscuit? Be quick.", chaotic: "Last biscuit! Want it? Quick!", schemer: "Do you want the last biscuit?",
     cruel: "Do you want the last biscuit? Shame.", bossy: "Do you want the last biscuit? Decide.", proud: "Do you want the last biscuit? I'm being generous.", flirty: "Do you want the last biscuit?",
     anxious: "Do you want the last biscuit? I don't mind.", goofy: "Do you want the last biscuit? Think carefully.", ditzy: "Do you want the last biscuit? Is it the last one?", theatrical: "Would you like the very last biscuit?" }),
@@ -244,13 +244,13 @@ export const BATCH5 = [
     anxious: "Sorry. I'm having it. Is that okay?", goofy: "Tough. I'm having it. Life's unfair.", ditzy: "Oh. I'm having it! Sorry!", theatrical: "Tough! The biscuit is mine!" }),
   T("Whatever happens at the next recoupling, we're fine. Yeah?", {
     earnest: "Whatever happens at the next recoupling, we're fine. Yeah?", warm: "Whatever happens at the recoupling, we're okay. You and me.", calm: "Whatever happens at the recoupling, we're fine.", quiet: "Whatever happens, we're fine?",
-    dry: "Whatever happens at the recoupling, we're fine. Yes?", nerdy: "Whatever the recoupling does, we're fine. Agreed?", loud: "Whatever happens at the recoupling, we're FINE! Yeah?", blunt: "Recoupling or not, we're fine.",
+    dry: "Whatever happens at the recoupling, we're fine. Yes?", nerdy: "Whatever the recoupling does, we're fine. Agreed?", loud: "Whatever happens at the recoupling, we're fine! Yeah?", blunt: "Recoupling or not, we're fine.",
     tough: "Whatever happens, we're good. Yeah?", competitive: "Whatever happens at the recoupling, we stick together. Yeah?", chaotic: "Whatever happens! We're fine! Yeah? Yeah!", schemer: "Whatever happens at the recoupling, we're fine. We look out for each other.",
     cruel: "Whatever happens at the recoupling, we're fine. Unlike some.", bossy: "Whatever happens at the recoupling, we're fine. Agreed.", proud: "Whatever happens at the recoupling, we're fine. We always will be.", flirty: "Whatever happens at the recoupling, we're fine. Yeah?",
     anxious: "Whatever happens at the recoupling, we're fine? Promise?", goofy: "Whatever happens at the recoupling, we're fine. Friendship insurance.", ditzy: "Whatever happens at the recoupling, we're fine? When is it?", theatrical: "Whatever fate brings at the recoupling, we are fine!" }),
   T("We're more than fine.", {
     earnest: "We're more than fine.", warm: "We're more than fine. Always.", calm: "We're more than fine.", quiet: "More than fine.",
-    dry: "We're more than fine.", nerdy: "We're more than fine. We're solid.", loud: "We're MORE than fine!", blunt: "We're more than fine.",
+    dry: "We're more than fine.", nerdy: "We're more than fine. We're solid.", loud: "We're more than fine!", blunt: "We're more than fine.",
     tough: "More than fine.", competitive: "We're more than fine. Best friendship in here.", chaotic: "We're more than fine! We're great!", schemer: "We're more than fine.",
     cruel: "We're more than fine. Can't say that for most.", bossy: "We're more than fine. Done.", proud: "We're more than fine. Obviously.", flirty: "We're more than fine.",
     anxious: "We're more than fine. I promise.", goofy: "We're more than fine. We're fabulous.", ditzy: "We're more than fine! Were we not?", theatrical: "We're more than fine! We're magnificent!" }),
@@ -262,25 +262,25 @@ export const BATCH5 = [
     anxious: "Can you pass me the suncream? I think I'm burning.", goofy: "Pass me the suncream. I'm turning into a lobster.", ditzy: "Pass me the suncream? Which one's suncream?", theatrical: "The suncream! Quickly, before I burst into flames!" }),
   T("You're already red.", {
     earnest: "You're already red.", warm: "You're already red. Oh no.", calm: "You're already red.", quiet: "You're red.",
-    dry: "You're already red.", nerdy: "You're already red. Too late, really.", loud: "You're already RED!", blunt: "You're red.",
+    dry: "You're already red.", nerdy: "You're already red. Too late, really.", loud: "You're already red!", blunt: "You're red.",
     tough: "You're red already.", competitive: "You're already red. I'm tanned.", chaotic: "You're red! So red! Very red!", schemer: "You're already red.",
     cruel: "You're already red. Like a tomato.", bossy: "You're already red. Shade. Now.", proud: "You're already red. I'm golden.", flirty: "You're already red. Suits you.",
     anxious: "You're already red. Does it hurt?", goofy: "You're already red. You're a strawberry.", ditzy: "Are you red? You are red!", theatrical: "You're already scarlet!" }),
   T("That's why I want the suncream.", {
     earnest: "That's why I want the suncream.", warm: "That's why I want it.", calm: "That's why I want it.", quiet: "That's why.",
-    dry: "That's why I want the suncream.", nerdy: "That's precisely why I want the suncream.", loud: "That's WHY I want the suncream!", blunt: "That's why.",
+    dry: "That's why I want the suncream.", nerdy: "That's precisely why I want the suncream.", loud: "That's why I want the suncream!", blunt: "That's why.",
     tough: "That's why.", competitive: "That's why I want it. Hand it over.", chaotic: "That's why! Give me it!", schemer: "That's why I want the suncream.",
     cruel: "That's why I want the suncream. Obviously.", bossy: "That's why. Give it to me.", proud: "That's why I want the suncream. I'm too pretty to burn.", flirty: "That's why I want the suncream.",
     anxious: "That's why I want the suncream. Please.", goofy: "That's why I want the suncream. Damage control.", ditzy: "Oh! That's why I want it!", theatrical: "That's precisely why!" }),
   T("If I get dumped, you're keeping my shoes.", {
     earnest: "If I get dumped, you're keeping my shoes.", warm: "If I get dumped, you're having my shoes.", calm: "If I get dumped, keep my shoes.", quiet: "If I go, keep my shoes.",
-    dry: "If I get dumped, you're keeping my shoes.", nerdy: "If I get dumped, my shoes go to you. All of them.", loud: "If I get dumped, you're keeping my SHOES!", blunt: "If I go, you get my shoes.",
+    dry: "If I get dumped, you're keeping my shoes.", nerdy: "If I get dumped, my shoes go to you. All of them.", loud: "If I get dumped, you're keeping my shoes!", blunt: "If I go, you get my shoes.",
     tough: "If I go, the shoes are yours.", competitive: "If I get dumped, you're keeping my shoes. Don't let anyone else touch them.", chaotic: "If I go, the shoes are yours! All of them!", schemer: "If I get dumped, you're keeping my shoes.",
     cruel: "If I get dumped, you're keeping my shoes. You need them more than me.", bossy: "If I get dumped, you're keeping my shoes. That's decided.", proud: "If I get dumped, you're keeping my shoes. Look after them.", flirty: "If I get dumped, you're keeping my shoes.",
     anxious: "If I get dumped, you're keeping my shoes. I mean it.", goofy: "If I get dumped, the shoes are yours. That's my will.", ditzy: "If I get dumped, you can have my shoes! Wait, which ones?", theatrical: "If I am dumped, my shoes are your inheritance!" }),
   T("You're not getting dumped. But yes, I'm keeping the shoes.", {
     earnest: "You're not getting dumped. But I'd keep the shoes.", warm: "You're not getting dumped. But I'm keeping the shoes, obviously.", calm: "You're not getting dumped. Shoes, though, yes.", quiet: "You won't. But yes. Shoes.",
-    dry: "You're not getting dumped. I'm still keeping the shoes.", nerdy: "You're not getting dumped. The shoes, however, I accept.", loud: "You're NOT getting dumped! But yes, shoes!", blunt: "You won't be dumped. Shoes, though, yes.",
+    dry: "You're not getting dumped. I'm still keeping the shoes.", nerdy: "You're not getting dumped. The shoes, however, I accept.", loud: "You're not getting dumped! But yes, shoes!", blunt: "You won't be dumped. Shoes, though, yes.",
     tough: "You're not getting dumped. Shoes are mine though.", competitive: "You're not getting dumped. But the shoes are mine.", chaotic: "You're not going anywhere! But shoes! Yes!", schemer: "You're not getting dumped. But I'm keeping the shoes.",
     cruel: "You're not getting dumped. But I'm keeping the shoes anyway.", bossy: "You're not getting dumped. And I'm keeping the shoes.", proud: "You're not getting dumped. But the shoes would suit me better.", flirty: "You're not getting dumped. But the shoes are mine.",
     anxious: "You're not getting dumped. I promise. But yes, shoes.", goofy: "You're not getting dumped. But the shoes are already mine.", ditzy: "You're not getting dumped! Can I still have the shoes?", theatrical: "You will not be dumped! But I accept the shoes!" }),
@@ -304,13 +304,13 @@ export const BATCH5 = [
     anxious: "Do you think {pa} is actually into me? Be honest. I can take it. I think.", goofy: "Is {pa} actually into me? Or am I imagining it?", ditzy: "Is {pa} into me? How do you tell?", theatrical: "Does {pa} truly feel it? Tell me honestly!" }),
   T("So. You and {pa}. Tell me everything.", {
     earnest: "So. You and {pa}. Tell me everything.", warm: "So. You and {pa}. I want to hear everything.", calm: "So. You and {pa}?", quiet: "You and {pa}. Go on.",
-    dry: "So. You and {pa}. Go on.", nerdy: "So. You and {pa}. From the beginning.", loud: "So! You and {pa}! Tell me EVERYTHING!", blunt: "You and {pa}. Tell me.",
+    dry: "So. You and {pa}. Go on.", nerdy: "So. You and {pa}. From the beginning.", loud: "So! You and {pa}! Tell me everything!", blunt: "You and {pa}. Tell me.",
     tough: "You and {pa}. Spill.", competitive: "So. You and {pa}. How's it going? Better than mine?", chaotic: "You and {pa}! Everything! Now!", schemer: "So. You and {pa}. Tell me everything.",
     cruel: "So. You and {pa}. Tell me everything. I want to know what you see in {pa.obj}.", bossy: "You and {pa}. Everything. Start talking.", proud: "So. You and {pa}. Tell me. I'm a good judge.", flirty: "So. You and {pa}. Tell me everything.",
     anxious: "So, you and {pa}. Is it going well?", goofy: "So. You and {pa}. Tell me everything. Leave nothing out.", ditzy: "So, you and {pa}! What's happening?", theatrical: "You and {pa}! Tell me the whole story!" }),
   T("I heard what you said about me in the kitchen.", {
     earnest: "I heard what you said about me in the kitchen.", warm: "I heard what you said about me in the kitchen. It hurt.", calm: "I heard what you said in the kitchen.", quiet: "I heard you. In the kitchen.",
-    dry: "I heard what you said about me in the kitchen.", nerdy: "I heard what you said about me in the kitchen. Every word.", loud: "I HEARD what you said about me in the kitchen!", blunt: "I heard you in the kitchen.",
+    dry: "I heard what you said about me in the kitchen.", nerdy: "I heard what you said about me in the kitchen. Every word.", loud: "I heard what you said about me in the kitchen!", blunt: "I heard you in the kitchen.",
     tough: "I heard what you said. Kitchen.", competitive: "I heard what you said about me in the kitchen.", chaotic: "The kitchen! I heard! Everything!", schemer: "I heard what you said about me in the kitchen. Interesting.",
     cruel: "I heard what you said about me in the kitchen. Brave.", bossy: "I heard what you said about me in the kitchen. Explain.", proud: "I heard what you said about me in the kitchen. Really?", flirty: "I heard what you said about me in the kitchen.",
     anxious: "I heard what you said about me in the kitchen.", goofy: "I heard what you said in the kitchen. The kitchen has ears.", ditzy: "I heard what you said in the kitchen! About me!", theatrical: "I heard every word you said about me in that kitchen!" }),

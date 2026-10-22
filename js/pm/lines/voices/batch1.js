@@ -110,7 +110,7 @@ export const BATCH1 = [
     sharp: 'Do what, exactly?', dry: 'Do what?', loud: 'Do what?!', soft: 'Do what? What do you mean?',
     odd: 'Do what? I\'ll do anything once.', anxious: 'Do what? What did I do?' }],
   ['*', "That's not what I said.", {
-    sharp: "That's not what I said, and you know it.", dry: "That's not what I said.", loud: "That is NOT what I said!", soft: "That's not what I said. I didn't mean it like that.",
+    sharp: "That's not what I said, and you know it.", dry: "That's not what I said.", loud: "That is not what I said!", soft: "That's not what I said. I didn't mean it like that.",
     odd: "That's not what I said. That's not even close.", anxious: "That's not what I said… is it?" }],
   ['*', 'In a minute.', {
     sharp: 'In a minute. Don\'t rush me.', dry: 'In a minute.', loud: 'In a minute! Hold on!', soft: 'In a minute, I promise.',
@@ -197,7 +197,7 @@ export const BATCH1 = [
     sharp: 'Give it a week. You\'ll see.', dry: 'Give it a week.', loud: 'Give it a week! Watch!', soft: 'Give it a week. It\'ll be better.',
     odd: 'Give it a week. I\'m always right about this.' }],
   ['*', "It's freezing.", {
-    sharp: "It's freezing. Who opened that?", dry: "It's freezing.", loud: "It's FREEZING!", soft: "It's freezing. Come here and keep me warm.",
+    sharp: "It's freezing. Who opened that?", dry: "It's freezing.", loud: "It's freezing!", soft: "It's freezing. Come here and keep me warm.",
     odd: "It's freezing. I can't feel my toes." }],
   ['*', 'Our secret.', {
     sharp: 'Our secret. Nobody else.', dry: 'Our secret.', loud: 'Our secret! Shh!', soft: 'Our secret. Just us.',

@@ -7,7 +7,7 @@
 // schemer, blunt, anxious, bossy, quiet, cruel, tough, goofy).
 export const BATCH3 = [
   ['*', 'Come on. Dinner.', {
-    sharp: 'Dinner. Move.', dry: 'Dinner. Come on.', loud: 'DINNER! Come on!', soft: "Come on, it's dinner. I saved you a seat.", odd: 'Dinner! Food! Come on!',
+    sharp: 'Dinner. Move.', dry: 'Dinner. Come on.', loud: 'Dinner! Come on!', soft: "Come on, it's dinner. I saved you a seat.", odd: 'Dinner! Food! Come on!',
     earnest: "Come on, it's dinner.", calm: "Dinner's ready. Come on.", warm: "Come on, you. Dinner's up.", blunt: 'Dinner. Now.', bossy: 'Up. Dinner. Now.',
     anxious: "Come on, it's dinner. We'll be late.", quiet: 'Dinner.', cruel: "Dinner. Try to keep up.", tough: 'Food. Come on.', goofy: 'Dinner! Chop chop!' }],
   ['*', 'In the middle of summer?', {
@@ -61,7 +61,7 @@ export const BATCH3 = [
     sharp: 'Pool. Now.', dry: 'Right. Pool?', loud: 'Right! Pool! Let\'s go!', soft: 'Right. Pool?', odd: 'Right. Pool? Cannonball?',
     calm: 'Pool?', warm: 'Right. Pool? Come on.', bossy: 'Right. Pool. Come on.', anxious: 'Pool? If you want.', goofy: 'Last one in the pool is a soggy biscuit.' }],
   ['*', 'Pool.', {
-    sharp: 'Pool.', dry: 'Pool.', loud: 'POOL!', soft: 'Pool. Yes.', odd: 'Pool. Race you.',
+    sharp: 'Pool.', dry: 'Pool.', loud: 'Pool!', soft: 'Pool. Yes.', odd: 'Pool. Race you.',
     warm: 'Pool. Let\'s go.', bossy: 'Pool.', goofy: 'Pool. Cannonball.' }],
   ['*', 'Same sunbed later?', {
     sharp: 'Same sunbed later. Don\'t let anyone take it.', dry: 'Same sunbed later?', loud: 'Same sunbed later? Yes?', soft: 'Same sunbed later?', odd: 'Same sunbed later? It knows our shape now.',
@@ -95,7 +95,7 @@ export const BATCH3 = [
     sharp: "You're one of my favourite people in here. Don't let it go to your head.", dry: "You're one of my favourite people in here, you know that?", loud: "You're one of my favourite people in here! You know that?", soft: "You're one of my favourite people in here, you know that?", odd: "You're one of my favourite people in here. Top three. Maybe top two.",
     earnest: "You're honestly one of my favourite people in here.", warm: "You know you're one of my favourite people in here, right?", blunt: "You're one of my favourites in here.", bossy: "You're one of my favourite people in here. Remember that.", goofy: "You're one of my favourite people in here. Top five, easy." }],
   ['*', 'Only one of?', {
-    sharp: 'Only one of?', dry: 'Only one of?', loud: 'ONLY one of?!', soft: 'Only one of? Aw.', odd: 'Only one of? I demand a recount.',
+    sharp: 'Only one of?', dry: 'Only one of?', loud: 'Only one of?!', soft: 'Only one of? Aw.', odd: 'Only one of? I demand a recount.',
     competitive: 'Only one of? Who\'s above me?', proud: 'Only one of? Surely the top.', goofy: 'Only one of? I want a trophy.' }],
   ['*', 'You always know what to say.', {
     sharp: 'You always know what to say.', dry: 'You always know what to say.', loud: 'You always know exactly what to say!', soft: 'You always know what to say.', odd: 'You always know what to say. It\'s like magic.',
@@ -110,7 +110,7 @@ export const BATCH3 = [
     sharp: "In a minute.", dry: "I'll be in in a minute.", loud: "I'll be in in a minute! Go!", soft: "I'll be in in a minute, promise.", odd: "I'll be in in a minute. Just warming up. Spiritually.",
     calm: "I'll be in in a minute.", warm: "Go on. I'll be in in a minute.", blunt: "In a minute.", anxious: "I'll be in in a minute. It looks cold.", quiet: "In a minute.", goofy: "I'll be in in a minute. Lowering the water level, slowly." }],
   ['*', "Let's not tell anyone we spent the whole afternoon gossiping.", {
-    sharp: "Nobody needs to know we spent all afternoon gossiping.", dry: "Let's not mention the whole afternoon of gossiping.", loud: "We spent the WHOLE afternoon gossiping! Nobody can know!", soft: "Let's not tell anyone we spent the whole afternoon gossiping.", odd: "Let's not tell anyone we spent the afternoon gossiping. Professional secret.",
+    sharp: "Nobody needs to know we spent all afternoon gossiping.", dry: "Let's not mention the whole afternoon of gossiping.", loud: "We spent the whole afternoon gossiping! Nobody can know!", soft: "Let's not tell anyone we spent the whole afternoon gossiping.", odd: "Let's not tell anyone we spent the afternoon gossiping. Professional secret.",
     warm: "Let's keep our gossip afternoon between us.", schemer: "Everything we said this afternoon stays with us.", blunt: "We never gossiped. Got it?", bossy: "Not a word about this afternoon.", anxious: "Let's not tell anyone we spent all afternoon gossiping. Please.", goofy: "Let's not tell anyone. We were 'sunbathing'." }],
   ['*', 'Is it weird that I tell you everything?', {
     sharp: 'Is it weird I tell you everything?', dry: 'Is it weird that I tell you everything?', loud: 'Is it weird that I literally tell you everything?', soft: 'Is it weird that I tell you everything?', odd: 'Is it weird that I tell you everything? Like, everything?',
@@ -143,7 +143,7 @@ export const BATCH3 = [
     sharp: "You'd be fine.", dry: "You'd be fine.", loud: "You'd be fine!", soft: "You'd be fine. You're stronger than you think.", odd: "You'd be fine. You'd make friends with a sunbed.",
     calm: "You'd be fine.", warm: "You'd be fine. But I'm glad you don't have to be.", blunt: "You'd be fine.", goofy: "You'd be fine. You'd adopt a lizard." }],
   ['*', "I'd be fine and bored.", {
-    sharp: "Fine and bored.", dry: "I'd be fine. And bored.", loud: "I'd be fine and SO bored!", soft: "I'd be fine and bored. And lonely.", odd: "I'd be fine and bored. Talking to my reflection.",
+    sharp: "Fine and bored.", dry: "I'd be fine. And bored.", loud: "I'd be fine and so bored!", soft: "I'd be fine and bored. And lonely.", odd: "I'd be fine and bored. Talking to my reflection.",
     goofy: "I'd be fine and bored. Narrating my own life." }],
   ['*', 'Right. Back to it.', {
     sharp: 'Right. Back to it.', dry: 'Right. Back to it.', loud: 'Right! Back to it!', soft: 'Right. Back to it, then.', odd: 'Right. Back to the grind. The sunbathing grind.',
@@ -151,13 +151,13 @@ export const BATCH3 = [
   ['*', 'Back to it.', {
     sharp: 'Back to it.', dry: 'Back to it.', loud: 'Back to it!', soft: 'Back to it.', odd: 'Back to it. Duty calls.' }],
   ['*', "Right, I'm starving. Kitchen?", {
-    sharp: "Kitchen. I'm starving.", dry: "Right, I'm starving. Kitchen?", loud: "I'm STARVING! Kitchen!", soft: "I'm starving. Kitchen?", odd: "Right, I'm starving. Kitchen? I'll make a sandwich tower.",
+    sharp: "Kitchen. I'm starving.", dry: "Right, I'm starving. Kitchen?", loud: "I'm starving! Kitchen!", soft: "I'm starving. Kitchen?", odd: "Right, I'm starving. Kitchen? I'll make a sandwich tower.",
     warm: "I'm starving. Kitchen? I'll make you something.", bossy: "Kitchen. Now. I'm starving.", anxious: "I'm starving. Kitchen? If you're hungry too?", goofy: "I'm starving. Kitchen? I could eat a sunbed." }],
   ['*', 'Kitchen.', {
-    sharp: 'Kitchen.', dry: 'Kitchen.', loud: 'KITCHEN!', soft: 'Kitchen. Yes.', odd: 'Kitchen. Lead the way.',
+    sharp: 'Kitchen.', dry: 'Kitchen.', loud: 'Kitchen!', soft: 'Kitchen. Yes.', odd: 'Kitchen. Lead the way.',
     goofy: 'Kitchen. To the snacks.' }],
   ['*', "I'm really glad we met.", {
-    sharp: "I'm glad we met. Really.", dry: "I'm really glad we met.", loud: "I'm SO glad we met!", soft: "I'm really glad we met.", odd: "I'm really glad we met. Best thing about this place.",
+    sharp: "I'm glad we met. Really.", dry: "I'm really glad we met.", loud: "I'm so glad we met!", soft: "I'm really glad we met.", odd: "I'm really glad we met. Best thing about this place.",
     earnest: "I'm really glad we met. I mean that.", calm: "I'm really glad we met.", warm: "I'm so glad we met. You know that?", blunt: "Glad we met.", anxious: "I'm really glad we met. I wasn't sure I'd find anyone.", goofy: "I'm really glad we met. Fate, probably." }],
   ['*', "Stop it. You'll make me cry.", {
     sharp: "Stop it. You'll make me cry.", dry: "Stop. You'll make me cry.", loud: "Stop it! You'll make me cry!", soft: "Stop it. You'll make me cry.", odd: "Stop it. My face is leaking.",
@@ -187,7 +187,7 @@ export const BATCH3 = [
     sharp: "Is {pb} being nice to you? Because if not, I'll have a word.", dry: "Is {pb} being nice to you? Really?", loud: "Is {pb} being nice to you? Really nice?!", soft: "Is {pb} being nice to you? Really nice?", odd: "Is {pb} being nice to you? On a scale of one to ten?",
     warm: "Is {pb} looking after you? Properly?", bossy: "Is {pb} treating you right? I'm asking.", tough: "Is {pb} treating you right? Say the word.", blunt: "Is {pb} good to you?", goofy: "Is {pb} being nice to you? Or do I need to glare?" }],
   ['*', "I've not seen you all day. Is {pb} keeping you busy?", {
-    sharp: "I've not seen you all day. {pb} keeping you busy?", dry: "Haven't seen you all day. {pb} keeping you busy?", loud: "I've not seen you ALL day! Is {pb} keeping you busy?", soft: "I've not seen you all day. Is {pb} keeping you busy?", odd: "I've not seen you all day. Has {pb} kidnapped you?",
+    sharp: "I've not seen you all day. {pb} keeping you busy?", dry: "Haven't seen you all day. {pb} keeping you busy?", loud: "I've not seen you all day! Is {pb} keeping you busy?", soft: "I've not seen you all day. Is {pb} keeping you busy?", odd: "I've not seen you all day. Has {pb} kidnapped you?",
     warm: "I've missed you today. Is {pb} keeping you busy?", cruel: "Remember me? Or has {pb} got you on a lead?", goofy: "I've not seen you all day. Has {pb} hidden you somewhere?" }],
   ['*', "Sorry. I'll make it up to you.", {
     sharp: "Sorry. I'll make it up to you.", dry: "Sorry. I'll make it up to you.", loud: "Sorry! I'll make it up to you!", soft: "Sorry. I'll make it up to you, promise.", odd: "Sorry. I'll make it up to you. With snacks.",
@@ -205,6 +205,6 @@ export const BATCH3 = [
     sharp: 'I need a drink. You want one?', dry: 'Right. I need a drink. You?', loud: 'Right! I need a drink! Want one?', soft: 'I need a drink. Do you want one?', odd: 'Right. Drink time. Want one?',
     warm: 'I need a drink. I\'ll get you one too.', bossy: 'Drink. I\'m getting you one.', goofy: 'Right. I need a drink. Want one? Large, obviously.' }],
   ['*', "You've been quiet all morning.", {
-    sharp: "You've been quiet all morning. What's going on?", dry: "You've been quiet all morning.", loud: "You've been SO quiet all morning!", soft: "You've been quiet all morning. Are you okay?", odd: "You've been quiet all morning. Suspiciously quiet.",
+    sharp: "You've been quiet all morning. What's going on?", dry: "You've been quiet all morning.", loud: "You've been so quiet all morning!", soft: "You've been quiet all morning. Are you okay?", odd: "You've been quiet all morning. Suspiciously quiet.",
     warm: "You've been quiet all morning. Talk to me.", bossy: "You've been quiet all morning. Out with it.", blunt: "You've been quiet. What's wrong?", goofy: "You've been quiet all morning. Did someone steal your voice?" }],
 ];

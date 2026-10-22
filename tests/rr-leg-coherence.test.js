@@ -41,7 +41,11 @@ describe('rr leg: a leg that makes sense in order', () => {
         n++;
         const la = logOf(leg, a, st.id)[0], lb = logOf(leg, b, st.id)[0];
         if (!la || !lb) continue;
-        const atStart = sc.data.t - la.from <= START && sc.data.t - lb.from <= START;
+        // (at the start: reading its clue at the box, or waiting for the gate, until its run begins, and its first minutes;
+        // 2026-10-22, the run starts once the clue is read)
+        const startOf = (id, l) => Math.max(l.from, runOf(res, leg, id, st.id)?.from ?? l.from);
+        const at = (id, l) => sc.data.t <= startOf(id, l) || sc.data.t - startOf(id, l) <= START;
+        const atStart = at(a, la) && at(b, lb);
         const sa = sideOf(res, leg, a, st.id), sb = sideOf(res, leg, b, st.id);
         if (!atStart && sa && sb && sa !== sb) bad.push(`seed ${res.state.seed} leg ${leg.n} ${sc.kind} ${a}(${sa}) ${b}(${sb}) t=${Math.round(sc.data.t)}`);
       }

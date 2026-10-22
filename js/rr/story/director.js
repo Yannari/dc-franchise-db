@@ -192,6 +192,25 @@ const FOLLOW_AT_TASK = 3;
 const FOLLOW_MAX = 3;
 // (`brief`: the third team followed through a challenge is seen at its trouble and its finish, not at every stage: a
 // stage has its own lines for two teams, and a third through all of it heard the general ones seven times a season)
+// A challenge in rooms (the sauna's huts, places/rock-north.js `rooms`): which teams were in one room at the same time,
+// `team|stretch` -> a key shared by the teams of one sitting (a team alone in its room has its own). Only they are shown
+// inside together (2026-10-22, the user on the elevator: "alone in it then suddenly with bowieandsami then right after
+// with thomandspencer", "check if it happens for other zone").
+function roomsTogether(rows) {
+  const out = {};
+  const by = {};
+  for (const r of rows) if (r.room != null && r.stages?.length) (by[`${r.stretch}#${r.room}`] ||= []).push(r);
+  for (const [k, rs] of Object.entries(by)) {
+    let c = 0, end = -Infinity;
+    for (const r of rs.sort((x, y) => x.seated - y.seated)) {
+      if (r.seated >= end) c++;
+      end = Math.max(end, ...r.stages.map(x => x.t));
+      out[`${r.team}|${r.stretch}`] = `${k}#${c}`;
+    }
+  }
+  return out;
+}
+
 function stageBeats(state, row, i, brief = false) {
   const [x, y] = people(state, row.team);
   const [a, b] = row.kind === 'botch' && row.who && [x, y].includes(row.who) ? [row.who, row.who === x ? y : x] : [x, y];
@@ -333,7 +352,16 @@ export function airLeg(state, leg) {
   };
   const take = (s, tier) => {
     picked.set(s.id, tier);
-    if (isRow(s)) { rowed.add(pairOf(s)); if (s.data?.team) blew.add(s.data.team); }
+    if (isRow(s)) {
+      rowed.add(pairOf(s));
+      if (s.data?.team) blew.add(s.data.team);
+      // (a warm moment of the pair later in the leg, picked first by a pass in another order, goes: a hug at the
+      // footrace after they snapped at the airport, 2026-10-22)
+      for (const [id, tr] of [...picked]) {
+        const p = byId.get(id);
+        if (tr > 0 && p && WARM.has(p.kind) && pairOf(p) === pairOf(s) && ((p.data?.t ?? 0) > (s.data?.t ?? 0) || ((p.data?.t ?? 0) === (s.data?.t ?? 0) && p.id > s.id))) picked.delete(id);
+      }
+    }
     if (SCENES[s.kind]?.family === 4) for (const x of s.data?.facts?.lovers || []) romance.add(x);
   };
   // (guards read in clock order: a row only blocks the warm scenes after it)
@@ -345,6 +373,7 @@ export function airLeg(state, leg) {
   // 1: every team at every task it ran; a moment there of its own if it has one, else a task beat
   const beats = [];
   const rows = (state.taskLog || []).filter(r => r.leg === n);
+  const roomed = roomsTogether(rows);
   const cleanAt = {};
   const pickStarts = {};
   // at a staged challenge, the teams followed all the way through, a different set at each one (2026-10-21, the user:
@@ -469,7 +498,7 @@ export function airLeg(state, leg) {
   // kind already aired twice stays off, and the moment's own lines say what it was
   const causeOf = s => {
     const c = s?.data?.cause != null && !s.kind.startsWith('int-') ? byId.get(s.data.cause) : null;
-    return c && !picked.has(c.id) && (optional[c.kind] || 0) < PER_KIND ? c : null;
+    return c && !picked.has(c.id) && ok(c) && (optional[c.kind] || 0) < PER_KIND ? c : null;
   };
   const takeCause = c => { take(c, 2); optional[c.kind] = (optional[c.kind] || 0) + 1; };
   // a moment somebody talks about to camera is worth its airtime: without this, the moments that had a confessional
@@ -529,7 +558,8 @@ export function airLeg(state, leg) {
   // a leg airs a confessional: when none made it, the strongest interview airs with the moment it is about
   const airedIv = () => [...picked.keys()].some(id => { const k = byId.get(id)?.kind || ''; return k.startsWith('int-') && k !== 'int-exit' && k !== 'int-bleachers'; });
   if (!airedIv()) {
-    const best = scenes.filter(s => s.kind.startsWith('int-') && s.kind !== 'int-exit' && s.kind !== 'int-bleachers' && byId.get(s.data?.about) && canVoice(state, s))
+    const best = scenes.filter(s => s.kind.startsWith('int-') && s.kind !== 'int-exit' && s.kind !== 'int-bleachers' && byId.get(s.data?.about) && canVoice(state, s)
+      && (picked.has(s.data.about) || ok(byId.get(s.data.about))))
       .sort((x, y) => airWeight(byId.get(y.data.about)) - airWeight(byId.get(x.data.about)) || x.id - y.id)[0];
     if (best) { const ab = byId.get(best.data.about); if (!picked.has(ab.id)) take(ab, 2); take(best, 2); }
   }
@@ -540,8 +570,12 @@ export function airLeg(state, leg) {
   }
 
   // a big cast: the teams with no story this leg check in together, and their clean runs at a task air together
+  // (the other team is on screen only in a scene the two of them are in: a confessional about them, a bleacher grudge,
+  // Don naming who threw the Boomerang only says their names; 2026-10-22, the user: "when someone reference someone
+  // else the icons of these people appear even when theyre not suppose to be here")
+  const withOther = s => ['teams', 'group'].includes(SCENES[s.kind]?.cast);
   const teamsIn = s => (namesOnly(s) ? [s.data.team]
-    : [...new Set([s.data?.team, s.data?.other, ...s.who.map(x => teamOf(state, x))].filter(Boolean))]);
+    : [...new Set([s.data?.team, withOther(s) ? s.data?.other : null, ...s.who.map(x => teamOf(state, x))].filter(Boolean))]);
   const montages = [];
   // the checkpoint: every team takes its clue at every challenge before it is seen doing it (2026-10-21, the user: "the
   // don box are here for a reason its a checkpoint use them"). The first team there and the teams followed there take
@@ -612,16 +646,19 @@ export function airLeg(state, leg) {
     flush();
     // clean runs at the same task, two or more quiet teams: one shared beat
     const CLEAN = b => b.kind === 'task-start' || b.kind === 'task-done' || (b.kind === 'task-try' && b.data.ending === 'first-try');
+    // (a challenge in rooms, the sauna's huts: one shared beat is the teams that were in one room together, 2026-10-22;
+    // a team alone in its hut has its own)
     const byStretch = {};
-    for (const b of beats) if (CLEAN(b) && quiet(b.data.team)) (byStretch[b.data.stretch] ||= []).push(b);
-    for (const [stretch, group] of Object.entries(byStretch)) {
+    for (const b of beats) if (CLEAN(b) && quiet(b.data.team)) (byStretch[roomed[`${b.data.team}|${b.data.stretch}`] || b.data.stretch] ||= []).push(b);
+    for (const [key, group] of Object.entries(byStretch)) {
+      const stretch = group[0].data.stretch;
       if (group.length < 2) continue;
       for (const b of group) beats.splice(beats.indexOf(b), 1);
       const first = [...group].sort((x, y) => x.data.t - y.data.t)[0];
       const ids = group.map(b => b.data.team);
-      montages.push({ scene: null, beat: `taskm:${n}:${stretch}`, kind: 'task-montage', ending: 'any', stretch, t: first.data.t,
+      montages.push({ scene: null, beat: `taskm:${n}:${key}`, kind: 'task-montage', ending: 'any', stretch, t: first.data.t,
         teams: ids, who: group.flatMap(b => b.who), side: null, tier: 1,
-        src: { ...first, id: `taskm:${n}:${stretch}`, kind: 'task-montage', data: { ...first.data, ending: 'any', teamsList: ids } } });
+        src: { ...first, id: `taskm:${n}:${key}`, kind: 'task-montage', data: { ...first.data, ending: 'any', teamsList: ids } } });
     }
   }
   // Don runs through the middle of the pack like the show ("third... hold on... fourth, fifth"): two or more mid-pack
@@ -661,7 +698,8 @@ export function airLeg(state, leg) {
   for (const b of beats) if (b.kind === 'task-try' && b.data.snap?.picked != null) (picks[`${b.data.stretch}|${b.data.t}`] ||= []).push(b);
   for (const group of Object.values(picks)) for (const b of group.slice(2)) b.data.t = Math.round(b.data.from ?? b.data.t);
   const spot = {};
-  for (const b of beats) if (CLEAN_BEAT(b)) (spot[`${b.data.stretch}|${b.data.t}|${b.kind}`] ||= []).push(b);
+  // (in a challenge in rooms, the teams of one room together: roomed below)
+  for (const b of beats) if (CLEAN_BEAT(b)) (spot[`${b.data.stretch}|${b.data.t}|${b.kind}${roomed[`${b.data.team}|${b.data.stretch}`] ? '|' + roomed[`${b.data.team}|${b.data.stretch}`] : ''}`] ||= []).push(b);
   for (const [key, group] of Object.entries(spot)) {
     if (group.length < 3) continue;
     // a small cast keeps every team in full: the third one there that minute is seen at the other end of its run

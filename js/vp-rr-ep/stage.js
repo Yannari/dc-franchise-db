@@ -478,9 +478,34 @@ export function createStage(holder, { faceOf, legLabel }) {
     const from = cp.from === 'box' && s.boxAt ? [s.boxAt[0], s.boxAt[1] - z * 0.42 * 2.88 * (16 / 9) * 0.72] : local ? [local[0] + z * 0.4, local[1] - z * 1.1] : null;
     if (!from) { holdTip(id); return; }
     if (local) {
-      // the local steps up to hand it over
-      const lp = fx.querySelector('.don.local') || null;
-      lp?.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${(to[0] - from[0]) * 0.25}cqw)`, offset: 0.4 }, { transform: 'translateX(0)' }], { duration: 1100, easing: 'ease-in-out' });
+      // the local walks over with the envelope held out, puts it in the team's hands and walks back to their post
+      // (2026-10-22, the user: "the animation of a local giving a tip/ticket is bad"): nothing thrown across the shot
+      const lp = fx.querySelector('.don.local');
+      const dir = Math.sign(to[0] - local[0]) || 1;
+      const stop = to[0] - dir * z * 1.1;                     // beside the team, on the local's side of it
+      const walk = 700, pause = 950, T = 2 * walk + pause;
+      lp?.animate([{ left: local[0] + '%' }, { left: stop + '%', offset: walk / T }, { left: stop + '%', offset: (walk + pause) / T }, { left: local[0] + '%' }],
+        { duration: T, easing: 'ease-in-out' });
+      lp?.querySelector('img')?.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-5%)' }, { transform: 'translateY(0)' }],
+        { duration: walk / 2, iterations: 2 });
+      const handY = local[1] - z * 1.1, held = x => x + dir * z * 0.4;
+      const env = document.createElement('img'); env.className = 'prop cliptip flying'; env.src = raceUrl('c-tip');
+      env.style.width = (z * 0.3) + 'cqw'; env.style.zIndex = 12;
+      toks.appendChild(env);
+      const D = walk + pause * 0.7;
+      env.animate([
+        { left: held(local[0]) + '%', top: handY + '%', transform: 'translate(-50%,-100%) rotate(-6deg)' },
+        { left: held(stop) + '%', top: handY + '%', transform: 'translate(-50%,-100%) rotate(-6deg)', offset: walk / D },
+        // held out to them
+        { left: held(stop) + dir * z * 0.2 + '%', top: (handY - z * 0.15) + '%', transform: 'translate(-50%,-100%) rotate(0deg)', offset: (walk + pause * 0.35) / D },
+        // taken
+        { left: to[0] + '%', top: to[1] + '%', transform: 'translate(-50%,-100%) rotate(4deg)' },
+      ], { duration: D, easing: 'ease-in-out', fill: 'backwards' }).finished.then(() => {
+        env.remove();
+        const t = holdTip(id);
+        t?.animate([{ transform: 'translate(-50%,-100%) scale(1)' }, { transform: 'translate(-50%,-125%) scale(1.15)', offset: 0.4 }, { transform: 'translate(-50%,-100%) scale(1)' }], { duration: 650, easing: 'ease-out' });
+      }).catch(() => {});
+      return;
     }
     const f = document.createElement('img'); f.className = 'prop cliptip flying'; f.src = raceUrl('c-tip');
     f.style.width = (z * 0.3) + 'cqw'; f.style.zIndex = 12; f.style.left = from[0] + '%'; f.style.top = from[1] + '%';

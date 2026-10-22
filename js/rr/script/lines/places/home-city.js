@@ -100,7 +100,7 @@ const tower = {
     ] },
   ],
   'decide-side.swayed-by-watching': [
-    { id: 'hc.tw-dc3', when: { ...TW, side: 'stairs' }, turns: [
+    { id: 'hc.tw-dc3', when: { ...TW, side: 'stairs', liftQueue: true }, turns: [
       { beat: "A queue of teams has formed in front of the single slow elevator." },
       { by: 'a', say: "Look at that line. We'll be waiting an hour." },
       { by: 'b', say: "Then let's take the stairs. Nobody's queuing for those." },
@@ -117,7 +117,7 @@ const tower = {
       { by: 'a', say: "No. Let's get ahead while our legs are fresh." },
       { beat: "They take the first ten flights at a sprint, and it costs them later." },
     ] },
-    { id: 'hc.sd-s1', when: SD, turns: [
+    { id: 'hc.sd-s1', when: { ...SD, liftWith: true }, turns: [
       { beat: "The elevator doors open, and {a} and {b} squeeze in beside another team." },
       { by: 'a', say: "How long does this take to get up?" },
       { by: 'b', say: "Long enough for me to start panicking about the deck." },
@@ -222,11 +222,7 @@ const tower = {
       { by: 'a', say: "We have to go back to the start. They're saying we have to go back." },
       { by: 'b', say: "Okay. Let's go back and try again, slower this time." },
     ] },
-    { id: 'hc.sd-x2', when: SD, turns: [
-      { beat: 'The elevator arrives, opens, and fills up with another team before {a} and {b} can get on.' },
-      { by: 'a', say: "Next one. We'll get the next one." },
-      { by: 'b', say: "The next one is ten minutes. The stairs would've been ten minutes." },
-    ] },
+    // (the car filling up before they get on is the elevator's own moment now: places/home-city-lift.js lift-door.full)
   ],
 };
 

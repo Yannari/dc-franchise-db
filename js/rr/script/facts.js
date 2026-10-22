@@ -10,6 +10,7 @@ import { identityOf } from '../identities.js';
 import { voiceOf } from '../../td/story/voice.js';
 import { players } from '../../core.js';
 import { FAMILY } from '../../td/story/voice-family-map.js';
+import { liftFacts } from '../lift.js';
 
 export const RR_FACT_KEYS = [
   'ending',
@@ -65,6 +66,9 @@ export const RR_FACT_KEYS = [
   'rule', 'byVote',
   // the stage of a staged challenge a moment is at (the sled's 'bear', the tango's 'routine')
   'stage',
+  // an elevator (lift.js), as it went in the end: another team rode up with a's; a's waited for a car; a car left
+  // without a's (full, shut on them, pushed out of it); two or more teams standing at its doors at the moment
+  'liftWith', 'liftWaited', 'liftMissed', 'liftQueue',
   // a Blind Boomerang (the board doesn't say who threw it)
   'blind',
   // an interview: a is the one the moment happened to (froze, got hurt, schemed); an exit: how the team went out
@@ -145,6 +149,8 @@ export function factsFor(scene, roles, state) {
     cause: cause ? cause.kind : null, causeEnding: cause ? cause.data?.ending ?? null : null,
     threadStep: thread ? thread.split(' ')[0] : null,
     register: registerOf(roles?.roles?.a), registerB: registerOf(roles?.roles?.b),
+    liftWith: null, liftWaited: null, liftMissed: null, liftQueue: false,
+    ...(d.team && d.stretch ? liftFacts(state, scene.leg ?? s.leg, d.stretch, d.team, d.t) : {}),
   };
   return f;
 }

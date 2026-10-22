@@ -14,6 +14,7 @@ import { PENALTIES } from './format.js';
 import { gs } from '../core.js';
 import { snapOf } from './scenes.js';
 import { streamFor } from '../dr/rng.js';
+import { rideLift, LIFT, LIFT_STAGES } from './lift.js';
 
 export const attemptChance = (level, pass) => Math.min(0.95, Math.max(0.05, pass + PASS_SLOPE * (level - 5)));
 
@@ -92,7 +93,7 @@ export function stageRun(state, id, task, stretchId, from, to, fails, quit = fal
 // One run at a task (a side of an Either/Or is a task too). `who` is 'both' or a name.
 // `onFail(attempt, row)` lets a Botch decide to quit or a watcher to step in; it returns
 // 'quit' to stop.
-export function runTask(state, team, task, t, api, rng, who = 'both', { stretchId = task.id, onFail = null, startAttempts = 0 } = {}) {
+export function runTask(state, team, task, t, api, rng, who = 'both', { stretchId = task.id, onFail = null, startAttempts = 0, parent = null } = {}) {
   const id = team.id;
   const level = Math.max(0.5, teamLevel(state, id, task.types, who));
   const [a, b] = people(state, id);
@@ -122,8 +123,27 @@ export function runTask(state, team, task, t, api, rng, who = 'both', { stretchI
     }
     if (onFail && onFail(attempts, row, t + dur) === 'quit') { quit = true; break; }
   }
+  // an elevator first (lift.js): the doors, the ride it gets, then the rest of the run from the top
+  if (task.lift && task.stages && parent) {
+    const { dep } = rideLift(state, parent, id, t, api, rng);
+    const rest = task.stages.filter(x => !LIFT_STAGES.has(x.id));
+    const all = task.stages.reduce((a, x) => a + (x.share ?? 1), 0) || 1;
+    const up = dep + LIFT.ride, left = dur * rest.reduce((a, x) => a + (x.share ?? 1), 0) / all;
+    row.stages = [{ id: 'lift-doors', ok: true, t: dep }, { id: 'elevator', ok: true, t: up },
+      ...(stageRun(state, id, { ...task, stages: rest }, stretchId, up, up + left, row.fails || 0, quit) || [])];
+    row.liftUp = true;
+    return { end: up + left, attempts, quit, data: { attempts, fails: row.fails || 0, p } };
+  }
   let start = t;
-  if (task.capacity && api?.slot) start = api.slot(stretchId + (task.side ? ':' + task.side : ''), task.capacity, t, dur);
+  if (task.capacity && api?.slot) {
+    const key = stretchId + (task.side ? ':' + task.side : '');
+    const st = api.station ? api.station(key, task.capacity, t, dur) : { start: api.slot(key, task.capacity, t, dur), k: 0 };
+    start = st.start;
+    // (a challenge in rooms, the sauna's two huts: its stations are the rooms' benches, a room's in a row)
+    if (task.rooms) row.room = Math.floor(st.k / Math.max(1, task.capacity / task.rooms));
+    // (when it got its place: before that it waited its turn outside; the run is fitted from here, leg.js settleRuns)
+    row.seated = start;
+  }
   if (task.stages) row.stages = stageRun(state, id, task, stretchId, start, start + dur, row.fails || 0, quit);
   return { end: start + dur, attempts, quit, data: { attempts, fails: row.fails || 0, p } };
 }
@@ -162,7 +182,7 @@ export function runEither(state, team, stretch, t, api, rng, { side = null } = {
   const sideOf = k => ({ ...stretch.sides.find(s => s.id === k), side: k });
   let switched = false;
   let sw = null;
-  const first = runTask(state, team, sideOf(pick), t, api, rng, 'both', { stretchId: stretch.id,
+  const first = runTask(state, team, sideOf(pick), t, api, rng, 'both', { stretchId: stretch.id, parent: stretch,
     onFail: (n, row) => {
       if (switched || row.fails < 2) return null;
       const other = stretch.sides.find(s => s.id !== pick);
@@ -176,7 +196,7 @@ export function runEither(state, team, stretch, t, api, rng, { side = null } = {
     } });
   let end = first.end;
   if (switched) {
-    const second = runTask(state, team, sideOf(sw), end + 5, api, rng, 'both', { stretchId: stretch.id, startAttempts: 0 });
+    const second = runTask(state, team, sideOf(sw), end + 5, api, rng, 'both', { stretchId: stretch.id, startAttempts: 0, parent: stretch });
     end = second.end;
     pick = sw;
     record(state, id, stretch.id, { side: sw, switched: true });
@@ -267,7 +287,7 @@ export function resolveTask(state, team, stretch, t, api, rng) {
   keepRun(state, team.id, stretch, t, r.end, { snap,
     side: r.data?.side ?? row.side ?? null, who: r.data?.who ?? null, attempts: row.attempts || 0, fails: row.fails || 0,
     switched: !!r.data?.switched, quit: !!(r.quit || r.data?.quit), ...(r.data?.right != null ? { right: r.data.right } : {}),
-    ...(row.stages ? { stages: row.stages } : {}) });
+    ...(row.stages ? { stages: row.stages } : {}), ...(row.liftUp ? { liftUp: true } : {}), ...(row.room != null ? { room: row.room } : {}), ...(row.seated != null ? { seated: row.seated } : {}) });
   return r;
 }
 

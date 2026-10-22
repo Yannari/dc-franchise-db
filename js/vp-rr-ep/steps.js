@@ -392,7 +392,8 @@ export function episodeScreens(res, eps, i) {
         const sgNow = stageNow ? sp?.stages?.[stageNow] : null;
         const here = sgNow ? [sgNow.plate, ...(sgNow.alt || [])].filter(standable) : [];
         const wides = TASKS.has(stretch.kind) ? (sp?.wide || []).filter(standable) : [];
-        const room = TASKS.has(stretch.kind) && sp?.act && standable(sp.act) && IN_PLACE.has(sp.act.mode)
+        // (not a challenge in several rooms, the sauna's huts: which hut is each team's own, and a team waiting is outside)
+        const room = TASKS.has(stretch.kind) && !stretch.rooms && sp?.act && standable(sp.act) && IN_PLACE.has(sp.act.mode)
           ? [sp.act, ...(sp.alt || []).filter(a => standable(a) && IN_PLACE.has(a.mode))] : [];
         // a team seen at this stretch minutes ago is still where it was seen: the shot of the latest sighting of any team in
         // the scene (the user, 2026-10-21: "FINN and Manu are outside then right after inside again", both at 08:12)
@@ -655,7 +656,9 @@ function decorate(scr, seg, scene, leg, ctx) {
     scr.steps.unshift({ by: null, part: 'tip', text: s.desc || s.label, team: null, intel: scr.steps[0].intel,
       tip: { kind: (KIND_NAME[s.kind] || 'Travel Tip').toUpperCase(), label: s.label, desc: s.desc || '', sides: (s.sides || []).map(x => x.label) } });
     scr.steps[1].intel = {};
-    scr.donBox = true;
+    // (where the challenge's own local hands the clues out there is no Don Box: 2026-10-22, the user: "no need to add a
+    // donbox when a local is already to give ticket ... its a local checkpoint")
+    if (!placeLocal(scr.place, s.id)) scr.donBox = true;
   }
   // (not indoors: Don by his fire, in his tea room, in the pub; the Don Box is out on the course)
   if (k === 'don-opener' && !/^don-/.test(scr.plate?.f || '')) scr.donBox = true;

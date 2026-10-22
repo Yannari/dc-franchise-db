@@ -52,7 +52,9 @@ export const PLACE_PLATES = {
     arrive: [p('arrive-9434588', 97, [14, 86])],
     props: { helmet: 'Empty purple helmet with chin strap-2', trolley: 'Teal zipline trolley with hand grips-5' },
     // (the glass elevator: its stage alone, nobody else's moment is in the elevator)
-    stageOnly: [repaint('task-9434868', p('task-9434868', 93, [8, 92], { closed: true }), null)].filter(Boolean),
+    // (the elevator doors at the bottom, where teams wait for the car: a job, lift.js)
+    stageOnly: [repaint('task-9434868', p('task-9434868', 93, [8, 92], { closed: true }), null),
+      repaint('task-lift-lobby', p('task-lift-lobby', 92, [8, 92]), null)].filter(Boolean),
     st: {
       'to-tower': { talk: [p('arrive-9434588', 97, [14, 86])] },
       tower: {
@@ -1096,6 +1098,9 @@ export const STAGE_SHOTS = {
       burn: { label: 'FLIGHT AFTER FLIGHT', plate: ['task-9434855', { mode: 'climb' }], fail: ['task-9434855', { mode: undefined, path: undefined, fx: undefined }] },
       'last-flights': { label: 'THE LAST FLIGHTS', plate: ['task-9434855', { mode: 'climb', path: [[35, 50], [62, 27], [40, 6]] }], fail: ['task-9434855', { mode: undefined, path: undefined, fx: undefined }] },
       'stairs-top': { label: 'THE TOP', plate: ['task-9434876', {}] },
+      // the doors at the bottom, where teams wait for the one car (lift.js): a job (the ground-floor lobby); meanwhile
+      // the corridor with the elevator door
+      'lift-doors': { label: 'THE ELEVATOR DOORS', plate: repaint('task-lift-lobby', ['task-lift-lobby', {}], ['task-9434876', {}]) },
       elevator: { label: 'THE ELEVATOR', plate: [repaint('task-9434868', 'task-9434868', 'task-9434876'), { closed: true }] },
       'clip-on': { label: 'CLIP ON', plate: ['task-9434827', { mode: undefined, path: undefined, g: 47, x: [14, 42], wear: 'helmet' }],
         fail: ['task-9434827', { mode: undefined, path: undefined, g: 47, x: [14, 42], wear: 'helmet' }] },

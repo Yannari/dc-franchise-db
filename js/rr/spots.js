@@ -2,7 +2,7 @@
 // job counted as back). Two teams at one challenge meet only in the same spot (leg.js).
 export const SPOTS = {
  "home-city": {
-  "tower": { "stairwell": "task-9434855", "burn": "task-9434855", "last-flights": "task-9434855", "stairs-top": "task-9434876", "elevator": "task-9434868", "clip-on": "task-9434827", "rail": "task-9434827", "deck-top": "task-9434876" },
+  "tower": { "stairwell": "task-9434855", "burn": "task-9434855", "last-flights": "task-9434855", "stairs-top": "task-9434876", "lift-doors": "task-lift-lobby", "elevator": "task-9434868", "clip-on": "task-9434827", "rail": "task-9434827", "deck-top": "task-9434876" },
   "zipline": { "clip-in": "task-zip-launch", "over-lake": "task-9435028", "grab-tip": "travel-9435206", "landing": "travel-9435206" }
  },
  "fire-mountain-isle": {

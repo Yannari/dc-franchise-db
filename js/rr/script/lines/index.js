@@ -89,6 +89,7 @@ import couples from './rewrite/couples.js';
 import redSandDesert from './places/red-sand-desert.js';
 import ironTowerCity from './places/iron-tower-city.js';
 import homeCity from './places/home-city.js';
+import homeCityLift from './places/home-city-lift.js';
 import skylineFinale from './places/skyline-finale.js';
 import fireMountainIsle from './places/fire-mountain-isle.js';
 import greatWallHills from './places/great-wall-hills.js';
@@ -189,7 +190,7 @@ import stoneHeadIsland from './places/stone-head-island.js';
 import badlands from './places/badlands.js';
 
 const FILES = [partners, partners1, partners2, partners3, partners4, partners5, don, tasks, teams1, teams2, rooms, romance,
-  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, checkpoint, eitherChoices, ride, narration, narration2, premiere, premiereIdentities, customIntros, redSandDesert, ironTowerCity, homeCity, skylineFinale, fireMountainIsle, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback, ...placesMore, chillNew,
+  localsMoney, infoSabotage, bodyPlace, donTwists, interviews, more1, more2, more3, more4, finale, montage, checkpoint, eitherChoices, ride, narration, narration2, premiere, premiereIdentities, customIntros, redSandDesert, ironTowerCity, homeCity, homeCityLift, skylineFinale, fireMountainIsle, greatWallHills, rockNorth, savannaFalls, treasureIsles, tombSands, torchStatueHarbour, redOutback, ...placesMore, chillNew,
   coastPalace, geyserIsland, carnivalRainforest, hauntedCastle,
   leiIsland, glassTowerGulf, swampPrison, outbackFarm,
   fjordPeaks, prairieRanch, iceFloe, dragonIsle,

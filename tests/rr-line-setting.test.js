@@ -22,18 +22,20 @@ const THINGS = [
   ['rail', /\b(rail|railing)\b/, /\brail/],
   ['stairs', /\b(stairs|staircase|the steps|up the steps)\b/, /\bstair|\bsteps\b/],
   ['bridge', /\bbridges?\b/, /\bbridge/],
-  ['fire', /\b(campfire|campsite|the fire|a small fire)\b/, /\bfire\b/],
+  ['fire', /\b(campfire|campsite|the fire(?! hydrant)|a small fire)\b/, /\bfire\b/],
   ['rope', /\b(rope|ropes)\b/, /\brope/],
   ['awning', /\bawning\b/, /\bawning/],
   ['station', /\bthe station\b/, /\bstation/],
   // (the clue's own scenes: a local hands it out at some challenges; elsewhere the Don Box is the race's, not this place's)
   ['the box', /\b(into the box|the box is|reach the box|reach for the box|empty box)\b/, /a(?!)/, /^(clue|box-grab)\./],
   ['food', /\b(eat all of it|the food one)\b/, /\b(eat|food|pepper|stew|meatball|delicac)/],
-  ['puzzle', /\bpuzzle\b/, /\bpuzzle/],
+  // (a brains challenge is a puzzle: the spices, five right out of a stall of them)
+  ['puzzle', /\bpuzzle\b/, /\bpuzzle|"brains"/],
 ];
 
 // (somewhere else, or not real: a story about a cousin's wedding, a boat in a daydream, directions to the next place)
-const ELSEWHERE = new Set(['pt.f-any1', 'tk.o-any1', 'tk.o-any2', 'vt.lc6', 'sc2.4', 'sc.lb2', 'ph.ma2']);
+// (and words that only look like the thing: the bridge club, a puppy climbing stairs)
+const ELSEWHERE = new Set(['pt.f-any1', 'tk.o-any1', 'tk.o-any2', 'vt.lc6', 'sc2.4', 'sc.lb2', 'ph.ma2', 'ce.j-2', 'tt.o-any1']);
 const hits = [];
 let read = 0;
 beforeAll(() => {

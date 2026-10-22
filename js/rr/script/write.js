@@ -28,6 +28,8 @@ import { SCENES, relFamOf } from '../scenes.js';
 import { factsFor } from './facts.js';
 import { identityLine } from './identity.js';
 import { REL_TAGS } from './lines/premiere-rel-tags.js';
+import { handoverLine } from './lines/local-handover.js';
+import { placeLocal, LOCALS } from '../../vp-rr-ep/locals.js';
 
 // The moments the director makes itself, from the leg's record (not engine scenes): kind -> endings.
 export const DIRECTOR_KINDS = {
@@ -325,8 +327,16 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
         text: fill(said, r.roles, { ...r.slots, partner: partnerOf(state, who) }), voice: `id:${hook}`, auto: true });
     }
   }
+  // a challenge whose own local hands the clue out: the local says something first, as it changes hands (2026-10-22, the
+  // user: "the local never said anything so why are they even there"); nobody is handed one reading over a shoulder
+  if (HANDED.has(scene.kind) && scene.data?.ending !== 'read-over-shoulder') {
+    const id = placeLocal(scene.data?.snap?.place, scene.data?.stretch);
+    const text = id && handoverLine(id, scene.data?.ending, stableRng(state.seed, 'rr-handover', scene.id));
+    if (text) lines.unshift({ kind: 'say', by: LOCALS[id], text, voice: `local:${id}` });
+  }
   return { lines, lineId: entry.id };
 }
+const HANDED = new Set(['clue', 'box-grab']);
 
 // Where a team's identity speaks on its own (identity.js hooks), and how often: at a task it's good or bad at,
 // when a task keeps failing or is given up, on arriving somewhere new, first or last on the mat, going home,

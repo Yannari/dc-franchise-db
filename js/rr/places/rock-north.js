@@ -9,7 +9,10 @@ export default {
   arrive: 'airport', local: ['taxi', 'foot'],
   stretches: [
     { id: 'spa-cab', kind: 'travel', mode: 'taxi', base: 30, cost: 30, plate: 'snowy road, cabs', label: 'Cab to the spa' },
-    { id: 'sauna', called: 'the sauna', kind: 'allin', types: ['patience'], base: 14, pass: 0.65, loopCost: 10, capacity: 4, opens: 420, closes: 1320,
+    // (two huts, two teams each, 2026-10-22: a team sits in its own hut, with the team on that hut's other bench or
+    // alone; `roomStages` are the stages inside it, where only the teams of one hut meet)
+    { id: 'sauna', called: 'the sauna', kind: 'allin', types: ['patience'], base: 14, pass: 0.65, loopCost: 10, capacity: 4, rooms: 2,
+      roomStages: ['the-heat', 'the-melt'], opens: 420, closes: 1320,
       plate: 'sauna hut, sauna interior', label: 'All-In: sweat it out',
       // in at the hut door, coats on; the first minutes of the heat (someone steps out: the ten minutes start again); the
       // last minutes, melting (out again); the timer ringing

@@ -59,12 +59,16 @@ export function runLeg({ teams, stretches, resolve }) {
       last.to = to;
     },
     slot(stretchId, capacity, t, dur) {
+      return api.station(stretchId, capacity, t, dur).start;
+    },
+    // the station a team takes (the k-th bench of a sauna's huts) and when it gets it
+    station(stretchId, capacity, t, dur) {
       const f = (free[stretchId] ||= Array(Math.max(1, capacity)).fill(-Infinity));
       let k = 0;
       for (let j = 1; j < f.length; j++) if (f[j] < f[k]) k = j;
       const start = Math.max(t, f[k]);
       f[k] = start + dur;
-      return start;
+      return { start, k };
     },
     // the teams still to reach (or still at) a stretch, other than this one and `except`
     remaining(stretchId, except = []) {

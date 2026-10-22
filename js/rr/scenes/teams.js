@@ -113,4 +113,17 @@ register([
     kind: { w: c => 1 + Math.max(0, c.teamBond()) / 3, fx: (fx, c) => fx.teams(c.tid, c.oid, 1) },
     clumsy: { w: 0.5, fx: (fx, c) => { fx.teams(c.tid, c.oid, 0.2); fx.mind(c.C, 'morale', -1); } },
   } }),
+  // An elevator's doors (lift.js decides; never offered on its own): a is the team inside, c the one running up.
+  // Held for them; shut in their face (a team in first, that may scheme); full, closing on them with nothing to be done
+  K({ id: 'lift-door', family: 2, cast: 'teams', moments: ['overlap'], when: () => 0, endings: {
+    held: { w: 0, fx: (fx, c) => { fx.teams(c.tid, c.oid, 0.5); fx.pop(c.A, 1); } },
+    shut: { w: 0, fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 2); fx.teams(c.tid, c.oid, -1); fx.pop(c.A, -1); fx.mind(c.C, 'stress', 6); } },
+    full: { w: 0, fx: (fx, c) => fx.mind(c.C, 'stress', 4) },
+  } }),
+  // Three teams for the car's two places: a is the team that gets on, c the one left. Pushed in past the team in line
+  // (one that may scheme), or the team in line keeps its place and says so
+  K({ id: 'lift-scramble', family: 2, cast: 'teams', moments: ['overlap'], when: () => 0, endings: {
+    'pushed-in': { w: 0, fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 2); fx.teams(c.tid, c.oid, -1); fx.pop(c.A, -1); fx.mind(c.C, 'stress', 6); } },
+    'held-line': { w: 0, fx: (fx, c) => { fx.rivalry(c.tid, c.oid, 1); fx.mind(c.A, 'morale', 2); } },
+  } }),
 ]);

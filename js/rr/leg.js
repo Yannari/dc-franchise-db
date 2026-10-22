@@ -24,6 +24,7 @@ import { addScene } from './state.js';
 import { DON_GOES_AFTER, DEPART_CARRY, DEPART_CARRY_MAX, FORM, DRIVER } from './format.js';
 import { spotOfStage } from './spots.js';
 import { fearTime } from './fears.js';
+import { LIFT } from './lift.js';
 import { streamFor } from '../dr/rng.js';
 import { pairKey } from './scenes/registry.js';
 
@@ -195,8 +196,15 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   // (A side is one place, whatever stage each team is at: the teams on the stairs pass each other on the landings.)
   // ...and on its side, in the spot of the stage it is working on (2026-10-21, the user: "FINN and Manu are outside then
   // right after inside again"): the stairs are one stairwell whatever flight each team is on, the deck is another place
-  const spotOf = (o, s, tt, from, until = null) => {
-    if (tt - from <= MEET_START) return 'start';
+  // (a team taking the elevator is at its doors a minute after it chose, waiting or riding: lift.js, 2026-10-22, a team
+  // already riding up "met" one just arriving at the foot)
+  const startFor = (o, s) => (state.attempts?.[o]?.[s.id]?.liftUp ? LIFT.doors : MEET_START);
+  // when a team's run at a challenge started: once its clue was read (resolve), on or after the minute it got there
+  const runStart = (o, s, from) => (from == null ? null
+    : (state.taskLog || []).findLast(r => r.leg === state.leg && r.team === o && r.stretch === s.id && r.from >= from - 0.5)?.from ?? from);
+  const spotOf = (o, s, tt, arrived, until = null) => {
+    const from = runStart(o, s, arrived);
+    if (tt < from || tt - from <= startFor(o, s)) return 'start';
     return `${state.attempts?.[o]?.[s.id]?.side || 'task'}|${stageSpot(o, s, tt, from, until) || ''}`;
   };
   // Where a team is at a staged challenge at minute tt (js/rr/spots.js: where the viewer draws each stage): arriving,
@@ -204,8 +212,9 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   // challenge isn't staged or the run isn't known yet (anywhere: no limit)
   // (the stages were laid over the run as planned; minutes won or lost since stretch it, and settleRuns stretches the
   // stages to fit in the end: so a minute of the run as it now stands, `until`, is read off the stages in proportion)
-  const stageSpot = (o, s, tt, from = null, until = null) => {
-    if (from != null && tt - from <= MEET_START && s.sides) return 'start';
+  const stageSpot = (o, s, tt, arrived = null, until = null) => {
+    const from = runStart(o, s, arrived);
+    if (from != null && tt - from <= startFor(o, s) && s.sides) return 'start';
     // (a run two teams share, the Superteam's sled, keeps its stages on the log, not on each team's own row)
     const stages = state.attempts?.[o]?.[s.id]?.stages || (state.taskLog || []).findLast(r => r.leg === state.leg && r.team === o && r.stretch === s.id)?.stages;
     // (just arrived: its first stage, unless that one's already done; 2026-10-22, a grass skirt put on in two minutes
@@ -213,13 +222,23 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
     if (from != null && tt - from <= MEET_START && (!stages?.length || stages[0].t >= tt - 0.5)) return s.stages?.[0] ? spotOfStage(to.id, s.id, s.stages[0].id) : null;
     if (!stages?.length) return null;
     const last = Math.max(...stages.map(x => x.t));
-    const at = from != null && Number.isFinite(until) && until > from && last > from ? from + (tt - from) * (last - from) / (until - from) : tt;
+    // (the elevator's doors and ride are when the car goes, read as they are; the run is stretched from the top: lift.js)
+    const top = state.attempts?.[o]?.[s.id]?.liftUp ? stages.find(x => x.id === 'elevator')?.t ?? null : null;
+    // (waiting its turn for a place, outside the sauna: at the first stage's spot until it gets one)
+    const seated = state.attempts?.[o]?.[s.id]?.seated;
+    if (seated != null && tt < seated) return spotOfStage(to.id, s.id, stages[0].id);
+    const base = top ?? (seated != null && seated > (from ?? -Infinity) ? seated : from);
+    const held = state.attempts?.[o]?.[s.id]?.room != null;
+    const at = !held && (top == null || tt > top) && base != null && Number.isFinite(until) && until > base && last > base ? base + (tt - base) * (last - base) / (until - base) : tt;
     const cur = stages.find(x => x.t >= at - 0.5) || stages.at(-1);
-    return spotOfStage(to.id, s.id, cur.id);
+    // (inside a room, the sauna's huts: only the teams of that room are there)
+    const room = (s.roomStages || []).includes(cur.id) ? state.attempts?.[o]?.[s.id]?.room : null;
+    return spotOfStage(to.id, s.id, cur.id) + (room != null ? `#${room}` : '');
   };
   // an Either/Or: the team meets whoever is with it, where and when, through its run
   // the checkpoints each team has been through this leg, and how many have been through each
   const boxed = new Set(), boxCount = {};
+  const ownShifts = {};      // `${team}|${stretch}` -> [[minute, minutes won or lost]] (resolve, settleRuns)
   const meetInside = (id, s, from, to, api) => {
     let extra = 0, watched = false;
     const met = new Set();
@@ -251,10 +270,22 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       row.to = l.to;
       if (!row.stages?.length || fitted.has(row.stages)) continue;
       fitted.add(row.stages);
+      // (a place held for a time, a sauna bench: its run inside is that time, the next team has the bench after it; the
+      // minutes it won or lost are outside, after)
+      if (row.room != null) { for (const x of row.stages) x.t = Math.min(x.t, l.to); continue; }
       // a push from another team (a sabotage, a U-Turn's minutes) moves the stages after it, not the ones before
-      for (const [at, d] of l.shifts || []) for (const x of row.stages) if (x.t > at) x.t = Math.max(at, x.t + d);
-      const from = row.from, last = Math.max(...row.stages.map(x => x.t));
-      if (last > from) for (const x of row.stages) x.t = from + (Math.max(from, x.t) - from) * (l.to - from) / (last - from);
+      // (an elevator's ride is when the car went, lift.js, which moves it itself: minutes won or lost, and the run's
+      // fitting, are from the top)
+      // (a team that waited its turn for a place, the sauna's benches, started its run when it got one)
+      const top = row.liftUp ? row.stages.find(x => x.id === 'elevator')?.t : row.seated > row.from ? row.seated : null;
+      // (and its own moments' minutes, at each moment in this visit: 2026-10-22, a talk late on the lava stones
+      // stretched the whole run, and a meeting on the stones went back to the bank)
+      const own = (ownShifts[`${row.team}|${row.stretch}`] || []).filter(([at]) => at >= l.from - 0.5 && at <= l.to + 0.5);
+      for (const [at, d] of [...(l.shifts || []), ...own].sort((x, y) => x[0] - y[0])) for (const x of row.stages) if (x.t > at && (top == null || x.t > top)) x.t = Math.max(at, top ?? at, x.t + d);
+      const from = top ?? row.from, last = Math.max(...row.stages.map(x => x.t));
+      if (last > from) for (const x of row.stages) if (top == null || x.t > top) x.t = from + (Math.max(from, x.t) - from) * (l.to - from) / (last - from);
+      // (inside the visit whatever moved it: a ride up that ended after a team's minutes won)
+      for (const x of row.stages) x.t = Math.min(l.to, Math.max(row.from, x.t));
     }
     for (const sc of state.scenes) {
       if (sc.leg !== state.leg || !sc.data?.stretch || !sc.data.team || sc.data.t == null) continue;
@@ -285,7 +316,8 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   const resolve = (team, s, t, api) => {
     const id = team.id;
     const key = `${id}|${s.id}`;
-    let extra = 0;
+    let extra = 0, cp = 0;
+    let scenesBefore = state.scenes.length;
 
     // Don goes to find a team hours behind everyone else (an elimination leg only).
     const done = Object.keys(matAt);
@@ -306,8 +338,11 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       // the elevator, on the stairs)
       const near = api.here(s.id, t).filter(x => x.id !== id && t - x.from <= BOX_TOGETHER);
       const mates = near.map(x => x.id), together = near.filter(x => t - x.from < 1).map(x => x.id);
-      extra += talkAtCheckpoint(state, id, mates, s, t, api, rng, { together, box: frac <= 0.34 ? 'ahead' : frac >= 0.66 ? 'behind' : 'mid', left: active.length - nth }).extra || 0;
+      cp = talkAtCheckpoint(state, id, mates, s, t, api, rng, { together, box: frac <= 0.34 ? 'ahead' : frac >= 0.66 ? 'behind' : 'mid', left: active.length - nth }).extra || 0;
     }
+    // (the run starts once the clue is read: 2026-10-22, a team still reading its clue at the box was out on the lava
+    // stones meeting another team; the minutes it lost after this are its own moments', at each moment)
+    scenesBefore = state.scenes.length;
     const inside = TASKS.includes(s.kind) && !!s.sides;
     const meetLater = inside && !talked.has(key);
     if (!talked.has(key) && !inside) {
@@ -425,9 +460,9 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       matAt[id] = t;
       res = { end: t };
     } else if (TASKS.includes(s.kind)) {
-      if (useExpress(state, team, s, stretches, t)) res = { end: t + 1 };
+      if (useExpress(state, team, s, stretches, t)) res = { end: t + cp + 1 };
       else {
-        res = resolveTask(state, team, s, t, api, rng);
+        res = resolveTask(state, team, s, t + cp, api, rng);
         // the side decided at the checkpoint is the side they went for first (the scene was played before they chose it,
         // and the lines are written for one side or the other: "Stairs. I'm not walking round the outside of anything")
         if (s.sides) {
@@ -448,6 +483,8 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       res = { end: t };
     }
 
+    // (a Superteam's run starts when its group leaves: the clue's minutes come after, as before)
+    if (s.kind === 'superteam') extra += cp;
     if (adjust) res = adjust(team, s, t, res) || res;
     if (meetLater) { talked.add(key); if (res.end != null) extra += meetInside(id, s, t, res.end, api); }
 
@@ -466,6 +503,11 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
     }
     // the clock runs in whole minutes; a gain can't bring a plane down early
     const gain = s.kind === 'travel' && s.mode === 'flight' ? Math.max(0, extra) : extra;
+    // the minutes this team won or lost to its own moments, at the moments (settleRuns moves the stages after each)
+    for (const sc of state.scenes.slice(scenesBefore)) {
+      if (sc.data?.t == null || sc.data.stretch !== s.id) continue;
+      for (const e of sc.data.effects || []) if (e[0] === 'time' && e[1] === id && e[2]) (ownShifts[key] ||= []).push([sc.data.t, e[2]]);
+    }
     const end = Math.max(t, Math.round((res.end ?? t) + gain));
     tick(state, id, end - t);
     return { ...res, end };

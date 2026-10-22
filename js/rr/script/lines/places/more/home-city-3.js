@@ -47,7 +47,7 @@ const tower = {
       by('b', "Warm muscles don't cramp. Cold muscles cry."),
       by('a', "Then cry on the way up."),
     ] },
-    { id: 'hc3.sd-s1', when: DECK, turns: [
+    { id: 'hc3.sd-s1', when: { ...DECK, liftWith: true }, turns: [
       beat('The elevator takes two teams at a time. {a} and {b} squeeze in, nose to nose with the other team.'),
       by('a', "Hi."),
       by('b', "Don't make friends. They're the competition."),

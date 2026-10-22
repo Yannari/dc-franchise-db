@@ -1146,6 +1146,14 @@
       "new": true,
       "ref": "task-22424515",
       "why": "oil-barrel, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): Beside an old drilling rig in the badlands: a patch of ground marked out in a grid of squares with string and little stakes, shovels leaning on a barrel, an old map pinned to a board, purple rock layers behind. Dusty ground across the bottom of the picture."
+    },
+    {
+      "place": "home-city",
+      "src": "02-home-city",
+      "file": "task-lift-lobby",
+      "new": true,
+      "ref": "task-9434876",
+      "why": "the elevator doors at the foot of the city tower (2026-10-22): where teams wait for the one slow car, two teams a ride; a ground-floor lobby with the elevator doors, a call button and the floor numbers above, floor to stand on (stand-in: the corridor at the top, task-9434876)"
     }
   ]
 }

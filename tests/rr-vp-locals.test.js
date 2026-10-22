@@ -65,7 +65,9 @@ describe('rr viewer: the locals', () => {
     const at = {};
     for (const ep of eps) for (const s of ep.screens) {
       const own = placeLocal(s.place, s.stretch, s.side);
-      if (!own || s.kind !== 'world' || s.mode !== 'talk' || s.plate?.closed || s.plate?.water || !['task-start', 'task-done'].includes(s.seg)) continue;
+      // (or at its checkpoint, handing the clue out: 2026-10-22, the guide at the waterfall's top, the dive itself on the
+      // edge away from the guide's post)
+      if (!own || s.kind !== 'world' || s.mode !== 'talk' || s.plate?.closed || s.plate?.water || !['task-start', 'task-done', 'clue'].includes(s.seg)) continue;
       const key = `${s.place}/${s.stretch}`;
       at[key] ||= { shown: 0 };
       if (Object.values(s.localFaces || {}).some(f => f.id === own)) at[key].shown++;

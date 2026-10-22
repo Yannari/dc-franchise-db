@@ -3073,6 +3073,25 @@
           "file": "rafael-look-1.png"
         }
       ]
+    },
+    "sean": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "sean.png"
+        },
+        {
+          "id": "look-1",
+          "show": "global",
+          "label": "Casual",
+          "file": "sean-look-1.png"
+        }
+      ]
     }
   }
 }

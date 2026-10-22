@@ -8168,7 +8168,6 @@
       "name": "Skye",
       "slug": "skye",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "showmancer",
       "stats": {
         "physical": 6,
@@ -8181,15 +8180,23 @@
         "intuition": 6,
         "temperament": 4
       },
+      "sexuality": "straight",
       "voice": "Bubbly, sincere and talks a mile a minute when she is excited. Wears every feeling on her face, falls fast, and means every word of it. #earnest #emotional#chaotic",
       "profileSources": {},
-      "ties": []
+      "age": 23,
+      "birthdate": "2003-06-09",
+      "ethnicity": "White",
+      "nationality": "Irish",
+      "hometown": "Galway, Ireland",
+      "occupation": "Veterinary nurse",
+      "descriptor": "The Open Book",
+      "backstory": "Skye grew up on the edge of Galway with three dogs, two cats and a rotating cast of injured birds that she nursed in shoeboxes on the kitchen windowsill. Becoming a veterinary nurse was never really a decision. She lives with her two best friends from school, cries at every film, and has been in love three times, each time completely and each time with someone who wanted something lighter than she did. Her friends signed her up for the villa after her last break-up, half as a joke, and she said yes before anyone could talk her out of it.",
+      "personality": "Skye is affectionate, sincere and constitutionally unable to hide how she feels. She gets excited about people quickly, says so straight away, and is genuinely puzzled by anyone who plays it cool. She is kind to everyone in the villa, including the people who are not kind back, and she takes it to heart when she is left out. Her honesty makes her easy to love and easy to hurt, and she knows it, but she has decided she would rather get hurt than go through life holding back. When someone she trusts lets her down she does not get angry so much as heartbroken, and she shows that too."
     },
     {
       "name": "Theo",
       "slug": "theo",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "chaos-agent",
       "stats": {
         "physical": 8,
@@ -8202,15 +8209,23 @@
         "intuition": 4,
         "temperament": 5
       },
+      "sexuality": "straight",
       "voice": "Cocky, easy charm with a mischievous streak and a slow drawl. Teases everyone, starts trouble for the fun of watching it, and grins his way out of the consequences. #goofy #proud#competitive",
       "profileSources": {},
-      "ties": []
+      "age": 25,
+      "birthdate": "2001-09-01",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Austin, Texas",
+      "occupation": "Real estate agent",
+      "descriptor": "The Golden Boy",
+      "backstory": "Theo was the star quarterback of a small high school outside Austin and was voted most likely to succeed, and he has been coasting on that ever since. A knee injury ended his college football in his second year, and he talked his way into selling houses, where it turns out the same grin works on buyers. He still wears his late grandfather's hat everywhere. Everything has come to him easily, including women, and he gets restless the moment anything is settled. His friends say he has never been told no often enough, and he came to the villa partly hoping someone would finally do it.",
+      "personality": "Theo is confident, playful and allergic to boredom. He teases everyone, stirs up harmless trouble to see who reacts, and enjoys being the reason a slow afternoon turns into a story. He means very little of it unkindly, but he rarely stops to check who is laughing and who is not. He is arrogant about his looks and his luck, and quick to lose interest once a chase is won. Beneath the swagger he is more insecure than he lets on, still measuring himself against the boy he was at seventeen, and the person who calls that out to his face gets his attention in a way nobody else does."
     },
     {
       "name": "Zara",
       "slug": "zara",
       "gender": "f",
-      "sexuality": "bi",
       "archetype": "wildcard",
       "stats": {
         "physical": 5,
@@ -8223,9 +8238,18 @@
         "intuition": 6,
         "temperament": 4
       },
+      "sexuality": "bi",
       "voice": "Loud, sunny and blunt. Says exactly what she thinks the second she thinks it, laughs at her own jokes, and shakes up any room that gets too comfortable. #blunt #loud #-goofy#bossy#flirty",
       "profileSources": {},
-      "ties": []
+      "age": 26,
+      "birthdate": "2000-08-14",
+      "ethnicity": "Black",
+      "nationality": "Trinidadian",
+      "hometown": "Port of Spain, Trinidad",
+      "occupation": "Influencer",
+      "descriptor": "The Firecracker",
+      "backstory": "Zara grew up the middle of five children in a crowded house in Port of Spain, where you had to be loud to be heard at the dinner table and funny to be remembered. She started filming her family's Sunday cook-ups at nineteen, mostly to make her cousins laugh, and the videos of her mother arguing with the oven found an audience far bigger than the family. By twenty-three she had quit her office job at a shipping company to post full time. She has dated a little and loved once, a boyfriend who wanted her quieter, and she left him the week he said it. She came to the villa because every relationship she has had started in private and ended the moment she was herself in public.",
+      "personality": "Zara is open, impulsive and almost impossible to offend, and she assumes everyone else is built the same way. She tells people what she thinks of them to their face, good or bad, and is honestly surprised when the bad half lands harder than she meant. She gets bored of anything predictable, so she tests couples, picks at polite silences and will say the thing everyone is avoiding just to see what happens. Under the noise she is loyal to anyone who can take her at full volume, and she has no patience for people who smile at her and talk about her later. She falls for confidence, then tests whether it is real."
     }
   ]
 }

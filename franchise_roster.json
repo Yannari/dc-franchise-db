@@ -7981,6 +7981,69 @@
       "voice": "Calm, warm-sounding and endlessly reasonable, the one everyone comes to for advice. Listens carefully, asks gentle questions, and somehow the advice always points where he wanted it to. #schemer #calm",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Ayesha",
+      "slug": "ayesha",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 7,
+        "social": 7,
+        "strategic": 5,
+        "loyalty": 6,
+        "boldness": 6,
+        "intuition": 8,
+        "temperament": 7
+      },
+      "voice": "Measured, amused and hard to impress. Sizes people up with one long look, asks the question nobody else dares to, and only lets her guard down for someone who has earned it. #dry #flirty",
+      "profileSources": {},
+      "ties": []
+    },
+    {
+      "name": "Lucia",
+      "slug": "lucia",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 4,
+        "endurance": 4,
+        "mental": 7,
+        "social": 8,
+        "strategic": 9,
+        "loyalty": 4,
+        "boldness": 7,
+        "intuition": 7,
+        "temperament": 6
+      },
+      "voice": "Flirty, fast and teasing, always with a wink. Answers a question with a question, plays dumb when it suits her, and is quietly three moves ahead of everyone she is charming. #flirty #schemer#chaotic#ditzy",
+      "profileSources": {},
+      "ties": []
+    },
+    {
+      "name": "Malik",
+      "slug": "malik",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 8,
+        "endurance": 8,
+        "mental": 3,
+        "social": 9,
+        "strategic": 2,
+        "loyalty": 6,
+        "boldness": 7,
+        "intuition": 4,
+        "temperament": 6
+      },
+      "voice": "Big, loud and warm, always mid-story with a grin. Gives everyone a nickname within an hour, laughs from the chest, and cannot stand a room with nothing going on. #loud #goofy",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

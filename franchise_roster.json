@@ -8086,6 +8086,27 @@
       "voice": "Slow, easy and unbothered, with a lazy smile and a shrug for every crisis. Speaks softly, jokes gently, and would rather go with the flow than fight it. #calm #-goofy#flirty",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Sean",
+      "slug": "sean",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "hero",
+      "stats": {
+        "physical": 8,
+        "endurance": 7,
+        "mental": 4,
+        "social": 7,
+        "strategic": 3,
+        "loyalty": 7,
+        "boldness": 6,
+        "intuition": 4,
+        "temperament": 7
+      },
+      "voice": "Big, cheerful and straight-talking, with a laugh you can hear across the garden. Looks out for everyone, hates seeing anyone left out, and says sorry first even when it wasn't his fault. #earnest #warm #-blunt",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

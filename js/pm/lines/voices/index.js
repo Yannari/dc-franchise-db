@@ -62,5 +62,7 @@ import { BATCH37 } from './batch37.js';
 import { BATCH38 } from './batch38.js';
 import { BATCH39 } from './batch39.js';
 import { BATCH40 } from './batch40.js';
+import { BATCH41 } from './batch41.js';
+import { BATCH42 } from './batch42.js';
 
-export const VOICES = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5, ...BATCH6, ...BATCH7, ...BATCH8, ...BATCH9, ...BATCH10, ...BATCH11, ...BATCH12, ...BATCH13, ...BATCH14, ...BATCH15, ...BATCH16, ...BATCH17, ...BATCH18, ...BATCH19, ...BATCH20, ...BATCH21, ...BATCH22, ...BATCH23, ...BATCH24, ...BATCH25, ...BATCH26, ...BATCH27, ...BATCH28, ...BATCH29, ...BATCH30, ...BATCH31, ...BATCH32, ...BATCH33, ...BATCH34, ...BATCH35, ...BATCH36, ...BATCH37, ...BATCH38, ...BATCH39, ...BATCH40];
+export const VOICES = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5, ...BATCH6, ...BATCH7, ...BATCH8, ...BATCH9, ...BATCH10, ...BATCH11, ...BATCH12, ...BATCH13, ...BATCH14, ...BATCH15, ...BATCH16, ...BATCH17, ...BATCH18, ...BATCH19, ...BATCH20, ...BATCH21, ...BATCH22, ...BATCH23, ...BATCH24, ...BATCH25, ...BATCH26, ...BATCH27, ...BATCH28, ...BATCH29, ...BATCH30, ...BATCH31, ...BATCH32, ...BATCH33, ...BATCH34, ...BATCH35, ...BATCH36, ...BATCH37, ...BATCH38, ...BATCH39, ...BATCH40, ...BATCH41, ...BATCH42];

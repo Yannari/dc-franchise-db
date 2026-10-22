@@ -25,5 +25,7 @@
 import { BATCH1 } from './batch1.js';
 import { BATCH2 } from './batch2.js';
 import { BATCH3 } from './batch3.js';
+import { BATCH4 } from './batch4.js';
+import { BATCH5 } from './batch5.js';
 
-export const VOICES = [...BATCH1, ...BATCH2, ...BATCH3];
+export const VOICES = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5];

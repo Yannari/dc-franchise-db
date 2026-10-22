@@ -3130,6 +3130,25 @@
           "file": "theo-look-1.png"
         }
       ]
+    },
+    "zara": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "zara.png"
+        },
+        {
+          "id": "look-1",
+          "show": "global",
+          "label": "Casual",
+          "file": "zara-look-1.png"
+        }
+      ]
     }
   }
 }

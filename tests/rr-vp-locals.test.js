@@ -13,7 +13,10 @@ import { PLACES } from '../js/rr/places.js';
 
 let eps = [];
 beforeAll(() => {
-  for (const [seed, pins] of [[41, {}], [42, { 2: 'fishing-cove', 3: 'red-sand-desert', 4: 'stone-head-island' }]]) {
+  // (a third season, 2026-10-22: with the roster's new faces the two came out with exactly five speaking, and the test
+  // measured its sample, not the viewer)
+  for (const [seed, pins] of [[41, {}], [42, { 2: 'fishing-cove', 3: 'red-sand-desert', 4: 'stone-head-island' }],
+    [43, { 2: 'stone-head-island', 3: 'fishing-cove', 4: 'pampas-ranch' }]]) {
     const { cast, teams } = raceCast(12, seed);
     setPlayers(cast);
     const res = playRaceSeason({ teams, seed, options: { pins } });

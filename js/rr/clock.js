@@ -45,14 +45,17 @@ export function runLeg({ teams, stretches, resolve }) {
       // a team that has checked in at the mat is done: nothing pushes or pulls it after that
       if (!r || r.done || (r.i >= stretches.length && r.t <= api.now) || !minutes) return;
       const last = [...log].reverse().find(l => l.id === id);
+      // (a running stretch remembers when it was pushed: the minutes lost are lost from then on, not spread over the
+      // whole run; 2026-10-22, a team sabotaged at the guards had its earlier minutes stretched back into the dungeon)
       if (minutes > 0) {
-        if (last && last.to > api.now) last.to += minutes;
+        if (last && last.to > api.now) { last.to += minutes; (last.shifts ||= []).push([api.now, minutes]); }
         r.t += minutes;
         return;
       }
       if (!last || last.to <= api.now) return;
       const to = Math.max(api.now, last.to + minutes);
       r.t -= last.to - to;
+      if (to !== last.to) (last.shifts ||= []).push([api.now, to - last.to]);
       last.to = to;
     },
     slot(stretchId, capacity, t, dur) {

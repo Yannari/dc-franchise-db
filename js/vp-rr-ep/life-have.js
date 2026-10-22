@@ -41,6 +41,12 @@ export const LIFE = {
  "assets/sets/rr/carnival-rainforest/task-9438128.webp": [
   "wind"
  ],
+ "assets/sets/rr/carnival-rainforest/task-ant-hut.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/carnival-rainforest/task-parade-route.webp": [
+  "wind"
+ ],
  "assets/sets/rr/cliff-pool-isle/arrive-22416267.webp": [
   "water"
  ],
@@ -181,6 +187,12 @@ export const LIFE = {
  "assets/sets/rr/fjord-peaks/chill-9443672.webp": [
   "water"
  ],
+ "assets/sets/rr/fjord-peaks/present-9443262.webp": [
+  "water"
+ ],
+ "assets/sets/rr/fjord-peaks/task-9443488.webp": [
+  "water"
+ ],
  "assets/sets/rr/fjord-peaks/task-9443600.webp": [
   "water"
  ],
@@ -208,7 +220,13 @@ export const LIFE = {
  "assets/sets/rr/fjord-sea/task-22420571.webp": [
   "water"
  ],
+ "assets/sets/rr/frozen-mine/task-9447685.webp": [
+  "water"
+ ],
  "assets/sets/rr/frozen-mine/task-9447726.webp": [
+  "water"
+ ],
+ "assets/sets/rr/frozen-mine/task-yacht-start.webp": [
   "water"
  ],
  "assets/sets/rr/game-show-city/task-22411046.webp": [
@@ -295,6 +313,9 @@ export const LIFE = {
  "assets/sets/rr/great-falls/task-22421939.webp": [
   "water"
  ],
+ "assets/sets/rr/great-falls/task-rope-start.webp": [
+  "water"
+ ],
  "assets/sets/rr/great-wall-hills/chill-9440467.webp": [
   "wind"
  ],
@@ -320,6 +341,9 @@ export const LIFE = {
   "wind"
  ],
  "assets/sets/rr/great-wall-hills/task-9440758.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/great-wall-hills/task-food-stall.webp": [
   "wind"
  ],
  "assets/sets/rr/home-city/present-9434583.webp": [
@@ -393,6 +417,16 @@ export const LIFE = {
  "assets/sets/rr/lei-island/task-9439101.webp": [
   "water"
  ],
+ "assets/sets/rr/lei-island/task-9439203.webp": [
+  "wind",
+  "water"
+ ],
+ "assets/sets/rr/lei-island/task-coals-end.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/lei-island/task-skirt-hut.webp": [
+  "wind"
+ ],
  "assets/sets/rr/neon-desert/task-9446121.webp": [
   "water"
  ],
@@ -461,6 +495,9 @@ export const LIFE = {
  "assets/sets/rr/rock-north/present-9440796.webp": [
   "wind"
  ],
+ "assets/sets/rr/rock-north/task-sauna-bank.webp": [
+  "water"
+ ],
  "assets/sets/rr/savanna-falls/arrive-9441458.webp": [
   "wind"
  ],
@@ -492,6 +529,13 @@ export const LIFE = {
   "wind",
   "water"
  ],
+ "assets/sets/rr/savanna-falls/task-ranger-line.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/savanna-falls/task-waterhole.webp": [
+  "wind",
+  "water"
+ ],
  "assets/sets/rr/skyline-finale/present-9450374.webp": [
   "wind"
  ],
@@ -499,6 +543,9 @@ export const LIFE = {
   "wind"
  ],
  "assets/sets/rr/skyline-finale/task-9450504.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/skyline-finale/task-buoy-boat.webp": [
   "wind"
  ],
  "assets/sets/rr/stilt-river/present-9447233.webp": [
@@ -567,6 +614,12 @@ export const LIFE = {
  "assets/sets/rr/torch-statue-harbour/task-park-pond.webp": [
   "water"
  ],
+ "assets/sets/rr/torch-statue-harbour/task-sewer-ladder.webp": [
+  "wind"
+ ],
+ "assets/sets/rr/torch-statue-harbour/task-statue-stairs.webp": [
+  "wind"
+ ],
  "assets/sets/rr/treasure-isles/arrive-9449512.webp": [
   "wind"
  ],
@@ -594,6 +647,9 @@ export const LIFE = {
  ],
  "assets/sets/rr/treasure-isles/task-9449576.webp": [
   "water"
+ ],
+ "assets/sets/rr/treasure-isles/task-9449577.webp": [
+  "wind"
  ],
  "assets/sets/rr/treasure-isles/task-9449592.webp": [
   "wind"

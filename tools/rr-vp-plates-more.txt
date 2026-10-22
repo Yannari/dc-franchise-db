@@ -21,7 +21,7 @@ fire-mountain-isle | task-22425831 | skip:another stop in those episodes (a trai
 fire-mountain-isle | task-22425843 | skip:another stop (a farm fence), not the volcano island | | |
 fire-mountain-isle | task-22425851 | skip:another stop (a roadside stand), not the volcano island | | |
 fire-mountain-isle | task-22425859 | skip:another stop (inside a train carriage), not the volcano island | | |
-glass-pyramid-city | arrive-22414932 | arrive | 78 | 4,56 | {"repaint":true}
+glass-pyramid-city | arrive-22414932 | arrive | 78 | 4,40 | {"repaint":true}
 glass-pyramid-city | present-22414925 | views | | |
 glass-pyramid-city | task-22415034 | talk:broken-statue | 90 | 6,94 |
 glass-pyramid-city | task-22415122 | views | | |
@@ -58,7 +58,7 @@ savanna-falls | travel-9441594 | skip:a stone figure on a beach, not the falls |
 savanna-falls | travel-9441717 | arrive | 92 | 6,80 |
 treasure-isles | chill-9449841 | mat | 62 | 18,92 |
 treasure-isles | present-9449602 | talk:harbour-run | 68 | 6,94 |
-treasure-isles | task-9449577 | talk:doubloons | 92 | 4,96 | {"repaint":true}
+treasure-isles | task-9449577 | talk:doubloons | 92 | 4,88 | {"repaint":true}
 treasure-isles | task-9449584 | views |  |  | {"repaint":true}
 treasure-isles | task-9449592 | alt:doubloons | 0 | 0,0 | {"water":true,"mode":"swim","path":[[10,62],[35,55],[60,62],[86,52]],"fx":"bubbles"}
 treasure-isles | task-9449658 | views | | |
@@ -159,7 +159,7 @@ red-outback | task-22419611 | views | | |
 red-outback | task-22419612 | views | | |
 lei-island | arrive-9438970 | views | | |
 lei-island | present-9439132 | views | | |
-lei-island | task-9439203 | arrive | 94 | 30,94 | {"repaint":true}
+lei-island | task-9439203 | arrive | 95 | 42,94 | {"repaint":true}
 lei-island | task-9439253 | alt:ring-dive | 0 | 0,0 | {"water":true,"mode":"dive","path":[[50,44],[50,58],[50,72],[50,88]],"fx":"splash"}
 glass-tower-gulf | chill-9440136 | talk:market-taxi | 92 | 40,94 |
 glass-tower-gulf | present-9439891 | views | | |
@@ -176,7 +176,7 @@ stilt-river | travel-9447001 | views | | |
 frozen-mine | Wooden Sauna Golden Race Mat | skip:in use (the sauna Chill Zone, through the repaint list) | | |
 frozen-mine | chill-9447963 | views | | | {"at":"mat"}
 frozen-mine | reference-chill-9447963 | skip:a reference frame for a repaint | | |
-frozen-mine | task-9447685 | talk:borehole | 78 | 14,70 | {"repaint":true}
+frozen-mine | task-9447685 | talk:borehole | 76 | 14,70 | {"repaint":true}
 tea-hills | chill-9448396 | talk:toy-train | 92 | 6,60 |
 tea-hills | chill-9448657 | talk:toy-train | 88 | 6,94 |
 tea-hills | task-9448429 | views | | |
@@ -295,7 +295,7 @@ ice-river | chill-22411653 | mat | 60 | 6,62 | {"matPos":[44,62],"scale":0.7}
 red-sand-desert | task-spice-scales | talk:spices | 90 | 8,92 | {"repaint":true}
 red-sand-desert | task-stew-table | talk:stew | 90 | 8,92 | {"repaint":true}
 red-sand-desert | task-stew-door | talk:stew | 90 | 8,92 | {"repaint":true}
-skyline-finale | task-buoy-boat | talk:buoys | 90 | 8,92 | {"repaint":true}
+skyline-finale | task-buoy-boat | talk:buoys | 95 | 22,78 | {"repaint":true}
 iron-tower-city | task-easel-close | talk:caricature | 90 | 8,92 | {"repaint":true}
 iron-tower-city | task-cafe-terrace | talk:caricature | 90 | 8,92 | {"repaint":true}
 iron-tower-city | task-cheese-cave | talk:catacombs | 90 | 8,92 | {"repaint":true}
@@ -304,7 +304,7 @@ great-wall-hills | task-food-stall | talk:skewers | 90 | 8,92 | {"repaint":true}
 rock-north | task-sauna-bank | talk:sauna | 90 | 8,92 | {"repaint":true}
 rock-north | task-river-near | talk:ice-river | 90 | 8,92 | {"repaint":true}
 rock-north | task-river-far | talk:ice-river | 90 | 8,92 | {"repaint":true}
-rock-north | task-guitar-crowd | talk:air-guitar | 90 | 8,92 | {"repaint":true}
+rock-north | task-guitar-crowd | talk:air-guitar | 90 | 12,88 | {"repaint":true}
 savanna-falls | task-ranger-line | talk:rhino | 90 | 8,92 | {"repaint":true}
 savanna-falls | task-waterhole | talk:rhino | 90 | 8,92 | {"repaint":true}
 treasure-isles | task-map-room | talk:pirate-map | 90 | 8,92 | {"repaint":true}
@@ -327,7 +327,7 @@ dragon-isle | task-stilt-shade | talk:venom | 90 | 8,92 | {"repaint":true}
 dragon-isle | task-weaver-loom | talk:rugs | 90 | 8,92 | {"repaint":true}
 stilt-river | task-fish-basket | talk:catfish | 90 | 8,92 | {"repaint":true}
 frozen-mine | task-yacht-start | talk:ice-yacht | 90 | 8,92 | {"repaint":true}
-pampas-ranch | task-tango-floor | talk:tango | 90 | 8,92 | {"repaint":true}
+pampas-ranch | task-tango-floor | talk:tango | 90 | 8,92 | {"repaint":true,"closed":true}
 pampas-ranch | task-gaucho-post | talk:emu | 90 | 8,92 | {"repaint":true}
 snow-peaks | task-dance-stage | talk:slap-dance | 90 | 8,92 | {"repaint":true}
 jungle-ruins | task-idol-niches | talk:golden-idol | 90 | 8,92 | {"repaint":true}

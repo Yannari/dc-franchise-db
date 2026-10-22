@@ -155,7 +155,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   const duelDone = {};       // team -> when its last duel ended: a team still mid-duel can't start the next one
   function duelAt(id, s, t, api) {
     const mine = duelRes[id];
-    if (mine) { delete duelRes[id]; if (mine.won) return { end: mine.end }; }
+    if (mine) { delete duelRes[id]; if (mine.go) return { end: mine.end }; }
     if (duelWait && duelWait !== id) {
       const o = duelWait;
       duelWait = null;
@@ -168,7 +168,11 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       const close = Math.abs(lv(w) - lv(l)) < 1;
       const ctx = { state, team: { id: w }, other: { id: l }, moment: 'twist', present: [w, l], stretch: s, t: end };
       playScene(ctx, 'head-to-head', rng, { ending: last ? 'final' : close ? 'close' : 'rout' });
-      if (o === w) { duelRes[o] = { won: true, end }; api.wake(o, end); }
+      if (o === w) { duelRes[o] = { go: true, end }; api.wake(o, end); }
+      // the team that was waiting lost: it goes in last after the duel, or waits on for the next team (2026-10-22: it
+      // had been left on its old wait, which ran out before the duel did, and it checked in ahead of its winner)
+      else if (last) { duelRes[o] = { go: true, end: end + 2 }; api.wake(o, end + 2); }
+      else duelWait = o;
       if (id === w) return { end };
       // this team lost: it waits for the next one, or goes in last
       if (last) return { end: end + 2 };
@@ -247,6 +251,8 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       row.to = l.to;
       if (!row.stages?.length || fitted.has(row.stages)) continue;
       fitted.add(row.stages);
+      // a push from another team (a sabotage, a U-Turn's minutes) moves the stages after it, not the ones before
+      for (const [at, d] of l.shifts || []) for (const x of row.stages) if (x.t > at) x.t = Math.max(at, x.t + d);
       const from = row.from, last = Math.max(...row.stages.map(x => x.t));
       if (last > from) for (const x of row.stages) x.t = from + (Math.max(from, x.t) - from) * (l.to - from) / (last - from);
     }

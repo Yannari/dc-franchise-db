@@ -24,6 +24,7 @@ const REVIEWED = {
   'snow-peaks/present-22413612': 'a snowfield with a rock and the peaks behind: snow to stand on from edge to edge',
   'secret-base-desert/task-22419058': 'the desert at night by the base: flat ground, cacti and mesas, dark so few edges',
   'secret-base-desert/chill-22419058': 'the same night desert frame, its Chill Zone copy',
+  'rock-north/task-9441122': 'the rock stage curtain, its player painted out (2026-10-22): the one playing air guitar in front of it is the shot',
 };
 
 // the two found by eye: they must stay under the floor, or the floor has drifted

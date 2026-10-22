@@ -52,7 +52,8 @@ describe('rr viewer: how a challenge is shot', () => {
     let inside = 0, outside = 0;
     for (const { s } of screens()) {
       if (s.place !== 'pampas-ranch' || s.stretch !== 'tango' || s.kind !== 'world' || s.seg === 'don-demo') continue;
-      if (/academy/.test(s.plate?.f || '')) inside++; else outside++;
+      // (the tango floor is the academy's own floor from across the room, 2026-10-22)
+      if (/academy|tango-floor/.test(s.plate?.f || '')) inside++; else outside++;
     }
     expect(inside).toBeGreaterThan(3);
     expect(outside).toBeLessThanOrEqual(1);

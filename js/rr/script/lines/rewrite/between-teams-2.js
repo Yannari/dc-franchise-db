@@ -269,7 +269,7 @@ export default {
       ] },
       { id: 'bt2.tl2', turns: [
         { by: 'b', say: "Pull! Pull harder!" },
-        { by: 'a', ...V("I'm pulling as hard as I can! They're stronger!", "I'm pulling! They're stronger!", "They're stronger!", "I'm PULLING as HARD as I CAN! They're STRONGER!", "I'm pulling as hard as I can, they're just stronger!", "I'm pulling with everything! They're made of rope!") },
+        { by: 'a', ...V("I'm pulling as hard as I can! They're stronger!", "I'm pulling! They're stronger!", "They're stronger!", "I'm PULLING as HARD as I CAN! They're STRONGER!", "I'm pulling as hard as I can, they're just stronger!", "I'm pulling with everything! They're made of iron!") },
         { beat: 'It slips out of {a}\'s hands and {c} and {d} are off with it.' },
         { by: 'b', say: "We had it. We actually had it." },
         { by: 'a', say: "We had it for about four seconds." },
@@ -307,7 +307,7 @@ export default {
         { beat: '{a} and {c} are tugging back and forth, both red in the face.' },
         { by: 'b', ...V("Um, guys? Guys? Somebody just took it.", "Guys. Somebody took it.", "Somebody took it.", "Um, GUYS? GUYS? Somebody just TOOK it!", "Um, guys? Somebody just took it.", "Guys. A thief has thieved it.") },
         { by: 'a', say: "Took what?" },
-        { beat: '{a} and {c} look down. They\'re both holding nothing but the empty rope it was tied to.' },
+        { beat: '{a} and {c} look down. Their hands are still clenched round nothing at all.' },
         { by: 'c', say: "This is your fault." },
         { by: 'a', say: "It's definitely your fault." },
       ] },

@@ -67,7 +67,7 @@ function stageOrderOf(placeId, stretch, side) {
   if (STAGE_ORDERS.has(key)) return STAGE_ORDERS.get(key);
   const ids = stretch?.stages?.map(x => x.id) || (stretch?.sides || []).find(x => x.id === side)?.stages?.map(x => x.id) || [];
   const sp = stretchPlates(placeId, stretch?.id, side);
-  const out = { all: {}, plates: [] };
+  const out = { all: {}, plates: [], ids };
   ids.forEach((id, j) => {
     const g = sp?.stages?.[id];
     out.plates[j] = g?.plate || null;
@@ -410,6 +410,20 @@ export function episodeScreens(res, eps, i) {
         opened.add(key);
       }
       if (!standable(plate) && mode !== 'act') plate = pick(sp?.talk?.filter(standable), 0) || plates.opener;
+      // nobody goes ahead to talk either: a challenge's talk shot can be one of its later stages (the stairs' is the hallway
+      // at the top), and a crowd on the landings shot there was "at the top" for the rest of the climb (2026-10-22): the
+      // furthest stage any of them is at, or has been seen at, that people can stand in
+      // (a stage's own moment is at its stage already)
+      if (mode === 'talk' && !CHECKPOINT_SEGS.has(k) && k !== 'task-stage' && seg.t != null && (stretch?.stages?.length || stretch?.sides)) {
+        const so = stageOrderOf(placeId, stretch, seg.side);
+        const real = id => so.ids.indexOf((st.taskLog || []).filter(r => r.leg === leg.n && r.team === id && r.stretch === seg.stretch)
+          .find(r => r.from <= seg.t + 0.5 && seg.t <= r.to + 0.5)?.stages?.find(x => x.t >= seg.t - 0.5)?.id);
+        const top = Math.max(-1, ...segTeams.map(id => Math.max(reachedAt[`${id}|${seg.stretch}`] ?? -1, real(id))));
+        if (top >= 0 && so.all[plate?.f] && !so.all[plate.f].some(j => j <= top)) {
+          const back = so.plates.slice(0, top + 1).reverse().find(p => p && standable(p));
+          if (back) plate = back;
+        }
+      }
       // nobody goes back to talk (the user, 2026-10-22: "they returned to a previous zone to have a conversation with
       // another team", "it looks like they teleporting"): a scene with another team at a staged challenge is at the
       // furthest stage any of them has been seen at already (going on to it is going forward; going back is a teleport)
@@ -423,7 +437,12 @@ export function episodeScreens(res, eps, i) {
       }
       // a narrow corner (a stair landing) holds two teams: three or more go to the stretch's widest standing plate
       if (mode === 'talk' && segTeams.length > 2 && plate?.x && plate.x[1] - plate.x[0] < 11 * segTeams.length) {
-        const wide = (sp?.talk || []).filter(standable).sort((a, b) => (b.x[1] - b.x[0]) - (a.x[1] - a.x[0]))[0];
+        // (not up to a stage none of them has reached: the stairs' widest shot is the hallway at the top, 2026-10-22, and a
+        // crowd on the landings sent there had all four "at the top" for the rest of the climb)
+        const so = stretch?.stages?.length || stretch?.sides ? stageOrderOf(placeId, stretch, seg.side) : null;
+        const far = Math.max(-1, stageAt(so || { all: {} }, plate?.f, -1) ?? -1, ...segTeams.map(id => reachedAt[`${id}|${seg.stretch}`] ?? -1));
+        const ahead = p => so?.all[p.f] && !so.all[p.f].some(j => j <= far);
+        const wide = (sp?.talk || []).filter(p => standable(p) && !ahead(p)).sort((a, b) => (b.x[1] - b.x[0]) - (a.x[1] - a.x[0]))[0];
         if (wide && wide.x[1] - wide.x[0] > plate.x[1] - plate.x[0]) plate = wide;
       }
       if (sideLabel) hudTask += ` · ${sideLabel.toUpperCase()}`;

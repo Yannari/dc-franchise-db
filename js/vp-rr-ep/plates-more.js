@@ -449,7 +449,7 @@ export const MORE = {
     "g": 78,
     "x": [
      4,
-     56
+     40
     ],
     "repaint": true
    }
@@ -701,10 +701,10 @@ export const MORE = {
     "talk": [
      {
       "f": "task-buoy-boat",
-      "g": 90,
+      "g": 95,
       "x": [
-       8,
-       92
+       22,
+       78
       ],
       "repaint": true
      }
@@ -915,7 +915,7 @@ export const MORE = {
       "g": 92,
       "x": [
        4,
-       96
+       88
       ],
       "repaint": true
      }
@@ -2082,8 +2082,8 @@ export const MORE = {
       "f": "task-guitar-crowd",
       "g": 90,
       "x": [
-       8,
-       92
+       12,
+       88
       ],
       "repaint": true
      }
@@ -2199,9 +2199,9 @@ export const MORE = {
   "arrive": [
    {
     "f": "task-9439203",
-    "g": 94,
+    "g": 95,
     "x": [
-     30,
+     42,
      94
     ],
     "repaint": true
@@ -2425,7 +2425,7 @@ export const MORE = {
     "talk": [
      {
       "f": "task-9447685",
-      "g": 78,
+      "g": 76,
       "x": [
        14,
        70
@@ -2775,7 +2775,8 @@ export const MORE = {
        8,
        92
       ],
-      "repaint": true
+      "repaint": true,
+      "closed": true
      }
     ]
    },

@@ -24,6 +24,10 @@ import { appearancesFor, ageAnchor, birthFromCanonAge, continuityIndex, continui
 import { ageNow, franchiseNow } from './franchise-calendar.js';
 import { INTERVIEW_QUESTIONS, parseInterview, serializeInterview }
   from './casting-interview.js';
+import { parseCharacterText, normalizeCharacter, characterToFile } from './character-file.js';
+// Imported, not read off `window`: core's functions are not exposed there, so every
+// Studio download (Export for repo, the per-character exports) threw "downloadFile is not defined".
+import { downloadFile } from './core.js';
 // The endpoint resolver, not a second hardcoded URL — it already handles the
 // localStorage and globalThis overrides, and pointing at the wrong worker fails
 // silently by falling through to its default branch.
@@ -1819,6 +1823,76 @@ function _addPortraitRow() {
   _refreshPortraitList();
 }
 
+// ── IMPORT / EXPORT A SHEET (js/character-file.js) ──────────────────────
+const _sheetVocab = () => ({
+  archetypes: ARCHETYPES, sexes: SEXES, statKeys: STAT_KEYS, dragKeys: DRAG_KEYS,
+  dragStyles: DRAG_STYLE_LIST, dragTraits: DRAG_TRAIT_LIST, interviewKeys: INTERVIEW_QUESTIONS.map(x => x.key),
+});
+
+/** Fill the open sheet from a file. Fills, never saves: the author reads it and presses Save. */
+async function _importSheet(file) {
+  if (!_draft) _draft = _blankChar();
+  const d = _draft;
+  let text;
+  try { text = await file.text(); } catch { _toast(`Couldn't read ${file.name}`, 'err'); return; }
+  const parsed = parseCharacterText(text);
+  if (parsed.error) { _toast(parsed.error, 'err'); return; }
+  const got = normalizeCharacter(parsed.raw, _sheetVocab());
+  if (!got.filled.length) { _toast(`Nothing in ${file.name} matched a field on the sheet`, 'err'); return; }
+  const f = got.fields;
+  // Filling somebody else's sheet is easy to do by accident with a folder of files.
+  if (d._editingSlug && f.name && d.name && f.name.trim().toLowerCase() !== d.name.trim().toLowerCase()
+    && !confirm(`${file.name} is for ${f.name}, and the sheet open is ${d.name}.\n\nFill ${d.name}'s sheet with it anyway? (The name changes too; nothing is saved until you press Save.)`)) return;
+  // A roster row's voice starts with its bio lead-in ("24, Asian Canadian, bi.") —
+  // the editor holds the prose alone and rebuilds the lead on save, as _editBySlug does.
+  if (f.voice) {
+    const bio = parseBio(f.voice);
+    f.voice = bio.prose;
+    for (const k of ['ethnicity', 'nationality', 'descriptor', 'sexuality']) if (bio[k] && f[k] === undefined) f[k] = bio[k];
+    if (bio.age && f.age === undefined) f.age = String(bio.age);
+  }
+  // An existing character keeps its slug: changing it on import would save as a rename.
+  if (d._editingSlug) delete f.slug;
+  Object.assign(d, f);
+  if (!d._editingSlug && !d.slug && d.name) d.slug = _slugify(d.name);
+  if (f.birthdate && f.age === undefined) { const a = ageNow(f.birthdate); if (a != null) d.age = String(a); }
+  if (Object.keys(got.stats).length) d.stats = { ...d.stats, ...got.stats };
+  if (Object.keys(got.drag).length) d.drag = { ..._emptyDrag(), ...(d.drag || {}), ...got.drag };
+  if (got.ties) d.ties = got.ties;
+  if (got.interview) d.interview = { ...(d.interview || {}), ...got.interview };
+  else if (got.interviewText) d.interview = { ...(d.interview || {}), ...Object.fromEntries(parseInterview(got.interviewText).map(r => [r.key, r.a])) };
+  if (got.kit) {
+    // the editor's own shape (bits rows, text one line per entry) or the game's (js/td/story/kits.js)
+    const k = got.kit;
+    d.kit = Array.isArray(k.bits) && k.bits.every(b => b && typeof b === 'object')
+      ? { ..._emptyKit(), ...k, bits: k.bits.map(b => ({ bit: b.bit || '', tease: b.tease || '', reply: b.reply || '' })) }
+      : _kitFrom(k);
+  }
+  if (got.avatarDataUri) d.avatarDataUri = got.avatarDataUri;
+  renderStudio();
+  const note = document.getElementById('st-save-note');
+  const more = parsed.extra > 0 ? ` (the file had ${parsed.extra + 1} characters; this is the first)` : '';
+  const msg = `Filled ${got.filled.length} field${got.filled.length === 1 ? '' : 's'} from ${file.name}${more}. Check them, then Save.`;
+  if (note) {
+    note.textContent = got.skipped.length ? `${msg} Skipped ${got.skipped.length}: ${got.skipped.join('; ')}` : msg;
+    note.className = `st-save-note ${got.skipped.length ? 'err' : 'ok'}`;
+    note.title = got.filled.join(', ');
+  }
+  _toast(got.skipped.length ? `Filled ${got.filled.length}, skipped ${got.skipped.length}` : `Filled ${got.filled.length} fields`, got.skipped.length ? 'err' : 'ok');
+}
+
+/** The open sheet as a .json download. A blank sheet exports the template. */
+function _exportSheet() {
+  const d = _draft || _blankChar();
+  const file = characterToFile(d, {
+    statKeys: STAT_KEYS,
+    interviewKeys: INTERVIEW_QUESTIONS.map(x => x.key),
+    dragOut: _hasDrag(d) ? { ...d.drag } : null,
+    kitOut: _kitOut(d),
+  });
+  _dl(`${d.slug || _slugify(d.name) || 'character-template'}.json`, JSON.stringify(file, null, 2));
+}
+
 function _renderEditor() {
   const ed = document.getElementById('st-editor');
   if (!ed) return;
@@ -2067,7 +2141,10 @@ function _renderEditor() {
           const member = active.slugs.includes(d.slug);
           return `<button type="button" class="st-btn st-lg${member ? ' st-primary' : ''}" id="st-add-cast" title="Toggle ${_esc(d.name)} in ${_esc(active.name)}">${member ? '★ In ' + _esc(active.name) : '☆ Add to ' + _esc(active.name)}</button>`;
         })()}
-        ${d.slug ? `<button type="button" class="st-btn st-danger" id="st-del">Delete</button>` : ''}
+        <label class="st-btn st-lg st-file" title="Fill this sheet from a file: a .json from Export, or a .txt with one label per line (Name: …, Age: 24, Pronouns: she/her, Archetype: schemer, Physical: 7, Backstory: …). Nothing is saved until you press Save.">⤒ Import<input type="file" id="st-sheet-import" accept=".json,.txt,application/json,text/plain" hidden></label>
+        <button type="button" class="st-btn st-lg" id="st-sheet-export" title="Download this sheet as a .json file. Export an empty sheet to get a template to fill in.">⤓ Export</button>
+        ${/* only a character opened from the roster: an unsaved sheet's slug (typed, or filled by Import) may be
+             somebody else's, and Delete would remove THEM */ d._editingSlug ? `<button type="button" class="st-btn st-danger" id="st-del">Delete</button>` : ''}
         <span class="st-save-note" id="st-save-note"></span>
       </div>
     </div>`;
@@ -2375,6 +2452,8 @@ function _renderEditor() {
   ed.querySelector('#st-del')?.addEventListener('click', _delete);
   // add/remove the selected character from the active cast, right from the editor
   ed.querySelector('#st-add-cast')?.addEventListener('click', async () => { await _toggleMember(d.slug); _renderEditor(); });
+  ed.querySelector('#st-sheet-import')?.addEventListener('change', e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) _importSheet(f); });
+  ed.querySelector('#st-sheet-export')?.addEventListener('click', _exportSheet);
 
   _drawRadar();
   _updateRead();
@@ -3467,8 +3546,8 @@ function _loadCastIntoSeason(cast) {
 // ═══════════════════════════════════════════════════════════════════════
 function _dl(name, text) {
   const b = new Blob([text], { type: 'application/json' });
+  // downloadFile revokes its own URL; the `a.href` revoke that followed threw a ReferenceError 1.5s later
   downloadFile(name, b);
-  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
 }
 function _dlDataUri(name, uri) { downloadFile(name, uri); }
 

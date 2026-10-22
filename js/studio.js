@@ -1332,13 +1332,17 @@ async function _existingVoice(name) {
 // Each chip has an ×: a hashtag tag is taken out of the text, a tag read from the words is switched off
 // with "#-tag" (the words stay as written). A switched-off tag shows struck through, and × puts it back.
 function _voiceReadHtml(text) {
-  const { hash, words, off } = readVoiceText(text || '');
+  const { hash, words, off, weights = {} } = readVoiceText(text || '');
   const x = (t, act, tip) => `<button type="button" class="st-vtag-x" data-vtag="${t}" data-act="${act}" title="${tip}" style="border:0;background:none;cursor:pointer;padding:0 0 0 4px;font:inherit;color:inherit;opacity:.7">×</button>`;
   const chip = (t, kind) => `<b style="padding:1px 6px;border-radius:8px;white-space:nowrap;background:${kind === 'own' ? 'rgba(255,170,60,.25)' : kind === 'off' ? 'rgba(128,128,128,.15)' : 'rgba(120,160,255,.18)'}">`
-    + (kind === 'off' ? `<s>${t}</s>${x(t, 'on', 'put it back')}` : `${kind === 'own' ? '#' : ''}${t}${x(t, 'off', 'remove this tag')}`) + '</b>';
+    + (kind === 'off' ? `<s>${t}</s>${x(t, 'on', 'put it back')}` : `${kind === 'own' ? '#' : ''}${t}${weights[t] != null ? `:${weights[t]}` : ''}${x(t, 'off', 'remove this tag')}`) + '</b>';
   const got = [...hash.map(t => chip(t, 'own')), ...words.map(t => chip(t, 'word'))].join(' ') || '<i>nothing yet</i>';
   const gone = off.length ? `<br>Removed: ${off.map(t => chip(t, 'off')).join(' ')}` : '';
   return `Simulator reads: ${got}${gone}<br>Set one outright with a hashtag in the text: ${WORD_TAGS.map(t => '#' + t).join(' ')}. Remove one with its ×, or #-tag (it also overrides the archetype and stats)`
+    + '<br>Order matters: the first tag leads. In Perfect Match a voice is a mix: the tags shown here count 4, 2.5, 1.5, then 1 each, in order'
+    + ' (five tags come out about 40 / 25 / 15 / 10 / 10 of their lines), and the tags the archetype and stats add share 1 between them.'
+    + ' A number sets a tag\'s count yourself, wherever it sits: #proud:3 gives proud 3, so "#flirty #proud:4" is half flirty, half proud,'
+    + ' and "#loud #goofy #warm:0.5" keeps warm to a hint. The other shows speak the first tag that has a line written for it.'
     + (_ciSelected() ? _circleVoiceHtml(text) : '');
 }
 // The Circle types in voices of its own (ci/register.js): #chill is not #calm, and Total Drama has no #diva, #catty
@@ -1355,7 +1359,8 @@ function _voiceToggleTag(text, tag, act) {
   const esc = tag.replace(/[^a-z]/g, '');
   if (act === 'on') return t.replace(new RegExp(`\\s*#-${esc}\\b`, 'gi'), '').trim();
   const had = new RegExp(`#${esc}\\b`, 'i').test(t);
-  t = t.replace(new RegExp(`\\s*#${esc}\\b`, 'gi'), '').trim();
+  // "#proud:3" goes with its weight
+  t = t.replace(new RegExp(`\\s*#${esc}(?::\\d+(?:\\.\\d+)?)?\\b`, 'gi'), '').trim();
   // a hashtag was the only reason: taking it out is enough, unless the words also say it
   if (had && !readVoiceText(t).words.includes(tag)) return t;
   return `${t} #-${esc}`.trim();

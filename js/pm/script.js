@@ -47,7 +47,7 @@ import { KISS_ROUND_LINES } from './lines/kiss-round.js';
 import { STEAMY_NARRATOR, STEAMY_SCENES } from './lines/steamy.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 import { VOICES } from './lines/voices/index.js';
-import { voiceOf } from '../td/story/voice.js';
+import { voiceWeights } from '../td/story/voice.js';
 import { FAMILY } from '../td/story/voice-family-map.js';
 
 export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES, ...CLOSE, ...ANSWER, ...KISS_LINES, ...RULES_LINES };
@@ -111,19 +111,63 @@ export const VOICE_MISSES = [];
   }
 }
 
-// Age is a register, not a personality (td/story/voice.js): a PM line has no age versions.
-const AGE_TAGS = new Set(['kid', 'teen', 'adult', 'grown']);
-/** Which of a turn's voices this islander speaks: their strongest tag with one, then its family. */
-export function voiceKey(name, v) {
+// ── whose voice a line comes out in ──────────────────────────────────
+// A voice is a MIX, not its strongest tag. Strongest-tag-wins gave the second
+// hashtag 0 lines of 33,168 on the user's 27 islanders (2026-10-22): Antwon
+// "#flirty #proud" never once spoke proud, though nearly every line had a proud
+// version written. Now each tag counts (voiceWeights: the written tags 4, 2.5,
+// 1.5, then 1 each; archetype and stat tags share 1; "#tag:n" outright); a
+// family version counts half its tag; and a scene brings one side forward
+// (SCENE_LEANS, half again). Age tags weigh nothing: they are a register, and a
+// PM line has no age versions.
+const SCENE_LEANS = {
+  soft: ['kiss', 'date', 'pull', 'bed-share', 'comfort', 'vent', 'dump-goodbye', 'deep-chat', 'recouple-pick', 'game-kiss'],
+  sharp: ['argument', 'blowup', 'jealous-confront', 'lie-question', 'ick'],
+  loud: ['argument', 'blowup', 'jealous-confront'],
+  dry: ['gossip', 'debrief', 'ick'],
+  odd: ['comedy', 'gossip'],
+};
+export const SCENE_LEAN = 1.5;
+const LEANS = {};
+for (const [fam, kinds] of Object.entries(SCENE_LEANS)) for (const k of kinds) (LEANS[k] ||= new Set()).add(fam);
+
+/**
+ * Which of a turn's voices this islander speaks. `u` (0..1) is where the pick
+ * lands: one number per speaker per scene, so a scene keeps them in one
+ * register instead of switching every line. `kind` is the scene's pool.
+ */
+export function voiceKey(name, v, { u = 0, kind = null } = {}) {
   if (!v || !name) return null;
-  let tags;
-  try { tags = voiceOf(name); } catch { return null; }
-  for (const t of tags) {
-    if (AGE_TAGS.has(t)) continue;
-    if (v[t]) return t;
-    if (FAMILY[t] && v[FAMILY[t]]) return FAMILY[t];
+  let weights;
+  try { weights = voiceWeights(name); } catch { return null; }
+  const lean = LEANS[kind];
+  const leaned = (key, w) => w * (lean?.has(FAMILY[key] || key) ? SCENE_LEAN : 1);
+  const land = list => {
+    let r = u * list.reduce((a, [, x]) => a + x, 0);
+    for (const [key, x] of list) { r -= x; if (r < 0) return key; }
+    return list.length ? list[list.length - 1][0] : null;
+  };
+  // The scene's register comes from the voice alone, so every line that has it
+  // says it; only a line with no version of it picks again, among what it has.
+  const tag = land(weights.filter(([, w]) => w > 0).map(([t, w]) => [t, leaned(t, w)]));
+  if (tag && v[tag]) return tag;
+  if (tag && FAMILY[tag] && v[FAMILY[tag]]) return FAMILY[tag];
+  const score = new Map();
+  for (const [t, w] of weights) {
+    if (!(w > 0)) continue;
+    const key = v[t] ? t : FAMILY[t] && v[FAMILY[t]] ? FAMILY[t] : null;
+    if (key) score.set(key, (score.get(key) || 0) + leaned(key, key === t ? w : w / 2));
   }
-  return null;
+  return land([...score]);
+}
+// One event is rendered in pieces (an opener, an answer, a close, parts), each
+// its own entry: while scriptFor renders one, every piece shares its scene.
+let SCENE = null;
+/** A speaker's place in the mix for one scene: a hash, never a draw, so no roll behind it moves. */
+function voiceDial(state, entry, name) {
+  let h = hashOf(`${state?.seed ?? ''}|${state?.ep ?? ''}|${state?.epSalt || ''}|${SCENE?.id || entry.id || ''}|${name}`);
+  h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
 }
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
@@ -510,7 +554,8 @@ export function renderScript(entry, ps, state = null, slots = {}) {
         : dialectOf(state, ps[ORDER[who]]);
       const name = speakerName(who, ps);
       // The islander's own voice, when the line has one for them (lines/voices/).
-      const key = voices && ORDER[who] != null ? voiceKey(name, voices) : null;
+      const key = voices && ORDER[who] != null
+        ? voiceKey(name, voices, { u: voiceDial(state, entry, name), kind: SCENE?.kind || String(entry.id || '').split('.')[0] }) : null;
       const out = { who: name, text: speak(f(key ? voices[key] : text), d) };
       // For the measuring probes only, never saved: which line this was, and in whose voice.
       Object.defineProperty(out, 'base', { value: text, enumerable: false });
@@ -526,6 +571,11 @@ const placeholder = kind => ({ id: `${kind}.0`, stage: `{a} — ${kind}.` });
 
 /** The scene for one event. */
 export function scriptFor(state, ev) {
+  const outer = SCENE;
+  SCENE = { id: `${ev.kind}|${castOf(ev).join(',')}|${ev.step ?? ''}`, kind: ev.kind };
+  try { return sceneScript(state, ev); } finally { SCENE = outer; }
+}
+function sceneScript(state, ev) {
   if (Array.isArray(ev.extra?.parts)) return partsScript(state, ev);
   const pool = POOLS[ev.kind];
   const ps = castOf(ev);

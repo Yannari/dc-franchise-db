@@ -75,6 +75,39 @@ export function voiceOf(name) {
 /** Every tag a line may key a variant on (the tests check pools against it). */
 export const VOICE_TAGS = [...WORDS.map(([t]) => t), 'kid', 'teen', 'adult', 'grown'];
 
+// How much of a speaker's talk each tag gets, for a show that MIXES a voice instead of speaking only
+// its strongest tag (Perfect Match). The tags the author WROTE (hashtags, then the ones read from the
+// voice's words) count by their place: 4, 2.5, 1.5, then 1 each, so a five-tag voice comes out about
+// 40 / 25 / 15 / 10 / 10. The tags only the archetype and stats add share 1 between them: heard, never
+// drowning what was written. "#proud:3" sets proud's count outright, wherever it sits. A voice with
+// nothing written takes its archetype and stat tags by place instead.
+// Measured 2026-10-22 on the user's 27 islanders: strongest-tag-wins gave the second hashtag 0 lines
+// of 33,168 (Antwon "#flirty #proud" never once spoke proud).
+export const PLACE_WEIGHTS = [4, 2.5, 1.5];
+export const LATER_WEIGHT = 1;
+export const UNWRITTEN_SHARE = 1;
+const weightCache = new Map();
+/** [[tag, weight], …] in voiceOf order, age tags left out (a register, not a personality). */
+export function voiceWeights(name) {
+  const tags = voiceOf(name).filter(t => !AGE.has(t));
+  const p = players.find(x => x.name === name);
+  const key = `${name}|${p?.voice || ''}|${p?.personality || ''}|${(p?.voiceTags || []).join(',')}|${tags.join(',')}`;
+  if (weightCache.has(key)) return weightCache.get(key);
+  const read = readVoiceText(`${p?.voice || ''} ${p?.personality || ''}`);
+  const set = read.weights || {};
+  const wrote = new Set([...(Array.isArray(p?.voiceTags) ? p.voiceTags : []), ...read.hash, ...read.words]);
+  const written = tags.filter(t => wrote.has(t));
+  const lead = written.length ? written : tags;
+  const rest = tags.filter(t => !lead.includes(t));
+  const out = tags.map(t => {
+    if (Number.isFinite(set[t])) return [t, set[t]];
+    const i = lead.indexOf(t);
+    return [t, i < 0 ? UNWRITTEN_SHARE / rest.length : i < PLACE_WEIGHTS.length ? PLACE_WEIGHTS[i] : LATER_WEIGHT];
+  });
+  weightCache.set(key, out);
+  return out;
+}
+
 /** The variant of a turn this speaker says: their strongest tag that has one, else the line itself. */
 // hush: the scene is somewhere secret (places.js), so a loud voice keeps it down: no shouted variant
 // fits: the writer's venue/time check (write.js placeOk); a variant that fails it falls back

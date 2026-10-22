@@ -37,7 +37,12 @@ export const WORDS = [
 
 export const WORD_TAGS = [...new Set(WORDS.map(([t]) => t))];
 
-/** { hash: tags written as #tag, words: tags read from the words, off: tags taken away as #-tag }. */
+/**
+ * { hash: tags written as #tag, words: tags read from the words, off: tags taken away as #-tag,
+ *   weights: { tag: n } for a tag written with a weight, "#proud:3" }.
+ * A weight is how much of a speaker's talk that tag gets beside their others, where a voice MIXES
+ * its tags (Perfect Match, pm/script.js); a show that speaks the strongest tag ignores it.
+ */
 export function readVoiceText(text = '') {
   const t = String(text || '').toLowerCase();
   const off = [...new Set([...t.matchAll(/#-([a-z]+)/g)].map(m => m[1]))];
@@ -53,5 +58,7 @@ export function readVoiceText(text = '') {
     }
   }
   const words = found.sort((a, b) => a[0] - b[0]).map(([, x]) => x).filter((x, i, a) => a.indexOf(x) === i && !hash.includes(x) && !off.includes(x));
-  return { hash, words, off };
+  const weights = {};
+  for (const m of t.matchAll(/#([a-z]+):(\d+(?:\.\d+)?)/g)) if (hash.includes(m[1])) weights[m[1]] = Number(m[2]);
+  return { hash, words, off, weights };
 }

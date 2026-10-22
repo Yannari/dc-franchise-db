@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8"><title>live plate probe</title>
+<style>body{margin:0;background:#000;overflow:hidden}.tdx{width:1280px}</style>
+<div class="tdx" data-uid="probe"><div class="tdx-stage" id="st" style="position:relative;width:1280px;height:720px;overflow:hidden"><div class="tdx-world"></div></div></div>
+<script type="module">
+import { worldHtml } from './js/vp-td-ep/stage.js';
+import { liveGL } from './js/vp-td-ep/glplate.js';
+import { TDX_CSS } from './js/vp-td-ep/style.js';
+const q = new URLSearchParams(location.search), key = q.get('k');
+const st = document.createElement('style'); st.textContent = TDX_CSS + (q.get('still') ? '.tdx .tdx-world{animation:none!important}' : ''); document.head.appendChild(st);
+const venue = key.split('/')[0];
+const w = document.querySelector('.tdx-world');
+let html = worldHtml({ venue, ep: +(q.get('ep') || 3) }, { scene: { plate: key, time: q.get('time') || '', tod: q.get('tod') || 'day' }, conf: false });
+if (q.get('grade')) html = html.replace(/data-grade="[a-z]+"/, `data-grade="${q.get('grade')}"`).replace(/tdx-sky g-[a-z]+/, `tdx-sky g-${q.get('grade')}`);
+w.innerHTML = html;
+if (q.get('zoom')) { document.getElementById('st').classList.add('push'); w.style.transform = 'translate(-40%,-30%) scale(2)'; }
+liveGL(w);
+window.ready = () => !!document.querySelector('canvas.tdx-gl.on');
+</script>

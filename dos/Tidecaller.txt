@@ -1,0 +1,50 @@
+Tidecaller
+
+The Strategy: The Everfrost Engine (Lohse Edition)
+
+Turn 1: The Human Advantage
+
+    Cast Encourage (1 AP): Use this first. It boosts your Intelligence and the primary stats of your teammates, increasing the damage of your entire elemental rotation and the lifesteal effectiveness for your physical allies.
+
+    Cast Rain (1 AP): Apply Wet to the field.
+
+    Cast Global Cooling (1 AP): Freeze the water for Elemental Affinity.
+
+    Cast Blessing of the North (2 AP): Set up the Water damage buff.
+
+    Note: If you have Adrenaline or Haste, use the extra AP for Hydrobrand here.
+
+Turn 2: The Hypothermia Shred
+
+    Cast Dampening Wave (1 AP): Lower enemy Magic Armor and Water Resistance.
+
+    Cast Hail Strike (2 AP): Target the Wet/Chilled enemies to apply Hypothermia (-10% Water Resistance).
+
+    Cast Arctic Blast (1 AP): Deliver the massive burst. With the resistance shred from the previous steps, this often strips the remaining Magic Armor from most enemies.
+
+Lohse’s Finisher: The Maddening Song
+
+    Cast Maddening Song (2 AP + 1 Source): This is your ultimate capstone. Once the "Hypothermia Shred" has destroyed the enemies' Magic Armor, use Lohse’s Source skill.
+
+    The Synergy: Any enemies not fully Frozen by your ice spells will now have the Mad status. Because they are standing on your ice, they will likely slip and lose turns while trying to move to attack their own allies. This creates a battlefield where the enemies are either frozen solid or violently confused.
+
+Defensive Rotation: The "Vitality Lock"
+
+In the event your team takes damage, Lohse’s human bonus to Critical Chance and her unique utility make her a high-priority target. Protect the "Engine" with this loop:
+
+    Cast Waters of Life: Increase Max Vitality for the team.
+
+    Cast Restoration: Heals for a percentage of that new, higher Max Vitality.
+
+    Cast Hydrotherapy (1 AP): If Lohse is focused, consume the ice surfaces at her feet to instantly regain Magic Armor and clear statuses like Necrofire or Burning.
+
+    Cast Frozen Bulwark: Drop this on the front-line ally who has Vampiric Hunger. They will chill attackers and heal themselves through damage, letting you return to your offensive rotation.
+
+Pro-Tip: The "Ice-Song" Combo
+
+By the time you reach Turn 3, the battlefield will be entirely covered in ice. Use Ice Fan to pick off any high-priority targets that resisted the initial freeze. Because Lohse’s Encourage is still active, your Hydrotherapy and Restoration will provide maximum recovery, ensuring the "Engine" stays running until every enemy is shattered.
+
+innate skills:encourage/maddening song/trident slide
+17 slots available
+this is all the skill they learned for the moment:
+vampiric hunger/armour of frost/bubblebeam/chilling touch/hail strike/hydrobrand/rain/restoration/artic blast/harsh current/ice fan/ice shard/soothing cold/winter blast/cleanse wounds/water of lifes!dampening wave/frozen bulwark/blessing of the north/ice wall/healing ritual/cryogenic stasis/global cooling/steam lance(2 memory slot)/hydrotherapy

@@ -1,0 +1,133 @@
+Terramancer:
+
+🪨 Beast – Terramancer Setup (14 Memory Slots)
+✅ Core Control & Surface Engine
+4
+
+Fossil Strike – Cheap oil + applies Oiled (lowers Earth resist) 
+
+Odinblade’s Geomancer Class Ove…
+
+Impalement – Strong AoE + Cripple
+
+Earthquake – Knockdown + Lost Footing utility 
+
+Odinblade’s Geomancer Class Ove…
+
+Vine Wall – Zone denial & battlefield control 
+
+Odinblade’s Geomancer Class Ove…
+
+Midnight Oil – Cheap oil surface + applies Oiled 
+
+Odinblade’s Geomancer Class Ove…
+
+These five create your surface → debuff → CC engine.
+
+✅ Damage Core (Earth Burst)
+
+Rock Volley – Reliable Earth damage
+
+Seismic Slide – Mobility + damage
+
+Reactive Armor – Huge AoE burst (synergises with Fortify) 
+
+Odinblade’s Geomancer Class Ove…
+
+Throw Dust – Cheap filler, good vs finesse 
+
+Odinblade’s Geomancer Class Ove…
+
+✅ Defense & Scaling
+4
+
+Fortify – Mandatory (armor scaling + Reactive Armor combo)
+
+Oily Carapace – Armor + cleanse + Fortified 
+
+Odinblade’s Geomancer Class Ove…
+
+Mend Metal – Team armor sustain + Slowed immunity 
+
+Odinblade’s Geomancer Class Ove…
+
+
+13–14. Nature’s Decree (2 slots) – Huge AoE control centerpiece
+
+This gives you:
+
+Sustain
+
+Massive physical armor scaling
+
+Surface abuse
+
+AoE lockdown
+
+Earth resistance shredding
+
+🎯 How You Play This Terramancer
+Opening Turn (Setup Phase)
+
+Midnight Oil → pre-oil cluster
+
+Fossil Strike → apply Oiled debuff
+
+Position with high ground
+
+You now:
+
+Lowered Earth resist
+
+Slowed enemies
+
+Prepared surfaces for follow-up
+
+Turn 2 (Break & Lock)
+
+Impalement to chunk armor
+
+Rock Volley
+
+When armor breaks → Earthquake
+
+Because Earthquake now applies Lost Footing even if they resist knockdown 
+
+Odinblade’s Geomancer Class Ove…
+
+, it’s strong even vs magic comps.
+
+Big Combo Turn (Armor Burst)
+
+Fortify yourself
+
+Oily Carapace if standing in oil
+
+Reactive Armor
+
+Reactive Armor now:
+
+Bigger AoE
+
+No ally damage
+
+Applies Bleed if no armor 
+
+Odinblade’s Geomancer Class Ove…
+
+This becomes a bruiser nuke.
+
+Nature’s Decree Usage
+
+Use this when:
+
+Enemies are clustered
+
+Physical armor is partially broken
+
+You need tempo control
+
+It’s your “control swing” button.
+
+i have 14 slots for:
+midnight oil/scorching ignition/oily carapace/earthbrand/fortify/fossil strike/oily touch/impalement/mend metal/rock volley/venom burst/vine grasp/corrosive touch/throw dust/earthquake/vine wall/granite plating/nature's decree/seismic slide/reactive armor/poison wave

@@ -1,0 +1,45 @@
+Constellationist
+
+### **The "Star-Lord" Strategy**
+
+The goal is to maintain at least one buffed "Super-Summon" on the field at all times while using your secondary AP to manipulate the battlefield.
+
+**Turn 1: The First Descent**
+
+* **Summon Sagittarius or Taurus (2–3 AP):** Choose based on the enemy's weakest armor.
+* *Low Physical Armor?* Call **Sagittarius** on high ground.
+* *Too many melee enemies?* Call **Taurus** directly in their path.
+
+
+* **Centaurus’s Touch (1 AP):** Use this immediately on your summon. This boosts their stats and ensures they survive their first round.
+* **Orion’s Arrow (1 AP):** Chip away at the specific armor type your summon is currently targeting.
+
+**Turn 2: The Celestial Shift**
+
+* **Summon Aquarius or Cancer (2–3 AP):** You are now **Weakened**, but you have two celestial spirits on the field.
+* **Aquarius** sets "Wet" for your mages.
+* **Cancer** provides defensive utility to keep you alive.
+
+
+* **Spirit Skills (0 AP):** Use the unique spells granted by your spirits. **Sagittarius** should focus on armor-shredding shots, while **Taurus** uses physical CC.
+* **Positioning:** Use your remaining movement to move away from the frontline. Your **Stench** talent will encourage enemies to hit your high-Constitution summons instead of you.
+
+---
+
+### **The "Emergency Swap" Pivot**
+
+If the battle turns against you, follow this reset loop:
+
+1. **Close the Gate (1 AP):** Unsummon a dying spirit. This removes the **Weaken** status from you and prevents the enemy from getting "Kill" bonuses.
+2. **Summon Virgo (2–3 AP):** Bring her in to heal yourself or your remaining spirit.
+3. **Reset:** Once stabilized, go back to Turn 1 and bring your heavy hitters back out.
+
+---
+
+### **Constellationist Pro-Tip: The "Leadership Anchor"**
+
+Because you are maxing **Summoning** and **Leadership**, your summons are significantly tankier when they are close to you. However, you have the **Stench** talent.
+
+**The Trick:** Stand about 5 meters behind your **Taurus**. You are close enough to give him the Leadership armor and resistance buffs, but because of Stench, the enemies will still choose to attack the bull instead of walking past him to get to you.
+
+Enough thinking—let the zodiac do the fighting.

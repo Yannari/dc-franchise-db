@@ -1,0 +1,29 @@
+Specter:
+
+The Strategy: The Soul Harvest
+
+Turn 1: The Mark of Death
+
+    Cast Unholy Ritual (1 AP): Start here to gain the Intelligence boost and prep the extra AP for Turn 2.
+
+    Cast Dreadfall (1 AP): Target the densest cluster of enemies. This sets the Dread status, shredding their Piercing resistance.
+
+    Cast Inflict Agony (1 AP): Mark your primary target.
+
+    Cast Tormented Volley (2 AP): If you have high ground or Haste, this will bring your target to 4 or 5 stacks of Agony immediately.
+
+Turn 2: The Core Collapse
+
+    Cast Seed of Malice (2 AP): Deliver the heavy blow. Since the target is already debuffed by Dread and Agony, this hits like a truck and spreads the misery to nearby foes.
+
+    Cast Soul Pierce (2 AP): Use this if you can line up multiple enemies. It will top off their Agony stacks.
+
+    Cast Purge (2 AP): The finisher. Detonate the 5 stacks on your primary target for a massive Piercing burst. This resets the cooldown of Inflict Agony.
+
+Spectre Pro-Tip: The "Torturer" Interaction
+
+Because you should be running the Torturer talent, your Agony stacks will tick damage against the enemy's Vitality even if they still have physical armor. By combining Dreadfall (which lowers Piercing resistance) with high stacks of Agony, you can effectively kill high-armor bosses without ever breaking their physical shield. Stack your Agony, use Ethereal Veil to vanish, and simply wait for the "Agony Engine" to finish them off on their own turns.
+
+
+i leveled up now i have 12 slot and these skills for my specter:
+mbonechill/dreadfall/essence bolt/ethereal veil/inflict agony/languish/purge/raise spectral banshee/riftwalk/tormented volley/unholy ritual/curse of vulnerability/pact of artillery/corruption/pact of brutality/seed of malice/soul pierce/underhanded bargain

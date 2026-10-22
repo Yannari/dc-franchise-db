@@ -1,0 +1,129 @@
+Im gonna give you my team in dos2 and files from a mod to redesign mage class in the game based on my data and these files you gonna design me a moveset and the strongest strategy i can do based on that moveset remember to respect the number of slots and dont go over (some moves ask multiple slots all the data are in the files):
+
+PS: Source Skills, Skills Innate and Skills from Items dont use any memory slots
+Specter:
+
+Available memory slots:
+19 Slots
+
+List of Learned Skills
+bonechill/dreadfall/essence bolt/ethereal veil/inflict agony/languish/purge/raise spectral banshee/riftwalk/tormented volley/unholy ritual/curse of vulnerability/pact of artillery/corruption/pact of brutality/seed of malice(2 memory slot)/soul pierce/underhanded bargain/Conduit of The Cruel/Cruel intent/Curse of Ineptness/Curse of Weakness/Merciful Resurrection/Pact of Immortality/Spread the Sickness
+
+Source skills:
+Dome of Protection
+Skills from Items:
+Spectral Throw
+
+
+Talent:Torturer/Executioner/Ingenious/Thrifty/Comeback Kid/Save Sortilege/Far-out Man
+
+Thunderlord:
+Available memory slots:
+26 Slots
+
+List of Learned Skills
+smoke cover/uncanny evasion/ volt swings/blinding radiance/conduit/electric discharge/overcast/shocking touch(skill from item so dont consume a slot)/thunderbrand/dazing bolt/erratic wisp/haze/volt assault/stormy below/graviportation/winds of change(skill from item so dont consume a slot)/netherswap/pressurise/tornado/conduction therapy/conjure wind elemental/insulation shield/lightning warp/turbulent wind/chain lightning(2 slots)/nimbus veil(2 slots)/closed circuit(2 slots)/evasive aura(2 slots)/thundering roar(2 slots)/vacuum touch/master of volts(2 slots)/repulsion blast/rolling thunder/thunder vault/Updraft
+
+Source skills:
+Summon Ifan Soul Wolf
+Skills from Items:
+Thunder Slam/winds of change/shocking touch
+
+Talent:Ingenious/Thrifty/Mnemonic/Executioner/Savage Sortilege/Far-out Man
+
+Constellationist: 
+Available memory slots:
+25 Slots
+
+List of Learned Skills
+Adrenaline/Andromeda's Chain/Caelum Assist/Centaurus Touch/Close the Gate/Corvu's Curse/Hydra's Fire/Lyra's Song/Orion's Arrow/Pegasus Celerity/Spread your wings/Aquarius(3 slots)/Cancer(3 slots)/Virgo(3 slots)/Taurus(3 slots)/Leo(3 slots)/Aries(3 slots)/Sagittarius(3 slots)/Capricorn(3 slots)
+
+
+Source skills:
+Break the Shackle/Flesh Sacrifice
+
+Skills Innate:
+Celestial Knowledge
+
+Talent:Ancestral Knowledge/Comeback Kid/Corpse Eater/Mnemonic/Stench
+
+Bloodtider:
+Available memory slots:
+24 Slots
+
+List of Learned Skills
+arcane volley/blood barrage/blood sucker/death wish/decaying touch/infect/mosquito swarm/mute/mystic rupture/oath of destruction/raining blood/raised bloated corpse/sanguine torrent/shackle of pain/unearth corpse/witches brew/raise undead elementalist/raise undead assassin/raise undead warrior/shallow grave/black shroud/bone cage/raise bone widow/living on the edge/locust plague/translocate/undead overlord/dispel undead/Grasp of the Starved/Last Rites/Arcane Punishment/Coagulated Armour/Ephemeral Interlude/Hemoplague/Raise Bone Golem/Ophidian Glare
+
+Source skills:
+Time Warp
+
+Skills Innate:
+Play Dead
+
+Talent:Elemental Affinity/Undead/Ingenious/Torturer/Savage Sortilege/Hothead
+
+Arsonist:
+Available memory slots:
+20 Slots
+
+List of Learned Skills
+burning touch/ember shower/firebrand/haste(skill from item so dont consume a slot)/ peace of mind/scorching ignition/searing volley/devour flames/fireball/magma geyser/self-immolation/spontaneous combustion/supernova/bleed fire/condemning explosion/fire-wwhip/epidemic of fire(2 slots)/laser ray/magma wall/will of the phoenix/sparking swings/sabotage/explosive trap/mass explosive trap/exquisite firecraft/mass condemning explosion/master of sparks/trailblazer/incineration/inflame/meteor strike/ragnarok/conjure fire slug/Mass Sabotage
+
+Source skills:
+Dragon's blaze/Demonic Stare
+
+Skills from Items:
+Roaring Strike/haste
+
+Talent:Elemental Affinity/Torturer/spellsong/Sophisticated/Savage Sortilege/Executioner
+
+Terramancer:
+Available memory slots:
+22 slots
+
+List of Learned Skills
+midnight oil/scorching ignition/oily carapace/earthbrand/fortify/fossil strike/oily touch/impalement/mend metal/rock volley/venom burst/vine grasp/corrosive touch/throw dust/earthquake/vine wall/granite plating/nature's decree/seismic slide/reactive armor/poison wave/adrenaline/artillery spores(2 slots)/corrosive spray(2 slots)/dust blast(2 slots)/mass oily carapace(2 slots)/boulder bash/expunge/natural remedy/song of the dryads/siphon poison/venomous aura(skill from item so dont consume a slot)/Shapeshift:Clay Sentinel
+
+Source skills:
+Petrifying Touch/Blinding Squall
+
+Skills from Items:
+venomous aura/whirlwind/all in
+
+Talent:Elemental Affinity/Dwarven Guile/Sturdy/Torturer/Savage Sortilege/Far-out Man
+
+Tidecaller:
+Available memory slots:
+26 Slots
+
+List of Learned Skills
+vampiric hunger/armour of frost/bubblebeam/chilling touch/hail strike/hydrobrand/rain/restoration(skill from item so dont consume a slot)/artic blast/harsh current/ice fan/ice shard/soothing cold/winter blast/cleanse wounds/water of lifes!dampening wave/frozen bulwark/blessing of the north/ice wall/healing ritual/cryogenic stasis/global cooling/steam lance(2 memory slot)/hydrotherapy/aegis assault/icy veins/rebuke/song of the seas/release the krakens/waterspout/whirlpool/arcane stitch/mass cleanse wounds(skill from item so dont consume a slot)/Vampiric Hunger Aura
+
+Source skills:
+Maddening Song
+
+Skills from Items:
+Trident Slide
+mass cleanse wounds
+restoration 
+
+Talent:Elemental Affinity/Mnemonic/Ingenious/Thrifty/Savage Sortilege/Far Out Man
+
+ORDER:
+[Spectre]
+   ↓ 
+[Thunderlord]
+   ↓ 
+[Constellationist]
+   ↓ 
+[Arsonist]
+   ↓ 
+[Bloodtider]
+   ↓ 
+[Terramancer]
+   ↓ 
+[Tidecaller]
+   
+Start with the spectre i gave you a excel containing all the explanation and detail(ap number, etc..., if a move demand more than 1 slot i precise it in the list of learned skill) for each moves so respect the ap for each turn too
+
+improve returning player twist

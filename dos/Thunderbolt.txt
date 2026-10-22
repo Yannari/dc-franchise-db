@@ -1,0 +1,28 @@
+Thunderbolt
+
+The "Storm's Eye" Strategy
+
+The Thunderlord wins by grouping enemies, priming one with electricity, and letting the "Conductive" forking mechanic do the work.
+
+Turn 1: The Gathering Storm
+
+    Buff (2 AP): Cast Thunderbrand and Volt Swings.
+
+    The Entry (2 AP): Use a mobility skill (like Tactical Retreat or Blitz Attack) to jump into the center of the enemy pack.
+
+    The Shield (2 AP): Cast Stormy Bellow. You are now immune to the stuns you are about to cause.
+
+Turn 2: The Chain Reaction
+
+    Prime (2 AP): Use Shocking Touch on the central enemy to set Conductive.
+
+    The Shred (2 AP): Fire Volt Assault or Electric Discharge into that target. The damage will fork to everyone nearby, melting their Magic Armor.
+
+    The Lockdown (2 AP): Cast Blinding Radiance. Since the armor is now shredded, everyone in the circle is Blinded and takes a final burst of Air damage.
+
+Thunderlord Pro-Tip: The "Forking" Multiplier
+
+When an enemy is Conductive, many of your spells (like Volt Assault) deal additional Air damage and fork that damage to enemies within 8m. This means the more enemies you pack together, the more "forks" are created. Use your teleportation skills on Turn 1 to stack enemies on top of each other before you unleash your Turn 2 combo.
+
+
+smoke cover/uncanny evasion/ volt swings/blinding radiance/conduit/electric discharge/overcast/shocking touch/thunderbrand/dazing bolt/erratic wisp/haze/volt assault/stormy below/graviportation/winds of change/netherswap/pressurise/tornado/conduction therapy/conjure wind elemental/insulation shield/lightning warp/turbulent wind/chain lightning(2 slots)/adrenaline/tactical retreat

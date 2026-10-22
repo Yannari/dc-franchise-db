@@ -1,0 +1,28 @@
+Bloodtide
+
+⚡ The Turn Sequence
+Pre-combat:
+
+Oath of Desecration on Fane (+10% damage)
+Arcane Volley to strip Magic Armour on priority targets
+
+Turn 1 (with Time Warp):
+
+Raining Blood (1 AP) — Blood everywhere, Decaying on enemies
+Death Wish (2 AP) — Self-buff active
+Blood Barrage (3 AP) — Sacrifice 15% HP, massive damage hits
+
+Time Warp Turn:
+4. Shackles of Pain (1 AP) — Bind to tankiest enemy
+5. Sanguine Torrent (3 AP) — Your remaining HP means massive Death Wish bonus; Shackles mirrors your sacrifice to your bound target
+6. Mystic Rupture (1 AP) — Debuff a surviving high-priority target
+
+The 1-HP Reaper Finisher:
+
+Cast Living on the Edge before going low
+Ride sacrifice spells down to 1 HP for maximum Death Wish
+Play Dead (Fane racial) if in danger — wait out the Decaying DoTs
+Blood Sucker next turn on a Blood surface → full HP reset, repeat
+
+15 slots
+arcane volley/blood barrage/blood sucker/death wish/decaying touch/infect/mosquito swarm/mute/mystic rupture/oath of destruction/raining blood/raised bloated corpse/sanguine torrent/shackle of pain/unearth corpse/witches brew/raise undead elementalist/raise undead assassin/raise undead warrior/shallow grave/black shroud/bone cage/raise bone widow/living on the edge/locust plague/translocate/undead overlord/dispel undead

@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ridonculous Race — Leg mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+/* MOCKUP — one leg of the Ridonculous Race, played like a visual novel on the user's own plates and cut-outs.
+   Scripted for the look and the pacing; the real leg is played by the engine. One click = one line. */
+:root{--ink:#0f1424;--paper:#fff8e6;--gold:#f7c948;--red:#e8433a;--hud:rgba(10,14,28,.78);--line:rgba(255,255,255,.14)}
+*{box-sizing:border-box}
+html,body{margin:0;background:#05070d;color:#fff;font-family:Rubik,system-ui,sans-serif}
+.wrap{max-width:1560px;margin:0 auto;padding:14px;display:grid;grid-template-columns:1fr 290px;gap:14px}
+@media (max-width:1000px){.wrap{grid-template-columns:1fr}}
+.stage{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:14px;background:#000;cursor:pointer;
+  box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px var(--line);container-type:inline-size;user-select:none}
+.plate{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .7s ease}
+.plate.on{opacity:1}
+.plate.kb-in{animation:kbIn 16s ease-out forwards} .plate.kb-pan{animation:kbPan 16s ease-in-out forwards}
+.plate{will-change:opacity,transform}
+@keyframes kbIn{from{transform:scale(1.02)}to{transform:scale(1.12)}}
+@keyframes kbPan{from{transform:scale(1.1) translateX(2%)}to{transform:scale(1.1) translateX(-2%)}}
+.layer{position:absolute;inset:0}
+#cam{position:absolute;inset:0;transform-origin:0 0;transition:transform 1.1s cubic-bezier(.45,.05,.2,1);will-change:transform}
+#ui{z-index:40;pointer-events:none}
+.vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.45))}
+
+/* HUD */
+.hud-leg{position:absolute;left:2cqw;top:1.8cqw;display:flex;align-items:center;gap:1cqw;z-index:20}
+.hud-leg .num{font-family:Bungee;font-size:1.9cqw;background:#08080e;color:#ffc21f;padding:.3cqw .9cqw;border-radius:.6cqw;transform:rotate(-3deg);box-shadow:0 0 0 .2cqw #5cc8ff,0 0 1cqw rgba(60,170,255,.7);text-shadow:0 .15cqw 0 #6a2200}
+.hud-leg .name{font-family:Bungee;font-size:1.45cqw;letter-spacing:.06em;text-shadow:0 .25cqw 0 rgba(0,0,0,.6)}
+.hud-task{position:absolute;right:2cqw;top:1.8cqw;font-family:Bungee;font-size:1.25cqw;padding:.45cqw 1.1cqw;border-radius:99px;
+  background:var(--hud);border:2px solid #8fb4ff;z-index:20;opacity:0;transform:translateY(-1cqw);transition:all .4s}
+.hud-task.on{opacity:1;transform:none}
+
+/* the dialogue box: visual-novel style, one line per click */
+.vn{position:absolute;left:2cqw;right:2cqw;bottom:1.6cqw;height:11.5cqw;z-index:50;display:none;
+  background:linear-gradient(180deg,rgba(14,19,38,.92),rgba(8,11,24,.96));border:2px solid var(--line);border-radius:1.4cqw;
+  box-shadow:0 1.2cqw 3cqw rgba(0,0,0,.55)}
+.vn.on{display:block;animation:vnIn .25s ease-out}
+.vn::before{content:"";position:absolute;left:0;top:0;bottom:0;width:.6cqw;border-radius:1.4cqw 0 0 1.4cqw;background:var(--c,var(--gold))}
+.vn .av{position:absolute;bottom:2.2cqw;width:13cqw;height:13cqw;border-radius:50%;object-fit:cover;border:.55cqw solid var(--c,var(--gold));
+  background:#222;box-shadow:0 0 0 .3cqw #0b0f1e,0 1cqw 2cqw rgba(0,0,0,.5)}
+.vn.left .av{left:1.6cqw} .vn.right .av{right:1.6cqw}
+.vn .av.pop{animation:avPop .3s cubic-bezier(.2,1.6,.4,1)}
+.vn .tx{position:absolute;top:1.2cqw;bottom:1cqw}
+.vn.left .tx{left:16.5cqw;right:2.5cqw} .vn.right .tx{left:2.5cqw;right:16.5cqw}
+.vn.vn-iv .tx{left:2.5cqw;right:2.5cqw}
+.vn .nm{display:inline-block;font-family:Bungee;font-size:1.25cqw;letter-spacing:.04em;color:#0b0f1e;background:var(--c,var(--gold));padding:.15cqw .8cqw;border-radius:.5cqw}
+.vn .tm{font:800 .85cqw Rubik;color:#9fb3d9;margin-left:.7cqw;letter-spacing:.1em;text-transform:uppercase}
+.vn .ln{font-size:1.75cqw;line-height:1.38;margin-top:.55cqw}
+.vn .more{position:absolute;right:1.4cqw;bottom:.8cqw;font-size:1.1cqw;color:var(--gold);animation:blink 1s infinite}
+@keyframes vnIn{from{opacity:0;transform:translateY(1cqw)}to{opacity:1;transform:none}}
+@keyframes avPop{from{transform:scale(.7)}to{transform:none}}
+@keyframes blink{50%{opacity:.2}}
+
+/* teams on the plates: avatar pairs */
+.ppl{position:absolute;transform:translate(-50%,-50%);z-index:10;text-align:center;pointer-events:none}
+.ppl img{display:block;width:var(--sz);height:var(--sz);border-radius:50%;border:calc(var(--sz)*.06) solid var(--c);object-fit:cover;background:#222;
+  box-shadow:0 .8cqw 1.6cqw rgba(0,0,0,.45);animation:idle 2.8s ease-in-out infinite;animation-delay:var(--d,0s)}
+.ppl .lab{display:inline-block;margin-top:.3cqw;font:800 calc(var(--sz)*.09) Rubik;background:var(--c);color:#0b0b14;padding:.05cqw .6cqw;border-radius:99px}
+.ppl.speaking img{animation:talk .55s ease-in-out infinite}
+.inset{position:absolute;left:2cqw;top:6.5cqw;z-index:30;background:rgba(10,14,28,.82);border:2px solid var(--line);border-radius:1.2cqw;padding:.8cqw 1cqw;display:flex;gap:1cqw;align-items:flex-end}
+.inset h4{position:absolute;left:1cqw;top:-1.1cqw;margin:0;font-family:Bungee;font-weight:400;font-size:.9cqw;background:#0f1424;color:#9fd8ff;padding:.1cqw .6cqw;border-radius:.4cqw}
+.inset .ppl{position:relative;transform:none}
+.tok{position:absolute;width:6cqw;transform:translate(-50%,-100%);z-index:10;text-align:center}
+.tok.big{width:12cqw} .tok.big .pair{height:8cqw} .tok.big .pair img{width:8cqw;height:8cqw} .tok.big .pair img:last-child{left:4cqw} .tok.big .lab{font-size:1.15cqw}
+.tok{width:7.5cqw} .tok .pair{position:relative;height:5cqw;filter:drop-shadow(0 .4cqw .3cqw rgba(0,0,0,.5))}
+.tok .pair img{position:absolute;top:0;width:5cqw;height:5cqw;border-radius:50%;border:.28cqw solid var(--c);background:#222;object-fit:cover}
+.tok .pair img:first-child{left:0} .tok .pair img:last-child{left:2.5cqw}
+.tok .lab{display:inline-block;margin-top:.25cqw;font:800 .85cqw Rubik;background:var(--c);color:#0b0b14;padding:.05cqw .55cqw;border-radius:99px;white-space:nowrap}
+.tok.out .pair img{filter:grayscale(1) brightness(.7)} .tok.out .lab{background:#777}
+.tok .bubble{position:absolute;left:50%;top:-2.6cqw;transform:translateX(-50%);background:#fff;color:var(--ink);font:800 1cqw Rubik;
+  padding:.15cqw .6cqw;border-radius:1cqw;white-space:nowrap;animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+.tok .rank{position:absolute;right:-.6cqw;top:-1cqw;font-family:Bungee;font-size:1.05cqw;background:var(--paper);color:var(--red);border:.22cqw solid var(--red);
+  border-radius:.5cqw;padding:0 .4cqw;transform:rotate(10deg);animation:thump .4s cubic-bezier(.2,1.8,.4,1) both}
+.tok .rank.gold{color:#9a6400;border-color:#c98b00}
+.shadow{position:absolute;left:50%;bottom:-.5cqw;width:4.6cqw;height:.9cqw;transform:translateX(-50%);background:radial-gradient(rgba(0,0,0,.45),transparent 70%)}
+.tok .pair img{animation:idle 2.6s ease-in-out infinite;animation-delay:var(--d,0s)}
+.tok .pair img:last-child{animation-delay:calc(var(--d,0s) - 1.1s)}
+.tok.speaking .pair img{animation:talk .55s ease-in-out infinite}
+.don-here.idle{animation:idleDon 3s ease-in-out infinite}
+.vn .av{animation:breathe 3.2s ease-in-out infinite}
+@keyframes idle{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-.25cqw) rotate(-2deg)}65%{transform:translateY(.1cqw) rotate(1.5deg)}}
+@keyframes idleDon{0%,100%{transform:translate(-50%,-100%)}50%{transform:translate(-50%,-100%) translateY(-.3cqw) rotate(-2deg)}}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
+@keyframes talk{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-.45cqw) rotate(-3deg)}}
+
+/* props and cards: the user's cut-outs */
+.prop{position:absolute;transform:translate(-50%,-100%);z-index:11;filter:drop-shadow(0 .6cqw .5cqw rgba(0,0,0,.45))}
+.tipcard{position:absolute;left:50%;top:4.5cqw;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:0;animation:cardIn .7s cubic-bezier(.2,.9,.3,1.25) both}
+.tipcard .card{height:32cqw;filter:drop-shadow(0 1.5cqw 2cqw rgba(0,0,0,.55));transform:rotate(-6deg);z-index:2}
+.tipcard .in{width:36cqw;margin-left:-2cqw;background:#eef4ff;color:var(--ink);border-radius:1cqw;padding:1.6cqw 1.8cqw 1.6cqw 3cqw;
+  box-shadow:0 1.5cqw 3cqw rgba(0,0,0,.5);border:.3cqw solid #0f1424;display:flex;flex-direction:column;gap:.8cqw}
+.tipcard .k{font-family:Bungee;font-size:2.4cqw;line-height:1.05;color:#2c4a9a}
+.tipcard .b{font:600 1.35cqw/1.4 Rubik}
+.tipcard .o{font:600 1.15cqw/1.35 Rubik;background:#c9d9ff;border-radius:.6cqw;padding:.5cqw .8cqw}
+.tipcard .o b{display:block;font-family:Bungee;font-weight:400;font-size:1.4cqw}
+.boom{position:absolute;left:50%;top:40%;width:40cqw;transform:translate(-50%,-50%);z-index:40;animation:boomIn .8s cubic-bezier(.2,1.4,.4,1) both}
+.boom img{width:100%;filter:drop-shadow(0 1.4cqw 2cqw rgba(0,0,0,.55))}
+.boom .t{position:absolute;left:0;right:0;top:-5cqw;text-align:center;font-family:Bungee;font-size:4cqw;color:#fff;text-shadow:0 .5cqw 0 #7a0f0a}
+@keyframes cardIn{from{transform:translateX(-50%) translateY(40cqw) rotate(-14deg) scale(.4);opacity:0}to{opacity:1}}
+@keyframes boomIn{from{transform:translate(-50%,-50%) rotate(-540deg) scale(.1);opacity:0}to{opacity:1}}
+
+/* title, stamps, fx */
+.title{position:absolute;left:0;right:0;top:12%;text-align:center;z-index:25;pointer-events:none}
+.title .globe{position:absolute;left:50%;top:-1cqw;width:30cqw;transform:translateX(-50%);filter:drop-shadow(0 0 1.2cqw #49b8ff);animation:globeIn .8s cubic-bezier(.2,1.3,.4,1) both}
+.title .stack{position:relative;padding-top:6.5cqw}
+.title .pre{display:inline-block;background:#f4f8ff;color:#1b5fd6;font:800 1.45cqw Rubik;letter-spacing:.06em;padding:.25cqw 1.2cqw;border-radius:.5cqw;animation:fade .5s .2s both}
+.title .band{display:inline-block;margin-top:.8cqw;background:#08080e;border-radius:1.4cqw;padding:.5cqw 2.6cqw .9cqw;
+  box-shadow:0 0 0 .3cqw #0c0c14,0 0 0 .55cqw #5cc8ff,0 0 2.4cqw .6cqw rgba(60,170,255,.75);animation:slam .7s cubic-bezier(.2,1.6,.4,1) both}
+.title .logo{width:44cqw;filter:drop-shadow(0 1cqw 2cqw rgba(0,0,0,.5));animation:slam .8s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes globeIn{from{transform:translateX(-50%) scale(.3) rotate(-90deg);opacity:0}to{opacity:1}}
+.title .big{font-family:Bungee;font-size:6cqw;line-height:1;background:linear-gradient(#fff36a 10%,#ffc21f 45%,#ff7a0a 85%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:.16cqw #4a1300;filter:drop-shadow(0 .35cqw 0 #3a0e00)}
+.title .sub{font:800 1.4cqw Rubik;letter-spacing:.3em;text-transform:uppercase;margin-top:1.3cqw;animation:fade .6s .5s both;text-shadow:0 .2cqw .6cqw #000,0 0 1cqw #000}
+@keyframes slam{from{transform:scale(2.6) rotate(-6deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pop{from{transform:translateX(-50%) scale(0)}to{transform:translateX(-50%) scale(1)}}
+.stamp{position:absolute;font-family:Bungee;color:var(--red);border:.45cqw solid var(--red);border-radius:.8cqw;padding:.2cqw 1cqw;font-size:2.4cqw;
+  transform:translate(-50%,-50%) rotate(-12deg);z-index:35;background:rgba(255,248,230,.92);animation:thump .45s cubic-bezier(.2,1.8,.4,1) both}
+.stamp.gold{color:#9a6400;border-color:#c98b00} .stamp.huge{font-size:6cqw;border-width:.8cqw}
+@keyframes thump{from{transform:translate(-50%,-50%) rotate(-12deg) scale(3);opacity:0}to{opacity:1}}
+.flash{position:absolute;inset:0;z-index:28;pointer-events:none;background:radial-gradient(circle at var(--x) var(--y),#fff6c0,#ff8a1f 25%,transparent 60%);animation:flash 1s ease-out forwards}
+@keyframes flash{0%{opacity:0}12%{opacity:1}100%{opacity:0}}
+.ember{position:absolute;width:.7cqw;height:.7cqw;border-radius:50%;background:#ffb02e;box-shadow:0 0 1cqw #ff6a00;z-index:27}
+.drop{position:absolute;width:.6cqw;height:.8cqw;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#e9fbff;box-shadow:0 0 .4cqw #fff;z-index:12}
+.wake{position:absolute;height:1.2cqw;border-radius:50%;border:.18cqw solid rgba(255,255,255,.75);z-index:9;transform:translate(-50%,-50%)}
+.swim{position:absolute;transform:translate(-50%,-50%);z-index:10;text-align:center}
+.swim img{width:4.2cqw;height:4.2cqw;border-radius:50%;border:.3cqw solid var(--c);animation:bob .7s ease-in-out infinite}
+.swim .lab{display:block;font:800 .8cqw Rubik;background:var(--c);color:#0b0b14;border-radius:99px;padding:0 .4cqw;margin-top:.1cqw}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-.5cqw) rotate(6deg)}}
+.statue{position:absolute;transform:translate(-50%,-100%);z-index:9;width:5cqw}
+.statue img{width:100%;display:block;filter:drop-shadow(0 .4cqw .4cqw rgba(0,0,0,.45))}
+.statue .bar{height:.55cqw;background:rgba(0,0,0,.5);border-radius:99px;margin-top:.3cqw;overflow:hidden}
+.statue .bar i{display:block;height:100%;background:var(--c);width:0}
+.log{position:absolute;width:3cqw;height:.9cqw;background:linear-gradient(#7a4b2a,#4a2b16);border:.15cqw solid #2a160a;border-radius:.45cqw;z-index:13}
+.split{position:absolute;inset:0;z-index:2}
+.split .half{position:absolute;inset:0;background-size:cover;background-position:center}
+.split .l{clip-path:polygon(0 0,56% 0,44% 100%,0 100%)} .split .r{clip-path:polygon(56% 0,100% 0,100% 100%,44% 100%)}
+.split .seam{position:absolute;inset:0;background:linear-gradient(97deg,transparent 49.4%,#fff 49.5% 50.5%,transparent 50.6%)}
+.split .tagL,.split .tagR{position:absolute;top:8cqw;font-family:Bungee;font-size:3.2cqw;text-shadow:0 .4cqw 0 rgba(0,0,0,.6)}
+.split .tagL{left:6cqw;color:#ffb02e} .split .tagR{right:6cqw;color:#bff3ff}
+.fboard{position:absolute;right:3cqw;top:7cqw;width:44cqw;z-index:24;background:#111522;border:.3cqw solid #2a3354;border-radius:1cqw;padding:1cqw 1.2cqw;font-family:Bungee;box-shadow:0 2cqw 4cqw rgba(0,0,0,.5);animation:fade .4s both}
+.fboard h4{margin:0 0 .6cqw;font-weight:400;font-size:1.15cqw;color:var(--gold)}
+.fboard .fl{display:grid;grid-template-columns:7cqw 1fr 6cqw;gap:.8cqw;align-items:center;padding:.6cqw 0;border-top:1px solid #2a3354;font-size:1.1cqw}
+.fboard .fl .t{color:#ffcf3f} .fboard .fl .who{font:800 1cqw Rubik;color:#dfe6ff} .fboard .fl .st{font-size:.9cqw;text-align:right;color:#4fd18b} .fboard .fl .st.late{color:#ff6b5e}
+.clock{position:absolute;transform:translate(-50%,0);z-index:12;font-family:Bungee;font-size:1cqw;background:#0f1424;color:#ffcf3f;padding:.1cqw .6cqw;border-radius:.4cqw;border:1px solid #ffcf3f;animation:fade .3s both}
+
+/* the interview room */
+.iv{position:absolute;inset:0;z-index:45;background:#06101f url(rr-leg/confess.webp) 48% 40%/135% auto no-repeat;animation:ivIn .35s ease-out both;overflow:hidden}
+.iv .compass{position:absolute;left:3.5cqw;top:22cqw;width:10cqw;opacity:.75}
+.iv .cf{position:absolute;top:7.5cqw;width:24cqw;height:24cqw;transform:translateX(-50%);animation:ivSit .5s cubic-bezier(.2,1.3,.4,1) both}
+.iv .cf img{width:100%;height:100%;border-radius:50%;object-fit:cover;border:.55cqw solid var(--c);background:#0d1a2c;
+  box-shadow:0 0 0 .35cqw #07101d,0 2cqw 4cqw rgba(0,0,0,.55);animation:idle 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+.iv .cf.speaking img{animation:talk .55s ease-in-out infinite}
+.iv .cf:not(.speaking) img{filter:brightness(.92)}
+.iv .cf.L{left:31%} .iv .cf.R{left:67%;animation-delay:.08s} .iv .cf.solo{left:50%}
+.iv .lower{position:absolute;left:0;top:29.5cqw;width:60%;height:6.6cqw;background:linear-gradient(90deg,rgba(120,200,110,.18),rgba(120,200,110,.42));
+  border-radius:0 .7cqw .7cqw 0;text-align:right;padding:.7cqw 1.6cqw 0 0;box-sizing:border-box;animation:lowerIn .5s .35s cubic-bezier(.2,1,.3,1) both,lowerOut .5s 5.5s ease-in forwards}
+.iv .lower .nm{font:600 1.75cqw Rubik;color:#c9dbe0;letter-spacing:.02em;line-height:1.1}
+.iv .lower .tm{font-family:Bungee;font-size:2.5cqw;line-height:1.05;color:#d7dde2;-webkit-text-stroke:.08cqw #6f8a90}
+@keyframes ivIn{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+@keyframes ivSit{from{transform:translateX(-50%) translateY(6cqw);opacity:0}to{transform:translateX(-50%);opacity:1}}
+@keyframes lowerIn{from{transform:translateX(-100%)}to{transform:none}}
+@keyframes lowerOut{to{transform:translateX(-100%)}}
+
+/* the travel map: the show's own, with its plane; the route and the plane zoom with the map */
+.mapwrap{position:absolute;inset:0;transform-origin:15% 40%;animation:mapZoom 14s ease-out forwards}
+.mapbg{position:absolute;inset:0;background:url(rr-leg/worldmap.webp) center/cover}
+.plane{position:absolute;width:2.6cqw;transform:translate(-50%,-50%);z-index:5;filter:drop-shadow(0 0 .5cqw #ffe36b);opacity:0}
+.pin{position:absolute;width:1.1cqw;height:1.1cqw;border-radius:50%;background:#ffe36b;box-shadow:0 0 1cqw #ffe36b;transform:translate(-50%,-50%);z-index:4}
+.pinlab{position:absolute;transform:translate(1.2cqw,-50%);font-family:Bungee;font-size:.9cqw;color:#fff;text-shadow:0 .15cqw 0 #000;white-space:nowrap;z-index:4}
+@keyframes mapZoom{from{transform:scale(1)}to{transform:scale(1.12)}}
+
+/* sidebar */
+.side{background:#0c1120;border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column}
+.side h3{margin:0 0 4px;font-family:Bungee;font-weight:400;font-size:15px;letter-spacing:.05em;color:var(--gold)}
+.side .sub{font-size:12px;color:#8b95b3;margin-bottom:12px}
+.board{position:relative;height:calc(6 * 64px)}
+.row{position:absolute;left:0;right:0;height:58px;display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:10px;
+  background:#141b31;border:1px solid var(--line);transition:top .7s cubic-bezier(.3,1.3,.5,1),opacity .4s,filter .4s}
+.row .rk{font-family:Bungee;font-size:20px;width:26px;text-align:center;color:#c9d2ef}
+.row .pp{position:relative;width:54px;height:36px;flex:none}
+.row .pp img{position:absolute;top:0;width:36px;height:36px;border-radius:50%;border:3px solid var(--c);object-fit:cover}
+.row .pp img:last-child{left:18px}
+.row .nm{font-weight:800;font-size:14px} .row .st{font-size:12px;color:#8fa0c8}
+.row.out{filter:grayscale(1);opacity:.55} .row.lead{background:linear-gradient(90deg,rgba(247,201,72,.18),#141b31)}
+.ctrl{display:flex;gap:8px;margin-top:auto;padding-top:14px}
+.ctrl button{flex:1;font:800 14px Rubik;padding:10px;border-radius:10px;border:0;background:#1d2747;color:#fff;cursor:pointer}
+.ctrl button.go{background:var(--gold);color:var(--ink)}
+.step{font-size:12px;color:#8b95b3;margin-top:8px;text-align:center}
+.note{grid-column:1/-1;font-size:13px;color:#8b95b3;line-height:1.5} .note b{color:#cfd8f3}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="heat"><feTurbulence type="fractalNoise" baseFrequency="0.01 0.04" numOctaves="2" seed="3">
+    <animate attributeName="baseFrequency" dur="6s" values="0.01 0.04;0.012 0.05;0.01 0.04" repeatCount="indefinite"/></feTurbulence>
+    <feDisplacementMap in="SourceGraphic" scale="9"/></filter>
+  <filter id="wave"><feTurbulence type="fractalNoise" baseFrequency="0.004 0.02" numOctaves="1" seed="8">
+    <animate attributeName="baseFrequency" dur="9s" values="0.004 0.02;0.005 0.026;0.004 0.02" repeatCount="indefinite"/></feTurbulence>
+    <feDisplacementMap in="SourceGraphic" scale="5"/></filter>
+</svg>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <div id="cam"><div class="plate" id="pA"></div><div class="plate" id="pB"></div>
+    <div class="layer" id="under"></div>
+    <div class="layer" id="toks"></div>
+    <div class="layer" id="fx"></div></div>
+    <div class="vignette"></div>
+    <div class="layer" id="ui"></div>
+    <div class="hud-leg"><span class="num">LEG 7</span><span class="name">FIRE-MOUNTAIN ISLE</span></div>
+    <div class="hud-task" id="task"></div>
+    <div class="vn" id="vn"><img class="av" id="vnAv" alt=""><div class="tx"><span class="nm" id="vnNm"></span><span class="tm" id="vnTm"></span><div class="ln" id="vnLn"></div></div><div class="more">▼</div></div>
+  </div>
+  <aside class="side">
+    <h3>STANDINGS</h3>
+    <div class="sub">Leg 7 of 12 · 6 teams left</div>
+    <div class="board" id="board"></div>
+    <div class="ctrl"><button id="prev">◀ Scene</button><button id="auto">▶ Auto</button><button class="go" id="next">Next ▶</button></div>
+    <div class="step" id="stepN"></div>
+  </aside>
+  <div class="note"><b>Mockup.</b> Click the picture (or Space / →) for the next line; ◀ goes back a scene. Plates: your edits, sharpened with Real-ESRGAN.
+    Travel map, plane, Don Box, Travel Tips, Boomerang card and Chill Zone mat: your cut-outs. Scripted for the look; the real leg is played by the engine.</div>
+</div>
+
+<script>
+const IMG = n => `rr-leg/${n}.webp`, P = n => `rr-leg/p/${n}.webp`;
+const TEAMS = {
+  ice:  {name:'Ice Dancers',  a:'jacques', b:'josee',  c:'#b78cff'},
+  sis:  {name:'Sisters',      a:'emma',    b:'kitty',  c:'#ff6fae'},
+  surf: {name:'Surfer Dudes', a:'geoff',   b:'brody',  c:'#39c0ff'},
+  fs:   {name:'Father & Son', a:'dwayne',  b:'junior', c:'#ffb020'},
+  goth: {name:'Goths',        a:'crimson', b:'ennui',  c:'#c4c4d4'},
+  bff:  {name:'BFFs',         a:'carrie',  b:'devin',  c:'#4fd18b'},
+};
+const WHO = {}; Object.entries(TEAMS).forEach(([id,t])=>{ WHO[t.a]=id; WHO[t.b]=id; });
+const NAME = {josee:'Josée'};
+const keyOf = who => who.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const $ = id => document.getElementById(id);
+const stage=$('stage'), toksL=$('toks'), fxL=$('fx'), underL=$('under'), uiL=$('ui'), cam=$('cam');
+let timers=[], flip=false;
+
+/* ---------- building blocks ---------- */
+function later(ms, fn){ timers.push(setTimeout(fn, ms)); }
+function plate(name, cls=''){
+  const a = flip ? $('pA') : $('pB'), b = flip ? $('pB') : $('pA'); flip=!flip;
+  a.className='plate'; a.style.backgroundImage = name ? `url(${IMG(name)})` : 'none';
+  void a.offsetWidth; a.className='plate on '+cls; b.classList.remove('on');
+  const old=b; later(800, ()=>{ if(!old.classList.contains('on')) old.className='plate'; });
+}
+function task(t){ const e=$('task'); e.textContent=t||''; e.classList.toggle('on', !!t); }
+function tok(id, x, y, big){
+  const t=TEAMS[id], e=document.createElement('div');
+  e.className='tok'+(big?' big':''); e.id='tok-'+id; e.style.setProperty('--c', t.c); e.style.setProperty('--d', (Math.random()*-2.6).toFixed(2)+'s'); e.style.left=x+'%'; e.style.top=y+'%';
+  e.innerHTML=`<div class="pair"><img src="${P(t.a)}"><img src="${P(t.b)}"></div><div class="shadow"></div><div class="lab">${t.name}</div>`;
+  toksL.appendChild(e); return e;
+}
+function walk(e, pts, dur, {delay=0, hop=false}={}){
+  const kf=[];
+  pts.forEach((p,i)=>{
+    if(hop && i){ const q=pts[i-1]; kf.push({left:(q[0]+p[0])/2+'%', top:(q[1]+p[1])/2+'%', transform:'translate(-50%,-100%) translateY(-3cqw)'}); }
+    kf.push({left:p[0]+'%', top:p[1]+'%', transform:'translate(-50%,-100%)'});
+  });
+  return e.animate(kf, {duration:dur, delay, fill:'forwards', easing: hop?'linear':'ease-in-out'});
+}
+/* one person, sized for what they are doing. In the world (#toks) unless an inset is given. */
+function person(key, x, y, sz=10, into){
+  const team=WHO[key], e=document.createElement('div'); e.className='ppl'; e.id='p-'+key;
+  e.style.setProperty('--c', TEAMS[team].c); e.style.setProperty('--sz', sz+'cqw'); e.style.setProperty('--d', (Math.random()*-2.8).toFixed(2)+'s');
+  if(!into){ e.style.left=x+'%'; e.style.top=y+'%'; }
+  e.innerHTML=`<img src="${P(key)}"><span class="lab">${(NAME[key]||key[0].toUpperCase()+key.slice(1))}</span>`;
+  (into||toksL).appendChild(e); return e;
+}
+/* a reaction inset: the people watching from somewhere else, on screen while they talk */
+function inset(title, keys, sz=5.5){ const b=document.createElement('div'); b.className='inset'; b.innerHTML=`<h4>${title}</h4>`; uiL.appendChild(b); keys.forEach(k=>person(k,0,0,sz,b)); return b; }
+function bubble(e, txt){ if(!e) return; const b=document.createElement('div'); b.className='bubble'; b.textContent=txt; e.appendChild(b); later(2600, ()=>b.remove()); }
+function stamp(x, y, txt, cls=''){ const s=document.createElement('div'); s.className='stamp '+cls; s.style.left=x+'%'; s.style.top=y+'%'; s.textContent=txt; uiL.appendChild(s); return s; }
+function embers(x, y, n, color){
+  for(let i=0;i<n;i++){ const m=document.createElement('div'); m.className='ember'; if(color) m.style.background=color;
+    m.style.left=x+'%'; m.style.top=y+'%'; fxL.appendChild(m);
+    const a=Math.random()*Math.PI*2, r=6+Math.random()*16;
+    m.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${Math.cos(a)*r}cqw,${Math.sin(a)*r-6}cqw)`,opacity:0}],{duration:900+Math.random()*700,easing:'cubic-bezier(.2,.7,.4,1)',fill:'forwards'}).finished.then(()=>m.remove()); }
+}
+function flash(x, y){ const f=document.createElement('div'); f.className='flash'; f.style.setProperty('--x',x+'%'); f.style.setProperty('--y',y+'%'); fxL.appendChild(f); embers(x,y,26); }
+/* water: droplets up and out, a ring left behind */
+function splash(x, y, n=10){
+  for(let i=0;i<n;i++){ const d=document.createElement('div'); d.className='drop'; d.style.left=x+'%'; d.style.top=y+'%'; fxL.appendChild(d);
+    const dx=(Math.random()-.5)*7, up=2+Math.random()*4;
+    d.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx/2}cqw,-${up}cqw)`,offset:.45},{transform:`translate(${dx}cqw,1cqw) scale(.6)`,opacity:0}],{duration:650+Math.random()*300,easing:'ease-out',fill:'forwards'}).finished.then(()=>d.remove()); }
+  const w=document.createElement('div'); w.className='wake'; w.style.left=x+'%'; w.style.top=(y+1.5)+'%'; fxL.appendChild(w);
+  w.animate([{width:'2cqw',opacity:.9},{width:'9cqw',opacity:0}],{duration:1100,fill:'forwards'}).finished.then(()=>w.remove());
+}
+function prop(src, x, y, w, z=11){ const p=document.createElement('img'); p.className='prop'; p.src=src; p.style.left=x+'%'; p.style.top=y+'%'; p.style.width=w+'cqw'; p.style.zIndex=z; fxL.appendChild(p); return p; }
+function donBox(x, y, drop=true){
+  const d=prop(IMG('c-donbox'), x, y, 3.4); d.id='donbox';
+  if(drop) d.animate([{transform:'translate(-50%,-260%)'},{transform:'translate(-50%,-92%)',offset:.7},{transform:'translate(-50%,-104%)',offset:.85},{transform:'translate(-50%,-100%)'}],{duration:900,easing:'ease-in',fill:'forwards'});
+  return d;
+}
+function tipOut(){ const d=$('donbox'); if(d){ d.src=IMG('c-donbox-tip'); d.animate([{transform:'translate(-50%,-100%) scale(1)'},{transform:'translate(-50%,-100%) scale(1.12,.92)'},{transform:'translate(-50%,-100%) scale(1)'}],{duration:350}); } }
+function tipCard(kind, body, opts=[]){
+  const c=document.createElement('div'); c.className='tipcard';
+  c.innerHTML=`<img class="card" src="${IMG('c-tip')}"><div class="in"><div class="k">${kind}</div><div class="b">${body}</div>${opts.map(o=>`<div class="o"><b>${o[0]}</b>${o[1]}</div>`).join('')}</div>`;
+  uiL.appendChild(c); return c;
+}
+function mat(x, y, w){ const m=document.createElement('img'); m.src=IMG('c-mat'); m.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${w}cqw;transform:translate(-50%,-50%);z-index:3;filter:drop-shadow(0 .4cqw .3cqw rgba(0,0,0,.35))`; underL.appendChild(m);
+  m.animate([{transform:'translate(-50%,-50%) scale(0)'},{transform:'translate(-50%,-50%) scale(1.06)',offset:.7},{transform:'translate(-50%,-50%) scale(1)'}],{duration:700,easing:'ease-out',fill:'forwards'}); }
+function donAt(x, y){ const d=document.createElement('img'); d.src=P('don'); d.className='don-here idle'; d.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:6cqw;border-radius:50%;border:.35cqw solid var(--gold);transform:translate(-50%,-100%);z-index:9;box-shadow:0 .6cqw 1cqw rgba(0,0,0,.4)`; fxL.appendChild(d); }
+function rank(e, txt, gold){ const r=document.createElement('div'); r.className='rank'+(gold?' gold':''); r.textContent=txt; e.querySelector('.pair').appendChild(r); }
+function clock(x, y, txt, big){ const c=document.createElement('div'); c.className='clock'; c.style.left=x+'%'; c.style.top=y+'%'; if(big) c.style.fontSize='2.2cqw'; c.textContent=txt; fxL.appendChild(c); return c; }
+function swimmer(id, who, x, y){
+  const t=TEAMS[id], s=document.createElement('div'); s.className='swim'; s.id='sw-'+id; s.dataset.p=who; s.style.setProperty('--c',t.c); s.style.left=x+'%'; s.style.top=y+'%';
+  s.innerHTML=`<img src="${P(who)}"><span class="lab">${(NAME[who]||who[0].toUpperCase()+who.slice(1))}</span>`; toksL.appendChild(s); return s;
+}
+/* a swim: the swimmer crosses, splashing every stroke */
+function swim(s, from, to, dur, delay=0){
+  s.animate([{left:from[0]+'%',top:from[1]+'%'},{left:to[0]+'%',top:to[1]+'%'}],{duration:dur,delay,fill:'forwards',easing:'linear'});
+  const strokes=Math.floor(dur/380);
+  for(let k=0;k<strokes;k++) later(delay+k*380, ()=>{ const t=k/strokes; splash(from[0]+(to[0]-from[0])*t+1.6, from[1]+(to[1]-from[1])*t-1, 5); });
+}
+function flyLog(from, to, delay){
+  later(delay, ()=>{ const l=document.createElement('div'); l.className='log'; fxL.appendChild(l); const mid=[(from[0]+to[0])/2, Math.min(from[1],to[1])-14];
+    l.animate([{left:from[0]+'%',top:from[1]+'%',transform:'rotate(0)'},{left:mid[0]+'%',top:mid[1]+'%',transform:'rotate(200deg)'},{left:to[0]+'%',top:to[1]+'%',transform:'rotate(400deg) scale(.6)',opacity:0}],{duration:650,easing:'ease-in-out',fill:'forwards'}).finished.then(()=>l.remove()); });
+}
+function statue(id, x, y, prog){
+  const s=document.createElement('div'); s.className='statue'; s.id='st-'+id; s.style.left=x+'%'; s.style.top=y+'%'; s.style.setProperty('--c',TEAMS[id].c);
+  s.innerHTML=`<img src="${IMG('log-statue')}" style="clip-path:inset(${(1-prog)*100}% 0 0 0);transition:clip-path 2.6s ease-out"><div class="bar"><i style="width:${prog*100}%;transition:width 2.6s ease-out"></i></div>`;
+  underL.appendChild(s); return s;
+}
+function grow(s, prog){ s.querySelector('img').style.clipPath=`inset(${(1-prog)*100}% 0 0 0)`; s.querySelector('.bar i').style.width=prog*100+'%'; }
+function throwStatue(){
+  const s=document.createElement('img'); s.src=IMG('log-statue'); s.style.cssText='position:absolute;width:4cqw;z-index:26;left:18%;top:72%;transform:translate(-50%,-50%)'; fxL.appendChild(s);
+  s.animate([{left:'18%',top:'72%',transform:'translate(-50%,-50%) rotate(0)'},{left:'42%',top:'8%',transform:'translate(-50%,-50%) rotate(300deg)',offset:.5},{left:'62%',top:'26%',transform:'translate(-50%,-50%) rotate(620deg) scale(.4)'}],{duration:1100,easing:'ease-in-out',fill:'forwards'});
+  later(1050, ()=>{ s.remove(); flash(62,26); });
+}
+
+/* the dialogue box */
+let side='left', lastWho=null, typer=null;
+function say(who, line){
+  const vn=$('vn'), key=keyOf(who), team=WHO[key], c=team?TEAMS[team].c:'#f7c948', iv=!!uiL.querySelector('.iv');
+  if(who!==lastWho) side = (key==='don') ? 'left' : (lastWho && side==='left' ? 'right' : 'left');
+  lastWho=who;
+  vn.className='vn on '+(iv?'vn-iv':side); vn.style.setProperty('--c', c);
+  const av=$('vnAv'); av.style.display = iv ? 'none' : ''; av.src=P(key); av.classList.remove('pop'); void av.offsetWidth; av.classList.add('pop');
+  $('vnNm').textContent=(NAME[key]||who).toUpperCase(); $('vnTm').textContent= iv ? 'interview' : (team?TEAMS[team].name:'host');
+  document.querySelectorAll('.tok.speaking,.ppl.speaking').forEach(e=>e.classList.remove('speaking'));
+  const here = $('p-'+key) || document.querySelector(`[data-p="${key}"]`) || (team && $('tok-'+team));
+  if(here) here.classList.add('speaking');
+  // nobody talks from off screen: a contestant's line needs them in the shot (Don may narrate)
+  if(team && !here && !iv) console.error('OFFSCREEN', who, '|', SCENES[S].name, '|', line.slice(0,40));
+  const L=$('vnLn'); L.textContent=''; let i=0; clearInterval(typer);
+  typer=setInterval(()=>{ L.textContent=line.slice(0,++i); if(i>=line.length) clearInterval(typer); }, 16);
+}
+/* the camera. close(x,y) frames a world point (in % of the plate) at 1.7x, kept inside the plate; wide() pulls back. */
+function wide(now){ if(now) cam.style.transition='none'; cam.style.transform='translate(0,0) scale(1)'; if(now){ void cam.offsetWidth; cam.style.transition=''; } }
+function close(x, y, s=1.7){
+  const cx=50, cy=38;                                          // where the face lands, above the dialogue box
+  let tx=cx - s*x, ty=cy - s*y;
+  tx=Math.min(0, Math.max(100 - s*100, tx)); ty=Math.min(0, Math.max(100 - s*100, ty));
+  cam.style.transform=`translate(${tx}%,${ty}%) scale(${s})`;
+}
+// a token's position in the world, read from its own style (where it was placed or walked to), not from the screen
+function worldPos(el){
+  const cs=getComputedStyle(el), W=toksL.clientWidth, H=toksL.clientHeight;
+  return [parseFloat(cs.left)/W*100, parseFloat(cs.top)/H*100 - 4];
+}
+function focusOn(el){ if(!el) return false; const [x,y]=worldPos(el); close(x,y); return true; }
+function quiet(){ $('vn').className='vn'; lastWho=null; document.querySelectorAll('.tok.speaking,.ppl.speaking').forEach(e=>e.classList.remove('speaking')); }
+/* the confessional. The pair sits together unless solo (Carrie never says the Devin thing with Devin beside her). */
+const NAMED = new Set();                                       // teams already captioned this episode
+function compassSVG(){
+  const pts=[]; for(let i=0;i<16;i++){ const a=i*Math.PI/8, r=i%2?18:i%4?30:46; pts.push([50+Math.sin(a)*r, 62-Math.cos(a)*r]); }
+  return `<svg class="compass" viewBox="0 0 100 112"><g fill="none" stroke="#4fb6c4" stroke-width="1.6"><circle cx="50" cy="62" r="40"/><circle cx="50" cy="62" r="46" opacity=".5"/></g>
+    <polygon points="${pts.map(p=>p.join(',')).join(' ')}" fill="#2d8f9c" stroke="#7fd6e0" stroke-width="1"/>
+    <path d="M50 2 L58 20 L50 16 L42 20 Z" fill="#4fb6c4"/></svg>`;
+}
+function interview(key, solo=false){
+  const team=WHO[key], T=TEAMS[team], d=document.createElement('div'); d.className='iv';
+  const seat=(k,cls)=>`<div class="cf ${cls}" data-p="${k}" style="--c:${T.c};--d:${(Math.random()*-3).toFixed(2)}s"><img src="${P(k)}"></div>`;
+  const nm=k=>(NAME[k]||k[0].toUpperCase()+k.slice(1));
+  let h=compassSVG() + (solo ? seat(key,'solo') : seat(T.a,'L')+seat(T.b,'R'));
+  if(!NAMED.has(team)){ NAMED.add(team); h+=`<div class="lower"><div class="nm">${solo?nm(key):nm(T.a)+' &amp; '+nm(T.b)}</div><div class="tm">${T.name}</div></div>`; }
+  d.innerHTML=h; uiL.appendChild(d);
+}
+
+/* the logo's globe: tilted panes of colour in a glowing ring (drawn once per card, seeded so it never flickers) */
+function globeSVG(){
+  let s=7, rnd=()=>(s=(s*16807)%2147483647)/2147483647, panes='';
+  const C=['#ff4fa3','#ffd23f','#3fd0ff','#7a5cff','#ff7a1a','#4fe08b','#ff3b3b','#5aa8ff','#ffe9f2'];
+  for(let i=0;i<46;i++){ const x=rnd()*100, y=rnd()*100, w=14+rnd()*22, h=7+rnd()*12;
+    panes+=`<rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" fill="${C[i%C.length]}" transform="rotate(${(rnd()*50-25).toFixed(1)} ${x} ${y})" stroke="#fff" stroke-width="1.3"/>`; }
+  return `<svg class="globe" viewBox="0 0 100 100"><defs><clipPath id="gc"><circle cx="50" cy="50" r="47"/></clipPath></defs>
+    <circle cx="50" cy="50" r="47" fill="#fff"/><g clip-path="url(#gc)">${panes}</g><circle cx="50" cy="50" r="47" fill="none" stroke="#bfe8ff" stroke-width="2.4"/></svg>`;
+}
+function titleCard(big, pre, sub){ return `<div class="title">${globeSVG()}<div class="stack"><div class="pre">${pre}</div><br><div class="band"><div class="big">${big}</div></div><div class="sub">${sub}</div></div></div>`; }
+
+/* standings */
+const rows={};
+function board(order, st={}, opts={}){
+  const B=$('board');
+  if(!B.children.length) Object.keys(TEAMS).forEach(id=>{ const t=TEAMS[id], r=document.createElement('div'); r.className='row'; r.style.setProperty('--c',t.c);
+    r.innerHTML=`<div class="rk"></div><div class="pp"><img src="${P(t.a)}"><img src="${P(t.b)}"></div><div><div class="nm">${t.name}</div><div class="st"></div></div>`; B.appendChild(r); rows[id]=r; });
+  order.forEach((id,i)=>{ const r=rows[id]; r.style.top=(i*64)+'px'; r.querySelector('.rk').textContent=i+1; r.querySelector('.st').textContent=st[id]||st._||'';
+    r.classList.toggle('lead', i===0 && !!opts.lead); r.classList.toggle('out', (opts.out||[]).includes(id)); });
+}
+
+/* ---------- the leg: scenes, each a list of beats (a line, an action, or both) ---------- */
+// Two flights, fifty minutes apart: the second wave catches up where a task is slow, and that is where teams meet.
+const START=['ice','sis','surf','fs','goth','bff'];
+const COVE1={ice:[9,56],sis:[17,59],surf:[30,57]}, COVE2={fs:[9,56],goth:[17,59],bff:[30,57]};
+const stone=k=>[24+k*6.1, 61];
+const XS={sis:9,ice:24,surf:39,goth:55,fs:71,bff:87};
+const LEDGE=[[8,74],[30,71],[52,69],[74,67],[94,66]];
+
+const SCENES=[
+ { name:'Previously', task:'PREVIOUSLY', setup(){ plate(null);
+    underL.innerHTML=`<div class="mapwrap"><div class="mapbg"></div>
+      <svg viewBox="0 0 100 56.25" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;z-index:3;overflow:visible">
+        <path id="rt" d="M12 14.6 Q6 14 3 25.3" fill="none" stroke="#e8433a" stroke-width=".45" stroke-linecap="round" style="opacity:0"/></svg>
+      <div class="pin" style="left:12%;top:26%"></div><div class="pinlab" style="left:12%;top:26%">BADLANDS</div>
+      <div class="pin" style="left:3%;top:45%"></div><div class="pinlab" style="left:3%;top:45%">FIRE-MOUNTAIN ISLE</div>
+      <img class="plane" id="plane" src="${IMG('plane')}" style="left:12%;top:26%"></div>`;
+    board(START, {ice:'1st last leg',sis:'2nd last leg',surf:'3rd last leg',fs:'4th last leg',goth:'5th last leg',bff:'6th last leg'}); },
+   beats:[
+    {who:'Don', line:'Previously, on the Ridonculous Race: the badlands. Dinosaur bones, a jet that exploded, and the BFFs scraping in ninety seconds before me.'},
+    {who:'Don', line:'Was I worried for them? Don’t care. Kidding. Still don’t care.'},
+    {act(){ const r=$('rt'), p=$('plane'); if(!r||!p) return;
+       const len=r.getTotalLength(), pts=[];
+       for(let i=0;i<=30;i++){ const a=r.getPointAtLength(len*i/30), b=r.getPointAtLength(Math.min(len, len*i/30+.4)); const ang=Math.atan2(b.x-a.x, -(b.y-a.y))*180/Math.PI;
+         pts.push({left:a.x+'%', top:(a.y/56.25*100)+'%', transform:`translate(-50%,-50%) rotate(${ang}deg)`, opacity:1}); }
+       p.animate(pts,{duration:3200,fill:'forwards',easing:'ease-in-out'});
+       r.style.opacity=1; r.style.strokeDasharray=len; r.style.strokeDashoffset=len;
+       r.animate([{strokeDashoffset:len},{strokeDashoffset:0}],{duration:3200,fill:'forwards',easing:'ease-in-out'}); },
+     who:'Don', line:'Tonight: an island with a volcano on it. Is it active? Legally, I’m not allowed to say. This… is the Ridonculous Race!'},
+   ]},
+ { name:'Departure', task:'DEPARTURE', setup(){ plate('campfire');
+    this.line=[[14,72],[24,74],[34,72],[44,74],[54,72],[64,74]]; START.forEach((id,i)=>tok(id,...this.line[i])); donAt(84,70);
+    board(START, {ice:'departs 7:00',sis:'departs 7:06',surf:'departs 7:19',fs:'departs 7:31',goth:'departs 7:44',bff:'departs 7:58'}); },
+   beats:[
+    {who:'Don', line:'Teams leave in the order they checked in last night. Ice Dancers, you’re first. Try not to look so smug about it.'},
+    {who:'Josée', line:'We are not smug. We are first. There is a difference.', cam:'close'},
+    {who:'Kitty', line:'Six minutes behind them! Emma, that’s basically tied, right? That’s basically tied.'},
+    {who:'Emma', line:'Six minutes is a lifetime. Run.', cam:'close'},
+    {act(){ const L=this.line; ['ice','sis','surf'].forEach((id,i)=>later(i*600, ()=>{ clock(L[i][0],L[i][1]+1.5,'DEPARTS '+['7:00','7:06','7:19'][i]); walk($('tok-'+id),[L[i],[112,66]],1400); })); },
+     who:'Don', line:'There’s no difference, but go. Go. Sisters, go. Surfers… you’re already gone. Good.'},
+    {who:'Crimson', line:'We leave at 7:44. Right when the bats go to sleep.'},
+    {who:'Ennui', line:'Poetic.'},
+    {who:'Devin', line:'Last out again. It’s fine! We’re a comeback team. Right, Carrie?'},
+    {who:'Carrie', line:'Right! A comeback… team. Team. Yes.', cam:'close'},
+    {act(){ const L=this.line; ['fs','goth','bff'].forEach((id,i)=>later(i*600, ()=>{ clock(L[i+3][0],L[i+3][1]+1.5,'DEPARTS '+['7:31','7:44','7:58'][i]); walk($('tok-'+id),[L[i+3],[112,66]],1400); })); },
+     who:'Don', line:'And that’s everybody. Finally. I was starting to get cold.'},
+   ]},
+ { name:'The gate', task:'THE AIRPORT', setup(){ plate('gate','kb-pan');
+    const fb=document.createElement('div'); fb.className='fboard';
+    fb.innerHTML=`<h4>DEPARTURES · FIRE-MOUNTAIN ISLE</h4>
+     <div class="fl"><span class="t">RR 101</span><span class="who">Ice Dancers · Sisters · Surfer Dudes</span><span class="st">BOARDING</span></div>
+     <div class="fl"><span class="t">RR 205</span><span class="who">Father &amp; Son · Goths · BFFs</span><span class="st late">+50 MIN</span></div>`;
+    uiL.appendChild(fb);
+    [['ice',44,68],['sis',54,70],['surf',64,68],['fs',10,68],['goth',20,70],['bff',30,68]].forEach(([id,x,y])=>tok(id,x,y));
+    board(START, {ice:'flight RR 101',sis:'flight RR 101',surf:'flight RR 101',fs:'flight RR 205',goth:'flight RR 205',bff:'flight RR 205'}); },
+   beats:[
+    {who:'Don', line:'Two flights to the island. One leaves now. The other leaves whenever it feels like it.'},
+    {who:'Geoff', line:'Dude! We made the early flight! Brody! We’re early-flight guys now!'},
+    {who:'Brody', line:'I always knew we had it in us, bro.'},
+    {act(){ [[44,68],[54,70],[64,68]].forEach((p,i)=>later(i*300, ()=>walk($('tok-'+['ice','sis','surf'][i]),[p,[112,64]],1300))); },
+     who:'Don', line:'Flight 101 is boarding. Flight 205 is… thinking about it.'},
+    {who:'Dwayne', line:'Fifty minutes, Junior! Plenty of time for the gift shop!'},
+    {who:'Junior', line:'Dad. We are LOSING.', cam:'close'},
+    {who:'Ennui', line:'Fifty minutes. Enough to contemplate the state of our dark souls.'},
+    {who:'Crimson', line:'I contemplated mine. It’s fine. It’s dark.'},
+   ]},
+ { name:'In the air', task:'IN THE AIR', setup(){ plate('sky','kb-pan'); },
+   beats:[{who:'Don', line:'Two planes, fifty minutes apart, and nobody on either one knows what a volcano is about to do to their weekend.'}]},
+ { name:'RR 101 · row 12', task:'IN THE AIR · RR 101', setup(){ plate('cabin','kb-in'); person('jacques',13.5,40,13); person('josee',33,40,13); },
+   beats:[
+    {who:'Josée', line:'If anyone gets ahead of us today, Jacques, we Boomerang them. No hesitation.'},
+    {who:'Jacques', line:'And if it is the nice surfers?'},
+    {who:'Josée', line:'ESPECIALLY the nice surfers. Nice people win nothing. Name one nice person with a gold medal.'},
+    {who:'Jacques', line:'…Me?'},
+   ]},
+ { name:'RR 101 · row 14', task:'IN THE AIR · RR 101', setup(){ plate('cabin','kb-pan'); person('kitty',13.5,40,13); person('emma',33,40,13); },
+   beats:[
+    {who:'Kitty', line:'Em, look, a cloud shaped like a trophy! That’s a sign!'},
+    {who:'Emma', line:'It’s a cloud shaped like a cloud. Sleep. You need your legs.'},
+    {who:'Kitty', line:'You sound like Mom.'},
+    {who:'Emma', line:'Mom would have won this already.', cam:'close'},
+   ]},
+ { name:'Flight RR 205', task:'IN THE AIR · RR 205', setup(){ plate('galley','kb-pan'); person('dwayne',58,50,10); person('junior',70,54,9); person('crimson',84,50,10); person('ennui',94,54,9); person('carrie',44,54,9.5); person('devin',31,50,9.5); },
+   beats:[
+    {who:'Dwayne', line:'Think the pilot needs a co-pilot, Junior? I did six hours on a flight simulator.'},
+    {who:'Junior', line:'It was a video game, Dad. You crashed into a mall. Twice.'},
+    {who:'Crimson', line:'Carrie. You’re staring at him like a moth at a candle.'},
+    {who:'Carrie', line:'I am not! I’m staring at… the… safety card.'},
+    {who:'Ennui', line:'Moths die, by the way. Just so you know.'},
+   ]},
+ { name:'Fire-Mountain Isle', task:'', setup(){ plate('erupt','kb-in'); uiL.innerHTML=titleCard('FIRE-MOUNTAIN ISLE','LEG 7','Either/Or · Botch or Watch · All-In'); },
+   beats:[{who:'Don', line:'Fire-Mountain Isle. Population: zero. Volcano: grumpy. Lawyers: very, very nervous.'}]},
+ { name:'Flight 1 lands', task:'ARRIVAL', setup(){ plate('cove','kb-pan');
+    Object.entries(COVE1).forEach(([id,p],i)=>{ const e=tok(id,-8,p[1]); walk(e,[[-8,p[1]],p],1000,{delay:i*250}); });
+    later(900, ()=>donBox(25,49)); board(START, {ice:'landed',sis:'landed',surf:'landed',fs:'in the air',goth:'in the air',bff:'in the air'}); },
+   beats:[
+    {who:'Kitty', line:'Don Box! Don Box! Selfie with the Don Box first —'},
+    {act(){ tipOut(); later(400, ()=>tipCard('EITHER/OR','Get to the far side of the island. Pick one. You may switch.',[['LAVA','Hop the stepping stones across the lava river.'],['FALLS','Raft down the river, then climb the path behind the waterfall.']])); },
+     who:'Emma', line:'Either/Or! “Lava: hop the stepping stones across the lava river. Falls: raft down the river, then climb the path behind the waterfall.”'},
+    {act(){ uiL.querySelector('.tipcard')?.remove(); },
+     who:'Jacques', line:'Lava. We spend our lives balancing on blades. This is just a hotter rink.'},
+    {who:'Josée', line:'Enjoy the slow, wet road, Sisters. Bye-bye!'},
+    {who:'Emma', line:'Falls. Lava is a trap for people who think they’re fast.'},
+    {who:'Brody', line:'Lava, bro? Lava, bro. Let’s gooo!'},
+   ]},
+ { name:'The choice', task:'EITHER / OR', setup(){ plate(null);
+    underL.innerHTML=`<div class="split"><div class="half l" style="background-image:url(${IMG('lava')})"></div><div class="half r" style="background-image:url(${IMG('falls')})"></div><div class="seam"></div><div class="tagL">LAVA</div><div class="tagR">FALLS</div></div>`;
+    const pick={ice:[14,70],surf:[26,74],sis:[72,72]};
+    Object.entries(pick).forEach(([id,p],i)=>{ const e=tok(id,50,80); walk(e,[[50,80],p],900,{delay:i*220}); });
+    board(START, {ice:'LAVA',surf:'LAVA',sis:'FALLS',fs:'in the air',goth:'in the air',bff:'in the air'}); },
+   beats:[{who:'Don', line:'Two teams take the lava. One takes the cliff. And three teams are still eating airplane peanuts.'}]},
+ { name:'Lava', task:'EITHER / OR · LAVA', setup(){ plate('lava'); tok('ice',10,66); tok('surf',10,66); },
+   beats:[
+    {act(){ walk($('tok-ice'),[[10,66],stone(0),stone(1),stone(2),stone(3),stone(4),stone(5),stone(6),stone(7),[86,63]],3600,{hop:true}); later(700, ()=>embers(40,62,6)); },
+     who:'Josée', line:'Point your toes, Jacques. Even here. ESPECIALLY here.'},
+    {act(){ walk($('tok-surf'),[[10,66],stone(0),stone(1),stone(2)],1500,{hop:true}); },
+     who:'Geoff', line:'It’s like surfing, man, except the wave wants to eat you!'},
+    {who:'Brody', line:'I’ve never felt so alive! Or so close to not being alive!'},
+    {act(){ board(['ice','sis','surf','fs','goth','bff'], {ice:'across the lava',sis:'climbing',surf:'on the stones',fs:'landing',goth:'landing',bff:'landing'}); },
+     who:'Don', line:'And the Ice Dancers are across already. Annoyingly graceful.'},
+   ]},
+ { name:'The stones', task:'EITHER / OR · LAVA', setup(){ plate('stones'); tok('surf',4,60,true); },
+   beats:[
+    {act(){ walk($('tok-surf'),[[4,60],[32,52]],700,{hop:true}); later(500, ()=>embers(20,64,10)); },
+     who:'Brody', line:'Dude, my shoes are smoking. Is that bad? That feels bad.'},
+    {who:'Geoff', line:'Just don’t stop. If you stop, you start thinking about it.'},
+    {act(){ walk($('tok-surf'),[[32,52],[61,43]],700,{hop:true}); later(500, ()=>embers(47,60,10)); },
+     who:'Brody', line:'Okay. Okay. Not thinking about it. Not thinking about it.'},
+    {act(){ walk($('tok-surf'),[[61,43],[84,54],[110,52]],1300,{hop:true}); },
+     who:'Geoff', line:'See? Easy! …My feet are so hot, bro.'},
+   ]},
+ { name:'The river', task:'EITHER / OR · FALLS', setup(){ plate('river','kb-pan');
+    const r=prop(IMG('log-raft'),18,30,22,9); r.id='raft'; underL.appendChild(r); const s=tok('sis',18,22,true);
+    const path=[[18,30],[34,46],[50,62],[66,78]];
+    walk(r,path,7000); walk(s,path.map(q=>[q[0],q[1]-8]),7000);
+    [1500,3200,5000].forEach((ms,i)=>later(ms, ()=>splash(28+i*16,34+i*18,9))); },
+   beats:[
+    {who:'Kitty', line:'Okay, this part is actually fun.'},
+    {who:'Emma', line:'Paddle on the left. Your left. Kitty. Your other left.'},
+    {act(){ splash(48,52,14); bubble($('tok-sis'),'SPLASH'); }, who:'Kitty', line:'I’m soaked. Emma, I am completely soaked.'},
+    {who:'Emma', line:'We’re about to climb behind a waterfall. You were going to get wet.'},
+   ]},
+ { name:'Falls', task:'EITHER / OR · FALLS', setup(){ plate('falls','kb-in'); tok('sis',8,74); },
+   beats:[
+    {act(){ walk($('tok-sis'),LEDGE.slice(0,3),2400); },
+     who:'Emma', line:'Hand holds, foot holds, don’t look down. We are losing time to those skaters.'},
+    {who:'Kitty', line:'It’s so pretty back here though! Can I take one —'},
+    {who:'Emma', line:'No.', cam:'close'},
+    {act(){ bubble($('tok-sis'),'my phone!'); }, who:'Kitty', line:'Okay but now I dropped my phone, so I have to take one, of where it fell.'},
+   ]},
+ { name:'Flight 2 lands', task:'ARRIVAL · +50 MIN', setup(){ plate('cove','kb-pan'); donBox(25,49,false); $('donbox').src=IMG('c-donbox-tip');
+    clock(48,24,'50 MINUTES LATER',true);
+    Object.entries(COVE2).forEach(([id,p],i)=>{ const e=tok(id,-8,p[1]); walk(e,[[-8,p[1]],p],1000,{delay:400+i*250}); });
+    board(['ice','sis','surf','fs','goth','bff'], {ice:'across the lava',sis:'stuck on the cliff',surf:'on the stones',fs:'landed',goth:'landed',bff:'landed'}); },
+   beats:[
+    {who:'Don', line:'Fifty minutes behind. In a normal race, that’s a lot. In this race, it’s a coffee break.'},
+    {who:'Dwayne', line:'“Lava or Falls.” Junior. LAVA. Like the floor game we used to play!'},
+    {who:'Junior', line:'That was pretend lava, Dad. That was a couch.'},
+    {who:'Crimson', line:'Falls. Lava is too cheerful. All that orange.'},
+    {who:'Devin', line:'Lava looks faster. And cooler. Way cooler.'},
+    {who:'Carrie', line:'Devin, it is literally the hottest thing on Earth. Falls.'},
+    {who:'Devin', line:'…Falls.'},
+   ]},
+ { name:'The jungle', task:'ARRIVAL · +50 MIN', setup(){ plate('jungle','kb-in'); tok('fs',34,76); tok('bff',64,78); tok('goth',50,68); },
+   beats:[
+    {act(){ walk($('tok-fs'),[[34,76],[42,60]],2200); }, who:'Dwayne', line:'Left, right, left, right! Come on, Junior, sing it with me!'},
+    {who:'Junior', line:'I’m not singing. People can see us.'},
+    {act(){ walk($('tok-bff'),[[64,78],[56,64]],1800); }, who:'Carrie', line:'Why are the Goths walking? Why are they walking and still ahead of us?'},
+    {who:'Ennui', line:'Run if you want. We’ll see you at the top.'},
+    {act(){ walk($('tok-goth'),[[50,68],[47,56]],2600); walk($('tok-bff'),[[56,64],[51,58]],1600,{delay:300}); }, who:'Devin', line:'Okay, that’s actually kind of cool.'},
+    {who:'Carrie', line:'It’s not cool, Devin. Run.'},
+   ]},
+ { name:'Interview: Jacques', task:'', setup(){ plate('lava'); interview('jacques'); },
+   beats:[
+    {who:'Jacques', line:'People think ice dancing is soft. Graceful. Pretty.'},
+    {who:'Jacques', line:'We have skated in front of judges who wanted us to fail. A river of lava is honestly a friendlier crowd.'},
+    {who:'Josée', line:'Lava does not give scores. It is the only judge we have never lost to.'},
+   ]},
+ { name:'Lava, again', task:'EITHER / OR · LAVA', setup(){ plate('lava'); tok('surf',...stone(2)); tok('fs',10,66); },
+   beats:[
+    {act(){ walk($('tok-fs'),[[10,66],stone(0),stone(1),stone(2),stone(3),stone(4)],2000,{hop:true}); },
+     who:'Dwayne', line:'Not bad for an old man, huh Junior? Watch this, I’m gonna do the little hop —'},
+    {act(){ const e=$('tok-fs'); walk(e,[stone(4),[stone(4)[0]+2,69],[stone(3)[0],69]],900); embers(stone(4)[0]+2,67,26); bubble(e,'HOT HOT HOT'); },
+     who:'Dwayne', line:'HOT! HOT HOT HOT HOT!'},
+    {act(){ walk($('tok-surf'),[stone(2),stone(3)],600,{hop:true}); bubble($('tok-surf'),'grab on!'); },
+     who:'Geoff', line:'Whoa, dude! Grab my hand! Brody, help me with the dad!'},
+    {who:'Junior', line:'Guys, you know we’re racing you, right?'},
+    {who:'Brody', line:'No dude left behind, little dude. That’s just the bro code.'},
+    {act(){ walk($('tok-fs'),[[stone(3)[0],69],stone(4),stone(5),stone(6),stone(7),[86,63]],2300,{hop:true});
+       walk($('tok-surf'),[stone(3),stone(4),stone(5),stone(6),stone(7),[86,63]],2600,{hop:true,delay:400});
+       board(['ice','fs','surf','sis','goth','bff'], {ice:'at the lagoon',fs:'across, thanks to the Surfers',surf:'across, lost the lead helping',sis:'stuck on the cliff',goth:'climbing',bff:'climbing'}); },
+     who:'Dwayne', line:'You boys are angels. ANGELS! Junior, we’re adopting them.'},
+   ]},
+ { name:'The ledge', task:'EITHER / OR · FALLS', setup(){ plate('falls','kb-in'); tok('sis',...LEDGE[2]); tok('goth',...LEDGE[0]); tok('bff',...LEDGE[0]); },
+   beats:[
+    {act(){ walk($('tok-goth'),[LEDGE[0],LEDGE[1],[47,70]],1600); }, who:'Don', line:'And the cliff path has exactly one ledge wide enough for one team. Guess who’s on it.'},
+    {who:'Crimson', line:'Move. Your colours are hurting the waterfall.'},
+    {who:'Emma', line:'We were here FIRST.'},
+    {act(){ walk($('tok-goth'),[[47,70],[56,64],LEDGE[3],LEDGE[4]],1800); }, who:'Ennui', line:'And yet, here we are. Passing you. How sad for you.'},
+    {act(){ walk($('tok-bff'),[LEDGE[0],LEDGE[1]],1200); }, who:'Kitty', line:'Carrie! Here, take my hand. Careful, it’s slippery.'},
+    {who:'Kitty', line:'Sooo… my love radar is going crazy right now. It’s Devin, isn’t it.'},
+    {who:'Carrie', line:'Shh! Kitty! He can HEAR you!', cam:'close'},
+    {who:'Devin', line:'Hear what? What’s going crazy?'},
+    {act(){ walk($('tok-sis'),[LEDGE[2],LEDGE[3],LEDGE[4]],1600); walk($('tok-bff'),[LEDGE[1],LEDGE[2],LEDGE[3],LEDGE[4]],2400,{delay:500});
+       board(['ice','fs','surf','goth','sis','bff'], {ice:'at the lagoon',fs:'at the lagoon',surf:'at the lagoon',goth:'across',sis:'across',bff:'across'}); },
+     who:'Carrie', line:'Nothing! The… waterfall! Great waterfall! Let’s GO!'},
+   ]},
+ { name:'Interview: Carrie', task:'', setup(){ plate('falls'); interview('carrie', true); },
+   beats:[
+    {who:'Carrie', line:'Okay. So. Kitty has a “love radar”. Which is not a real thing.'},
+    {who:'Carrie', line:'…It’s a little bit a real thing. I’ve liked Devin since the sandbox. He has no idea. And I’d like to keep it that way until I’m brave. Or dead. Whichever comes first.'},
+   ]},
+ { name:'The clearing', task:'EITHER / OR · THE CLEARING', setup(){ plate('tiki','kb-pan'); donBox(63,33); tok('ice',44,37); },
+   beats:[
+    {act(){ tipOut(); }, who:'Josée', line:'Botch or Watch. One of us swims the lagoon. Jacques, which one of us is the better swimmer?'},
+    {who:'Jacques', line:'…You are.'},
+    {who:'Josée', line:'Correct.'},
+    {act(){ const s=tok('sis',8,62); walk(s,[[8,62],[18,48],[30,40]],1800); }, who:'Kitty', line:'Wait. You took the lava and you’re only HERE?'},
+    {who:'Josée', line:'We have been here for four minutes. We are still first.'},
+    {act(){ const f=tok('fs',-6,40), g=tok('surf',-6,42); walk(f,[[-6,40],[20,38]],1400); walk(g,[[-6,42],[12,41]],1600,{delay:500}); },
+     who:'Dwayne', line:'Hi again, everybody! The Surfers saved my life back there. True story.'},
+    {who:'Emma', line:'Great. Now there are four of us. Kitty, go.'},
+   ]},
+ { name:'Botch or Watch', task:'BOTCH OR WATCH', setup(){ plate('lagoon','kb-in'); ['ice','fs','surf','goth','sis','bff'].forEach((id,i)=>tok(id,8+i*11,55));
+    board(['ice','fs','surf','goth','sis','bff'], {_:'at the lagoon'}); },
+   beats:[
+    {act(){ tipCard('BOTCH OR WATCH','One of you swims the lagoon to the next Don Box. The other one watches from the shore and cannot help.<br><br><b>Do not touch the mine.</b>'); },
+     who:'Don', line:'And now everybody’s here at once. That’s what happens when the swim is the slow part.'},
+    {who:'Josée', line:'I swim. You watch, Jacques. And you count my strokes. Out loud.'},
+    {who:'Kitty', line:'I got this one, Em! I was on the swim team! For, like, a week!'},
+    {who:'Devin', line:'I’ll swim. Carrie, I owe you one for the waterfall.'},
+    {who:'Carrie', line:'You don’t owe me anyth— okay, yes, swim.'},
+   ]},
+ { name:'The swim', task:'BOTCH OR WATCH', setup(){ plate('mine'); inset('ON THE SHORE',['jacques','emma','geoff','crimson','dwayne','carrie']); board(['ice','fs','surf','goth','sis','bff'], {_:'swimming'}); },
+   beats:[
+    {act(){ const sw={sis:'kitty',ice:'josee',surf:'brody',goth:'ennui',fs:'junior',bff:'devin'}, fin={sis:93,ice:88,surf:82,goth:76,fs:70,bff:52};
+       Object.keys(sw).forEach((id,i)=>{ const y=50+i*3.6, s=swimmer(id,sw[id],6,y); later(i*200, ()=>splash(6,y,14)); swim(s,[6,y],[fin[id],y],4600,i*200); }); },
+     who:'Don', line:'Six swimmers. One lagoon. One very old, very grumpy sea mine. I’ll be over here. Far over here.'},
+    {who:'Jacques', line:'Twelve! Thirteen! Long strokes, Josée! The little Sister is gaining!'},
+    {who:'Emma', line:'GO, KITTY! Pass her! PASS HER!'},
+    {act(){ const m=document.createElement('div'); m.style.cssText='position:absolute;left:57%;top:55%;width:10cqw;height:10cqw;transform:translate(-50%,-50%);z-index:12';
+       m.innerHTML='<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="10" fill="none" stroke="#ff3b30" stroke-width="4"><animate attributeName="r" values="10;46" dur=".7s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur=".7s" repeatCount="indefinite"/></circle></svg>'; fxL.appendChild(m);
+       for(let k=0;k<6;k++) later(k*220, ()=>splash(51+Math.random()*3, 68, 14)); },
+     who:'Devin', line:'Is it supposed to beep? Somebody tell me if it’s supposed to beep!'},
+    {who:'Carrie', line:'DEVIN. SWIM. AWAY. FROM. THE. BEEPING.'},
+    {act(){ const s=$('sw-bff'); if(s){ s.getAnimations().forEach(a=>a.cancel()); swim(s,[52,68],[93,68],2600); }
+       board(['sis','ice','surf','goth','fs','bff'], {sis:'Kitty out first!',ice:'Josée second',surf:'Brody',goth:'Ennui',fs:'Junior',bff:'Devin, eventually'}); },
+     who:'Kitty', line:'FIRST! I was FIRST! Did anyone get a picture? Did ANYONE get a picture?!'},
+   ]},
+ { name:'All-In', task:'ALL-IN', setup(){ plate('logs','kb-in'); Object.entries(XS).forEach(([id,x])=>tok(id,x+4.2,74)); board(['sis','ice','surf','goth','fs','bff'], {_:'at the log pile'}); },
+   beats:[
+    {act(){ tipCard('ALL-IN','Both of you: build a statue out of logs and pineapples.<br><br>Then carry it up the volcano and <b>feed it to the mountain</b>.'); },
+     who:'Don', line:'Build a statue. Feed it to the volcano. The volcano is picky, so make it pretty.'},
+    {who:'Dwayne', line:'A statue?! Junior. JUNIOR. Thirty years of birdhouses have led to this moment.'},
+    {who:'Junior', line:'You’ve been training to build a pineapple man.'},
+    {who:'Dwayne', line:'I’ve been training my whole LIFE, son.'},
+   ]},
+ { name:'Building', task:'ALL-IN', setup(){ plate('logs'); this.st={};
+    Object.entries(XS).forEach(([id,x])=>{ this.st[id]=statue(id,x,72,0); tok(id,x+4.2,74); }); },
+   beats:[
+    {act(){ const prog={sis:.6,ice:.5,surf:.35,goth:.5,fs:.7,bff:.2};
+       Object.entries(XS).forEach(([id,x],i)=>{ for(let k=0;k<Math.round(prog[id]*5);k++) flyLog([36,58],[x,62],k*420+i*90); later(200+i*90, ()=>grow(this.st[id],prog[id])); }); },
+     who:'Geoff', line:'Does it need a face? Brody, do statues need faces?'},
+    {who:'Brody', line:'Every statue deserves a face, bro. That’s just respect.'},
+    {who:'Crimson', line:'Ours has no face. Like the universe.'},
+    {who:'Ennui', line:'It’s our best work.'},
+    {act(){ const prog={sis:.9,ice:.8,surf:.55,goth:.7,fs:1,bff:.35};
+       Object.entries(XS).forEach(([id,x],i)=>{ for(let k=0;k<2;k++) flyLog([36,58],[x,62],k*420+i*90); later(200+i*90, ()=>grow(this.st[id],prog[id])); });
+       later(2800, ()=>stamp(71,40,'DONE!','gold'));
+       board(['fs','sis','ice','goth','surf','bff'], {fs:'statue finished',sis:'almost',ice:'arguing about the pose',goth:'very precise',surf:'lost a pineapple',bff:'one leg'}, {lead:true}); },
+     who:'Dwayne', line:'DONE! Look at those dovetail joints, Junior! LOOK AT THEM!'},
+    {who:'Junior', line:'…Okay. Okay, that’s actually really good, Dad.'},
+   ]},
+ { name:'Boomerang', task:'ALL-IN · BOOMERANG', setup(){ plate('logs');
+    const prog={sis:.95,ice:.95,surf:.7,goth:.85,fs:1,bff:.5};
+    Object.entries(XS).forEach(([id,x])=>{ statue(id,x,72,prog[id]); tok(id,x+4.2,74); });
+    board(['fs','sis','ice','goth','surf','bff'], {fs:'statue finished',sis:'almost',ice:'almost',goth:'finished',surf:'finished',bff:'two legs now'}, {lead:true}); },
+   beats:[
+    {who:'Josée', line:'Jacques. The Boomerang. Now.', cam:'close'},
+    {who:'Jacques', line:'On the surfers? You said the surfers!'},
+    {who:'Josée', line:'I said whoever is AHEAD. Look who is ahead, Jacques.'},
+    {act(){ const b=document.createElement('div'); b.className='boom'; b.innerHTML=`<div class="t">BOOMERANG!</div><img src="${IMG('c-boomerang')}">`; uiL.appendChild(b); },
+     who:'Don', line:'Ooh. The Ice Dancers throw their Boomerang at… the Sisters! Sisters, your statue goes back to being firewood. Start over.'},
+    {act(){ uiL.querySelector('.boom')?.animate([{opacity:1},{opacity:0,transform:'translate(-50%,-50%) scale(.2) rotate(360deg)'}],{duration:500,fill:'forwards'});
+       $('st-sis').animate([{transform:'translate(-50%,-100%) rotate(0)'},{transform:'translate(-50%,-100%) rotate(80deg)',offset:.6},{transform:'translate(-50%,-100%) rotate(80deg) translateY(3cqw)',opacity:0}],{duration:900,fill:'forwards',easing:'ease-in'});
+       later(700, ()=>embers(11,66,16,'#7a4b2a')); bubble($('tok-sis'),'NOOO');
+       board(['fs','ice','goth','surf','sis','bff'], {fs:'statue finished',ice:'used the Boomerang',goth:'finished',surf:'finished',sis:'Boomeranged! rebuilding',bff:'two legs now'}, {lead:true}); },
+     who:'Emma', line:'Are you SERIOUS?! We were one pineapple away!'},
+    {who:'Kitty', line:'Emma… our statue had such a nice smile…'},
+   ]},
+ { name:'Interview: Josée', task:'', setup(){ plate('logs'); interview('josee'); },
+   beats:[
+    {who:'Josée', line:'Was it mean? Yes.'},
+    {who:'Jacques', line:'It was a little mean.'},
+    {who:'Josée', line:'It was a LOT mean. That is how you know it worked.'},
+    {who:'Josée', line:'Bronze is the worst medal, you know. The road of shame is paved with bronze. And I will NOT walk on it because a girl with a phone is a faster swimmer than me.'},
+   ]},
+ { name:'The climb', task:'ALL-IN · THE CLIMB', setup(){ plate('climb','kb-in');
+    // one switchback path up the cone; each team starts where the last leg left it and keeps climbing
+    [['fs',[47,52],[51,34]],['goth',[43,62],[47,46]],['ice',[39,71],[43,57]],['surf',[57,74],[52,64]]].forEach(([id,a,z])=>{ const e=tok(id,...a); walk(e,[a,z],9000); }); },
+   beats:[
+    {who:'Dwayne', line:'Junior, lift with your legs! Your legs!'},
+    {who:'Junior', line:'I am lifting with my legs. My legs are just done, Dad.'},
+    {who:'Ennui', line:'Are we close to the top.'},
+    {who:'Crimson', line:'No.'},
+    {who:'Geoff', line:'Little dude is heavy, man. Hang in there, little dude.'},
+   ]},
+ { name:'The offering', task:'ALL-IN · THE OFFERING', setup(){ plate('rim','kb-in'); tok('surf',14,70); tok('goth',24,74); tok('fs',6,66); board(['fs','goth','ice','surf','sis','bff'], {fs:'climbing the volcano',goth:'climbing',ice:'climbing',surf:'climbing',sis:'rebuilding',bff:'still building'}, {lead:true}); },
+   beats:[
+    {act(){ [0,1,2].forEach(i=>later(i*800, throwStatue)); }, who:'Don', line:'One by one, the statues go into the mountain. Very moving. Very flammable.'},
+    {act(){ [0,1].forEach(i=>later(i*800, throwStatue)); board(['fs','goth','ice','surf','sis','bff'], {fs:'offering made',goth:'offering made',ice:'offering made',surf:'offering made',sis:'offering made',bff:'still carrying'}, {lead:true}); },
+     who:'Geoff', line:'Goodbye, little dude. You were the best pineapple man.'},
+    {who:'Crimson', line:'Ours went in without a sound. Like it wanted to.'},
+   ]},
+ { name:'Chill Zone', task:'CHILL ZONE', setup(){ plate('finish','kb-in'); mat(46,73,26); donAt(66,72); },
+   beats:(()=>{ const order=['fs','goth','ice','surf','sis'], lab=['1ST','2ND','3RD','4TH','5TH'], aside=[[14,66],[22,69],[30,66],[78,69],[86,66]];
+     const arrive=i=>()=>{ const id=order[i], e=tok(id,-6,74); walk(e,[[-6,74],[44,72]],900).finished.then(()=>{ rank(e,lab[i],i===0); later(800, ()=>walk(e,[[44,72],aside[i]],600)); }); };
+     return [{act:arrive(0), who:'Don', line:'Father and Son… you are team number one! You win a phone call home. Keep it short, I’m paying.'},
+       {who:'Dwayne', line:'THIRTY YEARS OF BIRDHOUSES!'},
+       {act:arrive(1), who:'Don', line:'Goths, team number two. Try to contain your excitement.'},
+       {who:'Ennui', line:'I’m so excited. Second place. Wow. I could pee myself.'},
+       {act:arrive(2), who:'Don', line:'Ice Dancers, team number three.'},
+       {who:'Josée', line:'Bronze. BRONZE. Do you know what bronze is, Don? It is the medal they give you so you feel bad in a SHINY way.'},
+       {act:arrive(3), who:'Don', line:'Surfer Dudes, number four. Would’ve been higher if you hadn’t stopped to rescue a dad.'},
+       {who:'Geoff', line:'Worth it, man. Totally worth it.'},
+       {act(){ arrive(4)(); board(['fs','goth','ice','surf','sis','bff'], {fs:'1st: wins a phone call home',goth:'2nd',ice:'3rd',surf:'4th',sis:'5th',bff:'still out there'}, {lead:true}); },
+        who:'Don', line:'And Sisters… team number five.'},
+       {who:'Emma', line:'Number five. Because of a BOOMERANG.', cam:'close'}]; })()},
+ { name:'Sundown', task:'ALL-IN · LAST TEAM OUT', setup(){ plate('dusk','kb-pan'); const e=tok('bff',4,58,true); walk(e,[[4,58],[50,62]],6500); },
+   beats:[
+    {who:'Devin', line:'Sun’s going down. We’re last, huh.'},
+    {who:'Carrie', line:'Probably. I’m sorry. I picked the falls.'},
+    {who:'Devin', line:'Hey, don’t be. The falls were awesome. You were awesome on that ledge.'},
+    {who:'Carrie', line:'…Thanks.', cam:'close'},
+    {act(){ walk($('tok-bff'),[[50,62],[110,64]],2600); }, who:'Devin', line:'Come on. If we go home, we go home running.'},
+   ]},
+ { name:'Last team', task:'CHILL ZONE', setup(){ plate('finish'); mat(46,73,26); donAt(66,72);
+    const aside=[[14,66],[22,69],[30,66],[78,69],[86,66]];
+    ['fs','goth','ice','surf','sis'].forEach((id,i)=>{ const e=tok(id,...aside[i]); rank(e,['1ST','2ND','3RD','4TH','5TH'][i],i===0); e.style.opacity=.6; });
+    walk(tok('bff',-6,74),[[-6,74],[44,72]],1600); },
+   beats:[
+    {who:'Devin', line:'We made it! We made it. Did we make it?'},
+    {who:'Don', line:'Carrie. Devin. You are the last team to arrive…'},
+    {who:'Carrie', line:'Devin, there’s something I should tell you before we —'},
+    {act(){ stamp(50,38,'NON-ELIMINATION','huge'); board(['fs','goth','ice','surf','sis','bff'], {fs:'1st',goth:'2nd',ice:'3rd',surf:'4th',sis:'5th',bff:'6th: non-elimination!'}, {lead:true}); },
+     who:'Don', line:'…and this is a non-elimination round! You get to stay! I’m so happy for you. Kidding. I’m indifferent.'},
+    {who:'Devin', line:'YES! Comeback team! What were you going to tell me?'},
+    {who:'Carrie', line:'…That you’re a great swimmer. Around mines. Specifically.'},
+   ]},
+ { name:'Interview: Carrie', task:'', setup(){ plate('finish'); interview('carrie', true); board(['fs','goth','ice','surf','sis','bff'], {fs:'1st',goth:'2nd',ice:'3rd',surf:'4th',sis:'5th',bff:'6th: non-elimination!'}, {lead:true}); },
+   beats:[
+    {who:'Carrie', line:'I was going to tell him. Right there, on the mat, in front of Don and everybody.'},
+    {who:'Carrie', line:'And then Don said “non-elimination”, and Devin hugged me, and I said… mines. I said MINES.'},
+   ]},
+ { name:'Next time', task:'', setup(){ plate('volcano','kb-in'); },
+   beats:[
+    {who:'Don', line:'Six teams left. One very unlucky Boomerang. One crush that is going precisely nowhere.'},
+    {act(){ uiL.innerHTML=`<div class="title" style="top:6%"><img class="logo" src="${IMG('logo')}"><div class="sub">Next leg · Stone-Head Isle</div></div>`; },
+     who:'Don', line:'Who will win the million dollars? Find out next time, on… the Ridonculous Race!'},
+   ]},
+];
+
+
+/* ---------- player: one click = one beat ---------- */
+let S=0, B=-1, auto=null;
+function clearAll(){ timers.forEach(t=>{clearTimeout(t);clearInterval(t);}); timers=[]; toksL.innerHTML=''; fxL.innerHTML=''; underL.innerHTML=''; uiL.innerHTML=''; quiet(); wide(true); }
+function scene(n){
+  S=Math.max(0,Math.min(SCENES.length-1,n)); B=-1; clearAll(); if(S===0) NAMED.clear();
+  const sc=SCENES[S]; task(sc.task); sc.setup.call(sc); beat();
+}
+function beat(){
+  const sc=SCENES[S];
+  if(B >= sc.beats.length-1){ if(S < SCENES.length-1) scene(S+1); return; }
+  B++; const b=sc.beats[B];
+  if(b.act) b.act.call(sc);
+  if(b.who) say(b.who, b.line); else quiet();
+  // the shot: an action is seen wide; a line is a close-up on whoever says it, when they stand in this place
+  if(b.cam==='close' && b.who){ const k=keyOf(b.who), el = k==='don' ? fxL.querySelector('.don-here') : ($('p-'+k) || $('tok-'+WHO[k])); if(!focusOn(el)) wide(); }
+  else wide();
+  $('stepN').textContent=`scene ${S+1} of ${SCENES.length} · ${sc.name} · line ${B+1}/${sc.beats.length}`;
+}
+stage.onclick=beat; $('next').onclick=beat; $('prev').onclick=()=>scene(B>0?S:S-1);
+$('auto').onclick=()=>{ if(auto){clearInterval(auto);auto=null;$('auto').textContent='▶ Auto';return;}
+  $('auto').textContent='❚❚ Pause'; auto=setInterval(beat, 3600); };
+addEventListener('keydown',e=>{ if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();beat();} if(e.key==='ArrowLeft') scene(B>0?S:S-1); });
+scene(0);
+</script>
+</body>
+</html>

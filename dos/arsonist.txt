@@ -1,0 +1,40 @@
+arsonist:
+
+The Strategy: The Solar Flare (1 AP Optimized)
+
+Turn 1: Setting the Hearth
+
+    Dragon's Blaze (1 AP - Racial): Use this at your own feet or toward enemies. This creates the fire surface to activate Elemental Affinity for the rest of your turn.
+
+    Peace of Mind (1 AP): Boosts Intelligence and Wits to ensure your subsequent spells crit via Savage Sortilege.
+
+    Bleed Fire (1 AP): Applies the resistance debuff.
+
+    Searing Volley (1 AP - Reduced from 2 AP): Target a high-priority enemy. You have now applied 4-5 stacks of Scorch for just 4 AP.
+
+Turn 2: The Solar Pulse
+
+    Supernova (1 AP - Reduced from 2 AP): Explode in the center of the enemies. With Sophisticated and Demon, you will take roughly 25% less damage from this than a standard mage.
+
+    Fireball (1 AP - Reduced from 2 AP): Maintain the surface and add more Scorch.
+
+    Condemning Explosion (1 AP): Use this on a target with high Scorch stacks to apply Necrofire.
+
+    Spontaneous Combustion (1 AP - Reduced from 2 AP): The finisher. It expunges the stacks for a massive critical hit.
+
+The "Bench" (What to Drop)
+
+    Drop Burning Touch & Fire-Whip: These are 2 AP single-target skills. In this rotation, Supernova and Searing Volley provide better value for the same 1 AP (with Affinity) cost.
+
+    Drop Magma Wall & Magma Geyser: Since your Explosive Traps now Snare enemies for 1 AP, these more expensive control spells are redundant.
+
+    Drop Self-Immolation: Supernova deals more damage and scales better with Scorch for the same 1 AP cost under Affinity.
+
+    Drop Sabotage: While it increments Scorch, its utility is too situational for a 14-slot limit compared to your core engine.
+
+Red Prince Pro-Tip: The Staff/Wand Pivot
+
+Since Elemental Affinity cannot drop costs to 0, if you run out of AP, use a fire wand or staff to hit the ground near you. This ensures that even if you have to move, you can always recreate a fire surface for 1 AP on your next turn to keep your expensive 2 AP spells (Supernova, Fireball) discounted to 1 AP. This makes the Red Prince a constant source of high-pressure fire that never has to pay "full price" for his strongest nukes.
+
+for 14 slots 
+burning touch/ember shower/firebrand/haste/peace of mind/scorching ignition/searing volley/devour flames/fireball/magma geyser/self-immolation/spontaneous combustion/supernova/bleed fire/condemning explosion/fire-wwhip/epidemic of fire(2 slots)/laser ray/magma wall/will of the phoenix/sparking swings/sabotage/explosive trap

@@ -1,0 +1,53 @@
+--- seed 1 proposal/not-yet (cp.pn3)
+  * Ireland pulls out a ring halfway through hugging Derek.
+  Derek: No, don't, not here.
+  Ireland: I thought you'd want...
+  Derek: I want it to be just us. Not this. Please put it away.
+  * Ireland puts it away. Derek takes her hand anyway.
+  Derek: Ask me again. Somewhere quiet. I promise I'll say something better.
+--- seed 4 proposal/yes (cp.py1)
+  * Still on the mat, Chris McLean drops to one knee. Wayne stops mid-sentence.
+  Wayne: What are you doing? Get up, people are watching.
+  Chris McLean: That's sort of the point. I've been carrying this ring around the world in a sock.
+  Wayne: A sock?
+  Chris McLean: A clean sock. Mostly. Will you marry me?
+  Wayne: Yes! Yes, obviously, get up, you're kneeling on the mat!
+  * Don, for once in his life, says nothing at all.
+--- seed 5 proposal/yes (cp.py1)
+  * Still on the mat, Fiore drops to one knee. Sky stops mid-sentence.
+  Sky: What are you doing? Get up, people are watching.
+  Fiore: That's sort of the point. I've been carrying this ring around the world in a sock.
+  Sky: A sock?
+  Fiore: A clean sock. Mostly. Will you marry me?
+  Sky: Yes! Yes, obviously, get up, you're kneeling on the mat!
+  * Don, for once in his life, says nothing at all.
+--- seed 9 proposal/yes (cp.py1)
+  * Still on the mat, Caleb drops to one knee. Tristan stops mid-sentence.
+  Tristan: What are you doing? Get up, people are watching.
+  Caleb: That's sort of the point. I've been carrying this ring around the world in a sock.
+  Tristan: A sock?
+  Caleb: A clean sock. Mostly. Will you marry me?
+  Tristan: Yes! Yes, obviously, get up, you're kneeling on the mat!
+  * Don, for once in his life, says nothing at all.
+--- seed 11 proposal/not-yet (cp.pn3)
+  * Alejandro pulls out a ring halfway through hugging Ellody.
+  Ellody: No, don't, not here.
+  Alejandro: I thought you'd want...
+  Ellody: I want it to be just us. Not this. Please put it away.
+  * Alejandro puts it away. Ellody takes his hand anyway.
+  Ellody: Ask me again. Somewhere quiet. I promise I'll say something better.
+--- seed 12 proposal/yes (cp.py4)
+  Avani: We've done every challenge on this race together. I want to do the rest of it together too. The life part.
+  Alec: Are you... is this...
+  * Avani nods, and holds out a ring that is very clearly from a gift shop.
+  Avani: It's temporary. The ring. Not the question.
+  Alec: I love it. I love you. Yes.
+  * They hug so hard they both fall over, which the crew applauds.
+--- seed 12 proposal/yes (cp.py1)
+  * Still on the mat, Natasha drops to one knee. Beth stops mid-sentence.
+  Beth: What are you doing? Get up, people are watching.
+  Natasha: That's sort of the point. I've been carrying this ring around the world in a sock.
+  Beth: A sock?
+  Natasha: A clean sock. Mostly. Will you marry me?
+  Beth: Yes! Yes, obviously, get up, you're kneeling on the mat!
+  * Don, for once in his life, says nothing at all.

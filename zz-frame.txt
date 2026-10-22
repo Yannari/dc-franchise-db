@@ -1,0 +1,5 @@
+seed 8 e3s50 task-done fire-mountain-isle lava-falls mode=act plate=task-22425122 g=0 x=0,0 pmode=swim water=true
+seed 8 e4s45 task-try pyramid-coast pepper-cliff mode=act plate=task-9446545 g=0 x=0,0 pmode=dive water=true
+seed 8 e4s46 task-try pyramid-coast pepper-cliff mode=act plate=task-9446545 g=0 x=0,0 pmode=dive water=true
+seed 8 e4s47 task-try pyramid-coast pepper-cliff mode=act plate=task-9446545 g=0 x=0,0 pmode=dive water=true
+seed 8 e9s39 task-try cliff-pool-isle falls-dive mode=act plate=task-22416404 g=0 x=0,0 pmode=dive water=true

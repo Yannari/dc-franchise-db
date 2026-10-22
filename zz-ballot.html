@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>ballot probe</title>
+<style>body{margin:0;background:#222;display:grid;grid-template-columns:repeat(3,640px);gap:6px}.tdx{width:640px;height:360px;position:relative;container-type:inline-size}</style>
+<div id="g"></div>
+<script type="module">
+import { ballotHtml } from './js/vp-td-ep/stage.js';
+import { TDX_CSS, TDX_FONTS } from './js/vp-td-ep/style.js';
+const st = document.createElement('style'); st.textContent = TDX_FONTS + TDX_CSS; document.head.appendChild(st);
+const fresh = new URLSearchParams(location.search).get('fresh') === '1';
+const V=['Heather','Owen','Gwen','Duncan','Izzy','Noah','Courtney','Cody','Sierra']; document.body.innerHTML = ['hosted-camp', 'film-lot', 'world-tour', 'survival-island', 'carnival','hosted-camp','carnival','survival-island','film-lot'].map((v,i) => `<div class="tdx">${ballotHtml({ venue: v, voter: V[i], voted: ['Lindsay','Alejandro','Bridgette','Trent','Leshawna','Harold','Geoff','Izzy','DJ'][i] }, fresh)}</div>`).join('');
+</script>

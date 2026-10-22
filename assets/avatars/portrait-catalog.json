@@ -3029,6 +3029,25 @@
           "file": "arjun-look-1.png"
         }
       ]
+    },
+    "malik": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "malik.png"
+        },
+        {
+          "id": "look-1",
+          "show": "global",
+          "label": "Casual",
+          "file": "malik-look-1.png"
+        }
+      ]
     }
   }
 }

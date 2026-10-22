@@ -25,6 +25,7 @@ import { gs, players, seasonConfig } from './core.js';
 import { classifyEventTone } from './tone.js';
 import { SHOWS, DEFAULT_FORMAT, showWords, roundShape } from './shows.js';
 import { ROMANCE_EVENT_IDS } from './dr/data/werk-events.js';
+import { SHOW_SIGNAL_READERS } from './ratings-shows.js';
 
 export const RATINGS_V = 1;
 
@@ -589,6 +590,11 @@ export function readSignals(ep, prev, opts = {}) {
      not because it was flat, because nothing could see it. Asked of the
      registry rather than of a slug, so a fifth show declaring the same
      shape gets the same reader. */
+  // A show that names its own reader in the registry gets it, before any
+  // shape check: the race is 'placements' and the Circle 'ballots', and
+  // neither writes what those readers read (js/ratings-shows.js).
+  const ownReader = SHOW_SIGNAL_READERS[SHOWS[format]?.signals];
+  if (ownReader) return ownReader(ep, prev, { ...opts, format });
   if (roundShape(format) === 'placements') {
     return readPlacementSignals(ep, prev, { ...opts, format, events, tones, pop, house });
   }
@@ -984,11 +990,12 @@ export function ratingsForSeason(history, opts = {}) {
  * The rating a published season document stores: score, tier, the four
  * demographics to one decimal, and the weekly curve as bare numbers.
  *
- * Only for a show whose reader can actually see its rounds (Total Drama and
- * Big Brother's votes, Drag Race's placements, Perfect Match's villa). On a
- * show the readers cannot see, every signal reads zero and every season
- * publishes the same flat score — measured on The Circle, 46.1 "Okay" for
- * every seed — and Dramagram scales a whole cast's followers by it.
+ * Only for a show whose reader can actually see its rounds: Total Drama and
+ * Big Brother's votes, Drag Race's placements, Perfect Match's villa, and the
+ * four in js/ratings-shows.js. On a show the readers cannot see, every signal
+ * reads zero and every season publishes the same flat score — measured on The
+ * Circle before it had a reader, 46.1 "Okay" for every seed — and Dramagram
+ * scales a whole cast's followers by it.
  */
 export function publishedRatings(history, opts = {}) {
   const r = ratingsForSeason(history, opts);

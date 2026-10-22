@@ -217,6 +217,8 @@ export const SHOWS = {
        Declared, because the alternative is every screen asking which array
        came back non-empty, and a show that exports neither is drawn nothing. */
     roundShape: 'ballots',
+    // The ratings reader for this show's rows (js/ratings-shows.js).
+    signals: 'castle',
     // ── THE BALLOTS THE AUDIENCE NEVER SAW ────────────────────────────
     //
     // The conclave's murder ballots ride on the same `votes[]` as the Round
@@ -499,6 +501,8 @@ export const SHOWS = {
     hasJury: false,
     roundsPath: 'episodeHistory',
     roundShape: 'ballots',
+    // The ratings reader for this show's rows (js/ratings-shows.js).
+    signals: 'circle',
     words: {
       seasonComplete: 'The final ratings are in.',
       noExitLine: 'Nobody was blocked',
@@ -565,6 +569,8 @@ export const SHOWS = {
     hasJury: false,
     roundsPath: 'episodeHistory',
     roundShape: 'ballots',
+    // The ratings reader for this show's rows (js/ratings-shows.js).
+    signals: 'challenge',
     words: { seasonComplete: 'The final is over. The champions are crowned.', noExitLine: 'Nobody went home',
       openingStoryline: 'Alumni and rookies, one villa on Blue Lagoon, and every vote said out loud.',
       // An episode with nothing scheduled: every episode still has a vote and an Arena.
@@ -628,6 +634,8 @@ export const SHOWS = {
     hasJury: false,
     roundsPath: 'episodeHistory',
     roundShape: 'placements',
+    // The ratings reader for this show's rows (js/ratings-shows.js).
+    signals: 'race',
     words: { seasonComplete: 'The race is over. The winners are crowned.', noExitLine: 'Nobody went home',
       openingStoryline: 'Teams of two, one race around the world, and a million dollars at the finish line.',
       quietRound: 'A leg of the race',

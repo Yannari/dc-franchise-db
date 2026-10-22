@@ -1620,6 +1620,17 @@ export function extractSeasonTemplate() {
  * The per-episode curve is stored as bare numbers so the seasons page can draw
  * a sparkline without shipping every signal of every week.
  */
+/**
+ * The same, for a show that publishes its own document: Drag Race, The Traitors,
+ * The Challenge, Ridonculous Race and The Circle. Each has its own reader
+ * (js/ratings.js, js/ratings-shows.js), and before they did, these seasons
+ * carried no rating, so Dramagram paid every one of them a flat 1x reach.
+ */
+function _rateSeason(doc, rows, format) {
+  if (doc && !doc.ratings) doc.ratings = publishedRatings(rows, { format });
+  return doc;
+}
+
 function _extractRatings() {
   try {
     // Always derived from the episode history rather than read off
@@ -3465,6 +3476,7 @@ export async function exportTraitorsSeason(onStatus) {
   _status(`Built ${doc.seasonId}: ${doc.castSize} players, ${doc.episodeCount} episodes.`);
   doc = await _fillTraitorsNarratives(doc, rows, _status);
   doc.exitInterviews = publishedExits('traitors');
+  _rateSeason(doc, rows, TRAITORS_FORMAT);
 
   _status('Merging databases...');
   let playersDb = null; let seasonsDb = null;
@@ -3734,10 +3746,7 @@ export async function exportDragRaceSeason(onStatus) {
     congeniality: gs.dr?.congeniality || null,
   });
   doc.exitInterviews = publishedExits('drag-race');
-  // The placements reader sees a drag season (tests/dr-ratings.test.js), so it
-  // is rated like Total Drama's: stored here, and Dramagram scales every
-  // queen's followers by it. Before, a drag season carried no rating at all.
-  doc.ratings = doc.ratings || publishedRatings(rows, { format: DRAG_FORMAT });
+  _rateSeason(doc, rows, DRAG_FORMAT);
 
   _status(`Built ${doc.seasonId}: ${doc.castSize} queens, ${doc.episodeCount} episodes.`);
 
@@ -3984,6 +3993,7 @@ export async function exportChallengeSeason(onStatus) {
   const doc = buildChallengeSeasonDocument(rows, gs.ch.record, { seasonNumber: seasonNum, options,
     title: seasonConfig?.name || null });
   doc.exitInterviews = publishedExits('the-challenge');
+  _rateSeason(doc, rows, CHALLENGE_FORMAT);
   _status(`Built ${doc.seasonId}: ${doc.castSize} players, ${doc.episodeCount} episodes.`);
 
   // Every episode's screenplay, where the wiki fills look for it (episode-store.js, ch_episode_sN_eM). The
@@ -4163,6 +4173,7 @@ export async function exportRaceSeason(onStatus) {
   _status('Building the season document...');
   const { buildRaceSeasonDocument } = await import('./rr/export.js');
   const doc = buildRaceSeasonDocument(rows, gs.rr.record, { seasonNumber: seasonNum, title: seasonConfig?.name || null });
+  _rateSeason(doc, rows, RACE_FORMAT);
   _status(`Built ${doc.seasonId}: ${doc.castSize} racers, ${doc.episodeCount} legs.`);
 
   // every leg's transcript, where the wiki fills look for it (episode-store.js); never fails the export
@@ -4354,6 +4365,7 @@ export async function exportCircleSeason(onStatus) {
   const doc = buildCircleSeasonDocument(rows, gs.ci.record, { seasonNumber: seasonNum, title: seasonConfig?.name || null,
     photos: { ciPhotos: seasonConfig.ciPhotos || {}, pool: Array.isArray(seasonConfig.ciPool) ? seasonConfig.ciPool : [] } });
   doc.exitInterviews = publishedExits('the-circle');
+  _rateSeason(doc, rows, CIRCLE_FORMAT);
   _status(`Built ${doc.seasonId}: ${doc.castSize} players, ${doc.episodeCount} episodes.`);
 
   // Every episode's transcript, where the wiki fills look for it (episode-store.js, ci_episode_sN_eM). Never

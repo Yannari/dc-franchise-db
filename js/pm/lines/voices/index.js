@@ -24,5 +24,6 @@
 // in this spot (feedback: the Challenge's human-dialogue rules).
 import { BATCH1 } from './batch1.js';
 import { BATCH2 } from './batch2.js';
+import { BATCH3 } from './batch3.js';
 
-export const VOICES = [...BATCH1, ...BATCH2];
+export const VOICES = [...BATCH1, ...BATCH2, ...BATCH3];

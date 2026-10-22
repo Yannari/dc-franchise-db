@@ -3010,6 +3010,25 @@
           "file": "gigi-cherie-dr-look-1.png"
         }
       ]
+    },
+    "arjun": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "arjun.png"
+        },
+        {
+          "id": "look-1",
+          "show": "global",
+          "label": "Casual",
+          "file": "arjun-look-1.png"
+        }
+      ]
     }
   }
 }

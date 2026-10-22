@@ -8250,6 +8250,27 @@
       "descriptor": "The Firecracker",
       "backstory": "Zara grew up the middle of five children in a crowded house in Port of Spain, where you had to be loud to be heard at the dinner table and funny to be remembered. She started filming her family's Sunday cook-ups at nineteen, mostly to make her cousins laugh, and the videos of her mother arguing with the oven found an audience far bigger than the family. By twenty-three she had quit her office job at a shipping company to post full time. She has dated a little and loved once, a boyfriend who wanted her quieter, and she left him the week he said it. She came to the villa because every relationship she has had started in private and ended the moment she was herself in public.",
       "personality": "Zara is open, impulsive and almost impossible to offend, and she assumes everyone else is built the same way. She tells people what she thinks of them to their face, good or bad, and is honestly surprised when the bad half lands harder than she meant. She gets bored of anything predictable, so she tests couples, picks at polite silences and will say the thing everyone is avoiding just to see what happens. Under the noise she is loyal to anyone who can take her at full volume, and she has no patience for people who smile at her and talk about her later. She falls for confidence, then tests whether it is real."
+    },
+    {
+      "name": "Blair",
+      "slug": "blair",
+      "gender": "f",
+      "sexuality": "bi",
+      "archetype": "chaos-agent",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 7,
+        "social": 6,
+        "strategic": 7,
+        "loyalty": 3,
+        "boldness": 9,
+        "intuition": 7,
+        "temperament": 4
+      },
+      "voice": "Sharp, smirking and impossible to embarrass. Says the thing that ends a conversation, enjoys the silence after it, and walks in like she already owns the place. #blunt #dry#competitive#flirty",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

@@ -14,6 +14,9 @@ describe('rr: a side a team refuses', () => {
     let vegans = 0;
     for (let seed = 41; seed <= 52; seed++) {
       const { cast, teams } = raceCast(12, seed);
+      // (a team of Vegans in every season: the draw follows the roster's size, and a roster grown by two had none in
+      // twelve, 2026-10-22; the test measured its sample, not the rule)
+      if (!teams.some(t => t.identity === 'vegans')) Object.assign(teams[seed % teams.length], { identity: 'vegans', name: 'The Vegans' });
       setPlayers(cast);
       const res = playRaceSeason({ teams, seed, options: { pins: { 2: 'geyser-island' } } });
       for (const r of res.state.taskLog || []) {

@@ -136,9 +136,10 @@ export default {
       ] },
       { id: 'pa.ft-2', when: { fearDoes: ['rail', 'rope'] }, turns: [
         { by: 'a', say: "I can't. I'm going to fall. I know I'm going to fall." },
-        { by: 'b', ...V("You're not going to fall. You're clipped in. Look, the rope. You're attached to the rope.", "You're clipped in. Look. The rope.", "You're attached. Look at the rope.", "You're NOT going to fall! You're CLIPPED in! Look, the ROPE!",
-          "You're not going to fall. You're clipped in, look. You're attached to the rope.", "You're attached to a rope. The rope loves you. The rope won't let go.") },
-        { by: 'a', say: "What if the rope breaks?" },
+        // (the rail on the tower's deck or a rope: the clip is what holds them on both, 2026-10-22)
+        { by: 'b', ...V("You're not going to fall. You're clipped in. Look, the clip. You're attached.", "You're clipped in. Look. The clip.", "You're attached. Look at the clip.", "You're NOT going to fall! You're CLIPPED in! Look at it!",
+          "You're not going to fall. You're clipped in, look. You're attached.", "You're clipped on. The clip loves you. The clip won't let go.") },
+        { by: 'a', say: "What if the clip breaks?" },
         { by: 'b', say: "Then I'll catch you." },
         { by: 'a', say: "You can't catch me. You can't catch a ball." },
         { by: 'b', say: "I'll try really hard. Now take one step." },

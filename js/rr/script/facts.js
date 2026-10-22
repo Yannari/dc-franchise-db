@@ -137,7 +137,7 @@ export function factsFor(scene, roles, state) {
     behind: !s.fresh && s.rank != null && s.rank > 0.66, ahead: !s.fresh && s.rank != null && s.rank < 0.33,
     broke: !!s.broke, snapped: !!s.snapped,
     tod: todWord(s.tod),
-    stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null, fearDoes: s.fearDoes ?? null, eats: types.includes('stomach'), puzzle: types.includes('brains'),
+    stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null, fearDoes: s.fearDoes ?? null, eats: types.includes('stomach') && !s.noEat, puzzle: types.includes('brains'),
     side: s.side ?? null,
     at: atOf(s, d),
     matPlace: d.matPlace ?? null, why: d.why ?? null, rule: d.rule ?? null, byVote: !!d.byVote, stage: d.stage ?? null, blind: !!d.blind,

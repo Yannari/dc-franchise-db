@@ -22,7 +22,7 @@ export default {
       // surfer boy's verdict (rebuild what he points at); his nod and the tip
       stages: [{ id: 'the-plan', share: 0.3, risk: 0 }, { id: 'walls', share: 1, risk: 0.5 }, { id: 'towers', share: 1.2, risk: 0.8 },
         { id: 'the-verdict', share: 0.5, risk: 1 }, { id: 'the-nod', share: 0.3, risk: 0 }],
-      desc: "On the beach below the palace, both partners build a sand replica of it from a photo: the towers, the walls, the gates and the gardens, all of it. A little local surfer boy judges every one, and he is very, very strict. A palace that's missing a tower, that slumps when it dries, or that a wave washes into, is a no, and the team rebuilds what he points at. When the boy finally nods, he hands over the next tip." },
+      desc: "On the beach below the palace, both partners build a sand replica of it from a photo: the towers, the walls, the gates and the gardens, all of it. A little local surfer boy judges every one, very, very strictly. A palace that's missing a tower, that slumps when it dries, or that a wave washes into, is a no, and the team rebuilds whatever the boy points at. When the boy finally nods, the next tip is theirs." },
     { id: 'motorboat', kind: 'travel', mode: 'boat', base: 25, cost: 30, plate: 'harbour, speedboats', label: 'Motorboat to the Chill Zone',
       mishaps: [['engine-cuts-out', 15]], mishapRate: 0.1 },
     { id: 'mat', kind: 'mat', plate: 'harbour pier', label: 'The Chill Zone' },

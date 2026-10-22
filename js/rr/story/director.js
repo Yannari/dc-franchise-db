@@ -801,7 +801,8 @@ export function airLeg(state, leg) {
       const won = crown.teams[0];
       // (Don's lines about the runners-up's race, a flight landing or a challenge shut for the night, mean nothing once
       // the race is won: they don't air)
-      for (let i = segs.length - 1; i >= 0; i--) if (segs[i].kind === 'don-narrate' && segs[i].t > crown.t) segs.splice(i, 1);
+      // (in the crown's own minute too: it sorts after the crown, 2026-10-22, a flight landing aired after the winners)
+      for (let i = segs.length - 1; i >= 0; i--) if (segs[i].kind === 'don-narrate' && segs[i].t >= crown.t) segs.splice(i, 1);
       const chase = segs.filter(x => x.t > crown.t && x.kind !== 'don-crown' && !x.kind.startsWith('int-') && !x.teams.includes(won));
       const lo = Math.max(crown.t - 1, ...segs.filter(x => x.t < crown.t && !chase.includes(x)).map(x => x.t));
       chase.forEach((x, i) => { x.t = lo + ((crown.t - lo) * (i + 1)) / (chase.length + 1); });

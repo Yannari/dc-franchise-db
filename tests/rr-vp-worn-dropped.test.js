@@ -44,13 +44,15 @@ describe('rr viewer: what is dropped leaves their arms', () => {
   beforeAll(() => {
     // (the two climbs that drop what they carry: the cliff path at Cliff Pool Isle, the volcano at Fire Mountain Isle;
     // seasons until two drops are found)
-    for (const seed of [8, 3, 21, 44, 5, 9, 13, 17, 29, 31]) {
+    // (...and one whose lines say it goes: 2026-10-22, the two found first had lines that never said so)
+    const says = s => s.steps.some(x => x.part === 'beat' && DROPS.test(x.text || ''));
+    for (const seed of [8, 3, 21, 44, 5, 9, 13, 17, 29, 31, 37, 41, 47, 53]) {
       const { cast, teams } = raceCast(10, seed);
       setPlayers(cast);
       const res = playRaceSeason({ teams, seed, options: { pins: { 2: 'cliff-pool-isle', 3: 'fire-mountain-isle' } } });
       const aired = airSeason(res);
       for (const i of [1, 2]) for (const s of episodeScreens(res, aired, i).screens) if (s.plate?.drop) drops.push(s);
-      if (drops.length >= 2) break;
+      if (drops.length >= 2 && drops.some(says)) break;
     }
   }, 600000);
   it('marks the step it goes: the one the climb fails on', () => {

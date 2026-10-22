@@ -7,7 +7,8 @@ export default {
   region: 'ocean', map: { x: 33, y: 62 },
   arrive: 'airport', local: ['taxi', 'foot', 'glider'],
   stretches: [
-    { id: 'ants', called: 'the forest floor', kind: 'botch', types: ['nerve', 'stomach'], base: 12, pass: 0.5, loopCost: 8,
+    // (`eats: false`: a strong stomach for the stings, nothing to eat)
+    { id: 'ants', called: 'the forest floor', kind: 'botch', types: ['nerve', 'stomach'], eats: false, base: 12, pass: 0.5, loopCost: 8,
       teaser: 'Who has a high pain threshold?', plate: 'forest floor', label: 'Botch or Watch: the ant mitten',
       // the mitten held out, crawling (won't put a hand in); the hand in, the stings (out empty); the tip fished out in one
       // piece (dropped back in); the swollen hand and the tip. a's hand, b watches

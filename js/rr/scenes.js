@@ -88,6 +88,8 @@ export function snapOf(st, { tid = null, oid = null, stretch = null, t = null, f
     // how they travel on this stretch (flight, taxi, foot, camel...)
     mode: stretch?.mode ?? null,
     taskTypes: [...new Set(types)],
+    // (a stomach challenge with nothing to eat: the ant mitten takes a strong stomach, not an appetite)
+    ...(stretch?.eats === false ? { noEat: true } : {}),
     // what the challenge's scary part makes them do, and at which stage (fears.js)
     ...(() => { const f = fearAt(st.placeNow, stretch, tid && stretch?.id ? st.attempts?.[tid]?.[stretch.id]?.side : null); return f ? { fearDoes: f.does, fearAt: f.at } : {}; })(),
     fails: fails || 0,

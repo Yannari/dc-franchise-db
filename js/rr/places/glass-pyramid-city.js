@@ -23,7 +23,7 @@ export default {
       // back up; the designer's applause. a walks, b watches from the side
       stages: [{ id: 'the-outfit', share: 0.4, risk: 0.3 }, { id: 'the-walk', share: 0.6, risk: 0.8 }, { id: 'the-pose', share: 0.3, risk: 1 },
         { id: 'walk-back', share: 0.4, risk: 0.4 }, { id: 'applause', share: 0.2, risk: 0 }],
-      desc: "In the museum's grand hall, a fashion designer has built a runway between the statues, and the partner who didn't do the last Botch or Watch puts on one of her outfits, a towering, ridiculous creation, and walks it. They have to strut to the end, pose, turn and walk back without tripping, stopping or laughing. The designer watches from the front row and the other partner can only watch from the side. A wobble, a giggle or a fall means a new outfit and another walk. A walk the designer applauds earns the next tip." },
+      desc: "In the museum's grand hall, a fashion designer has built a runway between the statues, and the partner who didn't do the last Botch or Watch puts on one of the designer's outfits, a towering, ridiculous creation, and walks it. They have to strut to the end, pose, turn and walk back without tripping, stopping or laughing. The designer watches from the front row and the other partner can only watch from the side. A wobble, a giggle or a fall means a new outfit and another walk. A walk the designer applauds earns the next tip." },
     { id: 'mat', kind: 'mat', plate: 'glass pyramid at night', label: 'The Chill Zone' },
   ],
 };

@@ -8653,6 +8653,27 @@
       "voice": "Cocky, playful and full of stories from places he has been. Laughs big, competes harder than anyone, and turns every game into something he has to win. #competitive #loud#tough",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Valentina",
+      "slug": "valentina",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "villain",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 5,
+        "social": 7,
+        "strategic": 6,
+        "loyalty": 3,
+        "boldness": 9,
+        "intuition": 6,
+        "temperament": 4
+      },
+      "voice": "Confident, dramatic and unapologetic, rolling every word. Goes straight for whoever is coupled up, enjoys the fallout, and tells anyone who complains to keep their man closer. #theatrical #flirty#cruel #emotional",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

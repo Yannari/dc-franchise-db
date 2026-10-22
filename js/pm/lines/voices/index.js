@@ -35,5 +35,7 @@ import { BATCH10 } from './batch10.js';
 import { BATCH11 } from './batch11.js';
 import { BATCH12 } from './batch12.js';
 import { BATCH13 } from './batch13.js';
+import { BATCH14 } from './batch14.js';
+import { BATCH15 } from './batch15.js';
 
-export const VOICES = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5, ...BATCH6, ...BATCH7, ...BATCH8, ...BATCH9, ...BATCH10, ...BATCH11, ...BATCH12, ...BATCH13];
+export const VOICES = [...BATCH1, ...BATCH2, ...BATCH3, ...BATCH4, ...BATCH5, ...BATCH6, ...BATCH7, ...BATCH8, ...BATCH9, ...BATCH10, ...BATCH11, ...BATCH12, ...BATCH13, ...BATCH14, ...BATCH15];

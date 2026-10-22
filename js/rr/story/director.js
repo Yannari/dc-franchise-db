@@ -263,10 +263,27 @@ function cutByChallenge(segs, leg) {
       if (first != null && i > first && x.t > opens) part.set(x, M + 1);
     });
   }
+  // a team Don goes out to on the road is the leg's ending (the user, 2026-10-21: "this one didnt announce the
+  // eliminated"): Don's walk out to them and their goodbye after the last check-in, and what they were still doing once
+  // the mat was open cut in with the check-ins before it (a team that never got there airs nowhere ahead of its exit)
+  const road = new Set(Object.entries(leg.how || {}).filter(([, h]) => h === 'on-location').map(([id]) => id));
+  // (once Don has reached them, nothing they did after it happened on screen: it doesn't air)
+  const exitAt = id => segs.find(x => x.kind === 'don-arrives' && x.teams.includes(id))?.t ?? Infinity;
+  const gone = new Set();
+  const reached = id => new Set(segs.filter(x => x.teams.includes(id) && x.stretch && x.t <= exitAt(id) + 0.01).map(x => x.stretch)
+    .concat((runs[id] || []).filter(l => l.from <= exitAt(id) + 0.01).map(l => l.stretch)));
+  if (road.size) for (const x of segs) {
+    if (!x.teams.length || !x.teams.every(id => road.has(id))) continue;
+    if (EXIT_KINDS.has(x.kind) || x.kind === 'int-exit' || (AFTER_EXIT.has(x.kind) && x.kind !== 'don-narrate')) part.set(x, M + 2);
+    // (the challenge they were at when Don came still airs, unfinished; one they only got to afterwards doesn't)
+    else if (!aboutOf(x) && x.t > exitAt(x.teams[0]) + 0.01 && !(x.kind.startsWith('task-') && reached(x.teams[0]).has(x.stretch))) gone.add(x);
+    else if (Number.isFinite(opens) && x.t > opens && !aboutOf(x)) part.set(x, M + 1);
+  }
   for (const x of segs) { const a = aboutOf(x); if (a) part.set(x, part.get(a)); }
   // (a stable sort: within a part the clock order stands)
   const idx = new Map(segs.map((x, i) => [x, i]));
   segs.sort((x, y) => part.get(x) - part.get(y) || idx.get(x) - idx.get(y));
+  for (const x of gone) { const a = segs.filter(y => aboutOf(y) === x); for (const y of [x, ...a]) segs.splice(segs.indexOf(y), 1); }
 }
 
 export function airLeg(state, leg) {

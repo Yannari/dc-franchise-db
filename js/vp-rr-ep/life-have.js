@@ -329,6 +329,9 @@ export const LIFE = {
   "wind",
   "water"
  ],
+ "assets/sets/rr/home-city/task-zip-launch.webp": [
+  "water"
+ ],
  "assets/sets/rr/ice-floe/present-9445072.webp": [
   "water"
  ],
@@ -409,6 +412,12 @@ export const LIFE = {
   "water"
  ],
  "assets/sets/rr/pyramid-coast/task-9446588.webp": [
+  "water"
+ ],
+ "assets/sets/rr/pyramid-coast/task-pepper-edge.webp": [
+  "water"
+ ],
+ "assets/sets/rr/pyramid-coast/task-pepper-rocks.webp": [
   "water"
  ],
  "assets/sets/rr/red-outback/empty-tent-camp-on-ochre-cliffs-1.webp": [

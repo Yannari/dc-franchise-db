@@ -141,7 +141,12 @@ describe('rr challenges in stages', () => {
     for (const { screens } of runs) for (const ep of screens) for (const s of ep.screens) {
       if (s.seg !== 'task-stage' || s.place !== 'pyramid-coast') continue;
       if (s.stage === 'the-ledge') { ledges++; expect(Object.values(s.localFaces || {}).map(f => f.id), s.id).not.toContain('pepper-vendor'); }
-      if (['cliff-jump', 'milk-swim'].includes(s.stage)) { swims++; expect(s.swimmers?.[s.teams[0]], s.id).toEqual([s.who[1]]); }
+      // (in the water, the jumper swims; on the rocks at the foot of the cliff, the jumper is there alone, the eater up top)
+      if (['cliff-jump', 'milk-swim'].includes(s.stage)) {
+        swims++;
+        if (s.plate?.water === false) expect(s.away?.[s.teams[0]], s.id).toEqual([s.who[0]]);
+        else expect(s.swimmers?.[s.teams[0]], s.id).toEqual([s.who[1]]);
+      }
     }
     expect(swims + ledges).toBeGreaterThan(0);
   });

@@ -133,10 +133,8 @@ ice-floe | chill-9444869 | talk:igloo | 92 | 6,94 |
 ice-floe | task-9444616 | talk:narwhal | 92 | 6,60 | {"deco":[["narwhal",74,78,15,{"move":"surface"}]]}
 ice-floe | task-9444866 | views | | |
 ice-floe | task-9445108 | talk:floe-run | 92 | 6,94 |
-pyramid-coast | chill-9446835 | skip:somebody is standing at the left edge | | |
 pyramid-coast | present-9446604 | views | | |
 pyramid-coast | present-9446715 | views | | |
-pyramid-coast | task-9446458 | skip:somebody is standing at the stall | | |
 pyramid-coast | task-9446545 | alt:pepper-cliff | 0 | 0,0 | {"water":true,"mode":"dive","path":[[34,44],[34,60],[34,74],[34,88]],"fx":"splash"}
 fishing-cove | present-22415825 | views | | |
 fishing-cove | task-22415659 | views | | |

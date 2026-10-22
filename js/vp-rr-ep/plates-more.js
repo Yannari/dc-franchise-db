@@ -2505,10 +2505,6 @@ export const LEFT_OUT = {
   "cutout/mummy": "Tomb Sands' mummy (used there, from its own folder)",
   "cutout/reed-boat": "Tomb Sands' reed boat (used there, from its own folder)"
  },
- "pyramid-coast": {
-  "chill-9446835": "somebody is standing at the left edge",
-  "task-9446458": "somebody is standing at the stall"
- },
  "cliff-pool-isle": {
   "task-22416354": "pale empty water with one fin: on screen it reads as nothing"
  },

@@ -997,7 +997,8 @@ function layout(s, size) {
       const watching = [];
       for (const id of s.teams) {
         const pair = s.members[id] || [];
-        const doer = pair.includes(s.who[0]) ? s.who[0] : pair[0];
+        // (`solo: 'b'`: the second partner is the one doing it, the jumper climbing out on the rocks with the milk)
+        const doer = plate.solo === 'b' && pair.includes(s.who[1]) ? s.who[1] : pair.includes(s.who[0]) ? s.who[0] : pair[0];
         s.away[id] = pair.filter(x => x !== doer);
         watching.push(...s.away[id]);
       }
@@ -1036,12 +1037,14 @@ function layout(s, size) {
     }
     if (s.mode === 'act' && plate?.mode) { s.work = plate.mode; s.plan = progressPlan(ps, s.ending); placeWorkProps(s, marks); }
     // (`solo` in place: one partner does it on the spot, the slap dance on the pad, the other in the box)
-    if (s.mode === 'act' && plate?.solo && s.seg === 'task-stage') {
+    // (and standing: the jumper alone on the rocks at the foot of the cliff, the eater waiting up top)
+    if ((s.mode === 'act' || plate?.solo === 'b') && plate?.solo && s.seg === 'task-stage') {
       s.away = {};
       const watching = [];
       for (const id of s.teams) {
         const pair = s.members[id] || [];
-        const doer = pair.includes(s.who[0]) ? s.who[0] : pair[0];
+        // (`solo: 'b'`: the second partner is the one doing it, the jumper climbing out on the rocks with the milk)
+        const doer = plate.solo === 'b' && pair.includes(s.who[1]) ? s.who[1] : pair.includes(s.who[0]) ? s.who[0] : pair[0];
         s.away[id] = pair.filter(x => x !== doer);
         watching.push(...s.away[id]);
       }

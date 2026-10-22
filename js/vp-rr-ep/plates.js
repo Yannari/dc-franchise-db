@@ -578,7 +578,7 @@ export const PLACE_PLATES = {
     src: '21-pyramid-coast', title: 'present-9446346', opener: p('present-9446663', 92, [6, 94]),
     arrive: [p('arrive-9446385', 94, [6, 94])],
     // (the foot of the cliff: only the milk's stage stands there)
-    stageOnly: repaint('task-pepper-rocks', [p('task-pepper-rocks', 88, [6, 70])], []),
+    stageOnly: repaint('task-pepper-rocks', [p('task-pepper-rocks', 86, [16, 78])], []),
     props: { flags: 'Green, orange, and red hand flags-5', peppers: 'Green, orange, and red pepper trio-6', canteen: 'Sage Green Milk Canteen Cutout-4',
       burro: 'Sleepy Grey Burro Prop-3' },
     st: {
@@ -589,11 +589,11 @@ export const PLACE_PLATES = {
       // 2026-10-22, the user: "why is pyramid coast only 4 screens?": the vendor's hut and the cliff's edge with the
       // flags take the canyon road's place once they're painted)
       'pepper-cliff': { talk: [p('task-9446542', 94, [6, 94]),
-        ...repaint('task-9446458', [p('task-9446458', 84, [4, 96])], []),
-        ...repaint('task-pepper-edge', [p('task-pepper-edge', 88, [4, 70])], [p('task-9446799', 94, [6, 94])])],
+        ...repaint('task-9446458', [p('task-9446458', 88, [4, 78])], []),
+        ...repaint('task-pepper-edge', [p('task-pepper-edge', 88, [4, 64])], [p('task-9446799', 94, [6, 94])])],
         act: p('task-9446542', 94, [6, 94], { mode: 'eat', prop: 'peppers', propW: 0.75, judge: ['flags', 0.9], fx: 'steam' }),
         act2: p('task-9446588', 0, [0, 0], { water: true, mode: 'swim', prop: 'canteen', path: [[16, 46], [36, 54], [60, 50], [80, 58]], fx: 'bubbles', inset: 'ON THE CLIFF' }) },
-      'burro-ride': { talk: [p('present-9446663', 92, [6, 94]), ...repaint('chill-9446835', [p('chill-9446835', 84, [14, 96])], [])],
+      'burro-ride': { talk: [p('present-9446663', 92, [6, 94]), ...repaint('chill-9446835', [p('chill-9446835', 80, [18, 92])], [])],
         act: p('task-9446799', 94, [6, 94], { mode: 'ride', prop: 'burro', path: [[-12, 94], [44, 92], [112, 94]], fx: 'dust' }) },
       mat: { talk: [p('chill-9446872', 64, [8, 92], { mat: [33, 61], scale: 0.75 })] },
     },
@@ -1595,8 +1595,8 @@ export const STAGE_SHOTS = {
       // (the rocks at the foot of the cliff, where the jumper climbs out with the canteen; the cliff's edge, where the
       // eater waits for it: 2026-10-22)
       'milk-swim': { label: 'THE MILK', plate: ['task-9446588', { mode: 'swim', swimmer: 'b', inset: 'AT THE CART' }], fail: ['task-9446588', { mode: 'swim', swimmer: 'b', inset: 'AT THE CART' }], stamp: 'LOST IT',
-        ...repaint('task-pepper-rocks', { alt: [['task-pepper-rocks', { mode: undefined, swimmer: undefined, inset: undefined, water: false, g: 88, x: [6, 70] }]] }, {}) },
-      'milk-delivered': { label: 'MILK!', plate: repaint('task-pepper-edge', ['task-pepper-edge', { mode: undefined, prop: undefined, g: 88, x: [4, 70], deco: [['canteen', 40, 88, 4]] }],
+        ...repaint('task-pepper-rocks', { alt: [['task-pepper-rocks', { mode: undefined, swimmer: undefined, solo: 'b', inset: 'AT THE TOP', water: false, g: 86, x: [16, 78] }]] }, {}) },
+      'milk-delivered': { label: 'MILK!', plate: repaint('task-pepper-edge', ['task-pepper-edge', { mode: undefined, prop: undefined, g: 88, x: [4, 64], deco: [['canteen', 40, 88, 4]] }],
         ['task-9446542', { mode: undefined, prop: undefined, deco: [['canteen', 44, 94, 4]] }]) },
     },
   },

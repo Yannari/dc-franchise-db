@@ -3054,6 +3054,25 @@
           "file": "malik-look-1.png"
         }
       ]
+    },
+    "rafael": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "rafael.png"
+        },
+        {
+          "id": "look-1",
+          "show": "global",
+          "label": "Casual",
+          "file": "rafael-look-1.png"
+        }
+      ]
     }
   }
 }

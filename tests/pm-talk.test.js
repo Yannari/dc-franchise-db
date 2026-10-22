@@ -22,7 +22,7 @@ const narration = e => [e.stage, e.beat].filter(Boolean);
 const tag = (kind, slot, e) => `${kind}.${slot} ${e.id}`;
 
 // Who a kind casts beyond {a} and {b}, and what fills {about}.
-const THREE = new Set(['gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief']);
+const THREE = new Set(['gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back']);
 const DEBRIEF_THREE = ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat'];
 const ABOUT_ALWAYS = new Set(['casa-miss', 'kin-protect']);
 const ABOUT_CAUSES = ['jealous', 'envy', 'rival', 'stole', 'told'];
@@ -67,6 +67,8 @@ describe('a placeholder only where somebody fills it', () => {
   it('{c} only in a kind that casts three', () => {
     for (const [k, s, e] of ENTRIES) {
       if (!texts(e).some(x => /\{c[.}]/.test(x))) continue;
+      // A recoupling names a third only when it is a steal: {c} lost {b}.
+      if (k === 'recouple-pick') { expect(e.when?.stoleFrom, tag(k, s, e)).toBe(true); continue; }
       expect(THREE.has(k), tag(k, s, e)).toBe(true);
       if (k === 'debrief') expect(list(e.when?.of).length && list(e.when.of).every(o => DEBRIEF_THREE.includes(o)), tag(k, s, e)).toBe(true);
     }

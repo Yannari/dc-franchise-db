@@ -98,7 +98,7 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   // the director (pm/story/director.js): how each one sounds, how much is shown, what it follows
   'reg', 'bReg', 'tier', 'after', 'afterBy', 'afterWhen', 'end', 'firstKiss', 'bPartnered', 'fresh', 'bFresh',
   // a talk file's own (pm/talk/*.js facts())
-  'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere'];
+  'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -176,6 +176,8 @@ export function factsFor(state, ev) {
   // How much a feels for b, in words a line can lean on (narration only):
   // "not yet" is somebody who cares; a real no is somebody who doesn't.
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
+  // …and how much b feels for a, the same way: whether it is said back.
+  if (b) { const r = romance(b, a); f.bFeels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.bFeels = null;
   for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since', 'staying', 'came', 'risk']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   // A recoupling "steal" of the chooser's own partner from before tonight.
   f.reclaim = !!ev.extra?.reclaim;

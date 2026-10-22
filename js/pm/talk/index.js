@@ -20,6 +20,10 @@ import { COMFORT } from './comfort.js';
 import { CASA_MISS, BED_SHARE } from './casa.js';
 import { CHALLENGE_KISS, CHALLENGE_WIN } from './challenge.js';
 import { DEBRIEF } from './debrief.js';
+import { RECOUPLE_PICK } from './recouple.js';
+import { DUMP_REACTION, SOLIDARITY, DUMP_GOODBYE } from './dumping.js';
+import { DATE_PICKED, DATE, DATE_BACK } from './dates.js';
+import { CLOSE_OFF, KEEPING_OPEN, OPEN_BACK_UP, EXCLUSIVE_ASK, OFFICIAL_ASK, ASK_DECLINED, LOVE_SAID, LOVE_HANGING } from './ladder.js';
 import { KIN_HEART, KIN_VET, KIN_PROTECT, EX_AWKWARD, EX_JEALOUS } from './kin.js';
 import { REASSURANCE, JEALOUS_CONFRONT, JEALOUS_RETALIATE, CONFESSION, NO_SHOW } from './jealousy.js';
 
@@ -27,4 +31,8 @@ export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'dee
   comedy: COMEDY, ick: ICK, advice: ADVICE, vent: VENT, comfort: COMFORT, 'casa-miss': CASA_MISS, 'bed-share': BED_SHARE,
   'challenge-kiss': CHALLENGE_KISS, 'challenge-win': CHALLENGE_WIN,
   reassurance: REASSURANCE, 'jealous-confront': JEALOUS_CONFRONT, 'jealous-retaliate': JEALOUS_RETALIATE, confession: CONFESSION, 'no-show': NO_SHOW, debrief: DEBRIEF,
+  'recouple-pick': RECOUPLE_PICK, 'dump-reaction': DUMP_REACTION, solidarity: SOLIDARITY, 'dump-goodbye': DUMP_GOODBYE,
+  'date-picked': DATE_PICKED, date: DATE, 'date-back': DATE_BACK,
+  'close-off': CLOSE_OFF, 'keeping-open': KEEPING_OPEN, 'open-back-up': OPEN_BACK_UP, 'exclusive-ask': EXCLUSIVE_ASK,
+  'official-ask': OFFICIAL_ASK, 'ask-declined': ASK_DECLINED, 'love-said': LOVE_SAID, 'love-hanging': LOVE_HANGING,
   'kin-heart': KIN_HEART, 'kin-vet': KIN_VET, 'kin-protect': KIN_PROTECT, 'ex-awkward': EX_AWKWARD, 'ex-jealous': EX_JEALOUS };

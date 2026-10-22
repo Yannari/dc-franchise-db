@@ -51,11 +51,23 @@ function titleFor(c, used) {
   return t;
 }
 
-/** The clip's own words, as they were said: the only thing Movie Night shows. */
+/**
+ * The clip's own words, as they were said: the only thing Movie Night shows.
+ * A whole conversation (pm/talk/, since the 2026-10-22 rebuild) is clipped to
+ * where it lands: its last few lines and its closing beat (the kiss, the
+ * promise, the no), never "Can I grab you for a chat?" from its opening.
+ */
+const CLIP_LINES = 8;
 function footage(e, hutOnly) {
   const src = hutOnly ? e.hut?.script : e.script;
-  const lines = (src?.lines || []).map(l => ({ who: l.who, text: l.text, ...(l.action ? { action: true } : {}) }));
-  return { lines, stage: hutOnly ? null : src?.stage || null, beat: hutOnly ? null : src?.beat || null };
+  let lines = (src?.lines || []).map(l => ({ who: l.who, text: l.text, ...(l.action ? { action: true } : {}) }));
+  if (!hutOnly && lines.length > CLIP_LINES) {
+    let at = lines.length - CLIP_LINES;
+    while (at < lines.length - 1 && lines[at].action) at++;   // start on somebody speaking
+    lines = lines.slice(at);
+  }
+  if (!hutOnly && src?.beat) lines.push({ who: '', text: src.beat, action: true });
+  return { lines, stage: hutOnly ? null : src?.stage || null, beat: null };
 }
 
 function candidates(state) {

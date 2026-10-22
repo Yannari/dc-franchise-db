@@ -8279,6 +8279,27 @@
       "descriptor": "The Wrecking Ball",
       "backstory": "Blair dropped out of art school in Los Angeles after one year, apprenticed in a tattoo shop and has had her own chair since she was twenty-two. Her parents divorced loudly when she was ten, and she spent her teens moving between two houses where everyone said polite things and meant the opposite, which left her with no patience for politeness at all. She has a waiting list of clients, a reputation for saying what she thinks of their ideas, and a long line of exes she is still friends with. She came to the villa as a bombshell because she likes walking into rooms where people have already got comfortable.",
       "personality": "Blair is bold, funny and deliberately disruptive. She gets bored of anything settled and enjoys poking at couples to see which ones are real. She is honest to the point of rudeness and finds it funny when people flinch. She is not malicious, and she will defend someone being ganged up on, but she never pretends to like anyone she doesn't. She is drawn to whoever is already taken, partly for the challenge and partly because she doesn't believe in anything that hasn't been tested. Her temper is short and her loyalty is earned slowly, and the one thing that disarms her is someone who isn't scared of her at all."
+    },
+    {
+      "name": "Callum",
+      "slug": "callum",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "underdog",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 6,
+        "social": 5,
+        "strategic": 5,
+        "loyalty": 10,
+        "boldness": 3,
+        "intuition": 5,
+        "temperament": 9
+      },
+      "voice": "Soft-spoken and shy with a dry Glasgow humour that sneaks up on you. Blushes easily, overthinks every compliment, and means it completely when he finally says something. #quiet #-dry#nerdy#warm#goofy",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

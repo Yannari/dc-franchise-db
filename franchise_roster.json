@@ -8044,6 +8044,27 @@
       "voice": "Big, loud and warm, always mid-story with a grin. Gives everyone a nickname within an hour, laughs from the chest, and cannot stand a room with nothing going on. #loud #goofy",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Mei",
+      "slug": "mei",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 7,
+        "social": 4,
+        "strategic": 7,
+        "loyalty": 6,
+        "boldness": 5,
+        "intuition": 9,
+        "temperament": 9
+      },
+      "voice": "Cool, dry and sparing with words. Watches more than she talks, lands one sharp line when it counts, and is almost never surprised. #dry #quiet#emotional#earnest",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

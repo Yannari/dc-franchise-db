@@ -556,6 +556,14 @@
       "prop": "blowpipe",
       "ref": "task-22423157",
       "why": "the safari in stages (2026-10-21): a long thin wooden blowpipe with a little feathered sleepy-dart beside it, lying flat, as a cut-out; the racers shoot the animal with it; no cut-out of one (meanwhile the dart stage shows no blowpipe)"
+    },
+    {
+      "place": "home-city",
+      "src": "02-home-city",
+      "file": "task-zip-launch",
+      "new": true,
+      "ref": "task-9434827",
+      "why": "the zipline's start (2026-10-21): a launch platform at the top of the city tower, a railing and a gate, the cable running out from it over the lake to the island airport, floor to stand on; the clip-in used the sky-deck's outside deck and read as the team back on the sky-deck (stand-in: the corridor at the top, task-9434876)"
     }
   ]
 }

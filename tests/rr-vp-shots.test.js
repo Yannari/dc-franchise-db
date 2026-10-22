@@ -21,7 +21,10 @@ import { existsSync } from 'node:fs';
 
 const eps = [];
 beforeAll(() => {
-  for (const [seed, pins] of [[41, { 2: 'ice-river', 3: 'pampas-ranch' }], [42, { 2: 'coast-palace', 3: 'outback-farm', 4: 'fishing-cove' }]]) {
+  for (const [seed, pins] of [[41, { 2: 'ice-river', 3: 'pampas-ranch' }], [42, { 2: 'coast-palace', 3: 'outback-farm', 4: 'fishing-cove' }],
+    // (a third, so a crowd at a challenge with a wide shot is in the sample whatever the seasons draw: 2026-10-21 the two
+    // above came out with none, and the test measured its sample, not the viewer)
+    [43, { 2: 'pampas-ranch', 3: 'coast-palace', 4: 'outback-farm' }]]) {
     const { cast, teams } = raceCast(12, seed);
     setPlayers(cast);
     const res = playRaceSeason({ teams, seed, options: { pins } });

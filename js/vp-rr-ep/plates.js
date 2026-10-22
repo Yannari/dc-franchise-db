@@ -64,7 +64,7 @@ export const PLACE_PLATES = {
             act: p('task-9434827', 70, [12, 88], { mode: 'walk', path: [[8, 52], [30, 53], [55, 53], [80, 52], [96, 50]], fx: 'wind', wear: 'helmet' }) },
         },
       },
-      zipline: { talk: [p('task-9434876', 93, [10, 70], { closed: true })],
+      zipline: { talk: [p('task-9434876', 93, [10, 70], { closed: true }), ...(REPAINTED.has('task-zip-launch') ? [p('task-zip-launch', 90, [8, 70])] : [])],
         act: p('task-9435028', 0, [0, 0], { water: true, mode: 'zip', prop: 'trolley', path: [[24, 38], [38, 45], [52, 52], [66, 60]], fx: 'wind', wear: 'helmet' }) },
       mat: { talk: [p('travel-9435166', 95, [6, 94])] },
     },
@@ -1071,6 +1071,9 @@ const FEAST = repaint('task-feast-hut', 'task-feast-hut', 'task-9437341'), FEAST
 const CATACOMBS = repaint('task-catacombs', 'task-catacombs', 'task-9436279');
 // the grass skirts, worn (lei-island's fire walk)
 const HULA = { wear: 'hula', wearOn: 'waist' };
+// the zipline's launch platform (a job), or meanwhile the corridor at the top of the tower
+const ZIP_LAUNCH = REPAINTED.has('task-zip-launch') ? ['task-zip-launch', { mode: undefined, path: undefined, fx: 'wind', wear: 'helmet', deco: [['trolley', 82, 70, 5]] }]
+  : ['task-9434876', { mode: undefined, path: undefined, wear: 'helmet' }];
 const BEAR_CLOSE = [['bear', 74, 84, 11, { move: 'wander', span: 8, dur: 10 }]];
 export const STAGE_SHOTS = {
   'home-city': {
@@ -1087,7 +1090,9 @@ export const STAGE_SHOTS = {
       'deck-top': { label: 'THE TIP', plate: ['task-9434876', {}] },
     },
     zipline: {
-      'clip-in': { label: 'CLIP IN', plate: ['task-9434827', { mode: undefined, path: undefined, fx: 'wind', wear: 'helmet', deco: [['trolley', 86, 62, 5]] }], fail: ['task-9434827', { mode: undefined, path: undefined, fx: 'wind', wear: 'helmet', deco: [['trolley', 86, 62, 5]] }] },
+      // (the launch platform is a job, edit/02-home-city: the outside deck it used is the sky-deck's, and read as the team
+      // back on the sky-deck, 2026-10-21; meanwhile the corridor at the top, where the zipline starts)
+      'clip-in': { label: 'CLIP IN', plate: ZIP_LAUNCH, fail: ZIP_LAUNCH },
       'over-lake': { label: 'OVER THE LAKE', plate: ['task-9435028', { mode: 'zip', wear: 'helmet' }], fail: ['task-9435028', { mode: 'zip', wear: 'helmet' }] },
       'grab-tip': { label: 'THE TIP ON THE LINE', plate: ['travel-9435206', ZIP_AIRPORT], fail: ['travel-9435206', ZIP_AIRPORT] },
       landing: { label: 'THE ISLAND AIRPORT', plate: ['travel-9435206', { people: undefined, g: 96, x: [52, 94] }] },

@@ -131,6 +131,8 @@ export function episodeScreens(res, eps, i) {
   const named = new Set();          // teams captioned in the confessional already this episode
   const screens = [];
   let lastPlate = plates?.opener || null, lastT = null;
+  // where each team was last seen standing at a stretch, and when (one place at a time: see SAME_SPOT)
+  const seenAt = {};
 
   const push = s => { s.id = `e${leg.n}s${screens.length}`; screens.push(s); return s; };
   const nameOfTeam = id => st.teams[id]?.name || id;
@@ -329,7 +331,16 @@ export function episodeScreens(res, eps, i) {
         const wides = TASKS.has(stretch.kind) ? (sp?.wide || []).filter(standable) : [];
         const room = TASKS.has(stretch.kind) && sp?.act && standable(sp.act) && IN_PLACE.has(sp.act.mode)
           ? [sp.act, ...(sp.alt || []).filter(a => standable(a) && IN_PLACE.has(a.mode))] : [];
-        if (here.length) plate = pick(here, nth(`${placeId}|${key}|${stageNow}`));
+        // a team seen at this stretch minutes ago is still where it was seen: the shot of the latest sighting of any team in
+        // the scene (the user, 2026-10-21: "FINN and Manu are outside then right after inside again", both at 08:12)
+        const near = segTeams.map(id => seenAt[id]).filter(p => p && p.stretch === seg.stretch
+          && Math.abs(p.t - seg.t) <= SAME_SPOT && standable(p.plate)).sort((x, y) => Math.abs(x.t - seg.t) - Math.abs(y.t - seg.t) || y.n - x.n)[0];
+        // (only a conversation between two teams: a team's own moment is where its stage is, a challenge opens wide, a crowd
+        // is shot wide, and two teams of different sides meet at the foot)
+        const talking = segTeams.length === 2 && !atStart && !/^task-/.test(k) && !(wides.length && !opened.has(key));
+        // (the team the scene is about at a stage of the challenge: the scene is there, and the other team with it)
+        if (near && talking && !here.length) plate = near.plate;
+        else if (here.length) plate = pick(here, nth(`${placeId}|${key}|${stageNow}`));
         else if (wides.length && (!opened.has(key) || segTeams.length >= 3)) plate = pick(wides, nth(`${placeId}|${key}|wide`));
         else if (room.length) plate = pick(room, nth(`${placeId}|${key}|room`));
         else plate = pick(sp?.talk, nth(`${placeId}|${key}`)) || sp?.act || (lastPlate?.place === placeId ? lastPlate : plates.opener);
@@ -352,6 +363,7 @@ export function episodeScreens(res, eps, i) {
     }
     if (plate && !plate.race) plate = { ...plate, place: plate.place || placeFor };
     if (plate && mode !== 'iv' && standable(plate)) lastPlate = { ...plate };
+    if (plate && mode === 'talk' && seg.stretch && seg.t != null && standable(plate)) for (const id of segTeams) seenAt[id] = { stretch: seg.stretch, t: seg.t, plate, n: screens.length };
 
     // the time card, on the first step after a gap in the clock
     let timecard = null;
@@ -693,6 +705,8 @@ function progressPlan(n, ending, failAt = -1) {
 // aisle), and a cabin that cannot hold everyone at the floor keeps the ones the scene is about (the user, 2026-10-19:
 // "a crowded same-flight galley overlaps").
 export const OVERLAP_OK = 0.08;                 // two faces may touch by this much of the smaller one, no more
+// minutes in which a team seen at a stretch is still where it was seen
+export const SAME_SPOT = 5;
 const STAGED = ['marks', 'as', 'pos', 'plan', 'swimmers', 'away', 'inset', 'donStand', 'localAt', 'boxAt', 'matAt', 'donAt', 'hiddenUntil', 'onMatAt', 'work', 'lift', 'liftAt',
   'workProp', 'judgeAt', 'leapAt', 'dropAt'];
 // The work's cut-out beside the team doing it (a sand palace, a mitten, a platter), on the side with more room, and the
@@ -1611,7 +1625,9 @@ function declutterCrowd(s) {
       const boxes = crowdBoxes(s, c, at);
       // off the picture (a rider still to come in): nobody to stand on
       if (boxes.every(b => b[2] <= 0 || b[0] >= 100)) continue;
-      const clear = bs => bs.every(b => { const p = padOf({ box: b, work: ['run', 'swing', 'push'].includes(c.as) ? c.as : c.work }, s.crowdSize || (s.size || 8) * CROWD_SCALE); return taken.every(t => overlapOf(p, t) <= OVERLAP_OK); });
+      // (the faces themselves too: padding the crowd's box makes it bigger, and a share of a bigger box is smaller; a real
+      // 0.081 overlap passed as 0.079, 2026-10-21)
+      const clear = bs => bs.every(b => { const p = padOf({ box: b, work: ['run', 'swing', 'push'].includes(c.as) ? c.as : c.work }, s.crowdSize || (s.size || 8) * CROWD_SCALE); return taken.every(t => overlapOf(p, t) <= OVERLAP_OK && overlapOf(b, t) <= OVERLAP_OK); });
       // and whole in the wide picture, its work loop and the plate's slow push included (a face half out would fade)
       const zc = s.crowdSize || (s.size || 8) * CROWD_SCALE, work = c.as === 'run' || c.as === 'swing' ? c.as : c.work;
       const inside = bs => bs.every(b => { const p = padOf({ box: b, work }, zc); return p[0] >= EDGE && p[2] <= 100 - EDGE; });

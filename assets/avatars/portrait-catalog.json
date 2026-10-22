@@ -3092,6 +3092,63 @@
           "file": "sean-look-1.png"
         }
       ]
+    },
+    "skye": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "skye.png"
+        },
+        {
+          "id": "look-1",
+          "show": "global",
+          "label": "Casual",
+          "file": "skye-look-1.png"
+        }
+      ]
+    },
+    "theo": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "theo.png"
+        },
+        {
+          "id": "look-1",
+          "show": "global",
+          "label": "Casual",
+          "file": "theo-look-1.png"
+        }
+      ]
+    },
+    "zara": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "zara.png"
+        },
+        {
+          "id": "look-1",
+          "show": "global",
+          "label": "Casual",
+          "file": "zara-look-1.png"
+        }
+      ]
     }
   }
 }

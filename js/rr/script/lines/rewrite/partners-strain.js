@@ -108,7 +108,17 @@ export default {
         { beat: '{a} is already writing one on the back of an old tip.' },
         { by: 'a', say: "This sign." },
       ] },
-      { id: 'ps.mn2', turns: [
+      // (begging where they are, wherever that is: a challenge's waiting crowd as much as a street)
+      { id: 'ps.mn3', turns: [
+        { by: 'b', say: "We've got nothing. Not a coin." },
+        { by: 'a', ...V("Then we ask. Politely. Everybody here has a bit of change.", "Then we ask. Everyone's got change.", "Then we ask people.", "Then we ASK! POLITELY! EVERYBODY here has a bit of CHANGE!", "Then we ask, politely. Everybody here has a little change.", "Then we ask. Kindness is free. Coins are not.") },
+        { by: 'b', say: "I've never asked a stranger for money in my life." },
+        { by: 'a', say: "Then today you start. I'll do the talking. You do the sad face." },
+        { beat: "{b} does the sad face. It is very convincing. Somebody hands over enough for the next stretch." },
+        { by: 'b', say: "I don't know how I feel about how good I am at that." },
+      ] },
+      // (the station and the train: on the road, never at a challenge; 2026-10-22)
+      { id: 'ps.mn2', when: { at: 'road' }, turns: [
         { by: 'b', say: "We've got nothing left for the train." },
         { by: 'a', ...V("Then we stand by the station and we smile at people until somebody helps.", "Then we smile at people till someone helps.", "Then we smile until someone helps.", "Then we STAND by the station and SMILE at people until SOMEBODY helps!", "Then we stand by the station and smile until somebody helps us.", "Then we stand there and smile like the hungriest people on earth.") },
         { by: 'b', say: "Is that a plan?" },

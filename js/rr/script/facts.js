@@ -44,6 +44,9 @@ export const RR_FACT_KEYS = [
   // what the challenge's scary part makes them do (fears.js: jump, drop, climb, rail, rope, cross, ride, swim, creature,
   // dark, fire, crowd, eat, any): a fear line names only the act it is for
   'fearDoes',
+  // the challenge has something to eat (a stomach task) / a puzzle to work out (a brains task), whichever of its types
+  // it is: a line about eating it or thinking it through plays only where there is one
+  'eats', 'puzzle',
   // the challenge itself (its stretch id: 'stew', 'spices'): a place's own lines for its own tasks
   'taskId',
   // the side a team took at an Either/Or ('stairs', 'skydeck', 'lava', 'falls'): a place's lines for each side
@@ -130,7 +133,7 @@ export function factsFor(scene, roles, state) {
     behind: !s.fresh && s.rank != null && s.rank > 0.66, ahead: !s.fresh && s.rank != null && s.rank < 0.33,
     broke: !!s.broke, snapped: !!s.snapped,
     tod: todWord(s.tod),
-    stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null, fearDoes: s.fearDoes ?? null,
+    stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null, fearDoes: s.fearDoes ?? null, eats: types.includes('stomach'), puzzle: types.includes('brains'),
     side: s.side ?? null,
     at: atOf(s, d),
     matPlace: d.matPlace ?? null, why: d.why ?? null, rule: d.rule ?? null, byVote: !!d.byVote, stage: d.stage ?? null, blind: !!d.blind,

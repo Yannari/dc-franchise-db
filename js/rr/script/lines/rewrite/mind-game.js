@@ -68,7 +68,7 @@ export default {
           "You were nearly done, though!", "You were so close to done. Done was right there.") },
       ] },
       { id: 'mg.r-task2', when: { at: 'task' }, turns: [
-        { beat: '{a} leans on the rail next to {c} and starts counting under {a.posAdj} breath, just loud enough.' },
+        { beat: '{a} stands right next to {c} and starts counting under {a.posAdj} breath, just loud enough.' },
         { by: 'a', ...V("Forty seconds. Forty-one. We did this in twenty.", "Forty. Forty-one. We did it in twenty.", "Forty-one seconds. We took twenty.", "FORTY seconds, forty-ONE, and we did this in TWENTY!",
           "Forty seconds... forty-one. We did this in about twenty, just so you know.", "Forty-one. Forty-two. Ours was twenty. Time is a cruel friend.") },
         { by: 'c', ...V("Nobody asked.", "Nobody asked.", "Nobody asked you.", "NOBODY asked!", "Nobody asked, though.", "Nobody asked, and nobody will.") },

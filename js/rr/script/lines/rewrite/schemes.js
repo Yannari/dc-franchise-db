@@ -45,9 +45,9 @@ export default {
         { by: 'c', say: "We'll remember this. We'll remember both of you." },
       ] },
       { id: 'sc.lc2', turns: [
-        { by: 'b', ...V("The bridge is closed. You have to go all the way round.", "Bridge is closed. Go all the way round.", "Closed bridge. All the way round.", "The bridge is CLOSED! You have to go ALL the way ROUND!", "The bridge is closed, sorry. You'll have to go all the way round.", "The bridge is closed. Indefinitely. Forever, probably.") },
-        { beat: 'Right behind {b}, a family walks happily across the bridge.' },
-        { by: 'd', say: "Those people are on the bridge." },
+        { by: 'b', ...V("This way's closed. You have to go all the way round.", "This way's closed. Go all the way round.", "Closed. All the way round.", "This way's CLOSED! You have to go ALL the way ROUND!", "This way's closed, sorry. You'll have to go all the way round.", "This way is closed. Indefinitely. Forever, probably.") },
+        { beat: 'Right behind {b}, a family walks happily straight through it.' },
+        { by: 'd', say: "Those people just walked through." },
         { by: 'b', say: "They're very brave." },
         { by: 'c', ...V("You lied to us. You just lied to our faces.", "You lied to our faces.", "You just lied to us.", "You LIED to us! You just LIED to our FACES!", "You just lied right to our faces.", "You lied. With your mouth. To our faces. In daylight.") },
         { by: 'a', say: "It was an optimistic guess." },

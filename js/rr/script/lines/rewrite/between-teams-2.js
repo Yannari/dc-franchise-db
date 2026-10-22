@@ -222,12 +222,21 @@ export default {
         { by: 'd', say: "Left was wrong." },
         { by: 'c', say: "Left was very wrong." },
       ] },
-      { id: 'bt2.mb2', turns: [
+      { id: 'bt2.mb2', when: { puzzle: true }, turns: [
         { by: 'a', say: "Here's what you do. Go as fast as you can, and don't think about it." },
         { by: 'd', ...V("Don't think about it? This is a puzzle.", "It's a puzzle, though.", "This is a puzzle.", "Don't THINK about it? This is a PUZZLE!", "Don't think about it? This one's a puzzle.", "Don't think? This one is entirely thinking.") },
         { by: 'a', say: "Then think fast." },
         { beat: '{c} and {d} think fast. They get it wrong, fast, three times.' },
         { by: 'c', say: "We should have thought slowly." },
+        { by: 'd', say: "We should have ignored the advice." },
+      ] },
+      // (advice that fits any challenge: go slow, when slow is wrong)
+      { id: 'bt2.mb3', turns: [
+        { by: 'a', say: "Take it slow. Whoever rushes this ends up doing it twice." },
+        { by: 'c', say: "Slow. Got it." },
+        { beat: '{c} and {d} take it very, very slowly. Two teams go past them while they do.' },
+        { by: 'd', say: "Slow was not the answer." },
+        { by: 'c', say: "Slow was their answer. For us." },
         { by: 'd', say: "We should have ignored the advice." },
       ] },
     ],

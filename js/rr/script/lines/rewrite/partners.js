@@ -31,7 +31,7 @@ export default {
         { by: 'a', ...V("New deal. You finish this, and I'll carry your backpack for the rest of the leg.", "Finish this, and I carry your backpack all leg.", "Finish it, I carry your bag all leg.", "NEW deal! You finish this, and I'll carry your BACKPACK for the rest of the LEG!",
           "Okay, new deal. Finish this, and I'll carry your backpack for the rest of the leg.", "New deal. You finish, and your backpack becomes my burden.") },
         { by: 'b', say: "The whole leg?" },
-        { by: 'a', say: "The whole leg. Up the stairs. Across town. Everywhere." },
+        { by: 'a', say: "The whole leg. Every hill, every queue. Everywhere." },
         { by: 'b', ...V("You're going to regret this.", "You'll regret this.", "You're going to regret saying that.", "You're going to REGRET this!", "You're really going to regret this, you know.", "You're going to regret this. It's a heavy bag. I packed rocks.") },
         { beat: '{b} finishes it on the next try. {a} picks up the backpack and immediately regrets it.' },
       ] },
@@ -332,7 +332,7 @@ export default {
           "We wait. If we go out in that, we get lost and soaked and lose even more time.", "We wait. That rain is personal. It wants us.") },
         { by: 'b', say: "Every other team might be going right now!" },
         { by: 'a', say: "Then every other team is getting lost and soaked. We wait." },
-        { beat: 'Half an hour under a shop awning. The rain finally stops.' },
+        { beat: 'Half an hour huddled under whatever cover they can find. The rain finally stops.' },
         { by: 'b', ...V("I counted the drops. About four hundred, before I gave up.", "I counted about four hundred drops.", "Four hundred drops. Then I quit counting.", "I counted the DROPS! About FOUR HUNDRED before I gave up!", "I counted the drops, you know. About four hundred before I gave up.", "Four hundred drops. I named some of them.") },
       ] },
       { id: 'pa.ww-2', turns: [

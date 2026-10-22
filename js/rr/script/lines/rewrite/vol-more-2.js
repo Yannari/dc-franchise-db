@@ -287,7 +287,7 @@ export default {
     ],
     'closed-for-night.campfire': [
       { id: 'cf2.1', turns: [
-        { beat: 'Everything is shut until morning. A small fire crackles, and a few racers sit round it, wrapped in blankets.' },
+        { beat: 'Everything is shut until morning. A few racers sit in a huddle outside, wrapped in blankets.' },
         { by: 'c', say: "What's everyone going to do with the money? If they win." },
         { by: 'a', say: "Pay off my car. Then buy another car." },
         { by: 'd', say: "Travel. Somewhere I don't have to run." },
@@ -296,7 +296,7 @@ export default {
         { by: 'b', say: "It is if you buy a really good bed." },
       ] },
       { id: 'cf2.2', turns: [
-        { beat: 'Under the stars, a few racers are lying round the fire, too tired to talk much.' },
+        { beat: 'Outside, waiting for morning, a few racers are lying on their bags, too tired to talk much.' },
         { by: 'b', say: "Is it weird that this is my favourite part so far?" },
         { by: 'd', say: "The bit where nothing happens?" },
         { by: 'b', say: "The bit where nobody's racing anybody." },
@@ -304,7 +304,7 @@ export default {
         { by: 'a', say: "Tomorrow. Pass the crisps." },
       ] },
       { id: 'cf2.3', turns: [
-        { beat: 'The fire pops. Somebody has found a guitar with three strings.' },
+        { beat: 'Somebody has found a guitar with three strings.' },
         { by: 'd', say: "Does anyone actually know how to play that?" },
         { by: 'a', say: "Nobody. That's what makes it fun." },
         { beat: '{a} strums. It sounds terrible. Everyone sings anyway.' },
@@ -313,11 +313,11 @@ export default {
       ] },
       { id: 'cf2.4', turns: [
         { by: 'c', say: "Ghost story. Somebody tell a ghost story." },
-        { by: 'b', say: "Once upon a time, there was a team that got to the station too late." },
+        { by: 'b', say: "Once upon a time, there was a team that got here too late." },
         { by: 'd', say: "That's not scary." },
-        { by: 'b', say: "And they had to sleep on the floor. Forever." },
+        { by: 'b', say: "And they had to sleep outside it. Forever." },
         { by: 'a', say: "Okay, that's a bit scary." },
-        { beat: 'Everybody looks down at the floor they\'re sitting on.' },
+        { beat: 'Everybody looks round at where they\'re sitting.' },
       ] },
     ],
     'alliance-check.doubts': [

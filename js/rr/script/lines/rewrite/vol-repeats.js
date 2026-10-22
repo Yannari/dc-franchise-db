@@ -135,8 +135,8 @@ export default {
         by('c', "Coincidence."),
       ] },
       { id: 'vr.cr2', turns: [
-        beat("{a} offers to carry {b}'s bag up the steps, even though {a.posAdj} own team is going the other way."),
-        by('c', "Our steps are over here."),
+        beat("{a} offers to carry {b}'s bag for a bit, even though {a.posAdj} own team is going the other way."),
+        by('c', "Our way is over here."),
         by('a', "I was being helpful."),
         by('c', "To another team. In a race."),
         by('a', "Being kind doesn't have a team."),

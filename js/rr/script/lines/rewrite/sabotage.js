@@ -124,7 +124,7 @@ export default {
     ],
 
     'steal.works': [
-      { id: 'sb.tw1', turns: [
+      { id: 'sb.tw1', when: { taskId: ['buoys', 'longship'] }, turns: [
         { beat: 'While {c} and {d} are busy, {a} slips their oar out of the boat and walks off with it.' },
         { by: 'b', ...V("Is that their oar? Why do you have their oar?", "That's their oar.", "Why do you have their oar?", "Is that THEIR oar? WHY do you have their OAR?", "Is that their oar? Why have you got their oar?", "That oar. That isn't our oar. Where did our new oar come from?") },
         { by: 'a', say: "Because now they don't." },
@@ -133,12 +133,21 @@ export default {
         { by: 'b', say: "I feel sick." },
       ] },
       { id: 'sb.tw2', turns: [
-        { beat: '{a} quietly picks up the map {c} left on a rock, folds it, and puts it in {a.posAdj} pocket.' },
+        { beat: '{a} quietly picks up the map {c} left on top of their bag, folds it, and puts it in {a.posAdj} pocket.' },
         { by: 'b', say: "Was that their map?" },
-        { by: 'a', ...V("It was a map. Lying on a rock. Anyone could've picked it up.", "A map, on a rock. Anyone could've.", "It was on a rock. Fair game.", "It was a MAP! Lying on a ROCK! ANYONE could've picked it UP!", "It was just a map lying on a rock. Anyone could've picked it up.", "It was a map on a rock. Finders, keepers. Losers, lost.") },
+        { by: 'a', ...V("It was a map. Just lying there. Anyone could've picked it up.", "A map, lying there. Anyone could've.", "It was lying there. Fair game.", "It was a MAP! Just LYING there! ANYONE could've picked it UP!", "It was just a map lying there. Anyone could've picked it up.", "It was a map, lying there. Finders, keepers. Losers, lost.") },
         { by: 'c', say: "{d}, have you got the map?" },
         { by: 'd', say: "You had the map." },
-        { by: 'c', say: "I put it on the rock. Right here. On this rock." },
+        { by: 'c', say: "I put it on the bag. Right here. On this bag." },
+      ] },
+      // (what every team has at every challenge: its tip)
+      { id: 'sb.tw3', turns: [
+        { beat: 'While {c} and {d} are busy, {a} picks up the tip they put down and slips it into {a.posAdj} pocket.' },
+        { by: 'b', say: "Was that their tip? Did you just take their tip?" },
+        { by: 'a', say: "They put it down. You don't put it down." },
+        { by: 'c', say: "{d}, where's the tip? It was right here." },
+        { by: 'd', say: "You had it. You always have it." },
+        { by: 'b', say: "I feel sick." },
       ] },
     ],
     'steal.seen': [
@@ -168,13 +177,22 @@ export default {
         { by: 'b', say: "We stole a sock." },
         { by: 'a', say: "And now we have to take it back before anybody notices." },
       ] },
-      { id: 'sb.tb2', turns: [
+      { id: 'sb.tb2', when: { taskId: ['reed-boat', 'swamp-raft'] }, turns: [
         { by: 'a', say: "I took their rope. Now they can't finish." },
         { by: 'b', ...V("That's not their rope. That's our rope.", "That's our rope.", "That's ours. Our rope.", "That's NOT their rope! That's OUR rope!", "That's not their rope, though. That's ours.", "That's our rope. You've stolen from us. You've robbed yourself.") },
         { beat: '{a} looks at the rope. {a} looks at their own empty station.' },
         { by: 'a', say: "Then where's their rope?" },
         { by: 'c', say: "Right here. Thanks for asking!" },
         { by: 'b', say: "We have to start again. We have to start completely again." },
+      ] },
+      // (the tip taken off the ground is their own)
+      { id: 'sb.tb3', turns: [
+        { by: 'a', say: "Got their tip. Now they have to go back for another one." },
+        { by: 'b', say: "That's ours. I put it down for one second." },
+        { beat: '{a} looks at the tip, then at {c}, who is holding theirs up and waving it.' },
+        { by: 'c', say: "Thanks for asking!" },
+        { by: 'b', say: "You stole our own tip. In front of them." },
+        { by: 'a', say: "Then we just pretend that was the plan." },
       ] },
     ],
 

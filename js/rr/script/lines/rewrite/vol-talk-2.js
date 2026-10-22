@@ -78,7 +78,7 @@ export default {
         { beat: '{c} does the last part slowly, and for the first time, it holds.' },
         { by: 'c', say: "It's so annoying that it works." },
       ] },
-      { id: 'vs.s10', turns: [
+      { id: 'vs.s10', when: { eats: true }, turns: [
         { by: 'b', say: "If you're doing the food one, don't smell it first. Just eat it." },
         { by: 'c', say: "Why not smell it?" },
         { by: 'a', say: "Because then you won't eat it." },

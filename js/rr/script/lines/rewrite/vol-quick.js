@@ -189,7 +189,7 @@ export default {
         { by: 'b', say: "This is a school." },
         { by: 'a', say: "It's a very religious-looking school." },
       ] },
-      { id: 'vq.tm4', turns: [
+      { id: 'vq.tm4', when: { eats: true }, turns: [
         { by: 'b', say: "We have to eat all of it? All of it?" },
         { by: 'a', say: "It says one of you. One of us eats it." },
         { by: 'b', say: "Oh. Then that's you." },
@@ -199,7 +199,7 @@ export default {
         { by: 'b', say: "Why are we looking for a dog?" },
         { by: 'a', say: "...It says god. Upside down, it says dog." },
       ] },
-      { id: 'vq.tm6', turns: [
+      { id: 'vq.tm6', when: { at: 'road' }, turns: [
         { by: 'a', say: "It says the bridge. The big one." },
         { by: 'b', say: "There are two big ones." },
         { by: 'a', say: "Then the bigger one. Probably." },

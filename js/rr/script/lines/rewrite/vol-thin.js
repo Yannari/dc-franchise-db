@@ -104,15 +104,15 @@ export default {
 
     'push.works': [
       { id: 'vt.pw1', turns: [
-        { beat: 'Both teams hit the narrow steps at the same moment.' },
+        { beat: 'Both teams hit the narrow bit at the same moment.' },
         { beat: '{a} plants a foot on the end of {c}\'s trailing lace. {c} goes down like a folding deckchair.' },
         { by: 'c', say: "Sorry! Sorry, that was me, I wasn't looking." },
         { by: 'a', say: "No harm done! Mind how you go!" },
-        { beat: '{a} and {b} are three steps up and gone before {c} has found {c.posAdj} shoe.' },
+        { beat: '{a} and {b} are three strides ahead and gone before {c} has found {c.posAdj} shoe.' },
         { by: 'b', say: "{c.Sub} said sorry to you." },
         { by: 'a', say: "{c.Sub}'s very polite. It's lovely to see." },
         { by: 'b', say: "I feel sick." },
-        { by: 'a', say: "That's the steps. Keep climbing." },
+        { by: 'a', say: "That's the race. Keep going." },
       ] },
       { id: 'vt.pw2', turns: [
         { by: 'a', say: "Big bag coming through! Big bag! Mind the big bag!" },
@@ -194,7 +194,7 @@ export default {
         { by: 'b', say: "I'm going to take that as a compliment." },
         { beat: 'When it\'s their turn, {b} talks, {a} does it, nobody shouts, and it works.' },
       ] },
-      { id: 'vt.wl4', turns: [
+      { id: 'vt.wl4', when: { fearDoes: ['cross', 'rope', 'ride', 'climb', 'rail'] }, turns: [
         { beat: '{a} is writing on a napkin with a borrowed pen.' },
         { by: 'c', say: "Are you taking notes?" },
         { by: 'a', say: "Yes. Look. Fell off: rushing. Fell off: looking down. Fell off: looking at their partner." },

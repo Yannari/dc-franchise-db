@@ -220,12 +220,12 @@ export default {
 
     'closed-for-night.campfire': [
       { id: 'rm.cc1', turns: [
-        { beat: 'Everything is closed until morning. A few racers sit around a small fire, too tired to be enemies.' },
+        { beat: 'Everything is closed until morning. A few racers sit together outside, wrapped in blankets, too tired to be enemies.' },
         { by: 'b', ...V("If you'd told me a week ago I'd be sitting here with you lot, I'd have laughed.", "A week ago I'd have laughed at this.", "A week ago, I'd have laughed.", "If you'd told me a WEEK ago I'd be sitting HERE with you lot, I'd have LAUGHED!",
-          "If you'd told me a week ago I'd be sitting here with all of you, I would have laughed.", "A week ago I'd have laughed at this. Now I'm sharing a fire with my rivals.") },
+          "If you'd told me a week ago I'd be sitting here with all of you, I would have laughed.", "A week ago I'd have laughed at this. Now I'm sharing a blanket with my rivals.") },
         { by: 'c', say: "You're still laughing. You laugh at everything." },
         { by: 'a', say: "Tomorrow we're all enemies again, right?" },
-        { by: 'd', say: "Tomorrow. Tonight, pass the marshmallows." },
+        { by: 'd', say: "Tomorrow. Tonight, pass the crisps." },
         { beat: 'For a few hours, nobody is racing anybody.' },
       ] },
       { id: 'rm.cc2', turns: [
@@ -267,16 +267,16 @@ export default {
       ] },
       { id: 'rm.cn2', turns: [
         { by: 'b', say: "Is anyone else awake?" },
-        { by: 'd', ...V("Everyone's awake. The ground is made of rocks.", "Everyone. The ground is rocks.", "All of us. Rock ground.", "EVERYONE'S awake! The ground is made of ROCKS!", "Everyone's awake. The ground is basically made of rocks.", "Everyone. The ground here is just rocks pretending to be ground.") },
-        { by: 'a', say: "I have a rock in my back right now. A specific rock." },
-        { by: 'c', say: "Swap with me. Mine's a smaller rock." },
+        { by: 'd', ...V("Everyone's awake. This ground is like concrete.", "Everyone. The ground's like concrete.", "All of us. Concrete ground.", "EVERYONE'S awake! This ground is like CONCRETE!", "Everyone's awake. This ground is basically concrete.", "Everyone. This ground is concrete pretending to be a bed.") },
+        { by: 'a', say: "I have a lump in my back right now. A specific lump." },
+        { by: 'c', say: "Swap with me. Mine's a smaller lump." },
         { beat: 'They swap places in the dark. It does not help. Nobody sleeps, and nobody minds as much as they should.' },
         { by: 'b', say: "This is the worst sleepover I've ever been to." },
       ] },
     ],
     'closed-for-night.prank': [
       { id: 'rm.cp1', turns: [
-        { beat: 'In the middle of the night, {a} creeps across the campsite with a bucket.' },
+        { beat: 'In the middle of the night, {a} creeps past the sleeping racers with a bucket.' },
         { by: 'c', say: "What's in the bucket?" },
         { by: 'a', ...V("Nothing. Water. It's a tradition.", "Water. A tradition.", "Just water. Tradition.", "NOTHING! WATER! It's a TRADITION!", "It's nothing, it's just water. It's a tradition.", "Water. It's an ancient tradition. Since tonight.") },
         { by: 'c', say: "Whose sleeping bag is that?" },

@@ -102,7 +102,7 @@ export default {
       ] },
     ],
     'overheard.mishears': [
-      { id: 'vr2.om1', turns: [
+      { id: 'vr2.om1', when: { at: 'road' }, turns: [
         { by: 'b', say: "I'm sure they said the bridge. They're going to the bridge." },
         { by: 'a', say: "Which bridge? There are about four bridges." },
         { by: 'b', say: "The big one, obviously." },

@@ -356,7 +356,10 @@ export function episodeScreens(res, eps, i) {
       // a team at a ride challenge stands beside its vehicle before and after the race (the sled, the rickshaw)
       if (mode === 'talk' && TASKS.has(stretch.kind) && sp?.act?.prop && ['ride', 'push'].includes(sp.act.mode) && !personOf(placeId, sp.act.prop)) parked = sp.act.prop;
     } else if (seg.stretch === 'board' || seg.stretch === 'speed-bump' || seg.stretch === 'zip') {
-      plate = (lastPlate?.place === placeId ? lastPlate : plates.opener);
+      // (where the teams just were, if it holds them: a corner of a cliff top, a fifth of the picture wide, put two teams
+      // on top of each other at the Boomerang board, 2026-10-21)
+      const holds = p => p?.place === placeId && (!p.x || p.x[1] - p.x[0] >= 14 * Math.max(1, segTeams.length));
+      plate = holds(lastPlate) ? lastPlate : plates.opener;
       hudTask = { board: 'THE BOARD', 'speed-bump': 'SPEED BUMP', zip: 'THE ZIP-IT' }[seg.stretch];
     } else {
       plate = (lastPlate?.place === placeId ? lastPlate : plates.opener);
@@ -1497,7 +1500,15 @@ export function planHide(s) {
     const r = safeRect(viewRect(st.cam));
     const hide = new Set();
     // only the teams behind the scene: a team in it (or Don, or a local) is never faded (the camera holds them all)
-    for (const f of facesAt(s, k)) if (f.kind === 'crowd' && !inRect(padOf(f, f.z), r, 0)) hide.add(f.key);
+    for (const f of facesAt(s, k)) {
+      if (f.kind !== 'crowd' || inRect(padOf(f, f.z), r, 0)) continue;
+      // (a wide shot holds the teams behind whole or not at all: one it can't hold is out of that picture, never half
+      // faded at its edge; relift's own measure let one through by a point, 2026-10-21)
+      const c = st.cam.shot === 'wide' ? s.crowd?.find(x => 'c:' + x.team === f.key) : null;
+      if (c) { c.pos[k] = null; c.st[k] = 'off'; } else hide.add(f.key);
+    }
+    // (nobody left behind to glance over, cheer or wince)
+    if (st.crowdReact && !(s.crowd || []).some(c => c.pos[k])) delete st.crowdReact;
     const sp = st.by === 'Don' ? 'p:Don' : st.team ? 't:' + st.team : st.by && s.localAt?.[st.by] ? 'p:' + st.by : null;
     if (sp) hide.delete(sp);
     if (hide.size) st.hide = [...hide];

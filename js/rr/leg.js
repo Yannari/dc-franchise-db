@@ -201,9 +201,12 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   // (the stages were laid over the run as planned; minutes won or lost since stretch it, and settleRuns stretches the
   // stages to fit in the end: so a minute of the run as it now stands, `until`, is read off the stages in proportion)
   const stageSpot = (o, s, tt, from = null, until = null) => {
-    if (from != null && tt - from <= MEET_START) return s.sides ? 'start' : (s.stages?.[0] ? spotOfStage(to.id, s.id, s.stages[0].id) : null);
+    if (from != null && tt - from <= MEET_START && s.sides) return 'start';
     // (a run two teams share, the Superteam's sled, keeps its stages on the log, not on each team's own row)
     const stages = state.attempts?.[o]?.[s.id]?.stages || (state.taskLog || []).findLast(r => r.leg === state.leg && r.team === o && r.stretch === s.id)?.stages;
+    // (just arrived: its first stage, unless that one's already done; 2026-10-22, a grass skirt put on in two minutes
+    // left a team "at the hut" while it was out on the coals)
+    if (from != null && tt - from <= MEET_START && (!stages?.length || stages[0].t >= tt - 0.5)) return s.stages?.[0] ? spotOfStage(to.id, s.id, s.stages[0].id) : null;
     if (!stages?.length) return null;
     const last = Math.max(...stages.map(x => x.t));
     const at = from != null && Number.isFinite(until) && until > from && last > from ? from + (tt - from) * (last - from) / (until - from) : tt;

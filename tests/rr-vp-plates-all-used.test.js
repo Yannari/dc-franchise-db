@@ -4,7 +4,7 @@
 // action whatever the user made for it, and every Chill Zone check-in used the first of its angles.
 // The frames folder is the user's (Downloads); on a machine without it this checks what it can.
 import { describe, it, expect } from 'vitest';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { PLACE_PLATES, STAGE_SHOTS, placeFiles, propFiles, stretchPlates } from '../js/vp-rr-ep/plates.js';
@@ -12,6 +12,8 @@ import { LEFT_OUT } from '../js/vp-rr-ep/plates-more.js';
 import { REPAINTED } from '../js/vp-rr-ep/repainted.js';
 
 const DONE = join(homedir(), 'Downloads', 'RidonculousRace-frames', 'done');
+// (a frame out with the user to be painted clean is placed already, and goes on screen when it's back: tools/rr-vp-jobs.json)
+const OUT = new Set(JSON.parse(readFileSync('tools/rr-vp-jobs.json', 'utf8')).jobs.filter(j => !j.new).map(j => j.file));
 const stem = f => f.replace(/\.(png|jpe?g|webp)$/i, '');
 const images = dir => (existsSync(dir) ? readdirSync(dir).filter(f => /\.(png|jpe?g|webp)$/i.test(f)).map(stem) : []);
 
@@ -23,7 +25,7 @@ describe('rr viewer: every finished plate is used', () => {
       const props = new Set(propFiles(id).map(x => x.file));
       const left = LEFT_OUT[id] || {};
       for (const f of images(join(DONE, pl.src))) {
-        if (f.startsWith('reference-') || used.has(f) || REPAINTED.has(f) || left[f]) continue;
+        if (f.startsWith('reference-') || used.has(f) || REPAINTED.has(f) || left[f] || OUT.has(f)) continue;
         unaccounted.push(`${id}/${f}`);
       }
       for (const f of images(join(DONE, pl.src, 'cutout'))) {

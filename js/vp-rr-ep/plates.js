@@ -992,14 +992,20 @@ export const PLACE_PLATES = {
 // screen): more standing shots at a challenge, more angles on the action (`alt`, a team's own; `alt2` for the second
 // half), more arrivals and Chill Zone angles, and the `views` Don narrates over. An alt `like: 'act'` is the stretch's
 // action plate with another cut-out (an updated version the user made).
-for (const [id, m] of Object.entries(MORE)) {
+// (`repaint`: a frame out for the user to paint clean, a person or the credits in it: on once it's back, 2026-10-22)
+const backFrom = list => (list || []).filter(x => !x.repaint || REPAINTED.has(x.f)).map(({ repaint, ...x }) => x);
+for (const [id, m0] of Object.entries(MORE)) {
   const pl = PLACE_PLATES[id];
   if (!pl) continue;
+  const back = sm => (sm ? Object.fromEntries(Object.entries(sm).map(([k, v]) => [k, Array.isArray(v) ? backFrom(v)
+    : k === 'sides' ? Object.fromEntries(Object.entries(v).map(([sd, x]) => [sd, back(x)])) : v])) : sm);
+  const m = { ...m0, arrive: backFrom(m0.arrive), views: backFrom(m0.views), mat: backFrom(m0.mat),
+    st: Object.fromEntries(Object.entries(m0.st || {}).map(([sid, sm]) => [sid, back(sm)])) };
   const fill = x => ({ g: 90, x: [12, 88], ...x });
   if (m.props) { pl.props = { ...pl.props, ...m.props }; for (const [k, v] of Object.entries(m.props)) if (v == null) delete pl.props[k]; }
-  if (m.arrive) pl.arrive = [...(pl.arrive || []), ...m.arrive.map(fill)];
+  if (m.arrive.length) pl.arrive = [...(pl.arrive || []), ...m.arrive.map(fill)];
   // (a view is Don's: nobody is stood on it, and a scene after it doesn't fall back to it)
-  if (m.views) pl.views = [...(pl.views || []), ...m.views.map(v => ({ ...fill(v), people: false }))];
+  if (m.views.length) pl.views = [...(pl.views || []), ...m.views.map(v => ({ ...fill(v), people: false }))];
   if (m.mat?.length && pl.st.mat) pl.st.mat.talk = [...(pl.st.mat.talk || []), ...m.mat.map(fill)];
   // a shot the challenge already had, changed so a cut-out the user made is in it (2026-10-20: 39 were never drawn); before the
   // alternates, so an alternate copied from the action shot keeps it
@@ -1143,10 +1149,10 @@ export const STAGE_SHOTS = {
         fail: ['Dinosaur skeletons in a fossil display-7', {}], stamp: 'A BONE MISSING' },
     },
     'oil-barrel': {
-      'old-map': { label: 'THE MAP', plate: ['Empty quarry, jet, barrels, and drill rig-9', { mode: undefined, prop: undefined, judge: null }] },
+      'old-map': { label: 'THE MAP', plate: repaint('task-drill-grid', ['task-drill-grid', { ...['Empty quarry, jet, barrels, and drill rig-9', { mode: undefined, prop: undefined, judge: null }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['Empty quarry, jet, barrels, and drill rig-9', { mode: undefined, prop: undefined, judge: null }]) },
       digging: { label: 'DIGGING', plate: ['Empty quarry, jet, barrels, and drill rig-9', { mode: 'chip', solo: true, inset: 'AT THE RIG', judge: null }], fail: ['Empty quarry, jet, barrels, and drill rig-9', { mode: 'chip', solo: true, inset: 'AT THE RIG', judge: null }], stamp: 'EMPTY HOLE' },
       'barrel-stuck': { label: 'THE BARREL', plate: ['task-22424515', { mode: 'chip', solo: true, inset: 'AT THE RIG' }], fail: ['task-22424515', { mode: 'chip', solo: true, inset: 'AT THE RIG' }], stamp: 'STUCK' },
-      'rolled-out': { label: 'ROLLED OUT', plate: ['Empty quarry, jet, barrels, and drill rig-9', { mode: undefined, prop: undefined, judge: null, fx: 'sparkle', deco: [['barrel', 66, 94, 7]] }] },
+      'rolled-out': { label: 'ROLLED OUT', plate: repaint('task-drill-grid', ['task-drill-grid', { ...['Empty quarry, jet, barrels, and drill rig-9', { mode: undefined, prop: undefined, judge: null, fx: 'sparkle', deco: [['barrel', 66, 94, 7]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['Empty quarry, jet, barrels, and drill rig-9', { mode: undefined, prop: undefined, judge: null, fx: 'sparkle', deco: [['barrel', 66, 94, 7]] }]) },
     },
   },
   'stone-head-island': {
@@ -1176,13 +1182,13 @@ export const STAGE_SHOTS = {
       'plum-picking': { label: 'PICKING', plate: ['task-22422865', { mode: 'pick', judge: null }], fail: ['task-22422865', { mode: 'pick', judge: null }], stamp: 'SQUASHED' },
       footballs: { label: 'THE FOOTBALLS', plate: ['task-22422865', { mode: 'pick', judge: null, deco: BALLS }],
         fail: ['task-22422865', { mode: undefined, judge: null, deco: BALLS }], stamp: 'KNOCKED OVER' },
-      'full-basket': { label: 'THE ELDER', plate: ['arrive-22422915', { deco: [['crate', 50, 93, 13]] }] },
+      'full-basket': { label: 'THE ELDER', plate: repaint('task-plum-elder', ['task-plum-elder', { ...['arrive-22422915', { deco: [['crate', 50, 93, 13]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['arrive-22422915', { deco: [['crate', 50, 93, 13]] }]) },
     },
     gourds: {
-      'gourd-row': { label: 'THE ROW', plate: ['task-22422938', { mode: undefined, prop: undefined }] },
+      'gourd-row': { label: 'THE ROW', plate: repaint('task-gourd-crowd', ['task-gourd-crowd', { ...['task-22422938', { mode: undefined, prop: undefined }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22422938', { mode: undefined, prop: undefined }]) },
       'first-swings': { label: 'FIRST SWINGS', plate: ['task-22422938', { mode: 'serve', solo: true, inset: 'WATCHING' }], fail: ['task-22422938', { mode: 'serve', solo: true, inset: 'WATCHING' }], stamp: 'MISSED' },
       'last-gourds': { label: 'THE LAST GOURDS', plate: ['task-22422938', { mode: 'serve', solo: true, inset: 'WATCHING' }], fail: ['task-22422938', { mode: 'serve', solo: true, inset: 'WATCHING' }], stamp: 'IT WOBBLED' },
-      'ten-for-ten': { label: 'TEN FOR TEN', plate: ['task-22422938', { mode: undefined, prop: undefined, fx: 'sparkle' }] },
+      'ten-for-ten': { label: 'TEN FOR TEN', plate: repaint('task-gourd-crowd', ['task-gourd-crowd', { ...['task-22422938', { mode: undefined, prop: undefined, fx: 'sparkle' }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22422938', { mode: undefined, prop: undefined, fx: 'sparkle' }]) },
     },
     safari: {
       'the-tracks': { label: 'THE TRACKS', plate: ['task-22423089', { g: 92, x: [6, 94], mode: 'search', prop: undefined }],
@@ -1217,18 +1223,18 @@ export const STAGE_SHOTS = {
     'wedding-slots': {
       'the-lever': { label: 'THE LEVER', plate: ['task-22421546', { mode: 'lever', solo: true, inset: 'IN THE PEWS', judge: null, local: false }],
         fail: ['task-22421546', { mode: 'lever', solo: true, inset: 'IN THE PEWS', judge: null, local: false }], stamp: 'NO HEARTS' },
-      'three-hearts': { label: 'THREE HEARTS', plate: ['task-22421546', { mode: undefined, prop: undefined, judge: null, local: false, fx: 'sparkle', deco: [['slots', 30, 95, 11]] }] },
+      'three-hearts': { label: 'THREE HEARTS', plate: repaint('task-chapel-altar', ['task-chapel-altar', { ...['task-22421546', { mode: undefined, prop: undefined, judge: null, local: false, fx: 'sparkle', deco: [['slots', 30, 95, 11]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22421546', { mode: undefined, prop: undefined, judge: null, local: false, fx: 'sparkle', deco: [['slots', 30, 95, 11]] }]) },
       'the-rails': { label: 'THE DRESSES', plate: ['task-22421563', { mode: 'search', solo: true, inset: 'IN THE PEWS' }],
-        fail: ['task-22421563', { mode: 'search', solo: true, inset: 'IN THE PEWS' }], stamp: 'WRONG DRESS' },
-      'the-minister': { label: 'THE MINISTER', plate: ['task-22421563', { mode: undefined, prop: undefined, deco: [['dress', 58, 96, 9]] }] },
+        fail: ['task-22421563', { mode: 'search', solo: true, inset: 'IN THE PEWS' }], stamp: 'WRONG DRESS', ...repaint('task-dress-rails', { alt: [['task-dress-rails', {}]] }, {}) },
+      'the-minister': { label: 'THE MINISTER', plate: repaint('task-chapel-altar', ['task-chapel-altar', { ...['task-22421563', { mode: undefined, prop: undefined, deco: [['dress', 58, 96, 9]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22421563', { mode: undefined, prop: undefined, deco: [['dress', 58, 96, 9]] }]) },
     },
     tightrope: {
-      'the-harness': { label: 'THE HARNESS', plate: ['task-22421939', { path: [[-6, 77], [0, 77], [5, 77]] }] },
+      'the-harness': { label: 'THE HARNESS', plate: repaint('task-rope-start', ['task-rope-start', { ...['task-22421939', { path: [[-6, 77], [0, 77], [5, 77]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22421939', { path: [[-6, 77], [0, 77], [5, 77]] }]) },
       'first-steps': { label: 'FIRST STEPS', plate: ['task-22421939', { path: [[4, 77], [18, 77], [30, 77]] }],
         fail: ['task-22421939', { path: [[4, 77], [14, 77], [10, 77]] }], stamp: 'WOBBLE' },
       'the-spray': { label: 'THE SPRAY', plate: ['task-22421939', { path: [[30, 77], [44, 77], [58, 77]] }],
         fail: ['task-22421939', { mode: 'zip', prop: undefined, path: [[44, 77], [44, 88], [44, 84], [10, 77]] }], stamp: 'IN THE HARNESS' },
-      'far-rim': { label: 'THE FAR RIM', plate: ['task-22421939', { path: [[58, 77], [78, 77], [96, 77]] }] },
+      'far-rim': { label: 'THE FAR RIM', plate: repaint('task-far-rim', ['task-far-rim', { ...['task-22421939', { path: [[58, 77], [78, 77], [96, 77]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22421939', { path: [[58, 77], [78, 77], [96, 77]] }]) },
     },
   },
   'fjord-sea': {
@@ -1244,18 +1250,18 @@ export const STAGE_SHOTS = {
     'meatball-cannon': {
       'load-up': { label: 'LOAD IT', plate: ['task-22420280', { mode: 'toss', solo: true, inset: 'WATCHING' }], fail: ['task-22420280', { mode: 'toss', solo: true, inset: 'WATCHING' }], stamp: 'SPILLED' },
       // (the target out on the water is a cut-out job, fjord-target; meanwhile the cannon fires from the shore)
-      'take-aim': { label: 'AIM', plate: ['task-22420280', { mode: undefined, prop: undefined, judge: null, deco: [['cannon', 13, 93, 10], ...FJORD_TARGET] }] },
+      'take-aim': { label: 'AIM', plate: repaint('task-cannon-deck', ['task-cannon-deck', { ...['task-22420280', { mode: undefined, prop: undefined, judge: null, deco: [['cannon', 13, 93, 10], ...FJORD_TARGET] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22420280', { mode: undefined, prop: undefined, judge: null, deco: [['cannon', 13, 93, 10], ...FJORD_TARGET] }]) },
       fire: { label: 'FIRE!', plate: ['task-22420280', { mode: 'toss', solo: true, inset: 'WATCHING', fx: 'splash' }], fail: ['task-22420280', { mode: 'toss', solo: true, inset: 'WATCHING', fx: 'splash' }], stamp: 'MISSED' },
-      bullseye: { label: 'BULLSEYE', plate: ['task-22420280', { mode: undefined, prop: undefined, judge: null, fx: 'sparkle', deco: [['cannon', 13, 93, 10], ...FJORD_TARGET] }] },
+      bullseye: { label: 'BULLSEYE', plate: repaint('task-cannon-deck', ['task-cannon-deck', { ...['task-22420280', { mode: undefined, prop: undefined, judge: null, fx: 'sparkle', deco: [['cannon', 13, 93, 10], ...FJORD_TARGET] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22420280', { mode: undefined, prop: undefined, judge: null, fx: 'sparkle', deco: [['cannon', 13, 93, 10], ...FJORD_TARGET] }]) },
     },
   },
   'red-outback': {
     // (the emu corral; the bungee platform on the rock, the rock face, the sheep pen below; the shearing pen)
     'emu-catch': {
-      'the-corral': { label: 'THE CORRAL', plate: ['task-22419889', { mode: undefined, prop: undefined, deco: CORRAL_EMU }] },
+      'the-corral': { label: 'THE CORRAL', plate: repaint('task-emu-gate', ['task-emu-gate', { ...['task-22419889', { mode: undefined, prop: undefined, deco: CORRAL_EMU }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22419889', { mode: undefined, prop: undefined, deco: CORRAL_EMU }]) },
       'emu-chase': { label: 'THE CHASE', plate: ['task-22419889', { mode: 'chase' }], fail: ['task-22419889', { mode: undefined, prop: undefined, deco: CORRAL_EMU }], stamp: 'FACE IN THE DIRT' },
-      'the-halter': { label: 'THE HALTER', plate: ['task-22419889', { mode: 'chase' }], fail: ['task-22419889', { mode: undefined, prop: undefined, deco: CORRAL_EMU }], stamp: 'BOLTED' },
-      mounted: { label: 'MOUNTED', plate: ['task-22419889', { mode: 'ride', prop: 'emu', path: [[30, 94], [48, 94], [64, 94]], fx: 'dust' }] },
+      'the-halter': { label: 'THE HALTER', plate: ['task-22419889', { mode: 'chase' }], fail: ['task-22419889', { mode: undefined, prop: undefined, deco: CORRAL_EMU }], stamp: 'BOLTED', ...repaint('task-emu-gate', { alt: [['task-emu-gate', {}]] }, {}) },
+      mounted: { label: 'MOUNTED', plate: ['task-22419889', { mode: 'ride', prop: 'emu', path: [[30, 94], [48, 94], [64, 94]], fx: 'dust' }], ...repaint('task-emu-track', { alt: [['task-emu-track', {}]] }, {}) },
     },
     'sheep-bungee': {
       'the-platform': { label: 'THE PLATFORM', plate: ['task-22419968', { mode: undefined, prop: undefined, path: undefined }], fail: ['task-22419968', { mode: undefined, prop: undefined, path: undefined }], stamp: 'NOT JUMPING' },
@@ -1266,9 +1272,9 @@ export const STAGE_SHOTS = {
         fail: ['task-22419611', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'zip', inset: 'ON THE ROCK', path: [[50, 96], [50, 60], [50, 24], [50, -6]] }], stamp: 'DROPPED IT' },
     },
     shearing: {
-      'hold-still': { label: 'HOLD STILL', plate: ['task-22419762', { mode: undefined, prop: undefined, judge: null, deco: [['sheep', 74, 97, 8]] }],
+      'hold-still': { label: 'HOLD STILL', plate: repaint('task-shearing-shed', ['task-shearing-shed', { ...['task-22419762', { mode: undefined, prop: undefined, judge: null, deco: [['sheep', 74, 97, 8]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22419762', { mode: undefined, prop: undefined, judge: null, deco: [['sheep', 74, 97, 8]] }]),
         fail: ['task-22419762', { mode: undefined, prop: undefined, judge: null, deco: [['sheep', 80, 97, 7, { move: 'wander', span: -20, dur: 3 }]] }], stamp: 'IT KICKED' },
-      'the-clippers': { label: 'THE CLIPPERS', plate: ['task-22419762', { mode: 'shear' }], fail: ['task-22419762', { mode: 'shear' }], stamp: 'OUCH' },
+      'the-clippers': { label: 'THE CLIPPERS', plate: ['task-22419762', { mode: 'shear' }], fail: ['task-22419762', { mode: 'shear' }], stamp: 'OUCH', ...repaint('task-shearing-shed', { alt: [['task-shearing-shed', {}]] }, {}) },
       'bald-sheep': { label: 'ANY BRAND?', plate: ['task-22419762', { mode: 'shear' }], fail: ['task-22419762', { mode: 'shear' }], stamp: 'NO BRAND' },
       'the-brand': { label: 'THE BRAND', plate: ['task-22419761', { fx: 'sparkle' }] },
     },
@@ -1292,7 +1298,7 @@ export const STAGE_SHOTS = {
   'marble-temple-hill': {
     // (the old track and its hurdles; the high jump bar; the temple columns, the chariot track, the wrestling sand)
     hurdles: {
-      'on-the-line': { label: 'ON THE LINE', plate: ['task-22418528', { mode: undefined, path: undefined, x: [6, 30] }] },
+      'on-the-line': { label: 'ON THE LINE', plate: repaint('task-stadium-stands', ['task-stadium-stands', { ...['task-22418528', { mode: undefined, path: undefined, x: [6, 30] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22418528', { mode: undefined, path: undefined, x: [6, 30] }]) },
       'first-hurdles': { label: 'THE HURDLES', plate: ['task-22418528', { mode: 'run', path: [[8, 90], [30, 90], [52, 90]] }],
         fail: ['task-22418528', { mode: 'run', path: [[8, 90], [20, 90], [26, 90]] }], stamp: 'KNOCKED IT' },
       'last-stretch': { label: 'THE LAST STRETCH', plate: ['task-22418528', { mode: 'run', path: [[52, 90], [72, 90], [92, 90]] }],
@@ -1302,7 +1308,7 @@ export const STAGE_SHOTS = {
     'high-jump': {
       'run-up': { label: 'THE RUN-UP', plate: ['task-22418529', { mode: 'beam', solo: true, inset: 'WATCHING' }], fail: ['task-22418529', { mode: 'beam', solo: true, inset: 'WATCHING' }], stamp: 'STOPPED' },
       'the-leap': { label: 'THE JUMP', plate: ['task-22418529', { mode: 'beam', solo: true, inset: 'WATCHING' }], fail: ['task-22418529', { mode: 'beam', solo: true, inset: 'WATCHING' }], stamp: 'KNOCKED THE BAR' },
-      'the-mat': { label: 'CLEAN!', plate: ['task-22418529', { mode: undefined, fx: 'sparkle' }] },
+      'the-mat': { label: 'CLEAN!', plate: repaint('task-jump-mat', ['task-jump-mat', { ...['task-22418529', { mode: undefined, fx: 'sparkle' }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22418529', { mode: undefined, fx: 'sparkle' }]) },
     },
     'ancient-games': {
       reins: { label: 'THE REINS', plate: ['task-22418324', {}], fail: ['task-22418324', {}], stamp: 'NOT READY' },
@@ -1329,8 +1335,8 @@ export const STAGE_SHOTS = {
       'the-vault': { label: 'THE JEWEL VAULT', plate: ['task-22417892', {}] },
       'the-table': { label: 'TWENTY CROWNS', plate: ['task-22417865', { mode: 'search', solo: true, inset: 'AT THE ROPE' }], fail: ['task-22417865', { mode: 'search', solo: true, inset: 'AT THE ROPE' }], stamp: 'NO IDEA' },
       'the-pick': { label: 'THIS ONE', plate: ['task-22417865', { mode: undefined }] },
-      'the-light': { label: 'TO THE LIGHT', plate: ['task-22417892', { fx: 'sparkle' }], fail: ['task-22417892', {}], stamp: 'GLASS' },
-      'real-jewel': { label: 'THE REAL ONE', plate: ['task-22417892', { fx: 'sparkle' }] },
+      'the-light': { label: 'TO THE LIGHT', plate: repaint('task-jewel-keeper', ['task-jewel-keeper', { ...['task-22417892', { fx: 'sparkle' }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22417892', { fx: 'sparkle' }]), fail: ['task-22417892', {}], stamp: 'GLASS' },
+      'real-jewel': { label: 'THE REAL ONE', plate: repaint('task-jewel-keeper', ['task-jewel-keeper', { ...['task-22417892', { fx: 'sparkle' }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22417892', { fx: 'sparkle' }]) },
     },
   },
   'cliff-pool-isle': {
@@ -1367,7 +1373,7 @@ export const STAGE_SHOTS = {
       'the-glass': { label: 'THE GLASS', plate: [SHACK, { mode: 'eat', prop: 'vinegar', judge: null }], fail: [SHACK, { mode: 'eat', prop: 'vinegar', judge: null }], stamp: 'SPAT IT OUT' },
       'the-words': { label: 'SAY IT BACK', plate: [SHACK, { mode: undefined, prop: undefined, judge: null }], fail: [SHACK, { mode: undefined, prop: undefined, judge: null }], stamp: 'WRONG WORD' },
       'kiss-the-cod': { label: 'KISS THE COD', plate: [SHACK, { mode: 'eat', prop: 'cod', judge: null }], fail: [SHACK, { mode: 'eat', prop: 'cod', judge: null }], stamp: 'PULLED AWAY' },
-      'honorary-locals': { label: 'HONORARY LOCALS', plate: [SHACK, { mode: undefined, prop: undefined, judge: null, fx: 'sparkle' }] },
+      'honorary-locals': { label: 'HONORARY LOCALS', plate: repaint('task-cove-dock', ['task-cove-dock', { ...[SHACK, { mode: undefined, prop: undefined, judge: null, fx: 'sparkle' }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], [SHACK, { mode: undefined, prop: undefined, judge: null, fx: 'sparkle' }]) },
     },
   },
   'glass-pyramid-city': {
@@ -1381,7 +1387,7 @@ export const STAGE_SHOTS = {
       'curator-nod': { label: 'WHOLE AGAIN', plate: ['task-22415175', { mode: undefined, judge: null, deco: [['torso', 50, 92, 8]] }] },
     },
     runway: {
-      'the-outfit': { label: 'THE OUTFIT', plate: ['task-22415034', {}], fail: ['task-22415034', {}], stamp: "DOESN'T FIT" },
+      'the-outfit': { label: 'THE OUTFIT', plate: repaint('task-backstage', ['task-backstage', { ...['task-22415034', {}][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22415034', {}]), fail: ['task-22415034', {}], stamp: "DOESN'T FIT" },
       'the-walk': { label: 'THE WALK', plate: [RUNWAY, { mode: 'walk', solo: true, inset: 'WATCHING', path: [[10, RUNWAY_G], [34, RUNWAY_G], [58, RUNWAY_G]] }],
         fail: [RUNWAY, { mode: 'walk', solo: true, inset: 'WATCHING', path: [[10, RUNWAY_G], [24, RUNWAY_G], [30, RUNWAY_G]] }], stamp: 'TRIPPED' },
       'the-pose': { label: 'POSE', plate: [RUNWAY, { mode: 'walk', solo: true, inset: 'WATCHING', path: [[58, RUNWAY_G], [76, RUNWAY_G], [86, RUNWAY_G]], fx: 'sparkle' }],
@@ -1404,10 +1410,10 @@ export const STAGE_SHOTS = {
     'golden-idol': {
       'idol-wall': { label: 'THE WALL OF IDOLS', plate: ['task-22414655', { mode: undefined, prop: undefined }] },
       carvings: { label: 'THE CARVINGS', plate: ['task-22414655', { mode: 'search' }], fail: ['task-22414655', { mode: 'search' }], stamp: 'NO IDEA' },
-      'pick-one': { label: 'THIS ONE', plate: ['task-22414655', { mode: undefined, prop: undefined, deco: [['idol', 46, 95, 6]] }] },
-      'scratch-test': { label: 'THE SCRATCH TEST', plate: ['task-22414655', { mode: undefined, prop: undefined, deco: [['idol', 46, 95, 6]] }],
+      'pick-one': { label: 'THIS ONE', plate: repaint('task-idol-niches', ['task-idol-niches', { ...['task-22414655', { mode: undefined, prop: undefined, deco: [['idol', 46, 95, 6]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22414655', { mode: undefined, prop: undefined, deco: [['idol', 46, 95, 6]] }]) },
+      'scratch-test': { label: 'THE SCRATCH TEST', plate: repaint('task-idol-guide', ['task-idol-guide', { ...['task-22414655', { mode: undefined, prop: undefined, deco: [['idol', 46, 95, 6]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22414655', { mode: undefined, prop: undefined, deco: [['idol', 46, 95, 6]] }]),
         fail: ['task-22414655', { mode: undefined, prop: undefined, deco: [['idol', 46, 95, 6]] }], stamp: 'FAKE!' },
-      'real-gold': { label: 'REAL GOLD', plate: ['task-22414655', { mode: undefined, prop: undefined, fx: 'sparkle', deco: [['idol', 46, 95, 7]] }] },
+      'real-gold': { label: 'REAL GOLD', plate: repaint('task-idol-guide', ['task-idol-guide', { ...['task-22414655', { mode: undefined, prop: undefined, fx: 'sparkle', deco: [['idol', 46, 95, 7]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22414655', { mode: undefined, prop: undefined, fx: 'sparkle', deco: [['idol', 46, 95, 7]] }]) },
     },
   },
   'snow-peaks': {
@@ -1427,7 +1433,7 @@ export const STAGE_SHOTS = {
         fail: ['task-22414020', { mode: 'dance', solo: true, inset: 'WATCHING', fx: 'sparkle' }], stamp: 'BZZT!' },
       'fast-part': { label: 'THE FAST PART', plate: ['task-22414020', { mode: 'dance', solo: true, inset: 'WATCHING' }],
         fail: ['task-22414020', { mode: 'dance', solo: true, inset: 'WATCHING', fx: 'sparkle' }], stamp: 'THREE MISSES' },
-      'last-beat': { label: 'THE LAST BEAT', plate: ['task-22414020', { mode: undefined }] },
+      'last-beat': { label: 'THE LAST BEAT', plate: repaint('task-dance-stage', ['task-dance-stage', { ...['task-22414020', { mode: undefined }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22414020', { mode: undefined }]) },
     },
   },
   'torch-statue-harbour': {
@@ -1435,7 +1441,7 @@ export const STAGE_SHOTS = {
     // the pond (a job: the fountain plaza stands in); the fountain)
     'statue-climb': {
       'statue-foot': { label: 'THE STATUE', plate: ['arrive-22412323', {}] },
-      'the-climb': { label: 'UP TO THE CROWN', plate: ['task-22412320', { mode: 'climb' }], fail: ['task-22412320', { mode: 'climb', path: [[51, 50], [52, 76], [52, 96]] }], stamp: 'BACK DOWN' },
+      'the-climb': { label: 'UP TO THE CROWN', plate: ['task-22412320', { mode: 'climb' }], fail: ['task-22412320', { mode: 'climb', path: [[51, 50], [52, 76], [52, 96]] }], stamp: 'BACK DOWN', ...repaint('task-statue-stairs', { alt: [['task-statue-stairs', {}]] }, {}) },
       'haul-carriage': { label: 'THE CARRIAGE', plate: ['task-22412320', { mode: 'climb', path: [[50, 30], [50, 28], [50, 26]], deco: [['carriage', 22, 56, 12]] }],
         fail: ['task-22412320', { mode: 'climb', path: [[50, 30], [50, 28], [50, 26]], deco: [['carriage', 22, 56, 12]] }], stamp: 'TANGLED' },
       'rope-ride': { label: 'DOWN THE ROPE', plate: ['task-22412320', { mode: 'ride', prop: 'carriage', path: [[34, 52], [48, 62], [62, 72], [76, 82]], fx: 'wind' }],
@@ -1447,7 +1453,7 @@ export const STAGE_SHOTS = {
         fail: ['task-22412479', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'push', prop: 'carriage', path: [[70, 74], [74, 74], [70, 74]], fx: 'splash' }], stamp: 'NOPE' },
       'the-tunnels': { label: 'THE TUNNELS', plate: ['task-22412499', { mode: 'push', deco: [] }], fail: ['task-22412499', { mode: 'push', path: [[80, 80], [56, 80], [30, 80], [4, 80]], deco: [] }], stamp: 'WRONG TURN' },
       'the-gator': { label: 'SOMETHING IN THE WATER', plate: ['task-22412499', { mode: 'push', deco: GATOR }], fail: ['task-22412499', { mode: 'push', path: [[56, 80], [30, 80], [4, 80]], deco: GATOR }], stamp: 'GATOR!' },
-      'the-ladder': { label: 'UP INTO THE PARK', plate: ['task-22412506', { people: undefined, g: 92, x: [6, 50], deco: [['carriage', 30, 92, 9]] }] },
+      'the-ladder': { label: 'UP INTO THE PARK', plate: repaint('task-sewer-ladder', ['task-sewer-ladder', { ...['task-22412506', { people: undefined, g: 92, x: [6, 50], deco: [['carriage', 30, 92, 9]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-22412506', { people: undefined, g: 92, x: [6, 50], deco: [['carriage', 30, 92, 9]] }]) },
     },
     'big-apple': {
       'wade-in': { label: 'THE POND', plate: [POND, { mode: undefined, prop: undefined }], fail: [POND, { mode: undefined, prop: undefined }], stamp: 'COLD!' },
@@ -1482,7 +1488,8 @@ export const STAGE_SHOTS = {
         fail: ['present-22409867', { mode: 'climb', path: [[56, 22], [64, 52], [74, 96]] }], stamp: 'TUMBLE' },
       'over-tip': { label: 'THE FAR SIDE', plate: ['task-22410503', { people: undefined, g: 94, x: [6, 60] }] },
       'tomb-door': { label: 'THE TOMB', plate: ['task-22410049', {}], fail: ['task-22410049', {}], stamp: 'NOT IN THERE' },
-      'three-doors': { label: 'THREE DOORS', plate: ['task-22409901', {}], fail: ['task-22409901', {}], stamp: 'WRONG DOOR' },
+      'three-doors': { label: 'THREE DOORS', plate: ['task-22409901', {}], fail: ['task-22409901', {}], stamp: 'WRONG DOOR',
+        ...repaint('task-22409918', { alt: [['task-22409918', {}]] }, {}) },
       'dart-trap': { label: 'THE CORRIDOR', plate: ['task-22409957', { mode: 'walk' }], fail: ['task-22409957', { mode: 'walk' }], stamp: 'DARTS!' },
       'scarab-room': { label: 'THE SCARABS', plate: ['task-22409944', {}], fail: ['task-22409944', {}], stamp: 'SCARABS!' },
       'way-out': { label: 'THE WAY OUT', plate: ['task-22409920', { people: undefined, g: 96, x: [6, 94] }] },
@@ -1511,7 +1518,7 @@ export const STAGE_SHOTS = {
       'buoy-hunt': { label: 'THE BUOYS', plate: ['chill-9450523', { mode: 'swim' }], fail: ['chill-9450523', { mode: 'swim' }], stamp: 'WRONG NUMBER' },
       'read-number': { label: 'READ IT', plate: ['task-9450504', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'swim', path: [[20, 88], [34, 86], [44, 88]] }],
         fail: ['task-9450504', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'swim', path: [[20, 88], [34, 86], [44, 88]] }], stamp: 'MISREAD' },
-      'the-lock': { label: 'THE LOCK', plate: ['task-9450434', { deco: [['briefcase', 24, 86, 6]] }], fail: ['task-9450434', { deco: [['briefcase', 24, 86, 6]] }], stamp: 'WRONG CODE' },
+      'the-lock': { label: 'THE LOCK', plate: repaint('task-buoy-boat', ['task-buoy-boat', { ...['task-9450434', { deco: [['briefcase', 24, 86, 6]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9450434', { deco: [['briefcase', 24, 86, 6]] }]), fail: ['task-9450434', { deco: [['briefcase', 24, 86, 6]] }], stamp: 'WRONG CODE' },
       'case-open': { label: 'OPEN!', plate: ['task-9450434', { deco: [['briefcase', 24, 86, 6]] }] },
     },
   },
@@ -1519,9 +1526,9 @@ export const STAGE_SHOTS = {
     // (the museum wide and the map shop close; the dock; the water from above; the reef, the tunnels, the cave)
     'pirate-map': {
       'the-museum': { label: 'THE PIRATE MUSEUM', plate: ['task-9449549', {}] },
-      'unroll-maps': { label: 'MAP AFTER MAP', plate: ['task-9449621', { mode: 'search', prop: 'map' }], fail: ['task-9449621', { mode: 'search', prop: 'map' }], stamp: 'PLAIN MAP' },
+      'unroll-maps': { label: 'MAP AFTER MAP', plate: ['task-9449621', { mode: 'search', prop: 'map' }], fail: ['task-9449621', { mode: 'search', prop: 'map' }], stamp: 'PLAIN MAP', ...repaint('task-map-room', { alt: [['task-map-room', {}]] }, {}) },
       'tug-of-war': { label: 'MINE!', plate: ['task-9449549', { deco: [['map', 50, 97, 5]] }], fail: ['task-9449549', { deco: [['map', 50, 97, 5]] }], stamp: 'LOST IT' },
-      'logo-map': { label: 'THE RIGHT MAP', plate: ['task-9449621', { deco: [['map', 40, 98, 6]] }] },
+      'logo-map': { label: 'THE RIGHT MAP', plate: repaint('task-map-room', ['task-map-room', { ...['task-9449621', { deco: [['map', 40, 98, 6]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9449621', { deco: [['map', 40, 98, 6]] }]) },
     },
     doubloons: {
       'tank-on': { label: 'TANK ON', plate: ['task-9449601', { mode: undefined, prop: undefined, path: undefined, water: false, g: 74, x: [10, 40], deco: [['mask', 34, 74, 4]] }],
@@ -1553,13 +1560,14 @@ export const STAGE_SHOTS = {
   'frozen-mine': {
     // (the lake edge; the ice yachts; the mine's pit; the winch on the snow; the cavern under the ice by headlamp)
     'ice-yacht': {
-      swimsuits: { label: 'SWIMSUITS', plate: ['task-9447726', {}], fail: ['task-9447726', {}], stamp: 'TOO COLD' },
+      swimsuits: { label: 'SWIMSUITS', plate: repaint('task-yacht-start', ['task-yacht-start', { ...['task-9447726', {}][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9447726', {}]), fail: ['task-9447726', {}], stamp: 'TOO COLD' },
       'push-off': { label: 'PUSH OFF', plate: ['task-9447678', { mode: 'ride', path: [[-18, 90], [8, 90], [24, 89]] }], fail: ['task-9447678', { mode: undefined, prop: undefined, path: undefined, water: false, g: 92, x: [6, 40] }], stamp: 'STUCK' },
       'across-ice': { label: 'ACROSS THE LAKE', plate: ['task-9447678', { mode: 'ride' }], fail: ['task-9447678', { mode: 'ride', path: [[30, 88], [50, 92], [36, 96]] }], stamp: 'SPUN OUT' },
       'mine-gate': { label: 'THE MINE', plate: ['task-9447861', {}] },
     },
     borehole: {
-      'the-harness': { label: 'THE HARNESS', plate: ['task-9447866', { people: undefined, g: 94, x: [6, 50] }], fail: ['task-9447866', { people: undefined, g: 94, x: [6, 50] }], stamp: 'NOT YET' },
+      'the-harness': { label: 'THE HARNESS', plate: ['task-9447866', { people: undefined, g: 94, x: [6, 50] }], fail: ['task-9447866', { people: undefined, g: 94, x: [6, 50] }], stamp: 'NOT YET',
+        ...repaint('task-9447685', { alt: [['task-9447685', {}]] }, {}) },
       'going-down': { label: 'DOWN THE HOLE', plate: ['task-9447790', { mode: 'zip' }] },
       'ball-search': { label: 'FIND THE RED ONE', plate: ['task-9447790', { mode: 'zip', path: [[50, 80], [46, 84], [54, 86], [50, 90]] }],
         fail: ['task-9447790', { mode: 'zip', path: [[50, 80], [46, 84], [54, 86], [50, 90]] }], stamp: 'WHITE BALL' },
@@ -1573,8 +1581,8 @@ export const STAGE_SHOTS = {
     catfish: {
       'wade-in': { label: 'INTO THE SHALLOWS', plate: ['task-9447243', { mode: 'swim' }], fail: ['task-9447243', { mode: 'swim' }], stamp: 'SLIPPED' },
       'feel-around': { label: 'FEEL FOR THEM', plate: ['task-9447033', { mode: 'swim' }], fail: ['task-9447033', { mode: 'swim' }], stamp: 'SLIPPED AWAY' },
-      'the-basket': { label: 'THE BASKET', plate: ['arrive-9447023', { deco: [['catfish', 60, 92, 9]] }], fail: ['task-9447243', { mode: 'swim' }], stamp: 'ESCAPED' },
-      'six-fish': { label: 'SIX!', plate: ['arrive-9447023', { deco: [['catfish', 60, 92, 9]] }] },
+      'the-basket': { label: 'THE BASKET', plate: repaint('task-fish-basket', ['task-fish-basket', { ...['arrive-9447023', { deco: [['catfish', 60, 92, 9]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['arrive-9447023', { deco: [['catfish', 60, 92, 9]] }]), fail: ['task-9447243', { mode: 'swim' }], stamp: 'ESCAPED' },
+      'six-fish': { label: 'SIX!', plate: repaint('task-fish-basket', ['task-fish-basket', { ...['arrive-9447023', { deco: [['catfish', 60, 92, 9]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['arrive-9447023', { deco: [['catfish', 60, 92, 9]] }]) },
     },
     tunnels: {
       'in-the-dark': { label: 'THE TUNNEL', plate: ['task-9447354', {}], fail: ['task-9447354', {}], stamp: 'NOT IN THERE' },
@@ -1622,19 +1630,19 @@ export const STAGE_SHOTS = {
   'dragon-isle': {
     // (the jungle floor where the ranger waits; the lizards under the stilt huts; the rug mountain and the cloth piles)
     venom: {
-      'the-ranger': { label: 'STICK, SPONGE, VIAL', plate: ['task-9445378', { deco: [['vial', 52, 90, 3]] }] },
+      'the-ranger': { label: 'STICK, SPONGE, VIAL', plate: repaint('task-stilt-shade', ['task-stilt-shade', { ...['task-9445378', { deco: [['vial', 52, 90, 3]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9445378', { deco: [['vial', 52, 90, 3]] }]) },
       distraction: { label: 'EYES ON THE STICK', plate: ['task-9445138', { mode: 'venom' }], fail: ['task-9445138', { mode: 'venom' }], stamp: 'HISS!' },
       'the-sponge': { label: 'THE SPONGE', plate: ['task-9445138', { mode: 'venom' }],
         fail: ['task-9445138', { mode: 'run', prop: undefined, judge: null, path: [[50, 93], [26, 94], [4, 95]], fx: 'dust' }], stamp: 'RUN!' },
       'fill-vial': { label: 'FILL THE VIAL', plate: ['task-9445138', { mode: 'venom' }], fail: ['task-9445138', { mode: 'venom' }], stamp: 'SPILLED' },
-      'vial-tip': { label: 'THE TIP', plate: ['task-9445378', { deco: [['vial', 52, 90, 3]] }] },
+      'vial-tip': { label: 'THE TIP', plate: repaint('task-stilt-shade', ['task-stilt-shade', { ...['task-9445378', { deco: [['vial', 52, 90, 3]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9445378', { deco: [['vial', 52, 90, 3]] }]) },
     },
     rugs: {
       'rug-mountain': { label: 'THE RUG MOUNTAIN', plate: [RUGS, {}] },
       'dig-in': { label: 'DIG IN', plate: ['task-9445496', { mode: 'search' }], fail: ['task-9445496', { mode: 'search' }], stamp: 'BURIED' },
       unroll: { label: 'UNROLL', plate: [RUGS, { mode: 'search', prop: 'textiles' }], fail: [RUGS, { mode: 'search', prop: 'textiles' }], stamp: 'NOT IT' },
-      'the-weaver': { label: 'THE WEAVER', plate: [RUGS, { deco: [['textiles', 64, RUGS_G, 10]] }], fail: [RUGS, { deco: [['textiles', 64, RUGS_G, 10]] }], stamp: 'WRONG RUG' },
-      'rug-tip': { label: 'THE TIP', plate: [RUGS, {}] },
+      'the-weaver': { label: 'THE WEAVER', plate: repaint('task-weaver-loom', ['task-weaver-loom', { ...[RUGS, { deco: [['textiles', 64, RUGS_G, 10]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], [RUGS, { deco: [['textiles', 64, RUGS_G, 10]] }]), fail: [RUGS, { deco: [['textiles', 64, RUGS_G, 10]] }], stamp: 'WRONG RUG' },
+      'rug-tip': { label: 'THE TIP', plate: repaint('task-weaver-loom', ['task-weaver-loom', { ...[RUGS, {}][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], [RUGS, {}]) },
     },
   },
   'ice-floe': {
@@ -1658,11 +1666,11 @@ export const STAGE_SHOTS = {
   'prairie-ranch': {
     // (the long table on the cliff top with its pots; the barn, wide by the hay and close at the bull)
     beans: {
-      'the-pot': { label: 'THE POT', plate: [BEANS, { mode: undefined, prop: undefined, deco: [['pot', 52, BEANS_G, 7]] }] },
+      'the-pot': { label: 'THE POT', plate: repaint('task-bean-wagon', ['task-bean-wagon', { ...[BEANS, { mode: undefined, prop: undefined, deco: [['pot', 52, BEANS_G, 7]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], [BEANS, { mode: undefined, prop: undefined, deco: [['pot', 52, BEANS_G, 7]] }]) },
       'first-half': { label: 'SPOON AFTER SPOON', plate: [BEANS, { mode: 'eat' }], fail: [BEANS, { mode: 'eat' }], stamp: 'TOPPED UP' },
-      'bean-wall': { label: 'THE BEAN WALL', plate: [BEANS, { mode: 'eat' }], fail: [BEANS, { mode: undefined, prop: undefined, deco: [['pot', 52, BEANS_G, 7]] }], stamp: 'TOPPED UP' },
+      'bean-wall': { label: 'THE BEAN WALL', plate: [BEANS, { mode: 'eat' }], fail: [BEANS, { mode: undefined, prop: undefined, deco: [['pot', 52, BEANS_G, 7]] }], stamp: 'TOPPED UP', ...repaint('task-beans-close', { alt: [['task-beans-close', {}]] }, {}) },
       'the-bottom': { label: 'THE BOTTOM', plate: [BEANS, { mode: 'eat' }], fail: [BEANS, { mode: 'eat' }], stamp: 'NOT CLEAN' },
-      'beans-tip': { label: 'THE TIP', plate: [BEANS, { mode: undefined, prop: undefined, deco: [['pot', 52, BEANS_G, 7]] }] },
+      'beans-tip': { label: 'THE TIP', plate: repaint('task-beans-close', ['task-beans-close', { ...[BEANS, { mode: undefined, prop: undefined, deco: [['pot', 52, BEANS_G, 7]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], [BEANS, { mode: undefined, prop: undefined, deco: [['pot', 52, BEANS_G, 7]] }]) },
     },
     bull: {
       'saddle-up': { label: 'GET ON', plate: ['task-9444134', {}], fail: ['task-9444134', {}], stamp: 'SLIPPED' },
@@ -1727,12 +1735,12 @@ export const STAGE_SHOTS = {
       'selfie-tip': { label: 'THE TIP', plate: ['task-9441526', { deco: [['raft', 24, 93, 14]] }] },
     },
     rhino: {
-      'the-ranger': { label: "THE RANGER'S LINE", plate: ['task-9441524', {}] },
+      'the-ranger': { label: "THE RANGER'S LINE", plate: repaint('task-ranger-line', ['task-ranger-line', { ...['task-9441524', {}][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9441524', {}]) },
       'creep-up': { label: 'THE LONG GRASS', plate: ['task-9441761', { people: undefined, g: 98, x: [30, 90] }], fail: ['task-9441761', { people: undefined, g: 98, x: [30, 90] }], stamp: 'SNORT' },
       'rhino-pose': { label: 'THE POSE', plate: ['task-9441524', { mode: 'photo' }],
-        fail: ['task-9441524', { mode: 'run', prop: undefined, path: [[64, 97], [36, 97], [8, 97]], fx: 'dust', deco: [['rhino', 76, 97, 16, { move: 'wander', span: -18, dur: 3 }]] }], stamp: 'CHARGE!' },
+        fail: ['task-9441524', { mode: 'run', prop: undefined, path: [[64, 97], [36, 97], [8, 97]], fx: 'dust', deco: [['rhino', 76, 97, 16, { move: 'wander', span: -18, dur: 3 }]] }], stamp: 'CHARGE!', ...repaint('task-waterhole', { alt: [['task-waterhole', {}]] }, {}) },
       'the-photo': { label: 'CLICK', plate: ['task-9441524', { mode: 'photo', fx: 'flash' }], fail: ['task-9441524', { mode: 'photo', fx: 'flash' }], stamp: 'NOT IN FRAME' },
-      'rhino-tip': { label: 'THE TIP', plate: ['task-9441524', { deco: [['rhino', 82, 97, 14, { move: 'wander', span: 6, dur: 16 }]] }] },
+      'rhino-tip': { label: 'THE TIP', plate: repaint('task-ranger-line', ['task-ranger-line', { ...['task-9441524', { deco: [['rhino', 82, 97, 14, { move: 'wander', span: 6, dur: 16 }]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9441524', { deco: [['rhino', 82, 97, 14, { move: 'wander', span: 6, dur: 16 }]] }]) },
     },
   },
   'rock-north': {
@@ -1741,18 +1749,18 @@ export const STAGE_SHOTS = {
       'sauna-door': { label: 'THE SAUNA', plate: ['task-9440922', { fx: 'steam' }] },
       'the-heat': { label: 'THE HEAT', plate: ['task-9440800', { mode: 'sweat' }], fail: ['task-9440800', { mode: undefined, prop: undefined, fx: 'steam' }], stamp: 'STEPPED OUT' },
       'the-melt': { label: 'MELTING', plate: ['task-9440800', { mode: 'sweat' }], fail: ['task-9440800', { mode: undefined, prop: undefined, fx: 'steam' }], stamp: 'STEPPED OUT' },
-      'timer-rings': { label: 'TIME!', plate: ['task-9440800', { mode: undefined, prop: undefined, fx: 'steam' }] },
+      'timer-rings': { label: 'TIME!', plate: repaint('task-sauna-bank', ['task-sauna-bank', { ...['task-9440800', { mode: undefined, prop: undefined, fx: 'steam' }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9440800', { mode: undefined, prop: undefined, fx: 'steam' }]) },
     },
     'ice-river': {
-      'river-bank': { label: 'THE BANK', plate: ['task-9440922', { fx: 'steam' }], fail: ['task-9440922', { fx: 'steam' }], stamp: 'NOT YET' },
+      'river-bank': { label: 'THE BANK', plate: repaint('task-river-near', ['task-river-near', { ...['task-9440922', { fx: 'steam' }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9440922', { fx: 'steam' }]), fail: ['task-9440922', { fx: 'steam' }], stamp: 'NOT YET' },
       'floe-hop': { label: 'FLOE TO FLOE', plate: ['task-9440942', { mode: 'hop' }], fail: ['task-9440980', { mode: 'swim' }], stamp: 'SPLASH!' },
       'the-gap': { label: 'THE LAST GAP', plate: ['task-9440980', { mode: 'swim' }], fail: ['task-9440980', { mode: 'swim' }], stamp: 'TOO COLD' },
-      'far-bank-box': { label: 'THE FAR BANK', plate: ['task-9440922', { fx: 'snow', deco: [['donbox@race', 80, 94, 6]] }] },
+      'far-bank-box': { label: 'THE FAR BANK', plate: repaint('task-river-far', ['task-river-far', { ...['task-9440922', { fx: 'snow', deco: [['donbox@race', 80, 94, 6]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9440922', { fx: 'snow', deco: [['donbox@race', 80, 94, 6]] }]) },
     },
     'air-guitar': {
       backstage: { label: 'BACKSTAGE', plate: ['task-9441040', {}], fail: ['task-9441040', {}], stamp: 'STAGE FRIGHT' },
       'the-riff': { label: 'THE RIFF', plate: ['task-9441025', { mode: 'guitar' }], fail: ['task-9441025', { mode: 'guitar' }], stamp: 'BOO!' },
-      'the-meter': { label: 'THE METER', plate: ['task-9441025', { mode: 'guitar' }], fail: ['task-9441025', { mode: 'guitar' }], stamp: 'NEXT SONG' },
+      'the-meter': { label: 'THE METER', plate: ['task-9441025', { mode: 'guitar' }], fail: ['task-9441025', { mode: 'guitar' }], stamp: 'NEXT SONG', ...repaint('task-guitar-crowd', { alt: [['task-guitar-crowd', {}]] }, {}) },
       encore: { label: 'ENCORE', plate: ['task-9441310', {}] },
     },
   },
@@ -1770,8 +1778,8 @@ export const STAGE_SHOTS = {
       'centre-tip': { label: 'THE TIP', plate: ['task-9440310', { deco: [['tip@race', 50, 94, 3]] }] },
     },
     skewers: {
-      'the-tray': { label: 'THE TRAY', plate: ['task-9440338', {}], fail: ['task-9440338', {}], stamp: 'IT MOVED' },
-      'thread-em': { label: 'ON THE STICKS', plate: ['task-9440338', { deco: [['skewers', 40, 97, 7]] }], fail: ['task-9440338', { deco: [['skewers', 40, 97, 7]] }], stamp: 'ESCAPED' },
+      'the-tray': { label: 'THE TRAY', plate: repaint('task-food-stall', ['task-food-stall', { ...['task-9440338', {}][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9440338', {}]), fail: ['task-9440338', {}], stamp: 'IT MOVED' },
+      'thread-em': { label: 'ON THE STICKS', plate: repaint('task-food-stall', ['task-food-stall', { ...['task-9440338', { deco: [['skewers', 40, 97, 7]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9440338', { deco: [['skewers', 40, 97, 7]] }]), fail: ['task-9440338', { deco: [['skewers', 40, 97, 7]] }], stamp: 'ESCAPED' },
       'the-fryer': { label: 'THE FRYER', plate: ['task-9440339', { fx: 'steam' }], fail: ['task-9440339', { fx: 'steam' }], stamp: 'BURNT' },
       'eat-em': { label: 'EAT THEM', plate: ['task-9440339', { mode: 'eat' }], fail: ['task-9440339', { mode: 'eat' }], stamp: 'NEW BATCH' },
       'empty-sticks': { label: 'EMPTY STICKS', plate: ['task-9440338', {}] },
@@ -1812,11 +1820,11 @@ export const STAGE_SHOTS = {
       'ring-tip': { label: 'THE TIP', plate: ['present-9439132', { people: undefined, g: 94, x: [6, 40], deco: [['ring', 30, 94, 3]] }] },
     },
     'fire-walk': {
-      'grass-skirts': { label: 'GRASS SKIRTS', plate: ['task-9439223', { deco: [['hula', 18, 76, 6]] }], fail: ['task-9439223', { deco: [['hula', 18, 76, 6]] }], stamp: 'WARDROBE!' },
+      'grass-skirts': { label: 'GRASS SKIRTS', plate: repaint('task-skirt-hut', ['task-skirt-hut', { ...['task-9439223', { deco: [['hula', 18, 76, 6]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9439223', { deco: [['hula', 18, 76, 6]] }]), fail: ['task-9439223', { deco: [['hula', 18, 76, 6]] }], stamp: 'WARDROBE!' },
       // (in their skirts from here on)
       'the-lift': { label: 'THE LIFT', plate: ['task-9439223', { ...HULA }], fail: ['task-9439223', { ...HULA }], stamp: 'TOO HEAVY' },
       'the-coals': { label: 'THE COALS', plate: ['task-9439223', { mode: 'coals', ...HULA }], fail: ['task-9439223', { mode: 'coals', ...HULA }], stamp: 'HOT!' },
-      'fire-dancer': { label: 'THE FIRE DANCER', plate: ['task-9439223', { x: [50, 94], ...HULA }] },
+      'fire-dancer': { label: 'THE FIRE DANCER', plate: repaint('task-coals-end', ['task-coals-end', { ...['task-9439223', { x: [50, 94], ...HULA }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9439223', { x: [50, 94], ...HULA }]) },
     },
   },
   'haunted-castle': {
@@ -1839,10 +1847,10 @@ export const STAGE_SHOTS = {
     // (the forest floor and the mitten; the gorge's edge, the vines, the river at the bottom, the coconut pile; the
     // costume table)
     ants: {
-      'the-mitten': { label: 'THE MITTEN', plate: ['task-9437989', { deco: [['mitten', 30, 92, 10]] }], fail: ['task-9437989', { deco: [['mitten', 30, 92, 10]] }], stamp: 'NOPE' },
+      'the-mitten': { label: 'THE MITTEN', plate: repaint('task-ant-hut', ['task-ant-hut', { ...['task-9437989', { deco: [['mitten', 30, 92, 10]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9437989', { deco: [['mitten', 30, 92, 10]] }]), fail: ['task-9437989', { deco: [['mitten', 30, 92, 10]] }], stamp: 'NOPE' },
       'hand-in': { label: 'HAND IN', plate: ['task-9438117', { mode: 'mitten' }], fail: ['task-9438117', { mode: 'mitten' }], stamp: 'EMPTY' },
       'ant-tip': { label: 'THE TIP', plate: ['task-9438117', { mode: 'mitten' }], fail: ['task-9438117', { mode: 'mitten' }], stamp: 'DROPPED' },
-      swollen: { label: 'THE HAND', plate: ['task-9437989', {}] },
+      swollen: { label: 'THE HAND', plate: repaint('task-ant-hut', ['task-ant-hut', { ...['task-9437989', {}][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9437989', {}]) },
     },
     gorge: {
       'gorge-edge': { label: 'THE EDGE', plate: ['task-9437972', {}], fail: ['task-9437972', {}], stamp: 'FROZEN' },
@@ -1854,21 +1862,21 @@ export const STAGE_SHOTS = {
     },
     costume: {
       feathers: { label: 'FEATHERS', plate: ['task-9438128', { mode: 'sew', judge: null }], fail: ['task-9438128', { mode: 'sew', judge: null }], stamp: 'STUCK' },
-      headpiece: { label: 'THE HEADPIECE', plate: ['task-9438128', { mode: 'sew', judge: null }], fail: ['task-9438128', { mode: 'sew', judge: null }], stamp: 'COLLAPSED' },
-      tailpiece: { label: 'THE TAILPIECE', plate: ['task-9438128', { mode: 'sew', prop: 'tail', judge: null }], fail: ['task-9438128', { mode: 'sew', prop: 'tail', judge: null }], stamp: 'MOULTING' },
-      'the-parade': { label: 'THE PARADE', plate: ['task-9438128', { mode: 'dance', prop: undefined }], fail: ['task-9438128', { mode: 'dance', prop: undefined }], stamp: 'MORE!' },
-      'judge-cheers': { label: 'THE JUDGE CHEERS', plate: ['task-9438128', { mode: undefined, prop: undefined, judge: null, deco: [['head', 22, 95, 6], ['tail', 32, 95, 7]] }] },
+      headpiece: { label: 'THE HEADPIECE', plate: ['task-9438128', { mode: 'sew', judge: null }], fail: ['task-9438128', { mode: 'sew', judge: null }], stamp: 'COLLAPSED', ...repaint('task-costume-tent', { alt: [['task-costume-tent', {}]] }, {}) },
+      tailpiece: { label: 'THE TAILPIECE', plate: ['task-9438128', { mode: 'sew', prop: 'tail', judge: null }], fail: ['task-9438128', { mode: 'sew', prop: 'tail', judge: null }], stamp: 'MOULTING', ...repaint('task-costume-tent', { alt: [['task-costume-tent', {}]] }, {}) },
+      'the-parade': { label: 'THE PARADE', plate: ['task-9438128', { mode: 'dance', prop: undefined }], fail: ['task-9438128', { mode: 'dance', prop: undefined }], stamp: 'MORE!', ...repaint('task-parade-route', { alt: [['task-parade-route', {}]] }, {}) },
+      'judge-cheers': { label: 'THE JUDGE CHEERS', plate: repaint('task-parade-route', ['task-parade-route', { ...['task-9438128', { mode: undefined, prop: undefined, judge: null, deco: [['head', 22, 95, 6], ['tail', 32, 95, 7]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9438128', { mode: undefined, prop: undefined, judge: null, deco: [['head', 22, 95, 6], ['tail', 32, 95, 7]] }]) },
     },
   },
   'geyser-island': {
     // (the geyser field with Don's speaker box at the near edge and the local at the far side; the feast hut; the ice cave)
     telephone: {
-      'the-speaker': { label: "DON'S PHRASE", plate: ['task-9437137', { mode: undefined, path: undefined, deco: [['donbox@race', 12, 92, 6]] }],
+      'the-speaker': { label: "DON'S PHRASE", plate: repaint('task-speaker-box', ['task-speaker-box', { ...['task-9437137', { mode: undefined, path: undefined, deco: [['donbox@race', 12, 92, 6]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9437137', { mode: undefined, path: undefined, deco: [['donbox@race', 12, 92, 6]] }]),
         fail: ['task-9437137', { mode: undefined, path: undefined, deco: [['donbox@race', 12, 92, 6]] }], stamp: 'SAY WHAT?' },
       'the-geysers': { label: 'THROUGH THE GEYSERS', plate: ['task-9437137', { mode: 'walk' }], fail: ['task-9437137', { mode: 'walk' }], stamp: 'SOAKED' },
-      'the-local': { label: 'SAY IT BACK', plate: ['task-9437137', { mode: undefined, path: undefined, x: [40, 94] }],
+      'the-local': { label: 'SAY IT BACK', plate: repaint('task-geyser-far', ['task-geyser-far', { ...['task-9437137', { mode: undefined, path: undefined, x: [40, 94] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9437137', { mode: undefined, path: undefined, x: [40, 94] }]),
         fail: ['task-9437137', { mode: undefined, path: undefined, x: [40, 94] }], stamp: 'WRONG WORD' },
-      'phrase-tip': { label: 'THE TIP', plate: ['task-9437137', { mode: undefined, path: undefined, x: [40, 94] }] },
+      'phrase-tip': { label: 'THE TIP', plate: repaint('task-geyser-far', ['task-geyser-far', { ...['task-9437137', { mode: undefined, path: undefined, x: [40, 94] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9437137', { mode: undefined, path: undefined, x: [40, 94] }]) },
     },
     // (Feast or Fossil: each side's stages on the one stretch, their ids apart)
     'feast-fossil': {
@@ -1892,7 +1900,7 @@ export const STAGE_SHOTS = {
       'suit-up': { label: 'MASK ON', plate: ['task-shark-deck', {}], fail: ['task-shark-deck', {}], stamp: 'BACK UP!' },
       'in-the-water': { label: 'IN THE WATER', plate: ['task-9436629', { mode: 'swim' }], fail: ['task-9436629', { mode: 'swim' }], stamp: 'PANIC' },
       'the-pass': { label: 'THE FIN GOES BY', plate: ['task-9436629', { mode: 'swim' }], fail: ['task-9436629', { mode: 'swim' }], stamp: 'MISSED' },
-      'back-aboard': { label: 'BACK ABOARD', plate: ['task-shark-deck', {}] },
+      'back-aboard': { label: 'BACK ABOARD', plate: repaint('task-shark-stern', ['task-shark-stern', { ...['task-shark-deck', {}][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-shark-deck', {}]) },
     },
     'sand-palace': {
       'the-plan': { label: 'THE PLAN IN THE SAND', plate: ['task-9436639', {}] },
@@ -1908,17 +1916,17 @@ export const STAGE_SHOTS = {
     caricature: {
       'the-easel': { label: 'THE EASEL', plate: ['task-9435855', {}] },
       'the-pose': { label: 'SIT STILL', plate: ['present-9435854', {}] },
-      sketch: { label: 'THE SKETCH', plate: ['task-9435855', { mode: 'draw' }], fail: ['task-9435855', { mode: 'draw' }], stamp: 'TORN UP' },
+      sketch: { label: 'THE SKETCH', plate: ['task-9435855', { mode: 'draw' }], fail: ['task-9435855', { mode: 'draw' }], stamp: 'TORN UP', ...repaint('task-easel-close', { alt: [['task-easel-close', {}]] }, {}) },
       'four-things': { label: 'FOUR EXAGGERATIONS', plate: ['present-9435854', { mode: 'draw', prop: 'pad', fx: 'sparkle' }],
         fail: ['present-9435854', { mode: 'draw', prop: 'pad', fx: 'sparkle' }], stamp: 'TORN UP' },
-      'artist-laughs': { label: 'THE ARTIST LAUGHS', plate: ['task-9435855', { deco: [['pad', 50, 95, 6]] }] },
+      'artist-laughs': { label: 'THE ARTIST LAUGHS', plate: repaint('task-easel-close', ['task-easel-close', { ...['task-9435855', { deco: [['pad', 50, 95, 6]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9435855', { deco: [['pad', 50, 95, 6]] }]) },
     },
     catacombs: {
       manhole: { label: 'THE MANHOLE', plate: ['task-9436001', {}], fail: ['task-9436001', {}] },
       tunnels: { label: 'THE TUNNELS', plate: [CATACOMBS, { mode: 'search' }], fail: [CATACOMBS, { mode: 'search', deco: [['skull', 50, 86, 4]] }], stamp: 'LOST' },
-      'dead-end': { label: 'A DEAD END', plate: [CATACOMBS, { deco: [['skull', 30, 86, 4], ['skull', 72, 86, 4]] }],
+      'dead-end': { label: 'A DEAD END', plate: repaint('task-catacomb-end', ['task-catacomb-end', { ...[CATACOMBS, { deco: [['skull', 30, 86, 4], ['skull', 72, 86, 4]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], [CATACOMBS, { deco: [['skull', 30, 86, 4], ['skull', 72, 86, 4]] }]),
         fail: [CATACOMBS, { mode: undefined, prop: undefined, deco: [['skull', 30, 86, 4], ['skull', 72, 86, 4]] }], stamp: 'DEAD END' },
-      'the-cheese': { label: 'THE CHEESE', plate: [CATACOMBS, { mode: undefined, prop: undefined, deco: [['cheese', 74, 86, 11], ['cheese', 87, 86, 11]] }] },
+      'the-cheese': { label: 'THE CHEESE', plate: repaint('task-cheese-cave', ['task-cheese-cave', { ...[CATACOMBS, { mode: undefined, prop: undefined, deco: [['cheese', 74, 86, 11], ['cheese', 87, 86, 11]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], [CATACOMBS, { mode: undefined, prop: undefined, deco: [['cheese', 74, 86, 11], ['cheese', 87, 86, 11]] }]) },
       'way-out': { label: 'OUT BY THE RIVER', plate: ['task-9436302', { deco: [['cheese', 80, 48, 8]] }] },
     },
   },
@@ -1930,14 +1938,14 @@ export const STAGE_SHOTS = {
       sniff: { label: 'SNIFF AND GUESS', plate: ['task-9435287', { mode: 'search' }], fail: ['task-9435287', { mode: 'search' }], stamp: 'WRONG SPICE' },
       'the-kiosk': { label: "THE MERCHANT'S KIOSK", plate: ['task-9435344', { mode: 'search', prop: 'jars', fx: 'spice' }],
         fail: ['task-9435344', { mode: 'search', prop: 'jars', fx: 'spice' }], stamp: 'WRONG SPICE' },
-      'pay-up': { label: 'FIVE LITTLE BAGS', plate: ['task-9435344', {}] },
+      'pay-up': { label: 'FIVE LITTLE BAGS', plate: repaint('task-spice-scales', ['task-spice-scales', { ...['task-9435344', {}][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9435344', {}]) },
     },
     stew: {
-      'the-chef': { label: 'THE CHEF COOKS', plate: ['task-9435484', { fx: 'steam' }] },
+      'the-chef': { label: 'THE CHEF COOKS', plate: repaint('task-stew-door', ['task-stew-door', { ...['task-9435484', { fx: 'steam' }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9435484', { fx: 'steam' }]) },
       'first-spoon': { label: 'THE FIRST SPOONFUL', plate: ['task-9435484', { mode: 'eat' }], fail: ['task-9435484', { mode: 'eat' }] },
-      'half-bowl': { label: 'HALFWAY DOWN', plate: ['task-9435484', { mode: 'eat' }], fail: ['task-9435484', { mode: undefined, prop: undefined, fx: 'steam' }] },
+      'half-bowl': { label: 'HALFWAY DOWN', plate: ['task-9435484', { mode: 'eat' }], fail: ['task-9435484', { mode: undefined, prop: undefined, fx: 'steam' }], ...repaint('task-stew-table', { alt: [['task-stew-table', {}]] }, {}) },
       'last-drop': { label: 'THE LAST DROPS', plate: ['task-9435484', { mode: 'eat' }], fail: ['task-9435484', { mode: undefined, prop: undefined, fx: 'steam' }] },
-      'empty-bowl': { label: 'THE EMPTY BOWL', plate: ['task-9435484', {}] },
+      'empty-bowl': { label: 'THE EMPTY BOWL', plate: repaint('task-stew-table', ['task-stew-table', { ...['task-9435484', {}][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9435484', {}]) },
     },
   },
   'ice-river': {
@@ -1960,13 +1968,13 @@ export const STAGE_SHOTS = {
       lesson: { label: 'THE LESSON', plate: ['task-dance-academy', { mode: undefined, prop: undefined }] },
       practice: { label: 'AT THE BARRE', plate: ['task-dance-academy', { mode: 'dance', prop: undefined, x: [6, 46] }] },
       routine: { label: 'THE ROUTINE', plate: ['task-dance-academy', { mode: 'dance', prop: undefined }] },
-      verdict: { label: 'THE VERDICT', plate: ['task-dance-academy', { mode: undefined, prop: undefined }] },
+      verdict: { label: 'THE VERDICT', plate: repaint('task-tango-floor', ['task-tango-floor', { ...['task-dance-academy', { mode: undefined, prop: undefined }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-dance-academy', { mode: undefined, prop: undefined }]) },
     },
     emu: {
-      bolas: { label: 'THE BOLAS', plate: ['task-9449177', { mode: undefined, judge: null }] },
+      bolas: { label: 'THE BOLAS', plate: repaint('task-gaucho-post', ['task-gaucho-post', { ...['task-9449177', { mode: undefined, judge: null }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9449177', { mode: undefined, judge: null }]) },
       'ride-out': { label: 'RIDING OUT', plate: ['present-9449278', { mode: 'ride', prop: 'horse', flip: true, path: [[-12, 92], [44, 90], [112, 92]], fx: 'dust', deco: [['emu', 82, 88, 7, { move: 'wander', span: 10, dur: 6 }]] }] },
       throw: { label: 'THE THROW', plate: ['task-9449177', { mode: 'toss' }] },
-      'lead-back': { label: 'BACK TO THE FENCE', plate: ['task-9449177', { mode: undefined, judge: null, deco: [['emu', 30, 90, 7, { move: 'wander', span: 6, dur: 12 }]] }] },
+      'lead-back': { label: 'BACK TO THE FENCE', plate: repaint('task-gaucho-post', ['task-gaucho-post', { ...['task-9449177', { mode: undefined, judge: null, deco: [['emu', 30, 90, 7, { move: 'wander', span: 6, dur: 12 }]] }][1], mode: undefined, path: undefined, prop: undefined, water: false, people: undefined, g: 90, x: [8, 92] }], ['task-9449177', { mode: undefined, judge: null, deco: [['emu', 30, 90, 7, { move: 'wander', span: 6, dur: 12 }]] }]) },
     },
   },
 };

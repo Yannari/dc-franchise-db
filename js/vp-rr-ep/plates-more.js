@@ -443,6 +443,17 @@ export const MORE = {
   }
  },
  "glass-pyramid-city": {
+  "arrive": [
+   {
+    "f": "arrive-22414932",
+    "g": 78,
+    "x": [
+     4,
+     56
+    ],
+    "repaint": true
+   }
+  ],
   "views": [
    {
     "f": "present-22414925"
@@ -503,6 +514,19 @@ export const MORE = {
       "prop": "legs"
      }
     ]
+   },
+   "runway": {
+    "talk": [
+     {
+      "f": "task-backstage",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
    }
   },
   "props": {
@@ -543,6 +567,15 @@ export const MORE = {
        6,
        94
       ]
+     },
+     {
+      "f": "task-drill-grid",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
      }
     ]
    }
@@ -602,6 +635,17 @@ export const MORE = {
   ]
  },
  "skyline-finale": {
+  "arrive": [
+   {
+    "f": "arrive-9450044",
+    "g": 92,
+    "x": [
+     6,
+     94
+    ],
+    "repaint": true
+   }
+  ],
   "views": [
    {
     "f": "present-9450230"
@@ -639,6 +683,32 @@ export const MORE = {
       ]
      }
     ]
+   },
+   "tower-stairs": {
+    "talk": [
+     {
+      "f": "task-9450211",
+      "g": 96,
+      "x": [
+       8,
+       90
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "buoys": {
+    "talk": [
+     {
+      "f": "task-buoy-boat",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
    }
   },
   "patch": [
@@ -663,6 +733,10 @@ export const MORE = {
   "views": [
    {
     "f": "present-9441647"
+   },
+   {
+    "f": "task-9441626",
+    "repaint": true
    },
    {
     "f": "task-9441761"
@@ -762,6 +836,28 @@ export const MORE = {
       "fx": "splash"
      }
     ]
+   },
+   "rhino": {
+    "talk": [
+     {
+      "f": "task-ranger-line",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
+     {
+      "f": "task-waterhole",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
    }
   },
   "arrive": [
@@ -813,6 +909,17 @@ export const MORE = {
     ]
    },
    "doubloons": {
+    "talk": [
+     {
+      "f": "task-9449577",
+      "g": 92,
+      "x": [
+       4,
+       96
+      ],
+      "repaint": true
+     }
+    ],
     "alt": [
      {
       "f": "task-9449592",
@@ -885,9 +992,26 @@ export const MORE = {
       ]
      }
     ]
+   },
+   "pirate-map": {
+    "talk": [
+     {
+      "f": "task-map-room",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
    }
   },
   "views": [
+   {
+    "f": "task-9449584",
+    "repaint": true
+   },
    {
     "f": "task-9449658"
    }
@@ -943,6 +1067,32 @@ export const MORE = {
       ]
      }
     ]
+   },
+   "statue-climb": {
+    "talk": [
+     {
+      "f": "task-statue-stairs",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "sewer": {
+    "talk": [
+     {
+      "f": "task-sewer-ladder",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
    }
   }
  },
@@ -976,6 +1126,19 @@ export const MORE = {
        6,
        94
       ]
+     }
+    ]
+   },
+   "shark": {
+    "talk": [
+     {
+      "f": "task-shark-stern",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
      }
     ]
    }
@@ -1043,6 +1206,22 @@ export const MORE = {
     ]
    }
   ],
+  "views": [
+   {
+    "f": "present-9443262",
+    "repaint": true
+   },
+   {
+    "f": "task-9443488",
+    "repaint": true
+   },
+   {
+    "f": "task-9443720"
+   },
+   {
+    "f": "travel-9443264"
+   }
+  ],
   "st": {
    "jump-dance": {
     "sides": {
@@ -1094,14 +1273,6 @@ export const MORE = {
     }
    }
   },
-  "views": [
-   {
-    "f": "task-9443720"
-   },
-   {
-    "f": "travel-9443264"
-   }
-  ],
   "patch": [
    {
     "stretch": "jump-dance",
@@ -1131,7 +1302,53 @@ export const MORE = {
    {
     "f": "task-22421883"
    }
-  ]
+  ],
+  "st": {
+   "wedding-slots": {
+    "talk": [
+     {
+      "f": "task-dress-rails",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
+     {
+      "f": "task-chapel-altar",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "tightrope": {
+    "talk": [
+     {
+      "f": "task-rope-start",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
+     {
+      "f": "task-far-rim",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  }
  },
  "outback-farm": {
   "mat": [
@@ -1186,6 +1403,17 @@ export const MORE = {
   }
  },
  "prairie-ranch": {
+  "arrive": [
+   {
+    "f": "arrive-9443884",
+    "g": 90,
+    "x": [
+     4,
+     60
+    ],
+    "repaint": true
+   }
+  ],
   "views": [
    {
     "f": "present-9443881"
@@ -1216,6 +1444,28 @@ export const MORE = {
       "closed": true
      }
     ]
+   },
+   "beans": {
+    "talk": [
+     {
+      "f": "task-bean-wagon",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
+     {
+      "f": "task-beans-close",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
    }
   }
  },
@@ -1230,6 +1480,32 @@ export const MORE = {
        6,
        94
       ]
+     }
+    ]
+   },
+   "kidnapper": {
+    "talk": [
+     {
+      "f": "task-22417781",
+      "g": 96,
+      "x": [
+       6,
+       94
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "crown-jewel": {
+    "talk": [
+     {
+      "f": "task-jewel-keeper",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
      }
     ]
    }
@@ -1288,7 +1564,44 @@ export const MORE = {
      ]
     }
    }
-  ]
+  ],
+  "st": {
+   "spices": {
+    "talk": [
+     {
+      "f": "task-spice-scales",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "stew": {
+    "talk": [
+     {
+      "f": "task-stew-table",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
+     {
+      "f": "task-stew-door",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  }
  },
  "iron-tower-city": {
   "arrive": [
@@ -1314,7 +1627,53 @@ export const MORE = {
    {
     "f": "travel-9436604"
    }
-  ]
+  ],
+  "st": {
+   "caricature": {
+    "talk": [
+     {
+      "f": "task-easel-close",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
+     {
+      "f": "task-cafe-terrace",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "catacombs": {
+    "talk": [
+     {
+      "f": "task-cheese-cave",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
+     {
+      "f": "task-catacomb-end",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  }
  },
  "swamp-prison": {
   "arrive": [
@@ -1533,7 +1892,22 @@ export const MORE = {
      ]
     }
    }
-  ]
+  ],
+  "st": {
+   "welcome-rite": {
+    "talk": [
+     {
+      "f": "task-cove-dock",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  }
  },
  "cliff-pool-isle": {
   "arrive": [
@@ -1662,10 +2036,39 @@ export const MORE = {
       ],
       "fx": "splash"
      }
+    ],
+    "talk": [
+     {
+      "f": "task-river-near",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
+     {
+      "f": "task-river-far",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
     ]
    },
    "air-guitar": {
     "talk": [
+     {
+      "f": "task-9441122",
+      "g": 98,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
      {
       "f": "task-9441310",
       "g": 95,
@@ -1674,6 +2077,28 @@ export const MORE = {
        94
       ],
       "closed": true
+     },
+     {
+      "f": "task-guitar-crowd",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "sauna": {
+    "talk": [
+     {
+      "f": "task-sauna-bank",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
      }
     ]
    }
@@ -1723,7 +2148,44 @@ export const MORE = {
      ]
     }
    }
-  ]
+  ],
+  "st": {
+   "emu-catch": {
+    "talk": [
+     {
+      "f": "task-emu-gate",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
+     {
+      "f": "task-emu-track",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "shearing": {
+    "talk": [
+     {
+      "f": "task-shearing-shed",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  }
  },
  "lei-island": {
   "views": [
@@ -1732,6 +2194,17 @@ export const MORE = {
    },
    {
     "f": "present-9439132"
+   }
+  ],
+  "arrive": [
+   {
+    "f": "task-9439203",
+    "g": 94,
+    "x": [
+     30,
+     94
+    ],
+    "repaint": true
    }
   ],
   "st": {
@@ -1765,6 +2238,28 @@ export const MORE = {
        ]
       ],
       "fx": "splash"
+     }
+    ]
+   },
+   "fire-walk": {
+    "talk": [
+     {
+      "f": "task-skirt-hut",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
+     {
+      "f": "task-coals-end",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
      }
     ]
    }
@@ -1890,6 +2385,17 @@ export const MORE = {
       "like": "act",
       "prop": "branded"
      }
+    ],
+    "talk": [
+     {
+      "f": "task-fish-basket",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
     ]
    },
    "tunnels": {
@@ -1914,6 +2420,34 @@ export const MORE = {
     "at": "mat"
    }
   ],
+  "st": {
+   "borehole": {
+    "talk": [
+     {
+      "f": "task-9447685",
+      "g": 78,
+      "x": [
+       14,
+       70
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "ice-yacht": {
+    "talk": [
+     {
+      "f": "task-yacht-start",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  },
   "patch": [
    {
     "stretch": "borehole",
@@ -2077,9 +2611,43 @@ export const MORE = {
      ]
     }
    }
-  ]
+  ],
+  "st": {
+   "skewers": {
+    "talk": [
+     {
+      "f": "task-food-stall",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  }
  },
  "tomb-sands": {
+  "st": {
+   "pyramid": {
+    "sides": {
+     "under": {
+      "talk": [
+       {
+        "f": "task-22409918",
+        "g": 99,
+        "x": [
+         6,
+         94
+        ],
+        "repaint": true
+       }
+      ]
+     }
+    }
+   }
+  },
   "views": [
    {
     "f": "task-22409920"
@@ -2139,7 +2707,44 @@ export const MORE = {
      ]
     }
    }
-  ]
+  ],
+  "st": {
+   "ants": {
+    "talk": [
+     {
+      "f": "task-ant-hut",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "costume": {
+    "talk": [
+     {
+      "f": "task-costume-tent",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
+     {
+      "f": "task-parade-route",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  }
  },
  "pampas-ranch": {
   "arrive": [
@@ -2159,7 +2764,35 @@ export const MORE = {
    {
     "f": "task-9449086"
    }
-  ]
+  ],
+  "st": {
+   "tango": {
+    "talk": [
+     {
+      "f": "task-tango-floor",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "emu": {
+    "talk": [
+     {
+      "f": "task-gaucho-post",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  }
  },
  "jungle-ruins": {
   "arrive": [
@@ -2179,7 +2812,31 @@ export const MORE = {
    {
     "f": "task-22414359"
    }
-  ]
+  ],
+  "st": {
+   "golden-idol": {
+    "talk": [
+     {
+      "f": "task-idol-niches",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
+     {
+      "f": "task-idol-guide",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  }
  },
  "secret-base-desert": {
   "views": [
@@ -2231,6 +2888,19 @@ export const MORE = {
       "fx": "splash"
      }
     ]
+   },
+   "meatball-cannon": {
+    "talk": [
+     {
+      "f": "task-cannon-deck",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
    }
   }
  },
@@ -2249,10 +2919,38 @@ export const MORE = {
      "prop": "fossil"
     }
    }
-  ]
+  ],
+  "st": {
+   "telephone": {
+    "talk": [
+     {
+      "f": "task-speaker-box",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     },
+     {
+      "f": "task-geyser-far",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  }
  },
  "dragon-isle": {
   "views": [
+   {
+    "f": "present-9445130",
+    "repaint": true
+   },
    {
     "f": "task-9445351"
    }
@@ -2269,7 +2967,35 @@ export const MORE = {
      ]
     }
    }
-  ]
+  ],
+  "st": {
+   "venom": {
+    "talk": [
+     {
+      "f": "task-stilt-shade",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "rugs": {
+    "talk": [
+     {
+      "f": "task-weaver-loom",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  }
  },
  "game-show-city": {
   "st": {
@@ -2374,6 +3100,41 @@ export const MORE = {
    }
   ]
  },
+ "snow-peaks": {
+  "views": [
+   {
+    "f": "present-22413694",
+    "repaint": true
+   }
+  ],
+  "st": {
+   "sausage": {
+    "alt": [
+     {
+      "like": "act",
+      "prop": "grinder2"
+     }
+    ]
+   },
+   "slap-dance": {
+    "talk": [
+     {
+      "f": "task-dance-stage",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  },
+  "props": {
+   "grinder2": "Steel-blue grinder nozzle update-5",
+   "pad": null
+  }
+ },
  "grass-savanna": {
   "st": {
    "safari": {
@@ -2385,6 +3146,32 @@ export const MORE = {
        6,
        94
       ]
+     }
+    ]
+   },
+   "plums": {
+    "talk": [
+     {
+      "f": "task-plum-elder",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "gourds": {
+    "talk": [
+     {
+      "f": "task-gourd-crowd",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
      }
     ]
    }
@@ -2400,22 +3187,6 @@ export const MORE = {
    }
   ]
  },
- "snow-peaks": {
-  "st": {
-   "sausage": {
-    "alt": [
-     {
-      "like": "act",
-      "prop": "grinder2"
-     }
-    ]
-   }
-  },
-  "props": {
-   "grinder2": "Steel-blue grinder nozzle update-5",
-   "pad": null
-  }
- },
  "marble-temple-hill": {
   "patch": [
    {
@@ -2427,6 +3198,34 @@ export const MORE = {
     }
    }
   ],
+  "st": {
+   "hurdles": {
+    "talk": [
+     {
+      "f": "task-stadium-stands",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   },
+   "high-jump": {
+    "talk": [
+     {
+      "f": "task-jump-mat",
+      "g": 90,
+      "x": [
+       8,
+       92
+      ],
+      "repaint": true
+     }
+    ]
+   }
+  },
   "props": {
    "hurdle": null
   }
@@ -2441,30 +3240,11 @@ export const LEFT_OUT = {
   "task-22425851": "another stop (a roadside stand), not the volcano island",
   "task-22425859": "another stop (inside a train carriage), not the volcano island"
  },
- "glass-pyramid-city": {
-  "arrive-22414932": "the cast is still in it (small, by the arches)",
-  "cutout/museum-bear__ref-1": "a reference picture for the bear cut-out",
-  "cutout/museum-bear__ref-2": "a reference picture for the bear cut-out",
-  "cutout/statue-head__ref-1": "a reference picture for the statue pieces",
-  "cutout/statue-legs__ref-1": "a reference picture for the statue pieces",
-  "cutout/statue-torso__ref-1": "a reference picture for the statue pieces",
-  "cutout/statue-torso__ref-2": "a reference picture for the statue pieces",
-  "cutout/statue-torso__ref-3": "a reference picture for the statue pieces"
- },
  "badlands": {
   "task-22424527": "a stage curtain, not this place"
  },
- "skyline-finale": {
-  "arrive-9450044": "the show's credits are burned into it",
-  "task-9450211": "somebody's hands are in it"
- },
  "savanna-falls": {
-  "task-9441626": "somebody is swimming in it",
   "travel-9441594": "a stone figure on a beach, not the falls"
- },
- "treasure-isles": {
-  "task-9449577": "people are peeking out of the huts",
-  "task-9449584": "a jet ski and somebody on the dock are painted in"
  },
  "torch-statue-harbour": {
   "task-22412644": "bare ground with nothing to say where it is"
@@ -2477,10 +3257,6 @@ export const LEFT_OUT = {
   "chill-9438461": "in use (the night Chill Zone's stand-in)",
   "task-9438461": "the same frame as chill-9438461"
  },
- "fjord-peaks": {
-  "present-9443262": "the show's credits are burned into it",
-  "task-9443488": "somebody is on the bridge"
- },
  "great-falls": {
   "task-22421739": "a bare stage floor, nothing says where it is",
   "task-22421782": "a stage with crocodile tubs from a challenge this place doesn't run",
@@ -2492,11 +3268,7 @@ export const LEFT_OUT = {
   "ute": "in use (the ute, through the repaint list)"
  },
  "prairie-ranch": {
-  "arrive-9443884": "somebody is standing in it",
   "task-9443881": "the same frame as present-9443881"
- },
- "twin-tower-bridge": {
-  "task-22417781": "the masked kidnapper is painted in"
  },
  "red-sand-desert": {
   "chill-22410379": "Tomb Sands' Chill Zone (the pyramid tomb, a 2241xxxx frame), not this oasis: the desert's mat cut between two Chill Zones",
@@ -2508,29 +3280,21 @@ export const LEFT_OUT = {
  "cliff-pool-isle": {
   "task-22416354": "pale empty water with one fin: on screen it reads as nothing"
  },
- "rock-north": {
-  "task-9441122": "somebody is lying on the stage"
- },
- "lei-island": {
-  "task-9439203": "somebody's arm is at the left edge"
- },
  "frozen-mine": {
   "Wooden Sauna Golden Race Mat": "in use (the sauna Chill Zone, through the repaint list)",
-  "reference-chill-9447963": "a reference frame for a repaint",
-  "task-9447685": "somebody is standing by the hole"
- },
- "tomb-sands": {
-  "task-22409918": "somebody is standing in a doorway"
+  "reference-chill-9447963": "a reference frame for a repaint"
  },
  "geyser-island": {
   "reference-task-9437341": "a reference frame for a repaint"
  },
- "dragon-isle": {
-  "present-9445130": "the show's credits are burned into it"
- },
- "snow-peaks": {
-  "present-22413694": "somebody is at the right edge",
-  "cutout/Total Drama arcade dance pad-1": "the dance pads are painted into the slap-dance stage: the cut-out would draw them twice"
+ "glass-pyramid-city": {
+  "cutout/museum-bear__ref-1": "a reference picture for the bear cut-out",
+  "cutout/museum-bear__ref-2": "a reference picture for the bear cut-out",
+  "cutout/statue-head__ref-1": "a reference picture for the statue pieces",
+  "cutout/statue-legs__ref-1": "a reference picture for the statue pieces",
+  "cutout/statue-torso__ref-1": "a reference picture for the statue pieces",
+  "cutout/statue-torso__ref-2": "a reference picture for the statue pieces",
+  "cutout/statue-torso__ref-3": "a reference picture for the statue pieces"
  },
  "fishing-cove": {
   "cutout/fisherman-local-Don": "the fisherman with Don's face, an earlier try; fisherman-local is used"
@@ -2540,6 +3304,9 @@ export const LEFT_OUT = {
  },
  "glass-tower-gulf": {
   "cutout/Empty Window-Cleaning Gondola-3": "the window-cleaning platform is painted into the squeegee plate: the cut-out would draw it twice"
+ },
+ "snow-peaks": {
+  "cutout/Total Drama arcade dance pad-1": "the dance pads are painted into the slap-dance stage: the cut-out would draw them twice"
  },
  "marble-temple-hill": {
   "cutout/hurdle": "the hurdles are painted across the stadium track: the cut-out drew them twice"

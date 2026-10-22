@@ -594,6 +594,558 @@
       "new": true,
       "ref": "task-9446545",
       "why": "the rocks at the foot of the sea cliff (2026-10-22): flat rocks at the water's edge where the jumper climbs out with the milk canteen, the cliff and its ledges rising behind; nowhere to stand during the swim (meanwhile: the swim)"
+    },
+    {
+      "place": "glass-pyramid-city",
+      "src": "35-glass-pyramid-city",
+      "file": "arrive-22414932",
+      "why": "the museum courtyard: the cast stands small by the arches (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the little group of people standing by the arches in the middle of the courtyard (keep the black car in the foreground, the palace and the glass pyramid).",
+      "sha256": "78116e90b4c20869f13b71432ed03dff092e0ea14612a1cf38795675fba06456"
+    },
+    {
+      "place": "skyline-finale",
+      "src": "27-skyline-finale",
+      "file": "task-9450211",
+      "why": "the top floor's window over the city: somebody's hands are in it (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the two hands and arms reaching up from the bottom; fill in the window, the sill and the floor behind them.",
+      "sha256": "82afcf9356535fd306f99186ffd6c46dc26674da7488a19b84ecb2cc319f89a1"
+    },
+    {
+      "place": "savanna-falls",
+      "src": "13-savanna-falls",
+      "file": "task-9441626",
+      "why": "the river above the falls: somebody is swimming in it (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the man swimming in the water on the right and his splash; leave calm water.",
+      "sha256": "40038124bc7cb0d8f69ddd1c0c9215bfdcd7545c8ffc42d49c3c6fcf0d8b8070"
+    },
+    {
+      "place": "treasure-isles",
+      "src": "26-treasure-isles",
+      "file": "task-9449577",
+      "why": "the beach huts where the divers suit up: people peek out of them (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the people peeking out of the huts and the arm at the left hut; keep the huts, the towels and the beach.",
+      "sha256": "238769f6d5e04bc570cdcfc2716c24c8dc93a32ae4d92dea23808a7e93b995be"
+    },
+    {
+      "place": "treasure-isles",
+      "src": "26-treasure-isles",
+      "file": "task-9449584",
+      "why": "the open sea off the island: a jet ski and somebody on the dock (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the red jet ski and its wake, and the person standing on the little dock at the right; keep the dock.",
+      "sha256": "1420e52c53a99035d12f7e4a7614a585a7cd660da818009dd76a22145eb1ec19"
+    },
+    {
+      "place": "fjord-peaks",
+      "src": "16-fjord-peaks",
+      "file": "task-9443488",
+      "why": "the bungee bridge over the gorge: somebody is on the bridge (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the small figure standing on the red bridge in the middle; keep the bridge, the cables and the gorge.",
+      "sha256": "d96b8aabb794d84ef791215e9b14556f61ac395cc340af5a4c7df5dbf6c27a91"
+    },
+    {
+      "place": "prairie-ranch",
+      "src": "17-prairie-ranch",
+      "file": "arrive-9443884",
+      "why": "the ranch house from the road: somebody stands in it (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the man in the red hat standing by the fence at the left; fill in the fence and the dirt.",
+      "sha256": "bca29db6a27cde0df1ce0e3785c074df6251ea6dcb163699ec583970e88f3741"
+    },
+    {
+      "place": "rock-north",
+      "src": "12-rock-north",
+      "file": "task-9441122",
+      "why": "the air-guitar stage curtain: somebody lies on the stage (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the person lying on the stage at the bottom; fill in the stage floor in front of the purple curtain.",
+      "sha256": "7ea5c637f105e808800cf1b3636ec81a9b995ac153a26ac572d31ab34464e5c4"
+    },
+    {
+      "place": "lei-island",
+      "src": "09-lei-island",
+      "file": "task-9439203",
+      "why": "the island's beach: somebody's arm reaches in at the left (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the arm and hand reaching in from the left edge; fill in the sky and the palm trees behind it.",
+      "sha256": "84ddcc65dcb0e1d008592bd13bcf6c8bf2b502052a09cfbc1d49601edc701463"
+    },
+    {
+      "place": "frozen-mine",
+      "src": "23-frozen-mine",
+      "file": "task-9447685",
+      "why": "the borehole and its winch: somebody stands by the hole (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the man in the red and white hat standing on the platform by the hole; fill in the platform.",
+      "sha256": "1e81b89606d9fba9758555225643582d6e4eeaa12598926e5de13c5ead38cf72"
+    },
+    {
+      "place": "tomb-sands",
+      "src": "29-tomb-sands",
+      "file": "task-22409918",
+      "why": "the three doorways in the tomb: somebody stands in one (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the man standing in the middle doorway; the doorway behind him is dark and empty.",
+      "sha256": "e45be98ad68a31e344164211f795bda8d0295579bc0389313b853f3ed1b0fd1b"
+    },
+    {
+      "place": "snow-peaks",
+      "src": "33-snow-peaks",
+      "file": "present-22413694",
+      "why": "the snow peaks: somebody is at the right edge (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the blond head and shoulder at the bottom right corner; fill in the snowy slope.",
+      "sha256": "d5e346ec58db82d9abe398bf5eae07fe712c0e50ffc01083b764e7f75079a9f9"
+    },
+    {
+      "place": "twin-tower-bridge",
+      "src": "38-twin-tower-bridge",
+      "file": "task-22417781",
+      "why": "the castle door at night: the masked kidnapper is painted in (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the masked kidnapper in the top hat and his sack; fill in the doorway, the wall and the floor behind him.",
+      "sha256": "1229fa9e4fbdde48964f9aa94ac47d06ebef0c7070fe938f719b014c94c34400"
+    },
+    {
+      "place": "skyline-finale",
+      "src": "27-skyline-finale",
+      "file": "arrive-9450044",
+      "why": "the airport with the city behind: the show's credits are burned in (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the words \"created by: Jennifer Pertsch & Tom McGillis\" at the bottom; fill in the runway behind them.",
+      "sha256": "ea57e2f03fb8c7768b74719870f92309b81b8d5ef1c390f3c40396c4525833e1"
+    },
+    {
+      "place": "fjord-peaks",
+      "src": "16-fjord-peaks",
+      "file": "present-9443262",
+      "why": "the station on the cliff: the show's credits are burned in (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the words \"CREATED BY: Jennifer Pertsch & Tom McGillis\"; fill in the cliff face behind them.",
+      "sha256": "32b386438f168343d4300d97570b5f6906fbc7a69a2af12afe6337a8f0cfc8ed"
+    },
+    {
+      "place": "dragon-isle",
+      "src": "19-dragon-isle",
+      "file": "present-9445130",
+      "why": "the green valley: the show's credits are burned in (2026-10-22: a left-out frame, painted clean)",
+      "ask": "Paint out the words \"WRITTEN BY: Miles Smith / DIRECTED BY: Keith Oliver & Chad Hicks\"; fill in the valley behind them.",
+      "sha256": "232d249e8bbf2546a158da478b8c6033fcfdc9c8622ab60221788a1dce467dac"
+    },
+    {
+      "place": "red-sand-desert",
+      "src": "03-red-sand-desert",
+      "file": "task-spice-scales",
+      "new": true,
+      "ref": "task-9435344",
+      "why": "spices, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The spice merchant's counter, close: a wooden counter with brass hanging scales, a pile of little paper bags, a money tin and a ledger, spice baskets behind under the striped awning. The sandy market floor across the bottom of the picture."
+    },
+    {
+      "place": "red-sand-desert",
+      "src": "03-red-sand-desert",
+      "file": "task-stew-table",
+      "new": true,
+      "ref": "task-9435484",
+      "why": "stew, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): A low wooden table on the shaded terrace of the desert restaurant, cushions round it, one big steaming clay bowl of red stew and a spoon on it, a jug of water; the desert and its red rocks beyond the terrace arches. Tiled floor across the bottom."
+    },
+    {
+      "place": "red-sand-desert",
+      "src": "03-red-sand-desert",
+      "file": "task-stew-door",
+      "new": true,
+      "ref": "task-9435484",
+      "why": "stew, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The front of the little desert restaurant: a mud-brick building with a carved wooden door, a striped awning, a hand-painted sign with a bowl on it, a barrel and clay pots by the door; open sand all around. Sand across the bottom of the picture."
+    },
+    {
+      "place": "skyline-finale",
+      "src": "27-skyline-finale",
+      "file": "task-buoy-boat",
+      "new": true,
+      "ref": "task-9450434",
+      "why": "buoys, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): Inside a wooden rowing boat out in the middle of the park lake, seen from the stern: two oars resting in the rowlocks, a closed metal briefcase with a combination lock on the middle seat, numbered buoys bobbing in the water around, the city skyline behind the trees. The boat's floorboards across the bottom of the picture."
+    },
+    {
+      "place": "iron-tower-city",
+      "src": "04-iron-tower-city",
+      "file": "task-easel-close",
+      "new": true,
+      "ref": "task-9435855",
+      "why": "caricature, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): A street artist's corner under a lamp post at night: a wooden easel with a big sheet of paper, charcoal sketches of funny faces pinned to a board, a little folding stool for the person posing, a box of charcoal; the lit-up iron tower in the distance. Cobbled pavement across the bottom of the picture."
+    },
+    {
+      "place": "iron-tower-city",
+      "src": "04-iron-tower-city",
+      "file": "task-cafe-terrace",
+      "new": true,
+      "ref": "present-9435854",
+      "why": "caricature, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): A little pavement cafe near the iron tower at night: round metal tables and chairs, a striped awning, a chalkboard menu, warm light from the windows, the tower lit up behind the trees. Pavement across the bottom of the picture."
+    },
+    {
+      "place": "iron-tower-city",
+      "src": "04-iron-tower-city",
+      "file": "task-cheese-cave",
+      "new": true,
+      "ref": "task-catacombs",
+      "why": "catacombs, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): A low chamber deep in the catacombs: wooden shelves stacked with big round wheels of cheese, the walls behind lined with skulls and bones, one dim lamp. Stone floor across the bottom of the picture."
+    },
+    {
+      "place": "iron-tower-city",
+      "src": "04-iron-tower-city",
+      "file": "task-catacomb-end",
+      "new": true,
+      "ref": "task-catacombs",
+      "why": "catacombs, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): A dead end in the catacombs: a narrow tunnel that stops at a wall of stacked skulls, bones in neat rows on both sides, a dripping arch, one dim lamp. Stone floor across the bottom of the picture."
+    },
+    {
+      "place": "great-wall-hills",
+      "src": "11-great-wall-hills",
+      "file": "task-food-stall",
+      "new": true,
+      "ref": "task-9440338",
+      "why": "skewers, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): A street food stall seen from the front: a counter with a big tray of worms, scorpions and beetles beside bundles of wooden skewers, paper lanterns and a painted sign above, steam from a wok, a few stools in front. Paved street across the bottom of the picture."
+    },
+    {
+      "place": "rock-north",
+      "src": "12-rock-north",
+      "file": "task-sauna-bank",
+      "new": true,
+      "ref": "task-9440922",
+      "why": "sauna, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The snowy riverbank outside the wooden sauna huts: a wooden bench with towels on it, buckets of snow, a hut door with steam pouring out, the river and pine trees behind. Packed snow across the bottom of the picture."
+    },
+    {
+      "place": "rock-north",
+      "src": "12-rock-north",
+      "file": "task-river-near",
+      "new": true,
+      "ref": "task-9440942",
+      "why": "ice-river, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The near bank of a half-frozen river: snowy ground in front, the river full of drifting ice floes beyond, the far bank with snowy pines on the other side and a small Don Box on a post over there. Snow across the bottom of the picture."
+    },
+    {
+      "place": "rock-north",
+      "src": "12-rock-north",
+      "file": "task-river-far",
+      "new": true,
+      "ref": "task-9440942",
+      "why": "ice-river, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The far bank of the frozen river: a red-and-white Don Box on a post in the snow, pine trees, the river and its floes behind it, the sauna huts small on the other side. Snow across the bottom of the picture."
+    },
+    {
+      "place": "rock-north",
+      "src": "12-rock-north",
+      "file": "task-guitar-crowd",
+      "new": true,
+      "ref": "task-9441025",
+      "why": "air-guitar, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): From the edge of the outdoor stage, looking out over the crowd area: a big standing field in front of the stage, a giant vertical appeal meter on a scaffold at the side lit from red at the bottom to green at the top, festival lights. The stage's edge across the bottom of the picture."
+    },
+    {
+      "place": "savanna-falls",
+      "src": "13-savanna-falls",
+      "file": "task-ranger-line",
+      "new": true,
+      "ref": "task-9441524",
+      "why": "rhino, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The ranger's line in the national park: a rope strung between wooden posts across the dry grass, the ranger's jeep parked to one side, a sign on a post, the waterhole and acacia trees far off. Dry grass and dirt across the bottom of the picture."
+    },
+    {
+      "place": "savanna-falls",
+      "src": "13-savanna-falls",
+      "file": "task-waterhole",
+      "new": true,
+      "ref": "task-9441524",
+      "why": "rhino, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): Right by the waterhole: trampled mud and dry grass, a flat rock, the water behind, acacia trees beyond; room on the left for a big animal to stand. Mud and grass across the bottom of the picture."
+    },
+    {
+      "place": "treasure-isles",
+      "src": "26-treasure-isles",
+      "file": "task-map-room",
+      "new": true,
+      "ref": "task-9449621",
+      "why": "pirate-map, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The pirate museum's back room: crates and barrels stuffed with rolled-up maps, a big wooden table with a map spread open and weighed down at the corners, a ship's lantern, waxwork pirate in a corner. Wooden floor across the bottom of the picture."
+    },
+    {
+      "place": "torch-statue-harbour",
+      "src": "32-torch-statue-harbour",
+      "file": "task-statue-stairs",
+      "new": true,
+      "ref": "task-22412320",
+      "why": "statue-climb, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): Inside the giant torch statue: a narrow metal spiral staircase winding up through green copper girders, small round windows letting in daylight, rivets everywhere. A landing of metal floor across the bottom of the picture."
+    },
+    {
+      "place": "torch-statue-harbour",
+      "src": "32-torch-statue-harbour",
+      "file": "task-sewer-ladder",
+      "new": true,
+      "ref": "task-22412499",
+      "why": "sewer, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The end of a sewer tunnel: an iron ladder climbing the wall up to an open manhole with daylight pouring down, a grate on the side, ankle-deep water glinting, brick walls. A dry ledge of brick across the bottom of the picture."
+    },
+    {
+      "place": "red-outback",
+      "src": "41-red-outback",
+      "file": "task-emu-gate",
+      "new": true,
+      "ref": "task-22419889",
+      "why": "emu-catch, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The gate of a dusty corral on the red plain: halters and ropes hanging on the gatepost, a water trough, a wooden rail fence, red rock hills behind. Red dirt across the bottom of the picture."
+    },
+    {
+      "place": "red-outback",
+      "src": "41-red-outback",
+      "file": "task-emu-track",
+      "new": true,
+      "ref": "task-22419889",
+      "why": "emu-catch, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): Open red plain outside the corral: a dirt track running off into the distance, spinifex bushes, a lone gum tree, the corral fence small behind. Red dirt across the bottom of the picture."
+    },
+    {
+      "place": "red-outback",
+      "src": "41-red-outback",
+      "file": "task-shearing-shed",
+      "new": true,
+      "ref": "task-22419762",
+      "why": "shearing, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): Inside an old wooden shearing shed: a worn board floor, old hand clippers hanging on hooks, piles of wool on the floor, a little pen gate on one side, sunlight through the slats. Board floor across the bottom of the picture."
+    },
+    {
+      "place": "coast-palace",
+      "src": "05-coast-palace",
+      "file": "task-shark-stern",
+      "new": true,
+      "ref": "task-shark-deck",
+      "why": "shark, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The stern of the boat out at sea: a swim platform with a ladder going down into the deep blue water, a coil of rope, life ring on the rail, the cliffs far off. The boat's deck across the bottom of the picture."
+    },
+    {
+      "place": "geyser-island",
+      "src": "06-geyser-island",
+      "file": "task-speaker-box",
+      "new": true,
+      "ref": "task-9437137",
+      "why": "telephone, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The edge of the geyser field: a weathered speaker box on a wooden post with a big button, a rope barrier, steaming vents and grey mud beyond, mountains behind. Dark ground across the bottom of the picture."
+    },
+    {
+      "place": "geyser-island",
+      "src": "06-geyser-island",
+      "file": "task-geyser-far",
+      "new": true,
+      "ref": "task-9437137",
+      "why": "telephone, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The far side of the geyser field: a little turf-roofed hut with a bench outside, the steaming field behind, a puff of a geyser in the distance. Grass and dark ground across the bottom of the picture."
+    },
+    {
+      "place": "carnival-rainforest",
+      "src": "07-carnival-rainforest",
+      "file": "task-ant-hut",
+      "new": true,
+      "ref": "task-9437989",
+      "why": "ants, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): A small thatched hut at the edge of the rainforest: a bench outside, woven mittens hanging from the eaves, a bucket of water and a jar of ointment on a stump, tall trees behind. Forest floor across the bottom of the picture."
+    },
+    {
+      "place": "carnival-rainforest",
+      "src": "07-carnival-rainforest",
+      "file": "task-costume-tent",
+      "new": true,
+      "ref": "task-9438128",
+      "why": "costume, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): Inside a carnival workshop tent: racks of bright feathers, sequins in jars, wire frames for headpieces, a tall mirror, a sewing table with a lamp. Wooden floor boards across the bottom of the picture."
+    },
+    {
+      "place": "carnival-rainforest",
+      "src": "07-carnival-rainforest",
+      "file": "task-parade-route",
+      "new": true,
+      "ref": "task-9438128",
+      "why": "costume, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): A little carnival parade route at the edge of the rainforest: bunting and paper flowers strung between poles, a judge's raised wooden stand with a chair, confetti on the ground. A dirt path across the bottom of the picture."
+    },
+    {
+      "place": "lei-island",
+      "src": "09-lei-island",
+      "file": "task-skirt-hut",
+      "new": true,
+      "ref": "task-9439223",
+      "why": "fire-walk, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): A jungle hut on the path: grass skirts and flower leis hanging on a rack outside, a woven mat, palm trees and hills behind. Sandy ground across the bottom of the picture."
+    },
+    {
+      "place": "lei-island",
+      "src": "09-lei-island",
+      "file": "task-coals-end",
+      "new": true,
+      "ref": "task-9439223",
+      "why": "fire-walk, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The far end of a long bed of glowing coals in a jungle clearing: tiki torches on poles, a carved post, the coals running back into the distance. Sandy ground across the bottom of the picture."
+    },
+    {
+      "place": "prairie-ranch",
+      "src": "17-prairie-ranch",
+      "file": "task-bean-wagon",
+      "new": true,
+      "ref": "task-beans-table",
+      "why": "beans, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The cook's chuckwagon at the top of the cliff: an old covered wagon, a cooking fire with big black iron pots of beans on it, a ladle, a sack of beans, mountains behind. Grass across the bottom of the picture."
+    },
+    {
+      "place": "prairie-ranch",
+      "src": "17-prairie-ranch",
+      "file": "task-beans-close",
+      "new": true,
+      "ref": "task-beans-table",
+      "why": "beans, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): Close on the long table at the cliff top: a red-checked tablecloth, big iron pots of beans and wooden spoons, a bench in front, the valley far below. The table and bench across the bottom of the picture."
+    },
+    {
+      "place": "dragon-isle",
+      "src": "19-dragon-isle",
+      "file": "task-stilt-shade",
+      "new": true,
+      "ref": "task-9445138",
+      "why": "venom, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): In the shade under the stilt huts: wooden stilts, sand, long forked sticks and sponges on poles leaning against a post, a tray of small glass vials on a crate, the sea glinting beyond. NO lizards. Sand across the bottom of the picture."
+    },
+    {
+      "place": "dragon-isle",
+      "src": "19-dragon-isle",
+      "file": "task-weaver-loom",
+      "new": true,
+      "ref": "task-rug-clearing",
+      "why": "rugs, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The weaver's corner of the jungle clearing: a big wooden loom with a half-woven rug, a stool, rolled rugs stacked beside it, a pot of tea on a crate, jungle behind. NO people. Dirt ground across the bottom of the picture."
+    },
+    {
+      "place": "stilt-river",
+      "src": "22-stilt-river",
+      "file": "task-fish-basket",
+      "new": true,
+      "ref": "task-9447243",
+      "why": "catfish, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The muddy river bank below the stilt village: a big wicker fish basket with a lid on the bank, a small wooden boat pulled up, the houses on stilts behind, the brown river. NO car. Mud across the bottom of the picture."
+    },
+    {
+      "place": "frozen-mine",
+      "src": "23-frozen-mine",
+      "file": "task-yacht-start",
+      "new": true,
+      "ref": "task-9447678",
+      "why": "ice-yacht, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The start line on the frozen lake's shore: a little changing tent, a rack of swimsuits, ice yachts with striped sails lined up on the ice, the mine's headframe far across the lake. Snow and ice across the bottom of the picture."
+    },
+    {
+      "place": "pampas-ranch",
+      "src": "25-pampas-ranch",
+      "file": "task-tango-floor",
+      "new": true,
+      "ref": "task-dance-academy",
+      "why": "tango, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The dance academy from the instructor's corner: a tall chair, a gramophone on a little table, the wooden floor and the mirrors across the room, red curtains at the tall windows. Wooden floor across the bottom of the picture."
+    },
+    {
+      "place": "pampas-ranch",
+      "src": "25-pampas-ranch",
+      "file": "task-gaucho-post",
+      "new": true,
+      "ref": "task-9449177",
+      "why": "emu, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): A hitching post on the grasslands: saddled horses tied to it, boleadoras hanging from the post, a small fire with a kettle, the endless grass and mountains behind. Grass and dirt across the bottom of the picture."
+    },
+    {
+      "place": "snow-peaks",
+      "src": "33-snow-peaks",
+      "file": "task-dance-stage",
+      "new": true,
+      "ref": "task-22414020",
+      "why": "slap-dance, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): A wooden stage in the snow seen from the audience: a big screen with arrows at the back, two light-up dance pads on the stage, wooden benches in the snow in front, mountains behind. Snow across the bottom of the picture."
+    },
+    {
+      "place": "jungle-ruins",
+      "src": "34-jungle-ruins",
+      "file": "task-idol-niches",
+      "new": true,
+      "ref": "task-22414655",
+      "why": "golden-idol, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): Close on the carved stone wall at the foot of the ruins: rows of little niches each holding a small golden idol, carvings of faces and symbols between them, vines. The stone ground across the bottom of the picture."
+    },
+    {
+      "place": "jungle-ruins",
+      "src": "34-jungle-ruins",
+      "file": "task-idol-guide",
+      "new": true,
+      "ref": "task-22414655",
+      "why": "golden-idol, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The old guide's spot by the ruins: a small wooden table under a palm-leaf shade with a coin, a magnifying glass and a cloth on it, a stool, burning torches, the ruins behind. Stone and dirt ground across the bottom of the picture."
+    },
+    {
+      "place": "glass-pyramid-city",
+      "src": "35-glass-pyramid-city",
+      "file": "task-backstage",
+      "new": true,
+      "ref": "task-museum-runway",
+      "why": "runway, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): Backstage at the museum fashion show: rails of towering ridiculous outfits, a mirror ringed with bulbs, a hat stand, a curtain through to the runway lights. Marble floor across the bottom of the picture."
+    },
+    {
+      "place": "fishing-cove",
+      "src": "36-fishing-cove",
+      "file": "task-cove-dock",
+      "new": true,
+      "ref": "task-shack-inside",
+      "why": "welcome-rite, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The little wooden dock by the fisherman's red shack: fishing nets drying, lobster pots, a rowing boat tied up, the grey cove water and cliffs. The dock's planks across the bottom of the picture."
+    },
+    {
+      "place": "twin-tower-bridge",
+      "src": "38-twin-tower-bridge",
+      "file": "task-jewel-keeper",
+      "new": true,
+      "ref": "task-22417892",
+      "why": "crown-jewel, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The jewel keeper's desk in the vault: a heavy wooden desk with a bright lamp, a magnifying glass and a velvet cushion, a ledger, the vault's stone walls and a barred door behind. Stone floor across the bottom of the picture."
+    },
+    {
+      "place": "marble-temple-hill",
+      "src": "39-marble-temple-hill",
+      "file": "task-stadium-stands",
+      "new": true,
+      "ref": "task-22418528",
+      "why": "hurdles, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The old marble stadium's start line: a painted line across the sandy track, the curved rows of worn marble seats rising behind, broken columns at the top, blue sky. The track across the bottom of the picture."
+    },
+    {
+      "place": "marble-temple-hill",
+      "src": "39-marble-temple-hill",
+      "file": "task-jump-mat",
+      "new": true,
+      "ref": "task-22418529",
+      "why": "high-jump, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): A big thick blue landing mat on the sand beside the high-jump bar and its two uprights, the marble ruins behind. Sand across the bottom of the picture."
+    },
+    {
+      "place": "fjord-sea",
+      "src": "42-fjord-sea",
+      "file": "task-cannon-deck",
+      "new": true,
+      "ref": "task-22420280",
+      "why": "meatball-cannon, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): On the deck of the longship: an old iron cannon on wooden wheels pointing out over the rail at the fjord, a barrel of meatballs beside it, the striped sail above, the mountains across the water. The deck planks across the bottom of the picture."
+    },
+    {
+      "place": "great-falls",
+      "src": "43-great-falls",
+      "file": "task-dress-rails",
+      "new": true,
+      "ref": "task-22421563",
+      "why": "wedding-slots, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): Backstage in the old theatre: long rails crammed with white wedding dresses, veils on hooks, a tall mirror, a dressing screen. Wooden floor across the bottom of the picture."
+    },
+    {
+      "place": "great-falls",
+      "src": "43-great-falls",
+      "file": "task-chapel-altar",
+      "new": true,
+      "ref": "task-22421546",
+      "why": "wedding-slots, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The wedding chapel in the theatre hall: a flower arch at the front of the stage, an aisle between rows of chairs, a lectern for the minister, hearts on the curtain. The stage floor across the bottom of the picture."
+    },
+    {
+      "place": "great-falls",
+      "src": "43-great-falls",
+      "file": "task-rope-start",
+      "new": true,
+      "ref": "task-22421939",
+      "why": "tightrope, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The near rim of the gorge where the tightrope starts: the rope anchored to a big post, a safety line above it, harnesses and a long balance pole on a rack, spray rising from the roaring falls below. Rock across the bottom of the picture."
+    },
+    {
+      "place": "great-falls",
+      "src": "43-great-falls",
+      "file": "task-far-rim",
+      "new": true,
+      "ref": "task-22421939",
+      "why": "tightrope, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The far rim of the gorge: the end of the tightrope tied to a post, a flag, rocks and spray, the falls roaring below, the near rim small across the gap. Rock across the bottom of the picture."
+    },
+    {
+      "place": "grass-savanna",
+      "src": "45-grass-savanna",
+      "file": "task-plum-elder",
+      "new": true,
+      "ref": "task-22422865",
+      "why": "plums, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The village elder's seat under a big shady tree: a carved wooden stool, woven baskets of plums, round huts behind. Dry ground across the bottom of the picture."
+    },
+    {
+      "place": "grass-savanna",
+      "src": "45-grass-savanna",
+      "file": "task-gourd-crowd",
+      "new": true,
+      "ref": "task-22422938",
+      "why": "gourds, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): The clearing with the row of ten wooden posts, each with a round gourd balanced on top, a cricket bat leaning on the first post, round huts and acacia trees behind. Dry ground across the bottom of the picture."
+    },
+    {
+      "place": "badlands",
+      "src": "47-badlands",
+      "file": "task-drill-grid",
+      "new": true,
+      "ref": "task-22424515",
+      "why": "oil-barrel, a new view (2026-10-22, the user: \"a lot of these challenge have like 4 screens\"): Beside an old drilling rig in the badlands: a patch of ground marked out in a grid of squares with string and little stakes, shovels leaning on a barrel, an old map pinned to a board, purple rock layers behind. Dusty ground across the bottom of the picture."
     }
   ]
 }

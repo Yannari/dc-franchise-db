@@ -21,7 +21,7 @@ fire-mountain-isle | task-22425831 | skip:another stop in those episodes (a trai
 fire-mountain-isle | task-22425843 | skip:another stop (a farm fence), not the volcano island | | |
 fire-mountain-isle | task-22425851 | skip:another stop (a roadside stand), not the volcano island | | |
 fire-mountain-isle | task-22425859 | skip:another stop (inside a train carriage), not the volcano island | | |
-glass-pyramid-city | arrive-22414932 | skip:the cast is still in it (small, by the arches) | | |
+glass-pyramid-city | arrive-22414932 | arrive | 78 | 4,56 | {"repaint":true}
 glass-pyramid-city | present-22414925 | views | | |
 glass-pyramid-city | task-22415034 | talk:broken-statue | 90 | 6,94 |
 glass-pyramid-city | task-22415122 | views | | |
@@ -39,27 +39,27 @@ badlands | Moonlit Wreckage with Rising Smoke-3 | views | | |
 badlands | Moonlit airplane wreckage and dust-2 | views | | |
 badlands | Open Jet Ramp, Empty Foreground-10 | arrive | 86 | 6,70 |
 badlands | task-22424527 | skip:a stage curtain, not this place | | |
-skyline-finale | arrive-9450044 | skip:the show's credits are burned into it | | |
+skyline-finale | arrive-9450044 | arrive | 92 | 6,94 | {"repaint":true}
 skyline-finale | present-9450230 | views | | |
 skyline-finale | present-9450374 | views | | |
 skyline-finale | task-9450109 | views | | |
 skyline-finale | task-9450148 | talk:footrace | 90 | 6,94 |
-skyline-finale | task-9450211 | skip:somebody's hands are in it | | |
+skyline-finale | task-9450211 | talk:tower-stairs | 96 | 8,90 | {"repaint":true}
 skyline-finale | task-9450373 | views | | |
 skyline-finale | task-9450400 | talk:footrace | 92 | 30,72 |
 skyline-finale | task-9450504 | views | | |
 savanna-falls | present-9441647 | views | | |
 savanna-falls | task-9441555 | alt:falls-selfie | 0 | 0,0 | {"water":true,"mode":"ride","prop":"raft","path":[[30,44],[34,60],[38,76],[42,90]],"fx":"splash"}
 savanna-falls | task-9441609 | alt:falls-selfie | 0 | 0,0 | {"water":true,"mode":"ride","prop":"raft","path":[[8,74],[34,71],[60,74],[86,71]],"fx":"splash"}
-savanna-falls | task-9441626 | skip:somebody is swimming in it | | |
+savanna-falls | task-9441626 | views |  |  | {"repaint":true}
 savanna-falls | task-9441761 | views | | |
 savanna-falls | task-9441900 | alt:falls-selfie | 0 | 0,0 | {"water":true,"mode":"ride","prop":"raft","path":[[8,90],[34,86],[60,90],[86,86]],"fx":"splash"}
 savanna-falls | travel-9441594 | skip:a stone figure on a beach, not the falls | | |
 savanna-falls | travel-9441717 | arrive | 92 | 6,80 |
 treasure-isles | chill-9449841 | mat | 62 | 18,92 |
 treasure-isles | present-9449602 | talk:harbour-run | 68 | 6,94 |
-treasure-isles | task-9449577 | skip:people are peeking out of the huts | | |
-treasure-isles | task-9449584 | skip:a jet ski and somebody on the dock are painted in | | |
+treasure-isles | task-9449577 | talk:doubloons | 92 | 4,96 | {"repaint":true}
+treasure-isles | task-9449584 | views |  |  | {"repaint":true}
 treasure-isles | task-9449592 | alt:doubloons | 0 | 0,0 | {"water":true,"mode":"swim","path":[[10,62],[35,55],[60,62],[86,52]],"fx":"bubbles"}
 treasure-isles | task-9449658 | views | | |
 treasure-isles | task-9449762 | alt:doubloons | 0 | 0,0 | {"water":true,"mode":"swim","path":[[10,70],[35,60],[60,66],[86,56]],"fx":"bubbles"}
@@ -87,8 +87,8 @@ haunted-castle | chill-94384611 | mat | 88 | 6,94 |
 haunted-castle | task-9438461 | skip:the same frame as chill-9438461 | | |
 haunted-castle | task-9438736 | views | | |
 fjord-peaks | arrive-9443502 | arrive | 86 | 6,94 |
-fjord-peaks | present-9443262 | skip:the show's credits are burned into it | | |
-fjord-peaks | task-9443488 | skip:somebody is on the bridge | | |
+fjord-peaks | present-9443262 | views |  |  | {"repaint":true}
+fjord-peaks | task-9443488 | views |  |  | {"repaint":true}
 fjord-peaks | task-9443600 | alt:jump-dance | 34 | 30,70 | {"side":"jump","mode":"bungee","prop":"harness","propW":0.8,"fx":"splash"}
 fjord-peaks | task-9443640 | alt:jump-dance | 0 | 0,0 | {"side":"jump","water":true,"mode":"dive","path":[[50,44],[50,60],[50,74],[50,86]],"fx":"splash"}
 fjord-peaks | task-9443720 | views | | |
@@ -105,7 +105,7 @@ outback-farm | chill-night-mat | skip:in use (Haunted Castle's night Chill Zone,
 outback-farm | farmer | skip:in use (the farmer at the rabbits, through the repaint list) | | |
 outback-farm | ute | skip:in use (the ute, through the repaint list) | | |
 outback-farm | task-9442855 | views | | |
-prairie-ranch | arrive-9443884 | skip:somebody is standing in it | | |
+prairie-ranch | arrive-9443884 | arrive | 90 | 4,60 | {"repaint":true}
 prairie-ranch | present-9443881 | views | | |
 prairie-ranch | task-9443881 | skip:the same frame as present-9443881 | | |
 prairie-ranch | task-9444112 | talk:cliff-run | 92 | 6,60 |
@@ -113,7 +113,7 @@ prairie-ranch | task-9444134 | talk:bull | 92 | 20,95 | {"closed":true}
 twin-tower-bridge | Leafy empty zebra crossing-1 | talk:fog-walk | 90 | 6,94 |
 twin-tower-bridge | present-22417669 | views | | |
 twin-tower-bridge | task-22417670 | views | | |
-twin-tower-bridge | task-22417781 | skip:the masked kidnapper is painted in | | |
+twin-tower-bridge | task-22417781 | talk:kidnapper | 96 | 6,94 | {"repaint":true}
 twin-tower-bridge | task-22417960 | views | | |
 twin-tower-bridge | task-22417962 | views | | |
 red-sand-desert | chill-22410379 | skip:Tomb Sands' Chill Zone (the pyramid tomb, a 2241xxxx frame), not this oasis: the desert's mat cut between two Chill Zones | | |
@@ -151,7 +151,7 @@ home-city | travel-9435206 | views | | |
 home-city | travel-9435210 | views | | |
 rock-north | arrive-9440832 | views | | |
 rock-north | task-9440980 | alt:ice-river | 0 | 0,0 | {"water":true,"mode":"hop","spots":[[12,46],[36,62],[62,66],[86,52]],"path":[[12,46],[36,62],[62,66],[86,52]],"fx":"splash"}
-rock-north | task-9441122 | skip:somebody is lying on the stage | | |
+rock-north | task-9441122 | talk:air-guitar | 98 | 8,92 | {"repaint":true}
 rock-north | task-9441310 | talk:air-guitar | 95 | 6,94 | {"closed":true}
 red-outback | Empty tent camp on ochre cliffs-1 | views | | |
 red-outback | present-22419696 | views | | |
@@ -159,7 +159,7 @@ red-outback | task-22419611 | views | | |
 red-outback | task-22419612 | views | | |
 lei-island | arrive-9438970 | views | | |
 lei-island | present-9439132 | views | | |
-lei-island | task-9439203 | skip:somebody's arm is at the left edge | | |
+lei-island | task-9439203 | arrive | 94 | 30,94 | {"repaint":true}
 lei-island | task-9439253 | alt:ring-dive | 0 | 0,0 | {"water":true,"mode":"dive","path":[[50,44],[50,58],[50,72],[50,88]],"fx":"splash"}
 glass-tower-gulf | chill-9440136 | talk:market-taxi | 92 | 40,94 |
 glass-tower-gulf | present-9439891 | views | | |
@@ -176,7 +176,7 @@ stilt-river | travel-9447001 | views | | |
 frozen-mine | Wooden Sauna Golden Race Mat | skip:in use (the sauna Chill Zone, through the repaint list) | | |
 frozen-mine | chill-9447963 | views | | | {"at":"mat"}
 frozen-mine | reference-chill-9447963 | skip:a reference frame for a repaint | | |
-frozen-mine | task-9447685 | skip:somebody is standing by the hole | | |
+frozen-mine | task-9447685 | talk:borehole | 78 | 14,70 | {"repaint":true}
 tea-hills | chill-9448396 | talk:toy-train | 92 | 6,60 |
 tea-hills | chill-9448657 | talk:toy-train | 88 | 6,94 |
 tea-hills | task-9448429 | views | | |
@@ -188,7 +188,7 @@ bamboo-wall-hills | task-22422579 | talk:delicacies | 95 | 6,94 | {"closed":true
 great-wall-hills | present-9440276 | views | | |
 great-wall-hills | present-9440425 | views | | |
 great-wall-hills | task-9440340 | views | | |
-tomb-sands | task-22409918 | skip:somebody is standing in a doorway | | |
+tomb-sands | task-22409918 | talk:pyramid | 99 | 6,94 | {"repaint":true,"side":"under"}
 tomb-sands | task-22409920 | views | | |
 tomb-sands | task-22410503 | views | | |
 carnival-rainforest | present-9437791 | views | | |
@@ -207,11 +207,11 @@ fjord-sea | present-22420232 | views | | |
 fjord-sea | task-22420571 | alt:longship | 0 | 0,0 | {"water":true,"mode":"ride","prop":"boat","path":[[-18,86],[50,84],[118,86]],"fx":"splash","second":true}
 geyser-island | arrive-9437005 | views | | |
 geyser-island | reference-task-9437341 | skip:a reference frame for a repaint | | |
-dragon-isle | present-9445130 | skip:the show's credits are burned into it | | |
+dragon-isle | present-9445130 | views |  |  | {"repaint":true}
 dragon-isle | task-9445351 | views | | |
 game-show-city | task-22411048 | alt:pinball | 0 | 0,0 | {"water":true,"mode":"roll","prop":"ball","path":[[10,88],[30,60],[50,48],[70,62],[88,46]],"fx":"sparkle"}
 game-show-city | task-22411118 | alt:pinball | 0 | 0,0 | {"water":true,"mode":"roll","prop":"ball","path":[[10,80],[30,56],[52,46],[72,60],[90,50]],"fx":"sparkle"}
-snow-peaks | present-22413694 | skip:somebody is at the right edge | | |
+snow-peaks | present-22413694 | views |  |  | {"repaint":true}
 grass-savanna | task-22423107 | talk:safari | 92 | 6,94 |
 stone-head-island | task-22423850 | views | | |
 
@@ -290,3 +290,58 @@ ice-river | task-22411924 | alt:sled | 0 | 0,0 | {"water":true,"mode":"ride","pr
 ice-river | present-22411651 | alt:sled | 0 | 0,0 | {"water":true,"mode":"ride","prop":"sled","path":[[10,94],[38,84],[66,80],[110,86]],"fx":"snow"}
 ice-river | present-22411652 | alt:sled | 0 | 0,0 | {"water":true,"mode":"ride","prop":"sled","path":[[47,40],[43,58],[41,74],[38,92]],"fx":"snow"}
 ice-river | chill-22411653 | mat | 60 | 6,62 | {"matPos":[44,62],"scale":0.7}
+# The new views, one or two for every challenge drawn on 1-2 backgrounds (2026-10-22, the user: "make the fix big"):
+# on screen once the user's view comes back (repainted.js); the stage each is drawn for is wired in plates.js STAGE_SHOTS
+red-sand-desert | task-spice-scales | talk:spices | 90 | 8,92 | {"repaint":true}
+red-sand-desert | task-stew-table | talk:stew | 90 | 8,92 | {"repaint":true}
+red-sand-desert | task-stew-door | talk:stew | 90 | 8,92 | {"repaint":true}
+skyline-finale | task-buoy-boat | talk:buoys | 90 | 8,92 | {"repaint":true}
+iron-tower-city | task-easel-close | talk:caricature | 90 | 8,92 | {"repaint":true}
+iron-tower-city | task-cafe-terrace | talk:caricature | 90 | 8,92 | {"repaint":true}
+iron-tower-city | task-cheese-cave | talk:catacombs | 90 | 8,92 | {"repaint":true}
+iron-tower-city | task-catacomb-end | talk:catacombs | 90 | 8,92 | {"repaint":true}
+great-wall-hills | task-food-stall | talk:skewers | 90 | 8,92 | {"repaint":true}
+rock-north | task-sauna-bank | talk:sauna | 90 | 8,92 | {"repaint":true}
+rock-north | task-river-near | talk:ice-river | 90 | 8,92 | {"repaint":true}
+rock-north | task-river-far | talk:ice-river | 90 | 8,92 | {"repaint":true}
+rock-north | task-guitar-crowd | talk:air-guitar | 90 | 8,92 | {"repaint":true}
+savanna-falls | task-ranger-line | talk:rhino | 90 | 8,92 | {"repaint":true}
+savanna-falls | task-waterhole | talk:rhino | 90 | 8,92 | {"repaint":true}
+treasure-isles | task-map-room | talk:pirate-map | 90 | 8,92 | {"repaint":true}
+torch-statue-harbour | task-statue-stairs | talk:statue-climb | 90 | 8,92 | {"repaint":true}
+torch-statue-harbour | task-sewer-ladder | talk:sewer | 90 | 8,92 | {"repaint":true}
+red-outback | task-emu-gate | talk:emu-catch | 90 | 8,92 | {"repaint":true}
+red-outback | task-emu-track | talk:emu-catch | 90 | 8,92 | {"repaint":true}
+red-outback | task-shearing-shed | talk:shearing | 90 | 8,92 | {"repaint":true}
+coast-palace | task-shark-stern | talk:shark | 90 | 8,92 | {"repaint":true}
+geyser-island | task-speaker-box | talk:telephone | 90 | 8,92 | {"repaint":true}
+geyser-island | task-geyser-far | talk:telephone | 90 | 8,92 | {"repaint":true}
+carnival-rainforest | task-ant-hut | talk:ants | 90 | 8,92 | {"repaint":true}
+carnival-rainforest | task-costume-tent | talk:costume | 90 | 8,92 | {"repaint":true}
+carnival-rainforest | task-parade-route | talk:costume | 90 | 8,92 | {"repaint":true}
+lei-island | task-skirt-hut | talk:fire-walk | 90 | 8,92 | {"repaint":true}
+lei-island | task-coals-end | talk:fire-walk | 90 | 8,92 | {"repaint":true}
+prairie-ranch | task-bean-wagon | talk:beans | 90 | 8,92 | {"repaint":true}
+prairie-ranch | task-beans-close | talk:beans | 90 | 8,92 | {"repaint":true}
+dragon-isle | task-stilt-shade | talk:venom | 90 | 8,92 | {"repaint":true}
+dragon-isle | task-weaver-loom | talk:rugs | 90 | 8,92 | {"repaint":true}
+stilt-river | task-fish-basket | talk:catfish | 90 | 8,92 | {"repaint":true}
+frozen-mine | task-yacht-start | talk:ice-yacht | 90 | 8,92 | {"repaint":true}
+pampas-ranch | task-tango-floor | talk:tango | 90 | 8,92 | {"repaint":true}
+pampas-ranch | task-gaucho-post | talk:emu | 90 | 8,92 | {"repaint":true}
+snow-peaks | task-dance-stage | talk:slap-dance | 90 | 8,92 | {"repaint":true}
+jungle-ruins | task-idol-niches | talk:golden-idol | 90 | 8,92 | {"repaint":true}
+jungle-ruins | task-idol-guide | talk:golden-idol | 90 | 8,92 | {"repaint":true}
+glass-pyramid-city | task-backstage | talk:runway | 90 | 8,92 | {"repaint":true}
+fishing-cove | task-cove-dock | talk:welcome-rite | 90 | 8,92 | {"repaint":true}
+twin-tower-bridge | task-jewel-keeper | talk:crown-jewel | 90 | 8,92 | {"repaint":true}
+marble-temple-hill | task-stadium-stands | talk:hurdles | 90 | 8,92 | {"repaint":true}
+marble-temple-hill | task-jump-mat | talk:high-jump | 90 | 8,92 | {"repaint":true}
+fjord-sea | task-cannon-deck | talk:meatball-cannon | 90 | 8,92 | {"repaint":true}
+great-falls | task-dress-rails | talk:wedding-slots | 90 | 8,92 | {"repaint":true}
+great-falls | task-chapel-altar | talk:wedding-slots | 90 | 8,92 | {"repaint":true}
+great-falls | task-rope-start | talk:tightrope | 90 | 8,92 | {"repaint":true}
+great-falls | task-far-rim | talk:tightrope | 90 | 8,92 | {"repaint":true}
+grass-savanna | task-plum-elder | talk:plums | 90 | 8,92 | {"repaint":true}
+grass-savanna | task-gourd-crowd | talk:gourds | 90 | 8,92 | {"repaint":true}
+badlands | task-drill-grid | talk:oil-barrel | 90 | 8,92 | {"repaint":true}

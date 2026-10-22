@@ -46,10 +46,13 @@ describe('rr viewer repaint jobs', () => {
     const src = readFileSync('js/vp-rr-ep/plates.js', 'utf8');
     // (Don's openers' jobs are wired where his openers are shot, 2026-10-20)
     const openers = readFileSync('js/vp-rr-ep/opener-shots.js', 'utf8');
+    // (a left-out frame painted clean is placed through plates-more with `repaint`, 2026-10-22)
+    const more = readFileSync('tools/rr-vp-plates-more.txt', 'utf8');
     expect(jobs.length).toBeGreaterThan(0);
     for (const j of jobs) {
       // a view by repaint(), a cut-out by REPAINTED.has() (its prop or judge switched on)
-      expect(src.includes(`repaint('${j.file}'`) || src.includes(`REPAINTED.has('${j.file}')`) || openers.includes(`'${j.file}'`), j.file).toBe(true);
+      expect(src.includes(`repaint('${j.file}'`) || src.includes(`REPAINTED.has('${j.file}')`) || openers.includes(`'${j.file}'`)
+        || more.split(/\r?\n/).some(l => l.includes(`| ${j.file} |`) && l.includes('"repaint":true')), j.file).toBe(true);
       // a repaint of an existing frame is hashed; a NEW view or cut-out switches on when its file appears
       if (!j.new) expect(j.sha256, `${j.file}: run python tools/rr-vp-repaints.py --jobs`).toMatch(/^[0-9a-f]{64}$/);
       else expect(j.why, j.file).toBeTruthy();

@@ -33,7 +33,7 @@ const THINGS = [
 ];
 
 // (somewhere else, or not real: a story about a cousin's wedding, a boat in a daydream, directions to the next place)
-const ELSEWHERE = new Set(['pt.f-any1', 'tk.o-any1', 'tk.o-any2', 'vt.lc6', 'sc2.4', 'sc.lb2']);
+const ELSEWHERE = new Set(['pt.f-any1', 'tk.o-any1', 'tk.o-any2', 'vt.lc6', 'sc2.4', 'sc.lb2', 'ph.ma2']);
 const hits = [];
 let read = 0;
 beforeAll(() => {

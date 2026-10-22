@@ -8587,6 +8587,27 @@
       "voice": "Sweet-voiced and sly, with a smirk under every compliment. Plays the nice girl in the room and the clever one in private, and always knows which version someone is getting. #schemer #flirty#dry #cruel",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Makaio",
+      "slug": "makaio",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "challenge-beast",
+      "stats": {
+        "physical": 8,
+        "endurance": 8,
+        "mental": 4,
+        "social": 5,
+        "strategic": 3,
+        "loyalty": 8,
+        "boldness": 5,
+        "intuition": 4,
+        "temperament": 5
+      },
+      "voice": "Gentle, warm and unhurried, with a big quiet laugh. Speaks slowly and kindly, stands up for anyone being picked on, and treats every woman with old-fashioned respect. #calm#tough#proud #-warm",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

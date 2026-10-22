@@ -8002,6 +8002,27 @@
       "voice": "Measured, amused and hard to impress. Sizes people up with one long look, asks the question nobody else dares to, and only lets her guard down for someone who has earned it. #dry #flirty",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Lucia",
+      "slug": "lucia",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 4,
+        "endurance": 4,
+        "mental": 7,
+        "social": 8,
+        "strategic": 9,
+        "loyalty": 4,
+        "boldness": 7,
+        "intuition": 7,
+        "temperament": 6
+      },
+      "voice": "Flirty, fast and teasing, always with a wink. Answers a question with a question, plays dumb when it suits her, and is quietly three moves ahead of everyone she is charming. #flirty #schemer#chaotic#ditzy",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

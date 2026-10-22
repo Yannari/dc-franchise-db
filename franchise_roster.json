@@ -8610,6 +8610,27 @@
       "voice": "Gentle, warm and unhurried, with a big quiet laugh. Speaks slowly and kindly, stands up for anyone being picked on, and treats every woman with old-fashioned respect. #calm#tough#proud #-warm",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Riza",
+      "slug": "riza",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 7,
+        "endurance": 6,
+        "mental": 5,
+        "social": 8,
+        "strategic": 4,
+        "loyalty": 6,
+        "boldness": 7,
+        "intuition": 5,
+        "temperament": 7
+      },
+      "voice": "Easygoing and flirty, leaning on the counter with a grin. Pours compliments like drinks, keeps the banter light, and falls a bit harder than he ever lets on. #flirty #-calm#loud#goofy",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

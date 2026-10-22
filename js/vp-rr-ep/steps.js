@@ -24,6 +24,7 @@ import { PLACES } from '../rr/places.js';
 import { LOCALS, localFor, localUrl, placeLocal, personOf } from './locals.js';
 import { aboutOf, cardOf } from './about.js';
 import { OPENER_SHOTS } from './opener-shots.js';
+import { goFor, GO } from './start-line.js';
 import { PLACE_PLATES, RACE, stretchPlates, standable, findPlate, heldProp } from './plates.js';
 
 export const TEAM_COLORS = ['#ff6fae', '#39c0ff', '#ffb020', '#4fd18b', '#b78cff', '#ff7a4a', '#5ee0d6', '#f2e94e', '#ff4f6d', '#8fb4ff', '#c7f464', '#e0a3ff',
@@ -470,6 +471,16 @@ export function episodeScreens(res, eps, i) {
       : { pre: 'NEXT TIME', big: (nextLeg?.placeName || '').toUpperCase(), sub: 'on the Ridonculous Race' },
     steps: [{ by: null, part: 'card', text: '', intel: {} }] });
 
+  // leg one's opener is the start line: every team at it, in a wide shot, and the race starts on Don's go (start-line.js;
+  // the user, 2026-10-21: "when he said idk GO or whatever they all start running")
+  if (leg.n === 1) {
+    const op = screens.find(x => x.kind === 'world' && x.seg === 'don-opener');
+    if (op) {
+      Object.assign(op, { startLine: true, teams: racing.slice(), don: true, members: Object.fromEntries(racing.map(id => [id, membersOf(id)])) });
+      const last = op.steps.at(-1);
+      if (!(last?.by === 'Don' && GO.test(last.text || ''))) op.steps.push(...goFor(st.seed));
+    }
+  }
   for (const s of screens) stageScreen(s, color);
   // a line that sends people away takes them off the stage (and a later one brings them back)
   const teamNames = Object.fromEntries(Object.entries(st.teams).map(([id, t]) => [id, t.name]));
@@ -759,7 +770,9 @@ function stageScreen(s, color) {
   s.color = color;
   if (s.kind !== 'world' || !s.plate) return;
   if ((s.mode === 'cabin' || s.kind === 'flight') && s.plate.seats && s.teams.length + s.locals.length + (s.don ? 1 : 0) > 1) s.plate = { ...RACE.galley, race: true };
-  const base = (s.plate?.scale || 1) * sizeFor(s.teams.length + (s.don ? 0.5 : 0), s.mode);
+  // (the start line stands its teams in two rows: a row is what has to fit across)
+  const across = s.startLine && s.teams.length > 6 ? Math.ceil(s.teams.length / 2) + 1 : s.teams.length + (s.don ? 0.5 : 0);
+  const base = (s.plate?.scale || 1) * sizeFor(across, s.mode);
   const floor = s.mode === 'cabin' ? 7 : Math.max(4.5, base * 0.62);
   for (let z = base; ; z *= 0.94) {
     for (const key of STAGED) delete s[key];
@@ -911,12 +924,29 @@ function layout(s, size) {
     // teams and the Don Box keep off it)
     const seat = s.mode === 'don' && s.don && (plate?.deco || []).find(d => /@race$/.test(d[0]));
     const avoid = seat ? [seat[1] - seat[3] / 3, seat[1], seat[1] + seat[3] / 3] : [];
-    const pts = spread(plate, n + (s.don ? 1 : 0) + s.locals.length, avoid, M);
-    let j = 0;
-    if (s.don) { s.donStand = pts[j++]; }
-    if (seat) s.donStand = [seat[1], seat[2] - seat[3] * 0.4];
-    s.locals.forEach(nm => { (s.localAt ||= {})[nm] = pts[j++]; });
-    s.teams.forEach(id => { marks[id] = pts[j++]; as[id] = 'stand'; });
+    if (s.startLine) {
+      // the start line: Don at the front, at the side; every team in a row, two rows when there are many, the back row
+      // standing a face higher and half a place along, so every face is seen
+      const rows = n > 6 ? 2 : 1, per = Math.ceil(n / rows), z = s.size;
+      const x0 = Math.max(plate.x[0], M), x1 = Math.min(plate.x[1], 100 - M), g = groundY(plate, 0);
+      // (the forecourt the two rows stand on: from the back row to the front, the ground of this shot)
+      if (rows === 2) s.plate = { ...plate, g: [Math.round((g - z * 2.3) * 10) / 10, g] };
+      s.donStand = [Math.round(x0 * 10) / 10, g];
+      const tx0 = x0 + z * 1.9, step = (x1 - tx0) / per;
+      s.teams.forEach((id, i) => {
+        const back = rows === 2 && i >= per, j = back ? i - per : i;
+        const x = tx0 + step * (j + (back ? 0.85 : 0.35));
+        marks[id] = [Math.round(Math.min(x1, x) * 10) / 10, Math.round((back ? g - z * 2.3 : g) * 10) / 10]; as[id] = 'stand';
+      });
+      s.locals.forEach((nm, i) => { (s.localAt ||= {})[nm] = [Math.round((x1 - i * z * 1.4) * 10) / 10, g]; });
+    } else {
+      const pts = spread(plate, n + (s.don ? 1 : 0) + s.locals.length, avoid, M);
+      let j = 0;
+      if (s.don) { s.donStand = pts[j++]; }
+      if (seat) s.donStand = [seat[1], seat[2] - seat[3] * 0.4];
+      s.locals.forEach(nm => { (s.localAt ||= {})[nm] = pts[j++]; });
+      s.teams.forEach(id => { marks[id] = pts[j++]; as[id] = 'stand'; });
+    }
     if (s.mode === 'act' && plate?.mode) { s.work = plate.mode; s.plan = progressPlan(ps, s.ending); placeWorkProps(s, marks); }
     // (`solo` in place: one partner does it on the spot, the slap dance on the pad, the other in the box)
     if (s.mode === 'act' && plate?.solo && s.seg === 'task-stage') {
@@ -1246,9 +1276,10 @@ function planCrowdReact(s) {
 // ── how the teams come in: at a run, the first time the episode sees them at a stretch ──
 function planEnter(s, screens, si) {
   // Don's GO at the start line: on his last line, if it is the GO, the teams sprint off
-  if (s.mode === 'don' && (s.teams.length || s.crowd?.length)) {
+  // (only at the start line, where everybody is: start-line.js)
+  if (s.startLine) {
     const last = s.steps.length - 1;
-    if (last > 0 && s.steps[last].by === 'Don' && /\bgo\b|\brace\b|\brun\b/i.test(s.steps[last].text || '')) s.exitAt = last;
+    if (s.steps[last]?.by === 'Don' && GO.test(s.steps[last].text || '')) s.exitAt = last;
   }
   // the premiere: each team runs in to the start line
   if (s.seg === 'team-intro' && !s.replay) { s.enter = Object.fromEntries(s.teams.filter(id => s.marks?.[id]).map(id => [id, 'left'])); return; }
@@ -1521,6 +1552,8 @@ function planCamera(s) {
   const wideAt = k => ({ shot: 'wide', on: [], s: 1, x: 0, y: (s.liftAt ? s.liftAt[k] : s.lift) || 0 });
   const speakerOf = st => (st.part === 'pause' ? null : st.by === 'Don' ? (s.donStand ? 'Don' : null) : st.team && s.teams.includes(st.team) ? st.team : st.by && s.localAt?.[st.by] ? st.by : null);
   const want = k => {
+    // (the start line is one wide shot, everybody in it, to the go)
+    if (s.startLine) return wideAt(k);
     const st = steps[k], prev = steps[k - 1];
     const sp = speakerOf(st);
     const focus = st.rank?.team ?? st.focus ?? null;

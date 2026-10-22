@@ -262,7 +262,8 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
     const by = t.by ? speakerName(t.by, r.roles, r.slots) : null;
     let said;
     if (kind === 'beat' || t.by === 'don' || t.by === 'local') said = { text: t.beat || t.say || t.conf, tag: null };
-    else if (t.id && (said = identityLine(state, by, t.id, rng))) said = { text: said, tag: `id:${t.id}` };
+    // (a team's own line for a place on the mat is for the Chill Zone: the finale's halfway mat is nobody's first place)
+    else if (t.id && !(scene.data?.midmat && String(t.id).startsWith('mat-')) && (said = identityLine(state, by, t.id, rng))) said = { text: said, tag: `id:${t.id}` };
     // a speaker's relationship lines are their own team's (c and d are the other team; in a romance the crush, b, and
     // b's partner d are; in a room, each speaker's own)
     else said = voicedLine(t, by, { relFam: SCENES[scene.kind]?.cast === 'group' || scene.kind === 'same-flight' ? relFamOfPerson(state, by)
@@ -295,7 +296,8 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   }
   // the team's identity, heard at a natural moment (when the entry didn't already call one)
   if (!lines.some(l => String(l.voice || '').startsWith('id:'))) {
-    const hook = AUTO_HOOK[scene.kind]?.(facts);
+    // (the finale's halfway mat places nobody: no first-place or last-place line there)
+    const hook = scene.data?.midmat && scene.kind === 'don-place' ? null : AUTO_HOOK[scene.kind]?.(facts);
     // at a challenge it opens the moment, said by whoever doesn't speak first: a task beat is a tight exchange that ends
     // on its button, and a line after the button answers nothing (2026-10-20 read: "Please don't. People walk on it." /
     // "This is a highlight run, Luis.")

@@ -63,8 +63,11 @@ describe('rr: every challenge is a checkpoint', () => {
   it('grabs at the box only with a team that got there at the same moment: one already holding its tip is read over', () => {
     let n = 0;
     for (const { seed, res } of seasons) for (const g of res.state.scenes.filter(s => s.kind === 'box-grab')) {
-      const theirs = res.state.scenes.find(s => s.kind === 'clue' && s.leg === g.leg && s.data.team === g.data.other && s.data.stretch === g.data.stretch);
-      const together = theirs && Math.abs(theirs.data.t - g.data.t) < 1;
+      // (when each got to the challenge: the clock's log; a clue's own minute moves with the run once the clock has run)
+      const log = res.legs.find(l => l.n === g.leg)?.log || [];
+      const came = id => log.filter(l => l.id === id && l.stretch === g.data.stretch).map(l => l.from).find(f => f <= g.data.t + 0.5 && g.data.t - f <= 2.5);
+      const mine = came(g.data.team), theirs = came(g.data.other);
+      const together = mine != null && theirs != null && Math.abs(mine - theirs) < 1;
       if (!together) expect(g.data.ending, `seed ${seed} leg ${g.leg} ${g.data.team}/${g.data.other}`).toBe('read-over-shoulder');
       n++;
     }

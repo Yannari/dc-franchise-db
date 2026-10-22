@@ -295,7 +295,7 @@ export default {
       'about-friction': ["{teamB} keep telling us we've got it so easy. Like, sure. Totally easy.",
         "{teamB} look at us like we're kids. We're adults. Mostly."],
       'about-friend': ["{teamB} are so fun! I'd hang out with them every weekend if I could.",
-        "{teamB} are great. They don't judge us for anything, and that's kind of rare."],
+        "{teamB} are great. They never make us feel stupid, and that's kind of rare."],
       arrive: ["Wait, this place is so cool. Can we stay here? Like, after?",
         "Okay, where are we going? Somebody tell me where we're going."],
       'mat-first': ["We came first? No way. No way! {partner}!",

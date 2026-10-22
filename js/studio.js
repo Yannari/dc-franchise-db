@@ -406,7 +406,8 @@ function _toast(msg, kind = 'ok') {
   if (!t) { t = document.createElement('div'); t.id = 'studio-toast'; document.body.appendChild(t); }
   t.textContent = msg;
   t.className = 'st-toast st-' + kind + ' show';
-  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 3200);
+  // A warning stays long enough to read.
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), kind === 'ok' ? 3200 : 9000);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1664,6 +1665,28 @@ function _portraitFilename(slug, show, id) {
   const prefix = (SHOWS[show] && SHOWS[show].prefix) || show;
   const stem = show === PORTRAIT_SHOW_ANY ? id : `${prefix}-${id}`;
   return `${slug}-${stem}.png`.replace(/-+/g, '-');
+}
+
+/**
+ * The wardrobe rows a save sends, with their filenames derived from the slug
+ * as it stands now (see the save). A row left without a label is NAMED, not
+ * dropped: dropping it was "it didn't save", because the warning that said so
+ * was overwritten by the "saved" message. A new row with no picture chosen
+ * has nothing to send and comes back in `empty`, for the save to report.
+ */
+function _portraitRowsToSend(d) {
+  const send = [], empty = [];
+  for (const q of (d.portraits || [])) {
+    if (!q || !q.id) continue;
+    if (!q.registered && d.slug) q.file = _portraitFilename(d.slug, q.show, q.id);
+    if (!q.registered && !q.unregistered && !q.dataUri) { empty.push(q); continue; }
+    if (!(q.label || '').trim()) {
+      const n = /^look-(\d+)$/.exec(q.id);
+      q.label = n ? `Look ${n[1]}` : 'Extra look';
+    }
+    if (q.file) send.push(q);
+  }
+  return { send, empty };
 }
 
 function _portraitThumb(p) {
@@ -3327,11 +3350,14 @@ async function _save() {
   //    which is why editing is instant now; press Publish when you're ready.
   let wrote = null;
   let savedToDb = false;
+  // Shown together at the end. The Studio has one toast, so a warning toasted
+  // here was replaced by "<name> saved" before anyone could read it.
+  const warnings = [];
   if (_serverUp) {
     try {
       await _rosterPush(entry);
       savedToDb = true;
-    } catch (e) { _toast('Saved locally, but the database write failed: ' + e.message, 'warn'); }
+    } catch (e) { warnings.push('Saved locally, but the database write failed: ' + e.message); }
 
     if (d.avatarDataUri) {
       try {
@@ -3342,7 +3368,7 @@ async function _save() {
         const j = await r.json();
         if (!j.ok) throw new Error(j.error || 'write failed');
         wrote = j.wrote;
-      } catch (e) { _toast('Avatar upload failed: ' + e.message, 'warn'); }
+      } catch (e) { warnings.push('Avatar upload failed: ' + e.message); }
     }
 
     // ── the wardrobe: files AND catalog entries, in one write ──
@@ -3363,11 +3389,9 @@ async function _save() {
        Anybody who happened to touch the show dropdown got a correct name,
        which is why it worked sometimes.
        Derived here instead, from the slug as it stands at the moment of
-       saving, for every row the catalog has not already accepted. */
-    for (const q of (d.portraits || [])) {
-      if (!q.registered && d.slug) q.file = _portraitFilename(d.slug, q.show, q.id);
-    }
-    const _porRows = (d.portraits || []).filter(q => q.id && q.file && (q.label || '').trim());
+       saving, for every row the catalog has not already accepted
+       (_portraitRowsToSend). */
+    const { send: _porRows, empty: _porEmpty } = _portraitRowsToSend(d);
     if (_porRows.length || (d.removePortraits || []).length) {
       try {
         const r = await fetch(_apiUrl('/api/character'), {
@@ -3382,7 +3406,7 @@ async function _save() {
         const j = await r.json();
         if (!j.ok) throw new Error(j.error || 'write failed');
         wrote = [...(wrote || []), ...(j.wrote || [])];
-        (j.portraitProblems || []).forEach(msg => _toast('Portrait: ' + msg, 'warn'));
+        (j.portraitProblems || []).forEach(msg => warnings.push('Portrait: ' + msg));
         for (const q of _porRows) {
           q.registered = true; q.unregistered = false; q.dataUri = '';
           const stem = q.file.replace(/\.[a-z0-9]+$/i, '');
@@ -3390,12 +3414,11 @@ async function _save() {
         }
         d.removePortraits = [];
         _refreshPortraitList();
-      } catch (e) { _toast('Portrait save failed: ' + e.message, 'warn'); }
+      } catch (e) { warnings.push('Extra looks not saved: ' + e.message); }
     }
-    // A row with no label is not saved: the label is what the Cast Builder
-    // shows, and an unlabelled thumbnail is a choice nobody can read.
-    const _porUnlabelled = (d.portraits || []).length - _porRows.length - 0;
-    if (_porUnlabelled > 0) _toast(`${_porUnlabelled} portrait${_porUnlabelled === 1 ? '' : 's'} skipped — each needs a label`, 'warn');
+    if (_porEmpty.length) {
+      warnings.push(`${_porEmpty.length} extra look${_porEmpty.length === 1 ? '' : 's'} not saved — no picture chosen`);
+    }
   }
 
   // 4) refresh surfaces
@@ -3407,11 +3430,12 @@ async function _save() {
   if (savedToDb) bits.push('in the database');
   if (wrote) bits.push(`${wrote.length} repo file${wrote.length === 1 ? '' : 's'}`);
   if (!bits.length) bits.push(_serverUp ? 'saved' : 'browser-only — run serve.py or deploy the Worker');
-  _toast(`${d.name} saved — ${bits.join(' + ')}`, 'ok');
+  const warned = warnings.length ? ` · but: ${warnings.join(' · ')}` : '';
+  _toast(`${d.name} saved — ${bits.join(' + ')}${warned}`, warned ? 'warn' : 'ok');
   _refreshPublishStatus();
   if (note) {
-    note.textContent = savedToDb ? '✓ saved — press Publish to push it to the site' : '✓ live in the cast pool';
-    note.className = 'st-save-note ok';
+    note.textContent = (savedToDb ? '✓ saved — press Publish to push it to the site' : '✓ live in the cast pool') + warned;
+    note.className = 'st-save-note ' + (warned ? 'err' : 'ok');
   }
 }
 

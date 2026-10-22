@@ -106,11 +106,14 @@ describe('the portraits panel', () => {
     expect(studio).toMatch(/portraitProblems/);
   });
 
-  it('skips an unlabelled row and says so', () => {
-    // The label is what the Cast Builder shows; an unlabelled thumbnail is a
-    // choice nobody can read.
-    expect(studio).toMatch(/\(q\.label \|\| ''\)\.trim\(\)/);
-    expect(studio).toMatch(/each needs a label/);
+  it('keeps every warning a save raises on screen', () => {
+    // 2026-10-22, "im putting extra for other people but it didnt save": the
+    // Studio has ONE toast, and the save's closing "<name> saved" replaced the
+    // "skipped - each needs a label" warning the instant it appeared. A save
+    // now collects its warnings and shows them in its last message and note.
+    const body = grab('_save');
+    expect((body.match(/_toast\(/g) || []).length, 'a warning toasted mid-save is overwritten').toBe(1);
+    expect(body).toMatch(/warnings\.push/);
   });
 });
 
@@ -257,5 +260,36 @@ describe('reopening a character in the studio', () => {
     ] } } })(d);
     expect(d.portraits.map(p => p.id)).toEqual(['look-1', 'tr-castle']);
     expect(d.portraits[0]).toMatchObject({ show: 'global', label: 'Casual', registered: true, makeDefault: false });
+  });
+});
+
+describe('which looks a save sends', () => {
+  const rows = new Function('SHOWS', [
+    "const PORTRAIT_SHOW_ANY='global';",
+    grab('_portraitFilename'), grab('_portraitRowsToSend'),
+    'return _portraitRowsToSend;',
+  ].join('\n'))(SHOWS);
+
+  it('names a look left without a label, instead of dropping it', () => {
+    const d = { slug: 'mei', portraits: [
+      { id: 'look-1', show: 'global', label: '', dataUri: 'data:image/png;base64,x' },
+      { id: 'look-2', show: 'traitors', label: '  ', dataUri: 'data:image/png;base64,y' },
+      { id: 'look-3', show: 'global', label: 'Gala', dataUri: 'data:image/png;base64,z' },
+    ] };
+    const { send, empty } = rows(d);
+    expect(send.map(q => q.label)).toEqual(['Look 1', 'Look 2', 'Gala']);
+    expect(send.map(q => q.file)).toEqual(['mei-look-1.png', 'mei-tr-look-2.png', 'mei-look-3.png']);
+    expect(empty).toEqual([]);
+  });
+
+  it('holds back a row with no picture, and keeps registered and on-disk ones', () => {
+    const d = { slug: 'mei', portraits: [
+      { id: 'look-1', show: 'global', label: 'Nothing chosen' },
+      { id: 'look-2', show: 'global', label: 'Casual', file: 'mei-look-2.png', registered: true },
+      { id: 'alt-1', show: 'global', label: 'Returning-player look', file: 'mei-returnee.png', unregistered: true },
+    ] };
+    const { send, empty } = rows(d);
+    expect(send.map(q => q.id)).toEqual(['look-2', 'alt-1']);
+    expect(empty.map(q => q.id)).toEqual(['look-1']);
   });
 });

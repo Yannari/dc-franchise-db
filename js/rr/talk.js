@@ -277,6 +277,9 @@ export function talkAtStretch(state, team, stretch, t, api, rng, end = null) {
 // work (leg.js meetInside, `atStart`)
 const NEEDS_WORK = new Set(['spy', 'steal', 'help-offer', 'rescue', 'tug-of-war', 'mock-the-struggle', 'save-your-enemy', 'free-ride',
   'course-sabotage', 'mind-game', 'deal']);
+// what needs a road, a course or a task (a shove into a hedge, a fake shortcut down "the low path", a hand over the
+// course): never at the gate or on the plane (2026-10-21: both aired while two teams waited for the same flight)
+const ROAD_ONLY = new Set([...NEEDS_WORK, 'push', 'ram', 'fake-shortcut', 'save-your-enemy', 'shove', 'collision', 'follow', 'gloat']);
 export function talkAtOverlap(state, team, others, stretch, t, api, rng, { atStart = false } = {}) {
   const id = idOf(team);
   const out = [];
@@ -284,9 +287,11 @@ export function talkAtOverlap(state, team, others, stretch, t, api, rng, { atSta
   const ids = others.map(idOf).filter(o => o && o !== id && state.teams[o]);
   state.metAt ||= {};
   for (const c of takeChains(state, id, ids)) playChain(state, c, id, stretch, t, api, rng, out, [id, ...ids]);
-  // at the Chill Zone the race is over: only what belongs on the mat (a console, a gloat, an accusation)
+  // at the Chill Zone the race is over: only what belongs on the mat (a console, an accusation)
   const moments = stretch?.kind === 'mat' ? ['mat']
     : ['overlap', ...(stretch?.capacity ? ['queue'] : []), ...(stretch?.mode === 'flight' ? ['airport', 'plane'] : [])];
+  const onFlight = stretch?.mode === 'flight';
+  const barred = kindId => (atStart && NEEDS_WORK.has(kindId)) || (onFlight && ROAD_ONLY.has(kindId));
   for (const o of ids) {
     const key = `${state.leg}|${stretch?.id}|${pairKey(id, o)}`;
     if (state.metAt[key]) continue;
@@ -298,7 +303,7 @@ export function talkAtOverlap(state, team, others, stretch, t, api, rng, { atSta
     // both ways round: either team can be the one who acts
     for (const [a, b] of [[id, o], [o, id]]) {
       for (const kind of Object.values(SCENES)) {
-        if (kind.cast !== 'teams' || !OVERLAP_FAMILIES.includes(kind.family) || (atStart && NEEDS_WORK.has(kind.id))) continue;
+        if (kind.cast !== 'teams' || !OVERLAP_FAMILIES.includes(kind.family) || barred(kind.id)) continue;
         const ctx = baseCtx(state, a, b, stretch, t, api, { firstMeet });
         const bm = bestMoment(kind, ctx, moments);
         if (bm.w > 0) cands.push({ kind: kind.id, w: bm.w * damp(state, kind.id, a), moment: bm.moment, a, b, firstMeet });
@@ -308,7 +313,7 @@ export function talkAtOverlap(state, team, others, stretch, t, api, rng, { atSta
     let pull = 0;
     for (const s of threadSteps(state, both)) {
       const kind = SCENES[s.kindId];
-      if (!kind || kind.cast !== 'teams' || (atStart && NEEDS_WORK.has(kind.id))) continue;
+      if (!kind || kind.cast !== 'teams' || barred(kind.id)) continue;
       const a = people(state, id).includes(s.who[0]) ? id : o;
       const b = a === id ? o : id;
       const extra = kind.family === 4 ? { people: s.who } : {};

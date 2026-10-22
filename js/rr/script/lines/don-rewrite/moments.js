@@ -104,8 +104,9 @@ export default {
   // the rulings
   'dr.ns1:3': "You did, and it's on camera, on several cameras, and one of them is up a tree.",
   'dr.ns2:0': "{team}, could I have a word?",
-  'dr.ns2:2': "I know, and you just helped another team with their challenge.",
-  'dr.ns2:6': "That's twenty minutes, starting now, because being nice is lovely, but being nice on my race is a penalty.",
+  'dr.ns2:2': "I know, and so was the team you just messed with.",
+  'dr.ns2:4': "It's fun right up until it's somebody else's race, and then it's cheating.",
+  'dr.ns2:6': "That's twenty minutes, starting now, because a bit of fun is lovely, but a bit of fun on my race is a penalty.",
   'dr.th1:2': "It looked bad, and it looked bad all the way up in the helicopter.",
   'dr.th1:4': "There's no penalty this time, but do it again and you're out of the race, not with a penalty, out.",
   'dr.th1:6': "Good, so now go on, and play nice!",

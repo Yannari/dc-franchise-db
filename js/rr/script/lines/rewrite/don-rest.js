@@ -343,11 +343,11 @@ export default {
       { id: 'dr.ns2', turns: [
         { by: 'don', say: "{team}. A word." },
         { by: 'a', ...V("We're kind of in the middle of a race right now.", "We're in the middle of a race.", "We're racing.", "We're in the MIDDLE of a RACE!", "Um, we're sort of in the middle of a race.", "We're mid-race, Don. Can it wait? Forever?") },
-        { by: 'don', say: "I know. And you just helped another team with their challenge." },
-        { by: 'b', say: "We were being nice." },
-        { by: 'don', say: "No sharing! It's the one rule everybody remembers, and you two forgot it." },
+        { by: 'don', say: "I know. So was the team you just messed with." },
+        { by: 'b', say: "It was only a bit of fun." },
+        { by: 'don', say: "It's fun right up until it's somebody else's race, and then it's cheating." },
         { beat: 'Don pulls out a stopwatch and starts it with a flourish.' },
-        { by: 'don', say: "Twenty minutes, starting now. Being nice is lovely. Being nice on my race is a penalty." },
+        { by: 'don', say: "Twenty minutes, starting now. A bit of fun is lovely. A bit of fun on my race is a penalty." },
       ] },
     ],
     'don-ruling.threat': [

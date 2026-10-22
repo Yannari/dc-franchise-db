@@ -54,7 +54,9 @@ register([
     'one-sided': { w: c => (10 - c.S(c.C, 'boldness')) / 6, fx: (fx, c) => fx.mind(c.C, 'morale', -3) },
     escalates: { w: c => (10 - c.S(c.A, 'temperament')) / 8, fx: (fx, c) => fx.rivalry(c.tid, c.oid, 1) },
   }, next: { escalates: 'shove' } }),
-  K({ id: 'gloat', family: 2, cast: 'teams', moments: ['overlap', 'mat'], when: c => (c.rivalry() >= 1 || c.friction() ? 0.2 : 0.02), endings: {
+  // (on the road only: every gloat line is about passing a team mid-race, and at the Chill Zone one of them has already
+  // checked in; 2026-10-21)
+  K({ id: 'gloat', family: 2, cast: 'teams', moments: ['overlap'], when: c => (c.rivalry() >= 1 || c.friction() ? 0.2 : 0.02), endings: {
     'rubbed-in': { w: c => c.S(c.A, 'boldness') / 5, fx: (fx, c) => { fx.mind(c.C, 'morale', -5); fx.rivalry(c.tid, c.oid, 1); } },
     backfires: { w: 0.5, fx: (fx, c) => fx.time(c.tid, 5) },
   } }),

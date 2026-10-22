@@ -19,11 +19,11 @@ import { readVoiceText } from '../js/td/story/voice-words.js';
 import { voiceOf, voiceWeights } from '../js/td/story/voice.js';
 import { makeIslanders, roleSetup } from './helpers/pm-cast.js';
 
-// Voices as the user writes them: two to five hashtags. #emotional and #food
-// are left out on purpose: the voice batches wrote 20 tags, not those two.
+// Voices as the user writes them: two to five hashtags. #emotional is in (batches
+// 145-168 wrote it); #food is left out on purpose: no line has a food version yet.
 const VOICES = [
   '#flirty #proud', '#loud #goofy #warm', '#dry #quiet #calm #nerdy', '#schemer #flirty #cruel #blunt #theatrical',
-  '#anxious #warm #earnest', '#competitive #proud #blunt', '#goofy #ditzy #warm #anxious', '#bossy #dry',
+  '#anxious #warm #earnest', '#competitive #proud #blunt', '#goofy #ditzy #warm #anxious', '#earnest #emotional',
   '#earnest #warm #tough', '#chaotic #flirty #loud', '#calm #schemer', '#theatrical #flirty #bossy #dry',
 ];
 

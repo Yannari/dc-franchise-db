@@ -8524,6 +8524,27 @@
       "voice": "Smooth, unhurried and very sure of himself. Speaks low and slow, raises one eyebrow instead of arguing, and makes it very clear he is here for someone else's girl. #flirty #proud#cruel",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Elias",
+      "slug": "elias",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "goat",
+      "stats": {
+        "physical": 7,
+        "endurance": 6,
+        "mental": 3,
+        "social": 7,
+        "strategic": 2,
+        "loyalty": 7,
+        "boldness": 6,
+        "intuition": 2,
+        "temperament": 8
+      },
+      "voice": "Goofy, eager and earnest, with a huge grin and zero filter. Gets excited about everything, tells long stories with no point, and takes every joke at his own expense. #goofy #earnest#chaotic#ditzy",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

@@ -8023,6 +8023,27 @@
       "voice": "Flirty, fast and teasing, always with a wink. Answers a question with a question, plays dumb when it suits her, and is quietly three moves ahead of everyone she is charming. #flirty #schemer#chaotic#ditzy",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Malik",
+      "slug": "malik",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 8,
+        "endurance": 8,
+        "mental": 3,
+        "social": 9,
+        "strategic": 2,
+        "loyalty": 6,
+        "boldness": 7,
+        "intuition": 4,
+        "temperament": 6
+      },
+      "voice": "Big, loud and warm, always mid-story with a grin. Gives everyone a nickname within an hour, laughs from the chest, and cannot stand a room with nothing going on. #loud #goofy",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

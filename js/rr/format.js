@@ -30,6 +30,10 @@ export const PENALTIES = {
   sabotage: 60, botchQuit: 240, eitherSkip: 360, aboveEconomy: 1440,
 };
 export const MARKED_MINUTES = 30;
-export const DEPARTURE_PENALTY = 60;
+export const DEPARTURE_PENALTY = 30;
+// what carries from one leg into the next (leg.js): half the check-in gap, ninety minutes at most
+export const DEPART_CARRY = 0.5, DEPART_CARRY_MAX = 90;
+// a team's form on the day (its tasks and its legs on foot take this many times as long) and its driver's (a taxi, a car)
+export const FORM = [0.84, 1.18], DRIVER = [0.75, 1.35];
 // A team this far behind the second-last is eliminated where it stands (spec §3).
 export const DON_GOES_AFTER = 180;

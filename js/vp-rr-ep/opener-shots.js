@@ -7,6 +7,7 @@
 //   f      a plate the place already has
 //   job    a plate still to be made (tools/rr-vp-jobs.json, Downloads/RidonculousRace-frames/edit/): until it is back
 //          (repainted.js), the opener doesn't air (write.js skips it) and the place's others do
+//   g      the ground line, for a plate whose ground the place never set
 //   deco   cut-outs Don is with ([key, x, y, w, opts]); one still to be made names its job in `need`
 // An opener with no entry here is shot on the place's own opener plate.
 import { REPAINTED } from './repainted.js';
@@ -46,7 +47,7 @@ export const OPENER_SHOTS = {
   'obf.op1': { f: 'present-9442701' }, 'obf.op2': { f: 'present-9442701' }, 'obf.op3': { f: 'present-9442822', deco: [[R('hay-bale'), 34, 92, 16]], need: ['hay-bale'] },
   'pmp.op1': { f: 'task-9449004' }, 'pmp.op2': { f: 'task-9449004' }, 'pmp.op3': { f: 'task-9449177' },
   'prr.op1': { f: 'present-9443998' }, 'prr.op2': { f: 'present-9444391' }, 'prr.op3': { f: 'present-9443998' },
-  'pyc.op1': { f: 'present-9446346' }, 'pyc.op2': { f: 'present-9446346' }, 'pyc.op3': { f: 'present-9446715', ...HAMMOCK(36) },
+  'pyc.op1': { f: 'present-9446346' }, 'pyc.op2': { f: 'present-9446346' }, 'pyc.op3': { f: 'present-9446715', g: 92, ...HAMMOCK(36) },
   'rob.op1': { f: 'present-22419827' }, 'rob.op2': { f: 'arrive-22419610' }, 'rob.op3': { f: 'arrive-22419610', deco: [['ute@outback-farm', 70, 92, 26], [R('camping-chair'), 38, 92, 9]], need: ['camping-chair'] },
   'dt.op6': { f: 'present-9435500' }, 'rsd.op1': { f: 'present-9435500' }, 'rsd.op2': { f: 'present-9435572' }, 'rsd.op3': { f: 'task-9435287', deco: [[R('camping-chair'), 30, 93, 9]], need: ['camping-chair'] },
   'rn.op1': { f: 'present-9440796' }, 'rn.op2': { f: 'task-9441025' }, 'rn.op3': { f: 'present-9440799', deco: [[R('hot-tub'), 40, 94, 20]], need: ['hot-tub'] },

@@ -21,11 +21,12 @@ import { teamLevel } from './skill.js';
 import { checkIn } from './chill.js';
 import { emit, playScene, interviewAfter } from './scenes.js';
 import { addScene } from './state.js';
-import { DON_GOES_AFTER } from './format.js';
+import { DON_GOES_AFTER, DEPART_CARRY, DEPART_CARRY_MAX, FORM, DRIVER } from './format.js';
+import { streamFor } from '../dr/rng.js';
 import { pairKey } from './scenes/registry.js';
 
 const TASKS = ['either', 'botch', 'allin', 'route', 'superteam'];
-const SPEED_BUMP = { base: 25, pass: 0.6, loopCost: 5 };
+const SPEED_BUMP = { base: 15, pass: 0.7, loopCost: 5 };
 const SUPER_WAIT = 60;
 // a Superteam of two teams this much at odds is 'stuck with the enemy' (one sour moment is not a feud)
 const SUPER_ENEMIES = 2;
@@ -113,7 +114,16 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   const MAT_COMPANY = 120;
   const atMat = (id, t) => Object.keys(matAt).filter(x => x !== id && matAt[x] <= t && t - matAt[x] <= MAT_COMPANY);
 
-  const depart = state.legs.at(-1)?.depart || {};
+  // the gap a team checked in behind is the gap it leaves behind, until the flights and the opening hours bunch the field:
+  // half of it, an hour and a half at most, carries into the leg (2026-10-21, the user: "the last one safe in the
+  // previous episode is the one going home in the next episode thats make the simulation useless and predictable";
+  // measured: 48% of eliminations, chance 16%)
+  const depart = Object.fromEntries(Object.entries(state.legs.at(-1)?.depart || {}).map(([k, v]) => [k, Math.min(DEPART_CARRY_MAX, Math.round(v * DEPART_CARRY))]));
+  // and a day is a day: a team's form, and the driver it gets, drawn once a leg from their own stream (nothing else the
+  // leg draws moves)
+  const luck = streamFor(state.seed, `luck${leg.n}`);
+  state.form = {}; state.driver = {};
+  for (const id of [...state.order].sort()) { state.form[id] = FORM[0] + (FORM[1] - FORM[0]) * luck(); state.driver[id] = DRIVER[0] + (DRIVER[1] - DRIVER[0]) * luck(); }
   // Don opens the leg, demonstrates each task to the first team there, and reads a twist's rule the first time
   emit(state, 'don-opener', [], rng() < 0.67 ? 'annoyed' : 'bored', { t: 0, place: to.id, effects: [['opener', leg.n, to.id]] });
   const demoed = new Set();
@@ -358,7 +368,7 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       matAt[id] = t;
       res = { end: t };
     } else if (TASKS.includes(s.kind)) {
-      if (useExpress(state, team, s, stretches)) res = { end: t + 1 };
+      if (useExpress(state, team, s, stretches, t)) res = { end: t + 1 };
       else {
         res = resolveTask(state, team, s, t, api, rng);
         // the Speed Bump: one extra task for last leg's non-elimination team, after the first task

@@ -23,7 +23,8 @@ describe('rr tasks', () => {
     expect(attemptChance(5, 0.5)).toBe(0.5);
     expect(attemptChance(10, 0.9)).toBe(0.95);
     expect(attemptChance(0, 0.1)).toBe(0.05);
-    expect(attemptChance(7, 0.5)).toBeCloseTo(0.66);
+    // (five points a level since 2026-10-21, skill.js PASS_SLOPE: eight made the weakest team fail most tries every leg)
+    expect(attemptChance(7, 0.5)).toBeCloseTo(0.6);
   });
 
   it('better racers finish the same task sooner on average', () => {

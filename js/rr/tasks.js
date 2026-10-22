@@ -9,13 +9,13 @@
 // Botch or Watch: partners alternate (the real show's rule); the watcher may only
 // cheer; a botcher who can't do it can quit at four hours. All-In: both must do it.
 import { addScene, S, mayScheme, partner } from './state.js';
-import { teamLevel, spreadOf } from './skill.js';
+import { teamLevel, spreadOf, pace, PASS_SLOPE } from './skill.js';
 import { PENALTIES } from './format.js';
 import { gs } from '../core.js';
 import { snapOf } from './scenes.js';
 import { streamFor } from '../dr/rng.js';
 
-export const attemptChance = (level, pass) => Math.min(0.95, Math.max(0.05, pass + 0.08 * (level - 5)));
+export const attemptChance = (level, pass) => Math.min(0.95, Math.max(0.05, pass + PASS_SLOPE * (level - 5)));
 
 const MAX_ATTEMPTS = 10;
 const pop = (name, d) => { if (!gs.popularity) gs.popularity = {}; gs.popularity[name] = (gs.popularity[name] || 0) + d; };
@@ -51,7 +51,7 @@ function runPick(state, id, task, stretchId, t, level, spread, rng) {
   for (let i = 0; i < task.pick.of; i++) if (rng() < q) right++;
   (state.picks ||= {})[id] = { leg: state.leg, stretch: stretchId, of: task.pick.of, right };
   const row = record(state, id, stretchId, { attempts: 1, fails: 0, right });
-  const dur = task.base * (1 + spread * 0.3 * (rng() - 0.5)) / (level / 5);
+  const dur = task.base * (1 + spread * 0.3 * (rng() - 0.5)) / pace(level);
   // (told in stages, a wrong spice is where it was grabbed: nobody tells them, the stew does)
   if (task.stages) row.stages = stageRun(state, id, task, stretchId, t, t + dur, task.pick.of - right);
   return { end: t + dur, attempts: 1, quit: false, data: { attempts: 1, fails: 0, p: 1, right } };
@@ -108,7 +108,7 @@ export function runTask(state, team, task, t, api, rng, who = 'both', { stretchI
   if (!startAttempts) row.fails = 0;
   for (;;) {
     attempts++;
-    dur += base * (1 + spread * 0.3 * (rng() - 0.5)) / (level / 5);
+    dur += base * (1 + spread * 0.3 * (rng() - 0.5)) / pace(level) * (state.form?.[id] ?? 1);
     row.attempts = attempts;
     if (rng() < p || attempts >= MAX_ATTEMPTS) break;
     row.fails = (row.fails || 0) + 1;
@@ -134,7 +134,7 @@ function expected(state, id, side, rng) {
   const p = attemptChance(lv, side.pass);
   const lead = state.lead[id];
   const noise = 1 + 0.4 * (rng() - 0.5) * (10 - S(lead, 'intuition')) / 10;
-  return ((side.base / (lv / 5)) / p + side.loopCost * (1 / p - 1)) * noise;
+  return ((side.base / pace(lv)) / p + side.loopCost * (1 / p - 1)) * noise;
 }
 
 // A side a team's identity won't do (the Vegans and a feast of shark and sheep's head): never chosen, never switched to.
@@ -169,7 +169,7 @@ export function runEither(state, team, stretch, t, api, rng, { side = null } = {
       if (refuses(state, id, other)) return null;
       const here = sideOf(pick);
       const lv = Math.max(0.5, teamLevel(state, id, here.types));
-      const remaining = (here.base / (lv / 5)) / attemptChance(lv, here.pass);
+      const remaining = (here.base / pace(lv)) / attemptChance(lv, here.pass);
       // each failure makes the side they're on feel worse than it is (the show's switchers)
       if (expected(state, id, other, rng) < remaining * (0.6 + 0.25 * row.fails)) { switched = true; sw = other.id; return 'quit'; }
       return null;

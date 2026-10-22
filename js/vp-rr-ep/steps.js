@@ -251,6 +251,8 @@ export function episodeScreens(res, eps, i) {
       if (os?.job) op = { f: os.job, g: 90, x: [10, 90] };
       else if (os?.f) { try { op = findPlate(placeId, os.f); } catch { op = plates.opener; } }
       if (op.water || op.people === false) op = { ...op, water: false, people: undefined, g: op.g || 90, x: op.x?.[1] > op.x?.[0] ? op.x : [10, 90] };
+      // (a shot whose ground the place never set, the treetops over the coast: the opener says where it is)
+      if (os?.g) op = { ...op, g: os.g };
       if (os?.deco) op = { ...op, deco: [...(op.deco || []), ...os.deco] };
       plate = op; placeFor = placeId; mode = 'don'; hudTask = 'THE START';
     }

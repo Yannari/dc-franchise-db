@@ -8,7 +8,7 @@
 // stations with room for so many; ground travel scaled by Travel skill, with the
 // odd mishap. Money is charged in money.js (Task 7).
 import { addScene } from './state.js';
-import { teamLevel, spreadOf } from './skill.js';
+import { teamLevel, spreadOf, pace } from './skill.js';
 import { identityOf } from './identities.js';
 import { REGIONS } from './places.js';
 import { spend, afford } from './money.js';
@@ -23,17 +23,21 @@ export function flightStretches(from, to, nTeams, rng, { book = false } = {}) {
   const first = Math.ceil(nTeams / count);
   const flights = [];
   for (let k = 0; k < count; k++) {
-    const departs = 60 + 90 * k;
-    let lands = departs + duration + Math.round(rng() * 60);
-    // a layover: one time in four the second flight lands before the first
-    if (k === 1 && rng() < 0.25) lands = flights[0].lands - (20 + Math.round(rng() * 40));
+    // (the flights are the race's great leveller: an hour apart, landing when the weather and the connections say, and
+    // a later one often down first; 2026-10-21: flights 90 minutes apart that landed in order carried the last team's
+    // place into the next leg every time)
+    const departs = 60 + 60 * k;
+    let lands = departs + duration + Math.round(rng() * 90);
+    // a layover: one time in three a later flight lands before the one ahead of it
+    if (k >= 1 && rng() < 0.35) lands = flights[k - 1].lands - (10 + Math.round(rng() * 40));
     flights.push({ seats: k === count - 1 ? Infinity : first, departs, lands, taken: [] });
   }
   const air = { id: 'airport', kind: 'travel', mode: 'flight', base: duration, cost: 0, noBeg: true,
     label: `Fly to ${to?.name || 'the next place'}`, flights, book };
   if (book) {
     // a connection nobody was told about: two seats, earlier than the first batch
-    air.connection = { seats: 2, departs: flights[0].departs + 30, lands: flights[0].lands - 45 - Math.round(rng() * 30), taken: [] };
+    // (ahead of every flight, a later one down early on a layover included)
+    air.connection = { seats: 2, departs: flights[0].departs + 30, lands: Math.min(...flights.map(f => f.lands)) - 45 - Math.round(rng() * 30), taken: [] };
   }
   return [air];
 }
@@ -79,7 +83,9 @@ function groundTime(state, id, stretch, rng) {
   const lv = Math.max(1, teamLevel(state, id, ['travel']));
   const t = state.teams[id];
   const spread = (spreadOf(t.a, ['travel']) + spreadOf(t.b, ['travel'])) / 2;
-  return stretch.base * (1 + 0.25 * (0.5 - rng()) * spread) / (lv / 5);
+  // (the day's luck: the driver on a taxi or a drive, the team's form on everything else; leg.js)
+  const luck = ['taxi', 'drive'].includes(stretch.mode) ? state.driver?.[id] ?? 1 : state.form?.[id] ?? 1;
+  return stretch.base * (1 + 0.25 * (0.5 - rng()) * spread) / pace(lv) * luck;
 }
 
 export function resolveTravel(state, team, stretch, t, api, rng) {

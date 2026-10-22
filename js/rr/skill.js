@@ -11,6 +11,12 @@ import { TASK_TYPES } from './types.js';
 import { identityOf } from './identities.js';
 import { getBond } from '../bonds.js';
 
+// How much faster a better team is (2026-10-21): a task's time is its base over pace(level). Linear (level / 5) made the
+// weakest team in a cast (3.8) take 2.3 times as long as the strongest (8.8) at everything, every leg, and the team that
+// was last and survived went out next time 48% of the time (chance 16%). The curve keeps the order and softens the gap.
+export const SKILL_CURVE = 0.55, PASS_SLOPE = 0.05;
+export const pace = level => (level / 5) ** SKILL_CURVE;
+
 export function identityFactor(team, types) {
   const id = identityOf(team);
   if (!id) return 1;

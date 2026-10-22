@@ -184,7 +184,7 @@ function levelAt(state, id, s) {
   if (s.kind === 'either') return Math.max(...(s.sides || []).map(x => teamLevel(state, id, x.types || [])));
   return teamLevel(state, id, s.types || []);
 }
-export function useExpress(state, team, stretch, stretches = []) {
+export function useExpress(state, team, stretch, stretches = [], t = null) {
   const id = team.id;
   if (!state.passes[id]?.express) return false;
   state.expressPlan ||= {};
@@ -200,8 +200,9 @@ export function useExpress(state, team, stretch, stretches = []) {
   // a picking task skipped with the pass still feeds the task after it (the stew is cooked with something): the
   // pass hands over the right ones
   if (stretch.pick) (state.picks ||= {})[id] = { leg: state.leg, stretch: stretch.id, of: stretch.pick.of, right: stretch.pick.of };
-  addScene(state, 'express-used', people(state, id), { team: id, stretch: stretch.id, effects: [['express', id, stretch.id]],
-    snap: snapOf(state, { tid: id, stretch, who: people(state, id) }) });
+  // (at the minute they hand it over at the task, not the leg's start: it aired before the flight, 2026-10-21)
+  addScene(state, 'express-used', people(state, id), { t, team: id, stretch: stretch.id, effects: [['express', id, stretch.id]],
+    snap: snapOf(state, { tid: id, stretch, t, who: people(state, id) }) });
   return true;
 }
 

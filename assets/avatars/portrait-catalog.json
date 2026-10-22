@@ -1914,6 +1914,12 @@
           "show": "global",
           "label": "Profile default",
           "file": "mei.png"
+        },
+        {
+          "id": "look-1",
+          "show": "global",
+          "label": "Casual",
+          "file": "mei-look-1.png"
         }
       ]
     },

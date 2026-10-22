@@ -8503,6 +8503,27 @@
       "voice": "Loud, giggly and full of energy, talking with her whole body. Hypes up everyone around her, laughs at everything, and makes strangers feel like best friends in a minute. #loud #goofy #flirty",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Antwon",
+      "slug": "antwon",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "villain",
+      "stats": {
+        "physical": 8,
+        "endurance": 6,
+        "mental": 5,
+        "social": 7,
+        "strategic": 6,
+        "loyalty": 3,
+        "boldness": 8,
+        "intuition": 5,
+        "temperament": 4
+      },
+      "voice": "Smooth, unhurried and very sure of himself. Speaks low and slow, raises one eyebrow instead of arguing, and makes it very clear he is here for someone else's girl. #flirty #proud#cruel",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

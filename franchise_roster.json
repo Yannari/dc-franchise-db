@@ -8065,6 +8065,27 @@
       "voice": "Cool, dry and sparing with words. Watches more than she talks, lands one sharp line when it counts, and is almost never surprised. #dry #quiet#emotional#earnest",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Rafael",
+      "slug": "rafael",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "floater",
+      "stats": {
+        "physical": 8,
+        "endurance": 7,
+        "mental": 4,
+        "social": 7,
+        "strategic": 3,
+        "loyalty": 7,
+        "boldness": 4,
+        "intuition": 4,
+        "temperament": 9
+      },
+      "voice": "Slow, easy and unbothered, with a lazy smile and a shrug for every crisis. Speaks softly, jokes gently, and would rather go with the flow than fight it. #calm #-goofy#flirty",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

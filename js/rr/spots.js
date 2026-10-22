@@ -105,7 +105,7 @@ export const SPOTS = {
   "tunnels": { "in-the-dark": "task-9447354", "the-traps": "task-9447366", "tunnel-ends": "task-9447366", "map-box": "task-9447366", "daylight": "task-9447315" }
  },
  "pyramid-coast": {
-  "pepper-cliff": { "pick-pepper": "task-9446542", "eat-pepper": "task-9446542", "the-ledge": "present-9446604", "cliff-jump": "task-9446545", "milk-swim": "task-9446588", "milk-delivered": "task-9446542" }
+  "pepper-cliff": { "pick-pepper": "task-9446542", "eat-pepper": "task-9446542", "the-ledge": "present-9446604", "cliff-jump": "task-9446545", "milk-swim": "task-9446588", "milk-delivered": "task-pepper-edge" }
  },
  "neon-desert": {
   "buggy-magic": { "the-remote": "task-9445821", "first-flag": "task-9445891", "the-dunes": "task-9446121", "last-flag": "task-9446132", "buggy-tip": "task-9445874", "into-cage": "task-9445798", "the-levers": "task-9445798", "lion-stirs": "task-9445798", "vanished": "task-9445798", "magic-tip": "chill-9446241" }

@@ -564,6 +564,36 @@
       "new": true,
       "ref": "task-9434827",
       "why": "the zipline's start (2026-10-21): a launch platform at the top of the city tower, a railing and a gate, the cable running out from it over the lake to the island airport, floor to stand on; the clip-in used the sky-deck's outside deck and read as the team back on the sky-deck (stand-in: the corridor at the top, task-9434876)"
+    },
+    {
+      "place": "pyramid-coast",
+      "src": "21-pyramid-coast",
+      "file": "task-9446458",
+      "why": "the pepper vendor's hut on the cliff top (2026-10-22, the user: 'why is pyramid coast only 4 screens?'): Don stands in front of it; with him painted out it is where the teams wait their turn at the cart",
+      "sha256": "6ac89a4107e77166cc8c3e21435d50791a32eb9f9ab35d1216e6bf26287217ce"
+    },
+    {
+      "place": "pyramid-coast",
+      "src": "21-pyramid-coast",
+      "file": "chill-9446835",
+      "why": "the ruins below the step pyramid (2026-10-22): a racer stands at the left edge; with them painted out it is the end of the burro ride, short of the Chill Zone",
+      "sha256": "e14a853611b10946ca6ae0cb7982e67830518375fd8c8aeb00178ea84a2730ee"
+    },
+    {
+      "place": "pyramid-coast",
+      "src": "21-pyramid-coast",
+      "file": "task-pepper-edge",
+      "new": true,
+      "ref": "task-9446542",
+      "why": "the cliff top's edge (2026-10-22): three flag poles, green, orange and red, at the edge of the sea cliff, the sea far below; where the eater waves the flag and gets the milk; the pepper cliff had four backgrounds and 73% of its screens were the cart (meanwhile: the cart)"
+    },
+    {
+      "place": "pyramid-coast",
+      "src": "21-pyramid-coast",
+      "file": "task-pepper-rocks",
+      "new": true,
+      "ref": "task-9446545",
+      "why": "the rocks at the foot of the sea cliff (2026-10-22): flat rocks at the water's edge where the jumper climbs out with the milk canteen, the cliff and its ledges rising behind; nowhere to stand during the swim (meanwhile: the swim)"
     }
   ]
 }

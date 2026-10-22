@@ -1338,20 +1338,26 @@ function _voiceReadHtml(text) {
     + (kind === 'off' ? `<s>${t}</s>${x(t, 'on', 'put it back')}` : `${kind === 'own' ? '#' : ''}${t}${weights[t] != null ? `:${weights[t]}` : ''}${x(t, 'off', 'remove this tag')}`) + '</b>';
   const got = [...hash.map(t => chip(t, 'own')), ...words.map(t => chip(t, 'word'))].join(' ') || '<i>nothing yet</i>';
   const gone = off.length ? `<br>Removed: ${off.map(t => chip(t, 'off')).join(' ')}` : '';
-  return `Simulator reads: ${got}${gone}<br>Set one outright with a hashtag in the text: ${WORD_TAGS.map(t => '#' + t).join(' ')}. Remove one with its ×, or #-tag (it also overrides the archetype and stats)`
+  // The how-it-works text folds away (the user, 2026-10-22); what the simulator reads stays in view.
+  // This re-renders on every keystroke, so the open state is remembered in _voiceHelpOpen.
+  return `Simulator reads: ${got}${gone}`
+    + (_ciSelected() ? _circleVoiceHtml(text) : '')
+    + `<details class="st-vhelp"${_voiceHelpOpen ? ' open' : ''} style="margin-top:4px"><summary style="cursor:pointer;opacity:.8">How voice tags work</summary>`
+    + `Set one outright with a hashtag in the text: ${WORD_TAGS.map(t => '#' + t).join(' ')}. Remove one with its ×, or #-tag (it also overrides the archetype and stats)`
     + '<br>Order matters: the first tag leads. In Perfect Match a voice is a mix: the tags shown here count 4, 2.5, 1.5, then 1 each, in order'
     + ' (five tags come out about 40 / 25 / 15 / 10 / 10 of their lines), and the tags the archetype and stats add share 1 between them.'
     + ' A number sets a tag\'s count yourself, wherever it sits: #proud:3 gives proud 3, so "#flirty #proud:4" is half flirty, half proud,'
     + ' and "#loud #goofy #warm:0.5" keeps warm to a hint. The other shows speak the first tag that has a line written for it.'
-    + (_ciSelected() ? _circleVoiceHtml(text) : '');
+    + (_ciSelected() ? `<br>The Circle's own voices, set with a hashtag: ${['calm', ...CIRCLE_VOICE_TAGS].map(t => '#' + t).join(' ')}`
+      + ' (#chill is laid-back and slangy; #calm is composed, no slang)' : '')
+    + '</details>';
 }
+let _voiceHelpOpen = false;
 // The Circle types in voices of its own (ci/register.js): #chill is not #calm, and Total Drama has no #diva, #catty
 // or #stoic at all (the user, 2026-10-20). Shown only while the Circle is the show selected.
 function _circleVoiceHtml(text) {
   const reg = voiceRegister({ voice: text || '' });
-  return `<br>The Circle types as: <b style="padding:1px 6px;border-radius:8px;background:rgba(120,220,180,.22)">${reg || 'from archetype and stats'}</b>`
-    + ` · its own voices, set with a hashtag: ${['calm', ...CIRCLE_VOICE_TAGS].map(t => '#' + t).join(' ')}`
-    + ' (#chill is laid-back and slangy; #calm is composed, no slang)';
+  return `<br>The Circle types as: <b style="padding:1px 6px;border-radius:8px;background:rgba(120,220,180,.22)">${reg || 'from archetype and stats'}</b>`;
 }
 /** The voice text with a tag removed (act 'off') or put back ('on'). */
 function _voiceToggleTag(text, tag, act) {
@@ -2232,8 +2238,13 @@ function _renderEditor() {
   ed.querySelector('#st-f-sex').addEventListener('change', e => d.sexuality = e.target.value);
   ed.querySelector('#st-f-arch').addEventListener('change', e => { d.archetype = e.target.value; _updateRead(); });
   ed.querySelector('#st-f-voice').addEventListener('input', e => { d.voice = e.target.value; const r = ed.querySelector('#st-voice-read'); if (r) r.innerHTML = _voiceReadHtml(d.voice); });
+  // 'toggle' doesn't bubble: caught on the way down, so a re-render keeps the help open or shut
+  // The toggle event lands a task later, after a quick keystroke may already have re-rendered the
+  // details away, so a click on the summary records the new state at once.
+  ed.querySelector('#st-voice-read')?.addEventListener('toggle', e => { if (e.target.matches?.('.st-vhelp')) _voiceHelpOpen = e.target.open; }, true);
   // the × on a voice tag: rewrite the text, so the removal is saved with the voice like everything else
   ed.querySelector('#st-voice-read')?.addEventListener('click', e => {
+    const s = e.target.closest('.st-vhelp > summary'); if (s) { _voiceHelpOpen = !s.parentElement.open; return; }
     const b = e.target.closest('.st-vtag-x'); if (!b) return;
     const v = ed.querySelector('#st-f-voice');
     d.voice = _voiceToggleTag(d.voice, b.dataset.vtag, b.dataset.act);

@@ -289,10 +289,13 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
       const who = lastBy === t.a ? t.b : t.a;
       // (one line per team: the next one not yet said in the premiere, from this team's own start in the list; two
       // couples saying "I'm winning us" in one episode was the bug, 2026-10-20)
-      const used = (state.relTagsSaid ||= []);
+      // (kept by scene: a scene written again says the same, and doesn't use up another team's line, 2026-10-22)
+      const by = (state.relTagsBy ||= {});
+      const used = Object.entries(by).filter(([k]) => k !== String(scene.id)).map(([, v]) => v);
       const from = Math.floor(stableRng(state.seed, 'rr-reltag', scene.id)() * tags.length) % tags.length;
-      const text = tags.map((_, k) => tags[(from + k) % tags.length]).find(x => !used.includes(x)) || tags[from];
-      used.push(text);
+      const text = by[scene.id] && tags.includes(by[scene.id]) ? by[scene.id]
+        : tags.map((_, k) => tags[(from + k) % tags.length]).find(x => !used.includes(x)) || tags[from];
+      by[scene.id] = text;
       lines.push({ kind: 'conf', by: who, text: fill(text, r.roles, { ...r.slots, partner: partnerOf(state, who) }), voice: null });
     }
   }

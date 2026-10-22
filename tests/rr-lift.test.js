@@ -104,6 +104,36 @@ describe('rr: the tower elevator, two teams a ride', () => {
     expect(read).toBeGreaterThanOrEqual(0);
   });
 
+  // (2026-10-22, the user: "why dont we have a view of the interior of the elevator anymore?": two teams riding up
+  // together had met at the doors already, and never talked in the car)
+  it('has two teams that ride up together talk in the car, not at the doors', () => {
+    let inCar = 0, atDoors = 0;
+    for (const { res } of seasons) {
+      const L = liftOf(res);
+      const sameRide = (a, b) => L.riders[a] && L.riders[a].ride === L.riders[b]?.ride;
+      for (const s of res.state.scenes.filter(x => x.leg === 1 && x.data?.stretch === 'tower' && x.data?.other && !/^lift-/.test(x.kind))) {
+        const { team, other } = s.data;
+        if (!sameRide(team, other)) continue;
+        const r = L.rides.find(x => x.id === L.riders[team].ride);
+        if (s.data.t >= r.dep - 0.5 && s.data.t <= r.dep + LIFT.ride + 0.5) inCar++;
+        // (both at the doors already: their clue at the box below is before it)
+        else if (s.data.t < r.dep - 0.5 && s.data.t > Math.max(L.riders[team].at, L.riders[other].at) + 1) atDoors++;
+      }
+    }
+    expect(inCar, 'conversations in the car').toBeGreaterThan(3);
+    expect(atDoors, 'teams that will share the car talking at the doors instead').toBe(0);
+  });
+
+  it('shows a team starting the sky-deck inside the car', () => {
+    let n = 0;
+    for (const { seed, ep } of seasons) for (const s of ep.screens) {
+      if (s.stretch !== 'tower' || s.side !== 'skydeck' || s.seg !== 'task-start') continue;
+      n++;
+      expect(s.plate?.f, `seed ${seed} ${s.id}`).toMatch(/9434868/);
+    }
+    expect(n).toBeGreaterThan(5);
+  });
+
   it('shows two teams in the car together only when they rode together', () => {
     let n = 0;
     for (const { seed, res, ep } of seasons) {

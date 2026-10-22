@@ -160,6 +160,10 @@ function taskEnding(row) {
 // A task beat: the director's own moment for a team at a task, from the task log. The one doing a Botch
 // speaks as a; the side they ran is named; a team's first task of the leg can air as its arrival at the task
 // and its last as the finish (`kind`), when nothing about the run itself needs telling.
+// the minute a team on an elevator side steps into the car (lift.js: its doors stage ends when the car goes)
+// (a minute in: the viewer reads the stage a minute is at with half a minute's slack)
+const startInCar = row => { const d = row.stages?.find(x => x.id === 'lift-doors')?.t; return d == null ? null : d + 1; };
+
 function taskBeat(state, row, i, kind = 'task-try') {
   const [x, y] = people(state, row.team);
   const [a, b] = row.kind === 'botch' && row.who && [x, y].includes(row.who) ? [row.who, row.who === x ? y : x] : [x, y];
@@ -171,6 +175,9 @@ function taskBeat(state, row, i, kind = 'task-try') {
     : kind === 'task-try' && ending !== 'first-try' && row.to > row.from ? Math.round((row.from + row.to) / 2) : row.from;
   // (a try that came after failing comes after the failure the episode can air: halfway through the run was before the
   // second miss of a long one, 2026-10-21)
+  // (an elevator first: a team starts it stepping into the car, 2026-10-22, the user: "why dont we have a view of the
+  // interior of the elevator anymore?")
+  if (kind === 'task-start' && row.liftUp) t = startInCar(row) ?? t;
   if (kind === 'task-try' && ending === 'after-fails') {
     const failed = state.scenes.filter(s => s.kind === 'attempt-fail' && s.leg === row.leg && s.data?.team === row.team && s.data?.stretch === row.stretch
       && s.data.t >= row.from - 0.5 && s.data.t <= row.to + 0.5).map(s => s.data.t);

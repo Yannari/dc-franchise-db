@@ -103,6 +103,16 @@ export function rideLift(state, stretch, id, t, api, rng) {
         const next = openRide(L, queued.dep, queued) || newRide(L, queued.dep + cycle);
         next.teams.push(c);
         them.ride = next.id;
+        // (a talk already set for the ride up with the team still in the car happened at the doors, before the push:
+        // 2026-10-22, the bumped team was seen in the car with a team it never rode with)
+        const mates = queued.teams.filter(x => x !== id);
+        for (const sc of state.scenes) {
+          const d = sc.data || {};
+          if (sc.leg !== state.leg || d.stretch !== stretch.id || d.t == null || d.t < queued.dep - 0.5) continue;
+          if (![d.team, d.other].includes(c) || !mates.some(x => [d.team, d.other].includes(x))) continue;
+          const mate = [d.team, d.other].find(x => x !== c);
+          d.t = (Math.max(them.at, L.riders[mate]?.at ?? them.at) + t) / 2;
+        }
         moveTo(state, stretch, c, next.dep);
         api?.delay?.(c, next.dep - queued.dep);
         moment(state, stretch, 'lift-scramble', id, c, t, rng, 'pushed-in', mine);
@@ -119,7 +129,9 @@ export function rideLift(state, stretch, id, t, api, rng) {
         + 0.08 * rivalryOf(state, inside, id), 0.05, 0.85) : 0;
       if (rng() < p) {
         const was = closing.dep;
-        closing.dep = Math.min(was, t);
+        // (no sooner than the car is back down from the ride before: shutting the doors can't bring it back faster)
+        const back = Math.max(-Infinity, ...L.rides.filter(r => r !== closing && r.dep < was).map(r => r.dep + cycle));
+        closing.dep = Math.min(was, Math.max(t, back));
         moveTo(state, stretch, inside, closing.dep);
         api?.delay?.(inside, closing.dep - was);
         me.missed = 'shut';

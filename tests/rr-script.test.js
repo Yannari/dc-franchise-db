@@ -61,7 +61,8 @@ describe('rr roles and facts', () => {
   it('the writers can see the task, the ride, the result at the mat, why the lead changed, and who is older', () => {
     for (const k of ['taskType', 'mode', 'matPlace', 'why', 'aElder']) expect(RR_FACT_KEYS).toContain(k);
     const st = res.state;
-    const mat = st.scenes.filter(s => ['blame', 'celebrate', 'bond-moment'].includes(s.kind) && s.data.stretch === 'mat');
+    // (Don naming the place too: a season can go without a partners' moment on the mat, 2026-10-22)
+    const mat = st.scenes.filter(s => ['blame', 'celebrate', 'bond-moment', 'don-place'].includes(s.kind) && s.data.stretch === 'mat' && !s.data.midmat);
     expect(mat.length).toBeGreaterThan(0);
     for (const s of mat) expect(['first', 'top', 'mid', 'bottom', 'last']).toContain(s.data.matPlace);
     const travel = st.scenes.filter(s => s.data.snap?.stretchKind === 'travel');

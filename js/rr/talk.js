@@ -304,7 +304,8 @@ const NEEDS_WORK = new Set(['spy', 'steal', 'help-offer', 'rescue', 'tug-of-war'
 // what needs a road, a course or a task (a shove into a hedge, a fake shortcut down "the low path", a hand over the
 // course): never at the gate or on the plane (2026-10-21: both aired while two teams waited for the same flight)
 const ROAD_ONLY = new Set([...NEEDS_WORK, 'push', 'ram', 'fake-shortcut', 'save-your-enemy', 'shove', 'collision', 'follow', 'gloat']);
-export function talkAtOverlap(state, team, others, stretch, t, api, rng, { atStart = false } = {}) {
+// `sure`: two teams shut in together (an elevator car) always have a moment, there's nowhere else to look
+export function talkAtOverlap(state, team, others, stretch, t, api, rng, { atStart = false, sure = false } = {}) {
   const id = idOf(team);
   const out = [];
   out.extra = 0;
@@ -346,7 +347,7 @@ export function talkAtOverlap(state, team, others, stretch, t, api, rng, { atSta
       if (bm.w > 0) { cands.push({ kind: kind.id, w: s.weight * THREAD_PULL, moment: bm.moment, a, b, people: extra.people }); pull += s.weight; }
     }
     const total = cands.reduce((s, c) => s + c.w, 0);
-    if (rng() >= Math.min(MEET_MAX, MEET * Math.min(1, total) + MEET_THREAD * pull)) continue;
+    if (!sure && rng() >= Math.min(MEET_MAX, MEET * Math.min(1, total) + MEET_THREAD * pull)) continue;
     while (cands.length) {
       const c = draw(cands, rng);
       if (!c) break;

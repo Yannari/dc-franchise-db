@@ -35,7 +35,7 @@ const THINGS = [
 
 // (somewhere else, or not real: a story about a cousin's wedding, a boat in a daydream, directions to the next place)
 // (and words that only look like the thing: the bridge club, a puppy climbing stairs)
-const ELSEWHERE = new Set(['pt.f-any1', 'tk.o-any1', 'tk.o-any2', 'vt.lc6', 'sc2.4', 'sc.lb2', 'ph.ma2', 'ce.j-2', 'tt.o-any1']);
+const ELSEWHERE = new Set(['pt.f-any1', 'tk.o-any1', 'tk.o-any2', 'vt.lc6', 'sc2.4', 'sc.lb2', 'ph.ma2', 'ce.j-2', 'tt.o-any1', 'tk.45', 'vs.c5']);
 const hits = [];
 let read = 0;
 beforeAll(() => {

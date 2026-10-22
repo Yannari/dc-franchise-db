@@ -242,15 +242,22 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   const meetInside = (id, s, from, to, api) => {
     let extra = 0, watched = false;
     const met = new Set();
+    // (two teams going up in the same elevator car talk in it, not at its doors: 2026-10-22, the user: "why dont we have
+    // a view of the interior of the elevator anymore?")
+    const lift = state.lifts?.[`${state.leg}|${s.id}`];
+    const rideOf = o => lift?.riders?.[o]?.ride ?? null;
+    const inCar = (o, tt) => { const r = lift?.rides.find(x => x.id === rideOf(o)); return !!r && tt >= r.dep; };
+    const later = (x, tt) => rideOf(id) != null && rideOf(id) === rideOf(x) && !inCar(id, tt);
     for (let tt = from; tt <= to; tt += 2) {
       const mine = spotOf(id, s, tt, from, to);
-      const now = api.here(s.id, tt).filter(x => x.id !== id && !met.has(x.id) && state.teams[x.id] && spotOf(x.id, s, tt, x.from, x.to) === mine).map(x => x.id);
+      const now = api.here(s.id, tt).filter(x => x.id !== id && !met.has(x.id) && state.teams[x.id] && !later(x.id, tt) && spotOf(x.id, s, tt, x.from, x.to) === mine).map(x => x.id);
       if (!now.length) continue;
       now.forEach(x => met.add(x));
       // (at its start nobody has begun: they can talk, but nobody has watched anybody at it yet; 2026-10-21, a
       // meeting there aired "they've been at it for an hour" and "has failed this task twice already")
       const atStart = mine === 'start';
-      extra += talkAtOverlap(state, id, now, s, tt, api, rng, { atStart }).extra || 0;
+      const car = inCar(id, tt) && now.every(x => rideOf(x) === rideOf(id));
+      extra += talkAtOverlap(state, id, now, s, tt, api, rng, { atStart, sure: car }).extra || 0;
       if (!watched && !atStart && now.length >= 2) { watched = true; talkAtWait(state, [id, ...now], s, tt, api, rng, 'watching'); }
     }
     return extra;

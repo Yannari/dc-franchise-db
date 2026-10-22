@@ -33,6 +33,8 @@ export const REL_TAGS = {
     "We've only been together a few weeks, so this is either going to be amazing or a disaster.",
     "We're very new. This is basically our third date.",
     "We just started dating, so if we survive this, that's it, that's forever.",
+    "We met two months ago. Our friends think this is a terrible idea.",
+    "It's still new. We haven't even had our first proper fight yet. Give it a day.",
   ],
   engaged: [
     "And we're engaged, so this is basically a very long, very sweaty engagement party.",

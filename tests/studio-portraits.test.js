@@ -230,3 +230,32 @@ describe('portrait panel rendering', () => {
     expect(html).toContain('&lt;img onerror=1&gt;');
   });
 });
+
+// ── Reopening a character ─────────────────────────────────────────────────
+//
+// 2026-10-22: Arjun's "Casual" look, saved for All shows, was gone from his
+// wardrobe the next time he was opened — "my extra portrait got lost". The
+// load skipped every 'global' look, meaning to skip only the profile default
+// (which is global too). The Cast Builder offered it all along.
+describe('reopening a character in the studio', () => {
+  const load = new Function('catalog', [
+    "const PORTRAIT_SHOW_ANY='global';",
+    "const _avatarList = [];",
+    "const appearancesFor = async () => [];",
+    "const fetch = async () => ({ json: async () => catalog });",
+    'const _showKeyOf = () => null;',
+    'async ' + grab('_loadDraftPortraits'),   // grab starts at 'function'
+    'return _loadDraftPortraits;',
+  ].join('\n'));
+
+  it('lists an All shows look, and not the profile default', async () => {
+    const d = { slug: 'arjun', name: 'Arjun' };
+    await load({ players: { arjun: { defaults: { global: 'base' }, portraits: [
+      { id: 'base', show: 'global', label: 'Profile default', file: 'arjun.png' },
+      { id: 'look-1', show: 'global', label: 'Casual', file: 'arjun-look-1.png' },
+      { id: 'tr-castle', show: 'traitors', label: 'Castle', file: 'arjun-tr-castle.png' },
+    ] } } })(d);
+    expect(d.portraits.map(p => p.id)).toEqual(['look-1', 'tr-castle']);
+    expect(d.portraits[0]).toMatchObject({ show: 'global', label: 'Casual', registered: true, makeDefault: false });
+  });
+});

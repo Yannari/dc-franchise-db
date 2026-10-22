@@ -1681,7 +1681,9 @@ async function _loadDraftPortraits(d) {
   const entry = cat && cat.players && cat.players[d.slug];
   const defaults = (entry && entry.defaults) || {};
   for (const p of ((entry && entry.portraits) || [])) {
-    if (!p || p.id === 'base' || p.show === PORTRAIT_SHOW_ANY) continue;
+    // The profile default only. An All shows look is global too, and skipping
+    // every global one hid the looks this panel itself saves for All shows.
+    if (!p || p.id === 'base') continue;
     d.portraits.push({
       id: p.id, show: p.show, label: p.label || '', file: p.file,
       registered: true, makeDefault: defaults[p.show] === p.id,

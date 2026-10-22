@@ -1918,6 +1918,53 @@ function _exportSheet() {
   _dl(`${d.slug || _slugify(d.name) || 'character-template'}.json`, JSON.stringify(file, null, 2));
 }
 
+/**
+ * The editor's cast button: there whenever a cast is being composed, even on
+ * a blank sheet (typing a name does not redraw the editor, so a button that
+ * waited for one would wait for ever; Save itself says a name is required).
+ * It used to need the character in the pool already, and
+ * Save never redrew it, so it appeared only after searching for the character
+ * and opening them again. On a sheet not saved yet it saves, then adds.
+ */
+function _castButtonHtml(d) {
+  const active = _casts.find(c => c.id === _activeCast);
+  if (!active) return '';
+  const inPool = !!d.slug && _roster().some(p => p.slug === d.slug);
+  const member = inPool && active.slugs.includes(d.slug);
+  const label = member ? '★ In ' + _esc(active.name)
+    : inPool ? '☆ Add to ' + _esc(active.name) : '☆ Save & add to ' + _esc(active.name);
+  return `<button type="button" class="st-btn st-lg${member ? ' st-primary' : ''}" id="st-add-cast" title="Toggle ${_esc(d.name)} in ${_esc(active.name)}">${label}</button>`;
+}
+
+// add/remove the open character from the active cast, right from the editor;
+// a character not in the pool yet is saved first (a cast holds slugs of saved
+// characters), and a save that fails adds nobody
+async function _onCastButton() {
+  const d = _draft;
+  const inPool = () => d.slug && _roster().some(p => p.slug === d.slug);
+  if (!inPool()) { await _save(); if (!inPool()) return; }
+  await _toggleMember(d.slug);
+  _renderEditor();
+}
+
+/**
+ * Redraw just the cast button: after a save, and whenever the casts change
+ * (picking one, making one, starring someone in the grid). Neither redraws the
+ * editor, so the button has to be put in, taken out or relabelled on its own.
+ */
+function _refreshCastButton() {
+  const save = document.querySelector('#st-editor #st-save');
+  if (!save || !_draft) return;
+  const old = document.querySelector('#st-editor #st-add-cast');
+  const tmp = document.createElement('div');
+  tmp.innerHTML = _castButtonHtml(_draft);
+  const next = tmp.firstElementChild;
+  if (next) next.addEventListener('click', _onCastButton);
+  if (old && next) old.replaceWith(next);
+  else if (old) old.remove();
+  else if (next) save.after(next);
+}
+
 function _renderEditor() {
   const ed = document.getElementById('st-editor');
   if (!ed) return;
@@ -2159,13 +2206,7 @@ function _renderEditor() {
       <div class="st-actions">
         ${d.name ? '<button type="button" class="st-btn st-lg" id="st-fill-profile">Fill in this profile</button><span class="st-hint" id="st-fill-note"></span>' : ''}
         <button type="button" class="st-btn st-primary st-lg" id="st-save">Save character</button>
-        ${(() => {
-          const active = _casts.find(c => c.id === _activeCast);
-          const inPool = d.slug && _roster().some(p => p.slug === d.slug);
-          if (!active || !inPool) return '';
-          const member = active.slugs.includes(d.slug);
-          return `<button type="button" class="st-btn st-lg${member ? ' st-primary' : ''}" id="st-add-cast" title="Toggle ${_esc(d.name)} in ${_esc(active.name)}">${member ? '★ In ' + _esc(active.name) : '☆ Add to ' + _esc(active.name)}</button>`;
-        })()}
+        ${_castButtonHtml(d)}
         <label class="st-btn st-lg st-file" title="Fill this sheet from a file: a .json from Export, or a .txt with one label per line (Name: …, Age: 24, Pronouns: she/her, Archetype: schemer, Physical: 7, Backstory: …). Nothing is saved until you press Save.">⤒ Import<input type="file" id="st-sheet-import" accept=".json,.txt,application/json,text/plain" hidden></label>
         <button type="button" class="st-btn st-lg" id="st-sheet-export" title="Download this sheet as a .json file. Export an empty sheet to get a template to fill in.">⤓ Export</button>
         ${/* only a character opened from the roster: an unsaved sheet's slug (typed, or filled by Import) may be
@@ -2475,8 +2516,7 @@ function _renderEditor() {
   });
   ed.querySelector('#st-save').addEventListener('click', _save);
   ed.querySelector('#st-del')?.addEventListener('click', _delete);
-  // add/remove the selected character from the active cast, right from the editor
-  ed.querySelector('#st-add-cast')?.addEventListener('click', async () => { await _toggleMember(d.slug); _renderEditor(); });
+  ed.querySelector('#st-add-cast')?.addEventListener('click', _onCastButton);
   ed.querySelector('#st-sheet-import')?.addEventListener('change', e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) _importSheet(f); });
   ed.querySelector('#st-sheet-export')?.addEventListener('click', _exportSheet);
 
@@ -3311,6 +3351,10 @@ async function _save() {
     || p.slug === d.slug || p.name === d.name);
   if (i >= 0) arr[i] = { ...arr[i], ...entry }; else arr.push(entry);
   _persistRoster(arr);
+  // From here the sheet IS this saved character, exactly as if it had been
+  // searched for and opened: a rename on the next save updates this row, and
+  // the cast button and Delete know it is in the pool.
+  d._editingSlug = d.slug;
 
   // 2) rich record (raw prose kept for editing) + avatar override
   const rich = { slug: d.slug, name: d.name, age: d.age, gender: d.gender,
@@ -3433,6 +3477,7 @@ async function _save() {
   const warned = warnings.length ? ` · but: ${warnings.join(' · ')}` : '';
   _toast(`${d.name} saved — ${bits.join(' + ')}${warned}`, warned ? 'warn' : 'ok');
   _refreshPublishStatus();
+  _refreshCastButton();
   if (note) {
     note.textContent = (savedToDb ? '✓ saved — press Publish to push it to the site' : '✓ live in the cast pool') + warned;
     note.className = 'st-save-note ' + (warned ? 'err' : 'ok');
@@ -3510,6 +3555,7 @@ function _renderCasts() {
   el.querySelector('#st-cast-load')?.addEventListener('click', () => _loadCastIntoSeason(active));
   el.querySelector('#st-cast-rename')?.addEventListener('click', () => _renameCast(active));
   el.querySelector('#st-cast-del')?.addEventListener('click', () => _deleteCast(active));
+  _refreshCastButton();
 }
 
 async function _newCast() {

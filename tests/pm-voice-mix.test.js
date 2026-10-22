@@ -2,21 +2,21 @@
 // pm-voice-mix.test.js — an islander speaks every tag they were written with
 // ══════════════════════════════════════════════════════════════════════
 //
-// Perfect Match used to speak only an islander's strongest voice tag. Measured
-// on the user's 27 islanders (2026-10-22): the second hashtag spoke 0 lines of
-// 33,168 — Antwon "#flirty #proud" never once sounded proud, though nearly
-// every line had a proud version written. The user: "most of my players have
-// between 3-5 tags". A voice is now a mix (td/story/voice.js voiceWeights,
-// pm/script.js voiceKey), and this holds it to one:
-//   - the tags written count 4, 2.5, 1.5, then 1 each; archetype and stat
-//     tags share 1; "#tag:n" sets a count outright;
-//   - over a season the second tag is heard, and the first still leads;
+// The user: "most of my players have between 3-5 tags". A voice is a mix
+// (td/story/voice.js voiceWeights): the tags written count 4, 2.5, 1.5, then 1
+// each; archetype and stat tags share 1; "#tag:n" sets a count outright. Since
+// the 2026-10-22 rebuild the mix picks a REGISTER for each speaker in each
+// scene (pm/story/director.js registerOf: soft · sharp · big · dry · flirty ·
+// nervy), and the register picks which whole movement they get:
+//   - over a season the second tag's register is heard, and the first leads;
 //   - the mix is a hash, never a draw: a season replays word for word.
 import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { playPerfectMatchSeason } from '../js/pm/season.js';
 import { readVoiceText } from '../js/td/story/voice-words.js';
 import { voiceOf, voiceWeights } from '../js/td/story/voice.js';
+import { REGISTERS, registerOf } from '../js/pm/story/director.js';
+import { scriptText } from '../js/pm/script.js';
 import { makeIslanders, roleSetup } from './helpers/pm-cast.js';
 
 // Voices as the user writes them: two to five hashtags. #emotional is in (batches
@@ -31,24 +31,11 @@ function cast(seed) {
   return makeIslanders(22, seed).map((p, i) => ({ ...p, voice: `Talks the way they talk. ${VOICES[i % VOICES.length]}` }));
 }
 
-function spoken(rows) {
-  const out = [];
-  const seen = new Set();
-  const walk = o => {
-    if (!o || typeof o !== 'object' || seen.has(o)) return;
-    seen.add(o);
-    if (o.script && Array.isArray(o.script.lines)) out.push(...o.script.lines);
-    for (const v of Array.isArray(o) ? o : Object.values(o)) walk(v);
-  };
-  walk(rows);
-  return out;
-}
-
 function play(seed) {
   const players = cast(seed); setPlayers(players);
   const names = players.map(p => p.name);
   const { rows } = playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed });
-  return { players, lines: spoken(rows).filter(l => names.includes(l.who)) };
+  return { players, rows };
 }
 
 describe('reading a weight off the voice', () => {
@@ -78,22 +65,21 @@ describe('reading a weight off the voice', () => {
 
 describe('a season in the mix', () => {
   const a = play(5);
+  const regOf = tag => Object.entries(REGISTERS).find(([, tags]) => tags.includes(tag))?.[0];
 
-  it('every islander\'s second hashtag is heard, and the first still leads', () => {
-    // One register holds a whole scene, so an islander with 80 lines has ~25
-    // picks, and the scene lean moves a flirt forward on every pull: one
-    // islander's first can trail their second. Across the cast it leads.
+  it("every islander's second register is heard, and the first still leads", () => {
+    setPlayers(a.players);   // an earlier test set its own roster
     const short = [], firsts = [], seconds = [];
     for (const p of a.players) {
-      const tags = readVoiceText(p.voice).hash;
-      const mine = a.lines.filter(l => l.who === p.name && l.voice);
-      if (tags.length < 2 || mine.length < 60) continue;
-      const share = t => mine.filter(l => l.voice === t).length / mine.length;
-      const [first, second] = tags.map(share);
+      const regs = [...new Set(readVoiceText(p.voice).hash.map(regOf).filter(Boolean))];
+      if (regs.length < 2) continue;
+      const scenes = a.rows.flatMap(r => r.pm.events).filter(e => e.tier && e.players.includes(p.name));
+      if (scenes.length < 40) continue;
+      const got = scenes.map(e => registerOf({ seed: 5 }, e, p.name));
+      const share = r => got.filter(x => x === r).length / got.length;
+      const [first, second] = regs.map(share);
       firsts.push(first); seconds.push(second);
-      if (!(second >= 0.10 && first < 0.75)) {
-        short.push(`${p.name} ${p.voice.split('. ')[1]}: ${tags[0]} ${(first * 100).toFixed(0)}%, ${tags[1]} ${(second * 100).toFixed(0)}% of ${mine.length}`);
-      }
+      if (!(second >= 0.10 && first < 0.85)) short.push(`${p.name} ${regs.join('/')}: ${(first * 100).toFixed(0)}% / ${(second * 100).toFixed(0)}% of ${got.length}`);
     }
     expect(short).toEqual([]);
     expect(firsts.length).toBeGreaterThan(8);
@@ -101,29 +87,8 @@ describe('a season in the mix', () => {
     expect(mean(firsts), `first ${mean(firsts).toFixed(2)} vs second ${mean(seconds).toFixed(2)}`).toBeGreaterThan(mean(seconds) + 0.1);
   });
 
-  it('a scene keeps a speaker in one register', () => {
-    // Most of a speaker's voiced lines inside one scene come out in one key.
-    let scenes = 0, steady = 0;
-    const seen = new Set();
-    const walk = o => {
-      if (!o || typeof o !== 'object' || seen.has(o)) return;
-      seen.add(o);
-      if (o.script && Array.isArray(o.script.lines)) {
-        const by = {};
-        for (const l of o.script.lines) if (l.voice) (by[l.who] ||= []).push(l.voice);
-        for (const keys of Object.values(by)) if (keys.length >= 3) { scenes++; if (new Set(keys).size === 1) steady++; }
-      }
-      for (const v of Array.isArray(o) ? o : Object.values(o)) walk(v);
-    };
-    setPlayers(a.players);
-    const names = a.players.map(p => p.name);
-    walk(playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed: 5 }).rows);
-    expect(scenes).toBeGreaterThan(20);
-    expect(steady / scenes).toBeGreaterThan(0.6);
-  });
-
   it('the same season replays word for word', () => {
-    const b = play(5);
-    expect(b.lines.map(l => `${l.who}: ${l.text}`)).toEqual(a.lines.map(l => `${l.who}: ${l.text}`));
+    const text = rows => rows.flatMap(r => r.pm.events).map(e => scriptText(e.script)).join(' / ');
+    expect(text(play(5).rows)).toBe(text(a.rows));
   });
 });

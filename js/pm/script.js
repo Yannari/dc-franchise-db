@@ -46,9 +46,8 @@ import { HEAT_LINES } from './lines/day/heat.js';
 import { KISS_ROUND_LINES } from './lines/kiss-round.js';
 import { STEAMY_NARRATOR, STEAMY_SCENES } from './lines/steamy.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
-import { VOICES } from './lines/voices/index.js';
-import { voiceWeights } from '../td/story/voice.js';
-import { FAMILY } from '../td/story/voice-family-map.js';
+import { TALK } from './talk/index.js';
+import { afterOf, tierOf, registerOf } from './story/director.js';
 
 export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES, ...CLOSE, ...ANSWER, ...KISS_LINES, ...RULES_LINES };
 // The pools a season ran dry of (lines/day/more-d.js), added to whichever pool holds the kind.
@@ -83,138 +82,23 @@ for (const [k, v] of Object.entries(STEAMY_SCENES)) POOLS[k] = [...(POOLS[k] || 
 for (const [k, v] of Object.entries(STEAMY_NARRATOR)) NARRATOR[k] = [...(NARRATOR[k] || []), ...v];
 export { HUT, NARRATOR };
 
-// ── a voice still has to be understood ─────────────────────────────────
-// The user, 2026-10-22, reading a chat: "Why?! This?! Go!" / "Dare! Phone call!
-// Here!" for "So what made you want to do this?" / "My friends dared me to
-// apply, and then I got a phone call". Earlier batches wrote some voices as
-// strings of one-word fragments (chaotic: 6,570 of 7,366 lines) or cut a whole
-// sentence to a word or two (quiet "Coincidence?" for "{c} latched on to the one
-// person everyone loves. Coincidence?"; blunt, tough, bossy and ditzy the same).
-// A version like that is dropped here, so the speaker says the plain line or
-// another of their tags instead; VOICE_DROPPED lists them (tests/pm-lines).
-export const VOICE_DROPPED = [];
-const wordsIn = s => String(s).replace(/\{[^}]+\}/g, 'X').split(/\s+/).filter(w => /[A-Za-z0-9]/.test(w));
-const sentencesIn = s => String(s).split(/(?<=[.!?…])\s+/).filter(x => wordsIn(x).length);
-const bare = s => String(s).toLowerCase().replace(/[^a-z0-9{}~ ]+/g, ' ').replace(/\s+/g, ' ').trim();
-/** Why a version can't be followed, or null when it reads. */
-export function unreadable(base, line) {
-  if (bare(line).includes(bare(base))) return null;       // the plain line is in there ("Mm. Go on.")
-  const n = wordsIn(line).length, nb = wordsIn(base).length;
-  if (nb >= 6 && n <= 3) return 'cut';                     // a sentence cut to a word or two
-  // Shouted fragments: every sentence a word or two, two or more of them
-  // exclaimed, where the plain line was a real sentence ("Why?! This?! Go!").
-  // Short spoken sentences stay ("Okay. That stings. But okay.").
-  const ss = sentencesIn(line), bs = sentencesIn(base);
-  const shouted = ss.filter(x => /!\s*$|\?!\s*$/.test(x.trim())).length;
-  const baseClipped = bs.length && bs.filter(x => wordsIn(x).length <= 2).length / bs.length >= 0.5;
-  if (ss.length >= 2 && ss.every(x => wordsIn(x).length <= 2) && shouted >= 2 && !baseClipped) return 'fragments';
-  return null;
-}
-function readableVoices(base, v) {
-  const out = {};
-  for (const [k, line] of Object.entries(v || {})) {
-    const why = unreadable(base, line);
-    if (why) VOICE_DROPPED.push({ key: k, why, base, line });
-    else out[k] = line;
-  }
-  return out;
-}
-
-// ── a line in the speaker's own voice (lines/voices/) ─────────────────
-// Each voice hangs on its turn as a third element: [who, text, { tag: text }].
-// Found by the entry's id AND the line's words, so an edited line drops its
-// voices loudly (VOICE_MISSES, kept empty by tests/pm-lines.test.js) instead
-// of attaching them to whatever now sits at that position.
-export const VOICE_MISSES = [];
-{
-  const byId = new Map();
-  for (const pool of [...Object.values(POOLS), ...Object.values(HUT)]) for (const e of pool) {
-    if (!byId.has(e.id)) byId.set(e.id, []);
-    byId.get(e.id).push(e);
-  }
-  const spoken = e => (e.turns || []).flatMap(t => (Array.isArray(t) ? [[t, e.turns]] : t.vary.flatMap(v => v.turns.map(x => [x, v.turns]))));
-  const everyEntry = [...byId.values()].flat();
-  // id '*': the line wherever an islander says it. Only for the short replies that
-  // mean the same thing in every scene ("Go on.", "I know.", "Me too."), which are
-  // a few words in hundreds of entries and the most-heard words in a season.
-  for (const [id, text, raw] of VOICES) {
-    let hit = false;
-    const v = readableVoices(text, raw);
-    for (const e of id === '*' ? everyEntry : byId.get(id) || []) for (const [t, list] of spoken(e)) {
-      if (t[1] !== text || !['a', 'b', 'c', 'd'].includes(t[0])) continue;
-      list[list.indexOf(t)] = [t[0], t[1], { ...(t[2] || {}), ...v }];
-      hit = true;
-    }
-    if (!hit) VOICE_MISSES.push(`${id} :: ${text}`);
-  }
-}
-
-
-// ── whose voice a line comes out in ──────────────────────────────────
-// A voice is a MIX, not its strongest tag. Strongest-tag-wins gave the second
-// hashtag 0 lines of 33,168 on the user's 27 islanders (2026-10-22): Antwon
-// "#flirty #proud" never once spoke proud, though nearly every line had a proud
-// version written. Now each tag counts (voiceWeights: the written tags 4, 2.5,
-// 1.5, then 1 each; archetype and stat tags share 1; "#tag:n" outright); a
-// family version counts half its tag; and a scene brings one side forward
-// (SCENE_LEANS, half again). Age tags weigh nothing: they are a register, and a
-// PM line has no age versions.
-const SCENE_LEANS = {
-  soft: ['kiss', 'date', 'pull', 'bed-share', 'comfort', 'vent', 'dump-goodbye', 'deep-chat', 'recouple-pick', 'game-kiss'],
-  sharp: ['argument', 'blowup', 'jealous-confront', 'lie-question', 'ick'],
-  loud: ['argument', 'blowup', 'jealous-confront'],
-  dry: ['gossip', 'debrief', 'ick'],
-  odd: ['comedy', 'gossip'],
-};
-export const SCENE_LEAN = 1.5;
-const LEANS = {};
-for (const [fam, kinds] of Object.entries(SCENE_LEANS)) for (const k of kinds) (LEANS[k] ||= new Set()).add(fam);
-
-/**
- * Which of a turn's voices this islander speaks. `u` (0..1) is where the pick
- * lands: one number per speaker per scene, so a scene keeps them in one
- * register instead of switching every line. `kind` is the scene's pool.
- */
-export function voiceKey(name, v, { u = 0, kind = null } = {}) {
-  if (!v || !name) return null;
-  let weights;
-  try { weights = voiceWeights(name); } catch { return null; }
-  const lean = LEANS[kind];
-  const leaned = (key, w) => w * (lean?.has(FAMILY[key] || key) ? SCENE_LEAN : 1);
-  const land = list => {
-    let r = u * list.reduce((a, [, x]) => a + x, 0);
-    for (const [key, x] of list) { r -= x; if (r < 0) return key; }
-    return list.length ? list[list.length - 1][0] : null;
-  };
-  // The scene's register comes from the voice alone, so every line that has it
-  // says it; only a line with no version of it picks again, among what it has.
-  const tag = land(weights.filter(([, w]) => w > 0).map(([t, w]) => [t, leaned(t, w)]));
-  if (tag && v[tag]) return tag;
-  if (tag && FAMILY[tag] && v[FAMILY[tag]]) return FAMILY[tag];
-  const score = new Map();
-  for (const [t, w] of weights) {
-    if (!(w > 0)) continue;
-    const key = v[t] ? t : FAMILY[t] && v[FAMILY[t]] ? FAMILY[t] : null;
-    if (key) score.set(key, (score.get(key) || 0) + leaned(key, key === t ? w : w / 2));
-  }
-  return land([...score]);
-}
-// One event is rendered in pieces (an opener, an answer, a close, parts), each
-// its own entry: while scriptFor renders one, every piece shares its scene.
-let SCENE = null;
-/** A speaker's place in the mix for one scene: a hash, never a draw, so no roll behind it moves. */
-function voiceDial(state, entry, name) {
-  let h = hashOf(`${state?.seed ?? ''}|${state?.ep ?? ''}|${state?.epSalt || ''}|${SCENE?.id || entry.id || ''}|${name}`);
-  h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
-  return (h >>> 0) / 4294967296;
-}
+// ── how a speaker sounds ───────────────────────────────────────────
+// The old voice overlays (lines/voices/, a copy of every line per voice tag)
+// were retired with the 2026-10-22 rebuild: they clipped lines into fragments
+// nobody could follow ("Why?! This?! Go!"). A speaker's voice now chooses
+// which whole movement they get (pm/story/director.js registerOf, the facts
+// `reg` and `bReg`), never a broken copy of a neutral one.
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'staying', 'came', 'another', 'ago', 'behind', 'friction', 'chose', 'rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
   'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
-  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy', 'theirs', 'going', 'nth', 'exes', 'leaving', 'what', 'heat', 'game', 'why', 'risk'];
+  'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy', 'theirs', 'going', 'nth', 'exes', 'leaving', 'what', 'heat', 'game', 'why', 'risk',
+  // the director (pm/story/director.js): how each one sounds, how much is shown, what it follows
+  'reg', 'bReg', 'tier', 'after', 'afterBy', 'afterWhen', 'end', 'firstKiss', 'bPartnered', 'fresh', 'bFresh',
+  // a talk file's own (pm/talk/*.js facts())
+  'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -304,6 +188,9 @@ export function factsFor(state, ev) {
   // first day. They have known each other for hours.
   const arrivedNow = n => n != null && (state.ledger?.firstEp?.[n] ?? state.ep) === state.ep;
   f.justMet = arrivedNow(a) || (!!b && arrivedNow(b));
+  // Which of them is the new one: "when you walked in" needs b to have walked in.
+  f.fresh = state.ep > 1 && arrivedNow(a);
+  f.bFresh = state.ep > 1 && !!b && arrivedNow(b);
   // Everyone in it — and a's partner — has been in the villa two episodes or
   // more: only then is "for days" true (season 33: Ellie, in two days and
   // coupled that night, "hasn't been feeling it for days").
@@ -332,6 +219,19 @@ export function factsFor(state, ev) {
   f.knowsB = !!b && knowsAbout(state, a, b);
   // A friend's read on somebody's partner, in words (advice scenes).
   if (typeof ev.extra?.verdict === 'number') f.verdict = ev.extra.verdict > 0.2 ? 'good' : ev.extra.verdict < 0 ? 'bad' : 'unsure';   // ~35 / 25 / 40, measured
+  // The director's (pm/story/director.js): each speaker's register for this
+  // scene, how much of it is shown, the earlier scene it follows from ({x} is
+  // whoever that was with), and how the engine decided it ends.
+  f.reg = registerOf(state, ev, a);
+  f.bReg = b ? registerOf(state, ev, b) : null;
+  f.tier = ev.tier || null;
+  f.after = ev.after?.fam || null;
+  f.afterBy = ev.after?.by || null;
+  f.afterWhen = ev.after?.when || null;
+  f.end = ev.extra?.close == null ? null : ev.extra.close === true ? 'yes' : ev.extra.close;
+  f.firstKiss = !!ev.extra?.firstKiss;
+  // b has a partner of their own (somebody else's, or a's): "how's it going with {pb}?"
+  f.bPartnered = !!b && !!partnerOf(state, b);
   return f;
 }
 
@@ -431,14 +331,16 @@ function scriptRng(state) {
 // line about "nothing you've done" contradicted its own ballot (season 31).
 const LEADING = ['exes', 'stoleFrom', 'rebuffed', 'heard', 'kissed', 'promised', 'rowedToday', 'justMet', 'heat', 'going', 'why', 'another', 'behind', 'friction'];
 
-export function pickScript(state, pool, ps, facts, { allowRepeat = true, rng: own = null } = {}) {
+export function pickScript(state, pool, ps, facts, { allowRepeat = true, rng: own = null, lead = true } = {}) {
   // Candidates at each width, narrowest first: the leading pool, then every
   // entry that fits. A spent leading pool widens before it repeats: a couple
   // who rowed and made up five times in one evening heard the same
   // "I hate fighting with you" five times (season 7, night one) because the
   // making-up pool ran dry and the repeat rule fired inside it.
   const widths = [];
-  for (const k of LEADING) {
+  // A movement pool (pm/talk/) is written per fact already: no leading pool,
+  // or one opener written for day one plays for every pull on day one.
+  for (const k of lead ? LEADING : []) {
     if (!facts[k]) continue;
     const led = pool.filter(e => e.when?.[k] && matches(e.when, facts));
     if (led.length) { widths.push(led); break; }
@@ -481,7 +383,7 @@ const pro = name => pronounsOf(players.find(p => p.name === name)?.gender || 'nb
 // their couples. A pool may only use one behind `taken` / `bTaken`, so the
 // partner is always there to name (tests/pm-lines.test.js).
 export function fill(text, ps, partners = {}) {
-  const names = { a: ps[0], b: ps[1], c: ps[2], d: ps[3], pa: partners.pa, pb: partners.pb };
+  const names = { a: ps[0], b: ps[1], c: ps[2], d: ps[3], pa: partners.pa, pb: partners.pb, x: partners.x, about: partners.about };
   // {quote}: the first thing said in the clip being replayed (Movie Night, the reunion).
   if (partners.day != null) text = text.replace(/\{day\}/g, String(partners.day));
   if (partners.card != null) text = text.replace(/\{card\}/g, partners.card);
@@ -501,7 +403,7 @@ export function fill(text, ps, partners = {}) {
   }
   if (partners.quote != null) text = text.replace(/\{quote\}/g, partners.quote).replace(/\{quoteWho\}/g, partners.quoteWho);
   if (partners.exchange != null) text = text.replace(/\{exchange\}/g, partners.exchange);
-  return text.replace(/\{(pa|pb|a|b|c|d)(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj|gf))?\}/g, (m, who, form) => {
+  return text.replace(/\{(pa|pb|about|a|b|c|d|x)(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj|gf))?\}/g, (m, who, form) => {
     const n = names[who];
     if (!n) return m;
     // {b.gf}: what you ask {b} to be — from the roster, never guessed.
@@ -588,17 +490,12 @@ export function renderScript(entry, ps, state = null, slots = {}) {
   return {
     id: picked.length ? `${entry.id}:${picked.join('.')}` : entry.id,
     stage: entry.stage ? f(entry.stage) : null,
-    lines: lines.map(([who, text, voices]) => {
+    lines: lines.map(([who, text]) => {
       const d = who === 'dior' ? HOST_DIALECT() : who === 'narrator' ? NARRATOR_DIALECT()
         : dialectOf(state, ps[ORDER[who]]);
-      const name = speakerName(who, ps);
-      // The islander's own voice, when the line has one for them (lines/voices/).
-      const key = voices && ORDER[who] != null
-        ? voiceKey(name, voices, { u: voiceDial(state, entry, name), kind: SCENE?.kind || String(entry.id || '').split('.')[0] }) : null;
-      const out = { who: name, text: speak(f(key ? voices[key] : text), d) };
-      // For the measuring probes only, never saved: which line this was, and in whose voice.
+      const out = { who: speakerName(who, ps), text: speak(f(text), d) };
+      // For the measuring probes only, never saved: which line this was.
       Object.defineProperty(out, 'base', { value: text, enumerable: false });
-      if (key) Object.defineProperty(out, 'voice', { value: key, enumerable: false });
       return out;
     }),
     beat: beat ? f(beat) : null,
@@ -608,13 +505,18 @@ export function renderScript(entry, ps, state = null, slots = {}) {
 /** A pool that has not been written yet still says who was there and what kind of moment it was. */
 const placeholder = kind => ({ id: `${kind}.0`, stage: `{a} — ${kind}.` });
 
+/** The director's call on a scene (pm/story/director.js): what it follows from, and how much of it is shown. */
+export function direct(state, ev) {
+  // A talk file names the scenes its lines can follow (`after`); one that names
+  // none follows none. Every other kind may follow anything (a ceremony's whole script).
+  ev.after = afterOf(state, ev, TALK[ev.kind] ? TALK[ev.kind].after || [] : null);
+  // A ceremony written as movements (`tiered: false`) is always shown whole.
+  ev.tier = tierOf(state, ev, !!TALK[ev.kind] && TALK[ev.kind].tiered !== false);
+}
+
 /** The scene for one event. */
 export function scriptFor(state, ev) {
-  const outer = SCENE;
-  SCENE = { id: `${ev.kind}|${castOf(ev).join(',')}|${ev.step ?? ''}`, kind: ev.kind };
-  try { return sceneScript(state, ev); } finally { SCENE = outer; }
-}
-function sceneScript(state, ev) {
+  if (TALK[ev.kind]) return talkScript(state, ev, TALK[ev.kind]);
   if (Array.isArray(ev.extra?.parts)) return partsScript(state, ev);
   const pool = POOLS[ev.kind];
   const ps = castOf(ev);
@@ -677,6 +579,65 @@ function closed(state, ev, entry, opened, ps) {
   const lines = [...opened.lines, ...(opened.beat ? [act(opened.beat)] : [])];
   add.forEach((s, i) => { lines.push(...s.lines); if (s.beat && i < add.length - 1) lines.push(act(s.beat)); });
   return { id: [opened.id, ...add.map(s => s.id)].join('+'), stage: opened.stage, lines, beat: add[add.length - 1].beat };
+}
+
+// ── a conversation built from movements (pm/talk/) ────────────────────
+// A talking kind is a PLAN: movements in order (open → why → answer → probe →
+// turn → close), each a pool of whole exchanges of two to eight turns. Every
+// movement opens its own subject and finishes its own exchange, so any plan's
+// movements follow one another; the facts (and the ending the engine already
+// decided, `end`) pick the entry, never the other way round. A featured scene
+// plays the long plan, a short one the short plan, a note one line of staging.
+// "slot?" is optional: played a little over half the time, never a repeat.
+const OPTIONAL_P = 0.6;
+// A movement a plan needs that found nothing to say: kept for tests/pm-talk (it should stay rare).
+export const TALK_MISSES = [];
+function planOf(talk, tier, facts) {
+  const p = talk.plans[tier] || talk.plans.featured;
+  if (typeof p[0] === 'string') return p;
+  return (p.find(x => matches(x.when, facts)) || p[p.length - 1]).plan;
+}
+function talkScript(state, ev, talk) {
+  const ps = castOf(ev);
+  // A talk file may know more about its own kind than the shared facts do
+  // (gossip: who the secret was WITH, as {x}).
+  const facts = { ...factsFor(state, { ...ev, players: ps }), ...(talk.facts?.(state, ev) || {}) };
+  const slots = { ...clipSlots(state, ev), ...(ev.after?.x ? { x: ev.after.x } : {}), ...(talk.slots?.(state, ev) || {}) };
+  const tier = ev.tier || 'featured';
+  // A fact that leads (a talk file's `leads`): when it is true, a movement
+  // written for it is the only one that plays. A couple who rowed this
+  // morning make up; they never have a cosy chat that forgets the row.
+  const led = (talk.leads || []).filter(k => facts[k]);
+  const leading = pool => {
+    if (!led.length) return pool;
+    const only = pool.filter(e => led.some(k => e.when?.[k]) && matches(e.when, facts));
+    return only.length ? only : pool;
+  };
+  if (tier === 'note' && talk.notes?.length) {
+    const e = pickScript(state, leading(talk.notes), ps, facts, { lead: false });
+    if (e) { noteUse(state, e, ps); return { ...renderScript(e, ps, state, slots), tier }; }
+  }
+  const parts = [];
+  for (const raw of planOf(talk, tier === 'note' ? 'short' : tier, facts)) {
+    const opt = raw.endsWith('?');
+    const slot = opt ? raw.slice(0, -1) : raw;
+    if (opt && scriptRng(state)() >= OPTIONAL_P) continue;
+    const pool = leading(talk.moves[slot] || []);
+    if (!pool.length) { if (!opt) TALK_MISSES.push(`${ev.kind}.${slot}`); continue; }
+    const e = pickScript(state, pool, ps, facts, { allowRepeat: !opt, lead: false });
+    if (!e) { if (!opt) TALK_MISSES.push(`${ev.kind}.${slot}`); continue; }
+    noteUse(state, e, ps);
+    parts.push(renderScript(e, ps, state, slots));
+  }
+  if (!parts.length) return { ...renderScript(placeholder(ev.kind), ps, state), tier };
+  const act = text => ({ who: '', text, action: true });
+  const lines = [];
+  parts.forEach((p, i) => {
+    if (i && p.stage) lines.push(act(p.stage));
+    lines.push(...p.lines);
+    if (p.beat && i < parts.length - 1) lines.push(act(p.beat));
+  });
+  return { id: parts.map(p => p.id).join('+'), stage: parts[0].stage, lines, beat: parts[parts.length - 1].beat, tier };
 }
 
 /**

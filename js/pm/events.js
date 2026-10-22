@@ -19,7 +19,7 @@ import { feel, jealousyHit, attachment, emo } from './emotions.js';
 import { onYourSide, BLOOD } from './kin.js';
 import { streamFor } from '../dr/rng.js';
 import { girlCode, judgement } from './circle.js';
-import { scriptFor, hutFor, moodOf, narratorFor } from './script.js';
+import { scriptFor, hutFor, moodOf, narratorFor, direct } from './script.js';
 
 export const PHASE_BUDGETS = { morning: 12, day: 40, event: 18, evening: 23 };
 export const HUT_RATE = 0.25;
@@ -890,9 +890,13 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   // follow (pm/script.js closed). Its own dice, so no other draw moves.
   const endOf = ENDINGS[kind];
   if (endOf) ev.extra.close = endOf(state, ev, streamFor(state.seed || 1, `close:${ev.id}`));
+  // What it follows from and how much of it is shown (pm/story/director.js).
+  direct(state, ev);
   ev.script = scriptFor(state, ev);
   for (const n of res.major || []) if (!ev.major.includes(n)) ev.major.push(n);
   // No beach hut in the middle of a couple watching their own film.
+  // A note keeps its cutaway: whether there is one is the engine's (it moves
+  // the public), never the director's. A quick montage, then the hut.
   if (players.length && !NO_HUT.has(kind) && (ALWAYS_HUT.has(kind) || rng() < (EVERYDAY_HUT.has(kind) ? 0.1 : HUT_RATE))) {
     // Only somebody who was THERE goes to the hut about it: the one a debrief
     // or a telling is about is not in the room (user, reading night one: "say
@@ -928,7 +932,7 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
     }
   }
   // The voiceover, over what the public just watched. No ledger effect.
-  ev.narrator = narratorFor(state, ev);
+  ev.narrator = ev.tier === 'note' ? null : narratorFor(state, ev);
   if (ev.aired) writeLedger(state, ev, false);
   return ev;
 }

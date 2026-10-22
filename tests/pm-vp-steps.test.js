@@ -41,7 +41,9 @@ describe('every word the engine wrote is a click', () => {
 });
 
 describe('an episode is a dozen or more screens', () => {
-  it('villa episodes have 10 to 22 screens, none far past the step budget', () => {
+  // 10 to 22 before the 2026-10-22 rebuild; an episode is 600-900 clicks now
+  // (the user's tiers: ~20 featured conversations), so up to 28 segments.
+  it('villa episodes have 10 to 28 screens, none far past the step budget', () => {
     const counts = [];
     for (const seed of [1, 2, 3]) for (const row of season(seed)) {
       if (row.moment === 'reunion') continue;
@@ -56,7 +58,7 @@ describe('an episode is a dozen or more screens', () => {
     }
     const mean = counts.reduce((a, b) => a + b, 0) / counts.length;
     expect(mean).toBeGreaterThanOrEqual(10);
-    expect(mean).toBeLessThanOrEqual(22);
+    expect(mean).toBeLessThanOrEqual(28);
   });
   it('the final ends on the board and the winners', () => {
     const final = season(1).find(r => r.moment === 'final');

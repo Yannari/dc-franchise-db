@@ -3,6 +3,11 @@ import { setPlayers } from '../js/core.js';
 import { playPerfectMatchSeason } from '../js/pm/season.js';
 import { POOLS, pickScript, renderScript, knowsAbout, scriptText } from '../js/pm/script.js';
 import { makeIslanders, roleSetup } from './helpers/pm-cast.js';
+import { TALK } from '../js/pm/talk/index.js';
+
+// The movements written for a fact (js/pm/talk/): a scene's id is its movements' ids joined by '+'.
+const idsFor = key => new Set(Object.values(TALK).flatMap(t => [...Object.values(t.moves).flat(), ...t.notes]).filter(e => e.when?.[key]).map(e => e.id));
+const uses = (e, ids) => String(e.script?.id || '').split('+').some(id => ids.has(id));
 
 function season(seed) {
   const cast = makeIslanders(22, seed);
@@ -34,9 +39,9 @@ describe('an event becomes a scene', () => {
 
   it('the words never change a result: a different pool plays the same season', () => {
     const before = outcome(season(5));
-    const saved = POOLS.chat;
-    POOLS.chat = [...saved, ...Array.from({ length: 9 }, (_, i) => ({ id: `chat.t${i}`, stage: `{a} and {b}, take ${i}.` }))];
-    try { expect(outcome(season(5))).toEqual(before); } finally { POOLS.chat = saved; }
+    const saved = TALK.chat.moves.open;
+    TALK.chat.moves.open = [...saved, ...Array.from({ length: 9 }, (_, i) => ({ id: `chat.t${i}`, stage: `{a} and {b}, take ${i}.` }))];
+    try { expect(outcome(season(5))).toEqual(before); } finally { TALK.chat.moves.open = saved; }
   });
 
   it('a filter that matches nothing falls back to an entry with no conditions', () => {
@@ -85,25 +90,27 @@ describe('a line that mentions an earlier moment only runs when it happened', ()
   const LOW = ['heartbroken', 'stressed', 'lonely', 'jealous'];
   const COMFORT = ['friendship', 'advice', 'solidarity', 'chat', 'deep-chat'];
   const both = (e, a, b) => e.players.includes(a) && e.players.includes(b);
-  it('"thanks for yesterday" follows a real yesterday, and a repeat row follows a real row', () => {
-    let thanks = 0, repeats = 0;
+  it('"thanks for yesterday" follows a real yesterday, and making up follows a real row today', () => {
+    const THANKS = idsFor('comfortedYesterday'), MAKING_UP = idsFor('rowedToday');
+    let thanks = 0, made = 0;
     for (let s = 1; s <= 8; s++) {
       const { rows } = season(s);
       const all = rows.flatMap(r => r.pm.events);
       for (const e of all) {
         const [a, b] = e.players;
-        if (e.script.id.startsWith('friendship.36')) {
+        if (uses(e, THANKS)) {
           thanks++;
           expect(all.some(x => x.ep === e.ep - 1 && COMFORT.includes(x.kind) && both(x, a, b) && LOW.includes(x.moods?.[a])),
             `${a} thanks ${b} in ep ${e.ep}`).toBe(true);
         }
-        if (e.script.id.startsWith('argument.30')) {
-          repeats++;
-          expect(all.some(x => x.ep < e.ep && x.kind === 'argument' && both(x, a, b)), `${a} and ${b} ep ${e.ep}`).toBe(true);
+        if (uses(e, MAKING_UP)) {
+          made++;
+          const at = all.indexOf(e);
+          expect(all.slice(0, at).some(x => x.ep === e.ep && x.kind === 'argument' && both(x, a, b)), `${a} and ${b} ep ${e.ep}`).toBe(true);
         }
       }
     }
-    expect(thanks + repeats).toBeGreaterThan(0);   // the guard must see the lines it guards
+    expect(thanks + made).toBeGreaterThan(0);   // the guard must see the lines it guards
   });
 });
 
@@ -113,6 +120,7 @@ describe('the day remembers itself', () => {
   const WARM = ['chat', 'deep-chat', 'kiss', 'challenge-win'];
   const ORDER = ['morning', 'day', 'event', 'evening'];
   it('no cosy scene straight after a row, and the next one is making up', () => {
+    const MAKING_UP = idsFor('rowedToday');
     let rows = 0;
     for (let s = 1; s <= 6; s++) {
       for (const r of season(s).rows) {
@@ -123,7 +131,7 @@ describe('the day remembers itself', () => {
           for (const w of evs.slice(i + 1).filter(x => WARM.includes(x.kind) && x.players.includes(a) && x.players.includes(b))) {
             const gap = ORDER.indexOf(w.phase) - ORDER.indexOf(e.phase);
             if (ORDER.includes(w.phase)) expect(gap, `${a}+${b} ep ${r.num}: ${w.kind} in ${w.phase} after a row in ${e.phase}`).toBeGreaterThan(1);
-            expect(w.script.id, `${a}+${b} ep ${r.num}`).toMatch(/\.up\d/);
+            expect(uses(w, MAKING_UP), `${a}+${b} ep ${r.num}: ${w.script.id}`).toBe(true);
             rows++;
           }
         });

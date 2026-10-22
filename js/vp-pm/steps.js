@@ -27,7 +27,9 @@ import { musicOf } from './sound.js';
 // 20 until the conversations got their endings (lines/day/close.js, 2026-09-23):
 // a talking scene roughly doubled, and at 20 an episode ran 28 screens. The
 // extra length goes into each part of the day, not into more screens.
-export const MAX_STEPS = 30;
+// A screen's steps. 42 since the 2026-10-22 rebuild: an episode is 600-900
+// clicks now (the user's tiers), and at 30 it cut into thirty screens.
+export const MAX_STEPS = 42;
 const words = () => SHOWS['perfect-match'].words;
 
 // ── what each scene is called on the headline pill ────────────────────
@@ -671,8 +673,10 @@ function clipsFrom(screens, max = 3) {
   const cands = [];
   screens.forEach((sc, si) => sc.steps.forEach((st, k) => {
     if (!st.sceneStart || st.raw || NO_TEASE.has(st.kind) || st.part === 'result') return;
-    // The scene's first spoken line: what the teaser cuts off.
-    const line = sc.steps.slice(k).find(x => x.text && x.voice !== 'stage' && x.part !== 'stage' && x.part !== 'hut' && x.who);
+    // The scene's first spoken line: what the teaser cuts off. Only its own:
+    // a scene with nothing said (a one-line note) lends nothing, or the search
+    // ran on into the next scene, which may not have aired.
+    const line = sc.steps.slice(k).filter(x => x.ev === st.ev).find(x => x.text && x.voice !== 'stage' && x.part !== 'stage' && x.part !== 'hut' && x.who);
     if (!line || String(line.text).length < 14) return;
     const score = (st.big ? 3 : 0) + (st.fx?.neon || st.fx?.phone || st.fx?.shake ? 2 : 0) + (TEASE.has(st.kind) ? 2 : 0);
     if (score < 2) return;

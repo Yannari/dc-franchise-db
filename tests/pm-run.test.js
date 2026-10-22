@@ -72,9 +72,10 @@ describe('a season plays through the run path', () => {
     expect(Object.keys(gs.pm).sort()).toEqual(['built', 'castOrder', 'picks', 'record', 'rerolls', 'seed', 'setup', 'winners']);
     expect(JSON.stringify(gs.pm.record).length).toBeLessThan(40 * 1024);
     const size = JSON.stringify({ ...gs, _pmQueue: undefined }).length;
-    // A played season is its rows: about 1MB, measured. The engine's `state`
-    // would double it, and a page that saves on every episode notices 3.
-    expect(size).toBeLessThan(3 * 1024 * 1024);
+    // A played season is its rows: about 1MB, measured, and 3.7MB since the
+    // 2026-10-22 dialogue rebuild (featured conversations of 15-30 turns; saves
+    // go to IndexedDB). The engine's `state` would add megabytes more.
+    expect(size).toBeLessThan(5 * 1024 * 1024);
   });
 
   it('the public ledger and the relationships come back to the run tab', () => {

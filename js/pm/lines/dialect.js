@@ -62,6 +62,13 @@ export const SLOTS = {
   yeah:        { uk: 'yeah', scot: 'aye', geordie: 'aye', za: 'ja', us: 'yeah', esl: 'yes' },
   little:      { uk: 'little', scot: 'wee', us: 'little', esl: 'little' },
   pint:        { uk: 'a pint', za: 'a beer', us: 'a beer', au: 'a schooner', nz: 'a beer', esl: 'a drink' },
+  // the rebuilt dialogue's (docs/pm-dialogue-style.md): said everywhere in the villa, British at heart
+  reckon:      { uk: 'reckon', scot: 'reckon', us: 'think', ca: 'think', au: 'reckon', nz: 'reckon', esl: 'think' },
+  cheeky:      { uk: 'cheeky', us: 'little', ca: 'little', au: 'cheeky', esl: 'little' },
+  'crack-on':  { uk: 'crack on', ie: 'make a move', us: 'make a move', za: 'make a move', au: 'crack on', esl: 'make a move' },
+  'cracking-on': { uk: 'cracking on', ie: 'making a move', us: 'making a move', za: 'making a move', au: 'cracking on', esl: 'making a move' },
+  fancies:     { uk: 'fancies', za: 'likes', us: 'likes', au: 'likes', esl: 'likes' },
+  fit:         { uk: 'fit', scot: 'gorgeous', ie: 'gorgeous', us: 'hot', ca: 'hot', au: 'hot', za: 'hot', esl: 'beautiful' },
 };
 
 /** A slot's word for this dialect, walking the base chain; UK if nobody set it. */

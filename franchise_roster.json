@@ -7960,6 +7960,27 @@
       "descriptor": "The Cowboy",
       "backstory": "Wyatt has worked on ranches around eastern Montana for most of his adult life. Seasonal demands taught him to budget cautiously and repair things before replacing them. Raising a daughter made his routines more complicated and his priorities clearer. He handles packed lunches, school forms, and questions that cannot be answered with because I said so. He is proud of their life but uneasy about how much depends on another person's land and payroll. Friends know they can call when something breaks. He rarely calls when he needs company. His long-term hope is a modest place of his own with enough stability that a bad month does not feel like the start of losing everything.",
       "personality": "Wyatt prefers clear obligations and considers consistency a form of affection. He is observant about practical discomfort: a cold room, an empty plate, somebody carrying too much. Emotional ambiguity frustrates him because he cannot repair it with a task. He is slow to trust, then reluctant to revise that trust, partly because reconsideration feels disloyal. He can mistake tact for dishonesty and stubbornness for integrity. Around his daughter he is more patient, playful, and willing to explain than strangers would expect. Anger makes him terse rather than theatrical. He respects direct disagreement and dislikes being maneuvered into an answer. His growth depends on accepting that a changed judgment can be responsible rather than faithless."
+    },
+    {
+      "name": "Arjun",
+      "slug": "arjun",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "mastermind",
+      "stats": {
+        "physical": 8,
+        "endurance": 7,
+        "mental": 8,
+        "social": 8,
+        "strategic": 8,
+        "loyalty": 3,
+        "boldness": 7,
+        "intuition": 8,
+        "temperament": 4
+      },
+      "voice": "Calm, warm-sounding and endlessly reasonable, the one everyone comes to for advice. Listens carefully, asks gentle questions, and somehow the advice always points where he wanted it to. #schemer #calm",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

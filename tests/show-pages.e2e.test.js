@@ -4,6 +4,15 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+
+// What the page is showing: the published seasons themselves. This test once
+// wrote down 'total-drama, big-brother' and 15, and went red the day a Drag
+// Race and a Circle season were published.
+const SEASONS = JSON.parse(readFileSync('seasons_database.json', 'utf8')).seasons;
+const formatOf = s => s.format || 'total-drama';
+const FORMATS = [...new Set(SEASONS.map(formatOf))];
+const countOf = f => SEASONS.filter(s => formatOf(s) === f).length;
 
 const BASE = 'http://localhost:4179';
 let server, browser;
@@ -31,11 +40,12 @@ const waitForRankings = page => page.waitForFunction(() => {
 }, null, { timeout: 15000 });
 
 describe('seasons.html', () => {
-  it('shows both shows, under their own headings', async () => {
+  it('shows every show, each under one heading of its own', async () => {
     const page = await open('/seasons.html');
     const headings = await page.$$eval('[data-show-group]', els => els.map(e => e.dataset.showGroup));
-    expect(headings).toEqual(['total-drama', 'big-brother']);
-    expect(await page.$$eval('[data-season-format]', e => e.length)).toBe(15);
+    expect(headings[0]).toBe('total-drama');
+    expect([...headings].sort()).toEqual([...FORMATS].sort());
+    expect(await page.$$eval('[data-season-format]', e => e.length)).toBe(SEASONS.length);
     await page.close();
   });
 
@@ -44,13 +54,13 @@ describe('seasons.html', () => {
     const formats = await page.$$eval('[data-season-format]', els =>
       [...new Set(els.map(e => e.dataset.seasonFormat))]);
     expect(formats).toEqual(['big-brother']);
-    expect(await page.$$eval('[data-season-format]', e => e.length)).toBe(1);
+    expect(await page.$$eval('[data-season-format]', e => e.length)).toBe(countOf('big-brother'));
     await page.close();
   });
 
   it('treats a nonsense show as all of them', async () => {
     const page = await open('/seasons.html?show=wrestling');
-    expect(await page.$$eval('[data-season-format]', e => e.length)).toBe(15);
+    expect(await page.$$eval('[data-season-format]', e => e.length)).toBe(SEASONS.length);
     await page.close();
   });
 });

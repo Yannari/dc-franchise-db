@@ -8429,6 +8429,27 @@
       "voice": "Bright, bubbly and impossible not to like, with a big laugh and a compliment for everyone. Talks to the whole villa like they are old friends, and remembers every little thing you tell her. #warm #goofy#emotional#ditzy",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Kevin",
+      "slug": "kevin",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 7,
+        "endurance": 7,
+        "mental": 5,
+        "social": 6,
+        "strategic": 5,
+        "loyalty": 8,
+        "boldness": 4,
+        "intuition": 8,
+        "temperament": 8
+      },
+      "voice": "Calm, low-voiced and patient, with a knowing half-smile. Says little, notices everything, and asks the one question that tells him who someone really is. #calm#tough",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

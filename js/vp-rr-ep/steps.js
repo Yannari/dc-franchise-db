@@ -58,6 +58,25 @@ export function weatherOf(s) {
 const hhmm = m => { const d = ((Math.round(m) % 1440) + 1440) % 1440; return `${String(Math.floor(d / 60)).padStart(2, '0')}:${String(d % 60).padStart(2, '0')}`; };
 const TASKS = new Set(['either', 'botch', 'allin', 'route', 'superteam']);
 const KIND_NAME = { either: 'Either/Or', botch: 'Botch or Watch', allin: 'All-In', route: 'Route Info', superteam: 'Superteam' };
+// A staged challenge's stages in order, as shots: { all: plate file -> the places in the order of the stages it is the
+// shot of, plates: the shot of each stage } (a side's own stages at an Either/Or). A shot can be two stages (the vault
+// is where the crown jewel challenge starts and ends): `stageAt` reads it as the first of them not behind the team
+const STAGE_ORDERS = new Map();
+function stageOrderOf(placeId, stretch, side) {
+  const key = `${placeId}|${stretch?.id}|${side || ''}`;
+  if (STAGE_ORDERS.has(key)) return STAGE_ORDERS.get(key);
+  const ids = stretch?.stages?.map(x => x.id) || (stretch?.sides || []).find(x => x.id === side)?.stages?.map(x => x.id) || [];
+  const sp = stretchPlates(placeId, stretch?.id, side);
+  const out = { all: {}, plates: [] };
+  ids.forEach((id, j) => {
+    const g = sp?.stages?.[id];
+    out.plates[j] = g?.plate || null;
+    for (const pl of [g?.plate, ...(g?.alt || [])]) if (pl?.f && !(out.all[pl.f] ||= []).includes(j)) out.all[pl.f].push(j);
+  });
+  STAGE_ORDERS.set(key, out);
+  return out;
+}
+const stageAt = (so, f, reached = -1) => { const js = so.all[f]; return js ? (js.find(j => j >= reached) ?? js.at(-1)) : null; };
 // the checkpoint's scenes (scenes/checkpoint.js): shot where the clue is handed out
 const CHECKPOINT_SEGS = new Set(['clue', 'clue-montage', 'decide-side', 'box-grab']);
 /** What a checkpoint screen shows: where the clue comes from, which team takes its clue on which step, the clue's card
@@ -153,8 +172,9 @@ export function episodeScreens(res, eps, i) {
   const named = new Set();          // teams captioned in the confessional already this episode
   const screens = [];
   let lastPlate = plates?.opener || null, lastT = null;
-  // where each team was last seen standing at a stretch, and when (one place at a time: see SAME_SPOT)
-  const seenAt = {};
+  // where each team was last seen standing at a stretch, and when (one place at a time: see SAME_SPOT); how far into a
+  // staged challenge each has been seen (stageOrderOf)
+  const seenAt = {}, reachedAt = {};
 
   const push = s => { s.id = `e${leg.n}s${screens.length}`; screens.push(s); return s; };
   const nameOfTeam = id => st.teams[id]?.name || id;
@@ -390,6 +410,17 @@ export function episodeScreens(res, eps, i) {
         opened.add(key);
       }
       if (!standable(plate) && mode !== 'act') plate = pick(sp?.talk?.filter(standable), 0) || plates.opener;
+      // nobody goes back to talk (the user, 2026-10-22: "they returned to a previous zone to have a conversation with
+      // another team", "it looks like they teleporting"): a scene with another team at a staged challenge is at the
+      // furthest stage any of them has been seen at already (going on to it is going forward; going back is a teleport)
+      if (mode === 'talk' && !CHECKPOINT_SEGS.has(k) && segTeams.length >= 2) {
+        const so = stageOrderOf(placeId, stretch, seg.side);
+        const far = Math.max(-1, ...segTeams.map(id => reachedAt[`${id}|${seg.stretch}`] ?? -1));
+        const at = stageAt(so, plate?.f, far);
+        // (a stage nobody stands at, the bottom of the pool: the next one on that they can)
+        const on = far > (at ?? Infinity) ? so.plates.slice(far).find(p => p && standable(p)) : null;
+        if (on) plate = on;
+      }
       // a narrow corner (a stair landing) holds two teams: three or more go to the stretch's widest standing plate
       if (mode === 'talk' && segTeams.length > 2 && plate?.x && plate.x[1] - plate.x[0] < 11 * segTeams.length) {
         const wide = (sp?.talk || []).filter(standable).sort((a, b) => (b.x[1] - b.x[0]) - (a.x[1] - a.x[0]))[0];
@@ -409,6 +440,15 @@ export function episodeScreens(res, eps, i) {
     }
     if (plate && !plate.race) plate = { ...plate, place: plate.place || placeFor };
     if (plate && mode !== 'iv' && standable(plate)) lastPlate = { ...plate };
+    // (how far into a staged challenge each team has been seen: a checkpoint is before its first stage)
+    if (plate && seg.stretch && (stretch?.stages?.length || stretch?.sides)) {
+      const so = stageOrderOf(placeId, stretch, seg.side);
+      for (const id of segTeams) {
+        const key = `${id}|${seg.stretch}`;
+        const i = CHECKPOINT_SEGS.has(k) ? -1 : stageAt(so, plate?.f, reachedAt[key] ?? -1);
+        if (i != null) reachedAt[key] = Math.max(reachedAt[key] ?? -1, i);
+      }
+    }
     if (plate && mode === 'talk' && seg.stretch && seg.t != null && standable(plate)) for (const id of segTeams) seenAt[id] = { stretch: seg.stretch, t: seg.t, plate, n: screens.length };
 
     // the time card, on the first step after a gap in the clock

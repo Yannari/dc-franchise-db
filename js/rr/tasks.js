@@ -180,7 +180,8 @@ export function runEither(state, team, stretch, t, api, rng, { side = null } = {
     end = second.end;
     pick = sw;
     record(state, id, stretch.id, { side: sw, switched: true });
-    (state.switches ||= []).push({ team: id, leg: state.leg, stretch: stretch.id, to: sw });
+    // (`at`: the minute they gave up on the first side and walked round to the other: the episode shows it)
+    (state.switches ||= []).push({ team: id, leg: state.leg, stretch: stretch.id, to: sw, at: first.end });
   }
   return { end, data: { side: pick, switched } };
 }

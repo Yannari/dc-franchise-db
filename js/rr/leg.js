@@ -32,7 +32,8 @@ const SUPER_WAIT = 60;
 // a Superteam of two teams this much at odds is 'stuck with the enemy' (one sour moment is not a feud)
 const SUPER_ENEMIES = 2;
 const DAY = 1440;
-const BOX_TOGETHER = 2;                             // minutes: teams at a checkpoint's box together
+const BOX_TOGETHER = 1;                             // minutes: teams at a checkpoint's box together (one there longer is
+                                                    // already on the stairs, in the elevator: 2026-10-22, "they teleporting")
 const MEET_START = 5;                               // minutes at a task's start where every team arriving is in one spot
 const NIGHT = 180;                                  // a closed wait this long is a night, and Don says so
 // the Zip-It: the place's hardest kind of task, longer and harder to pass (the first team through skips to the mat)

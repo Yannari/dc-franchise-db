@@ -265,7 +265,8 @@ function cutByChallenge(segs, leg) {
     const lastTask = st.find(s => order.get(s.id) === tasks[M - 1])?.id;
     // (its first moment at the challenge itself, not on the road to it; what came before that stays before it)
     const firstThere = new Map();
-    segs.forEach((x, i) => { if (x.stretch === lastTask && x.teams.length && !firstThere.has(x.teams[0])) firstThere.set(x.teams[0], i); });
+    // (any team in it: a team whose clue aired in the montage of four has been there since, 2026-10-22)
+    segs.forEach((x, i) => { if (x.stretch === lastTask) for (const id of x.teams) if (!firstThere.has(id)) firstThere.set(id, i); });
     segs.forEach((x, i) => {
       if (part.get(x) !== M || !x.teams.length || x.kind === 'don-narrate' || aboutOf(x)) return;
       const first = firstThere.get(x.teams[0]);
@@ -379,6 +380,16 @@ export function airLeg(state, leg) {
       const own = scenes.filter(s => s.data?.team === r.team && s.data?.stretch === r.stretch && !s.kind.startsWith('int-') && !picked.has(s.id)).filter(ok)
         .sort((x, y) => weight(y) - weight(x) || x.id - y.id)[0];
       if (own && own.kind !== 'attempt-fail') take(own, 1);
+      // a team that gave up on one side of an Either/Or and walked round to the other is seen doing it, before its
+      // stages on the other side (2026-10-22, the user: "maybe they got out after seeing the stairs or the line for the
+      // elevator but u have to show this", "it looks like they teleporting")
+      if (r.switched) {
+        const sw = taskBeat(state, r, i, 'task-try');
+        sw.id += ':switch';
+        const at = (state.switches || []).find(x => x.team === r.team && x.leg === r.leg && x.stretch === r.stretch)?.at;
+        if (at != null) sw.data.t = Math.ceil(at) + 1;   // (after the second miss that made them give up)
+        beats.push(sw);
+      }
       beats.push(...stageBeats(state, r, i, followAt[r.stretch].brief?.has(r.team)));
       return;
     }
@@ -705,6 +716,11 @@ export function airLeg(state, leg) {
   // in the same minute a team finishes its challenge before it checks in; Don explains a challenge before anybody
   // chooses a side of it, and a team chooses before it starts
   // (Don shows it; a team takes its clue; it chooses a side; it does it)
+  // two teams at the box: the one that got there a moment earlier is not seen at the challenge until they have met at it
+  // (2026-10-22, the user: "they returned to a previous zone ... it looks like they teleporting")
+  for (const g of segs.filter(x => x.kind === 'box-grab' && x.teams.length > 1)) {
+    for (const x of segs) if (x !== g && x.stretch === g.stretch && x.teams.includes(g.teams[1]) && /^(task-|decide-side)/.test(x.kind) && x.t < g.t && g.t - x.t < 1) x.t = g.t;
+  }
   const phase = k => (k === 'don-demo' ? -2 : k === 'clue' || k === 'clue-montage' || k === 'box-grab' ? -1.5 : k === 'decide-side' ? -1 : k.startsWith('task-') ? 0 : 1);
   segs.sort((x, y) => x.t - y.t || phase(x.kind) - phase(y.kind)
     || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
@@ -781,6 +797,15 @@ export function airLeg(state, leg) {
     segs.splice(segs.indexOf(exit), 0, ...keep);
   }
 
+  // two teams at the box, once the episode is in order: if either is already seen at the challenge before it, the
+  // moment can't air where it happened without taking them back to the box (2026-10-22, "it looks like they teleporting"):
+  // it doesn't air, nor an interview about it
+  for (const g of segs.filter(x => x.kind === 'box-grab')) {
+    const at = segs.indexOf(g);
+    const gone = segs.slice(0, at).some(x => x.stretch === g.stretch && x.teams.some(id => g.teams.includes(id)) && !CHECKPOINT.has(x.kind) && x.kind !== 'clue-montage' && !x.kind.startsWith('int-'));
+    if (!gone) continue;
+    for (const x of segs.filter(y => y === g || (y.src?.data?.about != null && y.src.data.about === g.scene))) segs.splice(segs.indexOf(x), 1);
+  }
   // write what aired (only now are its words spent), and remember the storylines that moved
   state.storyAired ||= {};
   const unwritten = [];

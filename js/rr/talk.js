@@ -105,7 +105,7 @@ function pickEnding(kind, ctx, rng, ban) {
 }
 
 // Play one candidate under the caps, then let the threads, the interviews and the chains read it.
-function tryPlay(state, ctx, kindId, rng, out, { gate = true } = {}) {
+function tryPlay(state, ctx, kindId, rng, out, { gate = true, interview = true } = {}) {
   const kind = SCENES[kindId];
   if (!kind) return null;
   if (gate && whenOf(kind, ctx) <= 0) return null;
@@ -121,7 +121,7 @@ function tryPlay(state, ctx, kindId, rng, out, { gate = true } = {}) {
   out.extra = (out.extra || 0) + (ctx.extra || 0);      // may be negative: a gain
   ctx.extra = 0;
   advanceThreads(state, sc);
-  const iv = interviewAfter(state, sc, rng);
+  const iv = interview ? interviewAfter(state, sc, rng) : null;
   if (iv) { out.push(iv); advanceThreads(state, iv); }
   return sc;
 }
@@ -282,7 +282,7 @@ export function talkAtCheckpoint(state, team, others, stretch, t, api, rng, { bo
   const out = [];
   out.extra = 0;
   const ids = others.map(idOf).filter(o => o && o !== id && state.teams[o]);
-  tryPlay(state, baseCtx(state, id, null, stretch, t, api, { moment: 'clue', event: { ...eventAt(state, id, stretch), box, left } }), 'clue', rng, out, { gate: false });
+  tryPlay(state, baseCtx(state, id, null, stretch, t, api, { moment: 'clue', event: { ...eventAt(state, id, stretch), box, left } }), 'clue', rng, out, { gate: false, interview: false });   // (taking an envelope is not worth a confessional: it took them all)
   if (stretch?.sides) tryPlay(state, baseCtx(state, id, null, stretch, t, api, { moment: 'either', present: [id, ...ids] }), 'decide-side', rng, out, { gate: false });
   for (const o of ids) {
     if (tryPlay(state, baseCtx(state, id, o, stretch, t, api, { moment: 'box', arriving: id, event: { ...eventAt(state, id, stretch), together: together.includes(o) } }), 'box-grab', rng, out)) break;

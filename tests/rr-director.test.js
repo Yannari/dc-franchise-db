@@ -192,6 +192,8 @@ describe('rr director', () => {
         const sc = byId[seg.scene];
         if (sc?.kind.startsWith('int-') && sc.data.about != null) expect(seen.has(sc.data.about), `#${sc.id}`).toBe(true);
         if (seg.scene != null) seen.add(seg.scene);
+        // (a quick shot of several teams airs every moment in it: the checkpoint's clue-montage)
+        for (const id of seg.scenes || []) seen.add(id);
       }
     }
   });

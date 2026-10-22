@@ -21,7 +21,8 @@ describe('rr failed attempts', () => {
           // the plain failed try is down to the few challenges a stage doesn't cover)
           if (s.kind !== 'attempt-fail' && !(s.kind === 'task-stage' && s.ending === 'fail')) return;
           aired++;
-          const later = ep.segments.findIndex(x => x.kind === 'task-try' && x.stretch === s.stretch && x.teams?.[0] === s.teams?.[0]);
+          // (giving up on one side of an Either/Or for the other is not getting it done: rr-either-switch)
+          const later = ep.segments.findIndex(x => x.kind === 'task-try' && x.ending !== 'switched' && x.stretch === s.stretch && x.teams?.[0] === s.teams?.[0]);
           if (later >= 0) expect(later, `leg ${ep.n} ${s.teams?.[0]} @${s.stretch}: the result aired before the failure`).toBeGreaterThan(i);
         });
       }

@@ -42,7 +42,7 @@ export const BATCH95 = [
     earnest: "I was terrified. I just hid it.", warm: "I was terrified. I just hid it.", calm: "Terrified. I hid it.", quiet: "I hid it.", dry: "Terrified. Hid it.", nerdy: "I was terrified. I just hid it.",
     loud: "I was TERRIFIED! I just HID it!", blunt: "Terrified. Hid it.", tough: "Terrified. Hid it.", competitive: "I was terrified. I just hid it.", chaotic: "Terrified! Hid it!", schemer: "I was terrified. I just hid it.",
     cruel: "I was terrified. I just hid it.", bossy: "Terrified. Hid it.", proud: "I was terrified. I just hid it.", flirty: "I was terrified. I just hid it.",
-    anxious: "I was terrified. I just hid it. Badly.", goofy: "I was terrified. I just hid it. Oscar-worthy.", ditzy: "I hid it!", theatrical: "I was terrified! I just hid it!" }),
+    anxious: "I was terrified. I just hid it. Badly.", goofy: "I was terrified. I just hid it. Award-winning.", ditzy: "I hid it!", theatrical: "I was terrified! I just hid it!" }),
   T("It took a while, didn't it?", {
     earnest: "It took a while, didn't it?", warm: "It took a while, didn't it?", calm: "It took a while.", quiet: "A while.", dry: "It took a while, didn't it?", nerdy: "It took a while, didn't it?",
     loud: "It took a WHILE, didn't it?", blunt: "Took a while.", tough: "Took a while.", competitive: "It took a while, didn't it?", chaotic: "While! Took! Long!", schemer: "It took a while, didn't it?",

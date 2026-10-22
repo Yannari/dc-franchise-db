@@ -8408,6 +8408,27 @@
       "voice": "Cool, confident and competitive about everything. Talks like a coach, keeps score of things nobody else is counting, and smiles slowly when she knows she has already won. #competitive #proud",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Kaylee",
+      "slug": "kaylee",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 5,
+        "social": 9,
+        "strategic": 3,
+        "loyalty": 8,
+        "boldness": 6,
+        "intuition": 5,
+        "temperament": 7
+      },
+      "voice": "Bright, bubbly and impossible not to like, with a big laugh and a compliment for everyone. Talks to the whole villa like they are old friends, and remembers every little thing you tell her. #warm #goofy#emotional#ditzy",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

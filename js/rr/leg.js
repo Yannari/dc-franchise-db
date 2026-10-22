@@ -13,7 +13,7 @@ import { flightStretches, resolveTravel, boardFlightScenes } from './travel.js';
 import { resolveTask, runTask, keepRun } from './tasks.js';
 import { handOut, pickBoomerang, resolveBoard, useExpress, zipTask, revealBlind } from './twists.js';
 import { runLeg } from './clock.js';
-import { talkAtStretch, talkAtOverlap, talkAtWait, closeLegTalk } from './talk.js';
+import { talkAtStretch, talkAtOverlap, talkAtWait, closeLegTalk, talkAtCheckpoint } from './talk.js';
 import { snapCheck, makeupCheck, leaderCheck } from './team.js';
 import { tick, behind } from './mind.js';
 import { perceivedRank } from './knowledge.js';
@@ -32,6 +32,7 @@ const SUPER_WAIT = 60;
 // a Superteam of two teams this much at odds is 'stuck with the enemy' (one sour moment is not a feud)
 const SUPER_ENEMIES = 2;
 const DAY = 1440;
+const BOX_TOGETHER = 2;                             // minutes: teams at a checkpoint's box together
 const MEET_START = 5;                               // minutes at a task's start where every team arriving is in one spot
 const NIGHT = 180;                                  // a closed wait this long is a night, and Don says so
 // the Zip-It: the place's hardest kind of task, longer and harder to pass (the first team through skips to the mat)
@@ -208,6 +209,8 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
     return spotOfStage(to.id, s.id, cur.id);
   };
   // an Either/Or: the team meets whoever is with it, where and when, through its run
+  // the checkpoints each team has been through this leg, and how many have been through each
+  const boxed = new Set(), boxCount = {};
   const meetInside = (id, s, from, to, api) => {
     let extra = 0, watched = false;
     const met = new Set();
@@ -274,6 +277,18 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
     }
 
     // the teams already here: one moment for each pair, once (at an Either/Or, through the run: below)
+    // the checkpoint: a team reaching a challenge takes its clue and reads it, and at an Either/Or decides there
+    // (2026-10-21, the user: "the don box are here for a reason its a checkpoint use them"); the envelopes left say
+    // where it stands; whoever reached the box in the same few minutes is there with it
+    if (TASKS.includes(s.kind) && !boxed.has(key)) {
+      boxed.add(key);
+      const nth = (boxCount[s.id] = (boxCount[s.id] || 0) + 1);
+      const frac = (nth - 1) / Math.max(1, active.length - 1);
+      // (at the box with it: the teams that got there in the same couple of minutes; one there five minutes is already in
+      // the elevator, on the stairs)
+      const mates = api.here(s.id, t).filter(x => x.id !== id && t - x.from <= BOX_TOGETHER).map(x => x.id);
+      extra += talkAtCheckpoint(state, id, mates, s, t, api, rng, { box: frac <= 0.34 ? 'ahead' : frac >= 0.66 ? 'behind' : 'mid', left: active.length - nth }).extra || 0;
+    }
     const inside = TASKS.includes(s.kind) && !!s.sides;
     const meetLater = inside && !talked.has(key);
     if (!talked.has(key) && !inside) {

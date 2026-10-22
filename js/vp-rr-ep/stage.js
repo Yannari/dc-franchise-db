@@ -451,6 +451,56 @@ export function createStage(holder, { faceOf, legLabel }) {
     cam.querySelectorAll('.cf').forEach(f => f.classList.toggle('talking', f.dataset.who === by));
   }
 
+  // ── the checkpoint (steps.js checkpointOf): the blue clue comes out of the Don Box's mouth, or from the hand of the
+  // challenge's own local, and flies to the team taking it; the team holds it up from then on (2026-10-21, the user:
+  // "make sure each checkpoint is used correctly from a don box or a local/guide that suppose to give that paper and
+  // give them actual animation when they get it") ──
+  function checkpointFx(s, k, fresh) {
+    const cp = s.checkpoint, z = s.size || 8;
+    const held = new Set(cp.holding || []);
+    for (const [i, id] of Object.entries(cp.grab)) if (Number(i) < k || (Number(i) === k && !fresh)) held.add(id);
+    const handOf = id => { const m = s.marks?.[id]; return m ? [m[0] + z * 0.55, m[1] - z * 0.9] : null; };
+    const holdTip = id => {
+      const at = handOf(id);
+      if (!at) return null;
+      const t = document.createElement('img'); t.className = 'prop cliptip held'; t.src = raceUrl('c-tip');
+      t.style.left = at[0] + '%'; t.style.top = at[1] + '%'; t.style.width = (z * 0.3) + 'cqw'; t.style.zIndex = 11;
+      toks.appendChild(t);
+      return t;
+    };
+    for (const id of held) holdTip(id);
+    const id = cp.grab[k];
+    if (!fresh || id == null) return;
+    const to = handOf(id);
+    if (!to) return;
+    // from Don's mouth on the box, or the local's hand
+    const local = cp.from === 'local' ? Object.values(s.localAt || {})[0] : null;
+    const from = cp.from === 'box' && s.boxAt ? [s.boxAt[0], s.boxAt[1] - z * 0.42 * 2.88 * (16 / 9) * 0.72] : local ? [local[0] + z * 0.4, local[1] - z * 1.1] : null;
+    if (!from) { holdTip(id); return; }
+    if (local) {
+      // the local steps up to hand it over
+      const lp = fx.querySelector('.don.local') || null;
+      lp?.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${(to[0] - from[0]) * 0.25}cqw)`, offset: 0.4 }, { transform: 'translateX(0)' }], { duration: 1100, easing: 'ease-in-out' });
+    }
+    const f = document.createElement('img'); f.className = 'prop cliptip flying'; f.src = raceUrl('c-tip');
+    f.style.width = (z * 0.3) + 'cqw'; f.style.zIndex = 12; f.style.left = from[0] + '%'; f.style.top = from[1] + '%';
+    toks.appendChild(f);
+    const mid = [(from[0] + to[0]) / 2, Math.min(from[1], to[1]) - z * 1.2];
+    f.animate([
+      { left: from[0] + '%', top: from[1] + '%', transform: 'translate(-50%,-100%) rotate(-20deg) scale(.6)' },
+      { left: mid[0] + '%', top: mid[1] + '%', transform: 'translate(-50%,-100%) rotate(200deg) scale(1.15)', offset: 0.5 },
+      { left: to[0] + '%', top: to[1] + '%', transform: 'translate(-50%,-100%) rotate(370deg) scale(1)' },
+    ], { duration: 900, delay: cp.from === 'box' ? 250 : 450, easing: 'cubic-bezier(.3,.1,.4,1)', fill: 'backwards' })
+      .finished.then(() => {
+        f.remove();
+        const t = holdTip(id);
+        // caught: held up for a moment, then read
+        t?.animate([{ transform: 'translate(-50%,-100%) scale(1)' }, { transform: 'translate(-50%,-130%) scale(1.25)', offset: 0.4 }, { transform: 'translate(-50%,-100%) scale(1)' }], { duration: 700, easing: 'ease-out' });
+        const pr = toks.querySelector(`[data-team="${id}"]:not([data-crowd]) .pair`);
+        pr?.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-14%)', offset: 0.4 }, { transform: 'translateY(0)' }], { duration: 600 });
+      }).catch(() => {});
+  }
+
   function world(ep, s, k, fresh) {
     const pl = s.plate;
     // the mat, the Don Box, the task's prop
@@ -460,7 +510,11 @@ export function createStage(holder, { faceOf, legLabel }) {
       under.appendChild(m);
       if (fresh && k === 0) m.animate([{ transform: 'translate(-50%,-50%) scale(0)' }, { transform: 'translate(-50%,-50%) scale(1.06)', offset: 0.7 }, { transform: 'translate(-50%,-50%) scale(1)' }], { duration: 700, easing: 'ease-out' });
     }
-    if (s.boxAt) {
+    if (s.boxAt && s.checkpoint) {
+      const b = prop(raceUrl(s.checkpoint.grab[k] != null ? 'c-donbox-tip' : 'c-donbox'), s.boxAt, (s.size || 8) * 0.42, 9);
+      b.classList.add('cpbox');
+      if (fresh && s.checkpoint.grab[k] != null) later(650, () => { b.src = raceUrl('c-donbox'); });
+    } else if (s.boxAt) {
       const opened = s.steps.slice(0, k + 1).some(x => x.part === 'tip') || k > 0;
       const b = prop(raceUrl(opened ? 'c-donbox-tip' : 'c-donbox'), s.boxAt, (s.size || 8) * 0.42, 9);
       if (fresh && k === 0) b.animate([{ transform: 'translate(-50%,-260%)' }, { transform: 'translate(-50%,-92%)', offset: 0.7 }, { transform: 'translate(-50%,-104%)', offset: 0.85 }, { transform: 'translate(-50%,-100%)' }], { duration: 900, easing: 'ease-in' });
@@ -561,6 +615,7 @@ export function createStage(holder, { faceOf, legLabel }) {
         e.querySelector('.pair').appendChild(r);
       }
     }
+    if (s.checkpoint) checkpointFx(s, k, fresh);
     // the watchers of a Botch in the water
     if (s.inset) {
       const b = document.createElement('div'); b.className = 'inset';
@@ -863,7 +918,7 @@ export function createStage(holder, { faceOf, legLabel }) {
     const step = s.steps[k];
     stamp(s, k, view, fresh);
     const boomWait = s.kind === 'world' ? boomerang(s, k, step, fresh) : 0;
-    if (step?.part === 'tip' && step.tip) {
+    if ((step?.part === 'tip' || step?.clueCard) && step.tip) {
       const t = step.tip;
       const c = document.createElement('div'); c.className = 'tipcard' + (fresh ? '' : ' still');
       c.innerHTML = `<img class="card" src="${raceUrl('c-tip')}" alt=""><div class="in"><div class="k">${esc(t.kind)}</div><div class="lb">${esc(t.label)}</div><div class="b">${esc(t.desc)}</div>${t.sides.length ? `<div class="os">${t.sides.map(x => `<div class="o">${esc(x)}</div>`).join('')}</div>` : ''}</div>`;

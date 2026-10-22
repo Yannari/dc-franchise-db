@@ -164,7 +164,8 @@ function momentsAt(state, id, stretch) {
       if (stretch.mode === 'flight') m.push('plane', 'wait', 'airport');
       if ((stretch.cost || 0) > 0) m.push('fare');
       break;
-    case 'either': m.push('either', 'tip'); break;
+    // (an Either/Or's side is decided at its checkpoint, once: talkAtCheckpoint)
+    case 'either': m.push('tip'); break;
     case 'botch': m.push('botch-pick', 'tip', 'botch-watch'); break;
     case 'allin': case 'task': m.push('tip'); break;
     case 'mat': m.push('mat', 'quiet'); break;
@@ -268,6 +269,22 @@ export function talkAtStretch(state, team, stretch, t, api, rng, end = null) {
       ctx.moment = c.moment;
       if (tryPlay(state, ctx, c.kind, rng, out)) { played.add(c.kind); break; }
     }
+  }
+  return out;
+}
+
+// ── The checkpoint: a team reaching a challenge takes its clue and reads it (scenes/checkpoint.js) ──
+// At an Either/Or it decides its side there, once; a team at the box with it in the same minute may grab, give way, or
+// read over a shoulder. `box`: 'ahead' / 'mid' / 'behind', where the envelopes left say the team is; `left`: how many.
+export function talkAtCheckpoint(state, team, others, stretch, t, api, rng, { box = 'mid', left = null } = {}) {
+  const id = idOf(team);
+  const out = [];
+  out.extra = 0;
+  const ids = others.map(idOf).filter(o => o && o !== id && state.teams[o]);
+  tryPlay(state, baseCtx(state, id, null, stretch, t, api, { moment: 'clue', event: { ...eventAt(state, id, stretch), box, left } }), 'clue', rng, out, { gate: false });
+  if (stretch?.sides) tryPlay(state, baseCtx(state, id, null, stretch, t, api, { moment: 'either', present: [id, ...ids] }), 'decide-side', rng, out, { gate: false });
+  for (const o of ids) {
+    if (tryPlay(state, baseCtx(state, id, o, stretch, t, api, { moment: 'box', arriving: id }), 'box-grab', rng, out)) break;
   }
   return out;
 }
@@ -404,7 +421,8 @@ export function closeLegTalk(state, leg, rng, { places = {}, at = {} } = {}) {
   const n = ids.length;
   for (const id of ids) {
     if (!state.teams[id]) continue;
-    const count = () => state.scenes.filter(s => s.leg === leg && s.data.family === 1 && s.data.team === id).length;
+    // (the clue taken at a checkpoint is the doorway to a challenge, not one of the team's moments: it kept the mat's away)
+    const count = () => state.scenes.filter(s => s.leg === leg && s.data.family === 1 && s.data.team === id && s.kind !== 'clue' && s.kind !== 'decide-side').length;
     const place = places[id];
     const fit = place == null ? 'bond-moment' : place <= Math.ceil(n / 3) ? 'celebrate' : place > n - Math.ceil(n / 3) ? 'blame' : 'bond-moment';
     const order = [fit, 'bond-moment', 'celebrate'];

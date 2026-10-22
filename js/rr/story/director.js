@@ -222,6 +222,8 @@ function followed(state) {
 // each part in clock order. The Chill Zone cuts back to the teams still out at the last challenge: a team's first
 // moment there airs in that challenge's part, and what it still has to do once the mat is open is intercut with the
 // check-ins, for the suspense of who is left out there.
+// what a team does at a challenge's checkpoint (scenes/checkpoint.js): aired by the checkpoint pass, nothing else
+const CHECKPOINT = new Set(['clue', 'decide-side', 'box-grab']);
 const MAT_KINDS = new Set(['don-place', 'mat-montage', 'don-elim', 'don-arrives', 'don-fakeout']);
 function cutByChallenge(segs, leg) {
   const st = getPlace(leg.place)?.stretches || [];
@@ -379,7 +381,8 @@ export function airLeg(state, leg) {
       beats.push(...stageBeats(state, r, i, followAt[r.stretch].brief?.has(r.team)));
       return;
     }
-    const here = scenes.filter(s => s.data?.team === r.team && s.data?.stretch === r.stretch && !s.kind.startsWith('int-'));
+    // (the checkpoint airs on its own, below: it is never the team's moment at the challenge itself)
+    const here = scenes.filter(s => s.data?.team === r.team && s.data?.stretch === r.stretch && !s.kind.startsWith('int-') && !CHECKPOINT.has(s.kind));
     if (here.some(s => picked.has(s.id))) return;
     // the same kind twice at the same place and minute is enough (three hugs in a row read as a loop)
     const sameSpot = s => [...picked.keys()].filter(id => { const p = byId.get(id); return p && p.kind === s.kind
@@ -528,6 +531,36 @@ export function airLeg(state, leg) {
   const teamsIn = s => (namesOnly(s) ? [s.data.team]
     : [...new Set([s.data?.team, s.data?.other, ...s.who.map(x => teamOf(state, x))].filter(Boolean))]);
   const montages = [];
+  // the checkpoint: every team takes its clue at every challenge before it is seen doing it (2026-10-21, the user: "the
+  // don box are here for a reason its a checkpoint use them"). The first team there and the teams followed there take
+  // theirs in a moment of their own (an Either/Or's choice with it); the rest of the field in a quick shot together,
+  // the teams that reached it within half an hour of each other, four at most (the user's choice)
+  {
+    const clues = scenes.filter(s => s.kind === 'clue');
+    const firstAt = {};
+    for (const s of clues) { const k = s.data.stretch; if (!firstAt[k] || s.data.t < firstAt[k].data.t) firstAt[k] = s; }
+    const quick = [];
+    for (const s of inOrder(clues)) {
+      const full = firstAt[s.data.stretch] === s || followAt[s.data.stretch]?.has?.(s.data.team);
+      if (!full) { picked.delete(s.id); quick.push(s); continue; }
+      take(s, 1);
+      const side = scenes.find(x => x.kind === 'decide-side' && x.data?.team === s.data.team && x.data?.stretch === s.data.stretch);
+      if (side) take(side, 1);
+    }
+    let run = [];
+    const flush = () => {
+      if (!run.length) return;
+      montages.push({ scene: run[0].id, scenes: run.map(s => s.id), kind: 'clue-montage', ending: 'any', stretch: run[0].data.stretch,
+        t: run[0].data.t ?? 0, teams: run.map(s => s.data.team), who: run.flatMap(s => s.who), side: null, tier: 0,
+        srcs: run.map(s => ({ ...s, kind: 'clue-montage', data: { ...s.data, ending: 'any' } })) });
+      run = [];
+    };
+    for (const s of [...quick].sort((x, y) => String(x.data.stretch).localeCompare(String(y.data.stretch)) || x.data.t - y.data.t)) {
+      if (run.length && (run[0].data.stretch !== s.data.stretch || s.data.t - run[0].data.t > 30 || run.length >= 4)) flush();
+      run.push(s);
+    }
+    flush();
+  }
   const N = leg.order.length;
   if (N > BIG_CAST) {
     const featured = new Set([...leg.order.slice(0, 3), ...leg.order.slice(-3), ...(leg.eliminated || [])]);
@@ -670,7 +703,8 @@ export function airLeg(state, leg) {
     teams: [b.data.team], who: [...b.who], side: b.data.side ?? null, picked: pickedOf(b.data.snap?.picked), tier: 1, src: b });
   // in the same minute a team finishes its challenge before it checks in; Don explains a challenge before anybody
   // chooses a side of it, and a team chooses before it starts
-  const phase = k => (k === 'don-demo' ? -2 : k === 'decide-side' ? -1 : k.startsWith('task-') ? 0 : 1);
+  // (Don shows it; a team takes its clue; it chooses a side; it does it)
+  const phase = k => (k === 'don-demo' ? -2 : k === 'clue' || k === 'clue-montage' || k === 'box-grab' ? -1.5 : k === 'decide-side' ? -1 : k.startsWith('task-') ? 0 : 1);
   segs.sort((x, y) => x.t - y.t || phase(x.kind) - phase(y.kind)
     || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
   if (leg.kind !== 'final') cutByChallenge(segs, leg);

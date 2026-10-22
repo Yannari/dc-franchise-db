@@ -309,6 +309,7 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .tok .veh.carry.arms.long{bottom:calc(var(--sz)*.3);z-index:6;animation:none;filter:drop-shadow(0 .15cqw .2cqw rgba(0,0,0,.45))}
 .swim .held-up{position:absolute;left:78%;top:-18%;width:calc(var(--sz)*.5);z-index:2;animation:bob .7s ease-in-out infinite}
 .prop.held{animation:heldBob 1.6s ease-in-out infinite}
+.prop.cliptip{filter:drop-shadow(0 .3cqw .3cqw rgba(0,0,0,.45))}.prop.cliptip.held{animation:heldBob 1.4s ease-in-out infinite}
 @keyframes heldBob{0%,100%{transform:translate(-50%,-100%) rotate(-4deg)}50%{transform:translate(-50%,-104%) rotate(4deg)}}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-.45cqw) rotate(6deg)}}
 @keyframes ripple{from{opacity:.9;transform:translate(-50%,-50%) scale(.6)}to{opacity:0;transform:translate(-50%,-50%) scale(1.4)}}

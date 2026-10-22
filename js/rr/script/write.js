@@ -43,6 +43,8 @@ export const DIRECTOR_KINDS = {
   // a big cast (director.js BIG_CAST): Don checks in a team with no story this leg in a line, and the clean
   // runs of teams like it at a task are shown together ({teams} names them)
   'mat-montage': ['any'], 'task-montage': ['any'],
+  // the rest of the field taking its clue at a challenge's checkpoint, a beat a team (director.js, scenes/checkpoint.js)
+  'clue-montage': ['any'],
   // a ride that is the leg's signature (a place's stretch with ride: true, the camel): the first teams on it, riding
   'ride': ['any'],
   // Don narrating the episode (director.js): the departure order, the flights, a bridge between the leaders and the

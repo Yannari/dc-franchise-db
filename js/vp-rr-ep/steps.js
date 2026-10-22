@@ -58,6 +58,24 @@ export function weatherOf(s) {
 const hhmm = m => { const d = ((Math.round(m) % 1440) + 1440) % 1440; return `${String(Math.floor(d / 60)).padStart(2, '0')}:${String(d % 60).padStart(2, '0')}`; };
 const TASKS = new Set(['either', 'botch', 'allin', 'route', 'superteam']);
 const KIND_NAME = { either: 'Either/Or', botch: 'Botch or Watch', allin: 'All-In', route: 'Route Info', superteam: 'Superteam' };
+// the checkpoint's scenes (scenes/checkpoint.js): shot where the clue is handed out
+const CHECKPOINT_SEGS = new Set(['clue', 'clue-montage', 'decide-side', 'box-grab']);
+/** What a checkpoint screen shows: where the clue comes from, which team takes its clue on which step, the clue's card
+ * (a team's own moment), and the side an Either/Or team chose (stamped on its last line). */
+function checkpointOf(k, seg, steps, from, stretch, rows) {
+  const teams = seg.teams || [];
+  const grab = {};
+  if (k === 'clue-montage') steps.forEach((_, i) => { if (teams[Math.min(i, teams.length - 1)] != null) grab[i] = teams[Math.min(i, teams.length - 1)]; });
+  else if (k === 'clue' || k === 'box-grab') grab[0] = teams[0];
+  const out = { from, grab, holding: k === 'decide-side' ? [teams[0]] : [] };
+  if (k === 'clue') out.card = { kind: (KIND_NAME[stretch.kind] || 'Route Info').toUpperCase(), label: stretch.label, sides: (stretch.sides || []).map(x => x.label) };
+  if (k === 'decide-side') {
+    const side = rows.find(r => r.team === teams[0] && r.stretch === seg.stretch)?.side;
+    const label = (stretch.sides || []).find(x => x.id === side)?.label;
+    if (label) out.chose = label.toUpperCase();
+  }
+  return out;
+}
 // scenes shot at the Chill Zone whatever their stretch says
 const MAT_KINDS = new Set(['don-place', 'don-elim', 'don-fakeout', 'don-crown', 'mat-montage', 'console', 'goodbye-kiss', 'call-home', 'reward',
   'medevac-choice', 'save-used', 'don-arrives']);
@@ -195,6 +213,9 @@ export function episodeScreens(res, eps, i) {
     steps: [{ by: null, part: 'card', text: '', intel: {} }] });
 
   // 3. the leg, in the director's order
+  // a challenge's checkpoint is one place all leg: shot to hold its biggest checkpoint scene (CHECKPOINT_SEGS)
+  const cpTeams = {};
+  for (const sg of ep.segments) if (CHECKPOINT_SEGS.has(sg.kind) && sg.stretch) cpTeams[sg.stretch] = Math.max(cpTeams[sg.stretch] || 0, sg.teams.length);
   for (const seg of ep.segments) {
     if (!seg.lines?.length) continue;
     const scene = typeof seg.scene === 'number' ? sceneById.get(seg.scene) : null;
@@ -204,7 +225,7 @@ export function episodeScreens(res, eps, i) {
     const sideLabel = seg.side && stretch?.sides ? stretch.sides.find(x => x.id === seg.side)?.label : null;
 
     // where it is shot
-    let mode = 'talk', plate = null, hudTask = stretch?.label?.toUpperCase() || '', parked = null, failStamp = null;
+    let mode = 'talk', plate = null, hudTask = stretch?.label?.toUpperCase() || '', parked = null, failStamp = null, checkpointFrom = null;
     let placeFor = placeId;
     const k = seg.kind;
     if (k === 'don-narrate') {
@@ -291,6 +312,24 @@ export function episodeScreens(res, eps, i) {
       plate = matPlate(placeId, Math.max(0, st.order.indexOf(segTeams[0])), mid); mode = 'mat'; hudTask = mid ? 'THE MIDPOINT' : leg.kind === 'final' ? 'THE FINISH LINE' : 'CHILL ZONE';
     } else if (k.startsWith('int-')) {
       mode = 'iv';
+    } else if (CHECKPOINT_SEGS.has(k) && stretch && TASKS.has(stretch.kind)) {
+      // the checkpoint (scenes/checkpoint.js): where the clue is handed out, the challenge's opening shot (the foot of
+      // the tower, the start of the course), with the Don Box in it, or the challenge's own local handing it over
+      const sp = stretchPlates(placeId, seg.stretch, null);
+      // (open ground: a shot of fixed spots stacks a box, a local and four teams on top of each other)
+      const open = p => !!p && standable(p) && !p.spots?.length;
+      const room = sp?.act && open(sp.act) && IN_PLACE.has(sp.act.mode) ? sp.act : null;
+      // (a challenge with no sides starts at its first stage: that is where a team arriving is, leg.js stageSpot)
+      const first = !stretch.sides && stretch.stages?.[0] ? sp?.stages?.[stretch.stages[0].id]?.plate : null;
+      // (...if it holds everybody there: the box, the local, the teams; else the widest open shot of the challenge)
+      const need = 11 * ((cpTeams[seg.stretch] || segTeams.length) + 2);
+      const roomy = p => open(p) && p.x[1] - p.x[0] >= need;
+      const cands = [first, ...(sp?.wide || []), room, ...(sp?.talk || [])].filter(open);
+      plate = cands.find(roomy) || [...cands].sort((x, y) => (y.x[1] - y.x[0]) - (x.x[1] - x.x[0]))[0] || plates.opener;
+      mode = 'talk';
+      // (beside its sled, its rickshaw: the vehicle waits at the start)
+      if (sp?.act?.prop && ['ride', 'push'].includes(sp.act.mode) && !personOf(placeId, sp.act.prop)) parked = sp.act.prop;
+      checkpointFrom = placeLocal(placeId, seg.stretch, null) ? 'local' : 'box';
     } else if (stretch) {
       const sp = stretchPlates(placeId, seg.stretch, seg.side);
       const wantsAct = (TASKS.has(stretch.kind) && ACT_KINDS.has(k)) || (stretch.kind === 'travel' && RIDE_KINDS.has(k));
@@ -442,7 +481,7 @@ export function episodeScreens(res, eps, i) {
       // (not out where the teams travel a path: the rancher stays at the fence while they ride the plain)
       // (a stage in a room has its local in it: the instructor in the academy)
       // (`local: false`: a stage away from the local's post, the cliff ledge far from the pepper cart)
-      if (own && plate?.local !== false && ((mode === 'talk' && ['task-start', 'task-done'].includes(k) && !plate?.closed) || (k === 'task-stage' && !plate?.path)) && standable(plate)) persons.push(own);
+      if (own && plate?.local !== false && ((mode === 'talk' && ['task-start', 'task-done'].includes(k) && !plate?.closed) || (k === 'task-stage' && !plate?.path) || checkpointFrom === 'local') && standable(plate)) persons.push(own);
       for (const id of new Set(persons)) if (!locals.some(n => localFor(n, placeId, seg.stretch, '', seg.side)?.id === id)) locals.push(LOCALS[id]);
       // each local's face (the user's avatars): who a speaking "A local" or "The judge" is, here
       const localFaces = Object.fromEntries(locals.map(n => [n, localFor(n, placeId, seg.stretch, seg.scene ?? seg.t, seg.side)]).filter(([, f]) => f));
@@ -458,6 +497,9 @@ export function episodeScreens(res, eps, i) {
         members: Object.fromEntries(teams.map(id => [id, membersOf(id)])), t: seg.t,
       };
       if (first) Object.assign(steps[0].intel, segIntel);
+      if (checkpointFrom) scr.checkpoint = checkpointOf(k, seg, steps, checkpointFrom, stretch, (st.taskLog || []).filter(r => r.leg === leg.n));
+      // (a team's own clue: its card opens on the step it reads it, a little after it lands in their hands)
+      if (scr.checkpoint?.card && steps[0]) Object.assign(steps[Math.min(1, steps.length - 1)], { clueCard: true, tip: { ...scr.checkpoint.card, desc: '' } });
       decorate(scr, seg, scene, leg, { nameOfTeam, membersOf, teamOf, stretch, sceneById });
       push(scr);
       first = false;
@@ -940,8 +982,10 @@ function layout(s, size) {
       });
       s.locals.forEach((nm, i) => { (s.localAt ||= {})[nm] = [Math.round((x1 - i * z * 1.4) * 10) / 10, g]; });
     } else {
-      const pts = spread(plate, n + (s.don ? 1 : 0) + s.locals.length, avoid, M);
+      const box = s.checkpoint?.from === 'box' ? 1 : 0;
+      const pts = spread(plate, n + (s.don ? 1 : 0) + s.locals.length + box, avoid, M);
       let j = 0;
+      if (box) s.boxAt = pts[j++];
       if (s.don) { s.donStand = pts[j++]; }
       if (seat) s.donStand = [seat[1], seat[2] - seat[3] * 0.4];
       s.locals.forEach(nm => { (s.localAt ||= {})[nm] = pts[j++]; });
@@ -1868,6 +1912,8 @@ function planStamps(s) {
     if (s.plan?.fail === k) st.stamp = { text: s.failStamp || 'TRY AGAIN', cls: '', team };
     else if (s.plan?.quit === k) st.stamp = { text: 'QUIT', cls: '', team };
     else if (k === last && s.mode === 'act' && (s.seg === 'task-done' || (s.seg === 'task-try' && !['quit', 'struggling'].includes(s.ending)))) st.stamp = { text: 'DONE!', cls: 'gold', team };
+    // (an Either/Or's choice, made at its checkpoint: the side, stamped on the last line)
+    else if (k === last && s.checkpoint?.chose) st.stamp = { text: s.checkpoint.chose, cls: 'gold', team };
     // (a team still struggling at the end of its scene is not through: no DONE! over "back we go")
     if (st.stamp) st.stamp.at = stampSpot(s, k, st.cam);
   });

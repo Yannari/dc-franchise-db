@@ -30,6 +30,8 @@ describe('rr viewer: a moment at a staged challenge, where the team is', () => {
     let n = 0;
     for (const { res, leg, s } of shots) {
       if (s.kind !== 'world' || s.mode !== 'talk' || s.seg === 'task-stage' || s.seg === 'don-demo' || !s.teams?.length || s.teams.length > 2 || s.split) continue;   // (a meeting before the split: rr-either-meet)
+      // (a team taking its clue is at the challenge's checkpoint, before any stage: rr-checkpoint)
+      if (s.checkpoint) continue;
       const row = (res.state.taskLog || []).filter(r => r.leg === leg.n && r.team === s.teams[0] && r.stretch === s.stretch)
         .find(r => r.from <= s.t + 0.5 && s.t <= r.to + 0.5);
       const stage = stageAt(row, s.t);

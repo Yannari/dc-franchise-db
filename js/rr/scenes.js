@@ -365,6 +365,7 @@ import './scenes/info.js';
 import './scenes/sabotage.js';
 import './scenes/body.js';
 import './scenes/place.js';
+import './scenes/checkpoint.js';
 import './scenes/don.js';
 import './scenes/twist-scenes.js';
 import './scenes/interviews.js';

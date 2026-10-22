@@ -30,7 +30,7 @@ describe('rr big cast', () => {
         for (const id of s.teams) {
           const at = order.indexOf(id);
           expect(at >= 3 && at < N - 3, `leg ${ep.n}: ${id} placed ${at + 1} of ${N}`).toBe(true);
-          const story = ep.segments.some(x => x.teams.includes(id) && x.scene != null && !['mat-montage', 'don-opener', 'same-flight', 'int-bleachers'].includes(x.kind)
+          const story = ep.segments.some(x => x.teams.includes(id) && x.scene != null && !['mat-montage', 'clue-montage', 'don-opener', 'same-flight', 'int-bleachers'].includes(x.kind)
             && (x.tier === 0 || x.teams.length > 1));
           expect(story, `leg ${ep.n}: ${id} had a story and was hurried`).toBe(false);
           quick++;

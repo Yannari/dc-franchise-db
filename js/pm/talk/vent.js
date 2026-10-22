@@ -11,6 +11,11 @@
 import { build } from './build.js';
 
 export const VENT = build('vent', {
+  stages: [
+    { stage: "{a} sits down next to {b} on the daybed and lets out a long sigh." },
+    { stage: "{a} and {b} are doing the washing-up together." },
+    { stage: "{a} and {b} are on their own in the dressing room." },
+  ],
   plans: {
     featured: ['open', 'moan', 'answer', 'close'],
     short: ['moan', 'answer'],

@@ -15,7 +15,7 @@ import { playPerfectMatchSeason } from '../js/pm/season.js';
 
 const ENTRIES = Object.entries(TALK).flatMap(([kind, t]) => [
   ...Object.entries(t.moves).flatMap(([slot, pool]) => pool.map(e => [kind, slot, e])),
-  ...t.notes.map(e => [kind, 'note', e])]);
+  ...t.notes.map(e => [kind, 'note', e]), ...(t.stages || []).map(e => [kind, 'stage', e])]);
 const texts = e => [e.stage, e.beat, ...(e.turns || []).map(t => t[1])].filter(Boolean);
 const spoken = e => (e.turns || []).map(t => t[1]);
 const narration = e => [e.stage, e.beat].filter(Boolean);

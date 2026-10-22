@@ -154,9 +154,11 @@ export const FIREPIT_LINES = {
   ],
   // New arrivals choose first (recoupling.js runRecoupling): the host says so.
   'recouple-first': [
-    { id: 'rf.1', when: { cast: 1 }, turns: [['dior', "Before we start. {a}, as our newest islander, you get to choose first."]], beat: '{a} takes a breath and stands up.' },
-    { id: 'rf.2', when: { cast: 1 }, turns: [['dior', "{a}, you're new here, so tonight you pick before anyone else."], ['a', "No pressure, then."]] },
-    { id: 'rf.3', when: { cast: 2 }, turns: [['dior', "{a} and {b}, as our newest islanders, you'll choose first. Then everyone else."]], beat: 'A few couples shift closer together on the benches.' },
+    { id: 'rf.1', when: { cast: 1, of: 'few' }, turns: [['dior', "Before we start. {a}, as our newest islander, you get to choose first."]], beat: '{a} takes a breath and stands up.' },
+    { id: 'rf.2', when: { cast: 1, of: 'few' }, turns: [['dior', "{a}, you're new here, so tonight you pick before anyone else."], ['a', "No pressure, then."]] },
+    { id: 'rf.3', when: { cast: 2, of: 'few' }, turns: [['dior', "{a} and {b}, as our newest islanders, you'll choose first. Then everyone else."]], beat: 'A few couples shift closer together on the benches.' },
+    { id: 'rf.m1', when: { of: 'many' }, turns: [['dior', "Before we start. Our newest islanders will choose first tonight, before anyone else. {a}, {b}, and everyone else who's just arrived, you're up."]], beat: 'The new faces look at each other along the bench.' },
+    { id: 'rf.m2', when: { of: 'many' }, turns: [['dior', "Everyone who's just walked into this villa chooses first tonight. {a}, you'll start us off. Then {b}, and the rest of the new arrivals."]], beat: "A few couples on the benches hold on to each other a little tighter." },
   ],
   'recouple-single': [
     { id: 'rsg.1', stage: '{a} is the only one left standing.', turns: [['dior', "{a}, you're single tonight. You're not going anywhere, but you are very vulnerable."], ['a', "I'll take it. For now."]] },

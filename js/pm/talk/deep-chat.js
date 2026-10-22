@@ -16,6 +16,11 @@
 import { build } from './build.js';
 
 export const DEEP_CHAT = build('deep-chat', {
+  stages: [
+    { stage: "{a} and {b} sit up on the terrace, away from everyone." },
+    { stage: "{a} and {b} lie on the daybed, talking quietly." },
+    { stage: "{a} and {b} sit on the edge of the pool, feet in the water." },
+  ],
   after: ['told', 'pull'],
   leads: ['rowedToday'],
   plans: {

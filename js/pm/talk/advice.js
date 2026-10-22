@@ -12,6 +12,11 @@
 import { build } from './build.js';
 
 export const ADVICE = build('advice', {
+  stages: [
+    { stage: "{a} and {b} sit together on the edge of the pool." },
+    { stage: "{b} finds {a} in the dressing room." },
+    { stage: "{a} and {b} sit on the swing seat." },
+  ],
   plans: {
     featured: ['open', 'ask', 'verdict', 'push?', 'close'],
     short: ['ask', 'verdict'],

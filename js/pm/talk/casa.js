@@ -10,6 +10,10 @@
 import { build } from './build.js';
 
 export const CASA_MISS = build('casa-miss', {
+  stages: [
+    { stage: "{a} and {b} sit on the daybeds while the new arrivals laugh by the pool." },
+    { stage: "{a} and {b} are lying on the sunbeds." },
+  ],
   plans: {
     featured: ['open', 'miss', 'friend', 'close'],
     short: ['miss', 'friend'],
@@ -88,6 +92,9 @@ export const CASA_MISS = build('casa-miss', {
 });
 
 export const BED_SHARE = build('bed-share', {
+  stages: [
+    { stage: "The lights are off, and {a} and {b} are sharing a bed." },
+  ],
   plans: {
     featured: ['night', 'talk', 'end'],
     short: ['talk', 'end'],

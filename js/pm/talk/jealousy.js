@@ -16,6 +16,10 @@ import { romance } from '../feelings.js';
 const FLIRTED = ['pull', 'date', 'game-kiss'];
 
 export const REASSURANCE = build('reassurance', {
+  stages: [
+    { stage: "{b} sits down next to {a} on the swing seat." },
+    { stage: "{b} finds {a} on {a.posAdj} own on the terrace." },
+  ],
   after: FLIRTED,
   facts: (state, ev) => ({ sincere: romance(ev.players[1], ev.players[0]) >= 5 }),
   plans: {
@@ -123,6 +127,10 @@ export const REASSURANCE = build('reassurance', {
 });
 
 export const JEALOUS_CONFRONT = build('jealous-confront', {
+  stages: [
+    { stage: "{a} sits down opposite {b} on the terrace." },
+    { stage: "{a} stops {b} on the way past the pool." },
+  ],
   after: FLIRTED,
   plans: {
     featured: ['open', 'accuse', 'answer', 'escalate?', 'end'],
@@ -147,7 +155,7 @@ export const JEALOUS_CONFRONT = build('jealous-confront', {
     ],
     accuse: [
       { when: { after: 'pull', afterBy: 'b' }, turns: [
-        ['a', "What's going on with you and {c}? And don't say nothing, because I saw that chat earlier. I saw you lean in. I saw you touch {c.posAdj} arm. Everyone saw it."],
+        ['a', "What's going on with you and {c}? And don't say nothing, because I saw that chat earlier. I saw how close you were sitting. Everyone saw it."],
         ['b', "It was a chat."],
         ['a', "It didn't look like a chat."],
       ] },
@@ -251,6 +259,10 @@ export const JEALOUS_RETALIATE = build('jealous-retaliate', {
 });
 
 export const CONFESSION = build('confession', {
+  stages: [
+    { stage: "{a} sits {b} down on the swing seat." },
+    { stage: "{a} takes {b} up to the terrace." },
+  ],
   facts: (state, ev) => {
     const s = (state.secrets || []).find(x => x.id === ev.extra?.secret);
     return { hasWith: !!s?.with };

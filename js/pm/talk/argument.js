@@ -33,7 +33,7 @@ export const ARGUMENT = build('argument', {
       { when: { cause: 'jealous' }, stage: "{a} storms over to {b} by the pool.", turns: [
         ['a', "Can I have a word? Now?"],
         ['b', "What's wrong with you?"],
-        ['a', "What's wrong with me? I've just watched you sit there with {about} for half an hour, laughing at every single thing {about} said, with your hand on {about.posAdj} leg. In front of everyone. In front of me."],
+        ['a', "What's wrong with me? I've just watched you sit there with {about} for half an hour, laughing at every single thing {about} said. In front of everyone. In front of me."],
       ] },
       { when: { cause: 'jealous' }, stage: "{a} confronts {b} on the terrace.", turns: [
         ['a', "Do you want to explain what that was with {about}?"],

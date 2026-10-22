@@ -115,7 +115,7 @@ export const GOSSIP = build('gossip', {
 
     tell: [
       { when: { sec: 'pull', hasWith: true }, turns: [
-        ['a', "{c} pulled {x} for a chat earlier. On the swing seats. And it didn't look like a friendly chat, if I'm honest. They were sitting really close, and {c} was doing that thing with {c.posAdj} hand on {x}'s leg."],
+        ['a', "{c} pulled {x} for a chat earlier. On the swing seats. And it didn't look like a friendly chat, if I'm honest. They were sitting really close, and {c} couldn't stop laughing at everything {x} said."],
         ['b', "When was this?"],
         ['a', "While you were inside."],
       ] },

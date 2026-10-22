@@ -28,6 +28,10 @@ const GIRLS = { gender: 'f', bGender: 'f' };
 const BOYS = { gender: 'm', bGender: 'm' };
 
 export const DEBRIEF = build('debrief', {
+  stages: [
+    { stage: "{Where}, {a} and {b} talk the night over." },
+    { stage: "{Where}, {b} sits down next to {a}." },
+  ],
   plans: {
     featured: ['open', 'recount', 'friend', 'push?', 'close'],
     short: ['recount', 'friend'],
@@ -149,9 +153,9 @@ export const DEBRIEF = build('debrief', {
         ['a', "And if it's still nothing in a few days?"],
       ] },
       { when: { of: 'meh', taken: true, chose: true }, turns: [
-        ['a', "Can I be honest? I picked {pa} because it was the safe option. Not because I'm mad about {pa}. And I'm lying here thinking, was that a mistake?"],
-        ['b', "Safe isn't always bad."],
-        ['a', "Safe isn't why I came in here."],
+        ['a', "Can I be honest? I picked {pa}, and I meant what I said up there. But now I'm sitting here, and I don't feel what I thought I'd feel. Is that normal?"],
+        ['b', "It's normal. Tonight's a lot. Nobody feels the right thing on cue."],
+        ['a', "I hope you're right."],
       ] },
     ],
 
@@ -166,8 +170,8 @@ export const DEBRIEF = build('debrief', {
         ['a', "I know. I'll talk to {c}."],
       ] },
       { when: { of: 'miss' }, turns: [
-        ['b', "{c} would want you to carry on. Honestly. If {c} saw you sitting up here moping, {c} would be furious. Have one sad night, and then do it for {c}."],
-        ['a', "Do it for {c}. Yeah."],
+        ['b', "{c} would want you to carry on. Honestly. If you could hear what {c} would say about you sitting up here moping, you'd get up right now. Have one sad night, and then do it for {c.obj}."],
+        ['a', "Do it for {c.obj}. Yeah."],
       ] },
       { when: { of: 'blame' }, turns: [
         ['b', "I get it. I'm angry too. But going after {c} tonight isn't going to bring anyone back. Sleep on it. Then decide."],

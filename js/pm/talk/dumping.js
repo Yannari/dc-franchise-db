@@ -111,7 +111,7 @@ export const DUMP_GOODBYE = build('dump-goodbye', {
   },
   moves: {
     hug: [
-      { when: { withB: true }, turns: [], beat: "{b} reaches {a} first and squeezes {a.obj} tight." },
+      { when: { withB: true }, turns: [], beat: "{b} reaches {a} and squeezes {a.obj} tight." },
       { when: { withB: true }, turns: [], beat: "{b} hugs {a} for a long time, and neither of them wants to let go." },
       { when: { withB: true }, turns: [], beat: "{b} pulls {a} in, already crying." },
     ],

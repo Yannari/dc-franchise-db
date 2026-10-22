@@ -13,6 +13,12 @@
 import { build } from './build.js';
 
 export const KISS = build('kiss', {
+  stages: [
+    { stage: "{a} and {b} are curled up together on the daybed." },
+    { stage: "{a} and {b} sit on the swing seat, legs tangled together." },
+    { stage: "{a} and {b} are lying by the pool in the sun." },
+    { stage: "{a} and {b} have found a quiet corner of the terrace." },
+  ],
   after: ['game-kiss', 'recoupling'],
   leads: ['rowedToday'],
   plans: {

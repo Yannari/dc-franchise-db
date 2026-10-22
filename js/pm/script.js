@@ -610,7 +610,9 @@ function talkScript(state, ev, talk) {
   // written for it is the only one that plays. A couple who rowed this
   // morning make up; they never have a cosy chat that forgets the row.
   const led = (talk.leads || []).filter(k => facts[k]);
-  const leading = pool => {
+  const morning = facts.phase === 'morning';
+  const leading = all => {
+    const pool = morning ? all.filter(e => !e.notMorning) : all;
     if (!led.length) return pool;
     const only = pool.filter(e => led.some(k => e.when?.[k]) && matches(e.when, facts));
     return only.length ? only : pool;
@@ -632,6 +634,11 @@ function talkScript(state, ev, talk) {
     parts.push(renderScript(e, ps, state, slots));
   }
   if (!parts.length) return { ...renderScript(placeholder(ev.kind), ps, state), tier };
+  // A plan that opens on dialogue (a short scene) still says where it is.
+  if (!parts[0].stage && talk.stages?.length) {
+    const st = pickScript(state, talk.stages, ps, facts, { lead: false });
+    if (st) { noteUse(state, st, ps); parts[0] = { ...parts[0], stage: renderScript(st, ps, state, slots).stage }; }
+  }
   const act = text => ({ who: '', text, action: true });
   const lines = [];
   parts.forEach((p, i) => {

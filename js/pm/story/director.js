@@ -153,8 +153,9 @@ export function tierOf(state, ev, tiered) {
   // it is never a whole conversation, and never less than short if it hides something.
   const secret = (state.secrets || []).some(s => s.eventId === ev.id);
   let tier = w >= FEATURED_AT && n.featured < FEATURED_CAP ? 'featured' : w >= SHORT_AT && n.short < SHORT_CAP ? 'short' : 'note';
-  if (!ev.aired && tier === 'featured') tier = 'short';
-  if (tier === 'note' && (secret || !ev.aired && ev.kind === 'pull')) tier = 'short';
+  // Raw footage the public never saw is a note, read in the transcript; only
+  // a scene that hides something is written out (Movie Night may play it).
+  if (!ev.aired) tier = secret || ev.kind === 'pull' ? 'short' : 'note';
   if (tier === 'featured') n.featured++;
   if (tier === 'short') n.short++;
   n.pairs[key] = (n.pairs[key] || 0) + 1;

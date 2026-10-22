@@ -443,8 +443,11 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   // New arrivals choose first (recoupling.js): the host says so, or a girl
   // stands up in a boys' choice with no reason given (season 33, Ellie).
   const firsts = r.picks.filter(pk => pk.first).map(pk => pk.picker);
+  // Four arrivals back from Casa all choose first: the host says so, not just
+  // the first two names (season read, 2026-10-22: "Malik and Lucia choose
+  // first", and then Sean and Kevin chose too, on a girls' choice night).
   if (firsts.length) open.push(makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-first', players: firsts.slice(0, 2), aired: true,
-    extra: { pop: {} } }));
+    extra: { pop: {}, of: firsts.length > 2 ? 'many' : 'few' } }));
   // A "steal" of the one you were coupled with before tonight is taking them
   // back, not mugging anybody off (season 33: Josh picked Mia first, and
   // Jordan, her partner, "chose someone already coupled up"). state.couples

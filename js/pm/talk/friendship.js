@@ -18,6 +18,12 @@ const GIRLS = { gender: 'f', bGender: 'f' };
 const BOYS = { gender: 'm', bGender: 'm' };
 
 export const FRIENDSHIP = build('friendship', {
+  stages: [
+    { stage: "{a} and {b} are on the daybeds." },
+    { stage: "{a} and {b} are in the kitchen." },
+    { stage: "{a} and {b} are lying by the pool." },
+    { stage: "{a} and {b} are sitting on the terrace." },
+  ],
   after: ['pull', 'date', 'row', 'told', 'recoupling', 'knocked-back', 'game-kiss'],
   plans: {
     featured: [

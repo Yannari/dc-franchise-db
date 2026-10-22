@@ -21,6 +21,16 @@
 // own; when every file is in, the page is told ("New version ready -- reload")
 // and the next load opens the new copy. Two deploys never meet in one page.
 //
+// THEY DID MEET, 2026-10-22, on the Cloudflare copy: the simulator never
+// started ("franchise-calendar.js does not provide an export named
+// projectedRun"). A new copy was downloaded from the LIST of the old one --
+// the files this browser had happened to load -- so a module the new deploy
+// added was not in it, and came from the network when a page asked: from
+// whatever deploy was live by then, beside cached files from an older one.
+// Now the download follows the imports of every script and page it fetches,
+// so a copy holds the whole module graph of its deploy, and a copy that
+// another deploy overtook while it downloaded is thrown away, not finished.
+//
 // Only this site's own files. The Worker, R2 (cloud saves, gallery, audio),
 // fonts and anything cross-origin go straight to the network, as do range
 // requests and media. Any fault here falls back to the network, so a bug in
@@ -91,10 +101,43 @@ async function dropAllBut(keep) {
   }
 }
 
+const IMPORTS = [
+  /\bfrom\s*["']([^"'\n]+)["']/g,               // import / export ... from '...'
+  /\bimport\s*["']([^"'\n]+)["']/g,             // import '...'
+  /\bimport\s*\(\s*["']([^"'\n]+)["']\s*\)/g,   // import('...')
+];
+const PAGE_LINKS = /<(?:script|link)\b[^>]*?\b(?:src|href)\s*=\s*["']([^"']+)["']/gi;
+
+/**
+ * The same-site files a script or page loads by a written path. A script's
+ * specifier counts only when it is a path ('./', '../', '/'): anything else is
+ * a bare name or another origin. A path in a comment is harmless -- a file
+ * that is not there is a 404, and a 404 is skipped.
+ */
+function linksOf(text, base) {
+  const page = /\.html?$/i.test(new URL(base).pathname);
+  const specs = [];
+  for (const re of page ? [PAGE_LINKS] : IMPORTS) for (const m of text.matchAll(re)) specs.push(m[1]);
+  const out = [];
+  for (const s of specs) {
+    if (!page && !/^\.{0,2}\//.test(s)) continue;
+    try {
+      const u = new URL(s, base);
+      u.hash = '';
+      if (u.origin === self.location.origin && u.pathname.startsWith(scopePath()) && !u.pathname.endsWith('/sw.js')) out.push(u.href);
+    } catch {}
+  }
+  return out;
+}
+
+const followable = url => /\.(m?js|html?)$/i.test(new URL(url).pathname);
+
 /**
  * Download a new deploy behind the open page: every file the current copy
- * holds, fresh, into the new deploy's own cache. Marked complete only when
- * all of it is in; then every open page is told.
+ * holds, fresh, into the new deploy's own cache -- and every file those
+ * scripts and pages import that it does not hold yet. Marked complete only
+ * when all of it is in and the deploy is still the live one; then every open
+ * page is told.
  */
 function downloadDeploy(stamp, from) {
   if (updating.has(stamp)) return updating.get(stamp);
@@ -102,19 +145,26 @@ function downloadDeploy(stamp, from) {
     const name = PREFIX + stamp;
     const target = await caches.open(name);
     const urls = (await (await caches.open(from)).keys()).map(r => r.url).filter(u => !u.endsWith(DONE));
+    const seen = new Set(urls);
     let i = 0, failed = 0;
     const worker = async () => {
       while (i < urls.length) {
         const url = urls[i++];
         try {
           const res = await fetch(url, { cache: 'no-cache', credentials: 'same-origin' });
-          if (res.ok && res.type === 'basic') await target.put(url, res);
-          else if (res.status !== 404) failed++;     // a deleted file is not a failure
+          if (res.ok && res.type === 'basic') {
+            if (followable(url)) {
+              for (const u of linksOf(await res.clone().text(), url)) if (!seen.has(u)) { seen.add(u); urls.push(u); }
+            }
+            await target.put(url, res);
+          } else if (res.status !== 404) failed++;   // a deleted file is not a failure
         } catch { failed++; }
       }
     };
     await Promise.all(Array.from({ length: PARALLEL }, worker));
-    if (failed) { await caches.delete(name); return false; }   // try again on a later load
+    // A deploy that landed while this downloaded may have changed files already
+    // fetched: those would be the old deploy's, the rest the new one's.
+    if (failed || (await deployStamp()) !== stamp) { await caches.delete(name); return false; }   // try again on a later load
     await markComplete(name);
     for (const c of await self.clients.matchAll({ type: 'window' })) c.postMessage({ type: 'dc-site-update-ready' });
     return true;

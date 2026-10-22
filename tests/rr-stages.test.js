@@ -9,6 +9,8 @@ import { playRaceSeason } from '../js/rr/season.js';
 import { setPlayers } from '../js/core.js';
 import { raceCast } from './helpers/rr-cast.js';
 import { PLACES } from '../js/rr/places.js';
+import { runTask } from '../js/rr/tasks.js';
+import { streamFor } from '../js/dr/rng.js';
 import { episodeScreens } from '../js/vp-rr-ep/steps.js';
 import { stretchPlates } from '../js/vp-rr-ep/plates.js';
 const stretchPlatesFor = (p, s, side) => stretchPlates(p, s, side);
@@ -192,16 +194,21 @@ describe('rr challenges in stages', () => {
     expect(short).toEqual([]);
   });
 
-  it('changes no result: the same race finishes in the same order with the stages as without', async () => {
+  // (the whole season used to finish in the same order with the stages as without; since 2026-10-21 the stages are where
+  // the teams are, and two teams meet only in the same spot (tests/rr-stage-spots.test.js), so who meets whom, and what
+  // that costs, rightly follows them. What a stage must never change is the run itself)
+  it('changes no run: a stage is where the team is, never how long it takes or how often it fails', () => {
     const { cast, teams } = raceCast(12, 41);
     setPlayers(cast);
-    const a = playRaceSeason({ teams, seed: 41, options: { pins: { 2: 'ice-river', 3: 'pampas-ranch' } } });
-    const kept = PLACES['ice-river'].stretches.map(s => s.stages);
-    PLACES['ice-river'].stretches.forEach(s => { delete s.stages; });
-    try {
-      setPlayers(cast);
-      const b = playRaceSeason({ teams, seed: 41, options: { pins: { 2: 'ice-river', 3: 'pampas-ranch' } } });
-      expect(b.legs.map(l => l.order)).toEqual(a.legs.map(l => l.order));
-    } finally { PLACES['ice-river'].stretches.forEach((s, i) => { if (kept[i]) s.stages = kept[i]; }); }
-  }, 400000);
+    const res = playRaceSeason({ teams, seed: 41, options: { pins: { 2: 'ice-river', 3: 'pampas-ranch' } } });
+    const tasks = ['ice-river', 'pampas-ranch'].flatMap(p => PLACES[p].stretches.filter(x => x.stages?.length && !x.sides));
+    expect(tasks.length).toBeGreaterThan(1);
+    const run = withStages => tasks.flatMap(task => Object.keys(res.state.teams).map(id => {
+      const st = structuredClone(res.state);
+      const r = runTask(st, { id }, withStages ? task : { ...task, stages: undefined }, 100, null, streamFor(7, `${task.id}|${id}`));
+      const row = st.attempts[id][task.id];
+      return `${task.id} ${id} ${Math.round(r.end)} ${row.attempts} ${row.fails || 0}`;
+    }));
+    expect(run(true)).toEqual(run(false));
+  });
 });

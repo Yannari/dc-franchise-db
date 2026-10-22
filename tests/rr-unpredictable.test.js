@@ -13,7 +13,8 @@ import { raceCast } from './helpers/rr-cast.js';
 it('the team last and safe one leg is not the next one out, as a rule', () => {
   let elims = 0, lastSafe = 0;
   const rho = [];
-  for (let seed = 1; seed <= 20; seed++) {
+  // (forty seasons: twenty came out at 33% on a run whose eighty-season rate was 27%, the sample's noise not the race)
+  for (let seed = 1; seed <= 40; seed++) {
     const { cast, teams } = raceCast([8, 10, 12][seed % 3], seed);
     setPlayers(cast);
     const L = playRaceSeason({ teams, seed }).state.legs;
@@ -31,7 +32,7 @@ it('the team last and safe one leg is not the next one out, as a rule', () => {
       if (d) rho.push(num / d);
     }
   }
-  expect(elims).toBeGreaterThan(80);
+  expect(elims).toBeGreaterThan(160);
   expect(lastSafe / elims).toBeLessThan(0.32);
   expect(rho.reduce((a, b) => a + b, 0) / rho.length).toBeLessThan(0.35);
-}, 600000);
+}, 1200000);

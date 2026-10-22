@@ -22,6 +22,7 @@ import { checkIn } from './chill.js';
 import { emit, playScene, interviewAfter } from './scenes.js';
 import { addScene } from './state.js';
 import { DON_GOES_AFTER, DEPART_CARRY, DEPART_CARRY_MAX, FORM, DRIVER } from './format.js';
+import { spotOfStage } from './spots.js';
 import { streamFor } from '../dr/rng.js';
 import { pairKey } from './scenes/registry.js';
 
@@ -185,17 +186,33 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   // side it chose. Two teams meet only in the same spot (the user, 2026-10-21, on Home City: teams on the deck met teams
   // on the stairs, "randomly finding thom and spencer who havent even take the elevator yet but bowie and sami did").
   // (A side is one place, whatever stage each team is at: the teams on the stairs pass each other on the landings.)
-  const spotOf = (o, s, tt, from) => {
+  // ...and on its side, in the spot of the stage it is working on (2026-10-21, the user: "FINN and Manu are outside then
+  // right after inside again"): the stairs are one stairwell whatever flight each team is on, the deck is another place
+  const spotOf = (o, s, tt, from, until = null) => {
     if (tt - from <= MEET_START) return 'start';
-    return state.attempts?.[o]?.[s.id]?.side || 'task';
+    return `${state.attempts?.[o]?.[s.id]?.side || 'task'}|${stageSpot(o, s, tt, from, until) || ''}`;
+  };
+  // Where a team is at a staged challenge at minute tt (js/rr/spots.js: where the viewer draws each stage): arriving,
+  // its first stage (an Either/Or's foot is its own spot: 'start'); then the stage it is working on; null when the
+  // challenge isn't staged or the run isn't known yet (anywhere: no limit)
+  // (the stages were laid over the run as planned; minutes won or lost since stretch it, and settleRuns stretches the
+  // stages to fit in the end: so a minute of the run as it now stands, `until`, is read off the stages in proportion)
+  const stageSpot = (o, s, tt, from = null, until = null) => {
+    if (from != null && tt - from <= MEET_START) return s.sides ? 'start' : (s.stages?.[0] ? spotOfStage(to.id, s.id, s.stages[0].id) : null);
+    const stages = state.attempts?.[o]?.[s.id]?.stages;
+    if (!stages?.length) return null;
+    const last = Math.max(...stages.map(x => x.t));
+    const at = from != null && Number.isFinite(until) && until > from && last > from ? from + (tt - from) * (last - from) / (until - from) : tt;
+    const cur = stages.find(x => x.t >= at - 0.5) || stages.at(-1);
+    return spotOfStage(to.id, s.id, cur.id);
   };
   // an Either/Or: the team meets whoever is with it, where and when, through its run
   const meetInside = (id, s, from, to, api) => {
     let extra = 0, watched = false;
     const met = new Set();
     for (let tt = from; tt <= to; tt += 2) {
-      const mine = spotOf(id, s, tt, from);
-      const now = api.here(s.id, tt).filter(x => x.id !== id && !met.has(x.id) && state.teams[x.id] && spotOf(x.id, s, tt, x.from) === mine).map(x => x.id);
+      const mine = spotOf(id, s, tt, from, to);
+      const now = api.here(s.id, tt).filter(x => x.id !== id && !met.has(x.id) && state.teams[x.id] && spotOf(x.id, s, tt, x.from, x.to) === mine).map(x => x.id);
       if (!now.length) continue;
       now.forEach(x => met.add(x));
       // (at its start nobody has begun: they can talk, but nobody has watched anybody at it yet; 2026-10-21, a
@@ -260,14 +277,19 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
     const meetLater = inside && !talked.has(key);
     if (!talked.has(key) && !inside) {
       talked.add(key);
-      const here = api.here(s.id, t).map(x => x.id).filter(x => x !== id);
+      const present = api.here(s.id, t).filter(x => x.id !== id);
+      // (a team arriving at a staged challenge is at its first stage: it meets the teams there, not the ones out on the
+      // cable or up on the deck)
+      const mine = TASKS.includes(s.kind) ? stageSpot(id, s, t, t) : null;
+      const here = present.filter(x => !mine || (stageSpot(x.id, s, t, x.from, x.to) ?? mine) === mine).map(x => x.id);
       if (here.length && s.kind !== 'mat') extra += talkAtOverlap(state, id, here, s, t, api, rng).extra || 0;
       if (s.kind === 'mat') {
         // the mat: a team that arrives while others are still there meets them (consoles, gloats)
         const there = atMat(id, t);
         if (there.length) talkAtOverlap(state, id, there, s, t, api, rng);
       }
-      if (s.capacity && here.length + 1 > s.capacity) talkAtWait(state, [id, ...here], s, t, api, rng, 'queue');
+      // (a queue is everybody waiting for the thing, wherever they stand in it)
+      if (s.capacity && present.length + 1 > s.capacity) talkAtWait(state, [id, ...present.map(x => x.id)], s, t, api, rng, 'queue');
       // three or more teams at one task: they watch each other
       else if (TASKS.includes(s.kind) && here.length >= 2) talkAtWait(state, [id, ...here], s, t, api, rng, 'watching');
       // three or more on the mat: the crowd at the Chill Zone

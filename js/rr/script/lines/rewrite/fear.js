@@ -13,7 +13,7 @@ export default {
   retire: [PB, FR, OV, 'phobia.any', PW, PF, PX, 'pep-talk.any'],
   pools: {
     [FR]: [
-      { id: 'fe.f-up1', when: T({ taskType: 'heights' }), turns: [
+      { id: 'fe.f-up1', when: T({ fearDoes: 'jump' }), turns: [
         { beat: '{a} gets to the edge, looks down once, and stops moving entirely.' },
         { by: 'b', ...V("Whenever you're ready. Ideally soon. Ideally now.", "Whenever you're ready. Ideally now.", "Ready when you are. Ideally now.", "Whenever you're READY, ideally SOON, ideally NOW!", "Whenever you're ready, okay? Ideally soon, though.", "Whenever you're ready. The edge isn't going anywhere. Neither, apparently, are you.") },
         { by: 'a', ...V("I'm not ready. My legs aren't ready. My legs have left the race.", "Not ready. My legs have left the race.", "My legs aren't ready. They've quit.", "I'm NOT ready! My LEGS aren't ready! My legs have LEFT the race!",
@@ -24,7 +24,7 @@ export default {
         { by: 'a', ...V("They're waving because they're in shock.", "They're in shock.", "That's shock waving.", "They're waving because they're in SHOCK!", "I think they're waving because they're in shock.", "That's not a wave. That's the body's last goodbye.") },
         { beat: 'Twenty minutes after getting to the edge, {a} finally goes, with {a.posAdj} eyes shut the whole way.' },
       ] },
-      { id: 'fe.f-wet1', when: T({ taskType: 'water' }), turns: [
+      { id: 'fe.f-wet1', when: T({ fearDoes: 'swim' }), turns: [
         { beat: '{a} is standing at the edge of the water, fully dressed, not moving.' },
         { by: 'a', ...V("I can't see the bottom. Why can't I see the bottom?", "Can't see the bottom. Why not?", "Why can't I see the bottom?", "I can't SEE the BOTTOM! WHY can't I see the bottom?", "I can't see the bottom. Why can't I see the bottom?", "I can't see the bottom. Water should have a visible bottom. That's a rule.") },
         { by: 'b', ...V("Because it's water. You don't need to see the bottom. You need to swim on the top.", "It's water. You swim on the top, not the bottom.", "You swim on the top. Forget the bottom.", "Because it's WATER! You don't NEED the bottom! You swim on the TOP!",
@@ -34,14 +34,14 @@ export default {
         { by: 'a', say: "That's exactly what they said in the movie." },
         { beat: 'It takes twenty more minutes, and {b} holding {a.posAdj} hand right to the edge, before {a} gets in.' },
       ] },
-      { id: 'fe.f-dark1', when: T({ taskType: 'nerve' }), turns: [
-        { beat: 'Something small and many-legged crawls across the table, and {a} takes one step back, then another.' },
-        { by: 'a', ...V("Nope. No. I'm not putting my hand anywhere near that.", "No. Not putting my hand near that.", "Nope. My hand stays here.", "NOPE, I'm NOT putting my hand anywhere NEAR that!", "No. I'm sorry. I'm not putting my hand anywhere near that.", "No. My hand and I have discussed it, and we're both out.") },
-        { by: 'b', ...V("It's tiny. It's smaller than your thumb.", "It's smaller than your thumb.", "It's tiny. Thumb-sized.", "It's TINY! It's smaller than your THUMB!", "It's really tiny, though. It's smaller than your thumb.", "It's tiny. It's more scared of you. It's hiding its tiny face.") },
-        { by: 'a', say: "My thumb doesn't have eight legs." },
+      { id: 'fe.f-dark1', when: T({ fearDoes: 'creature' }), turns: [
+        { beat: '{a} takes one look at it, then one step back, then another.' },
+        { by: 'a', ...V("Nope. No. I'm not going anywhere near that.", "No. Not going near that.", "Nope. I'm staying here.", "NOPE, I'm NOT going anywhere NEAR that!", "No. I'm sorry. I'm not going anywhere near that.", "No. My legs and I have discussed it, and we're all out.") },
+        { by: 'b', ...V("It's not even looking at you.", "It's not looking at you.", "It isn't looking.", "It's not even LOOKING at you!", "It's honestly not even looking at you.", "It isn't looking at you. It has other plans today.") },
+        { by: 'a', say: "It doesn't need to look at me. It knows exactly where I am." },
         { by: 'b', say: "Okay. Do you want me to talk you through it?" },
         { by: 'a', say: "I want you to talk me out of the country." },
-        { beat: 'Twenty minutes go by before {a} touches it, and only with one finger, and only while screaming.' },
+        { beat: 'Twenty minutes go by before {a} goes anywhere near it, and then only while screaming.' },
       ] },
       { id: 'fe.f-any1', turns: [
         { by: 'b', ...V("You've got this. Just start. Just take the first step.", "Just take the first step.", "Just the first step. That's all you have to do.", "You've GOT this! Just take the FIRST STEP!", "You've got this. You only have to take the first step.", "The first step. That's all anyone's asking. One step. A small one.") },
@@ -62,12 +62,12 @@ export default {
       ] },
     ],
     [PB]: [
-      { id: 'fe.p-up1', when: T({ taskType: 'heights' }), turns: [
+      { id: 'fe.p-up1', when: T({ fearDoes: ['jump', 'drop'] }), turns: [
         { beat: '{a} stares at the drop, breathing faster and faster.' },
         { by: 'b', say: "Breathe. Slowly. In through the nose." },
         { by: 'a', ...V("If I think about it, I'll never do it. So I'm not thinking about it.", "If I think, I won't do it. Not thinking.", "Not thinking about it. If I think, I stop.", "If I THINK about it, I'll NEVER do it! So I'm NOT thinking about it!",
           "If I think about it, I'll never do it, so I'm just not going to think.", "I'm not thinking about it. I'm switching my brain off. Goodbye, brain.") },
-        { beat: '{a} screams, very loudly, and goes, and is down and across before {b} has even finished saying wait.' },
+        { beat: '{a} screams, very loudly, and goes, and is gone before {b} has even finished saying wait.' },
         { by: 'b', say: "Was that the fastest anybody's done it?" },
         { by: 'a', ...V("I don't know. I wasn't there. My body did that without me.", "Don't know. My body did it without me.", "I wasn't there. My body did it.", "I don't KNOW, I wasn't THERE, my body did that WITHOUT me!",
           "I honestly don't know. My body did that without asking me.", "I wasn't present. My body handled it. My body is a legend.") },
@@ -92,7 +92,7 @@ export default {
       ] },
     ],
     [OV]: [
-      { id: 'fe.o-up1', when: T({ taskType: 'heights' }), turns: [
+      { id: 'fe.o-up1', when: T({ fearDoes: ['jump', 'drop', 'rail'] }), turns: [
         { beat: '{a} stands at the edge, shaking, and then turns round to {b}.' },
         { by: 'a', ...V("I've been scared of heights my whole life. My whole life, {b}.", "Scared of heights my whole life, {b}.", "My whole life, {b}. Scared of heights.", "I've been scared of heights my WHOLE LIFE! My WHOLE life, {b}!",
           "I've been scared of heights my whole life, {b}. My whole life.", "{b}, I have been afraid of heights since I was tall enough to be up one.") },
@@ -103,7 +103,7 @@ export default {
         { by: 'a', ...V("I did it. I actually did it. Write it down. Somebody write it down.", "I did it. Somebody write it down.", "I did it. Somebody write it down, please.", "I DID it! I ACTUALLY did it! Somebody WRITE it DOWN!",
           "I did it. I actually did it. Can somebody write that down?", "I did it. Carve it into the mountain.") },
       ] },
-      { id: 'fe.o-wet1', when: T({ taskType: 'water' }), turns: [
+      { id: 'fe.o-wet1', when: T({ fearDoes: 'swim' }), turns: [
         { beat: '{a} gets into the water one inch at a time.' },
         { by: 'b', ...V("You're in! You're actually in the water!", "You're in. You're actually in.", "You're actually in the water.", "You're IN! You're actually IN the WATER!", "You're in! You're actually in the water!", "You're in. You and the water are finally together.") },
         { by: 'a', ...V("Don't make a big deal out of it or I'll get out.", "Don't make it a big deal or I'll get out.", "Don't make a thing of it. I'll get out.", "DON'T make a big DEAL out of it or I'll GET OUT!",

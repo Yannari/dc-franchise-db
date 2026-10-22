@@ -41,6 +41,9 @@ export const RR_FACT_KEYS = [
   'tod',
   // the stretch and how the task went; the task's main type (water, stomach, perform, heights...); how they travel
   'stretchKind', 'taskType', 'mode', 'fails', 'switched', 'quit', 'place',
+  // what the challenge's scary part makes them do (fears.js: jump, drop, climb, rail, rope, cross, ride, swim, creature,
+  // dark, fire, crowd, eat, any): a fear line names only the act it is for
+  'fearDoes',
   // the challenge itself (its stretch id: 'stew', 'spices'): a place's own lines for its own tasks
   'taskId',
   // the side a team took at an Either/Or ('stairs', 'skydeck', 'lava', 'falls'): a place's lines for each side
@@ -127,7 +130,7 @@ export function factsFor(scene, roles, state) {
     behind: !s.fresh && s.rank != null && s.rank > 0.66, ahead: !s.fresh && s.rank != null && s.rank < 0.33,
     broke: !!s.broke, snapped: !!s.snapped,
     tod: todWord(s.tod),
-    stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null,
+    stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null, fearDoes: s.fearDoes ?? null,
     side: s.side ?? null,
     at: atOf(s, d),
     matPlace: d.matPlace ?? null, why: d.why ?? null, rule: d.rule ?? null, byVote: !!d.byVote, stage: d.stage ?? null, blind: !!d.blind,

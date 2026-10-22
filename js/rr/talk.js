@@ -12,6 +12,7 @@
 // Each function returns the scenes it played; `scenes.extra` is the minutes the team at
 // the centre lost (or won) to them, for the resolver to add to its stretch.
 import { SCENES, playScene, whenOf, prepare, interviewAfter, pairKey, taskTypesFor } from './scenes.js';
+import { fearAt, fearTime } from './fears.js';
 import { threadSteps, advanceThreads } from './threads.js';
 import { see } from './knowledge.js';
 import { getBond } from '../bonds.js';
@@ -221,7 +222,12 @@ export function momentTime(state, id, stretch, moment, t, end) {
   switch (moment) {
     case 'pass': case 'tip': return end;
     case 'fail': return t + span * 0.5;
-    case 'fear': return t + span * 0.15;
+    // (at the stage it is about, once they get there: fears.js; 2026-10-22, a freeze on the ledge aired at the cart)
+    case 'fear': {
+      const f = fearAt(state.placeNow, stretch, state.attempts?.[id]?.[stretch.id]?.side ?? null);
+      const at = f && fearTime(state.attempts?.[id]?.[stretch.id]?.stages, f.at, t);
+      return at != null ? Math.min(end, Math.max(t, at + 1)) : t + span * 0.15;
+    }
     case 'botch-watch': return t + span * 0.5;
     default: return t;
   }

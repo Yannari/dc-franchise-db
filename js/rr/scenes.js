@@ -13,6 +13,7 @@ import { getBond, addBond } from '../bonds.js';
 import { nudgeMind } from './mind.js';
 import { perceivedRank, believe } from './knowledge.js';
 import { identityOf } from './identities.js';
+import { fearAt } from './fears.js';
 import { gs } from '../core.js';
 
 import { SCENES, K, register, pairKey } from './scenes/registry.js';
@@ -87,6 +88,8 @@ export function snapOf(st, { tid = null, oid = null, stretch = null, t = null, f
     // how they travel on this stretch (flight, taxi, foot, camel...)
     mode: stretch?.mode ?? null,
     taskTypes: [...new Set(types)],
+    // what the challenge's scary part makes them do, and at which stage (fears.js)
+    ...(() => { const f = fearAt(st.placeNow, stretch, tid && stretch?.id ? st.attempts?.[tid]?.[stretch.id]?.side : null); return f ? { fearDoes: f.does, fearAt: f.at } : {}; })(),
     fails: fails || 0,
     side: tid && stretch?.id ? st.attempts?.[tid]?.[stretch.id]?.side ?? null : null,
     lead: tid ? st.lead[tid] ?? null : null,
@@ -245,7 +248,9 @@ export function playScene(ctx, kindId, rng, { ending = null } = {}) {
     // why the system played it (a lead changed after an injury or a snap), and where the team stands on the mat
     why: ctx.event?.cause ?? null, matPlace: ctx.matPlace ?? null,
     // in a meeting, the team that just got there (talk.js: the one arriving finds the other already here)
-    arriving: ctx.arriving ?? null };
+    arriving: ctx.arriving ?? null,
+    // a fear is at the stage it is about (settleRuns keeps it there when the run is stretched)
+    ...(ctx.moment === 'fear' && snap.fearAt ? { atStage: snap.fearAt } : {}) };
   const sc = addScene(ctx.state, kindId, who, data, seenByOf(ctx, kind, who));
   const nxt = kind.next?.[e];
   if (nxt) { ctx.state.chained ||= {}; (ctx.state.chained[ctx.tid] ||= []).push({ kind: nxt, cause: sc.id, other: ctx.oid }); }

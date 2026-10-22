@@ -212,7 +212,7 @@ export default {
       ] },
     ],
     'phobia.freezes': [
-      { id: 'fe2.1', when: { at: 'task', taskType: 'heights' }, turns: [
+      { id: 'fe2.1', when: { at: 'task', fearDoes: 'rail' }, turns: [
         { beat: '{a} grips the railing so tightly {a.posAdj} knuckles go white.' },
         { by: 'b', say: "Let go of the railing." },
         { by: 'a', say: "The railing is the only thing I trust." },
@@ -221,7 +221,7 @@ export default {
         { by: 'b', say: "Look at me, not down. Just at me." },
         { beat: '{a} looks at {b}, lets go of the railing one finger at a time, and goes.' },
       ] },
-      { id: 'fe2.2', when: { at: 'task', taskType: 'water' }, turns: [
+      { id: 'fe2.2', when: { at: 'task', fearDoes: 'swim' }, turns: [
         { by: 'a', say: "I can't put my face in. I just can't." },
         { by: 'b', say: "Then keep your face out. Swim with your head up." },
         { by: 'a', say: "That's not how swimming works." },
@@ -231,7 +231,7 @@ export default {
         { by: 'a', say: "Three." },
         { beat: 'Head up, splashing, very slowly, {a} goes.' },
       ] },
-      { id: 'fe2.3', when: { at: 'task', taskType: 'nerve' }, turns: [
+      { id: 'fe2.3', when: { at: 'task' }, turns: [
         { beat: '{a} takes one step forward and two steps back.' },
         { by: 'a', say: "My body won't do it. My brain says yes, and my body says no." },
         { by: 'b', say: "Then let your brain win. It's smarter." },

@@ -8,7 +8,7 @@ export default {
   retire: [],
   pools: {
     'fear-through.freezes': [
-      { id: 'vn.f1', when: { taskType: 'heights' }, turns: [
+      { id: 'vn.f1', when: { fearDoes: ['jump', 'drop', 'rail'] }, turns: [
         { beat: '{a} gets to the edge, looks down once, and stops moving entirely.' },
         { by: 'b', say: "Don't look down. Look at me." },
         { by: 'a', ...V("I already looked down. I can't un-look down.", "I looked. I can't un-look.", "Can't un-look.", "I ALREADY looked down! I CAN'T un-look DOWN!", "I already looked down, and I can't un-look it.", "I've seen the ground. The ground has seen me.") },
@@ -16,7 +16,7 @@ export default {
         { beat: 'Fifteen minutes go by. {a} thinks about tax forms. It doesn\'t help.' },
         { by: 'a', say: "Okay. Okay. Tax forms. Going." },
       ] },
-      { id: 'vn.f2', when: { taskType: 'water' }, turns: [
+      { id: 'vn.f2', when: { fearDoes: 'swim' }, turns: [
         { by: 'a', say: "I can't see the bottom. Why can't I see the bottom?" },
         { by: 'b', ...V("Because it's deep. That's how water works.", "Because it's deep.", "It's deep. That's water.", "Because it's DEEP! That's how WATER works!", "Because it's deep, that's just how water works.", "Because water keeps secrets. It's fine.") },
         { by: 'a', say: "What's down there?" },
@@ -40,12 +40,12 @@ export default {
         { beat: 'It takes another ten minutes, and a lot of breathing, before {a} moves at all.' },
         { by: 'b', say: "That was a short list, at least." },
       ] },
-      { id: 'vn.f5', when: { taskType: 'nerve' }, turns: [
+      { id: 'vn.f5', when: { fearDoes: 'creature' }, turns: [
         { by: 'a', say: "Something just moved. In there. Something moved." },
         { by: 'b', say: "It's supposed to move. That's the whole point." },
         { by: 'a', ...V("I'm not putting my hand in there. I'm not. Not while it's moving.", "Not while it's moving.", "Not while it moves.", "I'm NOT putting my HAND in there! NOT while it's MOVING!", "I'm not putting my hand in there while it's still moving.", "My hand and that thing will never meet.") },
         { by: 'b', say: "It'll always be moving. It's alive." },
-        { beat: '{a} stares into the box for fifteen minutes, waiting for it to stop being alive.' },
+        { beat: '{a} stares at it for fifteen minutes, waiting for it to stop being alive.' },
         { by: 'a', say: "I'm waiting for it to have a nap." },
       ] },
       { id: 'vn.f6', turns: [
@@ -58,13 +58,13 @@ export default {
       ] },
     ],
     'fear-through.talked-down': [
-      { id: 'vn.t1', when: { taskType: 'heights' }, turns: [
+      { id: 'vn.t1', when: { fearDoes: 'climb' }, turns: [
         { by: 'a', say: "I can't. I'm frozen. My legs won't go." },
         { by: 'b', ...V("Then don't use your legs. Use your hands. One hand, then the other. Slowly.", "Use your hands. One, then the other.", "Hands. One, then the other.", "Then DON'T use your LEGS! Use your HANDS! One hand, then the OTHER!", "Then don't use your legs, use your hands. One, then the other, slowly.", "Then crawl. Crawling is just walking, but humble.") },
         { by: 'a', say: "Talk to me. Don't stop talking." },
         { by: 'b', say: "Okay. Remember the camping trip? The tent in the river?" },
-        { beat: '{b} tells the whole story of the tent in the river, and by the end of it, {a} is across.' },
-        { by: 'a', say: "I'm across? When did I get across?" },
+        { beat: '{b} tells the whole story of the tent in the river, and by the end of it, {a} is at the top.' },
+        { by: 'a', say: "I'm at the top? When did I get to the top?" },
       ] },
       { id: 'vn.t2', turns: [
         { by: 'b', say: "Look at me. Not at it. At me." },
@@ -74,11 +74,11 @@ export default {
         { beat: 'On three, {a} goes. Screaming, but goes.' },
         { by: 'b', say: "You went! You actually went!" },
       ] },
-      { id: 'vn.t3', when: { taskType: 'water' }, turns: [
+      { id: 'vn.t3', when: { fearDoes: 'swim' }, turns: [
         { by: 'a', say: "I'm going to drown. I know I'm going to drown." },
-        { by: 'b', say: "You're wearing a life jacket. It's bright orange. You couldn't drown if you tried." },
-        { by: 'a', ...V("I could try very hard.", "I'd try hard.", "I could try.", "I could try VERY hard!", "I feel like I could try very hard.", "I'm talented. I'd find a way.") },
-        { by: 'b', say: "Then don't try. Just float. Floating is easy. You float in the bath." },
+        { by: 'b', say: "You swim every summer. I've watched you. You swim better than I do." },
+        { by: 'a', ...V("In a pool. With a lifeguard.", "In a pool. With a lifeguard.", "Pool. Lifeguard.", "In a POOL! With a LIFEGUARD!", "That was in a pool, with a lifeguard watching.", "In a pool. Pools have walls. This has nothing.") },
+        { by: 'b', say: "Then I'm the lifeguard. Just float first. Floating is easy. You float in the bath." },
         { beat: '{a} lowers {a.ref} in, inch by inch, and floats.' },
         { by: 'a', say: "I'm floating. I'm a bath. I'm a bath person." },
       ] },
@@ -90,7 +90,7 @@ export default {
         { beat: '{a} goes, mostly out of fear of {a.posAdj} mum.' },
         { by: 'a', say: "That was a low trick." },
       ] },
-      { id: 'vn.t5', turns: [
+      { id: 'vn.t5', when: { fearDoes: ['climb', 'rail', 'rope', 'cross'] }, turns: [
         { by: 'b', say: "Hey. I'm right here. I'm not going anywhere." },
         { by: 'a', say: "Promise?" },
         { by: 'b', ...V("Promise. If you fall, I'll fall with you. That's how it works.", "Promise. You fall, I fall.", "Promise. We fall together.", "PROMISE! If you FALL, I'll fall WITH you!", "I promise. If you fall, I'll fall with you. That's how this works.", "Promise. We're a set. Like salt and pepper.") },
@@ -98,7 +98,7 @@ export default {
         { by: 'b', say: "I know. But you're laughing, and you've moved." },
         { by: 'a', say: "...I've moved." },
       ] },
-      { id: 'vn.t6', when: { taskType: 'nerve' }, turns: [
+      { id: 'vn.t6', when: { fearDoes: 'creature' }, turns: [
         { by: 'a', say: "It's looking at me. It's actually looking at me." },
         { by: 'b', say: "It's more scared of you than you are of it." },
         { by: 'a', ...V("Then why isn't it running away?", "Then why isn't it leaving?", "Then why's it staying?", "Then WHY isn't it RUNNING AWAY?", "Then why isn't it running away from me?", "Then it's very good at hiding its fear.") },

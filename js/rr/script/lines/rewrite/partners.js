@@ -124,7 +124,7 @@ export default {
 
     // ── fear: talking a partner through it ──
     'fear-through.talked-down': [
-      { id: 'pa.ft-1', turns: [
+      { id: 'pa.ft-1', when: { fearDoes: 'rail' }, turns: [
         { beat: '{a} is gripping the rail with both hands and not letting go.' },
         { by: 'b', ...V("Look at me. Not down. Me. You're doing great.", "Look at me. Not down. You're doing great.", "Me, not down. You're doing great.", "Look at ME! Not DOWN! ME! You're doing GREAT!", "Look at me, not down. You're doing so great.", "Look at me. I'm much less scary than down.") },
         { by: 'a', say: "I'm not doing great. I'm holding a rail." },
@@ -134,7 +134,7 @@ export default {
         { beat: 'One hand. Then the other. Step by step, with {b} counting every single one out loud, they make it across.' },
         { by: 'a', say: "Don't ever tell anyone I held your hand that hard." },
       ] },
-      { id: 'pa.ft-2', turns: [
+      { id: 'pa.ft-2', when: { fearDoes: ['rail', 'rope'] }, turns: [
         { by: 'a', say: "I can't. I'm going to fall. I know I'm going to fall." },
         { by: 'b', ...V("You're not going to fall. You're clipped in. Look, the rope. You're attached to the rope.", "You're clipped in. Look. The rope.", "You're attached. Look at the rope.", "You're NOT going to fall! You're CLIPPED in! Look, the ROPE!",
           "You're not going to fall. You're clipped in, look. You're attached to the rope.", "You're attached to a rope. The rope loves you. The rope won't let go.") },

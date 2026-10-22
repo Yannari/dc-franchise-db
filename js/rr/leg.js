@@ -23,6 +23,7 @@ import { emit, playScene, interviewAfter } from './scenes.js';
 import { addScene } from './state.js';
 import { DON_GOES_AFTER, DEPART_CARRY, DEPART_CARRY_MAX, FORM, DRIVER } from './format.js';
 import { spotOfStage } from './spots.js';
+import { fearTime } from './fears.js';
 import { streamFor } from '../dr/rng.js';
 import { pairKey } from './scenes/registry.js';
 
@@ -255,6 +256,13 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       if (!l || !(l.to >= l.from)) continue;
       if (['pass', 'tip'].includes(sc.data.moment)) sc.data.t = l.to;
       else sc.data.t = Math.min(l.to, Math.max(l.from, sc.data.t));
+      // a fear at its stage, as the run now stands
+      if (sc.data.atStage) {
+        const row = (state.taskLog || []).find(r => r.leg === state.leg && r.team === sc.data.team && r.stretch === sc.data.stretch && r.from <= sc.data.t + 0.5 && sc.data.t <= r.to + 0.5)
+          || (state.taskLog || []).findLast(r => r.leg === state.leg && r.team === sc.data.team && r.stretch === sc.data.stretch);
+        const at = row && fearTime(row.stages, sc.data.atStage, row.from);
+        if (at != null) sc.data.t = Math.min(l.to, Math.max(l.from, at + 1));
+      }
     }
     // an interview is about a moment: it comes after it, wherever that moment now is
     const byId = new Map(state.scenes.filter(x => x.leg === state.leg).map(x => [x.id, x]));

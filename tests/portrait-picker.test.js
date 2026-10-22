@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setPortraitCatalog } from '../js/avatar-registry.js';
-import { renderPortraitPicker } from '../js/cast-ui.js';
+import { renderPortraitPicker, filterRoster, setFRANCHISE_ROSTER } from '../js/cast-ui.js';
 
 const CATALOG = {
   schemaVersion: 1,
@@ -78,4 +78,31 @@ describe('renderPortraitPicker', () => {
     expect(html).not.toContain('<img onerror=1>');
     expect(html).toContain('&lt;img onerror=1&gt;');
   });
+});
+
+describe('the roster search badge', () => {
+  // Arjun's second look was made in the casting studio for every show
+  // ('global'), and the badge counted only show-specific looks: no "+1",
+  // though the picker offered two.
+  const badgeFor = (slug, name, format = 'total-drama') => {
+    globalThis.seasonConfig = { format };   // cast-ui reads the page's global, not an import
+    setPortraitCatalog({ schemaVersion: 1, players: {
+      ...CATALOG.players,
+      arjun: { defaults: { global: 'base' }, portraits: [
+        { id: 'base', show: 'global', label: 'Profile default', file: 'arjun.png' },
+        { id: 'look-1', show: 'global', label: 'Casual', file: 'arjun-look-1.png' },
+      ] },
+    } }, ['bowie.png', 'bowie-bb.png', 'bowie-tr.png', 'plain.png', 'arjun.png', 'arjun-look-1.png']);
+    document.body.innerHTML = '<div id="roster-dropdown"></div>';
+    setFRANCHISE_ROSTER([{ name, slug, archetype: 'floater' }]);
+    filterRoster(name);
+    return document.querySelector('#roster-dropdown .roster-item').textContent.match(/\+(\d+)/)?.[1] ?? null;
+  };
+
+  it('counts a look made for every show', () => expect(badgeFor('arjun', 'Arjun')).toBe('1'));
+  it('counts this show\'s looks, not the profile default or a missing file', () => {
+    expect(badgeFor('bowie', 'Bowie', 'traitors')).toBe('1');
+    expect(badgeFor('bowie', 'Bowie', 'big-brother')).toBe('1');
+  });
+  it('shows nothing for a character with only the profile default', () => expect(badgeFor('plain', 'Plain')).toBe(null));
 });

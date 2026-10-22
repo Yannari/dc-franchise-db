@@ -408,7 +408,7 @@ export function filterRoster(query) {
     `<div class="roster-item" data-i="${i}" onmousedown="fillFromRoster(${JSON.stringify(p).replace(/"/g,'&quot;')})"
       style="padding:7px 10px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
       <span>${p.name}${_extraPortraitCount(p)
-    ? ` <span title="${_extraPortraitCount(p)} portrait${_extraPortraitCount(p) === 1 ? '' : 's'} for this show besides the default" style="font-size:9px;letter-spacing:.5px;color:#a78bfa">+${_extraPortraitCount(p)}</span>` : ''}</span>
+    ? ` <span title="${_extraPortraitCount(p)} portrait${_extraPortraitCount(p) === 1 ? '' : 's'} besides the profile default" style="font-size:9px;letter-spacing:.5px;color:#a78bfa">+${_extraPortraitCount(p)}</span>` : ''}</span>
       <span style="font-size:10px;color:var(--muted)">${p.archetype||''}</span>
     </div>`
   ).join('');
@@ -1006,10 +1006,16 @@ export async function renderSeasonSaveList() {
 // every portrait registered for THIS show, plus the profile default, and lets
 // the season pick one.
 
-/** How many show-specific looks this character has, for the roster dropdown. */
+/**
+ * How many looks the picker offers besides the profile default, for the roster
+ * dropdown: this show's and the every-show looks the casting studio makes
+ * (`global`), and only ones whose file exists.
+ */
 function _extraPortraitCount(p) {
-  try { return portraitOptions(baseAvatarSlug(p), seasonFormat(seasonConfig)).filter(o => !o.isGlobal).length; }
-  catch { return 0; }
+  try {
+    return portraitOptions(baseAvatarSlug(p), seasonFormat(seasonConfig))
+      .filter(o => !o.missing && !(o.isGlobal && o.id === 'base')).length;
+  } catch { return 0; }
 }
 
 let _formPortrait = { avatarId: null, avatarFile: '' };

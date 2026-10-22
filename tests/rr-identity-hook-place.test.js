@@ -16,7 +16,8 @@ describe('rr identity lines at a challenge', () => {
   it('opens the moment: never the last word of a task beat', () => {
     let n = 0;
     const late = [];
-    for (const seed of [41, 42]) {
+    // (three seasons: two came out with exactly ten such lines on 2026-10-21, and the guard measured its sample)
+    for (const seed of [41, 42, 43]) {
       const { cast, teams } = raceCast(12, seed);
       setPlayers(cast);
       for (const ep of airSeason(playRaceSeason({ teams, seed }))) for (const s of ep.segments) {

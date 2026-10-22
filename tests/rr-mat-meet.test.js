@@ -9,7 +9,7 @@ import { playRaceSeason } from '../js/rr/season.js';
 import { setPlayers } from '../js/core.js';
 import { raceCast } from './helpers/rr-cast.js';
 
-const mats = [], flights = [];
+const mats = [], flights = [], shortcuts = [];
 // what needs a road, a course or a task: never at the gate or on the plane (leg 7, 2026-10-21: a team was shoved into a
 // hedge and another sent down the "low path" while both waited for the same flight)
 const ROAD = ['push', 'ram', 'course-sabotage', 'fake-shortcut', 'free-ride', 'save-your-enemy', 'shove', 'help-offer', 'rescue',
@@ -21,6 +21,8 @@ beforeAll(() => {
     const res = playRaceSeason({ teams, seed });
     airSeason(res);
     for (const s of res.state.scenes) if (ROAD.includes(s.kind) && s.data?.snap?.mode === 'flight') flights.push(`seed ${seed} leg ${s.leg} ${s.kind}`);
+    // a shortcut is through the streets between two places ("Shortcut's through the car park" was said at the top of the tower)
+    for (const s of res.state.scenes) if (s.kind === 'fake-shortcut' && !(s.data?.snap?.stretchKind === 'travel' && ['foot', 'taxi', 'drive'].includes(s.data?.snap?.mode))) shortcuts.push(`seed ${seed} leg ${s.leg} ${s.data?.stretch} ${s.data?.snap?.stretchKind}/${s.data?.snap?.mode}`);
     for (const s of res.state.scenes) if (s.kind === 'gloat' && (s.data?.stretch === 'mat' || s.data?.snap?.stretchKind === 'mat')) mats.push(`seed ${seed} leg ${s.leg}`);
   }
 }, 600000);
@@ -28,6 +30,9 @@ beforeAll(() => {
 describe('rr: at the Chill Zone', () => {
   it('nobody gloats about passing a team that has already checked in', () => {
     expect(mats).toEqual([]);
+  });
+  it('a fake shortcut is only ever offered on the road between two places', () => {
+    expect(shortcuts).toEqual([]);
   });
   it('nobody is shoved, sent the wrong way or helped over a course while waiting for a flight', () => {
     expect(flights).toEqual([]);

@@ -42,7 +42,8 @@ describe('rr: the leg cuts between its teams', () => {
       for (let j = 1; j < ts.length; j++) {
         const next = segs.findIndex(s => s.stretch === ts[j]);
         if (next < 0) continue;
-        const late = segs.slice(next).filter(s => s.stretch === ts[j - 1] && s.kind !== 'don-demo');
+        // (a team Don goes out to on the road is the leg's ending: what it still did airs with the check-ins, rr-road-exit)
+        const late = segs.slice(next).filter(s => s.stretch === ts[j - 1] && s.kind !== 'don-demo' && !s.teams.every(id => leg.how?.[id] === 'on-location'));
         if (late.length) bad.push(`seed ${seed} leg ${leg.n}: ${late.length} at ${ts[j - 1]} after ${ts[j]} began`);
       }
     }
@@ -124,6 +125,7 @@ describe('rr: the leg cuts between its teams', () => {
       if (late.length) { could++; if (after.length) cut++; }
       for (const s of after) {
         const id = s.teams[0];
+        if (leg.how?.[id] === 'on-location') continue;
         if (!segs.slice(0, firstIn).some(x => x.stretch === lastT && x.teams.includes(id))) bad.push(`seed ${seed} leg ${leg.n}: ${id} first seen at ${lastT} after the mat opened`);
       }
     }

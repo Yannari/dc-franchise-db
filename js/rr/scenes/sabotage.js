@@ -46,7 +46,9 @@ register([
   K({ id: 'steal', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: c => (c.stretch?.kind && c.stretch.kind !== 'travel' ? w(0.04)(c) : 0), endings: sab({ delay: 30 }), facts, next: ruled }),
   K({ id: 'kidnap-pet', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: w(0.005), endings: sab({ delay: 60, rivalry: 3, backfire: 20 }), facts, next: ruled }),
   K({ id: 'course-sabotage', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: w(0.03), endings: sab({ delay: 25 }), facts, next: ruled }),
-  K({ id: 'fake-shortcut', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: w(0.02), endings: sab({ delay: 40 }), facts, next: ruled }),
+  // (a shortcut is through the streets between two places, on foot or by car: it was offered at the top of the tower,
+  // "Shortcut's through the car park", and at the bottom of a waterfall; 2026-10-21)
+  K({ id: 'fake-shortcut', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: c => (c.stretch?.kind === 'travel' && ['foot', 'taxi', 'drive'].includes(c.stretch?.mode) ? w(0.02)(c) : 0), endings: sab({ delay: 40 }), facts, next: ruled }),
   K({ id: 'mind-game', family: 8, cast: 'teams', scheme: true, moments: ['overlap'], when: w(0.05), endings: {
     rattled: { w: c => (10 - c.S(c.C, 'temperament')) / 5, fx: (fx, c) => { fx.mind(c.C, 'stress', 15); fx.pass(c.oid, -0.1); fx.rivalry(c.tid, c.oid, 1); c.state.rec[c.tid].sabotage++; c.seenBy = [c.A, c.B, c.C, c.D]; } },
     'steels-them': { w: c => c.S(c.C, 'temperament') / 5, fx: (fx, c) => { fx.bond(c.C, c.D, 1); fx.rivalry(c.tid, c.oid, 1); c.state.rec[c.tid].sabotage++; c.seenBy = [c.A, c.B, c.C, c.D]; } },

@@ -167,8 +167,15 @@ function taskBeat(state, row, i, kind = 'task-try') {
   // a try that took more than one go is a moment in the middle of it, not at the start (teams who arrived together
   // struggle on their own clocks)
   // ...and getting out of it is the end of it
-  const t = (kind === 'task-done' || (kind === 'task-try' && row.right != null)) && row.to > row.from ? Math.round(row.to)
+  let t = (kind === 'task-done' || (kind === 'task-try' && row.right != null)) && row.to > row.from ? Math.round(row.to)
     : kind === 'task-try' && ending !== 'first-try' && row.to > row.from ? Math.round((row.from + row.to) / 2) : row.from;
+  // (a try that came after failing comes after the failure the episode can air: halfway through the run was before the
+  // second miss of a long one, 2026-10-21)
+  if (kind === 'task-try' && ending === 'after-fails') {
+    const failed = state.scenes.filter(s => s.kind === 'attempt-fail' && s.leg === row.leg && s.data?.team === row.team && s.data?.stretch === row.stretch
+      && s.data.t >= row.from - 0.5 && s.data.t <= row.to + 0.5).map(s => s.data.t);
+    if (failed.length) t = Math.min(Math.max(row.to, row.from), Math.max(t, Math.round(Math.max(...failed)) + 1));
+  }
   return { id: `task:${row.leg}:${row.team}:${row.stretch}:${i}`, leg: row.leg, kind, who: [a, b], seenBy: [a, b],
     data: { ending, team: row.team, stretch: row.stretch, t, from: row.from, to: row.to,
       switched: row.switched, quit: row.quit, side: row.side,

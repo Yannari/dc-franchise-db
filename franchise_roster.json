@@ -8482,6 +8482,90 @@
       "descriptor": "The Quiet Storm",
       "backstory": "Kevin is the son of Ghanaian parents who settled in Toronto, and he followed his mother into nursing. He works nights on an emergency ward, where he has learned to read people in seconds and keep his face completely still while he does it. He plays chess in the park on his days off and is the one his friends call when something is wrong. His longest relationship ended when she said he was always calm and she never knew if he cared. He came in late as a bombshell on purpose, so he could watch the couples before choosing which one to test.",
       "personality": "Kevin is composed, attentive and hard to fool. He listens far more than he talks, notices small shifts in how people behave and usually knows who is lying before they have finished the sentence. He keeps his reads to himself until they are useful, and he can seem distant to people who mistake quiet for coldness. He is principled, has no taste for cruelty and doesn't make moves he would be ashamed of. When he cares about someone he is steady and protective. His challenge in the villa is putting what he feels into words before the chance to say it has passed."
+    },
+    {
+      "name": "Amara",
+      "slug": "amara",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 5,
+        "social": 9,
+        "strategic": 4,
+        "loyalty": 7,
+        "boldness": 7,
+        "intuition": 5,
+        "temperament": 6
+      },
+      "voice": "Loud, giggly and full of energy, talking with her whole body. Hypes up everyone around her, laughs at everything, and makes strangers feel like best friends in a minute. #loud #goofy #flirty",
+      "profileSources": {},
+      "ties": []
+    },
+    {
+      "name": "Antwon",
+      "slug": "antwon",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "villain",
+      "stats": {
+        "physical": 8,
+        "endurance": 6,
+        "mental": 5,
+        "social": 7,
+        "strategic": 6,
+        "loyalty": 3,
+        "boldness": 8,
+        "intuition": 5,
+        "temperament": 4
+      },
+      "voice": "Smooth, unhurried and very sure of himself. Speaks low and slow, raises one eyebrow instead of arguing, and makes it very clear he is here for someone else's girl. #flirty #proud#cruel",
+      "profileSources": {},
+      "ties": []
+    },
+    {
+      "name": "Elias",
+      "slug": "elias",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "goat",
+      "stats": {
+        "physical": 7,
+        "endurance": 6,
+        "mental": 3,
+        "social": 7,
+        "strategic": 2,
+        "loyalty": 7,
+        "boldness": 6,
+        "intuition": 2,
+        "temperament": 8
+      },
+      "voice": "Goofy, eager and earnest, with a huge grin and zero filter. Gets excited about everything, tells long stories with no point, and takes every joke at his own expense. #goofy #earnest#chaotic#ditzy",
+      "profileSources": {},
+      "ties": []
+    },
+    {
+      "name": "Georgia",
+      "slug": "georgia",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 7,
+        "endurance": 6,
+        "mental": 3,
+        "social": 8,
+        "strategic": 5,
+        "loyalty": 4,
+        "boldness": 8,
+        "intuition": 6,
+        "temperament": 5
+      },
+      "voice": "Cheeky, giggly and fearless, with a laugh that gets her into trouble. Flirts with whoever is closest, changes her mind on a whim, and dares herself into things for the story. #flirty #chaotic#blunt#emotional",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

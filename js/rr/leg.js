@@ -199,7 +199,8 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
   // stages to fit in the end: so a minute of the run as it now stands, `until`, is read off the stages in proportion)
   const stageSpot = (o, s, tt, from = null, until = null) => {
     if (from != null && tt - from <= MEET_START) return s.sides ? 'start' : (s.stages?.[0] ? spotOfStage(to.id, s.id, s.stages[0].id) : null);
-    const stages = state.attempts?.[o]?.[s.id]?.stages;
+    // (a run two teams share, the Superteam's sled, keeps its stages on the log, not on each team's own row)
+    const stages = state.attempts?.[o]?.[s.id]?.stages || (state.taskLog || []).findLast(r => r.leg === state.leg && r.team === o && r.stretch === s.id)?.stages;
     if (!stages?.length) return null;
     const last = Math.max(...stages.map(x => x.t));
     const at = from != null && Number.isFinite(until) && until > from && last > from ? from + (tt - from) * (last - from) / (until - from) : tt;
@@ -288,8 +289,8 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
         const there = atMat(id, t);
         if (there.length) talkAtOverlap(state, id, there, s, t, api, rng);
       }
-      // (a queue is everybody waiting for the thing, wherever they stand in it)
-      if (s.capacity && present.length + 1 > s.capacity) talkAtWait(state, [id, ...present.map(x => x.id)], s, t, api, rng, 'queue');
+      // (a queue is everybody at its start: the teams waiting, not one already out on the run)
+      if (s.capacity && here.length + 1 > s.capacity) talkAtWait(state, [id, ...here], s, t, api, rng, 'queue');
       // three or more teams at one task: they watch each other
       else if (TASKS.includes(s.kind) && here.length >= 2) talkAtWait(state, [id, ...here], s, t, api, rng, 'watching');
       // three or more on the mat: the crowd at the Chill Zone

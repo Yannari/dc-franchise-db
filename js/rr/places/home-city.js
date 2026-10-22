@@ -15,7 +15,7 @@ export default {
             { id: 'stairs-top', share: 0.3, risk: 0 }] },
         // the slow elevator, two teams at a time; clipping onto the rail at the deck door; the walk round the outside
         // deck in the wind (freeze: back to the start of the rail); in through the far door to the tip
-        { id: 'skydeck', label: 'Sky-deck', types: ['heights'], base: 25, pass: 0.6, loopCost: 10, capacity: 2,
+        { id: 'skydeck', label: 'Sky-deck', types: ['heights'], base: 25, pass: 0.7, loopCost: 10, capacity: 2,
           stages: [{ id: 'elevator', share: 1, risk: 0 }, { id: 'clip-on', share: 0.4, risk: 0.3 }, { id: 'rail', share: 2, risk: 1 },
             { id: 'deck-top', share: 0.3, risk: 0 }] },
       ] },

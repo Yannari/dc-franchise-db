@@ -153,7 +153,9 @@ describe('rr viewer steps', () => {
   it('shows every team at every task it ran', () => {
     each((ep, p, i) => {
       const leg = p.res.legs[i];
-      const rows = (p.res.state.taskLog || []).filter(r => r.leg === leg.n && PLACES[leg.place]?.stretches.some(s => s.id === r.stretch));
+      // (a team Don went out to on the road isn't seen at a challenge it only got to after he reached it: rr-road-exit)
+      const exitT = id => (p.res.state.scenes.find(x => x.leg === leg.n && x.kind === 'don-arrives' && x.data?.team === id)?.data?.t ?? Infinity);
+      const rows = (p.res.state.taskLog || []).filter(r => r.leg === leg.n && PLACES[leg.place]?.stretches.some(s => s.id === r.stretch) && r.from <= exitT(r.team));
       const seen = new Set(ep.screens.filter(s => s.stretch).flatMap(s => (s.teams || []).map(t => `${t}|${s.stretch}`)));
       const missing = rows.filter(r => !seen.has(`${r.team}|${r.stretch}`)).map(r => `${r.team}@${r.stretch}`);
       expect(missing, `leg ${leg.n}`).toEqual([]);

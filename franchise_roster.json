@@ -8342,6 +8342,27 @@
       "voice": "Passionate, cocky and quick to fire up. Talks with his hands, jokes loudly, and goes from flirting to furious in the time it takes someone to look at his girl. #loud #flirty#competitive #-goofy#blunt",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Pablo",
+      "slug": "pablo",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 9,
+        "endurance": 8,
+        "mental": 4,
+        "social": 6,
+        "strategic": 3,
+        "loyalty": 7,
+        "boldness": 8,
+        "intuition": 4,
+        "temperament": 2
+      },
+      "voice": "Passionate, cocky and quick to fire up. Talks with his hands, jokes loudly, and goes from flirting to furious in the time it takes someone to look at his girl. #loud #flirty#competitive #-goofy#blunt",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

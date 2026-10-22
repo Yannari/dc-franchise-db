@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
-import { POOLS, HUT, NARRATOR, SPEAKERS, FACT_KEYS, renderScript, speak } from '../js/pm/script.js';
+import { POOLS, HUT, NARRATOR, SPEAKERS, FACT_KEYS, renderScript, speak, VOICE_MISSES, voiceKey } from '../js/pm/script.js';
+import { WORDS } from '../js/td/story/voice-words.js';
+import { FAMILY } from '../js/td/story/voice-family-map.js';
 import { SLOTS, REGIONAL_WORDS } from '../js/pm/lines/dialect.js';
 import { DAY } from '../js/pm/lines/day.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
@@ -9,11 +11,12 @@ import { foreignWordsIn } from './helpers/show-vocabulary.js';
 const ENTRIES = [...Object.entries(POOLS).flatMap(([k, pool]) => pool.map(e => [k, e])),
   ...Object.entries(HUT).flatMap(([k, pool]) => pool.map(e => [`hut:${k}`, e])),
   ...Object.entries(NARRATOR).flatMap(([k, pool]) => pool.map(e => [`narrator:${k}`, e]))];
+// …and every voice a line carries (lines/voices/): a voice is held to every rule its line is.
 function texts(e) {
   const out = [e.stage, e.beat];
   for (const t of e.turns || []) {
-    if (Array.isArray(t)) out.push(t[1]);
-    else for (const v of t.vary) { out.push(v.beat); for (const [, x] of v.turns) out.push(x); }
+    if (Array.isArray(t)) out.push(t[1], ...Object.values(t[2] || {}));
+    else for (const v of t.vary) { out.push(v.beat); for (const [, x, vo] of v.turns) out.push(x, ...Object.values(vo || {})); }
   }
   return out.filter(Boolean);
 }
@@ -112,6 +115,35 @@ describe('the pools are well-formed', () => {
     for (const [k, e] of ENTRIES) for (const t of e.turns || []) {
       if (!Array.isArray(t)) expect(t.vary.some(v => !v.when), `${k} ${e.id}`).toBe(true);
     }
+  });
+});
+
+describe('a line in the speaker\'s own voice (lines/voices/)', () => {
+  it('every voice finds its line: an edited line never keeps voices meant for its old words', () => {
+    expect(VOICE_MISSES).toEqual([]);
+  });
+  it('a voice is keyed by a voice tag or one of its five families', () => {
+    const OK = new Set([...WORDS.map(([t]) => t), ...Object.values(FAMILY)]);
+    const bad = [];
+    for (const [k, e] of ENTRIES) for (const t of turns(e)) for (const key of Object.keys(t[2] || {})) if (!OK.has(key)) bad.push(`${k} ${e.id}: ${key}`);
+    expect(bad).toEqual([]);
+  });
+  it('only an islander speaks in a voice: never the host or the narrator', () => {
+    for (const [k, e] of ENTRIES) for (const t of turns(e)) if (t[2]) expect(['a', 'b', 'c', 'd'], `${k} ${e.id}`).toContain(t[0]);
+  });
+  it('the speaker\'s strongest tag picks the voice, then its family, then the next tag', () => {
+    setPlayers([
+      { name: 'Hash', gender: 'f', archetype: 'hero', stats: {}, voice: 'Quiet and kind. #goofy' },
+      { name: 'Fam', gender: 'm', archetype: 'hero', stats: {}, voice: 'Theatrical and dramatic about everything.' },
+      { name: 'Plain', gender: 'f', archetype: 'hero', stats: {}, voice: '' },
+    ]);
+    const v = { goofy: 'G', odd: 'O', soft: 'S' };
+    expect(voiceKey('Hash', v)).toBe('goofy');                 // the hashtag leads
+    expect(voiceKey('Fam', v)).toBe('odd');                    // theatrical has no line, its family does
+    expect(voiceKey('Plain', { sharp: 'X' })).toBe(null);      // hero = earnest, warm: nothing sharp about it
+    const line = renderScript({ id: 't', turns: [['a', 'Go on.', { goofy: 'Ooh. Go on, go on.' }]] }, ['Hash']).lines[0];
+    expect(line.text).toBe('Ooh. Go on, go on.');
+    expect(JSON.parse(JSON.stringify(line))).toEqual({ who: 'Hash', text: 'Ooh. Go on, go on.' });   // nothing extra saved
   });
 });
 

@@ -46,6 +46,9 @@ import { HEAT_LINES } from './lines/day/heat.js';
 import { KISS_ROUND_LINES } from './lines/kiss-round.js';
 import { STEAMY_NARRATOR, STEAMY_SCENES } from './lines/steamy.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
+import { VOICES } from './lines/voices/index.js';
+import { voiceOf } from '../td/story/voice.js';
+import { FAMILY } from '../td/story/voice-family-map.js';
 
 export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES, ...CLOSE, ...ANSWER, ...KISS_LINES, ...RULES_LINES };
 // The pools a season ran dry of (lines/day/more-d.js), added to whichever pool holds the kind.
@@ -79,6 +82,49 @@ for (const [k, v] of Object.entries(KISS_ROUND_LINES)) POOLS[k] = [...(POOLS[k] 
 for (const [k, v] of Object.entries(STEAMY_SCENES)) POOLS[k] = [...(POOLS[k] || []), ...v];
 for (const [k, v] of Object.entries(STEAMY_NARRATOR)) NARRATOR[k] = [...(NARRATOR[k] || []), ...v];
 export { HUT, NARRATOR };
+
+// ── a line in the speaker's own voice (lines/voices/) ─────────────────
+// Each voice hangs on its turn as a third element: [who, text, { tag: text }].
+// Found by the entry's id AND the line's words, so an edited line drops its
+// voices loudly (VOICE_MISSES, kept empty by tests/pm-lines.test.js) instead
+// of attaching them to whatever now sits at that position.
+export const VOICE_MISSES = [];
+{
+  const byId = new Map();
+  for (const pool of [...Object.values(POOLS), ...Object.values(HUT)]) for (const e of pool) {
+    if (!byId.has(e.id)) byId.set(e.id, []);
+    byId.get(e.id).push(e);
+  }
+  const spoken = e => (e.turns || []).flatMap(t => (Array.isArray(t) ? [[t, e.turns]] : t.vary.flatMap(v => v.turns.map(x => [x, v.turns]))));
+  const everyEntry = [...byId.values()].flat();
+  // id '*': the line wherever an islander says it. Only for the short replies that
+  // mean the same thing in every scene ("Go on.", "I know.", "Me too."), which are
+  // a few words in hundreds of entries and the most-heard words in a season.
+  for (const [id, text, v] of VOICES) {
+    let hit = false;
+    for (const e of id === '*' ? everyEntry : byId.get(id) || []) for (const [t, list] of spoken(e)) {
+      if (t[1] !== text || !['a', 'b', 'c', 'd'].includes(t[0])) continue;
+      list[list.indexOf(t)] = [t[0], t[1], { ...(t[2] || {}), ...v }];
+      hit = true;
+    }
+    if (!hit) VOICE_MISSES.push(`${id} :: ${text}`);
+  }
+}
+
+// Age is a register, not a personality (td/story/voice.js): a PM line has no age versions.
+const AGE_TAGS = new Set(['kid', 'teen', 'adult', 'grown']);
+/** Which of a turn's voices this islander speaks: their strongest tag with one, then its family. */
+export function voiceKey(name, v) {
+  if (!v || !name) return null;
+  let tags;
+  try { tags = voiceOf(name); } catch { return null; }
+  for (const t of tags) {
+    if (AGE_TAGS.has(t)) continue;
+    if (v[t]) return t;
+    if (FAMILY[t] && v[FAMILY[t]]) return FAMILY[t];
+  }
+  return null;
+}
 
 export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'staying', 'came', 'another', 'ago', 'behind', 'friction', 'chose', 'rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
@@ -459,10 +505,17 @@ export function renderScript(entry, ps, state = null, slots = {}) {
   return {
     id: picked.length ? `${entry.id}:${picked.join('.')}` : entry.id,
     stage: entry.stage ? f(entry.stage) : null,
-    lines: lines.map(([who, text]) => {
+    lines: lines.map(([who, text, voices]) => {
       const d = who === 'dior' ? HOST_DIALECT() : who === 'narrator' ? NARRATOR_DIALECT()
         : dialectOf(state, ps[ORDER[who]]);
-      return { who: speakerName(who, ps), text: speak(f(text), d) };
+      const name = speakerName(who, ps);
+      // The islander's own voice, when the line has one for them (lines/voices/).
+      const key = voices && ORDER[who] != null ? voiceKey(name, voices) : null;
+      const out = { who: name, text: speak(f(key ? voices[key] : text), d) };
+      // For the measuring probes only, never saved: which line this was, and in whose voice.
+      Object.defineProperty(out, 'base', { value: text, enumerable: false });
+      if (key) Object.defineProperty(out, 'voice', { value: key, enumerable: false });
+      return out;
     }),
     beat: beat ? f(beat) : null,
   };

@@ -131,7 +131,9 @@ describe('a line in the speaker\'s own voice (lines/voices/)', () => {
   it('only an islander speaks in a voice: never the host or the narrator', () => {
     for (const [k, e] of ENTRIES) for (const t of turns(e)) if (t[2]) expect(['a', 'b', 'c', 'd'], `${k} ${e.id}`).toContain(t[0]);
   });
-  it('the speaker\'s strongest tag picks the voice, then its family, then the next tag', () => {
+  // A voice is a mix (pm-voice-mix.test.js). With no scene to place it (u = 0)
+  // the pick lands on the first tag: here, the one each speaker has.
+  it('a tag picks its own version, else its family\'s, and an unrelated voice keeps the line', () => {
     setPlayers([
       { name: 'Hash', gender: 'f', archetype: 'hero', stats: {}, voice: 'Quiet and kind. #goofy' },
       { name: 'Fam', gender: 'm', archetype: 'hero', stats: {}, voice: 'Theatrical and dramatic about everything.' },

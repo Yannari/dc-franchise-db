@@ -7981,6 +7981,27 @@
       "voice": "Calm, warm-sounding and endlessly reasonable, the one everyone comes to for advice. Listens carefully, asks gentle questions, and somehow the advice always points where he wanted it to. #schemer #calm",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Ayesha",
+      "slug": "ayesha",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 7,
+        "social": 7,
+        "strategic": 5,
+        "loyalty": 6,
+        "boldness": 6,
+        "intuition": 8,
+        "temperament": 7
+      },
+      "voice": "Measured, amused and hard to impress. Sizes people up with one long look, asks the question nobody else dares to, and only lets her guard down for someone who has earned it. #dry #flirty",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

@@ -83,6 +83,43 @@ for (const [k, v] of Object.entries(STEAMY_SCENES)) POOLS[k] = [...(POOLS[k] || 
 for (const [k, v] of Object.entries(STEAMY_NARRATOR)) NARRATOR[k] = [...(NARRATOR[k] || []), ...v];
 export { HUT, NARRATOR };
 
+// ── a voice still has to be understood ─────────────────────────────────
+// The user, 2026-10-22, reading a chat: "Why?! This?! Go!" / "Dare! Phone call!
+// Here!" for "So what made you want to do this?" / "My friends dared me to
+// apply, and then I got a phone call". Earlier batches wrote some voices as
+// strings of one-word fragments (chaotic: 6,570 of 7,366 lines) or cut a whole
+// sentence to a word or two (quiet "Coincidence?" for "{c} latched on to the one
+// person everyone loves. Coincidence?"; blunt, tough, bossy and ditzy the same).
+// A version like that is dropped here, so the speaker says the plain line or
+// another of their tags instead; VOICE_DROPPED lists them (tests/pm-lines).
+export const VOICE_DROPPED = [];
+const wordsIn = s => String(s).replace(/\{[^}]+\}/g, 'X').split(/\s+/).filter(w => /[A-Za-z0-9]/.test(w));
+const sentencesIn = s => String(s).split(/(?<=[.!?…])\s+/).filter(x => wordsIn(x).length);
+const bare = s => String(s).toLowerCase().replace(/[^a-z0-9{}~ ]+/g, ' ').replace(/\s+/g, ' ').trim();
+/** Why a version can't be followed, or null when it reads. */
+export function unreadable(base, line) {
+  if (bare(line).includes(bare(base))) return null;       // the plain line is in there ("Mm. Go on.")
+  const n = wordsIn(line).length, nb = wordsIn(base).length;
+  if (nb >= 6 && n <= 3) return 'cut';                     // a sentence cut to a word or two
+  // Shouted fragments: every sentence a word or two, two or more of them
+  // exclaimed, where the plain line was a real sentence ("Why?! This?! Go!").
+  // Short spoken sentences stay ("Okay. That stings. But okay.").
+  const ss = sentencesIn(line), bs = sentencesIn(base);
+  const shouted = ss.filter(x => /!\s*$|\?!\s*$/.test(x.trim())).length;
+  const baseClipped = bs.length && bs.filter(x => wordsIn(x).length <= 2).length / bs.length >= 0.5;
+  if (ss.length >= 2 && ss.every(x => wordsIn(x).length <= 2) && shouted >= 2 && !baseClipped) return 'fragments';
+  return null;
+}
+function readableVoices(base, v) {
+  const out = {};
+  for (const [k, line] of Object.entries(v || {})) {
+    const why = unreadable(base, line);
+    if (why) VOICE_DROPPED.push({ key: k, why, base, line });
+    else out[k] = line;
+  }
+  return out;
+}
+
 // ── a line in the speaker's own voice (lines/voices/) ─────────────────
 // Each voice hangs on its turn as a third element: [who, text, { tag: text }].
 // Found by the entry's id AND the line's words, so an edited line drops its
@@ -100,8 +137,9 @@ export const VOICE_MISSES = [];
   // id '*': the line wherever an islander says it. Only for the short replies that
   // mean the same thing in every scene ("Go on.", "I know.", "Me too."), which are
   // a few words in hundreds of entries and the most-heard words in a season.
-  for (const [id, text, v] of VOICES) {
+  for (const [id, text, raw] of VOICES) {
     let hit = false;
+    const v = readableVoices(text, raw);
     for (const e of id === '*' ? everyEntry : byId.get(id) || []) for (const [t, list] of spoken(e)) {
       if (t[1] !== text || !['a', 'b', 'c', 'd'].includes(t[0])) continue;
       list[list.indexOf(t)] = [t[0], t[1], { ...(t[2] || {}), ...v }];
@@ -110,6 +148,7 @@ export const VOICE_MISSES = [];
     if (!hit) VOICE_MISSES.push(`${id} :: ${text}`);
   }
 }
+
 
 // ── whose voice a line comes out in ──────────────────────────────────
 // A voice is a MIX, not its strongest tag. Strongest-tag-wins gave the second

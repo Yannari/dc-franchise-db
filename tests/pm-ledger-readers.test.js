@@ -9,7 +9,9 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'js', 'pm');
-const ALLOWED = new Set(['ledger.js', 'public-vote.js', 'arrivals.js', 'season.js']);
+// export.js publishes a FINISHED season (each islander's on-air following);
+// it runs after the last night and no islander decides anything from it.
+const ALLOWED = new Set(['ledger.js', 'public-vote.js', 'arrivals.js', 'season.js', 'export.js']);
 const READERS = /\b(readApproval|coupleScore|followers|ledgerSnapshot)\b|\.approval\s*\[|\.fame\s*\[/;
 const strip = src => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\r\n]*/g, '');
 

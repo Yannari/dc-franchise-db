@@ -35,6 +35,8 @@ import { SHOWS, seasonId, exitVerbs, PERFECT_MATCH_FORMAT } from '../shows.js';
 import { TWIST_CATALOG } from '../core.js';
 import { momentTitle } from './transcript.js';
 import { CHALLENGE_NAMES } from './schedule.js';
+import { followers } from './ledger.js';
+import { publishedRatings } from '../ratings.js';
 
 export const PERFECT_MATCH = PERFECT_MATCH_FORMAT;
 const slug = n => String(n || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -168,6 +170,7 @@ export function pmTwistsPlayed(rows = []) {
 export function buildPerfectMatchSeasonDocument(rows = [], { seasonNumber = 1 } = {}) {
   const history = pmVotingHistory(rows);
   const final = finalOf(rows);
+  const lastPm = rows[rows.length - 1]?.pm || {};
   const placements = pmPlacements(rows).map(p => {
     const career = pmCareerStats(rows, p.name);
     // THE PAIR, where it outlived the villa: a finalist couple, or a couple
@@ -178,9 +181,13 @@ export function buildPerfectMatchSeasonDocument(rows = [], { seasonNumber = 1 } 
     const partner = finalCouple ? finalCouple.find(n => n !== p.name) : leftWith;
     return { ...p, ...(partner ? { showmance: partner, showmanceEnded: 'intact' } : {}),
       pm: { couplings: career.couplings, timesStolen: career.timesStolen, publicVotesSurvived: career.publicVotesSurvived,
-        finalApproval: career.finalApproval, label: career.label } };
+        finalApproval: career.finalApproval, label: career.label,
+        // The following the villa built them on air: fame scaled by how the
+        // public took them, as the season ended (js/pm/ledger.js). Dramagram
+        // adds it on top of the debut (js/dramagram.js FOLLOWERS.onAir).
+        followers: followers({ approval: lastPm.approval || {}, fame: lastPm.fame || {} }, p.name) } };
   });
-  const last = rows[rows.length - 1]?.pm || {};
+  const last = lastPm;
   const winners = (final[0]?.couple || []).map(n => ({ name: n, playerSlug: slug(n), share: Math.round(final[0].share * 1000) / 1000 }));
   // The public's favourite islander at the end: the show's audience award.
   const fav = Object.entries(last.approval || {}).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
@@ -200,6 +207,10 @@ export function buildPerfectMatchSeasonDocument(rows = [], { seasonNumber = 1 } 
     fanFavourite: fav ? { name: fav, playerSlug: slug(fav) } : null,
     placements: placements.map(p => (fav && p.name === fav ? { ...p, fanFavourite: true } : p)),
     votingHistory: history,
+    // How the season went down with the country. Stored, as Total Drama's is,
+    // because the published document has none of the villa the reader needs,
+    // and Dramagram scales every islander's followers by it.
+    ratings: publishedRatings(rows, { format: PERFECT_MATCH }),
     twists: pmTwistsPlayed(rows),
     emoji: SHOWS[PERFECT_MATCH].emoji,
     exitVerbs: exitVerbs(PERFECT_MATCH),

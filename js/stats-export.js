@@ -14,7 +14,7 @@ import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
 import { nextWindowFor, nextAllStarsWindow } from './franchise-calendar.js';
-import { ratingsForSeason } from './ratings.js';
+import { ratingsForSeason, publishedRatings } from './ratings.js';
 import { publishedExitInterviews } from './bb/exit-interview.js';
 import { publishedTDExitInterviews } from './td/exit-interview.js';
 import { publishedExits } from './exit-interview/house.js';
@@ -3734,6 +3734,10 @@ export async function exportDragRaceSeason(onStatus) {
     congeniality: gs.dr?.congeniality || null,
   });
   doc.exitInterviews = publishedExits('drag-race');
+  // The placements reader sees a drag season (tests/dr-ratings.test.js), so it
+  // is rated like Total Drama's: stored here, and Dramagram scales every
+  // queen's followers by it. Before, a drag season carried no rating at all.
+  doc.ratings = doc.ratings || publishedRatings(rows, { format: DRAG_FORMAT });
 
   _status(`Built ${doc.seasonId}: ${doc.castSize} queens, ${doc.episodeCount} episodes.`);
 

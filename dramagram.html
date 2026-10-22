@@ -792,7 +792,10 @@ function followerStory(h) {
   if (!big) return '';
   const when = big.season ? (big.season.title || big.season.seasonId) : '';
   const verb = big.delta > 0 ? 'Up' : 'Down';
-  return `${verb} ${short(Math.abs(big.delta))} ${big.why === 'won' ? 'for winning' : `after ${big.why}`}${when ? ` ${when}` : ''}.`;
+  const reason = big.why === 'won' ? 'for winning'
+    : big.why === 'followed on air' ? 'from the following built on air on'
+    : `after ${big.why}`;
+  return `${verb} ${short(Math.abs(big.delta))} ${reason}${when ? ` ${when}` : ''}.`;
 }
 
 const tick = () => '<svg class="dg-tick" width="15" height="15" viewBox="0 0 24 24" aria-label="verified">'

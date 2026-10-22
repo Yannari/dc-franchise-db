@@ -101,6 +101,19 @@ export const FOLLOWERS = {
   // Seasons with no rating pay exactly what they always did: 1 throughout.
   reachFloor: 0.6,
   reachCeiling: 1.32,
+  // ── the following a show builds ON AIR ──
+  //
+  // Perfect Match keeps its own count while the season plays: fame from every
+  // aired scene, scaled by how the public took them (js/pm/ledger.js,
+  // followers()), and published on the islander's season (pm.followers). It is
+  // added on top of the debut, converted at this rate, because the villa's
+  // scale is not this one: across six measured seasons the median islander
+  // ended on ~180k and the best on ~660k, against a 12k debut and a 120k win
+  // here — taken raw, an ordinary islander would outrank every winner of every
+  // other show. At a quarter, the best of a villa lands where a win does.
+  //
+  // Scaled by REACH, not by the edit: approval is already inside the number.
+  onAir: 0.25,
   floor: 800,                   // nobody ends at zero; the account still exists
 };
 
@@ -224,6 +237,12 @@ export function followerHistory(slug, { careers = [], seasons = [], events = [] 
       steps.push({ season, why: debuted ? 'played' : 'debut', delta: exposure });
       n += exposure;
       debuted = true;
+      const built = Number(played.pm?.followers);
+      if (Number.isFinite(built) && built > 0) {
+        const add = Math.round(built * FOLLOWERS.onAir * reach);
+        n += add;
+        steps.push({ season, why: 'followed on air', delta: add });
+      }
       const place = Number(played.placement);
       const bonus = place === 1 ? FOLLOWERS.win
         : place === 2 ? FOLLOWERS.runnerUp

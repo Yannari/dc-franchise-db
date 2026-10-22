@@ -980,6 +980,26 @@ export function ratingsForSeason(history, opts = {}) {
   };
 }
 
+/**
+ * The rating a published season document stores: score, tier, the four
+ * demographics to one decimal, and the weekly curve as bare numbers.
+ *
+ * Only for a show whose reader can actually see its rounds (Total Drama and
+ * Big Brother's votes, Drag Race's placements, Perfect Match's villa). On a
+ * show the readers cannot see, every signal reads zero and every season
+ * publishes the same flat score — measured on The Circle, 46.1 "Okay" for
+ * every seed — and Dramagram scales a whole cast's followers by it.
+ */
+export function publishedRatings(history, opts = {}) {
+  const r = ratingsForSeason(history, opts);
+  if (!r) return null;
+  return {
+    v: r.v, score: r.score, tier: r.tier,
+    demos: Object.fromEntries(Object.entries(r.demos).map(([k, v]) => [k, Math.round(v * 10) / 10])),
+    curve: r.weeks.map(w => w.overall),
+  };
+}
+
 // ── What moved them ──────────────────────────────────────────────────
 //
 // A number with no reason attached is a scoreboard. These are the sentences

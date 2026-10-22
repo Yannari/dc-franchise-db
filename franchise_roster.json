@@ -8545,6 +8545,27 @@
       "voice": "Goofy, eager and earnest, with a huge grin and zero filter. Gets excited about everything, tells long stories with no point, and takes every joke at his own expense. #goofy #earnest#chaotic#ditzy",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Georgia",
+      "slug": "georgia",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 7,
+        "endurance": 6,
+        "mental": 3,
+        "social": 8,
+        "strategic": 5,
+        "loyalty": 4,
+        "boldness": 8,
+        "intuition": 6,
+        "temperament": 5
+      },
+      "voice": "Cheeky, giggly and fearless, with a laugh that gets her into trouble. Flirts with whoever is closest, changes her mind on a whim, and dares herself into things for the story. #flirty #chaotic#blunt#emotional",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

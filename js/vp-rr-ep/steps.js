@@ -669,12 +669,15 @@ function sizeFor(n, mode) {
 }
 
 // Progress through a task over a screen's steps: up, a slip back on a failed try, through.
-function progressPlan(n, ending) {
+// the line of a stage that says what they carried went: "the chest tumbles", "drops the statue", "lets go"
+export const DROPS = /\b(drops?|dropped|tumbles?|slips?|lets? go|falls?|fell)\b/i;
+function progressPlan(n, ending, failAt = -1) {
   const out = [];
   // (a stage where it went wrong plays like a try after fails: on its way, then back to the start of the stage)
   if (ending === 'fail') ending = 'after-fails';
   if (ending === 'after-fails' || ending === 'struggling') {
-    const fail = Math.max(1, Math.floor(n / 2));
+    // (it goes wrong halfway, or on the line that says it does: `failAt`)
+    const fail = failAt >= 0 && failAt < n ? failAt : Math.max(1, Math.floor(n / 2));
     for (let i = 0; i < n; i++) out.push(i < fail ? 0.15 + 0.5 * (i + 1) / fail : i === fail ? 0 : (i - fail) / Math.max(1, n - 1 - fail));
     return { p: out, fail: n > 1 ? fail : -1 };
   }
@@ -689,7 +692,7 @@ function progressPlan(n, ending) {
 // "a crowded same-flight galley overlaps").
 export const OVERLAP_OK = 0.08;                 // two faces may touch by this much of the smaller one, no more
 const STAGED = ['marks', 'as', 'pos', 'plan', 'swimmers', 'away', 'inset', 'donStand', 'localAt', 'boxAt', 'matAt', 'donAt', 'hiddenUntil', 'onMatAt', 'work', 'lift', 'liftAt',
-  'workProp', 'judgeAt', 'leapAt'];
+  'workProp', 'judgeAt', 'leapAt', 'dropAt'];
 // The work's cut-out beside the team doing it (a sand palace, a mitten, a platter), on the side with more room, and the
 // local who judges it (the surfer boy, the carnival dancer, the coach) beyond it, as tall as a racer: placed here so
 // the teams behind the shot keep clear of them (planCrowd) and the stage only draws them.
@@ -811,8 +814,13 @@ function layout(s, size) {
     } else arriving.forEach(id => { marks[id] = [...mat]; as[id] = 'stand'; });
     s.donStand = s.donAt;
   } else if (s.mode === 'act' && plate?.path && PATH_MODES.has(plate.mode)) {
-    const plan = progressPlan(ps, s.ending === 'any' && s.seg === 'task-done' ? 'done' : s.ending);
+    // (a climb that drops what it carries slips on the line that says so: the chest tumbles as it is read)
+    const said = plate.drop ? s.steps.findIndex(x => x.part === 'beat' && DROPS.test(x.text || '')) : -1;
+    const plan = progressPlan(ps, s.ending === 'any' && s.seg === 'task-done' ? 'done' : s.ending, said);
     s.plan = plan;
+    // what the climb carried goes on the step it fails: out of their arms, down to where it lands (plates.js `drop`)
+    // (`from`: where they were on the climb when it went, so the fall plays even when the screen opens on it)
+    if (plate.drop && plate.carry && plan.fail >= 0) s.dropAt = { k: plan.fail, to: plate.drop, what: plate.carry, from: pathAt(plate.path, plan.fail > 0 ? plan.p[plan.fail - 1] : 0.65) };
     s.pos = [];
     const ride = plate.mode === 'ride';
     // teams on the same path keep a face's width and more apart along it (the path's length in % of the frame)

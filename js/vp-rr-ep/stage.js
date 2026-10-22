@@ -115,7 +115,9 @@ export function createStage(holder, { faceOf, legLabel }) {
     if (as === 'push' && veh) veh += WHEELS;
     // what the challenge has them wear (the helmets on the deck and the zipline: the user, 2026-10-21, "the helmet isnt
     // even on their head"), on both their heads
-    const wear = pl.wear ? `<span class="wear w0"><img src="${propUrl(pl.place || s.place, pl.wear)}" alt=""></span><span class="wear w1"><img src="${propUrl(pl.place || s.place, pl.wear)}" alt=""></span>` : '';
+    // (`wearOn: 'waist'`: under each face, the grass skirts at the fire walk; 2026-10-21)
+    const wcls = pl.wearOn === 'waist' ? ' waist' : '';
+    const wear = pl.wear ? `<span class="wear${wcls} w0"><img src="${propUrl(pl.place || s.place, pl.wear)}" alt=""></span><span class="wear${wcls} w1"><img src="${propUrl(pl.place || s.place, pl.wear)}" alt=""></span>` : '';
     e.innerHTML = `<div class="pair">${[t.a, t.b].map(n => `<img data-p="${esc(n)}" src="${faceOf(n)}" alt="">`).join('')}${wear}</div>${veh}<div class="shadow"></div><div class="lab">${esc(t.name)}</div>`;
     toks.appendChild(e);
     return e;
@@ -173,6 +175,14 @@ export function createStage(holder, { faceOf, legLabel }) {
   function prop(src, pos, w, z = 8) {
     const p = document.createElement('img'); p.className = 'prop'; p.src = src; p.style.left = pos[0] + '%'; p.style.top = pos[1] + '%'; p.style.width = w + 'cqw'; p.style.zIndex = z;
     under.appendChild(p); return p;
+  }
+  // what a climb dropped, where it landed (steps.js dropAt): one per screen, bobbing if it fell in the water
+  function droppedEl(s) {
+    const got = under.querySelector('.prop.dropped');
+    if (got) return got;
+    const d = prop(propUrl(s.plate.place || s.place, s.dropAt.what), s.dropAt.to, (s.size || 8) * 0.95, 7);
+    d.classList.add('dropped'); if (s.plate.water) d.classList.add('afloat');
+    return d;
   }
   // a stamp (steps.js planStamps decides which, stampSpot where): above or beside its team, never on a face
   function stamp(s, k, view, fresh) {
@@ -536,6 +546,8 @@ export function createStage(holder, { faceOf, legLabel }) {
         continue;
       }
       const e = tokenEl(ep, s, id, at, { extraCls: it.out[id] ? 'out' : '' });
+      // dropped (the chest off the cliff path): not in their arms any more, lying where it landed
+      if (s.dropAt && id === s.teams[0] && k >= s.dropAt.k) { e.querySelector('.veh.carry')?.remove(); droppedEl(s); }
       if (gone.length) {
         e.querySelectorAll('.pair img').forEach(im => { if (gone.includes(im.dataset.p)) im.remove(); });
         const left = e.querySelector('.pair img'); if (left) left.style.left = 'calc(var(--sz) * .275)';
@@ -685,6 +697,18 @@ export function createStage(holder, { faceOf, legLabel }) {
     // a slip on a failed try, a quit
     if (s.plan?.fail === k) {
       const id = s.teams[0], at = posAt(s, id, k) || s.marks[id];
+      // it goes out of their arms and falls, turning over, to where it lands (a splash in water)
+      if (s.dropAt?.k === k) {
+        const from = s.dropAt.from || posAt(s, id, k - 1) || at, to = s.dropAt.to;
+        // (the screen opens on the slip: they come down from where it went, as a slip on a later line does)
+        if (k === 0 && at) toks.querySelectorAll(`[data-team="${id}"]:not([data-crowd])`).forEach(e => e.animate([{ left: from[0] + '%', top: from[1] + '%' }, { left: at[0] + '%', top: at[1] + '%' }], { duration: 650, easing: 'cubic-bezier(.6,0,.9,.6)', fill: 'backwards' }));
+        toks.querySelectorAll(`[data-team="${id}"]:not([data-crowd]) .veh.carry`).forEach(c => c.remove());
+        const d = droppedEl(s);
+        d.animate([{ left: from[0] + '%', top: from[1] + '%', transform: 'translate(-50%,-100%) rotate(0)' },
+          { left: (from[0] + to[0]) / 2 + '%', top: Math.min(from[1], to[1]) - 6 + '%', transform: 'translate(-50%,-100%) rotate(-200deg)', offset: 0.3 },
+          { left: to[0] + '%', top: to[1] + '%', transform: 'translate(-50%,-100%) rotate(-380deg)' }], { duration: 1100, delay: 150, easing: 'cubic-bezier(.45,0,.9,.55)', fill: 'backwards' });
+        later(1250, () => (s.plate.water || pl.fx === 'splash' ? splash(to[0], to[1], 14) : particles('dust', to[0], to[1], 10, 5)));
+      }
       toks.querySelectorAll(`[data-team="${id}"]`).forEach(e => e.animate([{ transform: 'translate(-50%,-100%) rotate(0)' }, { transform: 'translate(-54%,-100%) rotate(-8deg)' }, { transform: 'translate(-46%,-100%) rotate(8deg)' }, { transform: 'translate(-50%,-100%) rotate(0)' }], { duration: 420, iterations: 2 }));
       if (pl.fx === 'splash' || ['swim', 'dive', 'hop'].includes(pl.mode)) splash(at?.[0] ?? 50, (at?.[1] ?? 70), 14);
     }

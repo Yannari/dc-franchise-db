@@ -137,6 +137,11 @@ body.rr-body{margin:0;background:var(--bg);color:#fff;font-family:Rubik,system-u
 .tok .pair .wear{position:absolute;top:calc(var(--sz)*-.5);width:calc(var(--sz)*.88);z-index:3;pointer-events:none}
 .tok .pair .wear.w0{left:calc(var(--sz)*.06)} .tok .pair .wear.w1{left:calc(var(--sz)*.61)}
 .tok .pair .wear img{position:static;display:block;width:100%;height:auto;border:0;border-radius:0;background:none;object-fit:contain;animation:none}
+.tok .pair .wear.waist{top:calc(var(--sz)*.8);width:calc(var(--sz)*.82);z-index:-1;transform-origin:50% 0;animation:hulaSway .9s ease-in-out infinite}
+.tok .pair .wear.waist.w0{left:calc(var(--sz)*.09)} .tok .pair .wear.waist.w1{left:calc(var(--sz)*.64);animation-delay:-.45s}
+@keyframes hulaSway{0%,100%{transform:rotate(-7deg) translateX(-4%)}50%{transform:rotate(7deg) translateX(4%)}}
+.prop.dropped.afloat{animation:dropBob 2.2s ease-in-out 1.3s infinite}
+@keyframes dropBob{0%,100%{transform:translate(-50%,-100%) rotate(-8deg)}50%{transform:translate(-50%,-92%) rotate(6deg)}}
 .tok .lab{display:inline-block;margin-top:.25cqw;font:800 calc(var(--sz)*.16) Rubik;background:var(--c);color:#0b0b14;padding:.05cqw .55cqw;border-radius:99px;white-space:nowrap}
 .tok .shadow{position:absolute;left:50%;bottom:calc(var(--sz)*-.12);width:calc(var(--sz)*1.1);height:calc(var(--sz)*.18);transform:translateX(-50%);background:radial-gradient(rgba(0,0,0,.45),transparent 70%)}
 .tok.out .pair img{filter:grayscale(1) brightness(.7)} .tok.out .lab{background:#777}

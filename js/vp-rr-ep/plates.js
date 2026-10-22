@@ -399,7 +399,8 @@ export const PLACE_PLATES = {
       // in grass skirts and leis, across the hot coals
       'fire-walk': { talk: [p('task-9439223', 76, [6, 94])],
         // (the bed of hot coals they walk is laid along the path: 2026-10-20, the cut-out was never placed)
-        act: p('task-9439223', 78, [6, 94], { mode: 'coals', prop: 'hula', path: [[8, 78], [30, 78], [56, 78], [84, 78]], fx: 'embers',
+        // (the grass skirts are worn, round their waists: never a cut-out on the ground under them, 2026-10-21)
+        act: p('task-9439223', 78, [6, 94], { mode: 'coals', wear: 'hula', wearOn: 'waist', path: [[8, 78], [30, 78], [56, 78], [84, 78]], fx: 'embers',
           deco: [['coals', 12, 81, 20], ['coals', 30, 81, 20], ['coals', 48, 81, 20], ['coals', 66, 81, 20], ['coals', 84, 81, 20]] }) },
       'hut-run': { talk: [p('chill-9439397', 92, [6, 94])],
         act: p('chill-9439397', 92, [6, 94], { mode: 'run', path: [[14, 92], [50, 92], [86, 92]] }) },
@@ -1068,6 +1069,8 @@ const BEANS = repaint('task-beans-table', 'task-beans-table', 'task-9444112'), B
 const COURT = repaint('task-tennis-court', 'task-tennis-court', 'task-9439713');
 const FEAST = repaint('task-feast-hut', 'task-feast-hut', 'task-9437341'), FEAST_G = repaint('task-feast-hut', 92, 76);
 const CATACOMBS = repaint('task-catacombs', 'task-catacombs', 'task-9436279');
+// the grass skirts, worn (lei-island's fire walk)
+const HULA = { wear: 'hula', wearOn: 'waist' };
 const BEAR_CLOSE = [['bear', 74, 84, 11, { move: 'wander', span: 8, dur: 10 }]];
 export const STAGE_SHOTS = {
   'home-city': {
@@ -1113,7 +1116,7 @@ export const STAGE_SHOTS = {
       'log-pile': { label: 'THE LOG PILE', plate: ['task-22426261', { mode: undefined, prop: undefined, judge: null }] },
       'the-statue': { label: 'THE STATUE', plate: ['task-22426261', { mode: 'build' }], fail: ['task-22426261', { mode: 'build' }], stamp: 'FELL APART' },
       'up-the-volcano': { label: 'UP THE VOLCANO', plate: ['present-22426355', { mode: 'climb', prop: 'statue', carry: 'statue', path: [[20, 98], [34, 78], [46, 58]] }],
-        fail: ['present-22426355', { mode: 'climb', prop: undefined, path: [[34, 78], [40, 68], [28, 90]], deco: [['statue', 44, 98, 6]] }], stamp: 'DROPPED IT' },
+        fail: ['present-22426355', { mode: 'climb', prop: undefined, carry: 'statue', path: [[34, 78], [40, 68], [28, 90]], drop: [44, 98] }], stamp: 'DROPPED IT' },
       'the-crater': { label: 'INTO THE CRATER', plate: ['chill-22426500', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'walk', crowd: false, path: [[98, 56], [90, 53], [82, 52]], fx: 'embers', deco: [['statue', 62, 46, 12]] }] },
     },
   },
@@ -1332,7 +1335,7 @@ export const STAGE_SHOTS = {
       // (up the rocks at the side of the falls, the chest in their arms: "sami isnt even hauling or near the chest")
       'cliff-path': { label: 'BACK UP THE CLIFF', plate: ['present-22416327', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'climb', carry: 'chest', solo: true, crowd: false, inset: 'ON THE CLIFF',
         path: [[30, 90], [18, 80], [10, 62], [14, 46], [22, 31]] }],
-        fail: ['present-22416327', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'climb', carry: 'chest', solo: true, crowd: false, inset: 'ON THE CLIFF', path: [[30, 90], [18, 80], [12, 70], [20, 86]] }], stamp: 'DROPPED IT' },
+        fail: ['present-22416327', { people: undefined, water: true, g: 0, x: [0, 0], mode: 'climb', carry: 'chest', solo: true, crowd: false, inset: 'ON THE CLIFF', path: [[30, 90], [18, 80], [12, 70], [20, 86]], drop: [36, 90] }], stamp: 'DROPPED IT' },
       'chest-up': { label: 'THE TOP', plate: ['task-22416404', { mode: undefined, prop: undefined, path: undefined, water: false, local: false, g: 64, x: [4, 26], deco: [['chest', 34, 64, 5]] }] },
     },
     bobsled: {
@@ -1795,9 +1798,10 @@ export const STAGE_SHOTS = {
     },
     'fire-walk': {
       'grass-skirts': { label: 'GRASS SKIRTS', plate: ['task-9439223', { deco: [['hula', 18, 76, 6]] }], fail: ['task-9439223', { deco: [['hula', 18, 76, 6]] }], stamp: 'WARDROBE!' },
-      'the-lift': { label: 'THE LIFT', plate: ['task-9439223', {}], fail: ['task-9439223', {}], stamp: 'TOO HEAVY' },
-      'the-coals': { label: 'THE COALS', plate: ['task-9439223', { mode: 'coals' }], fail: ['task-9439223', { mode: 'coals' }], stamp: 'HOT!' },
-      'fire-dancer': { label: 'THE FIRE DANCER', plate: ['task-9439223', { x: [50, 94] }] },
+      // (in their skirts from here on)
+      'the-lift': { label: 'THE LIFT', plate: ['task-9439223', { ...HULA }], fail: ['task-9439223', { ...HULA }], stamp: 'TOO HEAVY' },
+      'the-coals': { label: 'THE COALS', plate: ['task-9439223', { mode: 'coals', ...HULA }], fail: ['task-9439223', { mode: 'coals', ...HULA }], stamp: 'HOT!' },
+      'fire-dancer': { label: 'THE FIRE DANCER', plate: ['task-9439223', { x: [50, 94], ...HULA }] },
     },
   },
   'haunted-castle': {

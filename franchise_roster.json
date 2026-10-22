@@ -8366,6 +8366,27 @@
       "voice": "Passionate, cocky and quick to fire up. Talks with his hands, jokes loudly, and goes from flirting to furious in the time it takes someone to look at his girl. #loud #flirty#competitive #-goofy#blunt",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Freya",
+      "slug": "freya",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 4,
+        "endurance": 4,
+        "mental": 7,
+        "social": 7,
+        "strategic": 3,
+        "loyalty": 9,
+        "boldness": 4,
+        "intuition": 5,
+        "temperament": 7
+      },
+      "voice": "Sweet, nervous and a little giggly, apologising half the time she speaks. Once she picks someone she is all in, and she will defend them to anyone. #anxious #warm#earnest",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

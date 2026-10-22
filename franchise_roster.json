@@ -7965,7 +7965,7 @@
       "name": "Arjun",
       "slug": "arjun",
       "gender": "m",
-      "archetype": "mastermind",
+      "archetype": "villain",
       "stats": {
         "physical": 8,
         "endurance": 7,
@@ -7988,7 +7988,8 @@
       "occupation": "Management consultant",
       "descriptor": "The Advisor",
       "backstory": "Arjun is the eldest son of two doctors who moved from Hyderabad to New Jersey before he was born, and he grew up as the steady one, the child who translated between his parents and his teachers, his grandparents and his little sister. He went to a good university, joined a consulting firm and became very good at telling companies what they already wanted to hear in a way that sounded like their own idea. He is older than most of the villa and has been engaged once; she ended it when she realised he had been managing their arguments rather than having them. He applied to the villa telling himself he wanted something real, and he is not sure he believes it.",
-      "personality": "Arjun is patient, articulate and quietly manipulative. He plays the older brother of the villa, the one people bring their problems to, and he gives thoughtful, kind-sounding advice that almost always moves them where he needs them to be. He rarely raises his voice and never makes the first move in the open; he lets other people say the thing he planted. He is calculating about relationships as well as the game, choosing partners for what they bring as much as how he feels. He is not cruel, and he would call himself a good person. His blind spot is that he believes everyone is as controlled as he is, and genuine chaos or genuine feeling throws him completely."
+      "personality": "Arjun is patient, articulate and quietly manipulative. He plays the older brother of the villa, the one people bring their problems to, and he gives thoughtful, kind-sounding advice that almost always moves them where he needs them to be. He rarely raises his voice and never makes the first move in the open; he lets other people say the thing he planted. He is calculating about relationships as well as the game, choosing partners for what they bring as much as how he feels. He is not cruel, and he would call himself a good person. His blind spot is that he believes everyone is as controlled as he is, and genuine chaos or genuine feeling throws him completely.",
+      "ties": []
     },
     {
       "name": "Ayesha",

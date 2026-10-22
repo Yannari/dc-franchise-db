@@ -3111,6 +3111,25 @@
           "file": "skye-look-1.png"
         }
       ]
+    },
+    "theo": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "theo.png"
+        },
+        {
+          "id": "look-1",
+          "show": "global",
+          "label": "Casual",
+          "file": "theo-look-1.png"
+        }
+      ]
     }
   }
 }

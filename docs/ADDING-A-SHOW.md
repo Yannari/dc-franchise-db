@@ -154,23 +154,86 @@ That is not hypothetical. Both existing shows shipped with it:
 Both were found by playing seasons and reading the numbers. Neither was found
 by a test, because there is nothing for a test to catch: the code ran fine.
 
+**It happened to four more shows at once.** The Traitors, The Challenge,
+Ridonculous Race and The Circle each shipped with no reader of their own. The
+first three fell into the vote reader, and the race into the runway reader,
+because the race declares `roundShape: 'placements'`. Neither found anything,
+so every signal read zero. Measured on The Circle (2026-10-22), every seed rated
+46.1 "Okay", the same number to the decimal. None of the four exporters even
+stored the rating, so nobody saw it.
+
+**The fix is a reader per show, named in the registry.** `SHOWS[slug].signals`
+names it (`'villa'`, `'castle'`, `'challenge'`, `'race'`, `'circle'`), and
+`readSignals` dispatches on that name BEFORE the round-shape check. A show's
+round shape decides how its rounds are exported, not where its drama is
+recorded. The four newer readers live in `js/ratings-shows.js`; Perfect Match's
+`readVillaSignals` and Drag Race's `readPlacementSignals` are in `js/ratings.js`.
+
 **So, for your show:**
 
-1. Point each signal at where your engine records it. The ones that need it are
-   `blindside` (`flippedVotes`), `predictable` (`statedTarget`), the tone
-   signals (`airedEvents`), and `returns`. The rest read fields both shows
-   already share — `eliminated`, `votingLog`, `houseAtStart`, `twists`,
-   `immunityWinner`/`hoh`.
-2. Declare `audience` in the registry (§1). Without it your show is rated as
+1. **Dump a played season's rows first, built by the same function your run
+   file uses** (`challengeRows`, `raceRows`, the castle's `episodeHistory`).
+   A headless season that never calls the run file's builder has no rows at
+   all. The first probe of The Challenge and the Race read `rows: 0` and
+   rated nothing. Print the top-level keys, your block's keys and a count of
+   every aired event KIND.
+2. **Write a reader that keeps each signal's MEANING and changes only its
+   source.** Read the show's own kinds, because those are its words: a
+   traitor caught at the table, an Arena upset against the power rankings, a
+   team that led last leg going home on this one. Each of the four newer
+   readers says at the top what each signal reads. A signal the format
+   genuinely lacks is an honest zero, said out loud in a comment (a race has
+   no returns: its boomerang is a penalty).
+3. **Size each count to the show's volume.** A villa airs ~100 scenes a night,
+   a race leg 60-180 segments, and a Circle day 20-35 scenes of several
+   blocks each. A span copied from another show pins the signal at the top
+   of its band. The Circle's first pass rated 68 "Great" on every seed
+   because strategy, showmance and villainy all saturated.
+4. Declare `audience` in the registry (§1). Without it your show is rated as
    generic reality television — the base table, no overlay. That is a
    deliberate neutral fallback rather than inheriting Total Drama's, which
    would rate your show as though it were a different one.
-3. **Play a season and print the signals before you believe any of it.** Every
-   signal should vary and none should sit pinned at zero or one. This is the
-   only check that works.
-4. Add your show to `tests/ratings-distribution.test.js`, which re-measures the
-   `CALIBRATION` bands and fails when a signal drifts out of the range the
-   table claims. That table is a snapshot of one measurement and it rots.
+5. **Add your show to `tests/ratings-shows.test.js`.** It asks every reader the
+   same three questions:
+   - Does every signal stay inside its `CALIBRATION` band?
+   - Does every signal move? (p90 above 15% of the band, p50 below its top,
+     and a real spread.)
+   - Do different seasons rate differently? This is the check that catches a
+     flat constant.
+
+   Use four seasons, not one, and give twists a season that books some. A
+   plain Challenge season books none, so its twist signal is an honest zero
+   on it.
+6. **Store the rating at export.** Call `_rateSeason(doc, rows, FORMAT)` in
+   your exporter (`js/stats-export.js`); it stores `publishedRatings()`. Total
+   Drama and Big Brother compute theirs inline (`_extractRatings`), and every
+   exporter registered after them forgot to. That is §11.5 Q, the second copy
+   missing the hard-won part.
+
+**Why the rating matters beyond the badge: it moves followers.** Dramagram
+(`js/dramagram.js`) scales a person's debut, placement bonus and fan-favourite
+payment by the season's REACH. A Dogwater season pays 0.6x and an Iconic one
+1.32x. A season with no rating pays a flat 1x, which is the same for every
+season of the show. A missing rating is not neutral: it erases the difference
+between the season everybody watched and the one nobody did.
+
+**A show that counts its own following.** Perfect Match's public ledger keeps a
+follower number all season: fame from every aired scene, scaled by approval
+(`js/pm/ledger.js followers()`). The exporter publishes it on each islander's
+season (`pm.followers`), and Dramagram adds it as a "followed on air" step.
+That step is converted at `FOLLOWERS.onAir` (0.25) and scaled by reach. The
+conversion exists because the two scales differ by ~15x: the median islander
+ended on ~180k and the best on ~660k, against a 12k debut and a 120k win. Taken
+raw, an ordinary islander would outrank every other show's winner. If your show
+keeps a following too, publish it on the placement under your prefix and give
+it the same conversion. `tests/pm-dramagram-followers.test.js` is the worked
+example: play, build the document, merge it into both databases, then read
+every islander's history.
+
+A trap in that test: a season merged into an EMPTY database gets no
+`airYear`/`airSlot` (there is no calendar to place it after), and Dramagram only
+counts a season that aired. Every total came back 0 until the test gave the
+season a summer.
 
 One thing that is deliberately NOT per show: `CALIBRATION` itself. Big Brother
 genuinely produces more strategy per week than Total Drama does, and
@@ -240,6 +303,7 @@ The season document must carry, whatever the show:
 | `placements[]` with `name`, `playerSlug`, `placement`, `status` | every page reads these |
 | `winner { name, playerSlug, vote, runnerUp }` | the wiki lead quotes the tally |
 | `twists[]` | the season page's Twists section; `_extractTwists()` is show-agnostic |
+| `ratings` (via `_rateSeason`) | the seasons page's tier badge, and Dramagram's reach multiplier on every cast member's followers (§2.5). Missing = a flat 1x for every season |
 | a per-round array | **the shape decision below** |
 
 And on each placement row, for the readers that are not the season page (The
@@ -1222,6 +1286,8 @@ The existing ones that will already catch you:
   ninth copy appeared, and it did appear. Per-show DATA maps are exemptions
   carrying their reason; the surviving two-show ternaries are a ratchet
 - `tests/season-format.test.js` — the export adapter matches the engine's shape
+- `tests/ratings-shows.test.js` — every show's ratings reader reads signals that
+  stay in band, move, and differ between seasons (§2.5, §11.5 W). Add your show
 - **Carried relationships come from ONE place** (§8.2). There is no guard for
   this yet and it is worth writing, because the failure is silent: a show that
   grows its own table of per-relationship constants still runs, still seeds
@@ -2029,6 +2095,23 @@ on the chopping block had no scene, because a plan only aired when one
 alliance had made it). Every name two ballots went to is now a plan with its
 own scene. The probe is `zz-td-tribal-measure`'s shape: per tribal, who was
 asked, who was on the block, and which scenes were about them.
+
+### W. A reader that finds nothing returns a plausible constant
+
+The ratings readers return zero for a fact they cannot find, and a zero is a
+real reading ("nothing happened this week"). A show the reader cannot see
+therefore gets a rating, and a believable one: 46.1 "Okay". It got that same
+46.1 on every season, to the decimal. Four shows shipped that way (§2.5). It
+was invisible for two reasons. The exporters never stored the number, so no
+page showed it. And Dramagram's fallback for a missing rating (1x reach) looks
+like a sensible default rather than a lie told the same way about every season.
+
+**The rule: a reader's test must ask whether different inputs give different
+outputs, not only whether the output is in range.** "In range" is exactly what
+a constant passes. `tests/ratings-shows.test.js` asks for a spread across four
+seasons, and fails on the constant. The same holds anywhere a summary number is
+derived from a record whose shape varies by show (a score, a tier, a
+multiplier): print it for several seasons side by side before trusting it.
 
 ---
 

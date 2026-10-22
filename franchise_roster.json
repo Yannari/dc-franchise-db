@@ -8300,6 +8300,27 @@
       "voice": "Soft-spoken and shy with a dry Glasgow humour that sneaks up on you. Blushes easily, overthinks every compliment, and means it completely when he finally says something. #quiet #-dry#nerdy#warm#goofy",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Dante",
+      "slug": "dante",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 6,
+        "endurance": 5,
+        "mental": 5,
+        "social": 8,
+        "strategic": 7,
+        "loyalty": 3,
+        "boldness": 9,
+        "intuition": 5,
+        "temperament": 5
+      },
+      "voice": "Smooth, playful and full of lines he has used before. Tells every girl she is the only one he is thinking about, and keeps a careful count of which ones believe it. #flirty #schemer",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

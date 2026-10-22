@@ -1,0 +1,441 @@
+// pm/lines/voices/batch118.js — see index.js. Every tag on each line (batch4's rule).
+const T = (text, v) => ['*', text, v];
+
+export const BATCH118 = [
+  T("I didn't want to do this. My vote is for {b} to leave.", {
+    earnest: "I didn't want to do this. My vote is for {b} to leave.", warm: "I didn't want to do this. My vote is for {b} to leave.", calm: "Didn't want to. My vote's {b}.", quiet: "{b}.",
+    dry: "Didn't want to. {b}.", nerdy: "I didn't want to do this. My vote is for {b} to leave.", loud: "I DIDN'T want to! My vote is {b}!", blunt: "{b}.",
+    tough: "{b}.", competitive: "I didn't want to do this. My vote is for {b} to leave.", chaotic: "Didn't want to! {b}!", schemer: "I didn't want to do this. My vote is for {b} to leave.",
+    cruel: "My vote is for {b} to leave.", bossy: "{b}.", proud: "I didn't want to do this. My vote is for {b} to leave.", flirty: "I didn't want to do this. My vote is for {b} to leave.",
+    anxious: "I didn't want to do this. My vote is for {b} to leave. Sorry.", goofy: "I didn't want to do this. My vote is for {b} to leave. Sorry, pal.", ditzy: "Sorry, {b}!", theatrical: "I didn't want to do this! My vote is for {b} to leave!" }),
+  T("Honestly, I'm embarrassed. Everyone heard that.", {
+    earnest: "Honestly, I'm embarrassed. Everyone heard that.", warm: "Honestly, I'm embarrassed. Everyone heard that.", calm: "I'm embarrassed. Everyone heard.", quiet: "Everyone heard.",
+    dry: "Embarrassed. Everyone heard.", nerdy: "Honestly, I'm embarrassed. Everyone heard that.", loud: "I'm SO embarrassed! EVERYONE heard that!", blunt: "Embarrassed.",
+    tough: "Embarrassed.", competitive: "Honestly, I'm embarrassed. Everyone heard that.", chaotic: "Embarrassed! Everyone!", schemer: "Honestly, I'm embarrassed. Everyone heard that.",
+    cruel: "Honestly, I'm embarrassed. Everyone heard that.", bossy: "Embarrassed.", proud: "Honestly, I'm embarrassed. Everyone heard that.", flirty: "Honestly, I'm embarrassed. Everyone heard that.",
+    anxious: "Honestly, I'm embarrassed. Everyone heard that. I want to hide.", goofy: "Honestly, I'm embarrassed. Everyone heard that. Bury me.", ditzy: "Everyone heard!", theatrical: "Honestly, I'm embarrassed! Everyone heard that!" }),
+  T("It's a game. It doesn't mean anything.", {
+    earnest: "It's a game. It doesn't mean anything.", warm: "It's a game. It doesn't mean anything.", calm: "It's a game. Means nothing.", quiet: "It's a game.", dry: "It's a game. Means nothing.", nerdy: "It's a game. It doesn't mean anything.",
+    loud: "It's a GAME! It doesn't MEAN anything!", blunt: "It's a game.", tough: "It's a game.", competitive: "It's a game. It doesn't mean anything.", chaotic: "Game! Nothing!", schemer: "It's a game. It doesn't mean anything.",
+    cruel: "It's a game. It doesn't mean anything.", bossy: "It's a game.", proud: "It's a game. It doesn't mean anything.", flirty: "It's a game. It doesn't mean anything.",
+    anxious: "It's a game. It doesn't mean anything.", goofy: "It's a game. It doesn't mean anything. Promise.", ditzy: "It's a game!", theatrical: "It's a game! It doesn't mean anything!" }),
+  T("It means something to me.", {
+    earnest: "It means something to me.", warm: "It means something to me.", calm: "It means something to me.", quiet: "It does to me.", dry: "Means something to me.", nerdy: "It means something to me.",
+    loud: "It means something to ME!", blunt: "Does to me.", tough: "Does to me.", competitive: "It means something to me.", chaotic: "Means! To me!", schemer: "It means something to me.",
+    cruel: "It means something to me.", bossy: "Does to me.", proud: "It means something to me.", flirty: "It means something to me.",
+    anxious: "It means something to me.", goofy: "It means something to me. A lot.", ditzy: "It does to me!", theatrical: "It means something to me!" }),
+  T("It has to be a girl. It has to be.", {
+    earnest: "It has to be a girl. It has to be.", warm: "It has to be a girl. It has to be.", calm: "Has to be a girl.", quiet: "Please be a girl.", dry: "Has to be a girl.", nerdy: "It has to be a girl. Statistically.",
+    loud: "It HAS to be a GIRL! It HAS to be!", blunt: "Has to be a girl.", tough: "Has to be a girl.", competitive: "It has to be a girl. It has to be.", chaotic: "Girl! Has to! Please!", schemer: "It has to be a girl. It has to be.",
+    cruel: "It has to be a girl. It has to be.", bossy: "Has to be a girl.", proud: "It has to be a girl. It has to be.", flirty: "It has to be a girl. It has to be.",
+    anxious: "It has to be a girl. It has to be. Please.", goofy: "It has to be a girl. It has to be. Fingers crossed.", ditzy: "A girl!", theatrical: "It has to be a girl! It has to be!" }),
+  T("And if it's another boy?", {
+    earnest: "And if it's another boy?", warm: "And if it's another boy?", calm: "And if it's a boy?", quiet: "And if not?", dry: "And if it's another boy?", nerdy: "And if it's another boy?",
+    loud: "And if it's ANOTHER boy?", blunt: "And if not?", tough: "And if not?", competitive: "And if it's another boy?", chaotic: "Boy?! Another?!", schemer: "And if it's another boy?",
+    cruel: "And if it's another boy?", bossy: "And if not?", proud: "And if it's another boy?", flirty: "And if it's another boy?",
+    anxious: "And if it's another boy?", goofy: "And if it's another boy? Awkward.", ditzy: "A boy?", theatrical: "And if it's another boy?" }),
+  T("Then I'll be very polite about it.", {
+    earnest: "Then I'll be very polite about it.", warm: "Then I'll be very polite about it.", calm: "I'll be polite.", quiet: "I'll be polite.", dry: "Then I'll be very polite.", nerdy: "Then I'll be very polite about it.",
+    loud: "Then I'll be VERY polite about it!", blunt: "Polite.", tough: "Polite.", competitive: "Then I'll be very polite about it.", chaotic: "Polite! Very!", schemer: "Then I'll be very polite about it.",
+    cruel: "Then I'll be very polite about it.", bossy: "Polite.", proud: "Then I'll be very polite about it.", flirty: "Then I'll be very polite about it.",
+    anxious: "Then I'll be very polite about it.", goofy: "Then I'll be very polite about it. Firm handshake.", ditzy: "I'll be polite!", theatrical: "Then I'll be very polite about it!" }),
+  T("Being too cool is the biggest turn-off. Show me you're keen.", {
+    earnest: "Being too cool is the biggest turn-off. Show me you're keen.", warm: "Being too cool is the biggest turn-off. Show me you're keen.", calm: "Too cool is a turn-off. Be keen.", quiet: "Show me you're keen.",
+    dry: "Too cool. Turn-off. Be keen.", nerdy: "Being too cool is the biggest turn-off. Show me you're keen.", loud: "Too COOL is the BIGGEST turn-off! Show me you're KEEN!", blunt: "Be keen.",
+    tough: "Be keen.", competitive: "Being too cool is the biggest turn-off. Show me you're keen.", chaotic: "Cool! No! Keen!", schemer: "Being too cool is the biggest turn-off. Show me you're keen.",
+    cruel: "Being too cool is the biggest turn-off. Show me you're keen.", bossy: "Be keen.", proud: "Being too cool is the biggest turn-off. Show me you're keen.", flirty: "Being too cool is the biggest turn-off. Show me you're keen.",
+    anxious: "Being too cool is the biggest turn-off. Show me you're keen.", goofy: "Being too cool is the biggest turn-off. Show me you're keen. Wave a banner.", ditzy: "Be keen!", theatrical: "Being too cool is the biggest turn-off! Show me you're keen!" }),
+  T("How do you not know my middle name?", {
+    earnest: "How do you not know my middle name?", warm: "How do you not know my middle name?", calm: "You don't know my middle name?", quiet: "My middle name?",
+    dry: "How do you not know my middle name?", nerdy: "How do you not know my middle name?", loud: "How do you NOT know my MIDDLE NAME?", blunt: "My middle name?",
+    tough: "My middle name?", competitive: "How do you not know my middle name?", chaotic: "Middle name! How?!", schemer: "How do you not know my middle name?",
+    cruel: "How do you not know my middle name?", bossy: "My middle name?", proud: "How do you not know my middle name?", flirty: "How do you not know my middle name?",
+    anxious: "How do you not know my middle name?", goofy: "How do you not know my middle name? Shocking.", ditzy: "My middle name!", theatrical: "How do you not know my middle name?!" }),
+  T("You've never told me your middle name!", {
+    earnest: "You've never told me your middle name!", warm: "You've never told me your middle name!", calm: "You never told me it.", quiet: "You never told me.", dry: "You've never told me it.", nerdy: "You've never told me your middle name!",
+    loud: "You've NEVER told me your middle name!", blunt: "Never told me.", tough: "Never told me.", competitive: "You've never told me your middle name!", chaotic: "Never told! Me!", schemer: "You've never told me your middle name!",
+    cruel: "You've never told me your middle name!", bossy: "Never told me.", proud: "You've never told me your middle name!", flirty: "You've never told me your middle name!",
+    anxious: "You've never told me your middle name!", goofy: "You've never told me your middle name! Mystery.", ditzy: "You never told me!", theatrical: "You've never told me your middle name!" }),
+  T("I shouldn't have said that in front of everyone. In here, nothing stays in the room.", {
+    earnest: "I shouldn't have said that in front of everyone. In here, nothing stays in the room.", warm: "I shouldn't have said that in front of everyone. In here, nothing stays in the room.", calm: "Shouldn't have said it there. Nothing stays private.", quiet: "Nothing stays in the room.",
+    dry: "Shouldn't have said that in front of everyone. Nothing stays put.", nerdy: "I shouldn't have said that in front of everyone. In here, nothing stays in the room.", loud: "SHOULDN'T have said it in front of EVERYONE! NOTHING stays here!", blunt: "Shouldn't have said it.",
+    tough: "Shouldn't have said it.", competitive: "I shouldn't have said that in front of everyone. In here, nothing stays in the room.", chaotic: "Everyone! Said it! Oops!", schemer: "I shouldn't have said that in front of everyone. In here, nothing stays in the room.",
+    cruel: "I shouldn't have said that in front of everyone. In here, nothing stays in the room.", bossy: "Shouldn't have said it.", proud: "I shouldn't have said that in front of everyone. In here, nothing stays in the room.", flirty: "I shouldn't have said that in front of everyone. In here, nothing stays in the room.",
+    anxious: "I shouldn't have said that in front of everyone. In here, nothing stays in the room. Oh no.", goofy: "I shouldn't have said that in front of everyone. In here, nothing stays in the room. Leaky walls.", ditzy: "Oops!", theatrical: "I shouldn't have said that in front of everyone! In here, nothing stays in the room!" }),
+  T("The villa feels smaller tonight. I miss {c} already.", {
+    earnest: "The villa feels smaller tonight. I miss {c} already.", warm: "The villa feels smaller tonight. I miss {c} already.", calm: "Smaller villa tonight. I miss {c}.", quiet: "I miss {c}.",
+    dry: "Villa's smaller tonight. Miss {c}.", nerdy: "The villa feels smaller tonight. I miss {c} already.", loud: "The villa feels SMALLER tonight! I MISS {c}!", blunt: "Miss {c}.",
+    tough: "Miss {c}.", competitive: "The villa feels smaller tonight. I miss {c} already.", chaotic: "Smaller! Miss {c}!", schemer: "The villa feels smaller tonight. I miss {c} already.",
+    cruel: "The villa feels smaller tonight. I miss {c} already.", bossy: "Miss {c}.", proud: "The villa feels smaller tonight. I miss {c} already.", flirty: "The villa feels smaller tonight. I miss {c} already.",
+    anxious: "The villa feels smaller tonight. I miss {c} already.", goofy: "The villa feels smaller tonight. I miss {c} already. Too quiet.", ditzy: "I miss {c}!", theatrical: "The villa feels smaller tonight! I miss {c} already!" }),
+  T("You didn't vote for me.", {
+    earnest: "You didn't vote for me.", warm: "You didn't vote for me.", calm: "You didn't vote for me.", quiet: "Not for me.", dry: "Didn't vote for me.", nerdy: "You didn't vote for me.",
+    loud: "You DIDN'T vote for ME!", blunt: "Didn't vote for me.", tough: "Didn't vote for me.", competitive: "You didn't vote for me.", chaotic: "Vote! Not me!", schemer: "You didn't vote for me.",
+    cruel: "You didn't vote for me.", bossy: "Didn't vote for me.", proud: "You didn't vote for me.", flirty: "You didn't vote for me.",
+    anxious: "You didn't vote for me.", goofy: "You didn't vote for me. Traitorous.", ditzy: "You didn't vote for me!", theatrical: "You didn't vote for me!" }),
+  T("{c} was better! I'm just being honest.", {
+    earnest: "{c} was better! I'm just being honest.", warm: "{c} was better! I'm just being honest.", calm: "{c} was better. Honestly.", quiet: "{c} was better.", dry: "{c} was better. Honest.", nerdy: "{c} was better! I'm just being honest.",
+    loud: "{c} was BETTER! I'm just being HONEST!", blunt: "{c} was better.", tough: "{c} was better.", competitive: "{c} was better! I'm just being honest.", chaotic: "{c}! Better! Honest!", schemer: "{c} was better! I'm just being honest.",
+    cruel: "{c} was better! I'm just being honest.", bossy: "{c} was better.", proud: "{c} was better! I'm just being honest.", flirty: "{c} was better! I'm just being honest.",
+    anxious: "{c} was better! I'm just being honest. Sorry.", goofy: "{c} was better! I'm just being honest. Brutally.", ditzy: "{c} was better!", theatrical: "{c} was better! I'm just being honest!" }),
+  T("I voted for you.", {
+    earnest: "I voted for you.", warm: "I voted for you.", calm: "I voted for you.", quiet: "I voted for you.", dry: "I voted for you.", nerdy: "I voted for you.",
+    loud: "I VOTED for YOU!", blunt: "Voted for you.", tough: "Voted for you.", competitive: "I voted for you.", chaotic: "Voted! You!", schemer: "I voted for you.",
+    cruel: "I voted for you.", bossy: "Voted for you.", proud: "I voted for you.", flirty: "I voted for you.",
+    anxious: "I voted for you.", goofy: "I voted for you. Loyal.", ditzy: "I voted for you!", theatrical: "I voted for you!" }),
+  T("Stop. Stop, I can't breathe.", {
+    earnest: "Stop. Stop, I can't breathe.", warm: "Stop. Stop, I can't breathe.", calm: "Stop. I can't breathe.", quiet: "Stop.", dry: "Stop. Can't breathe.", nerdy: "Stop. Stop, I can't breathe.",
+    loud: "STOP! STOP, I can't BREATHE!", blunt: "Stop.", tough: "Stop.", competitive: "Stop. Stop, I can't breathe.", chaotic: "Stop! Breathe! Can't!", schemer: "Stop. Stop, I can't breathe.",
+    cruel: "Stop. Stop, I can't breathe.", bossy: "Stop.", proud: "Stop. Stop, I can't breathe.", flirty: "Stop. Stop, I can't breathe.",
+    anxious: "Stop. Stop, I can't breathe.", goofy: "Stop. Stop, I can't breathe. Crying laughing.", ditzy: "Stop!", theatrical: "Stop! Stop, I can't breathe!" }),
+  T("I'm not even trying.", {
+    earnest: "I'm not even trying.", warm: "I'm not even trying.", calm: "Not even trying.", quiet: "Not trying.", dry: "Not even trying.", nerdy: "I'm not even trying.",
+    loud: "I'm NOT even TRYING!", blunt: "Not trying.", tough: "Not trying.", competitive: "I'm not even trying.", chaotic: "Not trying! At all!", schemer: "I'm not even trying.",
+    cruel: "I'm not even trying.", bossy: "Not trying.", proud: "I'm not even trying.", flirty: "I'm not even trying.",
+    anxious: "I'm not even trying.", goofy: "I'm not even trying. Natural talent.", ditzy: "Not trying!", theatrical: "I'm not even trying!" }),
+  T("That's the worrying bit.", {
+    earnest: "That's the worrying bit.", warm: "That's the worrying bit.", calm: "That's the worrying bit.", quiet: "That's worrying.", dry: "That's the worrying bit.", nerdy: "That's the worrying bit.",
+    loud: "That's the WORRYING bit!", blunt: "Worrying.", tough: "Worrying.", competitive: "That's the worrying bit.", chaotic: "Worrying! That!", schemer: "That's the worrying bit.",
+    cruel: "That's the worrying bit.", bossy: "Worrying.", proud: "That's the worrying bit.", flirty: "That's the worrying bit.",
+    anxious: "That's the worrying bit.", goofy: "That's the worrying bit. Very worrying.", ditzy: "Worrying!", theatrical: "That's the worrying bit!" }),
+  T("I'm {a}, and I talk to everyone. I'll know the whole villa by the end of the first night.", {
+    earnest: "I'm {a}, and I talk to everyone. I'll know the whole villa by the end of the first night.", warm: "I'm {a}, and I talk to everyone. I'll know the whole villa by the end of the first night.", calm: "I'm {a}. I talk to everyone.", quiet: "I'm {a}. I talk to everyone.",
+    dry: "{a}. Talk to everyone. Whole villa by night one.", nerdy: "I'm {a}, and I talk to everyone. I'll know the whole villa by the end of the first night.", loud: "I'm {a}! I talk to EVERYONE! Whole villa by NIGHT ONE!", blunt: "{a}. Talk to everyone.",
+    tough: "{a}. Talk to everyone.", competitive: "I'm {a}, and I talk to everyone. I'll know the whole villa by the end of the first night.", chaotic: "{a}! Everyone! Night one!", schemer: "I'm {a}, and I talk to everyone. I'll know the whole villa by the end of the first night.",
+    cruel: "I'm {a}, and I talk to everyone. I'll know the whole villa by the end of the first night.", bossy: "{a}. Talk to everyone.", proud: "I'm {a}, and I talk to everyone. I'll know the whole villa by the end of the first night.", flirty: "I'm {a}, and I talk to everyone. I'll know the whole villa by the end of the first night.",
+    anxious: "I'm {a}, and I talk to everyone. I'll know the whole villa by the end of the first night.", goofy: "I'm {a}, and I talk to everyone. I'll know the whole villa by the end of the first night. And their star signs.", ditzy: "I'm {a}! I talk to everyone!", theatrical: "I'm {a}, and I talk to everyone! I'll know the whole villa by the end of the first night!" }),
+  T("Rude to a waiter? That's it. We're done.", {
+    earnest: "Rude to a waiter? That's it. We're done.", warm: "Rude to a waiter? That's it. We're done.", calm: "Rude to a waiter? We're done.", quiet: "We're done.",
+    dry: "Rude to a waiter. Done.", nerdy: "Rude to a waiter? That's it. We're done.", loud: "RUDE to a waiter? THAT'S it! We're DONE!", blunt: "Rude to staff. Done.",
+    tough: "Rude to staff. Done.", competitive: "Rude to a waiter? That's it. We're done.", chaotic: "Rude! Waiter! Done!", schemer: "Rude to a waiter? That's it. We're done.",
+    cruel: "Rude to a waiter? That's it. We're done.", bossy: "Rude to staff. Done.", proud: "Rude to a waiter? That's it. We're done.", flirty: "Rude to a waiter? That's it. We're done.",
+    anxious: "Rude to a waiter? That's it. We're done.", goofy: "Rude to a waiter? That's it. We're done. Bill, please.", ditzy: "We're done!", theatrical: "Rude to a waiter? That's it! We're done!" }),
+  T("I don't usually do this. I've been working up to it all day.", {
+    earnest: "I don't usually do this. I've been working up to it all day.", warm: "I don't usually do this. I've been working up to it all day.", calm: "I've worked up to this all day.", quiet: "Working up to it.",
+    dry: "Don't usually do this. Worked up to it all day.", nerdy: "I don't usually do this. I've been working up to it all day.", loud: "I DON'T usually do this! Worked up to it ALL DAY!", blunt: "Worked up to it.",
+    tough: "Worked up to it.", competitive: "I don't usually do this. I've been working up to it all day.", chaotic: "Don't usually! All day!", schemer: "I don't usually do this. I've been working up to it all day.",
+    cruel: "I don't usually do this. I've been working up to it all day.", bossy: "Worked up to it.", proud: "I don't usually do this. I've been working up to it all day.", flirty: "I don't usually do this. I've been working up to it all day.",
+    anxious: "I don't usually do this. I've been working up to it all day. Shaking.", goofy: "I don't usually do this. I've been working up to it all day. Pep talk in the mirror.", ditzy: "I don't usually do this!", theatrical: "I don't usually do this! I've been working up to it all day!" }),
+  T("Working up to what?", {
+    earnest: "Working up to what?", warm: "Working up to what?", calm: "Up to what?", quiet: "Up to what?", dry: "Working up to what?", nerdy: "Working up to what?",
+    loud: "Working up to WHAT?", blunt: "To what?", tough: "To what?", competitive: "Working up to what?", chaotic: "What?! Up to?!", schemer: "Working up to what?",
+    cruel: "Working up to what?", bossy: "To what?", proud: "Working up to what?", flirty: "Working up to what?",
+    anxious: "Working up to what?", goofy: "Working up to what? Suspense.", ditzy: "To what?", theatrical: "Working up to what?" }),
+  T("Telling you I think you're the most interesting person in here.", {
+    earnest: "Telling you I think you're the most interesting person in here.", warm: "Telling you I think you're the most interesting person in here.", calm: "You're the most interesting person here.", quiet: "You're the most interesting.",
+    dry: "Telling you you're the most interesting person here.", nerdy: "Telling you I think you're the most interesting person in here.", loud: "Telling you you're the MOST interesting person in HERE!", blunt: "Most interesting here.",
+    tough: "Most interesting here.", competitive: "Telling you I think you're the most interesting person in here.", chaotic: "Most interesting! You!", schemer: "Telling you I think you're the most interesting person in here.",
+    cruel: "Telling you I think you're the most interesting person in here.", bossy: "Most interesting here.", proud: "Telling you I think you're the most interesting person in here.", flirty: "Telling you I think you're the most interesting person in here.",
+    anxious: "Telling you I think you're the most interesting person in here.", goofy: "Telling you I think you're the most interesting person in here. By miles.", ditzy: "You're interesting!", theatrical: "Telling you I think you're the most interesting person in here!" }),
+  T("We haven't really talked yet, and I've been wanting to.", {
+    earnest: "We haven't really talked yet, and I've been wanting to.", warm: "We haven't really talked yet, and I've been wanting to.", calm: "We haven't talked yet. I've wanted to.", quiet: "I've wanted to talk.",
+    dry: "Haven't really talked. Been wanting to.", nerdy: "We haven't really talked yet, and I've been wanting to.", loud: "We haven't TALKED yet! I've been WANTING to!", blunt: "Wanted to talk.",
+    tough: "Wanted to talk.", competitive: "We haven't really talked yet, and I've been wanting to.", chaotic: "Talk! Wanted to!", schemer: "We haven't really talked yet, and I've been wanting to.",
+    cruel: "We haven't really talked yet, and I've been wanting to.", bossy: "Wanted to talk.", proud: "We haven't really talked yet, and I've been wanting to.", flirty: "We haven't really talked yet, and I've been wanting to.",
+    anxious: "We haven't really talked yet, and I've been wanting to.", goofy: "We haven't really talked yet, and I've been wanting to. Here I am.", ditzy: "I wanted to talk!", theatrical: "We haven't really talked yet, and I've been wanting to!" }),
+  T("You smiled at me all day, and then you took {about}.", {
+    earnest: "You smiled at me all day, and then you took {about}.", warm: "You smiled at me all day, and then you took {about}.", calm: "You smiled all day. Then took {about}.", quiet: "You took {about}.",
+    dry: "Smiled at me all day. Then took {about}.", nerdy: "You smiled at me all day, and then you took {about}.", loud: "You SMILED at me ALL DAY, then TOOK {about}!", blunt: "Smiled. Took {about}.",
+    tough: "Smiled. Took {about}.", competitive: "You smiled at me all day, and then you took {about}.", chaotic: "Smiled! Took! {about}!", schemer: "You smiled at me all day, and then you took {about}.",
+    cruel: "You smiled at me all day, and then you took {about}.", bossy: "Smiled. Took {about}.", proud: "You smiled at me all day, and then you took {about}.", flirty: "You smiled at me all day, and then you took {about}.",
+    anxious: "You smiled at me all day, and then you took {about}.", goofy: "You smiled at me all day, and then you took {about}. Charming.", ditzy: "You took {about}!", theatrical: "You smiled at me all day, and then you took {about}!" }),
+  T("It was very personal. To me.", {
+    earnest: "It was very personal. To me.", warm: "It was very personal. To me.", calm: "It was personal to me.", quiet: "Personal.", dry: "Very personal. To me.", nerdy: "It was very personal. To me.",
+    loud: "It was VERY personal! To ME!", blunt: "Personal.", tough: "Personal.", competitive: "It was very personal. To me.", chaotic: "Personal! Me!", schemer: "It was very personal. To me.",
+    cruel: "It was very personal. To me.", bossy: "Personal.", proud: "It was very personal. To me.", flirty: "It was very personal. To me.",
+    anxious: "It was very personal. To me.", goofy: "It was very personal. To me. Extremely.", ditzy: "It was personal!", theatrical: "It was very personal! To me!" }),
+  T("Okay. That's a big thing to say.", {
+    earnest: "Okay. That's a big thing to say.", warm: "Okay. That's a big thing to say.", calm: "That's a big thing to say.", quiet: "That's big.", dry: "Okay. Big thing to say.", nerdy: "Okay. That's a big thing to say.",
+    loud: "OKAY! That's a BIG thing to say!", blunt: "Big thing.", tough: "Big thing.", competitive: "Okay. That's a big thing to say.", chaotic: "Big! Thing! Okay!", schemer: "Okay. That's a big thing to say.",
+    cruel: "Okay. That's a big thing to say.", bossy: "Big thing.", proud: "Okay. That's a big thing to say.", flirty: "Okay. That's a big thing to say.",
+    anxious: "Okay. That's a big thing to say. Wow.", goofy: "Okay. That's a big thing to say. Huge.", ditzy: "That's big!", theatrical: "Okay! That's a big thing to say!" }),
+  T("I know. I mean it.", {
+    earnest: "I know. I mean it.", warm: "I know. I mean it.", calm: "I mean it.", quiet: "I mean it.", dry: "I know. I mean it.", nerdy: "I know. I mean it.",
+    loud: "I KNOW! I MEAN it!", blunt: "Mean it.", tough: "Mean it.", competitive: "I know. I mean it.", chaotic: "Know! Mean it!", schemer: "I know. I mean it.",
+    cruel: "I know. I mean it.", bossy: "Mean it.", proud: "I know. I mean it.", flirty: "I know. I mean it.",
+    anxious: "I know. I mean it. I really do.", goofy: "I know. I mean it. Fully.", ditzy: "I mean it!", theatrical: "I know! I mean it!" }),
+  T("That's… a lot. In a good way. I think.", {
+    earnest: "That's… a lot. In a good way. I think.", warm: "That's… a lot. In a good way. I think.", calm: "That's a lot. Good, I think.", quiet: "That's a lot.", dry: "That's a lot. Good way. I think.", nerdy: "That's… a lot. In a good way. I think.",
+    loud: "That's… a LOT! In a GOOD way! I think!", blunt: "A lot. Good.", tough: "A lot. Good.", competitive: "That's… a lot. In a good way. I think.", chaotic: "A lot! Good! Think!", schemer: "That's… a lot. In a good way. I think.",
+    cruel: "That's… a lot. In a good way. I think.", bossy: "A lot. Good.", proud: "That's… a lot. In a good way. I think.", flirty: "That's… a lot. In a good way. I think.",
+    anxious: "That's… a lot. In a good way. I think. Probably.", goofy: "That's… a lot. In a good way. I think. Processing.", ditzy: "That's a lot!", theatrical: "That's… a lot! In a good way! I think!" }),
+  T("I'm {a}. I'm a planner. I like to know where things are going, and I'm going all the way.", {
+    earnest: "I'm {a}. I'm a planner. I like to know where things are going, and I'm going all the way.", warm: "I'm {a}. I'm a planner. I like to know where things are going, and I'm going all the way.", calm: "I'm {a}. A planner. Going all the way.", quiet: "I'm {a}. A planner.",
+    dry: "{a}. Planner. Going all the way.", nerdy: "I'm {a}. I'm a planner. I like to know where things are going, and I'm going all the way.", loud: "I'm {a}! A PLANNER! I'm going ALL the WAY!", blunt: "{a}. All the way.",
+    tough: "{a}. All the way.", competitive: "I'm {a}. I'm a planner. I like to know where things are going, and I'm going all the way.", chaotic: "{a}! Plan! All the way!", schemer: "I'm {a}. I'm a planner. I like to know where things are going, and I'm going all the way.",
+    cruel: "I'm {a}. I'm a planner. I like to know where things are going, and I'm going all the way.", bossy: "{a}. All the way.", proud: "I'm {a}. I'm a planner. I like to know where things are going, and I'm going all the way.", flirty: "I'm {a}. I'm a planner. I like to know where things are going, and I'm going all the way.",
+    anxious: "I'm {a}. I'm a planner. I like to know where things are going, and I'm going all the way.", goofy: "I'm {a}. I'm a planner. I like to know where things are going, and I'm going all the way. Spreadsheet ready.", ditzy: "I'm {a}! A planner!", theatrical: "I'm {a}! I'm a planner! I like to know where things are going, and I'm going all the way!" }),
+  T("We've only known each other an hour and we're already best friends.", {
+    earnest: "We've only known each other an hour and we're already best friends.", warm: "We've only known each other an hour and we're already best friends.", calm: "An hour, and best friends already.", quiet: "Best friends already.",
+    dry: "Known each other an hour. Best friends.", nerdy: "We've only known each other an hour and we're already best friends.", loud: "ONE HOUR and we're ALREADY best friends!", blunt: "Best friends. An hour.",
+    tough: "Best friends. An hour.", competitive: "We've only known each other an hour and we're already best friends.", chaotic: "Hour! Best friends!", schemer: "We've only known each other an hour and we're already best friends.",
+    cruel: "We've only known each other an hour and we're already best friends.", bossy: "Best friends. An hour.", proud: "We've only known each other an hour and we're already best friends.", flirty: "We've only known each other an hour and we're already best friends.",
+    anxious: "We've only known each other an hour and we're already best friends.", goofy: "We've only known each other an hour and we're already best friends. Speed friends.", ditzy: "Best friends!", theatrical: "We've only known each other an hour and we're already best friends!" }),
+  T("Oh. Force of habit.", {
+    earnest: "Oh. Force of habit.", warm: "Oh. Force of habit.", calm: "Force of habit.", quiet: "Habit.", dry: "Oh. Force of habit.", nerdy: "Oh. Force of habit.",
+    loud: "OH! Force of HABIT!", blunt: "Habit.", tough: "Habit.", competitive: "Oh. Force of habit.", chaotic: "Oh! Habit!", schemer: "Oh. Force of habit.",
+    cruel: "Oh. Force of habit.", bossy: "Habit.", proud: "Oh. Force of habit.", flirty: "Oh. Force of habit.",
+    anxious: "Oh. Force of habit. Sorry.", goofy: "Oh. Force of habit. Oops.", ditzy: "Habit!", theatrical: "Oh. Force of habit." }),
+  T("You've got it bad.", {
+    earnest: "You've got it bad.", warm: "You've got it bad.", calm: "You've got it bad.", quiet: "Got it bad.", dry: "You've got it bad.", nerdy: "You've got it bad.",
+    loud: "You've got it BAD!", blunt: "Got it bad.", tough: "Got it bad.", competitive: "You've got it bad.", chaotic: "Bad! So bad!", schemer: "You've got it bad.",
+    cruel: "You've got it bad.", bossy: "Got it bad.", proud: "You've got it bad.", flirty: "You've got it bad.",
+    anxious: "You've got it bad.", goofy: "You've got it bad. Hopeless.", ditzy: "You've got it bad!", theatrical: "You've got it bad!" }),
+  T("I've got it really bad.", {
+    earnest: "I've got it really bad.", warm: "I've got it really bad.", calm: "Really bad.", quiet: "Really bad.", dry: "Got it really bad.", nerdy: "I've got it really bad.",
+    loud: "I've got it REALLY bad!", blunt: "Really bad.", tough: "Really bad.", competitive: "I've got it really bad.", chaotic: "Really! Bad!", schemer: "I've got it really bad.",
+    cruel: "I've got it really bad.", bossy: "Really bad.", proud: "I've got it really bad.", flirty: "I've got it really bad.",
+    anxious: "I've got it really bad. Help.", goofy: "I've got it really bad. Terminal.", ditzy: "Really bad!", theatrical: "I've got it really bad!" }),
+  T("One kiss. At Casa. That stays at Casa.", {
+    earnest: "One kiss. At Casa. That stays at Casa.", warm: "One kiss. At Casa. That stays at Casa.", calm: "One kiss. Stays at Casa.", quiet: "Stays at Casa.", dry: "One kiss. Casa. Stays there.", nerdy: "One kiss. At Casa. That stays at Casa.",
+    loud: "ONE kiss! At CASA! STAYS at Casa!", blunt: "Stays at Casa.", tough: "Stays at Casa.", competitive: "One kiss. At Casa. That stays at Casa.", chaotic: "Kiss! Casa! Stays!", schemer: "One kiss. At Casa. That stays at Casa.",
+    cruel: "One kiss. At Casa. That stays at Casa.", bossy: "Stays at Casa.", proud: "One kiss. At Casa. That stays at Casa.", flirty: "One kiss. At Casa. That stays at Casa.",
+    anxious: "One kiss. At Casa. That stays at Casa. Please.", goofy: "One kiss. At Casa. That stays at Casa. Vault.", ditzy: "Stays at Casa!", theatrical: "One kiss! At Casa! That stays at Casa!" }),
+  T("Everyone kept telling me to twist. I didn't.", {
+    earnest: "Everyone kept telling me to twist. I didn't.", warm: "Everyone kept telling me to twist. I didn't.", calm: "Everyone said twist. I didn't.", quiet: "I didn't twist.", dry: "Everyone said twist. Didn't.", nerdy: "Everyone kept telling me to twist. I didn't.",
+    loud: "EVERYONE said TWIST! I DIDN'T!", blunt: "Didn't twist.", tough: "Didn't twist.", competitive: "Everyone kept telling me to twist. I didn't.", chaotic: "Twist! Didn't!", schemer: "Everyone kept telling me to twist. I didn't.",
+    cruel: "Everyone kept telling me to twist. I didn't.", bossy: "Didn't twist.", proud: "Everyone kept telling me to twist. I didn't.", flirty: "Everyone kept telling me to twist. I didn't.",
+    anxious: "Everyone kept telling me to twist. I didn't.", goofy: "Everyone kept telling me to twist. I didn't. Stubborn.", ditzy: "I didn't twist!", theatrical: "Everyone kept telling me to twist! I didn't!" }),
+  T("I thought I was going to feel guilty.", {
+    earnest: "I thought I was going to feel guilty.", warm: "I thought I was going to feel guilty.", calm: "I thought I'd feel guilty.", quiet: "I thought I'd feel guilty.", dry: "Thought I'd feel guilty.", nerdy: "I thought I was going to feel guilty.",
+    loud: "I THOUGHT I'd feel GUILTY!", blunt: "Thought I'd feel guilty.", tough: "Thought I'd feel guilty.", competitive: "I thought I was going to feel guilty.", chaotic: "Guilty! Thought so!", schemer: "I thought I was going to feel guilty.",
+    cruel: "I thought I was going to feel guilty.", bossy: "Thought I'd feel guilty.", proud: "I thought I was going to feel guilty.", flirty: "I thought I was going to feel guilty.",
+    anxious: "I thought I was going to feel guilty.", goofy: "I thought I was going to feel guilty. Waiting for it.", ditzy: "I thought I'd feel guilty!", theatrical: "I thought I was going to feel guilty!" }),
+  T("And I don't. Not now.", {
+    earnest: "And I don't. Not now.", warm: "And I don't. Not now.", calm: "I don't. Not now.", quiet: "I don't.", dry: "And I don't. Not now.", nerdy: "And I don't. Not now.",
+    loud: "And I DON'T! Not NOW!", blunt: "I don't.", tough: "I don't.", competitive: "And I don't. Not now.", chaotic: "Don't! Not now!", schemer: "And I don't. Not now.",
+    cruel: "And I don't. Not now.", bossy: "I don't.", proud: "And I don't. Not now.", flirty: "And I don't. Not now.",
+    anxious: "And I don't. Not now. Weird.", goofy: "And I don't. Not now. Huh.", ditzy: "I don't!", theatrical: "And I don't! Not now!" }),
+  T("Is that seat still mine?", {
+    earnest: "Is that seat still mine?", warm: "Is that seat still mine?", calm: "Is that seat still mine?", quiet: "Still mine?", dry: "That seat still mine?", nerdy: "Is that seat still mine?",
+    loud: "Is that seat STILL mine?", blunt: "My seat?", tough: "My seat?", competitive: "Is that seat still mine?", chaotic: "Seat! Mine?!", schemer: "Is that seat still mine?",
+    cruel: "Is that seat still mine?", bossy: "My seat?", proud: "Is that seat still mine?", flirty: "Is that seat still mine?",
+    anxious: "Is that seat still mine? Please?", goofy: "Is that seat still mine? Reserved?", ditzy: "My seat?", theatrical: "Is that seat still mine?" }),
+  T("It never stopped being yours.", {
+    earnest: "It never stopped being yours.", warm: "It never stopped being yours.", calm: "It's always been yours.", quiet: "Always yours.", dry: "Never stopped being yours.", nerdy: "It never stopped being yours.",
+    loud: "It NEVER stopped being YOURS!", blunt: "Always yours.", tough: "Always yours.", competitive: "It never stopped being yours.", chaotic: "Yours! Always!", schemer: "It never stopped being yours.",
+    cruel: "It never stopped being yours.", bossy: "Always yours.", proud: "It never stopped being yours.", flirty: "It never stopped being yours.",
+    anxious: "It never stopped being yours.", goofy: "It never stopped being yours. Name on it.", ditzy: "Always yours!", theatrical: "It never stopped being yours!" }),
+  T("It was in bed. {c} and someone who isn't you.", {
+    earnest: "It was in bed. {c} and someone who isn't you.", warm: "It was in bed. {c} and someone who isn't you.", calm: "In bed. {c} and someone else.", quiet: "{c}, in bed.",
+    dry: "In bed. {c}. Not you.", nerdy: "It was in bed. {c} and someone who isn't you.", loud: "In BED! {c} and someone who ISN'T you!", blunt: "Bed. {c}. Not you.",
+    tough: "Bed. {c}. Not you.", competitive: "It was in bed. {c} and someone who isn't you.", chaotic: "Bed! {c}! Not you!", schemer: "It was in bed. {c} and someone who isn't you.",
+    cruel: "It was in bed. {c} and someone who isn't you.", bossy: "Bed. {c}. Not you.", proud: "It was in bed. {c} and someone who isn't you.", flirty: "It was in bed. {c} and someone who isn't you.",
+    anxious: "It was in bed. {c} and someone who isn't you. Sorry.", goofy: "It was in bed. {c} and someone who isn't you. Awkward.", ditzy: "In bed!", theatrical: "It was in bed! {c} and someone who isn't you!" }),
+  T("I've been trying not to think about it.", {
+    earnest: "I've been trying not to think about it.", warm: "I've been trying not to think about it.", calm: "Trying not to think about it.", quiet: "Trying not to.", dry: "Trying not to think about it.", nerdy: "I've been trying not to think about it.",
+    loud: "I've been TRYING not to THINK about it!", blunt: "Not thinking about it.", tough: "Not thinking about it.", competitive: "I've been trying not to think about it.", chaotic: "Not thinking! Trying!", schemer: "I've been trying not to think about it.",
+    cruel: "I've been trying not to think about it.", bossy: "Not thinking about it.", proud: "I've been trying not to think about it.", flirty: "I've been trying not to think about it.",
+    anxious: "I've been trying not to think about it. Failing.", goofy: "I've been trying not to think about it. Now I am.", ditzy: "Trying not to!", theatrical: "I've been trying not to think about it!" }),
+  T("Because in here I always know where you are.", {
+    earnest: "Because in here I always know where you are.", warm: "Because in here I always know where you are.", calm: "In here I know where you are.", quiet: "I know where you are.",
+    dry: "In here I always know where you are.", nerdy: "Because in here I always know where you are.", loud: "In HERE I ALWAYS know where you ARE!", blunt: "Know where you are.",
+    tough: "Know where you are.", competitive: "Because in here I always know where you are.", chaotic: "Here! Know! Where you are!", schemer: "Because in here I always know where you are.",
+    cruel: "Because in here I always know where you are.", bossy: "Know where you are.", proud: "Because in here I always know where you are.", flirty: "Because in here I always know where you are.",
+    anxious: "Because in here I always know where you are. Outside, I won't.", goofy: "Because in here I always know where you are. Small villa.", ditzy: "I know where you are!", theatrical: "Because in here I always know where you are!" }),
+  T("I got a text. It says the photos are here.", {
+    earnest: "I got a text. It says the photos are here.", warm: "I got a text. It says the photos are here.", calm: "Text. The photos are here.", quiet: "The photos are here.",
+    dry: "Got a text. Photos are here.", nerdy: "I got a text. It says the photos are here.", loud: "I got a TEXT! The PHOTOS are here!", blunt: "Photos are here.",
+    tough: "Photos are here.", competitive: "I got a text. It says the photos are here.", chaotic: "Text! Photos! Here!", schemer: "I got a text. It says the photos are here.",
+    cruel: "I got a text. It says the photos are here.", bossy: "Photos are here.", proud: "I got a text. It says the photos are here.", flirty: "I got a text. It says the photos are here.",
+    anxious: "I got a text. It says the photos are here. Oh no.", goofy: "I got a text. It says the photos are here. Say cheese.", ditzy: "Photos!", theatrical: "I got a text! It says the photos are here!" }),
+  T("Say no to me sometimes. I mean it.", {
+    earnest: "Say no to me sometimes. I mean it.", warm: "Say no to me sometimes. I mean it.", calm: "Say no sometimes.", quiet: "Say no sometimes.", dry: "Say no to me sometimes. Mean it.", nerdy: "Say no to me sometimes. I mean it.",
+    loud: "Say NO to me sometimes! I MEAN it!", blunt: "Say no.", tough: "Say no.", competitive: "Say no to me sometimes. I mean it.", chaotic: "No! Say it! Sometimes!", schemer: "Say no to me sometimes. I mean it.",
+    cruel: "Say no to me sometimes. I mean it.", bossy: "Say no.", proud: "Say no to me sometimes. I mean it.", flirty: "Say no to me sometimes. I mean it.",
+    anxious: "Say no to me sometimes. I mean it.", goofy: "Say no to me sometimes. I mean it. Practise on me.", ditzy: "Say no!", theatrical: "Say no to me sometimes! I mean it!" }),
+  T("I think this one tastes of… wine.", {
+    earnest: "I think this one tastes of… wine.", warm: "I think this one tastes of… wine.", calm: "Tastes of wine.", quiet: "Wine?", dry: "This one tastes of… wine.", nerdy: "I think this one tastes of… wine. Grapes, specifically.",
+    loud: "This one tastes of… WINE!", blunt: "Wine.", tough: "Wine.", competitive: "I think this one tastes of… wine.", chaotic: "Wine! Tastes!", schemer: "I think this one tastes of… wine.",
+    cruel: "I think this one tastes of… wine.", bossy: "Wine.", proud: "I think this one tastes of… wine.", flirty: "I think this one tastes of… wine.",
+    anxious: "I think this one tastes of… wine. Is that right?", goofy: "I think this one tastes of… wine. Expert.", ditzy: "Wine!", theatrical: "I think this one tastes of… wine." }),
+  T("You're a natural.", {
+    earnest: "You're a natural.", warm: "You're a natural.", calm: "A natural.", quiet: "A natural.", dry: "You're a natural.", nerdy: "You're a natural.",
+    loud: "You're a NATURAL!", blunt: "Natural.", tough: "Natural.", competitive: "You're a natural.", chaotic: "Natural! You!", schemer: "You're a natural.",
+    cruel: "You're a natural.", bossy: "Natural.", proud: "You're a natural.", flirty: "You're a natural.",
+    anxious: "You're a natural.", goofy: "You're a natural. Genius.", ditzy: "You're a natural!", theatrical: "You're a natural!" }),
+  T("You're not mad. You're allowed to feel it. Just don't do anything tonight.", {
+    earnest: "You're not mad. You're allowed to feel it. Just don't do anything tonight.", warm: "You're not mad. You're allowed to feel it. Just don't do anything tonight.", calm: "Feel it. Don't act tonight.", quiet: "Don't do anything tonight.",
+    dry: "You're not mad. Feel it. Don't act tonight.", nerdy: "You're not mad. You're allowed to feel it. Just don't do anything tonight.", loud: "You're NOT mad! FEEL it! Just DON'T do anything TONIGHT!", blunt: "Not tonight.",
+    tough: "Not tonight.", competitive: "You're not mad. You're allowed to feel it. Just don't do anything tonight.", chaotic: "Feel it! Not tonight!", schemer: "You're not mad. You're allowed to feel it. Just don't do anything tonight.",
+    cruel: "You're allowed to feel it. Just don't do anything tonight.", bossy: "Not tonight.", proud: "You're not mad. You're allowed to feel it. Just don't do anything tonight.", flirty: "You're not mad. You're allowed to feel it. Just don't do anything tonight.",
+    anxious: "You're not mad. You're allowed to feel it. Just don't do anything tonight.", goofy: "You're not mad. You're allowed to feel it. Just don't do anything tonight. Sleep on it.", ditzy: "Not tonight!", theatrical: "You're not mad! You're allowed to feel it! Just don't do anything tonight!" }),
+  T("Why not tonight?", {
+    earnest: "Why not tonight?", warm: "Why not tonight?", calm: "Why not tonight?", quiet: "Why not?", dry: "Why not tonight?", nerdy: "Why not tonight?",
+    loud: "WHY not tonight?", blunt: "Why not?", tough: "Why not?", competitive: "Why not tonight?", chaotic: "Why?! Tonight?!", schemer: "Why not tonight?",
+    cruel: "Why not tonight?", bossy: "Why not?", proud: "Why not tonight?", flirty: "Why not tonight?",
+    anxious: "Why not tonight?", goofy: "Why not tonight? Strike while hot.", ditzy: "Why not?", theatrical: "Why not tonight?" }),
+  T("Because tonight you'll shout. Tomorrow you'll talk.", {
+    earnest: "Because tonight you'll shout. Tomorrow you'll talk.", warm: "Because tonight you'll shout. Tomorrow you'll talk.", calm: "Tonight you'd shout. Tomorrow you'll talk.", quiet: "Tomorrow you'll talk.",
+    dry: "Tonight, shouting. Tomorrow, talking.", nerdy: "Because tonight you'll shout. Tomorrow you'll talk.", loud: "TONIGHT you'll SHOUT! TOMORROW you'll TALK!", blunt: "Shout tonight. Talk tomorrow.",
+    tough: "Shout tonight. Talk tomorrow.", competitive: "Because tonight you'll shout. Tomorrow you'll talk.", chaotic: "Shout! Tonight! Talk! Tomorrow!", schemer: "Because tonight you'll shout. Tomorrow you'll talk.",
+    cruel: "Because tonight you'll shout. Tomorrow you'll talk.", bossy: "Shout tonight. Talk tomorrow.", proud: "Because tonight you'll shout. Tomorrow you'll talk.", flirty: "Because tonight you'll shout. Tomorrow you'll talk.",
+    anxious: "Because tonight you'll shout. Tomorrow you'll talk.", goofy: "Because tonight you'll shout. Tomorrow you'll talk. Science.", ditzy: "Talk tomorrow!", theatrical: "Because tonight you'll shout! Tomorrow you'll talk!" }),
+  T("Using our mouths? For all of it?", {
+    earnest: "Using our mouths? For all of it?", warm: "Using our mouths? For all of it?", calm: "Mouths? For all of it?", quiet: "All of it?", dry: "Using our mouths. For all of it.", nerdy: "Using our mouths? For all of it?",
+    loud: "Using our MOUTHS? For ALL of it?", blunt: "Mouths only?", tough: "Mouths only?", competitive: "Using our mouths? For all of it?", chaotic: "Mouths?! All?!", schemer: "Using our mouths? For all of it?",
+    cruel: "Using our mouths? For all of it?", bossy: "Mouths only?", proud: "Using our mouths? For all of it?", flirty: "Using our mouths? For all of it?",
+    anxious: "Using our mouths? For all of it?", goofy: "Using our mouths? For all of it? Messy.", ditzy: "Mouths?!", theatrical: "Using our mouths? For all of it?!" }),
+  T("Cheers, everyone.", {
+    earnest: "Cheers, everyone.", warm: "Cheers, everyone.", calm: "Cheers.", quiet: "Cheers.", dry: "Cheers, everyone.", nerdy: "Cheers, everyone.",
+    loud: "CHEERS, everyone!", blunt: "Cheers.", tough: "Cheers.", competitive: "Cheers, everyone. Thanks for losing.", chaotic: "Cheers! Everyone!", schemer: "Cheers, everyone.",
+    cruel: "Cheers, everyone.", bossy: "Cheers.", proud: "Cheers, everyone.", flirty: "Cheers, everyone.",
+    anxious: "Cheers, everyone.", goofy: "Cheers, everyone. Bow.", ditzy: "Cheers!", theatrical: "Cheers, everyone!" }),
+  T("Better luck next time.", {
+    earnest: "Better luck next time.", warm: "Better luck next time.", calm: "Better luck next time.", quiet: "Next time.", dry: "Better luck next time.", nerdy: "Better luck next time.",
+    loud: "BETTER luck NEXT time!", blunt: "Next time.", tough: "Next time.", competitive: "Better luck next time.", chaotic: "Luck! Next time!", schemer: "Better luck next time.",
+    cruel: "Better luck next time.", bossy: "Next time.", proud: "Better luck next time.", flirty: "Better luck next time.",
+    anxious: "Better luck next time.", goofy: "Better luck next time. You'll need it.", ditzy: "Next time!", theatrical: "Better luck next time!" }),
+  T("If {pa} can't see why I'm upset, that's a problem in itself.", {
+    earnest: "If {pa} can't see why I'm upset, that's a problem in itself.", warm: "If {pa} can't see why I'm upset, that's a problem in itself.", calm: "If {pa} can't see why, that's a problem.", quiet: "That's a problem.",
+    dry: "{pa} can't see why I'm upset. That's the problem.", nerdy: "If {pa} can't see why I'm upset, that's a problem in itself.", loud: "If {pa} CAN'T see why I'm upset, that's a PROBLEM!", blunt: "That's a problem.",
+    tough: "That's a problem.", competitive: "If {pa} can't see why I'm upset, that's a problem in itself.", chaotic: "{pa}! Can't see! Problem!", schemer: "If {pa} can't see why I'm upset, that's a problem in itself.",
+    cruel: "If {pa} can't see why I'm upset, that's a problem in itself.", bossy: "That's a problem.", proud: "If {pa} can't see why I'm upset, that's a problem in itself.", flirty: "If {pa} can't see why I'm upset, that's a problem in itself.",
+    anxious: "If {pa} can't see why I'm upset, that's a problem in itself.", goofy: "If {pa} can't see why I'm upset, that's a problem in itself. Glasses needed.", ditzy: "That's a problem!", theatrical: "If {pa} can't see why I'm upset, that's a problem in itself!" }),
+  T("Just so you know, I'm not going anywhere.", {
+    earnest: "Just so you know, I'm not going anywhere.", warm: "Just so you know, I'm not going anywhere.", calm: "I'm not going anywhere.", quiet: "Not going anywhere.", dry: "Just so you know. Not going anywhere.", nerdy: "Just so you know, I'm not going anywhere.",
+    loud: "Just so you KNOW, I'm NOT going ANYWHERE!", blunt: "Not going anywhere.", tough: "Not going anywhere.", competitive: "Just so you know, I'm not going anywhere.", chaotic: "Not going! Anywhere!", schemer: "Just so you know, I'm not going anywhere.",
+    cruel: "Just so you know, I'm not going anywhere.", bossy: "Not going anywhere.", proud: "Just so you know, I'm not going anywhere.", flirty: "Just so you know, I'm not going anywhere.",
+    anxious: "Just so you know, I'm not going anywhere.", goofy: "Just so you know, I'm not going anywhere. Rooted.", ditzy: "I'm staying!", theatrical: "Just so you know, I'm not going anywhere!" }),
+  T("Then this is going to get messy.", {
+    earnest: "Then this is going to get messy.", warm: "Then this is going to get messy.", calm: "Then it'll get messy.", quiet: "It'll get messy.", dry: "Then this'll get messy.", nerdy: "Then this is going to get messy.",
+    loud: "Then this is going to get MESSY!", blunt: "Messy.", tough: "Messy.", competitive: "Then this is going to get messy.", chaotic: "Messy! Very!", schemer: "Then this is going to get messy.",
+    cruel: "Then this is going to get messy.", bossy: "Messy.", proud: "Then this is going to get messy.", flirty: "Then this is going to get messy.",
+    anxious: "Then this is going to get messy.", goofy: "Then this is going to get messy. Aprons on.", ditzy: "Messy!", theatrical: "Then this is going to get messy!" }),
+  T("Done with what?", {
+    earnest: "Done with what?", warm: "Done with what?", calm: "Done with what?", quiet: "With what?", dry: "Done with what?", nerdy: "Done with what?",
+    loud: "Done with WHAT?", blunt: "With what?", tough: "With what?", competitive: "Done with what?", chaotic: "Done?! What?!", schemer: "Done with what?",
+    cruel: "Done with what?", bossy: "With what?", proud: "Done with what?", flirty: "Done with what?",
+    anxious: "Done with what?", goofy: "Done with what? Lunch?", ditzy: "With what?", theatrical: "Done with what?" }),
+  T("Fighting over {c}. I'm not going to be in competition with someone for a person.", {
+    earnest: "Fighting over {c}. I'm not going to be in competition with someone for a person.", warm: "Fighting over {c}. I'm not going to be in competition with someone for a person.", calm: "Fighting over {c}. Not competing for a person.", quiet: "Not competing for {c}.",
+    dry: "Fighting over {c}. Not competing for a person.", nerdy: "Fighting over {c}. I'm not going to be in competition with someone for a person.", loud: "Fighting over {c}! NOT competing for a PERSON!", blunt: "Not competing.",
+    tough: "Not competing.", competitive: "Fighting over {c}. I'm not going to be in competition with someone for a person.", chaotic: "Fighting! {c}! Not competing!", schemer: "Fighting over {c}. I'm not going to be in competition with someone for a person.",
+    cruel: "Fighting over {c}. I'm not going to be in competition with someone for a person.", bossy: "Not competing.", proud: "Fighting over {c}. I'm not going to be in competition with someone for a person.", flirty: "Fighting over {c}. I'm not going to be in competition with someone for a person.",
+    anxious: "Fighting over {c}. I'm not going to be in competition with someone for a person.", goofy: "Fighting over {c}. I'm not going to be in competition with someone for a person. Not a prize.", ditzy: "Not competing!", theatrical: "Fighting over {c}! I'm not going to be in competition with someone for a person!" }),
+  T("I'm sure. If {c} wants me, {c} knows where I am.", {
+    earnest: "I'm sure. If {c} wants me, {c} knows where I am.", warm: "I'm sure. If {c} wants me, {c} knows where I am.", calm: "{c} knows where I am.", quiet: "{c} knows where I am.",
+    dry: "Sure. {c} knows where I am.", nerdy: "I'm sure. If {c} wants me, {c} knows where I am.", loud: "I'm SURE! If {c} wants me, {c} KNOWS where I am!", blunt: "{c} knows where I am.",
+    tough: "{c} knows where I am.", competitive: "I'm sure. If {c} wants me, {c} knows where I am.", chaotic: "Sure! {c}! Knows!", schemer: "I'm sure. If {c} wants me, {c} knows where I am.",
+    cruel: "I'm sure. If {c} wants me, {c} knows where I am.", bossy: "{c} knows where I am.", proud: "I'm sure. If {c} wants me, {c} knows where I am.", flirty: "I'm sure. If {c} wants me, {c} knows where I am.",
+    anxious: "I'm sure. If {c} wants me, {c} knows where I am.", goofy: "I'm sure. If {c} wants me, {c} knows where I am. Same sunbed.", ditzy: "{c} knows!", theatrical: "I'm sure! If {c} wants me, {c} knows where I am!" }),
+  T("Do you even feel bad?", {
+    earnest: "Do you even feel bad?", warm: "Do you even feel bad?", calm: "Do you feel bad?", quiet: "Feel bad?", dry: "Do you even feel bad?", nerdy: "Do you even feel bad?",
+    loud: "Do you EVEN feel BAD?", blunt: "Feel bad?", tough: "Feel bad?", competitive: "Do you even feel bad?", chaotic: "Bad?! Feel?!", schemer: "Do you even feel bad?",
+    cruel: "Do you even feel bad?", bossy: "Feel bad?", proud: "Do you even feel bad?", flirty: "Do you even feel bad?",
+    anxious: "Do you even feel bad?", goofy: "Do you even feel bad? At all?", ditzy: "Feel bad?", theatrical: "Do you even feel bad?" }),
+  T("Honestly? No. I came here to win.", {
+    earnest: "Honestly? No. I came here to win.", warm: "Honestly? No. I came here to win.", calm: "No. I came to win.", quiet: "No.", dry: "Honestly. No. Came to win.", nerdy: "Honestly? No. I came here to win.",
+    loud: "Honestly? NO! I came to WIN!", blunt: "No. Came to win.", tough: "No. Came to win.", competitive: "Honestly? No. I came here to win. And I will.", chaotic: "No! Win!", schemer: "Honestly? No. I came here to win.",
+    cruel: "Honestly? No. I came here to win.", bossy: "No. Came to win.", proud: "Honestly? No. I came here to win.", flirty: "Honestly? No. I came here to win.",
+    anxious: "Honestly? No. I came here to win.", goofy: "Honestly? No. I came here to win. Sorry not sorry.", ditzy: "No! I came to win!", theatrical: "Honestly? No! I came here to win!" }),
+  T("At my expense.", {
+    earnest: "At my expense.", warm: "At my expense.", calm: "At my expense.", quiet: "At my expense.", dry: "At my expense.", nerdy: "At my expense.",
+    loud: "At MY expense!", blunt: "My expense.", tough: "My expense.", competitive: "At my expense.", chaotic: "Me! Expense!", schemer: "At my expense.",
+    cruel: "At my expense.", bossy: "My expense.", proud: "At my expense.", flirty: "At my expense.",
+    anxious: "At my expense.", goofy: "At my expense. Literally.", ditzy: "At my expense!", theatrical: "At my expense!" }),
+  T("At anyone's.", {
+    earnest: "At anyone's.", warm: "At anyone's.", calm: "At anyone's.", quiet: "Anyone's.", dry: "At anyone's.", nerdy: "At anyone's.",
+    loud: "At ANYONE'S!", blunt: "Anyone's.", tough: "Anyone's.", competitive: "At anyone's.", chaotic: "Anyone's!", schemer: "At anyone's.",
+    cruel: "At anyone's.", bossy: "Anyone's.", proud: "At anyone's.", flirty: "At anyone's.",
+    anxious: "At anyone's.", goofy: "At anyone's. Equal opportunity.", ditzy: "Anyone's!", theatrical: "At anyone's." }),
+  T("I really don't want to do this. It's {b}.", {
+    earnest: "I really don't want to do this. It's {b}.", warm: "I really don't want to do this. It's {b}.", calm: "Don't want to. It's {b}.", quiet: "It's {b}.", dry: "Don't want to. {b}.", nerdy: "I really don't want to do this. It's {b}.",
+    loud: "I REALLY don't want to! It's {b}!", blunt: "{b}.", tough: "{b}.", competitive: "I really don't want to do this. It's {b}.", chaotic: "Don't want to! {b}!", schemer: "I really don't want to do this. It's {b}.",
+    cruel: "It's {b}.", bossy: "{b}.", proud: "I really don't want to do this. It's {b}.", flirty: "I really don't want to do this. It's {b}.",
+    anxious: "I really don't want to do this. It's {b}. Sorry.", goofy: "I really don't want to do this. It's {b}. Sorry, pal.", ditzy: "Sorry, {b}!", theatrical: "I really don't want to do this! It's {b}!" }),
+  T("Everyone brush your teeth. Now.", {
+    earnest: "Everyone brush your teeth. Now.", warm: "Everyone brush your teeth. Now.", calm: "Brush your teeth. Now.", quiet: "Brush your teeth.", dry: "Everyone. Teeth. Now.", nerdy: "Everyone brush your teeth. Now.",
+    loud: "EVERYONE brush your TEETH! NOW!", blunt: "Teeth. Now.", tough: "Teeth. Now.", competitive: "Everyone brush your teeth. Now.", chaotic: "Teeth! Brush! Now!", schemer: "Everyone brush your teeth. Now.",
+    cruel: "Everyone brush your teeth. Now.", bossy: "Teeth. Now.", proud: "Everyone brush your teeth. Now.", flirty: "Everyone brush your teeth. Now.",
+    anxious: "Everyone brush your teeth. Now. Please.", goofy: "Everyone brush your teeth. Now. Minty fresh.", ditzy: "Brush your teeth!", theatrical: "Everyone brush your teeth! Now!" }),
+  T("Do I have to pick?", {
+    earnest: "Do I have to pick?", warm: "Do I have to pick?", calm: "Do I have to pick?", quiet: "Pick?", dry: "Do I have to pick?", nerdy: "Do I have to pick?",
+    loud: "Do I HAVE to PICK?", blunt: "Pick?", tough: "Pick?", competitive: "Do I have to pick?", chaotic: "Pick?! Me?!", schemer: "Do I have to pick?",
+    cruel: "Do I have to pick?", bossy: "Pick?", proud: "Do I have to pick?", flirty: "Do I have to pick?",
+    anxious: "Do I have to pick? Really?", goofy: "Do I have to pick? Eeny meeny.", ditzy: "Pick?", theatrical: "Do I have to pick?" }),
+  T("It's a dare.", {
+    earnest: "It's a dare.", warm: "It's a dare.", calm: "It's a dare.", quiet: "A dare.", dry: "It's a dare.", nerdy: "It's a dare.",
+    loud: "It's a DARE!", blunt: "Dare.", tough: "Dare.", competitive: "It's a dare.", chaotic: "Dare! Dare!", schemer: "It's a dare.",
+    cruel: "It's a dare.", bossy: "Dare.", proud: "It's a dare.", flirty: "It's a dare.",
+    anxious: "It's a dare.", goofy: "It's a dare. Rules are rules.", ditzy: "A dare!", theatrical: "It's a dare!" }),
+  T("I got you one.", {
+    earnest: "I got you one.", warm: "I got you one.", calm: "Got you one.", quiet: "For you.", dry: "Got you one.", nerdy: "I got you one.",
+    loud: "I got you ONE!", blunt: "For you.", tough: "For you.", competitive: "I got you one.", chaotic: "One! For you!", schemer: "I got you one.",
+    cruel: "I got you one.", bossy: "For you.", proud: "I got you one.", flirty: "I got you one.",
+    anxious: "I got you one. If you want it.", goofy: "I got you one. Extra ice.", ditzy: "For you!", theatrical: "I got you one!" }),
+  T("Oh. Thanks.", {
+    earnest: "Oh. Thanks.", warm: "Oh. Thanks.", calm: "Thanks.", quiet: "Thanks.", dry: "Oh. Thanks.", nerdy: "Oh. Thanks.",
+    loud: "OH! THANKS!", blunt: "Thanks.", tough: "Thanks.", competitive: "Oh. Thanks.", chaotic: "Oh! Thanks!", schemer: "Oh. Thanks.",
+    cruel: "Oh. Thanks.", bossy: "Thanks.", proud: "Oh. Thanks.", flirty: "Oh. Thanks.",
+    anxious: "Oh. Thanks.", goofy: "Oh. Thanks. Lovely.", ditzy: "Thanks!", theatrical: "Oh. Thanks." }),
+  T("I was just about to get {b} a drink.", {
+    earnest: "I was just about to get {b} a drink.", warm: "I was just about to get {b} a drink.", calm: "I was about to get {b} a drink.", quiet: "I was getting {b} one.",
+    dry: "Was just about to get {b} a drink.", nerdy: "I was just about to get {b} a drink.", loud: "I was JUST about to get {b} a DRINK!", blunt: "Was getting {b} one.",
+    tough: "Was getting {b} one.", competitive: "I was just about to get {b} a drink.", chaotic: "Drink! {b}! Me!", schemer: "I was just about to get {b} a drink.",
+    cruel: "I was just about to get {b} a drink.", bossy: "Was getting {b} one.", proud: "I was just about to get {b} a drink.", flirty: "I was just about to get {b} a drink.",
+    anxious: "I was just about to get {b} a drink.", goofy: "I was just about to get {b} a drink. Beaten to it.", ditzy: "I was getting one!", theatrical: "I was just about to get {b} a drink!" }),
+  T("They like us! The public actually like us!", {
+    earnest: "They like us! The public actually like us!", warm: "They like us! The public actually like us!", calm: "The public like us.", quiet: "They like us.", dry: "They like us. Actually.", nerdy: "They like us! The public actually like us!",
+    loud: "They LIKE us! The public ACTUALLY like us!", blunt: "They like us.", tough: "They like us.", competitive: "They like us! The public actually like us! Obviously.", chaotic: "Like us! Public! Us!", schemer: "They like us! The public actually like us!",
+    cruel: "They like us. The public actually like us.", bossy: "They like us.", proud: "They like us! The public actually like us!", flirty: "They like us! The public actually like us!",
+    anxious: "They like us! The public actually like us! Really?", goofy: "They like us! The public actually like us! Mad.", ditzy: "They like us!", theatrical: "They like us! The public actually like us!" }),
+  T("I really thought it would be me.", {
+    earnest: "I really thought it would be me.", warm: "I really thought it would be me.", calm: "I thought it'd be me.", quiet: "Thought it'd be me.", dry: "Really thought it'd be me.", nerdy: "I really thought it would be me.",
+    loud: "I REALLY thought it'd be ME!", blunt: "Thought it was me.", tough: "Thought it was me.", competitive: "I really thought it would be me.", chaotic: "Me! Thought so!", schemer: "I really thought it would be me.",
+    cruel: "I really thought it would be me.", bossy: "Thought it was me.", proud: "I really thought it would be me.", flirty: "I really thought it would be me.",
+    anxious: "I really thought it would be me.", goofy: "I really thought it would be me. Wrong again.", ditzy: "I thought it was me!", theatrical: "I really thought it would be me!" }),
+  T("I know. {c} doesn't know what's been left on the table.", {
+    earnest: "I know. {c} doesn't know what's been left on the table.", warm: "I know. {c} doesn't know what's been left on the table.", calm: "{c} doesn't know what they missed.", quiet: "{c}'s missing out.",
+    dry: "I know. {c} doesn't know what got left on the table.", nerdy: "I know. {c} doesn't know what's been left on the table.", loud: "I KNOW! {c} doesn't KNOW what's been LEFT!", blunt: "{c}'s missing out.",
+    tough: "{c}'s missing out.", competitive: "I know. {c} doesn't know what's been left on the table.", chaotic: "{c}! Left! Table!", schemer: "I know. {c} doesn't know what's been left on the table.",
+    cruel: "I know. {c} doesn't know what's been left on the table.", bossy: "{c}'s missing out.", proud: "I know. {c} doesn't know what's been left on the table.", flirty: "I know. {c} doesn't know what's been left on the table.",
+    anxious: "I know. {c} doesn't know what's been left on the table.", goofy: "I know. {c} doesn't know what's been left on the table. Their loss.", ditzy: "Their loss!", theatrical: "I know! {c} doesn't know what's been left on the table!" }),
+  T("Don't. I'll cry.", {
+    earnest: "Don't. I'll cry.", warm: "Don't. I'll cry.", calm: "Don't. I'll cry.", quiet: "I'll cry.", dry: "Don't. I'll cry.", nerdy: "Don't. I'll cry.",
+    loud: "DON'T! I'll CRY!", blunt: "I'll cry.", tough: "Don't. I'm fine.", competitive: "Don't. I'll cry.", chaotic: "Don't! Cry!", schemer: "Don't. I'll cry.",
+    cruel: "Don't. I'll cry.", bossy: "I'll cry.", proud: "Don't. I'll cry.", flirty: "Don't. I'll cry.",
+    anxious: "Don't. I'll cry. I'm crying.", goofy: "Don't. I'll cry. Waterworks.", ditzy: "I'll cry!", theatrical: "Don't! I'll cry!" }),
+  T("Then cry. I'm here.", {
+    earnest: "Then cry. I'm here.", warm: "Then cry. I'm here.", calm: "Then cry. I'm here.", quiet: "I'm here.", dry: "Then cry. I'm here.", nerdy: "Then cry. I'm here.",
+    loud: "Then CRY! I'm HERE!", blunt: "Cry. I'm here.", tough: "Cry. I'm here.", competitive: "Then cry. I'm here.", chaotic: "Cry! Here!", schemer: "Then cry. I'm here.",
+    cruel: "Then cry. I'm here.", bossy: "Cry. I'm here.", proud: "Then cry. I'm here.", flirty: "Then cry. I'm here.",
+    anxious: "Then cry. I'm here.", goofy: "Then cry. I'm here. Tissue?", ditzy: "I'm here!", theatrical: "Then cry! I'm here!" }),
+  T("You two look good together. I mean it.", {
+    earnest: "You two look good together. I mean it.", warm: "You two look good together. I mean it.", calm: "You look good together.", quiet: "You look good.", dry: "You two look good together. Mean it.", nerdy: "You two look good together. I mean it.",
+    loud: "You two look GOOD together! I MEAN it!", blunt: "You look good.", tough: "You look good.", competitive: "You two look good together. I mean it.", chaotic: "Good! Together! Mean it!", schemer: "You two look good together. I mean it.",
+    cruel: "You two look good together. I mean it.", bossy: "You look good.", proud: "You two look good together. I mean it.", flirty: "You two look good together. I mean it.",
+    anxious: "You two look good together. I mean it.", goofy: "You two look good together. I mean it. Sickening.", ditzy: "You look good!", theatrical: "You two look good together! I mean it!" }),
+  T("That means a lot, coming from you.", {
+    earnest: "That means a lot, coming from you.", warm: "That means a lot, coming from you.", calm: "That means a lot.", quiet: "Means a lot.", dry: "Means a lot. From you.", nerdy: "That means a lot, coming from you.",
+    loud: "That means a LOT, coming from YOU!", blunt: "Means a lot.", tough: "Means a lot.", competitive: "That means a lot, coming from you.", chaotic: "Means! A lot! You!", schemer: "That means a lot, coming from you.",
+    cruel: "That means a lot, coming from you.", bossy: "Means a lot.", proud: "That means a lot, coming from you.", flirty: "That means a lot, coming from you.",
+    anxious: "That means a lot, coming from you.", goofy: "That means a lot, coming from you. Truly.", ditzy: "Means a lot!", theatrical: "That means a lot, coming from you!" }),
+  T("You've got that look again.", {
+    earnest: "You've got that look again.", warm: "You've got that look again.", calm: "That look again.", quiet: "That look.", dry: "Got that look again.", nerdy: "You've got that look again.",
+    loud: "You've got THAT look again!", blunt: "That look.", tough: "That look.", competitive: "You've got that look again.", chaotic: "Look! Again!", schemer: "You've got that look again.",
+    cruel: "You've got that look again.", bossy: "That look.", proud: "You've got that look again.", flirty: "You've got that look again.",
+    anxious: "You've got that look again.", goofy: "You've got that look again. Busted.", ditzy: "That look!", theatrical: "You've got that look again!" }),
+  T("The one where you're happy.", {
+    earnest: "The one where you're happy.", warm: "The one where you're happy.", calm: "The happy one.", quiet: "The happy one.", dry: "The happy one.", nerdy: "The one where you're happy.",
+    loud: "The one where you're HAPPY!", blunt: "Happy one.", tough: "Happy one.", competitive: "The one where you're happy.", chaotic: "Happy! That one!", schemer: "The one where you're happy.",
+    cruel: "The one where you're happy.", bossy: "Happy one.", proud: "The one where you're happy.", flirty: "The one where you're happy.",
+    anxious: "The one where you're happy.", goofy: "The one where you're happy. Cute.", ditzy: "Happy one!", theatrical: "The one where you're happy!" }),
+  T("I am happy.", {
+    earnest: "I am happy.", warm: "I am happy.", calm: "I am happy.", quiet: "I'm happy.", dry: "I am happy.", nerdy: "I am happy.",
+    loud: "I AM happy!", blunt: "Happy.", tough: "Happy.", competitive: "I am happy.", chaotic: "Happy! I am!", schemer: "I am happy.",
+    cruel: "I am happy.", bossy: "Happy.", proud: "I am happy.", flirty: "I am happy.",
+    anxious: "I am happy. Really.", goofy: "I am happy. Very.", ditzy: "I'm happy!", theatrical: "I am happy!" }),
+  T("I want to thank my partner, obviously. And everyone who voted.", {
+    earnest: "I want to thank my partner, obviously. And everyone who voted.", warm: "I want to thank my partner, obviously. And everyone who voted.", calm: "Thanks to my partner. And the voters.", quiet: "Thank you.",
+    dry: "Thanks to my partner. Obviously. And the voters.", nerdy: "I want to thank my partner, obviously. And everyone who voted.", loud: "THANK you to my PARTNER! And EVERYONE who voted!", blunt: "Thanks, all.",
+    tough: "Thanks, all.", competitive: "I want to thank my partner, obviously. And everyone who voted.", chaotic: "Partner! Voters! Thanks!", schemer: "I want to thank my partner, obviously. And everyone who voted.",
+    cruel: "I want to thank my partner, obviously.", bossy: "Thanks, all.", proud: "I want to thank my partner, obviously. And everyone who voted.", flirty: "I want to thank my partner, obviously. And everyone who voted.",
+    anxious: "I want to thank my partner, obviously. And everyone who voted.", goofy: "I want to thank my partner, obviously. And everyone who voted. And my hair.", ditzy: "Thank you!", theatrical: "I want to thank my partner, obviously! And everyone who voted!" }),
+  T("It's a compliment! It's a compliment, isn't it?", {
+    earnest: "It's a compliment! It's a compliment, isn't it?", warm: "It's a compliment! It's a compliment, isn't it?", calm: "It's a compliment. Isn't it?", quiet: "Is it a compliment?",
+    dry: "It's a compliment. Isn't it.", nerdy: "It's a compliment! It's a compliment, isn't it?", loud: "It's a COMPLIMENT! ISN'T it?", blunt: "Compliment?",
+    tough: "Compliment?", competitive: "It's a compliment! It's a compliment, isn't it?", chaotic: "Compliment! Is it?!", schemer: "It's a compliment! It's a compliment, isn't it?",
+    cruel: "It's a compliment! It's a compliment, isn't it?", bossy: "Compliment?", proud: "It's a compliment! It's a compliment, isn't it?", flirty: "It's a compliment! It's a compliment, isn't it?",
+    anxious: "It's a compliment! It's a compliment, isn't it? Isn't it?", goofy: "It's a compliment! It's a compliment, isn't it? Hmm.", ditzy: "A compliment!", theatrical: "It's a compliment! It's a compliment, isn't it?" }),
+];

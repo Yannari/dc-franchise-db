@@ -8184,6 +8184,27 @@
       "voice": "Bubbly, sincere and talks a mile a minute when she is excited. Wears every feeling on her face, falls fast, and means every word of it. #earnest #emotional#chaotic",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Theo",
+      "slug": "theo",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "chaos-agent",
+      "stats": {
+        "physical": 8,
+        "endurance": 6,
+        "mental": 4,
+        "social": 7,
+        "strategic": 4,
+        "loyalty": 5,
+        "boldness": 9,
+        "intuition": 4,
+        "temperament": 5
+      },
+      "voice": "Cocky, easy charm with a mischievous streak and a slow drawl. Teases everyone, starts trouble for the fun of watching it, and grins his way out of the consequences. #goofy #proud#competitive",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

@@ -179,7 +179,7 @@ export const BATCH151 = [
   T("I'm not. It's nothing.", { emotional: "I'm not. It's nothing. I'm just happy." }),
   T("It's not nothing.", { emotional: "It's not nothing. I know your face." }),
   T("Honestly. Leave it.", { emotional: "Honestly. Leave it. I'll tell you later, when I can say it without going red." }),
-  T("{c} has been getting to know someone. Not you.", { emotional: "{c} has been getting to know someone. Not you. I'm so sorry. I had to tell you." }),
+  T("{c} has been getting to know someone. Not you.", { emotional: "{c} has been getting to know someone. Not you. My stomach's been in knots all day carrying it." }),
   T("I don't laugh with {pa}. I laugh with everyone else.", { emotional: "I don't laugh with {pa}. I laugh with everyone else. And it makes me so sad." }),
   T("That's not nothing.", { emotional: "That's not nothing. That's big. Are you okay?" }),
   T("No. That's the problem.", { emotional: "No. That's the problem. And I don't know what to do." }),

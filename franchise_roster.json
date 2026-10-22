@@ -8631,6 +8631,27 @@
       "voice": "Easygoing and flirty, leaning on the counter with a grin. Pours compliments like drinks, keeps the banter light, and falls a bit harder than he ever lets on. #flirty #-calm#loud#goofy",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Shamar",
+      "slug": "shamar",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "challenge-beast",
+      "stats": {
+        "physical": 9,
+        "endurance": 8,
+        "mental": 4,
+        "social": 6,
+        "strategic": 4,
+        "loyalty": 6,
+        "boldness": 8,
+        "intuition": 5,
+        "temperament": 6
+      },
+      "voice": "Cocky, playful and full of stories from places he has been. Laughs big, competes harder than anyone, and turns every game into something he has to win. #competitive #loud#tough",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

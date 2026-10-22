@@ -8387,6 +8387,27 @@
       "voice": "Sweet, nervous and a little giggly, apologising half the time she speaks. Once she picks someone she is all in, and she will defend them to anyone. #anxious #warm#earnest",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Imani",
+      "slug": "imani",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "challenge-beast",
+      "stats": {
+        "physical": 9,
+        "endurance": 8,
+        "mental": 5,
+        "social": 5,
+        "strategic": 6,
+        "loyalty": 5,
+        "boldness": 7,
+        "intuition": 5,
+        "temperament": 4
+      },
+      "voice": "Cool, confident and competitive about everything. Talks like a coach, keeps score of things nobody else is counting, and smiles slowly when she knows she has already won. #competitive #proud",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

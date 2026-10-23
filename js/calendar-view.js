@@ -25,7 +25,7 @@ import { SHOWS, DEFAULT_FORMAT } from './shows.js';
 import {
   airKey, airLabel, latestAired, nextWindowFor, nextAllStarsWindow, episodeAirDates, airDateLabel, bookedWindow, DEFAULT_RUN, projectedRun,
 } from './franchise-calendar.js';
-import { readSavedGame, readLocks, liveSeason, setupSeason } from './air-watch.js';
+import { readSavedGame, readLocks, liveSeason, setupSeason, dueSeasons } from './air-watch.js';
 
 const DAY = 86400000;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -249,6 +249,11 @@ function css() {
 .fc-card span{font-size:12px;color:var(--fc-dim)}
 .fc-card.now small::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#4ade80;margin-right:6px;
   box-shadow:0 0 0 0 rgba(74,222,128,.7);animation:fcPing 1.8s infinite;vertical-align:1px}
+.fc-card.due{border-color:rgba(251,191,36,.45)}
+.fc-card.due small{color:#fbbf24}
+.fc-card.due.hot{border-color:rgba(248,113,113,.55)}
+.fc-card.due.hot small{color:#f87171}
+.fc-also{flex:1 1 100%;font-size:12px;color:var(--fc-dim)}
 
 .fc-years{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px;margin-bottom:6px;scrollbar-width:thin}
 .fc-pill{flex:0 0 auto;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--fc-dim);
@@ -463,7 +468,7 @@ function barHtml(r, year, i) {
   if (r.finale.getTime() + DAY > b) cls.push('to-next');
   if (r.projected) cls.push('ghost');
   if (r.live || r.started) cls.push('live');
-  if (state.model.nowRun === r) cls.push('is-now');
+  if (state.model.nowMark === r) cls.push('is-now');
   if (state.selected === r.key) cls.push('sel');
   // A bar clipped to a few weeks at the edge of a year has room for its label
   // and nothing else; the title and winner are in the tooltip and the card.
@@ -493,7 +498,7 @@ function boardHtml(year) {
       <div class="fc-qrow">${quarterHeaders()}</div>
       <div class="fc-mrow">${months}</div>
       ${rows}
-      ${nowIn ? `<div class="fc-nowline" style="left:${pct(now.getTime(), year)}%" title="Now — the ${esc(airDateLabel(now))} finale of ${esc(state.model.nowRun.short)}"></div>` : ''}
+      ${nowIn ? `<div class="fc-nowline" style="left:${pct(now.getTime(), year)}%" title="Now — ${state.model.nowMark?.live ? `${esc(airDateLabel(now))}, episode ${state.model.live.aired} of ${esc(state.model.nowMark.short)}` : `the ${esc(airDateLabel(now))} finale of ${esc(state.model.nowRun?.short)}`}"></div>` : ''}
     </div>
     ${lanes.length ? '' : `<div class="fc-empty">Nothing aired in ${year}.</div>`}`;
 }
@@ -524,7 +529,7 @@ function detailHtml() {
   const isNow = state.model.nowRun === r;
   const status = r.live ? `Playing now · ${r.aired} of ${r.count} episodes aired · not exported yet`
     : r.started ? 'Started · its date is fixed · not exported yet'
-      : r.possible ? 'Possible · not scheduled yet' : r.projected ? 'Projected · not scheduled yet' : isNow ? 'Latest to air · the franchise is here' : 'Aired';
+      : r.possible ? 'Possible · not scheduled yet' : r.projected ? 'Projected · not scheduled yet' : isNow ? (state.model.nowMark === r ? 'Latest to air · the franchise is here' : 'Last aired') : 'Aired';
   const stars = r.show.allStars;
   const which = r.season.allStars && stars ? `${stars.label} ${r.season.asNumber || ''}` : `Season ${r.season.seasonNumber}`;
   const starSlots = (stars?.airSlots || []).map(s => s[0].toUpperCase() + s.slice(1)).join(' and ');
@@ -565,7 +570,7 @@ function chronoHtml() {
     if (y !== lastYear) { out.push(`<div class="fc-ymark"><span>${y}</span></div>`); lastYear = y; }
     const cls = ['fc-node'];
     if (r.projected) cls.push('ghost');
-    if (state.model.nowRun === r) cls.push('is-now');
+    if (state.model.nowMark === r) cls.push('is-now');
     if (state.selected === r.key) cls.push('sel');
     out.push(`<button type="button" class="${cls.join(' ')}" data-key="${esc(r.key)}" style="--ac:${r.show.accent};animation-delay:${Math.min(i * 45, 1200)}ms"
       title="${esc(r.season.title || r.short)}"><span class="dot">${r.show.emoji}</span><b>${esc(r.short)}</b>
@@ -574,15 +579,43 @@ function chronoHtml() {
   return `<div class="fc-rail">${out.join('')}</div>`;
 }
 
+// The user, 2026-10-23: "now for a finished season and up next for a season playing now and it doesnt
+// really tell me that soon i should start bb2". "Now" was the latest finale and "Up next" the earliest
+// projected bar, which is the season being played. The season in the simulator is now; the next to start
+// is what airs while it does (air-watch.js dueSeasons, the Run tab's banner), else the next projected bar.
 function cardsHtml() {
-  const { nowRun, ghosts } = state.model;
-  // The earliest projected premiere, even one that lands before the current
-  // season's finale: shows overlap, and the next to start is still next.
-  const upNext = ghosts[0];
+  const { nowRun, ghosts, live, due = [] } = state.model;
+  const liveRun = ghosts.find(g => g.live) || null;
   const card = (cls, r, label, line) => r ? `<div class="fc-card ${cls}" data-key="${esc(r.key)}" style="--ac:${r.show.accent}">
     <small>${label}</small><b>${r.show.emoji} ${esc(r.season.title || r.short)}</b><span>${line}</span></div>` : '';
-  return card('now', nowRun, 'Now', nowRun ? `${esc(airLabel(nowRun.season))} · finale ${esc(airDateLabel(nowRun.finale))}` : '')
-    + card('next', upNext, upNext ? `Up next · ${tagOf(upNext)}` : '', upNext ? `${esc(airLabel(upNext.season))} · premieres ${esc(shortDate(upNext.start))}` : '');
+  const out = [];
+  if (liveRun && live) {
+    out.push(card('now', liveRun, 'Playing now', `${esc(airLabel(liveRun.season))} · episode ${live.aired} of ${live.total} aired`
+      + ` · finale ${esc(airDateLabel(live.finale))}`));
+  }
+  out.push(card('last', nowRun, 'Last aired', nowRun ? `${esc(airLabel(nowRun.season))} · finale ${esc(airDateLabel(nowRun.finale))}` : ''));
+
+  // Every next season that premieres while the live one airs and has not started, booked ones too: dueSeasons
+  // lists only the ones an export would move, and a booked season that keeps its date is still due.
+  const airing = liveRun && live?.current
+    ? ghosts.filter(g => !g.live && !g.started && !g.possible && g.start <= live.finale) : [];
+  const dueRun = airing[0];
+  if (dueRun) {
+    const d = due.find(x => x.format === dueRun.format && x.number === Number(dueRun.season.seasonNumber));
+    const overdue = dueRun.start <= live.current;
+    const weeks = Math.max(0, Math.round((dueRun.start - live.current) / (7 * DAY)));
+    const when = overdue ? `premiered ${esc(shortDate(dueRun.start))}: ${esc(live.short)} has aired past it (episode ${live.aired})`
+      : `premieres ${esc(shortDate(dueRun.start))}, ${weeks === 0 ? 'this week' : `in ${weeks} week${weeks === 1 ? '' : 's'}`} of ${esc(live.short)}`;
+    out.push(card(`next due${overdue ? ' hot' : ''}`, dueRun, overdue ? 'Start next · due now' : 'Start next · soon',
+      `${when}. ${d ? `Start it before you export ${esc(live.short)}, or it moves to ${esc(airLabel(d.moves))}` : 'Start it next'}`));
+    if (airing.length > 1) out.push(`<div class="fc-also">Also airing before ${esc(live.short)} ends: ${airing.slice(1).map(x => `${x.show.emoji} ${esc(x.short)}`).join(', ')}</div>`);
+  } else {
+    // The earliest projected premiere that is not the season being played, even one that lands before
+    // the current season's finale: shows overlap, and the next to start is still next.
+    const upNext = ghosts.find(g => !g.live);
+    out.push(card('next', upNext, upNext ? `Up next · ${tagOf(upNext)}` : '', upNext ? `${esc(airLabel(upNext.season))} · premieres ${esc(shortDate(upNext.start))}` : ''));
+  }
+  return out.join('');
 }
 
 function setYear(year, dir = 0) {
@@ -684,12 +717,18 @@ export async function mountCalendar(root) {
     // A season cast but not started yet: its bar runs as long as its cast.
     const setup = setupSeason(saved?.gs || null, saved?.cfg || readConfig(), rows);
     state.model = buildModel(seasons, { live, setup, locks: readLocks() });
+    state.model.live = live;
+    state.model.due = live ? dueSeasons(rows, live) : [];
+    // Now is the episode being played, when there is one; the latest finale otherwise.
+    const liveRun = live ? state.model.ghosts.find(g => g.live) : null;
+    state.model.nowMark = liveRun || state.model.nowRun;
+    if (liveRun && live.current) state.model.now = live.current;
     if (!state.model.all.length) {
       root.innerHTML = '<div class="fc-hint">No season has an air date yet. Add <code>airYear</code> and <code>airSlot</code> to seasons_database.json.</div>';
       return;
     }
     build(root);
-    state.selected = state.model.nowRun?.key || null;
+    state.selected = state.model.nowMark?.key || null;
     setYear((state.model.now || state.model.all[0].start).getUTCFullYear());
     root.querySelector('.fc-detail').innerHTML = detailHtml();
     requestAnimationFrame(() => state.selected && centreNode(state.selected));

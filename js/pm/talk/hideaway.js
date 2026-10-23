@@ -119,7 +119,7 @@ export const HIDEAWAY_MORNING = build('hideaway-morning', {
   moves: {
     catch: [
       { stage: "Breakfast. {b} comes down, and the whole kitchen goes quiet at once.", turns: [['a', "So?"], ['b', "So what?"]] },
-      { stage: "{a} corners {b} by the coffee machine before {b} has even got a cup.", turns: [['a', "Details. Now. All of them."]] },
+      { stage: "{a} corners {b} by the coffee machine, first thing, before anyone else can.", turns: [['a', "Details. Now. All of them."]] },
       { stage: "{b} walks out onto the lawn in last night's outfit, and {a} is already waiting.", turns: [['a', "Good morning. Very good morning, by the look of it."]] },
     ],
     grill: [

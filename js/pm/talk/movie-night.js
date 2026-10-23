@@ -91,7 +91,11 @@ export const MOVIE_REACT = build('movie-react', {
 
 export const MOVIE_ROW = build('movie-row', {
   tiered: false,
-  plans: { featured: ['open', 'answer', 'push', 'land'], short: ['open', 'answer', 'land'] },
+  // Walking off is the refusal: said once, not three times.
+  plans: {
+    featured: [{ when: { of: 'walk-off' }, plan: ['open', 'answer', 'land'] }, { plan: ['open', 'answer', 'push', 'land'] }],
+    short: ['open', 'answer', 'land'],
+  },
   moves: {
     open: [
       { when: { of: ['own-it', 'deny'] }, stage: "After the screening, on the daybeds.", turns: [['a', "Say something. Anything. You've been quiet since the lights came up."]] },

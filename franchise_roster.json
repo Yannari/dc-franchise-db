@@ -8935,6 +8935,27 @@
       "voice": "Smooth, warm and flirtatious: low voice, long eye contact, a compliment for everyone. Every sweet word has a purpose, and he never sounds like he's working. #flirty #schemer",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Kyle",
+      "slug": "kyle",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 8,
+        "endurance": 8,
+        "mental": 4,
+        "social": 4,
+        "strategic": 4,
+        "loyalty": 7,
+        "boldness": 8,
+        "intuition": 4,
+        "temperament": 3
+      },
+      "voice": "Gruff, booming and old-school, a cop's voice that expects to be obeyed. Calls the younger players 'kid', tells long stories about the force and does not apologise. #proud #blunt #-loud",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

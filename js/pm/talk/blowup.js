@@ -308,7 +308,7 @@ export const PILE_IN = build('pile-in', {
     land: [
       { turns: [], beat: "{a} steps right in front of {b}. That splits the garden straight down the middle." },
       { turns: [], beat: "{a} leads {b} away, and {c} is left shouting at the pair of them across the lawn." },
-      { turns: [], beat: "{c} stares at {a}. {a} has picked a side, and everyone saw which." },
+      { turns: [], beat: "{c} stares at {a}, who has picked a side, and everyone saw which." },
       { turns: [], beat: "Two more islanders get up off the daybeds. It's not a row between two people any more." },
     ],
   },
@@ -463,7 +463,7 @@ export const CLEAR_THE_AIR = build('clear-the-air', {
       { when: { of: 'peace' }, turns: [], beat: "They hug, awkwardly, and then properly." },
       { when: { of: 'peace' }, turns: [], beat: "Somebody on the terrace actually claps, and they both tell them to shut up." },
       { when: { of: 'peace' }, turns: [], beat: "The whole villa breathes out." },
-      { when: { of: 'still-angry' }, turns: [], beat: "{b} walks off first. {a} stays where {a} is, staring at the pool." },
+      { when: { of: 'still-angry' }, turns: [], beat: "{b} walks off first. {a} stays put, staring at the pool." },
       { when: { of: 'still-angry' }, turns: [], beat: "Neither of them budges an inch, and the tea goes cold." },
     ],
   },

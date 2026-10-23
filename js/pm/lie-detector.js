@@ -177,7 +177,8 @@ export function lieDetector(state, rng) {
       if (believes) { addRelationshipDimension(c, a, 'trust', 0.5); feel(state, c, 'security', 0.5); }
       else addBond(c, a, -0.5);
     }
-    out.push(scene(state, rng, 'lie-row', [a, c], { of: rowOf,
+    // What they own up to is what the secret was: a kiss is only a kiss if it was one.
+    out.push(scene(state, rng, 'lie-row', [a, c], { of: rowOf, ...(rowOf === 'own-it' ? { what: caughtSecret.kind || 'said' } : {}),
       pop: { [a]: { approval: rowOf === 'own-it' ? -0.8 : rowOf === 'deny' ? -0.3 : 0.3, fame: 2 }, [c]: { approval: 0.6, fame: 1.5 } } }, [a, c]));
   }
   return out;

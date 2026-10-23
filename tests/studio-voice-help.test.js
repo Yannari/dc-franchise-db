@@ -73,4 +73,9 @@ describe('how voice tags work, per show', () => {
     expect(src).toMatch(/How voice tags work in \$\{_showName\(\)\}/);
     expect(src).toMatch(/\(_bbSelected\(\) \? _bbVoiceHtml\(text\) : ''\)/);
   });
+
+  it('"Fill in this profile" shows only when Big Brother is selected', () => {
+    // the user, 2026-10-23: "remove fill this profile button when big brother isnt selected"
+    expect(src).toMatch(/d\.name && _bbSelected\(\) \? '<button[^']*id="st-fill-profile"/);
+  });
 });

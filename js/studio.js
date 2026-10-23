@@ -2265,7 +2265,7 @@ function _renderEditor() {
       </details>
 
       <div class="st-actions">
-        ${d.name ? '<button type="button" class="st-btn st-lg" id="st-fill-profile">Fill in this profile</button><span class="st-hint" id="st-fill-note"></span>' : ''}
+        ${/* Big Brother only, like the interview above */ d.name && _bbSelected() ? '<button type="button" class="st-btn st-lg" id="st-fill-profile">Fill in this profile</button><span class="st-hint" id="st-fill-note"></span>' : ''}
         <button type="button" class="st-btn st-primary st-lg" id="st-save">Save character</button>
         ${_castButtonHtml(d)}
         <label class="st-btn st-lg st-file" title="Fill this sheet from a file: a .json from Export, or a .txt with one label per line (Name: …, Age: 24, Pronouns: she/her, Archetype: schemer, Physical: 7, Backstory: …). Nothing is saved until you press Save.">⤒ Import<input type="file" id="st-sheet-import" accept=".json,.txt,application/json,text/plain" hidden></label>

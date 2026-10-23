@@ -39,6 +39,8 @@ import { SHOWS } from './shows.js';
 import { CIRCLE_FORMAT } from './shows.js';
 import { readVoiceText, WORD_TAGS } from './td/story/voice-words.js';
 import { voiceRegister, CIRCLE_VOICE_TAGS } from './ci/register.js';
+import { voiceMix as bbVoiceMix, bbTagRegisters } from './bb/story/register.js';
+import { REGISTERS as PM_REGISTERS } from './pm/story/director.js';
 import { HAND_KITS, handGround } from './td/story/kits/index.js';
 import { GROUND } from './td/story/kits/kits-ground.js';
 
@@ -1342,17 +1344,65 @@ function _voiceReadHtml(text) {
   // This re-renders on every keystroke, so the open state is remembered in _voiceHelpOpen.
   return `Simulator reads: ${got}${gone}`
     + (_ciSelected() ? _circleVoiceHtml(text) : '')
-    + `<details class="st-vhelp"${_voiceHelpOpen ? ' open' : ''} style="margin-top:4px"><summary style="cursor:pointer;opacity:.8">How voice tags work</summary>`
-    + `Set one outright with a hashtag in the text: ${WORD_TAGS.map(t => '#' + t).join(' ')}. Remove one with its ×, or #-tag (it also overrides the archetype and stats)`
-    + '<br>Order matters: the first tag leads. In Perfect Match a voice is a mix: the tags shown here count 4, 2.5, 1.5, then 1 each, in order'
-    + ' (five tags come out about 40 / 25 / 15 / 10 / 10 of their lines), and the tags the archetype and stats add share 1 between them.'
-    + ' A number sets a tag\'s count yourself, wherever it sits: #proud:3 gives proud 3, so "#flirty #proud:4" is half flirty, half proud,'
-    + ' and "#loud #goofy #warm:0.5" keeps warm to a hint. The other shows speak the first tag that has a line written for it.'
-    + (_ciSelected() ? `<br>The Circle's own voices, set with a hashtag: ${['calm', ...CIRCLE_VOICE_TAGS].map(t => '#' + t).join(' ')}`
-      + ' (#chill is laid-back and slangy; #calm is composed, no slang)' : '')
+    + (_bbSelected() ? _bbVoiceHtml(text) : '')
+    + `<details class="st-vhelp"${_voiceHelpOpen ? ' open' : ''} style="margin-top:4px"><summary style="cursor:pointer;opacity:.8">How voice tags work in ${_showName()}</summary>`
+    + _voiceHelpFor(_showFormat())
     + '</details>';
 }
 let _voiceHelpOpen = false;
+
+// The explanation is the selected show's (the user, 2026-10-22: "showing the # that works for bb in the explanation only
+// if bb is selected, same for all the other shows"): each show reads the tags its own way, and some not at all.
+const _showFormat = () => { try { return window.seasonConfig?.format || 'total-drama'; } catch { return 'total-drama'; } };
+const _showName = () => SHOWS[_showFormat()]?.name || 'this show';
+const _tags = list => list.map(t => '#' + t).join(' ');
+const _byRegister = groups => Object.entries(groups).map(([r, tags]) => `<b>${r}</b> ${_tags(tags)}`).join(' · ');
+const _REMOVE = 'Remove one with its ×, or write #-tag: it also overrides what the archetype and stats would add.';
+const _MIX = (who) => `<br>${who} mixes a voice instead of always speaking the first tag: the tags you wrote count 4, 2.5, 1.5, then 1 each, in order`
+  + ' (five tags come out about 40 / 25 / 15 / 10 / 10), and a number sets one yourself wherever it sits:'
+  + ' "#flirty #proud:4" is half and half, "#loud #goofy #warm:0.5" keeps warm to a hint.';
+function _voiceHelpFor(format) {
+  if (format === 'big-brother') {
+    return `Big Brother talks in nine ways. Each tag speaks as one of them: ${_byRegister(bbTagRegisters())}.`
+      + ' A register\'s own name works too (#bubbly, #smooth).'
+      + '<br>Some tags change with the tags beside them: #loud is tough beside #blunt or #cruel and bubbly beside #warm or #goofy;'
+      + ' #calm is sweet beside #warm and smooth beside #schemer; #proud is mean beside #cruel and tough beside #blunt. #nerdy does nothing here.'
+      + `<br>Your hashtags come first in the order written, then the words of the voice in the order they come. ${_REMOVE}`
+      + _MIX('Big Brother')
+      + ' Each scene lands on one of them, never two in one scene: "#warm #dry" is warm in about six scenes of ten and dry in four.'
+      + ' With nothing written, the archetype decides.';
+  }
+  if (format === 'perfect-match') {
+    return `Perfect Match writes every conversation six ways, and each tag speaks as one of them: ${_byRegister(PM_REGISTERS)}.`
+      + `<br>Order matters: your hashtags first, then the words of the voice. ${_REMOVE}`
+      + _MIX('Perfect Match')
+      + ' The tags the archetype and stats add share 1 between them: heard, never drowning what you wrote.';
+  }
+  if (format === CIRCLE_FORMAT) {
+    return `The Circle reads the first of your tags that types (${_tags(WORD_TAGS)}), plus its own voices, set with a hashtag:`
+      + ` ${_tags(['calm', ...CIRCLE_VOICE_TAGS])}. #chill is laid-back and slangy; #calm is composed, no slang.`
+      + ' Some tags read by the ones beside them: #quiet beside #anxious or #warm is shy, otherwise stoic; #proud beside #tough is blunt, otherwise catty.'
+      + `<br>${_REMOVE} One voice per player, no mix, so a number (#proud:3) does nothing here.`;
+  }
+  if (format === 'traitors') {
+    return 'The Traitors does not read voice tags. A contestant answers in one of four registers (blunt, sharp, warm, guarded),'
+      + ' taken from their archetype, or from their stats when there is none.';
+  }
+  if (format === 'drag-race') {
+    return 'Drag Race does not read these tags. A queen speaks from her drag profile: the style and voice set in the Drag section.';
+  }
+  // Total Drama, The Challenge and Ridonculous Race speak through Total Drama's voices (td/story/voice.js)
+  return `Set one outright with a hashtag in the text: ${_tags(WORD_TAGS)}. ${_REMOVE}`
+    + '<br>Order matters: your hashtags first, then the words of the voice, then what the archetype, stats and age add.'
+    + ` ${_showName()} speaks the first of them that has a line written for it, so a number (#proud:3) does nothing here.`;
+}
+// What Big Brother hears in this voice (bb/story/register.js voiceMix), while it is the show selected.
+function _bbVoiceHtml(text) {
+  const mix = bbVoiceMix(text || '');
+  const total = mix.reduce((s, [, w]) => s + w, 0);
+  const shown = mix.length ? mix.map(([r, w]) => `${r} ${Math.round(100 * w / total)}%`).join(' · ') : 'from the archetype';
+  return `<br>Big Brother speaks as: <b style="padding:1px 6px;border-radius:8px;background:rgba(240,192,64,.22)">${shown}</b>`;
+}
 // The Circle types in voices of its own (ci/register.js): #chill is not #calm, and Total Drama has no #diva, #catty
 // or #stoic at all (the user, 2026-10-20). Shown only while the Circle is the show selected.
 function _circleVoiceHtml(text) {

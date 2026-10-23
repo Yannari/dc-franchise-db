@@ -21,7 +21,7 @@
 
 import { players } from '../../core.js';
 import { pStats, pronouns } from '../../players.js';
-import { readVoiceText } from '../../td/story/voice-words.js';
+import { readVoiceText, WORD_TAGS } from '../../td/story/voice-words.js';
 
 // Whole words only (2026-10-22: "means every word" read as mean, "goes quiet and embarrassed" as
 // terse, "pushy" as shy, "even-tempered" as a temper, "some kind of" as sweet). Stems keep their endings.
@@ -64,6 +64,13 @@ function tagReg(t, has) {
   if (t === 'calm') return ['warm', 'earnest'].some(has) ? 'sweet' : ['schemer', 'proud', 'flirty'].some(has) ? 'smooth' : 'terse';
   if (t === 'proud') return has('cruel') ? 'mean' : ['tough', 'blunt', 'competitive'].some(has) ? 'tough' : 'smooth';
   return TAG_REG[t] || null;
+}
+/** { register: [voice tags] } each tag speaks in on its own (the casting studio's explanation); loud, calm and proud move
+ *  with the tags beside them, nerdy weighs nothing. */
+export function bbTagRegisters() {
+  const out = {};
+  for (const tag of WORD_TAGS) { const r = tagReg(tag, () => false); if (r) (out[r] ||= []).push(tag); }
+  return out;
 }
 // How much of a speaker's talk each register gets: Perfect Match's weights (td/story/voice.js PLACE_WEIGHTS),
 // by the place a tag was written: the first 4, then 2.5, 1.5, and 1 each after. "#proud:3" sets one outright.

@@ -193,10 +193,30 @@ Everything in §6 is built except deleting the old pools outright (see below).
 - **Measured** on the user's Season 1 cast: ~22 featured / ~20 short / ~50 notes and
   550-800 clicks an episode; 10.1 words a turn (32% at 10+, against Love Island's 43%:
   openers and reactions are short by nature); 89% of aired lines from the new files.
-- **Kept on purpose:** the old pools that still read well and are mostly ceremony beats
-  or games (intro tapes, the host at the fire pit, challenges and kiss games, Movie
-  Night reactions, the blow-up thread, votes and grudges, the final's film). They pass
-  every rule in tests/pm-lines.test.js, including the brand-name guard.
+- **The redo (2026-10-22, later the same day):** the user didn't trust what was left
+  ("redo the 11%"), so it was rebuilt too. Old-pool lines aired fell from 9.5% to 2.9%.
+  - Talk files now cover blow-ups, the scenes alone, the arrivals, the final's journey,
+    kiss games, the lie detector's card and row, the Hideaway, Movie Night, the rituals,
+    Casa Amor, the ceremony nerves, the plea, apologies and grudges, every challenge
+    scene, the step-forward coupling, the rarer formats, and exes and family.
+    Dior may speak in a talk file where the show has the host speak.
+  - The intro tape is a monologue from the character file (`{age}` `{job}` `{town}`),
+    not one line per profile field.
+  - The beach hut and the narrator were rewritten.
+  - A hut line now exists for every kind `makeEvent` cuts away from. Before, a missing
+    line silently dropped the cutaway and the fame that rides on it.
+- **Kept on purpose:** these old pools still play.
+  - Rewritten in place: the lie detector's four timed parts and the journey clips
+    (narrator over footage).
+  - The texts and the challenge rules, which state each format's mechanics exactly.
+  - The host's ceremony scripts (recaps, verdicts, the final, the reunion), which are
+    specific to what happened.
+  - The one-sentence ballots.
+  - Movie Night's clips, which are the real scenes replayed.
+- **Not deleted yet:** the old pools a talk file now shadows still sit in
+  `js/pm/lines/`. They never play, and `tests/pm-lines.test.js` still reads some of
+  them (`POOLS.comedy`). The same goes for the per-file `*_HUT` exports that hut.js
+  no longer imports.
 - **Guards:** tests/pm-talk.test.js (plans, placeholders, regional words, other shows'
   words, brands, fragments, a played season's misses and length), tests/pm-script.test.js
   (making-up follows a real row, "thanks for yesterday" follows a real yesterday).

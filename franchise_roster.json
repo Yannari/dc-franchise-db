@@ -8914,6 +8914,27 @@
       "voice": "Warm Georgia drawl with steel underneath, unhurried and charming. Calls people 'sugar', asks the gentle question and files away the answer without anyone noticing. #calm #warm",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Juan",
+      "slug": "juan",
+      "gender": "m",
+      "sexuality": "bi",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 7,
+        "endurance": 6,
+        "mental": 4,
+        "social": 9,
+        "strategic": 8,
+        "loyalty": 2,
+        "boldness": 8,
+        "intuition": 7,
+        "temperament": 5
+      },
+      "voice": "Smooth, warm and flirtatious: low voice, long eye contact, a compliment for everyone. Every sweet word has a purpose, and he never sounds like he's working. #flirty #schemer",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

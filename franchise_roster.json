@@ -9005,6 +9005,27 @@
       "backstory": "Kyle Brady has been a police officer in Pensacola, Florida, for twenty-four years, and he still runs five miles before every shift to prove he can keep up with the rookies. He grew up on the Gulf Coast, joined the force at twenty-two and raised his son Don mostly on his own after the divorce; Don is in college now and calls him every Sunday. Kyle is old-fashioned, plain-spoken and proud of it. He applied because his son said he would not last a week in a house full of twenty-somethings, and Kyle has never turned down a challenge in his life. He plans to win the first competition and show every one of them.",
       "personality": "Kyle is competitive, stubborn and protective. He is in better shape than men half his age, wants everyone to know it and treats every competition like a fitness test. He likes order and rules and has little patience for what he calls whining or for causes he does not understand, which puts him on a collision course with anyone who lectures him. He is loyal to the people he respects, mostly the athletes and anyone straight with him, and he would rather lose a fight than back down from one. Under the gruffness he is a proud dad who misses his kid. His blind spot is thinking a house works like a precinct.",
       "ties": []
+    },
+    {
+      "name": "Lacey",
+      "slug": "lacey",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 7,
+        "social": 7,
+        "strategic": 6,
+        "loyalty": 7,
+        "boldness": 4,
+        "intuition": 6,
+        "temperament": 6
+      },
+      "voice": "Bright, earnest and a little breathless, talks fast about the future and her plans. Blushes and laughs at herself; when she likes someone, everyone can tell. #earnest #warm#competitive:3.5#emotional",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

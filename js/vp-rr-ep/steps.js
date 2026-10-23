@@ -100,7 +100,7 @@ function checkpointOf(k, seg, steps, from, stretch, rows) {
 }
 // scenes shot at the Chill Zone whatever their stretch says
 const MAT_KINDS = new Set(['don-place', 'don-elim', 'don-fakeout', 'don-crown', 'mat-montage', 'console', 'goodbye-kiss', 'call-home', 'reward',
-  'medevac-choice', 'save-used', 'don-arrives']);
+  'medevac-choice', 'save-used', 'don-arrives', 'winner-words', 'don-signoff']);
 const ACT_KINDS = new Set(['task-try', 'task-done', 'task-montage']);
 const RIDE_KINDS = new Set(['ride', 'travel-mishap']);
 // romance and crush interviews are said alone (spec §9.4: solo when the subject demands it)

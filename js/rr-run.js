@@ -39,6 +39,7 @@ import { teamRef } from './rr/script/roles.js';
 import { TASK_TYPES } from './rr/types.js';
 import { PLACES } from './rr/places.js';
 import { rrLedgerRecord } from './rr/ledger-record.js';
+import { legRecord } from './rr/leg-record.js';
 import { carriedFor } from './franchise-carry.js';
 import { recordBuiltSeason, hasFranchiseHistory } from './franchise-meta.js';
 import { tieBetween } from './ties.js';
@@ -289,6 +290,8 @@ export function raceRows(result, eps) {
         aired: { previously: ep.previously ? { lines: ep.previously.lines.map(l => ({ ...l })) } : null,
           segments: (ep.segments || []).map(segOf) },
         ...(final ? { final: { winner, winners: winner ? [team(winner).a, team(winner).b] : [], order: [...(result.final?.order || leg.order || [])] } } : {}),
+        // what a wiki, trivia and awards are made from (rr/leg-record.js)
+        detail: legRecord(state, leg, result.legs[i - 1] || null),
       },
     });
   }

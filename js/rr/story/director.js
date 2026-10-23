@@ -26,7 +26,7 @@ import { teamRef, teamTag, relLabel } from './previously.js';
 // (what a challenge is shot doing: a ride along a path is seen being ridden; airing only, never the race itself)
 import { stretchPlates } from '../../vp-rr-ep/plates.js';
 
-export const MUST = new Set(['proposal', 'don-opener', 'don-demo', 'don-place', 'don-crown', 'don-elim', 'don-arrives', 'don-fakeout', 'don-rule', 'don-ruling',
+export const MUST = new Set(['proposal', 'winner-words', 'don-signoff', 'don-opener', 'don-demo', 'don-place', 'don-crown', 'don-elim', 'don-arrives', 'don-fakeout', 'don-rule', 'don-ruling',
   'boomerang-found', 'boomerang-decide', 'boomerang-hit', 'boomerang-vote', 'yield', 'zip-it', 'save-used', 'medevac-choice',
   'boomerang-reveal', 'head-to-head',
   'speed-bump', 'surrender', 'reward', 'call-home', 'int-exit', 'console', 'goodbye-kiss', 'int-bleachers',
@@ -855,6 +855,13 @@ export function airLeg(state, leg) {
       segs.sort((x, y) => x.t - y.t || phase(x.kind) - phase(y.kind)
         || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
     }
+    // the last words: the winners', then Don signing off, and nothing after him (2026-10-23)
+    // (at the last minute of what airs before them: their own clock is the runners-up's check-in, which the chase cut in
+    // before the crown)
+    const last = ['winner-words', 'don-signoff'].map(k => segs.findIndex(x => x.kind === k)).filter(i => i >= 0)
+      .sort((a, b) => b - a).map(i => segs.splice(i, 1)[0]).reverse();
+    const lastAt = Math.max(-Infinity, ...segs.map(y => y.t).filter(Number.isFinite));
+    for (const x of last.sort((a, b) => (a.kind === 'don-signoff') - (b.kind === 'don-signoff'))) { if (Number.isFinite(lastAt)) x.t = lastAt; segs.push(x); }
   }
   // once Don has sent a team home, the episode doesn't go back to them racing: what happened before the exit airs
   // before it, anything after it (an on-location exit leaves a team out on the road) doesn't air at all

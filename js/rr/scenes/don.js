@@ -31,6 +31,14 @@ register([
     winner: { w: 1, fx: (fx, c) => { fx.mind(c.A, 'morale', 20); fx.mind(c.B, 'morale', 20); fx.pop(c.A, 2); fx.pop(c.B, 2); } },
     'runner-up': { w: 1, fx: (fx, c) => { fx.mind(c.A, 'morale', -5); fx.mind(c.B, 'morale', -5); } },
   } }),
+  // the finale's last words: the winners on the stage, then Don closing the season (chill.js, a final leg only; the
+  // moment 'finale' is never a meeting's, so neither is ever played by chance)
+  K({ id: 'winner-words', family: 11, moments: ['finale'], endings: {
+    'last-words': { w: 1, fx: (fx, c) => { fx.pop(c.A, 1); fx.pop(c.B, 1); fx.bond(c.A, c.B, 1); } },
+  } }),
+  K({ id: 'don-signoff', family: 11, cast: 'don', moments: ['finale'], endings: {
+    plain: { w: 1, fx: (fx, c) => fx.note(`signoff:${c.state.leg}`, 'plain') },
+  } }),
   K({ id: 'don-fakeout', family: 11, cast: 'don', moments: ['mat'], endings: {
     relief: { w: 3, fx: (fx, c) => { fx.mind(c.A, 'morale', 10); fx.mind(c.B, 'morale', 10); } },
     fury: { w: 0.3, fx: (fx, c) => fx.mind(c.A, 'stress', 10) },

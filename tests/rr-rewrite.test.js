@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest';
 import { POOLS, REWRITES } from '../js/rr/script/lines/index.js';
 import { KIND_AT_TASK } from '../js/rr/script/write.js';
 
-const QUICK = new Set(['celebrate', 'judge-yes', 'tip-read', 'ride', 'arrival-awe', 'task-start', 'task-done', 'attempt-fail', 'gross-out', 'don-place', 'don-elim', 'don-fakeout', 'don-arrives', 'identity-moment']);
+const QUICK = new Set(['celebrate', 'judge-yes', 'tip-read', 'ride', 'arrival-awe', 'task-start', 'task-done', 'attempt-fail', 'gross-out', 'don-place', 'don-elim', 'don-fakeout', 'don-arrives', 'identity-moment', 'winner-words', 'don-signoff']);
 const WHERE = [
   ['airport', /\b(airport|boarding pass|departure board|the gate|row (one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)|seatbelt|overhead bin)\b/i],
   ['task', /\b(task|judge)\b/i],

@@ -179,6 +179,13 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     emit(state, 'don-place', people(state, id), ending,
       { team: id, place: i + 1, matPlace: band, t: finish[id] ?? null, stretch: 'mat', effects: [['placed', id, i + 1]] });
   });
+  // the finale ends on the winners' last words on the stage, and Don signing the season off, once every finalist is in
+  // (the user, 2026-10-23: "the winners then the losers then last words of the winner then the host don signing off")
+  if (leg.kind === 'final' && order[0] && finish[order[0]] != null) {
+    const end = Math.max(...order.filter(id => !result.eliminated.includes(id) && finish[id] != null).map(id => finish[id]));
+    emit(state, 'winner-words', people(state, order[0]), 'last-words', { team: order[0], t: end + 1, stretch: 'mat' });
+    emit(state, 'don-signoff', people(state, order[0]), 'plain', { team: order[0], t: end + 2, stretch: 'mat', effects: [['signoff', n]] });
+  }
 
   // the winner's reward
   const first = order[0];

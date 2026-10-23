@@ -18,6 +18,10 @@
 //        rankings board.
 //   The life layer (life-hook.js / life-resolver.js) reads an appearance's `showmance` and `showmanceEnded`, and
 //        here `showmanceStage` too: a couple team leaves dating, engaged (a yes on the mat) or married.
+//   What a wiki, trivia and awards are made from (2026-10-23, rr/leg-record.js): every leg's `order` carries each
+//        team's check-in time, clock, gap to the winner and penalty with its reasons; each leg has its `challenges`
+//        (every run: the side, who did it, the tries, the minutes), `reward`, `passes`, `boomerangVote`, `sabotage`,
+//        `fears` and `hurt`; every placement's `rr` has the place on each leg and the season's numbers.
 import { SHOWS, seasonId, exitVerbs, RACE_FORMAT } from '../shows.js';
 
 export const RACE = RACE_FORMAT;
@@ -32,6 +36,22 @@ const STATUS = { last: 'Eliminated', 'on-location': 'Eliminated', midpoint: 'Eli
   disqualified: 'Disqualified' };
 
 // ── the legs ───────────────────────────────────────────────────────────
+// a leg's order, each team with its check-in from the leg's record (a row built before 2026-10-23 has none)
+const orderOf = rr => (rr.order || []).map(o => {
+  const d = rr.detail?.teams?.find(x => x.team === o.name);
+  return { team: o.name, members: [o.a, o.b].filter(Boolean), place: o.place,
+    ...(d ? { time: d.time, clock: d.clock, day: d.day, gap: d.gap, arrived: d.arrived, penalty: d.penalty,
+      ...(d.penaltyReasons ? { penaltyReasons: d.penaltyReasons } : {}), ...(d.departsNextLeg != null ? { departsNextLeg: d.departsNextLeg } : {}) } : {}) };
+});
+// the rest of the leg's record
+const detailOf = rr => {
+  const d = rr.detail;
+  if (!d) return {};
+  return { clockStart: d.clockStart, route: d.route, challenges: d.challenges, reward: d.reward, passes: d.passes,
+    boomerangVote: d.boomerangVote, sabotage: d.sabotage, fears: d.fears, hurt: d.hurt, nonElim: d.nonElim, saved: d.saved,
+    onLocation: d.onLocation, money: d.money };
+};
+
 export function rrVotingHistory(rows = []) {
   return rows.filter(r => r.rr && r.rr.kind !== 'final').map(r => {
     const rr = r.rr;
@@ -48,9 +68,10 @@ export function rrVotingHistory(rows = []) {
       eliminated: exits[0]?.name || null,
       eliminatedSlug: exits[0]?.slug || '',
       exits,
-      order: (rr.order || []).map(o => ({ team: o.name, members: [o.a, o.b].filter(Boolean), place: o.place })),
+      order: orderOf(rr),
       legWinners: rr.order?.[0] ? [rr.order[0].a, rr.order[0].b].filter(Boolean) : [],
       twist: rr.twist || null,
+      ...detailOf(rr),
     };
   });
 }
@@ -64,8 +85,9 @@ export function rrFinal(rows = []) {
     episode: row.num,
     place: rr.placeName || rr.place || null,
     winners: [...(rr.final?.winners || [])],
-    order: (rr.order || []).map(o => ({ team: o.name, members: [o.a, o.b].filter(Boolean), place: o.place })),
+    order: orderOf(rr),
     exits: (row.exits || []).map(x => ({ name: x.name, slug: slug(x.name), verb: x.verb, channel: x.channel || null })),
+    ...detailOf(rr),
   };
 }
 
@@ -78,10 +100,47 @@ function mainShowmance(list = []) {
   return (intact.length ? intact : list).slice().sort((a, b) => (b.since || 0) - (a.since || 0))[0] || null;
 }
 
+// A racer's season, from the legs' records: the place on every leg they ran, and the numbers awards are made from.
+function racerLegs(n, legs) {
+  const legPlaces = [];
+  const out = { challenges: 0, solo: 0, fails: 0, switches: 0, quits: 0, fearsFaced: 0, fearsBeaten: 0, hurt: 0,
+    expressUsed: 0, savesUsed: 0, boomerangsThrown: 0, boomerangedBy: 0, sabotaged: 0, sabotagedBy: 0, penaltyLegs: 0 };
+  let team = null;
+  for (const h of legs) {
+    const o = (h.order || []).find(x => x.members.includes(n));
+    if (!o) continue;
+    team = o.team;
+    legPlaces.push({ leg: h.leg ?? h.n ?? legPlaces.length + 1, place: o.place });
+    if (o.penalty) out.penaltyLegs++;
+    for (const c of h.challenges || []) for (const r of c.runs) {
+      if (r.team !== team) continue;
+      out.challenges++;
+      if (r.by.length === 1 && r.by[0] === n) out.solo++;
+      out.fails += r.fails || 0;
+      if (r.switched) out.switches++;
+      if (r.quit) out.quits++;
+    }
+    for (const f of h.fears || []) if (f.racer === n) { out.fearsFaced++; if (['overcomes', 'talked-down', 'panic-break', 'relents'].includes(f.ending)) out.fearsBeaten++; }
+    for (const x of h.hurt || []) if (x.racer === n) out.hurt++;
+    for (const p of h.passes || []) {
+      if (p.team === team && p.pass === 'express') out.expressUsed++;
+      if (p.team === team && p.pass === 'save') out.savesUsed++;
+      if (p.team === team && p.pass === 'boomerang' && !p.wasted) out.boomerangsThrown++;
+      if (p.on === team && p.pass === 'boomerang') out.boomerangedBy++;
+    }
+    if (h.boomerangVote?.target === team) out.boomerangedBy++;
+    for (const s of h.sabotage || []) { if (s.by === team) out.sabotaged++; if (s.on === team) out.sabotagedBy++; }
+  }
+  const places = legPlaces.map(x => x.place);
+  return { legPlaces, ...(places.length ? { bestPlace: Math.min(...places), worstPlace: Math.max(...places),
+    averagePlace: Math.round(places.reduce((a, b) => a + b, 0) / places.length * 10) / 10 } : {}), ...out };
+}
+
 /** placements[], from the ledger record (§8.4). */
 export function rrPlacements(rows = [], record = null) {
   const history = rrVotingHistory(rows);
   const final = rrFinal(rows);
+  const legs = [...history, ...(final ? [{ ...final, leg: rows.find(r => r.rr?.kind === 'final')?.rr?.leg }] : [])];
   const recPlayers = record?.players || {};
   const lastExit = new Map();
   for (const h of history) for (const x of h.exits) lastExit.set(x.name, { ...x, episode: h.episode });
@@ -112,7 +171,7 @@ export function rrPlacements(rows = [], record = null) {
       votesReceived: 0,
       // the registry's careerStats paths (js/shows.js), and the rest of the race's numbers
       rr: { legWins: rr.legWins || 0, lasts: rr.lasts || 0, penalties: rr.penalties || 0, begged: rr.begged || 0,
-        sabotage: rr.sabotage || 0, helped: rr.helped || 0 },
+        sabotage: rr.sabotage || 0, helped: rr.helped || 0, ...racerLegs(n, legs) },
       alliances: [...(r.allies || [])],
       rivalries: [...(r.rivals || [])],
       betrayed: [...(r.betrayed || [])],

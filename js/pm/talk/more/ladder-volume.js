@@ -225,14 +225,14 @@ export const ARGUMENT_VOLUME_2 = {
 export const GOSSIP_TELL_VOLUME = {
   moves: {
     tell: [
-      { when: { sec: 'pull', hasWith: true }, turns: [['a', "{c} spent half the afternoon with {x} by the gym. Just the two of them. And they were sitting really, really close."]] },
-      { when: { sec: 'pull', hasWith: true }, turns: [['a', "I saw {c} and {x} on the beanbags earlier. Heads together, whispering. They split up the second they saw me."]] },
-      { when: { sec: 'pull', hasWith: true }, turns: [['a', "{c} went off for a chat with {x}. It wasn't a quick one. And when they came back, they wouldn't look at each other."]] },
-      { when: { sec: 'kiss', hasWith: true }, turns: [['a', "I saw {c} kiss {x} round the side of the villa. I wasn't looking for it. I just saw it."]] },
-      { when: { sec: 'kiss', hasWith: true }, turns: [['a', "{c} and {x} kissed. By the pool. When you were inside. I'm so sorry."]] },
-      { when: { sec: 'bed', hasWith: true }, turns: [['a', "{c} and {x} were in the same bed at Casa. Whispering, giggling. I was right there."]] },
+      { when: { sec: 'pull', hasWith: true, casa: false, light: false }, turns: [['a', "{c} spent half the afternoon with {x} by the gym. Just the two of them. And they were sitting really, really close."]] },
+      { when: { sec: 'pull', hasWith: true, casa: false, light: false }, turns: [['a', "I saw {c} and {x} on the beanbags earlier. Heads together, whispering. They split up the second they saw me."]] },
+      { when: { sec: 'pull', hasWith: true, casa: false, light: false }, turns: [['a', "{c} went off for a chat with {x}. It wasn't a quick one. And when they came back, they wouldn't look at each other."]] },
+      { when: { sec: 'kiss', hasWith: true, casa: false, light: false }, turns: [['a', "I saw {c} kiss {x} round the side of the villa. I wasn't looking for it. I just saw it."]] },
+      { when: { sec: 'kiss', hasWith: true, casa: false, light: false }, turns: [['a', "{c} and {x} kissed. By the pool. When you were inside. I'm so sorry."]] },
+      { when: { sec: 'bed', hasWith: true }, turns: [['a', "{c} and {x} shared a bed. Whispering, giggling, the lot. I was in the next one."]] },
       { when: { sec: 'promise', hasWith: true }, turns: [['a', "{c} was making plans with {x} for when you're all out. Holidays. Dinners. I heard every word."]] },
-      { when: { sec: 'said' }, turns: [['a', "{c} told a group of us that {c} is only with you because it's easier than being single."]] },
+      { when: { sec: 'said' }, turns: [['a', "{c} told a group of us that being with you is easier than being single. That's all it is, apparently."]] },
       { when: { hasWith: false }, turns: [['a', "{c} has been telling people {c} isn't sure about you. More than one person. I didn't want you finding out at a fire pit."]] },
     ],
   },

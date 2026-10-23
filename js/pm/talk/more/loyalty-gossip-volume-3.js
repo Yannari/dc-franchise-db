@@ -1,0 +1,168 @@
+// pm/talk/more/loyalty-gossip-volume-3.js — round seven for loyalty and
+// gossip (the user, 2026-10-22: "address the repeats by increasing the volume
+// of the dialogue ALOT"). After round six both were still about half repeats.
+// Same gates as before: in loyalty {a} is always coupled ({pa}); in gossip
+// the telling names exactly what the secret was (`sec`), {x} only behind
+// `hasWith`, the reaction and close are `end`'s.
+const CLOSED = ['closed-off', 'exclusive', 'official'];
+const S = (stage, ...turns) => ({ stage, turns });
+const R = (...turns) => ({ turns });
+const W = (when, ...turns) => ({ when, turns });
+const BEAT = beat => ({ turns: [], beat });
+
+export const LOYALTY_VOLUME_3 = {
+  moves: {
+    open: [
+      S("{b} finds {a} by the pool, on {a.posAdj} own for once.", ['b', "Can I sit with you?"], ['a', "You can sit. I'm not moving, though."]),
+      S("{b} wanders over to {a} with a hopeful smile.", ['b', "Have you got a sec for me?"], ['a', "A sec. Go on."]),
+      S("{b} catches {a} coming back from the shower.", ['b', "Before you go back to the others, can I talk to you?"], ['a', "We can talk on the way."]),
+      S("{b} sits down on the end of {a}'s sunbed without asking.", ['a', "Make yourself at home."], ['b', "I'm trying to. Have you got a minute?"]),
+      S("{b} finds {a} watering the plants on the terrace.", ['b', "That's very domestic of you."], ['a', "Somebody has to. What do you want?"]),
+      S("{b} slides onto the beanbag next to {a}'s.", ['b', "Hello, you."], ['a', "Hello. That's a very particular hello."]),
+      S("{b} stops {a} at the top of the stairs.", ['b', "Two minutes. Just you and me."], ['a', "You can have two minutes. Right here."]),
+      S("{b} brings {a} a drink {a} didn't ask for.", ['a', "What's this?"], ['b', "A peace offering. Before I ask you something."]),
+      S("{b} finds {a} in the kitchen making lunch.", ['b', "That looks nice. Make me one, and then let me talk to you."], ['a', "I'll make you one. We'll talk here."]),
+      S("{b} waves {a} over from the swing seat, patting the space next to {b.obj}.", ['a', "I'm fine here."], ['b', "Come on. I don't bite."]),
+      S("{b} hovers by the outdoor shower until {a} comes out.", ['a', "Have you been waiting for me?"], ['b', "Maybe. Have you got a minute?"]),
+      S("{b} lies down on the lawn next to {a} and turns on {b.posAdj} side.", ['b', "Can I tell you something?"], ['a', "You're going to anyway."]),
+      W({ phase: 'evening' }, ['b', "Before everyone sits down tonight, can I have a word?"], ['a', "Go on. Here, though."]),
+      W({ bTaken: true }, ['a', "Where's {pb}?"], ['b', "In the shower. I wanted to talk to you while I can."]),
+      W({ known: true }, ['b', "We need to talk. And I need you to not laugh."], ['a', "I can't promise that. Go on."]),
+    ],
+    pitch: [
+      R(['b', "I like you. A lot more than I should. I'm not going to pretend I don't any more."]),
+      R(['b', "I think about you more than anyone else in here. I thought you should know."]),
+      R(['b', "Every time I talk to you, I forget anyone else is in the villa."]),
+      R(['b', "I've watched you with {pa}, and I can't help thinking, it should be me."]),
+      R(['b', "I'm not trying to start anything. I just couldn't keep it to myself any more."]),
+      R(['b', "You make me laugh more than anyone. You make me nervous more than anyone. That has to mean something."]),
+      R(['b', "If you were single, I'd have asked you out on the first night. I'm asking you now instead."]),
+      R(['b', "I think we'd be amazing together. I think part of you knows it too."]),
+      R(['b', "I'm sorry. I know you're with {pa}. I just think you deserve someone who can't stop looking at you."]),
+      R(['b', "You're the first person I look for when I wake up. Is that mad?"]),
+      W({ bFresh: true }, ['b', "I know I've only just arrived. I knew the second I saw you."]),
+      W({ known: true }, ['b', "I've been your friend since the start, and I've loved every minute. I just want more than friends."]),
+    ],
+    refuse: [
+      R(['a', "I'm going to be honest, because you deserve that. I'm with {pa}, and I'm happy. There's no room for anyone else."]),
+      R(['a', "That's really kind. It doesn't change anything. It's {pa}. It's going to stay that way."]),
+      R(['a', "I can't do that to {pa}. I won't. And I don't want to."]),
+      R(['a', "I'd rather hurt your feelings now than lead you on for a week. It's a no."]),
+      R(['a', "I like you, I really do. As a friend. Only ever as a friend."]),
+      R(['a', "I'm not that person. I've never been that person, and I'm not going to start in here."]),
+      R(['a', "I'm flattered. Honestly, I'm flattered. But I've found what I came for, and it's with {pa}."]),
+      R(['a', "You've got the wrong person. I'm the most loyal person you'll ever meet."]),
+      R(['a', "I don't need to think about it. The answer's no. It was no before you sat down."]),
+      R(['a', "I'm not going to throw away what I've got with {pa} for a maybe."]),
+      W({ myRung: CLOSED }, ['a', "I'm closed off. I said it, I meant it, and I'm not going to unsay it on a sunbed."]),
+      W({ bTaken: true }, ['a', "You've got {pb}, and I've got {pa}. Let's both go back to them."]),
+      W({ reg: 'soft' }, ['a', "I'm so sorry. I hate saying no to people. But I'm with {pa}, and I'm staying put."]),
+      W({ reg: 'sharp' }, ['a', "No. I'm with {pa}. That's all I've got to say about it."]),
+    ],
+    push: [
+      R(['b', "Not even a little bit?"], ['a', "Not even a tiny bit."]),
+      R(['b', "Think about it tonight, at least."], ['a', "I'll be thinking about {pa} tonight. Sorry."]),
+      R(['b', "You don't have to decide now."], ['a', "I'm not deciding. It was decided before you asked."]),
+      R(['b', "What if I'm right about us?"], ['a', "You're not. I'm sorry."]),
+      R(['b', "Can I at least ask again in a week?"], ['a', "You can ask. The answer will be the same."]),
+      R(['b', "Why not?"], ['a', "Because I'm happy. That's the whole reason."]),
+      R(['b', "Is it because of {pa}?"], ['a', "It's completely because of {pa}."]),
+    ],
+    hold: [
+      R(['a', "I'd love us to still be friends after this. If you can."], ['b', "I can try."]),
+      R(['a', "I'm going to tell {pa} straight away. I'm not keeping secrets."]),
+      R(['a', "Please don't make it awkward. I'll pass you the sun cream like nothing happened."]),
+      R(['a', "There'll be someone for you in here. I promise. It's just not me."]),
+      R(['a', "That's my answer, and it's not going to change. I hope you can respect that."], ['b', "I can."]),
+      R(['a', "I'm with {pa} today, and tomorrow, and at the final. That's the plan."]),
+      R(['a', "You'll find someone who looks at you the way I look at {pa}. You deserve that."]),
+      R(['a', "I don't want this to be a thing. Let's just let it go."], ['b', "Okay."]),
+      W({ myRung: CLOSED }, ['a', "When I say I'm closed off, I mean shut. Locked. The key's in the pool."]),
+      W({ reg: 'nervy' }, ['a', "Sorry. I'm really bad at saying no. But it's no. Sorry. Again."]),
+    ],
+    close: [
+      BEAT("{b} nods, gets up, and walks back to the pool a bit too quickly."),
+      BEAT("{a} watches {b} go, then goes straight to find {pa}."),
+      R(['b', "Well. That's me told."], ['a', "Nicely, I hope."]),
+      BEAT("{a} goes back to {pa} and gives {pa.obj} a long hug, for no reason anyone else can see."),
+      R(['a', "We're okay, aren't we?"], ['b', "We will be."]),
+      BEAT("{b} goes inside and doesn't come back out for a while."),
+      BEAT("Somebody on the daybeds saw all of it. It'll be round the villa by dinner."),
+      R(['b', "Thanks for not laughing at me."], ['a', "I'd never laugh at you."]),
+      BEAT("{a} lets out a long breath, then goes to tell {pa} everything."),
+      BEAT("{b} heads to the gym and lifts something very heavy, very angrily."),
+      R(['a', "I'm sorry."], ['b', "Don't be. You were honest."]),
+      BEAT("{pa} looks over, and {a} gives {pa.obj} a little thumbs up."),
+      BEAT("{b} jumps in the pool and stays under for a very long time."),
+      R(['b', "I'll get over it."], ['a', "You will. Faster than you think."]),
+      BEAT("{a} goes back to sunbathing next to {pa}, holding {pa.posAdj} hand a bit tighter."),
+      BEAT("{b} rejoins the others and laughs a bit too loudly at the next joke."),
+      W({ bTaken: true }, ['b', "I'd better get back to {pb}."], ['a', "You'd better."]),
+    ],
+  },
+  notes: [
+    { stage: "{b} tries it with {a} by the pool. {a} turns {b.obj} down, kindly." },
+    { stage: "{a} says no to {b} and goes straight back to {pa}." },
+    { stage: "{b} asks {a} for a chat on the terrace. {a} keeps it short and very clear." },
+    { stage: "{a} turns {b} down in front of half the villa, which is the point." },
+    { stage: "{b} confesses how {b} feels. {a} thanks {b.obj}, and says it's {pa}." },
+    { stage: "{a} lets {b} down gently, then tells {pa} the whole thing." },
+  ],
+};
+
+export const GOSSIP_VOLUME_3 = {
+  moves: {
+    open: [
+      S("{a} finds {b} lying by the pool and kneels down next to {b.obj}.", ['a', "Can you come with me for a sec?"], ['b', "Why? What's wrong?"]),
+      S("{a} pulls {b} away from the kitchen.", ['b', "What are you doing?"], ['a', "Getting you somewhere quiet. You need to hear something."]),
+      S("{a} sits down on {b}'s bed, looking serious.", ['b', "Uh oh. You've got your serious face on."], ['a', "I know. Sorry."]),
+      S("{a} walks {b} up to the roof terrace.", ['b', "Why are we up here?"], ['a', "Because I don't want anyone to hear this but you."]),
+      S("{a} finds {b} on the swing seat and sits down without a word.", ['b', "Are you okay?"], ['a', "I'm fine. It's you I'm worried about."]),
+      S("{a} catches {b} on the way to the shower.", ['a', "Can it wait? I need to talk to you."], ['b', "It sounds like it can't wait."]),
+      S("{a} hands {b} a drink and steers {b.obj} towards the far end of the garden.", ['b', "Is this a talk? This feels like a talk."], ['a', "This is a talk."]),
+    ],
+    hesitate: [
+      R(['a', "I wasn't going to say anything. Then I thought, if it was me, I'd want to know."]),
+      R(['a', "I've been sitting on this for hours. I can't sit on it any more."]),
+      R(['a', "I hate being the one to tell you this. I hate it."]),
+      R(['b', "Just tell me. Whatever it is, I'd rather hear it from you."]),
+      R(['a', "You're going to be upset. I'm sorry. I'd rather you were upset with the truth."]),
+      R(['a', "Okay. Deep breath. This isn't easy to say."]),
+      W({ heard: true }, ['a', "I didn't see it myself. But I heard it, and I believe it."]),
+      W({ light: true }, ['a', "It's small. It's probably nothing. But you'd want to know about nothing, wouldn't you?"]),
+    ],
+    ask: [
+      R(['b', "Who told you? Did you see it yourself?"], ['a', "I saw it. I wouldn't come to you with a rumour."]),
+      R(['b', "Does everyone know?"], ['a', "I don't think so. Not yet."]),
+      R(['b', "Why didn't you tell me straight away?"], ['a', "I wanted to be sure. I didn't want to get it wrong."]),
+      W({ hasWith: true }, ['b', "{x}? You're sure it was {x}?"], ['a', "Completely sure."]),
+    ],
+    react: [
+      W({ end: 'angry' }, ['b', "I'm going to find {c}. Right now."], ['a', "Wait. Think first."], ['b', "I've thought. I'm going."]),
+      W({ end: 'angry' }, ['b', "All this time. All this time, and {c} looked me in the eye."]),
+      W({ end: 'angry' }, ['b', "I'm not crying. I'm too angry to cry. That'll come later."]),
+      W({ end: 'angry' }, ['b', "How could {c} do that? In front of everyone? How?"]),
+      W({ end: 'quiet' }, ['b', "I need a minute. Can you just sit with me?"], ['a', "As long as you want."]),
+      W({ end: 'quiet' }, ['b', "I don't know what to say. I don't know what to feel."]),
+      W({ end: 'quiet' }, ['b', "Okay. Thank you. I'm going to think about what to do."]),
+      W({ end: 'thanks' }, ['b', "Thank you for telling me. I know that took guts."], ['a', "You'd have done the same."]),
+      W({ end: 'thanks' }, ['b', "I'm glad it was you who told me. Nobody else would have."]),
+      W({ end: 'thanks' }, ['b', "Right. Thank you. I'm going to talk to {c} about it."]),
+    ],
+    close: [
+      { when: { end: 'angry' }, turns: [], beat: "{b} is on {b.posAdj} feet before {a} can stop {b.obj}." },
+      { when: { end: 'angry' }, turns: [['a', "Do you want me to come?"], ['b', "No. I've got this."]] },
+      { when: { end: 'angry' }, turns: [], beat: "{a} watches {b} march across the garden, and hopes this was the right thing." },
+      { when: { end: 'quiet' }, turns: [], beat: "{b} rests {b.posAdj} head on {a}'s shoulder, and they don't move for a long time." },
+      { when: { end: 'quiet' }, turns: [], beat: "{b} goes very quiet, and stays quiet for the rest of the afternoon." },
+      { when: { end: 'thanks' }, turns: [], beat: "{b} hugs {a}, hard, then goes to find {c}." },
+      { when: { end: 'thanks' }, turns: [['a', "I'm here, whatever happens."], ['b', "I know. Thank you."]] },
+    ],
+  },
+  notes: [
+    { stage: "{a} tells {b} what {a} saw, and {b} goes very still." },
+    { stage: "{a} takes {b} up to the roof terrace to tell {b.obj} about {c}." },
+    { stage: "{a} finally tells {b} what's been going round about {c}." },
+    { when: { hasWith: true }, stage: "{a} tells {b} what {c} and {x} have been up to." },
+  ],
+};

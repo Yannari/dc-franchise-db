@@ -25,12 +25,14 @@ export function build(kind, { plans, moves, notes = [], after = null, facts = nu
  * (`friendship.close.x4`), marked for the morning like the rest.
  */
 export function extend(talk, { moves = {}, notes = [], stages = [] }) {
-  const name = (slot, e, i) => ({ ...e, id: e.id || `${talk.kind}.${slot}.x${i + 1}` });
+  // Numbered after what the pool already holds, so a kind extended twice never repeats an id.
+  const name = (slot, e, i, had) => ({ ...e, id: e.id || `${talk.kind}.${slot}.x${had + i + 1}` });
   const mark = e => (DAY_UNDER_WAY.test(textOf(e)) ? { ...e, notMorning: true } : e);
   for (const [slot, pool] of Object.entries(moves)) {
-    talk.moves[slot] = [...(talk.moves[slot] || []), ...pool.map((e, i) => mark(name(slot, e, i)))];
+    const had = (talk.moves[slot] || []).length;
+    talk.moves[slot] = [...(talk.moves[slot] || []), ...pool.map((e, i) => mark(name(slot, e, i, had)))];
   }
-  talk.notes = [...talk.notes, ...notes.map((e, i) => mark(name('note', e, i)))];
-  talk.stages = [...(talk.stages || []), ...stages.map((e, i) => name('stage', e, i))];
+  talk.notes = [...talk.notes, ...notes.map((e, i) => mark(name('note', e, i, talk.notes.length)))];
+  talk.stages = [...(talk.stages || []), ...stages.map((e, i) => name('stage', e, i, (talk.stages || []).length))];
   return talk;
 }

@@ -12,6 +12,7 @@ import { KISS } from './kiss.js';
 import { DEEP_CHAT } from './deep-chat.js';
 import { FRIENDSHIP } from './friendship.js';
 import { FRIENDSHIP_MORE } from './more/friendship.js';
+import { DECL_FINAL_MORE } from './more/final.js';
 import { CHAT_MORE, DEEP_MORE, KISS_MORE, PULL_MORE, LOYALTY_MORE, ICK_MORE, ARGUMENT_MORE, ADVICE_MORE, COMFORT_MORE,
   REASSURANCE_MORE, CONFESSION_MORE, CONFRONT_MORE, DEBRIEF_MORE, RECOUPLE_MORE, BED_MORE, GOODBYE_MORE, DECL_MORE, DATE_MORE } from './more/everyday.js';
 import { GOSSIP } from './gossip.js';
@@ -41,7 +42,7 @@ extend(CHAT, CHAT_MORE); extend(DEEP_CHAT, DEEP_MORE); extend(KISS, KISS_MORE); 
 extend(LOYALTY, LOYALTY_MORE); extend(ICK, ICK_MORE); extend(ARGUMENT, ARGUMENT_MORE); extend(ADVICE, ADVICE_MORE);
 extend(COMFORT, COMFORT_MORE); extend(REASSURANCE, REASSURANCE_MORE); extend(CONFESSION, CONFESSION_MORE);
 extend(JEALOUS_CONFRONT, CONFRONT_MORE); extend(DEBRIEF, DEBRIEF_MORE); extend(RECOUPLE_PICK, RECOUPLE_MORE);
-extend(BED_SHARE, BED_MORE); extend(DUMP_GOODBYE, GOODBYE_MORE); extend(DECLARATION, DECL_MORE); extend(DATE, DATE_MORE);
+extend(BED_SHARE, BED_MORE); extend(DUMP_GOODBYE, GOODBYE_MORE); extend(DECLARATION, DECL_MORE); extend(DECLARATION, DECL_FINAL_MORE); extend(DATE, DATE_MORE);
 
 export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'deep-chat': DEEP_CHAT, friendship: FRIENDSHIP, gossip: GOSSIP, argument: ARGUMENT,
   comedy: COMEDY, ick: ICK, advice: ADVICE, vent: VENT, comfort: COMFORT, 'casa-miss': CASA_MISS, 'bed-share': BED_SHARE,

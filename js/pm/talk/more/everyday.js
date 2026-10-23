@@ -447,8 +447,8 @@ export const DECL_MORE = {
     stand: [
       { stage: "{a} stands up and wipes {a.posAdj} hands on {a.posAdj} legs.", turns: [['a', "I'm so nervous. Okay."]] },
       { stage: "{a} gets to {a.posAdj} feet and looks at {b} for a long moment.", turns: [] },
-      { stage: "{a} stands, takes {b}'s hand, and pulls {b} up too.", turns: [] },
-      { stage: "{a} stands up, laughs at how nervous {a} is, and starts.", turns: [] },
+      { stage: "{a} stands, takes {b}'s hand, and pulls {b.obj} up too.", turns: [] },
+      { stage: "{a} stands up, laughs at {a.posAdj} own nerves, and starts.", turns: [] },
       { stage: "{a} clears {a.posAdj} throat. The whole fire pit leans in.", turns: [] },
       { stage: "{a} stands at the front of the fire pit, facing {b}.", turns: [] },
     ],

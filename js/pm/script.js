@@ -721,7 +721,10 @@ function clipSlots(state, ev) {
   const spoken = (clip?.script?.lines || []).filter(l => !l.action && l.who);
   const own = spoken.filter(l => l.who === (clip?.players || [])[0]);
   const pool = own.length ? own : spoken;
-  const line = [...pool].reverse().find(l => l.text.length >= 20) || [...pool].sort((x, y) => y.text.length - x.text.length)[0];
+  // …with substance: a whole conversation (pm/talk/) ends on small talk ("Thanks
+  // for the chat."), so a line with something in it comes first (season read, 2026-10-22).
+  const line = [...pool].reverse().find(l => l.text.length >= 40) || [...pool].reverse().find(l => l.text.length >= 20)
+    || [...pool].sort((x, y) => y.text.length - x.text.length)[0];
   if (!line) return {};
   // …with what it answered, when it is an answer: {exchange} is the two lines.
   // A question is played with its answer; anything else with what it answered.

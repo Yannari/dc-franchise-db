@@ -303,9 +303,12 @@ export const KINDS = {
     cast: (s, rng) => {
       if (!s.split) return null;
       const fresh = new Set(s.casaArrivals || []);
+      // One bed each a night (season read, 2026-10-22: Antwon shared three
+      // in one evening, and Lucia three).
+      const inBed = new Set(today(s).filter(e => e.kind === 'bed-share').flatMap(e => e.players));
       const opts = [];
-      for (const o of s.villa.filter(n => !fresh.has(n) && partnerOf(s, n))) {
-        for (const c of roomMates(s, o).filter(n => fresh.has(n) && !partnerOf(s, n))) {
+      for (const o of s.villa.filter(n => !fresh.has(n) && partnerOf(s, n) && !inBed.has(n))) {
+        for (const c of roomMates(s, o).filter(n => fresh.has(n) && !partnerOf(s, n) && !inBed.has(n))) {
           const w = (attr(s, o, c) ?? 0) * (1 - 0.7 * S(s, o).loyalty / 10) * (1 - 0.25 * (s.casaMissed?.[o] || 0));
           if (w > 0) opts.push([[o, c], w]);
         }

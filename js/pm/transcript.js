@@ -16,7 +16,7 @@ import { roundExits, PERFECT_MATCH_FORMAT } from '../shows.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-export const PM_PHASE_LABEL = { arrival: 'The arrivals', 'arrival-2': 'The arrivals', coupling: 'The first coupling', debrief: 'The debrief', cinema: 'Movie Night', blowup: 'It kicks off', breakdown: 'It all gets too much', triangle: 'The love triangle', rivals: 'Wanting the same one',
+export const PM_PHASE_LABEL = { arrival: 'The arrivals', 'arrival-2': 'The arrivals', coupling: 'The first coupling', debrief: 'The debrief', cinema: 'Movie Night', blowup: 'It kicks off', breakdown: 'It all gets too much', triangle: 'The love triangle', rivals: 'Elsewhere in the villa',
   morning: 'Morning', day: 'The day', event: 'The challenge', evening: 'Evening',
   firepit: 'The fire pit', dumping: 'The dumping', reunion: 'The reunion', 'final-date': 'The final dates', final: 'The final vote' };
 export const PM_MOMENT_TITLE = { 'first-coupling': 'The first coupling', bombshell: 'A bombshell arrives',

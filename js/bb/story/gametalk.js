@@ -378,13 +378,14 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
   const pi = out.findIndex(t => /^hohweek\.plan3?\.pawn$/.test(t.kind));
   const lastNo = out.map(t => t.kind).lastIndexOf('hohweek.pawn.refuse');
   if (pi >= 0 && lastNo > pi) out.splice(lastNo, 0, ...out.splice(pi, 1));
-  // the real target fishes. What the HOH says is who they are: a nice archetype never lies; a
-  // backdoor target can never be told the truth.
+  // the real target fishes. What the HOH says is who they are: a nice archetype lies less, and more the
+  // more strategic they are (the user, 2026-10-23: "change that rule"); a backdoor target can never be
+  // told the truth.
   const fisher = real;
   if (fisher && fisher !== hoh) {
     const s = pStats(hoh) || {};
-    const canLie = !NICE.has(archOf(hoh));
-    const lie = canLie ? ((s.strategic || 5) / 10) * (1 - (s.loyalty || 5) / 20) : 0;
+    const lie = ((s.strategic || 5) / 10) * (1 - (s.loyalty || 5) / 20)
+      * (NICE.has(archOf(hoh)) ? 0.5 * (s.strategic || 5) / 10 : 1);
     const honest = bd ? 0 : ((s.boldness || 5) / 10) * ((s.loyalty || 5) / 10);
     const roll = rng() * (lie + honest + 0.35);
     const how = roll < lie ? 'lie' : roll < lie + honest ? 'honest' : 'deflect';

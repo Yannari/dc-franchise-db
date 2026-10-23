@@ -4220,10 +4220,12 @@ export function simulateBBWeek(options = {}) {
         try { st = pStats(leaverName) || {}; } catch { st = {}; }
         let arch = '';
         try { arch = (players.find(pp => pp.name === leaverName) || {}).archetype || ''; } catch { arch = ''; }
-        if (['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(arch)) return false;
+        // A nice archetype may keep a quiet plan too, from nothing: only a strategic one with loyalty to spare
+        // ever gets there (the user, 2026-10-23: nice archetypes "cant strategize? thats lame ... change that rule").
+        const nice = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'].includes(arch);
         const scheming = ['villain', 'mastermind', 'schemer'].includes(arch);
-        const odds = Math.max(0, Math.min(0.85,
-          (scheming ? 0.45 : 0.15)
+        const odds = Math.max(0, Math.min(nice ? 0.4 : 0.85,
+          (scheming ? 0.45 : nice ? 0 : 0.15)
           + ((st.strategic ?? 5) - 5) * 0.05
           + (5 - (st.loyalty ?? 5)) * 0.045));
         return rng() < odds;

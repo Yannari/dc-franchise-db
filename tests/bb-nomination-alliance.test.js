@@ -564,10 +564,11 @@ describe('and the version where nobody says anything', () => {
     expect(gs.namedAlliances[0].members).toContain('M0');
   });
 
-  it('is a choice of character, and the ones who never scheme never take it', () => {
+  it('is a choice of character, and a nice archetype takes it only on strategy', () => {
+    // the user, 2026-10-23, changed the rule: a nice archetype may keep a quiet plan, from no head start
     const week = readFileSync('js/bb/week.js', 'utf8');
-    expect(week, 'the quiet break is not gated on archetype')
-      .toMatch(/'hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'/);
+    expect(week).toMatch(/const nice = \['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'\]/);
+    expect(week).toMatch(/\(scheming \? 0\.45 : nice \? 0 : 0\.15\)/);
     // The house has to actually intend something by it, or it is just a flag.
     expect(week).toMatch(/setBBTarget\(leaverName/);
   });

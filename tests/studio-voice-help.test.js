@@ -79,6 +79,25 @@ describe('how voice tags work, per show', () => {
     expect(src).toMatch(/d\.name && _bbSelected\(\) \? '<button[^']*id="st-fill-profile"/);
   });
 
+  it('the stats read-out says what scheming means in the selected show, and never that a nice archetype cannot play', () => {
+    // the user, 2026-10-23, of "Never schemes" on a Big Brother sheet: "like they cant strategize? thats lame"
+    const scheme = (format, arch, stats) => new Function('SHOWS', [
+      `const _showFormat = () => ${JSON.stringify(format)};`, line('_showName'),
+      line('VILLAIN_ARCH'), line('NICE_ARCH_SET'), grab('_schemeLine'),
+      `return _schemeLine(${JSON.stringify(arch)}, ${JSON.stringify(stats)}, ${JSON.stringify(format)});`,
+    ].join('\n'))(SHOWS);
+    const hero = { strategic: 9, loyalty: 7 }, wild = { strategic: 8, loyalty: 3 };
+    for (const f of Object.keys(SHOWS)) expect(scheme(f, 'hero', hero), f).not.toMatch(/never schemes/i);
+    expect(scheme('big-brother', 'hero', hero)).toMatch(/full game.*nominations, backdoors/);
+    expect(scheme('big-brother', 'hero', hero)).toMatch(/never<\/b> sabotages/);
+    expect(scheme('big-brother', 'villain', hero)).toMatch(/dirty/);
+    expect(scheme('big-brother', 'wildcard', wild)).toMatch(/<b>yes<\/b>/);
+    expect(scheme('big-brother', 'wildcard', hero)).toMatch(/Plays it straight/);
+    expect(scheme('total-drama', 'hero', hero)).toMatch(/no dirty tricks/);
+    expect(scheme('traitors', 'hero', hero)).toMatch(/less convincingly/);
+    expect(scheme('total-drama', '', hero)).toBe('');
+  });
+
   it('the Drag Race craft section shows only when Drag Race is selected', () => {
     // the user, 2026-10-23: "remove drag race craft section when drag race isnt selected"
     expect(src).toMatch(/_drSelected\(\) \? `<details class="st-drag" id="st-drag-panel"/);

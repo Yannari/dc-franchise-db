@@ -2973,20 +2973,55 @@ function _nearestArchetype(stats) {
   return { archetype: best, distance: bestDist };
 }
 
+// What "scheming" is depends on the show, and none of them stops a nice archetype from playing.
+// The user, 2026-10-23, reading "Never schemes" on a Big Brother sheet: "like they cant strategize? thats lame".
+// That was Total Drama's rule (social-manipulation.js) printed over every show; Big Brother's nice archetypes
+// make alliances, nominate and backdoor, and are only kept from lying to a face, a quiet betrayal and jury lobbying.
+function _schemeLine(arch, s, format) {
+  if (!arch) return '';
+  const villain = VILLAIN_ARCH.includes(arch), nice = NICE_ARCH_SET.has(arch);
+  const built = (s.strategic || 0) >= 6 && (s.loyalty || 10) <= 4;
+  const neutral = what => built
+    ? `${what} too — strategic ${s.strategic} and loyalty ${s.loyalty} make ${arch} cold enough`
+    : `Plays it straight — a ${arch} needs strategic 6+ and loyalty 4 or less for that (${s.strategic} / ${s.loyalty})`;
+  if (format === 'total-drama') {
+    if (villain) return `Pulls dirty tricks <b>every episode</b> — forged notes, lies, kiss traps; ${arch} is a villain archetype`;
+    if (nice) return `Votes and plays the game, but <b>no dirty tricks</b> — forged notes, lies and kiss traps are off for a ${arch}`;
+    const pct = Math.round((s.strategic / 10) * ((10 - s.loyalty) / 10) * 100);
+    return `Pulls dirty tricks about <b>${pct}%</b> of episodes — strategic ${s.strategic} against loyalty ${s.loyalty}`;
+  }
+  if (format === 'big-brother') {
+    const game = 'Plays the <b>full game</b> — alliances, nominations, backdoors';
+    if (villain) return `${game}, and plays it <b>dirty</b>: lies to faces, breaks deals quietly, lobbies the jury`;
+    if (nice) return `${game}. Lies to a face or keeps a quiet plan only when strategic enough (strategic ${s.strategic}, loyalty ${s.loyalty}); `
+      + `<b>never</b> sabotages, makes things up or lobbies the jury`;
+    return `${game}. Dirty moves (lies to faces, quiet betrayals, jury lobbying): ${neutral('<b>yes</b>')}`;
+  }
+  if (format === 'traitors') {
+    return nice
+      ? `As a Traitor, murders and lies like anyone — but a ${arch} lies <b>less convincingly</b> than a schemer`
+      : `As a Traitor, murders and lies like anyone${villain ? ' — and lies <b>well</b>' : ''}`;
+  }
+  if (format === 'drag-race') {
+    if (villain) return `Throws <b>shade</b> and reads the other queens to camera`;
+    if (nice) return `Competes all out, but <b>no shade</b> — she can still say when she was hurt`;
+    return `Shade and reads: ${neutral('<b>yes</b>')}`;
+  }
+  const show = _showName();
+  const tricks = format === 'the-challenge' ? 'throwing a daily, sabotage' : 'lies, sabotage';
+  if (villain) return `Plays the game and plays it <b>dirty</b> in ${show} — ${tricks}`;
+  if (nice) return `Plays the game, but <b>no dirty tricks</b> in ${show} — ${tricks} are off for a ${arch}`;
+  return `Dirty tricks in ${show} (${tricks}): ${neutral('<b>yes</b>')}`;
+}
+
 function _readLines(d) {
   const s = d.stats || {};
   const arch = d.archetype || '';
   const out = [];
 
-  // 1) scheming — the exact rule from social-manipulation.js
-  if (VILLAIN_ARCH.includes(arch)) {
-    out.push(['scheme', `Schemes <b>every episode</b> — ${arch} is a villain archetype`]);
-  } else if (NICE_ARCH_SET.has(arch)) {
-    out.push(['scheme', `<b>Never schemes</b> — nice archetypes are locked out, even at strategic 10`]);
-  } else if (arch) {
-    const pct = Math.round((s.strategic / 10) * ((10 - s.loyalty) / 10) * 100);
-    out.push(['scheme', `Schemes about <b>${pct}%</b> of episodes — strategic ${s.strategic} against loyalty ${s.loyalty}`]);
-  }
+  // 1) scheming, in the selected show's terms
+  const scheme = _schemeLine(arch, s, _showFormat());
+  if (scheme) out.push(['scheme', scheme]);
 
   // 2) challenge lean
   const phys = ((s.physical || 0) + (s.endurance || 0)) / 2;

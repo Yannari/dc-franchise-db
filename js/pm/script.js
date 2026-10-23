@@ -28,6 +28,7 @@ import { HUT } from './lines/hut.js';
 import { HUT_VOLUME } from './lines/hut-volume.js';
 import { HUT_VOLUME_2 } from './lines/hut-volume-2.js';
 import { HUT_VOLUME_3 } from './lines/hut-volume-3.js';
+import { HUT_VOLUME_4 } from './lines/hut-volume-4.js';
 import { NARRATOR } from './lines/narrator.js';
 import { STEAMY_NARRATOR } from './lines/steamy.js';
 import { ICEBREAKER_CARDS } from './lines/kiss-games.js';
@@ -41,7 +42,7 @@ import { afterOf, tierOf, registerOf } from './story/director.js';
 // pm/talk/ (a kind with a talk file never reads a pool here).
 export const POOLS = { ...FIREPIT_LINES, ...FINAL_LINES, ...CHALLENGE_LINES, ...LIE_LINES, ...JOURNEY_LINES, ...ANSWER, ...RULES_LINES };
 // More beach-hut lines for the scenes that cut away most (lines/hut-volume.js).
-for (const more of [HUT_VOLUME, HUT_VOLUME_2, HUT_VOLUME_3]) for (const [st, v] of Object.entries(more)) HUT[st].push(...v);
+for (const more of [HUT_VOLUME, HUT_VOLUME_2, HUT_VOLUME_3, HUT_VOLUME_4]) for (const [st, v] of Object.entries(more)) HUT[st].push(...v);
 // The voiceover over a steamy scene (lines/steamy.js).
 for (const [k, v] of Object.entries(STEAMY_NARRATOR)) NARRATOR[k] = [...(NARRATOR[k] || []), ...v];
 export { HUT, NARRATOR };

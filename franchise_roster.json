@@ -9027,6 +9027,27 @@
       "voice": "Bright, earnest and a little breathless, talks fast about the future and her plans. Blushes and laughs at herself; when she likes someone, everyone can tell. #earnest #warm#competitive:3.5#emotional",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Martin",
+      "slug": "martin",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "floater",
+      "stats": {
+        "physical": 3,
+        "endurance": 5,
+        "mental": 8,
+        "social": 4,
+        "strategic": 7,
+        "loyalty": 8,
+        "boldness": 3,
+        "intuition": 6,
+        "temperament": 7
+      },
+      "voice": "Nervous, nerdy and quick, full of comic-book comparisons and reality TV trivia. Stammers when put on the spot, then lights up when he gets to explain something. #nerdy #anxious",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

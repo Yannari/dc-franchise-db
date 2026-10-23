@@ -14,7 +14,9 @@ describe('rr overnight', () => {
   it('airs Don closing a challenge for the night before every overnight jump in a leg', () => {
     let jumps = 0;
     const silent = [];
-    for (const seed of [41, 42, 43, 44]) {
+    // (seasons until a night has been jumped: 2026-10-22, four seasons had none with the roster grown)
+    for (const seed of [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]) {
+      if (jumps >= 2) break;
       const { cast, teams } = raceCast(12, seed);
       setPlayers(cast);
       const res = playRaceSeason({ teams, seed });
@@ -27,7 +29,9 @@ describe('rr overnight', () => {
           const next = timed[i + 1];
           if (next && !nights.some(x => s.t < x.until && next.t > x.t)) return;
           // (a long flight is a jump too, and the landing says so: this is the jump INTO a challenge)
-          if (!next || next.t - s.t < 360 || !AT_TASK.has(next.kind) || s.kind === 'same-flight') return;
+          // (...or into anything at the challenge that was shut: the morning opens on a talk at its gate as often, cut a
+          // challenge at a time, 2026-10-22)
+          if (!next || next.t - s.t < 360 || !(AT_TASK.has(next.kind) || nights.some(x => x.stretch === next.stretch)) || s.kind === 'same-flight') return;
           jumps++;
           // (Don's line, or the teams' own night by the closed challenge, in the twelve hours before the jump)
           const before = timed.slice(0, i + 1).filter(x => x.t >= s.t - 720);

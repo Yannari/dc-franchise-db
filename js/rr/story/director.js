@@ -23,6 +23,8 @@ import { getPlace } from '../places.js';
 import { writeScene, TASK_LINES, canVoice } from '../script/write.js';
 import { pickedOf } from '../script/facts.js';
 import { teamRef, teamTag, relLabel } from './previously.js';
+// (what a challenge is shot doing: a ride along a path is seen being ridden; airing only, never the race itself)
+import { stretchPlates } from '../../vp-rr-ep/plates.js';
 
 export const MUST = new Set(['proposal', 'don-opener', 'don-demo', 'don-place', 'don-crown', 'don-elim', 'don-arrives', 'don-fakeout', 'don-rule', 'don-ruling',
   'boomerang-found', 'boomerang-decide', 'boomerang-hit', 'boomerang-vote', 'yield', 'zip-it', 'save-used', 'medevac-choice',
@@ -218,14 +220,18 @@ function roomsTogether(rows) {
   return out;
 }
 
-function stageBeats(state, row, i, brief = false) {
+function stageBeats(state, row, i, brief = false, place = null) {
   const [x, y] = people(state, row.team);
   const [a, b] = row.kind === 'botch' && row.who && [x, y].includes(row.who) ? [row.who, row.who === x ? y : x] : [x, y];
   // (one fail a stage, two at most; a team that gives up always airs the moment it gave up: Coast Palace's fin, three
   // misses, and the quit itself was the one cut)
   let fails = 0;
   const last = row.stages.length - 1, seen = new Set();
-  const keep = (e, j) => (e.ok ? !brief || j === last : (row.quit && j === last) || (!seen.has(e.id) && (seen.add(e.id), ++fails <= STAGE_FAILS)));
+  // (brief: the last stage, and the ride itself when the challenge is one, the zipline over the lake: 2026-10-22, the
+  // user: "we dont see them zipline anymore", a team followed briefly was seen only landing)
+  const sp = brief && place ? stretchPlates(place, row.stretch, row.side) : null;
+  const ride = sp ? row.stages.findIndex(e => e.ok && sp.stages?.[e.id]?.plate?.path && sp.stages[e.id].plate.mode) : -1;
+  const keep = (e, j) => (e.ok ? !brief || j === last || j === ride : (row.quit && j === last) || (!seen.has(e.id) && (seen.add(e.id), ++fails <= STAGE_FAILS)));
   return row.stages.filter(keep).map((e, j) => ({
     id: `stage:${row.leg}:${row.team}:${row.stretch}:${i}:${j}`, leg: row.leg, kind: 'task-stage', who: [a, b], seenBy: [a, b],
     data: { ending: e.ok ? 'ok' : 'fail', team: row.team, stretch: row.stretch, stage: e.id, t: Math.round(e.t), from: row.from, to: row.to,
@@ -426,7 +432,7 @@ export function airLeg(state, leg) {
         if (at != null) sw.data.t = Math.ceil(at) + 1;   // (after the second miss that made them give up)
         beats.push(sw);
       }
-      beats.push(...stageBeats(state, r, i, followAt[r.stretch].brief?.has(r.team)));
+      beats.push(...stageBeats(state, r, i, followAt[r.stretch].brief?.has(r.team), leg.place));
       return;
     }
     // (the checkpoint airs on its own, below: it is never the team's moment at the challenge itself)
@@ -449,6 +455,7 @@ export function airLeg(state, leg) {
     const clean = !r.fails && !r.switched && !r.quit;
     const nthClean = clean ? (cleanAt[r.stretch] = (cleanAt[r.stretch] || 0) + 1) : 0;
     // a picking task's moment is the picking and how it went (the spices: all five, most, a guess)
+    // (a challenge done along a path is seen being done by every team besides: below, after the ride)
     const kind = r.right != null ? 'task-try' : clean ? (nthClean % 2 ? 'task-start' : 'task-done') : 'task-try';
     // ...and the first three teams there are seen arriving at it first: the challenge is set up once, then results
     // (two at most in the same minute: teams who queued for the opening all arrive at once)
@@ -477,6 +484,31 @@ export function airLeg(state, leg) {
           snap: { leg: n, place: leg.place, rel: tm.rel, relFam: relFamOf(tm.rel), identity: tm.identity ?? null, mode: s.mode } } });
     }
   }
+  // a challenge done along a path (the zipline, a raft, a swim, the tightrope) is seen being done by every team that did
+  // it: a team with nothing of it on screen (its own story moment aired there instead; followed, its stages all at the
+  // two ends) is seen finishing it on it (2026-10-22, the user: "when u use a new plate u erase a part of the challenge")
+  // ...and a team that gave up one side of an Either/Or for the other is seen doing it, whatever else aired of it there
+  // (its own story moment had taken the place of its run: 2026-10-22)
+  rows.forEach((r, i) => {
+    if (!r.switched || beats.some(b => b.data?.team === r.team && b.data?.stretch === r.stretch && b.kind === 'task-try' && b.data.ending === 'switched')) return;
+    const sw = taskBeat(state, r, i, 'task-try');
+    if (sw.data.ending !== 'switched') return;
+    sw.id += ':switch';
+    const at = (state.switches || []).find(x => x.team === r.team && x.leg === r.leg && x.stretch === r.stretch)?.at;
+    if (at != null) sw.data.t = Math.ceil(at) + 1;
+    beats.push(sw);
+  });
+  rows.forEach((r, i) => {
+    if (r.quit || r.right != null) return;
+    const sp = stretchPlates(leg.place, r.stretch, r.side);
+    if (!sp?.act?.path) return;
+    const doing = b => b.data?.team === r.team && b.data?.stretch === r.stretch && (['task-try', 'task-done'].includes(b.kind)
+      || (b.kind === 'task-stage' && !!(b.data.ending === 'fail' ? sp.stages?.[b.data.stage]?.fail : sp.stages?.[b.data.stage]?.plate)?.mode));
+    if (beats.some(doing)) return;
+    const done = taskBeat(state, r, i, 'task-done');
+    done.id += ':doing';
+    beats.push(done);
+  });
   // the premiere meets its teams the way the show does: every one introduced as it turns up, after Don's welcome
   // and before his rules (the user, 2026-10-19). They arrive in an order the seed draws.
   if (n === 1) {

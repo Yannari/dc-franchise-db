@@ -10,7 +10,9 @@ import { raceCast } from './helpers/rr-cast.js';
 
 const legs = [];
 beforeAll(() => {
-  for (const seed of [1, 2, 3, 4, 5, 6]) {
+  // (seasons until three exits on the road: 2026-10-22, the roster's new faces left one in the first six)
+  for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
+    if (legs.length >= 3) break;
     const { cast, teams } = raceCast(10, seed);
     setPlayers(cast);
     const res = playRaceSeason({ teams, seed });

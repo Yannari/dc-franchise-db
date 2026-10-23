@@ -284,13 +284,19 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       // (an elevator's ride is when the car went, lift.js, which moves it itself: minutes won or lost, and the run's
       // fitting, are from the top)
       // (a team that waited its turn for a place, the sauna's benches, started its run when it got one)
-      const top = row.liftUp ? row.stages.find(x => x.id === 'elevator')?.t : row.seated > row.from ? row.seated : null;
+      // (the stages after the top by their place in the run, not their minute: a team pushed out of a car rides later,
+      // and its clip-on, planned before that, is still after the ride; 2026-10-22 it was left before it)
+      const topIdx = row.liftUp ? row.stages.findIndex(x => x.id === 'elevator') : -1;
+      const top = topIdx >= 0 ? row.stages[topIdx].t : row.seated > row.from ? row.seated : null;
+      const after = (x, j) => (topIdx >= 0 ? j > topIdx : top == null || x.t > top);
       // (and its own moments' minutes, at each moment in this visit: 2026-10-22, a talk late on the lava stones
       // stretched the whole run, and a meeting on the stones went back to the bank)
       const own = (ownShifts[`${row.team}|${row.stretch}`] || []).filter(([at]) => at >= l.from - 0.5 && at <= l.to + 0.5);
-      for (const [at, d] of [...(l.shifts || []), ...own].sort((x, y) => x[0] - y[0])) for (const x of row.stages) if (x.t > at && (top == null || x.t > top)) x.t = Math.max(at, top ?? at, x.t + d);
+      for (const [at, d] of [...(l.shifts || []), ...own].sort((x, y) => x[0] - y[0])) row.stages.forEach((x, j) => { if (x.t > at && after(x, j)) x.t = Math.max(at, top ?? at, x.t + d); });
+      // (nothing after the top before it)
+      if (topIdx >= 0) row.stages.forEach((x, j) => { if (j > topIdx) x.t = Math.max(x.t, top); });
       const from = top ?? row.from, last = Math.max(...row.stages.map(x => x.t));
-      if (last > from) for (const x of row.stages) if (top == null || x.t > top) x.t = from + (Math.max(from, x.t) - from) * (l.to - from) / (last - from);
+      if (last > from) row.stages.forEach((x, j) => { if (after(x, j)) x.t = from + (Math.max(from, x.t) - from) * (l.to - from) / (last - from); });
       // (inside the visit whatever moved it: a ride up that ended after a team's minutes won)
       for (const x of row.stages) x.t = Math.min(l.to, Math.max(row.from, x.t));
     }

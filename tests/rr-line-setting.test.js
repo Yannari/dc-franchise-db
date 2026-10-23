@@ -58,6 +58,9 @@ beforeAll(() => {
         const has = JSON.stringify(st).toLowerCase();
         for (const x of sg.lines) {
           const t = String(x.text || '').toLowerCase();
+          // (a team's own story about somewhere else, said under many line ids: the bridge club, the firefighters'
+          // stairs, the boat at home)
+          if (/bridge club|flights of stairs|on the boat|borrow the boat/.test(t)) continue;
           for (const [name, says, owns, pools] of THINGS) if ((!pools || pools.test(en.k)) && says.test(t) && !owns.test(has)) hits.push(`${res.legs[i].place}/${st.id} ${sg.lineId} [${name}]: ${x.text}`);
         }
       }

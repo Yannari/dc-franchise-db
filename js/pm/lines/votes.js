@@ -51,7 +51,7 @@ export const VOTE_LINES = {
       ['a', "You got someone I cared about dumped because you don't like them."], ['b', "Yeah. I did."]] },
     // tactical: seen through
     { id: 'vf.x.01', when: { of: 'tactical' }, stage: 'At breakfast, {a} puts {a.posAdj} cup down and looks at {b}.', turns: [
-      ['a', "\"I haven't seen their connection grow.\" Come on. That was tactical, and everyone knows it."], ['b', "It wasn't."],
+      ['a', "All that about not seeing their connection grow? Come on. That was tactical, and everyone knows it."], ['b', "It wasn't."],
       ['a', "Then why {c}? The strongest couple in here?"], ['b', "…It was my honest opinion."]], beat: 'Nobody at the table believes it.' },
     { id: 'vf.x.02', when: { of: 'tactical' }, stage: 'By the fire pit, {a} catches {b} alone.', turns: [
       ['a', "You got rid of {c} because it helps you."], ['b', "That's a big thing to say."],

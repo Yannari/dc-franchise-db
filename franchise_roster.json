@@ -8764,6 +8764,27 @@
       "voice": "Haughty, theatrical and sneering, a cartoon villain's drawl with a plan for everything. Hands out insults like gifts, monologues about his own genius and sulks loudly when he loses. #cruel #schemer",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Angelica",
+      "slug": "angelica",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "mastermind",
+      "stats": {
+        "physical": 5,
+        "endurance": 6,
+        "mental": 8,
+        "social": 7,
+        "strategic": 10,
+        "loyalty": 4,
+        "boldness": 6,
+        "intuition": 8,
+        "temperament": 6
+      },
+      "voice": "Polished, poised and sweetly cutting, every insult wrapped in a compliment. Speaks in complete, well-chosen sentences and smiles while she says the worst thing in the room. #schemer #proud",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

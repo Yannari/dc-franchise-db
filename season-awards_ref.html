@@ -498,7 +498,10 @@ window._showsReady = new Promise(resolve => { window._showsResolve = resolve; })
 </script>
 <script type="module">
   import { parseSeasonRef, seasonId, DEFAULT_FORMAT } from './js/shows.js';
-  window.shows = { parseSeasonRef, seasonId, DEFAULT_FORMAT };
+  /* A race season's awards are worked out from its legs (js/rr/awards.js), not written: a clock decides that show. */
+  import { raceAwardsHtml } from './js/rr/awards.js';
+  import { isRaceSeason } from './js/rr/wiki.js';
+  window.shows = { parseSeasonRef, seasonId, DEFAULT_FORMAT, raceAwardsHtml, isRaceSeason };
   window._showsResolve(window.shows);
 </script>
 
@@ -664,6 +667,25 @@ function statLbCard(title, rows) {
       const arrow = dir === 'prev' ? '←' : '→';
       const label = dir === 'prev' ? `S${num} Awards` : `S${num} Awards`;
       return `<a class="snav-btn" href="season-awards_ref.html?season=${num}">${dir==='prev'?arrow+' ':''} ${label} ${dir==='next'?arrow:''}</a>`;
+    }
+
+    /* A RACE SEASON: the winners are a team and every award is a number off the legs, so the page is
+       js/rr/awards.js's body between this page's own hero and navigation. */
+    if (shows && shows.isRaceSeason && shows.isRaceSeason(season)) {
+      document.title = `${season.title} Awards — DC Franchise`;
+      main.innerHTML = `<div class="sa-hero"><div class="sa-hero-body">
+          <div class="sa-season-badge">🏁 Season ${seasonNum}</div>
+          <div class="sa-hero-title">${season.title} Awards</div>
+          <div class="sa-hero-pills">
+            ${season.teams?.length ? `<span class="sa-pill">${season.teams.length} Teams</span>` : ''}
+            ${season.episodeCount ? `<span class="sa-pill">${season.episodeCount} Legs</span>` : ''}
+          </div></div></div>
+        ${shows.raceAwardsHtml(season)}
+        <div class="season-nav"><div class="snav-center">
+          <a class="snav-btn primary" href="awards.html">🏅 All Awards</a>
+          <a class="snav-btn" href="season_ref.html?season=${seasonRef}">📋 Season Overview</a>
+        </div></div>`;
+      return;
     }
 
     let html = `

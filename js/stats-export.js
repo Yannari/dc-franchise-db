@@ -4306,6 +4306,7 @@ export function mergeRaceSeasonsDatabase(existing, seasonDoc) {
     winner: null,
     winners,
     winningTeam: seasonDoc.winningTeam || null,
+    awards: seasonDoc.awards && typeof seasonDoc.awards === 'object' ? seasonDoc.awards : {},
     theme: _clean(seasonDoc.seasonNarrative, _clean(seasonDoc.subtitle)),
     status: 'Complete',
     castPhotoPath: `assets/cast/${seasonId(RACE_FORMAT, seasonNum)}-cast.png`,

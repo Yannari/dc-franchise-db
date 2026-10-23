@@ -16,6 +16,7 @@ import {
   DEFAULT_FORMAT, showWords, showName, exitVerbs, roundExits, publicBallots,
   roundShape, seasonRounds,
 } from './shows.js';
+import { buildRaceWiki, isRaceSeason } from './rr/wiki.js';
 import { buildTrackRecordGrid, RESULT_LABELS } from './dr/grid.js';
 import { avatarUrl } from './avatar-registry.js';
 import { episodeAirDates, airDateLabel, airLabel } from './franchise-calendar.js';
@@ -195,6 +196,9 @@ export function buildWikiTab(s, { face = null, seasonRow = null } = {}) {
     avatarFile: row?.avatarFile,
     show: s?.format || DEFAULT_FORMAT,
   }));
+  /* A RACE IS ITS OWN ARTICLE. Nobody votes, there is no block and no runway: its page is the leg-by-leg chart and a
+     block per leg, read off the export's leg records (rr/wiki.js). */
+  if (isRaceSeason(s)) return buildRaceWiki(s, { face: srFace, seasonRow });
       /* ── ONE SHAPE FROM TWO SHOWS ──────────────────────────────────
          Big Brother exports `weeks` — a Head of Household, a block, a veto,
          a vote. Total Drama exports `votingHistory` — an episode, a boot,

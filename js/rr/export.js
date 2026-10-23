@@ -23,6 +23,7 @@
 //        (every run: the side, who did it, the tries, the minutes), `reward`, `passes`, `boomerangVote`, `sabotage`,
 //        `fears` and `hurt`; every placement's `rr` has the place on each leg and the season's numbers.
 import { SHOWS, seasonId, exitVerbs, RACE_FORMAT } from '../shows.js';
+import { raceAwardsIndex } from './awards.js';
 
 export const RACE = RACE_FORMAT;
 const slug = n => String(n || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -207,7 +208,7 @@ export function buildRaceSeasonDocument(rows = [], record = null, { seasonNumber
   const placements = rrPlacements(legs, record);
   const winnersRows = placements.filter(p => p.status === 'Winner');
   const winners = winnersRows.map(w => ({ name: w.name, playerSlug: w.playerSlug, team: w.team }));
-  return {
+  const doc = {
     seasonNumber: Number(seasonNumber),
     format: RACE,
     seasonId: seasonId(RACE, seasonNumber),
@@ -227,4 +228,7 @@ export function buildRaceSeasonDocument(rows = [], record = null, { seasonNumber
     emoji: SHOWS[RACE].emoji,
     exitVerbs: exitVerbs(RACE),
   };
+  // the awards index's card (awards.html); the awards page works the whole list out from the legs (rr/awards.js)
+  doc.awards = raceAwardsIndex(doc);
+  return doc;
 }

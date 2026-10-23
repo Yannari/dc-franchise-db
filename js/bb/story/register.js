@@ -21,27 +21,105 @@
 
 import { players } from '../../core.js';
 import { pStats, pronouns } from '../../players.js';
+import { readVoiceText } from '../../td/story/voice-words.js';
 
+// Whole words only (2026-10-22: "means every word" read as mean, "goes quiet and embarrassed" as
+// terse, "pushy" as shy, "even-tempered" as a temper, "some kind of" as sweet). Stems keep their endings.
 const KEYS = {
   silent: /never speaks|doesn't speak|does not speak|mute\b|communicates through gestures/,
   sfx: /sound effects|beatbox/,
-  terse: /says little|few words|barely talks|man of few|quiet|monosyllab|short sentences|clipped|stoic|deadpan/,
-  sarcastic: /sarcas|deadpan|dry\b|snark|cynic|wry|eye-roll/,
-  sweet: /sweet|gentle|kind|earnest|wholesome|warm|caring|soft-spoken/,
-  theatrical: /theatric|dramatic|diva|flamboyant|over-the-top|melodram|vain/,
-  anxious: /nervous|anxious|insecure|shy|timid|awkward|paranoi|worried|neurotic/,
-  smooth: /smooth|charming|silky|flatter|suave|charismatic|polished/,
-  tough: /blunt|tough|brash|no-nonsense|gruff|aggressive|hot-headed|short fuse|temper/,
-  bubbly: /bubbly|gush|excitab|energetic|enthusias|peppy|over-shar|chatter|hyper/,
-  mean: /cruel|mean|dismissive|bossy|condescend|put-down|snide|entitled|belittl/,
+  terse: /\b(?:says little|few words|barely talks|(?:man|woman) of few|quiet|monosyllab\w*|short sentences|clipped|stoic|deadpan)\b/,
+  sarcastic: /\b(?:sarcas\w*|deadpan|dry|snark\w*|cynic\w*|wry|eye-roll\w*)\b/,
+  sweet: /\b(?:sweet(?:ly|ness)?|gentle|gently|kind(?:ly|ness)?(?! of\b)|earnest(?:ly)?|wholesome|warm(?:ly|th)?|caring|soft-spoken)\b/,
+  theatrical: /\b(?:theatric\w*|dramatic\w*|diva|flamboyan\w*|over-the-top|melodram\w*|vain)\b/,
+  anxious: /\b(?:nervous\w*|anxious\w*|insecur\w*|shy|shyly|timid\w*|awkward\w*|paranoi\w*|worried|worrier|neurotic\w*)\b/,
+  smooth: /\b(?:smooth\w*|charming\w*|silky|flatter\w*|suave|charismatic|polished)\b/,
+  tough: /\b(?:blunt\w*|tough|brash|no-nonsense|gruff\w*|aggressive\w*|hot-headed|short fuse|temper|(?:short|hot|quick|bad)-tempered)\b/,
+  bubbly: /\b(?:bubbly|gush\w*|excitab\w*|energetic|enthusias\w*|peppy|over-shar\w*|chatter\w*|hyper(?:active)?)\b/,
+  // (cruel and cruelly, not "cruelty": "slow to notice cruelty aimed at her" is somebody kind)
+  mean: /\b(?:cruel(?:ly)?|(?<!\bi )mean(?:er|est|ness)?(?! (?:it|well|to)\b)|dismissive|bossy|condescend\w*|put-downs?|snide|entitled|belittl\w*)\b/,
 };
+export const BB_REGISTERS = ['terse', 'sarcastic', 'theatrical', 'anxious', 'mean', 'smooth', 'tough', 'bubbly', 'sweet'];
 const ARCH_REG = { hothead: 'tough', 'chaos-agent': 'theatrical', villain: 'mean', schemer: 'smooth', mastermind: 'smooth',
   'social-butterfly': 'bubbly', showmancer: 'sweet', hero: 'sweet', 'loyal-soldier': 'terse', underdog: 'anxious', goat: 'anxious',
   floater: 'sarcastic', wildcard: 'theatrical', 'challenge-beast': 'tough', 'perceptive-player': 'terse' };
 
+// The user, 2026-10-22: "fix bb so it read the hashtags properly like the other shows ... read perfect match,
+// its a better example". The voice tags every show writes (#warm #dry, td/story/voice-words.js), each in the
+// register Big Brother talks in. A few depend on the tags beside them, as the Circle's do (ci/register.js):
+//   loud    with a hard tag it is a fighter (tough), with a soft one it is excitement (bubbly), else a show
+//   calm    composed and kind (sweet) beside a soft tag, composed and in control (smooth) beside a playing one,
+//           else few words (terse)
+//   proud   cruel beside cruel, tough beside a hard one (a proud cop is not "Naturally."), else polished (smooth)
+// nerdy names what somebody talks ABOUT, not how, and weighs nothing here.
+const TAG_REG = {
+  quiet: 'terse', dry: 'sarcastic', warm: 'sweet', earnest: 'sweet', blunt: 'tough', tough: 'tough', competitive: 'tough',
+  theatrical: 'theatrical', chaotic: 'theatrical', emotional: 'theatrical', anxious: 'anxious', cruel: 'mean', bossy: 'mean',
+  schemer: 'smooth', flirty: 'smooth', goofy: 'bubbly', ditzy: 'bubbly', food: 'bubbly',
+};
+const HARD_TAGS = ['blunt', 'tough', 'cruel', 'bossy', 'competitive'], SOFT_TAGS = ['warm', 'earnest', 'goofy', 'food', 'ditzy', 'emotional'];
+function tagReg(t, has) {
+  if (BB_REGISTERS.includes(t) && !TAG_REG[t]) return t; // a Big Brother register named outright: #bubbly, #smooth
+  if (t === 'loud') return HARD_TAGS.some(has) ? 'tough' : SOFT_TAGS.some(has) ? 'bubbly' : 'theatrical';
+  if (t === 'calm') return ['warm', 'earnest'].some(has) ? 'sweet' : ['schemer', 'proud', 'flirty'].some(has) ? 'smooth' : 'terse';
+  if (t === 'proud') return has('cruel') ? 'mean' : ['tough', 'blunt', 'competitive'].some(has) ? 'tough' : 'smooth';
+  return TAG_REG[t] || null;
+}
+// How much of a speaker's talk each register gets: Perfect Match's weights (td/story/voice.js PLACE_WEIGHTS),
+// by the place a tag was written: the first 4, then 2.5, 1.5, and 1 each after. "#proud:3" sets one outright.
+const PLACE = [4, 2.5, 1.5], LATER = 1;
+// "not cruelly", "never warm", "dislikes cruelty disguised as humor", "uncomfortable with mean play"
+const NOT_BEFORE = /\b(not|never|rarely|fake|faux|pretends? to be|acts|no|without|dislikes?|hates?|uncomfortable with)\W*$/;
+
+/** [[register, weight], …] the authored voice says, strongest first; empty when it says none. */
+export function voiceMix(voice) {
+  const raw = String(voice || '');
+  const t = raw.toLowerCase();
+  const read = readVoiceText(raw);
+  const tdTags = new Set([...read.hash, ...read.words]);
+  const has = x => tdTags.has(x);
+  const off = new Set(read.off.map(x => tagReg(x, has) || (BB_REGISTERS.includes(x) ? x : null)).filter(Boolean));
+  const list = [];
+  // 1. the author's hashtags, in the order written (a Big Brother register's own name counts too)
+  // (written run together as often as not: "herself.#blunt#cruel#schemer")
+  for (const m of t.matchAll(/#(-?)([a-z]+)(?::(\d+(?:\.\d+)?))?/g)) {
+    const r = m[1] ? null : tagReg(m[2], has);
+    if (r && !off.has(r)) list.push({ r, set: m[3] != null ? Number(m[3]) : null });
+  }
+  // 2. then the words, in the order they come (hashtags taken out so a #warm is not counted twice)
+  const words = t.replace(/#-?[a-z]+(?::[\d.]+)?/g, ' ');
+  const found = [];
+  for (const r of BB_REGISTERS) {
+    const g = new RegExp(KEYS[r].source, 'g');
+    for (let m; (m = g.exec(words));) {
+      if (NOT_BEFORE.test(words.slice(Math.max(0, m.index - 24), m.index)) || /\bonly when\b/.test(words.slice(m.index, m.index + m[0].length + 22))) continue;
+      found.push([m.index, r]); break;
+    }
+  }
+  for (const [, r] of found.sort((a, b) => a[0] - b[0])) if (!off.has(r)) list.push({ r, set: null });
+  const by = new Map();
+  list.forEach(({ r, set }, i) => {
+    const w = set ?? (i < PLACE.length ? PLACE[i] : LATER);
+    by.set(r, set != null ? set : (by.get(r) || 0) + w);
+  });
+  return [...by.entries()].filter(([, w]) => w > 0).sort((a, b) => b[1] - a[1]);
+}
+
+const dial = (...parts) => {
+  let h = 7;
+  for (const c of parts.join('|')) h = (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0;
+  h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+};
+
 const _cache = new Map();
-/** { reg, silent, sfx, catch: [phrases] } from the authored voice, else the archetype. */
-export function registerOf(name) {
+/**
+ * { reg, mix, silent, sfx, catch: [phrases] } from the authored voice, else the archetype.
+ * `scene` (any stable key for one scene) lands the register on the voice's mix, as Perfect Match does
+ * (pm/story/director.js): one register per speaker per scene, the second hashtag heard about a quarter
+ * of the time instead of never. Without a scene, the strongest.
+ */
+export function registerOf(name, scene = null) {
   const p0 = (players || []).find(x => x.name === name);
   // the authored voice lives on the franchise roster (window.FRANCHISE_ROSTER in the app); a cast
   // entry that carries its own wins
@@ -49,19 +127,23 @@ export function registerOf(name) {
   const rec = Array.isArray(book) ? book.find(r => r && r.name === name) : null;
   const p = { ...(rec || {}), ...(p0 || {}), voice: p0?.voice || rec?.voice || '' };
   const key = `${name}|${p.voice}|${p.archetype || ''}`;
-  if (_cache.has(key)) return _cache.get(key);
-  const v = String(p?.voice || '').toLowerCase();
-  const out = { reg: null, silent: KEYS.silent.test(v), sfx: KEYS.sfx.test(v), catch: [] };
-  // the first register the description names, in the order that matters most for speech
-  for (const r of ['terse', 'sarcastic', 'theatrical', 'anxious', 'mean', 'smooth', 'tough', 'bubbly', 'sweet']) if (KEYS[r].test(v)) { out.reg = r; break; }
-  if (!out.reg) out.reg = ARCH_REG[p?.archetype] || ((pStats(name)?.temperament || 5) <= 3 ? 'tough' : 'sweet');
-  // a quoted catchphrase in the description ('calls everyone "dude"'; "Look, guys,")
-  for (const m of String(p?.voice || '').matchAll(/["“]([^"”]{2,28})["”]/g)) {
-    const c = m[1].trim().replace(/[,.]$/, '');
-    // only what can open a line: a word or two of address or exclamation, not a sentence
-    if (c && !/\./.test(c) && c.split(/\s+/).length <= 3) out.catch.push(c);
+  let out = _cache.get(key);
+  if (!out) {
+    const v = String(p?.voice || '').toLowerCase();
+    out = { reg: null, mix: voiceMix(p.voice), silent: KEYS.silent.test(v), sfx: KEYS.sfx.test(v), catch: [] };
+    if (!out.mix.length) out.mix = [[ARCH_REG[p?.archetype] || ((pStats(name)?.temperament || 5) <= 3 ? 'tough' : 'sweet'), 1]];
+    out.reg = out.mix[0][0];
+    // a quoted catchphrase in the description ('calls everyone "dude"'; "Look, guys,")
+    for (const m of String(p?.voice || '').matchAll(/["“]([^"”]{2,28})["”]/g)) {
+      const c = m[1].trim().replace(/[,.]$/, '');
+      // only what can open a line: a word or two of address or exclamation, not a sentence
+      if (c && !/\./.test(c) && c.split(/\s+/).length <= 3) out.catch.push(c);
+    }
+    _cache.set(key, out);
   }
-  _cache.set(key, out);
+  if (scene == null || out.mix.length < 2) return out;
+  let r = dial(scene, name) * out.mix.reduce((s, [, w]) => s + w, 0);
+  for (const [reg, w] of out.mix) { r -= w; if (r < 0) return reg === out.reg ? out : { ...out, reg }; }
   return out;
 }
 
@@ -72,9 +154,9 @@ export function registerOf(name) {
 // (hard, soft, loud); the speaker's own register first, then its family, then the line as written.
 export const REG_FAMILY = { mean: 'hard', tough: 'hard', sarcastic: 'hard', terse: 'hard', anxious: 'soft', sweet: 'soft', bubbly: 'soft', theatrical: 'loud' };
 export const VARIANT_KEYS = ['terse', 'sarcastic', 'theatrical', 'anxious', 'mean', 'smooth', 'tough', 'bubbly', 'sweet', 'hard', 'soft', 'loud'];
-export function variantOf(t, by) {
+export function variantOf(t, by, scene = null) {
   if (!t?.v || !by) return null;
-  const r = registerOf(by).reg;
+  const r = registerOf(by, scene).reg;
   return t.v[r] ?? t.v[REG_FAMILY[r]] ?? null;
 }
 
@@ -93,9 +175,9 @@ export function toneOf(entry) {
   return Object.keys(TONE).filter(k => TONE[k].test(t));
 }
 /** The candidates that fit the person in role `a` (and `b` as a tie-break), or all of them. */
-export function pickTone(cands, who) {
+export function pickTone(cands, who, scene = null) {
   if (!cands || cands.length < 2 || !who?.a) return cands;
-  const ra = registerOf(who.a).reg, rb = who.b ? registerOf(who.b).reg : null;
+  const ra = registerOf(who.a, scene).reg, rb = who.b ? registerOf(who.b, scene).reg : null;
   const want = FITS[ra] || [];
   const score = e => { const t = toneOf(e); return t.filter(x => want.includes(x)).length * 2 + t.filter(x => (FITS[rb] || []).includes(x)).length; };
   const best = Math.max(...cands.map(score));
@@ -162,11 +244,12 @@ const h = s => { let x = 2166136261; for (const ch of String(s)) x = Math.imul(x
 
 /**
  * One spoken line in its speaker's register. Returns the line (possibly the same one), or a beat
- * for somebody who does not speak. `salt` keeps the choice stable for a scene.
+ * for somebody who does not speak. `salt` keeps the choice stable for a scene; `scene` keys which of
+ * the speaker's registers it is (registerOf), the salt unless the caller shares one across a scene.
  */
-export function voiceLine(line, salt, before = null, after = null) {
+export function voiceLine(line, salt, before = null, after = null, scene = salt) {
   if (!line || !line.by || (line.kind !== 'say' && line.kind !== 'dr')) return line;
-  const r = registerOf(line.by);
+  const r = registerOf(line.by, scene);
   const text = String(line.text).trim();
   const k = h(`${salt}|${line.by}|${text}`);
   let fn = Object.keys(FN).find(f => FN[f].test(text));

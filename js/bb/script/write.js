@@ -156,7 +156,7 @@ export function writeScene(scene, ctx = {}, rng = Math.random, { track = false }
   const lines = entry.turns.map(t => {
     const kind = t.dr ? 'dr' : t.beat ? 'beat' : 'say';
     const by = t.by ? who[t.by] || (t.by === 'hoh' ? ctx.hoh : null) : null;
-    return { kind, by, text: said(kind, fill(variantOf(t, by) ?? (t.dr || t.beat || t.say), who, ctx, scene.data || {})) };
+    return { kind, by, text: said(kind, fill(variantOf(t, by, `${entry.id}|${pairKey}|${ctx.week?.num || 0}`) ?? (t.dr || t.beat || t.say), who, ctx, scene.data || {})) };
   });
   return { lines, text: transcript(lines), lineId: entry.id, lineToken };
 }

@@ -133,8 +133,10 @@ function scriptSteps(lines, extra = {}) {
   let pushed = false;
   // every scripted line in the speaker's register (bb/story/register.js): a silent houseguest
   // writes on a notepad, the stock replies are said the way this person says them
+  // (one script is one scene: its first line keys which of each speaker's registers it is said in)
+  const scene = `script|${(lines || []).find(l => l?.text)?.text || ''}`;
   return (lines || []).filter(l => l && l.text).map(l0 => {
-    const l = voiceLine(l0, 'script');
+    const l = voiceLine(l0, 'script', null, null, scene);
     const k = l.kind === 'dr' ? 'dr' : l.kind === 'beat' ? 'beat' : 'say';
     const push = k === 'say' && !pushed ? (pushed = true) : false;
     return { k, by: l.by || null, t: l.text, ...(push ? { push: true } : {}), ...extra };

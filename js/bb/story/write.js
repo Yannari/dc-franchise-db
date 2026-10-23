@@ -292,7 +292,7 @@ function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
   const full = Object.fromEntries(keys.map(k => [k, pools[k]]));
   // ...but once a pool has all aired this season, the tone would narrow it to the same entry every time
   // (the read of 2026-10-13: one campaign close eight times): a spent pool rotates whole, least-used first
-  for (const k of keys) if (pools[k]?.length > 1 && pools[k].some(e => !used[e.id])) pools[k] = pickTone(pools[k], who);
+  for (const k of keys) if (pools[k]?.length > 1 && pools[k].some(e => !used[e.id])) pools[k] = pickTone(pools[k], who, regKey(ctx));
   // the tone is a preference: when the picker's own rules leave nothing in the fitted set, the
   // whole set is tried (a recap went missing when it was narrowed away)
   const got = pickEntry(ledger(), pools, key, facts, pairKey, rng, speakers, clock, { fresh: true }) || pickEntry(ledger(), full, key, facts, pairKey, rng, speakers, clock, { fresh: true });
@@ -300,11 +300,14 @@ function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
   return got;
 }
 
+// which of a houseguest's registers they speak in (register.js registerOf): one per stretch of the week,
+// so the tone a scene was picked for, its lines' versions and the stock replies all agree
+const regKey = ctx => `bb|${ctx?.week?.num || 0}|${ctx?.stretch || 0}`;
 const render = (entry, who, ctx, data) => entry.turns.map(t => {
   const kind = t.dr ? 'dr' : t.beat ? 'beat' : 'say';
   const by = t.by ? who[t.by] || null : null;
   data = withComp(data, ctx);
-  const text = said(kind, fill(variantOf(t, by) ?? (t.dr || t.beat || t.say), who, { hoh: ctx.hoh }, data));
+  const text = said(kind, fill(variantOf(t, by, regKey(ctx)) ?? (t.dr || t.beat || t.say), who, { hoh: ctx.hoh }, data));
   // a line may open on a slot ("{when}, {a} made a joke...") — a sentence starts with a capital
   return { kind, by, text: text.replace(/^(["'(…\.\s]*)([a-z])/, (m, p, ch) => p + ch.toUpperCase()) };
 });
@@ -971,7 +974,7 @@ const voiced = (sc, kind, ctx) => {
   // ...and now and then a line of the season it is (theme-texture.js): CORA's camera, the Den's door, the whistle
   if (/fight|feud|argument|apolog|makeup|breakup|declare|cold|grudge|snap|block|goodbye|backdoor|blame|confront|blow|betray|exposed/.test(String(kind || ''))) return addThemeTexture(addInsight(sc, kind, ctx?.week?.num), kind, ctx);
   sc.lines = sc.lines.map((l, i) => voiceLine(l, sc.id, sc.lines.slice(0, i).reverse().find(x => x.kind === 'say'),
-    { text: sc.lines.slice(i + 1).filter(x => x.kind !== 'beat').map(x => x.text).join(' ') }));
+    { text: sc.lines.slice(i + 1).filter(x => x.kind !== 'beat').map(x => x.text).join(' ') }, regKey(ctx)));
   return addThemeTexture(addInsight(sc, kind, ctx?.week?.num), kind, ctx);
 };
 export function writeStoryScene(line, step, ctx) {

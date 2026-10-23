@@ -104,7 +104,7 @@ export const BLOWUP = build('blowup', {
     ],
     charge: [
       { when: { of: 'cheating', cause: 'partner', kissed: true }, turns: [
-        ['a', "You kissed someone else. You kissed someone else, and then you came back to bed and kissed me goodnight like nothing had happened. Do you know how that feels? To find out that every goodnight since then was a lie?"],
+        ['a', "You kissed someone else. You kissed someone else, and then you came back to bed and kissed me like nothing had happened. Do you know how that feels? To find out that every kiss since then was a lie?"],
       ] },
       { when: { of: 'cheating', cause: 'partner', kissed: false }, turns: [
         ['a', "I don't even care exactly what it was. I care that you did it, and then you looked me in the eye every day, and you said nothing. You let me tell everyone how solid we were."],

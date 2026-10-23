@@ -331,7 +331,7 @@ export const RIVAL_WON = build('rival-won', {
     ],
     land: [
       { when: { of: 'gracious' }, turns: [], beat: "They hug, and {c} watches it with a relieved smile." },
-      { when: { of: 'bitter' }, turns: [], beat: "{b} goes to bed early, and doesn't say goodnight to anyone." },
+      { when: { of: 'bitter' }, turns: [], beat: "{b} goes off on {b.posAdj} own, and doesn't say a word to anyone." },
       { when: { of: 'bitter' }, turns: [], beat: "{a} squeezes {c}'s hand and keeps looking at the fire." },
     ],
   },
@@ -498,7 +498,7 @@ export const CRUSH_PLEA = build('crush-plea', {
         ['a', "Can I ask you for something? Can you show me a bit more affection? I'm not trying to be needy. I just don't always know where I stand with you, and in here, that's scary."],
       ] },
       { stage: "{a} sits with {b} on the swing seat.", turns: [
-        ['a', "Sometimes I feel like I'm the only one trying. I'm always the one who comes and finds you. I'm always the one who says goodnight first. And I just need to know you're in this too."],
+        ['a', "Sometimes I feel like I'm the only one trying. I'm always the one who comes and finds you. I'm always the one who says sorry first. And I just need to know you're in this too."],
       ] },
       { stage: "In the bedroom, {a} turns to {b} before the lights go out.", turns: [
         ['a', "Do you actually like me? Because you never say it, and I'm starting to wonder."],

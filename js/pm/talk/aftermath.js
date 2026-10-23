@@ -92,7 +92,7 @@ export const VOTE_FALLOUT = build('vote-fallout', {
       { when: { of: 'threat' }, stage: "On the terrace, {a} sits down across from {b}, and doesn't say hello.", turns: [['a', "Is your couple really that weak that you had to get rid of {c} to keep it?"]] },
       { when: { of: 'grudge' }, stage: "{a} finds {b} by the pool.", turns: [['a', "That wasn't a vote. That was personal. You've had it in for {c} since day one."]] },
       { when: { of: 'grudge' }, stage: "In the dressing room, {a} turns round to face {b}.", turns: [['a', "You couldn't wait, could you? First chance you got, you went for {c}."]] },
-      { when: { of: 'tactical' }, stage: "At breakfast, {a} puts {a.posAdj} cup down and looks straight at {b}.", turns: [['a', "All that about not seeing their connection grow? Come on. That was tactical, and everyone at this table knows it."]] },
+      { when: { of: 'tactical' }, stage: "At the kitchen table, {a} puts {a.posAdj} cup down and looks straight at {b}.", turns: [['a', "All that about not seeing their connection grow? Come on. That was tactical, and everyone at this table knows it."]] },
       { when: { of: 'tactical' }, stage: "By the fire pit, {a} catches {b} on {b.posAdj} own.", turns: [['a', "You got rid of {c} because it helps you. Not because of anything {c} did."]] },
     ],
     answer: [

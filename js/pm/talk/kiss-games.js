@@ -40,7 +40,7 @@ export const GAME_KISS = build('game-kiss', {
       { when: { of: 'fun' }, stage: "{a} plants a big, silly kiss on {b}.", turns: [['b', "Was that a kiss or a headbutt?"], ['a', "Bit of both. You're welcome."]] },
       { when: { of: 'fun' }, turns: [['a', "{b}, you're my friend, so come here. This means nothing, and I want everyone to know it means nothing."], ['b', "Nothing at all."]] },
       { when: { of: 'fun' }, stage: "{a} gives {b} a quick peck and runs straight back to the line.", turns: [['b', "That's it? That's all I get?"], ['a', "That's all anyone gets."]] },
-      { when: { of: 'fun', game: 'snogger' }, stage: "{a} kisses blindfolded {b} on the forehead.", turns: [['b', "Who does that? Who kisses a forehead? What is this, a goodnight?"]] },
+      { when: { of: 'fun', game: 'snogger' }, stage: "{a} kisses blindfolded {b} on the forehead.", turns: [['b', "Who does that? Who kisses a forehead? What is this, a blessing?"]] },
     ],
     faces: [
       { when: { of: 'partner' }, turns: [], beat: "The villa groans, the way it always does at the safe ones." },

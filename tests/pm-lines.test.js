@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { POOLS, HUT, NARRATOR, SPEAKERS, FACT_KEYS, renderScript, speak } from '../js/pm/script.js';
 import { SLOTS, REGIONAL_WORDS } from '../js/pm/lines/dialect.js';
-import { DAY } from '../js/pm/lines/day.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
 import { brandsIn } from './helpers/brand-names.js';
 
@@ -92,22 +91,6 @@ describe('the pools are well-formed', () => {
           if (has(x, 'pb')) expect(!!bOk, `${k} ${e.id}: ${x}`).toBe(true);
         }
       }
-    }
-  });
-  it('every day-to-day pool has at least three scenes anyone can get', () => {
-    // A condition that matches nobody must still find a scene. Gossip is cast
-    // only for a witness, so `knows` is always true there and counts as none.
-    for (const [k, pool] of Object.entries(DAY)) {
-      // An argument always carries its reason (events.js argumentReasons), so
-      // each reason is its own "anyone": three scenes for every one of them.
-      if (k === 'argument') {
-        for (const c of ['jealous', 'mismatch', 'stress', 'bicker', 'rival', 'envy', 'stole', 'voted', 'told', 'clash']) {
-          expect(pool.filter(e => e.when?.cause === c).length, `argument ${c}`).toBeGreaterThanOrEqual(3);
-        }
-        continue;
-      }
-      const open = pool.filter(e => !e.when || (k === 'gossip' && Object.keys(e.when).join() === 'knows'));
-      expect(open.length, k).toBeGreaterThanOrEqual(3);
     }
   });
   it('every variant block has a plain reply with no condition', () => {
@@ -255,43 +238,5 @@ describe('a confessional is about its scene', () => {
     for (const [stance, pool] of Object.entries(HUT)) for (const e of pool) {
       expect(!!(e.when?.kind || e.when?.family), `${stance} ${e.id}`).toBe(true);
     }
-  });
-  it('a solo scene sets the scene: who is there, and who is being spoken to', () => {
-    for (const e of POOLS.comedy) expect(e.stage, e.id).toBeTruthy();
-  });
-});
-
-describe('a line happens at its own time of day', () => {
-  // Season 11 read, 2026-09-23: "Morning kiss? / I haven't brushed my teeth"
-  // in the evening, "At breakfast, Amber says it to the whole table" in the
-  // middle of the challenge. A line that sets the scene at a time of day is
-  // gated to it — and only to a time its kind actually plays.
-  const texts = e => [e.stage, e.beat, ...(e.turns || []).flatMap(t => Array.isArray(t) ? [t[1]]
-    : (t.vary || []).flatMap(v => [v.beat, ...(v.turns || []).map(x => x[1])]))].filter(Boolean).join(' ');
-  const phases = e => [].concat(e.when?.phase || []);
-  const MORNING = /\b(making (everyone )?breakfast|make breakfast for|before breakfast|morning kiss|brushed my teeth|just woken)\b/i;
-  // "At breakfast" sets a scene only in a stage direction ("you rolled your
-  // eyes at breakfast" is somebody remembering it).
-  const STAGE_MORNING = /\bat breakfast\b/i;
-  const NIGHT = /\b(goodnight|night, then|a quick kiss before the fire pit|help me with my hair before the fire pit)\b/i;
-  it('morning words only in the morning, night words only at night', () => {
-    const bad = [];
-    for (const [k, pool] of Object.entries(DAY)) for (const e of pool) {
-      const t = texts(e);
-      if (MORNING.test(t) && !phases(e).includes('morning')) bad.push(`${k} ${e.id}: ${t.match(MORNING)[0]}`);
-      if (STAGE_MORNING.test(e.stage || '') && !phases(e).includes('morning')) bad.push(`${k} ${e.id}: at breakfast`);
-      if (NIGHT.test(t) && !phases(e).includes('evening')) bad.push(`${k} ${e.id}: ${t.match(NIGHT)[0]}`);
-    }
-    expect(bad).toEqual([]);
-  });
-  it('a line gated to a time of day is one its kind can play at', async () => {
-    const { PHASE_KINDS } = await import('../js/pm/events.js');
-    const when = Object.fromEntries(Object.keys(DAY).map(k => [k, Object.entries(PHASE_KINDS).filter(([, ks]) => ks.some(([x]) => x === k)).map(([p]) => p)]));
-    const bad = [];
-    for (const [k, pool] of Object.entries(DAY)) {
-      if (!when[k].length) continue;   // a kind cast outside the day (loyalty, making up): no phase to check
-      for (const e of pool) for (const p of phases(e)) if (!when[k].includes(p)) bad.push(`${k} ${e.id}: ${p}`);
-    }
-    expect(bad).toEqual([]);
   });
 });

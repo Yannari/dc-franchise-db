@@ -17,68 +17,27 @@ import { streamFor } from '../dr/rng.js';
 import { stepOf, believedStep, situationship } from './ladder.js';
 import { emo, attachmentLabel } from './emotions.js';
 import { romance, shown } from './feelings.js';
-import { DAY } from './lines/day.js';
-import { LADDER } from './lines/ladder.js';
-import { FEELINGS } from './lines/feelings.js';
-import { MOMENTS as MOMENT_LINES } from './lines/moments.js';
+import { FIREPIT_LINES } from './lines/firepit.js';
+import { FINAL_LINES } from './lines/final.js';
 import { CHALLENGE_LINES } from './lines/challenges.js';
-import { CLOSE, ANSWER } from './lines/day/close.js';
+import { LIE_LINES } from './lines/lie-detector.js';
+import { JOURNEY_LINES } from './lines/journey.js';
+import { ANSWER } from './lines/answer.js';
+import { RULES_LINES } from './lines/challenge-rules.js';
 import { HUT } from './lines/hut.js';
 import { NARRATOR } from './lines/narrator.js';
-import { KISS_LINES, ICEBREAKER_CARDS } from './lines/kiss-games.js';
-import { RULES_LINES } from './lines/challenge-rules.js';
-import { MORE_D } from './lines/day/more-d.js';
-import { MORE_E } from './lines/day/more-e.js';
-import { JOURNEY_LINES, JOURNEY_MORE, JOURNEY_SHAPES } from './lines/journey.js';
-import { JOURNEY_LOVE } from './lines/journey-love.js';
-import { KIN_LINES } from './lines/kin.js';
-import { RIVALRY_LINES } from './lines/rivalry.js';
-import { CAMP_LINES } from './lines/camps.js';
-import { FEUD_LINES } from './lines/feuds.js';
-import { GAME_LINES } from './lines/game.js';
-import { ARC_LINES } from './lines/arcs.js';
-import { VOTE_LINES } from './lines/votes.js';
-import { SECOND_CHANCE_LINES } from './lines/second-chance.js';
-import { VARIANTS } from './lines/variants.js';
-import { FIREPIT_LINES } from './lines/firepit.js';
-import { HIDEAWAY_LINES } from './lines/hideaway.js';
-import { HEAT_LINES } from './lines/day/heat.js';
-import { KISS_ROUND_LINES } from './lines/kiss-round.js';
-import { STEAMY_NARRATOR, STEAMY_SCENES } from './lines/steamy.js';
+import { STEAMY_NARRATOR } from './lines/steamy.js';
+import { ICEBREAKER_CARDS } from './lines/kiss-games.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
 import { TALK } from './talk/index.js';
 import { afterOf, tierOf, registerOf } from './story/director.js';
 
-export const POOLS = { ...DAY, ...LADDER, ...FEELINGS, ...MOMENT_LINES, ...CHALLENGE_LINES, ...CLOSE, ...ANSWER, ...KISS_LINES, ...RULES_LINES };
-// The pools a season ran dry of (lines/day/more-d.js), added to whichever pool holds the kind.
-for (const [k, v] of Object.entries(MORE_D)) POOLS[k] = [...(POOLS[k] || []), ...v];
-for (const [k, v] of Object.entries(MORE_E)) POOLS[k] = [...(POOLS[k] || []), ...v];
-// The final dates and each couple's film (lines/journey.js).
-for (const [k, v] of Object.entries(JOURNEY_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-for (const [k, v] of Object.entries(JOURNEY_MORE)) POOLS[k] = [...(POOLS[k] || []), ...v];
-for (const [k, v] of Object.entries(JOURNEY_SHAPES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-for (const [k, v] of Object.entries(JOURNEY_LOVE)) POOLS[k] = [...(POOLS[k] || []), ...v];
-// The islanders who knew each other before the villa (lines/kin.js).
-for (const [k, v] of Object.entries(KIN_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-for (const [k, v] of Object.entries(RIVALRY_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-for (const [k, v] of Object.entries(CAMP_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-for (const [k, v] of Object.entries(FEUD_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-for (const [k, v] of Object.entries(GAME_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-for (const [k, v] of Object.entries(ARC_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-for (const [k, v] of Object.entries(VOTE_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-for (const [k, v] of Object.entries(SECOND_CHANCE_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-// More lines for the pools a season wears thin (lines/variants.js), whichever file the pool lives in.
-for (const [k, v] of Object.entries(VARIANTS)) POOLS[k] = [...(POOLS[k] || []), ...v];
-// The night before a dumping's verdict (lines/firepit.js).
-for (const [k, v] of Object.entries(FIREPIT_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-// The Hideaway night (lines/hideaway.js).
-for (const [k, v] of Object.entries(HIDEAWAY_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-// How hot a pull runs (lines/day/heat.js).
-for (const [k, v] of Object.entries(HEAT_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-// The kisses a kissing challenge is made of (lines/kiss-round.js).
-for (const [k, v] of Object.entries(KISS_ROUND_LINES)) POOLS[k] = [...(POOLS[k] || []), ...v];
-// The villa when it runs hot (lines/steamy.js): more staging, and the narrator's say.
-for (const [k, v] of Object.entries(STEAMY_SCENES)) POOLS[k] = [...(POOLS[k] || []), ...v];
+// What still plays from the old pools: the host and the texts at the fire
+// pit, the final and the reunion, the ballots, the challenge texts and rules,
+// the lie detector's parts and the journey's clips. Every conversation is
+// pm/talk/ (a kind with a talk file never reads a pool here).
+export const POOLS = { ...FIREPIT_LINES, ...FINAL_LINES, ...CHALLENGE_LINES, ...LIE_LINES, ...JOURNEY_LINES, ...ANSWER, ...RULES_LINES };
+// The voiceover over a steamy scene (lines/steamy.js).
 for (const [k, v] of Object.entries(STEAMY_NARRATOR)) NARRATOR[k] = [...(NARRATOR[k] || []), ...v];
 export { HUT, NARRATOR };
 
@@ -212,7 +171,7 @@ export function factsFor(state, ev) {
   // Gossip carrying a debrief: the teller heard it said (pm/debrief.js), never saw it.
   f.heard = !!(ev.extra?.secret && state.secrets?.find(s => s.id === ev.extra.secret)?.said);
   // Gossip: what kind of thing it was (pull · kiss · bed · said · promise), so
-  // a line only says "kissed" about a kiss (lines/day.js SEC_OF).
+  // a line only says "kissed" about a kiss (talk/gossip.js gates on it).
   f.sec = ev.extra?.secret ? state.secrets?.find(s => s.id === ev.extra.secret)?.kind || null : null;
   f.cast = ev.players.filter(Boolean).length;   // how many are in it, when one is optional
   f.withB = !!b;                       // somebody else is in the scene
@@ -325,7 +284,7 @@ function scriptRng(state) {
 
 // Facts that, when true, must lead: a couple who rowed this morning gets a
 // making-up scene, never a fresh cosy one that ignores the row.
-// `justMet` leads too: two islanders who met today talk like it (pm/lines/day/just-met.js).
+// `justMet` leads too: two islanders who met today talk like it.
 // `rebuffed` leads first: a pull b turned down is a no, whatever else is true.
 // `heard`: gossip about something SAID in a debrief, not something seen.
 // `stoleFrom` first of all: a pick that takes someone from another islander is
@@ -534,7 +493,7 @@ export function scriptFor(state, ev) {
   return entry ? closed(state, ev, entry, opened, ps) : opened;
 }
 
-// ── how a conversation ends (lines/day/close.js) ──────────────────────
+// ── how an old-pool scene ends (lines/answer.js, `<kind>-close`) ──────
 // A talking scene that opened short gets an ending: the question it stopped
 // on answered, then a close picked by what the engine decided the scene did
 // (ev.extra.close). The opener's own beat stays where it happened, as an

@@ -358,7 +358,7 @@ export const CAMP_SWITCH = build('camp-switch', { ...S,
   plans: { featured: ['say', 'land'], short: ['say', 'land'] },
   moves: {
     say: [
-      { stage: "{a} sits down next to {b} at breakfast, and the whole table notices.", turns: [
+      { stage: "{a} sits down next to {b} at the kitchen table, and the whole table notices.", turns: [
         ['a', "I owe you an apology. I took {c}'s side without hearing yours, and I've realised I got it wrong. I'm sorry."],
         ['b', "That means a lot. Honestly."],
       ] },

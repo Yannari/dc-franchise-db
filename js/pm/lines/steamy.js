@@ -7,7 +7,7 @@
 // it. Suggestive, not explicit, the way the show plays it.
 //
 // STEAMY_NARRATOR: the voiceover over a steamy scene (script.js narratorFor
-// gives these first call). STEAMY_SCENES: more staging for the scenes.
+// gives these first call). The scenes themselves are pm/talk/.
 export const STEAMY_NARRATOR = {
   'game-kiss': [
     { id: 'nar.gk.c1', when: { of: 'crush' }, turns: [['narrator', "{a} and {b} kiss for ten seconds. It was meant to be a peck."]] },
@@ -65,36 +65,5 @@ export const STEAMY_NARRATOR = {
   ],
   'heart-rate': [
     { id: 'nar.hr.s1', when: { coupled: false, taken: true }, turns: [['narrator', "{a}'s highest reading is for {b}, not {pa}. It's on the screen."]] },
-  ],
-};
-
-export const STEAMY_SCENES = {
-  'game-kiss': [
-    { id: 'gk.c8', when: { of: 'crush' }, stage: "{a} takes {b}'s face in both hands and kisses {b.obj}.", turns: [['b', "Wow."]], beat: 'Someone on the lawn fans themselves.' },
-    { id: 'gk.c9', when: { of: 'crush' }, stage: '{a} pulls {b} in by the waist and kisses {b.obj} hard.', turns: [['a', "Was that the challenge?"], ['b', "I don't care."]] },
-    { id: 'gk.c10', when: { of: 'crush' }, stage: "{a} pushes {b} against the wall and kisses {b.obj}, one hand in {b.posAdj} hair.", turns: [['b', "Okay."], ['a', "Okay?"], ['b', "Do it again."]], beat: "The villa cheers. The ones with partners watching don't." },
-    { id: 'gk.s6', when: { of: 'stir', bTaken: true }, stage: '{a} kisses {b} slowly, eyes on {pb}.', turns: [['a', "Oops."]], beat: '{pb} gets up and walks off.' },
-    { id: 'gk.s7', when: { of: 'stir' }, stage: "{a} sits on {b}'s lap for the kiss and stays there.", turns: [['a', "What? It's the challenge."]] },
-  ],
-  pull: [
-    { id: 'ht.s9', when: { heat: 'steamy' }, stage: "The daybed. {a}'s leg is over {b}'s.", turns: [
-      ['b', "People are looking."], ['a', "Let them."], ['b', "You don't care?"],
-      ['a', "Not right now."], ['b', "Me neither."]],
-      beat: 'Someone turns the music up.' },
-    { id: 'ht.s10', when: { heat: 'steamy' }, stage: 'The pool at night. {a} and {b} are the only ones in it.', turns: [
-      ['a', "Come here."], ['b', "I'm here."], ['a', "Closer."]],
-      beat: 'The terrace lights go off. They stay in the pool.' },
-    { id: 'ht.s11', when: { heat: 'steamy' }, stage: "{b} is putting sun cream on {a}'s back. Slowly.", turns: [
-      ['a', "I think you've done that bit."], ['b', "I know."], ['a', "You're still doing it."],
-      ['b', "I know."]],
-      beat: 'The people on the next sunbed leave.' },
-  ],
-  hideaway: [
-    { id: 'hideaway.s1', stage: 'The Hideaway. The hot tub is on and the lights are low.', turns: [['a', "Finally."], ['b', "Nobody's going to walk in."]], beat: 'The camera cuts away as they get in.' },
-    { id: 'hideaway.s2', stage: 'There are rose petals on the bed and two glasses out.', turns: [['b', "They've gone all out."], ['a', "So should we."]], beat: 'The lights go off. The covers move.' },
-  ],
-  'bed-share': [
-    { id: 'bed-share.s1', when: { of: 'kiss' }, stage: 'Casa Amor, lights out. The covers move.', turns: [['b', "We shouldn't."], ['a', "Then tell me to stop."]], beat: "Neither of them stops." },
-    { id: 'bed-share.s2', when: { of: 'kiss' }, stage: 'The Casa bedroom, dark. {a} and {b} are whispering under the covers.', turns: [['a', "Come here."], ['b', "I'm already here."]], beat: 'The whispering stops. Everyone else pretends to be asleep.' },
   ],
 };

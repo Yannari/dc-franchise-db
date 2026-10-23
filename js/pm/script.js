@@ -25,6 +25,7 @@ import { JOURNEY_LINES } from './lines/journey.js';
 import { ANSWER } from './lines/answer.js';
 import { RULES_LINES } from './lines/challenge-rules.js';
 import { HUT } from './lines/hut.js';
+import { HUT_VOLUME } from './lines/hut-volume.js';
 import { NARRATOR } from './lines/narrator.js';
 import { STEAMY_NARRATOR } from './lines/steamy.js';
 import { ICEBREAKER_CARDS } from './lines/kiss-games.js';
@@ -37,6 +38,8 @@ import { afterOf, tierOf, registerOf } from './story/director.js';
 // the lie detector's parts and the journey's clips. Every conversation is
 // pm/talk/ (a kind with a talk file never reads a pool here).
 export const POOLS = { ...FIREPIT_LINES, ...FINAL_LINES, ...CHALLENGE_LINES, ...LIE_LINES, ...JOURNEY_LINES, ...ANSWER, ...RULES_LINES };
+// More beach-hut lines for the scenes that cut away most (lines/hut-volume.js).
+for (const [st, v] of Object.entries(HUT_VOLUME)) HUT[st].push(...v);
 // The voiceover over a steamy scene (lines/steamy.js).
 for (const [k, v] of Object.entries(STEAMY_NARRATOR)) NARRATOR[k] = [...(NARRATOR[k] || []), ...v];
 export { HUT, NARRATOR };

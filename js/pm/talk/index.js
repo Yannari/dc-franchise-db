@@ -14,6 +14,8 @@ import { FRIENDSHIP } from './friendship.js';
 import { FRIENDSHIP_MORE } from './more/friendship.js';
 import { FRIENDSHIP_VOLUME } from './more/friendship-volume.js';
 import { PULL_VOLUME } from './more/pull-volume.js';
+import { LOYALTY_VOLUME, GOSSIP_VOLUME } from './more/loyalty-gossip-volume.js';
+import { PULL_VOLUME_2, FRIENDSHIP_VOLUME_2, NOTES_VOLUME } from './more/everyday-volume.js';
 import { DECL_FINAL_MORE } from './more/final.js';
 import { CHAT_MORE, DEEP_MORE, KISS_MORE, PULL_MORE, LOYALTY_MORE, ICK_MORE, ARGUMENT_MORE, ADVICE_MORE, COMFORT_MORE,
   REASSURANCE_MORE, CONFESSION_MORE, CONFRONT_MORE, DEBRIEF_MORE, RECOUPLE_MORE, BED_MORE, GOODBYE_MORE, DECL_MORE, DATE_MORE } from './more/everyday.js';
@@ -58,7 +60,8 @@ import { REASSURANCE, JEALOUS_CONFRONT, JEALOUS_RETALIATE, CONFESSION, NO_SHOW }
 // More for the pools a season wears thin (pm/talk/more/, measured).
 extend(FRIENDSHIP, FRIENDSHIP_MORE); extend(FRIENDSHIP, FRIENDSHIP_VOLUME);
 extend(CHAT, CHAT_MORE); extend(DEEP_CHAT, DEEP_MORE); extend(KISS, KISS_MORE); extend(PULL, PULL_MORE); extend(PULL, PULL_VOLUME);
-extend(LOYALTY, LOYALTY_MORE); extend(ICK, ICK_MORE); extend(ARGUMENT, ARGUMENT_MORE); extend(ADVICE, ADVICE_MORE);
+extend(LOYALTY, LOYALTY_MORE); extend(LOYALTY, LOYALTY_VOLUME); extend(GOSSIP, GOSSIP_VOLUME);
+extend(PULL, PULL_VOLUME_2); extend(FRIENDSHIP, FRIENDSHIP_VOLUME_2); extend(ICK, ICK_MORE); extend(ARGUMENT, ARGUMENT_MORE); extend(ADVICE, ADVICE_MORE);
 extend(COMFORT, COMFORT_MORE); extend(REASSURANCE, REASSURANCE_MORE); extend(CONFESSION, CONFESSION_MORE);
 extend(JEALOUS_CONFRONT, CONFRONT_MORE); extend(DEBRIEF, DEBRIEF_MORE); extend(RECOUPLE_PICK, RECOUPLE_MORE);
 extend(BED_SHARE, BED_MORE); extend(DUMP_GOODBYE, GOODBYE_MORE); extend(DECLARATION, DECL_MORE); extend(DECLARATION, DECL_FINAL_MORE); extend(DATE, DATE_MORE);
@@ -95,3 +98,6 @@ export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'dee
   'rival-shade': RIVAL_SHADE, 'rival-play': RIVAL_PLAY, 'code-call': CODE_CALL, 'rival-row': RIVAL_ROW, 'rival-step-back': RIVAL_STEP_BACK,
   'rival-won': RIVAL_WON, 'crush-confide': CRUSH_CONFIDE, 'crush-watch': CRUSH_WATCH, 'crush-move': CRUSH_MOVE, 'crush-plea': CRUSH_PLEA, 'crush-over': CRUSH_OVER,
   'kin-heart': KIN_HEART, 'kin-vet': KIN_VET, 'kin-protect': KIN_PROTECT, 'ex-awkward': EX_AWKWARD, 'ex-jealous': EX_JEALOUS };
+
+// The one-line notes the everyday kinds wore thin (talk/more/everyday-volume.js).
+for (const [k, notes] of Object.entries(NOTES_VOLUME)) extend(TALK[k], { notes });

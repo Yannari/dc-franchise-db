@@ -23,8 +23,11 @@ const narration = e => [e.stage, e.beat].filter(Boolean);
 const tag = (kind, slot, e) => `${kind}.${slot} ${e.id}`;
 
 // Who a kind casts beyond {a} and {b}, and what fills {about}.
-const THREE = new Set(['gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back',
-  'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch']);
+const THREE = new Set([
+  'betray-see', 'betray-confront', 'villa-happy', 'redeem-doubt', 'grass-talk', 'parents-named', 'parents-advice', 'parents-mediate', 'exw-stir', 'exw-partner',
+  'gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back',
+  'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch',
+  'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called']);
 const DEBRIEF_THREE = ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat'];
 const ABOUT_ALWAYS = new Set(['casa-miss', 'kin-protect']);
 const ABOUT_CAUSES = ['jealous', 'envy', 'rival', 'stole', 'told'];
@@ -62,7 +65,9 @@ describe('the movements are well-formed', () => {
 describe('a placeholder only where somebody fills it', () => {
   it('only known placeholders, and never a subject pronoun', () => {
     for (const [k, s, e] of ENTRIES) for (const x of texts(e)) {
-      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, tag(k, s, e)).toMatch(/^\{(where|Where|about|(pa|pb|a|b|c|x|about)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
+      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, tag(k, s, e)).toMatch(/^\{(where|Where|about|(pa|pb|a|b|c|d|x|about)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
+      // {d} is named only in the one kind that casts four.
+      if (/\{d[.}]/.test(x)) expect(k, tag(k, s, e)).toBe('camp-clash');
       expect(x, tag(k, s, e)).not.toMatch(/\{[a-z]+\.(sub|Sub)\}/);
     }
   });

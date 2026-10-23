@@ -384,6 +384,6 @@ export const NO_SHOW = build('no-show', {
     ],
   },
   notes: [
-    { stage: "{b} asks {a} why {a} never came to find {b.obj}." },
+    { stage: "{b} wants to know why {a} never came to find {b.obj}." },
   ],
 });

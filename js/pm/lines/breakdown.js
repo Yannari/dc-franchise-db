@@ -9,7 +9,7 @@ export const BREAKDOWN_LINES = {
     // heartbreak
     { id: 'bd.h.01', when: { of: 'heartbreak' }, stage: 'The bathroom, the door locked, the tap running so nobody hears.', turns: [['a', "I'm fine. I'm fine. I'm fine."]], beat: "{a} isn't fine, and slides down the wall to the floor." },
     { id: 'bd.h.02', when: { of: 'heartbreak' }, stage: 'The daybeds, late, {a} curled up under a blanket.', turns: [['a', "I really thought it was going somewhere. I really, really did."]], beat: 'The tears come all at once.' },
-    { id: 'bd.h.03', when: { of: 'heartbreak' }, stage: 'The dressing room. {a} sits in front of the mirror, make-up running.', turns: [['a', "Look at me. I look like I've been hit by a bus."], ['a', "That's how it feels, to be fair."]] },
+    { id: 'bd.h.03', when: { of: 'heartbreak', gender: 'f' }, stage: 'The dressing room. {a} sits in front of the mirror, make-up running.', turns: [['a', "Look at me. I look like I've been hit by a bus."], ['a', "That's how it feels, to be fair."]] },
     { id: 'bd.h.04', when: { of: 'heartbreak' }, stage: '{a} walks away from the fire pit before anyone notices, and doesn\'t come back.', turns: [['a', "I just need five minutes. Please. Just five minutes."]] },
     // stress
     { id: 'bd.s.01', when: { of: 'stress' }, stage: 'The roof terrace, {a} on the floor with {a.posAdj} knees up.', turns: [['a', "I can't breathe. Every night there's something. I can't switch off."]] },

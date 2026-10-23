@@ -322,7 +322,15 @@ export function pickScript(state, pool, ps, facts, { allowRepeat = true, rng: ow
     // The leading pool is the scene's truth (a row is followed by making up):
     // spent, it lends a line again before a wider pool forgets the row.
     if (!weights.some(x => x > 0) && i === 0 && widths.length > 1) weights = w.map(e => relaxedWeight(state, e, ps));
-    if (weights.some(x => x > 0)) { cands = w; ws = weights; break; }
+    if (weights.some(x => x > 0)) {
+      // Walk the pool: while a fitting line has never been heard this season,
+      // only those are drawn. A heard line kept 30% of its weight, so a pool
+      // with 40 fresh lines of 100 still repeated a third of the time (the user,
+      // 2026-10-22: "address the repeats"; 70% of a season's lines were repeats).
+      const fresh = weights.map((x, j) => (x > 0 && !usage(state)[w[j].id] ? x : 0));
+      if (fresh.some(x => x > 0)) weights = fresh;
+      cands = w; ws = weights; break;
+    }
   }
   // Every entry already spent on this pair: allow a repeat rather than silence
   // — the one heard longest ago, never one already heard this episode while

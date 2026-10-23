@@ -9048,6 +9048,27 @@
       "voice": "Nervous, nerdy and quick, full of comic-book comparisons and reality TV trivia. Stammers when put on the spot, then lights up when he gets to explain something. #nerdy #anxious",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Michele",
+      "slug": "michele",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 3,
+        "endurance": 5,
+        "mental": 6,
+        "social": 9,
+        "strategic": 6,
+        "loyalty": 8,
+        "boldness": 5,
+        "intuition": 9,
+        "temperament": 6
+      },
+      "voice": "Bubbly and fast, talks like she is filming even when she isn't: 'amaze', 'literally', a hashtag said out loud. Goes soft and earnest when she talks about her boyfriend or her dogs. #warm #loud",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

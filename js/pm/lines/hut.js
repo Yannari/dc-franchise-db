@@ -24,6 +24,8 @@ const CHALLENGE = ['challenge-text', 'tod-truth', 'blow-dare', 'couple-goals', '
   'course-pick', 'course-run', 'course-win', 'tower-q', 'receipt', 'look-who', 'talent-act', 'grafties-award', 'snogger-kiss',
   'snogger-win', 'sports-win', 'sports-captains', 'lie-question', 'heart-rate', 'snog-marry-pie'];
 const LOUD = ['pile-in', 'camp-rally', 'camp-confront', 'rival-play', 'jealous-retaliate', 'blowup'];
+// The kinds the catch-all lines answer, for lines/hut-volume*.js.
+export const HUT_GROUPS = { COUPLE, DUMPED, RIVALS, GAME, CEREMONY, ARRIVALS, CHALLENGE, LOUD };
 
 export const HUT = {
   honest: [

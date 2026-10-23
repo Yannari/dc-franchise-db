@@ -18,6 +18,11 @@ import { LOYALTY_VOLUME, GOSSIP_VOLUME } from './more/loyalty-gossip-volume.js';
 import { PULL_VOLUME_2, FRIENDSHIP_VOLUME_2, NOTES_VOLUME } from './more/everyday-volume.js';
 import { PULL_VOLUME_3 } from './more/pull-volume-3.js';
 import { FRIENDSHIP_VOLUME_3 } from './more/friendship-volume-3.js';
+import { LOYALTY_VOLUME_2, GOSSIP_VOLUME_2 } from './more/loyalty-gossip-volume-2.js';
+import { FRIENDSHIP_VOLUME_4 } from './more/friendship-volume-4.js';
+import { PULL_VOLUME_4 } from './more/pull-volume-4.js';
+import { INTRO_VOLUME } from './more/intro-volume.js';
+import { FAMILIES_VOLUME, PILE_IN_VOLUME, DEBRIEF_STAGES, VENT_STAGES, ADVICE_STAGES } from './more/small-pools-volume.js';
 import { CHAT_VOLUME, DEEP_VOLUME, KISS_VOLUME, ARGUMENT_VOLUME, VENT_VOLUME, DATE_VOLUME, KEEPING_OPEN_VOLUME, COMEDY_VOLUME, COMFORT_VOLUME, ADVICE_VOLUME } from './more/everyday-volume-4.js';
 import { DECL_FINAL_MORE } from './more/final.js';
 import { CHAT_MORE, DEEP_MORE, KISS_MORE, PULL_MORE, LOYALTY_MORE, ICK_MORE, ARGUMENT_MORE, ADVICE_MORE, COMFORT_MORE,
@@ -108,3 +113,9 @@ for (const [k, notes] of Object.entries(NOTES_VOLUME)) extend(TALK[k], { notes }
 extend(CHAT, CHAT_VOLUME); extend(DEEP_CHAT, DEEP_VOLUME); extend(KISS, KISS_VOLUME); extend(ARGUMENT, ARGUMENT_VOLUME);
 extend(VENT, VENT_VOLUME); extend(DATE, DATE_VOLUME); extend(KEEPING_OPEN, KEEPING_OPEN_VOLUME); extend(COMEDY, COMEDY_VOLUME);
 extend(COMFORT, COMFORT_VOLUME); extend(ADVICE, ADVICE_VOLUME);
+extend(LOYALTY, LOYALTY_VOLUME_2); extend(GOSSIP, GOSSIP_VOLUME_2);
+extend(FRIENDSHIP, FRIENDSHIP_VOLUME_4);
+extend(PULL, PULL_VOLUME_4);
+extend(INTRO, INTRO_VOLUME);
+extend(FAMILIES, FAMILIES_VOLUME); extend(PILE_IN, PILE_IN_VOLUME);
+extend(DEBRIEF, { stages: DEBRIEF_STAGES }); extend(VENT, { stages: VENT_STAGES }); extend(ADVICE, { stages: ADVICE_STAGES });

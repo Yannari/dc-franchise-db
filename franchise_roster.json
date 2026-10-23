@@ -8830,6 +8830,27 @@
       "descriptor": "The Artist",
       "backstory": "Ian Baxter, who has answered to Baxter since school, is a painter from Plattsmouth, Nebraska, a river town where he was the only openly gay man most of his neighbours had ever met. He left for art school, came back to look after his grandmother and stayed. He paints barns, grain silos and the people who work in them, sells canvases at the state fair and teaches a Thursday night class at the library. His grandmother, who is ninety and still ruthless at bingo, made him apply. He is older than most of the house and expects to be underestimated by people who think an artist from Nebraska cannot play a game.",
       "personality": "Baxter is eccentric, gentle and much sharper than his rambling suggests. He sees the house the way he sees a painting, noticing who stands next to whom and who looks away, and he files it all behind a dreamy smile. He is funny in a dry, unexpected way and gets on with the misfits better than the popular crowd. He is a survivor: put him on the block and he will talk, joke and charm his way off it again. He follows his gut and changes his mind when it tells him to, which makes him hard to count on and hard to target. His flaw is that he hates holding power, and he wobbles when it is finally his turn."
+    },
+    {
+      "name": "Ben",
+      "slug": "ben",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 8,
+        "endurance": 8,
+        "mental": 4,
+        "social": 3,
+        "strategic": 5,
+        "loyalty": 9,
+        "boldness": 6,
+        "intuition": 3,
+        "temperament": 5
+      },
+      "voice": "Clipped, blunt and serious, talks in orders and short facts. No small talk, no fun facts, and a rare dry grin when someone earns it. #tough #blunt",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

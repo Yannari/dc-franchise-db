@@ -65,9 +65,11 @@ describe('the movements are well-formed', () => {
 describe('a placeholder only where somebody fills it', () => {
   it('only known placeholders, and never a subject pronoun', () => {
     for (const [k, s, e] of ENTRIES) for (const x of texts(e)) {
-      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, tag(k, s, e)).toMatch(/^\{(where|Where|about|age|job|town|(pa|pb|a|b|c|d|x|about)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
+      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, tag(k, s, e)).toMatch(/^\{(where|Where|about|age|job|town|day|(pa|pb|a|b|c|d|x|about)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
       // {age} {job} {town}: an intro tape's, from the character file.
       if (/\{(age|job|town)\}/.test(x)) expect(k, tag(k, s, e)).toBe('intro');
+      // {day}: the day a declaration's moment happened (script.js clipSlots).
+      if (/\{day\}/.test(x)) expect(k, tag(k, s, e)).toBe('speech');
       // {d} is named only in the one kind that casts four.
       if (/\{d[.}]/.test(x)) expect(k, tag(k, s, e)).toBe('camp-clash');
       expect(x, tag(k, s, e)).not.toMatch(/\{[a-z]+\.(sub|Sub)\}/);

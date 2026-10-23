@@ -179,7 +179,7 @@ with a pool-wear probe over four seasons, like TD's.
 
 ## 8. Status (2026-10-22, built)
 
-Everything in §6 is built except deleting the old pools outright (see below).
+Everything in §6 is built, the old pools deleted included (see below).
 
 - **Director:** `js/pm/story/director.js` — tiers (decided as each scene fires, not at
   episode end: the engine's later scenes, Movie Night and the reunion read earlier
@@ -213,10 +213,24 @@ Everything in §6 is built except deleting the old pools outright (see below).
     specific to what happened.
   - The one-sentence ballots.
   - Movie Night's clips, which are the real scenes replayed.
-- **Not deleted yet:** the old pools a talk file now shadows still sit in
-  `js/pm/lines/`. They never play, and `tests/pm-lines.test.js` still reads some of
-  them (`POOLS.comedy`). The same goes for the per-file `*_HUT` exports that hut.js
-  no longer imports.
+- **Deleted (21a0a8baa):** the old pools a talk file shadowed, which never played, and
+  the per-file `*_HUT` exports hut.js no longer imported. Every rendered line of a played
+  season hashed the same before and after. git keeps the old lines if any are wanted back.
+- **Volume against repetition (2026-10-22/23, rounds one to nine):** the user asked for
+  "the volume of the dialogue ALOT" after a season repeated itself. Measured with a
+  repeat probe (three seasons on the Season 1 cast, spoken lines of 25+ characters
+  already heard that season) and a wear probe (draws per movement against its size):
+  - scene lines already heard: 70% before, 29-31% after; the beach hut 58% before, about
+    24% after; the most-heard line 15 times a season before, 5 to 7 after.
+  - The extra pools live in `talk/more/*-volume*.js` and `lines/hut-volume*.js`.
+  - `pickScript` walks a pool before it repeats: while any fitting entry is unheard this
+    season, only unheard ones are drawn.
+  - **A fact that LEADS starves its pool.** On a day a couple rowed, `rowedToday` leads
+    the chat, the kiss, the deep chat and the challenge win, so only entries written for
+    it play. Each had one per movement, and one making-up note was heard eleven times a
+    season. When you add a lead, give it a real pool.
+  - Friendship (about 300 a season) and the pull are still the largest absolute sources
+    of repeats, because they are the commonest scenes.
 - **Guards:** tests/pm-talk.test.js (plans, placeholders, regional words, other shows'
   words, brands, fragments, a played season's misses and length), tests/pm-script.test.js
   (making-up follows a real row, "thanks for yesterday" follows a real yesterday).

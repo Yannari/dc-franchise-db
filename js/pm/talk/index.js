@@ -30,6 +30,9 @@ import { DUMP_REACTION, SOLIDARITY, DUMP_GOODBYE } from './dumping.js';
 import { DATE_PICKED, DATE, DATE_BACK } from './dates.js';
 import { DECLARATION } from './final.js';
 import { INTRO } from './intro.js';
+import { BREAKDOWN, OVERTHINKING, JEALOUS_SULK, HEAD_TURNED, TORCH, DOUBLE_STANDARD } from './alone.js';
+import { ARRIVAL_CHAT, FIRST_TOAST, BOMBSHELL_TEXT, BOMBSHELL_GUESS, ENTRANCE, BOMBSHELL_REACT } from './arrivals.js';
+import { BLOWUP, PILE_IN, VILLA_DIVIDED, COLD_SHOULDER, CLEAR_THE_AIR } from './blowup.js';
 import { BETRAY_SEE, BETRAY_CONFRONT, BETRAY_END, MUGGED_LOW, FOUND_LOVE, VILLA_HAPPY, REDEEM_REFLECT, REDEEM_ACT, REDEEM_DOUBT, GRASS_TALK, GRASS_FROZEN, GRASS_CONFRONT, PARENTS_NAMED, PARENTS_ADVICE, PARENTS_MEDIATE, PARENTS_WOBBLE, EXW_STIR, EXW_PARTNER, EXW_TALK, EXW_BACK } from './arcs.js';
 import { TRIANGLE_TORN, TRIANGLE_RIVALS, TRIANGLE_CASE, TRIANGLE_ULTIMATUM, TRIANGLE_TEAMS, TRIANGLE_CHOICE, CAMP_RALLY, CAMP_CONFRONT, CAMP_CLASH, CAMP_LOBBY, CAMP_SPLIT, CAMP_SWITCH, CAMP_AFTER, FEUD_CONFRONT, FEUD_INTERRUPT, FEUD_SHADE, FEUD_ICK, FEUD_CLOSURE, GAME_PLAN, GAME_LATCH, GAME_TWO_FACED, GAME_SUSPECT, GAME_CALLED, GAME_FALLOUT, GAME_END } from './storylines.js';
 import { RIVAL_SHADE, RIVAL_PLAY, CODE_CALL, RIVAL_ROW, RIVAL_STEP_BACK, RIVAL_WON, CRUSH_CONFIDE, CRUSH_WATCH, CRUSH_MOVE, CRUSH_PLEA, CRUSH_OVER } from './rivalry.js';
@@ -54,6 +57,9 @@ export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'dee
   'close-off': CLOSE_OFF, 'keeping-open': KEEPING_OPEN, 'open-back-up': OPEN_BACK_UP, 'exclusive-ask': EXCLUSIVE_ASK,
   'official-ask': OFFICIAL_ASK, 'ask-declined': ASK_DECLINED, 'love-said': LOVE_SAID, 'love-hanging': LOVE_HANGING,
   declaration: DECLARATION, intro: INTRO,
+  breakdown: BREAKDOWN, overthinking: OVERTHINKING, 'jealous-sulk': JEALOUS_SULK, 'head-turned': HEAD_TURNED, torch: TORCH, 'double-standard': DOUBLE_STANDARD,
+  'arrival-chat': ARRIVAL_CHAT, 'first-toast': FIRST_TOAST, 'bombshell-text': BOMBSHELL_TEXT, 'bombshell-guess': BOMBSHELL_GUESS, entrance: ENTRANCE, 'bombshell-react': BOMBSHELL_REACT,
+  blowup: BLOWUP, 'pile-in': PILE_IN, 'villa-divided': VILLA_DIVIDED, 'cold-shoulder': COLD_SHOULDER, 'clear-the-air': CLEAR_THE_AIR,
   'betray-see': BETRAY_SEE, 'betray-confront': BETRAY_CONFRONT, 'betray-end': BETRAY_END, 'mugged-low': MUGGED_LOW, 'found-love': FOUND_LOVE, 'villa-happy': VILLA_HAPPY, 'redeem-reflect': REDEEM_REFLECT, 'redeem-act': REDEEM_ACT, 'redeem-doubt': REDEEM_DOUBT, 'grass-talk': GRASS_TALK, 'grass-frozen': GRASS_FROZEN, 'grass-confront': GRASS_CONFRONT, 'parents-named': PARENTS_NAMED, 'parents-advice': PARENTS_ADVICE, 'parents-mediate': PARENTS_MEDIATE, 'parents-wobble': PARENTS_WOBBLE, 'exw-stir': EXW_STIR, 'exw-partner': EXW_PARTNER, 'exw-talk': EXW_TALK, 'exw-back': EXW_BACK,
   'triangle-torn': TRIANGLE_TORN, 'triangle-rivals': TRIANGLE_RIVALS, 'triangle-case': TRIANGLE_CASE, 'triangle-ultimatum': TRIANGLE_ULTIMATUM, 'triangle-teams': TRIANGLE_TEAMS, 'triangle-choice': TRIANGLE_CHOICE, 'camp-rally': CAMP_RALLY, 'camp-confront': CAMP_CONFRONT, 'camp-clash': CAMP_CLASH, 'camp-lobby': CAMP_LOBBY, 'camp-split': CAMP_SPLIT, 'camp-switch': CAMP_SWITCH, 'camp-after': CAMP_AFTER, 'feud-confront': FEUD_CONFRONT, 'feud-interrupt': FEUD_INTERRUPT, 'feud-shade': FEUD_SHADE, 'feud-ick': FEUD_ICK, 'feud-closure': FEUD_CLOSURE, 'game-plan': GAME_PLAN, 'game-latch': GAME_LATCH, 'game-two-faced': GAME_TWO_FACED, 'game-suspect': GAME_SUSPECT, 'game-called': GAME_CALLED, 'game-fallout': GAME_FALLOUT, 'game-end': GAME_END,
   'rival-shade': RIVAL_SHADE, 'rival-play': RIVAL_PLAY, 'code-call': CODE_CALL, 'rival-row': RIVAL_ROW, 'rival-step-back': RIVAL_STEP_BACK,

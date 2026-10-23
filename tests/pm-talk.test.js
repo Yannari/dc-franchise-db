@@ -27,7 +27,7 @@ const THREE = new Set([
   'betray-see', 'betray-confront', 'villa-happy', 'redeem-doubt', 'grass-talk', 'parents-named', 'parents-advice', 'parents-mediate', 'exw-stir', 'exw-partner',
   'gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back',
   'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch',
-  'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called']);
+  'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react']);
 const DEBRIEF_THREE = ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat'];
 const ABOUT_ALWAYS = new Set(['casa-miss', 'kin-protect']);
 const ABOUT_CAUSES = ['jealous', 'envy', 'rival', 'stole', 'told'];

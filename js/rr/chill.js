@@ -165,6 +165,17 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
     const ending = penalties[id] ? 'penalty-reveal'
       : (state.rec[id].sabotage || 0) >= 1 && rng() < 0.5 ? 'scared-of-them'
       : band === 'mid' && rng() < 0.35 ? 'bored' : 'plain';
+    // a penalty: Don stops them where they'd have placed on arrival, and once it's served they check in in their real
+    // place (2026-10-22: "we just passed from 2nd to 8th for no reason", the team never seen again after the stool)
+    if (ending === 'penalty-reveal') {
+      const arrived = Object.keys(finish).filter(x => finish[x] < finish[id]).length + 1;
+      emit(state, 'don-place', people(state, id), ending,
+        { team: id, place: arrived, matPlace: band, t: finish[id] ?? null, stretch: 'mat', effects: [['penalty', id, penalties[id]]] });
+      if (result.nonElim?.id === id) return;
+      emit(state, 'don-place', people(state, id), 'penalty-served',
+        { team: id, place: i + 1, matPlace: band, t: times[id], minutes: penalties[id], stretch: 'mat', effects: [['placed', id, i + 1]] });
+      return;
+    }
     emit(state, 'don-place', people(state, id), ending,
       { team: id, place: i + 1, matPlace: band, t: finish[id] ?? null, stretch: 'mat', effects: [['placed', id, i + 1]] });
   });

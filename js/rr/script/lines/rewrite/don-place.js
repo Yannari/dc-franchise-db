@@ -202,5 +202,31 @@ export default {
         don("Then it'll be a very frustrating wait, won't it?"),
       ] },
     ],
+    // the penalty served, and the check-in in the place it cost them (chill.js; 2026-10-22: a team sat on the stool in
+    // second and turned up eighth on the results card with nothing between)
+    'don-place.penalty-served': [
+      { id: 'dp2.ps1', turns: [
+        { beat: 'Don clicks his stopwatch and waves them over to the mat.' },
+        don("Time's up, {team}! That's {penalty} served, so step onto the mat, because you're the {placing} team to arrive."),
+        { by: 'a', ...V("We got here ages ago.", "We were here first. Well, earlier.", "We've been here the whole time.", "We got here AGES ago!", "We did get here quite a while ago, though.", "We got here so long ago, I've aged.") },
+        don("You did, and then you sat on a stool, and that's the order these things happen in."),
+      ] },
+      { id: 'dp2.ps2', turns: [
+        don("{penalty}, served in full, and I watched every minute of it, so come on up, {team}."),
+        { by: 'b', say: "We watched team after team walk past us onto that mat." },
+        don("I know, and it was honestly the best part of my day. You're the {placing} team to arrive."),
+      ] },
+      { id: 'dp2.ps3', turns: [
+        don("{team}, your penalty's over, and you can finally step on the mat."),
+        { by: 'a', ...V("Where does that leave us?", "So where are we?", "Where are we?", "WHERE does that leave us?", "So, where does that leave us, then?", "Where are we now? Emotionally, too.") },
+        don("You're the {placing} team to arrive, which isn't where you'd have been, but it's where you are."),
+      ] },
+      { id: 'dp2.ps4', turns: [
+        { beat: 'They have been watching the mat for {penalty}. Don finally waves them on.' },
+        don("Off the bench, {team}, because your penalty is done, and you are officially the {placing} team to arrive."),
+        { by: 'b', say: "It was a really long {penalty}." },
+        don("They're all the same length, I checked, so maybe next time just follow the rules."),
+      ] },
+    ],
   },
 };

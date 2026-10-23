@@ -154,7 +154,7 @@ export const KIND_AT_TASK = new Set(['task-stage', 'task-start', 'task-try', 'ta
 const ABOUT_INTERVIEWS = new Set(['int-feeling', 'int-strategy', 'int-about-team', 'int-contradict']);
 
 // Endings the kind's general lines can't speak for (a check-in that never mentions the penalty): their own pool only.
-export const OWN_ONLY = new Set(['don-place.penalty-reveal']);
+export const OWN_ONLY = new Set(['don-place.penalty-reveal', 'don-place.penalty-served']);
 
 function keyFor(kind, ending) {
   const own = `${kind}.${ending}`, any = `${kind}.any`;
@@ -168,6 +168,16 @@ const ORDINAL = ['zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth
   'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth'];
 const NUMBER = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
   'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen'];
+// a penalty's length the way Don says it: 'an hour', 'half an hour', 'four hours', 'an hour and ten minutes'
+export function penaltyWords(m) {
+  const h = Math.floor(m / 60), r = m % 60;
+  const hours = h === 1 ? 'an hour' : h ? `${NUMBER[h] || h} hours` : '';
+  if (!r) return hours;
+  if (r === 30 && !h) return 'half an hour';
+  if (r === 30) return `${hours} and a half`;
+  const mins = `${r === 15 ? 'fifteen' : r === 45 ? 'forty-five' : r === 20 ? 'twenty' : r === 10 ? 'ten' : NUMBER[r] || r} minutes`;
+  return hours ? `${hours} and ${mins}` : mins;
+}
 const speakerName = (by, roles, slots) => (by === 'don' ? DON : by === 'local'
   ? (slots.local ? slots.local.charAt(0).toUpperCase() + slots.local.slice(1) : 'A local') : roles[by]);
 
@@ -216,6 +226,7 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   if (!key) return null;
   if (scene.data?.place != null && ORDINAL[scene.data.place]) r.slots.placing = ORDINAL[scene.data.place];
   if (scene.data?.place != null && NUMBER[scene.data.place]) r.slots.number = NUMBER[scene.data.place];
+  if (scene.data?.minutes > 0) r.slots.penalty = penaltyWords(scene.data.minutes);
   const have = new Set([...Object.keys(r.roles), ...Object.keys(r.slots)]);
   const pools = {};
   const facts = factsFor(scene, r, state);

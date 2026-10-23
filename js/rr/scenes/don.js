@@ -23,6 +23,8 @@ register([
     bored: { w: 1, fx: (fx, c) => fx.mind(c.A, 'morale', -1) },
     'scared-of-them': { w: 0.3, fx: (fx, c) => fx.mind(c.A, 'morale', 2) },
     'penalty-reveal': { w: 0.5, fx: (fx, c) => { fx.mind(c.A, 'morale', -6); fx.mind(c.B, 'morale', -6); } },
+    // the penalty served: the check-in, in the place it cost them (chill.js)
+    'penalty-served': { w: 0, fx: (fx, c) => fx.mind(c.A, 'morale', -2) },
   } }),
   // the finale's finish line: Don crowns the winners, then tells the runners-up (chill.js, a final leg only)
   K({ id: 'don-crown', family: 11, cast: 'don', moments: ['mat'], endings: {
@@ -45,8 +47,9 @@ register([
     'at-the-stage': { w: 0.3, fx: (fx, c) => fx.mind(c.A, 'morale', -10) },
   } }),
   K({ id: 'don-ruling', family: 11, cast: 'don', moments: ['ruling'], endings: {
-    // a ruling on a caught sabotage is never 'allowed'
-    'no-sharing': { w: 1, fx: (fx, c) => fx.time(c.tid, 20) },
+    // a ruling on a caught sabotage is never 'allowed'; its penalty is the hour at the mat (sabotage.js), said here, not
+    // twenty minutes more on the spot (2026-10-22: a team paid both, and dropped from second to eighth unexplained)
+    'no-sharing': { w: 1, fx: (fx, c) => fx.mind(c.A, 'morale', -4) },
     allowed: { w: c => (c.cause ? 0 : 1), fx: (fx, c) => fx.mind(c.A, 'morale', 3) },
     threat: { w: 1, fx: (fx, c) => fx.mind(c.A, 'stress', 8) },
   } }),

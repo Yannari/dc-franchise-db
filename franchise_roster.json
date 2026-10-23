@@ -8851,6 +8851,27 @@
       "voice": "Clipped, blunt and serious, talks in orders and short facts. No small talk, no fun facts, and a rare dry grin when someone earns it. #tough #blunt",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Dominic",
+      "slug": "dominic",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "challenge-beast",
+      "stats": {
+        "physical": 9,
+        "endurance": 9,
+        "mental": 4,
+        "social": 7,
+        "strategic": 5,
+        "loyalty": 8,
+        "boldness": 7,
+        "intuition": 2,
+        "temperament": 7
+      },
+      "voice": "Loud, sunny and excitable, calls everyone bro and says it with love. Talks about protein and his mama's cooking, and turns red and changes the subject when anything sounds like school. #goofy #warm",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

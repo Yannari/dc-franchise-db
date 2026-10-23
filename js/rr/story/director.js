@@ -173,8 +173,11 @@ function taskBeat(state, row, i, kind = 'task-try') {
   // a try that took more than one go is a moment in the middle of it, not at the start (teams who arrived together
   // struggle on their own clocks)
   // ...and getting out of it is the end of it
+  // (the middle of the doing, not of the wait: a team queuing an hour for the elevator was "trying" out on the deck rail
+  // while still at the doors, and the viewer then kept its ride-mates' talk in the car out on the rail too, 2026-10-23)
+  const work = Math.max(row.from, (row.liftUp ? row.stages?.find(x => x.id === 'elevator')?.t : row.seated) ?? row.from);
   let t = (kind === 'task-done' || (kind === 'task-try' && row.right != null)) && row.to > row.from ? Math.round(row.to)
-    : kind === 'task-try' && ending !== 'first-try' && row.to > row.from ? Math.round((row.from + row.to) / 2) : row.from;
+    : kind === 'task-try' && ending !== 'first-try' && row.to > row.from ? Math.round((Math.min(work, row.to) + row.to) / 2) : row.from;
   // (a try that came after failing comes after the failure the episode can air: halfway through the run was before the
   // second miss of a long one, 2026-10-21)
   // (an elevator first: a team starts it stepping into the car, 2026-10-22, the user: "why dont we have a view of the

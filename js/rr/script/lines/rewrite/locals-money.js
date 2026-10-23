@@ -292,7 +292,17 @@ export default {
         { beat: 'The local watches {a} walk off with it and says nothing more.' },
         { by: 'b', say: "I don't like that silence." },
       ] },
-      { id: 'lm.lb2', turns: [
+      // (a rule any place can have: don't feed the animals, don't touch the thing, keep off the grass)
+      { id: 'lm.lb3', turns: [
+        L("Please, do not touch. Nobody touches. There is a sign."),
+        { by: 'a', ...V("I didn't see a sign.", "What sign?", "Sign? Where?", "I didn't SEE a SIGN!", "I honestly didn't see any sign.", "A sign? I was looking at the thing, not the sign.") },
+        L("You are leaning on the sign."),
+        { beat: '{a} steps off the sign, very slowly, and wipes the footprint off it with one sleeve.' },
+        { by: 'b', say: "We're going now. We're going. Sorry." },
+        L("Thank you. And the sign thanks you."),
+      ] },
+      // (only where there is something sacred: it aired at a harbour statue and a fjord, 2026-10-23)
+      { id: 'lm.lb2', when: { sacred: true }, turns: [
         L("Please. No photos inside. It is sacred."),
         { by: 'a', say: "Of course. No photos." },
         { beat: '{a} takes a photo, very quietly. The flash goes off.' },

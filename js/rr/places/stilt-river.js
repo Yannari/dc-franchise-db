@@ -3,7 +3,7 @@
 // with their bare hands (Superteam); then crawl through old trap-filled tunnels in the dark until they find the Don Box
 // with the map out (All-In); a run to the Chill Zone on the temple path at sunset.
 export default {
-  id: 'stilt-river', name: 'Stilt River', recap: 'catching catfish with bare hands and crawling through booby-trapped tunnels',
+  id: 'stilt-river', sacred: true, name: 'Stilt River', recap: 'catching catfish with bare hands and crawling through booby-trapped tunnels',
   region: 'far-east', map: { x: 78, y: 50 },
   arrive: 'airport', local: ['boat', 'foot'],
   stretches: [

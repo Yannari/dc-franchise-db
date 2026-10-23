@@ -184,10 +184,12 @@ export default {
         { by: 'b', say: "...It says red coat. Sorry. Coat." },
       ] },
       { id: 'vq.tm3', turns: [
-        { by: 'a', ...V("Three blocks left, then right at the church.", "Three left, right at the church.", "Left three, right at church.", "Three blocks LEFT, then RIGHT at the CHURCH!", "Three blocks left, then right at the church.", "Three lefts and a church. Easy.") },
-        { beat: 'Twenty minutes later, they are looking at a school.' },
-        { by: 'b', say: "This is a school." },
-        { by: 'a', say: "It's a very religious-looking school." },
+        // (directions with nothing in them a place might not have: "right at the church" ended at a religious-looking
+        // school on an ice yacht and a zipline, 2026-10-23)
+        { by: 'a', ...V("Left, then straight on until we see it. Easy.", "Left, then straight on.", "Left. Straight. Done.", "LEFT, then STRAIGHT on until we SEE it! Easy!", "Left, then straight on until we see it, I think. Easy.", "Left, then onwards until destiny reveals it.") },
+        { beat: 'Twenty minutes later, they are back exactly where they read the tip.' },
+        { by: 'b', say: "We've been here. We've been here before." },
+        { by: 'a', say: "Then it's a very easy place to find." },
       ] },
       { id: 'vq.tm4', when: { eats: true }, turns: [
         { by: 'b', say: "We have to eat all of it? All of it?" },

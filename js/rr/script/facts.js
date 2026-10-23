@@ -11,6 +11,7 @@ import { voiceOf } from '../../td/story/voice.js';
 import { players } from '../../core.js';
 import { FAMILY } from '../../td/story/voice-family-map.js';
 import { liftFacts } from '../lift.js';
+import { PLACES } from '../places.js';
 
 export const RR_FACT_KEYS = [
   'ending',
@@ -48,6 +49,8 @@ export const RR_FACT_KEYS = [
   // the challenge has something to eat (a stomach task) / a puzzle to work out (a brains task), whichever of its types
   // it is: a line about eating it or thinking it through plays only where there is one
   'eats', 'puzzle',
+  // the leg has a sacred site (a temple, a tomb, the monk's wall: places/*.js `sacred`): a line about one plays only there
+  'sacred',
   // the challenge itself (its stretch id: 'stew', 'spices'): a place's own lines for its own tasks
   'taskId',
   // the side a team took at an Either/Or ('stairs', 'skydeck', 'lava', 'falls'): a place's lines for each side
@@ -138,6 +141,7 @@ export function factsFor(scene, roles, state) {
     broke: !!s.broke, snapped: !!s.snapped,
     tod: todWord(s.tod),
     stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null, fearDoes: s.fearDoes ?? null, eats: types.includes('stomach') && !s.noEat, puzzle: types.includes('brains'),
+    sacred: !!PLACES[s.place]?.sacred,
     side: s.side ?? null,
     at: atOf(s, d),
     matPlace: d.matPlace ?? null, why: d.why ?? null, rule: d.rule ?? null, byVote: !!d.byVote, stage: d.stage ?? null, blind: !!d.blind,

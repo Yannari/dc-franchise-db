@@ -3,7 +3,7 @@
 // from the ledge with the same flag (the hotter the pepper, the lower the jump) and swim back with a canteen of milk for
 // the eater (All-In); then ride burros along the coast to the Chill Zone at the step pyramid.
 export default {
-  id: 'pyramid-coast', name: 'Pyramid Coast', recap: 'eating fiery peppers, cliff diving for milk and riding burros to a pyramid',
+  id: 'pyramid-coast', sacred: true, name: 'Pyramid Coast', recap: 'eating fiery peppers, cliff diving for milk and riding burros to a pyramid',
   region: 'north', map: { x: 16, y: 46 },
   arrive: 'airport', local: ['taxi', 'burro', 'foot'],
   stretches: [

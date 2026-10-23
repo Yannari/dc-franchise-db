@@ -4,7 +4,7 @@
 // the dunes by camel to the great river; build a boat out of reed bundles and cross the river past the crocodiles; the
 // Chill Zone at the foot of the pyramid on the far bank.
 export default {
-  id: 'tomb-sands', name: 'Tomb Sands', recap: 'climbing over a pyramid or crawling under it, and floating past crocodiles on a boat made of reeds',
+  id: 'tomb-sands', sacred: true, name: 'Tomb Sands', recap: 'climbing over a pyramid or crawling under it, and floating past crocodiles on a boat made of reeds',
   region: 'desert', map: { x: 56, y: 40 },
   arrive: 'airport', local: ['taxi', 'camel', 'boat', 'foot'],
   stretches: [

@@ -3,7 +3,7 @@
 // jump bar (Botch or Watch); then, among the temple columns, a choice of the ancient games, drive a horse-drawn chariot
 // round the track, or wrestle the champion in the sand (Either/Or); the Chill Zone is at the finish line by the ruins.
 export default {
-  id: 'marble-temple-hill', name: 'Marble Temple Hill', recap: 'running hurdles, clearing a high jump and racing a chariot at the old games',
+  id: 'marble-temple-hill', sacred: true, name: 'Marble Temple Hill', recap: 'running hurdles, clearing a high jump and racing a chariot at the old games',
   region: 'old-coast', map: { x: 56, y: 36 },
   arrive: 'airport', local: ['taxi', 'foot'],
   stretches: [

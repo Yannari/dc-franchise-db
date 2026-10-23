@@ -3,7 +3,7 @@
 // before the monk at the end strikes the gong (All-In); then the partner who didn't do the last Botch or Watch eats a
 // bowl of the hills' strangest delicacies, every bite (Botch or Watch); the Chill Zone is at the end of the wall.
 export default {
-  id: 'bamboo-wall-hills', name: 'Bamboo Wall Hills', recap: 'racing the ancient wall before the gong and eating a bowl of delicacies',
+  id: 'bamboo-wall-hills', sacred: true, name: 'Bamboo Wall Hills', recap: 'racing the ancient wall before the gong and eating a bowl of delicacies',
   region: 'far-east', map: { x: 81, y: 40 },
   arrive: 'airport', local: ['bus', 'foot'],
   stretches: [

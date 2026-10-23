@@ -25,7 +25,11 @@ const logOf = (leg, team, stretch) => (leg.log || []).filter(l => l.id === team 
 const scenesOf = (res, leg) => res.state.scenes.filter(s => s.leg === leg.n && s.data?.stretch);
 const switched = (res, leg, team, stretch) => (res.state.switches || []).some(x => x.leg === leg.n && x.team === team && x.stretch === stretch);
 const runOf = (res, leg, team, stretch) => (res.state.taskLog || []).filter(r => r.leg === leg.n && r.team === team && r.stretch === stretch).at(-1) || null;
-const sideOf = (res, leg, team, stretch) => runOf(res, leg, team, stretch)?.side ?? null;
+// (the run in progress at that minute: a Boomerang sends a team back to do the other side, 2026-10-23, Tomb Sands)
+const sideOf = (res, leg, team, stretch, t) => {
+  const runs = (res.state.taskLog || []).filter(r => r.leg === leg.n && r.team === team && r.stretch === stretch);
+  return (runs.find(r => t != null && r.from <= t + 0.5 && t <= r.to + 0.5) || runs.at(-1))?.side ?? null;
+};
 
 describe('rr leg: a leg that makes sense in order', () => {
   it('only lets two teams at an Either/Or meet at its start or on the same side', () => {
@@ -46,7 +50,7 @@ describe('rr leg: a leg that makes sense in order', () => {
         const startOf = (id, l) => Math.max(l.from, runOf(res, leg, id, st.id)?.from ?? l.from);
         const at = (id, l) => sc.data.t <= startOf(id, l) || sc.data.t - startOf(id, l) <= START;
         const atStart = at(a, la) && at(b, lb);
-        const sa = sideOf(res, leg, a, st.id), sb = sideOf(res, leg, b, st.id);
+        const sa = sideOf(res, leg, a, st.id, sc.data.t), sb = sideOf(res, leg, b, st.id, sc.data.t);
         if (!atStart && sa && sb && sa !== sb) bad.push(`seed ${res.state.seed} leg ${leg.n} ${sc.kind} ${a}(${sa}) ${b}(${sb}) t=${Math.round(sc.data.t)}`);
       }
     });

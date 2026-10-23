@@ -26,17 +26,28 @@ import { build } from './build.js';
 
 const GIRLS = { gender: 'f', bGender: 'f' };
 const BOYS = { gender: 'm', bGender: 'm' };
+// Night one's debrief (moments.js): just coupled, no ceremony yet, and no
+// room ({Where} is a later night's). happy · unsure (about {pa}) · rather
+// ({c} is who {a} would rather have) · rather-yours ({pb}: {b}'s own partner).
+const NIGHT_ONE = ['happy', 'unsure', 'rather', 'rather-yours'];
+const LATER = { of: ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blame', 'next', 'eyeing', 'bomb-threat', 'bomb-fancy', 'picked', 'meh'] };
 
 export const DEBRIEF = build('debrief', {
   stages: [
-    { stage: "{Where}, {a} and {b} talk the night over." },
-    { stage: "{Where}, {b} sits down next to {a}." },
+    { when: LATER, stage: "{Where}, {a} and {b} talk the night over." },
+    { when: LATER, stage: "{Where}, {b} sits down next to {a}." },
+    { when: { of: NIGHT_ONE }, stage: "Night one, after the coupling. {a} grabs {b} by the pool." },
+    { when: { of: NIGHT_ONE }, stage: "The first night, late. {a} and {b} sit on the end of a sunbed while everyone else gets ready for bed." },
   ],
   plans: {
-    featured: ['open', 'recount', 'friend', 'push?', 'close'],
+    featured: [{ when: { of: NIGHT_ONE }, plan: ['night', 'recount', 'friend'] }, { plan: ['open', 'recount', 'friend', 'push?', 'close'] }],
     short: ['recount', 'friend'],
   },
   moves: {
+    night: [
+      { stage: "Night one, after the coupling. {a} grabs {b} by the pool before anyone else can.", turns: [['b', "Well? Go on. How do you feel?"]] },
+      { stage: "The first night. {a} and {b} sit on the end of a sunbed, still in their outfits.", turns: [['b', "So. First night. First couple. Talk to me."]] },
+    ],
     open: [
       { stage: "{Where}, {b} sits down next to {a}.", turns: [
         ['b', "Go on, then. Talk."],
@@ -63,6 +74,14 @@ export const DEBRIEF = build('debrief', {
     ],
 
     recount: [
+      { when: { of: 'happy', taken: true }, turns: [['a', "I got who I wanted. I actually got who I wanted. When {pa} stood next to me, I had to stop myself grinning like an idiot. I'm trying not to look too pleased with myself."]] },
+      { when: { of: 'happy', taken: true }, turns: [['a', "Honestly? I couldn't have picked better if I'd written it down. {pa} is exactly my type. I keep looking over to check it's real."]] },
+      { when: { of: 'unsure', taken: true }, turns: [['a', "It's not that I don't like {pa}. I do. I just need more than one night. Is that awful? We've said about ten words to each other."]] },
+      { when: { of: 'unsure', taken: true }, turns: [['a', "{pa} is lovely. Really lovely. I just didn't feel the thing. You know the thing? I didn't feel it yet."]] },
+      { when: { of: 'rather', taken: true, cast: 3 }, turns: [['a', "Can I tell you something, and you don't tell anyone? I'm with {pa}, and I keep looking at {c}. I've been looking at {c} all night."]] },
+      { when: { of: 'rather', taken: true, cast: 3 }, turns: [['a', "{pa} is great. Genuinely. But if I'd had the choice, it would have been {c}. I'm only saying it to you."]] },
+      { when: { of: 'rather-yours', taken: true, bTaken: true }, turns: [['a', "I'm going to be honest with you, because you're my friend. If I'd had the choice tonight, I'd have gone for {pb}."]] },
+      { when: { of: 'rather-yours', taken: true, bTaken: true }, turns: [['a', "This is awkward, and I'm sorry, but I have to say it. The one I liked most when I walked in was {pb}."]] },
       { when: { of: 'robbed', since: 'before' }, turns: [
         ['a', "I didn't see it coming. I really didn't. {c} was nice to my face all week. Sat with me at breakfast, asked how it was going, the lot. And then tonight {c} stands up, says a name, and that's it. Everything I'd built, gone in about ten seconds."],
         ['b', "I know. That's what I can't get over."],
@@ -160,6 +179,14 @@ export const DEBRIEF = build('debrief', {
     ],
 
     friend: [
+      { when: { of: 'happy' }, turns: [['b', "Look at your face. You're glowing. Don't jinx it."], ['a', "I'm not going to jinx it. I'm going to enjoy it."]] },
+      { when: { of: 'happy' }, turns: [['b', "Night one, and you've already got the good one. That's not fair on the rest of us."]] },
+      { when: { of: 'unsure' }, turns: [['b', "It's night one. Nobody feels the thing on night one. Give it a few days."], ['a', "And if I still don't?"], ['b', "Then you'll know."]] },
+      { when: { of: 'unsure', taken: true }, turns: [['b', "Don't say that to {pa}, whatever you do. Not tonight."], ['a', "I'm not mad."]] },
+      { when: { of: 'rather', cast: 3 }, turns: [['b', "It's one night. You don't owe anyone anything yet. Just don't make it obvious."], ['a', "Is it obvious?"], ['b', "A bit."]] },
+      { when: { of: 'rather', cast: 3 }, turns: [['b', "Then get to know {c}. Quietly. Nicely. Without blowing anything up on day one."]] },
+      { when: { of: 'rather-yours', bTaken: true }, turns: [['b', "Wow. Okay. That's my partner you're talking about."], ['a', "I know. I'm sorry. I'd rather you heard it from me."], ['b', "Would you?"]] },
+      { when: { of: 'rather-yours', bTaken: true }, turns: [['b', "You've been here one night, and you're telling me you want {pb}?"], ['a', "I'm telling you I'm not going to lie to you."]] },
       { when: { of: ['robbed', 'twisted-on'] }, turns: [
         ['b', "Listen. Tonight is over. You're still here. And anyone who could do that to you, or walk away from you, isn't the person you thought. You'll see that tomorrow. Tonight, you're allowed to be sad."],
         ['a', "I feel so stupid."],

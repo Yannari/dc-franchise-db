@@ -95,6 +95,10 @@ export const CHAT = build('chat', {
     ],
 
     catch: [
+      // Catch-alls with no time of day in them: two were not enough for a morning (probe, 2026-10-22).
+      { turns: [['a', "Come here. I've barely seen you. Where have you been hiding?"], ['b', "I've been right here. You've been busy."], ['a', "Never too busy for you. Shove up."]] },
+      { turns: [['b', "You look like you've got something on your mind."], ['a', "Just you. Honestly. That's it. That's the whole mind."], ['b', "That's a very small mind."]] },
+      { turns: [['a', "Can I steal you for a bit? No reason. I just like sitting with you."], ['b', "That's the best reason."]] },
       { turns: [
         ['a', "So how's your day been? I feel like I've been on the other side of the villa from you all day."],
         ['b', "It's been all right, actually. I had a really good chat with the others earlier, and then I fell asleep on a sun lounger and woke up with half a tan. So that's been my day. What about you?"],

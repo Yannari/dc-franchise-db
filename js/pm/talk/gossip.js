@@ -114,6 +114,17 @@ export const GOSSIP = build('gossip', {
     ],
 
     tell: [
+      // A secret with nobody else in it: something {c} said, not something {c} did.
+      { when: { hasWith: false }, turns: [
+        ['a', "After the recoupling, {c} was talking. About you. Saying {c} wasn't sure about you, that it might not be what {c} wants. I wasn't going to say anything, but I couldn't sit on it."],
+        ['b', "{c} said that?"],
+        ['a', "Not to me. But I was there."],
+      ] },
+      { when: { hasWith: false }, turns: [
+        ['a', "I heard {c} talking about you, and it wasn't how {c} talks about you to your face. It was all, I don't know, I'm not feeling it, I'm just going along with it."],
+        ['b', "Going along with it."],
+        ['a', "That's what {c} said. I'm sorry."],
+      ] },
       { when: { sec: 'pull', hasWith: true }, turns: [
         ['a', "{c} pulled {x} for a chat earlier. On the swing seats. And it didn't look like a friendly chat, if I'm honest. They were sitting really close, and {c} couldn't stop laughing at everything {x} said."],
         ['b', "When was this?"],

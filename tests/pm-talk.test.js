@@ -27,8 +27,8 @@ const THREE = new Set([
   'betray-see', 'betray-confront', 'villa-happy', 'redeem-doubt', 'grass-talk', 'parents-named', 'parents-advice', 'parents-mediate', 'exw-stir', 'exw-partner',
   'gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back',
   'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch',
-  'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write', 'hideaway-vote', 'hideaway-morning', 'movie-react', 'snog-marry-pie', 'casa-react', 'vote-fallout', 'receipt', 'look-who', 'headline', 'couple-goals', 'couple-goals-row', 'snogger-row', 'lip-watch', 'talent-snub', 'tower-q', 'blow-dare', 'course-pick', 'step-reveal', 'step-choose', 'steal', 'visit-arrive', 'visit-leave']);
-const DEBRIEF_THREE = ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat'];
+  'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write', 'hideaway-vote', 'hideaway-morning', 'movie-react', 'snog-marry-pie', 'casa-react', 'vote-fallout', 'receipt', 'look-who', 'headline', 'couple-goals', 'couple-goals-row', 'snogger-row', 'lip-watch', 'talent-snub', 'tower-q', 'blow-dare', 'course-pick', 'step-reveal', 'step-choose', 'steal', 'visit-arrive', 'visit-leave', 'stand-up', 'stand-up-pick', 'bombshell-save', 'public-match', 'return-ex', 'mission-dump', 'sleepover-invite', 'sleepover-choice', 'walk-doubt', 'walk-after']);
+const DEBRIEF_THREE = ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat', 'rather'];
 const ABOUT_ALWAYS = new Set(['casa-miss', 'kin-protect']);
 const ABOUT_CAUSES = ['jealous', 'envy', 'rival', 'stole', 'told'];
 // Kinds whose {a} is always coupled with somebody outside the scene ({pa}).
@@ -50,8 +50,8 @@ describe('the movements are well-formed', () => {
     const ids = ENTRIES.map(([, , e]) => e.id);
     expect(ids.length).toBe(new Set(ids).size);
   });
-  it('speakers are the cast', () => {
-    for (const [k, s, e] of ENTRIES) for (const t of e.turns || []) expect(['a', 'b', 'c', 'd'], tag(k, s, e)).toContain(t[0]);
+  it('speakers are the cast, or Dior where the show has the host speak', () => {
+    for (const [k, s, e] of ENTRIES) for (const t of e.turns || []) expect(['a', 'b', 'c', 'd', 'dior'], tag(k, s, e)).toContain(t[0]);
   });
   it('every condition is a known fact', () => {
     for (const [k, s, e] of ENTRIES) for (const key of Object.keys(e.when || {})) expect(FACT_KEYS, tag(k, s, e)).toContain(key);
@@ -73,7 +73,7 @@ describe('a placeholder only where somebody fills it', () => {
       // {quote}: the beach-hut line Look Who's Talking reads out.
       if (/\{quote\}/.test(x)) expect(k, tag(k, s, e)).toBe('look-who');
       // {d} is named only in the kinds that cast four.
-      if (/\{d[.}]/.test(x)) expect(['camp-clash', 'hideaway-vote', 'snog-marry-pie', 'receipt', 'headline', 'couple-goals', 'step-reveal', 'step-choose'], tag(k, s, e)).toContain(k);
+      if (/\{d[.}]/.test(x)) expect(['camp-clash', 'hideaway-vote', 'snog-marry-pie', 'receipt', 'headline', 'couple-goals', 'step-reveal', 'step-choose', 'walk-doubt'], tag(k, s, e)).toContain(k);
       expect(x, tag(k, s, e)).not.toMatch(/\{[a-z]+\.(sub|Sub)\}/);
     }
   });

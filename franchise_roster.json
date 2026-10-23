@@ -8893,6 +8893,27 @@
       "voice": "Calm, precise and motherly, a doctor's bedside manner with a lecture always ready. Asks if you've had water today and tells you the truth even when you didn't ask. #earnest #blunt",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Ivyna",
+      "slug": "ivyna",
+      "gender": "f",
+      "sexuality": "lesbian",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 4,
+        "endurance": 4,
+        "mental": 4,
+        "social": 8,
+        "strategic": 6,
+        "loyalty": 7,
+        "boldness": 4,
+        "intuition": 9,
+        "temperament": 8
+      },
+      "voice": "Warm Georgia drawl with steel underneath, unhurried and charming. Calls people 'sugar', asks the gentle question and files away the answer without anyone noticing. #calm #warm",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

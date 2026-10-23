@@ -8835,7 +8835,6 @@
       "name": "Ben",
       "slug": "ben",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "loyal-soldier",
       "stats": {
         "physical": 8,
@@ -8848,15 +8847,23 @@
         "intuition": 3,
         "temperament": 5
       },
+      "sexuality": "straight",
       "voice": "Clipped, blunt and serious, talks in orders and short facts. No small talk, no fun facts, and a rare dry grin when someone earns it. #tough #blunt",
       "profileSources": {},
-      "ties": []
+      "age": 27,
+      "birthdate": "1999-11-05",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Fort Worth, Texas",
+      "occupation": "Basic training instructor",
+      "descriptor": "The Drill Sergeant",
+      "backstory": "Ben is a basic training instructor from Fort Worth, Texas, and the third generation of a military family; his grandfather and father both expected him to enlist, and he never considered anything else. He has spent years turning frightened eighteen-year-olds into soldiers, and he is very good at it and very bad at everything that happens after the shift ends. He drives an old truck, lives alone, and his last girlfriend said living with him was like living in a barracks. He applied because he knew someone tough would create drama, and because leading people is the one thing he is sure he does well. Asked what he would bring into the house, he said that was classified.",
+      "personality": "Ben is disciplined, hard-working and closed off. He is strong, blunt and observant, and he takes command of any group without a leader, because he does not believe anyone else is capable. He finds it hard to connect with strangers and has no patience for emotions, gossip or what he calls childish drama. Once someone earns his trust, though, he is fiercely and quietly loyal, and he will sit on the block before he breaks his word. He respects people who stand up to him more than people who agree with him. His blind spot is feelings, other people's and his own, and he does not see a betrayal coming until it is done."
     },
     {
       "name": "Dominic",
       "slug": "dominic",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "challenge-beast",
       "stats": {
         "physical": 9,
@@ -8869,15 +8876,23 @@
         "intuition": 2,
         "temperament": 7
       },
+      "sexuality": "straight",
       "voice": "Loud, sunny and excitable, calls everyone bro and says it with love. Talks about protein and his mama's cooking, and turns red and changes the subject when anything sounds like school. #goofy #warm",
       "profileSources": {},
-      "ties": []
+      "age": 27,
+      "birthdate": "2000-02-27",
+      "ethnicity": "Puerto Rican American",
+      "nationality": "American",
+      "hometown": "Miami, Florida",
+      "occupation": "College student and personal trainer",
+      "descriptor": "The Golden Boy",
+      "backstory": "Dominic grew up in Miami in a crowded apartment with his mother, his grandmother and three younger sisters, in a family that came from Puerto Rico before he was born. He has never been, and every Christmas he promises his abuela he will take her. He has been the same height since he was thirteen, which made him the kid every coach wanted and every teacher gave up on. He is on his third try at a college degree, paying for it as a personal trainer, and he dreams of opening his own gym. He applied because a client told him he would win every competition on the show, and he believed her.",
+      "personality": "Dominic is kind, competitive and far less simple than he lets people think. He is a natural athlete who treats every challenge like a final and celebrates every win at full volume, but he is the first to help the loser up afterwards. He hates drama, calls it a buzzkill and walks away from shouting matches. He is self-conscious about school and covers it with jokes about being dumb, so people underestimate how closely he is watching. He is loyal to whoever is loyal to him and falls hard when he likes someone. His blind spot is believing that winning is enough, and forgetting that the people who vote are keeping score too."
     },
     {
       "name": "Fatima",
       "slug": "fatima",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "perceptive-player",
       "stats": {
         "physical": 3,
@@ -8890,15 +8905,23 @@
         "intuition": 8,
         "temperament": 7
       },
+      "sexuality": "straight",
       "voice": "Calm, precise and motherly, a doctor's bedside manner with a lecture always ready. Asks if you've had water today and tells you the truth even when you didn't ask. #earnest #blunt",
       "profileSources": {},
-      "ties": []
+      "age": 41,
+      "birthdate": "1986-03-02",
+      "ethnicity": "Iranian American",
+      "nationality": "American",
+      "hometown": "Cambridge, Massachusetts",
+      "occupation": "Doctor",
+      "descriptor": "The Doctor",
+      "backstory": "Fatima Kalantar is a doctor at a teaching hospital in Cambridge, Massachusetts, the daughter of Iranian immigrants who ran a corner pharmacy and expected nothing less than medical school. At forty-four she has spent twenty years working nights, raising two teenagers with her husband, a professor, and running the hospital's free clinic at weekends. She is the oldest woman in the house and doesn't mind saying so. She applied on a dare from her daughter, who said she had never done one spontaneous thing in her life, and because the prize would pay for the clinic's new wing. She is not sure she knows how to lie, and not sure she wants to learn.",
+      "personality": "Fatima is principled, caring and direct. She mothers the house without being asked, checking on anyone who is sick, reminding people to eat and telling them exactly what she thinks of their choices. She is honest to a fault, believes in fairness and will stand up for anyone she thinks is being treated badly, even when it costs her. Younger players find her either comforting or exhausting: she lectures, and she does not always notice she is doing it. She is loyal to the people who share her values. Her weakness is that she runs the house like a ward that should be run sensibly, and nobody in it wants a sensible game."
     },
     {
       "name": "Ivyna",
       "slug": "ivyna",
       "gender": "f",
-      "sexuality": "lesbian",
       "archetype": "perceptive-player",
       "stats": {
         "physical": 4,
@@ -8911,15 +8934,23 @@
         "intuition": 9,
         "temperament": 8
       },
+      "sexuality": "lesbian",
       "voice": "Warm Georgia drawl with steel underneath, unhurried and charming. Calls people 'sugar', asks the gentle question and files away the answer without anyone noticing. #calm #warm",
       "profileSources": {},
-      "ties": []
+      "age": 28,
+      "birthdate": "1998-05-13",
+      "ethnicity": "Indian American",
+      "nationality": "American",
+      "hometown": "Roswell, Georgia",
+      "occupation": "Hair salon owner",
+      "descriptor": "The Steel Magnolia",
+      "backstory": "Ivy Everette owns a hair salon in Roswell, Georgia, and has spent twelve years behind the chair listening to women tell her everything: their marriages, their feuds, the secrets they would never tell their pastor. The daughter of a preacher and a church organist, she learned to read a congregation before she could read a book, and she opened her salon at twenty on a loan nobody thought she would repay. She is divorced, with no regrets. She is older than most of the house and was almost not cast at all; the call came at the last minute. She applied because she has heard every kind of game played out in her chair and wanted to play one herself.",
+      "personality": "Ivy is patient, perceptive and warmer than most strategists, which is exactly what makes her dangerous. She listens far more than she talks, and people tell her things they never meant to say, just as they do in her salon. She does not rush: she watches, lets the house settle and then picks her side carefully. She is loyal to a small circle and protects them quietly. She is polite in every situation and almost impossible to provoke, though she keeps a sharp tongue for anyone who disrespects her. Her weakness is patience itself: she can wait so long for the perfect moment that the moment passes."
     },
     {
       "name": "Juan",
       "slug": "juan",
       "gender": "m",
-      "sexuality": "bi",
       "archetype": "schemer",
       "stats": {
         "physical": 7,
@@ -8932,15 +8963,23 @@
         "intuition": 7,
         "temperament": 5
       },
+      "sexuality": "bi",
       "voice": "Smooth, warm and flirtatious: low voice, long eye contact, a compliment for everyone. Every sweet word has a purpose, and he never sounds like he's working. #flirty #schemer",
       "profileSources": {},
-      "ties": []
+      "age": 27,
+      "birthdate": "1999-06-08",
+      "ethnicity": "Mexican American",
+      "nationality": "American",
+      "hometown": "San Antonio, Texas",
+      "occupation": "Bartender and salsa instructor",
+      "descriptor": "The Charmer",
+      "backstory": "Juan grew up in San Antonio, Texas, the youngest son of a Mexican American family that runs a taqueria two blocks from the river, and he learned to charm customers at the counter before he could see over it. He tends bar at a downtown hotel and teaches salsa at weekends, two jobs that taught him how to make anyone feel like the only person in the room. He has had a lot of girlfriends and kept none of them, and his mother keeps a list of the ones she liked. He applied because he believes that in a house full of strangers, the one everybody wants is the one nobody votes out, and he intends to be wanted.",
+      "personality": "Juan is charming, confident and quietly calculating. He reads attraction the way other players read votes and uses it as his main weapon: he chooses partners for what they bring, makes them feel chosen and collects their loyalty, their secrets and their votes in return. He is warm, funny and great company, and even people who suspect him find it hard to stay angry. He is careful never to look like he is playing, and he lets his showmances fight his battles. He does care about people, just not more than he cares about winning. His weakness is that charm runs out when people compare notes, and everyone he has charmed eventually talks to each other."
     },
     {
       "name": "Kyle",
       "slug": "kyle",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "hothead",
       "stats": {
         "physical": 8,
@@ -8953,9 +8992,18 @@
         "intuition": 4,
         "temperament": 3
       },
+      "sexuality": "straight",
       "voice": "Gruff, booming and old-school, a cop's voice that expects to be obeyed. Calls the younger players 'kid', tells long stories about the force and does not apologise. #proud #blunt #-loud",
       "profileSources": {},
-      "ties": []
+      "age": 46,
+      "birthdate": "1980-06-10",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Pensacola, Florida",
+      "occupation": "Police officer",
+      "descriptor": "The Cop",
+      "backstory": "Kyle Brady has been a police officer in Pensacola, Florida, for twenty-four years, and he still runs five miles before every shift to prove he can keep up with the rookies. He grew up on the Gulf Coast, joined the force at twenty-two and raised his son Don mostly on his own after the divorce; Don is in college now and calls him every Sunday. Kyle is old-fashioned, plain-spoken and proud of it. He applied because his son said he would not last a week in a house full of twenty-somethings, and Kyle has never turned down a challenge in his life. He plans to win the first competition and show every one of them.",
+      "personality": "Kyle is competitive, stubborn and protective. He is in better shape than men half his age, wants everyone to know it and treats every competition like a fitness test. He likes order and rules and has little patience for what he calls whining or for causes he does not understand, which puts him on a collision course with anyone who lectures him. He is loyal to the people he respects, mostly the athletes and anyone straight with him, and he would rather lose a fight than back down from one. Under the gruffness he is a proud dad who misses his kid. His blind spot is thinking a house works like a precinct."
     }
   ]
 }

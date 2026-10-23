@@ -8872,6 +8872,27 @@
       "voice": "Loud, sunny and excitable, calls everyone bro and says it with love. Talks about protein and his mama's cooking, and turns red and changes the subject when anything sounds like school. #goofy #warm",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Fatima",
+      "slug": "fatima",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 3,
+        "endurance": 4,
+        "mental": 9,
+        "social": 5,
+        "strategic": 3,
+        "loyalty": 9,
+        "boldness": 6,
+        "intuition": 8,
+        "temperament": 7
+      },
+      "voice": "Calm, precise and motherly, a doctor's bedside manner with a lecture always ready. Asks if you've had water today and tells you the truth even when you didn't ask. #earnest #blunt",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

@@ -4,6 +4,7 @@ import { POOLS, HUT, NARRATOR, SPEAKERS, FACT_KEYS, renderScript, speak } from '
 import { SLOTS, REGIONAL_WORDS } from '../js/pm/lines/dialect.js';
 import { DAY } from '../js/pm/lines/day.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
+import { brandsIn } from './helpers/brand-names.js';
 
 // Every entry in every pool, with its variant blocks opened out.
 const ENTRIES = [...Object.entries(POOLS).flatMap(([k, pool]) => pool.map(e => [k, e])),
@@ -127,6 +128,11 @@ describe('the words follow the rules', () => {
       for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, `${k} ${e.id}`).toMatch(/^\{(quote|quoteWho|exchange|day|card|about|side|Side|sideOne|walkers|Walkers|walkerOne|where|Where|(pa|pb|a|b|c|d)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
       expect(x, `${k} ${e.id}`).not.toMatch(/\bDior\b/);
     }
+  });
+  it('no brand names: the villa is its own world (the user: "dont use brand names again")', () => {
+    const bad = [];
+    for (const [k, e] of ENTRIES) for (const x of texts(e)) for (const b of brandsIn(x)) bad.push(`${k} ${e.id}: "${b}" in: ${x}`);
+    expect(bad).toEqual([]);
   });
   it("no other show's vocabulary", () => {
     for (const [k, e] of ENTRIES) for (const x of texts(e)) expect(foreignWordsIn(x, 'perfect-match'), `${k} ${e.id}: ${x}`).toEqual([]);

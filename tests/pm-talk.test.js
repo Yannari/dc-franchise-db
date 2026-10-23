@@ -9,6 +9,7 @@ import { TALK } from '../js/pm/talk/index.js';
 import { FACT_KEYS, TALK_MISSES } from '../js/pm/script.js';
 import { SLOTS, REGIONAL_WORDS } from '../js/pm/lines/dialect.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
+import { brandsIn } from './helpers/brand-names.js';
 import { makeIslanders, roleSetup } from './helpers/pm-cast.js';
 import { setPlayers } from '../js/core.js';
 import { playPerfectMatchSeason } from '../js/pm/season.js';
@@ -22,7 +23,8 @@ const narration = e => [e.stage, e.beat].filter(Boolean);
 const tag = (kind, slot, e) => `${kind}.${slot} ${e.id}`;
 
 // Who a kind casts beyond {a} and {b}, and what fills {about}.
-const THREE = new Set(['gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back']);
+const THREE = new Set(['gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back',
+  'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch']);
 const DEBRIEF_THREE = ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat'];
 const ABOUT_ALWAYS = new Set(['casa-miss', 'kin-protect']);
 const ABOUT_CAUSES = ['jealous', 'envy', 'rival', 'stole', 'told'];
@@ -97,6 +99,11 @@ describe('a placeholder only where somebody fills it', () => {
 });
 
 describe('the words follow the rules', () => {
+  it('no brand names: the villa is its own world (the user: "dont use brand names again")', () => {
+    const bad = [];
+    for (const [k, s, e] of ENTRIES) for (const x of texts(e)) for (const b of brandsIn(x)) bad.push(`${tag(k, s, e)}: "${b}" in: ${x}`);
+    expect(bad).toEqual([]);
+  });
   it("no other show's vocabulary", () => {
     for (const [k, s, e] of ENTRIES) for (const x of texts(e)) expect(foreignWordsIn(x, 'perfect-match'), `${tag(k, s, e)}: ${x}`).toEqual([]);
   });

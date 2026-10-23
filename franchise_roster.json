@@ -8785,6 +8785,27 @@
       "voice": "Polished, poised and sweetly cutting, every insult wrapped in a compliment. Speaks in complete, well-chosen sentences and smiles while she says the worst thing in the room. #schemer #proud",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Baxter",
+      "slug": "baxter",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 4,
+        "endurance": 6,
+        "mental": 7,
+        "social": 6,
+        "strategic": 6,
+        "loyalty": 6,
+        "boldness": 5,
+        "intuition": 8,
+        "temperament": 7
+      },
+      "voice": "Soft, wry and a little odd, full of strange observations and gentle jokes about small-town life. Rambles about colour and light, then says something devastatingly accurate. #dry #goofy",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

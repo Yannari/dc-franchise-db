@@ -27,7 +27,7 @@ const THREE = new Set([
   'betray-see', 'betray-confront', 'villa-happy', 'redeem-doubt', 'grass-talk', 'parents-named', 'parents-advice', 'parents-mediate', 'exw-stir', 'exw-partner',
   'gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back',
   'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch',
-  'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write']);
+  'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write', 'hideaway-vote', 'hideaway-morning', 'movie-react']);
 const DEBRIEF_THREE = ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat'];
 const ABOUT_ALWAYS = new Set(['casa-miss', 'kin-protect']);
 const ABOUT_CAUSES = ['jealous', 'envy', 'rival', 'stole', 'told'];
@@ -70,8 +70,8 @@ describe('a placeholder only where somebody fills it', () => {
       if (/\{(age|job|town)\}/.test(x)) expect(k, tag(k, s, e)).toBe('intro');
       // {day}: the day a declaration's moment happened (script.js clipSlots).
       if (/\{day\}/.test(x)) expect(k, tag(k, s, e)).toBe('speech');
-      // {d} is named only in the one kind that casts four.
-      if (/\{d[.}]/.test(x)) expect(k, tag(k, s, e)).toBe('camp-clash');
+      // {d} is named only in the kinds that cast four.
+      if (/\{d[.}]/.test(x)) expect(['camp-clash', 'hideaway-vote'], tag(k, s, e)).toContain(k);
       expect(x, tag(k, s, e)).not.toMatch(/\{[a-z]+\.(sub|Sub)\}/);
     }
   });

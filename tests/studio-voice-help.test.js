@@ -78,4 +78,10 @@ describe('how voice tags work, per show', () => {
     // the user, 2026-10-23: "remove fill this profile button when big brother isnt selected"
     expect(src).toMatch(/d\.name && _bbSelected\(\) \? '<button[^']*id="st-fill-profile"/);
   });
+
+  it('the Drag Race craft section shows only when Drag Race is selected', () => {
+    // the user, 2026-10-23: "remove drag race craft section when drag race isnt selected"
+    expect(src).toMatch(/_drSelected\(\) \? `<details class="st-drag" id="st-drag-panel"/);
+    expect(src).toMatch(/id="st-f-drag-family-add">\+ Add link<\/button>\s*<\/details>` : ''\}/);
+  });
 });

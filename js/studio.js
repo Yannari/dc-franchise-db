@@ -357,6 +357,7 @@ function _kitOut(d) {
 const _kitCount = d => { const o = _kitOut(d); return o ? Object.keys(o).length : 0; };
 const _tdSelected = () => { try { const f = window.seasonConfig?.format; return !f || f === 'total-drama'; } catch { return true; } };
 const _bbSelected = () => { try { return window.seasonConfig?.format === 'big-brother'; } catch { return false; } };
+const _drSelected = () => { try { return window.seasonConfig?.format === 'drag-race'; } catch { return false; } };
 const _ciSelected = () => { try { return window.seasonConfig?.format === CIRCLE_FORMAT; } catch { return false; } };
 
 function _blankChar() {
@@ -2105,7 +2106,7 @@ function _renderEditor() {
       <div id="st-f-ties">${_renderTies(d)}</div>
       <button type="button" class="st-btn st-btn-sm" id="st-f-ties-add" style="margin-bottom:10px">+ Add a tie</button>
 
-      <details class="st-drag" id="st-drag-panel"${_hasDrag(d) ? ' open' : ''}>
+      ${/* Drag Race only. Hidden, d.drag is kept as it is and still saved with the sheet. */ _drSelected() ? `<details class="st-drag" id="st-drag-panel"${_hasDrag(d) ? ' open' : ''}>
         <summary>Drag Race — craft <span class="st-hint">only this show reads these</span></summary>
         <div class="st-sliders">${DRAG_KEYS.map(_dragSliderHTML).join('')}</div>
         <label class="st-l">Drag style <span class="st-hint">what she is known for; blank derives it from the strongest craft</span>
@@ -2136,7 +2137,7 @@ function _renderEditor() {
         <div class="st-l">Drag family <span class="st-hint">pick a name from the roster + the relationship to this queen</span></div>
         <div id="st-f-drag-family">${_renderFamilyLinks(d)}</div>
         <button type="button" class="st-btn st-btn-sm" id="st-f-drag-family-add">+ Add link</button>
-      </details>
+      </details>` : ''}
 
       <label class="st-l">Voice profile <span class="st-hint">how they TALK + personality — the bio line below is added automatically</span>
         <textarea class="st-input st-area" id="st-f-voice" rows="3" placeholder="e.g. Minimal, calm and dry; lets people underestimate the pretty one…">${_esc(d.voice)}</textarea>

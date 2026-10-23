@@ -12,6 +12,8 @@ import { KISS } from './kiss.js';
 import { DEEP_CHAT } from './deep-chat.js';
 import { FRIENDSHIP } from './friendship.js';
 import { FRIENDSHIP_MORE } from './more/friendship.js';
+import { FRIENDSHIP_VOLUME } from './more/friendship-volume.js';
+import { PULL_VOLUME } from './more/pull-volume.js';
 import { DECL_FINAL_MORE } from './more/final.js';
 import { CHAT_MORE, DEEP_MORE, KISS_MORE, PULL_MORE, LOYALTY_MORE, ICK_MORE, ARGUMENT_MORE, ADVICE_MORE, COMFORT_MORE,
   REASSURANCE_MORE, CONFESSION_MORE, CONFRONT_MORE, DEBRIEF_MORE, RECOUPLE_MORE, BED_MORE, GOODBYE_MORE, DECL_MORE, DATE_MORE } from './more/everyday.js';
@@ -54,8 +56,8 @@ import { KIN_HEART, KIN_VET, KIN_PROTECT, EX_AWKWARD, EX_JEALOUS } from './kin.j
 import { REASSURANCE, JEALOUS_CONFRONT, JEALOUS_RETALIATE, CONFESSION, NO_SHOW } from './jealousy.js';
 
 // More for the pools a season wears thin (pm/talk/more/, measured).
-extend(FRIENDSHIP, FRIENDSHIP_MORE);
-extend(CHAT, CHAT_MORE); extend(DEEP_CHAT, DEEP_MORE); extend(KISS, KISS_MORE); extend(PULL, PULL_MORE);
+extend(FRIENDSHIP, FRIENDSHIP_MORE); extend(FRIENDSHIP, FRIENDSHIP_VOLUME);
+extend(CHAT, CHAT_MORE); extend(DEEP_CHAT, DEEP_MORE); extend(KISS, KISS_MORE); extend(PULL, PULL_MORE); extend(PULL, PULL_VOLUME);
 extend(LOYALTY, LOYALTY_MORE); extend(ICK, ICK_MORE); extend(ARGUMENT, ARGUMENT_MORE); extend(ADVICE, ADVICE_MORE);
 extend(COMFORT, COMFORT_MORE); extend(REASSURANCE, REASSURANCE_MORE); extend(CONFESSION, CONFESSION_MORE);
 extend(JEALOUS_CONFRONT, CONFRONT_MORE); extend(DEBRIEF, DEBRIEF_MORE); extend(RECOUPLE_PICK, RECOUPLE_MORE);

@@ -128,11 +128,19 @@ Personality picks WHICH option, never a broken copy of a neutral one:
 - Persona (fuckboy, hopeless romantic, game player, girls' girl…) and intent (love, fun, fame, win)
   steer the purpose and the turn.
 
-## 8. Never
+## 8. Where the words live
+
+`js/pm/talk/<kind>.js`: each conversation kind is a plan of movements (`build`); extra
+entries for pools a season wears thin go in `js/pm/talk/more/` (`extend`). A movement
+opens and closes its own subject, so any plan's movements follow one another. Gate on
+facts (`when`), never decide anything: the engine's ending (`end`, `of`) picks the
+landing. Measure pool wear over two seasons before and after adding.
+
+## 9. Never
 
 - Fragments, clipped telegrams, ALL-CAPS shouting.
 - A line that would only make sense with a scene that didn't air.
 - Someone who has left the villa, or isn't in the scene, speaking.
 - Quoting a line back in quote marks.
 - Other shows' words (camp, tribe, house, eviction, challenge-beast…) — `foreignWordsIn` checks.
-- Real brands, films, songs, celebrities.
+- Real brands, products, apps, events, films, songs, celebrities, other shows (tests/helpers/brand-names.js).

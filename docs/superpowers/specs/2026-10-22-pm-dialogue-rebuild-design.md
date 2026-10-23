@@ -176,3 +176,27 @@ with a pool-wear probe over four seasons, like TD's.
 - Readability: no fragment strings, no sentence cut to a word or two (the `unreadable` rule).
 - Pool wear over four seasons under a ceiling.
 - The `pm-lines` well-formedness rules (ids, speakers, facts, slots, regional words, other shows' words).
+
+## 8. Status (2026-10-22, built)
+
+Everything in §6 is built except deleting the old pools outright (see below).
+
+- **Director:** `js/pm/story/director.js` — tiers (decided as each scene fires, not at
+  episode end: the engine's later scenes, Movie Night and the reunion read earlier
+  scenes' words), `after` causes per talk file, registers from voice tags.
+- **Writer:** `js/pm/talk/` — 90+ kinds as movement files (`build`, `extend` for the
+  measured extra pools in `talk/more/`), `leads` (a fact that must lead: `rowedToday`),
+  `stages` (a short scene that opens on dialogue still says where it is), notMorning
+  (a line assuming the day is under way never plays at breakfast), `tiered: false`
+  for ceremonies and storylines.
+- **Voice overlays retired** (168 batches deleted); voice picks whole movements.
+- **Measured** on the user's Season 1 cast: ~22 featured / ~20 short / ~50 notes and
+  550-800 clicks an episode; 10.1 words a turn (32% at 10+, against Love Island's 43%:
+  openers and reactions are short by nature); 89% of aired lines from the new files.
+- **Kept on purpose:** the old pools that still read well and are mostly ceremony beats
+  or games (intro tapes, the host at the fire pit, challenges and kiss games, Movie
+  Night reactions, the blow-up thread, votes and grudges, the final's film). They pass
+  every rule in tests/pm-lines.test.js, including the brand-name guard.
+- **Guards:** tests/pm-talk.test.js (plans, placeholders, regional words, other shows'
+  words, brands, fragments, a played season's misses and length), tests/pm-script.test.js
+  (making-up follows a real row, "thanks for yesterday" follows a real yesterday).

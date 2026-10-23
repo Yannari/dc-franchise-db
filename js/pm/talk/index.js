@@ -26,6 +26,8 @@ import { FRIENDSHIP_VOLUME_5 } from './more/friendship-volume-5.js';
 import { PULL_VOLUME_5 } from './more/pull-volume-5.js';
 import { VENT_VOLUME_2, DEBRIEF_VOLUME_2, BLOWUP_VOLUME_2, DATE_VOLUME_2, COMFORT_VOLUME_2, DUMP_GOODBYE_VOLUME } from './more/midsize-volume.js';
 import { NOTES_VOLUME_2, STAGES_VOLUME_2, SMALL_MOVES_2 } from './more/notes-volume-2.js';
+import { FRIENDSHIP_VOLUME_6 } from './more/friendship-volume-6.js';
+import { PULL_VOLUME_6, GOSSIP_TELL_VOLUME_2, ARGUMENT_START_VOLUME, PILE_IN_LAND_VOLUME } from './more/pull-gossip-volume-6.js';
 import { ROWED_VOLUME } from './more/rowed-volume.js';
 import { HOTSPOT_VOLUME } from './more/hotspot-volume.js';
 import { STORYLINE_VOLUME } from './more/storyline-volume.js';
@@ -141,3 +143,5 @@ for (const [k, notes] of Object.entries(NOTES_VOLUME_2)) extend(TALK[k], { notes
 for (const [k, stages] of Object.entries(STAGES_VOLUME_2)) extend(TALK[k], { stages });
 for (const [k, more] of Object.entries(SMALL_MOVES_2)) extend(TALK[k], more);
 for (const [k, more] of Object.entries(ROWED_VOLUME)) extend(TALK[k], more);
+extend(FRIENDSHIP, FRIENDSHIP_VOLUME_6);
+extend(PULL, PULL_VOLUME_6); extend(GOSSIP, GOSSIP_TELL_VOLUME_2); extend(ARGUMENT, ARGUMENT_START_VOLUME); extend(PILE_IN, PILE_IN_LAND_VOLUME);

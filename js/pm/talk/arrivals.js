@@ -261,10 +261,16 @@ export const BOMBSHELL_GUESS = build('bombshell-guess', {
         ['a', "Let me have this. Let me have one minute of hope before it all goes wrong."],
         ['b', "Fine. One minute."],
       ] },
-      { when: { coupled: false, cast: 2 }, turns: [
+      { when: { coupled: false, cast: 2, gender: 'f' }, turns: [
         ['b', "You've got your hopes up."],
         ['a', "I have not."],
         ['b', "You've put lipstick on in the last thirty seconds."],
+        ['a', "That's just good preparation."],
+      ] },
+      { when: { coupled: false, cast: 2, gender: 'm' }, turns: [
+        ['b', "You've got your hopes up."],
+        ['a', "I have not."],
+        ['b', "You've fixed your hair in the pool reflection three times."],
         ['a', "That's just good preparation."],
       ] },
     ],

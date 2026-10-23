@@ -12,6 +12,15 @@
 //   kinOf      twins · family · friends · ex, and -in when already inside
 //   eyes       they've already picked someone out · pastEx: an ex they'd rather not see
 //   intent · persona · reg         as everywhere
+//   gender     the speaker's (shared fact); `into`: who they go for, from their
+//              gender and sexuality (f · m · any). {one} / {ones} say it: a girl /
+//              girls, a boy / boys (a guy / guys outside Britain and Ireland),
+//              someone / people. A line that pictures a body (stubble, heels)
+//              is gated on `into` (the user, 2026-10-23: "theo said he wears
+//              heels he doesnt"); `look` is the first wanted look that fits
+//              who they go for, so a straight man never wants a pretty boy.
+//   shape      0-3, fixed per islander and season: which order the tape runs
+//              in, so twenty tapes in a row do not share one skeleton.
 // One speaker, cut together: every movement is one turn of a few sentences.
 import { build } from './build.js';
 import { players } from '../../core.js';
@@ -25,13 +34,28 @@ const jobOf = p => {
 const townOf = p => String(p?.hometown || '').split(',')[0].trim() || null;
 const record = n => players.find(p => p.name === n);
 const partOf = (ev, pool) => (ev.extra?.parts || []).find(([k]) => k === pool)?.[1] ?? null;
+// Who an islander goes for, from js/attraction.js's rule.
+const intoOf = p => {
+  const g = p?.gender || 'm', s = p?.sexuality || 'straight';
+  if (s === 'gay') return 'm';
+  if (s === 'lesbian') return 'f';
+  if (s !== 'straight') return 'any';
+  return g === 'm' ? 'f' : g === 'f' ? 'm' : 'any';
+};
+// A wanted look that only fits one gender is skipped by someone who does not go for it.
+const LOOK_FOR = { 'pretty-boy': ['m', 'any'], 'pretty-girl': ['f', 'any'] };
+const lookOf = (p, into) => (p.type?.looks || []).find(l => !LOOK_FOR[l] || LOOK_FOR[l].includes(into)) || null;
+const hash = str => { let h = 0; for (const c of str) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+const BOYS = ['uk', 'scot', 'geordie', 'essex', 'ie'];
 
 export const INTRO = build('intro', {
   tiered: false,
   facts: (state, ev) => {
     const a = ev.players[0], p = state.profiles[a] || {}, r = record(a);
+    const into = intoOf({ gender: p.gender || r?.gender, sexuality: p.sexuality || r?.sexuality });
     return {
-      look: p.type?.looks?.[0] || null, vibe: p.type?.vibes?.[0] || null,
+      into, shape: hash(`${state.seed ?? 1}:${a}`) % 4,
+      look: lookOf(p, into), vibe: p.type?.vibes?.[0] || null,
       ick: p.icks?.[0] || null, interest: p.interests?.[0] || null,
       from: p.dialect && p.dialect !== (state.dialect || 'uk') ? p.dialect : null,
       kinOf: partOf(ev, 'intro-kin'), eyes: !!p.eyesOn?.length, pastEx: !!p.ex && !partOf(ev, 'intro-kin'),
@@ -39,15 +63,21 @@ export const INTRO = build('intro', {
     };
   },
   slots: (state, ev) => {
-    const r = record(ev.players[0]);
-    return { age: r?.age ? String(r.age) : null, job: jobOf(r), town: townOf(r) };
+    const a = ev.players[0], r = record(a), p = state.profiles[a] || {};
+    const into = intoOf({ gender: p.gender || r?.gender, sexuality: p.sexuality || r?.sexuality });
+    const boy = BOYS.includes(p.dialect || state.dialect || 'uk') ? 'boy' : 'guy';
+    return { age: r?.age ? String(r.age) : null, job: jobOf(r), town: townOf(r),
+      one: { f: 'a girl', m: `a ${boy}` }[into] || 'someone', ones: { f: 'girls', m: `${boy}s` }[into] || 'people' };
   },
   plans: {
     featured: [
       { when: { kinOf: ['twins', 'family', 'friends', 'ex', 'twins-in', 'family-in', 'friends-in', 'ex-in'] }, plan: ['hello', 'me', 'kin', 'type', 'vibe?', 'close'] },
       { when: { eyes: true }, plan: ['hello', 'me', 'type', 'eyes', 'close'] },
       { when: { pastEx: true }, plan: ['hello', 'me', 'type', 'ick?', 'past', 'close'] },
-      { plan: ['hello', 'me', 'extra?', 'type', 'vibe?', 'ick', 'close'] },
+      { when: { shape: 0 }, plan: ['hello', 'me', 'extra?', 'type', 'vibe?', 'ick', 'close'] },
+      { when: { shape: 1 }, plan: ['hello', 'extra', 'me', 'type', 'vibe?', 'close'] },
+      { when: { shape: 2 }, plan: ['hello', 'me', 'type', 'ick', 'close'] },
+      { plan: ['hello', 'type', 'vibe', 'me', 'extra?', 'close'] },
     ],
     short: ['hello', 'type', 'close'],
   },
@@ -134,7 +164,7 @@ export const INTRO = build('intro', {
       { when: { look: 'blonde' }, turns: [['a', "Put a blonde in front of me and I go to pieces. Blonde hair, a nice tan, a big smile. That's the dream."]] },
       { when: { look: 'brunette' }, turns: [['a', "I always end up with brunettes. Long dark hair gets me every time. My friends say I'm the most predictable person they know."]] },
       { when: { look: 'brunette' }, turns: [['a', "Brown hair, brown eyes, warm colours. I don't know why, but that's always the person I end up talking to all night."]] },
-      { when: { look: 'dark-hair' }, turns: [['a', "Dark hair, dark eyes, a bit of stubble if they can grow it. That's my weakness. Anyone like that walks into a room, and I've stopped listening to whoever I was talking to."]] },
+      { when: { look: 'dark-hair', into: 'm' }, turns: [['a', "Dark hair, dark eyes, a bit of stubble if he can grow it. That's my weakness. Anyone like that walks into a room, and I've stopped listening to whoever I was talking to."]] },
       { when: { look: 'dark-hair' }, turns: [['a', "I go for dark hair and a serious face. Someone who looks like they're thinking something they're not going to tell you. I find that very hard to resist."]] },
       { when: { look: 'redhead' }, turns: [['a', "Redheads. I've always had a thing for them. Every crush I had at school had red hair. Still true, I'm afraid."]] },
       { when: { look: 'redhead' }, turns: [['a', "Ginger hair and freckles is the cutest thing in the world, and I will fight anyone who says otherwise."]] },
@@ -145,9 +175,9 @@ export const INTRO = build('intro', {
       { when: { look: 'pretty-boy' }, turns: [['a', "I like them a bit pretty. Nice skin, good hair, smells amazing. Someone who takes longer to get ready than I do, and isn't embarrassed about it."]] },
       { when: { look: 'pretty-girl' }, turns: [['a', "I go for someone really put-together. Hair done, nails done, the full look. I love someone who makes an effort. It makes me want to make one too."]] },
       { when: { look: 'rugged' }, turns: [['a', "I like someone a bit rough around the edges. Messy hair, a couple of scars, looks like they could fix a car. Too polished and I get bored."]] },
-      { when: { look: 'rugged' }, turns: [['a', "My type looks like they've just come back from a week of camping. A beard, a bit scruffy, completely unbothered. I love it."]] },
+      { when: { look: 'rugged', into: 'm' }, turns: [['a', "My type looks like he's just come back from a week of camping. A beard, a bit scruffy, completely unbothered. I love it."]] },
       { when: { look: 'accent' }, turns: [['a', "An accent gets me every time. It doesn't even matter which one. If you talk differently to me, I'll listen to anything you say, even if it's rubbish."]] },
-      { when: { look: 'glam' }, turns: [['a', "I love someone who makes an effort. Full glam, every day, heels by the pool. The more effort someone puts in, the more I'm into it."]] },
+      { when: { look: 'glam', into: 'f' }, turns: [['a', "I love a girl who makes an effort. Full glam, every day, heels by the pool. The more effort someone puts in, the more I'm into it."]] },
       { when: { look: 'natural' }, turns: [['a', "I prefer someone natural. No filters, no fuss. Someone who looks good first thing in the morning with their hair everywhere. That's the one."]] },
       { turns: [['a', "My type on paper? Honestly, I don't really have one. I've been with all sorts. It's more about how someone makes me feel than what they look like. Mostly. Okay, a bit about what they look like."]] },
     ],

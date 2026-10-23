@@ -65,9 +65,9 @@ describe('the movements are well-formed', () => {
 describe('a placeholder only where somebody fills it', () => {
   it('only known placeholders, and never a subject pronoun', () => {
     for (const [k, s, e] of ENTRIES) for (const x of texts(e)) {
-      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, tag(k, s, e)).toMatch(/^\{(where|Where|about|age|job|town|day|quote|card|(pa|pb|a|b|c|d|x|about)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
-      // {age} {job} {town}: an intro tape's, from the character file.
-      if (/\{(age|job|town)\}/.test(x)) expect(k, tag(k, s, e)).toBe('intro');
+      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, tag(k, s, e)).toMatch(/^\{(where|Where|about|age|job|town|one|ones|day|quote|card|(pa|pb|a|b|c|d|x|about)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
+      // {age} {job} {town}: an intro tape's, from the character file; {one} {ones}: who the tape's islander goes for.
+      if (/\{(age|job|town|one|ones)\}/.test(x)) expect(k, tag(k, s, e)).toBe('intro');
       // {day}: the day a declaration's moment happened (script.js clipSlots).
       if (/\{day\}/.test(x)) expect(k, tag(k, s, e)).toBe('speech');
       // {quote}: the beach-hut line Look Who's Talking reads out.
@@ -184,6 +184,29 @@ describe('a line happens at its own time of day', () => {
       if (MORNING.test(t) && !phases(e).includes('morning')) bad.push(`${tag(k, s, e)}: ${t.match(MORNING)[0]}`);
       if (STAGE_MORNING.test(e.stage || '') && !phases(e).includes('morning')) bad.push(`${tag(k, s, e)}: at breakfast`);
       if (NIGHT.test(t) && !phases(e).includes('evening')) bad.push(`${tag(k, s, e)}: ${t.match(NIGHT)[0]}`);
+    }
+    expect(bad).toEqual([]);
+  });
+});
+
+describe('a line about a body or a partner fits who says it', () => {
+  // The user, 2026-10-23: "presentation intro are not really gendered ... i
+  // got theo said he wears heels he doesnt". A spoken line that pictures the
+  // speaker's own body or outfit is gated on their `gender`; one that pictures
+  // who they want is gated on `into` (an intro tape's) or says {one} / {ones}.
+  const BODY = /\b(heels|bikinis?|lipstick|mascara|my lashes|my nails|my make-up|my beard|my stubble)\b/i;
+  const WANT = /\b(a girl|a boy|a guy|girlfriend|boyfriend|dream girl)\b/i;
+  it('gated on the speaker or on who they go for', () => {
+    const bad = [];
+    for (const [k, s, e] of ENTRIES) {
+      const w = e.when || {};
+      for (const [who, line] of e.turns || []) {
+        if (who !== 'a' && who !== 'b') continue;
+        // A look that only fits one gender is only ever the look of someone who goes for it (intro.js lookOf).
+        const gated = w.gender || w.bGender || w.into || ['pretty-girl', 'pretty-boy'].includes(w.look);
+        if (BODY.test(line) && !/head over heels/i.test(line) && !gated) bad.push(`${tag(k, s, e)}: ${line.match(BODY)[0]}`);
+        if (k === 'intro' && WANT.test(line) && !gated) bad.push(`${tag(k, s, e)}: ${line.match(WANT)[0]}`);
+      }
     }
     expect(bad).toEqual([]);
   });

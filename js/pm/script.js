@@ -64,7 +64,7 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   // a talk file's own (pm/talk/*.js facts())
   'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels',
   // an intro tape's (pm/talk/intro.js)
-  'look', 'vibe', 'ick', 'interest', 'from', 'kinOf', 'eyes', 'pastEx', 'hasAge', 'hasJob', 'hasTown'];
+  'look', 'vibe', 'ick', 'interest', 'from', 'kinOf', 'eyes', 'pastEx', 'hasAge', 'hasJob', 'hasTown', 'into', 'shape'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -381,7 +381,7 @@ export function fill(text, ps, partners = {}) {
   if (partners.exchange != null) text = text.replace(/\{exchange\}/g, partners.exchange);
   // An intro tape's own facts, from the character file (pm/talk/intro.js): only
   // what the file says, never invented.
-  for (const k of ['age', 'job', 'town']) if (partners[k] != null) text = text.split(`{${k}}`).join(partners[k]);
+  for (const k of ['age', 'job', 'town', 'one', 'ones']) if (partners[k] != null) text = text.split(`{${k}}`).join(partners[k]);
   return text.replace(/\{(pa|pb|about|a|b|c|d|x)(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj|gf))?\}/g, (m, who, form) => {
     const n = names[who];
     if (!n) return m;

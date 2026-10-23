@@ -22,6 +22,9 @@ import { LOYALTY_VOLUME_2, GOSSIP_VOLUME_2 } from './more/loyalty-gossip-volume-
 import { FRIENDSHIP_VOLUME_4 } from './more/friendship-volume-4.js';
 import { PULL_VOLUME_4 } from './more/pull-volume-4.js';
 import { INTRO_VOLUME } from './more/intro-volume.js';
+import { FRIENDSHIP_VOLUME_5 } from './more/friendship-volume-5.js';
+import { PULL_VOLUME_5 } from './more/pull-volume-5.js';
+import { LADDER_VOLUME, GAME_KISS_VOLUME, ARGUMENT_VOLUME_2, GOSSIP_TELL_VOLUME } from './more/ladder-volume.js';
 import { FAMILIES_VOLUME, PILE_IN_VOLUME, DEBRIEF_STAGES, VENT_STAGES, ADVICE_STAGES } from './more/small-pools-volume.js';
 import { CHAT_VOLUME, DEEP_VOLUME, KISS_VOLUME, ARGUMENT_VOLUME, VENT_VOLUME, DATE_VOLUME, KEEPING_OPEN_VOLUME, COMEDY_VOLUME, COMFORT_VOLUME, ADVICE_VOLUME } from './more/everyday-volume-4.js';
 import { DECL_FINAL_MORE } from './more/final.js';
@@ -119,3 +122,7 @@ extend(PULL, PULL_VOLUME_4);
 extend(INTRO, INTRO_VOLUME);
 extend(FAMILIES, FAMILIES_VOLUME); extend(PILE_IN, PILE_IN_VOLUME);
 extend(DEBRIEF, { stages: DEBRIEF_STAGES }); extend(VENT, { stages: VENT_STAGES }); extend(ADVICE, { stages: ADVICE_STAGES });
+extend(FRIENDSHIP, FRIENDSHIP_VOLUME_5);
+extend(PULL, PULL_VOLUME_5);
+for (const [k, more] of Object.entries(LADDER_VOLUME)) extend(TALK[k], more);
+extend(TALK['game-kiss'], GAME_KISS_VOLUME); extend(ARGUMENT, ARGUMENT_VOLUME_2); extend(GOSSIP, GOSSIP_TELL_VOLUME);

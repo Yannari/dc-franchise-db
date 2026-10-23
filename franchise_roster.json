@@ -8743,6 +8743,48 @@
       "descriptor": "The Homewrecker",
       "backstory": "Valentina trained in ballet in Buenos Aires until a teacher told her she was too much for it, and she has been proving that right ever since, dancing in a touring stage show that has taken her through twenty cities. She grew up the only girl among four brothers and learned to fight for every bit of attention at the table. She has been called a homewrecker more than once, and she says it like a title she earned. She came in with the second group to turn heads, and she picked out her target from the first photo she saw.",
       "personality": "Valentina is bold, dramatic and deliberately ruthless when she wants something. She goes after taken men without guilt, enjoys the jealousy she causes and has no interest in being liked by the other women. She is cutting when challenged, and her put-downs are delivered with a smile. She is honest about what she is doing, which she considers more decent than sneaking around. She is passionate and quick to anger, and she never backs down from a confrontation. Beneath the performance she is fiercely proud and terrified of being ordinary, and the rare person who sees her as more than a threat gets a loyalty nobody in the villa expects."
+    },
+    {
+      "name": "Alexander",
+      "slug": "alexander",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "villain",
+      "stats": {
+        "physical": 3,
+        "endurance": 3,
+        "mental": 8,
+        "social": 2,
+        "strategic": 7,
+        "loyalty": 2,
+        "boldness": 9,
+        "intuition": 4,
+        "temperament": 3
+      },
+      "voice": "Haughty, theatrical and sneering, a cartoon villain's drawl with a plan for everything. Hands out insults like gifts, monologues about his own genius and sulks loudly when he loses. #cruel #schemer",
+      "profileSources": {},
+      "ties": []
+    },
+    {
+      "name": "Angelica",
+      "slug": "angelica",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "mastermind",
+      "stats": {
+        "physical": 5,
+        "endurance": 6,
+        "mental": 8,
+        "social": 7,
+        "strategic": 10,
+        "loyalty": 4,
+        "boldness": 6,
+        "intuition": 8,
+        "temperament": 6
+      },
+      "voice": "Polished, poised and sweetly cutting, every insult wrapped in a compliment. Speaks in complete, well-chosen sentences and smiles while she says the worst thing in the room. #schemer #proud",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

@@ -10,12 +10,13 @@
 // The words live in pm/lines/* and are picked by pm/script.js AFTER the
 // event has happened, on their own dice: prose renders, it never decides.
 import { addBond, getBond } from '../bonds.js';
-import { addRelationshipDimension } from '../relationships.js';
+import { addRelationshipDimension, getRelationshipDimension } from '../relationships.js';
 import { attr, nudgeAttraction, ickHit, compatible } from './chemistry.js';
 import { recordAired, nudgeBelief, BETRAYAL } from './ledger.js';
 import { romance, shown, revealTruth, friendship, believed } from './feelings.js';
-import { closedness, betrayalWeight } from './ladder.js';
-import { feel, jealousyHit, attachment, emo } from './emotions.js';
+import { closedness, betrayalWeight, stepOf, setStep, believeStep } from './ladder.js';
+import { feel, jealousyHit, attachment, emo, breakHeart } from './emotions.js';
+import { noteBreakup } from './exes.js';
 import { onYourSide, BLOOD } from './kin.js';
 import { streamFor } from '../dr/rng.js';
 import { girlCode, judgement } from './circle.js';
@@ -129,16 +130,24 @@ const PHASE_ORDER = ['morning', 'day', 'event', 'evening'];
 export function today(state) {
   return (state._today || []).filter(e => e.ep === state.ep);
 }
+// Having it out over a telling is a row too (haveItOut, below).
+export const ROW_KINDS = new Set(['argument', 'told-confront']);
 export function rowedToday(state, a, b) {
-  return today(state).filter(e => e.kind === 'argument' && e.players.includes(a) && e.players.includes(b));
+  return today(state).filter(e => ROW_KINDS.has(e.kind) && e.players[0] && e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b));
 }
 function cooling(state, a, b) {
   // The named challenge (pm/challenges.js) is the afternoon's event.
   const at = p => PHASE_ORDER.indexOf(p === 'challenge' ? 'event' : p);
   const now = at(state.phase);
-  return rowedToday(state, a, b).some(e => now - at(e.phase) <= 1);
+  // Having it out over a telling, unforgiven, cools them for the rest of the day.
+  if (rowedToday(state, a, b).some(e => now - at(e.phase) <= 1 || (e.kind === 'told-confront' && e.extra?.verdict !== 'forgive'))) return true;
+  // …and one of them has just been told what the other was up to: nobody
+  // cuddles up on the daybed the hour after hearing that (read, 2026-10-23).
+  return today(state).some(e => e.kind === 'gossip' && e.players.slice(1, 3).includes(a) && e.players.slice(1, 3).includes(b)
+    && now - at(e.phase) <= 1);
 }
-const warmCouples = state => couplesInRoom(state).filter(([a, b]) => !cooling(state, a, b));
+// …and a couple one of whom is done with the other has no warm scenes left.
+const warmCouples = state => couplesInRoom(state).filter(([a, b]) => !cooling(state, a, b) && !doneWith(state, a, b));
 const compatibleMates = (state, a) => roomMates(state, a).filter(b => attr(state, a, b) != null);
 const openSecret = (state, n) => state.secrets.some(s => !s.known && (s.who === n || s.partner === n));
 
@@ -153,12 +162,14 @@ const DAY_ONE = 0.25;
 // What a pull while coupled costs with the public (x SCENE_GAIN); the one
 // who goes along with it pays half.
 const PULL_COST = 1.3;
-const GOSSIP_PER_EPISODE = 3;
+// Two a night (user, 2026-10-23: "the gossiping a lot but nothing ever come
+// from it"): each telling is now a story with a confrontation after it.
+const GOSSIP_PER_EPISODE = 2;
 const metToday = (s, ...ns) => ns.some(n => n != null && (s.ledger?.firstEp?.[n] ?? s.ep) === s.ep);
 
 // The roles a kind's scene talks ABOUT rather than includes (their index in
 // ev.players): never the one who goes to the beach hut about it.
-const HUT_ABSENT = { 'casa-miss': [1], debrief: [2], gossip: [2], advice: [2], 'triangle-case': [2], 'triangle-torn': [], 'lie-write': [2],
+const HUT_ABSENT = { 'casa-miss': [1], debrief: [2], gossip: [2], 'told-confront': [2], advice: [2], 'triangle-case': [2], 'triangle-torn': [], 'lie-write': [2],
   'tower-q': [2], 'bombshell-react': [], 'movie-react': [], confession: [2] };
 
 export const KINDS = {
@@ -580,6 +591,8 @@ export const KINDS = {
         // about Ryan three episodes after Ryan was dumped (with a hut from
         // Ryan, who was not there), and Priya about Jordan the same way.
         if (!s.villa.includes(sec.who) || partnerOf(s, sec.partner) !== sec.who) continue;
+        // Nobody carries news to someone who has just told the partner they're done.
+        if (doneWith(s, sec.partner, sec.who)) continue;
         for (const w of sec.witnesses) {
           if (!s.villa.includes(w) || !roomMates(s, w).includes(sec.partner)) continue;
           options.push([{ players: [w, sec.partner, sec.who], secret: sec.id },
@@ -688,7 +701,7 @@ export const KINDS = {
     'ask-declined', 'love-said', 'love-hanging', 'hideaway', 'torch', 'jealous-confront',
     'jealous-sulk', 'jealous-retaliate', 'reassurance', 'overthinking', 'confession', 'advice',
     'heart-rate', 'snog-marry-pie', 'movie-night', 'double-standard', 'notes', 'families',
-    'solidarity',
+    'solidarity', 'told-confront',
     // the dumping formats of Plan 4.5
     'dump-at-risk', 'dump-verdict-couple', 'dump-verdict-singles', 'group-entrance', 'final-recoupling', 'challenge-rules', 'date-text', 'date-picked', 'date-back',
     'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'speech',
@@ -797,6 +810,113 @@ const ENDINGS = {
     return 'thanks';
   },
 };
+
+// ── having it out ─────────────────────────────────────────────────────
+// User, 2026-10-23: "the gossiping a lot but nothing ever come from it its
+// like really empty". Measured on the Season 1 cast, two seasons: 53-58
+// tellings aired, a row between the couple after only a quarter of them, the
+// couple's next scene a kiss or a cosy chat in 60% ("I'm going to find Arjun.
+// Right now." — then a kiss), and one islander told about the same partner
+// nine times with nothing changing. Now a telling always reaches the one it
+// was about, the same day, and what is said there decides something.
+// …but not every time (user, the same day: "dont make a confrontation happen
+// too much tho cause gossip is already repetitive enough"): the angrier the
+// telling left them, the likelier they go and say it, and a quiet one mostly
+// keeps it in. A "done" ends the couple there and then, one break-up a night
+// at most, the rule the photos and Movie Night share (movie-night.js).
+//   told-confront [p, x, w]  p has it out with x, about what w told p
+//     `of`      x's answer: owns · small (plays it down) · denies · blames (turns on w)
+//     `verdict` p's: forgive · warning · done
+//     `believed` p takes x's word over w's (a denial or a blame that lands)
+//     `channel` how it starts: straight (p storms over) · calm (p sits x down) · held (x asks what's wrong)
+//     `nth`     first · again (p has had it out with x over a telling before)
+// Who lies is the franchise rule: a nice archetype never denies, a neutral
+// one only with strategic >= 6 and loyalty <= 4. Everything else is weights.
+const toldKey = (p, x) => `${p}|${x}`;
+/** One of them told the other they're done, this episode or the last. */
+function doneWith(state, a, b) {
+  return [toldKey(a, b), toldKey(b, a)].some(k => state.toldDone?.[k] != null && state.ep - state.toldDone[k] <= 1);
+}
+function answerOf(s, x, sev, rng) {
+  const st = S(s, x), arch = s.profiles[x].archetype;
+  const nice = LOYAL_KIND.has(arch);
+  const liar = PLAYERS.has(arch) || (!nice && st.strategic >= 6 && st.loyalty <= 4);
+  return weighted(rng, [
+    ['owns', 0.2 + st.loyalty / 10 + (emo(s, x).guilt || 0) / 10 + (nice ? 0.4 : 0)],
+    ['small', 0.3 + (sev < 1 ? 0.8 : 0.2)],
+    ['denies', liar ? 0.3 + (1 - st.loyalty / 10) : 0],
+    ['blames', (0.15 + 0.4 * st.boldness / 10 + 0.3 * (1 - st.temperament / 10)) * (nice ? 0.4 : 1)],
+  ]);
+}
+export function haveItOut(state, tell) {
+  const [w, p, x] = tell.players;
+  if (!state.villa.includes(p) || !state.villa.includes(x) || apart(state, p, x) || partnerOf(state, p) !== x) return null;
+  const rng = streamFor(state.seed || 1, `confront:${tell.id}`);
+  const sec = state.secrets.find(z => z.id === tell.extra.secret);
+  const sev = Math.max(0.3, sec?.severity ?? 1);
+  const key = toldKey(p, x);
+  // Told again and again about the same partner, anyone snaps in the end.
+  const heard = ((state.toldHeard ||= {})[key] = (state.toldHeard[key] || 0) + 1);
+  const goes = ({ angry: 0.5, thanks: 0.18, quiet: 0.06 }[tell.extra.close] ?? 0.18) + 0.12 * (heard - 1);
+  if (rng() >= Math.min(0.9, goes * Math.min(1, 0.4 + 0.6 * sev))) return null;
+  const nth = (state.toldOut?.[key] || 0) > 0 ? 'again' : 'first';
+  (state.toldOut ||= {})[key] = (state.toldOut[key] || 0) + 1;
+  const channel = { angry: 'straight', thanks: 'calm', quiet: 'held' }[tell.extra.close] || 'calm';
+  const wasClosed = ['closed-off', 'exclusive', 'official'].includes(stepOf(state, p, x));
+  const of = answerOf(state, x, sev, rng);
+  // A denial, or a turn on the teller, lands when p trusts x more than w.
+  const trustGap = (friendship(p, x) - friendship(p, w)) / 10;
+  const believed = (of === 'denies' || of === 'blames')
+    && rng() < clamp(0.35 + 0.5 * trustGap - (sev >= 1 ? 0.15 : 0) - (nth === 'again' ? 0.2 : 0), 0.05, 0.85);
+  const keen = clamp(romance(p, x) / 10, 0, 1);
+  const sorry = { owns: 0.25, small: sev < 1 ? 0.1 : -0.15, denies: -0.3, blames: -0.15 }[of];
+  const heavy = Math.min(1.5, sev);
+  const verdict = believed ? 'forgive' : weighted(rng, [
+    ['forgive', Math.max(0.05, keen + sorry + 0.15 * T(state, p) / 10 - 0.35 * heavy - (nth === 'again' ? 0.3 : 0))],
+    ['warning', 0.45],
+    ['done', Math.max(0.05, 0.3 * (1 - keen) + 0.2 * heavy + (nth === 'again' ? 0.3 : 0) - sorry)],
+  ]);
+  // One couple ends a night, at most: a second "done" tonight is a last chance.
+  // …and only on a day the season can take it (season.js _canSplit).
+  const verdictNow = verdict === 'done' && (state._splitEp === state.ep || !state._canSplit) ? 'warning' : verdict;
+  const split = verdictNow === 'done';
+  // What the answer does, whatever p decides.
+  if (of === 'owns') { addRelationshipDimension(p, x, 'trust', 0.2); feel(state, x, 'guilt', -0.5); }
+  if (of === 'blames' || of === 'denies') { addBond(x, w, -0.8); addRelationshipDimension(x, w, 'resentment', 0.6); }
+  if (believed) {
+    // The messenger takes it: p sides with the partner.
+    addBond(p, w, -1); addRelationshipDimension(p, w, 'resentment', 0.8);
+    addBond(p, x, 0.5); nudgeAttraction(state, p, x, 0.5 * heavy);
+  } else if (of === 'denies') {
+    addRelationshipDimension(p, x, 'trust', -0.8); addRelationshipDimension(p, x, 'resentment', 0.5);
+  } else if (of === 'small' && sev >= 1) addRelationshipDimension(p, x, 'resentment', 0.4);
+  // …and what p decides.
+  if (verdictNow === 'forgive') {
+    addBond(p, x, 0.5); nudgeAttraction(state, p, x, 0.3);
+    for (const r of Object.keys(emo(state, p).jealousy || {})) emo(state, p).jealousy[r] *= 0.5;
+  } else if (verdictNow === 'warning') {
+    addRelationshipDimension(p, x, 'trust', -0.4); feel(state, p, 'security', -0.4);
+  } else {
+    addBond(p, x, -1.2); nudgeAttraction(state, p, x, -1.5); addRelationshipDimension(p, x, 'trust', -1);
+    feel(state, p, 'heartbreak', 1 + keen); feel(state, x, 'security', -0.8);
+    // Closed off for someone who wasn't: back to just coupled, and x is told so.
+    if (stepOf(state, p, x) && stepOf(state, p, x) !== 'coupled') { setStep(state, p, x, 'coupled'); believeStep(state, x, p, 'coupled'); }
+    (state.toldDone ||= {})[key] = state.ep;
+    // Done is done: whatever else x has been doing is out too.
+    for (const z of state.secrets) if (!z.known && z.who === x && z.partner === p) z.known = true;
+    // …and it is over: both single until somebody picks them.
+    state.couples = state.couples.filter(k => !(k.includes(p) && k.includes(x)));
+    state._splitEp = state.ep;
+    noteBreakup(state, { ender: p, wrong: x, severity: sev, cause: 'told' });
+    breakHeart(state, x, p, 3 * romance(x, p) / 10);
+  }
+  nudgeBelief(state.ledger, x, p, { forgive: 2, warning: -2, done: -6 }[verdictNow]);
+  const xApproval = { owns: 0.2, small: -0.2, denies: -0.7, blames: -0.5 }[of];
+  const pop = { ...pop1(p, split ? 1 : 0.4, split ? 2.5 : 1.5), ...pop1(x, xApproval - (split ? 0.5 : 0), split ? 2.5 : 1.5) };
+  return makeEvent(state, rng, { phase: tell.phase, kind: 'told-confront', players: [p, x, w], aired: true,
+    major: sev >= 1 || verdictNow === 'done' ? [p, x] : [],
+    extra: { secret: tell.extra.secret, of, verdict: verdictNow, believed, split, channel, nth, wasClosed, pop } });
+}
 
 // The relations' scenes, by the part of the day (pm/kin.js).
 const KIN_PHASE_KINDS = {
@@ -1010,7 +1130,10 @@ export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS) {
       seenPhase[key] = (seenPhase[key] || 0) + 1;
       seenEp[key] = (seenEp[key] || 0) + 1;
       const extra = Array.isArray(got) ? {} : { secret: got.secret, ...(got.extra || {}) };
-      out.push(makeEvent(state, rng, { phase, kind: realKind, players, extra }));
+      const ev = makeEvent(state, rng, { phase, kind: realKind, players, extra });
+      out.push(ev);
+      // A telling reaches the one it was about, the same day (haveItOut).
+      if (realKind === 'gossip') { const after = haveItOut(state, ev); if (after) out.push(after); }
       made++;
     }
   }

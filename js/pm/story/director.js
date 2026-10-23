@@ -60,7 +60,7 @@ export function registerOf(state, ev, name) {
 // saw (it aired) and everyone in the new one knows about.
 export const AFTER_OF = {
   pull: 'pull', loyalty: 'knocked-back', kiss: 'kiss', 'challenge-kiss': 'game-kiss', 'game-kiss': 'game-kiss',
-  argument: 'row', 'jealous-confront': 'row', blowup: 'row', 'rival-row': 'row', 'feud-confront': 'row',
+  argument: 'row', 'jealous-confront': 'row', 'told-confront': 'row', blowup: 'row', 'rival-row': 'row', 'feud-confront': 'row',
   gossip: 'told', confession: 'told', entrance: 'arrival', 'group-entrance': 'arrival', 'return-entrance': 'arrival',
   date: 'date', 'recouple-pick': 'recoupling', steal: 'recoupling', hideaway: 'hideaway', ick: 'ick',
   'casa-return': 'casa', photos: 'casa', 'movie-clip': 'movie', 'bed-share': 'bed', 'head-turned': 'head-turned',
@@ -72,6 +72,8 @@ export const AFTER_OF = {
 const BETWEEN = new Set(['row', 'kiss', 'closed', 'official', 'love', 'recoupling', 'hideaway', 'ick']);
 // …and a challenge kiss is either: the two of them, or one of them and somebody else.
 const EITHER = new Set(['game-kiss']);
+// Scenes whose third player is talked about, never there.
+const ABOUT_THIRD = new Set(['told-confront', 'jealous-confront']);
 
 /** Does `n` know scene `e` happened? In it, or it was no secret, or they saw it or were told. */
 export function knowsOf(state, n, e) {
@@ -97,7 +99,10 @@ export function afterOf(state, ev, fams = null) {
     if (e === ev || !e.aired || e.tier === 'note') continue;
     const fam = AFTER_OF[e.kind];
     if (!fam || (fams && !fams.includes(fam))) continue;
-    const mine = e.players.includes(a), theirs = !!b && e.players.includes(b);
+    // A confrontation's third is who it was ABOUT, not in the room: a later
+    // scene with them did not have that row.
+    const inIt = ABOUT_THIRD.has(e.kind) ? e.players.slice(0, 2) : e.players;
+    const mine = inIt.includes(a), theirs = !!b && inIt.includes(b);
     if (!mine && !theirs) continue;
     const between = !!b && mine && theirs;
     if (!EITHER.has(fam) && BETWEEN.has(fam) !== between) continue;

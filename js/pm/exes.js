@@ -23,7 +23,7 @@
 // half-hearted one costs the one who gave it.
 import { addBond } from '../bonds.js';
 import { getRelationshipDimension, addRelationshipDimension } from '../relationships.js';
-import { makeEvent, partnerOf } from './events.js';
+import { makeEvent, partnerOf, apart } from './events.js';
 import { romance } from './feelings.js';
 import { emo, feel, breakHeart } from './emotions.js';
 
@@ -45,6 +45,8 @@ export function secondChances(state, rng, entry = null) {
     if (br.closed || br.ep === state.ep) continue;
     const { ender: b, wrong: a } = br;
     if (!here(a) || !here(b)) { br.closed = true; continue; }
+    // Never across Casa Amor's two villas: it waits for the night they're back.
+    if (apart(state, a, b)) continue;
     // The one who did it may have moved on (a Casa twist) and still come back
     // for them (UK 10's Sammy did); the one hurt only listens if they are not
     // happier with somebody new.

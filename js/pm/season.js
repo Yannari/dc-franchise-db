@@ -202,6 +202,12 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace, votesAhead, coupledAhead, plainNights: nights, firstVote, surplus, slotsAhead };
     // For a partner walking out with the dumped (moments.js): only while the season can spare them.
     state._surplus = surplus;
+    // A row that ends a couple mid-day (events.js haveItOut): only before the
+    // couples-only stretch, on a night with no vote, with recouplings left to
+    // mend it and islanders to spare — the pace above must still reach the
+    // final with its couples.
+    state._canSplit = ['villa', 'bombshell', 'recoupling'].includes(entry.moment) && !entry.coupled && !entry.finalRecoupling
+      && nights >= 2 && surplus >= 2;
     // Episode one opens on the arrivals and the first coupling, before the day.
     if (entry.moment === 'first-coupling') ctx.opening = nightOneOpening(state, ctx);
     // The final's day is the final dates (pm/journey.js): no ordinary villa

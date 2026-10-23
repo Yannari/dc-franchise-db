@@ -55,6 +55,13 @@ function grievances(state, tonight = []) {
     if (e.kind === 'steal') add(p[2], p[0], 3 * fade, 'steal');
     if (e.kind === 'casa-react' && ['devastated', 'turned'].includes(e.extra?.of)) { add(p[0], p[1], 3 * fade, 'casa', 'partner'); if (p[2]) add(p[0], p[2], 2.5 * fade, 'casa', 'rival'); }
     if (e.kind === 'gossip') add(p[2], p[0], 1.5 * fade, 'told');   // the one exposed, at the teller
+    // Had it out with the partner and not forgiven: the other one is next.
+    if (e.kind === 'told-confront' && e.extra?.verdict !== 'forgive') {
+      const sec = (state.secrets || []).find(z => z.id === e.extra.secret);
+      if (sec?.with && sec.with !== p[0]) add(p[0], sec.with, 2 * fade, 'cheating', 'rival', sec.kind === 'kiss');
+    }
+    // Turned on the teller: x at w, on top of the telling.
+    if (e.kind === 'told-confront' && e.extra?.of === 'blames') add(p[1], p[2], 1 * fade, 'told');
     if (e.kind === 'debrief' && e.extra?.of === 'blame' && p[2]) add(p[0], p[2], 2 * fade, 'vote');
     // Old rows feed the next one only a little (measured: at full weight
     // they fed themselves, 12.5 blow-ups a season, most of them about nothing new).

@@ -55,7 +55,7 @@ export const KIND_LABEL = {
   'camp-rally': 'Rallying round', 'camp-confront': 'Stepping in', 'camp-clash': 'Two sides', 'camp-lobby': 'A word in the ear', 'camp-split': 'The villa divided', 'camp-switch': 'Changing sides', 'camp-after': 'After the choice',
   'feud-confront': 'Having it out', 'feud-interrupt': 'Walking in on them', 'feud-shade': 'The new one', 'feud-ick': 'The ick', 'feud-closure': 'Talking it out',
   'game-plan': 'The plan', 'game-latch': 'Working it', 'game-two-faced': 'Two faces', 'game-suspect': 'Is it a game?', 'game-called': 'Called out', 'game-fallout': 'After', 'game-end': 'The game player',
-  'betray-see': 'Finding out', 'betray-confront': 'A friend?', 'betray-end': 'The friendship', 'mugged-low': 'Always the one left', 'found-love': 'Finally', 'villa-happy': 'So happy for them',
+  'betray-see': 'Finding out', 'betray-confront': 'A friend?', 'told-confront': 'Having it out', 'betray-end': 'The friendship', 'mugged-low': 'Always the one left', 'found-love': 'Finally', 'villa-happy': 'So happy for them',
   'redeem-reflect': 'Looking back', 'redeem-act': 'Saying sorry', 'redeem-doubt': 'For the cameras?', 'grass-talk': 'The one who tells', 'grass-frozen': 'Gone quiet', 'grass-confront': 'You told them',
   'parents-named': 'Mum and Dad', 'parents-advice': 'Ask Mum and Dad', 'parents-mediate': 'Stepping in', 'parents-wobble': 'Even Mum and Dad', 'exw-stir': 'The ex is back', 'exw-partner': 'Should I be worried?', 'exw-talk': 'The talk', 'exw-back': 'A second chance', 'vote-fallout': 'The morning after', 'vote-callout': 'You voted for me', 'grudge-cold': 'The cold shoulder', 'grudge-clash': 'Still angry', 'grudge-end': 'The grudge',
   'visit-arrive': 'Look who is back', 'visit-confront': 'Face to face', 'visit-leave': 'Gone again',
@@ -194,6 +194,12 @@ const PULL_POPS = {
   light: [[1, 'Just friendly', 'teal', 'star']],
   cold: [[1, 'Not interested', 'down', 'crack']],
 };
+// Having it out over a telling: the chip is what the told one decided.
+const VERDICT_POPS = {
+  forgive: [[1, 'Forgiven', 'teal', 'heart']],
+  warning: [[1, 'Last chance', 'red', 'crack']],
+  done: [[0, 'Done', 'red', 'crack'], [1, 'Trust gone', 'red', 'crack']],
+};
 const POPS_WHEN = { 'first-look': e => e.extra?.of === 'spark', 'ex-confront': e => e.extra?.of === 'spark', 'kin-vet': e => e.extra?.of === 'approve', 'ex-awkward': e => e.extra?.of === 'spark',
   // A kiss that fell flat moved nothing up worth a chip.
   icebreaker: e => e.extra?.choice === 'spark', 'lady-luck-kiss': e => e.extra?.choice === 'spark', receipt: e => ['secret', 'pull', 'head-turned'].includes(e.extra?.of),
@@ -268,6 +274,10 @@ function fxFor(row, e, first) {
   if (k.startsWith('feud-') && e.extra?.sides) fx.sides = e.extra.sides;
   if (k === 'game-called') { fx.shake = true; fx.neon = ["It's a game", '#ef4444']; }
   if (k === 'betray-confront' && e.extra?.sides) fx.sides = e.extra.sides;
+  // Having it out over a telling: the storm-over shakes; a "done" kills the lights.
+  if (k === 'told-confront' && e.extra?.channel === 'straight') fx.shake = true;
+  if (k === 'told-confront' && e.extra?.verdict === 'done') fx.neonDie = ["I'm done", '#ff2e88'];
+  if (k === 'told-confront' && e.extra?.verdict === 'warning') fx.neon = ['Last chance', '#ffc15e'];
   if (k === 'betray-end' && e.extra?.of === 'over') fx.neon = ['Friendship over', '#ef4444'];
   if (k === 'found-love') fx.neon = ['Finally', '#ff2e88'];
   if (k === 'exw-back') fx.neon = ['A second chance', '#ff2e88'];
@@ -347,7 +357,7 @@ export function sceneSteps(row, e, evIndex, bg) {
   const host = words().host, narrator = words().narratorName;
   const s = e.script || { lines: [] };
   const lines = s.lines || [];
-  const pops = (POPS_WHEN[e.kind]?.(e) === false ? [] : (e.kind === 'pull' && PULL_POPS[e.extra?.heat]) || POPS[e.kind] || []).map(([slot, t, style, icon]) => [e.players[slot], t, style, icon]).filter(p => p[0]);
+  const pops = (POPS_WHEN[e.kind]?.(e) === false ? [] : (e.kind === 'pull' && PULL_POPS[e.extra?.heat]) || (e.kind === 'told-confront' && VERDICT_POPS[e.extra?.verdict]) || POPS[e.kind] || []).map(([slot, t, style, icon]) => [e.players[slot], t, style, icon]).filter(p => p[0]);
   const hurt = new Set(pops.filter(p => HURT_STYLES.has(p[2])).map(p => p[0]));
   // The situation the scene is, for its music (vp-pm/sound.js); null plays in silence.
   const base = { ev: evIndex, kind: e.kind, music: musicOf(e), raw: !e.aired, headline: KIND_LABEL[e.kind] || null,

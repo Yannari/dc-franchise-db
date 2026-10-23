@@ -29,6 +29,7 @@ import { HUT_VOLUME } from './lines/hut-volume.js';
 import { HUT_VOLUME_2 } from './lines/hut-volume-2.js';
 import { HUT_VOLUME_3 } from './lines/hut-volume-3.js';
 import { HUT_VOLUME_4 } from './lines/hut-volume-4.js';
+import { HUT_CONFRONT } from './lines/hut-confront.js';
 import { NARRATOR } from './lines/narrator.js';
 import { STEAMY_NARRATOR } from './lines/steamy.js';
 import { ICEBREAKER_CARDS } from './lines/kiss-games.js';
@@ -42,7 +43,7 @@ import { afterOf, tierOf, registerOf } from './story/director.js';
 // pm/talk/ (a kind with a talk file never reads a pool here).
 export const POOLS = { ...FIREPIT_LINES, ...FINAL_LINES, ...CHALLENGE_LINES, ...LIE_LINES, ...JOURNEY_LINES, ...ANSWER, ...RULES_LINES };
 // More beach-hut lines for the scenes that cut away most (lines/hut-volume.js).
-for (const more of [HUT_VOLUME, HUT_VOLUME_2, HUT_VOLUME_3, HUT_VOLUME_4]) for (const [st, v] of Object.entries(more)) HUT[st].push(...v);
+for (const more of [HUT_VOLUME, HUT_VOLUME_2, HUT_VOLUME_3, HUT_VOLUME_4, HUT_CONFRONT]) for (const [st, v] of Object.entries(more)) HUT[st].push(...v);
 // The voiceover over a steamy scene (lines/steamy.js).
 for (const [k, v] of Object.entries(STEAMY_NARRATOR)) NARRATOR[k] = [...(NARRATOR[k] || []), ...v];
 export { HUT, NARRATOR };
@@ -63,7 +64,7 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   // the director (pm/story/director.js): how each one sounds, how much is shown, what it follows
   'reg', 'bReg', 'tier', 'after', 'afterBy', 'afterWhen', 'end', 'firstKiss', 'bPartnered', 'fresh', 'bFresh',
   // a talk file's own (pm/talk/*.js facts())
-  'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels',
+  'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels', 'believed', 'dayOne',
   // an intro tape's (pm/talk/intro.js)
   'look', 'vibe', 'ick', 'interest', 'from', 'kinOf', 'eyes', 'pastEx', 'hasAge', 'hasJob', 'hasTown', 'into', 'shape'];
 
@@ -136,6 +137,9 @@ export function factsFor(state, ev) {
   Object.assign(f, b ? historyFacts(state, a, b) : { comfortedYesterday: false, rowedBefore: false });
   // They argued earlier today — this scene is the making up, not a fresh start.
   // (An argument scene itself is excluded: it IS the row.)
+  // (Not after having it out over a telling: the making-up lines are for a
+  // row about nothing much, "and agree it was about nothing" — events.js
+  // keeps that couple's warm scenes off for the day instead.)
   f.rowedToday = !!b && (state._today || []).some(e => e.ep === state.ep && e !== ev && e.kind === 'argument'
     && e.players.includes(a) && e.players.includes(b));
   // Somebody walked in today (a bombshell, Casa's arrivals) — not day one.
@@ -188,6 +192,9 @@ export function factsFor(state, ev) {
   f.knowsB = !!b && knowsAbout(state, a, b);
   // A friend's read on somebody's partner, in words (advice scenes).
   if (typeof ev.extra?.verdict === 'number') f.verdict = ev.extra.verdict > 0.2 ? 'good' : ev.extra.verdict < 0 ? 'bad' : 'unsure';   // ~35 / 25 / 40, measured
+  // …or a decision in words (told-confront: forgive · warning · done).
+  else if (typeof ev.extra?.verdict === 'string') f.verdict = ev.extra.verdict;
+  if (ev.extra?.believed != null) f.believed = !!ev.extra.believed;
   // The director's (pm/story/director.js): each speaker's register for this
   // scene, how much of it is shown, the earlier scene it follows from ({x} is
   // whoever that was with), and how the engine decided it ends.
@@ -300,7 +307,22 @@ function scriptRng(state) {
 // line about "nothing you've done" contradicted its own ballot (season 31).
 const LEADING = ['exes', 'stoleFrom', 'rebuffed', 'heard', 'kissed', 'promised', 'rowedToday', 'justMet', 'heat', 'going', 'why', 'another', 'behind', 'friction'];
 
+// The furthest islander a line names ({c} is the third): a line that names
+// somebody the scene has not got never plays (a debrief about a night whose
+// third had already left: "I saw {c}'s face", printed raw).
+const NAMES = ['a', 'b', 'c', 'd'];
+function needs(e) {
+  if (e._needs != null) return e._needs;
+  const text = [e.stage, e.beat, ...(e.turns || []).map(t => t[1])].filter(Boolean).join(' ');
+  let n = 0;
+  for (const [, who] of text.matchAll(/\{([abcd])[.}]/g)) n = Math.max(n, NAMES.indexOf(who) + 1);
+  for (const t of e.turns || []) if (NAMES.includes(t[0])) n = Math.max(n, NAMES.indexOf(t[0]) + 1);
+  Object.defineProperty(e, '_needs', { value: n, enumerable: false });
+  return n;
+}
+const castFits = (e, facts) => facts.cast == null || needs(e) <= Math.max(facts.cast, 1);
 export function pickScript(state, pool, ps, facts, { allowRepeat = true, rng: own = null, lead = true } = {}) {
+  pool = pool.filter(e => castFits(e, facts));
   // Candidates at each width, narrowest first: the leading pool, then every
   // entry that fits. A spent leading pool widens before it repeats: a couple
   // who rowed and made up five times in one evening heard the same
@@ -770,7 +792,7 @@ const FAMILIES = {
     'overthinking', 'ick'],
   friendship: ['friendship', 'comedy', 'advice', 'solidarity', 'movie-night', 'snog-marry-pie', 'heart-rate',
     'notes', 'families'],
-  gossip: ['gossip', 'confession', 'loyalty'],
+  gossip: ['gossip', 'confession', 'loyalty', 'told-confront'],
   dumping: ['recouple-pick', 'dump-buildup', 'dump-verdict', 'ballot-reveal', 'dump-reaction',
     'dump-goodbye', 'dump-fallout', 'steal'],
   finale: ['declaration', 'final-result', 'envelope', 'reveal', 'walk'],

@@ -141,6 +141,15 @@ export const NARRATOR = {
   'jealous-confront': [
     { id: 'nar.confront.1', turns: [['narrator', "{a} has been watching {b} with {c} for two days, and has finally said something. All of it, in one go."]] },
   ],
+  'told-confront': [
+    { id: 'nar.told.1', turns: [['narrator', "{a} has asked {b} one simple question. {b} has given quite a long answer. In the villa, that is rarely a good sign."]] },
+    { id: 'nar.told.2', turns: [['narrator', "Somewhere in the villa, {c} is suddenly very interested in a magazine."]] },
+    { id: 'nar.told.3', when: { verdict: 'done' }, turns: [['narrator', "And that, it seems, is that. {a} has walked off, and {b} has run out of things to say."]] },
+    { id: 'nar.told.4', when: { verdict: 'forgive', believed: false }, turns: [['narrator', "{a} has forgiven {b}. The villa breathes out. {c} breathes out slightly less."]] },
+    { id: 'nar.told.5', when: { believed: true }, turns: [['narrator', "{a} believes {b}. Which means that, as far as {a} is concerned, {c} has some explaining to do."]] },
+    { id: 'nar.told.6', when: { of: 'denies', believed: false }, turns: [['narrator', "{b} says it never happened, very firmly, several times. {a} is still deciding which of those times to believe."]] },
+    { id: 'nar.told.7', when: { verdict: 'warning' }, turns: [['narrator', "{b} is still coupled up with {a}. Just. On probation, with no time off for good behaviour."]] },
+  ],
   'jealous-retaliate': [
     { id: 'nar.retaliate.1', turns: [['narrator', "{a} is sitting very close to {b}, laughing slightly louder than the jokes deserve, and {c} is watching. That's the point."]] },
   ],

@@ -90,7 +90,7 @@ export function storyOf(state, a, b) {
   add('casa', seen.find(e => e.kind === 'casa-return' && both(e, a, b)));
   add('photos', seen.find(e => e.kind === 'photos' && both(e, a, b) && after(e)));
   // The split, and the way back.
-  const split = seen.find(e => (e.kind === 'movie-split' || e.kind === 'photo-split') && both(e, a, b));
+  const split = seen.find(e => (e.kind === 'movie-split' || e.kind === 'photo-split' || (e.kind === 'told-confront' && e.extra?.split)) && both(e, a, b));
   if (split) { add('split', split); add('back', seen.find(e => e.kind === 'reunite' && both(e, a, b) && e.ep >= split.ep)); }
   // The night they were at risk, and survived it.
   add('at-risk', seen.find(e => e.kind === 'dump-buildup' && both(e, a, b) && after(e)));

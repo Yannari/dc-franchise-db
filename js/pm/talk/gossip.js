@@ -18,6 +18,9 @@ import { stepOf } from '../ladder.js';
 
 const CLOSED = ['closed-off', 'exclusive', 'official'];
 
+// A light secret is a mild one from somebody's first day (events.js DAY_ONE):
+// only then is it "early days" (read, 2026-10-23: said on episode three).
+const dayOne = (state, s) => !!s && [s.who, s.with].some(n => n && (state.ledger?.firstEp?.[n] ?? -1) === s.ep);
 const secretOf = (state, ev) => (state.secrets || []).find(s => s.id === ev.extra?.secret) || null;
 
 export const GOSSIP = build('gossip', {
@@ -25,7 +28,7 @@ export const GOSSIP = build('gossip', {
   facts: (state, ev) => {
     const s = secretOf(state, ev);
     return { hasWith: !!s?.with, seen: !!s?.witnesses?.includes(ev.players[0]) && !s?.said,
-      casa: !!s?.casa, light: (s?.severity ?? 1) < 0.6,
+      casa: !!s?.casa, light: (s?.severity ?? 1) < 0.6, dayOne: (s?.severity ?? 1) < 0.6 && dayOne(state, s),
       // {b} had closed off with {c}: only then is it "I closed myself off for you".
       closedOff: CLOSED.includes(stepOf(state, ev.players[1], ev.players[2])) };
   },
@@ -135,7 +138,7 @@ export const GOSSIP = build('gossip', {
         ['b', "They went quiet?"],
         ['a', "Straight away. Like they'd been caught."],
       ] },
-      { when: { sec: 'pull', hasWith: true, light: true }, turns: [
+      { when: { sec: 'pull', hasWith: true, dayOne: true }, turns: [
         ['a', "{c} had a chat with {x} on the daybeds. It was early on, and it might have been nothing, everyone was talking to everyone. But it looked a bit flirty, and I thought you should know."],
         ['b', "Flirty how?"],
         ['a', "Just... lots of laughing. Lots of eye contact."],

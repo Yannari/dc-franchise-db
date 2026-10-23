@@ -48,6 +48,7 @@ import { DECL_FINAL_MORE } from './more/final.js';
 import { CHAT_MORE, DEEP_MORE, KISS_MORE, PULL_MORE, LOYALTY_MORE, ICK_MORE, ARGUMENT_MORE, ADVICE_MORE, COMFORT_MORE,
   REASSURANCE_MORE, CONFESSION_MORE, CONFRONT_MORE, DEBRIEF_MORE, RECOUPLE_MORE, BED_MORE, GOODBYE_MORE, DECL_MORE, DATE_MORE } from './more/everyday.js';
 import { GOSSIP } from './gossip.js';
+import { TOLD_CONFRONT } from './confront.js';
 import { ARGUMENT } from './argument.js';
 import { COMEDY } from './comedy.js';
 import { ICK } from './ick.js';
@@ -94,7 +95,7 @@ extend(COMFORT, COMFORT_MORE); extend(REASSURANCE, REASSURANCE_MORE); extend(CON
 extend(JEALOUS_CONFRONT, CONFRONT_MORE); extend(DEBRIEF, DEBRIEF_MORE); extend(RECOUPLE_PICK, RECOUPLE_MORE);
 extend(BED_SHARE, BED_MORE); extend(DUMP_GOODBYE, GOODBYE_MORE); extend(DECLARATION, DECL_MORE); extend(DECLARATION, DECL_FINAL_MORE); extend(DATE, DATE_MORE);
 
-export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'deep-chat': DEEP_CHAT, friendship: FRIENDSHIP, gossip: GOSSIP, argument: ARGUMENT,
+export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'deep-chat': DEEP_CHAT, friendship: FRIENDSHIP, gossip: GOSSIP, 'told-confront': TOLD_CONFRONT, argument: ARGUMENT,
   comedy: COMEDY, ick: ICK, advice: ADVICE, vent: VENT, comfort: COMFORT, 'casa-miss': CASA_MISS, 'bed-share': BED_SHARE,
   'challenge-kiss': CHALLENGE_KISS, 'challenge-win': CHALLENGE_WIN,
   reassurance: REASSURANCE, 'jealous-confront': JEALOUS_CONFRONT, 'jealous-retaliate': JEALOUS_RETALIATE, confession: CONFESSION, 'no-show': NO_SHOW, debrief: DEBRIEF,

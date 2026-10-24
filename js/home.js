@@ -14,6 +14,7 @@ import { seasonWinners } from './records.js';
 import { loadPortraitCatalog, avatarUrl } from './avatar-registry.js';
 import { onAirModel, loadAiring, airingModels, exitSentence } from './on-air.js';
 import { snapshot, mountDigest } from './digest.js';
+import { mountToday } from './today.js';
 
 const API = (() => {
   try { return (localStorage.getItem('studio_api_base') || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, ''); }
@@ -186,7 +187,8 @@ function finalesHtml(model) {
 
 export async function mountHome() {
   const get = url => fetch(url, { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)).catch(() => null);
-  const [pdb, sdb] = await Promise.all([get('players_database.json'), get('seasons_database.json'), loadPortraitCatalog().catch(() => null)]);
+  const [pdb, sdb, rdb] = await Promise.all([get('players_database.json'), get('seasons_database.json'),
+    get('rankings_database.json'), loadPortraitCatalog().catch(() => null)]);
   const players = (pdb?.players || []).filter(p => p?.id && p?.name);
   const seasons = sdb?.seasons || [];
   const model = homeModel(players, seasons);
@@ -203,6 +205,7 @@ export async function mountHome() {
   ].map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join(''));
   set('hmShows', showsHtml(model));
   set('hmFinales', finalesHtml(model));
+  mountToday(document.getElementById('hmToday'), { players, seasons, rankings: rdb?.rankings || [] });
   set('hmPlayersLink', `Browse all ${model.counts.players} players`);
 
   const track = document.getElementById('coverflowTrack');

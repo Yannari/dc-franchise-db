@@ -173,8 +173,14 @@ export function seasonWinners(season) {
   const raw = typeof season.winner === 'string' ? { name: season.winner } : season.winner;
   const w = raw && typeof raw === 'object' ? raw : null;
   const firsts = (season.placements || []).filter(p => p?.placement === 1);
+  // A shared win written into ONE block: "Alejandro & Cameron" with the second
+  // winner's slug in `coWinnerSlug` (the index row for td-8). Read as one
+  // name it drew one face and linked one player for two champions.
+  const pair = w?.coWinnerSlug && /\s&\s/.test(w.name || '')
+    ? w.name.split(/\s&\s/).map((name, i) => ({ name: name.trim(), playerSlug: i ? w.coWinnerSlug : w.playerSlug }))
+    : null;
   const named = Array.isArray(season.winners) && season.winners.length ? season.winners
-    : (firsts.length ? firsts : (w?.name ? [w] : []));
+    : (firsts.length ? firsts : (pair || (w?.name ? [w] : [])));
   return named.filter(p => p?.name).map(p => {
     const slug = p.playerSlug || _slug(p.name);
     // The singular block's prose belongs to the person it names and nobody else.

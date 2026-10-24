@@ -220,7 +220,10 @@ describe('the whole view the page draws', () => {
       expect(v.stats.players).toBe(v.careers.length);
       expect(v.stats.appearances)
         .toBe(v.careers.reduce((n, c) => n + c.seasonsPlayed, 0));
-      expect(v.champions.length).toBeLessThanOrEqual(v.seasons.length);
+      // One row per WINNER: a season won jointly (td-8, Alejandro & Cameron)
+      // gives two, so the bound is the winners each season names, not one each.
+      expect(v.champions.length)
+        .toBeLessThanOrEqual(v.seasons.reduce((n, s) => n + Math.max(1, seasonWinners(s).length), 0));
       expect(v.boards).toHaveLength(8);
     }
   });
@@ -257,6 +260,9 @@ describe('everybody who won a season', () => {
       .toEqual(['A', 'B']);
     expect(seasonWinners({ winner: { name: 'A', playerSlug: 'a' } }).map(w => w.name))
       .toEqual(['A']);
+    // A joint win written into one block (td-8): two champions, two slugs.
+    expect(seasonWinners({ winner: { name: 'Alejandro & Cameron', playerSlug: 'alejandro', coWinnerSlug: 'cameron' } })
+      .map(w => [w.name, w.playerSlug])).toEqual([['Alejandro', 'alejandro'], ['Cameron', 'cameron']]);
     expect(seasonWinners({ placements: [
       { name: 'A', placement: 1 }, { name: 'B', placement: 1 }, { name: 'C', placement: 3 },
     ] }).map(w => w.name)).toEqual(['A', 'B']);

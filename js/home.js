@@ -8,11 +8,12 @@
 //   - "on air" is the same model the On Air page draws (js/on-air.js)
 //   - the shows, their counts and latest winners are seasons_database.json
 //   - the headline numbers are counted from those two files, here, once
-import { SHOWS } from './shows.js';
+import { SHOWS, DEFAULT_FORMAT } from './shows.js';
 import { airKey, airLabel } from './franchise-calendar.js';
 import { seasonWinners } from './records.js';
 import { loadPortraitCatalog, avatarUrl } from './avatar-registry.js';
-import { onAirModel, loadAiring, airingModels } from './on-air.js';
+import { onAirModel, loadAiring, airingModels, exitSentence } from './on-air.js';
+import { snapshot, mountDigest } from './digest.js';
 
 const API = (() => {
   try { return (localStorage.getItem('studio_api_base') || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, ''); }
@@ -49,7 +50,7 @@ function finished(seasons) {
 export function homeModel(players = [], seasons = []) {
   const done = finished(seasons);
   const shows = Object.entries(SHOWS).map(([format, show]) => {
-    const own = done.filter(s => (s.format || 'total-drama') === format);
+    const own = done.filter(s => (s.format || DEFAULT_FORMAT) === format);
     const latest = own[own.length - 1] || null;
     return {
       format, name: show.name, accent: show.accent, seasons: own.length,
@@ -215,6 +216,12 @@ export async function mountHome() {
   // shows can air in the same slot, and the card used to know only one.
   const [entries, exits] = await Promise.all([loadAiring(), get(`${API}/api/live-exits`)]);
   const models = airingModels(entries, exits, seasons);
+
+  // What changed since this browser last looked, above everything else.
+  mountDigest(document.getElementById('hmDigest'),
+    snapshot({ models, exits, seasons, players: players.length }),
+    { models, exits, seasons, exitSentence, seasonWinners, showOf: f => SHOWS[f || DEFAULT_FORMAT] });
+
   const mount = document.getElementById('hmOnAir');
   if (!mount) return;
   if (!models.length) { mount.innerHTML = onAirCard(onAirModel(null, exits, seasons)); return; }

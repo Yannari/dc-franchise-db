@@ -9252,7 +9252,13 @@
       "descriptor": "The Lone Wolf",
       "backstory": "Vlad plays electric guitar, and sometimes bass, in a Seattle band called And Inside that has been almost famous for ten years. He grew up in the rain with a father who repaired amplifiers and a mother who taught piano, and he learned to say what he felt through a guitar instead of out loud. The band shares every songwriting credit and every unpaid bill, and the prize money would finally pay for the album they keep promising. He applied because he thought he fit a stereotype the casting people wanted, and he was right. He does not want to be friends with anyone in the house, and he would never admit he volunteers at an animal shelter on weekends.",
       "personality": "Vlad is stoic, private and far more observant than his silence suggests. His plan is to lie low, and he is very good at it: he never campaigns, never shouts and never gives anyone a reason to write his name down. He keeps to himself, writes in his music journal and answers questions with a shrug or a single word. People find him either cool or rude, and he does not care which. Under it he is gentle, loyal once won over, and has a dark, dry humour that slips out at the worst moments. His motto is that melancholy is the happiness of being sad. His flaw is that hiding works only until the house runs out of people to hide behind.",
-      "ties": []
+      "ties": [
+        {
+          "name": "Leona",
+          "kin": "partners",
+          "outside": true
+        }
+      ]
     },
     {
       "name": "Willow",

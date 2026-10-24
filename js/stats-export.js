@@ -5452,6 +5452,33 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
 // snapshot that the site can overlay on top of the finished-season data.
 
 /** Build a snapshot of the season currently loaded in the simulator. */
+/**
+ * One player's numbers for the live site, labelled the way the show labels
+ * them: the registry's careerStats (js/shows.js), read off the same fields the
+ * snapshot already fills -- `comps` for the house, the drag record, immunity and
+ * reward for the camp. The bare total is left out where the parts exist (an
+ * HOH and a veto say more than "2 competitions"); a show whose parts this
+ * snapshot does not carry falls back to its own word for a win.
+ */
+export function _liveStats(format, p) {
+  const record = {
+    challengeWins: p.challengeWins || 0,
+    immunityWins: p.immunityWins, rewardWins: p.rewardWins,
+    bb: p.comps && 'hoh' in p.comps ? { hohWins: p.comps.hoh, vetoWins: p.comps.veto,
+      blockBusterWins: p.comps.blockBuster, timesNominated: p.timesNominated } : undefined,
+    dr: 'maxiWins' in p ? { wins: p.maxiWins, highs: p.highs, lows: p.lows, bottoms: p.bottoms,
+      lipsyncWins: p.lipsyncWins } : undefined,
+  };
+  const get = path => path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), record);
+  const show = SHOWS[format] || SHOWS[DEFAULT_FORMAT];
+  const parts = (show.careerStats || [])
+    .filter(([path]) => path !== 'challengeWins')
+    .map(([path, , label]) => ({ label, value: get(path) }))
+    .filter(s => typeof s.value === 'number');
+  return parts.length ? parts
+    : [{ label: show.words?.comps || 'challenges won', value: record.challengeWins }];
+}
+
 export function extractLiveSeasonSnapshot() {
   const history = gs.episodeHistory || [];
   if (!history.length) throw new Error('No episodes have been played yet');
@@ -5566,8 +5593,36 @@ export function extractLiveSeasonSnapshot() {
     };
   });
 
+  // ── WHAT THE SITE NEEDS TO SAY IT IN THIS SHOW'S WORDS ──
+  //
+  // On Air printed "1 win" for everyone: an HOH and a veto are not the same
+  // win, and neither is an immunity necklace. Each player now carries `stats`,
+  // labelled by the registry's careerStats (HOH wins, immunity wins, maxi
+  // challenges won...), plus the tribe they are on before the merge and whether
+  // they are on the island -- and the snapshot carries the season's shape in
+  // `board`, so the page can group the cast the way the show does.
+  const tribes = Array.isArray(gs.tribes) ? gs.tribes : [];
+  const teamOf = new Map();
+  if (!gs.isMerged) for (const t of tribes) for (const m of (t.members || [])) teamOf.set(m, t.name);
+  const onIsland = new Set(Array.isArray(gs.riPlayers) ? gs.riPlayers : []);
+  for (const p of players) {
+    p.stats = _liveStats(format, p);
+    if (p.status === 'in' && teamOf.has(p.name)) p.team = teamOf.get(p.name);
+    if (onIsland.has(p.name)) p.island = true;
+  }
+  const ri = typeof seasonConfig !== 'undefined' && seasonConfig?.ri;
+  const board = {
+    merged: !!gs.isMerged,
+    mergeName: gs.isMerged ? (gs.mergeName || null) : null,
+    teams: gs.isMerged ? [] : tribes.filter(t => t && t.name).map(t => ({ name: t.name, color: t.color || null })),
+    island: ri ? (seasonConfig.riFormat === 'rescue' ? 'Rescue Island' : 'Redemption Island') : null,
+    juryStarted: jury.size > 0,
+    phase: gs.phase || null,
+  };
+
   const stillIn = players.filter(p => p.status === 'in').length;
   return {
+    board,
     seasonNumber: (typeof seasonConfig !== 'undefined' && seasonConfig?.seasonNumber) || _getSeasonNumber(),
     // ── WHICH SHOW IS AIRING ──
     //
@@ -5701,7 +5756,10 @@ export async function clearLiveSeason() {
   try {
     const headers = { 'Content-Type': 'application/json' };
     if (token) headers.Authorization = `Bearer ${token}`;
-    const r = await fetch(base + '/api/live-season/clear', { method: 'POST', headers, body: '{}' });
+    // Which show: the site keeps one airing season per show, so clearing takes
+    // this show's off the air and leaves the others where they are.
+    const format = seasonFormat(typeof seasonConfig !== 'undefined' ? seasonConfig : null);
+    const r = await fetch(base + '/api/live-season/clear', { method: 'POST', headers, body: JSON.stringify({ format }) });
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || 'clear failed');
     if (note) note.textContent = 'Airing season removed from the site.';

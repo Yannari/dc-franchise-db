@@ -88,7 +88,7 @@ export default {
     // endpoint keeps the strict ALLOWED_ORIGIN check.
     const PUBLIC_READS = ['/api/leaderboard', '/api/relationships', '/api/stats',
                           '/api/roster', '/api/roster/status', '/api/live-season',
-                          '/api/social', '/api/life-events', '/api/live-exits'];
+                          '/api/social', '/api/life-events', '/api/live-exits', '/api/live-shows'];
     // The gallery listing is per-slug, so it is a prefix rather than a fixed
     // path — but it is the same kind of thing as the rest of this list: public
     // data the player page reads from whatever origin it happens to be on.
@@ -452,6 +452,10 @@ export default {
         // page shouldn't hit D1 on every visit.
         return json(await liveSeasonGet(env), 200, rcors, 30);
       }
+      if (request.method === 'GET' && url.pathname === '/api/live-shows') {
+        // Every show on the air at once (On Air, the home page). See liveShowsGet.
+        return json(await liveShowsGet(env), 200, rcors, 30);
+      }
       if (request.method === 'GET' && url.pathname === '/api/live-exits') {
         // Kristal-talKs reads the airing seasons' exit interviews here.
         return json(await liveExitsGet(env), 200, rcors, 30);
@@ -471,6 +475,15 @@ export default {
           const meta = await db(env).prepare('SELECT season_number FROM live_meta WHERE id = 1').first().catch(() => null);
           if (meta?.season_number != null) {
             await db(env).prepare('DELETE FROM live_exits WHERE season_number = ?').bind(meta.season_number).run().catch(() => null);
+          }
+          // And its row among the shows on the air: by format when the caller
+          // says which show, otherwise the row holding that season number.
+          const cleared = await request.json().catch(() => ({}));
+          if (cleared?.format) {
+            await db(env).prepare('DELETE FROM live_shows WHERE format = ?').bind(String(cleared.format)).run().catch(() => null);
+          } else if (meta?.season_number != null) {
+            await db(env).prepare('DELETE FROM live_shows WHERE season_number = ? AND updated_at = (SELECT updated_at FROM live_meta WHERE id = 1)')
+              .bind(meta.season_number).run().catch(() => null);
           }
           return json(await liveSeasonClear(env), 200, cors);
         }
@@ -1533,12 +1546,85 @@ async function liveSeasonPut(env, payload = {}) {
     }
   }
 
+  // ── EVERY SHOW ON THE AIR, NOT ONLY THE LAST ONE SYNCED ─────────────
+  //
+  // live_meta is one row (id = 1), so publishing Big Brother 2 replaced Perfect
+  // Match 1's standings ten seconds after they went up, and On Air could only
+  // ever show one show. live_shows keeps one row per FORMAT -- a show airs one
+  // season at a time -- written the same way as the exits: on its own,
+  // afterwards, a failure reported rather than thrown. /api/live-season keeps
+  // answering exactly as before for every reader that wants "the" season.
+  let showsError = null;
+  try {
+    await ensureLiveShows(d);
+    await d.prepare(
+      `INSERT INTO live_shows (format,season_number,title,episode,total_players,still_in,players,board,updated_at)
+       VALUES (?,?,?,?,?,?,?,?,datetime('now'))
+       ON CONFLICT(format) DO UPDATE SET season_number=excluded.season_number, title=excluded.title,
+         episode=excluded.episode, total_players=excluded.total_players, still_in=excluded.still_in,
+         players=excluded.players, board=excluded.board, updated_at=excluded.updated_at`
+    ).bind(fmt, season, payload.title || ex?.title || null, asInt(payload.episode),
+      asInt(payload.totalPlayers) || players.length,
+      asInt(payload.stillIn) ?? players.filter(p => p.status === 'in').length,
+      // Each player AS SENT, not a whitelist: the snapshot carries each show's
+      // own numbers (comps, the drag record, labelled `stats`), the tribe and the
+      // island, and a list of fixed columns is how "1 win" got published for an
+      // HOH. Only the portrait file is checked, the one field a page builds a URL
+      // from.
+      JSON.stringify(players.filter(p => p && p.name).map(p => {
+        const { avatarFile, ...rest } = p;
+        const safe = safePortraitFile(avatarFile);
+        return { ...rest, name: String(p.name), status: p.status || 'in', ...(safe ? { avatarFile: safe } : {}) };
+      })),
+      JSON.stringify(payload.board && typeof payload.board === 'object' ? payload.board : {})).run();
+  } catch (e) {
+    showsError = e.message || String(e);
+  }
+
   return {
     ok: true, seasonNumber: season, episode: asInt(payload.episode),
     players: players.length, posts, exits,
     ...(socialError ? { socialError } : {}),
     ...(exitsError ? { exitsError } : {}),
     ...(portraitError ? { portraitError } : {}),
+    ...(showsError ? { showsError } : {}),
+  };
+}
+
+/** live_shows is created on first use: no schema file to remember to apply. */
+let _liveShowsReady = false;
+async function ensureLiveShows(d) {
+  if (_liveShowsReady) return;
+  await d.prepare(
+    `CREATE TABLE IF NOT EXISTS live_shows (format TEXT PRIMARY KEY, season_number INTEGER NOT NULL,
+      title TEXT, episode INTEGER, total_players INTEGER, still_in INTEGER, players TEXT, board TEXT, updated_at TEXT)`
+  ).run();
+  _liveShowsReady = true;
+}
+
+/**
+ * Every show on the air, one entry per show, newest sync first.
+ *
+ * A row whose season has since been published as FINISHED is left out: the
+ * finale export is what takes a season off the air, and nobody has to clear it
+ * by hand (the same contradiction liveSeasonPut refuses to create).
+ */
+async function liveShowsGet(env) {
+  const d = db(env);
+  try { await ensureLiveShows(d); } catch { return { ok: true, shows: [] }; }
+  const res = await d.prepare('SELECT * FROM live_shows ORDER BY updated_at DESC').all().catch(() => ({ results: [] }));
+  const finished = await d.prepare('SELECT format, season_number FROM seasons').all().catch(() => ({ results: [] }));
+  const done = new Set((finished.results || []).map(r => `${r.format}:${r.season_number}`));
+  return {
+    ok: true,
+    shows: (res.results || []).filter(r => !done.has(`${r.format}:${r.season_number}`)).map(r => {
+      let players = [], board = {};
+      try { players = JSON.parse(r.players || '[]'); } catch { players = []; }
+      try { board = JSON.parse(r.board || '{}'); } catch { board = {}; }
+      return { format: r.format, airing: true, seasonNumber: r.season_number, title: r.title,
+        episode: r.episode, totalPlayers: r.total_players, stillIn: r.still_in,
+        updatedAt: r.updated_at, board, players };
+    }),
   };
 }
 

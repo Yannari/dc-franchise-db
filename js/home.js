@@ -12,7 +12,7 @@ import { SHOWS } from './shows.js';
 import { airKey, airLabel } from './franchise-calendar.js';
 import { seasonWinners } from './records.js';
 import { loadPortraitCatalog, avatarUrl } from './avatar-registry.js';
-import { onAirModel } from './on-air.js';
+import { onAirModel, loadAiring } from './on-air.js';
 
 const API = (() => {
   try { return (localStorage.getItem('studio_api_base') || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, ''); }
@@ -140,9 +140,9 @@ function runDock(track, controls) {
 
 // ── the sections ──
 
-function onAirCard(m) {
+function onAirCard(m, nav = '') {
   if (m.airing) {
-    return `<a class="hm-onair" href="on-air.html" style="--show:${esc(m.show.accent)}">
+    return `<a class="hm-onair" href="on-air.html?show=${encodeURIComponent(m.format)}" style="--show:${esc(m.show.accent)}">${nav}
       <span class="hm-live"><i></i>On air now</span>
       <span class="hm-onair-show">${esc(m.show.name)}</span>
       <b>${esc(m.title)}</b>
@@ -211,6 +211,31 @@ export async function mountHome() {
   }
 
   // On air last: it is the one section waiting on the network.
-  const [live, exits] = await Promise.all([get(`${API}/api/live-season`), get(`${API}/api/live-exits`)]);
-  set('hmOnAir', onAirCard(onAirModel(live, exits, seasons)));
+  // Every show on the air, one card each, with arrows between them -- two
+  // shows can air in the same slot, and the card used to know only one.
+  const [entries, exits] = await Promise.all([loadAiring(), get(`${API}/api/live-exits`)]);
+  const models = entries.map(e => onAirModel(e, exits, seasons)).filter(m => m.airing);
+  const mount = document.getElementById('hmOnAir');
+  if (!mount) return;
+  if (!models.length) { mount.innerHTML = onAirCard(onAirModel(null, exits, seasons)); return; }
+  let at = 0, timer = null;
+  const draw = () => {
+    const nav = models.length > 1
+      ? `<span class="hm-onair-nav" aria-hidden="false"><span>${at + 1} / ${models.length}</span>`
+        + `<button type="button" data-step="-1" aria-label="Previous show on air">&#8249;</button>`
+        + `<button type="button" data-step="1" aria-label="Next show on air">&#8250;</button></span>` : '';
+    mount.innerHTML = onAirCard(models[at], nav);
+    mount.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation();
+      at = (at + Number(b.dataset.step) + models.length) % models.length;
+      clearInterval(timer); timer = null;
+      draw();
+    }));
+  };
+  draw();
+  // A slow rotation when nobody is touching it, so both shows get seen.
+  if (models.length > 1 && !reduceMotion()) {
+    timer = setInterval(() => { at = (at + 1) % models.length; draw(); }, 7000);
+    mount.addEventListener('mouseenter', () => { clearInterval(timer); timer = null; }, { once: true });
+  }
 }

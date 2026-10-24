@@ -1,7 +1,7 @@
 // On Air: the visitor's page for the season airing now. Every word that differs
 // by show must come from that show's registry entry (docs/ADDING-A-SHOW.md).
 import { describe, it, expect } from 'vitest';
-import { onAirModel, exitSentence, ordinal, agoLabel } from '../js/on-air.js';
+import { onAirModel, exitSentence, ordinal, agoLabel, showsInView, singular, statText } from '../js/on-air.js';
 
 const live = (over = {}) => ({
   ok: true, airing: true, seasonNumber: 2, title: null, episode: 3, totalPlayers: 4, stillIn: 3,
@@ -72,5 +72,53 @@ describe('helpers', () => {
     const now = Date.parse('2026-10-24T10:11:55Z');
     expect(agoLabel('2026-10-24 07:11:55', now)).toBe('3 hours ago');
     expect(agoLabel('garbage', now)).toBe('');
+  });
+});
+
+describe('several shows on the air', () => {
+  const bb = onAirModel({ ...live(), format: 'big-brother' }, exits('big-brother'));
+  const pm = onAirModel({ ...live(), format: 'perfect-match', seasonNumber: 1 }, null);
+  it("takes the entry's own format over the exit feed", () => {
+    expect(pm.format).toBe('perfect-match');
+    expect(pm.words.players).toBe('islanders');
+  });
+  it('shows one show when the switcher picked one, and every show on "all"', () => {
+    expect(showsInView([bb, pm], 'perfect-match').map(m => m.format)).toEqual(['perfect-match']);
+    expect(showsInView([bb, pm], 'drag-race')).toEqual([]);
+    expect(showsInView([bb, pm], 'all')).toHaveLength(2);
+  });
+});
+
+describe('the board, grouped the way the show groups it', () => {
+  const base = live({
+    board: { merged: false, teams: [{ name: 'Gophers', color: '#38bdf8' }, { name: 'Bass', color: '#f97316' }], island: 'Redemption Island' },
+    players: [
+      { name: 'Ana', status: 'in', team: 'Gophers', stats: [{ label: 'immunity wins', value: 2 }] },
+      { name: 'Bo', status: 'in', team: 'Bass', stats: [{ label: 'immunity wins', value: 0 }] },
+      { name: 'Cy', status: 'in', island: true },
+      { name: 'Di', status: 'jury', exitEpisode: 6 },
+      { name: 'Ed', status: 'out', exitEpisode: 2 },
+    ],
+  });
+  const m = onAirModel({ ...base, format: 'total-drama' }, null);
+  it('splits the cast still in by tribe before the merge', () => {
+    expect(m.groups.map(g => `${g.name}:${g.players.map(p => p.name)}`)).toEqual(['Gophers:Ana', 'Bass:Bo']);
+  });
+  it('keeps the island, the jury and the pre-jury apart', () => {
+    expect(m.island.map(p => p.name)).toEqual(['Cy']);
+    expect(m.islandName).toBe('Redemption Island');
+    expect(m.jury.map(p => p.name)).toEqual(['Di']);
+    expect(m.out.map(p => p.name)).toEqual(['Ed']);
+  });
+  it('is one group after the merge, under the merged name', () => {
+    const merged = onAirModel({ ...base, format: 'total-drama', board: { merged: true, mergeName: 'Kinosaki' } }, null);
+    expect(merged.groups.map(g => g.name)).toEqual(['Kinosaki']);
+  });
+  it('names a win', () => {
+    expect(statText({ label: 'HOH wins', value: 1 })).toBe('1 HOH win');
+    expect(statText({ label: 'vetoes won', value: 1 })).toBe('1 veto won');
+    expect(statText({ label: 'vetoes won', value: 2 })).toBe('2 vetoes won');
+    expect(singular('maxi challenges won')).toBe('maxi challenge won');
+    expect(m.leaders[0]).toMatchObject({ label: 'immunity wins', value: 2 });
   });
 });

@@ -433,7 +433,7 @@ export function writeWitnessAfter(w, ctx, at) {
 }
 
 // ── the vote talk: the eviction, before it happens (bb/story/votetalk.js says who and why) ──
-const VT_MOOD = k => (k.startsWith('plan') ? 'plan' : k.startsWith('swing') ? 'deals' : 'drama');
+const VT_MOOD = k => (/^(bb\.)?plan/.test(k) ? 'plan' : /^(swing|bb\.split)/.test(k) ? 'deals' : 'drama');
 export function writeVoteTalk(t, ctx, at) {
   return writeKeyed(`vote.${t?.kind}`, t, ctx, at, { id: `vt:${ctx.week?.num || 0}:${t?.kind}`, step: `vote.${t?.kind}`, mood: VT_MOOD(String(t?.kind || '')),
     spotKind: String(t?.kind || '').startsWith('read') ? 'target.count' : 'plan.vote' });

@@ -18,6 +18,58 @@ import { getBond, getPerceivedBond } from '../../bonds.js';
 
 const closest = (n, pool) => pool.slice().sort((x, y) => getBond(n, y) - getBond(n, x) || (x < y ? -1 : 1))[0] || null;
 
+// ── a Block Buster week ──
+// The talk airs before the Block Buster, so it is about all three in the chairs: who a pair wants out,
+// and who goes instead if that one wins it (the user, 2026-10-24: "if the target is really x, what if x
+// wins blockbuster, we go y... like the real show"). It holds whichever way the arena goes, and it is
+// true of the ballots: a voter who evicts E over F has E ahead of F in their order, so their target and
+// backup can never contradict the vote the arena's result then leaves them casting.
+//   bb.plan(.hoh)  two on the winning side: {target}, else {backup} ({third} the one left)
+//   bb.split       one from each side, who want different people ({mine} is a's, {theirs} b's)
+function blockBusterTalk(week, here, ballots, out, other) {
+  const three = (week.blockBeforeSafety || []).filter(Boolean);
+  const voter = b => b.voter && here.has(b.voter) && !three.includes(b.voter) && b.voter !== week.hoh;
+  const against = ballots.filter(b => b.evict === out && voter(b)).map(b => b.voter);
+  const keep = ballots.filter(b => b.evict !== out && voter(b)).map(b => b.voter);
+  // who a set of voters wants out first: least liked first, the one they evict ahead of the one they keep
+  const orderFor = (vs, evicts, spares, first = null) => {
+    const like = x => vs.reduce((s, v) => s + getBond(v, x), 0) / Math.max(1, vs.length);
+    const o = three.slice().sort((x, y) => like(x) - like(y) || (x < y ? -1 : 1));
+    if (first && first !== spares && o.includes(first)) o.splice(o.indexOf(first), 1), o.unshift(first);
+    const e = o.indexOf(evicts), s = o.indexOf(spares);
+    if (e > s) [o[e], o[s]] = [o[s], o[e]];
+    return o;
+  };
+  const talks = [];
+  let best = null;
+  for (let i = 0; i < against.length; i++) for (let j = i + 1; j < against.length; j++) {
+    const s = getBond(against[i], against[j]);
+    if (!best || s > best.s) best = { s, a: against[i], b: against[j] };
+  }
+  if (best) {
+    // the Head of Household's target leads, when it is one they would vote out and they are with the HOH
+    const aim = (week.acts || []).find(a => a?.type === 'nominations')?.target;
+    const withHoh = week.hoh && here.has(week.hoh) && getBond(best.a, week.hoh) + getBond(best.b, week.hoh) >= 2;
+    const o = orderFor([best.a, best.b], out, other, withHoh ? aim : null);
+    const byHoh = withHoh && o[0] === aim;
+    talks.push({ kind: byHoh ? 'bb.plan.hoh' : 'bb.plan', who: { a: best.a, b: best.b }, data: { target: o[0], backup: o[1], third: o[2] },
+      why: [`${best.a} and ${best.b} want ${o[0]} out${byHoh ? `, as ${week.hoh} does` : ''}.`, `If ${o[0]} wins the Block Buster, it is ${o[1]}.`] });
+  }
+  // somebody who ends up on the other side of the vote, with the friend on the winning side they disagree with
+  const used = new Set(talks.flatMap(t => Object.values(t.who)));
+  let pair = null;
+  for (const a of keep.filter(n => !used.has(n))) for (const b of against.filter(n => !used.has(n))) {
+    const s = getBond(a, b);
+    if (s >= 1 && (!pair || s > pair.s)) pair = { s, a, b };
+  }
+  if (pair) {
+    const mine = orderFor([pair.a], other, out)[0], theirs = orderFor([pair.b], out, other)[0];
+    if (mine !== theirs) talks.push({ kind: 'bb.split', who: { a: pair.a, b: pair.b }, data: { mine, theirs },
+      why: [`${pair.a} wants ${mine} out; ${pair.b} wants ${theirs}.`] });
+  }
+  return talks;
+}
+
 /** The vote talk for a week's eviction act: [{ kind, who: {a,b}, data, why }]. */
 export function voteTalkFor(act, week, present) {
   const here = new Set(present || []);
@@ -26,6 +78,9 @@ export function voteTalkFor(act, week, present) {
   const out = act?.evicted || week?.evicted;
   if (ballots.length < 2 || noms.length < 2 || !out || !here.has(out)) return [];
   const other = noms.find(n => n !== out) || null;
+  // a Block Buster week talks before the arena: about three, with a plan for each way it goes
+  const buster = (week?.acts || []).find(a => a?.type === 'safety' && a.winner);
+  if (buster && (week.blockBeforeSafety || []).length >= 3) return blockBusterTalk(week, here, ballots, out, other);
   const against = ballots.filter(b => b.evict === out).map(b => b.voter).filter(n => here.has(n));
   const keep = ballots.filter(b => b.evict !== out).map(b => b.voter).filter(n => here.has(n));
   const talks = [];

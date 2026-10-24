@@ -611,11 +611,6 @@ export function airStorylines(week) {
   // ── the vote talk: the last thing before the live vote (bb/story/votetalk.js) ──
   // the plan, the swing and the one going home, true of the ballots, on the act before the eviction
   const airVoteTalk = evAct => {
-    // A Block Buster week decides who is still on the block on the live night itself, so every vote
-    // talk (written from the ballots, between the final two) would air before the arena said who they
-    // are (the user, 2026-10-24: "they often hesitate between 2 people before the Block Buster when
-    // there's obviously 3 nominees"). The house talks about three until then; the vote talk stays off.
-    if ((week.acts || []).some(a => a?.type === 'safety' && a.winner && week.acts.indexOf(a) < week.acts.indexOf(evAct))) return;
     const i = week.acts.indexOf(evAct);
     const host = week.acts.slice(0, i).reverse().find(a => a && !CEREMONY.has(a.type)) || week.acts.slice(0, i).reverse().find(Boolean);
     if (!host) return;

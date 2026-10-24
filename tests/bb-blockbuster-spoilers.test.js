@@ -33,11 +33,24 @@ const busters = () => weeks.filter(r => (r.acts || []).some(a => a?.type === 'sa
 describe('a Block Buster week before the Block Buster', () => {
   it('has Block Buster weeks to read', () => expect(busters().length).toBeGreaterThan(4));
 
-  it('airs no vote talk between the final two before the arena has said who they are', () => {
+  // the user, 2026-10-24, on taking the vote talk off: "you cant do that when blockbuster is active all
+  // season... just tweak so the discussion is more realist: if the target is really x, what if x wins
+  // blockbuster, we go y"
+  it('talks the vote through three ways, never between the final two, before the arena', () => {
+    let planned = 0;
     for (const row of busters()) {
-      const scenes = row.acts.flatMap(a => a.scenes || []);
-      expect(scenes.filter(s => /^vote\./.test(String(s.step))).map(s => s.step), `week ${row.num}`).toEqual([]);
+      const three = row.blockBeforeSafety || [];
+      const scenes = row.acts.flatMap(a => a.scenes || []).filter(s => /^vote\./.test(String(s.step)));
+      expect(scenes.map(s => s.step).filter(k => !/^vote\.bb\.(plan(\.hoh)?|split)$/.test(k)), `week ${row.num}`).toEqual([]);
+      for (const s of scenes.filter(x => /^vote\.bb\.plan/.test(x.step))) {
+        planned++;
+        // a target and a backup, both of the three, and nothing said yet about who wins it
+        const said = (s.lines || []).map(l => l.text).join(' ');
+        expect(three.filter(n => said.includes(n)).length, `week ${row.num}: ${said}`).toBeGreaterThanOrEqual(2);
+        expect(said).toMatch(/Block Buster|wins it|comes off|isn't|pulls it off|backup|plan B/);
+      }
     }
+    expect(planned).toBeGreaterThan(busters().length / 2);
   });
 
   it('shows the one the Block Buster saves campaigning, and never more than the other two', () => {

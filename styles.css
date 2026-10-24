@@ -1827,3 +1827,24 @@ body.hasSiteHeader .hero .meta{
 .kpi h3:has(⚔️) {
   color: #f87171; /* Red color for rivalries */
 }
+
+/* ===== PAGE TRANSITIONS (js/page-transitions.js) =====
+   Network pages slide into each other instead of flashing white. Only pages
+   that load this stylesheet opt in, and the simulator never does. The player
+   portrait you clicked flies into the player page's hero. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root) { animation: bs-vt-out .18s cubic-bezier(.4,0,1,1) both; }
+  ::view-transition-new(root) { animation: bs-vt-in .32s cubic-bezier(.2,.8,.2,1) both; }
+  ::view-transition-group(bs-portrait) { animation-duration: .42s; animation-timing-function: cubic-bezier(.2,.8,.2,1); }
+  ::view-transition-image-pair(bs-portrait) { isolation: auto; }
+  #pp-hero-portrait { view-transition-name: bs-portrait; }
+  /* The face you clicked, when the page it opens has not drawn its own yet:
+     it lifts toward you and dissolves instead of sliding away with the page. */
+  ::view-transition-old(bs-portrait):only-child { animation: bs-vt-lift .4s cubic-bezier(.2,.8,.2,1) both; }
+  ::view-transition-new(bs-portrait):only-child { animation: bs-vt-in .32s cubic-bezier(.2,.8,.2,1) both; }
+}
+@keyframes bs-vt-out { to { opacity: 0; transform: translateY(-10px) scale(.995); } }
+@keyframes bs-vt-in { from { opacity: 0; transform: translateY(14px); } }
+@keyframes bs-vt-lift { 40% { opacity: 1; } to { opacity: 0; transform: scale(1.4) translateY(-14px); filter: blur(3px); } }
+/* ===== /PAGE TRANSITIONS ===== */

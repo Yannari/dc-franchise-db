@@ -30,6 +30,7 @@ import { mountShowSwitcher, currentShow, rememberShow, SHOW_SWITCHER_CSS } from 
  * here; they are under STUDIO_LINKS, one click away in the header.
  */
 import { latestAired, airLabel, airKey } from './franchise-calendar.js';
+import './page-transitions.js';
 export const NAV_LINKS = [
   { href: 'index.html',            label: 'Home' },
   { href: 'on-air.html',           label: 'On Air' },

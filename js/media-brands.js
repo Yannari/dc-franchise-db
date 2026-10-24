@@ -19,7 +19,7 @@ export const MEDIA = {
     word: () => '<span class="mb-w mb-birdie">birdie</span>',
   },
   chatalumni: {
-    name: 'ChatAlumni', href: 'social.html?app=chat',
+    name: 'ChatAlumni', href: 'social.html?app=chatalumni',
     tile: 'linear-gradient(135deg,#1F7A50,#0E4A30)', ink: '#F5C451', accent: '#F5C451',
     icon: '<path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
     word: () => '<span class="mb-w mb-chat">Chat<b>Alumni</b></span>',
@@ -70,6 +70,18 @@ export const MEDIA_CSS = `
 .mb-kristal b{color:#E84393}
 a.mb-logo:hover .mb-w{text-decoration:underline;text-underline-offset:3px}
 `;
+
+/**
+ * Every element marked `data-media-icon="birdie"` (or any MEDIA key) gets that
+ * medium's tile in front of its text -- for pages whose links are static HTML.
+ */
+export function paintMediaIcons(root = document, size = 22) {
+  ensureMediaCss(root.ownerDocument || root);
+  for (const el of root.querySelectorAll('[data-media-icon]')) {
+    if (el.querySelector(':scope > .mb-tile')) continue;
+    el.insertAdjacentHTML('afterbegin', mediaIcon(el.dataset.mediaIcon, Number(el.dataset.mediaSize) || size));
+  }
+}
 
 /** Add MEDIA_CSS to the page once. */
 export function ensureMediaCss(doc = document) {

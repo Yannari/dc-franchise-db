@@ -48,17 +48,18 @@
   #dg *{box-sizing:border-box}
   .dg-wrap{max-width:1140px;margin:0 auto}
   .dg-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 4px}
+  .dg-head-mark{display:inline-flex;align-items:center;gap:12px}
   .dg-logo{font-size:27px;font-weight:800;letter-spacing:-.03em;
     background:linear-gradient(92deg,var(--dg-hot),#ffc14d);
     -webkit-background-clip:text;background-clip:text;color:transparent}
   .dg-sub{color:var(--dg-dim);font-size:13.5px}
   /* The app switcher, in this app's language rather than the other two's. */
   .dg-apps{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 0}
-  .dg-apps a,.dg-apps span{display:inline-flex;align-items:center;gap:7px;
+  .dg-apps>a,.dg-apps>span{display:inline-flex;align-items:center;gap:7px;
     padding:8px 14px;border-radius:2px;font-size:13.5px;font-weight:700;
     text-decoration:none;border:1px solid var(--dg-line);color:var(--dg-dim)}
   .dg-apps a:hover{color:var(--dg-ink);border-color:var(--dg-dim)}
-  .dg-apps span{color:var(--dg-bg);background:var(--dg-hot);border-color:var(--dg-hot)}
+  .dg-apps>span{color:var(--dg-bg);background:var(--dg-hot);border-color:var(--dg-hot)}
   .dg-back{color:var(--dg-hot);text-decoration:none;font-weight:600;font-size:13px}
   /* `display:flex` on the bar and the grid beats the hidden ATTRIBUTE, so
      hiding them in JS did nothing visible — the search bar sat over the
@@ -226,7 +227,7 @@
 <div id="dg">
   <div class="dg-wrap">
     <div class="dg-head">
-      <span class="dg-logo">Dramagram</span>
+      <span class="dg-head-mark" data-media-icon="dramagram" data-media-size="38"><span class="dg-logo">Dramagram</span></span>
       <span class="dg-sub" id="dg-now"></span>
     </div>
 
@@ -236,12 +237,10 @@
          ChatAlumni live on social.html and take an ?app= parameter; this one is
          the page you are on, so it is marked rather than linked. -->
     <nav class="dg-apps" aria-label="Choose an app">
-      <a href="social.html?app=birdie">
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M3 15c4-1 6-4 7-7 1 3 4 5 8 5-1 4-5 7-9 7H4l2-3z" fill="currentColor"/></svg>
+      <a href="social.html?app=birdie" data-media-icon="birdie">
         Birdie
       </a>
-      <a href="social.html?app=chatalumni">
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <a href="social.html?app=chatalumni" data-media-icon="chatalumni">
         ChatAlumni
       </a>
       <!-- A SPAN ON THE DIRECTORY, A LINK EVERYWHERE ELSE.
@@ -249,12 +248,10 @@
            directory and wrong when you are two clicks into somebody's profile:
            it was the one control that looked like the way home and did nothing
            when pressed. Swapped for a link by the boot code below. -->
-      <span id="dg-here" aria-current="page">
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/></svg>
+      <span id="dg-here" aria-current="page" data-media-icon="dramagram">
         Dramagram
       </span>
-      <a href="kristal.html">
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="2" fill="none"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <a href="kristal.html" data-media-icon="kristal">
         Kristal-talKs
       </a>
     </nav>
@@ -280,6 +277,8 @@
 
 <script type="module" src="js/site-header.js"></script>
 <script type="module">
+import { paintMediaIcons } from './js/media-brands.js';
+paintMediaIcons();
 import { directory, short, postsFor, followerHistory, tiesFor, relationshipStatus }
   from './js/dramagram.js';
 import { lineFor } from './js/life-events.js';
@@ -386,7 +385,7 @@ async function renderProfile(slug, { archive = true } = {}) {
   const here = $('#dg-here');
   if (here && here.tagName === 'SPAN') {
     here.outerHTML = here.outerHTML
-      .replace('<span id="dg-here" aria-current="page">', '<a id="dg-here" href="dramagram.html">')
+      .replace(/^<span id="dg-here" aria-current="page"/, '<a id="dg-here" href="dramagram.html"')
       .replace(/<\/span>$/, '</a>');
   }
   const host = $('#dg-profile');

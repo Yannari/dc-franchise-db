@@ -41,18 +41,18 @@
   .kt-head{display:flex;align-items:center;gap:16px;margin-bottom:6px}
   .kt-cover{width:84px;height:84px;border-radius:18px;object-fit:cover;
     border:2px solid var(--kt-hot);box-shadow:0 6px 24px rgba(232,67,147,.25)}
-  .kt-logo{font-size:30px;font-weight:900;letter-spacing:-.5px}
+  .kt-logo{font-size:30px;font-weight:900;letter-spacing:-.5px;display:flex;align-items:center;gap:12px}
   .kt-logo b{color:var(--kt-hot)}
   .kt-tag{color:var(--kt-dim);font-size:13px;margin-top:2px}
   .kt-stats{color:var(--kt-dim);font-size:12.5px;margin-top:6px}
   .kt-stats b{color:var(--kt-ink)}
 
   .kt-apps{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 4px}
-  .kt-apps a,.kt-apps span{display:inline-flex;align-items:center;gap:7px;
+  .kt-apps>a,.kt-apps>span{display:inline-flex;align-items:center;gap:7px;
     padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:700;
     text-decoration:none;border:1px solid var(--kt-line);color:var(--kt-dim)}
   .kt-apps a:hover{color:var(--kt-ink);border-color:var(--kt-dim)}
-  .kt-apps span{color:#fff;background:var(--kt-hot);border-color:var(--kt-hot)}
+  .kt-apps>span{color:#fff;background:var(--kt-hot);border-color:var(--kt-hot)}
 
   /* ── the podcast's seasons: one tab per off-season ── */
   .kt-periods{display:flex;gap:8px;overflow-x:auto;padding:14px 0 6px;scrollbar-width:thin}
@@ -176,17 +176,17 @@
     <div class="kt-head">
       <img class="kt-cover" src="assets/avatars/kristal.png" alt="Kristal">
       <div>
-        <div class="kt-logo">Kristal-tal<b>Ks</b></div>
+        <div class="kt-logo" data-media-icon="kristal" data-media-size="40"><span>Kristal-tal<b>Ks</b></span></div>
         <div class="kt-tag">The exit interview they should have been scared of. Hosted by Kristal.</div>
         <div class="kt-stats" id="kt-stats"></div>
       </div>
     </div>
 
     <nav class="kt-apps" aria-label="Choose an app">
-      <a href="social.html?app=birdie">Birdie</a>
-      <a href="social.html?app=chatalumni">ChatAlumni</a>
-      <a href="dramagram.html">Dramagram</a>
-      <span aria-current="page">Kristal-talKs</span>
+      <a href="social.html?app=birdie" data-media-icon="birdie">Birdie</a>
+      <a href="social.html?app=chatalumni" data-media-icon="chatalumni">ChatAlumni</a>
+      <a href="dramagram.html" data-media-icon="dramagram">Dramagram</a>
+      <span aria-current="page" data-media-icon="kristal">Kristal-talKs</span>
     </nav>
 
     <!-- The podcast's seasons: one tab per off-season, newest first. -->
@@ -199,6 +199,8 @@
 
 <script type="module" src="js/site-header.js"></script>
 <script type="module">
+import { paintMediaIcons } from './js/media-brands.js';
+paintMediaIcons();
 import { podcastFor, PODCAST_FOLLOWERS, MENTIONED_HIT, exitFollowerDelta } from './js/kristal.js';
 import { episodeComments } from './js/kristal-voice.js';
 import { careersIn } from './js/records.js';

@@ -75,7 +75,11 @@ export function gameTalkFor(week, ctx, clock, talked, lastGone) {
   const want = (kind, who, data = {}) => { if (!talked.has(kind) && Object.values(who).every(Boolean)) out.push({ kind, who, data }); };
 
   // ── a Block Buster week, three on the block, before it is played ──
-  const three = (week.blockBeforeSafety || []).filter(n => house.includes(n));
+  // The Block Buster is played after the veto, so blockBeforeSafety holds the block as the veto
+  // left it, replacement included. Before the veto meeting the three on the block are the three
+  // the HOH named (the user, 2026-10-24: a replacement nominee was "in the chairs" in a talk that
+  // aired before the veto was even played).
+  const three = ((clock.cer ? week.blockBeforeSafety : week.initialNominees) || []).filter(n => house.includes(n));
   if (week.safetyMode && clock.noms && !clock.safety && three.length >= 3) {
     const nomAct = (week.acts || []).find(a => a?.type === 'nominations');
     const hoh = ctx.hoh && house.includes(ctx.hoh) ? ctx.hoh : null;

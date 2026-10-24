@@ -3961,6 +3961,17 @@ function storyLifeScreen(scenes, ctx, n) {
     if (!d?.player || !d.alliance) continue;
     steps.push({ k: 'beat', t: `After last week's vote, ${d.player} is no longer part of ${d.alliance}.`, card: { kind: 'out', name: d.alliance, members: [d.player] } });
   }
+  // Every change to who is in an alliance is seen (the user, 2026-10-24: "we dont see alliance event in
+  // the stepped viewer when someone get added or remove to an alliance"). An alliance last week's vote
+  // ended, at the top of the week; a recruit this stretch whose own scene did not air, at the top of
+  // its stretch (measured: 16 of 27 recruits in two seasons had no card).
+  if (n === 1) for (const d of ctx.dissolved || []) {
+    if (!d?.name) continue;
+    steps.push({ k: 'beat', t: `After last week's vote, ${d.name} is finished.`, card: { kind: 'ended', name: d.name, members: (d.members || []).filter(m => (ctx.house || []).includes(m)) } });
+  }
+  for (const j of ctx.joins || []) {
+    steps.push({ k: 'beat', t: `Away from the cameras, ${j.alliance} brings ${j.joined} in.`, card: { kind: 'joined', name: j.alliance, members: [j.joined, ...j.with] } });
+  }
   for (const sc of scenes) {
     const set = SET_OF_ROOM(sc.room);
     const xs = spread(sc.cast.length);
@@ -4147,6 +4158,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     // BB27's Sanctum week: the Mastermind runs the HOH, the nominations, the veto meeting and the vote himself
     sanctum: (row.acts || []).some(x => x && x.type === 'eviction' && x.publicVote),
     departures: (row.allianceDepartures || []).filter(d => d && d.carried),
+    dissolved: (row.allianceDissolved || []).filter(d => d && d.carried),
     row,
     pleas: row.finalPleas || [], plea, anchor: 'start', day: 1, jury: [...(row.jury || [])], finalTwo: [...(row.finalTwo || [])], priorEvicted: [...priorEvicted], intro, firstRead };
   let finalPart = 0;
@@ -4177,7 +4189,12 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   const flush = () => {
     if (houseLife === 'segments' && storied) {
       const scs = storyStretch.filter(sc => !(sc.cast || []).some(n => ctx.hidden.has(n)) && (sc.lines || []).length);
+      // the recruits of this stretch that no aired scene showed joining
+      const shownJoin = (al, n) => scs.some(sc => sc.title?.kind === 'joined' && sc.title.name === al && (sc.title.members || []).includes(n));
+      ctx.joins = stretch.filter(b => b?.eventId === 'alliance-recruited' && b.allianceName && b.joined && !ctx.hidden.has(b.joined) && !shownJoin(b.allianceName, b.joined))
+        .map(b => ({ alliance: b.allianceName, joined: b.joined, with: (b.players || []).filter(n => n !== b.joined && !ctx.hidden.has(n)) }));
       if (scs.length) { const sc = stretchSnap(storyLifeScreen(scs, ctx, ++scenes)); sc.hidden = new Set(ctx.hidden); out.push(sc); }
+      ctx.joins = [];
       stretch = []; storyStretch = [];
       return;
     }

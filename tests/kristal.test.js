@@ -405,7 +405,11 @@ describe('the interview reads the record', () => {
     const earlier = [{ guest: 'b', guestName: 'Bowie', exchanges: [{ a: 'Gabby was my emotional support.' }] }];
     const none = composeEpisode(storyEp('kt-clip-0', { guest: 'Ara' }, { guest: 'a' }), { words: {}, earlier });
     expect(none.exchanges.some(e => e.topic === 'the-response')).toBe(false);
-    earlier[0].exchanges.push({ a: 'Ara lied to me on day two.' });
+    // A compliment is not a clip: every answer to one is a defence.
+    earlier[0].exchanges.push({ topic: 'the-win', a: 'Ara scared me more than anyone.' });
+    expect(composeEpisode(storyEp('kt-clip-2', { guest: 'Ara' }, { guest: 'a' }), { words: {}, earlier })
+      .exchanges.some(e => e.topic === 'the-response')).toBe(false);
+    earlier[0].exchanges.push({ topic: 'the-rivalry', a: 'Ara lied to me on day two.' });
     const some = composeEpisode(storyEp('kt-clip-1', { guest: 'Ara' }, { guest: 'a' }), { words: {}, earlier });
     const rx = some.exchanges.find(e => e.topic === 'the-response');
     expect(rx.q).toContain('Ara lied to me on day two.');

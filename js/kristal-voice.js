@@ -318,10 +318,21 @@ function exchangeFor(b, ctx, pressed = false) {
     const f = g.need === 'x' || b.type === 'the-loss' ? facts : { ...facts, x: null };
     const bank = g.byRel ? g.byRel[['ally', 'rival', 'neutral'][b.rel ?? 2]] : g.a;
     q = pickLine(g.q, `${key}|q`, f);
+    // An answer that echoes the question -- "Deserve is a big word", "Saw it
+    // coming?", "Again?" -- needs the question to have said it. Asked "Would
+    // you have voted for Wayne?", Julia answered "Deserve is a big word".
+    const echoFits = t => {
+      const m = String(t || '').match(/^([A-Z][a-z’']*(?: [a-z’']+){0,2})(?:\?| is a big word)/);
+      return !m || q.toLowerCase().includes(m[1].toLowerCase());
+    };
     a = pickLine(bank?.[style], `${key}|a`, f);
+    for (let k = 1; k < 6 && a && !echoFits(a); k++) a = pickLine(bank?.[style], `${key}|a${k}`, f);
     if (pressed && g.press) {
       const pr = pickFrom(g.press, `${key}|p`);
-      if (pr && slotsOf(pr.p).every(k => has(f, k))) {
+      // A press that the answer already settled is not asked: "So is Lila
+      // right or not?" after "Lila is right, honestly" is a host who was not
+      // listening.
+      if (pr && slotsOf(pr.p).every(k => has(f, k)) && !(pr.unless && pr.unless.test(a))) {
         press = fill(pr.p, f);
         crack = pickLine(pr.c?.[style], `${key}|c`, f) || null;
       }
@@ -369,11 +380,28 @@ export function composeEpisode(ep, { words = {}, prior = null, earlier = [], vis
   // The mentioned guest's episode first (the person this hour is about), then
   // anybody else who sat down before and named them.
   const named = new RegExp(`\\b${esc(story.guest || '\u0000')}\\b`);
+  // Only a line from an exchange where they were judged or something they did
+  // was named: every answer to a clip is a defence ("leaves out everything X
+  // did first", "X is right that I did it"), and played a compliment --
+  // "I've never been so scared of anyone as I was of Bowie" -- it answered
+  // something nobody said.
+  // Not the record or the ballots either: "It's true. It's also only the half
+  // Thom was there for" and "Bowie. I recognised the handwriting" mean nothing
+  // without the question they answered. And not the nice-thing angle of a
+  // rivalry, which is a compliment by request.
+  // Nor a betrayal, which is the speaker CONFESSING ("I made Bowie pancakes
+  // that morning"): "It's just wrong" does not answer an apology.
+  const CLIPPABLE = new Set(['the-rivalry', 'the-backstab', 'the-boot', 'the-loss', 'the-winner']);
   const clipFrom = p => {
     if (!p || p.guest === ep.guest) return null;
     // Only a line that says their name: a clip about somebody else is not a clip.
-    const line = (p.exchanges || []).flatMap(x => [x.crack, x.a]).find(t => t && named.test(t)) || null;
-    return line ? { by: p.guestName, quote: line } : null;
+    // ...and not a line paying them a compliment from inside an accusing beat:
+    // "I appreciated that more than Isabel will ever know" is thanks.
+    const PRAISE = /\b(appreciat\w*|grateful|thank\w*|respect\w*|love[sd]?|adore\w*|proud|saw through me|could (actually )?beat me)\b/i;
+    const line = (p.exchanges || []).filter(x => CLIPPABLE.has(x.topic) && !/\bnice thing\b/i.test(x.q || ''))
+      .flatMap(x => [x.crack, x.a]).find(t => t && named.test(t) && !PRAISE.test(t)) || null;
+    // It is read out inside “…”, so its own quotation marks become single ones.
+    return line ? { by: p.guestName, quote: line.replace(/“/g, '‘').replace(/”/g, '’') } : null;
   };
   const clip = clipFrom(prior) || earlier.map(clipFrom).find(Boolean) || null;
 

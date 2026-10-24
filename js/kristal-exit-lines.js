@@ -334,7 +334,7 @@ export const NAMED_Q = {
     'Let’s talk about {x}. Did {x} put you there?',
     'If you had to put one name on it, would it be {x}?',
     'Whose idea was it, really?',
-    'How much of this is on {x}?',
+    'Is this on {x}?',
   ],
   respect: [
     'Let’s talk about {x}. You’re not angry?',
@@ -344,11 +344,11 @@ export const NAMED_Q = {
   ],
   drag: [
     'Tell me about {x}.',
-    'I noticed you rolling your eyes when I said {x}. Go on.',
+    'Your face just changed. Is that about {x}?',
     'What does everyone at home not know about {x}?',
     'Who was the hardest person to live with?',
     'Let’s talk about {x}. Be honest.',
-    'Whose edit is kinder than they deserve?',
+    'Who fooled the audience the most?',
   ],
   warn: [
     'What should people know about {x}?',
@@ -585,7 +585,8 @@ export const FAN_A = {
   },
   mixed: {
     hot: ['They saw an edit. They didn’t live it.', 'People at home have no idea what it’s like on day thirty with no sleep.'],
-    soft: ['That’s fair. I probably did play it too safe in places.', 'I’d have changed the first week. I came in too fast.', 'Honestly, they’re not wrong. I’ll own that.'],
+    soft: ['That’s fair. I probably did play it too safe in places.', 'I’d have changed the first week. I came in too fast.', 'Honestly, they’re not wrong. I’ll own that.',
+      'Both halves have a point. That’s the annoying part.', 'Split sounds right. I was split on me too.'],
     hurt: ['I did my best. That’s all I can say.', 'I hear it. I’m not ready to hear all of it yet.'],
   },
   cold: {
@@ -594,6 +595,37 @@ export const FAN_A = {
     hurt: ['That’s hard to hear. I’m going to log off for a while.', 'I wasn’t a villain. I was scared.'],
   },
 };
+
+/**
+ * A listener's QUESTION gets an answer to that question. FAN_A is a reaction
+ * to what the comments say ("They saw an edit"), which answers "the internet
+ * thinks you're the villain" and does not answer "do you think you played too
+ * safe?". A question matching one of these is answered from its own lines.
+ */
+export const FAN_FIT = [
+  { when: /too safe/i, a: {
+    hot: ['Too safe? I played the only game the numbers gave me.', 'Safe is what you call it when it doesn’t work.'],
+    soft: ['That’s fair. I probably did play it too safe in places.', 'Honestly, they’re not wrong. I’ll own that.'],
+    hurt: ['Maybe. I was scared, and it showed.', 'Probably. I didn’t want to be the one who blew it up.'],
+  } },
+  { when: /have a plan/i, a: {
+    hot: ['I had a plan. Nobody else stuck to theirs.', 'I had a plan. I just didn’t print it on a T-shirt.'],
+    soft: ['I had one. It needed one more week.', 'A plan, yes. A good one, apparently not.'],
+    hurt: ['I had a plan. I didn’t have the numbers.'],
+  } },
+  { when: /differently/i, a: {
+    hot: ['Nothing. I’d play it the same and hope the others played it better.', 'I’d have trusted nobody. Lesson learned.'],
+    soft: ['I’d have changed the first week. I came in too fast.', 'Talked less, listened more. Every time.'],
+    hurt: ['I’d have trusted fewer people. Or the right ones.'],
+  } },
+  { when: /so hard on everybody/i, a: {
+    hot: ['Because somebody had to say it, and nobody else would.', 'I was honest. It looks hard when everyone else is pretending.'],
+    soft: ['That’s fair. I wasn’t always my best self in there.'],
+    hurt: ['I wasn’t a villain. I was scared.'],
+  } },
+];
+/** FAN_A lines that answer one particular question, kept off the others. */
+export const FAN_SPECIFIC = /too safe|first week/i;
 
 export const RANK_Q = [
   'Rank who’s left. Top three.',

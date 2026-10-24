@@ -116,7 +116,9 @@ export const BEATS = {
         rambler: ['It was {x}, and the worst part is I’d told {x} that same morning that I trusted {x} more than anyone, and {x} just nodded.'],
       } }] },
     { k: 'nobody', need: '!x',
-      q: ['{exitNight}. Whose idea was it, and when did you find out?',
+      // No culprit on the record, so the question cannot ask whose idea it was:
+      // the answers have no name to give.
+      q: ['{exitNight}. When did you find out it was you?',
         'Walk me into {exitNight}. When did you know?'],
       a: {
         bomb: ['Everybody pretends it was a group decision. It’s never a group decision. I found out when they did.',
@@ -185,11 +187,12 @@ export const BEATS = {
           charmer: ['{x} deserved it. I would have liked to lose to {x} in person, though.', 'Yes, and {x} looked wonderful doing it, which matters.'],
           earnest: ['Yes. {x} earned it.', 'Yes. I was proud of {x}, and we barely spoke in there.'],
           deadpan: ['Probably. I wasn’t there for {x}’s end.', 'Sure. {x} was fine.'],
-          chaos: ['I did not see it coming at all, which means {x} did something right.', 'I’d have voted for whoever made me laugh. So, not {x}. But sure.'],
+          chaos: ['I did not see it coming at all, which means {x} did something right.', 'I’d have voted for whoever made me laugh, so not {x}. But I get why the jury did.'],
           rambler: ['I think so? I was gone by then, so I watched {x} win at home with my whole family, and they said yes before I did.'],
         },
       },
-      press: [{ p: 'Yes or no. Did {x} deserve it?', c: {
+      // Not after an answer that already said yes or no.
+      press: [{ p: 'Yes or no. Did {x} deserve it?', unless: /^(Yes|No)\b/, c: {
         bomb: ['No. {x} didn’t deserve it. I deserved it. There, I said it into a microphone.'],
         analyst: ['Yes. And I’d rather lose to a good game than beat a bad one.', 'Yes. And I’d like it noted that I said so first.'],
         hothead: ['Fine! No! I don’t think {x} deserved it! I think {x} hid behind everyone!'],
@@ -564,19 +567,20 @@ export const BEATS = {
           'I’d put it slightly differently. I’d put it the way it happened.', '{x} writes a very flattering record. For {x}.'],
         analyst: ['That’s accurate, and it leaves out why. {x} knows why.', 'Fair, as far as it goes. It just stops at the convenient bit for {x}.',
           'I don’t disagree with a word. I disagree with the order.', 'It’s true. It’s also only the half {x} was there for.'],
-        hothead: ['{x} wrote that? Of course {x} wrote that.', 'Correct something? I’d correct the whole thing!',
-          'Fair? No. Accurate? Fine. Those are different.'],
-        charmer: ['I love that I’m in {x}’s highlights. I’ve made it.', 'I’d never correct {x}. I’d just add a few details, in a nicer font.',
+        hothead: ['{x} wrote that? Of course {x} wrote that.', 'I’d rewrite the whole thing, start to finish!',
+          'It’s accurate. It isn’t fair. Those are different things.'],
+        charmer: ['I love that I’m in {x}’s highlights. I’ve made it.', 'I wouldn’t change a word of {x}’s. I’d just add a few details, in a nicer font.',
           'It’s fair. I’m nicer in my version, but it’s fair.'],
         earnest: ['That’s fair. I’d tell it a bit kinder to both of us, but it’s fair.', 'It’s fair. I’d only add that I felt terrible about it after.',
           'That’s how {x} saw it, and I understand why.'],
         deadpan: ['Sounds about right. {x} was there.', 'Fine.', 'It’s accurate.'],
         chaos: ['Honestly, flattered. {x} made me sound far more organised than I was.',
-          'I’d correct it to make me sound worse, honestly. It was worse.', 'I don’t remember it, which means it was probably exactly like that.'],
+          'If anything it makes me sound better than I was. It was worse.', 'I don’t remember it, which means it was probably exactly like that.'],
         rambler: ['That’s true, mostly, though it was messier, there was a whole other conversation with {x} first that nobody filmed.',
           'It’s fair, but there was a whole morning before it that nobody wrote down, which is where most of it actually happened.'],
       },
-      press: [{ p: 'So {x} is lying?', c: {
+      // Not after the guest has just agreed the record is accurate.
+      press: [{ p: 'So {x} is lying?', unless: /\b(accurate|fair|true|about right)\b/i, c: {
         bomb: ['Lying is a strong word. Leaving out the bits where {x} looks bad is a skill, and {x} is skilled.'],
         analyst: ['Not lying. Just telling the half {x} likes.'],
         hothead: ['Yes! Lying! On the record!'],
@@ -612,7 +616,8 @@ export const BEATS = {
         rambler: ['I listened to {x}’s episode twice, actually, and I understand why {x} remembers it that way, but there’s a whole conversation before it that {x} skipped.',
           'I listened to that bit three times, and I think {x} means it, and I think {x} is missing one thing, which is that I was scared too.'],
       },
-      press: [{ p: 'So is {x} right or not?', c: {
+      // Not after an answer that already said right or wrong.
+      press: [{ p: 'So is {x} right or not?', unless: /\b(right|wrong)\b/i, c: {
         bomb: ['{x} is half right. The half {x} got wrong is the half with my name in it.', '{x} is right that I did it. {x} is wrong that I feel bad.'],
         analyst: ['{x} is right about what happened and wrong about why.', '{x} has the facts. {x} doesn’t have the reasons, and I’m not sure I want {x} to.'],
         hothead: ['{x} is wrong! Wrong!', 'Fine. {x} has a point. One. Small.'],

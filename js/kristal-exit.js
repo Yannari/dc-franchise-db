@@ -42,11 +42,25 @@ export function exitPicks(rec, key) {
   const r = rec || {};
   const still = r.stillIn || [];
   const order = still.slice().sort((a, b) => hash(`${key}|o|${a}`) - hash(`${key}|o|${b}`));
+  // Never somebody they just praised: Skye called Ayesha "my person" and then
+  // named Ayesha as next in trouble, in the same hour.
+  const warm = warmOf(r);
   const next = (r.segments || []).includes('who-next') && still.length >= 2
-    ? (r.rivals || []).find(n => still.includes(n)) || order.find(n => n !== r.prediction) || null
+    ? (r.rivals || []).find(n => still.includes(n) && !warm.has(n))
+      || order.find(n => n !== r.prediction && !warm.has(n)) || null
     : null;
   const winner = r.prediction && r.kind !== 'finalist' ? r.prediction : null;
   return { next, winner, order };
+}
+
+/**
+ * Who the guest is warm to, from the record: anyone they name kindly (praise,
+ * respect, missing them), their allies and their partner. Every answer in the
+ * hour has to agree with this -- the interview is one person talking.
+ */
+export function warmOf(r) {
+  return new Set([...(r?.named || []).filter(n => POSITIVE.has(n.stance)).map(n => n.who),
+    ...(r?.allies || []), r?.partner].filter(Boolean));
 }
 
 /** The remix counts kristal.html keeps in this browser (its SALT_KEY). */
@@ -182,26 +196,76 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   // ── how it ended ──
   const openKind = B('OPEN_Q', r.kind).length ? r.kind : 'seen-it-coming';
   const oa = B('OPEN_A', openKind, g).length ? B('OPEN_A', openKind, g) : B('OPEN_A', openKind, 'soft');
-  push('the-exit', pick(B('OPEN_Q', openKind), `${K}|oq`, base, used), pick(oa, `${K}|oa`, base, used));
+  // A question every line of which needs a fact this exit lacks (a showmance
+  // exit with no partner on the record) is asked the general way, not blank.
+  const oq = pick(B('OPEN_Q', openKind), `${K}|oq`, base, used)
+    || pick(['How are you feeling, now it’s over?', 'How are you, honestly, after that?'], `${K}|oq2`, base, used);
+  const oaLine = pick(oa, `${K}|oa`, base, used)
+    || pick(B('OPEN_A', 'seen-it-coming', g).length ? B('OPEN_A', 'seen-it-coming', g) : B('OPEN_A', 'seen-it-coming', 'soft'), `${K}|oa2`, base, used);
+  push('the-exit', oq, oaLine);
 
   // ── the people they name, written once and placed below ──
   const t = r.truth;
   const tapeOn = (r.segments || []).includes('the-tape') && t && t.flippers.length;
   let blamed = 0;
   const flipped = new Set(tapeOn ? t.flippers : []);
+  // ── one person talking for an hour ──
+  // Questions and answers were drawn from pools independently, so the hour
+  // could contradict itself: an open "Who was the hardest person to live
+  // with?" answered "Angelica is not who you think", Blair calling Theo "the
+  // only nice thing I'll say about anybody today" after praising Malik, and
+  // Sabrina picking Kyle to win "not because Kyle deserves it" after calling
+  // him the only honest person in there.
+  const warm = warmOf(r);
+  const praised = (r.named || []).filter(n => POSITIVE.has(n.stance)).length;
+  // "the only one", "everyone else was playing a part": true of ONE person.
+  const ONLY = /\bonly (honest )?(one|person|nice thing)\b|\bthe one person\b|\beveryone else\b|\bjust \{x\}|\bnobody else\b/i;
+  // An answer to "Who…?" opens on the name, or on the few words that lead
+  // straight into it. "I want Bo to know I'm not mad" names Bo early and still
+  // does not answer "Who do you wish had come with you?".
+  const OPENS_ON_X = /^(\[J\])?((Just|It was|Probably|And|Put it on|Honestly,|I’d trust|I respect|I lived with|I never fully trusted|I’d keep an eye on|Watch) )?\{x\}/;
+  // "Bo, I love you, win the thing" talks TO Bo -- a message, not an answer.
+  const leadsWithX = t => OPENS_ON_X.test(t) && !/^\{x\}, (I|you)\b/.test(t);
+  // "{x}. The one…" / "Just {x}." is the shape of an answer to "Who…?". Asked
+  // "Tell me about Malik", nobody answers "Malik."
+  const WHO_FORM = /^(\[J\])?(Just )?\{x\}[.,]/;
   const namedLine = (n, i, afterTape = false) => {
     const f = { ...base, x: n.who };
     // One person is THE one; anyone else blamed is "who else", and a friend
     // the tape just exposed is asked about as that.
     const second = n.stance === 'blame' && !(afterTape && flipped.has(n.who)) && blamed++ > 0;
+    // "Who are you rooting for now?" is a question about somebody still playing.
+    const asks = (L.NAMED_Q[n.stance] || []).filter(t => n.still || !/\brooting for now\b/i.test(t));
     const q = afterTape && flipped.has(n.who) ? pick(L.AFTER_TAPE_Q, `${K}|aq|${i}`, f, used)
       : second ? pick(L.BLAME2_Q, `${K}|b2q|${i}`, f, used)
-        : pick(L.NAMED_Q[n.stance], `${K}|nq|${i}`, f, used);
+        : pick(asks, `${K}|nq|${i}`, f, used);
+    // An open question ("Who…?", "Is there anyone…?") is answered with the
+    // name, about what happened -- not a forecast that never says who.
+    const open = /^(who|whose)\b/i.test(q) || /\banyone\b/i.test(q);
+    const forward = /\brooting for now\b/i.test(q);
     const exposed = afterTape && flipped.has(n.who) && n.stance === 'blame';
-    const lines = exposed ? (L.AFTER_TAPE_A[g] || [])
+    let lines = exposed ? (L.AFTER_TAPE_A[g] || [])
       : second ? (L.BLAME2_A[g] || [])
-      : [...(L.NAMED_A[n.stance]?.[g] || []), ...(n.still ? (L.NAMED_IN[n.stance]?.[g] || []) : [])];
-    return ['named', q, pick(lines.length ? lines : (L.NAMED_A[n.stance]?.soft || []), `${K}|na|${i}`, f, used),
+      // "Who are you rooting for now?" is answered with a hope, not a memory.
+      : forward && n.still ? [...(L.NAMED_IN[n.stance]?.[g] || []), ...(L.NAMED_IN[n.stance]?.soft || [])]
+      : [...(L.NAMED_A[n.stance]?.[g] || []), ...(n.still && !open ? (L.NAMED_IN[n.stance]?.[g] || []) : [])];
+    // Each rule narrows the bank; a rule that would empty it is skipped, and a
+    // bank narrowed below three borrows the stance's calmer lines (same rules)
+    // rather than saying the one survivor in every interview.
+    const rules = [
+      open && !exposed ? leadsWithX : t => !WHO_FORM.test(t),
+      t => praised <= 1 || !ONLY.test(t),
+      // Sabrina left in week one: "I lived with Angelica for weeks" is not hers to say.
+      t => (Number(r.week) || 0) >= 3 || !/\bweeks\b/i.test(t),
+    ];
+    const narrow = list => rules.reduce((acc, ok) => (acc.filter(ok).length ? acc.filter(ok) : acc), list);
+    const own = narrow(lines);
+    const strict = own.filter(t => rules.every(ok => ok(t)));
+    if (strict.length < 3 && !exposed && !second && !forward && g !== 'soft') {
+      const calmer = (L.NAMED_A[n.stance]?.soft || []).filter(t => !lines.includes(t));
+      lines = narrow([...lines, ...calmer]);
+    } else lines = own;
+    return ['named', q, pick(lines, `${K}|na|${i}`, f, used),
       { who: n.who, stance: n.stance }];
   };
   // When the tape plays, they get to name their suspect first — Kristal can
@@ -253,11 +317,19 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   for (const seg of r.segments || []) {
     if (seg === 'fan-mail') {
       const rc = L.FAN_Q[r.reception] ? r.reception : 'mixed';
-      push('fan-mail', pick(B('FAN_Q', rc), `${K}|fq`, base, used), pick(L.FAN_A[rc][g], `${K}|fa`, base, used));
+      const fq = pick(B('FAN_Q', rc), `${K}|fq`, base, used);
+      // A listener's question gets that question's answer (FAN_FIT); the
+      // general reactions answer only a comment read out, never a question.
+      const fit = L.FAN_FIT.find(x => x.when.test(fq));
+      const days = t => (Number(r.week) || 0) >= 4 || !/\bday thirty\b/i.test(t);
+      const fa = fit ? (fit.a[g] || fit.a.soft) : (L.FAN_A[rc][g] || []).filter(t => !L.FAN_SPECIFIC.test(t) && days(t));
+      push('fan-mail', fq, pick(fa.length ? fa : L.FAN_A[rc].soft, `${K}|fa`, base, used));
     } else if (seg === 'rank-them' && still.length >= 3) {
       const top = [r.prediction, ...order].filter((x, i, a) => x && a.indexOf(x) === i).slice(0, 3);
       const f = { ...base, a: top[0], b: top[1], c: top[2] };
-      push('rank-them', pick(L.RANK_Q, `${K}|rq`, f, used), pick(L.RANK_A, `${K}|ra`, f, used), { who: top[0] });
+      // "Three: {c}, and that's being generous" is a dig, never at a friend.
+      const ranks = warm.has(top[2]) ? L.RANK_A.filter(t => !/\bgenerous\b/.test(t)) : L.RANK_A;
+      push('rank-them', pick(L.RANK_Q, `${K}|rq`, f, used), pick(ranks, `${K}|ra`, f, used), { who: top[0] });
     } else if (seg === 'message-in') {
       const x = (r.partner && still.includes(r.partner) && !flipped.has(r.partner) ? r.partner : null)
         || (r.named || []).find(n => n.still && POSITIVE.has(n.stance) && !flipped.has(n.who))?.who
@@ -276,14 +348,28 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
       const x = picks.next;
       if (!x) continue;
       const f = { ...base, x };
-      push('who-next', pick(B('NEXT_Q'), `${K}|xq`, f, used), pick(L.NEXT_A[g], `${K}|xa`, f, used), { who: x });
+      // "{x}, if there is any justice" is for a rival. Anyone else is a read
+      // of the numbers, said like one.
+      const rival = (r.rivals || []).includes(x) || (r.named || []).some(n => n.who === x && !POSITIVE.has(n.stance));
+      push('who-next', pick(B('NEXT_Q'), `${K}|xq`, f, used), pick(L.NEXT_A[rival ? g : 'soft'], `${K}|xa`, f, used), { who: x });
     }
   }
 
   // ── who wins ──
   if (picks.winner) {
     const f = { ...base, x: picks.winner };
-    push('the-prediction', pick(L.PREDICT_Q, `${K}|pq`, f, used), pick(L.PREDICT_A[g], `${K}|pa`, f, used), { who: picks.winner });
+    // The tone follows how they feel about the person: "and I hate saying
+    // it" is about somebody they cannot stand, never a friend they praised.
+    const GRUDGING = /hate saying|not because .* deserves/i;
+    const FOND = /happy for|rooting for|I want it to be/i;
+    const relation = warm.has(picks.winner) ? 'warm'
+      : (r.rivals || []).includes(picks.winner) || (r.named || []).some(n => n.who === picks.winner && !POSITIVE.has(n.stance)) ? 'cold' : 'neutral';
+    const all = [...(L.PREDICT_A[g] || []), ...(L.PREDICT_A.soft || [])].filter((t, i, a) => a.indexOf(t) === i);
+    const fits = relation === 'warm' ? all.filter(t => !GRUDGING.test(t))
+      : relation === 'cold' ? (L.PREDICT_A[g] || []).filter(t => !FOND.test(t))
+        : (L.PREDICT_A[g] || []).filter(t => !GRUDGING.test(t) && !FOND.test(t));
+    const bank = fits.length ? fits : all.filter(t => !GRUDGING.test(t) && !FOND.test(t));
+    push('the-prediction', pick(L.PREDICT_Q, `${K}|pq`, f, used), pick(bank, `${K}|pa`, f, used), { who: picks.winner });
   }
 
   // ── rapid fire: a few names ──

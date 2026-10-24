@@ -9132,6 +9132,27 @@
       "voice": "Passionate, preachy and quick to accuse, every conversation turned into a protest speech. Calls things problematic, raises her voice when challenged and rarely hears the irony. #loud #blunt#chaotic",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Sawyer",
+      "slug": "sawyer",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "hero",
+      "stats": {
+        "physical": 7,
+        "endurance": 8,
+        "mental": 4,
+        "social": 7,
+        "strategic": 3,
+        "loyalty": 9,
+        "boldness": 4,
+        "intuition": 6,
+        "temperament": 9
+      },
+      "voice": "Slow, gentle Southern drawl, polite to a fault: 'well, shucks', 'yes ma'am'. Talks about his animals like family and calms a room just by walking into it. #calm #warm",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

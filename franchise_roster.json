@@ -9174,6 +9174,27 @@
       "voice": "Flat, low and sparing; says as little as possible and makes every word count. Dry one-liners, long silences, and a softness he hides the moment a baby animal appears. #quiet #dry",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Willow",
+      "slug": "willow",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 4,
+        "social": 7,
+        "strategic": 4,
+        "loyalty": 8,
+        "boldness": 8,
+        "intuition": 5,
+        "temperament": 4
+      },
+      "voice": "Big, theatrical and emotional, every story told like an audition, every feeling at full volume. Quotes plays, calls people 'darling', and cries easily, every tear real. #theatrical #emotional",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

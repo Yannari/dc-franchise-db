@@ -599,7 +599,7 @@ export const PHRASINGS = {
     'conspiracy': {
       timeline: [
         'they knew. they absolutely knew and they built the episode around it',
-        'this is scripted and i have said it since season {season}',
+        'this is scripted and i have said it from day one',
         'the edit gave it away twenty minutes early. that was on purpose',
         'you do not get that camera angle by accident',
         'somebody in that control room has a favourite and it is obvious',
@@ -814,7 +814,7 @@ export const PHRASINGS = {
         '{subject} knew everybody and understood nobody',
         'the whole cast liked {subject} better from a voting booth',
         'you cannot treat people like furniture and act shocked when the chairs move',
-        '{subject} social game was a customer service voice over active contempt',
+        '{subject}’s social game was a customer service voice over active contempt',
         'every bridge burned beautifully. shame about needing to cross one',
         '{subject} made every ally feel temporary and finally got believed',
         'charm gets you in the room. character decides whether anyone warns you',
@@ -873,7 +873,7 @@ export const PHRASINGS = {
         'that smug little victory walk for finishing fourth in a two person job',
         "{subject}'s outfit is fighting harder than {subject} did all episode",
         'all that posing and the camera still found a more interesting wall',
-        '{subject} hair has survived more adversity than {subject} game',
+        '{subject}’s hair has survived more adversity than {subject}’s game',
         'a face made for reaction shots and not one correct reaction all season',
         '{subject} entered the room like a winner and left the conversation as furniture',
         'personality assembled entirely from mirrors and interrupted sentences',
@@ -1055,7 +1055,7 @@ export const PHRASINGS = {
       timeline: [
         '{subject} deserved better than a game they were never going to be good at',
         'not everybody is built for this and that is not a character flaw',
-        'the nicest person on that beach and it was always going to cost them',
+        'the nicest person in that house and it was always going to cost them',
         'i am fine. {subject} is bad at this and i am fine',
       ],
       chat: [
@@ -1125,7 +1125,7 @@ export const PHRASINGS = {
     },
     'stan-post': {
       timeline: [
-        'been on {subject} since season {season} and i will be here at the finale',
+        'been on {subject} since day one and i will be here at the finale',
         'defending {subject} in every reply for as long as it takes',
         'you can say what you like, {subject} is the reason this season is watchable',
         'four seasons of this account and one favourite. still {subject}',
@@ -1157,7 +1157,7 @@ export const PHRASINGS = {
       timeline: [
         'and another thing about {subject}',
         'thank you. finally somebody said it',
-        'adding to this: {subject} did the same thing in episode {episode}',
+        'adding to this: {subject} did the exact same thing last week',
         'the replies on this are carrying me through the night',
       ],
     },
@@ -1191,25 +1191,38 @@ export const PHRASINGS = {
 
 export const DECORATIONS = {
   /** Timeline openers. Fragments, lowercase, mid-thought. */
+  // Openers that sit in front of a FRAGMENT as well as a sentence: most
+  // timeline lines are fragments ("the only person in that cast worth the
+  // edit"), and "no because" / "i'm sorry but" in front of one is not English.
+  // The sampler rations them: rare, and each at most once a night.
   openers: {
-    timeline: ['ok but ', 'nah ', 'lmao ', "i'm sorry but ", 'genuinely ', 'listen ', 'hold on. ', 'no because '],
+    timeline: ['ok but ', 'lmao ', 'honestly ', 'wait ', 'nah '],
     // Chat openers terminate themselves, so the sentence after them keeps its
     // capital. "For what it is worth, i would put..." is the tell of a template.
-    chat: ['Honestly? ', 'Okay. ', 'Look. ', 'For what it is worth: ', 'Right. ', 'Two things. ',
-      'Quick one. ', 'Late to this, but. ', 'Rewatching now. ', 'Hosting tonight, so briefly: '],
+    chat: ['Honestly? ', 'Okay. ', 'Look. ', 'For what it is worth: ', 'Right. ',
+      'Quick one. ', 'Rewatching now. ', 'Hosting tonight, so briefly: '],
   },
-  /** Trailing tics. */
+  /**
+   * Trailing tics, by the post's attitude: "i said what i said" closes a dig,
+   * not a love letter. Written contracted -- they are added after contraction.
+   */
   tails: {
-    timeline: [' anyway', ' bye', ' i said what i said', ' no notes', ' im done', ' and that is the post'],
-    chat: [' Thoughts?', ' Watch it back.', ' I could be wrong.', ' Anyway, that is my read.',
-      ' Curious what the room thinks.', ' Happy to be argued with.', ' Tell me I am wrong.',
-      ' That is all I have got tonight.', ' Someone check my maths on that.', ' Open to the other read.'],
+    timeline: {
+      hostile: [' i said what i said', ' and that’s the post', ' im done'],
+      warm: [' no notes', ' that’s it'],
+      neutral: [' anyway', ' just saying'],
+    },
+    chat: {
+      hostile: [' Happy to be argued with.', ' Watch it back.'],
+      warm: [' Good for them.', ' Watch it back.'],
+      neutral: [' I could be wrong.', ' Curious what the room thinks.', ' Open to the other read.'],
+    },
   },
   /** Emoji by posture, so a dunk never lands with a heart on it. */
   emoji: {
     hostile: ['💀', '😭', '🍅', '🤡', '😂', '☠️'],
     supportive: ['😭', '💛', '🫶', '🥺', '👑', '🤍'],
-    neutral: ['👀', '🤔', '😳', '‼️', '🧠'],
+    neutral: ['👀', '😳', '‼️'],
   },
 };
 

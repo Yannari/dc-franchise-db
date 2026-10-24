@@ -45,6 +45,8 @@ import { platformOf } from './platforms.js';
 import {
   PHRASINGS, DECORATIONS, SHAPE_STANCE, TOPIC_AIM, ARCHETYPE_PULL,
 } from './phrasings.js';
+import { contract, emphasize, placeWords } from './humanize.js';
+import { words as showWords } from './adapter.js';
 
 
 /**
@@ -150,21 +152,15 @@ function fillSlots(template, event) {
     .trim();
 }
 
-/** Uppercase a run of words. Frequency scales with `rate`; never a threshold. */
-function shout(text, rate, rng) {
-  if (rate <= 0 || rng() >= rate) return text;
-  const words = text.split(' ');
-  if (words.length < 4) return text.toUpperCase();
-  const runLen = 1 + Math.floor(rng() * 3);
-  const start = Math.floor(rng() * (words.length - runLen));
-  for (let i = start; i < start + runLen; i++) words[i] = words[i].toUpperCase();
-  return words.join(' ');
-}
-
 function punctuate(text, style, rng) {
   let t = text.trim();
   if (style === 'none') return t.replace(/\.+$/, '');
-  if (style === 'heavy') return t.replace(/[.!?]+$/, '') + _pick(rng, ['!!', '!!!', '?!', '...', '!?']);
+  // "?!" belongs on a question. On a statement -- "Lucia only said what
+  // everyone saw?!" -- it reads as a generator, not a person.
+  if (style === 'heavy') {
+    const asks = /\?$/.test(t) || /^(who|what|why|how|where|when|is|are|was|did|does|do|can|could|would|explain)\b/i.test(t);
+    return t.replace(/[.!?]+$/, '') + _pick(rng, asks ? ['?!', '??', '?!?'] : ['!!', '!!!', '...', '!']);
+  }
   return /[.!?…]$/.test(t) ? t : t + '.';
 }
 
@@ -282,10 +278,21 @@ function claimsFit(template, event) {
   if (/\b(is|are) gone\b|\b(went|goes|gone|sent) home\b/.test(t) && !kindsFor(event).includes('eviction')) return false;
   const ep = Number(event?.episode) || 0;
   if (!ep) return true;
-  const week = t.match(/\bweek (one|two|three|four|five|six|seven|eight|nine|ten|\d+)\b/);
-  // "week eight" is true from week eight on; only a week still to come is false.
-  if (week && ep < (WEEK_NUMBER[week[1]] || Number(week[1]))) return false;
+  const num = w => WEEK_NUMBER[w] || Number(w) || 0;
+  const week = t.match(/\b(in|since|around|by)? ?week (one|two|three|four|five|six|seven|eight|nine|ten|\d+)\b/);
+  // "week eight" is true from week eight on; "in week two" talks about a week
+  // already gone, so not during week two itself.
+  if (week && ep < num(week[2]) + (week[1] ? 1 : 0)) return false;
   if (/\ball (season|series)\b|\bevery (single )?week\b/.test(t) && ep < 3) return false;
+  // Found reading Big Brother 2's first week: "nothing has happened in a
+  // month", "this stopped being a competition around episode four", "has not
+  // had a confessional in three episodes" -- on night one.
+  if (/\b(a|one) month\b/.test(t) && ep < 4) return false;
+  const span = t.match(/\b(two|three|four|five|six|seven|eight|nine|ten|\d+) (straight )?(weeks|episodes)\b/);
+  if (span && ep < num(span[1])) return false;
+  const past = t.match(/\b(around|since|by|before|in) episode (one|two|three|four|five|six|seven|eight|nine|ten|\d+)\b/);
+  if (past && ep <= num(past[2])) return false;
+  if (/\blast week\b|\bstopped being\b|\bnothing has happened\b|\bremarkably silent\b/.test(t) && ep < 2) return false;
   return true;
 }
 
@@ -327,7 +334,15 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
   // episode reaches at all, and there are only two or three shapes per topic,
   // so there is nothing to sweep through. Uniform reaches more.
   const ep = event?.episode || 0;
-  const shape = _pick(rng, shapes);
+  // A shape whose every line has been said tonight is out of the draw: the
+  // fallback used to start the pool over, and a five-line pool under a busy
+  // night printed "this account has had one correct opinion in three seasons"
+  // five times. A crowd that has said everything in one register says it in
+  // another, or says nothing -- `null` is a post not made.
+  const unsaid = s => !used || poolFor(topic.id, s, stream, event).some(t => !used.has(t));
+  const open = shapes.filter(unsaid);
+  if (!open.length) return null;
+  const shape = _pick(rng, open);
   const all = poolFor(topic.id, shape, stream, event);
 
   // ── not the same sentence nine times ──
@@ -369,12 +384,25 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
   }
   if (used && template) used.add(template);
 
-  let text = fillSlots(template, event);
+  // The show's own word for where the cast lives, then the contractions people
+  // type with (js/social/humanize.js).
+  let text = contract(placeWords(fillSlots(template, event), showWords(event?.format).home));
 
   // Tics. The chat shouts less and decorates less — it is a room, not a stand.
   const roomVoice = stream === 'chat' ? 0.35 : 1;
-  const openers = DECORATIONS.openers[stream] || DECORATIONS.openers.timeline;
-  const tails = DECORATIONS.tails[stream] || DECORATIONS.tails.timeline;
+  const stanceNow = SHAPE_STANCE[shape] ?? 0;
+  // ── A TIC IS A HABIT, NOT A STAMP ──
+  // Glued onto a third of all posts, "no because" and "and that is the post"
+  // stopped reading as people and started reading as the machine: "no because
+  // the only person in that cast worth the edit. bye." Now rare, each one at
+  // most once a night (the `used` memory spans the episode), and a sign-off
+  // only where its attitude matches the post's.
+  const fits = list => (list || []).filter(x => !used || !used.has(`tic:${x}`));
+  const openers = fits(DECORATIONS.openers[stream] || DECORATIONS.openers.timeline);
+  const tailBag = DECORATIONS.tails[stream] || DECORATIONS.tails.timeline;
+  const tails = fits(Array.isArray(tailBag) ? tailBag
+    : tailBag[stanceNow < -0.25 ? 'hostile' : stanceNow > 0.25 ? 'warm' : 'neutral']);
+  const spend = x => { if (used) used.add(`tic:${x}`); return x; };
   // ── some posts are not sentences ──
   //
   // A `bare` topic is one where the whole effect is that nothing was composed:
@@ -383,21 +411,23 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
   // It still SHOUTS — that is the opposite of decoration — and it still gets an
   // emoji, because people do that.
   const bare = !!topic.bare;
-  if (!bare && rng() < 0.3 * roomVoice + (stream === 'chat' ? 0.12 : 0)) {
-    text = _pick(rng, openers) + text;
+  const openerRoll = rng();
+  if (!bare && openers.length && openerRoll < (stream === 'chat' ? 0.07 : 0.1)
+    && /^[a-z]/.test(text) === (stream === 'timeline')) {
+    text = spend(_pick(rng, openers)) + text;
   }
-  if (!bare && rng() < (stream === 'chat' ? 0.3 : 0.25)) {
-    text = punctuate(text, 'normal', rng) + _pick(rng, tails);
+  const tailRoll = rng();
+  if (!bare && tails.length && tailRoll < (stream === 'chat' ? 0.06 : 0.08)) {
+    text = punctuate(text, 'normal', rng) + spend(_pick(rng, tails));
   }
 
-  // `shout` capitalises a RUN of one to three words, which is right for a
-  // sentence somebody got worked up in the middle of and wrong for a scream:
-  // it produced "i AM on the FLOOR". Nobody half-shouts four words. A bare post
-  // is all of it or none of it.
+  // A scream is all capitals or none. A sentence leans on ONE word -- the one
+  // it means (humanize.js emphasize). The old run of one to three random words
+  // shouted across a word boundary: "the same four PEOPLE THE WHOLE episode".
   if (bare) {
     if (rng() < 0.45) text = text.toUpperCase();
-  } else {
-    text = shout(text, (persona.voice.caps || 0) * roomVoice, rng);
+  } else if (rng() < (persona.voice.caps || 0) * roomVoice * 0.6) {
+    text = emphasize(text, rng);
   }
   // The hosted room sands the tics off. Somebody who types "!!!" on the timeline
   // mostly does not in a chat they are hosting — proportionally, not always.
@@ -458,7 +488,7 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
  * @returns {object[]} posts
  */
 export function samplePosts(event, { count = 20, stream = 'timeline', rng = Math.random,
-  crowd = defaultCrowd } = {}) {
+  crowd = defaultCrowd, used: nightUsed = null } = {}) {
   const platform = platformOf(stream);
   const kinds = kindsFor(event);
 
@@ -478,8 +508,11 @@ export function samplePosts(event, { count = 20, stream = 'timeline', rng = Math
 
   const posts = [];
   // Shared across the whole crowd reacting to ONE event, so the room does not
-  // say the same sentence nine times in a row.
-  const used = new Set();
+  // say the same sentence nine times in a row -- and, when the feed passes its
+  // night's memory, across every event of the episode: the night-level takes
+  // ("stop giving the same four people the whole episode") are eligible under
+  // every event, and a per-event memory let four accounts post it in one night.
+  const used = nightUsed || new Set();
 
   // WHO SPEAKS IS DRAWN BEFORE ANYBODY SPEAKS.
   //
@@ -499,7 +532,8 @@ export function samplePosts(event, { count = 20, stream = 'timeline', rng = Math
     picks.push({ persona, topic: weightedPick(rng, candidates, t => topicWeight(persona, t, event, platform)) });
   }
   for (const { persona, topic } of picks) {
-    posts.push(composePost({ persona, topic, platform, event, rng, crowd, used }));
+    const post = composePost({ persona, topic, platform, event, rng, crowd, used });
+    if (post) posts.push(post);
   }
   return posts;
 }

@@ -175,6 +175,9 @@ export function buildEpisodeFeed(events, {
 
   const posts = [];
   let ordinal = 0;
+  // One memory per room for the whole night: no line, opener or sign-off is
+  // said twice in an episode (sampler.js composePost).
+  const nightUsed = { timeline: new Set(), chat: new Set() };
 
   for (const [evIdx, ev] of events.entries()) {
     const volume = packFor(ev.format)?.kinds?.[ev.kind]?.volume ?? VOLUME[ev.kind] ?? 1;
@@ -188,7 +191,7 @@ export function buildEpisodeFeed(events, {
       const own = seeded((seed * 7919 + (evIdx + 1) * 104729 + (stream === 'chat' ? 15485863 : 0)) >>> 0);
       let made;
       try {
-        made = samplePosts(ev, { count, stream, rng: own, ...(crowd ? { crowd } : {}) });
+        made = samplePosts(ev, { count, stream, rng: own, used: nightUsed[stream], ...(crowd ? { crowd } : {}) });
       } catch (err) {
         // A topic with no phrasing pool for this room is an authoring gap, not a
         // reason to lose the episode. The sampler throws so it is visible; the

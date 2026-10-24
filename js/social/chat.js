@@ -887,9 +887,10 @@ export function buildChatMessages(events, speakers, {
     const pool = crowdByKind.get(m.kind) || [];
     m.comments = Array.from({ length: Math.min(2, count) }, (_, i) => {
       // A real member post when the episode has one about this moment; the
-      // static pool only when it does not, so a room never falls silent.
-      const fresh = pool.filter(p => !usedCrowd.has(p.id));
-      const from = fresh.length ? fresh : pool;
+      // static pool only when it does not, so a room never falls silent. Once
+      // this moment's posts are spent the room's own lines take over -- the
+      // same member post under three hosts read as one person pasting it.
+      const from = pool.filter(p => !usedCrowd.has(p.id));
       if (from.length) {
         const p = from[Math.floor(rng() * from.length)];
         usedCrowd.add(p.id);

@@ -29,7 +29,7 @@ import { formatFollowers, followersOfPersona } from './social/crowd.js';
 import { EPISODE_MS } from './social/events.js';
 import { avatarUrl, loadPortraitCatalog } from './avatar-registry.js';
 import { loadAiring, airingModels } from './on-air.js';
-import { MEDIA, mediaLogo, mediaIcon, ensureMediaCss } from './media-brands.js';
+import { mediaLogo, ensureMediaCss } from './media-brands.js';
 
 const API = 'https://dc-studio.yannari19.workers.dev/api/social';
 const EXITS_API = 'https://dc-studio.yannari19.workers.dev/api/live-exits';
@@ -945,23 +945,9 @@ function renderRail() {
     </section>`;
 }
 
-// ── the hub: four apps, and what is on tonight ─────────────────────────
-const APP_LINES = {
-  birdie: 'The timeline, post by post',
-  chatalumni: 'Alumni host the watch party',
-  dramagram: 'Life after the show, in photos',
-  kristal: 'Every exit interview',
-};
-
-/** Each app's tile: its own icon, wordmark and line. Drawn once; render() only presses. */
-function paintApps() {
-  for (const el of document.querySelectorAll('.soc-app[data-media]')) {
-    const key = el.dataset.media;
-    el.style.setProperty('--acc', MEDIA[key]?.accent || '#fff');
-    el.innerHTML = `${mediaIcon(key, 44)}<span class="soc-app-copy">${MEDIA[key].word()}`
-      + `<small>${esc(APP_LINES[key] || '')}</small></span>`;
-  }
-}
+// ── the hub: what is on tonight ─────────────────────────────────────────
+// The four apps' tab bar is static markup in social.html, shared with the
+// Dramagram and Kristal-talKs pages (js/media-brands.js, tools/app-tabs.mjs).
 
 /** Tonight's seasons as one-tap jumps; the one being read is marked. */
 function renderOnAir(models) {
@@ -1164,7 +1150,6 @@ function fillPickers() {
 // ── boot ──────────────────────────────────────────────────────────────
 (async function boot() {
   ensureMediaCss();
-  paintApps();
   readUrl();
   const [players, seasons, rankings, voices] = await Promise.all([
     json('players_database.json'), json('seasons_database.json'),

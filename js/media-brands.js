@@ -71,6 +71,80 @@ export const MEDIA_CSS = `
 a.mb-logo:hover .mb-w{text-decoration:underline;text-underline-offset:3px}
 `;
 
+// ── the app bar ──────────────────────────────────────────────────────────
+//
+// The four apps share ONE tab bar, in the same place on all three pages that
+// host them (social.html for Birdie and ChatAlumni, dramagram.html,
+// kristal.html), so moving between apps changes the page under the bar and
+// never the bar itself. It used to be three switchers -- tiles on one page,
+// chips on the other two -- and every click redrew the control you had just
+// pressed.
+//
+// The markup is written INTO each page by tools/app-tabs.mjs (no flash while a
+// script loads, and the page source says which tab it is); its styles are the
+// APP TABS block of styles.css, written by the same tool. tests/app-tabs.test.js
+// fails if a page drifts from appTabsHtml.
+
+export const APP_ORDER = ['birdie', 'chatalumni', 'dramagram', 'kristal'];
+export const APP_LINES = {
+  birdie: 'The timeline, post by post',
+  chatalumni: 'Alumni host the watch party',
+  dramagram: 'Life after the show, in photos',
+  kristal: 'Every exit interview',
+};
+// Ids the pages already address: social-page.js wires #pick-birdie/#pick-chat,
+// and the Dramagram page's own tab is #dg-here.
+const TAB_ID = { birdie: 'pick-birdie', chatalumni: 'pick-chat', dramagram: 'pick-gram', kristal: 'pick-kristal' };
+const PAGE_OF = { birdie: 'social', chatalumni: 'social', dramagram: 'dramagram', kristal: 'kristal' };
+const HREF = { birdie: 'social.html?app=birdie', chatalumni: 'social.html?app=chatalumni', dramagram: 'dramagram.html', kristal: 'kristal.html' };
+
+/**
+ * The bar for one page. On social.html Birdie and ChatAlumni switch in place
+ * (buttons, aria-pressed, Birdie pressed until the page says otherwise); every
+ * other tab is a link, and the page's own app is marked aria-current.
+ */
+export function appTabsHtml(page) {
+  const tabs = APP_ORDER.map(key => {
+    const inner = `${mediaIcon(key, 44)}<span class="app-tab-copy">${MEDIA[key].word()}<small>${APP_LINES[key]}</small></span>`;
+    const style = `--acc:${MEDIA[key].accent}`;
+    if (page === 'social' && PAGE_OF[key] === 'social') {
+      return `<button type="button" class="app-tab" id="${TAB_ID[key]}" style="${style}" aria-pressed="${key === 'birdie'}">${inner}</button>`;
+    }
+    const here = PAGE_OF[key] === page;
+    const id = here && key === 'dramagram' ? 'dg-here' : TAB_ID[key];
+    return `<a class="app-tab" id="${id}" style="${style}"${here ? ' aria-current="page"' : ''} href="${HREF[key]}">${inner}</a>`;
+  });
+  return `<nav class="app-tabs" aria-label="Apps">${tabs.join('')}</nav>`;
+}
+
+export const APP_TABS_CSS = `
+html{scrollbar-gutter:stable}
+.app-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:1180px;margin:18px auto 0;padding:0 16px;box-sizing:content-box}
+.app-tab{--acc:#fff;position:relative;display:flex;align-items:center;gap:14px;min-height:76px;padding:14px 16px;border-radius:18px;
+  cursor:pointer;text-decoration:none;text-align:left;font:inherit;color:#F3EEF9;background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.12);transition:transform .18s ease}
+.app-tab:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--acc) 55%,transparent)}
+.app-tab[aria-pressed="true"],.app-tab[aria-current="page"]{border-color:var(--acc);
+  background:color-mix(in srgb,var(--acc) 12%,#1a1424);
+  box-shadow:0 10px 30px -12px color-mix(in srgb,var(--acc) 70%,transparent),inset 0 0 0 1px color-mix(in srgb,var(--acc) 40%,transparent)}
+.app-tab[aria-pressed="true"]::after,.app-tab[aria-current="page"]::after{content:"";position:absolute;left:18px;right:18px;bottom:-1px;
+  height:3px;border-radius:3px;background:var(--acc)}
+.app-tab:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+.app-tab .mb-tile{border-radius:13px}
+.app-tab-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.app-tab-copy .mb-w{font-size:20px}
+.app-tab-copy small{font-size:12.5px;color:#B9AEC8;line-height:1.3}
+@media(max-width:900px){.app-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){
+  .app-tab{min-height:64px;padding:10px 12px;gap:10px}
+  .app-tab .mb-tile{width:36px!important;height:36px!important}
+  .app-tab-copy{overflow:hidden}
+  .app-tab-copy .mb-w{font-size:15px}
+  .app-tab-copy small{display:none}
+}
+@media(prefers-reduced-motion:reduce){.app-tab{transition:none}}
+`;
+
 /**
  * Every element marked `data-media-icon="birdie"` (or any MEDIA key) gets that
  * medium's tile in front of its text -- for pages whose links are static HTML.

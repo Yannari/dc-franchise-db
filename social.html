@@ -72,41 +72,6 @@
   .soc-jump:hover{ transform:translateY(-2px); background:rgba(0,0,0,.4); }
   .soc-jump[aria-pressed="true"]{ background:color-mix(in srgb,var(--show) 22%,rgba(0,0,0,.3)); border-color:var(--show); }
 
-  .soc-apps{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:0 0 18px; }
-  .soc-app{
-    --acc:#fff; position:relative; display:flex; align-items:center; gap:14px; min-height:76px;
-    padding:14px 16px; border-radius:18px; cursor:pointer; text-decoration:none; text-align:left;
-    font:inherit; color:var(--text,#f4f1f7); background:var(--panel,rgba(255,255,255,.04));
-    border:1px solid var(--stroke,rgba(255,255,255,.12));
-    transition:transform .18s ease;
-  }
-  .soc-app:hover{ transform:translateY(-3px); border-color:color-mix(in srgb,var(--acc) 55%,transparent); }
-  .soc-app[aria-pressed="true"]{
-    border-color:var(--acc); background:color-mix(in srgb,var(--acc) 12%,var(--panel,#1a1424));
-    box-shadow:0 10px 30px -12px color-mix(in srgb,var(--acc) 70%,transparent), inset 0 0 0 1px color-mix(in srgb,var(--acc) 40%,transparent);
-  }
-  .soc-app[aria-pressed="true"]::after{
-    content:""; position:absolute; left:18px; right:18px; bottom:-1px; height:3px; border-radius:3px; background:var(--acc);
-  }
-  .soc-app:focus-visible{ outline:3px solid var(--acc); outline-offset:3px; }
-  .soc-app .mb-tile{ border-radius:13px; }
-  .soc-app-copy{ display:flex; flex-direction:column; gap:4px; min-width:0; }
-  .soc-app-copy .mb-w{ font-size:20px; }
-  .soc-app-copy small{ font-size:12.5px; color:var(--muted,#bdb4c7); line-height:1.3; }
-  a.soc-app::before{
-    content:"\2197"; position:absolute; top:10px; right:12px; font-size:13px; color:var(--muted,#bdb4c7); opacity:.7;
-  }
-  @media(max-width:900px){ .soc-apps{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
-  @media(max-width:520px){
-    .soc-hero{ padding:22px 18px; border-radius:18px; }
-    .soc-onair{ justify-content:flex-start; }
-    .soc-app{ min-height:64px; padding:10px 12px; gap:10px; }
-    .soc-app .mb-tile{ width:36px !important; height:36px !important; }
-    .soc-app-copy{ overflow:hidden; }
-    .soc-app-copy .mb-w{ font-size:15px; }
-    .soc-app-copy small{ display:none; }
-    a.soc-app::before{ display:none; }
-  }
   @media(prefers-reduced-motion:reduce){ .soc-hero-glow, .soc-onair-lab i{ animation:none; } }
 
   /* ── context bar ────────────────────────────────────────────────── */
@@ -488,6 +453,10 @@
   </div>
 </header>
 
+<!-- APP TABS: written by tools/app-tabs.mjs -->
+<nav class="app-tabs" aria-label="Apps"><button type="button" class="app-tab" id="pick-birdie" style="--acc:#38BDF8" aria-pressed="true"><span class="mb-tile" style="width:44px;height:44px;background:linear-gradient(135deg,#38BDF8,#2563EB);color:#fff" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M3 15c4-1 6-4 7-7 1 3 4 5 8 5-1 4-5 7-9 7H4l2-3z" fill="currentColor"/></svg></span><span class="app-tab-copy"><span class="mb-w mb-birdie">birdie</span><small>The timeline, post by post</small></span></button><button type="button" class="app-tab" id="pick-chat" style="--acc:#F5C451" aria-pressed="false"><span class="mb-tile" style="width:44px;height:44px;background:linear-gradient(135deg,#1F7A50,#0E4A30);color:#F5C451" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></span><span class="app-tab-copy"><span class="mb-w mb-chat">Chat<b>Alumni</b></span><small>Alumni host the watch party</small></span></button><a class="app-tab" id="pick-gram" style="--acc:#FF7A6B" href="dramagram.html"><span class="mb-tile" style="width:44px;height:44px;background:linear-gradient(135deg,#FF3EA5,#FFB23D);color:#fff" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/></svg></span><span class="app-tab-copy"><span class="mb-w mb-gram">Dramagram</span><small>Life after the show, in photos</small></span></a><a class="app-tab" id="pick-kristal" style="--acc:#E84393" href="kristal.html"><span class="mb-tile" style="width:44px;height:44px;background:linear-gradient(135deg,#E84393,#8E2DE2);color:#fff" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="2" fill="none"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></span><span class="app-tab-copy"><span class="mb-w mb-kristal">Kristal-tal<b>Ks</b></span><small>Every exit interview</small></span></a></nav>
+<!-- /APP TABS -->
+
 <main class="soc-wrap">
   <section class="soc-hero">
     <div class="soc-hero-glow" aria-hidden="true"></div>
@@ -498,17 +467,6 @@
     </div>
     <div class="soc-onair" id="soc-onair" aria-label="On the air now"></div>
   </section>
-
-  <!-- Four apps, one row. Birdie and ChatAlumni are two windows on the same
-       night and switch in place; Dramagram and Kristal-talKs are all-time, so
-       they LINK to their own pages rather than becoming a pane of a feed that
-       is scoped to one episode. Tiles are painted from js/media-brands.js. -->
-  <nav class="soc-apps" aria-label="Apps">
-    <button class="soc-app" id="pick-birdie" data-media="birdie" aria-pressed="true">Birdie</button>
-    <button class="soc-app" id="pick-chat" data-media="chatalumni" aria-pressed="false">ChatAlumni</button>
-    <a class="soc-app" id="pick-gram" data-media="dramagram" href="dramagram.html">Dramagram</a>
-    <a class="soc-app" id="pick-kristal" data-media="kristal" href="kristal.html">Kristal-talKs</a>
-  </nav>
 
   <div class="soc-top">
     <span class="soc-ctx" id="ctx-chip">Loading</span>

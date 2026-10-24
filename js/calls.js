@@ -9,6 +9,8 @@
 // Scored calls stay in a history, which gives the record and the streak the
 // page shows back: something to come back for on the night of the next exit.
 
+import { picksForExit } from './kristal-exit.js';
+
 const KEY = 'bs_calls_v1';
 
 export const seasonKey = m => `${m.format}:${m.seasonNumber}`;
@@ -65,8 +67,10 @@ export function callHtml(m, entry, stats, fresh) {
   const record = stats.made
     ? `<span class="oa-call-rec"><b>${stats.hits}</b> of ${stats.made} called${stats.streak > 1 ? ` <span class="oa-call-streak">${FLAME}${stats.streak} in a row</span>` : ''}</span>`
     : '<span class="oa-call-rec">Your first call</span>';
-  const hint = m.latestExit?.prediction
-    ? `<p class="oa-call-hint">${esc(m.latestExit.guest)}'s call on the way out: <b>${esc(m.latestExit.prediction)}</b>.</p>` : '';
+  // The last guest's own answer to "who goes next?", quoted from the interview.
+  const next = m.latestExit ? picksForExit(m.format, m.seasonNumber, m.latestExit).next : null;
+  const hint = next
+    ? `<p class="oa-call-hint">${esc(m.latestExit.guest)} named <b>${esc(next)}</b> to go next on Kristal-talKs.</p>` : '';
   const state = open
     ? `<p class="oa-call-lock">${pending ? `Still waiting on your ${esc(round.toLowerCase())} ${esc(open.round + 1)} call:` : 'Locked in:'} <b>${esc(open.pick)}</b> goes next. <button type="button" class="oa-call-change">Change</button></p>`
     : `<p class="oa-call-lock">Who leaves in ${esc(round.toLowerCase())} ${esc((Number(m.episode) || 0) + 1)}? Tap a face.</p>`;

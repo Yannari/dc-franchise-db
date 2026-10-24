@@ -2,11 +2,13 @@
 import { describe, it, expect } from 'vitest';
 import { tickerItems, tickerHtml } from '../js/ticker.js';
 import { onAirModel, exitSentence, statText } from '../js/on-air.js';
+import { picksForExit, exitInterviewHref } from '../js/kristal-exit.js';
 
-const helpers = { exitSentence, statText };
+const helpers = { exitSentence, statText, picksForExit: (f, n, x) => picksForExit(f, n, x, {}), exitInterviewHref };
 const exits = { ok: true, seasons: [
   { format: 'big-brother', seasonNumber: 2, title: 'Big Brother 2', updatedAt: 'a',
-    exitInterviews: [{ guest: 'Sabrina', week: 1, placement: 18, how: 'evicted', votes: { against: 15, total: 15 }, prediction: 'Kyle' }] },
+    exitInterviews: [{ id: 'big-brother-w1-Sabrina', guest: 'Sabrina', week: 1, placement: 18, how: 'evicted', votes: { against: 15, total: 15 },
+      prediction: 'Kyle', segments: ['who-next'], rivals: ['Angelica'], stillIn: ['Angelica', 'Kyle', 'Bo'] }] },
   { format: 'drag-race', seasonNumber: 3, title: 'Drag Race 3', updatedAt: 'b',
     exitInterviews: [{ guest: 'Mona', week: 2, placement: 12, how: 'sashayed away', votes: null }] },
 ] };
@@ -30,7 +32,11 @@ describe('tickerItems', () => {
   });
 
   it('carries the call, the leader and the loudest post, each linked', () => {
-    expect(items.find(i => i.kind === 'call').text).toBe('On the way out, Sabrina called Kyle as the next to go.');
+    // `prediction` is the WINNER pick; who goes next is the who-next segment's answer.
+    const call = items.find(i => i.kind === 'call');
+    expect(call.text).toBe('Sabrina names Angelica to go next.');
+    // Never ?show=: that is the site's show switcher.
+    expect(call.href).toBe('kristal.html?exit=big-brother-w1-Sabrina&in=bb-2');
     expect(items.find(i => i.kind === 'leader').text).toBe('Ana leads the season: 2 HOH wins.');
     const post = items.find(i => i.kind === 'post');
     expect(post.text).toBe('“LEAVE Kyle ALONE” @a');

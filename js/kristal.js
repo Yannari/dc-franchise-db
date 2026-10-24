@@ -40,7 +40,7 @@ import { significanceOf, lineFor } from './life-events.js';
 import { fameOf } from './life-resolver.js';
 import { showWords } from './shows.js';
 import { styleOf, voiceOf, composeEpisode, podcastAftermath, parseMoment } from './kristal-voice.js';
-import { composeExit, pronounsFor } from './kristal-exit.js';
+import { composeExit, pronounsFor, exitEpisodeKey } from './kristal-exit.js';
 
 export const KRISTAL = { slug: 'kristal', name: 'Kristal' };
 
@@ -402,7 +402,7 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
       const loud = (rec.named || []).filter(n => n.still && (n.stance === 'drag' || n.stance === 'blame'))
         .sort((a, b) => b.heat - a.heat)[0];
       const ep = {
-        id: `kt-${sid}-x-${rec.id}`, num: ++epNum, kind: 'exit',
+        id: exitEpisodeKey(sid, rec), num: ++epNum, kind: 'exit',
         afterSeason: sid, period: `${sid}:live`, when: airLabel(season), season,
         guest: slug, guestName: rec.guest, archetype: prof.archetype || '', style: styleOf(prof),
         record: rec, reception: rec.reception || 'mixed', listeners,

@@ -35,7 +35,7 @@ const clip = (t, n = 110) => {
  * posts. Pure: `helpers` is { exitSentence, statText } from on-air.js.
  * Returns [{ kind, label, accent, text, href }].
  */
-export function tickerItems(models, postsByFormat = {}, { exitSentence, statText }) {
+export function tickerItems(models, postsByFormat = {}, { exitSentence, statText, picksForExit, exitInterviewHref }) {
   const items = [];
   for (const m of models) {
     const label = m.title;
@@ -44,8 +44,13 @@ export function tickerItems(models, postsByFormat = {}, { exitSentence, statText
     const x = m.latestExit;
     const line = x ? exitSentence(x, m) : '';
     if (line) items.push({ kind: 'exit', label, accent, text: line, href: `on-air.html?show=${show}` });
-    if (x?.prediction) {
-      items.push({ kind: 'call', label, accent, text: `On the way out, ${x.guest} called ${x.prediction} as the next to go.`, href: 'kristal.html' });
+    // Quoted from the interview: who goes next when it was asked, else the winner pick.
+    const picks = x && picksForExit ? picksForExit(m.format, m.seasonNumber, x) : {};
+    const said = picks.next ? `${x.guest} names ${picks.next} to go next.`
+      : picks.winner ? `${x.guest} picks ${picks.winner} to win it all.` : '';
+    if (said) {
+      items.push({ kind: 'call', label, accent, text: said,
+        href: exitInterviewHref ? exitInterviewHref(m.format, m.seasonNumber, x) : 'kristal.html' });
     }
     const lead = (m.leaders || [])[0];
     if (lead) items.push({ kind: 'leader', label, accent, text: `${lead.player.name} leads the season: ${statText(lead)}.`, href: `on-air.html?show=${show}` });
@@ -153,7 +158,8 @@ async function fetchItems() {
     const last = all.reduce((n, p) => Math.max(n, Number(p.episode) || 0), 0);
     posts[m.format] = all.filter(p => Number(p.episode) === last);
   }));
-  return tickerItems(models, posts, onAir);
+  const kx = await import('./kristal-exit.js');
+  return tickerItems(models, posts, { ...onAir, picksForExit: kx.picksForExit, exitInterviewHref: kx.exitInterviewHref });
 }
 
 /** Put the ticker under the site header, when something is on the air. */

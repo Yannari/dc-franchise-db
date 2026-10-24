@@ -428,7 +428,12 @@ function render() {
     <b>${episodes.filter(e => e.tier === 'viral').length}</b> everyone heard`;
 
   const gaps = [...new Set(episodes.map(periodOf))].reverse();
-  period = gaps[0] || null;
+  // ?exit=<record id>&in=<season id> opens ONE exit interview (On Air and the
+  // ticker link here): its period's tab, the episode open, scrolled into view.
+  const q = new URLSearchParams(location.search);
+  const wanted = q.get('exit') ? episodes.find(e => e.kind === 'exit' && e.record?.id === q.get('exit')
+    && (!q.get('in') || e.season?.seasonId === q.get('in'))) : null;
+  period = (wanted && periodOf(wanted)) || gaps[0] || null;
   $('#kt-periods').innerHTML = gaps.map(g => {
     const eps = episodes.filter(e => periodOf(e) === g);
     // An in-season tab ("During Summer 2027") sits just before that season's debrief tab.
@@ -446,6 +451,10 @@ function render() {
     };
   });
   render();
+  if (wanted) {
+    const row = [...document.querySelectorAll('[data-open]')].find(b => b.dataset.open === wanted.id);
+    if (row) { row.click(); row.closest('.kt-ep')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+  }
 })();
 </script>
 </body>

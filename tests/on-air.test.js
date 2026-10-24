@@ -153,3 +153,23 @@ describe('a show only the exit feed knows is on', () => {
     expect(ms.map(m => m.format)).toEqual(['big-brother']);
   });
 });
+
+describe('quoting the exit interview', () => {
+  // `prediction` on the record is who the guest says WINS. The page printed it
+  // as "called Kyle as the next to go" while Sabrina had said Angelica.
+  it('quotes the same two names the interview itself says', async () => {
+    const { composeExit, exitEpisodeKey, picksForExit } = await import('../js/kristal-exit.js');
+    const { seasonId } = await import('../js/shows.js');
+    const rec = { id: 'big-brother-w1-Sabrina', guest: 'Sabrina', week: 1, kind: 'first-boot', mood: 'denial',
+      prediction: 'Kyle', segments: ['who-next'], rivals: [], stillIn: ['Angelica', 'Kyle', 'Bo', 'Ivy'] };
+    const sid = seasonId('big-brother', 2);
+    for (const salt of ['', '3']) {
+      const t = composeExit({ id: exitEpisodeKey(sid, rec), record: rec, season: { format: 'big-brother' } }, { salt });
+      const said = topic => t.exchanges.find(e => e.topic === topic)?.who;
+      const picks = picksForExit('big-brother', 2, rec, salt ? { [`${sid}:live`]: salt } : {});
+      expect(picks.next).toBe(said('who-next'));
+      expect(picks.winner).toBe(said('the-prediction'));
+      expect(picks.winner).toBe('Kyle');
+    }
+  });
+});

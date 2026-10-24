@@ -10,12 +10,67 @@
 // touches a listener count or a follower.
 
 import * as L from './kristal-exit-lines.js';
+import { seasonId } from './shows.js';
 
 function hash(key) {
   let h = 2166136261;
   const s = String(key);
   for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
   return h >>> 0;
+}
+
+/**
+ * The key an in-season exit interview is written from: the episode id, and the
+ * remix count when the reader has re-rolled that season's words (js/kristal.js
+ * passes proseSalts[`${seasonId}:live`]). Every name the interview picks by
+ * hash comes off this key, so anything quoting the interview must use it too.
+ */
+export function exitEpisodeKey(seasonId, rec, salt = '') {
+  const id = `kt-${seasonId}-x-${rec?.id}`;
+  return salt ? `${id}~${salt}` : id;
+}
+
+/**
+ * The two names an exit interview puts on the record: who the guest says goes
+ * NEXT (the who-next segment, when the episode has one) and who they say WINS
+ * (the closing prediction, never asked of a finalist). composeExit writes its
+ * answers from exactly these, so a page quoting the interview -- On Air, the
+ * ticker -- says what the guest actually said. `prediction` on the record is
+ * the WINNER pick; reading it as "who goes next" put words in Sabrina's mouth.
+ */
+export function exitPicks(rec, key) {
+  const r = rec || {};
+  const still = r.stillIn || [];
+  const order = still.slice().sort((a, b) => hash(`${key}|o|${a}`) - hash(`${key}|o|${b}`));
+  const next = (r.segments || []).includes('who-next') && still.length >= 2
+    ? (r.rivals || []).find(n => still.includes(n)) || order.find(n => n !== r.prediction) || null
+    : null;
+  const winner = r.prediction && r.kind !== 'finalist' ? r.prediction : null;
+  return { next, winner, order };
+}
+
+/** The remix counts kristal.html keeps in this browser (its SALT_KEY). */
+export const REMIX_KEY = 'kt_remix';
+export function remixSalts(storage = globalThis.localStorage) {
+  try { return JSON.parse(storage?.getItem(REMIX_KEY) || '{}') || {}; } catch { return {}; }
+}
+
+/**
+ * What an airing season's exit interview says, for a page quoting it: the same
+ * key the Kristal-talKs page writes it from, this browser's remix included.
+ */
+export function picksForExit(format, seasonNumber, rec, salts = remixSalts()) {
+  const sid = seasonId(format, seasonNumber);
+  return exitPicks(rec, exitEpisodeKey(sid, rec, salts[`${sid}:live`] || ''));
+}
+
+/**
+ * A link that opens this exit interview on kristal.html, not just the podcast.
+ * `in` names the season by its id, NOT `?show=`: that parameter is the site's
+ * show switcher, and a link carrying it changed the reader's filter everywhere.
+ */
+export function exitInterviewHref(format, seasonNumber, rec) {
+  return `kristal.html?exit=${encodeURIComponent(rec?.id || '')}&in=${encodeURIComponent(seasonId(format, seasonNumber))}`;
 }
 const SLOT_RE = /\{(\w+)\}/g;
 const slotsOf = t => [...String(t).matchAll(SLOT_RE)].map(m => m[1]);
@@ -193,7 +248,8 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
 
   // ── the rotating segments ──
   const still = r.stillIn || [];
-  const order = still.slice().sort((a, b) => hash(`${K}|o|${a}`) - hash(`${K}|o|${b}`));
+  const picks = exitPicks(r, K);
+  const order = picks.order;
   for (const seg of r.segments || []) {
     if (seg === 'fan-mail') {
       const rc = L.FAN_Q[r.reception] ? r.reception : 'mixed';
@@ -217,7 +273,7 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
       push('caller', pick(L.CALLER_IN, `${K}|ci`, f, used), pick(L.CALLER_SAY[tone], `${K}|cs`, f, used),
         { speaker: r.caller, reply: pick(L.CALLER_REPLY[tone], `${K}|cr`, f, used), who: r.caller });
     } else if (seg === 'who-next' && still.length >= 2) {
-      const x = (r.rivals || []).find(n => still.includes(n)) || order.find(n => n !== r.prediction);
+      const x = picks.next;
       if (!x) continue;
       const f = { ...base, x };
       push('who-next', pick(B('NEXT_Q'), `${K}|xq`, f, used), pick(L.NEXT_A[g], `${K}|xa`, f, used), { who: x });
@@ -225,9 +281,9 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   }
 
   // ── who wins ──
-  if (r.prediction && r.kind !== 'finalist') {
-    const f = { ...base, x: r.prediction };
-    push('the-prediction', pick(L.PREDICT_Q, `${K}|pq`, f, used), pick(L.PREDICT_A[g], `${K}|pa`, f, used), { who: r.prediction });
+  if (picks.winner) {
+    const f = { ...base, x: picks.winner };
+    push('the-prediction', pick(L.PREDICT_Q, `${K}|pq`, f, used), pick(L.PREDICT_A[g], `${K}|pa`, f, used), { who: picks.winner });
   }
 
   // ── rapid fire: a few names ──

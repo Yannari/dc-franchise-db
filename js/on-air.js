@@ -29,6 +29,7 @@ import { avatarUrl, loadPortraitCatalog } from './avatar-registry.js';
 import { mediaLogo, ensureMediaCss } from './media-brands.js';
 import { currentShow, ALL } from './show-switcher.js';
 import { mountCall } from './calls.js';
+import { picksForExit, exitInterviewHref } from './kristal-exit.js';
 import { enableTilt } from './card-tilt.js';
 
 const API = (() => {
@@ -262,6 +263,18 @@ function heroHtml(m) {
   </section>`;
 }
 
+/**
+ * What the guest said on the way out, quoted from the interview itself: who
+ * goes next (when the episode asked) and who wins. The record's `prediction`
+ * is the WINNER pick -- it once ran here as "called X as the next to go".
+ */
+export function picksLine(m, x, salts) {
+  if (!x?.guest) return '';
+  const { next, winner } = picksForExit(m.format, m.seasonNumber, x, salts);
+  const said = [next && `named <b>${esc(next)}</b> to go next`, winner && `picked <b>${esc(winner)}</b> to win it all`].filter(Boolean);
+  return said.length ? `<p class="oa-predict">On Kristal-talKs, ${esc(x.guest)} ${said.join(' and ')}.</p>` : '';
+}
+
 function exitHtml(m) {
   const x = m.latestExit;
   const line = exitSentence(x, m);
@@ -276,11 +289,30 @@ function exitHtml(m) {
       <span class="oa-kicker">Latest exit</span>
       <h2>${esc(x.guest)}</h2>
       <p>${esc(line)}</p>
-      ${x.prediction ? `<p class="oa-predict">On the way out, ${esc(x.guest)} called <b>${esc(x.prediction)}</b> as the next to go.</p>` : ''}
-      <a class="oa-kristal" href="kristal.html">${mediaLogo('kristal', { size: 26 })}<span>Watch the exit interview</span></a>
+      ${picksLine(m, x)}
+      <a class="oa-kristal" href="${esc(exitInterviewHref(m.format, m.seasonNumber, x))}">${mediaLogo('kristal', { size: 26 })}<span>Watch ${esc(x.guest)}'s exit interview</span></a>
+      ${alsoOutHtml(m, x)}
     </div>
     ${tally}
   </section>`;
+}
+
+/**
+ * Everyone else who left in the same round as the latest exit -- a double
+ * eviction, a couple dumped together -- each with what they said and their
+ * own interview. Perfect Match sent Skye and Blair home the same night and
+ * the card used to name only one of them.
+ */
+function alsoOutHtml(m, x) {
+  const same = (m.exits || []).filter(o => o && o.guest && o.guest !== x.guest && (o.week ?? null) === (x.week ?? null));
+  if (!same.length) return '';
+  const round = (m.words.round || 'Episode').toLowerCase();
+  return `<div class="oa-also"><span class="oa-kicker">Also out in ${esc(round)} ${esc(x.week)}</span>${same.map(o => `
+    <div class="oa-also-row">
+      <p>${esc(exitSentence(o, m))}</p>
+      ${picksLine(m, o)}
+      <a class="oa-kristal is-small" href="${esc(exitInterviewHref(m.format, m.seasonNumber, o))}">${mediaLogo('kristal', { size: 20 })}<span>Watch ${esc(o.guest)}'s exit interview</span></a>
+    </div>`).join('')}</div>`;
 }
 
 function leadersHtml(m) {

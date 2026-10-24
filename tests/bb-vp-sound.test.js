@@ -10,6 +10,7 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
+import { stageHtml } from '../js/vp-bb-ep/stage.js';
 import { BB_BEDS, BB_STINGS, bedFor, soundFor } from '../js/vp-bb-ep/sound.js';
 import { BED_CATALOG, CUE_CATALOG } from '../js/audio.js';
 import { seedGame } from './helpers/setup.js';
@@ -58,6 +59,24 @@ describe('the Big Brother viewer’s sound', () => {
       });
     }
     expect(waited).toBeGreaterThan(0);
+  });
+
+  // the user, 2026-10-24: "where's the music change when the house announced the evicted and the zoom on
+  // the evicted"
+  it('hits the name, turns the wait to the goodbye, and puts the camera on the evicted', () => {
+    let named = 0;
+    for (const S of SCREENS.filter(x => x.kind === 'evict')) {
+      S.steps.forEach((st, i) => {
+        if (!st.out) return;
+        named++;
+        expect(soundFor(S, i)).toEqual({ cue: 'bb-evicted', bed: 'bb-ending' });
+        // the line after the name is still the goodbye, not the wait
+        if (S.steps[i + 1] && !S.steps[i + 1].scene) expect(soundFor(S, i + 1).bed).not.toBe('bb-live-wait');
+        const html = stageHtml([S], 0, i, false, { season: 'default', host: 'Valeria' }).html;
+        expect(html.match(/data-cam="([^"]*)"/)?.[1] || '', S.id).toMatch(/^scale\(1\.(4|32)\)/);
+      });
+    }
+    expect(named).toBeGreaterThan(0);
   });
 
   it('does not play every house scene to the same music', () => {

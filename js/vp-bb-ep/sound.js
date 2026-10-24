@@ -226,7 +226,10 @@ function rulesFor(screen, idx) {
   if (screen.kind === 'evict') {
     if (/[Tt]he votes are (locked )?in/.test(t)) return { cue: null, bed: 'bb-live-wait' };
     if (st.votes) return { cue: 'bb-result', bed: null };
-    if (/you are evicted from the Big Brother house/.test(t)) return { cue: 'bb-evicted', bed: null };
+    // the name: the hit, and the wait gives way to the goodbye (the user, 2026-10-24: "where's the music
+    // change when the house announced the evicted"). Read off the step's `out`, so a theme's own words
+    // ("your stay at the Hotel Mystère is over") land it too.
+    if (st.out || /you are evicted from the Big Brother house/.test(t)) return { cue: 'bb-evicted', bed: 'bb-ending' };
     if (/walks to the front door/.test(t)) return { cue: 'bb-door', bed: null };
     if (st.door) return { cue: 'bb-crowd', bed: null };
     if (st.big && st.safe) return { cue: 'bb-hoh-crown', bed: null };

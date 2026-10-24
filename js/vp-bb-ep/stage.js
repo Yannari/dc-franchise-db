@@ -190,12 +190,17 @@ function chipsFor(n, L) {
 }
 function camOf(S, i) {
   const st = S.steps[i];
-  if (!st || !st.push || !st.by || S.set === 'suite') return 'none';
-  if (st.k === 'host' && !(S.seated && seatsAt(S, i)[st.by])) return 'scale(1.18)|20% 30%';
-  if (st.k === 'dr') return 'scale(1.18)|50% 42%';
-  if (S.seated) { const seated = seatsAt(S, i); const a = seatOf(S, seated, st.by); if (a) return `scale(1.3)|${a.at[0]}% ${100 - a.at[1] - a.w * 1.1}%`; }
-  const p = castAt(S, i).find(([n]) => n === st.by);
-  return `scale(1.22)|${p ? p[1] : 50}% 58%`;
+  // the name read out on eviction night: the camera goes to them, not to the host reading it (the
+  // user, 2026-10-24: "where's ... the zoom on the evicted")
+  const evictee = st?.out && S.kind === 'evict' ? st.out : null;
+  if (!st || (!evictee && (!st.push || !st.by)) || S.set === 'suite') return 'none';
+  const who = evictee || st.by;
+  if (!evictee && st.k === 'host' && !(S.seated && seatsAt(S, i)[st.by])) return 'scale(1.18)|20% 30%';
+  if (!evictee && st.k === 'dr') return 'scale(1.18)|50% 42%';
+  if (S.seated) { const seated = seatsAt(S, i); const a = seatOf(S, seated, who); if (a) return `scale(${evictee ? 1.4 : 1.3})|${a.at[0]}% ${100 - a.at[1] - a.w * 1.1}%`; }
+  const p = castAt(S, i).find(([n]) => n === who);
+  if (evictee && !p) return 'none';
+  return `scale(${evictee ? 1.32 : 1.22})|${p ? p[1] : 50}% 58%`;
 }
 export const camStyle = c => c === 'none' ? 'transform:none' : `transform:${c.split('|')[0]};transform-origin:${c.split('|')[1]}`;
 

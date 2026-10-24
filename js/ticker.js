@@ -17,6 +17,9 @@ const API = (() => {
   catch { return 'https://dc-studio.yannari19.workers.dev'; }
 })();
 const CACHE_KEY = 'bs_ticker_v1';
+// Collapsed is a choice the reader makes once, so it holds across pages and
+// visits until they open the bar again.
+const COLLAPSED_KEY = 'bs_ticker_collapsed';
 const CACHE_MS = 3 * 60 * 1000;
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
@@ -73,10 +76,14 @@ export function tickerHtml(items) {
   const row = items.map(it => `<a class="bs-tk-item" href="${esc(it.href)}" style="--show:${esc(it.accent)}">`
     + `<b class="bs-tk-show">${esc(it.label)}</b><span class="bs-tk-kind">${esc(KIND[it.kind] || '')}</span>`
     + `<span class="bs-tk-text">${esc(it.text)}</span></a>`).join('<i class="bs-tk-sep" aria-hidden="true"></i>');
+  const n = items.length;
   // The row twice, so the crawl loops by sliding exactly one copy's width.
   return `<span class="bs-tk-live"><i></i>Live</span>`
-    + `<div class="bs-tk-view"><div class="bs-tk-track"><div class="bs-tk-row">${row}</div>`
-    + `<div class="bs-tk-row" aria-hidden="true" inert>${row}</div></div></div>`;
+    + `<div class="bs-tk-view" id="bs-tk-view"><div class="bs-tk-track"><div class="bs-tk-row">${row}</div>`
+    + `<div class="bs-tk-row" aria-hidden="true" inert>${row}</div></div></div>`
+    + `<button type="button" class="bs-tk-toggle" aria-controls="bs-tk-view" aria-expanded="true" aria-label="Hide the news">`
+    + `<span class="bs-tk-more">${n} ${n === 1 ? 'story' : 'stories'}</span>`
+    + `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
 }
 
 export const TICKER_CSS = `
@@ -103,8 +110,22 @@ export const TICKER_CSS = `
 .bs-tk-kind{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;border-radius:5px;
   background:rgba(255,255,255,.08);color:#CFC4DE}
 .bs-tk-sep{display:inline-block;width:6px;height:6px;margin:0 20px;transform:rotate(45deg);background:rgba(255,255,255,.28);flex:none}
-@media(max-width:600px){.bs-ticker{height:34px;font-size:12.5px}.bs-tk-live{padding-left:10px;padding-right:18px}}
-@media(prefers-reduced-motion:reduce){.bs-tk-track{animation:none}.bs-tk-view{overflow-x:auto}.bs-tk-row[aria-hidden]{display:none}}
+.bs-tk-toggle{flex:none;display:flex;align-items:center;gap:8px;padding:0 14px;border:0;border-left:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.04);color:#CFC4DE;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.bs-tk-toggle:hover{color:#fff;background:rgba(255,255,255,.1)}
+.bs-tk-toggle:focus-visible{outline:2px solid #FF3EA5;outline-offset:-2px}
+.bs-tk-toggle svg{transition:transform .2s ease}
+.bs-tk-more{display:none}
+.bs-ticker{transition:height .2s ease}
+.bs-ticker.is-collapsed{height:28px;background:transparent;border-bottom-color:transparent}
+.bs-ticker.is-collapsed .bs-tk-view{display:none}
+.bs-ticker.is-collapsed .bs-tk-live{font-size:10.5px;padding-left:12px;padding-right:18px}
+.bs-ticker.is-collapsed .bs-tk-toggle{border-left:0;background:rgba(26,12,40,.9);border-radius:0 0 10px 0}
+.bs-ticker.is-collapsed .bs-tk-more{display:inline}
+.bs-ticker.is-collapsed .bs-tk-toggle svg{transform:rotate(180deg)}
+@media(max-width:600px){.bs-ticker{height:34px;font-size:12.5px}.bs-tk-live{padding-left:10px;padding-right:18px}
+  .bs-tk-toggle{padding:0 10px}.bs-ticker.is-collapsed{height:26px}}
+@media(prefers-reduced-motion:reduce){.bs-ticker,.bs-tk-toggle svg{transition:none}.bs-tk-track{animation:none}.bs-tk-view{overflow-x:auto}.bs-tk-row[aria-hidden]{display:none}}
 `;
 
 function readCache() {
@@ -156,9 +177,27 @@ export async function mountTicker(header) {
   bar.setAttribute('role', 'region');
   bar.setAttribute('aria-label', 'Live from the network');
   bar.innerHTML = tickerHtml(items);
+  const toggle = bar.querySelector('.bs-tk-toggle');
+  const setCollapsed = on => {
+    bar.classList.toggle('is-collapsed', on);
+    toggle.setAttribute('aria-expanded', String(!on));
+    toggle.setAttribute('aria-label', on ? `Show the news, ${items.length} ${items.length === 1 ? 'story' : 'stories'}` : 'Hide the news');
+  };
+  let collapsed = false;
+  try { collapsed = localStorage.getItem(COLLAPSED_KEY) === '1'; } catch { /* blocked storage: open */ }
+  setCollapsed(collapsed);
+  toggle.addEventListener('click', () => {
+    collapsed = !collapsed;
+    setCollapsed(collapsed);
+    try { localStorage.setItem(COLLAPSED_KEY, collapsed ? '1' : '0'); } catch { /* blocked: holds for this page */ }
+  });
   header.insertAdjacentElement('afterend', bar);
-  // A steady reading speed whatever the length: ~70px a second.
-  const row = bar.querySelector('.bs-tk-row');
-  const w = row?.scrollWidth || 0;
-  if (w) bar.style.setProperty('--bs-tk-dur', `${Math.max(20, Math.round(w / 70))}s`);
+  // A steady reading speed whatever the length: ~70px a second. Measured when
+  // the row is on screen -- a collapsed bar has no width to measure.
+  const measure = () => {
+    const w = bar.querySelector('.bs-tk-row')?.scrollWidth || 0;
+    if (w) bar.style.setProperty('--bs-tk-dur', `${Math.max(20, Math.round(w / 70))}s`);
+  };
+  measure();
+  toggle.addEventListener('click', () => { if (!collapsed) measure(); });
 }

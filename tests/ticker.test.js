@@ -48,3 +48,13 @@ describe('tickerItems', () => {
     expect(html).toMatch(/class="bs-tk-row" aria-hidden="true" inert/);
   });
 });
+
+describe('collapsing the band', () => {
+  it('has a toggle that names what it does and what is hidden', () => {
+    const html = tickerHtml([{ kind: 'exit', label: 'Big Brother 2', accent: '#38BDF8', text: 'x', href: 'on-air.html' },
+      { kind: 'post', label: 'Big Brother 2', accent: '#38BDF8', text: 'y', href: 'social.html' }]);
+    expect(html).toMatch(/<button type="button" class="bs-tk-toggle" aria-controls="bs-tk-view" aria-expanded="true" aria-label="Hide the news">/);
+    expect(html).toContain('<span class="bs-tk-more">2 stories</span>');
+    expect(html).toContain('id="bs-tk-view"');
+  });
+});

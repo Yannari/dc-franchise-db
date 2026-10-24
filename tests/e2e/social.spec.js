@@ -74,17 +74,18 @@ test('the host directory is derived, and large', async ({ page }) => {
 });
 
 test('a season nobody has played says so, rather than showing an empty feed', async ({ page }) => {
-  // Big Brother 2 has no published document. This is the honest preseason state
-  // the spec asks for: no fabricated weeks, no invented alumni, and it explains
-  // what would be here.
-  await page.goto(social('show=big-brother&season=2&app=chatalumni'));
+  // Big Brother 9 has no published document and nothing on the air. (This was
+  // Big Brother 2 until Big Brother 2 started airing and had posts of its own.)
+  // The honest preseason state the spec asks for: no fabricated weeks, no
+  // invented alumni, and it explains what would be here.
+  await page.goto(social('show=big-brother&season=9&app=chatalumni'));
   await ready(page);
 
-  await expect(page.locator('.state-card h2')).toContainText('Big Brother 2');
+  await expect(page.locator('.state-card h2')).toContainText('Big Brother 9');
   await expect(page.locator('#conn')).toHaveAttribute('data-state', 'PRESEASON');
   expect(await page.locator('.msg').count(), 'a preseason page invented messages').toBe(0);
   // and the picker agrees with the page about where you are
-  await expect(page.locator('#pick-season')).toHaveValue('big-brother|2');
+  await expect(page.locator('#pick-season')).toHaveValue('big-brother|9');
 });
 
 test('a Big Brother season speaks Big Brother', async ({ page }) => {

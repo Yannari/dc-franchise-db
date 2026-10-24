@@ -19,7 +19,6 @@ const ALLOW = new Map([
   ['js/studio.js', 'an authoring tool: it browses raw files on purpose'],
   ['js/vp-coaches.js', 'a named last-resort fallback for somebody not in the cast'],
   ['js/franchise-ui.js', 'career-level pages resolve from stored season data'],
-  ['js/social-page.js', 'career-level pages resolve from stored season data'],
   ['js/wiki-view.js', 'career-level pages resolve from stored season data'],
 ]);
 

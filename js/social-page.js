@@ -27,9 +27,12 @@ import { personaByHandle } from './social/personas.js';
 import { currentShow, ALL } from './show-switcher.js';
 import { formatFollowers, followersOfPersona } from './social/crowd.js';
 import { EPISODE_MS } from './social/events.js';
+import { avatarUrl, loadPortraitCatalog } from './avatar-registry.js';
+import { loadAiring, airingModels } from './on-air.js';
+import { MEDIA, mediaLogo, mediaIcon, ensureMediaCss } from './media-brands.js';
 
 const API = 'https://dc-studio.yannari19.workers.dev/api/social';
-const LIVE_API = 'https://dc-studio.yannari19.workers.dev/api/live-season';
+const EXITS_API = 'https://dc-studio.yannari19.workers.dev/api/live-exits';
 const ROOT = document.documentElement.getAttribute('data-root') || '.';
 
 // ── page state ────────────────────────────────────────────────────────
@@ -164,7 +167,7 @@ function seasonOptions(db) {
     .concat(Object.entries(S.airing).filter(([f, a]) => a && !(db.seasons?.seasons || []).some(x => {
       const ref = parseSeasonRef(x.seasonId || x.seasonNumber);
       return ref && (ref.format || DEFAULT_FORMAT) === f && ref.number === a.number;
-    })).map(([f, a]) => ({ format: f, number: a.number, title: 'airing now' })))
+    })).map(([f, a]) => ({ format: f, number: a.number, title: 'on air now' })))
     .sort((a, b) => b.number - a.number);
 }
 
@@ -172,19 +175,22 @@ function seasonOptions(db) {
    User, 2026-10-24: "im at ep3 and birdie still empty". Birdie opened only
    published seasons: a season mid-airing has no season file yet, so it had no
    episodes and showed the preseason card, even after "Publish to site" in the
-   Run tab had put every post it had into /api/social. The live standings say
-   which season is on the air (they do not say which show, so the show's own
-   posts confirm it), and the posts say which nights have aired. */
-let _live;
+   Run tab had put every post it had into /api/social. The On Air models say
+   which seasons are on the air -- every show at once, the same list the On Air
+   page draws -- and the posts say which nights have aired. */
+let _onAir;
+function onAirNow() {
+  _onAir ||= Promise.all([
+    loadAiring().catch(() => []),
+    fetch(EXITS_API).then(r => (r.ok ? r.json() : null)).catch(() => null),
+  ]).then(([entries, exits]) => airingModels(entries, exits, S.db.seasons?.seasons || []))
+    .catch(() => []);
+  return _onAir;
+}
+
 async function airingSeason(format) {
-  try {
-    _live ||= fetch(LIVE_API).then(r => (r.ok ? r.json() : null)).catch(() => null);
-    const live = await _live;
-    const n = Number(live?.airing && live.seasonNumber);
-    if (!n) return null;
-    const posts = await loadStored(format, n);
-    return posts.length ? { number: n, players: (live.players || []).map(p => p.slug || p.name).filter(Boolean) } : null;
-  } catch { return null; }
+  const m = (await onAirNow()).find(x => x.format === format);
+  return m ? { number: Number(m.seasonNumber), players: m.players.map(p => p.slug), episode: m.episode, title: m.title } : null;
 }
 
 /** Is there a season here at all: a published one, or one on the air. */
@@ -389,11 +395,14 @@ function setConn() {
 }
 
 // ── shared bits ───────────────────────────────────────────────────────
+/** A stable colour per account, so a regular is recognisable before the name is read. */
+const hueOf = s => [...String(s || '')].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+
 function avatar(slug, name, cls = 'avatar') {
   const initial = esc((name || '?').trim().charAt(0).toUpperCase());
-  if (!slug) return `<div class="${cls}" aria-hidden="true">${initial}</div>`;
+  if (!slug) return `<div class="${cls} is-fan" style="--h:${hueOf(name)}" aria-hidden="true">${initial}</div>`;
   return `<img class="${cls}" loading="lazy" width="48" height="48" alt=""
-    src="${ROOT}/assets/avatars/${esc(slug)}.png"
+    src="${esc(avatarUrl({ slug, show: S.format }))}"
     onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'${cls}',textContent:'${initial}'}))">`;
 }
 
@@ -588,10 +597,8 @@ function renderBirdie() {
   return `
   <div class="birdie">
     <div class="birdie-head">
-      <div class="birdie-mark">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15c4-1 6-4 7-7 1 3 4 5 8 5-1 4-5 7-9 7H4l2-3z" fill="#1c7ed6"/></svg>
-        Birdie
-      </div>
+      <div class="birdie-mark">${mediaLogo('birdie', { size: 30 })}
+        <span class="app-ctx">${esc(contextLabel(S.format, S.season, S.episode))}</span></div>
       <div class="b-tabs" role="tablist" aria-label="Timeline">
         ${tabs.map(([id, label]) => `<button role="tab" id="tab-${id}" data-tab="${id}"
           aria-selected="${S.tab === id}" aria-controls="birdie-feed">${label}</button>`).join('')}
@@ -666,10 +673,7 @@ function renderChat() {
     ['predictions', 'Predictions'], ['hosts', 'Hosts']];
   const head = `
     <div class="chat-head">
-      <div class="chat-mark">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z" fill="#b8862b"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4" stroke="#f6efdc" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
-        ChatAlumni
-      </div>
+      <div class="chat-mark">${mediaLogo('chatalumni', { size: 30 })}</div>
       <p class="chat-sub">${S.speakers.length} host${S.speakers.length === 1 ? '' : 's'} covering
         ${esc(contextLabel(S.format, S.season, S.episode))} ·
         ${nativeCount()} ${esc(words(S.format).short)} alumni${
@@ -906,26 +910,25 @@ function renderRail() {
   const trends = trendsFrom(S.feed.posts);
   const pulse = audiencePulse(S.feed.posts);
   const nameOf = s => titleCase(s || '');
+  const face = s => (s ? avatar(s, nameOf(s), 'avatar xs') : '');
+  const who = (lab, s, arrow, dir) => `<div class="pulse-row is-${dir}"><span class="lab">${lab}</span>
+        <span class="pulse-who">${face(s)}<b>${esc(nameOf(s))}</b>${arrow ? ` <span class="pulse-arrow" aria-hidden="true">${arrow}</span>
+        <span class="sr-only">${dir}</span>` : ''}</span></div>`;
 
   return `
     <section class="panel-card">
       <h2>Trending in ${esc(w.short)} ${esc(String(S.season))}</h2>
       ${trends.map((t, i) => `<div class="trend">
-        <span class="n">${i + 1}</span>
-        <span class="t">${esc(nameOf(t.subject))} ${esc(eventLabel(t.kind, S.format).toLowerCase())}</span>
-        <span class="c">${t.count}</span>
+        <span class="n">${i + 1}</span>${face(t.subject)}
+        <span class="t">${esc(nameOf(t.subject))} <small>${esc(eventLabel(t.kind, S.format).toLowerCase())}</small></span>
+        <span class="c">${t.count} posts</span>
       </div>`).join('') || '<p style="opacity:.6">Nothing yet.</p>'}
     </section>
     <section class="panel-card">
       <h2>Audience pulse</h2>
-      ${pulse.rising ? `<div class="pulse-row"><span class="lab">Rising</span>
-        <span>${esc(nameOf(pulse.rising.subject))} <span aria-hidden="true">↑</span>
-        <span class="sr-only">up</span></span></div>` : ''}
-      ${pulse.falling && pulse.falling !== pulse.rising ? `<div class="pulse-row"><span class="lab">Falling</span>
-        <span>${esc(nameOf(pulse.falling.subject))} <span aria-hidden="true">↓</span>
-        <span class="sr-only">down</span></span></div>` : ''}
-      ${pulse.divided ? `<div class="pulse-row"><span class="lab">Most divided</span>
-        <span>${esc(nameOf(pulse.divided.subject))}</span></div>` : ''}
+      ${pulse.rising ? who('Rising', pulse.rising.subject, '↑', 'up') : ''}
+      ${pulse.falling && pulse.falling !== pulse.rising ? who('Falling', pulse.falling.subject, '↓', 'down') : ''}
+      ${pulse.divided ? who('Most divided', pulse.divided.subject, '', 'split') : ''}
       <p style="font-size:11.5px;opacity:.55;margin:10px 0 0">
         Relative movement across this ${esc(w.episode)}, from how the audience reacted.</p>
     </section>
@@ -942,13 +945,35 @@ function renderRail() {
     </section>`;
 }
 
-function renderNav() {
-  const items = S.app === 'birdie'
-    ? [['for-you', 'For You'], ['latest', 'Latest'], ['following', 'Following'], ['players', 'Players']]
-    : [['main-stage', 'Main Stage'], ['predictions', 'Predictions'], ['hosts', 'Hosts']];
-  const current = S.app === 'birdie' ? S.tab : S.channel;
-  return items.map(([id, label]) => `<button type="button" data-${S.app === 'birdie' ? 'tab' : 'channel'}="${id}"
-    aria-current="${current === id ? 'page' : 'false'}">${label}</button>`).join('');
+// ── the hub: four apps, and what is on tonight ─────────────────────────
+const APP_LINES = {
+  birdie: 'The timeline, post by post',
+  chatalumni: 'Alumni host the watch party',
+  dramagram: 'Life after the show, in photos',
+  kristal: 'Every exit interview',
+};
+
+/** Each app's tile: its own icon, wordmark and line. Drawn once; render() only presses. */
+function paintApps() {
+  for (const el of document.querySelectorAll('.soc-app[data-media]')) {
+    const key = el.dataset.media;
+    el.style.setProperty('--acc', MEDIA[key]?.accent || '#fff');
+    el.innerHTML = `${mediaIcon(key, 44)}<span class="soc-app-copy">${MEDIA[key].word()}`
+      + `<small>${esc(APP_LINES[key] || '')}</small></span>`;
+  }
+}
+
+/** Tonight's seasons as one-tap jumps; the one being read is marked. */
+function renderOnAir(models) {
+  const el = $('soc-onair');
+  if (!el) return;
+  if (!models.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<span class="soc-onair-lab"><i></i>On air now</span>` + models.map(m => {
+    const here = m.format === S.format && Number(m.seasonNumber) === Number(S.season);
+    return `<button type="button" class="soc-jump" data-jump="${esc(m.format)}|${esc(m.seasonNumber)}"
+      aria-pressed="${here}" style="--show:${esc(m.show.accent)}"><b>${esc(m.title)}</b>`
+      + `<small>${esc(m.words.round || 'Episode')} ${esc(m.episode)}</small></button>`;
+  }).join('');
 }
 
 // ── render ────────────────────────────────────────────────────────────
@@ -957,7 +982,7 @@ function render() {
     + (S.episode ? ` · ${words(S.format).Episode} ${S.episode}` : ' · Preseason');
   $('pick-birdie').setAttribute('aria-pressed', String(S.app === 'birdie'));
   $('pick-chat').setAttribute('aria-pressed', String(S.app === 'chatalumni'));
-  $('rail-nav').innerHTML = renderNav();
+  onAirNow().then(renderOnAir);
   $('soc-main').innerHTML = S.app === 'birdie' ? renderBirdie() : renderChat();
   $('rail-right').innerHTML = renderRail();
   setConn();
@@ -1003,6 +1028,17 @@ function wire() {
     else if (S.subject) S.subject = null;
     else return;
     render();
+  });
+
+  // A season on the air, one tap away: its newest night, in the app you are in.
+  document.addEventListener('click', async ev => {
+    const j = ev.target.closest('[data-jump]');
+    if (!j) return;
+    const [format, number] = j.dataset.jump.split('|');
+    S.format = format; S.season = Number(number); S.episode = null;
+    S.airing[format] ||= await airingSeason(format);
+    stopLive();
+    await reload();
   });
 
   document.addEventListener('click', ev => {
@@ -1127,12 +1163,23 @@ function fillPickers() {
 
 // ── boot ──────────────────────────────────────────────────────────────
 (async function boot() {
+  ensureMediaCss();
+  paintApps();
   readUrl();
   const [players, seasons, rankings, voices] = await Promise.all([
     json('players_database.json'), json('seasons_database.json'),
     json('rankings_database.json'), json('voice-profiles.json'),
+    loadPortraitCatalog().catch(() => null),
   ]);
   S.db = { players, seasons, rankings, voices };
+  // Nothing asked for: open on what is on tonight, not on the last archive.
+  const asked = new URLSearchParams(location.search).has('show')
+    || (currentShow() && currentShow() !== ALL);
+  const tonight = await onAirNow();
+  if (!asked && tonight.length) {
+    S.format = tonight[0].format;
+    if (!S.season) S.season = Number(tonight[0].seasonNumber);
+  }
   S.airing[S.format] = await airingSeason(S.format);
 
   if (!S.season) {

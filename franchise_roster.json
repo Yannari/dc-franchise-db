@@ -8858,7 +8858,14 @@
       "occupation": "Basic training instructor",
       "descriptor": "The Drill Sergeant",
       "backstory": "Ben is a basic training instructor from Fort Worth, Texas, and the third generation of a military family; his grandfather and father both expected him to enlist, and he never considered anything else. He has spent years turning frightened eighteen-year-olds into soldiers, and he is very good at it and very bad at everything that happens after the shift ends. He drives an old truck, lives alone, and his last girlfriend said living with him was like living in a barracks. He applied because he knew someone tough would create drama, and because leading people is the one thing he is sure he does well. Asked what he would bring into the house, he said that was classified.",
-      "personality": "Ben is disciplined, hard-working and closed off. He is strong, blunt and observant, and he takes command of any group without a leader, because he does not believe anyone else is capable. He finds it hard to connect with strangers and has no patience for emotions, gossip or what he calls childish drama. Once someone earns his trust, though, he is fiercely and quietly loyal, and he will sit on the block before he breaks his word. He respects people who stand up to him more than people who agree with him. His blind spot is feelings, other people's and his own, and he does not see a betrayal coming until it is done."
+      "personality": "Ben is disciplined, hard-working and closed off. He is strong, blunt and observant, and he takes command of any group without a leader, because he does not believe anyone else is capable. He finds it hard to connect with strangers and has no patience for emotions, gossip or what he calls childish drama. Once someone earns his trust, though, he is fiercely and quietly loyal, and he will sit on the block before he breaks his word. He respects people who stand up to him more than people who agree with him. His blind spot is feelings, other people's and his own, and he does not see a betrayal coming until it is done.",
+      "ties": [
+        {
+          "name": "Leona",
+          "kin": "married",
+          "outside": true
+        }
+      ]
     },
     {
       "name": "Dominic",

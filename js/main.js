@@ -406,13 +406,19 @@ window.CHALLENGES = {
 // new deploy is fetched as one set rather than mixed with the old one. Off on a
 // local server, where a file's Last-Modified is its own mtime and not a deploy
 // stamp (localStorage dc_sw_local=1 turns it on there, for testing it). ?nosw
-// removes it, if it ever has to go.
+// removes it, and the copies it saved, if it ever has to go.
 (function registerSmartCache() {
   try {
     if (!('serviceWorker' in navigator)) return;
     const local = location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-    const off = new URLSearchParams(location.search).has('nosw') || (local && localStorage.getItem('dc_sw_local') !== '1');
-    if (off) { navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {}); return; }
+    const nosw = new URLSearchParams(location.search).has('nosw');
+    const off = nosw || (local && localStorage.getItem('dc_sw_local') !== '1');
+    if (off) {
+      navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {});
+      // the copies too: unregistered, a later load would register again and serve the same saved copy
+      if (nosw && window.caches) caches.keys().then(ks => ks.filter(k => k.startsWith('dc-site-')).forEach(k => caches.delete(k))).catch(() => {});
+      return;
+    }
     navigator.serviceWorker.register('sw.js').catch(e => console.warn('Smart cache not installed:', e));
     // A new deploy downloads behind the open page; when all of it is in, say so.
     navigator.serviceWorker.addEventListener('message', e => {

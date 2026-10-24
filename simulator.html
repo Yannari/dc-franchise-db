@@ -3,6 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+  // The smart cache (sw.js) heals itself. A saved copy of the site whose modules do not fit
+  // together stops the simulator before main.js runs (the user, 2026-10-24: "The requested module
+  // .../js/dr/chal/music-video.js doesn't provide an export named: 'IMPRESSION_CAP'", while the
+  // live file had it). A plain script, so it is listening before any module links: on that error
+  // it drops the saved copy and loads the site once from the network. Once a minute at most.
+  (function () {
+    function heal(msg) {
+      if (!/provides? an export named/i.test(String(msg || ''))) return;
+      try { if (Date.now() - (Number(sessionStorage.getItem('dc-heal')) || 0) < 60000) return; sessionStorage.setItem('dc-heal', String(Date.now())); } catch (e) { return; }
+      var jobs = [];
+      try { if (navigator.serviceWorker) jobs.push(navigator.serviceWorker.getRegistrations().then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); })); } catch (e) {}
+      try { if (window.caches) jobs.push(caches.keys().then(function (ks) { return Promise.all(ks.filter(function (k) { return k.indexOf('dc-site-') === 0; }).map(function (k) { return caches.delete(k); })); })); } catch (e) {}
+      Promise.all(jobs).catch(function () {}).then(function () { location.reload(); });
+    }
+    window.addEventListener('error', function (e) { heal(e && (e.message || (e.error && e.error.message))); });
+  })();
+  </script>
   <title>Simulator · Blindside Network</title>
   <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/brand/favicon-32.png" sizes="32x32" type="image/png">

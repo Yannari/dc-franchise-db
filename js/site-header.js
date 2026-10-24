@@ -31,6 +31,7 @@ import { mountShowSwitcher, currentShow, rememberShow, SHOW_SWITCHER_CSS } from 
  */
 import { latestAired, airLabel, airKey } from './franchise-calendar.js';
 import './page-transitions.js';
+import { mountTicker } from './ticker.js';
 export const NAV_LINKS = [
   { href: 'index.html',            label: 'Home' },
   { href: 'on-air.html',           label: 'On Air' },
@@ -308,6 +309,11 @@ export function renderSiteHeader() {
   // Filled after the nav is on screen and never awaited: the header must not
   // wait on a fetch, and a franchise with no life events simply has no badge.
   paintBadges(nav);
+
+  // ── the news ticker ──
+  // Under the header while something is on the air; never awaited, and absent
+  // when nothing is.
+  mountTicker(nav.closest('header'));
 
   let mount = document.getElementById('site-show-switch');
   if (!mount) {

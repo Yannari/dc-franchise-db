@@ -9111,6 +9111,27 @@
       "voice": "Bright, peppy and supremely confident, a pageant smile and a podium voice. Says the wrong thing with total sincerity, explains it twice and never notices the room has gone silent. #proud#cruel #-quiet",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Sabrina",
+      "slug": "sabrina",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 4,
+        "endurance": 4,
+        "mental": 5,
+        "social": 3,
+        "strategic": 4,
+        "loyalty": 7,
+        "boldness": 9,
+        "intuition": 4,
+        "temperament": 2
+      },
+      "voice": "Passionate, preachy and quick to accuse, every conversation turned into a protest speech. Calls things problematic, raises her voice when challenged and rarely hears the irony. #loud #blunt#chaotic",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

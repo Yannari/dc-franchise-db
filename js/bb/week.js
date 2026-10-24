@@ -92,6 +92,8 @@ import { runNightmarePower, nightmarePull } from './nightmare-power.js';
 import { runPremiereMystery } from './premiere-mystery.js';
 import { runTemptationPremiere } from './temptation-premiere.js';
 import { runMachinePremiere } from './machine-premiere.js';
+import { runCliqueReturnees } from './clique-returnees.js';
+import { mysteryHouseguestOf } from './premiere-mystery.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 // The pawn ask is where the jury bubble is most visible in a decision: an
@@ -2524,7 +2526,14 @@ export function simulateBBWeek(options = {}) {
           week.captainsOnly = [...sorted.captains];
         }
       } else if ((week.num || 1) === 1 && !allTeams().length) {
-        const sorted = assignTeams({ house, rng });
+        // BB11: the cast's veteran is held out of the sorting; they walk in with whichever clique wins
+        const withReturnees = !!options.cliqueReturnees && !preCrowned;
+        const vet = withReturnees && house.length >= 10 ? mysteryHouseguestOf(house) : null;
+        const sorted = assignTeams({ house: vet ? house.filter(n => n !== vet.n) : house, rng });
+        if (sorted && withReturnees) {
+          // the cliques lasted three weeks; they were disbanded before the week-four crown
+          gs.bb.teamsUntilWeek = Number(options.cliquesUntilWeek) || 3;
+        }
         if (sorted) {
           week.teamsAssigned = sorted.teams.map(t => ({ ...t, members: [...t.members] }));
           week.acts.push(addBeats({
@@ -2536,6 +2545,14 @@ export function simulateBBWeek(options = {}) {
               badgeText: t.name.toUpperCase(), badgeClass: 'blue',
             })),
           }, { players: house.slice(0, 4) }));
+          if (withReturnees) {
+            const cr = runCliqueReturnees({ week, teams: sorted.teams, returnee: vet, house, rng });
+            if (cr) {
+              week.cliqueReturnees = { hoh: cr.hoh, returnee: cr.act.returnee?.name || null };
+              week.acts.push(addBeats(cr.act, { players: [cr.act.last, cr.act.partner, cr.act.returnee?.name].filter(Boolean) }));
+              preCrowned = house.includes(cr.hoh) ? cr.hoh : null;
+            }
+          }
         }
       } else if (allTeams().length && !teamsDissolved()
         && (gs.bb?.teamsUntilWeek ? week.num > gs.bb.teamsUntilWeek : house.length <= (Number(options.teamsDissolveAt) || 8))) {
@@ -2655,6 +2672,22 @@ export function simulateBBWeek(options = {}) {
     } catch (err) {
       (week._premiereError ||= []).push(String(err?.message || err));
     }
+  }
+
+  // ── BB11: America's Coup d'État ──
+  // "During Week 4, the viewing public voted to give a Houseguest the Coup d'Etat; which would
+  // allow the holder to overthrow the Head of Household's nominations and name their own." The
+  // holder is told in private and the house is not; the power is the ordinary shelf's.
+  if (!compressed && twists.has('bb-americas-coup')) {
+    try {
+      const pick = house.slice().sort((a, b) => ((gs.popularity?.[b] || 0) + rng() * 1.5) - ((gs.popularity?.[a] || 0) + rng() * 1.5))[0];
+      if (pick) {
+        grantPower('coup-d-etat', pick, { week: week.num, visibility: 'secret', source: 'bb-americas-coup' });
+        week.americasCoup = { holder: pick };
+        week.acts.push(addBeats({ type: 'americas-coup', week: week.num, holder: pick, secret: true,
+          beats: [{ text: `America votes ${pick} the Coup d'État.`, players: [pick], badgeText: "AMERICA'S COUP", badgeClass: 'gold', part: 'granted' }] }, { players: [pick] }));
+      }
+    } catch (err) { (week._coupError ||= []).push(String(err?.message || err)); }
   }
 
   // ── BB26's JANKIE World: a week in the backyard on pizza and ice cream ──

@@ -1,23 +1,17 @@
-// Summer School.
+// Summer School: Big Brother 11, played 1:1 (user, 2026-10-24: "they have to be
+// perfect 1:1 of the real show with all the prose twist text moment"). From the
+// wiki's season page, its twists list and its week-by-week history:
 //
-// BB11, and the first theme built on `js/bb/teams.js` — the assigned-group
-// facility that did not exist until this season needed it. Everything else in
-// this engine is a group you joined. This is a group you were PUT IN.
-//
-// ── WHY THE SEASON IS ABOUT ONE RULE ──────────────────────────────────
-//
-// The wiki gives it in a single sentence: "should a member of their clique win
-// Head of Household, they would be immune from eviction that week." Four safe
-// instead of one, three of them for nothing. Every ceremony all season, a Head
-// of Household sits down to build a block and finds the name they wanted
-// protected by a heading somebody typed on night one — and the block they
-// build instead is the season.
-//
-// The rest of the arc is BB11's own, and almost all of it we already owned:
-// the Have/Have-Not competition that replaced the food comp, an audience grant
-// in the middle weeks (the broadcast's Coup d'Etat was America voting somebody
-// a game-changing power, which is precisely what the Care Package channel is),
-// and Pandora's Box late.
+//   night one   twelve sorted into four cliques (Athletes, Populars, Brains,
+//               Off-Beats); four past houseguests back one clique each, and the
+//               clique that wins the first HOH (The Wedgie) brings its returnee
+//               in as a houseguest and the first Head of Household (Jessie)
+//   weeks 1-3   a Head of Household's whole clique is immune; the cliques are
+//               disbanded before the week-four crown
+//   weekly      the Have/Have-Not competition
+//   week 4      America votes somebody the Coup d'État (Jeff, used in week 5)
+//   weeks 8-9   Pandora's Box, at a final five and a final four
+//   (no double eviction: week six's two rounds were Chima's expulsion)
 //
 // ── THE ANTAGONIST, AND THE ONE THING IT DOES ─────────────────────────
 //
@@ -83,30 +77,18 @@ export default {
       + 'has a heading for each of you and a caption underneath, both decided early, and it is '
       + 'delighted with how well everybody fits — right up until the day they stop fitting.',
     rules: [
-      'On night one the house is sorted into four cliques, by archetype rather than at random, so '
-        + 'the groups read as what they are the moment you see them. There is no competition and no '
-        + 'vote. Nobody may change clique and nobody may leave one.',
-      'THE RULE: whenever a houseguest wins Head of Household, every member of their clique is '
-        + 'immune from eviction that week. Four safe instead of one. Three of them did nothing at '
-        + 'all to earn it, and the Head of Household will often find the name they actually wanted '
-        + 'is one of the three.',
-      'A clique is not an alliance and never becomes one by itself. It pulls a little on who you '
-        + 'would rather not nominate, well below anybody you actually chose — so a houseguest can '
-        + 'spend a season being protected by three people they cannot stand, which is its own kind '
-        + 'of week.',
-      'Some weeks the house competes to avoid being a Have-Not, and the losers take slop, cold '
-        + 'water and the worst beds in the building for the week.',
-      'In the middle of the season the audience hands one houseguest something the rest of the room '
-        + 'does not get a say in — the game-changing grant this format has always used to break a '
-        + 'house that has settled.',
-      'Late on, the Head of Household is offered Pandora\'s Box: open it and take whatever is '
-        + 'inside, knowing the house takes something too. Only the Head of Household can open it, '
-        + 'and only the Head of Household finds out what it cost.',
-      'Near the end there is a double eviction — a whole week run in one sitting, two people gone '
-        + 'in a night, and nobody given a day to count anything.',
-      'The cliques do not last the season. Once the house is small enough they dissolve, and the '
-        + 'protection everybody has been quietly relying on is gone in a single night. That is the '
-        + 'week you find out who made real friends and who was only ever in a category.',
+      'On night one the house is sorted into four cliques: the Athletes, the Brains, the Populars and the '
+        + 'Off-Beats. Nobody chooses a clique and nobody may leave one.',
+      'Four past houseguests wait outside, one for each clique. The clique that wins the first Head of Household '
+        + 'competition brings its returnee in, as a houseguest and as the first Head of Household.',
+      'THE RULE: whenever somebody wins Head of Household, their whole clique is immune that week. The cliques '
+        + 'last three weeks, and are disbanded before the fourth crown.',
+      'Every week the house competes to avoid being a Have-Not: slop, cold showers and the worst beds in the '
+        + 'building for whoever loses.',
+      'In week four America votes to give one houseguest the Coup d\'État: at a veto meeting they may overthrow '
+        + 'the Head of Household\'s nominations and name their own. Only they are told.',
+      'At the final five and the final four, the Head of Household is offered Pandora\'s Box: open it and take '
+        + 'whatever is inside, knowing the house may pay for it.',
     ],
     watch: 'Watch who is safe without earning it, week after week, and watch what that does to them '
       + 'by the time it stops. Somebody in this house is going to reach the final five having never '
@@ -239,44 +221,21 @@ export default {
   // cadence's last possible emission. `untilFromEnd: 8` is what keeps that
   // true at casts 14 through 20; `tests/bb-theme-arcs.test.js` is the guard.
   arc: [
-    // Night one. The whole season hangs off this one card.
-    { at: { week: 1 }, book: 'bb-cliques' },
+    // BB11's running order (see the header).
+    { at: { week: 1 }, book: 'bb-cliques', options: { returnees: true } },
+    { at: { week: 4 }, book: 'bb-americas-coup' },
 
-    // BB11 replaced the food competition with the Have/Have-Not competition,
-    // and it ran all season. A cadence rather than a fixed week for the reason
-    // every cadence here exists: a fixed list leaves a long season empty.
-    { every: 3, from: 3, untilFromEnd: 8, book: 'bb-have-nots' },
+    // The Yearbook loses its headings the week the cliques are disbanded.
+    { at: { week: 4 }, mood: 'hostile' },
 
-    // ── THE AUDIENCE BREAKS THE HOUSE OPEN ────────────────────────────────
-    //
-    // BB11 ran the Coup d'Etat in week 4 — America voting one houseguest a
-    // game-changing power. We have no Coup CARD (it is a power on the shelf),
-    // and the Care Package IS this format's audience-grant channel, so it is
-    // the honest stand-in rather than a near neighbour: same hand, same
-    // secrecy, same job of breaking a house that has settled into its groups.
-    { at: { fromEnd: 6 }, book: 'bb-care-package' },
-
-    // ── THE TURN IS THE DISSOLUTION ───────────────────────────────────────
-    //
-    // `teams.js` dissolves the cliques when the house reaches eight, and
-    // `fromEnd: 5` IS a house of eight — so the register changes on the same
-    // night the headings stop applying, which is the only week this theme's
-    // turn could honestly land on. Both anchor forms, because a `frac` alone
-    // lands after the endgame has begun on a short season.
-    { at: { frac: 0.62 }, mood: 'hostile' },
-    { at: { fromEnd: 5 }, mood: 'hostile' },
-
-    // BB11 opened Pandora's Box in weeks 8 and 9 — late, twice, and only ever
-    // by the Head of Household.
-    { at: { fromEnd: 5 }, book: 'bb-pandoras-box' },
-    { at: { fromEnd: 4 }, book: 'bb-double-eviction' },
-    // And one last box, so the endgame is not unthemed — the gap High Roller's
-    // shipped with and had to be sent back for.
     { at: { fromEnd: 2 }, book: 'bb-pandoras-box' },
+    { at: { fromEnd: 1 }, book: 'bb-pandoras-box' },
   ],
 
-  books: ['bb-cliques', 'bb-have-nots', 'bb-care-package', 'bb-pandoras-box',
-    'bb-double-eviction'],
+  // The Have/Have-Not competition, every week; no Block Buster.
+  seasonKnobs: { bbHaveNots: 'every-week', bbSafetyMode: 'off' },
+
+  books: ['bb-cliques', 'bb-americas-coup', 'bb-pandoras-box'],
   // The season's identity is the sorting, not an affinity for particular
   // cards, so nothing is weighted up and nothing is banned: every other twist
   // composes on top of a house that happens to be in four groups.

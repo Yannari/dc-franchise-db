@@ -2577,6 +2577,54 @@ function pranksterScreen(act, ctx) {
     rules: [['AMERICA', 'votes in a Prankster'], ['ALL WEEK', 'pranks on the house'], ['ONE NOMINEE', 'the Prankster names the second']], rulesTitle: "AMERICA'S PRANKSTER · HOW IT WORKS", steps };
 }
 
+// ── BB11's first night: The Wedgie, and the returnee it lets in ──────────
+function cliqueReturneeScreen(act, ctx) {
+  const host = ctx.host;
+  const sup = (act.supporters || []).filter(s => s.name);
+  const ret = act.returnee;
+  const steps = [];
+  if (ret || sup.length) {
+    const n = sup.length + (ret ? 1 : 0);
+    steps.push({ k: 'host', by: host, t: n > 1 ? `Houseguests, ${word(n)} past houseguests are standing outside this house tonight. Only one of them is coming in.`
+      : 'Houseguests, a past houseguest is standing outside this house tonight, waiting to come in.', rule: 1, toast: ['THE RETURNEES', '#7aa2f7'] });
+    if (sup.length) steps.push({ k: 'beat', t: `${listOf(sup.map(s => `${s.name}, from ${s.where}`))}${ret ? ', and one more the house cannot see yet' : ''}.` });
+    steps.push({ k: 'host', by: host, t: 'Whichever clique wins the first Head of Household competition brings its returnee into this house, as a houseguest and as the first Head of Household.', rule: 2 });
+  } else {
+    steps.push({ k: 'host', by: host, t: 'Houseguests, the first Head of Household competition is clique against clique.', rule: 1 });
+  }
+  steps.push({ k: 'beat', t: 'The Wedgie. Every houseguest hangs from a rope by the back of their underwear, holding on to a toilet seat. Let go of the seat and you drop. The clique of the last houseguest hanging wins.' });
+  const order = (act.order || []).slice();
+  order.slice().reverse().slice(0, Math.max(0, order.length - 2)).forEach((n, i) => {
+    if (i % 3 === 0) steps.push({ k: 'beat', t: `${n} lets go of the seat and drops.` });
+  });
+  steps.push({ k: 'beat', t: `${act.last}${act.partner ? ` and ${act.partner} are the last two hanging, and both of them are` : ' is the last one hanging, for'} ${act.winningClique}.`, confetti: true, toast: [String(act.winningClique || '').toUpperCase(), '#f5c542'] });
+  if (ret) {
+    steps.push({ k: 'host', by: host, t: `${act.winningClique}, your returnee is coming in.`, shake: true },
+      { k: 'beat', t: `The front door opens, and in walks ${ret.name}${ret.won ? `, who won ${ret.where}` : `, back from ${ret.where}`}.`, toast: ['THE RETURNEE', '#7aa2f7'] },
+      { k: 'host', by: host, t: `${ret.name}, you are a member of ${act.winningClique}, and you are the first Head of Household.`, hoh: ret.name, big: [ret.name, 'Head of Household', 'safe'] },
+      { k: 'dr', by: ret.name, t: pickBy(["I walked in the door with the key in my hand. Nobody in there had a say in it, and every one of them knows it.", 'Back in the house, Head of Household on night one. I have done this before. They have not.'], `${ctx.week}|cr|${ret.name}`) });
+    if (sup.length) steps.push({ k: 'beat', t: `${listOf(sup.map(s => s.name))} ${sup.length > 1 ? 'go' : 'goes'} home without ever setting foot inside.` });
+  } else {
+    steps.push({ k: 'host', by: host, t: `${act.last}, you are the first Head of Household.`, hoh: act.last, big: [act.last, 'Head of Household', 'safe'] });
+  }
+  return [{ id: `bb-cliquereturn-w${ctx.week}`, kind: 'hoh', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: '22:00',
+    kicker: 'Live · Backyard', title: 'The Wedgie', label: 'Head of Household', sub: ret ? 'A returnee for the winning clique' : 'Clique against clique', cast: [[act.last, 40], [act.partner || act.last, 60]],
+    rules: [['CLIQUES', 'compete together'], ['LAST HANGING', 'wins it for the clique'], ...(ret ? [['THE RETURNEE', 'the winners\' returnee is HOH']] : [])], rulesTitle: 'THE WEDGIE · HOW IT WORKS', steps }];
+}
+
+function americasCoupScreen(act, ctx) {
+  const h = act.holder;
+  return { id: `bb-acoup-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '23:30',
+    kicker: 'Cam 01 · Diary Room', title: "America's Coup d'État", label: "America's Coup", sub: 'Told to one person', cast: [[h, 50]],
+    rules: [['AMERICA', 'voted for the holder'], ['A VETO MEETING', 'overthrow the nominations'], ['TWO WEEKS', 'to use it, or lose it']], rulesTitle: "THE COUP D'ÉTAT · HOW IT WORKS",
+    steps: [
+      { k: 'bb', t: `${h}, please come to the Diary Room.` },
+      { k: 'bb', t: `${h}, America has voted, and you have won the Coup d'État. At a veto meeting in the next two weeks you may overthrow the Head of Household: their nominees come down, and you name your own.`, rule: 1, toast: ["AMERICA'S COUP", '#f5c542'] },
+      { k: 'bb', t: 'Nobody else in the house will be told.', rule: 2 },
+      { k: 'dr', by: h, t: pickBy(["America gave me the power to overthrow the Head of Household. I'm sitting on it, smiling at everybody.", 'I have a secret that could flip this entire house, and I have to act normal at dinner.'], `${ctx.week}|ac|${h}`) },
+    ] };
+}
+
 // ── The Nightmare Power (Phase 7) ───────────────────────────────────────
 // Three in the morning: a secret power voids the nominations and the Head of
 // Household has to name two new nominees on the spot. Big Brother explains it
@@ -3076,7 +3124,8 @@ function moveInScreen(act, ctx, host, row) {
   // full the host speaks to them on the living room screen. Words: bb/script/lines/moveinact.js.
   // BB27's Mystery Houseguest checks in at the end of premiere night, not with the others.
   const held = (row?.acts || []).find(a => a?.type === 'premiere-mystery')?.mysteryGuest?.name
-    || (row?.acts || []).find(a => a?.type === 'temptation-premiere')?.returnee?.name || null;
+    || (row?.acts || []).find(a => a?.type === 'temptation-premiere')?.returnee?.name
+    || (row?.acts || []).find(a => a?.type === 'clique-returnees')?.returnee?.name || null;
   const notHeld = l => (Array.isArray(l) ? l.filter(x => !held || !(Array.isArray(x) ? x.some(v => String(v).includes(held)) : String(x?.text ?? x).includes(held))) : l);
   const arrivals = (act.arrivals || []).filter(n => n !== held);
   const groups = ((act.groups || []).length ? act.groups : [act.arrivals || []]).map(gr => gr.filter(n => n !== held)).filter(gr => gr.length);
@@ -3572,7 +3621,7 @@ function juryHouseScreen(act, ctx) {
 function twistAnnounceScreen(act, ctx, host) {
   // The premiere screen plays BB27's night itself: the host cannot announce her own kidnapping.
   const ann = (act.announced || []).filter(Boolean).filter(a => a.twist !== 'bb-premiere-mystery' && a.twist !== 'bb-temptation-premiere'
-    && a.twist !== 'bb-machine-premiere' && a.twist !== 'bb-jankie-world' && a.twist !== 'bb-teams');
+    && a.twist !== 'bb-machine-premiere' && a.twist !== 'bb-jankie-world' && a.twist !== 'bb-teams' && a.twist !== 'bb-americas-coup');
   if (!ann.length) return null;
   // A theme's antagonist reads his own twists (the Mastermind announced his on the screen, not the host).
   const ta = act.themeAnnouncer;
@@ -3582,7 +3631,7 @@ function twistAnnounceScreen(act, ctx, host) {
     const steps = [{ k: 'bb', t: 'Houseguests, please gather in the living room.' },
       { k: 'beat', t: 'The screen flickers on. It is not the host.' },
       ...sentences(ta.line).map((x, i) => ({ k: 'voice', own: true, by: ta.speaker, t: x, ...(i === 0 ? { toast: [String(ann[0].name || '').toUpperCase(), '#7c5cff'] } : {}) })),
-      ...(ann[0].sting ? [{ k: 'voice', own: true, by: ta.speaker, t: ann[0].sting, shake: true }] : []),
+      ...(ann[0].sting && !String(ta.line).includes(ann[0].sting) ? [{ k: 'voice', own: true, by: ta.speaker, t: ann[0].sting, shake: true }] : []),
       { k: 'beat', t: 'The screen goes dark. Nobody moves.' }];
     rules.forEach((_, i) => { if (steps[3 + i]) steps[3 + i].rule = i + 1; });
     const vc = voiceOf(ctx.row?.themeId, ctx.row?.themeMood).color;
@@ -4006,7 +4055,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   const late = (row.acts || []).find(a => a.type === 'rivals-open')?.arrived || [];
   // ...and a premiere's returning houseguest, held out of the move-in until the twist lets them in
   const heldGuest = (row.acts || []).find(a => a?.type === 'premiere-mystery')?.mysteryGuest?.name
-    || (row.acts || []).find(a => a?.type === 'temptation-premiere')?.returnee?.name || null;
+    || (row.acts || []).find(a => a?.type === 'temptation-premiere')?.returnee?.name
+    || (row.acts || []).find(a => a?.type === 'clique-returnees')?.returnee?.name || null;
   ctx.hidden = new Set([...late, ...(heldGuest ? [heldGuest] : [])]);
   const out = [];
   let scenes = 0;
@@ -4272,6 +4322,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       // the offer comes once the crown is won, so it airs after the competition
       case 'double-or-nothing': ctx.pendingDon = act; break;
       case 'field-trip': flush(); ceremony(fieldTripScreen(act, ctx)); beatsOf(act); break;
+      case 'clique-returnees': flush(); for (const scr of cliqueReturneeScreen(act, ctx)) ceremony(scr); if (heldGuest) ctx.hidden.delete(heldGuest); ctx.hoh = act.returnee?.name || act.last || ctx.hoh; beatsOf(act); break;
+      case 'americas-coup': flush(); ceremony(americasCoupScreen(act, ctx)); beatsOf(act); break;
       case 'americas-prankster': flush(); ceremony(pranksterScreen(act, ctx)); beatsOf(act); break;
       case 'split-house': flush(); for (const scr of splitScreens(act, ctx, KIT)) ceremony(scr); ctx.split = act; beatsOf(act); break;
       // High Roller's money

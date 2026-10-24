@@ -1076,6 +1076,9 @@ export function simulateBBEpisode() {
     whacktivityDoors: whackEntry?.doors || 'auto',
     // BB21: everybody chose a door in week one, and one named door opened each week
     whacktivityOpen: whackEntry?.open || null,
+    // BB11: four returnees back the cliques, and the first HOH's clique brings one in
+    cliqueReturnees: !!((seasonConfig.twistSchedule || [])
+      .find(t => t && Number(t.episode) === epNum && t.type === 'bb-cliques')?.returnees),
     // The secret power competition authors its doors the same way.
     secretPowerDoors: spcEntry?.doors || 'auto',
     // Which package the audience is voting over. 'auto' runs the show's

@@ -457,6 +457,18 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Every temptation comes with a consequence.',
     },
   },
+  // BB11's audience grant.
+  'bb-americas-coup': {
+    id: 'bb-americas-coup', layer: 'scheduled', category: 'distribution',
+    timing: 'week-opening', duration: { weeks: 1 },
+    rules: { americasCoup: true },
+    acquisition: { channel: 'audience', secrecy: 'holder-secret' },
+    announcement: {
+      name: "America's Coup d'État",
+      rule: 'America has voted to give one of you a power: the Coup d\'État. Whoever holds it can overthrow a Head of Household\'s nominations at a veto meeting and name their own. You will not be told who.',
+      sting: 'Somebody in this room already knows it is them.',
+    },
+  },
   // BB21's two audience twists.
   'bb-americas-field-trip': {
     id: 'bb-americas-field-trip', layer: 'scheduled', category: 'nomination-power',
@@ -887,7 +899,7 @@ export const BB_TWIST_CONTRACTS = {
     acquisition: { channel: 'none', secrecy: 'public' },
     announcement: {
       name: 'The Cliques',
-      rule: 'The house has been sorted into four cliques — the Athletes, the Brains, the Populars and the Off-Beats. Nobody chose their clique and nobody may change it. For as long as the cliques last, whenever a houseguest wins Head of Household their ENTIRE clique is immune from eviction that week: four people safe instead of one, and three of them did nothing to earn it. When the house gets small the cliques dissolve, and everybody finds out at once whether they had friends or only a category.',
+      rule: 'The house has been sorted into four cliques — the Athletes, the Brains, the Populars and the Off-Beats. Nobody chose their clique and nobody may change it. For as long as the cliques last, whenever a houseguest wins Head of Household their ENTIRE clique is immune from eviction that week: four people safe instead of one, and three of them did nothing to earn it. The cliques do not last the whole season, and when they go everybody finds out at once whether they had friends or only a category.',
       sting: 'You did not pick these people, and this week they are the only thing standing between you and that chair.',
     },
   },

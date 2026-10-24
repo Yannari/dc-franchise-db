@@ -247,12 +247,11 @@ describe('Summer School, as a season', () => {
   // Every card the arc books must have a line in the primer that explains
   // it. An audit found three unexplained cards on High Roller's; this is
   // the same guard the other themes carry.
+  // BB11's cards (the theme is the real season since 2026-10-24)
   const EXPLAINED = {
     'bb-cliques': /sorted into four cliques/i,
-    'bb-have-nots': /Have-Not/i,
-    'bb-care-package': /audience hands one houseguest/i,
+    'bb-americas-coup': /America votes to give one houseguest the Coup/i,
     'bb-pandoras-box': /Pandora/i,
-    'bb-double-eviction': /double eviction/i,
   };
 
   it('is registered in the engine and offered in the config', () => {
@@ -284,26 +283,20 @@ describe('Summer School, as a season', () => {
     // a viewer watches a season of odd blocks and never learns why.
     expect(rules).toMatch(/(entire|every member of their|whole) clique is immune/i);
     expect(rules).toMatch(/four/i);
-    // And that it ends.
-    expect(rules).toMatch(/dissolve/i);
+    // And that it ends: BB11's cliques were disbanded before the week-four crown.
+    expect(rules).toMatch(/disbanded/i);
   });
 
   it('turns its register on the week the headings stop applying', () => {
-    // teams.js dissolves at a house of eight, and fromEnd:5 IS a house of
-    // eight — the turn has to land on the same night or the theme is saying
-    // one thing while the engine does another.
+    // BB11's cliques were disbanded before the week-four crown; the Yearbook turns that week
     const moods = theme().arc.filter(a => a.mood);
-    expect(moods.some(m => m.at?.fromEnd === 5), 'the turn is not on the dissolution')
-      .toBe(true);
-    expect(moods.some(m => typeof m.at?.frac === 'number'),
-      'no frac backstop for a short season').toBe(true);
+    expect(moods.map(m => m.at)).toEqual([{ week: 4 }]);
+    expect(theme().arc.find(a => a.book === 'bb-cliques')?.options?.returnees).toBe(true);
   });
 
-  it('carries the arc to the end of the season', () => {
-    const ends = theme().arc.filter(a => a.book && typeof a.at?.fromEnd === 'number')
-      .map(a => a.at.fromEnd);
-    expect(Math.min(...ends), 'nothing booked in the last fortnight')
-      .toBeLessThanOrEqual(2);
+  it("carries the arc to the end of the season: Pandora's Box at a final five and four", () => {
+    const ends = theme().arc.filter(a => a.book === 'bb-pandoras-box').map(a => a.at.fromEnd + 3);
+    expect(ends).toEqual([5, 4]);
   });
 });
 

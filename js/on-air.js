@@ -399,7 +399,10 @@ const get = url => fetch(url, { cache: 'no-store' }).then(r => (r.ok ? r.json() 
 /** Every airing show's raw entry: live-shows, or the single slot on an older worker. */
 export async function loadAiring() {
   const many = await get(`${API}/api/live-shows`);
-  if (many?.ok && Array.isArray(many.shows)) return many.shows;
+  // An EMPTY list is not "nothing on the air": right after the worker gains
+  // live_shows, no show has published into it yet, and the old single slot
+  // still holds the last one that did.
+  if (many?.ok && Array.isArray(many.shows) && many.shows.length) return many.shows;
   const one = await get(`${API}/api/live-season`);
   return one?.airing ? [one] : [];
 }

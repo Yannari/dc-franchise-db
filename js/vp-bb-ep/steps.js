@@ -2923,9 +2923,13 @@ function mysteryScreens(act, ctx) {
   const steps = [];
   for (const b of beats) {
     if (b.part === 'called') steps.push(...linesOf(b), { k: 'bb', t: 'Houseguests, a second Power of Veto has been won, and it will be used now.', rule: 1 });
-    if (b.part === 'used') steps.push({ k: 'beat', t: `${act.holder} uses it. ${listOf(removed)} ${removed.length > 1 ? 'come' : 'comes'} off the block.`, v2Save: removed[0], toast: ['THE MYSTERY VETO', '#f5c542'] }, ...linesOf(b));
+    // the block's badges follow the meeting (the user, 2026-10-24: "mystery veto suppose to remove the nom
+    // badge under the avatar... and add the nom to the replaced")
+    if (b.part === 'used') steps.push({ k: 'beat', t: `${act.holder} uses it. ${listOf(removed)} ${removed.length > 1 ? 'come' : 'comes'} off the block.`, v2Save: removed[0], toast: ['THE MYSTERY VETO', '#f5c542'],
+      nom: before.filter(n => !removed.includes(n)) }, ...linesOf(b));
     if (b.part === 'pair') steps.push(...linesOf(b));
-    if (b.part === 'chair') steps.push({ k: 'beat', t: `${listOf(seated)} ${seated.length > 1 ? 'go' : 'goes'} up instead.`, v2Rep: seated[0], toast: ['ONE MORE CHAIR', '#ff3355'] }, ...linesOf(b));
+    if (b.part === 'chair') steps.push({ k: 'beat', t: `${listOf(seated)} ${seated.length > 1 ? 'go' : 'goes'} up instead.`, v2Rep: seated[0], toast: ['ONE MORE CHAIR', '#ff3355'],
+      nom: [...before.filter(n => !removed.includes(n)), ...seated] }, ...linesOf(b));
     if (b.part === 'empty') steps.push({ k: 'beat', t: 'Nobody can fill the chair. It stays empty.', v2Kept: true }, ...linesOf(b));
   }
   return [{

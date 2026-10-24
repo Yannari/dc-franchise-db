@@ -8,7 +8,7 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { bbWeekSteps, REPLACED } from '../js/vp-bb-ep/steps.js';
-import { stageHtml } from '../js/vp-bb-ep/stage.js';
+import { stageHtml, ledgerAt } from '../js/vp-bb-ep/stage.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -55,6 +55,24 @@ describe('the Mystery Veto on the stepped stage', () => {
       expect(S.steps.find(st => st.v2Save)?.v2Save).toBe(cer.removed[0]);
       expect(S.steps.find(st => st.v2Rep)?.v2Rep || null).toBe(cer.seated[0] || null);
     }
+  });
+
+  // the user, 2026-10-24: "mystery veto suppose to remove the nom badge under the avatar... and add the
+  // nom to the replaced"
+  it('takes the Nom badge off the one saved and puts it on the one seated', () => {
+    let n = 0;
+    for (const { ep, cer } of WEEKS.filter(w => w.cer?.removed?.length)) {
+      const screens = bbWeekSteps(ep);
+      const si = screens.findIndex(s => s.id.startsWith('bb-veto2b'));
+      const S = screens[si];
+      const end = ledgerAt(screens, si, S.steps.length - 1);
+      for (const r of cer.removed) expect(end.nom, `week ${ep.num}`).not.toContain(r);
+      for (const s of cer.seated || []) expect(end.nom, `week ${ep.num}`).toContain(s);
+      const used = S.steps.findIndex(st => st.v2Save);
+      expect(ledgerAt(screens, si, used).nom).not.toContain(cer.removed[0]);
+      n++;
+    }
+    expect(n).toBeGreaterThan(0);
   });
 
   it('speaks with no holes in a line, and paints every step', () => {

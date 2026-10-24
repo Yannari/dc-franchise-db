@@ -9096,7 +9096,7 @@
       "slug": "paisley",
       "gender": "f",
       "sexuality": "straight",
-      "archetype": "hothead",
+      "archetype": "chaos-agent",
       "stats": {
         "physical": 6,
         "endurance": 6,
@@ -9104,8 +9104,8 @@
         "social": 5,
         "strategic": 6,
         "loyalty": 4,
-        "boldness": 9,
-        "intuition": 3,
+        "boldness": 7,
+        "intuition": 4,
         "temperament": 4
       },
       "voice": "Bright, peppy and supremely confident, a pageant smile and a podium voice. Says the wrong thing with total sincerity, explains it twice and never notices the room has gone silent. #proud#cruel #-quiet",

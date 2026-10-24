@@ -642,7 +642,7 @@ function messageRow(m, i, prev) {
   const clustered = prev && prev.authorSlug === m.authorSlug && (m.at - prev.at) < 4 * 60 * 1000;
   const stars = '★'.repeat(Math.max(0, Math.round(m.stars || 0)));
   return `
-  <li class="msg${clustered ? ' clustered' : ''}" data-idx="${i}">
+  <li class="msg${clustered ? ' clustered' : ''}${m.replyTo ? ' is-reply' : ''}" data-idx="${i}">
     ${avatar(m.authorSlug, m.author, 'msg-avatar')}
     <div>
       <div class="msg-head">
@@ -651,7 +651,10 @@ function messageRow(m, i, prev) {
         ${host && !host.native ? '<span class="visiting">Cross-format host</span>' : ''}
         <span class="msg-time">${stamp(m.at)}</span>
       </div>
-      <p class="msg-body">${linkMentions(m.text, m.subject)}</p>
+      <p class="msg-body">${m.replyTo
+    // a host answering a host (js/social/green-room.js): the name they answer, set off like a reply
+    ? linkMentions(m.text, m.subject).replace(/^@([^\s<]+)/, '<span class="msg-at">@$1</span>')
+    : linkMentions(m.text, m.subject)}</p>
       <div class="msg-foot">
         <button type="button" data-like="${esc(m.id)}" aria-label="Like, ${m.likes} likes">♥ ${m.likes}</button>
         <span>${m.commentCount} comments</span>

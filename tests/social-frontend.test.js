@@ -139,7 +139,14 @@ describe('the hosted room', () => {
   it('has no tomatoes and no ratio', () => {
     // A pile-on belongs on Birdie. This room is people who know each other.
     expect(messages.every(m => m.tomatoes === undefined)).toBe(true);
-    expect(messages.every(m => m.replyTo === undefined)).toBe(true);
+    // Hosts answer each other now (js/social/green-room.js; the user, 2026-10-24: "like they're not even
+    // human talking"), which is a conversation, not a ratio: a host answers a host, and no message
+    // draws more than two answers.
+    for (const m of messages.filter(x => x.replyTo)) {
+      const to = messages.find(x => x.id === m.replyTo);
+      expect(to?.authorType).toBe('host');
+      expect(messages.filter(x => x.replyTo === m.replyTo).length).toBeLessThanOrEqual(2);
+    }
   });
 
   it('does not have two hosts say the same sentence', () => {

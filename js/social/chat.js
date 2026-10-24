@@ -19,6 +19,8 @@ import { eventLabel, words } from './adapter.js';
 import { pickRotating } from './freshness.js';
 import { TRAIT_TAKES, assignTraits } from './voices.js';
 import { packFor } from './packs/index.js';
+import { factOf, roleOf, deliveryOf, reactPool, replyPool } from './green-room.js';
+import { placeWords } from './humanize.js';
 
 /** Deterministic rng — the same night must not say different things on reload. */
 function seeded(seed) {
@@ -718,7 +720,18 @@ export function buildChatMessages(events, speakers, {
   const worth = events.filter(e => e.kind !== 'episode-aired' || events.length === 1);
   const covered = worth.length > 8 ? worth.filter((_, i) => i % 2 === 0) : worth;
 
+  // what each host has said in the green room's own voice, so a night does not repeat a construction
+  const usedVoice = new Map();
+  const voiceDraw = (pool, key) => {
+    if (!usedVoice.has(key)) usedVoice.set(key, new Set());
+    return pickFresh(pool, rng, usedVoice.get(key), episode, key);
+  };
+
   for (const ev of covered.length ? covered : events) {
+    // the moment itself, said in words: the first host on it says it, the next ones answer them
+    const fact = factOf(ev, w);
+    const role = roleOf(ev);
+    let prevOnMoment = null, opener = null;
     // Rotate a seeded window through the panel. `slice(0, n)` made a seven-host
     // night functionally a two-host room forever; fame picked the panel, then
     // array position silently prevented most of it from speaking.
@@ -790,6 +803,25 @@ export function buildChatMessages(events, speakers, {
       for (let tries = 0; tries < 3 && template === lastTemplate; tries++) template = draw();
       lastTemplate = template;
       let line = template({ s: subject, w, k: eventLabel(ev.kind, format) });
+      // ── the conversation (green-room.js) ──
+      // A host first on a moment says what happened, in their own delivery; a host after them answers
+      // them by name, agreeing or not (a different read of the game disagrees more often).
+      const voice = deliveryOf(host, lens);
+      let talked = null;
+      // whom a host answers: mostly the one who opened the moment, now and then the last word on it
+      let answering = null;
+      if (prevOnMoment && rng() < 0.65) {
+        answering = prevOnMoment.replyTo && opener && rng() < 0.6 ? opener : prevOnMoment;
+        const differs = answering.lens !== lens;
+        const stance = rng() < (differs ? 0.6 : 0.3) ? 'disagree' : 'agree';
+        const said = replyPool(voice, stance, role);
+        if (said.length) talked = voiceDraw(said, `reply:${voice}:${stance}:${role}`)({ p: answering.author, s: subject });
+        else answering = null;
+      } else if (!prevOnMoment && fact) {
+        const said = reactPool(voice, role);
+        if (said.length) talked = voiceDraw(said, `react:${voice}:${role}`)({ f: fact, s: subject });
+      }
+      if (talked) line = placeWords(talked, w.home);
 
       // Records should sharpen an occasional opinion, not introduce every post
       // like an alumni panelist reading their own biography.
@@ -797,7 +829,7 @@ export function buildChatMessages(events, speakers, {
       // "sat on a jury", "survived plenty of votes" — and on a packed show
       // that is another show's vocabulary tacked onto a castle take.
       const creds = pack ? [] : credential(host, w);
-      if (!useCharacter && !useTrait && creds.length && rng() < 0.14) {
+      if (!talked && !useCharacter && !useTrait && creds.length && rng() < 0.14) {
         line = withCredential(line, pickFresh(creds, rng, usedCreds, episode, host.slug), rng);
       }
 
@@ -815,19 +847,34 @@ export function buildChatMessages(events, speakers, {
         subject: ev.subject || null,
         eventLabel: eventLabel(ev.kind, format),
         lens,
-        trait: useTrait ? trait : null,
-        // Kept for the post-sort de-duplication below, then removed.
-        _pool: pool, _poolKey: poolKey,
+        trait: talked ? voice : useTrait ? trait : null,
+        // Kept for the post-sort de-duplication below, then removed (a green-room line has no pool to redraw from)
+        _pool: talked ? null : pool, _poolKey: poolKey,
+        ...(talked && answering ? { replyTo: answering.id } : {}),
+        // the conversation it belongs to, so the clock sort cannot split it (removed below)
+        _thread: answering ? (answering._thread || answering.id) : null,
         text: line,
-        at: Math.max(0, ev.at + Math.round((rng() - 0.3) * 4 * 60 * 1000)),
+        // an answer comes after what it answers
+        at: talked && answering ? Math.max(prevOnMoment.at, answering.at) + 20000 + Math.round(rng() * 70000)
+          : Math.max(0, ev.at + Math.round((rng() - 0.3) * 4 * 60 * 1000)),
         likes: 40 + Math.floor(rng() * 400) + host.stars * 60,
         comments: [],
         hostReplied: false,
       });
+      prevOnMoment = out[out.length - 1];
+      if (!opener) opener = prevOnMoment;
     }
   }
 
   out.sort((a, b) => a.at - b.at);
+  // a conversation reads together: several moments can share a minute, and sorted by the clock alone
+  // their answers interleaved, so "@Julia ..." landed under somebody else's moment
+  {
+    const thread = m => m._thread || m.id;
+    const starts = new Map();
+    for (const m of out) if (!starts.has(thread(m))) starts.set(thread(m), m.at);
+    out.sort((a, b) => starts.get(thread(a)) - starts.get(thread(b)) || a.at - b.at);
+  }
 
   // ── the sort is what makes two lines adjacent ──
   //
@@ -841,7 +888,7 @@ export function buildChatMessages(events, speakers, {
   // people is still the same sentence, and that is how it reads.
   const shape = t => String(t).replace(/[A-Z][a-z]+/g, 'X');
   for (let i = 1; i < out.length; i++) {
-    if (shape(out[i].text) !== shape(out[i - 1].text)) continue;
+    if (!out[i]._pool || shape(out[i].text) !== shape(out[i - 1].text)) continue;
     const w2 = words(format);
     for (let tries = 0; tries < 4; tries++) {
       const t = pickFresh(out[i]._pool, rng, usedByKind.get(out[i]._poolKey),
@@ -851,7 +898,7 @@ export function buildChatMessages(events, speakers, {
       if (shape(next) !== shape(out[i - 1].text)) { out[i].text = next; break; }
     }
   }
-  for (const m of out) { delete m._pool; delete m._poolKey; }
+  for (const m of out) { delete m._pool; delete m._poolKey; delete m._thread; }
 
   // ── members answer underneath ──
   //

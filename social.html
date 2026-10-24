@@ -253,6 +253,8 @@
 
   .msg{ display:grid; grid-template-columns:56px minmax(0,1fr); gap:14px; padding:16px 20px 12px; }
   .msg.clustered{ padding-top:2px; }
+  .msg.is-reply{ margin-left:44px; padding-top:8px; border-left:3px solid var(--bottle); }
+  .msg-at{ font-weight:700; color:var(--gold); }
   .msg.clustered .msg-avatar, .msg.clustered .msg-head{ visibility:hidden; height:0; overflow:hidden; }
   .msg-avatar{ width:56px; height:56px; border-radius:12px; object-fit:cover; border:2px solid var(--bottle); background:var(--cream); display:grid; place-items:center; font-weight:700; }
   .msg-head{ display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; }

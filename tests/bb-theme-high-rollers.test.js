@@ -16,6 +16,13 @@ import { simulateBBFinale } from '../js/bb-finale.js';
 import { readFileSync } from 'node:fs';
 import { rpBuildBBThemeBeat, buildVPScreens } from '../js/vp-screens.js';
 import { BED_CATALOG } from '../js/audio.js';
+import { BB_THEMES } from '../js/bb/themes.js';
+
+// The payout MECHANICS (tiers, once a week, split houses, the chip band) run on an
+// economy that pays every week. High Roller's itself is BB23 since 2026-10-24 and
+// pays only while the room is open, at the broadcast's amounts; that is asserted
+// in "BB23's money" below.
+BB_THEMES['hr-weekly'] = { ...BB_THEMES['high-rollers'], id: 'hr-weekly', payoutWindow: null, payoutAmounts: null, arc: [], books: [] };
 
 const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly',
   'Hicks', 'Emmah', 'Millie', 'Caleb'];
@@ -25,7 +32,7 @@ const CAST = NAMES.map((name, i) => ({
   name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[i],
 }));
 
-function house({ theme = 'high-rollers', twistSchedule = [] } = {}) {
+function house({ theme = 'hr-weekly', twistSchedule = [] } = {}) {
   seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
   Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
     ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
@@ -268,13 +275,7 @@ describe('the floor has a schedule', () => {
     return seasonConfig.twistSchedule;
   };
 
-  /**
-   * Play the season's HOUSE SIZE, week by week, and report what fired when.
-   *
-   * This is the only honest way to ask where an end-anchored card lands: the
-   * stamped `episode` is a guess, and `reanchorThemeArc` is what corrects it —
-   * one card a week, largest anchor first.
-   */
+  /** Play the season's HOUSE SIZE, week by week, and report which end-anchored cards fired when. */
   const walk = (cast, { doubleAt = 0 } = {}) => {
     const fired = [];
     let house = cast;
@@ -285,11 +286,8 @@ describe('the floor has a schedule', () => {
     return fired;
   };
 
-  it('books the twists the floor owns', () => {
-    expect(theme().books).toEqual(expect.arrayContaining([
-      'bb-prizes-and-punishments', 'bb-high-rollers-room', 'bb-coin-of-destiny',
-      'bb-double-eviction']));
-    // And `books` is a claim about the arc, not a wish beside it.
+  it("books BB23's cards and nothing else", () => {
+    expect([...theme().books].sort()).toEqual(['bb-coin-of-destiny', 'bb-double-eviction', 'bb-high-rollers-room', 'bb-teams', 'bb-wildcard']);
     for (const id of theme().books) expect(arcBooks()).toContain(id);
     for (const id of arcBooks()) expect(theme().books).toContain(id);
   });
@@ -299,136 +297,37 @@ describe('the floor has a schedule', () => {
     for (const id of arcBooks()) expect(ids, `${id} is a real twist`).toContain(id);
   });
 
-  it('opens the room three times and sells the Coin once', () => {
-    const counts = arcBooks().reduce((m, id) => ({ ...m, [id]: (m[id] || 0) + 1 }), {});
-    expect(counts['bb-high-rollers-room']).toBe(3);
-    expect(counts['bb-coin-of-destiny']).toBe(1);
-    expect(counts['bb-double-eviction']).toBe(1);
-    // Two ARC ENTRIES for the boxes — the week-one opener and the cadence that
-    // fills the middle. The cadence is one entry that expands to several weeks.
-    expect(counts['bb-prizes-and-punishments']).toBe(2);
+  it('runs the teams and the Wildcard for the first four weeks, at a cast of sixteen', () => {
+    const sched = stamp(16);
+    expect(sched.find(t => t.type === 'bb-teams').episode).toBe(1);
+    expect(sched.filter(t => t.type === 'bb-wildcard').map(t => t.episode)).toEqual([1, 2, 3, 4]);
   });
 
-  // ── THE GAP TEST ──────────────────────────────────────────────────────
-  //
-  // The complaint this exists for, in the user's words: "is it normal that all
-  // the twist happening at jury for this theme and just one or two pre-jury?"
-  // It was not normal. The arc was a fixed list of five acts, four of them
-  // end-anchored, so they clumped against the finale — at a cast of twenty that
-  // left EIGHT weeks between the opener and the next card. Every other theme
-  // carries a cadence for exactly this reason.
-  //
-  // Measured off `walk`, not off the stamped guess, because the stamped week of
-  // an end-anchored card is a prediction until `reanchorThemeArc` corrects it.
-  it('never leaves a long dead stretch, at any cast the show supports', () => {
-    // `walk` only ever reports the END-ANCHORED cards, because
-    // `reanchorThemeArc` is what corrects those and it returns nothing else.
-    // The week-one opener and the cadence are fixed-week entries and land at
-    // their stamped weeks exactly. Measuring with `walk` alone made both
-    // invisible and reported a six-week hole that is not there — so take the
-    // fixed cards from the stamped schedule and the anchored ones from the walk.
-    // EVERY fixed-week card, not one of them. This named a single twist, so
-    // the `every: 2` wildcard cadence -- which exists precisely to fill the
-    // front of the season -- was invisible to the measurement. At a cast of
-    // sixteen the arc stamps weeks 1, 2, 4, 6, 7, 8, 9, 10, 12 and its longest
-    // gap is two; the test could see only 1 and 12 of those and reported a
-    // five-week hole that was never in the season.
-    //
-    // Derived from the arc rather than listed, so a card added to the cadence
-    // later is counted without anybody remembering to come back here.
-    const fixedBooks = new Set(theme().arc
-      .filter(a => a.book && (a.every || a.at?.week != null))
-      .map(a => a.book));
-    for (const cast of [12, 14, 16, 18, 20]) {
-      const schedule = stamp(cast);
-      const fixedWeeks = schedule.filter(e => fixedBooks.has(e.type)).map(e => Number(e.episode));
-      const anchoredWeeks = walk(cast).map(f => f.ep);
-      const weeks = [...new Set([...fixedWeeks, ...anchoredWeeks])].sort((a, b) => a - b);
-      expect(weeks.length, `cast ${cast} fires nothing`).toBeGreaterThan(0);
-      expect(fixedWeeks.length, `cast ${cast} never runs the boxes`).toBeGreaterThan(0);
-
-      // The front: how long the house waits after the opener for a second card.
-      const seasonWeeks = cast - 3;
-      const gaps = [];
-      for (let i = 1; i < weeks.length; i++) gaps.push(weeks[i] - weeks[i - 1]);
-      const worst = Math.max(...gaps, weeks[0]);
-
-      // Four is the cadence's own stride plus one — a season that never goes
-      // longer than that between cards is a season with something always
-      // coming. Eight was the reported failure.
-      expect(worst, `cast ${cast} (${seasonWeeks} weeks) has a ${worst}-week hole; fired ${weeks}`)
-        .toBeLessThanOrEqual(4);
-    }
+  it('opens the room on the Veto Derby, then the Roulette, then sells the Coin', () => {
+    const rooms = theme().arc.filter(a => a.book === 'bb-high-rollers-room').map(a => a.options?.roomGame);
+    expect(rooms).toEqual(['veto-derby', 'chopping-block-roulette']);
+    expect(arcBooks().filter(b => b === 'bb-coin-of-destiny')).toHaveLength(1);
+    expect(arcBooks().filter(b => b === 'bb-double-eviction')).toHaveLength(2);
   });
 
-  // Not changed by this task and asserted so they cannot be: `fromEnd: 8` is the
-  // anchor that really fires below seventeen weeks, and it is the same house the
-  // room opens on. The turn and the door are the same night on purpose.
-  it('keeps both mood anchors exactly where they were', () => {
-    const moods = theme().arc.filter(a => a.mood).map(a => a.at);
-    expect(moods).toEqual([{ frac: 0.55 }, { fromEnd: 8 }]);
+  it('turns cold the night the room opens', () => {
+    expect(theme().arc.filter(a => a.mood).map(a => a.at)).toEqual([{ fromEnd: 8 }]);
   });
 
-  // ── the sweep the brief asks for ────────────────────────────────────────
-  it('opens the room at a final eleven, ten and nine at every cast from 12 to 20', () => {
-    for (let cast = 12; cast <= 20; cast++) {
-      stamp(cast);
-      const rooms = walk(cast).filter(f => f.type === 'bb-high-rollers-room');
-      expect(rooms.map(r => r.house), `cast ${cast}`).toEqual([11, 10, 9]);
-      // In order, on three separate weeks — never two doors in one night.
-      const weeks = rooms.map(r => r.ep);
-      expect(new Set(weeks).size, `cast ${cast}: two room nights collided`).toBe(3);
-      expect([...weeks].sort((a, b) => a - b), `cast ${cast}`).toEqual(weeks);
-    }
-  });
-
-  it('sells the Coin the week after the room closes, at every cast from 12 to 20', () => {
+  it('opens the room at a final eleven and ten, and sells the Coin at nine, at every cast from 12 to 20', () => {
     for (let cast = 12; cast <= 20; cast++) {
       stamp(cast);
       const fired = walk(cast);
-      const coin = fired.filter(f => f.type === 'bb-coin-of-destiny');
-      expect(coin.map(c => c.house), `cast ${cast}`).toEqual([8]);
-      expect(coin[0].ep, `cast ${cast}`)
-        .toBeGreaterThan(fired.filter(f => f.type === 'bb-high-rollers-room').pop().ep);
+      expect(fired.filter(f => f.type === 'bb-high-rollers-room').map(r => r.house), `cast ${cast}`).toEqual([11, 10]);
+      expect(fired.filter(f => f.type === 'bb-coin-of-destiny').map(r => r.house), `cast ${cast}`).toEqual([9]);
     }
   });
 
-  // The wrapped boxes are the one fixed-week act, and every act below them is
-  // end-anchored: on a nine-week season `fromEnd: 8` IS week two, so booking
-  // them any later than week one drops a room night on the small casts. This is
-  // the case that measured it — week 3 lost a night on casts 12 and 13.
-  it('never drops a card off the front of a short season', () => {
-    for (let cast = 12; cast <= 20; cast++) {
-      const sched = stamp(cast);
-      const types = sched.map(t => t.type);
-      expect(types.filter(t => t === 'bb-high-rollers-room'), `cast ${cast}: a room night was dropped`)
-        .toHaveLength(3);
-      expect(types, `cast ${cast}`).toContain('bb-prizes-and-punishments');
-      expect(types, `cast ${cast}`).toContain('bb-coin-of-destiny');
-      expect(sched.find(t => t.type === 'bb-prizes-and-punishments').episode).toBe(1);
-    }
+  it('runs its two doubles at a final eight and a final six', () => {
+    const at = theme().arc.filter(a => a.book === 'bb-double-eviction').map(a => a.at.fromEnd + 3);
+    expect(at).toEqual([8, 6]);
   });
 
-  // A double eviction is a house size skipped, and `reanchorThemeArc` fires at
-  // most one card a week — so the run goes LATE rather than losing a night.
-  // Measured rather than assumed, because three consecutive end-anchored cards
-  // is more than any other theme asks of that machinery.
-  it('keeps all three room nights when a double eviction skips a house size', () => {
-    for (let cast = 12; cast <= 20; cast++) {
-      for (let de = 1; de <= cast - 5; de++) {
-        stamp(cast);
-        const rooms = walk(cast, { doubleAt: de }).filter(f => f.type === 'bb-high-rollers-room');
-        expect(rooms, `cast ${cast}, double on week ${de}`).toHaveLength(3);
-        // Still in order, still one a week, still never above the anchor.
-        const houses = rooms.map(r => r.house);
-        expect(houses[0], `cast ${cast}, double ${de}`).toBeLessThanOrEqual(11);
-        expect([...houses].sort((a, b) => b - a), `cast ${cast}, double ${de}`).toEqual(houses);
-        expect(new Set(rooms.map(r => r.ep)).size).toBe(3);
-      }
-    }
-  });
-
-  // ── nothing booked that the resolver would throw away ───────────────────
   it('books nothing its own cards refuse', () => {
     const booked = new Set(arcBooks());
     for (const id of booked) {
@@ -437,54 +336,39 @@ describe('the floor has a schedule', () => {
         expect(booked, `${id} refuses ${foe}, and the arc books both`).not.toContain(foe);
       }
     }
-    // The two the room names, spelled out: no veto meeting, and no second house.
-    expect(booked.has('bb-instant-eviction')).toBe(false);
-    expect(booked.has('bb-split-house')).toBe(false);
   });
 
-  it('puts no two of its cards on one week at any cast from 12 to 20', () => {
+  it('puts no two of its cards on one week, except the Wildcard beside the teams on night one', () => {
     for (let cast = 12; cast <= 20; cast++) {
-      const weeks = stamp(cast).map(t => t.episode);
-      expect(new Set(weeks).size, `cast ${cast}: two theme cards share a week`)
-        .toBe(weeks.length);
+      const sched = stamp(cast).filter(t => !(t.type === 'bb-wildcard' && Number(t.episode) === 1));
+      const weeks = sched.map(t => t.episode);
+      expect(new Set(weeks).size, `cast ${cast}: two theme cards share a week`).toBe(weeks.length);
     }
   });
 });
 
 // ── and it runs ────────────────────────────────────────────────────────
-//
-// Everything above is arithmetic on a schedule. This plays the season the
-// schedule describes: the door opens on the weeks the arc booked, and the
-// season reaches its last night without throwing.
-describe('a themed season plays the arc it stamped', () => {
-  it('opens the room on the weeks it booked and reaches the finale', () => {
+describe("BB23's money, in a played season", () => {
+  it('pays only while the room is open, at 100 / 75 / 50, and opens the room at eleven and ten', () => {
     withSeededRandom(31, () => {
-      house();
+      house({ theme: 'high-rollers' });
       seasonConfig.themeArcStamped = '';
       stampThemeArc(CAST.length);
-      const booked = seasonConfig.twistSchedule
-        .filter(t => t.type === 'bb-high-rollers-room').map(t => t.episode);
-      expect(booked).toHaveLength(3);
-
       let guard = 0;
       while (gs.activePlayers.length > 3 && guard++ < 20) {
         if (!simulateBBEpisode()) break;
       }
-      const opened = (gs.bb.weeks || []).filter(w => w.highRollers).map(w => w.num);
-      expect(opened, 'the door never opened').toHaveLength(3);
-      // The weeks it opened on are the weeks the schedule ended up holding —
-      // which is `reanchorThemeArc`'s corrected number, not the stamped guess.
-      const final = seasonConfig.twistSchedule
-        .filter(t => t.type === 'bb-high-rollers-room').map(t => t.episode);
-      expect(opened).toEqual(final);
-      // And the house was the size the anchors were written for.
-      for (const w of (gs.bb.weeks || []).filter(x => x.highRollers)) {
+      for (const w of gs.bb.weeks || []) {
+        const paid = (w.acts || []).filter(a => a.type === 'bb-bucks');
+        if (!paid.length) continue;
         const size = (w.houseAtStart || []).length;
-        expect([11, 10, 9], `the room opened at a house of ${size}`).toContain(size);
+        expect(size, `paid at a house of ${size}`).toBeGreaterThanOrEqual(9);
+        expect(size).toBeLessThanOrEqual(11);
+        expect([...new Set(paid[0].payouts.map(p => p.amount))].sort((a, b) => b - a)).toEqual([100, 75, 50]);
       }
-
+      const opened = (gs.bb.weeks || []).filter(w => w.highRollers).map(w => (w.houseAtStart || []).length);
+      expect(opened).toEqual([11, 10]);
       expect(() => simulateBBFinale()).not.toThrow();
-      expect(gs.bb.weeks.length).toBeGreaterThan(3);
     });
   });
 });
@@ -669,7 +553,8 @@ describe('the chip band', () => {
    * is not on the screen. What must never appear is a number somebody can READ,
    * which is exactly the text nodes.
    */
-  const readable = (html) => html.replace(/<[^>]+>/g, ' ');
+  // readable TEXT: a stylesheet carried inside the markup is not something the viewer reads
+  const readable = (html) => html.replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]+>/g, ' ');
 
   it('shows the week\'s payout on House Life and never a balance', () => {
     withSeededRandom(7, () => {

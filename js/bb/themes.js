@@ -177,9 +177,11 @@ export function expandArc(arc, weeks) {
     if (!act) continue;
     if (!act.every) { out.push(act); continue; }
     const from = Math.max(1, Number(act.from ?? 1));
-    const stop = act.untilFromEnd != null
+    let stop = act.untilFromEnd != null
       ? resolveArcWeek({ fromEnd: act.untilFromEnd }, weeks)
       : Number(weeks) + 1;
+    // ...or at a fixed week (BB23's Wildcard ran while the teams did: weeks one to four)
+    if (act.untilWeek != null) stop = Math.min(stop, Number(act.untilWeek) + 1);
     for (let w = from; w < stop && w <= weeks; w += Number(act.every)) {
       out.push({ ...act, every: undefined, at: { week: w } });
     }

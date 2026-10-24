@@ -202,8 +202,11 @@ function drawWeighted(pool, n, rng) {
  *
  * @returns {object|null} the act, or null in a house too small for tiers
  */
-export function awardWeeklyBucks({ week, house = [],
+export function awardWeeklyBucks({ week, house = [], amounts = null,
   rng = stableRng('bb-bucks', gs?.bb?.seasonSalt || 0, week?.num || 0) } = {}) {
+  // a theme may pay the broadcast's own figures ([top, middle, floor]: BB23 paid 100 / 75 / 50)
+  const TIERS = amounts ? PAYOUT_TIERS.map((t, i) => ({ ...t, amount: amounts[i] ?? t.amount })) : PAYOUT_TIERS;
+  const FLOOR_NOW = amounts ? { ...FLOOR, amount: amounts[PAYOUT_TIERS.length] ?? FLOOR.amount } : FLOOR;
   const room = house.filter(Boolean);
   // Seven is the smallest house the canon tiers describe. At six the "top
   // three" and the "next three" are the entire room, nobody stands on the
@@ -212,7 +215,7 @@ export function awardWeeklyBucks({ week, house = [],
 
   const payouts = [];
   let pool = [...room];
-  for (const tier of PAYOUT_TIERS) {
+  for (const tier of TIERS) {
     const won = drawWeighted(pool, tier.count, rng);
     for (const name of won) {
       credit(name, tier.amount);
@@ -221,8 +224,8 @@ export function awardWeeklyBucks({ week, house = [],
     pool = pool.filter(n => !won.includes(n));
   }
   for (const name of pool) {
-    credit(name, FLOOR.amount);
-    payouts.push({ name, amount: FLOOR.amount, tier: FLOOR.tier });
+    credit(name, FLOOR_NOW.amount);
+    payouts.push({ name, amount: FLOOR_NOW.amount, tier: FLOOR_NOW.tier });
   }
 
   // Two beats, not fifteen: the transcript wants the shape of the vote, not a

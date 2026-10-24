@@ -538,8 +538,9 @@ export function cliqueScreens(act, ctx, kit) {
   if (!teams.length) return [];
   const over = act.type === 'teams-dissolved';
   const say = act.secret ? 'beat' : 'bb';
+  const teamsWord = act.style === 'captains' ? 'teams' : 'cliques';
   const steps = over ? [
-    { k: 'bb', t: 'Houseguests, the cliques are over. From now on, no group is safe because one of its own is in charge.', toast: ['THE CLIQUES ARE OVER', '#ff3355'], shake: true },
+    { k: 'bb', t: `Houseguests, the ${teamsWord} are over. From now on, no group is safe because one of its own is in charge.`, toast: [`THE ${teamsWord.toUpperCase()} ARE OVER`, '#ff3355'], shake: true },
     ...beatSteps(act, kit),
   ] : [
     { k: say, t: act.secret ? 'The house is sorted into cliques, and nobody in it is told.' : 'Houseguests, this summer you have been sorted into cliques.', rule: 1 },
@@ -552,7 +553,7 @@ export function cliqueScreens(act, ctx, kit) {
   const here = kit.houseNow(ctx);
   return [{
     id: over ? 'bb-cliques-end-v' : 'bb-cliques-v', kind: 'cliques', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '10:00',
-    kicker: 'Cam 04 · Living room', title: over ? 'Cliques Over' : 'The Cliques', label: over ? 'Cliques Over' : 'The Cliques', sub: over ? 'Every houseguest for themselves' : 'Sorted, not chosen',
+    kicker: 'Cam 04 · Living room', title: over ? (act.style === 'captains' ? 'Teams Over' : 'Cliques Over') : 'The Cliques', label: over ? (act.style === 'captains' ? 'Teams Over' : 'Cliques Over') : 'The Cliques', sub: over ? 'Every houseguest for themselves' : 'Sorted, not chosen',
     seated: kit.seatLiving([], here.filter(n => n !== ctx.hoh), ctx.hoh),
     ...(over ? {} : { rules: [['SORTED', 'four cliques, not chosen'], ['COVERED', 'a clique is safe while one of its own is HOH']], rulesTitle: 'THE CLIQUES · HOW IT WORKS' }), steps,
   }];

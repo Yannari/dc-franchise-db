@@ -457,6 +457,18 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Every temptation comes with a consequence.',
     },
   },
+  // BB23's teams: captains, a draft, and a team's safety for the first four weeks.
+  'bb-teams': {
+    id: 'bb-teams', layer: 'season', category: 'power-structure',
+    timing: 'season-opening', duration: { weeks: null },
+    rules: { assignedTeams: 'captains' },
+    acquisition: { channel: 'none', secrecy: 'public' },
+    announcement: {
+      name: 'Teams of Four',
+      rule: 'You will move in four at a time, and each group will compete. The four winners are Team Captains, and each will pick three teammates. Until the end of week four, whoever wins Head of Household keeps their whole team safe.',
+      sting: 'You did not choose your team. Your team chose you, or did not.',
+    },
+  },
   // BB26's week nine: JANKIE World and the JANKIE Power of Veto.
   'bb-jankie-world': {
     id: 'bb-jankie-world', layer: 'scheduled', category: 'veto',

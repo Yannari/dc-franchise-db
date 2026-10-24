@@ -185,6 +185,61 @@ export function assignTeams({ house = [], rng = Math.random } = {}) {
   return { teams: allTeams(), assignments: teams };
 }
 
+// ── BB23: FOUR CAPTAINS, FOUR TEAMS OF FOUR ─────────────────────────────
+//
+// "During the live move-in, houseguests will enter in groups of four and
+// compete for power. The winners of each group will become Team Captains and
+// will be shown a 90-second intro package of the remaining houseguests and
+// choose their three teammates, creating four teams of four, each with two men
+// and two women. Every week, whoever wins HOH will also earn safety for their
+// entire team. The teams will last for the first four weeks of the game."
+// The four were the Kings, the Queens, the Jokers and the Aces.
+export const BB23_TEAMS = Object.freeze(['Kings', 'Queens', 'Jokers', 'Aces']);
+const genderOf = n => (players || []).find(p => p.name === n)?.gender || null;
+
+export function assignCaptainTeams({ house = [], rng = Math.random, readBond = () => 0 } = {}) {
+  const room = (house || []).filter(Boolean);
+  if (room.length < 8) return null;
+  const nTeams = Math.min(4, Math.floor(room.length / 2));
+  // the move-in groups, in the order they walked in, and a competition in each
+  const size = Math.ceil(room.length / nTeams);
+  const groups = Array.from({ length: nTeams }, (_, i) => room.slice(i * size, (i + 1) * size)).filter(g => g.length);
+  const st = (n, k) => Number(pStats(n)?.[k]) || 5;
+  const groupComps = groups.map(g => {
+    const scores = Object.fromEntries(g.map(n => [n, Math.round((st(n, 'physical') * 0.4 + st(n, 'endurance') * 0.3 + st(n, 'mental') * 0.3 + rng() * 4) * 10) / 10]));
+    const order = g.slice().sort((a, b) => scores[b] - scores[a]);
+    return { players: g, scores, order, captain: order[0] };
+  });
+  const captains = groupComps.map(c => c.captain);
+  // The draft, round by round: a captain picks on a ninety-second first impression, and must end
+  // with two men and two women where the house allows it.
+  const teams = captains.map((c, i) => ({ id: `team-${i + 1}`, name: BB23_TEAMS[i] || `Team ${i + 1}`, captain: c, members: [c], picks: [] }));
+  let pool = room.filter(n => !captains.includes(n));
+  const cap = Math.ceil(room.length / teams.length);
+  const need = (t, g) => {
+    const half = Math.ceil(cap / 2);
+    return t.members.filter(m => genderOf(m) === g).length < half;
+  };
+  const appeal = (c, n) => readBond(c, n) * 0.5 + st(n, 'social') * 0.25 + st(n, 'physical') * 0.2 + rng() * 1.5;
+  for (let round = 0; pool.length && round < cap; round++) {
+    for (const t of teams) {
+      if (!pool.length || t.members.length >= cap) continue;
+      const fits = pool.filter(n => { const g = genderOf(n); return !g || (g !== 'm' && g !== 'f') || need(t, g); });
+      const from = fits.length ? fits : pool;
+      const pick = from.slice().sort((a, b) => appeal(t.captain, b) - appeal(t.captain, a))[0];
+      t.members.push(pick); t.picks.push(pick);
+      pool = pool.filter(n => n !== pick);
+    }
+  }
+  for (const n of pool) teams.slice().sort((a, b) => a.members.length - b.members.length)[0].members.push(n);
+  if (!gs.bb) gs.bb = {};
+  gs.bb.teams = teams.map(t => ({ id: t.id, name: t.name, blurb: '', captain: t.captain, members: [...t.members] }));
+  gs.bb.teamsDissolved = false;
+  gs.bb.teamStyle = 'captains';
+  gs.bb.teamsUntilWeek = 4;
+  return { teams: allTeams(), captains, groupComps, draft: teams.map(t => ({ name: t.name, captain: t.captain, picks: [...t.picks] })) };
+}
+
 /**
  * Who the Head of Household's team protects this week.
  *
@@ -217,6 +272,15 @@ export function dissolveTeams(week) {
   if (!store().length || teamsDissolved()) return null;
   gs.bb.teamsDissolved = true;
   const teams = allTeams();
+  const captains = gs.bb.teamStyle === 'captains';
+  if (captains) {
+    return {
+      type: 'teams-dissolved', style: 'captains', week: week?.num || 0, secret: false,
+      teams: teams.map(t => ({ id: t.id, name: t.name, members: [...t.members] })),
+      beats: [{ text: 'The Kings, the Queens, the Jokers and the Aces are just names now. Whoever spent four weeks safe because of a teammate is on their own.',
+        players: [], badgeText: 'THE TEAMS ARE OVER', badgeClass: 'red' }],
+    };
+  }
   return {
     type: 'teams-dissolved', week: week?.num || 0, secret: false,
     teams: teams.map(t => ({ id: t.id, name: t.name, members: [...t.members] })),

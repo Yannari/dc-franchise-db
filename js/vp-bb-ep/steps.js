@@ -1886,12 +1886,18 @@ function wildcardScreens(act, ctx) {
   const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
   const beats = act.beats || [];
   const drawnN = (act.players || []).length;
-  const steps = [
+  const byTeam = (act.teamPicks || []).length > 0;
+  const steps = byTeam ? [
+    { k: 'bb', t: `Houseguests, it is time for the Wildcard Competition. The ${word(drawnN)} teams that are not safe this week will each send one player.`, rule: 1 },
+  ] : [
     { k: 'bb', t: `Houseguests, it is time for the Wildcard. I will draw ${word(drawnN)} names from this hat. Nobody chooses to play.`, rule: 1 },
-    { k: 'bb', t: 'The houseguests drawn will play one puzzle. The best score wins.', rule: 2 },
+    { k: 'bb', t: byTeam ? 'They will play one puzzle. The best score wins.' : 'The houseguests drawn will play one puzzle. The best score wins.', rule: 2 },
     { k: 'bb', t: 'The winner will be offered safety for this week.', rule: 3 },
     { k: 'bb', t: 'But safety has a price. The winner can take it and pay, or turn it down.', rule: 4 },
   ];
+  for (const b of beats.filter(x => x.part === 'sent')) {
+    steps.push({ k: 'beat', t: `The ${b.team} send ${b.players[0]}.`, wcDraw: b.players[0] }, ...linesOf(b));
+  }
   for (const b of beats.filter(x => x.part === 'drawn')) {
     const n = b.players[0];
     steps.push({ k: 'bb', t: b.first ? `The first name is... ${n}.` : `The next name is... ${n}.`, wcDraw: n }, ...linesOf(b));
@@ -1919,10 +1925,10 @@ function wildcardScreens(act, ctx) {
   }
   return [{
     id: `bb-wild-w${ctx.week}`, kind: 'wild', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '12:15',
-    kicker: 'Cam 04 · Living room', title: 'The Wildcard', label: 'The Wildcard', sub: 'Three names, one offer',
+    kicker: 'Cam 04 · Living room', title: 'The Wildcard', label: 'The Wildcard', sub: byTeam ? 'One player a team, one offer' : 'Three names, one offer',
     seated: seatLiving([], ctx.house.filter(n => n !== ctx.hoh), ctx.hoh),
     wild: { n: drawnN, price: act.punishmentLabel, houseWide: !!act.houseWide },
-    rules: [['THE HAT', `${word(drawnN)} names are drawn — nobody chooses to play`], ['ONE PUZZLE', 'the best score wins'],
+    rules: [byTeam ? ['THE TEAMS', 'each team that is not safe sends one'] : ['THE HAT', `${word(drawnN)} names are drawn — nobody chooses to play`], ['ONE PUZZLE', 'the best score wins'],
       ['THE OFFER', 'the winner is offered safety this week'], ['THE PRICE', 'take it and pay a punishment, or turn it down']],
     rulesTitle: 'THE WILDCARD · HOW IT WORKS', steps,
   }];
@@ -2472,6 +2478,52 @@ function jankieWorldScreen(act, ctx) {
     kicker: 'Cam 05 · Backyard', title: 'JANKIE World', label: 'JANKIE World', sub: 'AINSLEY is away',
     cast: [], rules: [['THE HOUSE', 'closed for the week'], ['MEALS', 'pizza and ice cream'], ['THE VETO', 'second place wins the JANKIE Veto']],
     rulesTitle: 'JANKIE WORLD · HOW IT WORKS', steps };
+}
+
+// ── BB23's captains, the draft, and Double or Nothing ───────────────────
+function captainsScreens(act, ctx) {
+  const host = ctx.host;
+  const steps = [
+    { k: 'host', by: host, t: 'Houseguests, you moved in four at a time, and every group played for something. The winner of each group is a Team Captain.', rule: 1, toast: ['TEAM CAPTAINS', '#c9a227'] },
+  ];
+  (act.groupComps || []).forEach((g, i) => {
+    steps.push({ k: 'beat', t: `Group ${i + 1}: ${listOf(g.players || [])}. ${g.captain} wins it.`, board: { title: `GROUP ${i + 1}`, rows: (g.order || []).map(n => ({ n, text: n === g.captain ? 'CAPTAIN' : String(g.scores?.[n] ?? '') })) } });
+  });
+  steps.push({ k: 'host', by: host, t: 'Captains, you have each watched a ninety-second introduction from every other houseguest. Now pick three teammates: two men and two women on every team.', rule: 2 });
+  steps.push({ k: 'host', by: host, t: 'Until the end of week four, whoever wins Head of Household keeps their whole team safe.', rule: 3 });
+  for (const d of act.draft || []) {
+    steps.push({ k: 'say', by: d.captain, t: `${listOf(d.picks || [])}. We're the ${d.name}.`, board: { title: String(d.name).toUpperCase(), rows: [d.captain, ...(d.picks || [])].map(n => ({ n, text: n === d.captain ? 'CAPTAIN' : '' })) } });
+  }
+  const last = (act.draft || []).map(d => (d.picks || []).at(-1)).filter(Boolean);
+  if (last.length) steps.push({ k: 'dr', by: last[last.length - 1], t: pickBy(["Picked last. Fine. I'll remember who passed on me, and I'll be very nice about it.", "Last pick. That's a story I'm going to enjoy telling at the finale."], `${ctx.week}|lastpick`) });
+  steps.push({ k: 'host', by: host, t: `And only the four captains, ${listOf(act.captains || [])}, will play for the first Head of Household.`, rule: 4 });
+  return [{ id: 'bb-cliques-v', kind: 'cliques', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '21:00',
+    kicker: 'Cam 04 · Living room', title: 'The Teams', label: 'The Teams', sub: 'Four captains, four teams of four', cast: [],
+    rules: [['CAPTAINS', 'won their move-in group'], ['THE DRAFT', 'three picks, two men and two women a team'], ['FOUR WEEKS', "the HOH's team is safe"]],
+    rulesTitle: 'THE TEAMS · HOW IT WORKS', steps }];
+}
+
+function doubleOrNothingScreen(act, ctx) {
+  const host = ctx.host;
+  const a = act.hoh, b = act.runner;
+  const steps = [
+    { k: 'host', by: host, t: `${a}, you are the Head of Household, and your team is safe this week. But I have an offer for you. Double or nothing.`, rule: 1, toast: ['DOUBLE OR NOTHING', '#c9a227'] },
+    { k: 'host', by: host, t: `Play one more competition tonight, against ${b}. Win it and your whole team is safe this week and next. Lose it, and ${b} takes your crown, and your team is safe from nothing.`, rule: 2 },
+    { k: 'host', by: host, t: 'Or keep what you have. Your team is safe this week only. What will it be?' },
+  ];
+  if (!act.took) {
+    steps.push({ k: 'say', by: a, t: pickBy(["I'm going to keep it. I've got the crown. I'm not handing it back on a coin flip.", "No. Thank you. I'll take this week and worry about next week next week."], `${ctx.week}|don`) },
+      { k: 'beat', t: `${a} turns it down. The ${act.team || 'team'} are safe for one week.`, toast: ['NOTHING', '#9aa4b2'] });
+  } else {
+    steps.push({ k: 'say', by: a, t: "Double. Let's go." },
+      { k: 'beat', t: `${a} and ${b} play it, right there in the yard.` });
+    if (act.won) steps.push({ k: 'beat', t: `${a} wins it. The whole team is safe for two weeks.`, confetti: true, toast: ['DOUBLE', '#f5c542'] });
+    else steps.push({ k: 'beat', t: `${a} loses it. ${b} is the new Head of Household.`, shake: true, toast: ['NOTHING LEFT', '#ff3355'] },
+      { k: 'dr', by: a, t: 'I had it. I had the whole week, and I bet it. I am going to hear about this from my team for a very long time.' });
+  }
+  return { id: `bb-don-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: '23:00',
+    kicker: 'Live · Backyard', title: 'Double or Nothing', label: 'Double or Nothing', sub: act.took ? (act.won ? 'Double' : 'Nothing') : 'Turned down', cast: [[a, 40], [b, 60]],
+    rules: [['DOUBLE', 'the team is safe for two weeks'], ['NOTHING', 'the crown goes to the runner-up'], ['NO', 'safe this week only']], rulesTitle: 'DOUBLE OR NOTHING · HOW IT WORKS', steps };
 }
 
 // ── The Nightmare Power (Phase 7) ───────────────────────────────────────
@@ -3469,7 +3521,7 @@ function juryHouseScreen(act, ctx) {
 function twistAnnounceScreen(act, ctx, host) {
   // The premiere screen plays BB27's night itself: the host cannot announce her own kidnapping.
   const ann = (act.announced || []).filter(Boolean).filter(a => a.twist !== 'bb-premiere-mystery' && a.twist !== 'bb-temptation-premiere'
-    && a.twist !== 'bb-machine-premiere' && a.twist !== 'bb-jankie-world');
+    && a.twist !== 'bb-machine-premiere' && a.twist !== 'bb-jankie-world' && a.twist !== 'bb-teams');
   if (!ann.length) return null;
   // A theme's antagonist reads his own twists (the Mastermind announced his on the screen, not the host).
   const ta = act.themeAnnouncer;
@@ -3986,6 +4038,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         if (!act.preCrowned) {
           const sc = compScreen(act, ctx, 'hoh');
           // the viewer was told who took the money: they hear the throw from the one who threw it
+          // BB23: only the four captains played for the first crown
+          if ((ctx.captains || []).length && sc?.steps && ctx.week === 1) sc.steps.splice(1, 0, { k: 'beat', t: `Only the four Team Captains play: ${listOf(ctx.captains)}. Their teams watch from the side of the yard.` });
           // BB26's Mascots, in costume, cheering from the side (they cannot play)
           if ((ctx.mascots || []).length && sc?.steps && ctx.week === 1) sc.steps.splice(1, 0, { k: 'beat', t: `${listOf(ctx.mascots)}, in full mascot costume, ${ctx.mascots.length > 1 ? 'cheer' : 'cheers'} from the side of the yard. They are not allowed to play.` });
           if (act.temptationThrow && sc?.steps) sc.steps.push({ k: 'dr', by: act.temptationThrow, t: pickBy([
@@ -3993,6 +4047,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
             'I threw it. I had to. If anybody asks, I just got unlucky.',
             "Losing on purpose is harder than it looks. You can't be first out, and you can't be last."], `${ctx.week}|throw|${act.temptationThrow}`) });
           ceremony(sc);
+          if (ctx.pendingDon) { ceremony(doubleOrNothingScreen(ctx.pendingDon, ctx)); beatsOf(ctx.pendingDon); ctx.pendingDon = null; }
         }
         ctx.hoh = act.winner || ctx.hoh; ctx.anchor = 'hoh';
         // the room opens the same night (bb/hoh-room.js says which competitions get it, and which beats play in it)
@@ -4157,7 +4212,12 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'camp-director': flush(); for (const scr of campDirectorScreens(act, ctx, KIT)) ceremony(scr);
         if (act.evicted) (ctx.gone ||= new Set()).add(act.evicted);
         beatsOf(act); break;
-      case 'teams-assigned': case 'teams-dissolved': flush(); for (const scr of cliqueScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;
+      case 'teams-assigned': case 'teams-dissolved': flush();
+        if (act.style === 'captains') { ctx.captains = act.type === 'teams-assigned' ? [...(act.captains || [])] : null; for (const scr of (act.type === 'teams-assigned' ? captainsScreens(act, ctx) : cliqueScreens(act, ctx, KIT))) ceremony(scr); }
+        else for (const scr of cliqueScreens(act, ctx, KIT)) ceremony(scr);
+        beatsOf(act); break;
+      // the offer comes once the crown is won, so it airs after the competition
+      case 'double-or-nothing': ctx.pendingDon = act; break;
       case 'split-house': flush(); for (const scr of splitScreens(act, ctx, KIT)) ceremony(scr); ctx.split = act; beatsOf(act); break;
       // High Roller's money
       case 'bb-bucks': flush(); for (const scr of bucksScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;

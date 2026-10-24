@@ -527,6 +527,9 @@ export function openRoom({ week, house = [], hoh = null, nominees = [], vetoHold
     const p = pronouns(name);
     entries.push({ name, gameId: game.id, price: game.price, won: outcome.won,
       removed: outcome.removed, replacement: outcome.replacement });
+    // The Derby's "win" is a place in the top six, which its own beats say after the guesses: a
+    // verdict here read as somebody walking out a winner before anybody had written a number down.
+    if (game.id === 'veto-derby') continue;
     beats.push(outcome.won
       ? beat(pick(WON, rng)(name, p), [name], 'PAID AND WON', 'gold')
       : beat(pick(LOST, rng)(name, p, game.price), [name], 'PAID AND LOST', 'bad'));

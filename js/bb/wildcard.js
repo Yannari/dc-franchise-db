@@ -37,6 +37,7 @@ import { getPerceivedBond, addBond } from '../bonds.js';
 import { aptitude, clamp } from '../bb-comps/_shared.js';
 import { stableRng } from './knowledge.js';
 import { drawPunishment, applyPunishment, BB_PUNISHMENTS } from './punishments.js';
+import { allTeams, teamsDissolved, teamOf } from './teams.js';
 
 // Beats are plain facts with a `part`; the words are written by
 // bb/script/ceremony.js from lines/wildact.js.
@@ -140,18 +141,39 @@ export function runWildcard({ week, house, hoh, nominees = [],
   const pool = room.filter(n => n !== hoh);
   if (pool.length < 2) return null;
   const seen = drawn();
-  const fresh = pool.filter(n => !seen.includes(n));
-  const repeats = pool.filter(n => seen.includes(n));
-  const hat = [...shuffle(fresh, rng), ...shuffle(repeats, rng)];
-  const players = hat.slice(0, Math.min(WILDCARD_DRAW, hat.length));
+  // BB23, now that assigned teams exist: "The three teams that aren't immune for the week will each
+  // select one competitor." A team sends whoever it fancies in a puzzle, leaning on whoever needs the
+  // safety most (the least warmth from the Head of Household).
+  let players;
+  let teamPicks = null;
+  const hohTeam = hoh ? teamOf(hoh)?.id : null;
+  const live = teamsDissolved() ? [] : allTeams().filter(t => t.id !== hohTeam);
+  if (live.length >= 2) {
+    // a team that has sent somebody before tends to send somebody else
+    const want = n => aptitude(n, WILDCARD_MIX) - (() => { try { return getPerceivedBond(hoh, n) * 0.25; } catch { return 0; } })()
+      - (seen.includes(n) ? 1.5 : 0) + (rng() - 0.5) * 2;
+    teamPicks = live.map(t => {
+      const can = t.members.filter(n => pool.includes(n));
+      const who = can.sort((a, b) => want(b) - want(a))[0] || null;
+      return who ? { team: t.name, name: who } : null;
+    }).filter(Boolean);
+    players = teamPicks.map(p => p.name);
+  } else {
+    const fresh = pool.filter(n => !seen.includes(n));
+    const repeats = pool.filter(n => seen.includes(n));
+    const hat = [...shuffle(fresh, rng), ...shuffle(repeats, rng)];
+    players = hat.slice(0, Math.min(WILDCARD_DRAW, hat.length));
+  }
   if (!players.length) return null;
   for (const name of players) if (!seen.includes(name)) seen.push(name);
 
-  players.forEach((name, i) => {
+  if (teamPicks) {
+    for (const p of teamPicks) beats.push(beat(`The ${p.team} send ${p.name}.`, [p.name], p.team.toUpperCase(), 'blue', 'sent', { team: p.team }));
+  } else players.forEach((name, i) => {
     say();
     beats.push(beat(`${name} is drawn${i === 0 ? ' first' : ''}.`, [name], i === 0 ? 'FIRST OUT' : 'DRAWN', 'blue', 'drawn', { first: i === 0 }));
   });
-  const missed = pool.filter(n => !players.includes(n));
+  const missed = teamPicks ? [] : pool.filter(n => !players.includes(n));
   if (missed.length) {
     const who = missed[Math.floor(rng() * missed.length)] || missed[0];
     say();
@@ -181,7 +203,7 @@ export function runWildcard({ week, house, hoh, nominees = [],
 
   const act = {
     type: 'wildcard', week: week?.num || 0, secret: false,
-    players: [...players], scores: scores.map(s => ({ name: s.name, score: +s.score.toFixed(1) })),
+    players: [...players], teamPicks, scores: scores.map(s => ({ name: s.name, score: +s.score.toFixed(1) })),
     winner, houseWide, punishment: punishmentId, punishmentLabel: label,
     punishmentBlurb: def?.blurb || '', accepted: false, safe: [],
     served: [], hoh: hoh || null, beats,

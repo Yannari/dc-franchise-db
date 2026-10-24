@@ -336,7 +336,8 @@ describe('the Coin costs money', () => {
     expect(primer, 'the theme lost its primer').toBeTruthy();
     const rules = primer.rules.join(' ');
     expect(rules).toContain('Coin of Destiny');
-    expect(rules, 'the primer does not say what it costs').toContain(String(COIN_PRICE));
+    // the theme's own price (BB23's 250) when it sets one
+    expect(rules, 'the primer does not say what it costs').toContain(String(BB_THEMES['high-rollers'].coinPrice || COIN_PRICE));
     // The two halves of canon that the old copy left out.
     expect(rules).toMatch(/replacement/i);
     expect(rules).toMatch(/competes again|compete again/i);

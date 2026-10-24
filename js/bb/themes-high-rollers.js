@@ -1,48 +1,24 @@
-// High Roller's.
+// High Roller's: Big Brother 23, played 1:1 (user, 2026-10-24: "they have to
+// be perfect 1:1 of the real show with all the prose twist text moment").
+// From the wiki's season page and its Teams, Wildcard, BB Bucks and Game
+// History tables:
 //
-// BB23's High Roller's Room, taken seriously. On the broadcast it was a late
-// addition: a back room that opened past the halfway mark, where houseguests
-// spent BB Bucks on a roulette wheel for safety and for the right to name a
-// third nominee. The room is the famous part. The room is NOT the part that
-// makes a season.
+//   weeks 1-4   four teams of four (Kings, Queens, Jokers, Aces): captains won
+//               their move-in group, drafted two men and two women, and only
+//               the captains played for the first HOH, whose winner turned
+//               down Double or Nothing. A Head of Household's team is safe.
+//               Each week the three other teams send one player each to the
+//               Wildcard Competition: safety, at the price of a punishment.
+//   week 5      no teams, no twist.
+//   weeks 6-8   the High Roller's Room at the final eleven, ten and nine.
+//               America votes BB Bucks those weeks only (100 / 75 / 50), and
+//               the room sells the Veto Derby (50), then the Chopping Block
+//               Roulette (125), then the Coin of Destiny (250).
+//   weeks 9-10  two double evictions, final eight to six, then six to four.
 //
-// The part that makes a season is the MONEY, and it arrives long before the
-// room does. Every week America voted a payout to the entire cast in tiers —
-// the top three, the next three, and everybody else — and the totals CARRIED
-// and were ANNOUNCED. That is the twist nobody talks about, and it is the one
-// this simulator has been missing a shape for:
-//
-//   it is an audience signal the room can read.
-//
-// Every other season here keeps the audience outside the glass. Popularity
-// moves, the edit notices, and the houseguests never find out. Here the vote
-// is read out on the floor every week, so a player who is being watched
-// LEARNS they are being watched, and so does everybody standing next to them.
-// A top-tier week is a target painted by strangers. That single fact
-// changes how a room reads itself, and it needed no new room to do it.
-//
-// The economy is still the spine. What sits on top of it now is the FLOOR: the
-// room the money buys into (`js/bb/high-rollers-room.js`, opened three times at
-// the canon final eleven, ten and nine), the Coin bought on its own buy-in, and
-// the wrapped-box veto that asks the casino's own question out loud on night
-// one. Every id in `books` has an engine behind it and a dispatch in
-// `js/bb/week.js`; a theme that books a card with nothing behind it ships a
-// week where the timeline says something happens and nothing does, which is
-// what `books: []` was protecting against while the room was unbuilt.
-//
-// ── THE ANTAGONIST, AND WHY IT IS TWO THINGS ────────────────────────────
-//
-// The House is the thing that always wins and never speaks. The Pit Boss is
-// its mouth, working the floor.
-//
-// That split is not a flourish, it is a hard mechanical requirement. Every
-// other surface in this simulator — `summariseWeek`, the backlog, the VP, the
-// vote prose — says "the house" to mean the ROSTER: the twelve people playing.
-// An antagonist who says "the house always wins" writes a sentence that is
-// ambiguous in its own transcript, and it is ambiguous in exactly the way that
-// matters, because the roster is who the line would be about. So the Pit Boss
-// never says it. It says THE FLOOR, THE ROOM, THE EDGE, THE COUNT. A test
-// holds the whole voice pool to that.
+// The Pit Boss is ours: BB23 had no voice of its own, and every theme here has
+// one. He works the floor; he never says "the house", because every other
+// surface in this simulator uses that phrase for the roster.
 export default {
   id: 'high-rollers',
   name: "High Roller's",
@@ -58,6 +34,13 @@ export default {
   // delete it and the theme still registers, still speaks, still paints, and
   // pays nobody, silently, with nothing thrown anywhere.
   economy: 'bb-bucks',
+  // BB23's money: paid only while the room was open (a house of eleven to nine), at the
+  // broadcast's own 100 / 75 / 50, against the broadcast's prices (the Coin was 250).
+  payoutWindow: [9, 11],
+  payoutAmounts: [100, 75, 50],
+  coinPrice: 250,
+  // The rail bets were this simulator's invention, not BB23's.
+  railBets: false,
 
   // Brass on black lacquer — a card room after hours, lit from the table up.
   // Deliberately NOT green: felt would be the obvious read and A Summer of
@@ -102,72 +85,28 @@ export default {
     // most of the way through a season without working out what the money was
     // for. Name the purchase, the price and what it does, in that order,
     // before saying anything clever about audiences.
-    what: 'A season you can buy your way out of trouble in. Every week the audience pays every '
-      + 'houseguest, and that money is yours to keep until you spend it. Late on, the floor opens and '
-      + 'starts selling: a bet on somebody else\'s veto for 50, a spin for 125 that can take you off '
-      + 'the block, and finally the Coin of Destiny for 165, which hands you somebody else\'s whole week '
-      + 'without ever telling them you took it. A season earns less than that list costs, so nobody buys '
-      + 'everything. Everything else follows from that: what a payout is worth, who can afford the room '
-      + 'when it opens, and who gambled away the price of a seat in July.',
+    what: 'BB23. The first four weeks are a team game: four teams of four, and the Head of Household\'s '
+      + 'team is safe. Past the halfway mark a back room opens, and America\'s money buys power in it.',
     who: 'The Pit Boss works the floor for an owner that never shows itself, never plays, and never '
       + 'loses. He is a floor manager and he is delighted you came. He comps the drinks, he learns '
       + 'your name, and he has been counting since the moment you sat down.',
-    // ORDERED THE WAY THE SEASON HAPPENS, not by importance. A viewer reads
-    // this once, before week one, and then meets these cards in this order: the
-    // payout every week from the start, the early-weeks cards, the floor's menu
-    // in the order the floor sells it, and the endgame. An earlier draft led
-    // with the two newest cards and pushed the payout — which is the thing
-    // everything else is priced against — into the middle of the list.
     rules: [
-      'The audience pays every houseguest every week — the top three get the most, the next three a '
-        + 'little less, everybody else the floor rate. The result is announced, so the room learns '
-        + 'each week who the audience loves.',
-      'Money carries over and is never taken away. Saving is a strategy, and so is spending early.',
-      'Any week, anybody may stake 10 at the rail on who they think is going home. Get it right and '
-        + 'the floor pays; get it wrong and it is gone. The odds are the floor\'s, so betting loses '
-        + 'money on average — but it is the only thing to do with a wallet before the room opens.',
-      'Some weeks three houseguests are DRAWN, at random, before nominations — the Head of Household is '
-        + 'not in the hat and nobody else volunteers for it. They compete, and whoever wins is offered '
-        + 'safety for the week at a price: a punishment. About a third of the time that punishment is '
-        + 'billed to everybody ELSE instead of to the winner. Taking it is said out loud in front of the '
-        + 'people who will be serving it; turning it down costs nothing at all, and says a great deal.',
-      'Some veto competitions do not award the veto. They set the order in which people pick a wrapped '
-        + 'box, and the veto is in exactly one of them — the rest hold cash, trips and punishments, and a '
-        + 'later picker can steal what somebody has already opened. It is this season asking its own '
-        + 'question with the money made literal: what did you actually come here for?',
-      'Three times late in the season a back room opens, and it sells one game a night. The first '
-        + 'night is the Veto Derby, at 50: guess a number, finish in the top six, and you earn the '
-        + 'right to back one of the six veto players. Back the one who wins and you hold a veto of '
-        + 'your own — and you spend it BEFORE they spend theirs, so a Head of Household can lose two '
-        + 'nominees in one meeting and have to refill the block twice.',
-      'The nights after that sell the spin, for 125. Win it and you take a houseguest off the block '
-        + '— yourself, or somebody you want to keep — and then a wheel picks their replacement at '
-        + 'random. The Head of Household loses control of their own week, and because nobody chose '
-        + 'the replacement, nobody can pin it on you.',
-      'One week further on, the floor sells the last and dearest thing it has: the Coin of Destiny, at '
-        + '165. Everybody who pays plays for it, one wins, and that one is taken somewhere with no camera '
-        + 'and asked to call a coin toss. Call it right and you do not merely take the nominations — you '
-        + 'ARE the Head of Household for the rest of the week, and you name the replacement at the veto '
-        + 'meeting too. The Head of Household you took it from stays safe and competes again next week. '
-        + 'Call it wrong and you have paid, played and lost in front of everybody.',
-      'Nobody is ever told who called the toss. The room watched the money change hands, so it knows the '
-        + 'list of everyone who wanted the week — and it will never know which of them got it.',
-      'You pay on the way IN, and the game can beat you. Losing does not refund the seat — you can '
-        + 'pay in full, in front of everybody, and walk out with nothing.',
-      'Each game may be played once per houseguest, for the whole season, and a season earns less '
-        + 'than the menu costs. Buying in is a door you close behind you — and the cheap game comes '
-        + 'first, on the one night most of the room can still afford to walk through it.',
-      'Near the end, the floor closes two tables in one night: a double eviction, played at speed, with '
-        + 'the whole week — competition, nominations, veto and vote — run in a single sitting. Nobody '
-        + 'gets days to count anything.',
-      'One asymmetry worth knowing, because it is the only place this screen tells you more than the '
-        + 'players get: YOU are shown what everybody is holding, week by week. They are not. They saw '
-        + 'each payout read out and they saw who walked to the table, and from that they have to guess '
-        + 'the rest — so a houseguest who looks broke may simply have been quiet.',
+      'Night one: you move in four at a time, and the winner of each group\'s competition becomes a '
+        + 'Team Captain who drafts three teammates. Only the captains play for the first Head of Household, '
+        + 'and the winner is offered Double or Nothing.',
+      'For four weeks, whoever wins Head of Household keeps their whole team safe, and the three other teams '
+        + 'each send one player to the Wildcard: the winner may take safety, and a punishment with it.',
+      'At the final eleven the High Roller\'s Room opens for three weeks. America votes BB Bucks every one '
+        + 'of those weeks: 100 for its top three, 75 for the next three, 50 for everybody else.',
+      'The room sells one game a week, and you pay on the way in, win or lose: the Veto Derby for 50, '
+        + 'the Chopping Block Roulette for 125, the Coin of Destiny for 250. Each game can be played once.',
+      'The Coin of Destiny\'s winner calls a coin toss in secret. Call it right and they are the Head of '
+        + 'Household for the rest of the week, naming the nominations and the replacement, and nobody is ever '
+        + 'told who. The Head of Household they took it from stays safe and competes again next week.',
+      'Then two double evictions, back to back.',
     ],
-    watch: 'Watch who the audience pays and who it does not, because that is public from week one. Then '
-      + 'watch who spends and who saves — the menu costs more than a season earns, so nobody gets to '
-      + 'buy everything, and every purchase is somebody deciding what they came here for.',
+    watch: 'Watch who the captains pick on night one, and who they leave for last. Then watch who saved '
+      + 'their BB Bucks and who spent them, because the Coin costs more than anybody is paid in one week.',
     register: {
       neutral: 'Hospitality. The drinks are comped, the floor is glad you came, and it is counting.',
       hostile: 'Accounting. The comps have stopped and the markers are being called in.',
@@ -332,129 +271,23 @@ export default {
   // one night the answer is still allowed to be "the money". Everything the
   // room charges for later is that same question with a price on it.
   arc: [
-    // The wrapped-box veto. Already built and wired (`js/bb/week.js` dispatches
-    // it; `js/bb-events/prize-exchange.js` remembers who took the cash).
-    { at: { week: 1 }, book: 'bb-prizes-and-punishments' },
+    // BB23's running order (see the header).
+    { at: { week: 1 }, book: 'bb-teams' },
+    { at: { week: 1 }, alongside: true, book: 'bb-wildcard' },
+    { every: 1, from: 2, untilWeek: 4, untilFromEnd: 8, book: 'bb-wildcard' },
 
-    // ── THE CADENCE, WHICH THIS ARC SHIPPED WITHOUT AND SHOULD NOT HAVE ──
-    //
-    // Every other theme carries one — Mystery `every: 3, from: 6`, AINSLEY and
-    // Temptation `every: 3, from: 5` — and the engine grew the feature for a
-    // measured reason: a fixed list of acts leaves a seventeen-week season
-    // empty for six to nine weeks. This arc was a fixed list of five, four of
-    // them end-anchored, so they clumped against the finale and left week one
-    // alone at the front. At a cast of twenty that was an EIGHT-week dead
-    // stretch before anything happened, reported off a real timeline.
-    //
-    // The boxes are the right card to repeat, for the same reason they open the
-    // season: they are the casino's question wearing a veto competition, and
-    // they cost the house nothing to run. AINSLEY already uses them as its cadence
-    // card, so this is the established shape rather than a new one.
-    //
-    // `untilFromEnd: 9` stops the run BEFORE the room's first night at
-    // `fromEnd: 8`. The running order drops an act that resolves at or before
-    // the act above it, so a cadence that ran any later would start eating room
-    // nights on the small casts — the exact failure the week-one note below
-    // this records.
-    // ── ONE CADENCE PER WINDOW, AND THIS ONE IS THE WILDCARD'S ──
-    //
-    // There used to be a boxes cadence here as well, and it silently ate the
-    // Wildcard's first night on EVERY cast size. A recurrence is expanded in
-    // full before the next act is considered, and an act landing at or before
-    // the one above it is refused — so two cadences sharing a window cannot
-    // interleave, they can only take turns eating each other. The boxes were
-    // here to fill the early weeks; the Wildcard now does that better, and it
-    // is the card BB23 actually ran there.
-
-    // ── THE WILDCARD, AND WHY IT SHARES THE CADENCE WINDOW ────────────────
-    //
-    // The early weeks were the arc's thinnest stretch and the boxes were
-    // carrying them alone. This is the other half of BB23's season and it fits
-    // the floor exactly: a name comes out of a hat, and safety is sold at a
-    // price somebody else might be made to pay. It is the theme's thesis with
-    // no money in it, which is what makes it work in the weeks before anybody
-    // has any.
-    //
-    // `every: 2` against the boxes' `every: 3` in the same window is deliberate
-    // and it does NOT double-book: the scheduler fires at most one card a week
-    // and pushes the loser late rather than dropping it. `untilFromEnd: 9`
-    // matches the boxes so neither cadence can reach the room's first night at
-    // `fromEnd: 8` — the silent-drop failure the note above this records.
-    { every: 2, from: 2, untilFromEnd: 9, book: 'bb-wildcard' },
-
-    { at: { frac: 0.55 }, mood: 'hostile' },
     { at: { fromEnd: 8 }, mood: 'hostile' },
-
-    // ── THE ROOM, THREE NIGHTS, AT THE HOUSE SIZES THE BROADCAST USED ────
-    //
-    // `fromEnd` 8/7/6 is a final eleven, ten and nine — the run the room ran on
-    // the broadcast, and the reason the mood turn shares the eight anchor. They
-    // are written as three separate acts rather than a `every: 1` recurrence so
-    // each one carries its own `atHouse` and `reanchorThemeArc` can correct all
-    // three independently against the house that is really standing.
-    //
-    // Three consecutive end-anchored bookings is more than any other theme asks
-    // of that machinery, and it fires AT MOST ONE card a week, so a night that
-    // skips a house size (a double eviction the user books) pushes the run late
-    // rather than dropping any of it — the three nights still happen, in order,
-    // one house smaller each. Measured across casts twelve to twenty.
-    //
-    // Each night is cheap for the house to attend and expensive to lose: the
-    // seat is burned per houseguest whatever the result, so the room empties out
-    // as the run goes on, which is the shape it should have.
-    { at: { fromEnd: 8 }, book: 'bb-high-rollers-room' },
-    { at: { fromEnd: 7 }, book: 'bb-high-rollers-room' },
-    { at: { fromEnd: 6 }, book: 'bb-high-rollers-room' },
-
-    // The Coin, one week after the room closes: the floor's last product, sold
-    // on its own buy-in rather than out of the room, and priced at 165 against
-    // the same ledger the room bills. It is deliberately the week AFTER the
-    // wheel's last night — anybody who spent 125 on a spin has put this out of
-    // reach, which is the choice the whole economy exists to force.
-    //
-    // NOT canon's 250; the reason is written beside the constant in
-    // `js/bb/coin-of-destiny.js`, and it is measured rather than argued.
-    { at: { fromEnd: 5 }, book: 'bb-coin-of-destiny' },
-
-    // ── THE FLOOR SETTLES UP ─────────────────────────────────────────────
-    //
-    // The arc used to stop dead here, four or more weeks short of the finale.
-    // Mystery, AINSLEY and Temptation all book something at `fromEnd: 4`, and a
-    // double eviction is what the Pit Boss's hostile register has been
-    // promising since the comps stopped: the floor closing two tables in one
-    // night and calling in what it is owed.
-    //
-    // It sits AFTER the room's run rather than inside it. A double takes TWO,
-    // so booked any earlier it would shift the three room nights down a house
-    // size each and cost them their canon final eleven / ten / nine.
-    { at: { fromEnd: 4 }, book: 'bb-double-eviction' },
-
-    // ── AND THE LAST HAND ─────────────────────────────────────────────────
-    //
-    // The arc used to stop at the double, two or more weeks short of the
-    // finale, while Mystery, AINSLEY and Temptation all carry something to
-    // `fromEnd: 2`. The boxes are the right card to close on and it is the same
-    // reason they open the season: at a final five, choosing five thousand
-    // dollars over the only thing that could have saved you is the most
-    // expensive version of this theme's question that the game can stage.
-    //
-    // Booked AFTER the double in this array because the running order drops any
-    // act resolving at or before the one above it.
-    { at: { fromEnd: 2 }, book: 'bb-prizes-and-punishments' },
+    { at: { fromEnd: 8 }, book: 'bb-high-rollers-room', options: { roomGame: 'veto-derby' } },
+    { at: { fromEnd: 7 }, book: 'bb-high-rollers-room', options: { roomGame: 'chopping-block-roulette' } },
+    { at: { fromEnd: 6 }, book: 'bb-coin-of-destiny' },
+    { at: { fromEnd: 5 }, book: 'bb-double-eviction' },
+    { at: { fromEnd: 3 }, book: 'bb-double-eviction' },
   ],
 
-  // What the arc owns, and what it deliberately leaves alone:
-  //   books    — the three above. `tests/bb-themes.test.js` holds every id in
-  //              here to `TWIST_CATALOG`, and each has an engine and a dispatch.
-  //   weights  — the season's identity is the payout, not a twist affinity.
-  //              Weighting cards this theme does not own would make it a
-  //              flavour of the base game rather than a season about money.
-  //   bans     — the economy collides with nothing. It adds a number to a week
-  //              that already ran; every other twist runs on top of it intact.
-  //   exclusive— nothing here is exclusive: the payout is the theme, and it is
-  //              gated by `economy` rather than by a card only this theme has.
-  books: ['bb-prizes-and-punishments', 'bb-wildcard', 'bb-high-rollers-room',
-    'bb-coin-of-destiny', 'bb-double-eviction'],
+  // No Block Buster on BB23.
+  seasonKnobs: { bbSafetyMode: 'off' },
+
+  books: ['bb-teams', 'bb-wildcard', 'bb-high-rollers-room', 'bb-coin-of-destiny', 'bb-double-eviction'],
   weights: {},
   bans: [],
   exclusive: [],

@@ -291,10 +291,11 @@ describe('ported screens on the stepped stage', () => {
     paints(screens, ci);
   });
 
-  it("pays the house in public and keeps the slips private, every week of High Roller's", () => {
+  // BB23 paid only while the room was open, and had no rail bets (the theme is the real season since 2026-10-24)
+  it("pays the house in public and keeps the slips private, every week the High Roller's Room is open", () => {
     const kinds = new Set();
     for (const { screens } of all('high rollers')) screens.forEach((s, i) => { if (['bucks', 'sidebet', 'derby', 'rollers'].includes(s.kind)) { kinds.add(s.kind); paints(screens, i); } });
-    expect([...kinds].sort()).toEqual(['bucks', 'derby', 'rollers', 'sidebet']);
+    expect([...kinds].sort()).toEqual(['bucks', 'derby', 'rollers']);
   });
 
   it('lets the rivals walk in before they choose the Head of Household', () => {

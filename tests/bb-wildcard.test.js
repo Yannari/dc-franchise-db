@@ -171,10 +171,11 @@ describe("High Roller's explains itself", () => {
 
   // What in the primer proves each booked card is described. A booked card with
   // no row here is a card nobody has written an explanation for.
+  // BB23's cards (the theme is the real season since 2026-10-24)
   const EXPLAINED = {
-    'bb-prizes-and-punishments': /wrapped\s+box/i,
-    'bb-wildcard': /drawn/i,
-    'bb-high-rollers-room': /back room/i,
+    'bb-teams': /Team Captain/i,
+    'bb-wildcard': /Wildcard/i,
+    'bb-high-rollers-room': /High Roller's Room/i,
     'bb-coin-of-destiny': /Coin of Destiny/i,
     'bb-double-eviction': /double eviction/i,
   };
@@ -195,8 +196,8 @@ describe("High Roller's explains itself", () => {
     // A viewer reads this once, in order. The payout is what every price on the
     // menu is measured against, so it cannot appear after the menu.
     const rules = theme().primer.rules;
-    const payout = rules.findIndex(r => /audience pays every houseguest/i.test(r));
-    const firstPurchase = rules.findIndex(r => /back room|Coin of Destiny/i.test(r));
+    const payout = rules.findIndex(r => /America votes BB Bucks/i.test(r));
+    const firstPurchase = rules.findIndex(r => /Veto Derby|Coin of Destiny/i.test(r));
     expect(payout).toBeGreaterThanOrEqual(0);
     expect(firstPurchase).toBeGreaterThan(payout);
   });

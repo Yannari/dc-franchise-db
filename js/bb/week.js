@@ -85,6 +85,7 @@ import { observeBlocs, readVoteTells, listBlocs, learnAbout, pointOfAttack, bloc
 import { recordBBVotes, tickBBKnowledge, stableRng } from './knowledge.js';
 import { runCallOutChain } from './white-locust.js';
 import { runCampDirector } from './camp-director.js';
+import { assignCaptainTeams, teamOf } from './teams.js';
 import { assignTeams, teamImmune, dissolveTeams, allTeams,
   teamsDissolved } from './teams.js';
 import { runNightmarePower, nightmarePull } from './nightmare-power.js';
@@ -2035,9 +2036,12 @@ export function simulateBBWeek(options = {}) {
   const _calendarHouse = week.splitOther?.length
     ? [...new Set([...house, ...week.splitOther])]
     : house;
-  if (_payThisCycle && currentTheme()?.economy === 'bb-bucks') {
+  // BB23 paid only while the room was open (final eleven to final nine), at 100 / 75 / 50
+  const _pw = currentTheme()?.payoutWindow;
+  const _inWindow = !_pw || (_calendarHouse.length >= _pw[0] && _calendarHouse.length <= _pw[1]);
+  if (_payThisCycle && _inWindow && currentTheme()?.economy === 'bb-bucks') {
     try {
-      const payout = awardWeeklyBucks({ week, house: _calendarHouse, rng });
+      const payout = awardWeeklyBucks({ week, house: _calendarHouse, amounts: currentTheme()?.payoutAmounts || null, rng });
       if (payout) week.acts.push(addBeats(payout, { players: payout.payouts.map(p => p.name).slice(0, 4) }));
       // The wallet each houseguest carries INTO the week's decisions, taken
       // after the audience has paid and before anybody has bet or bought a
@@ -2502,9 +2506,24 @@ export function simulateBBWeek(options = {}) {
   // end-anchored act in this codebase is: a season is not a fixed number of
   // weeks. A protection that survived to the final five would decide the
   // endgame by accident of sorting rather than by anything anybody played.
-  if (!compressed && week.twistState?.rules?.assignedTeams) {
+  // The card is only on the schedule in week one; the dissolution has to be checked every week after
+  // it, or the teams (and Summer School's cliques) never end.
+  if (!compressed && (week.twistState?.rules?.assignedTeams || (allTeams().length && !teamsDissolved()))) {
     try {
-      if ((week.num || 1) === 1 && !allTeams().length) {
+      if ((week.num || 1) === 1 && !allTeams().length && week.twistState?.rules?.assignedTeams === 'captains') {
+        const sorted = assignCaptainTeams({ house, rng, readBond: (a, b) => { try { return getPerceivedBond(a, b); } catch { return 0; } } });
+        if (sorted) {
+          week.teamsAssigned = sorted.teams.map(t => ({ ...t, members: [...t.members] }));
+          week.acts.push(addBeats({
+            type: 'teams-assigned', style: 'captains', week: week.num, secret: false,
+            teams: week.teamsAssigned, captains: sorted.captains, groupComps: sorted.groupComps, draft: sorted.draft,
+            beats: sorted.draft.map(d => ({ text: `${d.captain} picks ${d.picks.join(', ')}: the ${d.name}.`, players: [d.captain, ...d.picks], badgeText: d.name.toUpperCase(), badgeClass: 'blue', part: 'draft' })),
+          }, { players: sorted.captains }));
+          // BB23: only the four captains played for the first Head of Household
+          sittingOut = house.filter(n => !sorted.captains.includes(n));
+          week.captainsOnly = [...sorted.captains];
+        }
+      } else if ((week.num || 1) === 1 && !allTeams().length) {
         const sorted = assignTeams({ house, rng });
         if (sorted) {
           week.teamsAssigned = sorted.teams.map(t => ({ ...t, members: [...t.members] }));
@@ -2519,7 +2538,7 @@ export function simulateBBWeek(options = {}) {
           }, { players: house.slice(0, 4) }));
         }
       } else if (allTeams().length && !teamsDissolved()
-        && house.length <= (Number(options.teamsDissolveAt) || 8)) {
+        && (gs.bb?.teamsUntilWeek ? week.num > gs.bb.teamsUntilWeek : house.length <= (Number(options.teamsDissolveAt) || 8))) {
         const ended = dissolveTeams(week);
         if (ended) {
           week.teamsDissolved = true;
@@ -2528,6 +2547,15 @@ export function simulateBBWeek(options = {}) {
       }
     } catch (err) {
       (week._teamsError ||= []).push(String(err?.message || err));
+    }
+  }
+
+  // BB23's Wildcard is a team game while the teams last: say so where the house is told the rule.
+  if (allTeams().length && !teamsDissolved() && gs.bb?.teamStyle === 'captains') {
+    for (const a of week.twistState?.announcements || []) {
+      if (a?.twist !== 'bb-wildcard') continue;
+      a.rule = 'The three teams that are not safe this week will each send one player to the Wildcard Competition. The winner may take safety for the week, and a punishment with it: theirs, their team\'s, or the whole house\'s.';
+      a.sting = 'Somebody\'s team is about to volunteer them.';
     }
   }
 
@@ -2908,6 +2936,38 @@ export function simulateBBWeek(options = {}) {
   if (!preCrowned && week.mustThrowHoh && hoh === week.mustThrowHoh && hohCompetition?.placements?.length > 1) {
     hoh = hohCompetition.placements.find(n => n !== week.mustThrowHoh && hohPlayers.includes(n)) || hoh;
     week.threwForTemptation = week.mustThrowHoh;
+  }
+
+  // ── BB23: DOUBLE OR NOTHING ──
+  // "Whoever wins will be tempted with a double or nothing offer": risk the week for a third
+  // competition. Win it and the team is safe this week and next; lose it and the crown goes to the
+  // runner-up's team. Turn it down and the team is safe this week only. (Frenchie turned it down.)
+  if (!preCrowned && !compressed && week.num === 1 && gs.bb?.teamStyle === 'captains' && hohCompetition?.placements?.length > 1) {
+    try {
+      const runner = hohCompetition.placements.find(n => n !== hoh && (week.captainsOnly || []).includes(n)) || null;
+      if (runner) {
+        const ds = pStats(hoh) || {};
+        const took = rng() < Math.min(0.75, Math.max(0.1, 0.15 + (ds.boldness || 5) * 0.05 - (ds.strategic || 5) * 0.02));
+        const don = { type: 'double-or-nothing', week: week.num, hoh, runner, team: teamOf(hoh)?.name || null, took, won: null, beats: [] };
+        if (took) {
+          const sc = n => { const p = pStats(n) || {}; return (p.physical || 5) * 0.35 + (p.mental || 5) * 0.35 + (p.endurance || 5) * 0.3 + rng() * 4; };
+          don.won = sc(hoh) >= sc(runner);
+          if (don.won) {
+            const t = teamOf(hoh);
+            gs.bb.teamSafeWeek = { week: 2, members: [...(t?.members || [hoh])] };
+          } else {
+            don.dethroned = hoh;
+            hoh = runner;
+          }
+        }
+        const pop = (n, d) => { gs.popularity ||= {}; gs.popularity[n] = (gs.popularity[n] || 0) + d; };
+        pop(don.hoh, took ? 1 : -0.3);
+        don.beats.push({ text: took ? (don.won ? `${don.hoh} takes the Double or Nothing and wins it: the ${teamOf(don.hoh)?.name || 'team'} are safe for two weeks.` : `${don.hoh} takes the Double or Nothing and loses it. ${runner} is the Head of Household.`)
+          : `${don.hoh} turns down the Double or Nothing and keeps the crown.`, players: [don.hoh, runner], badgeText: 'DOUBLE OR NOTHING', badgeClass: took ? (don.won ? 'gold' : 'red') : 'grey', part: 'result' });
+        week.doubleOrNothing = don;
+        week.acts.push(addBeats(don, { players: [don.hoh, runner] }));
+      }
+    } catch (err) { (week._donError ||= []).push(String(err?.message || err)); }
   }
 
   // ── the only time power in this house is given rather than won ──
@@ -3615,6 +3675,10 @@ export function simulateBBWeek(options = {}) {
      the cliques dissolve, so the caller never has to know either. */
   let teamSafe = [];
   try { teamSafe = teamImmune(week, hoh); } catch { teamSafe = []; }
+  // BB23: a team that won the Double or Nothing is safe in week two whoever is Head of Household
+  if (gs.bb?.teamSafeWeek && Number(gs.bb.teamSafeWeek.week) === Number(week.num)) {
+    teamSafe = [...new Set([...teamSafe, ...gs.bb.teamSafeWeek.members.filter(n => house.includes(n))])];
+  }
   // ── BB19: the Temptation Competition the Halting Hex let in ──
   // Anybody but the HOH may opt in; the winner is safe for the week, last place is the third nominee.
   let temptationLastSeat = null;
@@ -3960,7 +4024,7 @@ export function simulateBBWeek(options = {}) {
     // the buy-in is what it always was — a public decision to play, with
     // nothing to hand over. Gating the twist on the currency instead would
     // silently delete it from every season that is not High Roller's.
-    const coinPrice = currentTheme()?.economy === 'bb-bucks' ? COIN_PRICE : 0;
+    const coinPrice = currentTheme()?.economy === 'bb-bucks' ? (Number(currentTheme()?.coinPrice) || COIN_PRICE) : 0;
     const coin = runCoinOfDestiny({ week, house, hoh, nominees: [...nominees],
       price: coinPrice, rng });
     if (coin) {
@@ -6825,7 +6889,7 @@ export function simulateBBWeek(options = {}) {
     // The calendar-week half of the gate is the same one the payout uses:
     // `simulateBBWeek` runs twice on a double eviction and once per side on a
     // Split House.
-    if (campaignIndex === 0 && currentTheme()?.economy === 'bb-bucks'
+    if (campaignIndex === 0 && currentTheme()?.economy === 'bb-bucks' && currentTheme()?.railBets !== false
       && !compressed && (week.segment == null || week.segment === 1)) {
       try {
         week.sideBets = runSideBets({ week, house, nominees: [...visibleBlock], rng });

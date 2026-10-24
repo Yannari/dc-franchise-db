@@ -6,6 +6,7 @@ import { getBond, getPerceivedBond, bKey, bondLabel, addBond } from '../js/bonds
 import { credit, balance } from '../js/bb/bb-bucks.js';
 import { runSideBets, settleSideBets, SIDE_BET } from '../js/bb/side-bet.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
+import { BB_THEMES } from '../js/bb/themes.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -137,7 +138,10 @@ describe('the table opens once a week', () => {
       Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
         ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
       Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
-        bbHaveNots: 'off', bbSafetyMode: 'off', theme: 'high-rollers' });
+        bbHaveNots: 'off', bbSafetyMode: 'off', theme: 'hr-rail' });
+      // High Roller's is BB23 since 2026-10-24 and BB23 had no rail; the table is exercised on an
+      // economy that keeps one, paying every week.
+      BB_THEMES['hr-rail'] = { ...BB_THEMES['high-rollers'], id: 'hr-rail', railBets: true, payoutWindow: null, payoutAmounts: null, arc: [], books: [] };
       seasonConfig.twistSchedule = [];
 
       let sawOne = false;

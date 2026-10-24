@@ -14,12 +14,21 @@
 # Deployed by .github/workflows/deploy-site.yml on every push to main (a burst
 # of pushes becomes one deploy), which also writes deploy.json for sw.js.
 # What is NOT uploaded: .assetsignore at the repo root.
+#
+# THE ADDRESS: blindsidenetwork.com (bought 2026-10-24) and www, attached as
+# Custom Domains through the API, not declared here -- so the CI token never
+# needs zone permissions. dc-site.yannari19.workers.dev still answers too.
 name = "dc-site"
 account_id = "0e4acd29eba65cbd9827840fd9468c0f"
 compatibility_date = "2026-10-01"
+# Clean addresses (/timeline -> timeline.html) and www -> apex. Only runs when
+# no file matches; see site.js.
+main = "site.js"
 
 [assets]
 directory = ".."
+binding = "ASSETS"
 # Every file at its own path, exactly as GitHub Pages serves it. The default
-# ("auto-trailing-slash") answers /simulator.html with a 307 to /simulator.
+# ("auto-trailing-slash") answers /simulator.html with a 307 to /simulator,
+# which sw.js cannot cache; site.js serves the clean spelling instead.
 html_handling = "none"

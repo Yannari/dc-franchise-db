@@ -130,7 +130,9 @@ function linksOf(text, base) {
   return out;
 }
 
-const followable = url => /\.(m?js|html?)$/i.test(new URL(url).pathname);
+// A page is .html -- or a clean address with no extension at all ("/timeline",
+// "/"), which the Cloudflare copy serves as the .html of the same name.
+const followable = url => /(\.(m?js|html?)|\/[^./]*)$/i.test(new URL(url).pathname);
 
 /**
  * Download a new deploy behind the open page: every file the current copy

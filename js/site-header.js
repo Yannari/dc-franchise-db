@@ -67,8 +67,39 @@ export const SUB_NAV = {
 /** The page we are on, as a bare filename. Empty path means the index. */
 export function currentPage(pathname = window.location.pathname) {
   const file = String(pathname).split('/').pop() || 'index.html';
-  return file === '' ? 'index.html' : file;
+  // A clean address ("/timeline") is the page of the same name.
+  return file.includes('.') ? file : file + '.html';
 }
+
+// ── CLEAN ADDRESSES ──
+//
+// blindsidenetwork.com/timeline, not /timeline.html. The files keep their names
+// (every link, test and cached copy uses them); the address bar drops the
+// extension once the page is open, and the nav links without it. Only where the
+// server answers the clean spelling: the Cloudflare copy (worker/site.js) and
+// GitHub Pages do, a local server and a file:// page do not.
+
+/** True where /timeline is answered with timeline.html. */
+export function servesCleanUrls(loc = window.location) {
+  return /^https?:$/.test(loc.protocol) && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(loc.hostname);
+}
+
+/** "timeline.html" -> "timeline", "index.html" -> "./" (an empty href is this page). */
+export function cleanHref(href) {
+  if (href === 'index.html') return './';
+  return String(href).replace(/(^|\/)index\.html$/, '$1').replace(/\.html(?=$|[?#])/, '');
+}
+
+/** Drop .html from the address bar, keeping the query and the hash. */
+export function cleanAddress(loc = window.location, hist = window.history) {
+  if (!servesCleanUrls(loc) || !/\.html$/i.test(loc.pathname)) return;
+  // A full path here, never "./": "/index.html" -> "/", "/timeline.html" -> "/timeline".
+  const path = loc.pathname.replace(/(^|\/)index\.html$/i, '$1').replace(/\.html$/i, '');
+  try { hist.replaceState(hist.state, '', path + loc.search + loc.hash); }
+  catch { /* the address is cosmetic */ }
+}
+
+const linkHref = href => (typeof window !== 'undefined' && servesCleanUrls() ? cleanHref(href) : href);
 
 /**
  * Which nav entry should read as current.
@@ -101,7 +132,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c =>
 export function navHtml(active = activeHref()) {
   const items = NAV_LINKS.map(l => {
     const on = l.href === active;
-    return `<li class="nav-item"><a href="${esc(l.href)}" class="nav-link${on ? ' active' : ''}"`
+    return `<li class="nav-item"><a href="${esc(linkHref(l.href))}" class="nav-link${on ? ' active' : ''}"`
       + `${on ? ' aria-current="page"' : ''}>`
       + `<span class="nav-icon">${l.icon}</span><span>${esc(l.label)}</span>`
       + (l.badge ? `<span class="nav-badge" data-badge="${esc(l.badge)}" hidden></span>` : '')
@@ -163,7 +194,7 @@ export function subNavHtml(page = currentPage()) {
   const links = SUB_NAV[activeHref(page)];
   if (!links) return '';
   return `<nav class="site-subnav" aria-label="Section">${links.map(l =>
-    `<a href="${esc(l.href)}"${l.href === page ? ' class="is-on" aria-current="page"' : ''}>${
+    `<a href="${esc(linkHref(l.href))}"${l.href === page ? ' class="is-on" aria-current="page"' : ''}>${
       esc(l.label)}</a>`).join('')}</nav>`;
 }
 
@@ -289,6 +320,7 @@ export async function paintBadges(root = document) {
 }
 
 if (typeof document !== 'undefined') {
+  cleanAddress();
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', renderSiteHeader, { once: true });
   } else {

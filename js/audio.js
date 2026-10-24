@@ -2,6 +2,7 @@
 export const DEFAULT_PREFS = { muted: false, volume: 0.7 };
 export const STORAGE_KEY = 'dc_audio';
 export const MUSIC_KEY = 'dc_audio_music';   // background-music on/off (separate from master mute)
+export const MUSIC_LEVEL_KEY = 'dc_audio_music_level';   // the music's own level, 0..1 (voices and effects never pass through it)
 
 export function clampVolume(v) {
   if (typeof v !== 'number' || Number.isNaN(v)) return DEFAULT_PREFS.volume;
@@ -348,6 +349,10 @@ export class AudioEngine {
     // Background music (ambient beds) on/off — independent of master mute, so the
     // user can keep SFX while silencing beds. Stored under its own key (default ON).
     this._musicOn = this._storage ? this._storage.getItem(MUSIC_KEY) !== '0' : true;
+    // The music's own level (the user, 2026-10-24: "a way to lower music without lowering the voices"):
+    // beds run through their own channel before the master, so voices, stings and room sound keep theirs.
+    const lvl = this._storage ? this._storage.getItem(MUSIC_LEVEL_KEY) : null;
+    this._musicLevel = lvl == null || lvl === '' ? 1 : clampVolume(Number(lvl));
     this._desiredBed = null;   // last bed requested, played only while _musicOn
     this._unlocked = false;
     this._ctx = null;
@@ -362,6 +367,12 @@ export class AudioEngine {
   getVolume() { return this._volume; }
   isUnlocked() { return this._unlocked; }
   isMusicEnabled() { return this._musicOn; }
+  getMusicLevel() { return this._musicLevel; }
+  setMusicLevel(v) {
+    this._musicLevel = clampVolume(v);
+    if (this._musicGain) this._musicGain.gain.value = this._musicLevel;
+    if (this._storage) this._storage.setItem(MUSIC_LEVEL_KEY, String(this._musicLevel));
+  }
   _persist() { if (this._storage) this._storage.setItem(STORAGE_KEY, serializePrefs({ muted: this._muted, volume: this._volume })); }
   _applyMaster() { if (this._master) this._master.gain.value = this._muted ? 0 : this._volume; }
   setMuted(m) { this._muted = !!m; this._applyMaster(); this._persist(); }
@@ -377,9 +388,12 @@ export class AudioEngine {
     this._master = this._ctx.createGain();
     this._applyMaster();
     this._master.connect(this._ctx.destination);
+    this._musicGain = this._ctx.createGain();
+    this._musicGain.gain.value = this._musicLevel;
+    this._musicGain.connect(this._master);
     this._bedGain = this._ctx.createGain();
     this._bedGain.gain.value = 1;
-    this._bedGain.connect(this._master);
+    this._bedGain.connect(this._musicGain);
     if (this._ctx.resume) this._ctx.resume();
     this._unlocked = true;
     if (this._pendingBed) { const b = this._pendingBed; this._pendingBed = null; this.ambient(b); }

@@ -140,7 +140,7 @@ const engine = () => (typeof window !== 'undefined' ? window.audio : null);
 export function bbxTitleReady(v) {
   if (!v || v.dataset.started || !viewerOpen()) return;
   v.dataset.started = '1';
-  try { const a = engine(); if (a) { v.volume = Math.max(0, Math.min(1, a.getVolume?.() ?? 0.7)); v.muted = !!a.isMuted?.(); } } catch { /* defaults */ }
+  try { const a = engine(); if (a) { v.volume = Math.max(0, Math.min(1, (a.getVolume?.() ?? 0.7) * (a.getMusicLevel?.() ?? 1))); v.muted = !!a.isMuted?.(); } } catch { /* defaults */ }
   const p = v.play?.();
   if (p && typeof p.catch === 'function') p.catch(() => v.closest('.bbt')?.classList.add('blocked'));
 }

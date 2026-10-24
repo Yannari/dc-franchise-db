@@ -115,6 +115,9 @@ const SHELL_CSS = `
 .bbx .bbx-tip span{color:#c7d0e4}
 .bbx .bbx-bar .bbx-count{font:600 11px 'Chakra Petch',monospace;color:#9fb0c6;min-width:64px;text-align:center}
 .bbx .bbx-bar .bbx-voices:not(.on){opacity:.5;text-decoration:line-through}
+.bbx .bbx-bar .bbx-mvol{flex:none;display:flex;align-items:center;gap:5px;padding:0 4px;color:#dbe6f7;font-size:13px;cursor:pointer}
+.bbx .bbx-bar .bbx-mvol input{width:76px;margin:0;accent-color:#22e1ff;cursor:pointer}
+.bbx .bbx-bar .bbx-mvol.zero span{opacity:.5;text-decoration:line-through}
 .bbx .bbx-bar .bbi-btn.on{color:#22e1ff}
 #visual-player.bbx-tv .bbx .bbx-screen{position:fixed;inset:0;z-index:2147483000;background:#000;display:flex;align-items:center;justify-content:center}
 #visual-player.bbx-tv .bbx .bbx-stage{width:min(100vw,calc(100vh * 16 / 9));border-radius:0;box-shadow:none}
@@ -156,7 +159,7 @@ function barHtml(uid, S, R) {
   const b = (cls, act, title, label, id = '') => `<button type="button" class="${cls}"${id ? ` id="${id}"` : ''} onclick="${act}" title="${title}">${label}</button>`;
   // a press on a button never takes the keyboard's focus (Space stays play/pause); the seek bar keeps its own
   // press, or it cannot be dragged (the user, 2026-10-15: "I can't click or pull it to a specific frame")
-  return `<div class="bbx-bar" onclick="event.stopPropagation()" onmousedown="if(!event.target.closest('.bbx-track'))event.preventDefault()">
+  return `<div class="bbx-bar" onclick="event.stopPropagation()" onmousedown="if(!event.target.closest('.bbx-track,.bbx-mvol'))event.preventDefault()">
     ${b('bbx-ico', `bbxScene('${uid}',-1)`, 'Previous scene (Shift+←)', ICON.prevScene)}
     ${b('bbx-ico', `bbxBack('${uid}')`, 'Back one line (←)', ICON.back)}
     ${b('bbx-play', `bbxAuto('${uid}')`, 'Play / pause (Space)', ICON.play, `bbx-auto-${uid}`)}
@@ -166,10 +169,29 @@ function barHtml(uid, S, R) {
     <span class="bbx-count" id="bbx-count-${uid}">0 / ${n}</span>
     ${b('', `bbxSpeed('${uid}')`, 'Auto speed', speedLabel(R?.speed || speedOf()), `bbx-speed-${uid}`)}
     ${b(`bbx-voices ${voicesOn() ? 'on' : ''}`, 'bbxVoices()', "The houseguests' voices, and the room sound when there is no music", '🔊 Voices')}
+    ${musicSlider()}
     ${b('bbi-btn', `bbxIntel('${uid}')`, "What the house doesn't know: bonds, alliances, deals, and what they're thinking (i)", 'Intel', `bbi-btn-${uid}`)}
     ${R?.map ? b('', `bbxMapExit('${uid}')`, 'The house map (M)', 'Map') : ''}
     ${b('bbx-ico', 'bbxTv()', 'Fullscreen TV (F)', ICON.full)}
   </div>`;
+}
+// The music's own level, under the voices (the user, 2026-10-24: "a way to low music without lowering the
+// voices"): it moves only the music channel (audio.setMusicLevel), so voices, stings and the room keep theirs.
+const musicLevel = () => { try { const v = window.audio?.getMusicLevel?.(); return typeof v === 'number' ? v : 1; } catch { return 1; } };
+function musicSlider() {
+  const v = Math.round(musicLevel() * 100);
+  return `<label class="bbx-mvol${v ? '' : ' zero'}" title="Music volume (the voices stay as they are)"><span>🎵</span><input type="range" min="0" max="100" step="1" value="${v}" aria-label="Music volume" oninput="bbxMusicLevel(this.value)" onchange="bbxMusicLevel(this.value);this.blur()" onkeydown="event.stopPropagation()"></label>`;
+}
+export function bbxMusicLevel(v) {
+  const lvl = Math.max(0, Math.min(100, Number(v) || 0)) / 100;
+  try { window.audio?.setMusicLevel?.(lvl); } catch { /* sound never breaks the bar */ }
+  if (typeof document === 'undefined') return;
+  document.querySelectorAll('.bbx-mvol').forEach(l => {
+    l.classList.toggle('zero', !lvl);
+    const inp = l.querySelector('input'); if (inp && inp !== document.activeElement) inp.value = String(Math.round(lvl * 100));
+  });
+  // the opening and closing titles are music too
+  document.querySelectorAll('.bbt video').forEach(el => { try { el.volume = Math.max(0, Math.min(1, (window.audio?.getVolume?.() ?? 0.7) * lvl)); } catch { /* defaults */ } });
 }
 // the bar follows the step: the play button, the seek bar, the count
 function barSync(uid, R) {
@@ -783,7 +805,7 @@ if (typeof document !== 'undefined') document.addEventListener('keydown', e => {
   else if (e.key === 'Escape' && root.classList.contains('intel-open')) { e.preventDefault(); e.stopImmediatePropagation(); bbxIntel(root.dataset.uid); }
 });
 
-if (typeof window !== 'undefined') Object.assign(window, { bbxSeek, bbxSeekHover, bbxSeekTip, bbxSpeed, bbxScene, bbxIntel, bbxIntelClick, bbxLive, bbxMapExit, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxJump, bbxJumpFromLine });
+if (typeof window !== 'undefined') Object.assign(window, { bbxSeek, bbxSeekHover, bbxSeekTip, bbxSpeed, bbxScene, bbxIntel, bbxIntelClick, bbxLive, bbxMapExit, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxMusicLevel, bbxJump, bbxJumpFromLine });
 // Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
 // or Auto keeps clicking through the week (and its music) behind a closed window.
 if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {

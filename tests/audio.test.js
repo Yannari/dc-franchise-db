@@ -247,6 +247,33 @@ describe('AudioEngine — music toggle (independent of mute)', () => {
   });
 });
 
+describe('AudioEngine — music level (the music lower, the voices as they are)', () => {
+  it('defaults to full, clamps, and persists under its own key', () => {
+    const storage = fakeStorage();
+    const e = new AudioEngine({ ctxFactory: () => new FakeAudioContext(), storage });
+    expect(e.getMusicLevel()).toBe(1);
+    e.setMusicLevel(0.25);
+    expect(storage.getItem('dc_audio_music_level')).toBe('0.25');
+    expect(new AudioEngine({ ctxFactory: () => new FakeAudioContext(), storage }).getMusicLevel()).toBe(0.25);
+    e.setMusicLevel(4);
+    expect(e.getMusicLevel()).toBe(1);
+  });
+
+  it('turns the beds down and leaves the master, where voices and stings play, alone', () => {
+    const e = makeEngine(); e.setVolume(0.8); e.setMusicLevel(0.3); e.unlock();
+    expect(e._musicGain.gain.value).toBe(0.3);
+    expect(e._master.gain.value).toBe(0.8);
+    e.setMusicLevel(0);
+    expect(e._musicGain.gain.value).toBe(0);
+    expect(e._master.gain.value).toBe(0.8);
+    expect(e.output().dest).toBe(e._master);
+    const spy = vi.fn();
+    e._catalogOverride = { 'spy-cue': { duck: false, build: spy } };
+    e.sfx('spy-cue');
+    expect(spy.mock.calls[0][1]).toBe(e._master);
+  });
+});
+
 describe('initAudio', () => {
   it('unlocks the singleton on first document gesture', () => {
     // singleton has no fake ctx; give it one for the test

@@ -307,6 +307,10 @@ const TITLES = {
  */
 export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
   archetypes = {}, profiles = {}, names = {},
+  // display name -> roster slug, for a guest with no career yet (a season still
+  // on the air): without it the guest was their bare name, so the portrait
+  // asked for assets/avatars/Skye.png and the roster profile was never found.
+  slugByName = {},
   // gapId -> remix count. PROSE ONLY: a salt re-rolls every word of a
   // period's episodes and touches nothing the follower model reads — the
   // bookings, listeners and tiers are identical under any salt, by test.
@@ -388,7 +392,8 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
     const words = showWords(season.format);
     for (const rec of (season.exitInterviews || []).slice().sort((a, b) => (a.week || 0) - (b.week || 0))) {
       if (!rec?.guest) continue;
-      const slug = slugOf(rec.guest) || rec.guest;
+      const slug = slugOf(rec.guest) || slugByName[rec.guest]
+        || String(rec.guest).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       const prof = profileOf(slug);
       const career = bySlug.get(slug);
       const fame = career ? fameOf(career) : 0.2;

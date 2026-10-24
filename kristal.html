@@ -425,6 +425,7 @@ function render() {
     profiles: Object.fromEntries(rows.filter(r => r.slug)
       .map(r => [r.slug, { archetype: r.archetype, stats: r.stats, gender: r.gender }])),
     names: namesBySlug,
+    slugByName: Object.fromEntries(rows.filter(r => r.slug && r.name).map(r => [r.name, r.slug])),
   };
   episodes = podcastFor({ ...buildInputs, proseSalts: salts });
   const total = episodes.reduce((n, e) => n + e.listeners, 0);

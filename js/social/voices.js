@@ -47,22 +47,22 @@
  */
 export const DELIVERY = {
   // trait: [pattern, profiles matched when last measured]
-  mystical: [/mystic|spiritual|new-age|cosmic|aura|zen|hippie|dream|surreal|bizarre/, 6],
+  mystical: [/mystic|spiritual|new-age|cosmic|aura|zen|hippie|dream|surreal|bizarre/, 7],
   // `criminal` because a CRIMINAL LAW STUDENT is not streetwise. The
   // count drifting from 7 to 8 was this and only this: Hasan is composed and
   // formal, reads as a lawyer because he is training to be one, and the word
   // that put him in a jersey-tough delivery bucket was his degree.
-  streetwise: [/tough|street|jersey|scrapp|hardened|delinquent|rebel|punk|criminal(?! law)|thug/, 6],
-  boastful: [/boast|arrogant|egotis|vain|self-obsessed|narcissis|cocky|braggart|conceited/, 10],
-  excitable: [/excit|hyper|energetic|bubbly|manic|enthusiast|bouncy|eager|giddy/, 14],
-  theatrical: [/dramat|theatric|flamboyan|over-the-top|melodram|diva|showman|grandiose|poetic|opera/, 17],
-  sarcastic: [/sarcas|snark|sardonic|mocking|cynic|smug|smart-alec|wry|ironic/, 16],
-  formal: [/formal|articulate|precise|analytic|intellect|scholar|clinical|methodical|polite|proper/, 17],
-  nervous: [/nervous|anxious|timid|shy|stammer|panick|insecure|jitter|worrier|meek|fearful/, 23],
-  deadpan: [/deadpan|dry |monoton|stoic|laconic|unbothered|nonchalant|apathetic|bored|flat /, 19],
-  manipulative: [/manipulat|silky|flatter|charm|schem|slick|smooth|honey|calculat|cunning/, 30],
-  blunt: [/blunt|brash|loud|aggressive|abrasive|no-nonsense|harsh|gruff|confrontational|bossy/, 48],
-  warm: [/kind|sweet|warm|gentle|caring|nurtur|supportive|optimis|cheerful|friendly|earnest/, 85],
+  streetwise: [/tough|street|jersey|scrapp|hardened|delinquent|rebel|punk|criminal(?! law)|thug/, 17],
+  boastful: [/boast|arrogant|egotis|vain|self-obsessed|narcissis|cocky|braggart|conceited/, 16],
+  excitable: [/excit|hyper|energetic|bubbly|manic|enthusiast|bouncy|eager|giddy/, 23],
+  theatrical: [/dramat|theatric|flamboyan|over-the-top|melodram|diva|showman|grandiose|poetic|opera/, 29],
+  sarcastic: [/sarcas|snark|sardonic|mocking|cynic|smug|smart-alec|wry|ironic/, 18],
+  formal: [/formal|articulate|precise|analytic|intellect|scholar|clinical|methodical|polite|proper/, 25],
+  nervous: [/nervous|anxious|timid|shy|stammer|panick|insecure|jitter|worrier|meek|fearful/, 33],
+  deadpan: [/deadpan|dry |monoton|stoic|laconic|unbothered|nonchalant|apathetic|bored|flat /, 31],
+  manipulative: [/manipulat|silky|flatter|charm|schem|slick|smooth|honey|calculat|cunning/, 53],
+  blunt: [/blunt|brash|loud|aggressive|abrasive|no-nonsense|harsh|gruff|confrontational|bossy/, 93],
+  warm: [/kind|sweet|warm|gentle|caring|nurtur|supportive|optimis|cheerful|friendly|earnest/, 129],
 };
 
 /**

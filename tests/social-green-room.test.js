@@ -92,10 +92,21 @@ describe('a night in the green room (the published Big Brother season)', () => {
     expect(replies).toBeGreaterThan(5);
   });
 
-  it('never pities a winner or congratulates the one it happened to', () => {
+  it('never pities a winner, or talks about somebody evicted as if they were still playing', () => {
     for (const { msgs } of nights) for (const m of msgs) {
-      expect(m.text).not.toMatch(/undefined|\{|\}/);
+      expect(m.text).not.toMatch(/undefined|\{|\}|\bnull\b/);
       if (roleOf(m) === 'win') expect(m.text, m.text).not.toMatch(/Poor |deserved better|impossible spot/);
+      if (roleOf(m) === 'out') expect(m.text, m.text).not.toMatch(/need a miracle|fight back now|isn't finished|watch their back/);
+    }
+  });
+
+  // the user, 2026-10-24, after the first pass: "they still talk like yoda". Every host message is now
+  // the moment said in words, or an answer to a host, with a point of its own most of the time.
+  it('posts no maxim: every message says the moment or answers somebody', () => {
+    const w = { onDanger: 'on the block', challenge: 'competition', home: 'house' };
+    for (const { feed, msgs } of nights) {
+      const facts = feed.events.map(e => factOf(e, w)).filter(Boolean);
+      for (const m of msgs) expect(!!m.replyTo || facts.some(f => m.text.includes(f)), m.text).toBe(true);
     }
   });
 });

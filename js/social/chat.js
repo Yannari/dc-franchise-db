@@ -19,7 +19,7 @@ import { eventLabel, words } from './adapter.js';
 import { pickRotating } from './freshness.js';
 import { TRAIT_TAKES, assignTraits } from './voices.js';
 import { packFor } from './packs/index.js';
-import { factOf, roleOf, deliveryOf, reactPool, replyPool } from './green-room.js';
+import { factOf, roleOf, deliveryOf, reactPool, replyPool, clausePool } from './green-room.js';
 import { placeWords } from './humanize.js';
 
 /** Deterministic rng — the same night must not say different things on reload. */
@@ -810,13 +810,29 @@ export function buildChatMessages(events, speakers, {
       let talked = null;
       // whom a host answers: mostly the one who opened the moment, now and then the last word on it
       let answering = null;
-      if (prevOnMoment && rng() < 0.65) {
+      // where this host stands on the moment: an opener takes it as it was said; agreeing with somebody
+      // keeps their side, disagreeing takes the other (agreeing with "that win is the worst thing for
+      // Ireland" and then saying "Ireland earned every bit of that" was a contradiction)
+      let take = 'agree';
+      // (always: a host after the first answering somebody is the room; one posting a maxim beside them was
+      // the "yoda" the user kept hearing)
+      if (prevOnMoment) {
         answering = prevOnMoment.replyTo && opener && rng() < 0.6 ? opener : prevOnMoment;
         const differs = answering.lens !== lens;
         const stance = rng() < (differs ? 0.6 : 0.3) ? 'disagree' : 'agree';
+        const theirs = answering._take || 'agree';
+        take = stance === 'agree' ? theirs : theirs === 'agree' ? 'disagree' : 'agree';
         const said = replyPool(voice, stance, role);
-        if (said.length) talked = voiceDraw(said, `reply:${voice}:${stance}:${role}`)({ p: answering.author, s: subject });
-        else answering = null;
+        if (said.length) {
+          talked = voiceDraw(said, `reply:${voice}:${stance}:${role}`)({ p: answering.author, s: subject });
+          // ...and what the answer is about: the player, or whoever acted (green-room.js CLAUSE)
+          const actor = ev.actor ? titleCase(ev.actor) : null;
+          const point = clausePool(take, role, !!actor);
+          if (point.length && rng() < 0.85) {
+            const c = voiceDraw(point, `clause:${take}:${role}`)({ s: subject, a: actor });
+            if (c && !talked.includes(c)) talked = `${talked} ${c}`;
+          }
+        } else answering = null;
       } else if (!prevOnMoment && fact) {
         const said = reactPool(voice, role);
         if (said.length) talked = voiceDraw(said, `react:${voice}:${role}`)({ f: fact, s: subject });
@@ -853,6 +869,7 @@ export function buildChatMessages(events, speakers, {
         ...(talked && answering ? { replyTo: answering.id } : {}),
         // the conversation it belongs to, so the clock sort cannot split it (removed below)
         _thread: answering ? (answering._thread || answering.id) : null,
+        _take: talked ? take : null,
         text: line,
         // an answer comes after what it answers
         at: talked && answering ? Math.max(prevOnMoment.at, answering.at) + 20000 + Math.round(rng() * 70000)
@@ -898,7 +915,7 @@ export function buildChatMessages(events, speakers, {
       if (shape(next) !== shape(out[i - 1].text)) { out[i].text = next; break; }
     }
   }
-  for (const m of out) { delete m._pool; delete m._poolKey; delete m._thread; }
+  for (const m of out) { delete m._pool; delete m._poolKey; delete m._thread; delete m._take; }
 
   // ── members answer underneath ──
   //

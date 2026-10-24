@@ -112,19 +112,26 @@ export function eligibleHosts({
 /**
  * The hosts attached to this season — the 8-14 the room feels like it belongs to.
  *
- * Same-show authority is a bonus rather than a gate, so an icon from the other
- * format can still cover a premiere; without that, a new show opens to an empty
- * green room on the one night it most needs voices.
+ * THE SHOW'S OWN ALUMNI FIRST, ALWAYS (user, 2026-10-24: "chatalumni should
+ * always prioritize alumni from their respective show as eligible first,
+ * cross alumni intershow its just in case we dont have enough alumni"). Same-
+ * show authority used to be a +25 bonus, so a famous enough visitor still
+ * outranked somebody who played this show. Now every eligible alumnus of the
+ * show is seated before any visitor, and visitors come in only to make up a
+ * room that can hold a night's conversation (`fill`, the most who speak in
+ * one episode) — which is still how a new show's premiere gets its voices.
  */
-export function seasonPanel(hosts, { format = 'total-drama', size = 12 } = {}) {
+export const PANEL_FILL = 7;
+export function seasonPanel(hosts, { format = 'total-drama', size = 12, fill = PANEL_FILL } = {}) {
   const scored = hosts.map(h => ({
     ...h,
     influence: h.fameScore
-      + (h.native ? 25 : 0)
       + Math.min(15, h.lastSeason)          // recent players are fresher in mind
       + h.wins * 8,
   })).sort((a, b) => b.influence - a.influence || a.name.localeCompare(b.name));
-  return scored.slice(0, size);
+  const native = scored.filter(h => h.native).slice(0, size);
+  const visitors = scored.filter(h => !h.native).slice(0, Math.max(0, Math.min(size, fill) - native.length));
+  return [...native, ...visitors];
 }
 
 /** Which expertise a night calls for. A finale wants finalists, not comp beasts. */
@@ -177,7 +184,8 @@ export function episodeSpeakers(panel, events, {
         + expertise * 30
         + (castmates.get(h.slug) || 0) * 40,
     };
-  }).sort((a, b) => b.relevance - a.relevance || a.name.localeCompare(b.name));
+  // The show's own alumni lead the room; a visitor speaks only in a seat they cannot fill.
+  }).sort((a, b) => (b.native ? 1 : 0) - (a.native ? 1 : 0) || b.relevance - a.relevance || a.name.localeCompare(b.name));
 
   const take = Math.max(min, Math.min(max, scored.length));
 

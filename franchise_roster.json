@@ -9153,6 +9153,27 @@
       "voice": "Slow, gentle Southern drawl, polite to a fault: 'well, shucks', 'yes ma'am'. Talks about his animals like family and calms a room just by walking into it. #calm #warm",
       "profileSources": {},
       "ties": []
+    },
+    {
+      "name": "Vlad",
+      "slug": "vlad",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "underdog",
+      "stats": {
+        "physical": 6,
+        "endurance": 7,
+        "mental": 7,
+        "social": 3,
+        "strategic": 6,
+        "loyalty": 6,
+        "boldness": 3,
+        "intuition": 7,
+        "temperament": 8
+      },
+      "voice": "Flat, low and sparing; says as little as possible and makes every word count. Dry one-liners, long silences, and a softness he hides the moment a baby animal appears. #quiet #dry",
+      "profileSources": {},
+      "ties": []
     }
   ]
 }

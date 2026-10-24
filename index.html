@@ -19,7 +19,7 @@
   <style>
     /* The front page. The cast wall (.heroWall) and carousel (.coverflow) keep
        their styles.css rules; everything here is the page around them. */
-    .hm{max-width:1280px;margin:0 auto;padding:22px clamp(16px,3vw,32px) 56px;display:grid;gap:40px}
+    .hm{max-width:1280px;margin:0 auto;padding:22px clamp(16px,3vw,32px) 56px;display:grid;grid-template-columns:minmax(0,1fr);gap:40px}
     .hm-hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:28px;align-items:end;
       min-height:440px!important;padding:clamp(24px,4vw,48px)!important}
     .hm-hero-copy,.hm-hero-side{position:relative;z-index:2;min-width:0}
@@ -37,6 +37,35 @@
     .hm-btn.primary{background:linear-gradient(135deg,#FF3EA5,#7B5CFF);border-color:transparent}
     .hm-btn:hover{filter:brightness(1.1)}
     .hm-btn:focus-visible,.hm-head a:focus-visible{outline:2px solid #FFC23D;outline-offset:3px}
+    /* The channel: corner bug + programme guide (js/home.js) */
+    .hm-bug{position:absolute;top:18px;right:20px;z-index:3;display:flex;align-items:center;gap:8px;opacity:.82;pointer-events:none;
+      color:#fff;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+    .hm-bug svg{width:30px;height:30px}
+    .hm-bug span{font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;padding:3px 7px;border-radius:4px;
+      background:rgba(255,255,255,.14)}
+    .hm-bug span.is-live{background:#E5243B}
+    @media(max-width:560px){.hm-bug{top:12px;right:12px;gap:6px}.hm-bug svg{width:20px;height:20px}.hm-bug span{font-size:9.5px;padding:2px 5px}}
+    .hm-guide-wrap:empty{display:none}
+    .hm-guide-wrap{margin:0 0 30px}
+    .hm-guide{display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;border-radius:20px;overflow:hidden;
+      border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03)}
+    .hm-guide-col{display:flex;flex-direction:column;gap:8px;padding:14px;border-left:1px solid rgba(255,255,255,.08);min-width:0}
+    .hm-guide-col:first-child{border-left:0}
+    .hm-guide-col.is-now{background:linear-gradient(180deg,rgba(229,36,59,.12),rgba(229,36,59,.02))}
+    .hm-guide-col h3{margin:0 0 2px;font-size:11.5px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--muted,#bdb4c7)}
+    .hm-guide-col.is-now h3{color:#FF6B7D}
+    .hm-prog{position:relative;display:grid;gap:2px;padding:10px 12px;border-radius:12px;text-decoration:none;color:#F3EEF9;
+      background:rgba(0,0,0,.25);border-left:3px solid var(--show);transition:background .15s ease,transform .15s ease}
+    .hm-prog:hover{background:rgba(0,0,0,.42);transform:translateX(2px)}
+    .hm-prog b{font-size:15px;line-height:1.2}
+    .hm-prog span{font-size:12.5px;color:var(--muted,#bdb4c7)}
+    .hm-prog-live{position:absolute;top:10px;right:10px;font-style:normal;font-size:10px;font-weight:900;letter-spacing:.14em;
+      text-transform:uppercase;color:#fff;background:#E5243B;padding:2px 6px;border-radius:4px}
+    .hm-prog-none{margin:0;font-size:13px;color:var(--muted,#bdb4c7)}
+    @media(max-width:900px){
+      .hm-guide{display:flex;overflow-x:auto;scroll-snap-type:x mandatory}
+      .hm-guide-col{flex:0 0 78%;scroll-snap-align:start}
+    }
     /* Today on Blindside (js/today.js) */
     .hm-today:empty{display:none}
     .td-date{color:var(--muted,#bdb4c7);font-size:14px}
@@ -252,6 +281,8 @@
     </section>
 
     <div id="hmDigest"></div>
+
+    <section id="hmGuide" class="hm-guide-wrap" aria-label="What is on"></section>
 
     <section class="hm-counts" id="hmCounts" aria-label="The network in numbers"></section>
 

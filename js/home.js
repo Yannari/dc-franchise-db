@@ -15,6 +15,7 @@ import { loadPortraitCatalog, avatarUrl } from './avatar-registry.js';
 import { onAirModel, loadAiring, airingModels, exitSentence } from './on-air.js';
 import { snapshot, mountDigest } from './digest.js';
 import { mountToday } from './today.js';
+import { brandMark } from './brand.js';
 
 const API = (() => {
   try { return (localStorage.getItem('studio_api_base') || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, ''); }
@@ -170,8 +171,8 @@ function showsHtml(model) {
       ${w ? `<span class="hm-show-winner"><img src="${esc(avatarUrl({ slug: w.playerSlug, show: s.format }))}" alt="" loading="lazy" onerror="this.remove()">Latest winner <b>${esc(w.name)}</b></span>` : ''}
     </a>`;
   };
-  return `<div class="hm-shows">${model.aired.map(tile).join('')}</div>`
-    + (model.upcoming.length ? `<p class="hm-upcoming">In production: ${model.upcoming.map(s => esc(s.name)).join(', ')}.</p>` : '');
+  // The shows still in production are in the programme guide's "Later".
+  return `<div class="hm-shows">${model.aired.map(tile).join('')}</div>`;
 }
 
 function finalesHtml(model) {
@@ -183,6 +184,40 @@ function finalesHtml(model) {
       <span><b>${esc(s.title)}</b><small>${ws.length ? `Won by ${esc(ws.map(x => x.name).join(' & '))}` : ''}${airLabel(s) ? ` · ${esc(airLabel(s))}` : ''}</small></span>
     </a>`;
   }).join('')}</div>`;
+}
+
+// ── the channel: its bug and its guide ──
+
+/**
+ * The programme guide: what is on now, what is up next, what is coming later
+ * and what is on demand -- the front page read the way a channel's is.
+ */
+export function guideHtml(models, model) {
+  const cell = (href, accent, title, sub, extra = '') => `<a class="hm-prog" href="${esc(href)}" style="--show:${esc(accent || '#B9A7FF')}">
+      ${extra}<b>${esc(title)}</b><span>${esc(sub)}</span></a>`;
+  const now = models.length
+    ? models.map(m => cell(`on-air.html?show=${encodeURIComponent(m.format)}`, m.show.accent, m.title,
+      `${m.words.round || 'Episode'} ${m.episode} · ${m.stillInCount} of ${m.total} still in`, '<i class="hm-prog-live">Live</i>')).join('')
+    : '<p class="hm-prog-none">Nothing on the air right now.</p>';
+  const next = models.map(m => cell(`on-air.html?show=${encodeURIComponent(m.format)}`, m.show.accent,
+    `${m.words.round || 'Episode'} ${(Number(m.episode) || 0) + 1}`, `${m.title} · make your call`)).join('')
+    || '<p class="hm-prog-none">The next season is being cast.</p>';
+  // A show with its first season on the air is "on now", not "later".
+  const later = model.upcoming.filter(s => !models.some(m => m.format === s.format)).map(s => cell(`seasons.html?show=${encodeURIComponent(s.format)}`, s.accent, s.name, 'In production')).join('')
+    || '<p class="hm-prog-none">Every show has aired.</p>';
+  const demand = model.recent.slice(0, 2).map(s => {
+    const w = seasonWinners(s).map(x => x.name).join(' & ');
+    return cell(`season_ref.html?season=${encodeURIComponent(s.seasonId || s.seasonNumber)}`, SHOWS[s.format || DEFAULT_FORMAT]?.accent,
+      s.title, w ? `The finale · won by ${w}` : 'The finale');
+  }).join('');
+  const col = (label, body, cls = '') => `<div class="hm-guide-col ${cls}"><h3>${label}</h3>${body}</div>`;
+  return `<div class="hm-guide" role="region" aria-label="Programme guide">
+    ${col('On now', now, 'is-now')}${col('Up next', next)}${col('Later', later)}${col('On demand', demand)}</div>`;
+}
+
+/** The channel's corner bug on the hero: the mark, and whether it is live. */
+export function bugHtml(live) {
+  return `<div class="hm-bug" aria-hidden="true">${brandMark({ id: 'hm-bug', animated: false })}<span class="${live ? 'is-live' : ''}">${live ? 'Live' : 'Replay'}</span></div>`;
 }
 
 export async function mountHome() {
@@ -224,6 +259,9 @@ export async function mountHome() {
   mountDigest(document.getElementById('hmDigest'),
     snapshot({ models, exits, seasons, players: players.length }),
     { models, exits, seasons, exitSentence, seasonWinners, showOf: f => SHOWS[f || DEFAULT_FORMAT] });
+
+  set('hmGuide', guideHtml(models, model));
+  document.querySelector('.hm-hero')?.insertAdjacentHTML('beforeend', bugHtml(models.length > 0));
 
   const mount = document.getElementById('hmOnAir');
   if (!mount) return;

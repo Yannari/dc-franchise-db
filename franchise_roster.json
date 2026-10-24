@@ -8829,8 +8829,7 @@
       "occupation": "Artist",
       "descriptor": "The Artist",
       "backstory": "Ian Baxter, who has answered to Baxter since school, is a painter from Plattsmouth, Nebraska, a river town where he was the only openly gay man most of his neighbours had ever met. He left for art school, came back to look after his grandmother and stayed. He paints barns, grain silos and the people who work in them, sells canvases at the state fair and teaches a Thursday night class at the library. His grandmother, who is ninety and still ruthless at bingo, made him apply. He is older than most of the house and expects to be underestimated by people who think an artist from Nebraska cannot play a game.",
-      "personality": "Baxter is eccentric, gentle and much sharper than his rambling suggests. He sees the house the way he sees a painting, noticing who stands next to whom and who looks away, and he files it all behind a dreamy smile. He is funny in a dry, unexpected way and gets on with the misfits better than the popular crowd. He is a survivor: put him on the block and he will talk, joke and charm his way off it again. He follows his gut and changes his mind when it tells him to, which makes him hard to count on and hard to target. His flaw is that he hates holding power, and he wobbles when it is finally his turn.",
-      "ties": []
+      "personality": "Baxter is eccentric, gentle and much sharper than his rambling suggests. He sees the house the way he sees a painting, noticing who stands next to whom and who looks away, and he files it all behind a dreamy smile. He is funny in a dry, unexpected way and gets on with the misfits better than the popular crowd. He is a survivor: put him on the block and he will talk, joke and charm his way off it again. He follows his gut and changes his mind when it tells him to, which makes him hard to count on and hard to target. His flaw is that he hates holding power, and he wobbles when it is finally his turn."
     },
     {
       "name": "Ben",
@@ -9004,14 +9003,12 @@
       "occupation": "Police officer",
       "descriptor": "The Cop",
       "backstory": "Kyle Brady has been a police officer in Pensacola, Florida, for twenty-four years, and he still runs five miles before every shift to prove he can keep up with the rookies. He grew up on the Gulf Coast, joined the force at twenty-two and raised his son Don mostly on his own after the divorce; Don is in college now and calls him every Sunday. Kyle is old-fashioned, plain-spoken and proud of it. He applied because his son said he would not last a week in a house full of twenty-somethings, and Kyle has never turned down a challenge in his life. He plans to win the first competition and show every one of them.",
-      "personality": "Kyle is competitive, stubborn and protective. He is in better shape than men half his age, wants everyone to know it and treats every competition like a fitness test. He likes order and rules and has little patience for what he calls whining or for causes he does not understand, which puts him on a collision course with anyone who lectures him. He is loyal to the people he respects, mostly the athletes and anyone straight with him, and he would rather lose a fight than back down from one. Under the gruffness he is a proud dad who misses his kid. His blind spot is thinking a house works like a precinct.",
-      "ties": []
+      "personality": "Kyle is competitive, stubborn and protective. He is in better shape than men half his age, wants everyone to know it and treats every competition like a fitness test. He likes order and rules and has little patience for what he calls whining or for causes he does not understand, which puts him on a collision course with anyone who lectures him. He is loyal to the people he respects, mostly the athletes and anyone straight with him, and he would rather lose a fight than back down from one. Under the gruffness he is a proud dad who misses his kid. His blind spot is thinking a house works like a precinct."
     },
     {
       "name": "Lacey",
       "slug": "lacey",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "showmancer",
       "stats": {
         "physical": 6,
@@ -9024,15 +9021,23 @@
         "intuition": 6,
         "temperament": 6
       },
+      "sexuality": "straight",
       "voice": "Bright, earnest and a little breathless, talks fast about the future and her plans. Blushes and laughs at herself; when she likes someone, everyone can tell. #earnest #warm#competitive:3.5#emotional",
       "profileSources": {},
-      "ties": []
+      "age": 21,
+      "birthdate": "2006-04-17",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Bloomington, Indiana",
+      "occupation": "City hall intern",
+      "descriptor": "The Future Mayor",
+      "backstory": "Lacey McAdams is a twenty-one-year-old intern at Bloomington city hall in Indiana, where she files permits, answers the phone and tells anyone who will listen that she will be mayor one day. She is the eldest of three, the daughter of a schoolteacher and a mail carrier, and she has been running for something, class president, homecoming court, student council, since she was ten. She keeps a five-year plan in a notebook and a romantic streak she pretends not to have. She applied because a reality show is a campaign with better lighting, and she has always wanted to know if she could win one.",
+      "personality": "Lacey is ambitious, warm and sincere. She is a natural politician, friendly to everyone, good with names and keen to be liked, though she still blushes when she is caught campaigning. She takes the game seriously and wants to make a big move herself rather than be carried. She falls for people fast and completely, and once she has picked someone she is all in, which makes her loyal and a little blind. She is braver than she looks and will use power when she gets it. Her weakness is that she is young and every feeling shows on her face, so the house always knows where she stands and who she stands with."
     },
     {
       "name": "Martin",
       "slug": "martin",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "floater",
       "stats": {
         "physical": 3,
@@ -9045,15 +9050,23 @@
         "intuition": 6,
         "temperament": 7
       },
+      "sexuality": "straight",
       "voice": "Nervous, nerdy and quick, full of comic-book comparisons and reality TV trivia. Stammers when put on the spot, then lights up when he gets to explain something. #nerdy #anxious",
       "profileSources": {},
-      "ties": []
+      "age": 25,
+      "birthdate": "2001-05-29",
+      "ethnicity": "Mexican American",
+      "nationality": "American",
+      "hometown": "San Jose, California",
+      "occupation": "Comic book store employee",
+      "descriptor": "The Superfan",
+      "backstory": "Martin Rivera works at a comic book store in San Jose, California, where he runs Friday tabletop night and knows every regular's pull list by heart. He grew up the only boy in a Mexican American family of five, the kid reading under the table at family parties while his cousins played football in the yard. He has watched every season of every big reality competition and keeps a spreadsheet of the best moves ever made. He lives with his parents to save money and has never had a girlfriend for longer than a month. He applied because he has spent half his life knowing exactly what everyone on screen should have done, and he wants to find out if he can do it himself.",
+      "personality": "Martin is sweet, anxious and an encyclopaedia of other people's games. He talks strategy constantly, casts everyone in the house as a superhero or a villain and gets genuinely excited when somebody makes a big move, even against him. He is loyal to the first people who treat him as an equal and hurt badly when they don't. Under pressure he freezes, stammers and overthinks, and the athletes intimidate him. He is far more resilient than he looks and keeps coming back from the block with a new plan. His blind spot is that knowing the game in theory is not the same as playing it in the room."
     },
     {
       "name": "Michele",
       "slug": "michele",
       "gender": "f",
-      "sexuality": "bi",
       "archetype": "social-butterfly",
       "stats": {
         "physical": 3,
@@ -9066,15 +9079,23 @@
         "intuition": 9,
         "temperament": 6
       },
+      "sexuality": "bi",
       "voice": "Bubbly and fast, talks like she is filming even when she isn't: 'amaze', 'literally', a hashtag said out loud. Goes soft and earnest when she talks about her boyfriend or her dogs. #warm #loud",
       "profileSources": {},
-      "ties": []
+      "age": 23,
+      "birthdate": "2003-09-15",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Denver, Colorado",
+      "occupation": "Blogger",
+      "descriptor": "The Vlogger",
+      "backstory": "Michele grew up in Denver, the middle child of a big, loud family, and started filming herself at fourteen because nobody at the dinner table let her finish a sentence. Nine years later she has more than half a million subscribers on ViewTube, for a channel about her life, her outfits and her two dogs, Nova and Dash, and a boyfriend, Dwayne, who films, edits and keeps her grounded. She moved to Los Angeles for the channel and misses her family more than she says on camera. A lifelong reality TV fan, she applied to prove she can make real friends off a screen. She plans to keep her following a secret in case it makes her a target.",
+      "personality": "Michele is upbeat, sociable and tougher than she looks. She talks to everyone, remembers everyone's birthday and makes people feel like the most interesting person in the room, and it is mostly not an act. She is not athletic and knows it, so her game is friendships, and she keeps them even when the numbers say she shouldn't. She hates conflict and gets tearful in arguments, but she does not break: put her on the block five times and she will campaign five times, smiling. She talks about Dwayne her dog constantly. Her flaw is that she narrates her own life, and people sometimes wonder which Michele is the real one."
     },
     {
       "name": "Nina",
       "slug": "nina",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "wildcard",
       "stats": {
         "physical": 6,
@@ -9087,15 +9108,23 @@
         "intuition": 7,
         "temperament": 4
       },
+      "sexuality": "straight",
       "voice": "Loud, quick and Jersey to the bone, says exactly what she thinks with a laugh on top. Talks in music, reads a room like a dance floor and knows when to switch the track. #loud #blunt#warm:3#dry",
       "profileSources": {},
-      "ties": []
+      "age": 26,
+      "birthdate": "2000-12-02",
+      "ethnicity": "African American",
+      "nationality": "American",
+      "hometown": "Hoboken, New Jersey",
+      "occupation": "DJ",
+      "descriptor": "The DJ",
+      "backstory": "Nina Jonae grew up in Hoboken, New Jersey, the youngest of four sisters, in an apartment where the radio was never off. She started DJing at sixteen at her cousin's parties, worked her way into clubs across the river, and now plays weddings on Saturdays and nightclubs until four on Sunday mornings. She knows how to read a crowd and how to win one back, and she thinks a house full of strangers is just a crowd with a cash prize. Her family is her whole world; the cousin who taught her to beat-match has never let her forget it. She applied because her sisters dared her to.",
+      "personality": "Nina is confident, outspoken and fun, the person who turns a quiet kitchen into a party. She has no filter and does not want one: if she thinks you are lying she will say so, laugh, and still share her snacks with you. She is fiercely loyal to the misfits and outsiders she adopts and has no time for cliques or for people who think they are better than everyone else. She reads people well, but she reacts before she thinks, and her mouth starts fights her head could have avoided. When she wins power she uses it boldly. Her weakness is that she cannot pretend, and in this house sometimes you have to."
     },
     {
       "name": "Paisley",
       "slug": "paisley",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "chaos-agent",
       "stats": {
         "physical": 6,
@@ -9108,15 +9137,23 @@
         "intuition": 4,
         "temperament": 4
       },
+      "sexuality": "straight",
       "voice": "Bright, peppy and supremely confident, a pageant smile and a podium voice. Says the wrong thing with total sincerity, explains it twice and never notices the room has gone silent. #proud#cruel #-quiet",
       "profileSources": {},
-      "ties": []
+      "age": 25,
+      "birthdate": "2002-04-04",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Scottsdale, Arizona",
+      "occupation": "Public relations associate",
+      "descriptor": "The Debutante",
+      "backstory": "Paisley grew up in Scottsdale, Arizona, the daughter of a car dealership owner and a former pageant queen, and she has been competing, campaigning and smiling for cameras since she could walk. She was first runner-up for Miss Teen Arizona, president of her college's Young Republicans and the author of a blog about faith, fitness and family values. She does public relations for her father's dealerships and has a five-year plan that includes a husband, a ranch house and a run for the state legislature. She applied because she thinks America needs to see someone with real values on television, and because she is sure everyone will love her once they get to know her.",
+      "personality": "Paisley is polished, confident and completely unaware of how she comes across. She is never mean on purpose; she genuinely believes she is helping when she corrects someone's grammar, critiques their diet or explains why their opinion is wrong. Her politics come out at the worst possible moments, and she cannot understand why people get upset when she is only being honest. She is upbeat, organised and generous, always offering to plan, host or take charge, which is part of the problem. She is loyal and sincere, and it would hurt her to learn that half the house finds her exhausting. Her blind spot is herself: she never notices the room going quiet."
     },
     {
       "name": "Sabrina",
       "slug": "sabrina",
       "gender": "f",
-      "sexuality": "queer",
       "archetype": "hothead",
       "stats": {
         "physical": 4,
@@ -9129,15 +9166,23 @@
         "intuition": 4,
         "temperament": 2
       },
+      "sexuality": "queer",
       "voice": "Passionate, preachy and quick to accuse, every conversation turned into a protest speech. Calls things problematic, raises her voice when challenged and rarely hears the irony. #loud #blunt#chaotic",
       "profileSources": {},
-      "ties": []
+      "age": 29,
+      "birthdate": "1997-10-29",
+      "ethnicity": "African American",
+      "nationality": "American",
+      "hometown": "Quechee, Vermont",
+      "occupation": "Non-profit event organiser",
+      "descriptor": "The Activist",
+      "backstory": "Sabrina Jackson organises events for an environmental non-profit in Quechee, Vermont, and you can find her at almost every rally, march and protest in New England. She grew up in a family that argued about politics at every meal and learned to win by being the loudest and the most certain. She is vegan, an animal rights campaigner and proudly confrontational, and she has been asked to leave two farmers' markets for arguing with the vendors. She applied because a national audience is a platform, and she believes the right message, shouted loudly enough, can change minds. She does not plan to make friends with people whose values she cannot respect.",
+      "personality": "Sabrina is passionate, principled and combative. She genuinely wants to make the world better and genuinely believes she knows how, but she attacks people for their habits and beliefs instead of persuading them, and she does not notice when her own choices contradict her speeches. She takes criticism as an attack and answers it with louder accusations, quick to call her opponents sexist or ignorant. She is loyal and loving to the few friends who share her causes. Under the noise she is lonely and suspects people are laughing at her. Her weakness is that she cannot pick her battles: every fight is the most important one, so she fights everyone."
     },
     {
       "name": "Sawyer",
       "slug": "sawyer",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "hero",
       "stats": {
         "physical": 7,
@@ -9150,15 +9195,23 @@
         "intuition": 6,
         "temperament": 9
       },
+      "sexuality": "straight",
       "voice": "Slow, gentle Southern drawl, polite to a fault: 'well, shucks', 'yes ma'am'. Talks about his animals like family and calms a room just by walking into it. #calm #warm",
       "profileSources": {},
-      "ties": []
+      "age": 28,
+      "birthdate": "1998-11-30",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Nashville, Tennessee",
+      "occupation": "Farmhand",
+      "descriptor": "The Southern Gent",
+      "backstory": "Sawyer is a farmhand outside Nashville, Tennessee, who looks after twenty-seven animals, holds licences for more machines than he can name and has never been outside the state. He grew up on the farm he now works, raised by his grandparents, and was a mechanical bull riding champion three years running. He has a partner back home, Caleb, a vet he met when his baby goat Buckley got sick, and he would have brought Buckley into the house if they had let him. He would rather nobody assumed the farm makes him money, because it doesn't. He applied because a show like this needs an outsider, a breath of fresh farm air. His motto is eat clean and eat green.",
+      "personality": "Sawyer is calm, kind and empathetic. He hates confrontation and does everything he can to defuse a fight, usually with a story about a stubborn animal. He listens more than he talks, notices when someone is struggling and is the person people cry in front of. He is honest and finds lying physically uncomfortable, which makes him a poor strategist and a very good friend. His game is finding the people he connects with and sticking with them. He has a quiet stubborn streak, though, and push him hard enough and the bull rider shows. His weakness is that he trusts too easily, and the house learns it fast."
     },
     {
       "name": "Vlad",
       "slug": "vlad",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "underdog",
       "stats": {
         "physical": 6,
@@ -9171,15 +9224,23 @@
         "intuition": 7,
         "temperament": 8
       },
+      "sexuality": "straight",
       "voice": "Flat, low and sparing; says as little as possible and makes every word count. Dry one-liners, long silences, and a softness he hides the moment a baby animal appears. #quiet #dry",
       "profileSources": {},
-      "ties": []
+      "age": 25,
+      "birthdate": "2001-07-02",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Seattle, Washington",
+      "occupation": "Guitarist",
+      "descriptor": "The Lone Wolf",
+      "backstory": "Vlad plays electric guitar, and sometimes bass, in a Seattle band called And Inside that has been almost famous for ten years. He grew up in the rain with a father who repaired amplifiers and a mother who taught piano, and he learned to say what he felt through a guitar instead of out loud. The band shares every songwriting credit and every unpaid bill, and the prize money would finally pay for the album they keep promising. He applied because he thought he fit a stereotype the casting people wanted, and he was right. He does not want to be friends with anyone in the house, and he would never admit he volunteers at an animal shelter on weekends.",
+      "personality": "Vlad is stoic, private and far more observant than his silence suggests. His plan is to lie low, and he is very good at it: he never campaigns, never shouts and never gives anyone a reason to write his name down. He keeps to himself, writes in his music journal and answers questions with a shrug or a single word. People find him either cool or rude, and he does not care which. Under it he is gentle, loyal once won over, and has a dark, dry humour that slips out at the worst moments. His motto is that melancholy is the happiness of being sad. His flaw is that hiding works only until the house runs out of people to hide behind."
     },
     {
       "name": "Willow",
       "slug": "willow",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "social-butterfly",
       "stats": {
         "physical": 4,
@@ -9192,9 +9253,18 @@
         "intuition": 5,
         "temperament": 4
       },
+      "sexuality": "straight",
       "voice": "Big, theatrical and emotional, every story told like an audition, every feeling at full volume. Quotes plays, calls people 'darling', and cries easily, every tear real. #theatrical #emotional",
       "profileSources": {},
-      "ties": []
+      "age": 34,
+      "birthdate": "1992-07-19",
+      "ethnicity": "Puerto Rican American",
+      "nationality": "American",
+      "hometown": "New York City, New York",
+      "occupation": "Actress",
+      "descriptor": "The Actress",
+      "backstory": "Willow Guvera is an actress from New York City who has been almost famous for fifteen years. She grew up in Washington Heights, the daughter of a Puerto Rican seamstress who sewed costumes for off-Broadway shows, and she spent her childhood backstage. She has played three nurses, two murder victims and a talking cereal box, and she waits tables between parts. At thirty-four she is tired of hearing she is too old, too loud or too much. She cares passionately about animals and the environment and will march for either. She applied because no casting director can tell her she is wrong for the part if the part is herself.",
+      "personality": "Willow is dramatic, warm-hearted and impossible to ignore. She treats the house like a stage and every conversation like a scene, and she is genuinely lovely to the people she likes, generous with compliments, hugs and advice nobody asked for. She feels everything deeply and shows all of it, laughing loudly and crying openly, which some people find charming and others exhausting. She is loyal to her friends to the point of recklessness and will defend them long after it has stopped being smart. She is not much of a strategist and knows it. Her weakness is that she performs even when she is sincere, so people are never sure when to believe her."
     }
   ]
 }

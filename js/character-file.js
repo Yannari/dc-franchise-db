@@ -218,9 +218,12 @@ export function normalizeCharacter(raw, vocab) {
   if (Array.isArray(dragSrc.family)) out.drag.family = dragSrc.family.filter(l => l && l.name && l.rel).map(l => ({ name: String(l.name), rel: String(l.rel) }));
   if (Object.keys(out.drag).length) out.filled.push('drag');
 
-  // Family & ties: [{ name, kin, role? }], as the editor writes them.
+  // Family & ties: [{ name, kin, role? }], as the editor writes them; a partner outside the franchise is
+  // { name?, kin, outside: true } (js/ties.js outsidePartner), the name optional.
   if (Array.isArray(r.ties)) {
-    out.ties = r.ties.filter(t => t && t.name && t.kin).map(t => ({ name: String(t.name), kin: String(t.kin), ...(t.role ? { role: String(t.role) } : {}) }));
+    out.ties = r.ties.filter(t => t && t.kin && (t.name || t.outside === true)).map(t => (t.outside === true
+      ? { name: String(t.name || ''), kin: String(t.kin), outside: true }
+      : { name: String(t.name), kin: String(t.kin), ...(t.role ? { role: String(t.role) } : {}) }));
     if (out.ties.length) out.filled.push(`${out.ties.length} ties`);
   }
 

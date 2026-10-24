@@ -52,7 +52,8 @@ export function authoredEdges(roster = rosterNow()) {
   const out = new Map();
   for (const c of roster || []) {
     for (const t of c?.ties || []) {
-      if (!t?.name || !t.kin || t.name === c.name) continue;
+      // a partner outside the franchise is nobody's tie but theirs (outsidePartner)
+      if (!t?.name || !t.kin || t.name === c.name || t.outside) continue;
       const k = key(c.name, t.name);
       if (out.has(k)) continue;
       const roleA = DIRECTED[t.kin] ? (FLIP[t.role] ? t.role : DIRECTED[t.kin][0]) : null;
@@ -194,3 +195,29 @@ export function startingCoupleBySlug(slug, roster = rosterNow()) {
   return partner?.slug ? { stage: c.stage, with: partner.slug } : null;
 }
 setLifeStart(slug => startingCoupleBySlug(slug));
+
+// ── Somebody outside the franchise ──
+// A couple tie to a person who is not a character: `{ kin: 'married', outside: true, name? }`. The user,
+// 2026-10-23: "just add in tie a way to set married for status unknow". No other sheet sees it and no family
+// is worked out from it (authoredEdges skips it); it is the partner waiting at home, which every show already
+// plays (life-cast.js lifeSeeds soloPartners → partnerAtHome / atHome). The name is optional: blank, it is
+// "Paisley's husband", the word read off her gender and sexuality, and "spouse" when they do not say.
+const OUTSIDE_WORD = {
+  married: { m: 'husband', f: 'wife', x: 'spouse' },
+  engaged: { m: 'fiancé', f: 'fiancée', x: 'fiancé' },
+  partners: { m: 'partner', f: 'partner', x: 'partner' },
+  dating: { m: 'boyfriend', f: 'girlfriend', x: 'partner' },
+};
+function outsideWord(me, kin) {
+  const g = me?.gender, s = me?.sexuality;
+  const other = g === 'm' || g === 'f' ? (s === 'straight' ? (g === 'm' ? 'f' : 'm') : s === 'gay' || s === 'lesbian' ? g : 'x') : 'x';
+  return (OUTSIDE_WORD[kin] || OUTSIDE_WORD.married)[other];
+}
+export function outsidePartner(name, roster = rosterNow()) {
+  const me = (roster || []).find(c => c?.name === name);
+  const mine = (me?.ties || []).filter(t => t?.outside && TIE_STAGE[t.kin]);
+  if (!mine.length) return null;
+  mine.sort((x, y) => STAGE_RANK.indexOf(x.kin) - STAGE_RANK.indexOf(y.kin));
+  const named = String(mine[0].name || '').trim();
+  return { name: named || `${name}'s ${outsideWord(me, mine[0].kin)}`, stage: TIE_STAGE[mine[0].kin], named: !!named };
+}

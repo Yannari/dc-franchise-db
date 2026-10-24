@@ -708,13 +708,19 @@ const TIE_KINDS = new Set(['twins', 'siblings', 'step-siblings', 'parent-child',
   'in-laws', 'married', 'engaged', 'partners', 'dating', 'best-friends', 'childhood-friends', 'old-friends',
   'roommates', 'colleagues', 'teammates', 'estranged', 'exes', 'ex-friends']);
 const TIE_ROLES = new Set(['parent', 'child', 'grandparent', 'grandchild', 'elder', 'younger']);
+const OUTSIDE_KINDS = new Set(['married', 'engaged', 'partners', 'dating']);
 function tiesToJson(raw) {
   if (raw == null) return null;
   if (!Array.isArray(raw)) throw new ValidationError('ties must be a list');
   const out = [];
   for (const t of raw) {
     if (!t || typeof t !== 'object') continue;
-    const name = typeof t.name === 'string' ? t.name.trim() : '';
+    const name = typeof t.name === 'string' ? t.name.trim().slice(0, 80) : '';
+    // A partner outside the franchise (js/ties.js outsidePartner): a couple only, the name optional.
+    if (t.outside === true) {
+      if (OUTSIDE_KINDS.has(t.kin)) out.push({ name, kin: t.kin, outside: true });
+      continue;
+    }
     if (!name || !TIE_KINDS.has(t.kin)) continue;
     out.push({ name, kin: t.kin, ...(TIE_ROLES.has(t.role) ? { role: t.role } : {}) });
   }

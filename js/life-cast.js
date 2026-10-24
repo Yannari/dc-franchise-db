@@ -27,6 +27,7 @@
 // once, rather than in every consumer.
 
 import { stateOf } from './life-events.js';
+import { outsidePartner } from './ties.js';
 import { airKey } from './franchise-calendar.js';
 
 /** How much of a bond each stage of a relationship is worth at the start. */
@@ -127,6 +128,11 @@ export function lifeSeeds(cast = [], log = [], seasons = []) {
           name: p.name, whom: partner, whomName: prettify(partner), stage,
         });
       }
+    } else {
+      // Spoken for by somebody outside the franchise (a tie with `outside`, js/ties.js): cast alone, always.
+      // No slug, so the log can never move it; a partner the log knows about wins above.
+      const out_ = outsidePartner(p.name);
+      if (out_) out.soloPartners.push({ name: p.name, whom: null, whomName: out_.name, stage: out_.stage, outside: true });
     }
 
     // ── exes ──

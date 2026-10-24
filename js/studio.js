@@ -245,17 +245,23 @@ const TIE_ROLES = {
   grandparent: [['grandparent', 'they are the grandparent'], ['grandchild', 'they are the grandchild']],
   'aunt-uncle': [['elder', 'they are the aunt/uncle'], ['younger', 'they are the niece/nephew']],
 };
-function _personSelect(selected, self) {
+// A partner who is not a character (js/ties.js outsidePartner): married, engaged, partners or dating only.
+const OUTSIDE = '__outside__';
+const TOGETHER_KINS = new Set(TIE_GROUPS.find(([g]) => g === 'Together')[1].map(([k]) => k));
+function _personSelect(selected, self, outside = false) {
   const names = [...new Set(_roster().map(r => r && r.name).filter(n => n && n !== self))].sort();
-  return `<option value="">— pick someone —</option>${names.map(n =>
+  return `<option value="">— pick someone —</option>`
+    + `<option value="${OUTSIDE}"${outside ? ' selected' : ''}>Someone outside the franchise (married, dating…)</option>${names.map(n =>
     `<option value="${_esc(n)}"${n === selected ? ' selected' : ''}>${_esc(n)}</option>`).join('')}`;
 }
 function _renderTies(d) {
   const ties = (d.ties || []);
   if (!ties.length) return '<div class="st-hint" style="margin:4px 0 2px">No ties yet.</div>';
   return ties.map((t, i) => `<div class="st-tie-row" data-idx="${i}" style="display:flex;gap:6px;align-items:center;margin:3px 0;flex-wrap:wrap">
-    <select class="st-input st-tie-name" style="flex:1;min-width:150px">${_personSelect(t.name, d.name)}</select>
-    <select class="st-input st-tie-kin" style="width:210px">${TIE_GROUPS.map(([g, list]) => `<optgroup label="${g}">${list.map(([k, l]) =>
+    <select class="st-input st-tie-name" style="flex:1;min-width:150px">${_personSelect(t.outside ? '' : t.name, d.name, !!t.outside)}</select>
+    ${t.outside ? `<input class="st-input st-tie-outside" style="flex:1;min-width:140px" value="${_esc(t.name || '')}"
+      placeholder="their name (optional)" title="Somebody who is not a character. Blank, they are just ${_esc(d.name || 'this character')}'s husband, wife or partner. Every show plays them as the partner waiting at home.">` : ''}
+    <select class="st-input st-tie-kin" style="width:210px">${TIE_GROUPS.filter(([g]) => !t.outside || g === 'Together').map(([g, list]) => `<optgroup label="${g}">${list.map(([k, l]) =>
       `<option value="${k}"${k === t.kin ? ' selected' : ''}>${l}</option>`).join('')}</optgroup>`).join('')}</select>
     ${TIE_ROLES[t.kin] ? `<select class="st-input st-tie-role" style="width:200px">${TIE_ROLES[t.kin].map(([r, l]) =>
       `<option value="${r}"${r === (t.role || TIE_ROLES[t.kin][0][0]) ? ' selected' : ''}>${l}</option>`).join('')}</select>` : ''}
@@ -268,6 +274,10 @@ function _readTies(container) {
     const name = (row.querySelector('.st-tie-name')?.value || '').trim();
     const kin = row.querySelector('.st-tie-kin')?.value || 'siblings';
     const role = row.querySelector('.st-tie-role')?.value;
+    if (name === OUTSIDE) {
+      out.push({ name: (row.querySelector('.st-tie-outside')?.value || '').trim(), kin: TOGETHER_KINS.has(kin) ? kin : 'married', outside: true });
+      continue;
+    }
     out.push({ name, kin, ...(TIE_ROLES[kin] ? { role: role && TIE_ROLES[kin].some(([r]) => r === role) ? role : TIE_ROLES[kin][0][0] } : {}) });
   }
   return out;
@@ -279,8 +289,8 @@ function _wireTies(ed, d) {
   const redraw = () => { container.innerHTML = _renderTies(d); };
   container.addEventListener('change', e => {
     d.ties = _readTies(container);
-    // a relation with a direction shows its who-is-who; one without hides it
-    if (e.target.closest('.st-tie-kin')) redraw();
+    // a relation with a direction shows its who-is-who; one without hides it; somebody outside shows a name box
+    if (e.target.closest('.st-tie-kin') || e.target.closest('.st-tie-name')) redraw();
   });
   container.addEventListener('click', e => {
     if (!e.target.closest('.st-tie-rm')) return;
@@ -3438,7 +3448,7 @@ async function _save() {
   if (_hasDrag(d)) entry.drag = { ...d.drag, traits: [...(d.drag.traits || [])] };
   // Family & ties: always sent, so removing the last tie clears it in the
   // database too (the Worker stores an empty list as NULL).
-  entry.ties = (d.ties || []).filter(t => t && t.name && t.kin && t.name !== d.name).map(t => ({ ...t }));
+  entry.ties = (d.ties || []).filter(t => t && t.kin && (t.outside || (t.name && t.name !== d.name))).map(t => ({ ...t }));
   // The camp kit: always sent, so clearing it clears it in the database too (null).
   entry.kit = _kitOut(d);
 

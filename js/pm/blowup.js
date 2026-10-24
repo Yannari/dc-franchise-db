@@ -62,6 +62,8 @@ function grievances(state, tonight = []) {
     }
     // Turned on the teller: x at w, on top of the telling.
     if (e.kind === 'told-confront' && e.extra?.of === 'blames') add(p[1], p[2], 1 * fade, 'told');
+    // Went after the teller and it turned into a feud: c at w, and back.
+    if (e.kind === 'stirrer-confront' && e.extra?.close === 'feud') { add(p[0], p[1], 1.5 * fade, 'told'); add(p[1], p[0], 0.8 * fade, 'history'); }
     if (e.kind === 'debrief' && e.extra?.of === 'blame' && p[2]) add(p[0], p[2], 2 * fade, 'vote');
     // Old rows feed the next one only a little (measured: at full weight
     // they fed themselves, 12.5 blow-ups a season, most of them about nothing new).

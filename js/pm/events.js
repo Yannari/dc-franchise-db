@@ -169,7 +169,7 @@ const metToday = (s, ...ns) => ns.some(n => n != null && (s.ledger?.firstEp?.[n]
 
 // The roles a kind's scene talks ABOUT rather than includes (their index in
 // ev.players): never the one who goes to the beach hut about it.
-const HUT_ABSENT = { 'casa-miss': [1], debrief: [2], gossip: [2], 'told-confront': [2], advice: [2], 'triangle-case': [2], 'triangle-torn': [], 'lie-write': [2],
+const HUT_ABSENT = { 'casa-miss': [1], debrief: [2], gossip: [2], 'told-confront': [2], 'stirrer-confront': [2], advice: [2], 'triangle-case': [2], 'triangle-torn': [], 'lie-write': [2],
   'tower-q': [2], 'bombshell-react': [], 'movie-react': [], confession: [2] };
 
 export const KINDS = {
@@ -701,7 +701,7 @@ export const KINDS = {
     'ask-declined', 'love-said', 'love-hanging', 'hideaway', 'torch', 'jealous-confront',
     'jealous-sulk', 'jealous-retaliate', 'reassurance', 'overthinking', 'confession', 'advice',
     'heart-rate', 'snog-marry-pie', 'movie-night', 'double-standard', 'notes', 'families',
-    'solidarity', 'told-confront',
+    'solidarity', 'told-confront', 'stirrer-confront',
     // the dumping formats of Plan 4.5
     'dump-at-risk', 'dump-verdict-couple', 'dump-verdict-singles', 'group-entrance', 'final-recoupling', 'challenge-rules', 'date-text', 'date-picked', 'date-back',
     'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'speech',
@@ -916,6 +916,72 @@ export function haveItOut(state, tell) {
   return makeEvent(state, rng, { phase: tell.phase, kind: 'told-confront', players: [p, x, w], aired: true,
     major: sev >= 1 || verdictNow === 'done' ? [p, x] : [],
     extra: { secret: tell.extra.secret, of, verdict: verdictNow, believed, split, channel, nth, wasClosed, pop } });
+}
+
+// ── going after the one who told ──────────────────────────────────────
+// User, 2026-10-24: "is this normal that we often dont have a followup of a
+// gossip still?" then "like they could confront the stirrer of their
+// partner/coupled up if they care enough". A telling that ends in a chat
+// between the couple names nobody to the teller's face; this is the one where
+// somebody walks up to the teller. Who, and how likely, is how much they care:
+//   stirrer-confront [c, w, o]  c has it out with w, who told o
+//     `side`  them    c is the one it was about, o c's partner ("why are you
+//                     telling my partner things about me?")
+//             partner c is the one told, who took the partner's word (o) over
+//                     w's, and now says so to w
+//     `why`   asked   c knows because o had it out with c (haveItOut ran)
+//             heard   word got back round the villa (it didn't)
+//     `of`    w's answer: stands (I'd tell them again) · sorry · denies (never
+//             said a thing; only someone who may lie) · back (fires back)
+//     `close` cleared · cold · feud
+// Rarer than having it out: the one talked about has to want it badly enough
+// to make it worse, and word only sometimes gets back.
+export function callOutStirrer(state, tell, after) {
+  const [w, p, x] = tell.players;
+  const rng = streamFor(state.seed || 1, `stirrer:${tell.id}`);
+  let c, o, side, why, chance;
+  if (after?.extra?.believed) {
+    // The one told sided with the partner: the teller hears about it.
+    [c, o, side, why] = [p, x, 'partner', 'asked'];
+    chance = 0.4;
+  } else if (after) {
+    [c, o, side, why] = [x, p, 'them', 'asked'];
+    chance = 0.2 + (after.extra.of === 'blames' ? 0.25 : 0) + (after.extra.verdict !== 'forgive' ? 0.1 : 0);
+  } else {
+    // Nobody had it out — but a villa talks, and sometimes it gets back.
+    [c, o, side, why] = [x, p, 'them', 'heard'];
+    chance = 0.12;
+  }
+  if (![c, w, o].every(n => state.villa.includes(n)) || c === w || apart(state, c, w) || doneWith(state, c, w)) return null;
+  const st = S(state, c);
+  const care = clamp(romance(c, o) / 10, 0, 1);
+  chance *= (0.3 + 1.2 * care) * (0.6 + 0.6 * st.boldness / 10);
+  if (rng() >= Math.min(0.6, chance)) return null;
+  const sw = S(state, w), arch = state.profiles[w].archetype;
+  const nice = LOYAL_KIND.has(arch);
+  const liar = PLAYERS.has(arch) || (!nice && sw.strategic >= 6 && sw.loyalty <= 4);
+  const of = weighted(rng, [
+    ['stands', 0.25 + 0.5 * sw.boldness / 10 + (side === 'partner' ? 0.2 : 0)],
+    ['sorry', 0.15 + 0.4 * sw.loyalty / 10 + (nice ? 0.3 : 0)],
+    // Denying the telling itself only works while the partner hasn't said who.
+    ['denies', liar && why === 'heard' ? 0.5 : 0],
+    ['back', 0.1 + 0.45 * (1 - sw.temperament / 10) + (nice ? 0 : 0.1)],
+  ]);
+  const calm = (T(state, c) + T(state, w)) / 20;
+  const close = of === 'sorry' && rng() < 0.4 + 0.4 * calm ? 'cleared'
+    : of === 'back' || (of === 'stands' && rng() < 0.6 - 0.4 * calm) ? 'feud' : 'cold';
+  // What it costs between the two of them.
+  addBond(c, w, { cleared: -0.2, cold: -0.8, feud: -1.5 }[close]);
+  addRelationshipDimension(c, w, 'trust', close === 'cleared' ? -0.2 : -0.6);
+  if (close === 'feud') { addRelationshipDimension(c, w, 'resentment', 0.7); addRelationshipDimension(w, c, 'resentment', 0.5); feel(state, c, 'stress', 0.4); }
+  if (close === 'cleared') addRelationshipDimension(w, c, 'trust', 0.2);
+  // Standing up for the couple is something the partner hears about.
+  if (side === 'partner' || close !== 'feud') { addBond(c, o, 0.3); nudgeAttraction(state, o, c, 0.2 * care); }
+  const wApproval = { stands: 0, sorry: 0.3, denies: -0.6, back: -0.3 }[of];
+  const pop = { ...pop1(c, side === 'partner' ? 0.3 : -0.1, 1.5), ...pop1(w, wApproval, close === 'feud' ? 2 : 1.2) };
+  return makeEvent(state, rng, { phase: tell.phase, kind: 'stirrer-confront', players: [c, w, o], aired: true,
+    major: close === 'feud' ? [c, w] : [],
+    extra: { secret: tell.extra.secret, side, why, of, close, pop } });
 }
 
 // The relations' scenes, by the part of the day (pm/kin.js).
@@ -1133,7 +1199,13 @@ export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS) {
       const ev = makeEvent(state, rng, { phase, kind: realKind, players, extra });
       out.push(ev);
       // A telling reaches the one it was about, the same day (haveItOut).
-      if (realKind === 'gossip') { const after = haveItOut(state, ev); if (after) out.push(after); }
+      // …and sometimes somebody goes after the one who told (callOutStirrer).
+      if (realKind === 'gossip') {
+        const after = haveItOut(state, ev);
+        if (after) out.push(after);
+        const back = callOutStirrer(state, ev, after);
+        if (back) out.push(back);
+      }
       made++;
     }
   }

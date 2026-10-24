@@ -58,8 +58,8 @@ describe('the villa reaches the feed as the villa', () => {
       const last = recs[recs.length - 1].episode;
       for (const rec of recs) {
         if (rec.episode === last) continue;
-        // Made-official is a scene the published record does not carry.
-        const live = new Set(liveEvents(state, rec).filter(e => NATIVE.has(e.kind) && e.kind !== 'made-official').map(keyOf));
+        // Every villa scene too: the published round carries them (`scenes`).
+        const live = new Set(liveEvents(state, rec).filter(e => NATIVE.has(e.kind)).map(keyOf));
         const pub = new Set(eventsForEpisode(doc, F, 1, rec.episode).filter(e => NATIVE.has(e.kind)).map(keyOf));
         const onlyLive = [...live].filter(k => !pub.has(k)), onlyPub = [...pub].filter(k => !live.has(k));
         if (onlyLive.length || onlyPub.length) diffs.push(`seed ${seed} ep ${rec.episode}: live-only ${onlyLive.join(' ')} · published-only ${onlyPub.join(' ')}`);
@@ -91,6 +91,38 @@ describe('the villa reaches the feed as the villa', () => {
       }
     }
     expect(posts).toBeGreaterThan(100);
+    expect(bad).toEqual([]);
+  });
+});
+
+describe('the villa between the ceremonies', () => {
+  it('reaches the timeline: rows, tellings, first kisses, tears', () => {
+    const seen = new Set();
+    for (const { state } of SEASONS) for (const rec of episodeRecords(state, F)) for (const e of liveEvents(state, rec)) seen.add(e.kind);
+    for (const k of ['row', 'gossip', 'first-kiss', 'tears']) expect(seen.has(k), `no "${k}" in three seasons`).toBe(true);
+  });
+  it('keeps a night to its loudest few, a couple once', () => {
+    for (const { state } of SEASONS) for (const rec of episodeRecords(state, F)) {
+      const drama = liveEvents(state, rec).filter(e => ['row', 'jealous', 'gossip', 'had-it-out', 'called-off', 'first-kiss',
+        'blowup', 'movie-night', 'love-said', 'tears', 'back-together'].includes(e.kind));
+      expect(drama.length).toBeLessThanOrEqual(7);
+    }
+  });
+  it('never claims a departure the night did not have, or a week it has not reached', () => {
+    const bad = [];
+    for (const { state } of SEASONS) {
+      for (const rec of episodeRecords(state, F)) {
+        const evs = liveEvents(state, rec);
+        const left = evs.some(e => e.kind === 'dumped' || e.kind === 'finale');
+        for (const p of buildEpisodeFeed(evs, { seed: feedSeed(1, rec.episode) })) {
+          const t = String(p.text).toLowerCase();
+          if (!left && /\b(is|are) gone\b|\b(went|goes|gone|sent) home\b/.test(t)) bad.push(`ep ${rec.episode} gone: ${p.text}`);
+          const w = t.match(/\bweek (one|two|three|four|five|six|seven|eight|nine|ten)\b/);
+          const n = w && ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'].indexOf(w[1]) + 1;
+          if (n && rec.episode < n) bad.push(`ep ${rec.episode} week: ${p.text}`);
+        }
+      }
+    }
     expect(bad).toEqual([]);
   });
 });

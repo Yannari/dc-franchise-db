@@ -37,6 +37,7 @@ import { momentTitle } from './transcript.js';
 import { CHALLENGE_NAMES } from './schedule.js';
 import { followers } from './ledger.js';
 import { publishedRatings } from '../ratings.js';
+import { feedScenes } from './feed-scenes.js';
 
 export const PERFECT_MATCH = PERFECT_MATCH_FORMAT;
 const slug = n => String(n || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -86,6 +87,10 @@ export function pmVotingHistory(rows = []) {
       challenge: row.pm?.challenge ? { id: row.pm.challenge, name: CHALLENGE_NAMES[row.pm.challenge] || row.pm.challenge } : null,
       steals: events.filter(e => e.kind === 'steal' || (e.kind === 'recouple-pick' && e.extra?.stole))
         .map(e => ({ by: e.players[0], took: e.players[1], from: e.kind === 'steal' ? e.players[2] : e.extra.stole })),
+      // The villa's drama the audience talks about online — rows, tellings,
+      // first kisses, Movie Night — kept small (js/pm/feed-scenes.js), so the
+      // published feed reads the same night the played one does.
+      scenes: feedScenes(events),
     };
   });
 }

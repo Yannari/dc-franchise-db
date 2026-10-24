@@ -144,8 +144,11 @@ function seeded(seed) {
  */
 function pickParent(post, earlier, rng) {
   if (post.stream !== 'timeline') return null;
+  // Only a post already up: the hottest is chosen by likes, which the crowd's
+  // opinion sets, so a reply moved to follow a later one moved by popularity —
+  // and the crowd then reshuffled who was posting all down the timeline.
   const candidates = earlier.filter(p =>
-    p.stream === 'timeline' && p.subject && p.subject === post.subject && !p.replyTo);
+    p.stream === 'timeline' && p.subject && p.subject === post.subject && !p.replyTo && p.at < post.at);
   if (!candidates.length) return null;
   // Loud posts attract answers; a quiet one is rarely worth replying to.
   const hottest = candidates.slice(-12).sort((a, b) =>
@@ -173,13 +176,19 @@ export function buildEpisodeFeed(events, {
   const posts = [];
   let ordinal = 0;
 
-  for (const ev of events) {
+  for (const [evIdx, ev] of events.entries()) {
     const volume = packFor(ev.format)?.kinds?.[ev.kind]?.volume ?? VOLUME[ev.kind] ?? 1;
     for (const stream of ['timeline', 'chat']) {
       const count = Math.max(1, Math.round(BASE[stream] * volume * scale));
+      // EACH MOMENT, AND EACH ROOM, ITS OWN STREAM. They shared `rng`, and how
+      // many rolls a post takes depends on its words (a shout splits the text)
+      // — so the crowd's opinion of one subject, by choosing what was said
+      // about them, moved who spoke about every moment after. The posts
+      // shuffled authors whenever any pool gained or lost a line.
+      const own = seeded((seed * 7919 + (evIdx + 1) * 104729 + (stream === 'chat' ? 15485863 : 0)) >>> 0);
       let made;
       try {
-        made = samplePosts(ev, { count, stream, rng, ...(crowd ? { crowd } : {}) });
+        made = samplePosts(ev, { count, stream, rng: own, ...(crowd ? { crowd } : {}) });
       } catch (err) {
         // A topic with no phrasing pool for this room is an authoring gap, not a
         // reason to lose the episode. The sampler throws so it is visible; the

@@ -60,7 +60,7 @@ export function registerOf(state, ev, name) {
 // saw (it aired) and everyone in the new one knows about.
 export const AFTER_OF = {
   pull: 'pull', loyalty: 'knocked-back', kiss: 'kiss', 'challenge-kiss': 'game-kiss', 'game-kiss': 'game-kiss',
-  argument: 'row', 'jealous-confront': 'row', 'told-confront': 'row', blowup: 'row', 'rival-row': 'row', 'feud-confront': 'row',
+  argument: 'row', 'jealous-confront': 'row', 'told-confront': 'row', 'stirrer-confront': 'row', blowup: 'row', 'rival-row': 'row', 'feud-confront': 'row',
   gossip: 'told', confession: 'told', entrance: 'arrival', 'group-entrance': 'arrival', 'return-entrance': 'arrival',
   date: 'date', 'recouple-pick': 'recoupling', steal: 'recoupling', hideaway: 'hideaway', ick: 'ick',
   'casa-return': 'casa', photos: 'casa', 'movie-clip': 'movie', 'bed-share': 'bed', 'head-turned': 'head-turned',
@@ -73,7 +73,7 @@ const BETWEEN = new Set(['row', 'kiss', 'closed', 'official', 'love', 'recouplin
 // …and a challenge kiss is either: the two of them, or one of them and somebody else.
 const EITHER = new Set(['game-kiss']);
 // Scenes whose third player is talked about, never there.
-const ABOUT_THIRD = new Set(['told-confront', 'jealous-confront']);
+const ABOUT_THIRD = new Set(['told-confront', 'jealous-confront', 'stirrer-confront']);
 
 /** Does `n` know scene `e` happened? In it, or it was no secret, or they saw it or were told. */
 export function knowsOf(state, n, e) {

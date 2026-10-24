@@ -256,7 +256,7 @@ function weightedPick(rng, items, weightOf) {
  * that need one. `fillSlots` then throws on anything that slips through, which
  * can now only be a typo.
  */
-function poolFor(topicId, shape, stream, event) {
+function poolFor(topicId, shape, stream, event, checkClaims = true) {
   // A pack's topics are written in the pack; the shared fandom topics are not.
   const byShape = packFor(event?.format)?.phrasings?.[topicId] || PHRASINGS[topicId] || {};
   const byStream = byShape[shape] || {};
@@ -265,8 +265,28 @@ function poolFor(topicId, shape, stream, event) {
   // finale keeps the phrasings that name somebody instead of losing them all.
   const has = k => (k === 'subject' ? !!subjectLabel(event) : !(event[k] == null || event[k] === ''));
   const missing = SLOT_NAMES.filter(k => !has(k));
-  if (!missing.length) return pool;
-  return pool.filter(t => !missing.some(k => t.includes(`{${k}}`)));
+  const fits = t => !checkClaims || claimsFit(t, event);
+  if (!missing.length) return pool.filter(fits);
+  return pool.filter(t => fits(t) && !missing.some(k => t.includes(`{${k}}`)));
+}
+
+/* ── A LINE MAY NOT CLAIM WHAT THE NIGHT DID NOT HAVE ────────────────────
+   The fandom pools are shared by every show and every night, and three kinds
+   of sentence in them are only true some of the time. Found reading a villa's
+   first episode: "now Hannah is gone" under a steal (a betrayal, which the
+   pile-on listens for — nobody left), "week eight and i am still in on her" on
+   night one, and "not one correct reaction all season" an hour into a season. */
+const WEEK_NUMBER = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+function claimsFit(template, event) {
+  const t = String(template).toLowerCase();
+  if (/\b(is|are) gone\b|\b(went|goes|gone|sent) home\b/.test(t) && !kindsFor(event).includes('eviction')) return false;
+  const ep = Number(event?.episode) || 0;
+  if (!ep) return true;
+  const week = t.match(/\bweek (one|two|three|four|five|six|seven|eight|nine|ten|\d+)\b/);
+  // "week eight" is true from week eight on; only a week still to come is false.
+  if (week && ep < (WEEK_NUMBER[week[1]] || Number(week[1]))) return false;
+  if (/\ball (season|series)\b|\bevery (single )?week\b/.test(t) && ep < 3) return false;
+  return true;
 }
 
 /** Every shape this topic can actually speak in this room. */
@@ -340,6 +360,12 @@ export function composePost({ persona, topic, platform, event, rng = Math.random
     if (rng() < 0.7 && Math.abs(other.length - target) < Math.abs(template.length - target)) {
       template = other;
     }
+  } else if (poolFor(topic.id, shape, stream, event, false).length > 1) {
+    // A pool `claimsFit` cut to one line still takes the two rolls the second
+    // draw would have: a post that took fewer shifted every author after it,
+    // and the crowd's opinion of the subject (which picks the topic, and so
+    // the pool) then decided who spoke.
+    frontIndex(rng, 1); rng();
   }
   if (used && template) used.add(template);
 

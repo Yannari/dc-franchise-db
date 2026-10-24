@@ -64,7 +64,7 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   // the director (pm/story/director.js): how each one sounds, how much is shown, what it follows
   'reg', 'bReg', 'tier', 'after', 'afterBy', 'afterWhen', 'end', 'firstKiss', 'bPartnered', 'fresh', 'bFresh',
   // a talk file's own (pm/talk/*.js facts())
-  'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels', 'believed', 'dayOne',
+  'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels', 'believed', 'dayOne', 'side',
   // an intro tape's (pm/talk/intro.js)
   'look', 'vibe', 'ick', 'interest', 'from', 'kinOf', 'eyes', 'pastEx', 'hasAge', 'hasJob', 'hasTown', 'into', 'shape'];
 
@@ -149,7 +149,7 @@ export function factsFor(state, ev) {
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
   // …and how much b feels for a, the same way: whether it is said back.
   if (b) { const r = romance(b, a); f.bFeels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.bFeels = null;
-  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since', 'staying', 'came', 'risk']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since', 'staying', 'came', 'risk', 'side']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   // A recoupling "steal" of the chooser's own partner from before tonight.
   f.reclaim = !!ev.extra?.reclaim;
   // A steal at the recoupling: {c} is the one who loses {b}.
@@ -792,7 +792,7 @@ const FAMILIES = {
     'overthinking', 'ick'],
   friendship: ['friendship', 'comedy', 'advice', 'solidarity', 'movie-night', 'snog-marry-pie', 'heart-rate',
     'notes', 'families'],
-  gossip: ['gossip', 'confession', 'loyalty', 'told-confront'],
+  gossip: ['gossip', 'confession', 'loyalty', 'told-confront', 'stirrer-confront'],
   dumping: ['recouple-pick', 'dump-buildup', 'dump-verdict', 'ballot-reveal', 'dump-reaction',
     'dump-goodbye', 'dump-fallout', 'steal'],
   finale: ['declaration', 'final-result', 'envelope', 'reveal', 'walk'],

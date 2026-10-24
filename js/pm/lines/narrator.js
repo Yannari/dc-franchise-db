@@ -150,6 +150,13 @@ export const NARRATOR = {
     { id: 'nar.told.6', when: { of: 'denies', believed: false }, turns: [['narrator', "{b} says it never happened, very firmly, several times. {a} is still deciding which of those times to believe."]] },
     { id: 'nar.told.7', when: { verdict: 'warning' }, turns: [['narrator', "{b} is still coupled up with {a}. Just. On probation, with no time off for good behaviour."]] },
   ],
+  'stirrer-confront': [
+    { id: 'nar.stir.1', turns: [['narrator', "{a} has come to find out who's been talking. It didn't take long. It never does in here."]] },
+    { id: 'nar.stir.2', when: { end: 'feud' }, turns: [['narrator', "And {a} and {b} have agreed on something at last: they never want to speak to each other again."]] },
+    { id: 'nar.stir.3', when: { end: 'cleared' }, turns: [['narrator', "{b} has said sorry, {a} has said fine, and the villa's gossip has had to find somebody else to talk about. For about ten minutes."]] },
+    { id: 'nar.stir.4', when: { of: 'denies' }, turns: [['narrator', "{b} insists not one word has been said to anyone. Which, for {b}, would be a villa record."]] },
+    { id: 'nar.stir.5', when: { side: 'partner' }, turns: [['narrator', "{a} has decided to believe {c}. {b} has decided that was a mistake. Both of them are sticking to it."]] },
+  ],
   'jealous-retaliate': [
     { id: 'nar.retaliate.1', turns: [['narrator', "{a} is sitting very close to {b}, laughing slightly louder than the jokes deserve, and {c} is watching. That's the point."]] },
   ],

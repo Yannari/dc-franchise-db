@@ -24,7 +24,7 @@ const tag = (kind, slot, e) => `${kind}.${slot} ${e.id}`;
 
 // Who a kind casts beyond {a} and {b}, and what fills {about}.
 const THREE = new Set([
-  'betray-see', 'betray-confront', 'told-confront', 'villa-happy', 'redeem-doubt', 'grass-talk', 'parents-named', 'parents-advice', 'parents-mediate', 'exw-stir', 'exw-partner',
+  'betray-see', 'betray-confront', 'told-confront', 'stirrer-confront', 'villa-happy', 'redeem-doubt', 'grass-talk', 'parents-named', 'parents-advice', 'parents-mediate', 'exw-stir', 'exw-partner',
   'gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back',
   'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch',
   'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write', 'hideaway-vote', 'hideaway-morning', 'movie-react', 'snog-marry-pie', 'casa-react', 'vote-fallout', 'receipt', 'look-who', 'headline', 'couple-goals', 'couple-goals-row', 'snogger-row', 'lip-watch', 'talent-snub', 'tower-q', 'blow-dare', 'course-pick', 'step-reveal', 'step-choose', 'steal', 'visit-arrive', 'visit-leave', 'stand-up', 'stand-up-pick', 'bombshell-save', 'public-match', 'return-ex', 'mission-dump', 'sleepover-invite', 'sleepover-choice', 'walk-doubt', 'walk-after', 'ex-partner', 'lady-luck-pick']);

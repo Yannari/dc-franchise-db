@@ -17,6 +17,8 @@
 import { PERFECT_MATCH_FORMAT } from '../../shows.js';
 import { PHRASINGS, CHAT_TAKES, PERSONAS } from './perfect-match-words.js';
 import { HOST_TAKES } from './perfect-match-voices.js';
+import { VILLA_PHRASINGS, VILLA_CHAT_TAKES } from './perfect-match-villa-words.js';
+import { feedScenes } from '../../pm/feed-scenes.js';
 
 const slugOf = name => String(name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
@@ -33,7 +35,78 @@ const KINDS = {
   'dumped':          { label: 'Dumped', volume: 2.0, at: 0.9, implies: ['eviction'] },
   'walked':          { label: 'Walked', volume: 1.8, at: 0.9 },
   'envelope':        { label: 'The envelope', volume: 1.5, at: 0.97 },
+  // ── the villa itself, between the ceremonies (js/pm/feed-scenes.js) ──
+  'row':             { label: 'Row', volume: 0.9, at: 0.35, implies: ['argument'] },
+  'jealous':         { label: 'Jealousy', volume: 0.8, at: 0.38, implies: ['argument'] },
+  'gossip':          { label: 'Gossip', volume: 0.7, at: 0.42 },
+  'had-it-out':      { label: 'Had it out', volume: 1.1, at: 0.45, implies: ['argument'] },
+  'called-off':      { label: 'Called it off', volume: 1.9, at: 0.47, implies: ['showmance-broken'] },
+  'first-kiss':      { label: 'First kiss', volume: 1.0, at: 0.5, implies: ['romantic-spark'] },
+  'blowup':          { label: 'Villa blow-up', volume: 1.7, at: 0.52, implies: ['argument'] },
+  'movie-night':     { label: 'Movie Night', volume: 1.8, at: 0.6, implies: ['argument'] },
+  'love-said':       { label: 'I love you', volume: 1.3, at: 0.62, implies: ['romantic-spark'] },
+  'tears':           { label: 'Tears', volume: 0.8, at: 0.4 },
+  'back-together':   { label: 'Back together', volume: 1.3, at: 0.65, implies: ['romantic-spark'] },
 };
+
+/* ── A NIGHT'S DRAMA, CHOSEN ─────────────────────────────────────────────
+   A season airs fifty rows, thirty tellings and dozens of kisses; a timeline
+   that reacted to every one would be the same few posts on a loop. Each kind
+   has a cap, a couple is talked about once a night (its biggest moment), and
+   the night keeps the loudest few — `fame` is how hard the scene aired. */
+const DRAMA_CAP = { 'called-off': 2, blowup: 1, 'movie-night': 2, 'had-it-out': 2, 'made-official': 2,
+  'love-said': 1, 'back-together': 1, 'first-kiss': 2, jealous: 1, tears: 1, row: 1, gossip: 1 };
+const DRAMA_RANK = { 'called-off': 6, blowup: 5, 'movie-night': 5, 'had-it-out': 4, 'made-official': 4,
+  'love-said': 4, 'back-together': 4, 'first-kiss': 3, jealous: 2, tears: 2, row: 1, gossip: 1 };
+const DRAMA_PER_NIGHT = 7;
+
+/** The moments of one night the timeline reacts to, in airing order. */
+export function nightDrama(scenes = []) {
+  const ranked = scenes.map((x, i) => ({ ...x, i }))
+    .filter(x => DRAMA_CAP[x.feed])
+    .sort((a, b) => DRAMA_RANK[b.feed] - DRAMA_RANK[a.feed] || b.fame - a.fame || a.i - b.i);
+  const taken = [], pairs = new Set(), per = {};
+  for (const x of ranked) {
+    const pair = x.players.slice(0, 2).sort().join('|');
+    if (pairs.has(pair) || (per[x.feed] || 0) >= DRAMA_CAP[x.feed]) continue;
+    // A couple going official is always news; everything else fights for room.
+    if (taken.length >= DRAMA_PER_NIGHT && x.feed !== 'made-official') continue;
+    pairs.add(pair); per[x.feed] = (per[x.feed] || 0) + 1; taken.push(x);
+  }
+  return taken.sort((a, b) => a.i - b.i);
+}
+
+const ROW_ABOUT = { 'casa-row': ' about Casa Amor', 'photo-row': ' over the photos', 'lie-row': ' after the lie detector',
+  'snogger-row': ' after the kissing challenge', 'couple-goals-row': ' after the couples challenge',
+  'visit-confront': ' in front of the families' };
+
+/** Who a moment is about, who else, and the one fact that makes it this night's. */
+function dramaEvent(x) {
+  const [a, b, c] = x.players;
+  switch (x.feed) {
+    case 'row': return { subject: a, actor: b, receipt: x.kind === 'stirrer-confront'
+      ? `${a} went after ${b} for telling ${c} everything` : `${a} and ${b} had a row${ROW_ABOUT[x.kind] || ''}` };
+    case 'jealous': return { subject: a, actor: b, receipt: c ? `${a} had a go at ${b} about ${c}` : `${a} had a go at ${b}` };
+    case 'blowup': return { subject: a, actor: b, receipt: `${a} and ${b} split the whole villa` };
+    case 'gossip': return { subject: a, actor: b, receipt: c ? `${a} told ${b} what ${c} has been up to` : `${a} told ${b} everything` };
+    case 'had-it-out': return { subject: a, actor: b, receipt: x.verdict === 'forgive'
+      ? `${a} had it out with ${b} and let it go` : `${a} had it out with ${b} and gave them one last chance` };
+    case 'called-off': return { subject: a, actor: b, receipt: `${a} ended it with ${b}` };
+    case 'first-kiss': return { subject: a, actor: b, receipt: `${a} and ${b} kissed for the first time` };
+    case 'movie-night': {
+      const partner = (x.audience || []).find(n => n !== a) || null;
+      return { subject: a, actor: partner, receipt: partner
+        ? `the clip of ${a} with ${b} played at Movie Night in front of ${partner}`
+        : `the clip of ${a} with ${b} played at Movie Night` };
+    }
+    case 'love-said': return { subject: a, actor: b, receipt: `${a} told ${b} "I love you"` };
+    case 'tears': return { subject: a, receipt: `${a} broke down in the beach hut` };
+    case 'back-together': return { subject: a, actor: b, receipt: `${a} and ${b} got back together` };
+    case 'made-official': return { subject: a, actor: b,
+      receipt: `${a} and ${b} made it ${x.kind === 'official-ask' ? 'official' : 'exclusive'}` };
+    default: return null;
+  }
+}
 
 /** What this fandom argues about. Words in perfect-match-words.js. */
 const TOPICS = [
@@ -59,6 +132,31 @@ const TOPICS = [
     triggers: ['envelope'], reads: ['envelope'], shapes: ['live-reaction'] },
   { id: 'winners-verdict', stream: 'both', weight: 1.3,
     triggers: ['finale'], reads: ['finalVote', 'winners'], shapes: ['live-reaction', 'hot-take', 'complaint'] },
+  // The villa between the ceremonies. Birdie only: the alumni room has takes.
+  // Weighted well above the fandom topics every night carries (the edit,
+  // shipping, the pile-on), or a row is three posts in fifty about the row.
+  { id: 'row-talk', stream: 'timeline', weight: 7,
+    triggers: ['row'], reads: ['scenes'], shapes: ['live-reaction', 'hot-take', 'defence'] },
+  { id: 'jealousy-talk', stream: 'timeline', weight: 7,
+    triggers: ['jealous'], reads: ['scenes'], shapes: ['live-reaction', 'hot-take'] },
+  { id: 'blowup-talk', stream: 'timeline', weight: 9,
+    triggers: ['blowup'], reads: ['scenes'], shapes: ['live-reaction', 'hot-take', 'call-out'] },
+  { id: 'stirring-talk', stream: 'timeline', weight: 8,
+    triggers: ['gossip'], reads: ['scenes'], shapes: ['live-reaction', 'hot-take', 'defence'] },
+  { id: 'confront-talk', stream: 'timeline', weight: 8,
+    triggers: ['had-it-out'], reads: ['scenes'], shapes: ['live-reaction', 'hot-take', 'complaint'] },
+  { id: 'called-off-talk', stream: 'timeline', weight: 10,
+    triggers: ['called-off'], reads: ['scenes'], shapes: ['live-reaction', 'sympathy', 'gloating'] },
+  { id: 'first-kiss-talk', stream: 'timeline', weight: 8,
+    triggers: ['first-kiss'], reads: ['scenes'], shapes: ['gushing', 'ship', 'hot-take'] },
+  { id: 'movie-night-talk', stream: 'timeline', weight: 10,
+    triggers: ['movie-night'], reads: ['scenes'], shapes: ['live-reaction', 'hot-take', 'call-out'] },
+  { id: 'love-talk', stream: 'timeline', weight: 8,
+    triggers: ['love-said'], reads: ['scenes'], shapes: ['gushing', 'hot-take'] },
+  { id: 'tears-talk', stream: 'timeline', weight: 7,
+    triggers: ['tears'], reads: ['scenes'], shapes: ['sympathy', 'live-reaction'] },
+  { id: 'reunite-talk', stream: 'timeline', weight: 8,
+    triggers: ['back-together'], reads: ['scenes'], shapes: ['live-reaction', 'hot-take', 'gushing'] },
   { id: 'villa-edit', stream: 'both', weight: 0.8,
     triggers: ['episode-aired'], reads: ['couples', 'exits'], shapes: ['call-out', 'hot-take'] },
 ];
@@ -75,19 +173,31 @@ const TOPIC_AIM = {
   'challenge-talk': { target: 'subject', stance: 0.3 },
   'envelope-talk': { target: 'subject', stance: 0.4 },
   'winners-verdict': { target: 'subject', stance: 0.5 },
+  'row-talk': { target: 'subject', stance: -0.1 },
+  'jealousy-talk': { target: 'subject', stance: -0.1 },
+  'blowup-talk': { target: 'subject', stance: -0.3 },
+  'stirring-talk': { target: 'subject', stance: -0.2 },
+  'confront-talk': { target: 'subject', stance: 0.4 },
+  'called-off-talk': { target: 'subject', stance: 0.5 },
+  'first-kiss-talk': { target: 'subject', stance: 0.6 },
+  'movie-night-talk': { target: 'subject', stance: -0.5 },
+  'love-talk': { target: 'subject', stance: 0.6 },
+  'tears-talk': { target: 'subject', stance: 0.7 },
+  'reunite-talk': { target: 'subject', stance: 0.3 },
   // Aimed at the producers, not an islander.
   'villa-edit': { target: 'none', stance: -0.2 },
 };
 
 /** Which kind of fan reaches for which topic. 1 is indifferent. */
 const ARCHETYPE_PULL = {
-  analyst: { 'public-vote-talk': 1.5, 'villa-edit': 1.3, 'winners-verdict': 1.2 },
-  stan: { 'dumping-reaction': 1.4, 'public-vote-talk': 1.3 },
-  hater: { 'steal-reaction': 1.4, 'villa-edit': 1.3 },
-  livefeeder: { 'bombshell-watch': 1.4, 'challenge-talk': 1.3 },
-  chaos: { 'casa-verdict': 1.5, 'steal-reaction': 1.3, 'envelope-talk': 1.3 },
-  casual: { 'winners-verdict': 1.2, 'challenge-talk': 1.2 },
-  shipper: { 'couple-watch': 1.8, 'casa-verdict': 1.3 },
+  analyst: { 'public-vote-talk': 1.5, 'villa-edit': 1.3, 'winners-verdict': 1.2, 'confront-talk': 1.2 },
+  stan: { 'dumping-reaction': 1.4, 'public-vote-talk': 1.3, 'tears-talk': 1.4, 'called-off-talk': 1.3 },
+  hater: { 'steal-reaction': 1.4, 'villa-edit': 1.3, 'movie-night-talk': 1.4, 'stirring-talk': 1.3 },
+  livefeeder: { 'bombshell-watch': 1.4, 'challenge-talk': 1.3, 'row-talk': 1.4, 'blowup-talk': 1.3 },
+  chaos: { 'casa-verdict': 1.5, 'steal-reaction': 1.3, 'envelope-talk': 1.3, 'blowup-talk': 1.5,
+    'movie-night-talk': 1.4, 'jealousy-talk': 1.3 },
+  casual: { 'winners-verdict': 1.2, 'challenge-talk': 1.2, 'first-kiss-talk': 1.2 },
+  shipper: { 'couple-watch': 1.8, 'casa-verdict': 1.3, 'first-kiss-talk': 1.8, 'love-talk': 1.7, 'reunite-talk': 1.5 },
 };
 
 /** The episodes a season being played has aired. */
@@ -123,10 +233,10 @@ function events(record, meta, { make, ctx = context(null) } = {}) {
   if (challenge) out.push(make('villa-challenge', { jitter: jitter(),
     receipt: record.challenge?.name ? `the challenge was ${record.challenge.name}` : null }));
 
-  // ── made it official (the ladder's yes) ──
-  for (const e of scenes.filter(x => x.kind === 'exclusive-ask' || x.kind === 'official-ask')) {
-    out.push(make('made-official', { subject: e.players[0], actor: e.players[1], jitter: jitter(),
-      receipt: `${e.players[0]} and ${e.players[1]} made it ${e.kind === 'official-ask' ? 'official' : 'exclusive'}` }));
+  // ── the villa's own drama, and the ladder's yes: the same scenes either way ──
+  for (const x of nightDrama(pm ? feedScenes(pm.events || []) : (record.scenes || []))) {
+    const d = dramaEvent(x);
+    if (d) out.push(make(x.feed, { ...d, jitter: jitter() }));
   }
 
   // ── arrivals: a bombshell's entrance, never night one's line-up ──
@@ -191,10 +301,10 @@ export default {
   context,
   events,
   topics: TOPICS,
-  phrasings: PHRASINGS,
+  phrasings: { ...PHRASINGS, ...VILLA_PHRASINGS },
   topicAim: TOPIC_AIM,
   archetypePull: ARCHETYPE_PULL,
   personas: PERSONAS,
   hostTakes: HOST_TAKES,
-  chatTakes: CHAT_TAKES,
+  chatTakes: { ...CHAT_TAKES, ...VILLA_CHAT_TAKES },
 };

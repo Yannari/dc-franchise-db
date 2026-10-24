@@ -9,7 +9,7 @@
 // in their heads right now (the side panel's "why" lines).
 import { esc, img, col } from './stage.js';
 
-export const TABS = [['heads', 'In their heads'], ['people', 'Relationships'], ['allies', 'Alliances'], ['deals', 'Deals']];
+export const TABS = [['heads', 'In their heads'], ['people', 'Relationships'], ['allies', 'Alliances'], ['deals', 'Deals'], ['power', 'Power']];
 const BOND_WORD = v => (v >= 6 ? 'Close' : v >= 3 ? 'Friends' : v > -2 ? 'Neutral' : v > -5 ? 'Tension' : 'Enemies');
 const BOND_CLS = v => (v >= 6 ? 'close' : v >= 3 ? 'friend' : v > -2 ? 'neutral' : v > -5 ? 'tense' : 'enemy');
 
@@ -67,6 +67,50 @@ export function weekAt(num, snap = null, shown = null, at = null) {
   return { players, out, bond, love, alliances: live ? (live.alliances || []) : (S.namedAlliances || []), gone: live ? [] : (S.dissolvedAlliances || []), deals, live: !!live };
 }
 
+/* ── THE POWER TAB ──────────────────────────────────────────────────────
+   User, 2026-10-24: "in intel big brother can we have a tab power?". Who holds
+   the week's power as far as the screen has got (the stage's ledger: L.hoh,
+   L.nom, L.veto), then every secret power alive this week (the week's
+   powerLedger, js/bb/powers.js powerLedgerFor): holder, who in the house knows
+   it exists, what it does, its catch, its fuse. Nothing the screen has not
+   reached: a power handed out THIS week stays off the drawer until a line has
+   named it, and one fired this week reads spent only once its firing has
+   aired — until the week is over, when everything is. */
+const KNOWN = {
+  public: ['The house knows', 'open'],
+  'holder-secret': ['Holder unknown', 'half'],
+  secret: ['Nobody knows', 'dark'],
+};
+function powerTab(num, L, face) {
+  const E = (globalThis.gs?.episodeHistory || []).find(e => +e.num === +num);
+  const evicted = E?.evicted || E?.eliminated;
+  const ended = !!E && (!evicted || evicted === 'No elimination' || (L?.out || []).includes(evicted));
+  const said = (L?.said || []).join(' \n ');
+  let h = '<div class="bbi-sub">In charge right now</div>';
+  const seat = (label, names, cls) => `<div class="bbi-row">${names.map(face).join('')}<b>${esc(names.join(' & '))}</b><span class="bbi-bond ${cls}">${esc(label)}</span></div>`;
+  const rows = [];
+  if (L?.hoh) rows.push(seat('Head of Household', [L.hoh], 'close'));
+  const noms = (L?.nom || []).filter(n => !(L?.out || []).includes(n) || n === evicted);
+  if (noms.length) rows.push(seat(noms.length === 1 ? 'Nominated' : 'On the block', noms, 'enemy'));
+  if (L?.veto) rows.push(seat('Power of Veto', [L.veto], 'friend'));
+  h += rows.length ? rows.join('') : '<div class="bbi-none">No Head of Household yet this week.</div>';
+  const week = +num;
+  const ledger = (E?.powerLedger || []).filter(p => p && p.powerId)
+    .filter(p => ended || p.acquiredWeek < week || said.includes(p.name));
+  h += '<div class="bbi-sub">Secret powers</div>';
+  if (!ledger.length) return h + '<div class="bbi-none">No secret power in the house this week.</div>';
+  h += ledger.map(p => {
+    const [know, kcls] = KNOWN[p.visibility] || KNOWN.public;
+    const spent = p.firedThisWeek && (ended || said.includes(`played a power: ${p.name}`));
+    const fuse = spent ? 'Spent this week' : p.weeksLeft <= 0 ? 'Last week it exists' : `${p.weeksLeft} week${p.weeksLeft === 1 ? '' : 's'} left`;
+    return `<div class="bbi-pw ${kcls}${spent ? ' spent' : ''}"><div class="bbi-row">${face(p.holder)}<b>${esc(p.name)}</b><span class="bbi-bond ${spent ? 'neutral' : 'tense'}">${esc(fuse)}</span></div>
+      <div class="bbi-pwm">${esc(p.holder)} · ${esc(know)}</div>
+      ${p.blurb ? `<div class="bbi-pwd">${esc(p.blurb)}</div>` : ''}
+      ${p.catch ? `<div class="bbi-pwc"><span>The catch</span> ${esc(p.catch)}</div>` : ''}</div>`;
+  }).join('');
+  return h;
+}
+
 /** The drawer for a screen at a step. `L` is the stage's ledger (L.why), `tab` and `who` the viewer's picks. */
 export function intelHtml(num, L, tab, who, snap = null, at = null) {
   if (!TABS.some(t => t[0] === tab)) tab = 'heads';
@@ -76,6 +120,8 @@ export function intelHtml(num, L, tab, who, snap = null, at = null) {
   const face = n => `<span class="bbi-f" style="--c:${col(n)}">${img(n)}</span>`;
   if (tab === 'heads') {
     h += L?.why?.length ? L.why.map(w => `<div class="bbi-why">${esc(w)}</div>`).join('') : '<div class="bbi-none">Nothing hidden in this moment. Keep watching.</div>';
+  } else if (tab === 'power') {
+    h += powerTab(num, L, face);
   } else if (!W) {
     h += '<div class="bbi-none">This week was saved without its record, so the house as it stood is not known.</div>';
   } else if (tab === 'people') {
@@ -98,7 +144,7 @@ export function intelHtml(num, L, tab, who, snap = null, at = null) {
     const broken = W.deals.filter(d => d.broken).slice(-4);
     if (broken.length) h += `<div class="bbi-sub">Broken</div>${broken.map(d => `<div class="bbi-gone">${esc((d.players || []).join(' & '))} · ${esc(kind(d))}${d.brokenBy ? ` · broken by ${esc(d.brokenBy)}` : ''}</div>`).join('')}`;
   }
-  return `${h}${tab === 'heads' ? '' : `<div class="bbi-note">${W?.live ? 'As the house stands right now.' : 'As the week ends.'}</div>`}</div>`;
+  return `${h}${tab === 'heads' || tab === 'power' ? '' : `<div class="bbi-note">${W?.live ? 'As the house stands right now.' : 'As the week ends.'}</div>`}</div>`;
 }
 
 export const INTEL_CSS = `
@@ -137,4 +183,10 @@ export const INTEL_CSS = `
 .bbx .bbi-alm{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:12.5px;color:#dbe6f7}
 .bbx .bbi-alm span{display:inline-flex;align-items:center;gap:5px}
 .bbx .bbi-gone{font-size:12px;color:#7d89a3;padding:2px 0;text-decoration:line-through}
+.bbx .bbi-pw{margin:0 0 8px;padding:4px 9px 7px;border:1px solid #24304a;border-left:3px solid #ffc758;border-radius:6px;background:#0f1729}
+.bbx .bbi-pw.half{border-left-color:#7ee7ff}.bbx .bbi-pw.dark{border-left-color:#c9737f}.bbx .bbi-pw.spent{opacity:.7}
+.bbx .bbi-pwm{font:600 10.5px 'Chakra Petch',sans-serif;letter-spacing:1px;text-transform:uppercase;color:#7d89a3;margin:0 0 4px}
+.bbx .bbi-pwd{font-size:12.5px;color:#dbe6f7;line-height:1.35}
+.bbx .bbi-pwc{font-size:12px;color:#c9b27a;line-height:1.35;margin-top:4px}
+.bbx .bbi-pwc span{font:700 9.5px 'Chakra Petch',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#ffc758}
 `;

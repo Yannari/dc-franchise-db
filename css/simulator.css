@@ -3311,6 +3311,28 @@
        COLDEST neutral on the shelf — every other theme's ordinary register is
        warm or at least alive, and this one is a filing system, which should
        feel like one from week one rather than only after it turns. */
+    /* ── Secret Story: a house of locked doors, lit from one screen ─────────
+       Night-blue and a single gold. The Voice is everywhere and never seen, so
+       the page is dark and the one warm thing on it is the light under a door. */
+    .rp-theme-secret-story {
+      --theme-accent:#e0b84a; --theme-glow:#f2d27a;
+      --bbx-danger-rgb:  196,64,72;
+      --bbx-note-rgb:    224,184,74;
+      --bbx-key-rgb:     242,210,122;
+      --bbx-good-rgb:    96,200,150;
+      --bbx-info-rgb:    150,160,200;
+      --bbx-dim-rgb:     88,94,124;
+      --bbx-stage-rgb:   10,12,26;      --bbx-stage2-rgb:  5,6,16;
+      --bbx-screen-rgb:  12,14,30;      --bbx-screen2-rgb: 6,7,18;
+      --bbx-card-rgb:    11,13,28;      --bbx-card2-rgb:   6,7,17;
+      --bbx-ink:         #eef0f8;
+      --bbx-ink-quiet:   #f6f7fc;
+      --bbx-faint:       #4c5170;
+      --bbx-glyph:       #0a0c1a; }
+    .rp-theme-secret-story .rp-page h1,
+    .rp-theme-secret-story .rp-page h2 { letter-spacing:.12em; font-family:"Cinzel","Trajan Pro",Georgia,serif; }
+    .rp-theme-secret-story.is-mood-hostile { --theme-accent:#f0c860; --bbx-note-rgb: 240,200,96; --bbx-faint:#5a5f80; }
+
     .rp-theme-summer-school {
       --theme-accent:#7dd3fc; --theme-glow:#bae6fd;
       --bbx-danger-rgb:  190,68,74;     /* a red pen on a laminated sheet     */

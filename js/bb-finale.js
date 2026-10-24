@@ -15,6 +15,7 @@
 
 import { gs, seasonConfig } from './core.js';
 import { themeBeat, themeState } from './bb/themes.js';
+import { ssOn, secretStoryFinalVote, ssState } from './bb/secret-story.js';
 import { pStats, pronouns } from './players.js';
 import { getBond } from './bonds.js';
 import { dealBetween, sincerityOf, honoursDeal, breakDeal, exposeDeal, tierOf } from './bb/deals.js';
@@ -566,6 +567,31 @@ export function simulateBBFinale(rng = Math.random) {
 
   const finaleHouse = generateBBFinaleHouse(week, rng);
   if (finaleHouse) acts.push(finaleHouse);
+
+  // ── SECRET STORY: no final Head of Household and no jury; the public crowns the winner ──
+  if (ssOn()) {
+    const fv = secretStoryFinalVote({ finalists: [...house], rng });
+    acts.push({ type: 'ss-final-vote', ...fv });
+    const winner = fv.winner;
+    const order = fv.order;
+    const runnerUp = order[1] || null;
+    const ssCut = order.length > 2 ? order[order.length - 1] : null;
+    _themeFinale('crown', { finalists: [...order], winner });
+    gs.phase = 'complete';
+    gs.winner = winner;
+    gs.bb ||= {};
+    gs.bb.finale = { finalHoh: null, finalTwo: order.slice(0, 2), cut: ssCut, jury: [], votes: {}, winner, runnerUp, favourite: null,
+      publicVote: fv.percents, kitty: fv.kitty };
+    return {
+      num: week.num, format: 'big-brother', isBigBrother: true, isFinale: true, finale: true,
+      themeMood: themeState()?.mood || null, themeId: themeState()?.id || null,
+      houseAtStart: house, finalHoh: null, finalTwo: order.slice(0, 2), cut: ssCut,
+      jury: [], juryVotes: {}, winner, runnerUp, favourite: null,
+      evictionInterview: null, eliminated: ssCut, acts,
+      challengeType: null, isMerge: false, riChoice: null,
+      alliances: [], twists: [], tribesAtStart: [], campEvents: null, summaryText: '',
+    };
+  }
 
   // ── what is about to happen, said out loud ──
   //

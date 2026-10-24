@@ -93,6 +93,7 @@ import { runPremiereMystery } from './premiere-mystery.js';
 import { runTemptationPremiere } from './temptation-premiere.js';
 import { runMachinePremiere } from './machine-premiere.js';
 import { runCliqueReturnees } from './clique-returnees.js';
+import { ssOn, assignSecrets, runSecretHunt, secretStoryNominations, secretStoryPublicVote } from './secret-story.js';
 import { mysteryHouseguestOf } from './premiere-mystery.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
@@ -1688,6 +1689,9 @@ export function simulateBBWeek(options = {}) {
   // it is going to run until the house is big enough for it, two thousand
   // lines below this.
   let skipVeto = compressed ? !!options.skipVeto : (twists.has('bb-instant-eviction') || !!options.skipVeto);
+  // Secret Story has no Power of Veto: the immunity competition is the week's only competition
+  const ss = ssOn();
+  if (ss) skipVeto = true;
   week.twists = [...twists];
   week.compressed = compressed;
   if (options.segment) week.segment = options.segment;
@@ -1780,6 +1784,10 @@ export function simulateBBWeek(options = {}) {
       primer: JSON.parse(JSON.stringify(_primer)),
       mood: week.themeMood, players: [], beats: [],
     });
+  }
+  // Secret Story: every houseguest has walked in with a secret and a kitty; The Voice says so
+  if (ssOn() && !compressed && !gs.bb?.secretStory) {
+    try { const given = assignSecrets({ house, rng }); if (given) week.acts.push(given); } catch { /* the season plays without */ }
   }
   // A turn is a CHANGE of register, not a week that happens to be hostile.
   // High Roller's books `hostile` at two anchors on purpose (a proportional
@@ -2969,6 +2977,17 @@ export function simulateBBWeek(options = {}) {
   if (!preCrowned && week.mustThrowHoh && hoh === week.mustThrowHoh && hohCompetition?.placements?.length > 1) {
     hoh = hohCompetition.placements.find(n => n !== week.mustThrowHoh && hohPlayers.includes(n)) || hoh;
     week.threwForTemptation = week.mustThrowHoh;
+  }
+
+  // ── SECRET STORY: the secrets on night one, and the buzzer every week ──
+  if (ss && !compressed) {
+    try {
+      if (!gs.bb?.secretStory) {
+        const given = assignSecrets({ house, rng });
+        if (given) week.acts.push(given);
+      }
+      week._ssHunt = runSecretHunt({ week, house, rng });
+    } catch (err) { (week._ssError ||= []).push(String(err?.message || err)); }
   }
 
   // ── BB23: DOUBLE OR NOTHING ──
@@ -4612,7 +4631,23 @@ export function simulateBBWeek(options = {}) {
     const g = nominationGrievance(week.hoh, name);
     if (g) nomGrievances[name] = g;
   }
+  // SECRET STORY: the house nominates in the Diary Room, one sex against the other; the immunity
+  // winner (the engine's `hoh`) and anybody made safe this week cannot be named
+  let ssNom = null;
+  if (ss && !chainNoms.length) {
+    try {
+      ssNom = secretStoryNominations({ week, house, immune: [hoh, ...keySafe].filter(Boolean), rng });
+      if (ssNom?.nominees?.length >= 2) {
+        nominees = [...ssNom.nominees];
+        week.initialNominees = [...nominees];
+        week.finalNominees = [...nominees];
+      } else ssNom = null;
+    } catch { ssNom = null; }
+  }
+  for (const a of week._ssHunt || []) week.acts.push(addBeats(a, { players: [a.by, a.target] }));
+  delete week._ssHunt;
   if (!chainNoms.length) week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
+    secretStory: ssNom,
     grievances: nomGrievances, allianceExits: week.allianceExits || null,
     allianceConsults: _mergeConsults(week.allianceConsults),
     duo: duoNom, nomFallout: week.nomFallout,
@@ -5295,7 +5330,7 @@ export function simulateBBWeek(options = {}) {
     // transcript would both tell the house the Head of Household's nominations
     // are standing, on a week where the Head of Household never made any. The
     // chain act already said what happened instead.
-    if (!chainNoms.length) {
+    if (!chainNoms.length && !ss) {
       week.acts.push(addBeats(
         { type: 'instant-eviction', nominees: [...nominees], hoh,
           sequestered: week.sequestered || null, overheard, regret },
@@ -6932,7 +6967,7 @@ export function simulateBBWeek(options = {}) {
 
   // Days 5–6 — votes begin from bonds, then campaigning can visibly move them.
   // A duel week has no voters: see the block above.
-  let voters = week.chainDuel ? []
+  let voters = (week.chainDuel || ss) ? []
     : house.filter(name => name !== hoh && !nominees.includes(name));
   voters = hook(hooks, 'voteEligibility', voters, { week, house, hoh, nominees: [...nominees] }) || voters;
   voters = [...new Set(voters)].filter(name => house.includes(name) && name !== hoh && !nominees.includes(name)
@@ -7642,9 +7677,14 @@ export function simulateBBWeek(options = {}) {
   let evicted;
   let secondEvicted = null;
   let tieBreak = null;
+  const ssPublic = ss && !week.chainDuel ? secretStoryPublicVote({ nominees, rng }) : null;
   if (week.chainDuel) {
     // Decided in the yard, not in the Diary Room.
     evicted = week.chainDuel.loser;
+  } else if (ssPublic) {
+    // SECRET STORY: the public evicts
+    evicted = ssPublic.evicted;
+    week.ssPublic = ssPublic;
   } else if (doubleVote && nominees.length >= 3) {
     // One vote, three chairs, two walks. The two highest evict-getters both
     // leave; the only tie that matters is the BOUNDARY — second place versus
@@ -7894,7 +7934,7 @@ export function simulateBBWeek(options = {}) {
   }
 
   week.acts.push(addBeats(
-    { type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted,
+    { type: 'eviction', nominees: [...nominees], ballots, votes, tieBreak, evicted, ssPublic: week.ssPublic || null,
       // THE PUBLIC'S BALLOT, WHERE THE BALLOTS ARE READ.
       //
       // It is counted into `votes` but it is not in `ballots`, so the eviction

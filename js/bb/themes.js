@@ -39,6 +39,7 @@ import MYSTERY from './themes-mystery.js';
 import HIGH_ROLLERS from './themes-high-rollers.js';
 import SUMMER_CAMP from './themes-summer-camp.js';
 import SUMMER_SCHOOL from './themes-summer-school.js';
+import SECRET_STORY from './themes-secret-story.js';
 
 /**
  * Every theme, by id.
@@ -55,6 +56,7 @@ export const BB_THEMES = {
   [HIGH_ROLLERS.id]: HIGH_ROLLERS,
   [SUMMER_CAMP.id]: SUMMER_CAMP,
   [SUMMER_SCHOOL.id]: SUMMER_SCHOOL,
+  [SECRET_STORY.id]: SECRET_STORY,
 };
 
 export const THEME_LIST = Object.keys(BB_THEMES);
@@ -359,7 +361,7 @@ export function reanchorThemeArc(epNum, houseSize) {
 // Knobs only a theme ever sets (no control in the config panel). They describe ONE season's
 // running order (Summer Camp's Have-Nots from week four, Machine's Instigator from week six), so a
 // season under any other theme, or none, must not inherit them from the last one.
-const THEME_ONLY_KNOBS = ['bbHaveNotsFrom', 'bbSaboteurStartWeek'];
+const THEME_ONLY_KNOBS = ['bbHaveNotsFrom', 'bbSaboteurStartWeek', 'bbSecretStory'];
 function clearThemeOnlyKnobs(theme) {
   for (const k of THEME_ONLY_KNOBS) if (!(theme?.seasonKnobs && k in theme.seasonKnobs)) delete seasonConfig[k];
 }

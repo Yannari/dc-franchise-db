@@ -29,7 +29,7 @@
 //
 // ── AND THE TURN, WHICH IS UNLIKE THE OTHER FIVE ──────────────────────
 //
-// Every other theme's hostile register is a mood: the Den flares red, CORA
+// Every other theme's hostile register is a mood: the Den flares red, AINSLEY
 // flares red, Summer of Mystery drains to bone, High Roller's goes fluorescent
 // and Summer Camp goes SILENT. This one is not a mood at all. It is a SYSTEM
 // FAILING.

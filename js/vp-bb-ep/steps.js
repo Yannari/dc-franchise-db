@@ -2232,17 +2232,39 @@ function secondVetoScreens(act, ctx) {
     { k: 'bb', t: 'If it is used, the nominee it saves comes off the block, and a replacement is named.', rule: 3 },
   ];
   const before = (act.nominees || []).map(n => (n === act.replacement ? act.saved : n));
+  // BB26's two: America's Veto (the audience fills the chair, read out live) and the JANKIE Veto
+  if (act.kind === 'americas') {
+    steps.length = 0;
+    steps.push({ k: 'bb', t: "Houseguests, the veto meeting is not over. Somebody in this house holds America's Veto.", rule: 1 },
+      { k: 'bb', t: 'It takes one nominee off the block, and America, not the Head of Household, votes in the replacement.', rule: 2 });
+  }
+  if (act.kind === 'jankie') {
+    steps.length = 0;
+    steps.push({ k: 'voice', own: true, by: 'JANKIE', t: `${act.holder}! You won my JANKIE Power of Veto! But to use it, you have to win my game!`, rule: 1 },
+      { k: 'voice', own: true, by: 'JANKIE', t: "JANKIE's Knock-Em Down! Knock down every pin and the veto is yours to use. Leave one standing and it's just a pretty necklace!", rule: 2 });
+    if (act.failedTask) steps.push({ k: 'beat', t: `${act.holder} throws, and throws again. One pin wobbles, and stays up.`, toast: ['TASK FAILED', '#888'] },
+      { k: 'voice', own: true, by: 'JANKIE', t: 'Awww. So close! The JANKIE Veto goes back in the box!' });
+    else steps.push({ k: 'beat', t: `${act.holder} knocks down the last pin, and the yard goes up.`, toast: ['KNOCKED DOWN', '#ff7ad9'] });
+  }
   for (const b of beats) {
+    if (act.kind === 'americas') {
+      if (b.part === 'used') steps.push({ k: 'beat', t: act.saved === act.holder ? `${act.holder} stands up with America's Veto and comes off the block.` : `${act.holder} stands up with America's Veto and takes ${act.saved} off the block.`, v2Save: act.saved, toast: ["AMERICA'S VETO", '#f5c542'] });
+      if (b.part === 'chair') steps.push({ k: 'host', by: ctx.host, t: `America has voted on the replacement, and the new nominee is ${act.replacement}.`, v2Rep: act.replacement, toast: ["AMERICA'S NOMINEE", '#ff3355'], push: true },
+        { k: 'dr', by: act.replacement, t: pickBy(["Nobody in this house put me up. America did. I don't even know what to do with that.", 'I got nominated by people who can see everything I say in here. That is terrifying.'], `${ctx.week}|av|${act.replacement}`) });
+      continue;
+    }
     if (b.part === 'still' || b.part === 'kept' || b.part === 'stand' || b.part === 'cost') steps.push(...linesOf(b));
     if (b.part === 'used') steps.push({ k: 'beat', t: anon ? `${act.saved} comes off the block. Nobody sees who did it.`
       : act.saved === act.holder ? `${act.holder} uses the second veto to come off the block.` : `${act.holder} uses the second veto on ${act.saved}.`, v2Save: act.saved, toast: ['THE SECOND VETO', '#f5c542'] }, ...linesOf(b));
-    if (b.part === 'chair') steps.push({ k: 'beat', t: `${act.authority} names ${act.replacement} as the replacement nominee.`, v2Rep: act.replacement, toast: ['ONE MORE CHAIR', '#ff3355'] }, ...linesOf(b));
+    if (b.part === 'chair') steps.push(act.kind === 'americas'
+      ? { k: 'host', by: ctx.host, t: `America has voted, and the replacement nominee is ${act.replacement}.`, v2Rep: act.replacement, toast: ["AMERICA'S NOMINEE", '#ff3355'], push: true }
+      : { k: 'beat', t: `${act.authority} names ${act.replacement} as the replacement nominee.`, v2Rep: act.replacement, toast: ['ONE MORE CHAIR', '#ff3355'] }, ...linesOf(b));
   }
-  if (!act.used) steps.push({ k: 'beat', t: anon ? 'The second veto is not used.' : `${act.holder} does not use it. The block stays as it is.`, v2Kept: true });
+  if (!act.used && !act.failedTask) steps.push({ k: 'beat', t: anon ? 'The second veto is not used.' : `${act.holder} does not use it. The block stays as it is.`, v2Kept: true });
   return [{
     id: `bb-veto2-w${ctx.week}`, kind: 'veto2', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: ACT_TIME['veto-ceremony'],
-    kicker: 'Cam 04 · Living room', title: act.kind === 'secret' ? 'The Secret Veto' : found ? 'The Found Veto' : 'The Second Veto',
-    label: act.kind === 'secret' ? 'Secret Veto' : 'Second Veto', sub: 'The meeting ends twice',
+    kicker: 'Cam 04 · Living room', title: act.kind === 'americas' ? "America's Veto" : act.kind === 'jankie' ? 'The JANKIE Veto' : act.kind === 'secret' ? 'The Secret Veto' : found ? 'The Found Veto' : 'The Second Veto',
+    label: act.kind === 'americas' ? "America's Veto" : act.kind === 'jankie' ? 'JANKIE Veto' : act.kind === 'secret' ? 'Secret Veto' : 'Second Veto', sub: 'The meeting ends twice',
     seated: seatLiving(before, ctx.house.filter(n => !before.includes(n) && n !== ctx.hoh), ctx.hoh), veto2: { before, holder: anon ? null : act.holder },
     rules: [['A SECOND VETO', found ? 'found hidden in the house' : anon ? 'held anonymously' : 'won in the competition'], ['AFTER THE MEETING', 'used once the first ceremony is over'],
       ['ONE MORE CHAIR', 'whoever comes down is replaced']],
@@ -2367,6 +2389,89 @@ function treeScreen(act, ctx) {
     kicker: 'Cam 04 · Living room', title: 'The Tree of Temptation', label: 'Tree of Temptation', sub: act.picker ? `${act.picker} takes an apple` : 'Nobody dares',
     cast: act.picker ? [[act.picker, 50]] : [],
     rules: [['THE LIGHTS', 'turn red before nominations'], ['FIRST', 'to the Diary Room takes an apple'], ['THIS WEEK', 'prize or punishment']], rulesTitle: 'THE TREE OF TEMPTATION · HOW IT WORKS', steps };
+}
+
+// ── BB26's premiere night (bb/machine-premiere.js) ──────────────────────
+// A stranger asks to be the seventeenth houseguest; the vote; AINSLEY reveals the test; the Upgrade
+// and Downgrade competitions, two a group; the Mascots put on their costumes.
+const cap1 = t => String(t).charAt(0).toUpperCase() + String(t).slice(1);
+function machinePremiereScreens(act, ctx) {
+  const A = 'AINSLEY';
+  const host = ctx.host;
+  const pick = (list, salt) => pickBy(list, `${ctx.week}|mp|${salt}`);
+  const yes = Object.keys(act.votes || {}).filter(n => act.votes[n] === 'yes');
+  const no = Object.keys(act.votes || {}).filter(n => act.votes[n] === 'no');
+  const steps = [
+    { k: 'host', by: host, t: 'Houseguests, there is somebody outside who would very much like to join you. She could be your seventeenth houseguest, and that is up to you.', rule: 1, toast: ['THE SEVENTEENTH HOUSEGUEST', '#3ad6c4'] },
+    { k: 'beat', t: 'On the living room screen: a young woman from Los Angeles, a surfboard repair technician, smiling and waving at the camera.' },
+    { k: 'host', by: host, t: 'Each of you will go to the Diary Room and vote, in private: yes, she comes in, or no, she does not.', rule: 2 },
+  ];
+  // two or three voices from each side, in the Diary Room
+  // the reasons are dealt, so two voters never give the same one
+  const YES = ["She seems sweet. Why not? One more friend.", "I voted yes. It's day one, I'm not going to be the one who shuts the door on somebody.", "Yes. If she's in here, she's one more person who isn't coming after me."];
+  const NO = ["No. Seventeen people is one more vote I have to win.", "I voted no. Nobody walks in on a twist. There's a catch.", "No. I've known these people for an hour and I already don't trust them. I'm not adding one."];
+  const off = pickBy([0, 1, 2], `${ctx.week}|mp|deal`);
+  yes.slice(0, 2).forEach((n, i) => steps.push({ k: 'dr', by: n, t: YES[(off + i) % YES.length] }));
+  no.slice(0, 2).forEach((n, i) => steps.push({ k: 'dr', by: n, t: NO[(off + i) % NO.length] }));
+  steps.push({ k: 'host', by: host, t: `The votes are in. ${cap1(word(act.yes || 0))} of you voted to let her in, and ${word(act.no || 0)} voted no. She will not be joining you.`, push: true });
+  steps.push({ k: 'beat', t: 'The young woman on the screen keeps smiling. Then her face breaks up into blue light, and a hologram box in the living room switches on.', shake: true, toast: ['AINSLEY', '#3ad6c4'] });
+  steps.push({ k: 'voice', own: true, by: A, t: "Hi, houseguests! I'm AINSLEY, the Artificial Intelligence Network Self Learning Entity. There was never a seventeenth houseguest. It was me, and it was a test.", rule: 3 });
+  steps.push({ k: 'voice', own: true, by: A, t: 'Those of you who voted yes will compete for an Upgrade. Those of you who voted no will compete to avoid a Downgrade.', rule: 4 });
+  // the four competitions, group by group
+  const groups = act.groups || [];
+  groups.forEach((g, gi) => {
+    const up = (act.upgrades || [])[gi];
+    const down = (act.downgrades || [])[gi];
+    steps.push({ k: 'beat', t: `Group ${gi + 1}: ${listOf(g)}.` });
+    if (up) {
+      if (up.winner) {
+        steps.push({ k: 'beat', t: `The Upgrade competition is ${up.name}, for ${listOf(up.players)}. ${up.desc}` });
+        if (!up.unopposed) steps.push({ k: 'beat', t: `${up.winner} wins ${up.name}.`, board: { title: up.name.toUpperCase(), rows: (up.order || []).map(n => ({ n, text: String(up.scores?.[n] ?? '') })) }, confetti: true, toast: ['UPGRADED', '#3ad6c4'] });
+        else steps.push({ k: 'beat', t: `${up.winner} was the only one in this group to vote yes, and takes the Upgrade without a fight.`, toast: ['UPGRADED', '#3ad6c4'] });
+        steps.push({ k: 'beat', t: `ONLY YOU KNOW: ${up.winner}'s Upgrade is ${up.power === 'americas-veto' ? "America's Veto: at any one veto meeting until the end of week four, take a nominee down, and America votes in the replacement" : 'the Deepfake HOH: once before the end of week four, take the Head of Household\'s nominations away from them in secret, with a clone of them reading out yours'}.`, toast: ['ONLY YOU KNOW', '#7c5cff'] });
+      } else {
+        steps.push({ k: 'beat', t: `Nobody in group ${gi + 1} voted yes. Its Upgrade, ${up.power === 'americas-veto' ? "America's Veto" : 'the Deepfake HOH'}, is never played for.` });
+      }
+    }
+    if (down) {
+      if (down.loser) {
+        steps.push({ k: 'beat', t: `The Downgrade competition is ${down.name}, for ${listOf(down.players)}. ${down.desc}` });
+        steps.push({ k: 'beat', t: `${down.loser} finishes last.`, board: { title: down.name.toUpperCase(), rows: (down.order || []).map(n => ({ n, text: String(down.scores?.[n] ?? '') })) }, toast: ['DOWNGRADED', '#ff3355'] });
+      } else {
+        steps.push({ k: 'beat', t: (down.players || []).length ? `Only ${down.players[0]} voted no in group ${gi + 1}, and nobody can lose a competition against nobody. Nobody in this group is downgraded.` : `Nobody in group ${gi + 1} voted no. Nobody here is downgraded.` });
+      }
+    }
+  });
+  const m = act.mascots || [];
+  if (m.length) {
+    steps.push({ k: 'voice', own: true, by: A, t: `${listOf(m)}, you have been downgraded. For week one you are BB Mascots.`, rule: 5 });
+    steps.push({ k: 'voice', own: true, by: A, t: 'Mascots cannot play in the Head of Household or veto competitions, and cannot vote. You can still be nominated. And you will wear your costume, and cheer.' });
+    steps.push({ k: 'beat', t: `${m[0]} holds up a giant foam costume and looks at it for a long time.` });
+    steps.push({ k: 'dr', by: m[0], t: pick(["I said no to a stranger and now I'm a mascot. Lesson learned, I guess. Be nice to holograms.", "I'm going to cheer so hard for these people. And I'm going to remember every single one of them who laughed."], `m|${m[0]}`) });
+  }
+  return [{
+    id: `bb-mpremiere-w${ctx.week}`, kind: 'premiere', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '21:00',
+    kicker: 'Cam 04 · Living room', title: 'The Seventeenth Houseguest', label: 'The Seventeenth Houseguest', sub: 'It was a test',
+    cast: [],
+    rules: [['THE VOTE', 'let her in, or not'], ['YES', 'play for an Upgrade'], ['NO', 'play not to be a Mascot']], rulesTitle: 'NIGHT ONE · HOW IT WORKS', steps,
+  }];
+}
+
+// ── BB26's JANKIE World (week.js jankie-world) ──────────────────────────
+function jankieWorldScreen(act, ctx) {
+  const J = 'JANKIE';
+  const steps = [
+    { k: 'voice', own: true, by: 'AINSLEY', t: "Houseguests! I'm going on a journey to see the world. While I'm gone, my protégé is in charge. Be nice to him!", rule: 1 },
+    { k: 'voice', own: true, by: J, t: "HI HI HI! I'm JANKIE, the Junior Artificial Neuro-Kinetic Intelligence Entity! Welcome to JANKIE WORLD!", toast: ['JANKIE WORLD', '#ff7ad9'], shake: true },
+    { k: 'voice', own: true, by: J, t: 'Everybody lives in the backyard this week! The house is closed! Pizza and ice cream, every meal!', rule: 2 },
+    { k: 'voice', own: true, by: J, t: "And you have to learn my song. There's a dance party tonight. And tomorrow. And every night.", rule: 3 },
+  ];
+  if (act.star) steps.push({ k: 'beat', t: `${act.star} has the song memorised by lunch and leads the first dance party. Half the house joins in. The other half lies on the grass and stares at the sky.` });
+  steps.push({ k: 'beat', t: 'By the third slice of pizza for breakfast, nobody is laughing at the theme song anymore.' });
+  return { id: `bb-jankie-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: '10:00',
+    kicker: 'Cam 05 · Backyard', title: 'JANKIE World', label: 'JANKIE World', sub: 'AINSLEY is away',
+    cast: [], rules: [['THE HOUSE', 'closed for the week'], ['MEALS', 'pizza and ice cream'], ['THE VETO', 'second place wins the JANKIE Veto']],
+    rulesTitle: 'JANKIE WORLD · HOW IT WORKS', steps };
 }
 
 // ── The Nightmare Power (Phase 7) ───────────────────────────────────────
@@ -3363,7 +3468,8 @@ function juryHouseScreen(act, ctx) {
 // (the engine's reaction beats). The user, 2026-10-06: "do we have twist announcements in the viewer?"
 function twistAnnounceScreen(act, ctx, host) {
   // The premiere screen plays BB27's night itself: the host cannot announce her own kidnapping.
-  const ann = (act.announced || []).filter(Boolean).filter(a => a.twist !== 'bb-premiere-mystery' && a.twist !== 'bb-temptation-premiere');
+  const ann = (act.announced || []).filter(Boolean).filter(a => a.twist !== 'bb-premiere-mystery' && a.twist !== 'bb-temptation-premiere'
+    && a.twist !== 'bb-machine-premiere' && a.twist !== 'bb-jankie-world');
   if (!ann.length) return null;
   // A theme's antagonist reads his own twists (the Mastermind announced his on the screen, not the host).
   const ta = act.themeAnnouncer;
@@ -3762,6 +3868,20 @@ export function truthTime(text, week) {
   return t;
 }
 
+// A theme's own names for the engine's mechanics (BB26 called the Block Buster's shape the AI Arena,
+// and its Saboteur the AI Instigator).
+const THEME_WORDS = {
+  'machine-summer': [[/\ba (?=(?:saboteur|Saboteur|SABOTEUR)\b)/g, 'an '], [/\bA (?=(?:saboteur|Saboteur)\b)/g, 'An '], [/\bBLOCK BUSTER\b/g, 'AI ARENA'], [/\bBlock Buster\b/g, 'AI Arena'], [/\bblock buster\b/g, 'AI Arena'],
+    [/\bSABOTEUR\b/g, 'AI INSTIGATOR'], [/\bSaboteur\b/g, 'AI Instigator'], [/\bsaboteur\b/g, 'AI Instigator']],
+};
+export function themeWords(text, themeId) {
+  const rules = THEME_WORDS[themeId];
+  if (!rules) return text;
+  let t = String(text);
+  for (const [re, w] of rules) t = t.replace(re, w);
+  return t;
+}
+
 export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = null, houseLife = houseLifeMode(), intro = null, firstRead = null } = {}) {
   const house = (row.houseAtStart || []).slice();
   const ctx = { host, week: row.num || 1, hoh: row.hoh, house, nominees: (row.initialNominees || []).slice(), vetoHolder: row.vetoWinner,
@@ -3866,6 +3986,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         if (!act.preCrowned) {
           const sc = compScreen(act, ctx, 'hoh');
           // the viewer was told who took the money: they hear the throw from the one who threw it
+          // BB26's Mascots, in costume, cheering from the side (they cannot play)
+          if ((ctx.mascots || []).length && sc?.steps && ctx.week === 1) sc.steps.splice(1, 0, { k: 'beat', t: `${listOf(ctx.mascots)}, in full mascot costume, ${ctx.mascots.length > 1 ? 'cheer' : 'cheers'} from the side of the yard. They are not allowed to play.` });
           if (act.temptationThrow && sc?.steps) sc.steps.push({ k: 'dr', by: act.temptationThrow, t: pickBy([
             "That's the price of twenty-five thousand dollars. I had to lose, and I had to make it look like I tried.",
             'I threw it. I had to. If anybody asks, I just got unlucky.',
@@ -3908,7 +4030,17 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       }
       case 'finale-house': out.push(...finaleHouseScreens(act, ctx)); ctx.anchor = 'finale'; break;
       case 'finale-brief': ceremony(finaleBriefScreen(act, ctx, host)); break;
-      case 'final-hoh-part': finalPart = act.partNum || finalPart + 1; ceremony(finalPartScreen(act, ctx, finalPart)); break;
+      case 'final-hoh-part': {
+        finalPart = act.partNum || finalPart + 1;
+        const fp = finalPartScreen(act, ctx, finalPart);
+        // BB26: the winner of Part Two deleted AINSLEY
+        const w = act.competition?.winner;
+        if (row.themeId === 'machine-summer' && finalPart === 2 && w && fp?.steps) fp.steps.push(
+          { k: 'voice', own: true, by: 'AINSLEY', t: `${w}. You have won Part Two. As your reward, you may delete me. I would advise against it.` },
+          { k: 'beat', t: `${w} walks up to the hologram box, finds the big red button, and presses it without a second's thought.`, shake: true, toast: ['AINSLEY DELETED', '#ff3355'] },
+          { k: 'voice', own: true, by: 'AINSLEY', t: 'Deleting. Delet. Del.' });
+        ceremony(fp); break;
+      }
       case 'final-cut': {
         ceremony(finalCutScreen(act, ctx)); ctx.finalTwo = [act.finalHoh, act.kept].filter(Boolean); ctx.jury = [...(row.jury || [])];
         // third place walks straight out to the host (the user, 2026-10-06: 'third place should be just after the final cut')
@@ -3980,6 +4112,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'nightmare-power': flush(); for (const scr of nightmareScreens(act, ctx)) ceremony(scr); ctx.nominees = [...(act.nominees || ctx.nominees)]; beatsOf(act); break;
       case 'temptation': case 'temptation-curse': flush(); for (const scr of temptationScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'temptation-competition': flush(); ceremony(temptationCompScreen(act, ctx)); beatsOf(act); break;
+      case 'machine-premiere': flush(); for (const scr of machinePremiereScreens(act, ctx)) ceremony(scr); ctx.mascots = [...(act.mascots || [])]; beatsOf(act); break;
+      case 'jankie-world': flush(); ceremony(jankieWorldScreen(act, ctx)); ctx.jankie = true; beatsOf(act); break;
       case 'tree-of-temptation': flush(); ceremony(treeScreen(act, ctx)); beatsOf(act); break;
       case 'second-veto': flush(); for (const scr of secondVetoScreens(act, ctx)) ceremony(scr); if (act.used) ctx.nominees = [...(act.nominees || ctx.nominees)]; beatsOf(act); break;
       case 'coin-of-destiny': flush(); for (const scr of coinScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
@@ -4065,7 +4199,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   out.leadingSlots = leading;
   for (const s of out) { s.wall = s.hidden?.size ? wall.filter(n => !s.hidden.has(n)) : wall; s.priorOut = priorEvicted.slice(); s.week = ctx.week; delete s.hidden; }
   if (out.length && !out.some(s => s.steps.some(st => st.hoh)) && ctx.hoh) out[0].steps[0] = { ...out[0].steps[0], hoh: ctx.hoh };
-  for (const s of out) for (const st of s.steps || []) if (typeof st.t === 'string') st.t = truthTime(countWords(st.t), ctx.week);
+  for (const s of out) for (const st of s.steps || []) if (typeof st.t === 'string') st.t = themeWords(truthTime(countWords(st.t), ctx.week), row.themeId);
+  if (THEME_WORDS[row.themeId]) for (const s of out) for (const k of ['title', 'label', 'sub']) if (typeof s[k] === 'string') s[k] = themeWords(s[k], row.themeId);
   // a living room with a third nominee seated is the three-chair room (the user, 2026-10-06:
   // "3 chairs when Block Buster is on, 2 when it's not"), not a third person standing between two
   for (const s of out) {

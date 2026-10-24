@@ -124,6 +124,17 @@ export function resolveVetoRules({
     });
   }
 
+  // ── BB26's America's Veto: the holder takes one down, the audience fills the chair ──
+  // Carried like a found veto (it airs only when it is used), because the holder
+  // has four weeks and most meetings it stays in the pocket.
+  const av = activePowerAt('veto-ceremony', week?.num, 'americas-veto');
+  if (av && house.includes(av.holder)) {
+    extra.push({
+      kind: 'americas', holder: av.holder, instance: av,
+      authority: 'america', visibility: 'public', mustUse: false, hidden: true,
+    });
+  }
+
   // ── count ──
   for (const kind of ['double', 'secret']) {
     if (!rules[kind === 'double' ? 'doubleVeto' : 'secretVeto']) continue;
@@ -132,12 +143,14 @@ export function resolveVetoRules({
     const holder = _secondHolder(kind, { vetoWinner, placements, vetoPlayers, house, hoh, rng });
     if (!holder) continue;
     extra.push({
-      kind, holder,
+      kind: kind === 'double' && rules.jankieVeto ? 'jankie' : kind, holder,
       // A second medallion never carries the Diamond's authority unless it is
       // told to: two people rewriting the chair is a different twist again.
       authority: rules.secondVetoAuthority === 'veto-holder' ? 'veto-holder' : 'hoh',
       visibility: kind === 'secret' ? 'anonymous' : 'public',
       mustUse: false,
+      // BB26's JANKIE Power of Veto: usable only by beating a carnival game at the meeting
+      ...(kind === 'double' && rules.jankieVeto ? { task: 'jankie' } : {}),
     });
   }
 

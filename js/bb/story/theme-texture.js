@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════
 //
 // The user, 2026-10-15: "the pools dont change with the theme". Only the antagonist's announcements knew what
-// season it was: nobody in the house mentioned CORA, the Den's door, the whistle or the chips, and nobody noticed
+// season it was: nobody in the house mentioned AINSLEY, the Den's door, the whistle or the chips, and nobody noticed
 // when the season turned. Measured first (scratch tests/zz-bb-poolfreq): a Machine season aired 461 different
 // pools, none more than about thirty times, so themed lines filed under individual pools would almost never air.
 //
@@ -31,25 +31,25 @@ const T = {
   'machine-summer': {
     room: {
       neutral: ['A camera in the corner of the ceiling turns, slowly, to follow the conversation.',
-        "CORA's panel in the wall glows a little brighter, the way it does when she is listening.",
-        'Somewhere in the house, CORA politely reminds nobody in particular to drink some water.',
+        "AINSLEY's panel in the wall glows a little brighter, the way it does when she is listening.",
+        'Somewhere in the house, AINSLEY politely reminds nobody in particular to drink some water.',
         'The lights in the room adjust themselves by a few degrees. Nobody touched them.'],
       hostile: ['The panel in the wall has gone red. It does not flicker any more. It just watches.',
         'Every camera in the room turns at once, and stays turned.',
-        'CORA announces the time, to the second, for no reason anybody can think of.'],
+        'AINSLEY announces the time, to the second, for no reason anybody can think of.'],
     },
     dr: {
-      plan: { neutral: ['In a normal house you whisper. In this house CORA hears a whisper better than a shout.',
-        'We waited for CORA to finish her announcement before anybody said a single name.',
-        'I keep forgetting CORA is in every room. Then I remember, halfway through a sentence.'],
-      hostile: ["CORA isn't helping any more. Everything we plan, we plan knowing she has the recording.",
-        'I used to think CORA was on our side. Now I only talk game in the shower, with the water running.'] },
-      fight: { neutral: ['CORA heard all of that. CORA hears everything. Great.', 'Somewhere there is a log file with that whole argument in it, timestamped.'],
-        hostile: ["CORA didn't even pretend to look away. I swear the camera zoomed in."] },
-      heart: { neutral: ["It's hard to be romantic when the walls say good morning.", 'Nothing in this house is private. CORA probably has a word for what we are already.'],
-        hostile: ["CORA knows exactly how much time we spend together. I'd rather she didn't."] },
-      life: { neutral: ["CORA wished me a happy Tuesday. It's Thursday. I said thank you anyway.", "I've started saying please to the house. I don't know when that happened."],
-        hostile: ['CORA used to tell jokes. Now she just tells us what time it is.', 'Nobody says goodnight to CORA any more.'] },
+      plan: { neutral: ['In a normal house you whisper. In this house AINSLEY hears a whisper better than a shout.',
+        'We waited for AINSLEY to finish her announcement before anybody said a single name.',
+        'I keep forgetting AINSLEY is in every room. Then I remember, halfway through a sentence.'],
+      hostile: ["AINSLEY isn't helping any more. Everything we plan, we plan knowing she has the recording.",
+        'I used to think AINSLEY was on our side. Now I only talk game in the shower, with the water running.'] },
+      fight: { neutral: ['AINSLEY heard all of that. AINSLEY hears everything. Great.', 'Somewhere there is a log file with that whole argument in it, timestamped.'],
+        hostile: ["AINSLEY didn't even pretend to look away. I swear the camera zoomed in."] },
+      heart: { neutral: ["It's hard to be romantic when the walls say good morning.", 'Nothing in this house is private. AINSLEY probably has a word for what we are already.'],
+        hostile: ["AINSLEY knows exactly how much time we spend together. I'd rather she didn't."] },
+      life: { neutral: ["AINSLEY wished me a happy Tuesday. It's Thursday. I said thank you anyway.", "I've started saying please to the house. I don't know when that happened."],
+        hostile: ['AINSLEY used to tell jokes. Now she just tells us what time it is.', 'Nobody says goodnight to AINSLEY any more.'] },
     },
   },
   'summer-of-temptation': {

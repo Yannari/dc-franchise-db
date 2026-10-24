@@ -971,7 +971,7 @@ const voiced = (sc, kind, ctx) => {
   // (each with the line it answers: "No." to "Is it about me?" is a fact, not a refusal)
   // ...and the line after it, which may quote it back ("Okay." "Just okay?")
   // (the rest of the scene, the Diary Room too: "I know." voiced "I know! Right?", then "And 'I know' is even worse")
-  // ...and now and then a line of the season it is (theme-texture.js): CORA's camera, the Den's door, the whistle
+  // ...and now and then a line of the season it is (theme-texture.js): AINSLEY's camera, the Den's door, the whistle
   if (/fight|feud|argument|apolog|makeup|breakup|declare|cold|grudge|snap|block|goodbye|backdoor|blame|confront|blow|betray|exposed/.test(String(kind || ''))) return addThemeTexture(addInsight(sc, kind, ctx?.week?.num), kind, ctx);
   sc.lines = sc.lines.map((l, i) => voiceLine(l, sc.id, sc.lines.slice(0, i).reverse().find(x => x.kind === 'say'),
     { text: sc.lines.slice(i + 1).filter(x => x.kind !== 'beat').map(x => x.text).join(' ') }, regKey(ctx)));

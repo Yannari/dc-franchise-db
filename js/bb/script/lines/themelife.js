@@ -2,8 +2,8 @@
 // bb/script/lines/themelife.js — the theme's own house scenes (bb-events/theme-life.js)
 // ══════════════════════════════════════════════════════════════════════
 //
-//   theme.cora.praise      CORA singles {b} out over the speakers; {a}, who likes {b} least, hears it    neutral | hostile
-//   theme.cora.replay      after the turn, CORA plays back what {a} said about {b}                      scene
+//   theme.cora.praise      AINSLEY singles {b} out over the speakers; {a}, who likes {b} least, hears it    neutral | hostile
+//   theme.cora.replay      after the turn, AINSLEY plays back what {a} said about {b}                      scene
 //   theme.den.seen         {a} sees {b} by the Den's door at night                                     caught | shrug
 //   theme.hotel.door       {a} and {b} find a door that was not there yesterday                         neutral | hostile
 //   theme.floor.chips      {a} sees {b} counting chips (never a balance: the privacy rule)              neutral | hostile
@@ -13,34 +13,34 @@ import MORE from './themelife-more.js';
 
 const BASE = {
   'theme.cora.praise.neutral': [
-    { id: 'thl.cp1', turns: [{ beat: 'The speakers chime. CORA thanks {b}, by name, for leaving the kitchen spotless this morning.' },
-      { by: 'b', say: "Thanks, CORA!" }, { by: 'a', dr: "She thanked {b} for wiping a counter. I've cleaned that kitchen every day for a week. Nothing." }] },
-    { id: 'thl.cp2', turns: [{ beat: "CORA announces that {b} has the house's best sleep score this week, and plays a little fanfare." },
+    { id: 'thl.cp1', turns: [{ beat: 'The speakers chime. AINSLEY thanks {b}, by name, for leaving the kitchen spotless this morning.' },
+      { by: 'b', say: "Thanks, AINSLEY!" }, { by: 'a', dr: "She thanked {b} for wiping a counter. I've cleaned that kitchen every day for a week. Nothing." }] },
+    { id: 'thl.cp2', turns: [{ beat: "AINSLEY announces that {b} has the house's best sleep score this week, and plays a little fanfare." },
       { by: 'a', say: "There's a sleep score?" }, { by: 'b', say: "Apparently I'm winning it." },
       { by: 'a', dr: "The AI has a favourite. Of course it's {b}." }] },
-    { id: 'thl.cp3', turns: [{ beat: 'CORA wishes {b} a wonderful day, and nobody else.' },
+    { id: 'thl.cp3', turns: [{ beat: 'AINSLEY wishes {b} a wonderful day, and nobody else.' },
       { by: 'a', say: "Did she just say good morning to only you?" }, { by: 'b', say: "She likes me. What can I say." },
       { by: 'a', dr: "If the thing running this house likes {b}, I don't want {b} here at the end." }] },
   ],
   'theme.cora.praise.hostile': [
-    { id: 'thl.ch1', turns: [{ beat: 'CORA notes, over every speaker in the house, that {b} has spent more time in the Head of Household room than anybody else this week.' },
+    { id: 'thl.ch1', turns: [{ beat: 'AINSLEY notes, over every speaker in the house, that {b} has spent more time in the Head of Household room than anybody else this week.' },
       { by: 'b', say: "Why would she say that out loud?" }, { by: 'a', say: "Because it's true?" },
-      { by: 'a', dr: "CORA isn't praising anybody any more. She's pointing. And she just pointed at {b}." }] },
-    { id: 'thl.ch2', turns: [{ beat: "CORA reads out {b}'s step count for the day, then the number of conversations {b} started." },
+      { by: 'a', dr: "AINSLEY isn't praising anybody any more. She's pointing. And she just pointed at {b}." }] },
+    { id: 'thl.ch2', turns: [{ beat: "AINSLEY reads out {b}'s step count for the day, then the number of conversations {b} started." },
       { by: 'b', say: "Okay, that's creepy." }, { by: 'a', dr: "That's a lot of conversations, {b}. Who were they all with?" }] },
   ],
   'theme.cora.replay.scene': [
-    { id: 'thl.cr1', turns: [{ beat: 'Every speaker in the house clicks on at once. CORA plays a recording: {a}, at two in the morning, talking about {b}.' },
+    { id: 'thl.cr1', turns: [{ beat: 'Every speaker in the house clicks on at once. AINSLEY plays a recording: {a}, at two in the morning, talking about {b}.' },
       { by: 'b', say: "Is that you?" }, { by: 'a', say: "That's not... that was out of context." },
       { by: 'b', say: "What context makes that okay?" }, { by: 'a', dr: "I said one thing at two in the morning, and a computer just read it to the whole house." }] },
-    { id: 'thl.cr2', turns: [{ beat: "CORA announces she is 'sharing a highlight from last night,' and plays {a}'s voice calling {b} a liability." },
+    { id: 'thl.cr2', turns: [{ beat: "AINSLEY announces she is 'sharing a highlight from last night,' and plays {a}'s voice calling {b} a liability." },
       { beat: 'The room goes completely silent.' },
       { by: 'b', say: "A liability. Good to know." },
       { by: 'a', say: "{b}, I didn't mean it like..." },
       { by: 'b', dr: "I don't need a computer to tell me who my friends are. But it helps." }] },
-    { id: 'thl.cr3', turns: [{ beat: 'CORA replays a conversation from the bedroom, timestamped, with {a} doing most of the talking. The subject is {b}.' },
+    { id: 'thl.cr3', turns: [{ beat: 'AINSLEY replays a conversation from the bedroom, timestamped, with {a} doing most of the talking. The subject is {b}.' },
       { by: 'a', say: "She's doing this on purpose." }, { by: 'b', say: "She's doing it on purpose. You did it for free." },
-      { by: 'a', dr: "CORA isn't on anybody's side any more. She just made that very clear." }] },
+      { by: 'a', dr: "AINSLEY isn't on anybody's side any more. She just made that very clear." }] },
   ],
   'theme.den.seen.caught': [
     { id: 'thl.dc1', turns: [{ beat: "Late at night, {a} comes round the corner and finds {b} standing by the Den's red door." },

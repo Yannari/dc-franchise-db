@@ -90,6 +90,7 @@ import { assignTeams, teamImmune, dissolveTeams, allTeams,
 import { runNightmarePower, nightmarePull } from './nightmare-power.js';
 import { runPremiereMystery } from './premiere-mystery.js';
 import { runTemptationPremiere } from './temptation-premiere.js';
+import { runMachinePremiere } from './machine-premiere.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 // The pawn ask is where the jury bubble is most visible in a decision: an
@@ -2387,7 +2388,7 @@ export function simulateBBWeek(options = {}) {
     }
     // Only decorate a rule the contract already made public. The theme helper
     // also verifies that this exact week/type came from the theme's stamped
-    // arc, so CORA or the Den never takes credit for a card the user booked.
+    // arc, so AINSLEY or the Den never takes credit for a card the user booked.
     const themeAnnouncer = themeTwistAnnouncement(group[0], {
       week: week.themeWeek ?? week.num,
       // The schedule is written in EPISODES (bb-run.js epNum): after a double
@@ -2622,6 +2623,56 @@ export function simulateBBWeek(options = {}) {
           week.premiereEvicted = gone;
           try { dropFromHousePlans(gone); } catch { /* plans survive it */ }
         }
+      }
+    } catch (err) {
+      (week._premiereError ||= []).push(String(err?.message || err));
+    }
+  }
+
+  // ── BB26's JANKIE World: a week in the backyard on pizza and ice cream ──
+  // Living outside together, with a dance party every night, does to a house
+  // what a week of it would: the people who can laugh at it get closer, and the
+  // short-tempered ones get on everybody's nerves.
+  if (!compressed && week.twistState?.rules?.jankieWorld) {
+    try {
+      const touched = [];
+      for (let i = 0; i < house.length; i++) {
+        for (let j = i + 1; j < house.length; j++) {
+          const a = house[i], b = house[j];
+          if (rng() > 0.18) continue;
+          const ta = pStats(a)?.temperament || 5, tb = pStats(b)?.temperament || 5;
+          const d = (ta + tb) / 2 >= 5.5 ? 0.5 : -0.5;
+          try { addBond(a, b, d); touched.push([a, b, d]); } catch { /* */ }
+        }
+      }
+      const star = house.slice().sort((x, y) => ((pStats(y)?.boldness || 5) + (pStats(y)?.social || 5)) - ((pStats(x)?.boldness || 5) + (pStats(x)?.social || 5)))[0];
+      gs.popularity ||= {};
+      if (star) gs.popularity[star] = (gs.popularity[star] || 0) + 0.8;
+      week.jankieWorld = { star };
+      week.acts.push(addBeats({
+        type: 'jankie-world', week: week.num, star, bonds: touched.length,
+        beats: [
+          { text: 'JANKIE moves the whole house out into the backyard for the week, on pizza and ice cream.', players: [...house], badgeText: 'JANKIE WORLD', badgeClass: 'gold', part: 'open' },
+          ...(star ? [{ text: `${star} learns JANKIE's song first and leads every dance party.`, players: [star], badgeText: 'THE LIFE OF THE PARTY', badgeClass: 'gold', part: 'star' }] : []),
+        ],
+      }, { players: [...house] }));
+    } catch (err) { (week._jankieError ||= []).push(String(err?.message || err)); }
+  }
+
+  // ── BB26's PREMIERE: the seventeenth houseguest, the Upgrades, the Mascots ──
+  // The Upgrades are the ordinary power shelf (America's Veto at the veto meeting,
+  // the Deepfake after the crown); a Mascot sits out the HOH, the veto draw and
+  // the vote, and can still be nominated.
+  if (!compressed && week.twistState?.rules?.machinePremiere) {
+    try {
+      const mp = runMachinePremiere(week, house);
+      if (mp) {
+        for (const p of mp.powers) {
+          try { grantPower(p.powerId, p.holder, { week: week.num, visibility: 'secret', source: 'bb-machine-premiere' }); } catch { /* the shelf refused it */ }
+        }
+        week.mascots = [...mp.mascots];
+        sittingOut = [...sittingOut, ...mp.mascots];
+        week.acts.push(addBeats(mp.act, { players: [...mp.powers.map(p => p.holder), ...mp.mascots] }));
       }
     } catch (err) {
       (week._premiereError ||= []).push(String(err?.message || err));
@@ -5085,7 +5136,8 @@ export function simulateBBWeek(options = {}) {
 
   if (!skipVeto) {
     // Veto act — player draw, competition, and lobbying.
-    const vetoDraw = drawVetoPlayers(house, hoh, nominees, rng,
+    // a BB26 Mascot is not drawn to play, unless the block put them in the veto by right
+    const vetoDraw = drawVetoPlayers((week.mascots || []).length ? house.filter(n => !week.mascots.includes(n) || nominees.includes(n)) : house, hoh, nominees, rng,
       (a, b) => { try { return getPerceivedBond(a, b); } catch { return 0; } },
       plan?.backdoorTarget || null);
     week.vetoDraw = vetoDraw;
@@ -6284,6 +6336,23 @@ export function simulateBBWeek(options = {}) {
       const eligible = house.filter(n => n !== hoh && n !== vetoWinner && n !== extra.holder
         && !nominees.includes(n) && !savedThisWeek.includes(n));
       if (!nominees.length || !eligible.length) continue;
+      // BB26: the JANKIE Veto is only usable by a holder who beats JANKIE's Knock-Em Down at the
+      // meeting. The house watches them try; a miss leaves the block as it is.
+      if (extra.task === 'jankie') {
+        const ts = pStats(extra.holder) || {};
+        const beat = rng() < Math.min(0.8, Math.max(0.15, 0.2 + (ts.physical || 5) * 0.035 + (ts.intuition || 5) * 0.02));
+        week.jankieTask = { holder: extra.holder, passed: beat };
+        if (!beat) {
+          week.acts.push(addBeats({
+            type: 'second-veto', kind: 'jankie', holder: extra.holder, used: false, failedTask: true,
+            saved: null, replacement: null, nominees: [...nominees],
+            beats: [{ text: `${extra.holder} has to knock down JANKIE's pins to use the JANKIE Power of Veto, and leaves one standing.`,
+              players: [extra.holder], badgeText: 'TASK FAILED', badgeClass: 'grey', part: 'failed' }],
+          }, { players: [extra.holder], nominees: [...nominees] }));
+          week.secondVeto = { kind: 'jankie', holder: extra.holder, used: false, failedTask: true, saved: null, replacement: null };
+          continue;
+        }
+      }
       let dec = shouldUseVeto(extra.holder, nominees, plan, rng,
         { hoh, house, diamond: extra.authority === 'veto-holder', hohSecret,
           second: true, anonymous: extra.visibility === 'anonymous' });
@@ -6315,7 +6384,7 @@ export function simulateBBWeek(options = {}) {
           anonymous: extra.visibility === 'anonymous', saved: null, replacement: null };
         continue;
       }
-      const authority = extra.authority === 'veto-holder' ? extra.holder : hoh;
+      const authority = extra.authority === 'veto-holder' ? extra.holder : extra.authority === 'america' ? 'America' : hoh;
       // Same rule, same reason — see the note on the first veto's chair.
       const protectedNames = [hoh, vetoWinner, extra.holder, dec.save, ...keySafe, ...duoCrownSafe, ...savedThisWeek,
         ...(week.rouletteSafe || []), ...(week.derbySafe || []),
@@ -6323,7 +6392,11 @@ export function simulateBBWeek(options = {}) {
         ...safetySuiteSafe(week.safetySuite), ...chainSafe(week.chainOfSafety),
         ...wildcardSafe(week.wildcard),
         ...nominees.filter(n => n !== dec.save)].filter(Boolean);
-      const secondRep = chooseReplacement(authority, house, protectedNames, plan, rng);
+      // America votes the way America's Nominee does: whoever it has least time for, with noise
+      const secondRep = extra.authority === 'america'
+        ? (house.filter(n => !protectedNames.includes(n))
+          .sort((a, b) => ((gs.popularity?.[a] || 0) + rng() * 2) - ((gs.popularity?.[b] || 0) + rng() * 2))[0] || null)
+        : chooseReplacement(authority, house, protectedNames, plan, rng);
       if (!secondRep || !house.includes(secondRep) || protectedNames.includes(secondRep)) continue;
       nominees = nominees.map(n => (n === dec.save ? secondRep : n));
       savedThisWeek.push(dec.save);
@@ -6693,7 +6766,8 @@ export function simulateBBWeek(options = {}) {
   let voters = week.chainDuel ? []
     : house.filter(name => name !== hoh && !nominees.includes(name));
   voters = hook(hooks, 'voteEligibility', voters, { week, house, hoh, nominees: [...nominees] }) || voters;
-  voters = [...new Set(voters)].filter(name => house.includes(name) && name !== hoh && !nominees.includes(name));
+  voters = [...new Set(voters)].filter(name => house.includes(name) && name !== hoh && !nominees.includes(name)
+    && !(week.mascots || []).includes(name));
   // Step 1 of the operation: everybody's own starting position, kept on the
   // ballot as `preference` so eviction night can replay the whole chain —
   // what they wanted, what a room asked of them, what they claimed, what

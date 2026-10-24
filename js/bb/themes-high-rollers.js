@@ -338,7 +338,7 @@ export default {
 
     // ── THE CADENCE, WHICH THIS ARC SHIPPED WITHOUT AND SHOULD NOT HAVE ──
     //
-    // Every other theme carries one — Mystery `every: 3, from: 6`, CORA and
+    // Every other theme carries one — Mystery `every: 3, from: 6`, AINSLEY and
     // Temptation `every: 3, from: 5` — and the engine grew the feature for a
     // measured reason: a fixed list of acts leaves a seventeen-week season
     // empty for six to nine weeks. This arc was a fixed list of five, four of
@@ -348,7 +348,7 @@ export default {
     //
     // The boxes are the right card to repeat, for the same reason they open the
     // season: they are the casino's question wearing a veto competition, and
-    // they cost the house nothing to run. CORA already uses them as its cadence
+    // they cost the house nothing to run. AINSLEY already uses them as its cadence
     // card, so this is the established shape rather than a new one.
     //
     // `untilFromEnd: 9` stops the run BEFORE the room's first night at
@@ -419,7 +419,7 @@ export default {
     // ── THE FLOOR SETTLES UP ─────────────────────────────────────────────
     //
     // The arc used to stop dead here, four or more weeks short of the finale.
-    // Mystery, CORA and Temptation all book something at `fromEnd: 4`, and a
+    // Mystery, AINSLEY and Temptation all book something at `fromEnd: 4`, and a
     // double eviction is what the Pit Boss's hostile register has been
     // promising since the comps stopped: the floor closing two tables in one
     // night and calling in what it is owed.
@@ -432,7 +432,7 @@ export default {
     // ── AND THE LAST HAND ─────────────────────────────────────────────────
     //
     // The arc used to stop at the double, two or more weeks short of the
-    // finale, while Mystery, CORA and Temptation all carry something to
+    // finale, while Mystery, AINSLEY and Temptation all carry something to
     // `fromEnd: 2`. The boxes are the right card to close on and it is the same
     // reason they open the season: at a final five, choosing five thousand
     // dollars over the only thing that could have saved you is the most

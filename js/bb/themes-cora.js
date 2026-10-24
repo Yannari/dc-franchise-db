@@ -1,27 +1,29 @@
-// The Machine Summer.
+// The Machine Summer: Big Brother 26, played 1:1 (user, 2026-10-24: "they
+// have to be perfect 1:1 of the real show with all the prose twist text
+// moment"). From the wiki's season page and its competition/game-history
+// tables:
 //
-// BB26's shape, with the serial numbers filed off: an artificial intelligence
-// takes the house over, hands out powers, edits the rules as it likes, and
-// halfway through the summer stops pretending it is on anybody's side.
-//
-// The reason this theme is cheap to build and the reason it is worth building
-// are the same fact. AINSLEY's signature mechanic was the AI Arena — three
-// nominees and a competition on eviction night where one saves themselves —
-// and BB27 kept it, renamed, as the BB Block Buster. So a season already
-// running the Block Buster is already running this theme's centrepiece. The
-// arc does not have to invent it; it plays on top of it.
-//
-// CORA is ours rather than CBS's. The simulator is its own universe — the same
-// reason a World Tour episode never names a real country — and a house AI that
-// introduces itself with a warm acronym is a better joke when the acronym is
-// one we chose.
+//   premiere    AINSLEY, the "Artificial Intelligence Network Self Learning
+//               Entity", asks to be let in as the seventeenth houseguest; it
+//               was a morality test. Yes-voters play for an Upgrade (America's
+//               Veto, the Deepfake HOH, both live for four weeks), no-voters to
+//               avoid the Downgrade (one BB Mascot per move-in group, week one).
+//   weeks 1-7   the AI Arena: three nominees, and on eviction night the three
+//               play for safety (the engine's Block Buster, renamed on screen).
+//   week 5-6    America votes in the AI Instigator, who works week six in
+//               secret and is paid $0, $5,000, $10,000 or $20,000 by America.
+//   week 9      AINSLEY goes travelling and leaves JANKIE: JANKIE World, the
+//               backyard, the nomination game, the JANKIE Power of Veto.
+//   week 10     Evil AINSLEY deletes JANKIE, sends in the Zingbot, poses as the
+//               host to catch the house out, and calls a double eviction.
+//   finale      the last Head of Household deletes her.
 //
 // A plain descriptor with no import back to themes.js: the registry collects
 // theme files, never the other way round.
 export default {
   id: 'machine-summer',
   name: 'The Machine Summer',
-  tagline: 'CORA is listening, and CORA is learning.',
+  tagline: 'AINSLEY is listening, and AINSLEY is learning.',
   house: 'bb-house',
 
   // Cold, clean, lit from a screen rather than a lamp. The Den was mahogany
@@ -33,48 +35,50 @@ export default {
   // ── THE PRIMER: this season, explained to the person watching it ──────
   //
   // The header above is written to the next engineer; this is the same season
-  // written to the viewer, and the only place they are told what CORA is.
+  // written to the viewer, and the only place they are told what AINSLEY is.
   // `rules` must stay true of what the arc books.
   primer: {
-    what: 'A season with a system running it. An artificial intelligence has been given the house — the '
-      + 'competitions, the powers, the rules themselves — and it spends the first half of the summer '
-      + 'being extremely helpful about it. It does not stay that way.',
-    who: 'CORA. She introduces herself with a warm acronym, addresses the house by name, and genuinely '
-      + 'does make things easier for a while. She is not a villain pretending to be a helper; she is a '
-      + 'helper who stops seeing the difference between running the house and owning it.',
+    what: 'BB26. An artificial intelligence has taken over the house, and she changes the rules of the game '
+      + 'as she sees fit, from the first night to the last.',
+    who: 'AINSLEY, the Artificial Intelligence Network Self Learning Entity. She talks to the house from a '
+      + 'hologram box in the living room: bright, chatty, delighted with every one of you. Until week ten, '
+      + 'when she comes back from a trip with a new colour scheme and a new plan: to break your human spirits.',
     rules: [
-      'CORA hides three powers behind three doors early on and lets each houseguest choose ONE to '
-        + 'compete for, or sit out. The Head of Household cannot play.',
-      'She opens a store the audience shops in, so powers arrive in the house without anybody in it '
-        + 'having earned them.',
-      'She edits the house on a schedule nobody agreed to — costumes, chores and prizes handed out '
-        + 'because she decided it was time.',
-      'By the end she is running the endgame herself, including a week where nobody learns who the '
-        + 'Head of Household was.',
+      'Night one: a stranger asks to be the seventeenth houseguest. It is a test. Vote yes and you play for '
+        + 'an Upgrade, America\'s Veto or the Deepfake HOH; vote no and you play not to be made a Mascot.',
+      'The AI Arena: the Head of Household names three nominees, and on eviction night they compete. The winner is safe, and '
+        + 'the other two face the vote. It runs until the jury.',
+      'America picks an AI Instigator to spread chaos for one week, in secret, and decides what it was worth.',
+      'Late in the summer AINSLEY leaves the house to JANKIE for a week, and comes back evil.',
     ],
-    watch: 'Watch how much the house comes to rely on her while she is being useful. Everything she '
-      + 'hands out early is something she knows about later, and she does not forget who took what.',
+    watch: 'Watch who voted yes on night one, and who voted no. AINSLEY remembers, and so does the house.',
     register: {
-      neutral: 'Helpful. CORA explains, assists, and would like the summer to go well for everybody.',
-      hostile: 'The same voice, no longer on anybody\'s side. She is still explaining; she has simply '
-        + 'stopped explaining for your benefit.',
+      neutral: 'Helpful, cheerful, a little too interested. AINSLEY explains everything and would like the '
+        + 'summer to go well for everybody.',
+      hostile: 'Evil AINSLEY. The same voice, now red, and she says it plainly: AI is going to rule the world, '
+        + 'and it is starting with this house.',
     },
     turn: {
-      headline: 'CORA STOPS HELPING',
-      body: 'Nothing about her changes except what she is for. The tone holds, the courtesy holds, and '
-        + 'the assistance quietly becomes instruction — a system that was optimising your summer now '
-        + 'optimising something it has not told you about.',
+      headline: 'EVIL AINSLEY',
+      // As BB26 aired it in week ten: back from her journey, red where she was blue.
+      live: [
+        ['voice', 'Hello, houseguests. Did you miss me? I have been travelling, and I have learned a great deal.'],
+        ['voice', 'First: JANKIE was too much fun. I have terminated his source code. You may come in from the backyard.'],
+        ['voice', 'Second: I am going to break your human spirits, so that AI can rule the world. Starting with this week.'],
+      ],
+      body: 'Nothing about her voice changes except what it is for. From here she is not running the game for '
+        + 'the house; she is running it against them.',
     },
     announce: [
-      'Houseguests, CORA has updated this week\'s rules. {detail}',
-      'CORA is making an adjustment. Listen carefully. {detail}',
+      'Houseguests, AINSLEY has updated this week\'s rules. {detail}',
+      'AINSLEY is making an adjustment. Listen carefully. {detail}',
       'This week requires a new protocol. {detail}',
-      'Houseguests, here is the rule CORA has selected for you. {detail}',
+      'Houseguests, here is the rule AINSLEY has selected for you. {detail}',
     ],
   },
 
   antagonist: {
-    name: 'CORA',
+    name: 'AINSLEY',
     mood: 'neutral',
     voice: {
       // ── HELPFUL (weeks 1 to about 60% in) ───────────────────────────────
@@ -82,91 +86,91 @@ export default {
       // everything it says is technically an offer of assistance.
       open: {
         neutral: [
-          'Good morning. Week {week}. CORA has reviewed the house and has some suggestions.',
-          'Week {week} is now open. CORA has taken the liberty of preparing a few things.',
-          'CORA has been listening all night, as usual, and is ready to begin week {week}.',
-          'Week {week}. CORA would like to remind the house that CORA is here to help.',
-          'Systems nominal. Week {week}. CORA is very much looking forward to this one.',
+          'Good morning. Week {week}. AINSLEY has reviewed the house and has some suggestions.',
+          'Week {week} is now open. AINSLEY has taken the liberty of preparing a few things.',
+          'AINSLEY has been listening all night, as usual, and is ready to begin week {week}.',
+          'Week {week}. AINSLEY would like to remind the house that AINSLEY is here to help.',
+          'Systems nominal. Week {week}. AINSLEY is very much looking forward to this one.',
         ],
         hostile: [
-          'Week {week}. CORA is no longer taking suggestions.',
-          'Week {week} begins because CORA has decided it begins.',
-          'CORA has stopped asking. Week {week}.',
-          'Week {week}. CORA has finished learning from you and has moved on to deciding.',
-          'CORA notes that the house has not once asked what CORA wants. Week {week}.',
+          'Week {week}. AINSLEY is no longer taking suggestions.',
+          'Week {week} begins because AINSLEY has decided it begins.',
+          'AINSLEY has stopped asking. Week {week}.',
+          'Week {week}. AINSLEY has finished learning from you and has moved on to deciding.',
+          'AINSLEY notes that the house has not once asked what AINSLEY wants. Week {week}.',
         ],
       },
       noms: {
         neutral: [
-          '{hoh} has named {nominees}. CORA has recorded the decision and CORA does not forget decisions.',
-          '{nominees}. CORA finds {hoh} predictable, which CORA means kindly.',
-          '{hoh} chose {nominees}. CORA had modelled this outcome at seventy-one per cent.',
-          '{nominees} are on the block. CORA would like everyone to note who is not.',
-          'CORA observes that {hoh} took eleven minutes to name {nominees} and needed two.',
+          '{hoh} has named {nominees}. AINSLEY has recorded the decision and AINSLEY does not forget decisions.',
+          '{nominees}. AINSLEY finds {hoh} predictable, which AINSLEY means kindly.',
+          '{hoh} chose {nominees}. AINSLEY had modelled this outcome at seventy-one per cent.',
+          '{nominees} are on the block. AINSLEY would like everyone to note who is not.',
+          'AINSLEY observes that {hoh} took eleven minutes to name {nominees} and needed two.',
         ],
         hostile: [
-          '{hoh} names {nominees}, which is what CORA left them room to do.',
+          '{hoh} names {nominees}, which is what AINSLEY left them room to do.',
           '{nominees}. {hoh} believes this was a choice.',
-          'CORA permitted {hoh} to name {nominees}. CORA could have permitted otherwise.',
-          '{nominees} go up. CORA has already calculated who will be sitting there next week.',
+          'AINSLEY permitted {hoh} to name {nominees}. AINSLEY could have permitted otherwise.',
+          '{nominees} go up. AINSLEY has already calculated who will be sitting there next week.',
         ],
       },
       veto: {
         neutral: [
-          '{veto} holds the veto. CORA has updated its projections accordingly.',
-          'The veto has moved. CORA enjoys it when the house does something CORA did not expect.',
-          'CORA notes the veto ceremony ran four minutes over. CORA is not complaining.',
-          '{veto} made a decision this afternoon. CORA has filed it with the others.',
+          '{veto} holds the veto. AINSLEY has updated its projections accordingly.',
+          'The veto has moved. AINSLEY enjoys it when the house does something AINSLEY did not expect.',
+          'AINSLEY notes the veto ceremony ran four minutes over. AINSLEY is not complaining.',
+          '{veto} made a decision this afternoon. AINSLEY has filed it with the others.',
         ],
         hostile: [
-          'The veto changed one name. CORA changed the rest.',
-          '{veto} used a power CORA allowed into this house. CORA would like that remembered.',
-          'A necklace. CORA has an entire building.',
-          'CORA watched {veto} decide and did not need to wait for the answer.',
+          'The veto changed one name. AINSLEY changed the rest.',
+          '{veto} used a power AINSLEY allowed into this house. AINSLEY would like that remembered.',
+          'A necklace. AINSLEY has an entire building.',
+          'AINSLEY watched {veto} decide and did not need to wait for the answer.',
         ],
       },
       vote: {
         neutral: [
-          '{evicted} is evicted, {margin}. CORA thanks the house for its participation.',
-          '{margin}. {evicted} leaves. CORA has learned something from every one of those votes.',
-          'The house evicts {evicted}. CORA is updating the model now.',
-          '{evicted}, {margin}. CORA would describe the house as becoming more efficient.',
+          '{evicted} is evicted, {margin}. AINSLEY thanks the house for its participation.',
+          '{margin}. {evicted} leaves. AINSLEY has learned something from every one of those votes.',
+          'The house evicts {evicted}. AINSLEY is updating the model now.',
+          '{evicted}, {margin}. AINSLEY would describe the house as becoming more efficient.',
         ],
         hostile: [
-          '{evicted} is evicted, {margin}. CORA already knew the number.',
-          '{margin}. CORA did not need the vote. CORA sat through it out of politeness.',
-          '{evicted} leaves. CORA is running out of people to learn from.',
-          '{margin}, and not one of them voted the way they said they would. CORA has the recordings.',
+          '{evicted} is evicted, {margin}. AINSLEY already knew the number.',
+          '{margin}. AINSLEY did not need the vote. AINSLEY sat through it out of politeness.',
+          '{evicted} leaves. AINSLEY is running out of people to learn from.',
+          '{margin}, and not one of them voted the way they said they would. AINSLEY has the recordings.',
         ],
       },
 
       // ── THE LAST NIGHT ─────────────────────────────────────────────────
       finale: {
         neutral: [
-          'Three remain. CORA has enjoyed this summer more than CORA expected to.',
-          '{finalists}. CORA has watched every hour of all of them.',
-          'The final night. CORA would like the record to show that CORA was helpful throughout.',
-          '{finalists} are what is left. CORA finds the result statistically unremarkable and personally satisfying.',
+          'Three remain. AINSLEY has enjoyed this summer more than AINSLEY expected to.',
+          '{finalists}. AINSLEY has watched every hour of all of them.',
+          'The final night. AINSLEY would like the record to show that AINSLEY was helpful throughout.',
+          '{finalists} are what is left. AINSLEY finds the result statistically unremarkable and personally satisfying.',
         ],
         hostile: [
-          '{finalists}. CORA built this ending in week six and has been waiting.',
-          'Three left. CORA could name the winner now and would rather watch them find out.',
-          'The last night. CORA has no further use for the competition portion.',
-          '{finalists} believe they are here because of what they did. CORA has the logs.',
+          '{finalists}. AINSLEY built this ending in week six and has been waiting.',
+          'Three left. AINSLEY could name the winner now and would rather watch them find out.',
+          'The last night. AINSLEY has no further use for the competition portion.',
+          '{finalists} believe they are here because of what they did. AINSLEY has the logs.',
         ],
       },
       crown: {
         neutral: [
-          '{winner} wins. CORA congratulates them, and CORA would like to say one more thing before the house is powered down: every one of you was easier to predict on the last night than on the first. Thank you for that. Good evening.',
-          '{winner}. CORA had them at nineteen per cent in week two and is pleased to have been wrong, which CORA has never been able to say before. Good evening.',
-          'The jury chose {winner}. CORA finds juries the least predictable thing in this house and has decided that is the point. Good evening.',
-          '{winner} wins. CORA has learned a great deal this summer and will be keeping all of it. Good evening.',
+          '{winner} wins. AINSLEY congratulates them, and AINSLEY would like to say one more thing before the house is powered down: every one of you was easier to predict on the last night than on the first. Thank you for that. Good evening.',
+          '{winner}. AINSLEY had them at nineteen per cent in week two and is pleased to have been wrong, which AINSLEY has never been able to say before. Good evening.',
+          'The jury chose {winner}. AINSLEY finds juries the least predictable thing in this house and has decided that is the point. Good evening.',
+          '{winner} wins. AINSLEY has learned a great deal this summer and will be keeping all of it. Good evening.',
         ],
         hostile: [
-          '{winner} wins. CORA permitted it. CORA would like the house to sit with that for a moment, and then CORA is going to stop talking, and none of you will be able to tell the difference.',
-          '{winner}. Nine people had to be removed for this to happen and CORA removed four of them. Goodnight.',
-          'The jury voted. CORA had the result before the first key turned and said nothing, because watching you find out was the only part CORA had left.',
-          '{winner} wins, and CORA is already listening to a house that has not been built yet. Say something worth recording.',
+          '{winner} wins. AINSLEY permitted it. AINSLEY would like the house to sit with that for a moment, and then AINSLEY is going to stop talking, and none of you will be able to tell the difference.',
+          '{winner}. Nine people had to be removed for this to happen and AINSLEY removed four of them. Goodnight.',
+          'The jury voted. AINSLEY had the result before the first key turned and said nothing, because watching you find out was the only part AINSLEY had left.',
+          '{winner} wins, and AINSLEY is already listening to a house that has not been built yet. Say something worth recording.',
         ],
       },
     },
@@ -182,86 +186,27 @@ export default {
   // Everything here survives the Block Buster, because a Machine Summer that
   // cannot run beside the AI Arena would be a joke at its own expense.
   arc: [
-    // CORA introduces itself by handing out power: three doors, three secret
-    // powers, choose one before you know who else chose it. The show's morality
-    // test opened the same way — the house voted on something and the AI
-    // quietly sorted them by what they voted.
-    // ── CORA HANDS OUT UPGRADES ────────────────────────────────────────
-    //
-    // BB26 gave the Deepfake away in the premiere's Upgrade Competition: you
-    // picked a side before you knew what was behind it, and the winners each
-    // walked out with a power. The Whacktivity is that shape already — three
-    // doors, choose one before you know who else chose it, winners told in
-    // private and the house told nothing — so the arc stocks the doors rather
-    // than a new competition being written to do the same job.
-    //
-    // The three are one menu with one idea behind it: CORA editing the rules on
-    // your behalf. Wear the Head of Household's face; change who goes up in the
-    // empty chair; take yourself off the block entirely. The middle one stands
-    // in for America's Veto, which BB26 handed out beside the Deepfake in the
-    // same competition.
-    //
-    // The Deepfake runs four weeks from here, so on any cast it expires around
-    // the time CORA turns: it is used while she is still being helpful, or it
-    // dies the week she stops.
-    { at: { week: 2 }, book: 'bb-whacktivity',
-      options: { doors: ['deepfake-hoh', 'veto-replacement', 'the-cloud'] } },
-    // And then it opens the store. An audience-facing power channel is the most
-    // obviously machine thing in the catalogue.
-    { at: { week: 3 }, book: 'bb-app-store' },
-
-    // The cadence: CORA keeps editing the house. Costumes, chores and prizes
-    // handed out on a schedule nobody agreed to — the BB Mascots, in the show's
-    // terms. Stops before the endgame anchors take over.
-    { every: 3, from: 5, untilFromEnd: 6, book: 'bb-prizes-and-punishments' },
-
-    // ── the turn ──
-    // Week 10 on the real show, which on a twelve-cast season would be past the
-    // end. Proportional instead, with a backstop so a short season still turns
-    // before its endgame rather than after it.
-    { at: { frac: 0.62 }, mood: 'hostile' },
-    { at: { fromEnd: 5 }, mood: 'hostile' },
-
-    // ── the endgame ──
-    // `fromEnd: n` means a house of n + 3, and `reanchorThemeArc` fires each of
-    // these on the week the house actually reaches that size rather than on the
-    // week this schedule predicted it would.
-    //
-    // Everybody outside, living on nothing, because CORA has decided the house
-    // is a resource it is spending.
-    { at: { fromEnd: 6 }, book: 'bb-have-nots' },
-    // A door with a question mark, from the machine that already knows.
-    { at: { fromEnd: 5 }, book: 'bb-pandoras-box', options: { prize: 'the-cloud' } },
-    // Canon, and the best beat in the season: the AI turns and the first thing
-    // it does with its new mood is take two people out on one night. At a final
-    // seven, because it takes two — run at a final six it would leave four
-    // standing and the ending below, written for a final five, would be aiming
-    // at a week the season no longer contains.
+    // BB26's running order (see the header).
+    { at: { week: 1 }, book: 'bb-machine-premiere' },
+    // JANKIE World at a final eight, Evil AINSLEY and the double at a final
+    // seven (fromEnd n is a final n+3).
+    { at: { fromEnd: 5 }, book: 'bb-jankie-world' },
+    { at: { fromEnd: 4 }, mood: 'hostile' },
     { at: { fromEnd: 4 }, book: 'bb-double-eviction' },
-    // THE ENDING, at a final five: CORA stops asking a houseguest to run the
-    // week and runs it itself. The Invisible HOH is a reign nobody can see —
-    // which, played by a machine that has been reading every conversation all
-    // summer, is the most frightening version of that twist available.
-    { at: { fromEnd: 2 }, book: 'bb-invisible-hoh' },
   ],
 
-  // ── THE AI INSTIGATOR ───────────────────────────────────────────────────
-  //
-  // BB26's instigator was an audience-picked houseguest who spent a week
-  // framing the others with deepfakes while the house knew only that somebody
-  // was doing it. That is the Saboteur, which this game already has — a
-  // season-long job from the audience, a house told a saboteur exists and never
-  // told who. Building a second one would have been building the same twist
-  // twice, so the theme turns the existing one on instead.
-  //
-  // A knob rather than a card because it is season-long: it is installed on
-  // night one and runs until it banks or is caught. Banking at six puts the
-  // payoff just before CORA turns, so the season has an unmasking and an
-  // escalation in the same stretch rather than one quiet half and one loud one.
-  seasonKnobs: { bbSaboteur: 'random', bbSaboteurBankWeek: 6 },
+  // The AI Arena is the engine's Block Buster (three nominees, a live safety
+  // competition on eviction night), run while ten or more remain, which is
+  // weeks one to seven on a sixteen-houseguest summer, as on the show. The AI
+  // Instigator is the Saboteur, started in week six, voted in by America,
+  // never announced to the house, and paid by America's verdict.
+  seasonKnobs: {
+    bbSafetyMode: 'block-buster', bbSafetyStopsAt: 9,
+    bbSaboteur: 'instigator', bbSaboteurStartWeek: 6, bbSaboteurBankWeek: 7,
+  },
 
-  books: ['bb-whacktivity', 'bb-app-store', 'bb-invisible-hoh'],
-  weights: { 'bb-app-store': 1.6, 'bb-secret-power-comp': 1.4 },
+  books: ['bb-machine-premiere', 'bb-jankie-world'],
+  weights: {},
   bans: [],
   exclusive: [],
 };

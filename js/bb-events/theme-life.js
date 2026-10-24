@@ -4,7 +4,7 @@
 //
 // The user, 2026-10-15: the dialogue did not change with the theme. bb/story/theme-texture.js puts the theme in
 // the house's lines; these are the theme's own scenes, and every one of them moves something (CLAUDE.md: camp
-// events must have consequences): CORA singles somebody out, or plays back what somebody said at three in the
+// events must have consequences): AINSLEY singles somebody out, or plays back what somebody said at three in the
 // morning; somebody is seen by the Den's door; a new door in the hotel and an accusation; chips counted in
 // public; an activity that pairs two people who would never have chosen each other; a caption read out over the
 // intercom. One a week per event at most, and only in its own theme (and mood, where the turn changes it).
@@ -32,7 +32,7 @@ function coldestPair(house, week = 0) {
 const rotate = (list, week) => list[week % Math.max(1, Math.min(3, list.length))];
 const pick = (list, salt) => list[[...String(salt)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % list.length];
 
-// ── Machine: CORA singles somebody out ─────────────────────────────────
+// ── Machine: AINSLEY singles somebody out ─────────────────────────────────
 const coraPraises = {
   id: 'theme-cora-praises',
   category: 'house-life',
@@ -42,7 +42,7 @@ const coraPraises = {
     return band(12);
   },
   fire(house, ctx, api) {
-    // the one CORA praises: the most social (she likes the people who talk to her); the one it grates on: who
+    // the one AINSLEY praises: the most social (she likes the people who talk to her); the one it grates on: who
     // likes them least
     const b = [...house].sort((x, y) => pStats(y).social - pStats(x).social)[weekNum(ctx) % 2];
     const a = others(house, b, ctx.hoh).sort((x, y) => getBond(x, b) - getBond(y, b))[0];
@@ -51,11 +51,11 @@ const coraPraises = {
     api.addBond(a, b, -0.6);
     api.suspicion(a, b, 0.5);
     api.popDelta(b, hostile(ctx) ? -1 : 1);
-    return { scene, players: [b, a], badgeText: "CORA'S FAVOURITE", badgeClass: 'grey' };
+    return { scene, players: [b, a], badgeText: "AINSLEY'S FAVOURITE", badgeClass: 'grey' };
   },
 };
 
-// ── Machine, after the turn: CORA plays back what somebody said ────────
+// ── Machine, after the turn: AINSLEY plays back what somebody said ────────
 const coraReplays = {
   id: 'theme-cora-replays',
   category: 'social',
@@ -71,7 +71,7 @@ const coraReplays = {
     const scene = makeScene('theme.cora.replay', { a, b }, { ending: 'scene' }, house, 'living-room');
     // b now knows exactly what a said, word for word, with a timestamp
     api.addBond(b, a, -1.6);
-    api.remember(b, a, 'grudge', 2, { about: 'CORA played back what they said about me' });
+    api.remember(b, a, 'grudge', 2, { about: 'AINSLEY played back what they said about me' });
     api.popDelta(a, -1);
     return { scene, players: [a, b], badgeText: 'PLAYED BACK', badgeClass: 'red' };
   },

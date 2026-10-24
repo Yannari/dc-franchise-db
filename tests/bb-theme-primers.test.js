@@ -89,8 +89,8 @@ describe('every registered theme explains itself', () => {
 // ── THE ANNOUNCEMENT VOICE ──────────────────────────────────────────────
 //
 // `themeTwistAnnouncement` used to pick its words with
-// `theme.id === 'machine-summer' ? [CORA's lines] : [the Den's lines]`, so
-// EVERY theme that was not CORA announced its twists in the Den's voice. A
+// `theme.id === 'machine-summer' ? [AINSLEY's lines] : [the Den's lines]`, so
+// EVERY theme that was not AINSLEY announced its twists in the Den's voice. A
 // hotel said "the Den has changed the terms of this week"; so did a casino.
 // The engine that exists to stop one season's vocabulary printing over
 // another's was the thing doing it.

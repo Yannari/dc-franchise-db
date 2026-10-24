@@ -866,6 +866,8 @@ export function simulateBBFinale(rng = Math.random) {
     // 'neutral', and a season that spent eight weeks escalating drops out of the
     // escalated room for the one episode it was all building to.
     themeMood: themeState()?.mood || null,
+    // ...and which theme: the finale's own moments read it (Mystery's unmasking, AINSLEY's deletion)
+    themeId: themeState()?.id || null,
     houseAtStart: house,
     finalHoh, finalTwo, cut,
     jury, juryVotes: votes,

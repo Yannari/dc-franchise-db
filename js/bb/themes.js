@@ -515,6 +515,11 @@ export function installTheme(houseSize) {
   const yours = (seasonConfig.twistSchedule || []).filter(t => t?.source !== 'theme');
   const entries = themeScheduleEntries(theme, { weeks, existing: yours });
   seasonConfig.twistSchedule = [...yours, ...entries];
+  // A theme that was never stamped in the designer still owes the season its
+  // season-long settings (Machine's AI Arena and Instigator, Mystery's Block
+  // Buster): without this a season started straight from the picker played the
+  // arc's cards and none of the rules around them.
+  for (const [key, value] of Object.entries(theme.seasonKnobs || {})) seasonConfig[key] = value;
   // No `said: []`. It was carried from the original sketch of the antagonist as
   // something that remembered its own lines, nothing ever appended to it, and
   // an always-empty array on the season state is worse than no array — the next
@@ -734,8 +739,8 @@ export function themeTwistAnnouncement(announcement, ctx = {}) {
   const detail = `${name}: ${rule}${sting ? ` ${sting}` : ''}`;
   // ── THE WORDS COME FROM THE THEME, NOT FROM A BRANCH IN HERE ──────────
   //
-  // This used to be `theme.id === 'machine-summer' ? [CORA's lines] : [the
-  // Den's lines]`, which meant every theme that was not CORA announced its
+  // This used to be `theme.id === 'machine-summer' ? [AINSLEY's lines] : [the
+  // Den's lines]`, which meant every theme that was not AINSLEY announced its
   // twists in the DEN's voice. A hotel said "the Den has changed the terms of
   // this week"; a casino said it too. That is the exact bug class this
   // codebase's own instructions open with — one season's vocabulary printed

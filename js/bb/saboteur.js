@@ -93,9 +93,31 @@ function castingScore(name) {
  *
  * @returns the state, or null when the house is too small to hide anybody in.
  */
-export function installBBSaboteur(house = [], { bankWeek = 5, rng = Math.random, pick = null } = {}) {
+export function installBBSaboteur(house = [], { bankWeek = 5, rng = Math.random, pick = null, instigator = false } = {}) {
   const cast = house.filter(Boolean);
   if (cast.length < 6) return null;
+
+  // BB26's AI Instigator: "During Week 5, America voted for one houseguest to
+  // become the AI Instigator ... At the start of Week 6, the Instigator was
+  // revealed to the audience ... Unlike the Deepfake HOH, however, he must keep
+  // the power a secret." One week of it, the house never told it exists, and
+  // America names the figure after the week ($0 / $5,000 / $10,000 / $20,000)
+  // — paid even to an Instigator evicted that same week, as Tucker was.
+  if (instigator) {
+    const NICE = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
+    const archOf = n => (players || []).find(p => p.name === n)?.archetype || '';
+    // America votes for its favourite troublemaker; a nice archetype never takes a job framing people
+    const field = cast.filter(n => !NICE.includes(archOf(n)));
+    const pool = field.length ? field : cast;
+    const w = pool.map(n => ({ name: n, w: Math.max(0.4, 3 + (gs.popularity?.[n] || 0) + stat(n, 'boldness') * 0.2) }));
+    let roll = rng() * w.reduce((s, x) => s + x.w, 0);
+    let chosen = (pick && cast.includes(pick)) ? pick : w[0].name;
+    if (!(pick && cast.includes(pick))) for (const e of w) { roll -= e.w; if (roll <= 0) { chosen = e.name; break; } }
+    const st = seat(chosen, bankWeek);
+    Object.assign(st, { instigator: true, quiet: true, payOnExit: true, prize: 20000, tiers: [1, 0.5, 0.25], byAmerica: true });
+    st.quota = Math.max(1, Math.ceil((st.bankWeek - st.installedWeek) * 0.6));
+    return st;
+  }
 
   // A named choice wins outright. The Mole has let a user cast it by hand since
   // it shipped, and a season twist you cannot point at a specific houseguest is
@@ -139,7 +161,7 @@ function seat(picked, bankWeek) {
     // low from being free: a week spent being careful is a week that does not
     // count towards it. Attempts count rather than successes, because going for
     // it and missing is still doing the job you were paid to do.
-    quota: Math.max(2, Math.ceil((Math.max(2, Number(bankWeek) || 5) - 1) * 0.6)),
+    quota: Math.max(2, Math.ceil((Math.max(2, Number(bankWeek) || 5) - ((gs.bb.weeks?.length || 0) + 1)) * 0.6)),
     attempted: 0,
   };
   return gs.bb.saboteur;
@@ -171,6 +193,8 @@ function seat(picked, bankWeek) {
 export function announceSaboteur(week) {
   const state = saboteurState();
   if (!state || state.announced) return false;
+  // the AI Instigator is the audience's secret: the house is never told it exists
+  if (state.quiet) { state.announced = true; state.announcedWeek = Number(week?.num) || 1; return false; }
   const contract = BB_TWIST_CONTRACTS['bb-saboteur'];
   if (!contract?.announcement || !week?.twistState) return false;
   week.twistState.announcements = [
@@ -735,18 +759,37 @@ export function offerSaboteurMission(week, { rng = Math.random } = {}) {
   // The first job is always taken. Nobody signs up for this, gets handed the
   // card on night one and passes — and a twist whose opening episode is the
   // saboteur declining to do anything is a twist that has not started.
-  const accepted = !state.missions.length || rng() < appetite;
+  // BB26's Instigator was handed the job by America and started at once
+  const accepted = state.instigator || !state.missions.length || rng() < appetite;
 
   const beats = [];
   // The broadcast happens whether or not the job is taken — the house is being
   // taunted by somebody standing in the room, and that is a weekly fixture
   // rather than a consequence of the mission.
-  const taunt = fresh(BROADCASTS, 'broadcast')(sab);
+  let taunt = null;
+  if (state.instigator) {
+    // BB26: the Instigator framed people "with Deepfake Clones from the Proto Box". The house hears
+    // somebody it knows say something they never said, and the one framed pays for it.
+    const framed = others.length ? others[Math.floor(rng() * others.length)] : null;
+    if (framed) {
+      const lines = [`"Honestly? I'm only friends with half of you because I need the votes."`,
+        `"Whoever is on the block next week, it was me. I just made somebody else say the names."`,
+        `"I've been lying to every single person in this house since day one, and it has been so easy."`];
+      beats.push({
+        text: `The hologram box in the living room flickers, and ${framed}'s face comes up on it: `
+          + `${lines[Math.floor(rng() * lines.length)]} ${framed} was in the backyard when it played, and nobody believes it.`,
+        players: [framed], badgeText: 'A DEEPFAKE', badgeClass: 'red',
+      });
+      for (const n of others) if (n !== framed && rng() < 0.35) { try { addBond(n, framed, -0.4); } catch { /* */ } }
+    }
+  } else {
+  taunt = fresh(BROADCASTS, 'broadcast')(sab);
   beats.push({
     text: `The living-room television cuts to static, and then to a silhouette. `
       + `The voice is not anybody's. ${taunt}`,
     players: [], badgeText: 'ON THE HOUSE TELEVISION', badgeClass: 'red',
   });
+  }
   beats.push(accepted
     ? { text: fresh(ACCEPTS, 'accept')(sab, p), players: [sab], badgeText: 'TAKES THE JOB', badgeClass: 'red' }
     : { text: fresh(REFUSALS, 'refuse')(sab, p), players: [sab], badgeText: 'PASSES', badgeClass: 'grey' });
@@ -1038,6 +1081,8 @@ export function resolveSaboteurMission(week, { rng = Math.random } = {}) {
 export function runSaboteurAccusation(week, { rng = Math.random } = {}) {
   const state = saboteurState();
   if (!state || state.survived || state.caught || state.revealed) return null;
+  // a house that was never told there is an Instigator cannot stand up and name one
+  if (state.quiet) return null;
   // One guess, and the house has spent it. This is what the wall told them on
   // night one — "get it wrong and that is the only guess you had" — and without
   // it the house was standing up to accuse somebody in nine seasons out of ten,
@@ -1176,9 +1221,11 @@ export function audiencePayout(state) {
   // however much the audience enjoyed the one.
   if ((state.attempted || 0) < (state.quota || 0)) return 0;
   if (!done) return 0;
-  if (applause >= 3.2) return state.prize;
-  if (applause >= 2.0) return Math.round(state.prize * 0.4);
-  if (applause >= 1.0) return Math.round(state.prize * 0.2);
+  // BB26's card: all of it, half, a quarter, or nothing ($20,000 / $10,000 / $5,000 / $0)
+  const [top, mid, low] = state.tiers || [1, 0.4, 0.2];
+  if (applause >= 3.2) return Math.round(state.prize * top);
+  if (applause >= 2.0) return Math.round(state.prize * mid);
+  if (applause >= 1.0) return Math.round(state.prize * low);
   return 0;
 }
 
@@ -1199,6 +1246,24 @@ export function checkSaboteurBank(week) {
   const house = (week?.houseAtStart || gs.activePlayers || []).filter(Boolean);
   if (!house.includes(state.player)) return null;
 
+  // BB26's Instigator survived the week: America pays, and the house is still never told.
+  if (state.instigator) {
+    state.survived = true;
+    const verdict = audiencePayout(state);
+    state.banked = verdict;
+    if (seasonConfig?.popularityEnabled !== false) {
+      gs.popularity ||= {};
+      gs.popularity[state.player] = round2((gs.popularity[state.player] || 0) + Math.max(0, state.applause) * 2.2 + 3);
+    }
+    return {
+      type: 'saboteur-reveal', week: weekNum, saboteur: state.player, instigator: true,
+      banked: verdict, applause: state.applause, missions: state.missions.filter(m => m.worked).length,
+      beats: [{ text: `The AI Instigator's week is over. ${state.player} goes back to being an ordinary houseguest, and nobody inside ever finds out.`,
+        players: [state.player], badgeText: 'NOBODY KNEW', badgeClass: 'blue' },
+      { text: `America was asked what the week was worth, and gave ${P(state.player).obj} $${verdict.toLocaleString()}.`,
+        players: [state.player], badgeText: verdict ? 'PAID' : 'NOTHING', badgeClass: verdict ? 'gold' : 'grey' }],
+    };
+  }
   state.survived = true;
   state.revealed = true;
   const sab = state.player;
@@ -1282,6 +1347,28 @@ export function checkSaboteurBank(week) {
 export function saboteurEvicted(name, week) {
   const state = saboteurState();
   if (!state || state.player !== name || state.survived || state.caught) return null;
+  // The Instigator's week was the job: evicted at the end of it, America still pays.
+  if (state.payOnExit && (Number(week?.num) || 0) >= state.bankWeek - 1) {
+    state.survived = true;
+    const verdict = audiencePayout(state);
+    state.banked = verdict;
+    if (seasonConfig?.popularityEnabled !== false) {
+      gs.popularity ||= {};
+      gs.popularity[name] = round2((gs.popularity[name] || 0) + Math.max(0, state.applause) * 2.2 + 3);
+    }
+    return {
+      type: 'saboteur-reveal', week: Number(week?.num) || 0, saboteur: name, instigator: true,
+      banked: verdict, evicted: true, applause: state.applause,
+      missions: state.missions.filter(m => m.worked).length,
+      beats: [{
+        text: `${name} walks out of the house without anybody inside ever knowing what ${P(name).sub} spent the week doing.`,
+        players: [name], badgeText: 'NOBODY KNEW', badgeClass: 'blue',
+      }, {
+        text: `America was asked what the week was worth, and gave ${P(name).obj} $${verdict.toLocaleString()}.`,
+        players: [name], badgeText: verdict ? 'PAID' : 'NOTHING', badgeClass: verdict ? 'gold' : 'grey',
+      }],
+    };
+  }
   state.caught = true;
   state.revealed = true;
   const lost = state.banked;

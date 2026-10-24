@@ -12,7 +12,7 @@
 // he left the house alone for two months and came back in Week 9 to run it.
 //
 // What makes it worth building is that last part. The Den escalates in mood and
-// CORA escalates in mood; the Mastermind escalates in AUTHORITY. The wiki calls
+// AINSLEY escalates in mood; the Mastermind escalates in AUTHORITY. The wiki calls
 // it "The Mastermind's Month of Mayhem": nine houseguests left, less than a
 // month of show, and a stated goal of three on finale night. He collects three
 // "sacrifices" to get there. Our arc can express that exactly, because an
@@ -33,7 +33,7 @@ export default {
   // The wiki calls it a haunted hotel, so this is a GRAND HOTEL rather than a
   // haunted house: deep green walls, brass, lamplight, gold lettering with too
   // much tracking. The identity is the surface — the Den is mahogany brown,
-  // CORA is a blue-black screen, and nothing else in this game is green.
+  // AINSLEY is a blue-black screen, and nothing else in this game is green.
   //
   // And it escalates the opposite way to both of them. They go red; this one
   // DRAINS, to bone and candle, for the month the Mastermind runs the building.

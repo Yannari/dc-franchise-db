@@ -421,6 +421,11 @@ export function bbForcedCompsForWeek(epNum) {
     && (seasonConfig.twistSchedule || []).some(t => t?.source === 'theme' && t.type === 'bb-double-eviction' && Number(t.episode) === Number(epNum))) {
     forced.hoh = 'bb-social-zingbot';
   }
+  // BB26: Evil AINSLEY's first act on her return was to unleash the Zingbot, the week of her double.
+  if (!forced.veto && seasonConfig.theme === 'machine-summer'
+    && (seasonConfig.twistSchedule || []).some(t => t?.source === 'theme' && t.type === 'bb-double-eviction' && Number(t.episode) === Number(epNum))) {
+    forced.veto = 'bb-social-zingbot';
+  }
   return Object.keys(forced).length ? forced : undefined;
 }
 
@@ -857,13 +862,19 @@ export function simulateBBEpisode() {
   // is chosen on night one, before anybody has done anything worth sabotaging,
   // and it runs until it banks or gets caught. `bbSaboteur` is a season knob
   // rather than a twist-schedule entry for the same reason.
-  if (seasonConfig.bbSaboteur && seasonConfig.bbSaboteur !== 'off' && !saboteurState()) {
+  // ...unless it starts later: BB26's AI Instigator was voted in by America in
+  // week five and worked week six (`bbSaboteur: 'instigator'`).
+  // (only the Instigator starts late: a knob left over from a Machine season must not delay a Saboteur)
+  const _sabStart = seasonConfig.bbSaboteur === 'instigator' ? (Number(seasonConfig.bbSaboteurStartWeek) || 1) : 1;
+  if (seasonConfig.bbSaboteur && seasonConfig.bbSaboteur !== 'off' && !saboteurState()
+    && ((gs.bb?.weeks?.length || 0) + 1) >= _sabStart) {
     try {
       installBBSaboteur(house, {
         bankWeek: Number(seasonConfig.bbSaboteurBankWeek) || 5,
         rng: Math.random,
         // 'choose' means the user cast it themselves.
         pick: seasonConfig.bbSaboteur === 'choose' ? (seasonConfig.bbSaboteurPlayer || null) : null,
+        instigator: seasonConfig.bbSaboteur === 'instigator',
       });
     } catch { /* the season plays without one */ }
   }

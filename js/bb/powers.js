@@ -349,6 +349,24 @@ export const BB_POWER_DEFINITIONS = {
     moment: 'After the Head of Household is crowned, before nominations.',
   },
 
+  // BB26's Upgrade. "A lighter variation of the Diamond Power of Veto, where
+  // the winner will be able to use the power at any point during the first four
+  // weeks of the game. If they choose to use the Power of Veto, they can take
+  // down one nominee but instead of the HOH naming the replacement, the audience
+  // will decide in a vote, with the results of the renomination vote being
+  // revealed live on eviction night. The HOH, POV Holder, and person Vetoed off
+  // the block all remain immune from renomination."
+  'americas-veto': {
+    id: 'americas-veto',
+    name: "America's Veto",
+    rules: { replacementAuthority: 'america' },
+    useTiming: 'veto-ceremony',
+    windowWeeks: 4,
+    blurb: 'A second veto, usable at any one veto meeting up to the end of week four. It takes one nominee off the block, and America, not the Head of Household, votes in the replacement.',
+    catch: 'The holder chooses who comes down and nobody chooses who goes up: the replacement is whoever the audience wants to see sweat, and it is read out live.',
+    moment: 'Any veto meeting up to the end of week four, once the ordinary veto has been decided.',
+  },
+
   'hoh-interrogation': {
     id: 'hoh-interrogation',
     name: 'The Interrogation',

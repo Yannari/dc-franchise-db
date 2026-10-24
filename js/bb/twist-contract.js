@@ -457,6 +457,30 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Every temptation comes with a consequence.',
     },
   },
+  // BB26's week nine: JANKIE World and the JANKIE Power of Veto.
+  'bb-jankie-world': {
+    id: 'bb-jankie-world', layer: 'scheduled', category: 'veto',
+    timing: 'week-opening', duration: { weeks: 1 },
+    rules: { jankieWorld: true, doubleVeto: true, jankieVeto: true },
+    acquisition: { channel: 'veto-competition', secrecy: 'open' },
+    announcement: {
+      name: 'JANKIE World',
+      rule: 'AINSLEY has gone to see the world, and JANKIE is in charge. Everybody lives in the backyard this week, on pizza and ice cream. Whoever comes second in the veto competition wins the JANKIE Power of Veto, but can only use it by beating one of JANKIE\'s carnival games.',
+      sting: 'Learn the song. There will be a dance party.',
+    },
+  },
+  // BB26's premiere: the seventeenth-houseguest vote, the Upgrades, the Mascots.
+  'bb-machine-premiere': {
+    id: 'bb-machine-premiere', layer: 'scheduled', category: 'distribution',
+    timing: 'week-opening', duration: { weeks: 1 },
+    rules: { machinePremiere: true },
+    acquisition: { channel: 'dedicated-competition', secrecy: 'holder-secret' },
+    announcement: {
+      name: 'The Seventeenth Houseguest',
+      rule: 'Somebody is waiting outside who would like to be the seventeenth houseguest. Each of you will vote, in private, on whether she comes in.',
+      sting: 'Every vote tonight is being recorded.',
+    },
+  },
   // BB19's Tree of Temptation: an apple for whoever reaches the Diary Room first.
   'bb-tree-of-temptation': {
     id: 'bb-tree-of-temptation', layer: 'scheduled', category: 'distribution',

@@ -20656,7 +20656,7 @@ export function rpBuildBBThemeBeat(ep, act) {
 }
 
 /**
- * CORA: a wall terminal, not a face.
+ * AINSLEY: a wall terminal, not a face.
  *
  * The show gave its AI a hologram box in the living room. The interesting part
  * was never the hologram — it was that the house was being ADDRESSED BY THE
@@ -20733,7 +20733,7 @@ function _rpThemeBeatCora(ep, act) {
     <div class="cora-term">
       <div class="cora-bar">
         <span class="cora-dot"></span>
-        <span class="cora-name">CORA</span>
+        <span class="cora-name">AINSLEY</span>
         <span>${label}</span>
         <span class="cora-status">${status}</span>
       </div>
@@ -20780,7 +20780,7 @@ function _rpThemeBeatDen(ep, act) {
 /**
  * The Mastermind, who is a door rather than an eye.
  *
- * The Den watches and CORA scans, and both of those are the same gesture: a
+ * The Den watches and AINSLEY scans, and both of those are the same gesture: a
  * light pointed at the house. This one is the opposite gesture — the thing
  * addressing the room is a door standing very slightly open in a corridor
  * nobody can find, with the light coming from the wrong side of it.
@@ -20974,7 +20974,7 @@ function _rpThemeBeatMystery(ep, act) {
  * The Pit Boss, who is a TABLE rather than a face.
  *
  * The other three antagonists are all a light pointed at the house — the Den's
- * eye, CORA's panel, the Mastermind's door. This one never appears at all,
+ * eye, AINSLEY's panel, the Mastermind's door. This one never appears at all,
  * because a pit boss is not a presence in a casino, it is the fact that the
  * room is being run. So the screen is the thing it runs: a half-round table
  * under the floor lamps, brass rail, five seats with money on them, and the

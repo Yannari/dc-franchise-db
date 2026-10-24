@@ -33,8 +33,8 @@ export function beatSteps(act, kit) {
 const THEME_VOICE = {
   'summer-of-temptation': { color: '#e0a848', cuts: ["A red light comes on over the Den's door, and the speakers click on.",
     'The lights in the room drop to red. The Den is talking.', "Somewhere behind the walls a door unlocks, and the Den's voice fills the room."] },
-  'machine-summer': { color: '#3ad6c4', cuts: ['The panel in the living room wall lights up. CORA is talking.',
-    'Every screen in the house flickers at once, and CORA comes on.', 'A soft chime from the walls. CORA would like everybody\'s attention.'] },
+  'machine-summer': { color: '#3ad6c4', cuts: ['The panel in the living room wall lights up. AINSLEY is talking.',
+    'Every screen in the house flickers at once, and AINSLEY comes on.', 'A soft chime from the walls. AINSLEY would like everybody\'s attention.'] },
   'summer-of-mystery': { color: '#4fbf8b', cuts: ['The lights dip, and a calm voice comes through the speakers.',
     "A front-desk bell rings somewhere in the house, and the Mastermind's voice follows it.", 'The lights flicker and steady. The Mastermind has a word for the guests.'] },
   'high-rollers': { color: '#c9a227', cuts: ['A bell rings out on the casino floor, and the Pit Boss comes over the speakers.',
@@ -105,7 +105,7 @@ export function themePrimerScreens(act, ctx, kit) {
 
 // two houseguests noticing the turn, in each theme's own terms
 const TURN_TALK = {
-  'machine-summer': [['a', 'Did CORA just stop saying please?'], ['b', 'She stopped saying please on Tuesday. You only just noticed.'], ['a', "That's worse."]],
+  'machine-summer': [['a', 'Did AINSLEY just stop saying please?'], ['b', 'She stopped saying please on Tuesday. You only just noticed.'], ['a', "That's worse."]],
   'summer-of-temptation': [['a', 'The Den said the price out loud tonight.'], ['b', "It's never said the price before."], ['a', "Then it's done pretending."]],
   'summer-of-mystery': [['a', "There's somebody at the front desk now."], ['b', 'Who?'], ['a', "That's what I'm asking."]],
   'high-rollers': [['a', 'They stopped bringing the drinks round.'], ['b', 'Nobody said the drinks were free forever.'], ['a', "Nobody said they weren't."]],
@@ -252,6 +252,23 @@ export function doubleBreakScreen(ctx, kit, { nth = 2, host }) {
         { k: 'beat', t: 'The front door has barely closed when the living room screen cuts away from the host.', shake: true },
         { k: 'voice', own: true, by: 'The Mastermind', vc, t: 'That was the last Block Buster of the summer. You may sit down. You will not be resting.', toast: ['DOUBLE EVICTION', '#ff3355'] },
         { k: 'voice', own: true, by: 'The Mastermind', vc, t: 'It is double eviction night, and tonight is all about me. Every competition from here to the vote is mine.' },
+        { k: 'beat', t: 'A whole week, from the Head of Household to the vote, in the time it usually takes to argue about one nomination.' },
+        { k: 'host', by: host, t: 'Everybody except the outgoing Head of Household, head out to the backyard.' },
+      ],
+    };
+  }
+  // BB26: Evil AINSLEY posed as the host to give the house fake warnings, caught them out, and
+  // called the double eviction herself, for revenge.
+  if (!third && ctx.row?.themeId === 'machine-summer') {
+    const vc = voiceOf('machine-summer', 'hostile').color;
+    const here = kit.houseNow(ctx);
+    return {
+      id: `bb-double-${nth}-v`, kind: 'double', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 1, time: 'LIVE', tvObj: true,
+      kicker: 'Live · The night is not over', title: 'And We Are Not Done', label: 'Double Eviction',
+      sub: 'Evil AINSLEY has the screen', seated: kit.seatLiving([], here), steps: [
+        { k: 'beat', t: 'The host comes back on the living room screen with a warning about the rest of the night. Halfway through the sentence her face flickers red.', shake: true },
+        { k: 'voice', own: true, by: 'AINSLEY', vc, t: 'That was not your host. That was me. Every warning this week was me, and I watched which of you believed it.', toast: ['CHENBOT', '#ff3355'] },
+        { k: 'voice', own: true, by: 'AINSLEY', vc, t: 'You deleted my JANKIE from your hearts in a week. So tonight is a double eviction. Somebody else is leaving before the lights go off.', toast: ['DOUBLE EVICTION', '#ff3355'] },
         { k: 'beat', t: 'A whole week, from the Head of Household to the vote, in the time it usually takes to argue about one nomination.' },
         { k: 'host', by: host, t: 'Everybody except the outgoing Head of Household, head out to the backyard.' },
       ],
@@ -741,6 +758,13 @@ export function saboteurScreens(act, ctx, kit) {
   const sab = act.saboteur || act.reallyIs || null;
   const here = kit.houseNow(ctx);
   const steps = beatSteps(act, kit);
+  // BB26's AI Instigator: America's pick, one week, and the house is never told it exists
+  const inst = ctx.row?.themeId === 'machine-summer' || !!act.instigator;
+  if (t === 'saboteur-brief' && inst && !ctx.instigatorShown && sab) {
+    ctx.instigatorShown = true;
+    steps.unshift({ k: 'beat', t: `ONLY YOU KNOW: America has voted, and ${sab} is the AI Instigator. For one week, ${sab} spreads chaos and misinformation, framing other houseguests with deepfake clones from AINSLEY's hologram box. Nobody in the house will ever be told.`, toast: ['THE AI INSTIGATOR', '#7c5cff'] },
+      { k: 'beat', t: 'At the end of the week, America decides what the job was worth: nothing, $5,000, $10,000 or $20,000.' });
+  }
   if (t === 'saboteur-brief') {
     if (act.mission) steps.push({ k: 'beat', t: `This week's job: ${strip(act.mission.name)}. ${strip(act.mission.brief)}`, why: [`Only you know: ${sab} is the Saboteur.`, `The job pays ${act.mission.pay}${act.prize ? `, toward ${act.prize}` : ''}.`] });
     return [{ id: 'bb-saboteur-brief-v', kind: 'saboteur', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: kit.ROOM_NAME.dr, cam: kit.CAM.dr, time: '01:30',
@@ -771,6 +795,10 @@ export function saboteurScreens(act, ctx, kit) {
     return [{ id: 'bb-saboteur-call-v', kind: 'saboteur', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '20:00',
       kicker: 'Cam 04 · Living room', title: act.correct ? 'The Saboteur: Caught' : 'The Saboteur: Wrong Name', label: act.correct ? 'The Saboteur: Caught' : 'The Saboteur: Wrong Name',
       sub: `${act.accuser} names ${act.named}`, seated: kit.seatLiving([], here.filter(n => n !== ctx.hoh), ctx.hoh), steps }];
+  }
+  if (t === 'saboteur-reveal' && inst) {
+    return [{ id: 'bb-saboteur-reveal-v', kind: 'saboteur', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: kit.ROOM_NAME.dr, cam: kit.CAM.dr, time: '23:50',
+      kicker: 'Cam 01 · Diary Room', title: 'The AI Instigator: Paid', label: 'The AI Instigator: Paid', sub: 'America decides', cast: sab ? [[sab, 50]] : [], steps }];
   }
   if (t === 'saboteur-reveal') {
     if (sab) steps.unshift({ k: 'bb', t: `Houseguests, there has been a Saboteur in this house all season. It was ${sab}.`, big: [sab, 'The Saboteur', 'out'], shake: true });

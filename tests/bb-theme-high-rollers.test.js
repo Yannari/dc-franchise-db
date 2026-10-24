@@ -494,7 +494,7 @@ describe('a themed season plays the arc it stamped', () => {
 // The visual thesis of this theme is a TEMPERATURE FLIP. Neutral is a warm
 // high-limit salon — brass on black lacquer, lit from the table up. Hostile is
 // the count room behind it: steel, fluorescent, every warm tone gone. It is the
-// only theme on the shelf that escalates cold (the Den and CORA both go red,
+// only theme on the shelf that escalates cold (the Den and AINSLEY both go red,
 // Summer of Mystery drains to bone), so "the hostile block is different" is not
 // enough — it has to be different in the one direction that makes the theme
 // legible beside the other three. These cases assert the direction.
@@ -582,7 +582,7 @@ describe('the skin', () => {
 // ── the Pit Boss's screen ──────────────────────────────────────────────
 //
 // `rpBuildBBThemeBeat` dispatches per theme precisely so a second theme is not
-// a recolour of the first. The Den is an eye, CORA is a wall terminal, the
+// a recolour of the first. The Den is an eye, AINSLEY is a wall terminal, the
 // Mastermind is a door. This one is the PIT: a brass rail over felt, and the
 // line set like a floor announcement. On a hostile beat the same table is lit
 // by the count-room fluorescents instead.

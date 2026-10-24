@@ -12,7 +12,7 @@ import { SHOWS } from './shows.js';
 import { airKey, airLabel } from './franchise-calendar.js';
 import { seasonWinners } from './records.js';
 import { loadPortraitCatalog, avatarUrl } from './avatar-registry.js';
-import { onAirModel, loadAiring } from './on-air.js';
+import { onAirModel, loadAiring, airingModels } from './on-air.js';
 
 const API = (() => {
   try { return (localStorage.getItem('studio_api_base') || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, ''); }
@@ -214,7 +214,7 @@ export async function mountHome() {
   // Every show on the air, one card each, with arrows between them -- two
   // shows can air in the same slot, and the card used to know only one.
   const [entries, exits] = await Promise.all([loadAiring(), get(`${API}/api/live-exits`)]);
-  const models = entries.map(e => onAirModel(e, exits, seasons)).filter(m => m.airing);
+  const models = airingModels(entries, exits, seasons);
   const mount = document.getElementById('hmOnAir');
   if (!mount) return;
   if (!models.length) { mount.innerHTML = onAirCard(onAirModel(null, exits, seasons)); return; }

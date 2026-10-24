@@ -1,7 +1,7 @@
 // On Air: the visitor's page for the season airing now. Every word that differs
 // by show must come from that show's registry entry (docs/ADDING-A-SHOW.md).
 import { describe, it, expect } from 'vitest';
-import { onAirModel, exitSentence, ordinal, agoLabel, showsInView, singular, statText } from '../js/on-air.js';
+import { onAirModel, exitSentence, ordinal, agoLabel, showsInView, singular, statText, airingModels } from '../js/on-air.js';
 
 const live = (over = {}) => ({
   ok: true, airing: true, seasonNumber: 2, title: null, episode: 3, totalPlayers: 4, stillIn: 3,
@@ -120,5 +120,36 @@ describe('the board, grouped the way the show groups it', () => {
     expect(statText({ label: 'vetoes won', value: 2 })).toBe('2 vetoes won');
     expect(singular('maxi challenges won')).toBe('maxi challenge won');
     expect(m.leaders[0]).toMatchObject({ label: 'immunity wins', value: 2 });
+  });
+});
+
+describe('a show only the exit feed knows is on', () => {
+  // The old worker kept one standings slot: publishing Big Brother 2 wrote over
+  // Perfect Match 1, which aired the same summer and vanished from On Air.
+  const feed = { ok: true, seasons: [
+    { format: 'big-brother', seasonNumber: 2, title: 'Big Brother 2', updatedAt: '2026-10-24 07:11:55',
+      exitInterviews: [{ guest: 'Di', week: 2, placement: 4, how: 'evicted' }] },
+    { format: 'perfect-match', seasonNumber: 1, title: 'Perfect Match 1', airYear: 2027, airSlot: 'summer',
+      updatedAt: '2026-10-24 07:11:45', exitInterviews: [
+        { guest: 'Skye', week: 4, placement: 13, how: 'dumped', stillIn: ['Arjun', 'Mei', 'Theo'] },
+        { guest: 'Blair', week: 4, placement: 12, how: 'dumped', stillIn: ['Arjun', 'Mei', 'Theo'] },
+        { guest: 'Jo', week: 2, placement: 14, how: 'dumped', stillIn: ['Arjun', 'Mei', 'Theo', 'Skye', 'Blair'] },
+      ] },
+  ] };
+
+  it('puts both shows on the air, the second rebuilt from its exits', () => {
+    const ms = airingModels([live()], feed, []);
+    expect(ms.map(m => m.format)).toEqual(['big-brother', 'perfect-match']);
+    const pm = ms[1];
+    expect(pm.episode).toBe(4);
+    expect(pm.stillIn.map(p => p.name)).toEqual(['Arjun', 'Mei', 'Theo']);
+    expect(pm.out.map(p => p.name).sort()).toEqual(['Blair', 'Jo', 'Skye']);
+    expect(pm.total).toBe(6);
+    expect(pm.stillInCount).toBe(3);
+  });
+
+  it('leaves a finished season off the air', () => {
+    const ms = airingModels([], feed, [{ seasonId: 'pm-1', format: 'perfect-match', status: 'Complete' }]);
+    expect(ms.map(m => m.format)).toEqual(['big-brother']);
   });
 });

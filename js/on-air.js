@@ -22,7 +22,7 @@
 // a Big Brother houseguest is evicted and wins HOHs, a Total Drama camper is
 // voted out and wins immunity, and Drag Race has no vote at all -- so a vote
 // count is never printed for it.
-import { SHOWS, DEFAULT_FORMAT } from './shows.js';
+import { SHOWS, DEFAULT_FORMAT, parseSeasonRef } from './shows.js';
 import { airLabel, airKey, latestAired } from './franchise-calendar.js';
 import { seasonWinners } from './records.js';
 import { avatarUrl, loadPortraitCatalog } from './avatar-registry.js';
@@ -366,6 +366,50 @@ export async function loadAiring() {
   return one?.airing ? [one] : [];
 }
 
+/**
+ * Seasons on the air that only the exit feed knows about.
+ *
+ * The old worker kept ONE standings slot, so publishing Big Brother 2 wrote
+ * over Perfect Match 1 -- and Perfect Match, airing the same summer, vanished
+ * from the page while its exits and posts were still up. Each exit interview
+ * records who was still in when it happened, so the newest one rebuilds the
+ * cast: those names in, every guest so far out. No stats (the exit feed has
+ * none), which is the board's honest shape until the show publishes again.
+ *
+ * `covered` is the models already built; a finished season is not airing.
+ */
+export function airingFromExits(exits, seasons = [], covered = []) {
+  const done = new Set(finished(seasons).map(s => {
+    const ref = parseSeasonRef(s.seasonId || s.seasonNumber);
+    return ref ? `${ref.format || DEFAULT_FORMAT}:${ref.number}` : '';
+  }));
+  const have = new Set(covered.map(m => `${m.format}:${m.seasonNumber}`));
+  return (exits?.seasons || []).filter(s => SHOWS[s.format] && s.exitInterviews?.length
+    && !done.has(`${s.format}:${s.seasonNumber}`) && !have.has(`${s.format}:${s.seasonNumber}`))
+    .map(s => {
+      const xs = [...s.exitInterviews].sort((a, b) => (a.week ?? 0) - (b.week ?? 0) || (b.placement ?? 0) - (a.placement ?? 0));
+      const last = xs[xs.length - 1];
+      const gone = new Set(xs.map(x => x.guest));
+      const still = (last.stillIn || []).filter(n => !gone.has(n));
+      const players = [
+        ...still.map(name => ({ name, status: 'in' })),
+        ...xs.map(x => ({ name: x.guest, status: x.juror ? 'jury' : 'out', exitEpisode: x.week ?? null })),
+      ];
+      return {
+        format: s.format, seasonNumber: s.seasonNumber, title: s.title, airing: true, fromExits: true,
+        episode: last.week ?? null, updatedAt: s.updatedAt, players,
+        totalPlayers: players.length, stillIn: still.length,
+      };
+    });
+}
+
+/** Every airing show's model, the standings first and the exit feed filling gaps. */
+export function airingModels(entries, exits, seasons = []) {
+  const models = entries.map(e => onAirModel(e, exits, seasons)).filter(m => m.airing);
+  return models.concat(airingFromExits(exits, seasons, models)
+    .map(e => onAirModel(e, exits, seasons)).filter(m => m.airing));
+}
+
 const _posts = new Map();
 function postsFor(m) {
   const key = `${m.format}:${m.seasonNumber}`;
@@ -388,7 +432,7 @@ export async function mountOnAir(root) {
     loadPortraitCatalog().catch(() => null),
   ]);
   const seasons = sdb?.seasons || [];
-  const models = entries.map(e => onAirModel(e, exits, seasons)).filter(m => m.airing);
+  const models = airingModels(entries, exits, seasons);
   const picked = () => { try { return currentShow() || ALL; } catch { return ALL; } };
   let active = null;
 

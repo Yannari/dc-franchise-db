@@ -29,6 +29,7 @@ import { avatarUrl, loadPortraitCatalog } from './avatar-registry.js';
 import { mediaLogo, ensureMediaCss } from './media-brands.js';
 import { currentShow, ALL } from './show-switcher.js';
 import { mountCall } from './calls.js';
+import { enableTilt } from './card-tilt.js';
 
 const API = (() => {
   try { return (localStorage.getItem('studio_api_base') || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, ''); }
@@ -465,6 +466,8 @@ export async function mountOnAir(root) {
     if (active === m.format && posts.length) renderShow(body, m, posts);
   };
   addEventListener('showchange', () => { active = null; draw(); });
+  // The cast cards tilt like trading cards; a jury or a winner is not foil here.
+  enableTilt(root, '.oa-card', { lift: 'translateY(-4px)' });
   await draw();
   return models;
 }

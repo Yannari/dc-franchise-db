@@ -506,6 +506,11 @@ window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve
   window.showSwitcher = { currentShow, ALL, SHOWS, DEFAULT_FORMAT };
   window._showSwitcherResolve(window.showSwitcher);
 </script>
+<script type="module">
+  // Trading-card tilt; winners in holographic foil (js/card-tilt.js).
+  import { enableTilt } from './js/card-tilt.js';
+  enableTilt(document.getElementById('grid'), 'a.card', { foil: '.winner' });
+</script>
 <script>
 const grid = document.getElementById('grid');
 const search = document.getElementById('search');

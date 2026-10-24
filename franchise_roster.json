@@ -8908,6 +8908,13 @@
       "sexuality": "straight",
       "voice": "Calm, precise and motherly, a doctor's bedside manner with a lecture always ready. Asks if you've had water today and tells you the truth even when you didn't ask. #earnest #blunt",
       "profileSources": {},
+      "ties": [
+        {
+          "name": "Oumar",
+          "kin": "married",
+          "outside": true
+        }
+      ],
       "age": 41,
       "birthdate": "1986-03-02",
       "ethnicity": "Iranian American",
@@ -8916,14 +8923,7 @@
       "occupation": "Doctor",
       "descriptor": "The Doctor",
       "backstory": "Fatima Kalantar is a doctor at a teaching hospital in Cambridge, Massachusetts, the daughter of Iranian immigrants who ran a corner pharmacy and expected nothing less than medical school. At forty-four she has spent twenty years working nights, raising two teenagers with her husband, a professor, and running the hospital's free clinic at weekends. She is the oldest woman in the house and doesn't mind saying so. She applied on a dare from her daughter, who said she had never done one spontaneous thing in her life, and because the prize would pay for the clinic's new wing. She is not sure she knows how to lie, and not sure she wants to learn.",
-      "personality": "Fatima is principled, caring and direct. She mothers the house without being asked, checking on anyone who is sick, reminding people to eat and telling them exactly what she thinks of their choices. She is honest to a fault, believes in fairness and will stand up for anyone she thinks is being treated badly, even when it costs her. Younger players find her either comforting or exhausting: she lectures, and she does not always notice she is doing it. She is loyal to the people who share her values. Her weakness is that she runs the house like a ward that should be run sensibly, and nobody in it wants a sensible game.",
-      "ties": [
-        {
-          "name": "Oumar",
-          "kin": "married",
-          "outside": true
-        }
-      ]
+      "personality": "Fatima is principled, caring and direct. She mothers the house without being asked, checking on anyone who is sick, reminding people to eat and telling them exactly what she thinks of their choices. She is honest to a fault, believes in fairness and will stand up for anyone she thinks is being treated badly, even when it costs her. Younger players find her either comforting or exhausting: she lectures, and she does not always notice she is doing it. She is loyal to the people who share her values. Her weakness is that she runs the house like a ward that should be run sensibly, and nobody in it wants a sensible game."
     },
     {
       "name": "Ivyna",
@@ -9002,6 +9002,13 @@
       "sexuality": "gay",
       "voice": "Gruff, booming and old-school, a cop's voice that expects to be obeyed. Calls the younger players 'kid', tells long stories about the force and does not apologise. #proud #blunt #-loud#competitive",
       "profileSources": {},
+      "ties": [
+        {
+          "name": "Antoine",
+          "kin": "married",
+          "outside": true
+        }
+      ],
       "age": 46,
       "birthdate": "1980-06-10",
       "ethnicity": "White",
@@ -9010,14 +9017,7 @@
       "occupation": "Police officer",
       "descriptor": "The Cop",
       "backstory": "Kyle Brady has been a police officer in Pensacola, Florida, for twenty-four years, and he still runs five miles before every shift to prove he can keep up with the rookies. He grew up on the Gulf Coast, joined the force at twenty-two and raised his son Don mostly on his own after the divorce; Don is in college now and calls him every Sunday. Kyle is old-fashioned, plain-spoken and proud of it. He applied because his son said he would not last a week in a house full of twenty-somethings, and Kyle has never turned down a challenge in his life. He plans to win the first competition and show every one of them.",
-      "personality": "Kyle is competitive, stubborn and protective. He is in better shape than men half his age, wants everyone to know it and treats every competition like a fitness test. He likes order and rules and has little patience for what he calls whining or for causes he does not understand, which puts him on a collision course with anyone who lectures him. He is loyal to the people he respects, mostly the athletes and anyone straight with him, and he would rather lose a fight than back down from one. Under the gruffness he is a proud dad who misses his kid. His blind spot is thinking a house works like a precinct.",
-      "ties": [
-        {
-          "name": "Antoine",
-          "kin": "married",
-          "outside": true
-        }
-      ]
+      "personality": "Kyle is competitive, stubborn and protective. He is in better shape than men half his age, wants everyone to know it and treats every competition like a fitness test. He likes order and rules and has little patience for what he calls whining or for causes he does not understand, which puts him on a collision course with anyone who lectures him. He is loyal to the people he respects, mostly the athletes and anyone straight with him, and he would rather lose a fight than back down from one. Under the gruffness he is a proud dad who misses his kid. His blind spot is thinking a house works like a precinct."
     },
     {
       "name": "Lacey",
@@ -9183,16 +9183,15 @@
       "sexuality": "queer",
       "voice": "Passionate, preachy and quick to accuse, every conversation turned into a protest speech. Calls things problematic, raises her voice when challenged and rarely hears the irony. #loud #blunt#chaotic",
       "profileSources": {},
-      "age": 29,
-      "birthdate": "1997-10-29",
+      "age": 31,
+      "birthdate": "1995-10-29",
       "ethnicity": "African American",
       "nationality": "American",
       "hometown": "Quechee, Vermont",
       "occupation": "Non-profit event organiser",
       "descriptor": "The Activist",
       "backstory": "Sabrina Jackson organises events for an environmental non-profit in Quechee, Vermont, and you can find her at almost every rally, march and protest in New England. She grew up in a family that argued about politics at every meal and learned to win by being the loudest and the most certain. She is vegan, an animal rights campaigner and proudly confrontational, and she has been asked to leave two farmers' markets for arguing with the vendors. She applied because a national audience is a platform, and she believes the right message, shouted loudly enough, can change minds. She does not plan to make friends with people whose values she cannot respect.",
-      "personality": "Sabrina is passionate, principled and combative. She genuinely wants to make the world better and genuinely believes she knows how, but she attacks people for their habits and beliefs instead of persuading them, and she does not notice when her own choices contradict her speeches. She takes criticism as an attack and answers it with louder accusations, quick to call her opponents sexist or ignorant. She is loyal and loving to the few friends who share her causes. Under the noise she is lonely and suspects people are laughing at her. Her weakness is that she cannot pick her battles: every fight is the most important one, so she fights everyone.",
-      "ties": []
+      "personality": "Sabrina is passionate, principled and combative. She genuinely wants to make the world better and genuinely believes she knows how, but she attacks people for their habits and beliefs instead of persuading them, and she does not notice when her own choices contradict her speeches. She takes criticism as an attack and answers it with louder accusations, quick to call her opponents sexist or ignorant. She is loyal and loving to the few friends who share her causes. Under the noise she is lonely and suspects people are laughing at her. Her weakness is that she cannot pick her battles: every fight is the most important one, so she fights everyone."
     },
     {
       "name": "Sawyer",
@@ -9213,16 +9212,15 @@
       "sexuality": "straight",
       "voice": "Slow, gentle Southern drawl, polite to a fault: 'well, shucks', 'yes ma'am'. Talks about his animals like family and calms a room just by walking into it. #calm #warm",
       "profileSources": {},
-      "age": 28,
-      "birthdate": "1998-11-30",
+      "age": 25,
+      "birthdate": "2001-11-30",
       "ethnicity": "White",
       "nationality": "American",
       "hometown": "Nashville, Tennessee",
       "occupation": "Farmhand",
       "descriptor": "The Southern Gent",
       "backstory": "Sawyer is a farmhand outside Nashville, Tennessee, who looks after twenty-seven animals, holds licences for more machines than he can name and has never been outside the state. He grew up on the farm he now works, raised by his grandparents, and was a mechanical bull riding champion three years running. He has a partner back home, Caleb, a vet he met when his baby goat Buckley got sick, and he would have brought Buckley into the house if they had let him. He would rather nobody assumed the farm makes him money, because it doesn't. He applied because a show like this needs an outsider, a breath of fresh farm air. His motto is eat clean and eat green.",
-      "personality": "Sawyer is calm, kind and empathetic. He hates confrontation and does everything he can to defuse a fight, usually with a story about a stubborn animal. He listens more than he talks, notices when someone is struggling and is the person people cry in front of. He is honest and finds lying physically uncomfortable, which makes him a poor strategist and a very good friend. His game is finding the people he connects with and sticking with them. He has a quiet stubborn streak, though, and push him hard enough and the bull rider shows. His weakness is that he trusts too easily, and the house learns it fast.",
-      "ties": []
+      "personality": "Sawyer is calm, kind and empathetic. He hates confrontation and does everything he can to defuse a fight, usually with a story about a stubborn animal. He listens more than he talks, notices when someone is struggling and is the person people cry in front of. He is honest and finds lying physically uncomfortable, which makes him a poor strategist and a very good friend. His game is finding the people he connects with and sticking with them. He has a quiet stubborn streak, though, and push him hard enough and the bull rider shows. His weakness is that he trusts too easily, and the house learns it fast."
     },
     {
       "name": "Vlad",
@@ -9243,22 +9241,22 @@
       "sexuality": "straight",
       "voice": "Flat, low and sparing; says as little as possible and makes every word count. Dry one-liners, long silences, and a softness he hides the moment a baby animal appears. #quiet #dry",
       "profileSources": {},
-      "age": 25,
-      "birthdate": "2001-07-02",
-      "ethnicity": "White",
-      "nationality": "American",
-      "hometown": "Seattle, Washington",
-      "occupation": "Guitarist",
-      "descriptor": "The Lone Wolf",
-      "backstory": "Vlad plays electric guitar, and sometimes bass, in a Seattle band called And Inside that has been almost famous for ten years. He grew up in the rain with a father who repaired amplifiers and a mother who taught piano, and he learned to say what he felt through a guitar instead of out loud. The band shares every songwriting credit and every unpaid bill, and the prize money would finally pay for the album they keep promising. He applied because he thought he fit a stereotype the casting people wanted, and he was right. He does not want to be friends with anyone in the house, and he would never admit he volunteers at an animal shelter on weekends.",
-      "personality": "Vlad is stoic, private and far more observant than his silence suggests. His plan is to lie low, and he is very good at it: he never campaigns, never shouts and never gives anyone a reason to write his name down. He keeps to himself, writes in his music journal and answers questions with a shrug or a single word. People find him either cool or rude, and he does not care which. Under it he is gentle, loyal once won over, and has a dark, dry humour that slips out at the worst moments. His motto is that melancholy is the happiness of being sad. His flaw is that hiding works only until the house runs out of people to hide behind.",
       "ties": [
         {
           "name": "Leona",
           "kin": "partners",
           "outside": true
         }
-      ]
+      ],
+      "age": 29,
+      "birthdate": "1997-07-02",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Seattle, Washington",
+      "occupation": "Guitarist",
+      "descriptor": "The Lone Wolf",
+      "backstory": "Vlad plays electric guitar, and sometimes bass, in a Seattle band called And Inside that has been almost famous for ten years. He grew up in the rain with a father who repaired amplifiers and a mother who taught piano, and he learned to say what he felt through a guitar instead of out loud. The band shares every songwriting credit and every unpaid bill, and the prize money would finally pay for the album they keep promising. He applied because he thought he fit a stereotype the casting people wanted, and he was right. He does not want to be friends with anyone in the house, and he would never admit he volunteers at an animal shelter on weekends.",
+      "personality": "Vlad is stoic, private and far more observant than his silence suggests. His plan is to lie low, and he is very good at it: he never campaigns, never shouts and never gives anyone a reason to write his name down. He keeps to himself, writes in his music journal and answers questions with a shrug or a single word. People find him either cool or rude, and he does not care which. Under it he is gentle, loyal once won over, and has a dark, dry humour that slips out at the worst moments. His motto is that melancholy is the happiness of being sad. His flaw is that hiding works only until the house runs out of people to hide behind."
     },
     {
       "name": "Willow",

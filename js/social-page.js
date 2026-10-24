@@ -961,7 +961,7 @@ function render() {
   $('soc-main').innerHTML = S.app === 'birdie' ? renderBirdie() : renderChat();
   $('rail-right').innerHTML = renderRail();
   setConn();
-  document.title = `${S.app === 'birdie' ? 'Birdie' : 'ChatAlumni'} — ${words(S.format).name} ${S.season}`;
+  document.title = `${S.app === 'birdie' ? 'Birdie' : 'ChatAlumni'}: ${words(S.format).name} ${S.season} · Blindside Network`;
 }
 
 // ── events ────────────────────────────────────────────────────────────

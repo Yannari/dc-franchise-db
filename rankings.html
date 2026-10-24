@@ -756,17 +756,10 @@ background: rgba(0, 0, 0, 0.2);
 </header>
 
 <div class="container">
-  <div class="topbar">
-    <div>
-      <div class="brand">DC <span>Franchise</span> Database</div>
-      <div class="meta">Power Rankings across all Seasons</div>
-    </div>
-    <div class="meta">Updated through Season <span id="rankings-season">9</span></div>
-  </div>
 
 
   <div class="hero">
-    <h1>🏆 Player Rankings</h1>
+    <h1>Player Rankings</h1>
     <p>Comprehensive tier rankings across all seasons • Updated through S<span id="rankings-season-hero">9</span></p>
   </div>
 
@@ -838,7 +831,7 @@ background: rgba(0, 0, 0, 0.2);
 
   <div id="rankings-container">
     <div class="hero">
-      <h2>⏳ Loading Rankings...</h2>
+      <h2>Loading rankings…</h2>
       <p>Please wait while we fetch the player rankings</p>
     </div>
   </div>
@@ -957,7 +950,7 @@ window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve
     console.error('Error:', error);
     document.getElementById('rankings-container').innerHTML = 
       '<div class="hero">' +
-        '<h2>❌ Error Loading Rankings</h2>' +
+        '<h2>The rankings could not load</h2>' +
         '<p>' + error.message + '</p>' +
         '<p>Make sure rankings_database.json and players_database.json are in the root folder.</p>' +
       '</div>';
@@ -1037,11 +1030,9 @@ function renderRankings(rankingsData, playersMap) {
     const name = meta.name || show;
     container.innerHTML =
       '<div style="text-align:center;padding:64px 24px;opacity:.75;">'
-      + '<div style="font-size:34px;margin-bottom:10px;">' + (meta.emoji || '📋') + '</div>'
       + '<h2 style="margin:0 0 8px;font-size:19px;">No ' + name + ' rankings yet</h2>'
       + '<p style="margin:0 auto;opacity:.7;max-width:420px;line-height:1.55;">'
-      + 'Rankings are generated from <strong>current-season.html</strong> once a season is finished. '
-      + name + ' seasons are already recorded — the board just has not been built.</p></div>';
+      + 'The ' + name + ' seasons are on record. Their power rankings will appear here once they are published.</p></div>';
     return;
   }
 

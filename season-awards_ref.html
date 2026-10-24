@@ -609,7 +609,7 @@ function statLbCard(title, rows) {
 
   if (!ref) {
     main.innerHTML = `<div class="no-season">
-      <h2>⚠️ No Season Specified</h2>
+      <h2>No season chosen</h2>
       <p>Please provide a season number in the URL: <code>season-awards_ref.html?season=1</code></p>
       <a href="awards.html">← Back to All Awards</a>
     </div>`;
@@ -628,7 +628,7 @@ function statLbCard(title, rows) {
     if (!res.ok) throw new Error(`Season ${seasonNum} data not found (HTTP ${res.status})`);
     const season = await res.json();
 
-    document.title = `Season ${seasonNum} Awards — ${season.title} — DC Franchise`;
+    document.title = `Season ${seasonNum} Awards — ${season.title} · Blindside Network`;
 
     const awards = season.awards || {};
     const w = season.winner || {};
@@ -650,7 +650,7 @@ function statLbCard(title, rows) {
     /* A RACE SEASON: the winners are a team and every award is a number off the legs, so the page is
        js/rr/awards.js's body between this page's own hero and navigation. */
     if (shows && shows.isRaceSeason && shows.isRaceSeason(season)) {
-      document.title = `${season.title} Awards — DC Franchise`;
+      document.title = `${season.title} Awards · Blindside Network`;
       main.innerHTML = `<div class="sa-hero"><div class="sa-hero-body">
           <div class="sa-season-badge">🏁 Season ${seasonNum}</div>
           <div class="sa-hero-title">${season.title} Awards</div>
@@ -855,7 +855,7 @@ function statLbCard(title, rows) {
   } catch (err) {
     console.error('Season awards error:', err);
     main.innerHTML = `<div class="no-season">
-      <h2>⚠️ Awards Not Found</h2>
+      <h2>No awards for this season yet</h2>
       <p>Could not load awards for Season ${seasonNum}.</p>
       <p style="margin-top:8px;font-size:12px;opacity:.6">${err.message}</p>
       <a href="awards.html">← Back to All Awards</a>

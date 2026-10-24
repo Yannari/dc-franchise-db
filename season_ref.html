@@ -636,7 +636,7 @@ function buildRecords(season){
     const ref=shows
       ? shows.parseSeasonRef(raw)
       : (/^\d+$/.test(String(raw||'').trim()) && Number(raw)>0 ? {format:null,number:Number(raw)} : null);
-    if(!ref){document.getElementById('season-content').innerHTML='<div class="hero"><h1>⚠️ No Season Specified</h1><p><a href="seasons.html">← Back to Seasons</a></p></div>';return;}
+    if(!ref){document.getElementById('season-content').innerHTML='<div class="hero"><h1>No season chosen</h1><p><a href="seasons.html">← Back to Seasons</a></p></div>';return;}
 
     const sn=ref.number;
     /* Total Drama keeps the bare filename its fourteen files already use;
@@ -682,7 +682,7 @@ function buildRecords(season){
        seasons_database.json, which this page has already fetched. */
     const seasonTitle = s.title || (window.__seasonRow && window.__seasonRow.title)
       || seasonLabel;
-    document.title = showPrefix + sn + ' — ' + seasonTitle;
+    document.title = seasonTitle + ' · Blindside Network';
     document.getElementById('footer-sub').textContent=seasonTitle+' • '+s.castSize+' players';
 
     // [AI_FILL] IS A PLACEHOLDER, NOT A VALUE.
@@ -1128,7 +1128,7 @@ function buildRecords(season){
 
   }catch(err){
     console.error(err);
-    document.getElementById('season-content').innerHTML=`<div class="hero"><h1>⚠️ Season Not Found</h1><p>${err.message}</p><p><a href="seasons.html">← Back to Seasons</a></p></div>`;
+    document.getElementById('season-content').innerHTML=`<div class="hero"><h1>Season not found</h1><p>${err.message}</p><p><a href="seasons.html">← Back to Seasons</a></p></div>`;
   }
 })();
 

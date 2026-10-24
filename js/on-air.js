@@ -17,6 +17,7 @@
 import { SHOWS, DEFAULT_FORMAT } from './shows.js';
 import { airLabel, latestAired } from './franchise-calendar.js';
 import { seasonWinners } from './records.js';
+import { avatarUrl, loadPortraitCatalog } from './avatar-registry.js';
 
 const API = (() => {
   try { return (localStorage.getItem('studio_api_base') || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, ''); }
@@ -73,7 +74,9 @@ export function onAirModel(live, exits, seasons = []) {
   const players = live.players.map(p => ({
     name: p.name,
     slug: p.slug || String(p.name).toLowerCase(),
-    portrait: `assets/avatars/${p.avatarFile || (p.slug || String(p.name).toLowerCase()) + '.png'}`,
+    // Through the resolver, like every other screen: the season's own portrait
+    // snapshot first, then this show's default, then the global one.
+    portrait: avatarUrl({ slug: p.slug || String(p.name).toLowerCase(), show: format, avatarFile: p.avatarFile }),
     status: p.status || 'in',
     exitEpisode: p.exitEpisode ?? null,
     wins: Number(p.challengeWins || 0),
@@ -212,6 +215,7 @@ export async function mountOnAir(root) {
   const get = url => fetch(url, { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)).catch(() => null);
   const [live, exits, sdb] = await Promise.all([
     get(`${API}/api/live-season`), get(`${API}/api/live-exits`), get('seasons_database.json'),
+    loadPortraitCatalog().catch(() => null),
   ]);
   const m = onAirModel(live, exits, sdb?.seasons || []);
   let posts = [];

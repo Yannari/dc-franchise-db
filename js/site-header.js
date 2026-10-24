@@ -29,7 +29,7 @@ import { mountShowSwitcher, currentShow, rememberShow, SHOW_SWITCHER_CSS } from 
  * The creator's own rooms (the season control room, the Life inbox) are not
  * here; they are under STUDIO_LINKS, one click away in the header.
  */
-import { latestAired, airLabel } from './franchise-calendar.js';
+import { latestAired, airLabel, airKey } from './franchise-calendar.js';
 export const NAV_LINKS = [
   { href: 'index.html',            label: 'Home' },
   { href: 'on-air.html',           label: 'On Air' },
@@ -356,7 +356,28 @@ export async function stampNow(nav) {
     el.innerHTML = `<span title="${esc(latest.title || latest.seasonId || '')}">`
       + `Now &nbsp;<b>${esc(label)}</b></span>`;
     (document.getElementById('site-show-switch') || nav).insertAdjacentElement('afterend', el);
+    // A season ON THE AIR is later than every finished one. Without this the
+    // pill said "Spring 2027" while On Air showed a Summer 2027 season airing.
+    // Drawn from the database first, moved forward when the live feeds answer.
+    const airing = await airingWindow();
+    if (airing && airKey(airing) > (airKey(latest) ?? -Infinity)) {
+      el.innerHTML = `<span title="${esc(airing.title || '')} is on air">Now &nbsp;<b>${esc(airLabel(airing))}</b></span>`;
+    }
   } catch { /* the date is a nicety; the header is not */ }
+}
+
+/** The airing season's air window, from the live feeds, or null. Never throws. */
+async function airingWindow() {
+  try {
+    let base = 'https://dc-studio.yannari19.workers.dev';
+    try { base = (localStorage.getItem('studio_api_base') || base).replace(/\/+$/, ''); } catch {}
+    const get = u => fetch(u).then(r => (r.ok ? r.json() : null)).catch(() => null);
+    const [live, exits] = await Promise.all([get(base + '/api/live-season'), get(base + '/api/live-exits')]);
+    if (!live?.airing) return null;
+    const same = (exits?.seasons || []).filter(x => Number(x.seasonNumber) === Number(live.seasonNumber));
+    const hit = same.find(x => x.updatedAt === live.updatedAt) || same[0];
+    return hit?.airYear && hit?.airSlot ? hit : null;
+  } catch { return null; }
 }
 
 /**

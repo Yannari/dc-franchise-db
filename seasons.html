@@ -180,12 +180,22 @@
     opacity: .85; transition: opacity .3s;
   }
   .scard:hover .scard-photo { opacity: 1; }
+  /* A title card where there is no cast photo yet (most seasons): the show
+     and the number, set in the network's display face on the season colour. */
   .scard-photo-fallback {
     width: 100%; height: 120px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 52px;
-    background: linear-gradient(135deg, var(--sc, rgba(125,76,255,.2)) 0%, rgba(0,0,0,.3) 100%);
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, var(--sc, rgba(125,76,255,.2)) 0%, rgba(0,0,0,.35) 100%);
     border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .scard-photo-fallback span {
+    font: 600 12px/1.2 var(--font-body); letter-spacing: .16em; text-transform: uppercase;
+    color: rgba(255,255,255,.85);
+  }
+  .scard-photo-fallback b {
+    font-family: var(--font-display); font-weight: 900; font-size: 64px; line-height: .8;
+    color: rgba(255,255,255,.92);
   }
 
   /* Card body */
@@ -326,12 +336,12 @@
 </style>
 
 <div class="seasons-hero">
-  <h1>🗂️ Seasons Wiki</h1>
+  <h1>Seasons</h1>
   <p>Click a season to open its full profile</p>
   <div class="seasons-hero-stats">
-    <div class="seasons-hero-stat">🏝️ <span id="stat-seasons">—</span> Seasons</div>
-    <div class="seasons-hero-stat">👥 <span id="stat-players">—</span> Players</div>
-    <div class="seasons-hero-stat">📺 <span id="stat-episodes">—</span> Episodes</div>
+    <div class="seasons-hero-stat"><span id="stat-seasons">—</span> Seasons</div>
+    <div class="seasons-hero-stat"><span id="stat-players">—</span> Players</div>
+    <div class="seasons-hero-stat"><span id="stat-episodes">—</span> Episodes</div>
   </div>
 </div>
 
@@ -488,7 +498,6 @@ function renderSeasons(seasons) {
     const slug = (season.winner?.playerSlug || season.winner?.name || '').toLowerCase().replace(/[^a-z0-9]/g,'-');
     const winnerName = season.winner?.name || '—';
     const vote = season.winner?.vote || '';
-    const emoji = season.emoji || '🏝️';
     const title = season.title || `Total Drama Season ${season.seasonNumber}`;
     const subtitle = season.subtitle || season.theme || '';
     const eps = season.episodeCount || '—';
@@ -511,12 +520,12 @@ function renderSeasons(seasons) {
        src="${castArt(season, fmt, season.seasonNumber)}"
        alt="${showLabel(fmt, season.seasonNumber)} cast"
        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-  <div class="scard-photo-fallback" style="display:none">${emoji}</div>
+  <div class="scard-photo-fallback" style="display:none"><span>${(sw && sw.SHOWS[fmt]?.name) || 'Total Drama'}</span><b>${season.seasonNumber}</b></div>
 
   <div class="scard-body">
     <div class="scard-header">
       <div>
-        <div class="scard-num">${showLabel(fmt, season.seasonNumber)} ${emoji}</div>
+        <div class="scard-num">${showLabel(fmt, season.seasonNumber)}</div>
         <div class="scard-title">${title.replace(/^Total Drama[:\s]*/i,'')}</div>
         ${subtitle ? `<div class="scard-subtitle">${subtitle}</div>` : ''}
         <!-- WHEN it aired. The franchise has had a calendar since the life
@@ -532,7 +541,7 @@ function renderSeasons(seasons) {
              worse number for a season that already has one. -->
         ${season.ratings?.tier ? `<span class="scard-badge scard-tier tier-${season.ratings.tier.key}" title="Audience rating ${season.ratings.score} of 100">${season.ratings.tier.label}</span>` : ''}
         ${showShort ? `<span class="scard-badge season-show-badge">${showShort}</span>` : ''}
-        ${isMR ? '<span class="scard-badge recent">⭐ Latest</span>' : ''}
+        ${isMR ? '<span class="scard-badge recent">Latest</span>' : ''}
         ${status === 'Complete' ? '<span class="scard-badge complete">✓</span>' : ''}
       </div>
     </div>
@@ -540,11 +549,11 @@ function renderSeasons(seasons) {
     <div class="scard-winner">
       <div class="scard-winner-av">
         <img src="${faceSrc(season.winner?.playerSlug || season.winner?.name, slug)}" alt="${winnerName}"
-             onerror="this.style.display='none';this.parentElement.textContent='👑'"/>
+             onerror="this.parentElement.textContent=(this.alt||'?').slice(0,2).toUpperCase()"/>
       </div>
       <div class="scard-winner-info">
         <div class="scard-winner-label">Winner</div>
-        <div class="scard-winner-name">🏆 ${winnerName}</div>
+        <div class="scard-winner-name">${winnerName}</div>
       </div>
       ${vote ? `<div class="scard-winner-vote">${vote}</div>` : ''}
     </div>
@@ -621,17 +630,20 @@ function applyFilters() {
     ]);
     await switcherReady;
 
-    const [seasonsRes, franchiseRes] = await Promise.all([
+    // Players are counted from players_database.json, the same file the home
+    // page counts: franchise_database.json's summary is written less often and
+    // said 196 while the home page said 211.
+    const [seasonsRes, playersRes] = await Promise.all([
       fetch('seasons_database.json'),
-      fetch('franchise_database.json').catch(() => null)
+      fetch('players_database.json').catch(() => null)
     ]);
 
     const data = await seasonsRes.json();
-    const franchiseData = franchiseRes ? await franchiseRes.json().catch(() => null) : null;
+    const playersData = playersRes ? await playersRes.json().catch(() => null) : null;
 
     if (!data.seasons?.length) throw new Error('No seasons found');
 
-    const totalPlayers = franchiseData?.franchiseStats?.uniquePlayers || data.franchise?.totalPlayers || '—';
+    const totalPlayers = playersData?.players?.length || data.franchise?.totalPlayers || '—';
     const totalEps = data.seasons.reduce((sum, s) => sum + (s.episodeCount || 0), 0);
 
     document.getElementById('stat-seasons').textContent = data.seasons.length;

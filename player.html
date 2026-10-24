@@ -93,13 +93,6 @@
 <!-- SITE HEADER END -->
 
 <div class="container">
-  <div class="topbar">
-    <div>
-      <div class="brand">DC <span>Franchise</span> Database</div>
-      <div class="meta">Local static website • Click seasons + player profiles • Search + sort included</div>
-    </div>
-    <div class="meta">Season count: 5 • Player count: 58</div>
-  </div>
 
   
   <!-- Loading state -->
@@ -481,7 +474,7 @@ if (!playerId) {
       }
 
       // Update page title
-      document.title = player.name + ' – Profile';
+      document.title = player.name + ' · Blindside Network';
 
       // Render player profile
       renderPlayerProfile(player);
@@ -674,7 +667,7 @@ async function renderDebutProfile(id) {
   const name = (rp && rp.name) || (lp && lp.name) || id;
   const esc = t => String(t ?? '').replace(/[&<>"]/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  document.title = name + ' – Profile';
+  document.title = name + ' · Blindside Network';
 
   let age = null;
   if (rp && rp.birthdate && /^\d{4}-\d{2}-\d{2}$/.test(rp.birthdate)) {

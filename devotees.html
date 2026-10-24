@@ -406,18 +406,11 @@
 <main style="min-height:100vh; padding-bottom:100px;">
   <div class="container">
     
-    <div class="topbar">
-      <div>
-        <div class="brand">DC <span>Franchise</span> Database</div>
-        <div class="meta">Dynamic player profiles • Powered by JSON • Search & sort enabled</div>
-      </div>
-      <div class="meta" id="metaCounts">68 total players • 68 appearances</div>
-    </div>
     
    
 
     <div class="devotees-hero">
-      <h1>👥 All Players</h1>
+      <h1>All Players</h1>
       <p id="devoteesBlurb">Browse the complete roster</p>
     </div>
 
@@ -798,8 +791,9 @@ function showLiveBanner(live) {
   const el = document.createElement('div');
   el.className = 'live-banner';
   el.innerHTML = `<span class="dot"></span>
-    <span>Season ${live.seasonNumber}${live.title ? ' · ' + live.title : ''} is airing — episode ${live.episode}</span>
-    <span class="sub">${live.stillIn} of ${live.totalPlayers} still in</span>`;
+    <span>On air now${live.title ? ': ' + live.title : ''}</span>
+    <span class="sub">${live.stillIn} of ${live.totalPlayers} still in · its cast is included below</span>
+    <a class="sub" href="on-air.html" style="color:#FFC23D;font-weight:600;text-decoration:none;margin-left:auto">Follow the season</a>`;
   const host = document.querySelector('main') || document.body;
   host.insertBefore(el, host.firstChild);
 }

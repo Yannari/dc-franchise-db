@@ -29,6 +29,7 @@ import { formatFollowers, followersOfPersona } from './social/crowd.js';
 import { EPISODE_MS } from './social/events.js';
 
 const API = 'https://dc-studio.yannari19.workers.dev/api/social';
+const LIVE_API = 'https://dc-studio.yannari19.workers.dev/api/live-season';
 const ROOT = document.documentElement.getAttribute('data-root') || '.';
 
 // ── page state ────────────────────────────────────────────────────────
@@ -36,6 +37,9 @@ const S = {
   format: DEFAULT_FORMAT, season: null, episode: null,
   app: 'birdie', tab: 'for-you', channel: 'main-stage',
   db: {}, doc: null, stored: [], feed: { events: [], posts: [], source: 'archive' },
+  // The season on the air, by show: { number, players } once "Publish to site"
+  // has put its posts up. See airingSeason.
+  airing: {},
   hosts: [], panel: [], speakers: [], messages: [],
   // Watch Live: `clock` is where the episode is up to, in ms. Everything after
   // it is unreleased, which is what makes arrivals arrive.
@@ -157,12 +161,46 @@ function seasonOptions(db) {
       return ref ? { format: ref.format || DEFAULT_FORMAT, number: ref.number, title: s.title } : null;
     })
     .filter(Boolean)
+    .concat(Object.entries(S.airing).filter(([f, a]) => a && !(db.seasons?.seasons || []).some(x => {
+      const ref = parseSeasonRef(x.seasonId || x.seasonNumber);
+      return ref && (ref.format || DEFAULT_FORMAT) === f && ref.number === a.number;
+    })).map(([f, a]) => ({ format: f, number: a.number, title: 'airing now' })))
     .sort((a, b) => b.number - a.number);
+}
+
+/* ── A SEASON STILL BEING PLAYED ─────────────────────────────────────────
+   User, 2026-10-24: "im at ep3 and birdie still empty". Birdie opened only
+   published seasons: a season mid-airing has no season file yet, so it had no
+   episodes and showed the preseason card, even after "Publish to site" in the
+   Run tab had put every post it had into /api/social. The live standings say
+   which season is on the air (they do not say which show, so the show's own
+   posts confirm it), and the posts say which nights have aired. */
+let _live;
+async function airingSeason(format) {
+  try {
+    _live ||= fetch(LIVE_API).then(r => (r.ok ? r.json() : null)).catch(() => null);
+    const live = await _live;
+    const n = Number(live?.airing && live.seasonNumber);
+    if (!n) return null;
+    const posts = await loadStored(format, n);
+    return posts.length ? { number: n, players: (live.players || []).map(p => p.slug || p.name).filter(Boolean) } : null;
+  } catch { return null; }
+}
+
+/** Is there a season here at all: a published one, or one on the air. */
+const hasSeason = () => !!S.doc || S.stored.length > 0;
+
+/** The nights there are to read: the document's, or the aired season's posts. */
+function episodeList() {
+  const eps = episodesOf(S.doc, S.format);
+  if (eps.length || S.doc) return eps;
+  return [...new Set(S.stored.map(p => Number(p.episode)).filter(Number.isFinite))]
+    .sort((a, b) => a - b).map(episode => ({ episode, record: null }));
 }
 
 /** Who is playing right now — they cannot host, and they have no alumni status. */
 function airingCast(doc) {
-  if (!doc) return [];
+  if (!doc) return S.airing[S.format]?.number === S.season ? S.airing[S.format].players : [];
   return (doc.placements || []).map(p => p.playerSlug || p.name).filter(Boolean);
 }
 
@@ -172,7 +210,7 @@ async function loadEpisode() {
   S.doc = await loadSeasonDoc(format, season, { root: ROOT });
   S.stored = await loadStored(format, season);
 
-  const eps = episodesOf(S.doc, format);
+  const eps = episodeList();
   if (!S.episode || !eps.some(e => e.episode === S.episode)) {
     S.episode = eps.length ? eps[eps.length - 1].episode : null;
   }
@@ -339,7 +377,7 @@ function clearNew() { S.newIds = new Set(); }
 function setConn() {
   const el = $('conn'), t = $('conn-text');
   if (!el) return;
-  const state = !S.doc ? 'PRESEASON'
+  const state = !hasSeason() ? 'PRESEASON'
     : S.live ? 'LIVE'
     : S.clock < EPISODE_MS ? 'REPLAY'
     : S.feed.source === 'published' ? 'CAUGHT UP' : 'ARCHIVE';
@@ -782,7 +820,7 @@ function predictionRows(question) {
 }
 
 function renderPredictions() {
-  const preseason = !S.doc;
+  const preseason = !hasSeason();
   const qs = pollQuestions(S.format, { preseason });
   return `
     <p class="divider">Predictions</p>
@@ -806,7 +844,7 @@ function renderPredictions() {
 
 // ── the clock ─────────────────────────────────────────────────────────
 function clockBar() {
-  if (!S.doc || !S.episode) return '';
+  if (!hasSeason() || !S.episode) return '';
   return `
   <div class="clock">
     <button type="button" id="btn-live" aria-pressed="${S.live}">${S.live ? '⏸ Pause' : '▶ Watch Live'}</button>
@@ -823,7 +861,7 @@ function clockBar() {
 // ── empty and preseason states ────────────────────────────────────────
 function emptyFeed() {
   const w = words(S.format);
-  if (!S.doc) {
+  if (!hasSeason()) {
     // The honest preseason state: no fake weeks, no invented alumni, and it says
     // what WOULD be here and when.
     const visitors = S.panel.slice(0, 6).map(h => h.name).join(', ');
@@ -863,7 +901,7 @@ function emptyFeed() {
 
 // ── right rail ────────────────────────────────────────────────────────
 function renderRail() {
-  if (!S.doc || !S.feed.posts.length) return '';
+  if (!hasSeason() || !S.feed.posts.length) return '';
   const w = words(S.format);
   const trends = trendsFrom(S.feed.posts);
   const pulse = audiencePulse(S.feed.posts);
@@ -1079,7 +1117,7 @@ function fillPickers() {
     `<option value="${o.format}|${o.number}" ${o.format === S.format && o.number === S.season ? 'selected' : ''}>
       ${esc(words(o.format).short)} ${o.number}${o.title ? ' — ' + esc(o.title) : ''}</option>`).join('');
 
-  const eps = episodesOf(S.doc, S.format);
+  const eps = episodeList();
   $('pick-episode').innerHTML = eps.length
     ? eps.map(e => `<option value="${e.episode}" ${e.episode === S.episode ? 'selected' : ''}>
         ${esc(words(S.format).Episode)} ${e.episode}</option>`).join('')
@@ -1095,6 +1133,7 @@ function fillPickers() {
     json('rankings_database.json'), json('voice-profiles.json'),
   ]);
   S.db = { players, seasons, rankings, voices };
+  S.airing[S.format] = await airingSeason(S.format);
 
   if (!S.season) {
     const opts = seasonOptions(S.db).filter(o => o.format === S.format);
@@ -1111,6 +1150,7 @@ function fillPickers() {
     const show = e?.detail?.show;
     if (!show || show === ALL || show === S.format) return;
     S.format = show;
+    if (!(show in S.airing)) S.airing[show] = await airingSeason(show);
     const opts = seasonOptions(S.db).filter(o => o.format === show);
     S.season = opts.length ? opts[0].number : 1;
     S.episode = null;

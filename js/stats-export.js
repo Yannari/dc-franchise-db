@@ -5605,7 +5605,11 @@ export async function syncLiveEpisode(onStatus) {
 
   const snap = extractLiveSeasonSnapshot();
   const social = socialPublishPayload();
-  if (social) snap.social = social;
+  // Filed under the standings' season, always: the feed's own number is
+  // seasonConfig's, which is 0 on a season nobody numbered, while the standings
+  // asked. The posts then went up as season 0 and Birdie, which finds the
+  // airing season's posts by the standings' number, showed nothing.
+  if (social) snap.social = { ...social, season: snap.seasonNumber };
   // Says what it is actually sending. The standings are for this episode; the
   // feed is the whole season, and a status line that mentions only the episode
   // is why somebody has to ask whether their rebuild went out.

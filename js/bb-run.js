@@ -421,6 +421,11 @@ export function bbForcedCompsForWeek(epNum) {
     && (seasonConfig.twistSchedule || []).some(t => t?.source === 'theme' && t.type === 'bb-double-eviction' && Number(t.episode) === Number(epNum))) {
     forced.hoh = 'bb-social-zingbot';
   }
+  // BB21: the Zingbot came for Prank Week, as the veto.
+  if (!forced.veto && seasonConfig.theme === 'summer-camp'
+    && (seasonConfig.twistSchedule || []).some(t => t?.source === 'theme' && t.type === 'bb-americas-prankster' && Number(t.episode) === Number(epNum))) {
+    forced.veto = 'bb-social-zingbot';
+  }
   // BB26: Evil AINSLEY's first act on her return was to unleash the Zingbot, the week of her double.
   if (!forced.veto && seasonConfig.theme === 'machine-summer'
     && (seasonConfig.twistSchedule || []).some(t => t?.source === 'theme' && t.type === 'bb-double-eviction' && Number(t.episode) === Number(epNum))) {
@@ -507,7 +512,8 @@ export function bbTwistsForWeek(weekNum) {
   // overrule.
   const mode = seasonConfig.bbHaveNots || 'twist';
   const out = new Set(legal);
-  if (mode === 'every-week') out.add('bb-have-nots');
+  // ...from a given week (BB21's Have-Nots began in week four, in the old Camp Comeback room)
+  if (mode === 'every-week' && Number(weekNum) >= (Number(seasonConfig.bbHaveNotsFrom) || 1)) out.add('bb-have-nots');
   if (mode === 'off') out.delete('bb-have-nots');
   return [...out];
 }
@@ -1060,12 +1066,16 @@ export function simulateBBEpisode() {
     forcedCompetitions: bbForcedCompsForWeek(epNum),
     battleBackStyle: bbEntry?.bbStyle || 'gauntlet',
     battleBackCompetition: bbFindCompetition(bbEntry?.bbComp),
+    // only the first N evicted may fight (BB19's Battle Back was the first four)
+    battleBackCap: Number(bbEntry?.battleBackCap) || 0,
     pandorasPrize: boxEntry?.prize || undefined,
     roomGame: roomEntry?.game || undefined,
     temptationOffer: denEntry?.offer || 'random',
     americasNomineeStyle: anEntry?.anStyle === 'mvp' ? 'mvp' : 'direct',
     hiddenPowerId: hpEntry?.hidden || 'the-cloud',
     whacktivityDoors: whackEntry?.doors || 'auto',
+    // BB21: everybody chose a door in week one, and one named door opened each week
+    whacktivityOpen: whackEntry?.open || null,
     // The secret power competition authors its doors the same way.
     secretPowerDoors: spcEntry?.doors || 'auto',
     // Which package the audience is voting over. 'auto' runs the show's

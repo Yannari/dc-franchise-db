@@ -405,16 +405,18 @@ function nomScreen(act, ctx) {
   if (act.deadLastChair && noms.includes(act.deadLastChair)) outside[act.deadLastChair] = 'deadlast';
   const anN = act.americasChair || ctx.anAct?.nominee;
   if (anN && noms.includes(anN)) outside[anN] = 'america';
+  if (act.tcompChair && noms.includes(act.tcompChair)) outside[act.tcompChair] = 'tcomp';
+  if (act.pranksterChair && noms.includes(act.pranksterChair)) outside[act.pranksterChair] = 'prankster';
   const mine = noms.filter(n => !outside[n]);
   // In the Sanctum (BB27) there are no keys: the HOH sets a voodoo doll of each nominee on the table, by candlelight.
   const doll = !!ctx.sanctum;
   const steps = doll ? [
     { k: 'beat', t: 'The Sanctum, at an hour the Mastermind chose. Candles, a round table, and a voodoo doll of every houseguest still in the game.', toast: ['THE SANCTUM', '#e8dcc0'] },
     { k: 'voice', own: true, by: 'The Mastermind', vc: voiceOf('summer-of-mystery', 'hostile').color, t: `${hoh}, there are no keys tonight. Place the dolls of the houseguests you nominate on the table.` },
-    { k: 'say', by: hoh, t: `It is my responsibility as Head of Household to nominate ${word(mine.length)} houseguests for eviction.` },
+    { k: 'say', by: hoh, t: `It is my responsibility as Head of Household to nominate ${word(mine.length)} houseguest${mine.length === 1 ? '' : 's'} for eviction.` },
   ] : [
     { k: 'bb', t: 'This is the nomination ceremony.' },
-    { k: 'say', by: hoh, t: `This is the nomination ceremony. It is my responsibility as Head of Household to nominate ${word(mine.length)} houseguests for eviction.` },
+    { k: 'say', by: hoh, t: `This is the nomination ceremony. It is my responsibility as Head of Household to nominate ${word(mine.length)} houseguest${mine.length === 1 ? '' : 's'} for eviction.` },
     { k: 'say', by: hoh, t: `I will now turn my first key.` },
   ];
   const nwhy = nomWhy(act, hoh, mine, ctx.row);
@@ -431,6 +433,12 @@ function nomScreen(act, ctx) {
     else if (how === 'america') steps.push({ k: 'bb', t: 'There is one more key. America has nominated a houseguest.' },
       { k: 'beat', t: 'A key turns with nobody\'s hand on it. A face fills the last slot.', reveal: n, ...fin,
         why: [ctx.anAct?.mvp ? `Only you know: ${ctx.anAct.mvp} was voted Most Valuable Player and named ${n}.` : `The audience named ${n}. Nobody in the house did.`] });
+    else if (how === 'tcomp') steps.push({ k: 'bb', t: `${n} finished last in ${act.tcompBy || 'the competition'}, and takes the last chair.` },
+      { k: 'beat', t: 'The last key turns on its own.', reveal: n, ...fin });
+    else if (how === 'prankster') steps.push({ k: 'bb', t: `There is one more key, and it belongs to America's Prankster, ${act.prankster}.` },
+      { k: 'say', by: act.prankster, t: `My nominee is ${n}.` },
+      { k: 'beat', t: `${act.prankster} turns the key. ${n}'s face fills the last slot.`, reveal: n, ...fin },
+      { k: 'dr', by: n, t: pickBy(["A prank is a pie. Putting me on the block is not a prank.", 'America gave somebody a whoopee cushion and a nomination, and they used the nomination on me.'], `${ctx.week}|pr|${n}`) });
     else if (how === 'curse') steps.push({ k: 'bb', t: `${n}, there is one more key, and it is yours. You must nominate yourself.` },
       { k: 'beat', t: `${n} turns the last key. ${n}'s own face fills the slot.`, reveal: n, ...fin });
     else steps.push({ k: 'bb', t: `${n} finished last in the Head of Household competition, and takes the last chair.` },
@@ -1824,10 +1832,11 @@ function campScreens(act, ctx) {
   const size = act.size || 4;
   if (act.type === 'camp-comeback') {
     const a = act.arrival, nth = act.nth || (act.camp || []).length;
-    const steps = [{ k: 'beat', t: `The front door opens again, and ${a} is called back inside.` }];
+    const steps = [{ k: 'beat', t: act.htr ? `The front door opens, and ${a}, evicted on night one, walks back into the house.` : `The front door opens again, and ${a} is called back inside.` }];
     const rules = nth === 1;
     if (rules) {
-      steps.push({ k: 'host', by: ctx.host, t: `${a}, you have been evicted from the Big Brother house. But you are not leaving.` });
+      steps.push({ k: 'host', by: ctx.host, t: act.htr ? `${a}, you were the first houseguest to leave this summer. Tonight you are coming back in, but not into the game.`
+        : `${a}, you have been evicted from the Big Brother house. But you are not leaving.` });
       steps.push(
         { k: 'bb', t: `Houseguests, the first ${word(size)} people evicted this season will not leave the house.`, rule: 1 },
         { k: 'bb', t: 'They will live here as campers. Campers cannot compete, cannot vote and cannot be nominated.', rule: 2 },
@@ -2074,17 +2083,26 @@ function whackScreens(act, ctx) {
   const rooms = act.rooms || [];
   const open = rooms.find(r => r.powerId === act.openId);
   const n = rooms.length;
-  const steps = [
+  const steps = act.kept ? [
+    { k: 'bb', t: `Houseguests, in the first week you each chose a Whacktivity. Tonight's is ${open ? open.power : 'the next one'}, and the houseguests who chose it play now.`, rule: 1 },
+    { k: 'bb', t: 'The winner will be told in private. Nobody else will be told anything.', rule: 2 },
+  ] : act.fixedDoor ? [
+    { k: 'bb', t: `Houseguests, behind each of these ${word(n)} doors is a Whacktivity, a competition for a different power.`, rule: 1 },
+    { k: 'bb', t: `Choose one, now, for the whole summer. Up to ${word(5)} of you can play each one. ${act.hoh ? `${act.hoh}, as Head of Household, you cannot play.` : ''}`.trim(), rule: 2 },
+    { k: 'bb', t: 'One Whacktivity will be played each week. If you are evicted before yours, you never play it.', rule: 3 },
+    { k: 'bb', t: 'The winner will be told in private. Nobody else will be told anything.', rule: 4 },
+  ] : [
     { k: 'bb', t: `Houseguests, behind each of these ${word(n)} doors is a competition for a different power.`, rule: 1 },
     { k: 'bb', t: `Choose one door. Up to ${word(5)} of you can play each one. ${act.hoh ? `${act.hoh}, as Head of Household, you cannot play.` : ''}`.trim(), rule: 2 },
     { k: 'bb', t: 'Only one door will open tonight. You will not know which until you have chosen.', rule: 3 },
     { k: 'bb', t: 'The winner will be told in private. Nobody else will be told anything.', rule: 4 },
   ];
-  rooms.forEach((r, i) => {
+  if (!act.kept) rooms.forEach((r, i) => {
     const list = r.entrants || [];
     steps.push({ k: 'beat', t: list.length ? `${listOf(list)} ${list.length === 1 ? 'picks' : 'pick'} ${r.power}.` : `Nobody picks ${r.power}.`, whPick: i });
   });
-  if (open) steps.push({ k: 'bb', t: `The door that opens tonight is... ${open.power}.`, whOpen: rooms.indexOf(open), toast: ['ONE DOOR OPENS', '#ff8a3d'] });
+  if (open && !act.kept) steps.push({ k: 'bb', t: act.fixedDoor ? `The first Whacktivity is... ${open.power}.` : `The door that opens tonight is... ${open.power}.`, whOpen: rooms.indexOf(open), toast: ['ONE DOOR OPENS', '#ff8a3d'] });
+  else if (open) steps.push({ k: 'beat', t: `${listOf(open.entrants || [])} ${(open.entrants || []).length === 1 ? 'walks' : 'walk'} through the door.`, whOpen: rooms.indexOf(open) });
   // the players of the open door, heard only once it is known to be theirs
   for (const b of beats.filter(x => x.part === 'picked')) steps.push(...linesOf(b));
   for (const b of beats.filter(x => x.part === 'shut')) steps.push(...linesOf(b));
@@ -2524,6 +2542,39 @@ function doubleOrNothingScreen(act, ctx) {
   return { id: `bb-don-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: '23:00',
     kicker: 'Live · Backyard', title: 'Double or Nothing', label: 'Double or Nothing', sub: act.took ? (act.won ? 'Double' : 'Nothing') : 'Turned down', cast: [[a, 40], [b, 60]],
     rules: [['DOUBLE', 'the team is safe for two weeks'], ['NOTHING', 'the crown goes to the runner-up'], ['NO', 'safe this week only']], rulesTitle: 'DOUBLE OR NOTHING · HOW IT WORKS', steps };
+}
+
+// ── BB21's America's Field Trip and America's Prankster ─────────────────
+function fieldTripScreen(act, ctx) {
+  const host = ctx.host;
+  const [w, s2, l] = act.order || [];
+  const steps = [
+    { k: 'host', by: host, t: `Houseguests, America has voted, and it is sending three of you on a Field Trip: ${listOf(act.sent || [])}.`, rule: 1, toast: ["AMERICA'S FIELD TRIP", '#fcd34d'] },
+    { k: 'host', by: host, t: 'The three of you will compete. The winner is safe this week. Second place gets a punishment. Third place will be the third nominee.', rule: 2 },
+    { k: 'beat', t: 'Egscape the Coop. Each of the three is shut in a giant chicken coop in the yard, with a pile of eggs and one key hidden inside one of them. They crack eggs until somebody finds the key, unlocks the coop and hits the buzzer, and the next one out takes second.' },
+  ];
+  if (w) steps.push({ k: 'beat', t: `${w} is out of the coop first, and safe for the week.`, win: w, confetti: true, toast: ['SAFE', '#f5c542'], board: { title: 'THE FIELD TRIP', rows: (act.order || []).map((n, i) => ({ n, text: ['SAFE', 'CHICKEN SUIT', 'THIRD NOMINEE'][i] })) } });
+  if (s2) steps.push({ k: 'beat', t: `${s2} is second, and spends the week in a chicken suit.`, toast: ['PUNISHED', '#ff8a3d'] },
+    { k: 'dr', by: s2, t: pickBy(["I'm a chicken. For a week. I came so close to being safe and now I cluck.", 'Second place gets you a chicken suit. I am never going on a field trip again.'], `${ctx.week}|ft|${s2}`) });
+  if (l) steps.push({ k: 'beat', t: `${l} is last, and will be the third nominee.`, nom: [l], toast: ['THIRD NOMINEE', '#ff3355'] },
+    { k: 'dr', by: l, t: pickBy(["America sent me on that trip. America put me on the block. Thanks, America.", "I didn't ask to go. Now I'm sitting in the third chair because of a bunch of eggs."], `${ctx.week}|ftl|${l}`) });
+  return { id: `bb-fieldtrip-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: '12:00',
+    kicker: 'Cam 05 · Backyard', title: "America's Field Trip", label: "America's Field Trip", sub: 'Safe, chicken, or the block', cast: (act.order || []).map((n, i) => [n, [30, 50, 70][i]]),
+    rules: [['AMERICA', 'sends three'], ['FIRST', 'safe for the week'], ['SECOND', 'a punishment'], ['LAST', 'the third nominee']], rulesTitle: "AMERICA'S FIELD TRIP · HOW IT WORKS", steps };
+}
+
+function pranksterScreen(act, ctx) {
+  const host = ctx.host;
+  const p = act.prankster;
+  const steps = [
+    { k: 'host', by: host, t: `Houseguests, it is Prank Week. America has voted for a Prankster, and America's Prankster is ${p}.`, rule: 1, toast: ["AMERICA'S PRANKSTER", '#fcd34d'], shake: true },
+    { k: 'host', by: host, t: `${p}, you will be pranking this house all week. And this week the Head of Household names only one nominee. You name the other.`, rule: 2 },
+  ];
+  (act.marks || []).forEach((m, i) => steps.push({ k: 'beat', t: i === 0 ? `${m} walks into the kitchen and straight into a pie, courtesy of ${p}.` : `${m} opens the storage room door and a bucket of slime comes down. ${p} is already laughing.`, toast: ['PRANKED', '#9aa4b2'] }));
+  steps.push({ k: 'dr', by: p, t: pickBy(["America picked me to be the Prankster. I'm going to have so much fun, and somebody is going on the block for it.", "Pies, slime, and a nomination. Best week of my life."], `${ctx.week}|prk|${p}`) });
+  return { id: `bb-prankster-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '13:00',
+    kicker: 'Cam 04 · Living room', title: "America's Prankster", label: "America's Prankster", sub: 'Prank Week', cast: [[p, 50]],
+    rules: [['AMERICA', 'votes in a Prankster'], ['ALL WEEK', 'pranks on the house'], ['ONE NOMINEE', 'the Prankster names the second']], rulesTitle: "AMERICA'S PRANKSTER · HOW IT WORKS", steps };
 }
 
 // ── The Nightmare Power (Phase 7) ───────────────────────────────────────
@@ -3923,6 +3974,8 @@ export function truthTime(text, week) {
 // A theme's own names for the engine's mechanics (BB26 called the Block Buster's shape the AI Arena,
 // and its Saboteur the AI Instigator).
 const THEME_WORDS = {
+  'summer-camp': [[/\bThe Veto Redraw\b/g, 'The Chaos Power'], [/\bthe Veto Redraw\b/g, 'the Chaos Power'],
+    [/\bThe Diamond Power of Veto\b/g, 'The Panic Power'], [/\bthe Diamond Power of Veto\b/g, 'the Panic Power']],
   'machine-summer': [[/\ba (?=(?:saboteur|Saboteur|SABOTEUR)\b)/g, 'an '], [/\bA (?=(?:saboteur|Saboteur)\b)/g, 'An '], [/\bBLOCK BUSTER\b/g, 'AI ARENA'], [/\bBlock Buster\b/g, 'AI Arena'], [/\bblock buster\b/g, 'AI Arena'],
     [/\bSABOTEUR\b/g, 'AI INSTIGATOR'], [/\bSaboteur\b/g, 'AI Instigator'], [/\bsaboteur\b/g, 'AI Instigator']],
 };
@@ -4218,6 +4271,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         beatsOf(act); break;
       // the offer comes once the crown is won, so it airs after the competition
       case 'double-or-nothing': ctx.pendingDon = act; break;
+      case 'field-trip': flush(); ceremony(fieldTripScreen(act, ctx)); beatsOf(act); break;
+      case 'americas-prankster': flush(); ceremony(pranksterScreen(act, ctx)); beatsOf(act); break;
       case 'split-house': flush(); for (const scr of splitScreens(act, ctx, KIT)) ceremony(scr); ctx.split = act; beatsOf(act); break;
       // High Roller's money
       case 'bb-bucks': flush(); for (const scr of bucksScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;

@@ -165,6 +165,8 @@ describe('Summer Camp', () => {
     'bb-whacktivity': /three doors|one of three/i,
     'bb-camp-comeback': /Camp Comeback/i,
     'bb-double-eviction': /double eviction|two.*one night/i,
+    'bb-americas-field-trip': /Field Trip/i,
+    'bb-americas-prankster': /Prankster/i,
   };
 
   it('is registered in the engine and offered in the config', () => {
@@ -191,13 +193,12 @@ describe('Summer Camp', () => {
   });
 
   it('carries the arc to the end of the season', () => {
-    // High Roller's shipped stopping at fromEnd:4 and had to be sent back for
-    // it. Every theme should have something in the last fortnight.
+    // BB21 1:1 (2026-10-24): its last twist was the final-seven double eviction (fromEnd 4).
     const ends = theme().arc
       .filter(a => a.book && a.at && typeof a.at.fromEnd === 'number')
       .map(a => a.at.fromEnd);
-    expect(Math.min(...ends), 'nothing is booked in the last fortnight')
-      .toBeLessThanOrEqual(2);
+    expect(Math.min(...ends), 'the arc stops before the endgame')
+      .toBeLessThanOrEqual(4);
   });
 
   it('turns the register with both anchor forms', () => {

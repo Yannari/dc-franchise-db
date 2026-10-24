@@ -457,6 +457,29 @@ export const BB_TWIST_CONTRACTS = {
       sting: 'Every temptation comes with a consequence.',
     },
   },
+  // BB21's two audience twists.
+  'bb-americas-field-trip': {
+    id: 'bb-americas-field-trip', layer: 'scheduled', category: 'nomination-power',
+    timing: 'week-opening', duration: { weeks: 1 },
+    rules: { fieldTrip: true },
+    acquisition: { channel: 'audience', secrecy: 'public' },
+    announcement: {
+      name: "America's Field Trip",
+      rule: 'America has voted to send three of you on a Field Trip, and the three will compete. The winner is safe this week. The runner-up gets a punishment. The loser is the third nominee.',
+      sting: 'Pack a lunch.',
+    },
+  },
+  'bb-americas-prankster': {
+    id: 'bb-americas-prankster', layer: 'scheduled', category: 'nomination-power',
+    timing: 'week-opening', duration: { weeks: 1 },
+    rules: { prankster: true },
+    acquisition: { channel: 'audience', secrecy: 'public' },
+    announcement: {
+      name: "America's Prankster",
+      rule: 'It is Prank Week. America has voted for a Prankster, who will be pranking this house all week. And this week the Head of Household names only one nominee: America\'s Prankster names the other.',
+      sting: 'Keep your eyes open, and your mouth shut.',
+    },
+  },
   // BB23's teams: captains, a draft, and a team's safety for the first four weeks.
   'bb-teams': {
     id: 'bb-teams', layer: 'season', category: 'power-structure',

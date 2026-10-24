@@ -295,6 +295,8 @@ export default {
     // final eleven and a final seven; one house size later here (fromEnd n is
     // a final n+3), because a fourteen-houseguest summer has no week free for
     // a double between the Battle Back and the Tree otherwise.
+    // (a proportional backstop, so a short cast still turns before its end)
+    { at: { frac: 0.6 }, mood: 'hostile' },
     { at: { fromEnd: 7 }, mood: 'hostile' },
     { at: { fromEnd: 7 }, book: 'bb-double-eviction' },
     { at: { fromEnd: 6 }, book: 'bb-tree-of-temptation' },

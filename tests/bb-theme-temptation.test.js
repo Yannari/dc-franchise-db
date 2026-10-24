@@ -111,12 +111,18 @@ describe('the arc it actually books', () => {
     // eight (week 5), 4 a final seven (week 6) — where the double goes, because
     // it takes two and has to leave five standing — and 2 a final five
     // (week 8), where the season's last offer is.
+    // BB19's running order since 2026-10-24 ("1:1 of the real show"): the button, three Dens,
+    // the Battle Back the same week as the last Den, then the endgame. A nine-week season is too
+    // short for the first double and the first Tree, which the arc drops rather than reorders.
     expect(mine).toEqual([
+      [1, 'bb-temptation-premiere'],
       [2, 'bb-den-of-temptation'],
-      [3, 'bb-have-nots'],
-      [5, 'bb-pandoras-box'],
-      [6, 'bb-double-eviction'],
-      [8, 'bb-den-of-temptation'],
+      [3, 'bb-den-of-temptation'],
+      [4, 'bb-den-of-temptation'],
+      [4, 'bb-battle-back'],
+      [5, 'bb-tree-of-temptation'],
+      [6, 'bb-tree-of-temptation'],
+      [7, 'bb-double-eviction'],
     ]);
   });
 
@@ -124,10 +130,10 @@ describe('the arc it actually books', () => {
   // as a grant. Booking it directly would fail the registry test in
   // bb-themes.test.js; this pins the other half — that the arc still gets it
   // into the house, via the distributor that hands powers out.
-  it('reaches the Halting Hex through Pandora rather than booking it', () => {
+  it('offers the Halting Hex in the third Den, as BB19 did, rather than booking it', () => {
     play();
-    const box = seasonConfig.twistSchedule.find(t => t.type === 'bb-pandoras-box');
-    expect(box.prize).toBe('halting-hex');
+    const offers = seasonConfig.twistSchedule.filter(t => t.type === 'bb-den-of-temptation').map(t => t.offer);
+    expect(offers).toEqual(['pendant-of-protection', 'ring-of-replacement', 'halting-hex']);
     expect(seasonConfig.twistSchedule.some(t => t.type === 'halting-hex')).toBe(false);
     expect(TWIST_CATALOG.some(c => c.id === 'halting-hex')).toBe(false);
   });
@@ -178,7 +184,8 @@ describe('the arc holds its shape at every cast size', () => {
 
     // One week, one theme act. The old dedupe was `episode:book`, so two
     // DIFFERENT acts landing on one week was not counted as a collision.
-    const byWeek = out.map(e => Number(e.episode));
+    // ...except the Battle Back, authored `alongside` the last Den (BB19 ran them a night apart)
+    const byWeek = out.filter(e => e.type !== 'bb-battle-back').map(e => Number(e.episode));
     expect(new Set(byWeek).size, `two theme acts share a week: ${byWeek}`).toBe(byWeek.length);
 
     // Strictly increasing, and inside the season.
@@ -201,10 +208,11 @@ describe('the arc holds its shape at every cast size', () => {
     }
   });
 
-  it.each(CASTS)('cast %i: the Den always opens the season', size => {
+  it.each(CASTS)('cast %i: the $25,000 button always opens the season', size => {
     const out = themeScheduleEntries(THEME(), { weeks: size - 3, existing: [] });
     expect(out.length, 'the arc booked nothing at all').toBeGreaterThan(0);
-    expect(out[0].type).toBe('bb-den-of-temptation');
+    expect(out[0].type).toBe('bb-temptation-premiere');
+    expect(Number(out[0].episode)).toBe(1);
   });
 
   it.each(CASTS)('cast %i: the Den hardens, and before the endgame', size => {
@@ -224,7 +232,8 @@ describe('the arc holds its shape at every cast size', () => {
 
     const de = themeScheduleEntries(THEME(), { weeks, existing: [] })
       .find(e => e.type === 'bb-double-eviction');
-    if (de) expect(turned, 'it turned at or after the endgame').toBeLessThan(Number(de.episode));
+    // BB19's temptations stop being free with the first double: the turn is that week at the latest
+    if (de) expect(turned, 'it turned after the endgame').toBeLessThanOrEqual(Number(de.episode));
   });
 
   // The engine-level guarantee, not this theme's: a week the user booked is
@@ -339,9 +348,10 @@ describe('the Den stops asking', () => {
     // backstop is the earlier of the two, at week five. It has to be: 62% of
     // nine weeks lands after the endgame has already begun, and a Den that
     // hardens once the bill has arrived has escalated to nothing.
-    advanceThemeArc(4, 9);
+    // On a nine-week season the first double's week (fromEnd 7) is week three, and the turn is there.
+    advanceThemeArc(2, 9);
     expect(themeState().mood).toBe('neutral');
-    advanceThemeArc(5, 9);
+    advanceThemeArc(3, 9);
     expect(themeState().mood).toBe('hostile');
     // And it stays turned — a heel turn is not a one-week costume.
     advanceThemeArc(7, 9);
@@ -350,13 +360,14 @@ describe('the Den stops asking', () => {
 
   it('changes what the Den says when it turns', () => {
     play();
-    const calm = themeVoice('open', { week: 6 }).line;
-    advanceThemeArc(6, 9);
-    const said = themeVoice('open', { week: 6 });
+    // the turn is the first double's week: week three of a nine-week season
+    const calm = themeVoice('open', { week: 3 }).line;
+    advanceThemeArc(3, 9);
+    const said = themeVoice('open', { week: 3 });
     expect(said.line).not.toBe(calm);
     expect(said.mood).toBe('hostile');
     // Really from the hostile pool, not merely a different neutral draw.
-    const fill = t => t.replace('{week}', '6');
+    const fill = t => t.replace('{week}', '3');
     expect(THEME().antagonist.voice.open.hostile.map(fill)).toContain(said.line);
   });
 

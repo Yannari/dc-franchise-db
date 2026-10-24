@@ -1,32 +1,19 @@
-// Summer Camp.
+// Summer Camp: Big Brother 21, played 1:1 (user, 2026-10-24: "they have to be
+// perfect 1:1 of the real show with all the prose twist text moment"). From the
+// wiki's season page, its Game History table and the twist pages:
 //
-// BB21, and the cheapest theme on the list to build because almost all of it
-// was already here: `whacktivity.js` and `camp-comeback.js` shipped long before
-// this file, both registered, both with engines. What the season was missing
-// was its NIGHT ONE — and that turned out to be the only part worth writing
-// from scratch, because it is the only twist in this catalogue that hands out
-// power by ELECTION (`js/bb/camp-director.js`).
-//
-// ── THE SPEC'S TABLE WAS WRONG, AND THIS IS THE CORRECTION ─────────────
-//
-// The design doc listed BB21 as "Camp Director, Whacktivity, Camp Comeback,
-// Prank Week". There is no Prank Week in BB21. The wiki gives four twists and
-// this arc books the three that are real plus the competition that carries the
-// first eviction:
-//
-//   Camp Director   night one, the house ELECTS one, who banishes four
-//   Hit The Road    those four battle; the slowest is evicted before the
-//                   first crown (built into the Camp Director act)
-//   Whacktivity     weeks 1-3, five to a room, one secret power
-//   Camp Comeback   evictees keep living in the house, then battle to return
-//
-// All three canon doors are real now. The Chaos Power is `veto-redraw` and the
-// Panic Power is `diamond-veto`, both of which predate this theme; the Nightmare
-// Power was built for it (`js/bb/nightmare-power.js`) and is the first thing in
-// this engine that can UNDO a ceremony which has already happened. The arc asks
-// for those three BY NAME through the schedule entry rather than taking the
-// shelf's default first three — a Summer Camp running somebody else's powers is
-// a camp skin rather than the season.
+//   night one   the house elects a Camp Director (Jackson), who banishes four to
+//               Hit The Road; the slowest (David) is evicted on the spot
+//   weeks 1-3   everybody picks one of three Whacktivities, once; one opens a
+//               week: Nightmare, then Chaos, then Panic (Ovi, Jack, Christie)
+//   weeks 1-4   Camp Comeback: the first four evicted stay in the house, the
+//               night-one evictee walking back in to join them, and battle for
+//               one place back when the fourth arrives (Cliff)
+//   week 4 on   Have-Nots, in the old Camp Comeback room
+//   week 7      America's Field Trip (voted in week six): safe, chicken suit,
+//               third nominee
+//   week 9      America's Prankster and Prank Week (the Zingbot came too)
+//   week 10     a double eviction, final seven to five
 //
 // ── THE ANTAGONIST ────────────────────────────────────────────────────
 //
@@ -78,33 +65,19 @@ export default {
       + 'and often — right up until the announcements stop.',
     rules: [
       'Night one, before anything else: the houseguests elect a Camp Director. Nobody competes for it. '
-        + 'It is a vote taken by people who have known each other for one afternoon, so it goes to '
-        + 'whoever seems warmest and least dangerous.',
-      'The Camp Director then banishes FOUR houseguests to Hit The Road — named out loud, in front of '
-        + 'everybody — and those four run a scramble in the backyard. The slowest is evicted '
-        + 'immediately, before a single Head of Household has been crowned. The three who survive walk '
-        + 'back inside bound together, and none of them has to wonder whose idea it was.',
-      'The three doors hold three different powers and they are not equal. One VOIDS a nomination '
-        + 'ceremony that has already happened: the camp is woken in the middle of the night, the two '
-        + 'nominees come down, and the Head of Household has to name two different people on the '
-        + 'spot with the first two now untouchable. One forces the veto players to be drawn again. '
-        + 'One hands the veto winner a second veto that also takes the replacement nomination away '
-        + 'from the Head of Household. None of the three is ever traced back to whoever won it.',
-      'For the first few weeks, five houseguests at a time choose one of three doors and compete '
-        + 'behind it for a secret power. You pick your door before you know who else picked it, so the '
-        + 'power everybody wants is the one you have to beat four people for — and only one room opens '
-        + 'each week, so the quiet door might be the only one that plays. Winners are told in private '
-        + 'and the camp is told nothing, but everybody saw who walked in.',
-      'The houseguests voted out early do not go home. They move into Camp Comeback — a camper\'s '
-        + 'uniform, a bad bed, and no competitions, no vote and no nominations — and go on living '
-        + 'alongside the people who evicted them. A camper has total information, no stake and nothing '
-        + 'to lose, which makes them the only honest person in the building. When the last one arrives, '
-        + 'all of them play for a single place back in the game.',
-      'Late in the summer there is a double eviction: a whole week — competition, nominations, '
-        + 'veto and vote — run in one sitting, with two campers going home in a single night and '
-        + 'nobody given a day to count anything.',
-      'Nothing at this camp is announced as a punishment. It is an activity, and you are going to enjoy '
-        + 'it.',
+        + 'It is a vote taken by people who have known each other for one afternoon.',
+      'The Camp Director then banishes four houseguests to Hit The Road, named out loud, and those four '
+        + 'race in the backyard. The slowest is evicted on the spot, before anybody is Head of Household.',
+      'In the first week everybody picks one of three Whacktivities, and five play each. One opens a week: '
+        + 'Nightmare (it voids a nomination ceremony in the middle of the night), then Chaos (redraw the veto '
+        + 'players), then Panic (hold a veto that also names the replacement). Winners are told in private.',
+      'The first four voted out do not go home. They move into Camp Comeback: a camper\'s uniform, a bad '
+        + 'bed, no competitions, no vote, no nominations, and the people who evicted them in the next room. '
+        + 'When the fourth arrives, the four play for one place back in the game.',
+      'Week seven: America sends three houseguests on a Field Trip. The winner is safe, the runner-up '
+        + 'wears a chicken suit for the week, and the loser is the third nominee.',
+      'Then Prank Week: America votes for a Prankster, who pranks the camp all week and names the second '
+        + 'nominee. Late in the summer, a double eviction.',
     ],
     watch: 'Watch the person the camp elected. They were chosen on night one for being the least '
       + 'frightening person in the building, and the job made them point at four people before anybody '
@@ -235,57 +208,29 @@ export default {
   // above it is REFUSED rather than shifted — so the fixed week-one card leads
   // and everything end-anchored follows.
   arc: [
-    // Night one, and the only place it can ever run: `runCampDirector` is
-    // gated to week 1 in `js/bb/week.js` because the election is a read of a
-    // house that does not know itself yet.
+    // BB21's running order (see the header).
     { at: { week: 1 }, book: 'bb-camp-director' },
-
-    // Weeks 1-3 on the broadcast, and the cadence is what keeps the early
-    // season busy — the same job the wrapped boxes do on High Roller's.
-    // `untilFromEnd: 8` stops it well before the endgame: a secret power won at
-    // a final seven is a different, much later twist than the one BB21 ran.
-    // ── THE FIRST DOOR, THEN THE CAMPERS, THEN THE REST OF THE DOORS ──
-    //
-    // Written as week 2, week 3, and a cadence from week 4, rather than as one
-    // cadence with Camp Comeback dropped into the middle of it. A recurrence is
-    // expanded IN FULL before the next act is considered, and an act landing at
-    // or before the one above it is refused — so a cadence running 2, 4, 6 with
-    // a week-3 act listed under it does not interleave. The week-3 act is
-    // simply refused, on every cast size, with only a console warning to say
-    // so. Camp Comeback was being dropped from its own theme exactly that way.
-    //
-    // Canon order anyway: Whacktivity ran from week one, and Camp Comeback
-    // opened after the second eviction.
+    { at: { week: 1 }, alongside: true, book: 'bb-camp-comeback' },
+    { at: { week: 1 }, alongside: true, book: 'bb-whacktivity',
+      options: { doors: ['nightmare-power', 'veto-redraw', 'diamond-veto'], open: 'nightmare-power' } },
     { at: { week: 2 }, book: 'bb-whacktivity',
-    options: { doors: ['nightmare-power', 'veto-redraw', 'diamond-veto'] } },
+      options: { doors: ['nightmare-power', 'veto-redraw', 'diamond-veto'], open: 'veto-redraw' } },
+    { at: { week: 3 }, book: 'bb-whacktivity',
+      options: { doors: ['nightmare-power', 'veto-redraw', 'diamond-veto'], open: 'diamond-veto' } },
 
-    // The campers. It runs across the first four evictions from wherever it
-    // starts, so it goes down early and wants room to finish.
-    { at: { week: 3 }, book: 'bb-camp-comeback' },
-
-    // And the rest of the doors, from the week after the campers move in.
-    { every: 2, from: 4, untilFromEnd: 8, book: 'bb-whacktivity',
-    options: { doors: ['nightmare-power', 'veto-redraw', 'diamond-veto'] } },
-
-    // The announcements stop. Both anchor forms, and the EARLIER one turns the
-    // season — on every cast up to sixteen weeks that is `fromEnd`, which is a
-    // house size wearing a calendar's clothes and is the right instinct here:
-    // the camp goes quiet when the camp gets small.
+    // The Head Counsellor goes quiet from the Field Trip on (a proportional anchor as the backstop on a long cast).
     { at: { frac: 0.55 }, mood: 'hostile' },
     { at: { fromEnd: 7 }, mood: 'hostile' },
-
-    // A double eviction late, and the closing card at `fromEnd: 2` so the last
-    // fortnight is themed — the gap High Roller's shipped with and had to be
-    // sent back for. A double takes TWO, so it sits at 4 to leave 2 reachable.
+    { at: { fromEnd: 7 }, book: 'bb-americas-field-trip' },
+    { at: { fromEnd: 5 }, book: 'bb-americas-prankster' },
     { at: { fromEnd: 4 }, book: 'bb-double-eviction' },
-    { at: { fromEnd: 2 }, book: 'bb-whacktivity',
-    options: { doors: ['nightmare-power', 'veto-redraw', 'diamond-veto'] } },
   ],
 
-  books: ['bb-camp-director', 'bb-whacktivity', 'bb-camp-comeback', 'bb-double-eviction'],
-  // The camp likes its own competitions. Nothing here is exclusive and nothing
-  // is banned: every one of these composes with an ordinary week.
-  weights: { 'bb-whacktivity': 1.6, 'bb-camp-comeback': 1.3 },
+  // Have-Nots from week four, as BB21 ran them; no Block Buster.
+  seasonKnobs: { bbHaveNots: 'every-week', bbHaveNotsFrom: 4, bbSafetyMode: 'off' },
+
+  books: ['bb-camp-director', 'bb-camp-comeback', 'bb-whacktivity', 'bb-americas-field-trip', 'bb-americas-prankster', 'bb-double-eviction'],
+  weights: {},
   bans: [],
   exclusive: [],
 };

@@ -163,7 +163,7 @@ function appeal(name, powerId, { nominees = [], hoh = null, rng = Math.random } 
  * Format Designer, so any power added to the registry can be competed for
  * with no new code.
  */
-export function runWhacktivity({ week, house, hoh, nominees = [], rng = Math.random, offered = [] } = {}) {
+export function runWhacktivity({ week, house, hoh, nominees = [], rng = Math.random, offered = [], open = null } = {}) {
   const room = (house || []).filter(Boolean);
   // Deduped, because the doors are authored one at a time now and the same
   // power standing behind two of them would collapse two rooms into one set
@@ -181,7 +181,14 @@ export function runWhacktivity({ week, house, hoh, nominees = [], rng = Math.ran
   const picks = {};
   shelf.forEach(id => { picks[id] = []; });
   const satOut = [];
-  for (const name of eligible) {
+  // BB21: the fifteen chose their Whacktivity ONCE, in week one, and one named room opened each
+  // week after (Nightmare, then Chaos, then Panic). A season told which door opens keeps the
+  // first week's choices, minus anybody who has since left the house.
+  const kept = open && gs.bb?.whackPicks ? gs.bb.whackPicks : null;
+  if (kept) {
+    for (const id of shelf) picks[id] = (kept[id] || []).filter(p => room.includes(p.name) && p.name !== hoh).map(p => ({ ...p }));
+  }
+  for (const name of (kept ? [] : eligible)) {
     const scored = shelf.map(id => ({ id, want: appeal(name, id, { nominees, hoh, rng }) }))
       .sort((a, b) => b.want - a.want);
     const best = scored[0];
@@ -194,10 +201,13 @@ export function runWhacktivity({ week, house, hoh, nominees = [], rng = Math.ran
   }
 
   // Five to a room, and the five who wanted it most get in.
-  for (const id of shelf) {
+  if (!kept) for (const id of shelf) {
     picks[id].sort((a, b) => b.want - a.want);
     const overflow = picks[id].splice(WHACK_CAP);
     overflow.forEach(o => satOut.push(o.name));
+  }
+  if (open && !kept) {
+    (gs.bb ||= {}).whackPicks = Object.fromEntries(shelf.map(id => [id, picks[id].map(p => ({ ...p }))]));
   }
 
   // ── which room opens tonight ──
@@ -212,9 +222,10 @@ export function runWhacktivity({ week, house, hoh, nominees = [], rng = Math.ran
   // Preference goes to a room with somebody in it, so the twist does not
   // resolve to "nothing happened" while five people stand in the next corridor.
   const stocked = shelf.filter(id => picks[id].length);
-  const openId = stocked.length
-    ? stocked[Math.floor(rng() * stocked.length)]
-    : shelf[Math.floor(rng() * shelf.length)];
+  const openId = open && shelf.includes(open) ? open
+    : stocked.length
+      ? stocked[Math.floor(rng() * stocked.length)]
+      : shelf[Math.floor(rng() * shelf.length)];
 
   // ── the rooms ──
   const rooms = [];
@@ -307,6 +318,8 @@ export function runWhacktivity({ week, house, hoh, nominees = [], rng = Math.ran
   return {
     type: 'whacktivity', week: weekNum, secret: true,
     offered: shelf, openId, rooms, satOut: [...satOut], hoh,
+    // BB21's shape: one choice in week one, one named door a week (`kept` = the choices are last week's)
+    fixedDoor: !!open, kept: !!kept,
     beats,
   };
 }

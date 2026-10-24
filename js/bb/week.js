@@ -3463,7 +3463,7 @@ export function simulateBBWeek(options = {}) {
         ? wanted
         : Object.keys(BB_POWER_DEFINITIONS).slice(0, 3);
       week.whacktivity = runWhacktivity({
-        week, house, hoh, nominees: [], rng, offered: doors,
+        week, house, hoh, nominees: [], rng, offered: doors, open: options.whacktivityOpen || null,
       });
       if (week.whacktivity) {
         week.acts.push(addBeats(week.whacktivity,
@@ -3683,6 +3683,37 @@ export function simulateBBWeek(options = {}) {
   // Anybody but the HOH may opt in; the winner is safe for the week, last place is the third nominee.
   let temptationLastSeat = null;
   const _epNow = (gs.episodeHistory?.length || 0) + 1;
+  // ── BB21: America's Field Trip ──
+  // "During Week 6, America will vote to send three houseguests on a 'Field Trip' ... the winner
+  // gets immunity, the runner-up gets a punishment, and the loser becomes the 3rd nominee."
+  // America sends the three it most wants to watch; the Head of Household cannot go.
+  if (!compressed && twists.has('bb-americas-field-trip') && (options.segment || 1) <= 1) {
+    try {
+      const pool = house.filter(n => n !== hoh && !keySafe.includes(n));
+      const w = n => Math.max(0.3, 3 + (gs.popularity?.[n] || 0) * 0.6 + rng() * 2);
+      const sent = pool.slice().sort((a, b) => w(b) - w(a)).slice(0, 3);
+      if (sent.length === 3) {
+        const st = n => pStats(n) || {};
+        const sc = Object.fromEntries(sent.map(n => [n, Math.round(((st(n).physical || 5) * 0.4 + (st(n).mental || 5) * 0.3 + (st(n).endurance || 5) * 0.3 + rng() * 4) * 10) / 10]));
+        const order = sent.slice().sort((a, b) => sc[b] - sc[a]);
+        const [winner, second, last] = order;
+        keySafe = [...keySafe, winner];
+        temptationLastSeat = last;
+        gs.popularity ||= {};
+        gs.popularity[winner] = (gs.popularity[winner] || 0) + 0.8;
+        gs.popularity[second] = (gs.popularity[second] || 0) + 0.6;   // the country loves a chicken
+        try { addBond(second, winner, -0.3); addBond(last, winner, -0.5); } catch { /* */ }
+        week.fieldTrip = { sent, winner, second, last };
+        week.acts.push(addBeats({
+          type: 'field-trip', week: week.num, sent, scores: sc, order, winner, second, last,
+          beats: [
+            { text: `America sends ${sent.join(', ')} on the Field Trip.`, players: sent, badgeText: "AMERICA'S FIELD TRIP", badgeClass: 'gold', part: 'sent' },
+            { text: `${winner} wins it and is safe; ${second} spends the week in a chicken suit; ${last} is the third nominee.`, players: order, badgeText: 'SAFE, CHICKEN, BLOCK', badgeClass: 'red', part: 'result' },
+          ],
+        }, { players: order }));
+      }
+    } catch (err) { (week._fieldTripError ||= []).push(String(err?.message || err)); }
+  }
   if (!compressed && (gs.bb?.temptationCompWeeks || []).includes(_epNow) && (options.segment || 1) <= 1) {
     try {
       const tc = runTemptationCompetition({ week, house, hoh, protectedNames: [...keySafe, ...rivalsSafe], rng });
@@ -3872,9 +3903,19 @@ export function simulateBBWeek(options = {}) {
     }
   }
 
+  // ── BB21: America's Prankster ──
+  // America voted for a Prankster, who spent Prank Week pranking the house and named the second
+  // nominee beside the Head of Household's one (Nick named Christie). The Prankster is America's
+  // favourite, and can be on the block themselves.
+  let pranksterSeat = null;
+  if (!compressed && twists.has('bb-americas-prankster') && (options.segment || 1) <= 1) {
+    const pool = house.filter(n => n !== hoh);
+    const pr = pool.slice().sort((a, b) => ((gs.popularity?.[b] || 0) + rng()) - ((gs.popularity?.[a] || 0) + rng()))[0] || null;
+    if (pr) { pranksterSeat = pr; week.prankster = { name: pr }; }
+  }
   // How many the Head of Household actually gets to name.
   const hohSeats = Math.max(1, nomineeCount
-    - (curseSeat && !week.temptation?.curseAdds ? 1 : 0) - (deadLastSeat ? 1 : 0));
+    - (curseSeat && !week.temptation?.curseAdds ? 1 : 0) - (deadLastSeat ? 1 : 0) - (pranksterSeat ? 1 : 0));
 
   // `duoBlock` already guarantees both halves are in the house and neither is
   // protected, so this no longer re-filters the pair — that filter is exactly
@@ -3947,6 +3988,31 @@ export function simulateBBWeek(options = {}) {
   if (curseSeat && !nominees.includes(curseSeat)) nominees.push(curseSeat);
   if (deadLastSeat && !nominees.includes(deadLastSeat)) nominees.push(deadLastSeat);
   if (temptationLastSeat && !nominees.includes(temptationLastSeat) && house.includes(temptationLastSeat)) nominees.push(temptationLastSeat);
+  if (pranksterSeat) {
+    try {
+      const pr = pranksterSeat;
+      const pick = chooseReplacement(pr, house, [hoh, ...untouchable, ...nominees, pr].filter(Boolean), chooseNominationPlan(pr, house, rng), rng)
+        || house.find(n => n !== hoh && n !== pr && !nominees.includes(n) && !untouchable.includes(n));
+      // and the week's pranks: somebody gets a pie, somebody gets slime, and both know who did it
+      const marks = house.filter(n => n !== pr).sort(() => rng() - 0.5).slice(0, 2);
+      for (const m of marks) { try { addBond(m, pr, -0.3); } catch { /* */ } }
+      gs.popularity ||= {};
+      gs.popularity[pr] = (gs.popularity[pr] || 0) + 1;
+      if (pick) {
+        nominees.push(pick);
+        try { addBond(pick, pr, -1.4); } catch { /* */ }
+        week.prankster = { name: pr, nominee: pick, marks };
+        week.acts.push(addBeats({
+          type: 'americas-prankster', week: week.num, prankster: pr, nominee: pick, hohNominee: nominees[0], marks,
+          beats: [
+            { text: `America votes ${pr} its Prankster.`, players: [pr], badgeText: "AMERICA'S PRANKSTER", badgeClass: 'gold', part: 'voted' },
+            ...marks.map((m, i) => ({ text: i === 0 ? `${pr} hits ${m} with a pie.` : `${pr} slimes ${m}.`, players: [pr, m], badgeText: 'PRANKED', badgeClass: 'grey', part: 'prank' })),
+            { text: `${pr} names ${pick} as the second nominee.`, players: [pr, pick], badgeText: "THE PRANKSTER'S NOMINEE", badgeClass: 'red', part: 'nominee' },
+          ],
+        }, { players: [pr, pick, ...marks], nominees: [pick] }));
+      }
+    } catch (err) { (week._pranksterError ||= []).push(String(err?.message || err)); }
+  }
   // ── BB ROADKILL: the third key nobody's hand is on ──
   //
   // Everybody plays, one at a time and out of sight of the rest, and only the
@@ -4535,7 +4601,13 @@ export function simulateBBWeek(options = {}) {
     // responsibility to nominate TWO people" and turns two keys for a block
     // the Head of Household only chose half of.
     hohNominees: nominees.filter(n => n !== week.temptationChair
-      && n !== week.roadkill?.nominee && n !== week.deadLastNominee && n !== week.americasNominee?.nominee),
+      && n !== week.roadkill?.nominee && n !== week.deadLastNominee && n !== week.americasNominee?.nominee
+      && n !== (week.temptationComp?.last || week.fieldTrip?.last) && n !== week.prankster?.nominee),
+    // BB19's Temptation Competition and BB21's Field Trip seat their last place; BB21's Prankster names one
+    tcompChair: week.temptationComp?.last || week.fieldTrip?.last || null,
+    tcompBy: week.fieldTrip ? "America's Field Trip" : week.temptationComp ? 'the Temptation Competition' : null,
+    pranksterChair: week.prankster?.nominee || null,
+    prankster: week.prankster?.name || null,
     curseChair: week.temptationChair || null,
     roadkillChair: week.roadkill?.nominee || null,
     deadLastChair: week.deadLastNominee || null,
@@ -8021,6 +8093,19 @@ export function simulateBBWeek(options = {}) {
       return living > 0 && living < CAMP_SIZE;
     } catch { return false; }
   })();
+  // BB21: David, out on night one, walked back in to join Ovi in Camp Comeback after the first
+  // eviction. A Comeback booked in week one takes the Hit the Road evictee in first.
+  if (!compressed && twists.has('bb-camp-comeback') && evicted && week.campDirector?.evicted && !campers().length) {
+    try {
+      const htr = week.campDirector.evicted;
+      const back = sendToCamp({ week, evicted: htr, house, rng });
+      if (back) {
+        back.htr = true;
+        week.acts.push(addBeats(back, { players: [htr] }));
+        gs.jury = (gs.jury || []).filter(n => n !== htr);
+      }
+    } catch { /* the camp opens with one */ }
+  }
   if (!compressed && (twists.has('bb-camp-comeback') || _campFilling) && evicted) {
     try {
       const camped = sendToCamp({ week, evicted, house, rng });

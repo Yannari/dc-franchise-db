@@ -277,8 +277,8 @@ export default {
     { every: 1, from: 2, untilWeek: 4, untilFromEnd: 8, book: 'bb-wildcard' },
 
     { at: { fromEnd: 8 }, mood: 'hostile' },
-    { at: { fromEnd: 8 }, book: 'bb-high-rollers-room', options: { roomGame: 'veto-derby' } },
-    { at: { fromEnd: 7 }, book: 'bb-high-rollers-room', options: { roomGame: 'chopping-block-roulette' } },
+    { at: { fromEnd: 8 }, book: 'bb-high-rollers-room', options: { game: 'veto-derby' } },
+    { at: { fromEnd: 7 }, book: 'bb-high-rollers-room', options: { game: 'chopping-block-roulette' } },
     { at: { fromEnd: 6 }, book: 'bb-coin-of-destiny' },
     { at: { fromEnd: 5 }, book: 'bb-double-eviction' },
     { at: { fromEnd: 3 }, book: 'bb-double-eviction' },

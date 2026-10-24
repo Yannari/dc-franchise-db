@@ -304,7 +304,7 @@ describe('the floor has a schedule', () => {
   });
 
   it('opens the room on the Veto Derby, then the Roulette, then sells the Coin', () => {
-    const rooms = theme().arc.filter(a => a.book === 'bb-high-rollers-room').map(a => a.options?.roomGame);
+    const rooms = theme().arc.filter(a => a.book === 'bb-high-rollers-room').map(a => a.options?.game);
     expect(rooms).toEqual(['veto-derby', 'chopping-block-roulette']);
     expect(arcBooks().filter(b => b === 'bb-coin-of-destiny')).toHaveLength(1);
     expect(arcBooks().filter(b => b === 'bb-double-eviction')).toHaveLength(2);

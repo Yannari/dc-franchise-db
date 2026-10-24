@@ -356,7 +356,16 @@ export function reanchorThemeArc(epNum, houseSize) {
  * does, so "a week you booked is yours" survives both the rebook below and the
  * sweep above.
  */
+// Knobs only a theme ever sets (no control in the config panel). They describe ONE season's
+// running order (Summer Camp's Have-Nots from week four, Machine's Instigator from week six), so a
+// season under any other theme, or none, must not inherit them from the last one.
+const THEME_ONLY_KNOBS = ['bbHaveNotsFrom', 'bbSaboteurStartWeek'];
+function clearThemeOnlyKnobs(theme) {
+  for (const k of THEME_ONLY_KNOBS) if (!(theme?.seasonKnobs && k in theme.seasonKnobs)) delete seasonConfig[k];
+}
+
 function stripThemeBookings() {
+  clearThemeOnlyKnobs(null);
   const sched = seasonConfig.twistSchedule;
   if (!Array.isArray(sched) || !sched.some(t => t?.source === 'theme')) return;
   seasonConfig.twistSchedule = sched.filter(t => t?.source !== 'theme');
@@ -401,6 +410,7 @@ export function stampThemeArc(castSize) {
   if (!weeks) return [];
   const entries = themeScheduleEntries(theme, { weeks, existing: yours });
   seasonConfig.twistSchedule = [...yours, ...entries];
+  clearThemeOnlyKnobs(theme);
 
   // ── SEASON-LONG TWISTS THE THEME TURNS ON ──────────────────────────────
   //
@@ -521,6 +531,7 @@ export function installTheme(houseSize) {
   // season-long settings (Machine's AI Arena and Instigator, Mystery's Block
   // Buster): without this a season started straight from the picker played the
   // arc's cards and none of the rules around them.
+  clearThemeOnlyKnobs(theme);
   for (const [key, value] of Object.entries(theme.seasonKnobs || {})) seasonConfig[key] = value;
   // No `said: []`. It was carried from the original sketch of the antagonist as
   // something that remembered its own lines, nothing ever appended to it, and

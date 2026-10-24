@@ -317,6 +317,10 @@ describe('in a played week', () => {
       const den = (ep.acts || []).find(a => a.type === 'temptation');
       if (!den?.accepted) continue;
       accepted++;
+      // BB19's other two consequences land at once and seat nobody: three Ve-Toads, or the
+      // Temptation Competition. Each must still be there, said out loud.
+      if (den.curse?.id === 've-toads') { expect(den.vetoads, `seed ${seed}: no Ve-Toads`).toHaveLength(3); continue; }
+      if (den.curse?.id === 'temptation-competition') { expect((den.beats || []).some(b => b.part === 'tcomp'), `seed ${seed}: the competition was never announced`).toBe(true); continue; }
       const curseAct = (ep.acts || []).find(a => a.type === 'temptation-curse');
       expect(curseAct, `seed ${seed}: a curse was announced and never resolved`).toBeTruthy();
       if (curseAct.missed) { missed++; continue; }

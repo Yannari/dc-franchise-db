@@ -99,7 +99,10 @@ export function writeCeremony(act, week, house, extra = {}) {
   }
 
   if (act.type === 'nominations' && !act.anonymous && !act.duo?.blocks?.length) {
-    const noms = (act.nominees || []).filter(Boolean);
+    // the Head of Household speaks to the people THEY nominated: a chair a curse, a competition, the
+    // audience or a Prankster filled is not theirs to explain
+    const notMine = [act.curseChair, act.roadkillChair, act.deadLastChair, act.americasChair, act.tcompChair, act.pranksterChair].filter(Boolean);
+    const noms = (act.nominees || []).filter(Boolean).filter(n => !notMine.includes(n));
     if (hoh && noms.length >= 2) {
       const target = noms.includes(act.target) ? act.target : null;
       const backdoor = act.backdoorTarget && !noms.includes(act.backdoorTarget);

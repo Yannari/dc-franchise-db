@@ -83,9 +83,28 @@ export function brandFooter() {
     + `<a href="index.html" class="bs-footer-brand" aria-label="${BRAND.name} home">${brandMark({ id: 'bsf', animated: false })}`
     + `<span>${BRAND.name}</span></a>`
     + `<nav aria-label="Footer">${links.map(([h, l]) => `<a href="${h}">${l}</a>`).join('')}</nav>`
-    + `<p>blindsidenetwork.com · A fictional network. Every show, season and player here is simulated.</p>`
+    + `<p>blindsidenetwork.com · A fictional network. Every show, season and player here is simulated. · <a href="index.html?ident">Play the ident</a></p>`
     + `</div></footer>`;
 }
+
+/**
+ * The ident's gate, inlined into each page's <head> (js/ident.js plays it).
+ *
+ * Runs before the body paints: on the first visit of the day (or with ?ident
+ * in the address) it hides the page so the ident opens ONTO it rather than the
+ * page flashing up first. It unhides after four seconds whatever happens, so a
+ * failed module can never leave a blank site.
+ */
+// It also loads js/ident.js ITSELF, straight away: through the header's module
+// graph a cold first visit took longer than the four-second safety, so the
+// page sat dark and then no ident played. (No backslashes in here: this is a
+// template literal, and `\b` in one is a backspace character.)
+export const IDENT_BOOT = `<script>/* Blindside ident gate: js/ident.js */(function(){try{`
+  + `var q=/[?&]ident([=&]|$)/.test(location.search),d=new Date().toDateString(),r=matchMedia('(prefers-reduced-motion: reduce)').matches;`
+  + `if(q||(!r&&localStorage.getItem('bs_ident_day')!==d)){var h=document.documentElement;h.classList.add('bs-ident-on');`
+  + `var s=document.createElement('script');s.type='module';s.src=(h.getAttribute('data-root')||'.')+'/js/ident.js';document.head.appendChild(s);`
+  + `setTimeout(function(){h.classList.remove('bs-ident-on')},4000)}}catch(e){}})();</script>`
+  + `<style>.bs-ident-on body>*:not(.bs-ident){visibility:hidden}.bs-ident-on body{background:#0b0613}</style>`;
 
 /**
  * The favicon: the static mark on a plum tile, so it reads on light and dark
@@ -126,6 +145,7 @@ export const BRAND_CSS = `
 .bs-footer nav a{color:#A898BD;text-decoration:none;font-size:14px}
 .bs-footer nav a:hover{color:#F3EEF9}
 .bs-footer p{grid-column:1/-1;margin:0;color:#7E6F93;font-size:12.5px}
+.bs-footer p a{color:#A898BD;text-decoration:none}.bs-footer p a:hover{color:#F3EEF9;text-decoration:underline}
 @media (max-width:640px){.bs-footer-inner{grid-template-columns:1fr}.bs-footer nav{justify-content:flex-start}}
 @media (prefers-reduced-motion:no-preference){
   .bs-mark.is-animated .bs-slice{animation:bs-hit 1.15s .25s cubic-bezier(.2,.8,.2,1) both}

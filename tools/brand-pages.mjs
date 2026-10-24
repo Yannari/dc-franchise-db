@@ -11,7 +11,7 @@
 //     card becomes the Simulator link, the <title> takes the network's name,
 //     and the head links the icons
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { brandLockup, simulatorLink, faviconSvg, brandMark, brandFooter, BRAND, BRAND_CSS } from '../js/brand.js';
+import { brandLockup, simulatorLink, faviconSvg, brandMark, brandFooter, BRAND, BRAND_CSS, IDENT_BOOT } from '../js/brand.js';
 import { navHtml, activeHref } from '../js/site-header.js';
 
 const SUFFIX = ` · ${BRAND.name}`;
@@ -115,6 +115,12 @@ for (const [file, title] of Object.entries(TITLES)) {
   // The first <title>, which is the page's own (later ones live in templates).
   s = s.replace(/<title>[^<]*<\/title>/, `<title>${title === BRAND.name ? title : title + SUFFIX}</title>`);
   if (!s.includes('assets/brand/favicon.svg')) s = s.replace(/<\/title>/, `</title>\n  ${HEAD_LINKS}`);
+  // The ident's gate, on network pages only (the simulator is the studio, and
+  // the Ridonculous Race page is a show's own room). Replaced on every run.
+  s = s.replace(/\n?\s*<script>\/\* Blindside ident gate[\s\S]*?<\/style>/, '');
+  if (!['simulator.html', 'rr.html'].includes(file)) {
+    s = s.replace('<link rel="manifest" href="site.webmanifest">', `<link rel="manifest" href="site.webmanifest">\n  ${IDENT_BOOT}`);
+  }
 
   if (s !== before) write(file, s);
   report.push(`${file.padEnd(24)} lockup:${s.includes('class="bs-brand"') ? 'y' : '-'} sim:${s.includes('class="bs-sim"') ? 'y' : '-'} oldbrand:${/brand-section|stats-badge/.test(s) ? 'LEFT' : 'gone'}`);

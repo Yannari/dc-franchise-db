@@ -58,7 +58,7 @@ describe('the Rewind and the White Locust on the stepped stage', () => {
       expect(S.steps.slice(0, 4).map(st => st.rule)).toEqual([1, 2, 3, 4]);
       const ends = S.steps.filter(st => st.wlRound && st.wlRound[1] !== 'up').map(st => [st.wlRound[0], st.wlRound[1]]);
       expect(ends).toEqual(act.rounds.map(r => [r.target, r.made ? 'made' : 'out']));
-      expect(S.steps.at(-1).t).toContain(`${act.hoh}, you were the fastest`);
+      expect(S.steps.at(-1).t).toContain(act.hoh === act.safe ? `${act.hoh}, nobody survived` : `${act.hoh}, of everybody who survived a call-out, you were the fastest`);
     }
   });
 

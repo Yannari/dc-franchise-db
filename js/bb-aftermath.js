@@ -496,6 +496,14 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
   if (!evictee) return null;
   const house = (week.houseAtStart || []).filter(Boolean);
   const read = readOfTheRoom(evictee, week, house);
+  // A PUBLIC vote (BB27's Sanctum: every needle in front of the nominees) leaves
+  // nothing to guess: the evictee watched each vote land, so "who do you think
+  // did it" and "what if your friend voted against you" are questions with
+  // answers the whole house already saw.
+  if (week?.publicVote) {
+    read.betrayedByAlly = [];
+    read.correct = true;
+  }
   const p = pronouns(evictee);
   // Big Brother's host is Valeria, not Chris. seasonConfig.host is the Total
   // Drama setting and defaults to Chris, so inheriting it put the wrong person

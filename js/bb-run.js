@@ -410,11 +410,17 @@ export const BB_TWIST_IDS = new Set(
  */
 export function bbForcedCompsForWeek(epNum) {
   const entry = (seasonConfig.bbCompSchedule || [])
-    .find(c => c && Number(c.episode) === Number(epNum));
-  if (!entry) return undefined;
+    .find(c => c && Number(c.episode) === Number(epNum)) || {};
   const forced = {};
   if (entry.hoh) forced.hoh = entry.hoh;
   if (entry.veto) forced.veto = entry.veto;
+  // BB27: the Zingbot broke into the Hotel Mystère the week of the double
+  // eviction, and the Mastermind destroyed him to set up that Head of
+  // Household competition. A designer's own pin still wins.
+  if (!forced.hoh && seasonConfig.theme === 'summer-of-mystery'
+    && (seasonConfig.twistSchedule || []).some(t => t?.source === 'theme' && t.type === 'bb-double-eviction' && Number(t.episode) === Number(epNum))) {
+    forced.hoh = 'bb-social-zingbot';
+  }
   return Object.keys(forced).length ? forced : undefined;
 }
 

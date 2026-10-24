@@ -718,9 +718,10 @@ export function themeTwistAnnouncement(announcement, ctx = {}) {
   const week = Number(ctx.week || 0);
   if (!theme || !st || !announcement?.twist || !week) return null;
 
+  const episode = Number(ctx.episode || 0);
   const owned = (seasonConfig.twistSchedule || []).some(entry =>
     entry?.source === 'theme'
-    && Number(entry.episode) === week
+    && (Number(entry.episode) === week || (episode && Number(entry.episode) === episode))
     && entry.type === announcement.twist);
   if (!owned) return null;
 

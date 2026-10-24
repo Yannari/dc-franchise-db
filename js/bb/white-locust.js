@@ -29,6 +29,27 @@ import { gs, players, seasonConfig } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond, getBond, getPerceivedBond } from '../bonds.js';
 import { stableRng } from './knowledge.js';
+import { activeSeasons, seasonKeyParts } from '../franchise-meta.js';
+
+/**
+ * The resort's concierge. BB27's was Tyler Crispen, a runner-up and fan
+ * favourite from an earlier season, who ran the stay and the elimination
+ * himself. Ours is the franchise's most recent fan favourite who is not in
+ * this house; with no franchise history there is no concierge, and Big
+ * Brother runs the resort as before.
+ */
+export function conciergeOf(house = []) {
+  try {
+    // Latest last in the ledger: insertion order is the order they were played.
+    const seasons = Object.entries(activeSeasons() || {}).filter(([, v]) => v)
+      .map(([k, v]) => ({ ...v, _n: Number(seasonKeyParts(k, v)?.num) || 0 })).reverse();
+    for (const s of seasons) {
+      const fav = s.fanFavorite?.name || s.fanFavorite;
+      if (fav && typeof fav === 'string' && !house.includes(fav)) return fav;
+    }
+  } catch { /* no franchise */ }
+  return null;
+}
 
 /** The task each round asks for, and the two stats it leans on. */
 const TASKS = [
@@ -165,9 +186,11 @@ export function runCallOutChain(week, house, { rng = Math.random } = {}) {
   // ── the crown ──
   // "Of the players who completed the competition and survived, the person to
   // do so in the fastest time would be made the new HOH." The safety winner is
-  // eligible too — they completed a turn, they simply did it first.
-  const eligible = [{ name: safe, time: safetyTimes[0].t }, ...survivors];
-  const hoh = [...eligible].sort((a, b) => a.time - b.time)[0].name;
+  // NOT one of them: in BB27 Ava won safety and started the chain, and Lauren,
+  // the fastest of the three who survived a call-out, was HOH (the wiki's
+  // White Locust table). Only when nobody survived a turn does the crown fall
+  // back to the safety winner, the one person still standing.
+  const hoh = survivors.length ? [...survivors].sort((a, b) => a.time - b.time)[0].name : safe;
 
   // ── consequences ──
   //
@@ -198,6 +221,7 @@ export function runCallOutChain(week, house, { rng = Math.random } = {}) {
     hoh,
     act: {
       type: 'white-locust',
+      concierge: conciergeOf(pool),
       safe, safetyTask: safetyTask.name, safetyTime: safetyTimes[0].t,
       rounds, evicted, hoh,
       survivors: survivors.map(s => ({ ...s })),

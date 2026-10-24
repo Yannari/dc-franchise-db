@@ -148,11 +148,13 @@ describe('the arc at every cast this game casts', () => {
       // Chronological, and never two acts on one week.
       expect([...eps].sort((a, b) => a - b)).toEqual(eps);
       expect(new Set(eps).size).toBe(eps.length);
-      // No nine-week silences in the middle — the failure the cadence exists
-      // for, reported off a real timeline.
-      const gaps = eps.slice(1).map((e, i) => e - eps[i]);
-      if (cast >= 16) expect(Math.max(...gaps)).toBeLessThanOrEqual(3);
-      expect(entries.length).toBeGreaterThanOrEqual(cast >= 16 ? 5 : 4);
+      // BB27's real running order and nothing invented between: the premiere,
+      // the week-two powers, then the Month of Mayhem (White Locust, the
+      // double, the Sanctum). The weeks between are the Block Buster's, which
+      // the theme turns on rather than books (user, 2026-10-24: "1:1 of the
+      // real show").
+      const books = entries.filter(e => e.type).map(e => e.type);
+      expect(books).toEqual(['bb-premiere-mystery', 'bb-secret-power-comp', 'bb-white-locust', 'bb-double-eviction', 'bb-sanctum-week']);
     });
   }
 });
@@ -209,9 +211,9 @@ describe('a season that actually plays', () => {
   it('runs the arc, escalates, and reaches a final three', () => {
     house({ bbSafetyMode: 'block-buster' });
     stampThemeArc(NAMES.length);
-    // The accomplice is a season knob the theme turns on rather than a card.
-    expect(seasonConfig.bbSaboteur).toBe('random');
-    expect(seasonConfig.bbSaboteurBankWeek).toBe(4);
+    // The Block Buster all season; the Accomplice is premiere night's, not the season-long Saboteur.
+    expect(seasonConfig.bbSafetyMode).toBe('block-buster');
+    expect(seasonConfig.bbSaboteur).toBe('off');
 
     const fired = [];
     withSeededRandom(414, () => {
@@ -230,7 +232,7 @@ describe('a season that actually plays', () => {
 
     const at = type => fired.find(f => f.type === type);
     expect(at('bb-secret-power-comp'), 'the powers week never ran').toBeTruthy();
-    expect(at('bb-hidden-power'), 'nothing was ever hidden in the house').toBeTruthy();
+    expect(at('bb-hidden-power'), 'BB27 hid no power in the building').toBeFalsy();
     // The two that carry the theme's stated promise.
     expect(at('bb-white-locust').house, 'the first sacrifice missed a final nine').toBe(9);
     expect(at('bb-double-eviction').house, 'the double missed a final seven').toBe(7);

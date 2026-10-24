@@ -44,7 +44,8 @@ describe('powers played and never played, on the stepped stage', () => {
   it('names the power and what it does first, then plays the engine’s scene', () => {
     for (const { ep, act } of played()) {
       const S = bbWeekSteps(ep).find(s => s.kind === 'power' && s.id.includes(act.powerId));
-      expect(S.steps[0].t).toContain(act.name);
+      // The relic is recovered, not played (BB27's premiere): Big Brother names it as the relic.
+      expect(S.steps[0].t).toContain(act.powerId === 'hoh-gatekeeper' ? 'Head of Household relic' : act.name);
       expect(S.steps[0].k).toBe('bb');
       if (act.powerId === 'hoh-gatekeeper') {
         expect(S.steps.some(st => st.pwMark === 'relic' && (act.eligible || []).every(n => st.t.includes(n)))).toBe(true);

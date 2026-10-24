@@ -25,6 +25,109 @@ import { pStats, pronouns } from '../players.js';
 import { addBond } from '../bonds.js';
 import { grantPower } from './powers.js';
 import { stableRng } from './knowledge.js';
+import { careerOf } from '../franchise-meta.js';
+
+// ── THE REST OF BB27'S PREMIERE ───────────────────────────────────────
+//
+// User, 2026-10-24: the themes "have to be perfect 1:1 of the real show".
+// The hunts were all this file played; the wiki's premiere has two more acts
+// after them, and the night is not BB27's without both:
+//
+//   THE MYSTERY HOUSEGUEST  a past winner, Rachel Reilly, revealed at the end
+//                           of the night as the seventeenth houseguest. Here:
+//                           the cast's most decorated veteran (a past winner
+//                           first), held out of the move-in and the hunts and
+//                           walked in once they are over. A cast with no
+//                           veteran has no mystery houseguest — inventing a
+//                           returnee would be the one thing this cannot do.
+//   THE SECRET ACCOMPLICE   one of the new houseguests helped the Mastermind
+//                           all night (Amy set the timer that cut the lights
+//                           and made the relic vanish with a remote). The rest,
+//                           the returnee included, vote to unmask them: caught,
+//                           and they are evicted on the spot; missed (BB27 voted
+//                           11-5 for the wrong person), and they play on as a
+//                           houseguest whose secret the house never learns.
+const PLAYERS_ARCH = new Set(['villain', 'mastermind', 'schemer']);
+const NICE_ARCH = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const archOf = n => { try { return (globalThis.players || []).find(p => p.name === n)?.archetype || null; } catch { return null; } };
+
+/** The cast's most decorated veteran, or null. A past winner outranks any number of seasons. */
+export function mysteryHouseguestOf(cast) {
+  const scored = [];
+  for (const n of cast || []) {
+    let career = [];
+    try { career = careerOf(n) || []; } catch { career = []; }
+    if (!career.length) continue;
+    const won = career.filter(c => c.rec?.winner).length;
+    const finals = career.filter(c => c.rec?.finalist).length;
+    scored.push({ n, score: won * 100 + finals * 20 + career.length * 5, won: won > 0,
+      where: (career.find(c => c.rec?.winner) || career[career.length - 1]).where });
+  }
+  scored.sort((a, b) => b.score - a.score || a.n.localeCompare(b.n));
+  return scored[0] || null;
+}
+
+/**
+ * Who could have been the Accomplice: somebody allowed to scheme. The
+ * franchise rule (CLAUDE.md): villain archetypes may, nice ones never do, a
+ * neutral one only with strategic >= 6 and loyalty <= 4.
+ */
+function accompliceOf(cast, r) {
+  const ok = cast.filter(n => {
+    const a = archOf(n);
+    if (NICE_ARCH.has(a)) return false;
+    if (PLAYERS_ARCH.has(a)) return true;
+    return stat(n, 'strategic') >= 6 && stat(n, 'loyalty') <= 4;
+  });
+  if (!ok.length) return null;
+  // Proportional: the cooler head is the likelier recruit.
+  const w = ok.map(n => 1 + stat(n, 'strategic') * 0.4 + (10 - stat(n, 'temperament')) * 0.1);
+  let x = r() * w.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < ok.length; i++) { x -= w[i]; if (x <= 0) return ok[i]; }
+  return ok[ok.length - 1];
+}
+
+/**
+ * The unmasking vote. Everybody but the Accomplice suspects somebody; the two
+ * most suspected go to a vote, and the majority names one of them.
+ *
+ * What a suspect looked like on the night is the only evidence anybody has:
+ * who was hard to find while the lights were out, who was too calm, who
+ * nobody had spoken to yet. The Accomplice's own cover is how strategic and
+ * how even-tempered they are, so a careful one is rarely the first name.
+ */
+function unmaskVote(cast, accomplice, guest, hunts, r) {
+  const voters = cast.filter(n => n !== accomplice);
+  const seenTalking = new Set(hunts.flatMap(h => (h.events || []).filter(e => e.kind === 'together').flatMap(e => e.players)));
+  const look = n => {
+    let s = 1 + (10 - stat(n, 'social')) * 0.12 + stat(n, 'strategic') * 0.08 + (seenTalking.has(n) ? -0.4 : 0.3);
+    if (n === accomplice) s += 0.6 - stat(n, 'strategic') * 0.05 - stat(n, 'temperament') * 0.04;
+    return Math.max(0.2, s);
+  };
+  const tally = {};
+  for (const v of voters) {
+    const pool = cast.filter(n => n !== v && n !== guest);
+    let best = null, bestS = -1;
+    for (const n of pool) {
+      let bond = 0;
+      try { bond = Number(globalThis.getBond?.(v, n)) || 0; } catch { bond = 0; }
+      const s = look(n) * (0.6 + r() * 0.9) - bond * 0.08;
+      if (s > bestS) { bestS = s; best = n; }
+    }
+    if (best) tally[best] = (tally[best] || 0) + 1;
+  }
+  const two = Object.entries(tally).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 2).map(([n]) => n);
+  if (two.length < 2) return null;
+  const votes = {};
+  for (const v of voters) {
+    if (two.includes(v)) { votes[v] = two.find(n => n !== v); continue; }
+    const s = two.map(n => look(n) * (0.6 + r() * 0.9) - (Number(globalThis.getBond?.(v, n)) || 0) * 0.08);
+    votes[v] = s[0] >= s[1] ? two[0] : two[1];
+  }
+  const count = Object.fromEntries(two.map(n => [n, Object.values(votes).filter(x => x === n).length]));
+  const named = count[two[0]] >= count[two[1]] ? two[0] : two[1];
+  return { suspects: two, votes, count, named, caught: named === accomplice };
+}
 
 // The rooms of a hotel nobody has been in for an hour. Each carries a
 // different kind of hiding place, which is why who searches where matters.
@@ -178,10 +281,14 @@ function runHunt({ team, target, targetName, draw, api }) {
  * eight this is four people looking for two things, which is not a mystery.
  */
 export function runPremiereMystery(week, house, { rng = Math.random } = {}) {
-  const cast = (house || []).filter(Boolean);
-  if (cast.length < 8) return null;
+  const everyone = (house || []).filter(Boolean);
+  if (everyone.length < 8) return null;
 
   const r = stableRng('premiere-mystery', gs?.bb?.seasonSalt || 0, week.num);
+  // The returnee walks in after the hunts, so they are not in either group.
+  const guestPick = everyone.length >= 9 ? mysteryHouseguestOf(everyone) : null;
+  const guest = guestPick?.n || null;
+  const cast = everyone.filter(n => n !== guest);
 
   // ── HOW THE TWO GROUPS FORM ──────────────────────────────────────────
   //
@@ -298,11 +405,33 @@ export function runPremiereMystery(week, house, { rng = Math.random } = {}) {
     try { addBond(n, hostWinner, -0.4); } catch { /* night one, barely anybody */ }
   }
 
+  // ── the returnee, then the Accomplice ──
+  const accomplice = accompliceOf(cast, r);
+  const vote = accomplice ? unmaskVote(everyone, accomplice, guest, [relicHunt, hostHunt], r) : null;
+  if (vote) {
+    // Being named in front of the house costs the named one with everybody who
+    // named them, whether or not they did it.
+    for (const [v, t] of Object.entries(vote.votes)) { try { addBond(v, t, -0.5); } catch { /* */ } }
+    if (vote.caught) {
+      if (seasonConfig?.popularityEnabled !== false) { gs.popularity ||= {}; gs.popularity[accomplice] = (gs.popularity[accomplice] || 0) - 2; }
+    } else {
+      // The wrong one was named, and knows exactly who did it.
+      const wronged = vote.named;
+      for (const [v, t] of Object.entries(vote.votes)) if (t === wronged) { try { addBond(wronged, v, -0.6); } catch { /* */ } }
+    }
+  }
+  (gs.bb ||= {}).accomplice = accomplice ? { name: accomplice, caught: !!vote?.caught, week: week.num } : null;
+
   return {
     relicWinner, hostWinner, relicTeam, hostTeam,
+    accomplice, accompliceCaught: !!vote?.caught,
     act: {
       type: 'premiere-mystery',
       relicWinner, hostWinner,
+      // The returnee and the Accomplice (see the head of this file).
+      mysteryGuest: guest ? { name: guest, won: !!guestPick.won, where: guestPick.where } : null,
+      accomplice: accomplice ? { name: accomplice, jobs: ['lights', 'relic'] } : null,
+      unmask: vote ? { suspects: vote.suspects, votes: vote.votes, count: vote.count, named: vote.named, caught: vote.caught } : null,
       relicTeam: [...relicTeam], hostTeam: [...hostTeam],
       // Said on the screen, because a rule the audience cannot see is a rule
       // the audience assumes is rigged.

@@ -49,22 +49,21 @@ export default {
   // same season explained to the viewer, and the only place they are told who
   // the Mastermind is. `rules` must stay true of what the arc books.
   primer: {
-    what: 'A season with an author inside it. The house has been dressed as a grand hotel full of doors '
-      + 'that were not there yesterday, and somebody took the host on the first night, stole the '
-      + 'crown, and planted an accomplice in the cast before anybody had unpacked. Then he left them '
-      + 'alone for two months.',
+    what: 'A season with an author inside it. The house is the Hotel Mystère, full of secrets and hidden '
+      + 'passageways, and on the first night somebody took the host, stole the Head of Household relic, '
+      + 'and had help doing it from inside the cast. Then he left them alone for two months.',
     who: 'The Mastermind. He is not a houseguest, he is not the building, and he is not playing the '
       + 'game — he is writing it. For most of the summer the hotel is merely too pleased to have you. '
       + 'Then he comes back to run the last month himself.',
     rules: [
-      'Real powers are hidden in the building all season. Nobody is told where, only that they exist, '
-        + 'and looking for one is something everybody else can see you doing.',
-      'One of the cast has been working for him since night one. The others are told somebody is, and '
-        + 'never told who.',
-      'His endgame is a stated number rather than a mood: he takes people out of the game himself '
-        + 'until the count is where he said it would be.',
-      'He takes one week entirely — the ceremonies move to times of his choosing, and the eviction '
-        + 'vote is held in public, in the room, in front of the person being voted out.',
+      'Every Head of Household names three nominees, and the BB Block Buster gives the three one last '
+        + 'chance to save themselves on eviction night. All season, jury included.',
+      "One of the new houseguests is the Mastermind's Accomplice. The house votes on premiere night: "
+        + 'name the Accomplice and they are evicted on the spot; miss, and they stay in the game, in secret.',
+      'In week two, three secret powers are hidden inside the Head of Household competition. All of them '
+        + 'expire the moment the jury begins.',
+      'The Month of Mayhem: with less than a month to go, he wants three houseguests on finale night and '
+        + 'takes three sacrifices to get there: the White Locust Resort, a double eviction, and the Sanctum.',
     ],
     watch: 'Watch the doors nobody opens. And watch the last month, when a season that has been happening '
       + 'around the house turns into a season being done to it.',
@@ -74,6 +73,14 @@ export default {
     },
     turn: {
       headline: 'THE MONTH OF MAYHEM',
+      // As BB27 aired it: the host, live, with less than a month to go and the
+      // jury just begun, and then the Mastermind himself.
+      live: [
+        ['host', 'Houseguests, there is less than a month left in this game, and there are still nine of you.'],
+        ['host', 'The Mastermind has decided that is too many. This is the Mastermind\'s Month of Mayhem: he wants three houseguests on finale night, and he will take three sacrifices to get there.'],
+        ['voice', 'Thank you. I will take it from here.'],
+        ['voice', 'Three of you will not reach finale night, and it will be my doing, not yours. The first leaves this week. Pack light.'],
+      ],
       body: 'He is downstairs now, and he is not checking anybody in. What changes is not how the hotel '
         + 'sounds but who is holding the pen: from here the ceremonies are his, the count is his, and '
         + 'the ending he named in advance is the one this house is walking towards.',
@@ -209,17 +216,10 @@ export default {
     // them. All three were already on the shelf under their own names.
     { at: { week: 2 }, book: 'bb-secret-power-comp',
       options: { doors: ['hoh-interrogation', 'mystery-competitor', 'mystery-veto'] } },
-    // A hidden safe in the foyer, and a hidden Diary Room door. Something In
-    // This House is that twist already — a real power hidden in the building,
-    // the house told only that it exists, and looking for it is a public act.
-    { at: { week: 3 }, book: 'bb-hidden-power' },
-
-    // The cadence, and it is the same card on purpose: the premise of the
-    // season is that the hotel keeps things from you, and a hotel that hides
-    // exactly one thing in July is not a mystery, it is an anecdote. Each one
-    // expires unclaimed after four evictions, so an unpressed advantage
-    // quietly becomes a story about the house being too frightened to look.
-    { every: 3, from: 6, untilFromEnd: 6, book: 'bb-hidden-power' },
+    // (The hidden safe in the foyer and the hidden Diary Room door were the
+    // set, not a twist: BB27 hid no power in the building, so neither does
+    // this arc. The weeks between the powers and the Month of Mayhem are the
+    // Block Buster's.)
 
     // ── the turn: the Month of Mayhem ──
     //
@@ -227,8 +227,9 @@ export default {
     // nine houseguests left. As a proportion that is about two thirds in, and
     // the backstop is a house size rather than a week for the same reason the
     // endgame is: nine left IS the cue, on any cast.
-    { at: { frac: 0.66 }, mood: 'hostile' },
-    { at: { fromEnd: 7 }, mood: 'hostile' },
+    // Announced live at nine left, the week White Locust takes the first one
+    // (BB27 Week 9): the turn and the first sacrifice are the same night.
+    { at: { fromEnd: 6 }, mood: 'hostile' },
 
     // ── the endgame: three sacrifices ──
     //
@@ -285,11 +286,16 @@ export default {
   // before the endgame — so the reveal lands while this theme is still being
   // hospitable, and the Month of Mayhem arrives into a house that already knows
   // it was played once.
-  seasonKnobs: { bbSaboteur: 'random', bbSaboteurBankWeek: 4 },
+  // The Accomplice is NOT the season-long Saboteur: BB27's did its jobs on
+  // premiere night and was voted on that same night (js/bb/premiere-mystery.js).
+  // What the season does need is the Block Buster, every week and past the
+  // jury ("unlike last season, the twist did not end when jury began"),
+  // stopping where the double eviction takes over at a final seven.
+  seasonKnobs: { bbSafetyMode: 'block-buster', bbSaboteur: 'off' },
 
-  books: ['bb-premiere-mystery', 'bb-secret-power-comp', 'bb-hidden-power',
+  books: ['bb-premiere-mystery', 'bb-secret-power-comp',
     'bb-white-locust', 'bb-sanctum-week'],
-  weights: { 'bb-hidden-power': 1.8, 'bb-secret-power-comp': 1.5, 'bb-pandoras-box': 1.3 },
+  weights: { 'bb-secret-power-comp': 1.5 },
   bans: [],
   exclusive: [],
 };

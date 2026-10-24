@@ -72,7 +72,9 @@ describe('ported screens on the stepped stage', () => {
     for (const c of CASES.filter(x => x.name.startsWith('theme '))) {
       for (const { ep, screens } of all(c.name)) {
         const lines = actsOf(ep, 'theme-beat').filter(a => a.line).map(a => a.line);
-        const said = screens.flatMap(s => s.steps.filter(st => st.k === 'voice').map(st => st.t));
+        // Every theme beat the engine gave the antagonist, and only those: lines the screens add in the
+        // antagonist's voice (the Mastermind runs the premiere, his announcements and the Sanctum) are `own`.
+        const said = screens.flatMap(s => s.steps.filter(st => st.k === 'voice' && !st.own).map(st => st.t));
         expect(said.length).toBe(lines.length);
         expect(lines.length, c.name).toBeGreaterThan(0);
         screens.forEach((s, si) => { if (['voice', 'primer', 'turn'].includes(s.kind)) paints(screens, si); });

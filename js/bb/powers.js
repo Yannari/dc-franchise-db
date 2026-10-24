@@ -91,7 +91,7 @@ export const BB_POWER_DEFINITIONS = {
     useTiming: 'hoh-competition',
     windowWeeks: 1,
     blurb: 'The holder names the four houseguests eligible to play for the next Head of Household, and may include or exclude themselves.',
-    catch: 'Everybody sees the four names, and everybody can count who is missing from them — this is the least deniable power in the game.',
+    catch: 'Everybody hears the four names, and everybody can count who was left out.',
     moment: 'The morning of the Head of Household competition, before anybody is in the yard.',
   },
 
@@ -109,9 +109,10 @@ export const BB_POWER_DEFINITIONS = {
     name: 'The Buy-Off',
     rules: { buyOff: true },
     useTiming: 'veto-ceremony',
-    // Pre-jury on the show. Four evictions is that, at the sizes this game
-    // casts, without hard-coding a jury rule into a power.
-    windowWeeks: 4,
+    // "If they are a final nominee at any time during the pre-jury phase"
+    // (BB27): the whole pre-jury stretch, however long the cast makes it.
+    windowWeeks: 20,
+    windowUntil: 'jury',
     blurb: 'The holder pays the Head of Household to take themselves off the block. The HOH cannot refuse and must name a replacement on the spot.',
     catch: 'The money was won in public, so the moment it is spent the whole house knows exactly what that prize really was — and it only works once.',
     moment: 'The veto ceremony, after the veto has been used or not used.',
@@ -326,7 +327,8 @@ export const BB_POWER_DEFINITIONS = {
     name: 'The Interrogation',
     rules: { usurpHoh: true, contested: 'interrogation' },
     useTiming: 'post-hoh',
-    windowWeeks: 6,
+    // "All of these powers expire at the start of the jury phase" (BB27).
+    windowWeeks: 20,
     windowUntil: 'jury',
     blurb: 'Takes over somebody else\'s Head of Household — but the deposed HOH then questions the whole house, and if they name the person who did it, they keep their week and the power is spent for nothing.',
     catch: 'It is the only power that can be REFUSED. Using it puts the holder in a room with somebody who is looking for exactly them, and a bad liar loses the power and the alibi in the same afternoon.',
@@ -342,7 +344,8 @@ export const BB_POWER_DEFINITIONS = {
     name: 'The Mystery Competitor',
     rules: { vetoProxy: true },
     useTiming: 'veto-draw',
-    windowWeeks: 6,
+    // "All of these powers expire at the start of the jury phase" (BB27).
+    windowWeeks: 20,
     windowUntil: 'jury',
     blurb: 'Only usable on the block: a former houseguest walks back into this house and takes one of the drawn veto spots, and if they win it, the veto belongs to the holder.',
     catch: 'It buys a second body in the draw, not a win — the alumnus has to actually beat the room, and everybody watches a stranger arrive knowing somebody paid for it.',
@@ -358,7 +361,8 @@ export const BB_POWER_DEFINITIONS = {
     name: 'The Mystery Veto',
     rules: { soloVetoComp: true },
     useTiming: 'post-veto',
-    windowWeeks: 6,
+    // "All of these powers expire at the start of the jury phase" (BB27).
+    windowWeeks: 20,
     windowUntil: 'jury',
     blurb: 'Calls a second veto competition at the end of the week with exactly one player in it: the holder. Win it and there is a real veto to use after the ceremony everybody already watched.',
     catch: 'A competition is a competition. Nobody is standing in the way and it can still be lost, and the house finds out it existed either way.',

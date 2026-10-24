@@ -117,7 +117,15 @@ const TURN_TALK = {
 export function themeTurnScreens(act, ctx, kit) {
   const v = voiceOf(act.themeId, act.to);
   const from = strip(act.registers?.from || act.from), to = strip(act.registers?.to || act.to);
-  const steps = [
+  // A theme that knows how its show announced the turn plays that, in the show's own voices
+  // (A Summer of Mystery: the host announced the Month of Mayhem live, and then the Mastermind spoke).
+  const live = (act.live || []).map(([who, t], i) => (who === 'host'
+    ? { k: 'host', by: ctx.host, t, ...(i === 0 ? { big: ['The turn', String(act.headline || 'THE TURN')] } : {}) }
+    : { k: 'voice', own: true, by: act.speaker, vc: v.color, t, ...(i === 0 ? { big: ['The turn', String(act.headline || 'THE TURN')] } : {}) }));
+  const steps = live.length ? [...live,
+    { k: 'beat', t: `Until now: ${from}`, rule: 1, quiet: true },
+    { k: 'beat', t: `From here: ${to}`, rule: 2, quiet: true, toast: [String(act.speaker || 'THE VOICE').toUpperCase(), v.color] },
+  ] : [
     { k: 'beat', t: strip(act.body) || `${act.speaker} is not who it was on Sunday.`, big: ['The turn', String(act.headline || 'THE TURN')], shake: true },
     { k: 'beat', t: `Until now: ${from}`, rule: 1, quiet: true },
     { k: 'beat', t: `From here: ${to}`, rule: 2, quiet: true, toast: [String(act.speaker || 'THE VOICE').toUpperCase(), v.color] },
@@ -232,6 +240,23 @@ export function instantScreens(act, ctx, kit) {
 // ── A second (or third) eviction, starting now ──────────────────────────
 export function doubleBreakScreen(ctx, kit, { nth = 2, host }) {
   const third = nth >= 3;
+  // BB27: the Mastermind called the double himself, the moment the final Block Buster's evictee was out
+  // of the door, and said the night was "all about him".
+  if (!third && ctx.row?.themeId === 'summer-of-mystery') {
+    const vc = voiceOf('summer-of-mystery', 'hostile').color;
+    const here = kit.houseNow(ctx);
+    return {
+      id: `bb-double-${nth}-v`, kind: 'double', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 1, time: 'LIVE', tvObj: true,
+      kicker: 'Live · The night is not over', title: 'And We Are Not Done', label: 'Double Eviction',
+      sub: 'The Mastermind has the screen', seated: kit.seatLiving([], here), steps: [
+        { k: 'beat', t: 'The front door has barely closed when the living room screen cuts away from the host.', shake: true },
+        { k: 'voice', own: true, by: 'The Mastermind', vc, t: 'That was the last Block Buster of the summer. You may sit down. You will not be resting.', toast: ['DOUBLE EVICTION', '#ff3355'] },
+        { k: 'voice', own: true, by: 'The Mastermind', vc, t: 'It is double eviction night, and tonight is all about me. Every competition from here to the vote is mine.' },
+        { k: 'beat', t: 'A whole week, from the Head of Household to the vote, in the time it usually takes to argue about one nomination.' },
+        { k: 'host', by: host, t: 'Everybody except the outgoing Head of Household, head out to the backyard.' },
+      ],
+    };
+  }
   const steps = [
     { k: 'host', by: host, t: third ? 'Nobody sit down. There is a third eviction tonight, and it starts right now.'
       : 'Houseguests, please take your seats. There is a second eviction tonight, and it starts right now.', toast: [third ? 'TRIPLE EVICTION' : 'DOUBLE EVICTION', '#ff3355'], shake: true },

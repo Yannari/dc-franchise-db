@@ -1787,6 +1787,8 @@ export function simulateBBWeek(options = {}) {
       speaker: th.antagonist?.name || 'The Voice',
       from: _moodBefore, to: week.themeMood,
       headline: _primer.turn?.headline || '', body: _primer.turn?.body || '',
+      // How the show itself announced it, when the theme says (BB27: the host, live, then the Mastermind).
+      live: Array.isArray(_primer.turn?.live) ? _primer.turn.live.map(x => [...x]) : null,
       registers: { from: _primer.register?.[_moodBefore] || '',
         to: _primer.register?.[week.themeMood] || '' },
       players: [], beats: [],
@@ -2387,6 +2389,10 @@ export function simulateBBWeek(options = {}) {
     // arc, so CORA or the Den never takes credit for a card the user booked.
     const themeAnnouncer = themeTwistAnnouncement(group[0], {
       week: week.themeWeek ?? week.num,
+      // The schedule is written in EPISODES (bb-run.js epNum): after a double
+      // eviction ran the engine twice, the week number is one ahead of it, and
+      // the Mastermind's Sanctum was read by the host.
+      episode: (gs.episodeHistory?.length || 0) + 1,
       side: options.splitSide || '',
     });
     week.acts.push({ type: 'twist-announcement', announced: group,
@@ -2579,6 +2585,17 @@ export function simulateBBWeek(options = {}) {
         week.premiereMystery = { relicWinner: opening.relicWinner, hostWinner: opening.hostWinner };
         week.acts.push(addBeats(opening.act,
           { players: [opening.relicWinner, opening.hostWinner] }));
+        // Unmasked on premiere night, the Accomplice is evicted on the spot
+        // (BB27's rule), before anybody plays for the first crown. The week
+        // goes on with its ordinary eviction.
+        if (opening.accompliceCaught && opening.accomplice && house.includes(opening.accomplice)) {
+          const gone = opening.accomplice;
+          house.splice(house.indexOf(gone), 1);
+          gs.activePlayers = (gs.activePlayers || []).filter(n => n !== gone);
+          if (!gs.eliminated.includes(gone)) gs.eliminated.push(gone);
+          week.premiereEvicted = gone;
+          try { dropFromHousePlans(gone); } catch { /* plans survive it */ }
+        }
       }
     } catch (err) {
       (week._premiereError ||= []).push(String(err?.message || err));

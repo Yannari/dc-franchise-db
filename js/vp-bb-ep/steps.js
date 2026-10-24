@@ -29,10 +29,11 @@ import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate } from 
 import { seatedJurors } from '../bb/jury.js';
 import { finaleHouseScenes } from './finale-house.js';
 import { hasHohRoom, hohRoomBeats } from '../bb/hoh-room.js';
+import { mastermindReveal } from '../bb/mastermind-reveal.js';
 import { themeBeatScreens, themeVoiceSteps, themePrimerScreens, themeTurnScreens, haveNotScreens, departureScreens, instantScreens,
   doubleBreakScreen, americasVoteScreens, hackerScreens, hackerVoteScreens, roadkillScreens, pandoraScreens, detonationScreens,
   appStoreScreens, drawTwistSteps, campDirectorScreens, cliqueScreens, splitScreens, otherSideScreen, bucksScreens, sideBetScreens,
-  sideBetPaidScreens, derbyScreens, rollersRoomScreens, rivalsScreens, saboteurScreens } from './steps-ports.js';
+  sideBetPaidScreens, derbyScreens, rollersRoomScreens, rivalsScreens, saboteurScreens, voiceOf } from './steps-ports.js';
 
 // The engine's own moments that happen AT a ceremony (the user, 2026-10-06: "most of the time the
 // reactions are after, but sometimes it causes drama during the ceremony, same for veto"). They play
@@ -205,6 +206,13 @@ function compScreen(act, ctx, kind) {
   const steps = [];
   steps.push({ k: 'bb', t: isHoh ? `Houseguests, it is time for the Head of Household competition.` : `Houseguests, it is time for the Power of Veto competition.` });
   if (isHoh && act.outgoingHoh) steps.push({ k: 'beat', t: `${act.outgoingHoh}, the outgoing Head of Household, sits this one out.` });
+  // BB27: the Zingbot broke into the Hotel Mystère, and the Mastermind came for him.
+  const zingMystery = isHoh && comp.id === 'bb-social-zingbot' && ctx.row?.themeId === 'summer-of-mystery';
+  if (zingMystery) {
+    const vcM = voiceOf('summer-of-mystery', ctx.row?.themeMood).color;
+    steps.push({ k: 'beat', t: 'Before anybody reaches the yard, an alarm goes off. Something has broken into the hotel.', toast: ['INTRUDER', '#ff3355'] });
+    steps.push({ k: 'voice', own: true, by: 'The Mastermind', vc: vcM, t: 'Nobody enters this hotel without a reservation. Least of all a robot.' });
+  }
   const desc = String(comp.desc || '').split(/(?<=\.)\s/)[0];
   // the rules card opens on the competition's name: what they do, how it is lost, how it is won
   if (comp.name) steps.push({ k: 'beat', t: `${comp.name}. ${desc}`, rules: true });
@@ -217,6 +225,10 @@ function compScreen(act, ctx, kind) {
   for (const { t, b } of shown) {
     const who = (b.players || []).filter(Boolean);
     steps.push(who.length === 1 ? { k: 'beat', t, reveal: who, badge: b.badgeText ? [b.badgeText, b.badgeClass || ''] : null } : { k: 'beat', t, ...(who.length ? { focus: who.slice(0, 4) } : {}) });
+  }
+  if (zingMystery) {
+    steps.push({ k: 'beat', t: 'Then every light in the yard flickers, the Zingbot gets one more joke out, and his eyes go dark for good.', shake: true });
+    steps.push({ k: 'voice', own: true, by: 'The Mastermind', vc: voiceOf('summer-of-mystery', ctx.row?.themeMood).color, t: 'That is enough comedy. The Zingbot has checked out of my hotel.', toast: ['THE ZINGBOT IS DESTROYED', '#ff3355'] });
   }
   const told = shown.slice(-4).some(x => x.t.includes(winner));
   // what happened between them during it (a collision, a taunt, somebody helping a rival): the
@@ -251,6 +263,11 @@ function compScreen(act, ctx, kind) {
       ...(!isHoh ? (ctx.nominees || []).filter(n => n !== winner).slice(0, 3).map(n => bondLine(winner, n, act)).filter(Boolean) : [])];
     steps.push({ k: 'beat', t: isHoh ? `${winner} wins Head of Household!` : `${winner} wins the Power of Veto!`, win: winner, confetti: true,
       toast: [isHoh ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO', '#d99a10'], ...(isHoh ? { hoh: winner } : { veto: winner }), ...(cwhy.length ? { why: cwhy } : {}) });
+  }
+  // BB27: the first Head of Household competition was the Mastermind's lair, and its winner got to destroy it.
+  if (isHoh && ctx.week === 1 && ctx.row?.themeId === 'summer-of-mystery' && !act.secret) {
+    steps.push({ k: 'beat', t: `And the prize comes with one more thing: ${winner} gets to take the Mastermind's lair apart, piece by piece, while the house cheers.`, toast: ["THE MASTERMIND'S LAIR", '#4fbf8b'] });
+    steps.push({ k: 'voice', own: true, by: 'The Mastermind', vc: voiceOf('summer-of-mystery', 'neutral').color, t: 'Enjoy it. I have other rooms.' });
   }
   const reaction = kind === 'final' ? null : isHoh ? act.script?.hoh : act.script?.veto;
   if (reaction?.length && !(isHoh && act.secret)) steps.push(...scriptSteps(reaction));
@@ -389,7 +406,13 @@ function nomScreen(act, ctx) {
   const anN = act.americasChair || ctx.anAct?.nominee;
   if (anN && noms.includes(anN)) outside[anN] = 'america';
   const mine = noms.filter(n => !outside[n]);
-  const steps = [
+  // In the Sanctum (BB27) there are no keys: the HOH sets a voodoo doll of each nominee on the table, by candlelight.
+  const doll = !!ctx.sanctum;
+  const steps = doll ? [
+    { k: 'beat', t: 'The Sanctum, at an hour the Mastermind chose. Candles, a round table, and a voodoo doll of every houseguest still in the game.', toast: ['THE SANCTUM', '#e8dcc0'] },
+    { k: 'voice', own: true, by: 'The Mastermind', vc: voiceOf('summer-of-mystery', 'hostile').color, t: `${hoh}, there are no keys tonight. Place the dolls of the houseguests you nominate on the table.` },
+    { k: 'say', by: hoh, t: `It is my responsibility as Head of Household to nominate ${word(mine.length)} houseguests for eviction.` },
+  ] : [
     { k: 'bb', t: 'This is the nomination ceremony.' },
     { k: 'say', by: hoh, t: `This is the nomination ceremony. It is my responsibility as Head of Household to nominate ${word(mine.length)} houseguests for eviction.` },
     { k: 'say', by: hoh, t: `I will now turn my first key.` },
@@ -397,7 +420,8 @@ function nomScreen(act, ctx) {
   const nwhy = nomWhy(act, hoh, mine, ctx.row);
   const last = noms.length - 1;
   mine.forEach((n, i) => {
-    steps.push({ k: 'beat', t: i === 0 ? `${hoh} turns the first key. A face fills the first slot on the screen.` : `${hoh} turns the next key.`, reveal: n,
+    steps.push({ k: 'beat', t: doll ? (i === 0 ? `${hoh} picks up ${n}'s doll and sets it in the middle of the table.` : `${hoh} sets ${n}'s doll down beside it.`)
+      : i === 0 ? `${hoh} turns the first key. A face fills the first slot on the screen.` : `${hoh} turns the next key.`, reveal: n,
       ...(i === mine.length - 1 ? { nom: mine.slice(), ...(mine.length === noms.length ? { nom: noms.slice(), toast: ['NOMINATED', '#ff3355'] } : {}), ...(nwhy.length ? { why: nwhy } : {}) } : {}) });
   });
   Object.entries(outside).forEach(([n, how], j) => {
@@ -780,7 +804,14 @@ function evictionScreen(act, ctx, host) {
   // Block Buster), hears the nominees, calls each voter to the Diary Room in turn, and reads
   // the result to a room holding its breath.
   const pickH = (lines, salt) => pickBy(lines, `${ctx.week}|${salt}`);
-  const steps = [
+  // BB27's Sanctum: the vote is the Mastermind's, mid-week and in the Sanctum, not the host's live show.
+  const inSanctum = !!act.publicVote && (act.sanctumOrder || []).length > 0;
+  const vcM = voiceOf('summer-of-mystery', 'hostile').color;
+  const H = t => (inSanctum ? { k: 'voice', own: true, by: 'The Mastermind', vc: vcM, t } : { k: 'host', by: host, t });
+  const steps = inSanctum ? [
+    { k: 'beat', t: 'The Sanctum, in the middle of the week. No live audience, no host: candles, the round table, and the dolls.', toast: ['THE SANCTUM', '#e8dcc0'] },
+    H('Sit down. Tonight the vote is mine, and nobody will be voting in secret.'),
+  ] : [
     { k: 'host', by: host, t: pickH([`Good evening, houseguests.`, `Hello, houseguests!`, `Good evening, everyone. Welcome to eviction night.`], 'hi') },
     { k: 'beat', t: pickH([`The whole house, in a ragged chorus: "Hi, ${host}!"`, `"Hi, ${host}!" Somebody waves at the camera. Somebody else pulls their arm down.`, `The house shouts hello. The nominees are a beat behind everyone else.`], 'hi2') },
   ];
@@ -795,9 +826,8 @@ function evictionScreen(act, ctx, host) {
   // One voter (the final four): the nominees speak to that one person, and the vote is cast live, out loud (the user,
   // 2026-10-16: "top4 speech obviously cater to the only person voting like in the top3").
   const sole = ballots.length === 1 && !(act.publicVote && (act.sanctumOrder || []).length) ? ballots[0].voter : null;
-  steps.push({ k: 'host', by: host, t: sole
-    ? `Tonight only one person votes. ${sole}, you will cast the sole vote to evict, live, in front of everyone. Nominees, this is your last chance to speak to ${sole}. ${noms[0]}, you're first.`
-    : `In a few moments one of you will be evicted. Nominees, this is your last chance to sway the votes. ${noms[0]}, you're first.` });
+  steps.push(sole ? { k: 'host', by: host, t: `Tonight only one person votes. ${sole}, you will cast the sole vote to evict, live, in front of everyone. Nominees, this is your last chance to speak to ${sole}. ${noms[0]}, you're first.` }
+    : H(`In a few moments one of you will be evicted. Nominees, this is your last chance to sway the votes. ${noms[0]}, you're first.`));
   const pleas = ctx.pleas || [];
   const said = new Set();
   for (const n of noms) {
@@ -823,8 +853,8 @@ function evictionScreen(act, ctx, host) {
     if (sole) {
       steps.push({ k: 'host', by: host, t: `Thank you both. ${sole}, it's time. Please stand, and cast your vote.`, tense: [sole, ...noms] });
     } else if (sanct) {
-      steps.push({ k: 'host', by: host, t: `Thank you both. Tonight there is no secret ballot. On the table in front of you is a doll for every houseguest still in this game, and a pin.`, toast: ['THE SANCTUM', '#e8dcc0'] });
-      steps.push({ k: 'host', by: host, t: `You will vote one at a time, in front of each other and in front of the nominees. ${seq[0].voter}, you're first.` });
+      steps.push(H('On the table in front of you is a doll for every houseguest still in this game, and a needle. You will evict by stabbing a doll.'));
+      steps.push(H(`One at a time, in front of each other and in front of the nominees. ${seq[0].voter}, you're first.`));
     } else steps.push({ k: 'host', by: host, t: `Thank you both. It's time for the live vote. The nominees can't vote, and ${ctx.hoh}, as Head of Household, you only vote in the event of a tie. ${ballots[0].voter}, you're first. Please go to the Diary Room.` });
     const voteLines = act.script?.votes || {};
     const reasonsUsed = new Set();
@@ -844,14 +874,14 @@ function evictionScreen(act, ctx, host) {
       if (sanct) {
         pins[b.evict] = (pins[b.evict] || 0) + 1;
         const decided = order.find(v => v.voter === b.voter)?.afterDecided;
-        steps.push({ k: 'beat', t: decided ? `The room already knows how this ends. ${b.voter} walks up anyway, with ${b.evict} watching, and puts the pin in ${b.evict}'s doll.`
-          : `${b.voter} takes the pin and puts it into ${b.evict}'s doll. Nobody has to be told whose vote that was.`, ballot: [b.voter, b.evict, chain], tense: [b.voter, b.evict],
-          board: { title: 'THE SANCTUM · PINS', rows: noms.map(n => ({ n, text: `${pins[n] || 0} ${(pins[n] || 0) === 1 ? 'pin' : 'pins'}` })) } });
+        steps.push({ k: 'beat', t: decided ? `The room already knows how this ends. ${b.voter} walks up anyway, with ${b.evict} watching, and stabs ${b.evict}'s doll.`
+          : `${b.voter} takes the needle and stabs ${b.evict}'s doll. Nobody has to be told whose vote that was.`, ballot: [b.voter, b.evict, chain], tense: [b.voter, b.evict],
+          board: { title: 'THE SANCTUM · NEEDLES', rows: noms.map(n => ({ n, text: `${pins[n] || 0} ${(pins[n] || 0) === 1 ? 'needle' : 'needles'}` })) } });
         // said to the room, in front of the nominee: short. The vote line was written for the Diary Room ("I'm doing
         // another thing in here"), so it stays there.
         steps.push({ k: 'say', by: b.voter, push: true, t: voiceLine({ kind: 'say', by: b.voter, text: pickH([`I vote to evict ${b.evict}.`, `Sorry, ${b.evict}. I vote to evict you.`,
           `I vote to evict ${b.evict}. It's nothing personal.`, `${b.evict}, I'm sorry. I vote to evict you.`, `I vote to evict ${b.evict}.`], `pin|${b.voter}`) }, 'vote').text });
-        steps.push({ k: 'dr', by: b.voter, t: said1 });
+        // (the Diary Room vote line is for a secret ballot: in the Sanctum the vote was said to the room)
       } else if (sole) {
         // stood up in the living room, in front of both of them
         steps.push({ k: 'beat', t: `${b.voter} stands. Nobody else in the room moves.` });
@@ -866,8 +896,7 @@ function evictionScreen(act, ctx, host) {
       const why = voteReason(b, commit, noms, ctx.week, reasonsUsed);
       if (why) steps.push({ k: 'dr', by: b.voter, t: why });
       const next = seq[i + 1]?.voter;
-      if (next) steps.push({ k: 'host', by: host, t: sanct ? pickH([`Thank you, ${b.voter}. ${next}, you're next.`, `${next}, the pin is yours.`, `${next}, you're up.`], `next|${i}`)
-        : pickH([`Thank you, ${b.voter}. ${next}, you're next.`, `Thank you. ${next}, please go to the Diary Room.`, `Thank you, ${b.voter}. ${next}?`, `${next}, you're up.`], `next|${i}`) });
+      if (next) steps.push(sanct ? H(pickH([`${next}. The needle is yours.`, `${next}, you're next.`, `${next}. Choose.`], `next|${i}`)) : { k: 'host', by: host, t: pickH([`Thank you, ${b.voter}. ${next}, you're next.`, `Thank you. ${next}, please go to the Diary Room.`, `Thank you, ${b.voter}. ${next}?`, `${next}, you're up.`], `next|${i}`) });
     });
   }
   const tally = {};
@@ -877,10 +906,12 @@ function evictionScreen(act, ctx, host) {
   const avW = av?.target ? Math.max(1, Number(av.weight) || 1) : 0;
   if (avW) tally[av.target] = (tally[av.target] || 0) + avW;
   const a = tally[evicted] || 0, others = ballots.length + avW - a;
-  if (!sole) steps.push({ k: 'host', by: host, t: `Thank you, everyone. Houseguests, the votes are locked in. When I reveal the result, the evicted houseguest will have just a few moments to say their goodbyes, grab their belongings, and walk out the front door. Are you ready?` });
+  if (!sole) steps.push(inSanctum ? H('Every needle is in. One of you is leaving my hotel tonight.')
+    : { k: 'host', by: host, t: `Thank you, everyone. Houseguests, the votes are locked in. When I reveal the result, the evicted houseguest will have just a few moments to say their goodbyes, grab their belongings, and walk out the front door. Are you ready?` });
   if (!sole) steps.push({ k: 'beat', t: pickH([`${listOf(noms)} take each other's hands.`, `Nobody breathes. ${noms[0]} stares straight ahead.`, `A few people nod. ${noms[1] || noms[0]} closes both eyes.`, `The room is so quiet you can hear the cameras turning.`], 'ready'), tense: noms });
   if (act.tieBreak) {
-    steps.push({ k: 'host', by: host, t: `We have a tie. ${ctx.hoh}, as Head of Household, you must cast the deciding vote, in front of everyone.` });
+    steps.push(inSanctum ? H(`A tie. ${ctx.hoh}, take the needle again.`) : { k: 'host', by: host, t: `We have a tie. ${ctx.hoh}, as Head of Household, you must cast the deciding vote, in front of everyone.` });
+    if (inSanctum) steps.push({ k: 'beat', t: `${ctx.hoh} stabs ${evicted}'s doll a second time.` });
     steps.push({ k: 'say', by: ctx.hoh, push: true, t: `I vote to evict ${evicted}.` });
   }
   if (act.duoVote) {
@@ -890,9 +921,9 @@ function evictionScreen(act, ctx, host) {
     if (dv.evicted && dv.survivor) steps.push({ k: 'beat', t: `${(dv.losing || []).join(' and ')} lose the count, and it is ${dv.evicted} who goes. ${dv.survivor} stays.` });
   }
   if (evicted) {
-    if (ballots.length && !sole) steps.push({ k: 'host', by: host, push: true, t: others === 0 ? `By a unanimous vote...` : `By a vote of ${word(a)} to ${word(others)}...`, votes: [a, others], tense: noms,
+    if (ballots.length && !sole) steps.push({ ...H(others === 0 ? `By a unanimous vote...` : `By a vote of ${word(a)} to ${word(others)}...`), push: true, votes: [a, others], tense: noms,
       big: others === 0 ? ['By a', 'Unanimous vote'] : ['By a vote of', `${a} – ${others}`] });
-    steps.push({ k: 'host', by: host, t: `${sole ? '' : '...'}${evicted}, you are evicted from the Big Brother house.`, ...(ctx.hexed ? {} : { out: evicted }), shake: true, big: [evicted, 'Evicted', 'out'] });
+    steps.push({ ...H(inSanctum ? `${evicted}, your stay at the Hotel Mystère is over.` : `${sole ? '' : '...'}${evicted}, you are evicted from the Big Brother house.`), ...(ctx.hexed ? {} : { out: evicted }), shake: true, big: [evicted, 'Evicted', 'out'] });
     if (ctx.hexed) {
       // A Halting Hex is about to cancel this: no goodbye, no door, no black-and-white portrait.
       steps.push({ k: 'beat', t: `${evicted} stands up to say goodbye.` });
@@ -927,8 +958,13 @@ function evictionScreen(act, ctx, host) {
         }
       }
       // the walk out is at the front door (the user's foyer): the doors open on the light and the noise
-      steps.push({ k: 'beat', t: pickH([`The front door opens. The roar of the crowd floods into the house.`, `The door opens on lights and noise and cheering. ${evicted} doesn't look back.`, `${evicted} takes one last look at the house. The door opens. The crowd erupts.`], 'door'), door: true, cut: { plate: 'foyer', who: evicted, phase: 'open' } });
-      steps.push({ k: 'host', by: host, t: pickH([`${evicted}, come on out!`, `Come on out, ${evicted}!`], 'out'), cut: { plate: 'foyer', who: evicted, phase: 'out' } });
+      if (inSanctum) {
+        // mid-week, and nobody is waiting outside: no crowd, no host at the door
+        steps.push({ k: 'beat', t: `The front door opens on a quiet night. ${evicted} walks out of it alone.`, door: true, cut: { plate: 'foyer', who: evicted, phase: 'open' } });
+      } else {
+        steps.push({ k: 'beat', t: pickH([`The front door opens. The roar of the crowd floods into the house.`, `The door opens on lights and noise and cheering. ${evicted} doesn't look back.`, `${evicted} takes one last look at the house. The door opens. The crowd erupts.`], 'door'), door: true, cut: { plate: 'foyer', who: evicted, phase: 'open' } });
+        steps.push({ k: 'host', by: host, t: pickH([`${evicted}, come on out!`, `Come on out, ${evicted}!`], 'out'), cut: { plate: 'foyer', who: evicted, phase: 'out' } });
+      }
       steps.push({ k: 'beat', t: `The front door closes. On the memory wall, ${evicted}'s portrait goes black and white.`, exit: evicted });
       // a final-two or final-three promise broken tonight, for the audience (the house cannot know)
       for (const d of ctx.row?.dealBreaks || []) {
@@ -941,8 +977,8 @@ function evictionScreen(act, ctx, host) {
     }
   }
   const rest = ctx.house.filter(n => !noms.includes(n));
-  return { id: 'bb-evict-v', kind: 'evict', anchor: 'evict', set: 'ceremony', room: ROOM_NAME.ceremony, cam: 1, sanctum: sanct,
-    title: sanct ? 'The Sanctum' : 'Eviction Night', kicker: 'Live · Eviction night', sub: `${listOf(noms)} on the block`, day: ctx.day, time: 'LIVE',
+  return { id: 'bb-evict-v', kind: 'evict', anchor: 'evict', set: 'ceremony', room: inSanctum ? 'The Sanctum' : ROOM_NAME.ceremony, cam: 1, sanctum: sanct, ...(inSanctum ? { nv: true } : {}),
+    title: sanct ? 'The Sanctum' : 'Eviction Night', kicker: inSanctum ? 'The Sanctum · Mid-week' : 'Live · Eviction night', sub: `${listOf(noms)} on the block`, day: ctx.day, time: inSanctum ? 'MID-WEEK' : 'LIVE',
     // everybody who speaks on the night gets a seat before anybody who stays silent: the sofas hold
     // eight, and the people arguing after the parting shot were the ones left off (the user,
     // 2026-10-07: "it doesn't show their icons when they talk")
@@ -1325,6 +1361,31 @@ function favouriteScreen(act, ctx, host) {
   if (act.reason) steps.push({ k: 'beat', t: `${act.winner} won it for ${stripTags(act.reason)}.` });
   steps.push({ k: 'host', by: host, t: `Congratulations, ${act.winner}. And that's our season of Big Brother. Thank you all, and good night!` });
   return finaleScreen('bb-afh-v', 'afp', "America's Favourite", act.winner, ctx, steps);
+}
+
+// ── A Summer of Mystery: who the Mastermind was (bb/mastermind-reveal.js) ──
+// BB27's finale unmasked a past winner, then showed he had been framed: there were three Masterminds,
+// each out for revenge on the twist that cost them their own season.
+function unmaskScreen(ctx, host) {
+  let rev = null;
+  try { rev = mastermindReveal((ROSTER || []).map(p => p.name)); } catch { rev = null; }
+  if (!rev) return null;
+  const vc = voiceOf('summer-of-mystery', 'hostile').color;
+  const m = rev.masterminds;
+  const steps = [
+    { k: 'host', by: host, t: 'All summer, one question has hung over the Hotel Mystère. Tonight, we finally answer it. Who is the Mastermind?', toast: ['THE MASTERMIND', '#4fbf8b'] },
+    { k: 'beat', t: 'The lights drop. A masked figure walks onto the stage, and the crowd goes silent.' },
+    { k: 'beat', t: `The mask comes off. It is ${rev.framed.name}, who won ${rev.framed.where}.`, shake: true, toast: ['UNMASKED', '#ff3355'] },
+    { k: 'say', by: rev.framed.name, t: 'Me? I just got here. Somebody handed me this mask in the hallway ten minutes ago.' },
+    { k: 'beat', t: 'Then the screen behind the stage lights up, and the voice everybody knows comes out of it.' },
+    { k: 'voice', own: true, by: 'The Mastermind', vc, t: `${rev.framed.name} was a decoy. A winner makes a very convincing suspect.` },
+    { k: 'voice', own: true, by: 'The Mastermind', vc, t: `There was never one of us.` },
+  ];
+  m.forEach((x, i) => steps.push({ k: 'beat', t: `${i === 0 ? 'A second' : i === 1 ? 'A third' : 'A fourth'} mask comes off: ${x.name}, ${x.placement === 2 ? 'runner-up' : 'a finalist'} on ${x.where}.`, toast: [x.name.toUpperCase(), '#ff3355'] }));
+  steps.push({ k: 'say', by: m[0].name, t: m.length > 1 ? 'We all came this close to winning, and a twist took it away. So this summer, we wrote the twists.'
+    : 'I came this close to winning, and a twist took it away. So this summer, I wrote the twists.' });
+  steps.push({ k: 'host', by: host, t: `${listOf(m.map(x => x.name))}. The Masterminds of the Hotel Mystère. And now, it is time for the jury to decide who wins.` });
+  return finaleScreen('bb-unmask-v', 'reunion', 'The Masterminds', 'Who was behind the mask', ctx, steps);
 }
 
 // The reunion: everybody except the final two (they are inside the house), before the jury votes (the user,
@@ -2071,11 +2132,14 @@ function powerScreens(act, ctx) {
   if (!beats.some(b => b.part)) return null;   // a power this set does not draw yet keeps its classic card
   const who = act.holder;
   // Held in secret or not, a power played is played in front of the house.
+  // The relic is not "played": its finder chooses the field (BB27's premiere), and Big Brother says so.
+  const relic = act.powerId === 'hoh-gatekeeper';
   const steps = [
-    { k: 'bb', t: `Houseguests, ${who} has played a power: ${act.name}.`, rule: 1 },
-    ...(act.blurb ? [{ k: 'bb', t: act.blurb, rule: 2 }] : []),
-    // the limitation people misremember, said out loud
-    ...(act.catch ? [{ k: 'bb', t: act.catch, rule: act.blurb ? 3 : 2 }] : []),
+    { k: 'bb', t: relic ? `Houseguests, ${who} recovered the Head of Household relic, and will now choose the four houseguests who play in the first Head of Household competition.`
+      : `Houseguests, ${who} has played a power: ${act.name}.`, rule: 1 },
+    ...(act.blurb && !relic ? [{ k: 'bb', t: act.blurb, rule: 2 }] : []),
+    // the limitation people misremember: a caption for the viewer, never Big Brother's own words
+    ...(act.catch ? [{ k: 'beat', t: act.catch, rule: act.blurb && !relic ? 3 : 2 }] : []),
   ];
   const set = POWER_ROOM[act.powerId] || 'ceremony';
   for (const b of beats) {
@@ -2090,7 +2154,7 @@ function powerScreens(act, ctx) {
   }
   return [{
     id: `bb-pw-${act.powerId}-w${ctx.week}`, kind: 'power', anchor: ctx.anchor, day: ctx.day, set, room: ROOM_NAME[set], cam: CAM[set],
-    time: act.timing === 'veto-ceremony' ? ACT_TIME['veto-ceremony'] : act.powerId === 'hoh-gatekeeper' ? '18:30' : ACT_TIME.nominations,
+    time: act.timing === 'veto-ceremony' ? ACT_TIME['veto-ceremony'] : act.powerId === 'hoh-gatekeeper' ? '23:30' : ACT_TIME.nominations,
     kicker: `Cam ${String(CAM[set]).padStart(2, '0')} · ${ROOM_NAME[set]}`, title: act.name, label: act.name, sub: `${who} plays it`,
     cast: [[who, 50]], power: { name: act.name, holder: who },
     rules: [['THE POWER', act.name], ...(act.blurb ? [['WHAT IT DOES', act.blurb]] : []), ...(act.catch ? [['THE CATCH', act.catch]] : [])],
@@ -2466,11 +2530,20 @@ function mysteryScreens(act, ctx) {
 // quiet prize. Words: lines/pmact.js.
 function premiereScreens(act, ctx) {
   const linesOf = x => (x && x.lines?.length ? scriptSteps(x.lines) : []);
+  // BB27 (user, 2026-10-24: "1:1 of the real show"): the host is taken in the
+  // middle of the night's welcome, the lights go out (the Accomplice's timer),
+  // and the Mastermind takes over the screen. He sets the hunts, not Big Brother.
+  const M = 'The Mastermind';
+  const pick = (list, salt) => pickBy(list, `${ctx.week}|premiere|${salt}`);
   const steps = [
-    { k: 'bb', t: 'Houseguests, the host has been taken, and the Head of Household relic is gone with her.', rule: 1 },
-    { k: 'bb', t: 'You will split into two groups. One group hunts for the host. The other hunts for the relic.', rule: 2 },
-    { k: 'bb', t: 'Whoever finds the relic will choose the four houseguests who play for the first Head of Household.', rule: 3 },
-    { k: 'bb', t: 'Whoever finds the host wins ten thousand dollars.', rule: 4 },
+    { k: 'beat', t: pick(['The host is back on the living room screen to say goodnight when every light in the house goes out at once.',
+      'The host is halfway through a sentence on the living room screen when the house goes black.']) },
+    { k: 'beat', t: 'Ten seconds of dark. When the lights come back, the screen shows an empty studio, and the Head of Household relic is gone from its stand.', toast: ['THE HOST IS GONE', '#7c5cff'], shake: true },
+    { k: 'voice', own: true, by: M, t: 'Good evening, and welcome to the Hotel Mystère. Your host is my guest tonight. So is your relic.', rule: 1 },
+    { k: 'voice', own: true, by: M, t: 'Split yourselves into two groups. One group will look for your host. The other will look for the relic.', rule: 2 },
+    { k: 'voice', own: true, by: M, t: 'Whoever finds the relic will decide which four of you play for the first Head of Household.', rule: 3 },
+    { k: 'voice', own: true, by: M, t: 'Whoever finds your host will be paid for the trouble. Ten thousand dollars.', rule: 4 },
+    { k: 'beat', t: 'The screen goes dark again.' },
     { k: 'beat', t: act.splitRule || 'The house splits in two.' },
   ];
   for (const h of act.hunts || []) {
@@ -2487,12 +2560,49 @@ function premiereScreens(act, ctx) {
     }
   }
   for (const b of act.beats || []) steps.push(...linesOf(b));
+
+  // ── the Mystery Houseguest (a past winner, walked in after the hunts) ──
+  const g = act.mysteryGuest;
+  if (g?.name) {
+    steps.push({ k: 'host', by: ctx.host, t: pick(['Houseguests, before you go to bed, there is one more guest checking in tonight. Some of you have already found the clues.',
+      'Houseguests, the hotel has one more room to fill tonight. If you looked closely, the clues were all over the house.']), rule: 5 });
+    steps.push({ k: 'beat', t: `The front door opens. It is ${g.name}${g.won ? `, who won ${g.where}` : `, back from ${g.where}`}.`, toast: ['THE MYSTERY HOUSEGUEST', '#f5c542'] });
+    steps.push({ k: 'say', by: g.name, t: pick(["Did you miss me? Don't answer that.", 'Surprise. I hope somebody saved me a bed.', 'Hello, hotel. I know my way around a house like this.']) });
+    steps.push({ k: 'dr', by: g.name, t: g.won ? 'I have won this game before. Everybody in that room knows it, which means I start the season with a target on me. Good. I know what to do with one.'
+      : 'Everybody in there has watched me play before. They think they know my game. They know my last one.' });
+  }
+
+  // ── the Accomplice: the house votes to unmask them ──
+  const u = act.unmask, acc = act.accomplice?.name;
+  if (u && acc) {
+    steps.push({ k: 'voice', own: true, by: M, t: 'One more thing before you sleep. The lights going out. The relic disappearing. I did not do that alone.', rule: 6, shake: true });
+    steps.push({ k: 'voice', own: true, by: M, t: 'One of you has been working for me since before you walked through that door. Name my Accomplice, and they leave tonight. Name the wrong person, and my Accomplice stays in this game, and you will never know who it is.' });
+    steps.push({ k: 'beat', t: `It does not take long. Two names keep coming back: ${u.suspects[0]} and ${u.suspects[1]}.` });
+    steps.push({ k: 'say', by: u.suspects[0], t: pick(["Me? I was in the reading room the whole time. Ask anyone.", "I've been here six hours. When would I have had time?"], 's0') });
+    steps.push({ k: 'say', by: u.suspects[1], t: pick(["I get it. I'm quiet. Quiet isn't guilty.", "I'd vote for me too, honestly. But it wasn't me."], 's1') });
+    const [x, y] = u.suspects;
+    steps.push({ k: 'beat', t: `The house votes: ${u.count[x]} for ${x}, ${u.count[y]} for ${y}.`, toast: [`${u.named.toUpperCase()} IS NAMED`, '#ff3355'] });
+    if (u.caught) {
+      steps.push({ k: 'voice', own: true, by: M, t: `Correct. ${acc}, your stay at the Hotel Mystère is over.`, shake: true });
+      steps.push({ k: 'beat', t: `${acc} picks up a bag and walks out of the front door before the first Head of Household has even been played.`, toast: ['THE ACCOMPLICE IS EVICTED', '#ff3355'] });
+      steps.push({ k: 'dr', by: acc, t: 'I did everything he asked. I just could not keep my face still in that room.' });
+    } else {
+      steps.push({ k: 'voice', own: true, by: M, t: `Wrong. ${u.named} was never my Accomplice. My Accomplice voted with the rest of you, and sleeps in this house tonight.`, shake: true });
+      steps.push({ k: 'beat', t: `Only the people watching at home are told: the Accomplice is ${acc}.`, toast: ['FOR YOU AT HOME', '#7c5cff'] });
+      steps.push({ k: 'dr', by: acc, t: `I set the timer that killed the lights, and I pressed the button that made the relic disappear. Then I voted for ${u.named} with everybody else.` });
+      steps.push({ k: 'dr', by: u.named, t: pick(["Night one, and the whole house thinks I'm a liar. I didn't even get to unpack.", "They were wrong about me tonight. I'm going to remember every one of them who said my name."], 'named') });
+    }
+  }
+  const vc = voiceOf('summer-of-mystery', 'neutral').color;
+  for (const st of steps) if (st.k === 'voice' && !st.vc) st.vc = vc;
   return [{
     id: `bb-premiere-w${ctx.week}`, kind: 'premiere', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '21:00',
     kicker: 'Cam 04 · Living room', title: 'Premiere Night', label: 'Premiere Night', sub: 'Two hunts, two prizes',
     cast: [], nv: true,
-    rules: [['THE HOST IS GONE', 'and the HOH relic with her'], ['TWO GROUPS', 'one hunt each'], ['THE RELIC', 'its finder picks who plays for HOH'], ['THE HOST', 'her finder wins $10,000']],
-    rulesTitle: 'PREMIERE NIGHT · HOW IT WORKS', steps,
+    rules: [['THE HOST IS GONE', 'and the HOH relic with her'], ['TWO GROUPS', 'one hunt each'], ['THE RELIC', 'its finder picks who plays for HOH'], ['THE HOST', 'her finder wins $10,000'],
+      ...(act.mysteryGuest ? [['ONE MORE GUEST', 'a returning houseguest checks in']] : []),
+      ...(act.unmask ? [['THE ACCOMPLICE', 'name them and they leave tonight']] : [])],
+    rulesTitle: 'PREMIERE NIGHT · THE HOTEL MYSTÈRE', steps,
   }];
 }
 
@@ -2579,12 +2689,16 @@ function rewindScreens(act, ctx) {
       rulesTitle: 'THE REWIND · PLAYED', steps,
     }];
   }
-  // the White Locust
+  // the White Locust: run by its concierge (BB27's was a fan-favourite alumnus), else by Big Brother
+  const cg = act.concierge;
+  const say = cg ? t => ({ k: 'host', by: cg, t }) : t => ({ k: 'bb', t });
   const steps = [
-    { k: 'bb', t: 'Houseguests, welcome to the White Locust Resort. By the end of your stay, one of you will not be checking out.', rule: 1 },
-    { k: 'bb', t: 'First, you will all play for safety. The winner starts the call-out chain.', rule: 2 },
-    { k: 'bb', t: 'Whoever is called out must finish a task before the clock runs out. Survive, and you call out the next person, with less time.', rule: 3 },
-    { k: 'bb', t: 'Fail, and you are out of the game. No vote. The fastest survivor becomes Head of Household.', rule: 4 },
+    ...(cg ? [{ k: 'beat', t: `The houseguests are met at the resort gate by its concierge for the week: ${cg}, a fan favourite from another season.`, toast: ['THE CONCIERGE', '#f5c542'] }] : []),
+    { ...say(cg ? 'Welcome to the White Locust Resort! Relax, enjoy your stay. Just know that by the end of it, one of you will not be checking out.'
+      : 'Houseguests, welcome to the White Locust Resort. By the end of your stay, one of you will not be checking out.'), rule: 1 },
+    { ...say('First, you will all play for safety. The winner starts the call-out chain.'), rule: 2 },
+    { ...say('Whoever is called out must finish a task before the clock runs out. Survive, and you call out the next person, with less time.'), rule: 3 },
+    { ...say('Fail, and you are out of the game. No vote. Of everybody who survives a call-out, the fastest becomes Head of Household.'), rule: 4 },
     { k: 'beat', t: `${act.safe} wins ${act.safetyTask} and is safe.`, wlSafe: act.safe, toast: ['SAFE', '#22e1ff'] },
   ];
   for (const r of act.rounds || []) {
@@ -2595,7 +2709,8 @@ function rewindScreens(act, ctx) {
       ...(r.made ? {} : { toast: ['DOES NOT CHECK OUT', '#ff3355'] }) }, ...(r.endLines?.length ? scriptSteps(r.endLines) : []));
   }
   for (const b of act.beats || []) steps.push(...linesOf(b));
-  if (act.hoh) steps.push({ k: 'bb', t: `${act.hoh}, you were the fastest. You are the new Head of Household.`, toast: ['NEW HEAD OF HOUSEHOLD', '#f5c542'] });
+  if (act.hoh) steps.push({ ...say(act.hoh === act.safe ? `${act.hoh}, nobody survived a call-out, so the crown is yours. You are the new Head of Household.`
+    : `${act.hoh}, of everybody who survived a call-out, you were the fastest. You are the new Head of Household.`), toast: ['NEW HEAD OF HOUSEHOLD', '#f5c542'] });
   return [{
     id: `bb-locust-w${ctx.week}`, kind: 'locust', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: '16:00',
     kicker: 'Cam 05 · Backyard', title: 'The White Locust Resort', label: 'White Locust Resort', sub: 'One guest does not check out',
@@ -2617,8 +2732,11 @@ function moveInScreen(act, ctx, host, row) {
   // about four meet the host on the stage, each says a few words, and the group goes through the
   // front door together; inside, the people already in greet the next group; when the house is
   // full the host speaks to them on the living room screen. Words: bb/script/lines/moveinact.js.
-  const arrivals = act.arrivals || [];
-  const groups = (act.groups || []).length ? act.groups : [arrivals];
+  // BB27's Mystery Houseguest checks in at the end of premiere night, not with the others.
+  const held = (row?.acts || []).find(a => a?.type === 'premiere-mystery')?.mysteryGuest?.name || null;
+  const notHeld = l => (Array.isArray(l) ? l.filter(x => !held || !(Array.isArray(x) ? x.some(v => String(v).includes(held)) : String(x?.text ?? x).includes(held))) : l);
+  const arrivals = (act.arrivals || []).filter(n => n !== held);
+  const groups = ((act.groups || []).length ? act.groups : [act.arrivals || []]).map(gr => gr.filter(n => n !== held)).filter(gr => gr.length);
   const beatOf = n => (act.beats || []).find(b => (b.players || [])[0] === n) || {};
   const pick = (list, salt) => pickBy(list, `${ctx.week}|movein|${salt}`);
   const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
@@ -2674,7 +2792,9 @@ function moveInScreen(act, ctx, host, row) {
   // the house is full: the host on the living room screen
   const announced = (row?.acts || []).some(a => a?.type === 'twist-announcement');
   steps.push({ k: 'bb', scene: inside(arrivals.slice(0, 16), 'ceremony', { tvObj: true, time: '10:00 PM' }), t: 'Houseguests, please gather in the living room.', toast: ['THE HOUSE IS FULL', '#f5c542'] });
-  steps.push({ k: 'host', by: host, t: `Houseguests! Welcome to the Big Brother house. For the next few months, this is home. Take a look around: everybody standing in this room wants the same thing you do.` });
+  steps.push({ k: 'host', by: host, t: row?.themeId === 'summer-of-mystery'
+    ? `Houseguests! Welcome to the Hotel Mystère. For the next few months, this is home. Every room in it has a secret, and so does everybody standing in it.`
+    : `Houseguests! Welcome to the Big Brother house. For the next few months, this is home. Take a look around: everybody standing in this room wants the same thing you do.` });
   if (announced) steps.push({ k: 'host', by: host, t: `And this season, the game has a twist. You'll hear all about it very soon.` });
   steps.push({ k: 'host', by: host, t: `Get comfortable, but not too comfortable. The competition for the first Head of Household is coming, and it won't wait for you to unpack. Good luck.` });
   steps.push({ k: 'beat', t: pick(['The screen goes dark. Sixteen people look at each other at once.', 'The screen goes black. For about three seconds, nobody says anything. Then everybody does.', 'The host is gone. The house erupts.'], 'end').replace('Sixteen', titleCase(word(arrivals.length))) });
@@ -2925,6 +3045,14 @@ function interviewScreen(iv, ctx, host, row) {
       if (g.react) steps.push(...said(g.react));
     }
   }
+  // BB27: when the Accomplice was evicted, the Mastermind had a goodbye message of his own for her.
+  const acc = globalThis.gs?.bb?.accomplice;
+  if (row?.themeId === 'summer-of-mystery' && acc?.name === ev && !acc.caught) {
+    const vcM = voiceOf('summer-of-mystery', row?.themeMood).color;
+    steps.push({ k: 'host', by: h, t: 'There is one more message for you. It is not from a houseguest.', toast: ['ONE MORE MESSAGE', '#4fbf8b'] });
+    steps.push({ k: 'voice', own: true, by: 'The Mastermind', vc: vcM, t: `${ev}. You kept my secret from the first night to the front door, and nobody in that house ever knew. The Hotel Mystère thanks you for your service.` });
+    steps.push({ k: 'say', by: ev, t: 'I did. And nobody ever caught me.' });
+  }
   if (iv.parting) steps.push({ k: 'say', by: ev, t: T(iv.parting) });
   steps.push({ k: 'beat', t: iv.joinsJury ? (row?.isFinale ? `${ev} takes the last seat on the jury bench${iv.juryNumber ? `, juror number ${word(iv.juryNumber)}` : ''}. In an hour, ${ev} votes for the winner.`
     : `${ev} is going to the jury house${iv.juryNumber ? `, juror number ${word(iv.juryNumber)}` : ''}.`) : `${ev} is going home.`,
@@ -3099,8 +3227,28 @@ function juryHouseScreen(act, ctx) {
 // rules card filling as it goes, then the line that lands (sting), then how the house takes it
 // (the engine's reaction beats). The user, 2026-10-06: "do we have twist announcements in the viewer?"
 function twistAnnounceScreen(act, ctx, host) {
-  const ann = (act.announced || []).filter(Boolean);
+  // The premiere screen plays BB27's night itself: the host cannot announce her own kidnapping.
+  const ann = (act.announced || []).filter(Boolean).filter(a => a.twist !== 'bb-premiere-mystery');
   if (!ann.length) return null;
+  // A theme's antagonist reads his own twists (the Mastermind announced his on the screen, not the host).
+  const ta = act.themeAnnouncer;
+  if (ta?.line && ann.length === 1) {
+    const sentences = t => String(t || '').split(/(?<=[.!?])\s+(?=[A-Z])/).map(x => x.trim()).filter(Boolean);
+    const rules = sentences(ann[0].rule).map((x, i) => [i ? '' : String(ann[0].name || 'THE TWIST').toUpperCase(), x]);
+    const steps = [{ k: 'bb', t: 'Houseguests, please gather in the living room.' },
+      { k: 'beat', t: 'The screen flickers on. It is not the host.' },
+      ...sentences(ta.line).map((x, i) => ({ k: 'voice', own: true, by: ta.speaker, t: x, ...(i === 0 ? { toast: [String(ann[0].name || '').toUpperCase(), '#7c5cff'] } : {}) })),
+      ...(ann[0].sting ? [{ k: 'voice', own: true, by: ta.speaker, t: ann[0].sting, shake: true }] : []),
+      { k: 'beat', t: 'The screen goes dark. Nobody moves.' }];
+    rules.forEach((_, i) => { if (steps[3 + i]) steps[3 + i].rule = i + 1; });
+    const vc = voiceOf(ctx.row?.themeId, ctx.row?.themeMood).color;
+    for (const st of steps) if (st.k === 'voice') st.vc = vc;
+    for (const b of act.socialBeats || []) steps.push(...(b.lines?.length ? scriptSteps(b.lines) : [{ k: 'beat', t: stripTags(b.text) }]));
+    return { id: act.secondCall ? 'bb-twist-2-v' : 'bb-twist-v', kind: 'twist', anchor: ctx.anchor || 'start', label: `${ann[0].name || 'Twist'}: Announcement`,
+      set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · Living room', title: 'The Announcement', sub: ann[0].name || '',
+      day: ctx.day, time: '9:00 PM', tvObj: true, seated: seatLiving([], ctx.house.filter(n => !ctx.hidden?.has?.(n))),
+      rules, rulesTitle: `${String(ann[0].name || 'THE TWIST').toUpperCase()} · HOW IT WORKS`, steps };
+  }
   const sentences = t => String(t || '').split(/(?<=[.!?])\s+(?=[A-Z])/).map(x => x.trim()).filter(Boolean);
   const rules = [];
   const steps = [{ k: 'bb', t: act.secondCall ? 'Houseguests, please gather in the living room. There is more.' : 'Houseguests, please gather in the living room.' }];
@@ -3488,6 +3636,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     hexed: (row.acts || []).some(x => x.type === 'halting-hex' || x.type === 'rewind'),
     // the week's Block Buster, announced at the top of eviction night
     safety: (row.acts || []).find(x => x && x.type === 'safety' && x.winner) || null,
+    // BB27's Sanctum week: the Mastermind runs the HOH, the nominations, the veto meeting and the vote himself
+    sanctum: (row.acts || []).some(x => x && x.type === 'eviction' && x.publicVote),
     departures: (row.allianceDepartures || []).filter(d => d && d.carried),
     row,
     pleas: row.finalPleas || [], plea, anchor: 'start', day: 1, jury: [...(row.jury || [])], finalTwo: [...(row.finalTwo || [])], priorEvicted: [...priorEvicted], intro, firstRead };
@@ -3624,6 +3774,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       // the reunion, then the keys, then the finalists come out for them (the user, 2026-10-16)
       case 'jury-vote': {
         if (ctx.reunion) { const r = reunionScreen(ctx.reunion, ctx); if (r) ceremony(r); ctx.reunion = null; }
+        if (row.themeId === 'summer-of-mystery') { const m = unmaskScreen(ctx, host); if (m) ceremony(m); }
         ceremony(juryKeysScreen(act, ctx, host, row)); ceremony(winnerScreen(act, ctx, host, row)); break;
       }
       case 'americas-favourite': ceremony(favouriteScreen(act, ctx, host)); break;

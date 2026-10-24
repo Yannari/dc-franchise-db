@@ -262,7 +262,8 @@ function genericSimulation(comp, participants, context, rng) {
       : context.type === 'veto'
         ? { ...shouldThrowVeto(name, context), enemies: 0, safety: 0, slopRisk: 0 }
         : { throwChance:0, enemies:0, safety:0, slopRisk:0 };
-    const threw = context.allowThrowing !== false && rng() < throwRead.throwChance;
+    const threw = (context.type === 'hoh' && context.mustThrow === name)
+      || (context.allowThrowing !== false && rng() < throwRead.throwChance);
     const throwPenalty = threw ? 4.5 + rng() * 3 : 0;
     // A week of cold showers and slop is a real disadvantage, not a costume.
     // Big enough to cost a close competition, small enough that a have-not can
@@ -435,6 +436,7 @@ export function runBBCompetition(options = {}) {
   const context = {
     type, house:[...(options.house || participants)], excluded:[...(options.excluded || [])],
     week:options.week || null, seed:options.seed, allowThrowing:options.allowThrowing,
+    mustThrow:options.mustThrow || null,
     nominees:[...(options.nominees || [])], hoh:options.hoh || null,
     // Who is on slop this week. Custom competitions can read it; the generic
     // scorer applies it directly.

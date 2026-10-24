@@ -175,6 +175,8 @@ export function aptitude(name, mix) {
  * power than by letting somebody else hold it.
  */
 export function throwRead(name, context, rng) {
+  // BB19: the houseguest who took the $25,000 was told to throw the first HOH
+  if (context.type === 'hoh' && context.mustThrow && context.mustThrow === name) { rng(); return { threw: true, chance: 1 }; }
   if (context.allowThrowing === false) return { threw: false, chance: 0 };
   // ── AND THE VETO, WHICH THIS REFUSED TO CONSIDER ──
   //

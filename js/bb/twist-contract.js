@@ -444,6 +444,31 @@ export const BB_TWIST_CONTRACTS = {
   // misattributed accusation, the alliance that comes out one short and blames
   // the wrong chair — exists because a ballot is private. Take that away for one
   // night and all of it resolves to certainty.
+  // BB19's premiere night: the $25,000 button, the returnee it lets in, and
+  // the BB Swap that takes somebody out before the first Head of Household.
+  'bb-temptation-premiere': {
+    id: 'bb-temptation-premiere', layer: 'scheduled', category: 'distribution',
+    timing: 'week-opening', duration: { weeks: 1 },
+    rules: { temptationPremiere: true },
+    acquisition: { channel: 'none', secrecy: 'holder-secret' },
+    announcement: {
+      name: 'The First Temptation',
+      rule: 'There is a button in front of each of you. The first houseguest to press it wins twenty-five thousand dollars. Nobody will be told who it was.',
+      sting: 'Every temptation comes with a consequence.',
+    },
+  },
+  // BB19's Tree of Temptation: an apple for whoever reaches the Diary Room first.
+  'bb-tree-of-temptation': {
+    id: 'bb-tree-of-temptation', layer: 'scheduled', category: 'distribution',
+    timing: 'week-opening', duration: { weeks: 1 },
+    rules: { treeOfTemptation: true },
+    acquisition: { channel: 'random-draw', secrecy: 'public' },
+    announcement: {
+      name: 'Tree of Temptation',
+      rule: 'Five apples hang on the Tree of Temptation. When its lights turn red, the first houseguest to reach the Diary Room may claim one. Some are prizes and some are punishments, and nobody knows which until it is taken.',
+      sting: 'Whatever is in the apple is yours this week.',
+    },
+  },
   // Premiere night. It hands out two powers and nothing else — the relic
   // decides who plays for the crown, and the buy-off is the money.
   'bb-premiere-mystery': {

@@ -40,8 +40,10 @@ describe('premiere night on the stepped stage', () => {
   it('explains it first, says how the groups formed, and ends each hunt on the engine’s finder', () => {
     for (const { ep, act } of NIGHTS) {
       const S = screenOf(ep);
-      expect(S.steps.slice(0, 4).map(st => st.rule)).toEqual([1, 2, 3, 4]);
-      expect(S.steps[4].t).toBe(act.splitRule);
+      // BB27: the lights go out and the Mastermind sets the four rules, then the house splits
+      const ruled = S.steps.map((st, i) => (st.rule ? i : -1)).filter(i => i >= 0).slice(0, 4);
+      expect(ruled.map(i => S.steps[i].rule)).toEqual([1, 2, 3, 4]);
+      expect(S.steps.findIndex(st => st.t === act.splitRule)).toBeGreaterThan(ruled[3]);
       expect(S.steps.filter(st => st.pmFound).map(st => st.pmFound)).toEqual(act.hunts.map(h => [h.target, h.found]));
     }
   });

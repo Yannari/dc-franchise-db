@@ -813,10 +813,11 @@ describe('the antagonist is present at the finale', () => {
     expect(vpChain.slice(0, 1200)).toContain("act.type === 'finale-house'");
   });
 
-  it('ends its arc at a final five, not at the finale', () => {
+  it('ends its arc before the finale, not on it', () => {
     const t = BB_THEMES['summer-of-temptation'];
     const last = [...t.arc].filter(a => a.book).pop();
-    expect(last.at?.fromEnd).toBe(2);         // fromEnd 2 is a final five at every cast
+    // BB19's last twist was the final-seven double; nothing is introduced at a final four
+    expect(last.at?.fromEnd).toBeGreaterThanOrEqual(2);
     // Nothing books the last week — the Den stops dealing before the finale.
     expect(t.arc.some(a => a.book && a.at?.fromEnd === 1)).toBe(false);
   });
@@ -879,9 +880,22 @@ describe('a theme that was picked but never stamped', () => {
 // every act counted back from an assumed finale aired one house size early —
 // the double at a final eight, the closing act at a final six.
 describe('end-anchored theme cards follow the house, not the calendar', () => {
+  // The endgame these were measured on (Temptation's, before it was rebuilt to BB19's running
+  // order): the box at a final eight, the double at a final seven, the last act at a final five.
+  const ENDFIX = {
+    id: 'endfix', name: 'Endgame', tagline: 't', house: 'bb-house',
+    palette: { accent: '#112233' }, fonts: { display: 'x', body: 'y' },
+    antagonist: { name: 'Nobody', voice: {} },
+    arc: [{ at: { week: 2 }, book: 'bb-den-of-temptation' },
+          { at: { fromEnd: 5 }, book: 'bb-pandoras-box', options: { prize: 'halting-hex' } },
+          { at: { fromEnd: 4 }, book: 'bb-double-eviction' },
+          { at: { fromEnd: 2 }, book: 'bb-den-of-temptation' }],
+    books: [], weights: {}, bans: [], exclusive: [],
+  };
   beforeEach(() => {
+    BB_THEMES.endfix = ENDFIX;
     seasonConfig.format = 'big-brother';
-    seasonConfig.theme = 'summer-of-temptation';
+    seasonConfig.theme = 'endfix';
     seasonConfig.twistSchedule = [];
     seasonConfig.themeArcStamped = '';
     setGs({ ...gs, bb: null });
@@ -890,7 +904,7 @@ describe('end-anchored theme cards follow the house, not the calendar', () => {
   // The last test installs a theme onto `gs.bb`, and an installed theme is what
   // `currentTheme()` reads FIRST — left behind, it answers for every describe
   // below this one.
-  afterEach(() => { setGs({ ...gs, bb: null }); });
+  afterEach(() => { setGs({ ...gs, bb: null }); delete BB_THEMES.endfix; seasonConfig.theme = 'summer-of-temptation'; });
 
   const de = () => seasonConfig.twistSchedule.find(t => t.type === 'bb-double-eviction');
 

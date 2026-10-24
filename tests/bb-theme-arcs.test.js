@@ -51,12 +51,16 @@ describe('theme arcs', () => {
   it('stay in the order they were authored in', () => {
     for (const [id, theme] of Object.entries(BB_THEMES)) {
       for (const cast of NORMAL) {
-        const eps = themeScheduleEntries(theme, { weeks: cast - 3, existing: [] })
-          .map(e => e.episode);
+        const entries = themeScheduleEntries(theme, { weeks: cast - 3, existing: [] });
+        const eps = entries.map(e => e.episode);
         const sorted = [...eps].sort((a, b) => a - b);
         expect(eps, `${id} at cast ${cast} came out unordered`).toEqual(sorted);
-        expect(new Set(eps).size, `${id} at cast ${cast} double-booked a week`)
-          .toBe(eps.length);
+        // an act authored `alongside` shares the week before it on purpose (BB19's last Den and
+        // its Battle Back were a night apart); anything else on a taken week is a collision
+        const alongside = new Set((theme.arc || []).filter(a => a.alongside).map(a => a.book));
+        const own = entries.filter(e => !alongside.has(e.type)).map(e => e.episode);
+        expect(new Set(own).size, `${id} at cast ${cast} double-booked a week`)
+          .toBe(own.length);
       }
     }
   });

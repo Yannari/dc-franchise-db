@@ -42,7 +42,31 @@ export const TEMPTATION_CURSES = Object.freeze({
     name: 'The Curse of the Third Chair',
     rule: 'One houseguest, chosen at random, must nominate THEMSELVES alongside the Head of Household’s two.',
   },
+  // BB19's second consequence: "Cody, Jason & Jessica will be dressed as
+  // 'Ve-Toads' for the rest of the week" — frog suits, hopping only, lily pads
+  // to stand on in every room.
+  've-toads': {
+    id: 've-toads',
+    name: 'The Ve-Toads',
+    rule: 'Three houseguests are Ve-Toads for the rest of the week: frog suits, they can only hop, and they may only stand or sit on the lily pads.',
+  },
+  // BB19's third: the Halting Hex let the Temptation Competition into the
+  // house for three weeks. "The winner of the competition is safe for the
+  // week while the houseguest that finishes last will go up as a third
+  // nominee."
+  'temptation-competition': {
+    id: 'temptation-competition',
+    name: 'The Temptation Competition',
+    rule: 'For the next three weeks, anybody may opt in to a competition before the nominations. The winner is safe for the week; whoever finishes last is the third nominee.',
+  },
 });
+
+/** Which consequence each of BB19's offers carried. Anything else curses a chair. */
+const OFFER_CURSE = {
+  'pendant-of-protection': 'third-chair',
+  'ring-of-replacement': 've-toads',
+  'halting-hex': 'temptation-competition',
+};
 
 // Beats are plain facts with a `part`; the words are written by
 // bb/script/ceremony.js from lines/tempact.js.
@@ -159,7 +183,10 @@ export function runDenOfTemptation({ week, house, rng = Math.random, offered = '
   say();
   beats.push(beat(`${entrant} is offered ${def.name} in the Den.`, [entrant], 'THE DEN', 'gold', 'offer', { power: def.name }));
 
-  const accepted = acceptRead(entrant, rng, { house: room, hoh: week?.hoh || null });
+  // BB19's three Den offers were all taken on the show; one of them refused is
+  // the rare scene, not a coin flip that cancels the Temptation Competition.
+  const accepted = acceptRead(entrant, rng, { house: room, hoh: week?.hoh || null })
+    || (OFFER_CURSE[powerId] ? rng() < 0.7 : false);
 
   if (!accepted) {
     say();
@@ -194,7 +221,25 @@ export function runDenOfTemptation({ week, house, rng = Math.random, offered = '
   // It is also how the show ran it: the temptation is taken on one night and
   // the cursed houseguest is revealed at the ceremony, which is a better beat
   // anyway — the house spends the gap knowing a curse is coming for somebody.
-  const curse = TEMPTATION_CURSES['third-chair'];
+  const curse = TEMPTATION_CURSES[OFFER_CURSE[powerId] || 'third-chair'];
+  const epNow = (gs.episodeHistory?.length || 0) + 1;
+  let vetoads = null;
+  if (curse.id === 've-toads') {
+    // Three, drawn from everybody but the taker, and the house is not told why it was them.
+    const pool = room.filter(n => n !== entrant);
+    vetoads = [];
+    while (vetoads.length < 3 && pool.length) vetoads.push(pool.splice(Math.floor(rng() * pool.length), 1)[0]);
+    for (const n of vetoads) {
+      gs.popularity ||= {};
+      gs.popularity[n] = (gs.popularity[n] || 0) + 0.8;   // the country loves a frog
+    }
+    (gs.bb ||= {}).vetoads = { week: weekNum, names: [...vetoads] };
+    beats.push(beat(`${listOfNames(vetoads)} are Ve-Toads for the rest of the week.`, vetoads, 'VE-TOADS', 'green', 'toads'));
+  }
+  if (curse.id === 'temptation-competition') {
+    (gs.bb ||= {}).temptationCompWeeks = [epNow + 1, epNow + 2, epNow + 3];
+    beats.push(beat('The Temptation Competition is coming to the house for three weeks.', [entrant], 'THE CONSEQUENCE', 'red', 'tcomp'));
+  }
 
   // ── and starts hunting ──
   //
@@ -224,7 +269,98 @@ export function runDenOfTemptation({ week, house, rng = Math.random, offered = '
     type: 'temptation', week: weekNum, entrant, offered: powerId,
     power: def.name, accepted: true,
     curse: { id: curse.id, name: curse.name, rule: curse.rule },
-    cursed: null, cursePending: true, guesses, beats,
+    // Only the chair waits for the nominations; the frogs and the competition land now.
+    cursed: null, cursePending: curse.id === 'third-chair', vetoads, guesses, beats,
+    // BB19's self-nomination was IN ADDITION to the Head of Household's two.
+    curseAdds: curse.id === 'third-chair' && OFFER_CURSE[powerId] === 'third-chair',
+  };
+}
+
+/**
+ * BB19's Tree of Temptation (weeks 8 to 10). Five apples on a tree in the
+ * house; before the nominations its lights turn red, and the first houseguest
+ * to reach the Diary Room and claim one takes an apple without knowing which:
+ * Save a Friend, Can't Play in the Next HOH, Bounty on Your Head (the Head of
+ * Household is paid $5,000 if they evict the holder that week), Eliminate Two
+ * Eviction Votes, or a Second Veto. Whatever it is, it is that week's only.
+ * Nobody may take two. The real house mostly left it alone: one apple was
+ * pulled in three weeks.
+ */
+export const TREE_APPLES = Object.freeze({
+  'save-a-friend': { id: 'save-a-friend', name: 'Save a Friend', good: true },
+  'no-hoh': { id: 'no-hoh', name: "Can't Play in the Next HOH", good: false },
+  'bounty': { id: 'bounty', name: 'Bounty on Your Head', good: false },
+  'minus-two': { id: 'minus-two', name: 'Eliminate Two Eviction Votes', good: true },
+  'second-veto': { id: 'second-veto', name: 'A Second Veto', good: true },
+});
+export function runTreeOfTemptation({ week, house, hoh, rng = Math.random } = {}) {
+  const b = (gs.bb ||= {});
+  if (!b.treeApples) {
+    const all = Object.keys(TREE_APPLES);
+    b.treeApples = [];
+    while (all.length) b.treeApples.push(all.splice(Math.floor(rng() * all.length), 1)[0]);
+    b.treePicked = [];
+  }
+  const room = (house || []).filter(n => n && n !== hoh && !(b.treePicked || []).includes(n));
+  const lean = n => {
+    const st = pStats(n);
+    const aimed = hoh && gs.intentions?.[hoh]?.targets?.includes?.(n) ? 0.12 : 0;
+    return clamp(0.02 + st.boldness * 0.012 + aimed, 0.01, 0.3);
+  };
+  const runners = room.filter(n => rng() < lean(n));
+  const base = { type: 'tree-of-temptation', week: Number(week?.num) || null, applesLeft: b.treeApples.length };
+  if (!runners.length || !b.treeApples.length) {
+    return { ...base, picker: null, apple: null,
+      beats: [beat('The Tree of Temptation lights up red. Nobody goes near it.', [], 'THE TREE', 'grey', 'nobody')] };
+  }
+  const picker = runners.slice().sort((x, y) => pStats(y).physical - pStats(x).physical)[0];
+  const apple = TREE_APPLES[b.treeApples.shift()];
+  b.treePicked.push(picker);
+  const out = { ...base, picker, apple: apple.id, appleName: apple.name, good: apple.good };
+  if (apple.id === 'save-a-friend') {
+    const friend = room.filter(n => n !== picker).sort((x, y) => { try { return getBond(picker, y) - getBond(picker, x); } catch { return 0; } })[0] || null;
+    out.saved = friend;
+    if (friend) try { addBond(friend, picker, 1.5); } catch { /* */ }
+  }
+  if (apple.id === 'no-hoh') b.barredFromHoh = { name: picker, week: (Number(week?.num) || 0) + 1 };
+  gs.popularity ||= {};
+  gs.popularity[picker] = (gs.popularity[picker] || 0) + (apple.good ? 0.5 : 1);
+  out.beats = [beat(`${picker} reaches the Diary Room first and takes an apple from the Tree of Temptation: ${apple.name}.`, [picker, out.saved].filter(Boolean),
+    apple.good ? 'A PRIZE' : 'A PUNISHMENT', apple.good ? 'gold' : 'red', 'apple')];
+  return out;
+}
+
+const listOfNames = l => (l.length < 2 ? l.join('') : `${l.slice(0, -1).join(', ')} and ${l[l.length - 1]}`);
+
+/**
+ * BB19's Temptation Competition, run before the nominations on the weeks the
+ * Halting Hex unleashed it. Anybody but the Head of Household may opt in; the
+ * winner is safe for the week and whoever finishes last is the third nominee.
+ * Opting in is the gamble: the people who feel the week closing on them are
+ * the ones who take it.
+ */
+export function runTemptationCompetition({ week, house, hoh, protectedNames = [], rng = Math.random } = {}) {
+  const room = (house || []).filter(n => n && n !== hoh);
+  const want = n => {
+    const st = pStats(n);
+    const aimed = hoh && gs.intentions?.[hoh]?.targets?.includes?.(n) ? 0.35 : 0;
+    return clamp(0.25 + st.boldness * 0.04 + ((st.physical + st.mental) / 2) * 0.025 + aimed - (protectedNames.includes(n) ? 0.5 : 0), 0.05, 0.92);
+  };
+  const entrants = room.filter(n => rng() < want(n));
+  if (entrants.length < 2) return null;
+  const score = n => { const st = pStats(n); return st.physical * 0.35 + st.mental * 0.35 + st.endurance * 0.2 + rng() * 3.5; };
+  const scores = Object.fromEntries(entrants.map(n => [n, Math.round(score(n) * 10) / 10]));
+  const order = entrants.slice().sort((a, b) => scores[b] - scores[a]);
+  const winner = order[0];
+  const last = order[order.length - 1];
+  gs.popularity ||= {};
+  gs.popularity[winner] = (gs.popularity[winner] || 0) + 0.8;
+  // which of the three it is: BB19 ran Bowlerina, then Strangest Things, then Where Were You?
+  const nth = ((gs.bb ||= {}).temptationCompsRun = (gs.bb.temptationCompsRun || 0) + 1);
+  return {
+    type: 'temptation-competition', week: Number(week?.num) || null, nth, entrants, scores, order, winner, last,
+    sitOut: room.filter(n => !entrants.includes(n)),
+    beats: [beat(`${winner} wins the Temptation Competition and is safe for the week. ${last} finishes last and will be the third nominee.`, [winner, last], 'TEMPTATION COMPETITION', 'red', 'result')],
   };
 }
 
@@ -246,7 +382,8 @@ export function runDenOfTemptation({ week, house, rng = Math.random, offered = '
  */
 export function resolveCurse({ week, house, protectedNames = [], rng = Math.random } = {}) {
   const t = week?.temptation;
-  if (!t?.accepted || t.cursed) return null;
+  // only the chair waits for the nominations: Ve-Toads and the Temptation Competition already landed
+  if (!t?.accepted || t.cursed || t.cursePending === false) return null;
   const off = new Set([t.entrant, ...protectedNames].filter(Boolean));
   const eligible = (house || []).filter(n => n && !off.has(n));
   const weekNum = Number(week?.num) || (gs.bb?.weeks?.length || 0) + 1;

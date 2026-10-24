@@ -36,7 +36,7 @@ import { openDuoWeek, duoWeekActive, duoWeekNominees, duoWeekAfterVeto,
   duoWeekSecondEvictee, duoWeekEviction, duoWeekEvents, duoWeekSafe,
   DUO_WEEK_MIN_HOUSE } from './duo-week.js';
 import { fillTeam, runMission } from './team-america.js';
-import { runDenOfTemptation, resolveCurse } from './temptation.js';
+import { runDenOfTemptation, resolveCurse, runTemptationCompetition, runTreeOfTemptation } from './temptation.js';
 import { runWhacktivity } from './whacktivity.js';
 import { runSecretPowerComp, SECRET_POWER_DOORS } from './secret-power.js';
 import { playInterrogation, playMysteryCompetitor, playMysteryVeto,
@@ -89,6 +89,7 @@ import { assignTeams, teamImmune, dissolveTeams, allTeams,
   teamsDissolved } from './teams.js';
 import { runNightmarePower, nightmarePull } from './nightmare-power.js';
 import { runPremiereMystery } from './premiere-mystery.js';
+import { runTemptationPremiere } from './temptation-premiere.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
 // The pawn ask is where the jury bubble is most visible in a decision: an
@@ -109,7 +110,7 @@ import { swapTwins, twinTells, twinDiscovery, checkTwinEntry, twinEvicted, twinS
   twinExposure as twinExposureLevel, holdSisters } from './twin-twist.js';
 import { rivalsState, announceRivals, openRivals, seatRivals, rivalsSittingOut, rivalsImmune,
   rivalsChooseHoh, rivalWeekEvents, rivalEvicted } from './rivals.js';
-import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, spendPull, BB_POWER_DEFINITIONS } from './powers.js';
+import { grantPower, activePowerAt, usePower, expirePowers, powerLedgerFor, spendPull, BB_POWER_DEFINITIONS, pendantHolders } from './powers.js';
 
 /**
  * A competition win, seen by the whole house, becomes strategic respect and a
@@ -2484,7 +2485,9 @@ export function simulateBBWeek(options = {}) {
      week, so when honouring it would leave fewer than two in the yard the
      keys give way and their holders play. Rivals sitting out is the harder
      rule and gives way second. */
-  let sittingOut = [...rivalsOut, ...keysOut];
+  const _treeBarred = gs.bb?.barredFromHoh && Number(gs.bb.barredFromHoh.week) === Number(week.num) && house.includes(gs.bb.barredFromHoh.name)
+    ? [gs.bb.barredFromHoh.name] : [];
+  let sittingOut = [...rivalsOut, ...keysOut, ..._treeBarred];
   const yard = out => house.filter(name => name !== gs.bb.outgoingHoh && !out.includes(name));
   if (yard(sittingOut).length < 2) sittingOut = [...rivalsOut];
   if (yard(sittingOut).length < 2) sittingOut = [];
@@ -2590,6 +2593,29 @@ export function simulateBBWeek(options = {}) {
         // goes on with its ordinary eviction.
         if (opening.accompliceCaught && opening.accomplice && house.includes(opening.accomplice)) {
           const gone = opening.accomplice;
+          house.splice(house.indexOf(gone), 1);
+          gs.activePlayers = (gs.activePlayers || []).filter(n => n !== gone);
+          if (!gs.eliminated.includes(gone)) gs.eliminated.push(gone);
+          week.premiereEvicted = gone;
+          try { dropFromHousePlans(gone); } catch { /* plans survive it */ }
+        }
+      }
+    } catch (err) {
+      (week._premiereError ||= []).push(String(err?.message || err));
+    }
+  }
+
+  // ── BB19's PREMIERE: the button, the returnee, the BB Swap ───────────
+  // The taker throws the first Head of Household (below); the swap's evictee
+  // leaves before anybody plays for it, and the week goes on to its own vote.
+  if (!compressed && week.twistState?.rules?.temptationPremiere) {
+    try {
+      const tp = runTemptationPremiere(week, house);
+      if (tp) {
+        week.mustThrowHoh = tp.mustThrow || null;
+        week.acts.push(addBeats(tp.act, { players: [tp.mustThrow, tp.evicted, tp.returnee].filter(Boolean) }));
+        if (tp.evicted && house.includes(tp.evicted)) {
+          const gone = tp.evicted;
           house.splice(house.indexOf(gone), 1);
           gs.activePlayers = (gs.activePlayers || []).filter(n => n !== gone);
           if (!gs.eliminated.includes(gone)) gs.eliminated.push(gone);
@@ -2781,7 +2807,8 @@ export function simulateBBWeek(options = {}) {
     : runBBCompetition({ type:'hoh', participants:hohPlayers, excluded:house.filter(name => !hohPlayers.includes(name)), house, week, rng, library:competitionLibrary, forcedId:options.forcedCompetitions?.hoh, seed:options.seed,
       // The saboteur got to the yard first. Chosen at the briefing, before any
       // of this ran — see js/bb/saboteur.js.
-      sabotaged: week._sabRig?.slot === 'hoh' ? week._sabRig.mark : null });
+      sabotaged: week._sabRig?.slot === 'hoh' ? week._sabRig.mark : null,
+      mustThrow: week.mustThrowHoh || null });
   // What moving that marker actually cost, recorded off the finished board so
   // the debrief can say it in numbers rather than in adjectives.
   if (week._sabRig && hohCompetition?.sabotage) {
@@ -2826,6 +2853,11 @@ export function simulateBBWeek(options = {}) {
     || (secretPowers?.winner)
     || hook(hooks, 'hohResult', hohCompetition.winner, { week, results: hohResults, competition:hohCompetition, house });
   if (!preCrowned && !hohPlayers.includes(hoh)) hoh = hohCompetition.winner;
+  // BB19: the $25,000 taker was told to throw the first Head of Household, and did.
+  if (!preCrowned && week.mustThrowHoh && hoh === week.mustThrowHoh && hohCompetition?.placements?.length > 1) {
+    hoh = hohCompetition.placements.find(n => n !== week.mustThrowHoh && hohPlayers.includes(n)) || hoh;
+    week.threwForTemptation = week.mustThrowHoh;
+  }
 
   // ── the only time power in this house is given rather than won ──
   //
@@ -2883,6 +2915,8 @@ export function simulateBBWeek(options = {}) {
   if (!hohSecret && hohCompetition) recordCompDominance(hohCompetition, house, week.num);
   week.acts.push(addBeats({ type: 'hoh', winner: hoh, results: hohResults, competition:hohCompetition,
     outgoingHoh: gs.bb.outgoingHoh, secret: hohSecret,
+    // BB19: who threw it for the $25,000 (the viewer knows; the house never does)
+    temptationThrow: week.mustThrowHoh && hohPlayers.includes(week.mustThrowHoh) ? week.mustThrowHoh : null,
     // Crowned before this cycle began, in a competition the other half of the
     // house also played. Flagged so the screen and the transcript can say so
     // instead of presenting a competition that is not there.
@@ -3511,6 +3545,8 @@ export function simulateBBWeek(options = {}) {
   // down to the size the twist named.
   let keySafe = [];
   try { keySafe = keyHolders(); } catch { keySafe = []; }
+  // BB19's Pendant of Protection: immune for three evictions, nominations and replacements alike.
+  try { keySafe = [...keySafe, ...pendantHolders(week.num, house).filter(n => !keySafe.includes(n))]; } catch { /* no pendant */ }
   /* YOU CANNOT NOMINATE YOUR OWN DUO.
      The Head of Household cannot go up, so the pair they are half of cannot go
      up either — which makes their partner safe for the week, at this ceremony
@@ -3528,6 +3564,39 @@ export function simulateBBWeek(options = {}) {
      the cliques dissolve, so the caller never has to know either. */
   let teamSafe = [];
   try { teamSafe = teamImmune(week, hoh); } catch { teamSafe = []; }
+  // ── BB19: the Temptation Competition the Halting Hex let in ──
+  // Anybody but the HOH may opt in; the winner is safe for the week, last place is the third nominee.
+  let temptationLastSeat = null;
+  const _epNow = (gs.episodeHistory?.length || 0) + 1;
+  if (!compressed && (gs.bb?.temptationCompWeeks || []).includes(_epNow) && (options.segment || 1) <= 1) {
+    try {
+      const tc = runTemptationCompetition({ week, house, hoh, protectedNames: [...keySafe, ...rivalsSafe], rng });
+      if (tc) {
+        week.temptationComp = { winner: tc.winner, last: tc.last, entrants: tc.entrants };
+        week.acts.push(addBeats(tc, { players: [tc.winner, tc.last] }));
+        keySafe = [...keySafe, tc.winner];
+        if (tc.last !== tc.winner && !keySafe.includes(tc.last)) temptationLastSeat = tc.last;
+      }
+    } catch (err) { (week._temptationCompError ||= []).push(String(err?.message || err)); }
+  }
+  if (!compressed && twists.has('bb-tree-of-temptation') && (options.segment || 1) <= 1) {
+    try {
+      const tree = runTreeOfTemptation({ week, house, hoh, rng });
+      if (tree) {
+        week.treeApple = tree.picker ? { picker: tree.picker, apple: tree.apple, saved: tree.saved || null } : null;
+        week.acts.push(addBeats(tree, { players: [tree.picker, tree.saved].filter(Boolean) }));
+        if (tree.apple === 'save-a-friend' && tree.saved) keySafe = [...keySafe, tree.saved];
+        if (tree.apple === 'second-veto') {
+          try { grantPower('secret-veto', tree.picker, { week: week.num, visibility: 'public', source: 'tree-of-temptation' }); } catch { /* */ }
+        }
+        // a bounty is a reason to aim: an HOH who is not close to the holder leans towards it
+        if (tree.apple === 'bounty' && hoh) {
+          let b = 0; try { b = getBond(hoh, tree.picker); } catch { b = 0; }
+          if (b < 3 && rng() < 0.55) { (gs.intentions ||= {})[hoh] ||= {}; gs.intentions[hoh].targets = [tree.picker, ...(gs.intentions[hoh].targets || []).filter(n => n !== tree.picker)]; }
+        }
+      }
+    } catch (err) { (week._treeError ||= []).push(String(err?.message || err)); }
+  }
   const untouchable = [hoh, week.botbActive ? coHoh : null, week.cloud?.holder,
     carePackageProtects(week.carePackage), ...safetySuiteSafe(week.safetySuite), ...chainSafe(week.chainOfSafety),
     ...wildcardSafe(week.wildcard),
@@ -3690,7 +3759,7 @@ export function simulateBBWeek(options = {}) {
 
   // How many the Head of Household actually gets to name.
   const hohSeats = Math.max(1, nomineeCount
-    - (curseSeat ? 1 : 0) - (deadLastSeat ? 1 : 0));
+    - (curseSeat && !week.temptation?.curseAdds ? 1 : 0) - (deadLastSeat ? 1 : 0));
 
   // `duoBlock` already guarantees both halves are in the house and neither is
   // protected, so this no longer re-filters the pair — that filter is exactly
@@ -3762,6 +3831,7 @@ export function simulateBBWeek(options = {}) {
   // Household's names plus the one that is not theirs.
   if (curseSeat && !nominees.includes(curseSeat)) nominees.push(curseSeat);
   if (deadLastSeat && !nominees.includes(deadLastSeat)) nominees.push(deadLastSeat);
+  if (temptationLastSeat && !nominees.includes(temptationLastSeat) && house.includes(temptationLastSeat)) nominees.push(temptationLastSeat);
   // ── BB ROADKILL: the third key nobody's hand is on ──
   //
   // Everybody plays, one at a time and out of sight of the rest, and only the
@@ -5020,6 +5090,25 @@ export function simulateBBWeek(options = {}) {
       plan?.backdoorTarget || null);
     week.vetoDraw = vetoDraw;
     let vetoPlayers = vetoDraw.players;
+    // ── BB19's Ring of Replacement: left out of the draw, its holder takes a drawn seat ──
+    try {
+      const ring = activePowerAt('veto-draw', week.num, 'ring-of-replacement');
+      if (ring && house.includes(ring.holder) && !vetoPlayers.includes(ring.holder)) {
+        const bumpable = vetoPlayers.filter(n => n !== hoh && !nominees.includes(n));
+        if (bumpable.length) {
+          const bump = bumpable.slice().sort((a, b) => { try { return getPerceivedBond(ring.holder, a) - getPerceivedBond(ring.holder, b); } catch { return 0; } })[0];
+          vetoPlayers = vetoPlayers.map(n => (n === bump ? ring.holder : n));
+          usePower(ring, week.num);
+          week.ringReplaced = { holder: ring.holder, bumped: bump };
+          week.acts.push(addBeats({ type: 'power-played', powerId: 'ring-of-replacement', holder: ring.holder,
+            name: BB_POWER_DEFINITIONS['ring-of-replacement'].name, timing: 'veto-draw', hoh, bumped: bump,
+            blurb: BB_POWER_DEFINITIONS['ring-of-replacement'].blurb, catch: BB_POWER_DEFINITIONS['ring-of-replacement'].catch,
+            beats: [{ text: `${ring.holder} plays the Ring of Replacement and takes ${bump}'s seat in the veto competition.`,
+              players: [ring.holder, bump], badgeText: 'THE RING', badgeClass: 'gold', part: 'ring' }] }, { players: [ring.holder, bump] }));
+          try { addBond(bump, ring.holder, -1.2); } catch { /* */ }
+        }
+      }
+    } catch { /* no ring */ }
 
     // ── somebody who does not live here takes a spot ──
     //
@@ -6521,7 +6610,8 @@ export function simulateBBWeek(options = {}) {
         players: [x.holder],
         badgeText: x.reason === 'holder-evicted' ? 'LEFT WITH THEM' : 'NEVER PLAYED',
         badgeClass: 'grey',
-        part: x.reason === 'holder-evicted' ? 'evicted' : 'expired', power: x.name, since: x.heldSince,
+        // a passive power (BB19's Pendant) was never there to be played: its protection simply ends
+        part: x.reason === 'holder-evicted' ? 'evicted' : BB_POWER_DEFINITIONS[x.powerId]?.useTiming === 'passive' ? 'ended' : 'expired', power: x.name, since: x.heldSince,
       })),
     });
     // The words (lines/expact.js), without addBeats: the house is told nothing,
@@ -7300,6 +7390,12 @@ export function simulateBBWeek(options = {}) {
       }
     } catch { week.americasVote = null; }
   }
+  // BB19's apple: two of the eviction votes against its holder are thrown out.
+  if (week.treeApple?.apple === 'minus-two' && votes[week.treeApple.picker]) {
+    const was = votes[week.treeApple.picker];
+    votes[week.treeApple.picker] = Math.max(0, was - 2);
+    week.minusTwo = { name: week.treeApple.picker, removed: was - votes[week.treeApple.picker] };
+  }
   let evicted;
   let secondEvicted = null;
   let tieBreak = null;
@@ -7891,7 +7987,8 @@ export function simulateBBWeek(options = {}) {
         players: [x.holder],
         badgeText: x.reason === 'holder-evicted' ? 'LEFT WITH THEM' : 'NEVER PLAYED',
         badgeClass: 'grey',
-        part: x.reason === 'holder-evicted' ? 'evicted' : 'expired', power: x.name, since: x.heldSince,
+        // a passive power (BB19's Pendant) was never there to be played: its protection simply ends
+        part: x.reason === 'holder-evicted' ? 'evicted' : BB_POWER_DEFINITIONS[x.powerId]?.useTiming === 'passive' ? 'ended' : 'expired', power: x.name, since: x.heldSince,
       })),
     });
     // The words (lines/expact.js), without addBeats: the house is told nothing,
@@ -7923,6 +8020,7 @@ export function simulateBBWeek(options = {}) {
         week, rng,
         style: options.battleBackStyle || 'gauntlet',
         competition: options.battleBackCompetition || null,
+        cap: Number(options.battleBackCap) || 0,
       });
       if (week.battleBack) {
         // The words (lines/bkact.js), without addBeats: the evictees are not in

@@ -51,19 +51,21 @@ export default {
   // the same season written to the viewer, and it is the only place they are
   // ever told what a Den is. Keep `rules` true of what the arc actually books.
   primer: {
-    what: 'A season built on offers. Every so often the house is shown something worth having and told '
-      + 'it can be had for nothing — no competition, no catch it can see. Refusing genuinely costs '
-      + 'nothing, and that is the only reason accepting is a decision at all.',
+    what: 'BB19. From the first night the house is tempted, again and again, and every temptation comes '
+      + 'with a consequence. Whoever takes it is never named, and somebody else usually pays.',
     who: 'The Den is a room in this house that talks. It never competes, never votes and never lies to '
       + 'anybody; it simply opens a door, makes an offer, and waits. It is patient, it is delighted '
       + 'when somebody says yes, and it has never once paid for anything it handed out.',
     rules: [
-      'One houseguest at a time is taken into the Den alone and offered a real power for free.',
-      'Accepting puts a curse into the house — and the curse never lands on the person who accepted it.',
-      'The house is told that a curse has landed. It is never told who caused it, so it hunts for a '
-        + 'culprit it has no way of identifying.',
-      'Pandora\'s Box turns up late carrying something worse than usual, and the last offer of the '
-        + 'season comes when there is almost nobody left to pay for it.',
+      'Night one: twenty-five thousand dollars to the first houseguest to press a button. The taker must '
+        + 'throw the first Head of Household, and the money lets a returning houseguest into the game, at the '
+        + 'cost of somebody else\'s place.',
+      'Three times, America sends one houseguest into the Den of Temptation: the Pendant of Protection, the '
+        + 'Ring of Replacement, the Halting Hex. Take it, and the house pays the consequence.',
+      'The Halting Hex lets the Temptation Competition in for the next three weeks: opt in, and the winner is safe '
+        + 'while last place becomes the third nominee. The first four evicted get one chance to battle back.',
+      'Late in the summer, the Tree of Temptation: an apple for whoever reaches the Diary Room first, and '
+        + 'nobody knows if it holds a prize or a punishment. And there are Have-Nots all summer long.',
     ],
     watch: 'Watch who says yes early, while saying yes still looks free. Then watch who pays for it, '
       + 'because it is never the same person — and watch the house convict somebody innocent of it.',
@@ -269,50 +271,43 @@ export default {
   // rpBuildBBThemeBeat); renaming it would silently lose the styling and no
   // test would see it.
   arc: [
-    // A season is between nine and seventeen weeks here, and a fixed list of
-    // five acts cannot fill the long end of that. Authored as an opening, a
-    // CADENCE, and an endgame, so the shape reads the same at every cast:
-    // the Den keeps asking all the way through rather than twice a summer.
-    { at: { week: 2 }, book: 'bb-den-of-temptation' },
-    { at: { week: 3 }, book: 'bb-have-nots' },
+    // BB19's real running order (user, 2026-10-24: "1:1 of the real show"),
+    // from the wiki's Temptations and Game History tables:
+    //   night one   the $25,000 button, the returnee it lets in, the BB Swap
+    //   day 8       the Den: the Pendant of Protection (a self-nomination)
+    //   day 17      the Den: the Ring of Replacement (three Ve-Toads)
+    //   day 29      the Den: the Halting Hex (the Temptation Competition,
+    //               weeks 5 to 7, which the Den result books itself)
+    //   day 30      the Battle Back, for the first four evicted
+    //   day 58      a double eviction, eleven to nine
+    //   weeks 8-10  the Tree of Temptation
+    //   day 79      a double eviction, seven to five
+    { at: { week: 1 }, book: 'bb-temptation-premiere' },
+    { at: { week: 2 }, book: 'bb-den-of-temptation', options: { offer: 'pendant-of-protection' } },
+    { at: { week: 3 }, book: 'bb-den-of-temptation', options: { offer: 'ring-of-replacement' } },
+    { at: { week: 4 }, book: 'bb-den-of-temptation', options: { offer: 'halting-hex' } },
+    // Day 30 was the night after the third Den: the first four evicted, and
+    // only them, fought for the way back in.
+    { at: { week: 4 }, alongside: true, book: 'bb-battle-back', options: { battleBackCap: 4 } },
 
-    // The offer, on a rhythm. Stops before the endgame anchors take over so it
-    // never collides with them — the run-order rule would drop whichever came
-    // second, and dropping the bill is worse than dropping an offer.
-    { every: 3, from: 5, untilFromEnd: 6, book: 'bb-den-of-temptation' },
-
-    // The turn, as a PROPORTION rather than a fixed week. `week: 6` is two
-    // thirds of a twelve-cast season and barely a third of a twenty, so the Den
-    // used to spend more of a long season collecting than offering, and the
-    // escalation stopped meaning anything.
-    { at: { frac: 0.62 }, mood: 'hostile' },
-    // Backstop. On a very short season 62% lands INSIDE the endgame, and a Den
-    // that hardens after the bill has already arrived has escalated to nothing.
-    // Both acts set the same mood, so whichever comes first is the turn.
-    { at: { fromEnd: 5 }, mood: 'hostile' },
-
-    // ── THE ENDGAME, IN HOUSE SIZES ────────────────────────────────────────
-    //
-    // `fromEnd: n` means a house of n + 3, and `reanchorThemeArc` fires each of
-    // these on the week the house actually reaches that size rather than on the
-    // week this schedule predicted it would.
-    //
-    // The double sits one week earlier than it used to. It takes TWO, so a
-    // double at a final six leaves a final four and the closing act below —
-    // written for a final five — was aiming at a week the season no longer
-    // contained. At a final seven the double leaves exactly five standing, and
-    // the Den's last offer lands on them.
-    { at: { fromEnd: 5 }, book: 'bb-pandoras-box', options: { prize: 'halting-hex' } },
-    { at: { fromEnd: 4 }, book: 'bb-double-eviction' },
-    // THE ENDING, at a final five. It deliberately does not run to the finale:
-    // a season still introducing mechanics at a final four has nowhere to put
-    // the consequences. The Den stops dealing here and spends the last night
-    // talking — that is what the `finale` and `crown` hooks are for.
-    { at: { fromEnd: 2 }, book: 'bb-den-of-temptation' },
+    // The temptations stop being free when the doubles start: a double, three
+    // weeks of the Tree, a double. BB19 (seventeen, plus Paul) ran them at a
+    // final eleven and a final seven; one house size later here (fromEnd n is
+    // a final n+3), because a fourteen-houseguest summer has no week free for
+    // a double between the Battle Back and the Tree otherwise.
+    { at: { fromEnd: 7 }, mood: 'hostile' },
+    { at: { fromEnd: 7 }, book: 'bb-double-eviction' },
+    { at: { fromEnd: 6 }, book: 'bb-tree-of-temptation' },
+    { at: { fromEnd: 5 }, book: 'bb-tree-of-temptation' },
+    { at: { fromEnd: 4 }, book: 'bb-tree-of-temptation' },
+    { at: { fromEnd: 3 }, book: 'bb-double-eviction' },
   ],
 
-  books: ['bb-den-of-temptation', 'bb-pandoras-box'],
-  weights: { 'bb-pandoras-box': 1.6, 'bb-prizes-and-punishments': 1.4 },
+  // BB19 ran Have-Nots every week and had no Block Buster.
+  seasonKnobs: { bbHaveNots: 'every-week', bbSafetyMode: 'off' },
+
+  books: ['bb-temptation-premiere', 'bb-den-of-temptation', 'bb-battle-back', 'bb-tree-of-temptation'],
+  weights: {},
   bans: [],
   exclusive: [],
 };

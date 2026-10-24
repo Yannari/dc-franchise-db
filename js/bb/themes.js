@@ -223,7 +223,9 @@ export function themeScheduleEntries(theme, { weeks = 10, existing = [] } = {}) 
     // it would not run. A season too short for the whole arc gets the front of
     // it, in order, and is missing the tail, which is legible. A season with
     // the tail on backwards is not.
-    if (ep <= lastEp) {
+    // ...except an act written to share the week before it (`alongside`): BB19 ran its last
+    // Den and its Battle Back in the same week, a night apart.
+    if (ep < lastEp || (ep === lastEp && !act.alongside)) {
       // Say so. Dropping a colliding act is the right behaviour on a season too
       // short for the whole arc, but it is the WRONG behaviour to be silent
       // about when the arc itself is misordered — list `{fromEnd: 1}` above

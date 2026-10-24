@@ -862,6 +862,8 @@ export function writeCeremony(act, week, house, extra = {}) {
     for (const b of (act.beats || []).slice(0, 3)) {
       const a = (b.players || [])[0];
       if (!a || !b.part) continue;
+      // a worn power that ran its course has nothing to regret: the caption is the whole note
+      if (b.part === 'ended') continue;
       const lines = fresh('expact.gone', { a }, { ending: b.part === 'evicted' ? 'evicted' : 'expired' }, `exp|${a}|${b.power || ''}`);
       if (Array.isArray(lines) && lines.length) { b.lines = lines; b.text = transcript(lines); }
     }

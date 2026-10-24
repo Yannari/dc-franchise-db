@@ -104,6 +104,33 @@ export const BB_POWER_DEFINITIONS = {
   // save in this game can say — a veto is used on you, this is done TO the
   // person in charge, in front of everybody, and they have to name somebody
   // else on the spot with no time to think.
+  // BB19's first Den of Temptation: America chose who faced it, and Paul took
+  // it. "Whoever takes the pendant will be immune for the next three
+  // evictions." Not a decision once held: it simply covers its holder, at
+  // the nominations and the veto replacement, three weeks running.
+  'pendant-of-protection': {
+    id: 'pendant-of-protection',
+    name: 'The Pendant of Protection',
+    rules: { pendant: true },
+    useTiming: 'passive',
+    windowWeeks: 3,
+    blurb: 'Immune for the next three evictions: the holder cannot be nominated, or named as a replacement, three weeks running.',
+    catch: 'It protects the holder and nobody else, and the house finds out the moment somebody tries to put them up.',
+    moment: 'Every nomination ceremony and veto meeting for three weeks.',
+  },
+  // BB19's second Den. "Whoever takes the ring will be given the option of
+  // swapping themselves for one of the three veto players who were selected
+  // by random draw if they were not initially selected."
+  'ring-of-replacement': {
+    id: 'ring-of-replacement',
+    name: 'The Ring of Replacement',
+    rules: { ringReplace: true },
+    useTiming: 'veto-draw',
+    windowWeeks: 1,
+    blurb: 'If the holder is not drawn to play in the veto, they can take the place of one of the houseguests who were.',
+    catch: 'It buys a seat in the competition, not the veto itself, and it only works on a week the draw leaves them out.',
+    moment: 'The veto draw, right after the names come out.',
+  },
   'buy-off': {
     id: 'buy-off',
     name: 'The Buy-Off',
@@ -622,6 +649,12 @@ export function powerLedgerFor(week, house = gs.activePlayers || []) {
         blurb: def.blurb || '', catch: def.catch || '', moment: def.moment || '',
       };
     });
+}
+
+/** Who is wearing the Pendant of Protection this week (BB19): every live one, by holder. */
+export function pendantHolders(weekNum, house = gs.activePlayers || []) {
+  return store().filter(p => p.powerId === 'pendant-of-protection' && !p.disposed
+    && p.acquiredWeek <= weekNum && weekNum <= p.expiresAfterWeek && (house || []).includes(p.holder)).map(p => p.holder);
 }
 
 /** Fire it. The instance stays in the store as the record of what happened. */

@@ -1,13 +1,36 @@
-/* ===== Fonts: Samdan (Total Drama style) ===== */
-@font-face{
-  font-family: "Samdan";
-  src: url("assets/fonts/Samdan.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+/* ===== BRAND: Blindside Network (written by tools/brand-pages.mjs from js/brand.js) ===== */
+@font-face{font-family:"Big Shoulders Display";src:url("assets/fonts/BigShouldersDisplay.woff2") format("woff2");font-weight:100 900;font-display:swap}
+@font-face{font-family:"Instrument Sans";src:url("assets/fonts/InstrumentSans.woff2") format("woff2");font-weight:400 700;font-display:swap}
+.bs-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;color:#F3EEF9;min-width:0}
+.bs-mark{width:46px;height:46px;flex:none;overflow:visible}
+.bs-word{display:grid;line-height:.84}
+.bs-name{font-family:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;font-weight:900;font-size:31px;letter-spacing:.035em}
+.bs-net{font-family:"Instrument Sans",system-ui,sans-serif;font-weight:600;font-size:10.5px;letter-spacing:.56em;color:#A898BD;margin-top:5px}
+.bs-sim{display:inline-flex;align-items:center;gap:6px;font-family:"Instrument Sans",system-ui,sans-serif;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#F3EEF9;text-decoration:none;border:1px solid rgba(255,62,165,.7);border-radius:999px;padding:8px 16px;transition:background .2s,border-color .2s}
+.bs-sim:hover,.bs-sim:focus-visible{background:rgba(255,62,165,.14);border-color:#FF3EA5}
+.bs-brand:focus-visible,.bs-sim:focus-visible{outline:2px solid #FFC23D;outline-offset:4px;border-radius:10px}
+.bs-mark .bs-slice{transform:translate(3.5px,4.5px)}
+@media (prefers-reduced-motion:no-preference){
+  .bs-mark.is-animated .bs-slice{animation:bs-hit 1.15s .25s cubic-bezier(.2,.8,.2,1) both}
+  .bs-mark.is-animated .bs-body{animation:bs-recoil 1.15s .25s ease-out both}
+  .bs-brand:hover .bs-mark.is-animated .bs-slice{animation-name:bs-hit-again}
+  .bs-brand:hover .bs-mark.is-animated .bs-body{animation-name:bs-recoil-again}
+  .bs-mark.is-animated .bs-glint{animation:bs-glint 7s 2.2s ease-in-out infinite}
 }
-h1,.card,.player-name,.mini-name{
-  font-family: "Samdan", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+@keyframes bs-hit{0%{transform:translate(24px,-3px);opacity:0}38%{transform:translate(0,0);opacity:1}58%{transform:translate(0,0)}70%{transform:translate(6px,7.5px)}84%{transform:translate(3px,4px)}100%{transform:translate(3.5px,4.5px)}}
+@keyframes bs-hit-again{0%{transform:translate(3.5px,4.5px)}30%{transform:translate(0,0)}52%{transform:translate(0,0)}66%{transform:translate(6px,7.5px)}82%{transform:translate(3px,4px)}100%{transform:translate(3.5px,4.5px)}}
+@keyframes bs-recoil{0%,58%{transform:none}68%{transform:translate(-1.6px,0)}100%{transform:none}}
+@keyframes bs-recoil-again{0%,52%{transform:none}63%{transform:translate(-1.6px,0)}100%{transform:none}}
+@keyframes bs-glint{0%,82%{transform:translateX(0)}100%{transform:translateX(70px)}}
+@media (max-width:640px){.bs-mark{width:38px;height:38px}.bs-name{font-size:25px}.bs-net{font-size:9px}.bs-sim{padding:7px 12px;font-size:12px}}
+/* ===== /BRAND ===== */
+/* ===== Type: Blindside Network =====
+   Big Shoulders Display for names and numbers, Instrument Sans for reading.
+   Both are declared (and self-hosted) in the BRAND block above. The network
+   carries eight shows, so the headings no longer wear Total Drama's Samdan --
+   the simulator keeps its own fonts. */
+h1,.player-name,.mini-name{
+  font-family: var(--font-display);
 }
 
 :root{
@@ -22,7 +45,10 @@ h1,.card,.player-name,.mini-name{
   --accent2:#ffb347;      /* gold */
   --good:#4cffb3;
   --danger:#ff5c7a;
-  --font-samdan: "Samdan", "Trebuchet MS", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+  --font-display: "Big Shoulders Display", "Arial Narrow", Impact, system-ui, sans-serif;
+  --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  /* Kept under its old name: forty page rules read it. It is the display face now. */
+  --font-samdan: var(--font-display);
 }
 
 
@@ -60,123 +86,6 @@ h1,.card,.player-name,.mini-name{
   justify-content: space-between;
   padding: 14px 0;
   gap: 24px;
-}
-
-.brand-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  text-decoration: none;
-  color: inherit;
-  transition: transform 0.3s ease;
-}
-
-.brand-section:hover {
-  transform: translateY(-1px);
-}
-
-.brand-icon {
-  position: relative;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #7D4CFF 0%, #FF4CE6 50%, #FFB347 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 
-    0 4px 16px rgba(125, 76, 255, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 4px 16px rgba(125, 76, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset; }
-  50% { box-shadow: 0 4px 24px rgba(125, 76, 255, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.15) inset; }
-}
-
-.brand-icon::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: 14px;
-  padding: 2px;
-  background: linear-gradient(135deg, #7D4CFF, #FF4CE6, #FFB347);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.brand-section:hover .brand-icon::before {
-  opacity: 1;
-}
-
-.brand-logo-text {
-  font-size: 28px;
-  font-weight: 900;
-  letter-spacing: -0.5px;
-}
-
-.brand-content h1 {
-  font-size: clamp(18px, 2vw, 22px);
-  font-weight: 800;
-  margin: 0;
-  background: linear-gradient(135deg, #FFFFFF 0%, #E0D0FF 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.5px;
-  line-height: 1.2;
-}
-
-.brand-gradient {
-  background: linear-gradient(135deg, #7D4CFF 0%, #FF4CE6 50%, #FFB347 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 900;
-}
-
-.brand-subtitle {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-  margin-top: 2px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.stats-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
-  transition: all 0.3s ease;
-}
-
-.stats-badge:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(125, 76, 255, 0.3);
-  transform: translateY(-1px);
-}
-
-.stats-main {
-  font-size: 14px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
-  letter-spacing: -0.3px;
-}
-
-.stats-sub {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.45);
-  margin-top: 2px;
-  font-family: 'Courier New', monospace;
 }
 
 .header-nav {
@@ -274,46 +183,12 @@ h1,.card,.player-name,.mini-name{
     padding: 12px 0;
   }
 
-  .brand-content h1 {
-    font-size: 16px;
-  }
-
-  .brand-icon {
-    width: 40px;
-    height: 40px;
-  }
-
-  .brand-logo-text {
-    font-size: 22px;
-  }
-
-  .stats-badge {
-    padding: 6px 12px;
-  }
-
-  .stats-main {
-    font-size: 12px;
-  }
-
-  .stats-sub {
-    font-size: 9px;
-  }
-
   .nav-link {
     padding: 8px 14px;
     font-size: 13px;
   }
 }
 
-@media (max-width: 480px) {
-  .brand-subtitle {
-    display: none;
-  }
-
-  .stats-sub {
-    display: none;
-  }
-}
 /* ===== END MODERN HEADER STYLES ===== */
 
 
@@ -322,7 +197,7 @@ html,body{height:100%}
 body{
   margin:0;
   color:var(--text);
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  font-family:var(--font-body);
   background:radial-gradient(1200px 500px at top, rgba(125,76,255,.35), transparent 60%),
              radial-gradient(circle at top, var(--bg1), var(--bg0));
 }

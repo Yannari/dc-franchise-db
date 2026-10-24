@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DC Franchise Simulator</title>
+  <title>Simulator · Blindside Network</title>
+  <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/brand/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <meta name="theme-color" content="#120B1C">
   <link rel="icon" type="image/png" href="assets/cast/dc_icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,8 +23,8 @@
   <header class="sim-header">
     <div class="bcast-id">
       <span class="bcast-onair" id="bcast-onair"><span class="bcast-dot"></span><span id="bcast-onair-label">ON AIR</span></span>
-      <span class="bcast-logo"><img src="assets/cast/dc_icon.png" alt="DC"><span class="bcast-chan">DCH<b>1</b></span></span>
-      <span class="bcast-net">DC FRANCHISE NETWORK</span>
+      <!-- The way back to the network. A new tab, so a season in progress is never navigated away from. -->
+      <a class="bcast-logo bcast-home" href="index.html" target="_blank" rel="noopener" title="Open Blindside Network"><svg class="bs-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><defs><linearGradient id="simbs-hit" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF3EA5"/><stop offset="1" stop-color="#7B5CFF"/></linearGradient><linearGradient id="simbs-glint" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><clipPath id="simbs-keep"><polygon points="0,0 32.5,0 44.5,64 0,64"/></clipPath><clipPath id="simbs-slice"><polygon points="34.5,0 64,0 64,64 46.5,64"/></clipPath><clipPath id="simbs-b"><path d="M12 7h22c8 0 14 5 14 12.5 0 4.6-2.3 8.2-6 10.2 5 1.8 8 5.9 8 11.3C50 49.6 43.8 57 34.5 57H12Z M23 16.5v10h9.5a5 5 0 0 0 0-10ZM23 35v12.5h11a6.25 6.25 0 0 0 0-12.5Z" clip-rule="evenodd"/></clipPath></defs><g class="bs-body" clip-path="url(#simbs-keep)"><path d="M12 7h22c8 0 14 5 14 12.5 0 4.6-2.3 8.2-6 10.2 5 1.8 8 5.9 8 11.3C50 49.6 43.8 57 34.5 57H12Z M23 16.5v10h9.5a5 5 0 0 0 0-10ZM23 35v12.5h11a6.25 6.25 0 0 0 0-12.5Z" fill="currentColor" fill-rule="evenodd"/></g><g class="bs-slice" clip-path="url(#simbs-slice)" transform="translate(3.5 4.5)"><path d="M12 7h22c8 0 14 5 14 12.5 0 4.6-2.3 8.2-6 10.2 5 1.8 8 5.9 8 11.3C50 49.6 43.8 57 34.5 57H12Z M23 16.5v10h9.5a5 5 0 0 0 0-10ZM23 35v12.5h11a6.25 6.25 0 0 0 0-12.5Z" fill="url(#simbs-hit)" fill-rule="evenodd"/></g></svg><span class="bcast-net">BLINDSIDE NETWORK</span></a>
       <span class="bcast-now"><span class="bcast-season" id="bcast-season">—</span><span class="bcast-context"><span class="bcast-episode" id="bcast-episode"></span><span class="bcast-phase" id="bcast-phase"></span><span class="bcast-progress" aria-hidden="true"><span id="bcast-progress-fill"></span></span></span></span>
     </div>
     <nav class="sim-tabs" aria-label="Simulator journey">

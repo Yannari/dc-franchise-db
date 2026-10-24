@@ -4895,6 +4895,11 @@
     @keyframes bcastPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
     .bcast-logo { display: inline-flex; align-items: center; gap: 7px; }
     .bcast-logo img { height: 28px; vertical-align: middle; }
+    /* The Blindside mark: the way back to the network (opens in a new tab). */
+    .bcast-home { gap: 9px; text-decoration: none; color: var(--text); border-radius: 8px; padding: 2px 6px 2px 2px; transition: background .2s; }
+    .bcast-home:hover, .bcast-home:focus-visible { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+    .bcast-home .bs-mark { width: 30px; height: 30px; flex: none; }
+    .bcast-home .bcast-net { white-space: nowrap; }
     .bcast-chan { font-family: var(--font-display); font-size: 15px; letter-spacing: 1px; color: var(--accent); }
     .bcast-chan b { color: var(--text); margin-left: 1px; }
     .bcast-net { font-family: var(--font-display); font-size: 16px; letter-spacing: 1.5px; color: var(--text); }

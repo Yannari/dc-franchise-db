@@ -65,8 +65,10 @@ export function orderFormats(formats) {
     (a === DEFAULT_FORMAT ? -1 : 0) - (b === DEFAULT_FORMAT ? -1 : 0));
 }
 
+// A dot in the show's own accent rather than its emoji: the network's chrome is
+// text and colour, and the emoji read as a prototype beside the real mark.
 const labelOf = format => SHOWS[format]
-  ? `${SHOWS[format].emoji} ${SHOWS[format].name}`
+  ? `<i class="show-sw-dot" style="--c:${SHOWS[format].accent || '#A898BD'}" aria-hidden="true"></i>${SHOWS[format].name}`
   : format;
 
 /**
@@ -135,5 +137,8 @@ export const SHOW_SWITCHER_CSS = `
   transition:background .15s ease,color .15s ease;}
 .show-sw-btn:hover{color:#fff;background:rgba(255,255,255,0.07);}
 .show-sw-btn[aria-pressed="true"]{color:#12101a;background:linear-gradient(135deg,#ffd76a,#ffa726);}
+.show-sw-btn{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;}
+.show-sw-dot{width:7px;height:7px;border-radius:50%;background:var(--c);flex:none;}
+.show-sw-btn[aria-pressed="true"] .show-sw-dot{box-shadow:0 0 0 1.5px rgba(18,16,26,.55);}
 @media(prefers-reduced-motion:reduce){.show-sw-btn{transition:none;}}
 `;

@@ -22,38 +22,46 @@ import { SHOWS } from './shows.js';
 import { mountShowSwitcher, currentShow, rememberShow, SHOW_SWITCHER_CSS } from './show-switcher.js';
 
 /**
- * The canonical navigation, in order.
+ * The canonical navigation, in order: what a VISITOR to Blindside Network
+ * looks for. Text only -- the emoji that stood in for icons read as a
+ * prototype once the site had a real mark.
  *
- * Eleven entries — the ten every page had, plus whichever of Leaderboards and
- * Compare that page was missing. Every page gets all of them now.
+ * The creator's own rooms (the season control room, the Life inbox) are not
+ * here; they are under STUDIO_LINKS, one click away in the header.
  */
 import { latestAired, airLabel } from './franchise-calendar.js';
 export const NAV_LINKS = [
-  { href: 'index.html',            icon: '🏠',  label: 'Home' },
-  { href: 'current-season.html',   icon: '📊',  label: 'Current Season' },
-  { href: 'social.html',           icon: '💬',  label: 'Social' },
-  { href: 'franchise.html',        icon: '🏛️', label: 'Franchise' },
-  // ONE ENTRY FOR FOUR PAGES.
+  { href: 'index.html',            label: 'Home' },
+  { href: 'on-air.html',           label: 'On Air' },
+  { href: 'seasons.html',          label: 'Seasons' },
+  { href: 'devotees.html',         label: 'Players' },
+  // ONE ENTRY FOR FIVE PAGES.
   //
-  // Rankings, Leaderboards, Awards and Compare are four answers to one question
-  // — who is best — and they took a third of the bar between them. They keep
-  // their own pages, which are four thousand lines of working code between
-  // them; what changes is that the nav offers RECORDS and the four link to each
-  // other through the strip below. Twelve items to ten, and room for Life.
-  { href: 'rankings.html',         icon: '🏆',  label: 'Records' },
-  { href: 'seasons.html',          icon: '🗂️', label: 'Seasons' },
-  { href: 'devotees.html',         icon: '👥',  label: 'Players' },
-  // `badge` names a counter this link can carry. Resolved after the nav paints,
-  // so a slow or missing count never delays the header.
-  { href: 'life.html',             icon: '🌱',  label: 'Life', badge: 'life' },
-  { href: 'timeline.html',         icon: '🗓️', label: 'Timeline' },
+  // Rankings, Leaderboards, Awards, Compare and the franchise statistics are
+  // answers to one question -- who is best, and what happened -- and they took
+  // a third of the bar between them. They keep their own pages; the nav offers
+  // RECORDS and they link to each other through the strip below.
+  { href: 'rankings.html',         label: 'Records' },
+  { href: 'social.html',           label: 'Social' },
+  { href: 'timeline.html',         label: 'Timeline' },
+];
+
+/**
+ * The creator's rooms, under the Studio menu beside the Simulator link.
+ * `badge` names a counter the menu carries; resolved after the header paints,
+ * so a slow or missing count never delays it.
+ */
+export const STUDIO_LINKS = [
+  { href: 'simulator.html',       label: 'Simulator',            note: 'Make and play seasons' },
+  { href: 'current-season.html',  label: 'Season control room',  note: 'Sync, analytics, publish' },
+  { href: 'life.html',            label: 'Life inbox',           note: 'Approve the off-season', badge: 'life' },
 ];
 
 /**
  * Pages that sit under one nav entry, as a strip of their own.
  *
- * Keyed by the nav href they belong to, so adding a fifth records page is one
- * line here rather than an edit to four documents.
+ * Keyed by the nav href they belong to, so adding a page to a section is one
+ * line here rather than an edit to every document in it.
  */
 export const SUB_NAV = {
   'rankings.html': [
@@ -61,6 +69,7 @@ export const SUB_NAV = {
     { href: 'leaderboards.html', label: 'Leaderboards' },
     { href: 'awards.html',       label: 'Awards' },
     { href: 'compare.html',      label: 'Compare' },
+    { href: 'franchise.html',    label: 'Franchise stats' },
   ],
 };
 
@@ -118,6 +127,10 @@ const BELONGS_TO = {
   'leaderboards.html': 'rankings.html',
   'awards.html': 'rankings.html',
   'compare.html': 'rankings.html',
+  'franchise.html': 'rankings.html',
+  // The rest of the social family: Birdie's neighbours on the network.
+  'kristal.html': 'social.html',
+  'dramagram.html': 'social.html',
 };
 
 export function activeHref(page = currentPage()) {
@@ -134,9 +147,7 @@ export function navHtml(active = activeHref()) {
     const on = l.href === active;
     return `<li class="nav-item"><a href="${esc(linkHref(l.href))}" class="nav-link${on ? ' active' : ''}"`
       + `${on ? ' aria-current="page"' : ''}>`
-      + `<span class="nav-icon">${l.icon}</span><span>${esc(l.label)}</span>`
-      + (l.badge ? `<span class="nav-badge" data-badge="${esc(l.badge)}" hidden></span>` : '')
-      + `</a></li>`;
+      + `<span>${esc(l.label)}</span></a></li>`;
   }).join('');
   return `<ul class="nav-list">${items}</ul>`;
 }
@@ -189,6 +200,62 @@ export const SITE_HEADER_CSS = `
   border-color:rgba(125,76,255,.55);}
 `;
 
+/**
+ * The Studio menu: the creator's rooms, beside the Simulator link.
+ *
+ * A <details> so it opens without script and closes on a second click; the
+ * life badge sits on the summary, because the inbox is inside the menu.
+ */
+export function studioHtml(page = currentPage()) {
+  const items = STUDIO_LINKS.map(l => `<a href="${esc(linkHref(l.href))}"${l.href === page ? ' aria-current="page"' : ''}>`
+    + `<b>${esc(l.label)}</b><span>${esc(l.note)}</span></a>`).join('');
+  const badge = STUDIO_LINKS.find(l => l.badge)?.badge;
+  return `<details class="bs-studio"><summary>Studio`
+    + (badge ? `<span class="nav-badge" data-badge="${esc(badge)}" hidden></span>` : '')
+    + `</summary><div class="bs-studio-panel">${items}</div></details>`;
+}
+
+const STUDIO_CSS = `
+.header-top{gap:16px}
+.bs-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+.bs-studio{position:relative}
+.bs-studio summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+  font:600 13px/1 "Instrument Sans",system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(243,238,249,.78);padding:9px 12px;border-radius:999px}
+.bs-studio summary::-webkit-details-marker{display:none}
+.bs-studio summary::after{content:"";width:6px;height:6px;border:solid currentColor;border-width:0 1.5px 1.5px 0;
+  transform:translateY(-2px) rotate(45deg);margin-left:2px}
+.bs-studio summary:hover,.bs-studio[open] summary{color:#fff;background:rgba(255,255,255,.07)}
+.bs-studio summary:focus-visible{outline:2px solid #FFC23D;outline-offset:2px}
+.bs-studio-panel{position:absolute;right:0;top:calc(100% + 8px);z-index:1100;width:260px;display:grid;padding:6px;
+  background:#170e24;border:1px solid rgba(255,255,255,.12);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.55)}
+.bs-studio-panel a{display:grid;gap:2px;padding:10px 12px;border-radius:10px;text-decoration:none;color:#F3EEF9}
+.bs-studio-panel a:hover,.bs-studio-panel a:focus-visible{background:rgba(255,62,165,.12)}
+.bs-studio-panel a[aria-current]{background:rgba(123,92,255,.18)}
+.bs-studio-panel b{font-weight:600;font-size:14px}
+.bs-studio-panel span{font-size:12px;color:#A898BD}
+@media (max-width:640px){.bs-studio summary{padding:8px 8px;font-size:12px}}
+@media (max-width:440px){.header-top{gap:8px}.bs-actions{gap:4px}.bs-studio summary{padding:6px 6px;font-size:11px;letter-spacing:.06em}}
+/* The show switcher is wider than a phone: let it scroll inside its own row. */
+@media (max-width:760px){.site-show-switch{justify-content:flex-start;overflow-x:auto;scrollbar-width:none}.site-show-switch::-webkit-scrollbar{display:none}}
+`;
+
+/** Put the Studio menu beside the Simulator link (once). */
+export function mountStudio(root = document) {
+  const sim = root.querySelector('.header-top .bs-sim');
+  if (!sim || root.querySelector('.bs-studio')) return;
+  const actions = document.createElement('div');
+  actions.className = 'bs-actions';
+  sim.replaceWith(actions);
+  actions.innerHTML = studioHtml();
+  actions.appendChild(sim);
+  // Close on a click elsewhere, or Escape: a menu that stays open over the page
+  // after you have moved on reads as broken.
+  const menu = actions.querySelector('.bs-studio');
+  document.addEventListener('click', e => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && menu.open) { menu.open = false; menu.querySelector('summary').focus(); } });
+}
+
 /** The sub-strip for the section this page is in, or '' when it has none. */
 export function subNavHtml(page = currentPage()) {
   const links = SUB_NAV[activeHref(page)];
@@ -210,6 +277,7 @@ export function renderSiteHeader() {
   if (!nav) return null;
 
   nav.innerHTML = navHtml();
+  mountStudio();
 
   // The chosen show is remembered for the tab, so it survives navigation. An
   // explicit ?show= in the URL wins over the memory and updates it — links stay
@@ -251,7 +319,7 @@ export function renderSiteHeader() {
   if (!document.getElementById('site-header-css')) {
     const style = document.createElement('style');
     style.id = 'site-header-css';
-    style.textContent = SHOW_SWITCHER_CSS + SITE_HEADER_CSS;
+    style.textContent = SHOW_SWITCHER_CSS + SITE_HEADER_CSS + STUDIO_CSS;
     document.head.appendChild(style);
   }
 
@@ -310,7 +378,9 @@ export async function lifeBadgeCount() {
 
 /** Fill any badge the nav declared. Failure is silent and leaves it hidden. */
 export async function paintBadges(root = document) {
-  const el = root.querySelector?.('[data-badge="life"]');
+  // The counter sits on the Studio menu, in the header around the nav.
+  const scope = root.closest?.('header') || root;
+  const el = scope.querySelector?.('[data-badge="life"]');
   if (!el) return;
   const n = await lifeBadgeCount();
   if (!n) { el.hidden = true; return; }

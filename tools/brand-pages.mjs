@@ -11,7 +11,8 @@
 //     card becomes the Simulator link, the <title> takes the network's name,
 //     and the head links the icons
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { brandLockup, simulatorLink, faviconSvg, brandMark, BRAND, BRAND_CSS } from '../js/brand.js';
+import { brandLockup, simulatorLink, faviconSvg, brandMark, brandFooter, BRAND, BRAND_CSS } from '../js/brand.js';
+import { navHtml, activeHref } from '../js/site-header.js';
 
 const SUFFIX = ` · ${BRAND.name}`;
 
@@ -20,7 +21,8 @@ const TITLES = {
   'index.html': BRAND.name,
   'awards.html': 'Season Awards',
   'compare.html': 'Compare Players',
-  'current-season.html': 'Current Season',
+  'current-season.html': 'Season Control Room',
+  'on-air.html': 'On Air',
   'devotees.html': 'Players',
   'dramagram.html': 'Dramagram',
   'franchise.html': 'Franchise',
@@ -100,10 +102,16 @@ for (const [file, title] of Object.entries(TITLES)) {
   } else if (s.includes('class="bs-brand"') && !s.includes('class="bs-sim"')) {
     s = s.replace(/(<a href="index\.html" class="bs-brand"[\s\S]*?<\/a>)/, `$1\n      ${simulatorLink()}`);
   }
+  // The nav, as js/site-header.js will draw it, so the page does not flash the
+  // old one before the script replaces it.
+  s = s.replace(/(<nav class="header-nav"[^>]*>)[\s\S]*?(<\/nav>)/, (_, open, close) => `${open}${navHtml(activeHref(file))}${close}`);
   // The cards' old numbers are gone; their writers must not throw on the gap.
   s = s.replace(/document\.getElementById\('(totalSeasons|totalPlayers|currentSeasonNum|iconFormat)'\)\.textContent\s*=/g,
     "(document.getElementById('$1') || {}).textContent =");
 
+  // The footer: the old "DC Franchise Database ... Icons: name.png" strip, or
+  // one an earlier run wrote.
+  s = s.replace(/(?:<!-- SITE FOOTER START -->\s*)?<footer class="(?:siteFooter|bs-footer)[^"]*">[\s\S]*?<\/footer>(?:\s*<!-- SITE FOOTER END -->)?/, brandFooter());
   // The first <title>, which is the page's own (later ones live in templates).
   s = s.replace(/<title>[^<]*<\/title>/, `<title>${title === BRAND.name ? title : title + SUFFIX}</title>`);
   if (!s.includes('assets/brand/favicon.svg')) s = s.replace(/<\/title>/, `</title>\n  ${HEAD_LINKS}`);

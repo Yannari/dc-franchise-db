@@ -15,6 +15,87 @@
   <script src="config.js"></script>
 
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* The front page. The cast wall (.heroWall) and carousel (.coverflow) keep
+       their styles.css rules; everything here is the page around them. */
+    .hm{max-width:1280px;margin:0 auto;padding:22px clamp(16px,3vw,32px) 56px;display:grid;gap:40px}
+    .hm-hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:28px;align-items:end;
+      min-height:440px!important;padding:clamp(24px,4vw,48px)!important}
+    .hm-hero-copy,.hm-hero-side{position:relative;z-index:2;min-width:0}
+    /* A scrim under the words: the wall is busy and the lead must stay readable. */
+    .hm-hero::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+      background:linear-gradient(90deg,rgba(14,8,22,.94) 0%,rgba(14,8,22,.82) 42%,rgba(14,8,22,.35) 75%,rgba(14,8,22,.2) 100%),
+                 linear-gradient(0deg,rgba(14,8,22,.7),transparent 45%)}
+    .hm-title{font-family:var(--font-display);font-weight:900;font-size:clamp(46px,7.4vw,96px);line-height:.9;
+      letter-spacing:.01em;margin:0 0 18px;text-transform:uppercase}
+    .hm-title span{background:linear-gradient(90deg,#FF3EA5,#7B5CFF);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hm-lead{max-width:56ch;font-size:17px;line-height:1.55;color:rgba(243,238,249,.82);margin:0 0 24px}
+    .hm-ctas{display:flex;gap:10px;flex-wrap:wrap}
+    .hm-btn{display:inline-flex;align-items:center;padding:12px 20px;border-radius:999px;font-weight:600;text-decoration:none;
+      color:#F3EEF9;border:1px solid rgba(255,255,255,.22);background:rgba(18,11,28,.55);backdrop-filter:blur(6px)}
+    .hm-btn.primary{background:linear-gradient(135deg,#FF3EA5,#7B5CFF);border-color:transparent}
+    .hm-btn:hover{filter:brightness(1.1)}
+    .hm-btn:focus-visible,.hm-head a:focus-visible{outline:2px solid #FFC23D;outline-offset:3px}
+    .hm-onair{display:grid;gap:6px;text-decoration:none;color:#F3EEF9;padding:20px 22px;border-radius:18px;
+      background:linear-gradient(160deg,color-mix(in srgb,var(--show,#7B5CFF) 26%,rgba(18,11,28,.9)),rgba(18,11,28,.92));
+      border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(8px);transition:transform .2s,border-color .2s}
+    .hm-onair:hover{transform:translateY(-2px);border-color:rgba(255,62,165,.6)}
+    .hm-onair b{font-family:var(--font-display);font-weight:900;font-size:34px;line-height:.95;letter-spacing:.01em}
+    .hm-onair span{color:rgba(243,238,249,.75);font-size:14px}
+    .hm-onair em{font-style:normal;color:#FFC23D;font-weight:600;font-size:14px;margin-top:6px}
+    .hm-onair-show{text-transform:uppercase;letter-spacing:.14em;font-size:12px!important;font-weight:600;color:var(--show,#FF3EA5)!important}
+    .hm-live{display:inline-flex;align-items:center;gap:8px;justify-self:start;font-size:11.5px!important;font-weight:600;letter-spacing:.18em;
+      text-transform:uppercase;color:#fff!important;background:rgba(255,62,165,.16);border:1px solid rgba(255,62,165,.55);border-radius:999px;padding:6px 11px}
+    .hm-live i{width:7px;height:7px;border-radius:50%;background:#FF3EA5}
+    .hm-live.off{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18);color:var(--muted)!important}
+    .hm-live.off i{background:var(--muted)}
+    @media (prefers-reduced-motion:no-preference){.hm-live:not(.off) i{animation:hm-pulse 1.8s ease-out infinite}}
+    @keyframes hm-pulse{0%{box-shadow:0 0 0 0 rgba(255,62,165,.6)}70%{box-shadow:0 0 0 8px rgba(255,62,165,0)}100%{box-shadow:none}}
+
+    .hm-counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-block:1px solid rgba(255,255,255,.1)}
+    .hm-counts div{display:grid;gap:2px;padding:18px 8px;text-align:center}
+    .hm-counts div + div{border-left:1px solid rgba(255,255,255,.08)}
+    .hm-counts b{font-family:var(--font-display);font-weight:900;font-size:44px;line-height:1;font-variant-numeric:tabular-nums}
+    .hm-counts span{color:var(--muted);font-size:13px;letter-spacing:.14em;text-transform:uppercase}
+
+    .hm-block{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+    .hm-block > *{min-width:0}
+    .hm-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .hm-head h2{font-family:var(--font-display);font-weight:800;font-size:34px;letter-spacing:.02em;margin:0}
+    .hm-head a{color:#FFC23D;font-weight:600;text-decoration:none}
+    .hm-head a:hover{text-decoration:underline}
+    .dockWrap.hm-block{padding:0;background:none;border:0;box-shadow:none;overflow:visible}
+    .hm-head .dockControls{display:flex;align-items:center;gap:10px}
+
+    .hm-shows{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+    .hm-show{position:relative;display:grid;gap:6px;padding:20px 20px 18px;border-radius:16px;text-decoration:none;color:#F3EEF9;
+      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);overflow:hidden;transition:transform .2s,border-color .2s}
+    .hm-show::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--c)}
+    .hm-show:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--c) 60%,transparent)}
+    .hm-show-name{font-family:var(--font-display);font-weight:800;font-size:28px;letter-spacing:.02em;line-height:1}
+    .hm-show-count{color:var(--c);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+    .hm-show-winner{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13.5px;margin-top:4px}
+    .hm-show-winner img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#241535}
+    .hm-show-winner b{color:#F3EEF9;font-weight:600}
+    .hm-upcoming{margin:2px 0 0;color:var(--muted);font-size:14px}
+
+    .hm-finales{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+    .hm-finale{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;text-decoration:none;color:#F3EEF9;
+      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);transition:border-color .2s;min-width:0}
+    .hm-finale:hover{border-color:rgba(255,62,165,.5)}
+    .hm-finale img{width:58px;height:58px;border-radius:50%;object-fit:cover;flex:none;background:#241535;box-shadow:0 0 0 2px #FFC23D}
+    .hm-finale span{display:grid;gap:3px;min-width:0}
+    .hm-finale b{font-family:var(--font-display);font-weight:800;font-size:22px;letter-spacing:.02em;line-height:1.05}
+    .hm-finale small{color:var(--muted);font-size:13px}
+
+    @media (max-width:860px){
+      .hm-hero{grid-template-columns:minmax(0,1fr);min-height:0!important}
+      .hm-hero::before{background:rgba(14,8,22,.84)}
+      .hm-counts{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .hm-counts div:nth-child(3){border-left:0}
+      .hm-counts div:nth-child(n+3){border-top:1px solid rgba(255,255,255,.08)}
+    }
+  </style>
 </head>
 <body class="home">
 <!-- SITE HEADER START -->
@@ -30,62 +111,7 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="header-nav" aria-label="Primary navigation">
-      <ul class="nav-list">
-        <li class="nav-item">
-          <a href="index.html" class="nav-link" data-page="index">
-            <span class="nav-icon">🏠</span>
-            <span>Home</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="current-season.html" class="nav-link" data-page="current-season">
-            <span class="nav-icon">📊</span>
-            <span>Current Season</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
-            <span class="nav-icon">🧾</span>
-            <span>Voting Analytics</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="franchise.html" class="nav-link" data-page="franchise">
-            <span class="nav-icon">🏛️</span>
-            <span>Franchise</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="rankings.html" class="nav-link" data-page="rankings">
-            <span class="nav-icon">🏆</span>
-            <span>Rankings</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="seasons.html" class="nav-link" data-page="seasons">
-            <span class="nav-icon">🗂️</span>
-            <span>Seasons</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="devotees.html" class="nav-link" data-page="devotees">
-            <span class="nav-icon">👥</span>
-            <span>Players</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="awards.html" class="nav-link" data-page="awards">
-            <span class="nav-icon">🏅</span>
-            <span>Awards</span>
-          </a>
-        </li>
-        <li class="nav-item"><a href="leaderboards.html" class="nav-link" data-page="leaderboards"><span class="nav-icon">📈</span><span>Leaderboards</span></a></li>
-
-
-        <li class="nav-item"><a href="timeline.html" class="nav-link" data-page="timeline"><span class="nav-icon">🗓️</span><span>Timeline</span></a></li>
-      </ul>
-    </nav>
+    <nav class="header-nav" aria-label="Primary navigation"><ul class="nav-list"><li class="nav-item"><a href="index.html" class="nav-link active" aria-current="page"><span>Home</span></a></li><li class="nav-item"><a href="on-air.html" class="nav-link"><span>On Air</span></a></li><li class="nav-item"><a href="seasons.html" class="nav-link"><span>Seasons</span></a></li><li class="nav-item"><a href="devotees.html" class="nav-link"><span>Players</span></a></li><li class="nav-item"><a href="rankings.html" class="nav-link"><span>Records</span></a></li><li class="nav-item"><a href="social.html" class="nav-link"><span>Social</span></a></li><li class="nav-item"><a href="timeline.html" class="nav-link"><span>Timeline</span></a></li></ul></nav>
   </div>
 </header>
 
@@ -152,329 +178,56 @@
 
 
   
-  <main class="homeWrap">
-
-    <section class="hero" aria-label="Home hero">
+  <main class="hm">
+    <section class="hero hm-hero" aria-label="Blindside Network">
       <div class="heroWall" id="heroWall" aria-hidden="true"></div>
-
-      <div class="heroContent">
-        <div class="heroKicker">
-          <span class="mini">✨</span>
-          <span>Auto-shuffled cast wall • Apple TV–style dock • One-click exploring</span>
-        </div>
-
-        <h1 class="heroTitle"><span class="grad">Enter the Franchise</span><br>and jump straight into the chaos.</h1>
-        <p class="heroLead">
-          Browse seasons, track rankings, and deep-dive into voting analytics. The homepage shuffles a “featured” contestant every refresh.
-        </p>
-
-        <div class="heroCtas">
-          <a class="btn primary" href="current-season.html"><span class="mini">📊</span>Open Season 5 hub</a>
-          <a class="btn" href="devotees.html"><span class="mini">👥</span>Browse players</a>
-          <a class="btn" href="seasons.html"><span class="mini">🗂️</span>All seasons</a>
+      <div class="hm-hero-copy">
+        <h1 class="hm-title">Every season.<br>Every vote.<br><span>Every blindside.</span></h1>
+        <p class="hm-lead">Blindside Network is home to eight reality competitions and one shared cast of characters who keep coming back. Follow the season on air, relive every finale, and trace any player's whole career.</p>
+        <div class="hm-ctas">
+          <a class="hm-btn primary" href="on-air.html">What's on now</a>
+          <a class="hm-btn" href="seasons.html">Browse every season</a>
         </div>
       </div>
-
-      <aside class="heroAside" aria-label="Featured">
-        <h3>Featured (shuffles every refresh)</h3>
-        <a class="featureCard" id="featuredLink" href="devotees.html">
-          <div class="featureAvatar"><img id="featuredImg" alt="" src="assets/avatars/mickey.png"></div>
-          <div class="featureMeta">
-            <div class="name" id="featuredName">Mickey</div>
-            <div class="sub" id="featuredSub">Click to open profile</div>
-          </div>
-        </a>
-      </aside>
+      <div class="hm-hero-side" id="hmOnAir" aria-live="polite">
+        <a class="hm-onair is-off" href="on-air.html"><span class="hm-live off"><i></i>Tuning in</span><b>&nbsp;</b></a>
+      </div>
     </section>
 
-    <section class="dockWrap" aria-label="Coverflow dock">
-      <div class="dockTop">
-        <div>
-          <h2>3D Coverflow Dock</h2>
-          <p>Slow auto-scroll, pause on hover. Drag / wheel to browse.</p>
-        </div>
+    <section class="hm-counts" id="hmCounts" aria-label="The network in numbers"></section>
+
+    <section class="hm-block" aria-labelledby="hmShowsTitle">
+      <div class="hm-head"><h2 id="hmShowsTitle">The shows</h2><a href="seasons.html">All seasons</a></div>
+      <div id="hmShows"></div>
+    </section>
+
+    <section class="hm-block" aria-labelledby="hmFinalesTitle">
+      <div class="hm-head"><h2 id="hmFinalesTitle">Recent finales</h2><a href="timeline.html">The timeline</a></div>
+      <div id="hmFinales"></div>
+    </section>
+
+    <section class="hm-block dockWrap" aria-labelledby="hmPlayersTitle">
+      <div class="hm-head">
+        <h2 id="hmPlayersTitle">The players</h2>
         <div class="dockControls">
-          <button class="iconBtn" id="dockPrev" aria-label="Scroll left">◀</button>
-          <button class="iconBtn" id="dockNext" aria-label="Scroll right">▶</button>
-          <button class="iconBtn" id="dockShuffle" aria-label="Shuffle">⟲</button>
+          <button class="iconBtn" id="dockPrev" type="button" aria-label="Scroll players left">&#9664;</button>
+          <button class="iconBtn" id="dockNext" type="button" aria-label="Scroll players right">&#9654;</button>
+          <a href="devotees.html" id="hmPlayersLink">Browse all players</a>
         </div>
       </div>
-
       <div class="coverflow">
-        <div class="coverflowTrack" id="coverflowTrack" tabindex="0" aria-label="Contestants dock">
-          <!-- JS renders items here -->
-        </div>
-        <div class="dockHint">Tip: add icons in <code>assets/avatars/</code> and put names in the <code>ICONS</code> list (in this file).</div>
+        <div class="coverflowTrack" id="coverflowTrack" tabindex="0" aria-label="Players"></div>
       </div>
     </section>
-
-    <section style="margin-top:18px;">
-      <div class="homeCards">
-        <a class="card homeCard" href="rankings.html">
-          <span class="homeCardIcon">🏆</span>
-          <div>
-            <h3>Rankings</h3>
-            <p>Franchise-wide player tiers + scoring.</p>
-          </div>
-        </a>
-        <a class="card homeCard" href="seasons.html">
-          <span class="homeCardIcon">🧾</span>
-          <div>
-            <h3>Voting Charts</h3>
-            <p>Who voted for who, every episode: in each Total Drama season's Vote History.</p>
-          </div>
-        </a>
-        <a class="card homeCard" href="awards.html">
-          <span class="homeCardIcon">🏅</span>
-          <div>
-            <h3>Awards</h3>
-            <p>Superlatives across every season.</p>
-          </div>
-        </a>
-      </div>
-    </section>
-
   </main>
 
-  
-
-<script>
-/** =========================================================
- *  ICON SOURCES
- *  - Put icons as assets/avatars/<name>.png
- *  - Add names here (lowercase filename)
- *  ========================================================= */
-const ICONS = [
-  "alejandro", "amy", "anne-maria", "b", "beardo",
-  "beth", "blaineley", "brick", "bridgette", "cameron",
-  "cody", "courtney", "crimson", "dakota", "dave",
-  "dawn", "dj", "duncan", "dwayne", "ella",
-  "emma", "eva", "ezekiel", "geoff", "gwen",
-  "harold", "heather", "izzy", "jasmine", "jo",
-  "josee", "justin", "katie", "leonard", "leshawna",
-  "lightning", "lindsay", "max", "mickey", "mike",
-  "noah", "owen", "rodney", "ryan", "sadie",
-  "sam", "samey", "scarlett", "scott", "shawn",
-  "sierra", "sky", "staci", "sugar", "topher",
-  "trent", "tyler", "zoey", "brody", "ennui",
-  "jacques", "jay", "junior", "kelly", "kitty",
-  "mary", "stephanie", "tammy",
-];
-
-
-function titleCase(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
-function initials(name){
-  const parts = titleCase(name).split(/\s+|[-_]/g).filter(Boolean);
-  if (!parts.length) return "";
-  if (parts.length === 1) return parts[0].slice(0,2).toUpperCase();
-  return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
-}
-function shuffle(arr){
-  const a = arr.slice();
-  for (let i=a.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
-}
-
-/** =========================================================
- *  HERO WALL (auto-scrolling background)
- *  ========================================================= */
-function buildHeroWall(names){
-  const wall = document.getElementById("heroWall");
-  if (!wall) return;
-
-  const rows = 6;
-  const perRow = 18;
-
-  const pool = shuffle(names);
-  const pick = (n) => Array.from({length:n}, (_,i)=>pool[i % pool.length]);
-
-  wall.innerHTML = "";
-  for (let r=0;r<rows;r++){
-    const row = document.createElement("div");
-    row.className = "heroRow";
-    row.dataset.dir = (r % 2 === 0) ? "l" : "r";
-    row.dataset.speed = (r % 3 === 0) ? "fast" : "slow";
-
-    const rowNames = pick(perRow + r);
-    const tiles = [];
-    for (const n of rowNames){
-      const tile = document.createElement("div");
-      tile.className = "heroTile";
-      const img = document.createElement("img");
-      img.loading = "lazy";
-      img.alt = "";
-      img.src = `assets/avatars/${n}.png`;
-      img.onerror = () => { tile.style.opacity = ".18"; img.style.display="none"; };
-      tile.appendChild(img);
-      tiles.push(tile);
-      row.appendChild(tile);
-    }
-    tiles.forEach(t => row.appendChild(t.cloneNode(true)));
-    wall.appendChild(row);
-  }
-}
-
-/** =========================================================
- *  COVERFLOW DOCK
- *  ========================================================= */
-let autoScrollOn = true;
-let rafId = null;
-
-function renderDock(names){
-  const track = document.getElementById("coverflowTrack");
-  if (!track) return;
-  track.innerHTML = "";
-
-  names.forEach((n) => {
-    const a = document.createElement("a");
-    a.className = "dockItem";
-    a.href = `player.html?player=${n}`;
-    a.dataset.name = n;
-
-    const card = document.createElement("div");
-    card.className = "dockCard";
-
-    const avatar = document.createElement("div");
-    avatar.className = "dockAvatar";
-
-    const img = document.createElement("img");
-    img.loading = "lazy";
-    img.alt = titleCase(n);
-    img.src = `assets/avatars/${n}.png`;
-
-    const init = document.createElement("span");
-    init.className = "dockInitials";
-    init.textContent = initials(n);
-
-    img.onerror = () => { a.classList.add("is-missing"); };
-
-    avatar.appendChild(img);
-    avatar.appendChild(init);
-
-    const label = document.createElement("div");
-    label.className = "dockName";
-    label.textContent = titleCase(n);
-
-    card.appendChild(avatar);
-    card.appendChild(label);
-    a.appendChild(card);
-    track.appendChild(a);
-  });
-
-  requestAnimationFrame(() => {
-    track.scrollLeft = (track.scrollWidth - track.clientWidth) * 0.22;
-    updateCoverflow();
-  });
-}
-
-function updateCoverflow(){
-  const track = document.getElementById("coverflowTrack");
-  if (!track) return;
-
-  const center = track.scrollLeft + track.clientWidth / 2;
-  const items = Array.from(track.querySelectorAll(".dockItem"));
-
-  items.forEach((it) => {
-    const w = it.getBoundingClientRect().width;
-    const itCenter = it.offsetLeft + w / 2;
-    const d = (itCenter - center) / w;
-    const clamped = Math.max(-2.2, Math.min(2.2, d));
-
-    const rotate = clamped * -18;
-    const z =  (1.8 - Math.abs(clamped)) * 48;
-    const y = Math.abs(clamped) * 8;
-    const scale = 1 - Math.min(0.22, Math.abs(clamped) * 0.09);
-
-    it.style.transform = `translateY(${y}px) translateZ(${z}px) rotateY(${rotate}deg) scale(${scale})`;
-  });
-}
-
-function startAutoScroll(){
-  const track = document.getElementById("coverflowTrack");
-  if (!track) return;
-
-  const step = () => {
-    if (autoScrollOn){
-      track.scrollLeft += 0.25;
-      if (track.scrollLeft >= track.scrollWidth - track.clientWidth - 2){
-        track.scrollLeft = 0;
-      }
-      updateCoverflow();
-    }
-    rafId = requestAnimationFrame(step);
-  };
-
-  if (rafId) cancelAnimationFrame(rafId);
-  rafId = requestAnimationFrame(step);
-}
-
-function setFeatured(names){
-  const chosen = names[Math.floor(Math.random()*names.length)];
-  const link = document.getElementById("featuredLink");
-  const img = document.getElementById("featuredImg");
-  const name = document.getElementById("featuredName");
-
-  if (name) name.textContent = titleCase(chosen);
-  if (img){
-    img.src = `assets/avatars/${chosen}.png`;
-    img.alt = titleCase(chosen);
-    img.onerror = () => { img.style.display="none"; };
-  }
-  if (link) link.href = `player.html?player=${chosen}`;
-}
-
-function boot(){
-  const names = shuffle(ICONS);
-
-  buildHeroWall(names);
-  renderDock(names);
-  setFeatured(names);
-
-  const track = document.getElementById("coverflowTrack");
-  if (track){
-    track.addEventListener("scroll", () => updateCoverflow(), {passive:true});
-    track.addEventListener("mouseenter", () => { autoScrollOn = false; });
-    track.addEventListener("mouseleave", () => { autoScrollOn = true; });
-    track.addEventListener("focus", () => { autoScrollOn = false; });
-    track.addEventListener("blur", () => { autoScrollOn = true; });
-  }
-
-  document.getElementById("dockPrev")?.addEventListener("click", () => {
-    autoScrollOn = false;
-    track.scrollBy({left: -240, behavior: "smooth"});
-  });
-  document.getElementById("dockNext")?.addEventListener("click", () => {
-    autoScrollOn = false;
-    track.scrollBy({left: 240, behavior: "smooth"});
-  });
-  document.getElementById("dockShuffle")?.addEventListener("click", () => {
-    autoScrollOn = false;
-    const shuffled = shuffle(ICONS);
-    renderDock(shuffled);
-    buildHeroWall(shuffled);
-    setFeatured(shuffled);
-    setTimeout(() => { autoScrollOn = true; }, 1200);
-  });
-
-  startAutoScroll();
-}
-
-boot();
+<script type="module">
+  import { mountHome } from './js/home.js';
+  mountHome();
 </script>
 
+<footer class="bs-footer"><div class="bs-footer-inner"><a href="index.html" class="bs-footer-brand" aria-label="Blindside Network home"><svg class="bs-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><defs><linearGradient id="bsf-hit" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF3EA5"/><stop offset="1" stop-color="#7B5CFF"/></linearGradient><linearGradient id="bsf-glint" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><clipPath id="bsf-keep"><polygon points="0,0 32.5,0 44.5,64 0,64"/></clipPath><clipPath id="bsf-slice"><polygon points="34.5,0 64,0 64,64 46.5,64"/></clipPath><clipPath id="bsf-b"><path d="M12 7h22c8 0 14 5 14 12.5 0 4.6-2.3 8.2-6 10.2 5 1.8 8 5.9 8 11.3C50 49.6 43.8 57 34.5 57H12Z M23 16.5v10h9.5a5 5 0 0 0 0-10ZM23 35v12.5h11a6.25 6.25 0 0 0 0-12.5Z" clip-rule="evenodd"/></clipPath></defs><g class="bs-body" clip-path="url(#bsf-keep)"><path d="M12 7h22c8 0 14 5 14 12.5 0 4.6-2.3 8.2-6 10.2 5 1.8 8 5.9 8 11.3C50 49.6 43.8 57 34.5 57H12Z M23 16.5v10h9.5a5 5 0 0 0 0-10ZM23 35v12.5h11a6.25 6.25 0 0 0 0-12.5Z" fill="currentColor" fill-rule="evenodd"/></g><g class="bs-slice" clip-path="url(#bsf-slice)" transform="translate(3.5 4.5)"><path d="M12 7h22c8 0 14 5 14 12.5 0 4.6-2.3 8.2-6 10.2 5 1.8 8 5.9 8 11.3C50 49.6 43.8 57 34.5 57H12Z M23 16.5v10h9.5a5 5 0 0 0 0-10ZM23 35v12.5h11a6.25 6.25 0 0 0 0-12.5Z" fill="url(#bsf-hit)" fill-rule="evenodd"/></g></svg><span>Blindside Network</span></a><nav aria-label="Footer"><a href="on-air.html">On Air</a><a href="seasons.html">Seasons</a><a href="devotees.html">Players</a><a href="rankings.html">Records</a><a href="social.html">Social</a><a href="timeline.html">Timeline</a><a href="simulator.html">Simulator</a></nav><p>blindsidenetwork.com · A fictional network. Every show, season and player here is simulated.</p></div></footer>
 
-
-<!-- SITE FOOTER START -->
-<footer class="siteFooter">
-  <div class="footerInner">
-    <div class="footerTitle">DC Franchise Database</div>
-    <div class="footerSub">Static archive • <span id="footer-seasons">9</span> seasons • <span id="footer-players">102</span> players • Icons: name.png</div>
-  </div>
-</footer>
-<!-- SITE FOOTER END -->
   <script type="module" src="js/site-header.js"></script>
 </body>
 </html>

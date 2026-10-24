@@ -10,6 +10,17 @@
 .bs-sim:hover,.bs-sim:focus-visible{background:rgba(255,62,165,.14);border-color:#FF3EA5}
 .bs-brand:focus-visible,.bs-sim:focus-visible{outline:2px solid #FFC23D;outline-offset:4px;border-radius:10px}
 .bs-mark .bs-slice{transform:translate(3.5px,4.5px)}
+.bs-footer{margin-top:48px;border-top:1px solid rgba(255,255,255,.08);background:rgba(10,6,16,.55)}
+.bs-footer-inner{max-width:1280px;margin:0 auto;padding:28px clamp(16px,3vw,32px) 34px;display:grid;gap:14px;
+  grid-template-columns:auto 1fr;align-items:center}
+.bs-footer-brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:#F3EEF9;
+  font-family:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;font-weight:900;font-size:20px;letter-spacing:.04em;text-transform:uppercase}
+.bs-footer-brand .bs-mark{width:30px;height:30px}
+.bs-footer nav{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px 18px}
+.bs-footer nav a{color:#A898BD;text-decoration:none;font-size:14px}
+.bs-footer nav a:hover{color:#F3EEF9}
+.bs-footer p{grid-column:1/-1;margin:0;color:#7E6F93;font-size:12.5px}
+@media (max-width:640px){.bs-footer-inner{grid-template-columns:1fr}.bs-footer nav{justify-content:flex-start}}
 @media (prefers-reduced-motion:no-preference){
   .bs-mark.is-animated .bs-slice{animation:bs-hit 1.15s .25s cubic-bezier(.2,.8,.2,1) both}
   .bs-mark.is-animated .bs-body{animation:bs-recoil 1.15s .25s ease-out both}
@@ -23,6 +34,7 @@
 @keyframes bs-recoil-again{0%,52%{transform:none}63%{transform:translate(-1.6px,0)}100%{transform:none}}
 @keyframes bs-glint{0%,82%{transform:translateX(0)}100%{transform:translateX(70px)}}
 @media (max-width:640px){.bs-mark{width:38px;height:38px}.bs-name{font-size:25px}.bs-net{font-size:9px}.bs-sim{padding:7px 12px;font-size:12px}}
+@media (max-width:440px){.bs-brand{gap:8px}.bs-mark{width:32px;height:32px}.bs-name{font-size:21px}.bs-net{font-size:7.5px;letter-spacing:.5em}.bs-sim{padding:6px 10px;font-size:11px;letter-spacing:.06em}}
 /* ===== /BRAND ===== */
 /* ===== Type: Blindside Network =====
    Big Shoulders Display for names and numbers, Instrument Sans for reading.

@@ -21,6 +21,7 @@ import TEXTURE from './texture.js';
 import EDITORIAL from './editorial.js';
 import ARC from './arc.js';
 import COUPLE from './couple.js';
+import CHEAT from './cheat.js';
 import JURY from './jury.js';
 import PLAN from './plan.js';
 import KNOWN from './known.js';
@@ -84,5 +85,5 @@ import BLOWUP from './blowup.js';
 import THEMELIFE from './themelife.js';
 import ISLAND from './island.js';
 
-export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP, ...WHACK, ...TWIST1, ...TWIST2, ...TWIST3, ...TWIST4, ...TWIST5, ...TWIST6, ...TWIST7, ...TWIST8, ...TWIST9, ...TWIST10, ...TWIST11, ...TWIST12, ...VFALL, ...ENGINE2, ...KIN, ...PAST, ...ANON, ...SOLO, ...SUITEACT, ...CHAINACT, ...HUNTACT, ...PXACT, ...DUOACT, ...CAMPACT, ...WILDACT, ...SPACT, ...CAPACT, ...INTACT, ...WHACT, ...EXPACT, ...PWACT, ...COINACT, ...SECACT, ...TEMPACT, ...NMACT, ...BKACT, ...BLACT, ...TEAMACT, ...MVACT, ...PMACT, ...HEXACT, ...QUIETACT, ...RWACT, ...MOVEINACT, ...MOVEINKIN, ...EVICTVOTE, ...NOMTHIRD, ...NOMWHY, ...BLOWUP, ...THEMELIFE, ...ISLAND };
+export const POOLS = { ...FRICTION, ...CEREMONY, ...TALK, ...SOCIAL, ...DEALS, ...ALLIANCE, ...CAMPAIGN, ...POWER, ...LIFE, ...PHASE, ...BLOC, ...VENUE, ...FALLOUT, ...BOND, ...REIGN, ...SCHEME, ...FOLLOWUP, ...TEXTURE, ...EDITORIAL, ...ARC, ...COUPLE, ...CHEAT, ...JURY, ...PLAN, ...KNOWN, ...CER, ...ROMANCE, ...UPKEEP, ...ENGINE, ...DRINKS, ...MEETING, ...SLOP, ...WHACK, ...TWIST1, ...TWIST2, ...TWIST3, ...TWIST4, ...TWIST5, ...TWIST6, ...TWIST7, ...TWIST8, ...TWIST9, ...TWIST10, ...TWIST11, ...TWIST12, ...VFALL, ...ENGINE2, ...KIN, ...PAST, ...ANON, ...SOLO, ...SUITEACT, ...CHAINACT, ...HUNTACT, ...PXACT, ...DUOACT, ...CAMPACT, ...WILDACT, ...SPACT, ...CAPACT, ...INTACT, ...WHACT, ...EXPACT, ...PWACT, ...COINACT, ...SECACT, ...TEMPACT, ...NMACT, ...BKACT, ...BLACT, ...TEAMACT, ...MVACT, ...PMACT, ...HEXACT, ...QUIETACT, ...RWACT, ...MOVEINACT, ...MOVEINKIN, ...EVICTVOTE, ...NOMTHIRD, ...NOMWHY, ...BLOWUP, ...THEMELIFE, ...ISLAND };
 export const POOL_KEYS = Object.keys(POOLS);

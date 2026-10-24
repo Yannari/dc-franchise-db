@@ -970,7 +970,8 @@ export function initGameState() {
     // somebody is spoken for reads it here rather than re-deriving it.
     for (const solo of _life.soloPartners) {
       const p = players.find(x => x.name === solo.name);
-      if (p) p.partnerAtHome = { slug: solo.whom, name: solo.whomName, stage: solo.stage };
+      if (p) p.partnerAtHome = { slug: solo.whom, name: solo.whomName, stage: solo.stage,
+        ...(solo.outside ? { outside: true, named: !!solo.named, word: solo.word } : {}) };
     }
   }
 

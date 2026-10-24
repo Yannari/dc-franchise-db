@@ -132,7 +132,7 @@ export function lifeSeeds(cast = [], log = [], seasons = []) {
       // Spoken for by somebody outside the franchise (a tie with `outside`, js/ties.js): cast alone, always.
       // No slug, so the log can never move it; a partner the log knows about wins above.
       const out_ = outsidePartner(p.name);
-      if (out_) out.soloPartners.push({ name: p.name, whom: null, whomName: out_.name, stage: out_.stage, outside: true });
+      if (out_) out.soloPartners.push({ name: p.name, whom: null, whomName: out_.name, stage: out_.stage, outside: true, named: out_.named, word: out_.word });
     }
 
     // ── exes ──

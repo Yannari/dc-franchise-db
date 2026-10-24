@@ -715,8 +715,10 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
   const _at = players.find(pl => pl.name === evictee)?.partnerAtHome || null;
   let homecoming = null;
   if (_at) {
+    // still going, or ended because the house exposed it as cheating (bb-events/cheating.js); one they called off
+    // themselves, for home, is the reunion
     const strayed = (gs.showmances || []).some(sh => (sh.players || []).includes(evictee)
-      && sh.phase !== 'broken-up');
+      && sh.origin !== 'arrived-together' && (sh.phase !== 'broken-up' || sh.breakupType === 'cheating'));
     homecoming = {
       whom: _at.name, stage: _at.stage, strayed,
       line: strayed

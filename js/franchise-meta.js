@@ -1583,7 +1583,8 @@ export function retrofitFranchiseMeta() {
     }
     for (const solo of life.soloPartners) {
       const p = players.find(x => x.name === solo.name);
-      if (p) p.partnerAtHome = { slug: solo.whom, name: solo.whomName, stage: solo.stage };
+      if (p) p.partnerAtHome = { slug: solo.whom, name: solo.whomName, stage: solo.stage,
+        ...(solo.outside ? { outside: true, named: !!solo.named, word: solo.word } : {}) };
     }
   } catch (e) { console.warn('Life carryover skipped.', e); }
   return true;

@@ -219,5 +219,6 @@ export function outsidePartner(name, roster = rosterNow()) {
   if (!mine.length) return null;
   mine.sort((x, y) => STAGE_RANK.indexOf(x.kin) - STAGE_RANK.indexOf(y.kin));
   const named = String(mine[0].name || '').trim();
-  return { name: named || `${name}'s ${outsideWord(me, mine[0].kin)}`, stage: TIE_STAGE[mine[0].kin], named: !!named };
+  const word = outsideWord(me, mine[0].kin);
+  return { name: named || `${name}'s ${word}`, stage: TIE_STAGE[mine[0].kin], named: !!named, word };
 }

@@ -21,8 +21,8 @@ afterEach(() => { delete globalThis.window; });
 
 describe('the partner at home', () => {
   it('is the typed name, or "Paisley\'s husband" read off her gender and sexuality', () => {
-    expect(outsidePartner('Paisley', ROSTER)).toEqual({ name: "Paisley's husband", stage: 'married', named: false });
-    expect(outsidePartner('Sawyer', ROSTER)).toEqual({ name: 'Caleb', stage: 'married', named: true });
+    expect(outsidePartner('Paisley', ROSTER)).toEqual({ name: "Paisley's husband", stage: 'married', named: false, word: 'husband' });
+    expect(outsidePartner('Sawyer', ROSTER)).toEqual({ name: 'Caleb', stage: 'married', named: true, word: 'husband' });
     expect(outsidePartner('Robin', ROSTER).name).toBe("Robin's partner");
     expect(outsidePartner('Lacey', ROSTER)).toBeNull();
   });
@@ -38,8 +38,8 @@ describe('the partner at home', () => {
     globalThis.window = { FRANCHISE_ROSTER: ROSTER };
     const out = lifeSeeds([{ name: 'Paisley', slug: 'paisley' }, { name: 'Sawyer', slug: 'sawyer' }], [], []);
     expect(out.soloPartners).toEqual([
-      { name: 'Paisley', whom: null, whomName: "Paisley's husband", stage: 'married', outside: true },
-      { name: 'Sawyer', whom: null, whomName: 'Caleb', stage: 'married', outside: true },
+      { name: 'Paisley', whom: null, whomName: "Paisley's husband", stage: 'married', outside: true, named: false, word: 'husband' },
+      { name: 'Sawyer', whom: null, whomName: 'Caleb', stage: 'married', outside: true, named: true, word: 'husband' },
     ]);
     expect(out.showmances).toEqual([]);
     const juan = lifeSeeds([{ name: 'Juan', slug: 'juan' }], [], []);

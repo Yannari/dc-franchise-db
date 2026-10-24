@@ -8916,7 +8916,14 @@
       "occupation": "Doctor",
       "descriptor": "The Doctor",
       "backstory": "Fatima Kalantar is a doctor at a teaching hospital in Cambridge, Massachusetts, the daughter of Iranian immigrants who ran a corner pharmacy and expected nothing less than medical school. At forty-four she has spent twenty years working nights, raising two teenagers with her husband, a professor, and running the hospital's free clinic at weekends. She is the oldest woman in the house and doesn't mind saying so. She applied on a dare from her daughter, who said she had never done one spontaneous thing in her life, and because the prize would pay for the clinic's new wing. She is not sure she knows how to lie, and not sure she wants to learn.",
-      "personality": "Fatima is principled, caring and direct. She mothers the house without being asked, checking on anyone who is sick, reminding people to eat and telling them exactly what she thinks of their choices. She is honest to a fault, believes in fairness and will stand up for anyone she thinks is being treated badly, even when it costs her. Younger players find her either comforting or exhausting: she lectures, and she does not always notice she is doing it. She is loyal to the people who share her values. Her weakness is that she runs the house like a ward that should be run sensibly, and nobody in it wants a sensible game."
+      "personality": "Fatima is principled, caring and direct. She mothers the house without being asked, checking on anyone who is sick, reminding people to eat and telling them exactly what she thinks of their choices. She is honest to a fault, believes in fairness and will stand up for anyone she thinks is being treated badly, even when it costs her. Younger players find her either comforting or exhausting: she lectures, and she does not always notice she is doing it. She is loyal to the people who share her values. Her weakness is that she runs the house like a ward that should be run sensibly, and nobody in it wants a sensible game.",
+      "ties": [
+        {
+          "name": "Oumar",
+          "kin": "married",
+          "outside": true
+        }
+      ]
     },
     {
       "name": "Ivyna",

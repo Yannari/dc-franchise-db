@@ -88,7 +88,7 @@ export default {
     // endpoint keeps the strict ALLOWED_ORIGIN check.
     const PUBLIC_READS = ['/api/leaderboard', '/api/relationships', '/api/stats',
                           '/api/roster', '/api/roster/status', '/api/live-season',
-                          '/api/social', '/api/life-events'];
+                          '/api/social', '/api/life-events', '/api/live-exits'];
     // The gallery listing is per-slug, so it is a prefix rather than a fixed
     // path — but it is the same kind of thing as the rest of this list: public
     // data the player page reads from whatever origin it happens to be on.
@@ -452,6 +452,10 @@ export default {
         // page shouldn't hit D1 on every visit.
         return json(await liveSeasonGet(env), 200, rcors, 30);
       }
+      if (request.method === 'GET' && url.pathname === '/api/live-exits') {
+        // Kristal-talKs reads the airing seasons' exit interviews here.
+        return json(await liveExitsGet(env), 200, rcors, 30);
+      }
       if (request.method === 'GET' && url.pathname === '/api/social') {
         // The feed page polls this while a season airs, so it is cached for the
         // same short window as the standings it accompanies.
@@ -462,7 +466,14 @@ export default {
         if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
           return json({ ok: false, error: 'unauthorized' }, 401, cors);
         }
-        if (url.pathname === '/api/live-season/clear') return json(await liveSeasonClear(env), 200, cors);
+        if (url.pathname === '/api/live-season/clear') {
+          // Taking a run off the air takes its exit interviews with it (the run did not happen).
+          const meta = await db(env).prepare('SELECT season_number FROM live_meta WHERE id = 1').first().catch(() => null);
+          if (meta?.season_number != null) {
+            await db(env).prepare('DELETE FROM live_exits WHERE season_number = ?').bind(meta.season_number).run().catch(() => null);
+          }
+          return json(await liveSeasonClear(env), 200, cors);
+        }
         const body = await request.json().catch(() => ({}));
         return json(await liveSeasonPut(env, body), 200, cors);
       }
@@ -1502,11 +1513,47 @@ async function liveSeasonPut(env, payload = {}) {
     }
   }
 
+  // Kristal-talKs' exit interviews ride along too, written the same way: on
+  // their own, afterwards, a failure reported (a database without
+  // live_exits_schema.sql answers "no such table") rather than thrown.
+  let exits = 0, exitsError = null;
+  const ex = payload.exits;
+  if (ex && Array.isArray(ex.exitInterviews)) {
+    try {
+      await d.prepare(
+        `INSERT INTO live_exits (format,season_number,title,air_year,air_slot,body,updated_at)
+         VALUES (?,?,?,?,?,?,datetime('now'))
+         ON CONFLICT(format,season_number) DO UPDATE SET title=excluded.title, air_year=excluded.air_year,
+           air_slot=excluded.air_slot, body=excluded.body, updated_at=excluded.updated_at`
+      ).bind(fmt, season, ex.title || payload.title || null, asInt(ex.airYear), ex.airSlot || null,
+        JSON.stringify(ex.exitInterviews)).run();
+      exits = ex.exitInterviews.length;
+    } catch (e) {
+      exitsError = e.message || String(e);
+    }
+  }
+
   return {
     ok: true, seasonNumber: season, episode: asInt(payload.episode),
-    players: players.length, posts,
+    players: players.length, posts, exits,
     ...(socialError ? { socialError } : {}),
+    ...(exitsError ? { exitsError } : {}),
     ...(portraitError ? { portraitError } : {}),
+  };
+}
+
+/** Every airing season's exit interviews (live_exits), for kristal.html. */
+async function liveExitsGet(env) {
+  const res = await db(env).prepare('SELECT * FROM live_exits ORDER BY format, season_number').all()
+    .catch(() => ({ results: [] }));
+  return {
+    ok: true,
+    seasons: (res.results || []).map(r => {
+      let list = [];
+      try { list = JSON.parse(r.body || '[]'); } catch { list = []; }
+      return { format: r.format, seasonNumber: r.season_number, title: r.title,
+        airYear: r.air_year, airSlot: r.air_slot, updatedAt: r.updated_at, exitInterviews: list };
+    }),
   };
 }
 

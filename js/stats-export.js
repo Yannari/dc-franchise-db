@@ -5610,6 +5610,23 @@ export async function syncLiveEpisode(onStatus) {
   // asked. The posts then went up as season 0 and Birdie, which finds the
   // airing season's posts by the standings' number, showed nothing.
   if (social) snap.social = { ...social, season: snap.seasonNumber };
+  // Kristal-talKs' exit interviews, so a boot is heard the week they leave and
+  // not only once the finale is exported (user, 2026-10-24: "i still dont see
+  // it for the dumped in perfect match and the evicted in big brother"). With
+  // the season's air window, which Kristal files the "During …" tab under.
+  try {
+    const fmt = snap.format || DEFAULT_FORMAT;
+    const list = fmt === 'total-drama' ? publishedTDExitInterviews()
+      : fmt === 'big-brother' ? publishedExitInterviews() : publishedExits(fmt);
+    let sdb = { seasons: [] };
+    try { const r = await fetch('seasons_database.json'); if (r.ok) sdb = await r.json(); } catch {}
+    const win = _airWindowFor(sdb, fmt, snap.seasonNumber);
+    snap.exits = {
+      title: snap.title || `${SHOWS[fmt]?.name || fmt} ${snap.seasonNumber}`,
+      airYear: win.airYear || null, airSlot: win.airSlot || null,
+      exitInterviews: Array.isArray(list) ? list : [],
+    };
+  } catch (e) { console.warn('live sync: exit interviews not sent —', e?.message || e); }
   // Says what it is actually sending. The standings are for this episode; the
   // feed is the whole season, and a status line that mentions only the episode
   // is why somebody has to ask whether their rebuild went out.
@@ -5648,7 +5665,9 @@ Put it back on the site as airing anyway?`);
   // rather than reporting a clean sync that half happened.
   const said = j.socialError ? ` · the feed did not publish (${j.socialError})`
     : j.posts ? ` · ${j.posts} posts` : '';
-  _status(`Episode ${snap.episode} is live — ${snap.stillIn} of ${snap.totalPlayers} still in.${said}`);
+  const heard = j.exitsError ? ` · the exit interviews did not publish (${j.exitsError})`
+    : j.exits ? ` · ${j.exits} exit interview${j.exits === 1 ? '' : 's'}` : '';
+  _status(`Episode ${snap.episode} is live — ${snap.stillIn} of ${snap.totalPlayers} still in.${said}${heard}`);
   return j;
 }
 

@@ -203,6 +203,30 @@ import { episodeComments } from './js/kristal-voice.js';
 import { careersIn } from './js/records.js';
 import { socialGraph } from './js/life-resolver.js';
 import { tiesFor } from './js/dramagram.js';
+import { SHOWS, seasonId, DEFAULT_FORMAT } from './js/shows.js';
+import { nextWindowFor } from './js/franchise-calendar.js';
+
+/* ── A SEASON STILL ON THE AIR ──────────────────────────────────────────
+   User, 2026-10-24: "i still dont see it for the dumped in perfect match and
+   the evicted in big brother". A season's exit interviews lived only on its
+   row in seasons_database.json, which a season gets when its finale is
+   exported. "Publish to site" in the Run tab now sends them to /api/live-exits
+   (worker/live_exits_schema.sql), one entry per show and season, and an entry
+   whose season is not published yet becomes a season row here with its
+   interviews and nothing else: no cast record, so no debrief until it ends. */
+const LIVE_EXITS = 'https://dc-studio.yannari19.workers.dev/api/live-exits';
+function airingSeasons(published, live) {
+  const have = new Set(published.map(s => `${s.format || DEFAULT_FORMAT}|${s.seasonNumber}`));
+  const out = [];
+  for (const x of live?.seasons || []) {
+    if (!x?.exitInterviews?.length || have.has(`${x.format}|${x.seasonNumber}`)) continue;
+    const win = x.airYear && x.airSlot ? { airYear: x.airYear, airSlot: x.airSlot }
+      : nextWindowFor([...published, ...out], x.format, { number: x.seasonNumber }) || {};
+    out.push({ seasonId: seasonId(x.format, x.seasonNumber), seasonNumber: x.seasonNumber, format: x.format,
+      title: x.title, ...win, exitInterviews: x.exitInterviews, airing: true });
+  }
+  return out;
+}
 
 const $ = s => document.querySelector(s);
 const esc = t => String(t ?? '').replace(/[&<>"]/g, c =>
@@ -323,7 +347,7 @@ function card(ep) {
       <span class="kt-art">${avatar('kristal', 'host')}${avatar(ep.guest, 'guest')}</span>
       <span class="kt-ep-meta">
         <span class="kt-ep-num">EP ${ep.num} · ${esc(ep.kind === 'debrief' ? 'THE DEBRIEF'
-          : ep.kind === 'exit' ? `EXIT INTERVIEW · WEEK ${ep.record?.week ?? ''}` : 'THE CATCH-UP')}</span><br>
+          : ep.kind === 'exit' ? `EXIT INTERVIEW · ${(SHOWS[ep.season?.format || DEFAULT_FORMAT]?.words?.round || 'Week').toUpperCase()} ${ep.record?.week ?? ''}` : 'THE CATCH-UP')}</span><br>
         <span class="kt-ep-title">${esc(ep.title)}</span>
         <span class="kt-ep-sub">
           <span>${mmss(ep.minutes)}</span>
@@ -384,18 +408,19 @@ function render() {
 }
 
 (async () => {
-  const [pdb, sdb, life, roster] = await Promise.all([
+  const [pdb, sdb, life, roster, liveExits] = await Promise.all([
     fetch('players_database.json').then(r => r.json()).catch(() => ({ players: [] })),
     fetch('seasons_database.json').then(r => r.json()).catch(() => ({ seasons: [] })),
     fetch('life_events.json').then(r => r.json()).catch(() => ({ events: [] })),
     fetch('franchise_roster.json').then(r => r.json()).catch(() => ({ players: [] })),
+    fetch(LIVE_EXITS).then(r => (r.ok ? r.json() : null)).catch(() => null),
   ]);
   const rows = roster.players || roster || [];
   const careers = careersIn(pdb, 'all');
   namesBySlug = Object.fromEntries((pdb.players || []).map(p => [p.id, p.name]));
   graph = socialGraph(careers);
   buildInputs = {
-    careers, seasons: sdb.seasons || [], lifeEvents: life.events || [],
+    careers, seasons: [...(sdb.seasons || []), ...airingSeasons(sdb.seasons || [], liveExits)], lifeEvents: life.events || [],
     // archetype AND stats, so the voice styles have both to choose from.
     profiles: Object.fromEntries(rows.filter(r => r.slug)
       .map(r => [r.slug, { archetype: r.archetype, stats: r.stats, gender: r.gender }])),

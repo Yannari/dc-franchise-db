@@ -28,6 +28,7 @@ import { seasonWinners } from './records.js';
 import { avatarUrl, loadPortraitCatalog } from './avatar-registry.js';
 import { mediaLogo, ensureMediaCss } from './media-brands.js';
 import { currentShow, ALL } from './show-switcher.js';
+import { mountCall } from './calls.js';
 
 const API = (() => {
   try { return (localStorage.getItem('studio_api_base') || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, ''); }
@@ -185,6 +186,8 @@ export function onAirModel(live, exits, seasons = []) {
     leaders: leaders.slice(0, 4),
     latestExit: latest,
     exitPlayer,
+    // Every exit filed so far: "Call it" scores a call against the next one.
+    exits: interviews,
   };
 }
 
@@ -350,8 +353,10 @@ function wireBirdie(root) {
 /** Draw one show's season. */
 export function renderShow(root, m, posts = []) {
   const top = [...posts].sort((a, b) => (b.likes || 0) - (a.likes || 0)).slice(0, 24);
-  root.innerHTML = heroHtml(m) + leadersHtml(m) + exitHtml(m) + boardHtml(m) + birdieHtml(top);
+  root.innerHTML = heroHtml(m) + leadersHtml(m) + exitHtml(m) + '<div class="oa-call-slot"></div>'
+    + boardHtml(m) + birdieHtml(top);
   wireBirdie(root);
+  mountCall(root.querySelector('.oa-call-slot'), m, m.exits);
 }
 
 // ── loading ──────────────────────────────────────────────────────────────

@@ -3544,7 +3544,9 @@ pool, check every scene in it against this table.
 ## 20. The shows still to build
 
 Ranked 2026-10-14, after six shows (Total Drama, Big Brother, The Traitors,
-Drag Race, Perfect Match, The Circle). Nothing on this list is started.
+Drag Race, Perfect Match, The Circle). Since then two rows have been built:
+The Challenge (#1), and #8 as The Ridonculous Race, the cartoon version of The
+Amazing Race (`ridonculous-race`, §22).
 
 **Every show here gets a stepped viewer** (§17.2, §18), mockups first. No new
 show ships on the classic column-of-cards viewer; count the viewer in the cost.
@@ -3596,7 +3598,7 @@ the prefix, name, emoji, `words` and `audience` overlay, while dispatch in
 (§9), `CONFIG_SCOPE`, ratings signals (§2.5) and export stamping (§5); you skip
 the engine. Use it when a format wants its own billing but not its own rules.
 
-Before building any of these, do §16.9 and §17.8, build the dialogue by §19 and
+Before building any of these, do §16.9, §17.8 and §22.9, build the dialogue by §19 and
 the viewer by §18.4, and check the real show's rules on its wiki before
 designing a mechanic.
 
@@ -3659,3 +3661,280 @@ half its islanders, and somebody who has not arrived has not left.
   (the first port read `week.nominees`, which is only written on a cancelled
   week, and called two thirds of all exits backdoors); no guest line twice in
   a season; nobody messaged, ranked or predicted who is no longer playing.
+
+---
+
+## 22. What the race actually found (The Ridonculous Race)
+
+Built 2026-10-17 to 2026-10-24. The design is
+`docs/superpowers/specs/2026-10-18-ridonculous-race-design.md`; the research,
+decisions, identities and scene catalogue are in `docs/ridonculous-race-*.md`,
+and the writers' brief is `docs/rr-writers-brief.md`. The engine is `js/rr/`,
+the stepped viewer `js/vp-rr-ep/`, and the guards are the 130-odd
+`tests/rr-*.test.js` (`npx vitest run tests/rr-*` is the gate before every
+commit).
+
+The race is unlike the earlier shows in three ways:
+- nobody is voted out (the Boomerang vote only picks a target);
+- the contestants are pairs;
+- most of what is on screen is art the user made by hand: painted backgrounds
+  (plates) and cut-outs for 46 invented places.
+
+Almost every defect below was found by the user reading one leg's transcript
+or looking at one screen. Very few were found by a test going red.
+
+### 22.1 Decide what the wiki will say before the first export
+
+The first exporter kept each leg's check-in order and the season totals, and
+nothing else. When the wiki article and the awards page were built, they needed
+more for every leg:
+- each team's check-in time, clock, day and gap to the winner;
+- every penalty, with its reasons;
+- every challenge run: the side taken, who did it, the tries, the minutes, a
+  switch or a quit;
+- the reward, the passes, the Boomerang ballots, the sabotage, the fears and
+  the injuries.
+
+All of that existed in the finished season and was thrown away at export. It is
+now read into each row by `js/rr/leg-record.js`. A season exported before that
+change will never have the detail, so `tests/rr-wiki.test.js` keeps an old
+document drawing without it.
+
+**Rule:** before writing the exporter, write down the wiki's sections, the
+trivia lines and the awards you want, and check that every number each one
+needs is in the season document. Adding a field to the export is cheap.
+Getting it back for a season already published is impossible.
+
+- **Store ids in the record, and turn them into words in one place.** The
+  record keeps machine ids like `refuse:holds` and `ditch-a-cab:seen`.
+  `js/rr/record-words.js` turns them into words ("refusing a challenge"), and
+  both pages read that file. A test fails if a raw id, `undefined`, `NaN` or
+  `[object` reaches the page.
+- **Awards come from numbers, not a writer** (`js/rr/awards.js`):
+  - an award nobody earned is left out;
+  - a tie goes to the team that finished higher;
+  - the awards index card (`doc.awards`) travels on the seasons row
+    (`mergeRaceSeasonsDatabase`), or `awards.html` shows nothing for the season.
+- **Recognise the season by its data, not its slug.** Shared pages
+  (`season-wiki-tab.js`, `season-awards_ref.html`) call `isRaceSeason(s)`,
+  which checks for teams and for legs with a check-in order. Writing
+  `format === 'ridonculous-race'` there fails the show-list-duplication guard
+  (§13), as it should.
+- **Every shared tab needs to be told about a no-vote show** (§0). The season
+  page's Vote History tab still lists each leg as "No vote detail". Open each
+  tab of the season page with your show's data before calling the export done.
+
+### 22.2 Use every piece of art the user made, and give each one a job
+
+- **Every plate is used, or left out with a reason.** A third of the user's
+  finished plates (420 of 642) never reached the screen. Each challenge used
+  one standing shot and one action angle, every Chill Zone check-in used its
+  first angle, and cut-outs loaded but were never placed. The user asked "why
+  did i do all that work if u dont even use them all".
+  `tests/rr-vp-plates-all-used.test.js` now fails on any file in the user's
+  folder that is neither used nor listed in `LEFT_OUT` with a reason.
+- **A cut-out changes the challenge.** "How are u suppose to include a cutout
+  of a polar bear if u dont tweak the challenge." A prop the challenge uses is
+  drawn in use:
+  - held in the hands (`HELD` in `js/vp-rr-ep/plates.js`);
+  - carried along a path (`carry`);
+  - worn (`wear`);
+  - dropped on a fail (`drop`);
+  - ridden (vehicle modes);
+  - or placed as scenery (`deco`).
+
+  The guards are `rr-vp-held` and `rr-vp-worn-dropped`. A vial stood on the
+  ground beside the team is a bug.
+- **Words and backgrounds must match.** If a line names something the
+  background doesn't show, write the plate job yourself, then tell the user.
+  Don't ask first. Don opened "inside a log cabin" on a snow plain, and racers
+  stood on the finish mat while the course was still running. The job is
+  `tools/rr-vp-jobs.json` plus `edit/<folder>/prompt.txt` with reference frames,
+  then `python tools/rr-vp-repaints.py --jobs`. Use a stand-in that matches the
+  words until the plate comes back, and name the job in your report.
+- **A challenge has stages, from its real rules.** At first every challenge was
+  arrive, one fail, done, and the user called them "super short with barely
+  anything to do". Each challenge now has stages built from its real rules
+  (`stages: [{id, share, risk}]`). Each stage has:
+  - its own shot (`STAGE_SHOTS`);
+  - at least two lines when it goes right, and two when it fails if it can go
+    wrong (`tests/rr-stages.test.js`);
+  - a screenshot, taken with `node tools/rr-vp-look.mjs <seed> <leg>
+    stage:<id>:ok|fail` and looked at.
+- **Measure how much screen each background gets.** A close-up must not be a
+  challenge's only background for talk. Count each background's share of a
+  leg's screens over several seasons. Anything above about 40% that is a
+  close-up needs wide alternates. Later, 81 of 93 challenges still used four
+  backgrounds or fewer, and the fix was new plate jobs, not new code.
+
+### 22.3 A team is in one place at a time
+
+The user read the Home City leg and found all of these:
+- teams on the sky-deck talking to teams on the stairs;
+- a judge where the challenge has none;
+- snow falling indoors;
+- a team checked in while its zipline was still airing;
+- "every day of this race" said at seven in the morning on day one.
+
+What fixed them:
+- **Every scene has a minute and a spot.** Two teams talk only where both are
+  at that minute. Where each stage of each challenge is (`js/rr/spots.js`) is
+  generated from the stage shots by `tools/rr-spots.mjs`, and `rr-stage-spots`
+  fails until it is regenerated after a stage changes.
+- **A moment is timed by what it is.** A fear plays at the stage that frightens
+  them, a pass at the end, a fail in the middle. After the clock runs,
+  `settleRuns` fits each run's stages and moments into the visit they belong
+  to. A try at the elevator is after the ride, not halfway through the queue.
+- **A shared space records who is in it with whom, not just a capacity**
+  (`js/rr/lift.js`, the sauna's rooms). A car that takes two teams at a time
+  has to say which two, ride by ride, or the pairs change from shot to shot.
+- **Smaller rules:**
+  - no weather on an indoor background;
+  - the finish mat only for teams that have finished;
+  - a jump of hours on the clock shows something on screen (the overnight
+    narration);
+  - no history lines in the first hour, and no past-leg lines on leg 1.
+- **The episode clock is allowed to go back.** A leg is cut a challenge at a
+  time ("meanwhile, back at the dive"), so tests check that each team's own
+  story moves forward. They must not assume the whole episode runs on one
+  clock.
+
+### 22.4 What the screen says must match what the engine did
+
+- **When a result changes, show it at the time it changes, with the engine's
+  number.** A team caught sabotaging paid twice: Don's ruling added twenty
+  minutes on the spot, on top of the hour every caught sabotage sits out. Then
+  the team was held at the mat and not seen again until the results card, so
+  second place became eighth with nothing on screen. The user asked "we just
+  passed from 2nd to 8th for no reason what happened??". Now:
+  - the ruling announces the hour and adds nothing;
+  - the reveal names the place the team would have had;
+  - a "penalty served" check-in airs at the real time and the real place
+    (`rr-penalty-told`).
+- **A choice is made on screen, once, and later lines use it.** A team now
+  picks its Either/Or side at the clue box (`js/rr/talk.js`
+  `talkAtCheckpoint`). Lines then speak only the side it actually took, and a
+  switch of sides airs.
+- **Check that every pool of lines actually airs.** Three pools never reached
+  the screen:
+  - the failed-try lines (they were counted as a plain moment);
+  - every Superteam challenge (it kept no task row);
+  - a leg's first challenge never had a team finishing it on screen.
+
+  The probe is to count aired `${kind}@${stretch}` over pinned seeds and look
+  for zeros (`rr-reach`, `rr-attempt-fail`, `rr-task-done-first-task`).
+- **The finale ends where the show ends.** It used to carry on after the crown,
+  with the runners-up still racing. The order is now:
+  1. the winners;
+  2. the runners-up;
+  3. the winners' last words;
+  4. the host signing off;
+  5. nothing after him (`rr-finale-end`, `rr-finale-after-crown`).
+
+### 22.5 A general line names something the place doesn't have
+
+Lines in a general pool are said at every one of 46 places, so a word that
+belongs to one challenge leaks into all the others. These all aired:
+- "right at the church" and a local's "No photos inside. It is sacred." on an
+  ice yacht and at an outback airport;
+- an oar stolen out of a boat where there is no boat;
+- "Look, the rope" at a challenge with no rope;
+- "we have to eat all of it?" before a zipline.
+
+The fixes:
+- **A place that has a thing says so in a fact**, like `sacred: true`, `eats`
+  or `puzzle`, and lines that need it check the fact (`rr-sacred-setting`).
+  Everything else in a general pool must fit anywhere (`rr-line-setting`
+  checks every aired general line against the challenge's own description).
+- **Each scary challenge says what the fear is about**, in `js/rr/fears.js`:
+  the act (jump, drop, climb, rope, swim, creature, dark, eat and so on) and the
+  stage where it happens. A fear line either matches that act or names no act
+  at all (`rr-fear-act`). The root cause was that `taskType` held only the
+  challenge's first type.
+- **The standing rules:**
+  - locals get no gendered pronouns;
+  - no real place names (the World Tour rule) and no brand names;
+  - nothing claims a past the season has not had ("camels again" on leg 2,
+    "since the desert" before the desert).
+
+### 22.6 Voice: the real show's transcript is the target
+
+- **Read the real show before writing a single line.** The user pasted the
+  premiere and episode 3 captions and said "this is our goal". They are kept
+  in `.superpowers/reference/`, outside the repo. They showed:
+  - an introduction is one partner talking in a natural run-on breath while
+    the other reacts;
+  - exchanges are short (2 to 7 lines) but specific to the team, the place or
+    the task;
+  - the mid-pack check-ins are a rapid list.
+
+  Our first introductions gave every team the same three-beat joke, and the
+  user called them "really robotic and AI". Never copy the captions close to
+  word for word.
+- **Check the brief against the transcript.** The writers' brief described Don
+  as dry, bored and mean. The real Don is an upbeat, slick host with puns and
+  jabs aimed at each team. Hundreds of lines were written to the wrong brief
+  before the user caught it. Don's lines must be whole sentences with the joke
+  at the end: `js/rr/script/don-flow.js` `donFlowProblem`, enforced by
+  `rr-don-flow`.
+- **Racers talk like people out loud.** That means plain words, contractions,
+  answering the partner's last line, and at most one joke. Avoid strained
+  metaphors, stacked shouts and one-word fragments. Re-read a whole batch
+  before the first test run. The user had to repeat this rule, because the
+  tests do not catch it.
+- **Measure repeats across a season.** Repeated lines started at 57.7% of
+  aired scenes and came down to 0.5%, by adding variants to the pools that
+  repeated, not by deleting lines.
+
+### 22.7 Fairness and surprise are measured, not assumed
+
+- **Find which lever causes it before changing anything.** The team that was
+  last and safe on one leg went out on the next 48% of the time, against a
+  chance level of 16%. The cause was not skill: with skill nearly switched off
+  it was still 29%. It was flights landing in order (the last team always on
+  the last flight) and the whole check-in gap carried into the next leg.
+  Widening the random luck alone made it worse (40%). Test one lever at a time
+  and split the measure by what kind of leg came before. It is now 23%, held
+  by `rr-unpredictable`.
+- **Every team gets screen time.** The leaders had about twice the moments of
+  everyone else until the Chill Zone. Now each challenge follows a different
+  set of teams, and spare moments go to the team seen least (`rr-focus`).
+- **Seeded tests break when content changes.** Adding a place, dropping a
+  `draft` flag or editing the roster reshuffles every seeded season. A test
+  that needs a rare outcome should search seeds for it, not pin one seed.
+
+### 22.8 Tools and operational traps
+
+- `npm run rr:read` and `npm run rr:transcript` use the audit config. A plain
+  `vitest run` skips `*-audit` tests and quietly leaves an old transcript on
+  disk.
+- A new place carries `draft: true` until its art lands. The route never draws
+  a draft, and the Season Timeline doesn't offer it.
+- Whole-season tests come close to the 90-second timeout when the full suite
+  runs in parallel, so give them their own timeout.
+- Screenshot an unpublished season in Playwright by serving its document with
+  `page.route('**/data/seasons/rr-1-data.json', …)`. Register the route again
+  after the browser context resets, and save screenshots under
+  `.playwright-mcp/`.
+- When guards fail on files you didn't touch (other shows, another session's
+  uncommitted work), name them in your report. Don't fix them in your commit.
+
+### 22.9 What the next show should do
+
+1. Everything in §16.9 and §17.8.
+2. Before writing the exporter, write the wiki's sections, the trivia and the
+   awards, and put every number they need into the season document. Test that
+   no raw id reaches the page.
+3. If the user makes art for the show, guard that every file is used. Give
+   every prop a job in the challenge, write plate jobs yourself and tell the
+   user. Screenshot every new stage and look at it.
+4. Give every scene a minute and a spot. Two people talk only where both are,
+   and a shared space records who is in it with whom.
+5. When the engine changes a result, show it on screen at that moment, using
+   the engine's own number.
+6. Gate every general line on facts about the place, so no line names what the
+   place doesn't have.
+7. Read the real show's transcript, and check the writers' brief against it,
+   before writing pools.
+8. Measure what airs per pool, the repeats, each team's share of screen time,
+   and how much one round predicts the next. Find the cause before tuning.

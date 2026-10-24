@@ -1015,6 +1015,12 @@ export function openVisualPlayer(epNum) {
   const savedMode = localStorage.getItem('vp_view_mode');
   _vpViewMode = VP_VIEW_MODES.has(savedMode) ? savedMode : 'watch';
   buildVPScreens(epRecord);
+  // a Big Brother episode opens where the viewer left it (vp-bb-ep/screens.js bbxResumeAt)
+  try {
+    const at = typeof window.bbxResumeAt === 'function' ? window.bbxResumeAt(epRecord) : null;
+    const i = at ? vpScreens.findIndex(s => s && s.id === at) : -1;
+    if (i > 0) vpCurrentScreen = i;
+  } catch (e) { /* the episode opens at the top */ }
   document.getElementById('visual-player').style.display = 'flex';
   document.body.style.overflow = 'hidden';
   renderVPScreen();

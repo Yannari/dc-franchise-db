@@ -50,6 +50,53 @@ const mapHtml = (uid, R) => {
 // where the Intel drawer is in the week: the screen's stretch start, and whether the screen has played out
 const intelAt = R => { const S = R.screens?.[R.si]; return S ? { start: S.snapStart || null, atEnd: R.idx >= (S.steps?.length || 0) - 1 } : null; };
 const reg = () => (typeof window !== 'undefined' ? (window._bbx ||= {}) : (globalThis._bbx ||= {}));
+
+// ── what this viewer has watched, kept across closing the viewer and a reload ──
+// The user, 2026-10-24: "the episode keep returning to the first frame even after i skip" and "it
+// should persist read conversations even after i close". Per episode: the screen it was on, and per
+// screen the line reached and the house-map conversations watched. A per-viewer convenience in
+// localStorage (a private window simply starts every episode from the top).
+const WATCH_KEY = 'bb-watched';
+const WATCH_MAX = 120;   // episodes kept; the oldest go first
+const watchAll = () => { try { return JSON.parse(localStorage.getItem(WATCH_KEY) || '{}') || {}; } catch { return {}; } };
+function watchSave(fp, fn) {
+  if (!fp) return;
+  try {
+    const all = watchAll(); const e = all[fp] || { s: {} }; e.s ||= {};
+    fn(e); e.t = Date.now(); all[fp] = e;
+    const keys = Object.keys(all);
+    if (keys.length > WATCH_MAX) keys.sort((a, b) => (all[a].t || 0) - (all[b].t || 0)).slice(0, keys.length - WATCH_MAX).forEach(k => delete all[k]);
+    localStorage.setItem(WATCH_KEY, JSON.stringify(all));
+  } catch { /* per-viewer convenience */ }
+}
+const remember = R => watchSave(R?.fp, e => { e.s[R.si] = { i: R.idx, w: R.map ? [...R.map.watched] : [] }; });
+// An episode is the same episode while its screens are: a re-run season, or the other House Life
+// view, is a different set of screens and starts from the top.
+const hashOf = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7).toString(36);
+const episodeKey = (row, steps) => {
+  const sc = (typeof globalThis !== 'undefined' && globalThis.seasonConfig) || {};
+  return `${seasonId('big-brother', sc.seasonNumber || row.seasonNumber || 1)}|${row.num}|${hashOf(steps.map(S => `${S.id}:${S.steps?.length}:${S.steps?.[0]?.t || ''}`).join('|'))}`;
+};
+let lastBuilt = null;   // the Big Brother episode the viewer last built: its key and its screens' ids
+/** The screen to open this episode on: where the viewer left it (vp-ui.js openVisualPlayer). */
+export function bbxResumeAt(row) {
+  if (!lastBuilt || lastBuilt.num !== row?.num) return null;
+  const at = watchAll()[lastBuilt.fp]?.at;
+  // an episode watched to its closing titles opens at the top again
+  return at && lastBuilt.ids.includes(at) && at !== 'bb-closing' ? at : null;
+}
+// a screen kept from before: the line it reached, and the conversations watched on its map
+function restoreInto(R, kept) {
+  const n = R.screens[R.si]?.steps?.length || 0;
+  const i = Math.max(-1, Math.min(n - 1, Number.isInteger(kept?.i) ? kept.i : -1));
+  if (R.map) {
+    const ks = new Set(R.map.convs.map(c => c.k));
+    R.map.watched = new Set((kept?.w || []).filter(k => ks.has(k)));
+    const c = i >= 0 ? R.map.convs.find(x => i >= x.from && i <= x.to) : null;
+    // back inside the conversation it was left in; one already watched, or none, opens on the map
+    if (c && !R.map.watched.has(c.k)) { Object.assign(R.map, { mode: 'play', cur: c.k, end: c.to }); R.idx = i; } else R.idx = -1;
+  } else R.idx = i;
+}
 const SHELL_CSS = `
 .bbx .bbx-feed{margin-top:14px;border-top:1px solid rgba(34,225,255,.25);padding-top:10px}
 .bbx .bbx-feed-h{font:700 11px 'Chakra Petch',system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#22e1ff;margin:0 0 8px;cursor:pointer}
@@ -259,6 +306,8 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   const houseLife = steps.some(S => S.kind === 'houselife');
   if (!steps.length) return legacy;
   const o = { season: seasonOf(row), host };
+  const fp = episodeKey(row, steps);
+  const kept = watchAll()[fp]?.s || {};
   // Twist and House Life screens, by the part of the week they followed in the old running
   // order. Counted by OCCURRENCE: on a double or triple eviction the first cycle's eviction
   // is a different place from the second's, and filing both under "after the eviction"
@@ -327,8 +376,9 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
       return;
     }
     const uid = `bbx${esc(row.num)}-${si}`;
-    reg()[uid] = { uid, screens: steps, si, idx: -1, o, auto: false, timer: null, map: newMap(S), num: row.num, tab: 'heads', who: null, lastL: null, speed: speedOf() };
+    reg()[uid] = { uid, screens: steps, si, idx: -1, o, auto: false, timer: null, map: newMap(S), num: row.num, tab: 'heads', who: null, lastL: null, speed: speedOf(), fp };
     const R0 = reg()[uid];
+    if (kept[si]) restoreInto(R0, kept[si]);
     // which of the week's lines have a voice actor's clip (vp-bb-ep/voicing.js), asked before the first line
     if (si === 0) bbVoicedLines(row.num);
     // a House Life segment holds its stretch's classic House Life screens (and takes the first one's id)
@@ -398,6 +448,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   out.push(titleScreen('outro', key, cast, seasonTitle, goneAfter));
   // the Debug screen is not part of the episode: it goes after the closing, never before it
   for (let i = out.length - 2; i >= 0; i--) if (/debug/.test(out[i]?.id || '')) out.push(...out.splice(i, 1));
+  lastBuilt = { fp, num: row.num, ids: out.map(x => x?.id).filter(Boolean) };
   // a classic screen kept inside the stepped week (a twist) still has the way to the classic viewer
   const SWITCH = `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" class="bbx-switch" onclick="bbxSwitchViewer('classic')" style="border:1px solid #22e1ff;background:#0d1220;color:#22e1ff;border-radius:8px;padding:7px 12px;font:600 11px monospace;letter-spacing:1px;cursor:pointer">CLASSIC VIEWER</button></div>`;
   return out.map(x => (x && typeof x.html === 'string' && !x.html.includes('class="bbx"') && !x.html.includes('bbxSwitchViewer') && !/^bb-(titles|closing)$/.test(x.id || '') ? { ...x, html: SWITCH + x.html } : x));
@@ -407,7 +458,9 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
 function sync(uid) {
   const S = reg()[uid];
   const root = typeof document !== 'undefined' ? document.querySelector(`.bbx[data-uid="${uid}"]`) : null;
-  if (S && root && root.dataset.idx == null) { S.idx = -1; stopAuto(S); if (S.map) S.map = newMap(S.screens[S.si]); }
+  // A screen drawn again (the viewer came back to it, or reopened the episode) shows where it was
+  // left, not the top: it used to start over here, and the next click played its first line again.
+  if (S && root && root.dataset.idx == null) { stopAuto(S); paint(uid, false); }
   return S;
 }
 function paint(uid, fresh) {
@@ -418,6 +471,7 @@ function paint(uid, fresh) {
   const el = document.getElementById(`bbx-st-${uid}`);
   if (!el) return;
   clearInterval(R.typing);
+  remember(R);
   // the house map and a room's feed are drawn instead of the stage
   if (R.map && R.map.mode !== 'play') {
     el.innerHTML = mapHtml(uid, R);
@@ -669,6 +723,16 @@ export function bbxJumpFromLine(el, i) {
   if (root) bbxJump(root.dataset.uid, i + 1);
 }
 export function bbxReset(uid) { const R = sync(uid); if (!R) return; stopAuto(R); R.idx = -1; if (R.map) R.map = newMap(R.screens[R.si]); paint(uid, false); }
+// Opened again, a screen kept from before is drawn where it was left; and the episode remembers
+// which screen it is on.
+if (typeof document !== 'undefined') document.addEventListener('vp:screen', e => {
+  const id = e?.detail?.id;
+  if (lastBuilt && id && lastBuilt.ids.includes(id)) watchSave(lastBuilt.fp, w => { w.at = id; });
+  document.querySelectorAll('#vp-screen-content .bbx[data-uid]').forEach(root => {
+    const R = reg()[root.dataset.uid];
+    if (root.dataset.idx == null && R && (R.idx >= 0 || R.map?.watched?.size)) sync(root.dataset.uid);
+  });
+});
 // a reveal holds the screen longer: the room needs a beat with the name
 const holdFor = st => Math.min(9000, 1600 + String(st?.t || '').length * 40) + (st?.big ? 2600 : 0) + (st?.tense ? 1200 : 0) + (st?.scene?.slate ? 600 : 0);
 function stopAuto(R) { R.auto = false; clearTimeout(R.timer); if (R.uid) barSync(R.uid, R); }
@@ -805,7 +869,7 @@ if (typeof document !== 'undefined') document.addEventListener('keydown', e => {
   else if (e.key === 'Escape' && root.classList.contains('intel-open')) { e.preventDefault(); e.stopImmediatePropagation(); bbxIntel(root.dataset.uid); }
 });
 
-if (typeof window !== 'undefined') Object.assign(window, { bbxSeek, bbxSeekHover, bbxSeekTip, bbxSpeed, bbxScene, bbxIntel, bbxIntelClick, bbxLive, bbxMapExit, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxMusicLevel, bbxJump, bbxJumpFromLine });
+if (typeof window !== 'undefined') Object.assign(window, { bbxSeek, bbxSeekHover, bbxSeekTip, bbxSpeed, bbxScene, bbxIntel, bbxIntelClick, bbxLive, bbxMapExit, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxMusicLevel, bbxJump, bbxJumpFromLine, bbxResumeAt });
 // Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
 // or Auto keeps clicking through the week (and its music) behind a closed window.
 if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {

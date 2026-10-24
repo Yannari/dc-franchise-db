@@ -1980,13 +1980,18 @@ export function simulateBBWeek(options = {}) {
     // Ceremony acts schedule beats too, and a competition night can move a
     // relationship as far as a whole morning of house life. Same limit.
     const bondsBefore = { ...(gs.bonds || {}) };
-    act.socialBeats = scheduleHouseBeats(eventLibrary, house, {
+    // The eviction act's house beats are the night AFTER the vote: whoever went out of the front door
+    // is not in them (the user, 2026-10-24: Kyle pitching Nina for a vote after Kyle's eviction)
+    const gone = act.type === 'eviction' ? new Set([act.evicted, act.secondEvicted, ...(act.extraEvictions || []).map(x => x?.evicted)].filter(Boolean)) : null;
+    const room = gone ? house.filter(n => !gone.has(n)) : house;
+    const blockNow = (extra.nominees || week.finalNominees || week.initialNominees || []).filter(n => !gone?.has(n));
+    act.socialBeats = scheduleHouseBeats(eventLibrary, room, {
       act: act.type, phase: act.phase || act.type,
       // On an invisible week the event pool does not get to know either —
       // a scene about "the HOH's room" would out the winner in narration.
       hoh: week.hohSecret ? null : week.hoh,
-      nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
+      nominees: blockNow,
     }, { rng,
       // Campaign acts are where the vote operation's stories live — the
       // meetings noticed, the recruit reporting the pitch, the liar pressed —
@@ -7159,11 +7164,26 @@ export function simulateBBWeek(options = {}) {
     // block as far as they know. One conversation per voter for the week,
     // same discipline as the real pitches; a small real consequence so the
     // scene is not scenery.
+    //
+    // ...and AS MUCH as everybody else, in every campaign act, as the same
+    // scripted pitch. It used to get two unscripted beats in the first act only,
+    // which House Life never aired (it airs 'campaign-pitch'), while the two the
+    // arena would leave on the block pitched in every act: the user, 2026-10-24,
+    // "it's too obvious who is still on the block with the way they're
+    // campaigning". The ballots stay on the final two (the arena's result), so a
+    // yes here moves a relationship, not a vote.
     const thirdBeats = [];
-    if (week.safetyWinner && week.blockBeforeSafety && campaignIndex === 0) {
+    if (week.safetyWinner && week.blockBeforeSafety) {
       const third = week.safetyWinner;
       const rival = [...nominees].sort((a, b) =>
         getPerceivedBond(third, a) - getPerceivedBond(third, b))[0];
+      // as many conversations as the average nominee has this act
+      const pitchers = new Set(pitchBeats.map(b => b.players[0]));
+      const per = pitchBeats.reduce((n, b) => n + Math.max(1, b.players.length - 1), 0) / Math.max(1, pitchers.size);
+      const count = Math.max(campaignIndex === 0 ? 1 : 0, Math.min(3, Math.round(per)));
+      const fresh = ballots.slice()
+        .filter(b => b.voter !== third && !pitchPairSeen.has(`${third}→${b.voter}`))
+        .sort((a, b) => (Number(a.margin) || 0) - (Number(b.margin) || 0)).slice(0, count);
       // ── the arena winner is a VOTER, so they can draw their own ballot ──
       //
       // `voters` excludes the Head of Household and the nominees. It does not
@@ -7172,19 +7192,37 @@ export function simulateBBWeek(options = {}) {
       // Pitching down the loosest ballots therefore reached their own, and the
       // week printed "Aaron gets Aaron alone", followed by "Aaron & Aaron
       // +0.3" as a recorded relationship change.
-      for (const ballot of ballots.slice()
-        .filter(b => b.voter !== third)
-        .sort((a, b) => (Number(a.margin) || 0) - (Number(b.margin) || 0)).slice(0, 2)) {
+      for (const ballot of fresh) {
+        const voter = ballot.voter;
+        pitchPairSeen.set(`${third}→${voter}`, true);
         let words = '';
-        try { words = campaignArgument(third, ballot.voter, rival); } catch { words = ''; }
-        _cappedBondWindow(() => addBond(ballot.voter, third, 0.3));
+        try { words = campaignArgument(third, voter, rival); } catch { words = ''; }
+        // the voter's answer is the voter's feeling for them: no ballot of theirs can move
+        const yes = getPerceivedBond(voter, third) >= 1.5;
+        const delta = yes ? 0.3 : 0.1;
+        _cappedBondWindow(() => addBond(voter, third, delta));
+        let script = null;
+        let made = null;
+        try {
+          const who = { a: third, b: voter };
+          const sctx = { week, act: 'campaign', hoh: week.hoh || null, nominees: [...visibleBlock], room: 'bedroom', seenBy: [third, voter] };
+          const c = campaignCase(third, voter, rival);
+          made = { kind: c.kind, target: c.opponent || null, partner: c.partner || null, alliance: c.alliance || null };
+          script = joinScripts(
+            scriptBeat('campaign.case', who, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance,
+              theirComps: numberWord(c.theirComps), myComps: numberWord(c.myComps) }, sctx),
+            scriptBeat('campaign.reply', who, { ending: yes ? 'receptive' : 'unmoved' }, sctx));
+        } catch { script = null; }
         thirdBeats.push({
-          text: `${third} gets ${ballot.voter} alone — three chairs, and ${third} is not waiting `
-            + `for a competition to decide which ones matter. ${words}`,
-          players: [third, ballot.voter],
-          badgeText: 'STILL ON THE BLOCK', badgeClass: 'red',
-          eventId: 'campaign-pitch-third', category: 'deals', location: 'bedroom',
-          effects: [{ kind: 'bond', text: `${ballot.voter} & ${third} +0.3`, delta: 0.3 }],
+          text: `${third} gets ${voter} alone. ${words} ${yes
+            ? `${voter} listens, and says ${pronouns(voter).sub} will think about it.`
+            : `${voter} hears all of it and does not move.`}`,
+          players: [third, voter],
+          badgeText: yes ? 'RECEPTIVE' : 'UNMOVED', badgeClass: yes ? 'green' : 'grey',
+          eventId: 'campaign-pitch', category: 'deals', location: 'bedroom',
+          ...(made ? { pitchCase: made } : {}), pitchOutcome: yes ? 'receptive' : 'unmoved',
+          effects: [{ kind: 'bond', text: `${voter} & ${third} +${delta}`, delta }],
+          ...(script || {}),
         });
       }
     }

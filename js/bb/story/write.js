@@ -193,6 +193,13 @@ function presumed(entry, ctx, who = null) {
     // move-in night, read 2026-10-15)
     if (p === 'days' && (ctx.week?.num || 0) <= 1 && !ctx.hoh) return false;
     if (p === 'noms' && !(ctx.nominees || []).length) return false;
+    // the week's place, for a line that asks about the next step of it (the user, 2026-10-24: "Are you
+    // putting me up if you win HOH?", said to the HOH after the nomination ceremony)
+    if (p === 'nohoh' && ctx.hoh) return false;
+    if (p === 'hohc' && !(ctx.hoh && who && who.c === ctx.hoh)) return false;
+    if (p === 'nonoms' && (ctx.nominees || []).length) return false;
+    if (p === 'offblock' && who && (ctx.nominees || []).includes(who.a)) return false;
+    if (p === 'precer' && ctx.cer) return false;
     if (p === 'vote' && !(gs.bb?.weeks || []).some(w => w !== ctx.week && w.evicted)) return false;
     if (p === 'jurors' && !(ctx.jurors > 0)) return false;
   }

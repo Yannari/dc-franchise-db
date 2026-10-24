@@ -1,0 +1,76 @@
+// What airs before a result must not give the result away. The user, 2026-10-24, on Block Buster
+// weeks: "it's too obvious who is still on the block with the way they're campaigning" and "they
+// often hesitate between 2 people before the Block Buster when there's obviously 3 nominees"; and on
+// any week: a nominee's campaign pitch "happened after Kyle's eviction".
+import { describe, expect, it, beforeAll } from 'vitest';
+import { gs, players, seasonConfig, relationships, setPlayers, setGs } from '../js/core.js';
+import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
+import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
+import { initGameState } from '../js/savestate.js';
+import { simulateBBEpisode } from '../js/bb-run.js';
+import { withSeededRandom } from './helpers/rng.js';
+
+const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly', 'Hicks', 'Emmah', 'Millie', 'Caleb', 'Beth', 'Owen'];
+const ARCH = ['mastermind', 'social-butterfly', 'hero', 'showmancer', 'schemer', 'floater', 'villain', 'loyal-soldier', 'underdog', 'goat', 'hothead', 'wildcard', 'hero', 'floater'];
+const KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
+const weeks = [];
+
+beforeAll(() => {
+  for (const seed of [7, 11, 23]) {
+    setGs(null);
+    setPlayers(NAMES.map((name, i) => ({ name, slug: name.toLowerCase(), gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[i],
+      stats: Object.fromEntries(KEYS.map((k, j) => [k, 1 + ((i * 7 + j * 3 + seed) % 10)])) })));
+    Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+    Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7, bbHaveNots: 'off', bbSafetyMode: 'block-buster', seasonNumber: 1, theme: 'none' });
+    seasonConfig.twistSchedule = []; initGameState(); globalThis.gs = gs;
+    withSeededRandom(seed, () => { for (let i = 0; i < 3; i++) simulateBBEpisode(); });
+    weeks.push(...JSON.parse(JSON.stringify(gs.episodeHistory.filter(r => r.format === 'big-brother'))));
+  }
+}, 900000);
+
+const busters = () => weeks.filter(r => (r.acts || []).some(a => a?.type === 'safety' && a.winner));
+
+describe('a Block Buster week before the Block Buster', () => {
+  it('has Block Buster weeks to read', () => expect(busters().length).toBeGreaterThan(4));
+
+  it('airs no vote talk between the final two before the arena has said who they are', () => {
+    for (const row of busters()) {
+      const scenes = row.acts.flatMap(a => a.scenes || []);
+      expect(scenes.filter(s => /^vote\./.test(String(s.step))).map(s => s.step), `week ${row.num}`).toEqual([]);
+    }
+  });
+
+  it('shows the one the Block Buster saves campaigning, and never more than the other two', () => {
+    let seenThird = 0;
+    for (const row of busters()) {
+      const third = row.acts.find(a => a?.type === 'safety').winner;
+      const aired = {};
+      for (const a of row.acts.filter(x => x?.type === 'campaign')) for (const s of a.scenes || []) {
+        if (s.step === 'pitch' && s.cast?.[0]) aired[s.cast[0]] = (aired[s.cast[0]] || 0) + 1;
+      }
+      const others = Object.entries(aired).filter(([n]) => n !== third).map(([, k]) => k);
+      if (aired[third]) seenThird++;
+      expect(aired[third] || 0, `week ${row.num}: ${JSON.stringify(aired)}`).toBeLessThanOrEqual(Math.max(1, ...others));
+      // the engine gives them pitches of the same kind as everybody's
+      const beats = row.acts.filter(x => x?.type === 'campaign').flatMap(a => a.socialBeats || []);
+      expect(beats.some(b => b.eventId === 'campaign-pitch' && b.players?.[0] === third), `week ${row.num}`).toBe(true);
+    }
+    expect(seenThird).toBeGreaterThan(busters().length / 2);
+  });
+});
+
+describe('the night after the vote', () => {
+  it('has nobody who just went out of the front door in it, and no nominee campaigning', () => {
+    for (const row of weeks) {
+      for (const ev of (row.acts || []).filter(a => a?.type === 'eviction')) {
+        const gone = [ev.evicted, ev.secondEvicted].filter(Boolean);
+        for (const b of ev.socialBeats || []) {
+          expect(b.eventId, `week ${row.num}`).not.toBe('power-nom-campaign');
+          // nobody gone is the one doing anything (their own goodbye, the evict- events, is theirs; an
+          // alliance that fell apart because they left can still name them)
+          if (!/^evict-/.test(String(b.eventId))) for (const n of gone) expect(b.players?.[0], `week ${row.num} ${b.eventId}`).not.toBe(n);
+        }
+      }
+    }
+  });
+});

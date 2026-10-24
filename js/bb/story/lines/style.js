@@ -395,7 +395,8 @@ export default {
       { by: 'a', say: "Too late. I've had an idea." },
       { by: 'b', dr: "When {a} gets bored, somebody's week gets ruined. I just hope it's not mine." },
     ] },
-    { id: 'gy-sp.3', turns: [
+    // what {a} asks {c} out loud depends on where the week is: {c} is the HOH whenever there is one
+    { id: 'gy-sp.3', presumes: ['nohoh'], turns: [
       { beat: 'The backyard. {a} walks straight up to {c} in front of everyone.' },
       { by: 'a', say: "Are you putting me up if you win HOH?" },
       { by: 'c', say: "...Why would you ask me that out here?" },
@@ -403,6 +404,24 @@ export default {
       { by: 'c', say: "I'm not doing this right now." },
       { by: 'a', say: "That's a yes, then." },
       { by: 'a', dr: "Some people play this game in the shadows. I'd rather turn the lights on." },
+    ] },
+    { id: 'gy-sp.3b', presumes: ['hohc', 'nonoms'], turns: [
+      { beat: 'The backyard. {a} walks straight up to {c} in front of everyone.' },
+      { by: 'a', say: "Are you putting me up tomorrow?" },
+      { by: 'c', say: "...Why would you ask me that out here?" },
+      { by: 'a', say: "Because I want everybody to hear the answer." },
+      { by: 'c', say: "I haven't decided anything yet." },
+      { by: 'a', say: "That's not a no." },
+      { by: 'a', dr: "Some people play this game in the shadows. I'd rather turn the lights on." },
+    ] },
+    { id: 'gy-sp.3c', presumes: ['hohc', 'noms', 'offblock', 'precer'], turns: [
+      { beat: 'The backyard. {a} walks straight up to {c} in front of everyone.' },
+      { by: 'a', say: "If the veto gets used, am I the one going up?" },
+      { by: 'c', say: "...Why would you ask me that out here?" },
+      { by: 'a', say: "Because I want everybody to hear the answer." },
+      { by: 'c', say: "I'm not doing this right now." },
+      { by: 'a', say: "That's not a no." },
+      { by: 'a', dr: "If I'm the one going up in somebody's place, I want the whole house to have watched {c} dodge the question." },
     ] },
     { id: 'gy-sp.4', room: 'kitchen', turns: [
       { beat: 'The kitchen. {a} slams a cupboard. {b} winces.' },

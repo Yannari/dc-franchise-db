@@ -102,7 +102,9 @@ export function airStorylines(week) {
   const lastGone = [...(gs.bb?.weeks || [])].reverse().find(w => w !== week && w.evicted)?.evicted || null;
   const ctxOf = () => ({ week, hoh: clock.hoh ? (week.hoh || null) : null,
     nominees: clock.noms ? ((clock.cer ? week.finalNominees : week.initialNominees) || week.finalNominees || week.initialNominees || []) : [], stretch,
-    firstNight: (week.num || 0) === 1 && stretch === 0, present: present(), phase: season.phase, jurors: season.jurors });
+    firstNight: (week.num || 0) === 1 && stretch === 0, present: present(), phase: season.phase, jurors: season.jurors,
+    // has the veto meeting happened (a line about who goes up in the veto's place airs only before it)
+    cer: !!clock.cer });
 
   // Which whole-house set piece opens this stretch.
   const setFor = ctx => {
@@ -565,6 +567,7 @@ export function airStorylines(week) {
   // step. Each campaign act airs up to four of its pitches, every nominee at least once,
   // the ones that moved a vote first, never the same nominee and voter twice in a week.
   const pitchedPairs = new Set();
+  const pitchedBy = new Map();   // how many pitches of each nominee have aired this week
   const airCampaign = act => {
     const ctx = ctxOf();
     const pitches = (act.socialBeats || []).filter(b => b && b.eventId === 'campaign-pitch' && (b.players || []).length >= 2
@@ -573,19 +576,33 @@ export function airStorylines(week) {
     const rank = b => (b.pitchOutcome === 'worn' ? 3 : b.pitchOutcome === 'receptive' ? 2 : 1);
     const chosen = [];
     const voter = b => b.players[b.players.length - 1];
-    for (const nominee of [...new Set(pitches.map(b => b.players[0]))]) {
+    // Who works the room most on screen must not tell the viewer who the vote is really between (the
+    // user, 2026-10-24, of a Block Buster week: "it's too obvious who is still on the block with the way
+    // they're campaigning"). The one the Block Buster will save has fresh voters left when the other two
+    // have worked theirs, so they are never seen campaigning more than the busiest of them.
+    const seen = n => chosen.filter(c => c.players[0] === n).length + (pitchedBy.get(n) || 0);
+    const third = week.blockBeforeSafety?.length && week.safetyWinner ? week.safetyWinner : null;
+    const most = () => Math.max(0, ...(week.blockBeforeSafety || []).filter(n => n !== third).map(seen));
+    const order = [...new Set(pitches.map(b => b.players[0]))].sort((x, y) => (x === third) - (y === third));
+    for (const nominee of order) {
+      if (nominee === third && seen(third) > most()) continue;
       const best = pitches.filter(b => b.players[0] === nominee && !chosen.some(c => voter(c) === voter(b))).sort((x, y) => rank(y) - rank(x))[0];
       if (best) chosen.push(best);
     }
-    for (const b of pitches.slice().sort((x, y) => rank(y) - rank(x))) {
+    // ...then the rest go to whoever has been seen campaigning least this week
+    for (;;) {
       if (chosen.length >= 4) break;
-      if (!chosen.includes(b) && !chosen.some(c => voter(c) === voter(b))) chosen.push(b);
+      const left = pitches.filter(b => !chosen.includes(b) && !chosen.some(c => voter(c) === voter(b))
+        && !(third && b.players[0] === third && seen(third) >= most()));
+      if (!left.length) break;
+      chosen.push(left.sort((x, y) => seen(x.players[0]) - seen(y.players[0]) || rank(y) - rank(x))[0]);
     }
     chosen.slice(0, 4).forEach((b, i) => {
       b.firstAired = pitchedPairs.has(b.players.join('>'));
       const sc = writeCampaignScene(b, ctx, at + i * 0.1, `${week.num || 0}|${act.campaignIndex ?? 0}|${i}|${b.players.join('>')}`);
       if (!sc) return;
       pitchedPairs.add(b.players.join('>'));
+      pitchedBy.set(b.players[0], (pitchedBy.get(b.players[0]) || 0) + 1);
       b.aired = true;
       (act.scenes ||= []).push(sc);
     });
@@ -594,6 +611,11 @@ export function airStorylines(week) {
   // ── the vote talk: the last thing before the live vote (bb/story/votetalk.js) ──
   // the plan, the swing and the one going home, true of the ballots, on the act before the eviction
   const airVoteTalk = evAct => {
+    // A Block Buster week decides who is still on the block on the live night itself, so every vote
+    // talk (written from the ballots, between the final two) would air before the arena said who they
+    // are (the user, 2026-10-24: "they often hesitate between 2 people before the Block Buster when
+    // there's obviously 3 nominees"). The house talks about three until then; the vote talk stays off.
+    if ((week.acts || []).some(a => a?.type === 'safety' && a.winner && week.acts.indexOf(a) < week.acts.indexOf(evAct))) return;
     const i = week.acts.indexOf(evAct);
     const host = week.acts.slice(0, i).reverse().find(a => a && !CEREMONY.has(a.type)) || week.acts.slice(0, i).reverse().find(Boolean);
     if (!host) return;

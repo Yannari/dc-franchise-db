@@ -260,7 +260,8 @@ const nomCampaign = {
   weight(house, ctx) {
     // Needs somebody to pitch to — the "has run out of people to talk to"
     // fallback was a card with nothing in it.
-    return _blockKnown(ctx) && _noms(ctx).length && house.length >= 4
+    // (on eviction night the campaign is over: the speeches were the last word)
+    return _blockKnown(ctx) && ctx?.act !== 'eviction' && ctx?.phase !== 'eviction' && _noms(ctx).length && house.length >= 4
       && _others(house, ..._noms(ctx), _hoh(ctx)).length ? band(9) : 0;
   },
   fire(house, ctx, api, rng) {

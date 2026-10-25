@@ -257,7 +257,9 @@ export function finalDate(state, rng, [a, b], n, given = null) {
   chapters.forEach((c, i) => {
     const day = state.epDay?.[c.event.ep] ?? null;
     events.push(makeEvent(state, rng, { phase: 'final-date', kind: 'journey-clip', players: c.about ? [a, b, c.about] : [a, b], aired: true,
-      extra: { of: c.type, clip: c.event.id, clipEp: c.event.ep, day, about: c.about, first: i === 0, pop: pop(0, 0.4) } }));
+      // `what`: the clip's own kind, so a 'love' chapter that was an exclusive
+      // ask isn't narrated as "three words" (season read 2026-10-25).
+      extra: { of: c.type, what: c.event.kind, clip: c.event.id, clipEp: c.event.ep, day, about: c.about, first: i === 0, pop: pop(0, 0.4) } }));
     // Watching it back: warmer for the good moments, a wince for the bad.
     const sore = ['row', 'tested', 'casa', 'photos', 'split', 'at-risk', 'enemies'].includes(c.type);
     feel(state, a, sore ? 'stress' : 'security', 0.2); feel(state, b, sore ? 'stress' : 'security', 0.2);

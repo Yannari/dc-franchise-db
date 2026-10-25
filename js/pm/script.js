@@ -67,7 +67,7 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   // a talk file's own (pm/talk/*.js facts())
   'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels', 'believed', 'dayOne', 'side',
   // the storylines (pm/threads.js): which story a beat is in, and what a group chat is about
-  'story', 'subj', 'final', 'score', 'paKissed', 'lowScore', 'choosing',
+  'story', 'subj', 'final', 'score', 'paKissed', 'lowScore', 'choosing', 'said',
   // what today did to a couple (sourOf): 'mine' (a did it), 'theirs' (b did), 'row', or null
   'sour',
   // an intro tape's (pm/talk/intro.js)
@@ -164,7 +164,7 @@ export function factsFor(state, ev) {
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
   // …and how much b feels for a, the same way: whether it is said back.
   if (b) { const r = romance(b, a); f.bFeels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.bFeels = null;
-  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since', 'staying', 'came', 'risk', 'side', 'subj', 'final', 'score', 'choosing']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since', 'staying', 'came', 'risk', 'side', 'subj', 'final', 'score', 'choosing', 'said']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   f.story = ev.extra?.thread?.type || null;
   // A recoupling "steal" of the chooser's own partner from before tonight.
   f.reclaim = !!ev.extra?.reclaim;
@@ -741,7 +741,11 @@ function clipSlots(state, ev) {
     // host, and another couple's islander, in two couples' films).
     const theirs = new Set(ev.players.slice(0, 2));
     const spoken = (clip?.script?.lines || []).filter(l => !l.action && theirs.has(l.who) && l.text.length > 12);
-    const line = spoken.sort((x, y) => y.text.length - x.text.length)[0];
+    // …about each other, too: a line naming a third islander is about them (season
+    // read 2026-10-25: Kaz and Callum's "first chat" chapter played Callum on Amber).
+    const others = players.map(p => p.name).filter(n => n && !theirs.has(n));
+    const aboutUs = spoken.filter(l => !others.some(n => l.text.includes(n)));
+    const line = (aboutUs.length ? aboutUs : spoken).sort((x, y) => y.text.length - x.text.length)[0];
     return line ? { ...got, quote: line.text, quoteWho: line.who } : got;
   }
   // A declaration's moment, and the day it was.

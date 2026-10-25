@@ -1377,7 +1377,10 @@ Object.assign(MOMENTS, {
         events.push(makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'declaration', players: [x, y], aired: true,
           extra: { of: shape, pop: { [x]: { approval: 2 * romance(x, y) / 10, fame: 2 } } } }));
         if (ch) events.push(makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'speech', players: [x, y], aired: true,
-          extra: { of: ch.type, day: state.epDay?.[ch.event.ep] ?? null, pop: { [x]: { approval: 0.5 * romance(x, y) / 10, fame: 0.6 } } } }));
+          // `what` the moment was and whether x `said` it: "I told you how I felt" is
+          // the one who said it (season read 2026-10-25: Jordan said it of Leah's ask).
+          extra: { of: ch.type, what: ch.event.kind, said: ch.event.players[0] === x, day: state.epDay?.[ch.event.ep] ?? null,
+            pop: { [x]: { approval: 0.5 * romance(x, y) / 10, fame: 0.6 } } } }));
       });
     });
     // Declarations count toward the vote: close the ledger before the country votes.

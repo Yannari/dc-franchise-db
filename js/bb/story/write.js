@@ -200,6 +200,7 @@ function presumed(entry, ctx, who = null) {
     if (p === 'nonoms' && (ctx.nominees || []).length) return false;
     if (p === 'offblock' && who && (ctx.nominees || []).includes(who.a)) return false;
     if (p === 'precer' && ctx.cer) return false;
+    if (p === 'preveto' && ctx.veto) return false;
     if (p === 'vote' && !(gs.bb?.weeks || []).some(w => w !== ctx.week && w.evicted)) return false;
     if (p === 'jurors' && !(ctx.jurors > 0)) return false;
   }

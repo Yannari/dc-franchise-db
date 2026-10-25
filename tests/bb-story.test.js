@@ -51,7 +51,7 @@ describe('the storyline pools', () => {
         if (t.say || t.dr) expect(['a', 'b', 'c', 'd', 'e', 'f', 'x', 'y'], `${key} ${e.id}`).toContain(t.by);
       }
       for (const k of Object.keys(e.when || {})) expect(BB_FACT_KEYS, `${key} ${e.id} when.${k}`).toContain(k);
-      for (const p of e.presumes || []) expect(['hoh', 'noms', 'vote', 'jurors', 'guests', 'days', 'nohoh', 'hohc', 'nonoms', 'offblock', 'precer'], `${key} ${e.id}`).toContain(p);
+      for (const p of e.presumes || []) expect(['hoh', 'noms', 'vote', 'jurors', 'guests', 'days', 'nohoh', 'hohc', 'nonoms', 'offblock', 'precer', 'preveto'], `${key} ${e.id}`).toContain(p);
       if (e.room) expect(ROOMS.has(e.room), `${key} ${e.id} room ${e.room}`).toBe(true);
       // background lines and cutaways are stage directions by design
       if (!/^(bg\.|set\.cut\.)/.test(key)) expect(e.turns.some(t => t.say || t.dr), `${key} ${e.id} has nobody speaking`).toBe(true);

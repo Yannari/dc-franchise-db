@@ -429,7 +429,7 @@ export default {
   ],
 
   'story.target.backdoor.any': [
-    { id: 'td.1', presumes: ['hoh'], room: 'hoh-room', turns: [
+    { id: 'td.1', presumes: ['hoh', 'preveto'], room: 'hoh-room', turns: [
       { beat: 'HOH room. {a} locks the door and turns the music up.' },
       { by: 'b', say: "Okay, now I'm scared." },
       { by: 'a', say: "Those two were never the point." },
@@ -443,7 +443,7 @@ export default {
       { by: 'a', say: "That's the plan. And it doesn't leave this room." },
       { by: 'b', dr: "{a} has been smiling at {target} all week. All week. And the whole time…" },
     ] },
-    { id: 'td.2', presumes: ['hoh'], turns: [
+    { id: 'td.2', presumes: ['hoh', 'preveto'], turns: [
       { by: 'a', say: "I need you to do something for me. And not ask why." },
       { by: 'b', say: "I'm definitely going to ask why." },
       { by: 'a', say: "If you play veto and win, use it." },
@@ -465,7 +465,7 @@ export default {
       { by: 'a', say: "Exactly. {target}." },
       { by: 'b', dr: "That's the scariest thing I've heard in this house. Mostly because I've also been in that room every night this week." },
     ] },
-    { id: 'td.4', presumes: ['hoh'], turns: [
+    { id: 'td.4', presumes: ['hoh', 'preveto'], turns: [
       { by: 'a', say: "Can you keep a secret? A real one?" },
       { by: 'b', say: "That depends on how big it is." },
       { by: 'a', say: "Big. {target} goes up after the veto." },

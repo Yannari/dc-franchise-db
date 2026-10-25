@@ -55,6 +55,13 @@ const PUBLIC = p => (p.line.type === 'feud' && ['friction', 'argument'].includes
   || (p.line.type === 'life' && ['banter', 'prank', 'chores'].includes(p.step.step))
   || (p.line.type === 'showmance' && p.step.step === 'spark' && p.step.outcome !== 'couple');
 
+/**
+ * When a backdoor can be told, by where the week is: 'wait' before the nomination ceremony, 'open' between it
+ * and the veto competition, 'gone' once the veto has been played (the user, 2026-10-24: "this should only be
+ * before veto and after hoh and nomination ceremony").
+ */
+export const backdoorWindow = clock => (clock?.veto ? 'gone' : clock?.noms ? 'open' : 'wait');
+
 /** File the week and choose what airs. Words only: no game state moves. */
 export function airStorylines(week) {
   if (!week || !Array.isArray(week.acts)) return;
@@ -104,7 +111,9 @@ export function airStorylines(week) {
     nominees: clock.noms ? ((clock.cer ? week.finalNominees : week.initialNominees) || week.finalNominees || week.initialNominees || []) : [], stretch,
     firstNight: (week.num || 0) === 1 && stretch === 0, present: present(), phase: season.phase, jurors: season.jurors,
     // has the veto meeting happened (a line about who goes up in the veto's place airs only before it)
-    cer: !!clock.cer });
+    cer: !!clock.cer,
+    // ...and the veto competition (a line about who might play it or win it airs only before it)
+    veto: !!clock.veto });
 
   // Which whole-house set piece opens this stretch.
   const setFor = ctx => {
@@ -441,6 +450,15 @@ export function airStorylines(week) {
       // the HOH's plan scene already laid the backdoor out to their closest person: telling it again
       // ("Can you keep a secret? Hicks goes up after the veto") to the same person is a rerun (read 2026-10-14)
       if (p.line.type === 'target' && p.step.step === 'backdoor' && [...talked].some(k => /^hohweek\.plan3?\.backdoor/.test(k))) { p.step.aired = true; return false; }
+      // A backdoor is told between the nomination ceremony and the veto competition, and only then (the user,
+      // 2026-10-24: "Michele goes up after the veto", aired once Michele had won it; "this should only be before
+      // veto and after hoh and nomination ceremony"). Before the nominations it waits for them; once the veto has
+      // been played it is gone.
+      if (p.line.type === 'target' && p.step.step === 'backdoor') {
+        const w = backdoorWindow(clock);
+        if (w === 'gone') { p.step.aired = true; return false; }
+        if (w === 'wait') return false;
+      }
       return true;
     };
     const take = (p, into) => {

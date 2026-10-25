@@ -144,6 +144,22 @@ export function placeFor(row, e, phase) {
   return phase === 'morning' ? 'bedroom' : dark ? 'pool-night' : 'daybeds';
 }
 
+// ── which story a scene belongs to ────────────────────────────────────
+// A storyline's beat (pm/threads.js) carries the story's kind, its two
+// people and the episode it began: the stage wears it as a chip, so a pull
+// on night two reads as the next chapter of yesterday's graft, not a scene
+// from nowhere (user: "no setup, no real impact … there's no storyline").
+const STORY_NAME = { graft: 'The graft', doubt: 'Cracks', secret: 'The secret', progress: 'Getting serious', spark: 'A new spark' };
+export function storyOf(row, e) {
+  const th = e.extra?.thread;
+  if (!th?.type || !STORY_NAME[th.type]) return null;
+  const night = th.since != null && row.num != null ? row.num - th.since + 1 : null;
+  const who = th.who?.length ? th.who.join(th.type === 'graft' ? ' → ' : ' & ')
+    : th.beat === 'react' ? 'The villa talks' : '';
+  const when = th.beat === 'bed' ? 'Lights out' : night == null ? '' : night <= 1 ? 'It starts' : `Night ${night}`;
+  return { type: th.type, name: STORY_NAME[th.type], who, when };
+}
+
 // Where the busts stand, by how many are in the scene.
 const SPOTS = { 1: [50], 2: [30, 70], 3: [20, 50, 80], 4: [14, 38, 62, 86], 5: [10, 30, 50, 70, 90] };
 
@@ -395,7 +411,7 @@ export function sceneSteps(row, e, evIndex, bg) {
   const hurt = new Set(pops.filter(p => HURT_STYLES.has(p[2])).map(p => p[0]));
   // The situation the scene is, for its music (vp-pm/sound.js); null plays in silence.
   const base = { ev: evIndex, kind: e.kind, music: musicOf(e), raw: !e.aired, headline: KIND_LABEL[e.kind] || null,
-    big: !!(e.aired && e.major?.length) };
+    big: !!(e.aired && e.major?.length), story: storyOf(row, e) };
   const out = [];
   const make = (part, who, text, voice, extra = {}) => {
     // Movie Night's clip: the audience on the beanbags (the partner watching,

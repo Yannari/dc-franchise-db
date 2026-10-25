@@ -333,7 +333,7 @@ function graftBeat(state, rng, t, phase) {
   const { c, t: tt, p } = t;
   if (!together(state, c, tt)) return [];
   const out = [];
-  const tag = beat => ({ thread: { id: t.id, type: 'graft', beat } });
+  const tag = beat => ({ thread: { id: t.id, type: 'graft', beat, since: t.ep, who: castOf(t).slice(0, 2) } });
   // 1. c tells a friend what they're planning.
   if (!t.told && (phase === 'morning' || phase === 'day')) {
     const f = friendsOf(state, c, [tt, p], 1)[0];
@@ -428,7 +428,7 @@ function whereHead(state, rng, phase, p, tt, c, threadTag) {
 function graftEvening(state, rng, t, phase) {
   const { c, t: tt, p } = t;
   const out = [];
-  const tag = beat => ({ thread: { id: t.id, type: 'graft', beat } });
+  const tag = beat => ({ thread: { id: t.id, type: 'graft', beat, since: t.ep, who: castOf(t).slice(0, 2) } });
   // t tells c to back off: turned down twice, or closed off.
   if (t.shutDue && !t.shut && together(state, tt, c)) {
     t.shut = true;
@@ -466,7 +466,7 @@ function graftEvening(state, rng, t, phase) {
 function doubtBeat(state, rng, t, phase) {
   const { a, p } = t;
   if (!together(state, a, p)) return [];
-  const tag = beat => ({ thread: { id: t.id, type: 'doubt', beat }, why: t.why, ...(t.x ? { about: t.x } : {}) });
+  const tag = beat => ({ thread: { id: t.id, type: 'doubt', beat, since: t.ep, who: castOf(t).slice(0, 2) }, why: t.why, ...(t.x ? { about: t.x } : {}) });
   // 1. a confides in a friend (events.js vent: said out loud, so it can travel).
   if (!t.vented && (phase === 'morning' || phase === 'day')) {
     const f = friendsOf(state, a, [p, t.x], 1)[0];
@@ -541,7 +541,7 @@ function doubtBeat(state, rng, t, phase) {
 function secretBeat(state, rng, t, phase) {
   const sec = state.secrets.find(s => s.id === t.sec);
   if (!sec || sec.known || !together(state, t.w, t.p)) return [];
-  const tag = beat => ({ thread: { id: t.id, type: 'secret', beat }, secret: t.sec });
+  const tag = beat => ({ thread: { id: t.id, type: 'secret', beat, since: t.ep, who: castOf(t).slice(0, 2) }, secret: t.sec });
   // 1. The one who saw it carries it, and asks a friend what to do.
   if (!t.carried && (phase === 'morning' || phase === 'day')) {
     const f = friendsOf(state, t.w, [t.x, t.p], 1)[0];
@@ -563,7 +563,7 @@ function secretBeat(state, rng, t, phase) {
     const tell = makeEvent(state, rng, { phase, kind: 'gossip', players: [t.w, t.p, t.x], aired: true, extra: { ...tag('tell') } });
     const out = [tell];
     const after = haveItOut(state, tell);
-    if (after) { after.extra.thread = { id: t.id, type: 'secret', beat: 'confront' }; out.push(after); }
+    if (after) { after.extra.thread = { id: t.id, type: 'secret', beat: 'confront', since: t.ep, who: castOf(t).slice(0, 2) }; out.push(after); }
     const back = callOutStirrer(state, tell, after);
     if (back) out.push(back);
     return out;
@@ -574,7 +574,7 @@ function secretBeat(state, rng, t, phase) {
 function progressBeat(state, rng, t, phase) {
   const { a, b } = t;
   if (!together(state, a, b)) return [];
-  const tag = beat => ({ thread: { id: t.id, type: 'progress', beat } });
+  const tag = beat => ({ thread: { id: t.id, type: 'progress', beat, since: t.ep, who: castOf(t).slice(0, 2) } });
   // The villa teases them, the morning after a moment of theirs.
   if (t.moment != null && t.moment < state.ep && !t.teased && (phase === 'morning' || phase === 'day')) {
     const center = rng() < 0.5 ? a : b, other = center === a ? b : a;
@@ -603,7 +603,7 @@ function progressBeat(state, rng, t, phase) {
 function sparkBeat(state, rng, t, phase) {
   const { a, b } = t;
   if (!together(state, a, b) || partnerOf(state, a) || partnerOf(state, b)) return [];
-  const tag = beat => ({ thread: { id: t.id, type: 'spark', beat } });
+  const tag = beat => ({ thread: { id: t.id, type: 'spark', beat, since: t.ep, who: castOf(t).slice(0, 2) } });
   // The friends, after a chat: what's going on with you two?
   if (t.chatted != null && t.chatted < state.ep && !t.teased && (phase === 'morning' || phase === 'day')) {
     const center = rng() < 0.5 ? a : b, other = center === a ? b : a;
@@ -836,7 +836,7 @@ export function bedChats(state, rng, phase = 'evening') {
     const warm = !rowed && romance(a, b) >= 4 && romance(b, a) >= 4;
     if (warm) { addBond(a, b, 0.3); feel(state, a, 'security', 0.5); feel(state, b, 'security', 0.5); }
     else { feel(state, a, 'stress', 0.3); }
-    return scene(state, rng, phase, 'bed-chat', [a, b], { thread: { id: t.id, type: t.type, beat: 'bed' }, subj: t.type, of: warm ? 'warm' : rowed ? 'after-row' : 'distant',
+    return scene(state, rng, phase, 'bed-chat', [a, b], { thread: { id: t.id, type: t.type, beat: 'bed', since: t.ep, who: castOf(t).slice(0, 2) }, subj: t.type, of: warm ? 'warm' : rowed ? 'after-row' : 'distant',
       pop: pop([a, 0.2, 0.6], [b, 0.2, 0.6]) });
   });
 }

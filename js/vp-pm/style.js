@@ -226,6 +226,15 @@ export const PMV_CSS = `/* ═════════════════�
 .pmv-l3{position:absolute;left:4%;bottom:40%;z-index:8;display:flex;flex-direction:column;align-items:flex-start;gap:2px;
   opacity:0;transform:translateX(-30px);transition:opacity .45s,transform .6s cubic-bezier(.2,1.2,.3,1);pointer-events:none}
 .pmv-l3.pmv-on{opacity:1;transform:none}
+/* The storyline a scene belongs to (steps.js storyOf): a tab on the dialogue box, across from the name. */
+.pmv-story{position:absolute;right:3%;top:0;z-index:2;display:flex;align-items:baseline;gap:8px;max-width:60%;
+  background:#1a0624cc;color:#fff;border-radius:10px;border-left:4px solid var(--sc,#ff2e88);padding:6px 12px 5px 9px;
+  backdrop-filter:blur(6px);font:700 clamp(10px,1.15vw,14px)/1.1 Outfit;opacity:0;transform:translate(14px,-58%);transition:opacity .45s,transform .45s;pointer-events:none}
+.pmv-story.pmv-on{opacity:1;transform:translate(0,-58%)}
+.pmv-story b{font:400 clamp(14px,1.7vw,20px)/1 'Bebas Neue';letter-spacing:.12em;color:var(--sc,#ff2e88);white-space:nowrap}
+.pmv-story span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pmv-story em{font-style:normal;opacity:.7;text-transform:uppercase;letter-spacing:.12em;font-size:.82em;white-space:nowrap}
+.pmv-story em:empty,.pmv-story span:empty{display:none}
 .pmv-l3 small{font:800 11px/1 Outfit;letter-spacing:.18em;text-transform:uppercase;background:#fff;color:#ff2e88;padding:5px 9px;border-radius:6px 6px 6px 0}
 .pmv-l3 b{font:400 clamp(26px,4.4vw,52px)/1 'Bebas Neue',Outfit;letter-spacing:.04em;color:#fff;background:#1a0624d9;padding:6px 14px 4px;border-radius:0 8px 8px 8px;
   box-shadow:0 8px 24px #0005}

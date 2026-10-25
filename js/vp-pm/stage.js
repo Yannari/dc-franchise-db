@@ -128,7 +128,7 @@ function frame(bg, hud, board) {
     <div class="${P('toast')}"></div>
     <div class="${P('caption')}"></div>
     <div class="${P('l3')}"><small></small><b></b></div>
-    <div class="${P('dlg')} ${P('hide')}"><div class="${P('plate')}"></div><div class="${P('txt')}"></div><div class="${P('beat')}"></div><span class="${P('nxt')}">${IC.next}</span></div>
+    <div class="${P('dlg')} ${P('hide')}"><div class="${P('plate')}"></div><div class="${P('txt')}"></div><div class="${P('beat')}"></div><div class="${P('story')}"><b></b><span></span><em></em></div><span class="${P('nxt')}">${IC.next}</span></div>
     <div class="${P('hud')}"><span class="${P('pill')}">${esc(hud)}</span><span class="${P('pill')} ${P('air')}"><span class="${P('scissors')}">${IC.scissors}</span><span class="${P('airtxt')}">On air</span></span></div>
     <div class="${P('headline')}"></div>
     <div class="${P('wipe')}"><svg viewBox="-20 -14 40 27"><path d="${HEART}"/></svg></div>
@@ -207,6 +207,16 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
     l3.querySelector('small').textContent = st.vt.tag;
     l3.querySelector('b').textContent = st.vt.name;
     if (fresh && st.sceneStart) later(el, 500, () => l3.classList.add(P('on'))); else l3.classList.add(P('on'));
+  }
+
+  // Which storyline this is, in the corner (steps.js storyOf).
+  if (st.story && !tape) {
+    const ch = q('story');
+    ch.style.setProperty('--sc', { graft: '#ffc15e', doubt: '#ff5a6e', secret: '#b48cff', progress: '#ff6fb5', spark: '#3fe0c5' }[st.story.type] || '#ff2e88');
+    ch.querySelector('b').textContent = st.story.name;
+    ch.querySelector('span').textContent = st.story.who;
+    ch.querySelector('em').textContent = st.story.when;
+    if (fresh && st.sceneStart) later(el, 650, () => ch.classList.add(P('on'))); else ch.classList.add(P('on'));
   }
 
   // the busts

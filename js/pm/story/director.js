@@ -127,14 +127,14 @@ const WORTH = {
   advice: 2, comfort: 2.6, reassurance: 3, solidarity: 2, overthinking: 1.5, debrief: 3,
   // the storylines and the villa's reactions (pm/threads.js): what an episode is about
   'graft-eyes': 2.8, watching: 3, 'where-head': 4, 'graft-shut': 3.2, 'graft-turn': 4.2, 'feels-off': 2.8,
-  'secret-burden': 3.2, 'group-chat': 3, 'bed-chat': 2.6, 'doubt-end': 4,
+  'secret-burden': 3.2, 'group-chat': 3, 'bed-chat': 2.6, 'doubt-end': 4, 'pick-chat': 3, 'vote-worry': 2.8, 'stick-twist': 3.4,
 };
 export const FEATURED_AT = 2.5, SHORT_AT = 1.6;
 // An episode's most: about twenty featured conversations and thirty short ones
 // (the user picked the tiers: ~600-900 clicks an episode).
 export const FEATURED_CAP = 24, SHORT_CAP = 34;
 // The storylines' own scenes (pm/threads.js), whole however busy the day.
-const STORY_KINDS = new Set(['graft-eyes', 'watching', 'where-head', 'graft-turn', 'graft-shut', 'feels-off', 'secret-burden', 'group-chat', 'bed-chat', 'doubt-end']);
+const STORY_KINDS = new Set(['graft-eyes', 'watching', 'where-head', 'graft-turn', 'graft-shut', 'feels-off', 'secret-burden', 'group-chat', 'bed-chat', 'doubt-end', 'pick-chat', 'vote-worry', 'stick-twist']);
 
 /** featured · short · note for a tiered kind, or null for a kind always written whole. */
 export function tierOf(state, ev, tiered) {

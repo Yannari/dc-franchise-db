@@ -641,6 +641,76 @@ export function threadBeats(state, rng, phase, max = Infinity) {
   return out;
 }
 
+// ── the day before the night ──────────────────────────────────────────
+// On a ceremony day the villa talks about tonight (both real episodes read:
+// "If he gets to know her and still chooses you, he's yours"): who they'll
+// pick and who'll pick them, whether the public know them, stick or twist.
+// Saying it out loud moves things: a friend's word sways a pick a little,
+// and a couple who fear the vote pull together.
+export function tonightBeats(state, rng, phase, entry, max = 2) {
+  const th = state._th;
+  if (!th || th.ep !== state.ep || !entry) return [];
+  const done = (th.tonight ||= []);
+  const out = [];
+  const m = entry.moment;
+  const free = n => !done.includes(n) && inVilla(state, n);
+  if (m === 'recoupling') {
+    // The ones it's a real question for: singles, and anybody in a story about their couple.
+    const cands = state.villa.filter(free).map(a => {
+      const p = partnerOf(state, a);
+      const story = live(state).find(t => (t.type === 'graft' && t.t === a) || (t.type === 'doubt' && t.a === a));
+      const x = !p ? roomMates(state, a).filter(o => compatible(state, a, o)).sort((u, v) => (attr(state, a, v) ?? 0) - (attr(state, a, u) ?? 0))[0]
+        : story ? (story.type === 'graft' ? story.c : story.x) : null;
+      const of = !p ? 'nobody' : story ? (x ? 'torn' : 'unsure') : null;
+      return of ? { a, p, x, of, w: !p ? 1.2 : 1 } : null;
+    }).filter(Boolean).sort((u, v) => v.w - u.w || (u.a < v.a ? -1 : 1));
+    for (const c of cands) {
+      if (out.length >= max) break;
+      const f = friendsOf(state, c.a, [c.p, c.x], 1)[0];
+      if (!f || (c.x && !together(state, c.a, c.x)) || (c.p && apart(state, c.a, c.p))) continue;
+      done.push(c.a);
+      // The friend's word: back the couple, or go for the one they keep looking at.
+      const backs = c.p ? (getBond(f, c.p) + 1 >= (c.x ? getBond(f, c.x) : -9) ? c.p : c.x) : c.x;
+      if (backs) nudgeAttraction(state, c.a, backs, 0.3);
+      feel(state, c.a, 'stress', c.of === 'nobody' ? 0.5 : 0.3);
+      out.push(scene(state, rng, phase, 'pick-chat', [c.a, f, ...(c.x ? [c.x] : [])],
+        { of: c.of, side: backs === c.p ? 'partner' : 'other', final: !!entry.finalRecoupling, pop: pop([c.a, 0.2, 0.8]) }));
+    }
+  } else if (m === 'public-vote' || m === 'semi-final') {
+    // The couples who feel least sure of themselves feel it: the newest, the
+    // least into each other. (Never the public's numbers: the villa can't see
+    // them — tests/pm-ledger-readers.)
+    const since = c => state.coupledSince?.[[...c].sort().join('|')] ?? 0;
+    const couples = state.couples.filter(([a, b]) => together(state, a, b) && free(a) && free(b))
+      .map(c => [c, (romance(c[0], c[1]) + romance(c[1], c[0])) / 2 + Math.min(4, ((state.day ?? 0) - since(c)) / 3)])
+      .sort((u, v) => u[1] - v[1]);
+    for (const [[a, b]] of couples.slice(0, max)) {
+      done.push(a, b);
+      addBond(a, b, 0.4); feel(state, a, 'stress', 0.4); feel(state, b, 'stress', 0.4);
+      const calm = rng() < (st(state, a, 'temperament') + st(state, b, 'temperament')) / 2;
+      out.push(scene(state, rng, phase, 'vote-worry', [a, b], { of: calm ? 'calm' : 'scared', pop: pop([a, 0.3, 0.8], [b, 0.3, 0.8]) }));
+    }
+  } else if (m === 'stick-or-twist' && state.split) {
+    // Casa: the originals with somebody new on their mind.
+    const arrivals = new Set(state.casaArrivals || []);
+    const cands = state.villa.filter(n => free(n) && !arrivals.has(n) && partnerOf(state, n)).map(o => {
+      const x = roomMates(state, o).filter(c => arrivals.has(c) && compatible(state, o, c)).sort((u, v) => (attr(state, o, v) ?? 0) - (attr(state, o, u) ?? 0))[0];
+      return x ? { o, x, w: (attr(state, o, x) ?? 0) - romance(o, partnerOf(state, o)) / 2 } : null;
+    }).filter(c => c && c.w > 0).sort((u, v) => v.w - u.w);
+    for (const c of cands.slice(0, max)) {
+      const f = friendsOf(state, c.o, [c.x], 1)[0];
+      if (!f) continue;
+      done.push(c.o);
+      const p = partnerOf(state, c.o);
+      const stick = getBond(f, p) + 1 >= getBond(f, c.x);
+      nudgeAttraction(state, c.o, stick ? p : c.x, 0.3);
+      out.push(scene(state, rng, phase, 'stick-twist', [c.o, f, c.x], { of: (attr(state, c.o, c.x) ?? 0) > romance(c.o, p) ? 'tempted' : 'torn',
+        side: stick ? 'stick' : 'twist', pop: pop([c.o, 0.2, 1]) }));
+    }
+  }
+  return out;
+}
+
 // ── the villa reacts ──────────────────────────────────────────────────
 // What a beat leaves the one it happened to telling their friends, and who it
 // was about. `due`: now (later this part of the day) or next (the next part).
@@ -674,7 +744,8 @@ export function queueReaction(state, e) {
   if (!r) return;
   // One group chat per person a day, and per thing that happened.
   if (th.queue.some(q => q.center === r.center) || (th.reacted || []).includes(r.center)) return;
-  th.queue.push({ ...r, about: e.id, from: e.phase });
+  // `src` is the scene it reacts to; `about` stays the third person's name.
+  th.queue.push({ ...r, src: e.id, from: e.phase });
 }
 
 const NEXT = { night: 'morning', morning: 'day', day: 'evening', challenge: 'evening', event: 'evening', evening: 'night' };

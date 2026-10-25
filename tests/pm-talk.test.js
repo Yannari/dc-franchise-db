@@ -32,9 +32,9 @@ const DEBRIEF_THREE = ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blam
 const ABOUT_ALWAYS = new Set(['casa-miss', 'kin-protect']);
 const ABOUT_CAUSES = ['jealous', 'envy', 'rival', 'stole', 'told'];
 // Kinds whose {a} is always coupled with somebody outside the scene ({pa}).
-const PA_ALWAYS = new Set(['loyalty', 'vent', 'bed-share', 'graft-shut']);
+const PA_ALWAYS = new Set(['loyalty', 'vent', 'bed-share', 'graft-shut', 'stick-twist']);
 // The storylines' kinds (pm/threads.js) cast three or four: {c} always, {d} where named.
-const STORY_THREE = ['graft-eyes', 'watching', 'where-head', 'graft-turn', 'feels-off', 'secret-burden', 'group-chat'];
+const STORY_THREE = ['graft-eyes', 'watching', 'where-head', 'graft-turn', 'feels-off', 'secret-burden', 'group-chat', 'pick-chat', 'stick-twist'];
 const STORY_FOUR = ['graft-eyes', 'watching', 'secret-burden', 'group-chat'];
 for (const k of STORY_THREE) THREE.add(k);
 const list = v => [].concat(v ?? []);

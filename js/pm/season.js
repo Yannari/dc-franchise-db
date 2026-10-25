@@ -25,7 +25,7 @@ import { emo, attachment, attachmentLabel, walkRisk, feel } from './emotions.js'
 import { addBond, getBond } from '../bonds.js';
 import { proneness } from './breakdown.js';
 import { runVillaDay } from './villa-day.js';
-import { beginThreads, threadBeats, reactions, queueReaction, bedChats } from './threads.js';
+import { beginThreads, threadBeats, reactions, queueReaction, bedChats, tonightBeats } from './threads.js';
 import { seasonSchedule, withPicks, withBookings, resolveRandomGames, buildSchedule, FINAL_COUPLES } from './schedule.js';
 import { MOMENTS, nightOneOpening } from './moments.js';
 import { returnIslander, secondChance } from './arrivals.js';
@@ -118,7 +118,7 @@ function villaDayEvents(state, rng, entry, seed) {
   // the season's biggest drama (user): its nights keep their temptations.
   const casa = !!state.split;
   const T = { morning: TEXTURE.morning, day: TEXTURE.day, evening: TEXTURE.evening + (entry.moment === 'villa' ? 3 : 0) + (casa ? 4 : 0) };
-  const part = (phase, n) => storyPhase(state, rng, trng, phase, n);
+  const part = (phase, n) => storyPhase(state, rng, trng, phase, n, entry);
   if (entry.moment === 'first-coupling') return [...part('day', T.day), ...part('evening', T.evening)];
   if (!entry.challenge) return [...part('morning', T.morning), ...part('day', T.day + 2), ...part('evening', T.evening)];
   const out = [...part('morning', T.morning), ...part('day', T.day)];
@@ -147,7 +147,7 @@ const TEXTURE_KINDS = {
  * the texture — a little villa life, a thread's beat, a little more, the next
  * thread — and the reactions those beats left due before it ends.
  */
-function storyPhase(state, rng, trng, phase, texture) {
+function storyPhase(state, rng, trng, phase, texture, entry = null) {
   const kinds = { [phase]: TEXTURE_KINDS[phase] || TEXTURE_KINDS.day };
   const draw = n => {
     const evs = n > 0 ? generateEpisodeEvents(state, rng, { [phase]: n }, { kinds }) : [];
@@ -162,7 +162,10 @@ function storyPhase(state, rng, trng, phase, texture) {
   for (let i = 0; i < stories; i++) {
     out.push(...threadBeats(state, trng, phase, 1));
     if (left > 0) { const n = Math.min(left, per); out.push(...draw(n)); left -= n; }
+    // Halfway through the day and the evening: tonight, on everybody's mind.
+    if (i === 1 && (phase === 'day' || phase === 'evening')) out.push(...tonightBeats(state, trng, phase, entry, phase === 'day' ? 2 : 1));
   }
+  if (stories < 2 && (phase === 'day' || phase === 'evening')) out.push(...tonightBeats(state, trng, phase, entry, phase === 'day' ? 2 : 1));
   out.push(...draw(left));
   out.push(...reactions(state, trng, phase, 3));
   return out;

@@ -72,6 +72,7 @@ import { WHERE_HEAD_MORE, WHERE_HEAD_PLANS } from './more/where-head-more.js';
 import { STORY_MORE, WATCHING_PLANS, FEELS_OFF_PLANS, BED_CHAT_PLANS } from './more/story-more.js';
 import { GROUP_CHAT_ENDED } from './more/group-chat-ended.js';
 import { DOUBT_END } from './doubt-end.js';
+import { PICK_CHAT, VOTE_WORRY, STICK_TWIST } from './tonight.js';
 import { COMFORT } from './comfort.js';
 import { CASA_MISS, BED_SHARE } from './casa.js';
 import { CHALLENGE_KISS, CHALLENGE_WIN } from './challenge.js';
@@ -158,6 +159,7 @@ extend(GROUP_CHAT, GROUP_CHAT_STORY);
 extend(GROUP_CHAT, GROUP_CHAT_SPARK);
 extend(GROUP_CHAT, GROUP_CHAT_ENDED);
 TALK['doubt-end'] = DOUBT_END;
+TALK['pick-chat'] = PICK_CHAT; TALK['vote-worry'] = VOTE_WORRY; TALK['stick-twist'] = STICK_TWIST;
 // A story's pull is about the story: no tangent, and its own why, answer and probe.
 extend(PULL, PULL_STORY);
 PULL.plans.featured = [...PULL_STORY_PLANS, ...PULL.plans.featured];

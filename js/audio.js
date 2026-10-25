@@ -671,7 +671,7 @@ export function buildAudioDebugPanel() {
     + ` <button class="btn btn-sm" onclick="audioBed(null)">stop bed</button>`;
   return `<div style="padding:12px"><h3>Audio cues</h3><div style="display:flex;flex-wrap:wrap;gap:6px">${cues}</div>
     <h3 style="margin-top:14px">Ambient beds</h3><div style="display:flex;flex-wrap:wrap;gap:6px">${beds}</div>
-    <h3 style="margin-top:14px">Credits</h3><p style="font-size:12px;line-height:1.5;opacity:.85">Dialogue blips: <a href="https://dmochas-assets.itch.io/dmochas-bleeps-pack" target="_blank" rel="noopener">Text/Dialogue Bleeps Pack</a> by dmochas, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> (trimmed, levelled, re-encoded).<br>Total Drama ambience and effects: Joseph SARDIN / BigSoundBank, CC0; booing crowd by NeoSpica, CC0. Full list in assets/audio/td/CREDITS.md.</p></div>`;
+    <h3 style="margin-top:14px">Credits</h3><p style="font-size:12px;line-height:1.5;opacity:.85">Dialogue blips: <a href="https://dmochas-assets.itch.io/dmochas-bleeps-pack" target="_blank" rel="noopener">Text/Dialogue Bleeps Pack</a> by dmochas, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> (trimmed, levelled, re-encoded).<br>Total Drama ambience and effects: Joseph SARDIN / BigSoundBank, CC0; booing crowd by NeoSpica, CC0. Full list in assets/audio/td/CREDITS.md.<br>Perfect Match music: fifteen tracks by Kevin MacLeod (<a href="https://incompetech.com" target="_blank" rel="noopener">incompetech.com</a>), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> (trimmed, levelled, re-encoded); titles in assets/audio/mine/CREDITS.md.</p></div>`;
 }
 
 let _initDone = false;

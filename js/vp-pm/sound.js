@@ -425,17 +425,78 @@ async function startBed(sit) {
     src.connect(g); g.connect(dest);
     src.start(now, Math.min(pick.start, Math.max(0, buf.duration - 1)));
     mine.src = src; mine.g = g; mine.pending = false;
+    ambLevel();
   } catch { if (bed === mine) bed = null; }
 }
 /** Stop the situation's track: `cut` is the dead stop before a verdict, otherwise a fade. */
 function stopBed(cut = false) {
   const b = bed; bed = null;
   if (b && !b.pending) fadeOut(b, cut ? 0.06 : 1.2);
+  ambLevel();
+}
+
+// ── the place itself, under everything ────────────────────────────────
+// User, 2026-10-25: "keep the ambience from the other songs" — the villa's
+// sound is the other shows' recordings: The Challenge's villa by day (the sea)
+// and by night (crickets and the sea), Total Drama's campfire for the fire pit
+// and its room tone indoors. Chosen by the scene's set (steps.js placeFor);
+// nothing in the beach hut, on the intro tapes or at the final's stage. Low on
+// its own and much lower under music (music > voices > ambience).
+const AMB = { day: 'assets/audio/ch/amb-day.mp3', night: 'assets/audio/ch/amb-night.mp3',
+  fire: 'assets/audio/td/amb/campfire.ogg', indoor: 'assets/audio/td/amb/indoor.ogg' };
+const AMB_OF = { daybeds: 'day', lawn: 'day', roof: 'day', day: 'day', 'casa-day': 'day', date: 'day',
+  'pool-night': 'night', 'lawn-night': 'night', 'roof-night': 'night', terrace: 'night', casa: 'night', cinema: 'night',
+  night: 'fire', 'firepit-dusk': 'fire',
+  kitchen: 'indoor', 'kitchen-night': 'indoor', bedroom: 'indoor', 'bedroom-night': 'indoor', dressing: 'indoor', hideaway: 'indoor' };
+const AMB_ALONE = 0.16, AMB_UNDER = 0.05;
+let amb = null;
+const ambBuffers = {};
+async function ambBuffer(c, path) {
+  if (ambBuffers[path] !== undefined) return ambBuffers[path];
+  try {
+    const res = await fetch(path);
+    ambBuffers[path] = res.ok ? await c.decodeAudioData(await res.arrayBuffer()) : null;
+  } catch { ambBuffers[path] = null; }
+  return ambBuffers[path];
+}
+/** Where the ambience should sit right now: under a music bed, or on its own. */
+function ambLevel() {
+  if (!amb?.g) return;
+  try {
+    const c = amb.g.context, now = c.currentTime;
+    amb.g.gain.cancelScheduledValues(now);
+    amb.g.gain.setValueAtTime(Math.max(0.0001, amb.g.gain.value), now);
+    amb.g.gain.exponentialRampToValueAtTime(bed ? AMB_UNDER : AMB_ALONE, now + 0.8);
+  } catch { /* stopped */ }
+}
+function stopAmb() { const a = amb; amb = null; if (a?.src) fadeOut(a, 0.8); }
+/** The scene's set changed: crossfade to its sound, or to none. */
+async function ambFor(bg) {
+  const want = AMB_OF[bg] || null;
+  if ((amb?.want ?? null) === want) return;
+  stopAmb();
+  if (!want || !musicWanted() || !engine.output?.()) return;
+  const mine = amb = { want };
+  const { ctx: c, dest } = engine.output();
+  const buf = await ambBuffer(c, AMB[want]);
+  if (!buf || amb !== mine) return;
+  try {
+    const now = c.currentTime;
+    const src = c.createBufferSource(); src.buffer = buf; src.loop = true;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(bed ? AMB_UNDER : AMB_ALONE, now + 1.2);
+    src.connect(g); g.connect(dest);
+    // Somewhere into the loop, so every cut doesn't start on the same wave.
+    src.start(now, (now * 7.3) % Math.max(1, buf.duration - 1));
+    mine.src = src; mine.g = g;
+  } catch { if (amb === mine) amb = null; }
 }
 
 /** A step of the episode just played: start, keep, change or cut the music. */
 export function moodStep(st) {
   if (!st) return;
+  ambFor(st.bg);
   // The name is read out in silence.
   if (CUTS_BEFORE.has(st.kind)) { stopBed(true); return; }
   if (!st.sceneStart) return;
@@ -450,7 +511,7 @@ export function moodStep(st) {
 /** A Perfect Match screen opened: a cutaway when the part of the day changed. */
 export function pmScreenOpened(id) {
   const part = String(id || '').replace(/^villa-/, '').replace(/-\d+$/, '');
-  if (!part || part === 'debug') { stopBed(); return; }
+  if (!part || part === 'debug') { stopBed(); stopAmb(); return; }
   // A ceremony split over two screens keeps its music; anywhere else lets it go.
   if (part !== lastPart) { stopBed(); playTransition(); }
   lastPart = part;
@@ -459,8 +520,8 @@ if (typeof document !== 'undefined' && !globalThis.__pmCutaways) {
   globalThis.__pmCutaways = true;
   document.addEventListener('vp:screen', e => {
     if (String(e.detail?.id || '').startsWith('villa-')) pmScreenOpened(e.detail.id);
-    else { stopBed(); lastPart = null; }
+    else { stopBed(); stopAmb(); lastPart = null; }
   });
   // Leaving the Viewing Party takes the music with it.
-  document.addEventListener('vp:close', () => { stopBed(); lastPart = null; });
+  document.addEventListener('vp:close', () => { stopBed(); stopAmb(); lastPart = null; });
 }

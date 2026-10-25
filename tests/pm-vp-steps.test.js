@@ -14,7 +14,10 @@ function season(seed) {
   const names = cast.map(p => p.name);
   return (seasons[seed] = playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed }).rows);
 }
-const allLines = e => [...(e.script?.lines || []), ...(e.narrator?.lines || []), ...(e.hut?.script?.lines || [])];
+// A story beat's narrator leads into the scene (pm/script.js storyLead); the rest follow it.
+const allLines = e => e.narrator?.before
+  ? [...e.narrator.lines, ...(e.script?.lines || []), ...(e.hut?.script?.lines || [])]
+  : [...(e.script?.lines || []), ...(e.narrator?.lines || []), ...(e.hut?.script?.lines || [])];
 
 describe('every word the engine wrote is a click', () => {
   it('each scene line, voiceover and beach-hut line appears exactly once, in the order of the scene', () => {
@@ -29,7 +32,7 @@ describe('every word the engine wrote is a click', () => {
         // chapter's staging is its footage line, played on screen (steps.js).
         const footage = mine.find(s => s.part === 'footage');
         if (footage) expect(e.script.stage).toBe(`${footage.who}: "${footage.text}"`);
-        else if (e.script?.stage && e.script.lines?.length) expect(mine[0].caption).toBe(e.script.stage);
+        else if (e.script?.stage && e.script.lines?.length) expect(mine.find(s => s.part !== 'narr').caption).toBe(e.script.stage);
         if (e.script?.beat) expect(mine.filter(s => s.beat).map(s => s.beat)).toEqual([e.script.beat]);
       });
       // Every scene is on screen once: no step for a scene belongs to two screens.
@@ -113,7 +116,7 @@ describe('the stage at rest names nobody, and each click shows exactly its line'
     const { perfectMatchVpScreens, pmRevealNext, pmRevealAll } = await import('../js/vp-pm/screens.js');
     const rows = season(1), row = rows[6];
     const screens = perfectMatchVpScreens(row, rows[5]);
-    const steps = episodeScreens(row);
+    const steps = episodeScreens(row, { prev: rows[5] });
     for (const [si, s] of screens.entries()) {
       document.body.innerHTML = s.html;
       const uid = `${row.num}-${si}`;
@@ -137,6 +140,26 @@ describe('the stage at rest names nobody, and each click shows exactly its line'
 });
 
 describe('the breaks: "Coming up" and "Next time"', () => {
+  it('"Previously on" plays last episode\'s aired lines in full, and says who really left', async () => {
+    const { roundExits, PERFECT_MATCH_FORMAT } = await import('../js/shows.js');
+    let seen = 0;
+    const rows = season(1);
+    rows.forEach((row, i) => {
+      if (!i) return;
+      const prev = rows[i - 1];
+      const open = episodeScreens(row, { prev }).find(s => s.teaser === 'previously');
+      if (!open) return;
+      seen++;
+      const before = episodeScreens(prev, { breaks: false }).flatMap(x => x.steps).filter(x => !x.raw && x.text);
+      for (const st of open.steps.filter(s => s.voice !== 'narrator')) {
+        expect(before.some(x => x.who === st.who && x.text === st.text), `e${row.num} "${st.text}"`).toBe(true);
+      }
+      const exit = open.steps.find(s => /left the villa/.test(s.text || ''));
+      for (const x of roundExits(prev, PERFECT_MATCH_FORMAT)) expect(exit?.text, `e${row.num}`).toContain(x.name);
+    });
+    expect(seen).toBeGreaterThan(5);
+  });
+
   it('a teaser cuts its line off, never shows how anything ends, and nothing that did not air', async () => {
     const { cutLine } = await import('../js/vp-pm/steps.js');
     // Cut before it lands: at a sentence when there is more to come, never mid-word.
@@ -149,8 +172,10 @@ describe('the breaks: "Coming up" and "Next time"', () => {
         const screens = episodeScreens(row, { next: rows[i + 1] ? { row: rows[i + 1] } : null });
         const teasers = screens.filter(s => s.teaser);
         breaks += teasers.length;
-        // A break is never the first screen, and the final has no "Next time".
-        expect(screens[0].teaser, `e${row.num}`).toBeFalsy();
+        // A break is never the first screen — only the cold open ("Previously",
+        // "Tonight", 2026-10-25) comes before the episode — and the final has no "Next time".
+        const firstReal = screens.findIndex(s => !s.teaser);
+        expect(screens.slice(0, firstReal).every(s => s.teaser === 'previously' || s.teaser === 'tonight'), `e${row.num}`).toBe(true);
         if (row.moment === 'final' || row.moment === 'reunion') expect(teasers.some(s => s.teaser === 'nexttime')).toBe(false);
         for (const s of teasers) for (const st of s.steps) {
           expect(st.ev, `e${row.num}`).toBe(-1);

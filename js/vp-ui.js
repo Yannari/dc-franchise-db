@@ -49,6 +49,8 @@ function _pmPhaseForScreen(id) {
   if (phase === 'debug') return { id:'debug', label:'Debug', icon:'⚙' };
   // The breaks (vp-pm/steps.js withBreaks): each one is its own stop in the
   // running order, as an ad break is.
+  // The cold open: "Previously on…" and "Tonight…" (2026-10-25).
+  if (phase === 'previously' || phase === 'tonight') return { id:'pm-open', label:'Previously', icon:'◀' };
   if (phase === 'comingup') return { id:'pm-break', label:'Coming up', icon:'▶' };
   if (phase === 'nexttime') return { id:'pm-next', label:'Next time', icon:'▶' };
   if (_PM_DAY.has(phase)) return { id:'pm-villa', label:'The Villa', icon:'☀' };

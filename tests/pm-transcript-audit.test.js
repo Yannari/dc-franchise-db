@@ -79,9 +79,10 @@ ${eps}
   const line = l => l.action ? `  (${l.text})` : `  ${l.who}: ${l.text}`;
   const txt = rows.map(r => [`\n==== Episode ${r.num} — ${momentTitle(r)} (day ${(r.calendar || r.days || ['-'])[0]}) ====`,
     ...phasesOf(r).flatMap(([, evs, label]) => [`\n-- ${label} --`, ...evs.flatMap(e => [
+      ...(e.narrator?.before ? e.narrator.lines.map(l => `  NARRATOR: ${l.text}`) : []),
       `[${e.kind}${e.extra?.of ? ' ' + e.extra.of : ''}${e.aired ? '' : ' · not aired'}]${e.script?.stage ? ' ' + e.script.stage : ''}`,
       ...(e.script?.lines || []).map(line), ...(e.script?.beat ? [`  (${e.script.beat})`] : []),
-      ...(e.narrator?.lines || []).map(l => `  NARRATOR: ${l.text}`),
+      ...(e.narrator && !e.narrator.before ? e.narrator.lines : []).map(l => `  NARRATOR: ${l.text}`),
       ...(e.hut?.script?.lines || []).map(l => `  HUT ${e.hut.who}: ${l.text}`)])]),
     `  exits: ${(r.exits || []).map(x => `${x.name} (${x.verb}${x.channel ? ' ' + x.channel : ''})`).join(', ') || 'none'} · couples: ${(r.pm.couples || []).map(c => c.join('+')).join(', ')}`]).flat().join('\n');
   writeFileSync(out.replace(/\.html$/, '.txt'), txt);

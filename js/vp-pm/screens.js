@@ -292,7 +292,7 @@ function debugHtml(row) {
  * `villa-<phase>-<i>` (vp-ui.js groups them: the day, the night, the reunion).
  */
 export function perfectMatchVpScreens(row, prev = null, { debug = false, next = null } = {}) {
-  const screens = episodeScreens(row, { next });
+  const screens = episodeScreens(row, { next, prev });
   const out = screens.map((screen, si) => {
     const uid = `${row.num}-${si}`;
     reg()[uid] = { row, prev, screens, si, idx: -1, sel: null, names: screen.steps.flatMap(s => s.cast.map(c => c[0])) };

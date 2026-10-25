@@ -31,6 +31,7 @@ import { HUT_VOLUME_3 } from './lines/hut-volume-3.js';
 import { HUT_VOLUME_4 } from './lines/hut-volume-4.js';
 import { HUT_CONFRONT } from './lines/hut-confront.js';
 import { NARRATOR } from './lines/narrator.js';
+import { NARRATOR_STORY } from './lines/narrator-story.js';
 import { STEAMY_NARRATOR } from './lines/steamy.js';
 import { ICEBREAKER_CARDS } from './lines/kiss-games.js';
 import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
@@ -750,6 +751,9 @@ const steamy = ev => (ev.kind === 'game-kiss' && ['crush', 'stir'].includes(ev.e
   || ev.kind === 'blow-slip' || (ev.kind === 'bed-share' && ev.extra?.of === 'kiss') || (ev.kind === 'tod-truth' && ev.extra?.of === 'named-coupled');
 export function narratorFor(state, ev) {
   if (!ev.aired) return null;
+  // A story's beat: he leads INTO it, saying its cause (lines/narrator-story.js).
+  const lead = storyLead(state, ev);
+  if (lead) return lead;
   const pool = NARRATOR[ev.kind];
   if (!pool?.length) return null;
   const said = ((state._narrated ||= {})[state.ep] ||= 0);
@@ -764,6 +768,31 @@ export function narratorFor(state, ev) {
   noteUse(state, entry, ps);
   state._narrated[state.ep] = said + 1;
   return renderScript(entry, ps, state, { day: state.calendarDay || state.day || state.ep });
+}
+
+/**
+ * The narrator's lead-in to a story beat (the real show: "After feeling played
+ * by Cash, Charlie forms a personal best four-word sentence"). Once a story an
+ * episode — its first beat that day — and once a person's group chat; at most
+ * seven an episode. Said BEFORE the scene (`before`), so the viewer knows why
+ * they are watching it.
+ */
+const STORY_LEADS_PER_EPISODE = 7;
+function storyLead(state, ev) {
+  const pool = NARRATOR_STORY[ev.kind];
+  if (!pool?.length) return null;
+  const key = ev.extra?.thread?.id || (ev.kind === 'group-chat' ? `gc:${ev.players[0]}` : null);
+  if (!key) return null;
+  const led = ((state._narrLed ||= {})[state.ep] ||= []);
+  if (led.includes(key) || led.length >= STORY_LEADS_PER_EPISODE) return null;
+  const ps = castOf(ev);
+  const fresh = pool.filter(e => (usage(state)[e.id]?.eps.length || 0) < 2);
+  const entry = pickScript(state, fresh, ps, factsFor(state, { ...ev, players: ps }), { allowRepeat: false });
+  if (!entry) return null;
+  noteUse(state, entry, ps);
+  led.push(key);
+  const slots = { ...(ev.extra?.x ? { x: ev.extra.x } : {}), ...(ev.extra?.about ? { about: ev.extra.about } : {}) };
+  return { ...renderScript(entry, ps, state, slots), before: true };
 }
 
 /** The beach-hut cutaway: one speaker, straight to camera. */

@@ -21,7 +21,7 @@
 // a number the engine never wrote.
 import { phasesOf, momentTitle } from '../pm/transcript.js';
 import { CHALLENGE_NAMES } from '../pm/schedule.js';
-import { SHOWS } from '../shows.js';
+import { SHOWS, roundExits, PERFECT_MATCH_FORMAT } from '../shows.js';
 import { musicOf } from './sound.js';
 
 // 20 until the conversations got their endings (lines/day/close.js, 2026-09-23):
@@ -398,6 +398,12 @@ export function sceneSteps(row, e, evIndex, bg) {
     out.push({ ...base, part: 'footage', who, text: footage[2], voice: 'clip', cast: castOf(e, who, host), bg });
   }
   for (const l of e.narrator?.lines || []) make('narr', l.who, l.text, 'narrator');
+  // A story beat's narrator leads INTO the scene, saying its cause
+  // (pm/script.js storyLead): his lines open it, the staging stays on its first line.
+  if (e.narrator?.before) {
+    const narr = out.filter(st => st.part === 'narr');
+    out.splice(0, out.length, ...narr, ...out.filter(st => st.part !== 'narr'));
+  }
   // The beach hut: its own set, one face, straight to camera.
   // Its stage direction and beat too ("already crying", "wipes her eyes"),
   // on its first and last click, as a scene's are.
@@ -631,7 +637,7 @@ export function episodeScreens(row, opts = {}) {
     const steps = finalSteps(row);
     if (steps.length) screens.push({ key: `result-${screens.length}`, phase: 'result', label: 'The winners', bg: 'final', rail: null, steps });
   }
-  return opts.breaks === false ? screens : withBreaks(row, screens, opts.next);
+  return opts.breaks === false ? screens : withBreaks(row, screens, opts.next, opts.prev);
 }
 const MOMENT_PHASE = new Set(['firepit', 'dumping', 'reunion']);
 const DRAWN_BY_FINAL = new Set(['final-result', 'envelope', 'final-open', 'final-two', 'final-drum', 'final-winners']);
@@ -645,10 +651,14 @@ const NO_TEASE = new Set(['dump-at-risk', 'dump-buildup', 'dump-safe', 'dump-ple
   'top-couple-pick', 'reveal', 'result', 'stick-or-twist', 'casa-return', 'immunity-win', 'couples-vote', 'ex-ballot']);
 const TEASE = new Set(['argument', 'gossip', 'pull', 'entrance', 'group-entrance', 'head-turned', 'jealous-confront',
   'confession', 'hideaway', 'photos', 'movie-night', 'dump-text', 'dump-open', 'challenge-kiss', 'exclusive-ask',
-  'official-ask', 'love-said', 'declaration', 'date', 'snog-marry-pie', 'heart-rate', 'notes', 'mission-dump', 'loyalty']);
+  'official-ask', 'love-said', 'declaration', 'date', 'snog-marry-pie', 'heart-rate', 'notes', 'mission-dump', 'loyalty',
+  // the storylines' turns (pm/threads.js): what an episode is about
+  'where-head', 'graft-turn', 'doubt-end', 'watching', 'secret-burden', 'graft-shut', 'pick-chat', 'stick-twist', 'graft-eyes', 'feels-off']);
 const OPENERS = {
   comingup: ['Still to come tonight…', 'Coming up after the break…', 'Later on Perfect Match…', 'Coming up…'],
   nexttime: ['Next time on Perfect Match…', 'Tomorrow night…'],
+  previously: ['Previously on Perfect Match…'],
+  tonight: ['Tonight…', 'Tonight on Perfect Match…'],
 };
 /**
  * A line cut off before it lands: the teaser's whole trick. At the end of its
@@ -722,7 +732,62 @@ function breakScreen(kind, row, clips, bg, title = null, label = kind === 'comin
  * end — from the next episode as it played (a rewatch), or from the schedule,
  * which says what the night will be without anyone having seen it.
  */
-function withBreaks(row, screens, next) {
+// ── the cold open ─────────────────────────────────────────────────────
+// Both real episodes read open the same way (docs/superpowers/specs/
+// 2026-10-25-pm-episode-overhaul.md §1): "Previously on…" (what happened, in
+// full: it happened), "Tonight…" (what's coming, cut before it lands), then
+// the narrator says where every couple stands.
+function previouslyScreen(row, prev) {
+  if (!prev?.pm) return null;
+  const clips = clipsFrom(episodeScreens(prev, { breaks: false }), 5);
+  if (clips.length < 2) return null;
+  const narr = words().narratorName || 'The Narrator';
+  const steps = [{ part: 'teaser', kind: 'teaser', who: narr, voice: 'narrator', bg: 'day', headline: 'Previously', cast: [],
+    text: OPENERS.previously[0], fx: { teaser: 'previously', neon: ['Previously', '#ff8fb8'] }, sceneStart: true, sceneEnd: true, ev: -1 }];
+  for (const { st, line } of clips) {
+    steps.push({ part: 'teaser', kind: 'teaser', who: line.who, voice: line.voice === 'hut' ? 'hut' : line.voice || '', bg: st.bg,
+      headline: 'Previously', text: line.text, cast: (st.cast || []).slice(0, 3).map(([n, x]) => [n, x, n === line.who ? 'speak' : '']),
+      fx: { teaser: 'previously' }, sceneStart: true, sceneEnd: true, ev: -1 });
+  }
+  // …and how the night ended: who went home.
+  const gone = roundExits(prev, PERFECT_MATCH_FORMAT);
+  if (gone.length) {
+    const names = gone.map(x => x.name);
+    const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+    steps.push({ part: 'teaser', kind: 'teaser', who: narr, voice: 'narrator', bg: 'night', headline: 'Previously', cast: [],
+      text: `And at the end of the night, ${list} left the villa.`, fx: { teaser: 'previously' }, sceneStart: true, sceneEnd: true, ev: -1 });
+  }
+  return { key: `previously-${row.num}`, phase: 'previously', label: 'Previously', bg: 'day', rail: null, steps, teaser: 'previously' };
+}
+/** Where everyone stands, as the narrator puts it at the top of the episode. */
+function statusLine(row, prev) {
+  if (!prev?.pm) return null;
+  const st = startOfEpisode(row, prev);
+  const couples = st.couples.map(([a, b]) => `${a} and ${b}`);
+  if (!couples.length) return null;
+  const coupled = new Set(st.couples.flat());
+  const singles = st.villa.filter(n => !coupled.has(n));
+  const join = xs => xs.length === 1 ? xs[0] : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
+  const day = row.calendar?.[0] ?? row.days?.[0];
+  const open = [`${day != null ? `Day ${day} in the villa. ` : ''}As things stand, our couples are ${join(couples)}.`,
+    `Here's where everyone is, as of this morning. Coupled up: ${join(couples)}.`,
+    `${day != null ? `Day ${day}. ` : ''}For anyone just joining us, the couples are ${join(couples)}.`][(row.num || 0) % 3];
+  const tail = !singles.length ? ' Nobody is single, which in this villa never lasts.'
+    : singles.length === 1 ? ` And ${singles[0]} is single, and would like everyone to know that's a choice. It is not a choice.`
+      : ` And ${join(singles)} are single, and keeping their options open, mostly because nobody has offered them any.`;
+  return open + tail;
+}
+function coldOpen(row, prev, out) {
+  const screens = [];
+  const before = previouslyScreen(row, prev);
+  if (before) screens.push(before);
+  // Tonight: from this episode, never how anything ends (NO_TEASE).
+  const clips = clipsFrom(out, 3);
+  if (clips.length >= 2) screens.push(breakScreen('tonight', row, clips, out[0]?.bg || 'day', null, 'Tonight'));
+  return screens;
+}
+
+function withBreaks(row, screens, next, prev = null) {
   if (row.moment === 'reunion' || !screens.length) return screens;
   const isNight = s => MOMENT_PHASE.has(s.phase) || s.phase === 'moment' || s.phase === 'result';
   const out = [...screens];
@@ -735,12 +800,21 @@ function withBreaks(row, screens, next) {
     const clips = clipsFrom(out.slice(at, to));
     if (clips.length >= 2) out.splice(at, 0, breakScreen('comingup', row, clips, out[at].bg, null, label));
   }
-  if (row.moment === 'final') return out;
+  // The narrator's top of the show: where every couple stands, on the first
+  // screen of the episode proper.
+  const status = statusLine(row, prev);
+  const first = out.find(s => !s.teaser);
+  if (status && first) {
+    first.steps.unshift({ part: 'narr', kind: 'status', who: words().narratorName || 'The Narrator', voice: 'narrator', text: status,
+      cast: [], bg: first.steps[0]?.bg || first.bg, headline: 'Where we are', sceneStart: true, sceneEnd: true, ev: -1 });
+  }
+  const open = coldOpen(row, prev, screens);
+  if (row.moment === 'final') return [...open, ...out];
   if (next?.row?.pm) {
     const clips = clipsFrom(episodeScreens(next.row, { breaks: false }));
     if (clips.length) out.push(breakScreen('nexttime', row, clips, 'night'));
   } else if (next?.title) out.push(breakScreen('nexttime', row, [], 'night', next.title));
-  return out;
+  return [...open, ...out];
 }
 
 // A later screen of the same part of the day is named after its most

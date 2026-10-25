@@ -77,8 +77,10 @@ function sceneHtml(e) {
   const pop = e.aired
     ? (moves ? `<div class="pm-pop">public: ${moves}${e.major?.length ? ' <span class="pm-major">major moment</span>' : ''}</div>` : '')
     : '<div class="pm-pop">not seen by the public: no effect</div>';
+  // A story beat's narrator leads into it (pm/script.js storyLead).
+  const before = !!e.narrator?.before;
   return `<div class="pm-scene${e.aired ? '' : ' pm-hidden'}"><div class="pm-meta">${esc(e.kind)}${
-    e.aired ? '' : '<span class="pm-unaired">didn\'t air</span>'}</div>${lines}${narr}${hut}${pop}</div>`;
+    e.aired ? '' : '<span class="pm-unaired">didn\'t air</span>'}</div>${before ? narr : ''}${lines}${before ? '' : narr}${hut}${pop}</div>`;
 }
 
 // The parts of the night a moment has of its own. A moment's other scenes
@@ -177,10 +179,11 @@ export function episodeText(row) {
     out.push('', `— ${label} —`);
     for (const e of evs) {
       const s = e.script || { lines: [] };
+      if (e.narrator?.before) for (const l of e.narrator.lines) out.push(`${l.who}: "${l.text}"`);
       if (s.stage) out.push(`(${s.stage})`);
       for (const l of s.lines) out.push(l.action ? l.text : `${l.who}: "${l.text}"`);
       if (s.beat) out.push(`(${s.beat})`);
-      if (e.narrator) for (const l of e.narrator.lines) out.push(`${l.who}: "${l.text}"`);
+      if (e.narrator && !e.narrator.before) for (const l of e.narrator.lines) out.push(`${l.who}: "${l.text}"`);
       if (e.hut) for (const l of e.hut.script.lines) out.push(`  [beach hut] ${l.who}: "${l.text}"`);
       if (!e.aired) out.push('  (not aired)');
       out.push('');

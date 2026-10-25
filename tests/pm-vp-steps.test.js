@@ -221,3 +221,20 @@ describe('a scene stands where its staging says it is', () => {
     expect(named / all).toBeGreaterThan(0.95);
   });
 });
+
+describe('the episode plays under music', () => {
+  // The storylines (pm/threads.js) played in silence when they landed (2026-10-25):
+  // half an episode with no music under it.
+  it('most of a season is scored, and no storyline beat is silent', () => {
+    let steps = 0, scored = 0;
+    const silentStory = new Set();
+    for (const row of season(7)) for (const sc of episodeScreens(row, { breaks: false })) for (const st of sc.steps) {
+      if (st.part === 'hut') continue;
+      steps++;
+      if (st.music) scored++;
+      else if (st.story && st.voice !== 'text') silentStory.add(st.kind);
+    }
+    expect(scored / steps).toBeGreaterThan(0.9);
+    expect([...silentStory]).toEqual([]);
+  });
+});

@@ -259,8 +259,46 @@ const SITUATION = {
   declare: ['declaration', 'speech'],
   'final-wait': ['final-open', 'final-two', 'final-drum'],
   winner: ['final-result', 'final-winners', 'envelope'],
+  // The villa between the big moments: the show's own pop, quieter (manifest
+  // vol), under the chats, the games and the small talk (user: "the music and
+  // sfx are not enough"; half of an episode played in silence).
+  villa: ['chat', 'friendship', 'debrief', 'advice', 'gossip', 'loyalty', 'keeping-open', 'date-back', 'date-picked',
+    'bombshell-guess', 'close-off', 'course-pick', 'parents-advice', 'families', 'challenge-rules', 'challenge-text',
+    'snog-marry-pie', 'heart-rate', 'rival-play', 'pull', 'deep-chat', 'clear-the-air', 'game-plan', 'crush-confide',
+    'hideaway-morning', 'couple-goals', 'knowing-me', 'tod-truth', 'redeem-reflect'],
 };
+// …and the nerves before a ceremony and the lie detector wait under the suspense.
+SITUATION.suspense.push('dump-nerves', 'recouple-nerves', 'dump-recap', 'lie-question');
+SITUATION.comedy.push('ick');
+SITUATION.romance.push('reassurance');
 const BY_KIND = Object.fromEntries(Object.entries(SITUATION).flatMap(([sit, ks]) => ks.map(k => [k, sit])));
+/*
+ * THE STORYLINES' SCENES (pm/threads.js), by how each one went: these played
+ * in silence until 2026-10-25, and they are most of an episode now. A graft's
+ * eyes and a secret carried are the sneaking track; a turned head is drama
+ * when somebody shouts and heartache when they don't; an honest "where's your
+ * head at" hurts, a reassuring one is romance, a dodge or a lie sneaks; the
+ * villa's group chats are gossip when someone's been caught, a row when
+ * there's been one, and the fun track when it's good news. The night before
+ * a ceremony waits under the suspense.
+ */
+const SAD_NEWS = new Set(['knocked-back', 'shut-down', 'ended', 'honest']);
+const STORY_MUSIC = {
+  'graft-eyes': () => 'cheating',
+  watching: () => 'cheating',
+  'secret-burden': () => 'cheating',
+  'graft-shut': x => (x.of === 'sore' ? 'drama' : 'villa'),
+  'graft-turn': x => (x.of === 'angry' ? 'drama' : x.of === 'hurt' ? 'cry' : 'cheating'),
+  'where-head': x => (x.of === 'reassure' ? 'romance' : x.of === 'honest' ? 'cry' : 'cheating'),
+  'feels-off': x => (x.of === 'told' ? 'cry' : x.of === 'covers' ? 'cheating' : 'villa'),
+  'doubt-end': x => (x.of === 'recommit' ? 'romance' : 'cry'),
+  'group-chat': x => (x.subj === 'row' ? 'drama' : SAD_NEWS.has(x.subj) ? 'cry'
+    : ['celebrate', 'progress', 'spark'].includes(x.subj) ? 'comedy' : ['found-out', 'turned'].includes(x.subj) ? 'cheating' : 'villa'),
+  'bed-chat': x => (x.of === 'warm' ? 'romance' : x.of === 'after-row' ? 'cry' : 'villa'),
+  'pick-chat': () => 'suspense',
+  'vote-worry': () => 'suspense',
+  'stick-twist': () => 'suspense',
+};
 const ONE_SHOT = new Set(['transition']);
 const CUTS_BEFORE = new Set(['dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles']);
 /**
@@ -273,11 +311,18 @@ const CUTS_BEFORE = new Set(['dump-verdict', 'dump-verdict-couple', 'dump-verdic
 export function musicOf(e) {
   if (!e?.kind) return null;
   if (e.extra?.secret && ['kiss', 'pull', 'bed-share', 'vent', 'hideaway'].includes(e.kind)) return 'cheating';
+  if (e.kind in STORY_MUSIC) return STORY_MUSIC[e.kind](e.extra || {});
+  // A storyline's own beats (pm/threads.js): a graft's pull is sneaking, a
+  // couple's growing or a new spark's is romance, a doubt's vent is heartache.
+  const th = e.extra?.thread?.type;
+  if (th && e.kind === 'pull') return th === 'spark' ? 'romance' : 'cheating';
+  if (th === 'doubt' && e.kind === 'vent') return 'cry';
+  if ((th === 'progress' || th === 'spark') && ['deep-chat', 'chat', 'date'].includes(e.kind)) return 'romance';
   if (e.kind === 'movie-clip') return e.extra?.of === 'loyalty' ? null : 'cheating';
   if (e.kind === 'casa-react') return ['devastated', 'turned', 'both'].includes(e.extra?.of) ? 'cheating' : null;
   // A couple's FIRST kiss is the moment (events.js records it, counting only
   // real kisses — a challenge's kiss is not one); the tenth is a chat.
-  if (e.kind === 'kiss') return e.extra?.firstKiss ? 'kiss' : null;
+  if (e.kind === 'kiss') return e.extra?.firstKiss ? 'kiss' : 'villa';
   // Night one's presentation tapes are part of the starters walking in; a
   // bombshell's or Casa's tape is its own.
   if (e.kind === 'intro') return ['arrival', 'arrival-2', 'coupling'].includes(e.phase) ? 'starters' : 'intro';
@@ -376,7 +421,7 @@ async function startBed(sit) {
     if (pick.loopTo) { src.loop = true; src.loopStart = pick.loopFrom || 0; src.loopEnd = Math.min(pick.loopTo, buf.duration); }
     const g = c.createGain();
     g.gain.setValueAtTime(0.0001, now);
-    g.gain.exponentialRampToValueAtTime(BED_VOL, now + 1.2);
+    g.gain.exponentialRampToValueAtTime(BED_VOL * (pick.vol || 1), now + 1.2);
     src.connect(g); g.connect(dest);
     src.start(now, Math.min(pick.start, Math.max(0, buf.duration - 1)));
     mine.src = src; mine.g = g; mine.pending = false;

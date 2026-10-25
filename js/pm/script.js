@@ -67,7 +67,9 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   // a talk file's own (pm/talk/*.js facts())
   'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels', 'believed', 'dayOne', 'side',
   // the storylines (pm/threads.js): which story a beat is in, and what a group chat is about
-  'story', 'subj', 'final',
+  'story', 'subj', 'final', 'score', 'paKissed', 'lowScore',
+  // what today did to a couple (sourOf): 'mine' (a did it), 'theirs' (b did), 'row', or null
+  'sour',
   // an intro tape's (pm/talk/intro.js)
   'look', 'vibe', 'ick', 'interest', 'from', 'kinOf', 'eyes', 'pastEx', 'hasAge', 'hasJob', 'hasTown', 'into', 'shape'];
 
@@ -138,6 +140,16 @@ export function factsFor(state, ev) {
   // What really happened between these two, from the record — the only way a
   // line may mention an earlier moment (user: "fix what? … is this even true?").
   Object.assign(f, b ? historyFacts(state, a, b) : { comfortedYesterday: false, rowedBefore: false });
+  // With a's partner when the scene is a's alone (a plea at the front).
+  f.sour = sourOf(state, a, b ?? partnerOf(state, a));
+  // Whether a has really kissed a's own partner yet: a line may only remember
+  // a kiss that happened (season read 2026-10-25: "I just kissed Molly so I
+  // didn't have to say anything", the morning before their first kiss).
+  const mine = partnerOf(state, a);
+  const kissedMine = e => e.kind === 'kiss' && e.players.includes(a) && e.players.includes(mine);
+  // A snogger kiss he scored seven or under: nobody grins about that one.
+  f.lowScore = ev.extra?.score != null && ev.extra.score <= 7;
+  f.paKissed = !!mine && ((state.history || []).some(kissedMine) || (state._today || []).some(kissedMine));
   // They argued earlier today — this scene is the making up, not a fresh start.
   // (An argument scene itself is excluded: it IS the row.)
   // (Not after having it out over a telling: the making-up lines are for a
@@ -152,7 +164,7 @@ export function factsFor(state, ev) {
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
   // …and how much b feels for a, the same way: whether it is said back.
   if (b) { const r = romance(b, a); f.bFeels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.bFeels = null;
-  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since', 'staying', 'came', 'risk', 'side', 'subj', 'final']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since', 'staying', 'came', 'risk', 'side', 'subj', 'final', 'score']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   f.story = ev.extra?.thread?.type || null;
   // A recoupling "steal" of the chooser's own partner from before tonight.
   f.reclaim = !!ev.extra?.reclaim;
@@ -217,6 +229,34 @@ export function factsFor(state, ev) {
 
 const LOW = ['heartbroken', 'stressed', 'lonely', 'jealous'];
 const COMFORT = ['friendship', 'advice', 'solidarity', 'chat', 'deep-chat'];
+/**
+ * WHAT TODAY DID TO THESE TWO. A telling, a row, a turned head, an honest
+ * "I'm not closed off" or an ending: 'mine' when a did the wrong (a was the
+ * one told about, a turned, a gave the answer that hurt), 'theirs' when b did,
+ * 'row' when it was both or nobody's. Null on a clean day. The fire pit's
+ * pleas and goodbyes read it (season read 2026-10-25: Callum, told about
+ * Amber that afternoon, pleaded "I've got something real with Amber" and left
+ * on "I love you, you know").
+ */
+export function sourOf(state, a, b) {
+  if (!a || !b) return null;
+  const pair = (x, y) => (x === a && y === b ? 'theirs' : x === b && y === a ? 'mine' : null);
+  let out = null;
+  for (const e of state._today || []) {
+    if (e.ep !== state.ep) continue;
+    const [p0, p1, p2] = e.players;
+    // told: p1 was told about p2 (gossip [w, p, x]); confronted: p0 had it out with p1
+    const got = e.kind === 'gossip' ? pair(p1, p2)
+      : e.kind === 'told-confront' && e.extra?.verdict !== 'forgive' ? pair(p0, p1)
+      : e.kind === 'graft-turn' ? pair(p1, p0)
+      : e.kind === 'where-head' && !['reassure', 'lie'].includes(e.extra?.of) ? pair(p0, p1)
+      : (e.kind === 'argument' || (e.kind === 'doubt-end' && e.extra?.of === 'friends')) && pair(p0, p1) ? 'row'
+      : null;
+    if (got) out = out && out !== got ? 'row' : got;
+  }
+  return out;
+}
+
 function historyFacts(state, a, b) {
   // The record holds finished episodes (season.js pushes a day when it ends),
   // so "yesterday" is the last episode: one villa day is one episode.
@@ -390,6 +430,8 @@ export function fill(text, ps, partners = {}) {
   // {quote}: the first thing said in the clip being replayed (Movie Night, the reunion).
   if (partners.day != null) text = text.replace(/\{day\}/g, String(partners.day));
   if (partners.card != null) text = text.replace(/\{card\}/g, partners.card);
+  // A game's scores, read off the board (talk/challenges.js snogger-row).
+  for (const k of ['mine', 'Mine', 'top']) if (partners[k] != null) text = text.split(`{${k}}`).join(partners[k]);
   if (partners.about != null) text = text.replace(/\{about\}/g, partners.about);
   // Night one's two sides, from the scene: who stands in the line (`side`)
   // and who walks in to it. The pools never say "the girls" outright, so the

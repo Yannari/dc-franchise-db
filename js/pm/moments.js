@@ -8,7 +8,7 @@
 // a partner left behind can be heartbroken enough to walk out with them.
 import { addBond, getBond } from '../bonds.js';
 import { makeEvent, partnerOf, roomMates, airLater, today } from './events.js';
-import { revealExchange } from './script.js';
+import { revealExchange, sourOf } from './script.js';
 import { streamFor } from '../dr/rng.js';
 import { romance } from './feelings.js';
 import { closedness } from './ladder.js';
@@ -88,7 +88,7 @@ function fireBuildUp(state, rng, { atRisk, channel, format, dumped }) {
     const rx = romance(x, y), ry = romance(y, x);
     const rowed = (state.history || []).some(e => e.kind === 'argument' && e.ep >= state.ep - 1 && e.players.includes(x) && e.players.includes(y))
       || today(state).some(e => e.kind === 'argument' && e.players.includes(x) && e.players.includes(y));
-    const why = rowed ? 'rocky' : rx - ry >= 3 ? 'uneven' : Math.min(rx, ry) >= 6 ? 'solid' : 'unsure';
+    const why = rowed ? 'rocky' : sourOf(state, x, y) ? 'sour' : rx - ry >= 3 ? 'uneven' : Math.min(rx, ry) >= 6 ? 'solid' : 'unsure';
     addBond(x, y, 0.2);
     feel(state, x, 'stress', 0.3); feel(state, y, 'stress', 0.3);
     push('dump-nerves', [x, y], { why, pop: { [x]: { approval: 0.1, fame: 0.6 } } });
@@ -622,7 +622,11 @@ function crossGenderNight(state, ctx) {
     const m = publicVoteIslanders(state, { rng: ctx.rng, gender: 'm', bottom: 3, immune });
     const atRisk = [...f.bottom, ...m.bottom].map(n => [n]);
     const vd = villaDumping(state, { format: 'cross-gender', bottom: atRisk, rng: ctx.rng });
-    const scene = dumpingScene(state, ctx.rng, { atRisk, dumped: vd.dumped, ballots: vd.ballots, channel: 'villa', format: 'cross-gender' });
+    // A tie: the host says so, and the public's votes settle it (villa-vote.js tally).
+    const afterVotes = vd.ties?.length ? () => vd.ties.map(t => makeEvent(state, ctx.rng, { phase: 'dumping', kind: 'dump-tie',
+      players: [t.goes, ...t.tied.filter(n => n !== t.goes)], aired: true, major: [...t.tied],
+      extra: { channel: 'villa', pop: { [t.goes]: { approval: 0, fame: 1.5 } } } })) : null;
+    const scene = dumpingScene(state, ctx.rng, { atRisk, dumped: vd.dumped, ballots: vd.ballots, channel: 'villa', format: 'cross-gender', afterVotes });
     return { events: scene.events, exits: scene.exits, ballots: vd.ballots,
       extra: { islanderShares: [...f.shares, ...m.shares], bottom: atRisk, dumpFormat: 'cross-gender' } };
   }

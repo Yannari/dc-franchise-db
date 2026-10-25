@@ -257,7 +257,7 @@ export const DEBRIEF_ELEVEN = {
       W({ of: 'stole' }, ['b', "You did what you had to do. Just be ready for tomorrow."]),
       W({ of: 'twisted-on' }, ['b', "I can't believe {c} came back with someone else. I'm so sorry."]),
       W({ of: 'twisted' }, ['b', "You followed your heart. {c} will be hurt, but you'd have regretted it."]),
-      W({ of: 'miss' }, ['b', "I know. It's weird without {c} already. The bed's still made."]),
+      W({ of: 'miss' }, ['b', "It's weird without {c} already. I keep expecting {c} to come back up the stairs."]),
       W({ of: 'blame' }, ['b', "I know you're angry with {c}. Sleep on it before you say anything."]),
       W({ of: 'next' }, ['b', "You're not next. I won't let you be next."]),
       W({ of: ['eyeing', 'bomb-threat'], taken: true }, ['b', "Everyone's eyes wander when someone new walks in. It doesn't mean {pa} is going anywhere."]),

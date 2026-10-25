@@ -17,24 +17,58 @@ export const DUMP_REACTION = build('dump-reaction', {
   plans: { featured: ['hold', 'words', 'last?'], short: ['hold', 'words'] },
   moves: {
     hold: [
-      { turns: [], beat: "{a} is on {a.posAdj} feet before the host has finished, and pulls {b} into a hug." },
-      { turns: [], beat: "{a} doesn't move for a second. Then {a} grabs {b}'s hand and doesn't let go." },
-      { turns: [['a', "No. No, no, no."]], beat: "{a} wraps {a.posAdj} arms round {b} and buries {a.posAdj} face in {b.posAdj} shoulder." },
-      { turns: [], beat: "{b} turns to {a}, and {a} is already crying." },
+      { when: { sour: null }, turns: [], beat: "{a} is on {a.posAdj} feet before the host has finished, and pulls {b} into a hug." },
+      { when: { sour: null }, turns: [], beat: "{a} doesn't move for a second. Then {a} grabs {b}'s hand and doesn't let go." },
+      { when: { sour: null }, turns: [['a', "No. No, no, no."]], beat: "{a} wraps {a.posAdj} arms round {b} and buries {a.posAdj} face in {b.posAdj} shoulder." },
+      { when: { sour: null }, turns: [], beat: "{b} turns to {a}, and {a} is already crying." },
+      // A day that went wrong between them (script.js sourOf): nobody runs into anybody's arms.
+      { when: { sour: ['mine', 'theirs', 'row'] }, turns: [], beat: "{a} stands up slowly. After today, neither of them knows if a hug is still allowed." },
+      { when: { sour: ['mine', 'theirs', 'row'] }, turns: [], beat: "{b} looks at {a} across the fire pit, and for a second nobody in the villa breathes." },
     ],
     words: [
-      { when: { feels: 'strong' }, turns: [
+      // a did the wrong today, and b is the one going
+      { when: { sour: 'mine' }, turns: [
+        ['a', "I'm sorry. About today. About all of it."],
+        ['b', "Are you sorry, or are you sorry I found out?"],
+        ['a', "That's not fair."],
+        ['b', "Not much about today has been."],
+      ] },
+      { when: { sour: 'mine' }, turns: [
+        ['a', "I didn't want it to end like this."],
+        ['b', "Then you should have thought about that this afternoon."],
+        ['a', "Can we at least talk on the outside?"],
+        ['b', "Maybe. Ask me when it doesn't hurt."],
+      ] },
+      // b did the wrong, and b is the one going
+      { when: { sour: 'theirs' }, turns: [
+        ['b', "I know what you think of me right now. I'm sorry it ends like this."],
+        ['a', "So am I. But you made it end like this. Not them."],
+        ['b', "Yeah. I know."],
+      ] },
+      { when: { sour: 'theirs' }, turns: [
+        ['b', "Say something. Anything."],
+        ['a', "I don't know what you want me to say. This morning I'd have cried. Now I don't know what I feel."],
+        ['b', "That's worse."],
+        ['a', "I know it is."],
+      ] },
+      { when: { sour: 'row' }, turns: [
+        ['a', "We never even sorted it out."],
+        ['b', "We will. Outside. Without everyone watching."],
+        ['a', "Promise you'll actually ring me."],
+        ['b', "I'll ring you. Go on."],
+      ] },
+      { when: { feels: 'strong', sour: null }, turns: [
         ['a', "This isn't fair. This isn't fair. I've only just found you."],
         ['b', "Hey. Look at me. This isn't the end, okay? This is just the end of in here. I'll be waiting for you on the outside, I promise you that."],
         ['a', "You'd better be."],
         ['b', "I'll be the first one there when you walk out."],
       ] },
-      { when: { feels: 'strong' }, turns: [
+      { when: { feels: 'strong', sour: null }, turns: [
         ['b', "Don't cry. Please don't cry, or I'll start."],
         ['a', "I can't help it. I don't want to do this without you. I don't know how to do this without you."],
         ['b', "You do. You're the strongest person in this villa. You're going to be fine, and then you're going to come home to me."],
       ] },
-      { when: { feels: 'some' }, turns: [
+      { when: { feels: 'some', sour: null }, turns: [
         ['a', "I'm so sorry. I'm so sorry it's you."],
         ['b', "Don't be sorry. It's not your fault. You've been amazing to me in here, and I'll never forget that."],
         ['a', "I wish we'd had longer."],
@@ -45,22 +79,24 @@ export const DUMP_REACTION = build('dump-reaction', {
         ['b', "It's okay. Honestly. I've had the best time. Look after yourself in here."],
         ['a', "I will. Take care of yourself, yeah?"],
       ] },
-      { turns: [
+      { when: { sour: null }, turns: [
         ['b', "Promise me something. Don't let anyone in here mess you about once I'm gone."],
         ['a', "I promise."],
         ['b', "And keep my side of the bed warm."],
         ['a', "Nobody's getting your side of the bed."],
       ] },
-      { when: { rung: ['closed-off', 'exclusive', 'official'] }, turns: [
+      { when: { rung: ['closed-off', 'exclusive', 'official'], sour: null }, turns: [
         ['a', "We said we were closed off. We said we'd see this through together."],
         ['b', "And we still will. Just from different places for a bit. Nothing changes how I feel about you. Nothing. Do you hear me?"],
         ['a', "I hear you."],
       ] },
     ],
     last: [
-      { turns: [], beat: "The host gives them a moment. They take it." },
-      { turns: [['b', "I love you, you know."], ['a', "I know. Go on. Before I don't let you."]] },
-      { turns: [], beat: "{b} kisses {a} one last time and walks away. {a} watches until {b} is gone." },
+      { when: { sour: null }, turns: [], beat: "The host gives them a moment. They take it." },
+      // Love said only when it is there, and nothing today has dented it.
+      { when: { feels: 'strong', sour: null }, turns: [['b', "I love you, you know."], ['a', "I know. Go on. Before I don't let you."]] },
+      { when: { sour: null }, turns: [], beat: "{b} kisses {a} one last time and walks away. {a} watches until {b} is gone." },
+      { when: { sour: ['mine', 'theirs', 'row'] }, turns: [], beat: "{b} picks up {b.posAdj} bag and walks to the steps without looking back. {a} watches every step." },
     ],
   },
   notes: [],

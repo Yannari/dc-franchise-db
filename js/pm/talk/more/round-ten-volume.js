@@ -178,9 +178,9 @@ export const ROUND_TEN = {
   'game-kiss': {
     moves: {
       faces: [
-        BW({ of: 'partner' }, "{b} grins like it's the best thing that's happened all week."),
+        BW({ of: 'partner', lowScore: false }, "{b} grins like it's the best thing that's happened all week."),
         BW({ of: 'partner' }, "The villa boos the safe choice. {a} takes a bow."),
-        BW({ of: 'partner' }, "{a} and {b} go back to their spots holding hands, and nobody's surprised."),
+        BW({ of: 'partner', lowScore: false }, "{a} and {b} go back to their spots holding hands, and nobody's surprised."),
         BW({ of: 'crush' }, "There's a gasp from the end of the line, and somebody whistles."),
         BW({ of: 'crush' }, "{b} goes pink, and {a} goes pinker."),
         BW({ of: 'crush' }, "Nobody claps. Everybody's too busy looking at everybody else."),

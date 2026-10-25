@@ -16,7 +16,7 @@ from mathutils import Vector
 argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 OUT = argv[0] if argv else '.'
 ALL = ['daybeds-day', 'pool-night', 'kitchen-day', 'kitchen-night', 'lawn-day', 'lawn-night', 'terrace-night', 'terrace-day',
-       'bedroom-day', 'bedroom-night', 'dressing-day', 'hideaway-night', 'casa-night']
+       'bedroom-day', 'bedroom-night', 'dressing-day', 'hideaway-night', 'casa-night', 'casa-day']
 SETS = argv[1:] or ALL
 AMBIENT = [0.3, (1, 1, 1)]
 STEPS = [[(0.0, 0.32), (0.12, 0.62), (0.45, 1.0), (1.3, 1.3)]]
@@ -518,6 +518,7 @@ BUILDS = {
     'daybeds-day': ('day', lambda M: build_daybeds(M)),
     'pool-night': ('night', lambda M: build_daybeds(M, night=True)),
     'casa-night': ('night', lambda M: build_daybeds(M, night=True, casa=True)),
+    'casa-day': ('day', lambda M: build_daybeds(M, casa=True)),
     'kitchen-day': ('day', lambda M: build_kitchen(M)),
     'kitchen-night': ('evening', lambda M: build_kitchen(M, night=True)),
     'lawn-day': ('day', lambda M: build_lawn(M)),

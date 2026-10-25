@@ -73,6 +73,9 @@ import { STORY_MORE, WATCHING_PLANS, FEELS_OFF_PLANS, BED_CHAT_PLANS } from './m
 import { GROUP_CHAT_ENDED } from './more/group-chat-ended.js';
 import { DOUBT_END } from './doubt-end.js';
 import { PICK_CHAT, VOTE_WORRY, STICK_TWIST } from './tonight.js';
+import { VOTE_WORRY_VOLUME, PICK_CHAT_VOLUME, STICK_TWIST_VOLUME } from './more/tonight-volume.js';
+import { GROUP_CHAT_VOLUME } from './more/group-chat-volume.js';
+import { RECEIPT_VOLUME, JOURNEY_REACT_VOLUME, CASA_RETURN_VOLUME, ENTRANCE_VOLUME, DEBRIEF_VOLUME_3, CASA_MISS_VOLUME, BED_CHAT_VOLUME } from './more/repeat-volume.js';
 import { COMFORT } from './comfort.js';
 import { CASA_MISS, BED_SHARE } from './casa.js';
 import { CHALLENGE_KISS, CHALLENGE_WIN } from './challenge.js';
@@ -95,7 +98,7 @@ import { DUMP_NERVES, RECOUPLE_NERVES, DUMP_PLEA } from './ceremony.js';
 import { APOLOGY, APOLOGY_REJECTED, REUNITE, VOTE_FALLOUT, VOTE_CALLOUT, GRUDGE_COLD, GRUDGE_END, FIRST_ARRIVAL } from './aftermath.js';
 import { RECEIPT, LOOK_WHO, SNOGGER_KISS, SNOGGER_WIN, SNOGGER_ROW, COUPLE_GOALS, COUPLE_GOALS_ROW, KNOWING_ME, KNOWING_ROW, TALENT_ACT, TALENT_WIN, TALENT_SNUB, BABY_DOLL, SORTS_PODIUM, GRAFTIES_AWARD, BLOW_SLIP, BLOW_DARE, LIP_RACE, LIP_WATCH, TOWER_Q, COURSE_RUN, COURSE_PICK, COURSE_WIN, BLIND_RUN, SPORTS_CAPTAINS, SPORTS_WIN, SPORTS_SORE, HEADLINE } from './challenges.js';
 import { STEP_FORWARD, STEP_REVEAL, STEP_CHOOSE, STEP_BACK, STEP_LAST, STEAL, GROUP_ENTRANCE, VISIT_ARRIVE, VISIT_CONFRONT, VISIT_LEAVE, RETURN_ENTRANCE } from './coupling.js';
-import { FIRST_LOOK, PROFILE_PICK, PUBLIC_COUPLE, RANKING_COUPLE, STAND_UP, STAND_UP_PICK, SAVE_SETUP, BOMBSHELL_SAVE, PUBLIC_MATCH, RETURN_EX, MISSION_BRIEF, MISSION_DUMP, MISSION_RETURN, SLEEPOVER_INVITE, SLEEPOVER_NIGHT, SLEEPOVER_SINGLE, SLEEPOVER_CHOICE, IMMUNITY_WIN, WALK, WALK_DOUBT, WALK_GOODBYE, WALK_AFTER, ENVELOPE, SAVE_TIE } from './formats.js';
+import { FIRST_LOOK, PROFILE_PICK, PUBLIC_COUPLE, RANKING_COUPLE, STAND_UP, STAND_UP_PICK, SAVE_SETUP, BOMBSHELL_SAVE, PUBLIC_MATCH, RETURN_EX, MISSION_BRIEF, MISSION_DUMP, MISSION_RETURN, SLEEPOVER_INVITE, SLEEPOVER_NIGHT, SLEEPOVER_SINGLE, SLEEPOVER_CHOICE, IMMUNITY_WIN, WALK, WALK_DOUBT, WALK_GOODBYE, WALK_AFTER, ENVELOPE, SAVE_TIE, DUMP_TIE } from './formats.js';
 import { EX_TEXT, EX_REVEAL, EX_PARTNER, EX_CONFRONT, PAIR_TEXT, KIN_ENTRANCE, KIN_GOODBYE, KIN_WALK, SC_ARRIVE, SC_RULES, SC_VOTE, SC_STAY, SC_LEAVE, ICEBREAKER, KISS_PICK, LADY_LUCK_KISS, LADY_LUCK_PICK, GRUDGE_CLASH } from './last-pools.js';
 import { BLOWUP, PILE_IN, VILLA_DIVIDED, COLD_SHOULDER, CLEAR_THE_AIR } from './blowup.js';
 import { BETRAY_SEE, BETRAY_CONFRONT, BETRAY_END, MUGGED_LOW, FOUND_LOVE, VILLA_HAPPY, REDEEM_REFLECT, REDEEM_ACT, REDEEM_DOUBT, GRASS_TALK, GRASS_FROZEN, GRASS_CONFRONT, PARENTS_NAMED, PARENTS_ADVICE, PARENTS_MEDIATE, PARENTS_WOBBLE, EXW_STIR, EXW_PARTNER, EXW_TALK, EXW_BACK } from './arcs.js';
@@ -138,7 +141,7 @@ export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'dee
   'grudge-cold': GRUDGE_COLD, 'grudge-end': GRUDGE_END, 'first-arrival': FIRST_ARRIVAL,
   'receipt': RECEIPT, 'look-who': LOOK_WHO, 'snogger-kiss': SNOGGER_KISS, 'snogger-win': SNOGGER_WIN, 'snogger-row': SNOGGER_ROW, 'couple-goals': COUPLE_GOALS, 'couple-goals-row': COUPLE_GOALS_ROW, 'knowing-me': KNOWING_ME, 'knowing-row': KNOWING_ROW, 'talent-act': TALENT_ACT, 'talent-win': TALENT_WIN, 'talent-snub': TALENT_SNUB, 'baby-doll': BABY_DOLL, 'sorts-podium': SORTS_PODIUM, 'grafties-award': GRAFTIES_AWARD, 'blow-slip': BLOW_SLIP, 'blow-dare': BLOW_DARE, 'lip-race': LIP_RACE, 'lip-watch': LIP_WATCH, 'tower-q': TOWER_Q, 'course-run': COURSE_RUN, 'course-pick': COURSE_PICK, 'course-win': COURSE_WIN, 'blind-run': BLIND_RUN, 'sports-captains': SPORTS_CAPTAINS, 'sports-win': SPORTS_WIN, 'sports-sore': SPORTS_SORE, 'headline': HEADLINE,
   'step-forward': STEP_FORWARD, 'step-reveal': STEP_REVEAL, 'step-choose': STEP_CHOOSE, 'step-back': STEP_BACK, 'step-last': STEP_LAST, 'steal': STEAL, 'group-entrance': GROUP_ENTRANCE, 'visit-arrive': VISIT_ARRIVE, 'visit-confront': VISIT_CONFRONT, 'visit-leave': VISIT_LEAVE, 'return-entrance': RETURN_ENTRANCE,
-  'first-look': FIRST_LOOK, 'profile-pick': PROFILE_PICK, 'public-couple': PUBLIC_COUPLE, 'ranking-couple': RANKING_COUPLE, 'stand-up': STAND_UP, 'stand-up-pick': STAND_UP_PICK, 'save-setup': SAVE_SETUP, 'bombshell-save': BOMBSHELL_SAVE, 'public-match': PUBLIC_MATCH, 'return-ex': RETURN_EX, 'mission-brief': MISSION_BRIEF, 'mission-dump': MISSION_DUMP, 'mission-return': MISSION_RETURN, 'sleepover-invite': SLEEPOVER_INVITE, 'sleepover-night': SLEEPOVER_NIGHT, 'sleepover-single': SLEEPOVER_SINGLE, 'sleepover-choice': SLEEPOVER_CHOICE, 'immunity-win': IMMUNITY_WIN, 'walk': WALK, 'walk-doubt': WALK_DOUBT, 'walk-goodbye': WALK_GOODBYE, 'walk-after': WALK_AFTER, 'envelope': ENVELOPE, 'save-tie': SAVE_TIE,
+  'first-look': FIRST_LOOK, 'profile-pick': PROFILE_PICK, 'public-couple': PUBLIC_COUPLE, 'ranking-couple': RANKING_COUPLE, 'stand-up': STAND_UP, 'stand-up-pick': STAND_UP_PICK, 'save-setup': SAVE_SETUP, 'bombshell-save': BOMBSHELL_SAVE, 'public-match': PUBLIC_MATCH, 'return-ex': RETURN_EX, 'mission-brief': MISSION_BRIEF, 'mission-dump': MISSION_DUMP, 'mission-return': MISSION_RETURN, 'sleepover-invite': SLEEPOVER_INVITE, 'sleepover-night': SLEEPOVER_NIGHT, 'sleepover-single': SLEEPOVER_SINGLE, 'sleepover-choice': SLEEPOVER_CHOICE, 'immunity-win': IMMUNITY_WIN, 'walk': WALK, 'walk-doubt': WALK_DOUBT, 'walk-goodbye': WALK_GOODBYE, 'walk-after': WALK_AFTER, 'envelope': ENVELOPE, 'save-tie': SAVE_TIE, 'dump-tie': DUMP_TIE,
   'ex-text': EX_TEXT, 'ex-reveal': EX_REVEAL, 'ex-partner': EX_PARTNER, 'ex-confront': EX_CONFRONT, 'pair-text': PAIR_TEXT, 'kin-entrance': KIN_ENTRANCE, 'kin-goodbye': KIN_GOODBYE, 'kin-walk': KIN_WALK, 'sc-arrive': SC_ARRIVE, 'sc-rules': SC_RULES, 'sc-vote': SC_VOTE, 'sc-stay': SC_STAY, 'sc-leave': SC_LEAVE, 'icebreaker': ICEBREAKER, 'kiss-pick': KISS_PICK, 'lady-luck-kiss': LADY_LUCK_KISS, 'lady-luck-pick': LADY_LUCK_PICK, 'grudge-clash': GRUDGE_CLASH,
   blowup: BLOWUP, 'pile-in': PILE_IN, 'villa-divided': VILLA_DIVIDED, 'cold-shoulder': COLD_SHOULDER, 'clear-the-air': CLEAR_THE_AIR,
   'betray-see': BETRAY_SEE, 'betray-confront': BETRAY_CONFRONT, 'betray-end': BETRAY_END, 'mugged-low': MUGGED_LOW, 'found-love': FOUND_LOVE, 'villa-happy': VILLA_HAPPY, 'redeem-reflect': REDEEM_REFLECT, 'redeem-act': REDEEM_ACT, 'redeem-doubt': REDEEM_DOUBT, 'grass-talk': GRASS_TALK, 'grass-frozen': GRASS_FROZEN, 'grass-confront': GRASS_CONFRONT, 'parents-named': PARENTS_NAMED, 'parents-advice': PARENTS_ADVICE, 'parents-mediate': PARENTS_MEDIATE, 'parents-wobble': PARENTS_WOBBLE, 'exw-stir': EXW_STIR, 'exw-partner': EXW_PARTNER, 'exw-talk': EXW_TALK, 'exw-back': EXW_BACK,
@@ -153,11 +156,23 @@ export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'dee
 extend(VENT, VENT_STORY);
 VENT.leads = [...(VENT.leads || []), 'why'];
 VENT.slots = (state, ev) => (ev.extra?.about ? { x: ev.extra.about } : {});
+// The board's numbers, as said out loud: "an eight", "a nine".
+const SCORE_WORD = ['nothing', 'a one', 'a two', 'a three', 'a four', 'a five', 'a six', 'a seven', 'an eight', 'a nine', 'a ten'];
+TALK['snogger-row'].slots = (state, ev) => {
+  const w = n => SCORE_WORD[Math.max(0, Math.min(10, n | 0))];
+  const mine = w(ev.extra?.mine);
+  return { mine, Mine: mine[0].toUpperCase() + mine.slice(1), top: w(ev.extra?.top) };
+};
 // …and a group chat names who it is about ({x}) and who with ({about}), and
 // says exactly what happened (talk/more/group-chat-story.js) whenever it can.
 extend(GROUP_CHAT, GROUP_CHAT_STORY);
 extend(GROUP_CHAT, GROUP_CHAT_SPARK);
 extend(GROUP_CHAT, GROUP_CHAT_ENDED);
+extend(GROUP_CHAT, GROUP_CHAT_VOLUME);
+// The pools one episode heard twice (2026-10-25, more/repeat-volume.js).
+for (const [k, more] of [['receipt', RECEIPT_VOLUME], ['journey-react', JOURNEY_REACT_VOLUME], ['casa-return', CASA_RETURN_VOLUME], ['entrance', ENTRANCE_VOLUME],
+  ['debrief', DEBRIEF_VOLUME_3], ['casa-miss', CASA_MISS_VOLUME], ['bed-chat', BED_CHAT_VOLUME]]) extend(TALK[k], more);
+extend(VOTE_WORRY, VOTE_WORRY_VOLUME); extend(PICK_CHAT, PICK_CHAT_VOLUME); extend(STICK_TWIST, STICK_TWIST_VOLUME);
 TALK['doubt-end'] = DOUBT_END;
 TALK['pick-chat'] = PICK_CHAT; TALK['vote-worry'] = VOTE_WORRY; TALK['stick-twist'] = STICK_TWIST;
 // A story's pull is about the story: no tangent, and its own why, answer and probe.

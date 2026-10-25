@@ -126,6 +126,10 @@ const busyIn = state => new Set([
   ...(state.triangles || []).filter(t => !t.over).flatMap(t => [t.h, t.x, t.y]),
   ...(state.rivalries || []).filter(t => !t.over).flatMap(t => [t.h, t.x, t.y]),
   ...(state.crushes || []).filter(t => !t.over).flatMap(t => [t.a, t.b]),
+  // …and the storylines' people (pm/threads.js), as the threads keep clear of
+  // these (season read 2026-10-25: Molly, in a graft with Tyler, asked Callum
+  // "would you ever go for someone like me?" out of nowhere).
+  ...(state.threads || []).filter(t => !t.over).flatMap(t => [t.a, t.b, t.c, t.t, t.p, t.w, t.x].filter(Boolean)),
 ]);
 const wants = (state, n, h) => Math.max(romance(n, h), attr(state, n, h) ?? 0);
 /** The friend somebody would talk to: their closest in the villa, not one of the story. */
@@ -172,6 +176,9 @@ function newCrush(state, rng) {
     if (busy.has(a)) continue;
     for (const b of roomMates(state, a)) {
       if (busy.has(b) || !compatible(state, a, b)) continue;
+      // A crush is a single's, or wanting more from one's own partner: the
+      // coupled with eyes for somebody else are a graft (pm/threads.js).
+      if (partnerOf(state, a) && partnerOf(state, a) !== b) continue;
       // Told no, or let go: that one is over. It only comes back if b has
       // since come round a little (a let-down twice in two episodes read as a bug).
       const done = state.crushDone?.[`${a}>${b}`];

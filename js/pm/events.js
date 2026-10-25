@@ -391,7 +391,9 @@ export const KINDS = {
       const opts = [];
       for (const o of s.villa.filter(n => !fresh.has(n))) {
         const p = partnerOf(s, o);
-        if (!p || roomMates(s, o).includes(p) || (s.casaMissed?.[o] || 0) >= 2) continue;
+        // Twice a Casa at most, and never twice in a day (season read 2026-10-25:
+        // Molly told Freya she missed Sean in the morning, and again after lunch, word for word).
+        if (!p || roomMates(s, o).includes(p) || (s.casaMissed?.[o] || 0) >= 2 || s.casaMissedEp?.[o] === s.ep) continue;
         // Already cheated this Casa: not pining. The cheating touches only the
         // one who did it until the other finds out (user): the partner at home
         // goes on missing them, right up to the photo.
@@ -424,6 +426,7 @@ export const KINDS = {
     apply: (s, ev) => {
       const [o, friend] = ev.players, p = ev.extra.about;
       (s.casaMissed ||= {})[o] = (s.casaMissed[o] || 0) + 1;
+      (s.casaMissedEp ||= {})[o] = s.ep;
       feel(s, o, 'loneliness', 0.8);
       if (ev.extra.of === 'worries') feel(s, o, 'security', -0.6);
       if (ev.extra.of === 'tears') { feel(s, o, 'stress', 0.5); addBond(o, friend, 0.3); }
@@ -753,7 +756,7 @@ export const KINDS = {
     'challenge-text', 'receipt', 'look-who',
     // night one's opening
     'first-arrival', 'first-look', 'step-forward', 'step-last', 'host-open', 'host-first', 'intro', 'snogger-kiss', 'snogger-win', 'snogger-row', 'couple-goals', 'couple-goals-row',
-    'knowing-me', 'knowing-row', 'talent-act', 'talent-win', 'talent-snub', 'baby-doll', 'sorts-podium', 'grafties-award', 'save-vote', 'save-tie', 'lie-write', 'lie-question', 'lie-row', 'blow-slip', 'blow-dare', 'lip-race', 'lip-watch', 'tower-q', 'course-run', 'course-pick', 'course-win', 'blind-run', 'sports-captains', 'sports-win', 'sports-sore', 'headline', 'triangle-torn', 'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'breakdown', 'comfort', 'no-show', 'blowup', 'pile-in', 'villa-divided', 'cold-shoulder', 'clear-the-air', 'apology', 'reunite', 'apology-rejected', 'casa-host', 'casa-react', 'casa-row', 'photo-text', 'photo-row', 'photo-split', 'movie-text', 'movie-seat', 'movie-clip', 'movie-react', 'movie-row', 'movie-split', 'arrival-chat', 'first-toast', 'debrief', 'bombshell-text', 'bombshell-guess', 'bombshell-react', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot',
+    'knowing-me', 'knowing-row', 'talent-act', 'talent-win', 'talent-snub', 'baby-doll', 'sorts-podium', 'grafties-award', 'save-vote', 'save-tie', 'dump-tie', 'lie-write', 'lie-question', 'lie-row', 'blow-slip', 'blow-dare', 'lip-race', 'lip-watch', 'tower-q', 'course-run', 'course-pick', 'course-win', 'blind-run', 'sports-captains', 'sports-win', 'sports-sore', 'headline', 'triangle-torn', 'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'breakdown', 'comfort', 'no-show', 'blowup', 'pile-in', 'villa-divided', 'cold-shoulder', 'clear-the-air', 'apology', 'reunite', 'apology-rejected', 'casa-host', 'casa-react', 'casa-row', 'photo-text', 'photo-row', 'photo-split', 'movie-text', 'movie-seat', 'movie-clip', 'movie-react', 'movie-row', 'movie-split', 'arrival-chat', 'first-toast', 'debrief', 'bombshell-text', 'bombshell-guess', 'bombshell-react', 'top-couple-pick', 'couples-vote', 'ex-return', 'ex-ballot',
     // two after the same one, and the crush that isn't returned (pm/rivalry.js)
     'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch', 'crush-move', 'crush-plea', 'crush-over',
     'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after',
@@ -896,7 +899,10 @@ export function haveItOut(state, tell) {
   // Told again and again about the same partner, anyone snaps in the end.
   const heard = ((state.toldHeard ||= {})[key] = (state.toldHeard[key] || 0) + 1);
   const goes = ({ angry: 0.5, thanks: 0.18, quiet: 0.06 }[tell.extra.close] ?? 0.18) + 0.12 * (heard - 1);
-  if (rng() >= Math.min(0.9, goes * Math.min(1, 0.4 + 0.6 * sev))) return null;
+  // The angry close has just said "I want to hear it from them" on screen: it
+  // always goes (season read 2026-10-25: half the time it didn't, and the story
+  // stopped on a promise).
+  if (rng() >= Math.min(0.9, goes * Math.min(1, 0.4 + 0.6 * sev)) && tell.extra.close !== 'angry') return null;
   const nth = (state.toldOut?.[key] || 0) > 0 ? 'again' : 'first';
   (state.toldOut ||= {})[key] = (state.toldOut[key] || 0) + 1;
   const channel = { angry: 'straight', thanks: 'calm', quiet: 'held' }[tell.extra.close] || 'calm';
@@ -1100,6 +1106,14 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
     // How everyone in it felt going in, so a later line can say "thanks for
     // yesterday" only when yesterday really happened (pm/script.js history).
     moods: Object.fromEntries(players.map(n => [n, moodOf(state, n)])) };
+  // Which villa it happened in, while the villa is split for Casa Amor: the
+  // screens and the transcript cut between them (season read 2026-10-25: the
+  // two villas' scenes ran together, and nobody could tell which was which).
+  // Recorded, not decided: it draws nothing.
+  if (state.split) {
+    const here = players.filter(Boolean);
+    if (here.length) ev.where = here.every(n => state.casa?.includes(n)) ? 'casa' : 'villa';
+  }
   // Kept for the rest of the day, so later scenes know what already happened.
   state._today = [...today(state), ev];
   const res = def.apply(state, ev, rng) || {};

@@ -175,9 +175,15 @@ export function episodeHeaderHtml(row, prev = null) {
 /** The same content as plain text, for the text backlog. */
 export function episodeText(row) {
   const out = [`EPISODE ${row.num} — ${momentTitle(row).toUpperCase()}`];
+  // Casa Amor: the cut between the two villas (pm/events.js `where`).
+  let where = null;
   for (const [, evs, label] of phasesOf(row)) {
     out.push('', `— ${label} —`);
     for (const e of evs) {
+      if (e.where && e.where !== where) {
+        out.push(e.where === 'casa' ? (where ? '[Meanwhile, at Casa Amor]' : '[At Casa Amor]') : (where ? '[Back in the main villa]' : '[In the main villa]'));
+        where = e.where;
+      }
       const s = e.script || { lines: [] };
       if (e.narrator?.before) for (const l of e.narrator.lines) out.push(`${l.who}: "${l.text}"`);
       if (s.stage) out.push(`(${s.stage})`);

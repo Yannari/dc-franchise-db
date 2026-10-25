@@ -25,7 +25,7 @@ const tag = (kind, slot, e) => `${kind}.${slot} ${e.id}`;
 // Who a kind casts beyond {a} and {b}, and what fills {about}.
 const THREE = new Set([
   'betray-see', 'betray-confront', 'told-confront', 'stirrer-confront', 'villa-happy', 'redeem-doubt', 'grass-talk', 'parents-named', 'parents-advice', 'parents-mediate', 'exw-stir', 'exw-partner',
-  'gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back',
+  'dump-tie', 'gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back',
   'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch',
   'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write', 'hideaway-vote', 'hideaway-morning', 'movie-react', 'snog-marry-pie', 'casa-react', 'vote-fallout', 'receipt', 'look-who', 'headline', 'couple-goals', 'couple-goals-row', 'snogger-row', 'lip-watch', 'talent-snub', 'tower-q', 'blow-dare', 'course-pick', 'step-reveal', 'step-choose', 'steal', 'visit-arrive', 'visit-leave', 'stand-up', 'stand-up-pick', 'bombshell-save', 'public-match', 'return-ex', 'mission-dump', 'sleepover-invite', 'sleepover-choice', 'walk-doubt', 'walk-after', 'ex-partner', 'lady-luck-pick']);
 const DEBRIEF_THREE = ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat', 'rather'];
@@ -69,13 +69,15 @@ describe('the movements are well-formed', () => {
 describe('a placeholder only where somebody fills it', () => {
   it('only known placeholders, and never a subject pronoun', () => {
     for (const [k, s, e] of ENTRIES) for (const x of texts(e)) {
-      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, tag(k, s, e)).toMatch(/^\{(where|Where|about|age|job|town|one|ones|day|quote|card|(pa|pb|a|b|c|d|x|about)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
+      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, tag(k, s, e)).toMatch(/^\{(where|Where|about|age|job|town|one|ones|day|quote|card|mine|Mine|top|(pa|pb|a|b|c|d|x|about)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
       // {age} {job} {town}: an intro tape's, from the character file; {one} {ones}: who the tape's islander goes for.
       if (/\{(age|job|town|one|ones)\}/.test(x)) expect(k, tag(k, s, e)).toBe('intro');
       // {day}: the day a declaration's moment happened (script.js clipSlots).
       if (/\{day\}/.test(x)) expect(k, tag(k, s, e)).toBe('speech');
       // {quote}: the beach-hut line Look Who's Talking reads out.
       if (/\{quote\}/.test(x)) expect(k, tag(k, s, e)).toBe('look-who');
+      // {mine} {top}: a snogger board's scores.
+      if (/\{(mine|Mine|top)\}/.test(x)) expect(k, tag(k, s, e)).toBe('snogger-row');
       // {card}: the question frozen in the ice.
       if (/\{card\}/.test(x)) expect(k, tag(k, s, e)).toBe('icebreaker');
       // {d} is named only in the kinds that cast four.

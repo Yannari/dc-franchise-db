@@ -409,6 +409,24 @@ export const ENVELOPE = build('envelope', {
   },
 });
 
+// A dumping vote level between two or three: the public's votes settle it,
+// and {a} is the one they voted for least (pm/villa-vote.js tally).
+export const DUMP_TIE = build('dump-tie', {
+  ...ONE,
+  plans: { featured: ['tie', 'land?'], short: ['tie'] },
+  moves: {
+    tie: [
+      { when: { cast: 2 }, turns: [['dior', "We have a tie. {a} and {b} have the same number of votes. So it goes back to the public. And of the two of you, the public voted least for {a}."]] },
+      { when: { cast: 2 }, turns: [['dior', "It's level. The villa can't split {a} and {b}. The public can. {a}, of the two of you, you had the fewest votes."]] },
+      { when: { cast: 3 }, turns: [['dior', "One vote each. Nobody in this villa can decide between {a}, {b} and {c}. So it comes down to the public's votes. And of the three of you, the fewest went to {a}."]] },
+    ],
+    land: [
+      { turns: [], beat: "{a} closes {a.posAdj} eyes. {b} doesn't know where to look." },
+      { turns: [], beat: "Nobody on the benches moves. {a} nods, very slowly." },
+    ],
+  },
+});
+
 export const SAVE_TIE = build('save-tie', {
   ...ONE,
   plans: { featured: ['tie', 'land?'], short: ['tie'] },

@@ -598,7 +598,7 @@ export const GAME_SUSPECT = build('game-suspect', { ...S,
         ['a', "Can I tell you what I think? I think {c} is playing a game. I watch {c} all day, and every move {c} makes is a move. Who {c} sits with. Who {c} laughs at. It's all planned."],
       ] },
       { stage: "{a} and {b} are on washing-up duty, watching {c} across the garden.", turns: [
-        ['a', "Have you noticed {c} only ever goes for whoever's doing best with the public? It's not a coincidence. I'm telling you."],
+        ['a', "Have you noticed {c} only ever goes for whoever looks safest in here? Whoever's never been at risk. It's not a coincidence. I'm telling you."],
       ] },
     ],
     answer: [

@@ -193,7 +193,7 @@ export const VOTE_WORRY = build('vote-worry', {
 
 export const STICK_TWIST = build('stick-twist', {
   stages: [
-    { stage: "Casa Amor. {a} and {b} have found the one quiet corner of the villa." },
+    { stage: "{a} and {b} have found the one quiet corner of the villa, away from the new arrivals." },
   ],
   plans: {
     featured: ['open', 'torn', 'answer', 'close'],

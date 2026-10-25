@@ -708,7 +708,10 @@ export function tonightBeats(state, rng, phase, entry, max = 2) {
     // least into each other. (Never the public's numbers: the villa can't see
     // them — tests/pm-ledger-readers.)
     const since = c => state.coupledSince?.[[...c].sort().join('|')] ?? 0;
-    const couples = state.couples.filter(([a, b]) => together(state, a, b) && free(a) && free(b))
+    // …not one that's been told, rowed or ended today (season read 2026-10-25:
+    // Callum, told about Amber that afternoon, on the daybed with her at night
+    // saying "I'm not ready to leave you").
+    const couples = state.couples.filter(([a, b]) => together(state, a, b) && free(a) && free(b) && !tooSoonForWarm(state, a, b))
       .map(c => [c, (romance(c[0], c[1]) + romance(c[1], c[0])) / 2 + Math.min(4, ((state.day ?? 0) - since(c)) / 3)])
       .sort((u, v) => u[1] - v[1]);
     for (const [[a, b]] of couples.slice(0, max)) {
@@ -781,6 +784,8 @@ export function queueReaction(state, e) {
 
 const NEXT = { night: 'morning', morning: 'day', day: 'evening', challenge: 'evening', event: 'evening', evening: 'night' };
 /** The reactions that are due in this part of the day, as group chats. */
+// How many group chats about the same kind of news an episode airs.
+const CHAT_CAP = { pulled: 2, 'shut-down': 2, 'knocked-back': 2 };
 export function reactions(state, rng, phase, max = 3) {
   const th = state._th;
   if (!th || th.ep !== state.ep) return [];
@@ -809,9 +814,15 @@ export function reactions(state, rng, phase, max = 3) {
       for (const s of state.secrets.filter(z => !z.known && z.who === center && z.with === x)) for (const f of fs) if (!s.witnesses.includes(f)) s.witnesses.push(f);
     }
     if (wronged) feel(state, center, 'stress', -0.3);
+    // The same telling, over and over, is one the edit cuts (season read
+    // 2026-10-25, Casa: four "how did you feel? not what you said" chats in
+    // one episode). Past the cap it still happens — the friends know, and take
+    // sides — off camera.
+    const n = ((th.subjN ||= {})[subj] = (th.subjN[subj] || 0) + 1);
+    const aired = n <= (CHAT_CAP[subj] ?? 3);
     out.push(scene(state, rng, phase, 'group-chat', [center, ...fs], { subj, x: x || null, about: about || null, ...(q.of ? { of: q.of } : {}),
       ...(q.sec ? { sec: q.sec } : {}), ...(q.kissed ? { kissed: true } : {}), ...(q.why ? { why: q.why } : {}), ...(q.story ? { thread: { type: q.story, beat: 'react' } } : {}),
-      pop: pop([center, wronged ? 0.4 : 0.2, 1], [fs[0], 0.1, 0.5]) }));
+      pop: pop([center, wronged ? 0.4 : 0.2, 1], [fs[0], 0.1, 0.5]) }, { aired }));
   }
   return out;
 }

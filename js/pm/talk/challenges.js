@@ -62,7 +62,7 @@ export const RECEIPT = build('receipt', {
     read: [
       ...Object.entries(CARD).flatMap(([of, text]) => [
         { ...card(of, G), stage: `{a} reads the card out loud: "${text}" {a} doesn't even look at anyone else, and walks straight over to {c}.`, turns: [['a', "I'm sorry. I've just got a feeling about you."]] },
-        { ...card(of, NG), stage: `{a} reads the card: "${text}" {a} thinks for a long time, then kisses {b}.`, turns: [['b', "Me? I haven't done anything! Why me?"]] },
+        { ...card(of, NG), stage: `{a} reads the card: "${text}" {a} thinks for a long time, then kisses {b}.`, turns: [] },
       ]),
     ],
     answer: [
@@ -148,12 +148,14 @@ export const SNOGGER_ROW = build('snogger-row', {
   plans: { featured: ['catch', 'row', 'land?'], short: ['catch', 'row'] },
   moves: {
     catch: [
-      { when: { of: 'big' }, stage: "The scores are read out. {b} gave {a} a five, and {c} a nine. Everyone does the maths.", turns: [['a', "A five? I got a five? And {c} got a nine?"]] },
-      { when: { of: 'small' }, stage: "The scores are read out. {b} gave {c} one more point than {a}. One.", turns: [['a', "Just so I'm clear. You gave {c} more than me."]] },
+      // {mine}/{top}: what {b} really gave {a} and {c} (pm/challenges.js snogger), with the article.
+      { when: { of: 'big' }, stage: "The scores are read out. {b} gave {a} {mine}, and {c} {top}. Everyone does the maths.", turns: [['a', "{Mine}? I got {mine}? And {c} got {top}?"]] },
+      // 'small' is a gap of two: a row needs two points at least.
+      { when: { of: 'small' }, stage: "The scores are read out. {b} gave {c} two more points than {a}. Two.", turns: [['a', "Just so I'm clear. You gave {c} more than me."]] },
     ],
     row: [
       { when: { of: 'big' }, turns: [['b', "I was blindfolded! I didn't know it was you!"], ['a', "You should know what I kiss like. That's the whole point. That's the whole point of us."]] },
-      { when: { of: 'small' }, turns: [['b', "It's one point."], ['a', "It's one point to {c}. That's what it is."], ['b', "You're being mad."]] },
+      { when: { of: 'small' }, turns: [['b', "It's two points."], ['a', "It's two points to {c}. That's what it is."], ['b', "You're being mad."]] },
     ],
     land: [
       { turns: [], beat: "{c} is trying very hard not to look pleased with {c.ref}." },

@@ -44,8 +44,13 @@ describe('an episode of villa events', () => {
   });
 
   it('about a quarter of events carry a beach-hut cutaway', () => {
-    const evs = generateEpisodeEvents(state, streamFor(3, 'ep:2'));
-    const huts = evs.filter(e => e.hut).length / evs.length;
+    // Over eight draws: one draw ran 0.13-0.26 around a mean of 0.18 (measured,
+    // thirty seeds), and a single one was the edge of the band, not the rate.
+    let huts = 0;
+    for (let k = 1; k <= 8; k++) {
+      const evs = generateEpisodeEvents(villa(), streamFor(k, 'ep:2'));
+      huts += evs.filter(e => e.hut).length / evs.length / 8;
+    }
     expect(huts).toBeGreaterThan(0.15);
     expect(huts).toBeLessThan(0.35);
   });

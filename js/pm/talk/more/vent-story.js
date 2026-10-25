@@ -13,7 +13,7 @@ export const VENT_STORY = {
         ['b', "Oh no. The ick."],
         ['a', "The ick. Full ick. And I don't know if it's going to go away."],
       ] },
-      { when: { why: 'ick' }, turns: [
+      { when: { why: 'ick', paKissed: true }, turns: [
         ['a', "Can I tell you something awful? I went to kiss {pa} this morning and I just didn't want to. Like, my whole body went, no thank you. And three days ago I couldn't keep my hands off {pa}."],
         ['b', "What changed?"],
         ['a', "I genuinely don't know. Nothing. Everything. Something small, and I can't get it out of my head."],
@@ -33,7 +33,7 @@ export const VENT_STORY = {
         ['b', "Have you told {pa} that?"],
         ['a', "How do you tell someone that? {pa} would be crushed."],
       ] },
-      { when: { why: 'behind' }, turns: [
+      { when: { why: 'behind', paKissed: true }, turns: [
         ['a', "Last night {pa} said something really big to me. Really sweet. And I couldn't say it back. I just kissed {pa} so I didn't have to say anything. And {pa} didn't notice, and that's almost worse."],
         ['b', "Oh, that's a lot to carry."],
         ['a', "It's a lot. I don't want to hurt {pa}. I just can't fake something I don't feel yet."],

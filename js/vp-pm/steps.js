@@ -133,8 +133,11 @@ const PLACES = [
   [/\bfire ?pit\b|\bbench\b/i, 'firepit-dusk', 'night'],
 ];
 export function placeFor(row, e, phase) {
+  // Casa Amor's own villa, while the two are split (pm/events.js `where`).
+  if (e.where === 'casa') return DARK.has(phase) || phase === 'firepit' ? 'casa' : OPEN.has(phase) ? 'casa-day' : null;
   if (!OPEN.has(phase)) return null;
-  if (CASA_NIGHTS.has(row.moment) && DARK.has(phase)) return null;
+  // A Casa night with no record of which villa: the old Casa set for the evening.
+  if (CASA_NIGHTS.has(row.moment) && DARK.has(phase) && !e.where) return null;
   const dark = DARK.has(phase);
   const said = `${e.script?.stage || ''} ${e.extra?.where || ''}`;
   for (const [rx, day, night] of PLACES) if (rx.test(said)) return dark ? night : day;
@@ -641,6 +644,9 @@ export function episodeScreens(row, opts = {}) {
   const events = row.pm.events || [];
   const index = new Map(events.map((e, i) => [e, i]));
   const screens = [];
+  // Casa Amor: the narrator cuts between the two villas (pm/events.js `where`).
+  let where = null, cuts = 0;
+  const narr = words().narratorName || 'The Narrator';
   for (const [phase, all, label] of phasesOf(row)) {
     // The final's result and envelope are the engine's record (the transcript
     // reads them); on screen, finalSteps draws them with the board.
@@ -652,6 +658,15 @@ export function episodeScreens(row, opts = {}) {
       const set = night ? (e.phase === 'reunion' ? 'reunion' : 'firepit') : e.phase === 'challenge' ? 'day' : e.phase;
       const bg = placeFor(row, e, set) || bgFor(row, set);
       const steps = sceneSteps(row, e, index.get(e), bg);
+      if (e.where && e.where !== where && steps.length) {
+        const first = !where;
+        where = e.where;
+        const text = (e.where === 'casa'
+          ? (first ? ['At Casa Amor…'] : ['Meanwhile, at Casa Amor…', 'Over at Casa Amor…', 'Meanwhile, in the other villa…'])
+          : (first ? ['In the main villa…'] : ['Back at the main villa…', 'Meanwhile, back in the main villa…', 'Back in the villa…']))[cuts++ % 3] || (e.where === 'casa' ? 'At Casa Amor…' : 'In the main villa…');
+        steps.unshift({ ...steps[0], part: 'narr', kind: 'where', who: narr, voice: 'narrator', text, cast: [], ev: -1,
+          headline: e.where === 'casa' ? 'Casa Amor' : 'The main villa', caption: null, beat: null, story: null, kiss: null, line: undefined, fx: null });
+      }
       return { steps, big: steps[0].big };
     });
     const hasDump = evs.some(e => RAIL_OF[e.kind] != null);
@@ -696,7 +711,7 @@ const DRAWN_BY_FINAL = new Set(['final-result', 'envelope', 'final-open', 'final
 // to come, each line cut off before it lands. A teaser never shows how
 // anything ends — no verdict, no pick, no goodbye, nothing that didn't air.
 const NO_TEASE = new Set(['dump-at-risk', 'dump-buildup', 'dump-safe', 'dump-plea', 'dump-decide', 'dump-recap', 'dump-nerves', 'debrief', 'villa-divided', 'clear-the-air', 'dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles', 'dump-reaction', 'dump-goodbye',
-  'dump-fallout', 'recouple-pick', 'steal', 'final-result', 'envelope', 'save-tie', 'walk', 'ballot-reveal', 'save-vote',
+  'dump-fallout', 'recouple-pick', 'steal', 'final-result', 'envelope', 'save-tie', 'dump-tie', 'walk', 'ballot-reveal', 'save-vote',
   'top-couple-pick', 'reveal', 'result', 'stick-or-twist', 'casa-return', 'immunity-win', 'couples-vote', 'ex-ballot']);
 const TEASE = new Set(['argument', 'gossip', 'pull', 'entrance', 'group-entrance', 'head-turned', 'jealous-confront',
   'confession', 'hideaway', 'photos', 'movie-night', 'dump-text', 'dump-open', 'challenge-kiss', 'exclusive-ask',

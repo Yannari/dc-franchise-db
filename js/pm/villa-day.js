@@ -247,6 +247,9 @@ function advice(state, rng) {
     // 30% of every coupled islander a night, and four advice scenes an episode
     // that led nowhere).
     if (!partner || !c || apart(state, c, n) || rng() >= (inStory(state, n) ? 0.3 : 0.06)) continue;
+    // They've had this conversation already today (a telling, a vent): a note
+    // saying it again is the same scene twice (season read 2026-10-25).
+    if (today(state).some(e => e.players.includes(c) && e.players.includes(n) && e.players.includes(partner))) continue;
     const v = verdict(state, c, partner);
     nudgeAttraction(state, n, partner, 0.6 * v);
     addRelationshipDimension(n, partner, 'trust', 0.5 * v);

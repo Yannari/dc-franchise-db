@@ -76,11 +76,23 @@ function affinity(state, v, t) {
 /** Why v voted against t (null: nothing past liking them less). */
 export const voteWhy = (state, v, t) => (partnerOf(state, v) === t ? null : motives(state, v, t).why);
 
-function tally(ballots, rng) {
+/**
+ * The most votes go. A tie, given the at-risk in public order (fewest votes
+ * first), is broken in the open by the public: the tied islander they voted
+ * for least goes, and `ties` records it for the host to say (season read
+ * 2026-10-25: three boys voted for three girls, and Freya went with no word
+ * of why). Without an order, the old silent draw.
+ */
+function tally(ballots, rng, order = null, ties = null) {
   const count = new Map();
   for (const b of ballots) count.set(b.target, (count.get(b.target) || 0) + 1);
   const top = Math.max(...count.values());
   const tied = [...count].filter(([, c]) => c === top).map(([n]) => n);
+  if (tied.length > 1 && order) {
+    const goes = [...tied].sort((x, y) => order.indexOf(x) - order.indexOf(y))[0];
+    ties?.push({ tied, goes });
+    return goes;
+  }
   return tied[Math.floor(rng() * tied.length)];
 }
 
@@ -114,7 +126,7 @@ function villaDumpingRaw(state, { format, bottom, rng }) {
   }
 
   // cross-gender: each side votes one of the other side's at-risk islanders.
-  const dumped = [], ballots = [];
+  const dumped = [], ballots = [], ties = [];
   for (const side of ['f', 'm']) {
     // Never both halves of one couple: the second side votes from the others
     // at risk, not the partner of the one the first side just sent home (user:
@@ -133,9 +145,9 @@ function villaDumpingRaw(state, { format, bottom, rng }) {
     const free = cast.filter(b => affinity(state, b.voter, b.target) < 90);
     const mine = free.length ? free : cast;
     ballots.push(...mine);
-    dumped.push(tally(mine, rng));
+    dumped.push(tally(mine, rng, atRisk, ties));
   }
-  return { dumped, ballots };
+  return { dumped, ballots, ties };
 }
 
 const coupleAffinity = (state, voters, c) => voters.reduce((s, v) => s + affinity(state, v, c[0]) + affinity(state, v, c[1]), 0);

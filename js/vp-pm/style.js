@@ -72,6 +72,7 @@ export const PMV_CSS = `/* ═════════════════�
 .pmv-sc-bedroom-night{background:url(assets/sets/pm/bedroom-night.webp) center 55%/cover no-repeat,#1d1b3a}
 .pmv-sc-dressing{background:url(assets/sets/pm/dressing-day.webp) center 40%/cover no-repeat,#ffe4dc}
 .pmv-sc-hideaway{background:url(assets/sets/pm/hideaway-night.webp) center 60%/cover no-repeat,#2a1b33}
+.pmv-sc-casa-day{background:url(assets/sets/pm/casa-day.webp) center 60%/cover no-repeat,linear-gradient(180deg,#bfe6ff,#e0a86a)}
 .pmv-sc-firepit-dusk{background:url(assets/sets/pm/firepit-dusk.webp) center 62%/cover no-repeat,#f39a7a}
 /* Zoomed so the chair's fan rises behind the islander's head and frames it. */
 .pmv-sc-hut{background:url(assets/sets/pm/hut.webp) 50% 92%/140% auto no-repeat,#f2727a}

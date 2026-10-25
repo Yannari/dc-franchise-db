@@ -80,7 +80,7 @@ function sceneHtml(bg) {
     kitchen: `${bokeh(5, '', 5, 45, 2)}`, bedroom: `${bokeh(6, '', 5, 45, 2)}`, dressing: `${bokeh(6, '', 5, 45, 2)}`,
     'pool-night': `${bokeh(12, '', 2, 40, 1.2)}`, 'lawn-night': `${bokeh(14, '', 2, 55, 1.1)}`, 'roof-night': `${bokeh(12, '', 2, 40, 1.2)}`,
     'kitchen-night': `${bokeh(6, '', 5, 40, 1.6)}`, 'bedroom-night': `${bokeh(8, '', 5, 40, 1.4)}`, hideaway: `${bokeh(14, '', 10, 80, 1.4)}`,
-    'firepit-dusk': `${bokeh(10, '', 2, 35, 1.4)}${embers}`,
+    'firepit-dusk': `${bokeh(10, '', 2, 35, 1.4)}${embers}`, 'casa-day': `${bokeh(8, '', 5, 40, 2.4)}`,
     casa: `${bokeh(24, '', 5, 80, 3)}`,
     // The intro tape: a studio, not the villa — a colour wall, the show's
     // heart outlined huge behind them, stripes of light going past.

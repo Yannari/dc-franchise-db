@@ -180,7 +180,12 @@ function snogger(state, rng) {
   // — her partner, the one she fancies, a laugh, or a schemer's stir — and
   // the boys, blindfolded, only find out from the villa's faces.
   // Every girl takes her turn (user: "and everyone participates").
-  const out = kissRound(state, rng, { kissers: [...girls].sort(() => rng() - 0.5), targets: boys, n: girls.length, game: 'snogger', scene });
+  // Each kiss carries the score he will give it, so what he says under the
+  // blindfold is what gets read out (season read 2026-10-25: "Ten. Easily
+  // ten" to his partner, and a five on the board).
+  const scored = (s, r, kind, players, extra, ...rest) => scene(s, r, kind, players,
+    kind === 'game-kiss' ? { ...extra, score: score[`${players[1]}|${players[0]}`] ?? null } : extra, ...rest);
+  const out = kissRound(state, rng, { kissers: [...girls].sort(() => rng() - 0.5), targets: boys, n: girls.length, game: 'snogger', scene: scored });
   // The best kiss of the day.
   const [bestKey] = Object.entries(score).sort((x, y) => y[1] - x[1])[0] || [];
   if (bestKey) {
@@ -209,7 +214,9 @@ function snogger(state, rng) {
     jealousyHit(state, g, b, rival, 1.5 + gap, { confirmed: true });
     feel(state, g, 'security', -0.6 * gap);
     addRelationshipDimension(g, b, 'trust', -0.3 * gap);
+    // The board's real numbers (talk/challenges.js reads them out: {mine}, {top}).
     if (i === 0) out.push(scene(state, rng, 'snogger-row', [g, b, rival], { of: gap >= 3 ? 'big' : 'small',
+      mine: score[`${b}|${g}`] || 0, top: score[`${b}|${rival}`] || 0,
       pop: pop([b, -0.3 * gap, 1.5], [g, 0.3, 1.5]) }, gap >= 3 ? [b] : []));
   });
   return out;

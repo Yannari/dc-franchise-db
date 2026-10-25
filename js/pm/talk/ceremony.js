@@ -22,9 +22,11 @@ export const DUMP_NERVES = build('dump-nerves', {
   moves: {
     ready: [
       { stage: "The dressing room. {a} is doing {a.posAdj} hair very slowly, as if that will slow the night down.", turns: [['b', "Are you scared?"], ['a', "Terrified. You?"], ['b', "I can't even think about it. I've put the same earring in three times."]] },
-      { stage: "{a} and {b} sit on the edge of the bed, dressed and ready, and neither of them gets up.", turns: [['a', "We should go down."], ['b', "In a minute. One more minute."]] },
-      { stage: "On the terrace, {a} holds {b}'s hand a little too tight.", turns: [['b', "Breathe."], ['a', "I am breathing. I'm just breathing very fast."]] },
-      { when: { why: 'rocky' }, stage: "{a} and {b} get ready on opposite sides of the room.", turns: [['a', "Are we going to talk about earlier before we go down?"], ['b', "Not now."]] },
+      { when: { why: ['solid', 'uneven', 'unsure'] }, stage: "{a} and {b} sit on the edge of the bed, dressed and ready, and neither of them gets up.", turns: [['a', "We should go down."], ['b', "In a minute. One more minute."]] },
+      { when: { why: ['solid', 'uneven', 'unsure'] }, stage: "On the terrace, {a} holds {b}'s hand a little too tight.", turns: [['b', "Breathe."], ['a', "I am breathing. I'm just breathing very fast."]] },
+      { when: { why: ['rocky', 'sour'] }, stage: "{a} and {b} get ready on opposite sides of the room.", turns: [['a', "Are we going to talk about earlier before we go down?"], ['b', "Not now."]] },
+      // Told, turned or answered badly today (moments.js: sourOf).
+      { when: { why: 'sour' }, stage: "{a} is ready first, and waits at the top of the stairs for {b} longer than {a} wants to.", turns: [['b', "You didn't have to wait."], ['a', "I know. I did anyway."]] },
       { when: { why: 'solid' }, stage: "{a} and {b} sit on the swing seat, holding hands, already dressed.", turns: [['b', "You're quiet."], ['a', "I'm just not ready for this to stop."]] },
       { when: { why: 'uneven' }, stage: "{a} straightens {b}'s collar, and takes longer about it than it needs.", turns: [['a', "There. Perfect. You look perfect."], ['b', "Thanks."]] },
     ],
@@ -32,6 +34,8 @@ export const DUMP_NERVES = build('dump-nerves', {
       { when: { channel: ['public', 'villa', 'top-couple', 'save'] }, turns: [['a', "Do you think the public like us? Honestly?"], ['b', "I think they like you."], ['a', "That's not an answer. That's half an answer."], ['b', "It's the half I'm sure about."]] },
       { when: { why: 'rocky' }, turns: [['a', "If we go home tonight, I don't want that row to be the last thing we said to each other in here."], ['b', "Then we'll talk after. If there is an after."], ['a', "Don't say that."]] },
       { when: { why: 'rocky' }, turns: [['b', "We shouldn't have argued today. Of all days."], ['a', "Everyone argues."], ['b', "Not everyone argues right before a vote."]] },
+      { when: { why: 'sour' }, turns: [['a', "Are we going down there together, or just at the same time?"], ['b', "I don't know yet. Ask me after."]] },
+      { when: { why: 'sour' }, turns: [['b', "If we go home tonight, everyone's going to say it was today that did it."], ['a', "Maybe it was."], ['b', "Don't."]] },
       { when: { why: 'uneven' }, turns: [['a', "If we go tonight, would you be upset?"], ['b', "Of course."], ['a', "About going, or about me?"], ['b', "Both. Can we not do this now?"]] },
       { when: { why: 'uneven' }, turns: [['a', "Whatever happens down there, I'm glad I'm standing next to you."], ['b', "Yeah. Me too."]] },
       { when: { why: 'solid' }, turns: [['a', "If they send us home, we go home together. That's all that matters."], ['b', "And carry on outside."], ['a', "And carry on outside. Same as in here, but with a kettle that works."]] },
@@ -98,13 +102,18 @@ export const DUMP_PLEA = build('dump-plea', {
   plans: { featured: ['plea', 'more?'], short: ['plea'] },
   moves: {
     plea: [
-      { when: { of: 'couple' }, stage: "{a} and {b} stand at the front, holding hands.", turns: [['a', "We've come such a long way. Everyone here has watched us do it. Please, give us the chance to keep going."]] },
-      { when: { of: 'couple' }, turns: [['b', "I know we're not the loudest couple in here. We don't cause drama. But what we've got is real."], ['a', "It really is."]] },
-      { when: { of: 'couple' }, turns: [['b', "I came in here to find someone, and I found them. I found them on day one, and I've not looked anywhere else since. Please don't send us home yet."]] },
+      { when: { of: 'couple', sour: null }, stage: "{a} and {b} stand at the front, holding hands.", turns: [['a', "We've come such a long way. Everyone here has watched us do it. Please, give us the chance to keep going."]] },
+      { when: { of: 'couple', sour: null }, turns: [['b', "I know we're not the loudest couple in here. We don't cause drama. But what we've got is real."], ['a', "It really is."]] },
+      { when: { of: 'couple', sour: null }, turns: [['b', "I came in here to find someone, and I found them. I found them on day one, and I've not looked anywhere else since. Please don't send us home yet."]] },
+      // A couple standing at the front on the day it went wrong (script.js sourOf).
+      { when: { of: 'couple', sour: ['mine', 'theirs', 'row'] }, stage: "{a} and {b} stand at the front, a gap between them that wasn't there yesterday.", turns: [['a', "Everyone saw today. I'm not going to pretend it didn't happen."], ['b', "But one bad day isn't the whole thing. Let us fix it."]] },
+      { when: { of: 'one', ...T, sour: 'theirs' }, turns: [['a', "I'm not going to stand here and pretend today didn't happen. But I came in here for me, and I'm not done yet."]] },
+      { when: { of: 'one', ...T, sour: 'mine' }, stage: "{a} can't quite look at {pa} on the bench.", turns: [['a', "I know I've let {pa} down today. I know what that looks like. I want the chance to put it right."]] },
+      { when: { of: 'one', ...T, sour: 'row' }, turns: [['a', "{pa} and I had a rough day. One day. I'd like the chance to sort it out."]] },
       { when: { of: 'one', taken: false }, turns: [['a', "I haven't found my person yet. I know that. I just need a bit more time, and I think they might be closer than everyone thinks."]] },
       { when: { of: 'one', taken: false }, turns: [['a', "I know I'm single, and I know how that looks. But I haven't stopped trying, not for one day."]] },
-      { when: { of: 'one', ...T }, turns: [['a', "{pa} and I are only just getting started. Please don't make that the end of it."]] },
-      { when: { of: 'one', ...T }, stage: "{a} looks straight at {pa} on the bench.", turns: [['a', "I've got something real with {pa}. I want the chance to see where it goes. That's all I'm asking for."]] },
+      { when: { of: 'one', ...T, sour: null }, turns: [['a', "{pa} and I are only just getting started. Please don't make that the end of it."]] },
+      { when: { of: 'one', ...T, sour: null }, stage: "{a} looks straight at {pa} on the bench.", turns: [['a', "I've got something real with {pa}. I want the chance to see where it goes. That's all I'm asking for."]] },
       { when: { of: 'one' }, stage: "{a} stands at the front, alone.", turns: [['a', "I've given this villa everything. Every day. I'd really, really love to stay."]] },
     ],
     more: [

@@ -200,9 +200,10 @@ describe('an aired episode can be watched and read', () => {
       const html = screens.map(s => s.html).join('');
       const cardsOf = s => s.html.match(/class="pmv-card[ "]/g)?.length || 0;
       // …nor are the cold open ("Previously", "Tonight") and the narrator's
-      // where-everyone-stands card at the top of the episode (2026-10-25).
+      // where-everyone-stands card at the top of the episode (2026-10-25),
+      // nor the cuts between the villas while Casa Amor is on ("Meanwhile…").
       const { episodeScreens } = await import('../js/vp-pm/steps.js');
-      const status = episodeScreens(row, { prev }).flatMap(s => s.steps).filter(st => st.kind === 'status').length;
+      const status = episodeScreens(row, { prev }).flatMap(s => s.steps).filter(st => st.kind === 'status' || st.kind === 'where').length;
       const extra = screens.filter(s => /^villa-(comingup|nexttime|previously|tonight)-/.test(s.id)).reduce((n, s) => n + cardsOf(s), 0)
         + status + (row.moment === 'final' && row.pm.shares?.length && !row.pm.events.some(e => e.kind === 'final-open') ? 1 : 0);
       expect(html.match(/class="pmv-card[ "]/g)?.length, `ep ${row.num}`).toBe(row.pm.events.length + extra);

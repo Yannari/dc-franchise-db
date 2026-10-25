@@ -28,12 +28,15 @@ export const GAME_KISS = build('game-kiss', {
     kiss: [
       { when: { of: 'partner' }, turns: [['b', "Took you long enough."], ['a', "About two seconds. Sorry, everyone. I'm boring."], ['b', "You're not boring. You're mine."]] },
       { when: { of: 'partner' }, stage: "{a} takes {b} by the hand first, then kisses {b.obj}.", turns: [['a', "Safe choice?"], ['b', "Best choice."]] },
-      { when: { of: 'partner', game: 'snogger' }, stage: "{a} kisses {b}, and {b} breaks into a grin under the blindfold.", turns: [['b', "I knew it was you. I'd know that anywhere. Ten. Easily ten."]] },
+      // What he says is the score he gives (pm/challenges.js snogger): the board reads it out later.
+      { when: { of: 'partner', game: 'snogger', score: 10 }, stage: "{a} kisses {b}, and {b} breaks into a grin under the blindfold.", turns: [['b', "I knew it was you. I'd know that anywhere. Ten. Easily ten."]] },
+      { when: { of: 'partner', game: 'snogger', score: [8, 9] }, stage: "{a} kisses {b}, and {b} sits back on the stool, smiling.", turns: [['b', "Okay. That was good. That was really good."]] },
+      { when: { of: 'partner', game: 'snogger', score: [1, 2, 3, 4, 5, 6, 7] }, stage: "{a} kisses {b}, and {b} doesn't react much under the blindfold.", turns: [['b', "Nice. Yeah. Nice."], ['a', "Nice?"]] },
       { when: { of: 'crush', taken: true }, stage: "{a} walks right past {pa} and kisses {b}. For quite a long time.", turns: [['a', "What? It's a game. It's a game! That's the challenge."]] },
       { when: { of: 'crush', taken: false }, stage: "{a} goes for {b}, and doesn't hold back.", turns: [['b', "Well. Hello."], ['a', "I've been waiting all day to do that. All week, actually."]] },
       { when: { of: 'crush' }, stage: "{a} takes {b}'s face in both hands and kisses {b.obj}.", turns: [['b', "Wow."], ['a', "I'm not going to lie. I've wanted to do that for a while."], ['b', "I could tell."]] },
       { when: { of: 'crush' }, stage: "{a} pulls {b} in by the waist, and it goes on well past the whistle.", turns: [['a', "Was that the challenge?"], ['b', "I don't care."]] },
-      { when: { of: 'crush', game: 'snogger' }, stage: "{b} is blindfolded and doesn't know who it is. Everyone else does.", turns: [['b', "Whoever that was... wow. Can I have that one again?"]] },
+      { when: { of: 'crush', game: 'snogger', score: [7, 8, 9, 10] }, stage: "{b} is blindfolded and doesn't know who it is. Everyone else does.", turns: [['b', "Whoever that was... wow. Can I have that one again?"]] },
       { when: { of: 'stir', bTaken: true }, stage: "{a} looks straight at {pb}, and then kisses {b}. Slowly.", turns: [['a', "What? It's only a game. Everyone's so sensitive."]] },
       { when: { of: 'stir', bTaken: true }, turns: [['a', "I'm picking {b}. Sorry, {pb}. Not sorry."]] },
       { when: { of: 'stir' }, stage: "{a} sits on {b}'s lap for the kiss, and stays there afterwards.", turns: [['a', "I think I'll go with {b}. What? It's the challenge. I'm doing the challenge."]] },

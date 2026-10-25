@@ -45,6 +45,14 @@ const PLAYERS = new Set(['villain', 'mastermind', 'schemer']);
 const LOYAL_KIND = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 /** Left single by a bombshell since the last ceremony: grafting to stay (moments.js recoupleNight). */
 const vulnerable = (state, n) => (state.vulnerableSince?.[n] ?? -1) > (state.lastRecouplingEp ?? 0);
+/** How far closing off for `p` holds `n` back from someone else, 0..1. In the
+ *  main villa any closed rung is near shut (closedness puts closed-off at
+ *  only 0.33, so it still flirted); the disloyal leak a little. Casa Amor is
+ *  untouched — it is where heads turn, the season's biggest drama (user). */
+const CLOSED_RUNGS = ['closed-off', 'exclusive', 'official'];
+const closedHold = (state, n, p) => !p ? 0
+  : state.split ? 0.8 * closedness(state, n, p)
+  : CLOSED_RUNGS.includes(stepOf(state, n, p)) ? 0.95 + 0.05 * S(state, n).loyalty / 10 : 0;
 /** How ready a coupled islander is to go chatting someone else up. */
 const graftUrge = (state, n) => (0.3 + 0.7 * (1 - S(state, n).loyalty / 10))
   * (PLAYERS.has(state.profiles[n].archetype) ? 1.5 : LOYAL_KIND.has(state.profiles[n].archetype) ? 0.5 : 1);
@@ -211,8 +219,12 @@ export const KINDS = {
       // as likely to graft as a schemer, and the public's Villain label fell
       // on nice archetypes 7.4% of the time vs 10.8% for villains — forty
       // seasons). Single, everybody chats freely.
+      // Closed off, an islander stops looking. Cutting the urge by 0.8 still
+      // had them start ~20 pulls a season (20 seasons: 393, 58 of them in
+      // Casa), so outside Casa it is all but shut — only the disloyal leak.
+      // Casa is where heads turn: the old 0.8 holds there.
       const a = weighted(rng, s.villa.filter(n => compatibleMates(s, n).length)
-        .map(n => [n, S(s, n).boldness * (1 - 0.8 * closedness(s, n, partnerOf(s, n)))
+        .map(n => [n, S(s, n).boldness * (1 - closedHold(s, n, partnerOf(s, n)))
           * (partnerOf(s, n) ? graftUrge(s, n) : vulnerable(s, n) ? 2 : 1)]));
       if (!a) return null;
       // Never somebody a turned down, or was turned down by, earlier today
@@ -227,8 +239,12 @@ export const KINDS = {
         .map(n => [n, attr(s, a, n)]));
       if (!b) return null;
       // A coupled islander can turn the pull down: that is a loyalty moment.
+      // Closing off is the reason to (before, it played no part: 353 pulls on
+      // a closed-off islander went ahead in 20 seasons, ~18 a season). Not in
+      // Casa: there the head is meant to turn.
       const pb = partnerOf(s, b);
-      if (pb && rng() < (S(s, b).loyalty / 10) * ((getBond(b, pb) + 10) / 20)) {
+      const loyal = (S(s, b).loyalty / 10) * ((getBond(b, pb) + 10) / 20);
+      if (pb && rng() < 1 - (1 - loyal) * (1 - (s.split ? 0 : closedHold(s, b, pb)))) {
         return { players: [b, a], kind: 'loyalty' };
       }
       return { players: [a, b] };

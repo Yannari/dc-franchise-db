@@ -57,11 +57,28 @@ export const PMV_CSS = `/* ═════════════════�
   url(assets/sets/pm/firepit-night.webp) center 62%/cover no-repeat,
   radial-gradient(55% 45% at 50% 100%,#ff7a3a99,#ff2e8833 45%,#0000 70%),
   linear-gradient(180deg,#0c0620 0%,#26103f 50%,#4a1747 100%)}
+/* The villa, room by room (tools/blender/pm-villa.py; steps.js placeFor). Each
+   frame keeps its lower third clear floor for the busts. The old gradients
+   stay under them while they load. */
+.pmv-sc-daybeds{background:url(assets/sets/pm/daybeds-day.webp) center 60%/cover no-repeat,linear-gradient(180deg,#bfe6ff,#c79a6a)}
+.pmv-sc-pool-night{background:url(assets/sets/pm/pool-night.webp) center 60%/cover no-repeat,linear-gradient(180deg,#26103f,#4a1747)}
+.pmv-sc-kitchen{background:url(assets/sets/pm/kitchen-day.webp) center 55%/cover no-repeat,#e9e4f6}
+.pmv-sc-kitchen-night{background:url(assets/sets/pm/kitchen-night.webp) center 55%/cover no-repeat,#c98f8f}
+.pmv-sc-lawn{background:url(assets/sets/pm/lawn-day.webp) center 60%/cover no-repeat,#8fd88a}
+.pmv-sc-lawn-night{background:url(assets/sets/pm/lawn-night.webp) center 60%/cover no-repeat,#2b3d3a}
+.pmv-sc-roof{background:url(assets/sets/pm/terrace-day.webp) center 60%/cover no-repeat,#c7a27a}
+.pmv-sc-roof-night{background:url(assets/sets/pm/terrace-night.webp) center 60%/cover no-repeat,#3b2147}
+.pmv-sc-bedroom{background:url(assets/sets/pm/bedroom-day.webp) center 55%/cover no-repeat,#ffe2c7}
+.pmv-sc-bedroom-night{background:url(assets/sets/pm/bedroom-night.webp) center 55%/cover no-repeat,#1d1b3a}
+.pmv-sc-dressing{background:url(assets/sets/pm/dressing-day.webp) center 40%/cover no-repeat,#ffe4dc}
+.pmv-sc-hideaway{background:url(assets/sets/pm/hideaway-night.webp) center 60%/cover no-repeat,#2a1b33}
+.pmv-sc-firepit-dusk{background:url(assets/sets/pm/firepit-dusk.webp) center 62%/cover no-repeat,#f39a7a}
 /* Zoomed so the chair's fan rises behind the islander's head and frames it. */
 .pmv-sc-hut{background:url(assets/sets/pm/hut.webp) 50% 92%/140% auto no-repeat,#f2727a}
 /* The hut is a close-up: one islander, bigger, sat in the chair's fan. */
 .pmv-sc-hut ~ .pmv-busts .pmv-bust{width:25%;bottom:30%}
 .pmv-sc-casa{background:
+  url(assets/sets/pm/casa-night.webp) center 60%/cover no-repeat,
   radial-gradient(50% 60% at 75% 30%,#14c8bb55,#0000 70%),radial-gradient(40% 50% at 20% 70%,#a78bfa55,#0000 70%),
   linear-gradient(180deg,#07142c,#132a52 60%,#1b0f3a)}
 .pmv-sc-final{background:

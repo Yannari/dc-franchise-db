@@ -74,6 +74,13 @@ function sceneHtml(bg) {
     // The set has its own string lights (assets/sets/pm/firepit-night.webp): no drawn run over them.
     night: `${bokeh(10, '', 2, 30, 1.2)}<div class="${P('glow')}"></div>${embers}`,
     hut: `${bokeh(4, '', 5, 50, 2.4)}`,
+    // The rendered rooms carry their own lights: a little drifting dust by
+    // day, fireflies and far lights by night, so a held frame still breathes.
+    daybeds: `${bokeh(8, '', 5, 40, 2.4)}`, lawn: `${bokeh(8, '', 5, 40, 2.4)}`, roof: `${bokeh(6, '', 5, 40, 2.4)}`,
+    kitchen: `${bokeh(5, '', 5, 45, 2)}`, bedroom: `${bokeh(6, '', 5, 45, 2)}`, dressing: `${bokeh(6, '', 5, 45, 2)}`,
+    'pool-night': `${bokeh(12, '', 2, 40, 1.2)}`, 'lawn-night': `${bokeh(14, '', 2, 55, 1.1)}`, 'roof-night': `${bokeh(12, '', 2, 40, 1.2)}`,
+    'kitchen-night': `${bokeh(6, '', 5, 40, 1.6)}`, 'bedroom-night': `${bokeh(8, '', 5, 40, 1.4)}`, hideaway: `${bokeh(14, '', 10, 80, 1.4)}`,
+    'firepit-dusk': `${bokeh(10, '', 2, 35, 1.4)}${embers}`,
     casa: `${bokeh(24, '', 5, 80, 3)}`,
     // The intro tape: a studio, not the villa — a colour wall, the show's
     // heart outlined huge behind them, stripes of light going past.

@@ -111,6 +111,39 @@ export function bgFor(row, phase) {
   return 'day';
 }
 
+// ── the set, from where the scene says it is ──────────────────────────
+// A scene's staging names its place ("On the swing seats, knees touching"):
+// the villa is rendered room by room (tools/blender/pm-villa.py), so a chat
+// in the kitchen is in the kitchen, and the day moves through the villa
+// instead of standing on one beach. Night or day from the part of the day.
+// Measured over two seasons: 70% of the open-villa scenes name a place.
+const DARK = new Set(['evening', 'debrief', 'breakdown', 'blowup', 'triangle', 'rivals']);
+// The games and the villa-wide moments play on the lawn, the challenge stage.
+const LAWN = new Set(['event', 'challenge']);
+const OPEN = new Set(['morning', 'day', 'arrival', ...LAWN, ...DARK]);
+// First match wins: the pool before the bedroom ("day beds" is not a bed).
+const PLACES = [
+  [/\bhideaway\b/i, 'hideaway', 'hideaway'],
+  [/\bdressing room\b|\bmirrors?\b/i, 'dressing', 'dressing'],
+  [/\bday ?beds?\b|\bsun ?beds?\b|\bpool(side)?\b|\bloungers?\b|\bhot tub\b|\bshallow end\b|\bswim/i, 'daybeds', 'pool-night'],
+  [/\bbed(room)?s?\b|\bpillows?\b|\bduvet\b/i, 'bedroom', 'bedroom-night'],
+  [/\bkitchen\b|\bbar\b|\bfridge\b|\bkettle\b/i, 'kitchen', 'kitchen-night'],
+  [/\broof\b|\brooftop\b|\bterrace\b|\bbalcony\b/i, 'roof', 'roof-night'],
+  [/\bswings?\b|\bswing seats?\b|\blawn\b|\bgarden\b|\bgym\b|\bhammock\b|\bbean ?bags?\b|\bgrass\b/i, 'lawn', 'lawn-night'],
+  [/\bfire ?pit\b|\bbench\b/i, 'firepit-dusk', 'night'],
+];
+export function placeFor(row, e, phase) {
+  if (!OPEN.has(phase)) return null;
+  if (CASA_NIGHTS.has(row.moment) && DARK.has(phase)) return null;
+  const dark = DARK.has(phase);
+  const said = `${e.script?.stage || ''} ${e.extra?.where || ''}`;
+  for (const [rx, day, night] of PLACES) if (rx.test(said)) return dark ? night : day;
+  // Nothing named: mornings wake up in the bedroom, games are on the lawn,
+  // days are by the pool, nights on the lit deck.
+  if (LAWN.has(phase) || LAWN.has(e.phase)) return 'lawn';
+  return phase === 'morning' ? 'bedroom' : dark ? 'pool-night' : 'daybeds';
+}
+
 // Where the busts stand, by how many are in the scene.
 const SPOTS = { 1: [50], 2: [30, 70], 3: [20, 50, 80], 4: [14, 38, 62, 86], 5: [10, 30, 50, 70, 90] };
 
@@ -601,7 +634,7 @@ export function episodeScreens(row, opts = {}) {
     const scenes = evs.map(e => {
       // A scene of the night is at the fire pit whatever part of the day it borrowed.
       const set = night ? (e.phase === 'reunion' ? 'reunion' : 'firepit') : e.phase === 'challenge' ? 'day' : e.phase;
-      const bg = bgFor(row, set);
+      const bg = placeFor(row, e, set) || bgFor(row, set);
       const steps = sceneSteps(row, e, index.get(e), bg);
       return { steps, big: steps[0].big };
     });

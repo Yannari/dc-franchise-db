@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { setPlayers } from '../js/core.js';
 import { playPerfectMatchSeason } from '../js/pm/season.js';
-import { episodeScreens, villaAt, startOfEpisode, MAX_STEPS } from '../js/vp-pm/steps.js';
+import { episodeScreens, villaAt, startOfEpisode, MAX_STEPS, placeFor } from '../js/vp-pm/steps.js';
 import { makeIslanders, roleSetup } from './helpers/pm-cast.js';
 
 const seasons = {};
@@ -189,5 +189,35 @@ describe('the breaks: "Coming up" and "Next time"', () => {
       });
     }
     expect(breaks).toBeGreaterThan(10);
+  });
+});
+
+describe('a scene stands where its staging says it is', () => {
+  const at = (stage, phase, ePhase = phase) => placeFor({ moment: 'villa' }, { phase: ePhase, script: { stage } }, phase);
+  it('reads the room, and the time of day picks the light', () => {
+    expect(at('They sit at the kitchen island.', 'day')).toBe('kitchen');
+    expect(at('They sit at the kitchen island.', 'evening')).toBe('kitchen-night');
+    expect(at('A slow kiss on the swing seat.', 'evening')).toBe('lawn-night');
+    expect(at('Up on the roof terrace.', 'debrief')).toBe('roof-night');
+    expect(at('In the dressing room, doing her lashes.', 'morning')).toBe('dressing');
+    // "day beds" is the pool, not the bedroom
+    expect(at('Waving from the day beds.', 'day')).toBe('daybeds');
+    expect(at('Still in bed, whispering.', 'morning')).toBe('bedroom');
+  });
+  it('falls back by the part of the day, and leaves the ceremonies alone', () => {
+    expect(at('They talk about the day.', 'morning')).toBe('bedroom');
+    expect(at('They talk about the day.', 'evening')).toBe('pool-night');
+    expect(at('The rules are read out.', 'day', 'challenge')).toBe('lawn');
+    expect(at('By the fire pit.', 'firepit')).toBe(null);
+    expect(placeFor({ moment: 'casa-nights' }, { phase: 'evening', script: { stage: 'In the kitchen.' } }, 'evening')).toBe(null);
+  });
+  it('over a season, the villa scenes stand in a rendered room, not the old gradients', () => {
+    let named = 0, all = 0;
+    for (const row of season(7)) for (const sc of episodeScreens(row, { breaks: false })) for (const st of sc.steps) {
+      if (st.part === 'hut' || st.ev < 0) continue;
+      all++;
+      if (!['day', 'terrace'].includes(st.bg)) named++;
+    }
+    expect(named / all).toBeGreaterThan(0.95);
   });
 });

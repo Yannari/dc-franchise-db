@@ -23,6 +23,7 @@ import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun,
   lastPerfectMatchRefusal, rerunPerfectMatchEpisode, perfectMatchPendingChange, perfectMatchSeasonShape,
+  perfectMatchResumeOffer, resumePerfectMatchSeason,
   perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes, perfectMatchNights, perfectMatchDrawnChallenges, perfectMatchDrawnNights } from './pm-run.js';
 import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES, CHALLENGE_NIGHTS as PM_CHALLENGE_NIGHTS } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
@@ -784,6 +785,7 @@ export function renderSeasonHub() {
   host.innerHTML = `<section class="hub-shell hub-${model.lifecycle}">
     <header class="hub-headline"><div><div class="hub-kicker">${model.setting.icon} ${_hubEsc(model.setting.label)} · ${_hubEsc(phaseLabel)}</div><div class="hub-state-badge">${_hubEsc(stateLabel)}</div><h1>${_hubEsc(model.title)}</h1><p>${_hubEsc(headlineStatus)}</p></div><div class="hub-headline-right"><button type="button" class="hub-sf${_spoilerFree ? ' is-on' : ''}" role="switch" aria-checked="${_spoilerFree}" onclick="toggleSpoilerFree(${!_spoilerFree})" title="${_spoilerFree ? 'Results are hidden until you watch the episode' : 'Results are shown on this screen as soon as an episode is simulated'}"><span class="hub-sf-track"><span class="hub-sf-knob"></span></span><span class="hub-sf-label">Spoiler-free<small>${_spoilerFree ? 'On · outcomes hidden' : 'Off · outcomes shown'}</small></span></button><button class="hub-primary" onclick="${primaryClick}">${_hubEsc(model.primaryLabel)}<span>→</span></button></div></header>
     ${secondaryActions}
+    ${_pmResumeHtml()}
     <div class="hub-progress${_spoilerFree && model.latest ? ' hub-progress-hidden' : ''}" role="progressbar" aria-label="${_spoilerFree && model.latest ? 'Season progress hidden' : 'Season progress'}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${_spoilerFree && model.latest ? 0 : model.progress}"><span style="width:${_spoilerFree && model.latest ? 100 : model.progress}%"></span></div>
     ${model.latest ? `<section class="hub-last-night"><div class="hub-last-label">Last episode</div><div class="hub-last-person">${_onReunion ? '' : _spoilerFree ? '<span class="hub-spoiler-mark">?</span>' : latestElim ? latestPortraits : `<span class="hub-no-boot">${_hubEsc(showWords(seasonFormat(seasonConfig)).noExitLine || 'No elimination')}</span>`}</div><div class="hub-last-copy"><strong>${_onReunion ? 'Everybody back, nothing left to hide' : _spoilerFree ? 'Outcome hidden until you watch' : _hubEsc(model.latestOutcome)}</strong><span>${_onReunion ? `Episode ${_reunionRow.num + 1} · The Reunion` : `Episode ${model.latest.num}`}${!_onReunion && !_spoilerFree && model.latest.challengeLabel ? ` · ${_hubEsc(model.latest.challengeLabel)}` : ''}</span></div><div class="hub-last-votes">${_onReunion ? '' : _spoilerFree ? `<em>${_hubEsc(showWords(seasonFormat(seasonConfig)).resultsHidden || 'Votes hidden')}</em>` : latestVotes}</div><button class="hub-watch" onclick="openVisualPlayer(${_watchArg(model.latest.num)})">▶ Watch</button></section>` : `<section class="hub-premiere-note"><strong>The premiere is next.</strong><span>${_hubEsc(showWords(seasonFormat(seasonConfig)).premiereNote || 'Nobody has voted yet. Opening bonds and first impressions will finally become consequences.')}</span></section>`}
     ${aftermathHtml}
@@ -1809,6 +1811,27 @@ export function _saveEpisodeCheckpoint() {
       + 'copy safe.'), 0);
   }
 }
+/**
+ * A villa season written by an older engine (pm-run.js perfectMatchResumeOffer):
+ * what aired stays, and the rest can be played by the new one from there.
+ */
+function _pmResumeHtml() {
+  if (!isPerfectMatchSeason()) return '';
+  const offer = perfectMatchResumeOffer();
+  if (!offer) return '';
+  return `<section class="hub-premiere-note"><strong>This season was written by an older villa engine.</strong><span>Episodes 1-${offer.from} stay exactly as they aired. Continue on the new engine and episode ${offer.next ?? offer.from + 1} onwards is played from the villa episode ${offer.from} left: the same couples, feelings and public, with the new storylines.</span><button class="hub-watch" onclick="continuePerfectMatchSeason()">Continue on the new engine →</button></section>`;
+}
+
+export function continuePerfectMatchSeason() {
+  const offer = perfectMatchResumeOffer();
+  if (!offer) return;
+  if (!confirm(`Replay episodes ${offer.next ?? offer.from + 1} onwards on the new engine? Episodes 1-${offer.from} are kept as they aired. Anything already simulated after that is replaced.`)) return;
+  if (!resumePerfectMatchSeason()) { alert(`This season can't be continued: ${lastPerfectMatchRefusal() || 'unknown reason'}.`); return; }
+  saveGameState();
+  _refreshFeed();
+  renderRunTab();
+}
+
 /** Said once a session: a full disk is not news again on the next press. */
 let _storageFailureTold = false;
 export const _saveBBCheckpoint = _saveEpisodeCheckpoint;

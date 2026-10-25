@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import { gs, setGs, setPlayers, seasonConfig, formatIsRunnable } from '../js/core.js';
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchEpisodesLeft,
   perfectMatchCastProblem, lastPerfectMatchRefusal, perfectMatchCanRerun, rerunPerfectMatchEpisode,
-  perfectMatchPendingChange } from '../js/pm-run.js';
+  perfectMatchPendingChange, perfectMatchResumeOffer, resumePerfectMatchSeason } from '../js/pm-run.js';
 import { makeIslanders } from './helpers/pm-cast.js';
 
 function freshSeason(n = 22, extra = {}) {
@@ -69,7 +69,8 @@ describe('a season plays through the run path', () => {
     playAll();
     // `record` is what the season leaves the franchise ledger (pm/ledger-record.js):
     // a per-islander summary of couples, friends, rivals and betrayals, not engine state.
-    expect(Object.keys(gs.pm).sort()).toEqual(['built', 'castOrder', 'picks', 'record', 'rerolls', 'seed', 'setup', 'winners']);
+    // `engine`: which engine wrote it, so an older season is offered the new one (pm-run.js perfectMatchResumeOffer).
+    expect(Object.keys(gs.pm).sort()).toEqual(['built', 'castOrder', 'engine', 'picks', 'record', 'rerolls', 'seed', 'setup', 'winners']);
     expect(JSON.stringify(gs.pm.record).length).toBeLessThan(40 * 1024);
     const size = JSON.stringify({ ...gs, _pmQueue: undefined }).length;
     // A played season is its rows: about 1MB, measured, and 3.7MB since the
@@ -223,5 +224,54 @@ describe('the Season Timeline\'s "N left" is the season that plays', () => {
     const before = perfectMatchVillaCounts();
     const aired = playAll();
     for (const r of aired) expect(before.get(r.num), `ep ${r.num}`).toBe(r.pm.villa.length + r.exits.length);
+  });
+});
+
+// A season written by an older engine is continued on the new one from its last
+// aired episode (pm/season.js restoreFromAired): what aired is untouched, and the
+// next episode opens on the villa the last one left (user, 2026-10-25).
+describe('an older season continues on the new engine', () => {
+  const aired8 = () => {
+    freshSeason();
+    for (let i = 0; i < 8; i++) simulatePerfectMatchEpisode();
+    delete gs.pm.engine;                              // as an older engine left it
+    return JSON.stringify(gs.episodeHistory);
+  };
+
+  it('keeps every aired episode and plays on from the villa episode 8 left', () => {
+    const before = aired8();
+    const last = gs.episodeHistory.at(-1);
+    expect(perfectMatchResumeOffer()).toEqual({ from: 8, next: 9 });
+    expect(resumePerfectMatchSeason()).toBe(true);
+    expect(JSON.stringify(gs.episodeHistory)).toBe(before);
+    expect(perfectMatchResumeOffer()).toBe(null);
+    expect(gs.pm.resumeFrom).toBe(8);
+    const next = gs._pmQueue[0];
+    expect(next.num).toBe(9);
+    expect(next.pm.couplesBefore).toEqual(last.pm.couples);
+    for (const n of last.pm.villa) expect(next.pm.villa.includes(n) || next.exits.some(x => x.name === n), n).toBe(true);
+    // Nobody already gone walks back in.
+    const gone = gs.episodeHistory.flatMap(r => r.exits.map(x => x.name));
+    for (const r of gs._pmQueue) for (const n of gone) expect(r.pm.villa.includes(n), `${n} in ep ${r.num}`).toBe(false);
+    // The rest of the season is the new engine's: its stories run.
+    expect(gs._pmQueue.filter(r => r.pm.events.some(e => e.extra?.thread)).length).toBeGreaterThan(5);
+    const aired = playAll();
+    expect(gs.phase).toBe('complete');
+    expect(gs.pmWinners?.length).toBe(2);
+    expect(aired[0].num).toBe(9);
+  });
+
+  it('a reload rebuilds the same continued season, and a re-run keeps what aired', () => {
+    aired8();
+    resumePerfectMatchSeason();
+    const nine = JSON.stringify(gs._pmQueue[0].pm.couples);
+    delete gs._pmQueue;                               // the reload
+    const row = simulatePerfectMatchEpisode();
+    expect(row.num).toBe(9);
+    expect(JSON.stringify(row.pm.couples)).toBe(nine);
+    const kept = JSON.stringify(gs.episodeHistory.slice(0, 8));
+    expect(rerunPerfectMatchEpisode(9)).toBe(true);
+    expect(JSON.stringify(gs.episodeHistory.slice(0, 8))).toBe(kept);
+    expect(simulatePerfectMatchEpisode().num).toBe(9);
   });
 });

@@ -44,8 +44,8 @@ export const VENT = build('vent', {
       ] },
       { turns: [
         ['a', "Can I be honest? {pa} is starting to do my head in. Everything I say, {pa} has to have an opinion on. Everything I do, {pa} wants to know about. I can't breathe. I came in here to meet someone, not to get a shadow."],
-        ['b', "Have you told {pa} that?"],
-        ['a', "God, no."],
+        ['b', "A shadow. Wow."],
+        ['a', "I know. I'd never say it to {pa}'s face."],
       ] },
       { turns: [
         ['a', "I don't think {pa} actually listens to me. I'll be telling a story, and I can see {pa} just waiting for me to finish so {pa} can talk. It's like having a conversation with a wall that nods."],

@@ -30,8 +30,8 @@ export const VENT_STORY = {
       ] },
       { when: { why: 'behind' }, turns: [
         ['a', "{pa} is so far ahead of me. {pa} is talking about the outside, about meeting each other's families, about how this is the real thing. And I'm sitting there nodding, and inside I'm going, I don't know yet. I don't know if I'll ever know."],
-        ['b', "Have you told {pa} that?"],
-        ['a', "How do you tell someone that? {pa} would be crushed."],
+        ['b', "That's a big gap to be sitting in."],
+        ['a', "And I can't say it. How do you tell someone that? {pa} would be crushed."],
       ] },
       { when: { why: 'behind', paKissed: true }, turns: [
         ['a', "Last night {pa} said something really big to me. Really sweet. And I couldn't say it back. I just kissed {pa} so I didn't have to say anything. And {pa} didn't notice, and that's almost worse."],

@@ -23,7 +23,7 @@
 import { gs, setGs, players, seasonConfig, seasonFormat, twistsForFormat, relationships } from './core.js';
 import { PERFECT_MATCH_FORMAT } from './shows.js';
 import { dealUnseen, noteShown, rerollKey } from './seen-episodes.js';
-import { playPerfectMatchSeason, perfectMatchScheduleFor } from './pm/season.js';
+import { playPerfectMatchSeason, perfectMatchScheduleFor, PM_ENGINE } from './pm/season.js';
 import { assignRoles, buildSchedule, withPicks, withBookings } from './pm/schedule.js';
 import { DIALECTS } from './pm/lines/dialect.js';
 import { pmLedgerRecord } from './pm/ledger-record.js';
@@ -376,8 +376,16 @@ function _carried(cast) {
   return carriedFor((players || []).filter(p => p && cast.includes(p.name)), seasonConfig || {});
 }
 
-function _build(inputs, rerolls) {
+/**
+ * `resumeFrom`: a season continued on a newer engine (resumePerfectMatchSeason)
+ * keeps its aired episodes up to that one exactly as they aired, and the engine
+ * plays on from the villa they left (pm/season.js restoreFromAired). Every
+ * rebuild after that resumes from the same episode, so what the new engine
+ * played replays exactly.
+ */
+function _build(inputs, rerolls, resumeFrom = gs?.pm?.resumeFrom ?? null) {
   _lastRefusal = null;
+  const resumeRows = resumeFrom ? (gs.episodeHistory || []).filter(r => r && r.format === PERFECT_MATCH_FORMAT && r.num <= resumeFrom) : [];
   const saved = Array.isArray(gs.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
   const cast = saved || (players || []).map(p => p.name).filter(Boolean);
   // Roles the author left blank take the default split, so the engine always
@@ -393,7 +401,8 @@ function _build(inputs, rerolls) {
   try {
     result = playPerfectMatchSeason({ cast, setup: resolved, seed, picks: inputs.picks, forcedSlots: inputs.forcedSlots || null, bookings: inputs.bookings || {}, rerolls,
       splitOrStealOn: inputs.splitOrStealOn, dialect: inputs.dialect, episodes: inputs.episodes, firstIn: inputs.firstIn,
-      arrivalCounts: inputs.arrivalCounts, finalCouples: inputs.finalCouples, carried });
+      arrivalCounts: inputs.arrivalCounts, finalCouples: inputs.finalCouples, carried,
+      resume: resumeRows.length ? { rows: resumeRows } : null });
     inner = gs;
     // What this season leaves the franchise, read while its own relationship
     // layer is still the live one (pm/ledger-record.js). Recorded when the
@@ -403,14 +412,16 @@ function _build(inputs, rerolls) {
         seasonName: seasonConfig?.name || null, archetypeOf: n => (players || []).find(p => p?.name === n)?.archetype || null });
     } catch { record = null; }
   } finally { setGs(outer); }
-  return { cast, resolved, seed, rows: inner.episodeHistory || [], winners: result.winners || [], inner, record };
+  return { cast, resolved, seed, rows: inner.episodeHistory || [], winners: result.winners || [], inner, record,
+    resumeFrom: resumeRows.length ? resumeFrom : null };
 }
 
 /** Make a built season the one on `gs`: the aired rows stay, the rest queue. */
 function _commit(built, inputs, rerolls, airedCount) {
   const { inner } = built;
   gs.pm = { seed: built.seed, castOrder: [...built.cast], setup: built.resolved, winners: built.winners,
-    picks: { ...inputs.picks }, rerolls: { ...rerolls }, built: _sig(inputs), record: built.record || null };
+    picks: { ...inputs.picks }, rerolls: { ...rerolls }, built: _sig(inputs), record: built.record || null,
+    engine: PM_ENGINE, ...(built.resumeFrom ? { resumeFrom: built.resumeFrom } : {}) };
   gs._pmQueue = built.rows.slice(airedCount);
   gs.popularity = { ...(gs.popularity || {}), ...(inner.popularity || {}) };
   gs.relationshipDimensions = inner.relationshipDimensions || {};
@@ -487,6 +498,42 @@ export const simulatePerfectMatchEpisode = airedEpisode('perfect-match', functio
   return row;
 }, airedAdapter);
 
+/**
+ * A season written by an older engine, with episodes still to air: the run tab
+ * offers to continue it on this one (resumePerfectMatchSeason). Null when not.
+ */
+export function perfectMatchResumeOffer() {
+  if (!gs?.pm?.seed || gs.pm.engine === PM_ENGINE || !Array.isArray(gs._pmQueue) || !gs._pmQueue.length) return null;
+  const aired = (gs.episodeHistory || []).filter(r => r && r.format === PERFECT_MATCH_FORMAT);
+  if (!aired.length) return null;
+  return { from: aired[aired.length - 1].num, next: gs._pmQueue[0]?.num ?? null };
+}
+
+/**
+ * CONTINUE ON THE NEW ENGINE (user, 2026-10-25: "with our new system I don't
+ * wanna start a new season"). Every aired episode stays exactly as it aired;
+ * the villa is rebuilt from the last one (who is in, the couples, every pair's
+ * feelings, the public) and the episodes still to come are played by this
+ * engine from there. False, with lastPerfectMatchRefusal(), when it cannot.
+ */
+export function resumePerfectMatchSeason() {
+  _lastRefusal = null;
+  if (!gs?.pm?.seed) return _refuse('this season has no stored seed');
+  const aired = (gs.episodeHistory || []).filter(r => r && r.format === PERFECT_MATCH_FORMAT);
+  if (!aired.length) return _refuse('nothing has aired yet, so the season is simply built on the new engine');
+  const at = aired[aired.length - 1].num;
+  let inputs;
+  try { inputs = _inputs(); } catch { return _refuse('the cast setup could not be read'); }
+  const rerolls = { ...(gs.pm.rerolls || {}) };
+  const built = _build(inputs, rerolls, at);
+  if (!built) return false;
+  if (!built.rows.some(r => r.num > at)) return _refuse('the season has no episodes left after this one');
+  _commit(built, inputs, rerolls, aired.length);
+  _lastNotice = null;
+  if (gs.phase === 'complete') gs.phase = 'villa';
+  return true;
+}
+
 export function perfectMatchEpisodesLeft() {
   return Array.isArray(gs?._pmQueue) ? gs._pmQueue.length : null;
 }
@@ -509,7 +556,10 @@ export function rerunPerfectMatchEpisode(epNum) {
   const prefix = aired.filter(r => r.num < N);
   const inputs = _inputs();
   const rerolls = { ...(gs.pm.rerolls || {}), [N]: ((gs.pm.rerolls || {})[N] || 0) + 1 };
-  const built = _build(inputs, rerolls);
+  // A season continued from an aired episode: re-running one at or before
+  // that point continues from the episode before it instead.
+  const rf = gs.pm.resumeFrom != null && N <= gs.pm.resumeFrom ? (N - 1 || null) : (gs.pm.resumeFrom ?? null);
+  const built = _build(inputs, rerolls, rf);
   if (!built) return false;
   const changed = _firstChanged(prefix, built.rows);
   if (changed != null) {

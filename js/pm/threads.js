@@ -187,6 +187,10 @@ function openGrafts(state, rng) {
   const taken = new Set();
   for (const x of cands.sort((a, b) => b.heat - a.heat)) {
     if (live(state).filter(t => t.type === 'graft').length >= MAX.graft) break;
+    // Two new grafts a day at most outside Casa: a villa with none running (a
+    // season continued on a new engine) opened three in one morning, three
+    // near-identical confessions to a friend back to back.
+    if (!state.split && live(state).filter(t => t.type === 'graft' && t.ep === state.ep).length >= 2) break;
     if (taken.has(x.c) || taken.has(x.t) || rng() >= Math.min(0.9, 0.35 + x.heat)) continue;
     taken.add(x.c); taken.add(x.t);
     state.threads.push(make(state, 'graft', { c: x.c, t: x.t, p: x.p }, x.heat));

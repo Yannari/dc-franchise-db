@@ -13,16 +13,17 @@ import { gs, setGs, players } from '../core.js';
 import { streamFor } from '../dr/rng.js';
 import { PERFECT_MATCH_FORMAT } from '../shows.js';
 import { resolveIslander } from './profile.js';
-import { seedAttraction, attr, compatible } from './chemistry.js';
-import { createLedger, noteArrival, closeEpisode, ledgerSnapshot } from './ledger.js';
+import { seedAttraction, attr, compatible, attractionOf } from './chemistry.js';
+import { createLedger, noteArrival, closeEpisode, ledgerSnapshot, POP_SCALE } from './ledger.js';
+import { setRelationshipDimension } from '../relationships.js';
 import { generateEpisodeEvents, makeEvent, partnerOf, PHASE_BUDGETS } from './events.js';
 import { nightDebrief } from './debrief.js';
 import { runChallenge } from './challenges.js';
 import { romance, friendship, shown, believed, growLove, updateBeliefs, decideMasks,
-  relationshipLabel } from './feelings.js';
+  relationshipLabel, setMask } from './feelings.js';
 import { syncLadder, stepOf } from './ladder.js';
 import { emo, attachment, attachmentLabel, walkRisk, feel } from './emotions.js';
-import { addBond, getBond } from '../bonds.js';
+import { addBond, getBond, bKey } from '../bonds.js';
 import { proneness } from './breakdown.js';
 import { runVillaDay } from './villa-day.js';
 import { beginThreads, threadBeats, reactions, queueReaction, bedChats, tonightBeats } from './threads.js';
@@ -183,6 +184,121 @@ function storyPhase(state, rng, trng, phase, texture, entry = null) {
 }
 
 /**
+ * The engine a season was written by. A season built by an older one keeps
+ * playing as it was written; pm-run.js offers to continue it on this one from
+ * the last aired episode (restoreFromAired). Bump it when the villa changes
+ * enough that an old season should be offered the new one.
+ */
+export const PM_ENGINE = '2026-10-25';
+
+/**
+ * THE RESUME (user, 2026-10-25: "with our new system I don't wanna start a new
+ * season"). The villa as the last aired episode left it, rebuilt from what
+ * aired — nothing re-simulated, so the past stays exactly as it was watched:
+ * who is in and who has gone (and who voted them out, and who they left
+ * behind), the couples and Casa Amor, every pair's feelings as the episode's
+ * snapshot recorded them (romance, friendship, what was shown and believed),
+ * the ladder, the emotions, the public's approval and fame, and the history the
+ * scenes read. What no row keeps — secrets nobody found out, the old engine's
+ * half-told stories — starts clean. Returns the episode it resumes after.
+ */
+function restoreFromAired(state, rows, queues, seed) {
+  const seen = [];
+  let prevCouples = [];
+  for (const r of rows) {
+    const pm = r.pm || {};
+    for (const n of [...(pm.villa || []), ...(pm.casaRoom || []), ...(r.exits || []).map(x => x?.name)]) {
+      if (n && state.profiles[n] && !seen.includes(n)) { seen.push(n); noteArrival(state.ledger, n, r.num); }
+    }
+    (state.epDay ||= {})[r.num] = r.calendar?.[0] ?? r.days?.[0] ?? null;
+    for (const x of r.exits || []) {
+      if (!x?.name) continue;
+      (state.gone ||= []).push({ name: x.name, ep: r.num });
+      const by = (r.votes || []).filter(b => !b.save && (b.target === x.name || b.couple?.includes(x.name))).map(b => b.voter);
+      if (by.length) (state.dumpedBy ||= {})[x.name] = by;
+      const was = (pm.couplesBefore || []).find(c => c.includes(x.name))?.find(m => m !== x.name);
+      if (was) (state.leftBehind ||= {})[x.name] = was;
+    }
+    const now = (pm.couples || []).map(c => [...c].sort().join('|'));
+    for (const k of now) if (!prevCouples.includes(k)) state.coupledSince[k] = r.days?.[0] ?? r.num;
+    prevCouples = now;
+    for (const e of pm.events || []) {
+      if (e.kind === 'love-said' && e.players?.length >= 2) {
+        state.loveSaid[`${e.players[0]}→${e.players[1]}`] = r.days?.[0] ?? r.num;
+        if (e.extra?.back) state.loveSaid[`${e.players[1]}→${e.players[0]}`] = r.days?.[0] ?? r.num;
+      }
+      if (e.kind === 'movie-clip' && e.extra?.clip) (state.shownClips ||= []).push(e.extra.clip);
+    }
+    if (r.moment === 'photos') state.photosShown = true;
+    if (r.moment === 'recoupling') state.lastRecouplingEp = r.num;
+    if (r.moment === 'casa-open') state.splitEp = r.num;
+  }
+  const last = rows[rows.length - 1], P = last.pm || {};
+  state.ep = last.num;
+  state.day = last.days?.[1] ?? state.day;
+  // Night one couples them, and every recoupling night takes the next turn (moments.js pickerGender).
+  state.recouplings = (rows.some(r => r.num === 1) ? 1 : 0) + rows.filter(r => r.moment === 'recoupling').length;
+  state.villa = [...(P.villa || [])].filter(n => state.profiles[n]);
+  state.couples = (P.couples || []).map(c => [...c]).filter(c => c.every(n => state.villa.includes(n)));
+  state.split = Array.isArray(P.casaRoom);
+  state.casa = state.split ? [...P.casaRoom] : [];
+  state.casaArrivals = state.split ? state.villa.filter(n => state.profiles[n].role === 'casa') : [];
+  // Nobody who has already walked in walks in again.
+  for (const q of [queues.bombshell, queues.casa]) for (let i = q.length - 1; i >= 0; i--) if (seen.includes(q[i])) q.splice(i, 1);
+  state.ladder = { ...(P.ladder || {}) };
+  for (const [n, e] of Object.entries(P.emotions || {})) {
+    if (!state.profiles[n]) continue;
+    Object.assign(emo(state, n), { security: e.security, confidence: e.confidence, loneliness: e.loneliness,
+      guilt: e.guilt, heartbreak: e.heartbreak, stress: e.stress });
+  }
+  const L = state.ledger;
+  for (const n of seen) {
+    if (P.approval?.[n] != null) L.approval[n] = P.approval[n];
+    if (P.fame?.[n] != null) L.fame[n] = P.fame[n];
+    if (P.labels?.[n]) L.label[n] = P.labels[n];
+    // The country's running total, as closeEpisode would have kept it.
+    gs.popularity[n] = Math.round((L.approval[n] || 0) * POP_SCALE * 100) / 100;
+  }
+  // Chemistry first, as it was seeded, for every pair who ever shared the villa;
+  // then the last episode's snapshot over the ones still in it.
+  for (const a of seen) for (const b of seen) {
+    if (a === b || !compatible(state, a, b)) continue;
+    const v = attractionOf(state.profiles[a], state.profiles[b], streamFor(seed, `spark:${a}>${b}`));
+    if (v != null) setRelationshipDimension(a, b, 'attraction', v);
+  }
+  const fr = {};
+  for (const [key, [r, f, sh, bel]] of Object.entries(P.relationships || {})) {
+    const [a, b] = key.split('→');
+    if (!state.profiles[a] || !state.profiles[b]) continue;
+    if (compatible(state, a, b)) {
+      // romance = max(0.9 att, 0.5 att + 0.6 love) (feelings.js): a couple keeps
+      // its seeded chemistry and the rest is love; anyone else is all attraction.
+      const seedV = attractionOf(state.profiles[a], state.profiles[b], streamFor(seed, `spark:${a}>${b}`)) ?? 0;
+      const coupled = state.couples.some(c => c.includes(a) && c.includes(b));
+      let att = r / 0.9, love = 0;
+      if (coupled && 0.9 * seedV <= r) { att = seedV; love = Math.max(0, (r - 0.5 * att) / 0.6); }
+      setRelationshipDimension(a, b, 'attraction', att);
+      setRelationshipDimension(a, b, 'love', love);
+      if (Math.abs(sh - r) > 0.05) setMask(state, a, b, sh);
+      if (Math.abs(bel - sh) > 0.05) state.believes[`${b}:${a}→${b}`] = bel;
+    }
+    setRelationshipDimension(a, b, 'affection', f);
+    setRelationshipDimension(a, b, 'trust', f);
+    fr[key] = f;
+  }
+  for (const key of Object.keys(fr)) {
+    const [a, b] = key.split('→');
+    const back = fr[`${b}→${a}`];
+    gs.bonds[bKey(a, b)] = Math.round(((fr[key] + (back ?? fr[key])) / 2) * 100) / 100;
+  }
+  // The scenes read what already happened (afterOf, first kisses, clips): the aired history.
+  state.history = rows.flatMap(r => r.pm?.events || []);
+  state.seq = state.history.length + 1;
+  gs.activePlayers = [...state.villa];
+  return last.num;
+}
+
+/**
  * `picks` pins drawn slots ({ 5: 'save-one' }). `rerolls` re-deals one
  * episode ({ 7: 2 } = episode 7's third deal): only that episode's dice move,
  * so every earlier episode replays exactly, and every later one follows from
@@ -190,7 +306,7 @@ function storyPhase(state, rng, trng, phase, texture, entry = null) {
  */
 export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = null, picks = {}, forcedSlots = null, bookings = {}, rerolls = {},
   splitOrStealOn = false, dialect = 'uk', episodes = null, firstIn = 'f', kinship = null, arrivalCounts = null, finalCouples = FINAL_COUPLES,
-  carried = null } = {}) {
+  carried = null, resume = null } = {}) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [],
     episodeHistory: [], popularity: {} });
   const state = initState(cast, setup, seed);
@@ -211,8 +327,13 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     { bombshells: queues.bombshell.length, casa: queues.casa.length, episodes, counts: arrivalCounts, starters: queues.starter.length, finalCouples: state.finalCouples }), picks, forcedSlots), bookings);
   schedule = resolveRandomGames(schedule, streamFor(seed, 'random-games'));
   let final = null;
+  // Continuing a season from what aired (restoreFromAired): those rows are the
+  // past, exactly as watched, and the loop plays only what comes after them.
+  const resumeAt = resume?.rows?.length ? restoreFromAired(state, resume.rows, queues, seed) : 0;
+  if (resumeAt) gs.episodeHistory.push(...resume.rows);
 
   for (const entry of schedule) {
+    if (entry.ep <= resumeAt) continue;
     state.ep = entry.ep;
     if (entry.days) state.day = entry.days[1];
     // The day the show says it is (schedule.js calendar); lines read this one.

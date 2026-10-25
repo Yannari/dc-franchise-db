@@ -95,3 +95,40 @@ export const CASA_RETURN_VOLUME_2 = {
     ],
   },
 };
+
+// Casa's return, the whole ceremony: several stayers and several walk-ins a night.
+export const CASA_RETURN_VOLUME_3 = {
+  moves: {
+    walk: [
+      { when: { of: 'returned', choice: 'twist', taken: false }, stage: "{a} comes down the steps with {b}, and doesn't even try to hide the smile.", turns: [['a', "Surprise. I've brought a friend. A very good friend."]] },
+      { when: { of: 'returned', choice: 'twist', taken: false }, stage: "{a} walks back in hand in hand with {b}, already waving at everyone.", turns: [['a', "Don't all look so shocked. I went single, and I came back happy."]] },
+      { when: { of: 'stayed', choice: 'twist', withB: true }, stage: "{a} is on the bench with {b}, sitting a little too straight.", turns: [['a', "Whatever walks down those steps, I chose this. I have to own it."]] },
+      { when: { of: 'stayed', choice: 'twist', withB: true }, stage: "{b} keeps a hand on {a}'s knee. {a} keeps looking at the steps anyway.", turns: [['a', "I'm not nervous. I'm just very aware of where everyone is standing."]] },
+    ],
+    words: [
+      { when: { of: 'returned', choice: 'twist', taken: false }, turns: [['b', "Hello, everyone. I promise I'm nicer than I look."], ['a', "That's not true. You're exactly as nice as you look."]] },
+      { when: { of: 'returned', choice: 'twist', taken: false }, turns: [['b', "So this is the famous villa."], ['a', "Don't get comfortable. They all bite."]] },
+      { when: { of: 'stayed', choice: 'twist', withB: true }, turns: [['b', "Do you want me to move?"], ['a', "No. Stay. If I'm doing this, I'm doing it properly."]] },
+      { when: { of: 'stayed', choice: 'twist', withB: true }, turns: [['b', "Breathe."], ['a', "I am breathing. Just not very well."]] },
+    ],
+    land: [
+      { when: { of: 'returned', choice: 'twist', taken: false }, turns: [], beat: "A few people cheer. A few people look at each other." },
+      { when: { of: 'returned', choice: 'twist', taken: false }, turns: [], beat: "Somebody on the bench shuffles up, and the newest couple in the villa sits down." },
+      { when: { of: 'stayed' }, turns: [], beat: "The music drops. Somebody appears at the top of the steps." },
+      { when: { of: 'stayed' }, turns: [], beat: "Nobody on the bench is breathing." },
+      { when: { of: 'stayed' }, turns: [], beat: "Two people on the bench grab each other's hands without looking." },
+      { when: { of: 'stayed' }, turns: [], beat: "The next shadow appears at the top of the steps, and the whole fire pit leans forward." },
+    ],
+  },
+};
+
+// The debrief's friend, when somebody twisted: one line said twice in one night.
+export const DEBRIEF_TWIST_VOLUME = {
+  moves: {
+    friend: [
+      { when: { of: 'twisted' }, turns: [['b', "It was always going to hurt someone tonight. At least you were honest about who you want."]] },
+      { when: { of: 'twisted' }, turns: [['b', "You did it in front of everyone. That takes more guts than sneaking around."]] },
+      { when: { of: 'twisted' }, turns: [['b', "Tomorrow's going to be hard. Just don't hide from {c}. Talk to {c} first thing."]] },
+    ],
+  },
+};

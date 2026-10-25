@@ -64,7 +64,9 @@ export function nightDebrief(state, rng, entry, pre, m) {
       // Only somebody who stuck was twisted on (season 33: Marcus, who came
       // back with Keisha himself, "I stuck. I actually stuck").
       if (left && e.extra?.theirs === 'stick') add(1, 'twisted-on', left, e.players[0]);
-      add(3, 'twisted', e.players[0], left);
+      // …and only somebody who had a partner to leave twisted (season read 2026-10-25:
+      // Imani, single when she left, got the twisted debrief and no words for it).
+      if (left) add(3, 'twisted', e.players[0], left);
     }
   }
   // Who went home, missed by their partner or best friend — and blamed on a voter.

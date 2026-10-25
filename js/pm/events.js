@@ -1110,7 +1110,8 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   // screens and the transcript cut between them (season read 2026-10-25: the
   // two villas' scenes ran together, and nobody could tell which was which).
   // Recorded, not decided: it draws nothing.
-  if (state.split) {
+  // (Not the fire pit: Casa's return is the two villas back in one place.)
+  if (state.split && phase !== 'firepit') {
     const here = players.filter(Boolean);
     if (here.length) ev.where = here.every(n => state.casa?.includes(n)) ? 'casa' : 'villa';
   }

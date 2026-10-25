@@ -63,8 +63,10 @@ function returnCeremony(state, rng, decisions) {
     if (of === ONE.devastated) jealousOf(state, p, d.with, 1.5);
     if (of === ONE.turned) jealousOf(state, d.name, pd.with, 1.5);
     if (of === ONE.both) { addBond(p, d.name, -0.4); }
-    out.push(ev('casa-react', [who, other, third].filter(Boolean), { of,
-      pop: { [who]: { approval: of === ONE.relief ? 1 : 2, fame: 2 } } }, of === ONE.relief ? [] : [who]));
+    // The relief is the walk-in itself (casa-return played the reunion); a
+    // reaction after it walked in a second time (season read 2026-10-25).
+    if (of !== ONE.relief) out.push(ev('casa-react', [who, other, third].filter(Boolean), { of,
+      pop: { [who]: { approval: 2, fame: 2 } } }, [who]));
     if (of === ONE.devastated) { rows.push([p, d.name]); noteBreakup(state, { ender: p, wrong: d.name, severity: 1, cause: 'casa' }); }
     if (of === ONE.turned) { rows.push([d.name, p]); noteBreakup(state, { ender: d.name, wrong: p, severity: 1, cause: 'casa' }); }
   }

@@ -57,7 +57,11 @@ export const BLOWUP = build('blowup', {
         ['a', "Comfy? Good. Because that's my towel, and that was my bed, and up until a few days ago, that was my person."],
         ['b', "I didn't take anything from you."],
       ] },
-      { when: { of: 'steal' }, stage: "Straight after the recoupling, by the bench.", turns: [
+      { when: { of: 'steal', ago: 'days' }, stage: "Days after the recoupling, and it still hasn't gone away. By the bench, it finally comes out.", turns: [
+        ['a', "Do you know what's worse than what you did? You've been walking round ever since like it never happened."],
+        ['b', "It was a recoupling. You pick who you want. I'm not going to keep apologising for it."],
+      ] },
+      { when: { of: 'steal', ago: 'today' }, stage: "Straight after the recoupling, by the bench.", turns: [
         ['a', "You couldn't wait, could you? You couldn't even give it one more day."],
         ['b', "It's a recoupling. You pick who you want. That's the whole point."],
       ] },

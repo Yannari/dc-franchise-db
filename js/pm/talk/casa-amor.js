@@ -115,10 +115,10 @@ export const CASA_REACT = build('casa-react', {
     face: [
       { when: { of: 'relief' }, stage: "{b} is alone at the top of the steps, and {a} can't breathe.", turns: [['a', "Oh my God. Oh my God. On your own. You're on your own."]] },
       { when: { of: 'relief' }, turns: [['a', "I knew it. I knew it. I didn't know it. I hoped it. Come here."]] },
-      { when: { of: 'devastated', ...C3 }, stage: "{b} walks in holding {c}'s hand, and {a}'s face just goes.", turns: [['a', "No. No. Are you serious? Are you actually serious?"]] },
+      { when: { of: 'devastated', ...C3 }, stage: "{a} hasn't moved from the bench. {a.PosAdj} face has just gone.", turns: [['a', "No. No. Are you serious? Are you actually serious?"]] },
       { when: { of: 'devastated', ...C3 }, turns: [['a', "I sat here every night. Every night. Loyal. And you walk in holding {c}'s hand."]] },
-      { when: { of: 'both', ...C3 }, stage: "{b} walks in with {c}. {a} is sitting next to somebody new as well.", turns: [['a', "Well. I suppose we've both made our choices, then."], ['b', "I suppose we have."]] },
-      { when: { of: 'turned', ...C3 }, stage: "{a} walked back in alone, proud, and {b} is sitting on the bench beside {c}.", turns: [['a', "Are you joking? I came back for you. I came back on my own, for you."]] },
+      { when: { of: 'both', ...C3 }, stage: "{a} looks at {b}, then at {c}, then back at {b}.", turns: [['a', "Well. I suppose we've both made our choices, then."], ['b', "I suppose we have."]] },
+      { when: { of: 'turned', ...C3 }, stage: "{a} still hasn't sat down. Nobody on the bench knows where to look.", turns: [['a', "Are you joking? I came back for you. I came back on my own, for you."]] },
     ],
     words: [
       { when: { of: 'relief' }, turns: [['b', "Did you doubt me?"], ['a', "Every second. Every single second. I'm sorry. Never again."]] },

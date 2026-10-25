@@ -32,13 +32,17 @@ function grievances(state, tonight = []) {
   const g = new Map();          // "a|b" -> { w, cause }
   // `role`: is b the partner who did it, or the other one? `kissed`: was it a
   // kiss? The row may only say what is true (user: "don't invent things").
+  // `ep`: when the thing it's about happened, so a row days later doesn't open
+  // "straight after the recoupling" (season read 2026-10-25).
+  let srcEp = state.ep;
   const add = (a, b, w, cause, role = null, kissed = false) => {
     if (!a || !b || a === b) return;
     const k = `${a}|${b}`, cur = g.get(k);
-    if (!cur || w > cur.w) g.set(k, { w: (cur?.w || 0) * 0.5 + w, cause, role, kissed });
+    if (!cur || w > cur.w) g.set(k, { w: (cur?.w || 0) * 0.5 + w, cause, role, kissed, ep: srcEp });
     else cur.w += w * 0.5;
   };
   for (const e of [...state.history, ...tonight]) {
+    srcEp = e.ep;
     const age = state.ep - e.ep;
     if (age > LOOKBACK || !e.aired) continue;
     const fade = 1 - age / (LOOKBACK + 1);
@@ -122,7 +126,7 @@ export function blowups(state, rng, entry = null, tonight = []) {
     const p = cooled * Math.max(0, Math.min(0.85, (t - 2.5) / 10 * (1.35 - temper / 10)));
     // A row about nothing but old rows is rarer than one about something that happened.
     const q = v.cause === 'history' ? p * 0.5 : p;
-    if (q > 0) cands.push({ a, b, t, p: q, cause: v.cause, role: v.role, kissed: !!v.kissed });
+    if (q > 0) cands.push({ a, b, t, p: q, cause: v.cause, role: v.role, kissed: !!v.kissed, ep: v.ep });
   }
   cands.sort((x, y) => y.t - x.t);
   const pick = cands.find(c => rng() < c.p);
@@ -132,7 +136,7 @@ export function blowups(state, rng, entry = null, tonight = []) {
   return out;
 }
 
-function kickOff(state, rng, { a, b, cause, role, kissed }) {
+function kickOff(state, rng, { a, b, cause, role, kissed, ep = state.ep }) {
   const events = [];
   const ev = (kind, players, extra, major = []) => {
     const e = makeEvent(state, rng, { phase: 'blowup', kind, players, aired: true, major, extra: { pop: {}, ...extra } });
@@ -141,7 +145,7 @@ function kickOff(state, rng, { a, b, cause, role, kissed }) {
   const just = JUSTIFIED.has(cause);
   addBond(a, b, -2); addRelationshipDimension(a, b, 'resentment', 1); addRelationshipDimension(b, a, 'resentment', 0.8);
   feel(state, a, 'stress', 1.2); feel(state, b, 'stress', 1);
-  ev('blowup', [a, b], { of: cause, cause: role, kissed, pop: { [a]: { approval: just ? 1.5 : -2, fame: 3 }, [b]: { approval: just ? -2 : 0.5, fame: 3 } } }, [a, b]);
+  ev('blowup', [a, b], { of: cause, cause: role, kissed, ago: ep === state.ep ? 'today' : 'days', pop: { [a]: { approval: just ? 1.5 : -2, fame: 3 }, [b]: { approval: just ? -2 : 0.5, fame: 3 } } }, [a, b]);
 
   // The sides: friendships and couples, and who is bold enough to say it.
   const S = n => state.profiles[n]?.stats || {};

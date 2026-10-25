@@ -695,6 +695,14 @@ export function tonightBeats(state, rng, phase, entry, max = 2) {
       const of = !p ? 'nobody' : story ? (x ? 'torn' : 'unsure') : null;
       return of ? { a, p, x, of, w: !p ? 1.2 : 1 } : null;
     }).filter(Boolean).sort((u, v) => v.w - u.w || (u.a < v.a ? -1 : 1));
+    // Nobody single and no story about a couple: the couples still talk about
+    // tonight, the last one most of all (a final recoupling day aired no beat at all).
+    if (!cands.length) {
+      for (const a of state.villa.filter(free)) {
+        const p = partnerOf(state, a);
+        if (p && !cands.some(c => c.a === p)) cands.push({ a, p, x: null, of: entry.finalRecoupling ? 'last' : 'settled', w: 0.5 });
+      }
+    }
     for (const c of cands) {
       if (out.length >= max) break;
       // Never the partner of the one they want (Imani told Molly she wanted Ryan, Molly's partner).
@@ -767,6 +775,10 @@ const REACT = {
   'graft-turn': e => ({ center: e.players[1], subj: 'turned', x: e.players[0], about: e.players[2], due: 'next' }),
   'doubt-end': e => (e.extra.of === 'friends' ? { center: e.players[1], subj: 'ended', x: e.players[0], due: 'next' } : null),
   'graft-shut': e => ({ center: e.players[1], subj: 'shut-down', x: e.players[0], due: 'next' }),
+  // The Tower of Truths' honest answer, out loud: told by the one who asked
+  // (season read 2026-10-25: Ryan said "Leah" in front of everyone, and nobody mentioned it again).
+  'tower-q': e => (e.extra.of === 'other-honest' ? { center: e.players[1], subj: 'named', x: e.players[0], about: e.players[2], due: 'next' }
+    : e.extra.of === 'dodge-seen' ? { center: e.players[1], subj: 'dodged', x: e.players[0], due: 'next' } : null),
   gossip: e => { const s = (e._s.secrets || []).find(z => z.id === e.extra.secret); return { center: e.players[1], subj: 'found-out', x: e.players[2], about: s?.with || null, sec: s?.kind || null, due: 'next' }; },
   'told-confront': e => ({ center: e.players[0], subj: 'row', x: e.players[1], due: 'next' }),
   'jealous-confront': e => ({ center: e.players[0], subj: 'row', x: e.players[1], due: 'next' }),
@@ -806,7 +818,19 @@ export function reactions(state, rng, phase, max = 3) {
     if (!inVilla(state, center)) continue;
     const fs = friendsOf(state, center, [x, about], 3).filter(f => f !== x && f !== about);
     if (!fs.length) continue;
-    const wronged = ['found-out', 'row', 'knocked-back', 'turned', 'honest', 'dodged', 'ended'].includes(subj);
+    // Found out, and what came of it (season read 2026-10-25: Sean believed Leah,
+    // then told the boys he'd "let Leah sweat"; Molly told the girls "I need to
+    // hear it from Jordan", and never did). Sided with the partner: nothing to
+    // tell the friends. Already had it out: it's a row now. Not yet: the
+    // friends send them, and it happens tonight.
+    let subjNow = subj, followUp = null;
+    if (subj === 'found-out' && x) {
+      const conf = today(state).find(e => e.kind === 'told-confront' && e.players[0] === center && e.players[1] === x);
+      if (conf && (conf.extra?.verdict === 'forgive' || conf.extra?.believed)) continue;
+      if (conf) subjNow = 'row';
+      else followUp = today(state).find(e => e.id === q.src && e.kind === 'gossip') || null;
+    }
+    const wronged = ['found-out', 'row', 'knocked-back', 'turned', 'honest', 'dodged', 'ended', 'named'].includes(subjNow);
     for (const f of fs) {
       addBond(center, f, 0.3);
       // The friends take a side: against whoever hurt their friend, in
@@ -824,11 +848,12 @@ export function reactions(state, rng, phase, max = 3) {
     // 2026-10-25, Casa: four "how did you feel? not what you said" chats in
     // one episode). Past the cap it still happens — the friends know, and take
     // sides — off camera.
-    const n = ((th.subjN ||= {})[subj] = (th.subjN[subj] || 0) + 1);
-    const aired = n <= (CHAT_CAP[subj] ?? 3);
-    out.push(scene(state, rng, phase, 'group-chat', [center, ...fs], { subj, x: x || null, about: about || null, ...(q.of ? { of: q.of } : {}),
+    const n = ((th.subjN ||= {})[subjNow] = (th.subjN[subjNow] || 0) + 1);
+    const aired = n <= (CHAT_CAP[subjNow] ?? 3);
+    out.push(scene(state, rng, phase, 'group-chat', [center, ...fs], { subj: subjNow, x: x || null, about: about || null, ...(q.of ? { of: q.of } : {}),
       ...(q.sec ? { sec: q.sec } : {}), ...(q.kissed ? { kissed: true } : {}), ...(q.why ? { why: q.why } : {}), ...(q.story ? { thread: { type: q.story, beat: 'react' } } : {}),
       pop: pop([center, wronged ? 0.4 : 0.2, 1], [fs[0], 0.1, 0.5]) }, { aired }));
+    if (followUp) { const after = haveItOut(state, followUp, { force: true, phase }); if (after) out.push(after); }
   }
   return out;
 }
@@ -848,9 +873,15 @@ export function bedChats(state, rng, phase = 'evening') {
     if (pair && together(state, ...pair) && partnerOf(state, pair[0]) === pair[1] && !pairs.some(p => p.includes(pair[0]) || p.includes(pair[1]))) pairs.push([...pair, t]);
   }
   return pairs.slice(0, 2).map(([a, b, t]) => {
-    const rowed = today(state).some(e => ['where-head', 'told-confront', 'jealous-confront', 'argument', 'graft-turn'].includes(e.kind)
-      && e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b));
-    const warm = !rowed && romance(a, b) >= 4 && romance(b, a) >= 4;
+    const both = e => e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b);
+    // A reassurance, a forgiven telling or a recommitment is a making-up, not a
+    // row (season read 2026-10-25: "we're good", a kiss, then lights out on
+    // "are you still angry with me?").
+    const madeUp = today(state).some(e => both(e) && ((e.kind === 'where-head' && e.extra?.of === 'reassure')
+      || (e.kind === 'told-confront' && e.extra?.verdict === 'forgive') || (e.kind === 'doubt-end' && e.extra?.of === 'recommit')));
+    const rowed = !madeUp && today(state).some(e => both(e) && (['jealous-confront', 'argument', 'graft-turn'].includes(e.kind)
+      || (e.kind === 'where-head' && e.extra?.of !== 'reassure') || (e.kind === 'told-confront' && e.extra?.verdict !== 'forgive')));
+    const warm = !rowed && (madeUp || (romance(a, b) >= 4 && romance(b, a) >= 4));
     if (warm) { addBond(a, b, 0.3); feel(state, a, 'security', 0.5); feel(state, b, 'security', 0.5); }
     else { feel(state, a, 'stress', 0.3); }
     return scene(state, rng, phase, 'bed-chat', [a, b], { thread: { id: t.id, type: t.type, beat: 'bed', since: t.ep, who: castOf(t).slice(0, 2) }, subj: t.type, of: warm ? 'warm' : rowed ? 'after-row' : 'distant',

@@ -254,6 +254,7 @@ export function sourOf(state, a, b) {
       : e.kind === 'told-confront' && e.extra?.verdict !== 'forgive' ? pair(p0, p1)
       // Movie Night, the photos, Casa's return: [the one hurt, the one who did it].
       : EXPOSED.has(e.kind) ? pair(p0, p1)
+      : e.kind === 'tower-q' && e.extra?.of === 'other-honest' ? pair(p1, p0)
       : e.kind === 'casa-react' && ['devastated', 'turned'].includes(e.extra?.of) ? pair(p0, p1)
       : e.kind === 'movie-clip' && e.extra?.of !== 'loyalty' && e.extra?.audience ? pair(e.extra.audience[0], e.extra.audience[1])
       : e.kind === 'graft-turn' ? pair(p1, p0)

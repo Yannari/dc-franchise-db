@@ -177,6 +177,8 @@ function cooling(state, a, b) {
   if (today(state).some(e => (EXPOSED.has(e.kind) || (e.kind === 'casa-react' && ['devastated', 'turned'].includes(e.extra?.of)))
     && e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b))) return true;
   if (today(state).some(e => e.kind === 'movie-clip' && e.extra?.of !== 'loyalty' && e.extra?.audience?.includes(a) && e.extra.audience.includes(b))) return true;
+  // …and somebody else's name, said at the Tower of Truths.
+  if (today(state).some(e => e.kind === 'tower-q' && e.extra?.of === 'other-honest' && e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b))) return true;
   // …and the stories' own rows (pm/threads.js): a partner who said they want
   // somebody else, or wouldn't give a straight answer, gets no kiss by the pool tonight.
   return today(state).some(e => e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b)
@@ -895,7 +897,7 @@ function answerOf(s, x, sev, rng) {
     ['blames', (0.15 + 0.4 * st.boldness / 10 + 0.3 * (1 - st.temperament / 10)) * (nice ? 0.4 : 1)],
   ]);
 }
-export function haveItOut(state, tell) {
+export function haveItOut(state, tell, { force = false, phase = null } = {}) {
   const [w, p, x] = tell.players;
   if (!state.villa.includes(p) || !state.villa.includes(x) || apart(state, p, x) || partnerOf(state, p) !== x) return null;
   const rng = streamFor(state.seed || 1, `confront:${tell.id}`);
@@ -908,7 +910,8 @@ export function haveItOut(state, tell) {
   // The angry close has just said "I want to hear it from them" on screen: it
   // always goes (season read 2026-10-25: half the time it didn't, and the story
   // stopped on a promise).
-  if (rng() >= Math.min(0.9, goes * Math.min(1, 0.4 + 0.6 * sev)) && tell.extra.close !== 'angry') return null;
+  // …and `force`: the friends have just heard "I need to hear it from them" (threads.js reactions).
+  if (rng() >= Math.min(0.9, goes * Math.min(1, 0.4 + 0.6 * sev)) && tell.extra.close !== 'angry' && !force) return null;
   const nth = (state.toldOut?.[key] || 0) > 0 ? 'again' : 'first';
   (state.toldOut ||= {})[key] = (state.toldOut[key] || 0) + 1;
   const channel = { angry: 'straight', thanks: 'calm', quiet: 'held' }[tell.extra.close] || 'calm';
@@ -963,7 +966,7 @@ export function haveItOut(state, tell) {
   nudgeBelief(state.ledger, x, p, { forgive: 2, warning: -2, done: -6 }[verdictNow]);
   const xApproval = { owns: 0.2, small: -0.2, denies: -0.7, blames: -0.5 }[of];
   const pop = { ...pop1(p, split ? 1 : 0.4, split ? 2.5 : 1.5), ...pop1(x, xApproval - (split ? 0.5 : 0), split ? 2.5 : 1.5) };
-  return makeEvent(state, rng, { phase: tell.phase, kind: 'told-confront', players: [p, x, w], aired: true,
+  return makeEvent(state, rng, { phase: phase || tell.phase, kind: 'told-confront', players: [p, x, w], aired: true,
     major: sev >= 1 || verdictNow === 'done' ? [p, x] : [],
     extra: { secret: tell.extra.secret, of, verdict: verdictNow, believed, split, channel, nth, wasClosed, pop } });
 }

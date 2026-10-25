@@ -282,7 +282,7 @@ const BY_KIND = Object.fromEntries(Object.entries(SITUATION).flatMap(([sit, ks])
  * there's been one, and the fun track when it's good news. The night before
  * a ceremony waits under the suspense.
  */
-const SAD_NEWS = new Set(['knocked-back', 'shut-down', 'ended', 'honest']);
+const SAD_NEWS = new Set(['knocked-back', 'shut-down', 'ended', 'honest', 'named']);
 const STORY_MUSIC = {
   'graft-eyes': () => 'cheating',
   watching: () => 'cheating',

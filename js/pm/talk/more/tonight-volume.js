@@ -128,6 +128,27 @@ export const PICK_CHAT_VOLUME = {
       ] },
     ],
     worry: [
+      // A couple on recoupling day, nobody's head turned: 'last' is the final recoupling.
+      { when: { of: 'last', choosing: true, taken: true }, turns: [
+        ['a', "It's the last recoupling. Whoever I stand up for tonight, that's who I'm walking into the final with."],
+        ['b', "And it's {pa}."],
+        ['a', "It's {pa}. I just never thought I'd be this nervous saying a name I already know."],
+      ] },
+      { when: { of: 'last', choosing: false, taken: true }, turns: [
+        ['a', "Last recoupling. If {pa} stands up and says anyone else, I'm not just single. I'm gone."],
+        ['b', "{pa} isn't saying anyone else."],
+        ['a', "I know. I think I know. I'd like to know a bit more."],
+      ] },
+      { when: { of: 'settled', taken: true }, turns: [
+        ['a', "Is it weird that I'm not even worried about tonight? Me and {pa} are fine. I just feel sick for everyone else."],
+        ['b', "That's because you're a nice person."],
+        ['a', "That's because I'm a nervous person."],
+      ] },
+      { when: { of: 'settled', taken: true }, turns: [
+        ['a', "I keep telling myself we're fine. We are fine. It's just that everyone who was fine at the last one isn't here any more."],
+        ['b', "That's not how it works."],
+        ['a', "That's exactly how it works in here."],
+      ] },
       { when: { of: 'nobody', choosing: false }, turns: [
         ['a', "Every recoupling I tell myself it's fine, someone will pick me. And then I watch everyone stand up and say someone else's name, and I count how many are left."],
         ['b', "And?"],
@@ -165,6 +186,19 @@ export const PICK_CHAT_VOLUME = {
       ] },
     ],
     answer: [
+      { when: { of: ['last', 'settled'], taken: true }, turns: [
+        ['b', "You two are the safest thing in this villa. Stop worrying."],
+        ['a', "Nobody's safe in here. You know that."],
+        ['b', "You're safer than most."],
+      ] },
+      { when: { of: 'last', taken: true }, turns: [
+        ['b', "Then say it like you mean it tonight. It's the last one, so make it count."],
+        ['a', "No pressure, then."],
+      ] },
+      { when: { of: 'settled', taken: true }, turns: [
+        ['b', "Worry about tomorrow tomorrow. Tonight you've got the easiest name in the villa to say."],
+        ['a', "Easiest isn't the word. Best, maybe."],
+      ] },
       { when: { of: 'nobody' }, turns: [
         ['b', "Stop counting. You're not a number on a bench. Go and have a laugh with people this afternoon, be yourself, and let whatever happens happen."],
         ['a', "That's easy to say from a couple."],

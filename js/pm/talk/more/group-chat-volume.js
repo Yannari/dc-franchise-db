@@ -152,3 +152,41 @@ export const GROUP_CHAT_VOLUME = {
     ],
   },
 };
+
+// The Tower of Truths: {x}, asked who they'd go for, named {about} out loud.
+export const GROUP_CHAT_NAMED = {
+  moves: {
+    tell: [
+      { when: { subj: 'named', hasWith: true }, turns: [
+        ['a', "In front of everyone. The question comes up, who would you go for if it wasn't me, and {x} doesn't even pause. {about}. Just like that."],
+        ['b', "Just like that?"],
+        ['a', "Like it had been sitting there ready."],
+      ] },
+      { when: { subj: 'named', hasWith: true }, turns: [
+        ['a', "I pulled a stupid question off a stupid block, and I got {about}. Out loud. With {about} sitting right there."],
+        ['b', "Oh, no."],
+        ['a', "Oh, yes."],
+      ] },
+    ],
+    react: [
+      { when: { subj: 'named' }, turns: [
+        ['b', "At least {x} was honest. I know that's not what you want to hear."],
+        ['a', "I'd have taken a lie tonight. Honestly. A nice lie."],
+      ] },
+      { when: { subj: 'named', hasWith: true }, turns: [
+        ['b', "{about}, though? Since when?"],
+        ['a', "That's what I want to know."],
+      ] },
+    ],
+    verdict: [
+      { when: { subj: 'named' }, turns: [
+        ['a', "I'm not going to make a scene. But I'm going to ask {x} exactly how long that's been the answer."],
+        ['b', "Good. Make {x} say it to your face."],
+      ] },
+      { when: { subj: 'named' }, turns: [
+        ['a', "It's a game. That's what everyone keeps saying. It's a game. It didn't feel like a game."],
+        ['b', "Because it wasn't one. Not for that question."],
+      ] },
+    ],
+  },
+};

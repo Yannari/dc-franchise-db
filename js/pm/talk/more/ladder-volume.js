@@ -32,9 +32,12 @@ export const LADDER_VOLUME = {
         { when: { bFeels: 'little' }, turns: [['b', "Thank you. I'm not there yet. I'm sorry. I want to be honest with you."]] },
       ],
       close: [
-        { turns: [], beat: "{b} kisses {a}, and they stay curled up there until someone shouts for dinner." },
-        { turns: [['a', "So that's that, then."], ['b', "That's that."]] },
-        { turns: [], beat: "When they go back down, {a} keeps hold of {b}'s hand the whole way." },
+        // The cosy endings are for an answer that wasn't "not yet" (season read
+        // 2026-10-25: "I'm not there yet. I'm sorry", then curled up till dinner).
+        { when: { bFeels: ['strong', 'some'] }, turns: [], beat: "{b} kisses {a}, and they stay curled up there until someone shouts for dinner." },
+        { when: { bFeels: ['strong', 'some'] }, turns: [['a', "So that's that, then."], ['b', "That's that."]] },
+        { when: { bFeels: ['strong', 'some'] }, turns: [], beat: "When they go back down, {a} keeps hold of {b}'s hand the whole way." },
+        { when: { bFeels: 'little' }, turns: [], beat: "They go back down together, not quite holding hands." },
         { when: { bFeels: 'little' }, turns: [], beat: "{a} nods and smiles. It's a brave smile." },
       ],
     },

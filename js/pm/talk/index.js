@@ -74,7 +74,7 @@ import { GROUP_CHAT_ENDED } from './more/group-chat-ended.js';
 import { DOUBT_END } from './doubt-end.js';
 import { PICK_CHAT, VOTE_WORRY, STICK_TWIST } from './tonight.js';
 import { VOTE_WORRY_VOLUME, PICK_CHAT_VOLUME, STICK_TWIST_VOLUME } from './more/tonight-volume.js';
-import { GROUP_CHAT_VOLUME } from './more/group-chat-volume.js';
+import { GROUP_CHAT_VOLUME, GROUP_CHAT_NAMED } from './more/group-chat-volume.js';
 import { BABY_DOLL_VOLUME, PHOTOS_VOLUME, PHOTO_ROW_VOLUME, JOURNEY_REACT_VOLUME_2, JOURNEY_OPEN_VOLUME, SECRET_BURDEN_VOLUME, CASA_RETURN_VOLUME_2, CASA_RETURN_VOLUME_3, DEBRIEF_TWIST_VOLUME } from './more/repeat-volume-2.js';
 import { RECEIPT_VOLUME, JOURNEY_REACT_VOLUME, CASA_RETURN_VOLUME, ENTRANCE_VOLUME, DEBRIEF_VOLUME_3, CASA_MISS_VOLUME, BED_CHAT_VOLUME } from './more/repeat-volume.js';
 import { COMFORT } from './comfort.js';
@@ -169,7 +169,7 @@ TALK['snogger-row'].slots = (state, ev) => {
 extend(GROUP_CHAT, GROUP_CHAT_STORY);
 extend(GROUP_CHAT, GROUP_CHAT_SPARK);
 extend(GROUP_CHAT, GROUP_CHAT_ENDED);
-extend(GROUP_CHAT, GROUP_CHAT_VOLUME);
+extend(GROUP_CHAT, GROUP_CHAT_VOLUME); extend(GROUP_CHAT, GROUP_CHAT_NAMED);
 // The pools one episode heard twice (2026-10-25, more/repeat-volume.js).
 for (const [k, more] of [['receipt', RECEIPT_VOLUME], ['journey-react', JOURNEY_REACT_VOLUME], ['casa-return', CASA_RETURN_VOLUME], ['entrance', ENTRANCE_VOLUME],
   ['debrief', DEBRIEF_VOLUME_3], ['casa-miss', CASA_MISS_VOLUME], ['bed-chat', BED_CHAT_VOLUME],

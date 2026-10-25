@@ -86,7 +86,10 @@ function candidates(state) {
       else if (e.kind === 'debrief' && e.players[0] === x && ['meh', 'bomb-fancy', 'rather'].includes(e.extra?.of) && partnerOf(state, x) === p)
         out.push({ e, x, p, sev: 0.7, what: 'debrief', rival: e.players[2] || null });
       // A beach hut, two-faced, about any scene of theirs.
-      else if (e.hut?.who === x && e.hut.stance === 'two-faced') out.push({ e, x, p, sev: 0.5, what: 'hut', hut: true, rival: null });
+      // …that says something about the partner watching: "Confessions" once played
+      // "I agreed with whatever was said", and Jordan blew up over it (season read 2026-10-25).
+      else if (e.hut?.who === x && e.hut.stance === 'two-faced' && (e.hut.script?.lines || []).some(l => l.text.includes(p)))
+        out.push({ e, x, p, sev: 0.5, what: 'hut', hut: true, rival: null });
       // Turning a pull down: the good clip.
       else if (e.kind === 'loyalty' && e.players[0] === x) out.push({ e, x, p, sev: 0, what: 'loyalty', good: true, rival: e.players[1] });
     }

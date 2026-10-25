@@ -67,7 +67,7 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   // a talk file's own (pm/talk/*.js facts())
   'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels', 'believed', 'dayOne', 'side',
   // the storylines (pm/threads.js): which story a beat is in, and what a group chat is about
-  'story', 'subj', 'final', 'score', 'paKissed', 'lowScore', 'choosing', 'said',
+  'story', 'subj', 'final', 'score', 'paKissed', 'lowScore', 'choosing', 'said', 'bSour',
   // what today did to a couple (sourOf): 'mine' (a did it), 'theirs' (b did), 'row', or null
   'sour',
   // an intro tape's (pm/talk/intro.js)
@@ -142,6 +142,9 @@ export function factsFor(state, ev) {
   Object.assign(f, b ? historyFacts(state, a, b) : { comfortedYesterday: false, rowedBefore: false });
   // With a's partner when the scene is a's alone (a plea at the front).
   f.sour = sourOf(state, a, b ?? partnerOf(state, a));
+  // …and b with b's own partner, when that is somebody else (a bombshell's date
+  // asking "how are things with {pb}?" on the night of the photos).
+  f.bSour = b && partnerOf(state, b) && partnerOf(state, b) !== a ? sourOf(state, b, partnerOf(state, b)) : null;
   // Whether a has really kissed a's own partner yet: a line may only remember
   // a kiss that happened (season read 2026-10-25: "I just kissed Molly so I
   // didn't have to say anything", the morning before their first kiss).
@@ -238,6 +241,7 @@ const COMFORT = ['friendship', 'advice', 'solidarity', 'chat', 'deep-chat'];
  * Amber that afternoon, pleaded "I've got something real with Amber" and left
  * on "I love you, you know").
  */
+export const EXPOSED = new Set(['movie-row', 'photo-row', 'casa-row', 'photos', 'movie-split', 'photo-split']);
 export function sourOf(state, a, b) {
   if (!a || !b) return null;
   const pair = (x, y) => (x === a && y === b ? 'theirs' : x === b && y === a ? 'mine' : null);
@@ -248,6 +252,10 @@ export function sourOf(state, a, b) {
     // told: p1 was told about p2 (gossip [w, p, x]); confronted: p0 had it out with p1
     const got = e.kind === 'gossip' ? pair(p1, p2)
       : e.kind === 'told-confront' && e.extra?.verdict !== 'forgive' ? pair(p0, p1)
+      // Movie Night, the photos, Casa's return: [the one hurt, the one who did it].
+      : EXPOSED.has(e.kind) ? pair(p0, p1)
+      : e.kind === 'casa-react' && ['devastated', 'turned'].includes(e.extra?.of) ? pair(p0, p1)
+      : e.kind === 'movie-clip' && e.extra?.of !== 'loyalty' && e.extra?.audience ? pair(e.extra.audience[0], e.extra.audience[1])
       : e.kind === 'graft-turn' ? pair(p1, p0)
       : e.kind === 'where-head' && !['reassure', 'lie'].includes(e.extra?.of) ? pair(p0, p1)
       : (e.kind === 'argument' || (e.kind === 'doubt-end' && e.extra?.of === 'friends')) && pair(p0, p1) ? 'row'

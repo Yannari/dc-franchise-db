@@ -17,7 +17,7 @@
 //   no-show    [a, b]     b's partner a never came. Said later, to a's face.
 import { addBond, getBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
-import { makeEvent, partnerOf, apart } from './events.js';
+import { makeEvent, partnerOf, apart, tooSoonForWarm } from './events.js';
 import { emo, feel, attachment } from './emotions.js';
 import { romance } from './feelings.js';
 import { players } from '../core.js';
@@ -106,7 +106,8 @@ function scene(state, rng, { a, cause }) {
   const others = state.villa.filter(n => n !== a && n !== pa && !apart(state, n, a));
   const friends = others.filter(n => getBond(n, a) > 1).sort((x, y) => pull(y) - pull(x)).slice(0, 2);
   const comers = [...friends];
-  const partnerComes = pa && pa !== reason && !apart(state, pa, a) && rng() < 0.35 + 0.5 * Math.max(0, getBond(pa, a)) / 10 + 0.2 * (S(pa).loyalty ?? 5) / 10;
+  // …and not one who's just been shown up, or rowed with them, today.
+  const partnerComes = pa && pa !== reason && !apart(state, pa, a) && !tooSoonForWarm(state, pa, a) && rng() < 0.35 + 0.5 * Math.max(0, getBond(pa, a)) / 10 + 0.2 * (S(pa).loyalty ?? 5) / 10;
   if (partnerComes) comers.push(pa);
   // Somebody from the other side of a feud, now and then — kindness, or guilt.
   const ally = enemy.filter(n => !apart(state, n, a)).length && rng() < 0.18 ? enemy.filter(n => !apart(state, n, a)).sort((x, y) => (S(y).loyalty ?? 5) - (S(x).loyalty ?? 5))[0] : null;

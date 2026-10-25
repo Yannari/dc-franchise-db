@@ -20,7 +20,7 @@ import { noteBreakup } from './exes.js';
 import { onYourSide, BLOOD } from './kin.js';
 import { streamFor } from '../dr/rng.js';
 import { girlCode, judgement } from './circle.js';
-import { scriptFor, hutFor, moodOf, narratorFor, direct } from './script.js';
+import { scriptFor, hutFor, moodOf, narratorFor, direct, EXPOSED } from './script.js';
 
 export const PHASE_BUDGETS = { morning: 12, day: 40, event: 18, evening: 23 };
 export const HUT_RATE = 0.25;
@@ -171,6 +171,12 @@ function cooling(state, a, b) {
   // about Jess at lunch, crying with the boys, then a long kiss with her on
   // the terrace that evening.)
   if (today(state).some(e => e.kind === 'gossip' && e.players.slice(1, 3).includes(a) && e.players.slice(1, 3).includes(b))) return true;
+  // …and a partner just shown up on Movie Night, in a Casa photo, or walking
+  // back in with someone else: no comforting cuddle an hour later (season
+  // read 2026-10-25: Amber, "I can't look at you tonight", then "we're in it together").
+  if (today(state).some(e => (EXPOSED.has(e.kind) || (e.kind === 'casa-react' && ['devastated', 'turned'].includes(e.extra?.of)))
+    && e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b))) return true;
+  if (today(state).some(e => e.kind === 'movie-clip' && e.extra?.of !== 'loyalty' && e.extra?.audience?.includes(a) && e.extra.audience.includes(b))) return true;
   // …and the stories' own rows (pm/threads.js): a partner who said they want
   // somebody else, or wouldn't give a straight answer, gets no kiss by the pool tonight.
   return today(state).some(e => e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b)

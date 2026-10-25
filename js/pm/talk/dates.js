@@ -153,13 +153,22 @@ export const DATE = build('date', {
       ] },
     ],
     test: [
-      { when: { bTaken: true }, turns: [
+      { when: { bTaken: true, bSour: ['mine', 'theirs', 'row'] }, turns: [
+        ['a', "So how are things with {pb}?"],
+        ['b', "Honestly? Today's been a mess. I don't really want to talk about {pb} right now."],
+        ['a', "Then we won't. Tell me about you instead."],
+      ] },
+      { when: { bTaken: true, bSour: ['mine', 'theirs', 'row'] }, turns: [
+        ['a', "Everyone back there was talking about you and {pb} when I walked in. Are you okay?"],
+        ['b', "No. But it's nice that someone asked."],
+      ] },
+      { when: { bTaken: true, bSour: null }, turns: [
         ['a', "Can I ask you about {pb}? You don't have to answer."],
         ['b', "Go on."],
         ['a', "Are you happy? Honestly?"],
         ['b', "I'm... yeah. I think I am. It's early days. We get on really well. I'm just not sure yet if it's more than that."],
       ] },
-      { when: { bTaken: true, spark: false }, turns: [
+      { when: { bTaken: true, spark: false, bSour: null }, turns: [
         ['a', "So how are things with {pb}?"],
         ['b', "Really good, actually. I'm not going to lie to you and say they're not. {pb} has been amazing to me, and I'm not looking anywhere else."],
         ['a', "Fair enough. At least you're honest."],
@@ -251,17 +260,27 @@ export const DATE_BACK = build('date-back', {
       ] },
     ],
     answer: [
-      { when: { of: 'loyal' }, turns: [
+      { when: { of: 'loyal', sour: ['mine', 'theirs', 'row'] }, turns: [
+        ['b', "Nothing happened. I want you to know that, after today."],
+        ['a', "After today, I'm not sure what I know."],
+        ['b', "Then know that. That's one thing."],
+      ] },
+      { when: { of: 'loyal', sour: ['mine', 'theirs', 'row'] }, turns: [
+        ['b', "I spent the whole date thinking about earlier. About us."],
+        ['a', "And?"],
+        ['b', "And I don't want it to end like this."],
+      ] },
+      { when: { of: 'loyal', sour: null }, turns: [
         ['b', "It was nice. Honestly, it was a nice afternoon. {c} is lovely, the food was good. But the whole time I was sitting there, I just kept thinking about getting back here. It made me realise I'm happy where I am."],
         ['a', "Really?"],
         ['b', "Really."],
       ] },
-      { when: { of: 'loyal' }, turns: [
+      { when: { of: 'loyal', sour: null }, turns: [
         ['b', "Before you ask, nothing happened, and nothing's going to. {c} asked about us, and I said it's going really well. That was basically the whole date."],
         ['a', "I wasn't going to ask."],
         ['b', "You were absolutely going to ask."],
       ] },
-      { when: { of: 'loyal' }, turns: [
+      { when: { of: 'loyal', sour: null }, turns: [
         ['b', "I missed you, if that helps. I know that sounds stupid after two hours. But I did."],
         ['a', "It does help, actually."],
       ] },
@@ -304,8 +323,10 @@ export const DATE_BACK = build('date-back', {
       ] },
     ],
     settle: [
-      { when: { of: 'loyal' }, turns: [['a', "Come here, then."]], beat: "{b} curls up next to {a}, and {a} finally relaxes." },
-      { when: { of: 'loyal' }, turns: [], beat: "{a} kisses {b}, and from across the lawn, {c} sees it." },
+      { when: { of: 'loyal', sour: null }, turns: [['a', "Come here, then."]], beat: "{b} curls up next to {a}, and {a} finally relaxes." },
+      { when: { of: 'loyal', sour: null }, turns: [], beat: "{a} kisses {b}, and from across the lawn, {c} sees it." },
+      { when: { of: 'loyal', sour: ['mine', 'theirs', 'row'] }, turns: [], beat: "{a} nods, and doesn't reach for {b}'s hand. Not yet." },
+      { when: { of: 'loyal', sour: ['mine', 'theirs', 'row'] }, turns: [['a', "We'll talk properly tomorrow."], ['b', "Tomorrow."]], beat: "They sit on the same daybed, a gap between them." },
       { when: { of: 'keen' }, turns: [], beat: "{a} doesn't look convinced, and {b} doesn't try very hard to convince {a.obj}." },
       { when: { of: 'keen' }, turns: [['a', "Okay."], ['b', "Okay?"], ['a', "I said okay."]], beat: "It doesn't sound okay." },
     ],

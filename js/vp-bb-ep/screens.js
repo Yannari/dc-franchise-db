@@ -514,7 +514,13 @@ function paint(uid, fresh) {
   // breathes at its commas and full stops. When it is all there, the names and the words of
   // the game light up (stage.js emph).
   const tx = el.querySelector('.tx[data-full]');
-  if (fresh && !tx) bbVoiceStop();
+  // Big Brother and a season's own voice (The Mastermind...) are not typed out: their line is the speaker panel, so
+  // their clip is asked for here (the user, 2026-10-25: "i still cant hear the mastermind"; it only ever played for
+  // a typed line, so the house's voices stayed silent with their clips in the bucket)
+  if (fresh && !tx) {
+    const cur = R.screens[R.si]?.steps?.[R.idx] || {};
+    if (!(voicesOn() && (cur.k === 'bb' || cur.k === 'voice') && bbVoiceLine(R.num, cur))) bbVoiceStop();
+  }
   if (fresh && tx && !tx.textContent) {
     const un = v => v.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
     const full = un(tx.dataset.full);

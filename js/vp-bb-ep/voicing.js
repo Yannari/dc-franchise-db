@@ -16,6 +16,7 @@ import { audio as engine } from '../audio.js';
 import { bbWeekSteps } from './steps.js';
 
 const PRICE = 25 / 1e6;   // Inworld TTS-2, dollars a character
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const token = () => { try { return localStorage.getItem('studio_api_token') || ''; } catch { return ''; } };
 export const VOICE_API = () => { try { return (localStorage.getItem('studio_api_base') || '').replace(/\/+$/, '') || 'https://dc-studio.yannari19.workers.dev'; } catch { return 'https://dc-studio.yannari19.workers.dev'; } };
 export const bbCanVoice = () => !!token();
@@ -40,8 +41,22 @@ export function bbVoiceSeason() {
 export function voiceName(st) {
   if (!st || !st.t) return null;
   if (st.k === 'bb') return 'Big Brother';
-  if (st.k === 'say' || st.k === 'dr' || st.k === 'host') return st.by || null;
+  // a season's own voice (The Mastermind, AINSLEY, The Voice...) speaks too (the user, 2026-10-25: "cant find how
+  // to voice the big brother and the mastermind")
+  if (st.k === 'say' || st.k === 'dr' || st.k === 'host' || st.k === 'voice') return st.by || null;
   return null;
+}
+
+// A voice is found by its name the way a person would type it: capitals, spaces, dashes and a leading "The" do not
+// matter, so an Inworld voice named "Big-brother" is Big Brother's and "The-Mastermind" or "Mastermind" is The
+// Mastermind's (the user named theirs that way, and the exact-name match found neither).
+export const voiceKey = s => String(s || '').toLowerCase().replace(/^the[\s_-]+/, '').replace(/[^a-z0-9]+/g, '');
+/** The voice of each speaker: { speaker: voiceId }, from the account's { name: voiceId }. */
+export function resolveVoices(speakers, voices = {}) {
+  const byKey = new Map(Object.entries(voices).map(([n, id]) => [voiceKey(n), id]));
+  const out = {};
+  for (const n of speakers) { const id = voices[n] || byKey.get(voiceKey(n)); if (id) out[n] = id; }
+  return out;
 }
 
 /** Every spoken line of a week, in the viewer's own words: [{ id, by, text, k }]. */
@@ -194,6 +209,8 @@ async function plan(ep) {
   // "already voiced" never counts a dead week's lines
   const ids = new Set(all.map(l => l.id));
   if (all.length && [...have].some(id => !ids.has(id))) { await bbClearVoices({ episode: ep, keep: [...ids] }); have = new Set([...have].filter(id => ids.has(id))); }
+  // each speaker's voice, matched by name the forgiving way (voiceKey); what is sent to the studio is this map
+  voices = resolveVoices([...new Set(all.map(l => l.by))], voices);
   const lines = all.filter(l => voices[l.by]);
   const missing = lines.filter(l => !have.has(l.id));
   const voiceless = [...new Set(all.filter(l => !voices[l.by]).map(l => l.by))];
@@ -210,7 +227,7 @@ export async function bbVoiceEpisode(ep, { force = false, ready = null } = {}) {
     P.say(title, 'Reading the week…', 0.02);
     const p = ready || await plan(ep);
     if (!p.lines.length) {
-      P.say(`Week ${ep}: nobody has a voice yet`, `Make a voice in your Inworld workspace named exactly like a houseguest (${p.voiceless.slice(0, 6).join(', ')}${p.voiceless.length > 6 ? '…' : ''}) and press again.`, null, true);
+      P.say(`Week ${ep}: nobody has a voice yet`, `Make a voice in your Inworld workspace named like the speaker (${p.voiceless.slice(0, 6).map(esc).join(', ')}${p.voiceless.length > 6 ? '…' : ''}) and press again.`, null, true);
       return;
     }
     const todo = force ? p.lines : p.missing;
@@ -279,7 +296,12 @@ export async function bbVoiceSelected(ep) {
   const opts = [];
   if (p.missing.length) opts.push({ label: `Voice the ${p.missing.length} missing lines · about $${estimate(p.missing)}`, value: 'missing', main: true });
   opts.push({ label: `Revoice all ${p.lines.length} lines (new takes) · about $${estimate(p.lines)}`, value: 'all', main: !p.missing.length });
-  const pick = await P.choose(`Week ${ep}`, p.missing.length ? `${p.voicedCount} lines have a voice, ${p.missing.length} don't yet.` : `All ${p.lines.length} lines have a voice.`, opts);
+  // who will stay on the blips, and how to fix it (the user, 2026-10-25: "when i try to revoice it doesnt tell me
+  // what voice actor is missing and why")
+  const nobody = p.voiceless.length
+    ? `<br><br>No Inworld voice for <b>${p.voiceless.map(esc).join(', ')}</b> (${p.all.filter(l => p.voiceless.includes(l.by)).length} lines): they keep the blips. Name a voice in your Inworld workspace like them; capitals, spaces and dashes don't matter.`
+    : '';
+  const pick = await P.choose(`Week ${ep}`, `${p.missing.length ? `${p.voicedCount} lines have a voice, ${p.missing.length} don't yet.` : `All ${p.lines.length} voiced lines have a voice.`}${nobody}`, opts);
   if (pick === 'missing') return bbVoiceEpisode(ep, { ready: p });
   if (pick === 'all') return bbVoiceEpisode(ep, { force: true, ready: p });
   bbHubVoiceLabel(ep);

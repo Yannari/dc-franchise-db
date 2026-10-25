@@ -32,6 +32,20 @@ describe('recoupling', () => {
     expect(r.ballots.every(b => b.channel === 'recoupling')).toBe(true);
   });
 
+  it('a new arrival chooses first only on the side choosing tonight', () => {
+    // PM1 ep 8: a boys' choice, and the new girl chose first and took a
+    // boy from his couple. She waits to be picked like the other girls.
+    const s = villa(11);
+    s.lastRecoupleEp = 1;
+    const g = n => s.profiles[n].gender;
+    const newGirl = s.villa.find(n => g(n) === 'f'), newBoy = s.villa.find(n => g(n) === 'm');
+    s.ledger.firstEp[newGirl] = 2; s.ledger.firstEp[newBoy] = 2;
+    const r = runRecoupling(s, { rng: streamFor(3, 'rc'), pickerGender: 'm' });
+    expect(r.picks.some(pk => pk.picker === newGirl)).toBe(false);
+    expect(r.picks.find(pk => pk.first)?.picker).toBe(newBoy);
+    expect(r.picks.every(pk => g(pk.picker) === 'm')).toBe(true);
+  });
+
   it('a couple in love picks each other back', () => {
     const s = villa(10);
     const [f, m] = [s.villa[0], s.villa[1]];

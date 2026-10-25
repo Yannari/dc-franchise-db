@@ -72,16 +72,18 @@ export function pickReason(state, p, c) {
 /**
  * NEW ARRIVALS PICK FIRST. "As new arrivals, Ellie and Spencer were given
  * first choice at the recoupling" — five of the eight seasons read say it in
- * those words (UK 9, 10, 11, 13; US 8). Anyone who walked in since the last
- * recoupling chooses before the picking side, whichever side they are on;
- * the picking side then chooses from who is left. The first coupling has no
- * last recoupling, so it plays exactly as it always did.
+ * those words (UK 9, 10, 11, 13; US 8). Only an arrival on the side that
+ * is choosing tonight goes first; one on the other side waits to be picked
+ * like everyone else (user, PM1 ep 8: "it says the boys choose and it let the
+ * new girl choose cause she new" — Imani took Sean from Freya, and Freya,
+ * left standing, went home). The first coupling has no last recoupling, so
+ * it plays exactly as it always did.
  */
 export function runRecoupling(state, { rng, pickerGender, repick = false }) {
   const room = state.villa.filter(n => !(state.split && state.casa.includes(n)));
   const last = state.lastRecoupleEp;
-  const fresh = last == null ? [] : shuffle(rng, room.filter(n => (state.ledger.firstEp?.[n] ?? 0) > last
-    || (state.returnedEp?.[n] ?? 0) > last));
+  const fresh = last == null ? [] : shuffle(rng, room.filter(n => state.profiles[n].gender === pickerGender
+    && ((state.ledger.firstEp?.[n] ?? 0) > last || (state.returnedEp?.[n] ?? 0) > last)));
   const regular = shuffle(rng, room.filter(n => state.profiles[n].gender === pickerGender && !fresh.includes(n)));
   const pickers = [...fresh, ...regular];
   const isPicker = new Set(pickers);

@@ -2,7 +2,7 @@
 // season (tests/helpers/pm-cast.js) is played in the page, put in gs.episodeHistory, and
 // the player opened on an episode. One shot per set the episode visits (the first line of
 // the first scene there), so a new backdrop or a staging change can be looked at.
-//   (serve the repo: python -m http.server 8771)   node tools/pm-vp-shots.mjs [seed] [episode] [max] [sets|story]
+//   (serve the repo: python -m http.server 8771)   node tools/pm-vp-shots.mjs [seed] [episode] [max] [sets|story|kind:<kind>]
 // Shots land in $PM_SHOTS (default shots/pm-vp)/s<seed>-e<ep>-<n>-<set>.png.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -38,8 +38,10 @@ const plan = await page.evaluate(mode => {
   const out = [], seen = new Set();
   const any = Object.values(window._pmv)[0];
   any.screens.forEach((sc, si) => sc.steps.forEach((st, k) => {
-    // sets: the first step on each set; story: a spoken line of each story kind
-    const key = mode === 'story' ? (st.story && k > 0 && st.part === 'line' ? st.story.type : null) : st.bg;
+    // sets: the first step on each set; story: a spoken line of each story kind;
+    // kind:<kind>: every step of that kind (e.g. kind:where, Casa's cuts)
+    const key = mode === 'story' ? (st.story && k > 0 && st.part === 'line' ? st.story.type : null)
+      : mode.startsWith('kind:') ? (st.kind === mode.slice(5) ? `${st.kind}${si}-${k}` : null) : st.bg;
     if (!key || seen.has(key)) return;
     seen.add(key); out.push({ si, k, bg: key });
   }));

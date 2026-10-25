@@ -658,14 +658,16 @@ export function episodeScreens(row, opts = {}) {
       const set = night ? (e.phase === 'reunion' ? 'reunion' : 'firepit') : e.phase === 'challenge' ? 'day' : e.phase;
       const bg = placeFor(row, e, set) || bgFor(row, set);
       const steps = sceneSteps(row, e, index.get(e), bg);
-      if (e.where && e.where !== where && steps.length) {
+      // (Aired scenes only: unaired footage is shown apart, and doesn't move the show.)
+      if (e.where && e.aired && e.where !== where && steps.length) {
         const first = !where;
         where = e.where;
         const text = (e.where === 'casa'
           ? (first ? ['At Casa Amor…'] : ['Meanwhile, at Casa Amor…', 'Over at Casa Amor…', 'Meanwhile, in the other villa…'])
           : (first ? ['In the main villa…'] : ['Back at the main villa…', 'Meanwhile, back in the main villa…', 'Back in the villa…']))[cuts++ % 3] || (e.where === 'casa' ? 'At Casa Amor…' : 'In the main villa…');
-        steps.unshift({ ...steps[0], part: 'narr', kind: 'where', who: narr, voice: 'narrator', text, cast: [], ev: -1,
-          headline: e.where === 'casa' ? 'Casa Amor' : 'The main villa', caption: null, beat: null, story: null, kiss: null, line: undefined, fx: null });
+        // Its own step, not a copy of the scene's first: none of the scene's pops, kiss or staging.
+        steps.unshift({ ev: -1, kind: 'where', part: 'narr', who: narr, voice: 'narrator', text, cast: [], bg: steps[0].bg,
+          music: steps[0].music, raw: false, big: false, headline: e.where === 'casa' ? 'Casa Amor' : 'The main villa', sceneStart: true, sceneEnd: true });
       }
       return { steps, big: steps[0].big };
     });

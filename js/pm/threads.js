@@ -46,6 +46,7 @@ import { romance, friendship, schemeEligible, revealTruth } from './feelings.js'
 import { stepOf, setStep, tellStep, closedness } from './ladder.js';
 import { feel, jealousyHit, emo, attachment, breakHeart } from './emotions.js';
 import { judgement } from './circle.js';
+import { noteBreakup } from './exes.js';
 
 const MAX = { graft: 3, doubt: 2, secret: 2, progress: 2, spark: 2 };
 // How many threads an episode is about: the real episodes read had three or
@@ -484,6 +485,18 @@ function doubtBeat(state, rng, t, phase) {
       nudgeAttraction(state, p, a, -1);
       addRelationshipDimension(p, a, 'resentment', 0.5);
       if (stepOf(state, a, p) !== 'coupled') { setStep(state, a, p, 'coupled'); tellStep(state, p, a); }
+      // Done is done (events.js doneWith): no warm scenes between them, and
+      // neither turns a pull down "for" the other any more (season read
+      // 2026-10-25: Callum, dumped at lunch, told Ellie "I'm going back to Amber").
+      (state.toldDone ||= {})[`${a}|${p}`] = state.ep;
+      // …and on a day the season can take it (season.js _canSplit, the same
+      // rule as having it out over a telling), they're single from now.
+      if (state._canSplit && state._splitEp !== state.ep) {
+        state.couples = state.couples.filter(k => !(k.includes(a) && k.includes(p)));
+        state._splitEp = state.ep;
+        // The one who ended it is the one who did the hurting (exes.js: a second chance is theirs to ask for).
+        noteBreakup(state, { ender: a, wrong: a, severity: 0.5, cause: 'doubt' });
+      }
       close(t, 'ended', state);
     }
     return [scene(state, rng, phase, 'doubt-end', [a, p], { ...tag('end'), of: recommit ? 'recommit' : 'friends',
@@ -523,14 +536,17 @@ function secretBeat(state, rng, t, phase) {
     const f = friendsOf(state, t.w, [t.x, t.p], 1)[0];
     if (!f) return [];
     t.carried = true;
+    t.carriedEp = state.ep;
     const tellIt = rng() < 0.35 + 0.4 * st(state, f, 'boldness') + 0.25 * Math.max(0, getBond(f, t.p)) / 5;
     t.advised = tellIt ? 'tell' : 'leave';
     if (!sec.witnesses.includes(f)) sec.witnesses.push(f);
     addBond(t.w, f, 0.3);
     return [scene(state, rng, phase, 'secret-burden', [t.w, f, t.x, t.p], { ...tag('burden'), of: t.advised, sec: sec.kind, pop: pop([t.w, 0.1, 0.8]) })];
   }
-  // 2. The telling: told to tell, or bold enough without being told.
-  if (t.carried && (phase === 'day' || phase === 'evening')) {
+  // 2. The telling: told to tell, or bold enough without being told — and
+  // told to wait, they wait the day at least (season read 2026-10-25: "wait a
+  // day", then the telling two hours later).
+  if (t.carried && (phase === 'day' || phase === 'evening') && (t.advised === 'tell' || state.ep > t.carriedEp)) {
     const goes = t.advised === 'tell' ? 0.75 : 0.25 + 0.4 * st(state, t.w, 'boldness');
     if (rng() >= goes) { if (t.carried && state.ep > t.ep) t.waited = (t.waited || 0) + 1; return []; }
     const tell = makeEvent(state, rng, { phase, kind: 'gossip', players: [t.w, t.p, t.x], aired: true, extra: { ...tag('tell') } });

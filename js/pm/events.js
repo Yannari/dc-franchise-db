@@ -61,7 +61,8 @@ const closedHold = (state, n, p) => !p ? 0
  * the storylines (pm/threads.js) both ask through here.
  */
 export function pullBetween(s, rng, a, b) {
-  const pb = partnerOf(s, b);
+  // Done with their partner (a telling, "better as friends"): nobody to be loyal to.
+  const pb = partnerOf(s, b) && !doneWith(s, b, partnerOf(s, b)) ? partnerOf(s, b) : null;
   const loyal = (S(s, b).loyalty / 10) * ((getBond(b, pb) + 10) / 20);
   if (pb && rng() < 1 - (1 - loyal) * (1 - (s.split ? 0 : closedHold(s, b, pb)))) {
     return { players: [b, a], kind: 'loyalty' };

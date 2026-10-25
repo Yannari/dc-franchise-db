@@ -80,7 +80,7 @@ export const GROUP_CHAT = build('group-chat', {
         ['b', "I didn't know. I swear I didn't know."],
         ['a', "I know you didn't. I can tell by your face."],
       ] },
-      { when: { subj: 'found-out' }, turns: [
+      { when: { subj: 'found-out', hasWith: false }, turns: [
         ['a', "I feel sick. I actually feel sick. I trusted {x}. I told {x} things I haven't told anyone in here. And the whole time, {x} was doing that."],
         ['b', "Have you spoken to {x} yet?"],
         ['a', "Not yet. I don't trust myself to be calm."],

@@ -107,8 +107,19 @@ export function airStorylines(week) {
     if (t?.name && (t.kind === 'alliance' || t.kind === 'joined')) shownIn[t.name] = [...new Set([...(shownIn[t.name] || []), ...(t.members || [])])];
   };
   const lastGone = [...(gs.bb?.weeks || [])].reverse().find(w => w !== week && w.evicted)?.evicted || null;
+  // Who is on the block as the house knows it right now (the user, 2026-10-24: "can u audit and fix the
+  // chronology"). Before the veto meeting: the HOH's nominees, less one who has won the veto (they take
+  // themselves off at the meeting: "I'm scared of the Block Buster", said by the veto winner). After it: the block
+  // the meeting left, which on a Block Buster week is all three until the live night reads the result (it used to
+  // be the final two from the meeting on, which told the house who the arena would save).
+  const blockNow = () => {
+    if (!clock.noms) return [];
+    if (clock.cer) return (week.blockBeforeSafety?.length ? week.blockBeforeSafety : week.finalNominees) || week.initialNominees || [];
+    const named = week.initialNominees || week.finalNominees || [];
+    return clock.veto && week.vetoWinner ? named.filter(n => n !== week.vetoWinner) : named;
+  };
   const ctxOf = () => ({ week, hoh: clock.hoh ? (week.hoh || null) : null,
-    nominees: clock.noms ? ((clock.cer ? week.finalNominees : week.initialNominees) || week.finalNominees || week.initialNominees || []) : [], stretch,
+    nominees: blockNow(), stretch,
     firstNight: (week.num || 0) === 1 && stretch === 0, present: present(), phase: season.phase, jurors: season.jurors,
     // has the veto meeting happened (a line about who goes up in the veto's place airs only before it)
     cer: !!clock.cer,
@@ -454,6 +465,10 @@ export function airStorylines(week) {
       // 2026-10-24: "Michele goes up after the veto", aired once Michele had won it; "this should only be before
       // veto and after hoh and nomination ceremony"). Before the nominations it waits for them; once the veto has
       // been played it is gone.
+      // a nominee's scene (comforted on the block, working a voter) is for somebody on the block NOW: not the one
+      // who has just won the veto, not one the meeting took off
+      if (p.line.type === 'target' && (p.step.step === 'block' || p.step.step === 'lobby') && p.step.roles.a && clock.noms
+        && !blockNow().includes(p.step.roles.a)) { p.step.aired = true; return false; }
       if (p.line.type === 'target' && p.step.step === 'backdoor') {
         const w = backdoorWindow(clock);
         if (w === 'gone') { p.step.aired = true; return false; }

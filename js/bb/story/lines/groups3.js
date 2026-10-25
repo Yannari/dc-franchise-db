@@ -50,7 +50,7 @@ export default {
       { by: 'a', say: "Names. Give me names." },
       { by: 'd', dr: "{a} asked the room straight out. Nobody gave names. But we gave {a} enough to go on." },
     ] },
-    { id: 'gl3.4', room: 'backyard', presumes: ['noms'], turns: [
+    { id: 'gl3.4', room: 'backyard', presumes: ['noms', 'preveto'], turns: [
       { beat: 'Backyard. {a} is lying on a lounger. {b}, {c} and {d} are on the ones around it.' },
       { by: 'a', say: "Be honest. If it was you, what would you do?" },
       { by: 'b', say: "Talk to everyone." },

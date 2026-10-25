@@ -79,7 +79,11 @@ export function gameTalkFor(week, ctx, clock, talked, lastGone) {
   // left it, replacement included. Before the veto meeting the three on the block are the three
   // the HOH named (the user, 2026-10-24: a replacement nominee was "in the chairs" in a talk that
   // aired before the veto was even played).
-  const three = ((clock.cer ? week.blockBeforeSafety : week.initialNominees) || []).filter(n => house.includes(n));
+  // ...and once the veto has been played, a nominee who won it takes themselves off at the meeting: they are not
+  // one of the three any more (the user, 2026-10-24: "I'm scared of the Block Buster", from the one who had just won
+  // the veto)
+  const holder = clock.veto && !clock.cer ? week.vetoWinner : null;
+  const three = ((clock.cer ? week.blockBeforeSafety : week.initialNominees) || []).filter(n => house.includes(n) && n !== holder);
   if (week.safetyMode && clock.noms && !clock.safety && three.length >= 3) {
     const nomAct = (week.acts || []).find(a => a?.type === 'nominations');
     const hoh = ctx.hoh && house.includes(ctx.hoh) ? ctx.hoh : null;

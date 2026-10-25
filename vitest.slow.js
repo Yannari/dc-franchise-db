@@ -129,6 +129,7 @@ export const SLOW_TESTS = [
   'bb-theme-primers.test.js',              //  63s
   'house-mechanics.test.js',               //  63s
   'bb-fallout.test.js',                    //  61s
+  'bb-chronology.test.js',                 //  57s locally, four seasons
 ];
 
 /** Glob form, for a config's include/exclude. */

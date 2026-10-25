@@ -418,7 +418,7 @@ export default {
       { by: 'b', say: "Good. I'll help." },
       { by: 'b', dr: "I'll be honest with {a} even when it's bad news. That's the only kind of friend worth having in here." },
     ] },
-    { id: 'tb.6', presumes: ['noms'], when: { register: ['fiery', 'competitor'] }, turns: [
+    { id: 'tb.6', presumes: ['noms', 'preveto'], when: { register: ['fiery', 'competitor'] }, turns: [
       { by: 'a', say: "I'm not going out like this. I'm not." },
       { by: 'b', say: "Nobody said you were." },
       { by: 'a', say: "Everybody's saying it with their faces. I can see it." },

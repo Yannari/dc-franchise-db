@@ -36,6 +36,15 @@ describe('the Block Buster talk before and after the veto', () => {
     expect(JSON.stringify(talk.map(t => t.who))).not.toContain('"Ben"');
   });
 
+  // the user, 2026-10-24: Vlad, who had just won the veto, said "I'm scared of the Block Buster... if I lose it,
+  // it's my fault": a nominee who wins the veto takes themselves off at the meeting
+  it('between the veto and the meeting, never casts the veto winner as one of the three', () => {
+    const week = setup();
+    week.vetoWinner = 'Nom2';
+    const talk = gameTalkFor(week, ctxOf(week), { hoh: true, noms: true, veto: true, cer: false, safety: false }, new Set(), null);
+    expect(JSON.stringify(talk.filter(t => /^bb\./.test(t.kind)).map(t => t.who))).not.toContain('"Nom2"');
+  });
+
   it('after the veto meeting, talks about the block the Block Buster is played for', () => {
     const week = setup();
     const after = { ...ctxOf(week), nominees: [...week.blockBeforeSafety] };

@@ -42,44 +42,70 @@ export const PICK_CHAT = build('pick-chat', {
       ] },
     ],
     worry: [
-      { when: { of: 'nobody' }, turns: [
+      { when: { of: 'nobody', choosing: false }, turns: [
         ['a', "I'm single going into a recoupling. Do you know how that feels? Every couple in here is going to stand up and pick each other, and I'm going to be sitting on that bench hoping somebody says my name."],
         ['b', "Somebody will."],
         ['a', "Who, though? Honestly, who?"],
       ] },
-      { when: { of: 'nobody', cast: 3 }, turns: [
+      { when: { of: 'nobody', cast: 3, choosing: false }, turns: [
         ['a', "The only person I'd want to pick me is {c}. And I've got no idea if {c} even thinks about me. We've had, what, one real conversation?"],
         ['b', "One good conversation is more than most people get in here."],
         ['a', "One conversation isn't going to keep me in this villa."],
       ] },
-      { when: { of: 'nobody', final: true }, turns: [
+      { when: { of: 'nobody', final: true, choosing: false }, turns: [
         ['a', "It's the last one. If nobody picks me tonight, that's it. I'm gone. I've got a few hours left in here, maybe, and I can't do anything about it except sit and wait."],
         ['b', "Don't talk like that. You don't know that."],
         ['a', "I know the maths. Count the people. Somebody's going home."],
       ] },
-      { when: { of: 'torn', cast: 3, taken: true }, turns: [
+      // A single who chooses tonight: picking means taking someone.
+      { when: { of: 'nobody', choosing: true }, turns: [
+        ['a', "I'm single and I'm picking tonight. Which means I have to stand up in front of everyone and take somebody off somebody else."],
+        ['b', "Or pick someone who's single."],
+        ['a', "There's nobody single I want. That's the problem."],
+      ] },
+      { when: { of: 'nobody', cast: 3, choosing: true }, turns: [
+        ['a', "I'm going to pick {c}. I've decided. I just don't know if {c} wants to be picked by me, and I'll find out in front of the whole fire pit."],
+        ['b', "What does your gut say?"],
+        ['a', "My gut says pick {c}. My gut's been wrong before."],
+      ] },
+      { when: { of: 'torn', cast: 3, taken: true, choosing: true }, turns: [
         ['a', "Okay, so. If it's my choice tonight, I don't know who I'm picking. I know what I should do. I should pick {pa}. Everyone expects me to pick {pa}. But I keep thinking about {c}, and I don't know if that's real or if I'm just scared of missing something."],
         ['b', "Wow. You're actually thinking about it."],
         ['a', "I'm thinking about nothing else."],
       ] },
-      { when: { of: 'torn', cast: 3, taken: true }, turns: [
+      { when: { of: 'torn', cast: 3, taken: true, choosing: false }, turns: [
         ['a', "Can I tell you something and you don't judge me? I think {c} might pick me tonight. And I don't know what I'd do if that happened. I'd have to stand up in front of {pa} and everyone."],
         ['b', "What would you want to do?"],
         ['a', "That's the problem. I don't know."],
       ] },
-      { when: { of: 'unsure', taken: true }, turns: [
+      { when: { of: 'unsure', taken: true, choosing: false }, turns: [
+        ['a', "Everyone thinks me and {pa} are fine. And I'm sitting here hoping {pa} picks me tonight, and not sure I want {pa} to. How do you hope for something you're not sure you want?"],
+        ['b', "You'll know when {pa} stands up. Your face will know before you do."],
+        ['a', "That's what I'm scared of."],
+      ] },
+      { when: { of: 'unsure', taken: true, choosing: true }, turns: [
         ['a', "Everyone thinks me and {pa} are fine. We're the couple nobody worries about. And I'm sitting here genuinely not knowing if I'd pick {pa} tonight. There's nobody else. It's not that. I just don't know if this is it."],
         ['b', "That's a big thing to be carrying into a fire pit."],
         ['a', "Tell me about it."],
       ] },
     ],
     answer: [
-      { when: { of: 'nobody' }, turns: [
+      { when: { of: 'nobody', choosing: true }, turns: [
+        ['b', "Then pick the one you'd be happiest waking up next to tomorrow. Not the safest. Not the one who won't cause drama. The one you'd actually want."],
+        ['a', "Even if it causes drama?"],
+        ['b', "Especially then. That's what tonight is for."],
+      ] },
+      { when: { of: 'nobody', cast: 3, choosing: true }, turns: [
+        ['b', "Then talk to {c} before tonight. Not to ask permission. Just so it's not a total shock at the fire pit."],
+        ['a', "That's actually good advice."],
+        ['b', "I'm full of it today."],
+      ] },
+      { when: { of: 'nobody', choosing: false }, turns: [
         ['b', "Listen to me. You've been yourself the whole time in here, and people see that. Go and talk to people today. Not desperate, just talk. Let them remember you before tonight."],
         ['a', "Go and graft, basically."],
         ['b', "Go and graft. Nicely."],
       ] },
-      { when: { of: 'nobody', cast: 3 }, turns: [
+      { when: { of: 'nobody', cast: 3, choosing: false }, turns: [
         ['b', "Then go and talk to {c}. Today. Not tonight at the fire pit, today. If there's something there, give {c} a reason to say your name."],
         ['a', "And if there isn't?"],
         ['b', "Then at least you'll know you tried."],
@@ -111,7 +137,7 @@ export const PICK_CHAT = build('pick-chat', {
         ['a', "Whatever happens tonight, promise you'll still talk to me tomorrow."],
         ['b', "I'll talk to you tomorrow. I'll probably talk to you too much tomorrow."],
       ] },
-      { when: { of: ['torn', 'unsure'], taken: true }, turns: [
+      { when: { of: ['torn', 'unsure'], taken: true, choosing: true }, turns: [
         ['a', "If I don't pick {pa} tonight, everyone's going to hate me, aren't they?"],
         ['b', "Some people will. But you can't pick someone because you're scared of the villa. You'll be the one living with it."],
       ] },

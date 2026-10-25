@@ -13,6 +13,18 @@ import { partnerOf } from './events.js';
 import { kinFor, onYourSide } from './kin.js';
 import { getBond } from '../bonds.js';
 
+/**
+ * Whose choice the next recoupling is, without taking the turn: the smaller
+ * side picks, and level sides take turns (moments.js pickerGender takes it).
+ * The day before reads it (pm/threads.js: "it's the boys tonight").
+ */
+export function nextPicker(state) {
+  const room = state.villa.filter(n => !(state.split && state.casa?.includes(n)));
+  const f = room.filter(n => state.profiles[n]?.gender === 'f').length, m = room.filter(n => state.profiles[n]?.gender === 'm').length;
+  const turn = state.recouplings % 2 === 0 ? 'm' : 'f';
+  return f === m ? turn : f < m ? 'f' : 'm';
+}
+
 // How much each intent weighs connection, attraction and safety.
 export const INTENT_WEIGHTS = {
   love: { conn: 1.0, attr: 0.4, safe: 0.3 },

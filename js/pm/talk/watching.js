@@ -78,7 +78,7 @@ export const WATCHING = build('watching', {
       ] },
       { turns: [
         ['b', "Just remember, {c} went because {d} asked. {c} didn't go looking for it."],
-        ['a', "{c} didn't have to say yes, though, did {c.obj}?"],
+        ['a', "Nobody made {c} say yes, though."],
         ['b', "No. I suppose not."],
       ] },
     ],

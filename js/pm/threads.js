@@ -46,6 +46,7 @@ import { romance, friendship, schemeEligible, revealTruth } from './feelings.js'
 import { stepOf, setStep, tellStep, closedness } from './ladder.js';
 import { feel, jealousyHit, emo, attachment, breakHeart } from './emotions.js';
 import { judgement } from './circle.js';
+import { nextPicker } from './recoupling.js';
 import { noteBreakup } from './exes.js';
 
 const MAX = { graft: 3, doubt: 2, secret: 2, progress: 2, spark: 2 };
@@ -682,6 +683,9 @@ export function tonightBeats(state, rng, phase, entry, max = 2) {
   const m = entry.moment;
   const free = n => !done.includes(n) && inVilla(state, n);
   if (m === 'recoupling') {
+    // Whose choice it is tonight: a pick-chat is a chooser's or a waiter's
+    // (season read 2026-10-25: told "whatever you decide" on a night she didn't).
+    const picks = nextPicker(state);
     // The ones it's a real question for: singles, and anybody in a story about their couple.
     const cands = state.villa.filter(free).map(a => {
       const p = partnerOf(state, a);
@@ -693,7 +697,8 @@ export function tonightBeats(state, rng, phase, entry, max = 2) {
     }).filter(Boolean).sort((u, v) => v.w - u.w || (u.a < v.a ? -1 : 1));
     for (const c of cands) {
       if (out.length >= max) break;
-      const f = friendsOf(state, c.a, [c.p, c.x], 1)[0];
+      // Never the partner of the one they want (Imani told Molly she wanted Ryan, Molly's partner).
+      const f = friendsOf(state, c.a, [c.p, c.x, c.x ? partnerOf(state, c.x) : null].filter(Boolean), 1)[0];
       if (!f || (c.x && !together(state, c.a, c.x)) || (c.p && apart(state, c.a, c.p))) continue;
       done.push(c.a);
       // The friend's word: back the couple, or go for the one they keep looking at.
@@ -701,7 +706,8 @@ export function tonightBeats(state, rng, phase, entry, max = 2) {
       if (backs) nudgeAttraction(state, c.a, backs, 0.3);
       feel(state, c.a, 'stress', c.of === 'nobody' ? 0.5 : 0.3);
       out.push(scene(state, rng, phase, 'pick-chat', [c.a, f, ...(c.x ? [c.x] : [])],
-        { of: c.of, side: backs === c.p ? 'partner' : 'other', final: !!entry.finalRecoupling, pop: pop([c.a, 0.2, 0.8]) }));
+        { of: c.of, side: backs === c.p ? 'partner' : 'other', final: !!entry.finalRecoupling, choosing: state.profiles[c.a]?.gender === picks,
+          pop: pop([c.a, 0.2, 0.8]) }));
     }
   } else if (m === 'public-vote' || m === 'semi-final') {
     // The couples who feel least sure of themselves feel it: the newest, the

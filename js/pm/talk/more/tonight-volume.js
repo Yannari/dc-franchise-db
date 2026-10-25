@@ -128,17 +128,17 @@ export const PICK_CHAT_VOLUME = {
       ] },
     ],
     worry: [
-      { when: { of: 'nobody' }, turns: [
+      { when: { of: 'nobody', choosing: false }, turns: [
         ['a', "Every recoupling I tell myself it's fine, someone will pick me. And then I watch everyone stand up and say someone else's name, and I count how many are left."],
         ['b', "And?"],
         ['a', "And tonight the number's very small."],
       ] },
-      { when: { of: 'nobody' }, turns: [
+      { when: { of: 'nobody', choosing: false }, turns: [
         ['a', "I've done everything right. I've talked to everyone. I've been nice. I've been myself. And I still don't know if a single person in here would stand up for me."],
         ['b', "You don't know that nobody would."],
         ['a', "I don't know that anybody would. That's worse."],
       ] },
-      { when: { of: 'nobody', cast: 3 }, turns: [
+      { when: { of: 'nobody', cast: 3, choosing: false }, turns: [
         ['a', "If {c} picks someone else tonight, I think I'll just laugh. Out loud, at the fire pit. Because what else do you do?"],
         ['b', "You really like {c}, don't you?"],
         ['a', "I like {c} enough to be scared of {c}. That's new for me."],
@@ -148,7 +148,7 @@ export const PICK_CHAT_VOLUME = {
         ['b', "What's 'that'?"],
         ['a', "I don't know. Butterflies. The thing I came in here for."],
       ] },
-      { when: { of: 'torn', cast: 3, taken: true }, turns: [
+      { when: { of: 'torn', cast: 3, taken: true, choosing: true }, turns: [
         ['a', "If I pick {c} tonight, {pa} is going to look at me across that fire pit, and I'm going to have to keep standing there. I don't know if I can do that to {pa}."],
         ['b', "And if you pick {pa}?"],
         ['a', "Then I spend the next week wondering about {c}. Either way somebody gets hurt."],
@@ -175,7 +175,7 @@ export const PICK_CHAT_VOLUME = {
         ['a', "As a friend."],
         ['b', "Friendships turn into things in here every day."],
       ] },
-      { when: { of: 'nobody', cast: 3 }, turns: [
+      { when: { of: 'nobody', cast: 3, choosing: false }, turns: [
         ['b', "Have you actually told {c} any of this?"],
         ['a', "Obviously not."],
         ['b', "Then {c} doesn't know. You can't be picked for something you've kept to yourself."],
@@ -190,7 +190,7 @@ export const PICK_CHAT_VOLUME = {
         ['a', "That's not fair."],
         ['b', "It's not about fair. It's about what you want."],
       ] },
-      { when: { of: 'unsure', side: 'other', taken: true }, turns: [
+      { when: { of: 'unsure', side: 'other', taken: true, choosing: true }, turns: [
         ['b', "If you stand up tonight and pick {pa} because it's easier, you're both stuck. Think about your own feelings for once."],
         ['a', "That sounds really selfish."],
         ['b', "It's a recoupling. It's meant to be selfish."],
@@ -213,7 +213,7 @@ export const PICK_CHAT_VOLUME = {
         ['a', "Do you ever wish you could just skip to the end of the night? Find out, and get it over with?"],
         ['b', "Every time. And then the end of the night comes, and I wish I hadn't."],
       ] },
-      { turns: [
+      { when: { choosing: true }, turns: [
         ['b', "Can I give you one bit of advice? Whatever you say at that fire pit, mean it. People can tell when you don't."],
         ['a', "Can they?"],
         ['b', "Everyone can tell. The cameras can tell."],
@@ -223,7 +223,8 @@ export const PICK_CHAT_VOLUME = {
       { turns: [], beat: "{b} pulls {a} up off the bed. Nobody's ready, but it's time to get ready." },
       { turns: [['a', "I feel sick."], ['b', "Good sick or bad sick?"], ['a', "Recoupling sick."], ['b', "That's the worst kind."]] },
       { turns: [], beat: "{a} lies back and stares at the ceiling. {b} lies back next to {a}, and they stay there until somebody calls them." },
-      { turns: [['b', "Whatever you decide, I'll be on the bench cheering."], ['a', "Cheer quietly. Please."]] },
+      { when: { choosing: true }, turns: [['b', "Whatever you decide, I'll be on the bench cheering."], ['a', "Cheer quietly. Please."]] },
+      { when: { choosing: false }, turns: [['b', "Whoever says your name tonight is lucky. I mean it."], ['a', "Tell them that. Loudly. Before the fire pit."]] },
     ],
   },
 };

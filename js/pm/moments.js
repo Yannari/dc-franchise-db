@@ -13,7 +13,7 @@ import { streamFor } from '../dr/rng.js';
 import { romance } from './feelings.js';
 import { closedness } from './ladder.js';
 import { breakHeart, feel, jealousOf, jealousyHit, healOnReunion } from './emotions.js';
-import { runRecoupling } from './recoupling.js';
+import { runRecoupling, nextPicker } from './recoupling.js';
 import { publicVote, publicVoteIslanders, finalVote, splitOrSteal } from './public-vote.js';
 import { villaDumping, sideDumping, safePickCouples, topCouplePicks, saveOne, couplesVote, returningExes, exIslandersVote } from './villa-vote.js';
 import { arriveBombshell, arrivePair, bombshellSteal, openCasa, standUp, bombshellSaves, publicMatch, introParts } from './arrivals.js';
@@ -318,7 +318,7 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
   for (const n of dumped) {
     // …from the ones staying: on a double dumping, one leaver told another
     // "don't let anyone mess you about once I'm gone" (season 31).
-    const friends = roomMates(state, n).filter(m => getBond(n, m) > 1 && !dumped.includes(m)).slice(0, hugs);
+    const friends = roomMates(state, n).filter(m => getBond(n, m) > 1 && !dumped.includes(m) && m !== (state._passedOver?.ep === state.ep ? state._passedOver.of[n] : undefined)).slice(0, hugs);
     for (const f of friends) { addBond(n, f, 0.2); ev('dump-goodbye', [n, f], { [n]: { approval: 0.5, fame: 0.5 } }); }
     ev('dump-goodbye', [n], { [n]: { approval: 1.5, fame: 1 } });
   }
@@ -387,11 +387,9 @@ function recoupleBuildUp(state, { picker, stake, final }) {
 // elimination, we've got more girls than boys — how are the ones picking the
 // ones eliminated?").
 function pickerGender(state) {
-  const room = state.villa.filter(n => !(state.split && state.casa?.includes(n)));
-  const f = room.filter(n => state.profiles[n]?.gender === 'f').length, m = room.filter(n => state.profiles[n]?.gender === 'm').length;
-  const turn = state.recouplings % 2 === 0 ? 'm' : 'f';
+  const g = nextPicker(state);
   state.recouplings++;
-  return f === m ? turn : f < m ? 'f' : 'm';
+  return g;
 }
 
 function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, all = false, toCome = [], surplus = 0, dumping = null }) {
@@ -459,7 +457,13 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
     extra: { stole: pk.stole, reclaim: reclaim(pk), reason: pk.reason, pop: { [pk.picker]: { approval: pk.stole && !reclaim(pk) ? -BETRAYAL.steal : 0.2, fame: 1 },
       ...(pk.stole ? { [pk.stole]: { approval: 1.5, fame: 2 } } : {}) } } }))];
   for (const pk of r.picks) if (pk.stole) breakHeart(state, pk.stole, pk.picked, 5 * romance(pk.stole, pk.picked) / 10);
+  // Who walked in with whom, for the goodbyes after (dumpingScene): the one who
+  // just chose somebody else isn't the one hugging you at the gate saying "it
+  // should never have been you" (season read 2026-10-25: Sean, to Tasha, a
+  // minute after picking Freya over her).
+  const was = Object.fromEntries(state.villa.map(n => [n, partnerOf(state, n)]));
   state.couples = r.couples;
+  state._passedOver = { ep: state.ep, of: Object.fromEntries(state.villa.filter(n => was[n] && partnerOf(state, n) !== was[n]).map(n => [n, was[n]])) };
   for (const [a, b] of r.couples) healOnReunion(state, a, b);
   // Who has been single and vulnerable since the last ceremony (below).
   const lastCeremony = state.lastRecouplingEp ?? 0;

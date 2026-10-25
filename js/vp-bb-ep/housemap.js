@@ -70,7 +70,7 @@ const ALL = { ...ZONES, ...ISLAND };
 // sure we're not missing any plate for all the zones"). A place whose plate the user is still making
 // names its to-edit folder instead; tests/bb-housemap.test.js holds every zone to one or the other.
 export const ZONE_PLATE = {
-  pool: 'pool-wide', bar: 'bar-lobby-wide', gym: 'gym-racks', hallway: 'purple-hall', bathroom: 'bathroom', wing: 'bedroom-wide',
+  pool: 'pool-wide', bar: 'bar-lobby-wide', gym: 'gym-racks', hallway: 'hallway', bathroom: 'bathroom', wing: 'bedroom-wide',
   kitchen: 'kitchen-room', ksink: 'kitchen-sink', living: 'living-screens', dining: 'dining-room', kstove: 'kitchen-stove', lsofas: 'living-sofas', lconsole: 'living-console', dtable: 'dining-meal', noms: 'nom-table', library: 'library-wide', front: 'front', dr: 'confessional',
   beach: 'beach-hut', westdock: 'dock', clearing: 'comp-clearing', resort: 'front',
   hoh: 'hoh-suite', pantry: 'storage', foyer: 'foyer', eastdock: 'pier-east', npond: 'pond-north', epond: 'pond-east',
@@ -85,7 +85,7 @@ const PUBLIC = ['living', 'lsofas', 'kitchen', 'kstove', 'pool', 'gym', 'wing', 
 
 // a plate's room on the blueprint
 const ZONE_OF_PLATE = [[/^living-/, 'living'], [/^library-/, 'library'], [/^confessional$/, 'dr'], [/^nom-table$/, 'noms'], [/^dining-/, 'dining'],
-  [/^kitchen-/, 'kitchen'], [/^bar-/, 'bar'], [/^bedroom-/, 'wing'], [/^(hallway|bathroom)$/, 'bathroom'], [/^purple-hall$/, 'hallway'],
+  [/^kitchen-/, 'kitchen'], [/^bar-/, 'bar'], [/^bedroom-/, 'wing'], [/^bathroom$/, 'bathroom'], [/^(hallway|purple-hall)$/, 'hallway'],
   [/^hoh-/, 'hoh'], [/^storage/, 'pantry'], [/^havenot$/, 'lounge'], [/^foyer$/, 'foyer'], [/^studio-/, 'studio'],
   [/^gym-/, 'gym'], [/^(pool-|patio$|balcony$)/, 'pool'], [/^(lawn-|front)/, 'front'], [/^memory-wall$/, 'living'],
   [/^beach-/, 'beach'], [/^dock$/, 'westdock'], [/^pier/, 'eastdock'], [/^(comp-|forest-night$)/, 'clearing'],

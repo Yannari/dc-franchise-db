@@ -174,3 +174,15 @@ describe('the wide view first', () => {
     expect(share('yard', Object.keys(RESORT.plates).filter(id => RESORT.plates[id].place))).toBeGreaterThan(0.2);
   });
 });
+
+// the user, 2026-10-24: "the bathroom doesnt use the correct plate, it use the plate for the hallway where we see
+// the bathroom door... use the hallway plate for the hallway". The hallway was a wide default of the bathroom's
+// set (three in four bathroom scenes played in the corridor); it is the corridor only when the lines put it there.
+describe('the bathroom and the hallway', () => {
+  it('plays a bathroom scene in the bathroom', () => {
+    for (let i = 0; i < 200; i++) expect(pickPlate('bathroom', `scene-${i}`, 'They talk at the sinks.')).toBe('bathroom');
+  });
+  it('plays it in the hallway when the lines are in the hallway', () => {
+    expect(pickPlate('bathroom', 'k1', 'They stop in the hallway outside the bathroom.')).toBe('hallway');
+  });
+});

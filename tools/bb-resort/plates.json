@@ -115,8 +115,8 @@
  "bedroom-beds": {"room": "bedroom", "sets": ["bedroom"], "use": [], "words": "between the beds|nightstand|bedside|on (?:his|her|their|the) bed", "indoor": true, "lights": [[565, 230, 170]]},
  "bedroom-sofa": {"room": "bedroom", "sets": ["bedroom"], "use": [], "words": "bedroom sofa|armchair|sofa in the bedroom", "indoor": true, "lights": [[1570, 420, 110]]},
 
- "hallway": {"room": "washroom", "sets": ["bathroom"], "use": ["house"], "indoor": true},
- "purple-hall": {"room": "hoh-room", "sets": [], "use": [], "indoor": true, "words": "hallway|corridor|upstairs"},
+ "hallway": {"room": "washroom", "sets": ["bathroom"], "use": [], "indoor": true, "words": "hallway|corridor|in the hall|outside the bathroom|bathroom door"},
+ "purple-hall": {"room": "hoh-room", "sets": [], "use": [], "indoor": true, "words": "upstairs hall|upstairs"},
 
  "gym-racks": {"room": "backyard", "sets": ["yard"], "use": [], "indoor": true, "words": "gym|weights|workout|lifting|dumbbell", "windows": [[20, 0, 1600, 640]]},
  "gym-kettlebells": {"room": "backyard", "sets": ["yard"], "use": [], "indoor": true, "words": "gym|kettlebell|weights", "windows": [[90, 0, 1600, 710]]},

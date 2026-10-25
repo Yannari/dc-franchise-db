@@ -10,9 +10,9 @@
 // Never reads approval or fame.
 import { attr } from './chemistry.js';
 import { romance, believed } from './feelings.js';
-import { makeEvent, partnerOf } from './events.js';
+import { makeEvent, partnerOf, apart } from './events.js';
 import { closedness } from './ladder.js';
-import { emo, breakHeart, feel, jealousOf } from './emotions.js';
+import { emo, breakHeart, feel, jealousOf, attachment } from './emotions.js';
 import { addBond } from '../bonds.js';
 import { confrontation } from './movie-night.js';
 import { noteBreakup } from './exes.js';
@@ -86,11 +86,19 @@ export function stickOrTwist(state, { rng }) {
     const p = partnerOf(state, o);
     const conn = p ? Math.max(0, romance(o, p) / 10) : 0;
     // Fear: I know they strayed, or I believe they feel less than I do.
+    // …and the other villa: not knowing what they're doing over there, worst
+    // for the anxious ("What if {pa}'s doing exactly what I'm doing?"). The
+    // villa's old random gossip used to supply the fear before Casa; with the
+    // storylines it halved (0.22 -> 0.12 a decision) and twists fell to a fifth.
+    const unknown = p && apart(state, o, p) ? 0.06 + 0.12 * attachment(prof).anxiety : 0;
     const fear = p ? (state.secrets.some(x => x.known && x.who === p && x.partner === o) ? 0.25 : 0)
-      + 0.2 * Math.max(0, romance(o, p) - believed(state, o, p)) / 10 : 0;
+      + 0.2 * Math.max(0, romance(o, p) - believed(state, o, p)) / 10 + unknown : 0;
     const intent = ['fun', 'stir'].includes(prof.intent) ? 0.2 : 0;
     const arch = prof.archetype === 'loyal-soldier' ? -0.1 : 0;
-    const ladder = p ? -0.35 * closedness(state, o, p) : 0;
+    // Casa is the test of the closed-off (user: "the biggest source of drama in
+    // the season"): the storylines (2026-10-25) leave more couples official, and
+    // at -0.35 a closed couple all but never twisted (a quarter of the tempted).
+    const ladder = p ? -0.18 * closedness(state, o, p) : 0;
     const feelings = -0.15 * e.security / 10 + 0.2 * e.heartbreak / 10;
     const twistP = options.length
       ? clamp(0.1 + 0.55 * best - 0.45 * conn + intent + fear - 0.3 * s.loyalty / 10 + arch + ladder + feelings

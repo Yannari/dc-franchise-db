@@ -102,9 +102,20 @@ export function noteArrival(L, name, ep) {
   L.label[name] = 'invisible';
 }
 
+/**
+ * HOW HARD A BAD LOOK LANDS. Since the storylines (pm/threads.js, 2026-10-25)
+ * an episode airs a third fewer scenes, and a bad act is a featured beat of a
+ * story — the narrator leads into it, the hut follows it — not one of ninety
+ * random scenes. The public read it harder. Measured: at 1.0 the villain label
+ * reached 37% of seasons by episode 12 (80% before the storylines).
+ */
+export const HARSH = 1.9;
+// …and a good one: the turn-downs and friendships that made fan favourites
+// air a third as often (measured: Fan Favourite by episode 12 fell 98% -> 84%).
+export const WARM = 1.3;
 export function recordAired(L, { who, approval = 0, fame = 0, major = false }) {
   if (!who || L.firstEp[who] == null) return;
-  L.raw[who] = (L.raw[who] || 0) + approval * SCENE_GAIN;
+  L.raw[who] = (L.raw[who] || 0) + approval * SCENE_GAIN * (approval < 0 ? HARSH : WARM);
   L.fameRaw[who] = (L.fameRaw[who] || 0) + Math.max(0, fame);
   if (major) L.major[who] = true;
 }

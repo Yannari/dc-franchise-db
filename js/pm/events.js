@@ -336,7 +336,9 @@ export const KINDS = {
       // coupled costs in proportion more, or the villains that pulls made
       // went with them (villain by ep 12: 60% -> 40% of seasons).
       return { pop: { ...pop1(a, partnerOf(s, a) ? -PULL_COST * light : 0.2, 1.5),
-        ...pop1(b, rebuffed ? (partnerOf(s, b) ? 0.3 : 0) : partnerOf(s, b) ? -PULL_COST / 2 * light : 0.1, 1) } };
+        // …and in a story (pm/threads.js graft), going along with it is the
+        // public's whole read of the coupled one: near the full price.
+        ...pop1(b, rebuffed ? (partnerOf(s, b) ? 0.3 : 0) : partnerOf(s, b) ? -PULL_COST * (ev.extra?.thread ? 0.9 : 0.5) * light : 0.1, 1) } };
     },
   },
   // Casa Amor week: sharing a bed with a new arrival — the show's classic
@@ -1122,7 +1124,9 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   // No beach hut in the middle of a couple watching their own film.
   // A note keeps its cutaway: whether there is one is the engine's (it moves
   // the public), never the director's. A quick montage, then the hut.
-  if (players.length && !NO_HUT.has(kind) && (ALWAYS_HUT.has(kind) || rng() < (EVERYDAY_HUT.has(kind) ? 0.1 : HUT_RATE))) {
+  // A story's beat always cuts to the hut (pm/threads.js): the real show plays
+  // every turn of a storyline with the one it happened to, straight to camera.
+  if (players.length && !NO_HUT.has(kind) && (ALWAYS_HUT.has(kind) || extra?.thread || rng() < (EVERYDAY_HUT.has(kind) ? 0.1 : HUT_RATE))) {
     // Only somebody who was THERE goes to the hut about it: the one a debrief
     // or a telling is about is not in the room (user, reading night one: "say
     // what out loud, when Mickey wasn't even the one talking").

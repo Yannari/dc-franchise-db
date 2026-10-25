@@ -95,7 +95,9 @@ describe('Perfect Match spec audit', () => {
       // 10. events per episode, repeated lines, and how many carried a hut
       for (const r of rows.filter(x => x.moment !== 'reunion')) {
         // The final is its dates, not a villa day (pm/journey.js): not a villa episode's count.
-        if (r.moment !== 'final') m.eventsPerEp.push(r.pm.events.length);
+        // What an episode is to watch: the lines that aired (2026-10-25, the
+        // storylines: an episode is its stories, not a hundred random events).
+        if (r.moment !== 'final') m.eventsPerEp.push(r.pm.events.filter(e => e.aired).reduce((s, e) => s + (e.script?.lines?.length || 0) + (e.hut?.script?.lines?.length || 0), 0));
         m.hutRate.push(r.pm.events.filter(e => e.hut).length / r.pm.events.length);
       }
       const seen = new Map();
@@ -151,7 +153,7 @@ PERFECT MATCH — ${SEASONS} seasons
  7. Casa twist, loyalty < 6 ......... ${pct(...m.twists.low)}   loyalty >= 6: ${pct(...m.twists.high)}
     photos surfaced a hidden event .. ${pct(m.photosSurfaced, SEASONS)}
  8. envelope steals ................. ${pct(m.steals, m.envelopes)}  (real UK: 0)
-10. events per villa episode ........ mean ${mean(m.eventsPerEp).toFixed(1)}, min ${Math.min(...m.eventsPerEp)}
+10. lines aired per villa episode .. mean ${mean(m.eventsPerEp).toFixed(1)}, min ${Math.min(...m.eventsPerEp)}
     hut cutaways per episode ........ ${(100 * mean(m.hutRate)).toFixed(1)}%  (design: 25%)
     repeated line+cast in a season .. ${pct(m.repeatLines, m.lines)}  (Plan 3's pools drive this toward 0)
 11. seasons producing each relationship shape (spec: most seasons; 0 = a system that reaches no screen)
@@ -172,10 +174,10 @@ JUMP: ${m.jumpDetail || 'none'}
     expect(m.jumps).toBe(0);
     expect(m.schemeViolations).toBe(0);
     expect(m.stressUp).toBe(SEASONS);
-    // The quietest villa episode of a hundred seasons (the mean is ~118). The
-    // floor was 80; with the day played before the fire pit (2026-09-23) the
-    // quietest measured 79 — one episode in ~1,500, the mean unmoved.
-    expect(Math.min(...m.eventsPerEp)).toBeGreaterThanOrEqual(75);
+    // The quietest villa episode of a hundred seasons, in lines aired. (It
+    // counted events until 2026-10-25, floor 75; an episode is its stories now,
+    // and the user's bar is length with substance: "not finished in 5 minutes".)
+    expect(Math.min(...m.eventsPerEp)).toBeGreaterThanOrEqual(100);
     expect(m.twists.low[0] / (m.twists.low[1] || 1)).toBeGreaterThan(m.twists.high[0] / (m.twists.high[1] || 1));
     // PEAK jealousy by attachment is printed, NOT asserted. The research says
     // secure islanders feel it fully once a threat is confirmed, so their peak

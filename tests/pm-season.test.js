@@ -30,7 +30,8 @@ describe('a whole Perfect Match season', () => {
     const { rows } = play(2);
     // The final is its dates, not a villa day (pm/journey.js): held to its own count below.
     for (const r of rows.filter(r => r.moment !== 'reunion' && r.moment !== 'final')) {
-      const beats = r.pm.events.filter(e => e.extra?.thread).length;
+      // …a story beat, or the day before the night talking about tonight (threads.js tonightBeats).
+      const beats = r.pm.events.filter(e => e.extra?.thread || ['pick-chat', 'vote-worry', 'stick-twist'].includes(e.kind)).length;
       const lines = r.pm.events.filter(e => e.aired).reduce((s, e) => s + (e.script?.lines?.length || 0) + (e.hut?.script?.lines?.length || 0), 0);
       expect(beats, `episode ${r.num}: story beats`).toBeGreaterThanOrEqual(2);
       expect(lines, `episode ${r.num}: lines aired`).toBeGreaterThanOrEqual(120);

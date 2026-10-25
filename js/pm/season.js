@@ -117,7 +117,8 @@ function villaDayEvents(state, rng, entry, seed) {
   // drinks, the terrace, the beds — so its evening runs longer. Casa Amor is
   // the season's biggest drama (user): its nights keep their temptations.
   const casa = !!state.split;
-  const T = { morning: TEXTURE.morning, day: TEXTURE.day, evening: TEXTURE.evening + (entry.moment === 'villa' ? 3 : 0) + (casa ? 4 : 0) };
+  // (Measured: at +4 a night, Casa's twists fell from a third of the tempted to a fifth.)
+  const T = { morning: TEXTURE.morning + (casa ? 3 : 0), day: TEXTURE.day + (casa ? 6 : 0), evening: TEXTURE.evening + (entry.moment === 'villa' ? 3 : 0) + (casa ? 7 : 0) };
   const part = (phase, n) => storyPhase(state, rng, trng, phase, n, entry);
   if (entry.moment === 'first-coupling') return [...part('day', T.day), ...part('evening', T.evening)];
   if (!entry.challenge) return [...part('morning', T.morning), ...part('day', T.day + 2), ...part('evening', T.evening)];
@@ -139,16 +140,26 @@ function villaDayEvents(state, rng, entry, seed) {
 const TEXTURE = { morning: 5, day: 8, evening: 6 };
 const TEXTURE_KINDS = {
   morning: [['chat', 4], ['kiss', 2], ['friendship', 3], ['comedy', 1.5], ['ick', 0.4]],
-  day: [['chat', 2.5], ['deep-chat', 1.5], ['pull', 0.6], ['friendship', 3], ['comedy', 2], ['argument', 0.4], ['ick', 0.6]],
-  evening: [['kiss', 3], ['deep-chat', 2], ['pull', 0.4], ['argument', 0.5], ['friendship', 1], ['chat', 0.5], ['comedy', 1], ['bed-share', 1.2]],
+  // Rows keep their real causes (events.js argumentReasons): a villa has a few.
+  day: [['chat', 2.5], ['deep-chat', 1.5], ['pull', 0.6], ['friendship', 3], ['comedy', 2], ['argument', 0.9], ['ick', 0.6]],
+  evening: [['kiss', 3], ['deep-chat', 2], ['pull', 0.4], ['argument', 1], ['friendship', 1], ['chat', 0.5], ['comedy', 1], ['bed-share', 1.2]],
 };
 /**
  * One part of the day: last part's reactions, then the stories intercut with
  * the texture — a little villa life, a thread's beat, a little more, the next
  * thread — and the reactions those beats left due before it ends.
  */
+// Casa Amor's days are temptation (user: "it should still be the biggest source of
+// drama in the season"): the pulls, the beds and the missing are the texture.
+// Measured: with the villa's ordinary mix, twists fell from a third of the
+// tempted to a quarter (about one pull a Casa day instead of five).
+const CASA_KINDS = {
+  morning: [['chat', 2], ['pull', 2.5], ['friendship', 1.5], ['comedy', 1], ['kiss', 1]],
+  day: [['pull', 3.5], ['chat', 2], ['deep-chat', 1.2], ['friendship', 1.5], ['comedy', 1], ['argument', 0.6]],
+  evening: [['pull', 2.5], ['bed-share', 2.5], ['kiss', 1.5], ['deep-chat', 1.2], ['argument', 0.6], ['comedy', 0.6]],
+};
 function storyPhase(state, rng, trng, phase, texture, entry = null) {
-  const kinds = { [phase]: TEXTURE_KINDS[phase] || TEXTURE_KINDS.day };
+  const kinds = { [phase]: (state.split ? CASA_KINDS : TEXTURE_KINDS)[phase] || TEXTURE_KINDS.day };
   const draw = n => {
     const evs = n > 0 ? generateEpisodeEvents(state, rng, { [phase]: n }, { kinds }) : [];
     for (const e of evs) queueReaction(state, e);

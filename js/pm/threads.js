@@ -54,6 +54,11 @@ const MAX = { graft: 3, doubt: 2, secret: 2, progress: 2, spark: 2 };
 // episode ran 260 clicks against the old 450, and the user wants substance).
 export const HEADLINES = 5;
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const PLAYERS = new Set(['villain', 'mastermind', 'schemer']);
+// What the public make of a story's moves (x SCENE_GAIN, like every pop).
+// Measured 2026-10-25: with the stories carrying the drama and these near
+// zero, the villain label fell from 80% of seasons by episode 12 to 12%.
+const COST = { plot: -0.6, plotFresh: -0.25, lie: -1.6, dodge: -0.8, turn: -1.8, dump: -0.9 };
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const S = (state, n) => state.profiles[n]?.stats || {};
@@ -63,6 +68,7 @@ const inVilla = (state, ...ns) => ns.every(n => n && state.villa.includes(n));
 const together = (state, ...ns) => inVilla(state, ...ns) && ns.every(n => !apart(state, ns[0], n));
 const gender = (state, n) => state.profiles[n]?.gender;
 const wants = (state, a, b) => Math.max(romance(a, b), attr(state, a, b) ?? 0);
+const fresh = (state, n) => state.ep > 1 && (state.ledger?.firstEp?.[n] ?? -1) >= state.ep - 1;
 
 function weighted(rng, opts) {
   const live = opts.filter(o => o[1] > 0);
@@ -162,11 +168,15 @@ function openGrafts(state, rng) {
         if (want < (fresh || casa ? 3 : 4.3) - 0.8 * slack(state)) continue;
         // A coupled chaser only goes looking when their own couple is weaker
         // than this, and never closed off (events.js closedHold, the same rule).
+        // A schemer's own couple holds them back less (memory: the Villain label
+        // barely tracked archetype; the fix is behaviour, schemers mug off more).
         const cp = partnerOf(state, c);
-        if (cp && (romance(c, cp) >= want - 1 || ['closed-off', 'exclusive', 'official'].includes(stepOf(state, c, cp)))) continue;
+        const player = PLAYERS.has(state.profiles[c]?.archetype);
+        if (cp && (romance(c, cp) >= want - (player ? 3 : 0.5) || ['closed-off', 'exclusive', 'official'].includes(stepOf(state, c, cp)))) continue;
         // …and not twice on the same three once it ended.
         if ((state.threadDone || {})[`graft:${c}>${t}`] != null && state.ep - state.threadDone[`graft:${c}>${t}`] < 4) continue;
-        const heat = (want / 10) * (0.5 + st(state, c, 'boldness')) * (fresh ? 1.6 : 1) * (0.6 + (attr(state, t, c) ?? 0) / 15);
+        const heat = (want / 10) * (0.5 + st(state, c, 'boldness')) * (fresh ? 1.6 : 1) * (0.6 + (attr(state, t, c) ?? 0) / 15)
+          * (player ? 1.6 : NICE.has(state.profiles[c]?.archetype) ? 0.6 : 1);
         cands.push({ c, t, p, heat });
       }
     }
@@ -335,7 +345,7 @@ function graftBeat(state, rng, t, phase) {
       const push = st(state, f, 'boldness') > 0.5 && getBond(f, p) < 2;
       // Whether t has given c anything back yet: how a's hopes are pitched.
       const theirs = (attr(state, tt, c) ?? 0) >= 3.5 ? 'yes' : 'no';
-      out.push(scene(state, rng, phase, 'graft-eyes', [c, f, tt, p], { ...tag('eyes'), of: push ? 'go-for-it' : 'careful', theirs, pop: pop([c, 0.1, 1]) }));
+      out.push(scene(state, rng, phase, 'graft-eyes', [c, f, tt, p], { ...tag('eyes'), of: push ? 'go-for-it' : 'careful', theirs, pop: pop([c, fresh(state, c) ? COST.plotFresh : COST.plot, 1.2]) }));
       return out;
     }
   }
@@ -411,7 +421,7 @@ function whereHead(state, rng, phase, p, tt, c, threadTag) {
     for (const s of hid) { s.severity = Math.min(2, s.severity * 1.5); s.lied = true; }
   }
   return scene(state, rng, phase, 'where-head', c ? [p, tt, c] : [p, tt], { ...threadTag, of, kissed: kissedC,
-    pop: pop([p, 0.3, 1.2], [tt, of === 'honest' ? 0.4 : of === 'lie' ? -0.2 : of === 'deflect' ? -0.3 : 0.4, 1.4]) },
+    pop: pop([p, 0.3, 1.2], [tt, of === 'honest' ? 0.4 : of === 'lie' ? COST.lie : of === 'deflect' ? COST.dodge : 0.4, 1.4]) },
     { major: of === 'honest' ? [p, tt] : [] });
 }
 
@@ -448,7 +458,7 @@ function graftEvening(state, rng, t, phase) {
     nudgeAttraction(state, c, tt, 0.4);
     // …and p takes it as p is built: the hot-headed angry, the calm quietly.
     const react = weighted(rng, [['angry', (1 - st(state, p, 'temperament')) * (0.4 + st(state, p, 'boldness'))], ['hurt', 0.6 + attachment(state.profiles[p]).anxiety], ['calm', st(state, p, 'temperament') * 0.8]]);
-    out.push(scene(state, rng, phase, 'graft-turn', [tt, p, c], { ...tag('turn'), of: react, pop: pop([tt, -0.6, 2], [p, 1, 1.5]) }, { major: [tt, p] }));
+    out.push(scene(state, rng, phase, 'graft-turn', [tt, p, c], { ...tag('turn'), of: react, pop: pop([tt, COST.turn, 2.2], [p, 1.2, 1.5]) }, { major: [tt, p] }));
   }
   return out;
 }
@@ -494,13 +504,14 @@ function doubtBeat(state, rng, t, phase) {
       if (state._canSplit && state._splitEp !== state.ep) {
         state.couples = state.couples.filter(k => !(k.includes(a) && k.includes(p)));
         state._splitEp = state.ep;
-        // The one who ended it is the one who did the hurting (exes.js: a second chance is theirs to ask for).
-        noteBreakup(state, { ender: a, wrong: a, severity: 0.5, cause: 'doubt' });
+        // In exes.js terms the hurt one decides on a second chance (`ender`)
+        // and the one who ended it is the one who would come back and say sorry.
+        noteBreakup(state, { ender: p, wrong: a, severity: 0.5, cause: 'doubt' });
       }
       close(t, 'ended', state);
     }
     return [scene(state, rng, phase, 'doubt-end', [a, p], { ...tag('end'), of: recommit ? 'recommit' : 'friends',
-      pop: pop([a, recommit ? 0.8 : -0.2, 1.5], [p, recommit ? 0.5 : 1, 1.5]) }, { major: recommit ? [] : [a, p] })];
+      pop: pop([a, recommit ? 0.8 : COST.dump, 1.5], [p, recommit ? 0.5 : 1.2, 1.5]) }, { major: recommit ? [] : [a, p] })];
   }
   // 2. The next day, p feels it, and asks a friend. The friend may be the one a told.
   if (t.vented && !t.noticed && t.ventEp < state.ep && (phase === 'day' || phase === 'evening')) {
@@ -718,8 +729,12 @@ export function tonightBeats(state, rng, phase, entry, max = 2) {
       if (!f) continue;
       done.push(c.o);
       const p = partnerOf(state, c.o);
-      const stick = getBond(f, p) + 1 >= getBond(f, c.x);
-      nudgeAttraction(state, c.o, stick ? p : c.x, 0.3);
+      // The friend hears how {a} talks about the new one, not only whose side
+      // they're on: every original knows the partner better than an arrival,
+      // and "stick" every time held Casa's twists to a quarter of the tempted.
+      const lean = (getBond(f, p) - getBond(f, c.x)) / 5 - ((attr(state, c.o, c.x) ?? 0) - romance(c.o, p)) / 4;
+      const stick = rng() < clamp(0.5 + 0.25 * lean, 0.15, 0.85);
+      nudgeAttraction(state, c.o, stick ? p : c.x, 0.25);
       out.push(scene(state, rng, phase, 'stick-twist', [c.o, f, c.x], { of: (attr(state, c.o, c.x) ?? 0) > romance(c.o, p) ? 'tempted' : 'torn',
         side: stick ? 'stick' : 'twist', pop: pop([c.o, 0.2, 1]) }));
     }

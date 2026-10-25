@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createLedger, noteArrival, recordAired, closeEpisode, coupleScore, followers,
-  labelFor, nudgeBelief, readApproval, CAP, FIRST_CAP, MAJOR_CAP, SCENE_GAIN, POP_SCALE, FIRST_WINDOW } from '../js/pm/ledger.js';
+  labelFor, nudgeBelief, readApproval, CAP, FIRST_CAP, MAJOR_CAP, SCENE_GAIN, POP_SCALE, FIRST_WINDOW, WARM } from '../js/pm/ledger.js';
 
 const S = FIRST_WINDOW;   // the first episode after the first-impression window is S + 1
 
@@ -31,9 +31,10 @@ describe('per-episode caps', () => {
     const L = settled(); const pop = {};
     const scene = 1 / SCENE_GAIN;                    // one scene's worth of raw
     recordAired(L, { who: 'A', approval: 4 * scene });
-    const { applied } = closeEpisode(L, S + 1, pop).A;   // 0.75 * 4 = 3
-    expect(applied).toBe(3);
-    expect(pop.A).toBe(3 * POP_SCALE);
+    // 0.75 * 4 = 3, read WARM (ledger.js: a good look lands a third harder since the storylines)
+    const { applied } = closeEpisode(L, S + 1, pop).A;
+    expect(applied).toBeCloseTo(3 * WARM, 5);
+    expect(pop.A).toBeCloseTo(applied * POP_SCALE, 5);
   });
 });
 

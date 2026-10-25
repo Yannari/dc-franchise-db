@@ -31,6 +31,9 @@ const MAX_REFUSALS = 2;
 
 /** Note a break-up where it happens. */
 export function noteBreakup(state, { ender, wrong, severity = 1, cause }) {
+  // Two people, always (a break-up noted with one name twice had Isl13 say sorry
+  // to Isl13 and take Isl13 back: 2026-10-25).
+  if (!ender || !wrong || ender === wrong) return;
   (state.breakups ||= []).push({ ender, wrong, severity, cause, ep: state.ep, refused: 0, closed: false });
 }
 

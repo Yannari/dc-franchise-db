@@ -450,6 +450,145 @@ export const VILLA_PHRASINGS = {
       ],
     },
   },
+
+  // ── the storylines (js/pm/threads.js): a graft, a turned head, a shut-down,
+  // the cracks. {subject} is the one it is about: the grafter, the one whose
+  // head turned, the one who said no, the one who gave the answer that hurt.
+
+  'graft-talk': {
+    'live-reaction': {
+      timeline: [
+        'oh {subject} is GRAFTING grafting',
+        '{subject} pulling {actor} for a chat in full view of the whole villa. bold',
+        '{receipt} and the daybeds went silent',
+        'not {subject} saying "just a chat" with that face',
+        'the way {actor} said yes to that chat way too fast',
+        'everyone on the terrace pretending they are not watching that chat. we are all watching that chat',
+        'the graft has started and i am seated',
+        '{subject} has been building up to this for two days and you could tell',
+      ],
+    },
+    'hot-take': {
+      timeline: [
+        'it is a dating show. pulling someone for a chat is literally the point',
+        'grafting on someone coupled up is fair game until they say no. then it is not',
+        '{subject} did it to their face at least. respect the honesty, hate the timing',
+        'if one chat can shake a couple, the couple was not that solid',
+        '{actor} is the one who should be explaining, not {subject}',
+        'the grafters always get the edit. always',
+      ],
+    },
+    defence: {
+      timeline: [
+        'leave {subject} alone, they asked for a chat, not a wedding',
+        'nobody in there is married. {subject} is allowed to want someone',
+        'at least {subject} is not sneaking around about it',
+        'the hate {subject} is getting for one chat is wild',
+        'if {actor} was that happy, {actor} would have said no in five seconds',
+        'grafting is the job description. {subject} is just good at their job',
+      ],
+    },
+  },
+
+  'head-turned-talk': {
+    'live-reaction': {
+      timeline: [
+        'HIS HEAD HAS BEEN TURNED. or hers. whoever. i am screaming',
+        '{receipt} and i actually gasped',
+        'not "my head has been turned" with {actor} sitting RIGHT there',
+        '{actor}\'s face when {subject} said it. i felt that in my chest',
+        'the silence after that was the loudest thing this whole series',
+        '{subject} finally said it out loud and the villa will never be the same',
+        'you could see this coming for three episodes and it still hurt',
+      ],
+    },
+    'hot-take': {
+      timeline: [
+        'better a turned head said out loud than a sneaky one at casa',
+        '{subject} was honest. it was cruel, but it was honest',
+        'if your head turns that easy it was never really facing the right way',
+        'the fans of {subject} going very quiet tonight',
+        '{actor} deserved to hear it before the whole villa did',
+        'heads turn in there every week. it is what you do next that matters',
+      ],
+    },
+    'call-out': {
+      timeline: [
+        '{subject} had every chance to say this privately and chose not to',
+        'stringing {actor} along for days and then THIS. no',
+        '{subject} wanted it both ways and now has neither',
+        'whoever is defending {subject} tonight, i am not reading it',
+        '{subject} let {actor} make plans for the outside. then this',
+        'the nicest possible way of being the worst person in the villa',
+      ],
+    },
+  },
+
+  'shut-down-talk': {
+    'live-reaction': {
+      timeline: [
+        '{subject} said NO and i stood up in my living room',
+        '{receipt} and it was perfect',
+        'the way {subject} did not even let the chat get started',
+        '{actor} walking back to the daybeds after that. ouch',
+        'shut down. politely. but SHUT DOWN',
+        '{subject} closing that door so fast it made a noise',
+      ],
+    },
+    gushing: {
+      timeline: [
+        '{subject} is the most loyal person in that villa and it is not close',
+        'everyone deserves someone who shuts it down like {subject} just did',
+        'protect {subject} at all costs',
+        'that is what being closed off actually looks like',
+        'my respect for {subject} just went through the roof',
+        'loyal AND kind about it. {subject} is the moment',
+      ],
+    },
+    'hot-take': {
+      timeline: [
+        '{actor} should have seen that coming from a mile off',
+        'there is a nice way to say no and {subject} found it',
+        'a shut-down that kind is somehow worse for {actor}',
+        'saying no is easy. saying it like that takes a good person',
+        'the grafters are going to stop trying with {subject} after that',
+        'one no like that is worth ten loyal speeches at the fire pit',
+      ],
+    },
+  },
+
+  'cracks-talk': {
+    'live-reaction': {
+      timeline: [
+        '{receipt} and i had to put my phone down',
+        'not the "where is your head at" chat going completely wrong',
+        '{actor}\'s face when {subject} answered. oh no',
+        'the pause before {subject} answered said everything',
+        'i do not think {actor} expected that answer. i do not think anyone did',
+        'this couple has been cracking for days and tonight you could hear it',
+      ],
+    },
+    'hot-take': {
+      timeline: [
+        '{subject} is not all in and has not been for a while',
+        'honest answers in there are rare. this one cost a lot',
+        'if you have to ask where their head is at, you already know',
+        '{actor} deserves someone who does not need a minute to answer that',
+        'this is the start of the end for them. calling it now',
+        'at least {actor} knows now. knowing is better than guessing in there',
+      ],
+    },
+    sympathy: {
+      timeline: [
+        'my heart is with {actor} tonight',
+        'nobody wants to hear that answer from the person they wake up next to',
+        '{actor} keeping it together after that was so strong',
+        'sending {actor} the biggest hug through the screen',
+        '{actor} has given that couple everything. this is so unfair',
+        'whoever sits with {actor} tonight, thank you',
+      ],
+    },
+  },
 };
 
 /** The alumni room's takes on the same moments. `s` is the subject's name. */
@@ -563,5 +702,45 @@ export const VILLA_CHAT_TAKES = {
     () => 'If they make it to the final after this, they will deserve it.',
     ({ s }) => `I hope ${s} gets what they need from it this time.`,
     () => 'They know each other properly now. That can only help.',
+  ],
+  grafting: [
+    () => 'Pulling someone who is coupled up is the game. How you do it is the character.',
+    ({ s }) => `${s} has decided to go for it. You cannot fault the confidence.`,
+    () => 'One chat is nothing. Three chats in a day is a graft.',
+    () => 'Watch the partner, not the grafter. The partner tells you how solid it was.',
+    ({ s }) => `If ${s} gets a no, I hope they take it well. That is what people remember.`,
+    () => 'Every villa needs someone who will not just sit and wait.',
+    () => 'The chat itself is never the story. The partner finding out is.',
+    ({ s }) => `${s} picked a very public place for a private question.`,
+  ],
+  'head-turned': [
+    () => 'Saying your head has turned out loud is the hardest thing you do in there.',
+    ({ s }) => `${s} was honest. The public will decide if it was the right kind of honest.`,
+    () => 'A turned head is never the end of it. The next recoupling is.',
+    () => 'Once it is said, the couple is never quite the same, even if they stay together.',
+    ({ s }) => `I do not envy ${s} at breakfast tomorrow.`,
+    () => 'The partner always finds out last, and always feels it most.',
+    () => 'Better said now than walked in with at Casa.',
+    ({ s }) => `${s} will be asked about that at every fire pit from now on.`,
+  ],
+  'shut-down': [
+    () => 'A clean no is the kindest thing you can give someone in there.',
+    ({ s }) => `${s} knows exactly what they want. That is rare in a villa.`,
+    () => 'The public love a loyal islander. That just won a lot of people over.',
+    () => 'The one who got turned down will be fine. It is the not knowing that hurts.',
+    ({ s }) => `${s}'s partner should be very happy tonight.`,
+    () => 'Closing a door that politely takes practice.',
+    () => 'Some people come in to play. Some come in to find one person. That was the second kind.',
+    ({ s }) => `Whoever pulls ${s} next will think twice.`,
+  ],
+  cracks: [
+    () => 'When you have to ask where someone is at, the answer usually hurts.',
+    ({ s }) => `${s} gave the honest answer. It was not the one anyone wanted.`,
+    () => 'Couples crack in there all the time. Some of them set again.',
+    () => 'The first hard conversation tells you everything about the next three weeks.',
+    ({ s }) => `I think ${s} has known for a while and just said it tonight.`,
+    () => 'That is the moment a couple starts to come apart, or starts to get real.',
+    () => 'You can come back from an honest answer. You cannot come back from a lie.',
+    ({ s }) => `The next recoupling will tell us if ${s} meant it.`,
   ],
 };

@@ -47,6 +47,11 @@ const KINDS = {
   'love-said':       { label: 'I love you', volume: 1.3, at: 0.62, implies: ['romantic-spark'] },
   'tears':           { label: 'Tears', volume: 0.8, at: 0.4 },
   'back-together':   { label: 'Back together', volume: 1.3, at: 0.65, implies: ['romantic-spark'] },
+  // the storylines (js/pm/threads.js): what most of an episode is now
+  'grafting':        { label: 'Grafting', volume: 1.1, at: 0.37, implies: ['twist'] },
+  'head-turned':     { label: 'Head turned', volume: 1.6, at: 0.5, implies: ['betrayal'] },
+  'shut-down':       { label: 'Shut down', volume: 1.0, at: 0.44 },
+  'cracks':          { label: 'Cracks', volume: 1.2, at: 0.46, implies: ['argument'] },
 };
 
 /* ── A NIGHT'S DRAMA, CHOSEN ─────────────────────────────────────────────
@@ -55,9 +60,10 @@ const KINDS = {
    has a cap, a couple is talked about once a night (its biggest moment), and
    the night keeps the loudest few — `fame` is how hard the scene aired. */
 const DRAMA_CAP = { 'called-off': 2, blowup: 1, 'movie-night': 2, 'had-it-out': 2, 'made-official': 2,
-  'love-said': 1, 'back-together': 1, 'first-kiss': 2, jealous: 1, tears: 1, row: 1, gossip: 1 };
-const DRAMA_RANK = { 'called-off': 6, blowup: 5, 'movie-night': 5, 'had-it-out': 4, 'made-official': 4,
-  'love-said': 4, 'back-together': 4, 'first-kiss': 3, jealous: 2, tears: 2, row: 1, gossip: 1 };
+  'love-said': 1, 'back-together': 1, 'first-kiss': 2, jealous: 1, tears: 1, row: 1, gossip: 1,
+  'head-turned': 1, cracks: 1, grafting: 1, 'shut-down': 1 };
+const DRAMA_RANK = { 'called-off': 6, blowup: 5, 'movie-night': 5, 'head-turned': 5, 'had-it-out': 4, 'made-official': 4,
+  'love-said': 4, 'back-together': 4, cracks: 3, 'first-kiss': 3, grafting: 2, 'shut-down': 2, jealous: 2, tears: 2, row: 1, gossip: 1 };
 const DRAMA_PER_NIGHT = 7;
 
 /** The moments of one night the timeline reacts to, in airing order. */
@@ -92,6 +98,13 @@ function dramaEvent(x) {
     case 'had-it-out': return { subject: a, actor: b, receipt: x.verdict === 'forgive'
       ? `${a} had it out with ${b} and let it go` : `${a} had it out with ${b} and gave them one last chance` };
     case 'called-off': return { subject: a, actor: b, receipt: `${a} ended it with ${b}` };
+    case 'grafting': return { subject: a, actor: b, receipt: `${a} pulled ${b} for a chat, and ${b} is coupled up` };
+    case 'head-turned': return { subject: a, actor: b, receipt: c ? `${a} told ${b} their head has been turned by ${c}` : `${a} told ${b} their head has been turned` };
+    case 'shut-down': return { subject: a, actor: b, receipt: `${a} told ${b} to back off` };
+    case 'cracks': return x.kind === 'tower-q'
+      ? { subject: a, actor: b, receipt: c ? `asked who they would go for, ${a} said ${c}, with ${b} sitting right there` : `${a} gave ${b} an answer at the tower nobody wanted` }
+      : { subject: b, actor: a, receipt: x.of === 'deflect' ? `${b} could not give ${a} a straight answer about where their head is at`
+        : `${b} told ${a} their head is not all the way in it` };
     case 'first-kiss': return { subject: a, actor: b, receipt: `${a} and ${b} kissed for the first time` };
     case 'movie-night': {
       const partner = (x.audience || []).find(n => n !== a) || null;
@@ -157,6 +170,15 @@ const TOPICS = [
     triggers: ['tears'], reads: ['scenes'], shapes: ['sympathy', 'live-reaction'] },
   { id: 'reunite-talk', stream: 'timeline', weight: 8,
     triggers: ['back-together'], reads: ['scenes'], shapes: ['live-reaction', 'hot-take', 'gushing'] },
+  // The storylines: a graft, a turned head, a shut-down, the cracks.
+  { id: 'graft-talk', stream: 'timeline', weight: 7,
+    triggers: ['grafting'], reads: ['scenes'], shapes: ['live-reaction', 'hot-take', 'defence'] },
+  { id: 'head-turned-talk', stream: 'timeline', weight: 10,
+    triggers: ['head-turned'], reads: ['scenes'], shapes: ['live-reaction', 'hot-take', 'call-out'] },
+  { id: 'shut-down-talk', stream: 'timeline', weight: 7,
+    triggers: ['shut-down'], reads: ['scenes'], shapes: ['live-reaction', 'gushing', 'hot-take'] },
+  { id: 'cracks-talk', stream: 'timeline', weight: 8,
+    triggers: ['cracks'], reads: ['scenes'], shapes: ['live-reaction', 'hot-take', 'sympathy'] },
   { id: 'villa-edit', stream: 'both', weight: 0.8,
     triggers: ['episode-aired'], reads: ['couples', 'exits'], shapes: ['call-out', 'hot-take'] },
 ];
@@ -184,6 +206,10 @@ const TOPIC_AIM = {
   'love-talk': { target: 'subject', stance: 0.6 },
   'tears-talk': { target: 'subject', stance: 0.7 },
   'reunite-talk': { target: 'subject', stance: 0.3 },
+  'graft-talk': { target: 'subject', stance: -0.2 },
+  'head-turned-talk': { target: 'subject', stance: -0.5 },
+  'shut-down-talk': { target: 'subject', stance: 0.6 },
+  'cracks-talk': { target: 'subject', stance: -0.2 },
   // Aimed at the producers, not an islander.
   'villa-edit': { target: 'none', stance: -0.2 },
 };
@@ -197,7 +223,8 @@ const ARCHETYPE_PULL = {
   chaos: { 'casa-verdict': 1.5, 'steal-reaction': 1.3, 'envelope-talk': 1.3, 'blowup-talk': 1.5,
     'movie-night-talk': 1.4, 'jealousy-talk': 1.3 },
   casual: { 'winners-verdict': 1.2, 'challenge-talk': 1.2, 'first-kiss-talk': 1.2 },
-  shipper: { 'couple-watch': 1.8, 'casa-verdict': 1.3, 'first-kiss-talk': 1.8, 'love-talk': 1.7, 'reunite-talk': 1.5 },
+  shipper: { 'couple-watch': 1.8, 'casa-verdict': 1.3, 'first-kiss-talk': 1.8, 'love-talk': 1.7, 'reunite-talk': 1.5,
+    'shut-down-talk': 1.4, 'cracks-talk': 1.3 },
 };
 
 /** The episodes a season being played has aired. */

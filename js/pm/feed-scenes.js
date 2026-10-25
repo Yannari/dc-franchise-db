@@ -28,6 +28,11 @@ export const FEED_SCENES = {
   breakdown: 'tears',
   reunite: 'back-together',
   'exclusive-ask': 'made-official', 'official-ask': 'made-official',
+  // the storylines (js/pm/threads.js), the most of an episode since 2026-10-25:
+  // somebody grafting on somebody coupled, a head turned, a graft shut down,
+  // the cracks in a couple, and one that ends
+  pull: 'grafting', 'graft-turn': 'head-turned', 'graft-shut': 'shut-down',
+  'where-head': 'cracks', 'tower-q': 'cracks', 'doubt-end': 'called-off',
 };
 
 const FACTS = ['firstKiss', 'verdict', 'split', 'of', 'yes', 'title', 'audience', 'cause', 'close'];
@@ -41,6 +46,12 @@ export function feedScene(e) {
   if (!feed || !e.aired) return null;
   const x = e.extra || {};
   if (feed === 'first-kiss' && !x.firstKiss) return null;
+  // Only a story's pull is a graft (an everyday chat is not news), only an
+  // answer that hurt is a crack, only a doubt that ended the couple ends one.
+  if (e.kind === 'pull' && x.thread?.type !== 'graft') return null;
+  if (e.kind === 'where-head' && !['honest', 'deflect'].includes(x.of)) return null;
+  if (e.kind === 'tower-q' && x.of !== 'other-honest') return null;
+  if (e.kind === 'doubt-end' && x.of !== 'friends') return null;
   if (feed === 'made-official' && x.yes === false) return null;
   // A telling that ended the couple is a different night from one they survived.
   if (feed === 'had-it-out' && x.split) feed = 'called-off';

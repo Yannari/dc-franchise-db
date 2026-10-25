@@ -55,6 +55,23 @@ import { COMEDY } from './comedy.js';
 import { ICK } from './ick.js';
 import { ADVICE } from './advice.js';
 import { VENT } from './vent.js';
+// The storylines and what the villa makes of them (pm/threads.js).
+import { GRAFT_EYES } from './graft-eyes.js';
+import { WATCHING } from './watching.js';
+import { WHERE_HEAD } from './where-head.js';
+import { GRAFT_SHUT, GRAFT_TURN } from './graft-turn.js';
+import { FEELS_OFF } from './feels-off.js';
+import { SECRET_BURDEN } from './secret-burden.js';
+import { GROUP_CHAT } from './group-chat.js';
+import { BED_CHAT } from './bed-chat.js';
+import { VENT_STORY } from './more/vent-story.js';
+import { GROUP_CHAT_STORY } from './more/group-chat-story.js';
+import { GROUP_CHAT_SPARK } from './more/group-chat-spark.js';
+import { PULL_STORY, PULL_STORY_PLANS } from './more/pull-story.js';
+import { WHERE_HEAD_MORE, WHERE_HEAD_PLANS } from './more/where-head-more.js';
+import { STORY_MORE, WATCHING_PLANS, FEELS_OFF_PLANS, BED_CHAT_PLANS } from './more/story-more.js';
+import { GROUP_CHAT_ENDED } from './more/group-chat-ended.js';
+import { DOUBT_END } from './doubt-end.js';
 import { COMFORT } from './comfort.js';
 import { CASA_MISS, BED_SHARE } from './casa.js';
 import { CHALLENGE_KISS, CHALLENGE_WIN } from './challenge.js';
@@ -127,7 +144,35 @@ export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'dee
   'triangle-torn': TRIANGLE_TORN, 'triangle-rivals': TRIANGLE_RIVALS, 'triangle-case': TRIANGLE_CASE, 'triangle-ultimatum': TRIANGLE_ULTIMATUM, 'triangle-teams': TRIANGLE_TEAMS, 'triangle-choice': TRIANGLE_CHOICE, 'camp-rally': CAMP_RALLY, 'camp-confront': CAMP_CONFRONT, 'camp-clash': CAMP_CLASH, 'camp-lobby': CAMP_LOBBY, 'camp-split': CAMP_SPLIT, 'camp-switch': CAMP_SWITCH, 'camp-after': CAMP_AFTER, 'feud-confront': FEUD_CONFRONT, 'feud-interrupt': FEUD_INTERRUPT, 'feud-shade': FEUD_SHADE, 'feud-ick': FEUD_ICK, 'feud-closure': FEUD_CLOSURE, 'game-plan': GAME_PLAN, 'game-latch': GAME_LATCH, 'game-two-faced': GAME_TWO_FACED, 'game-suspect': GAME_SUSPECT, 'game-called': GAME_CALLED, 'game-fallout': GAME_FALLOUT, 'game-end': GAME_END,
   'rival-shade': RIVAL_SHADE, 'rival-play': RIVAL_PLAY, 'code-call': CODE_CALL, 'rival-row': RIVAL_ROW, 'rival-step-back': RIVAL_STEP_BACK,
   'rival-won': RIVAL_WON, 'crush-confide': CRUSH_CONFIDE, 'crush-watch': CRUSH_WATCH, 'crush-move': CRUSH_MOVE, 'crush-plea': CRUSH_PLEA, 'crush-over': CRUSH_OVER,
-  'kin-heart': KIN_HEART, 'kin-vet': KIN_VET, 'kin-protect': KIN_PROTECT, 'ex-awkward': EX_AWKWARD, 'ex-jealous': EX_JEALOUS };
+  'kin-heart': KIN_HEART, 'kin-vet': KIN_VET, 'kin-protect': KIN_PROTECT, 'ex-awkward': EX_AWKWARD, 'ex-jealous': EX_JEALOUS,
+  'graft-eyes': GRAFT_EYES, watching: WATCHING, 'where-head': WHERE_HEAD, 'graft-shut': GRAFT_SHUT, 'graft-turn': GRAFT_TURN,
+  'feels-off': FEELS_OFF, 'secret-burden': SECRET_BURDEN, 'group-chat': GROUP_CHAT, 'bed-chat': BED_CHAT };
+
+// A doubt's confide says its real reason (threads.js doubt): `why` leads, and {x} is who {a} looks at.
+extend(VENT, VENT_STORY);
+VENT.leads = [...(VENT.leads || []), 'why'];
+VENT.slots = (state, ev) => (ev.extra?.about ? { x: ev.extra.about } : {});
+// …and a group chat names who it is about ({x}) and who with ({about}), and
+// says exactly what happened (talk/more/group-chat-story.js) whenever it can.
+extend(GROUP_CHAT, GROUP_CHAT_STORY);
+extend(GROUP_CHAT, GROUP_CHAT_SPARK);
+extend(GROUP_CHAT, GROUP_CHAT_ENDED);
+TALK['doubt-end'] = DOUBT_END;
+// A story's pull is about the story: no tangent, and its own why, answer and probe.
+extend(PULL, PULL_STORY);
+PULL.plans.featured = [...PULL_STORY_PLANS, ...PULL.plans.featured];
+PULL.leads = [...(PULL.leads || []), 'story'];
+// "What's going on?" runs on past the answer: what it did to them, and what now.
+extend(WHERE_HEAD, WHERE_HEAD_MORE);
+WHERE_HEAD.plans = WHERE_HEAD_PLANS;
+// …and the other storyline talks run on a movement longer each.
+for (const [k, more] of Object.entries(STORY_MORE)) extend(TALK[k], more);
+WATCHING.plans = WATCHING_PLANS; FEELS_OFF.plans = FEELS_OFF_PLANS; BED_CHAT.plans = BED_CHAT_PLANS;
+GROUP_CHAT.slots = (state, ev) => ({ ...(ev.extra?.x ? { x: ev.extra.x } : {}), ...(ev.extra?.about ? { about: ev.extra.about } : {}) });
+GROUP_CHAT.facts = (state, ev) => ({ hasWith: !!ev.extra?.about });
+// The witness names who it was with.
+SECRET_BURDEN.slots = (state, ev) => { const s = (state.secrets || []).find(z => z.id === ev.extra?.secret); return s?.with ? { about: s.with } : {}; };
+SECRET_BURDEN.facts = (state, ev) => ({ hasWith: !!(state.secrets || []).find(z => z.id === ev.extra?.secret)?.with });
 
 // The one-line notes the everyday kinds wore thin (talk/more/everyday-volume.js).
 for (const [k, notes] of Object.entries(NOTES_VOLUME)) extend(TALK[k], { notes });

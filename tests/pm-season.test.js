@@ -22,11 +22,18 @@ describe('a whole Perfect Match season', () => {
     expect(gs.episodeHistory).toBe(rows);
   });
 
-  it('villa episodes carry about a hundred events', () => {
+  it('villa episodes are made of stories, and run long', () => {
+    // 2026-10-25 (docs/superpowers/specs/2026-10-25-pm-episode-overhaul.md):
+    // an episode is its storylines (pm/threads.js), not a hundred random
+    // events. Every villa episode moves stories on, and what airs is a real
+    // length — the user: "make sure the episode is still big enough".
     const { rows } = play(2);
     // The final is its dates, not a villa day (pm/journey.js): held to its own count below.
     for (const r of rows.filter(r => r.moment !== 'reunion' && r.moment !== 'final')) {
-      expect(r.pm.events.length, `episode ${r.num}`).toBeGreaterThanOrEqual(80);
+      const beats = r.pm.events.filter(e => e.extra?.thread).length;
+      const lines = r.pm.events.filter(e => e.aired).reduce((s, e) => s + (e.script?.lines?.length || 0) + (e.hut?.script?.lines?.length || 0), 0);
+      expect(beats, `episode ${r.num}: story beats`).toBeGreaterThanOrEqual(2);
+      expect(lines, `episode ${r.num}: lines aired`).toBeGreaterThanOrEqual(120);
     }
     // …every finalist couple's date and film: at least a date, an opening, three chapters and an ending each.
     const fin = rows.find(r => r.moment === 'final');

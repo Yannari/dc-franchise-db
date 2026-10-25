@@ -315,7 +315,8 @@ function parents(state, rng, ev) {
     if (state.ep < 5 || state.parentsDone) return;
     // The settled couple: both properly in it, the longest together.
     const since = c => state.pairedSince?.[c.slice().sort().join('|')] ?? state.ep;
-    const c = state.couples.filter(([a, b]) => romance(a, b) >= 6 && romance(b, a) >= 6 && state.ep - since([a, b]) >= 3)
+    // Both in the same villa: Casa Amor named a couple across the split (season 22, ep 10).
+    const c = state.couples.filter(([a, b]) => together(state, a, b) && romance(a, b) >= 6 && romance(b, a) >= 6 && state.ep - since([a, b]) >= 3)
       .sort((x, y) => (romance(y[0], y[1]) + romance(y[1], y[0])) - (romance(x[0], x[1]) + romance(x[1], x[0])))[0];
     if (!c || rng() > 0.5) return;
     const k = friendOf(state, c[0], [c[1]]);

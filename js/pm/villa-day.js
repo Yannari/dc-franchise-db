@@ -26,6 +26,8 @@ import { gamePlayers } from './game.js';
 import { arcs } from './arcs.js';
 import { streamFor } from '../dr/rng.js';
 import { kissRound, roundSize } from './kiss-round.js';
+import { inStory } from './threads.js';
+import { today } from './events.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pick = (rng, arr) => (arr.length ? arr[Math.floor(rng() * arr.length)] : null);
@@ -167,6 +169,8 @@ function feelingScenes(state, rng) {
   for (const n of state.villa) {
     const e = emo(state, n), partner = partnerOf(state, n);
     if (!partner) continue;
+    // Already had it out today, in a story's own talk (threads.js where-head).
+    if (today(state).some(x => x.kind === 'where-head' && x.players.slice(0, 2).includes(n))) continue;
     const [rival, j] = Object.entries(e.jealousy).sort((x, y) => y[1] - x[1])[0] || [null, 0];
     if (!rival || rng() >= clamp(j / 10, 0, 0.9)) continue;
     const how = jealousyOutlet(state, n, rng);
@@ -239,7 +243,10 @@ function advice(state, rng) {
   const out = [];
   for (const n of state.villa) {
     const partner = partnerOf(state, n), c = confidantOf(state, n);
-    if (!partner || !c || apart(state, c, n) || rng() >= 0.3) continue;
+    // A friend's word on the partner: for the ones in a story, mostly (it was
+    // 30% of every coupled islander a night, and four advice scenes an episode
+    // that led nowhere).
+    if (!partner || !c || apart(state, c, n) || rng() >= (inStory(state, n) ? 0.3 : 0.06)) continue;
     const v = verdict(state, c, partner);
     nudgeAttraction(state, n, partner, 0.6 * v);
     addRelationshipDimension(n, partner, 'trust', 0.5 * v);

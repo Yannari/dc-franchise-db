@@ -53,6 +53,21 @@ const CLOSED_RUNGS = ['closed-off', 'exclusive', 'official'];
 const closedHold = (state, n, p) => !p ? 0
   : state.split ? 0.8 * closedness(state, n, p)
   : CLOSED_RUNGS.includes(stepOf(state, n, p)) ? 0.95 + 0.05 * S(state, n).loyalty / 10 : 0;
+/**
+ * `a` asks `b` for a chat. A coupled `b` can turn it down on the spot: that
+ * is a loyalty moment, and closing off is the reason to (before, it played no
+ * part: 353 pulls on a closed-off islander went ahead in 20 seasons, ~18 a
+ * season). Not in Casa: there the head is meant to turn. The random day and
+ * the storylines (pm/threads.js) both ask through here.
+ */
+export function pullBetween(s, rng, a, b) {
+  const pb = partnerOf(s, b);
+  const loyal = (S(s, b).loyalty / 10) * ((getBond(b, pb) + 10) / 20);
+  if (pb && rng() < 1 - (1 - loyal) * (1 - (s.split ? 0 : closedHold(s, b, pb)))) {
+    return { players: [b, a], kind: 'loyalty' };
+  }
+  return { players: [a, b], kind: 'pull' };
+}
 /** How ready a coupled islander is to go chatting someone else up. */
 const graftUrge = (state, n) => (0.3 + 0.7 * (1 - S(state, n).loyalty / 10))
   * (PLAYERS.has(state.profiles[n].archetype) ? 1.5 : LOYAL_KIND.has(state.profiles[n].archetype) ? 0.5 : 1);
@@ -151,11 +166,20 @@ function cooling(state, a, b) {
   if (rowedToday(state, a, b).some(e => now - at(e.phase) <= 1 || (e.kind === 'told-confront' && e.extra?.verdict !== 'forgive'))) return true;
   // …and one of them has just been told what the other was up to: nobody
   // cuddles up on the daybed the hour after hearing that (read, 2026-10-23).
-  return today(state).some(e => e.kind === 'gossip' && e.players.slice(1, 3).includes(a) && e.players.slice(1, 3).includes(b)
-    && now - at(e.phase) <= 1);
+  // (The rest of the day, not the hour: season read 2026-10-25, Theo told
+  // about Jess at lunch, crying with the boys, then a long kiss with her on
+  // the terrace that evening.)
+  if (today(state).some(e => e.kind === 'gossip' && e.players.slice(1, 3).includes(a) && e.players.slice(1, 3).includes(b))) return true;
+  // …and the stories' own rows (pm/threads.js): a partner who said they want
+  // somebody else, or wouldn't give a straight answer, gets no kiss by the pool tonight.
+  return today(state).some(e => e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b)
+    && (e.kind === 'graft-turn' || (e.kind === 'doubt-end' && e.extra?.of === 'friends')
+      || (e.kind === 'where-head' && e.extra?.of !== 'reassure' && e.extra?.of !== 'lie')));
 }
 // …and a couple one of whom is done with the other has no warm scenes left.
 const warmCouples = state => couplesInRoom(state).filter(([a, b]) => !cooling(state, a, b) && !doneWith(state, a, b));
+/** Too soon after a row for a warm scene between these two (the storylines ask too: pm/threads.js). */
+export const tooSoonForWarm = (state, a, b) => cooling(state, a, b) || doneWith(state, a, b);
 const compatibleMates = (state, a) => roomMates(state, a).filter(b => attr(state, a, b) != null);
 const openSecret = (state, n) => state.secrets.some(s => !s.known && (s.who === n || s.partner === n));
 
@@ -238,16 +262,7 @@ export const KINDS = {
       const b = weighted(rng, compatibleMates(s, a).filter(n => n !== partnerOf(s, a) && !noToday(n))
         .map(n => [n, attr(s, a, n)]));
       if (!b) return null;
-      // A coupled islander can turn the pull down: that is a loyalty moment.
-      // Closing off is the reason to (before, it played no part: 353 pulls on
-      // a closed-off islander went ahead in 20 seasons, ~18 a season). Not in
-      // Casa: there the head is meant to turn.
-      const pb = partnerOf(s, b);
-      const loyal = (S(s, b).loyalty / 10) * ((getBond(b, pb) + 10) / 20);
-      if (pb && rng() < 1 - (1 - loyal) * (1 - (s.split ? 0 : closedHold(s, b, pb)))) {
-        return { players: [b, a], kind: 'loyalty' };
-      }
-      return { players: [a, b] };
+      return pullBetween(s, rng, a, b);
     },
     apply: (s, ev, rng) => {
       const [a, b] = ev.players;
@@ -741,7 +756,9 @@ export const KINDS = {
     'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after',
     'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'feud-closure',
     'game-plan', 'game-latch', 'game-two-faced', 'game-suspect', 'game-called', 'game-fallout', 'game-end',
-    'betray-see', 'betray-confront', 'betray-end', 'mugged-low', 'found-love', 'villa-happy', 'redeem-reflect', 'redeem-act', 'redeem-doubt', 'grass-talk', 'grass-frozen', 'grass-confront', 'parents-named', 'parents-advice', 'parents-mediate', 'parents-wobble', 'exw-stir', 'exw-partner', 'exw-talk', 'exw-back', 'vote-fallout', 'vote-callout', 'grudge-cold', 'grudge-clash', 'grudge-end', 'visit-arrive', 'visit-confront', 'visit-leave', 'sc-arrive', 'sc-rules', 'sc-vote', 'sc-stay', 'sc-leave']
+    'betray-see', 'betray-confront', 'betray-end', 'mugged-low', 'found-love', 'villa-happy', 'redeem-reflect', 'redeem-act', 'redeem-doubt', 'grass-talk', 'grass-frozen', 'grass-confront', 'parents-named', 'parents-advice', 'parents-mediate', 'parents-wobble', 'exw-stir', 'exw-partner', 'exw-talk', 'exw-back', 'vote-fallout', 'vote-callout', 'grudge-cold', 'grudge-clash', 'grudge-end', 'visit-arrive', 'visit-confront', 'visit-leave', 'sc-arrive', 'sc-rules', 'sc-vote', 'sc-stay', 'sc-leave',
+    // the storylines and what the villa makes of them (pm/threads.js)
+    'graft-eyes', 'watching', 'where-head', 'graft-turn', 'graft-shut', 'feels-off', 'secret-burden', 'group-chat', 'bed-chat', 'doubt-end']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };
@@ -1167,17 +1184,20 @@ export function airLater(state, ev) {
 // evening and Mia in eight comedy scenes — the cast was drawn fresh each time,
 // with nothing to say who had just been on screen doing the same thing.
 const PER_PHASE = 1, PER_EPISODE = 2;
-export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS) {
+export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS, { kinds: kindsOf = null } = {}) {
   const out = [];
-  if (state._castSeenEp !== state.ep) { state._castSeen = {}; state._castSeenEp = state.ep; }
+  if (state._castSeenEp !== state.ep) { state._castSeen = {}; state._castSeenPhase = {}; state._castSeenEp = state.ep; }
   const seenEp = state._castSeen;
   for (const [phase, budget] of Object.entries(budgets)) {
+    if (budget <= 0) continue;
     state.phase = phase;
-    const seenPhase = {};
+    // Kept for the episode: the storylines draw the day a few scenes at a
+    // time (pm/threads.js), and each draw still knows who was just on screen.
+    const seenPhase = ((state._castSeenPhase ||= {})[phase] ||= {});
     // Casa nights are temptation nights: pulls weigh double while split.
     // The relations' own scenes join the day only in a season that has
     // relations: a cast without them plays exactly as it always did.
-    const kinds = [...PHASE_KINDS[phase], ...(Object.keys(state.kin || {}).length ? KIN_PHASE_KINDS[phase] || [] : []),
+    const kinds = [...(kindsOf?.[phase] || PHASE_KINDS[phase]), ...(Object.keys(state.kin || {}).length ? KIN_PHASE_KINDS[phase] || [] : []),
       // …and the days after an ex walks in, when it is all anyone talks about.
       ...(Object.values(state.exArrived || {}).some(e => state.ep - e <= 2) ? [['ex-awkward', 2]] : []),
       // …and missing the other villa, only while it is the other villa.

@@ -32,7 +32,11 @@ const DEBRIEF_THREE = ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blam
 const ABOUT_ALWAYS = new Set(['casa-miss', 'kin-protect']);
 const ABOUT_CAUSES = ['jealous', 'envy', 'rival', 'stole', 'told'];
 // Kinds whose {a} is always coupled with somebody outside the scene ({pa}).
-const PA_ALWAYS = new Set(['loyalty', 'vent', 'bed-share']);
+const PA_ALWAYS = new Set(['loyalty', 'vent', 'bed-share', 'graft-shut']);
+// The storylines' kinds (pm/threads.js) cast three or four: {c} always, {d} where named.
+const STORY_THREE = ['graft-eyes', 'watching', 'where-head', 'graft-turn', 'feels-off', 'secret-burden', 'group-chat'];
+const STORY_FOUR = ['graft-eyes', 'watching', 'secret-burden', 'group-chat'];
+for (const k of STORY_THREE) THREE.add(k);
 const list = v => [].concat(v ?? []);
 
 describe('the movements are well-formed', () => {
@@ -75,7 +79,7 @@ describe('a placeholder only where somebody fills it', () => {
       // {card}: the question frozen in the ice.
       if (/\{card\}/.test(x)) expect(k, tag(k, s, e)).toBe('icebreaker');
       // {d} is named only in the kinds that cast four.
-      if (/\{d[.}]/.test(x)) expect(['camp-clash', 'hideaway-vote', 'snog-marry-pie', 'receipt', 'headline', 'couple-goals', 'step-reveal', 'step-choose', 'walk-doubt'], tag(k, s, e)).toContain(k);
+      if (/\{d[.}]/.test(x)) expect(['camp-clash', 'hideaway-vote', 'snog-marry-pie', 'receipt', 'headline', 'couple-goals', 'step-reveal', 'step-choose', 'walk-doubt', ...STORY_FOUR], tag(k, s, e)).toContain(k);
       expect(x, tag(k, s, e)).not.toMatch(/\{[a-z]+\.(sub|Sub)\}/);
     }
   });
@@ -98,13 +102,16 @@ describe('a placeholder only where somebody fills it', () => {
   it('{x} behind the scene it names (`after`) or the secret it was with (`hasWith`)', () => {
     for (const [k, s, e] of ENTRIES) {
       if (!texts(e).some(x => /\{x[.}]/.test(x))) continue;
-      expect(!!e.when?.after || e.when?.hasWith === true, tag(k, s, e)).toBe(true);
+      // A group chat always names who it is about; a doubt's moan names who {a} looks at.
+      expect(!!e.when?.after || e.when?.hasWith === true || k === 'group-chat' || (k === 'vent' && e.when?.why === 'eyes'), tag(k, s, e)).toBe(true);
     }
   });
   it('{about} only where the scene has somebody it is about', () => {
     for (const [k, s, e] of ENTRIES) {
       if (!texts(e).some(x => /\{about[.}]/.test(x))) continue;
       if (ABOUT_ALWAYS.has(k)) continue;
+      // Who it was with, named only behind the fact that there is somebody (talk/index.js facts).
+      if (k === 'group-chat' || k === 'secret-burden') { expect(e.when?.hasWith, tag(k, s, e)).toBe(true); continue; }
       expect(k, tag(k, s, e)).toBe('argument');
       expect(list(e.when?.cause).length && list(e.when.cause).every(c => ABOUT_CAUSES.includes(c)), tag(k, s, e)).toBe(true);
     }

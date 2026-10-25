@@ -25,6 +25,7 @@ import { emo, attachment, attachmentLabel, walkRisk, feel } from './emotions.js'
 import { addBond, getBond } from '../bonds.js';
 import { proneness } from './breakdown.js';
 import { runVillaDay } from './villa-day.js';
+import { beginThreads, threadBeats, reactions, queueReaction, bedChats } from './threads.js';
 import { seasonSchedule, withPicks, withBookings, resolveRandomGames, buildSchedule, FINAL_COUPLES } from './schedule.js';
 import { MOMENTS, nightOneOpening } from './moments.js';
 import { returnIslander, secondChance } from './arrivals.js';
@@ -105,20 +106,65 @@ function villaDayEvents(state, rng, entry, seed) {
   // with its rules (schedule.js fills every villa day), and the time the
   // generic one took is ordinary villa time — its kisses and "winners" had
   // no name, no rules and no start, and read as scenes from nowhere.
-  const { morning, day, event } = PHASE_BUDGETS;
+  // THE STORIES DECIDE THE DAY (pm/threads.js; user, 2026-10-25: "no
+  // storyline … no cause, no consequences"). The episode's threads play their
+  // beats, the villa reacts to them, and the random draw is only the texture
+  // between: a few scenes a part of the day, light ones, with no pull, kiss
+  // or row from nowhere (those belong to a story).
+  const trng = streamFor(seed, `threads:${entry.ep}${state.epSalt}`);
+  beginThreads(state, trng, entry);
   // A villa day has no fire pit and no ceremony: the night is the villa's —
-  // drinks, the terrace, the beds — so its evening runs twice as long (at the
-  // usual length it was the thinnest episode of the season, 72 events).
-  const evening = PHASE_BUDGETS.evening * (entry.moment === 'villa' ? 2 : 1);
-  if (entry.moment === 'first-coupling') return generateEpisodeEvents(state, rng, { day: day + event, evening });
-  if (!entry.challenge) return generateEpisodeEvents(state, rng, { morning, day: day + event, evening });
-  const out = generateEpisodeEvents(state, rng, { morning, day });
+  // drinks, the terrace, the beds — so its evening runs longer. Casa Amor is
+  // the season's biggest drama (user): its nights keep their temptations.
+  const casa = !!state.split;
+  const T = { morning: TEXTURE.morning, day: TEXTURE.day, evening: TEXTURE.evening + (entry.moment === 'villa' ? 3 : 0) + (casa ? 4 : 0) };
+  const part = (phase, n) => storyPhase(state, rng, trng, phase, n);
+  if (entry.moment === 'first-coupling') return [...part('day', T.day), ...part('evening', T.evening)];
+  if (!entry.challenge) return [...part('morning', T.morning), ...part('day', T.day + 2), ...part('evening', T.evening)];
+  const out = [...part('morning', T.morning), ...part('day', T.day)];
   const chal = runChallenge(state, streamFor(seed, `chal:${entry.ep}${state.epSalt}`), entry.challenge);
   if (chal.length) state._namedChallengeEp = entry.ep;
+  for (const e of chal) queueReaction(state, e);
   out.push(...chal);
   // A challenge that could not play (too few couples) leaves the afternoon
   // to the villa.
-  out.push(...generateEpisodeEvents(state, rng, chal.length ? { evening } : { day: event, evening }));
+  if (!chal.length) out.push(...part('day', 3));
+  out.push(...part('evening', T.evening));
+  return out;
+}
+
+// The day's texture: a few light scenes a part of the day around the stories.
+// Pulls stay (a spark is how a story starts) but rare; gossip and the moan
+// about a partner are the stories' own now (threads.js secret and doubt).
+const TEXTURE = { morning: 5, day: 8, evening: 6 };
+const TEXTURE_KINDS = {
+  morning: [['chat', 4], ['kiss', 2], ['friendship', 3], ['comedy', 1.5], ['ick', 0.4]],
+  day: [['chat', 2.5], ['deep-chat', 1.5], ['pull', 0.6], ['friendship', 3], ['comedy', 2], ['argument', 0.4], ['ick', 0.6]],
+  evening: [['kiss', 3], ['deep-chat', 2], ['pull', 0.4], ['argument', 0.5], ['friendship', 1], ['chat', 0.5], ['comedy', 1], ['bed-share', 1.2]],
+};
+/**
+ * One part of the day: last part's reactions, then the stories intercut with
+ * the texture — a little villa life, a thread's beat, a little more, the next
+ * thread — and the reactions those beats left due before it ends.
+ */
+function storyPhase(state, rng, trng, phase, texture) {
+  const kinds = { [phase]: TEXTURE_KINDS[phase] || TEXTURE_KINDS.day };
+  const draw = n => {
+    const evs = n > 0 ? generateEpisodeEvents(state, rng, { [phase]: n }, { kinds }) : [];
+    for (const e of evs) queueReaction(state, e);
+    return evs;
+  };
+  const out = [...reactions(state, trng, phase, 3)];
+  const stories = (state._th?.headline || []).length;
+  const per = Math.max(1, Math.floor(texture / (stories + 1)));
+  let left = texture;
+  out.push(...draw(Math.min(left, per))); left -= Math.min(left, per);
+  for (let i = 0; i < stories; i++) {
+    out.push(...threadBeats(state, trng, phase, 1));
+    if (left > 0) { const n = Math.min(left, per); out.push(...draw(n)); left -= n; }
+  }
+  out.push(...draw(left));
+  out.push(...reactions(state, trng, phase, 3));
   return out;
 }
 
@@ -224,6 +270,17 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // the next day, and the debrief carries the night itself.
     // Nothing on the final's day either: that night is the declarations.
     const vday = entry.moment === 'reunion' || entry.moment === 'final' ? [] : runVillaDay(state, streamFor(seed, `day:${entry.ep}${state.epSalt}`), entry);
+    // The love triangles and the rivalries are the evening's own stories, not
+    // an appendix after it ("The love triangle", "Elsewhere in the villa" played
+    // as separate sections once everyone had gone to bed).
+    for (const e of vday) if (e.phase === 'triangle' || e.phase === 'rivals') e.phase = 'evening';
+    for (const e of vday) queueReaction(state, e);
+    // A night with no ceremony ends in bed: the couples of the day's stories
+    // go over it, and what's still due is said before they sleep.
+    if (['villa', 'casa-nights'].includes(entry.moment)) {
+      const trng = streamFor(seed, `threads-night:${entry.ep}${state.epSalt}`);
+      vday.push(...reactions(state, trng, 'evening', 2), ...bedChats(state, trng, 'evening'));
+    }
     day.push(...vday);
     state.history.push(...vday);
     // A returning islander walks back in before the night's moment, so at a

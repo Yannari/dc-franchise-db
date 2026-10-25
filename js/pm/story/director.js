@@ -125,11 +125,16 @@ const WORTH = {
   comedy: 1.4, ick: 2.2, vent: 2.6, 'bed-share': 3.4, 'casa-miss': 2.4, 'challenge-kiss': 1.4, 'challenge-win': 1,
   'kin-heart': 1.8, 'kin-vet': 2.6, 'kin-protect': 3.2, 'ex-awkward': 2.6, 'ex-jealous': 2.8,
   advice: 2, comfort: 2.6, reassurance: 3, solidarity: 2, overthinking: 1.5, debrief: 3,
+  // the storylines and the villa's reactions (pm/threads.js): what an episode is about
+  'graft-eyes': 2.8, watching: 3, 'where-head': 4, 'graft-shut': 3.2, 'graft-turn': 4.2, 'feels-off': 2.8,
+  'secret-burden': 3.2, 'group-chat': 3, 'bed-chat': 2.6, 'doubt-end': 4,
 };
 export const FEATURED_AT = 2.5, SHORT_AT = 1.6;
 // An episode's most: about twenty featured conversations and thirty short ones
 // (the user picked the tiers: ~600-900 clicks an episode).
 export const FEATURED_CAP = 24, SHORT_CAP = 34;
+// The storylines' own scenes (pm/threads.js), whole however busy the day.
+const STORY_KINDS = new Set(['graft-eyes', 'watching', 'where-head', 'graft-turn', 'graft-shut', 'feels-off', 'secret-burden', 'group-chat', 'bed-chat', 'doubt-end']);
 
 /** featured · short · note for a tiered kind, or null for a kind always written whole. */
 export function tierOf(state, ev, tiered) {
@@ -147,6 +152,8 @@ export function tierOf(state, ev, tiered) {
   if (ev.kind === 'argument' && x.close === 'walk-off') w += 0.5;
   // It follows something: the thread is what an edit cuts to.
   if (ev.after) w += 1;
+  // A beat of one of the episode's stories is what the episode is about.
+  if (ev.extra?.thread) w += 1.2;
   // A bombshell's first day is the episode.
   if (ev.players.some(p => (state.ledger?.firstEp?.[p] ?? -1) === state.ep && state.ep > 1)) w += 0.8;
   // Somebody in it is hiding something.
@@ -158,6 +165,11 @@ export function tierOf(state, ev, tiered) {
   // it is never a whole conversation, and never less than short if it hides something.
   const secret = (state.secrets || []).some(s => s.eventId === ev.id);
   let tier = w >= FEATURED_AT && n.featured < FEATURED_CAP ? 'featured' : w >= SHORT_AT && n.short < SHORT_CAP ? 'short' : 'note';
+  // The episode's stories and the villa's reactions to them are always whole
+  // conversations: a couple in a story is on screen several times a day by
+  // design, and the same-pair rule above shrank their bedtime talk to one line
+  // (season read 2026-10-25: thirteen story scenes a season aired as notes).
+  if (ev.extra?.thread || STORY_KINDS.has(ev.kind)) tier = 'featured';
   // Raw footage the public never saw is a note, read in the transcript; only
   // a scene that hides something is written out (Movie Night may play it).
   if (!ev.aired) tier = secret || ev.kind === 'pull' ? 'short' : 'note';

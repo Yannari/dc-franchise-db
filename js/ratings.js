@@ -482,7 +482,10 @@ const VILLA_ROMANCE = new Set(['pull', 'challenge-kiss', 'stand-up', 'kiss', 'de
   'close-off', 'date', 'first-look', 'step-forward', 'sleepover-night', 'declaration', 'reassurance']);
 const VILLA_MESS = new Set(['argument', 'jealous-confront', 'jealous-retaliate', 'ick', 'confession', 'photos',
   'movie-night', 'snogger-row', 'couple-goals-row', 'talent-snub', 'knowing-row', 'double-standard', 'notes', 'dump-fallout']);
-const VILLA_SCHEMING = new Set(['gossip', 'loyalty', 'head-turned', 'keeping-open', 'mission-dump', 'couples-vote', 'top-couple-pick']);
+// …and the storylines' own moves (pm/threads.js): a graft planned, a secret
+// carried, a partner told 'I want somebody else', a pull turned away.
+const VILLA_SCHEMING = new Set(['gossip', 'loyalty', 'head-turned', 'keeping-open', 'mission-dump', 'couples-vote', 'top-couple-pick',
+  'graft-eyes', 'secret-burden', 'graft-turn', 'graft-shut', 'feels-off', 'where-head']);
 
 function readVillaSignals(ep, prev, opts) {
   const { format } = opts;

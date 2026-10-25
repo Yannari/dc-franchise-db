@@ -75,6 +75,7 @@ import { DOUBT_END } from './doubt-end.js';
 import { PICK_CHAT, VOTE_WORRY, STICK_TWIST } from './tonight.js';
 import { VOTE_WORRY_VOLUME, PICK_CHAT_VOLUME, STICK_TWIST_VOLUME } from './more/tonight-volume.js';
 import { GROUP_CHAT_VOLUME } from './more/group-chat-volume.js';
+import { BABY_DOLL_VOLUME, PHOTOS_VOLUME, PHOTO_ROW_VOLUME, JOURNEY_REACT_VOLUME_2, JOURNEY_OPEN_VOLUME, SECRET_BURDEN_VOLUME, CASA_RETURN_VOLUME_2 } from './more/repeat-volume-2.js';
 import { RECEIPT_VOLUME, JOURNEY_REACT_VOLUME, CASA_RETURN_VOLUME, ENTRANCE_VOLUME, DEBRIEF_VOLUME_3, CASA_MISS_VOLUME, BED_CHAT_VOLUME } from './more/repeat-volume.js';
 import { COMFORT } from './comfort.js';
 import { CASA_MISS, BED_SHARE } from './casa.js';
@@ -171,7 +172,9 @@ extend(GROUP_CHAT, GROUP_CHAT_ENDED);
 extend(GROUP_CHAT, GROUP_CHAT_VOLUME);
 // The pools one episode heard twice (2026-10-25, more/repeat-volume.js).
 for (const [k, more] of [['receipt', RECEIPT_VOLUME], ['journey-react', JOURNEY_REACT_VOLUME], ['casa-return', CASA_RETURN_VOLUME], ['entrance', ENTRANCE_VOLUME],
-  ['debrief', DEBRIEF_VOLUME_3], ['casa-miss', CASA_MISS_VOLUME], ['bed-chat', BED_CHAT_VOLUME]]) extend(TALK[k], more);
+  ['debrief', DEBRIEF_VOLUME_3], ['casa-miss', CASA_MISS_VOLUME], ['bed-chat', BED_CHAT_VOLUME],
+  ['baby-doll', BABY_DOLL_VOLUME], ['photos', PHOTOS_VOLUME], ['photo-row', PHOTO_ROW_VOLUME], ['journey-react', JOURNEY_REACT_VOLUME_2],
+  ['journey-open', JOURNEY_OPEN_VOLUME], ['secret-burden', SECRET_BURDEN_VOLUME], ['casa-return', CASA_RETURN_VOLUME_2]]) extend(TALK[k], more);
 extend(VOTE_WORRY, VOTE_WORRY_VOLUME); extend(PICK_CHAT, PICK_CHAT_VOLUME); extend(STICK_TWIST, STICK_TWIST_VOLUME);
 TALK['doubt-end'] = DOUBT_END;
 TALK['pick-chat'] = PICK_CHAT; TALK['vote-worry'] = VOTE_WORRY; TALK['stick-twist'] = STICK_TWIST;

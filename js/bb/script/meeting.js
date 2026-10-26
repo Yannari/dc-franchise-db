@@ -15,7 +15,9 @@ const CASE = { lie: 'lie', 'nothing-to-lose': 'desperate', power: 'power' };
 const OUTCOME = { lands: 'lands', backfires: 'backfires', 'nobody talks': 'silent', fizzles: 'fizzles' };
 // the call, the house gathering (who is coming, wondering why, the one it is about feeling it),
 // then the case, the answer and how it ends
-const PARTS = ['call', 'gather', 'case', 'answer', 'verdict'];
+// ...and between the case and the answer, the push: the one it is about pushes back and the caller says what
+// exactly (the user, 2026-10-26: "house meeting are really short and badly written")
+const PARTS = ['call', 'gather', 'case', 'push', 'answer', 'verdict'];
 
 /** { text, lines, lineId, beats } — or null when any part has no words. */
 export function writeMeeting({ caller, about, witness = null, outcome, cause, reason = null }, ctx = {}) {
@@ -25,7 +27,8 @@ export function writeMeeting({ caller, about, witness = null, outcome, cause, re
   const who = { a: caller, b: about, c: witness && witness !== caller && witness !== about ? witness : null };
   // a grudge says what it is about, when its pool knows the family (lines/meeting.js, meeting.case.grudge-*)
   const grudgeOf = reason && POOLS[`meeting.case.grudge-${reason}`] ? `grudge-${reason}` : 'grudge';
-  const endings = { call: 'scene', gather: 'scene', case: CASE[cause] || grudgeOf, answer: ending, verdict: ending };
+  const caseKind = CASE[cause] || grudgeOf;
+  const endings = { call: 'scene', gather: 'scene', case: caseKind, push: POOLS[`meeting.push.${caseKind}`] ? caseKind : 'grudge', answer: ending, verdict: ending };
   const opts = { week: ctx.week, act: ctx.act || 'house', hoh: ctx.hoh || null, room: 'living-room' };
   const parts = PARTS.map(part => scriptBeat(`meeting.${part}`, who, { ending: endings[part] },
     { ...opts, salt: `meeting|${part}|${caller}` }));

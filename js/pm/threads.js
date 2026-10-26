@@ -270,6 +270,7 @@ function openSecrets(state, rng) {
   const cands = [];
   for (const sec of state.secrets.filter(s => !s.known && s.with && !s.casa)) {
     if (!inVilla(state, sec.who, sec.partner) || partnerOf(state, sec.partner) !== sec.who) continue;
+    if (apart(state, sec.who, sec.partner)) continue;
     if (live(state).some(t => t.type === 'secret' && t.sec === sec.id)) continue;
     const w = sec.witnesses.filter(n => inVilla(state, n) && together(state, n, sec.partner))
       .sort((m, n) => (getBond(n, sec.partner) - getBond(n, sec.who)) - (getBond(m, sec.partner) - getBond(m, sec.who)))[0];
@@ -607,10 +608,15 @@ function doubtBeat(state, rng, t, phase) {
 function secretBeat(state, rng, t, phase) {
   const sec = state.secrets.find(s => s.id === t.sec);
   if (!sec || sec.known || !together(state, t.w, t.p)) return [];
+  // While the one it's about is in the other villa, it waits for the return:
+  // nobody can have it out across Casa Amor (user, 2026-10-26: "and during Casa too").
+  if (apart(state, t.x, t.p) || apart(state, t.x, t.w)) return [];
   const tag = beat => ({ thread: { id: t.id, type: 'secret', beat, since: t.ep, who: castOf(t).slice(0, 2) }, secret: t.sec });
   // 1. The one who saw it carries it, and asks a friend what to do.
   if (!t.carried && (phase === 'morning' || phase === 'day')) {
-    const f = friendsOf(state, t.w, [t.x, t.p], 1)[0];
+    // Never somebody who is in it: Freya told Zara that Rafael took Zara up to
+    // the terrace (season 1, user: "why is she saying to Zara?").
+    const f = friendsOf(state, t.w, [t.x, t.p, sec.with].filter(Boolean), 1)[0];
     if (!f) return [];
     t.carried = true;
     t.carriedEp = state.ep;

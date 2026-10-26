@@ -1042,6 +1042,8 @@ export function haveItOut(state, tell, { force = false, phase = null } = {}) {
   // …and `force`: the friends have just heard "I need to hear it from them" (threads.js reactions).
   if (rng() >= Math.min(0.9, goes * Math.min(1, 0.4 + 0.6 * sev)) && tell.extra.close !== 'angry' && !force) return null;
   const nth = (state.toldOut?.[key] || 0) > 0 ? 'again' : 'first';
+  // Every time before weighs: a third telling is not a second (season 1: Zara heard it three times).
+  const times = Math.min(2, state.toldOut?.[key] || 0);
   (state.toldOut ||= {})[key] = (state.toldOut[key] || 0) + 1;
   const channel = { angry: 'straight', thanks: 'calm', quiet: 'held' }[tell.extra.close] || 'calm';
   const wasClosed = ['closed-off', 'exclusive', 'official'].includes(stepOf(state, p, x));
@@ -1054,9 +1056,9 @@ export function haveItOut(state, tell, { force = false, phase = null } = {}) {
   const sorry = { owns: 0.25, small: sev < 1 ? 0.1 : -0.15, denies: -0.3, blames: -0.15 }[of];
   const heavy = Math.min(1.5, sev);
   const verdict = believed ? 'forgive' : weighted(rng, [
-    ['forgive', Math.max(0.05, keen + sorry + 0.15 * T(state, p) / 10 - 0.35 * heavy - (nth === 'again' ? 0.3 : 0))],
+    ['forgive', Math.max(0.05, keen + sorry + 0.15 * T(state, p) / 10 - 0.35 * heavy - 0.3 * times)],
     ['warning', 0.45],
-    ['done', Math.max(0.05, 0.3 * (1 - keen) + 0.2 * heavy + (nth === 'again' ? 0.3 : 0) - sorry)],
+    ['done', Math.max(0.05, 0.3 * (1 - keen) + 0.2 * heavy + 0.3 * times - sorry)],
   ]);
   // One couple ends a night, at most: a second "done" tonight is a last chance.
   // …and only on a day the season can take it (season.js _canSplit).

@@ -99,7 +99,7 @@ export const TOLD_CONFRONT = build('told-confront', {
       W({ hasWith: true }, ['a', "So. You and {x}. When were you going to mention that?"]),
       W({}, ['a', "I know what's been going on. I'm not stupid, and I'm not going to pretend I don't know."]),
       W({ nth: 'again' }, ['a', "Here we are again. Somebody else coming up to me, telling me what you've been up to."]),
-      W({ nth: 'again' }, ['a', "This is the second time someone's had to come to me about you. The second time."], ['b', "I know how it looks."]),
+      W({ nth: 'again' }, ['a', "This isn't the first time someone's had to come to me about you. It isn't even close."], ['b', "I know how it looks."]),
     ],
 
     answer: [

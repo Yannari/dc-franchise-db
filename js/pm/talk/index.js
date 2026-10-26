@@ -260,3 +260,11 @@ extend(LOYALTY, LOYALTY_ELEVEN); extend(ARGUMENT, ARGUMENT_ELEVEN); extend(GOSSI
 extend(DEBRIEF, DEBRIEF_ELEVEN); extend(PILE_IN, PILE_IN_ELEVEN); extend(TALK['game-kiss'], GAME_KISS_ELEVEN);
 for (const [k, more] of Object.entries(TINY_POOLS)) extend(TALK[k], more);
 extend(DEBRIEF, DEBRIEF_RECOUNT); extend(TALK['parents-advice'], PARENTS_ADVICE_VOLUME); extend(FAMILIES, FAMILIES_VOLUME_2);
+
+// A telling or a burden that says "earlier" or "this morning" is about today's
+// secret only (script.js factsFor `ago`): a secret from before Casa was told as
+// if it had happened that morning.
+for (const talk of [SECRET_BURDEN, GOSSIP]) for (const pool of Object.values(talk.moves)) for (const e of pool) {
+  const text = [e.stage, e.beat, ...(e.turns || []).map(x => (Array.isArray(x) ? x[1] : ''))].filter(Boolean).join(' ');
+  if (/\bearlier\b|this morning|\btoday\b|just now|an hour ago/i.test(text) && !e.when?.ago) e.when = { ...(e.when || {}), ago: 'today' };
+}

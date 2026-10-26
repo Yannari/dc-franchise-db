@@ -180,6 +180,11 @@ export function factsFor(state, ev) {
   // Night one's ranking: the pair at the top, or anybody below it.
   f.rank = ev.extra?.rank == null ? null : ev.extra.rank === 1 ? 'top' : 'lower';
   f.split = !!state.split;             // Casa Amor is on
+  // A scene about a secret knows when it happened: "earlier" is today's, not last week's.
+  if (ev.extra?.secret && f.ago == null) {
+    const sec = (state.secrets || []).find(z => z.id === ev.extra.secret);
+    if (sec) f.ago = sec.ep === state.ep ? 'today' : 'days';
+  }
   // …and who this scene concerns is in the OTHER villa (user, 2026-10-26: "it
   // acts like the old players are still in the same house even though they got
   // separated"): talked about, never placed in the room (presentFits below).

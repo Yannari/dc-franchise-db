@@ -34,7 +34,8 @@ export const NARRATOR_STORY = {
     { id: 'nst.off.2', turns: [['narrator', "Something's up with {c}, and {a} can feel it. {a} is going to get to the bottom of it, via {b}, which is the long way round."]] },
   ],
   'secret-burden': [
-    { id: 'nst.burden.1', turns: [['narrator', "{a} saw something earlier, and has been walking around with it ever since. It is getting heavy."]] },
+    { id: 'nst.burden.1', when: { ago: 'today' }, turns: [['narrator', "{a} saw something earlier, and has been walking around with it ever since. It is getting heavy."]] },
+    { id: 'nst.burden.3', when: { ago: 'days' }, turns: [['narrator', "{a} has been sitting on something for days now. It hasn't got any lighter."]] },
     { id: 'nst.burden.2', turns: [['narrator', "{a} knows something about {c} that {d} doesn't. In this villa, that has a shelf life of about an hour."]] },
   ],
   'doubt-end': [

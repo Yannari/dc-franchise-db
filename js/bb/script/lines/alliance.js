@@ -826,7 +826,7 @@ export default {
       { by: 'a', say: "I think it wasn't where you said it would be." },
     ] },
     { id: 'ab.f3', when: { known: true }, turns: [
-      { by: 'a', dr: "{target} was one of us. One of us. And somebody in {alliance} wrote that name down. I know exactly who." },
+      { by: 'a', dr: "{target} was one of us. One of us. And somebody in {alliance} voted {target} out. I know exactly who." },
     ] },
     { id: 'ab.f4', when: { room: ['living-room'] }, turns: [
       { beat: 'The moment the front door closes, the rest of {alliance} are comparing votes in the living room.' },

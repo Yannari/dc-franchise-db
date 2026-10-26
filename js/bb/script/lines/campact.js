@@ -41,7 +41,7 @@ export default {
   ],
   'campact.voters.scene': [
     { id: 'cc7.v1', turns: [{ by: 'a', dr: "I voted {b} out. Now {b}'s at the breakfast table every morning, and {b} has no idea." }] },
-    { id: 'cc7.v2', turns: [{ by: 'b', say: "Pass the milk?" }, { by: 'a', say: "Sure." }, { by: 'a', dr: "I wrote {b}'s name down. Now I'm passing {b} the milk. Very awkward." }] },
+    { id: 'cc7.v2', turns: [{ by: 'b', say: "Pass the milk?" }, { by: 'a', say: "Sure." }, { by: 'a', dr: "I voted against {b}. Now I'm passing {b} the milk. Very awkward." }] },
     { id: 'cc7.v3', turns: [{ by: 'a', dr: "You vote someone out so you don't have to see them any more. That isn't how this week went." }] },
     { id: 'cc7.v4', turns: [{ by: 'a', dr: "If {b} ever finds out it was my vote, and {b} comes back, I'm in trouble." }] },
     { id: 'cc7.v5', turns: [{ by: 'b', say: "Morning." }, { by: 'a', say: "Morning." }, { by: 'a', dr: "That's as far as we get these days." }] },

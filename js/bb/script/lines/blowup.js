@@ -107,7 +107,7 @@ export default {
       { by: 'a', say: "That's a yes. That's always a yes." },
       { by: 'b', say: "Think what you want." },
     ] },
-    { id: 'tb.v3', turns: [{ by: 'a', say: "You told me I had your vote. To my face. And then you wrote my name." }, { by: 'b', say: "Things changed." }, { by: 'a', say: "In one night?" }, { by: 'b', say: "In this house? Yes!" }] },
+    { id: 'tb.v3', turns: [{ by: 'a', say: "You told me I had your vote. To my face. And then you voted me out." }, { by: 'b', say: "Things changed." }, { by: 'a', say: "In one night?" }, { by: 'b', say: "In this house? Yes!" }] },
     { id: 'tb.v4', turns: [{ by: 'a', say: "I sat in that chair because of you, and now you want me to pass you the salt?" }, { by: 'b', say: "It's salt." }, { by: 'a', say: "It's not about the salt!" }] },
     { id: 'tb.v5', turns: [{ by: 'a', say: "You could have kept me off that block. You had every chance." }, { by: 'b', say: "And put somebody else up?" }, { by: 'a', say: "Yes! Anybody else!" }, { by: 'b', say: "That's not how it works, and you know it." }] },
     { id: 'tb.v6', turns: [{ by: 'a', say: "Everybody knows how you voted. You're the only one still pretending." }, { by: 'b', say: "I'm not pretending anything." }, { by: 'a', say: "Then say it! Say whose name you wrote!" }, { by: 'b', say: "It's none of your business!" }] },

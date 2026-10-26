@@ -89,7 +89,7 @@ export default {
       { by: 'b', say: "That's… actually everything." },
       { by: 'a', say: "That's everything. So we fight for each other. {alliance}." },
       { by: 'c', say: "Okay. In. Can we leave before someone wants crisps?" },
-      { by: 'a', dr: "{alliance} isn't about winning yet. It's about having people who'll fight for us when we're up." },
+      { by: 'a', dr: "{alliance} might not win us anything. But at least none of us will be on the block alone." },
     ] },
   ],
   'story.alliance.checkin.group': [

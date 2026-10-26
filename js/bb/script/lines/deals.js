@@ -458,7 +458,7 @@ export default {
       { by: 'a', say: "Together. That's the whole plan." },
     ] },
     { id: 'dp.m4', turns: [
-      { by: 'a', say: "Whatever else happens, neither of us writes the other's name down before jury." },
+      { by: 'a', say: "Whatever else happens, neither of us votes the other out before jury." },
       { by: 'b', say: "Deal. And after jury?" },
       { by: 'a', say: "After jury, we talk again." },
     ] },

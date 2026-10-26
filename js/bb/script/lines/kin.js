@@ -129,7 +129,7 @@ export default {
   ],
   'kin.blood.scene': [
     { id: 'kz.q1', when: { third: true }, turns: [{ by: 'c', say: "Final two. Half a million. Do you take {b}?" }, { by: 'a', say: "Obviously." }, { by: 'c', dr: "{a} answered very fast. That's what I'll remember." }] },
-    { id: 'kz.q2', when: { third: true }, turns: [{ by: 'c', say: "Could you write {b}'s name down?" }, { by: 'a', say: "Of course." }, { by: 'c', dr: "Nobody believed that. Not even {a}." }] },
+    { id: 'kz.q2', when: { third: true }, turns: [{ by: 'c', say: "Could you vote {b} out?" }, { by: 'a', say: "Of course." }, { by: 'c', dr: "Nobody believed that. Not even {a}." }] },
     { id: 'kz.q3', turns: [{ by: 'a', dr: "Everyone wants to know if I'd cut my {kinword}. I'd rather never find out." }] },
     { id: 'kz.q4', turns: [{ by: 'b', dr: "Someone asked {a} if {a} would vote me out. {a} said yes too quickly." }] },
     { id: 'kz.q5', when: { third: true }, turns: [{ by: 'c', say: "Would you cut {b}?" }, { by: 'a', say: "Would you cut your {kinword}?" }, { by: 'c', say: "I don't have one in here." }] },

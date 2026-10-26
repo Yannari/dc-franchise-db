@@ -96,7 +96,7 @@ function lines(kind, voice, o, h) {
     `I'm only still here because ${o} used the veto on me. I'm not going to forget that.`);
   if (h.sameVotes >= 2) add('same', `${o} and I have voted the same way ${word(h.sameVotes)} times now. We've never even talked about it.`,
     `Every vote so far, ${o} and I have voted the same way.`,
-    `${o} and I keep voting together. I don't think it's a coincidence any more.`);
+    `${o} and I keep voting the same way without ever planning it. We see this game the same way, whatever else happens.`);
   const split = h.splitVote && ago(h.splitVote, h);
   if (split) add('split', `${o} and I voted differently ${split}. Neither of us has said anything about it.`,
     `${o} voted the other way ${split}. I haven't asked ${o} about it yet.`,
@@ -217,7 +217,11 @@ export function addInsight(sc, kindText, weekNum) {
   const talkers = new Set(sc.lines.filter(l => l.by && l.kind !== 'dr' && l.kind !== 'beat').map(l => l.by));
   const aboutSomebodyElse = (players || []).some(p => p?.name && p.name !== me && p.name !== o && new RegExp(`\\b${p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(String(dl.text)));
   const theirs = talkers.size <= 2 ? !aboutSomebodyElse : kind === 'feud';
-  const hist = spoke(me) && spoke(o) && theirs ? res.hist : [];
+  // ...and a scene already talking about the vote is not closed on how the two of them voted (read 2026-10-25:
+  // "You voted to keep Brightly, didn't you? ...Yes", closed by "We split our votes last week, Hicks and me.
+  // I'm waiting for Hicks to bring it up")
+  const votesTalked = sc.lines.some(l => l.kind !== 'dr' && /\bvot(e|ed|es|ing)\b/i.test(String(l.text)));
+  const hist = spoke(me) && spoke(o) && theirs ? res.hist.filter(w => !(votesTalked && (w.fact === 'split' || w.fact === 'same'))) : [];
   // downtime is the scene's own: a voice line there read as a non sequitur, so only history; and a
   // voice line is about the other person, so only where that person is talking too (the read of
   // 2026-10-13: "I voted with the group. Nobody believes me. Sure, why not. Yul seems fun" in a

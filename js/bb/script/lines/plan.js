@@ -88,7 +88,7 @@ export default {
     { id: 'kd.u6', turns: [{ by: 'b', dr: "I haven't said yes. I haven't said no. That's on purpose." }] },
   ],
   'plan.dissent.refusing': [
-    { id: 'ke.r1', turns: [{ by: 'b', say: "I'm not writing {target}'s name and I'm not going to pretend to think about it." }, { by: 'a', say: "Can you keep your voice down?" }] },
+    { id: 'ke.r1', turns: [{ by: 'b', say: "I'm not voting {target} out and I'm not going to pretend to think about it." }, { by: 'a', say: "Can you keep your voice down?" }] },
     { id: 'ke.r2', turns: [{ by: 'a', say: "It's {target} on Thursday. I need you on it." }, { by: 'a', say: "Let me explain it again." }, { by: 'b', say: "You've explained it twice. Still no." }] },
     { id: 'ke.r3', turns: [{ by: 'a', say: "It's {target} on Thursday. Everybody else is in." }, { by: 'b', say: "Nothing you say in this conversation is going to change my mind." }, { by: 'a', say: "So something else might?" }, { by: 'b', say: "Not this." }] },
     { id: 'ke.r4', turns: [{ by: 'b', dr: "{a} makes the decisions and then holds the meetings. I'm done pretending that's a group." }] },

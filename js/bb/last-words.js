@@ -410,7 +410,7 @@ function speechFor(reveal, speaker, register, rng) {
   }
   if (reveal.type === 'flipper') {
     return register === 'explosion' ? pick(rng, [
-      `"${a}! You looked me in the face and promised me your vote! And you wrote my name anyway!"`,
+      `"${a}! You looked me in the face and promised me your vote! And you voted me out anyway!"`,
       `"${a} promised me ${P(a).posAdj} vote. Everybody look at ${P(a).obj} right now, because ${P(a).sub} voted me out anyway."`,
     ]) : pick(rng, [
       `"${a} promised me that vote to my face. Remember that the next time ${P(a).sub} promises you one."`,

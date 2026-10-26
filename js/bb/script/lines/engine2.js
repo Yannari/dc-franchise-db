@@ -28,7 +28,7 @@ export default {
     { id: 'en2.b2', turns: [{ by: 'a', dr: "There's nobody left in {alliance} to be angry with me. That doesn't make it feel any better." }] },
     { id: 'en2.b3', turns: [{ by: 'a', dr: "I voted out my only ally. It had to be done. I'll find out at the jury if {target} agrees." }] },
     { id: 'en2.b4', turns: [{ by: 'a', dr: "{alliance} is over. I ended it. I'd do it again, but I won't pretend it was easy." }] },
-    { id: 'en2.b5', turns: [{ by: 'a', dr: "{target} trusted me. I wrote {target}'s name down anyway. That's the game." }] },
+    { id: 'en2.b5', turns: [{ by: 'a', dr: "{target} trusted me. I voted {target} out anyway. That's the game." }] },
     { id: 'en2.b6', turns: [{ by: 'a', dr: "It's just me now. {alliance} is a name for an alliance with one person in it." }] },
   ],
   'alliance.repair.alone': [

@@ -215,7 +215,7 @@ export default {
     { id: 'wq.h3', turns: [{ by: 'b', say: "Did you vote {c} out?" }, { by: 'a', say: "Does it matter?" }, { by: 'b', say: "It does to me." }] },
     { id: 'wq.h4', turns: [{ by: 'a', dr: "Nobody forced me to decide. I decided in the Diary Room." }] },
     { id: 'wq.h5', turns: [{ by: 'b', dr: "{a} chose me with a vote. I'm not sure how to feel about that." }] },
-    { id: 'wq.h6', turns: [{ by: 'a', dr: "{c} left knowing I wrote the name. I'll live with that." }] },
+    { id: 'wq.h6', turns: [{ by: 'a', dr: "{c} left knowing I voted {c} out. I'll live with that." }] },
   ],
   'romance.triangleCut.house': [
     { id: 'wq.o1', turns: [{ by: 'a', dr: "The rest of the house settled it for me in about four seconds." }] },

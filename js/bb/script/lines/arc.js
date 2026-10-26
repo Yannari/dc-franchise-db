@@ -135,7 +135,7 @@ export default {
     { id: 'qg.l1', turns: [{ by: 'a', say: "It wasn't me who voted to keep {target}, and I'm tired of the question." }, { by: 'b', say: "Nobody asked you." }, { by: 'a', say: "I'm just saying. In case anyone was wondering." }, { by: 'b', say: "Nobody was." }, { by: 'b', dr: "Nobody even asked {a}. Why would you say that so loudly unless it's true?" }] },
     { id: 'qg.l2', turns: [{ by: 'a', say: "Just so everyone knows, I voted with the house." }, { by: 'b', say: "Of course you did." }, { by: 'a', say: "I did!" }, { by: 'b', say: "I believe you. Completely." }, { by: 'b', dr: "Nobody had even asked. And I don't believe a word of it." }] },
     { id: 'qg.l3', turns: [{ by: 'b', say: "So who voted to keep {target}?" }, { by: 'a', say: "Not me. I voted with everybody else." }, { by: 'b', say: "You're sure?" }, { by: 'a', say: "I was there. I know how I voted." }, { by: 'a', dr: "I explained my vote to everyone. In detail. I think they believed me." }] },
-    { id: 'qg.l4', turns: [{ by: 'a', say: "Look, I'll tell you exactly what happened in the Diary Room. I walked in, I sat down, I said the name, I walked out." }, { by: 'b', say: "Okay." }, { by: 'a', say: "The same name as everyone else." }, { by: 'b', say: "I said okay." }, { by: 'b', dr: "{a} explained {a.posAdj} vote in way too much detail. The truth is easier to explain than that." }] },
+    { id: 'qg.l4', turns: [{ by: 'a', say: "Look, I'll tell you exactly what happened in the Diary Room. I walked in, I sat down, I said the name, I walked out." }, { by: 'b', say: "Okay." }, { by: 'a', say: "The same name as everyone else." }, { by: 'b', say: "I said okay." }, { by: 'b', dr: "{a} explained {a.posAdj} vote in way too much detail. If {a} had nothing to hide, {a} wouldn't need to." }] },
     { id: 'qg.l5', turns: [{ by: 'a', say: "Whoever voted to keep {target} should just own it." }, { by: 'b', say: "Should they?" }, { by: 'a', say: "Of course they should. I would." }, { by: 'b', say: "Then go on." }, { by: 'a', say: "It wasn't me!" }, { by: 'b', dr: "Funny how quick that was." }] },
     { id: 'qg.l6', turns: [{ by: 'b', say: "Who voted to keep {target}?" }, { by: 'a', say: "No idea. Not me." }, { by: 'a', say: "Why would I keep {target}? I barely spoke to {target}." }, { by: 'b', dr: "Not you. Sure." }] },
   ],
@@ -186,7 +186,7 @@ export default {
     { id: 'qi.t2', turns: [{ by: 'a', dr: "In {b.posAdj} speech, {b} said {b} would come after whoever voted to keep {b} here. I'm not waiting to find out if {b} meant it." }] },
     { id: 'qi.t3', turns: [{ by: 'b', say: "That speech was a plea, not a plan." }, { by: 'a', say: "I understand." }, { by: 'b', dr: "{a} said 'I understand' and nothing else. I've lost {a}." }] },
     { id: 'qi.t4', turns: [{ by: 'a', dr: "I've stopped telling {b} things. Short answers only." }] },
-    { id: 'qi.t5', turns: [{ by: 'b', say: "Why are you being weird with me?" }, { by: 'a', say: "I'm not." }, { by: 'b', say: "You are." }, { by: 'a', say: "Remember your speech on eviction night? You told the room you'd come for whoever wrote your name down. I was in the room." }] },
+    { id: 'qi.t5', turns: [{ by: 'b', say: "Why are you being weird with me?" }, { by: 'a', say: "I'm not." }, { by: 'b', say: "You are." }, { by: 'a', say: "Remember your speech on eviction night? You told the room you'd come for whoever voted you out. I was in the room." }] },
     { id: 'qi.t6', turns: [{ by: 'b', dr: "My speech cost me a friend. I can see that now." }] },
   ],
   'arc.court.scene': [

@@ -305,7 +305,7 @@ export default {
       { by: 'a', say: "You don't have to ask." },
       { by: 'c', say: "I know. I just like hearing it." },
       { by: 'a', say: "Then I'll say it every day. I'm with you." },
-      { by: 'a', dr: "Some people play this game with numbers. I play it with people. Mine are worth more." },
+      { by: 'a', dr: "{c} doesn't have to ask. I'm voting to keep {c} every single week." },
     ] },
     { id: 'gy-sl.4', room: 'living-room', turns: [
       { beat: 'Living room. {b} is talking about {c} behind {c}’s back. {a} cuts in.' },
@@ -528,7 +528,7 @@ export default {
       { by: 'a', say: "Is it about me?" },
       { by: 'b', say: "No." },
       { by: 'a', say: "Then I'll stay out here." },
-      { by: 'a', dr: "I don't need to be in every fight. I need to be in the final chair." },
+      { by: 'a', dr: "If it's not about me, I'm not going in there. Let them fight." },
     ] },
     { id: 'gy-sg.5', presumes: ['vote'], room: 'kitchen', turns: [
       { beat: 'The kitchen. {c} jokes that {a} has done nothing all season.' },

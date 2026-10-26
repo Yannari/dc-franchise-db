@@ -217,7 +217,7 @@ export default {
       { by: 'b', say: "{c} would never vote for me. Ever. I'd rather {c} watched the finale from a sofa at home." },
       { by: 'a', say: "Wow. That's harsh." },
       { by: 'b', say: "It's harsh, but it's true." },
-      { by: 'b', dr: "Pre-jury evictions are free. No bitterness, no vote. After that, every name you write down comes back to you." },
+      { by: 'b', dr: "Before jury, whoever we vote out doesn't get a say at the end. After that, everybody we vote out gets a vote on us." },
     ] },
     { id: 'gt.pj3', phase: ['prejury'], room: 'kitchen', turns: [
       { beat: 'The kitchen, washing up. {a} washes. {b} dries. Neither is looking at the other.' },
@@ -269,7 +269,7 @@ export default {
       { by: 'a', say: "Do you think {gone} would vote for us?" },
       { by: 'b', say: "For you, maybe. For me? Not a chance." },
       { by: 'a', say: "Why not?" },
-      { by: 'b', say: "Because I hugged {gone} that morning and wrote {gone}'s name down that night." },
+      { by: 'b', say: "Because I hugged {gone} that morning and voted {gone} out that night." },
       { by: 'a', say: "Oof. That's going to hurt." },
       { by: 'b', say: "It already does." },
       { by: 'b', dr: "I'll see {gone} again on finale night. I've already started writing what I'll say." },

@@ -170,7 +170,7 @@ export default {
     ] },
     { id: 'vt.pg2', turns: [
       { by: 'b', say: "If it's close, I need you to not overthink it." },
-      { by: 'a', say: "I'm not overthinking it. I'm writing {target}'s name down and I'm going to enjoy it." },
+      { by: 'a', say: "I'm not overthinking it. I'm voting {target} out and I'm going to enjoy it." },
       { by: 'b', say: "Maybe don't enjoy it on camera." },
       { by: 'a', say: "Too late." },
       { by: 'b', say: "And {other}?" },

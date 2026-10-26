@@ -203,7 +203,7 @@ export default {
     { id: 'ld.h1', turns: [{ by: 'a', dr: "Honestly? I'm tired. I'm so tired. Out there I keep smiling, but in here I can admit it." }] },
     { id: 'ld.h2', turns: [{ by: 'a', dr: "I don't know if I'm playing this right. I really don't." }] },
     { id: 'ld.h3', turns: [{ by: 'a', dr: "I've been talking about {b} for ages. I think I'm actually talking about myself." }] },
-    { id: 'ld.h4', turns: [{ by: 'a', dr: "I don't want to write {b}'s name down. I probably will. I hate that." }] },
+    { id: 'ld.h4', turns: [{ by: 'a', dr: "I don't want to vote {b} out. I probably will. I hate that." }] },
     { id: 'ld.h5', turns: [{ by: 'a', dr: "Some days I love this place. Today isn't one of them." }] },
     { id: 'ld.h6', turns: [{ by: 'a', dr: "{b} is the closest thing I've got to a real friend in here. I hope that's still true next week." }] },
     { id: 'ld.h7', turns: [{ by: 'a', dr: "I came in with a plan. It lasted about two days. Now I'm just trying to stay." }] },

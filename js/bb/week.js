@@ -928,8 +928,8 @@ function runHouseRomance(week, rng) {
         }
         if (e.byTheirHand) {
           return romanceLine(e.type, [
-            `${c} is gone and ${a} wrote the name. ${b} watched ${a} do it and has not worked out yet whether that was a choice about the two of them or a warning about everybody.`,
-            `${a} had two people in this house and one vote to spend, and spent it. ${c} left knowing exactly whose handwriting it was, and ${b} is the only person in here who gained anything.`,
+            `${c} is gone and ${a} voted ${c} out. ${b} watched ${a} do it and has not worked out yet whether that was a choice about the two of them or a warning about everybody.`,
+            `${a} had two people in this house and one vote to spend, and spent it. ${c} left knowing exactly whose vote it was, and ${b} is the only person in here who gained anything.`,
             `Nobody had to force a decision in the end: ${a} made it on a piece of card. ${b} says the right things about it and thinks about it all night.`,
           ], a, b, c);
         }

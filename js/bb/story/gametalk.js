@@ -283,7 +283,11 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
       // a three-chair week is built so any of the HOH's names leaving works (the pawn aside)
       const block3 = ((prev.acts || []).find(x => x?.type === 'nominations' && !x.byCoHoh)?.nominees || []);
       const anyOf3 = block3.length >= 3 && block3.includes(lastGone) && lastGone !== plan.pawn;
-      if (lastGone === real || either || anyOf3) want('hohweek.verdict.done', { a: hoh, b: closest(hoh, [lastGone]), c: lastGone }, {}, ['c']);
+      // the HOH took the target down with their own veto: a change of plan, not a week that failed
+      const cer = (prev.acts || []).find(x => x?.type === 'veto-ceremony');
+      const selfSaved = cer?.used && cer.saved === real && cer.holder === hoh && lastGone !== real;
+      if (selfSaved) want('hohweek.verdict.changed', { a: hoh, b: closest(hoh, [real, lastGone]), c: real, d: lastGone }, {}, ['d']);
+      else if (lastGone === real || either || anyOf3) want('hohweek.verdict.done', { a: hoh, b: closest(hoh, [lastGone]), c: lastGone }, {}, ['c']);
       else if (lastGone === plan.pawn) want('hohweek.verdict.pawn', { a: hoh, b, c: real, d: lastGone }, {}, ['d']);
       else if (house.includes(real)) want('hohweek.verdict.missed', { a: hoh, b, c: real });
     }

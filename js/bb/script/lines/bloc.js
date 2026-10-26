@@ -26,7 +26,7 @@ export default {
     { id: 'bn.c5', turns: [{ by: 'a', dr: "{b} and {c} say they're just friends. Friends don't check with each other before every vote." }] },
     { id: 'bn.c6', turns: [{ by: 'a', dr: "I've stopped thinking of {b} and {c} as two people. They're a pair, and you have to deal with them as a pair." }] },
     { id: 'bn.c7', when: { room: ['backyard'] }, turns: [{ beat: '{b} and {c} whisper on the hammock.' }, { by: 'a', dr: "They do that every night. I'd love to know what they talk about." }] },
-    { id: 'bn.c8', turns: [{ by: 'a', dr: "{b} will never write {c}'s name down. I'm sure of it. And that changes everything." }] },
+    { id: 'bn.c8', turns: [{ by: 'a', dr: "{b} will never vote {c} out. I'm sure of it. And that changes everything." }] },
     { id: 'bn.c9', turns: [{ beat: '{c} laughs at something {b} says from across the room.' }, { by: 'a', dr: "Nobody else heard it. {c} did." }] },
   ],
   'bloc.noticed.group': [

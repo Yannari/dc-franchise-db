@@ -68,7 +68,7 @@ const ELECTED = [
 const BANISHED = [
   (d, n) => `${d} names ${n}, and does not look at ${n} while doing it.`,
   (d, n, p) => `${n} is banished. ${p.Sub} ${p.sub === 'they' ? 'were' : 'was'} still holding a drink somebody handed ${p.obj} on the way in.`,
-  (d, n) => `${d} says ${n}'s name with a reason attached. Nobody believes the reason and everybody writes down the name.`,
+  (d, n) => `${d} says ${n}'s name with a reason attached. Nobody believes the reason and everybody votes for the name.`,
   (d, n, p) => `${n} hears it, nods once, and starts counting who is left — the correct response, and no help at all tonight.`,
 ];
 const SPARED = [

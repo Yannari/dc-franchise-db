@@ -225,7 +225,7 @@ export default {
       { by: 'b', say: "Why would you do that?", v: { hard: "You're cleaning it. Now." } },
       { by: 'a', say: "Honestly? It seemed funnier in my head." },
       { by: 'b', say: "It's not funny in my bed." },
-      { by: 'a', dr: "Every prank seems funnier in your head. That's the whole problem with pranks." },
+      { by: 'a', dr: "It was so much funnier in my head. {b} did not find it funny. At all." },
     ] },
   ],
   'story.life.chores.any': [

@@ -18928,8 +18928,8 @@ export function _bbNomReason(hoh, name, role, ep) {
         'renominated-me', 'humiliation', 'decided-without-me', 'named-on-the-way-out'];
 
       if (t === 'voted-for-me') return say([
-        `"${N}, you wrote my name down${when}. Everybody in ${G} watched you do it and then watched me let it go. I am finished letting it go."`,
-        `"${N}, my name came out of that box${when} in your handwriting. I have been gracious about it for long enough."`,
+        `"${N}, you voted to evict me${when}. Everybody in ${G} knows it, and they all watched me let it go. I am finished letting it go."`,
+        `"${N}, you walked into the Diary Room${when} and said my name. I have been gracious about it for long enough."`,
       ]);
       if (t === 'overcommitted') return say([
         `"${N}, you have promised the end of this game to more people than it has room for. I worked out this week that I am one of them, and not the one you meant."`,

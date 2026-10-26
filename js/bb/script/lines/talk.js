@@ -1577,7 +1577,7 @@ export default {
       { by: 'b', say: "I don't have to do anything." },
       { by: 'a', say: "No, I know, I just mean..." },
       { by: 'b', say: "I know what you mean." },
-      { by: 'b', dr: "I'm writing a name down tonight. It might not be the one {a} wanted." },
+      { by: 'b', dr: "I'm voting tonight, and it might not be the way {a} wanted." },
     ] },
     { id: 'tp.o5', turns: [
       { by: 'a', say: "Can I say something about {c}? {c} is coming for you." },

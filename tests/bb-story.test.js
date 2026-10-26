@@ -94,6 +94,20 @@ describe('the storyline pools', () => {
     expect(bad).toEqual([]);
   });
 
+  // Big Brother votes are spoken in the Diary Room; a name written down is Survivor (read 2026-10-25: "every
+  // name you write down comes back to you", "I wrote {target}'s name down anyway. That's the game."). The
+  // HOH's notepad and a marker on the fridge are things people really write on.
+  it('never has anybody write a name down to vote', () => {
+    const WRITE = /\b(write|writes|wrote|writing|written)\b[^.!?]{0,25}\bname/i;
+    const bad = [];
+    for (const [key, pool] of [...all, ...Object.entries(POOLS)]) for (const e of pool) for (const t of e.turns) {
+      for (const s of [t.say, t.dr, t.beat, ...Object.values(t.v || {})].filter(Boolean)) {
+        if (WRITE.test(s) && !/notepad|marker/.test(s)) bad.push(`${key} ${e.id}: ${s}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
   it('never write a name into a pool', () => {
     for (const [key, pool] of all) for (const e of pool) {
       for (const n of NAMES.filter(n => !['Scary', 'Chase'].includes(n))) expect(JSON.stringify(e.turns).includes(n), `${key} ${e.id} names ${n}`).toBe(false);

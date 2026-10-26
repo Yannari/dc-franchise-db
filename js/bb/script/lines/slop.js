@@ -49,7 +49,7 @@ export default {
     { id: 'sl2.d7', when: { intent: 'repeat' }, turns: [{ by: 'b', say: "Another week in here together." }, { by: 'a', say: "We should get a plaque." }] },
   ],
   'slop.resent.scene': [
-    { id: 'sl2.r1', turns: [{ by: 'a', dr: "The comp decided the bottom. But {b} still had to write the names down." }] },
+    { id: 'sl2.r1', turns: [{ by: 'a', dr: "The comp decided the bottom. But {b} still had to say the names out loud." }] },
     { id: 'sl2.r2', turns: [{ by: 'b', say: "It's not personal." }, { by: 'a', say: "Mm." }, { by: 'a', dr: "Three nights on a metal bed. It's personal." }] },
     { id: 'sl2.r3', turns: [{ by: 'a', dr: "I'm not going to complain, or I'm the one who moaned about slop. I'm just going to remember {b}." }] },
     { id: 'sl2.r4', turns: [{ by: 'a', dr: "{b} hasn't been into the have-not room once this week." }] },

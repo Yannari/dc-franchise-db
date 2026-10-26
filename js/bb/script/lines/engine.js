@@ -19,7 +19,7 @@ export default {
     { id: 'ea2.3', turns: [{ by: 'a', dr: "{group} came out of that vote one short. I know exactly which chair it came from. Nobody else does." }] },
     { id: 'ea2.4', turns: [{ by: 'a', say: "Let's count it again. Everybody in {group} told me they were keeping {victim}." }, { beat: 'They count again. There is still one vote against {victim} that nobody will own.' }] },
     { id: 'ea2.5', turns: [{ by: 'a', dr: "Voting against {group} was the best move I've made all season, and nobody can ever know it was me." }] },
-    { id: 'ea2.6', turns: [{ by: 'a', say: "Somebody in {group} wrote {victim}'s name and is lying about it." }, { by: 'a', dr: "Somebody in {group} voted against {victim}, and it's me. Saying it first is the best cover I've got." }] },
+    { id: 'ea2.6', turns: [{ by: 'a', say: "Somebody in {group} voted {victim} out and is lying about it." }, { by: 'a', dr: "Somebody in {group} voted against {victim}, and it's me. Saying it first is the best cover I've got." }] },
   ],
   'engine.blame.blamed': [
     { id: 'eb2.b1', turns: [{ by: 'a', dr: "It was {b}. It has to be. {b} was always the one I wasn't sure about." }] },

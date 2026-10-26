@@ -114,7 +114,7 @@ export default {
     { id: 'ph.y3', turns: [{ by: 'a', dr: "Everyone knows where my vote is going. They've known since {when}." }] },
     { id: 'ph.y4', turns: [{ by: 'a', dr: "It's strategic. It's also personal. It can be both." }] },
     { id: 'ph.y5', turns: [{ by: 'a', dr: "I came back to finish what started in {when}." }] },
-    { id: 'ph.y6', turns: [{ by: 'a', dr: "I've waited a long time to write {b}'s name down." }] },
+    { id: 'ph.y6', turns: [{ by: 'a', dr: "I've waited a long time to vote {b} out." }] },
   ],
   'past.known.scene': [
     { id: 'ph.r7', turns: [{ by: 'b', say: "We all saw the season. We know exactly what you do." }, { by: 'a', say: "I'm not denying it." }] },

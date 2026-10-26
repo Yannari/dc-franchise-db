@@ -52,7 +52,7 @@ const opText = (lines, ...salt) => {
 function planReason(alliance, target, protectedMember, hoh) {
   if (protectedMember) return opText([
     `${protectedMember} is one of ours — the vote goes the other way.`,
-    `keeping ${protectedMember} means every one of us writes ${target}'s name.`,
+    `keeping ${protectedMember} means every one of us votes ${target} out.`,
     `${protectedMember} sits on the block, so this is not a debate, it is a headcount.`,
     `the group protects its own: ${protectedMember} stays, ${target} goes.`,
   ], alliance, target, 'protect');
@@ -75,7 +75,7 @@ function approachArgument(recruiter, voter, target, keeping) {
   return opText([
     `${recruiter} walks ${voter} through the math: the votes for ${target} are already there, and being one of them is safer than being outside them.`,
     `${recruiter} tells ${voter} that ${target} has said ${voter}'s name — true or not, it is the argument that works.`,
-    `${recruiter} offers ${voter} a week of cover: vote with the group on ${target} and nobody in it writes ${voter}'s name for a while.`,
+    `${recruiter} offers ${voter} a week of cover: vote with the group on ${target} and nobody in it votes against ${voter} for a while.`,
     `${recruiter} keeps it simple with ${voter}: ${keeping} will remember who kept them, and ${target} will not be here to remember anything.`,
     `${recruiter} asks ${voter} where they think the house is landing, lets the silence sit, and then says ${target}'s name like it is already decided.`,
     `${recruiter} does not pitch ${voter} so much as warn them: this vote is happening, and the only question is whether ${voter} is on the record with it.`,

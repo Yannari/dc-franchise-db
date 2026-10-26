@@ -93,7 +93,7 @@ export default {
   'meeting.case.grudge-vote': [
     { id: 'mt.gv1', turns: [{ by: 'a', say: "{b} helped put me on that block. Fine, that's the game. Just don't sit in my kitchen telling people you had no choice." }] },
     { id: 'mt.gv2', turns: [{ by: 'a', say: "{b}, you voted the way you voted. Own it. Stop telling everybody it wasn't you." }] },
-    { id: 'mt.gv3', turns: [{ by: 'a', say: "{b} told me I had a vote, and then wrote my name. I'd like {b} to explain that. Here." }] },
+    { id: 'mt.gv3', turns: [{ by: 'a', say: "{b} told me I had a vote, and then voted me out. I'd like {b} to explain that. Here." }] },
     { id: 'mt.gv4', turns: [{ by: 'a', say: "{b}, you put me in that chair. I've stayed quiet about it. I'm done being quiet." }] },
     { id: 'mt.gv5', turns: [{ by: 'a', say: "Everybody keeps telling me how {b} voted. I'd like to hear it from {b}." }] },
     { id: 'mt.gv6', turns: [{ by: 'a', say: "I sat on that block because of {b}, and I'm still here. I'd like {b} to look at me and say why." }] },

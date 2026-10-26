@@ -96,7 +96,7 @@ export default {
   ],
   'duoact.event.drag': [
     { id: 'dw7.d1', turns: [{ by: 'a', say: "We vote {target}." }, { by: 'b', say: "I can't vote {target}." }, { by: 'a', say: "Why not?" }] },
-    { id: 'dw7.d2', turns: [{ by: 'a', dr: "I want {target} gone. {b} won't write that name down. We're supposed to be a team." }] },
+    { id: 'dw7.d2', turns: [{ by: 'a', dr: "I want {target} gone. {b} won't vote that way. We're supposed to be a team." }] },
     { id: 'dw7.d3', turns: [{ by: 'b', dr: "{target} is my friend. {a} wants {target} out. We can't both get what we want." }] },
     { id: 'dw7.d4', turns: [{ by: 'a', say: "It has to be {target}." }, { by: 'b', say: "It doesn't have to be anything." }] },
     { id: 'dw7.d5', turns: [{ by: 'b', dr: "{a} and I spent an hour on the vote. We came out agreeing on nothing." }] },
@@ -128,7 +128,7 @@ export default {
   ],
   'duoact.event.pact': [
     { id: 'dw7.a1', turns: [{ by: 'a', say: "Neither pair votes for the other. Deal?" }, { by: 'b', say: "Deal." }, { by: 'a', dr: "In a week where everyone counts in twos, four of us is most of a majority." }] },
-    { id: 'dw7.a2', turns: [{ by: 'a', dr: "{b}'s pair and mine made a deal: neither of us writes down a name from the other." }] },
+    { id: 'dw7.a2', turns: [{ by: 'a', dr: "{b}'s pair and mine made a deal: neither of us votes against the other's pair." }] },
     { id: 'dw7.a3', turns: [{ by: 'b', say: "Four as one?" }, { by: 'a', say: "Four as one." }] },
     { id: 'dw7.a4', turns: [{ by: 'b', dr: "Two pairs, one agreement. Four votes, all going the same way." }] },
     { id: 'dw7.a5', turns: [{ by: 'a', say: "We look after you, you look after us." }, { by: 'b', say: "Done." }] },
@@ -144,7 +144,7 @@ export default {
   ],
   'duoact.taken.zero': [
     { id: 'dw7.z1', turns: [{ by: 'a', say: "Not one vote. And I'm going home." }, { by: 'b', say: "I'm so sorry." }] },
-    { id: 'dw7.z2', turns: [{ by: 'a', dr: "Nobody wrote my name down. Not one person. I'm leaving anyway." }] },
+    { id: 'dw7.z2', turns: [{ by: 'a', dr: "Nobody voted against me. Not one person. I'm leaving anyway." }] },
     { id: 'dw7.z3', turns: [{ by: 'a', say: "Zero votes. Zero." }, { by: 'b', say: "It should have been just me." }] },
     { id: 'dw7.z4', turns: [{ beat: '{a} stands up next to {b}. There is nothing else to do.' }, { by: 'a', say: "Come on, then." }] },
     { id: 'dw7.z5', turns: [{ by: 'a', say: "The house didn't vote for me. The house voted for {b}." }, { by: 'b', say: "I know." }] },

@@ -219,7 +219,7 @@ export default {
       { by: 'd', say: "Can I use it? There are no clean bowls." },
       { by: 'b', say: "No. Use something else." },
       { by: 'e', say: "Here. Use a mug." },
-      { by: 'd', dr: "I ate cereal out of a mug because {b} is guarding {gone}'s bowl. Everybody misses people differently in here." },
+      { by: 'd', dr: "I ate cereal out of a mug because {b} is guarding {gone}'s bowl. {b} misses {gone} more than anybody." },
     ] },
     { id: 'msm.2', room: 'living-room', turns: [
       { beat: 'The morning after the eviction. The house is on the sofas, half awake, saying what everybody’s thinking.' },
@@ -347,7 +347,7 @@ export default {
       { by: 'e', say: "Eat a carrot." },
       { by: 'd', say: "I don't want a carrot. I want whatever smells like that." },
       { beat: 'The food finally arrives. Silence falls instantly. Everyone eats.' },
-      { by: 'a', dr: "Feed people late and they'll forgive you anything. Feed people well and they'll forget they were angry." },
+      { by: 'a', dr: "Everybody was angry with me for twenty minutes. Then they ate, and nobody said a word." },
     ] },
     { id: 'msd.5', room: 'kitchen', turns: [
       { beat: 'Dinner. {a} has started a game where everyone has to guess what everyone else did before the house.' },

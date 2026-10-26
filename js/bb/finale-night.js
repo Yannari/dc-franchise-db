@@ -1220,7 +1220,7 @@ export function runReunion({ finalTwo = [], jury = [], prejury = [], week = 0, r
     if (isJuror(victim) && isFinalist(traitor)) {
       delta = moveRead(victim, traitor, {
         strength: -1.6, credibility: 0.75, kind: 'reunion-reveal', week,
-        text: `${victim} found out at the reunion that ${traitor} wrote their name down in week ${inc.num}`,
+        text: `${victim} found out at the reunion that ${traitor} voted to evict them in week ${inc.num}`,
       });
       if (Math.abs(delta) >= 0.05) moved.push({ juror: victim, finalist: traitor, delta: round2(delta), kind: 'reveal' });
     }

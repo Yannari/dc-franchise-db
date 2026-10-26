@@ -192,7 +192,7 @@ function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null) {
     if (knower) {
       const weight = credibility(newcomer, knower);
       moveRead(newcomer, story, { strength: -1.6, credibility: weight, kind: 'confirmed',
-        week, text: `${knower} confirmed it: ${story} wrote ${newcomer}'s name.` });
+        week, text: `${knower} confirmed it: ${story} voted ${newcomer} out.` });
       beats.push(beat('CONFIRMED', [knower, newcomer, story], pick(rng, [
       `${knower} puts down ${P(knower).posAdj} mug. "I can tell you how it went, if you want. You're right. It was ${story}."`,
       `${knower} hesitates, then decides. "I knew before I left. ${story} was always going to vote you out."`,
@@ -272,8 +272,8 @@ function reunionBeats(newcomer, residents, rng) {
     ])));
     else if (kind === 'voted-me') beats.push(beat('THE BALLOT', [j, newcomer], draw('re1170', [
       `${j} is waiting by the door. "Before you sit down, I need to know. Did you vote me out?" ${newcomer} hesitates a second too long, and ${j} has the answer.`,
-      `${j} stays on the couch. "I know you wrote my name. I'm not angry any more. I just want you to say it." ${newcomer} takes a breath. "Okay. I did."`,
-      `${j} doesn't stand up. "You wrote my name. I know you did." ${newcomer} sighs. "Can we at least wait until I've put my bag down?"`,
+      `${j} stays on the couch. "I know you voted me out. I'm not angry any more. I just want you to say it." ${newcomer} takes a breath. "Okay. I did."`,
+      `${j} doesn't stand up. "You voted me out. I know you did." ${newcomer} sighs. "Can we at least wait until I've put my bag down?"`,
       `${j} has been waiting for this. "So. Did you vote me out?" ${newcomer} takes a long time to answer. "Does it matter now?" "It matters to me," ${j} says.`,
     ])));
     else if (kind === 'friend') beats.push(beat('FRIEND', [j, newcomer], draw('re1566', [
@@ -540,10 +540,10 @@ function tableTalkBase(player, backer, doubter, residents, draw) {
   } else if (r.blamedBy.includes(doubter)) {
     reason = 'voted';
     sayBy(doubter, draw('against-voted', [
-      `${player} wrote my name. I know it. It's going to take a lot for ${pp.obj} to win me back.`,
+      `${player} voted me out. I know it. It's going to take a lot for ${pp.obj} to win me back.`,
       `${player} looked me in the eye that week and then voted me out. I haven't forgotten.`,
       `${player} voted me out. I know it. I'm not going to pretend that doesn't matter to me.`,
-      `I'm pretty sure ${player} wrote my name. You'll forgive me if I don't stand up and clap.`,
+      `I'm pretty sure ${player} voted me out. You'll forgive me if I don't stand up and clap.`,
     ]));
   } else if (r.wins === 0) {
     reason = 'nowins';

@@ -71,11 +71,11 @@ export default {
     { id: 'cc.b6', turns: [{ by: 'a', say: "Juries love {target}. Juries won't love me. Which one do you want next to you?" }] },
   ],
   'campaign.case.clean': [
-    { id: 'cc.n1', turns: [{ by: 'a', say: "I've never written your name down. Not once. {target} can't say the same, and I can." }] },
+    { id: 'cc.n1', turns: [{ by: 'a', say: "I've never voted against you. Not once. {target} can't say the same, and I can." }] },
     { id: 'cc.n2', turns: [{ by: 'a', say: "Check the votes. My name has never been next to yours. {target}'s has." }] },
     { id: 'cc.n3', turns: [{ by: 'a', say: "{target} has voted against you before. I never have. That should count for something." }] },
     { id: 'cc.n4', turns: [{ by: 'a', say: "I'm the only one up here who's never come after you. Not once, not in any vote." }] },
-    { id: 'cc.n5', turns: [{ by: 'a', say: "You know who's written your name down before. It wasn't me. Remember that on Thursday." }] },
+    { id: 'cc.n5', turns: [{ by: 'a', say: "You know who's voted against you before. It wasn't me. Remember that on Thursday." }] },
     { id: 'cc.n6', turns: [{ by: 'a', say: "Look at the voting history. I've never come after you. That's not luck, that's a choice I made." }] },
   ],
   'campaign.case.friend': [

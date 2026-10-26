@@ -290,7 +290,7 @@ export default {
       { by: 'b', say: "Then don't keep {c} past this week if you get the chance." },
       { by: 'a', say: "If I get the chance, I won't." },
       { by: 'b', say: "Just don't say it to anyone else." },
-      { by: 'a', dr: "{c} is the first name I'd write down if I could. I don't care who knows. Actually, I care a little bit." },
+      { by: 'a', dr: "{c} is the first person I'd vote out if I could. I don't care who knows. Actually, I care a little bit." },
     ] },
     { id: 'gt2.bv5', turns: [
       { beat: 'The backyard. {a} is pacing up and down by the wall. {b} is trying to keep up.' },
@@ -365,7 +365,7 @@ export default {
       { by: 'b', say: "About the vote? A bit. About the game? No." },
       { by: 'a', say: "{gone} will want to know why." },
       { by: 'b', say: "Then {gone} can ask me at the end. If I'm there." },
-      { by: 'b', dr: "I wrote {gone}'s name down. Now {gone} gets to write mine, or not, in a few weeks. That's how this works now." },
+      { by: 'b', dr: "I voted {gone} out. Now {gone} gets a vote on me in a few weeks. That's how this works now." },
     ] },
     { id: 'gt2.jb3', phase: ['jury', 'endgame'], room: 'bedroom', turns: [
       { beat: 'Bedroom. {a} is sitting on the bare mattress where {gone} slept. {b} sits down next to {a}.' },

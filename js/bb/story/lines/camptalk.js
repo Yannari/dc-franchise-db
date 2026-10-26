@@ -156,7 +156,7 @@ export default {
     D('cpd.pr5', 'a', "For the first time since that key turned, I feel like I've got a chance."),
     { id: 'cpd.pr6', turns: [{ by: 'a', dr: "{b} actually listened. It's the first time all week I've felt listened to." }] },
     { id: 'cpd.pr7', turns: [{ by: 'a', dr: "I came out of there lighter than I went in. That has to mean something." }] },
-    { id: 'cpd.pr8', turns: [{ by: 'a', dr: "I'm not counting {b} yet. But I'm writing {b}'s name down in pencil." }] },
+    { id: 'cpd.pr8', turns: [{ by: 'a', dr: "I'm not counting {b} yet. But I think I might have {b}." }] },
     { id: 'cpd.pr9', turns: [{ by: 'a', dr: "That was the one I was most scared of. And it went fine. Better than fine." }] },
   ],
   'camp.pdr.unmoved': [

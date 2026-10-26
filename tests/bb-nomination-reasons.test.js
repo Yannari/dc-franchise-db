@@ -219,6 +219,8 @@ describe('a grievance it cannot name', () => {
     const line = _bbNomReason('Hoh', 'Them', 'target', { num: 5, acts: [{ type: 'nominations',
       nominees: ['Them'], grievances: { Them: { kind: 'betrayal', alliance: 'The Engine',
         memory: { type: 'voted-for-me', ep: 3 } } } }] });
-    expect(line).toMatch(/wrote my name down|handwriting/i);
+    // a Big Brother vote is said in the Diary Room, never written (read 2026-10-25)
+    expect(line).toMatch(/voted to evict me|said my name/i);
+    expect(line).not.toMatch(/wrote|handwriting/i);
   });
 });

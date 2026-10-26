@@ -362,7 +362,7 @@ export default {
       { by: 'f', say: "There's no rice left." },
       { by: 'e', say: "Who ate all the rice?" },
       { beat: 'Everybody looks at {c}.' },
-      { by: 'b', dr: "Feeding people in here is power. You'd be amazed how hard it is to put the person who makes dinner on the block." },
+      { by: 'b', dr: "I made dinner for the whole house. I'd like to see somebody put the cook on the block now." },
     ] },
     { id: 'sd.o2', room: 'kitchen', turns: [
       { beat: 'Dinner. Too many people, too few chairs. Two people are sitting on the counter.' },

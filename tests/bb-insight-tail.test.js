@@ -42,4 +42,15 @@ describe('the history tail', () => {
     }
     expect(added).toBeGreaterThan(5);
   });
+
+  // read 2026-10-25: "You voted to keep Brightly, didn't you? ...Yes", closed by "We split our votes last week"
+  it('does not close a scene already about the vote on how the two of them voted', () => {
+    for (let i = 0; i < 20; i++) {
+      setup();
+      const sc = scene([['Fatima', "You voted to keep Ivyna, didn't you?"], ['Baxter', "I'm not saying."], ['Fatima', 'That means yes.'], ['Baxter', '...Yes.'],
+        ['Fatima', 'Then keep it quiet.'], ['Fatima', 'Baxter is fine as long as nobody finds out.', 'dr']], ['Fatima', 'Baxter'], `sc-${i}`);
+      addInsight(sc, 'target.lobby', 4);
+      expect(sc.lines.at(-1).text, `sc-${i}`).not.toMatch(/vot(e|ed)|week three/i);
+    }
+  });
 });

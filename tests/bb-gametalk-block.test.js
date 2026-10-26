@@ -5,7 +5,7 @@
 // nominated yet the veto and the replacement wasnt there yet so its a bit of a spoil".
 import { describe, expect, it } from 'vitest';
 import { gs, seasonConfig } from '../js/core.js';
-import { gameTalkFor } from '../js/bb/story/gametalk.js';
+import { gameTalkFor, hohWeekFor } from '../js/bb/story/gametalk.js';
 import { seedGame } from './helpers/setup.js';
 
 const NAMES = ['Hoh', 'Pal', 'Tgt', 'Nom2', 'Nom3', 'Ben', 'Ann', 'Joe'];
@@ -53,5 +53,28 @@ describe('the Block Buster talk before and after the veto', () => {
     expect(hoh).toBeTruthy();
     expect(week.blockBeforeSafety).toContain(hoh.who.d);
     expect(hoh.who.d).not.toBe('Nom3');
+  });
+});
+
+// read 2026-10-25: Axel nominated Beth, made a deal with her, saved her with his own veto, and the
+// replacement went home; the next morning he said "my whole HOH was about getting Beth out" and that
+// Beth "knows I tried"
+describe('the morning after, for an HOH who took the target down', () => {
+  const lastWeek = (holder, saved) => ({ num: 1, hoh: 'Hoh', evicted: 'Nom2', plan: { target: 'Tgt', pawn: 'Nom2', nominees: ['Tgt', 'Nom2'], structure: 'target-pawn' },
+    acts: [{ type: 'nominations', target: 'Tgt', nominees: ['Tgt', 'Nom2'] }, { type: 'veto-ceremony', used: true, holder, saved, replacement: 'Ben' }] });
+  const morning = prev => {
+    setup();
+    gs.bb.weeks = [prev];
+    const week = { num: 2, houseAtStart: NAMES.filter(n => n !== 'Nom2'), acts: [] };
+    return hohWeekFor(week, { present: NAMES.filter(n => n !== 'Nom2'), stretch: 0 }, { hoh: false }, new Set(), 'Nom2').map(t => t.kind);
+  };
+  it('calls it a change of plan when the HOH used the veto on the target', () => {
+    const kinds = morning(lastWeek('Hoh', 'Tgt'));
+    expect(kinds).toContain('hohweek.verdict.changed');
+    expect(kinds).not.toContain('hohweek.verdict.missed');
+    expect(kinds).not.toContain('hohweek.verdict.pawn');
+  });
+  it('still calls it a backfire when somebody else saved the target', () => {
+    expect(morning(lastWeek('Ann', 'Tgt'))).toContain('hohweek.verdict.pawn');
   });
 });

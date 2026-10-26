@@ -723,7 +723,7 @@ export default {
     ] },
     { id: 'sg.h16', turns: [{ by: 'a', dr: "I'm not looking for an apology from {b} any more. I'm looking for enough votes to send {b} home." }] },
     { id: 'sg.rs1', when: { register: 'schemer' }, turns: [{ by: 'a', dr: "I don't get angry. I make plans. And {b} is at the centre of my next one." }] },
-    { id: 'sg.rs2', when: { register: 'schemer' }, turns: [{ by: 'a', dr: "I'll smile at {b}, I'll help {b} with the dishes, and I'll write {b}'s name down the first chance I get." }] },
+    { id: 'sg.rs2', when: { register: 'schemer' }, turns: [{ by: 'a', dr: "I'll smile at {b}, I'll help {b} with the dishes, and I'll vote {b} out the first chance I get." }] },
     { id: 'sg.rf1', when: { register: 'fiery' }, turns: [{ by: 'a', dr: "Every time I see {b}'s face I want to scream. So I'm going to do the next best thing. Vote." }] },
     { id: 'sg.rf2', when: { register: 'fiery' }, turns: [{ by: 'a', dr: "People keep telling me to calm down about {b}. I am calm. This is me calm. You don't want to see the other version." }] },
     { id: 'sg.ry1', when: { register: 'shy' }, turns: [{ by: 'a', dr: "I don't usually hold grudges. But {b} has made me into somebody who does, and I'm not sure I'm sorry." }] },

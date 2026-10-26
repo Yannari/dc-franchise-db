@@ -569,7 +569,7 @@ export default {
       { by: 'b', say: "I didn't ask you to." },
       { by: 'a', say: "I know. I'm offering anyway. You need it." },
       { by: 'b', say: "Why would you do that for me?", v: { hard: "What do you want for it?" } },
-      { by: 'b', dr: "When somebody offers to save you before you've even asked, you have to wonder what they're really after." }] },
+      { by: 'b', dr: "{a} offered to play for me before I'd even asked. I'd love to know what {a} wants for it." }] },
     { id: 'pm.r7', turns: [{ by: 'a', say: "I'm your best shot." }, { by: 'b', say: "You're a shot. I don't know about best." }, { by: 'a', say: "I'm the best you've got." }, { by: 'b', say: "Then I'm in more trouble than I thought." }, { by: 'a', dr: "Charming. Good luck with the veto." }] },
   ],
 };

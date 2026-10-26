@@ -10,6 +10,9 @@
 //   movie-react  [a, b, (c)] a watched b on screen; c is beside a. `of`: hurt · fury · relief
 //   movie-row    [a, b]      a confronts b after. `of`: own-it · deny · walk-off
 //   movie-split  [a, b]      a ends it with b
+//   movie-react  also `of`: called (a was talked about by b, not a partner) · laugh · aww (a and b on screen together)
+//   movie-callout [a, b]     a, talked about on screen, finds b after. `of`: sorry · stands-by · deny
+//   movie-after  [a, b, c]   a and b, friends, go over Movie Night; c came off worst
 import { build } from './build.js';
 
 const C3 = { cast: 3 };
@@ -71,6 +74,18 @@ export const MOVIE_REACT = build('movie-react', {
       { when: { of: 'fury', ...C3 }, turns: [['a', "Do you see this? Are you all seeing this?"], ['c', "We're all seeing it."]] },
       { when: { of: 'relief' }, turns: [['a', "You said no. You actually said no."], ['b', "Of course I did. What did you think I was going to do?"]] },
       { when: { of: 'relief' }, turns: [['a', "I didn't even know that happened."], ['b', "I didn't think it was worth mentioning."], ['a', "It was worth mentioning! That's the best thing I've ever seen on a screen."]] },
+      // Talked about, by somebody who isn't a partner.
+      { when: { of: 'called' }, turns: [['a', "Wow. So that's what you think of me."]] },
+      { when: { of: 'called' }, turns: [['a', "You're so nice to my face. Every single day. And that's what you say when I'm not there?"]] },
+      { when: { of: 'called' }, turns: [['a', "Next time you've got something to say about me, say it to me."], ['b', "I was angry. I didn't mean it like that."], ['a', "It sounded exactly like you meant it."]] },
+      { when: { of: 'called', ...C3 }, turns: [['c', "Did you know {b} felt like that about you?"], ['a', "No. I honestly thought we were fine."]] },
+      // On screen together, and nothing to worry about.
+      { when: { of: 'laugh' }, turns: [['a', "Oh my God. Turn it off. Turn it off!"], ['b', "Absolutely not. Play it again."]] },
+      { when: { of: 'laugh' }, turns: [['b', "I forgot you did that."], ['a', "I was hoping everyone had."]] },
+      { when: { of: 'laugh' }, turns: [['a', "Why have they chosen that? Out of everything that's happened in here, that?"], ['b', "Because it's the best thing that's happened in here."]] },
+      { when: { of: 'aww' }, turns: [['a', "I didn't know they were filming that."], ['b', "They film everything."], ['a', "Good. I'm glad they did."]] },
+      { when: { of: 'aww' }, turns: [['b', "Did you mean it? What you said?"], ['a', "Every word. I'd say it again now, in front of everyone."]] },
+      { when: { of: 'aww' }, turns: [['a', "Everyone's looking at us."], ['b', "Let them look."]] },
     ],
     then: [
       { when: { of: ['hurt', 'fury'] }, turns: [['a', "Don't touch me. Don't even look at me right now. I'm watching the rest of this, and then we're talking."]] },
@@ -85,6 +100,12 @@ export const MOVIE_REACT = build('movie-react', {
       { when: { of: 'fury' }, turns: [], beat: "{b} takes {b.posAdj} arm back from round {a}, very slowly." },
       { when: { of: 'relief' }, turns: [], beat: "{a} kisses {b} in front of the whole cinema, and the villa cheers." },
       { when: { of: 'relief' }, turns: [], beat: "{a} pulls {b} into a hug and doesn't let go for the rest of the film." },
+      { when: { of: 'called' }, turns: [], beat: "{b} stares at the floor. {a} doesn't take {a.posAdj} eyes off {b} for the rest of the clip." },
+      { when: { of: 'called' }, turns: [], beat: "Half the cinema turns round to look at {b}, and {b} pretends to be very interested in the popcorn." },
+      { when: { of: 'laugh' }, turns: [], beat: "The whole cinema is crying with laughter, and {a} hides behind a cushion." },
+      { when: { of: 'laugh' }, turns: [], beat: "For one minute, nobody in the villa is worried about anything." },
+      { when: { of: 'aww' }, turns: [], beat: "The villa goes 'aww' all at once, and {b} goes bright red." },
+      { when: { of: 'aww' }, turns: [], beat: "{a} squeezes {b}'s hand, and somebody throws popcorn at them." },
     ],
   },
 });
@@ -123,6 +144,57 @@ export const MOVIE_ROW = build('movie-row', {
       { when: { of: 'deny' }, turns: [], beat: "Half the villa is listening in, and none of them believe {b} either." },
       { when: { of: 'walk-off' }, turns: [], beat: "{a} takes a pillow and sleeps on the daybed. {b} is left standing on the lawn on {b.posAdj} own." },
       { turns: [], beat: "The big screen is still glowing on the lawn, showing nothing at all." },
+    ],
+  },
+});
+
+export const MOVIE_CALLOUT = build('movie-callout', {
+  tiered: false,
+  plans: { featured: ['open', 'answer', 'push?', 'land'], short: ['open', 'answer', 'land'] },
+  moves: {
+    open: [
+      { stage: "After the screening, {a} finds {b} by the fire pit.", turns: [['a', "So. Do you want to tell me what that was?"]] },
+      { stage: "The lights have barely come up, and {a} is already on {a.posAdj} feet.", turns: [['a', "I'm not waiting until tomorrow. What was all that about me?"]] },
+      { stage: "{a} catches {b} on the way to the kitchen.", turns: [['a', "Have you got a minute? Because I've got a few things to say about that clip."], ['b', "I thought you might."]] },
+    ],
+    answer: [
+      { when: { of: 'sorry' }, turns: [['b', "I'm sorry. I was annoyed, and I said it to the wrong person. I should have said it to you."], ['a', "You should have."]] },
+      { when: { of: 'sorry' }, turns: [['b', "I'm not going to defend it. It was a horrible thing to say, and I'm sorry you had to hear it like that."], ['a', "I'd rather have heard it from you."]] },
+      { when: { of: 'stands-by' }, turns: [['b', "I'm not going to pretend I didn't say it. I did. And I still think it."], ['a', "Then at least we both know where we stand."]] },
+      { when: { of: 'stands-by' }, turns: [['b', "Honestly? I meant it. I'm not going to say sorry for something I actually think."], ['a', "Fine. Then don't be nice to me tomorrow either."]] },
+      { when: { of: 'deny' }, turns: [['b', "That's been cut. I said a lot more than that, and most of it was nice."], ['a', "Then where's the nice bit? Because I didn't see it."]] },
+      { when: { of: 'deny' }, turns: [['b', "That wasn't even about you. They've put it together to look like it was."], ['a', "It had my name in it."]] },
+    ],
+    push: [
+      { when: { of: 'sorry' }, turns: [['a', "I've defended you in here. More than once. That's what gets me."], ['b', "I know. I don't deserve that."]] },
+      { when: { of: 'stands-by' }, turns: [['a', "You know everyone saw that, don't you? Not just me."], ['b', "Then everyone knows what I think."]] },
+      { when: { of: 'deny' }, turns: [['a', "Twenty people watched you say it. Twenty."], ['b', "Twenty people watched an edit."]] },
+    ],
+    land: [
+      { when: { of: 'sorry' }, turns: [], beat: "{a} nods, but doesn't hug {b}. It's going to take more than one night." },
+      { when: { of: 'stands-by' }, turns: [], beat: "They walk off in opposite directions, and the whole villa notices." },
+      { when: { of: 'deny' }, turns: [], beat: "Nobody on the daybeds believes {b}, and {b} can tell." },
+    ],
+  },
+});
+
+export const MOVIE_AFTER = build('movie-after', {
+  tiered: false,
+  plans: { featured: ['open', 'talk', 'close'], short: ['talk', 'close'] },
+  moves: {
+    open: [
+      { stage: "The cinema has been cleared away, but nobody's gone to bed. {a} and {b} are on the daybeds, still going over it.", turns: [] },
+      { stage: "{a} and {b} are brushing their teeth side by side, and neither of them can stop talking about it.", turns: [] },
+    ],
+    talk: [
+      { turns: [['a', "I can't believe {c}. I actually can't believe it."], ['b', "I can. I've been saying it for days."], ['a', "You have. I didn't listen."]] },
+      { turns: [['b', "Who came off worst tonight? Honestly?"], ['a', "{c}. And it's not even close."]] },
+      { turns: [['a', "Did you see {c}'s face before the first clip had even started?"], ['b', "{c} knew. {c} knew exactly what was coming."]] },
+      { turns: [['b', "I'm never doing anything in this villa ever again. Not a chat, not a look, nothing."], ['a', "You'd be fine. You're not {c}."]] },
+    ],
+    close: [
+      { turns: [], beat: "Across the lawn, {c} is sitting on {c.posAdj} own." },
+      { turns: [], beat: "Nobody has gone over to sit with {c} yet." },
     ],
   },
 });

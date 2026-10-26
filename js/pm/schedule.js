@@ -30,12 +30,12 @@ export const SEASON_TEMPLATE = [
   { ep: 9, days: [23, 25], moment: 'casa-open' },
   { ep: 10, days: [26, 28], moment: 'casa-nights' },
   { ep: 11, days: [29, 30], moment: 'stick-or-twist' },
-  { ep: 12, days: [31, 33], moment: 'photos', arrivals: { bombshell: 1 }, rituals: ['movie-night'] },
+  { ep: 12, days: [31, 33], moment: 'photos', arrivals: { bombshell: 1 } },
   { ep: 13, days: [34, 36], moment: 'public-vote', slot: 'vote2', dumpFormat: 'safe-pick-couple', bottom: 3 },
   { ep: 14, days: [37, 38], moment: 'villa' },
   { ep: 15, days: [39, 41], moment: 'recoupling', rituals: ['hideaway'] },
   { ep: 16, days: [42, 43], moment: 'villa' },
-  { ep: 17, days: [44, 46], moment: 'public-vote', slot: 'vote-post', dumpFormat: 'safe-pick-couple', bottom: 3 },
+  { ep: 17, days: [44, 46], moment: 'public-vote', slot: 'vote-post', dumpFormat: 'safe-pick-couple', bottom: 3, rituals: ['movie-night'] },
   { ep: 18, days: [47, 48], moment: 'villa' },
   { ep: 19, days: [49, 51], moment: 'recoupling', arrivals: { bombshell: 0 }, rituals: ['notes'], finalRecoupling: true },
   { ep: 20, days: [52, 53], moment: 'villa' },
@@ -124,9 +124,12 @@ function baseWeeks(casa, finalCouples = FINAL_COUPLES) {
     { moment: 'casa-open', fixed: true },
     { moment: 'casa-nights', fixed: true },
     { moment: 'stick-or-twist', fixed: true, days: 2 },
-    { moment: 'photos', cap: 1, rituals: ['movie-night'], fixed: true },
+    { moment: 'photos', cap: 1, fixed: true },
   ] : [];
-  // With no Casa there are no photos to show: Movie Night moves to the vote.
+  // Movie Night is the last vote before the final recoupling, about ten days
+  // after Casa Amor as the real show plays it (UK 2021: Faye and Teddy's) —
+  // never the photos' night, which it used to share and starve (user,
+  // season 1: "just 29 frames and 1 or 2 videos"). Without Casa: the second vote.
   const post = [
     { moment: 'public-vote', slot: 'vote2', fixed: true, ...(casa > 0 ? {} : { rituals: ['movie-night'] }) },
     // Two more villa weeks between Casa Amor and the final recoupling, as the
@@ -137,7 +140,7 @@ function baseWeeks(casa, finalCouples = FINAL_COUPLES) {
     // the last night before the final recoupling and sees the villa as that
     // recoupling will find it.
     { moment: 'recoupling', postCasa: true, rituals: ['hideaway'] },
-    { moment: 'public-vote', slot: 'vote-post', fixed: true, anchorPost: true },
+    { moment: 'public-vote', slot: 'vote-post', fixed: true, anchorPost: true, ...(casa > 0 ? { rituals: ['movie-night'] } : {}) },
     // THE FINAL RECOUPLING. Everyone left single goes home, however many that
     // is, and from here the villa is couples only: each night after it sends
     // one couple home until four are left (user: "the 2 weeks before the

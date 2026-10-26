@@ -96,7 +96,7 @@ import { FINAL_DATE_MATES, JOURNEY_OPEN_MATES, JOURNEY_END_MATES, DECLARATION_MA
 import { GAME_KISS, TOD_TRUTH } from './kiss-games.js';
 import { LIE_WRITE, LIE_ROW } from './lie-detector.js';
 import { HIDEAWAY_TEXT, HIDEAWAY_VOTE, HIDEAWAY_WIN, HIDEAWAY_SNUB, HIDEAWAY, HIDEAWAY_MORNING } from './hideaway.js';
-import { MOVIE_TEXT, MOVIE_SEAT, MOVIE_REACT, MOVIE_ROW, MOVIE_SPLIT } from './movie-night.js';
+import { MOVIE_TEXT, MOVIE_SEAT, MOVIE_REACT, MOVIE_ROW, MOVIE_SPLIT, MOVIE_CALLOUT, MOVIE_AFTER } from './movie-night.js';
 import { FAMILIES, NOTES, HEART_RATE, SNOG_MARRY_PIE } from './rituals.js';
 import { CASA_TEXT, CASA_GOODBYE, CASA_RETURN, CASA_REACT, CASA_ROW, PHOTO_TEXT, PHOTOS, PHOTO_ROW, PHOTO_SPLIT } from './casa-amor.js';
 import { DUMP_NERVES, RECOUPLE_NERVES, DUMP_PLEA } from './ceremony.js';
@@ -140,7 +140,7 @@ export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'dee
   'game-kiss': GAME_KISS, 'tod-truth': TOD_TRUTH,
   'lie-write': LIE_WRITE, 'lie-row': LIE_ROW,
   'hideaway-text': HIDEAWAY_TEXT, 'hideaway-vote': HIDEAWAY_VOTE, 'hideaway-win': HIDEAWAY_WIN, 'hideaway-snub': HIDEAWAY_SNUB, hideaway: HIDEAWAY, 'hideaway-morning': HIDEAWAY_MORNING,
-  'movie-text': MOVIE_TEXT, 'movie-seat': MOVIE_SEAT, 'movie-react': MOVIE_REACT, 'movie-row': MOVIE_ROW, 'movie-split': MOVIE_SPLIT,
+  'movie-text': MOVIE_TEXT, 'movie-seat': MOVIE_SEAT, 'movie-react': MOVIE_REACT, 'movie-row': MOVIE_ROW, 'movie-split': MOVIE_SPLIT, 'movie-callout': MOVIE_CALLOUT, 'movie-after': MOVIE_AFTER,
   families: FAMILIES, notes: NOTES, 'heart-rate': HEART_RATE, 'snog-marry-pie': SNOG_MARRY_PIE,
   'casa-text': CASA_TEXT, 'casa-goodbye': CASA_GOODBYE, 'casa-return': CASA_RETURN, 'casa-react': CASA_REACT, 'casa-row': CASA_ROW,
   'photo-text': PHOTO_TEXT, photos: PHOTOS, 'photo-row': PHOTO_ROW, 'photo-split': PHOTO_SPLIT,

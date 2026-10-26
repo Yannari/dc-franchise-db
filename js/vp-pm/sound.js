@@ -240,7 +240,7 @@ const SITUATION = {
     'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'casa-miss', 'hideaway-win', 'game-kiss', 'found-love', 'exw-back'],
   cheating: ['photos', 'head-turned', 'bed-share'],
   drama: ['argument', 'blowup', 'pile-in', 'villa-divided', 'jealous-confront', 'told-confront', 'stirrer-confront', 'jealous-retaliate', 'cold-shoulder',
-    'casa-row', 'photo-row', 'movie-row', 'lie-row', 'triangle-rivals', 'triangle-ultimatum', 'apology-rejected', 'kin-protect',
+    'casa-row', 'photo-row', 'movie-row', 'movie-callout', 'lie-row', 'triangle-rivals', 'triangle-ultimatum', 'apology-rejected', 'kin-protect',
     'rival-shade', 'rival-row', 'code-call', 'rival-won', 'crush-watch', 'camp-confront', 'camp-clash', 'camp-split', 'camp-switch', 'feud-confront', 'feud-interrupt', 'feud-shade', 'game-called', 'game-fallout', 'betray-see', 'betray-confront', 'grass-confront', 'parents-wobble', 'vote-fallout', 'vote-callout', 'grudge-clash', 'visit-arrive', 'visit-confront', 'sc-arrive'],
   cry: ['walk-doubt', 'walk-after', 'mugged-low', 'betray-end', 'redeem-act', 'crush-move', 'crush-over', 'crush-plea', 'casa-goodbye', 'breakdown', 'comfort', 'dump-reaction', 'photo-split', 'movie-split', 'torch', 'ask-declined', 'jealous-sulk'],
   // The dumped saying goodbye, and anyone walking out.
@@ -319,7 +319,7 @@ export function musicOf(e) {
   if (th && e.kind === 'pull') return th === 'spark' ? 'romance' : 'cheating';
   if (th === 'doubt' && e.kind === 'vent') return 'cry';
   if ((th === 'progress' || th === 'spark') && ['deep-chat', 'chat', 'date'].includes(e.kind)) return 'romance';
-  if (e.kind === 'movie-clip') return e.extra?.of === 'loyalty' ? null : 'cheating';
+  if (e.kind === 'movie-clip') return e.extra?.of === 'sweet' ? 'romance' : e.extra?.of === 'funny' ? 'villa' : e.extra?.of === 'loyalty' ? null : e.extra?.of === 'said' ? 'drama' : 'cheating';
   if (e.kind === 'casa-react') return ['devastated', 'turned', 'both'].includes(e.extra?.of) ? 'cheating' : null;
   // A couple's FIRST kiss is the moment (events.js records it, counting only
   // real kisses — a challenge's kiss is not one); the tenth is a chat.

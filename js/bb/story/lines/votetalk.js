@@ -204,7 +204,7 @@ export default {
       { by: 'b', say: "Us. Probably everyone in the kitchen. Probably." },
       { by: 'a', say: "'Probably' twice." },
       { by: 'b', say: "It's Big Brother. It's always 'probably' until the host reads it out." },
-      { by: 'a', dr: "{target} goes. I'm almost sure. In here, 'almost' is the whole game." },
+      { by: 'a', dr: "{target} goes. I'm almost sure. I just hate 'almost'." },
     ] },
     { id: 'vt.pn3', turns: [
       { by: 'b', say: "Is it {target} or {other}? Just tell me which one we're doing." },

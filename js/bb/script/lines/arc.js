@@ -108,7 +108,7 @@ export default {
     { id: 'qe.d6', turns: [{ by: 'b', dr: "{a} promised me {a.posAdj} vote this week. I didn't even ask." }] },
     { id: 'qe.d7', turns: [{ by: 'a', say: "You're safe from me this week." }, { by: 'b', say: "Why?" }, { by: 'a', say: "Because you were kind to me when it counted." }] },
     { id: 'qe.d8', turns: [{ by: 'c', dr: "{a} and {b} have made some sort of deal. I mentioned {b} and {a} went cold." }] },
-    { id: 'qe.d9', turns: [{ by: 'a', dr: "I owe {b}. In this game, I pay my debts." }] },
+    { id: 'qe.d9', turns: [{ by: 'a', dr: "I owe {b}. And I'm going to pay {b} back." }] },
   ],
   'arc.debt.defend': [
     { id: 'qe.f1', turns: [{ by: 'c', say: "{b} is so annoying." }, { beat: '{a} does not laugh.' }, { by: 'c', say: "...Anyway." }] },

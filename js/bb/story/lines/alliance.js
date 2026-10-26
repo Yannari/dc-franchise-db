@@ -1056,7 +1056,7 @@ export default {
       { by: 'b', say: "I was with you. And then I wasn't. Things change." },
       { by: 'a', say: "Overnight?" },
       { by: 'b', say: "In this house? Yeah. Overnight." },
-      { by: 'b', dr: "That's the game. You make a promise at night, the house changes by morning. {a} should know that by now." },
+      { by: 'b', dr: "Yeah, I made {a} a promise. Then things changed. {a} would've done the same to me." },
     ] },
   ],
 

@@ -365,7 +365,7 @@ export default {
       { by: 'a', say: "Nothing happened. That's the point. {c} just walks in and the room gets worse." },
       { by: 'b', say: "That's not a reason to evict somebody." },
       { by: 'a', say: "It's my reason." },
-      { by: 'b', dr: "You can't win this game if you let one person get under your skin. {a} has let {c} all the way in." },
+      { by: 'b', dr: "{a} can't stop talking about {c}. {c} is really getting to {a}, and everybody can see it." },
     ] },
     { id: 'gt.bv3', phase: ['jury', 'endgame'], room: 'bedroom', turns: [
       { beat: 'Bedroom. {a} is sitting with {b}, both keeping their voices down.' },

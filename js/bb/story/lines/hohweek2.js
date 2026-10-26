@@ -239,9 +239,9 @@ export default {
       { by: 'b', say: "You look like you slept for the first time in a week." },
       { by: 'a', say: "I did. {c} is gone. It worked." },
       { by: 'b', say: "Not everybody's happy about it." },
-      { by: 'a', say: "Not everybody had to be. Enough people were." },
+      { by: 'a', say: "They don't have to be. Enough people voted with me." },
       { by: 'b', say: "And now you're just a houseguest again." },
-      { by: 'a', dr: "My one job as HOH was getting {c} out of this house, and I did it. Now somebody else holds the keys, and I find out what that costs me." },
+      { by: 'a', dr: "I won HOH to get {c} out, and I got {c} out. I don't have the room any more, so I guess now we see who comes after me." },
     ] },
     { id: 'hw.vd5', room: 'kitchen', presumes: ['vote'], turns: [
       { beat: 'Kitchen. {a} and {b} are doing the breakfast dishes side by side.' },
@@ -250,8 +250,8 @@ export default {
       { by: 'b', say: "That was a really good HOH." },
       { by: 'a', say: "{c} is gone, and I'm still friends with most of the house. I'll take it." },
       { by: 'b', say: "Most?" },
-      { by: 'a', say: "Most. You can't send somebody home and keep their friends." },
-      { by: 'a', dr: "{c} walked out exactly the way I planned. It doesn't make me safe next week, but nobody can say my week was wasted." },
+      { by: 'a', say: "Most. {c}'s friends aren't really talking to me." },
+      { by: 'a', dr: "It went exactly how I wanted. I'm not safe next week, but I'm really happy with how this week went." },
     ] },
     { id: 'hw.vd6', room: 'backyard', presumes: ['vote'], turns: [
       { beat: 'Backyard. {a} is sitting in the hot tub, alone, until {b} climbs in.' },
@@ -261,7 +261,7 @@ export default {
       { by: 'a', say: "Exactly. That's the whole point." },
       { by: 'b', say: "Who's next, then?" },
       { by: 'a', say: "Ask me when I've got another key." },
-      { by: 'a', dr: "I got rid of the person most likely to come after me. Whatever happens next, I used my HOH." },
+      { by: 'a', dr: "{c} would've come after me the first chance {c} got. Now {c} can't. Whatever happens next, I'm glad I did it." },
     ] },
     { id: 'hw.vd7', room: 'bedroom', presumes: ['vote'], turns: [
       { beat: 'Bedroom. {a} is moving back into a shared room, carrying an armful of clothes.' },
@@ -271,7 +271,7 @@ export default {
       { by: 'a', say: "Because {c}'s gone, and it was my call." },
       { by: 'b', say: "Do you feel bad at all?" },
       { by: 'a', say: "No. Should I?" },
-      { by: 'a', dr: "I don't feel bad. I made a plan, I stuck to it, and {c} is gone. Most HOHs don't get the week they wanted. I did." },
+      { by: 'a', dr: "I don't feel bad. I said I was getting {c} out, and I did. Not everybody gets to say that about their HOH." },
     ] },
   ],
   'talk.hohweek.verdict.missed': [
@@ -282,7 +282,7 @@ export default {
       { by: 'b', say: "You can't hide from {c} forever." },
       { by: 'a', say: "I know. I tried to get rid of {c}, it didn't work, and now we live together." },
       { by: 'b', say: "Awkward." },
-      { by: 'a', dr: "I put {c} up, and {c} stayed. {c} knows I came for {c.obj}, and {c} is still here." },
+      { by: 'a', dr: "I put {c} up, and {c} is still here. And {c} knows it was me. Great." },
     ] },
     { id: 'hw.vm5', room: 'kitchen', presumes: ['vote'], turns: [
       { beat: 'Kitchen. {a} is making coffee and not looking at anybody.' },
@@ -291,7 +291,7 @@ export default {
       { by: 'b', say: "It happens." },
       { by: 'a', say: "It happened to me. On my week." },
       { by: 'b', say: "So you go again." },
-      { by: 'a', dr: "I had one target. One. And they're standing at the counter making toast. I have to win something soon, or {c} is going to make me pay for trying." },
+      { by: 'a', dr: "{c} was my one target, and {c} is standing at the counter making toast. I need to win something soon, or {c} is coming for me." },
     ] },
     { id: 'hw.vm6', room: 'bedroom', presumes: ['vote'], turns: [
       { beat: 'Bedroom. {a} is pulling on a hoodie. {b} is sitting on the next bed.' },
@@ -300,7 +300,7 @@ export default {
       { by: 'b', say: "Maybe {c} will let it go." },
       { by: 'a', say: "Would you?" },
       { by: 'b', say: "...No." },
-      { by: 'a', dr: "I made my move and it missed. Now I've got an enemy who knows exactly what I'm willing to do, and no power to stop them." },
+      { by: 'a', dr: "I went after {c} and it didn't work. Now {c} hates me, and I can't do anything about it." },
     ] },
   ],
 };

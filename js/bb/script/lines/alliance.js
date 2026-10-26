@@ -463,7 +463,7 @@ export default {
       { by: 'a', say: "Around the house. You lot aren't as quiet as you think." },
     ] },
     { id: 'an.n13', turns: [
-      { by: 'a', dr: "{alliance}. They gave themselves a name. Nobody who's going to win this game gives their alliance a name." },
+      { by: 'a', dr: "{alliance}. They gave themselves a name. A name! That's how I found out about it." },
     ] },
     { id: 'an.n14', turns: [
       { by: 'a', say: "Say hi to the rest of {alliance} for me." },

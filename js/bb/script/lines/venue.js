@@ -20,7 +20,7 @@ export default {
     { id: 'vs.w5', turns: [{ by: 'b', say: "I like talking to you. It's the only time I don't think about the game." }, { by: 'a', say: "Same." }] },
     { id: 'vs.w6', turns: [{ by: 'a', say: "Tell me something about you that nobody in here knows." }, { by: 'b', say: "I'm scared of birds." }, { by: 'a', say: "Birds?" }, { by: 'b', say: "All of them." }] },
     { id: 'vs.w7', turns: [{ by: 'a', say: "How are you actually doing?" }, { by: 'b', say: "Honestly? Tired. But I'm okay." }, { by: 'a', say: "Good. I'm glad." }] },
-    { id: 'vs.w8', turns: [{ by: 'a', dr: "{b} and I talked for an hour today. Nothing about the game. That's how you build trust in here." }] },
+    { id: 'vs.w8', turns: [{ by: 'a', dr: "{b} and I talked for an hour today. Nothing about the game. I trust {b} a lot more after that." }] },
     { id: 'vs.w9', turns: [{ by: 'a', say: "You're a good person to have around." }, { by: 'b', say: "So are you. Don't tell anyone." }] },
     { id: 'vs.w10', turns: [{ by: 'b', say: "Did you sleep last night?" }, { by: 'a', say: "Not much." }, { by: 'b', say: "Me neither. Want to just sit here for a bit?" }] },
     { id: 'vs.w11', turns: [{ by: 'a', say: "If we weren't in here, I think we'd be friends." }, { by: 'b', say: "We are friends." }] },

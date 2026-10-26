@@ -423,7 +423,7 @@ export default {
       { by: 'e', say: "Would you rather go home first or come second?" },
       { beat: 'The yard goes very quiet.' },
       { by: 'f', say: "That's not a fun one." },
-      { by: 'e', dr: "I asked the one question nobody wanted. Second is the worst place in this game. Everybody knows it." },
+      { by: 'e', dr: "I asked the one question nobody wanted to answer. Nobody wants to be second. Including me." },
     ] },
     { id: 'msy.5', room: 'backyard', turns: [
       { beat: 'Backyard. It’s raining for the first time. Half the house has gone out in it on purpose.' },

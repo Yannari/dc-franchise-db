@@ -424,7 +424,7 @@ export default {
       { by: 'b', say: "Okay. Yes. It's called {alliance}. And honestly, we were going to ask you this week." },
       { by: 'a', say: "Really?" },
       { by: 'b', say: "Really. You just beat us to it." },
-      { by: 'a', dr: "Nobody asks to join an alliance. That's not how it works. Apparently it works if you just ask." },
+      { by: 'a', dr: "I was so nervous asking {b} if I could join. And they were going to ask me anyway. I'm in {alliance} now." },
     ] },
   ],
 

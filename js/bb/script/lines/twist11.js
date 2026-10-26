@@ -52,7 +52,7 @@ export default {
     { id: 'pb11.o2', turns: [{ by: 'b', say: "A mystery door with a question mark on it is a trap." }, { by: 'a', say: "{holder} opened it and {holder} is fine." }] },
     { id: 'pb11.o3', turns: [{ by: 'a', say: "Would you open it?" }, { by: 'b', say: "Never." }, { by: 'a', say: "Boring." }] },
     { id: 'pb11.o4', turns: [{ by: 'b', dr: "{a} would open anything. That's good to know." }] },
-    { id: 'pb11.o5', turns: [{ by: 'a', dr: "{b} is too careful. Careful people don't win this game." }] },
+    { id: 'pb11.o5', turns: [{ by: 'a', dr: "{b} is too careful. {b} won't make a move, and I need people who will." }] },
     { id: 'pb11.o6', turns: [
       { by: 'a', say: "You'd really never open that door? Not for anything?" },
       { by: 'b', say: "Not for anything. You don't know what's behind it." },
@@ -64,7 +64,7 @@ export default {
     { id: 'pb11.s2', turns: [{ by: 'a', say: "{holder} left it shut and got nothing." }, { by: 'b', say: "And lost nothing." }] },
     { id: 'pb11.s3', turns: [{ by: 'a', say: "Would you open it?" }, { by: 'b', say: "Never." }, { by: 'a', say: "Boring." }] },
     { id: 'pb11.s4', turns: [{ by: 'b', dr: "{a} would open anything. That's good to know." }] },
-    { id: 'pb11.s5', turns: [{ by: 'a', dr: "{b} is too careful. Careful people don't win this game." }] },
+    { id: 'pb11.s5', turns: [{ by: 'a', dr: "{b} is too careful. {b} won't make a move, and I need people who will." }] },
     { id: 'pb11.s6', turns: [{ by: 'a', dr: "If that door had been for me, I'd have opened it. No question." }] },
   ],
   'pan.watch.scene': [

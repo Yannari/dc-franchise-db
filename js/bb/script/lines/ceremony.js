@@ -151,7 +151,7 @@ export default {
   'hoh.win.first': [
     { id: 'hw.f1', turns: [
       { by: 'a', say: 'My first one! My first Head of Household!' },
-      { by: 'a', dr: "I've been sitting quiet, letting other people take the heat. Now it's my turn to hold the keys." },
+      { by: 'a', dr: "I've been sitting quiet, letting other people take the heat. Now it's my turn." },
     ] },
     { id: 'hw.f2', turns: [
       { by: 'a', say: 'Finally. Finally!' },
@@ -211,7 +211,7 @@ export default {
     ] },
     { id: 'hw.s3', turns: [
       { beat: '{a} looks straight across the room before the house has finished clapping.' },
-      { by: 'a', dr: "They tried to send me home and they missed. That's the most dangerous thing you can do in this game." },
+      { by: 'a', dr: "They tried to send me home and they missed. Now I've got the key. They should be scared." },
     ] },
     { id: 'hw.s4', turns: [
       { by: 'a', say: "Nobody's going to try that again, right? Right?" },
@@ -455,7 +455,7 @@ export default {
     { id: 'nd.t2', turns: [{ by: 'a', dr: "I'm the target. I can feel it. People are already being careful about where they sit next to me." }] },
     { id: 'nd.t3', turns: [{ by: 'a', dr: "{b} wants me gone. I'm going to make this the longest week of {b.posAdj} life." }] },
     { id: 'nd.t4', turns: [{ by: 'a', dr: "When you're the target, people stop talking to you normally. It's like they've already said goodbye." }] },
-    { id: 'nd.t5', turns: [{ by: 'a', dr: "The other nominee gets the sympathy. I get the stares. That's how you know which one you are." }] },
+    { id: 'nd.t5', turns: [{ by: 'a', dr: "Everybody's hugging the other nominee. Everybody's staring at me. I know which one of us is the target." }] },
     { id: 'nd.t6', turns: [{ by: 'a', dr: "If I win the veto, {b}'s whole week falls apart. That's the only thought in my head." }] },
   ],
   'noms.dr.blindsided': [

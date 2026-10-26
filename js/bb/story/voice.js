@@ -224,7 +224,9 @@ export function addInsight(sc, kindText, weekNum) {
   // ...and a fact only closes the kind of scene it belongs to: a flirtation takes none (the user, 2026-10-26, on
   // "Michele went bright red... Michele and I keep voting the same way": "theres no correlation"), and how two
   // people voted closes game talk or an alliance's scene, a split vote a fight too
-  const FITS = { same: ['game', 'ally'], split: ['game', 'ally', 'feud'], nomThem: ['game', 'feud'], nomMe: ['game', 'feud'],
+  // (and not an alliance being made: "Apparently it works if you just ask. Nina voted the other way in week three",
+  // the user, 2026-10-26: "other examples of that bug")
+  const FITS = { same: ['game'], split: ['game', 'feud'], nomThem: ['game', 'feud'], nomMe: ['game', 'feud'],
     theyNomMe: ['game', 'feud'], saved: ['game', 'ally', 'feud'], deal: ['game', 'feud'], alliance: ['game', 'feud'], couple: ['feud'] };
   const fits = w => (FITS[w.fact] || ['game', 'feud']).includes(kind) && !(votesTalked && (w.fact === 'split' || w.fact === 'same'));
   const hist = spoke(me) && spoke(o) && theirs && kind !== 'heart' ? res.hist.filter(fits) : [];

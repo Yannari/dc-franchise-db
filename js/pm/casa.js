@@ -10,7 +10,7 @@
 // Never reads approval or fame.
 import { attr } from './chemistry.js';
 import { romance, believed } from './feelings.js';
-import { makeEvent, partnerOf, apart } from './events.js';
+import { makeEvent, partnerOf, apart, today, casaBuilt } from './events.js';
 import { broken, splitOf, heartOf } from './just-friends.js';
 import { recordSplit } from './breakups.js';
 import { closedness } from './ladder.js';
@@ -105,6 +105,8 @@ export function stickOrTwist(state, { rng }) {
     const prof = state.profiles[o], s = prof.stats, e = emo(state, o);
     const options = [...arrivals].filter(c => roomOf(c) === roomOf(o) && attr(state, o, c) != null);
     const best = options.length ? Math.max(...options.map(c => attr(state, o, c))) / 10 : 0;
+    // …and what they built with the one they built the most with, as far as that one feels it back.
+    const built = options.length ? Math.max(...options.map(c => casaBuilt(state, o, c) * (0.4 + 0.6 * (attr(state, c, o) ?? 0) / 10))) : 0;
     // A partner who is only a friend now holds nobody back: Casa reads them
     // as single (user, 2026-10-26: "it shouldn't if they didn't rekindle").
     const p = heartOf(state, o);
@@ -125,7 +127,7 @@ export function stickOrTwist(state, { rng }) {
     const ladder = p ? -0.18 * closedness(state, o, p) : 0;
     const feelings = -0.15 * e.security / 10 + 0.2 * e.heartbreak / 10;
     const twistP = options.length
-      ? clamp(0.1 + 0.55 * best - 0.45 * conn + intent + fear - 0.3 * s.loyalty / 10 + arch + ladder + feelings
+      ? clamp(-0.06 + 0.3 * best + 0.75 * built - 0.45 * conn + intent + fear - 0.3 * s.loyalty / 10 + arch + ladder + feelings
         + (p ? 0 : 0.4), 0.02, 0.95)
       : 0;
     return { o, p, twistP, options };
@@ -134,7 +136,9 @@ export function stickOrTwist(state, { rng }) {
   const taken = new Set();
   const decisions = [];
   for (const { o, twistP, options } of scored) {
-    const free = options.filter(c => !taken.has(c)).sort((x, y) => attr(state, o, y) - attr(state, o, x));
+    // Who they twist for: the one they want, and the one they built something with.
+    const pull = c => (attr(state, o, c) ?? 0) / 10 + casaBuilt(state, o, c);
+    const free = options.filter(c => !taken.has(c)).sort((x, y) => pull(y) - pull(x));
     const pressure = peerPressure(state, o, decisions);
     if (free.length && rng() < clamp(twistP + pressure, 0.02, 0.95)) {
       taken.add(free[0]);

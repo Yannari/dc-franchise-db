@@ -71,6 +71,30 @@ export function pullBetween(s, rng, a, b) {
   }
   return { players: [a, b], kind: 'pull' };
 }
+// What two people built at Casa, from what they did together there: a kiss, a
+// night in the same bed, a pull that went somewhere, a long talk — and a pull
+// turned down counts against it. 0..1, and it saturates: the third night adds
+// less than the first. The user, 2026-10-26: "make sure some couples are really
+// missed due to the lack of Casa episodes" — measured on twenty seasons, a third
+// Casa episode doubled the drama and changed no decision, because the decision
+// read attraction alone, and the time was spread over a new pairing each scene.
+// Read by the decision (casa.js stickOrTwist) and by Casa's own casting below:
+// day one is meeting everybody, after that it is the one you have something with.
+const BUILT = { kiss: 1, 'deep-chat': 0.8, chat: 0.4, date: 1, 'challenge-kiss': 0.5, 'game-kiss': 0.5, 'snogger-kiss': 0.4 };
+export function casaBuilt(state, o, c) {
+  if (!state.split && state.splitEp == null) return 0;
+  const since = state.splitEp ?? state.ep;
+  let sum = 0;
+  for (const e of [...(state.history || []), ...today(state)]) {
+    if (e.ep < since || !e.players || !e.players.slice(0, 2).includes(o) || !e.players.slice(0, 2).includes(c)) continue;
+    if (e.kind === 'bed-share') sum += e.extra?.kissed ? 1.6 : 1.1;
+    else if (e.kind === 'pull') sum += e.extra?.rebuffed ? -0.3 : e.extra?.kissed ? 1.2 : 0.6;
+    else if (e.kind === 'loyalty') sum -= 0.5;
+    else sum += BUILT[e.kind] || 0;
+  }
+  return sum > 0 ? 1 - Math.exp(-sum / 3) : 0;
+}
+
 /** How ready a coupled islander is to go chatting someone else up. */
 const graftUrge = (state, n) => (0.3 + 0.7 * (1 - S(state, n).loyalty / 10))
   * (PLAYERS.has(state.profiles[n].archetype) ? 1.5 : LOYAL_KIND.has(state.profiles[n].archetype) ? 0.5 : 1);
@@ -271,7 +295,7 @@ export const KINDS = {
       const noToday = n => today(s).some(e => (e.kind === 'loyalty' || (e.kind === 'pull' && e.extra?.rebuffed))
         && e.players.includes(a) && e.players.includes(n));
       const b = weighted(rng, compatibleMates(s, a).filter(n => n !== partnerOf(s, a) && !noToday(n))
-        .map(n => [n, attr(s, a, n)]));
+        .map(n => [n, attr(s, a, n) * (s.split ? 1 + 3 * casaBuilt(s, a, n) : 1)]));
       if (!b) return null;
       return pullBetween(s, rng, a, b);
     },
@@ -365,7 +389,8 @@ export const KINDS = {
       const opts = [];
       for (const o of s.villa.filter(n => !fresh.has(n) && partnerOf(s, n) && !inBed.has(n))) {
         for (const c of roomMates(s, o).filter(n => fresh.has(n) && !partnerOf(s, n) && !inBed.has(n))) {
-          const w = (attr(s, o, c) ?? 0) * (heartOf(s, o) ? (1 - 0.7 * S(s, o).loyalty / 10) * (1 - 0.25 * (s.casaMissed?.[o] || 0)) : 1);
+          const w = (attr(s, o, c) ?? 0) * (heartOf(s, o) ? (1 - 0.7 * S(s, o).loyalty / 10) * (1 - 0.25 * (s.casaMissed?.[o] || 0)) : 1)
+            * (1 + 3 * casaBuilt(s, o, c));
           if (w > 0) opts.push([[o, c], w]);
         }
       }

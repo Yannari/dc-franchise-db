@@ -359,6 +359,17 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
   // past, exactly as watched, and the loop plays only what comes after them.
   const resumeAt = resume?.rows?.length ? restoreFromAired(state, resume.rows, queues, seed) : 0;
   if (resumeAt) gs.episodeHistory.push(...JSON.parse(JSON.stringify(resume.rows)));
+  // A season that aired on another schedule (Casa Amor was two episodes of three
+  // days until 2026-10-26): the days run on from the last one aired, never back.
+  if (resumeAt) {
+    const last = resume.rows[resume.rows.length - 1];
+    const lastDay = last.days?.[1] ?? 0, lastCal = last.calendar?.[1] ?? lastDay;
+    const next = schedule.find(e => e.ep > resumeAt && e.days);
+    const dShift = next && next.days[0] <= lastDay ? lastDay + 1 - next.days[0] : 0;
+    const cShift = next?.calendar && next.calendar[0] <= lastCal ? lastCal + 1 - next.calendar[0] : 0;
+    if (dShift || cShift) schedule = schedule.map(e => (e.ep <= resumeAt ? e : { ...e,
+      ...(e.days ? { days: e.days.map(d => d + dShift) } : {}), ...(e.calendar ? { calendar: e.calendar.map(d => d + cShift) } : {}) }));
+  }
 
   for (const entry of schedule) {
     if (entry.ep <= resumeAt) continue;

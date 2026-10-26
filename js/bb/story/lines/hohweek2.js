@@ -111,7 +111,7 @@ export default {
     { id: 'hw.fh4', room: 'hoh-room', turns: [
       { beat: 'HOH room. {b} comes up the stairs slowly, already sure of the answer.' },
       { by: 'b', say: "I'm not going to waste your time. Is it me?" },
-      { by: 'a', say: "It's you." },
+      { by: 'a', say: "Right now? Yes. It could still change." },
       { by: 'b', say: "Can I ask why?" },
       { by: 'a', say: "Because you'd do the same to me. I'm just doing it first." },
       { by: 'b', say: "That's fair. I hate that it's fair." },
@@ -121,7 +121,7 @@ export default {
     { id: 'hw.fh5', room: 'hoh-room', turns: [
       { beat: 'HOH room. {b} is standing in the doorway. {a} pats the bed for {b} to sit.' },
       { by: 'b', say: "I'd rather stand. Am I going up?" },
-      { by: 'a', say: "Yes. I wanted you to hear it from me, not at the ceremony." },
+      { by: 'a', say: "Probably, yes. I wanted you to hear it from me, not at the ceremony." },
       { by: 'b', say: "Is there anything I can do?" },
       { by: 'a', say: "Honestly? Not with me. The veto's your best shot." },
       { by: 'b', say: "Then I'll win it." },
@@ -131,7 +131,7 @@ export default {
     { id: 'hw.fh6', room: 'hoh-room', turns: [
       { beat: 'HOH room. {b} has brought nothing, no snacks and no speech.' },
       { by: 'b', say: "Just tell me straight. Am I going up?" },
-      { by: 'a', say: "Straight: you're my target." },
+      { by: 'a', say: "Straight: right now, you're the name at the top of my list." },
       { by: 'b', say: "Okay. Thank you." },
       { by: 'a', say: "You're taking that well." },
       { by: 'b', say: "I'm not. I'm just not going to fall apart in your room." },

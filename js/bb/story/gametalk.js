@@ -253,7 +253,6 @@ export function bondTalkFor(week, ctx, talkedPairs) {
 // eviction: whether the week worked. All of it read from the engine's plan (bb/strategy.js,
 // week.plan) and pawn negotiation (week.pawnAsk); nothing here decides anything.
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
-const PLAN_KIND = { 'target-pawn': 'pawn', 'double-target': 'two', 'two-targets': 'two', 'pair-split': 'pair', 'target-ally': 'ally', expendables: 'quiet' };
 
 export function hohWeekFor(week, ctx, clock, talked, lastGone) {
   const house = ctx.present || [];
@@ -313,6 +312,25 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
     return out;
   }
 
+  // ── between the ceremony and the veto: the plan, now that it is real ──
+  // (the user, 2026-10-25: the plan used to be laid out before the ceremony, names and all, "and spoiled me").
+  // Two chairs here; a Block Buster week's three are talk.bb.hoh.
+  if (clock.hoh && clock.noms && !clock.veto) {
+    const hoh = ctx.hoh;
+    const plan = week.plan;
+    const nomAct = (week.acts || []).find(x => x?.type === 'nominations' && !x.byCoHoh);
+    const block = (nomAct?.nominees || []).filter(Boolean);
+    if (!hoh || !plan || !house.includes(hoh) || block.length !== 2) return [];
+    const bd = plan.backdoorTarget && !block.includes(plan.backdoorTarget) ? plan.backdoorTarget : null;
+    const real = block.includes(plan.target) ? plan.target : block[0];
+    const other = block.find(n => n !== real);
+    const b = closest(hoh, [...block, bd].filter(Boolean));
+    if (bd) want('hohweek.after.backdoor', { a: hoh, b, c: block[0], d: block[1], e: bd });
+    else if (plan.pawn && plan.pawn === other) want('hohweek.after.pawn', { a: hoh, b, c: real, d: other });
+    else want('hohweek.after.two', { a: hoh, b, c: real, d: other });
+    return out;
+  }
+
   // ── between the HOH and the ceremony ──
   if (!clock.hoh || clock.noms) return [];
   const hoh = ctx.hoh;
@@ -331,35 +349,23 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
   const sw = (week.targetSwitches || []).filter(c => c.at === 'post').at(-1);
   const first = sw && week.planFirst;
   const b = closest(hoh, [real, plan.pawn, bd, ...block, sw?.from, sw?.by, first?.pawn, ...(first?.nominees || [])].filter(Boolean));
-  const [n0, n1] = block;
-  if (first && block.length < 3) {
-    const fb = first.backdoorTarget && !(first.nominees || []).includes(first.backdoorTarget) ? first.backdoorTarget : null;
-    const [f0, f1] = first.nominees || [];
-    if (fb) want('hohweek.plan.backdoor', { a: hoh, b, c: f0, d: f1, e: fb });
-    else {
-      const kind = PLAN_KIND[first.structure] || 'pawn';
-      const freal = first.target;
-      const other = (first.nominees || []).find(n => n !== freal);
-      want(`hohweek.plan.${kind}`, { a: hoh, b, c: freal, d: kind === 'pawn' ? (first.pawn || other) : other });
-    }
-  } else if (block.length >= 3) {
-    if (bd) want('hohweek.plan3.backdoor', { a: hoh, b, c: block[0], d: block[1], f: block[2], e: bd });
-    else {
-      const pawn = plan.pawn && block.includes(plan.pawn) && plan.pawn !== real ? plan.pawn : null;
-      const rest = block.filter(n => n !== real && n !== pawn);
-      if (pawn) want('hohweek.plan3.pawn', { a: hoh, b, c: real, d: pawn, f: rest[0] });
-      else want('hohweek.plan3.targets', { a: hoh, b, c: real, d: rest[0], f: rest[1] });
-    }
-  } else if (bd) want('hohweek.plan.backdoor', { a: hoh, b, c: n0, d: n1, e: bd });
-  else {
-    const kind = PLAN_KIND[plan.structure] || 'pawn';
-    const other = block.find(n => n !== real);
-    want(`hohweek.plan.${kind}`, { a: hoh, b, c: real, d: kind === 'pawn' ? (plan.pawn || other) : other });
+  const [n0] = block;
+  // Before the ceremony the HOH weighs it out loud and commits to nothing (the user, 2026-10-25: "sometimes they
+  // have a plan before nom but nothing set in stone"): the name they lean to, one more from the block, and one
+  // who may never be nominated at all, in either order, so the talk never spells out the ceremony. The plan as it
+  // was first made, on a week that changes its mind after (the switch scene follows).
+  {
+    const lean = first ? (first.backdoorTarget || first.target) : real;
+    const fromBlock = block.find(n => n !== lean && n !== plan.pawn) || block.find(n => n !== lean);
+    const maybe = house.filter(n => n !== hoh && n !== b && n !== lean && !block.includes(n) && n !== bd)
+      .sort((x, y) => getBond(hoh, x) - getBond(hoh, y))[0];
+    const [d, e] = rng() < 0.5 ? [fromBlock, maybe] : [maybe, fromBlock];
+    if (lean && d && e) want('hohweek.weigh', { a: hoh, b, c: lean, d, e });
   }
   // the plan scene IS the HOH saying the name to their closest person: the engine's moment of it
   // (power-hoh-deciding) does not fold into it a second time ("It's Nichelle. Don't tell anyone",
   // two lines after the whole backdoor was laid out)
-  const planned = out.find(t => /^hohweek\.plan/.test(t.kind));
+  const planned = out.find(t => /^hohweek\.(plan|weigh)/.test(t.kind));
   if (planned) planned.mute = (week.acts || []).flatMap(x => x?.socialBeats || [])
     .filter(x => x && !x.aired && x.eventId === 'power-hoh-deciding' && x.players?.[0] === hoh);
   // the switch itself, with whoever brought the name up (a pitch); the pitch's own engine moment is

@@ -289,9 +289,9 @@ export default {
     { id: 'hw.fh1', room: 'hoh-room', turns: [
       { beat: 'HOH room. {b} knocks, comes in, and does not sit down.' },
       { by: 'b', say: "Just tell me. Am I going up?" },
-      { by: 'a', say: "...Yes. I'm not going to lie to you." },
+      { by: 'a', say: "...Probably. I'm not going to lie to you." },
       { by: 'b', say: "Wow. Okay. Thank you for saying it to my face, I guess." },
-      { by: 'a', say: "You'd have found out at the ceremony anyway. You deserved to hear it from me." },
+      { by: 'a', say: "If it's you, I'd rather you heard it from me than at the ceremony." },
       { by: 'b', say: "Is there anything I can say?" },
       { by: 'a', say: "Win the veto." },
       { by: 'b', dr: "At least {a} was honest. It doesn't make it hurt less. It does make me want to win that veto more than anything." },
@@ -299,7 +299,7 @@ export default {
     { id: 'hw.fh2', room: 'hoh-room', turns: [
       { beat: 'HOH room. {b} sits on the edge of the bed, arms folded.' },
       { by: 'b', say: "People are saying I'm your target." },
-      { by: 'a', say: "People are right." },
+      { by: 'a', say: "Right now? People aren't wrong." },
       { by: 'b', say: "Can I at least know why?" },
       { by: 'a', say: "Because you're good at this game, and you're not playing it with me." },
       { by: 'b', say: "That doesn't feel like a compliment." },
@@ -308,7 +308,7 @@ export default {
     ] },
     { id: 'hw.fh3', room: 'hoh-room', turns: [
       { beat: 'HOH room. {b} has come up with a speech ready. {a} stops it before it starts.' },
-      { by: 'a', say: "Before you say anything: you're going up." },
+      { by: 'a', say: "Before you say anything: you're probably going up." },
       { by: 'b', say: "I haven't even made my case." },
       { by: 'a', say: "I know. I don't want you wasting it on me. Save it for the house." },
       { by: 'b', say: "That's... weirdly kind." },

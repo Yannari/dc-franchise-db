@@ -44,7 +44,7 @@ describe('the backdoor, told', () => {
     }
   });
 
-  it('in real seasons: a told backdoor sits between the ceremony and the veto, and the HOH plans it before the ceremony', () => {
+  it('in real seasons: a told backdoor sits between the ceremony and the veto; the HOH weighs names before it and explains the plan after it', () => {
     let plans = 0;
     for (const row of weeks) {
       const acts = row.acts || [];
@@ -56,10 +56,10 @@ describe('the backdoor, told', () => {
             expect(noms >= 0 && i >= noms, `week ${row.num}: ${sc.lineId} before the nominations`).toBe(true);
             expect(veto < 0 || i < veto, `week ${row.num}: ${sc.lineId} after the veto`).toBe(true);
           }
-          if (/^hohweek\.plan3?\.backdoor$/.test(String(sc.step))) {
-            plans++;
-            expect(noms < 0 || i < noms, `week ${row.num}: the HOH's plan after the ceremony`).toBe(true);
-          }
+          // the HOH weighs names before the ceremony and explains the plan after it, before the veto
+          if (sc.step === 'hohweek.weigh') { plans++; expect(noms < 0 || i < noms, `week ${row.num}: weighing after the ceremony`).toBe(true); }
+          if (/^hohweek\.after\./.test(String(sc.step))) expect(noms >= 0 && i >= noms && (veto < 0 || i < veto), `week ${row.num}: the plan outside its window`).toBe(true);
+          expect(String(sc.step), `week ${row.num}`).not.toMatch(/^hohweek\.plan/);
         }
       });
     }

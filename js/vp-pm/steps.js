@@ -43,7 +43,7 @@ export const KIND_LABEL = {
   'bombshell-guess': 'Who is it?', 'bombshell-react': 'All eyes on the steps',
   'movie-text': 'Movie Night', 'movie-seat': 'Taking their seats', 'movie-clip': 'Now showing', 'movie-react': 'The reaction',
   'movie-row': 'After the screening', 'movie-split': "It's over", 'movie-callout': 'Said behind your back', 'movie-after': 'After Movie Night',
-  'casa-host': 'The Casa Amor recoupling', 'casa-react': 'The moment', 'casa-row': 'After the fire pit', 'photo-text': 'Post from Casa',
+  'casa-host': 'The Casa Amor recoupling', 'casa-react': 'The moment', 'casa-row': 'After the fire pit', 'photo-text': 'Post from Casa', 'postcard-text': "You've got post", postcard: 'The postcard',
   'photo-row': 'The photo', 'photo-split': "It's over",
   'casa-miss': 'Missing them', 'pair-text': 'I got a text!', 'ex-text': 'I got a text!', 'ex-reveal': 'The ex', 'ex-partner': 'You two know each other?', 'ex-confront': 'What are you doing here?', 'kin-entrance': 'Two new arrivals', 'kin-heart': 'Family', 'kin-vet': 'The once-over',
   'kin-protect': 'Stepping in', 'ex-awkward': 'The ex', 'ex-jealous': 'The ex, moved on', 'kin-goodbye': 'Saying goodbye', 'kin-walk': 'Leaving together',
@@ -296,7 +296,9 @@ function fxFor(row, e, first) {
   if (k === 'casa-row' && e.extra?.of === 'deny') fx.shake = true;
   // The photos: a Polaroid of the real moment drops on the stage and develops.
   if (k === 'photos') fx.polaroid = { faces: e.extra?.faces || [e.players[1]], ep: e.extra?.photoEp ?? null };
-  if (k === 'photo-text') fx.phone = true;
+  if (k === 'photo-text' || k === 'postcard-text') fx.phone = true;
+  if (k === 'postcard') fx.polaroid = { faces: e.extra?.faces || [e.players[1]], ep: e.extra?.photoEp ?? null };
+  if (k === 'postcard' && ['kiss', 'bed', 'game'].includes(e.extra?.of)) fx.shake = true;
   // The film of their story: each chapter a polaroid with its day on it, and
   // at the end, how they felt about each other, episode by episode.
   if (k === 'journey-clip') fx.polaroid = { faces: e.extra?.about ? [e.players[0], e.extra.about] : e.players.slice(0, 2), ep: e.extra?.clipEp ?? null,
@@ -362,7 +364,7 @@ function fxFor(row, e, first) {
   // The bombshell comes down the steps as a silhouette and lights up (stage.js).
   if (k === 'entrance' && e.extra?.of === 'bombshell') fx.reveal = true;
   if (k === 'steal' || k === 'argument' || k === 'jealous-confront' || k === 'photos' || k === 'snogger-row') fx.shake = true;
-  if (k === 'photos') fx.neon = ['Mugged off', '#ef4444'];
+  if (k === 'photos' && e.extra?.of !== 'game') fx.neon = ['Mugged off', '#ef4444'];
   if (k === 'movie-night' || k === 'reveal') fx.raw = true;
   if (e.aired && e.major?.length && !fx.neonDie) fx.toast = ['Major moment', KIND_LABEL[k] || 'A big moment'];
   return fx;
@@ -755,7 +757,7 @@ function hookFor(row, kind, label) {
   if (row.moment === 'bombshell') return 'Still to come: a new face walks into the villa.';
   if (row.moment === 'casa-open') return 'Still to come: the villa splits in two.';
   if (row.moment === 'stick-or-twist') return 'Still to come: stick, or twist?';
-  if (row.moment === 'photos') return "Still to come: the photos from Casa Amor.";
+  if (row.moment === 'photos') return "Still to come: the postcards, back in one villa.";
   return null;
 }
 function clipsFrom(screens, max = 3) {

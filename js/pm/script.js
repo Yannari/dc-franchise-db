@@ -73,6 +73,8 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   'again', 'backNow',
   // a graft watched by the CHASER's partner: {c} went after {d}, not the other way round
   'chaser',
+  // the postcard a was sent from the other villa this Casa (pm/postcards.js): kiss · bed · pull · game · close · alone
+  'postcard',
   // a talk file's own (pm/talk/*.js facts())
   'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels', 'believed', 'dayOne', 'side',
   // Casa Amor: who this scene concerns is in the other villa, and which villa it is in

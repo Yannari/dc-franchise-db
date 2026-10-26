@@ -23,6 +23,7 @@ import { kinFor, onYourSide, BLOOD } from './kin.js';
 import { secretMission, sleepover, immunityChallenge } from './one-offs.js';
 import { attr, nudgeAttraction } from './chemistry.js';
 import { stickOrTwist } from './casa.js';
+import { postcards } from './postcards.js';
 import { kissFirst } from './kiss-games.js';
 import { finalDate, speechChapters, shapesOf } from './journey.js';
 import { confrontation } from './movie-night.js';
@@ -1324,7 +1325,8 @@ Object.assign(MOMENTS, {
     return { events: names.length ? openCasa(state, names, { ep: state.ep, seed: ctx.seed, rng: ctx.rng }) : [],
       exits: [], ballots: [] };
   },
-  'casa-nights': () => ({ events: [], exits: [], ballots: [] }),
+  // The second night of Casa: the postcards, in both villas (pm/postcards.js).
+  'casa-nights': (state, ctx) => ({ events: postcards(state, streamFor(ctx.seed, `postcards:${state.ep}${state.epSalt || ''}`)), exits: [], ballots: [] }),
   // A villa day: the day and its challenge, and nobody goes home (schedule.js).
   villa: () => ({ events: [], exits: [], ballots: [] }),
   'stick-or-twist': (state, ctx) => {
@@ -1335,40 +1337,31 @@ Object.assign(MOMENTS, {
   },
   photos: (state, ctx) => {
     const events = [];
-    // The photos are a scene, not an inbox: the worst half-dozen get shown.
-    // Every photo is a real moment from Casa Amor somebody kept quiet about
-    // (user: "don't invent things") — it lands as a Polaroid (vp-pm/stage.js).
+    // The postcards came during Casa (pm/postcards.js), the night before the
+    // stick-or-twist. Back in one villa, each one is put in front of the one
+    // in it — when the couple both stuck. A game kiss sent with no context is
+    // explained, and mostly forgiven; a real one is the row. What Casa hid
+    // that no postcard showed is Movie Night's (movie-night.js).
     state.photosShown = true;
-    // One photo a couple — the worst of it — and only to somebody still with
-    // the one in it (season 31: two photos each for the same three couples,
-    // and photos shown to exes who had split at the Casa return).
-    const pairs = new Set();
-    const shown = state.secrets.filter(x => x.casa && !x.known)
-      .sort((a, b) => b.severity - a.severity)
-      .filter(x => { const k = `${x.who}|${x.partner}`; if (pairs.has(k)) { x.known = true; return false; } pairs.add(k); return true; })
-      .slice(0, 6);
-    const live = shown.filter(sec => state.villa.includes(sec.who) && state.villa.includes(sec.partner));
-    if (live.length) {
-      const reader = live[0].partner;
-      events.push(makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'photo-text', players: [reader], aired: true, extra: { pop: {} } }));
-    }
-    for (const sec of shown) {
-      sec.known = true;
-      sec.public = true;              // the whole villa saw the photos
-      if (!state.villa.includes(sec.who) || !state.villa.includes(sec.partner) || partnerOf(state, sec.who) !== sec.partner) continue;
-      addBond(sec.who, sec.partner, -1.5 * sec.severity);
-      jealousyHit(state, sec.partner, sec.who, sec.with || sec.who, 4 * sec.severity, { confirmed: true });
-      addRelationshipDimension(sec.partner, sec.who, 'trust', -1.5 * sec.severity);
-      const hidden = state.history.find(e => e.id === sec.eventId);
-      if (hidden) airLater(state, hidden);
-      events.push(makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'photos', players: [sec.partner, sec.who],
-        aired: true, major: [sec.partner, sec.who],
-        extra: { secret: sec.id, of: sec.kind || 'pull', faces: [sec.who, sec.with].filter(Boolean), photoEp: sec.ep,
-          pop: { [sec.partner]: { approval: 1.5, fame: 2 }, [sec.who]: { approval: -BETRAYAL.photos, fame: 2 } } } }));
-      // …and the row that follows, while everyone is still holding the photos.
-      if (partnerOf(state, sec.who) === sec.partner) {
-        events.push(...confrontation(state, ctx.rng, { p: sec.partner, x: sec.who, sev: sec.severity, rowKind: 'photo-row', splitKind: 'photo-split', phase: 'firepit', about: sec.with || null }));
+    const since = state.splitEp ?? 0;
+    const faced = Object.entries(state.postcards || {})
+      .filter(([w, pc]) => pc.ep >= since && ['kiss', 'bed', 'pull', 'game'].includes(pc.of)
+        && state.villa.includes(w) && state.villa.includes(pc.about) && partnerOf(state, w) === pc.about)
+      .sort((a, b) => b[1].sev - a[1].sev).slice(0, 6);
+    for (const [w, pc] of faced) {
+      const p = pc.about;
+      const game = pc.of === 'game';
+      if (game) {
+        // "It was a dare": believed, mostly, and the doubt it caused is on the show.
+        addRelationshipDimension(w, p, 'trust', 0.8); addBond(w, p, 0.5); feel(state, w, 'security', 1);
       }
+      events.push(makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'photos', players: [w, p],
+        aired: true, major: [w, p],
+        extra: { of: pc.of, faces: [p, pc.with].filter(Boolean), photoEp: pc.ep, misleading: !!pc.misleading,
+          pop: game ? { [w]: { approval: 0.3, fame: 1.5 }, [p]: { approval: 0.8, fame: 1.5 } }
+            : { [w]: { approval: 1.5, fame: 2 }, [p]: { approval: -BETRAYAL.photos, fame: 2 } } } }));
+      // …and the row that follows, while everyone is still holding the photos.
+      if (!game) events.push(...confrontation(state, ctx.rng, { p: w, x: p, sev: pc.sev, rowKind: 'photo-row', splitKind: 'photo-split', phase: 'firepit', about: pc.with || null }));
     }
     return { events: [...events, ...arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0)], exits: [], ballots: [] };
   },

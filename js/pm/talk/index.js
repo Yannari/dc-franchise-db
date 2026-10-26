@@ -98,7 +98,7 @@ import { LIE_WRITE, LIE_ROW } from './lie-detector.js';
 import { HIDEAWAY_TEXT, HIDEAWAY_VOTE, HIDEAWAY_WIN, HIDEAWAY_SNUB, HIDEAWAY, HIDEAWAY_MORNING } from './hideaway.js';
 import { MOVIE_TEXT, MOVIE_SEAT, MOVIE_REACT, MOVIE_ROW, MOVIE_SPLIT, MOVIE_CALLOUT, MOVIE_AFTER } from './movie-night.js';
 import { FAMILIES, NOTES, HEART_RATE, SNOG_MARRY_PIE } from './rituals.js';
-import { CASA_TEXT, CASA_GOODBYE, CASA_RETURN, CASA_REACT, CASA_ROW, PHOTO_TEXT, PHOTOS, PHOTO_ROW, PHOTO_SPLIT } from './casa-amor.js';
+import { CASA_TEXT, CASA_GOODBYE, CASA_RETURN, CASA_REACT, CASA_ROW, PHOTO_TEXT, PHOTOS, PHOTO_ROW, PHOTO_SPLIT, POSTCARD_TEXT, POSTCARD } from './casa-amor.js';
 import { DUMP_NERVES, RECOUPLE_NERVES, DUMP_PLEA } from './ceremony.js';
 import { APOLOGY, APOLOGY_REJECTED, REUNITE, VOTE_FALLOUT, VOTE_CALLOUT, GRUDGE_COLD, GRUDGE_END, FIRST_ARRIVAL } from './aftermath.js';
 import { RECEIPT, LOOK_WHO, SNOGGER_KISS, SNOGGER_WIN, SNOGGER_ROW, COUPLE_GOALS, COUPLE_GOALS_ROW, KNOWING_ME, KNOWING_ROW, TALENT_ACT, TALENT_WIN, TALENT_SNUB, BABY_DOLL, SORTS_PODIUM, GRAFTIES_AWARD, BLOW_SLIP, BLOW_DARE, LIP_RACE, LIP_WATCH, TOWER_Q, COURSE_RUN, COURSE_PICK, COURSE_WIN, BLIND_RUN, SPORTS_CAPTAINS, SPORTS_WIN, SPORTS_SORE, HEADLINE } from './challenges.js';
@@ -143,7 +143,7 @@ export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'dee
   'movie-text': MOVIE_TEXT, 'movie-seat': MOVIE_SEAT, 'movie-react': MOVIE_REACT, 'movie-row': MOVIE_ROW, 'movie-split': MOVIE_SPLIT, 'movie-callout': MOVIE_CALLOUT, 'movie-after': MOVIE_AFTER,
   families: FAMILIES, notes: NOTES, 'heart-rate': HEART_RATE, 'snog-marry-pie': SNOG_MARRY_PIE,
   'casa-text': CASA_TEXT, 'casa-goodbye': CASA_GOODBYE, 'casa-return': CASA_RETURN, 'casa-react': CASA_REACT, 'casa-row': CASA_ROW,
-  'photo-text': PHOTO_TEXT, photos: PHOTOS, 'photo-row': PHOTO_ROW, 'photo-split': PHOTO_SPLIT,
+  'photo-text': PHOTO_TEXT, photos: PHOTOS, 'photo-row': PHOTO_ROW, 'photo-split': PHOTO_SPLIT, 'postcard-text': POSTCARD_TEXT, postcard: POSTCARD,
   'dump-nerves': DUMP_NERVES, 'recouple-nerves': RECOUPLE_NERVES, 'dump-plea': DUMP_PLEA,
   apology: APOLOGY, 'apology-rejected': APOLOGY_REJECTED, reunite: REUNITE, 'vote-fallout': VOTE_FALLOUT, 'vote-callout': VOTE_CALLOUT,
   'grudge-cold': GRUDGE_COLD, 'grudge-end': GRUDGE_END, 'first-arrival': FIRST_ARRIVAL,
@@ -188,6 +188,12 @@ TALK['doubt-end'] = DOUBT_END;
 TALK['just-friends'] = JUST_FRIENDS;
 // Overthinking while the partner is at Casa: the other villa's lines lead (talk/alone.js).
 OVERTHINKING.leads = [...(OVERTHINKING.leads || []), 'paAway'];
+// The postcard from the night before leads the stick-or-twist talk (pm/postcards.js).
+STICK_TWIST.facts = (state, ev) => {
+  const pc = state.postcards?.[ev.players[0]];
+  return { postcard: pc && pc.ep >= (state.splitEp ?? 0) ? pc.of : null };
+};
+STICK_TWIST.leads = [...(STICK_TWIST.leads || []), 'postcard'];
 // A couple just back together talk about it in bed (bed-chat.js).
 BED_CHAT.leads = [...(BED_CHAT.leads || []), 'backNow'];
 // Break-ups with a reason and a reaction (pm/breakups.js, talk/more/breakup-talk.js):

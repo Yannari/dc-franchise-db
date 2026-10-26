@@ -320,6 +320,7 @@ export function musicOf(e) {
   if (th === 'doubt' && e.kind === 'vent') return 'cry';
   if ((th === 'progress' || th === 'spark') && ['deep-chat', 'chat', 'date'].includes(e.kind)) return 'romance';
   if (e.kind === 'movie-clip') return e.extra?.of === 'sweet' ? 'romance' : e.extra?.of === 'funny' ? 'villa' : e.extra?.of === 'loyalty' ? null : e.extra?.of === 'said' ? 'drama' : 'cheating';
+  if (e.kind === 'postcard') return e.extra?.of === 'alone' ? 'romance' : e.extra?.of === 'close' ? null : 'cheating';
   if (e.kind === 'casa-react') return ['devastated', 'turned', 'both'].includes(e.extra?.of) ? 'cheating' : null;
   // A couple's FIRST kiss is the moment (events.js records it, counting only
   // real kisses — a challenge's kiss is not one); the tenth is a chat.

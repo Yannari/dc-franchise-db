@@ -168,29 +168,101 @@ export const PHOTO_TEXT = build('photo-text', {
   },
 });
 
+// The photos night is now the postcards, faced: they came during Casa
+// (pm/postcards.js), and back in one villa {a} puts {b}'s in front of {b}.
+// `of`: kiss · bed · pull · game (a challenge kiss sent with no context).
 export const PHOTOS = build('photos', {
   ...BIG,
   plans: { featured: ['look', 'answer', 'land'], short: ['look', 'land'] },
   moves: {
     look: [
-      { stage: "At the fire pit, the photos from Casa Amor are handed round. {a} is holding one of {b}.", turns: [['a', "I'm going to be sick. I think I'm actually going to be sick."]] },
-      { when: { of: 'kiss' }, stage: "{a} turns the photo over. It's {b}, at Casa, kissing somebody else.", turns: [['a', "You kissed someone. You stood at the gate and promised me, and you kissed someone."]] },
-      { when: { of: 'bed' }, stage: "{a}'s photo is {b} at Casa, in bed, not alone.", turns: [['a', "You shared a bed. You said nothing happened. That's a bed, {b}. That's not nothing."]] },
-      { when: { archetype: 'hothead' }, stage: "{a} takes one look at the photo of {b}, and throws it straight into the fire pit.", turns: [['a', "Brilliant. Absolutely brilliant. Anyone else got one for me?"]] },
-      { when: { attachment: 'anxious' }, stage: "{a} holds the photo of {b} with both hands, and keeps staring at it.", turns: [['a', "I knew it. I knew something would happen. I said it every night, and everyone told me I was being mad."]] },
-      { when: { attachment: 'avoidant' }, stage: "{a} looks at the photo of {b} for a second, and puts it face down.", turns: [['a', "Fine. It's fine. I'm not doing this here."]] },
+      { when: { of: ['kiss', 'bed', 'pull'] }, stage: "At the fire pit, {a} puts the postcard down in front of {b}.", turns: [['a', "I've been carrying this around since the night it came. Do you want to explain it, or shall I?"]] },
+      { when: { of: 'kiss' }, stage: "{a} still has the postcard. In it, {b} is kissing somebody else.", turns: [['a', "You kissed someone. You stood at the gate and promised me, and you kissed someone."]] },
+      { when: { of: 'bed' }, stage: "{a} still has the postcard: {b} at Casa, in bed, not alone.", turns: [['a', "You shared a bed. You said nothing happened. That's a bed, {b}. That's not nothing."]] },
+      { when: { of: 'pull' }, stage: "{a} lays the postcard on the bench: {b}, at Casa, sitting far too close to somebody new.", turns: [['a', "I looked at this every night you were gone. Every night. Tell me what I'm looking at."]] },
+      { when: { of: 'game' }, stage: "At the fire pit, {a} puts the postcard down in front of {b}: {b}, mid-kiss, at Casa.", turns: [['a', "I nearly didn't wait for you because of this. Tell me what it is."]] },
+      { when: { archetype: 'hothead', of: ['kiss', 'bed', 'pull'] }, stage: "{a} takes the postcard out, looks at it one more time, and throws it straight into the fire pit.", turns: [['a', "There. That's what I think of it. Now talk."]] },
+      { when: { attachment: 'anxious', of: ['kiss', 'bed', 'pull'] }, stage: "{a} holds the postcard of {b} with both hands, and keeps staring at it.", turns: [['a', "I knew it. I knew something would happen. I said it every night, and everyone told me I was being mad."]] },
+      { when: { attachment: 'avoidant', of: ['kiss', 'bed', 'pull'] }, stage: "{a} looks at the postcard of {b} for a second, and puts it face down.", turns: [['a', "Fine. It's fine. I'm not doing this here."]] },
     ],
     answer: [
-      { turns: [['b', "It's not what it looks like."], ['a', "It's a photo. It looks exactly like what it is."]] },
-      { turns: [['b', "Can we talk about this privately? Please?"], ['a', "Now you want privacy. Now."]] },
+      { when: { of: ['kiss', 'bed', 'pull'] }, turns: [['b', "It's not what it looks like."], ['a', "It's a photo. It looks exactly like what it is."]] },
+      { when: { of: ['kiss', 'bed', 'pull'] }, turns: [['b', "Can we talk about this privately? Please?"], ['a', "Now you want privacy. Now."]] },
+      { when: { of: 'game' }, turns: [['b', "It was a challenge. It was a dare, and everybody at Casa had to do it. I didn't even want to."], ['a', "Then why didn't anyone tell me that? I sat with that photo for a whole night."]] },
+      { when: { of: 'game' }, turns: [['b', "It was a game. That's all it was. I slept outside every night after."], ['a', "You slept outside?"], ['b', "Every night. Ask anyone."]] },
       { when: { of: ['kiss', 'bed'] }, turns: [['b', "I was going to tell you. Tonight. I swear I was going to tell you tonight."], ['a', "And now you don't have to."]] },
     ],
     land: [
-      { turns: [], beat: "Nobody at the fire pit says a word." },
-      { turns: [], beat: "The photo goes round the circle, and every face that sees it changes." },
+      { when: { of: ['kiss', 'bed', 'pull'] }, turns: [], beat: "Nobody at the fire pit says a word." },
+      { when: { of: ['kiss', 'bed', 'pull'] }, turns: [], beat: "The postcard goes round the circle, and every face that sees it changes." },
+      { when: { of: 'game' }, turns: [], beat: "{a} looks at the postcard again, and for the first time since it came, laughs." },
+      { when: { of: 'game' }, turns: [], beat: "{a} tears the postcard in half, and leaves the pieces in the fire pit." },
     ],
   },
 });
+
+// ── the postcards, during Casa (pm/postcards.js) ──────────────────────
+//   postcard-text [a]           the text, in one villa (`atCasa`: which)
+//   postcard      [a, b, c, d]  a opens a postcard of b, in the other villa;
+//                               c is the friend beside a; d is in the photo with b.
+//                               `of`: kiss · bed · pull · game · close · alone
+// b and d are in the other villa: talked about, looked at, never spoken to.
+export const POSTCARD_TEXT = build('postcard-text', {
+  ...BIG,
+  plans: { featured: ['text', 'land?'], short: ['text'] },
+  moves: {
+    text: [
+      { when: { atCasa: false }, stage: "{a}'s phone goes off on the daybeds, and everyone stops talking.", turns: [['a', "'Islanders, you've got post. Your partners have been busy at Casa Amor. #WishYouWereHere.'"]] },
+      { when: { atCasa: false }, stage: "An envelope is waiting on the kitchen counter, with everyone's names on it.", turns: [['a', "It's postcards. From Casa. Of them. Who wants to open theirs first?"]] },
+      { when: { atCasa: true }, stage: "At Casa Amor, {a}'s phone goes off by the pool.", turns: [['a', "'Islanders, there's post from the main villa. #WishYouWereHere.' No. I don't want post. I'm not ready for post."]] },
+      { when: { atCasa: true }, stage: "A stack of postcards is waiting on the table at Casa, each one with a name on it.", turns: [['a', "They've sent us photos of what's going on back at the main villa. Brilliant. Just what everyone needed tonight."]] },
+    ],
+    land: [
+      { turns: [], beat: "Nobody moves for a second. Then everybody moves at once." },
+      { turns: [], beat: "Somebody says they're not going to look at theirs. Everybody looks at theirs." },
+    ],
+  },
+});
+
+const HURT = ['kiss', 'bed', 'pull', 'game'];
+export const POSTCARD = build('postcard', {
+  ...BIG,
+  plans: { featured: ['open?', 'look', 'talk?', 'land'], short: ['look', 'land'] },
+  moves: {
+    open: [
+      { when: { cast: [3, 4] }, stage: "{c} hands {a} the postcard with {a.posAdj} name on it. {a} doesn't turn it over straight away.", turns: [['a', "I don't want to look."], ['c', "You don't have to."], ['a', "I do, though. I have to."]] },
+      { stage: "{a} turns the postcard over before anyone can say anything.", turns: [] },
+    ],
+    look: [
+      { when: { of: 'kiss', cast: 4 }, stage: "It's {b}, at the other villa, kissing {d}.", turns: [['a', "That's {b}. That's {b} kissing someone. That's {b} kissing someone else."]] },
+      { when: { of: 'kiss' }, stage: "It's {b}, kissing somebody {a} has never seen before.", turns: [['a', "Who is that? Who even is that?"]] },
+      { when: { of: 'bed' }, stage: "It's {b}, in a bed at the other villa, and {b} isn't on {b.posAdj} own.", turns: [['a', "That's a bed. That's {b} in a bed with somebody. I can't do this."]] },
+      { when: { of: 'pull', cast: 4 }, stage: "It's {b} on a daybed at the other villa, and {d} is sitting much too close.", turns: [['a', "Look at {b}'s face. I know that face. That's the face {b} used to make at me."]] },
+      { when: { of: 'pull' }, stage: "It's {b} at the other villa, deep in conversation with somebody new.", turns: [['a', "That's not a chat. I know what {b} looks like when it's just a chat."]] },
+      { when: { of: 'game', cast: 4 }, stage: "It's {b}, mid-kiss with {d}. There's nothing else in the photo to say why.", turns: [['a', "{b} said {b} would be good. {b} looked me in the eye and said it."]] },
+      { when: { of: 'game' }, stage: "It's {b}, kissing somebody new. Just that, and nothing else.", turns: [['a', "So that's what {b}'s been doing. Good. Great. Glad I know."]] },
+      { when: { of: 'close', cast: 4 }, stage: "It's {b}, by the pool at the other villa, in fits of laughter with {d}.", turns: [['a', "Okay. It's a laugh. People laugh. Why does it feel like that, then?"]] },
+      { when: { of: 'close' }, stage: "It's {b}, laughing with somebody new.", turns: [['a', "It's only a photo of {b} laughing. I don't know why my stomach's just dropped."]] },
+      { when: { of: 'alone' }, stage: "It's {b}, on {b.posAdj} own on a sunbed, while the party goes on behind.", turns: [['a', "Look at that face. That's the face of somebody who misses me."]] },
+      { when: { of: 'alone' }, stage: "It's {b}, turning away from somebody leaning in for a kiss.", turns: [['a', "{b} turned them down. {b} actually turned them down."]] },
+    ],
+    talk: [
+      { when: { of: HURT, cast: [3, 4] }, turns: [['c', "Maybe it's not what it looks like."], ['a', "What else could it look like? Tell me what else it could be."]] },
+      { when: { of: HURT, cast: [3, 4] }, turns: [['c', "Do you want me to take it off you?"], ['a', "No. I want to keep looking at it until it stops being true."]] },
+      { when: { of: HURT, cast: [3, 4] }, turns: [['a', "Tomorrow I've got to decide whether I wait for {b}. And they send me this the night before."], ['c', "That's exactly why they send it."]] },
+      { when: { of: 'close', cast: [3, 4] }, turns: [['c', "It's a photo of {b} laughing. That's all it is."], ['a', "I know it is. I just wish it was me making {b} laugh."]] },
+      { when: { of: 'alone', cast: [3, 4] }, turns: [['c', "See? I told you. {b}'s coming back for you."], ['a', "Don't say it. I'll believe it."]] },
+    ],
+    land: [
+      { when: { of: HURT }, turns: [], beat: "{a} puts the photo face down on the counter, and nobody picks it up." },
+      { when: { of: HURT }, turns: [], beat: "{a} doesn't say another word for the rest of the night." },
+      { when: { of: 'close' }, turns: [], beat: "{a} looks at the photo again, longer than anyone should look at a photo of somebody laughing." },
+      { when: { of: 'alone' }, turns: [], beat: "{a} keeps the photo, and tucks it under {a.posAdj} pillow." },
+    ],
+  },
+});
+// b and d are in the other villa, and only ever in the photo.
+POSTCARD.facts = () => ({ cAway: false, dAway: false });
 
 export const PHOTO_ROW = build('photo-row', {
   ...BIG,

@@ -9,7 +9,7 @@ import { makeIslanders, roleSetup } from './helpers/pm-cast.js';
 
 // Scenes ABOUT somebody elsewhere are fine: the two who talk are players 0 and 1.
 const ABOUT_THE_OTHER_VILLA = new Set(['casa-return', 'casa-react', 'casa-host', 'casa-row', 'photos', 'photo-text',
-  'photo-row', 'casa-miss', 'debrief']);
+  'photo-row', 'casa-miss', 'debrief', 'postcard', 'postcard-text']);
 
 describe('Casa Amor', () => {
   it('nobody talks to somebody in the other villa', () => {

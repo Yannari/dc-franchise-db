@@ -190,7 +190,7 @@ function storyPhase(state, rng, trng, phase, texture, entry = null) {
  * the last aired episode (restoreFromAired). Bump it when the villa changes
  * enough that an old season should be offered the new one.
  */
-export const PM_ENGINE = '2026-10-26.4';
+export const PM_ENGINE = '2026-10-26.5';
 
 /**
  * THE RESUME (user, 2026-10-25: "with our new system I don't wanna start a new
@@ -244,6 +244,12 @@ function restoreFromAired(state, rows, queues, seed) {
       if ((e.kind === 'reunite' || (e.kind === 'rekindle' && e.extra?.of === 'yes')) && e.players?.length >= 2) rekindle(state, e.players[0], e.players[1]);
     }
     if (r.moment === 'photos') state.photosShown = true;
+    // The postcards (pm/postcards.js): what each one was sent, for the stick-or-twist and the photos night.
+    for (const e of (r.pm?.events || []).filter(x => x.kind === 'postcard' && x.aired)) {
+      state.photosShown = true;
+      (state.postcards ||= {})[e.players[0]] = { of: e.extra?.of, sev: { bed: 1.1, kiss: 1, pull: 0.6, game: 0.8, close: 0.3, alone: 0 }[e.extra?.of] ?? 0.5,
+        about: e.players[1], with: e.players[3] || null, ep: r.num, misleading: !!e.extra?.misleading };
+    }
     if (r.moment === 'recoupling') state.lastRecouplingEp = r.num;
     if (r.moment === 'casa-open') state.splitEp = r.num;
   }

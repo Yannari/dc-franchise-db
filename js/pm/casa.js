@@ -20,6 +20,7 @@ import { confrontation } from './movie-night.js';
 import { noteBreakup } from './exes.js';
 import { peerPressure } from './circle.js';
 import { BETRAYAL } from './ledger.js';
+import { postcardFear } from './postcards.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -118,7 +119,10 @@ export function stickOrTwist(state, { rng }) {
     // storylines it halved (0.22 -> 0.12 a decision) and twists fell to a fifth.
     const unknown = p && apart(state, o, p) ? 0.06 + 0.12 * attachment(prof).anxiety : 0;
     const fear = p ? (state.secrets.some(x => x.known && x.who === p && x.partner === o) ? 0.25 : 0)
-      + 0.2 * Math.max(0, romance(o, p) - believed(state, o, p)) / 10 + unknown : 0;
+      + 0.2 * Math.max(0, romance(o, p) - believed(state, o, p)) / 10 + unknown
+      // …and the postcard, the night before: a photo of them with somebody
+      // else, real or not (Faye, UK 2021: "I'd never have recoupled with Sam").
+      + postcardFear(state, o) : 0;
     const intent = ['fun', 'stir'].includes(prof.intent) ? 0.2 : 0;
     const arch = prof.archetype === 'loyal-soldier' ? -0.1 : 0;
     // Casa is the test of the closed-off (user: "the biggest source of drama in

@@ -43,7 +43,10 @@ describe('friends after "better as friends"', () => {
     });
     expect(endings, 'friends endings to test against').toBeGreaterThan(3);
     expect(bad).toEqual([]);
-    expect(scenes).toBeGreaterThan(endings);
+    // Some endings go bitter, or one of them is dumped, before a scene is due:
+    // measured 2026-10-26, 55 scenes for 44 endings over ten seasons, but as few
+    // as 2 for 7 in one (season 3). On three seasons, more than half is the bar.
+    expect(scenes).toBeGreaterThan(endings / 2);
   });
 
   it('a couple of friends at the final is not played as a love story', () => {

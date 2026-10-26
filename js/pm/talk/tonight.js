@@ -237,6 +237,20 @@ export const STICK_TWIST = build('stick-twist', {
       ] },
     ],
     torn: [
+      // The postcard, the night before (pm/postcards.js).
+      { when: { postcard: ['kiss', 'bed', 'pull', 'game'], taken: true }, turns: [
+        ['a', "I keep looking at that postcard. {pa}, with somebody else. If {pa}'s already moved on, why am I sitting here waiting?"],
+        ['b', "You don't know what that photo was."],
+        ['a', "I know what it looked like. That's all I've got to go on."],
+      ] },
+      { when: { postcard: 'close', taken: true }, turns: [
+        ['a', "It was only a photo of {pa} laughing. But I can't stop thinking about who {pa} was laughing with."],
+        ['b', "That's the postcard talking. That's what it's for."],
+      ] },
+      { when: { postcard: 'alone', taken: true }, turns: [
+        ['a', "Did you see my postcard? {pa}, on {pa.posAdj} own on a sunbed. How do I walk back in there with somebody new after that?"],
+        ['b', "You don't. That's your answer."],
+      ] },
       { when: { of: 'tempted', taken: true }, turns: [
         ['a', "I didn't think this would happen. I walked in here so sure. I was going to be the one who sat in the corner and missed {pa} the whole time. And then {c} walked in, and I haven't thought about {pa} once in two days."],
         ['b', "Two days."],

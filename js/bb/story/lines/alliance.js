@@ -1136,6 +1136,102 @@ export default {
     ] },
   ],
 
+  // ── betrayal: the vote {a} was promised is going the other way (the campaign, before the vote) ──
+  // {other}: the nominee {b} promised to vote out instead
+  'story.alliance.betrayal.flip': [
+    { id: 'abf.1', presumes: ['noms'], turns: [
+      { by: 'a', say: "Can I ask you something? And I need you to be honest." },
+      { by: 'b', say: "Okay." },
+      { by: 'a', say: "Are you still voting to evict {other}?" },
+      { by: 'b', say: "...Why are you asking me that?" },
+      { by: 'a', say: "Because people are saying you're not." },
+      { by: 'b', say: "People say a lot of things in here." },
+      { by: 'a', say: "That's not a no." },
+      { by: 'a', dr: "{b} promised me. {b} looked me in the face and promised. And now {b} can't even say it." },
+    ] },
+    { id: 'abf.2', presumes: ['noms'], room: 'bedroom', turns: [
+      { beat: 'Bedroom. {a} sits down on the end of {b}\'s bed.' },
+      { by: 'a', say: "You told me you were voting {other} out." },
+      { by: 'b', say: "I know." },
+      { by: 'a', say: "Is that still true?" },
+      { by: 'b', say: "I don't know yet. I'm thinking about it." },
+      { by: 'a', say: "You're thinking about it. I'm on the block, and you're thinking about it." },
+      { by: 'b', say: "I'm sorry. I have to do what's best for me this week." },
+      { by: 'a', dr: "{b} was supposed to be my vote. Now {b} is a maybe, and I can't count on a maybe." },
+    ] },
+    { id: 'abf.3', presumes: ['noms'], turns: [
+      { by: 'a', say: "Be straight with me. Are you voting me out?" },
+      { by: 'b', say: "I haven't decided." },
+      { by: 'a', say: "You told me you were voting {other} out." },
+      { by: 'b', say: "I did say that." },
+      { by: 'a', say: "So what changed?" },
+      { by: 'b', say: "{other} came and talked to me. That's all I'm going to say." },
+      { by: 'a', dr: "I thought I had {b}'s vote locked. I don't. I need to find another vote before the eviction." },
+    ] },
+    { id: 'abf.4', presumes: ['noms'], room: 'kitchen', turns: [
+      { beat: 'Kitchen. {a} waits until the room clears out, then turns to {b}.' },
+      { by: 'a', say: "I'm going to ask you once." },
+      { by: 'b', say: "Okay." },
+      { by: 'a', say: "Do I still have your vote?" },
+      { by: 'b', say: "...You'll find out on eviction night." },
+      { by: 'a', say: "Wow. Okay." },
+      { by: 'b', dr: "I promised {a} my vote. Then I thought about who I'd rather be sitting next to next week, and it isn't {a}." },
+    ] },
+  ],
+
+  // ── betrayal: a promise broken. {told} is what {b} promised, as {a} says it ("I was safe", "I had your vote",
+  // "we were going to the final two together"); {when} is when ("last week", "back in week 3")
+  'story.alliance.betrayal.promise': [
+    { id: 'abp.1', turns: [
+      { by: 'a', say: "Can I ask you something?" },
+      { by: 'b', say: "Sure." },
+      { by: 'a', say: "{pwhen}, you told me {told}. Do you remember that?" },
+      { by: 'b', say: "I remember." },
+      { by: 'a', say: "Because now I'm hearing you want me out." },
+      { by: 'b', say: "Who told you that?" },
+      { by: 'a', say: "Does it matter? Is it true?" },
+      { by: 'b', say: "...Things change in here." },
+      { by: 'a', dr: "{b} promised me. And now {b} is coming after me. I'm not going to forget this." },
+    ] },
+    { id: 'abp.2', room: 'kitchen', turns: [
+      { beat: 'Kitchen, with people around. {a} puts a mug down harder than {a} needs to.' },
+      { by: 'a', say: "You told me {told}." },
+      { by: 'b', say: "Can we not do this here?" },
+      { by: 'a', say: "No, we're doing it here. That was {pwhen}, and you said you meant it." },
+      { by: 'b', say: "I did mean it. Then." },
+      { by: 'a', say: "And now?" },
+      { by: 'b', say: "Now it's a different week." },
+      { by: 'a', dr: "Everybody heard that. Good. Now everybody knows what a promise from {b} is worth." },
+    ] },
+    { id: 'abp.3', turns: [
+      { by: 'a', say: "You told me {told}. That was {pwhen}. Are you still keeping that?" },
+      { by: 'b', say: "...I don't know." },
+      { by: 'a', say: "You don't know." },
+      { by: 'b', say: "I'm not going to lie to you about it. I don't know any more." },
+      { by: 'a', say: "Okay. Thanks for telling me, I guess." },
+      { by: 'b', say: "I'm sorry." },
+      { by: 'a', dr: "{b} couldn't even say yes. So that's it. I'm done trusting {b}." },
+    ] },
+    { id: 'abp.4', room: 'backyard', turns: [
+      { beat: 'The backyard. {a} catches {b} alone by the pool.' },
+      { by: 'a', say: "So it's true." },
+      { by: 'b', say: "What is?" },
+      { by: 'a', say: "You're going after me. After you told me {told}." },
+      { by: 'b', say: "It's not personal." },
+      { by: 'a', say: "It's completely personal. You looked me in the face." },
+      { by: 'b', say: "I know. I'm sorry. I'd still do it." },
+      { by: 'b', dr: "I did tell {a} that, and I meant it at the time. The game changed, and I changed with it." },
+    ] },
+    { id: 'abp.5', turns: [
+      { by: 'a', say: "{pwhen}, you told me {told}. I believed you." },
+      { by: 'b', say: "I know you did." },
+      { by: 'a', say: "So was it a lie, or did you just change your mind?" },
+      { by: 'b', say: "Does it matter?" },
+      { by: 'a', say: "Yeah. It matters to me." },
+      { by: 'b', say: "...I changed my mind." },
+      { by: 'a', dr: "I believed {b}. That's on me now. It won't happen again." },
+    ] },
+  ],
   // ── repair: does b stay? ────────────────────────────────────────────
   'story.alliance.repair.forgiven': [
     { id: 'aw2.f1', turns: [

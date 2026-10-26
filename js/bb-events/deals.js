@@ -23,7 +23,7 @@ import {
   trusts, dislikes, sharesAlliance, alliancesOf, grudge, remembers, wasPromised,
   suspicionOf, targetOf, targetsOf, isHunting, huntedBy, threat, biggestThreat, willScheme, deFactoAllies,
   isNice, isVillainous, archetype, trustOf, obligationOf, respectOf, dangerOf,
-  resentmentOf, beatsInvolving, spotlightOrder, actFacts,
+  resentmentOf, beatsInvolving, spotlightOrder, actFacts, memoriesOf, memoryWeek,
 } from './_read.js';
 import { makeScene } from '../bb/script/scene.js';
 
@@ -100,6 +100,28 @@ function _pitchPair(house, ctx) {
   const mark = voters.sort((x, y) =>
     Math.abs(bond(pitcher, x) - 1) - Math.abs(bond(pitcher, y) - 1))[0];
   return mark ? { pitcher, mark } : null;
+}
+
+// What a broken promise WAS, the way the one it was made to says it ("You told me ___"), and when: the scene
+// that confronts it names both (the user, 2026-10-25: "can they be more clear what are they talking about its so
+// vague": "You told me. To my face. You said I had your vote", about nothing the viewer could place).
+const PROMISE_SAID = [
+  [/my vote|a vote to keep/i, () => 'I had your vote'],
+  [/week of safety|safety/i, () => 'I was safe'],
+  [/only a pawn/i, () => 'I was only a pawn'],
+  [/final two/i, () => 'we were going to the final two together'],
+  [/jury together/i, () => "we'd go to the jury together"],
+  [/^(.+) goes up$/i, m => `${m[1]} was going up`],
+];
+function promiseSaid(victim, liar, weekNum) {
+  const m = memoriesOf(victim).filter(x => x && x.subject === liar && x.type === 'promise').at(-1);
+  const d = m?.details || m?.detail || {};
+  const text = String(d.promise || d.about || '');
+  let told = 'you had my back';
+  for (const [re, say] of PROMISE_SAID) { const k = text.match(re); if (k) { told = say(k); break; } }
+  const wk = m ? memoryWeek(m) : 0;
+  const when = !wk ? 'a while ago' : wk >= weekNum ? 'earlier this week' : wk === weekNum - 1 ? 'last week' : `back in week ${wk}`;
+  return { told, pwhen: when };
 }
 
 function _brokenPromise(house, ctx) {
@@ -279,7 +301,7 @@ const brokenPromise = {
     });
     api.popDelta(liar, -1);
     // Called out in front of people: the house is in the room for it.
-    const scene = makeScene('deals.broken', { a: victim, b: liar }, { ending: 'confronted' }, _others(house, victim, liar),
+    const scene = makeScene('deals.broken', { a: victim, b: liar }, { ending: 'confronted', ...promiseSaid(victim, liar, ctx.week?.num || 0) }, _others(house, victim, liar),
       _room(['kitchen', 'living-room', 'backyard'], ctx, victim, liar));
     return { scene, players: [victim, liar], badgeText: 'PROMISE BROKEN', badgeClass: 'red' };
   },
@@ -512,7 +534,7 @@ const voteFlip = {
       api.remember(promised, voter, 'betrayal', 2, { about: 'a promised vote' });
       api.addBond(voter, other, 0.6);
     }
-    const scene = makeScene('deals.vote-flip', { a: voter, b: promised }, { ending: keeps ? 'kept' : 'flipped' }, [],
+    const scene = makeScene('deals.vote-flip', { a: voter, b: promised }, { ending: keeps ? 'kept' : 'flipped', ...(other ? { other } : {}) }, [],
       _room(['bedroom', 'backyard', 'kitchen'], ctx, voter, promised));
     return {
       scene, players: [voter, promised],

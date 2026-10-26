@@ -323,7 +323,7 @@ export default {
       { by: 'b', say: "There's a lot of laundry!" },
     ] },
     { id: 'sp.w5', turns: [
-      { by: 'a', dr: "I keep counting the votes and they don't add up. The only way they don't add up is if {b} is lying to me." },
+      { by: 'a', dr: "I keep going over who told me what, and it doesn't make sense. The only way it makes sense is if {b} has been lying to me." },
     ] },
     { id: 'sp.w6', turns: [
       { by: 'a', say: "{b}'s being weird with me. Has anyone else noticed?" },
@@ -341,7 +341,7 @@ export default {
       { by: 'b', say: "...You should." },
     ] },
     { id: 'sp.w9', turns: [
-      { by: 'a', dr: "Everyone says I'm overthinking it. Maybe I am. I'd rather that than get blindsided." },
+      { by: 'a', dr: "Everybody keeps telling me I'm being paranoid about {b}. Maybe I am. But if {b} is lying to me and I ignore it, I'm the one who goes home." },
       { beat: 'Meanwhile, in the next room, {b} is telling anyone who will listen how much {b} trusts {a}.' },
     ] },
     { id: 'sp.w10', turns: [
@@ -354,7 +354,7 @@ export default {
     { id: 'sp.w12', turns: [
       { by: 'a', say: "You've been really nice to me today." },
       { by: 'b', say: "I'm always nice to you." },
-      { by: 'a', say: "Exactly. Suspiciously consistent." },
+      { by: 'a', say: "I know. That's what's freaking me out." },
       { by: 'b', say: "Do you hear yourself?" },
     ] },
     { id: 'sp.w13', when: { register: 'fiery' }, turns: [
@@ -363,7 +363,7 @@ export default {
       { by: 'a', say: "...Oh." },
     ] },
     { id: 'sp.w14', when: { register: 'shy' }, turns: [{ by: 'a', dr: "I don't know why I can't believe {b} likes me. Maybe because nobody in here usually does." }] },
-    { id: 'sp.w15', when: { register: 'schemer' }, turns: [{ by: 'a', dr: "If I were {b}, I'd be lying to me right now. So {b} must be lying to me. That's just logic." }] },
+    { id: 'sp.w15', when: { register: 'schemer' }, turns: [{ by: 'a', dr: "If I were {b}, I'd be lying to me right now. So I'm going to assume {b} is." }] },
   ],
   'social.paranoia.founded': [
     { id: 'sp.f1', turns: [

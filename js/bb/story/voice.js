@@ -82,65 +82,67 @@ function lines(kind, voice, o, h) {
   const hist = [];
   // each fact is tagged, so the same one is not told about the same pair week after week
   const add = (fact, ...ways) => hist.push(Object.assign(ways.filter(Boolean), { fact }));
-  if (h.theyNomMe) add('nomMe', `${o} put me on the block in week ${h.theyNomMe}. I haven't forgotten that, and I don't think I'm supposed to.`,
-    `I was on the block because of ${o} once. I smile at ${o} every day. I also remember.`,
-    `${o} nominated me. We've talked a hundred times since and never once about that.`);
-  if (h.iNomThem) add('nomThem', `I put ${o} on the block in week ${h.iNomThem}. Every conversation with ${o} since then has had that sitting in the middle of it.`,
-    `I nominated ${o}. ${o} says it's water under the bridge. Nobody in here means that.`,
-    `I put ${o} up once. ${o} has never said a word to me about it. That's what worries me.`);
+  // Said the way people talk to the Diary Room camera: plain, the fact first, nothing clever (the user,
+  // 2026-10-25: "I shook on a deal with Fatima. I keep looking at my hand, tf does that mean")
+  if (h.theyNomMe) add('nomMe', `${o} put me on the block in week ${h.theyNomMe}. I'm nice to ${o}, but I haven't forgotten it.`,
+    `${o} nominated me once. We're fine now. Mostly.`,
+    `${o} put me up in week ${h.theyNomMe}. We've never talked about it, and I'm not going to bring it up.`);
+  if (h.iNomThem) add('nomThem', `I put ${o} on the block in week ${h.iNomThem}. ${o} says it's fine. I don't think it's fine.`,
+    `I nominated ${o}. ${o} says there are no hard feelings. I'd have hard feelings.`,
+    `I put ${o} up once, and ${o} has never said a word to me about it. That worries me a little.`);
   const sour = hist.length;
   if (h.theySavedMe) add('saved', `${o} used the veto on me in week ${h.theySavedMe}. I owe ${o}, and we both know it.`,
-    `${o} pulled me off the block. Whatever ${o} asks me for, I'm going to have to think very hard before I say no.`,
-    `I'm only still here because ${o} used that veto on me. That kind of thing doesn't wear off.`);
-  if (h.sameVotes >= 2) add('same', `${o} and I have voted the same way ${word(h.sameVotes)} times now. That's not an accident.`,
-    `Every vote so far, ${o} and I have landed in the same place. We've never once planned it out loud.`,
-    `${o} and I keep ending up on the same side of the vote. At some point that stops being luck.`);
+    `${o} took me off the block. If ${o} ever needs something from me, it's going to be really hard to say no.`,
+    `I'm only still here because ${o} used the veto on me. I'm not going to forget that.`);
+  if (h.sameVotes >= 2) add('same', `${o} and I have voted the same way ${word(h.sameVotes)} times now. We've never even talked about it.`,
+    `Every vote so far, ${o} and I have voted the same way.`,
+    `${o} and I keep voting together. I don't think it's a coincidence any more.`);
   const split = h.splitVote && ago(h.splitVote, h);
-  if (split) add('split', `${o} and I didn't vote the same way ${split}. Neither of us has brought it up. We both know.`,
-    `${o} voted the other way ${split}. Nobody had to tell me. I've been very friendly about it.`,
-    `We split ${split}, ${o} and me. I keep waiting for ${o} to explain, and ${o} keeps not explaining.`);
+  if (split) add('split', `${o} and I voted differently ${split}. Neither of us has said anything about it.`,
+    `${o} voted the other way ${split}. I haven't asked ${o} about it yet.`,
+    `We split our votes ${split}, ${o} and me. I'm waiting for ${o} to bring it up.`);
   // said about the alliance itself, not about "this" (the user, 2026-10-14: "super vague"): the tail
   // closes any kind of scene, so it cannot point at what the scene was
   // (the two about arguing close a disagreement only: "I need her vote more than I need to win an
   // argument" closed a flirtation at dinner, read 2026-10-14)
-  if (h.alliance && kind !== 'ally') add('alliance', `${o} and I are both in ${h.alliance}. Anything I say to ${o} gets back to the rest of them by dinner.`,
-    kind === 'feud' && `${o} is in ${h.alliance} with me, and I need ${o}'s vote more than I need to win an argument.`,
-    kind === 'feud' && `${o} and I are in ${h.alliance} together. With anybody else, I'd be a lot blunter.`);
-  if (h.deal && kind !== 'ally') add('deal', `${o} and I have a deal. I keep reminding myself of that.`,
-    `There's a deal between ${o} and me. Days like this, I find out how much it's worth.`,
-    `I shook on a deal with ${o}. I keep looking at my hand.`);
-  if (h.couple && kind === 'feud') add('couple', `It's different when it's ${o}. It's always different when it's ${o}.`,
-    `With anybody else I'd play this cold. With ${o}, I can't.`,
-    `Everybody knows about ${o} and me, so everybody's watching how I handle this.`);
+  if (h.alliance && kind !== 'ally') add('alliance', `${o} and I are both in ${h.alliance}, so anything I say to ${o} gets back to the rest of them.`,
+    kind === 'feud' && `${o} is in ${h.alliance} with me. I need ${o}'s vote more than I need to win this argument.`,
+    kind === 'feud' && `${o} and I are in ${h.alliance} together, so I'm being a lot nicer about this than I want to be.`);
+  if (h.deal && kind !== 'ally') add('deal', `${o} and I have a deal. I'm trying to remember that right now.`,
+    `I have a deal with ${o}. I really hope ${o} keeps it.`,
+    `${o} and I shook on a deal. I still think ${o} meant it.`);
+  if (h.couple && kind === 'feud') add('couple', `It's different when it's ${o}. I can't just be cold about it.`,
+    `With anybody else I'd let it go. With ${o}, it gets to me.`,
+    `Everybody knows about me and ${o}, so everybody's watching how I handle this.`);
   const V = {
     feud: {
-      fiery: [`And I'm not going to pretend I'm fine. ${o} knows exactly what ${o} did.`, `I've got a short fuse, and ${o} keeps finding it.`],
-      strategist: [`Every fight tells me something. ${o} just showed me exactly how ${o} handles pressure. I'll remember that.`],
-      warm: [`I hate this. I'll go and fix it with ${o} tomorrow, because I don't want to live like this.`, `I don't like being on anybody's bad side. Especially ${o}'s.`],
-      loyal: [`I'll say it to ${o}'s face, not behind ${o}'s back. That's the only way I know how to do this.`, `If ${o} has a problem with me, ${o} can come and say it. I'll be right here.`],
-      nervous: [`I shouldn't have said anything. Now I'm on ${o}'s bad side, and that's the worst place to be in here.`, `My heart is still pounding. I don't do confrontation. Ask anyone.`],
-      carefree: [`By tomorrow I'll have forgotten what this was about. ${o} won't, though. ${o} never does.`, `Honestly? We'll be fine by dinner. ${o} just needs to cool off.`],
-      competitor: [`Fine. I'll settle it the way I settle everything: I'll beat ${o} in the next competition.`, `${o} can talk all ${o} wants. I'll do my talking when the HOH is on the line.`],
-      villain: [`Let ${o} be angry. Angry people make mistakes, and I'll be right there when ${o} does.`, `Fine. ${o} and I don't get on. I've got a game to play.`],
+      fiery: [`I'm not going to pretend I'm fine. ${o} knows what ${o} did.`, `${o} gets on my nerves, and I'm not good at hiding it.`],
+      strategist: [`I'm staying calm. And now I know how ${o} acts under pressure.`],
+      warm: [`I hate this. I'll go and talk to ${o} tomorrow and fix it.`, `I don't like being on anybody's bad side. Especially ${o}'s.`],
+      loyal: [`If I have a problem with ${o}, I'll say it to ${o}'s face. Not behind ${o}'s back.`, `If ${o} has a problem with me, ${o} can come and tell me.`],
+      nervous: [`I shouldn't have said anything. Now ${o} is mad at me.`, `My heart is still going. I hate confrontation.`],
+      carefree: [`I'll be over it by tomorrow. I don't know about ${o}.`, `We'll be fine by dinner. ${o} just needs to calm down.`],
+      competitor: [`Fine. I'll beat ${o} in the next competition and that'll be the end of it.`, `${o} can talk all ${o} wants. I'll do my talking in the HOH competition.`],
+      villain: [`Let ${o} be angry. Angry people make mistakes.`, `${o} and I don't get on. Fine. I'm not here to be ${o}'s friend.`],
     },
     ally: {
-      fiery: [`If ${o} ever turns on me, everybody in this house will hear about it. Loudly.`, `I'm all in with ${o}. I don't do halfway.`],
-      strategist: [`That's one more vote I can count on, and ${o} doesn't realise I'm the one steering it.`, `${o} is useful, and ${o} likes me. That's the best kind of ally there is.`],
-      warm: [`It's not just a deal for me. I actually like ${o}. That's either my strength or my problem.`, `I came in here wanting real friends. ${o} feels like one.`],
-      loyal: [`Once I'm in, I'm in. ${o} will never have to wonder about me.`, `I don't make promises lightly. ${o} just got one.`],
-      nervous: [`Finally. I'm not on my own in here any more. I didn't realise how much I needed that.`, `I keep waiting for ${o} to change ${o}'s mind about me.`],
-      carefree: [`I didn't plan on joining anything. But ${o} asked nicely, and I'm easy.`, `${o} makes it easy. I didn't have to think twice.`],
-      competitor: [`Two people who can win competitions, working together? That's bad news for everyone else.`, `${o} can win. I can win. Good luck to the rest of them.`],
-      villain: [`${o} thinks this is a partnership. It's a shield. I'll decide when to put it down.`, `I'll keep ${o} close. That's exactly where I want ${o}.`],
+      fiery: [`If ${o} ever turns on me, the whole house is going to hear about it.`, `I'm all in with ${o}. I don't do halfway.`],
+      strategist: [`That's one more vote I can count on.`, `${o} trusts me, and that's useful to me.`],
+      warm: [`It's not just a game thing for me. I actually like ${o}.`, `I came in here wanting real friends. ${o} feels like one.`],
+      loyal: [`Once I'm in, I'm in. ${o} doesn't have to worry about me.`, `I don't make promises I won't keep, and I just made one to ${o}.`],
+      nervous: [`Finally, I'm not on my own in here.`, `I just hope ${o} doesn't change ${o}'s mind about me.`],
+      carefree: [`I didn't plan on joining anything, but ${o} asked, so why not.`, `${o} made it easy. I didn't have to think about it.`],
+      competitor: [`${o} can win competitions. So can I. That's bad news for everybody else.`, `${o} and me together? Good luck to the rest of them.`],
+      villain: [`${o} thinks we're partners. I'll keep ${o} close for as long as it helps me.`, `I'll keep ${o} close. That's exactly where I want ${o}.`],
     },
     heart: {
-      fiery: [`I don't do anything quietly, and that includes this.`, `If anyone has a problem with ${o} and me, they can say it to my face.`],
-      strategist: [`I know how this looks to the house. I've thought about it. I'm doing it anyway, which isn't like me.`, `Everyone will say it's a strategy. It isn't. That's what scares me.`],
-      warm: [`I didn't come here to fall for anybody. I'm not doing a very good job of that.`, `${o} makes this house a lot less lonely.`],
-      loyal: [`I don't do halfway. Not with ${o}.`, `I'm not playing games with ${o}. Everything else in here, sure. Not that.`],
-      nervous: [`I keep thinking ${o} is going to realise I'm not that interesting.`, `I'm terrified, honestly. In a good way. Mostly.`],
-      carefree: [`Is it a showmance? Who knows. It's fun, and I'm not overthinking it.`, `I'm just enjoying it. The game can wait an afternoon.`],
-      competitor: [`It's a distraction. I know it is. I'm letting it be one anyway.`, `I'll still beat ${o} in a competition. I'll just feel bad about it now.`],
+      fiery: [`I don't do anything quietly, and that includes this.`, `If anybody has a problem with me and ${o}, they can say it to my face.`],
+      strategist: [`I know how this looks to the house. I'm doing it anyway, which isn't like me.`, `Everybody will say it's strategy. It isn't, and that scares me a bit.`],
+      warm: [`I didn't come here to fall for anybody. That's not going very well.`, `${o} makes this house a lot less lonely.`],
+      loyal: [`I'm not playing games with ${o}. Not with ${o}.`, `With ${o}, I'm all in.`],
+      nervous: [`I keep waiting for ${o} to realise I'm not that interesting.`, `I'm terrified, honestly. In a good way. Mostly.`],
+      carefree: [`Is it a showmance? Who knows. I'm having fun.`, `The game can wait an afternoon.`],
+      competitor: [`It's a distraction. I know it is. I don't care.`, `I'll still try to beat ${o} in every competition. I'll just feel bad about it now.`],
       villain: [`I like ${o}. Really. It doesn't change what I'll do if I have to.`, `Feelings are dangerous in here. I'm having them anyway.`],
     },
     game: {

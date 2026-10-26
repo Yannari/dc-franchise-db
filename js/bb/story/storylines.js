@@ -56,7 +56,10 @@ function kindRule(kind, ending, beat) {
   if (kind === 'deals.defection') return R('alliance', 'poach', e === 'tempted' ? 'tempted' : 'refused');
   if (kind === 'deals.exposed') return R('alliance', 'exposed');
   if (kind === 'alliance.betrayal') return R('alliance', 'betrayal', 'alliance');
-  if (kind === 'deals.vote-flip' && e === 'flipped' || kind === 'deals.broken') return R('alliance', 'betrayal', 'vote');
+  // a vote promised and about to go the other way (the campaign, before the vote), and a promise broken (what it
+  // was, and when, are in its data): two different scenes, never "you said I had your vote" about either blindly
+  if (kind === 'deals.vote-flip' && e === 'flipped') return R('alliance', 'betrayal', 'flip');
+  if (kind === 'deals.broken') return R('alliance', 'betrayal', 'promise');
   if (kind === 'alliance.repair') return R('alliance', 'repair', e === 'rejected' ? 'rejected' : 'forgiven');
 
   // ── showmance ──
@@ -203,6 +206,8 @@ export const NEEDS = {
   'alliance.leftout': ['formed', 'recruit', 'checkin'],
   'alliance.betrayal.alliance': ['formed', 'recruit', 'checkin', 'leftout'],
   'alliance.betrayal.vote': null,
+  'alliance.betrayal.flip': null,
+  'alliance.betrayal.promise': null,
   'alliance.repair': ['betrayal'],
   'showmance.declare': ['spark', 'kiss'],
   'showmance.hiding': ['spark', 'kiss', 'declare'],

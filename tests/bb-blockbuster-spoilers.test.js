@@ -72,6 +72,23 @@ describe('a Block Buster week before the Block Buster', () => {
   });
 });
 
+// read 2026-10-25: Beth pitching Caleb alone in a bedroom, closed by "Owen (dr): I could tell I
+// wasn't the first" — the engine's beat for a case taken to several voters carried Owen's line
+describe('a campaign pitch', () => {
+  it('is closed only by somebody the viewer saw in it', () => {
+    let wide = 0;
+    for (const row of weeks) for (const a of (row.acts || []).filter(x => x?.type === 'campaign')) for (const s of a.scenes || []) {
+      if (s.step !== 'pitch' || !s.cast?.length) continue;
+      if (s.cast.length > 2) wide++;
+      const lines = s.lines || [];
+      const seen = n => n === s.cast[0] || n === s.cast[s.cast.length - 1]
+        || lines.some(l => l.kind === 'say' ? l.by === n : l.kind === 'beat' && String(l.text).includes(n));
+      for (const l of lines.filter(x => x.kind === 'dr')) expect(seen(l.by), `week ${row.num}: ${l.by}: ${l.text}`).toBe(true);
+    }
+    expect(wide).toBeGreaterThan(0);
+  });
+});
+
 describe('the night after the vote', () => {
   it('has nobody who just went out of the front door in it, and no nominee campaigning', () => {
     for (const row of weeks) {

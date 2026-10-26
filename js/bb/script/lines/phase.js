@@ -55,7 +55,7 @@ export default {
     { id: 'ps2.d2', when: { early: false }, turns: [{ by: 'b', dr: "{a} has barely spoken to me in weeks. Now I've won, {a} wants to talk for forty minutes. Funny, that." }] },
     { id: 'ps2.d3', turns: [{ by: 'a', say: "I just want you to know, I've never once said your name." }, { by: 'b', say: "Okay." }, { by: 'a', say: "I mean it." }, { by: 'b', say: "I said okay." }] },
     { id: 'ps2.d4', turns: [{ by: 'a', dr: "I was up those stairs before {b} had even stopped celebrating. I'm not proud of it. I'm scared." }] },
-    { id: 'ps2.d5', turns: [{ by: 'a', say: "Whatever you need this week, I'm here." }, { by: 'b', say: "Where were you last week?" }, { by: 'a', say: "...Busy." }] },
+    { id: 'ps2.d5', turns: [{ by: 'a', say: "Whatever you need this week, I'm here." }, { by: 'b', say: "Where were you yesterday?" }, { by: 'a', say: "...Busy." }] },
     { id: 'ps2.d6', turns: [{ by: 'a', say: "I know we haven't talked much." }, { by: 'b', say: "We haven't talked at all." }, { by: 'a', say: "I'd like to change that." }, { by: 'b', say: "This week. Right." }] },
     { id: 'ps2.d7', turns: [{ by: 'b', dr: "Everyone who ignored me last week is suddenly my best friend. I'm not stupid." }] },
   ],

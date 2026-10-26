@@ -466,7 +466,7 @@ export default {
       { by: 'b', say: "I'm sorry I made a deal without telling you." },
       { by: 'a', say: "Is that a real apology?" },
       { by: 'b', say: "It's half of one. The other half is that next time, you hear it first. Now go to sleep." },
-      { by: 'a', dr: "It was only half an apology. But from {b}, in this house, half an apology means a lot." },
+      { by: 'a', dr: "It was only half an apology. But from {b}, that's a lot." },
     ] },
     { id: 'sg.4', turns: [
       { by: 'a', say: "Do you even want this anymore?" },

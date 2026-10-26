@@ -80,7 +80,7 @@ export default {
       { by: 'c', say: "Ever since the HOH comp." },
       { by: 'b', say: "So it's not just me." },
       { by: 'a', say: "It's not just you. I've seen it too." },
-      { by: 'b', dr: "I went in thinking I was paranoid. Came out knowing three people are paranoid about the same person. That's not paranoia. That's a target." },
+      { by: 'b', dr: "I went in thinking I was paranoid. It turns out everybody's noticed it. Something's going on with {target}." },
     ] },
     { id: 'gg2.7', room: 'kitchen', presumes: ['noms'], when: { third: true }, turns: [
       { beat: 'Kitchen. {a} is cooking. {b} and {c} are "helping", which means standing close and talking quietly.' },

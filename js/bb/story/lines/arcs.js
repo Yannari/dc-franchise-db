@@ -31,7 +31,7 @@ export default {
       { by: 'a', say: "About {rival}. About how {rival} looked at me when I stayed." },
       { by: 'b', say: "How did {rival} look at you?" },
       { by: 'a', say: "Like I was a problem that didn't go away. Good. I'm not going away." },
-      { by: 'a', dr: "I'm not angry. I'm patient. In this house that's scarier." },
+      { by: 'a', dr: "I'm not angry. I'm waiting. {rival} will slip up, and I'll be there." },
     ] },
     { id: 'ar.pv3', presumes: ['vote'], turns: [
       { beat: '{a} is staring at the HOH room door.' },

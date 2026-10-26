@@ -52,7 +52,7 @@ export default {
       { by: 'a', say: "I know it's {target}. I just wanted somebody to say it out loud." },
       { by: 'b', say: "It's {target}. {hoh} put {target} up to get {target} out, and that's what's happening." },
       { by: 'a', say: "Okay. Okay. Then it's {target}." },
-      { by: 'b', dr: "The HOH gets the week. That's the rule nobody wrote down." },
+      { by: 'b', dr: "It's {hoh}'s week. {hoh} wants {target} gone, and I'm not getting in the way." },
     ] },
   ],
   'vote.plan.bloc': [
@@ -72,7 +72,7 @@ export default {
       { by: 'a', say: "I know. So would I. It's not about who we'd keep. It's about who keeps us." },
       { by: 'b', say: "And {other} keeps us." },
       { by: 'a', say: "{other} owes us after this. That's the point." },
-      { by: 'b', dr: "I'm voting with {group}. I'm not happy about it. Those are two different things in here." },
+      { by: 'b', dr: "I'm voting with {group}. I'm not happy about it, but I'm doing it." },
     ] },
     { id: 'vt.pb3', turns: [
       { by: 'a', say: "Hands in. {target}?" },
@@ -117,7 +117,7 @@ export default {
       { by: 'a', say: "Are you, though? You and {target} were close." },
       { by: 'b', say: "Were. Past tense. That's the problem with this house, everything is past tense by Thursday." },
       { by: 'a', say: "That's grim." },
-      { by: 'b', dr: "I liked {target}. I like {group} more. That's the only maths that matters this week." },
+      { by: 'b', dr: "I liked {target}. I like {group} more. So I'm voting {target} out." },
     ] },
     { id: 'vt.pb8', turns: [
       { by: 'b', say: "Is {group} solid? Like actually solid?" },
@@ -460,7 +460,7 @@ export default {
       { by: 'a', say: "So it's {backup} if it's not {target}." },
       { by: 'b', say: "It's {backup} if it's not {target}. Don't tell {backup} that.", v: { mean: "It's {backup} if it's not {target}. And {backup} can find out on Thursday like everybody else.", bubbly: "Yes. Shh! Quietly. Don't tell {backup}!" } },
       { by: 'a', say: "I wasn't going to tell anybody anything." },
-      { by: 'b', dr: "Everybody's got a first choice this week. The smart ones have a second one ready." },
+      { by: 'b', dr: "It's {target} first and {backup} second. I just hope {backup} doesn't find out." },
     ] },
     { id: 'vt.bp3', room: 'kitchen', turns: [
       { beat: 'The kitchen, late. {b} is washing one plate very slowly, which is a reason to stand next to {a}.' },

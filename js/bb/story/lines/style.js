@@ -227,7 +227,7 @@ export default {
       { by: 'a', say: "Not in here." },
       { by: 'b', say: "That sounds exhausting." },
       { by: 'a', say: "It is. But the alternative is going home." },
-      { by: 'a', dr: "Everybody in here is playing the game. Most of them just haven't noticed yet." },
+      { by: 'a', dr: "{b} asked if I ever stop playing. No. Not until I'm out of this house or holding the money." },
     ] },
   ],
   // ── the social player: time with everyone ──
@@ -359,7 +359,7 @@ export default {
     { id: 'gy-su.4', room: 'living-room', turns: [
       { beat: 'Living room. {a} is quietly watching an argument, saying nothing.' },
       { by: 'b', say: "You're not getting involved?" },
-      { by: 'a', say: "Why would I? Every fight in this house is two people who aren't me." },
+      { by: 'a', say: "Why would I? It's not my fight." },
       { by: 'a', dr: "Let the big players knock each other out. I'll be here when they're done." },
     ] },
     { id: 'gy-su.5', presumes: ['vote'], room: 'bedroom', turns: [

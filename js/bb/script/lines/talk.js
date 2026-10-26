@@ -1070,7 +1070,7 @@ export default {
       { by: 'b', say: "I'm not telling you that." },
       { by: 'a', say: "Then it was you." },
       { by: 'b', say: "That's not how that works." },
-      { by: 'a', dr: "If {b} didn't start it, {b} would have said who did. That's how it works in here." },
+      { by: 'a', dr: "If {b} didn't start it, {b} would have said who did. {b} didn't say anything." },
     ] },
     { id: 'tx.g8', when: { room: ['kitchen'] }, turns: [
       { by: 'b', say: "Somebody's been hiding the good cereal." },

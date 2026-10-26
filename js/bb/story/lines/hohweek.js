@@ -236,7 +236,7 @@ export default {
       { by: 'a', say: "That's the plan." },
       { by: 'b', say: "And next time you win, I'm not going up." },
       { by: 'a', say: "Deal." },
-      { by: 'b', dr: "Going up as a pawn is scary. But it means {a} owes me, and in this house that's worth a lot." },
+      { by: 'b', dr: "Going up as a pawn is scary. But it means {a} owes me one, and I'm going to hold {a} to that." },
     ] },
     { id: 'hw.wa3', room: 'hoh-room', turns: [
       { beat: 'HOH room. {a} is sitting very close to {b}, talking quietly.' },

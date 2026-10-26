@@ -140,7 +140,7 @@ export default {
     { id: 'df.t3', turns: [
       { by: 'a', say: "I'm not asking for an answer tonight." },
       { by: 'b', say: "Good. Because I haven't got one." },
-      { by: 'a', dr: "{b} didn't say yes. But {b} didn't say no either. In here, that usually means yes." },
+      { by: 'a', dr: "{b} didn't say yes. But {b} didn't say no either. I think {b} is with me." },
     ] },
     { id: 'df.t4', turns: [
       { by: 'a', say: "With us, you're second. With them, you're the spare." },

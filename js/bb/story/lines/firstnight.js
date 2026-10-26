@@ -171,7 +171,7 @@ export default {
       { by: 'a', say: "I'm memorising. Tomorrow I'm going to know everyone." },
       { by: 'c', say: "Tomorrow you're going to forget everyone again." },
       { beat: '{a} carries on whispering names until somebody throws a pillow.' },
-      { by: 'a', dr: "If you don't know everyone's name by day two, you've already lost. I'm not losing over names." },
+      { by: 'a', dr: "By tomorrow I'm going to know every single name in this house. People like it when you remember them." },
     ] },
     { id: 'fb.3', turns: [
       { beat: 'First night. The lights go off. Then the lights come back on. Then they go off again.' },

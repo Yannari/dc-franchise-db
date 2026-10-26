@@ -245,7 +245,7 @@ export default {
       { by: 'a', say: "'I think so', or yes?", v: { anxious: "Sorry, I need to know for sure. Is that a yes?" } },
       { by: 'b', say: "Yes. You can count on me." },
       { by: 'a', say: "Thank you. Seriously." },
-      { by: 'a', dr: "'I think so' turned into 'yes' in ten seconds. I'll take it. In this house you take every yes you can get." },
+      { by: 'a', dr: "'I think so' turned into 'yes' in ten seconds. I'll take it." },
     ] },
     { id: 'tl.l3', presumes: ['noms'], turns: [
       { by: 'a', say: "I'm not going to pretend. I'm scared." },

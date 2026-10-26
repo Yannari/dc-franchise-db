@@ -34,7 +34,7 @@ export default {
       { by: 'a', say: "Sleep with the light off. In silence. With a door that locks." },
       { by: 'b', say: "...Okay, yours is sadder." },
       { by: 'a', say: "Mine is so much sadder." },
-      { by: 'b', dr: "Day whatever-it-is. We've started describing locks to each other like they're holidays. That's where we are." },
+      { by: 'b', dr: "We've started describing locks to each other like they're holidays. That's how much we want some privacy." },
     ] },
     { id: 'lb.3', when: { third: true }, turns: [
       { by: 'a', say: "Okay, new game. Everyone has to say what animal everyone else would be." },
@@ -512,7 +512,7 @@ export default {
       { by: 'b', say: "You're going to make me cry. You're the worst. I hate you so much." },
       { by: 'a', say: "I know." },
       { by: 'b', say: "You're my favourite too, obviously." },
-      { by: 'b', dr: "I came in here to win money. I didn't expect to find a friend. That's the part nobody warns you about." },
+      { by: 'b', dr: "I came in here to win money. I didn't expect to find a friend in {a}." },
     ] },
     { id: 'lf.2', turns: [
       { by: 'a', say: "If it comes down to you and me—" },

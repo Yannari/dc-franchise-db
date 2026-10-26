@@ -74,7 +74,7 @@ export default {
       { by: 'a', dr: "Somebody asked if I was okay. I tried to say yes. Nothing came out." },
     ] },
     { id: 'pb.d5', turns: [
-      { by: 'a', dr: "Everybody's being so nice to me. That's how I know they've already decided." },
+      { by: 'a', dr: "Everybody's being so nice to me. I think they've already decided I'm going." },
     ] },
     { id: 'pb.d6', turns: [
       { beat: '{a} folds the same T-shirt three times and puts it back in the drawer unfolded.' },

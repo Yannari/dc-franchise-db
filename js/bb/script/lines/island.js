@@ -278,7 +278,7 @@ export default {
       { by: 'b', say: "Ninety-nine. I was generous." }, { by: 'a', dr: "{b} counts like a friend. Generously. I'll remember that." }] },
     { id: 'isg.s4', turns: [{ beat: 'The rowing machines in the gym. {a} and {b} row side by side, in time.' },
       { by: 'b', say: "We should do a competition like this." }, { by: 'a', say: "As a team?" }, { by: 'b', say: "As a team." },
-      { by: 'a', dr: "There are no teams in this house. But if there were, I'd pick {b}." }] },
+      { by: 'a', dr: "If we were picking teams, I'd pick {b}." }] },
     { id: 'isg.s5', turns: [{ beat: 'The gym. {a} shows {b} how to do a deadlift properly.' },
       { by: 'a', say: "Back straight. Push with your legs." }, { by: 'b', say: "Like this?" }, { by: 'a', say: "Exactly like that." },
       { by: 'b', say: "Nobody in this house has helped me with anything." },

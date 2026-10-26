@@ -298,7 +298,7 @@ export default {
       { by: 'b', say: "...Okay. I hear you." },
       { by: 'a', say: "Do you?" },
       { by: 'b', say: "I said I hear you. What else do you want?" },
-      { by: 'a', dr: "'I hear you.' That's what people say when they're waiting for you to stop talking." },
+      { by: 'a', dr: "{b} said 'I hear you' just to make me stop talking. I don't think a word of it went in." },
     ] },
     { id: 'sa.4', room: 'kitchen', when: { late: false, band: 'enemies' }, turns: [
       { by: 'a', say: "Oh, look who it is." },
@@ -331,7 +331,7 @@ export default {
       { by: 'a', say: "I want you to say you did it!" },
       { by: 'b', say: "Fine! I did it! Happy?" },
       { by: 'a', say: "...No. Actually. Not really." },
-      { by: 'b', dr: "{a} wanted an apology and a confession and a fight all at once. I can only do two of those at once." },
+      { by: 'b', dr: "{a} wanted an apology, a confession and a fight, all at once. I gave {a} the fight. That probably didn't help." },
     ] },
     { id: 'sa.6', when: { register: 'fiery' }, turns: [
       { by: 'a', say: "No. No, we're doing this now." },

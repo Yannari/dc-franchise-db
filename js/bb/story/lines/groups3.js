@@ -155,7 +155,7 @@ export default {
       { beat: 'They count together on their fingers, name by name.' },
       { by: 'c', say: "I think we're fine. There's one name I'm not sure about." },
       { by: 'd', say: "Then somebody talks to that person tonight." },
-      { by: 'd', dr: "We think we have the votes. 'Think' is a scary word in this house." },
+      { by: 'd', dr: "We think we have the votes. I just wish I was sure." },
     ] },
     { id: 'gc3.3', room: 'storage-room', presumes: ['noms'], turns: [
       { beat: 'Storage room. {a}, {b}, {c} and {d} are squeezed between the shelves, whispering.' },
@@ -188,7 +188,7 @@ export default {
       { by: 'c', say: "We'll make room." },
       { beat: 'Four people squeeze under one blanket. It does not fit.' },
       { by: 'a', say: "Thank you. I really needed this.", v: { hard: "You're all ridiculous. Thank you." } },
-      { by: 'b', dr: "Homesickness comes in waves in here. When it gets one of us, the rest of us pile on. Literally." },
+      { by: 'b', dr: "{a} was missing home, so we all got under the blanket with {a}. All four of us. It did not fit." },
     ] },
     { id: 'gh3.3', presumes: ['hoh'], turns: [
       { by: 'b', say: "Okay. Distraction time. Everyone tell {a} the most embarrassing thing that's happened to them in here." },

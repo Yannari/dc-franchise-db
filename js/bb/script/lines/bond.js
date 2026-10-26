@@ -19,7 +19,7 @@ export default {
     { id: 'bk.3', turns: [{ by: 'a', dr: "I kissed {b}. It wasn't strategy. I just really wanted to." }] },
     { id: 'bk.4', turns: [{ beat: '{a} kisses {b}.' }, { by: 'b', say: "Did that just happen?" }, { by: 'a', say: "I think so." }, { by: 'b', say: "Good." }] },
     { id: 'bk.5', turns: [{ beat: '{a} kisses {b} in the middle of a sentence.' }, { by: 'b', say: "I was talking!" }, { by: 'a', say: "I know." }] },
-    { id: 'bk.6', turns: [{ by: 'b', dr: "Everyone in here is playing a game. That kiss wasn't part of it." }] },
+    { id: 'bk.6', turns: [{ by: 'b', dr: "Everything else I do in here is game. That kiss wasn't." }] },
     { id: 'bk.7', turns: [{ beat: '{a} kisses {b}.' }, { by: 'a', say: "The cameras saw that." }, { by: 'b', say: "Let them." }] },
   ],
   // a and b were together before the show (kinship: married, engaged, partners, dating)

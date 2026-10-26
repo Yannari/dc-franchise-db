@@ -191,9 +191,9 @@ export default {
   ],
   'set.hohroom.close': [
     { id: 'sh.c1', room: 'hoh-room', turns: [{ beat: 'One by one, the house drifts back downstairs. The last two to leave take their time.' }, { by: 'a', dr: "I watched who left first and who stayed behind. That told me more than anything anybody said up here." }] },
-    { id: 'sh.c2', room: 'hoh-room', turns: [{ beat: 'The door shuts. {a} sits alone on the big bed and stares at the house camera.' }, { by: 'a', dr: "It's lovely up here. It's also the loneliest room in the house. Everyone wants something from you." }] },
+    { id: 'sh.c2', room: 'hoh-room', turns: [{ beat: 'The door shuts. {a} sits alone on the big bed and stares at the house camera.' }, { by: 'a', dr: "I love this room. I just know everybody who comes up those stairs this week wants something from me." }] },
     { id: 'sh.c3', room: 'hoh-room', turns: [{ beat: '{a} finally gets everyone out and locks the door. Within a minute, somebody knocks.' }, { by: 'a', dr: "That's the first visitor. There will be a lot more. And every single one of them has a name they want me to say." }] },
-    { id: 'sh.c4', room: 'hoh-room', turns: [{ beat: 'Everyone leaves except one, who lingers by the door, waiting for the others to go.' }, { by: 'a', dr: "Whoever stays behind wants a private word. There's always somebody who stays behind." }] },
+    { id: 'sh.c4', room: 'hoh-room', turns: [{ beat: 'Everyone leaves except one, who lingers by the door, waiting for the others to go.' }, { by: 'a', dr: "Everybody's gone except one. Now I find out what they actually came up for." }] },
   ],
 
   // ── after the nominations ────────────────────────────────────────────
@@ -275,7 +275,7 @@ export default {
     { id: 'sa.c1', turns: [{ beat: 'By the evening, the house has split: one group in the kitchen, one in the backyard, the nominees in the middle of both.' }, { by: 'b', dr: "Four days. I've got four days to change enough minds to stay." }] },
     { id: 'sa.c2', turns: [{ beat: 'The house starts to break into little pairs, all of them talking quietly, all of them looking at the nominees.' }, { by: 'a', dr: "Everyone's whispering. Everyone. I've never been so aware of a whisper in my life." }] },
     { id: 'sa.c3', turns: [{ beat: 'One by one, people drift off to have private conversations. The nominees end up alone together at the table.' }, { by: 'a', dr: "Sitting next to the person you're up against. Both pretending it's fine. It's not fine." }] },
-    { id: 'sa.c4', turns: [{ beat: 'Somebody puts music on. Nobody dances. The music plays anyway.' }, { by: 'b', dr: "Music on, nobody talking. That's what a house sounds like the day the block goes up." }] },
+    { id: 'sa.c4', turns: [{ beat: 'Somebody puts music on. Nobody dances. The music plays anyway.' }, { by: 'b', dr: "Music on, nobody talking. Nobody wants to be the first one to say a name." }] },
   ],
 
   // ── the morning after an eviction ────────────────────────────────────
@@ -343,8 +343,8 @@ export default {
   ],
   'set.morningafter.close': [
     { id: 'sm.c1', turns: [{ beat: 'By lunchtime, the empty bed has been taken. Nobody admits to taking it.' }, { by: 'b', dr: "Four hours. That's how long it took somebody to move into the bed of the person we evicted last night." }] },
-    { id: 'sm.c2', turns: [{ beat: 'The house starts to split back into its little groups, and everybody checks which group is bigger now.' }, { by: 'd', dr: "One fewer person means every vote counts more. You can watch people working out whose side they're on." }] },
-    { id: 'sm.c3', turns: [{ beat: 'Somebody puts on music. The house gets on with it.' }, { by: 'a', dr: "That's the thing about this house. Somebody leaves, everyone's sad for a morning, and then there's a new HOH to win." }] },
+    { id: 'sm.c2', turns: [{ beat: 'The house starts to split back into its little groups, and everybody checks which group is bigger now.' }, { by: 'd', dr: "There's one fewer of us now, and everybody's working out whose side they're on. You can see it at breakfast." }] },
+    { id: 'sm.c3', turns: [{ beat: 'Somebody puts on music. The house gets on with it.' }, { by: 'a', dr: "Everyone's sad for a morning. Then there's a new HOH to win, and we all have to get on with it." }] },
   ],
 
   // ── an ordinary evening ─────────────────────────────────────────────
@@ -413,10 +413,10 @@ export default {
     ] },
   ],
   'set.dinner.close': [
-    { id: 'sd.c1', room: 'kitchen', turns: [{ beat: 'Dinner breaks up. The washing-up does not get done. It never gets done.' }, { by: 'e', dr: "Same people always clean. Same people always don't. You learn a lot from the sink." }] },
-    { id: 'sd.c2', room: 'kitchen', turns: [{ beat: 'One by one people drift away from the table. A few of them drift in exactly the same direction.' }, { by: 'c', dr: "Watch who leaves the table together. That's the real seating plan." }] },
-    { id: 'sd.c3', room: 'kitchen', turns: [{ beat: 'Plates everywhere. Somebody starts singing. Somebody else, from the next room, begs them to stop.' }, { by: 'a', dr: "Some nights it's just a house full of friends. Those are the nights you have to remember it's a game." }] },
-    { id: 'sd.c4', room: 'kitchen', turns: [{ beat: 'The table empties. Two people stay behind, talking low over the empty dishes.' }, { by: 'f', dr: "Everyone leaves dinner. The two who stay behind are the ones you need to watch." }] },
+    { id: 'sd.c1', room: 'kitchen', turns: [{ beat: 'Dinner breaks up. The washing-up does not get done. It never gets done.' }, { by: 'e', dr: "Same people cleaned up again tonight. Same people didn't. I'm keeping track." }] },
+    { id: 'sd.c2', room: 'kitchen', turns: [{ beat: 'One by one people drift away from the table. A few of them drift in exactly the same direction.' }, { by: 'c', dr: "I watched who left the table together. Some of those pairs are new." }] },
+    { id: 'sd.c3', room: 'kitchen', turns: [{ beat: 'Plates everywhere. Somebody starts singing. Somebody else, from the next room, begs them to stop.' }, { by: 'a', dr: "Tonight felt like a house full of friends. I have to keep reminding myself it's a game." }] },
+    { id: 'sd.c4', room: 'kitchen', turns: [{ beat: 'The table empties. Two people stay behind, talking low over the empty dishes.' }, { by: 'f', dr: "Everyone left dinner except two. I'd love to know what they're talking about." }] },
   ],
   'set.backyard.open': [
     { id: 'sy.o1', room: 'backyard', turns: [
@@ -472,7 +472,7 @@ export default {
     ] },
   ],
   'set.backyard.close': [
-    { id: 'sy.c1', room: 'backyard', turns: [{ beat: 'The sun goes in. The backyard empties, two and three at a time.' }, { by: 'b', dr: "Out there it's all jokes. Inside it's all whispers. You need both to survive." }] },
+    { id: 'sy.c1', room: 'backyard', turns: [{ beat: 'The sun goes in. The backyard empties, two and three at a time.' }, { by: 'b', dr: "Out there we were all joking. As soon as we came inside, people started whispering again." }] },
     { id: 'sy.c2', room: 'backyard', turns: [{ beat: 'Big Brother calls everyone inside. Nobody moves for a full minute.' }, { by: 'd', dr: "That's the only bit of the day that feels like real life. Then the voice says 'inside', and it's a game again." }] },
     { id: 'sy.c3', room: 'backyard', turns: [{ beat: 'Somebody falls asleep on a lounger. Somebody else puts sun cream on their nose in the shape of a heart.' }, { by: 'a', dr: "We are adults. We are competing for a lot of money. We drew a heart on someone's nose." }] },
   ],
@@ -527,7 +527,7 @@ export default {
   'set.gamenight.close': [
     { id: 'sg.c1', room: 'living-room', turns: [{ beat: 'The game falls apart in an argument about the rules. Everyone goes to bed happy anyway.' }, { by: 'e', dr: "Nights like that are why I'll be sad when this is over. And also why I'll be glad." }] },
     { id: 'sg.c2', room: 'living-room', turns: [{ beat: 'Midnight. Somebody is still trying to start another round. The lights go off on them.' }, { by: 'a', dr: "Big Brother turned the lights off on our game. We kept playing in the dark. Nobody could see the cards. Didn't matter." }] },
-    { id: 'sg.c3', room: 'living-room', turns: [{ beat: 'The house goes to bed in twos. One pair goes the long way round, past the storage room.' }, { by: 'c', dr: "Game night's when people relax. Relaxed people say things. I was listening." }] },
+    { id: 'sg.c3', room: 'living-room', turns: [{ beat: 'The house goes to bed in twos. One pair goes the long way round, past the storage room.' }, { by: 'c', dr: "Everybody relaxed at game night and said a bit more than they meant to. I was listening." }] },
   ],
 
   // ── the camera finding a moment inside the room ─────────────────────

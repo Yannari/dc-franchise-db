@@ -875,7 +875,7 @@ export default {
       { by: 'a', say: "You do now." },
       { beat: '{b} looks at {a} for a long moment.' },
       { by: 'b', say: "Let me sleep on it." },
-      { by: 'a', dr: "That's not a no. In this house, 'let me sleep on it' is a yes that needs a nap." },
+      { by: 'a', dr: "That's not a no. I think {b} will come round by tomorrow." },
     ] },
     { id: 'ap2.t4', turns: [
       { by: 'a', say: "Can I show you something?" },

@@ -123,7 +123,7 @@ function lines(kind, voice, o, h) {
       nervous: [`I shouldn't have said anything. Now ${o} is mad at me.`, `My heart is still going. I hate confrontation.`],
       carefree: [`I'll be over it by tomorrow. I don't know about ${o}.`, `We'll be fine by dinner. ${o} just needs to calm down.`],
       competitor: [`Fine. I'll beat ${o} in the next competition and that'll be the end of it.`, `${o} can talk all ${o} wants. I'll do my talking in the HOH competition.`],
-      villain: [`Let ${o} be angry. Angry people make mistakes.`, `${o} and I don't get on. Fine. I'm not here to be ${o}'s friend.`],
+      villain: [`${o} can be as angry as ${o} likes. I'm not apologising.`, `${o} and I don't get on. Fine. I'm not here to be ${o}'s friend.`],
     },
     ally: {
       fiery: [`If ${o} ever turns on me, the whole house is going to hear about it.`, `I'm all in with ${o}. I don't do halfway.`],
@@ -143,17 +143,17 @@ function lines(kind, voice, o, h) {
       nervous: [`I keep waiting for ${o} to realise I'm not that interesting.`, `I'm terrified, honestly. In a good way. Mostly.`],
       carefree: [`Is it a showmance? Who knows. I'm having fun.`, `The game can wait an afternoon.`],
       competitor: [`It's a distraction. I know it is. I don't care.`, `I'll still try to beat ${o} in every competition. I'll just feel bad about it now.`],
-      villain: [`I like ${o}. Really. It doesn't change what I'll do if I have to.`, `Feelings are dangerous in here. I'm having them anyway.`],
+      villain: [`I like ${o}. Really. It doesn't change what I'll do if I have to.`, `I know I shouldn't let myself like ${o} this much. I'm doing it anyway.`],
     },
     game: {
       fiery: [`I'm done whispering. If it's ${o}, I'll say it out loud.`, `I can't stand sitting on information. It makes me want to scream it from the kitchen.`],
-      strategist: [`Information is the only real currency in here. I just got paid.`, `I'm not reacting yet. I'm watching who reacts.`],
+      strategist: [`I know something now that I didn't know this morning. I'm keeping it to myself for a bit.`, `I'm not reacting yet. I'm watching who reacts.`],
       warm: [`I hate talking about people like this. But this is the game, and I'm playing it.`, `I'll still give ${o} a hug at dinner. That's the hard part of this game.`],
       loyal: [`I'll only go after ${o} if ${o} gives me a reason. Right now, ${o} is giving me a few.`, `I'm not going to lie about it later. If I vote ${o} out, I'll say so.`],
       nervous: [`Every time somebody whispers, I assume it's about me. Today, for once, it isn't.`, `I just want to make it to the next week. That's my whole plan.`],
       carefree: [`I'm just here for the gossip, honestly. The game will sort itself out.`, `Whatever. I'll vote with whoever asks me nicest.`],
       competitor: [`I'd rather win my safety than talk my way into it.`, `All this talking. Just give me a competition and let me win it.`],
-      villain: [`Let them all talk. Every whisper gives me something to use.`, `I don't need anybody to trust me. I just need them scared of the right person.`],
+      villain: [`Let them all talk. I'll use whatever I hear.`, `I don't need ${o} to trust me. I need ${o} worried about somebody else.`],
     },
     life: {
       fiery: [`That's me. Loud, all the time. The house can deal with it.`, `I'm a lot. I know I'm a lot. That's the fun part.`],
@@ -163,7 +163,7 @@ function lines(kind, voice, o, h) {
       nervous: [`For one afternoon I forgot to be scared. That felt nice.`, `I'm starting to feel like I belong here. Don't jinx it.`],
       carefree: [`Best day in the house so far. Nobody talked about the game for a whole hour.`, `I'm not stressed. I'm never stressed. That's my secret.`],
       competitor: [`I've been sitting still too long. I need a competition.`, `I'm bored. Bored is dangerous for me.`],
-      villain: [`Everyone's laughing. Good. Laughing people tell you things.`, `I'm charming when I want to be. Today, I wanted to be.`],
+      villain: [`Everyone's laughing. Good. People say a lot more when they're relaxed.`, `I'm charming when I want to be. Today, I wanted to be.`],
     },
   };
   const voiced = V[kind]?.[voice] || [];

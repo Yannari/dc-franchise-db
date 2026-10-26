@@ -108,7 +108,7 @@ export default {
     ] },
   ],
   'set.hohroom.close': [
-    { id: 'msh.c1', room: 'hoh-room', turns: [{ beat: 'The house leaves in a slow trickle. {a} watches who goes first, and who hangs back.' }, { by: 'a', dr: "The first ones out don't need anything from me. The last ones out do." }] },
+    { id: 'msh.c1', room: 'hoh-room', turns: [{ beat: 'The house leaves in a slow trickle. {a} watches who goes first, and who hangs back.' }, { by: 'a', dr: "The first ones out of my room didn't need anything from me. The last ones out did." }] },
     { id: 'msh.c2', room: 'hoh-room', turns: [{ beat: 'Downstairs, the house splits into little huddles. Upstairs, {a} locks the door and lies on the bed.' }, { by: 'a', dr: "I've got this room for a week and one big decision to make. It's a lot heavier than it looked when I won." }] },
     { id: 'msh.c3', room: 'hoh-room', turns: [{ beat: 'The chocolates are gone. So is the house. Just {a} and the camera screen now.' }, { by: 'a', dr: "I'm going to watch that screen for an hour. Don't judge me. Everybody would." }] },
     { id: 'msh.c4', room: 'hoh-room', turns: [{ beat: 'Somebody is already knocking. {a} hasn’t even sat down.' }, { by: 'a', dr: "Somebody knocked before I'd even sat down on the bed. I know it comes with the room, but it's a bit sad: everybody who's nice to me this week wants something." }] },
@@ -208,8 +208,8 @@ export default {
   ],
   'set.afternoms.close': [
     { id: 'msa.c1', turns: [{ beat: 'By evening, the HOH room door has opened and closed a dozen times. The nominees count every visitor.' }, { by: 'a', dr: "Every person who goes up those stairs is either saving me or burying me. I can't tell which." }] },
-    { id: 'msa.c2', turns: [{ beat: 'Dinner is quiet. People sit with the people they’re voting with, and everyone can see it.' }, { by: 'b', dr: "You can tell how Thursday's going to go just from who sits next to who at dinner." }] },
-    { id: 'msa.c3', turns: [{ beat: 'The two nominees end up alone on the backyard swing as the light goes.' }, { by: 'b', dr: "We're up against each other. We sat on the swing for an hour. That's this game." }] },
+    { id: 'msa.c2', turns: [{ beat: 'Dinner is quiet. People sit with the people they’re voting with, and everyone can see it.' }, { by: 'b', dr: "I watched who sat next to who at dinner. I think I know how Thursday's going to go." }] },
+    { id: 'msa.c3', turns: [{ beat: 'The two nominees end up alone on the backyard swing as the light goes.' }, { by: 'b', dr: "We're up against each other, and we sat on the swing together for an hour. It's so weird." }] },
   ],
   'set.morningafter.open': [
     { id: 'msm.1', room: 'kitchen', turns: [
@@ -375,7 +375,7 @@ export default {
     ] },
   ],
   'set.dinner.close': [
-    { id: 'msd.c1', room: 'kitchen', turns: [{ beat: 'The plates go in the sink and stay there. People start pairing off for the evening.' }, { by: 'd', dr: "At dinner we're like a family. Once the plates are cleared, everyone goes back to playing the game." }] },
+    { id: 'msd.c1', room: 'kitchen', turns: [{ beat: 'The plates go in the sink and stay there. People start pairing off for the evening.' }, { by: 'd', dr: "At dinner we're like a family. As soon as the plates are cleared, everybody goes off in twos to talk game." }] },
     { id: 'msd.c2', room: 'kitchen', turns: [{ beat: 'Somebody starts singing at the table. Within a minute half the house is singing. Badly.' }, { by: 'b', dr: "Some nights it's just fun. I hate that it's fun. It makes Thursday harder." }] },
   ],
   'set.backyard.open': [
@@ -439,8 +439,8 @@ export default {
     ] },
   ],
   'set.backyard.close': [
-    { id: 'msy.c1', room: 'backyard', turns: [{ beat: 'The fun winds down. People start to peel off in twos, heading inside to talk.' }, { by: 'e', dr: "Out in the yard, we're all friends. Inside, everyone's counting votes. You go back and forth all day." }] },
-    { id: 'msy.c2', room: 'backyard', turns: [{ beat: 'Big Brother calls lockdown. Everybody trudges inside, still dripping.' }, { by: 'a', dr: "Lockdown means something's being built out here. Something's coming. Everyone knows it. Nobody says it." }] },
+    { id: 'msy.c1', room: 'backyard', turns: [{ beat: 'The fun winds down. People start to peel off in twos, heading inside to talk.' }, { by: 'e', dr: "Out in the yard we're all friends. Then you go inside and everybody's counting votes again." }] },
+    { id: 'msy.c2', room: 'backyard', turns: [{ beat: 'Big Brother calls lockdown. Everybody trudges inside, still dripping.' }, { by: 'a', dr: "Lockdown means they're building something out here. Everybody's trying to guess what the comp is." }] },
   ],
   'set.gamenight.open': [
     { id: 'msg.1', presumes: ['vote'], room: 'living-room', turns: [
@@ -479,6 +479,6 @@ export default {
   ],
   'set.gamenight.close': [
     { id: 'msg.c1', room: 'living-room', turns: [{ beat: 'Game night ends the way it always does: in an argument about the rules.' }, { by: 'b', dr: "We never finish a game in this house. We just start new arguments." }] },
-    { id: 'msg.c2', room: 'living-room', turns: [{ beat: 'The lights go off. A few of them keep talking in the dark.' }, { by: 'e', dr: "The best conversations happen after the lights go. That's when people stop performing." }] },
+    { id: 'msg.c2', room: 'living-room', turns: [{ beat: 'The lights go off. A few of them keep talking in the dark.' }, { by: 'e', dr: "Once the lights went off, people stopped being careful about what they said." }] },
   ],
 };

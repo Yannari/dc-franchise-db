@@ -89,7 +89,7 @@ export default {
       { by: 'b', say: "That's… actually everything." },
       { by: 'a', say: "That's everything. So we fight for each other. {alliance}." },
       { by: 'c', say: "Okay. In. Can we leave before someone wants crisps?" },
-      { by: 'a', dr: "Some alliances are about winning. This one's about not losing alone." },
+      { by: 'a', dr: "{alliance} isn't about winning yet. It's about having people who'll fight for us when we're up." },
     ] },
   ],
   'story.alliance.checkin.group': [
@@ -438,7 +438,7 @@ export default {
       { beat: 'Everybody laughs, quietly. Then nobody says anything for a long time.' },
       { by: 'b', say: "I'm going to miss this, weirdly." },
       { by: 'c', say: "Don't. Don't make it sad." },
-      { by: 'c', dr: "For about ten minutes there, nobody was playing. I'd forgotten what that felt like in here." },
+      { by: 'c', dr: "For about ten minutes there, nobody was playing. It was really nice." },
     ] },
     { id: 'gn.3', turns: [
       { by: 'a', say: "Is anybody else still awake?" },
@@ -461,7 +461,7 @@ export default {
       { by: 'b', say: "I think we would. All of us. We'd have a group chat." },
       { by: 'a', say: "The group chat would be chaos." },
       { by: 'b', say: "The best chaos." },
-      { by: 'd', dr: "It's sweet. It's also exactly what you say to people you're about to vote out." },
+      { by: 'd', dr: "It's sweet. I don't think we'll all be friends, though. Not once the votes start." },
     ] },
   ],
   'story.life.friends.group': [

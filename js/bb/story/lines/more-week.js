@@ -85,7 +85,7 @@ export default {
       { by: 'a', say: "It's a breakfast that also happens to come from somebody who'd like to still be here on Friday." },
       { by: 'd', say: "...It's good toast." },
       { by: 'a', say: "Thank you. Think about it." },
-      { by: 'c', dr: "Will toast change anybody's vote? Probably not. But people remember who fed them." },
+      { by: 'c', dr: "Will toast change anybody's vote? Probably not. But I'll remember {a} made me breakfast." },
     ] },
   ],
 };

@@ -801,7 +801,11 @@ export function writeCampaignScene(beat, ctx, at, salt) {
   // the engine's own Diary Room (if it wrote one) closes the scene in place of ours: a Diary
   // Room cut in the middle of the conversation, then the conversation going on, read as two scenes
   const talk = body.filter(l => l.kind !== 'dr');
-  const ownDr = body.filter(l => l.kind === 'dr');
+  // ...and only from somebody the viewer saw in it, by a line or a beat: a voter met off screen does not
+  // close it (read 2026-10-25: Beth and Caleb in a bedroom, closed by "Owen (dr): I could tell I wasn't
+  // the first"; a round of two, closed by a third who never appeared)
+  const seen = n => n === a || n === b || talk.some(l => l.kind === 'say' ? l.by === n : String(l.text).includes(n));
+  const ownDr = body.filter(l => l.kind === 'dr' && seen(l.by));
   const lines = [...(open ? render(open, who, ctx, data) : []), ...talk, ...(close ? render(close, who, ctx, data) : []), ...(ownDr.length ? ownDr : dr ? render(dr, who, ctx, data) : [])];
   const c = beat.pitchCase || {};
   const cw = CASE_WHY[c.kind];

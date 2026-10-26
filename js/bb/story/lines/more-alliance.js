@@ -165,7 +165,7 @@ export default {
       { beat: 'Three little fingers hook together.' },
       { by: 'a', say: "Final three. Nobody tells anybody." },
       { by: 'b', say: "Final three." },
-      { by: 'a', dr: "{b}, {c} and I made a final three on a pinky swear. In here, that's about as binding as anything else." },
+      { by: 'a', dr: "{b}, {c} and I made a final three on a pinky swear. I'm holding them to it." },
     ] },
     { id: 'af3.f11', deal: 'Final Two', turns: [
       { by: 'b', say: "If it comes down to it, who are you taking to the end?" },
@@ -547,7 +547,7 @@ export default {
       { by: 'a', say: "I'll be honest with you. I'm putting a group together, and I want you in it." },
       { by: 'b', say: "I appreciate you being honest. But no." },
       { by: 'a', say: "Not even a little bit interested?" },
-      { by: 'b', say: "I'm interested in staying in this house. Switching sides halfway through is how you leave it.", v: { hard: "No. I've got my people. I'm not switching." } },
+      { by: 'b', say: "I'm interested in staying in this house. If I switch sides now, nobody will ever trust me again.", v: { hard: "No. I've got my people. I'm not switching." } },
       { by: 'a', say: "Okay. I had to ask." },
       { by: 'b', dr: "Now I have to tell {ally} and {ally2} that {a} is recruiting, which means {a} just put a target on {a.posAdj} own back." },
     ] },

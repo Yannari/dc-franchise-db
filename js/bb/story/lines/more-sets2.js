@@ -28,7 +28,7 @@ export default {
       { by: 'e', say: "Can we at least know who it's from?" },
       { by: 'a', say: "Home. That's all you're getting." },
       { beat: '{a} folds the letter and puts it away. Nobody asks again.' },
-      { by: 'b', dr: "{a} kept the letter private. Smart. A letter from home tells you who somebody is playing for." },
+      { by: 'b', dr: "{a} kept the letter private. I wanted to know who it was from, and I think {a} knew that." },
     ] },
     { id: 'xh.3', room: 'hoh-room', turns: [
       { beat: 'HOH room. The basket has been raided. {a} is trying to work out who took the crisps.' },
@@ -183,7 +183,7 @@ export default {
     ] },
   ],
   'set.afternoms.close': [
-    { id: 'xa.c1', turns: [{ beat: 'The house starts its usual split. This week the line runs right down the middle of the kitchen.' }, { by: 'b', dr: "Every nomination week the house picks a side. You can see it by dinner." }] },
+    { id: 'xa.c1', turns: [{ beat: 'The house starts its usual split. This week the line runs right down the middle of the kitchen.' }, { by: 'b', dr: "The house has already picked a side. You could see it by dinner." }] },
     { id: 'xa.c2', turns: [{ beat: 'The two nominees sit apart for the first time all day. Both of them are being visited.' }, { by: 'a', dr: "It's a campaign now. Smile, talk, count votes. Four days of it." }] },
   ],
   'set.morningafter.open': [
@@ -252,7 +252,7 @@ export default {
     ] },
   ],
   'set.morningafter.close': [
-    { id: 'xm.c1', turns: [{ beat: 'By the afternoon, the house is talking about the HOH comp instead. {gone} is already a story people tell.' }, { by: 'a', dr: "One night. That's how long you're missed in here. Then there's another key, another chair, another Thursday." }] },
+    { id: 'xm.c1', turns: [{ beat: 'By the afternoon, the house is talking about the HOH comp instead. {gone} is already a story people tell.' }, { by: 'a', dr: "We missed them for one night. Now there's another HOH to win and another Thursday coming." }] },
   ],
   'set.dinner.open': [
     { id: 'xd.1', room: 'kitchen', turns: [

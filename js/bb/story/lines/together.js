@@ -50,7 +50,7 @@ export default {
       { by: 'a', say: "In here? Bad. It means we're a target." },
       { by: 'b', say: "Then maybe we stop sitting together at dinner." },
       { by: 'a', say: "I'm not doing that.", v: { hard: "Fine. For one week. Then I'm sitting next to you again." } },
-      { by: 'b', dr: "Everybody can see us. That's the problem with being happy in this house." },
+      { by: 'b', dr: "Everybody can see us. I know what they're saying about us. I don't care." },
     ] },
     { id: 'smt.6', room: 'kitchen', turns: [
       { beat: '{a} and {b} are cooking dinner for the house together, bumping into each other on purpose.' },
@@ -74,7 +74,7 @@ export default {
       { by: 'a', say: "Night. Big day tomorrow." },
       { by: 'b', say: "Every day's a big day in here." },
       { by: 'a', say: "Then get some sleep, and win something tomorrow." },
-      { by: 'b', dr: "In this house, {a} is the one thing that feels real." },
+      { by: 'b', dr: "{a} is the one thing in here that feels real to me." },
     ] },
   ],
 };

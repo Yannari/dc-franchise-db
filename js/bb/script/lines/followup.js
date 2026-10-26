@@ -87,7 +87,7 @@ export default {
     { id: 'fk.1', turns: [{ by: 'b', say: "Which part hurt the most?" }, { by: 'a', say: "When people laughed." }, { by: 'b', say: "Not everyone laughed." }] },
     { id: 'fk.2', turns: [{ beat: '{a} folds clothes much too hard. {b} starts helping.' }, { by: 'a', say: "I shouldn't have said that last bit." }, { by: 'b', say: "Probably not. But {target} started it." }] },
     { id: 'fk.3', turns: [{ by: 'a', say: "I'm over it." }, { by: 'b', say: "Then why are you still awake talking about it?" }] },
-    { id: 'fk.4', turns: [{ by: 'b', say: "Do you want to know who stood up for you after you left?" }, { by: 'a', say: "...Who?" }, { by: 'b', say: "More people than you think." }] },
+    { id: 'fk.4', turns: [{ by: 'b', say: "Do you want to know who stood up for you after that?" }, { by: 'a', say: "...Who?" }, { by: 'b', say: "More people than you think." }] },
     { id: 'fk.5', turns: [{ by: 'a', dr: "The fight with {target} keeps playing in my head. {b} sat with me until it stopped." }] },
     { id: 'fk.6', turns: [{ by: 'b', dr: "{a} is still shaking after that fight with {target}. I'm not leaving {a} on {a.posAdj} own tonight." }] },
     { id: 'fk.7', turns: [{ by: 'b', say: "Do you want a hug or do you want to vent?" }, { by: 'a', say: "Vent." }, { by: 'b', say: "Go on, then." }] },

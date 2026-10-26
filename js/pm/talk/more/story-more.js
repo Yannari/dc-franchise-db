@@ -28,12 +28,12 @@ export const STORY_MORE = {
       ['a', "It's already pretty big in my head."],
       ['b', "Exactly. So get it out of there."],
     ] },
-    { turns: [
+    { when: { chaser: false }, turns: [
       ['b', "Look at it this way. If {c} wanted {d}, {c} has had about a hundred chances by now. {c} keeps coming back to you. That has to count for something."],
       ['a', "It does. I know it does."],
       ['b', "So hold on to that, not to whatever's happening over there."],
     ] },
-    { turns: [
+    { when: { chaser: false }, turns: [
       ['b', "Whatever you do, don't let {d} see that it's got to you. That's exactly what {d} wants."],
       ['a', "You think {d} is doing it on purpose?"],
       ['b', "I think {d} knows exactly where you're sitting."],

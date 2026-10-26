@@ -492,7 +492,7 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
     const old = was[pk.picker];
     if (old && old !== pk.picked && !reclaim(pk) && !takenFirst.has(old) && state.villa.includes(old) && !broken(state, pk.picker, old)
       && Math.max(romance(old, pk.picker), romance(pk.picker, old)) >= 3) {
-      const rec = recordSplit(state, { by: pk.picker, left: old, cause: 'moved-on', about: pk.picked });
+      const rec = recordSplit(state, { by: pk.picker, left: old, cause: 'moved-on', about: pk.picked, publicly: true });
       const e = events[open.length + i];
       if (rec && e) {
         e.extra.splitRec = rec;

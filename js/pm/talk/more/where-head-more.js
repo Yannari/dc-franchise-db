@@ -51,7 +51,7 @@ export const WHERE_HEAD_MORE = {
       ] },
     ],
     decide: [
-      { when: { of: 'reassure', story: 'graft' }, turns: [
+      { when: { of: 'reassure', story: 'graft', chaser: false }, turns: [
         ['a', "Can we make a deal? If {c} pulls you again, you tell me first. Not after. First."],
         ['b', "Deal. And if anyone pulls you, same."],
         ['a', "Nobody's pulling me. Have you seen me today? I've been a wreck."],

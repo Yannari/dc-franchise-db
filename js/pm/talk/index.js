@@ -188,6 +188,8 @@ TALK['doubt-end'] = DOUBT_END;
 TALK['just-friends'] = JUST_FRIENDS;
 // Overthinking while the partner is at Casa: the other villa's lines lead (talk/alone.js).
 OVERTHINKING.leads = [...(OVERTHINKING.leads || []), 'paAway'];
+// A couple just back together talk about it in bed (bed-chat.js).
+BED_CHAT.leads = [...(BED_CHAT.leads || []), 'backNow'];
 // Break-ups with a reason and a reaction (pm/breakups.js, talk/more/breakup-talk.js):
 // the doubt's end says why and how it was taken; the exes after it.
 extend(DOUBT_END, DOUBT_END_REASONS);

@@ -40,6 +40,34 @@ export const BED_CHAT = build('bed-chat', {
       ] },
     ],
     talk: [
+      // Back together: they remember the first time round.
+      { when: { backNow: true }, turns: [
+        ['a', "Is it weird that this feels like the first night all over again?"],
+        ['b', "A bit. A good bit."],
+        ['a', "I honestly didn't think I'd be lying here with you again."],
+        ['b', "Neither did I. So let's not waste it this time."],
+      ] },
+      { when: { backNow: true }, turns: [
+        ['a', "Can I ask you something? Are we actually okay? Or are we just back in the same bed?"],
+        ['b', "We're okay. We're not the same as before. But I think that might be a good thing."],
+        ['a', "Not the same as before. I can live with that."],
+      ] },
+      { when: { backNow: true, of: ['after-row', 'distant'] }, turns: [
+        ['a', "We've been back together five minutes, and we're already lying here not talking. That's what happened last time."],
+        ['b', "I know. I don't want it to be like last time."],
+        ['a', "Then talk to me. That's all I'm asking."],
+      ] },
+      { when: { again: true, backNow: false, of: 'warm' }, turns: [
+        ['a', "Do you ever think about when we split up?"],
+        ['b', "Sometimes. Mostly I think about how stupid it was."],
+        ['a', "I don't think it was stupid. I think we needed it."],
+        ['b', "Don't make me agree with that. Not at this time of night."],
+      ] },
+      { when: { again: true, backNow: false, of: ['after-row', 'distant'] }, turns: [
+        ['a', "Every time we go quiet like this, I think, here we go. It's going to end like last time."],
+        ['b', "It's not last time."],
+        ['a', "Then tell me what's going on in your head. Because last time you didn't."],
+      ] },
       { when: { story: 'graft', of: 'warm' }, turns: [
         ['a', "Today was a lot."],
         ['b', "Today was a lot."],

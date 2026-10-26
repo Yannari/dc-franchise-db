@@ -426,6 +426,23 @@ function graftBeat(state, rng, t, phase) {
           { ...tag('watching'), of: sees ? 'sees' : 'told', heat: ev.extra.heat || null, pop: pop([p, 0.4, 1.2], [f, 0.1, 0.5]) }));
       }
     }
+    // …and the chaser's own partner, when there is one: the whole villa saw
+    // Rafael take Mei off for a chat, and Lucia was the only one nobody told
+    // (user, season 1: "why does everyone know except Lucia?").
+    const cp = heartOf(state, c);
+    if (got.kind === 'pull' && cp && cp !== tt && !t.cpSeen && together(state, cp, c) && !apart(state, cp, c)) {
+      const sees = rng() < 0.6;
+      const f = friendsOf(state, cp, [tt, c, p], 1)[0];
+      if (f && (sees || rng() < 0.75)) {
+        const raw = ev.extra.kissed ? 2.4 : ev.extra.heat === 'steamy' ? 2 : 1.4;
+        jealousyHit(state, cp, c, tt, raw, { confirmed: sees });
+        feel(state, cp, 'stress', 0.6);
+        addBond(cp, f, 0.3);
+        t.cpSeen = true;
+        out.push(scene(state, rng, phase, 'watching', [cp, f, c, tt],
+          { ...tag('watching'), of: sees ? 'sees' : 'told', chaser: true, heat: ev.extra.heat || null, pop: pop([cp, 0.4, 1.2], [f, 0.1, 0.5]) }));
+      }
+    }
     return out;
   }
   return out;
@@ -492,6 +509,13 @@ function graftEvening(state, rng, t, phase) {
   if (t.seen && !t.talked) {
     const ev = whereHead(state, rng, phase, p, tt, c, tag('where-head'));
     if (ev) { t.talked = state.ep; out.push(ev); }
+    return out;
+  }
+  // …and the chaser's partner asks the chaser (the same talk, the other couple).
+  const cp = heartOf(state, c);
+  if (t.cpSeen && !t.cpTalked && cp && cp !== tt) {
+    const ev = whereHead(state, rng, phase, cp, c, tt, { ...tag('where-head'), chaser: true });
+    if (ev) { t.cpTalked = state.ep; out.push(ev); }
     return out;
   }
   // A later episode: t has gone further for c than for p, and says so.

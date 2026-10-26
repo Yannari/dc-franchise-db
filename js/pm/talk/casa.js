@@ -35,6 +35,11 @@ export const CASA_MISS = build('casa-miss', {
       ] },
     ],
     miss: [
+      { when: { of: 'aches', again: true }, turns: [
+        ['a', "We've only just got back together. It took us so long to get back to each other, and now I've got to sit here and wait to see if {about} walks back in with someone else."],
+        ['b', "You got back together for a reason, though."],
+        ['a', "I know. I keep telling myself that."],
+      ] },
       { when: { of: 'aches' }, turns: [
         ['a', "I just miss {about}. Like, properly miss {about}. It's so weird. I didn't realise how much I'd got used to having {about} around until {about} wasn't there. I keep turning round to say something, and it's someone else."],
         ['b', "That's really sweet, actually."],

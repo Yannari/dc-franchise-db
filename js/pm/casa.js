@@ -86,9 +86,9 @@ function returnCeremony(state, rng, decisions) {
       pop: { [who]: { approval: 2, fame: 2 } } }, [who]));
     // Twisted on: the one who twisted moved on (breakups.js), and the one who stuck was left.
     if (of === ONE.devastated) { rows.push([p, d.name]); noteBreakup(state, { ender: p, wrong: d.name, severity: 1, cause: 'casa' });
-      out[out.length - 1].extra.splitRec = recordSplit(state, { by: d.name, left: p, cause: 'moved-on', about: d.with }); }
+      out[out.length - 1].extra.splitRec = recordSplit(state, { by: d.name, left: p, cause: 'moved-on', about: d.with, publicly: true }); }
     if (of === ONE.turned) { rows.push([d.name, p]); noteBreakup(state, { ender: d.name, wrong: p, severity: 1, cause: 'casa' });
-      out[out.length - 1].extra.splitRec = recordSplit(state, { by: p, left: d.name, cause: 'moved-on', about: pd.with }); }
+      out[out.length - 1].extra.splitRec = recordSplit(state, { by: p, left: d.name, cause: 'moved-on', about: pd.with, publicly: true }); }
   }
   // The rows, the same night: the one who stuck and the one who didn't.
   for (const [stuck, twister] of rows) {

@@ -398,7 +398,7 @@ export function standUp(state, name, { rng, tonight = [] }) {
   const loved = left ? Math.max(0, coupleScore(state.ledger, pick, left)) : 0;
   // Standing up for a bombshell, and chosen: {pick} left {left} for them (breakups.js).
   const splitRec = left && Math.max(romance(left, pick), romance(pick, left)) >= 3
-    ? recordSplit(state, { by: pick, left, cause: 'moved-on', about: name }) : null;
+    ? recordSplit(state, { by: pick, left, cause: 'moved-on', about: name, publicly: true }) : null;
   events.push(makeEvent(state, rng, { phase: 'event', kind: 'stand-up-pick', players: left ? [name, pick, left] : [name, pick],
     aired: true, major: left ? [name, pick, left] : [name],
     extra: { stole: left || null, ...(splitRec ? { splitRec } : {}), pop: mergePop({ [name]: { approval: left ? -(BETRAYAL.bombshellSteal + 0.05 * loved) : 0.3, fame: 3 },

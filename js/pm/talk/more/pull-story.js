@@ -15,17 +15,29 @@ export const PULL_STORY_PLANS = [
 export const PULL_STORY = {
   moves: {
     why: [
-      { when: { story: 'graft', bTaken: true }, turns: [
+      { when: { story: 'graft', bTaken: true, taken: false }, turns: [
         ['a', "I'm just going to be honest with you, because I think you'd rather that than me dancing round it. I like you. I've liked you since I first saw you. And I know you're with {pb}, and I'm not here to cause trouble. I just didn't want to get to the end of this and wonder."],
         ['b', "Okay. Wow. I wasn't expecting you to just come out with it."],
         ['a', "I'm not very good at pretending."],
+      ] },
+      // The grafter has a partner of their own (user, season 1: "it doesn't even
+      // acknowledge that Rafael is in an old couple, or Lucia").
+      { when: { story: 'graft', bTaken: true, taken: true }, turns: [
+        ['a', "I know how this looks. I'm with {pa}, you're with {pb}, and I'm sitting here anyway. But I can't keep pretending I don't feel something when I'm around you."],
+        ['b', "What about {pa}?"],
+        ['a', "I care about {pa}. I do. But caring about someone and feeling like this are two different things, and I've only just worked that out."],
+      ] },
+      { when: { story: 'graft', bTaken: true, taken: true, newCouple: false }, turns: [
+        ['a', "Me and {pa} have been together a long time in here. Everyone thinks we're solid. And I've been sitting next to {pa} at the fire pit, thinking about you."],
+        ['b', "You can't say that to me."],
+        ['a', "I know. I'm saying it anyway, because I'd rather say it to you than lie to {pa} for another week."],
       ] },
       { when: { story: 'graft', bTaken: true }, turns: [
         ['a', "Can I ask you something straight? How are things with {pb}? Honestly. Not the version you give the villa."],
         ['b', "Why do you want to know?"],
         ['a', "Because I'm interested in you. And if it's going amazing, I'll back off. But if it's not, I want you to know there's someone here who'd like to get to know you."],
       ] },
-      { when: { story: 'graft', bTaken: true, fresh: true }, turns: [
+      { when: { story: 'graft', bTaken: true, fresh: true, taken: false }, turns: [
         ['a', "I'll be honest. Before I even walked in, you were the one I wanted to talk to. And I know you're coupled up with {pb}, everyone made sure I knew that. But I'd be lying to myself if I didn't at least have one conversation with you."],
         ['b', "That's very forward."],
         ['a', "I haven't got time to be anything else. I've only just got here."],
@@ -42,18 +54,35 @@ export const PULL_STORY = {
       ] },
     ],
     answer: [
-      { when: { story: 'graft', bTaken: true, end: 'turned-down' }, turns: [
+      { when: { story: 'graft', bTaken: true, taken: false, bNewCouple: false, end: 'turned-down' }, turns: [
         ['b', "I appreciate you being honest, I really do. But I'm with {pb}, and I'm happy with {pb}. I'm not going to sit here and pretend there's a door open when there isn't. That wouldn't be fair on you, and it wouldn't be fair on {pb}."],
         ['a', "Okay. That's fair."],
       ] },
-      { when: { story: 'graft', bTaken: true, end: ['flirt', 'kissed', 'promised'] }, turns: [
+      { when: { story: 'graft', bTaken: true, bNewCouple: false, end: ['flirt', 'kissed', 'promised'] }, turns: [
         ['b', "It's… complicated. {pb} is lovely. Really lovely. But sometimes I sit there and I think, is this it? Is this the thing? And I don't know. I genuinely don't know."],
         ['a', "That's not a no."],
         ['b', "It's not a yes, either."],
       ] },
-      { when: { story: 'graft', bTaken: true, end: ['flirt', 'kissed', 'promised'] }, turns: [
+      { when: { story: 'graft', bTaken: true, bFirst: true, bNewCouple: false, taken: false, end: ['flirt', 'kissed', 'promised'] }, turns: [
         ['b', "I'm not going to lie and say I haven't noticed you. I have. I noticed you the second you walked in. But I've got {pb}, and I've built something with {pb}, and I can't just throw that away because someone new smiled at me."],
         ['a', "I'm not asking you to throw anything away. I'm asking for a chance to get to know you."],
+      ] },
+      { when: { story: 'graft', bTaken: true, bNewCouple: true, end: ['flirt', 'kissed', 'promised'] }, turns: [
+        ['b', "I've been with {pb} for about five minutes. I don't even know what we are yet. And you pick now to tell me this?"],
+        ['a', "Would you rather I'd waited until you did know?"],
+        ['b', "…No. Probably not."],
+      ] },
+      { when: { story: 'graft', bTaken: true, bNewCouple: true, end: 'turned-down' }, turns: [
+        ['b', "I only just coupled up with {pb}. I chose {pb}, and I want to see where it goes before I start looking anywhere else. I'm not doing that to {pb}."],
+        ['a', "Okay. That's fair."],
+      ] },
+      { when: { story: 'graft', bTaken: true, taken: true, end: ['flirt', 'kissed', 'promised'] }, turns: [
+        ['b', "I'm not going to pretend I haven't thought about it. But you've got {pa}. If we do this, it's not just {pb} who gets hurt. It's {pa} as well."],
+        ['a', "I know. I've thought about nothing else."],
+      ] },
+      { when: { story: 'graft', bTaken: true, taken: true, end: 'turned-down' }, turns: [
+        ['b', "Go back to {pa}. Honestly. You've got someone who likes you, and you're sitting here with me. That's not fair on {pa}, and it's not fair on me."],
+        ['a', "Okay. That's fair."],
       ] },
       { when: { story: 'spark' }, turns: [
         ['b', "Honestly? I've been hoping you'd pull me. I didn't want to be the one to do it, in case I'd read it all wrong. But every time you laugh at something I say, I feel about ten feet tall."],
@@ -71,6 +100,11 @@ export const PULL_STORY = {
         ['b', "That's not a fair question."],
         ['a', "It's the only question that matters, though, isn't it?"],
         ['b', "Maybe. Yes. I don't know. Stop looking at me like that."],
+      ] },
+      { when: { story: 'graft', bTaken: true, taken: true }, turns: [
+        ['b', "Does {pa} know you're over here?"],
+        ['a', "No."],
+        ['b', "Then what are we doing? Because if {pa} finds out from somebody else, that's on both of us."],
       ] },
       { when: { story: 'graft', bTaken: true }, turns: [
         ['a', "What would {pb} say, if {pb} could hear this?"],

@@ -109,7 +109,7 @@ export function triangles(state, rng, entry = null) {
       const w = p, l = p === t.x ? t.y : t.x;
       t.over = true;
       // Leaving the partner for the other one is a break-up (breakups.js); choosing the partner is not.
-      const splitRec = t.partnerAt === l && !broken(state, t.h, l) ? recordSplit(state, { by: t.h, left: l, cause: 'moved-on', about: w }) : null;
+      const splitRec = t.partnerAt === l && !broken(state, t.h, l) ? recordSplit(state, { by: t.h, left: l, cause: 'moved-on', about: w, publicly: true }) : null;
       breakHeart(state, l, t.h, 5 * romance(l, t.h) / 10);
       feel(state, w, 'security', 1.5);
       const v = splitRec ? verdictPop(splitRec, 0.7) : {};

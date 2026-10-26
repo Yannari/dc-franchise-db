@@ -55,7 +55,7 @@ const knownWrong = (state, who, to) => (state.secrets || []).filter(s => s.known
  * who {left} cheated with). Returns the record; it draws on its own dice,
  * so no other draw in the episode moves.
  */
-export function recordSplit(state, { by, left, cause, about = null }) {
+export function recordSplit(state, { by, left, cause, about = null, publicly = false }) {
   if (!by || !left || by === left) return null;
   const rng = streamFor(state.seed ?? 1, `split:${by}>${left}:${state.ep}`);
   const selfishCause = cause !== 'cheated' && cause !== 'played';
@@ -73,7 +73,10 @@ export function recordSplit(state, { by, left, cause, about = null }) {
   // the other cheating or playing them): then the anger is {by}'s.
   const mood = weighted(rng, [
     // Cheated on or played almost never ends calmly (user); leaving for somebody else rarely does.
-    ['friends', (wronged ? 0.04 : 0.1) + (1 - Math.max(rl, wronged ? rb : 0)) * (wronged ? 0.18 : heated ? 0.35 : 1.1)],
+    // …and left in front of everyone (a Casa twist, a recoupling, a bombshell's
+    // stand-up) is not taken well that night (season 1: Zara, "Not tonight.
+    // Maybe not ever", recorded as friends, and they were mates the next day).
+    ['friends', ((wronged ? 0.04 : 0.1) + (1 - Math.max(rl, wronged ? rb : 0)) * (wronged ? 0.18 : heated ? 0.35 : 1.1)) * (publicly ? 0.15 : 1)],
     ['hurt', Math.max(rl, wronged ? rb : 0) * (0.4 + 0.6 * T(state, wronged ? by : left))],
     ['bitter', rl * (1.1 - T(state, left)) * (1.6 - fair) * (heated ? 1.3 : 0.7)
       + (wronged ? (0.5 + 0.5 * rb) * (1.1 - T(state, by)) * 1.2 : 0)],

@@ -17,7 +17,7 @@ import { streamFor } from '../dr/rng.js';
 import { stepOf, believedStep, situationship } from './ladder.js';
 import { emo, attachmentLabel } from './emotions.js';
 import { romance, shown } from './feelings.js';
-import { heartOf } from './just-friends.js';
+import { heartOf, backTogether } from './just-friends.js';
 import { FIREPIT_LINES } from './lines/firepit.js';
 import { FINAL_LINES } from './lines/final.js';
 import { CHALLENGE_LINES } from './lines/challenges.js';
@@ -67,6 +67,12 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   'reg', 'bReg', 'tier', 'after', 'afterBy', 'afterWhen', 'end', 'firstKiss', 'bPartnered', 'fresh', 'bFresh',
   // a couple who are only friends now, at the final (pm/just-friends.js); how a break-up was taken
   'mates', 'took', 'exPick',
+  // how long a's and b's couples have stood; whether b was in the villa before a walked in
+  'newCouple', 'bNewCouple', 'bFirst',
+  // a couple that broke up and got back together; and did it in the last few days
+  'again', 'backNow',
+  // a graft watched by the CHASER's partner: {c} went after {d}, not the other way round
+  'chaser',
   // a talk file's own (pm/talk/*.js facts())
   'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels', 'believed', 'dayOne', 'side',
   // Casa Amor: who this scene concerns is in the other villa, and which villa it is in
@@ -209,6 +215,21 @@ export function factsFor(state, ev) {
   // Which of them is the new one: "when you walked in" needs b to have walked in.
   f.fresh = state.ep > 1 && arrivedNow(a);
   f.bFresh = state.ep > 1 && !!b && arrivedNow(b);
+  // A couple that formed in the last episode or so (about four days): not one that
+  // has "built something" (user, season 1: Mei and Riza, coupled the night before,
+  // talked about as if they had been together since day one).
+  const newWith = n => { const p = n && heartOf(state, n);
+    const since = p ? state.coupledSince?.[[n, p].sort().join('|')] : null;
+    return since != null && (state.day ?? since) - since <= 4; };
+  f.newCouple = newWith(a);
+  f.bNewCouple = !!b && newWith(b);
+  // b was already in the villa when a arrived: only then "the second you walked in".
+  f.bFirst = !!b && (state.ledger?.firstEp?.[b] ?? 0) < (state.ledger?.firstEp?.[a] ?? 0);
+  // a and a's partner broke up once and are back together (just-friends.js rekindle).
+  const back = partnerOf(state, a) ? backTogether(state, a, partnerOf(state, a)) : null;
+  f.again = !!back;
+  f.chaser = !!ev.extra?.chaser;
+  f.backNow = !!back && (back.day == null || state.day == null ? state.ep - back.ep <= 1 : state.day - back.day <= 4);
   // Everyone in it — and a's partner — has been in the villa two episodes or
   // more: only then is "for days" true (season 33: Ellie, in two days and
   // coupled that night, "hasn't been feeling it for days").

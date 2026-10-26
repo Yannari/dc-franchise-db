@@ -41,8 +41,15 @@ export function becomeFriends(state, ender, hurt, ep = state.ep) {
 }
 
 export function rekindle(state, a, b) {
-  if (state.splits) delete state.splits[key(a, b)];
+  const rec = state.splits?.[key(a, b)];
+  if (!rec) return;
+  // They remember it: a couple back together is not on its first go (user,
+  // 2026-10-26: "do they act like it's their first time each time?").
+  (state.backTogether ||= {})[key(a, b)] = { ep: state.ep, day: state.day ?? null, splitEp: rec.ep, cause: rec.cause };
+  delete state.splits[key(a, b)];
 }
+/** Broke up and got back together (and are, still). */
+export const backTogether = (state, a, b) => (a && b && state.backTogether?.[key(a, b)]) || null;
 
 /** Every break-up that stands. */
 export const splitRecords = state => Object.values(state.splits || {});

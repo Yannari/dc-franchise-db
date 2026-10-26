@@ -51,7 +51,18 @@ export const WHERE_HEAD = build('where-head', {
       ] },
     ],
     ask: [
-      { when: { story: 'graft' }, turns: [
+      // {b} went after {c} this time ({a} is the chaser's partner, threads.js).
+      { when: { story: 'graft', chaser: true }, turns: [
+        ['a', "I'm just going to say it. Why did you pull {c}?"],
+        ['b', "It was a chat."],
+        ['a', "You walked across the whole garden to get {c}, in front of everyone. In front of me. That's not a chat. That's a statement."],
+      ] },
+      { when: { story: 'graft', chaser: true }, turns: [
+        ['a', "Everyone in this villa knew before I did. Do you know how that feels? Being the last one to find out you went and got {c}?"],
+        ['b', "I was going to tell you."],
+        ['a', "When?"],
+      ] },
+      { when: { story: 'graft', chaser: false }, turns: [
         ['a', "I'm just going to say it, because I've been stewing on it all day and I can't do it any more. What was that with {c}?"],
         ['b', "What was what?"],
         ['a', "Don't. You know what. {c} pulled you, and you went, and you were gone for ages. And then you came back and didn't say a word to me about it."],
@@ -61,7 +72,7 @@ export const WHERE_HEAD = build('where-head', {
         ['b', "Me and {c} what?"],
         ['a', "That's what I'm asking. Everyone saw you go off together. I'm not stupid, and I'm not going to sit here pretending I didn't see it."],
       ] },
-      { when: { story: 'graft' }, turns: [
+      { when: { story: 'graft', chaser: false }, turns: [
         ['a', "I want to ask you something, and I want you to be honest, even if I'm not going to like it."],
         ['b', "Okay…"],
         ['a', "When {c} pulled you earlier. What did {c} say? And what did you say back?"],
@@ -84,12 +95,23 @@ export const WHERE_HEAD = build('where-head', {
     ],
     answer: [
       // ── graft ──
-      { when: { story: 'graft', of: 'reassure', kissed: false }, turns: [
+      { when: { story: 'graft', of: 'reassure', kissed: false, chaser: true }, turns: [
+        ['b', "I pulled {c} because I wanted to see if there was anything there. And there wasn't. I sat there the whole time thinking about you, and I'm sorry I had to go over there to work that out."],
+        ['a', "You had to pull somebody else to work out you liked me?"],
+        ['b', "When you say it like that it sounds awful."],
+        ['a', "It is awful."],
+      ] },
+      { when: { story: 'graft', of: 'honest', kissed: false, chaser: true }, turns: [
+        ['b', "I'm going to be honest, because you deserve that. I went over to {c} because I've been thinking about {c}. I don't know what it means yet. But I wasn't going to lie to you about it."],
+        ['a', "So you've been thinking about {c}. While you've been with me."],
+        ['b', "I know. I'm sorry."],
+      ] },
+      { when: { story: 'graft', of: 'reassure', kissed: false, chaser: false }, turns: [
         ['b', "Okay. Honestly? {c} pulled me, and I went, because I'm not going to be rude to someone. {c} said {c} likes me, and wanted to get to know me. And I said I'm with you, and I'm happy with you, and that's it. That's the whole chat."],
         ['a', "That's it?"],
         ['b', "That's it. I didn't tell you straight away because I didn't want to make it into a thing. I didn't think it was a thing."],
       ] },
-      { when: { story: 'graft', of: 'reassure', kissed: false }, turns: [
+      { when: { story: 'graft', of: 'reassure', kissed: false, chaser: false }, turns: [
         ['b', "Look at me. It was a chat. {c} asked me questions, I answered them, and the whole time I was thinking about getting back to you. I know how it looked. But I'm not going anywhere."],
         ['a', "You promise?"],
         ['b', "I promise. I'm exactly where I want to be."],
@@ -99,7 +121,7 @@ export const WHERE_HEAD = build('where-head', {
         ['a', "That's not really an answer."],
         ['b', "It's the only answer that matters. Come here."],
       ] },
-      { when: { story: 'graft', of: 'honest', kissed: false }, turns: [
+      { when: { story: 'graft', of: 'honest', kissed: false, chaser: false }, turns: [
         ['b', "I'm going to be honest with you, because you deserve that. I enjoyed talking to {c}. I didn't expect to, and I'm not saying I'm going to do anything about it, but there's something there, and I want to see what it is."],
         ['a', "Wow."],
         ['b', "I know. I'm sorry. I'd rather say it to your face now than have you find out some other way."],
@@ -114,11 +136,16 @@ export const WHERE_HEAD = build('where-head', {
         ['a', "That's not the same and you know it."],
         ['b', "Why isn't it? Because it's me?"],
       ] },
-      { when: { story: 'graft', of: 'deflect' }, turns: [
+      { when: { story: 'graft', of: 'deflect', chaser: false }, turns: [
         ['b', "Honestly, I think you're reading way too much into this. {c} wanted a chat. I had a chat. Can we not turn it into a whole thing?"],
         ['a', "It's already a thing. That's why I'm asking."],
       ] },
-      { when: { story: 'graft', of: 'lie' }, turns: [
+      { when: { story: 'graft', of: 'lie', chaser: true }, turns: [
+        ['b', "Nothing happened. I wanted to clear the air with {c} about something, that's all. I'm actually a bit hurt you'd think anything else."],
+        ['a', "So nothing happened?"],
+        ['b', "Nothing happened. I swear on my life."],
+      ] },
+      { when: { story: 'graft', of: 'lie', chaser: false }, turns: [
         ['b', "Nothing happened. We talked. {c} asked how things were with us, and I said they're good. That was literally it. I'm actually a bit hurt you'd think anything else."],
         ['a', "So nothing happened?"],
         ['b', "Nothing happened. I swear on my life."],

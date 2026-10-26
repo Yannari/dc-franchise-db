@@ -97,7 +97,7 @@ export const DEBRIEF = build('debrief', {
         ['a', "Everyone saw my face."],
       ] },
       { when: { of: 'stole', taken: true }, turns: [
-        ['a', "I know how it looked. I know everyone's going to say I'm a snake. But I've liked {pa} since day one, and I wasn't going to sit there and watch another recoupling go by without doing something about it."],
+        ['a', "I know how it looked. I know everyone's going to say I'm a snake. But I've liked {pa} for ages, and I wasn't going to sit there and watch another recoupling go by without doing something about it."],
         ['b', "How do you think {c} is feeling?"],
         ['a', "Awful, probably. And I feel bad about that. I just don't feel bad enough not to have done it."],
       ] },
@@ -209,7 +209,7 @@ export const DEBRIEF = build('debrief', {
         ['a', "Easy for you to say."],
         ['b', "It's not easy for anyone to say. I'm saying it anyway."],
       ] },
-      { when: { of: ['eyeing', 'bomb-threat'], taken: true }, turns: [
+      { when: { of: ['eyeing', 'bomb-threat'], taken: true, newCouple: false }, turns: [
         ['b', "Okay, but {pa} chose you. {pa} has been with you this whole time. One person walking through the door doesn't change that, unless you let it."],
         ['a', "Unless I let it?"],
         ['b', "If you go to bed tonight and start an argument, you're doing {c}'s work for {c}."],

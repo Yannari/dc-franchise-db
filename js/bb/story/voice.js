@@ -206,7 +206,16 @@ export function addInsight(sc, kindText, weekNum) {
   // history only when the scene is between these two: both of them speak in it (a bystander's
   // confessional brought up their own deal with somebody in the middle of another couple's scene)
   const spoke = n => sc.lines.some(l => l.by === n && l.kind !== 'dr');
-  const hist = spoke(me) && spoke(o) ? res.hist : [];
+  // ...and only when the scene is ABOUT the two of them: their row, their alliance, their showmance. A scene about
+  // somebody else (four on the loungers deciding Angelica can't be trusted) closed on "Fatima and I didn't vote
+  // the same way in week three", which is another conversation's point (the user, 2026-10-25: "its like its
+  // mixing 2 different conversation"). A confessional about a third person, and a group scene that is not the two
+  // of them fighting, keep their own ending; two people talking about themselves (a pitch for a vote, a deal) can
+  // still bring up the vote they split.
+  const talkers = new Set(sc.lines.filter(l => l.by && l.kind !== 'dr' && l.kind !== 'beat').map(l => l.by));
+  const aboutSomebodyElse = (players || []).some(p => p?.name && p.name !== me && p.name !== o && new RegExp(`\\b${p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(String(dl.text)));
+  const theirs = talkers.size <= 2 ? !aboutSomebodyElse : kind === 'feud';
+  const hist = spoke(me) && spoke(o) && theirs ? res.hist : [];
   // downtime is the scene's own: a voice line there read as a non sequitur, so only history; and a
   // voice line is about the other person, so only where that person is talking too (the read of
   // 2026-10-13: "I voted with the group. Nobody believes me. Sure, why not. Yul seems fun" in a

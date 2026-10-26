@@ -153,16 +153,15 @@ export default {
 
   // ── showmance ───────────────────────────────────────────────────────
   'story.showmance.spark.any': [
-    { id: 'sm2.1', turns: [
-      { by: 'b', say: "Why are you looking at me like that?" },
-      { by: 'a', say: "Like what?" },
-      { by: 'b', say: "Like you're about to say something stupid." },
-      { by: 'a', say: "I was going to say you look nice today." },
-      { by: 'b', say: "...That's not stupid." },
-      { by: 'a', say: "It felt stupid in my head." },
-      { by: 'b', say: "Say it again." },
-      { by: 'a', say: "No! Once was hard enough." },
-      { by: 'b', dr: "{a} went bright red. I'm going to think about that for the rest of the day." },
+    { id: 'sm2.1', room: 'bathroom', turns: [
+      { beat: 'The bathroom mirror. {b} is doing {b.posAdj} hair. {a} is brushing {a.posAdj} teeth at the next sink and keeps looking over.' },
+      { by: 'b', say: "What? Have I got something on my face?" },
+      { by: 'a', say: "No. Sorry. You just look really nice today." },
+      { by: 'b', say: "Oh. Thank you." },
+      { by: 'a', say: "I don't know why I said that out loud." },
+      { by: 'b', say: "I'm glad you did." },
+      { beat: '{a} goes back to brushing, very fast, and leaves without rinsing the sink.' },
+      { by: 'b', dr: "{a} told me I looked nice and then ran out of the bathroom. I'm going to be thinking about that all day." },
     ] },
     { id: 'sm2.2', room: 'kitchen', turns: [
       { beat: 'Kitchen. {a} is cooking. {b} is sitting on the counter, eating the ingredients.' },

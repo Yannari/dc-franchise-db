@@ -43,6 +43,17 @@ describe('the history tail', () => {
     expect(added).toBeGreaterThan(5);
   });
 
+  // the user, 2026-10-26, on "Michele went bright red... Michele and I keep voting the same way": "theres no correlation"
+  it('does not close a flirtation on anything from the game', () => {
+    for (let i = 0; i < 20; i++) {
+      setup();
+      const sc = scene([['Fatima', 'You look really nice today.'], ['Baxter', 'Oh. Thank you.'], ['Fatima', "I don't know why I said that out loud."], ['Baxter', "I'm glad you did."],
+        ['Baxter', 'Fatima told me I looked nice. I am going to think about that all day.', 'dr']], ['Fatima', 'Baxter'], `sc-${i}`);
+      addInsight(sc, 'showmance.spark', 4);
+      expect(sc.lines.at(-1).text, `sc-${i}`).not.toMatch(/vot(e|ed|ing)|week|block|deal|alliance|veto/i);
+    }
+  });
+
   // read 2026-10-25: "You voted to keep Brightly, didn't you? ...Yes", closed by "We split our votes last week"
   it('does not close a scene already about the vote on how the two of them voted', () => {
     for (let i = 0; i < 20; i++) {

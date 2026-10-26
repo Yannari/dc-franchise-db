@@ -221,7 +221,13 @@ export function addInsight(sc, kindText, weekNum) {
   // "You voted to keep Brightly, didn't you? ...Yes", closed by "We split our votes last week, Hicks and me.
   // I'm waiting for Hicks to bring it up")
   const votesTalked = sc.lines.some(l => l.kind !== 'dr' && /\bvot(e|ed|es|ing)\b/i.test(String(l.text)));
-  const hist = spoke(me) && spoke(o) && theirs ? res.hist.filter(w => !(votesTalked && (w.fact === 'split' || w.fact === 'same'))) : [];
+  // ...and a fact only closes the kind of scene it belongs to: a flirtation takes none (the user, 2026-10-26, on
+  // "Michele went bright red... Michele and I keep voting the same way": "theres no correlation"), and how two
+  // people voted closes game talk or an alliance's scene, a split vote a fight too
+  const FITS = { same: ['game', 'ally'], split: ['game', 'ally', 'feud'], nomThem: ['game', 'feud'], nomMe: ['game', 'feud'],
+    theyNomMe: ['game', 'feud'], saved: ['game', 'ally', 'feud'], deal: ['game', 'feud'], alliance: ['game', 'feud'], couple: ['feud'] };
+  const fits = w => (FITS[w.fact] || ['game', 'feud']).includes(kind) && !(votesTalked && (w.fact === 'split' || w.fact === 'same'));
+  const hist = spoke(me) && spoke(o) && theirs && kind !== 'heart' ? res.hist.filter(fits) : [];
   // downtime is the scene's own: a voice line there read as a non sequitur, so only history; and a
   // voice line is about the other person, so only where that person is talking too (the read of
   // 2026-10-13: "I voted with the group. Nobody believes me. Sure, why not. Yul seems fun" in a

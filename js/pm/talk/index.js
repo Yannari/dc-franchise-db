@@ -185,6 +185,8 @@ for (const [k, more] of [['receipt', RECEIPT_VOLUME], ['journey-react', JOURNEY_
 extend(VOTE_WORRY, VOTE_WORRY_VOLUME); extend(PICK_CHAT, PICK_CHAT_VOLUME); extend(STICK_TWIST, STICK_TWIST_VOLUME);
 TALK['doubt-end'] = DOUBT_END;
 TALK['just-friends'] = JUST_FRIENDS;
+// A fight over somebody names them: {x} is who the two of them are fighting over (pm/blowup.js).
+TALK.blowup.slots = (state, ev) => (ev.extra?.about ? { x: ev.extra.about } : {});
 TALK.rekindle = REKINDLE;
 TALK['pick-chat'] = PICK_CHAT; TALK['vote-worry'] = VOTE_WORRY; TALK['stick-twist'] = STICK_TWIST;
 // A story's pull is about the story: no tangent, and its own why, answer and probe.

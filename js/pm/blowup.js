@@ -35,10 +35,15 @@ function grievances(state, tonight = []) {
   // `ep`: when the thing it's about happened, so a row days later doesn't open
   // "straight after the recoupling" (season read 2026-10-25).
   let srcEp = state.ep;
-  const add = (a, b, w, cause, role = null, kissed = false) => {
+  // `about`: for jealousy, who the two of them are fighting over — said by
+  // name (user, 2026-10-26: "what are they fighting about, it's so vague":
+  // "You've spent more time with them today" never said who).
+  // `channel`: how a steal happened — 'recoupling' only when it was one, so
+  // "it was a recoupling, you pick who you want" is never said of a friend's pull.
+  const add = (a, b, w, cause, role = null, kissed = false, about = null, channel = null) => {
     if (!a || !b || a === b) return;
     const k = `${a}|${b}`, cur = g.get(k);
-    if (!cur || w > cur.w) g.set(k, { w: (cur?.w || 0) * 0.5 + w, cause, role, kissed, ep: srcEp });
+    if (!cur || w > cur.w) g.set(k, { w: (cur?.w || 0) * 0.5 + w, cause, role, kissed, ep: srcEp, about: about !== a && about !== b ? about : null, channel });
     else cur.w += w * 0.5;
   };
   for (const e of [...state.history, ...tonight]) {
@@ -52,40 +57,43 @@ function grievances(state, tonight = []) {
       const k = e.extra?.of === 'kiss';
       add(aud[0], aud[1], 2.5 * fade, 'cheating', 'partner', k);
       const rival = p.find(n => n !== aud[1]);
-      if (rival) add(aud[0], rival, 3 * fade, 'cheating', 'rival', k);       // the other one
+      if (rival) add(aud[0], rival, 3 * fade, 'cheating', 'rival', k, aud[1]);       // the other one
     }
-    if (e.kind === 'photos') { const k = e.extra?.of === 'kiss'; add(p[0], p[1], 2.5 * fade, 'cheating', 'partner', k); const r = e.extra?.faces?.[1]; if (r) add(p[0], r, 3 * fade, 'cheating', 'rival', k); }
-    if (e.kind === 'recouple-pick' && e.extra?.stole) add(p[2], p[0], 3 * fade, 'steal');
-    if (e.kind === 'steal') add(p[2], p[0], 3 * fade, 'steal');
-    if (e.kind === 'casa-react' && ['devastated', 'turned'].includes(e.extra?.of)) { add(p[0], p[1], 3 * fade, 'casa', 'partner'); if (p[2]) add(p[0], p[2], 2.5 * fade, 'casa', 'rival'); }
+    if (e.kind === 'photos') { const k = e.extra?.of === 'kiss'; add(p[0], p[1], 2.5 * fade, 'cheating', 'partner', k); const r = e.extra?.faces?.[1]; if (r) add(p[0], r, 3 * fade, 'cheating', 'rival', k, p[1]); }
+    // A steal names who was taken ('took'), so "you just took them" says who.
+    if (e.kind === 'recouple-pick' && e.extra?.stole) add(p[2], p[0], 3 * fade, 'steal', 'took', false, p[1], 'recoupling');
+    if (e.kind === 'steal') add(p[2], p[0], 3 * fade, 'steal', 'took', false, p[1]);
+    if (e.kind === 'casa-react' && ['devastated', 'turned'].includes(e.extra?.of)) { add(p[0], p[1], 3 * fade, 'casa', 'partner'); if (p[2]) add(p[0], p[2], 2.5 * fade, 'casa', 'rival', false, p[1]); }
     if (e.kind === 'gossip') add(p[2], p[0], 1.5 * fade, 'told');   // the one exposed, at the teller
     // Had it out with the partner and not forgiven: the other one is next.
     if (e.kind === 'told-confront' && e.extra?.verdict !== 'forgive') {
       const sec = (state.secrets || []).find(z => z.id === e.extra.secret);
-      if (sec?.with && sec.with !== p[0]) add(p[0], sec.with, 2 * fade, 'cheating', 'rival', sec.kind === 'kiss');
+      if (sec?.with && sec.with !== p[0]) add(p[0], sec.with, 2 * fade, 'cheating', 'rival', sec.kind === 'kiss', sec.who);
     }
     // Turned on the teller: x at w, on top of the telling.
     if (e.kind === 'told-confront' && e.extra?.of === 'blames') add(p[1], p[2], 1 * fade, 'told');
     // Went after the teller and it turned into a feud: c at w, and back.
     if (e.kind === 'stirrer-confront' && e.extra?.close === 'feud') { add(p[0], p[1], 1.5 * fade, 'told'); add(p[1], p[0], 0.8 * fade, 'history'); }
-    if (e.kind === 'debrief' && e.extra?.of === 'blame' && p[2]) add(p[0], p[2], 2 * fade, 'vote');
+    // A vote names who went home ('gone'), when the record says.
+    if (e.kind === 'debrief' && e.extra?.of === 'blame' && p[2]) add(p[0], p[2], 2 * fade, 'vote', e.extra.gone ? 'gone' : null, false, e.extra.gone || null);
     // Old rows feed the next one only a little (measured: at full weight
     // they fed themselves, 12.5 blow-ups a season, most of them about nothing new).
     if (e.kind === 'argument') { add(p[0], p[1], 0.35 * fade, 'history'); add(p[1], p[0], 0.35 * fade, 'history'); }
     // Two after the same one: the rivals of a love triangle.
-    if (e.kind === 'triangle-rivals') { add(p[0], p[1], 1.6 * fade, 'jealousy'); add(p[1], p[0], 1.6 * fade, 'jealousy'); }
+    if (e.kind === 'triangle-rivals') { add(p[0], p[1], 1.6 * fade, 'jealousy', null, false, p[2]); add(p[1], p[0], 1.6 * fade, 'jealousy', null, false, p[2]); }
     // …and the rivals of pm/rivalry.js: shade stings the one it was about, a row both.
-    if (e.kind === 'rival-shade') add(p[1], p[0], 1.4 * fade, 'jealousy');
-    if (e.kind === 'rival-row' && e.extra?.of === 'row') { add(p[0], p[1], 1.6 * fade, 'jealousy'); add(p[1], p[0], 1.6 * fade, 'jealousy'); }
-    if (e.kind === 'code-call') add(p[2], p[1], 1.2 * fade, 'jealousy');
+    if (e.kind === 'rival-shade') add(p[1], p[0], 1.4 * fade, 'jealousy', null, false, p[2]);
+    if (e.kind === 'rival-row' && e.extra?.of === 'row') { add(p[0], p[1], 1.6 * fade, 'jealousy', null, false, p[2]); add(p[1], p[0], 1.6 * fade, 'jealousy', null, false, p[2]); }
+    if (e.kind === 'code-call') add(p[2], p[1], 1.2 * fade, 'jealousy', null, false, partnerOf(state, p[2]));
     // …and the two sides: whoever went at somebody's friend, and the pair who clashed over it.
     if (e.kind === 'camp-confront' && e.extra?.of === 'hot') add(p[1], p[0], 1.2 * fade, 'history');
     if (e.kind === 'camp-clash') { add(p[0], p[1], 1.5 * fade, 'history'); add(p[1], p[0], 1.5 * fade, 'history'); }
     // Exes at war: the one left, at the one who left; the new one, at the one who keeps coming over.
     if (e.kind === 'feud-confront') add(p[0], p[1], 2 * fade, 'steal');
     // A game player called out: the one being played, at the player; and the accuser it was turned on.
-    if (e.kind === 'betray-see') add(p[0], p[1], 2.2 * fade, 'steal');
-    if (e.kind === 'vote-fallout' || e.kind === 'vote-callout' || e.kind === 'grudge-clash') add(p[0], p[1], 1.8 * fade, 'vote');
+    if (e.kind === 'betray-see') add(p[0], p[1], 2.2 * fade, 'steal', 'took', false, p[2]);
+    if (e.kind === 'vote-fallout') add(p[0], p[1], 1.8 * fade, 'vote', 'gone', false, p[2]);
+    if (e.kind === 'vote-callout' || e.kind === 'grudge-clash') add(p[0], p[1], 1.8 * fade, 'vote');
     if (e.kind === 'grass-confront') add(p[0], p[1], 1.2 * fade, 'told');
     if (e.kind === 'game-called') { add(p[2], p[1], 2.2 * fade, 'told'); if (e.extra?.of === 'turns') add(p[0], p[1], 1.5 * fade, 'history'); }
     if (e.kind === 'feud-interrupt' || (e.kind === 'feud-shade' && e.extra?.of === 'catty')) add(p[e.kind === 'feud-shade' ? 1 : 2], p[0], 1.2 * fade, 'history');
@@ -93,7 +101,16 @@ function grievances(state, tonight = []) {
   // Jealousy of a rival is a grievance of its own: the one who has been
   // eyeing their partner, whatever the record says.
   for (const a of state.villa) for (const [r, v] of Object.entries(emo(state, a).jealousy || {})) {
-    if (v >= 2 && state.villa.includes(r)) add(a, r, 0.45 * v, 'jealousy');
+    if (v >= 2 && state.villa.includes(r)) add(a, r, 0.45 * v, 'jealousy', null, false, partnerOf(state, a));
+  }
+  // Jealousy over nobody in particular is not a fight anybody could follow:
+  // what's left of it is their history.
+  for (const v of g.values()) if (v.cause === 'jealousy' && (!v.about || !state.villa.includes(v.about))) v.cause = 'history';
+  // A third named but no longer known (an id gone from the record): unnamed, and the role with it.
+  for (const v of g.values()) {
+    if (v.about) continue;
+    if (v.role === 'took' || v.role === 'gone') v.role = null;
+    if (v.role === 'rival') { v.cause = 'history'; v.role = null; }
   }
   return g;
 }
@@ -126,7 +143,7 @@ export function blowups(state, rng, entry = null, tonight = []) {
     const p = cooled * Math.max(0, Math.min(0.85, (t - 2.5) / 10 * (1.35 - temper / 10)));
     // A row about nothing but old rows is rarer than one about something that happened.
     const q = v.cause === 'history' ? p * 0.5 : p;
-    if (q > 0) cands.push({ a, b, t, p: q, cause: v.cause, role: v.role, kissed: !!v.kissed, ep: v.ep });
+    if (q > 0) cands.push({ a, b, t, p: q, cause: v.cause, role: v.role, kissed: !!v.kissed, ep: v.ep, about: v.about, channel: v.channel });
   }
   cands.sort((x, y) => y.t - x.t);
   const pick = cands.find(c => rng() < c.p);
@@ -136,7 +153,7 @@ export function blowups(state, rng, entry = null, tonight = []) {
   return out;
 }
 
-function kickOff(state, rng, { a, b, cause, role, kissed, ep = state.ep }) {
+function kickOff(state, rng, { a, b, cause, role, kissed, ep = state.ep, about = null, channel = null }) {
   const events = [];
   const ev = (kind, players, extra, major = []) => {
     const e = makeEvent(state, rng, { phase: 'blowup', kind, players, aired: true, major, extra: { pop: {}, ...extra } });
@@ -145,7 +162,10 @@ function kickOff(state, rng, { a, b, cause, role, kissed, ep = state.ep }) {
   const just = JUSTIFIED.has(cause);
   addBond(a, b, -2); addRelationshipDimension(a, b, 'resentment', 1); addRelationshipDimension(b, a, 'resentment', 0.8);
   feel(state, a, 'stress', 1.2); feel(state, b, 'stress', 1);
-  ev('blowup', [a, b], { of: cause, cause: role, kissed, ago: ep === state.ep ? 'today' : 'days', pop: { [a]: { approval: just ? 1.5 : -2, fame: 3 }, [b]: { approval: just ? -2 : 0.5, fame: 3 } } }, [a, b]);
+  // Who the fight is over, by name ({x}): the one both want, the partner the
+  // other one was with, the one taken, the one sent home. A jealousy fight over
+  // a's own partner is cause 'partner'.
+  ev('blowup', [a, b], { of: cause, cause: role || (cause === 'jealousy' && about && partnerOf(state, a) === about ? 'partner' : null), kissed, about, channel, ago: ep === state.ep ? 'today' : 'days', pop: { [a]: { approval: just ? 1.5 : -2, fame: 3 }, [b]: { approval: just ? -2 : 0.5, fame: 3 } } }, [a, b]);
 
   // The sides: friendships and couples, and who is bold enough to say it.
   const S = n => state.profiles[n]?.stats || {};

@@ -42,7 +42,7 @@ export const BLOWUP = build('blowup', {
       { when: { of: 'cheating', cause: 'rival' }, stage: "The garden, and it starts the second they see each other.", turns: [
         ['a', "Have you got a minute? Because I've got a few things to say, and I'd rather say them now than at dinner."],
         ['b', "Go on, then."],
-        ['a', "You knew they were with me. Every single person in this villa knew they were with me."],
+        ['a', "You knew {x} was with me. Every single person in this villa knew {x} was with me."],
       ] },
       { when: { of: 'cheating', cause: 'rival' }, stage: "The kitchen. It starts quiet, and it doesn't stay quiet.", turns: [
         ['a', "Can I have a word?"],
@@ -57,11 +57,11 @@ export const BLOWUP = build('blowup', {
         ['a', "Comfy? Good. Because that's my towel, and that was my bed, and up until a few days ago, that was my person."],
         ['b', "I didn't take anything from you."],
       ] },
-      { when: { of: 'steal', ago: 'days' }, stage: "Days after the recoupling, and it still hasn't gone away. By the bench, it finally comes out.", turns: [
+      { when: { of: 'steal', ago: 'days', channel: 'recoupling' }, stage: "Days after the recoupling, and it still hasn't gone away. By the bench, it finally comes out.", turns: [
         ['a', "Do you know what's worse than what you did? You've been walking round ever since like it never happened."],
         ['b', "It was a recoupling. You pick who you want. I'm not going to keep apologising for it."],
       ] },
-      { when: { of: 'steal', ago: 'today' }, stage: "Straight after the recoupling, by the bench.", turns: [
+      { when: { of: 'steal', ago: 'today', channel: 'recoupling' }, stage: "Straight after the recoupling, by the bench.", turns: [
         ['a', "You couldn't wait, could you? You couldn't even give it one more day."],
         ['b', "It's a recoupling. You pick who you want. That's the whole point."],
       ] },
@@ -82,18 +82,18 @@ export const BLOWUP = build('blowup', {
         ['a', "Look at that bed. That's the bed you emptied. I hope you're sleeping well."],
         ['b', "That's not fair, and you know it isn't."],
       ] },
-      { when: { of: 'vote' }, stage: "{a} has been waiting all day, and doesn't wait any longer.", turns: [
-        ['a', "Just tell me why. That's all I want. Tell me why you picked them to go, and not anyone else."],
+      { when: { of: 'vote', cause: 'gone' }, stage: "{a} has been waiting all day, and doesn't wait any longer.", turns: [
+        ['a', "Just tell me why. That's all I want. Tell me why you picked {x} to go, and not anyone else."],
         ['b', "I had to pick someone."],
       ] },
       { when: { of: 'jealousy' }, stage: "The lawn. {a} has been watching for an hour, and walks over.", turns: [
-        ['a', "Can you stop? Honestly, can you just stop? Every time I turn round, you're there."],
+        ['a', "Can you stop? Honestly, can you just stop? Every time I turn round, you're there with {x}."],
         ['b', "I'm allowed to sit where I want."],
       ] },
-      { when: { of: 'jealousy', taken: true }, stage: "The kitchen. {a}'s partner has just walked off laughing, and {b} is still smiling after them.", turns: [
+      { when: { of: 'jealousy', cause: 'partner' }, stage: "The kitchen. {x} has just walked off laughing, and {b} is still smiling.", turns: [
         ['a', "What's so funny?"],
         ['b', "Nothing. We were just talking."],
-        ['a', "You're always just talking. You're always just talking to the person I'm with."],
+        ['a', "You're always just talking. You're always just talking to {x}."],
       ] },
       { when: { of: 'history' }, stage: "The kitchen, over nothing at all, and then over everything.", turns: [
         ['a', "Oh, here we go. You've got that face on again."],
@@ -120,25 +120,25 @@ export const BLOWUP = build('blowup', {
         ['a', "You kissed somebody who was coupled up. With me. And then you sat at breakfast and asked me to pass the juice. You smiled at me. Who does that?"],
       ] },
       { when: { of: 'cheating', cause: 'rival' }, turns: [
-        ['a', "I'm not stupid. I know they did it too. I'll be having a word with them, believe me. But you knew. You knew, and you went ahead anyway, and then you were nice to me. That's the bit I can't get over."],
+        ['a', "I'm not stupid. I know {x} did it too. I'll be having a word with {x}, believe me. But you knew. You knew, and you went ahead anyway, and then you were nice to me. That's the bit I can't get over."],
       ] },
       { when: { of: 'casa', cause: 'partner' }, turns: [
         ['a', "I sat in this villa every night, loyal, turning down people left, right and centre, telling everyone you'd come back on your own. I said it out loud. I said it on camera. And you walked down those steps holding someone's hand."],
       ] },
       { when: { of: 'casa', cause: 'rival' }, turns: [
-        ['a', "You knew about me before you even met them. You knew there was somebody waiting back here. And you still went for it, every day, until they turned."],
+        ['a', "You knew about me before you even met {x}. You knew there was somebody waiting back here. And you still went for it, every day, until {x} turned."],
       ] },
-      { when: { of: 'steal' }, turns: [
-        ['a', "You knew how I felt. I told you. I sat with you and told you how much I liked them, and you listened, and you nodded, and then you went after them. You used what I told you."],
+      { when: { of: 'steal', cause: 'took' }, turns: [
+        ['a', "You knew how I felt. I told you. I sat with you and told you how much I liked {x}, and you listened, and you nodded, and then you went after {x}. You used what I told you."],
       ] },
       { when: { of: 'told' }, turns: [
         ['a', "If you had a problem with me, you could have come to me. That's all I'd have asked. Instead I've got half the villa looking at me sideways, and I'm the last one to know why."],
       ] },
-      { when: { of: 'vote' }, turns: [
-        ['a', "They were my best friend in here. You knew that. Everyone knew that. And when it came to it, you didn't even hesitate. You said their name like it was nothing."],
+      { when: { of: 'vote', cause: 'gone' }, turns: [
+        ['a', "{x} was my best friend in here. You knew that. Everyone knew that. And when it came to it, you didn't even hesitate. You said the name like it was nothing."],
       ] },
       { when: { of: 'jealousy' }, turns: [
-        ['a', "It's not a coincidence any more. It's every day. The daybeds, the kitchen, the pool. Wherever they are, you are, and you've got that look on your face, and I'm meant to just watch it."],
+        ['a', "It's not a coincidence any more. It's every day. The daybeds, the kitchen, the pool. Wherever {x} is, you are, and you've got that look on your face, and I'm meant to just watch it."],
       ] },
       { when: { of: 'history' }, turns: [
         ['a', "Since the day I walked in, you've had a problem with me. I've tried. I have honestly tried. I've made you tea. I've laughed at your jokes, which isn't easy. And you still look at me like I've done something."],
@@ -154,7 +154,7 @@ export const BLOWUP = build('blowup', {
         ['a', "Then why did you hide it, if it meant nothing?"],
       ] },
       { when: { of: 'cheating', cause: 'rival' }, turns: [
-        ['b', "I didn't owe you anything. I'm sorry, but I didn't. They're the one who was with you. Take it up with them."],
+        ['b', "I didn't owe you anything. I'm sorry, but I didn't. {x} is the one who was with you. Take it up with {x}."],
         ['a', "Oh, I will. But I'm starting with you."],
       ] },
       { when: { of: 'cheating', cause: 'rival' }, turns: [
@@ -166,8 +166,8 @@ export const BLOWUP = build('blowup', {
         ['a', "I'd rather you'd come back."],
       ] },
       { when: { of: 'casa', cause: 'rival' }, turns: [
-        ['b', "I'm not going to apologise for how they feel about me. They made their own choice. I didn't drag anyone down those steps."],
-        ['a', "No, you just made sure they wanted to walk down them with you."],
+        ['b', "I'm not going to apologise for how {x} feels about me. {x} made {x.posAdj} own choice. I didn't drag anyone down those steps."],
+        ['a', "No, you just made sure {x} wanted to walk down them with you."],
       ] },
       { when: { of: 'steal' }, turns: [
         ['b', "Nobody in here belongs to anybody. I followed my heart. I'm sorry it hurt you, I really am, but I'm not sorry I did it."],
@@ -182,7 +182,7 @@ export const BLOWUP = build('blowup', {
         ['a', "Did you lose any sleep over it? Because I did."],
       ] },
       { when: { of: 'jealousy' }, turns: [
-        ['b', "We're friends. We get on. I'm not going to stop talking to someone because it makes you feel insecure. That's your problem, not mine."],
+        ['b', "We're friends. We get on. I'm not going to stop talking to {x} because it makes you feel insecure. That's your problem, not mine."],
         ['a', "Don't you dare call me insecure."],
       ] },
       { when: { of: 'history' }, turns: [
@@ -203,7 +203,7 @@ export const BLOWUP = build('blowup', {
         ['a', "Then don't be one."],
       ] },
       { when: { of: 'cheating', cause: 'rival' }, turns: [
-        ['b', "You're making me the villain because it's easier than being angry at them."],
+        ['b', "You're making me the villain because it's easier than being angry at {x}."],
         ['a', "Don't tell me who I'm angry at. I've got enough to go round."],
         ['b', "Clearly."],
       ] },
@@ -218,7 +218,7 @@ export const BLOWUP = build('blowup', {
         ['b', "You're making a scene."],
         ['a', "You made the scene. I'm just the one reading it out."],
       ] },
-      { turns: [
+      { when: { of: ['cheating', 'casa'], cause: 'partner' }, turns: [
         ['a', "Look at me. Look at me when I'm talking to you."],
         ['b', "I am looking at you."],
         ['a', "You're looking past me. You've been looking past me for days, and I'm only just working out why."],
@@ -235,9 +235,9 @@ export const BLOWUP = build('blowup', {
       ] },
     ],
     crack: [
-      { turns: [['b', "Maybe if you weren't so hard to be around, people wouldn't have to go behind your back."]], beat: "Even the people pretending not to listen stop pretending." },
-      { turns: [['a', "You know what? You're welcome to each other. Honestly. You deserve each other."]], beat: "{a} turns and walks off, and leaves the door swinging." },
-      { turns: [['a', "I hope it was worth it. I really hope, when you watch this back, you think it was worth it."]] },
+      { when: { of: ['cheating', 'casa', 'told', 'steal'] }, turns: [['b', "Maybe if you weren't so hard to be around, people wouldn't have to go behind your back."]], beat: "Even the people pretending not to listen stop pretending." },
+      { when: { of: ['cheating', 'casa', 'steal'] }, turns: [['a', "You know what? You're welcome to each other. Honestly. You deserve each other."]], beat: "{a} turns and walks off, and leaves the door swinging." },
+      { when: { of: ['cheating', 'casa', 'steal', 'told', 'vote'] }, turns: [['a', "I hope it was worth it. I really hope, when you watch this back, you think it was worth it."]] },
       { turns: [['b', "Say what you want. You'll still be the one crying in the bathroom tonight."]], beat: "Somebody gasps. Somebody actually gasps." },
       { turns: [['a', "Don't talk to me. Don't sit near me. Don't make me a drink. I'm done."], ['b', "Fine by me."]] },
       { turns: [['b', "I'm sorry. I'm sorry. What else do you want me to say?"], ['a', "Nothing. There's nothing you could say now."]] },

@@ -80,7 +80,7 @@ export function nightDebrief(state, rng, entry, pre, m) {
       || state.villa.filter(n => g(n) === g(d) && getBond(d, n) >= 2).sort((x, y) => getBond(d, y) - getBond(d, x))[0];
     add(2, 'miss', mourner, d);
     const voter = (m.ballots || []).find(b => !b.save && (b.target === d || b.couple?.includes(d)) && here(b.voter))?.voter;
-    if (voter && mourner && voter !== mourner) add(3, 'blame', mourner, voter);
+    if (voter && mourner && voter !== mourner) add(3, 'blame', mourner, voter, null, { gone: d });
   }
   if (gone.length) {
     const nervy = state.villa.filter(n => !partnerOf(state, n) || (state.ledger?.approval?.[n] ?? 0) < -10);

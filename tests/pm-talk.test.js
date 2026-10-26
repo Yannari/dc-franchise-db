@@ -107,7 +107,10 @@ describe('a placeholder only where somebody fills it', () => {
     for (const [k, s, e] of ENTRIES) {
       if (!texts(e).some(x => /\{x[.}]/.test(x))) continue;
       // A group chat always names who it is about; a doubt's moan names who {a} looks at.
-      expect(!!e.when?.after || e.when?.hasWith === true || k === 'group-chat' || (k === 'vent' && e.when?.why === 'eyes'), tag(k, s, e)).toBe(true);
+      // …and a fight names who it is over (pm/blowup.js `about`): the one both want
+      // (jealousy), the partner the other one was with (rival), the one taken, the one sent home.
+      expect(!!e.when?.after || e.when?.hasWith === true || k === 'group-chat' || (k === 'vent' && e.when?.why === 'eyes')
+        || (k === 'blowup' && (e.when?.of === 'jealousy' || ['rival', 'took', 'gone'].includes(e.when?.cause))), tag(k, s, e)).toBe(true);
     }
   });
   it('{about} only where the scene has somebody it is about', () => {

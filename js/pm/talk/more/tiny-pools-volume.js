@@ -34,11 +34,11 @@ export const TINY_POOLS = {
   blowup: {
     moves: {
       open: [
-        S({ of: 'jealousy', taken: true }, "The daybeds. {b} has been sitting with {a}'s partner all afternoon, and {a} has had enough.", ['a', "Comfy, are we?"], ['b', "Very, thanks."], ['a', "Funny. You always seem to end up next to the person I'm with."]),
-        S({ of: 'jealousy', taken: true }, "By the pool. {a}'s partner is laughing at something {b} has just said, again.", ['a', "What's the joke? I'd love to hear it."], ['b', "It's not that funny."], ['a', "Then why is everyone laughing?"]),
-        S({ of: 'jealousy', taken: true }, "The kitchen, after lunch. {a} doesn't wait for the plates to be cleared.", ['a', "Can I have a word? About the person I'm coupled with?"], ['b', "Here we go."]),
-        S({ of: 'jealousy' }, "The terrace. {a} has been watching from across the garden, and finally comes over.", ['a', "Every time I look up, there you are."], ['b', "It's a villa. I have to be somewhere."]),
-        S({ of: 'jealousy' }, "By the swing seat, and {a} is already angry by the time {a} gets there.", ['a', "Is there something you want to tell me?"], ['b', "No. Is there something you want to ask me?"]),
+        S({ of: 'jealousy', cause: 'partner' }, "The daybeds. {b} has been sitting with {x} all afternoon, and {a} has had enough.", ['a', "Comfy, are we?"], ['b', "Very, thanks."], ['a', "Funny. You always seem to end up next to {x}."]),
+        S({ of: 'jealousy', cause: 'partner' }, "By the pool. {x} is laughing at something {b} has just said, again.", ['a', "What's the joke? I'd love to hear it."], ['b', "It's not that funny."], ['a', "Then why is everyone laughing?"]),
+        S({ of: 'jealousy', cause: 'partner' }, "The kitchen, after lunch. {a} doesn't wait for the plates to be cleared.", ['a', "Can I have a word? About {x}?"], ['b', "Here we go."]),
+        S({ of: 'jealousy' }, "The terrace. {a} has been watching from across the garden, and finally comes over.", ['a', "Every time I look up, you're with {x}."], ['b', "It's a villa. I have to be somewhere."]),
+        S({ of: 'jealousy' }, "By the swing seat, and {a} is already angry by the time {a} gets there.", ['a', "Is there something you want to tell me? About you and {x}?"], ['b', "No. Is there something you want to ask me?"]),
       ],
     },
   },

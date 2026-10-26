@@ -76,7 +76,10 @@ export const BLOWUP_VOLUME_2 = {
     push: [
       R(['a', "You don't even look sorry."], ['b', "Because I'm not going to stand here and grovel."], ['a', "Nobody's asking you to grovel. I'm asking you to care."]),
       R(['b', "You're blowing this way out of proportion."], ['a', "Am I? Ask anyone. Go on. Ask anyone in this garden."]),
-      R(['a', "I trusted you. Do you understand that? I actually trusted you."], ['b', "And I never asked you to."]),
+      W({ of: ['cheating', 'casa', 'told', 'steal'] }, ['a', "I trusted you. Do you understand that? I actually trusted you."], ['b', "And I never asked you to."]),
+      // A jealousy fight's push and crack: about {x}, never about trust nobody gave.
+      W({ of: 'jealousy' }, ['b', "{x} can talk to anyone in this villa. You don't get a say in that."], ['a', "I'm not telling {x} anything. I'm telling you."]),
+      W({ of: 'jealousy' }, ['a', "Go on, then. Tell me you don't want {x}. Look me in the eye and say it."], ['b', "I don't have to tell you anything."]),
       R(['b', "Can we just talk about this later?"], ['a', "Later? You've had days. Later's gone."]),
     ],
     crack: [

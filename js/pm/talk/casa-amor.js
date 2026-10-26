@@ -123,7 +123,8 @@ export const CASA_REACT = build('casa-react', {
     words: [
       { when: { of: 'relief' }, turns: [['b', "Did you doubt me?"], ['a', "Every second. Every single second. I'm sorry. Never again."]] },
       { when: { of: 'devastated', ...C3 }, turns: [['b', "I'm sorry. I didn't plan it. I didn't want it to happen like this."], ['a', "How did you want it to happen?"]] },
-      { when: { of: 'turned', ...C3 }, turns: [['b', "I didn't know. I didn't know what you'd do. Nobody told us anything."], ['a', "You should have known. That's the point. You should have known me."]] },
+      // (Not "I didn't know what you'd do": the walk-in has just said it — season 1, Dante, twice in a minute.)
+      { when: { of: 'turned', ...C3 }, turns: [['b', "I'm sorry. I made a choice, and I'm not going to pretend I didn't."], ['a', "You should have known me. That's the point. You should have known me."]] },
     ],
     land: [
       { when: { of: 'relief' }, turns: [], beat: "{a} is up and running before {b} has reached the bottom step." },

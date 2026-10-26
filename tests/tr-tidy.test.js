@@ -5,7 +5,7 @@
 // existed (seed 21, read end to end), except the ones marked as controls.
 import { describe, expect, it, beforeAll } from 'vitest';
 import { setPlayers } from '../js/core.js';
-import { tidyNames } from '../js/vp-tr/tidy.js';
+import { tidyNames, tidySpoken } from '../js/vp-tr/tidy.js';
 
 beforeAll(() => {
   setPlayers([
@@ -35,6 +35,15 @@ describe('a repeated name becomes a pronoun', () => {
       .toBe('Emma changed her mind twice before the doors opened.');
     expect(tidyNames('Gerry was still arguing with themselves on the stairs.'))
       .toBe('Gerry was still arguing with himself on the stairs.');
+  });
+
+  // read 2026-10-25, a Big Brother season: "anything I say to she gets back to the rest of them"
+  it('as an object after "to", "with" or "about", even when a verb follows it', () => {
+    expect(tidySpoken('Emma and I are in it together, so anything I say to Emma gets back to the rest of them.'))
+      .toBe('Emma and I are in it together, so anything I say to her gets back to the rest of them.');
+    // "after" can start a clause, so it is still the subject there (the control)
+    expect(tidyNames('Gerry froze, and after Gerry said it the room went quiet.'))
+      .toBe('Gerry froze, and after he said it the room went quiet.');
   });
 });
 

@@ -120,7 +120,7 @@ export default {
       { beat: '{c} takes the sandwich back upstairs. Nobody says a word until the door closes.' },
       { by: 'f', say: "Well, that was awkward." },
       { by: 'a', say: "What were we supposed to say? 'Nice nominations'?", v: { soft: "I didn't know what to say to {c}. I still don't." } },
-      { by: 'b', dr: "The HOH came down to make a sandwich and the whole kitchen went quiet. That's what power does in this house." },
+      { by: 'b', dr: "The HOH came down to make a sandwich and the whole kitchen went quiet. Nobody knew what to say to {hoh}." },
     ] },
     { id: 'xa.3', room: 'living-room', turns: [
       { beat: 'Straight after nominations. {b} is laughing. Nobody knows why, including {b}.' },

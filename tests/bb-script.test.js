@@ -181,4 +181,11 @@ describe('fill', () => {
     expect(fill('{a} told {b} that {a.sub} had had enough. There are {count} of us.', { a: 'Ann', b: 'Bo' }))
       .toBe(`Ann told Bo that ${pronouns('Ann').sub} had had enough. There are two of us.`);
   });
+
+  // read 2026-10-25: "I was saving that for later. yesterday, Beth ate it."
+  it('opens a sentence it starts with a capital, and leaves one it does not start alone', () => {
+    expect(fill('I was saving that. {when}, {a} ate it. {count}.', { a: 'Ann' }, {}, { when: 'yesterday', count: 'seven' }))
+      .toBe('I was saving that. Yesterday, Ann ate it. Seven.');
+    expect(fill('"{when}?" Ann asked about it {when}.', {}, {}, { when: 'yesterday' })).toBe('"Yesterday?" Ann asked about it yesterday.');
+  });
 });

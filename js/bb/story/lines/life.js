@@ -22,7 +22,7 @@ export default {
       { by: 'a', say: "Thank you! So cereal is a cold soup, like gazpacho." },
       { by: 'b', say: "I'm going to bed.", v: { loud: "I'm not doing this! I'm going to bed!" } },
       { by: 'c', say: "It's two in the afternoon." },
-      { by: 'a', dr: "We have the cereal argument at least once a week, and nobody has ever changed their mind." },
+      { by: 'a', dr: "We've had the cereal argument three times now. Nobody has ever changed their mind." },
     ] },
     { id: 'lb.2', turns: [
       { by: 'a', say: "What would you do right now if you were home?" },

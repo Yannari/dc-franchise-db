@@ -31,6 +31,9 @@ import { players } from '../core.js';
 const PREPOSITIONS = new Set(['to', 'with', 'at', 'for', 'about', 'on', 'of', 'from',
   'behind', 'beside', 'past', 'against', 'toward', 'towards', 'by', 'into', 'onto',
   'over', 'under', 'without', 'around', 'near', 'after', 'like']);
+// ...and the ones that never start a clause: a name after them is the object whatever follows it ("anything
+// I say to Nichelle gets back" is not "to she gets back", read 2026-10-25 in a Big Brother season)
+const ONLY_PREP = new Set(['to', 'with', 'at', 'about', 'of', 'from', 'against', 'toward', 'towards', 'into', 'onto', 'without', 'beside', 'behind']);
 // after "Name's", the words that leave it standing alone ("it was Misha's in the end")
 const STANDALONE_AFTER = new Set(['in', 'on', 'at', 'to', 'for', 'with', 'from', 'and', 'or', 'but', 'now', 'too', 'again', 'anymore', 'instead', 'either']);
 // after "Name's", the words that make it "Name is" / "Name has" rather than a possessive
@@ -163,7 +166,7 @@ function _tidySentence(sent, re, speech = false) {
         else if (h.poss) rep = p.posAdj;
         // "after Gerry said" is a clause, not an object: a real verb after
         // the name wins over the preposition before it.
-        else if ((PREPOSITIONS.has(prev) || (speech && OBJ_AFTER.has(prev))) && !trueVerb) rep = p.obj;
+        else if (ONLY_PREP.has(prev) || ((PREPOSITIONS.has(prev) || (speech && OBJ_AFTER.has(prev))) && !trueVerb)) rep = p.obj;
         else if (VERBS.has(next) && !(p.sub === 'they' && PLURAL_UNSAFE.has(next) && !(speech && THEY_VERB[next]))) rep = p.sub;
       }
     }

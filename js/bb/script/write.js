@@ -34,17 +34,24 @@ const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eig
  * Anything else is a name the scene decided and carries in its data: {alliance},
  * {alliance2}, {target} (a person talked about, never a speaker).
  */
+// a slot that opens a sentence opens it with a capital (read 2026-10-25: "I was saving that for later.
+// yesterday, Beth ate it.")
+const opens = (whole, at) => /(^|[.!?]["”’]?\s+)["“'‘(…]*$/.test(whole.slice(0, at));
 export function fill(text, who, ctx = {}, data = {}) {
-  return text.replace(/\{(\w+)(?:\.(\w+))?\}/g, (m, role, part) => {
-    // a scene that carries its own count (the vote as the host read it: 'Seven to two') says that;
-    // otherwise {count} is how many are in the house (the audit, 2026-10-06: 'Ten.' for a 7-2 vote)
-    if (role === 'count') return typeof data.count === 'string' ? data.count : (WORDS[gs.activePlayers?.length || 0] || String(gs.activePlayers?.length || 0));
-    const name = role === 'hoh' ? ctx.hoh : (who[role] ?? (typeof data[role] === 'string' ? data[role] : undefined));
-    if (!name) return m;
-    if (!part) return name;
-    const p = pronouns(name) || {};
-    return p[part] ?? m;
+  return text.replace(/\{(\w+)(?:\.(\w+))?\}/g, (m, role, part, at, whole) => {
+    const v = slot(m, role, part, who, ctx, data);
+    return v !== m && opens(whole, at) ? v.replace(/^[a-z]/, ch => ch.toUpperCase()) : v;
   });
+}
+function slot(m, role, part, who, ctx, data) {
+  // a scene that carries its own count (the vote as the host read it: 'Seven to two') says that;
+  // otherwise {count} is how many are in the house (the audit, 2026-10-06: 'Ten.' for a 7-2 vote)
+  if (role === 'count') return typeof data.count === 'string' ? data.count : (WORDS[gs.activePlayers?.length || 0] || String(gs.activePlayers?.length || 0));
+  const name = role === 'hoh' ? ctx.hoh : (who[role] ?? (typeof data[role] === 'string' ? data[role] : undefined));
+  if (!name) return m;
+  if (!part) return name;
+  const p = pronouns(name) || {};
+  return p[part] ?? m;
 }
 
 /**

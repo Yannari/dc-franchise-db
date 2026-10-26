@@ -544,7 +544,6 @@ export default {
     { id: 'sc.f4', turns: [{ beat: 'Somebody turns up the music. {a} and {b} take that as permission.' }] },
     { id: 'sc.f5', turns: [{ beat: 'Somebody starts a singalong. {a} and {b} use the noise.' }] },
     { id: 'sc.f7', turns: [{ beat: '{a} and {b} have ended up on the same patch of floor, laughing at the same jokes.' }] },
-    { id: 'sc.f9', turns: [{ beat: 'Under the noise, {a} and {b} are having a much quieter conversation.' }] },
     { id: 'sc.f10', turns: [{ beat: 'The room splits into little groups. {a} and {b} make one of their own.' }] },
   ],
   // two people talking low inside the noise (write.js CUT: the game's quiet conversations)
@@ -555,6 +554,7 @@ export default {
     { id: 'sc.a2', turns: [{ beat: 'Under cover of the noise, {a} leans in to {b}.' }] },
     { id: 'sc.a3', turns: [{ beat: '{a} and {b} drift to the far end of the room, away from everybody.' }] },
     { id: 'sc.a4', turns: [{ beat: 'Nobody notices {a} and {b} slip out of the conversation. That is the idea.' }] },
+    { id: 'sc.f9', turns: [{ beat: 'Under the noise, {a} and {b} are having a much quieter conversation.' }] },
   ],
   'set.cut.flirt': [
     { id: 'sc.l1', turns: [{ beat: 'Not everyone is paying attention to the room. {a} and {b} have found each other again.' }] },

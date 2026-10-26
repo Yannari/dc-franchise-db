@@ -264,7 +264,7 @@ export default {
       { by: 'a', say: "It's an 'I don't know.'" },
       { by: 'b', say: "In this house, 'I don't know' on a Wednesday is a no." },
       { by: 'a', say: "...I'm sorry." },
-      { by: 'b', dr: "{a} wouldn't look at me. Everybody who's voting for you looks you in the eye. Everybody who isn't looks at the floor." },
+      { by: 'b', dr: "{a} wouldn't look at me. I know what that means." },
     ] },
     { id: 'vt.sn2', turns: [
       { by: 'b', say: "Whatever they've told you about me, it's not true." },
@@ -416,7 +416,7 @@ export default {
       { by: 'b', say: "Is there anything I can do?" },
       { by: 'a', say: "Not for the vote. Just sit with me." },
       { beat: '{b} sits with {a}. They don\'t say anything else for a while.' },
-      { by: 'a', dr: "I'm not going to beg. I've seen people beg in here. It's worse than leaving." },
+      { by: 'a', dr: "I'm not going to beg. If I go, I want to walk out of that door with my head up." },
     ] },
     { id: 'vt.rk3', turns: [
       { by: 'a', say: "Be honest. How many do I have?" },

@@ -78,7 +78,7 @@ export default {
     { id: 'pw2.3', turns: [{ by: 'b', dr: "I'll be nice to {a} this week, because {a} has the key. But watching how {a} acts with a bit of power tells me a lot, and it's not good news." }] },
     { id: 'pw2.4', when: { room: ['kitchen'] }, turns: [{ beat: '{a} holds court in the kitchen. {b} watches from the doorway.' }, { by: 'b', dr: "{a} loves this. Maybe a bit too much." }] },
     { id: 'pw2.5', turns: [{ by: 'a', say: "Everyone's being so nice to me today." }, { by: 'b', say: "Wonder why." }, { by: 'a', say: "Because I'm lovely?" }, { by: 'b', say: "Sure. That must be it." }] },
-    { id: 'pw2.6', turns: [{ by: 'b', dr: "Give some people a bit of power and they change straight away. {a} is one of those people. I'll still go up to that room and smile. That's the game. But I've noticed." }] },
+    { id: 'pw2.6', turns: [{ by: 'b', dr: "{a} has been HOH for a day and is already different with me. I'll still go up to that room and smile. But I've noticed." }] },
     { id: 'pw2.7', turns: [{ by: 'a', dr: "I know people are watching how I act this week. I'm trying to stay the same. It's harder than it sounds." }] },
   ],
   'phase.isolation.scene': [

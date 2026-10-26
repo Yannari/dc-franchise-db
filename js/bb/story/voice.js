@@ -119,11 +119,11 @@ function lines(kind, voice, o, h) {
       fiery: [`I'm not going to pretend I'm fine. ${o} knows what ${o} did.`, `${o} gets on my nerves, and I'm not good at hiding it.`],
       strategist: [`I'm staying calm. And now I know how ${o} acts under pressure.`],
       warm: [`I hate this. I'll go and talk to ${o} tomorrow and fix it.`, `I don't like being on anybody's bad side. Especially ${o}'s.`],
-      loyal: [`If I have a problem with ${o}, I'll say it to ${o}'s face. Not behind ${o}'s back.`, `If ${o} has a problem with me, ${o} can come and tell me.`],
+      loyal: [`I'd rather have it out with ${o} now than let it sit.`, `Whatever this is with ${o}, I'll sort it out face to face. Not behind ${o}'s back.`],
       nervous: [`I shouldn't have said anything. Now ${o} is mad at me.`, `My heart is still going. I hate confrontation.`],
       carefree: [`I'll be over it by tomorrow. I don't know about ${o}.`, `We'll be fine by dinner. ${o} just needs to calm down.`],
       competitor: [`Fine. I'll beat ${o} in the next competition and that'll be the end of it.`, `${o} can talk all ${o} wants. I'll do my talking in the HOH competition.`],
-      villain: [`${o} can be as angry as ${o} likes. I'm not apologising.`, `${o} and I don't get on. Fine. I'm not here to be ${o}'s friend.`],
+      villain: [`I'm not going to be the one who backs down with ${o}.`, `${o} and I don't get on. Fine. I'm not here to be ${o}'s friend.`],
     },
     ally: {
       fiery: [`If ${o} ever turns on me, the whole house is going to hear about it.`, `I'm all in with ${o}. I don't do halfway.`],

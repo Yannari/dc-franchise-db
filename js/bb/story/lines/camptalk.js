@@ -136,7 +136,7 @@ export default {
     { id: 'cpd.vu10', turns: [{ by: 'b', dr: "I nodded a lot. I didn't mean most of the nods." }] },
     { id: 'cpd.vu11', turns: [{ by: 'b', dr: "I've known how I'm voting since the nominations. {a} didn't change that." }] },
     { id: 'cpd.vu12', turns: [{ by: 'b', dr: "I wish I could give {a} what {a} wants. I can't." }] },
-    { id: 'cpd.vu13', turns: [{ by: 'b', dr: "{a} is a good person and a good campaigner. Neither of those is a vote." }] },
+    { id: 'cpd.vu13', turns: [{ by: 'b', dr: "{a} is a good person and a good campaigner. I'm still not voting to keep {a}." }] },
   ],
   'camp.vdr.worn': [
     D('cpd.vw1', 'b', "I said no the first time. {a} came back. Persistence counts for something in here."),
@@ -166,7 +166,7 @@ export default {
     D('cpd.pu4', 'a', "I said everything I came to say. I'm not sure any of it went in."),
     D('cpd.pu5', 'a', "Every conversation, I'm trying to read the vote off their face. {b}’s face gave me nothing."),
     D('cpd.pu6', 'a', "I think {b} is with me. I think. I hope."),
-    { id: 'cpd.pu7', turns: [{ by: 'a', dr: "{b} was kind. Kind is what people are when they've already decided." }] },
+    { id: 'cpd.pu7', turns: [{ by: 'a', dr: "{b} was kind about it. Too kind. I think {b} has already decided." }] },
     { id: 'cpd.pu8', turns: [{ by: 'a', dr: "I could see it in {b}'s face before I'd finished my first sentence." }] },
     { id: 'cpd.pu9', turns: [{ by: 'a', dr: "That was hard. I'm going to have a cry in the bathroom and then try someone else." }] },
     { id: 'cpd.pu10', turns: [{ by: 'a', dr: "{b} said all the right things. None of them was \"yes\"." }] },

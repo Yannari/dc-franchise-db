@@ -232,7 +232,15 @@ function restoreFromAired(state, rows, queues, seed) {
       // Every break-up as it was recorded (breakups.js), until they rekindle;
       // a "better as friends" from before the records is two friends.
       if (e.extra?.splitRec?.by) setSplit(state, { ...e.extra.splitRec });
-      else if (e.kind === 'doubt-end' && e.extra?.of === 'friends' && e.players?.length >= 2) becomeFriends(state, e.players[0], e.players[1], r.num);
+      else if (e.kind === 'doubt-end' && e.extra?.of === 'friends' && e.players?.length >= 2) {
+        // Aired before break-ups had a reaction: read it from what was said
+        // (user's season 1, ep 11: Mei, "I'm not going to pretend I'm fine"),
+        // and from what is still felt once the feelings are back (below).
+        const said = (e.script?.lines || []).map(l => l.text || '').join(' ');
+        const rec = becomeFriends(state, e.players[0], e.players[1], r.num);
+        rec.mood = /I've got enough friends in here|Don't you dare say friends/.test(said) ? 'bitter' : null;
+        rec.legacy = true;
+      }
       if ((e.kind === 'reunite' || (e.kind === 'rekindle' && e.extra?.of === 'yes')) && e.players?.length >= 2) rekindle(state, e.players[0], e.players[1]);
     }
     if (r.moment === 'photos') state.photosShown = true;
@@ -296,6 +304,14 @@ function restoreFromAired(state, rows, queues, seed) {
     const [a, b] = key.split('→');
     const back = fr[`${b}→${a}`];
     gs.bonds[bKey(a, b)] = Math.round(((fr[key] + (back ?? fr[key])) / 2) * 100) / 100;
+  }
+  // A break-up from before the records: hurt while the one left still feels it, friends once they don't.
+  for (const f of splitRecords(state)) {
+    if (!f.legacy) continue;
+    const r = romance(f.left, f.by);
+    f.torch = Math.round(Math.max(r, romance(f.by, f.left)) / 10 * 100) / 100;
+    if (!f.mood) f.mood = r >= 5 ? 'hurt' : 'friends';
+    delete f.legacy;
   }
   // Exes back together with the feeling back both ways have rekindled.
   for (const f of splitRecords(state)) {

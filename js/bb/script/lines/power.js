@@ -545,7 +545,7 @@ export default {
       { by: 'b', say: "Morning. Did you sleep okay?" },
       { by: 'a', say: "Not really. You?" },
       { by: 'b', say: "Like a baby." },
-      { by: 'a', dr: "{b} is being really nice to me this week, and that's what worries me. You don't have to be that nice to somebody you're keeping.", v: { anxious: "{b} keeps smiling at me and I can't sleep. If {b} was keeping me, {b} wouldn't have to try this hard." } }] },
+      { by: 'a', dr: "{b} is being really nice to me this week, and that's what worries me. {b} is never this nice to me.", v: { anxious: "{b} keeps smiling at me and I can't sleep. If {b} was keeping me, {b} wouldn't have to try this hard." } }] },
     { id: 'pfb.s7', when: { register: 'cool' }, turns: [{ beat: "{a} watches {b} go back upstairs, and works out how many visits that makes today." }, { by: 'a', dr: "The nominations don't make sense unless the real target isn't on the block. I'm not on the block. I think it's me." }] },
   ],
   // ── "pick me and I'll save you" ── a the seller, b the nominee

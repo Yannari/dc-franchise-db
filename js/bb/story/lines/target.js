@@ -375,7 +375,7 @@ export default {
       { by: 'b', say: "Nobody's decided anything. People in here change their minds every hour." },
       { by: 'a', say: "...Okay. What do I do first?" },
       { by: 'b', say: "First you eat. Then we make a list." },
-      { by: 'b', dr: "When people go up, they stop eating and they stop talking. That's how you lose. I'm not letting {a} lose like that." },
+      { by: 'b', dr: "{a} has stopped eating and stopped talking. I'm not letting {a} give up like that." },
     ] },
     { id: 'tb.3', presumes: ['noms'], turns: [
       { by: 'a', say: "Can I say something stupid?" },
@@ -416,7 +416,7 @@ export default {
       { by: 'b', say: "Yes. I'd want you to know, so you could fight." },
       { by: 'a', say: "...Okay. Then I'll fight." },
       { by: 'b', say: "Good. I'll help." },
-      { by: 'b', dr: "I'll be honest with {a} even when it's bad news. That's the only kind of friend worth having in here." },
+      { by: 'b', dr: "I'll be honest with {a} even when it's bad news. {a} would do the same for me." },
     ] },
     { id: 'tb.6', presumes: ['noms', 'preveto'], when: { register: ['fiery', 'competitor'] }, turns: [
       { by: 'a', say: "I'm not going out like this. I'm not." },

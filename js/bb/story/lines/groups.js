@@ -228,7 +228,7 @@ export default {
       { by: 'c', say: "I bet they were making a deal." },
       { by: 'b', say: "Or crying. People cry up there." },
       { by: 'a', say: "{target} doesn't cry. {target} plans." },
-      { by: 'c', dr: "{target} went up some stairs, and we've already decided it's a conspiracy. That's this house in one afternoon." },
+      { by: 'c', dr: "{target} went up some stairs, and we've already decided it's a conspiracy. I'm not saying we're right." },
     ] },
     { id: 'gg.2', turns: [
       { by: 'b', say: "Has anyone else noticed {target} never washes up?" },
@@ -240,7 +240,7 @@ export default {
       { by: 'b', say: "And then says 'thank you, guys!' like we're staff." },
       { by: 'd', say: "Okay, that's actually really annoying." },
       { by: 'a', say: "Welcome. You're one of us now." },
-      { by: 'd', dr: "I had no problem with {target} this morning. Now every time I see a plate by the sink, I think of {target}. This house gets in your head." },
+      { by: 'd', dr: "I had no problem with {target} this morning. Now every time I see a plate by the sink, I think of {target}. I don't even know if that's fair." },
     ] },
     { id: 'gg.3', room: 'kitchen', when: { early: true }, turns: [
       { beat: 'Kitchen. {a}, {b} and {c} are pretending to make sandwiches.' },
@@ -264,7 +264,7 @@ export default {
       { by: 'd', say: "...Doesn't matter. {target}." },
       { by: 'b', say: "That was very peer-pressured." },
       { by: 'd', say: "It was a hundred percent peer-pressured." },
-      { by: 'c', dr: "Four people, one name. That's how a target is born in here. Not in a ceremony. In a chat like that one." },
+      { by: 'c', dr: "Four people, one name, and nobody even argued. {target} has no idea." },
     ] },
     { id: 'gg.5', turns: [
       { by: 'a', say: "Is it just me, or does {target} act like the game's already over?" },
@@ -276,7 +276,7 @@ export default {
       { by: 'a', say: "It's not what {target} says. It's the way {target} walks into a room." },
       { by: 'b', say: "...Okay, now I see it." },
       { by: 'a', say: "Right?" },
-      { by: 'b', dr: "Nobody can point to one thing {target} has done. We're all completely sure anyway. That's how fast it happens in here." },
+      { by: 'b', dr: "Nobody can point to one thing {target} has done. We're all completely sure anyway." },
     ] },
     { id: 'gg.6', room: 'backyard', turns: [
       { beat: 'Backyard. {a}, {b}, {c} and {d} on the loungers, all facing away from the house.' },
@@ -370,7 +370,7 @@ export default {
       { by: 'a', say: "That's just the butter.", v: { anxious: "Is it? Oh no. Okay. Okay, I'm flipping it." } },
       { beat: '{a} flips it. It lands on the floor.' },
       { by: 'd', say: "Well, it looked good in the air." },
-      { by: 'a', dr: "Four people watching me cook, and not one of them helped. That's this house in a nutshell." },
+      { by: 'a', dr: "Four people watching me cook, and not one of them helped." },
     ] },
     { id: 'gb.4', presumes: ['hoh'], turns: [
       { by: 'a', say: "What's the first thing you'll eat when you get out?" },
@@ -425,7 +425,7 @@ export default {
       { beat: 'Three people at the counter, eating cereal in the dark.' },
       { by: 'b', say: "Do you ever forget we're on TV?" },
       { by: 'c', say: "Right now, yeah. This is the only time I forget." },
-      { by: 'b', dr: "Two in the morning is the only time this house is honest. Everyone's too tired to lie." },
+      { by: 'b', dr: "It's two in the morning and everybody's too tired to lie. Best conversation I've had all week." },
     ] },
     { id: 'gn.2', room: 'backyard', turns: [
       { beat: 'Backyard, late. {a}, {b}, {c} and {d} lying on the grass, looking up.' },
@@ -448,7 +448,7 @@ export default {
       { by: 'c', say: "We're all thinking about Thursday, aren't we?" },
       { by: 'b', say: "Yeah. Nobody's going to say a name, though." },
       { beat: 'Nobody says a name. Nobody goes to sleep either.' },
-      { by: 'b', dr: "Four people lying in the dark, all thinking about the same vote, and nobody saying a name. That's a bedroom on eviction week." },
+      { by: 'b', dr: "Four people lying in the dark, all thinking about the same vote, and nobody saying a name." },
     ] },
     { id: 'gn.4', turns: [
       { by: 'b', say: "Can I ask everyone something weird?" },

@@ -48,13 +48,13 @@ export default {
       { by: 'a', dr: "They didn't say a word to each other. They didn't need to. They're working together." },
     ] },
     { id: 'de.f7', turns: [
-      { by: 'a', dr: "{b} defended {c} at dinner. Out of nowhere. Nobody had even said {c}'s name. That's not friendship. That's a deal." },
+      { by: 'a', dr: "{b} defended {c} at dinner. Out of nowhere. Nobody had even said {c}'s name. I think {b} and {c} have a deal." },
     ] },
     { id: 'de.f8', turns: [
       { by: 'a', dr: "Once you see it, you can't stop seeing it. {b} and {c} vote together, sit together and cover for each other." },
     ] },
     { id: 'de.f9', when: { reason: 'final-two' }, turns: [
-      { by: 'a', dr: "{b} and {c} have a final two. I'd put money on it. And if I'm right, everybody else in this house is just playing for third." },
+      { by: 'a', dr: "{b} and {c} have a final two. I'd put money on it. And if I'm right, the rest of us need to split them up." },
     ] },
     { id: 'de.f10', when: { reason: 'final-two' }, turns: [
       { by: 'a', dr: "{b} and {c} have a final two. And I'm going to make sure everyone knows." },
@@ -72,7 +72,7 @@ export default {
       { by: 'a', dr: "I know {b} and {c} have a deal. That's very useful to me. I just need to pick who to tell." },
     ] },
     { id: 'de.f15', when: { register: 'cool' }, turns: [
-      { by: 'a', dr: "I've watched every vote. {b} and {c} have never once been on opposite sides. That isn't a coincidence. It's a plan." },
+      { by: 'a', dr: "I've watched every vote. {b} and {c} have never once been on opposite sides. That's not a coincidence. They're working together." },
     ] },
     { id: 'de.f16', when: { register: 'fiery' }, turns: [
       { by: 'a', dr: "They think they're so clever, {b} and {c}. They're not clever. They're obvious. And I'm about to tell everybody." },

@@ -34,7 +34,7 @@ export default {
       { by: 'a', say: "So I don't know if I'm the target." },
       { by: 'b', say: "You won't know until the veto. That's how it works." },
       { by: 'a', say: "I hate how it works." },
-      { by: 'b', dr: "You can see the block on {a} from across the room. Every conversation, every meal. It never comes off until the veto does." },
+      { by: 'b', dr: "{a} hasn't been the same since the nominations. You can see it every time {a} walks into a room." },
     ] },
     { id: 'gt2.vh4', turns: [
       { beat: 'The backyard, late. {a} is throwing a tennis ball against the wall. {b} catches the rebound.' },
@@ -45,7 +45,7 @@ export default {
       { by: 'b', say: "That's a lot of people." },
       { by: 'a', say: "Is it?" },
       { by: 'b', say: "...Some people." },
-      { by: 'a', dr: "Everybody says they like you when you're on the block. The veto ceremony tells you who meant it." },
+      { by: 'a', dr: "Everybody keeps telling me they like me. At the veto meeting I'll find out who meant it." },
     ] },
     { id: 'gt2.vh5', room: 'living-room', turns: [
       { beat: 'Living room. {a} is curled up in the corner of the sofa. {b} sits right next to {a}.' },
@@ -258,7 +258,7 @@ export default {
       { by: 'a', say: "Nothing, really. {c} has just been loud at me all day, and I've had enough." },
       { by: 'b', say: "That's not a crime." },
       { by: 'a', say: "It should be." },
-      { by: 'b', dr: "{a} and {c} can't be in the same room any more. In a house this small, that's a problem for everyone." },
+      { by: 'b', dr: "{a} and {c} can't be in the same room any more, and I'm stuck in the middle of it." },
     ] },
     { id: 'gt2.bv2', room: 'bedroom', turns: [
       { beat: 'Bedroom. {a} sits down hard on {b}’s bed.' },
@@ -312,7 +312,7 @@ export default {
       { by: 'b', say: "Eating cake from a tin?" },
       { by: 'a', say: "With you. Without anybody playing anything." },
       { by: 'b', say: "...Yeah. Me too." },
-      { by: 'b', dr: "In a house where everybody wants something from you, {a} is the one person who just wants to hang out. That's rare in here." },
+      { by: 'b', dr: "Everybody in here wants something from me. {a} doesn't. {a} just wants to hang out." },
     ] },
     { id: 'gt2.bt2', room: 'bedroom', turns: [
       { beat: 'Bedroom. {a} is braiding {b}’s hair, or trying to.' },
@@ -343,7 +343,7 @@ export default {
       { by: 'a', say: "No. Want to just sit here?" },
       { by: 'b', say: "I can do that." },
       { beat: 'They sit there for a long time. Neither of them says anything about the game.' },
-      { by: 'a', dr: "{b} knows when to talk and when not to. That's the most useful skill in this house, and hardly anybody has it." },
+      { by: 'a', dr: "{b} knows when to talk and when to keep quiet. I trust {b} more because of it." },
     ] },
   ],
   'talk.jury.bitter': [

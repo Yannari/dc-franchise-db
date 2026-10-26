@@ -148,7 +148,7 @@ export default {
       { by: 'a', say: "Pawns go home all the time. I'm not trusting {c}'s plan. I'm winning the veto." },
       { by: 'b', say: "And if you don't?" },
       { by: 'a', say: "Then I campaign like my life depends on it. Because it does." },
-      { by: 'b', dr: "Nobody on the block believes the word 'pawn'. Nobody should." },
+      { by: 'b', dr: "{a} keeps saying {a} is just the pawn. I hope {a} is right." },
     ] },
     { id: 'gt.vh3', room: 'kitchen', turns: [
       { beat: 'The kitchen. {a} is making a protein shake with real violence. {b} watches.' },
@@ -409,7 +409,7 @@ export default {
       { by: 'b', say: "What does that mean?" },
       { by: 'a', say: "It means with everybody else, I'm working out what to say. With you I just talk." },
       { by: 'b', say: "Me too. I didn't know I needed that until now." },
-      { by: 'b', dr: "In a house where everybody's playing, finding one person you can just be normal with is everything." },
+      { by: 'b', dr: "{a} is the one person in here I can just be normal with. I didn't know how much I needed that." },
     ] },
     { id: 'gt.bt2', room: 'kitchen', turns: [
       { beat: 'The kitchen, early morning. {a} has already made two coffees. One for {b}.' },
@@ -441,7 +441,7 @@ export default {
       { by: 'a', say: "For about twenty minutes." },
       { by: 'b', say: "You could have woken me up." },
       { by: 'a', say: "I didn't want to." },
-      { by: 'b', dr: "There are maybe two people in here I'd fall asleep next to. {a} is one of them. That says a lot about this house." },
+      { by: 'b', dr: "There are maybe two people in here I'd fall asleep next to. {a} is one of them." },
     ] },
     { id: 'gt.bt5', phase: ['prejury', 'jury'], room: 'bedroom', turns: [
       { beat: 'Bedroom. {a} is sitting with {b}, both talking low and fast.' },

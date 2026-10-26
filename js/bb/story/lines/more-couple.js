@@ -20,7 +20,7 @@ export default {
       { by: 'b', say: "I don't care about next week." },
       { by: 'a', say: "I do. One of us has to get to the end. Promise me it's you, if it's not me." },
       { beat: '{b} doesn’t answer. {b} just holds on.' },
-      { by: 'b', dr: "The whole house is watching {a} like a stranger who might go home. Nobody knows I'm watching the person I love." },
+      { by: 'b', dr: "Everybody's looking at {a} like {a} might go home. Nobody knows {a} is the person I love." },
     ] },
     { id: 'kc.b2', presumes: ['noms'], when: { kin: 'together' }, turns: [
       { by: 'b', say: "Hey. You okay?" },

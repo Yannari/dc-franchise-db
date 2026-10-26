@@ -133,7 +133,7 @@ function wallBeats(finalists, rng, draw) {
       loud.blowup
         ? `They get to week ${loud.week} and all three of them start talking at once. ${loud.name} went out of that door shouting ${loud.blowup}'s name, and the house has not really been the same house since.`
         : loud.brokeADeal
-          ? `Week ${loud.week} comes up and the room goes quiet. That was the one where ${loud.brokeADeal.breaker} wrote ${loud.brokeADeal.victim}'s name down after promising not to.`
+          ? `Week ${loud.week} comes up and the room goes quiet. That was the one where ${loud.brokeADeal.breaker} voted to evict ${loud.brokeADeal.victim} after promising not to.`
           : `They argue about week ${loud.week} for twenty minutes and do not agree about a single detail of it.`,
       `Week ${loud.week} takes half an hour on its own. Three people who were in the same house that night remember three different weeks.`,
     ])));

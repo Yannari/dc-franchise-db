@@ -144,7 +144,7 @@ export default {
       { beat: 'It is not fine. It comes out of the oven like a brick.' },
       { by: 'd', say: "Okay, it's a bit crunchy. But it's not bad." },
       { by: 'c', say: "It's bad. I'm still eating it." },
-      { by: 'a', dr: "Four people, four opinions, no recipe. That's this house, basically. The cake was terrible, and we ate all of it." },
+      { by: 'a', dr: "Four people, four opinions, no recipe. The cake was terrible, and we ate all of it." },
     ] },
     { id: 'gb2.4', turns: [
       { by: 'a', say: "If this house was a TV show, what would it be called?" },
@@ -285,7 +285,7 @@ export default {
       { by: 'a', say: "Then prove it by being boring. Week after week. Just boring." },
       { by: 'b', say: "I can be boring." },
       { by: 'a', say: "I know. It's your best quality." },
-      { by: 'b', dr: "{a} called me boring as a compliment. In here, it is one. Boring people don't get blindsided." },
+      { by: 'b', dr: "{a} called me boring as a compliment. I'll take it. Boring doesn't get blindsided." },
     ] },
   ],
 };

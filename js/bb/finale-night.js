@@ -236,7 +236,7 @@ const QUESTIONS = {
     (j, f, g, p) => `"If our relationship was real, explain the lie. If it was not real, say that now."`,
   ],
   cut: [
-    (j, f, g, p) => `"You wrote my name down in week ${NUM(g.week)}. I'm not angry about it — I want to know whether it was your idea or whether somebody handed it to you."`,
+    (j, f, g, p) => `"You voted to evict me in week ${NUM(g.week)}. I'm not angry about it — I want to know whether it was your idea or whether somebody handed it to you."`,
     (j, f, g, p) => `"Talk me through the week you got me out. Whose plan was it, actually?"`,
     (j, f, g, p) => `"Everyone up there is going to claim my eviction. Convince me it was yours."`,
     (j, f, g, p) => `"What did my eviction change for your game besides making the house one person smaller?"`,
@@ -417,7 +417,7 @@ const ANSWERS = {
   },
   honest: {
     grievance: [
-      f => `"I was not the architect of your eviction. I knew where the vote was going, chose not to risk my game stopping it, and wrote your name. That is less impressive than control and more honest than stealing it."`,
+      f => `"I was not the architect of your eviction. I knew where the vote was going, chose not to risk my game stopping it, and voted to evict you. That is less impressive than control and more honest than stealing it."`,
       f => `"I let you believe you had me when you did not. I was scared that telling you would make me the next target. I can explain it, but I cannot make it noble."`,
       f => `"There was a point when I could have warned you. I did not. I picked my place in the house over giving you a fair chance, and I understand why that matters now."`,
       f => `"I did not hate you and I was not secretly laughing at you. I made a frightened decision in a game that rewards frightened decisions when they work."`,
@@ -996,7 +996,7 @@ const TAPE_INTROS = [
 
 const CONFESSIONS = [
   (t, v, p) => `"It was me. You spent the rest of the season thinking it was somebody else and it was me, and I let you."`,
-  (t, v, p) => `"I wrote your name. I'm not going to sit here on live television and let you keep being wrong about it."`,
+  (t, v, p) => `"I voted to evict you. I'm not going to sit here on live television and let you keep being wrong about it."`,
   (t, v, p) => `"Yeah. That one was mine." ${t} does not look away while ${p.sub} says it, which is worth something and not very much.`,
 ];
 // Only when that vote actually sent them out of the door — a flip that did

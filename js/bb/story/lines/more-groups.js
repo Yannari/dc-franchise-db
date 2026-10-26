@@ -32,7 +32,7 @@ export default {
       { by: 'c', say: "So {target}'s too nice and that's suspicious?" },
       { by: 'a', say: "Yes." },
       { by: 'b', say: "Honestly? Same." },
-      { by: 'c', dr: "We decided someone's a villain for being too nice. I'd like to say that's unusual in here. It isn't." },
+      { by: 'c', dr: "We just decided {target} is a villain for being too nice. I'm not sure that makes sense, but here we are." },
     ] },
     { id: 'gg2.3', when: { third: true }, turns: [
       { by: 'b', say: "Shh. Is {target} coming?" },
@@ -79,7 +79,7 @@ export default {
       { by: 'a', say: "No, but seriously, {target} has been a bit off. With everyone." },
       { by: 'c', say: "Ever since the HOH comp." },
       { by: 'b', say: "So it's not just me." },
-      { by: 'a', say: "It's not just you. It's never just you in here." },
+      { by: 'a', say: "It's not just you. I've seen it too." },
       { by: 'b', dr: "I went in thinking I was paranoid. Came out knowing three people are paranoid about the same person. That's not paranoia. That's a target." },
     ] },
     { id: 'gg2.7', room: 'kitchen', presumes: ['noms'], when: { third: true }, turns: [

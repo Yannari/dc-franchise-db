@@ -100,7 +100,7 @@ export default {
       { by: 'a', say: "What are people saying out there?" },
       { by: 'c', say: "Not now. Snacks first. Then strategy." },
       { by: 'a', say: "...What kind of snacks?" },
-      { by: 'a', dr: "Being on the block is the loneliest thing in this house. Except when it isn't. Today it wasn't." },
+      { by: 'a', dr: "Being on the block is lonely. Today it wasn't, because of these guys." },
     ] },
     { id: 'gk3.2', presumes: ['noms'], turns: [
       { by: 'b', say: "Okay. War council." },

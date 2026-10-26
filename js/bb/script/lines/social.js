@@ -78,7 +78,7 @@ export default {
     { id: 'sa.f9', turns: [
       { by: 'a', say: "You've never once lied to me in here. That's rare." },
       { by: 'b', say: "That's not a high bar." },
-      { by: 'a', say: "In this house it's the highest bar there is. Work with me." },
+      { by: 'a', say: "I can't say that about anybody else in here. Work with me." },
       { by: 'b', say: "...Okay. I'm in." },
     ] },
     { id: 'sa.f10', turns: [
@@ -698,7 +698,7 @@ export default {
     { id: 'sg.r10', when: { reason: 'humiliation' }, turns: [{ by: 'a', dr: "{b} embarrassed me in front of the whole house. The whole house. I haven't forgotten a single word." }] },
     { id: 'sg.r11', when: { reason: 'humiliation' }, turns: [{ by: 'a', dr: "{b} made me look like a fool in front of everybody. I'm going to make {b} look like a fool on eviction night." }] },
     { id: 'sg.r12', when: { reason: 'humiliation' }, turns: [{ by: 'a', dr: "People still bring up what {b} said to me. Every time they do, I get a little more sure." }] },
-    { id: 'sg.r13', when: { reason: 'promise' }, turns: [{ by: 'a', dr: "{b} gave me {b.posAdj} word. In this house, your word is all you've got. I can't trust {b}'s any more." }] },
+    { id: 'sg.r13', when: { reason: 'promise' }, turns: [{ by: 'a', dr: "{b} gave me {b.posAdj} word, and {b} broke it. I can't trust anything {b} says now." }] },
     { id: 'sg.r14', when: { reason: 'promise' }, turns: [{ by: 'a', dr: "We had a deal. I kept my side. {b} didn't. It's that simple." }] },
     { id: 'sg.r15', when: { reason: 'promise' }, turns: [{ by: 'a', dr: "{b} broke a promise to me. So I've made one to myself: {b} goes before I do." }] },
     { id: 'sg.r16', when: { reason: 'left-out' }, turns: [{ by: 'a', dr: "{b} held a meeting about the vote and didn't invite me. Fine. I'll hold one about {b} and not invite {b} either." }] },
@@ -764,7 +764,7 @@ export default {
       { by: 'b', say: "You're not next. But you're not safe either." },
     ] },
     { id: 'sd.a6', turns: [
-      { by: 'a', dr: "Everybody likes me, but nobody needs me. That's how people go home in here." },
+      { by: 'a', dr: "Everybody likes me, but nobody needs me. That's a problem." },
       { by: 'a', say: "{b}. We should work together." },
       { by: 'b', say: "Where's this come from?" },
       { by: 'a', say: "Survival." },

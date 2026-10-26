@@ -52,7 +52,7 @@ export default {
     { id: 'tc.l2', turns: [
       { by: 'a', say: "You don't owe me anything. I know that. I'm asking anyway." },
       { by: 'b', say: 'Okay. Ask.' },
-      { by: 'a', say: "Keep me, and you've got somebody in this house who'll never write your name down. Ever." },
+      { by: 'a', say: "Keep me, and you've got somebody in this house who'll never vote you out. Ever." },
       { by: 'b', say: 'Never is a long time in here.' },
       { by: 'a', say: "Then hold me to it." },
     ] },
@@ -762,7 +762,7 @@ export default {
       { by: 'b', say: "You've been spending a lot of time with the others." },
       { by: 'a', say: "Is that a problem?" },
       { by: 'b', say: "It's an observation." },
-      { by: 'a', say: "Observations in this house are never just observations." },
+      { by: 'a', say: "That's never just an observation, though." },
     ] },
     { id: 'tr.d15', turns: [
       { by: 'a', say: "Promise me we're still solid." },
@@ -1251,7 +1251,7 @@ export default {
       { by: 'a', say: "With this few of us left, {c} is the one to worry about." },
       { by: 'b', say: "Why {c}?" },
       { by: 'a', say: "Because {c} has friends on both sides and enemies on neither." },
-      { by: 'b', dr: "{a} is right. That's the most dangerous kind of player in this house." },
+      { by: 'b', dr: "{a} is right about {c}. And if {a} is right, {c} is a lot more dangerous than I thought." },
     ] },
     { id: 'tg.t14', turns: [
       { by: 'b', say: "Who told you that?" },
@@ -1300,7 +1300,7 @@ export default {
     ] },
     { id: 'tg.t21', turns: [
       { by: 'b', say: "Who's {c} closest to in here? Honestly?" },
-      { by: 'a', say: "Everyone thinks it's them. That's the trick." },
+      { by: 'a', say: "Everyone thinks it's them. That's what {c} wants." },
       { by: 'b', say: "...That's terrifying." },
       { by: 'a', say: "That's {c}." },
     ] },
@@ -1393,7 +1393,7 @@ export default {
     { id: 'tk.k7', turns: [
       { by: 'a', say: "I'm not here because I want something. I just didn't want you on your own." },
       { by: 'b', say: "That's the nicest thing anyone's said to me all week." },
-      { by: 'b', dr: "In here, everyone who's nice to you wants your vote. {a} didn't even ask for mine." },
+      { by: 'b', dr: "Everybody who's been nice to me this week wanted my vote. {a} didn't even ask for it." },
     ] },
     { id: 'tk.k8', when: { room: ['backyard'] }, turns: [
       { beat: '{b} is lying on the backyard grass, staring up at the sky. {a} lies down alongside.' },

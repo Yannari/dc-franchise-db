@@ -83,7 +83,7 @@ export default {
       { by: 'a', say: "Grown-ups in this house. Okay." },
       { by: 'b', say: "I'm in." },
       { by: 'a', say: "Fine. In." },
-      { by: 'a', dr: "{b}, {c} and I just made a final three. We never fight, which is great, until there are only two chairs left at the end." },
+      { by: 'a', dr: "{b}, {c} and I just made a final three. We never fight. I'm sure that'll change if it's ever down to the three of us." },
     ] },
     { id: 'af3.f7', deal: 'Final Two', turns: [
       { by: 'a', say: "Can we make a deal that's actually real? Not like everyone else's deals." },
@@ -541,7 +541,7 @@ export default {
       { by: 'b', say: "I'm turning you down, as politely as I can." },
       { by: 'a', say: "You'll regret it." },
       { by: 'b', say: "Maybe. I'll regret it from the final two." },
-      { by: 'b', dr: "Everybody who wants to 'run the house' ends up running out of it." },
+      { by: 'b', dr: "{a} wants to 'run the house'. People who say that usually leave first. I'm not going with {a}." },
     ] },
     { id: 'ap3.r4', turns: [
       { by: 'a', say: "I'll be honest with you. I'm putting a group together, and I want you in it." },

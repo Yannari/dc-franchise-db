@@ -289,7 +289,7 @@ export default {
       { beat: 'Nobody knows where the coffee is.' },
       { by: 'e', say: "Okay, that's actually really sad." },
       { by: 'a', say: "To {gone}. Wherever the coffee is." },
-      { by: 'c', dr: "Every time somebody leaves, the house gets a bit quieter. And a bit meaner. You can feel it straight away." },
+      { by: 'c', dr: "{gone} has been gone one night and the house already feels quieter. And meaner." },
     ] },
     { id: 'sm.o2', room: 'kitchen', turns: [
       { beat: "Breakfast. Everybody is pretending to be fine. {gone}'s mug is still on the draining board." },
@@ -338,7 +338,7 @@ export default {
       { by: 'b', say: "It's not just you. I keep looking for {gone}." },
       { by: 'c', say: "I put out an extra cup this morning without thinking.", v: { soft: "I made {gone} a coffee this morning before I remembered." } },
       { by: 'e', say: "It'll feel normal in a couple of days. It always does." },
-      { by: 'a', dr: "Last night somebody walked out of that door. This morning we're already getting used to it. That's how fast this place moves." },
+      { by: 'a', dr: "Last night {gone} walked out of that door. This morning we're making breakfast like nothing happened. It's weird." },
     ] },
   ],
   'set.morningafter.close': [
@@ -490,7 +490,7 @@ export default {
       { by: 'f', say: "...How did you know?" },
       { by: 'b', say: "Because I've watched you lie all week." },
       { beat: 'The room goes "ooooh". {f} pretends to be offended. Mostly pretends.' },
-      { by: 'c', dr: "We played a game about lying in a house full of liars. Nobody won. Everybody learned something." },
+      { by: 'c', dr: "We played a game about lying in a house full of liars. It got very quiet at one point." },
     ] },
     { id: 'sg.o2', room: 'living-room', turns: [
       { beat: 'Living room. Somebody has made up a quiz about the house.' },

@@ -453,7 +453,7 @@ export default {
       { by: 'b', say: "I'm in." },
       { by: 'c', say: "...Yeah. Me too. Final three." },
       { beat: 'Three hands go in. Nobody says anything about who wins after that.' },
-      { by: 'c', dr: "{a}, {b} and I are a final three now. It's a great deal, right up until the three of us have to become two." },
+      { by: 'c', dr: "{a}, {b} and I are a final three now. It's a good deal for now. I'll worry about which two of us later." },
     ] },
     { id: 'af2.f3', deal: 'Final Two', turns: [
       { by: 'b', say: "Can I ask you something serious?" },
@@ -478,7 +478,7 @@ export default {
       { by: 'b', say: "...That's actually really smart." },
       { by: 'a', say: "Thank you, I have moments." },
       { by: 'b', say: "Okay. Jury. Both of us." },
-      { by: 'a', dr: "{b} and I promised to get each other to jury. Everybody promises final two and nobody means it. This is smaller, so I can actually keep it." },
+      { by: 'a', dr: "{b} and I promised to get each other to jury. Everybody in here promises final two. This is just jury, so I can actually keep it." },
     ] },
     { id: 'af2.j2', deal: 'To the Jury, Together', turns: [
       { by: 'a', say: "I'm not going to promise you the end. Nobody can promise that." },
@@ -513,7 +513,7 @@ export default {
       { by: 'b', say: "I guess that's a final two." },
       { by: 'a', say: "Don't tell anyone." },
       { by: 'b', say: "Who would I tell? You're the only one I talk to." },
-      { by: 'b', dr: "{a} asked me straight out to be a final two, and I said yes. Nobody asks straight out in here, and that's exactly why I trust it." },
+      { by: 'b', dr: "{a} asked me straight out to be a final two, and I said yes. No games, no hints. I trust that." },
     ] },
   ],
 
@@ -582,7 +582,7 @@ export default {
       { by: 'a', say: "And if I say yes?" },
       { by: 'b', say: "Then a lot of conversations start happening." },
       { by: 'a', say: "...Yes. Obviously yes." },
-      { by: 'a', dr: "If you get asked to join something in here, you say yes. Then you work out if you meant it." },
+      { by: 'a', dr: "I said yes. I'll work out later if I meant it." },
     ] },
   ],
 
@@ -595,7 +595,7 @@ export default {
       { by: 'b', say: "Everyone I said I would. They all told me they're with us.", v: { hard: "Everyone. Relax. They're with us." } },
       { by: 'a', say: "Okay. Then we're good." },
       { by: 'b', say: "That's what I said!" },
-      { by: 'a', dr: "{b} always says 'we're good'. I need to hear who. Names are what keep you in this house." },
+      { by: 'a', dr: "{b} always says 'we're good'. I need to hear who. I need names." },
     ] },
     { id: 'ak2.s2', turns: [
       { by: 'b', say: "We still good?" },
@@ -606,7 +606,7 @@ export default {
       { by: 'a', say: "We're good. We're so good. Go to sleep." },
       { by: 'b', say: "Okay. Night." },
       { by: 'a', say: "Night." },
-      { by: 'b', dr: "Some nights I just need to hear it. That's not weakness. That's this house." },
+      { by: 'b', dr: "Some nights I just need to hear {a} say it. That's all." },
     ] },
     { id: 'ak2.s3', presumes: ['noms'], turns: [
       { by: 'a', say: "Let's count it out loud. Who do we actually have?" },
@@ -669,7 +669,7 @@ export default {
       { by: 'a', say: "About what?" },
       { by: 'b', say: "Nothing. Home stuff. Why are you being weird about it?", v: { hard: "Home stuff. Are you keeping track of where I go now?" } },
       { by: 'a', say: "I'm not being weird. I'm just asking." },
-      { by: 'a', dr: "Nobody goes up to the HOH room for that long to talk about home. That's not what that room is for." },
+      { by: 'a', dr: "{b} was up in the HOH room for an hour. You don't stay up there that long just to talk about home." },
     ] },
     { id: 'ak2.d4', turns: [
       { by: 'b', say: "Can I be honest? I'm a bit worried about us." },

@@ -217,7 +217,7 @@ export default {
       { by: 'c', say: "It's a chair until somebody new sits in it permanently." },
       { by: 'd', say: "So, who's sitting in it permanently?" },
       { beat: 'Nobody sits in it. The chair stays empty all breakfast.' },
-      { by: 'd', dr: "Nobody would sit in {gone}'s chair. By tomorrow somebody will. That's how fast it goes." },
+      { by: 'd', dr: "Nobody would sit in {gone}'s chair this morning. By tomorrow somebody will." },
     ] },
     { id: 'xm.4', room: 'bedroom', turns: [
       { beat: 'Morning after. Somebody has found {gone}’s hoodie under a bed.' },

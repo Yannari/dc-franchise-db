@@ -392,7 +392,7 @@ export default {
       { by: 'b', dr: "Nobody's actually accused me. They've all just decided it was me." },
     ] },
     { id: 'ab.w6', turns: [
-      { by: 'a', dr: "I haven't got proof {b} is the one who voted the other way. I've got a feeling, and in here a feeling is usually enough." },
+      { by: 'a', dr: "I haven't got proof {b} is the one who voted the other way. I've got a feeling, and my feelings are usually right." },
     ] },
     { id: 'ab.w7', turns: [
       { by: 'b', say: "Why does everyone think I'm the one who voted the other way?" },

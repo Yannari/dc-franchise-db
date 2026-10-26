@@ -345,7 +345,7 @@ export default {
     { id: 'll.8', room: 'backyard', turns: [
       { beat: 'Backyard, very late. {a} is lying on the grass, alone, looking straight up.' },
       { by: 'a', dr: "You can't see any stars from in here. The lights are too bright. I keep looking anyway." },
-      { by: 'a', dr: "I think that's the whole game, honestly. Looking for something you know isn't there." },
+      { by: 'a', dr: "Anyway. I should probably go to bed." },
     ] },
     { id: 'll.6', room: 'kitchen', turns: [
       { by: 'a', say: "Hey. You up?" },

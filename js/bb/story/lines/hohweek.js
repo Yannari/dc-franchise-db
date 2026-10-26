@@ -326,7 +326,7 @@ export default {
       { by: 'a', say: "Everybody's in the conversation. That's what this week is." },
       { by: 'b', say: "That's not a no." },
       { by: 'a', say: "It's not a yes either." },
-      { by: 'b', dr: "{a} didn't answer the question. In this house, that is the answer. I think I'm going up." },
+      { by: 'b', dr: "{a} didn't answer the question. I think I'm going up." },
     ] },
     { id: 'hw.fd2', room: 'hoh-room', turns: [
       { beat: 'HOH room. {b} is sitting where the last visitor sat, asking the same question.' },
@@ -433,7 +433,7 @@ export default {
       { by: 'b', say: "{c} said some things on the way out." },
       { by: 'a', say: "{c} was always going to. It doesn't change anything." },
       { by: 'b', say: "It might change the jury." },
-      { by: 'a', dr: "I named my target, and my target is gone. Nothing went sideways. That's what a good HOH looks like." },
+      { by: 'a', dr: "I named my target, and my target is gone. Nothing went wrong. That's a good week." },
     ] },
     { id: 'hw.vd3', room: 'hoh-room', presumes: ['vote'], turns: [
       { beat: 'HOH room, the last morning before the next competition. {a} is taking the photos off the wall.' },
@@ -474,7 +474,7 @@ export default {
       { by: 'a', say: "I know. I don't understand how." },
       { by: 'b', say: "You know what that makes you, right?" },
       { by: 'a', say: "A target. Yeah. I know." },
-      { by: 'a', dr: "A failed HOH is the worst thing in this game. You make an enemy, you don't get rid of them, and then you have no power left. That's my week." },
+      { by: 'a', dr: "I made an enemy of {c} and I didn't even get {c} out. Now I've got no power, and {c} has every reason to come after me." },
     ] },
   ],
   // the pawn went home

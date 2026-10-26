@@ -230,7 +230,7 @@ export default {
       { by: 'e', say: "When do we do it, then?" },
       { by: 'd', say: "After coffee. Everything after coffee." },
       { beat: 'Somebody puts coffee on. The conversation does not wait for it.' },
-      { by: 'c', dr: "Every vote, someone says 'I didn't think it would be them'. Somebody always did. They're just not saying." },
+      { by: 'c', dr: "Everybody keeps saying 'I didn't think it would be {gone}'. Somebody did. They voted for it." },
     ] },
     { id: 'msm.3', room: 'kitchen', turns: [
       { beat: 'Morning. {a} is reading out {gone}’s chore rota, still stuck to the fridge.' },
@@ -265,7 +265,7 @@ export default {
       { beat: 'Silence.' },
       { by: 'a', say: "Because there's a new HOH comp today." },
       { by: 'e', say: "Oh, right. Butter, please." },
-      { by: 'e', dr: "The morning after an eviction, everyone's an angel. By lunch the HOH comp starts and the halos come off." },
+      { by: 'e', dr: "The morning after an eviction, everybody is really nice to each other. It won't last past the HOH comp." },
     ] },
     { id: 'msm.6', room: 'living-room', turns: [
       { beat: 'Morning. Everyone is in the living room, staring at {gone}’s photo on the memory wall.' },
@@ -284,7 +284,7 @@ export default {
       { by: 'a', say: "Yeah. Habit. I always made {gone} a stack.", v: { soft: "Yeah. I forgot. I always made {gone} a stack." } },
       { by: 'c', say: "I'll eat them. {gone} would want somebody to." },
       { by: 'a', say: "Go on, then." },
-      { by: 'a', dr: "That's this house in one moment. Sad about somebody, and eating their pancakes." },
+      { by: 'a', dr: "I'm sad {gone} is gone. I'm also eating {gone}'s pancakes." },
     ] },
     { id: 'msm.8', room: 'backyard', turns: [
       { beat: 'Backyard, early. The house is out in the sun because nobody slept.' },

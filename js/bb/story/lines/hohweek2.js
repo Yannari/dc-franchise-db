@@ -261,7 +261,7 @@ export default {
       { by: 'a', say: "Exactly. That's the whole point." },
       { by: 'b', say: "Who's next, then?" },
       { by: 'a', say: "Ask me when I've got another key." },
-      { by: 'a', dr: "I removed the person most likely to come after me. That's what you do with an HOH. Whatever happens next, I used it." },
+      { by: 'a', dr: "I got rid of the person most likely to come after me. Whatever happens next, I used my HOH." },
     ] },
     { id: 'hw.vd7', room: 'bedroom', presumes: ['vote'], turns: [
       { beat: 'Bedroom. {a} is moving back into a shared room, carrying an armful of clothes.' },
@@ -282,7 +282,7 @@ export default {
       { by: 'b', say: "You can't hide from {c} forever." },
       { by: 'a', say: "I know. I tried to get rid of {c}, it didn't work, and now we live together." },
       { by: 'b', say: "Awkward." },
-      { by: 'a', dr: "The worst result for an HOH is putting somebody up and watching them stay. {c} knows I came for {c.obj}, and {c} is still here." },
+      { by: 'a', dr: "I put {c} up, and {c} stayed. {c} knows I came for {c.obj}, and {c} is still here." },
     ] },
     { id: 'hw.vm5', room: 'kitchen', presumes: ['vote'], turns: [
       { beat: 'Kitchen. {a} is making coffee and not looking at anybody.' },

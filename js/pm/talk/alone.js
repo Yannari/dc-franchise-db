@@ -66,16 +66,29 @@ export const BREAKDOWN = build('breakdown', {
   },
 });
 
+// Overthinking is what jealousy becomes while the partner is at Casa Amor
+// (villa-day.js feelingScenes): those lines are about the other villa, and they
+// lead whenever the partner is in it (`paAway`, talk/index.js).
+const AWAY = { taken: true, paAway: true };
 export const OVERTHINKING = build('overthinking', {
   plans: { featured: ['where', 'spiral', 'catch', 'land?'], short: ['where', 'spiral'] },
   moves: {
     where: [
+      { when: AWAY, stage: "Lights out. {a} is lying awake in a bed that feels far too big.", turns: [] },
+      { when: { ...AWAY, atCasa: false }, stage: "{a} is sitting on the edge of the pool, staring at the gate {pa} walked out of.", turns: [] },
+      { when: { ...AWAY, atCasa: true }, stage: "{a} is sitting on the edge of the pool at Casa, as far from the party as {a} can get.", turns: [] },
+      { when: AWAY, stage: "The dressing room. {a} is going over it out loud, to nobody, again.", turns: [] },
       { when: T, stage: "The dressing room. {a} is going over it out loud, to nobody, again.", turns: [] },
       { when: T, stage: "Lights out. {a} is lying awake, and {pa} is fast asleep beside {a.obj}.", turns: [] },
       { when: T, stage: "{a} has been sitting with the same cup of tea for twenty minutes. It's gone cold.", turns: [] },
       { when: T, stage: "The daybeds. {a} is talking to the friend on the next sunbed, who hasn't said a word yet.", turns: [] },
     ],
     spiral: [
+      { when: AWAY, turns: [['a', "What is {pa} doing right now? Who is {pa} talking to? Who's in the bed next to {pa.obj}? I'm not going to think about it. I'm thinking about it."]] },
+      { when: AWAY, turns: [['a', "Everyone keeps saying {pa} will be fine, {pa} will be loyal. How do they know? None of us know what's going on over there."]] },
+      { when: AWAY, turns: [['a', "What if {pa} walks back in with someone? What if I'm sitting there on my own, with everyone watching? I can't stop picturing it."]] },
+      { when: { ...AWAY, atCasa: false }, turns: [['a', "I keep thinking about the last thing {pa} said before {pa} left. I've played it back so many times it doesn't even sound like words any more."]] },
+      { when: { ...AWAY, atCasa: true }, turns: [['a', "I keep thinking about the last thing {pa} said before I left. I've played it back so many times it doesn't even sound like words any more."]] },
       { when: T, turns: [['a', "{pa} said 'we'll see' about the recoupling. 'We'll see.' What does 'we'll see' mean? Nobody says 'we'll see' about something they're sure of."]] },
       { when: T, turns: [['a', "Why did {pa} go quiet at dinner? Was that me? Did I say something? I went back through everything I said, and I can't find it."]] },
       { when: T, turns: [['a', "{pa} laughed really hard at someone's joke earlier. Harder than {pa} laughs at mine. I'm not counting. I'm just noticing."]] },

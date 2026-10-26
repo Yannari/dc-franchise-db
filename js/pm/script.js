@@ -69,6 +69,8 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   'mates', 'took', 'exPick',
   // a talk file's own (pm/talk/*.js facts())
   'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels', 'believed', 'dayOne', 'side',
+  // Casa Amor: who this scene concerns is in the other villa, and which villa it is in
+  'paAway', 'pbAway', 'cAway', 'dAway', 'xAway', 'atCasa',
   // the storylines (pm/threads.js): which story a beat is in, and what a group chat is about
   'story', 'subj', 'final', 'score', 'paKissed', 'lowScore', 'choosing', 'said', 'bSour',
   // what today did to a couple (sourOf): 'mine' (a did it), 'theirs' (b did), 'row', or null
@@ -405,7 +407,10 @@ const castFits = (e, facts) => facts.cast == null || needs(e) <= Math.max(facts.
 const PRESENT_SLOTS = { pa: 'paAway', pb: 'pbAway', c: 'cAway', d: 'dAway', x: 'xAway', about: 'xAway' };
 const presentRe = slot => new RegExp([
   `(?:find|back to|leaves|left|walks past|walk past|next to|sits with|sat with|kiss|kisses|hug|hugs|cuddle|over to|towards|wave at|waves at|look at|looks at|looking at|in front of) \\{${slot}(?:\\.[a-zA-Z]+)?\\}`,
-  `\\{${slot}\\}(?:'s)? (?:is |are |was )?(?:looking|looks|looked|watching|watches|staring|laughing|sitting|sat|busy|right there|over there|on the daybeds|by the pool|in the kitchen|across|spots|walks|walked|comes|came|catches|keeps|hasn't looked|wrapped|is still|has just|gets up|stands|knows I'm|know you're|know you are)`,
+  `\\{${slot}\\}(?:'s)? (?:is |are |was )?(?:looking|looks|looked|watching|watches|staring|laughing|sitting|sat|busy|right there|over there|on the daybeds|by the pool|in the kitchen|across|spots|walks|walked|comes|came|catches|keeps|hasn't looked|wrapped|is still|has just|gets up|stands|knows I'm|know you're|know you are|is fast asleep|is asleep|beside)`,
+  // …or did something with them today: "{pa} laughed at someone's joke earlier".
+  // (What they DID — "thinking about {pa} today" is exactly what Casa is for.)
+  `\\{${slot}\\} (?:laughed|smiled|looked|said|kissed|walked|went quiet|was laughing|was sitting|was chatting)[^.?!"]{0,60}\\b(?:earlier|this morning|tonight|today)\\b`,
   `wrapped round \\{${slot}\\}`, `[Ww]here's \\{${slot}\\}`, `with \\{${slot}\\} right there`,
   // …and telling them now, before anyone else can: nobody reaches the other villa until the return.
   `tell \\{${slot}\\} before`,

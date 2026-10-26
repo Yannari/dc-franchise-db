@@ -90,6 +90,8 @@ describe('a placeholder only where somebody fills it', () => {
       if (!texts(e).some(x => /\{c[.}]/.test(x))) continue;
       // A recoupling names a third only when it is a steal: {c} lost {b}.
       if (k === 'recouple-pick') { expect(e.when?.stoleFrom, tag(k, s, e)).toBe(true); continue; }
+      // "Back on?" casts a third only when a friend saw it (threads.js rekindleBeat).
+      if (k === 'rekindle') { expect(e.when?.of, tag(k, s, e)).toBe('noticed'); continue; }
       expect(THREE.has(k), tag(k, s, e)).toBe(true);
       if (k === 'debrief') expect(list(e.when?.of).length && list(e.when.of).every(o => DEBRIEF_THREE.includes(o)), tag(k, s, e)).toBe(true);
     }

@@ -19,6 +19,7 @@
 // one in the middle is split; every stage after is a chance, not a schedule.
 import { addBond, getBond } from '../bonds.js';
 import { makeEvent, partnerOf, roomMates } from './events.js';
+import { heartOf } from './just-friends.js';
 import { attr, nudgeAttraction, compatible } from './chemistry.js';
 import { romance } from './feelings.js';
 import { feel, jealousOf, breakHeart } from './emotions.js';
@@ -42,14 +43,14 @@ const open = state => (state.triangles ||= []).filter(t => !t.over);
 // Which of the pairs [who, with, kind, severity] are behind somebody's back:
 // a partner OUTSIDE the triangle. Coupled with one of the two is the ordinary
 // triangle, played in front of the villa.
-const behindOf = (state, t, pairs) => pairs.filter(([who]) => { const p = partnerOf(state, who); return p && ![t.h, t.x, t.y].includes(p); });
+const behindOf = (state, t, pairs) => pairs.filter(([who]) => { const p = heartOf(state, who); return p && ![t.h, t.x, t.y].includes(p); });
 // Whose secret the scene's lines speak to: the one in the middle's, if theirs,
 // else the one asking's ('mid' reads {pb}, 'asker' {pa}).
 const whose = (bb, h) => bb.some(([who]) => who === h) ? 'mid' : 'asker';
 // Kept, once the scene exists (the secret points at it).
 function keepSecrets(state, e, pairs) {
   for (const [who, other, kind, sev] of pairs) {
-    const p = partnerOf(state, who);
+    const p = heartOf(state, who);
     state.secrets.push({ id: `sec${state.secrets.length + 1}`, who, partner: p, with: other, kind, severity: sev,
       ep: state.ep, witnesses: [], known: false, eventId: e.id, casa: !!state.split });
     feel(state, who, 'guilt', 1.5 * sev * closedness(state, who, p));

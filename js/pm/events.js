@@ -17,6 +17,7 @@ import { romance, shown, revealTruth, friendship, believed } from './feelings.js
 import { closedness, betrayalWeight, stepOf, setStep, believeStep } from './ladder.js';
 import { feel, jealousyHit, attachment, emo, breakHeart } from './emotions.js';
 import { noteBreakup } from './exes.js';
+import { justFriends, heartOf, friendsRecords } from './just-friends.js';
 import { onYourSide, BLOOD } from './kin.js';
 import { streamFor } from '../dr/rng.js';
 import { girlCode, judgement } from './circle.js';
@@ -257,8 +258,8 @@ export const KINDS = {
       // Casa), so outside Casa it is all but shut — only the disloyal leak.
       // Casa is where heads turn: the old 0.8 holds there.
       const a = weighted(rng, s.villa.filter(n => compatibleMates(s, n).length)
-        .map(n => [n, S(s, n).boldness * (1 - closedHold(s, n, partnerOf(s, n)))
-          * (partnerOf(s, n) ? graftUrge(s, n) : vulnerable(s, n) ? 2 : 1)]));
+        .map(n => [n, S(s, n).boldness * (1 - closedHold(s, n, heartOf(s, n)))
+          * (heartOf(s, n) ? graftUrge(s, n) : vulnerable(s, n) ? 2 : 1)]));
       if (!a) return null;
       // Never somebody a turned down, or was turned down by, earlier today
       // (read, season 21: Priya said no to Jordan in front of everyone, "and
@@ -298,7 +299,8 @@ export const KINDS = {
       // A pull that goes further (user: "pull shouldn't be the only thing
       // creating secrets — a kiss…"): both have to fancy it, and the one who
       // pulled is held back by their own loyalty and how closed-off they are.
-      const pa = partnerOf(s, a);
+      // Friends now are nobody's to cheat on (just-friends.js).
+      const pa = heartOf(s, a);
       const kissed = !rebuffed && rng() < light * 0.35 * { 'one-sided': 0.2, light: 0.3, flirty: 1, steamy: 1.6 }[heat] * ((attr(s, a, b) ?? 0) / 10) * ((attr(s, b, a) ?? 0) / 10)
         * (1 - 0.6 * S(s, a).loyalty / 10) * (1 - 0.4 * (pa ? closedness(s, a, pa) : 0));
       ev.extra.kissed = kissed;
@@ -319,7 +321,7 @@ export const KINDS = {
       // Only a pull b went along with is b's secret; a made the move either way.
       for (const [x, y, sev0] of rebuffed ? [[a, b, 1]] : [[a, b, 1], [b, a, bShare]]) {
         const sev = sev0 * weight * heatSev;
-        const p = partnerOf(s, x);
+        const p = heartOf(s, x);
         if (!p || p === y) continue;
         const witnesses = roomMates(s, x).filter(n => n !== y && n !== p)
           .filter(() => rng() < seenBy);
@@ -336,17 +338,17 @@ export const KINDS = {
           addRelationshipDimension(p, x, 'resentment', sev * betrayalWeight(s, p, x));
         }
         // Grafting on somebody else's couple costs you with their friends.
-        const py = partnerOf(s, y);
+        const py = heartOf(s, y);
         if (py && py !== x) girlCode(s, x, [y, py]);
       }
       // Pulls were cut to ~60% of their old rate (PHASE_KINDS, 2026-09-28:
       // turn-downs were 7 scenes an episode); each one the public sees while
       // coupled costs in proportion more, or the villains that pulls made
       // went with them (villain by ep 12: 60% -> 40% of seasons).
-      return { pop: { ...pop1(a, partnerOf(s, a) ? -PULL_COST * light : 0.2, 1.5),
+      return { pop: { ...pop1(a, heartOf(s, a) ? -PULL_COST * light : 0.2, 1.5),
         // …and in a story (pm/threads.js graft), going along with it is the
         // public's whole read of the coupled one: near the full price.
-        ...pop1(b, rebuffed ? (partnerOf(s, b) ? 0.3 : 0) : partnerOf(s, b) ? -PULL_COST * (ev.extra?.thread ? 0.9 : 0.5) * light : 0.1, 1) } };
+        ...pop1(b, rebuffed ? (heartOf(s, b) ? 0.3 : 0) : heartOf(s, b) ? -PULL_COST * (ev.extra?.thread ? 0.9 : 0.5) * light : 0.1, 1) } };
     },
   },
   // Casa Amor week: sharing a bed with a new arrival — the show's classic
@@ -362,7 +364,7 @@ export const KINDS = {
       const opts = [];
       for (const o of s.villa.filter(n => !fresh.has(n) && partnerOf(s, n) && !inBed.has(n))) {
         for (const c of roomMates(s, o).filter(n => fresh.has(n) && !partnerOf(s, n) && !inBed.has(n))) {
-          const w = (attr(s, o, c) ?? 0) * (1 - 0.7 * S(s, o).loyalty / 10) * (1 - 0.25 * (s.casaMissed?.[o] || 0));
+          const w = (attr(s, o, c) ?? 0) * (heartOf(s, o) ? (1 - 0.7 * S(s, o).loyalty / 10) * (1 - 0.25 * (s.casaMissed?.[o] || 0)) : 1);
           if (w > 0) opts.push([[o, c], w]);
         }
       }
@@ -370,7 +372,7 @@ export const KINDS = {
     },
     apply: (s, ev, rng) => {
       const [o, c] = ev.players;
-      const p = partnerOf(s, o);
+      const p = heartOf(s, o);
       // How far it goes: the one who is coupled's pull, and whether the new one wants it too.
       const kissed = rng() < 0.55 * ((attr(s, o, c) ?? 0) / 10) * (0.4 + (attr(s, c, o) ?? 0) / 16);
       ev.extra.kissed = kissed;
@@ -398,7 +400,8 @@ export const KINDS = {
       const fresh = new Set(s.casaArrivals || []);
       const opts = [];
       for (const o of s.villa.filter(n => !fresh.has(n))) {
-        const p = partnerOf(s, o);
+        // Nobody pines for a friend.
+        const p = heartOf(s, o);
         // Twice a Casa at most, and never twice in a day (season read 2026-10-25:
         // Molly told Freya she missed Sean in the morning, and again after lunch, word for word).
         if (!p || roomMates(s, o).includes(p) || (s.casaMissed?.[o] || 0) >= 2 || s.casaMissedEp?.[o] === s.ep) continue;
@@ -451,7 +454,7 @@ export const KINDS = {
     cast: (s, rng) => {
       // Only about a partner of a while: day one has no "same chat every day".
       if (s.ep < 2) return null;
-      const a = weighted(rng, s.villa.filter(n => partnerOf(s, n) && !metToday(s, n, partnerOf(s, n)))
+      const a = weighted(rng, s.villa.filter(n => heartOf(s, n) && !metToday(s, n, partnerOf(s, n)))
         .map(n => [n, Math.max(0, 10 - romance(n, partnerOf(s, n))) + S(s, n).boldness / 3]));
       if (!a) return null;
       const g = s.profiles[a]?.gender;
@@ -622,6 +625,31 @@ export const KINDS = {
       return { pop: { ...pop1(a, 0.2, 0.5), ...pop1(b, 0.2, 0.5) } };
     },
   },
+  // Two who ended it as friends (just-friends.js): {a} ended it, {b} was told.
+  // How it is between them now — still sharing a bed as a couple, raw, one of
+  // them still holding a torch, or easy — and it heals a little each time.
+  'just-friends': {
+    salience: 0.6,
+    cast: (s, rng) => {
+      const opts = friendsRecords(s).filter(r => r.ep < s.ep && s.villa.includes(r.ender) && s.villa.includes(r.hurt)
+        && roomMates(s, r.ender).includes(r.hurt));
+      const r = pick(rng, opts);
+      if (!r) return null;
+      const bed = partnerOf(s, r.ender) === r.hurt;
+      const torch = romance(r.hurt, r.ender) >= 5;
+      const of = bed ? 'bed' : s.ep - r.ep <= 1 && torch ? 'raw' : torch ? 'torch' : 'easy';
+      return { players: [r.ender, r.hurt], extra: { of } };
+    },
+    apply: (s, ev) => {
+      const [a, b] = ev.players, of = ev.extra.of;
+      addBond(a, b, 0.3);
+      addRelationshipDimension(a, b, 'affection', 0.3); addRelationshipDimension(b, a, 'affection', 0.3);
+      if (of === 'easy' || of === 'bed') { feel(s, b, 'heartbreak', -0.5); feel(s, b, 'stress', -0.2); }
+      if (of === 'raw') feel(s, b, 'stress', 0.3);
+      if (of === 'torch') { feel(s, b, 'loneliness', 0.3); nudgeAttraction(s, b, a, -0.3); }
+      return { pop: { ...pop1(a, 0.2, 0.6), ...pop1(b, 0.3, 0.6) } };
+    },
+  },
   gossip: {
     salience: 0.8,
     cast: (s, rng) => {
@@ -772,7 +800,7 @@ export const KINDS = {
     'game-plan', 'game-latch', 'game-two-faced', 'game-suspect', 'game-called', 'game-fallout', 'game-end',
     'betray-see', 'betray-confront', 'betray-end', 'mugged-low', 'found-love', 'villa-happy', 'redeem-reflect', 'redeem-act', 'redeem-doubt', 'grass-talk', 'grass-frozen', 'grass-confront', 'parents-named', 'parents-advice', 'parents-mediate', 'parents-wobble', 'exw-stir', 'exw-partner', 'exw-talk', 'exw-back', 'vote-fallout', 'vote-callout', 'grudge-cold', 'grudge-clash', 'grudge-end', 'visit-arrive', 'visit-confront', 'visit-leave', 'sc-arrive', 'sc-rules', 'sc-vote', 'sc-stay', 'sc-leave',
     // the storylines and what the villa makes of them (pm/threads.js)
-    'graft-eyes', 'watching', 'where-head', 'graft-turn', 'graft-shut', 'feels-off', 'secret-burden', 'group-chat', 'bed-chat', 'doubt-end',
+    'graft-eyes', 'watching', 'where-head', 'graft-turn', 'graft-shut', 'feels-off', 'secret-burden', 'group-chat', 'bed-chat', 'doubt-end', 'rekindle',
     // the day before the night (pm/threads.js tonightBeats)
     'pick-chat', 'vote-worry', 'stick-twist']
     .map(k => [k, { salience: 1, cast: () => null,
@@ -884,6 +912,7 @@ const ENDINGS = {
 const toldKey = (p, x) => `${p}|${x}`;
 /** One of them told the other they're done, this episode or the last. */
 function doneWith(state, a, b) {
+  if (justFriends(state, a, b)) return true;
   return [toldKey(a, b), toldKey(b, a)].some(k => state.toldDone?.[k] != null && state.ep - state.toldDone[k] <= 1);
 }
 function answerOf(s, x, sev, rng) {
@@ -1047,7 +1076,7 @@ const KIN_PHASE_KINDS = {
 const KIN_GAP = { 'kin-heart': 1, 'kin-vet': 0, 'kin-protect': 1, 'ex-awkward': 1, 'ex-jealous': 0 };
 const KIN_KINDS = new Set(Object.keys(KIN_GAP));
 // The most of a kind one episode's villa day holds, aired or not.
-const EP_CAP = { argument: 3, ick: 3, comedy: 3 };
+const EP_CAP = { argument: 3, ick: 3, comedy: 3, 'just-friends': 2 };
 // What only happens once between the same people: sizing up a partner, the
 // ex's new partner, a flirt answered for.
 const onceFor = (s, tag) => (s.kinOnce ||= []).includes(tag);
@@ -1232,7 +1261,9 @@ export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS, { kin
       // …and the days after an ex walks in, when it is all anyone talks about.
       ...(Object.values(state.exArrived || {}).some(e => state.ep - e <= 2) ? [['ex-awkward', 2]] : []),
       // …and missing the other villa, only while it is the other villa.
-      ...(state.split ? [['casa-miss', phase === 'evening' ? 2.4 : 1.4]] : [])]
+      ...(state.split ? [['casa-miss', phase === 'evening' ? 2.4 : 1.4]] : []),
+      // …and two who are friends now, since they said so (just-friends.js).
+      ...(phase !== 'event' && friendsRecords(state).length ? [['just-friends', 1.5]] : [])]
       .map(([k, w]) => [k, k === 'pull' && state.split ? w * 2 : w]);
     let made = 0, tries = 0;
     // Eight tries a slot: the same-cast cap turns some draws away, and four

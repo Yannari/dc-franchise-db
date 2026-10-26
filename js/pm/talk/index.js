@@ -72,6 +72,8 @@ import { WHERE_HEAD_MORE, WHERE_HEAD_PLANS } from './more/where-head-more.js';
 import { STORY_MORE, WATCHING_PLANS, FEELS_OFF_PLANS, BED_CHAT_PLANS } from './more/story-more.js';
 import { GROUP_CHAT_ENDED } from './more/group-chat-ended.js';
 import { DOUBT_END } from './doubt-end.js';
+import { JUST_FRIENDS } from './just-friends.js';
+import { REKINDLE } from './rekindle.js';
 import { PICK_CHAT, VOTE_WORRY, STICK_TWIST } from './tonight.js';
 import { VOTE_WORRY_VOLUME, PICK_CHAT_VOLUME, STICK_TWIST_VOLUME } from './more/tonight-volume.js';
 import { GROUP_CHAT_VOLUME, GROUP_CHAT_NAMED } from './more/group-chat-volume.js';
@@ -89,6 +91,7 @@ import { INTRO } from './intro.js';
 import { BREAKDOWN, OVERTHINKING, JEALOUS_SULK, HEAD_TURNED, TORCH, DOUBLE_STANDARD } from './alone.js';
 import { ARRIVAL_CHAT, FIRST_TOAST, BOMBSHELL_TEXT, BOMBSHELL_GUESS, ENTRANCE, BOMBSHELL_REACT } from './arrivals.js';
 import { FINAL_DATE, JOURNEY_OPEN, JOURNEY_REACT, JOURNEY_END, SPEECH } from './journey.js';
+import { FINAL_DATE_MATES, JOURNEY_OPEN_MATES, JOURNEY_END_MATES, DECLARATION_MATES } from './more/just-friends-final.js';
 import { GAME_KISS, TOD_TRUTH } from './kiss-games.js';
 import { LIE_WRITE, LIE_ROW } from './lie-detector.js';
 import { HIDEAWAY_TEXT, HIDEAWAY_VOTE, HIDEAWAY_WIN, HIDEAWAY_SNUB, HIDEAWAY, HIDEAWAY_MORNING } from './hideaway.js';
@@ -116,7 +119,10 @@ extend(LOYALTY, LOYALTY_MORE); extend(LOYALTY, LOYALTY_VOLUME); extend(GOSSIP, G
 extend(PULL, PULL_VOLUME_2); extend(PULL, PULL_VOLUME_3); extend(FRIENDSHIP, FRIENDSHIP_VOLUME_3); extend(FRIENDSHIP, FRIENDSHIP_VOLUME_2); extend(ICK, ICK_MORE); extend(ARGUMENT, ARGUMENT_MORE); extend(ADVICE, ADVICE_MORE);
 extend(COMFORT, COMFORT_MORE); extend(REASSURANCE, REASSURANCE_MORE); extend(CONFESSION, CONFESSION_MORE);
 extend(JEALOUS_CONFRONT, CONFRONT_MORE); extend(DEBRIEF, DEBRIEF_MORE); extend(RECOUPLE_PICK, RECOUPLE_MORE);
-extend(BED_SHARE, BED_MORE); extend(DUMP_GOODBYE, GOODBYE_MORE); extend(DECLARATION, DECL_MORE); extend(DECLARATION, DECL_FINAL_MORE); extend(DATE, DATE_MORE);
+extend(BED_SHARE, BED_MORE); extend(DUMP_GOODBYE, GOODBYE_MORE); extend(DECLARATION, DECL_MORE); extend(DECLARATION, DECL_FINAL_MORE);
+// A couple of friends at the final (pm/just-friends.js): their own date, film and speeches.
+extend(FINAL_DATE, FINAL_DATE_MATES); extend(JOURNEY_OPEN, JOURNEY_OPEN_MATES); extend(JOURNEY_END, JOURNEY_END_MATES); extend(DECLARATION, DECLARATION_MATES);
+for (const t of [FINAL_DATE, JOURNEY_END, DECLARATION]) t.leads = [...(t.leads || []), 'mates']; extend(DATE, DATE_MORE);
 
 export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'deep-chat': DEEP_CHAT, friendship: FRIENDSHIP, gossip: GOSSIP, 'told-confront': TOLD_CONFRONT, 'stirrer-confront': STIRRER_CONFRONT, argument: ARGUMENT,
   comedy: COMEDY, ick: ICK, advice: ADVICE, vent: VENT, comfort: COMFORT, 'casa-miss': CASA_MISS, 'bed-share': BED_SHARE,
@@ -178,6 +184,8 @@ for (const [k, more] of [['receipt', RECEIPT_VOLUME], ['journey-react', JOURNEY_
   ['casa-return', CASA_RETURN_VOLUME_3], ['debrief', DEBRIEF_TWIST_VOLUME]]) extend(TALK[k], more);
 extend(VOTE_WORRY, VOTE_WORRY_VOLUME); extend(PICK_CHAT, PICK_CHAT_VOLUME); extend(STICK_TWIST, STICK_TWIST_VOLUME);
 TALK['doubt-end'] = DOUBT_END;
+TALK['just-friends'] = JUST_FRIENDS;
+TALK.rekindle = REKINDLE;
 TALK['pick-chat'] = PICK_CHAT; TALK['vote-worry'] = VOTE_WORRY; TALK['stick-twist'] = STICK_TWIST;
 // A story's pull is about the story: no tangent, and its own why, answer and probe.
 extend(PULL, PULL_STORY);

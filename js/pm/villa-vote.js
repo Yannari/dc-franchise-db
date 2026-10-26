@@ -12,6 +12,9 @@ import { attachment } from './emotions.js';
 import { attr } from './chemistry.js';
 import { partnerOf } from './events.js';
 import { coupleStrength } from './ladder.js';
+import { justFriends } from './just-friends.js';
+// A couple who are only friends now is the villa's least compatible by definition (just-friends.js).
+const notReal = (state, c) => (justFriends(state, c[0], c[1]) ? 1 : 0);
 import { kinOf, onYourSide } from './kin.js';
 
 // The last four are Plan 4.5 (docs/superpowers/plans/…-plan-4.5-twists.md),
@@ -56,6 +59,8 @@ function motives(state, v, t) {
     rival: sly && theirs && theirs !== v ? -4 * (0.5 + strat) * Math.max(0, romance(v, theirs) - 4) / 6 : 0,
     competition: sly ? -2 * strat * strength : 0,
     protect: sly ? 0 : 3 * strength * (nice ? 1.3 : 1),
+    // …and a couple of friends is nobody's to protect: everyone knows it isn't real.
+    notReal: theirs && justFriends(state, t, theirs) ? -2.5 : 0,
   };
   const score = Object.values(terms).reduce((a, b) => a + b, 0);
   const worst = ['threat', 'grudge', 'rival', 'competition'].sort((x, y) => terms[x] - terms[y])[0];
@@ -233,7 +238,7 @@ export function couplesVote(state, { rng, atRisk = 2, immune = [] }) {
   for (const c of state.couples) {
     const others = state.couples.filter(o => o !== c);
     if (!others.length) continue;
-    const target = [...others].map(o => [o, coupleAffinity(state, c, o) + 4 * coupleStrength(state, o[0], o[1])
+    const target = [...others].map(o => [o, coupleAffinity(state, c, o) + 4 * coupleStrength(state, o[0], o[1]) - 6 * notReal(state, o)
       + (rng() - 0.5) * 0.5]).sort((x, y) => x[1] - y[1])[0][0];
     votes.push({ couple: [...c], target: [...target] });
   }
@@ -246,7 +251,7 @@ export function couplesVote(state, { rng, atRisk = 2, immune = [] }) {
   // the rest are the weakest-looking of the unnamed, or a semi-final that
   // has to trim to four could not (measured: a 40-islander final of five).
   const unnamed = state.couples.filter(c => !vulnerable.includes(c) && safe(c))
-    .sort((x, y) => coupleStrength(state, x[0], x[1]) - coupleStrength(state, y[0], y[1]));
+    .sort((x, y) => notReal(state, y) - notReal(state, x) || coupleStrength(state, x[0], x[1]) - coupleStrength(state, y[0], y[1]));
   while (vulnerable.length < atRisk && unnamed.length) vulnerable.push(unnamed.shift());
   return { votes, vulnerable };
 }
@@ -272,7 +277,7 @@ export function returningExes(state, max = 8) {
 /** The exes vote which of the vulnerable couples leaves; the most-voted goes. */
 export function exIslandersVote(state, { exes, vulnerable, rng, dump = 1 }) {
   const ballots = exes.map(ex => {
-    const score = c => c.reduce((s, n) => s + friendship(ex, n) - (grudgeOf(state, ex, n) ? 6 : 0), 0) + (rng() - 0.5) * 0.5;
+    const score = c => c.reduce((s, n) => s + friendship(ex, n) - (grudgeOf(state, ex, n) ? 6 : 0), 0) - 12 * notReal(state, c) + (rng() - 0.5) * 0.5;
     const worst = [...vulnerable].sort((x, y) => score(x) - score(y))[0];
     const held = worst.find(n => grudgeOf(state, ex, n)) || null;
     return { voter: ex, target: held || worst[0], couple: [...worst], channel: 'exes',

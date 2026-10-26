@@ -241,7 +241,8 @@ function curveOf(a, b) {
  */
 export function finalDate(state, rng, [a, b], n, given = null) {
   const events = [];
-  const chapters = storyOf(state, a, b);
+  // Friends now (just-friends.js): no love story to play back, so no montage.
+  const chapters = given === 'just-friends' ? [] : storyOf(state, a, b);
   const shape = given || shapeOf(chapters, state, a, b);
   const pop = (x, y) => ({ [a]: { approval: x, fame: y }, [b]: { approval: x, fame: y } });
   // A Casa couple either walked back into the villa together (the original
@@ -251,7 +252,7 @@ export function finalDate(state, rng, [a, b], n, given = null) {
   const came = (state.history || []).some(e => e.kind === 'casa-return' && e.extra?.choice === 'twist' && e.extra?.of === 'returned'
     && e.players.includes(a) && e.players.includes(b)) ? 'together' : 'villa';
   events.push(makeEvent(state, rng, { phase: 'final-date', kind: 'final-date', players: [a, b], aired: true,
-    extra: { of: ['sunset', 'yacht', 'picnic', 'rooftop'][n % 4], pop: pop(0.2, 1.5) } }));
+    extra: { of: ['sunset', 'yacht', 'picnic', 'rooftop'][n % 4], mates: shape === 'just-friends' || null, pop: pop(0.2, 1.5) } }));
   events.push(makeEvent(state, rng, { phase: 'final-date', kind: 'journey-open', players: [a, b], aired: true,
     extra: { of: shape, came, pop: pop(0, 0.5) } }));
   chapters.forEach((c, i) => {
@@ -270,7 +271,7 @@ export function finalDate(state, rng, [a, b], n, given = null) {
   const warmth = (romance(a, b) + romance(b, a)) / 20;
   feel(state, a, 'security', 0.8 * warmth); feel(state, b, 'security', 0.8 * warmth);
   events.push(makeEvent(state, rng, { phase: 'final-date', kind: 'journey-end', players: [a, b], aired: true,
-    extra: { of: shape, came, curve: curveOf(a, b), chapters: chapters.length, pop: pop(0.3, 1) } }));
+    extra: { of: shape, came, mates: shape === 'just-friends' || null, curve: curveOf(a, b), chapters: chapters.length, pop: pop(0.3, 1) } }));
   return { events, shape, chapters };
 }
 

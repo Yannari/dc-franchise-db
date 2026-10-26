@@ -11,6 +11,7 @@
 import { attr } from './chemistry.js';
 import { romance, believed } from './feelings.js';
 import { makeEvent, partnerOf, apart } from './events.js';
+import { justFriends, heartOf } from './just-friends.js';
 import { closedness } from './ladder.js';
 import { emo, breakHeart, feel, jealousOf, attachment } from './emotions.js';
 import { addBond } from '../bonds.js';
@@ -30,6 +31,8 @@ function returnCeremony(state, rng, decisions) {
   const ev = (kind, players, extra, major = []) => makeEvent(state, rng, { phase: 'firepit', kind, players, aired: true, major, extra });
   const ret = (d, side) => {
     const partner = before[d.name];
+    // Twisting on a friend is no betrayal, with the public or anyone (just-friends.js).
+    const heart = partner && !justFriends(state, d.name, partner) ? partner : null;
     // Who is in the scene: a stayer sits with the one they twisted for, or
     // alone — the partner is still at Casa. (Cast with the partner as {b},
     // `taken` read false, and season 33's Jordan, Callum and Kai, all waiting
@@ -40,9 +43,9 @@ function returnCeremony(state, rng, decisions) {
     // moved on is not "I told you I'd come back" / "Get over here".
     const theirs = partner ? decided[partner]?.choice || null : null;
     return ev('casa-return', players, { choice: d.choice, theirs, of: side, pop: d.choice === 'twist'
-      ? { [d.name]: { approval: partner ? -BETRAYAL.casaTwist : 0.5, fame: 3 }, ...(partner ? { [partner]: { approval: 3, fame: 3 } } : {}) }
-      : { [d.name]: { approval: partner ? 2 : 0, fame: 1.5 } } },
-    d.choice === 'twist' ? players.concat(partner ? [partner] : []) : []);
+      ? { [d.name]: { approval: heart ? -BETRAYAL.casaTwist : 0.5, fame: 3 }, ...(heart ? { [heart]: { approval: 3, fame: 3 } } : {}) }
+      : { [d.name]: { approval: heart ? 2 : 0, fame: 1.5 } } },
+    d.choice === 'twist' ? players.concat(heart ? [heart] : []) : []);
   };
   const out = [ev('casa-host', [], { pop: {} })];
   // The ones who stayed choose first, and sit with that choice.
@@ -53,7 +56,8 @@ function returnCeremony(state, rng, decisions) {
     out.push(ret(d, 'returned'));
     const p = before[d.name];
     const pd = p ? decided[p] : null;
-    if (!p || !pd) continue;
+    // Friends: nobody is devastated and nobody has it out at the fire pit.
+    if (!p || !pd || justFriends(state, d.name, p)) continue;
     const of = d.choice === 'stick' && pd.choice === 'stick' ? ONE.relief
       : d.choice === 'twist' && pd.choice !== 'twist' ? ONE.devastated
       : d.choice === 'twist' ? ONE.both : ONE.turned;
@@ -85,7 +89,9 @@ export function stickOrTwist(state, { rng }) {
     const prof = state.profiles[o], s = prof.stats, e = emo(state, o);
     const options = [...arrivals].filter(c => roomOf(c) === roomOf(o) && attr(state, o, c) != null);
     const best = options.length ? Math.max(...options.map(c => attr(state, o, c))) / 10 : 0;
-    const p = partnerOf(state, o);
+    // A partner who is only a friend now holds nobody back: Casa reads them
+    // as single (user, 2026-10-26: "it shouldn't if they didn't rekindle").
+    const p = heartOf(state, o);
     const conn = p ? Math.max(0, romance(o, p) / 10) : 0;
     // Fear: I know they strayed, or I believe they feel less than I do.
     // …and the other villa: not knowing what they're doing over there, worst
@@ -141,11 +147,11 @@ export function stickOrTwist(state, { rng }) {
 
   // Whoever stuck while their partner twisted is safe, and heartbroken.
   for (const n of singleSafe) {
-    const ex = scored.find(x => x.o === n)?.p;
-    if (ex) breakHeart(state, n, ex, 6 * romance(n, ex) / 10);
+    const ex = partnerOf(state, n);
+    if (ex) breakHeart(state, n, ex, (justFriends(state, n, ex) ? 2 : 6) * romance(n, ex) / 10);
   }
 
-  const before = Object.fromEntries(scored.map(x => [x.o, x.p]));
+  const before = Object.fromEntries(scored.map(x => [x.o, partnerOf(state, x.o)]));
   state.couples = next;
   // Recorded like every other exit, so the ex-islanders' vote can ask them back.
   for (const n of dumped) (state.gone ||= []).push({ name: n, ep: state.ep });

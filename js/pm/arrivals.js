@@ -11,6 +11,7 @@ import { addBond } from '../bonds.js';
 import { seedAttraction, attr, nudgeAttraction } from './chemistry.js';
 import { noteArrival, readApproval, coupleScore, BETRAYAL } from './ledger.js';
 import { makeEvent, partnerOf } from './events.js';
+import { justFriends, heartOf } from './just-friends.js';
 import { romance, friendship, schemeEligible } from './feelings.js';
 import { closedness } from './ladder.js';
 import { breakHeart, feel, jealousOf, jealousyHit } from './emotions.js';
@@ -259,7 +260,8 @@ export function bombshellSteal(state, name, { rng }) {
   if (!targets.length) return null;
   const stole = targets[0];
   const leftSingle = partnerOf(state, stole);
-  const loved = Math.max(0, coupleScore(state.ledger, stole, leftSingle));
+  // Taking somebody who is only a friend now steals nobody's heart (just-friends.js).
+  const loved = justFriends(state, stole, leftSingle) ? -1 : Math.max(0, coupleScore(state.ledger, stole, leftSingle));
   state.couples = state.couples.filter(c => !c.includes(stole));
   state.couples.push([name, stole]);
   // SINGLE AND VULNERABLE, not dumped (UK 11 d22: Jessy and Trey stole two
@@ -269,8 +271,8 @@ export function bombshellSteal(state, name, { rng }) {
   (state.vulnerableSince ||= {})[leftSingle] = state.ep;
   const ev = makeEvent(state, rng, { phase: 'event', kind: 'steal', players: [name, stole, leftSingle],
     aired: true, major: [name, stole, leftSingle],
-    extra: { pop: { [name]: { approval: -(BETRAYAL.bombshellSteal + 0.05 * loved), fame: 3 },
-      [stole]: { approval: 0, fame: 2 }, [leftSingle]: { approval: 1.5, fame: 2 } } } });
+    extra: { pop: { [name]: { approval: loved < 0 ? 0.3 : -(BETRAYAL.bombshellSteal + 0.05 * loved), fame: 3 },
+      [stole]: { approval: 0, fame: 2 }, [leftSingle]: { approval: loved < 0 ? 0.3 : 1.5, fame: 2 } } } });
   return { stole, leftSingle, events: [ev] };
 }
 
@@ -366,7 +368,7 @@ export function standUp(state, name, { rng, tonight = [] }) {
   const events = [];
   const standers = [];
   for (const c of otherSide(state, name, tonight)) {
-    const partner = partnerOf(state, c);
+    const partner = heartOf(state, c);
     const want = (attr(state, c, name) ?? 0) / 10;
     const hold = partner ? 0.35 + 0.65 * closedness(state, c, partner) : 0;
     const bold = state.profiles[c].stats.boldness / 10;
@@ -389,7 +391,8 @@ export function standUp(state, name, { rng, tonight = [] }) {
   }
   const pick = standers.map(c => [c, (attr(state, name, c) ?? 0) + 2 * Math.max(0, friendship(name, c)) / 10 + (rng() - 0.5)])
     .sort((a, b) => b[1] - a[1])[0][0];
-  const left = partnerOf(state, pick);
+  // Only a heart counts as stolen: a friend's couple is anybody's (just-friends.js).
+  const left = heartOf(state, pick);
   const loved = left ? Math.max(0, coupleScore(state.ledger, pick, left)) : 0;
   events.push(makeEvent(state, rng, { phase: 'event', kind: 'stand-up-pick', players: left ? [name, pick, left] : [name, pick],
     aired: true, major: left ? [name, pick, left] : [name],

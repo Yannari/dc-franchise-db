@@ -13,6 +13,7 @@
 // cooker turn feelings up as the season goes on.
 import { romance, believed } from './feelings.js';
 import { betrayalWeight, believedCloseness } from './ladder.js';
+import { justFriends } from './just-friends.js';
 
 export const FEELINGS = ['security', 'confidence', 'loneliness', 'guilt', 'heartbreak', 'stress'];
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -52,6 +53,8 @@ export const effectiveTemperament = (state, n) => clamp(state.profiles[n].stats.
 
 /** A threat to my couple, as I perceive it. Returns the jealousy it added. */
 export function jealousyHit(state, viewer, partner, rival, raw, { confirmed = false } = {}) {
+  // A friend now kisses who they like (just-friends.js).
+  if (justFriends(state, viewer, partner)) return 0;
   const a = attachment(state.profiles[viewer]);
   const love = romance(viewer, partner) / 10;
   const style = a.secure * (confirmed ? 1 : 0.15) + a.anxiety * (0.8 + 0.6 * a.anxiety) + a.avoidance * 0.5;

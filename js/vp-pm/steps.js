@@ -152,7 +152,7 @@ export function placeFor(row, e, phase) {
 // people and the episode it began: the stage wears it as a chip, so a pull
 // on night two reads as the next chapter of yesterday's graft, not a scene
 // from nowhere (user: "no setup, no real impact … there's no storyline").
-const STORY_NAME = { graft: 'The graft', doubt: 'Cracks', secret: 'The secret', progress: 'Getting serious', spark: 'A new spark' };
+const STORY_NAME = { graft: 'The graft', doubt: 'Cracks', secret: 'The secret', progress: 'Getting serious', spark: 'A new spark', rekindle: 'Back on?' };
 export function storyOf(row, e) {
   const th = e.extra?.thread;
   if (!th?.type || !STORY_NAME[th.type]) return null;

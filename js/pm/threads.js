@@ -39,7 +39,9 @@
 // The thread decides who and why; the kind decides what it does. Every beat
 // has a consequence (CLAUDE.md), and only people in the same room are cast.
 import { addBond, getBond } from '../bonds.js';
-import { addRelationshipDimension } from '../relationships.js';
+import { addRelationshipDimension, getRelationshipDimension } from '../relationships.js';
+import { becomeFriends, justFriends, heartOf, friendsRecords, rekindle } from './just-friends.js';
+import { nudgeBelief, beliefOf } from './ledger.js';
 import { makeEvent, partnerOf, roomMates, apart, today, pullBetween, haveItOut, callOutStirrer, tooSoonForWarm } from './events.js';
 import { attr, nudgeAttraction, compatible } from './chemistry.js';
 import { romance, friendship, schemeEligible, revealTruth } from './feelings.js';
@@ -49,7 +51,7 @@ import { judgement } from './circle.js';
 import { nextPicker } from './recoupling.js';
 import { noteBreakup } from './exes.js';
 
-const MAX = { graft: 3, doubt: 2, secret: 2, progress: 2, spark: 2 };
+const MAX = { graft: 3, doubt: 2, secret: 2, progress: 2, spark: 2, rekindle: 1 };
 // How many threads an episode is about: the real episodes read had three or
 // four big ones and a smaller one or two (measured 2026-10-25: at four the
 // episode ran 260 clicks against the old 450, and the user wants substance).
@@ -100,7 +102,7 @@ const live = state => (state.threads ||= []).filter(t => !t.over);
 const inThread = (state, n, type = null) => live(state).some(t => (!type || t.type === type) && castOf(t).includes(n));
 /** In one of the villa's stories right now. */
 export const inStory = (state, n) => live(state).some(t => castOf(t).includes(n));
-export const castOf = t => ({ graft: [t.c, t.t, t.p], doubt: [t.a, t.p], secret: [t.w, t.x, t.p], progress: [t.a, t.b], spark: [t.a, t.b] }[t.type] || []).filter(Boolean);
+export const castOf = t => ({ graft: [t.c, t.t, t.p], doubt: [t.a, t.p], secret: [t.w, t.x, t.p], progress: [t.a, t.b], spark: [t.a, t.b], rekindle: [t.a, t.b] }[t.type] || []).filter(Boolean);
 
 // ── opening and closing ───────────────────────────────────────────────
 function close(t, why, state) { t.over = true; t.why = why; t.endEp = state.ep; }
@@ -135,6 +137,12 @@ function settle(state) {
       if (partnerOf(state, t.a) === t.b) { close(t, 'coupled', state); continue; }
       if (partnerOf(state, t.a) || partnerOf(state, t.b)) { close(t, 'apart', state); continue; }
       if (Math.min(attr(state, t.a, t.b) ?? 0, attr(state, t.b, t.a) ?? 0) < 3 || state.ep - t.ep >= 4) close(t, 'fizzled', state);
+    } else if (t.type === 'rekindle') {
+      // Back on by another road (a second chance), or it went nowhere.
+      if (!justFriends(state, t.a, t.b)) { close(t, 'rekindled', state); continue; }
+      // Coupled up with somebody else since: there is nothing to ask.
+      if (!(partnerOf(state, t.a) === t.b || (!partnerOf(state, t.a) && !partnerOf(state, t.b)))) { close(t, 'apart', state); continue; }
+      if (state.ep - t.ep >= 4) close(t, 'faded', state);
     } else if (t.type === 'progress') {
       if (partnerOf(state, t.a) !== t.b) { close(t, 'apart', state); continue; }
       if (stepOf(state, t.a, t.b) === 'official' && stepOf(state, t.b, t.a) === 'official') close(t, 'official', state);
@@ -215,6 +223,8 @@ function openDoubts(state, rng) {
   for (const [x, y] of state.couples) {
     for (const [a, p] of [[x, y], [y, x]]) {
       if (!together(state, a, p) || busy.has(a) || inThread(state, a) || inThread(state, p, 'doubt')) continue;
+      // Friends already: there is nothing left to go off (just-friends.js).
+      if (justFriends(state, a, p)) continue;
       // Coupled a day at least: night one has no "going off" anybody.
       if ((state.coupledSince?.[[a, p].sort().join('|')] ?? state.day) >= (state.day ?? 0)) continue;
       const r = romance(a, p);
@@ -264,7 +274,7 @@ function openProgress(state, rng) {
   if (live(state).filter(t => t.type === 'progress').length >= MAX.progress) return;
   const cands = [];
   for (const [a, b] of state.couples) {
-    if (!together(state, a, b) || inThread(state, a) || inThread(state, b)) continue;
+    if (!together(state, a, b) || inThread(state, a) || inThread(state, b) || justFriends(state, a, b)) continue;
     if (stepOf(state, a, b) === 'official' && stepOf(state, b, a) === 'official') continue;
     const r = Math.min(romance(a, b), romance(b, a));
     if (r < 4 - slack(state)) continue;
@@ -281,13 +291,32 @@ function openSparks(state, rng) {
   const singles = state.villa.filter(n => !partnerOf(state, n) && !busy.has(n) && !inThread(state, n));
   const cands = [];
   for (const a of singles) for (const b of singles) {
-    if (a >= b || !together(state, a, b) || !compatible(state, a, b)) continue;
+    if (a >= b || !together(state, a, b) || !compatible(state, a, b) || justFriends(state, a, b)) continue;
     const m = Math.min(attr(state, a, b) ?? 0, attr(state, b, a) ?? 0);
     if (m < 3 - 0.5 * slack(state)) continue;
     if ((state.threadDone || {})[`spark:${a}+${b}`] != null) continue;
     cands.push({ a, b, heat: 0.35 + m / 12 });
   }
   openSome(state, rng, 'spark', cands, c => [c.a, c.b], () => 0.7, c => ({ a: c.a, b: c.b }));
+}
+
+// Two who are friends now (just-friends.js), and one of them still feels
+// something, or has started to again: "are they back on?" One try a pair.
+function openRekindles(state, rng) {
+  if (live(state).filter(t => t.type === 'rekindle').length >= MAX.rekindle) return;
+  const busy = busyElsewhere(state);
+  const cands = [];
+  for (const f of friendsRecords(state)) {
+    const { ender: a, hurt: b } = f;
+    if (state.ep - f.ep < 2 || !together(state, a, b) || busy.has(a) || busy.has(b) || inThread(state, a) || inThread(state, b)) continue;
+    // Only while either could say yes: still coupled as friends, or both single.
+    if (!(partnerOf(state, a) === b || (!partnerOf(state, a) && !partnerOf(state, b)))) continue;
+    if ((state.threadDone || {})[`rekindle:${[a, b].sort().join('+')}`] != null) continue;
+    const most = Math.max(romance(a, b), romance(b, a));
+    if (most < 3 - slack(state)) continue;
+    cands.push({ a, b, heat: 0.3 + most / 12 + Math.max(0, friendship(a, b)) / 30 });
+  }
+  openSome(state, rng, 'rekindle', cands, c => [c.a, c.b], c => Math.min(0.7, 0.25 + c.heat * 0.4), c => ({ a: c.a, b: c.b }));
 }
 
 /**
@@ -302,18 +331,19 @@ export function beginThreads(state, rng, entry) {
   settle(state);
   for (const t of state.threads.filter(x => x.over && x.endEp === state.ep)) {
     const key = t.type === 'graft' ? `graft:${t.c}>${t.t}` : t.type === 'doubt' ? `doubt:${t.a}>${t.p}`
-      : t.type === 'progress' ? `progress:${[t.a, t.b].sort().join('+')}` : t.type === 'spark' ? `spark:${[t.a, t.b].sort().join('+')}` : `secret:${t.sec}`;
+      : t.type === 'progress' ? `progress:${[t.a, t.b].sort().join('+')}` : t.type === 'spark' ? `spark:${[t.a, t.b].sort().join('+')}`
+      : t.type === 'rekindle' ? `rekindle:${[t.a, t.b].sort().join('+')}` : `secret:${t.sec}`;
     (state.threadDone ||= {})[key] = state.ep;
   }
   // The final has no villa day, and the reunion none at all.
   if (['final', 'reunion'].includes(entry?.moment)) { state._th = { ep: state.ep, headline: [], used: {}, queue: [] }; return; }
   const alive = q => inVilla(state, q.center) && (!q.x || inVilla(state, q.x));
-  openGrafts(state, rng); openSecrets(state, rng); openDoubts(state, rng); openProgress(state, rng); openSparks(state, rng);
+  openGrafts(state, rng); openSecrets(state, rng); openDoubts(state, rng); openProgress(state, rng); openSparks(state, rng); openRekindles(state, rng);
   // Too few stories with somewhere to go: look again, less fussily.
   const going = () => live(state).filter(t => !(t.type === 'doubt' && t.ended)).length;
   if (going() < 3) {
     state._threadSlack = 1;
-    openGrafts(state, rng); openDoubts(state, rng); openProgress(state, rng); openSparks(state, rng);
+    openGrafts(state, rng); openDoubts(state, rng); openProgress(state, rng); openSparks(state, rng); openRekindles(state, rng);
     state._threadSlack = 0;
   }
   // A second graft on a bombshell night: the new arrival is the episode.
@@ -490,7 +520,10 @@ function doubtBeat(state, rng, t, phase) {
     const r = romance(a, p);
     const recommit = r >= 5 || (t.talkOf === 'reassure' && r >= 4);
     // Ending it takes some nerve, or not caring much any more.
-    const ends = !recommit && rng() < 0.35 + 0.4 * st(state, a, 'boldness') + 0.3 * (1 - r / 5);
+    // With no recoupling left to part them, nobody calls it off as friends on
+    // the way to the final: they stay together, not sure (a couple of friends
+    // reached the final in 5 seasons of 20, and read it as a love story).
+    const ends = !recommit && state._recouplingAhead !== false && rng() < 0.35 + 0.4 * st(state, a, 'boldness') + 0.3 * (1 - r / 5);
     if (!recommit && !ends) { close(t, 'limbo', state); return []; }
     if (recommit) {
       addBond(a, p, 0.5); nudgeAttraction(state, a, p, 0.6); feel(state, p, 'security', 1.5); feel(state, a, 'guilt', -0.5);
@@ -499,6 +532,16 @@ function doubtBeat(state, rng, t, phase) {
       breakHeart(state, p, a, 3 * romance(p, a) / 10);
       nudgeAttraction(state, p, a, -1);
       addRelationshipDimension(p, a, 'resentment', 0.5);
+      // Friends from now until they rekindle (just-friends.js). {a} decided
+      // it: most of the feeling goes with the decision, and {p} knows where
+      // {a} stands now. What's left is a friendship, a little warmer for the honesty.
+      becomeFriends(state, a, p);
+      // …and the country saw it end: nobody believes in them as a couple now.
+      nudgeBelief(state.ledger, a, p, Math.min(0, -25 - beliefOf(state.ledger, a, p)));
+      addRelationshipDimension(a, p, 'attraction', -0.5 * getRelationshipDimension(a, p, 'attraction'));
+      addRelationshipDimension(a, p, 'love', -0.7 * getRelationshipDimension(a, p, 'love'));
+      revealTruth(state, p, a);
+      addRelationshipDimension(a, p, 'affection', 1); addRelationshipDimension(p, a, 'affection', 1);
       if (stepOf(state, a, p) !== 'coupled') { setStep(state, a, p, 'coupled'); tellStep(state, p, a); }
       // Done is done (events.js doneWith): no warm scenes between them, and
       // neither turns a pull down "for" the other any more (season read
@@ -635,6 +678,59 @@ function sparkBeat(state, rng, t, phase) {
 }
 
 /**
+ * Friends again, or more? {a} ended it, {b} was told. A moment between them
+ * that isn't quite a friend's; a friend of {b}'s who saw it; then one of them
+ * asks, and the answer is the other's feeling, in proportion: back on (a
+ * couple again, the country believing in them again) or the door closed for
+ * good. Their talk is pm/talk/rekindle.js.
+ */
+function rekindleBeat(state, rng, t, phase) {
+  const { a, b } = t;
+  if (!together(state, a, b) || !justFriends(state, a, b)) return [];
+  if (!(partnerOf(state, a) === b || (!partnerOf(state, a) && !partnerOf(state, b)))) return [];
+  const tag = beat => ({ thread: { id: t.id, type: 'rekindle', beat, since: t.ep, who: [a, b] } });
+  // 1. A moment: they laugh like they used to, a hand that stays a second too long.
+  if (t.moment == null && (phase === 'day' || phase === 'evening')) {
+    t.moment = state.ep;
+    const warmth = 0.3 + Math.max(0, friendship(a, b)) / 20;
+    nudgeAttraction(state, a, b, warmth); nudgeAttraction(state, b, a, warmth);
+    addBond(a, b, 0.3);
+    return [scene(state, rng, phase, 'rekindle', [a, b], { ...tag('moment'), of: 'moment', pop: pop([a, 0.2, 0.8], [b, 0.2, 0.8]) })];
+  }
+  // 2. Somebody saw it: a friend of {b}'s asks what that was.
+  if (t.moment != null && t.noticed == null && t.moment < state.ep && (phase === 'morning' || phase === 'day')) {
+    const f = friendsOf(state, b, [a], 1)[0];
+    t.noticed = state.ep;
+    if (!f) return [];
+    addBond(b, f, 0.2);
+    return [scene(state, rng, phase, 'rekindle', [f, b, a], { ...tag('noticed'), of: 'noticed', pop: pop([b, 0.1, 0.6]) })];
+  }
+  // 3. The ask, in the evening: whoever feels more asks, and the other's feeling answers.
+  if (t.noticed != null && phase === 'evening' && !t.asked) {
+    t.asked = true;
+    const [x, y] = romance(a, b) >= romance(b, a) ? [a, b] : [b, a];
+    // The cooler one answers: what came back, and how close they've grown as
+    // friends (measured: on the feeling alone it was one yes in eleven asks).
+    const yes = rng() < clamp(0.1 + romance(y, x) / 10 + Math.max(0, friendship(y, x)) / 30, 0.1, 0.85);
+    if (yes) {
+      rekindle(state, a, b);
+      if (!partnerOf(state, x)) state.couples.push([x, y]);
+      addBond(x, y, 1); nudgeAttraction(state, x, y, 0.8); nudgeAttraction(state, y, x, 0.8);
+      addRelationshipDimension(y, x, 'love', 0.8); addRelationshipDimension(x, y, 'love', 0.8);
+      feel(state, x, 'security', 1.5); feel(state, y, 'security', 1);
+      nudgeBelief(state.ledger, x, y, 25);
+    } else {
+      breakHeart(state, x, y, 2 * romance(x, y) / 10);
+      nudgeAttraction(state, x, y, -1.5);
+    }
+    close(t, yes ? 'rekindled' : 'closed', state);
+    return [scene(state, rng, phase, 'rekindle', [x, y], { ...tag('ask'), of: yes ? 'yes' : 'no',
+      pop: pop([x, yes ? 0.6 : 0.4, 1.5], [y, yes ? 0.6 : 0.1, 1.5]) }, { major: yes ? [x, y] : [] })];
+  }
+  return [];
+}
+
+/**
  * The thread beats of one part of the day: the episode's headline threads,
  * each moving on at most once a part of the day, and no more than its share
  * of the episode (the top story four, the others three).
@@ -662,6 +758,7 @@ export function threadBeats(state, rng, phase, max = Infinity) {
     else if (t.type === 'secret') evs = secretBeat(state, rng, t, phase);
     else if (t.type === 'progress') evs = progressBeat(state, rng, t, phase);
     else if (t.type === 'spark') evs = sparkBeat(state, rng, t, phase);
+    else if (t.type === 'rekindle') evs = rekindleBeat(state, rng, t, phase);
     if (!evs.length) continue;
     th.used[id] = (th.used[id] || 0) + 1;
     t.last = state.ep;
@@ -769,7 +866,8 @@ export function tonightBeats(state, rng, phase, entry, max = 2) {
 const REACT = {
   pull: e => {
     const [c, t] = e.players;
-    if (!partnerOf(e._s, t) || partnerOf(e._s, t) === c || e.extra.rebuffed) return null;
+    // Pulled while only friends with your partner is no news (just-friends.js).
+    if (!heartOf(e._s, t) || heartOf(e._s, t) === c || e.extra.rebuffed) return null;
     return { center: t, subj: 'pulled', x: c, due: 'next' };
   },
   watching: () => null,
@@ -874,7 +972,7 @@ export function bedChats(state, rng, phase = 'evening') {
     const t = (state.threads || []).find(x => x.id === id);
     if (!t || !th.used[id]) continue;
     const pair = t.type === 'graft' ? [t.p, t.t] : t.type === 'doubt' ? [t.p, t.a] : t.type === 'progress' ? [t.a, t.b] : null;
-    if (pair && together(state, ...pair) && partnerOf(state, pair[0]) === pair[1] && !pairs.some(p => p.includes(pair[0]) || p.includes(pair[1]))) pairs.push([...pair, t]);
+    if (pair && together(state, ...pair) && partnerOf(state, pair[0]) === pair[1] && !justFriends(state, ...pair) && !pairs.some(p => p.includes(pair[0]) || p.includes(pair[1]))) pairs.push([...pair, t]);
   }
   return pairs.slice(0, 2).map(([a, b, t]) => {
     const both = e => e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b);

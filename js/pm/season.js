@@ -16,6 +16,7 @@ import { resolveIslander } from './profile.js';
 import { seedAttraction, attr, compatible, attractionOf } from './chemistry.js';
 import { createLedger, noteArrival, closeEpisode, ledgerSnapshot, POP_SCALE } from './ledger.js';
 import { setRelationshipDimension } from '../relationships.js';
+import { becomeFriends, rekindle, friendsRecords } from './just-friends.js';
 import { generateEpisodeEvents, makeEvent, partnerOf, PHASE_BUDGETS } from './events.js';
 import { nightDebrief } from './debrief.js';
 import { runChallenge } from './challenges.js';
@@ -189,7 +190,7 @@ function storyPhase(state, rng, trng, phase, texture, entry = null) {
  * the last aired episode (restoreFromAired). Bump it when the villa changes
  * enough that an old season should be offered the new one.
  */
-export const PM_ENGINE = '2026-10-25';
+export const PM_ENGINE = '2026-10-26';
 
 /**
  * THE RESUME (user, 2026-10-25: "with our new system I don't wanna start a new
@@ -228,6 +229,9 @@ function restoreFromAired(state, rows, queues, seed) {
         if (e.extra?.back) state.loveSaid[`${e.players[1]}→${e.players[0]}`] = r.days?.[0] ?? r.num;
       }
       if (e.kind === 'movie-clip' && e.extra?.clip) (state.shownClips ||= []).push(e.extra.clip);
+      // Friends since a "better as friends" (just-friends.js), until a second chance.
+      if (e.kind === 'doubt-end' && e.extra?.of === 'friends' && e.players?.length >= 2) becomeFriends(state, e.players[0], e.players[1], r.num);
+      if (e.kind === 'reunite' && e.players?.length >= 2) rekindle(state, e.players[0], e.players[1]);
     }
     if (r.moment === 'photos') state.photosShown = true;
     if (r.moment === 'recoupling') state.lastRecouplingEp = r.num;
@@ -291,8 +295,14 @@ function restoreFromAired(state, rows, queues, seed) {
     const back = fr[`${b}→${a}`];
     gs.bonds[bKey(a, b)] = Math.round(((fr[key] + (back ?? fr[key])) / 2) * 100) / 100;
   }
+  // A pair of friends back together with the feeling back both ways has rekindled.
+  for (const f of friendsRecords(state)) {
+    if (state.couples.some(c => c.includes(f.ender) && c.includes(f.hurt))
+      && romance(f.ender, f.hurt) >= 5.5 && romance(f.hurt, f.ender) >= 5.5) rekindle(state, f.ender, f.hurt);
+  }
   // The scenes read what already happened (afterOf, first kisses, clips): the aired history.
-  state.history = rows.flatMap(r => r.pm?.events || []);
+  // Copies: the engine marks history as it plays, and the aired rows must never change.
+  state.history = JSON.parse(JSON.stringify(rows.flatMap(r => r.pm?.events || [])));
   state.seq = state.history.length + 1;
   gs.activePlayers = [...state.villa];
   return last.num;
@@ -330,7 +340,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
   // Continuing a season from what aired (restoreFromAired): those rows are the
   // past, exactly as watched, and the loop plays only what comes after them.
   const resumeAt = resume?.rows?.length ? restoreFromAired(state, resume.rows, queues, seed) : 0;
-  if (resumeAt) gs.episodeHistory.push(...resume.rows);
+  if (resumeAt) gs.episodeHistory.push(...JSON.parse(JSON.stringify(resume.rows)));
 
   for (const entry of schedule) {
     if (entry.ep <= resumeAt) continue;
@@ -389,6 +399,9 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // final with its couples.
     state._canSplit = ['villa', 'bombshell', 'recoupling'].includes(entry.moment) && !entry.coupled && !entry.finalRecoupling
       && nights >= 2 && surplus >= 2;
+    // A recoupling still to come, or Casa's stick or twist: until the last of
+    // them, a couple who call it off as friends can still part (pm/threads.js).
+    state._recouplingAhead = ahead.some(e => e.moment === 'recoupling' || e.moment === 'stick-or-twist');
     // Episode one opens on the arrivals and the first coupling, before the day.
     if (entry.moment === 'first-coupling') ctx.opening = nightOneOpening(state, ctx);
     // The final's day is the final dates (pm/journey.js): no ordinary villa

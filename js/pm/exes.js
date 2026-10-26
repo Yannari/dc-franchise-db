@@ -26,6 +26,7 @@ import { getRelationshipDimension, addRelationshipDimension } from '../relations
 import { makeEvent, partnerOf, apart } from './events.js';
 import { romance } from './feelings.js';
 import { emo, feel, breakHeart } from './emotions.js';
+import { rekindle } from './just-friends.js';
 
 const MAX_REFUSALS = 2;
 
@@ -79,6 +80,7 @@ export function secondChances(state, rng, entry = null) {
       state.couples = state.couples.filter(c => !c.includes(a) && !c.includes(b));
       for (const n of left) { const was = n === pa ? a : b; breakHeart(state, n, was, 4 * romance(n, was) / 10); }
       state.couples.push([b, a]);
+      rekindle(state, a, b);
       br.closed = true;
       addBond(a, b, 1.0); addRelationshipDimension(b, a, 'trust', 0.8);
       feel(state, a, 'security', 1); feel(state, b, 'security', 0.5);

@@ -9,6 +9,7 @@
 // rung, and the gap between the two is a situationship.
 import { romance } from './feelings.js';
 import { getRelationshipDimension } from '../relationships.js';
+import { justFriends } from './just-friends.js';
 
 export const STEPS = ['coupled', 'cracking-on', 'open', 'closed-off', 'exclusive', 'official'];
 // How much a partner's straying hurts, by the rung you believe they are on.
@@ -84,6 +85,8 @@ export function decideLadder(state, rng, attachmentOf = null) {
     // of each other: they are in different villas (audit 2026-09-27: asks,
     // "I love you"s and Hideaway nights across the two villas).
     if (state.split && state.casa.includes(a) !== state.casa.includes(b)) continue;
+    // Friends sharing a bed climb nothing and say nothing (just-friends.js).
+    if (justFriends(state, a, b)) continue;
     for (const [x, y] of [[a, b], [b, a]]) {
       const cur = stepOf(state, x, y) || 'coupled';
       const r = readiness(state, x, y, attachmentOf);

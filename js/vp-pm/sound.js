@@ -292,6 +292,7 @@ const STORY_MUSIC = {
   'where-head': x => (x.of === 'reassure' ? 'romance' : x.of === 'honest' ? 'cry' : 'cheating'),
   'feels-off': x => (x.of === 'told' ? 'cry' : x.of === 'covers' ? 'cheating' : 'villa'),
   'doubt-end': x => (x.of === 'recommit' ? 'romance' : 'cry'),
+  rekindle: x => (x.of === 'yes' || x.of === 'moment' ? 'romance' : x.of === 'no' ? 'cry' : 'villa'),
   'group-chat': x => (x.subj === 'row' ? 'drama' : SAD_NEWS.has(x.subj) ? 'cry'
     : ['celebrate', 'progress', 'spark'].includes(x.subj) ? 'comedy' : ['found-out', 'turned'].includes(x.subj) ? 'cheating' : 'villa'),
   'bed-chat': x => (x.of === 'warm' ? 'romance' : x.of === 'after-row' ? 'cry' : 'villa'),

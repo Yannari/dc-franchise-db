@@ -12,6 +12,7 @@ import { romance, friendship, believed } from './feelings.js';
 import { partnerOf } from './events.js';
 import { kinFor, onYourSide } from './kin.js';
 import { getBond } from '../bonds.js';
+import { justFriends } from './just-friends.js';
 
 /**
  * Whose choice the next recoupling is, without taking the turn: the smaller
@@ -49,10 +50,13 @@ function desire(state, p, c, { rng, taken }) {
   const prof = state.profiles[p], s = prof.stats;
   const w = INTENT_WEIGHTS[prof.intent] || INTENT_WEIGHTS.love;
   // My feelings for you, and what I BELIEVE you feel for me.
-  const conn = (romance(p, c) + Math.max(0, friendship(p, c)) * 0.5) / 10;
-  const att = (attr(state, p, c) ?? 0) / 10;
+  // Friends now: what is left is the friendship and a safe pair of hands;
+  // each looks elsewhere unless the feeling is back (just-friends.js).
+  const mates = justFriends(state, p, c);
+  const conn = ((mates ? 0.4 : 1) * romance(p, c) + Math.max(0, friendship(p, c)) * 0.5) / 10;
+  const att = (mates ? 0.4 : 1) * (attr(state, p, c) ?? 0) / 10;
   const safety = (believed(state, p, c) / 10) * (s.strategic / 10);
-  const stay = partnerOf(state, p) === c ? 0.25 + 0.5 * s.loyalty / 10 : 0;
+  const stay = partnerOf(state, p) === c ? (mates ? 0.3 : 1) * (0.25 + 0.5 * s.loyalty / 10) : 0;
   const stealCost = taken.has(c) ? 0.4 - 0.3 * s.boldness / 10 : 0;
   const archConn = prof.archetype === 'showmancer' ? 1.15 : 1;
   const archSafe = prof.archetype === 'villain' || prof.archetype === 'schemer' ? 1.3 : 1;

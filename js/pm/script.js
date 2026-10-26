@@ -17,6 +17,7 @@ import { streamFor } from '../dr/rng.js';
 import { stepOf, believedStep, situationship } from './ladder.js';
 import { emo, attachmentLabel } from './emotions.js';
 import { romance, shown } from './feelings.js';
+import { heartOf } from './just-friends.js';
 import { FIREPIT_LINES } from './lines/firepit.js';
 import { FINAL_LINES } from './lines/final.js';
 import { CHALLENGE_LINES } from './lines/challenges.js';
@@ -64,6 +65,8 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy', 'theirs', 'going', 'nth', 'exes', 'leaving', 'what', 'heat', 'game', 'why', 'risk',
   // the director (pm/story/director.js): how each one sounds, how much is shown, what it follows
   'reg', 'bReg', 'tier', 'after', 'afterBy', 'afterWhen', 'end', 'firstKiss', 'bPartnered', 'fresh', 'bFresh',
+  // a couple who are only friends now, at the final (pm/just-friends.js)
+  'mates',
   // a talk file's own (pm/talk/*.js facts())
   'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels', 'believed', 'dayOne', 'side',
   // the storylines (pm/threads.js): which story a beat is in, and what a group chat is about
@@ -123,9 +126,10 @@ export function factsFor(state, ev) {
     bPersona: pb?.persona || null,
     bMood: b ? moodOf(state, b) : null,
     bRung: b ? stepOf(state, b, a) : null,
-    bTaken: !!b && !!partnerOf(state, b) && partnerOf(state, b) !== a,
+    // Taken is a heart elsewhere: a partner who is only a friend now is not one (just-friends.js).
+    bTaken: !!b && !!heartOf(state, b) && heartOf(state, b) !== a,
     archetype: players.find(p => p.name === a)?.archetype || null,
-    taken: !!partnerOf(state, a) && partnerOf(state, a) !== b,
+    taken: !!heartOf(state, a) && heartOf(state, a) !== b,
     // Where a stands with a's OWN partner — for scenes where b is somebody else.
     myRung: partnerOf(state, a) ? stepOf(state, a, partnerOf(state, a)) : null,
     // Narration only: a threshold picks words, never an outcome (CLAUDE.md).
@@ -167,7 +171,7 @@ export function factsFor(state, ev) {
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
   // …and how much b feels for a, the same way: whether it is said back.
   if (b) { const r = romance(b, a); f.bFeels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.bFeels = null;
-  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since', 'staying', 'came', 'risk', 'side', 'subj', 'final', 'score', 'choosing', 'said']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since', 'staying', 'came', 'risk', 'side', 'subj', 'final', 'score', 'choosing', 'said', 'mates']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   f.story = ev.extra?.thread?.type || null;
   // A recoupling "steal" of the chooser's own partner from before tonight.
   f.reclaim = !!ev.extra?.reclaim;
@@ -358,7 +362,7 @@ function scriptRng(state) {
 // Ellie being taken back from the one who had just picked her).
 // `why`: a vote's reason (pm/villa-vote.js motives) — a grudge vote said with a
 // line about "nothing you've done" contradicted its own ballot (season 31).
-const LEADING = ['exes', 'stoleFrom', 'rebuffed', 'heard', 'kissed', 'promised', 'rowedToday', 'justMet', 'heat', 'going', 'why', 'another', 'behind', 'friction'];
+const LEADING = ['mates', 'exes', 'stoleFrom', 'rebuffed', 'heard', 'kissed', 'promised', 'rowedToday', 'justMet', 'heat', 'going', 'why', 'another', 'behind', 'friction'];
 
 // The furthest islander a line names ({c} is the third): a line that names
 // somebody the scene has not got never plays (a debrief about a night whose

@@ -27,6 +27,7 @@
 // the terrace" (lines/day/gossip heard entries).
 import { addBond, getBond } from '../bonds.js';
 import { makeEvent, partnerOf } from './events.js';
+import { justFriends } from './just-friends.js';
 import { attr, nudgeAttraction } from './chemistry.js';
 import { feel, jealousOf } from './emotions.js';
 
@@ -167,7 +168,7 @@ function scene(state, rng, of, a, b, c, chose = null, more = {}) {
     default: break;
   }
   // Said out loud about a partner, in front of a witness: it can travel.
-  if (pa && (of === 'meh' || of === 'bomb-fancy')) {
+  if (pa && !justFriends(state, a, pa) && (of === 'meh' || of === 'bomb-fancy')) {
     state.secrets.push({ id: `sec${state.secrets.length + 1}`, who: a, partner: pa, with: of === 'bomb-fancy' ? c : null,
       severity: 0.6, ep: state.ep, witnesses: [b], known: false, said: true, casa: false });
   }

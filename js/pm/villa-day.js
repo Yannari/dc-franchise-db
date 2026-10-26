@@ -178,7 +178,8 @@ function feelingScenes(state, rng) {
     if (!rival || rng() >= clamp(j / 10, 0, 0.9)) continue;
     const how = jealousyOutlet(state, n, rng);
     // With the partner in the other villa, it can only be kept in.
-    if (apart(state, n, partner) && how !== 'sulk' && how !== 'hidden') {
+    // A sulk needs somebody there to sulk at: with the partner at Casa it is overthinking, alone.
+    if (apart(state, n, partner) && how !== 'hidden') {
       feel(state, n, 'stress', 0.5);
       out.push(scene(state, rng, 'overthinking', [n], { pop: pop([n, 0.3, 0.6]) }, { phase: 'day' }));
       continue;

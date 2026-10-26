@@ -180,6 +180,21 @@ export function factsFor(state, ev) {
   // Night one's ranking: the pair at the top, or anybody below it.
   f.rank = ev.extra?.rank == null ? null : ev.extra.rank === 1 ? 'top' : 'lower';
   f.split = !!state.split;             // Casa Amor is on
+  // …and who this scene concerns is in the OTHER villa (user, 2026-10-26: "it
+  // acts like the old players are still in the same house even though they got
+  // separated"): talked about, never placed in the room (presentFits below).
+  // (Not at the fire pit: Casa's return is the two villas back in one place.)
+  if (state.split && ev.phase !== 'firepit') {
+    const villaOf = n => (state.casa?.includes(n) ? 'casa' : 'villa');
+    const awayFrom = n => !!n && n !== a && (state.villa || []).includes(n) && villaOf(n) !== villaOf(a);
+    f.paAway = awayFrom(partnerOf(state, a));
+    f.pbAway = !!b && awayFrom(partnerOf(state, b));
+    f.cAway = awayFrom(c);
+    f.dAway = awayFrom(ev.players[3]);
+    f.xAway = awayFrom(ev.extra?.about || ev.extra?.x || null);
+    // Which villa the scene is in (where its lead is).
+    f.atCasa = villaOf(a) === 'casa';
+  }
   // One of them walked in THIS episode: night one for everybody, a bombshell's
   // first day. They have known each other for hours.
   const arrivedNow = n => n != null && (state.ledger?.firstEp?.[n] ?? state.ep) === state.ep;
@@ -378,8 +393,45 @@ function needs(e) {
   return n;
 }
 const castFits = (e, facts) => facts.cast == null || needs(e) <= Math.max(facts.cast, 1);
+
+// Placing somebody in the room: finding them, going back to them, them looking
+// over, sitting on the daybeds, wrapped round somebody. During Casa Amor a line
+// that does it to somebody in the other villa never plays (factsFor's *Away).
+const PRESENT_SLOTS = { pa: 'paAway', pb: 'pbAway', c: 'cAway', d: 'dAway', x: 'xAway', about: 'xAway' };
+const presentRe = slot => new RegExp([
+  `(?:find|back to|leaves|left|walks past|walk past|next to|sits with|sat with|kiss|kisses|hug|hugs|cuddle|over to|towards|wave at|waves at|look at|looks at|looking at|in front of) \\{${slot}(?:\\.[a-zA-Z]+)?\\}`,
+  `\\{${slot}\\}(?:'s)? (?:is |are |was )?(?:looking|looks|looked|watching|watches|staring|laughing|sitting|sat|busy|right there|over there|on the daybeds|by the pool|in the kitchen|across|spots|walks|walked|comes|came|catches|keeps|hasn't looked|wrapped|is still|has just|gets up|stands|knows I'm|know you're|know you are)`,
+  `wrapped round \\{${slot}\\}`, `[Ww]here's \\{${slot}\\}`, `with \\{${slot}\\} right there`,
+  // …and telling them now, before anyone else can: nobody reaches the other villa until the return.
+  `tell \\{${slot}\\} before`,
+  // …and anywhere in the villa, in the same sentence ("why did {pa} go quiet at dinner?").
+  `\\{${slot}\\}[^.?!"]{0,40}(?:at dinner|on the daybeds|by the pool|in the kitchen|across the|at breakfast|on the terrace)`,
+].join('|'));
+const PRESENT_RE = Object.fromEntries(Object.keys(PRESENT_SLOTS).map(s => [s, presentRe(s)]));
+const entryText = e => {
+  if (e._text != null) return e._text;
+  const turns = (e.turns || []).flatMap(t => (Array.isArray(t) ? [t[1]] : (t.vary || []).flatMap(v => (v.turns || []).map(x => x[1]))));
+  const text = [e.stage, e.beat, ...turns].filter(Boolean).join(' ');
+  Object.defineProperty(e, '_text', { value: text, enumerable: false });
+  return text;
+};
+// Having watched a couple together, with one of them in the other villa ("I know
+// Malik's with Ayesha, I've got eyes", from somebody who arrived after Ayesha left).
+const SEEN_TOGETHER = /I've got eyes|I've seen (?:them|the two of them|how they)|everyone can see it/;
+// Which villa a line thinks it is in: "back in the villa" is said at Casa, "over at Casa" in the villa.
+const SAID_AT_CASA = /back in the villa|the main villa|the other lot back|back at the villa/i;
+const SAID_IN_VILLA = /over at Casa|at Casa right now|in Casa right now|what's happening at Casa/i;
+const presentFits = (e, facts) => {
+  if (!facts.split) return true;
+  const text = entryText(e);
+  if (Object.entries(PRESENT_SLOTS).some(([slot, flag]) => facts[flag] && PRESENT_RE[slot].test(text))) return false;
+  if (SEEN_TOGETHER.test(text) && Object.entries(PRESENT_SLOTS).some(([slot, flag]) => facts[flag] && text.includes(`{${slot}`))) return false;
+  if (facts.atCasa === false && SAID_AT_CASA.test(text)) return false;
+  if (facts.atCasa === true && SAID_IN_VILLA.test(text)) return false;
+  return true;
+};
 export function pickScript(state, pool, ps, facts, { allowRepeat = true, rng: own = null, lead = true } = {}) {
-  pool = pool.filter(e => castFits(e, facts));
+  pool = pool.filter(e => castFits(e, facts) && presentFits(e, facts));
   // Candidates at each width, narrowest first: the leading pool, then every
   // entry that fits. A spent leading pool widens before it repeats: a couple
   // who rowed and made up five times in one evening heard the same
@@ -502,7 +554,9 @@ export function speak(text, dialect) {
         return x ? (w[0] === w[0].toUpperCase() ? x[0].toUpperCase() + x.slice(1) : x) : w; });
     const own = info.own || [];
     if (own.length && Math.floor(h / 10) % 7 === 0 && out.split(' ').length >= 4 && /^[A-Z]/.test(out)) {
-      const rest = /^I\b/.test(out) ? out : out[0].toLowerCase() + out.slice(1);
+      // A name keeps its capital after the opener ("Allora, valentina asked me" read in a season, 2026-10-26).
+      const named = (players || []).some(p => p?.name && new RegExp(`^${p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(out));
+      const rest = /^I\b/.test(out) || named ? out : out[0].toLowerCase() + out.slice(1);
       out = `${own[Math.floor(h / 70) % own.length]} ${rest}`;
     }
   }

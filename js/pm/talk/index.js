@@ -215,7 +215,9 @@ WHERE_HEAD.plans = WHERE_HEAD_PLANS;
 for (const [k, more] of Object.entries(STORY_MORE)) extend(TALK[k], more);
 WATCHING.plans = WATCHING_PLANS; FEELS_OFF.plans = FEELS_OFF_PLANS; BED_CHAT.plans = BED_CHAT_PLANS;
 GROUP_CHAT.slots = (state, ev) => ({ ...(ev.extra?.x ? { x: ev.extra.x } : {}), ...(ev.extra?.about ? { about: ev.extra.about } : {}) });
-GROUP_CHAT.facts = (state, ev) => ({ hasWith: !!ev.extra?.about });
+// `sec`: what kind of secret it was (a kiss, a promise, a pull) — never passed until 2026-10-26, so the
+// story's found-out tells (more/group-chat-story.js) never played: 45 chats in 10 seasons lost their telling.
+GROUP_CHAT.facts = (state, ev) => ({ hasWith: !!ev.extra?.about, ...(ev.extra?.sec ? { sec: ev.extra.sec } : {}) });
 // The witness names who it was with.
 SECRET_BURDEN.slots = (state, ev) => { const s = (state.secrets || []).find(z => z.id === ev.extra?.secret); return s?.with ? { about: s.with } : {}; };
 SECRET_BURDEN.facts = (state, ev) => ({ hasWith: !!(state.secrets || []).find(z => z.id === ev.extra?.secret)?.with });

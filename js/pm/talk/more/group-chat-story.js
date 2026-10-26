@@ -59,6 +59,16 @@ export const GROUP_CHAT_STORY = {
         ['b', "That's not an answer."],
         ['a', "That's what I said! And then {x} went to get a drink."],
       ] },
+      // Whatever it was, there was somebody else in it.
+      { when: { subj: 'found-out', hasWith: true }, turns: [
+        ['a', "I've just found out about {x} and {about}. Everyone knew. Everyone. And I was the last one."],
+        ['b', "What did {x} say?"],
+        ['a', "Nothing that made it any better."],
+      ] },
+      { when: { subj: 'found-out', hasWith: true }, turns: [
+        ['a', "So it's {about}. That's who {x} has been sneaking off with. I'd have rather heard it from {x}."],
+        ['b', "I'm so sorry."],
+      ] },
       { when: { subj: 'found-out', sec: 'kiss', hasWith: true }, turns: [
         ['a', "{x} kissed {about}. Behind my back. And I had to hear it from someone else, sitting in the kitchen like an idiot, while {x} was out by the pool acting like everything was normal."],
         ['b', "{about}? I'm going to be sick."],

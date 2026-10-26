@@ -1229,7 +1229,9 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   // (Not the fire pit: Casa's return is the two villas back in one place.)
   if (state.split && phase !== 'firepit') {
     const here = players.filter(Boolean);
-    if (here.length) ev.where = here.every(n => state.casa?.includes(n)) ? 'casa' : 'villa';
+    // Where its lead is: a Casa scene that talks about somebody back home is
+    // still a Casa scene ("what do you really think of Isl02?" was cut into the main villa).
+    if (here.length) ev.where = state.casa?.includes(here[0]) ? 'casa' : 'villa';
   }
   // Kept for the rest of the day, so later scenes know what already happened.
   state._today = [...today(state), ev];

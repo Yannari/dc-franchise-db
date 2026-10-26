@@ -127,7 +127,7 @@ export function stickOrTwist(state, { rng }) {
     const ladder = p ? -0.18 * closedness(state, o, p) : 0;
     const feelings = -0.15 * e.security / 10 + 0.2 * e.heartbreak / 10;
     const twistP = options.length
-      ? clamp(-0.06 + 0.3 * best + 0.75 * built - 0.45 * conn + intent + fear - 0.3 * s.loyalty / 10 + arch + ladder + feelings
+      ? clamp(0.04 + 0.3 * best + 0.75 * built - 0.45 * conn + intent + fear - 0.3 * s.loyalty / 10 + arch + ladder + feelings
         + (p ? 0 : 0.4), 0.02, 0.95)
       : 0;
     return { o, p, twistP, options };

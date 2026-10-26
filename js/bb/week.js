@@ -3279,8 +3279,13 @@ export function simulateBBWeek(options = {}) {
     // whole inventory minus the Diamond Veto, which has its own distributors
     // and would otherwise be handed out twice in a week that ran both.
     const wanted = options.appStoreShelf || 'all';
+    // ...and the powers a season hands out its own way: BB19's two Den powers (bb/temptation.js) and BB26's
+    // America's Veto (bb/machine-premiere.js). Each power goes to a different houseguest, in this order, so a
+    // house smaller than the shelf leaves its tail unsold: with those three added above it, the Interrogation
+    // fell off the end and never reached anybody (bb-vp-interrogation went red at d20ad2719).
+    const DEN_ONLY = new Set(['diamond-veto', 'pendant-of-protection', 'ring-of-replacement', 'americas-veto']);
     const shelf = (wanted === 'all'
-      ? Object.keys(BB_POWER_DEFINITIONS).filter(id => id !== 'diamond-veto')
+      ? Object.keys(BB_POWER_DEFINITIONS).filter(id => !DEN_ONLY.has(id))
       : [wanted]).filter(id => BB_POWER_DEFINITIONS[id]);
     // Weighted by how much of the show a houseguest has been, with a floor so
     // an invisible houseguest is a long shot rather than an impossibility.

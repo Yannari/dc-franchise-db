@@ -121,8 +121,10 @@ export function airStorylines(week) {
   // An Interrogation that took the crown: until its screen airs, the house still has the HOH who won the
   // competition (the user, 2026-10-26: a house-life scene with Nina's photos in the HOH room aired before the
   // interrogation that made Nina HOH — "like i already know nina took over michele hoh")
-  const usurp = week.interrogation && !week.interrogation.caught && week.interrogation.deposed ? week.interrogation : null;
-  let hohNow = usurp ? usurp.deposed : week.hoh;
+  // ...and a Deepfake is never announced: the house believes the deposed HOH ran the whole week (`hohPublic`), so
+  // house life keeps them as HOH from start to end, and only the viewer knows otherwise
+  const usurp = week.interrogation && !week.interrogation.caught && week.interrogation.deposed && !week.interrogation.creditsDeposed ? week.interrogation : null;
+  let hohNow = usurp ? usurp.deposed : (week.hohPublic || week.hoh);
   const ctxOf = () => ({ week, hoh: clock.hoh ? (hohNow || null) : null,
     nominees: blockNow(), stretch,
     firstNight: (week.num || 0) === 1 && stretch === 0, present: present(), phase: season.phase, jurors: season.jurors,

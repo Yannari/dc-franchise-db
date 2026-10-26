@@ -16,9 +16,9 @@ const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', '
 const ARCH = ['mastermind', 'social-butterfly', 'hero', 'showmancer', 'schemer', 'floater', 'villain', 'loyal-soldier', 'underdog', 'goat', 'hothead', 'wildcard', 'floater', 'hero'];
 const CAST = NAMES.map((name, i) => ({ name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[i] }));
 
-function intWeeks() {
+function intWeeks(seeds = [4242, 77, 31337, 9001, 8080]) {
   const out = [];
-  for (const seed of [4242, 77, 31337, 9001, 8080]) {
+  for (const seed of seeds) {
     seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
     Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
     Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7, bbHaveNots: 'off', bbSafetyMode: 'off' });
@@ -75,5 +75,42 @@ describe('the Interrogation and the Deepfake on the stepped stage', () => {
     expect(REPLACED.test('bb-power-hoh-interrogation')).toBe(true);
     expect(REPLACED.test('bb-power-deepfake-hoh')).toBe(true);
     expect(REPLACED.test('bb-power-halting-hex')).toBe(false);
+  });
+});
+
+// The user, 2026-10-26: a house-life scene with Nina's photos in the HOH room aired before the Interrogation that
+// made Nina HOH ("like i already know nina took over michele hoh"), and "the badge should change too after the
+// takeover but michele still has the hoh badge".
+describe('a crown that changed hands', () => {
+  const HOH_SET = /^st:(m|x)?sh\./;
+  const owns = (sc, n) => (sc.lines || []).some(l => l.text.includes(`${n}'s`) || l.text.includes(`${n}’s`));
+
+  it('moves the badge to the taker when the deposed HOH names the wrong person, and in the Deepfake', () => {
+    for (const { ep, act } of WEEKS.filter(w => !w.act.caught)) {
+      expect(screenOf(ep).steps.some(st => st.hoh === act.holder), `week ${ep.num}`).toBe(true);
+    }
+  });
+
+  it('opens the new HOH room only after the Interrogation has aired', () => {
+    // more seasons than the rest of the file needs: the HOH room has to come up in a takeover week
+    const taken = [...WEEKS, ...intWeeks([5, 12, 19, 27, 33, 41, 58, 64])].filter(w => !w.act.caught && !w.act.creditsDeposed);
+    expect(taken.length).toBeGreaterThan(0);
+    for (const { ep, act } of taken) {
+      // the order the viewer plays it in, not the order of the acts
+      const screens = bbWeekSteps(ep);
+      const si = screens.findIndex(x => x.kind === 'interro');
+      const mine = new RegExp(`${act.holder}['’]s (photo|letter|bed|room|snacks)|${act.holder} (is|as) (the )?(HOH|Head of Household)`);
+      for (const scr of screens.slice(0, si)) for (const st of scr.steps || []) {
+        expect(mine.test(String(st.t || '')), `week ${ep.num} ${scr.id}: ${st.t}`).toBe(false);
+      }
+    }
+  });
+
+  it('never shows the house the Deepfake: its HOH room is the one the house believes in', () => {
+    for (const { ep, act } of WEEKS.filter(w => w.act.creditsDeposed && !w.act.caught)) {
+      for (const sc of ep.acts.flatMap(a => a.scenes || []).filter(x => HOH_SET.test(String(x.lineId)))) {
+        expect(owns(sc, act.holder), `week ${ep.num} ${sc.lineId}`).toBe(false);
+      }
+    }
   });
 });

@@ -184,6 +184,9 @@ function whenOf(prior, step) {
   return d <= 0 ? 'earlier today' : d === 1 ? 'yesterday' : 'the other day';
 }
 
+// an HOH or a veto, in a week already played or this week's so far
+const hasWon = (n, ctx) => (gs.bb?.weeks || []).some(w => w !== ctx.week && (w.hoh === n || w.vetoWinner === n))
+  || ctx.hoh === n || (ctx.veto && ctx.week?.vetoWinner === n);
 function presumed(entry, ctx, who = null) {
   for (const p of entry.presumes || []) {
     // guests: neither of the two is the HOH (read 2026-10-14: the HOH asked "I saw you up in the HOH room
@@ -204,6 +207,9 @@ function presumed(entry, ctx, who = null) {
     if (p === 'preveto' && ctx.veto) return false;
     if (p === 'vote' && !(gs.bb?.weeks || []).some(w => w !== ctx.week && w.evicted)) return false;
     if (p === 'jurors' && !(ctx.jurors > 0)) return false;
+    // won: {a} has really won something (the user, 2026-10-26, on "Because I keep winning?" from somebody who had
+    // won nothing: "he didnt won one time hes just a threat based on his stat")
+    if (p === 'won' && !(who?.a && hasWon(who.a, ctx))) return false;
   }
   // a line written for one stage of the season (bb/story/lines/gametalk.js) airs only then
   if (entry.phase && !entry.phase.includes(ctx.phase || 'early')) return false;

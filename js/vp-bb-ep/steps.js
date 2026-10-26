@@ -641,8 +641,11 @@ function vetoMeetingScreen(act, ctx) {
   const before = ctx.nominees.slice();
   const hoh = act.chairAuthority || ctx.hoh;
   const holderOnBlock = before.includes(holder);
+  // the Head of Household holding the veto is talking about their own nominations (the user, 2026-10-26: "nina won
+  // the veto why is she not talking like its her own nomination")
+  const ownNoms = holder === hoh;
   const steps = [{ k: 'say', by: holder, t: 'This is the Power of Veto meeting.', veto: holder, medal: 'on' }];
-  steps.push({ k: 'say', by: holder, t: `${hoh} has nominated ${holderOnBlock ? listOf(['me', ...before.filter(n => n !== holder)]) : listOf(before)} for eviction. I have the power to veto one of these nominations.` });
+  steps.push({ k: 'say', by: holder, t: `${ownNoms ? 'I have' : `${hoh} has`} nominated ${holderOnBlock ? listOf(['me', ...before.filter(n => n !== holder)]) : listOf(before)} for eviction. I have the power to veto one of these nominations.` });
   if (act.diamond) steps.push({ k: 'say', by: holder, t: `This is the DIAMOND POWER OF VETO. If I use it, I name the replacement nominee myself, not the Head of Household.`, toast: ['DIAMOND VETO', '#22e1ff'] });
   steps.push({ k: 'say', by: holder, t: holderOnBlock
     ? `I'm one of the nominees, so I'll make this quick.`
@@ -680,10 +683,11 @@ function vetoMeetingScreen(act, ctx) {
       const namer = act.diamond ? holder : hoh;
       // the final four: one possible name, and everybody in the room knew it before the medallion moved
       const forced = !!act.forcedReplacement;
-      if (!act.diamond) steps.push({ k: 'say', by: holder, t: `${hoh}, since I have just vetoed one of your nominations, you must now name a replacement nominee.` });
+      if (!act.diamond && !ownNoms) steps.push({ k: 'say', by: holder, t: `${hoh}, since I have just vetoed one of your nominations, you must now name a replacement nominee.` });
       steps.push({ k: 'say', by: namer, t: act.diamond
         ? `The diamond veto has been used, so the replacement is mine to name.`
         : forced ? `There's only one person in this house I'm allowed to name, and everybody here knows who it is.`
+          : ownNoms ? `Since I've just vetoed one of my own nominations, I have to name a replacement. My replacement nominee is...`
           : `I knew it might come to this. My replacement nominee is...` });
       steps.push({ k: 'say', by: namer, push: true,
         why: forced ? [`Nobody chose this: with ${word(houseNow(ctx).length)} left, ${act.replacement} is the only houseguest who can be nominated.`] : vetoWhy(act, holder, before, hoh),
@@ -2040,7 +2044,7 @@ function interrogationScreens(act, ctx) {
   if (act.creditsDeposed) {
     const steps = [
       { k: 'beat', t: `${holder} has a secret power that takes somebody else's Head of Household.`, rule: 1 },
-      { k: 'beat', t: `${holder} uses it on ${deposed}. ${deposed} is not told.`, rule: 2 },
+      { k: 'beat', t: `${holder} uses it on ${deposed}. ${deposed} is not told.`, rule: 2, hoh: holder },
       { k: 'beat', t: `When the nominations are read out, the wall will use ${deposed}'s voice.`, rule: 3 },
     ];
     for (const b of beats) steps.push(...linesOf(b));
@@ -2066,7 +2070,7 @@ function interrogationScreens(act, ctx) {
     }
     if (b.part === 'name') steps.push({ k: 'bb', t: `${deposed}, who took your Head of Household?` }, ...linesOf(b).map((x, i) => i ? x : { ...x, intName: b.accused || '' }));
     if (b.part === 'caught') steps.push({ k: 'bb', t: `${deposed}, you are correct. You remain Head of Household.`, intEnd: 'caught', toast: ['CAUGHT', '#ff3355'] }, ...linesOf(b));
-    if (b.part === 'wrong') steps.push({ k: 'bb', t: b.accused ? `${deposed}, that is not correct. Your reign as Head of Household is over.` : `${deposed}, without a name, your reign as Head of Household is over.`, intEnd: 'wrong', toast: ['THE WRONG NAME', '#f5c542'] }, ...linesOf(b));
+    if (b.part === 'wrong') steps.push({ k: 'bb', t: b.accused ? `${deposed}, that is not correct. Your reign as Head of Household is over.` : `${deposed}, without a name, your reign as Head of Household is over.`, intEnd: 'wrong', toast: ['THE WRONG NAME', '#f5c542'], ...(holder ? { hoh: holder } : {}) }, ...linesOf(b));
   }
   return [{
     id: `bb-interrogation-w${ctx.week}`, kind: 'interro', anchor: ctx.anchor, day: ctx.day, set: 'hoh', room: ROOM_NAME.hoh, cam: CAM.hoh, time: '12:40',
@@ -4394,7 +4398,11 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'coin-of-destiny': flush(); for (const scr of coinScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'power-expired': flush(); for (const scr of expiredScreens(act, ctx)) ceremony(scr); break;
       case 'whacktivity': flush(); for (const scr of whackScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
-      case 'interrogation': flush(); for (const scr of interrogationScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
+      case 'interrogation': flush(); for (const scr of interrogationScreens(act, ctx)) ceremony(scr); beatsOf(act);
+        // the crown changed hands: the badge and every screen after this one are the new HOH's (the user, 2026-10-26:
+        // "the badge should change too after the takeover but michele still has the hoh badge")
+        if (!act.caught && (act.hoh || act.holder)) ctx.hoh = act.hoh || act.holder;
+        break;
       case 'time-capsule': flush(); for (const scr of capsuleScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'wildcard': flush(); for (const scr of wildcardScreens(act, ctx)) ceremony(scr); beatsOf(act); break;
       case 'safety-suite': flush(); for (const scr of suiteScreens(act, ctx)) ceremony(scr); beatsOf(act); break;

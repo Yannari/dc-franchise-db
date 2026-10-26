@@ -79,22 +79,22 @@ export default {
       { by: 'a', say: "There's always a comp coming." },
       { by: 'a', dr: "My game is simple. If I win, I stay. If I keep winning, nobody can touch me. That's the plan." },
     ] },
-    { id: 'gy-sb.2', room: 'bedroom', turns: [
+    { id: 'gy-sb.2', room: 'bedroom', presumes: ['won'], turns: [
       { beat: 'Bedroom. {b} sits down beside {a} and talks quietly.' },
       { by: 'b', say: "People are talking about you." },
-      { by: 'a', say: "Because I keep winning?" },
-      { by: 'b', say: "Because you keep winning." },
+      { by: 'a', say: "Because I won?" },
+      { by: 'b', say: "Because you won, and everybody thinks you'll win again." },
       { by: 'a', say: "So what do I do? Lose on purpose?" },
       { by: 'b', say: "Maybe. Just once, so people stop counting your wins." },
-      { by: 'a', dr: "Everyone wants a competitor on their side until the competitor is the biggest threat in the house. Then nobody wants you at all." },
+      { by: 'a', dr: "Everybody wanted me on their side when I was winning things for them. Now they're scared of me." },
     ] },
-    { id: 'gy-sb.3', room: 'kitchen', turns: [
+    { id: 'gy-sb.3', room: 'kitchen', presumes: ['won'], turns: [
       { beat: 'The kitchen. {a} is eating a huge plate of food. {c} watches from across the counter.' },
       { by: 'c', say: "Are you eating for the next comp already?" },
       { by: 'a', say: "I'm eating for every comp. I don't know which one's next." },
       { by: 'c', say: "You know you can't win everything." },
       { by: 'a', say: "I don't need to win everything. Just the next one." },
-      { by: 'c', dr: "Every time {a} wins, the rest of us lose a week. Somebody has to take {a} out before it's too late." },
+      { by: 'c', dr: "{a} has already won once. If {a} keeps winning, none of us can touch {a}. Somebody has to get {a} out soon." },
     ] },
     { id: 'gy-sb.4', turns: [
       { beat: 'The backyard. {a} is practising balancing on the edge of a step, eyes closed.' },
@@ -102,7 +102,7 @@ export default {
       { by: 'a', say: "Practising standing still." },
       { by: 'b', say: "For what?" },
       { by: 'a', say: "Endurance comp. Someone's going to have to stand on something for hours. I want it to be me who's still standing." },
-      { by: 'b', dr: "{a} trains for comps that haven't been announced. It's either very smart or very weird." },
+      { by: 'b', dr: "{a} is training for comps nobody's even told us about. I can't decide if that's smart or just weird." },
     ] },
     { id: 'gy-sb.5', room: 'living-room', turns: [
       { beat: 'Living room. {a} is going through every comp so far, out loud, to {b}.' },
@@ -110,7 +110,7 @@ export default {
       { by: 'b', say: "So you'll lose a puzzle." },
       { by: 'a', say: "I'm not losing anything. I'm going to get better at puzzles." },
       { by: 'b', say: "By when? Thursday?" },
-      { by: 'a', dr: "I know exactly where I'm weak. That's why I win." },
+      { by: 'a', dr: "I know exactly where I'm weak. Puzzles. So that's what I'm working on." },
     ] },
     { id: 'gy-sb.6', room: 'bedroom', turns: [
       { beat: 'Bedroom, late. {a} is lying awake, staring at the ceiling.' },
@@ -118,7 +118,7 @@ export default {
       { by: 'a', say: "If I don't win the next one, I think I'm going up." },
       { by: 'b', say: "You don't know that." },
       { by: 'a', say: "Look at me. I'm the obvious name." },
-      { by: 'a', dr: "Being good at comps is great right up until the week you lose one. Then you're just a big target with no shield." },
+      { by: 'a', dr: "Everybody knows I'm good at comps. The first week I don't win, I think I'm going up." },
     ] },
   ],
   // ── the manipulator (villains, masterminds, schemers only): a seed, planted ──

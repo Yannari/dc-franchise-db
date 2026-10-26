@@ -118,7 +118,12 @@ export function airStorylines(week) {
     const named = week.initialNominees || week.finalNominees || [];
     return clock.veto && week.vetoWinner ? named.filter(n => n !== week.vetoWinner) : named;
   };
-  const ctxOf = () => ({ week, hoh: clock.hoh ? (week.hoh || null) : null,
+  // An Interrogation that took the crown: until its screen airs, the house still has the HOH who won the
+  // competition (the user, 2026-10-26: a house-life scene with Nina's photos in the HOH room aired before the
+  // interrogation that made Nina HOH — "like i already know nina took over michele hoh")
+  const usurp = week.interrogation && !week.interrogation.caught && week.interrogation.deposed ? week.interrogation : null;
+  let hohNow = usurp ? usurp.deposed : week.hoh;
+  const ctxOf = () => ({ week, hoh: clock.hoh ? (hohNow || null) : null,
     nominees: blockNow(), stretch,
     firstNight: (week.num || 0) === 1 && stretch === 0, present: present(), phase: season.phase, jurors: season.jurors,
     // has the veto meeting happened (a line about who goes up in the veto's place airs only before it)
@@ -541,7 +546,8 @@ export function airStorylines(week) {
       // the HOH's week first (gametalk.js hohWeekFor): the plan, the pawn ask, the target
       // fishing, a floater, or the morning-after verdict on how the week went
       // (a week whose target changed has one more: the switch is a beat of its own)
-      const hw0 = hohWeekFor(week, tctx, clock, talked, lastGone);
+      // (not while an Interrogation is about to take the crown: the week's plan is the new HOH's, not this one's)
+      const hw0 = clock.hoh && hohNow !== week.hoh ? [] : hohWeekFor(week, tctx, clock, talked, lastGone);
       const hw = hw0.slice(0, hw0.some(t => t.kind.startsWith('hohweek.switch')) ? 5 : 4);
       talks.push(...hw);
       const game = hw.length >= 3 ? null : gameTalkFor(week, tctx, { ...clock, safety: clock.safety || pending.some(p => p.act.type === 'safety') }, talked, lastGone)[0];
@@ -672,6 +678,14 @@ export function airStorylines(week) {
       if (act.type === 'veto-ceremony') clock.cer = true;
       if (act.type === 'eviction' && act.evicted) gone.add(act.evicted);
     } else if (act.type === 'rivals-hoh') late.clear();
+    else if (act.type === 'interrogation' && usurp && hohNow !== week.hoh) {
+      // the crown changes hands here: what aired before it was the old HOH's week, and the new HOH's room opens now
+      choose();
+      stretch++;
+      hohNow = week.hoh;
+      clock.hohJust = true;
+      clock.nomsJust = false;
+    }
     if (act.type === 'safety') clock.safety = true;
     for (const beat of act.socialBeats || []) {
       at++;

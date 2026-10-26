@@ -17,7 +17,8 @@ import { romance, shown, revealTruth, friendship, believed } from './feelings.js
 import { closedness, betrayalWeight, stepOf, setStep, believeStep } from './ladder.js';
 import { feel, jealousyHit, attachment, emo, breakHeart } from './emotions.js';
 import { noteBreakup } from './exes.js';
-import { justFriends, heartOf, friendsRecords } from './just-friends.js';
+import { broken, splitOf, heartOf, friendsRecords, splitRecords, exOf } from './just-friends.js';
+import { exReact, takeSting, recordSplit } from './breakups.js';
 import { onYourSide, BLOOD } from './kin.js';
 import { streamFor } from '../dr/rng.js';
 import { girlCode, judgement } from './circle.js';
@@ -625,20 +626,26 @@ export const KINDS = {
       return { pop: { ...pop1(a, 0.2, 0.5), ...pop1(b, 0.2, 0.5) } };
     },
   },
-  // Two who ended it as friends (just-friends.js): {a} ended it, {b} was told.
-  // How it is between them now — still sharing a bed as a couple, raw, one of
-  // them still holding a torch, or easy — and it heals a little each time.
+  // Two who broke up and are still on speaking terms (just-friends.js): {a}
+  // ended it, {b} was left and is the one with the feelings. Friends, or the
+  // one left trying to be — sharing a bed as a couple, raw, holding a torch,
+  // or easy. Only after a break-up nobody was wronged in: a cheat and the one
+  // they cheated on get the cold ('ex-cold') and the sting ('ex-sting').
   'just-friends': {
     salience: 0.6,
     cast: (s, rng) => {
-      const opts = friendsRecords(s).filter(r => r.ep < s.ep && s.villa.includes(r.ender) && s.villa.includes(r.hurt)
-        && roomMates(s, r.ender).includes(r.hurt));
+      // Once every other episode a pair at most (measured: 15 a season, the same "pillow wall" in bed 4 times).
+      const opts = friendsRecords(s).filter(r => r.ep < s.ep && r.holder === r.left && !['cheated', 'played'].includes(r.cause)
+        && !(r.lastAfter != null && s.ep - r.lastAfter < 2)
+        && s.villa.includes(r.by) && s.villa.includes(r.left) && roomMates(s, r.by).includes(r.left));
       const r = pick(rng, opts);
       if (!r) return null;
-      const bed = partnerOf(s, r.ender) === r.hurt;
-      const torch = romance(r.hurt, r.ender) >= 5;
-      const of = bed ? 'bed' : s.ep - r.ep <= 1 && torch ? 'raw' : torch ? 'torch' : 'easy';
-      return { players: [r.ender, r.hurt], extra: { of } };
+      const bed = partnerOf(s, r.by) === r.left;
+      const torch = romance(r.left, r.by) >= 5;
+      // The bed is the first night or two of it; after that it's the friendship.
+      const of = bed && s.ep - r.ep <= 2 && (s.phase === 'evening' || s.phase === 'morning') ? 'bed' : r.mood === 'hurt' ? (s.ep - r.ep <= 1 ? 'raw' : 'torch') : torch && s.ep - r.ep <= 1 ? 'raw' : 'easy';
+      r.lastAfter = s.ep;
+      return { players: [r.by, r.left], extra: { of, took: r.mood } };
     },
     apply: (s, ev) => {
       const [a, b] = ev.players, of = ev.extra.of;
@@ -647,7 +654,75 @@ export const KINDS = {
       if (of === 'easy' || of === 'bed') { feel(s, b, 'heartbreak', -0.5); feel(s, b, 'stress', -0.2); }
       if (of === 'raw') feel(s, b, 'stress', 0.3);
       if (of === 'torch') { feel(s, b, 'loneliness', 0.3); nudgeAttraction(s, b, a, -0.3); }
-      return { pop: { ...pop1(a, 0.2, 0.6), ...pop1(b, 0.3, 0.6) } };
+      // Time heals: the one left, once the feeling has gone, is a friend at last.
+      const rec = splitOf(s, a, b);
+      if (rec?.mood === 'hurt' && romance(b, a) < 3) rec.mood = 'friends';
+      // Being gracious about being dumped wins the public over.
+      return { pop: { ...pop1(a, 0.2, 0.6), ...pop1(b, ev.extra.took === 'hurt' ? 0.5 : 0.3, 0.6) } };
+    },
+  },
+  // The ex is with somebody new (breakups.js exReact), and the one still
+  // holding a torch saw it. Hurt: {a} tells a friend ({b}), and {c} is the ex.
+  // Bitter: {a} goes at the ex ({b}) about it. {x} is the new one.
+  'ex-sting': {
+    salience: 0.7,
+    cast: (s, rng) => {
+      // Every other episode a pair at most (measured: a bitter ex sniped ten episodes in fifteen).
+      const st = takeSting(s, x => [x.holder, x.ex, x.other].every(n => s.villa.includes(n)) && !!splitOf(s, x.holder, x.ex)
+        && roomMates(s, x.holder).includes(x.ex) && !(splitOf(s, x.holder, x.ex).lastAfter != null && s.ep - splitOf(s, x.holder, x.ex).lastAfter < 2));
+      if (!st) return null;
+      const rec = splitOf(s, st.holder, st.ex);
+      rec.lastAfter = s.ep;
+      // How long since the break-up itself (not the sting): "we finished this morning".
+      const ago = rec.ep === s.ep ? 'today' : 'days';
+      // A cheat stung by the one they cheated on moving on has no "at least you're not hiding it".
+      const cause = ['cheated', 'played'].includes(rec.cause) && st.holder !== rec.by ? 'dumped' : rec.cause;
+      if (rec.mood === 'bitter') return { players: [st.holder, st.ex], extra: { of: 'snipe', about: st.other, ago, cause } };
+      const friend = roomMates(s, st.holder).filter(n => n !== st.ex && n !== st.other)
+        .sort((x, y) => getBond(st.holder, y) - getBond(st.holder, x))[0];
+      if (!friend) return null;
+      return { players: [st.holder, friend, st.ex], extra: { of: 'stung', about: st.other, ago, cause } };
+    },
+    apply: (s, ev) => {
+      const [a, b] = ev.players;
+      const ex = ev.extra.of === 'snipe' ? b : ev.players[2];
+      const rec = splitOf(s, a, ex);
+      const fair = rec?.fair ?? 0.5;
+      if (ev.extra.of === 'stung') {
+        addBond(a, b, 0.3); feel(s, a, 'loneliness', 0.4);
+        return { pop: { ...pop1(a, 0.5 * (1 - fair) + 0.2, 1) } };
+      }
+      addBond(a, b, -0.6); addRelationshipDimension(a, b, 'resentment', 0.5); feel(s, a, 'stress', 0.4);
+      // Lashing out reads as petty after a fair break-up, and as fair enough after a selfish one.
+      return { pop: { ...pop1(a, 0.4 - 0.9 * fair, 1.5), ...pop1(b, -0.6 * (1 - fair), 1) } };
+    },
+  },
+  // Exes who are not over it and not friends (bitter): the cold shoulder at
+  // breakfast, or a night in the same bed if no recoupling has parted them.
+  // {a} is the angry one.
+  'ex-cold': {
+    salience: 0.5,
+    cast: (s, rng) => {
+      const opts = splitRecords(s).filter(r => r.mood === 'bitter' && r.ep < s.ep && s.villa.includes(r.by) && s.villa.includes(r.left)
+        && roomMates(s, r.by).includes(r.left) && !(r.lastAfter != null && s.ep - r.lastAfter < 2));
+      const r = pick(rng, opts);
+      if (!r) return null;
+      r.lastAfter = s.ep;
+      const angry = ['cheated', 'played'].includes(r.cause) ? r.by : r.left;
+      const other = exOf(r, angry);
+      return { players: [angry, other], extra: { of: partnerOf(s, angry) === other && s.phase === 'evening' ? 'bed' : 'cold', cause: r.cause } };
+    },
+    apply: (s, ev, rng) => {
+      const [a, b] = ev.players;
+      addBond(a, b, -0.3); feel(s, a, 'stress', 0.3); feel(s, b, 'stress', 0.2);
+      // Bitterness wears off, in its own time and by temper (user: not all of them
+      // stay at war): to hurt while the feeling lasts, to friends once it has gone.
+      const rec = splitOf(s, a, b);
+      const since = s.ep - (rec?.ep ?? s.ep);
+      if (rec && since >= 3 && rng() < Math.min(0.6, 0.12 * (since - 2) * (0.5 + 0.5 * S(s, a).temperament / 10))) {
+        rec.mood = romance(rec.holder, exOf(rec, rec.holder)) >= 5 ? 'hurt' : 'friends';
+      }
+      return { pop: { ...pop1(a, 0, 0.6), ...pop1(b, 0, 0.6) } };
     },
   },
   gossip: {
@@ -912,7 +987,7 @@ const ENDINGS = {
 const toldKey = (p, x) => `${p}|${x}`;
 /** One of them told the other they're done, this episode or the last. */
 function doneWith(state, a, b) {
-  if (justFriends(state, a, b)) return true;
+  if (broken(state, a, b)) return true;
   return [toldKey(a, b), toldKey(b, a)].some(k => state.toldDone?.[k] != null && state.ep - state.toldDone[k] <= 1);
 }
 function answerOf(s, x, sev, rng) {
@@ -973,6 +1048,7 @@ export function haveItOut(state, tell, { force = false, phase = null } = {}) {
     addRelationshipDimension(p, x, 'trust', -0.8); addRelationshipDimension(p, x, 'resentment', 0.5);
   } else if (of === 'small' && sev >= 1) addRelationshipDimension(p, x, 'resentment', 0.4);
   // …and what p decides.
+  let splitRec = null;
   if (verdictNow === 'forgive') {
     addBond(p, x, 0.5); nudgeAttraction(state, p, x, 0.3);
     for (const r of Object.keys(emo(state, p).jealousy || {})) emo(state, p).jealousy[r] *= 0.5;
@@ -990,6 +1066,8 @@ export function haveItOut(state, tell, { force = false, phase = null } = {}) {
     state.couples = state.couples.filter(k => !(k.includes(p) && k.includes(x)));
     state._splitEp = state.ep;
     noteBreakup(state, { ender: p, wrong: x, severity: sev, cause: 'told' });
+    // Cheated on: p ended it, x is left, and who x was with is the reason (breakups.js).
+    splitRec = recordSplit(state, { by: p, left: x, cause: 'cheated', about: state.secrets.find(z => z.id === tell.extra.secret)?.with || null });
     breakHeart(state, x, p, 3 * romance(x, p) / 10);
   }
   nudgeBelief(state.ledger, x, p, { forgive: 2, warning: -2, done: -6 }[verdictNow]);
@@ -997,7 +1075,7 @@ export function haveItOut(state, tell, { force = false, phase = null } = {}) {
   const pop = { ...pop1(p, split ? 1 : 0.4, split ? 2.5 : 1.5), ...pop1(x, xApproval - (split ? 0.5 : 0), split ? 2.5 : 1.5) };
   return makeEvent(state, rng, { phase: phase || tell.phase, kind: 'told-confront', players: [p, x, w], aired: true,
     major: sev >= 1 || verdictNow === 'done' ? [p, x] : [],
-    extra: { secret: tell.extra.secret, of, verdict: verdictNow, believed, split, channel, nth, wasClosed, pop } });
+    extra: { secret: tell.extra.secret, of, verdict: verdictNow, believed, split, channel, nth, wasClosed, pop, ...(splitRec ? { splitRec } : {}) } });
 }
 
 // ── going after the one who told ──────────────────────────────────────
@@ -1076,7 +1154,7 @@ const KIN_PHASE_KINDS = {
 const KIN_GAP = { 'kin-heart': 1, 'kin-vet': 0, 'kin-protect': 1, 'ex-awkward': 1, 'ex-jealous': 0 };
 const KIN_KINDS = new Set(Object.keys(KIN_GAP));
 // The most of a kind one episode's villa day holds, aired or not.
-const EP_CAP = { argument: 3, ick: 3, comedy: 3, 'just-friends': 2 };
+const EP_CAP = { argument: 3, ick: 3, comedy: 3, 'just-friends': 1, 'ex-sting': 1, 'ex-cold': 1 };
 // What only happens once between the same people: sizing up a partner, the
 // ex's new partner, a flirt answered for.
 const onceFor = (s, tag) => (s.kinOnce ||= []).includes(tag);
@@ -1156,6 +1234,13 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   // Kept for the rest of the day, so later scenes know what already happened.
   state._today = [...today(state), ev];
   const res = def.apply(state, ev, rng) || {};
+  // An ex moving on: the one still holding a torch feels it, and the one who
+  // ended it pays for moving fast (breakups.js). Draws nothing.
+  const exPop = exReact(state, ev);
+  if (exPop) {
+    res.pop = { ...(res.pop || {}) };
+    for (const [n, d] of Object.entries(exPop)) res.pop[n] = { approval: (res.pop[n]?.approval || 0) + d.approval, fame: (res.pop[n]?.fame || 0) + d.fame };
+  }
   // Where the people in it stand with each other now: the relationships
   // panel moves scene by scene as the episode is watched (user: "I see people
   // kiss but in relationship is still nobody yet"). Against the last value
@@ -1262,8 +1347,11 @@ export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS, { kin
       ...(Object.values(state.exArrived || {}).some(e => state.ep - e <= 2) ? [['ex-awkward', 2]] : []),
       // …and missing the other villa, only while it is the other villa.
       ...(state.split ? [['casa-miss', phase === 'evening' ? 2.4 : 1.4]] : []),
-      // …and two who are friends now, since they said so (just-friends.js).
-      ...(phase !== 'event' && friendsRecords(state).length ? [['just-friends', 1.5]] : [])]
+      // …and two who are friends now, since they said so (just-friends.js),
+      // the exes who are not, and an ex who just saw the other with somebody new.
+      ...(phase !== 'event' && friendsRecords(state).length ? [['just-friends', 1.5]] : []),
+      ...(phase !== 'event' && splitRecords(state).some(r => r.mood === 'bitter') ? [['ex-cold', 1]] : []),
+      ...(phase !== 'event' && (state._exStings || []).some(x => x.ep >= state.ep - 1) ? [['ex-sting', 2.5]] : [])]
       .map(([k, w]) => [k, k === 'pull' && state.split ? w * 2 : w]);
     let made = 0, tries = 0;
     // Eight tries a slot: the same-cast cap turns some draws away, and four

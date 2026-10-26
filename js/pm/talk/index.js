@@ -4,7 +4,8 @@
 // notes: [entries] }. Put together by pm/script.js talkScript; how islanders talk is
 // docs/pm-dialogue-style.md; which scenes are long, short or a note, and what each
 // follows from, is pm/story/director.js.
-import { extend } from './build.js';
+import { extend, build } from './build.js';
+import { DOUBT_END_REASONS, EX_STING, EX_COLD, CASA_REACT_STUNG, BLOWUP_DUMPED, VENT_REASONS, RECOUPLE_EX } from './more/breakup-talk.js';
 import { PULL } from './pull.js';
 import { LOYALTY } from './loyalty.js';
 import { CHAT } from './chat.js';
@@ -185,8 +186,22 @@ for (const [k, more] of [['receipt', RECEIPT_VOLUME], ['journey-react', JOURNEY_
 extend(VOTE_WORRY, VOTE_WORRY_VOLUME); extend(PICK_CHAT, PICK_CHAT_VOLUME); extend(STICK_TWIST, STICK_TWIST_VOLUME);
 TALK['doubt-end'] = DOUBT_END;
 TALK['just-friends'] = JUST_FRIENDS;
+// Break-ups with a reason and a reaction (pm/breakups.js, talk/more/breakup-talk.js):
+// the doubt's end says why and how it was taken; the exes after it.
+extend(DOUBT_END, DOUBT_END_REASONS);
+DOUBT_END.leads = [...(DOUBT_END.leads || []), 'why', 'took'];
+DOUBT_END.slots = (state, ev) => (ev.extra?.about ? { x: ev.extra.about } : {});
+extend(VENT, VENT_REASONS);
+extend(RECOUPLE_PICK, RECOUPLE_EX);
+RECOUPLE_PICK.leads = [...(RECOUPLE_PICK.leads || []), 'exPick'];
+extend(CASA_REACT, CASA_REACT_STUNG);
+CASA_REACT.leads = [...(CASA_REACT.leads || []), 'of'];
+TALK['ex-sting'] = build('ex-sting', EX_STING);
+TALK['ex-sting'].slots = (state, ev) => (ev.extra?.about ? { x: ev.extra.about } : {});
+TALK['ex-cold'] = build('ex-cold', EX_COLD);
 // A fight over somebody names them: {x} is who the two of them are fighting over (pm/blowup.js).
 TALK.blowup.slots = (state, ev) => (ev.extra?.about ? { x: ev.extra.about } : {});
+extend(TALK.blowup, BLOWUP_DUMPED);
 TALK.rekindle = REKINDLE;
 TALK['pick-chat'] = PICK_CHAT; TALK['vote-worry'] = VOTE_WORRY; TALK['stick-twist'] = STICK_TWIST;
 // A story's pull is about the story: no tangent, and its own why, answer and probe.

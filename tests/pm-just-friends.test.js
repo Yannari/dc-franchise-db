@@ -35,7 +35,8 @@ describe('friends after "better as friends"', () => {
       for (const r of rows) for (const e of r.pm.events) {
         const [a, b] = e.players || [];
         if (e.kind === 'doubt-end' && e.extra?.of === 'friends') { since[key(a, b)] = r.num; endings++; continue; }
-        if ((e.kind === 'reunite' || (e.kind === 'rekindle' && e.extra?.of === 'yes')) && a && b) delete since[key(a, b)];
+        // Back together: a second chance, "Back on?", or picking each other at a recoupling with the feeling back.
+        if ((e.kind === 'reunite' || (e.kind === 'rekindle' && e.extra?.of === 'yes') || (e.kind === 'recouple-pick' && e.extra?.exPick === 'rekindled')) && a && b) delete since[key(a, b)];
         if (e.kind === 'just-friends') scenes++;
         if (a && b && since[key(a, b)] != null && since[key(a, b)] < r.num && ROMANTIC.has(e.kind)) bad.push(`season ${i} ep ${r.num} ${e.kind} ${a}+${b}`);
       }

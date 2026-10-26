@@ -33,7 +33,9 @@ import { addRelationshipDimension } from '../relationships.js';
 import { makeEvent, partnerOf, roomMates } from './events.js';
 import { attr, nudgeAttraction, compatible } from './chemistry.js';
 import { romance, schemeEligible, shown, setMask, revealTruth } from './feelings.js';
-import { feel } from './emotions.js';
+import { feel, breakHeart } from './emotions.js';
+import { recordSplit, verdictPop } from './breakups.js';
+import { noteBreakup } from './exes.js';
 
 const S = (state, n) => state.profiles[n]?.stats || {};
 const st = (state, n, k) => (S(state, n)[k] ?? 5) / 10;
@@ -173,11 +175,27 @@ function fallout(state, rng, G, ev) {
   const now = romance(g, t) / 10, want = (attr(state, t, g) ?? 0) / 10;
   const r = rng();
   const of = r < 0.2 + 0.5 * (1 - now) ? 'ends' : r < 0.2 + 0.5 * (1 - now) + 0.5 * want * st(state, t, 'loyalty') ? 'stays' : 'unsure';
-  if (of === 'ends') { nudgeAttraction(state, t, g, -2); addBond(t, g, -1.5); addRelationshipDimension(t, g, 'resentment', 1.2); }
+  // "You're playing me": t ends it (breakups.js), and on a day the season can
+  // take it, they're single from now; otherwise they're a couple in name only.
+  let splitRec = null;
+  if (of === 'ends') {
+    nudgeAttraction(state, t, g, -2); addBond(t, g, -1.5); addRelationshipDimension(t, g, 'resentment', 1.2);
+    if (partnerOf(state, t) === g) {
+      splitRec = recordSplit(state, { by: t, left: g, cause: 'played' });
+      if (state._canSplit && state._splitEp !== state.ep) {
+        state.couples = state.couples.filter(k => !(k.includes(t) && k.includes(g)));
+        state._splitEp = state.ep;
+        noteBreakup(state, { ender: t, wrong: g, severity: 1, cause: 'played' });
+        breakHeart(state, g, t, 2 * romance(g, t) / 10);
+      }
+    }
+  }
   if (of === 'stays') { addBond(t, g, 0.3); feel(state, t, 'stress', 0.5); }
   if (of === 'unsure') { nudgeAttraction(state, t, g, -0.8); feel(state, t, 'stress', 0.8); }
   G.outcome = of;
-  return ev('game-fallout', [t, g], { of, pop: pop([t, of === 'stays' ? -0.2 : 0.6, 1.5], [g, -0.3, 1.5]) }, [t, g]);
+  const v = splitRec ? verdictPop(splitRec) : {};
+  return ev('game-fallout', [t, g], { of, ...(splitRec ? { splitRec } : {}),
+    pop: pop([t, (of === 'stays' ? -0.2 : 0.6) + (v[t]?.approval || 0), 1.5], [g, -0.3 + (v[g]?.approval || 0), 1.5]) }, [t, g]);
 }
 
 function endIt(state, rng, G, ev) {

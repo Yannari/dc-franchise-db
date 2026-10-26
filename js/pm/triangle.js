@@ -19,11 +19,13 @@
 // one in the middle is split; every stage after is a chance, not a schedule.
 import { addBond, getBond } from '../bonds.js';
 import { makeEvent, partnerOf, roomMates } from './events.js';
-import { heartOf } from './just-friends.js';
+import { heartOf, broken } from './just-friends.js';
+import { recordSplit, verdictPop } from './breakups.js';
 import { attr, nudgeAttraction, compatible } from './chemistry.js';
 import { romance } from './feelings.js';
 import { feel, jealousOf, breakHeart } from './emotions.js';
 import { closedness } from './ladder.js';
+import { noteBreakup } from './exes.js';
 
 const MAX_ACTIVE = 2;
 
@@ -106,9 +108,13 @@ export function triangles(state, rng, entry = null) {
     if (p && (p === t.x || p === t.y) && (p !== t.partnerAt || recoupled)) {
       const w = p, l = p === t.x ? t.y : t.x;
       t.over = true;
+      // Leaving the partner for the other one is a break-up (breakups.js); choosing the partner is not.
+      const splitRec = t.partnerAt === l && !broken(state, t.h, l) ? recordSplit(state, { by: t.h, left: l, cause: 'moved-on', about: w }) : null;
       breakHeart(state, l, t.h, 5 * romance(l, t.h) / 10);
       feel(state, w, 'security', 1.5);
-      ev('triangle-choice', [t.h, w, l], { of: 'pick', pop: { [t.h]: { approval: 0, fame: 2 }, [l]: { approval: 1.5, fame: 2 } } }, [t.h, w, l], t);
+      const v = splitRec ? verdictPop(splitRec, 0.7) : {};
+      ev('triangle-choice', [t.h, w, l], { of: 'pick', ...(splitRec ? { splitRec } : {}),
+        pop: { [t.h]: { approval: v[t.h]?.approval || 0, fame: 2 }, [l]: { approval: 1.5 + (v[l]?.approval || 0), fame: 2 } } }, [t.h, w, l], t);
     }
   }
   // A new one.
@@ -133,9 +139,44 @@ export function triangles(state, rng, entry = null) {
   const together = t => !state.split || [t.x, t.y].every(n => state.casa.includes(n) === state.casa.includes(t.h));
   for (const t of open(state)) {
     if (t.ep === state.ep || !together(t)) continue;
+    // The partner who is one side of it may simply walk away from it, any day
+    // after the two sides have met (user: "I don't want to be in a triangle"):
+    // in proportion to their nerve and jealousy, less the more {h} still wants them.
+    const p = partnerOf(state, t.h);
+    if (t.stage >= 1 && (p === t.x || p === t.y)) {
+      const other = p === t.x ? t.y : t.x;
+      const S = state.profiles[p]?.stats || {};
+      const jealous = Math.min(1, (state.emo?.[p]?.jealousy?.[other] || 0) / 5);
+      const pWalk = Math.max(0, 0.15 + 0.25 * (S.boldness ?? 5) / 10 + 0.25 * jealous - 0.12 * (attr(state, t.h, p) ?? 0) / 10);
+      if (rng() < pWalk && walkOut(state, t, p, other, ev)) continue;
+    }
     for (let k = 0; k < 2 && !t.over; k++) if (rng() >= 0.3) advance(state, rng, t, ev);
   }
   return out;
+}
+
+/**
+ * "I'm not somebody's maybe": {a}, coupled with {h}, ends it rather than wait
+ * to be chosen over {b} (breakups.js, cause 'triangle'). Single from now on a
+ * day the season can take it; otherwise a couple in name only.
+ */
+function walkOut(state, t, a, b, ev) {
+  const h = t.h;
+  if (broken(state, h, a)) return false;
+  const rec = recordSplit(state, { by: a, left: h, cause: 'triangle', about: b });
+  if (!rec) return false;
+  if (state._canSplit && state._splitEp !== state.ep) {
+    state.couples = state.couples.filter(k => !(k.includes(a) && k.includes(h)));
+    state._splitEp = state.ep;
+    noteBreakup(state, { ender: h, wrong: a, severity: 0.5, cause: 'triangle' });
+  }
+  breakHeart(state, h, a, 2 * romance(h, a) / 10);
+  feel(state, a, 'stress', -0.5);
+  const v = verdictPop(rec);
+  ev('doubt-end', [a, h], { of: 'friends', why: 'triangle', about: b, took: rec.mood, splitRec: rec,
+    pop: { [a]: { approval: v[a].approval + 0.4, fame: 2 }, [h]: { approval: v[h].approval - 0.4, fame: 2 } } }, [a, h], t);
+  t.over = true;
+  return true;
 }
 
 function advance(state, rng, t, ev) {
@@ -189,6 +230,18 @@ function advance(state, rng, t, ev) {
         const bb = behindOf(state, t, [[h, chosen || a, chosen ? 'promise' : 'pull', chosen ? 1.2 : 0.6], [a, h, 'pull', 0.8]]);
         const e = ev('triangle-ultimatum', [a, h, b], { of, ...(bb.length ? { behind: whose(bb, h) } : {}), pop: { [a]: { approval: of === 'chose-x' ? 1 : -0.3, fame: 2 }, [h]: { approval: of === 'not-yet' ? -0.8 : 0, fame: 2 } } }, [a, h], t);
         keepSecrets(state, e, bb);
+        // Choosing the other one over a partner is leaving them (breakups.js).
+        const partner = partnerOf(state, h);
+        if (chosen && partner && chosen !== partner && (partner === a || partner === b) && !broken(state, h, partner)) {
+          e.extra.splitRec = recordSplit(state, { by: h, left: partner, cause: 'moved-on', about: chosen });
+          const v = verdictPop(e.extra.splitRec, 0.7);
+          for (const [n, d] of Object.entries(v)) e.pop[n] = { approval: (e.pop[n]?.approval || 0) + d.approval, fame: (e.pop[n]?.fame || 0) + d.fame };
+        }
+        // "Not yet", to their own partner: the partner may walk away from it
+        // (user: "I don't want to be in a triangle") — in proportion to their
+        // nerve and how much they've had of it. Single from now on a day the
+        // season can take it; otherwise a couple in name only.
+        if (of === 'not-yet' && partner === a && rng() < 0.25 + 0.35 * (S(a).boldness ?? 5) / 10) walkOut(state, t, a, b, ev);
         // A clear answer is the end of the triangle as a triangle.
         if (of !== 'not-yet') t.over = true;
       }

@@ -12,7 +12,7 @@
 // Hiding is not scheming; faking and manipulating are (spec §6.5).
 import { getRelationshipDimension, addRelationshipDimension } from '../relationships.js';
 import { compatible } from './chemistry.js';
-import { justFriends } from './just-friends.js';
+import { broken, splitOf } from './just-friends.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -63,7 +63,7 @@ const partnerOf = (state, n) => {
 export function growLove(state, couples) {
   for (const [a, b] of couples) {
     // Sharing a bed as friends grows nothing (just-friends.js).
-    if (justFriends(state, a, b)) continue;
+    if (broken(state, a, b)) continue;
     for (const [x, y] of [[a, b], [b, a]]) {
       const att = getRelationshipDimension(x, y, 'attraction');
       const aff = Math.max(0, friendship(x, y));
@@ -128,7 +128,13 @@ export function decideMasks(state, rng) {
 export function relationshipLabel(state, a, b) {
   const me = romance(a, b), them = romance(b, a), show = shown(state, a, b), fr = friendship(a, b);
   const coupled = state.couples.some(c => c.includes(a) && c.includes(b));
-  if (justFriends(state, a, b)) return ['zone', 'Just friends'];
+  // Broken up: what it is now, from this side of it.
+  const ex = splitOf(state, a, b);
+  if (ex) {
+    if (ex.mood === 'friends') return ['zone', 'Just friends'];
+    if (ex.mood === 'bitter') return ['mixed', 'Bitter exes'];
+    return ex.holder === a ? ['alone', 'Not over it'] : ['zone', 'Moved on'];
+  }
   if (show - me >= 4 && me <= 3) return ['fake', 'Faking it'];
   if (coupled) {
     if (me >= 7 && them >= 7) return ['love', 'Head over heels'];

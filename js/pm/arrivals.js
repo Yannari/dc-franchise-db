@@ -11,7 +11,9 @@ import { addBond } from '../bonds.js';
 import { seedAttraction, attr, nudgeAttraction } from './chemistry.js';
 import { noteArrival, readApproval, coupleScore, BETRAYAL } from './ledger.js';
 import { makeEvent, partnerOf } from './events.js';
-import { justFriends, heartOf } from './just-friends.js';
+import { broken, heartOf } from './just-friends.js';
+import { recordSplit, verdictPop } from './breakups.js';
+const mergePop = (into, add) => { for (const [n, d] of Object.entries(add || {})) into[n] = { approval: (into[n]?.approval || 0) + d.approval, fame: (into[n]?.fame || 0) + d.fame }; return into; };
 import { romance, friendship, schemeEligible } from './feelings.js';
 import { closedness } from './ladder.js';
 import { breakHeart, feel, jealousOf, jealousyHit } from './emotions.js';
@@ -261,7 +263,7 @@ export function bombshellSteal(state, name, { rng }) {
   const stole = targets[0];
   const leftSingle = partnerOf(state, stole);
   // Taking somebody who is only a friend now steals nobody's heart (just-friends.js).
-  const loved = justFriends(state, stole, leftSingle) ? -1 : Math.max(0, coupleScore(state.ledger, stole, leftSingle));
+  const loved = broken(state, stole, leftSingle) ? -1 : Math.max(0, coupleScore(state.ledger, stole, leftSingle));
   state.couples = state.couples.filter(c => !c.includes(stole));
   state.couples.push([name, stole]);
   // SINGLE AND VULNERABLE, not dumped (UK 11 d22: Jessy and Trey stole two
@@ -394,10 +396,13 @@ export function standUp(state, name, { rng, tonight = [] }) {
   // Only a heart counts as stolen: a friend's couple is anybody's (just-friends.js).
   const left = heartOf(state, pick);
   const loved = left ? Math.max(0, coupleScore(state.ledger, pick, left)) : 0;
+  // Standing up for a bombshell, and chosen: {pick} left {left} for them (breakups.js).
+  const splitRec = left && Math.max(romance(left, pick), romance(pick, left)) >= 3
+    ? recordSplit(state, { by: pick, left, cause: 'moved-on', about: name }) : null;
   events.push(makeEvent(state, rng, { phase: 'event', kind: 'stand-up-pick', players: left ? [name, pick, left] : [name, pick],
     aired: true, major: left ? [name, pick, left] : [name],
-    extra: { stole: left || null, pop: { [name]: { approval: left ? -(BETRAYAL.bombshellSteal + 0.05 * loved) : 0.3, fame: 3 },
-      [pick]: { approval: 0, fame: 2 }, ...(left ? { [left]: { approval: 1.5, fame: 2 } } : {}) } } }));
+    extra: { stole: left || null, ...(splitRec ? { splitRec } : {}), pop: mergePop({ [name]: { approval: left ? -(BETRAYAL.bombshellSteal + 0.05 * loved) : 0.3, fame: 3 },
+      [pick]: { approval: 0, fame: 2 }, ...(left ? { [left]: { approval: 1.5, fame: 2 } } : {}) }, splitRec ? { [pick]: verdictPop(splitRec)[pick] } : {}) } }));
   coupleWith(state, name, pick);
   return { events, coupled: pick };
 }

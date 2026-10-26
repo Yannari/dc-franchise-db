@@ -12,7 +12,8 @@ import { revealExchange, sourOf } from './script.js';
 import { streamFor } from '../dr/rng.js';
 import { romance } from './feelings.js';
 import { closedness } from './ladder.js';
-import { justFriends, rekindle, friendsRecords } from './just-friends.js';
+import { broken, splitOf, rekindle, splitRecords } from './just-friends.js';
+import { recordSplit, verdictPop } from './breakups.js';
 import { breakHeart, feel, jealousOf, jealousyHit, healOnReunion } from './emotions.js';
 import { runRecoupling, nextPicker } from './recoupling.js';
 import { publicVote, publicVoteIslanders, finalVote, splitOrSteal } from './public-vote.js';
@@ -452,12 +453,20 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   // Jordan, her partner, "chose someone already coupled up"). state.couples
   // is still the villa before the ceremony here.
   const reclaim = pk => !!pk.stole && partnerOf(state, pk.picker) === pk.picked;
-  // Picking somebody whose partner is only a friend now is no steal (just-friends.js).
-  const mates = pk => !!pk.stole && justFriends(state, pk.stole, pk.picked);
+  // Picking somebody who has broken up with their partner is no steal (just-friends.js).
+  const mates = pk => !!pk.stole && broken(state, pk.stole, pk.picked);
+  // Picking an ex (just-friends.js), said for what it is: back together with
+  // the feeling back both ways (rekindled below), still hoping, or as a friend.
+  const exPick = pk => {
+    const rec = splitOf(state, pk.picker, pk.picked);
+    if (!rec) return null;
+    if (romance(pk.picker, pk.picked) >= 5.5 && romance(pk.picked, pk.picker) >= 5.5) return 'rekindled';
+    return rec.holder === pk.picker && rec.mood !== 'friends' ? 'hoping' : 'friend';
+  };
   const events = [...open, ...r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(pk.stole ? [pk.stole] : [])], aired: true,
     major: pk.stole ? [pk.picker, pk.stole] : [],
-    extra: { stole: pk.stole, reclaim: reclaim(pk), mates: mates(pk), reason: pk.reason, pop: { [pk.picker]: { approval: pk.stole && !reclaim(pk) && !mates(pk) ? -BETRAYAL.steal : 0.2, fame: 1 },
+    extra: { stole: pk.stole, reclaim: reclaim(pk), mates: mates(pk), exPick: exPick(pk), reason: pk.reason, pop: { [pk.picker]: { approval: pk.stole && !reclaim(pk) && !mates(pk) ? -BETRAYAL.steal : 0.2, fame: 1 },
       ...(pk.stole ? { [pk.stole]: { approval: mates(pk) ? 0.3 : 1.5, fame: 2 } } : {}) } } }))];
   for (const pk of r.picks) if (pk.stole) breakHeart(state, pk.stole, pk.picked, (mates(pk) ? 2 : 5) * romance(pk.stole, pk.picked) / 10);
   // Who walked in with whom, for the goodbyes after (dumpingScene): the one who
@@ -466,14 +475,32 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   // minute after picking Freya over her).
   const was = Object.fromEntries(state.villa.map(n => [n, partnerOf(state, n)]));
   state.couples = r.couples;
-  // Friends who chose each other again with the feeling back on both sides
-  // have rekindled; picked back for safety, they're a couple as friends.
-  for (const f of friendsRecords(state)) {
-    if (partnerOf(state, f.ender) !== f.hurt) continue;
-    if (romance(f.ender, f.hurt) >= 5.5 && romance(f.hurt, f.ender) >= 5.5) { rekindle(state, f.ender, f.hurt); nudgeBelief(state.ledger, f.ender, f.hurt, 10); }
-    // …and the country doesn't buy a couple of friends.
-    else nudgeBelief(state.ledger, f.ender, f.hurt, Math.min(0, -25 - beliefOf(state.ledger, f.ender, f.hurt)));
+  // Exes who chose each other again with the feeling back on both sides
+  // have rekindled; picked back for safety, they're a couple in name only.
+  for (const f of splitRecords(state)) {
+    if (partnerOf(state, f.by) !== f.left) continue;
+    if (romance(f.by, f.left) >= 5.5 && romance(f.left, f.by) >= 5.5) { rekindle(state, f.by, f.left); nudgeBelief(state.ledger, f.by, f.left, 10); }
+    // …and the country doesn't buy it.
+    else nudgeBelief(state.ledger, f.by, f.left, Math.min(0, -25 - beliefOf(state.ledger, f.by, f.left)));
   }
+  // Picking somebody new over a partner is a break-up, when there was
+  // something to break (breakups.js): the one who picked moved on, and the
+  // public judges how. Not when the partner had already been picked by
+  // somebody else, and not a pair who had nothing.
+  const takenFirst = new Set();
+  r.picks.forEach((pk, i) => {
+    const old = was[pk.picker];
+    if (old && old !== pk.picked && !reclaim(pk) && !takenFirst.has(old) && state.villa.includes(old) && !broken(state, pk.picker, old)
+      && Math.max(romance(old, pk.picker), romance(pk.picker, old)) >= 3) {
+      const rec = recordSplit(state, { by: pk.picker, left: old, cause: 'moved-on', about: pk.picked });
+      const e = events[open.length + i];
+      if (rec && e) {
+        e.extra.splitRec = rec;
+        for (const [n, d] of Object.entries(verdictPop(rec, 0.6))) e.pop[n] = { approval: (e.pop[n]?.approval || 0) + d.approval, fame: (e.pop[n]?.fame || 0) + d.fame };
+      }
+    }
+    takenFirst.add(pk.picked);
+  });
   state._passedOver = { ep: state.ep, of: Object.fromEntries(state.villa.filter(n => was[n] && partnerOf(state, n) !== was[n]).map(n => [n, was[n]])) };
   for (const [a, b] of r.couples) healOnReunion(state, a, b);
   // Who has been single and vulnerable since the last ceremony (below).
@@ -1340,7 +1367,7 @@ Object.assign(MOMENTS, {
           pop: { [sec.partner]: { approval: 1.5, fame: 2 }, [sec.who]: { approval: -BETRAYAL.photos, fame: 2 } } } }));
       // …and the row that follows, while everyone is still holding the photos.
       if (partnerOf(state, sec.who) === sec.partner) {
-        events.push(...confrontation(state, ctx.rng, { p: sec.partner, x: sec.who, sev: sec.severity, rowKind: 'photo-row', splitKind: 'photo-split', phase: 'firepit' }));
+        events.push(...confrontation(state, ctx.rng, { p: sec.partner, x: sec.who, sev: sec.severity, rowKind: 'photo-row', splitKind: 'photo-split', phase: 'firepit', about: sec.with || null }));
       }
     }
     return { events: [...events, ...arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0)], exits: [], ballots: [] };
@@ -1378,7 +1405,7 @@ Object.assign(MOMENTS, {
     // Each story's shape is decided against the others (journey.js shapesOf).
     // A couple who are only friends now (just-friends.js) is not a love story,
     // whatever their film holds: their date, declarations and result say so.
-    const shapes = shapesOf(state, state.couples).map((s, n) => (justFriends(state, ...state.couples[n]) ? 'just-friends' : s));
+    const shapes = shapesOf(state, state.couples).map((s, n) => (broken(state, ...state.couples[n]) ? 'just-friends' : s));
     const dates = state.couples.map(([a, b], n) => { const d = finalDate(state, ctx.rng, [a, b], n, shapes[n]); events.push(...d.events); return d; });
     // THE DECLARATIONS: both of them speak, as the show has it — each opens on
     // the shape of their story and then speaks of one real moment from it
@@ -1390,7 +1417,7 @@ Object.assign(MOMENTS, {
         events.push(makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'declaration', players: [x, y], aired: true,
           extra: { of: shape, mates: shape === 'just-friends' || null,
             // …and which of them ended it, for a couple of friends (just-friends.js).
-            said: shape === 'just-friends' ? state.justFriends?.[[x, y].sort().join('|')]?.ender === x : null, pop: { [x]: { approval: 2 * romance(x, y) / 10, fame: 2 } } } }));
+            said: shape === 'just-friends' ? splitOf(state, x, y)?.by === x : null, pop: { [x]: { approval: 2 * romance(x, y) / 10, fame: 2 } } } }));
         if (ch) events.push(makeEvent(state, ctx.rng, { phase: 'firepit', kind: 'speech', players: [x, y], aired: true,
           // `what` the moment was and whether x `said` it: "I told you how I felt" is
           // the one who said it (season read 2026-10-25: Jordan said it of Leah's ask).
@@ -1424,7 +1451,7 @@ Object.assign(MOMENTS, {
       const [a, b] = f.couple, won = f.placement === 1;
       events.push(makeEvent(state, ctx.rng, { phase: 'final', kind: 'final-result', players: [a, b], aired: true,
         major: won ? [a, b] : [],
-        extra: { of: PLACE[f.placement] || 'fourth', mates: justFriends(state, a, b) || null, pop: { [a]: { approval: 0, fame: won ? 6 : 2 }, [b]: { approval: 0, fame: won ? 6 : 2 } } } }));
+        extra: { of: PLACE[f.placement] || 'fourth', mates: broken(state, a, b) || null, pop: { [a]: { approval: 0, fame: won ? 6 : 2 }, [b]: { approval: 0, fame: won ? 6 : 2 } } } }));
     };
     const byPlace = [...final].sort((x, y) => y.placement - x.placement);
     for (const f of byPlace.filter(f => f.placement > 2)) result(f);

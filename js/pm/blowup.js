@@ -23,6 +23,7 @@ import { addBond, getBond } from '../bonds.js';
 import { getRelationshipDimension, addRelationshipDimension } from '../relationships.js';
 import { makeEvent, partnerOf, apart } from './events.js';
 import { emo, feel } from './emotions.js';
+import { splitRecords, rawness } from './just-friends.js';
 
 const LOOKBACK = 2;
 const JUSTIFIED = new Set(['cheating', 'steal', 'casa', 'told', 'vote']);
@@ -102,6 +103,12 @@ function grievances(state, tonight = []) {
   // eyeing their partner, whatever the record says.
   for (const a of state.villa) for (const [r, v] of Object.entries(emo(state, a).jealousy || {})) {
     if (v >= 2 && state.villa.includes(r)) add(a, r, 0.45 * v, 'jealousy', null, false, partnerOf(state, a));
+  }
+  // A bitter break-up that isn't over (pm/breakups.js): the one left, at the one
+  // who ended it — rawest at first; who they left for, by name ('moved').
+  for (const rec of splitRecords(state)) {
+    if (rec.mood !== 'bitter' || ['cheated', 'played'].includes(rec.cause)) continue;
+    add(rec.left, rec.by, 2.2 * rawness(state, rec) * (0.3 + rec.torch), 'dumped', rec.about ? 'moved' : null, false, rec.about);
   }
   // Jealousy over nobody in particular is not a fight anybody could follow:
   // what's left of it is their history.

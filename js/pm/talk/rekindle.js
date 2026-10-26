@@ -116,7 +116,7 @@ export const REKINDLE = build('rekindle', {
       { when: MOMENT, turns: [], beat: "Somebody calls them in for dinner, and they both get up a beat too slowly." },
       { when: MOMENT, turns: [], beat: "{a} goes inside first. {b} watches {a.obj} go, and then pretends not to have." },
       { when: NOTICED, turns: [['a', "Just be careful. I don't want to pick you up off the floor again."], ['b', "I know. I'll be careful."]] },
-      { when: NOTICED, turns: [['a', "Whatever it is, I'm on your side. You know that."]], beat: "{b} doesn't answer, which is an answer." },
+      { when: NOTICED, turns: [['a', "Whatever it is, I'm on your side. You know that."]], beat: "{b} doesn't answer, and doesn't need to." },
       { when: YES, turns: [], beat: "They kiss, and somebody on the terrace shouts, \"Finally!\"" },
       { when: YES, turns: [['b', "Don't make me regret this."], ['a', "I won't."]], beat: "They walk back in holding hands, and the villa goes quiet, then loud." },
       { when: NO, turns: [['a', "Still friends?"], ['b', "Always. That was never the question."]], beat: "They hug, and this time it really is just a hug." },

@@ -12,9 +12,9 @@ import { attachment } from './emotions.js';
 import { attr } from './chemistry.js';
 import { partnerOf } from './events.js';
 import { coupleStrength } from './ladder.js';
-import { justFriends } from './just-friends.js';
+import { broken } from './just-friends.js';
 // A couple who are only friends now is the villa's least compatible by definition (just-friends.js).
-const notReal = (state, c) => (justFriends(state, c[0], c[1]) ? 1 : 0);
+const notReal = (state, c) => (broken(state, c[0], c[1]) ? 1 : 0);
 import { kinOf, onYourSide } from './kin.js';
 
 // The last four are Plan 4.5 (docs/superpowers/plans/…-plan-4.5-twists.md),
@@ -60,7 +60,7 @@ function motives(state, v, t) {
     competition: sly ? -2 * strat * strength : 0,
     protect: sly ? 0 : 3 * strength * (nice ? 1.3 : 1),
     // …and a couple of friends is nobody's to protect: everyone knows it isn't real.
-    notReal: theirs && justFriends(state, t, theirs) ? -2.5 : 0,
+    notReal: theirs && broken(state, t, theirs) ? -2.5 : 0,
   };
   const score = Object.values(terms).reduce((a, b) => a + b, 0);
   const worst = ['threat', 'grudge', 'rival', 'competition'].sort((x, y) => terms[x] - terms[y])[0];

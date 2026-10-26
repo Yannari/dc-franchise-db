@@ -65,8 +65,8 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy', 'theirs', 'going', 'nth', 'exes', 'leaving', 'what', 'heat', 'game', 'why', 'risk',
   // the director (pm/story/director.js): how each one sounds, how much is shown, what it follows
   'reg', 'bReg', 'tier', 'after', 'afterBy', 'afterWhen', 'end', 'firstKiss', 'bPartnered', 'fresh', 'bFresh',
-  // a couple who are only friends now, at the final (pm/just-friends.js)
-  'mates',
+  // a couple who are only friends now, at the final (pm/just-friends.js); how a break-up was taken
+  'mates', 'took', 'exPick',
   // a talk file's own (pm/talk/*.js facts())
   'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels', 'believed', 'dayOne', 'side',
   // the storylines (pm/threads.js): which story a beat is in, and what a group chat is about
@@ -171,7 +171,7 @@ export function factsFor(state, ev) {
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
   // …and how much b feels for a, the same way: whether it is said back.
   if (b) { const r = romance(b, a); f.bFeels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.bFeels = null;
-  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since', 'staying', 'came', 'risk', 'side', 'subj', 'final', 'score', 'choosing', 'said', 'mates']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since', 'staying', 'came', 'risk', 'side', 'subj', 'final', 'score', 'choosing', 'said', 'mates', 'took', 'exPick']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   f.story = ev.extra?.thread?.type || null;
   // A recoupling "steal" of the chooser's own partner from before tonight.
   f.reclaim = !!ev.extra?.reclaim;

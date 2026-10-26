@@ -92,6 +92,9 @@ describe('a placeholder only where somebody fills it', () => {
       if (k === 'recouple-pick') { expect(e.when?.stoleFrom, tag(k, s, e)).toBe(true); continue; }
       // "Back on?" casts a third only when a friend saw it (threads.js rekindleBeat).
       if (k === 'rekindle') { expect(e.when?.of, tag(k, s, e)).toBe('noticed'); continue; }
+      // An ex's sting casts a third only when a friend is there (events.js 'ex-sting').
+      if (k === 'ex-sting') { expect(e.when?.of, tag(k, s, e)).toBe('stung'); continue; }
+      if (k === 'casa-react' && e.when?.of === 'stung') continue;
       expect(THREE.has(k), tag(k, s, e)).toBe(true);
       if (k === 'debrief') expect(list(e.when?.of).length && list(e.when.of).every(o => DEBRIEF_THREE.includes(o)), tag(k, s, e)).toBe(true);
     }
@@ -109,8 +112,10 @@ describe('a placeholder only where somebody fills it', () => {
       // A group chat always names who it is about; a doubt's moan names who {a} looks at.
       // …and a fight names who it is over (pm/blowup.js `about`): the one both want
       // (jealousy), the partner the other one was with (rival), the one taken, the one sent home.
-      expect(!!e.when?.after || e.when?.hasWith === true || k === 'group-chat' || (k === 'vent' && e.when?.why === 'eyes')
-        || (k === 'blowup' && (e.when?.of === 'jealousy' || ['rival', 'took', 'gone'].includes(e.when?.cause))), tag(k, s, e)).toBe(true);
+      expect(!!e.when?.after || e.when?.hasWith === true || k === 'group-chat' || (k === 'vent' && ['eyes', 'triangle'].includes(e.when?.why))
+        || (k === 'blowup' && (e.when?.of === 'jealousy' || ['rival', 'took', 'gone', 'moved'].includes(e.when?.cause)))
+        // …an ex's sting names the new one, and a break-up with a reason names who it's about.
+        || k === 'ex-sting' || (k === 'doubt-end' && ['eyes', 'triangle'].includes(e.when?.why)), tag(k, s, e)).toBe(true);
     }
   });
   it('{about} only where the scene has somebody it is about', () => {

@@ -18,7 +18,7 @@ import { familyVerdict } from './arrivals.js';
 import { BETRAYAL } from './ledger.js';
 import { movieNight } from './movie-night.js';
 import { secondChances } from './exes.js';
-import { justFriends, heartOf } from './just-friends.js';
+import { broken, heartOf } from './just-friends.js';
 import { blowups } from './blowup.js';
 import { breakdowns } from './breakdown.js';
 import { triangles } from './triangle.js';
@@ -124,7 +124,7 @@ function hideawayNight(state) {
   const into = ([x, y]) => (romance(x, y) + romance(y, x)) / 2;
   for (const [a, b] of couples) {
     // Never a couple who are only friends now (just-friends.js).
-    const pick = couples.filter(c => !c.includes(a) && !justFriends(state, c[0], c[1]))
+    const pick = couples.filter(c => !c.includes(a) && !broken(state, c[0], c[1]))
       .map(c => [c, (friendship(a, c[0]) + friendship(a, c[1]) + friendship(b, c[0]) + friendship(b, c[1])) / 4 + 0.6 * into(c) + (rng() - 0.5) * 2])
       .sort((p, q) => q[1] - p[1])[0]?.[0];
     if (!pick) continue;

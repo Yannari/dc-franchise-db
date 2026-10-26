@@ -16,7 +16,7 @@ import { resolveIslander } from './profile.js';
 import { seedAttraction, attr, compatible, attractionOf } from './chemistry.js';
 import { createLedger, noteArrival, closeEpisode, ledgerSnapshot, POP_SCALE } from './ledger.js';
 import { setRelationshipDimension } from '../relationships.js';
-import { becomeFriends, rekindle, friendsRecords } from './just-friends.js';
+import { becomeFriends, rekindle, splitRecords, setSplit } from './just-friends.js';
 import { generateEpisodeEvents, makeEvent, partnerOf, PHASE_BUDGETS } from './events.js';
 import { nightDebrief } from './debrief.js';
 import { runChallenge } from './challenges.js';
@@ -190,7 +190,7 @@ function storyPhase(state, rng, trng, phase, texture, entry = null) {
  * the last aired episode (restoreFromAired). Bump it when the villa changes
  * enough that an old season should be offered the new one.
  */
-export const PM_ENGINE = '2026-10-26';
+export const PM_ENGINE = '2026-10-26.2';
 
 /**
  * THE RESUME (user, 2026-10-25: "with our new system I don't wanna start a new
@@ -229,9 +229,11 @@ function restoreFromAired(state, rows, queues, seed) {
         if (e.extra?.back) state.loveSaid[`${e.players[1]}→${e.players[0]}`] = r.days?.[0] ?? r.num;
       }
       if (e.kind === 'movie-clip' && e.extra?.clip) (state.shownClips ||= []).push(e.extra.clip);
-      // Friends since a "better as friends" (just-friends.js), until a second chance.
-      if (e.kind === 'doubt-end' && e.extra?.of === 'friends' && e.players?.length >= 2) becomeFriends(state, e.players[0], e.players[1], r.num);
-      if (e.kind === 'reunite' && e.players?.length >= 2) rekindle(state, e.players[0], e.players[1]);
+      // Every break-up as it was recorded (breakups.js), until they rekindle;
+      // a "better as friends" from before the records is two friends.
+      if (e.extra?.splitRec?.by) setSplit(state, { ...e.extra.splitRec });
+      else if (e.kind === 'doubt-end' && e.extra?.of === 'friends' && e.players?.length >= 2) becomeFriends(state, e.players[0], e.players[1], r.num);
+      if ((e.kind === 'reunite' || (e.kind === 'rekindle' && e.extra?.of === 'yes')) && e.players?.length >= 2) rekindle(state, e.players[0], e.players[1]);
     }
     if (r.moment === 'photos') state.photosShown = true;
     if (r.moment === 'recoupling') state.lastRecouplingEp = r.num;
@@ -295,10 +297,10 @@ function restoreFromAired(state, rows, queues, seed) {
     const back = fr[`${b}→${a}`];
     gs.bonds[bKey(a, b)] = Math.round(((fr[key] + (back ?? fr[key])) / 2) * 100) / 100;
   }
-  // A pair of friends back together with the feeling back both ways has rekindled.
-  for (const f of friendsRecords(state)) {
-    if (state.couples.some(c => c.includes(f.ender) && c.includes(f.hurt))
-      && romance(f.ender, f.hurt) >= 5.5 && romance(f.hurt, f.ender) >= 5.5) rekindle(state, f.ender, f.hurt);
+  // Exes back together with the feeling back both ways have rekindled.
+  for (const f of splitRecords(state)) {
+    if (state.couples.some(c => c.includes(f.by) && c.includes(f.left))
+      && romance(f.by, f.left) >= 5.5 && romance(f.left, f.by) >= 5.5) rekindle(state, f.by, f.left);
   }
   // The scenes read what already happened (afterOf, first kisses, clips): the aired history.
   // Copies: the engine marks history as it plays, and the aired rows must never change.

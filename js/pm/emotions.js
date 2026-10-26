@@ -13,7 +13,7 @@
 // cooker turn feelings up as the season goes on.
 import { romance, believed } from './feelings.js';
 import { betrayalWeight, believedCloseness } from './ladder.js';
-import { justFriends } from './just-friends.js';
+import { splitOf, rawness } from './just-friends.js';
 
 export const FEELINGS = ['security', 'confidence', 'loneliness', 'guilt', 'heartbreak', 'stress'];
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -53,13 +53,16 @@ export const effectiveTemperament = (state, n) => clamp(state.profiles[n].stats.
 
 /** A threat to my couple, as I perceive it. Returns the jealousy it added. */
 export function jealousyHit(state, viewer, partner, rival, raw, { confirmed = false } = {}) {
-  // A friend now kisses who they like (just-friends.js).
-  if (justFriends(state, viewer, partner)) return 0;
+  // Broken up (just-friends.js): the one who ended it, and a friend, feel
+  // nothing; the one still holding a torch still does, fading as it gets less raw.
+  const ex = splitOf(state, viewer, partner);
+  if (ex && (ex.holder !== viewer || ex.mood === 'friends')) return 0;
+  const exScale = ex ? rawness(state, ex) : 1;
   const a = attachment(state.profiles[viewer]);
   const love = romance(viewer, partner) / 10;
   const style = a.secure * (confirmed ? 1 : 0.15) + a.anxiety * (0.8 + 0.6 * a.anxiety) + a.avoidance * 0.5;
   const e = emo(state, viewer);
-  const amount = clamp(raw * love * betrayalWeight(state, viewer, partner) * style * (1 + 0.08 * e.stress), 0, 10);
+  const amount = clamp(raw * love * betrayalWeight(state, viewer, partner) * style * (1 + 0.08 * e.stress) * exScale, 0, 10);
   e.jealousy[rival] = clamp((e.jealousy[rival] || 0) + amount, 0, 10);
   feel(state, viewer, 'security', -0.6 * amount);
   feel(state, viewer, 'stress', 0.2 * amount);

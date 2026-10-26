@@ -11,7 +11,8 @@
 import { attr } from './chemistry.js';
 import { romance, believed } from './feelings.js';
 import { makeEvent, partnerOf, apart } from './events.js';
-import { justFriends, heartOf } from './just-friends.js';
+import { broken, splitOf, heartOf } from './just-friends.js';
+import { recordSplit } from './breakups.js';
 import { closedness } from './ladder.js';
 import { emo, breakHeart, feel, jealousOf, attachment } from './emotions.js';
 import { addBond } from '../bonds.js';
@@ -32,7 +33,7 @@ function returnCeremony(state, rng, decisions) {
   const ret = (d, side) => {
     const partner = before[d.name];
     // Twisting on a friend is no betrayal, with the public or anyone (just-friends.js).
-    const heart = partner && !justFriends(state, d.name, partner) ? partner : null;
+    const heart = partner && !broken(state, d.name, partner) ? partner : null;
     // Who is in the scene: a stayer sits with the one they twisted for, or
     // alone — the partner is still at Casa. (Cast with the partner as {b},
     // `taken` read false, and season 33's Jordan, Callum and Kai, all waiting
@@ -56,8 +57,20 @@ function returnCeremony(state, rng, decisions) {
     out.push(ret(d, 'returned'));
     const p = before[d.name];
     const pd = p ? decided[p] : null;
-    // Friends: nobody is devastated and nobody has it out at the fire pit.
-    if (!p || !pd || justFriends(state, d.name, p)) continue;
+    if (!p || !pd) continue;
+    // Broken up before Casa (just-friends.js): no betrayal, nobody has it out
+    // at the fire pit. But the one still holding a torch watches the ex walk
+    // in with somebody new, and it stings (user: "jealousy could still be
+    // there, especially if it's recent"); friends just clap.
+    const exRec = splitOf(state, d.name, p);
+    if (exRec) {
+      const [holder, ex, withWhom] = exRec.holder === p ? [p, d.name, d.with] : [d.name, p, pd.with];
+      if (exRec.mood !== 'friends' && withWhom && (exRec.holder === p ? d.choice === 'twist' : pd.choice === 'twist')) {
+        jealousOf(state, holder, withWhom, 0.8 * romance(holder, ex) / 10);
+        out.push(ev('casa-react', [holder, ex, withWhom], { of: 'stung', took: exRec.mood, pop: { [holder]: { approval: 0.8 * (1 - exRec.fair), fame: 1.2 } } }, [holder]));
+      }
+      continue;
+    }
     const of = d.choice === 'stick' && pd.choice === 'stick' ? ONE.relief
       : d.choice === 'twist' && pd.choice !== 'twist' ? ONE.devastated
       : d.choice === 'twist' ? ONE.both : ONE.turned;
@@ -71,8 +84,11 @@ function returnCeremony(state, rng, decisions) {
     // reaction after it walked in a second time (season read 2026-10-25).
     if (of !== ONE.relief) out.push(ev('casa-react', [who, other, third].filter(Boolean), { of,
       pop: { [who]: { approval: 2, fame: 2 } } }, [who]));
-    if (of === ONE.devastated) { rows.push([p, d.name]); noteBreakup(state, { ender: p, wrong: d.name, severity: 1, cause: 'casa' }); }
-    if (of === ONE.turned) { rows.push([d.name, p]); noteBreakup(state, { ender: d.name, wrong: p, severity: 1, cause: 'casa' }); }
+    // Twisted on: the one who twisted moved on (breakups.js), and the one who stuck was left.
+    if (of === ONE.devastated) { rows.push([p, d.name]); noteBreakup(state, { ender: p, wrong: d.name, severity: 1, cause: 'casa' });
+      out[out.length - 1].extra.splitRec = recordSplit(state, { by: d.name, left: p, cause: 'moved-on', about: d.with }); }
+    if (of === ONE.turned) { rows.push([d.name, p]); noteBreakup(state, { ender: d.name, wrong: p, severity: 1, cause: 'casa' });
+      out[out.length - 1].extra.splitRec = recordSplit(state, { by: p, left: d.name, cause: 'moved-on', about: pd.with }); }
   }
   // The rows, the same night: the one who stuck and the one who didn't.
   for (const [stuck, twister] of rows) {
@@ -148,7 +164,7 @@ export function stickOrTwist(state, { rng }) {
   // Whoever stuck while their partner twisted is safe, and heartbroken.
   for (const n of singleSafe) {
     const ex = partnerOf(state, n);
-    if (ex) breakHeart(state, n, ex, (justFriends(state, n, ex) ? 2 : 6) * romance(n, ex) / 10);
+    if (ex) breakHeart(state, n, ex, (broken(state, n, ex) ? 2 : 6) * romance(n, ex) / 10);
   }
 
   const before = Object.fromEntries(scored.map(x => [x.o, partnerOf(state, x.o)]));

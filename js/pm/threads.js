@@ -40,7 +40,8 @@
 // has a consequence (CLAUDE.md), and only people in the same room are cast.
 import { addBond, getBond } from '../bonds.js';
 import { addRelationshipDimension, getRelationshipDimension } from '../relationships.js';
-import { becomeFriends, justFriends, heartOf, friendsRecords, rekindle } from './just-friends.js';
+import { broken, splitOf, heartOf, friendsRecords, rekindle } from './just-friends.js';
+import { recordSplit, verdictPop } from './breakups.js';
 import { nudgeBelief, beliefOf } from './ledger.js';
 import { makeEvent, partnerOf, roomMates, apart, today, pullBetween, haveItOut, callOutStirrer, tooSoonForWarm } from './events.js';
 import { attr, nudgeAttraction, compatible } from './chemistry.js';
@@ -52,6 +53,8 @@ import { nextPicker } from './recoupling.js';
 import { noteBreakup } from './exes.js';
 
 const MAX = { graft: 3, doubt: 2, secret: 2, progress: 2, spark: 2, rekindle: 1 };
+// A doubt's reason, as the break-up's cause (breakups.js).
+const CAUSE_OF_WHY = { ick: 'clash', eyes: 'moved-on', behind: 'cooling', cooling: 'cooling', triangle: 'triangle', played: 'played' };
 // How many threads an episode is about: the real episodes read had three or
 // four big ones and a smaller one or two (measured 2026-10-25: at four the
 // episode ran 260 clicks against the old 450, and the user wants substance).
@@ -139,7 +142,7 @@ function settle(state) {
       if (Math.min(attr(state, t.a, t.b) ?? 0, attr(state, t.b, t.a) ?? 0) < 3 || state.ep - t.ep >= 4) close(t, 'fizzled', state);
     } else if (t.type === 'rekindle') {
       // Back on by another road (a second chance), or it went nowhere.
-      if (!justFriends(state, t.a, t.b)) { close(t, 'rekindled', state); continue; }
+      if (!broken(state, t.a, t.b)) { close(t, 'rekindled', state); continue; }
       // Coupled up with somebody else since: there is nothing to ask.
       if (!(partnerOf(state, t.a) === t.b || (!partnerOf(state, t.a) && !partnerOf(state, t.b)))) { close(t, 'apart', state); continue; }
       if (state.ep - t.ep >= 4) close(t, 'faded', state);
@@ -208,6 +211,11 @@ function openGrafts(state, rng) {
 // Why a is going off p, from what really happened: the ick, a crush on
 // somebody else, or simply feeling less than p does.
 function doubtWhy(state, a, p) {
+  // "You're playing me": p's game on a has been called, or a has been told it.
+  if ((state.games || []).some(G => G.g === p && G.t === a && !G.over && (G.called || G.knows?.includes(a)))) return { why: 'played' };
+  // "I don't want to be in a triangle": p is torn between a and somebody else.
+  const tri = (state.triangles || []).find(t => !t.over && t.h === p && (t.x === a || t.y === a));
+  if (tri) return { why: 'triangle', x: tri.x === a ? tri.y : tri.x };
   const ick = (state.history || []).some(e => e.kind === 'ick' && e.players[0] === a && e.players[1] === p && e.ep >= state.ep - 2);
   if (ick) return { why: 'ick' };
   const eyes = roomMates(state, a).filter(o => o !== p && (attr(state, a, o) ?? 0) > (attr(state, a, p) ?? 0) + 1.5)
@@ -224,12 +232,14 @@ function openDoubts(state, rng) {
     for (const [a, p] of [[x, y], [y, x]]) {
       if (!together(state, a, p) || busy.has(a) || inThread(state, a) || inThread(state, p, 'doubt')) continue;
       // Friends already: there is nothing left to go off (just-friends.js).
-      if (justFriends(state, a, p)) continue;
+      if (broken(state, a, p)) continue;
       // Coupled a day at least: night one has no "going off" anybody.
       if ((state.coupledSince?.[[a, p].sort().join('|')] ?? state.day) >= (state.day ?? 0)) continue;
       const r = romance(a, p);
       const w = doubtWhy(state, a, p);
-      const cold = (5.5 - r) / 5.5 + (w.why === 'ick' ? 0.5 : w.why === 'eyes' ? 0.4 : 0);
+      // Being one side of a triangle, or played, sours it whatever you feel
+      // (measured: on feeling alone, no triangle break-up in twenty seasons).
+      const cold = (5.5 - r) / 5.5 + ({ ick: 0.5, eyes: 0.4, triangle: 0.9, played: 1 }[w.why] || 0);
       if (cold <= 0.15 - 0.12 * slack(state)) continue;
       if ((state.threadDone || {})[`doubt:${a}>${p}`] != null && state.ep - state.threadDone[`doubt:${a}>${p}`] < 4) continue;
       cands.push({ a, p, ...w, heat: cold * (0.6 + romance(p, a) / 10) });
@@ -274,7 +284,7 @@ function openProgress(state, rng) {
   if (live(state).filter(t => t.type === 'progress').length >= MAX.progress) return;
   const cands = [];
   for (const [a, b] of state.couples) {
-    if (!together(state, a, b) || inThread(state, a) || inThread(state, b) || justFriends(state, a, b)) continue;
+    if (!together(state, a, b) || inThread(state, a) || inThread(state, b) || broken(state, a, b)) continue;
     if (stepOf(state, a, b) === 'official' && stepOf(state, b, a) === 'official') continue;
     const r = Math.min(romance(a, b), romance(b, a));
     if (r < 4 - slack(state)) continue;
@@ -291,7 +301,7 @@ function openSparks(state, rng) {
   const singles = state.villa.filter(n => !partnerOf(state, n) && !busy.has(n) && !inThread(state, n));
   const cands = [];
   for (const a of singles) for (const b of singles) {
-    if (a >= b || !together(state, a, b) || !compatible(state, a, b) || justFriends(state, a, b)) continue;
+    if (a >= b || !together(state, a, b) || !compatible(state, a, b) || broken(state, a, b)) continue;
     const m = Math.min(attr(state, a, b) ?? 0, attr(state, b, a) ?? 0);
     if (m < 3 - 0.5 * slack(state)) continue;
     if ((state.threadDone || {})[`spark:${a}+${b}`] != null) continue;
@@ -307,7 +317,9 @@ function openRekindles(state, rng) {
   const busy = busyElsewhere(state);
   const cands = [];
   for (const f of friendsRecords(state)) {
-    const { ender: a, hurt: b } = f;
+    const a = f.by, b = f.left;
+    // After cheating or a game, the way back is an apology (exes.js), not a moment by the pool.
+    if (['cheated', 'played'].includes(f.cause)) continue;
     if (state.ep - f.ep < 2 || !together(state, a, b) || busy.has(a) || busy.has(b) || inThread(state, a) || inThread(state, b)) continue;
     // Only while either could say yes: still coupled as friends, or both single.
     if (!(partnerOf(state, a) === b || (!partnerOf(state, a) && !partnerOf(state, b)))) continue;
@@ -518,7 +530,11 @@ function doubtBeat(state, rng, t, phase) {
   if (t.talked && t.talkEp < state.ep && !t.ended && (phase === 'day' || phase === 'evening')) {
     t.ended = true;
     const r = romance(a, p);
-    const recommit = r >= 5 || (t.talkOf === 'reassure' && r >= 4);
+    // Played or in a triangle, nobody talks themselves back into it.
+    const recommit = !['played', 'triangle'].includes(t.why) && (r >= 5 || (t.talkOf === 'reassure' && r >= 4));
+    // The reason, kept before close() writes how the thread ended over t.why.
+    const reason = t.why;
+    let rec = null;
     // Ending it takes some nerve, or not caring much any more.
     // With no recoupling left to part them, nobody calls it off as friends on
     // the way to the final: they stay together, not sure (a couple of friends
@@ -529,19 +545,18 @@ function doubtBeat(state, rng, t, phase) {
       addBond(a, p, 0.5); nudgeAttraction(state, a, p, 0.6); feel(state, p, 'security', 1.5); feel(state, a, 'guilt', -0.5);
       close(t, 'mended', state);
     } else {
+      // The break-up, with its real reason (breakups.js): how fair it was and
+      // how {p} takes it are weighed before anything moves. {a} decided it,
+      // so most of the feeling goes with the decision, and {p} knows where {a} stands.
+      rec = recordSplit(state, { by: a, left: p, cause: CAUSE_OF_WHY[t.why] || 'cooling', about: t.x || null });
       breakHeart(state, p, a, 3 * romance(p, a) / 10);
       nudgeAttraction(state, p, a, -1);
       addRelationshipDimension(p, a, 'resentment', 0.5);
-      // Friends from now until they rekindle (just-friends.js). {a} decided
-      // it: most of the feeling goes with the decision, and {p} knows where
-      // {a} stands now. What's left is a friendship, a little warmer for the honesty.
-      becomeFriends(state, a, p);
       // …and the country saw it end: nobody believes in them as a couple now.
       nudgeBelief(state.ledger, a, p, Math.min(0, -25 - beliefOf(state.ledger, a, p)));
       addRelationshipDimension(a, p, 'attraction', -0.5 * getRelationshipDimension(a, p, 'attraction'));
       addRelationshipDimension(a, p, 'love', -0.7 * getRelationshipDimension(a, p, 'love'));
       revealTruth(state, p, a);
-      addRelationshipDimension(a, p, 'affection', 1); addRelationshipDimension(p, a, 'affection', 1);
       if (stepOf(state, a, p) !== 'coupled') { setStep(state, a, p, 'coupled'); tellStep(state, p, a); }
       // Done is done (events.js doneWith): no warm scenes between them, and
       // neither turns a pull down "for" the other any more (season read
@@ -558,8 +573,11 @@ function doubtBeat(state, rng, t, phase) {
       }
       close(t, 'ended', state);
     }
+    // The talk says the real reason (`why`, {x} who it's about) and how {p}
+    // takes it (`took`); the public judges it fair or selfish (verdictPop).
     return [scene(state, rng, phase, 'doubt-end', [a, p], { ...tag('end'), of: recommit ? 'recommit' : 'friends',
-      pop: pop([a, recommit ? 0.8 : COST.dump, 1.5], [p, recommit ? 0.5 : 1.2, 1.5]) }, { major: recommit ? [] : [a, p] })];
+      why: reason, about: t.x || null, took: rec?.mood || null, splitRec: rec,
+      pop: recommit ? pop([a, 0.8, 1.5], [p, 0.5, 1.5]) : verdictPop(rec) }, { major: recommit ? [] : [a, p] })];
   }
   // 2. The next day, p feels it, and asks a friend. The friend may be the one a told.
   if (t.vented && !t.noticed && t.ventEp < state.ep && (phase === 'day' || phase === 'evening')) {
@@ -686,7 +704,7 @@ function sparkBeat(state, rng, t, phase) {
  */
 function rekindleBeat(state, rng, t, phase) {
   const { a, b } = t;
-  if (!together(state, a, b) || !justFriends(state, a, b)) return [];
+  if (!together(state, a, b) || !broken(state, a, b) || splitOf(state, a, b).mood === 'bitter') return [];
   if (!(partnerOf(state, a) === b || (!partnerOf(state, a) && !partnerOf(state, b)))) return [];
   const tag = beat => ({ thread: { id: t.id, type: 'rekindle', beat, since: t.ep, who: [a, b] } });
   // 1. A moment: they laugh like they used to, a hand that stays a second too long.
@@ -972,7 +990,7 @@ export function bedChats(state, rng, phase = 'evening') {
     const t = (state.threads || []).find(x => x.id === id);
     if (!t || !th.used[id]) continue;
     const pair = t.type === 'graft' ? [t.p, t.t] : t.type === 'doubt' ? [t.p, t.a] : t.type === 'progress' ? [t.a, t.b] : null;
-    if (pair && together(state, ...pair) && partnerOf(state, pair[0]) === pair[1] && !justFriends(state, ...pair) && !pairs.some(p => p.includes(pair[0]) || p.includes(pair[1]))) pairs.push([...pair, t]);
+    if (pair && together(state, ...pair) && partnerOf(state, pair[0]) === pair[1] && !broken(state, ...pair) && !pairs.some(p => p.includes(pair[0]) || p.includes(pair[1]))) pairs.push([...pair, t]);
   }
   return pairs.slice(0, 2).map(([a, b, t]) => {
     const both = e => e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b);

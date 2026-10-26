@@ -30,6 +30,7 @@ import { romance, revealTruth } from './feelings.js';
 import { emo, feel, jealousyHit, breakHeart } from './emotions.js';
 import { BETRAYAL } from './ledger.js';
 import { noteBreakup } from './exes.js';
+import { recordSplit } from './breakups.js';
 
 const LOOKBACK = 3;          // episodes of footage the producers pick from
 const MAX_CLIPS = 4;
@@ -176,7 +177,7 @@ export function movieNight(state, rng) {
   // jealousy, cheating").
   for (const c of picked.filter(k => !k.good).flatMap(k => [k, ...(k.also || [])])) {
     if (partnerOf(state, c.x) !== c.p) continue;
-    events.push(...confrontation(state, rng, { p: c.p, x: c.x, sev: c.sev, rowKind: 'movie-row', splitKind: 'movie-split', phase: 'cinema' }));
+    events.push(...confrontation(state, rng, { p: c.p, x: c.x, sev: c.sev, rowKind: 'movie-row', splitKind: 'movie-split', phase: 'cinema', about: c.rival || null }));
   }
   return events;
 }
@@ -187,7 +188,7 @@ export function movieNight(state, rng) {
  * loyalty and temper against their strategy — and the one hurt may end it
  * there: what they found out, against what they feel.
  */
-export function confrontation(state, rng, { p, x, sev, rowKind, splitKind, phase, split = true }) {
+export function confrontation(state, rng, { p, x, sev, rowKind, splitKind, phase, split = true, about = null }) {
   const out = [];
   const S = state.profiles[x]?.stats || {};
   const honest = ((S.loyalty ?? 5) + (S.temperament ?? 5)) / 20;
@@ -209,9 +210,11 @@ export function confrontation(state, rng, { p, x, sev, rowKind, splitKind, phase
     state.couples = state.couples.filter(k => !(k.includes(p) && k.includes(x)));
     state._splitEp = state.ep;
     noteBreakup(state, { ender: p, wrong: x, severity: sev, cause: splitKind });
+    // Caught on camera: p ends it, x is left (breakups.js).
+    const splitRec = recordSplit(state, { by: p, left: x, cause: 'cheated', about });
     breakHeart(state, x, p, 3 * romance(x, p) / 10);
     out.push(makeEvent(state, rng, { phase, kind: splitKind, players: [p, x], aired: true, major: [p, x],
-      extra: { pop: { [p]: { approval: 2, fame: 2.5 }, [x]: { approval: -1.5, fame: 2.5 } } } }));
+      extra: { splitRec, pop: { [p]: { approval: 2, fame: 2.5 }, [x]: { approval: -1.5, fame: 2.5 } } } }));
   }
   return out;
 }

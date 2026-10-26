@@ -435,7 +435,7 @@ export function writeWitnessAfter(w, ctx, at) {
   const sc = { id: `wa:${ctx.week?.num || 0}:${ctx.stretch}:${letDown}>${w.name}`, line: null, type: 'feud', step: 'witness-after', outcome,
     room, roomName: sp?.label || ROOM[room] || 'Kitchen', ...(sp ? { spot: sp.spot } : {}), cast: [letDown, w.name], mood: 'drama', at,
     fixedRoom: false, recap: false, lineId: entry.id,
-    why: [w.stance === 'out' ? `${w.name} stayed out of ${letDown}'s row with ${other}.` : `${w.name} took ${other}'s side against ${letDown}.`] };
+    why: [w.stance === 'out' ? `${w.name} stayed out of ${letDown}'s fight with ${other}.` : `${w.name} took ${other}'s side against ${letDown}.`] };
   sc.lines = sp ? lines : background(lines, sc, ctx, sc.id, false);
   return staging(sc);
 }

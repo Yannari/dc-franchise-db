@@ -67,7 +67,7 @@ export const DECLARATION = build('declaration', {
         ['a', "We met halfway through this whole thing, when the villa was turned upside down. Everyone thought it was a Casa thing, a bit of fun, something that wouldn't last. And it's lasted. It's more than lasted. It's the realest thing I've ever had."],
       ] },
       { when: { of: 'friends' }, turns: [
-        ['a', "You were my friend first. My best friend in here. You made me laugh every single day, you listened to me moan about everything, and you never once made me feel stupid. And one day I looked at you and realised I didn't just want you as my friend. Everyone in this villa saw it before we did."],
+        ['a', "You were my friend first. My best friend in here. You made me laugh every single day, you listened to me complain about everything, and you never once made me feel stupid. And one day I looked at you and realised I didn't just want you as my friend. Everyone in this villa saw it before we did."],
       ] },
       { when: { of: 'slow-burn' }, turns: [
         ['a', "It took us ages to get here. Honestly, ages. There were days I thought it was never going to happen. But every slow, frustrating, confusing day of it was worth it, because it means that what we've got now is built on something real."],

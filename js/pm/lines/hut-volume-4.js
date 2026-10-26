@@ -115,12 +115,12 @@ export const HUT_VOLUME_4 = {
       "I'd tell {b} anything. Anything except the one thing.",
     ]),
     ...lines('hutv4.argument.t', K('argument', B), [
-      "That row wasn't really about what we were rowing about. Not for me, anyway.",
+      "That fight wasn't really about what we were fighting about. Not for me, anyway.",
       "I shouted a lot. Shouting is easier than explaining.",
       "Everyone thinks I'm angry with {b}. I'm mostly angry with myself.",
       "I picked a fight so nobody would pick one with me. It worked, sort of.",
       "If I'm honest, I've got no right to be upset. I'm upset anyway.",
-      "That row was a nice distraction. A terrible one, but a nice one.",
+      "That fight was a nice distraction. A terrible one, but a nice one.",
     ]),
     ...lines('hutv4.advice.t', K('advice', { ...B, role: 0 }), [
       "I told {b} to be honest with everyone. I really should listen to my own advice.",

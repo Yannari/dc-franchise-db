@@ -249,7 +249,7 @@ export const GRASS_CONFRONT = two('grass-confront', {
 export const PARENTS_NAMED = two('parents-named', {
   moment: [
     { stage: "At dinner, {c} raises a glass to {a} and {b}.", turns: [
-      ['c', "To the villa's {~mum} and dad. Honestly, you two are the only reason this place hasn't fallen apart. Every time someone's crying, one of you is there. Every time there's a row, one of you sorts it out."],
+      ['c', "To the villa's {~mum} and dad. Honestly, you two are the only reason this place hasn't fallen apart. Every time someone's crying, one of you is there. Every time there's a fight, one of you sorts it out."],
       ['a', "Stop it."],
       ['b', "We're not that old."],
       ['c', "You're a bit that old."],
@@ -311,7 +311,7 @@ export const PARENTS_MEDIATE = two('parents-mediate', {
 
 export const PARENTS_WOBBLE = two('parents-wobble', {
   row: [
-    { stage: "The two everyone calls the villa's parents are rowing, and nobody knows what to do with themselves.", turns: [
+    { stage: "The two everyone calls the villa's parents are fighting, and nobody knows what to do with themselves.", turns: [
       ['a', "You're always sorting out everyone else's problems. When do you ever have time for mine?"],
       ['b', "That's not fair. I'm always there for you."],
       ['a', "You're always there for everyone. That's the problem."],

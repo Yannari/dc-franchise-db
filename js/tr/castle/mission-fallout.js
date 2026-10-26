@@ -1839,7 +1839,7 @@ const LAUGHED_LINES = {
     '{a} and {b} agree the afternoon was impossible.\n{a}: "Nobody could have won that."\n{b}: "Nobody. It was rigged."',
     '{a} and {b} blame the mission, not each other.\n{b}: "It was the set-up. Not us."\n{a}: "Definitely not us."',
     '{a} and {b} decide it was unwinnable.\n{a}: "Nobody could have won that."\n{b}: "Nobody."\n{a} (to camera): "Easier to blame the mission than each other."',
-    '{a} and {b} moan about the task all the way home.\n{b}: "Whoever designed that was having a laugh."\n{a}: "Having a laugh at us."',
+    '{a} and {b} complain about the task all the way home.\n{b}: "Whoever designed that was having a laugh."\n{a}: "Having a laugh at us."',
   ],
   'went-quiet-about-it': [
     'Neither {a} nor {b} says anything about the afternoon all the way home.\n{a} (to camera): "Nothing to say. It went badly."',

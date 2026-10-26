@@ -210,7 +210,7 @@ export const FRIENDSHIP_MORE = {
       ] },
       { turns: [
         ['b', "What would you be doing right now if you weren't in here?"],
-        ['a', "Working, probably. Moaning about work. Planning what I'd do at the weekend and then not doing any of it."],
+        ['a', "Working, probably. Complaining about work. Planning what I'd do at the weekend and then not doing any of it."],
         ['b', "That sounds about right."],
         ['a', "This is better. Don't tell anyone I said that."],
       ] },

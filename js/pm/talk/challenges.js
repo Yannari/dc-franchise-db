@@ -51,7 +51,7 @@ const CARD = {
   pull: "This islander has pulled someone for a chat while they were coupled up.",
   'head-turned': "This islander has said their head has been turned.",
   ick: "This islander has had the ick about someone in the villa.",
-  row: "This islander has had a blazing row in the villa this week.",
+  row: "This islander has had a huge fight in the villa this week.",
   love: "This islander has said 'I love you' to someone in here.",
 };
 const card = (of, extra = {}) => ({ when: { of, ...extra } });
@@ -71,7 +71,7 @@ export const RECEIPT = build('receipt', {
       { when: { of: 'pull', ...G }, turns: [['c', "Okay, fine. I had a chat. Everyone has chats. It was a chat!"], ['a', "That's what the card says, isn't it."]] },
       { when: { of: 'head-turned', ...G }, turns: [['c', "I said I was confused. That's not the same thing."], ['a', "It's kind of the same thing."]] },
       { when: { of: 'ick', ...G }, turns: [['c', "Okay, yes. It's one little thing. I'm not saying who it's about."], ['a', "Everyone is going to ask you who."]] },
-      { when: { of: 'row', ...G }, turns: [['c', "One row. One! Every couple has one."], ['a', "The whole villa heard your one."]] },
+      { when: { of: 'row', ...G }, turns: [['c', "One fight. One! Every couple has one."], ['a', "The whole villa heard your one."]] },
       { when: { of: 'love', ...G }, turns: [['c', "Okay, yes, it's me, and I meant it, and I'm not embarrassed."], ['a', "You're bright red."], ['c', "I'm not embarrassed!"]] },
       { when: NG, turns: [['a', "Then who was it? Because it's somebody, and they're very quiet right now."]] },
       { when: NG, turns: [['b', "It wasn't me. I promise you it wasn't me."], ['a', "Sorry! Worth a try."]] },
@@ -364,10 +364,10 @@ export const LIP_RACE = build('lip-race', {
     race: [
       { when: { of: 'win' }, stage: "Lip Service. {a} and {b} pass the card mouth to mouth all the way down the line and never drop it once.", turns: [['b', "We won! We actually won!"], ['a', "I've never concentrated so hard in my life."]] },
       { when: { of: 'laugh' }, stage: "{a} and {b} drop the card every single time, because they can't stop laughing.", turns: [['a', "Stop looking at me!"], ['b', "I have to look at you, that's the game!"]] },
-      { when: { of: 'row' }, stage: "{a} and {b} drop the card for the fourth time, and it turns into a row.", turns: [['a', "You keep moving!"], ['b', "You keep breathing on it!"]] },
+      { when: { of: 'row' }, stage: "{a} and {b} drop the card for the fourth time, and it turns into a fight.", turns: [['a', "You keep moving!"], ['b', "You keep breathing on it!"]] },
     ],
     after: [
-      { when: { of: 'row' }, turns: [['a', "We've managed to have a row in the middle of a kissing race."], ['b', "That's us, isn't it? That's us in one game."]] },
+      { when: { of: 'row' }, turns: [['a', "We've managed to have a fight in the middle of a kissing race."], ['b', "That's us, isn't it? That's us in one game."]] },
       { when: { of: 'laugh' }, turns: [['b', "We came last."], ['a', "We came last having the best time."]] },
     ],
   },

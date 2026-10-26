@@ -29,7 +29,7 @@ export const ROWED_VOLUME = {
         R(['b', "I'm sorry I walked off."], ['a', "I'm sorry I made you want to."], ['b', "Can we start again?"], ['a', "From where?"], ['b', "From hello."]),
         R(['a', "I hate it when we're not talking. The whole day feels wrong."], ['b', "I know. I kept looking over at you."], ['a', "I saw."]),
         R(['b', "Who's going first?"], ['a', "Me. I'm sorry. I was being an idiot."], ['b', "You were. So was I."]),
-        R(['a', "I don't want to go to bed on a row."], ['b', "Then let's not."]),
+        R(['a', "I don't want to go to bed angry."], ['b', "Then let's not."]),
         R(['b', "I've been thinking about it all afternoon. I overreacted."], ['a', "We both did. I'm sorry too."]),
         R(['a', "Truce?"], ['b', "Truce. But you're making the teas for a week."], ['a', "Deal."]),
         R(['b', "I didn't like who I was earlier."], ['a', "I didn't like who I was either. Shall we both stop being them?"]),
@@ -38,9 +38,9 @@ export const ROWED_VOLUME = {
     notes: N(
       "{a} and {b} make up on the swing seat, slowly, and then all at once.",
       "{a} says sorry first. {b} says it straight back.",
-      "{a} and {b} sit down after their row and talk until it doesn't matter any more.",
+      "{a} and {b} sit down after their fight and talk until it doesn't matter any more.",
       "{a} brings {b} a drink as a peace offering, and it works.",
-      "{a} and {b} sort out their row by the pool, and come back holding hands.",
+      "{a} and {b} sort out their fight by the pool, and come back holding hands.",
       "{a} and {b} have an awkward half hour, and then a much better one.",
       "{a} and {b} make up over a cup of tea, and agree it was about nothing.",
       "{a} and {b} talk it through, and end up laughing about how silly it got."),
@@ -66,16 +66,16 @@ export const ROWED_VOLUME = {
     },
     notes: N(
       "{a} and {b} make up with a long kiss on the swing seat.",
-      "After their row, {a} finds {b}, and they kiss like they mean it.",
+      "After their fight, {a} finds {b}, and they kiss like they mean it.",
       "{a} and {b} kiss and make up in the dressing room, and come out smiling.",
       "{a} says sorry, {b} says sorry, and the rest is a kiss.",
-      "{a} and {b} kiss by the pool, the row already forgotten.",
+      "{a} and {b} kiss by the pool, the fight already forgotten.",
       "{a} and {b} make up, and the villa breathes a sigh of relief."),
   },
   'deep-chat': {
     moves: {
       open: [
-        S("{a} and {b} sit on the roof terrace, a little apart, after their row.", ['a', "Can we talk about it properly? Not just say sorry and move on?"], ['b', "I'd like that."]),
+        S("{a} and {b} sit on the roof terrace, a little apart, after their fight.", ['a', "Can we talk about it properly? Not just say sorry and move on?"], ['b', "I'd like that."]),
         S("{a} sits down opposite {b} on the daybeds, knees up.", ['a', "I don't want to just make up. I want to understand."], ['b', "Understand what?"], ['a', "Why it keeps happening."]),
         S("{b} asks {a} to walk round the garden with {b.obj}.", ['b', "I've been thinking about earlier. Not what we said. Why we said it."]),
         S("{a} and {b} sit on the stairs, both still a bit raw.", ['a', "Can I be honest with you?"], ['b', "That's what got us into this."], ['a', "That's what'll get us out of it."]),
@@ -91,22 +91,22 @@ export const ROWED_VOLUME = {
     },
     notes: N(
       "{a} and {b} talk about why they fought, and find the real reason underneath.",
-      "{a} and {b} sit up on the terrace after their row, and talk honestly for the first time in days.",
-      "After their row, {a} tells {b} what was really bothering {a.obj}.",
+      "{a} and {b} sit up on the terrace after their fight, and talk honestly for the first time in days.",
+      "After their fight, {a} tells {b} what was really bothering {a.obj}.",
       "{a} and {b} talk it through, and come away knowing each other better.",
       "{a} and {b} have a long, careful talk about how they argue, and agree to do it differently."),
   },
   'challenge-win': {
     moves: {
       win: [
-        S("{a} and {b} win, and the row from earlier is suddenly hard to remember.", ['b', "Well, that's awkward. We're good at this."], ['a', "We're good at a lot of things. When we're talking."]),
+        S("{a} and {b} win, and the fight from earlier is suddenly hard to remember.", ['b', "Well, that's awkward. We're good at this."], ['a', "We're good at a lot of things. When we're talking."]),
         S("{a} and {b} come out on top, and {a} grabs {b} without thinking.", ['a', "Sorry. Habit."], ['b', "Don't be sorry. Do it again."]),
         S("{a} and {b} win the challenge, and stand there grinning, not sure if they're allowed to.", ['a', "Are we still annoyed with each other?"], ['b', "I can't remember. I'm too happy."]),
         S("The win goes to {a} and {b}, and the others groan.", ['b', "Imagine how good we'd be if we were talking."], ['a', "We're talking now."]),
       ],
     },
     notes: N(
-      "{a} and {b} win the challenge, and the row is forgotten on the way back.",
+      "{a} and {b} win the challenge, and the fight is forgotten on the way back.",
       "{a} and {b} take the win, and a hug, and call it quits on earlier."),
   },
 };

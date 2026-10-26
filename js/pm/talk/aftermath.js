@@ -150,7 +150,7 @@ export const GRUDGE_END = build('grudge-end', {
     moment: [
       { when: { of: 'truce' }, stage: "{b} brings {a} a tea and sits down without asking.", turns: [['b', "I'm sorry it hurt you. It wasn't about you. It really wasn't."], ['a', "I know. I think I just needed someone to be angry at."], ['b', "Truce?"], ['a', "Truce."]] },
       { when: { of: 'truce' }, stage: "{a} finds {b} on the swing seat.", turns: [['a', "I'm done being angry. I'm exhausted. It's not what they'd want, anyway."], ['b', "Yeah?"], ['a', "Yeah."]] },
-      { when: { of: 'spark' }, stage: "On the roof terrace, late, the row runs out of steam.", turns: [['a', "I really want to hate you."], ['b', "And?"], ['a', "And it's getting harder every day. That's annoying."], ['b', "Me too."]] },
+      { when: { of: 'spark' }, stage: "On the roof terrace, late, the fight runs out of steam.", turns: [['a', "I really want to hate you."], ['b', "And?"], ['a', "And it's getting harder every day. That's annoying."], ['b', "Me too."]] },
       { when: { of: 'spark' }, stage: "By the fire pit, {a} and {b} are the last two up.", turns: [['b', "Can I say something mad?"], ['a', "You always do."], ['b', "I think I like you."], ['a', "That is mad."], ['b', "I know."]] },
       { when: { of: 'never' }, stage: "{b} tries one last time by the pool.", turns: [['b', "Can we just move on? Please?"], ['a', "You can. I'm not going to."]] },
       { when: { of: 'never' }, stage: "In the kitchen, {b} holds out a hand.", turns: [['b', "Friends?"], ['a', "No."]] },

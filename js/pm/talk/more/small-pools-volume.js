@@ -50,7 +50,7 @@ export const PILE_IN_VOLUME = {
       { turns: [], beat: "The villa splits right down the middle, and everyone can see which side is which." },
       { turns: [], beat: "{c} stares at {a} for a long moment, then turns away." },
       { turns: [], beat: "{a} puts an arm round {b} and walks {b.obj} away from it." },
-      { turns: [], beat: "Two more islanders get up off the daybeds. This isn't a row between two people any more." },
+      { turns: [], beat: "Two more islanders get up off the daybeds. This isn't a fight between two people any more." },
       { turns: [], beat: "{c} is left standing on {c.posAdj} own, with half the villa looking at {c.obj}." },
     ],
   },

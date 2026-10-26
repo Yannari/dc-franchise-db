@@ -276,12 +276,12 @@ export const ICK_MORE = { notes: [
 ] };
 
 export const ARGUMENT_MORE = { notes: [
-  { when: { end: 'make-up' }, stage: "{a} and {b} have a row by the pool, then make up before dinner." },
+  { when: { end: 'make-up' }, stage: "{a} and {b} have a fight by the pool, then make up before dinner." },
   { when: { end: 'make-up' }, stage: "{a} and {b} snap at each other, then laugh about it." },
   { when: { end: 'walk-off' }, stage: "{a} and {b} have words, and {a} storms off." },
-  { when: { end: 'walk-off' }, stage: "A row between {a} and {b} ends with a door slamming." },
+  { when: { end: 'walk-off' }, stage: "A fight between {a} and {b} ends with a door slamming." },
   { when: { end: 'simmer' }, stage: "{a} and {b} fall out, and it isn't sorted by bedtime." },
-  { when: { end: 'simmer' }, stage: "{a} and {b} have a row that the whole villa pretends not to hear." },
+  { when: { end: 'simmer' }, stage: "{a} and {b} have a fight that the whole villa pretends not to hear." },
   { stage: "{a} and {b} argue in the kitchen, and everyone else finds a reason to leave." },
 ] };
 
@@ -433,10 +433,10 @@ export const GOODBYE_MORE = {
         ['b', "For you, I'll try."],
       ] },
       { when: { withB: true }, turns: [
-        ['a', "Thank you for everything. For looking after me. For listening to me moan."],
-        ['b', "You never moaned."],
-        ['a', "I moaned all the time."],
-        ['b', "Okay, you moaned a bit. I'll miss it."],
+        ['a', "Thank you for everything. For looking after me. For listening to me complain."],
+        ['b', "You never complained."],
+        ['a', "I complained all the time."],
+        ['b', "Okay, you complained a bit. I'll miss it."],
       ] },
     ],
   },

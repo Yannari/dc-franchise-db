@@ -106,7 +106,7 @@ export const RECOUPLE_PICK = build('recouple-pick', {
         ['a', "I said I'd stick by this person, and I meant it. Nothing that's happened in here has changed how I feel. If anything, it's made me more sure. So I'm not going to stand here and make a long speech, because everyone knows who it is."],
       ] },
       { when: { reason: 'loyalty', known: true }, turns: [
-        ['a', "We've been through a lot, me and this person. Bombshells, rows, the lot. And every time, we've come back to each other. I'm not going anywhere, and I'm hoping they're not either."],
+        ['a', "We've been through a lot, me and this person. Bombshells, fights, the lot. And every time, we've come back to each other. I'm not going anywhere, and I'm hoping they're not either."],
       ] },
       { when: { reason: 'loyalty', reg: 'soft' }, turns: [
         ['a', "This person makes me feel safe. Every night, no matter what's gone on in the day, I get to go to bed next to them, and everything's okay again. I'm not giving that up for anyone."],

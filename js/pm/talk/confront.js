@@ -118,7 +118,7 @@ export const TOLD_CONFRONT = build('told-confront', {
       W({ of: 'small', sec: 'pull' }, ['b', "We were talking, in front of everyone. If I was going to do something behind your back, would I do it where everyone could see?"], ['a', "Somebody did see."]),
       W({ of: 'small', sec: 'kiss' }, ['b', "It was one kiss. It didn't mean anything. I swear it didn't mean anything."], ['a', "Then why did you do it?"]),
       W({ of: 'small', sec: 'bed' }, ['b', "We slept. That's all. You're making it into something it isn't."], ['a', "Am I?"]),
-      W({ of: 'small', sec: 'said' }, ['b', "I was having a moan. Everyone has a moan. It doesn't mean anything."], ['a', "It means something to me."]),
+      W({ of: 'small', sec: 'said' }, ['b', "I was venting. Everyone vents. It doesn't mean anything."], ['a', "It means something to me."]),
       W({ of: 'small', sec: 'promise' }, ['b', "People say all sorts of things in here. It was just talk. It's not like I booked a table."], ['a', "That's not funny."]),
       W({ of: 'small', dayOne: true }, ['b', "That was when everyone was talking to everyone. It didn't mean anything then, and it doesn't now."], ['a', "It meant something to me."]),
       W({ of: 'small' }, ['b', "Honestly, it's not as big as it sounds. Whoever told you has made it into a much bigger thing."], ['a', "Then make it smaller. Tell me exactly what happened."]),

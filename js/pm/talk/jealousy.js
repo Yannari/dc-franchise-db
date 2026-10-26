@@ -304,7 +304,7 @@ export const CONFESSION = build('confession', {
         ['a', "I told {x} I'd see {x.obj} on the outside. I said it, and I meant it at the time, and I shouldn't have, because I'm with you."],
       ] },
       { when: { sec: 'said' }, turns: [
-        ['a', "I said some things about you. To the others. Moaning, really. Saying I was bored, saying I didn't know if it was going anywhere. And I didn't mean it, I was just in a mood, but I said it, and I'm sorry."],
+        ['a', "I said some things about you. To the others. Complaining, really. Saying I was bored, saying I didn't know if it was going anywhere. And I didn't mean it, I was just in a mood, but I said it, and I'm sorry."],
       ] },
       { turns: [
         ['a', "I haven't been fair to you. There's been something going on in my head, and I let it show with someone else, and I should have come to you first. I'm so sorry."],

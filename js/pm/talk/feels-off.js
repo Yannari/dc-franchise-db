@@ -64,7 +64,7 @@ export const FEELS_OFF = build('feels-off', {
         ['b', "I'm sorry. I'd want to know, if it was me."],
       ] },
       { when: { of: 'told' }, turns: [
-        ['b', "I'm going to tell you, because you're my friend and you're asking me straight. {c} had a moan to me. About feeling bored, and not being sure. I'm not saying it's over. I'm saying {c} has doubts, and you deserve to hear that."],
+        ['b', "I'm going to tell you, because you're my friend and you're asking me straight. {c} was venting to me. About feeling bored, and not being sure. I'm not saying it's over. I'm saying {c} has doubts, and you deserve to hear that."],
         ['a', "Right. Okay. Wow."],
         ['b', "Please don't tell {c} it came from me."],
       ] },

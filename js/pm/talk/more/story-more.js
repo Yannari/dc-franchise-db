@@ -24,7 +24,7 @@ export const STORY_MORE = {
       ['b', "Then you know. And you can be angry then. Not before."],
     ] },
     { turns: [
-      ['b', "Honestly? I think you need to say something tonight. Not a row. Just, look, I saw it, and I didn't like it. If you sit on it, it'll turn into something much bigger in your head."],
+      ['b', "Honestly? I think you need to say something tonight. Not a fight. Just, look, I saw it, and I didn't like it. If you sit on it, it'll turn into something much bigger in your head."],
       ['a', "It's already pretty big in my head."],
       ['b', "Exactly. So get it out of there."],
     ] },
@@ -48,7 +48,7 @@ export const STORY_MORE = {
     { turns: [
       ['a', "I'm not imagining it. I know when someone's pulling away. I've had it happen before, and it feels exactly like this. Everything's polite. Everything's fine. And none of it is."],
       ['b', "That's horrible."],
-      ['a', "It's worse than a row. At least with a row you know where you are."],
+      ['a', "It's worse than a fight. At least with a fight you know where you are."],
     ] },
     { turns: [
       ['a', "I made a joke earlier, a stupid one, and before, {c} would have laughed just because it was me. Today {c} didn't even look up. And I know that's tiny. I know it is. But tiny things are all you've got in here."],

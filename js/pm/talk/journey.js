@@ -218,7 +218,7 @@ export const SPEECH = build('speech', {
       { when: { of: 'photos' }, turns: [['a', "After the photos, I didn't know if we'd make it. I know how much that week hurt. And we're standing here anyway, and that's because of you."]] },
       { when: { of: 'split' }, turns: [['a', "There was a moment in there when it was over. I never want to feel like that again. I'm going to spend every day making sure I don't."]] },
       { when: { of: 'at-risk' }, turns: [['a', "Standing at that fire pit on day {day}, waiting for our names, the only thing I could think about was not seeing you every morning."]] },
-      { when: { of: 'row' }, turns: [['a', "We've argued. Of course we have. But even when we row, I'd rather be arguing with you than getting on with anyone else in the world."]] },
+      { when: { of: 'row' }, turns: [['a', "We've argued. Of course we have. But even when we fight, I'd rather be arguing with you than getting on with anyone else in the world."]] },
       { when: { of: 'row' }, turns: [['a', "You've seen me at my worst in there, and you stayed. You called me out when I needed it. That means more to me than you know."]] },
       { when: { of: 'love', what: 'love-said', said: true }, turns: [['a', "On day {day}, I told you how I felt. I was terrified. I meant it then, and I mean it more now, standing here."]] },
       { when: { of: 'love', what: 'love-said', said: false }, turns: [['a', "On day {day}, you said it first. I've never been so happy to be beaten to something in my life."]] },

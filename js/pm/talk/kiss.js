@@ -58,7 +58,7 @@ export const KISS = build('kiss', {
         ['b', "There's always someone around."],
         ['a', "There isn't now."],
       ] },
-      { when: { rowedToday: true }, stage: "{a} finds {b} on the terrace after their row.", turns: [
+      { when: { rowedToday: true }, stage: "{a} finds {b} on the terrace after their fight.", turns: [
         ['a', "I hate this. I hate it when we're like this."],
         ['b', "Me too. I don't even remember what we were arguing about now."],
         ['a', "Neither do I. Something stupid."],
@@ -261,7 +261,7 @@ export const KISS = build('kiss', {
   },
 
   notes: [
-    { when: { rowedToday: true }, stage: "{a} and {b} kiss and make up after their row." },
+    { when: { rowedToday: true }, stage: "{a} and {b} kiss and make up after their fight." },
     { when: { end: ['warm', 'easy'] }, stage: "{a} and {b} share a long kiss on the swing seat." },
     { when: { end: ['warm', 'easy'] }, stage: "{a} and {b} sneak a kiss by the pool." },
     { when: { end: 'warm' }, stage: "{a} and {b} can't keep their hands off each other on the daybeds." },

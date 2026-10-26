@@ -233,18 +233,18 @@ export const ARGUMENT_VOLUME = {
     ],
   },
   notes: [
-    { stage: "{a} and {b} have a short, sharp row by the pool, and then avoid each other for an hour." },
+    { stage: "{a} and {b} have a short, sharp fight by the pool, and then avoid each other for an hour." },
     { stage: "{a} and {b} bicker about nothing in the kitchen, loudly." },
     { stage: "{a} snaps at {b} at dinner, and the whole table goes quiet." },
     { stage: "{a} and {b} have words on the terrace, and go to bed not speaking." },
-    { stage: "A small comment turns into a big row between {a} and {b}." },
+    { stage: "A small comment turns into a big fight between {a} and {b}." },
   ],
 };
 
 export const VENT_VOLUME = {
   moves: {
     open: [
-      { stage: "{a} drags {b} up to the roof terrace.", turns: [['a', "I need to moan. Can I moan?"], ['b', "Moan away."]] },
+      { stage: "{a} drags {b} up to the roof terrace.", turns: [['a', "I need to vent. Can I vent?"], ['b', "Vent away."]] },
       { stage: "{a} sits down next to {b} and puts {a.posAdj} head in {a.posAdj} hands.", turns: [['b', "Uh oh. What's happened?"]] },
       { stage: "{a} finds {b} in the dressing room and shuts the door.", turns: [['a', "Can I say something, and you don't tell anyone?"], ['b', "Always."]] },
       { stage: "{a} flops onto the sunbed next to {b} with a huge sigh.", turns: [['b', "That was a big sigh."], ['a', "It's been a big day."]] },
@@ -261,7 +261,7 @@ export const VENT_VOLUME = {
       { turns: [['a', "{pa} is great with everyone else. With me, it's like talking to a wall some days."]] },
     ],
     answer: [
-      { turns: [['b', "Have you told {pa} any of this?"], ['a', "No. I don't want a row."], ['b', "It sounds like you need one."]] },
+      { turns: [['b', "Have you told {pa} any of this?"], ['a', "No. I don't want a fight."], ['b', "It sounds like you need one."]] },
       { turns: [['b', "I don't think that's you overthinking. I think that's real."]] },
       { turns: [['b', "You deserve someone who makes you feel like the best thing in here. Does {pa}?"], ['a', "Some days."]] },
       { turns: [['b', "Talk to {pa}. Honestly. It might be nothing, or it might be everything, and either way you'd know."]] },
@@ -277,7 +277,7 @@ export const VENT_VOLUME = {
     ],
   },
   notes: [
-    { stage: "{a} moans to {b} about {pa}, and feels better for it." },
+    { stage: "{a} vents to {b} about {pa}, and feels better for it." },
     { stage: "{a} tells {b} everything that's been bothering {a.obj} about {pa}." },
     { stage: "{a} vents to {b} on the roof terrace, away from everyone." },
     { stage: "{b} listens to {a} complain about {pa} for half an hour, and doesn't judge once." },

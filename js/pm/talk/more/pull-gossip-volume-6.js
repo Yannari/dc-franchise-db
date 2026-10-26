@@ -126,7 +126,7 @@ export const PILE_IN_LAND_VOLUME = {
       BEAT("{c} storms inside, and the door bangs behind {c.obj}."),
       BEAT("The whole villa is suddenly on one side or the other, and nobody is talking about anything else."),
       BEAT("{b} mouths thank you to {a}, and {a} just nods."),
-      BEAT("The row is over, but the sides aren't. They'll last all night."),
+      BEAT("The fight is over, but the sides aren't. They'll last all night."),
     ],
   },
 };

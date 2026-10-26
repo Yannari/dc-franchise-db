@@ -191,7 +191,7 @@ export const NOTES_VOLUME = {
     { stage: "{a} and {b} talk about {c}, and {a} doesn't hold back." },
   ],
   argument: [
-    { stage: "{a} and {b} have a short, sharp row in the kitchen." },
+    { stage: "{a} and {b} have a short, sharp fight in the kitchen." },
     { stage: "{a} and {b} snap at each other on the daybeds, then go to opposite ends of the villa." },
     { stage: "{a} and {b} argue by the pool, quietly at first and then not quietly at all." },
     { stage: "A small disagreement between {a} and {b} turns into a big one." },

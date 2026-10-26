@@ -313,7 +313,7 @@ export const PILE_IN = build('pile-in', {
       { turns: [], beat: "{a} steps right in front of {b}. That splits the garden straight down the middle." },
       { turns: [], beat: "{a} leads {b} away, and {c} is left shouting at the pair of them across the lawn." },
       { turns: [], beat: "{c} stares at {a}, who has picked a side, and everyone saw which." },
-      { turns: [], beat: "Two more islanders get up off the daybeds. It's not a row between two people any more." },
+      { turns: [], beat: "Two more islanders get up off the daybeds. It's not a fight between two people any more." },
     ],
   },
 });
@@ -323,7 +323,7 @@ export const VILLA_DIVIDED = build('villa-divided', {
   plans: { featured: ['split', 'here', 'there', 'land'], short: ['split', 'land'] },
   moves: {
     split: [
-      { stage: "An hour after the row. Two huddles, at opposite ends of the garden, and {a} and {b} in the middle of one each.", turns: [] },
+      { stage: "An hour after the fight. Two huddles, at opposite ends of the garden, and {a} and {b} in the middle of one each.", turns: [] },
       { stage: "Dinner is two tables tonight. Nobody has said why. Nobody needs to.", turns: [] },
       { stage: "The terrace has gone one way and the kitchen has gone the other. {a} is on the terrace. {b} is in the kitchen.", turns: [] },
       { stage: "Lights out, and every bed in the villa is whispering about {a} and {b}.", turns: [] },
@@ -342,7 +342,7 @@ export const VILLA_DIVIDED = build('villa-divided', {
     land: [
       { turns: [], beat: "Nobody crosses the lawn for the rest of the night." },
       { turns: [], beat: "Somebody puts the music on. Nobody dances." },
-      { turns: [], beat: "The row is over. Whatever this is has only just started." },
+      { turns: [], beat: "The fight is over. Whatever this is has only just started." },
     ],
   },
 });

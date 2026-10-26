@@ -84,7 +84,7 @@ export const INTRO = build('intro', {
   moves: {
     hello: [
       { when: { hasAge: true, hasJob: true, hasTown: true }, stage: "Meet {a}.", turns: [['a', "Hiya! I'm {a}, I'm {age}, I'm {job}, and I'm from {town}. And I am so ready for this, you have no idea."]] },
-      { when: { hasAge: true, hasJob: true, hasTown: true }, stage: "Meet {a}.", turns: [['a', "So, I'm {a}. I'm {age}, I'm from {town}, and I work as {job}, which I love, but I'd love it a lot more if I had someone to come home to and moan about it with."]] },
+      { when: { hasAge: true, hasJob: true, hasTown: true }, stage: "Meet {a}.", turns: [['a', "So, I'm {a}. I'm {age}, I'm from {town}, and I work as {job}, which I love, but I'd love it a lot more if I had someone to come home to and complain about it with."]] },
       { when: { hasJob: true, hasTown: true }, stage: "Meet {a}.", turns: [['a', "Hi, I'm {a}! I'm {job} from {town}, and my friends have basically pushed me into doing this, so if it goes wrong, it's their fault."]] },
       { when: { hasAge: true, hasTown: true }, stage: "Meet {a}.", turns: [['a', "I'm {a}, I'm {age}, and I'm from {town}. And no, I didn't think I'd ever be the kind of person who does something like this either."]] },
       { when: { hasAge: true, hasJob: true }, stage: "Meet {a}.", turns: [['a', "Hello! I'm {a}, I'm {age}, and I'm {job}. People always say they wouldn't have guessed that, and I never know if that's a compliment."]] },

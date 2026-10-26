@@ -70,7 +70,7 @@ const pyramid = {
   'don-demo.gag': [
     { id: 'tms.py-d1', when: PY, turns: [
       don("In this Either/Or, teams choose. Over: climb the great pyramid and get down the other side. Under: go through the tomb, and find the way out."),
-      { beat: 'He peers into the dark doorway of the tomb. Something inside moans, very softly.' },
+      { beat: 'He peers into the dark doorway of the tomb. Something inside groans, very softly.' },
       don("That's the wind. That's definitely the wind. Mostly. I'd go over."),
     ] },
   ],

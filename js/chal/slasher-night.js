@@ -91,7 +91,7 @@ const SLASHER_HORROR_BEATS = {
     "The wind changes direction. Something in the air smells wrong.",
     "Tree branches scrape the roof like fingernails on a coffin lid.",
     "The wind dies. In the stillness, a single footstep. Then nothing.",
-    "A low moan through the trees. Just the wind. Probably just the wind."
+    "A low groan through the trees. Just the wind. Probably just the wind."
   ],
   silence: [
     "A board creaks. Everyone freezes.",

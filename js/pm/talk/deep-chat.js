@@ -42,7 +42,7 @@ export const DEEP_CHAT = build('deep-chat', {
         ['a', "Can I ask you something a bit deep?"],
         ['b', "Go on. I'm in a deep mood."],
       ] },
-      { when: { rowedToday: true }, stage: "{a} and {b} sit together after their row.", turns: [
+      { when: { rowedToday: true }, stage: "{a} and {b} sit together after their fight.", turns: [
         ['a', "Can we actually talk? Not about what happened. About why it happened."],
         ['b', "Yeah. I think we need to."],
       ] },
@@ -291,7 +291,7 @@ export const DEEP_CHAT = build('deep-chat', {
   },
 
   notes: [
-    { when: { rowedToday: true }, stage: "After their row, {a} and {b} talk it all through, properly." },
+    { when: { rowedToday: true }, stage: "After their fight, {a} and {b} talk it all through, properly." },
     { when: { end: 'open' }, stage: "{a} and {b} have a deep chat on the terrace about what they really want." },
     { when: { end: 'open' }, stage: "{b} opens up to {a} about being hurt before." },
     { when: { end: 'guarded' }, stage: "{a} tries to get {b} to open up. {b} changes the subject." },

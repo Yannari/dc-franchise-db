@@ -169,7 +169,7 @@ export const GOSSIP = build('gossip', {
         ['a', "I'm so sorry."],
       ] },
       { when: { sec: 'said' }, turns: [
-        ['a', "{c} was having a moan about you earlier. Saying you're clingy, saying {c} needs space, saying it's like being stuck with someone. And it wasn't a joke. {c} meant it."],
+        ['a', "{c} was venting about you earlier. Saying you're clingy, saying {c} needs space, saying it's like being stuck with someone. And it wasn't a joke. {c} meant it."],
         ['b', "Clingy?"],
         ['a', "That was the word."],
       ] },

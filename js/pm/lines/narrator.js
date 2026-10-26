@@ -15,7 +15,7 @@ export const NARRATOR = {
   ],
   overthinking: [
     { id: 'nar.overthinking.x1', turns: [['narrator', "{a} has been worrying about this for two hours. For the record, nothing has actually happened."]] },
-    { id: 'nar.overthinking.x2', turns: [['narrator', "Inside {a}'s head, there's been a row, a break-up and a tearful reunion. Outside, it's a perfectly normal afternoon."]] },
+    { id: 'nar.overthinking.x2', turns: [['narrator', "Inside {a}'s head, there's been a fight, a break-up and a tearful reunion. Outside, it's a perfectly normal afternoon."]] },
   ],
   advice: [
     { id: 'nar.advice.x1', turns: [['narrator', "{a} has given {b} some advice about {c}. {b} has nodded at all of it, which is usually a bad sign."]] },
@@ -208,7 +208,7 @@ export const NARRATOR = {
     { id: 'nar.breakdown.1', turns: [['narrator', "It's been building for days, and today it's come out all at once. {a} isn't okay, and for once, isn't pretending to be."]] },
   ],
   blowup: [
-    { id: 'nar.blowup.1', turns: [['narrator', "That wasn't a row. That was an event. People will be talking about it for the rest of the summer."]] },
+    { id: 'nar.blowup.1', turns: [['narrator', "That wasn't a fight. That was an event. People will be talking about it for the rest of the summer."]] },
     { id: 'nar.blowup.2', turns: [['narrator', "Everyone in the villa now knows exactly what {a} thinks of {b}. And exactly how loudly {a} can say it."]] },
   ],
   'pile-in': [

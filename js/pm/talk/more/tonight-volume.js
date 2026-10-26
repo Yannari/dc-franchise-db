@@ -30,7 +30,7 @@ export const VOTE_WORRY_VOLUME = {
     ],
     fear: [
       { when: { of: 'scared' }, turns: [
-        ['a', "Every couple in here has a moment. A big kiss, a big row, a big something. What's ours?"],
+        ['a', "Every couple in here has a moment. A big kiss, a big fight, a big something. What's ours?"],
         ['b', "Ours is that we didn't need one."],
         ['a', "That's lovely. That's also exactly what nobody votes for."],
       ] },

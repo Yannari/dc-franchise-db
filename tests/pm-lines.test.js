@@ -159,6 +159,19 @@ describe('every islander talks like where they are from', () => {
       for (const [, x] of turns(e)) for (const [, key] of x.matchAll(/\{~([A-Za-z-]+)\}/g)) expect(SLOTS, `${k} ${e.id}`).toHaveProperty(key.toLowerCase());
     }
   });
+  it('no "row" for a fight and no "moan" for a complaint', () => {
+    // The user, 2026-10-26: "retire the word row for saying fight … nobody say
+    // row, also why use moan in a context that isn't sexual". A fight is a fight;
+    // complaining is venting or complaining. (A row of seats, in a row and the
+    // gym's rowing machine are rows.)
+    const RETIRED = /(rows?|rowed|moan(s|ed|ing)?)/i;
+    const LITERAL_ROW = /(in a row|rows? of|rowing machine|not rowing)/i;
+    const bad = [];
+    for (const [k, e] of ENTRIES) for (const x of texts(e)) {
+      if (RETIRED.test(x) && !LITERAL_ROW.test(x)) bad.push(`${k} ${e.id}: ${x}`);
+    }
+    expect(bad).toEqual([]);
+  });
   it('no regional word is written straight into a line', () => {
     const bare = x => x.replace(/\{~[A-Za-z-]+\}/g, ' ').toLowerCase();
     const bad = [];

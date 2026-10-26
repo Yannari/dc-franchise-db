@@ -185,7 +185,7 @@ export const GROUP_CHAT = build('group-chat', {
       ] },
       { when: { subj: 'row' }, turns: [
         ['b', "Honestly, I think you both just need to sleep on it. You're both wound up. Nothing good gets said when you're both like that."],
-        ['a', "Maybe. I just hate going to bed on a row."],
+        ['a', "Maybe. I just hate going to bed angry."],
       ] },
       { when: { subj: 'knocked-back' }, turns: [
         ['b', "Not yet isn't no. Not yet means {x} is still in it, just slower than you. Some people are slow. Doesn't mean they're not coming."],

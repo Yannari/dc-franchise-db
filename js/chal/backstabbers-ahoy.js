@@ -254,7 +254,7 @@ const PARANOIA_TEXT = [
 
 // ── ATMOSPHERE / FLAVOR ──
 const ATMOSPHERE_FLAVOR = [
-  'A foghorn moans somewhere out in the bay. Nobody answers it.',
+  'A foghorn groans somewhere out in the bay. Nobody answers it.',
   'Fang\'s fin cuts a slow circle around the dive platform, then sinks out of sight.',
   'A mutant gull lands on the committee boat, screeches, and steals a sandwich.',
   'The air pumps wheeze and clatter, a dozen hands cranking in the salt spray.',

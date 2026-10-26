@@ -136,7 +136,7 @@ export const ARGUMENT = build('argument', {
         ['b', "Maybe if you said something worth listening to."],
         ['a', "Wow. Okay. Here we go."],
       ] },
-      { when: { cause: 'clash' }, stage: "A row breaks out between {a} and {b} in the garden.", turns: [
+      { when: { cause: 'clash' }, stage: "A fight breaks out between {a} and {b} in the garden.", turns: [
         ['a', "I'm sick of the attitude. I'm sick of the eye-rolling every time I speak. If you've got a problem with me, say it to my face."],
         ['b', "Fine. I've got a problem with you."],
         ['a', "Go on, then."],
@@ -334,6 +334,6 @@ export const ARGUMENT = build('argument', {
   },
 
   notes: [
-    { stage: "{a} and {b} have a row that the whole villa hears." },
+    { stage: "{a} and {b} have a fight that the whole villa hears." },
   ],
 });

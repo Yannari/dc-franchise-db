@@ -36,7 +36,7 @@ const KINDS = {
   'walked':          { label: 'Walked', volume: 1.8, at: 0.9 },
   'envelope':        { label: 'The envelope', volume: 1.5, at: 0.97 },
   // ── the villa itself, between the ceremonies (js/pm/feed-scenes.js) ──
-  'row':             { label: 'Row', volume: 0.9, at: 0.35, implies: ['argument'] },
+  'row':             { label: 'Fight', volume: 0.9, at: 0.35, implies: ['argument'] },
   'jealous':         { label: 'Jealousy', volume: 0.8, at: 0.38, implies: ['argument'] },
   'gossip':          { label: 'Gossip', volume: 0.7, at: 0.42 },
   'had-it-out':      { label: 'Had it out', volume: 1.1, at: 0.45, implies: ['argument'] },
@@ -91,7 +91,7 @@ function dramaEvent(x) {
   const [a, b, c] = x.players;
   switch (x.feed) {
     case 'row': return { subject: a, actor: b, receipt: x.kind === 'stirrer-confront'
-      ? `${a} went after ${b} for telling ${c} everything` : `${a} and ${b} had a row${ROW_ABOUT[x.kind] || ''}` };
+      ? `${a} went after ${b} for telling ${c} everything` : `${a} and ${b} had a fight${ROW_ABOUT[x.kind] || ''}` };
     case 'jealous': return { subject: a, actor: b, receipt: c ? `${a} had a go at ${b} about ${c}` : `${a} had a go at ${b}` };
     case 'blowup': return { subject: a, actor: b, receipt: `${a} and ${b} split the whole villa` };
     case 'gossip': return { subject: a, actor: b, receipt: c ? `${a} told ${b} what ${c} has been up to` : `${a} told ${b} everything` };

@@ -9,7 +9,7 @@ export const DECL_FINAL_MORE = {
         ['a', "Everyone keeps asking us what our secret is, and I never know what to say, because there isn't one. From the first night, it's just been easy with you. We've watched the whole villa go up and down around us, and we've just held hands and stayed exactly where we were. I never had to wonder. Not once."],
       ] },
       { when: { of: 'rocky' }, turns: [
-        ['a', "We're not the couple anyone would have bet on, are we? We've had more rows than anyone in this villa. Some of them were my fault, most of them, probably. But we always came back to each other. And every time we did, it was a bit stronger than before."],
+        ['a', "We're not the couple anyone would have bet on, are we? We've had more fights than anyone in this villa. Some of them were my fault, most of them, probably. But we always came back to each other. And every time we did, it was a bit stronger than before."],
       ] },
       { when: { of: 'way-back' }, turns: [
         ['a', "There was a time in here when I thought I'd lost you for good. I'd walk past you in the kitchen and not know what to say. And somehow we found our way back. I don't take a single day of it for granted, because I know what it felt like without you."],

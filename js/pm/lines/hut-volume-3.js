@@ -140,7 +140,7 @@ export const HUT_VOLUME_3 = {
       "I needed to let off steam. I only let off the bits that were safe to let off.",
       "I vented about everything except the one thing that's actually bothering me.",
       "{b} probably thinks I've told {b} everything. Not even close.",
-      "I picked the wrong person to moan to. Or the right person. I'll find out.",
+      "I picked the wrong person to vent to. Or the right person. I'll find out.",
     ]),
     ...lines('hutv3.comfort.t', K('comfort', { role: 0 }), [
       "I was there for {b}. I'll always be there for {b}. It also keeps me away from questions.",

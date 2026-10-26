@@ -123,7 +123,7 @@ export const HUT_VOLUME_2 = {
     ]),
     ...lines('hutv2.loud.t', { kind: LOUD }, [
       "While everyone's shouting about that, nobody's looking at me. I'll take it.",
-      "Other people's rows are the best thing that can happen to me this week.",
+      "Other people's fights are the best thing that can happen to me this week.",
       "I joined in. Loudly. It's easier to be loud about someone else's mess.",
       "The more drama there is, the safer I feel. That's a terrible thing to say. It's true.",
     ]),

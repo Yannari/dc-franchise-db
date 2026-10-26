@@ -24,8 +24,8 @@ export const VENT = build('vent', {
     open: [
       { stage: "{a} flops down next to {b} on the daybed and groans.", turns: [
         ['b', "What's that noise for?"],
-        ['a', "Don't. I need to moan, and you're the only one I can moan to."],
-        ['b', "Go on, then. Moan."],
+        ['a', "Don't. I need to vent, and you're the only one I can vent to."],
+        ['b', "Go on, then. Vent."],
       ] },
       { stage: "{a} drags {b} into the dressing room and shuts the door.", turns: [
         ['b', "What's happened?"],
@@ -93,7 +93,7 @@ export const VENT = build('vent', {
     ],
   },
   notes: [
-    { stage: "{a} has a moan about {pa} to {b} in the dressing room." },
+    { stage: "{a} vents about {pa} to {b} in the dressing room." },
     { stage: "{a} vents to {b} about {pa}, a little too loudly." },
   ],
 });

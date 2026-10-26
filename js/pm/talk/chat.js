@@ -252,7 +252,7 @@ export const CHAT = build('chat', {
         ['b', "Much better. You're nicer now."],
       ] },
       { turns: [
-        ['b', "Who do you think's going to be the next couple to have a massive row?"],
+        ['b', "Who do you think's going to be the next couple to have a massive fight?"],
         ['a', "I'm not getting into that. I'm not getting involved."],
         ['b', "Go on. You know you want to."],
         ['a', "Fine. I've got a feeling, but I'm not saying it out loud, because the second I do, they'll all hear it."],
@@ -447,7 +447,7 @@ export const CHAT = build('chat', {
   },
 
   notes: [
-    { when: { rowedToday: true }, stage: "{a} and {b} sit down together after their row, and slowly make up." },
+    { when: { rowedToday: true }, stage: "{a} and {b} sit down together after their fight, and slowly make up." },
     { when: { end: 'warm' }, stage: "{a} and {b} spend a quiet hour together on the daybeds, wrapped up in each other." },
     { when: { end: 'warm' }, stage: "{a} and {b} catch up by the pool, laughing about nothing." },
     { when: { end: 'easy' }, stage: "{a} and {b} sit together on the terrace, chatting about home." },

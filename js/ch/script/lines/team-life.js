@@ -144,7 +144,7 @@ export default {
         v: { loud: "Fine! When we lose again, remember I was the one who said something!", dry: "Lovely. When we lose again, I'll be over there, having said so." } },
       { by: 'b', conf: "{a} came for the job in front of everybody and got one vote. {a}'s own. I didn't have to say a word.",
         v: { sharp: "One vote. {a}'s. I didn't even have to open my mouth.", dry: "{a} held a vote on me and lost it, one to everybody. I've never felt more secure." } },
-      { by: 'a', conf: "They've been moaning about the plan for a week. Then I give them a chance to change it, and nobody's hand moves.",
+      { by: 'a', conf: "They've been complaining about the plan for a week. Then I give them a chance to change it, and nobody's hand moves.",
         v: { soft: "I really thought somebody would put their hand up with me. Nobody did. That was embarrassing." } },
     ] },
     { id: 'tlc.f2', turns: [
@@ -154,7 +154,7 @@ export default {
       { by: 'b', say: "Then you don't want it." },
       { by: 'c', opt: 1, say: "Can we eat?" },
       { by: 'b', conf: "{a} wants to be captain without anybody voting for it. That's called complaining.",
-        v: { sharp: "{a} wants the job and won't ask for it. Then {a} can stop moaning." } },
+        v: { sharp: "{a} wants the job and won't ask for it. Then {a} can stop complaining." } },
     ] },
     { id: 'tlc.f3', turns: [
       { by: 'a', say: "Be honest. Would anybody follow me instead?" },

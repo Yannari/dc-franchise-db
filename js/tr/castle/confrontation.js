@@ -1144,7 +1144,7 @@ registerEvent({
     for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
     const sceneWhy = branch === 'still-going-inside' ? 'brought the argument in through the door'
       : branch === 'dropped-it-at-the-gate' ? 'left it on the other side of the gate'
-        : branch === 'somebody-else-carried-it' ? 'had their row repeated by somebody who overheard it'
+        : branch === 'somebody-else-carried-it' ? 'had their fight repeated by somebody who overheard it'
           : 'climbed down on the last quarter mile';
     const note = lineFor(CARRIED_HOME_LINES[branch],
       `confront-carried-it-home|${branch}|${ctx.ep}`, { a, b });

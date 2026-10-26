@@ -66,7 +66,7 @@ export const CHALLENGE_WIN = build('challenge-win', {
   },
   moves: {
     win: [
-      { when: { rowedToday: true }, stage: "{a} and {b} win the challenge, and for a moment the row is forgotten.", turns: [
+      { when: { rowedToday: true }, stage: "{a} and {b} win the challenge, and for a moment the fight is forgotten.", turns: [
         ['a', "We were barely speaking this morning, and now look at us."],
         ['b', "Maybe we just needed something to win together."],
         ['a', "Truce?"],
@@ -99,7 +99,7 @@ export const CHALLENGE_WIN = build('challenge-win', {
     ],
   },
   notes: [
-    { when: { rowedToday: true }, stage: "{a} and {b} put their row behind them and win the challenge together." },
+    { when: { rowedToday: true }, stage: "{a} and {b} put their fight behind them and win the challenge together." },
     { stage: "{a} and {b} win the challenge." },
   ],
 });

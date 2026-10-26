@@ -56,7 +56,7 @@ export const FRIENDSHIP_VOLUME_5 = {
       t(['a', "Can I ask you a big question? What are you actually scared of?"], ['b', "Being forgotten. Going home and nobody remembering I was here."]),
       tw(T, ['b', "How do you know {pa} is the right one?"], ['a', "I don't, yet. But I've stopped looking at the door when someone walks in. That has to mean something."]),
       tw(T, ['a', "{pa} made me a cup of tea this morning without me asking. I nearly cried."], ['b', "That's how they get you. The tea."]),
-      tw(T, ['b', "Have you and {pa} had a real row yet?"], ['a', "A small one. About whose turn it was to get the towels. I lost."]),
+      tw(T, ['b', "Have you and {pa} had a real fight yet?"], ['a', "A small one. About whose turn it was to get the towels. I lost."]),
       tw(T, ['a', "Sometimes I worry {pa} likes the idea of me more than me."], ['b', "Have you asked?"], ['a', "God, no. I'd rather worry."]),
       tw(T, ['b', "What would you do if {pa}'s head got turned?"], ['a', "Cry, mostly. Then get on with it. Then cry again."]),
       tw({ taken: false }, ['a', "I'm going to try and enjoy being single while I can."], ['b', "That's very grown-up of you."], ['a', "I'm trying something new."]),

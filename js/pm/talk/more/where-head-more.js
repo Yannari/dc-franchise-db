@@ -34,7 +34,7 @@ export const WHERE_HEAD_MORE = {
         ['b', "I don't know. I wish I did. It would be easier if I did."],
       ] },
       { when: { of: 'deflect' }, turns: [
-        ['a', "I'm not trying to start a row. I swear I'm not. I just want to know where I stand, because right now I don't, and it's horrible. I'm lying in bed at night next to someone I don't know how to read."],
+        ['a', "I'm not trying to start a fight. I swear I'm not. I just want to know where I stand, because right now I don't, and it's horrible. I'm lying in bed at night next to someone I don't know how to read."],
         ['b', "You can read me."],
         ['a', "I can't, though. That's what I'm telling you."],
       ] },

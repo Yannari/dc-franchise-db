@@ -51,7 +51,7 @@ export default {
   'slop.resent.scene': [
     { id: 'sl2.r1', turns: [{ by: 'a', dr: "The comp decided the bottom. But {b} still had to say the names out loud." }] },
     { id: 'sl2.r2', turns: [{ by: 'b', say: "It's not personal." }, { by: 'a', say: "Mm." }, { by: 'a', dr: "Three nights on a metal bed. It's personal." }] },
-    { id: 'sl2.r3', turns: [{ by: 'a', dr: "I'm not going to complain, or I'm the one who moaned about slop. I'm just going to remember {b}." }] },
+    { id: 'sl2.r3', turns: [{ by: 'a', dr: "I'm not going to complain, or I'm the one who complained about slop. I'm just going to remember {b}." }] },
     { id: 'sl2.r4', turns: [{ by: 'a', dr: "{b} hasn't been into the have-not room once this week." }] },
     { id: 'sl2.r5', when: { intent: 'lucky' }, turns: [{ by: 'a', dr: "{partner} finished one place above me and is eating a proper dinner. I've thought about that a lot today." }] },
     { id: 'sl2.r6', turns: [{ by: 'a', dr: "I won't forget who put me down here." }] },

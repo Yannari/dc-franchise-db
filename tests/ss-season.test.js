@@ -50,6 +50,9 @@ describe('a Secret Story season', () => {
     for (const p of doc.placements) expect(p.ss, p.name).toBeTruthy();
     expect(doc.finalVote.length).toBeGreaterThan(1);
     expect(doc.winner.vote).toMatch(/%/);
+    // No jury here: nobody is 'Pre-Jury' or 'Jury', and second is the public's second.
+    expect(doc.placements.every(p => !/jury/i.test(p.status))).toBe(true);
+    expect(doc.winner.runnerUp).toBe(doc.finalVote[1].name);
   });
 });
 

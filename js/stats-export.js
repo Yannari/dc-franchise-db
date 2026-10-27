@@ -3228,6 +3228,8 @@ export function buildBigBrotherSeasonDocument(seasonNumber, { format = seasonFor
     doc.finalVote = order.map(n => ({ name: n, percent: Number(pct[n]) || 0 }));
     doc.jurySize = 0;
     if (doc.winner) {
+      // The public's order, not the final three's: second is second.
+      doc.winner.runnerUp = order[1] || null;
       doc.winner.vote = doc.finalVote.map(f => `${f.name} ${f.percent}%`).join(' — ');
       doc.winner.kitty = Number(finale.kitty) || 0;
     }
@@ -4985,7 +4987,9 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
         name,
         playerSlug: _slug(name),
         // Shared across both shows, so every existing reader keeps working.
+        // No jury on a show that has none (Secret Story): out is 'Eliminated'.
         status: place === 1 ? 'Winner' : place <= finalOrder.length ? 'Finalist'
+              : !jurySize ? 'Eliminated'
               : place <= jurySize + finalOrder.length ? 'Jury' : 'Pre-Jury',
         votesReceived: bb.votesReceived || 0,
         // What the audience made of them. Live-only until now, which left fame

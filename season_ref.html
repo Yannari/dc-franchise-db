@@ -602,6 +602,30 @@ function buildAwardHighlights(awards){
   }).filter(Boolean).join('');
 }
 
+/* SECRET STORY'S BOARD OF SECRETS: every secret, its holder, and what became
+   of it. The audience saw them all from launch night; the house saw only the
+   ones that fell. Read from the season document, or its seasons row. */
+function buildSecretsBoard(season){
+  const list = (season && season.secrets) || (window.__seasonRow && window.__seasonRow.secrets) || [];
+  if (!list.length) return '';
+  const e = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const slug = n => String(n||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  const who = hs => (hs||[]).map(h => `<a href="player.html?player=${slug(h)}">${e(h)}</a>`).join(' &amp; ');
+  const found = list.filter(x => x.found).length;
+  // Kept means it lasted to the end; somebody eliminated took theirs out unfound.
+  const kept = new Set((season.placements || []).filter(p => p.ss && p.ss.secretKept).map(p => p.name));
+  return `<div class="sr-sh sr-reveal"><h2>The Secrets</h2><span class="sr-sh-pill">${found} of ${list.length} found</span></div>
+    <div class="sr-reveal" style="display:grid;gap:6px;margin-bottom:20px">
+      ${list.map(x => `<div style="display:grid;grid-template-columns:minmax(120px,1fr) 2fr minmax(140px,1fr);gap:10px;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,.04);align-items:center">
+        <div style="font-weight:700">${who(x.holders)}</div>
+        <div style="font-style:italic">&ldquo;${e(x.text)}&rdquo;</div>
+        <div style="font-size:12px;color:${x.found ? '#f2d27a' : 'var(--muted)'}">${x.found
+          ? `Found by ${who([x.foundBy])}${x.week ? `, week ${e(x.week)}` : ''}`
+          : (x.holders || []).some(h => kept.has(h)) ? 'Kept to the end' : 'Left with it, never found'}</div>
+      </div>`).join('')}
+    </div>`;
+}
+
 function buildRecords(season){
   const st=season.statistics;if(!st)return'';
   const records=[];
@@ -684,7 +708,8 @@ function buildRecords(season){
     const seasonTitle = s.title || (window.__seasonRow && window.__seasonRow.title)
       || seasonLabel;
     document.title = seasonTitle + ' · Blindside Network';
-    document.getElementById('footer-sub').textContent=seasonTitle+' • '+s.castSize+' players';
+    // The footer line went with the old footer (2f9c5dfb5); every season page threw here since.
+    { const fs = document.getElementById('footer-sub'); if (fs) fs.textContent = seasonTitle+' • '+s.castSize+' players'; }
 
     // [AI_FILL] IS A PLACEHOLDER, NOT A VALUE.
     //
@@ -761,7 +786,17 @@ function buildRecords(season){
     const finalists=s.finalists||[];
     const maxVotes=Math.max(...finalists.map(f=>f.votes||f.juryVotes||0),1);
     const barColors=[sc,'#94a3b8','#64748b'];
-    const finalistsHTML=finalists.length?`<div class="sr-finalists">
+    /* A SHOW THE PUBLIC CROWNS (Secret Story) has no jury: its final is the
+       country's shares, drawn from the document's finalVote. */
+    const publicVote = Array.isArray(s.finalVote) && s.finalVote.length ? s.finalVote : null;
+    const finalistsHTML=publicVote?`<div class="sr-finalists">
+      <div class="sr-finalists-lbl">The Public's Vote</div>
+      ${publicVote.map((f,i)=>`<div class="sr-finalist-row">
+          <div class="sr-finalist-name">${plink(f.name)}</div>
+          <div class="sr-finalist-bar-wrap"><div class="sr-finalist-bar" data-pct="${Math.round(Number(f.percent)||0)}" style="width:0%;background:${barColors[i]||'#64748b'}"></div></div>
+          <div class="sr-finalist-votes" style="color:${barColors[i]||'#ccc'}">${Number(f.percent)||0}%</div>
+        </div>`).join('')}
+    </div>`:finalists.length?`<div class="sr-finalists">
       <div class="sr-finalists-lbl">Final Jury Vote</div>
       ${[...finalists].sort((a,b)=>(a.placement||9)-(b.placement||9)).map((f,i)=>{
         const v=f.votes||f.juryVotes||0;
@@ -934,6 +969,8 @@ function buildRecords(season){
       <div id="sr-panel-overview" class="sr-panel on">
         ${winnerHTML}
         ${narrative?`<div class="sr-sh sr-reveal"><h2>Season Narrative</h2></div><div class="sr-narrative sr-reveal">${narrative}</div>`:''}
+
+        ${buildSecretsBoard(s)}
 
         <!-- Top Finishers strip -->
         ${(s.placements||[]).length?`<div class="sr-sh sr-reveal"><h2>Top Finishers</h2><span class="sr-sh-pill">${(s.placements||[]).length} players</span></div>

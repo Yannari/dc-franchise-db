@@ -351,7 +351,7 @@ export function secretStoryPublicVote({ nominees = [], rng = Math.random } = {})
  */
 export function secretStoryExport(state, { finalists = [] } = {}) {
   const secrets = (state?.secrets || []).map(s => ({
-    holders: [...(s.holders || [])], text: s.text, kind: s.kind,
+    holders: [...(s.holders || [])], text: s.text, kind: s.secretKind || s.kind,
     found: !!s.found, foundBy: s.foundBy || null, week: s.week ?? null,
   }));
   const names = new Set([...Object.keys(state?.kitty || {}), ...secrets.flatMap(s => s.holders)]);

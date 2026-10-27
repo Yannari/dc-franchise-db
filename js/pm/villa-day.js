@@ -20,6 +20,7 @@ import { movieNight } from './movie-night.js';
 import { secondChances } from './exes.js';
 import { broken, heartOf } from './just-friends.js';
 import { blowups } from './blowup.js';
+import { enemies } from './enemies.js';
 import { breakdowns } from './breakdown.js';
 import { triangles } from './triangle.js';
 import { rivalries } from './rivalry.js';
@@ -367,6 +368,9 @@ export function runVillaDay(state, rng, entry) {
   // When it kicks off (pm/blowup.js): after the night's reveals — Movie Night
   // included — never before them.
   out.push(...blowups(state, rng, entry, out));
+  // …and the everyday enemies (pm/enemies.js): a dig, a word behind a back, a
+  // fight with a reason, a freeze-out, a truce. On their own dice.
+  out.push(...enemies(state, streamFor(state.seed ?? 1, `enemies:${state.ep}${state.epSalt || ''}`), entry));
   // …and when it all gets too much (pm/breakdown.js): after the night's hurt.
   // (On its own dice, so the rest of the day plays exactly as it did without it.)
   out.push(...breakdowns(state, streamFor(state.seed ?? 1, `breakdown:${state.ep}${state.epSalt || ''}`), entry));

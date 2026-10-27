@@ -96,6 +96,7 @@ import { FINAL_DATE_MATES, JOURNEY_OPEN_MATES, JOURNEY_END_MATES, DECLARATION_MA
 import { GAME_KISS, TOD_TRUTH } from './kiss-games.js';
 import { LIE_WRITE, LIE_ROW } from './lie-detector.js';
 import { HIDEAWAY_TEXT, HIDEAWAY_VOTE, HIDEAWAY_WIN, HIDEAWAY_SNUB, HIDEAWAY, HIDEAWAY_MORNING } from './hideaway.js';
+import { ENEMY_SNIPE, ENEMY_BITCH, ENEMY_CLASH, ENEMY_FREEZE, ENEMY_TRUCE } from './enemies.js';
 import { MOVIE_TEXT, MOVIE_SEAT, MOVIE_REACT, MOVIE_ROW, MOVIE_SPLIT, MOVIE_CALLOUT, MOVIE_AFTER } from './movie-night.js';
 import { FAMILIES, NOTES, HEART_RATE, SNOG_MARRY_PIE } from './rituals.js';
 import { CASA_TEXT, CASA_GOODBYE, CASA_RETURN, CASA_REACT, CASA_ROW, PHOTO_TEXT, PHOTOS, PHOTO_ROW, PHOTO_SPLIT, POSTCARD_TEXT, POSTCARD } from './casa-amor.js';
@@ -144,6 +145,7 @@ export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'dee
   families: FAMILIES, notes: NOTES, 'heart-rate': HEART_RATE, 'snog-marry-pie': SNOG_MARRY_PIE,
   'casa-text': CASA_TEXT, 'casa-goodbye': CASA_GOODBYE, 'casa-return': CASA_RETURN, 'casa-react': CASA_REACT, 'casa-row': CASA_ROW,
   'photo-text': PHOTO_TEXT, photos: PHOTOS, 'photo-row': PHOTO_ROW, 'photo-split': PHOTO_SPLIT, 'postcard-text': POSTCARD_TEXT, postcard: POSTCARD,
+  'enemy-snipe': ENEMY_SNIPE, 'enemy-bitch': ENEMY_BITCH, 'enemy-clash': ENEMY_CLASH, 'enemy-freeze': ENEMY_FREEZE, 'enemy-truce': ENEMY_TRUCE,
   'dump-nerves': DUMP_NERVES, 'recouple-nerves': RECOUPLE_NERVES, 'dump-plea': DUMP_PLEA,
   apology: APOLOGY, 'apology-rejected': APOLOGY_REJECTED, reunite: REUNITE, 'vote-fallout': VOTE_FALLOUT, 'vote-callout': VOTE_CALLOUT,
   'grudge-cold': GRUDGE_COLD, 'grudge-end': GRUDGE_END, 'first-arrival': FIRST_ARRIVAL,

@@ -190,7 +190,7 @@ function storyPhase(state, rng, trng, phase, texture, entry = null) {
  * the last aired episode (restoreFromAired). Bump it when the villa changes
  * enough that an old season should be offered the new one.
  */
-export const PM_ENGINE = '2026-10-26.5';
+export const PM_ENGINE = '2026-10-26.6';
 
 /**
  * THE RESUME (user, 2026-10-25: "with our new system I don't wanna start a new

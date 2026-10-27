@@ -116,7 +116,8 @@ function candidates(state) {
     // What somebody said ABOUT somebody else, not to their face: the debrief
     // after a steal, a dumping, a bombshell (debrief.js) — watched by the one
     // it was about, who is not a partner. The villa's feuds start here.
-    if (e.kind === 'debrief' && SAID.has(e.extra?.of) && here(e.players[0]) && here(e.players[2]) && e.players[0] !== e.players[2])
+    // …or to a friend, on purpose, behind their back (pm/enemies.js).
+    if (((e.kind === 'debrief' && SAID.has(e.extra?.of)) || e.kind === 'enemy-bitch') && here(e.players[0]) && here(e.players[2]) && e.players[0] !== e.players[2])
       out.push({ e, x: e.players[0], p: e.players[2], sev: 0.6, what: 'said', said: true, rival: null });
     // The show always plays something to laugh at, and something sweet.
     else if (e.kind === 'comedy' && e.aired && e.players.filter(here).length >= 2)

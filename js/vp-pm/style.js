@@ -631,6 +631,15 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 @keyframes pmv-tugpulse{30%{transform:scaleY(1.9);filter:brightness(1.5)}}
 
 /* ── THE CASA PHOTOS: a Polaroid of the real moment, developing ── */
+/* ── THE SCOREBOARD: a challenge's running score, or one placing ── */
+.pmv-score{position:absolute;left:50%;top:13%;transform:translateX(-50%);z-index:12;display:none;align-items:center;gap:.7em;
+  padding:.35em .9em;border-radius:999px;background:rgba(20,8,24,.82);border:2px solid #ff2e88;box-shadow:0 6px 18px #0008;
+  color:#fff;font-family:'Bebas Neue',sans-serif;font-size:clamp(14px,2vw,22px);letter-spacing:.04em;pointer-events:none;white-space:nowrap}
+.pmv-score.pmv-on{display:flex}
+.pmv-score .pmv-sc-n{color:#ffd84a;font-size:1.25em;min-width:2.6em;text-align:center}
+.pmv-score.pmv-pill1 .pmv-sc-n{min-width:0}
+.pmv-score.pmv-bump{animation:pmv-scbump .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pmv-scbump{0%{transform:translateX(-50%) scale(.85)}60%{transform:translateX(-50%) scale(1.08)}100%{transform:translateX(-50%) scale(1)}}
 .pmv-polaroid{position:absolute;left:50%;top:4%;width:25%;z-index:11;opacity:0;pointer-events:none;
   background:#fbfaf6;padding:3% 3% 9%;border-radius:4px;box-shadow:0 18px 50px #000a,0 0 0 1px #0001;transform:translate(-50%,0) rotate(-4deg)}
 .pmv-polaroid.pmv-on{opacity:1}

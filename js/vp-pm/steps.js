@@ -363,6 +363,15 @@ function fxFor(row, e, first) {
   if (k === 'movie-react' && e.extra?.of === 'called') fx.shake = true;
   if (k === 'movie-callout' && e.extra?.of !== 'sorry') fx.shake = true;
   if (k === 'enemy-clash') fx.shake = true;
+  // THE SCOREBOARD (user: "no suspense"): Sports Day's running score, and the
+  // placings read out one by one — only what the step itself has revealed.
+  const nth = n => n + (n % 10 === 1 && n % 100 !== 11 ? 'st' : n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th');
+  if ((k === 'sports-race' || k === 'sports-win') && e.extra?.score && e.extra?.teams) {
+    fx.score = { left: `Team ${e.extra.teams.A}`, right: `Team ${e.extra.teams.B}`, a: e.extra.score.A, b: e.extra.score.B };
+  }
+  if (k === 'blind-run' && e.extra?.place) fx.score = { pill: `${nth(e.extra.place)} of ${e.extra.of2}` };
+  if (k === 'sorts-place' && e.extra?.place) fx.score = { pill: `The public's ${nth(e.extra.place)} of ${e.extra.of2}` };
+  if (k === 'knowing-me' && e.extra?.got != null) fx.score = { pill: `${e.extra.got} out of 6` };
   if ((k === 'chal-watch' && e.extra?.of === 'fuming') || (k === 'chal-row' && e.extra?.of === 'storm')) fx.shake = true;
   if (k === 'movie-row' && e.extra?.of === 'deny') fx.shake = true;
   if (k === 'movie-split') { fx.neonDie = ["It's over", '#ff2e88']; fx.shake = true; }
@@ -522,6 +531,8 @@ export function sceneSteps(row, e, evIndex, bg) {
   if (first.fx.phone) first.fx.phone = [e.players[0], (lines[0]?.text || s.stage || '')];
   // A film chapter's polaroid stays up while its footage line plays.
   if (first.fx.polaroid) for (const st of out) if (st.part === 'footage') st.fx = { polaroid: first.fx.polaroid };
+  // The scoreboard stays up for the whole scene, not only its first line.
+  if (first.fx.score) for (const st of out) if (st !== first) st.fx = { ...(st.fx || {}), score: first.fx.score };
   // A big scene stays pushed in for all of its lines.
   // (Movie Night's clip keeps the wide shot: the screen is the picture.)
   const close = e.kind !== 'movie-clip' && !!(first.big || first.fx.shake);

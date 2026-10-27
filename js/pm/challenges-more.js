@@ -316,17 +316,17 @@ function sportsDay(state, rng) {
     if (cheat) { addBond(l, w, -0.6); addRelationshipDimension(l, w, 'resentment', 0.5); }
     if (fall) feel(state, l, 'confidence', -0.3);
     const fan = partnerOf(state, w) || null;
-    out.push(scene(state, rng, 'sports-race', [w, l, ...(fan ? [fan] : [])], { of: race, how: cheat ? 'cheat' : fall ? 'fall' : 'clean', score: { ...score },
+    out.push(scene(state, rng, 'sports-race', [w, l, ...(fan ? [fan] : [])], { of: race, how: cheat ? 'cheat' : fall ? 'fall' : 'clean', score: { ...score }, teams: { A: ca, B: cb },
       pop: pop([w, cheat ? -0.4 : 0.3, 1], [l, fall ? 0.3 : 0, 0.8]) }));
   }
   // The tug of war: the team's average (CLAUDE.md: averages, never sums), and it decides it.
   const avg = t => teams[t].reduce((s, n) => s + fit(n), 0) / teams[t].length;
   const tug = avg('A') + rng() * 2 >= avg('B') + rng() * 2 ? 'A' : 'B';
   score[tug] += 2;
-  out.push(scene(state, rng, 'sports-race', [cap[tug], cap[tug === 'A' ? 'B' : 'A']], { of: 'tug', how: 'clean', score: { ...score }, pop: {} }));
+  out.push(scene(state, rng, 'sports-race', [cap[tug], cap[tug === 'A' ? 'B' : 'A']], { of: 'tug', how: 'clean', score: { ...score }, teams: { A: ca, B: cb }, pop: {} }));
   const W = score.A >= score.B ? 'A' : 'B', L = W === 'A' ? 'B' : 'A';
   for (let i = 0; i < teams[W].length; i++) for (let j = i + 1; j < teams[W].length; j++) addBond(teams[W][i], teams[W][j], 0.15);
-  out.push(scene(state, rng, 'sports-win', [cap[W], ...teams[W].filter(n => n !== cap[W]).slice(0, 3)], { score: { ...score }, pop: Object.fromEntries(teams[W].map(n => [n, { approval: 0.1, fame: 0.8 }])) }));
+  out.push(scene(state, rng, 'sports-win', [cap[W], ...teams[W].filter(n => n !== cap[W]).slice(0, 3)], { score: { ...score }, teams: { A: ca, B: cb }, pop: Object.fromEntries(teams[W].map(n => [n, { approval: 0.1, fame: 0.8 }])) }));
   // THE STAR PLAYER (Leah picked Sammy, in front of Jess): the winners' best
   // gets a kiss from anyone on the other side of the villa.
   const star = [...teams[W]].sort((x, y) => fit(y) - fit(x))[0];

@@ -116,6 +116,7 @@ function frame(bg, hud, board) {
       <path class="${P('flap')}" d="M8 44 L100 106 L192 44Z" fill="#ff2e88" stroke="#fff" stroke-width="3"/><path d="${HEART}" transform="translate(100 104) scale(.9)" fill="#fff"/></svg>
     <div class="${P('phone')}"><div class="${P('scr')}"><h4>I got a text!</h4><div class="${P('tag')}"></div><p></p></div></div>
     <div class="${P('polaroid')}"><div class="${P('pol-photo')}"></div><div class="${P('pol-cap')}"></div></div>
+    <div class="${P('score')}"><span class="${P('sc-l')}"></span><b class="${P('sc-n')}"></b><span class="${P('sc-r')}"></span></div>
     <div class="${P('crack')}"></div>
     <svg class="${P('tri')}" viewBox="0 0 300 226" preserveAspectRatio="xMidYMid meet"></svg>
     <div class="${P('poly')}"><div class="${P('poly-scr')}"><svg viewBox="0 0 200 60" preserveAspectRatio="none"><polyline class="${P('poly-trace')}"/></svg><small></small></div><div class="${P('poly-lamp')}"><i></i><b></b></div></div>
@@ -360,6 +361,17 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
       ${face('h', T.h)}${face('x', T.x)}${face('y', T.y)}${teams}`;
     svg.classList.add(P('on'));
     if (fresh) { svg.classList.remove(P('draw')); void svg.getBoundingClientRect(); svg.classList.add(P('draw')); }
+  }
+  // The challenge's scoreboard: two teams and the running score, or one placing.
+  if (st.fx?.score) {
+    const sc = q('score');
+    const s = st.fx.score;
+    sc.querySelector('.' + P('sc-l')).textContent = s.pill ? '' : s.left;
+    sc.querySelector('.' + P('sc-r')).textContent = s.pill ? '' : s.right;
+    sc.querySelector('.' + P('sc-n')).textContent = s.pill || `${s.a} – ${s.b}`;
+    sc.classList.toggle(P('pill1'), !!s.pill);
+    sc.classList.add(P('on'));
+    if (fresh) { sc.classList.remove(P('bump')); void sc.offsetWidth; sc.classList.add(P('bump')); }
   }
   // The Casa photo: a Polaroid of the real moment, dropped on the stage, developing.
   if (st.fx?.polaroid) {

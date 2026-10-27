@@ -22,7 +22,8 @@ describe('the rows a season document gives the calculator', () => {
     const row = rows.find(r => r.name === winner.name);
     expect(row.immWins).toBe(winner.dr.wins);
     expect(row.rewWins).toBe(winner.dr.lipsyncWins);
-    expect(row.comp3Wins).toBe(winner.dr.highs);
+    expect(row.comp3Wins).toBe(winner.dr.smackdownCrowns ?? 0);   // the Smackdown crown
+    expect(row.strategicScore).toBe(winner.dr.ppe ?? 0);          // points per episode
     expect(row.socialCol).toBe(winner.dr.bottoms);
   });
 

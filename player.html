@@ -1868,6 +1868,20 @@ function renderPlayerProfile(fullPlayer) {
         add('🌟', `${S[fam]?.name || ''} Hall of Fame · ${runs.join(', ')}`, 'is-gold');
       }
     }
+    // DRAG RACE'S OWN HONOURS, read per season. A Lip Sync Assassin won three
+    // or more lip syncs FOR HER LIFE in one season (the export no longer counts
+    // a lip sync for the win); a Smackdown champion took the Lalaparuza crown.
+    {
+      const S = window.__SHOWS?.SHOWS || {};
+      const label = d => {
+        const sh = S[d.format] || {};
+        return sh.spinOff ? `${sh.familyTab || sh.name} ${d.season}` : `${sh.short || ''}${d.season}`;
+      };
+      const assassin = (player.seasonDetails || []).filter(d => (d.dr?.lipsyncWins || 0) >= 3);
+      if (assassin.length) add('🎤', `Lip Sync Assassin · ${assassin.map(d => `${d.dr.lipsyncWins} on ${label(d)}`).join(', ')}`, 'is-red');
+      const crowns = (player.seasonDetails || []).filter(d => (d.dr?.smackdownCrowns || 0) > 0);
+      if (crowns.length) add('💋', `Lip Sync Smackdown champion · ${crowns.map(label).join(', ')}`, 'is-purple');
+    }
     if (best === 2) add('🥈', 'Runner-up', 'is-silver');
     if (player.totalSeasons >= 3) add('🔁', `${player.totalSeasons}-time player`, 'is-purple');
     else if (player.totalSeasons === 2) add('🔁', 'Returnee', 'is-purple');

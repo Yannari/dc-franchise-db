@@ -846,17 +846,25 @@ export const RU_SHOW = {
     // so more of each point is a point the base was not already paying.
     comp2: { label: 'Lip syncs', weight: 1.1,
       title: '+1.1 per lip sync for your life won' },
-    // Thin on purpose. See the -0.518 above: this is the column closest to
-    // being placement wearing a hat.
-    comp3: { label: 'Highs', weight: 0.4, title: '+0.4 per high placement' },
+    // THE SMACKDOWN CROWN (Lalaparuza), priced as a maxi win: it is a
+    // competition won outright, the only one an eliminated queen can still win.
+    // Highs used to sit here at 0.4; PPE (the strat slot) now pays for a high.
+    comp3: { label: 'Smackdown', weight: 1.4,
+      title: '+1.4 per Lip Sync Smackdown crown, priced as a maxi win' },
     // NO ADVANTAGE LIFECYCLE. This show has nothing found, played, wasted or
     // carried out of the game, and an empty group contributes nothing rather
     // than a penalty — the Traitors' `strategic` precedent, one block up.
     adv: null,
-    // Nothing exports a strategic figure for a runway either, and there is no
-    // obvious candidate: the closest thing this show has to strategy is
-    // choosing what to make, which the panel already priced in the call.
-    strat: { weight: 0, scale: 10 },
+    /* ── POINTS PER EPISODE, in the strategic slot ──
+       The fandom ranks queens by PPE (WIN 5 / HIGH 4 / SAFE 3 / LOW 2 / BTM 1 /
+       ELIM 0, over the episodes she competed in), and it is the one number
+       that charges a bottom: the Bottom column below is shown, not scored.
+       Centred on a SAFE week, so an average run adds nothing, and averaged per
+       episode, so it does not charge a queen for lasting long — which is why
+       bottoms are not scored as a count. It replaced Highs (2026-10-27, the
+       user): PPE already counts a high. A first-boot's 0 is a real score.
+       Nothing else here is strategy; the panel prices what she chose to make. */
+    strat: { weight: 4, scale: 5, center: 3, label: 'PPE', zeroIsScore: true },
     /* ── A COLUMN WHOSE JOB IS TO STOP A WRONG DEFAULT ────────────────
        `_ruScore` falls back to `RU_SHOW['total-drama'].social` when a show
        declares none, and that fallback is the VOTES CURVE: it reads the
@@ -878,10 +886,10 @@ export const RU_SHOW = {
     read: (p) => ({
       comp1: p.dr?.wins ?? 0,
       comp2: p.dr?.lipsyncWins ?? 0,
-      comp3: p.dr?.highs ?? 0,
+      comp3: p.dr?.smackdownCrowns ?? 0,
       social: p.dr?.bottoms ?? 0,
       advFound: 0, advPlayed: 0, advWasted: 0, advHeld: 0,
-      strategicScore: 0,
+      strategicScore: p.dr?.ppe ?? 0,
     }),
   },
 
@@ -1012,8 +1020,10 @@ function _ruRelabelColumns() {
   if (socTh && soc) { socTh.textContent = soc.label; socTh.title = soc.title; }
   const stratTh = document.getElementById('ru-th-strat');
   if (stratTh && rub.strat) {
-    stratTh.title = 'How they actually played · ' + _stratRangeText(rub.strat)
-      + ' · auto-filled from season JSON — leave blank and it scores nothing';
+    // A show whose slot holds its own number names it (Drag Race: PPE).
+    stratTh.textContent = rub.strat.label || 'Strat';
+    stratTh.title = (rub.strat.label ? rub.strat.label + ' · ' : 'How they actually played · ') + _stratRangeText(rub.strat)
+      + (rub.strat.zeroIsScore ? ' · auto-filled from season JSON' : ' · auto-filled from season JSON — leave blank and it scores nothing');
   }
   const allyTh = document.getElementById('ru-th-allies');
   if (allyTh) {
@@ -1137,7 +1147,8 @@ function _stratRangeText(spec) {
 function _stratAdj(value, rub) {
   const spec = rub?.strat;
   const v = num(value);
-  if (!spec || !v) return 0;
+  // An empty column is nothing — unless the scale's 0 is a real score (PPE).
+  if (!spec || (!v && !spec.zeroIsScore)) return 0;
   return spec.center != null ? (v - spec.center) * spec.weight : v * spec.weight;
 }
 
@@ -1399,9 +1410,9 @@ export function ruScoreRows(rows, { board = null, castSize, coWin = false, forma
     // scale -- scored, average, worth nothing either way -- rendered exactly
     // like one whose column was never filled in. That ambiguity is what kept
     // the empty Strat column invisible on every house season for months.
-    if (row.strategicScore) {
+    if (row.strategicScore || _mrub.strat?.zeroIsScore) {
       const sa = _stratAdj(row.strategicScore, _mrub);
-      parts.push('Strat:' + (sa > 0 ? '+' : sa < 0 ? '−' : '±') + Math.abs(sa).toFixed(1));
+      parts.push((_mrub.strat?.label || 'Strat') + ':' + (sa > 0 ? '+' : sa < 0 ? '−' : '±') + Math.abs(sa).toFixed(1));
     }
     if (row.alliances)   parts.push('Allies:+' + (Math.min(row.alliances,RU_ALLY.cap)*RU_ALLY.weight).toFixed(1));
     if (row.fanFav)     parts.push('FanFav:+2.0');

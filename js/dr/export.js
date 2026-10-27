@@ -23,6 +23,7 @@
 // season read as a Big Brother eviction in half the site.
 import { SHOWS, showWords, seasonRounds, DRAG_FORMAT, formatPrefix } from '../shows.js';
 import { edgesOf } from './family.js';
+import { ppeFor } from './grid.js';
 
 // Re-exported so this module's own readers need one import, not two.
 export { DRAG_FORMAT };
@@ -140,6 +141,13 @@ export function dragEpisodes(rows) {
           ...(dr.lipsync.chosenBy ? { chosenBy: dr.lipsync.chosenBy } : {}),
         }
         : null,
+      /* THE SMACKDOWN. It was dropped whole: the published season could not
+         say who won it, so the site and the rankings never could either. */
+      ...(dr.smackdown ? { smackdown: {
+        winner: dr.smackdown.winner || null,
+        title: dr.smackdown.title || null,
+        duels: (dr.smackdown.duels || []).map(d => ({ round: d.round, winner: d.winner, loser: d.loser })),
+      } } : {}),
       /* THE SEASON'S SAVE THIS WEEK, when there is one and it was used. */
       save: dr.save && (dr.save.hold || (dr.save.tries || []).length) ? {
         kind: dr.save.kind,
@@ -216,8 +224,15 @@ export function dragPlacements(rows, cast = null) {
   });
 }
 
+/* LIP SYNCS THAT WERE NOT FOR HER LIFE. The premiere's top two singing for the
+   win, the Lip Sync for Your Legacy, a night with no elimination, a tournament
+   final: winning one is the week's WIN (already counted as a maxi win), not
+   surviving the bottom. Counting both paid one achievement twice. */
+const NOT_FOR_LIFE = new Set(['for-the-win', 'legacy', 'legacy-double', 'no-elimination', 'tournament']);
+
 export function dragCareerStats(rows, name, congeniality = null) {
   let wins = 0; let highs = 0; let lows = 0; let bottoms = 0; let lipsyncWins = 0;
+  let smackdownWins = 0; let smackdownCrowns = 0;
   for (const row of rows) {
     const c = row.dr?.call || {};
     if ((c.win || []).includes(name)) wins++;
@@ -227,7 +242,13 @@ export function dragCareerStats(rows, name, congeniality = null) {
     // whether or not the night ended in a lip sync.
     if ((c.bottom || []).includes(name) || (c.atRisk || []).includes(name)) bottoms++;
     const ls = row.dr?.lipsync;
-    if (ls && ls.winner === name) lipsyncWins++;
+    if (ls && ls.winner === name && !NOT_FOR_LIFE.has(ls.call)) lipsyncWins++;
+    // THE SMACKDOWN (Lalaparuza): every duel she won, and the crown.
+    const sd = row.dr?.smackdown;
+    if (sd) {
+      smackdownWins += (sd.duels || []).filter(d => d?.winner === name).length;
+      if (sd.winner === name) smackdownCrowns++;
+    }
     // A double shantay has no winner and both survived, which still counts as
     // having won a lip sync for your life.
     if (ls && ls.call === 'double-shantay' && (ls.queens || []).includes(name)) lipsyncWins++;
@@ -236,8 +257,14 @@ export function dragCareerStats(rows, name, congeniality = null) {
      who takes the sash on two seasons has congeniality 2, the same way she has
      wins 2. It reads 0 for everybody when the caller does not say who won —
      the season document knows, a single-row lookup may not. */
+  /* POINTS PER EPISODE, the chart's own number (js/dr/grid.js): WIN 5, HIGH 4,
+     SAFE 3, LOW 2, BTM 1, ELIM 0, over the episodes she competed in — so a long
+     run is not charged for its length, and a bottom costs what the show says. */
+  const ppe = ppeFor(rows.filter(r => r?.dr && !r.dr.smackdown && !r.dr.reunion)
+    .map(r => ({ result: resultFor(r, name) })));
   return {
-    wins, highs, lows, bottoms, lipsyncWins,
+    wins, highs, lows, bottoms, lipsyncWins, smackdownWins, smackdownCrowns,
+    ppe: ppe ?? 0,
     congeniality: congeniality && congeniality === name ? 1 : 0,
   };
 }

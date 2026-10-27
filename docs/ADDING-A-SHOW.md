@@ -3597,6 +3597,7 @@ the prefix, name, emoji, `words` and `audience` overlay, while dispatch in
 `run-ui.js` runs an existing engine in a mode. You still pay the identity maps
 (§9), `CONFIG_SCOPE`, ratings signals (§2.5) and export stamping (§5); you skip
 the engine. Use it when a format wants its own billing but not its own rules.
+§23 is the worked version: Drag Race All Stars, the first spin-off built this way.
 
 Before building any of these, do §16.9, §17.8 and §22.9, build the dialogue by §19 and
 the viewer by §18.4, and check the real show's rules on its wiki before
@@ -3938,3 +3939,125 @@ The fixes:
    before writing pools.
 8. Measure what airs per pool, the repeats, each team's share of screen time,
    and how much one round predicts the next. Find the cause before tuning.
+
+## 23. A spin-off of an existing show (Drag Race All Stars, 2026-10-27)
+
+Drag Race All Stars was a season SHAPE on Drag Race (`seasonConfig.drAllStars`)
+until it became its own show: `drag-race-all-stars`, prefix `dras`, seasons
+`dras-1`, `dras-2`. It is the template for every format that wants its own
+billing on an engine that already exists — Secret Story on Big Brother next,
+then Bachelor in Paradise, the Perfect Match modes, Moundir. Plan and ledger:
+`docs/superpowers/plans/2026-10-27-drag-race-all-stars-own-show.md`.
+
+**Why it had to stop being a flag.** With no prefix of its own, the first All
+Stars season would have published as `dr-2` and the next flagship as `dr-3`:
+the real show numbers them separately (Season 16, All Stars 9). The calendar
+was already faking it with an invented `asNumber`. The prefix is `dras`, not
+`as`, because other shows will have an All Stars too.
+
+### 23.1 The registry entry
+
+```js
+'drag-race-all-stars': {
+  prefix: 'dras', name: 'Drag Race All Stars', short: 'DRAS', emoji: '🌟', accent: '#b83cff',
+  engine: 'drag-race',      // what plays it
+  family: 'drag-race',      // where it is filed: site toggle, career, rankings
+  familyTab: 'All Stars',   // its tab under the family button (the parent says 'Drag Race')
+  spinOff: { after: 3 },    // first one once the flagship has aired 3; one a year
+  airNight: 5, airSlots: ['summer'],
+},
+```
+
+Everything it does not declare is copied from the parent by
+`SPIN_OFF_INHERITS` in `js/shows.js` (words, careerStats, articleStats,
+audience, roundShape, roundsPath, venue, rosterPlace, polls, runPerPlayer,
+runnableFlag, signals, hasJury, privateBallotChannels), so the two cannot
+drift. Hosts are inherited the same way, below `HOSTS_BY_FORMAT`.
+
+### 23.2 The one rule: rows stamp the ENGINE, the season carries the SHOW
+
+- An episode row keeps `ep.format === 'drag-race'`. A row's format answers
+  "which renderer draws me", and every viewer check already asks that — so
+  the whole `js/vp-dr/` tree and the engine did not change at all.
+- The season's identity is `seasonConfig.format` and the published document's
+  `format`. Numbering, save keys (`dras_episode_s1_e1`), the export, the
+  ledger record, the calendar, careers and the site read that.
+
+Two questions, two helpers, never a slug literal:
+
+| asking | use |
+|---|---|
+| which engine plays this / which controls, twists, venue, renderer | `engineOf(f)`, `engineFormat(cfg)` |
+| which show is this season, its number, keys, page | `seasonFormat(cfg)` |
+| which career, board, vocabulary, switcher button | `familyOf(f)`, `familyMembers(f)` |
+| is this season a spin-off | `isSpinOffSeason(cfg)` |
+| an old row `{ format: 'drag-race', allStars: true }` | `seasonRowFormat(row)` |
+| order across two series that number separately | `seasonOrder(f, n)` |
+
+The engine still reads its own flag (`config.drAllStars`); `drAllStarsFor(cfg)`
+sets it from the SHOW, so a hidden dropdown can no longer turn a Drag Race
+season into an All Stars one. An old config `{ format: 'drag-race',
+drAllStars: true }` reads as the spin-off in `seasonFormat()` — the one door
+every reader comes through, so presets, saves and live slots needed no
+migration.
+
+### 23.3 What had to learn the family, and how each was found
+
+Each of these was a per-show map or a `=== format` that would have quietly
+given the spin-off another show's answer. The guards caught the first four;
+reading caught the rest.
+
+| place | would have done | fix |
+|---|---|---|
+| `twistsForFormat` | no twists at all | filter by engine |
+| `CONFIG_SCOPE` (quick-setup) | Drag Race controls hidden | engine OR exact slug (`_inScope`); the exact slug scopes the All Stars rule select to the spin-off alone |
+| social words | Total Drama's ("jury") | family fallback |
+| vocabulary guard | DR and DRAS forbidding each other's words | a family is one vocabulary |
+| `settingsForFormat` | Total Drama's camps | engine fallback (found by reading) |
+| `HOSTS_BY_FORMAT` | Chris, Chef and Jeff | family inheritance (found by reading) |
+| `seasonExporterFor` | the Total Drama exporter | engine fallback |
+| `_tagSeasonDetail` split-brain guard | refused a `dr` block on a `dras` detail | compare blocks by engine |
+| the arrival card | "Season 1" for All Stars 1 | `pastSeasonLabel` |
+| trivia ordinals | All Stars 1 "before" Drag Race 3 | `seasonOrder` |
+| Kristal exit words, ledger record | Big Brother's words, filed as `dr-N` | family fallback, `format` option |
+| site header | the tab row drawn off-screen to the right | the switch area is a column |
+
+### 23.4 Careers, rankings and the Hall of Fame
+
+The user's rule: an All Stars crown is a **legitimate win** and counts
+everywhere a win counts — `byShow`, `records.careersIn`, the rankings board
+(`boardFile` and `RU_SHOW` fall back to the family). What tells it apart is
+the real show's own distinction: the winner is **inducted into the Hall of
+Fame**. `player.hallOfFame` lists those seasons, the player page's honours
+shelf says "Drag Race Hall of Fame · All Stars 1", the winner badge is
+`DRAS1 Winner`, the seasons row carries `hallOfFame: true`, and trivia names
+each induction and where she placed before it ("…after placing 9th on Drag
+Race 1"), plus the Nth inductee once there are three.
+
+### 23.5 The calendar
+
+`nextWindowFor(rows, spinOff)` hands a spin-off to `nextAllStarsWindow`, so
+every caller — the setup's Auto window, the export's air window, the calendar —
+gets "after the flagship's third season, one a year, on its own quarter"
+without branching. The calendar draws `DRAS 1` and one possible next season.
+
+### 23.6 On the site
+
+`js/show-switcher.js` draws one button per FAMILY; a family with more than one
+show on the page opens a second row named by `familyTab` (`Drag Race | All
+Stars`). A spin-off remembered from another page opens on its flagship rather
+than an empty filter. Adding a spin-off therefore costs the navbar nothing.
+
+### 23.7 The order that worked, for the next spin-off
+
+1. Registry entry; run every test that iterates `SHOWS` against a baseline
+   taken first. Each NEW failure is a map that needs a family or engine
+   fallback, never a copied entry.
+2. Engine checks to `engineFormat`; the mode flag from the show.
+3. Export, merges, ledger record, file paths, exporter dispatch.
+4. History and past readers: both series, air order, the label on screen.
+5. Calendar. 6. Careers, rankings, the distinction. 7. The switcher.
+8. Play a season off real data and read the export; run the show's audit.
+
+The worker imports `js/shows.js`: a spin-off cannot be published until the
+worker is redeployed with the new registry.

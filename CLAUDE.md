@@ -279,6 +279,12 @@ The franchise rules apply unchanged — nice archetypes never scheme or sabotage
 neutrals need `strategic >= 6 && loyalty <= 4`. Drag's schemes are reads,
 shade and idea theft rather than votes, but the eligibility rule is the same.
 
+### All Stars is its own show
+`drag-race-all-stars` (prefix `dras`) plays on this engine: episode rows keep
+`format: 'drag-race'`, the season's identity is `seasonConfig.format`. Engine
+checks use `engineFormat()`; careers, boards and the site use `familyOf()`. A
+spin-off of any show follows `docs/ADDING-A-SHOW.md` §23.
+
 ### Before shipping a change
 `npm run audit:dr-spec` — a hundred seasons, ten measurements, every rate
 printed beside its chance line. Every real defect on this show came from that

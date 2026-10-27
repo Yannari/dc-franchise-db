@@ -347,8 +347,13 @@ Rules that bite:
 
 ### All Stars (`drAllStars`)
 
-A season SHAPE, chosen on the setup screen beside the premiere and the finale,
-with its own rule dropdown (`drAllStarsRule`) because "All Stars" names five
+**Since 2026-10-27 All Stars is its own show**: `drag-race-all-stars`, seasons
+`dras-1`, `dras-2`, picked in the Show dropdown and playing on this engine
+(rows stay stamped `drag-race`). The engine still reads `drAllStars`;
+`drAllStarsFor` sets it from the show. Its winner is inducted into the Hall of
+Fame. See `docs/ADDING-A-SHOW.md` §23.
+
+The rule dropdown (`drAllStarsRule`) exists only on that show, because "All Stars" names five
 different games — the era table is in
 `docs/superpowers/specs/2026-09-08-drag-race-all-stars-design.md`, read off all
 ten seasons' wikitext.

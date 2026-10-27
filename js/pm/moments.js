@@ -64,7 +64,8 @@ function fireBuildUp(state, rng, { atRisk, channel, format, dumped }) {
   // What tonight is, for the text and the host: the public's singles, a
   // double dumping, or the format the night plays.
   const couplesGoing = dumped.filter(n => { const p = partnerOf(state, n); return p && dumped.includes(p); }).length / 2;
-  const tonight = channel === 'public' && atRisk.every(c => c.length === 1) ? 'singles'
+  // (The public's favourite boy and girl is a format of its own, not a singles night.)
+  const tonight = format === 'public-islanders' ? format : channel === 'public' && atRisk.every(c => c.length === 1) ? 'singles'
     : channel === 'public' && couplesGoing >= 2 ? 'public-double' : format || channel;
   const push = (kind, players, extra = {}, major = []) => out.push(makeEvent(state, rng,
     { phase: 'dumping', kind, players, aired: true, major, extra: { channel, ...extra } }));
@@ -165,7 +166,7 @@ function pleas(state, rng, atRisk, channel) {
 // ("the next boy" is never the first boy named).
 function nthAtRisk(state, atRisk, c, format, i) {
   const g = n => state.profiles[n].gender;
-  const before = String(format).startsWith('cross') ? atRisk.slice(0, i).filter(x => g(x[0]) === g(c[0])).length : i;
+  const before = /^(cross|same-gender|public-islanders|arrivals)/.test(String(format)) ? atRisk.slice(0, i).filter(x => g(x[0]) === g(c[0])).length : i;
   return before === 0 ? 'first' : i === atRisk.length - 1 ? 'last' : 'next';
 }
 export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], channel, decision = null, afterVotes = null, format = null, nominate = null, staying = 0 }) {
@@ -250,7 +251,8 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
     // Against one islander or a couple: the reasons differ (a boy at risk on
     // his own is not "the couple I haven't seen grow").
     // "The other couple" only when there are two: three at risk is 'couples'.
-    const risk = atRisk.find(c => c.includes(b.target))?.length === 1 ? 'one' : atRisk.length === 2 ? 'couple' : 'couples';
+    // One couple at risk and the vote naming one of the two (one-stays): 'split'.
+    const risk = format === 'one-stays' ? 'split' : atRisk.find(c => c.includes(b.target))?.length === 1 ? 'one' : atRisk.length === 2 ? 'couple' : 'couples';
     ev('ballot-reveal', [b.voter, b.target], { [b.voter]: { approval: why && why !== 'cover' ? -0.4 : -0.2, fame: why ? 1.5 : 1 } }, [], why ? { why, motive: b.why, risk } : { risk });
   }
   // …and what the votes left to settle (a tie), before anyone is told.
@@ -395,7 +397,7 @@ function pickerGender(state) {
   return g;
 }
 
-function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, all = false, toCome = [], surplus = 0, dumping = null }) {
+function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, all = false, toCome = [], surplus = 0, dumping = null, dry = 0 }) {
   // How many a recoupling may send home, decided before anyone picks, so the
   // host can say what is at stake (below: the cap's reasons).
   const base = state.villa.length > 10 ? 2 : 1;
@@ -411,7 +413,9 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   // (Boy-girl arithmetic: in a villa where somebody can fancy their own side it counts nobody.)
   const ownSide = here.some(a => here.some(b => b !== a && gen(b) === gen(a) && attr(state, a, b) != null));
   const hopeless = ownSide ? 0 : Math.max(0, count('f') - count('m') - coming('m')) + Math.max(0, count('m') - count('f') - coming('f'));
-  const cap = Math.min(Math.max(pace < 0.5 ? 0 : pace < 1 ? 1 : Math.max(base, Math.ceil(pace - 0.5)), hopeless),
+  // A long dry spell (season.js ctx.dry): the unpicked one goes, if the villa can spare them.
+  const parched = dry >= 3 && surplus >= 1 ? 1 : 0;
+  const cap = Math.min(Math.max(pace < 0.5 ? parched : pace < 1 ? 1 : Math.max(base, Math.ceil(pace - 0.5)), hopeless),
     Math.max(0, state.villa.length - floor));
   const picker = pickerGender(state);
   // The final recoupling says so first: who reads the text, and the one
@@ -1063,7 +1067,7 @@ export const MOMENTS = {
     const pre = arrivals(state, ctx, ctx.entry.arrivals?.bombshell || 0);
     // The final recoupling sends every single home (schedule.js).
     const r = recoupleNight(state, ctx.rng, { dumpSingles: true, pace: ctx.pace, votesAhead: ctx.votesAhead || 0,
-      all: !!ctx.entry.finalRecoupling, toCome: ctx.queues?.bombshell || [], surplus: ctx.surplus || 0,
+      all: !!ctx.entry.finalRecoupling, toCome: ctx.queues?.bombshell || [], surplus: ctx.surplus || 0, dry: ctx.dry || 0,
       dumping: ctx.entry.finalRecoupling ? null : ctx.entry.dumping || null });
     return { events: [...pre, ...r.events], exits: r.exits, ballots: r.ballots };
   },
@@ -1073,6 +1077,8 @@ export const MOMENTS = {
     ctx.immune = imm?.immune || [];
     const r = ctx.entry.coupled ? coupledNight(state, ctx) : voteNight(state, ctx);
     if (imm) { r.events = [...imm.events, ...r.events]; r.extra = { ...(r.extra || {}), immune: imm.immune }; }
+    // The last vote night (the arrivals format: who walked in since).
+    state.lastVoteEp = state.ep;
     return r;
   },
   bombshell: (state, ctx) => {
@@ -1161,7 +1167,10 @@ function voteNight(state, ctx) {
     // pace with nobody to spare and the night played as everyone safe).
     const authorSays = (ctx.entry.dumping === 'always' || (ctx.entry.formatBooked && ctx.entry.dumping !== 'none'))
       && state.couples.length >= 3;
-    if (!authorSays && (state.couples.length < 3 || (enough && !roomy && !firstRoom) || !paceOk)) {
+    // …and a vote three episodes or more into a dry spell plays, when the villa
+    // has a couple to spare (season.js ctx.dry).
+    const parched = ctx.entry.dumping !== 'none' && (ctx.dry ?? 0) >= 3 && (ctx.surplus ?? 0) >= 2 && state.couples.length >= 3;
+    if (!authorSays && !parched && (state.couples.length < 3 || (enough && !roomy && !firstRoom) || !paceOk)) {
       // …unless the villa has single islanders to lose: then the singles face
       // the public (measured: at the calibration cast a quarter of second
       // votes met four couples and three or four singles, who then all went
@@ -1188,6 +1197,17 @@ function voteNight(state, ctx) {
       const spare = Math.min(firstSingles ? Math.max(1, Math.round(ctx.pace)) : Math.round(ctx.pace), singles.length - toCome,
         firstSingles ? ctx.surplus : Infinity);
       if (spare > 0 && (paceOk || firstSingles)) return singlesVoteNight(state, ctx, singles, spare);
+      // ONE STAYS, ONE GOES: a dry spell, and no whole couple to spare — the
+      // villa has exactly the couples the last week needs (the user's season 1,
+      // eps 16-22: six couples, a final of four, two couple dumpings saved for
+      // the end and seven nights with nobody leaving). The public's least
+      // favourite couple is at risk and the villa sends one of them home; the
+      // one left has nobody to recouple with, and goes at the final recoupling.
+      // The same islanders leave; they leave across the stretch, not at its end.
+      if (ctx.entry.dumping !== 'none' && (ctx.dry ?? 0) >= 2 && lastVotes && !state.split
+        && state.couples.length > finalOf(state) && ctx.entry.moment === 'public-vote') {
+        return coupleFormatNight(state, { ...ctx, entry: { ...ctx.entry, bottom: 1 } }, 'one-stays');
+      }
       return { events: safeNight(state, ctx), exits: [], ballots: [], extra: { dumpFormat: null } };
     }
     // A vote that plays only because it is the first (the pace alone would
@@ -1264,11 +1284,55 @@ function couplesPossible(state, toCome) {
   return Math.min(n.f, n.m) + same.length;
 }
 
+/**
+ * THE ISLANDER NIGHTS the real show runs before couples go (Wikipedia, UK 9-12
+ * and US 6, night by night): the public vote for their favourite boy and girl,
+ * and then —
+ *   same-gender      the safe girls dump a girl, the safe boys a boy (US 6 d11)
+ *   public-islanders the boy and the girl with the fewest votes simply go
+ *                    (UK 10 d23, UK 11 d32, UK 12 d17 and d38)
+ *   arrivals         the newest arrivals decide, one of each (UK 9 d9: Aaron and Jessie)
+ * Each sends one boy and one girl home; with more of one side than the
+ * other, the cross-gender night's own rule evens it out instead.
+ */
+function islanderNight(state, ctx, fmt) {
+  const g = n => state.profiles[n].gender;
+  const nf = state.villa.filter(n => g(n) === 'f').length, nm = state.villa.length - nf;
+  if (nf !== nm) return crossGenderNight(state, ctx);
+  // The newest arrivals decide, and are safe from the vote they decide (UK 9 d9:
+  // Aaron and Jessie had only just walked in). Everybody who walked in since the
+  // last vote; one of each side, or it is not the format.
+  const since = state.lastVoteEp ?? 0;
+  const fresh = fmt === 'arrivals' ? state.villa.filter(n => (state.ledger?.firstEp?.[n] ?? 0) > Math.max(1, since)) : [];
+  if (fmt === 'arrivals' && !(fresh.some(n => g(n) === 'f') && fresh.some(n => g(n) === 'm'))) fmt = 'cross-gender';
+  const immune = [...(ctx.immune || []), ...(fmt === 'arrivals' ? fresh : [])];
+  const f = publicVoteIslanders(state, { rng: ctx.rng, gender: 'f', bottom: 3, immune });
+  const m = publicVoteIslanders(state, { rng: ctx.rng, gender: 'm', bottom: 3, immune });
+  const atRisk = [...f.bottom, ...m.bottom].map(n => [n]);
+  const shares = [...f.shares, ...m.shares];
+  if (fmt === 'public-islanders') {
+    // The fewest votes of each go, read out by the host; nobody in the villa decides.
+    const low = side => [...side.bottom].sort((x, y) => (shares.find(s => s.name === x)?.share ?? 0) - (shares.find(s => s.name === y)?.share ?? 0))[0];
+    const dumped = [low(f), low(m)].filter(Boolean);
+    const scene = dumpingScene(state, ctx.rng, { atRisk, dumped, channel: 'public', format: 'public-islanders' });
+    return { events: scene.events, exits: scene.exits, ballots: [], extra: { islanderShares: shares, bottom: atRisk, dumpFormat: 'public-islanders' } };
+  }
+  // The newest arrivals: everybody who walked in since the last vote, and is not at risk.
+  const voters = fmt === 'arrivals' ? fresh : null;
+  const vd = villaDumping(state, { format: fmt === 'same-gender' ? 'same-gender' : 'cross-gender', bottom: atRisk, rng: ctx.rng, voters });
+  const afterVotes = vd.ties?.length ? () => vd.ties.map(t => makeEvent(state, ctx.rng, { phase: 'dumping', kind: 'dump-tie',
+    players: [t.goes, ...t.tied.filter(n => n !== t.goes)], aired: true, major: [...t.tied],
+    extra: { channel: 'villa', pop: { [t.goes]: { approval: 0, fame: 1.5 } } } })) : null;
+  const scene = dumpingScene(state, ctx.rng, { atRisk, dumped: vd.dumped, ballots: vd.ballots, channel: 'villa', format: fmt, afterVotes });
+  return { events: scene.events, exits: scene.exits, ballots: vd.ballots, extra: { islanderShares: shares, bottom: atRisk, dumpFormat: fmt } };
+}
+
 /** A vote night in the drawn format; every format but save-one sends one couple home. */
 function coupleFormatNight(state, ctx, fmt) {
   {
     if (fmt === 'save-one') return saveOneNight(state, ctx);
     if (fmt === 'cross-gender') return crossGenderNight(state, ctx);
+    if (['same-gender', 'public-islanders', 'arrivals'].includes(fmt)) return islanderNight(state, ctx, fmt);
     if (fmt === 'couples-vote') return couplesVoteNight(state, ctx);
     const pv = publicVote(state, { rng: ctx.rng, bottom: ctx.entry.bottom || 2, immune: ctx.immune || [] });
     if (fmt === 'top-couple-picks') {

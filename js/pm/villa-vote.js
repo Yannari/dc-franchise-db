@@ -107,9 +107,10 @@ export function villaDumping(state, opts) {
   for (const b of res.ballots || []) if (!b.save) b.why = voteWhy(state, b.voter, b.target);
   return res;
 }
-function villaDumpingRaw(state, { format, bottom, rng }) {
+function villaDumpingRaw(state, { format, bottom, rng, voters: only = null }) {
   const atRisk = bottom.flat();
-  const voters = state.villa.filter(n => !atRisk.includes(n));
+  // `voters`: somebody other than every safe islander (the newest arrivals, UK 9 d9).
+  const voters = only || state.villa.filter(n => !atRisk.includes(n));
   const g = n => state.profiles[n].gender;
   if (format === 'public' || !voters.length) return { dumped: [...bottom[0]], ballots: [] };
 
@@ -131,6 +132,8 @@ function villaDumpingRaw(state, { format, bottom, rng }) {
   }
 
   // cross-gender: each side votes one of the other side's at-risk islanders.
+  // same-gender (US 6 d11): the safe girls send a girl home, the safe boys a boy.
+  const same = format === 'same-gender';
   const dumped = [], ballots = [], ties = [];
   for (const side of ['f', 'm']) {
     // Never both halves of one couple: the second side votes from the others
@@ -138,7 +141,7 @@ function villaDumpingRaw(state, { format, bottom, rng }) {
     // "still getting a couple dumped … the first dump" — at 18-20 islanders
     // half the first votes took a whole couple this way).
     const gone = dumped.map(n => partnerOf(state, n)).filter(Boolean);
-    const all = atRisk.filter(n => g(n) !== side);
+    const all = atRisk.filter(n => (same ? g(n) === side : g(n) !== side));
     const targets = all.filter(n => !gone.includes(n)).length ? all.filter(n => !gone.includes(n)) : all;
     const sideVoters = voters.filter(v => g(v) === side);
     if (!targets.length || !sideVoters.length) continue;

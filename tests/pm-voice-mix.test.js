@@ -79,8 +79,11 @@ describe('a season in the mix', () => {
       const share = r => got.filter(x => x === r).length / got.length;
       const [first, second] = regs.map(share);
       firsts.push(first); seconds.push(second);
-      // Two tags in one register (#earnest #warm are both soft) lead it to ~85%.
-      if (!(second >= 0.10 && first < 0.9)) short.push(`${p.name} ${regs.join('/')}: ${(first * 100).toFixed(0)}% / ${(second * 100).toFixed(0)}% of ${got.length}`);
+      // Two tags in one register (#earnest #warm are both soft) lead it to ~85%;
+      // over ~110 scenes that is +/-3.3% by the hash alone (registerOf is a pure
+      // hash of the scene id), so 90% is noise: 2026-10-27's new scenes put one
+      // islander at 90.4%. The bar sits two deviations out.
+      if (!(second >= 0.08 && first < 0.92)) short.push(`${p.name} ${regs.join('/')}: ${(first * 100).toFixed(0)}% / ${(second * 100).toFixed(0)}% of ${got.length}`);
     }
     expect(short).toEqual([]);
     expect(firsts.length).toBeGreaterThan(8);

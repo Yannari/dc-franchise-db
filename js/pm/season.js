@@ -195,7 +195,7 @@ function storyPhase(state, rng, trng, phase, texture, entry = null) {
  * the last aired episode (restoreFromAired). Bump it when the villa changes
  * enough that an old season should be offered the new one.
  */
-export const PM_ENGINE = '2026-10-26.8';
+export const PM_ENGINE = '2026-10-27';
 
 /**
  * THE RESUME (user, 2026-10-25: "with our new system I don't wanna start a new
@@ -259,6 +259,8 @@ function restoreFromAired(state, rows, queues, seed) {
     // Casa's leftovers: the ones who stuck while their partner twisted (casa.js).
     if (r.moment === 'stick-or-twist') state.casaSingles = (r.pm?.events || []).filter(e => e.kind === 'casa-return' && e.extra?.choice === 'stick' && e.extra?.theirs === 'twist').map(e => e.players[0]);
     if (r.moment === 'casa-open') state.splitEp = r.num;
+    if (r.moment === 'public-vote') state.lastVoteEp = r.num;
+    if ((r.exits || []).length) state.lastExitEp = r.num;
   }
   const last = rows[rows.length - 1], P = last.pm || {};
   state.ep = last.num;
@@ -432,7 +434,13 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     const firstVote = entry.moment === 'public-vote' && !schedule.slice(0, schedule.indexOf(entry)).some(e => e.moment === 'public-vote');
     // The arrival places still to come, for a pair who would take one of them (moments.js arrivals).
     const slotsAhead = ahead.filter(e => e !== entry).map(e => ({ moment: e.moment, n: e.arrivals?.bombshell || 0 })).filter(x => x.n > 0);
-    const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace, votesAhead, coupledAhead, plainNights: nights, firstVote, surplus, slotsAhead };
+    // THE DRY SPELL: episodes since anybody last went home. The real show
+    // dumps every 3-8 days (UK 11: days 2, 9, 14, 18, 23, 27, 29, 31, 32, 37…);
+    // measured 2026-10-27, ours ran six and seven episodes with nobody leaving
+    // whenever the pace alone kept a night safe. From the third, a night that
+    // can spare somebody dumps (moments.js recoupleNight, voteNight).
+    const dry = state.ep - (state.lastExitEp ?? 1);
+    const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace, votesAhead, coupledAhead, plainNights: nights, firstVote, surplus, slotsAhead, dry };
     // For a partner walking out with the dumped (moments.js): only while the season can spare them.
     state._surplus = surplus;
     // A row that ends a couple mid-day (events.js haveItOut): only before the
@@ -496,6 +504,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     updateBeliefs(state);
 
     const exits = [...m.exits];
+    if (exits.length) state.lastExitEp = state.ep;
     if (!ctx.closed) closeEpisode(state.ledger, state.ep, gs.popularity);
     // Nobody walks on the semi-final night either: it is the night the villa
     // is trimmed to its finalists, and a walkout after it (with the partner

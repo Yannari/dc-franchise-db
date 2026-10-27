@@ -81,13 +81,16 @@ describe('the challenges are drawn like the real show', () => {
     // six blanks at 5, 14, 16, 18, 20 and 22, every other night where it was.
     // The public alone made rarer before the last week (2026-09-28, user: "full
     // public votes don't often happen until the semi-final"): only formats moved.
+    // The real show's islander nights and the public's share after Casa, from
+    // Wikipedia's night-by-night tables for UK 9-12 and US 6 (2026-10-27): the
+    // formats moved (same-gender, arrivals; more public), nothing else did.
     const BEFORE = {
-      1: '//step-forward// //// //// //// //// save-one//// /saves/// //// //// //// //// //// top-couple-picks////imm //// ///return/ //// top-couple-picks//// //// //// //// safe-pick-couple//// //// public//// //// ////',
-      2: '//step-forward// //// //// //// //// cross-gender//// //// //// //// //// //// //// top-couple-picks//// //// //// //// safe-pick-couple//// //// //// //// safe-pick-couple//// //// public//// //// ////',
-      3: '//step-forward// //// /saves/// //// //// save-one//// //// //// //// //// //// //// safe-pick-couple//// //// //// //// top-couple-picks//// //// //// //// top-couple-picks//// //// ex-islanders//// //// ////',
-      4: '//step-forward// //// /stand-up/// //// //// cross-gender//// ///mission/ //// //// //// //// //// safe-pick-couple//// //// ///return/ //// top-couple-picks//// //// //// //// safe-pick-couple//// //// ex-islanders//// //// ////',
-      5: '//step-forward// //// /saves/// //// //// cross-gender//// /public-matches//sleepover/ //// //// //// //// //// couples-vote//// //// ///return/ //// safe-pick-couple//// //// //// //// safe-pick-couple//// //// public//// //// ////',
-      6: '//ranking// //// /stand-up/// //// //// cross-gender//// //// //// //// //// //// //// top-couple-picks//// //// //// //// public//// //// //// //// couples-vote//// //// ex-islanders//// //// ////',
+      1: '//step-forward// //// //// //// //// save-one//// /saves/// //// //// //// //// //// top-couple-picks////imm //// ///return/ //// public//// //// //// //// safe-pick-couple//// //// public//// //// ////',
+      2: '//step-forward// //// //// //// //// same-gender//// //// //// //// //// //// //// couples-vote//// //// //// //// top-couple-picks//// //// //// //// public//// //// public//// //// ////',
+      3: '//step-forward// //// /saves/// //// //// arrivals//// //// //// //// //// //// //// safe-pick-couple//// //// //// //// top-couple-picks//// //// //// //// top-couple-picks//// //// ex-islanders//// //// ////',
+      4: '//step-forward// //// /stand-up/// //// //// cross-gender//// ///mission/ //// //// //// //// //// top-couple-picks//// //// ///return/ //// couples-vote//// //// //// //// safe-pick-couple//// //// ex-islanders//// //// ////',
+      5: '//step-forward// //// /saves/// //// //// cross-gender//// /public-matches//sleepover/ //// //// //// //// //// public//// //// ///return/ //// safe-pick-couple//// //// //// //// public//// //// public//// //// ////',
+      6: '//ranking// //// /stand-up/// //// //// same-gender//// //// //// //// //// //// //// couples-vote//// //// //// //// public//// //// //// //// couples-vote//// //// ex-islanders//// //// ////',
     };
     const sig = s => s.map(e => [e.dumpFormat, e.arrivalRule, e.firstFormat, e.oneOff, e.immunity ? 'imm' : ''].map(x => x || '').join('/')).join(' ');
     for (const seed of Object.keys(BEFORE)) expect(sig(perfectMatchScheduleFor(Number(seed), SHAPE)), `seed ${seed}`).toBe(BEFORE[seed]);

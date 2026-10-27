@@ -1495,6 +1495,8 @@ async function _editBySlug(slug) {
     })(),
     age: pick(base.age, rich && rich.age, parsed.age),
     speakingVoice: pick(base.speakingVoice, rich && rich.speakingVoice),
+    // Secret Story canon: shown, never edited here (the database is write-once).
+    secret: (base.secret && base.secret.text) ? base.secret : (rich && rich.secret && rich.secret.text ? rich.secret : null),
     ethnicity: pick(base.ethnicity, rich && rich.ethnicity, parsed.ethnicity, legacy.ethnicity),
     nationality: pick(base.nationality, rich && rich.nationality, parsed.nationality, legacy.nationality),
     descriptor: pick(base.descriptor, rich && rich.descriptor, parsed.descriptor, legacy.descriptor),
@@ -2255,6 +2257,9 @@ function _renderEditor() {
            archive has them, so a debut character never sees an empty box.
            Folded state is remembered because a three-season veteran's history
            is longer than the form it sits under. -->
+      ${d.secret && d.secret.text ? `<div class="st-l" style="margin:6px 0 10px">Secret Story secret
+        <span class="st-hint">canon since ${_esc(String(d.secret.firstSeason || '').toUpperCase() || 'their first season')} &mdash; part of who they are, and it never changes</span>
+        <div style="font-style:italic;padding:6px 0">&ldquo;${_esc(d.secret.text)}&rdquo;</div></div>` : ''}
       <details class="st-cont" id="st-cont" hidden>
         <summary class="st-cont-sum">Continuity
           <span class="st-hint" id="st-cont-count">reading the archive&hellip;</span>

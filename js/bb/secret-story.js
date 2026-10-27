@@ -26,7 +26,8 @@
 // fake couple, a pair of fake siblings, a secret mission. None of those claims
 // anything about the person; they are jobs.
 import { gs, players, seasonConfig, kinshipPairs, seasonFormat } from '../core.js';
-import { SS_FORMAT } from '../shows.js';
+import { SS_FORMAT, seasonId } from '../shows.js';
+import { canonSecretsOf, pushCanonSecrets } from '../ss/canon.js';
 import { castSecrets, recognitions, resolveNominationRule, SS_HOUSE_THEMES } from '../ss/casting.js';
 import { pStats } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
@@ -79,7 +80,7 @@ function assignChosenSecrets(room, chosen, rng) {
     // A real tie is ONE secret two people share, if both are in the house.
     const holders = e.pair && room.includes(e.pair) && !placed.has(e.pair) ? [n, e.pair] : [n];
     secrets.push({ id: `secret-${holders.join('-')}`, kind: e.pair && holders.length > 1 ? 'real-pair' : 'personal',
-      source: e.source, poolId: e.id || null, holders, text: e.text,
+      source: e.source, poolId: e.id || null, secretKind: e.kind || null, holders, text: e.text,
       clues: [...(e.clues || [])], tells: [...(e.tells || [])], difficulty: Number(e.difficulty) || 0.55 });
     for (const h of holders) placed.add(h);
   }
@@ -192,6 +193,14 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     name: String(seasonConfig?.ssName || '').trim() || null,
     recognitions: recog.filter(r => room.includes(r.who) && room.includes(r.whom)),
   };
+  // THE SECRETS BECOME CANON NOW (js/ss/canon.js): from this browser if it can;
+  // the published season carries them as well, for the worker to finish.
+  if (asShow && typeof window !== 'undefined') {
+    const st = gs.bb.secretStory;
+    const slugOf = n => (players || []).find(p => p.name === n)?.slug || null;
+    const list = canonSecretsOf(st, { season: seasonId(SS_FORMAT, seasonConfig?.seasonNumber || 1), slugOf: n => slugOf(n) || undefined });
+    pushCanonSecrets(list).then(r => { if (r) st.canonWritten = [...(r.written || []), ...(r.kept || [])]; }).catch(() => {});
+  }
   // a mission that says The Voice told somebody a secret is knowledge they really hold
   for (const s of gs.bb.secretStory.secrets) {
     const m = /^The Voice told me (.+)'s secret$/.exec(s.text);

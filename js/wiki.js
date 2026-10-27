@@ -720,6 +720,8 @@ export function buildDossier(player, {
     gender: rosterRow.gender || '',
     archetype: rosterRow.archetype || '',
     descriptor: rosterRow.descriptor || '',
+    // Secret Story: the secret that became part of who they are (js/ss/canon.js).
+    secret: rosterRow.secret?.text ? { text: rosterRow.secret.text, firstSeason: rosterRow.secret.firstSeason || null } : null,
   };
   const backstory = rosterRow.backstory || '';
   // The casting interview, passed through as the stored string. Parsing it is

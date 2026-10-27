@@ -250,6 +250,8 @@ function infobox(dossier, show, root, L) {
     // own further down, so the one row a reader recognises had the wrong
     // thing in it.
     ['Label', bio.descriptor],
+    // A Secret Story secret is canon once a season starts: part of who they are.
+    ['Secret', bio.secret?.text ? `“${esc(bio.secret.text)}”${bio.secret.firstSeason ? ` <small>(${esc(String(bio.secret.firstSeason).toUpperCase())})</small>` : ''}` : ''],
     // Named for what it is instead of borrowing the epithet's row. It is not
     // canon and does not pretend to be: it is how the simulator plays them.
     ['Archetype', bio.archetype],

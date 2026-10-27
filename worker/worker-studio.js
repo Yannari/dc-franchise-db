@@ -443,6 +443,7 @@ export default {
         if (url.pathname === '/api/roster/delete')   return json(await rosterDelete(env, body), 200, cors);
         if (url.pathname === '/api/roster/unretire') return json(await rosterUnretire(env, body), 200, cors);
         if (url.pathname === '/api/roster/publish')  return json(await rosterPublish(env, body), 200, cors);
+        if (url.pathname === '/api/roster/secret')   return json(await rosterSecret(env, body), 200, cors);
         return json({ ok: false, error: 'unknown roster endpoint' }, 404, cors);
       }
       // ── refresh the derived tables from the repo JSON (token-guarded) ─────
@@ -847,6 +848,14 @@ function rosterRowToJson(r) {
   // Emitted as the stored JSON STRING, not re-parsed here: the Worker has no
   // business knowing the interview's shape, and js/casting-interview.js owns it.
   if (r.casting_interview) out.castingInterview = r.casting_interview;
+  // Secret Story: the secret that became part of who they are. Read back out,
+  // or the next Publish deletes it (memory: publish wipes authored fields).
+  if (r.secret) {
+    try {
+      const secret = JSON.parse(r.secret);
+      if (secret && typeof secret === 'object' && secret.text) out.secret = secret;
+    } catch { /* malformed secret is omitted rather than published broken */ }
+  }
   if (r.is_returnee) out.isReturnee = true;
   return out;
 }
@@ -971,6 +980,37 @@ async function rosterSave(env, payload) {
   await d.prepare('DELETE FROM roster_deleted WHERE slug = ?').bind(slug).run();
 
   return { ok: true, slug, name, created: !existing };
+}
+
+/**
+ * A Secret Story secret becomes canon: WRITE-ONCE. Sets `roster.secret` only
+ * while it is NULL, so a second season (or a re-publish) can never change who
+ * somebody is. Returns which slugs were written and which already had one.
+ *   payload: { secrets: [{ slug, secret: { text, kind, clues, tells, difficulty, id, firstSeason } }] }
+ */
+async function rosterSecret(env, payload = {}) {
+  const list = Array.isArray(payload.secrets) ? payload.secrets : [];
+  const written = [], kept = [], unknown = [];
+  const d = db(env);
+  for (const item of list) {
+    const slug = String(item?.slug || '').trim().toLowerCase();
+    const s = item?.secret;
+    if (!SLUG_RE.test(slug) || !s || typeof s !== 'object' || !String(s.text || '').trim()) continue;
+    const clean = {
+      text: String(s.text).trim().slice(0, 200), kind: String(s.kind || 'past').slice(0, 20),
+      clues: (Array.isArray(s.clues) ? s.clues : []).slice(0, 8).map(c => String(c).slice(0, 120)),
+      tells: (Array.isArray(s.tells) ? s.tells : []).slice(0, 6).map(c => String(c).slice(0, 160)),
+      difficulty: Math.max(0, Math.min(1, Number(s.difficulty) || 0.55)),
+      ...(s.id ? { id: String(s.id).slice(0, 60) } : {}),
+      ...(s.firstSeason ? { firstSeason: String(s.firstSeason).slice(0, 20) } : {}),
+    };
+    const r = await d.prepare("UPDATE roster SET secret = ?, updated_at = datetime('now') WHERE slug = ? AND (secret IS NULL OR secret = '')")
+      .bind(JSON.stringify(clean), slug).run();
+    if (r?.meta?.changes) { written.push(slug); continue; }
+    const row = await d.prepare('SELECT slug FROM roster WHERE slug = ?').bind(slug).first();
+    (row ? kept : unknown).push(slug);
+  }
+  return { ok: true, written, kept, unknown };
 }
 
 /**
@@ -1940,6 +1980,14 @@ async function publishSeason(env, payload = {}) {
     wrote.push(path);
   }
 
+  // SECRET STORY: the season's secrets become canon on the characters, if the
+  // simulator could not write them at the start (no Studio key in that browser).
+  // Write-once, so a re-publish changes nothing.
+  let canon = null;
+  if (Array.isArray(payload.season?.canonSecrets) && payload.season.canonSecrets.length) {
+    try { canon = await rosterSecret(env, { secrets: payload.season.canonSecrets }); } catch { canon = null; }
+  }
+
   // The season is finished and now part of the permanent history, so the live
   // overlay would only duplicate it. Clear it.
   try { await liveSeasonClear(env); } catch { /* overlay is best-effort */ }
@@ -1979,7 +2027,7 @@ async function publishSeason(env, payload = {}) {
   // accumulated while the season aired, and /api/social is keyed by
   // (format, season) — so an archived season keeps the feed it actually had
   // rather than falling back to one regenerated from its own records.
-  return { ok: true, wrote, synced, endedRun };
+  return { ok: true, wrote, synced, endedRun, canon };
 }
 
 // ══ standalone avatar management ═══════════════════════════════════════════

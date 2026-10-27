@@ -17,6 +17,7 @@ import { nextWindowFor } from './franchise-calendar.js';
 import { ratingsForSeason, publishedRatings } from './ratings.js';
 import { publishedExitInterviews } from './bb/exit-interview.js';
 import { secretStoryExport } from './bb/secret-story.js';
+import { canonSecretsOf } from './ss/canon.js';
 import { publishedTDExitInterviews } from './td/exit-interview.js';
 import { publishedExits } from './exit-interview/house.js';
 
@@ -3219,6 +3220,9 @@ export function buildBigBrotherSeasonDocument(seasonNumber, { format = seasonFor
     for (const p of doc.placements) p.ss = hunt.players[p.name] || null;
     doc.secrets = hunt.secrets;
     doc.houseTheme = gs.bb.secretStory.houseTheme || null;
+    // The canon this season created, for the worker to write if the start could not.
+    doc.canonSecrets = canonSecretsOf(gs.bb.secretStory, { season: doc.seasonId,
+      slugOf: n => players.find(p => p.name === n)?.slug || _slug(n) });
     if (gs.bb.secretStory.name) doc.seasonName = gs.bb.secretStory.name;
     const pct = finale.publicVote || {};
     doc.finalVote = order.map(n => ({ name: n, percent: Number(pct[n]) || 0 }));

@@ -1121,6 +1121,7 @@ export function renderCast() {
   renderFranchiseHistoryPanel();
   renderBackgroundPanel();
   window.renderHouseStructure?.();
+  window.renderSsSecrets?.();
   try { window.renderCastRoom?.(); } catch {}   // Visual Casting Room (additive; legacy UI is the fallback)
   // A villa season's islander panel follows the cast it sets up.
   try { window.renderPerfectMatchCastSetup?.(); } catch { /* optional chrome */ }
@@ -1606,6 +1607,14 @@ export function saveConfig() {
     bbSafetyStopsAt: parseInt(g('cfg-bb-safety-stops')?.value) || 9,
     bbHaveNotCount: g('cfg-bb-havenot-count')?.value || 'auto',
     bbDepartures: g('cfg-bb-departures')?.value || 'off',
+    // Secret Story: the season's identity, and the cast screen's choices
+    // (js/ss/setup-panel.js), which no control holds and so must survive a save.
+    ssName: g('cfg-ss-name') ? g('cfg-ss-name').value.trim() : (seasonConfig.ssName || ''),
+    ssHouseTheme: g('cfg-ss-house')?.value || seasonConfig.ssHouseTheme || 'random',
+    ssNominations: g('cfg-ss-noms')?.value || seasonConfig.ssNominations || 'random',
+    ssSecrets: seasonConfig.ssSecrets || {},
+    ssRecognitions: seasonConfig.ssRecognitions || null,
+    ssRecognitionsCast: seasonConfig.ssRecognitionsCast || '',
     qemRate:     g('cfg-qem-rate')?.value || 'rare',
     advantages: Object.fromEntries(ADVANTAGES.map(a => {
       if (a.key === 'idol') {
@@ -1648,6 +1657,7 @@ export function saveConfig() {
   // The house season shape is derived from jury size, cast size and the twist
   // schedule, so it is redrawn whenever any of them is written.
   window.renderHouseStructure?.();
+  window.renderSsSecrets?.();
   // The saved-season list shows one show; a new show is a new list.
   if (seasonFormat(seasonConfig) !== _saveListShow) renderSeasonSaveList();
 }
@@ -1832,8 +1842,12 @@ export function renderConfig() {
   set('cfg-bb-safety-stops', seasonConfig.bbSafetyStopsAt || 9);
   set('cfg-bb-havenot-count', seasonConfig.bbHaveNotCount || 'auto');
   set('cfg-bb-departures', seasonConfig.bbDepartures || 'off');
+  set('cfg-ss-name', seasonConfig.ssName || '');
+  set('cfg-ss-house', seasonConfig.ssHouseTheme || 'random');
+  set('cfg-ss-noms', seasonConfig.ssNominations || 'random');
   // Show only the controls this show's engine actually reads.
   window.applyFormatScope?.();
+  window.renderSsSecrets?.();
   // Aftermath
   set('cfg-aftermath', seasonConfig.aftermath || 'disabled');
   set('cfg-fan-vote-frequency', seasonConfig.fanVoteFrequency || 'disabled');

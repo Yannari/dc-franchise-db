@@ -2468,6 +2468,8 @@ export function mergeBigBrotherSeasonsDatabase(existing, seasonDoc) {
     emoji: _clean(seasonDoc.emoji),
     // Secret Story's board of secrets, for the season page.
     ...(Array.isArray(seasonDoc.secrets) ? { secrets: seasonDoc.secrets } : {}),
+    ...(seasonDoc.houseTheme ? { houseTheme: seasonDoc.houseTheme } : {}),
+    ...(seasonDoc.seasonName ? { seasonName: seasonDoc.seasonName } : {}),
     // On the row because kristal.html and the follower model both read rows.
     exitInterviews: Array.isArray(seasonDoc.exitInterviews) ? seasonDoc.exitInterviews : [],
     ...airWindow,
@@ -3216,6 +3218,8 @@ export function buildBigBrotherSeasonDocument(seasonNumber, { format = seasonFor
     const hunt = secretStoryExport(gs.bb.secretStory, { finalists: order });
     for (const p of doc.placements) p.ss = hunt.players[p.name] || null;
     doc.secrets = hunt.secrets;
+    doc.houseTheme = gs.bb.secretStory.houseTheme || null;
+    if (gs.bb.secretStory.name) doc.seasonName = gs.bb.secretStory.name;
     const pct = finale.publicVote || {};
     doc.finalVote = order.map(n => ({ name: n, percent: Number(pct[n]) || 0 }));
     doc.jurySize = 0;

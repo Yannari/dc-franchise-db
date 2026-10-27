@@ -27,6 +27,7 @@
 // anything about the person; they are jobs.
 import { gs, players, seasonConfig, kinshipPairs, seasonFormat } from '../core.js';
 import { SS_FORMAT } from '../shows.js';
+import { castSecrets, recognitions, resolveNominationRule, SS_HOUSE_THEMES } from '../ss/casting.js';
 import { pStats } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { careerOf } from '../franchise-meta.js';
@@ -39,6 +40,9 @@ export const ssOn = () => seasonFormat(seasonConfig) === SS_FORMAT;
 
 const st = (n, k) => { try { return Number(pStats(n)?.[k]) || 5; } catch { return 5; } };
 const genderOf = n => (players || []).find(p => p.name === n)?.gender || null;
+const archetypeOf = n => (players || []).find(p => p.name === n)?.archetype || null;
+const statsOf = n => { try { return pStats(n) || {}; } catch { return {}; } };
+const canonOf = n => (players || []).find(p => p.name === n)?.secret || null;
 const bond = (a, b) => { try { return getBond(a, b) || 0; } catch { return 0; } };
 const pop = n => Number(gs.popularity?.[n] || 0);
 const addPop = (n, d) => { gs.popularity ||= {}; gs.popularity[n] = Math.round(((gs.popularity[n] || 0) + d) * 100) / 100; };
@@ -58,16 +62,48 @@ const PAIR_KIN = {
 };
 
 /**
+ * Night one, from the cast screen (js/ss/casting.js): every housemate walks in
+ * with the secret they were shown there — a draw from the pool, one the user
+ * wrote, a real tie to somebody else in the house, or their canon from an
+ * earlier season. A housemate the screen never saw (added after) gets a draw.
+ */
+function assignChosenSecrets(room, chosen, rng) {
+  const fill = castSecrets(room.map(n => ({ name: n, archetype: archetypeOf(n), stats: statsOf(n), secret: canonOf(n) })),
+    { existing: chosen, rng });
+  const secrets = [];
+  const placed = new Set();
+  for (const n of room) {
+    if (placed.has(n)) continue;
+    const e = fill[n];
+    if (!e) continue;
+    // A real tie is ONE secret two people share, if both are in the house.
+    const holders = e.pair && room.includes(e.pair) && !placed.has(e.pair) ? [n, e.pair] : [n];
+    secrets.push({ id: `secret-${holders.join('-')}`, kind: e.pair && holders.length > 1 ? 'real-pair' : 'personal',
+      source: e.source, poolId: e.id || null, holders, text: e.text,
+      clues: [...(e.clues || [])], tells: [...(e.tells || [])], difficulty: Number(e.difficulty) || 0.55 });
+    for (const h of holders) placed.add(h);
+  }
+  return secrets;
+}
+
+/**
  * Night one: everybody's secret. Returns the act, or null when the house is too small.
  */
 export function assignSecrets({ house = [], rng = Math.random } = {}) {
   const room = house.filter(Boolean);
   if (room.length < 6) return null;
-  const secrets = [];
-  const taken = new Set();
+  // A season started as the show (not an old Big Brother theme save) always
+  // casts from the screen's choices, and draws the pool for anybody it lacks.
+  const asShow = seasonConfig?.format === SS_FORMAT;
+  const chosen = asShow || (seasonConfig?.ssSecrets && Object.keys(seasonConfig.ssSecrets).length)
+    ? (seasonConfig?.ssSecrets || {}) : null;
+  const secrets = chosen ? assignChosenSecrets(room, chosen, rng) : [];
+  const taken = new Set(secrets.flatMap(s => s.holders));
 
+  // ── v1, for a season the cast screen never saw (an old save, a headless run) ──
   // ── real pairs, from the roster's ties ──
   let pairs = [];
+  if (!chosen) {
   try { pairs = kinshipPairs() || []; } catch { pairs = []; }
   for (const p of pairs) {
     const kin = PAIR_KIN[p.kin];
@@ -131,6 +167,16 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     secrets.push({ id: `mission-${n}`, kind: 'voice-mission', holders: [n], text, difficulty: 0.7 });
     taken.add(n);
   }
+  }
+
+  // Who recognised whom walking in: the cast screen's draw, or made now.
+  let recog = Array.isArray(seasonConfig?.ssRecognitions) ? seasonConfig.ssRecognitions : null;
+  if (!recog) {
+    const careers = {};
+    for (const n of room) { try { careers[n] = careerOf(n) || []; } catch { careers[n] = []; } }
+    const fame = Object.fromEntries(room.map(n => [n, (careers[n] || []).some(c => c.rec?.winner || c.rec?.finalist) ? 0.6 : 0]));
+    recog = recognitions(room, { careers, fame, rng });
+  }
 
   gs.bb ||= {};
   gs.bb.secretStory = {
@@ -138,6 +184,13 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     kitty: Object.fromEntries(room.map(n => [n, KITTY_START])),
     suspicion: {},
     buzzes: [],
+    // How the confessional nominates all season (js/ss/casting.js).
+    rule: resolveNominationRule(seasonConfig?.ssNominations, rng),
+    // The season's house (a pick, or the draw made now) and its name.
+    houseTheme: SS_HOUSE_THEMES.some(h => h.id === seasonConfig?.ssHouseTheme)
+      ? seasonConfig.ssHouseTheme : SS_HOUSE_THEMES[Math.floor(rng() * SS_HOUSE_THEMES.length)].id,
+    name: String(seasonConfig?.ssName || '').trim() || null,
+    recognitions: recog.filter(r => room.includes(r.who) && room.includes(r.whom)),
   };
   // a mission that says The Voice told somebody a secret is knowledge they really hold
   for (const s of gs.bb.secretStory.secrets) {
@@ -235,7 +288,11 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   let voters, pool, rule;
   const men = room.filter(n => g(n) === 'm'), women = room.filter(n => g(n) === 'f');
   const eligible = l => l.filter(n => !immune.includes(n));
-  if (nominateMen && eligible(men).length >= 2 && women.length) {
+  // The revival's rule: everybody nominates anybody.
+  const mixed = ssState()?.rule === 'mixed';
+  if (mixed) {
+    voters = room; pool = eligible(room); rule = 'everybody';
+  } else if (nominateMen && eligible(men).length >= 2 && women.length) {
     voters = room.filter(n => g(n) !== 'm'); pool = eligible(men); rule = 'women-nominate-men';
   } else if (!nominateMen && eligible(women).length >= 2 && men.length) {
     voters = room.filter(n => g(n) !== 'f'); pool = eligible(women); rule = 'men-nominate-women';

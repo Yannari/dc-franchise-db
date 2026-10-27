@@ -52,3 +52,33 @@ describe('a Secret Story season', () => {
     expect(doc.winner.vote).toMatch(/%/);
   });
 });
+
+describe('night one, cast from the screen', () => {
+  it('gives every housemate a personal secret from the pool when nobody chose', () => {
+    play(8);
+    const s = gs.bb.secretStory;
+    expect(s.secrets.every(x => x.kind === 'personal' && x.source === 'pool')).toBe(true);
+    expect(s.secrets.flatMap(x => x.holders).sort()).toEqual([...NAMES].sort());
+    expect(new Set(s.secrets.map(x => x.poolId)).size).toBe(s.secrets.length);
+    expect(['gendered', 'mixed']).toContain(s.rule);
+    expect(Array.isArray(s.recognitions)).toBe(true);
+    expect(['loft', 'chalet', 'campus', 'arena', 'crystal', 'labyrinth']).toContain(s.houseTheme);
+  });
+
+  it('keeps what the cast screen chose, a shared real tie included', () => {
+    seasonConfig.ssSecrets = {
+      Bowie: { source: 'own', kind: 'job', text: 'I trained dolphins', clues: ['a whistle'], tells: ['claps like a seal'], difficulty: 0.5 },
+      Chase: { source: 'history', kind: 'family', text: 'We are brother and sister', pair: 'Ripper', clues: ['x'], tells: ['y'], difficulty: 0.5 },
+    };
+    seasonConfig.ssNominations = 'mixed';
+    const keep = seasonConfig.ssSecrets;
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    Object.assign(seasonConfig, { format: 'secret-story', seasonNumber: 1, finaleSize: 3, jurySize: 0, theme: '', twistSchedule: [], themeArcStamped: '', ssSecrets: keep, ssNominations: 'mixed' });
+    withSeededRandom(2, () => { simulateBBEpisode(); });
+    const s = gs.bb.secretStory;
+    expect(s.secrets.find(x => x.holders.includes('Bowie'))).toMatchObject({ text: 'I trained dolphins', source: 'own' });
+    expect(s.secrets.find(x => x.holders.includes('Chase'))).toMatchObject({ holders: ['Chase', 'Ripper'], kind: 'real-pair' });
+    expect(s.rule).toBe('mixed');
+    delete seasonConfig.ssSecrets; delete seasonConfig.ssNominations;
+  });
+});

@@ -1280,10 +1280,13 @@ const CONFIG_SCOPE = {
     'cfg-theme':             ['=big-brother'],   // Secret Story wears its own; no theme over it
     'cfg-bb-interview':      ['big-brother'],
     'cfg-bb-host-style':     ['big-brother'],
-    'cfg-bb-havenots':       ['big-brother'],
-    'cfg-bb-safety':         ['big-brother'],
-    'cfg-bb-safety-stops':   ['big-brother'],
-    'cfg-bb-havenot-count':  ['big-brother'],
+    'cfg-bb-havenots':       ['=big-brother'],
+    'cfg-bb-safety':         ['=big-brother'],
+    'cfg-bb-safety-stops':   ['=big-brother'],
+    'cfg-bb-havenot-count':  ['=big-brother'],
+    'cfg-ss-name':           ['secret-story'],
+    'cfg-ss-house':          ['secret-story'],
+    'cfg-ss-noms':           ['secret-story'],
     'cfg-bb-departures':     ['big-brother'],
     'f-tribe':               ['total-drama', 'the-circle'],  // a house has no tribes to join; the Circle's are its categories
     // The cast form's castle-only field, which says so on its own label —
@@ -1401,6 +1404,9 @@ const CONFIG_SCOPE = {
     'sec-season-options':     ['total-drama'],
     'sec-settings-mechanics': ['total-drama', 'big-brother', 'traitors', 'drag-race'],  // popularity lives here
     'sec-bb-options':         ['big-brother'],
+    'sec-ss-basics':          ['secret-story'],
+    'sec-ss-divider':         ['secret-story'],
+    'ss-setup-body':          ['secret-story'],
     'sec-bb-divider':         ['big-brother'],
     // The container, not just its heading. The fixed-rule lines inside it are
     // not form-groups, so scoping only the individual controls left "Ties" and
@@ -1496,8 +1502,8 @@ const CONFIG_SCOPE = {
     // told that a tie is "broken by the Head of Household, live" AND that "the
     // room stops banishing", one above the other. Found by a fourth show
     // arriving and somebody reading the screen.
-    'sec-bb-fixed-ties':     ['big-brother'],
-    'sec-bb-fixed-endgame':  ['big-brother'],
+    'sec-bb-fixed-ties':     ['=big-brother'],
+    'sec-bb-fixed-endgame':  ['=big-brother'],
     'sec-tr-fixed-ties':     ['traitors'],
     'sec-tr-fixed-endgame':  ['traitors'],
     'sec-dr-fixed-verdict':  ['drag-race'],

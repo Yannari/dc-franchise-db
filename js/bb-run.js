@@ -14,6 +14,7 @@
 // `js/episode.js` is not touched and not called. Total Drama's rules are not
 // involved in a Big Brother week.
 
+import { SS_FORMAT } from './shows.js';
 import { gs, seasonConfig, seasonFormat, engineFormat, resolveTwistSchedule, TWIST_CATALOG, plainText } from './core.js';
 // Imported rather than taken off `window`: main.js spreads the players module
 // onto the global scope, which works in the browser and nowhere else, so a
@@ -111,6 +112,18 @@ export const houseIsAtFinale = () => (gs.activePlayers || []).length <= houseFin
  */
 export function houseStructure(config = {}, castSize = 0) {
   const N = Number(castSize) || 0;
+  // SECRET STORY: housemates, no jury; the public eliminates and crowns.
+  if (seasonFormat(config) === SS_FORMAT) {
+    const weeks = Math.max(0, N - 3);
+    const rule = { gendered: 'one sex nominates the other', mixed: 'everybody nominates' }[config.ssNominations] || 'nominations drawn';
+    return [
+      { label: `${N} housemate${N === 1 ? '' : 's'}`, ok: N >= 6, why: N >= 6 ? undefined : 'The House of Secrets needs at least 6 housemates' },
+      { label: `${weeks} week${weeks === 1 ? '' : 's'}`, ok: weeks >= 1 },
+      { label: rule, ok: true },
+      { label: 'the public eliminates', ok: true },
+      { label: 'the public crowns the winner', ok: true },
+    ];
+  }
   const jurySize = Math.max(0, Number(config.jurySize) || 0);
   const segs = [];
 

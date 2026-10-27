@@ -12,7 +12,11 @@
 // Rendered into the Legacy tab by renderRankingsUpdate().
 
 import { extractSeasonTemplate, buildBigBrotherSeasonDocument } from './stats-export.js';
-import { SHOWS, parseSeasonRef, familyOf } from './shows.js';
+import { seasonFormat, engineFormat } from './core.js';
+import { buildDragSeasonDocument } from './dr/export.js';
+import { buildChallengeSeasonDocument } from './ch/export.js';
+import { buildCircleSeasonDocument } from './ci/export.js';
+import { SHOWS, parseSeasonRef, familyOf, BB_FORMAT, DRAG_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT } from './shows.js';
 import { boardFile } from './ranking-boards.js';
 
 // The tool was written against current-season.html, whose .btn is white-on-dark.
@@ -255,6 +259,8 @@ function _ruReset() {
  * board -- so a new board borrows them from whichever board is already loaded
  * and falls back to the standard five.
  */
+export function ruEmptyBoard(format) { return _ruEmptyBoard(format); }
+
 function _ruEmptyBoard(format) {
   format = familyOf(format);   // one board per family
   return {
@@ -333,6 +339,41 @@ function _ruDetectCoWin(tmpl) {
   return false;
 }
 
+/**
+ * The season in the simulator as the document its own show's exporter builds,
+ * chosen by ENGINE — a Drag Race All Stars season is built by the drag builder
+ * and stamped with its own show. Returns null for Total Drama, whose template
+ * (extractSeasonTemplate) reads the live state rather than these arguments.
+ * Throws, with something to do about it, when the season cannot be ranked yet.
+ */
+export function ruSeasonDocument(game, config) {
+  const engine = engineFormat(config);
+  const show = seasonFormat(config);
+  const n = Number(game?.seasonNumber || config?.seasonNumber) || 1;
+  const history = (game?.episodeHistory || []).filter(Boolean);
+  const name = SHOWS[show]?.name || show;
+  if (engine === BB_FORMAT) return buildBigBrotherSeasonDocument(n);
+  if (engine === DRAG_FORMAT) {
+    const rows = history.filter(r => r.dr);
+    if (!rows.some(r => r.dr?.finale)) throw new Error(`this ${name} season has no finale yet — play it through the crowning first`);
+    return buildDragSeasonDocument(rows, { seasonNumber: n, format: show, congeniality: game?.dr?.congeniality || null });
+  }
+  if (engine === CHALLENGE_FORMAT) {
+    const rows = history.filter(r => r.ch);
+    if (!rows.some(r => r.ch?.final)) throw new Error(`this ${name} season has not reached its final yet — play it to the end first`);
+    if (!game?.ch?.record?.players) throw new Error(`this ${name} season has no ledger record — re-run its last episode to rebuild it`);
+    let options = {};
+    try { options = JSON.parse(game.ch.built || '{}').options || {}; } catch { options = {}; }
+    return buildChallengeSeasonDocument(rows, game.ch.record, { seasonNumber: n, options, title: config?.name || null });
+  }
+  if (engine === CIRCLE_FORMAT) {
+    const rows = history.filter(r => r.ci);
+    if (!game?.ci?.record?.players) throw new Error(`this ${name} season has no ledger record — play it through the finale first`);
+    return buildCircleSeasonDocument(rows, game.ci.record, { seasonNumber: n, title: config?.name || null });
+  }
+  return null;
+}
+
 /** Fill the whole form from the season currently loaded in the simulator. */
 function _ruUseCurrentSeason() {
   const status = document.getElementById('ru-season-load-status');
@@ -352,17 +393,18 @@ function _ruUseCurrentSeason() {
     // columns from immunityWins and rewardWins, which a house does not have.
     // Every player came out zero and the season ranked on placement alone.
     let tmpl;
-    const houseNow = (typeof seasonConfig !== 'undefined' && seasonConfig?.format === 'big-brother')
-      || !!(typeof gs !== 'undefined' && gs?.bb?.weeks?.length);
+    // A house is still a house when the config was lost but the weeks were not.
+    const houseNow = !!(typeof gs !== 'undefined' && gs?.bb?.weeks?.length);
     try {
-      tmpl = houseNow
-        ? buildBigBrotherSeasonDocument(Number(gs?.seasonNumber || seasonConfig?.seasonNumber) || 1)
-        : extractSeasonTemplate();
+      const cfg = typeof seasonConfig !== 'undefined' ? seasonConfig : {};
+      const game = typeof gs !== 'undefined' ? gs : null;
+      tmpl = ruSeasonDocument(game, houseNow ? { ...cfg, format: 'big-brother' } : cfg)
+        || extractSeasonTemplate();
     } catch (e) {
       // The house builder says something useful when a season is unfinished
       // ('play the finale before exporting'); the Total Drama one throws from
       // deep inside. Keep a real message when there is one.
-      throw new Error(/finale|weeks/i.test(e?.message || '')
+      throw new Error(/finale|weeks|final|record|crowning/i.test(e?.message || '')
         ? e.message
         : 'no season is loaded in the simulator — run or load one first');
     }
@@ -1277,30 +1319,20 @@ function getRows() {
   return rows;
 }
 
-// ── Preview ───────────────────────────────────────────────
-function buildPreview() {
-  if (!rankingsDB) { alert('Load rankings_database.json first (Step \u2460)'); return; }
-  const seasonNum = parseInt(document.getElementById('ru-season-num').value);
-  const castSize  = parseInt(document.getElementById('ru-cast-size').value);
-  const coWinMode = document.getElementById('ru-co-winner').value === 'yes';
-  const rows      = getRows();
-  if (!rows.length)                     { alert('Add at least one player in Step \u2462'); return; }
-  if (isNaN(seasonNum)||isNaN(castSize)){ alert('Fill Season Number and Cast Size'); return; }
-
-  // Validate overrides have reasons
-  const missingReasons = rows.filter(r => r.override !== 0 && !r.overrideReason);
-  if (missingReasons.length) {
-    alert('Please add a reason for the override on: ' + missingReasons.map(r=>r.name).join(', '));
-    return;
-  }
-
+/**
+ * Score one season's rows against a board — what the preview shows and the
+ * Apply button writes. Pure: the page passes its table and its loaded board, a
+ * script passes a season document's rows and an empty board.
+ */
+export function ruScoreRows(rows, { board = null, castSize, coWin = false, format = 'total-drama' } = {}) {
+  const coWinMode = !!coWin;
   const winnerNames   = new Set((coWinMode?rows.filter(r=>r.placement===1):rows.filter(r=>r.placement===1).slice(0,1)).map(r=>r.name));
   const finalistNames = new Set(rows.filter(r=>r.placement<=3).map(r=>r.name));
   const knownCasts    = {1:24,2:14,3:16,4:18,5:18,6:20,7:20,8:18};
   const results       = [];
 
   rows.forEach(row => {
-    const existing = rankingsDB.rankings.find(p =>
+    const existing = (board?.rankings || []).find(p =>
       (p.name||'').toLowerCase()===row.name.toLowerCase() ||
       (p.playerId||'').toLowerCase()===row.name.toLowerCase()
     );
@@ -1329,7 +1361,7 @@ function buildPreview() {
 
     const newScore = computeScore({
       allPcts, wins:totalWins, nonWinFinals, numSeasons, coWin:isCoWin,
-      format:_ruShowFormat(),
+      format,
       immWins:row.immWins, rewWins:row.rewWins, comp3Wins:row.comp3Wins,
       advFound:row.advFound, advPlayed:row.advPlayed, advWasted:row.advWasted, advHeld:row.advHeld,
       strategicScore:row.strategicScore,
@@ -1350,7 +1382,7 @@ function buildPreview() {
     // (2 x 0.6), and called a veto a reward at a third of its real weight.
     // A breakdown that does not add up to its own total is worse than none:
     // it is a receipt for a different purchase.
-    const _mrub = _ruRubric();
+    const _mrub = _ruRubric(format);
     const _adv = _mrub.adv || {};
     if (row.immWins)    parts.push(_mrub.comp1.label + ':+' + (row.immWins*_mrub.comp1.weight).toFixed(1));
     if (row.rewWins)    parts.push(_mrub.comp2.label + ':+' + (row.rewWins*_mrub.comp2.weight).toFixed(1));
@@ -1415,6 +1447,27 @@ function buildPreview() {
       existingRef: existing, row
     });
   });
+  return results;
+}
+
+// ── Preview ───────────────────────────────────────────────
+function buildPreview() {
+  if (!rankingsDB) { alert('Load rankings_database.json first (Step \u2460)'); return; }
+  const seasonNum = parseInt(document.getElementById('ru-season-num').value);
+  const castSize  = parseInt(document.getElementById('ru-cast-size').value);
+  const coWinMode = document.getElementById('ru-co-winner').value === 'yes';
+  const rows      = getRows();
+  if (!rows.length)                     { alert('Add at least one player in Step \u2462'); return; }
+  if (isNaN(seasonNum)||isNaN(castSize)){ alert('Fill Season Number and Cast Size'); return; }
+
+  // Validate overrides have reasons
+  const missingReasons = rows.filter(r => r.override !== 0 && !r.overrideReason);
+  if (missingReasons.length) {
+    alert('Please add a reason for the override on: ' + missingReasons.map(r=>r.name).join(', '));
+    return;
+  }
+
+  const results = ruScoreRows(rows, { board: rankingsDB, castSize, coWin: coWinMode, format: _ruShowFormat() });
 
   pendingUpdated = results;
   renderPreview(results, seasonNum, castSize);
@@ -1705,22 +1758,17 @@ async function generateAIReasoning(name, seasonNum, placement, row, isWinner, is
   return buildSeasonReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning);
 }
 
-async function applyUpdates() {
-  if (!pendingUpdated||!rankingsDB) return;
-  const seasonNum = parseInt(document.getElementById('ru-season-num').value);
-
-  // Show loading state
-  const applyBtn = document.getElementById('ru-apply-btn');
-  const origText = applyBtn.textContent;
-  applyBtn.textContent = '⏳ Generating AI reasoning...';
-  applyBtn.disabled = true;
-
-  // First pass — update all stats without reasoning
+/**
+ * Write scored results onto a board: new entries, updated careers, then the
+ * ranks. Returns the entries that still need their reasoning written (the page
+ * asks the AI; a script writes its own). Pure apart from the board it is given.
+ */
+export function ruApplyResults(board, results, { seasonNum, format = 'total-drama' } = {}) {
   const needsReasoning = [];
-  pendingUpdated.forEach(r => {
+  results.forEach(r => {
     const row = r.row;
     if (r.isNew) {
-      const maxRank = Math.max(...rankingsDB.rankings.map(p=>p.rank||0));
+      const maxRank = Math.max(...board.rankings.map(p=>p.rank||0));
       const newEntry = {
         playerId: r.name.toLowerCase().replace(/[^a-z0-9]/g,'-'),
         name:r.name, rank:maxRank+1, tier:r.newTier, score:r.newScore,
@@ -1732,7 +1780,7 @@ async function applyUpdates() {
         // Career totals stay in their own units. The one column feeding them
         // carries votes on Total Drama and block survivals in the house, and
         // summing them into the same field would make both meaningless.
-        ...(_ruSocialIsVotes() ? { votesAgainst: row.socialCol, blockSurvived: 0 }
+        ...(_ruSocialIsVotes(format) ? { votesAgainst: row.socialCol, blockSurvived: 0 }
                                : { votesAgainst: 0, blockSurvived: row.socialCol }),
         juryVotes:row.juryVotes,
         idolsFound:row.advFound || (row.advPlayed+row.advWasted+row.advHeld),
@@ -1740,7 +1788,7 @@ async function applyUpdates() {
         reasoning: buildSeasonReasoning(r.name, seasonNum, r.placement, row, r.isWinner, true, ''),
         strengths:[], weaknesses:[]
       };
-      rankingsDB.rankings.push(newEntry);
+      board.rankings.push(newEntry);
       needsReasoning.push({ entry: newEntry, r, row, isNew: true, totalSeasons: 1, totalWins: r.isWinner?1:0 });
     } else {
       const e = r.existingRef;
@@ -1754,7 +1802,7 @@ async function applyUpdates() {
       e.placements.push(r.placement);
       e.avgPlacement=e.placements.reduce((a,b)=>a+b,0)/e.placements.length;
       e.challengeWins=(e.challengeWins||0)+row.immWins+row.rewWins+(row.comp3Wins||0);
-      if (_ruSocialIsVotes()) e.votesAgainst=(e.votesAgainst||0)+row.socialCol;
+      if (_ruSocialIsVotes(format)) e.votesAgainst=(e.votesAgainst||0)+row.socialCol;
       else                    e.blockSurvived=(e.blockSurvived||0)+row.socialCol;
       e.juryVotes=(e.juryVotes||0)+row.juryVotes;
       e.idolsFound=(e.idolsFound||0)+(row.advFound || (row.advPlayed+row.advWasted+row.advHeld));
@@ -1765,6 +1813,35 @@ async function applyUpdates() {
       needsReasoning.push({ entry: e, r, row, isNew: false, totalSeasons: e.seasonsPlayed, totalWins: e.wins, prevReasoning: e.reasoning });
     }
   });
+  ruRankBoard(board, format);
+  return needsReasoning;
+}
+
+/** Sort, number and stamp a board. */
+export function ruRankBoard(board, format = 'total-drama') {
+  board.rankings.sort((a,b)=>b.score-a.score);
+  board.rankings.forEach((p,i)=>{p.rank=i+1;});
+  if (board.metadata) {
+    board.metadata.lastUpdated=new Date().toISOString().split('T')[0];
+    // This said 78 while the file held 169 entries: written once and never
+    // again, so every reader that trusted the count was reading a stale one.
+    board.metadata.totalPlayers=(board.rankings||[]).length;
+    board.metadata.format=board.metadata.format||familyOf(format);
+  }
+}
+
+async function applyUpdates() {
+  if (!pendingUpdated||!rankingsDB) return;
+  const seasonNum = parseInt(document.getElementById('ru-season-num').value);
+
+  // Show loading state
+  const applyBtn = document.getElementById('ru-apply-btn');
+  const origText = applyBtn.textContent;
+  applyBtn.textContent = '⏳ Generating AI reasoning...';
+  applyBtn.disabled = true;
+
+  // First pass — update all stats without reasoning
+  const needsReasoning = ruApplyResults(rankingsDB, pendingUpdated, { seasonNum, format: _ruShowFormat() });
 
   // Second pass — generate AI reasoning for all players in parallel
   applyBtn.textContent = `⏳ Writing ${needsReasoning.length} player summaries...`;
@@ -1775,15 +1852,7 @@ async function applyUpdates() {
     );
   }));
 
-  rankingsDB.rankings.sort((a,b)=>b.score-a.score);
-  rankingsDB.rankings.forEach((p,i)=>{p.rank=i+1;});
-  if (rankingsDB.metadata) {
-    rankingsDB.metadata.lastUpdated=new Date().toISOString().split('T')[0];
-    // This said 78 while the file held 169 entries: written once and never
-    // again, so every reader that trusted the count was reading a stale one.
-    rankingsDB.metadata.totalPlayers=(rankingsDB.rankings||[]).length;
-    rankingsDB.metadata.format=rankingsDB.metadata.format||_ruShowFormat();
-  }
+  ruRankBoard(rankingsDB, _ruShowFormat());
 
   // Publish straight to the site: the Worker commits rankings_database.json and
   // refreshes the database from it. Downloading is the fallback, so a missing
@@ -1843,29 +1912,26 @@ async function _ruPublish(db, seasonNumber) {
 }
 
 // ── Season JSON auto-fill ─────────────────────────────────
-function loadSeasonData(json) {
-  const placements = json.placements||json.players||[];
-  if (!placements.length) { alert('No placements array found in season JSON'); return; }
-  document.getElementById('ru-placements-body').innerHTML='';
-  rowCount=0;
+export function ruRowsFromDoc(json) {
+  const placements = json?.placements||json?.players||[];
   // Self-contained name normalizer (this IIFE has no slugify in scope).
   const norm = s => (s||'').toLowerCase().trim().replace(/['".]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
   // Fan Favorite lives in the awards block, not in the placements array — map
   // it to a normalized name so we can tick the FANFAV box for that player.
-  const ffRaw = json.awards?.fanFavorite;
+  // Drag Race keeps its audience award as `congeniality` (Miss Congeniality).
+  const ffRaw = json.awards?.fanFavorite || json.congeniality;
   const fanFavKey = ffRaw ? norm(typeof ffRaw === 'string' ? ffRaw : ffRaw.name) : null;
   /* Remember what kind of season this is BEFORE filling anything: it decides
      which competition each of the two columns holds, and what they are called. */
-  _ruLoadedFormat = _ruFormatOfDoc(json);
-  _ruRelabelColumns();
+  const format = _ruFormatOfDoc(json);
   // WHERE THIS SHOW KEEPS ITS NUMBERS, asked of the show. This block was nine
   // `isHouse ? A : B` ternaries whose else branch is Total Drama, so a third
   // show auto-filled every column from field names a castle does not have and
   // the board ranked on placement alone. See `read` in RU_SHOW.
-  const _read = _ruRubric(_ruLoadedFormat).read || RU_SHOW['total-drama'].read;
+  const _read = _ruRubric(format).read || RU_SHOW['total-drama'].read;
 
   const sorted=[...placements].sort((a,b)=>(a.placement||99)-(b.placement||99));
-  sorted.forEach(p=>{
+  return sorted.map(p=>{
     const name=p.name||p.playerName||'';
     const placement=p.placement||p.finalPlacement||'';
     // Named/unbreakable alliances — exported as an array; count them for the
@@ -1874,23 +1940,39 @@ function loadSeasonData(json) {
                         : (typeof p.alliances === 'number' ? p.alliances
                         : (p.allianceCount ?? p.namedAlliances?.length ?? 0));
     const cols = _read(p, { placement });
-    const stats={
-      juryVotes:   p.juryVotes||p.jury_votes||0,
-      social:      cols.social,
-      advFound:    cols.advFound,
-      advPlayed:   cols.advPlayed,
-      advWasted:   cols.advWasted,
-      advHeld:     cols.advHeld,
-      strategicScore: cols.strategicScore,
-      imm:         cols.comp1,
-      rew:         cols.comp2,
-      comp3:       cols.comp3,
-      alliances:   allianceCount,
-      fanFav:      !!fanFavKey && norm(name) === fanFavKey,
-      quit:        p.eliminated==='quit'||p.quit||false,
+    // The shape getRows() reads off the table, so a script and the page score
+    // exactly the same row.
+    return {
+      name, placement: Number(placement) || placement,
+      immWins: num(cols.comp1), rewWins: num(cols.comp2), comp3Wins: num(cols.comp3),
+      advFound: num(cols.advFound), advPlayed: num(cols.advPlayed),
+      advWasted: num(cols.advWasted), advHeld: num(cols.advHeld),
+      alliances: allianceCount, strategicScore: num(cols.strategicScore),
+      juryVotes: p.juryVotes||p.jury_votes||0, socialCol: num(cols.social),
+      override: 0, overrideReason: '',
+      fanFav: !!fanFavKey && norm(name) === fanFavKey,
+      quit: p.eliminated==='quit'||p.quit||false,
     };
-    addRow(name, placement, stats);
   });
+}
+
+/** Fill the table from a season document — the rows ruRowsFromDoc reads. */
+function loadSeasonData(json) {
+  const rows = ruRowsFromDoc(json);
+  if (!rows.length) { alert('No placements array found in season JSON'); return; }
+  document.getElementById('ru-placements-body').innerHTML='';
+  rowCount=0;
+  /* Remember what kind of season this is BEFORE filling anything: it decides
+     which competition each of the two columns holds, and what they are called. */
+  _ruLoadedFormat = _ruFormatOfDoc(json);
+  _ruRelabelColumns();
+  const sorted = rows;
+  rows.forEach(r => addRow(r.name, r.placement, {
+    juryVotes: r.juryVotes, social: r.socialCol,
+    advFound: r.advFound, advPlayed: r.advPlayed, advWasted: r.advWasted, advHeld: r.advHeld,
+    strategicScore: r.strategicScore, imm: r.immWins, rew: r.rewWins, comp3: r.comp3Wins,
+    alliances: r.alliances, fanFav: r.fanFav, quit: r.quit,
+  }));
   if (sorted.length) document.getElementById('ru-cast-size').value=sorted.length;
   document.getElementById('ru-season-load-status').textContent='\u2705 Loaded '+sorted.length+' players';
   document.getElementById('ru-season-load-status').style.color='#4ade80';

@@ -64,7 +64,7 @@
 // on this repo only), STUDIO_TOKEN (a long random string the frontend sends).
 // Binding (wrangler.toml [[d1_databases]]): DB -> the "dc-franchise" D1 database.
 
-import { SHOWS, formatPrefix, DEFAULT_FORMAT } from '../js/shows.js';
+import { SHOWS, formatPrefix, DEFAULT_FORMAT, familyOf } from '../js/shows.js';
 import { composeVoice, stripBioLead } from '../js/bio.js';
 import { leaderboardQuery, castmatesQuery, bondsQuery,
          socialDeleteSeasonQuery, socialInsertQuery, socialSelectQuery } from './queries.js';
@@ -1130,9 +1130,11 @@ const RANKINGS_DB_PATH = 'rankings_database.json';
  * change one and change the other.
  */
 function rankingsPathFor(format) {
-  return !format || format === DEFAULT_FORMAT
+  // A spin-off is ranked on its family's board: All Stars on rankings_dr.json.
+  const fam = format ? familyOf(format) : format;
+  return !fam || fam === DEFAULT_FORMAT
     ? RANKINGS_DB_PATH
-    : `rankings_${formatPrefix(format)}.json`;
+    : `rankings_${formatPrefix(fam)}.json`;
 }
 
 /** Read a repo JSON file. Falls back to download_url for files over 1MB,

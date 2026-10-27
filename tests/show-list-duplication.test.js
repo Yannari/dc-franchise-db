@@ -162,7 +162,7 @@ const COMPARISON_BACKLOG = {
   'js/episode.js':                1,
   'js/finale.js':                 2,
   'js/intentions.js':             1,
-  'js/player-trivia.js':          2,
+  'js/player-trivia.js':          1,
   // 7 -> 8 for the main stage's blueprint chip. `blueprintFor` draws a
   // different DIAGRAM per show — tribes and a merge, a house and a jury, a
   // castle and its traitor ratio, a workroom and where the season stops — and
@@ -180,7 +180,6 @@ const COMPARISON_BACKLOG = {
   // registry entry declare its own blueprint builder, which would take this
   // row to 0 rather than to 9 the next time a show is added.
   'js/quick-setup.js':            9,
-  'js/rankings-update.js':        1,
   'js/romance.js':                3,
   // 9 -> 11 for the castle's run wiring (Plan 8, Task 7), and the two are two
   // DIFFERENT questions rather than one asked twice. `_isCastleRow(ep)` asks

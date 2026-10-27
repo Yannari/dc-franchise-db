@@ -113,10 +113,14 @@ describe('loading the season that is open in the simulator', () => {
     expect(SRC).toMatch(/buildBigBrotherSeasonDocument/);
     const fn = SRC.slice(SRC.indexOf('function _ruUseCurrentSeason'),
       SRC.indexOf('let rankingsDB'));
+    // The builder is chosen by engine in ruSeasonDocument (every show with a
+    // board, not only the house); the button falls back to Total Drama's.
     expect(fn, 'the button still always builds a Total Drama document')
-      .toMatch(/houseNow[\s\S]*buildBigBrotherSeasonDocument[\s\S]*extractSeasonTemplate/);
+      .toMatch(/houseNow[\s\S]*ruSeasonDocument\([\s\S]*extractSeasonTemplate/);
     expect(fn, 'the house is detected from the format or the played weeks')
       .toMatch(/seasonConfig\?\.format === 'big-brother'|gs\?\.bb\?\.weeks/);
+    const pick = SRC.slice(SRC.indexOf('export function ruSeasonDocument'), SRC.indexOf('function _ruUseCurrentSeason'));
+    expect(pick).toMatch(/engine === BB_FORMAT\) return buildBigBrotherSeasonDocument/);
   });
 
   it('keeps the message the house builder gives an unfinished season', () => {

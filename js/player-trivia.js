@@ -33,7 +33,7 @@
 
 import { airKey, airLabel } from './franchise-calendar.js';
 import { stateOf } from './life-events.js';
-import { SHOWS, showName, showWords, familyMembers, seasonOrder } from './shows.js';
+import { SHOWS, showName, showWords, familyMembers, familyOf, seasonOrder } from './shows.js';
 
 /** Minimum comparison pool before a superlative means anything. */
 const MIN_POOL = 5;
@@ -67,6 +67,16 @@ function joinList(xs) {
  * Read here rather than branched on at every call site, so a third show is one
  * entry rather than a sweep through this file.
  */
+/* A season's own block of numbers (`d.dr`, `d.ch`, `d.ci`), summed over a career. */
+const blockSum = (career, key, field) =>
+  (career.details || []).reduce((n, d) => n + (Number(d?.[key]?.[field]) || 0), 0);
+
+/* `ordinals` are this show's "the Nth to win …" facts, each `[qualifies(detail),
+   description]` given the `won` test. A show with no vote never gets the vote
+   one: "win without a single vote cast against them" over a runway is a claim
+   about a ballot that does not exist. */
+const VOTE_FREE_WIN = won => [d => won(d) && !(d.votesReceived || 0), 'win without a single vote cast against them'];
+
 const WORDS = {
   'big-brother': {
     player: 'houseguest', players: 'houseguests',
@@ -74,6 +84,11 @@ const WORDS = {
       { key: c => bb(c).hohWins, one: 'Head of Household win', many: 'Head of Household wins' },
       { key: c => bb(c).vetoWins, one: 'veto win', many: 'veto wins' },
       { key: c => bb(c).blockBusterWins, one: 'Block Buster win', many: 'Block Buster wins' },
+    ],
+    ordinals: won => [
+      VOTE_FREE_WIN(won),
+      [d => won(d) && (d.bb?.timesNominated || 0) > 0, 'win after being nominated'],
+      [d => (d.bb?.hohWins || 0) >= 3, 'win three Heads of Household in one season'],
     ],
   },
   'total-drama': {
@@ -83,9 +98,48 @@ const WORDS = {
       { key: c => c.immunityWins || 0, one: 'immunity win', many: 'immunity wins' },
       { key: c => c.idolsFound || 0, one: 'idol', many: 'idols found' },
     ],
+    ordinals: won => [
+      VOTE_FREE_WIN(won),
+      [d => won(d) && !(d.immunityWins || 0), 'win without a single immunity win'],
+    ],
+  },
+  // There is no vote: the panel ranks and the host decides. A crown, not a game.
+  'drag-race': {
+    player: 'queen', players: 'queens', winPhrase: 'take the crown',
+    comps: [
+      { key: c => blockSum(c, 'dr', 'wins'), one: 'maxi challenge win', many: 'maxi challenge wins' },
+      { key: c => blockSum(c, 'dr', 'lipsyncWins'), one: 'lip sync won', many: 'lip syncs won' },
+    ],
+    ordinals: won => [
+      [d => won(d) && !(d.dr?.wins || 0), 'take the crown without a single maxi challenge win'],
+      [d => won(d) && (d.dr?.bottoms || 0) > 0, 'take the crown after lip syncing for her life'],
+    ],
+  },
+  'the-challenge': {
+    player: 'player', players: 'players', winPhrase: 'win the final',
+    comps: [
+      { key: c => blockSum(c, 'ch', 'dailyWins'), one: 'daily won', many: 'dailies won' },
+      { key: c => blockSum(c, 'ch', 'arenaWins'), one: 'Arena win', many: 'Arena wins' },
+    ],
+    ordinals: won => [
+      [d => won(d) && (d.ch?.timesVotedIn || 0) > 0, 'win the final after being voted into the Arena'],
+      [d => won(d) && !(d.ch?.dailyWins || 0), 'win the final without a single daily win'],
+    ],
+  },
+  'the-circle': {
+    player: 'player', players: 'players',
+    comps: [
+      { key: c => blockSum(c, 'ci', 'influencerTimes'), one: 'time as Influencer', many: 'times as Influencer' },
+      { key: c => blockSum(c, 'ci', 'firstPlaces'), one: 'first-place rating', many: 'first-place ratings' },
+    ],
+    ordinals: won => [
+      [d => won(d) && !(d.ci?.influencerTimes || 0), 'win without ever being Influencer'],
+      [d => won(d) && d.ci?.mode === 'catfish', 'win as a catfish'],
+    ],
   },
 };
-const wordsFor = f => WORDS[f] || WORDS['total-drama'];
+// A spin-off speaks its family's words (Drag Race All Stars is Drag Race's).
+const wordsFor = f => WORDS[f] || WORDS[familyOf(f)] || WORDS['total-drama'];
 
 /** A career's Big Brother totals, summed across seasons. */
 function bb(career) {
@@ -225,17 +279,9 @@ export function playerTriviaFor(slug, careers = [], format = 'total-drama', opts
   };
 
   const won = d => d.placement === 1;
-  nthAmong(c => seasonWhere(c, won), 'win the game');
-  nthAmong(c => seasonWhere(c, d => won(d) && !(d.votesReceived || 0)),
-    'win without a single vote cast against them');
-  if (format === 'big-brother') {
-    nthAmong(c => seasonWhere(c, d => won(d) && (d.bb?.timesNominated || 0) > 0),
-      'win after being nominated');
-    nthAmong(c => seasonWhere(c, d => (d.bb?.hohWins || 0) >= 3),
-      'win three Heads of Household in one season');
-  } else {
-    nthAmong(c => seasonWhere(c, d => won(d) && !(d.immunityWins || 0)),
-      'win without a single immunity win');
+  nthAmong(c => seasonWhere(c, won), W.winPhrase || 'win the game');
+  for (const [qualifies, describe] of (W.ordinals || WORDS['total-drama'].ordinals)(won)) {
+    nthAmong(c => seasonWhere(c, qualifies), describe);
   }
   // The season they won their SECOND, which is the one this fact is about.
   nthAmong(c => {

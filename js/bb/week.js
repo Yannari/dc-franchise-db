@@ -63,6 +63,7 @@ import { updateSocialStatus } from '../social-status.js';
 import { updateEditLayer } from '../edit-layer.js';
 import { rememberBBStrategy, allyStake } from './shared-strategy.js';
 import { decideFish } from './hoh-fish.js';
+import { reviseStyles, anchorFor, styleOf } from './game-style.js';
 import { updateAdaptationFromEpisode } from '../adaptation.js';
 import {
   chooseNominationPlan, switchPlanTarget, chooseReplacement, explainReplacement, initialVotePreference,
@@ -2239,6 +2240,10 @@ export function simulateBBWeek(options = {}) {
     if (act && changes.length) act.planChanges = changes;
     return changes;
   };
+
+  // ...and a way of playing to win (bb/game-style.js), which turns as a season does: the quiet one rises, the rider
+  // whose anchor left finds another. Shown through what they do, never announced.
+  try { week.styleChanges = reviseStyles(week, house.filter(n => !gs.activePlayers || gs.activePlayers.includes(n))); } catch { week.styleChanges = []; }
 
   // Everybody arrives with a plan, even if the plan is thin.
   week.planChanges = [];
@@ -7304,6 +7309,24 @@ export function simulateBBWeek(options = {}) {
   // a count recorded before the blocs whipped, so the "truth" it compared
   // beliefs to was a count that no longer existed by Thursday.
   week.bandwagon = applyHouseBandwagon({ ballots, nominees, commitments, rng });
+  // A coattail rider votes the way their anchor wants (bb/game-style.js): the anchor's own ballot, the HOH's target
+  // if the anchor holds the key, or against the other chair if the anchor is sitting in one. Their own dice, so no
+  // later draw moves; the looser their own commitment, the likelier.
+  week.coattailVotes = [];
+  try {
+    for (const ballot of ballots) {
+      const anchor = anchorFor(ballot.voter);
+      if (!anchor || !house.includes(anchor)) continue;
+      const want = nominees.includes(anchor) ? nominees.find(n => n !== anchor)
+        : anchor === hoh ? (plan?.target && nominees.includes(plan.target) ? plan.target : null)
+          : ballots.find(b => b.voter === anchor)?.evict || null;
+      if (!want || want === ballot.evict || !nominees.includes(want)) continue;
+      const strength = commitments.get(ballot.voter)?.strength ?? 0.5;
+      if (stableRng(gs.bb?.seasonSalt || 0, 'coattail-vote', week.num || 0, ballot.voter)() >= 0.75 * (1 - strength * 0.6)) continue;
+      ballot.evict = want; ballot.changed = true; ballot.coattail = anchor;
+      week.coattailVotes.push({ voter: ballot.voter, anchor, target: want });
+    }
+  } catch { /* the vote stands as it was */ }
   // Step 8: what everybody THINKS is about to happen — believed counts stay
   // private reads (allies assumed with you, strangers guessed from bonds),
   // while `truth` is now the ballots as they will actually be cast.

@@ -546,9 +546,9 @@ export default {
       { by: 'a', say: "...Oh no." },
     ] },
     { id: 'tn.k5', turns: [
-      { beat: '{a} counts on {a.posAdj} fingers, gets to the end, and starts again.' },
+      { beat: '{a} goes through the house name by name, under {a.posAdj} breath, and starts again.' },
       { by: 'b', say: "You've done that three times." },
-      { by: 'a', say: "Because I keep getting a different number." },
+      { by: 'a', say: "Because every time I get to the end, I'm not sure who's with us." },
     ] },
     { id: 'tn.k6', turns: [
       { by: 'a', say: "I think we're fine." },

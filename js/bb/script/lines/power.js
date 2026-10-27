@@ -467,7 +467,7 @@ export default {
     { id: 'pe2.w1', when: { known: true }, turns: [{ by: 'a', say: "It's {target}. It's got to be." }, { by: 'b', say: "I'm not so sure." }, { by: 'a', say: "Trust me." }] },
     { id: 'pe2.w2', when: { known: true }, turns: [{ by: 'a', say: "{target}'s going up. Guaranteed." }, { by: 'b', say: "And if it isn't?" }, { by: 'a', say: "Then I'll be very surprised." }] },
     { id: 'pe2.w3', turns: [{ by: 'a', say: "Am I going up?" }, { by: 'b', say: "No way." }, { by: 'a', say: "You're sure?" }, { by: 'b', say: "No. But I'm saying it anyway." }] },
-    { id: 'pe2.w4', turns: [{ beat: '{a} counts on {a.posAdj} fingers everyone the HOH spoke to today, and keeps getting a different answer.' }, { by: 'b', say: "You've counted that four times." }, { by: 'a', say: "Because it keeps changing." }] },
+    { id: 'pe2.w4', turns: [{ beat: '{a} goes over everybody the HOH spoke to today, one name at a time.' }, { by: 'b', say: "You've gone over that four times." }, { by: 'a', say: "Because every time I do, somebody else has been up those stairs." }] },
     { id: 'pe2.w5', when: { known: true }, turns: [{ by: 'b', dr: "{a} is so sure it's {target}. I'm not. Tomorrow one of us gets to say \"I told you so\"." }] },
     { id: 'pe2.w6', turns: [{ by: 'b', say: "Do you ever get these right?" }, { by: 'a', say: "Sometimes." }, { by: 'b', say: "That's not reassuring." }] },
   ],

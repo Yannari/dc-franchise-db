@@ -16,6 +16,7 @@ import { duoPartnerFor } from './duos.js';
 // jury-pressure.js before adding one.
 import { juryManagementWeight, juryPactKeepPull } from './jury-pressure.js';
 import { pronounsOf } from '../pronouns-of.js';
+import { bandwagonFactor } from './game-style.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const noise = (rng, amount = 1) => (rng() - 0.5) * amount;
@@ -1340,7 +1341,8 @@ export function applyHouseBandwagon({ ballots = [], nominees = [], commitments =
     if (moves.length >= movable) break;
     const strength = commitments.get(ballot.voter)?.strength ?? 0.5;
     // The bigger the lead and the looser the commitment, the more likely.
-    const chance = Math.min(0.8, (Math.abs(lead) / ballots.length) * 1.6 * (1 - strength));
+    // ...and the way they play: a floater goes with the room far sooner than a loyal soldier (bb/game-style.js)
+    const chance = Math.min(0.85, (Math.abs(lead) / ballots.length) * 1.6 * (1 - strength) * bandwagonFactor(ballot.voter));
     if (rng() >= chance) continue;
     ballot.evict = leader;
     ballot.changed = true;

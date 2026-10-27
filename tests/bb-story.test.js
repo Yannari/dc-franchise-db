@@ -261,8 +261,10 @@ describe('house life in real weeks', () => {
     for (const ep of A.eps) if (ep.acts.some(a => a.type === 'campaign' && (a.socialBeats || []).some(b => b.eventId === 'campaign-pitch'))) {
       expect(ep.acts.flatMap(a => a.scenes || []).filter(sc => sc.type === 'campaign').length, `week ${ep.num} campaigned off screen`).toBeGreaterThan(0);
     }
-    // and different ways of playing get seen
-    const styles = new Set(scenes.filter(sc => String(sc.step).startsWith('style.')).map(sc => sc.step));
+    // and different ways of playing get seen: said once in a while (style.*), shown mostly in what people do (the
+    // strategy moves, bb-events/game-style.js; the user, 2026-10-27: "show it with their actions")
+    const styles = new Set([...scenes.filter(sc => String(sc.step).startsWith('style.')).map(sc => sc.step),
+      ...scenes.map(sc => String(sc.id || '').match(/:(style-[a-z-]+):/)?.[1]).filter(Boolean)]);
     expect(styles.size).toBeGreaterThanOrEqual(4);
   });
 

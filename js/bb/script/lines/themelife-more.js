@@ -70,7 +70,7 @@ export default {
     { id: 'thl.hn4', turns: [{ beat: '{a} and {b} find a key on the hallway carpet that fits no door anybody has found.' },
       { by: 'b', say: "I'll keep it." }, { by: 'a', say: "Why you?" },
       { by: 'b', say: "Because I picked it up." }, { by: 'a', dr: "{b} wanted that key very badly for somebody who says it's nothing." }] },
-    { id: 'thl.hn5', turns: [{ beat: 'A note slid under the hotel room door reads only: the accomplice is closer than you think. {a} reads it. {b} is standing right there.' },
+    { id: 'thl.hn5', when: { result: 'mystery' }, turns: [{ beat: 'A note slid under the hotel room door reads only: the accomplice is closer than you think. {a} reads it. {b} is standing right there.' },
       { by: 'b', say: "Don't look at me like that." }, { by: 'a', say: "Like what?" },
       { by: 'a', dr: "The note said closer than you think. {b} was the closest person in the room." }] },
     { id: 'thl.hn6', turns: [{ beat: 'The front-desk bell rings. {a} goes to look. {b} is already there, with nobody else around.' },

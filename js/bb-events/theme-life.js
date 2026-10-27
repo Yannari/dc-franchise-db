@@ -107,19 +107,20 @@ const hotelDoor = {
   weight(house, ctx) {
     if (!_reactable(ctx) || !themeIs(ctx, 'summer-of-mystery') || house.length < 3) return 0;
     if (firedThisWeek('theme-hotel-door', weekNum(ctx))) return 0;
-    // the suspicion it plants is "the accomplice, maybe": only while there is still one to find
-    if (!accompliceLive()) return 0;
     return band(12);
   },
   fire(house, ctx, api) {
     const pair = coldestPair(others(house, ctx.hoh), weekNum(ctx));
     if (!pair) return null;
     const [a, b] = pair;
-    const scene = makeScene('theme.hotel.door', { a, b }, { ending: hostile(ctx) ? 'hostile' : 'neutral' }, [a, b], 'living-room');
+    // the accomplice is only part of it while there is one to find (bb/premiere-mystery.js accompliceLive): the
+    // note under the door that says so waits on it (result 'mystery'), and so does the badge
+    const mystery = accompliceLive();
+    const scene = makeScene('theme.hotel.door', { a, b }, { ending: hostile(ctx) ? 'hostile' : 'neutral', ...(mystery ? { result: 'mystery' } : {}) }, [a, b], 'living-room');
     // a decides b knows more about this hotel than b is saying: the accomplice, maybe
     api.suspicion(a, b, 0.9);
     api.addBond(a, b, -0.4);
-    return { scene, players: [a, b], badgeText: 'THE ACCOMPLICE?', badgeClass: 'grey' };
+    return { scene, players: [a, b], badgeText: mystery ? 'THE ACCOMPLICE?' : 'WHAT THE HOTEL KNOWS', badgeClass: 'grey' };
   },
 };
 

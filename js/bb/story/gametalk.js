@@ -208,16 +208,26 @@ const STYLE_OF = {
  * who has been seen least this season (`aired`, kept with the storylines), so every player's
  * game gets its turn on screen.
  */
+// How each houseguest is really playing (bb/game-style.js), as the scenes of style.js name it.
+const TALK_OF = { comp: 'beast', alliance: 'strategist', social: 'social', float: 'floater', coattail: 'goat', manipulate: 'manipulator',
+  loyal: 'loyal', lowkey: 'underdog', rise: 'underdog', provoke: 'provocateur', read: 'perceptive' };
 export function styleTalkFor(week, ctx, aired) {
   const house = ctx.present || [];
   if (house.length < 4 || ((week.num || 0) === 1 && (ctx.stretch || 0) === 0)) return null;
   const { phase } = phaseOf(week);
   const rng = stableRng(gs.bb?.seasonSalt || 0, 'styletalk', week.num || 0, ctx.stretch || 0);
   const archOf = n => (players || []).find(p => p.name === n)?.archetype;
-  const order = house.filter(n => STYLE_OF[archOf(n)])
+  // the strategy the game is playing for them, else (a season saved before strategies) the archetype's
+  const styleFor = n => { const g = gs.bb?.styles?.[n]; return g ? TALK_OF[g] : STYLE_OF[archOf(n)]; };
+  // once in three weeks a person at most: the rest of their game is shown by what they do (bb-events/game-style.js)
+  // (the user, 2026-10-27: "don't announce every strategy, rather show it with their actions")
+  const wk = week.num || 0;
+  // ...and one a week for the whole house
+  if (aired.styleTalkWeek === wk) return null;
+  const order = house.filter(n => styleFor(n) && !(aired[`styleWeek:${n}`] != null && wk - aired[`styleWeek:${n}`] < 3))
     .map(n => [n, (aired[`style:${n}`] || 0) + rng() * 0.5]).sort((x, y) => x[1] - y[1]).map(x => x[0]);
   for (const a of order) {
-    let style = STYLE_OF[archOf(a)];
+    let style = styleFor(a);
     if (Array.isArray(style)) style = style[((week.num || 0) + (ctx.stretch || 0)) % style.length];
     const others = house.filter(n => n !== a);
     const byBond = others.slice().sort((x, y) => getBond(a, y) - getBond(a, x));
@@ -233,6 +243,8 @@ export function styleTalkFor(week, ctx, aired) {
     else if (style === 'goat') c = byBond[Math.floor(byBond.length / 2)];
     if (!b || !c || b === c) continue;
     aired[`style:${a}`] = (aired[`style:${a}`] || 0) + 1;
+    aired[`styleWeek:${a}`] = wk;
+    aired.styleTalkWeek = wk;
     return { kind: `style.${style}`, who: { a, b, c }, data: {}, phase };
   }
   return null;

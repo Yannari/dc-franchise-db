@@ -16,6 +16,8 @@
 //
 // So it lives here, in one place, and both guards import it.
 
+import { SHOWS, familyOf } from '../../js/shows.js';
+
 // ── the vocabularies ──────────────────────────────────────────────────
 //
 // `own` is what a show is ALLOWED to say, and therefore what its rivals are
@@ -141,11 +143,19 @@ export const VOCAB = {
   },
 };
 
+// A SPIN-OFF SPEAKS ITS FAMILY'S WORDS. Drag Race All Stars is the same show
+// with a returning cast: a queen sashays away on both, and neither may forbid
+// the other's nouns. Every other show is still forbidden all of them.
+for (const f of Object.keys(SHOWS)) {
+  const fam = familyOf(f);
+  if (fam !== f && !VOCAB[f] && VOCAB[fam]) VOCAB[f] = VOCAB[fam];
+}
+
 /** Everything a given format is not allowed to say. */
 export function forbiddenFor(format) {
   const mine = new Set((VOCAB[format]?.own || []).map(w => w.toLowerCase()));
   const others = Object.entries(VOCAB)
-    .filter(([f]) => f !== format)
+    .filter(([f]) => familyOf(f) !== familyOf(format))
     .flatMap(([, v]) => v.own);
   return [...new Set(others.map(w => w.toLowerCase()))].filter(w => !mine.has(w));
 }

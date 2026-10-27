@@ -9,7 +9,7 @@
 // A new show adds an entry here. It does not touch a component.
 //
 // Pure: no DOM, no data files, no gs.
-import { DEFAULT_FORMAT, seasonId } from '../shows.js';
+import { DEFAULT_FORMAT, seasonId, familyOf } from '../shows.js';
 import { packFor } from './packs/index.js';
 
 /** The default vocabulary. An unknown format renders in these words rather than crashing. */
@@ -377,9 +377,10 @@ const SHOW_WORDS = {
   },
 };
 
-/** The words this show uses. Unknown formats get the generic set, never a crash. */
+/** The words this show uses. Unknown formats get the generic set, never a crash.
+ *  A spin-off (Drag Race All Stars) talks like its family. */
 export function words(format) {
-  return SHOW_WORDS[format] || GENERIC;
+  return SHOW_WORDS[format] || SHOW_WORDS[familyOf(format)] || GENERIC;
 }
 
 const _cap = s => String(s || '').replace(/^./, c => c.toUpperCase());

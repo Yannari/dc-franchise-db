@@ -11,7 +11,7 @@ import { simulateBBSeason } from '../js/bb/week.js';
 import { extractBigBrotherSeasonTemplate, mergeBigBrotherSeason,
   mergeBigBrotherSeasonsDatabase } from '../js/stats-export.js';
 import { seedGame } from './helpers/setup.js';
-import { SHOWS } from '../js/shows.js';
+import { SHOWS, engineOf } from '../js/shows.js';
 
 const CAST = [
   ['A', 'mastermind'], ['B', 'social-butterfly'], ['C', 'challenge-beast'], ['D', 'schemer'],
@@ -46,7 +46,9 @@ describe('show formats', () => {
     // Every entry is filed under exactly one registered show — the sum is a
     // partition, not a sample. Summed over the REGISTRY: a three-show sum went
     // red the day Drag Race filed twists of its own.
-    const byShow = Object.keys(SHOWS).map(f => twistsForFormat(f));
+    // Summed over ENGINES: a spin-off (Drag Race All Stars) draws its engine's
+    // twists, which is sharing on purpose and not a twist filed twice.
+    const byShow = Object.keys(SHOWS).filter(f => engineOf(f) === f).map(f => twistsForFormat(f));
     expect(byShow.reduce((n, list) => n + list.length, 0)).toBe(TWIST_CATALOG.length);
     const seen = new Set();
     for (const list of byShow) {

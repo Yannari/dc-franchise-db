@@ -323,6 +323,8 @@ export const SHOWS = {
   // Spec: docs/superpowers/specs/2026-09-06-drag-race-design.md
   'drag-race': {
     prefix: 'dr', name: 'Drag Race', short: 'DR', emoji: '👑', accent: '#ff2d95',
+    // The tab this show answers to inside its own family (see familyOf).
+    familyTab: 'Drag Race',
     venue: { label: 'The Werk Room', icon: '👑' },
     // Set at the bottom of js/dr-run.js. Absent until that file exists, which
     // is deliberate: the setup screen must refuse a show with no engine.
@@ -397,6 +399,40 @@ export const SHOWS = {
     },
     polls: ['Who wins the next maxi challenge?', 'Who lip syncs next week?',
       'Who was robbed this week?', 'Who takes the crown?'],
+  },
+
+  // ── A SPIN-OFF: DRAG RACE ALL STARS ──────────────────────────────────
+  //
+  // Its own show — its own numbering (dras-1, dras-2), its own seasons on the
+  // site, its own summer on the calendar — playing on Drag Race's engine.
+  //
+  //   * `engine` names the engine that plays it. Episode ROWS keep the
+  //     engine's stamp (`ep.format === 'drag-race'`): a row's format answers
+  //     "which renderer draws me", and that answer did not change. The
+  //     season's IDENTITY is `seasonConfig.format` and the published
+  //     document's `format`. engineOf() / engineFormat() are the question an
+  //     engine check asks; seasonFormat() is the question an identity asks.
+  //   * `family` puts it under Drag Race: one button on the site with a tab
+  //     each (`familyTab`), one career, one rankings board. Its winner is
+  //     inducted into the Hall of Fame — a legitimate crown, marked as such.
+  //   * Everything it does not declare is inherited from the family's parent
+  //     below (SPIN_OFF_INHERITS), so the words cannot drift apart.
+  //   * The prefix is `dras`, not `as`: other shows will have All Stars too.
+  //
+  // Plan: docs/superpowers/plans/2026-10-27-drag-race-all-stars-own-show.md
+  'drag-race-all-stars': {
+    prefix: 'dras', name: 'Drag Race All Stars', short: 'DRAS', emoji: '🌟', accent: '#b83cff',
+    engine: 'drag-race',
+    family: 'drag-race',
+    familyTab: 'All Stars',
+    // The first is possible once the parent has aired its `after`-th season,
+    // in this show's first quarter after that; one a year from then on.
+    // Summer rather than spring: a 16-week winter season is still airing in
+    // April, and two runs of one franchise on the same Friday is the one
+    // collision the home quarters exist to prevent.
+    spinOff: { after: 3 },
+    airNight: 5,
+    airSlots: ['summer'],
   },
 
   // ── THE FIFTH SHOW: PERFECT MATCH ────────────────────────────────────
@@ -672,8 +708,53 @@ export const SHOWS = {
   },
 };
 
+/* WHAT A SPIN-OFF TAKES FROM ITS PARENT when it does not say otherwise. Its
+   identity (prefix, name, short, emoji, accent, calendar) is always its own;
+   how the show talks, scores and is read is the family's. */
+const SPIN_OFF_INHERITS = ['words', 'careerStats', 'articleStats', 'audience', 'roundShape',
+  'roundsPath', 'venue', 'rosterPlace', 'polls', 'runPerPlayer', 'runnableFlag', 'signals',
+  'hasJury', 'privateBallotChannels'];
+for (const show of Object.values(SHOWS)) {
+  const parent = show.family && SHOWS[show.family];
+  if (!parent || parent === show) continue;
+  for (const key of SPIN_OFF_INHERITS) {
+    if (!(key in show) && key in parent) show[key] = parent[key];
+  }
+}
+
 /** The default for anything that predates formats — every old season is this. */
 export const DEFAULT_FORMAT = 'total-drama';
+
+/** Which engine plays this show: its own, unless it is a spin-off of another. */
+export function engineOf(format) {
+  return SHOWS[format]?.engine || format;
+}
+
+/** Which family this show is filed under on the site, careers and rankings. */
+export function familyOf(format) {
+  return SHOWS[format]?.family || format;
+}
+
+/** Every show in this show's family, the parent first. */
+export function familyMembers(format) {
+  const fam = familyOf(format);
+  return Object.keys(SHOWS).filter(f => familyOf(f) === fam)
+    .sort((a, b) => (a === fam ? -1 : b === fam ? 1 : 0));
+}
+
+/**
+ * Which show a season ROW belongs to. A row is its own `format`, except the
+ * one shape written before All Stars had an entry of its own:
+ * `{ format: 'drag-race', allStars: true }` is a Drag Race All Stars season.
+ */
+export function seasonRowFormat(row) {
+  const f = row?.format || DEFAULT_FORMAT;
+  if (row?.allStars) {
+    const spin = Object.keys(SHOWS).find(k => k !== f && familyOf(k) === f && SHOWS[k].spinOff);
+    if (spin) return spin;
+  }
+  return f;
+}
 
 /**
  * THE SLUGS THAT DISPATCH, as constants rather than as typed-out strings.

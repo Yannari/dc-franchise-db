@@ -38,7 +38,7 @@
 // The vacuity arm below now FAILS if a registered format has no entry in VOCAB,
 // so the next show cannot be added silently.
 import { describe, expect, it } from 'vitest';
-import { SHOWS, DEFAULT_FORMAT, showWords, exitVerbs, roundShape } from '../js/shows.js';
+import { SHOWS, DEFAULT_FORMAT, showWords, exitVerbs, roundShape, familyOf } from '../js/shows.js';
 import { buildDossier } from '../js/wiki.js';
 import { renderArticle } from '../js/wiki-view.js';
 import { roundLedger } from '../js/wiki-fill.js';
@@ -217,7 +217,8 @@ describe('every registered show is described in its own words', () => {
       const forbidden = forbiddenFor(format);
       expect(forbidden.length, `${format} is forbidden nothing`).toBeGreaterThan(5);
       for (const other of FORMATS) {
-        if (other === format) continue;
+        // A family speaks one vocabulary: Drag Race and its All Stars share it.
+        if (familyOf(other) === familyOf(format)) continue;
         const theirs = (VOCAB[other]?.own || []).map(w => w.toLowerCase());
         expect(theirs.some(w => forbidden.includes(w)),
           `nothing ${other} says is forbidden on a ${format} page`).toBe(true);

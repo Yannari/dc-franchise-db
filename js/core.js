@@ -1,4 +1,4 @@
-import { SHOWS, showName, DEFAULT_FORMAT } from './shows.js';
+import { SHOWS, showName, DEFAULT_FORMAT, engineOf } from './shows.js';
 // The castle's own state module. `js/tr/state.js` imports js/alumni.js, which
 // imports js/shows.js — both leaves — so this adds no cycle and core stays
 // importable from anywhere. It is here so that the ONE pair of functions every
@@ -2103,9 +2103,20 @@ export function twistFormat(twist) {
   return SEASON_FORMATS.includes(twist?.format) ? twist.format : DEFAULT_FORMAT;
 }
 
+/**
+ * Which ENGINE plays this season. The same as seasonFormat() except for a
+ * spin-off (Drag Race All Stars plays on Drag Race's). Engine checks — is this
+ * a drag season, which twists can it draw, which renderer — ask this; anything
+ * about the season's identity (its number, its keys, its page) asks
+ * seasonFormat().
+ */
+export function engineFormat(source) {
+  return engineOf(seasonFormat(source));
+}
+
 /** The twists a given season is allowed to draw — a show never offers another's. */
 export function twistsForFormat(source) {
-  const fmt = seasonFormat(source);
+  const fmt = engineFormat(source);
   return TWIST_CATALOG.filter(t => twistFormat(t) === fmt);
 }
 

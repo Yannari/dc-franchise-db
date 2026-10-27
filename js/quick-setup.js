@@ -20,7 +20,7 @@
 
 import { TWIST_CATALOG, twistModeClashes, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
-import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords, HOSTS_BY_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT, RACE_FORMAT } from './shows.js';
+import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords, HOSTS_BY_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT, RACE_FORMAT, engineOf } from './shows.js';
 import { houseStructure } from './bb-run.js';
 import { buildSchedule, defaultRoleSplit } from './pm/schedule.js';
 import { circleCastProblem, circleShapeOf } from './ci-run.js';
@@ -600,6 +600,7 @@ const SHOW_TAGS = {
   'big-brother': 'One house, HOH, veto, live eviction',
   'traitors':    'A castle, a round table, a murder every night',
   'drag-race':   'Werk room, runway, lip sync for your life',
+  'drag-race-all-stars': 'Returning queens, a lip sync for your legacy, and the lipstick',
   'perfect-match': 'A villa, recouplings, and the public decides',
   'the-circle': 'Separate apartments, one social network, and nobody knows who is real',
   'the-challenge': 'Alumni and rookies, an open house vote, and the Arena',
@@ -1522,19 +1523,20 @@ export function applyFormatScope() {
   if (typeof document === 'undefined') return;
   const fmt = seasonFormat(seasonConfig);
   const show = (el, on) => { if (el) el.style.display = on ? '' : 'none'; };
+  const scoped = formats => _inScope(formats, fmt);
 
   for (const [key, formats] of Object.entries(CONFIG_SCOPE.accordions)) {
     const body = _g(`acc-body-${key}`);
-    show(body?.closest('.accordion'), formats.includes(fmt));
+    show(body?.closest('.accordion'), scoped(formats));
   }
   for (const [id, formats] of Object.entries(CONFIG_SCOPE.fields)) {
     const el = _g(id);
-    show(el && _scopeHost(el), formats.includes(fmt));
+    show(el && _scopeHost(el), scoped(formats));
   }
   for (const [id, formats] of Object.entries(CONFIG_SCOPE.sections)) {
     // a form control listed as a section (the cast form's show fields) hides with its label, not alone
     const el = _g(id);
-    show(el && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName) ? _scopeHost(el) : el, formats.includes(fmt));
+    show(el && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName) ? _scopeHost(el) : el, scoped(formats));
   }
   if (fmt === 'big-brother') qsOnHouseOptionChange();
 
@@ -1623,9 +1625,17 @@ export function renderHouseStructure() {
   </div>`;
 }
 
+/* A CONTROL BELONGS TO AN ENGINE. A spin-off plays on its family's engine
+   (Drag Race All Stars on Drag Race's), so it uses that engine's controls —
+   plus any listed under its own slug, which is how a control that exists ONLY
+   on the spin-off (the All Stars rule) is scoped. */
+function _inScope(formats, fmt) {
+  return formats.includes(fmt) || formats.includes(engineOf(fmt));
+}
+
 /** The controls a given show uses — exported so the scoping can be tested. */
 export function configScopeFor(fmt) {
-  const inFormat = ([, formats]) => formats.includes(fmt);
+  const inFormat = ([, formats]) => _inScope(formats, fmt);
   return {
     accordions: Object.entries(CONFIG_SCOPE.accordions).filter(inFormat).map(([k]) => k),
     fields: Object.entries(CONFIG_SCOPE.fields).filter(inFormat).map(([k]) => k),

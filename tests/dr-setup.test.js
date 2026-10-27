@@ -10,7 +10,10 @@ import { describe, expect, it } from 'vitest';
 import { defaultConfig } from '../js/core.js';
 import { configScopeFor, blueprintFor } from '../js/quick-setup.js';
 import { readFileSync } from 'node:fs';
-import { SHOWS } from '../js/shows.js';
+import { SHOWS, engineOf } from '../js/shows.js';
+
+/** The distinct engines a list of shows plays on — a spin-off counts as its engine. */
+const _engines = fmts => [...new Set(fmts.map(engineOf))];
 
 describe('drag-race setup scope', () => {
   it('defaults every dr field', () => {
@@ -84,9 +87,11 @@ describe('the setup screen shows one show at a time', () => {
   it('and every one of them is scoped to exactly one show', () => {
     const ids = [...html.matchAll(/<div class="bbopt-fixed" id="([^"]+)"/g)].map(m => m[1]);
     for (const id of ids) {
-      const shows = Object.entries(SHOWS)
+      // Counted by ENGINE: Drag Race All Stars plays on Drag Race's and draws
+      // its controls, which is one show's control on two billings.
+      const shows = _engines(Object.entries(SHOWS)
         .filter(([fmt]) => configScopeFor(fmt).sections.includes(id))
-        .map(([fmt]) => fmt);
+        .map(([fmt]) => fmt));
       expect(shows.length, `${id} is shown on ${shows.length} shows, not 1`).toBe(1);
     }
   });
@@ -118,10 +123,10 @@ describe('the setup screen shows one show at a time', () => {
   it('and each is claimed by exactly the show its name says', () => {
     const owner = { tr: 'traitors', bb: 'big-brother', dr: 'drag-race' };
     for (const [, id, prefix] of html.matchAll(/id="((?:cfg|sec)-(tr|bb|dr)-[\w-]+)"/g)) {
-      const owners = Object.keys(SHOWS).filter(fmt => {
+      const owners = _engines(Object.keys(SHOWS).filter(fmt => {
         const sc = configScopeFor(fmt);
         return [...sc.fields, ...sc.sections, ...sc.accordions].includes(id);
-      });
+      }));
       expect(owners, `${id} is claimed by ${owners.join(', ') || 'nobody'}`).toEqual([owner[prefix]]);
     }
   });
@@ -192,10 +197,10 @@ describe('the setup screen shows one show at a time', () => {
 
   it('and each show-specific one is scoped to exactly its show', () => {
     for (const [id, fmt] of Object.entries(CAST_FORM)) {
-      const shownOn = Object.keys(SHOWS).filter(f => {
+      const shownOn = _engines(Object.keys(SHOWS).filter(f => {
         const sc = configScopeFor(f);
         return [...sc.fields, ...sc.sections, ...sc.accordions].includes(id);
-      });
+      }));
       if (fmt === null) {
         expect(shownOn, `${id} is universal but scoped to ${shownOn.join(', ')}`).toEqual([]);
       } else {

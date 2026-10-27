@@ -11,6 +11,7 @@
 // core.js stays a leaf — it only holds the `setting` string; all the flavor lives
 // here and is consumed by camp-events.js.
 import { seasonConfig } from './core.js';
+import { engineOf } from './shows.js';
 
 export const SETTING_LIST = ['hosted-camp', 'survival-island', 'carnival', 'film-lot', 'world-tour'];
 
@@ -34,7 +35,8 @@ export const SETTINGS_BY_FORMAT = {
 };
 
 export function settingsForFormat(fmt) {
-  return SETTINGS_BY_FORMAT[fmt] || SETTING_LIST;
+  // A spin-off happens where its engine does: All Stars is in the werk room.
+  return SETTINGS_BY_FORMAT[fmt] || SETTINGS_BY_FORMAT[engineOf(fmt)] || SETTING_LIST;
 }
 
 /** The default setting for a show — the first one it has. */

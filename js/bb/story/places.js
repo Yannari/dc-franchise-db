@@ -50,8 +50,11 @@ const KINDS = {
 // A scene whose own words put it on furniture or in a room stays indoors: the island has no bed.
 const INDOOR = /\b(bed|beds|bunk|duvet|pillow|sofa|couch|kitchen|counter|fridge|stove|oven|shower|mirror|sink|table|door|shelves|hoh room|storage room|bathroom|bedroom|living room)\b/i;
 
-// spots taken this stretch, per week (a Map, never saved: the director runs a week in one go)
+// spots taken this stretch, per week (a Map, never saved: the director runs a week in one go, and
+// clears it first, resetSpots: a week written twice, by a rebuild or a second season in the same
+// session, found the first writing's spots still taken and moved its scenes)
 const taken = new Map();
+export function resetSpots() { taken.clear(); }
 const takenFor = ctx => {
   const k = `${ctx?.week?.num || 0}|${ctx?.stretch ?? 0}`;
   if (!taken.has(k)) { if (taken.size > 64) taken.clear(); taken.set(k, new Set()); }

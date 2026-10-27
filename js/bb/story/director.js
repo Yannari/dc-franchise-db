@@ -22,6 +22,7 @@ import { runnerDue, arcDue } from './arcs.js';
 import { gameTalkFor, bondTalkFor, styleTalkFor, phaseOf, hohWeekFor } from './gametalk.js';
 import { writeMilestone } from './milestone.js';
 import { hohRoomBeats } from '../hoh-room.js';
+import { resetSpots } from './places.js';
 
 const CEREMONY = new Set(['hoh', 'nominations', 'veto', 'veto-ceremony', 'eviction']);
 // the ceremonies' own moments (kept in step with vp-bb-ep/steps.js NOM_MOMENT / VETO_MOMENT)
@@ -65,6 +66,7 @@ export const backdoorWindow = clock => (clock?.veto ? 'gone' : clock?.noms ? 'op
 /** File the week and choose what airs. Words only: no game state moves. */
 export function airStorylines(week) {
   if (!week || !Array.isArray(week.acts)) return;
+  resetSpots();
   let stretch = 0;
   let at = 0;
   let pending = [];   // { act, line, step } filed this stretch

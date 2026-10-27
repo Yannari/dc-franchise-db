@@ -247,6 +247,36 @@ function noteAcross(id) {
   } catch { /* storage is a convenience */ }
 }
 
+// ...but a season reads the memory AS IT WAS WHEN THE SEASON BEGAN, never the live one. The live one
+// gains every scene this season airs, so a season rebuilt from week one (a re-run, a resumed season:
+// docs/ADDING-A-SHOW.md §11.5 N) avoided the scenes its own first airing had put there, and the weeks
+// already watched came back in other words (tests/bb-teams.test.js, "byte-identical", red since
+// October). The snapshot is kept on the season, so a checkpoint carries it, and in storage under the
+// season's salt, so a season started again from the same seed begins from the same memory.
+const SEEN_START_KEY = 'bb-story-seen-start';
+const SEEN_START_MAX = 8;
+const seenSets = new WeakMap();   // gs.bb -> its snapshot as a Set (gs.bb itself keeps only the array: it is saved)
+function seenBefore() {
+  const bb = gs.bb;
+  if (!bb) return new Set();
+  if (!Array.isArray(bb.seenBefore)) {
+    const salt = String(bb.seasonSalt || 0);
+    let starts = {};
+    try { starts = JSON.parse(globalThis.localStorage?.getItem(SEEN_START_KEY) || '{}') || {}; } catch { starts = {}; }
+    if (!Array.isArray(starts[salt])) {
+      starts[salt] = [...seenAcross()];
+      try {
+        const keep = Object.fromEntries(Object.entries(starts).slice(-SEEN_START_MAX));
+        globalThis.localStorage?.setItem(SEEN_START_KEY, JSON.stringify(keep));
+      } catch { /* storage is a convenience */ }
+    }
+    bb.seenBefore = starts[salt];
+  }
+  let set = seenSets.get(bb);
+  if (!set) seenSets.set(bb, set = new Set(bb.seenBefore));
+  return set;
+}
+
 // a line's text and its versions in each register (register.js variantOf): a slot any of them names must be filled
 const textsOf = t => [t.say || t.dr || t.beat || '', ...Object.values(t.v || {})].join(' ');
 
@@ -296,7 +326,7 @@ function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
   if (freshOnly && !keys.some(k => pools[k].some(e => !used[e.id]))) return null;
   for (const k of keys) { const unused = pools[k].filter(e => !used[e.id]); if (unused.length) pools[k] = unused; }
   // what this viewer saw in recent seasons waits while something new still fits
-  const seen = seenAcross();
+  const seen = seenBefore();
   if (seen.size) for (const k of keys) { const fresh = pools[k].filter(e => !seen.has(e.id)); if (fresh.length) pools[k] = fresh; }
   const facts = factsFor({ who, data, room }, { week: ctx.week, act: 'house', hoh: ctx.hoh, nominees: ctx.nominees });
   const comp = compOf(ctx);

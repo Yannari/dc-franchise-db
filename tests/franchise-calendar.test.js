@@ -13,7 +13,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   SLOTS, airKey, byAirDate, airLabel, ageAt, latestAired, yearsBetween, nextWindowFor, nextAllStarsWindow,
-  nowDate, finaleDate, premiereDate,
+  nowDate, finaleDate, premiereDate, projectedRun,
 } from '../js/franchise-calendar.js';
 import { SHOWS } from '../js/shows.js';
 
@@ -286,5 +286,32 @@ describe('Drag Race All Stars', () => {
 
   it('a show without All Stars has none', () => {
     expect(nextAllStarsWindow([td], 'total-drama')).toBe(null);
+  });
+
+  // ALL STARS AS ITS OWN SHOW (drag-race-all-stars, dras-N): the same rule,
+  // asked by either slug, over rows of either shape.
+  const AS = 'drag-race-all-stars';
+  const star = (n, y) => s(y, 'summer', { format: AS, seasonNumber: n });
+
+  it('answers the same for the spin-off slug', () => {
+    const w = nextAllStarsWindow([dr(1, 2027), td], AS);
+    expect(w).toMatchObject({ airYear: 2029, airSlot: 'summer', number: 1 });
+    expect(w.bridge).toEqual([{ airYear: 2028, airSlot: 'winter' }, { airYear: 2029, airSlot: 'winter' }]);
+  });
+
+  it('counts a dras row as an aired All Stars', () => {
+    const fx = [dr(1, 2027), dr(2, 2028), dr(3, 2029), star(1, 2029)];
+    expect(nextAllStarsWindow(fx, AS)).toMatchObject({ airYear: 2030, airSlot: 'summer', number: 2, bridge: [] });
+    expect(nextAllStarsWindow(fx, 'drag-race')).toMatchObject({ airYear: 2030, airSlot: 'summer', number: 2 });
+    expect(nextWindowFor(fx, 'drag-race')).toEqual({ airYear: 2030, airSlot: 'winter' });
+  });
+
+  it('a spin-off asked for its next window waits for its flagship', () => {
+    expect(nextWindowFor([dr(1, 2027), td], AS)).toEqual({ airYear: 2029, airSlot: 'summer' });
+  });
+
+  it("a spin-off is not part of its flagship's length", () => {
+    const fx = [dr(1, 2027, { episodeCount: 16, castSize: 14 }), { ...star(1, 2029), episodeCount: 4, castSize: 10 }];
+    expect(projectedRun('drag-race', fx).count).toBe(projectedRun('drag-race', fx.slice(0, 1)).count);
   });
 });

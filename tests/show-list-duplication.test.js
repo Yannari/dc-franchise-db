@@ -230,7 +230,6 @@ const COMPARISON_BACKLOG = {
   // same reason as js/tr-run.js and js/bb-run.js directly above and below:
   // which ENGINE a season plays is not a field the registry can declare, and
   // this module exists precisely to be the one place that asks.
-  'js/dr-run.js':                 1,
   'js/tr-run.js':                 1,
   'js/tr/endgame.js':             1,
   // 6 -> 7 for the castle's screen dispatch (Plan 8, Task 1). `buildVPScreens`

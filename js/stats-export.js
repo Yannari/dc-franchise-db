@@ -13,7 +13,7 @@ import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT, engineOf, familyOf } fro
 import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
-import { nextWindowFor, nextAllStarsWindow } from './franchise-calendar.js';
+import { nextWindowFor } from './franchise-calendar.js';
 import { ratingsForSeason, publishedRatings } from './ratings.js';
 import { publishedExitInterviews } from './bb/exit-interview.js';
 import { publishedTDExitInterviews } from './td/exit-interview.js';
@@ -2266,7 +2266,7 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
  * needs a "when". So it is placed by continuing the show's own rhythm rather
  * than left blank for somebody to notice later.
  */
-function _airWindowFor(db, format, seasonNum, { allStars = false } = {}) {
+function _airWindowFor(db, format, seasonNum) {
   const rows = (db && db.seasons) || [];
   const prior = rows.find(s => s.seasonNumber === seasonNum && (s.format || DEFAULT_FORMAT) === format);
   // An explicit choice in the season setup beats everything — including the
@@ -2288,9 +2288,8 @@ function _airWindowFor(db, format, seasonNum, { allStars = false } = {}) {
   const locked = (seasonFormat(seasonConfig) || DEFAULT_FORMAT) === format ? gs?.airWindow : null;
   if (locked && locked.airYear && locked.airSlot) return { airYear: locked.airYear, airSlot: locked.airSlot };
   const others = rows.filter(s => s !== prior);
-  // An All Stars season keeps its own quarter, not the flagship's next one.
-  const star = allStars ? nextAllStarsWindow(others, format) : null;
-  if (star) return { airYear: star.airYear, airSlot: star.airSlot };
+  // An All Stars season keeps its own quarter: nextWindowFor gives a spin-off
+  // its own rule (after its flagship, one a year), not a rhythm of its own.
   return nextWindowFor(others, format, { number: seasonNum }) || {};
 }
 
@@ -3839,6 +3838,16 @@ export async function exportPerfectMatchSeason(onStatus) {
   const doc = buildPerfectMatchSeasonDocument(rows, { seasonNumber: seasonNum });
   doc.exitInterviews = publishedExits('perfect-match');
   _status(`Built ${doc.seasonId}: ${doc.castSize} islanders, ${doc.episodeCount} episodes.`);
+
+  // Every episode's script, where the wiki fills look for it (episode-store.js), as The Challenge,
+  // The Circle and the race save theirs: without it the writer saw votes and placements and none of
+  // the villa. Never fails the export: with no storage the fills write from the record, and say so.
+  try {
+    const [{ putEpisode }, { wikiText }] = await Promise.all([import('./episode-store.js'), import('./pm/transcript.js')]);
+    let saved = 0;
+    for (const r of rows) { const t = wikiText(r); if (t) { await putEpisode(seasonNum, r.num, PERFECT_MATCH_FORMAT, t); saved++; } }
+    _status(`Saved ${saved} episode transcripts for the wiki.`);
+  } catch (e) { _status(`Could not save the episode transcripts (${e.message || e}); the wiki will be written from the record.`); }
 
   _status('Merging databases...');
   let playersDb = null; let seasonsDb = null;

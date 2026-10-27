@@ -29,7 +29,7 @@
 // thing to keep in step, and this project has been bitten by that often enough
 // to have a document about it.
 
-import { SHOWS } from './shows.js';
+import { SHOWS, familyOf, familyMembers, seasonRowFormat } from './shows.js';
 
 /** The four slots, in the order they occur within a year. */
 export const SLOTS = ['winter', 'spring', 'summer', 'fall'];
@@ -125,7 +125,7 @@ const median = xs => {
  * Returns { count, basis: 'cast' | 'typical' | 'default', cast }.
  */
 export function projectedRun(format, seasons = [], castSize = null) {
-  const mine = (seasons || []).filter(s => (s.format || 'total-drama') === format && !s.allStars
+  const mine = (seasons || []).filter(s => seasonRowFormat(s) === format
     && Number(s.episodeCount) > 0);
   const cast = Number(castSize) > 0 ? Number(castSize) : null;
   if (cast) {
@@ -248,6 +248,14 @@ export function yearsBetween(from, to) {
  * to reason from — in which case nothing is written and nothing is guessed.
  */
 export function nextWindowFor(seasons = [], format = null, { number = null } = {}) {
+  /* A SPIN-OFF HAS NO RHYTHM OF ITS OWN to continue: it waits for its
+     flagship and then airs once a year on its own quarter. That rule is
+     nextAllStarsWindow's, so every caller asking a spin-off for its next
+     window gets the rule instead of a summer that ignores the flagship. */
+  if (format && SHOWS[format]?.spinOff) {
+    const w = nextAllStarsWindow(seasons, format);
+    return w ? { airYear: w.airYear, airSlot: w.airSlot } : null;
+  }
   const quarters = s => { const k = airKey(s); return k == null ? null : Math.floor(k / 10) * 4 + (k % 10); };
   const at = q => ({ airYear: Math.floor(q / 4), airSlot: SLOTS[((q % 4) + 4) % 4] });
 
@@ -256,8 +264,9 @@ export function nextWindowFor(seasons = [], format = null, { number = null } = {
 
   // An All Stars season is not part of the flagship's rhythm: it has its own
   // quarter (nextAllStarsWindow), and counting it here would push the next
-  // winter season a year late every time one aired.
-  const mine = format ? dated.filter(s => (s.format || null) === format && !s.allStars) : dated;
+  // winter season a year late every time one aired. seasonRowFormat files the
+  // old `{ format: 'drag-race', allStars: true }` row under the spin-off.
+  const mine = format ? dated.filter(s => seasonRowFormat(s) === format) : dated;
 
   const next = number ?? (mine.length ? Math.max(...mine.map(s => Number(s.seasonNumber) || 0), mine.length) + 1 : 1);
   // A booking only ever keeps a season EARLIER than the rule would put it: it
@@ -308,8 +317,13 @@ export function nextWindowFor(seasons = [], format = null, { number = null } = {
  * this would be.
  */
 export function nextAllStarsWindow(seasons = [], format = null) {
-  const cfg = format ? SHOWS[format]?.allStars : null;
-  const slots = (cfg?.airSlots || []).map(s => SLOTS.indexOf(s)).filter(i => i >= 0);
+  // Asked by either slug: the spin-off itself, or the show it spun off from.
+  const spin = format && (SHOWS[format]?.spinOff ? format
+    : familyMembers(format).find(f => f !== format && familyOf(f) === format && SHOWS[f].spinOff));
+  if (!spin) return null;
+  const parent = familyOf(spin);
+  const cfg = SHOWS[spin].spinOff;
+  const slots = (SHOWS[spin].airSlots || []).map(s => SLOTS.indexOf(s)).filter(i => i >= 0);
   if (!slots.length) return null;
   const quarters = s => { const k = airKey(s); return Math.floor(k / 10) * 4 + (k % 10); };
   const at = q => ({ airYear: Math.floor(q / 4), airSlot: SLOTS[((q % 4) + 4) % 4] });
@@ -317,21 +331,20 @@ export function nextAllStarsWindow(seasons = [], format = null) {
 
   const dated = seasons.filter(s => airKey(s) != null).sort(byAirDate);
   if (!dated.length) return null;
-  const mine = dated.filter(s => (s.format || null) === format);
-  const stars = mine.filter(s => s.allStars);
+  const stars = dated.filter(s => seasonRowFormat(s) === spin);
   // Never before "now", like a flagship season (nextWindowFor).
   const now = nowDate(dated);
-  const open = q0 => { let q = q0; for (let i = 0; i < 16 && now && premiereDate(at(q), format) < now; i++) q = slotAfter(q); return q; };
+  const open = q0 => { let q = q0; for (let i = 0; i < 16 && now && premiereDate(at(q), spin) < now; i++) q = slotAfter(q); return q; };
   if (stars.length) return { ...at(open(slotAfter(quarters(stars[stars.length - 1])))), number: stars.length + 1, bridge: [] };
 
   const need = Math.max(1, Number(cfg.after) || 1);
-  const flagships = mine.filter(s => !s.allStars);
+  const flagships = dated.filter(s => seasonRowFormat(s) === parent);
   const bridge = [];
   let rows = dated;
   while (flagships.length < need) {
-    const w = nextWindowFor(rows, format);
+    const w = nextWindowFor(rows, parent);
     if (!w) return null;
-    const row = { format, airYear: w.airYear, airSlot: w.airSlot };
+    const row = { format: parent, airYear: w.airYear, airSlot: w.airSlot };
     bridge.push(w);
     flagships.push(row);
     rows = [...rows, row].sort(byAirDate);

@@ -1324,9 +1324,10 @@ async function _fillAirWindowOptions() {
     try {
       seasons = (await fetch('seasons_database.json').then(r => r.json())).seasons || [];
     } catch { /* no calendar, plain Auto */ }
-    const { nextWindowFor, nextAllStarsWindow, SLOTS, airKey } = await import('./franchise-calendar.js');
+    const { nextWindowFor, SLOTS, airKey } = await import('./franchise-calendar.js');
     const fmt = (typeof seasonFormat === 'function' && seasonFormat(seasonConfig)) || seasonConfig.format || 'total-drama';
-    const auto = (seasonConfig.drAllStars && nextAllStarsWindow(seasons, fmt)) || nextWindowFor(seasons, fmt);
+    // A spin-off (All Stars) gets its own rule from nextWindowFor: after its flagship.
+    const auto = nextWindowFor(seasons, fmt);
     const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
     const latest = Math.max(2026, ...seasons.map(s => Number(s.airYear) || 0));
     const opts = [`<option value="auto">Auto — ${auto ? `${cap(auto.airSlot)} ${auto.airYear}` : 'continues the schedule'}</option>`];

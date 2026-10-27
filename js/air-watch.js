@@ -23,7 +23,7 @@
 //
 // Imports nothing that touches the DOM at load, so timeline.html can use it
 // without the simulator.
-import { SHOWS, DEFAULT_FORMAT } from './shows.js';
+import { SHOWS, DEFAULT_FORMAT, seasonRowFormat } from './shows.js';
 import {
   airKey, airLabel, airDateLabel, episodeAirDates, nextWindowFor, premiereDate, projectedRun,
 } from './franchise-calendar.js';
@@ -106,7 +106,8 @@ export function setupSeason(gs, cfg, seasons, { castSize = storedCastSize() } = 
 
 /** The show's next season number on the calendar. */
 export function nextNumber(seasons, format) {
-  const mine = seasons.filter(s => s.format === format && !s.allStars);
+  // Its own show's rows: All Stars numbers from its own (an old allStars row included).
+  const mine = seasons.filter(s => seasonRowFormat(s) === format);
   return mine.length ? Math.max(...mine.map(s => Number(s.seasonNumber) || 0), mine.length) + 1 : 1;
 }
 

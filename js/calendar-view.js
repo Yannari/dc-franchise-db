@@ -21,7 +21,7 @@
 // drawn dashed and labelled "projected" everywhere, because a guess drawn like
 // a fact is how a calendar starts lying.
 
-import { SHOWS, DEFAULT_FORMAT } from './shows.js';
+import { SHOWS, DEFAULT_FORMAT, familyMembers, seasonRowFormat } from './shows.js';
 import {
   airKey, airLabel, latestAired, nextWindowFor, nextAllStarsWindow, episodeAirDates, airDateLabel, bookedWindow, DEFAULT_RUN, projectedRun,
 } from './franchise-calendar.js';
@@ -109,9 +109,10 @@ function runOf(season, projected = false, key = null) {
     key: key || (projected ? `next-${format}` : String(ref)),
     start: dates[0],
     finale: dates[dates.length - 1],
-    // An All Stars season is counted on its own: "DR AS1", not "DR 4".
-    short: season.allStars && show.allStars
-      ? `${show.short} ${show.allStars.short}${season.asNumber || ''}`
+    // An All Stars season is its own show and counted on its own: "DRAS 1",
+    // in air order (an old `allStars` row still carries its flagship number).
+    short: show.spinOff
+      ? `${show.short} ${season.asNumber || season.seasonNumber}`
       : `${show.short} ${season.seasonNumber}`,
     sub: subtitleOf(season.title, show),
   };
@@ -125,13 +126,19 @@ const tagOf = r => (r.live ? 'playing now' : r.started ? 'started' : r.possible 
  * the windows of seasons that have started; both sit on their show's next bar
  * instead of the rule's guess.
  */
-function buildModel(seasons, { live = null, setup = null, locks = {} } = {}) {
-  const dated = seasons.filter(s => airKey(s) != null);
+export function buildModel(seasons, { live = null, setup = null, locks = {} } = {}) {
+  // Every row filed under its show — an old `{ format: 'drag-race', allStars }`
+  // row is Drag Race All Stars. Untouched rows keep their identity, which the
+  // "latest aired" lookup below compares by.
+  const dated = seasons.filter(s => airKey(s) != null).map(s => {
+    const f = seasonRowFormat(s);
+    return f === (s.format || DEFAULT_FORMAT) ? s : { ...s, format: f };
+  });
   // Each aired All Stars learns which one it was, in air order.
   const starCount = {};
   const numbered = dated.slice().sort((a, b) => airKey(a) - airKey(b)).map(s => {
-    if (!s.allStars) return s;
-    const f = s.format || DEFAULT_FORMAT;
+    if (!SHOWS[s.format]?.spinOff) return s;
+    const f = s.format;
     starCount[f] = (starCount[f] || 0) + 1;
     return { ...s, asNumber: starCount[f] };
   });
@@ -141,6 +148,9 @@ function buildModel(seasons, { live = null, setup = null, locks = {} } = {}) {
   // Each show's next season, continued from its own rhythm.
   const ghosts = [];
   for (const [format, show] of Object.entries(SHOWS)) {
+    // A spin-off has no rhythm of its own: its possible next season is drawn
+    // with its flagship's, below, where the flagship it waits on is known.
+    if (show.spinOff) continue;
     const mine = dated.filter(s => (s.format || DEFAULT_FORMAT) === format);
     // A show with nothing aired still has a first season to place when it has
     // home quarters; without them there is no rhythm to continue.
@@ -175,7 +185,10 @@ function buildModel(seasons, { live = null, setup = null, locks = {} } = {}) {
     // ALL STARS — possible, on its own quarter. Before the first one, the
     // flagship seasons it waits on are drawn too (the `bridge`), so the bar
     // does not float in a year with nothing before it.
-    const as = nextAllStarsWindow(dated.map(s => ({ ...s, format: s.format || DEFAULT_FORMAT })), format);
+    const spin = familyMembers(format).find(f => f !== format && SHOWS[f].spinOff);
+    if (!spin) continue;
+    const spinShow = SHOWS[spin];
+    const as = nextAllStarsWindow(dated.map(s => ({ ...s, format: s.format || DEFAULT_FORMAT })), spin);
     if (!as) continue;
     let k = n;
     for (const b of as.bridge) {
@@ -187,13 +200,13 @@ function buildModel(seasons, { live = null, setup = null, locks = {} } = {}) {
       }, true, `next-${format}-${k}`);
       if (bridge) { bridge.lengthGuessed = true; bridge.lengthBasis = projectedRun(format, mine).basis; ghosts.push(bridge); }
     }
-    const lastStar = mine.filter(s => s.allStars).sort((a, b) => airKey(a) - airKey(b)).pop();
+    const lastStar = dated.filter(s => s.format === spin).sort((a, b) => airKey(a) - airKey(b)).pop();
     const count = lastStar?.episodeCount || projectedRun(format, mine).count;
     const star = runOf({
-      format, allStars: true, asNumber: as.number, seasonNumber: as.number,
-      title: `${show.name} ${show.allStars.label} ${as.number}`,
+      format: spin, asNumber: as.number, seasonNumber: as.number,
+      title: `${spinShow.name} ${as.number}`,
       airYear: as.airYear, airSlot: as.airSlot, episodeCount: count,
-    }, true, `next-${format}-as`);
+    }, true, `next-${spin}`);
     if (star) { star.lengthGuessed = true; star.lengthBasis = lastStar ? 'last' : projectedRun(format, mine).basis; star.possible = true; ghosts.push(star); }
   }
   ghosts.sort((a, b) => a.start - b.start);
@@ -530,9 +543,11 @@ function detailHtml() {
   const status = r.live ? `Playing now · ${r.aired} of ${r.count} episodes aired · not exported yet`
     : r.started ? 'Started · its date is fixed · not exported yet'
       : r.possible ? 'Possible · not scheduled yet' : r.projected ? 'Projected · not scheduled yet' : isNow ? (state.model.nowMark === r ? 'Latest to air · the franchise is here' : 'Last aired') : 'Aired';
-  const stars = r.show.allStars;
-  const which = r.season.allStars && stars ? `${stars.label} ${r.season.asNumber || ''}` : `Season ${r.season.seasonNumber}`;
-  const starSlots = (stars?.airSlots || []).map(s => s[0].toUpperCase() + s.slice(1)).join(' and ');
+  // A spin-off (Drag Race All Stars) is its own show, waiting on its flagship.
+  const stars = r.show.spinOff || null;
+  const flagship = stars ? SHOWS[r.show.family] : null;
+  const which = stars ? `${r.show.familyTab} ${r.season.asNumber || r.season.seasonNumber}` : `Season ${r.season.seasonNumber}`;
+  const starSlots = (stars ? r.show.airSlots || [] : []).map(s => s[0].toUpperCase() + s.slice(1)).join(' and ');
   const winner = r.season.winner?.name
     ? ` · Won by <b>${esc(r.season.winner.name)}</b>${r.season.winner.runnerUp ? ` over ${esc(r.season.winner.runnerUp)}` : ''}` : '';
   const home = (r.show.airSlots || []).map(s => s[0].toUpperCase() + s.slice(1)).join(' and ');
@@ -541,8 +556,8 @@ function detailHtml() {
     : r.live ? `<p>Being played in the simulator. Its date is fixed once it has aired an episode, so exporting another season first won't move it. It's scheduled for real once it's exported.</p>${booked}`
     : r.started ? `<p>Started in the simulator and saved; its date was fixed when it started. It's scheduled for real once it's exported.</p>${booked}`
     : r.possible
-      ? `<p>A possible ${esc(r.show.name)} ${esc(stars.label)}. ${r.season.asNumber === 1
-        ? `The first can follow ${esc(r.show.name)} ${esc(stars.after)}, in ${esc(starSlots)}`
+      ? `<p>A possible ${esc(r.show.name)}. ${r.season.asNumber === 1
+        ? `The first can follow ${esc(flagship?.name || '')} ${esc(stars.after)}, in ${esc(starSlots)}`
         : `One a year, in ${esc(starSlots)}`}, after that winter's season has crowned its winner. It isn't scheduled; play it and it lands here.</p>`
     : r.season.seasonNumber === 1
       ? `<p>Not played yet. ${esc(r.show.name)} airs in ${esc(home || 'its slot')}, and never before the latest finale, so its first season lands here unless something else is exported first. The episode count is a placeholder until then.</p>${booked}`

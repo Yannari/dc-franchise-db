@@ -50,3 +50,32 @@ describe('Drag Race All Stars in the registry', () => {
     expect(seasonRowFormat({})).toBe('total-drama');
   });
 });
+
+// The calendar draws All Stars as its own show (Task 5).
+import { buildModel } from '../js/calendar-view.js';
+
+describe('the franchise calendar', () => {
+  const row = (format, n, y, slot) => ({ format, seasonNumber: n, airYear: y, airSlot: slot,
+    episodeCount: 12, castSize: 12, seasonId: seasonId(format, n) });
+  const fx = [row('drag-race', 1, 2027, 'winter'), row('drag-race', 2, 2028, 'winter'),
+    row('drag-race', 3, 2029, 'winter'), row('drag-race-all-stars', 1, 2029, 'summer')];
+
+  it('labels an aired All Stars season by its own show', () => {
+    const m = buildModel(fx);
+    expect(m.runs.find(r => r.format === 'drag-race-all-stars').short).toBe('DRAS 1');
+    expect(m.runs.filter(r => r.format === 'drag-race').map(r => r.short)).toEqual(['DR 1', 'DR 2', 'DR 3']);
+  });
+
+  it('projects exactly one next All Stars, the year after', () => {
+    const stars = buildModel(fx).ghosts.filter(g => g.format === 'drag-race-all-stars');
+    expect(stars).toHaveLength(1);
+    expect(stars[0].short).toBe('DRAS 2');
+    expect(stars[0].season).toMatchObject({ airYear: 2030, airSlot: 'summer' });
+    expect(stars[0].possible).toBe(true);
+  });
+
+  it('reads an old allStars row the same way', () => {
+    const old = [...fx.slice(0, 3), { ...row('drag-race', 4, 2029, 'summer'), allStars: true, seasonId: 'dr-4' }];
+    expect(buildModel(old).runs.find(r => r.season.airSlot === 'summer').short).toBe('DRAS 1');
+  });
+});

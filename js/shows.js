@@ -334,13 +334,8 @@ export const SHOWS = {
     // (franchise-calendar.js projectedRun) until this show has aired seasons of its own: season 1: 16 episodes from 14 queens.
     runPerPlayer: 1.14,
     airSlots: ['winter'],
-    // ALL STARS, ON ITS OWN SCHEDULE. Possible from the year of the third
-    // flagship season, then one a year. Summer rather than spring: a 16-week
-    // winter season is still airing through April, and two runs of one show
-    // on the same Friday is the one collision the home quarters exist to
-    // prevent. Read by nextAllStarsWindow (js/franchise-calendar.js); a
-    // season row is All Stars when it carries `allStars: true`.
-    allStars: { label: 'All Stars', short: 'AS', airSlots: ['summer'], after: 3 },
+    // ALL STARS is its own show now: 'drag-race-all-stars' below, with its
+    // own summer and the `spinOff.after` rule nextAllStarsWindow reads.
     rosterPlace: 'COMPETITION',
     roundsPath: 'dr.episodes',
     /* WHAT SHAPE THIS SHOW'S ROUNDS ARE IN -- see roundShape() below.

@@ -62,6 +62,7 @@ import { applySocialStatusEffects, recordChallengeDominance, recordStrategicResp
 import { updateSocialStatus } from '../social-status.js';
 import { updateEditLayer } from '../edit-layer.js';
 import { rememberBBStrategy, allyStake } from './shared-strategy.js';
+import { decideFish } from './hoh-fish.js';
 import { updateAdaptationFromEpisode } from '../adaptation.js';
 import {
   chooseNominationPlan, switchPlanTarget, chooseReplacement, explainReplacement, initialVotePreference,
@@ -4261,6 +4262,13 @@ export function simulateBBWeek(options = {}) {
   week.initialNominees = [...nominees];
   week.plan = plan;
 
+  // ── the target went up and asked ──
+  // Before the ceremony, the HOH's real target climbs the stairs and asks "am I going up?". What the HOH says is
+  // theirs (bb/hoh-fish.js): a lie, the truth, or a dodge, from its own dice so no later draw moves. The writer shows
+  // this answer (bb/story/gametalk.js), and the nomination below prices a lie on top of the chair.
+  week.fish = null;
+  if (!chainNoms.length) { try { week.fish = decideFish(week, hoh, plan, house); } catch { week.fish = null; } }
+
   // ── the promises this ceremony just broke ──
   //
   // Safety deals are made BEFORE nominations, which is the only time they are
@@ -4393,6 +4401,11 @@ export function simulateBBWeek(options = {}) {
     // whole week is spent resenting them for it.
     const blamed = week.hohPublic || hoh;
     try { _cappedBondWindow(() => addBond(nominee, blamed, hit)); } catch { /* no bond, no grievance */ }
+    // ...and a lie on top of the chair: they asked the HOH straight out this week and were told they were safe
+    // (bb/hoh-fish.js). The hotter the temper, the harder it lands (the user, 2026-10-27: resentment "that could
+    // build up to the nom ceremony")
+    const lied = !!week.fish && week.fish.how === 'lie' && week.fish.fisher === nominee && week.fish.hoh === hoh;
+    if (lied) { try { _cappedBondWindow(() => addBond(nominee, hoh, -(0.6 + (10 - temper) * 0.12))); } catch { /* texture */ } }
 
     /* AND THE ROOM THEY BOTH BELONG TO WATCHED IT HAPPEN.
        Turning on your own alliance cost exactly one relationship — the person
@@ -4619,15 +4632,17 @@ export function simulateBBWeek(options = {}) {
        relationship to have been broken, and enough game in them to answer it. */
     let bold = 5, strategic = 5;
     try { bold = pStats(nominee)?.boldness ?? 5; strategic = pStats(nominee)?.strategic ?? 5; } catch { /* defaults */ }
-    if ((isTarget || treason >= 0.4) && (bold + strategic) / 2 >= 5) {
+    // a lie to their face makes an enemy of anybody with a temper, game or not
+    if (((isTarget || treason >= 0.4) && (bold + strategic) / 2 >= 5) || (lied && (bold + (10 - temper)) / 2 >= 5)) {
       try {
-        setBBTarget(nominee, hoh, treason >= 0.4
+        setBBTarget(nominee, hoh, lied ? 'told me I was safe and put me up'
+          : treason >= 0.4
           ? 'looked me in the eye all week and then put me up'
           : 'put me on that block', { week });
         reignMadeAnEnemy(week, nominee);
       } catch { /* the bond hit still stands */ }
     }
-    week.nomFallout.push({ nominee, hoh, hit, treason, kind: isTarget ? 'target' : 'nominee' });
+    week.nomFallout.push({ nominee, hoh, hit, treason, kind: isTarget ? 'target' : 'nominee', ...(lied ? { lied: true } : {}) });
   }
 
   // NO CEREMONY ON A CHAIN WEEK. The chain act already showed the house

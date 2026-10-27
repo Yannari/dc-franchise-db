@@ -63,6 +63,63 @@ export default {
     { id: 'zb.7', turns: [{ by: 'a', say: "Was any of it real?" }, { by: 'b', say: "It's the game." }, { by: 'a', say: "That's not an answer." }] },
     { id: 'zb.8', when: { intent: 'promised' }, turns: [{ by: 'a', say: "You told me I was safe." }, { by: 'b', say: "Things changed." }, { by: 'a', say: "In a day?" }] },
   ],
+  // lied to about the block, then put on it (bb-events/ceremonies.js nom-lied-to): a is the nominee, b the HOH
+  'cer.lied.blowup': [
+    { id: 'zl2.b1', turns: [
+      { by: 'a', say: "You told me I wasn't even on your radar. Those were your words." },
+      { by: 'b', say: "Things changed." },
+      { by: 'a', say: "In two days? Nothing changed. You lied to my face." },
+      { by: 'b', say: "It's the game." },
+      { by: 'a', say: "Then play it to my face next time." },
+      { beat: 'Nobody else in the room moves.' },
+      { by: 'a', dr: "I'd have respected 'you're going up'. I don't respect being lied to." }] },
+    { id: 'zl2.b2', turns: [
+      { by: 'a', say: "Can I say something?" },
+      { by: 'b', say: "The ceremony's over." },
+      { by: 'a', say: "I came up to your room and asked you straight. You looked at me and said I was fine." },
+      { by: 'b', say: "I said what I had to say." },
+      { by: 'a', say: "You said what was easy." },
+      { by: 'a', dr: "{b} could have told me the truth and I'd have had a week to fight. {b} took that week off me." }] },
+    { id: 'zl2.b3', when: { register: 'fiery' }, turns: [
+      { by: 'a', say: "No, everybody should hear this. I asked {b} if I was going up. {b} said no. And here I am." },
+      { by: 'b', say: "Sit down." },
+      { by: 'a', say: "I'm not sitting down. {b} lied to me, and I want every person in this room to know it." },
+      { beat: '{a} walks out. A door bangs somewhere down the hall.' },
+      { by: 'b', dr: "Was it a lie? Yes. Would I do it again? Probably. I didn't want {a} campaigning for five days." }] },
+    { id: 'zl2.b4', turns: [
+      { by: 'a', say: "I believed you. That's on me." },
+      { by: 'b', say: "It wasn't personal." },
+      { by: 'a', say: "You made it personal when you looked me in the eye and told me I was safe." },
+      { by: 'b', say: "I'm sorry you feel that way." },
+      { by: 'a', say: "Don't. Don't do that." },
+      { by: 'a', dr: "Everybody in that room just heard what {b}'s word is worth. Good. Now they know." }] },
+    { id: 'zl2.b5', turns: [
+      { by: 'a', say: "Just so everybody knows: two days ago {b} told me I was safe." },
+      { by: 'b', say: "That's not what I said." },
+      { by: 'a', say: "It's exactly what you said. 'You're fine, don't worry about it.'" },
+      { by: 'b', say: "I said I hadn't decided." },
+      { by: 'a', say: "You'd decided. You just didn't want me campaigning." },
+      { by: 'a', dr: "{b} wanted me quiet for two days. It worked. It won't work again." }] },
+    { id: 'zl2.b6', turns: [
+      { by: 'a', say: "Was any of it true? Anything you said up there?" },
+      { by: 'b', say: "We can talk about this later." },
+      { by: 'a', say: "No. You talked plenty in your room. Now I'm talking." },
+      { by: 'a', say: "I'd have voted with you every week if you'd been straight with me." },
+      { beat: '{b} looks at the floor. The rest of the house looks anywhere else.' },
+      { by: 'b', dr: "I lied to {a}. I knew it'd come out. I didn't think it'd come out in front of everyone." }] },
+  ],
+  'cer.lied.cold': [
+    { id: 'zl2.c1', turns: [{ by: 'a', dr: "I asked {b} straight out if I was going up. {b} told me I was fine. I'm not saying anything tonight. I'm going to remember it." }] },
+    { id: 'zl2.c2', turns: [
+      { by: 'a', say: "Congratulations." },
+      { by: 'b', say: "Don't be like that." },
+      { by: 'a', say: "Like what? You told me I was safe." },
+      { beat: '{a} sits back down and does not look at {b} again.' }] },
+    { id: 'zl2.c3', turns: [{ by: 'a', dr: "{b} lied to me about this week, quietly, in the HOH room. Next week {b} doesn't have the key, and I haven't forgotten." }] },
+    { id: 'zl2.c4', turns: [{ by: 'a', say: "Okay." }, { beat: '{a} smiles at {b} on the way past and keeps walking.' }, { by: 'a', dr: "{b} told me I wasn't going up. I smiled at {b} just now. I won't be smiling on eviction night." }] },
+    { id: 'zl2.c5', turns: [{ by: 'a', dr: "Two days ago {b} told me I was safe and I stopped campaigning. That's two days I don't get back, and {b} knew it." }] },
+    { id: 'zl2.c6', turns: [{ by: 'b', say: "No hard feelings?" }, { by: 'a', say: "You told me I was fine. Now I know what that means from you." }, { by: 'b', dr: "{a} took it quietly. That's worse. Loud I can deal with." }] },
+  ],
   'cer.stoic.scene': [
     { id: 'zs.1', turns: [{ by: 'a', say: "What time are the veto players picked?" }, { beat: 'That is all {a} says.' }] },
     { id: 'zs.2', turns: [{ by: 'a', say: "Right. Then I'd better win the veto." }, { beat: 'Two people laugh. One of them stops.' }] },

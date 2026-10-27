@@ -430,7 +430,13 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
   // told the truth.
   // ...unless they already went up and pitched themselves this week (bb-events/power.js): both in one week read as
   // "you're fine", "I believe you", and then the same person begging in the same room (the user, 2026-10-27)
-  const fisher = real;
+  // The engine decides the answer now, and pays for it (bb/hoh-fish.js, week.fish): a lie is remembered and comes
+  // out at the ceremony. A season saved before that has no week.fish, and rolls it here as it always did.
+  if (week.fish !== undefined) {
+    const f = week.fish;
+    if (f && f.hoh === hoh && f.fisher !== hoh && week._selfPitched !== f.fisher) want(`hohweek.fish.${f.how}`, { a: hoh, b: f.fisher });
+  }
+  const fisher = week.fish !== undefined ? null : real;
   if (fisher && fisher !== hoh && week._selfPitched !== fisher) {
     const s = pStats(hoh);
     const lie = ((s.strategic || 5) / 10) * (1 - (s.loyalty || 5) / 20)

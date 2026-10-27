@@ -178,7 +178,8 @@ const nomPawnReassured = {
 // house could see the alliance that just broke.
 function _blindsideVictim(ctx) {
   const week = ctx?.week?.num || 0;
-  return _nominees(ctx)
+  // (somebody the HOH lied to this week has their own scene: nom-lied-to)
+  return _nominees(ctx).filter(n => n !== _liedTo(ctx))
     .filter(n => trusts(n, ctx.hoh, 2.5) || wasPromised(n, ctx.hoh, week) || sharesAlliance(n, ctx.hoh))
     .sort((a, b) => bond(b, ctx.hoh) - bond(a, ctx.hoh))[0] || null;
 }
@@ -231,6 +232,54 @@ const nomBlindside = {
       });
     }
     return { scene, players: [victim, ctx.hoh], badgeText: wasVisible ? 'BLINDSIDED' : 'QUIET BETRAYAL', badgeClass: 'red' };
+  },
+};
+
+// ── lied to, and put up anyway ──
+// The target went up to the HOH room this week, asked "am I going up?", and was told they were safe (bb/hoh-fish.js).
+// The chair and the lie were already priced in the engine (bb/week.js nomFallout); what this adds is the room
+// SEEING it. A hot temper says it out loud at the ceremony, in front of everybody, and the house learns what the
+// HOH's word is worth; a cool one says nothing tonight and remembers. (The user, 2026-10-27: "it should create a sort
+// of resentment that could build up to the nom ceremony. I didn't have one fight at any nom ceremony yet.")
+function _liedTo(ctx) {
+  const f = ctx?.week?.fish;
+  return f && f.how === 'lie' && f.hoh === ctx?.hoh && _nominees(ctx).includes(f.fisher) ? f.fisher : null;
+}
+const nomLiedTo = {
+  id: 'nom-lied-to',
+  category: 'ceremonies',
+  weight(house, ctx) {
+    if (ctx.act !== 'nominations' || !ctx.hoh) return 0;
+    const victim = _liedTo(ctx);
+    if (!victim) return 0;
+    const s = pStats(victim);
+    // the hotter and bolder, the surer it comes out tonight; above the ordinary cap (14), because a lie to somebody's
+    // face is the thing in the room at this ceremony and should not lose the draw to a stock reaction
+    return band(90 + (10 - s.temperament) * 4 + s.boldness * 2, 150);
+  },
+  fire(house, ctx, api) {
+    const victim = _liedTo(ctx);
+    const s = pStats(victim);
+    // proportional, not a threshold: a temper and the nerve to use it, against the calm of holding it in
+    const heat = (10 - s.temperament) * 0.6 + s.boldness * 0.4;
+    const blowup = heat >= 5;
+    const scene = makeScene('cer.lied', { a: victim, b: ctx.hoh }, { ending: blowup ? 'blowup' : 'cold' }, house, 'living-room');
+    api.setTarget(victim, ctx.hoh, 'told me I was safe and put me up');
+    api.remember(victim, ctx.hoh, 'betrayal', blowup ? 3 : 2, { act: 'nominations', lie: true });
+    if (blowup) {
+      api.addBond(victim, ctx.hoh, -0.8);
+      api.popDelta(victim, 1);
+      api.popDelta(ctx.hoh, -1);
+      // said in front of everybody: the house now knows the HOH lies about nominations, and the sharp ones file it
+      _bystanders(house, ctx, victim).forEach(watcher => {
+        const sharp = pStats(watcher).intuition / 10;
+        api.suspicion(watcher, ctx.hoh, 0.6 * sharp);
+        if (sharp > 0.5) api.remember(watcher, ctx.hoh, 'warning', 1, { saw: 'lied to a nominee about the block' });
+      });
+    } else {
+      api.suspicion(victim, ctx.hoh, 1.0);
+    }
+    return { scene, players: [victim, ctx.hoh], badgeText: blowup ? 'CALLED OUT AT THE CEREMONY' : 'LIED TO', badgeClass: 'red' };
   },
 };
 
@@ -554,6 +603,7 @@ export const CEREMONY_EVENTS = [
   nomSpeechPersonal,
   nomPawnReassured,
   nomBlindside,
+  nomLiedTo,
   nomStoic,
   vetoSavedGratitude,
   vetoLeftOnBlock,

@@ -354,12 +354,12 @@ function headlines(state, rng) {
   const cards = [], seen = new Set();
   for (const e of [...(state.history || [])].reverse()) {
     const of = HEADLINE_KINDS[e.kind];
-    if (!of || !e.aired || e.ep < state.ep - 3 || e.ep >= state.ep || cards.some(c => c.of === of)) continue;
+    if (!of || !e.aired || e.ep < state.ep - 5 || e.ep >= state.ep || cards.some(c => c.of === of)) continue;
     const who = e.players[0];
     if (!state.villa.includes(who) || seen.has(who)) continue;
     if (of === 'pull' && !partnerOf(state, who)) continue;
     cards.push({ of, who, with: e.players[1] || null }); seen.add(who);
-    if (cards.length >= 3) break;
+    if (cards.length >= 5) break;
   }
   if (cards.length < 2) return [];
   const out = [];

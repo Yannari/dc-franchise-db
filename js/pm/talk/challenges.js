@@ -64,6 +64,10 @@ export const RECEIPT = build('receipt', {
       ...Object.entries(CARD).flatMap(([of, text]) => [
         { ...card(of, G), stage: `{a} reads the card out loud: "${text}" {a} doesn't even look at anyone else, and walks straight over to {c}.`, turns: [['a', "I'm sorry. I've just got a feeling about you."]] },
         { ...card(of, NG), stage: `{a} reads the card: "${text}" {a} thinks for a long time, then kisses {b}.`, turns: [] },
+        { ...card(of, G), stage: `{a} reads it out: "${text}" Then {a} looks straight at {c}.`, turns: [['a', "It's you. I'd put money on it."]] },
+        { ...card(of, G), stage: `"${text}" {a} doesn't hesitate for a second, and kisses {c}.`, turns: [['c', "Why me?"], ['a', "Call it a hunch."]] },
+        { ...card(of, NG), stage: `"${text}" {a} goes along the line, changes {a.posAdj} mind twice, and kisses {b}.`, turns: [['b', "Me? Seriously?"]] },
+        { ...card(of, NG), stage: `{a} reads the card, and the whole villa watches {a} decide. It's {b}.`, turns: [['a', "Sorry if I'm wrong. I'm probably wrong."]] },
       ]),
     ],
     answer: [
@@ -97,6 +101,12 @@ export const LOOK_WHO = build('look-who', {
       { when: { of: 'two-faced', ...G }, turns: [['a', "That's {b}. That's so obviously {b}."], ['b', "Okay. Yes. That was me. It sounds worse out loud."], ['c', "Hang on. That's about me."]] },
       { when: { of: 'two-faced', ...NG }, turns: [['a', "I genuinely have no idea who said that."], ['c', "Hang on. That's about me. Who said that about me?"], ['b', "It sounds worse than it was."]] },
       { when: { of: 'warm', ...G }, turns: [['a', "That's {b}. Has to be."], ['b', "Guilty. And I meant every word."]] },
+      { when: { of: 'warm', ...NG }, turns: [['a', "I don't know, but whoever it is, {c} should marry them."], ['b', "It was me."], ['c', "Stop it."]] },
+      { when: { of: 'warm', ...G }, turns: [['a', "That's {b}. Nobody else talks about {c} like that."], ['b', "I'm not even embarrassed."]] },
+      { when: { of: 'two-faced', ...G }, turns: [['a', "That's {b}, isn't it?"], ['b', "…Yes."], ['c', "About me? You said that about me?"]] },
+      { when: { of: 'two-faced', ...NG }, turns: [['a', "No idea. But somebody here is in trouble."], ['c', "Somebody said that about me?"], ['b', "Fine. Me. It came out wrong."]] },
+      { when: { of: 'cold', ...NG }, turns: [['a', "Whoever said that, I don't want to be on the wrong side of them."], ['b', "Me. And I meant it."]] },
+      { when: { of: 'plain', ...NG }, turns: [['a', "That could be anyone in here, to be fair."], ['b', "It's me. Mystery solved."]] },
       { when: { of: 'warm', ...NG }, turns: [['a', "No idea. Someone who likes {c} a lot, apparently."], ['b', "That was me, actually."]] },
       { when: { of: 'cold', ...G }, turns: [['a', "That's {b}. Nobody else talks like that."], ['b', "I'm not taking it back."], ['c', "Nobody asked you to."]] },
       { when: { of: 'cold', ...NG }, turns: [['a', "I've got no idea, and I'm scared to guess."], ['c', "Whoever it was, say it to my face next time."], ['b', "Fine. It was me."]] },
@@ -304,9 +314,13 @@ export const BABY_DOLL = build('baby-doll', {
     baby: [
       { when: { of: 'team' }, stage: "Three in the morning, and the doll starts crying. {a} and {b} both get up at the same time.", turns: [['a', "I've got her."], ['b', "No, I've got her. You did the last one."]] },
       { when: { of: 'left-it' }, stage: "The doll is screaming. {b} is asleep. {a} is not.", turns: [['a', "Are you joking? Are you actually asleep?"], ['b', "Five more minutes."]] },
+      { when: { of: 'steady' }, stage: "{a} and {b} have the doll in a sling, and take it in turns to carry it round the villa.", turns: [['a', "Has she been fed?"], ['b', "Twice. She's fine. Stop checking."]] },
+      { when: { of: 'steady' }, stage: "The doll cries at two in the morning. {b} gets up. At four, it's {a}'s turn, and {a} gets up without being asked.", turns: [['b', "You actually got up."], ['a', "I said I would."]] },
       { when: { of: 'lost' }, stage: "{a} and {b} come back from the pool. The doll does not come back from the pool with them.", turns: [['b', "Where's the baby?"], ['a', "I thought you had the baby."]] },
     ],
     after: [
+      { when: { of: 'steady' }, turns: [['b', "Your turn."], ['a', "It was my turn last time."], ['b', "And it's your turn again. I did the four o'clock."]] },
+      { when: { of: 'steady' }, turns: [], beat: "They take it in turns all night, and by morning they've worked out a system. Neither of them will admit the other one's is better." },
       { when: { of: 'team' }, turns: [['b', "Is it weird that this is the moment I thought, I could actually do this with you?"], ['a', "With a real one, I hope. Not the doll."]] },
       { when: { of: 'left-it' }, turns: [['a', "I've changed it four times. Four. You haven't changed it once."], ['b', "It's a doll."], ['a', "That's not the point, and you know it's not the point."]] },
       { when: { of: 'lost' }, turns: [['a', "We are never telling anyone about this."], ['b', "The whole villa saw."], ['a', "Then we're never telling anyone at home."]] },
@@ -337,6 +351,10 @@ export const GRAFTIES_AWARD = build('grafties-award', {
       { when: { of: 'couple' }, stage: "The Grafties. Couple of the summer, voted by the public: {a} and {b}.", turns: [['a', "We're putting this on the fridge."], ['b', "We don't have a fridge. We have a villa."]] },
       { when: { of: 'grafter' }, stage: "Biggest grafter of the summer: {a}.", turns: [['a', "I'm choosing to take that as a compliment. I'm choosing very hard."]] },
       { when: { of: 'grafter', coupled: true }, stage: "Biggest grafter of the summer: {a}. {b} laughs the loudest.", turns: [['b', "It worked, though, didn't it? It worked on me."]] },
+      { when: { of: 'mug' }, stage: "Most let down of the summer, voted by the villa: {a}.", turns: [['a', "Thanks. Really. Thank you all so much."]], beat: "Everyone claps, and nobody can quite look at {a}." },
+      { when: { of: 'mug' }, stage: "The next envelope: the islander whose partner has let them down the most. It's {a}.", turns: [['a', "I'm going to need a bigger trophy for this one."]] },
+      { when: { of: 'clown' }, stage: "Villa clown of the summer: {a}, and nobody is surprised.", turns: [['a', "I'd like to thank my material. All of it."]] },
+      { when: { of: 'clown' }, stage: "The award for the most laughs goes to {a}, who does a little bow.", turns: [['a', "You're welcome. All of you. Every day."]] },
       { when: { of: 'least' }, stage: "The award nobody wants: least likely to be getting a text at the final. It goes to {a}.", turns: [['a', "Thank you. I'd like to thank nobody."]] },
       { when: { of: 'least', coupled: true }, stage: "The award nobody wants goes to {a} and {b}.", turns: [['b', "We're going to frame it. Out of spite."]] },
     ],
@@ -369,6 +387,8 @@ export const BLOW_DARE = build('blow-dare', {
       { when: { of: 'kiss-other', taken: true }, turns: [['a', "{b}. Sorry, {c}. It's the forfeit."], ['c', "The forfeit said anyone. You picked {b}."]] },
       { when: { of: 'kiss-other', taken: false }, turns: [['a', "{b}. Come here. It's the rules."], ['b', "Since when do you follow rules?"]] },
       { when: { of: 'kiss-partner' }, turns: [['a', "Easiest forfeit I've ever done. {b}, come here."]] },
+      { when: { of: 'forfeit' }, turns: [['a', "Give me the forfeit. Whatever it is, it's better than that."]], beat: "The forfeit is a jug of something green over {a.posAdj} head. {a} doesn't regret it." },
+      { when: { of: 'forfeit' }, turns: [['a', "No. I'm not doing it. Forfeit."], ['b', "You know the forfeit's worse."], ['a', "I don't care."]] },
       { when: { of: 'forfeit' }, turns: [['a', "I'll take the forfeit. I'm not kissing somebody because a card fell on the floor."]] },
     ],
     land: [
@@ -420,6 +440,10 @@ export const TOWER_Q = build('tower-q', {
       { when: { of: 'dodge' }, turns: [['b', "'Who else in here are you into?'"], ['a', "No one. I'm not even going to pretend to think about it."], ['b', "Okay. I'll take that."]] },
       { when: { of: 'dodge' }, turns: [['b', "'Who would you go for, if you were single tomorrow?'"], ['a', "I wouldn't be single tomorrow. That's my answer."]] },
       { when: { of: 'dodge-seen' }, turns: [['b', "'Who would you go for in here, if you weren't with me?'"], ['a', "Nobody. You."], ['b', "You looked somewhere before you said that."]] },
+      { when: { of: 'rate-high' }, turns: [['b', "'Score your partner out of ten.' Go on, then."], ['a', "Eleven."], ['b', "It only goes up to ten."], ['a', "Not for you."]] },
+      { when: { of: 'rate-mid' }, turns: [['b', "'How happy are you in your couple, out of ten?'"], ['a', "Seven. And a half. Don't look at me like that, seven and a half is good."]] },
+      { when: { of: 'rate-low' }, turns: [['b', "'Score your partner out of ten.'"], ['a', "…Five."], ['b', "Five? Five?"], ['a', "You asked."]] },
+      { when: { of: 'rate-low' }, turns: [['b', "'How happy are you in your couple, out of ten?'"], ['a', "Do I have to say a number?"], ['b', "Yes."], ['a', "Four. Maybe a five on a good day."]] },
       { when: { of: 'rate-high' }, turns: [['b', "'Out of ten, how happy are you with me?'"], ['a', "Ten. Easy."], ['b', "You didn't even think about it."], ['a', "I didn't have to."]] },
       { when: { of: 'rate-mid' }, turns: [['b', "'Out of ten, how happy are you with me?'"], ['a', "Honestly? A solid six. Maybe a seven. It's early."], ['b', "I'll take a solid six. For now."]] },
       { when: { of: 'rate-low' }, turns: [['b', "'Out of ten, how happy are you with me?'"], ['a', "Can I pass?"], ['b', "No."], ['a', "Four."]] },
@@ -493,6 +517,7 @@ export const BLIND_RUN = build('blind-run', {
       { when: { of: 'steady' }, stage: "{b} is blindfolded, and {a} talks {b.obj} round the course one step at a time.", turns: [['a', "Small step. Smaller. There's a tyre. Lift your foot. Good."], ['b', "Are we winning?"], ['a', "We're not losing. That's the main thing."]] },
       { when: { of: 'steady' }, stage: "{a} guides {b} round so carefully that the next couple has to wait.", turns: [['b', "Why is everyone laughing?"], ['a', "Because we're very slow. But nobody's fallen in the pool."]] },
       { when: { of: 'steady' }, stage: "{b} has the blindfold on, and holds {a}'s voice like a rope.", turns: [['a', "Trust me. Three steps forward, then stop."], ['b', "I'm trusting you. Don't make me regret it."]] },
+      { when: { of: 'shout' }, stage: "{a} is guiding {b} past the paddling pool, and it's not going well.", turns: [['a', "Big step! Bigger! No, not that big!"], ['b', "Make up your mind!"]] },
       { when: { of: 'shout' }, stage: "{a} starts off calm. By the second obstacle, {a} is shouting.", turns: [['a', "Left! No, your left! LEFT!"], ['b', "Stop shouting at me! I can't see anything!"], ['a', "That's the whole game!"]] },
       { when: { of: 'shout' }, stage: "{b} stops dead in the middle of the course and refuses to move.", turns: [['b', "I'm not taking another step until you say it nicely."], ['a', "Please. Walk. Forward."], ['b', "Nicer than that."]] },
       { when: { of: 'win' }, stage: "{b} is blindfolded, and {a} doesn't raise {a.posAdj} voice once. They're round in no time.", turns: [['a', "Last one. Reach out. That's the flag."], ['b', "Have we done it? Have we actually done it?"]] },
@@ -554,7 +579,7 @@ const HEAD = {
   jealous: "'Green-eyed islander can't stand to see partner chatting.'",
 };
 export const HEADLINE = build('headline', {
-  plans: { featured: ['read', 'soak', 'land?'], short: ['read', 'soak'] },
+  plans: { featured: ['read', 'soak', 'land'], short: ['read', 'soak'] },
   moves: {
     read: Object.entries(HEAD).map(([of, h]) => ({ when: { of }, stage: "{a} picks up the next headline, and reads it out to the whole villa.", turns: [['a', h]] })),
     soak: [

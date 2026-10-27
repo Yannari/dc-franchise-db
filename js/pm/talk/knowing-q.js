@@ -18,6 +18,10 @@ export const KNOWING_Q = build('knowing-q', {
     ask: [
       { when: { of: 'friend' }, stage: "{a} and {b} sit back to back on the stools, whiteboards on their knees.", turns: [['a', "Question one. Who's my best friend in the villa?"]] },
       { when: { of: 'friend' }, turns: [['b', "Right. Who's your best friend in here? I know this. I definitely know this."]] },
+      { when: { of: 'friend' }, stage: "{b} has a pen in {b.posAdj} mouth and a very worried face.", turns: [['a', "Who's my best friend in the villa? Easy one."], ['b', "It's not easy. Everyone loves you."]] },
+      { when: { of: 'friend' }, turns: [['a', "Next card. 'Who would I go to first if I was upset?'"], ['b', "Okay. I know this one."]] },
+      { when: { of: 'nemesis' }, turns: [['a', "'Who in the villa gets on my nerves the most?' I'm not reading that out again."], ['b', "You don't have to. I've got it."]] },
+      { when: { of: 'nemesis' }, stage: "{a} reads the card and puts it face down.", turns: [['b', "What does it say?"], ['a', "'Who do I clash with most in here?'"], ['b', "Oh, I know this."]] },
       { when: { of: 'nemesis' }, stage: "The next card makes the whole villa go 'ooh'.", turns: [['a', "Who in here winds me up the most?"]] },
       { when: { of: 'nemesis' }, turns: [['b', "Who annoys you the most in the villa. Oh, this is going to cause problems."]] },
       { when: { of: 'fancy' }, stage: "{a} turns the card over, reads it, and goes pale.", turns: [['a', "'If you weren't with your partner, who would you go for?'"], ['b', "Oh, I want to know this one."]] },

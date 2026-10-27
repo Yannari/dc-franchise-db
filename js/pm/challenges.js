@@ -457,8 +457,10 @@ function babyDolls(state, rng) {
       addBond(a, b, 0.25);
       out.push(scene(state, rng, 'baby-doll', [a, b], { of: 'lost', pop: pop([a, 0.2, 1.5], [b, 0.2, 1.5]) }));
     } else {
-      // They got through it, and nobody filmed anything worth showing.
+      // They got through it, taking turns: shown now too (it used to be cut, and
+      // a baby challenge of two couples was two scenes).
       for (const n of [a, b]) feel(state, n, 'security', 0.3);
+      out.push(scene(state, rng, 'baby-doll', [a, b], { of: 'steady', pop: pop([a, 0.2, 0.6], [b, 0.2, 0.6]) }));
     }
   }
   return out;
@@ -525,6 +527,23 @@ function grafties(state, rng) {
     // "Grafter of the year" is a compliment until your partner hears it.
     if (p) { feel(state, p, 'security', -0.8); addRelationshipDimension(p, grafter, 'trust', -0.3); }
     out.push(scene(state, rng, 'grafties-award', [grafter, ...(p ? [p] : [])], { of: 'grafter', pop: pop([grafter, 0.2, 2]) }));
+  }
+  // …and two the villa itself has earned, read off what aired: the biggest
+  // mug (whose partner strayed the most behind their back, now known), and the
+  // villa clown (the most laughs).
+  const known = {};
+  for (const s of state.secrets || []) if (s.known && state.villa.includes(s.partner)) known[s.partner] = (known[s.partner] || 0) + (s.severity || 1);
+  const mug = Object.entries(known).sort((x, y) => y[1] - x[1])[0]?.[0];
+  if (mug && known[mug] >= 1) {
+    feel(state, mug, 'confidence', -0.5);
+    out.push(scene(state, rng, 'grafties-award', [mug], { of: 'mug', pop: pop([mug, 0.6, 1.5]) }));
+  }
+  const laughs = {};
+  for (const e of state.history || []) if (e.kind === 'comedy' && e.aired && state.villa.includes(e.players[0])) laughs[e.players[0]] = (laughs[e.players[0]] || 0) + 1;
+  const clown = Object.entries(laughs).sort((x, y) => y[1] - x[1])[0]?.[0];
+  if (clown && clown !== mug) {
+    feel(state, clown, 'confidence', 0.8);
+    out.push(scene(state, rng, 'grafties-award', [clown], { of: 'clown', pop: pop([clown, 0.4, 1.2]) }));
   }
   if (least) {
     feel(state, least, 'confidence', -1.5); feel(state, least, 'stress', 1.5);

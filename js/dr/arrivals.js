@@ -29,6 +29,7 @@ import {
 } from './data/entrances.js';
 import { HISTORY_BEATS, ALLSTARS_OPENING, AS_ENTRANCES, AS_INTROS } from './data/legacy-beats.js';
 import { dragOf, starPower } from './queen.js';
+import { pastSeasonLabel } from './history.js';
 
 const pick = (rng, list) => list[Math.floor(rng() * list.length) % list.length];
 
@@ -239,7 +240,7 @@ export function arrivalScenes({ cast = [], players = {}, rng = Math.random, star
       out.push({
         step: 'arrivals', kind: 'arrival:resume',
         data: { players: [name], past },
-        text: `Season ${past.season}: she ${ord(past.rank)}${wins ? `, with ${wins}` : ''}. ${biz}.`,
+        text: `${pastSeasonLabel(past)}: she ${ord(past.rank)}${wins ? `, with ${wins}` : ''}. ${biz}.`,
       });
     }
     /* ── AND WHO IS ALREADY IN THE ROOM ────────────────────────────

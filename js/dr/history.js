@@ -15,6 +15,8 @@
 // PURE. The fetching lives in js/dr-run.js; this only reads what it is given,
 // so it can be tested against a real stored season.
 
+import { SHOWS, DRAG_FORMAT } from '../shows.js';
+
 /** The per-episode rows, whichever shape of document this is. */
 function episodesOf(doc) {
   const a = doc?.dr?.episodes;
@@ -30,6 +32,7 @@ function episodesOf(doc) {
  */
 export function seasonFromDoc(doc) {
   if (!doc) return null;
+  const format = doc.format || DRAG_FORMAT;
   const num = Number(doc.seasonNumber) || 0;
   const placements = (doc.placements || [])
     .map(p => ({
@@ -67,10 +70,28 @@ export function seasonFromDoc(doc) {
       add(ls.winner, ls.loser, num);
     }
   }
-  return { season: num, placements, relations, winsKnown: true };
+  return { season: num, format, placements, relations, winsKnown: true };
+}
+
+/* ── WHEN A SEASON AIRED, AMONG BOTH SERIES ──
+   Drag Race and its All Stars number separately, so "newest first" cannot
+   compare the numbers. A season's place in the family's run is its number on
+   the main series; an All Stars season sits just after the flagship it waited
+   for (the registry's `spinOff.after`) and one a year from there — the
+   franchise calendar's own rule. */
+export function airOrder(s) {
+  const n = Number(s?.season) || 0;
+  const spin = SHOWS[s?.format]?.spinOff;
+  return spin ? (Number(spin.after) || 1) + n - 1 + 0.5 : n;
 }
 
 /** Every stored season, newest first — a queen who played twice is what she is NOW. */
 export function seasonsFromDocs(docs = []) {
-  return docs.map(seasonFromDoc).filter(Boolean).sort((a, b) => b.season - a.season);
+  return docs.map(seasonFromDoc).filter(Boolean).sort((a, b) => airOrder(b) - airOrder(a));
+}
+
+/** "Season 4" on the main series, "All Stars 1" on the spin-off: what a past is called on screen. */
+export function pastSeasonLabel(past) {
+  const tab = SHOWS[past?.format]?.spinOff && SHOWS[past.format].familyTab;
+  return `${tab || 'Season'} ${Number(past?.season) || 0}`;
 }

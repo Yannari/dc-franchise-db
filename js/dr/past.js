@@ -117,7 +117,8 @@ function realPast(name, seasons) {
     const winsKnown = s.winsKnown !== false;
     const wins = Number(row.wins) || 0;
     return {
-      real: true, season: Number(s.season) || 0, rank, of: list.length,
+      // `format` names the series: a queen back from All Stars is not from "season 1".
+      real: true, season: Number(s.season) || 0, format: s.format || null, rank, of: list.length,
       wins, winsKnown,
       exit: rank === 1 ? 'crowned' : rank <= 3 ? 'finalist' : 'eliminated',
       business: businessFor(rank, list.length, winsKnown ? wins : 0, name, { winsKnown }),

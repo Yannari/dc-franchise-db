@@ -38,7 +38,7 @@
 import { airKey, airLabel, byAirDate } from './franchise-calendar.js';
 import { significanceOf, lineFor } from './life-events.js';
 import { fameOf } from './life-resolver.js';
-import { showWords } from './shows.js';
+import { showWords, engineOf } from './shows.js';
 import { styleOf, voiceOf, composeEpisode, podcastAftermath, parseMoment } from './kristal-voice.js';
 import { composeExit, pronounsFor, exitEpisodeKey } from './kristal-exit.js';
 
@@ -238,7 +238,8 @@ function storyFor({ slug, detail, season, cast, nameOf, slugOf, lifeUpTo }) {
   // The number with somebody behind it, loudest first.
   const stats = [];
   const n = v => Number(v) || 0;
-  const fmt = season?.format;
+  // The ENGINE decides which stat block a detail carries (All Stars: `dr`).
+  const fmt = engineOf(season?.format);
   if ((fmt === 'total-drama' || fmt === 'big-brother') && n(detail.votesReceived) >= 3) stats.push({ type: 'votes', n: n(detail.votesReceived) });
   if (n(detail.bb?.timesNominated) >= 2) stats.push({ type: 'noms', n: n(detail.bb.timesNominated) });
   if (n(detail.dr?.bottoms) >= 2) stats.push({ type: 'bottoms', n: n(detail.dr.bottoms) });

@@ -165,8 +165,8 @@ describe('where the browser is mounted', () => {
     const player = read('player.html');
     expect(player).toContain('genealogy-tab.js');
     expect(player).toContain('fam-tree');
-    // Only on the show it belongs to.
-    expect(player).toMatch(/format === window\.__SHOWS\?\.DRAG_FORMAT\)\s*_renderGenealogy/);
+    // Only on the show it belongs to — Drag Race and its All Stars, one family.
+    expect(player).toMatch(/familyOf\(format\) === window\.__SHOWS\.DRAG_FORMAT\)\s*_renderGenealogy/);
 
     const franchise = read('franchise.html');
     expect(franchise, 'the franchise page is for seasons').not.toContain('genealogy-tab');

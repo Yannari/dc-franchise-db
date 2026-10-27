@@ -10,7 +10,7 @@
 //
 // The genealogy itself is js/dr/genealogy.js. This draws it.
 import { franchiseFamilies, genealogyFor } from './dr/genealogy.js';
-import { DRAG_FORMAT, seasonId } from './shows.js';
+import { DRAG_FORMAT, seasonId, familyOf } from './shows.js';
 
 /** Fetched documents, keyed by which seasons they are. */
 const _docCache = { key: null, docs: [] };
@@ -47,8 +47,9 @@ export async function buildFamilies(rosterDb) {
 
   // Every drag season we can find, for the houses a season built by itself.
   const ids = (seasonsIdx?.seasons || seasonsIdx || [])
-    .filter(x => (x.format || x.show) === DRAG_FORMAT)
-    .map(x => x.seasonId || seasonId(DRAG_FORMAT, x.seasonNumber || x.season));
+    // Both series: All Stars seasons record houses too.
+    .filter(x => familyOf(x.format || x.show) === DRAG_FORMAT)
+    .map(x => x.seasonId || seasonId(x.format || x.show, x.seasonNumber || x.season));
   const key = [...new Set(ids)].sort().join(',');
   if (_docCache.key !== key) {
     _docCache.key = key;

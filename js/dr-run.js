@@ -38,11 +38,11 @@
 // test still green.
 import { gs, gsCheckpoints, players, relationships, seasonConfig, seasonFormat, twistsForFormat,
   engineFormat, isSpinOffSeason } from './core.js';
-import { DRAG_FORMAT } from './shows.js';
+import { DRAG_FORMAT, familyOf } from './shows.js';
 import { dealUnseen, noteShown } from './seen-episodes.js';
 import { activeSeasons, seasonKeyParts, recordBuiltSeason } from './franchise-meta.js';
 import { drLedgerRecord } from './dr/ledger-record.js';
-import { seasonsFromDocs } from './dr/history.js';
+import { seasonsFromDocs, airOrder } from './dr/history.js';
 import { seasonFilePath } from './dr/export.js';
 import { getPerceivedBond, addBond } from './bonds.js';
 import { playDragSeason } from './dr/season.js';
@@ -578,17 +578,18 @@ export async function loadDragHistory() {
   if (_drDocs) return _drDocs;
   if (_drDocsLoading) return _drDocsLoading;
   _drDocsLoading = (async () => {
+    // Both series: a queen's last run may have been an All Stars.
     const nums = [];
     try {
       for (const [key, rec] of Object.entries(activeSeasons() || {})) {
         const { format, num } = seasonKeyParts(key, rec);
-        if (format === DRAG_FORMAT && num) nums.push(num);
+        if (familyOf(format) === DRAG_FORMAT && num) nums.push({ num, format });
       }
     } catch { /* no ledger yet */ }
     const docs = [];
-    for (const n of nums) {
+    for (const { num: n, format } of nums) {
       try {
-        const res = await fetch(seasonFilePath(n));
+        const res = await fetch(seasonFilePath(n, format));
         if (res.ok) docs.push(await res.json());
       } catch { /* not published; the ledger still has her placement */ }
     }
@@ -606,7 +607,7 @@ function _pastDragSeasons() {
     const out = [];
     for (const [key, rec] of Object.entries(activeSeasons() || {})) {
       const { format, num } = seasonKeyParts(key, rec);
-      if (format !== DRAG_FORMAT) continue;
+      if (familyOf(format) !== DRAG_FORMAT) continue;
       const placements = Object.entries(rec?.players || {})
         .map(([name, p]) => ({ name, place: Number(p?.placement) || 0, wins: Number(p?.chalWins) || 0 }))
         .filter(p => p.place > 0)
@@ -626,10 +627,10 @@ function _pastDragSeasons() {
           if (rec.players[rival]) relations.push({ a: name, b: rival, kind: 'rival', season: num });
         }
       }
-      if (placements.length) out.push({ season: num, placements, relations, winsKnown: false });
+      if (placements.length) out.push({ season: num, format, placements, relations, winsKnown: false });
     }
     // Newest first: a queen who has played twice arrives as what she is NOW.
-    return out.sort((a, b) => b.season - a.season);
+    return out.sort((a, b) => airOrder(b) - airOrder(a));
   } catch { return []; }
 }
 

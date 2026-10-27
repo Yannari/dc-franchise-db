@@ -677,7 +677,7 @@ function generalReaction(listener, speaker, reveal, reaction) {
         `${listener} nods once at the floor. ${P(listener).Sub} has thought that about ${a} for longer than tonight.`,
         `${listener} looks straight at ${a} and does not look away. That was a confession as far as ${P(listener).sub} is concerned.`,
         `${listener} mouths "I knew it" at the wall, where no camera is supposed to be.`,
-        `${listener} files it under confirmed, and starts counting the votes for next Thursday before the door has shut.`,
+        `${listener} files it under confirmed, and starts lining up votes for next Thursday before the door has shut.`,
         `"Right," says ${listener}, very quietly, and does not elaborate for anybody.`,
       ])
       : pool('confirmed-new', [

@@ -77,7 +77,7 @@ export default {
     { id: 'wc7.x1', turns: [{ by: 'a', say: "So one person is safe and {count} of us pay for it?" }, { by: 'b', say: "I didn't make the rules." }] },
     { id: 'wc7.x2', turns: [{ by: 'a', dr: "{b} chose this for all of us. I'll remember that on Thursday." }] },
     { id: 'wc7.x3', turns: [{ by: 'a', say: "Hope it was worth it, {b}." }, { by: 'b', say: "It was." }] },
-    { id: 'wc7.x4', turns: [{ by: 'a', dr: "There are {count} of us paying so {b} can relax this week. Count the votes, {b}." }] },
+    { id: 'wc7.x4', turns: [{ by: 'a', dr: "There are {count} of us paying so {b} can relax this week. That's how many people are paying for it, {b}." }] },
     { id: 'wc7.x5', turns: [{ by: 'a', say: "Thanks a lot, {b}." }, { beat: '{b} looks at the floor.' }] },
     { id: 'wc7.x6', turns: [{ by: 'a', dr: "I'm not angry. I'm keeping score." }] },
   ],
@@ -91,7 +91,7 @@ export default {
   ],
   'wildact.blocked.scene': [
     { id: 'wc7.k1', turns: [{ by: 'a', dr: "I'm on the block and I said no to safety. Either I have the votes, or I just made the worst choice of my life." }] },
-    { id: 'wc7.k2', turns: [{ by: 'a', dr: "People think I'm crazy for saying no. I've counted the votes. I'm fine." }] },
+    { id: 'wc7.k2', turns: [{ by: 'a', dr: "People think I'm crazy for saying no. I know where the votes are. I'm fine." }] },
     { id: 'wc7.k3', turns: [{ by: 'a', dr: "Yes, I'm nominated. Yes, I turned it down. I'm not paying for something I don't need." }] },
   ],
 };

@@ -131,7 +131,7 @@ export default {
   'premiere.rich.priced': [
     { id: 'tq.q1', turns: [{ by: 'a', say: "That's a tenth of what {b} made on night one." }, { beat: 'Everyone laughs. Nobody is entirely joking.' }] },
     { id: 'tq.q2', turns: [{ by: 'a', say: "Can you afford the tea, {b}?" }, { beat: 'The kitchen laughs. {b} laughs loudest.' }] },
-    { id: 'tq.q3', turns: [{ by: 'a', dr: "The first vote count anyone has done this season has {b}'s name at the top. Because of the money." }] },
+    { id: 'tq.q3', turns: [{ by: 'a', dr: "The first time anyone talks about a vote this season, {b}'s name is at the top. Because of the money." }] },
     { id: 'tq.q4', turns: [{ by: 'b', dr: "Everyone keeps joking about my money. Every joke is a little bit serious." }] },
     { id: 'tq.q5', turns: [{ by: 'a', say: "Rich people buy the snacks." }, { by: 'b', say: "Very funny." }] },
     { id: 'tq.q6', turns: [{ by: 'a', dr: "{b} has a big target, and it's the size of a cheque." }] },

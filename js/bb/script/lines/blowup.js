@@ -164,7 +164,7 @@ export default {
     ] },
     { id: 'tb.n3', turns: [{ by: 'a', say: "My name's been in every whisper in this house, and every one of them started with you." }, { by: 'b', say: "That's paranoid." }, { by: 'a', say: "Three people told me! Three!" }] },
     { id: 'tb.n4', turns: [{ by: 'a', say: "You want me gone. Just say it. I'd respect you more if you just said it." }, { by: 'b', say: "Fine. I want you gone." }, { by: 'a', say: "...Thank you. Was that so hard?" }] },
-    { id: 'tb.n5', turns: [{ by: 'a', say: "Is it true you're counting votes against me?" }, { by: 'b', say: "Who told you that?" }, { by: 'a', say: "That's not a no!" }, { by: 'b', say: "It's not a yes either!" }] },
+    { id: 'tb.n5', turns: [{ by: 'a', say: "Is it true you're getting people to vote me out?" }, { by: 'b', say: "Who told you that?" }, { by: 'a', say: "That's not a no!" }, { by: 'b', say: "It's not a yes either!" }] },
     { id: 'tb.n6', turns: [{ by: 'a', say: "If you're coming after me, come after me. Stop sending other people to do it." }, { by: 'b', say: "I'm not sending anybody." }, { by: 'a', say: "Then why does everybody you talk to come and ask me the same question?" }] },
   ],
   'talk.confront.about-friction': [

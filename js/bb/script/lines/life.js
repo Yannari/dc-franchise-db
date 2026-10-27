@@ -224,7 +224,7 @@ export default {
     { id: 'ls.a3', turns: [{ by: 'a', dr: "I've been awake so long the plan doesn't make sense any more. I'll fix it in the morning." }] },
     { id: 'ls.a4', turns: [{ beat: 'Everyone else is asleep. {a} lies on {a.posAdj} back, staring at the ceiling.' }, { by: 'a', dr: "A house full of people, and I've never felt more on my own." }] },
     { id: 'ls.a5', turns: [{ by: 'a', dr: "Every time I close my eyes, I'm back at the nomination ceremony." }] },
-    { id: 'ls.a6', turns: [{ by: 'a', dr: "I counted the votes four times tonight. I got three different answers." }] },
+    { id: 'ls.a6', turns: [{ by: 'a', dr: "I went through who's voting which way four times tonight. I got three different answers." }] },
     { id: 'ls.a7', turns: [{ by: 'a', dr: "Everyone's snoring. I'm wide awake, thinking about Thursday." }] },
     { id: 'ls.a8', turns: [{ beat: '{a} gets up, walks around the house in the dark, and goes back to bed. Twice.' }, { by: 'a', dr: "I just can't switch my brain off." }] },
     { id: 'ls.a9', turns: [{ by: 'a', dr: "It's four in the morning, and I've just realised I might have said the wrong thing to someone yesterday. Great." }] },

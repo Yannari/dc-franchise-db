@@ -80,7 +80,7 @@ export default {
     { id: 'fb.h8', turns: [{ by: 'a', say: "Did you sleep okay, up in your big room?" }, { by: 'b', say: "Don't do that." }, { by: 'a', say: "Do what? {gone}'s bed is empty. Yours had a view." }, { by: 'b', say: "I had to put two people up. You'd have done the same." }, { by: 'a', say: "Not {gone}. I wouldn't have picked {gone}." }] },
     { id: 'fb.h9', turns: [{ by: 'a', say: "One question. Was {gone} ever the pawn?" }, { by: 'b', say: "...I said that at the time." }, { by: 'a', say: "That's not a yes." }, { by: 'b', say: "It got away from me." }, { by: 'a', dr: "\"It got away from me.\" {b} held the key, put {gone} in the chair, and somehow it got away from {b}." }] },
     { id: 'fb.h10', turns: [{ by: 'b', say: "You haven't said a word to me since the eviction." }, { by: 'a', say: "Because every time I look at you, I see {gone}'s face when the last key out of that box wasn't {gone}'s." }, { by: 'b', say: "It wasn't personal." }, { by: 'a', say: "It was to me." }] },
-    { id: 'fb.h11', turns: [{ by: 'a', say: "Every week somebody's HOH, and every week they say it wasn't their fault." }, { by: 'b', say: "It wasn't. Count the votes." }, { by: 'a', say: "The votes only counted because you picked who they were for. You picked {gone}." }, { by: 'b', say: "And I'd do it again." }, { by: 'a', dr: "Good. At least now {b} has stopped hiding behind the house." }] },
+    { id: 'fb.h11', turns: [{ by: 'a', say: "Every week somebody's HOH, and every week they say it wasn't their fault." }, { by: 'b', say: "It wasn't. The house voted." }, { by: 'a', say: "The votes only counted because you picked who they were for. You picked {gone}." }, { by: 'b', say: "And I'd do it again." }, { by: 'a', dr: "Good. At least now {b} has stopped hiding behind the house." }] },
   ],
   'fallout.blame.wrong': [
     { id: 'fb.w1', turns: [{ by: 'a', say: "Can we stop pretending?" }, { by: 'b', say: "Pretending what?" }, { by: 'a', say: "That you had nothing to do with {gone} going." }, { by: 'b', say: "I didn't!" }, { by: 'a', say: "Nobody else makes sense." }, { by: 'a', dr: "It was {b}. It has to be. Nobody else makes sense." }] },
@@ -143,7 +143,7 @@ export default {
     { id: 'fo.c1', turns: [{ by: 'a', say: "Somebody voted to keep {gone}. And I think I know who." }, { beat: '{a} looks straight at {b}.' }, { by: 'b', say: "Don't look at me." }] },
     { id: 'fo.c2', turns: [{ by: 'a', dr: "Everyone said they were voting {gone} out. The numbers say somebody didn't. I'm pretty sure it was {b}." }] },
     { id: 'fo.c3', turns: [{ by: 'a', say: "{b}. It was you, wasn't it?" }, { by: 'b', say: "...Does it matter now?" }] },
-    { id: 'fo.c4', when: { third: true }, turns: [{ by: 'a', say: "{b} and {c}. You two kept {gone}." }, { by: 'c', say: "Says who?" }, { by: 'a', say: "Says the vote count." }] },
+    { id: 'fo.c4', when: { third: true }, turns: [{ by: 'a', say: "{b} and {c}. You two kept {gone}." }, { by: 'c', say: "Says who?" }, { by: 'a', say: "Says the vote." }] },
     { id: 'fo.c5', turns: [{ by: 'b', dr: "{a} worked out it was me. I don't know how. But {a} worked it out." }] },
     { id: 'fo.c6', turns: [{ by: 'a', dr: "{b} was close to {gone} all week. Who else was going to vote to keep {gone}?" }] },
   ],

@@ -120,7 +120,7 @@ export default {
   'engine.declined.misread': [
     { id: 'eg2.m1', turns: [{ by: 'a', dr: "I've counted. The votes are with me. I don't need to campaign." }, { beat: 'Nobody corrects {a}.' }] },
     { id: 'eg2.m2', turns: [{ by: 'a', dr: "Campaigning would only make me look worried. I'm not worried." }] },
-    { id: 'eg2.m3', turns: [{ by: 'a', dr: "I've counted the votes. I'm staying. No need to beg." }] },
+    { id: 'eg2.m3', turns: [{ by: 'a', dr: "I've asked around. I'm staying. No need to beg." }] },
     { id: 'eg2.m4', turns: [{ beat: '{a} spends the day relaxing instead of campaigning.' }, { by: 'a', dr: "Why would I campaign? I'm fine." }] },
     { id: 'eg2.m5', turns: [{ by: 'a', dr: "Everyone's been nice to me all week. That's my answer." }] },
     { id: 'eg2.m6', turns: [{ by: 'a', dr: "I'm not chasing votes I've already got." }] },

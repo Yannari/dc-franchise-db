@@ -175,6 +175,9 @@ function lines(kind, voice, o, h) {
   return { hist: kind === 'feud' ? hist : hist.slice(sour), voiced };
 }
 
+// the season's alliance names, as alternatives for a pattern ("|The Shield Wall|..."), or ''
+const groupsRe = () => (gs.namedAlliances || []).map(a => a?.name).filter(Boolean)
+  .map(n => '|' + String(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('');
 const NAMES_RE = () => new RegExp('(' + (players || []).map(p => p.name).filter(Boolean).map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'g');
 
 /**
@@ -228,7 +231,19 @@ export function addInsight(sc, kindText, weekNum) {
   // the user, 2026-10-26: "other examples of that bug")
   const FITS = { same: ['game'], split: ['game', 'feud'], nomThem: ['game', 'feud'], nomMe: ['game', 'feud'],
     theyNomMe: ['game', 'feud'], saved: ['game', 'ally', 'feud'], deal: ['game', 'feud'], alliance: ['game', 'feud'], couple: ['feud'] };
-  const fits = w => (FITS[w.fact] || ['game', 'feud']).includes(kind) && !(votesTalked && (w.fact === 'split' || w.fact === 'same'));
+  // ...and only a fact the conversation is already about: a deal closes a scene that talks about a deal or a promise,
+  // a vote the two shared one about trusting each other, and a scene whose talk names somebody else is about them
+  // (the user, 2026-10-27: Lacey and Michele timing Nina's forty minutes with the HOH, closed by "Lacey and I shook on
+  // a deal. I still think Lacey meant it": "the deal part had nothing to do with the conversation")
+  const talk = sc.lines.filter(l => l.kind === 'say').map(l => String(l.text || '')).join(' ');
+  const talkNamesSomebodyElse = (players || []).some(p => p?.name && p.name !== me && p.name !== o
+    && new RegExp(`\\b${p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(talk));
+  const TRUST = /\b(trust|loyal|together|my side|your side|have my back|got my back|working with|work with|with me|with you|on the same page|count on)\b/i;
+  const TOPIC = { deal: /\b(deal|promise[sd]?|final (two|three)|shook|pact|word)\b/i, same: TRUST, split: TRUST,
+    alliance: new RegExp(`\\balliance\\b${groupsRe()}`, 'i') };
+  const onTopic = w => !TOPIC[w.fact] || TOPIC[w.fact].test(talk);
+  const fits = w => (FITS[w.fact] || ['game', 'feud']).includes(kind) && !(votesTalked && (w.fact === 'split' || w.fact === 'same'))
+    && onTopic(w) && (kind === 'feud' || !talkNamesSomebodyElse);
   const hist = spoke(me) && spoke(o) && theirs && kind !== 'heart' ? res.hist.filter(fits) : [];
   // downtime is the scene's own: a voice line there read as a non sequitur, so only history; and a
   // voice line is about the other person, so only where that person is talking too (the read of

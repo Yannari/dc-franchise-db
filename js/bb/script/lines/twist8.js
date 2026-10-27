@@ -116,7 +116,7 @@ export default {
     { id: 'nm8.c6', turns: [{ by: 'a', dr: "I'm not accusing anyone. I'm just reminding people who was in that room." }] },
   ],
   'nm.hoh.steady': [
-    { id: 'nm8.s1', turns: [{ by: 'a', dr: "I'm counting votes for a block I didn't choose. By nine, I'll have a new plan." }] },
+    { id: 'nm8.s1', turns: [{ by: 'a', dr: "I'm looking for votes for a block I didn't choose. By nine, I'll have a new plan." }] },
     { id: 'nm8.s2', turns: [{ by: 'a', dr: "Somebody spent a whole power to change my week. That means my week was worth a power." }] },
     { id: 'nm8.s3', turns: [{ by: 'a', dr: "It's nobody's fault and everybody's problem. I'll work with the block I've got." }] },
     { id: 'nm8.s4', turns: [{ by: 'a', dr: "Plan B. I always have a plan B." }] },

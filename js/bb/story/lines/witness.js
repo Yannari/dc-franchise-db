@@ -11,9 +11,85 @@
 //   witness.out      a and b are going at it; c is close to both and will not choose
 // And later, when the one let down brings it up (a is let down, b is the witness, {x} the other one):
 //   witness.after.<side|turned|out>.<sorry|stand>   b apologises, or b stands by it
+// And a feud the house has watched for weeks (bb/witness.js feudRemark: a and b are the two at it, c says it,
+// {since} is the week it started):
+//   witness.again.fond     c likes both of them and teases them about it
+//   witness.again.stirs    c schemes, and their feud keeps eyes off c's own game
+//   witness.again.tired    c is sick of it
 // Ids 'wt.'.
 
 export default {
+  'witness.again.fond': [
+    { id: 'wg.f1', turns: [
+      { by: 'c', say: "You two again? Every single day since {since}." },
+      { by: 'a', say: "{b} started it." },
+      { by: 'b', say: "I did not." },
+      { by: 'c', say: "Honestly? I'd miss it if you stopped." },
+    ] },
+    { id: 'wg.f2', turns: [
+      { by: 'c', say: "Are you two doing this again? I'll make the tea." },
+      { by: 'b', say: "It's not funny, {c}." },
+      { by: 'c', say: "It's a little funny. You've been at it since {since}, and you're both still here." },
+    ] },
+    { id: 'wg.f3', turns: [
+      { beat: '{c} sits down between them.' },
+      { by: 'c', say: "Okay. I love you both. You've been fighting since {since}. Can we have one dinner off?" },
+      { by: 'a', say: "One dinner." },
+      { by: 'b', say: "Fine. One." },
+    ] },
+    { id: 'wg.f4', turns: [
+      { by: 'c', say: "{a}, {b}, you've been doing this since {since}. You'd both be bored without each other." },
+      { by: 'a', say: "I would not." },
+      { by: 'c', dr: "They fight every day, and if one of them went home, the other one wouldn't know what to do with themselves." },
+    ] },
+  ],
+  'witness.again.stirs': [
+    { id: 'wg.s1', turns: [
+      { by: 'c', say: "No, keep going. Don't stop on my account." },
+      { by: 'a', say: "Stay out of it, {c}." },
+      { by: 'c', dr: "{a} and {b} have been fighting since {since}. As long as they're busy with each other, nobody's looking at me." },
+    ] },
+    { id: 'wg.s2', turns: [
+      { beat: '{c} pulls up a chair and sits down to watch.' },
+      { by: 'b', say: "What are you doing?" },
+      { by: 'c', say: "Watching. You two have been at it since {since}. I'm not missing this one." },
+      { by: 'c', dr: "Two people who want each other gone, and neither of them is thinking about me. That's a good week for my game." },
+    ] },
+    { id: 'wg.s3', turns: [
+      { by: 'c', say: "{b}, are you going to let {a} talk to you like that?" },
+      { by: 'b', say: "Stay out of it, {c}." },
+      { by: 'c', dr: "Do I want them fighting? Yes. If {a} and {b} keep going after each other, my name never comes up." },
+    ] },
+    { id: 'wg.s4', turns: [
+      { by: 'c', say: "This again. Every week since {since}." },
+      { beat: "{c} laughs, and doesn't leave." },
+      { by: 'c', dr: "Every week {a} and {b} find something new to fight about. Every week they're each other's target, and I'm nobody's." },
+    ] },
+  ],
+  'witness.again.tired': [
+    { id: 'wg.t1', turns: [
+      { by: 'c', say: "Can you two not? Not today." },
+      { by: 'a', say: "Tell {b} that." },
+      { by: 'c', say: "I'm telling both of you. It's been every day since {since}." },
+    ] },
+    { id: 'wg.t2', turns: [
+      { by: 'c', say: "Every week. Since {since}. Every week it's you two." },
+      { by: 'b', say: "Then don't listen." },
+      { by: 'c', say: "I can't not listen. It's a small house." },
+      { by: 'c', dr: "I like {a} fine. I like {b} fine. I can't stand {a} and {b} in the same room." },
+    ] },
+    { id: 'wg.t3', turns: [
+      { beat: '{c} turns the music up, loud.' },
+      { by: 'a', say: "Really, {c}?" },
+      { by: 'c', say: "Yes, really. I've heard this fight since {since}. I don't need to hear it again." },
+    ] },
+    { id: 'wg.t4', turns: [
+      { by: 'c', say: "Here we go." },
+      { by: 'b', say: "Nobody asked you, {c}." },
+      { by: 'c', say: "Nobody had to. You've been doing this since {since}." },
+      { by: 'c', dr: "The whole house walks around those two. It's been going since {since}, and it's exhausting." },
+    ] },
+  ],
   'witness.side': [
     { id: 'wt.s1', turns: [
       { by: 'c', say: "{b}. Stop. {a} didn't do anything." },

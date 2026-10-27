@@ -72,6 +72,17 @@ export function mysteryHouseguestOf(cast) {
  * franchise rule (CLAUDE.md): villain archetypes may, nice ones never do, a
  * neutral one only with strategic >= 6 and loyalty <= 4.
  */
+/**
+ * Is "who is the accomplice?" still a question the house can ask: one was planted, nobody unmasked them, and they
+ * are still in the house. After the premiere vote catches them (or they leave), a note under a door saying "the
+ * accomplice is closer than you think" is about nobody (the user, 2026-10-27: "the accomplice already been evicted,
+ * and the mastermind announced it").
+ */
+export function accompliceLive() {
+  const a = gs.bb?.accomplice;
+  return !!a?.name && !a.caught && (gs.activePlayers || []).includes(a.name);
+}
+
 function accompliceOf(cast, r) {
   const ok = cast.filter(n => {
     const a = archOf(n);

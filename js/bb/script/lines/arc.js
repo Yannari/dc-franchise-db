@@ -182,12 +182,17 @@ export default {
     { id: 'qi.e6', turns: [{ by: 'a', say: "Mm-hm. Sure. Yep." }, { by: 'b', dr: "{a} agrees with everything I say and gives me nothing back." }] },
   ],
   'arc.threat.threatened': [
-    { id: 'qi.t1', turns: [{ by: 'a', say: "You said it to the room. I was in the room." }, { beat: 'That is the whole conversation.' }] },
-    { id: 'qi.t2', turns: [{ by: 'a', dr: "In {b.posAdj} speech, {b} said {b} would come after whoever voted to keep {b} here. I'm not waiting to find out if {b} meant it." }] },
-    { id: 'qi.t3', turns: [{ by: 'b', say: "That speech was a plea, not a plan." }, { by: 'a', say: "I understand." }, { by: 'b', dr: "{a} said 'I understand' and nothing else. I've lost {a}." }] },
-    { id: 'qi.t4', turns: [{ by: 'a', dr: "I've stopped telling {b} things. Short answers only." }] },
-    { id: 'qi.t5', turns: [{ by: 'b', say: "Why are you being weird with me?" }, { by: 'a', say: "I'm not." }, { by: 'b', say: "You are." }, { by: 'a', say: "Remember your speech on eviction night? You told the room you'd come for whoever voted you out. I was in the room." }] },
-    { id: 'qi.t6', turns: [{ by: 'b', dr: "My speech cost me a friend. I can see that now." }] },
+    // a forceful plea on eviction night (bb/vote-operation.js) that did not move this voter. Those speeches dare the
+    // house ("If you want me out, at least make it your move", "If I leave, I will know who chose it"); they never
+    // promise revenge, and {b} SURVIVED the vote, so nobody "voted {b} out". Said plainly: the speech, everyone who
+    // heard it, and why {a} is keeping away (the user, 2026-10-27: "who said the room... it's not clear what's the
+    // intent of this conversation")
+    { id: 'qi.t1', turns: [{ by: 'b', say: "Are we good?" }, { by: 'a', say: "You stood up on eviction night and dared everyone to vote you out. Now you're still here, and I don't know what you do with that. So no, I don't know if we're good." }, { beat: '{a} turns back to the dishes.' }] },
+    { id: 'qi.t2', turns: [{ by: 'a', dr: "{b} didn't ask anybody for a vote in that speech. {b} dared us. I heard it, and now {b} is still here. I'm not waiting around to find out what {b} does next." }] },
+    { id: 'qi.t3', turns: [{ by: 'b', say: "My speech was a plea. I wasn't threatening anyone." }, { by: 'a', say: "I understand." }, { by: 'b', dr: "{a} said 'I understand' and nothing else. My speech scared {a}, and I can't take it back." }] },
+    { id: 'qi.t4', turns: [{ by: 'a', dr: "Since {b}'s speech on eviction night, I've stopped telling {b} anything about my game. Short answers only. {b} was daring people to come at {b}, and I don't want to be the one {b} comes at." }] },
+    { id: 'qi.t5', turns: [{ by: 'b', say: "Why are you being weird with me?" }, { by: 'a', say: "I'm not." }, { by: 'b', say: "You are." }, { by: 'a', say: "Your speech on eviction night. You told everyone to own their vote against you. Now you're still here, and I'd rather not be on your list." }] },
+    { id: 'qi.t6', turns: [{ by: 'b', dr: "I went hard in my speech on eviction night, and now {a} won't talk game with me. I can see what it cost me." }] },
   ],
   'arc.court.scene': [
     { id: 'qj.1', turns: [{ by: 'b', say: "You're picking who sits next to you at the end." }, { by: 'a', say: "I know." }, { by: 'b', say: "So pick someone you trust. Just don't pick someone who'll beat you." }, { by: 'a', say: "Which one are you?" }, { by: 'b', say: "The one you trust." }, { by: 'c', dr: "I said the same thing to {a} an hour later. It didn't land the same." }] },

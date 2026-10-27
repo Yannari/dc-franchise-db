@@ -137,7 +137,7 @@ export default {
     { id: 'cj.7', turns: [{ by: 'b', dr: "{a} is jealous of {c}. Of {c}! We were talking about a competition." }] },
   ],
   'couple.pressure.scene': [
-    { id: 'cq.1', turns: [{ by: 'a', dr: "{b} is on the block and I can't eat. I can't sit down. I just keep counting votes, and I get a different number every time." }] },
+    { id: 'cq.1', turns: [{ by: 'a', dr: "{b} is on the block and I can't eat. I can't sit down. I keep going through who would vote to keep {b}, and I get a different answer every time." }] },
     { id: 'cq.2', turns: [{ by: 'b', say: "Breathe. I'm the one on the block." }, { by: 'a', say: "I know. That's why I can't breathe." }] },
     { id: 'cq.3', turns: [{ by: 'a', say: "I'm fine." }, { by: 'b', say: "You've been crying." }, { by: 'a', say: "Because you're on the block and I can't do anything about it." }] },
     { id: 'cq.4', turns: [{ by: 'b', dr: "I'm handling this better than {a} is. And {a} isn't even nominated." }] },

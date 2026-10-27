@@ -34,6 +34,7 @@ import { addThemeTexture } from './theme-texture.js';
 import { pickTone, voiceLine, variantOf } from './register.js';
 import { spotFor, onIsland, openingAt, SPOTS } from './places.js';
 import { pStats } from '../../players.js';
+import { feudHistory } from '../witness.js';
 
 const ledger = () => ((gs.bb ||= {}).storyLedger ||= newLedger());
 const ROOM = { kitchen: 'Kitchen', 'living-room': 'Living Room', bedroom: 'Bedroom', 'hoh-room': 'HOH Room',
@@ -75,7 +76,7 @@ const STEP_WHY = {
   'target.lobby': '{a} is lobbying {b} on the vote{tgt}.',
   'target.block': 'Life on the block.',
   'target.backdoor': 'A plan to backdoor {target}.',
-  'target.count': 'Counting the votes{tgt}.',
+  'target.count': 'Lining up the votes{tgt}.',
   'scheme.lie': '{a} is lying to {b}.',
   'scheme.caught': '{a} has been caught out.',
 };
@@ -208,6 +209,8 @@ function presumed(entry, ctx, who = null) {
     if (p === 'offblock' && who && (ctx.nominees || []).includes(who.a)) return false;
     if (p === 'precer' && ctx.cer) return false;
     if (p === 'preveto' && ctx.veto) return false;
+    // ...and after it: the veto has been played (a Block Buster nominee talks about the Block Buster once the veto is done)
+    if (p === 'postveto' && !ctx.veto) return false;
     if (p === 'vote' && !(gs.bb?.weeks || []).some(w => w !== ctx.week && w.evicted)) return false;
     if (p === 'jurors' && !(ctx.jurors > 0)) return false;
     // won: {a} has really won something (the user, 2026-10-26, on "Because I keep winning?" from somebody who had
@@ -332,6 +335,7 @@ function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
   const comp = compOf(ctx);
   for (const r of ['a', 'b', 'c']) facts[`low${r.toUpperCase()}`] = !!(comp && who[r] && comp.low.includes(who[r]));
   facts.words = !data.about || ['joke', 'snap', 'condescend', 'story'].includes(data.about);
+  if (typeof data.history === 'string') facts.history = data.history;
   const rng = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, 'story', salt);
   const speakers = Object.values(who).filter(Boolean);
   const pairKey = [who.a, who.b].filter(Boolean).sort().join('|');
@@ -412,22 +416,27 @@ function addWitnesses(sc, ws, ctx) {
   const present = new Set(ctx.present || []);
   const add = [];
   const cast = [...sc.cast];
+  const spoke = [];
   for (const w of ws.slice(0, 2)) {
     if (!present.has(w.name) || !sc.cast.includes(w.a) || !sc.cast.includes(w.b) || sc.cast.includes(w.name)) continue;
     // somebody the background already walked through the room is not standing in the middle of it
     if (sc.lines.some(l => l.bg && nameIn(w.name, l.text))) continue;
     // a jab: c stands up for the one on the receiving end, or goes along with the one doing it
-    const jab = w.kind === 'joke' && w.stance !== 'out';
-    const key = jab ? (w.a === w.doer ? 'witness.join' : 'witness.defend') : `witness.${w.stance}`;
+    // a feud the house has watched for weeks: somebody says so (bb/witness.js feudRemark)
+    const again = w.stance === 'again';
+    const jab = !again && w.kind === 'joke' && w.stance !== 'out';
+    const key = again ? `witness.again.${w.tone}` : jab ? (w.a === w.doer ? 'witness.join' : 'witness.defend') : `witness.${w.stance}`;
     const who = { a: w.a, b: w.b, c: w.name };
+    const wdata = again && w.since ? { since: w.since } : {};
     // a shouting match has its own lines too; a quiet row never hears "lower your voice"
     const shouty = sc.lines.filter(l => l.kind === 'say' && /!/.test(String(l.text || ''))).length >= 2;
-    const keys = !jab && w.kind === 'loud' && shouty && w.stance !== 'out' ? [key, `${key}.loud`] : [key];
-    const e = pick(keys, who, {}, ctx, sc.room, `${sc.id}|wit|${w.name}`);
+    const keys = !again && !jab && w.kind === 'loud' && shouty && w.stance !== 'out' ? [key, `${key}.loud`] : [key];
+    const e = pick(keys, who, wdata, ctx, sc.room, `${sc.id}|wit|${w.name}`);
     if (!e) continue;
-    const r = render(e, who, ctx, {});
+    const r = render(e, who, ctx, wdata);
     add.push(...r);
     cast.push(w.name);
+    spoke.push(w);
     // a witness who walks one of them out of the room ends it: nobody answers the next witness from the
     // corridor (read 2026-10-14: "Emmah walks out with Owen", then Owen: "Wow. Okay. Good to know.")
     if (r.some(l => l.kind === 'beat' && LEFT.test(String(l.text || '')) && (nameIn(w.a, l.text) || nameIn(w.b, l.text)))) break;
@@ -436,7 +445,10 @@ function addWitnesses(sc, ws, ctx) {
   let k = sc.lines.length; while (k > 0 && sc.lines[k - 1].kind === 'dr') k--;
   sc.lines.splice(Math.max(1, k), 0, ...add);
   sc.cast = [...new Set(cast)];
-  sc.witnessed = ws.filter(w => sc.cast.includes(w.name)).map(w => ({ ...w }));
+  // only the ones whose words are in the scene: a witness skipped here (already in the scene for something else,
+  // walking through in the background) took no side on screen, and a later "So. You and Scary. Team now?" about it
+  // recalled a stand the viewer never saw (the user, 2026-10-27)
+  sc.witnessed = spoke.map(w => ({ ...w }));
   return sc;
 }
 
@@ -598,6 +610,15 @@ function writeStoryScene0(line, step, ctx) {
   if (about && OVER[about]) data.over = OVER[about];
   if (about) data.about = about;
   for (const k of Object.keys(data)) if (data[k] != null && typeof data[k] !== 'string') delete data[k];
+  // how long these two have been at it (bb/witness.js feudHistory): "I thought we were friends" is a first falling
+  // out, never two people who have fought since week one (the user, 2026-10-27), and a feud that old says so
+  if (line.type === 'feud' && who.a && who.b) {
+    const h = feudHistory(who.a, who.b, step.week || ctx.week?.num || 0);
+    data.history = h.history;
+    if (h.since) data.since = h.since;
+  }
+  // the one left out is never told the plan is to go after themselves ("It's Dominic", to Dominic)
+  if (line.type === 'alliance' && step.step === 'leftout' && Object.values(who).includes(data.target)) delete data.target;
   let room = step.room || 'living-room';
   const preShow = step.outcome === 'couple' && line.type === 'showmance'
     && factsFor({ who, data: {}, room }, { week: ctx.week, act: 'house' }).kin === 'together';
@@ -707,6 +728,16 @@ function writeStoryScene0(line, step, ctx) {
     const rdata = { ...Object.fromEntries(Object.entries(told.data || {}).filter(([, v]) => typeof v === 'string')), when: data.when, ...(data.over ? { over: data.over } : {}) };
     const re = rk.length ? pick(rk, pw, rdata, ctx, room, `${line.id}|recap|${line.steps.indexOf(step)}`) : null;
     if (re) recap = render(re, pw, ctx, rdata);
+  }
+  // Left out of a decision: what it was, said by the one left out before the scene, when the scene's own words do
+  // not name it (the user, 2026-10-27: "You decided something with the others and I found out last": "stop being
+  // vague, say exactly what's the issue"). The target is the engine's (bb-events/alliance-life.js), never one of them.
+  if (line.type === 'alliance' && step.step === 'leftout' && data.alliance && !/\{target\}/.test(JSON.stringify(entry.turns))) {
+    const tgt = typeof data.target === 'string' && !Object.values(who).includes(data.target) ? data.target : null;
+    const sk = tgt ? 'recap.alliance.leftout.setup.target' : 'recap.alliance.leftout.setup.plain';
+    const sd = { alliance: data.alliance, ...(tgt ? { target: tgt } : {}) };
+    const se = STORY_POOLS[sk]?.length ? pick([sk], who, sd, ctx, room, `${line.id}|setup|${line.steps.indexOf(step)}`) : null;
+    if (se) recap = [...render(se, who, ctx, sd), ...recap];
   }
   // On stage: the people the scene actually uses — who speaks, or who a stage direction names.
   // (The event's third person is often only somebody the scene never needed.)
@@ -872,7 +903,7 @@ export function writeCampaignScene(beat, ctx, at, salt) {
 const FAMILY_WHY = [
   [/campaign|vote-pitch|nom-eve/, 'Campaigning: somebody working a vote before Thursday.'],
   [/^bloc-/, 'Alliance planning: who the group is voting for, and who it needs.'],
-  [/^plan-|^deals-numbers|count/, 'Counting votes.'],
+  [/^plan-|^deals-numbers|count/, 'Lining up votes.'],
   [/^deals-/, 'A deal between them.'],
   [/^alliance-/, 'Inside an alliance.'],
   [/^scheme-/, 'A scheme.'],

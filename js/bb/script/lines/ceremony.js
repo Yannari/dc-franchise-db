@@ -730,7 +730,7 @@ export default {
     { id: 'vr.a3', turns: [{ by: 'a', dr: "I had five minutes' warning. Five minutes. Everybody else had all week to campaign." }] },
     { id: 'vr.a4', turns: [{ by: 'a', dr: "Walking to that chair, I could see everyone else relax. Everyone except me." }] },
     { id: 'vr.a5', turns: [{ by: 'a', dr: "The veto was supposed to make this week calmer. It made it calmer for everybody except me." }] },
-    { id: 'vr.a6', turns: [{ by: 'a', dr: "I sat down in that chair and smiled, because the cameras were on. Inside, I was already counting votes." }] },
+    { id: 'vr.a6', turns: [{ by: 'a', dr: "I sat down in that chair and smiled, because the cameras were on. Inside, I was already working out who might keep me." }] },
   ],
   // the only houseguest left who could sit there (the final four): nobody chose it, and everybody knew it was coming
   'veto.renom.forced': [
@@ -870,7 +870,7 @@ export default {
       { beat: 'Nobody looks up from the floor.' },
     ] },
     { id: 'eg.b3', turns: [
-      { by: 'a', say: "I counted the votes. I had them. I had them!" },
+      { by: 'a', say: "Everybody told me they were voting with me. I had them. I had them!" },
       { by: 'b', say: "You did. I don't know what happened." },
     ] },
     { id: 'eg.b4', turns: [

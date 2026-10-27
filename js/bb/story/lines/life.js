@@ -301,7 +301,7 @@ export default {
     { id: 'll.2', turns: [
       { by: 'a', say: "Are you awake?" },
       { by: 'b', say: "Yeah. What's wrong?" },
-      { by: 'a', say: "I don't know. My brain won't stop. Every time I close my eyes I start counting votes.", v: { anxious: "I can't stop counting votes. Every time I close my eyes, I count them again, and it's never enough." } },
+      { by: 'a', say: "I don't know. My brain won't stop. Every time I close my eyes I start going through who's voting which way.", v: { anxious: "I can't stop going through who's voting which way. Every time I close my eyes, I count them again, and it's never enough." } },
       { by: 'b', say: "Try counting sheep instead." },
       { by: 'a', say: "The sheep would vote me out." },
       { by: 'b', say: "Go to sleep, {a}." },

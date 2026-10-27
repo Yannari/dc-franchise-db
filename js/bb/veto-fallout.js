@@ -166,7 +166,9 @@ export function applyVetoFallout({
     }
     draw(rng);
     beats.push(scene('veto-left-up', 'vfall.leftup', { a: n, b: holder },
-      { ending: sworn ? 'promised' : expectation >= 0.5 ? 'friend' : 'plain' }, `${holder} leaves ${n} on the block.`,
+      // whether the veto went back in the box or to somebody else ({saved}): a used veto is not "put back in the box"
+      { ending: sworn ? 'promised' : expectation >= 0.5 ? 'friend' : 'plain', result: saved ? 'used' : 'kept', ...(saved ? { saved } : {}) },
+      `${holder} leaves ${n} on the block.`,
       [n, holder], sworn ? 'PROMISE BROKEN' : expectation >= 0.5 ? 'LEFT UP BY A FRIEND' : 'LEFT UP', 'red', { week, hoh }));
   }
 

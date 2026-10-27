@@ -344,8 +344,9 @@ function _lastSplit(ctx) {
     const strayVoters = strayBallots.map(b => b?.voter || b?.by || b?.player).filter(Boolean);
     const key = `${w?.num ?? i}|${w?.evicted || majority}`;
     if (gs.bb?.allianceWrongBlameSeen === key) return null;
+    const voters = ballots.map(b => b?.voter || b?.by || b?.player).filter(Boolean);
     return { week: w, evicted: w.evicted || majority, strays: strayBallots.length,
-      strayVoters, key };
+      strayVoters, voters, key };
   }
   return null;
 }
@@ -367,7 +368,9 @@ function _blameCast(house, ctx) {
   // way" was printed over four votes that all went the same way.
   const ownStrays = split.strayVoters.filter(v => entry.members.includes(v));
   if (!ownStrays.length) return null;
-  const innocent = entry.members.filter(n => !split.strayVoters.includes(n));
+  // ...and only somebody who VOTED can be suspected of voting the other way: a nominee or the HOH has no
+  // ballot (the user, 2026-10-27: "she was sitting on the nominees chair, she couldn't even vote")
+  const innocent = entry.members.filter(n => split.voters.includes(n) && !split.strayVoters.includes(n));
   const blamed = _bottomBy(innocent, n => _looksLoyal(n, entry.members));
   const accuser = _organiser(entry.members.filter(n => n !== blamed));
   if (!blamed || !accuser) return null;

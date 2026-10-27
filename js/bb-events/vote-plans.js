@@ -443,7 +443,7 @@ const competingCounts = {
   },
   fire(house, ctx, api) {
     const found = _doubleCount(ctx, house);
-    if (!found) return _fallback(`Only one group in the house is counting votes this week.`, house.slice(0, 1), 'ONE ROOM');
+    if (!found) return _fallback(`Only one group in the house is lining up votes this week.`, house.slice(0, 1), 'ONE ROOM');
     const { voter, a, b } = found;
     const split = a.target !== b.target;
 

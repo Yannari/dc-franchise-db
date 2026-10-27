@@ -134,7 +134,7 @@ export default {
     { id: 'wl.t6', turns: [{ by: 'b', say: "Can we talk?" }, { by: 'a', say: "About what? You've been pretty clear." }] },
   ],
   'romance.triangleEscalation.schemed': [
-    { id: 'wl.s1', turns: [{ by: 'a', dr: "None of those three are counting votes. {first}, {centre}, {second}. They're playing a different game from us." }] },
+    { id: 'wl.s1', turns: [{ by: 'a', dr: "None of those three are playing for votes. {first}, {centre}, {second}. They're playing a different game from us." }] },
     { id: 'wl.s2', turns: [{ by: 'a', dr: "{first} is going to get hurt. Hurt people take the first hand offered. I'll be the one offering it." }] },
     { id: 'wl.s3', turns: [{ by: 'a', dr: "I've given {first} a small doubt and {second} a different one. Neither is big enough to trace." }] },
     { id: 'wl.s4', turns: [{ by: 'a', dr: "{centre} picks one of them. The other one comes to me that same night, angry and free." }] },

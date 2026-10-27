@@ -130,7 +130,7 @@ export default {
     { id: 'em.1', turns: [{ beat: '{a} opens the door without knocking. {b} and {c} stop talking and move apart.' }, { by: 'a', say: "Am I interrupting?" }, { by: 'b', say: "No!" }, { by: 'c', say: "No." }] },
     { id: 'em.2', turns: [{ by: 'b', say: "Perfect timing!" }, { beat: '{c} suddenly starts folding clothes.' }, { by: 'a', dr: "Perfect timing for what?" }] },
     { id: 'em.3', turns: [{ beat: '{a} sits down next to {b} and {c} and waits.' }, { by: 'b', say: "...Nice weather today." }, { by: 'a', dr: "They talked about the weather for ten minutes. We can't even see outside." }] },
-    { id: 'em.4', turns: [{ by: 'a', dr: "{b} and {c} were counting votes. I saw them hide it when I walked in." }] },
+    { id: 'em.4', turns: [{ by: 'a', dr: "{b} and {c} were going through who's voting which way. They stopped when I walked in." }] },
     { id: 'em.5', turns: [{ by: 'a', say: "What were you two talking about?" }, { by: 'c', say: "Nothing much." }, { by: 'a', say: "It didn't look like nothing much." }] },
     { id: 'em.6', turns: [{ by: 'b', dr: "{a} walked in at the worst moment. Now {a} knows something is going on." }] },
     { id: 'em.7', turns: [{ by: 'a', say: "Don't stop on my account." }, { by: 'b', say: "We weren't doing anything." }, { by: 'a', say: "Right." }] },

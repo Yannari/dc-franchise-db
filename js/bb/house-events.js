@@ -528,7 +528,7 @@ export function scheduleHouseBeats(events, house, ctx, options = {}) {
       // A row in front of the house has witnesses who say where they stand (bb/witness.js): decided and
       // paid for here, in the engine, from its own dice, so the words never move the game
       if (raw && raw.scene) {
-        const ws = decideWitnesses(raw.scene, `${ctx.week?.num || 0}|${ctx.act || ''}|${meta.index}|${event.id}`);
+        const ws = decideWitnesses(raw.scene, `${ctx.week?.num || 0}|${ctx.act || ''}|${meta.index}|${event.id}`, ctx.week?.num || 0);
         if (ws.length) {
           for (const w of ws) for (const [x, y, d] of witnessFx(w)) api.addBond(x, y, d);
           bookWitnesses(ws, ctx.week);

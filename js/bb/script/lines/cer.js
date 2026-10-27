@@ -51,7 +51,7 @@ export default {
     { id: 'zp.b3', turns: [{ by: 'a', say: "This time it's different." }, { by: 'b', say: "That's what you said last time." }] },
     { id: 'zp.b4', turns: [{ by: 'b', dr: "I agreed to be the pawn. When you're on the block, you agree to everything." }] },
     { id: 'zp.b5', turns: [{ by: 'a', say: "I need you to trust me." }, { by: 'b', say: "I know you do." }] },
-    { id: 'zp.b6', turns: [{ by: 'b', dr: "I'll sit up here. But I'm counting the votes myself this time." }] },
+    { id: 'zp.b6', turns: [{ by: 'b', dr: "I'll sit up here. But this time I'm asking every voter myself where they stand." }] },
   ],
   'cer.blindside.scene': [
     { id: 'zb.1', turns: [{ by: 'a', dr: "I'm going back over every conversation I've had with {b} this week. Knowing the ending changes all of them." }] },
@@ -85,7 +85,7 @@ export default {
     { id: 'zl.3', turns: [{ by: 'b', say: "I'm sorry." }, { by: 'a', say: "Don't." }] },
     { id: 'zl.4', turns: [{ by: 'a', dr: "I asked {b} for a different answer in private. Now I know what that conversation was worth." }] },
     { id: 'zl.5', when: { intent: 'allied' }, turns: [{ by: 'a', dr: "{b} and I are meant to be working together. {b} left me up here." }] },
-    { id: 'zl.6', turns: [{ by: 'a', dr: "The veto went back in the box. I went back to counting votes." }] },
+    { id: 'zl.6', turns: [{ by: 'a', dr: "The veto went back in the box. I went back to finding votes." }] },
     { id: 'zl.7', turns: [{ by: 'b', dr: "I couldn't use it on {a}. I hope {a} understands. I don't think {a} does." }] },
   ],
   'cer.backdoor.scene': [
@@ -99,7 +99,7 @@ export default {
   'cer.replace.scene': [
     { id: 'zr.1', turns: [{ by: 'a', say: "Was this always the plan?" }, { by: 'b', say: "No." }, { by: 'a', dr: "I don't believe that." }] },
     { id: 'zr.2', turns: [{ by: 'a', dr: "Once the veto was used, there was only ever one name that made the numbers work. Mine." }] },
-    { id: 'zr.3', turns: [{ by: 'a', dr: "I'm not even angry. Just tired. I sat down, and the house started counting votes." }] },
+    { id: 'zr.3', turns: [{ by: 'a', dr: "I'm not even angry. Just tired. I sat down, and the house started deciding which of us goes." }] },
     { id: 'zr.4', turns: [{ by: 'a', say: "Me? Really?" }, { by: 'b', say: "I'm sorry. It had to be someone." }] },
     { id: 'zr.5', turns: [{ by: 'a', dr: "I thought the veto would change somebody else's week. It changed mine." }] },
     { id: 'zr.6', turns: [{ by: 'b', dr: "Putting {a} up wasn't personal. {a} won't see it that way." }] },
@@ -152,6 +152,6 @@ export default {
     { id: 'zy.4', turns: [{ by: 'a', say: "So everybody knew except me." }, { beat: 'Nobody answers.' }] },
     { id: 'zy.5', turns: [{ by: 'a', say: "Was any of it real, {b}?" }, { beat: '{b} does not answer in time.' }] },
     { id: 'zy.6', turns: [{ beat: '{b} reaches for a goodbye hug. {a} hugs the person behind {b} instead.' }, { by: 'b', dr: "I deserved that." }] },
-    { id: 'zy.7', turns: [{ by: 'a', say: "I counted the votes this morning. I counted them wrong." }] },
+    { id: 'zy.7', turns: [{ by: 'a', say: "This morning I thought I knew where every vote was going. I was wrong." }] },
   ],
 };

@@ -266,7 +266,7 @@ export default {
       { by: 'b', say: "Why would {target} come after me?" },
       { by: 'a', say: "Ask {target} who's on the list for next week. Watch the face." },
       { by: 'b', say: "...Okay. I'll ask." },
-      { by: 'a', dr: "If I can't make {b} like me, I can make {b} scared of {target}. Scared votes count the same." },
+      { by: 'a', dr: "If I can't make {b} like me, I can make {b} scared of {target}. A scared vote is still a vote." },
     ] },
     { id: 'tl2.6', presumes: ['noms'], turns: [
       { by: 'a', say: "Can I tell you something nobody else knows?" },
@@ -296,7 +296,7 @@ export default {
       { by: 'b', say: "You're not asleep." },
       { by: 'a', say: "Nobody on the block sleeps." },
       { by: 'b', say: "You've got to try." },
-      { by: 'a', say: "Every time I close my eyes, I count votes." },
+      { by: 'a', say: "Every time I close my eyes, I go through who's voting which way." },
       { by: 'b', say: "What do you get?" },
       { by: 'a', say: "Depends. Sometimes four. Sometimes two." },
       { by: 'b', say: "Then it's not decided. Go to sleep on four." },

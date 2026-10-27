@@ -201,7 +201,7 @@ export default {
       { by: 'b', dr: "{a} came up here just to talk about {c}. Maybe {a} is right. But I want to know why {a} wants {c} gone so badly." }] },
   ],
   'phase.reckons.scene': [
-    { id: 'pr2.1', turns: [{ by: 'a', dr: "I've counted the votes twice. I don't like the number either time. I need {b}." }] },
+    { id: 'pr2.1', turns: [{ by: 'a', dr: "I've asked around twice. I don't like the answer either time. I need {b}." }] },
     { id: 'pr2.2', turns: [{ by: 'a', dr: "Last night I stopped being upset and started being useful. I made a list of who I need to talk to." }] },
     { id: 'pr2.3', turns: [{ by: 'a', dr: "Right now, the votes send me home. I've got a few days to change that." }] },
     { id: 'pr2.4', turns: [{ by: 'a', dr: "{b} is the first person I need to talk to. {b} won't look me in the eye." }] },

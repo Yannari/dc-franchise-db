@@ -14,6 +14,7 @@
 import { pStats, band, firedThisWeek } from './_read.js';
 import { getBond } from '../bonds.js';
 import { makeScene } from '../bb/script/scene.js';
+import { accompliceLive } from '../bb/premiere-mystery.js';
 
 const _reactable = ctx => ctx?.act === 'house' || ctx?.act === 'campaign';
 const themeIs = (ctx, id) => ctx?.week?.themeId === id;
@@ -106,6 +107,8 @@ const hotelDoor = {
   weight(house, ctx) {
     if (!_reactable(ctx) || !themeIs(ctx, 'summer-of-mystery') || house.length < 3) return 0;
     if (firedThisWeek('theme-hotel-door', weekNum(ctx))) return 0;
+    // the suspicion it plants is "the accomplice, maybe": only while there is still one to find
+    if (!accompliceLive()) return 0;
     return band(12);
   },
   fire(house, ctx, api) {

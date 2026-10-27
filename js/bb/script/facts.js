@@ -14,6 +14,8 @@ import { kinshipBetween, REL_KINSHIP } from '../../core.js';
 
 export const BB_FACT_KEYS = ['ending', 'result', 'intent', 'reason', 'act', 'early', 'late', 'band',
   'showmance', 'alliance', 'hohA', 'hohB', 'nomA', 'nomB', 'havenot', 'third', 'nice', 'villain', 'again',
+  // how long two feuding people have been at it (bb/witness.js feudHistory): new | again | long
+  'history',
   // where the scene is: a line that stages a room ("pulls her into the storage room") airs only there
   'room',
   // how the speaker (a) talks: the picker weights a line written for it well above a plain one

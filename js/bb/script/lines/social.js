@@ -396,7 +396,7 @@ export default {
       { by: 'a', say: "Then why can't you look at me?" },
     ] },
     { id: 'sp.f7', turns: [
-      { by: 'a', dr: "The vote count only works if {b} is with me. And I don't think {b} is with me any more." },
+      { by: 'a', dr: "My plan only works if {b} votes with me. And I don't think {b} is with me any more." },
     ] },
     { id: 'sp.f8', turns: [
       { by: 'a', say: "I heard my name in the bedroom earlier." },

@@ -327,7 +327,7 @@ export default {
       { by: 'b', say: "I did." },
       { by: 'a', say: "Was the hug part of the plan too?" },
       { by: 'b', say: "...The hug was real. The rest was the game." },
-      { by: 'a', dr: "I keep going back to that hug. I'll be going back to it on Thursday too, when I'm counting votes I probably don't have." },
+      { by: 'a', dr: "I keep going back to that hug. I'll be going back to it on Thursday too, when I'm hoping for votes I probably don't have." },
     ] },
   ],
   // the veto was never used, so the empty chair never existed

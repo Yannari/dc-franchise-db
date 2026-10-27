@@ -15,12 +15,13 @@
 export default {
   // ── the case ──────────────────────────────────────────────────────
   'campaign.case.deal': [
-    { id: 'cc.d1', turns: [{ by: 'a', say: "We made a deal, you and me. I haven't forgotten it, and I don't think you have either." }, { by: 'a', say: "Keep me, and it's still a plan. Send me home, and you're doing the rest of this on your own." }] },
-    { id: 'cc.d2', turns: [{ by: 'a', say: "You and me had a deal. That deal doesn't work with me in the jury house." }] },
-    { id: 'cc.d3', turns: [{ by: 'a', say: "I'm not going to remind you what we promised each other. I'm just going to ask if it still counts." }] },
-    { id: 'cc.d4', turns: [{ by: 'a', say: "If I go, our deal goes with me. Is that what you want?" }] },
-    { id: 'cc.d5', turns: [{ by: 'a', say: "I kept my side every single week. This is the week I need you to keep yours." }] },
-    { id: 'cc.d6', turns: [{ by: 'a', say: "We said the end, together. Please don't make this the end." }] },
+    // {deal}: which one, in words ("a final two", _read.js campaignCase)
+    { id: 'cc.d1', turns: [{ by: 'a', say: "We have {deal}, you and me. I haven't forgotten it, and I don't think you have either." }, { by: 'a', say: "Keep me, and it's still a plan. Send me home, and you're doing the rest of this on your own." }] },
+    { id: 'cc.d2', turns: [{ by: 'a', say: "You and me have {deal}. That doesn't work with me out of the house." }] },
+    { id: 'cc.d3', turns: [{ by: 'a', say: "We made {deal}. I'm not going to go over all of it again. I'm just asking if it still counts." }] },
+    { id: 'cc.d4', turns: [{ by: 'a', say: "We have {deal}. If I go, that goes with me. Is that what you want?" }] },
+    { id: 'cc.d5', turns: [{ by: 'a', say: "We have {deal}. I've kept my side of it. This is the week I need you to keep yours." }] },
+    { id: 'cc.d6', turns: [{ by: 'a', say: "We said {deal}. Please don't make this the end of it." }] },
   ],
   'campaign.case.hunted': [
     { id: 'cc.h1', turns: [{ by: 'a', say: "Every time you leave the room, {target} brings up your name. I'm not the one you need to worry about." }] },
@@ -123,7 +124,7 @@ export default {
     { id: 'cr.r12', turns: [{ by: 'b', say: "Give me a day. I need to check something." }, { by: 'a', dr: "Checking something means I've got a chance. Finally." }] },
     { id: 'cr.r13', turns: [{ by: 'b', say: "Why didn't anybody else say this to me?" }, { by: 'a', say: "Because it doesn't help them." }] },
     { id: 'cr.r14', turns: [{ by: 'b', say: "If I did this, nobody can know it was me." }, { by: 'a', say: "Nobody will." }] },
-    { id: 'cr.r15', turns: [{ beat: '{b} goes quiet, then asks {a} to go through it one more time.' }, { by: 'a', dr: "{b} asked me to say it again. That's a good sign." }] },
+    { id: 'cr.r15', turns: [{ beat: "{b} doesn't answer straight away." }, { by: 'b', say: "I'm not saying no." }, { by: 'a', dr: "{b} didn't say no. I will take that." }] },
     { id: 'cr.r16', turns: [{ by: 'b', say: "That's the first thing anyone's said this week that actually makes sense." }, { by: 'a', say: "Then trust it." }] },
     { id: 'cr.r17', turns: [{ by: 'b', say: "Who else knows you're asking?" }, { by: 'a', say: "Just you." }, { by: 'b', say: "Keep it that way." }] },
     { id: 'cr.r18', turns: [{ by: 'b', say: "I came in here to say no." }, { by: 'a', say: "And now?" }, { by: 'b', say: "And now I need to think." }] },

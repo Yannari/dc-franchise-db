@@ -30,8 +30,13 @@ function season(seed, weeks) {
   Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
   Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7, bbHaveNots: 'off', bbSafetyMode: 'off' });
   const eps = [];
-  for (let w = 0; w < weeks; w++) eps.push(JSON.parse(JSON.stringify(withSeededRandom(seed * 100 + w, () => simulateBBEpisode()))));
-  return { eps, lines: JSON.parse(JSON.stringify(gs.bb.storylines || [])), alliances: JSON.parse(JSON.stringify(gs.namedAlliances || [])) };
+  // the alliances as they stood after each week: a member who left in week 3 was in the room in week 1
+  const byWeek = [];
+  for (let w = 0; w < weeks; w++) {
+    eps.push(JSON.parse(JSON.stringify(withSeededRandom(seed * 100 + w, () => simulateBBEpisode()))));
+    byWeek.push(JSON.parse(JSON.stringify(gs.namedAlliances || [])));
+  }
+  return { eps, lines: JSON.parse(JSON.stringify(gs.bb.storylines || [])), alliances: JSON.parse(JSON.stringify(gs.namedAlliances || [])), byWeek };
 }
 const A = season(4242, 4);
 
@@ -51,7 +56,7 @@ describe('the storyline pools', () => {
         if (t.say || t.dr) expect(['a', 'b', 'c', 'd', 'e', 'f', 'x', 'y'], `${key} ${e.id}`).toContain(t.by);
       }
       for (const k of Object.keys(e.when || {})) expect(BB_FACT_KEYS, `${key} ${e.id} when.${k}`).toContain(k);
-      for (const p of e.presumes || []) expect(['hoh', 'noms', 'vote', 'jurors', 'guests', 'days', 'nohoh', 'hohc', 'nonoms', 'offblock', 'precer', 'preveto', 'won', 'nowon'], `${key} ${e.id}`).toContain(p);
+      for (const p of e.presumes || []) expect(['hoh', 'noms', 'vote', 'jurors', 'guests', 'days', 'nohoh', 'hohc', 'nonoms', 'offblock', 'precer', 'preveto', 'postveto', 'won', 'nowon'], `${key} ${e.id}`).toContain(p);
       if (e.room) expect(ROOMS.has(e.room), `${key} ${e.id} room ${e.room}`).toBe(true);
       // background lines and cutaways are stage directions by design
       if (!/^(bg\.|set\.cut\.)/.test(key)) expect(e.turns.some(t => t.say || t.dr), `${key} ${e.id} has nobody speaking`).toBe(true);
@@ -63,7 +68,7 @@ describe('the storyline pools', () => {
       // recaps, cutaways, background lines and set-piece closes are one or two lines by design
       // ...and the campaign's pieces, which wrap the engine's own pitch into one scene (write.js)
       // ...and a witness's few lines, said inside somebody else's row (bb/story/lines/witness.js)
-      if (/^(recap\.|bg\.|set\.cut\.|set\.\w+\.close|camp\.|witness\.(side|turned|out|defend|join)(\.loud)?$)/.test(key)) continue;
+      if (/^(recap\.|bg\.|set\.cut\.|set\.\w+\.close|camp\.|witness\.(side|turned|out|defend|join)(\.loud)?$|witness\.again\.\w+$)/.test(key)) continue;
       // one person alone (a monologue to the Diary Room) or the cold war's silence can be shorter
       const solo = e => !JSON.stringify(e.turns).includes('{b}');
       for (const e of pool) expect(e.turns.length, `${key} ${e.id}`).toBeGreaterThanOrEqual(solo(e) || /^story\.feud\.cold/.test(key) ? 3 : 6);
@@ -90,6 +95,17 @@ describe('the storyline pools', () => {
       // game talk written for later in the season (bb/story/gametalk.js) airs only then
       if (e.phase && !e.phase.includes('early')) continue;
       if (PAST.test(text) && !e.presumes && !CAUSED.test(key) && e.when?.early !== false) bad.push(`${key} ${e.id}`);
+    }
+    expect(bad).toEqual([]);
+  });
+
+  // "Counting votes" says nothing anybody can see (the user, 2026-10-27: "it doesn't mean anything... who counted
+  // it?"). People line votes up, ask where a vote is going, form a bloc; they say which.
+  it('never has anybody count votes', () => {
+    const COUNT = /\bcount(s|ed|ing)?\s+(the\s+)?votes\b|\bvotes?\s+count(ing)?\b/i;
+    const bad = [];
+    for (const [key, pool] of [...all, ...Object.entries(POOLS)]) for (const e of pool) for (const t of e.turns) {
+      for (const s of [t.say, t.dr, t.beat, ...Object.values(t.v || {})].filter(Boolean)) if (COUNT.test(s)) bad.push(`${key} ${e.id}: ${s}`);
     }
     expect(bad).toEqual([]);
   });
@@ -135,15 +151,17 @@ describe('house life in real weeks', () => {
   // ...and "i dont see a lot of alliance meeting before the votes", then "it doesnt have to be right after the vote":
   // a meeting airs among the week's talk, before the vote, with the alliance's own members in it
   it('puts an alliance meeting before the vote, with only that alliance in the room', () => {
-    for (const ep of A.eps) {
+    A.eps.forEach((ep, k) => {
       const ev = ep.acts.findIndex(a => a?.type === 'eviction');
       ep.acts.forEach((a, i) => { for (const sc of (a.scenes || []).filter(x => /^votemeet\./.test(String(x.step)))) {
         expect(i, `week ${ep.num}`).toBeLessThan(ev);
         const group = (sc.why || []).join(' ').match(/^(.+?) meets to settle the vote/)?.[1];
-        const al = A.alliances?.find(x => x.name === group);
+        // the alliance as it stood that week, not at the end of the run (§11.5: a sweep asking the last week about
+        // the first failed when a member who was in the room in week 1 had left the alliance by week 4)
+        const al = A.byWeek[k]?.find(x => x.name === group);
         if (al) for (const n of sc.cast) expect(al.members, `week ${ep.num} ${group}`).toContain(n);
       } });
-    }
+    });
   });
 
   it('airs three to five whole conversations a stretch, not a pile of snippets', () => {

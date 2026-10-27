@@ -18,6 +18,7 @@
 import { gs } from '../../core.js';
 import { stableRng } from '../knowledge.js';
 import { said } from '../script/write.js';
+import { accompliceLive } from '../premiere-mystery.js';
 
 // what kind of scene it is, from its type and step ("alliance.formed", "feud.fight", "life.banter")
 const KIND = t => (/feud|fight|argument|grudge|snap|blow|confront|cold|blame|betray|exposed|denial/.test(t) ? 'fight'
@@ -180,7 +181,9 @@ export function addThemeTexture(sc, kindText, ctx) {
   // a Diary Room line from somebody who spoke in the scene, or something in the room
   const drs = speakers.length ? (pack.dr[kind]?.[th.mood] || []) : [];
   const rooms = pack.room[th.mood] || [];
-  const fresh = l => !led[l];
+  // a line about the hidden accomplice only while there is one to find (bb/premiere-mystery.js accompliceLive)
+  const mystery = accompliceLive();
+  const fresh = l => !led[l] && (mystery || !/accomplice|planted/i.test(l));
   const useDr = drs.some(fresh) && (rng() < 0.6 || !rooms.some(fresh));
   const pool = (useDr ? drs : rooms).filter(fresh);
   if (!pool.length) return sc;

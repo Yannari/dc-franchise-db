@@ -172,63 +172,67 @@ export default {
   ],
 
   // ── a broken promise, called out in public ──────────────────────────
+  // Every scene says WHAT was promised and WHEN ({told}, {pwhen}: bb-events/deals.js promiseSaid). The
+  // promise was often made off camera, and a row about "the promise you made me" with no promise on
+  // screen or in the Intel tab leaves the viewer asking when it happened (the user, 2026-10-27).
   'deals.broken.confronted': [
     { id: 'db.c1', turns: [
-      { by: 'a', say: "You gave me your word." },
+      { by: 'a', say: "{pwhen}, you told me {told}. You gave me your word." },
       { by: 'b', say: "Things changed." },
-      { by: 'a', say: "Your word didn't come with an expiry date." },
-      { by: 'b', say: "Everything in this game has an expiry date." },
+      { by: 'a', say: "What changed? Tell me what changed." },
+      { by: 'b', say: "The house changed. I'm not going to explain it here." },
     ] },
     { id: 'db.c2', turns: [
       { by: 'a', say: "I'm not angry." },
       { by: 'b', say: "You're clearly angry." },
-      { by: 'a', say: "I'm disappointed. Angry would mean I expected better from you." },
+      { by: 'a', say: "You told me {told}. That was {pwhen}. I believed you, and I'm the only one who's surprised." },
       { beat: 'Nobody in the room says anything. Two people suddenly find something else to do.' },
     ] },
     { id: 'db.c3', turns: [
-      { by: 'a', say: "Let's talk about the promise you made me. In front of everyone, since you made it in private." },
+      { by: 'a', say: "Can everybody hear this? {pwhen}, {b} told me {told}." },
       { by: 'b', say: "Seriously? Here?" },
-      { by: 'a', say: "Here. Now." },
+      { by: 'a', say: "Here. You said it to me in private, so I'm saying it in front of everyone." },
       { by: 'b', say: "It meant something different at the time." },
-      { by: 'a', say: "It meant exactly what you said. You just didn't think I'd remember." },
+      { by: 'a', say: "It meant exactly what you said." },
     ] },
     { id: 'db.c4', turns: [
+      { by: 'a', say: "You told me {told}. {pwhen}. Remember?" },
       { by: 'b', say: "Let me explain." },
-      { by: 'a', say: "Go on. I'd love to hear this." },
-      { by: 'b', say: "The promise was about last week. Not this week." },
-      { by: 'a', dr: "{b} explained for five minutes. I came out of it sure of exactly one thing: {b} is a liar." },
+      { by: 'a', say: "Go on." },
+      { by: 'b', say: "That was then. It's a different week." },
+      { by: 'a', dr: "{b} explained for five minutes. I came out of it sure of one thing: {b} lied to me." },
     ] },
     { id: 'db.c5', turns: [
-      { by: 'a', say: "You looked me in the eye and promised me." },
+      { by: 'a', say: "You looked me in the eye and told me {told}." },
       { by: 'b', say: "I know." },
       { by: 'a', say: "Then why?" },
       { by: 'b', say: "Because it was you or me. And I picked me." },
-      { by: 'a', say: "At least that's honest. Finally." },
+      { by: 'a', say: "At least that's honest." },
     ] },
     { id: 'db.c6', turns: [
-      { by: 'a', say: "Everybody should know this. {b} made me a promise. Then {b} went back on it." },
+      { by: 'a', say: "Everybody should know this. {pwhen}, {b} told me {told}. Then {b} went back on it." },
       { by: 'b', say: "That's not the whole story." },
       { by: 'a', say: "Then tell them the whole story." },
       { beat: '{b} doesn\'t say anything. Everyone notices.' },
     ] },
     { id: 'db.c7', turns: [
-      { by: 'a', say: "Do you remember what you said to me? The exact words?" },
+      { by: 'a', say: "Do you remember what you said to me {pwhen}?" },
       { by: 'b', say: "Not exactly." },
-      { by: 'a', say: "I do. Every single one." },
-      { by: 'b', dr: "{a} has a very good memory. That's going to be a problem for me." },
+      { by: 'a', say: "You said {told}. I remember it word for word." },
+      { by: 'b', dr: "{a} remembers everything I've ever said. That's going to be a problem for me." },
     ] },
     { id: 'db.c8', turns: [
-      { by: 'a', say: "I trusted you. That was my mistake." },
+      { by: 'a', say: "I trusted you. You told me {told}." },
       { by: 'b', say: "Don't make this bigger than it is." },
-      { by: 'a', say: "You broke a promise in a game where promises are all we've got. It's exactly as big as it is." },
+      { by: 'a', say: "You made me a promise and you broke it. That's exactly as big as it is." },
     ] },
     { id: 'db.c9', when: { register: 'fiery' }, turns: [
-      { by: 'a', say: "LIAR! You're a liar, {b}, and everyone's going to know it!" },
+      { by: 'a', say: "You're a liar, {b}, and everyone's going to know it! You told me {told}!" },
       { by: 'b', say: "Calm down!" },
       { by: 'a', say: "Calm down? You promised me!" },
     ] },
     { id: 'db.c10', when: { register: 'cool' }, turns: [
-      { by: 'a', say: "I'm not going to shout. I just want everyone here to know what your promises are worth." },
+      { by: 'a', say: "I'm not going to shout. {pwhen}, you told me {told}. I just want everyone here to know that." },
       { by: 'b', say: "That's a low blow." },
       { by: 'a', say: "Lower than breaking one?" },
     ] },

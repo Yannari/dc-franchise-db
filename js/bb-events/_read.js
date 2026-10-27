@@ -41,7 +41,7 @@ import { relationshipDecisionProfile, hasRelationshipDimensions } from '../relat
 import { strategicReputation } from '../reputation.js';
 import { getIntentions } from '../intentions.js';
 import { believesDeal } from '../bb/knowledge.js';
-import { dealBetween } from '../bb/deals.js';
+import { dealBetween, tierOf } from '../bb/deals.js';
 import { passMemo } from '../bb/pass-memo.js';
 
 // ── what actually happened in this act ────────────────────────────────
@@ -639,7 +639,7 @@ export function campaignCase(nominee, voter, opponent) {
   const compsOf = n => (recOf(n).hohWins || 0) + (recOf(n).vetoWins || 0) + (recOf(n).blockBusterWins || 0);
   const theirComps = opponent ? compsOf(opponent) : 0;
   const myComps = compsOf(nominee);
-  const base = { opponent: opponent || null, partner: null, alliance: null, theirComps, myComps };
+  const base = { opponent: opponent || null, partner: null, alliance: null, deal: null, theirComps, myComps };
 
   // ── the argument is a read of THIS voter, made from what the nominee KNOWS ──
   //
@@ -651,7 +651,9 @@ export function campaignCase(nominee, voter, opponent) {
   // said out loud, and the old version was instead reciting alliance rosters
   // to a person who could recite them back.
   const house = gs.activePlayers || [];
-  if (dealBetween(nominee, voter)) return { ...base, kind: 'deal' };
+  const deal = dealBetween(nominee, voter);
+  // which deal, in words: "I'm not going to remind you what we promised each other" named nothing (the user, 2026-10-27)
+  if (deal) return { ...base, kind: 'deal', deal: ({ 'final-two': 'a final two', 'final-three': 'a final three' })[tierOf(deal)] || 'a deal to work together' };
   const pairedWith = opponent ? house.find(n =>
     n !== nominee && n !== voter && n !== opponent
     && believesDeal(nominee, opponent, n)) : null;

@@ -484,10 +484,10 @@ export default {
       { by: 'b', say: "Five is enough." },
     ] },
     { id: 'tn.s2', turns: [
-      { by: 'a', say: "Count the votes again." },
-      { by: 'b', say: "We've counted it four times." },
+      { by: 'a', say: "Go through the names again. Who's with us?" },
+      { by: 'b', say: "We've been through them four times." },
       { by: 'a', say: "Then a fifth won't hurt." },
-      { beat: 'They count on their fingers. Same answer.' },
+      { beat: 'They go through the house, name by name. Same answer.' },
     ] },
     { id: 'tn.s3', turns: [
       { by: 'b', say: "Are we good for Thursday?" },
@@ -1687,11 +1687,12 @@ export default {
       { by: 'b', dr: "{a} told me {a}'s always had my back. I've heard otherwise. {a} just made my decision easier." },
     ] },
     { id: 'tsp.f4', turns: [
-      { beat: '{a} comes in, sits on the end of the bed, and talks for a long time.' },
+      { beat: '{a} comes in and sits on the end of the bed.' },
+      { by: 'a', say: "I've heard my name is going around. I've never come after you, not once. Leave me off the block and I'll remember it." },
       { by: 'b', say: "Okay. I get it. I'll think about it." },
       { by: 'a', say: "You promise you'll think about it?" },
       { by: 'b', say: "I said I'll think about it." },
-      { by: 'a', dr: "I said everything I could. {b} just kept nodding. I don't think anything I said went in." },
+      { by: 'a', dr: "I told {b} I've never come after {b}. {b} just kept nodding. I don't think any of it went in." },
     ] },
     { id: 'tsp.f5', turns: [
       { by: 'a', say: "I know I'm going up. I'm not stupid." },

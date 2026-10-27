@@ -237,14 +237,20 @@ describe('converting the words did not change the game', () => {
 describe('every intent airs as a script', () => {
   it('fires each converted event as a written exchange', () => {
     const fired = new Set();
-    for (const eps of seasons) for (const b of beatsOf(eps)) {
+    const read = list => { for (const eps of list) for (const b of beatsOf(eps)) {
       if (!scripted(b)) continue;
       fired.add(b.eventId);
       // A script: at least one line somebody SAYS (a lone Diary Room counts), never only narration.
       expect(Array.isArray(b.lines) && b.lines.some(l => l.kind !== 'beat'), `${b.eventId} week ${b.week} has no script`).toBe(true);
-    }
-    for (const id of EVENT_IDS) if (!RARE.has(id) && !TWIST_ONLY.has(id) && !LAYER.has(id)) expect(fired.has(id), `${id} never fired in three seasons`).toBe(true);
-  });
+    } };
+    read(seasons);
+    // "Never fires" is a claim about every season, so a miss means play MORE, not fail (the volume test learned this
+    // first: tests/events-big-brother-volume.test.js). Each new event moved the draws and a marginal one fell out of
+    // the five seasons above (pawn-in-danger-panic, 2026-10-27, with the feud remarks); a dead one misses these too.
+    const due = () => [...EVENT_IDS].filter(id => !RARE.has(id) && !TWIST_ONLY.has(id) && !LAYER.has(id) && !fired.has(id));
+    for (const [seed, shift] of [[1234, 25], [5555, 30], [8080, 35], [6161, 40]]) { if (!due().length) break; read([playSeason(seed, shift)]); }
+    for (const id of due()) expect(fired.has(id), `${id} never fired in nine seasons`).toBe(true);
+  }, 900000);
 
   it('fills every slot, and only the people in the scene speak', () => {
     for (const eps of seasons) for (const b of beatsOf(eps)) {

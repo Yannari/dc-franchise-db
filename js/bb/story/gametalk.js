@@ -428,8 +428,10 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
   // the real target fishes. What the HOH says is who they are: a nice archetype lies less, and more the
   // more strategic they are (the user, 2026-10-23: "change that rule"); a backdoor target can never be
   // told the truth.
+  // ...unless they already went up and pitched themselves this week (bb-events/power.js): both in one week read as
+  // "you're fine", "I believe you", and then the same person begging in the same room (the user, 2026-10-27)
   const fisher = real;
-  if (fisher && fisher !== hoh) {
+  if (fisher && fisher !== hoh && week._selfPitched !== fisher) {
     const s = pStats(hoh);
     const lie = ((s.strategic || 5) / 10) * (1 - (s.loyalty || 5) / 20)
       * (NICE.has(archOf(hoh)) ? 0.5 * (s.strategic || 5) / 10 : 1);

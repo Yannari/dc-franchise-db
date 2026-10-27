@@ -128,7 +128,7 @@ export default {
       { by: 'a', dr: "I've stopped thinking about why I'm up here. It doesn't matter why. It only matters who's voting." },
     ] },
     { id: 'pb.f13', when: { room: ['bedroom'] }, turns: [
-      { beat: '{a} lies on the bed, staring at the ceiling, counting votes on {a.posAdj} fingers.' },
+      { beat: '{a} lies on the bed, staring at the ceiling, going through the house name by name.' },
       { by: 'a', dr: "I went through everybody who has a vote and who they'd keep, four times. Twice I stayed. Twice I went home. That's not great." },
     ] },
   ],
@@ -143,7 +143,7 @@ export default {
     { id: 'pw.t6', turns: [{ by: 'a', dr: "Being the pawn is a favour. {b} owes me now, and I won't let {b.obj} forget it." }] },
   ],
   'power.pawn.resents': [
-    { id: 'pw.r1', turns: [{ by: 'a', dr: "I was told this was a formality. I've counted the votes twice now. It doesn't feel like a formality to me." }] },
+    { id: 'pw.r1', turns: [{ by: 'a', dr: "I was told this was a formality. I've asked around twice now. It doesn't feel like a formality to me." }] },
     { id: 'pw.r2', turns: [{ by: 'a', say: "Pawns go home. Everybody knows pawns go home." }, { beat: 'Nobody in the room answers.' }] },
     { id: 'pw.r3', turns: [{ by: 'a', dr: "Being used like this stopped being funny by the second day." }] },
     { id: 'pw.r4', turns: [{ beat: '{a} smiles through the rest of the day, and stops the moment the camera is behind {a.obj}.' }, { by: 'a', dr: "I smile when {b} is around. I'm not happy about it." }] },
@@ -500,7 +500,7 @@ export default {
     { id: 'pa.c6', turns: [{ by: 'b', say: "Are you okay?" }, { by: 'a', say: "Do you actually want to know?" }, { by: 'b', say: "...Yes." }, { by: 'a', say: "Then no." }] },
   ],
   'power.replaced-reacts.cold': [
-    { id: 'pa.k1', turns: [{ by: 'a', say: "Congratulations on the veto. Thanks for being straight with me, {b}." }, { by: 'a', dr: "I'm counting votes before the room's even emptied." }] },
+    { id: 'pa.k1', turns: [{ by: 'a', say: "Congratulations on the veto. Thanks for being straight with me, {b}." }, { by: 'a', dr: "I'm finding out where the votes are before the room's even emptied." }] },
     { id: 'pa.k2', turns: [{ by: 'a', dr: "Within the hour I'd spoken to four people. {b} thought I was the easy option. {b} might want to check that." }] },
     { id: 'pa.k3', turns: [{ by: 'a', say: "That's the game." }, { by: 'b', dr: "{a} meant it. That's worse for me than if {a} had shouted." }] },
     { id: 'pa.k4', turns: [{ by: 'a', dr: "I'm not wasting time being angry. I've got four days to campaign." }] },

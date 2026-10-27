@@ -184,7 +184,7 @@ export default {
   ],
   'set.afternoms.close': [
     { id: 'xa.c1', turns: [{ beat: 'The house starts its usual split. This week the line runs right down the middle of the kitchen.' }, { by: 'b', dr: "The house has already picked a side. You could see it by dinner." }] },
-    { id: 'xa.c2', turns: [{ beat: 'The two nominees sit apart for the first time all day. Both of them are being visited.' }, { by: 'a', dr: "It's a campaign now. Smile, talk, count votes. Four days of it." }] },
+    { id: 'xa.c2', turns: [{ beat: 'The two nominees sit apart for the first time all day. Both of them are being visited.' }, { by: 'a', dr: "It's a campaign now. Smile, talk, ask for votes. Four days of it." }] },
   ],
   'set.morningafter.open': [
     { id: 'xm.1', room: 'kitchen', turns: [

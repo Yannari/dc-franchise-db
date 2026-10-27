@@ -169,7 +169,7 @@ export default {
       { by: 'f', say: "I'll cook." },
       { by: 'a', say: "Can I help?" },
       { by: 'f', say: "You want to help?" },
-      { by: 'a', say: "I want something to do with my hands that isn't counting votes." },
+      { by: 'a', say: "I want something to do with my hands that isn't worrying about votes." },
       { by: 'b', say: "Me too. Give me an onion." },
       { by: 'f', say: "Two nominees and an onion. This is going to be a sad dinner." },
       { by: 'd', say: "It's going to be a great dinner. Chop." },
@@ -439,7 +439,7 @@ export default {
     ] },
   ],
   'set.backyard.close': [
-    { id: 'msy.c1', room: 'backyard', turns: [{ beat: 'The fun winds down. People start to peel off in twos, heading inside to talk.' }, { by: 'e', dr: "Out in the yard we're all friends. Then you go inside and everybody's counting votes again." }] },
+    { id: 'msy.c1', room: 'backyard', turns: [{ beat: 'The fun winds down. People start to peel off in twos, heading inside to talk.' }, { by: 'e', dr: "Out in the yard we're all friends. Then you go inside and everybody's after votes again." }] },
     { id: 'msy.c2', room: 'backyard', turns: [{ beat: 'Big Brother calls lockdown. Everybody trudges inside, still dripping.' }, { by: 'a', dr: "Lockdown means they're building something out here. Everybody's trying to guess what the comp is." }] },
   ],
   'set.gamenight.open': [

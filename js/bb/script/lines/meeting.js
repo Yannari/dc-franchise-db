@@ -120,7 +120,7 @@ export default {
     { id: 'mt.gn2', turns: [{ by: 'a', say: "I heard my name in {b}'s plans. So let's hear the plan. Out loud. Go on." }] },
     { id: 'mt.gn3', turns: [{ by: 'a', say: "My name's been going round this house for days, and it started with {b}. I want to hear why." }] },
     { id: 'mt.gn4', turns: [{ by: 'a', say: "{b}, if you want me out, say it here. Not in the storage room." }] },
-    { id: 'mt.gn5', turns: [{ by: 'a', say: "{b} has been counting votes against me all week. Go on, {b}. How many have you got?" }] },
+    { id: 'mt.gn5', turns: [{ by: 'a', say: "{b} has been asking people to vote me out all week. Go on, {b}. Who have you got?" }] },
     { id: 'mt.gn6', turns: [{ by: 'a', say: "I know I'm on {b}'s list. I'd rather everybody heard it from me than from {b}." }] },
   ],
   'meeting.case.grudge-friction': [

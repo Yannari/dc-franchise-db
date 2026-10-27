@@ -426,13 +426,15 @@ export default {
       { by: 'b', say: "Now you've got no power, though." },
       { by: 'a', dr: "{c} is gone. That's what I wanted, and that's what happened. Whatever happens to me now, I'm happy with my week." },
     ] },
+    // nothing records what an evictee says on the way out, and the evictee may not be a juror: neither is said
+    // here (the user, 2026-10-27: "Vlad said some things on the way out" about nothing, "and Vlad isn't in the jury")
     { id: 'hw.vd2', room: 'backyard', presumes: ['vote'], turns: [
       { beat: 'Backyard. {a} is lying on the grass, smiling at nothing.' },
       { by: 'b', say: "Somebody looks pleased with themselves." },
       { by: 'a', say: "Somebody had a perfect week." },
-      { by: 'b', say: "{c} said some things on the way out." },
-      { by: 'a', say: "{c} was always going to. It doesn't change anything." },
-      { by: 'b', say: "It might change the jury." },
+      { by: 'b', say: "Everybody knows you wanted {c} out. They'll remember whose week it was." },
+      { by: 'a', say: "Good. I'd put {c} up again. It doesn't change anything." },
+      { by: 'b', say: "It might change who comes after you next." },
       { by: 'a', dr: "{c} is gone and nothing went wrong. Honestly, that's the best week I've had in here." },
     ] },
     { id: 'hw.vd3', room: 'hoh-room', presumes: ['vote'], turns: [
@@ -494,7 +496,7 @@ export default {
       { by: 'a', say: "{d} went home. I told {d} it was safe." },
       { by: 'b', say: "{d} knew the risk." },
       { by: 'a', say: "{d} didn't think there was a risk. I told {d} there wasn't one." },
-      { by: 'b', say: "The jury's going to hear about this." },
+      { by: 'b', say: "You didn't send {d} home. The house did." },
       { by: 'a', dr: "Everybody told me they were voting {c} out, and they didn't. And {d} is the one who went home for it, not me." },
     ] },
     { id: 'hw.vp3', room: 'backyard', presumes: ['vote'], turns: [

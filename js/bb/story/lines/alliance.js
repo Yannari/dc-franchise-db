@@ -614,7 +614,7 @@ export default {
       { by: 'a', say: "That's three. Who else?" },
       { by: 'b', say: "Honestly? I think that's it for sure." },
       { by: 'a', say: "Three isn't enough. We need a fourth, and we need it tonight.", v: { anxious: "Three isn't enough. I'm not going to sleep until we find a fourth." } },
-      { by: 'b', dr: "{a} counts votes the way other people count sheep. It's the only way {a} can sleep in here." },
+      { by: 'b', dr: "{a} goes through who's voting which way every night before sleeping. It's the only way {a} can sleep in here." },
     ] },
     { id: 'ak2.s4', turns: [
       { beat: '{a} and {b} pass each other in the hallway. {a} taps two fingers on the wall, twice.' },
@@ -713,7 +713,7 @@ export default {
     { id: 'al2.1', turns: [
       { by: 'a', say: "So when were you going to tell me?" },
       { by: 'b', say: "Tell you what?" },
-      { by: 'a', say: "That you all met. Without me." },
+      { by: 'a', say: "That {alliance} met about this week. Without me." },
       { by: 'b', say: "It wasn't a meeting. It was just — people talking." },
       { by: 'a', say: "In the storage room. With the door shut. 'People talking'." },
       { by: 'b', say: "Okay, it was a bit of a meeting." },
@@ -739,9 +739,9 @@ export default {
       { by: 'b', say: "Why are you being off with me?" },
       { by: 'a', say: "I'm not being off." },
       { by: 'b', say: "You're being a bit off." },
-      { by: 'a', say: "Fine. You decided something with the others and I found out last." },
+      { by: 'a', say: "Fine. Everybody in {alliance} knew the plan for this week before I did. I found out last." },
       { by: 'b', say: "We didn't decide anything, we were just talking options—" },
-      { by: 'a', say: "Then why does everyone know the option except me?" },
+      { by: 'a', say: "Then why does everyone in {alliance} know it except me?" },
       { by: 'b', say: "...Okay. That's bad. I'll fix it." },
       { by: 'a', say: "How?" },
       { by: 'b', say: "From now on you hear everything first. Before anyone." },
@@ -1381,15 +1381,29 @@ export default {
     { id: 'rak.b2', turns: [{ by: 'b', dr: "{when}, {a} told me we're good. I told {a} the same." }] },
     { id: 'rak.b3', turns: [{ by: 'b', dr: "{a} came to check on me {when}. That's what we do." }] },
   ],
+  // what was decided and who decided it, said plainly ({target}: who the group is going after, when the engine named one)
   'recap.alliance.leftout.a': [
-    { id: 'ral.a1', turns: [{ by: 'a', dr: "{when}, they made a decision without me. I found out after. I'm still not over it." }] },
-    { id: 'ral.a2', turns: [{ by: 'a', dr: "{b} ran a whole meeting {when} and didn't invite me. My own group." }] },
-    { id: 'ral.a3', turns: [{ by: 'a', dr: "I got left out {when}. That's the kind of thing you remember." }] },
+    { id: 'ral.a1', turns: [{ by: 'a', dr: "{when}, {alliance} decided to go after {target} without me. I found out after everybody else." }] },
+    { id: 'ral.a2', turns: [{ by: 'a', dr: "{b} ran a meeting of {alliance} {when} and didn't invite me. They set the plan for the week without me." }] },
+    { id: 'ral.a3', turns: [{ by: 'a', dr: "{when}, the rest of {alliance} sat down and made the plan for the week. I wasn't in the room." }] },
   ],
   'recap.alliance.leftout.b': [
-    { id: 'ral.b1', turns: [{ by: 'b', dr: "{when}, we decided some stuff without {a}. It wasn't personal. {a} doesn't see it that way." }] },
-    { id: 'ral.b2', turns: [{ by: 'b', dr: "{a} found out we talked without {a.obj} {when}. That went about as well as you'd think." }] },
-    { id: 'ral.b3', turns: [{ by: 'b', dr: "We left {a} out of one meeting {when}. One." }] },
+    { id: 'ral.b1', turns: [{ by: 'b', dr: "{when}, we picked {target} without {a}. It wasn't personal. {a} doesn't see it that way." }] },
+    { id: 'ral.b2', turns: [{ by: 'b', dr: "{when}, the rest of {alliance} made the plan for the week without {a}. {a} found out, and it went about as well as you'd think." }] },
+    { id: 'ral.b3', turns: [{ by: 'b', dr: "We set the plan for {alliance} {when}, and {a} wasn't there for it." }] },
+  ],
+  // ...and before the scene itself, when its words do not name the decision: a, in the Diary Room, says what it was
+  // (bb/story/write.js), so "you decided something with the others" is never the only thing the viewer is told
+  'recap.alliance.leftout.setup.target': [
+    { id: 'ral.t1', turns: [{ by: 'a', dr: "{alliance} decided to go after {target} this week. Nobody told me. I heard it last." }] },
+    { id: 'ral.t2', turns: [{ by: 'a', dr: "The plan in {alliance} is {target}. I found that out after everybody else did." }] },
+    { id: 'ral.t3', turns: [{ by: 'a', dr: "{b} and {c} sat down and picked {target} without me. I'm in {alliance} too." }] },
+    { id: 'ral.t4', turns: [{ by: 'a', dr: "Everybody in {alliance} knew we were going after {target} before I did. That tells me where I stand." }] },
+  ],
+  'recap.alliance.leftout.setup.plain': [
+    { id: 'ral.p1', turns: [{ by: 'a', dr: "{alliance} had a meeting about this week without me. I don't know what they decided, and that's the problem." }] },
+    { id: 'ral.p2', turns: [{ by: 'a', dr: "{b} and {c} are making the calls in {alliance} now. I find out what we're doing after it's done." }] },
+    { id: 'ral.p3', turns: [{ by: 'a', dr: "I'm in {alliance}, and I wasn't in the room when they made the plan for this week." }] },
   ],
   'recap.alliance.betrayal.a': [
     { id: 'rab.a1', turns: [{ by: 'a', dr: "{when}, {b} flipped on me. On the vote. After everything." }] },

@@ -34,7 +34,7 @@ export default {
   ],
   'wild.refusal.suspects': [
     { id: 'tw3.s1', turns: [{ by: 'a', say: "Nobody turns down safety unless they've already got it. So who's protecting {b}?" }, { beat: 'The question goes round the house by evening.' }] },
-    { id: 'tw3.s2', turns: [{ by: 'a', dr: "The punishment was survivable. The block isn't. {b} said no anyway. That's not brave. That's someone who has counted the votes." }] },
+    { id: 'tw3.s2', turns: [{ by: 'a', dr: "The punishment was survivable. The block isn't. {b} said no anyway. That's not brave. That's someone who already knows they have the votes." }] },
     { id: 'tw3.s3', turns: [{ by: 'a', dr: "I'm watching who {b} eats with. Somewhere in there is the reason {b} could afford to say no." }] },
     { id: 'tw3.s4', turns: [{ by: 'a', say: "Why did you turn it down?" }, { by: 'b', say: "Didn't need it." }, { by: 'a', dr: "Nobody turns down something free unless they've already got something better. Now I want to know what {b} has." }] },
     { id: 'tw3.s5', turns: [{ by: 'b', dr: "I said no to the deal. Now everyone wants to know why." }] },
@@ -86,7 +86,7 @@ export default {
     { id: 'tr3.u3', turns: [{ by: 'a', dr: "Every week {b} is here, {b} knows more than the last person we sent home." }] },
     { id: 'tr3.u4', turns: [{ by: 'a', say: "We need to deal with {b}. Now." }, { beat: 'Nobody argues.' }] },
     { id: 'tr3.u5', turns: [{ by: 'a', dr: "{b} came back at the top of my list. We showed {b} our whole hand and then let {b} back in." }] },
-    { id: 'tr3.u6', turns: [{ by: 'b', dr: "I've been back a day and people are already counting votes against me." }] },
+    { id: 'tr3.u6', turns: [{ by: 'b', dr: "I've been back a day and people are already lining up votes against me." }] },
   ],
   'returned.repriced.miracle': [
     { id: 'tr3.m1', turns: [{ by: 'a', dr: "Half the house thinks {b} coming back means something. Being nice to {b} costs nothing." }] },

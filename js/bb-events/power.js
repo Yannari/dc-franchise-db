@@ -172,7 +172,8 @@ const hohSelfPitch = {
   fire(house, ctx, api, rng) {
     const hoh = _hoh(ctx);
     const pitcher = _aim(ctx, hoh);
-    if (ctx?.week) ctx.week._selfPitched = true;
+    // who went up (bb/story/gametalk.js: the same person is not shown fishing the HOH as well)
+    if (ctx?.week) ctx.week._selfPitched = pitcher;
     // who goes up instead: the houseguest the HOH likes least, other than the one asking
     const instead = furthestFrom(hoh, _others(house, hoh, pitcher));
     const ps = pStats(pitcher), hs = pStats(hoh);
@@ -348,7 +349,7 @@ const nomCampaign = {
     const sctx = { week: ctx?.week, act: ctx?.act || 'campaign', hoh: _hoh(ctx), nominees: noms, room, seenBy: [nom, mark], salt: 'nom-campaign' };
     const c = campaignCase(nom, mark, other);
     const script = joinScripts(
-      scriptBeat('campaign.case', { a: nom, b: mark }, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance,
+      scriptBeat('campaign.case', { a: nom, b: mark }, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance, deal: c.deal,
         theirComps: numberWord(c.theirComps), myComps: numberWord(c.myComps) }, sctx),
       scriptBeat('campaign.reply', { a: nom, b: mark }, { ending: works ? 'receptive' : 'unmoved' }, sctx));
     return {

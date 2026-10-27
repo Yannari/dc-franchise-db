@@ -219,7 +219,7 @@ export default {
     ] },
     { id: 'gt2.bn3', room: 'bedroom', turns: [
       { beat: 'Bedroom, door shut. {a} has {b} by the arm.' },
-      { by: 'a', say: "If I don't win the Block Buster, I need you to count votes." },
+      { by: 'a', say: "If I don't win the Block Buster, I need you getting me votes." },
       { by: 'b', say: "I'm already counting." },
       { by: 'a', say: "And?" },
       { by: 'b', say: "It's close. It depends who's next to you in the chairs." },

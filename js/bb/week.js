@@ -837,7 +837,7 @@ function runHouseRomance(week, rng) {
         if ((e.players || []).length >= 4) {
           const [sch, s1, mid, s2] = e.players;
           return romanceLine(e.type, [
-            `${sch} watches the three of them all evening and says it quietly to one ally: "Nobody in that is counting votes. That is three people playing a different game to ours."`,
+            `${sch} watches the three of them all evening and says it quietly to one ally: "Nobody in that is playing for votes. That is three people playing a different game to ours."`,
             `"${s1} is going to get burned," ${sch} says, "and burned people take the first hand anybody holds out. I intend to be the one holding it."`,
             `${sch} has been feeding a small doubt to ${s1} and a different small doubt to ${s2}. Neither is big enough to trace. Both are big enough to keep it unstable.`,
             `${sch} maps it out on the storage room floor for one person: "${mid} picks one of them. The other one comes to us that same night, angry and free."`,
@@ -7110,7 +7110,7 @@ export function simulateBBWeek(options = {}) {
           const reply = scriptBeat('campaign.reply', who, { ending: worn ? 'worn' : response.accepted ? 'receptive' : 'unmoved' }, sctx);
           const c = campaignCase(pitch.pitcher, response.voter, pitch.pitchTarget);
           made = { kind: c.kind, target: c.opponent || null, partner: c.partner || null, alliance: c.alliance || null };
-          caseScript = scriptBeat('campaign.case', who, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance,
+          caseScript = scriptBeat('campaign.case', who, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance, deal: c.deal,
             theirComps: numberWord(c.theirComps), myComps: numberWord(c.myComps) }, sctx);
           // a return visit that lands says its case again: the first visit is often not the one that aired
           // (read 2026-10-14: "One more try" / "Okay. Round three went to Beth", and no argument at all).
@@ -7220,7 +7220,7 @@ export function simulateBBWeek(options = {}) {
           const c = campaignCase(third, voter, rival);
           made = { kind: c.kind, target: c.opponent || null, partner: c.partner || null, alliance: c.alliance || null };
           script = joinScripts(
-            scriptBeat('campaign.case', who, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance,
+            scriptBeat('campaign.case', who, { ending: c.kind, target: c.opponent, partner: c.partner, alliance: c.alliance, deal: c.deal,
               theirComps: numberWord(c.theirComps), myComps: numberWord(c.myComps) }, sctx),
             scriptBeat('campaign.reply', who, { ending: yes ? 'receptive' : 'unmoved' }, sctx));
         } catch { script = null; }

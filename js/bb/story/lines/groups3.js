@@ -114,7 +114,9 @@ export default {
       { by: 'b', say: "We'll split up. Two people each." },
       { by: 'a', dr: "I've got three people running my campaign for me. I didn't ask. I'm not going to stop them." },
     ] },
-    { id: 'gk3.3', room: 'kitchen', presumes: ['noms'], turns: [
+    // "there's still the veto" only while there is (the user, 2026-10-27: said in front of the veto winner, who had
+    // already told {a} he was using it on {a})
+    { id: 'gk3.3', room: 'kitchen', presumes: ['noms', 'preveto'], turns: [
       { beat: 'Kitchen. {a} is staring into a mug of tea that has gone cold. {b}, {c} and {d} are trying to act normal around {a}.' },
       { by: 'b', say: "Do you want me to make you a fresh one?" },
       { by: 'a', say: "No, this is fine." },

@@ -44,7 +44,7 @@ export default {
       { by: 'b', say: "Right. So we need to talk to people tonight.", v: { anxious: "Okay. Okay. So we're short. What do we do?" } }] },
     { id: 'kb.s3', when: { intent: 'one' }, turns: [{ by: 'a', dr: "We're one vote short of getting {target} out. One. I need to find it." }] },
     { id: 'kb.s4', when: { intent: 'many' }, turns: [{ by: 'a', dr: "We're {gap} votes short on {target}. That's not a small gap." }] },
-    { id: 'kb.s5', turns: [{ by: 'a', say: "We're fine." }, { beat: '{a} keeps counting votes.' }, { by: 'b', dr: "If we were fine, {a} would stop counting votes." }] },
+    { id: 'kb.s5', turns: [{ by: 'a', say: "We're fine." }, { beat: '{a} keeps going through the names, one at a time.' }, { by: 'b', dr: "If we were fine, {a} would stop going through the names." }] },
     { id: 'kb.s6', turns: [{ by: 'a', say: "Who haven't we asked yet?" }, { by: 'b', say: "Nobody you'd trust." }, { by: 'a', say: "Then let's start with them." }] },
   ],
   'plan.count.holds': [
@@ -68,7 +68,7 @@ export default {
     { id: 'kc.w2', turns: [{ by: 'a', say: "{source} got me on my own. About you." }, { by: 'b', say: "What did you say?" }, { by: 'a', say: "Nothing. That's why I'm telling you." }] },
     { id: 'kc.w3', turns: [{ by: 'a', say: "You should know who's doing the asking. It's {source}, and it's about you." }, { by: 'b', say: "...Thank you." }, { by: 'b', dr: "{source} is walking a plan round the house with my name on it. Now I know who to talk to first." }] },
     { id: 'kc.w4', turns: [{ by: 'a', dr: "{source} asked me to vote {b} out. I'm not betraying anyone. I'm just telling {b} who's asking." }, { by: 'a', say: "{source}. That's who's asking." }, { by: 'b', say: "Asking what?" }, { by: 'a', say: "For your name." }] },
-    { id: 'kc.w5', turns: [{ by: 'a', say: "Watch {source} today." }, { by: 'b', say: "Why?" }, { by: 'a', say: "Because {source} is counting votes, and your name is the one being counted." }] },
+    { id: 'kc.w5', turns: [{ by: 'a', say: "Watch {source} today." }, { by: 'b', say: "Why?" }, { by: 'a', say: "Because {source} is lining up votes, and your name is the one being counted." }] },
     { id: 'kc.w6', turns: [{ by: 'a', say: "I'm not supposed to tell you this. {source} wants you out on Thursday." }, { by: 'b', say: "Who else has {source} asked?" }, { by: 'a', say: "Me, at least. Probably more." }] },
   ],
   'plan.doubt.lies': [
@@ -136,7 +136,7 @@ export default {
     { id: 'kg.m6', turns: [{ by: 'b', dr: "We're all voting {targetA} out. But {a} and I are both counting {swing} as our vote, and only one of us can be right." }] },
   ],
   'plan.cocky.scene': [
-    { id: 'kh.1', turns: [{ by: 'a', say: "It's done. {target} is gone. We can stop talking about it." }, { by: 'b', say: "Have we actually counted the votes?" }, { by: 'a', say: "Everyone we asked said yes." }, { by: 'b', say: "Saying yes isn't the same as voting." }, { by: 'a', say: "Relax." }, { by: 'b', dr: "Everybody we asked said yes. That's {expected}. I'd only bet on {locked}." }] },
+    { id: 'kh.1', turns: [{ by: 'a', say: "It's done. {target} is gone. We can stop talking about it." }, { by: 'b', say: "Have we actually asked everyone where their vote is going?" }, { by: 'a', say: "Everyone we asked said yes." }, { by: 'b', say: "Saying yes isn't the same as voting." }, { by: 'a', say: "Relax." }, { by: 'b', dr: "Everybody we asked said yes. That's {expected}. I'd only bet on {locked}." }] },
     { id: 'kh.2', turns: [{ by: 'a', say: "Right, next week..." }, { by: 'b', say: "We haven't finished this week." }, { by: 'a', say: "This week's done. {target} is gone." }, { by: 'b', say: "Not until the votes are read out." }, { by: 'a', say: "You worry too much." }, { by: 'b', dr: "Somebody in this alliance has to worry. It's not going to be {a}." }] },
     { id: 'kh.3', turns: [{ by: 'b', say: "You're counting the maybes as votes." }, { by: 'a', say: "The maybes are votes." }, { by: 'b', say: "Since when?" }, { by: 'a', say: "Since I asked them nicely." }, { by: 'b', dr: "No, they're not." }] },
     { id: 'kh.4', turns: [{ by: 'a', say: "You look stressed." }, { by: 'b', say: "I'm fine." }, { by: 'a', say: "You're not. Stop it. We've got this." }, { by: 'b', say: "Have we?" }, { by: 'b', dr: "{a} is relaxed and I can't work out why. Nobody has actually checked who's voting {target} out." }] },
@@ -186,7 +186,7 @@ export default {
   'plan.pawn.guilt': [
     { id: 'kl.g1', turns: [{ by: 'a', say: "You're fine." }, { by: 'b', say: "You said that before the ceremony." }, { by: 'a', say: "And it's still true." }, { by: 'a', dr: "I'm not sure it's still true." }] },
     { id: 'kl.g2', turns: [{ by: 'a', dr: "I asked {b} to be a pawn. I said it was a formality. Now nobody can tell me the votes are on {target}." }] },
-    { id: 'kl.g3', turns: [{ by: 'a', dr: "I counted the votes for {b}'s sake. Twice. I got a different answer each time." }] },
+    { id: 'kl.g3', turns: [{ by: 'a', dr: "I asked around for {b}'s sake. Twice. I got a different answer each time." }] },
     { id: 'kl.g4', turns: [{ by: 'b', dr: "I've stopped asking {a} if I'm safe. I don't think {a} knows either." }] },
     { id: 'kl.g5', turns: [{ by: 'a', say: "I'll fix this." }, { by: 'b', say: "Can you?" }, { by: 'a', say: "...I'll try." }] },
     { id: 'kl.g6', turns: [{ by: 'a', dr: "I put {b} up as a pawn. If {b} goes home, that's on me." }] },
@@ -233,7 +233,7 @@ export default {
       { by: 'a', say: "I slept great. Funny, that." },
       { by: 'b', say: "Good for you. Enjoy it while it lasts.", v: { soft: "Good. I'm glad one of us did." } }] },
     { id: 'ko.r5', turns: [{ by: 'a', say: "Pass the butter?" }, { by: 'b', say: "Here." }, { by: 'a', say: "Thanks. You're very kind." }, { beat: "{a} smiles at {b} a little too long." }, { by: 'b', dr: "{a} hasn't stopped smiling at me since the eviction. I'd prefer shouting." }] },
-    { id: 'ko.r6', turns: [{ by: 'a', say: "Can I ask you something?" }, { by: 'b', say: "Sure." }, { by: 'a', say: "If I'd gone home last night, who would you be having breakfast with?" }, { by: 'b', say: "I don't know what you mean." }, { by: 'a', say: "Course you don't." }, { by: 'a', dr: "{b} counted the votes to evict me. {b} came up short. Now {b} is my target." }] },
+    { id: 'ko.r6', turns: [{ by: 'a', say: "Can I ask you something?" }, { by: 'b', say: "Sure." }, { by: 'a', say: "If I'd gone home last night, who would you be having breakfast with?" }, { by: 'b', say: "I don't know what you mean." }, { by: 'a', say: "Course you don't." }, { by: 'a', dr: "{b} went looking for votes to evict me. {b} came up short. Now {b} is my target." }] },
   ],
   'plan.regroup.polite': [
     { id: 'ko.p1', turns: [{ by: 'b', dr: "{a} has been polite to me all morning. That's the scariest thing that's happened all week." }] },

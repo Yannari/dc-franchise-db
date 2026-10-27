@@ -392,7 +392,9 @@ export function airStorylines(week) {
   const queueAfter = before => {
     for (const sc of week.acts.flatMap(a => a?.scenes || [])) {
       if (before.has(sc) || !sc.witnessed?.length) continue;
-      const w = sc.witnessed.find(x => x.stance !== 'side') || sc.witnessed[0];
+      // a remark on an old feud took no side, so nobody brings it up later
+      const took = sc.witnessed.filter(x => x.stance !== 'again');
+      const w = took.find(x => x.stance !== 'side') || took[0];
       if (w && !afterQueue.some(q => q.w.name === w.name && q.week === (week.num || 0))) afterQueue.push({ week: week.num || 0, stretch, w });
     }
   };

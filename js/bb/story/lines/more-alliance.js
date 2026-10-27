@@ -305,7 +305,7 @@ export default {
     { id: 'al3.1', turns: [
       { by: 'a', say: "So that's how it is now." },
       { by: 'b', say: "How what is?" },
-      { by: 'a', say: "Decisions get made, and I get told after. Like an employee." },
+      { by: 'a', say: "The plan for this week gets made in {alliance}, and I get told after." },
       { by: 'b', say: "That's not fair." },
       { by: 'a', say: "Is it true, though?" },
       { by: 'b', say: "...It happened once." },
@@ -320,7 +320,7 @@ export default {
       { by: 'a', say: "Who's the target this week?" },
       { by: 'b', say: "You don't know?" },
       { by: 'a', say: "No. I don't know. That's why I'm asking." },
-      { by: 'b', say: "Oh. I thought someone told you." },
+      { by: 'b', say: "Oh. It's {target}. I thought someone told you." },
       { by: 'a', say: "Nobody told me. Nobody ever tells me." },
       { by: 'b', say: "That's on us. I'm sorry." },
       { by: 'a', say: "Don't be sorry. Be early. Next time, be early." },

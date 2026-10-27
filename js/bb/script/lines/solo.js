@@ -15,7 +15,7 @@ export default {
     { id: 'so.n1', turns: [{ by: 'a', dr: "I've spent all morning trying to work out who got rid of {gone}. I've got nothing." }] },
     { id: 'so.n2', turns: [{ by: 'a', dr: "Everyone says they voted to keep {gone}. The numbers say otherwise." }] },
     { id: 'so.n3', turns: [{ by: 'a', dr: "Somebody in this house lied to me about {gone}. I just can't tell who." }] },
-    { id: 'so.n4', turns: [{ by: 'a', dr: "I keep counting the votes. It doesn't get me anywhere." }] },
+    { id: 'so.n4', turns: [{ by: 'a', dr: "I keep going through who would vote for me. It doesn't get me anywhere." }] },
     { id: 'so.n5', turns: [{ by: 'a', dr: "{gone} is gone and I don't know who to blame. That's worse than knowing." }] },
     { id: 'so.n6', turns: [{ by: 'a', dr: "I'll find out who did it. Maybe not today." }] },
   ],

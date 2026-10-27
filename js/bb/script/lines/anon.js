@@ -52,7 +52,7 @@ export default {
     { id: 'an3.n3', turns: [{ by: 'a', dr: "Nothing happened at the veto meeting. Which means something will happen on Thursday." }] },
     { id: 'an3.n4', turns: [{ by: 'a', dr: "The veto stayed in the box. I could have told you that on Monday." }] },
     { id: 'an3.n5', turns: [{ by: 'a', dr: "Quietest veto meeting we've had. Nobody moved, nobody spoke." }] },
-    { id: 'an3.n6', turns: [{ by: 'a', dr: "No changes. Now it's just counting votes." }] },
+    { id: 'an3.n6', turns: [{ by: 'a', dr: "No changes. Now it comes down to who has the votes." }] },
   ],
   'power.no-surprise.nominee': [
     { id: 'an3.m1', turns: [{ by: 'a', dr: "Nobody used the veto on me. I wasn't expecting them to." }] },

@@ -97,6 +97,17 @@ export default {
       { beat: '{a} leaves the bowl exactly where it is and walks away.' },
       { by: 'b', dr: "It's one bowl. It's one bowl, and it's going to be there tomorrow, and that's the point." },
     ] },
+    // ── a feud that has run for weeks ({since}: bb/witness.js feudHistory) ──
+    { id: 'sf.l1', room: 'kitchen', when: { history: 'long' }, turns: [
+      { beat: "Kitchen. {b} finds {a}'s plate on the counter, next to the sink, again." },
+      { by: 'b', say: "Again, {a}?" },
+      { by: 'a', say: "It's one plate." },
+      { by: 'b', say: "It's one plate every day since {since}." },
+      { by: 'a', say: "You keep count?" },
+      { by: 'b', say: "Somebody has to." },
+      { by: 'a', say: "Okay. I'll wash it. Happy?" },
+      { by: 'b', dr: "I'm not even angry about the plate. It's been {a} and me, every day, since {since}. I'm tired." },
+    ] },
   ],
 
   // ── friction: a joke that cut ───────────────────────────────────────
@@ -110,7 +121,7 @@ export default {
       { by: 'b', say: "Yeah. Good one." },
       { by: 'a', say: "Come on, it's a little bit you." },
       { by: 'b', say: "I said good one." },
-      { by: 'b', dr: "Everybody laughed. I laughed. I wasn't laughing." },
+      { by: 'b', dr: "{a} did an impression of me in front of everyone: arms folded, sighing at the ceiling. The whole room laughed, so I laughed along. I didn't think it was funny." },
     ] },
     { id: 'sf.j2', turns: [
       { by: 'a', say: "Oh, {b}'s doing the thinking face." },
@@ -173,6 +184,15 @@ export default {
       { by: 'a', say: "I'm kidding! Kind of." },
       { by: 'a', dr: "If people think {b} is a puppy, nobody looks at {b} as a threat. Including {b}. You're welcome." },
       { by: 'b', dr: "I'm not stupid. I know a compliment that's really an insult when I hear one." },
+    ] },
+    { id: 'sj.l1', when: { history: 'long' }, turns: [
+      { by: 'a', say: "Oh, look who's up." },
+      { by: 'b', say: "Don't start." },
+      { by: 'a', say: "I haven't started anything." },
+      { by: 'b', say: "You've been doing this since {since}. Every chance you get." },
+      { by: 'a', say: "It's a joke." },
+      { by: 'b', say: "It's not a joke when it's every day." },
+      { by: 'b', dr: "{a} has been making fun of me since {since}. The first time I laughed. I'm not laughing now." },
     ] },
   ],
 
@@ -239,6 +259,16 @@ export default {
       { beat: '{b} gets up, very slowly.' },
       { by: 'b', say: "You're in a mood." },
       { by: 'a', say: "I'm in a house full of people and none of the doors lock. Yes. I'm in a mood." },
+    ] },
+    { id: 'ss.l1', when: { history: 'long' }, turns: [
+      { by: 'b', say: "Morning." },
+      { by: 'a', say: "Can you not, right now?" },
+      { by: 'b', say: "I said good morning." },
+      { by: 'a', say: "And I said not right now." },
+      { by: 'b', say: "This again. Every day since {since}." },
+      { by: 'a', say: "Then stop talking to me in the mornings." },
+      { by: 'b', say: "Gladly." },
+      { by: 'a', dr: "{b} and I have been like this since {since}. I don't think either of us is trying to fix it any more." },
     ] },
   ],
 
@@ -364,7 +394,8 @@ export default {
       { by: 'b', say: "Okay, I'll count you." },
       { by: 'a', dr: "I don't yell. I don't need to. I just ask the question again until the answer gets honest." },
     ] },
-    { id: 'sa.8', turns: [
+    // a first falling-out only: two people who have fought since week one were never friends (the user, 2026-10-27)
+    { id: 'sa.8', when: { history: 'new', band: ['friends', 'neutral', 'cold'] }, turns: [
       { by: 'b', say: "Are you going to keep ignoring me, or…" },
       { by: 'a', say: "I'm not ignoring you." },
       { by: 'b', say: "You walked out of the room when I walked in. Twice." },
@@ -377,6 +408,28 @@ export default {
       { by: 'a', say: "...I thought we were friends. That's it. That's the thing. I thought we were friends, and friends don't do that." },
       { beat: '{b} opens up to answer, and nothing comes out.' },
       { by: 'b', dr: "I had a whole comeback ready. And then {a} said that, and I had nothing." },
+    ] },
+    { id: 'sa.l1', room: 'kitchen', when: { history: 'long' }, turns: [
+      { beat: '{b} comes into the kitchen. {a} puts a mug down, hard.' },
+      { by: 'a', say: "Here we go again." },
+      { by: 'b', say: "I haven't said anything." },
+      { by: 'a', say: "You don't have to. It's been like this since {since}. Every week it's something with us." },
+      { by: 'b', say: "Then stop starting it." },
+      { by: 'a', say: "Me? What happened {when} was you." },
+      { by: 'b', say: "And I'm sure you've got a list of the rest." },
+      { by: 'a', say: "I do, actually." },
+      { by: 'a', dr: "{b} and I have been fighting since {since}. I've stopped expecting it to get better. I just want to get to the end of the week." },
+      { by: 'b', dr: "Ask anyone in this house. {a} and I can't be in a room for ten minutes. It's been that way since {since}." },
+    ] },
+    { id: 'sa.l2', when: { history: 'long' }, turns: [
+      { by: 'b', say: "What is it this time?" },
+      { by: 'a', say: "This time? You say that like it's my fault." },
+      { by: 'b', say: "We've had this fight every week since {since}. I'm asking what it is this week." },
+      { by: 'a', say: "{when}. You know what you did." },
+      { by: 'b', say: "Fine. Say it, and then we can both go back to ignoring each other." },
+      { by: 'a', say: "You think this is funny." },
+      { by: 'b', say: "I think it's the same fight we had last time." },
+      { by: 'a', dr: "Me and {b}? It's never getting fixed. I've accepted that. Now I just want {b} out of this house before me, and I'll vote that way the first chance I get." },
     ] },
   ],
 
@@ -457,6 +510,15 @@ export default {
       { by: 'a', say: "Okay, I'm leaving before I cry." },
       { by: 'b', dr: "Saying it in front of {c} — that took guts. I didn't think {a} had that in there." },
     ] },
+    { id: 'sp.l1', when: { history: 'long' }, turns: [
+      { by: 'a', say: "Can I say something without it turning into a fight?" },
+      { by: 'b', say: "That would be a first." },
+      { by: 'a', say: "We've been at each other since {since}. I'm sorry about {when}. And I'm tired of all of it." },
+      { by: 'b', say: "So am I." },
+      { by: 'a', say: "So can we stop?" },
+      { by: 'b', say: "We can try. I'm not promising it lasts." },
+      { by: 'a', dr: "I don't think {b} and I will ever be friends. But I'd like to get through one week in here without a fight." },
+    ] },
   ],
   'story.feud.apology.refused': [
     { id: 'sp.r1', turns: [
@@ -531,6 +593,15 @@ export default {
       { by: 'b', say: "Noted." },
       { by: 'a', dr: "I said sorry and got 'noted', like I was a note stuck on the fridge. It stung more than I expected." },
     ] },
+    { id: 'sp.l2', when: { history: 'long' }, turns: [
+      { by: 'a', say: "{b}, I'm sorry about {when}." },
+      { by: 'b', say: "You're sorry about {when}. What about everything since {since}?" },
+      { by: 'a', say: "I'm trying to start somewhere." },
+      { by: 'b', say: "One sorry doesn't cover all of it." },
+      { by: 'a', say: "So that's a no." },
+      { by: 'b', say: "That's a not yet." },
+      { by: 'b', dr: "{a} wants one apology to fix a fight that has been going since {since}. It doesn't work like that." },
+    ] },
   ],
 
   // ── the cold war ────────────────────────────────────────────────────
@@ -587,6 +658,11 @@ export default {
       { by: 'a', say: "Great. I'll sit at the other end." },
       { by: 'b', say: "Great. I'll sit at this one." },
       { by: 'b', dr: "Ever since {when}, {a} talks about me in the third person when I'm standing right there. I'm right there." },
+    ] },
+    { id: 'sco.l1', when: { history: 'long' }, turns: [
+      { beat: '{a} and {b} sit at opposite ends of the table. Nobody asks why any more.' },
+      { by: 'a', dr: "{b} and I haven't got on since {since}. The house has stopped trying to fix it." },
+      { by: 'b', dr: "I'm fine not talking to {a}. Honestly, it's easier for everybody." },
     ] },
   ],
 

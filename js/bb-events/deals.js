@@ -108,14 +108,19 @@ function _pitchPair(house, ctx) {
 /** @type {[RegExp, (m: RegExpMatchArray) => string][]} */
 const PROMISE_SAID = [
   [/my vote|a vote to keep/i, () => 'I had your vote'],
-  [/week of safety|safety/i, () => 'I was safe'],
+  [/week of safety|safety|told me I was safe/i, () => 'I was safe'],
+  [/never come after me/i, () => "you'd never come after me"],
+  [/coming off|the veto/i, () => "you'd use the veto on me"],
   [/only a pawn/i, () => 'I was only a pawn'],
   [/final two/i, () => 'we were going to the final two together'],
   [/jury together/i, () => "we'd go to the jury together"],
   [/^(.+) goes up$/i, m => `${m[1]} was going up`],
 ];
+// A voter's own word ('my vote, this week', above) is a promise THEY made: it is not one made to them, and a row
+// about it had the voter calling the nominee a liar for a vote the voter promised (the user, 2026-10-27)
+const madeToMe = m => m && m.type === 'promise' && !/^my vote/i.test(String(m.details?.promise || m.detail?.promise || ''));
 function promiseSaid(victim, liar, weekNum) {
-  const m = memoriesOf(victim).filter(x => x && x.subject === liar && x.type === 'promise').at(-1);
+  const m = memoriesOf(victim).filter(x => x && x.subject === liar && madeToMe(x)).at(-1);
   const d = m?.details || m?.detail || {};
   const text = String(d.promise || d.about || '');
   let told = 'you had my back';
@@ -127,8 +132,9 @@ function promiseSaid(victim, liar, weekNum) {
 
 function _brokenPromise(house, ctx) {
   for (const victim of _leastSeen(house)) {
+    const wk = ctx?.week?.num || 0;
     const liar = _others(house, victim).find(n =>
-      wasPromised(victim, n, ctx?.week?.num || 0) && (dislikes(victim, n) || isHunting(n, victim)));
+      memoriesOf(victim).some(m => m.subject === n && madeToMe(m) && memoryWeek(m) < wk) && (dislikes(victim, n) || isHunting(n, victim)));
     if (liar) return { victim, liar };
   }
   return null;
@@ -266,7 +272,12 @@ const votePitch = {
 
     if (lands) {
       api.addBond(pitcher, mark, 1.1);
+      // the voter keeps their own word (deals-vote-flip reads it this way round: the voter remembers the
+      // nominee they promised)...
       api.remember(mark, pitcher, 'promise', 2, { promise: 'my vote, this week' });
+      // ...and the nominee keeps the promise they were given, the way every other promise is stored (the one it
+      // was made TO remembers who made it), so a broken-promise row is the nominee's, about the vote
+      api.remember(pitcher, mark, 'promise', 2, { promise: 'a vote to keep me' });
     } else {
       api.addBond(pitcher, mark, -0.4);
       api.suspicion(mark, pitcher, 0.6);
@@ -416,7 +427,7 @@ const numbersCheck = {
     // A miscount is how blindsides happen, and the less strategic miscount more.
     if (short) api.suspicion(a, furthestFrom(a, _voters(house, ctx)) || b, 0.8);
     const scene = makeScene('talk.debrief', { a, b }, { ending: short ? 'shaky' : 'sure' }, [], _room(['bedroom', 'backyard', 'pantry'], ctx, a, b));
-    return { scene, players: [a, b], badgeText: 'COUNTING VOTES', badgeClass: 'blue' };
+    return { scene, players: [a, b], badgeText: 'LINING UP VOTES', badgeClass: 'blue' };
   },
 };
 

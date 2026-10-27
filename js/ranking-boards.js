@@ -23,7 +23,7 @@
 // `metadata.format`, and player.html refuses a board belonging to another show.
 // The array was just never filled with more than one thing.
 
-import { SHOWS, DEFAULT_FORMAT } from './shows.js';
+import { SHOWS, DEFAULT_FORMAT, familyOf } from './shows.js';
 
 /**
  * Where each show's board lives.
@@ -52,7 +52,8 @@ export const BOARD_FILES = {
 
 /** The board file for a show, or null if that show does not have one. */
 export function boardFile(format) {
-  return BOARD_FILES[format] || null;
+  // A spin-off is ranked on its family's board: All Stars wins are Drag Race wins.
+  return BOARD_FILES[format] || BOARD_FILES[familyOf(format)] || null;
 }
 
 /**

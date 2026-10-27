@@ -199,9 +199,17 @@ export function _tagSeasonDetail(detail, format = DEFAULT_FORMAT) {
  */
 export function _rebuildByShow(player) {
   const byShow = {};
+  // THE HALL OF FAME: every season she WON on a spin-off. An All Stars crown
+  // counts in her Drag Race career below like any other; this is what tells
+  // it apart from a first-time win.
+  player.hallOfFame = [];
   for (const det of player.seasonDetails || []) {
     const format = det.format || DEFAULT_FORMAT;
-    const bucket = (byShow[format] ||= { seasons: 0 });
+    if (SHOWS[format]?.spinOff && Number(det.placement) === 1) {
+      player.hallOfFame.push({ seasonId: det.seasonId || seasonId(format, det.season), format, season: det.season });
+    }
+    // Filed under the FAMILY: one Drag Race career, both series in it.
+    const bucket = (byShow[familyOf(format)] ||= { seasons: 0 });
     bucket.seasons++;
     // A show declares which fields it contributes; see SHOWS in js/shows.js.
     for (const [from, to] of (SHOWS[format]?.careerStats || [])) {

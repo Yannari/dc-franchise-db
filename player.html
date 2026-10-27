@@ -1854,6 +1854,20 @@ function renderPlayerProfile(fullPlayer) {
       `<span class="pp-hon ${cls || ''}"><i>${icon}</i>${_esc(text)}</span>`);
     if (player.wins > 1) add('👑', `${player.wins}-time winner`, 'is-gold');
     else if (player.wins === 1) add('🏆', 'Champion', 'is-gold');
+    // THE HALL OF FAME: an All Stars crown is counted as a win above, and this
+    // is what marks it as one — named by the series, one line per family.
+    {
+      const S = window.__SHOWS?.SHOWS || {};
+      const byFamily = {};
+      for (const h of player.hallOfFame || []) {
+        const sh = S[h.format];
+        if (!sh) continue;
+        (byFamily[sh.family || h.format] ||= []).push(`${sh.familyTab || sh.name} ${h.season}`);
+      }
+      for (const [fam, runs] of Object.entries(byFamily)) {
+        add('🌟', `${S[fam]?.name || ''} Hall of Fame · ${runs.join(', ')}`, 'is-gold');
+      }
+    }
     if (best === 2) add('🥈', 'Runner-up', 'is-silver');
     if (player.totalSeasons >= 3) add('🔁', `${player.totalSeasons}-time player`, 'is-purple');
     else if (player.totalSeasons === 2) add('🔁', 'Returnee', 'is-purple');

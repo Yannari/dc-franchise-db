@@ -738,6 +738,18 @@ export function familyMembers(format) {
 }
 
 /**
+ * Where a season sits in its FAMILY's run, for ordering only. Drag Race and its
+ * All Stars number separately, so their numbers cannot be compared: a main
+ * season is its number, and spin-off season N airs just after the flagship it
+ * waited for (`spinOff.after`) and one a year from there — the calendar's rule.
+ */
+export function seasonOrder(format, season) {
+  const n = Number(season) || 0;
+  const spin = SHOWS[format]?.spinOff;
+  return spin ? (Number(spin.after) || 1) + n - 1 + 0.5 : n;
+}
+
+/**
  * Which show a season ROW belongs to. A row is its own `format`, except the
  * one shape written before All Stars had an entry of its own:
  * `{ format: 'drag-race', allStars: true }` is a Drag Race All Stars season.

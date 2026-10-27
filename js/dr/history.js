@@ -15,7 +15,7 @@
 // PURE. The fetching lives in js/dr-run.js; this only reads what it is given,
 // so it can be tested against a real stored season.
 
-import { SHOWS, DRAG_FORMAT } from '../shows.js';
+import { SHOWS, DRAG_FORMAT, seasonOrder } from '../shows.js';
 
 /** The per-episode rows, whichever shape of document this is. */
 function episodesOf(doc) {
@@ -80,9 +80,7 @@ export function seasonFromDoc(doc) {
    for (the registry's `spinOff.after`) and one a year from there — the
    franchise calendar's own rule. */
 export function airOrder(s) {
-  const n = Number(s?.season) || 0;
-  const spin = SHOWS[s?.format]?.spinOff;
-  return spin ? (Number(spin.after) || 1) + n - 1 + 0.5 : n;
+  return seasonOrder(s?.format, s?.season);
 }
 
 /** Every stored season, newest first — a queen who played twice is what she is NOW. */

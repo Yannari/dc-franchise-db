@@ -12,7 +12,7 @@
 // Rendered into the Legacy tab by renderRankingsUpdate().
 
 import { extractSeasonTemplate, buildBigBrotherSeasonDocument } from './stats-export.js';
-import { SHOWS, parseSeasonRef } from './shows.js';
+import { SHOWS, parseSeasonRef, familyOf } from './shows.js';
 import { boardFile } from './ranking-boards.js';
 
 // The tool was written against current-season.html, whose .btn is white-on-dark.
@@ -256,6 +256,7 @@ function _ruReset() {
  * and falls back to the standard five.
  */
 function _ruEmptyBoard(format) {
+  format = familyOf(format);   // one board per family
   return {
     metadata: {
       format,
@@ -920,6 +921,11 @@ export const RU_SHOW = {
     }),
   },
 };
+// A spin-off is priced by its family's rubric and lands on its family's board:
+// an All Stars crown is a Drag Race crown, ranked against the same currencies.
+for (const fmt of Object.keys(SHOWS)) {
+  if (!RU_SHOW[fmt] && RU_SHOW[familyOf(fmt)]) RU_SHOW[fmt] = RU_SHOW[familyOf(fmt)];
+}
 
 /**
  * Relabel the two competition columns for the show being ranked.

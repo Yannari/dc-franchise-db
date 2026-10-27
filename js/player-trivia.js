@@ -33,6 +33,7 @@
 
 import { airKey, airLabel } from './franchise-calendar.js';
 import { stateOf } from './life-events.js';
+import { SHOWS, showName, showWords, familyMembers, seasonOrder } from './shows.js';
 
 /** Minimum comparison pool before a superlative means anything. */
 const MIN_POOL = 5;
@@ -215,9 +216,11 @@ export function playerTriviaFor(slug, careers = [], format = 'total-drama', opts
         + `following ${joinList(before.slice(-3))}.`);
   };
 
-  /** The earliest season whose row satisfies `ok`, or null. */
+  /** The earliest season whose row satisfies `ok`, or null. In AIR order:
+   *  a career can hold two series that number separately (All Stars 1 aired
+   *  after Drag Race 3), so the bare numbers are not comparable. */
   const seasonWhere = (c, ok) => {
-    const hits = (c.details || []).filter(ok).map(d => d.season);
+    const hits = (c.details || []).filter(ok).map(d => seasonOrder(d.format, d.season));
     return hits.length ? Math.min(...hits) : null;
   };
 
@@ -236,9 +239,48 @@ export function playerTriviaFor(slug, careers = [], format = 'total-drama', opts
   }
   // The season they won their SECOND, which is the one this fact is about.
   nthAmong(c => {
-    const wins = (c.details || []).filter(won).map(d => d.season).sort((a, b) => a - b);
+    const wins = (c.details || []).filter(won).map(d => seasonOrder(d.format, d.season)).sort((a, b) => a - b);
     return wins.length > 1 ? wins[1] : null;
   }, 'win twice');
+
+  // ── the Hall of Fame ──
+  //
+  // An All Stars crown is a legitimate win and is counted as one everywhere
+  // above. What sets it apart is the real show's own distinction: its winner is
+  // inducted into the Hall of Fame. Said once per induction, with where she
+  // stood before it — and the ordinal only once there are enough inductees for
+  // "the first" to mean something.
+  const spin = familyMembers(format).find(f => f !== format && SHOWS[f].spinOff);
+  if (spin) {
+    const show = showName(format);
+    const tab = SHOWS[spin].familyTab;
+    const who = showWords(format).player;
+    const inducted = d => d.format === spin && Number(d.placement) === 1;
+    const mainRuns = (me.details || []).filter(d => (d.format || format) === format)
+      .sort((a, b) => a.season - b.season);
+    for (const d of (me.details || []).filter(inducted).sort((a, b) => a.season - b.season)) {
+      const wonFirst = mainRuns.find(x => Number(x.placement) === 1);
+      const first = mainRuns[0];
+      out.push(wonFirst
+        ? `${name} won ${show} ${wonFirst.season} and was later inducted into the Hall of Fame on ${tab} ${d.season}.`
+        : first
+          ? `${name} was inducted into the ${show} Hall of Fame on ${tab} ${d.season}, `
+            + `after placing ${nth(first.placement)} on ${show} ${first.season}.`
+          : `${name} was inducted into the ${show} Hall of Fame on ${tab} ${d.season}.`);
+    }
+    const set = careers
+      .map(c => ({ c, when: seasonWhere(c, inducted) }))
+      .filter(x => x.when != null)
+      .sort((a, b) => a.when - b.when || String(a.c.name).localeCompare(b.c.name));
+    const i = set.findIndex(x => x.c.id === slug);
+    if (set.length >= MIN_ORDINAL_POOL && i !== -1) {
+      const before = set.slice(0, i).map(x => x.c.name);
+      out.push(i === 0
+        ? `${name} was the first ${who} inducted into the ${show} Hall of Fame.`
+        : `${name} was the ${ordinal(i + 1)} ${who} inducted into the ${show} Hall of Fame, `
+          + `following ${joinList(before.slice(-3))}.`);
+    }
+  }
 
   // ── the only one ──
   //

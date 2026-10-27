@@ -291,3 +291,13 @@ printed beside its chance line. Every real defect on this show came from that
 or from printing output and reading it; not one came from a passing suite going
 red. The known-hot number is domination (top queen takes ~50% of maxi wins vs
 ~30% on the real show) — documented, diagnosed, and a design decision.
+
+## Secret Story (`secret-story`)
+
+Its own show (prefix `ss`) on the Big Brother engine, under Big Brother's site tab
+but with its OWN career, records and board (`careerShowOf`, ADDING-A-SHOW §23.8).
+No HOH, no veto, no jury: the confessional nominates, the public eliminates and
+crowns. Never print houseguest / HOH / veto / jury / evicted over it. A newbie's
+secret becomes canon on the character (write-once `roster.secret`). Design and
+the four-part plan: `docs/superpowers/specs/2026-10-27-secret-story-show-design.md`;
+research of all 14 French seasons: `docs/research/secret-story-france.md`.

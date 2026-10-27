@@ -1,4 +1,4 @@
-import { SHOWS, showName, DEFAULT_FORMAT, engineOf, seasonRowFormat } from './shows.js';
+import { SHOWS, showName, DEFAULT_FORMAT, engineOf, seasonRowFormat, BB_FORMAT, SS_FORMAT } from './shows.js';
 // The castle's own state module. `js/tr/state.js` imports js/alumni.js, which
 // imports js/shows.js — both leaves — so this adds no cycle and core stays
 // importable from anywhere. It is here so that the ONE pair of functions every
@@ -2108,9 +2108,9 @@ export function seasonFormat(source) {
   /* SECRET STORY USED TO BE A BIG BROTHER THEME (`theme: 'secret-story'`,
      knob `bbSecretStory: 'on'`). A config from then is a Secret Story season,
      read here for the same reason as the All Stars flag above. */
-  if (raw === 'big-brother' && source && typeof source === 'object'
-      && (source.theme === 'secret-story' || source.bbSecretStory === 'on')) {
-    return 'secret-story';
+  if (raw === BB_FORMAT && source && typeof source === 'object'
+      && (source.theme === SS_FORMAT || source.bbSecretStory === 'on')) {
+    return SS_FORMAT;
   }
   return raw;
 }

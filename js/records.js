@@ -23,7 +23,7 @@
 //
 // Pure: documents in, records out. No fetch, no DOM.
 import { parseBio } from './bio.js';
-import { familyOf } from './shows.js';
+import { careerShowOf } from './shows.js';
 
 const DEFAULT_FORMAT = 'total-drama';
 const fmtOf = d => d?.format || DEFAULT_FORMAT;
@@ -32,10 +32,11 @@ const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
 const _slug = n => String(n || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 /** Every season detail that belongs to this show. `all` keeps both.
- *  A show's career takes its spin-offs too: Drag Race's includes All Stars. */
+ *  A show's career takes its spin-offs too: Drag Race's includes All Stars,
+ *  but Big Brother's does not include Secret Story (careerShowOf). */
 function detailsOf(player, format) {
   const ds = player?.seasonDetails || [];
-  return format === 'all' ? ds : ds.filter(d => fmtOf(d) === format || familyOf(fmtOf(d)) === format);
+  return format === 'all' ? ds : ds.filter(d => fmtOf(d) === format || careerShowOf(fmtOf(d)) === format);
 }
 
 /**

@@ -31,6 +31,7 @@ import { intelHtml, INTEL_CSS } from './intel.js';
 import { BBX_COMP_CSS } from './comp-field.js';
 import { titleScreen } from './titles.js';
 import { seasonId } from '../shows.js';
+import { seasonFormat } from '../core.js';
 import { liveGL } from '../vp-td-ep/glplate.js';
 import { conversationsOf, nextConv, houseMapHtml, houseFeedHtml, HM_CSS } from './housemap.js';
 
@@ -75,7 +76,7 @@ const remember = R => watchSave(R?.fp, e => { e.s[R.si] = { i: R.idx, w: R.map ?
 const hashOf = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7).toString(36);
 const episodeKey = (row, steps) => {
   const sc = (typeof globalThis !== 'undefined' && globalThis.seasonConfig) || {};
-  return `${seasonId('big-brother', sc.seasonNumber || row.seasonNumber || 1)}|${row.num}|${hashOf(steps.map(S => `${S.id}:${S.steps?.length}:${S.steps?.[0]?.t || ''}`).join('|'))}`;
+  return `${seasonId(seasonFormat(sc), sc.seasonNumber || row.seasonNumber || 1)}|${row.num}|${hashOf(steps.map(S => `${S.id}:${S.steps?.length}:${S.steps?.[0]?.t || ''}`).join('|'))}`;
 };
 let lastBuilt = null;   // the Big Brother episode the viewer last built: its key and its screens' ids
 /** The screen to open this episode on: where the viewer left it (vp-ui.js openVisualPlayer). */
@@ -428,7 +429,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   // Every episode opens on the titles and closes on the closing (vp-bb-ep/titles.js),
   // both rendered in Blender with this season's cast, both skippable.
   const sc = (typeof globalThis !== 'undefined' && globalThis.seasonConfig) || {};
-  const key = seasonId('big-brother', sc.seasonNumber || row.seasonNumber || 1);
+  const key = seasonId(seasonFormat(sc), sc.seasonNumber || row.seasonNumber || 1);
   // the people who have been in the house by the start of this episode, evicted or not: never a
   // Rivals latecomer before they walk in, never the twin nobody knows exists
   const lateNow = new Set((row.acts || []).find(a => a?.type === 'rivals-open')?.arrived || []);

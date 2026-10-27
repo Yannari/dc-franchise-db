@@ -1,5 +1,5 @@
 // js/finale.js - Finale simulation: final challenge, jury vote, fan campaign, fan vote
-import { gs, gsCheckpoints, seasonConfig, players, repairGsSets, snapshotGs, seasonFormat } from './core.js';
+import { gs, gsCheckpoints, seasonConfig, players, repairGsSets, snapshotGs, seasonFormat, engineFormat } from './core.js';
 import { engagement } from './ratings.js';
 import { audienceBoard } from './audience.js';
 import { _idbPut } from './savestate.js';
@@ -2631,7 +2631,7 @@ export function _juryLayerRead(juror, finalist) {
  * "kept getting targeted and kept coming back".
  */
 function _juryCompRecord(name) {
-  if (seasonConfig.format === 'big-brother') {
+  if (engineFormat(seasonConfig) === 'big-brother') {
     const st = gs.bb?.stats?.[name] || {};
     return {
       wins: (Number(st.hohWins) || 0) + (Number(st.vetoWins) || 0)
@@ -2706,7 +2706,7 @@ function _juryCompRecord(name) {
 const JURY_COMP_STEP = 1.1;
 const JURY_COMP_CAP = 6;
 function _juryCompValue(wins) {
-  if (seasonConfig.format === 'big-brother') {
+  if (engineFormat(seasonConfig) === 'big-brother') {
     // One is not a résumé; five is. See the calibration note above.
     return Math.min(JURY_COMP_CAP, Math.max(0, wins - 1) * JURY_COMP_STEP);
   }

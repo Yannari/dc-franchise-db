@@ -6,9 +6,9 @@
 // show". The design (memory: project_secret_story_design) and the format, as
 // the classic French seasons ran it:
 //
-//   · every houseguest moves in with a SECRET, and the house is told there are
+//   · every housemate moves in with a SECRET, and the house is told there are
 //     secrets but not whose. Find somebody's and you take their money.
-//   · each houseguest starts with a kitty (here €10,000). Pressing the buzzer
+//   · each housemate starts with a kitty (here €10,000). Pressing the buzzer
 //     and naming a secret costs a stake: right, and you take the target's whole
 //     kitty and the secret is out; wrong, and the stake goes to the person you
 //     wrongly accused, in front of everybody.
@@ -19,20 +19,23 @@
 //   · the house is run by The Voice, who speaks from everywhere and nowhere.
 //
 // WHICH SECRETS. Real ones first, never invented biography (CLAUDE.md, and the
-// continuity rule "quote-or-it-is-not-canon"): two houseguests the roster says
-// are siblings, a couple, exes; a houseguest who has already won or played this
+// continuity rule "quote-or-it-is-not-canon"): two housemates the roster says
+// are siblings, a couple, exes; a housemate who has already won or played this
 // franchise. Everybody the roster says nothing about is handed a role BY THE
 // VOICE, which is what the show itself did (its fake couples and missions): a
 // fake couple, a pair of fake siblings, a secret mission. None of those claims
 // anything about the person; they are jobs.
-import { gs, players, seasonConfig, kinshipPairs } from '../core.js';
+import { gs, players, seasonConfig, kinshipPairs, seasonFormat } from '../core.js';
+import { SS_FORMAT } from '../shows.js';
 import { pStats } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { careerOf } from '../franchise-meta.js';
 
 export const KITTY_START = 10000;
 export const BUZZ_STAKE = 5000;
-export const ssOn = () => seasonConfig?.bbSecretStory === 'on';
+// The show, not a knob: a Secret Story season (or an old Big Brother one that
+// ran the theme, which seasonFormat reads as Secret Story).
+export const ssOn = () => seasonFormat(seasonConfig) === SS_FORMAT;
 
 const st = (n, k) => { try { return Number(pStats(n)?.[k]) || 5; } catch { return 5; } };
 const genderOf = n => (players || []).find(p => p.name === n)?.gender || null;
@@ -110,7 +113,7 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
   }
   // A role, not a biography: anybody left gets a mission from The Voice, each one different (the
   // show's own missions: get somebody nominated, fake a rivalry, report on the house). Some name a
-  // second houseguest, who is in on nothing.
+  // second housemate, who is in on nothing.
   const others = n => room.filter(x => x !== n);
   const MISSIONS = [
     n => 'I am The Voice\'s double agent, and I report on this house',
@@ -145,7 +148,7 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     type: 'ss-secrets', week: 1, secret: true,
     secrets: secrets.map(s => ({ holders: [...s.holders], text: s.text, kind: s.kind })),
     kitty: KITTY_START, stake: BUZZ_STAKE,
-    beats: [{ text: `Every houseguest moves in with a secret and ${KITTY_START.toLocaleString()} euros in the kitty.`, players: room.slice(0, 4), badgeText: 'THE SECRETS', badgeClass: 'gold', part: 'rules' }],
+    beats: [{ text: `Every housemate moves in with a secret and ${KITTY_START.toLocaleString()} euros in the kitty.`, players: room.slice(0, 4), badgeText: 'THE SECRETS', badgeClass: 'gold', part: 'rules' }],
   };
 }
 
@@ -269,6 +272,40 @@ export function secretStoryPublicVote({ nominees = [], rng = Math.random } = {})
   const percents = Object.fromEntries(nominees.map(n => [n, Math.round((s[n] / total) * 1000) / 10]));
   const evicted = nominees.slice().sort((a, b) => percents[a] - percents[b])[0];
   return { evicted, percents, saved: nominees.filter(n => n !== evicted) };
+}
+
+/**
+ * What a Secret Story season publishes about the hunt: each housemate's
+ * secret and what became of it, the buzzes, the kitty, and the secrets board.
+ * Pure: reads the state handed in (the export passes gs.bb.secretStory).
+ *
+ * A secret is KEPT when nobody found it and its holder lasted to the end
+ * (`finalists`): a secret taken out of the house by an elimination was never
+ * tested to the semi-final.
+ */
+export function secretStoryExport(state, { finalists = [] } = {}) {
+  const secrets = (state?.secrets || []).map(s => ({
+    holders: [...(s.holders || [])], text: s.text, kind: s.kind,
+    found: !!s.found, foundBy: s.foundBy || null, week: s.week ?? null,
+  }));
+  const names = new Set([...Object.keys(state?.kitty || {}), ...secrets.flatMap(s => s.holders)]);
+  const buzzes = state?.buzzes || [];
+  const players = {};
+  for (const n of names) {
+    const mine = secrets.find(s => s.holders.includes(n)) || null;
+    players[n] = {
+      secret: mine?.text || null,
+      secretKind: mine?.kind || null,
+      foundBy: mine?.found ? mine.foundBy : null,
+      foundWeek: mine?.found ? mine.week : null,
+      secretKept: mine && !mine.found && finalists.includes(n) ? 1 : 0,
+      secretsFound: secrets.filter(s => s.found && s.foundBy === n).length,
+      buzzesRight: buzzes.filter(b => b.by === n && b.right).length,
+      buzzesWrong: buzzes.filter(b => b.by === n && !b.right).length,
+      kitty: Number(state?.kitty?.[n]) || 0,
+    };
+  }
+  return { players, secrets };
 }
 
 /** The public's final vote, among the finalists. The winner takes their kitty. */

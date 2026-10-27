@@ -5,14 +5,14 @@
 // the knob `bbSecretStory: 'on'` is what changes the game (js/bb/secret-story.js
 // and its hooks in js/bb/week.js and js/bb-finale.js):
 //
-//   night one   every houseguest has a secret and a kitty; the house is told
+//   night one   every housemate has a secret and a kitty; the house is told
 //               there are secrets, never whose
 //   every week  an immunity competition; Diary Room nominations, one sex
 //               against the other; the buzzer; the PUBLIC evicts
 //   finale      the public crowns the winner, who takes their kitty
 //
 // No Head of Household, no veto, no jury. The secrets are real where the roster
-// has something real (a tie between two houseguests, a past season), and a role
+// has something real (a tie between two housemates, a past season), and a role
 // handed out by The Voice where it does not (a fake couple, fake siblings, a
 // mission): never invented biography.
 //
@@ -32,13 +32,13 @@ export default {
   },
 
   primer: {
-    what: 'Secret Story. Every houseguest walks in carrying a secret and a kitty of 10,000 euros. Find somebody '
-      + 'else\'s secret and their money is yours. There is no Head of Household here, no veto and no jury: '
-      + 'the house nominates, and the public decides who leaves and who wins.',
-    who: 'The Voice. Nobody has ever seen it. It speaks from every room at once, calls houseguests to the confessional, '
+    what: 'Secret Story. Every housemate walks in carrying a secret and a kitty of 10,000 euros. Find somebody '
+      + 'else\'s secret and their money is yours. The house nominates in the confessional, '
+      + 'and the public decides who leaves and who wins.',
+    who: 'The Voice. Nobody has ever seen it. It speaks from every room at once, calls housemates to the confessional, '
       + 'sets the rules and enforces them, and it knows every secret in the building.',
     rules: [
-      'Every houseguest has a secret, and the house is told only that the secrets exist. Some are real, two people the '
+      'Every housemate has a secret, and the house is told only that the secrets exist. Some are real, two people the '
         + 'roster says are related or together, somebody who has played this franchise before. The rest are roles The '
         + 'Voice hands out: a fake couple, fake siblings, a secret mission.',
       'Press the buzzer and name somebody\'s secret, staking 5,000 euros of your kitty. Right, and you take their whole '
@@ -46,7 +46,7 @@ export default {
       'Every week there is an immunity competition. The winner cannot be nominated.',
       'In the confessional the house nominates: one week the women name two men, the next the men name two women. The '
         + 'two most named face the public.',
-      'The public evicts, and on the last night the public chooses the winner, who leaves with their kitty.',
+      'The public eliminates, and on the last night the public chooses the winner, who leaves with their kitty.',
     ],
     watch: 'Watch who presses the buzzer and who never does. A wrong buzz tells the whole house who you suspect, and the '
       + 'public is watching every bit as closely as you are.',
@@ -60,7 +60,7 @@ export default {
     },
     announce: [
       'This is The Voice. {detail}',
-      'Houseguests, The Voice has a new rule for you. {detail}',
+      'Housemates, The Voice has a new rule for you. {detail}',
       'The Voice asks everybody to gather in the living room. {detail}',
       'Listen carefully. {detail}',
     ],
@@ -73,7 +73,7 @@ export default {
       open: {
         neutral: [
           'This is The Voice. Week {week} begins. Every secret in this house is still where it was last night.',
-          'Good morning, houseguests. Week {week}. The buzzer is in its usual place.',
+          'Good morning, housemates. Week {week}. The buzzer is in its usual place.',
           'This is The Voice. Week {week}. Some of you slept well. Not the ones with the best secrets.',
           'Week {week}. The Voice reminds you that a kitty does not grow by itself.',
         ],
@@ -100,15 +100,15 @@ export default {
       },
       veto: {
         neutral: [
-          'There is no veto in this house. The Voice decides the rules, and the public decides the rest.',
-          'No medallion will save you here.',
-          'The Voice reminds you that nothing comes off the block in this house.',
+          'The Voice decides the rules, and the public decides the rest.',
+          'Nobody can save you from the nominations but the public.',
+          'The Voice reminds you that a nomination in this house is final.',
           'Nominations stand. They always stand.',
         ],
         hostile: [
           'Nominations stand, as they always have.',
-          'There is no way off the block but the public.',
-          'The Voice has never once taken anybody off the block.',
+          'There is no way out of a nomination but the public.',
+          'The Voice has never once cancelled a nomination to be kind.',
           'Nothing is changing tonight. Only the public can change it.',
         ],
       },
@@ -116,14 +116,14 @@ export default {
         neutral: [
           'The public has chosen. {evicted} leaves the house.',
           '{evicted}, the public has voted, and you must leave. Your secret goes with you, or it already went.',
-          'This is The Voice. {evicted} is evicted by the public.',
+          'This is The Voice. {evicted} is eliminated by the public.',
           '{evicted} leaves. The kitty stays where it was.',
         ],
         hostile: [
           '{evicted} leaves. The public was never fooled.',
           'The country has spoken: {evicted}. The Voice was not surprised.',
           '{evicted}. One fewer secret in the house tonight.',
-          'This is The Voice. {evicted} is evicted, and the house is smaller and quieter for it.',
+          'This is The Voice. {evicted} is eliminated, and the house is smaller and quieter for it.',
         ],
       },
       finale: {

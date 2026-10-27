@@ -17,7 +17,7 @@ import { extractEvents } from './events.js';
 import { buildEpisodeFeed } from './feed.js';
 import { addEpisodePosts, hasEpisode, keepOnlyEpisodes, storeOf, postsForEpisode } from './store.js';
 import { rewriteEpisode } from './writer.js';
-import { seasonRounds } from '../shows.js';
+import { seasonRounds, engineOf } from '../shows.js';
 import { packFor } from './packs/index.js';
 
 /**
@@ -53,7 +53,7 @@ export function episodeRecords(gs, format) {
   // only the week ledger meant the one episode everybody watches for — the
   // jury vote, the winner, the half-million — was the single episode the
   // audience had no reaction to at all.
-  if (format === 'big-brother') {
+  if (engineOf(format) === 'big-brother') {
     // ── ANY WEEK THE LEDGER DOES NOT HAVE, NOT JUST THE FINALE ──
     //
     // This read `isFinale` only, because the finale was the one known episode

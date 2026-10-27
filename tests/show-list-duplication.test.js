@@ -124,7 +124,7 @@ const TERNARY_BACKLOG = {
   'js/cast-ui.js':                2,
   'js/run-ui.js':                 0,
   'js/social/events.js':          1,
-  'js/wiki-view.js':              4,
+  'js/wiki-view.js':              3,
   'player.html':                  1,
 };
 
@@ -213,7 +213,7 @@ const COMPARISON_BACKLOG = {
   'js/social/archive.js':         3,
   'js/social/events.js':          2,
   'js/social/live.js':            1,
-  'js/stats-export.js':           5,
+  'js/stats-export.js':           4,
   // 1 -> 2 for the castle's transcript (Plan 8, Task 6). This file already
   // hands a Big Brother row to its own writer in the same shape and for the
   // same reason: a show's TRANSCRIPT is not a field the registry can declare,
@@ -242,7 +242,7 @@ const COMPARISON_BACKLOG = {
   'js/vp-screens.js':             8,
   'js/vp-ui.js':                  1,
   'js/wiki-fill-run.js':          0,
-  'js/wiki-view.js':              7,
+  'js/wiki-view.js':              6,
   'player.html':                  4,
   'rankings.html':                1,
   'tools/backfill_formats.mjs':   2,

@@ -50,3 +50,23 @@ describe('Secret Story in the registry', () => {
     expect(seasonFormat({ format: 'big-brother' })).toBe('big-brother');
   });
 });
+
+// Careers, records and boards: Secret Story keeps its own; All Stars shares Drag Race's.
+import { careerShowOf } from '../js/shows.js';
+import { boardFile } from '../js/ranking-boards.js';
+import { RU_SHOW } from '../js/rankings-update.js';
+
+describe('where Secret Story is filed', () => {
+  it('keeps its own career, unlike a spin-off', () => {
+    expect(careerShowOf('secret-story')).toBe('secret-story');
+    expect(careerShowOf('drag-race-all-stars')).toBe('drag-race');
+    expect(careerShowOf('big-brother')).toBe('big-brother');
+  });
+  it('has its own board and its own rubric, not Big Brother\'s', () => {
+    expect(boardFile('secret-story')).toBe('rankings_ss.json');
+    expect(boardFile('drag-race-all-stars')).toBe('rankings_dr.json');
+    expect(RU_SHOW['secret-story']).not.toBe(RU_SHOW['big-brother']);
+    expect(RU_SHOW['secret-story'].read({ ss: { secretsFound: 2, secretKept: 1 }, bb: { hohWins: 3, timesNominated: 4 } }))
+      .toMatchObject({ comp1: 2, comp2: 1, comp3: 3, social: 4 });
+  });
+});

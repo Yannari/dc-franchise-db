@@ -21,7 +21,7 @@ import { CH_MARKS } from './marks.js';
 import { marksOf, plateKey, lineup, hostSide, sizeAt, teamColour } from './ground.js';
 import { BEAT_PLAYS } from './daily-play.js';
 import { episodeScenes } from '../ch/transcript.js';
-import { SHOWS } from '../shows.js';
+import { SHOWS, familyOf } from '../shows.js';
 import { dailyPlay, ARENA_PLAY } from './play.js';
 import { DAILY_VOICE, ARENA_VOICE, speak, tjLine } from './voices.js';
 import { pronouns } from '../players.js';
@@ -781,7 +781,7 @@ const SHOW_PLATE = { 'total-drama': 'assets/sets/td/survival-island/campfire-nig
   'the-circle': 'assets/sets/circle/studio.webp', 'the-challenge': 'assets/sets/ch/arena-night.webp' };
 const ord = n => { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
 function introCard(n, i) {
-  const career = (i.career || []).map(c => ({ where: c.where, show: SHOWS[c.format]?.name || null, plate: SHOW_PLATE[c.format] || null,
+  const career = (i.career || []).map(c => ({ where: c.where, show: SHOWS[c.format]?.name || null, plate: SHOW_PLATE[c.format] || SHOW_PLATE[familyOf(c.format)] || null,
     result: c.winner ? 'WON' : c.finalist ? `Finalist${c.place ? `, ${ord(c.place)}` : ''}` : c.place ? `${ord(c.place)}${c.total ? ` of ${c.total}` : ''}` : 'Played',
     winner: !!c.winner, wins: c.wins || 0 }));
   const plates = [...new Set([SHOW_PLATE[i.origin], ...career.map(c => c.plate)].filter(Boolean))];

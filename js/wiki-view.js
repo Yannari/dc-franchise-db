@@ -30,7 +30,7 @@ import { airLabel, ageAt, airKey } from './franchise-calendar.js';
 import { joinOrigin } from './bio.js';
 
 import { RESULT_LABELS } from './dr/grid.js';
-import { SHOWS, DEFAULT_FORMAT, seasonId, showName, showShort, showIcon, showAccent, showWords, exitVerbs, DRAG_FORMAT, familyOf }
+import { SHOWS, DEFAULT_FORMAT, seasonId, showName, showShort, showIcon, showAccent, showWords, exitVerbs, DRAG_FORMAT, familyOf, engineOf }
   from './shows.js';
 
 // `short` is the tab label — "TD14", "BB1". These came out of a copy of the
@@ -101,7 +101,7 @@ function _linker(dossier, root, faces = null) {
   for (const l of dossier.seasonLinks || []) addSeason(l.title, l.id);
   for (const c of dossier.career || []) {
     for (const x of c.seasons || []) {
-      const id = x.seasonId || (c.format === 'big-brother' ? `bb-${x.season}` : x.season);
+      const id = x.seasonId || (c.format && c.format !== DEFAULT_FORMAT ? seasonId(c.format, x.season) : x.season);
       addSeason(x.title, id);
       addSeason(`${meta(c.format).name} ${x.season}`, id);
     }
@@ -186,7 +186,7 @@ function _linker(dossier, root, faces = null) {
   /** A season, always as a link when the page knows where it lives. */
   const season = (x, fmt) => {
     const label = x.title || `${meta(fmt || x.format).name} ${x.season}`;
-    const id = x.seasonId || (fmt === 'big-brother' ? `bb-${x.season}` : x.season);
+    const id = x.seasonId || (fmt && fmt !== DEFAULT_FORMAT ? seasonId(fmt, x.season) : x.season);
     return `<a href="${seasonHref(id)}">${esc(label)}</a>`;
   };
 
@@ -269,7 +269,7 @@ function infobox(dossier, show, root, L) {
     ['Best finish', show.best < 99 ? ordinal(show.best) : ''],
     ['Wins', show.wins ? String(show.wins) : ''],
   ];
-  if (show.format === 'big-brother') {
+  if (engineOf(show.format) === 'big-brother') {
     careerPairs.push(['HOH wins', t.hohWins ? String(t.hohWins) : '']);
     careerPairs.push(['Veto wins', t.vetoWins ? String(t.vetoWins) : '']);
     // Named in full because "BB wins" reads as wins of Big Brother.
@@ -332,7 +332,7 @@ function infobox(dossier, show, root, L) {
     ];
     // Each show counts its own competitions, and neither one's words fit the
     // other: a camp has no veto and a house has no immunity idol.
-    if (show.format === 'big-brother') {
+    if (engineOf(show.format) === 'big-brother') {
       pairs.push(['HOH wins', bb.hohWins ? String(bb.hohWins) : '']);
       pairs.push(['Veto wins', bb.vetoWins ? String(bb.vetoWins) : '']);
       pairs.push(['Block Buster wins', bb.blockBusterWins ? String(bb.blockBusterWins) : '']);
@@ -353,7 +353,7 @@ function infobox(dossier, show, root, L) {
     pairs.push(['Showmance', s.showmance ? L.person(s.showmance) : '']);
     // What a real infobox calls Days. Counted in rounds, because rounds are
     // what this simulator measures — a day count would be invented.
-    pairs.push([show.format === 'big-brother' ? 'Weeks' : 'Episodes', rounds ? String(rounds) : '']);
+    pairs.push([engineOf(show.format) === 'big-brother' ? 'Weeks' : 'Episodes', rounds ? String(rounds) : '']);
     return rowsOf(pairs);
   };
 
@@ -600,7 +600,7 @@ function lead(dossier, show, root, L) {
     const name = esc(dossier.name);
     const first = name.split(/\s+/)[0];
 
-    const comps = show.format === 'big-brother'
+    const comps = engineOf(show.format) === 'big-brother'
       ? (bb.hohWins || 0) + (bb.vetoWins || 0) + (bb.blockBusterWins || 0)
       : (rec.challengeWins || 0) + (rec.tr?.missionsWon || 0);
     /* THE SHOW'S OWN WORD, not the other-of-two. A two-way ternary had every
@@ -1023,7 +1023,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [], face
   // The shape the reference pages use: "The Mad House 7" as a heading, and
   // everything about that season underneath it. A returnee gets one of these
   // per season, so their two games are never interleaved.
-  const isHouse = show.format === 'big-brother';
+  const isHouse = engineOf(show.format) === 'big-brother';
   // `isHouse` still gates the BIG BROTHER-ONLY columns below — have-nots, the
   // HOH/veto totals row — which are features of that game and not vocabulary.
   // Words are a different question, and answering it with the same boolean is

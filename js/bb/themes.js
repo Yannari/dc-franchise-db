@@ -19,7 +19,8 @@
 // The descriptor carries no house vocabulary in its STRUCTURE (acts are indexed
 // by episode, twists by catalog id), so a Total Drama theme later needs content
 // rather than a second engine.
-import { gs, seasonConfig, TWIST_CATALOG, twistModeClashes } from '../core.js';
+import { gs, seasonConfig, TWIST_CATALOG, twistModeClashes, seasonFormat, engineFormat } from '../core.js';
+import { SS_FORMAT } from '../shows.js';
 import { stableRng } from './knowledge.js';
 
 /** The accent the reader uses when a season has no theme. */
@@ -59,7 +60,9 @@ export const BB_THEMES = {
   [SECRET_STORY.id]: SECRET_STORY,
 };
 
-export const THEME_LIST = Object.keys(BB_THEMES);
+// Secret Story's descriptor stays in BB_THEMES (rows stamped with its id are read
+// by themeById), but it is a show now, not a theme anybody picks for Big Brother.
+export const THEME_LIST = Object.keys(BB_THEMES).filter(id => BB_THEMES[id] !== SECRET_STORY);
 
 export function themeById(id) {
   return (id && BB_THEMES[id]) || null;
@@ -73,7 +76,11 @@ export function themeById(id) {
  * a beach should start quoting an AI.
  */
 export function currentTheme() {
-  if (seasonConfig?.format !== 'big-brother') return null;
+  if (engineFormat(seasonConfig) !== 'big-brother') return null;
+  // SECRET STORY IS A SHOW NOW, NOT A PICK: its season always wears its own
+  // descriptor (the Voice, the palette, the knob that turns the hunt on), and
+  // no Big Brother theme can be put over it.
+  if (seasonFormat(seasonConfig) === SS_FORMAT) return SECRET_STORY;
   // ── A SEASON IN PROGRESS IS THE THEME IT INSTALLED, NOT THE ONE IN THE BOX ──
   //
   // `seasonConfig.theme` is a PICKER; `gs.bb.theme` is what is actually running.

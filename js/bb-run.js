@@ -14,7 +14,7 @@
 // `js/episode.js` is not touched and not called. Total Drama's rules are not
 // involved in a Big Brother week.
 
-import { gs, seasonConfig, seasonFormat, resolveTwistSchedule, TWIST_CATALOG, plainText } from './core.js';
+import { gs, seasonConfig, seasonFormat, engineFormat, resolveTwistSchedule, TWIST_CATALOG, plainText } from './core.js';
 // Imported rather than taken off `window`: main.js spreads the players module
 // onto the global scope, which works in the browser and nowhere else, so a
 // headless render of this transcript would throw on the first pronoun.
@@ -52,8 +52,8 @@ export { BB_POWER_DEFINITIONS } from './bb/powers.js';
 // as the power inventory above: re-exported here, put on `window` by main.js,
 // read by run-ui.js as a global.
 export { ROOM_GAMES } from './bb/high-rollers-room.js';
-/** Is this season a Big Brother season? */
-export const isBigBrotherSeason = () => seasonFormat(seasonConfig) === 'big-brother';
+/** Does this season play on the house engine? Big Brother, and Secret Story on it. */
+export const isBigBrotherSeason = () => engineFormat(seasonConfig) === 'big-brother';
 
 /**
  * A house, not tribes.

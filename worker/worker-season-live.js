@@ -386,7 +386,8 @@ async function generateNarrativeFill(body, env) {
   // Everything below used to assume Total Drama unconditionally, which was true
   // right up until the house shipped.
   const format = body.format || template?.format || 'total-drama';
-  const isBB = format === 'big-brother';
+  // The house engine: Big Brother, and Secret Story on it (this file has no imports).
+  const isBB = (SHOW_WORDS[format]?.engine || format) === 'big-brother';
   // A show with its own brief (NARRATIVE_BRIEFS, below) is written from it.
   const brief = NARRATIVE_BRIEFS[format] || null;
 
@@ -763,6 +764,80 @@ Return ONLY valid JSON matching the schema.
  * `p.immunityWins`, neither of which a castle placement carries.
  */
 const NARRATIVE_BRIEFS = {
+  'secret-story': {
+    placementLine(p) {
+      const ss = p.ss || {};
+      const secret = ss.secret
+        ? `secret "${ss.secret}"${ss.foundBy ? ` found by ${ss.foundBy} in week ${ss.foundWeek}` : ss.secretKept ? ' kept to the semi-final' : ' never found'}`
+        : 'no secret recorded';
+      return `#${p.placement} ${p.name} (${p.status}${p.exitEpisode ? `, week ${p.exitEpisode}` : ''}) — `
+        + `${secret}; found ${ss.secretsFound || 0} secret(s), ${ss.buzzesWrong || 0} wrong buzz(es); `
+        + `kitty ${ss.kitty ?? 0} euros; nominated ${p.bb?.timesNominated || 0}x`;
+    },
+    summaryExtras(t) {
+      return {
+        finalVote: (t.finalVote || []).map(f => `${f.name}: ${f.percent}%`),
+        secrets: (t.secrets || []).map(s => `${(s.holders || []).join(' & ')}: "${s.text}"${s.foundBy ? ` (found by ${s.foundBy})` : ' (kept)'}`),
+      };
+    },
+    instructions({ templateSummary, canonicalCast, recordBlock, episodeSummaries }) {
+      return `
+You are writing narrative content for a season of Secret Story, the French
+format. All STATS are already filled in — you only write NARRATIVE fields.
+
+THIS IS NOT TOTAL DRAMA AND IT IS NOT BIG BROTHER. There is no Head of
+Household, no veto, no block, no jury, no tribe and no idol. Never use those
+words. Players are HOUSEMATES; the place is the House of Secrets.
+How the house works:
+- Every housemate moves in hiding a SECRET and a kitty of 10,000 euros. Some
+  secrets are personal, some are roles La Voix handed out (a fake couple, fake
+  siblings, a mission).
+- La Voix, the unseen voice of the house, sets the rules and the missions.
+- THE BUZZ: a housemate who thinks they know somebody's secret presses the
+  buzzer in the confessional, stakes 5,000 euros, and names it. Right: they
+  take that person's whole kitty. Wrong: they lose the stake and the house
+  learns who they suspected.
+- Housemates NOMINATE in the confessional; the PUBLIC votes to save, and the
+  nominee it saves least is ELIMINATED. The public also chooses the winner,
+  who leaves with their kitty.
+
+SEASON DATA (pre-computed, DO NOT change these numbers):
+${templateSummary}
+
+THE SECRETS ARE THE SEASON. Every housemate's story runs through their secret:
+how long they kept it, who hunted it, every buzz they made and took. Get each
+one exactly right from the record: who found which secret, in which week, and
+who kept theirs to the end.
+
+THE RECORD OUTRANKS THE EPISODES.
+
+For each housemate write:
+- notes: 1 sentence summary
+- strategicRank: 1-10, how well they played the hunt and the public
+- story: 4-8 sentences: their secret, the hunt, the nominations, how it ended
+- gameplayStyle: 3-6 evocative words
+- keyMoments: 3-8 specific moments with week numbers
+- gameArchetype: pick the closest from the schema
+- resume / demise / demiseKind / optimalLine / ceiling, in house terms: who
+  nominated them and how the public voted, or, for the winner, the last real
+  threat to them.
+
+Also write: title, subtitle, seasonNarrative, winner analysis (keyStats/strategy/
+legacy) and all awards. Read the shared award names in house terms:
+"compBeast" is the games; "advantageKing" is the best secret hunter;
+"biggestBetrayal" is a buzz on a friend or a secret given away; "ftcGame" is
+whoever played the final week best; "mostRobbedFinalist" is a finalist the
+public did not pick.
+
+IMPORTANT: Use EXACTLY these housemate names — do not modify, abbreviate, or add suffixes.
+Cast: ${canonicalCast.join(', ')}
+${recordBlock}
+${episodeSummaries}
+
+Return ONLY valid JSON matching the schema.
+`.trim();
+    },
+  },
   'perfect-match': {
     placementLine(p) {
       const pm = p.pm || {};
@@ -972,6 +1047,7 @@ Return ONLY valid JSON matching the schema.
 
 const SHOW_WORDS = {
   'big-brother': { show: 'Big Brother', player: 'houseguest', round: 'Week', exit: 'evicted' },
+  'secret-story': { show: 'Secret Story', player: 'housemate', round: 'Week', exit: 'eliminated', engine: 'big-brother' },
   'total-drama': { show: 'Total Drama', player: 'contestant', round: 'Episode', exit: 'voted out' },
   'perfect-match': { show: 'Perfect Match', player: 'islander', round: 'Episode', exit: 'dumped' },
 };

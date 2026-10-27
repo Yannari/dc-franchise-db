@@ -240,11 +240,11 @@ function storyFor({ slug, detail, season, cast, nameOf, slugOf, lifeUpTo }) {
   const n = v => Number(v) || 0;
   // The ENGINE decides which stat block a detail carries (All Stars: `dr`).
   const fmt = engineOf(season?.format);
-  if ((fmt === 'total-drama' || fmt === 'big-brother') && n(detail.votesReceived) >= 3) stats.push({ type: 'votes', n: n(detail.votesReceived) });
+  if ((fmt === 'total-drama' || engineOf(fmt) === 'big-brother') && n(detail.votesReceived) >= 3) stats.push({ type: 'votes', n: n(detail.votesReceived) });
   if (n(detail.bb?.timesNominated) >= 2) stats.push({ type: 'noms', n: n(detail.bb.timesNominated) });
   if (n(detail.dr?.bottoms) >= 2) stats.push({ type: 'bottoms', n: n(detail.dr.bottoms) });
   if (n(detail.ci?.blocksMade) >= 1) stats.push({ type: 'blocks', n: n(detail.ci.blocksMade) });
-  const wins = fmt === 'big-brother' ? n(detail.bb?.hohWins) + n(detail.bb?.vetoWins)
+  const wins = engineOf(fmt) === 'big-brother' ? n(detail.bb?.hohWins) + n(detail.bb?.vetoWins)
     : fmt === 'drag-race' ? n(detail.dr?.wins) : n(detail.challengeWins);
   if (wins >= 2) stats.push({ type: 'wins', n: wins });
   if (n(detail.idolsFound) >= 1) stats.push({ type: 'idols', n: n(detail.idolsFound) });

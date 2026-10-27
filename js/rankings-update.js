@@ -16,7 +16,7 @@ import { seasonFormat, engineFormat } from './core.js';
 import { buildDragSeasonDocument } from './dr/export.js';
 import { buildChallengeSeasonDocument } from './ch/export.js';
 import { buildCircleSeasonDocument } from './ci/export.js';
-import { SHOWS, parseSeasonRef, familyOf, BB_FORMAT, DRAG_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT } from './shows.js';
+import { SHOWS, parseSeasonRef, careerShowOf, BB_FORMAT, DRAG_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT } from './shows.js';
 import { boardFile } from './ranking-boards.js';
 
 // The tool was written against current-season.html, whose .btn is white-on-dark.
@@ -262,7 +262,7 @@ function _ruReset() {
 export function ruEmptyBoard(format) { return _ruEmptyBoard(format); }
 
 function _ruEmptyBoard(format) {
-  format = familyOf(format);   // one board per family
+  format = careerShowOf(format);   // a spin-off shares its flagship's board
   return {
     metadata: {
       format,
@@ -352,7 +352,7 @@ export function ruSeasonDocument(game, config) {
   const n = Number(game?.seasonNumber || config?.seasonNumber) || 1;
   const history = (game?.episodeHistory || []).filter(Boolean);
   const name = SHOWS[show]?.name || show;
-  if (engine === BB_FORMAT) return buildBigBrotherSeasonDocument(n);
+  if (engine === BB_FORMAT) return buildBigBrotherSeasonDocument(n, { format: show });
   if (engine === DRAG_FORMAT) {
     const rows = history.filter(r => r.dr);
     if (!rows.some(r => r.dr?.finale)) throw new Error(`this ${name} season has no finale yet — play it through the crowning first`);
@@ -398,7 +398,8 @@ function _ruUseCurrentSeason() {
     try {
       const cfg = typeof seasonConfig !== 'undefined' ? seasonConfig : {};
       const game = typeof gs !== 'undefined' ? gs : null;
-      tmpl = ruSeasonDocument(game, houseNow ? { ...cfg, format: 'big-brother' } : cfg)
+      // (Secret Story is a house too: a config that already says so is kept.)
+      tmpl = ruSeasonDocument(game, houseNow && engineFormat(cfg) !== BB_FORMAT ? { ...cfg, format: BB_FORMAT } : cfg)
         || extractSeasonTemplate();
     } catch (e) {
       // The house builder says something useful when a season is unfinished
@@ -970,11 +971,36 @@ export const RU_SHOW = {
       strategicScore: 0,
     }),
   },
+  // SECRET STORY — PROVISIONAL until part 2 exports a measured season
+  // (ADDING-A-SHOW §24.2: measure before pricing). Its own board, not Big
+  // Brother's: no HOH, no veto, no jury. A secret FOUND is the show's own
+  // currency (taken from somebody, at a price); a secret KEPT is the hunt
+  // survived; the games are the week's immunity. Nominations are the house's
+  // verdict, shown and not scored, because surviving them is placement again.
+  'secret-story': {
+    comp1: { label: 'Secrets found', weight: 1.2, title: '+1.2 per secret found with the buzzer (provisional)' },
+    comp2: { label: 'Secret kept', weight: 1.0, title: '+1.0 for a secret kept to the end (provisional)' },
+    comp3: { label: 'Games', weight: 0.3, title: '+0.3 per immunity game won (provisional)' },
+    adv: null,
+    strat: { weight: 0, scale: 10 },
+    social: { kind: 'survived', label: 'Nominated', weight: 0, cap: 6,
+      title: 'Times nominated · shown, not scored (provisional)',
+      prose: { zero: 'never nominated', one: 'nominated once',
+        many: n => `nominated ${n} times` } },
+    read: (p) => ({
+      comp1: p.ss?.secretsFound ?? 0,
+      comp2: p.ss?.secretKept ?? 0,
+      comp3: p.bb?.hohWins ?? 0,
+      social: p.bb?.timesNominated ?? 0,
+      advFound: 0, advPlayed: 0, advWasted: 0, advHeld: 0,
+      strategicScore: 0,
+    }),
+  },
 };
 // A spin-off is priced by its family's rubric and lands on its family's board:
 // an All Stars crown is a Drag Race crown, ranked against the same currencies.
 for (const fmt of Object.keys(SHOWS)) {
-  if (!RU_SHOW[fmt] && RU_SHOW[familyOf(fmt)]) RU_SHOW[fmt] = RU_SHOW[familyOf(fmt)];
+  if (!RU_SHOW[fmt] && RU_SHOW[careerShowOf(fmt)]) RU_SHOW[fmt] = RU_SHOW[careerShowOf(fmt)];
 }
 
 /**
@@ -1838,7 +1864,7 @@ export function ruRankBoard(board, format = 'total-drama') {
     // This said 78 while the file held 169 entries: written once and never
     // again, so every reader that trusted the count was reading a stale one.
     board.metadata.totalPlayers=(board.rankings||[]).length;
-    board.metadata.format=board.metadata.format||familyOf(format);
+    board.metadata.format=board.metadata.format||careerShowOf(format);
   }
 }
 

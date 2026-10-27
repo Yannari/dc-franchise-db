@@ -1007,7 +1007,9 @@ function renderRankings(rankingsData, playersMap) {
   const boards = Array.isArray(rankingsData) ? rankingsData : [rankingsData];
   const formatOfBoard = b => (b && b.metadata && b.metadata.format) || DEFAULT_FORMAT;
   // A spin-off's board is its family's (Drag Race All Stars ranks on Drag Race's).
-  const familyOfFormat = f => ((sw && sw.SHOWS && sw.SHOWS[f] && sw.SHOWS[f].family) || f);
+  // The board a show is ranked on: a spin-off shares its flagship's (All Stars on
+  // Drag Race's), a show of its own keeps its own (Secret Story is not Big Brother).
+  const familyOfFormat = f => { const m = sw && sw.SHOWS && sw.SHOWS[f]; return (m && m.spinOff && m.family) || f; };
 
   if (sw && !window._sw) {
     // The switcher lives in the site header now, so the choice follows you

@@ -66,10 +66,10 @@ describe('scoring them onto an empty board', () => {
 });
 
 describe('the worker names the board the way the site reads it', () => {
-  it('files a spin-off under its family', () => {
+  it('files a spin-off under its flagship, and a show of its own under itself', () => {
     const src = readFileSync('worker/worker-studio.js', 'utf8');
     const fn = src.slice(src.indexOf('function rankingsPathFor'), src.indexOf('function rankingsPathFor') + 400);
-    expect(fn).toMatch(/familyOf\(format\)/);
+    expect(fn).toMatch(/careerShowOf\(format\)/);
   });
 });
 

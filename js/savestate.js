@@ -2,6 +2,7 @@
 import { gs, gsCheckpoints, players, seasonConfig, relationships, preGameAlliances,
          prepGsForSave, repairGsSets, setGs, setGsCheckpoints, setViewingEpNum, seasonFormat, kinshipPairs} from './core.js';
 import { pStats, pronouns } from './players.js';
+import { engineFormat } from './core.js';
 import { bKey } from './bonds.js';
 import { checkShowmanceBreakup, checkLoveTriangleBreakup } from './romance.js';
 import { generateAftermathShow } from './aftermath.js';
@@ -1182,7 +1183,7 @@ export function resetSeason() {
   // state it comes from is cleared
   // (each show its own folder: a Big Brother reset never empties the Total Drama season of the same number)
   const _fmt = seasonFormat(seasonConfig);
-  if (_fmt === 'big-brother') window.bbClearVoices?.({});
+  if (engineFormat(seasonConfig) === 'big-brother') window.bbClearVoices?.({});
   else if (_fmt === 'the-circle') window.ciClearVoices?.({});
   else if (_fmt === 'total-drama') window.tdClearVoices?.({});
   setGs(null);

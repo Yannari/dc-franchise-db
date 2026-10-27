@@ -9,13 +9,14 @@ import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.j
 import { buildDragSeasonDocument } from './dr/export.js';
 import { buildPerfectMatchSeasonDocument } from './pm/export.js';
 import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT, RACE_FORMAT } from './shows.js';
-import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT, engineOf, familyOf } from './shows.js';
+import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT, engineOf, familyOf, careerShowOf } from './shows.js';
 import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
 import { nextWindowFor } from './franchise-calendar.js';
 import { ratingsForSeason, publishedRatings } from './ratings.js';
 import { publishedExitInterviews } from './bb/exit-interview.js';
+import { secretStoryExport } from './bb/secret-story.js';
 import { publishedTDExitInterviews } from './td/exit-interview.js';
 import { publishedExits } from './exit-interview/house.js';
 
@@ -208,8 +209,10 @@ export function _rebuildByShow(player) {
     if (SHOWS[format]?.spinOff && Number(det.placement) === 1) {
       player.hallOfFame.push({ seasonId: det.seasonId || seasonId(format, det.season), format, season: det.season });
     }
-    // Filed under the FAMILY: one Drag Race career, both series in it.
-    const bucket = (byShow[familyOf(format)] ||= { seasons: 0 });
+    // A SPIN-OFF is filed under its FAMILY: one Drag Race career, both series
+    // in it. A show of its own on another's engine (Secret Story) keeps its
+    // own career: it is a different game, and its numbers mean other things.
+    const bucket = (byShow[careerShowOf(format)] ||= { seasons: 0 });
     bucket.seasons++;
     // A show declares which fields it contributes; see SHOWS in js/shows.js.
     for (const [from, to] of (SHOWS[format]?.careerStats || [])) {
@@ -2401,24 +2404,26 @@ function _mergeSeasonsDatabase(existing, rawStats, template) {
  * record needs, so this reads that instead.
  */
 export function mergeBigBrotherSeasonsDatabase(existing, seasonDoc) {
-  if (!seasonDoc || seasonDoc.format !== 'big-brother') {
+  if (!seasonDoc || engineOf(seasonDoc.format) !== 'big-brother') {
     throw new Error('mergeBigBrotherSeasonsDatabase expects a big-brother season document');
   }
+  // The show this season belongs to: Big Brother, or Secret Story on its engine.
+  const fmt = seasonDoc.format;
   const seasonNum = seasonDoc.seasonNumber;
   if (!seasonNum) throw new Error('Big Brother season document has no seasonNumber');
 
   const db = JSON.parse(JSON.stringify(existing || {}));
   if (!db.seasons) db.seasons = [];
-  const airWindow = _airWindowFor(db, 'big-brother', seasonNum);
+  const airWindow = _airWindowFor(db, fmt, seasonNum);
   // Read before the filter, for the same reason the air window is: the row is
   // rebuilt from the document, so a field the document does not carry does not
   // survive a re-publish.
   const priorRatings = (db.seasons.find(x =>
-    x.seasonNumber === seasonNum && x.format === 'big-brother') || {}).ratings || null;
+    x.seasonNumber === seasonNum && x.format === fmt) || {}).ratings || null;
 
   // Format-matched, so re-exporting Big Brother 1 leaves Total Drama 1 alone.
   db.seasons = db.seasons.filter(s =>
-    !(s.seasonNumber === seasonNum && s.format === 'big-brother'));
+    !(s.seasonNumber === seasonNum && s.format === fmt));
 
   const awards = seasonDoc.awards && typeof seasonDoc.awards === 'object' ? seasonDoc.awards : {};
   const named = a => (a?.name ? { name: a.name, playerSlug: a.playerSlug || _slug(a.name) } : null);
@@ -2432,9 +2437,9 @@ export function mergeBigBrotherSeasonsDatabase(existing, seasonDoc) {
   db.seasons.push({
     ratings: seasonDoc?.ratings || priorRatings || undefined,
     seasonNumber: seasonNum,
-    format: 'big-brother',
-    seasonId: seasonId('big-brother', seasonNum),
-    title: _clean(seasonDoc.title, `Big Brother ${seasonNum}`),
+    format: fmt,
+    seasonId: seasonId(fmt, seasonNum),
+    title: _clean(seasonDoc.title, `${SHOWS[fmt]?.name || 'Big Brother'} ${seasonNum}`),
     subtitle: _clean(seasonDoc.subtitle),
     castSize: seasonDoc.castSize,
     // Big Brother counts weeks where Total Drama counts episodes. The field is
@@ -2459,8 +2464,10 @@ export function mergeBigBrotherSeasonsDatabase(existing, seasonDoc) {
     },
     theme: _clean(seasonDoc.seasonNarrative, _clean(seasonDoc.subtitle)),
     status: 'Complete',
-    castPhotoPath: `assets/cast/${seasonId('big-brother', seasonNum)}-cast.png`,
+    castPhotoPath: `assets/cast/${seasonId(fmt, seasonNum)}-cast.png`,
     emoji: _clean(seasonDoc.emoji),
+    // Secret Story's board of secrets, for the season page.
+    ...(Array.isArray(seasonDoc.secrets) ? { secrets: seasonDoc.secrets } : {}),
     // On the row because kristal.html and the follower model both read rows.
     exitInterviews: Array.isArray(seasonDoc.exitInterviews) ? seasonDoc.exitInterviews : [],
     ...airWindow,
@@ -3170,7 +3177,7 @@ function _showmanceStrengthOf(name) {
   return { showmanceStrength: Math.round((bond * 0.6 + Math.min(1, lasted / 6) * 0.4) * 100) / 100 };
 }
 
-export function buildBigBrotherSeasonDocument(seasonNumber) {
+export function buildBigBrotherSeasonDocument(seasonNumber, { format = seasonFormat(seasonConfig) } = {}) {
   const weeks = gs.bb?.weeks || [];
   if (!weeks.length) throw new Error('No Big Brother weeks have been played yet.');
 
@@ -3186,6 +3193,7 @@ export function buildBigBrotherSeasonDocument(seasonNumber) {
   const doc = extractBigBrotherSeasonTemplate(weeks, finalists, {
     seasonNumber,
     jurySize: jury.length,
+    format,
   });
 
   // The extractor writes juryVotes: 0 for everybody, because the WEEK engine
@@ -3200,6 +3208,22 @@ export function buildBigBrotherSeasonDocument(seasonNumber) {
   // Kristal-talKs' in-season exit interviews: the decisions the simulator
   // made, which kristal.html writes into words (js/kristal-exit.js).
   doc.exitInterviews = publishedExitInterviews();
+  // ── SECRET STORY: the hunt, the kitty and the public's final vote ──
+  // No jury: the public crowned the winner, and the share each finalist got is
+  // the vote line. Every housemate carries an `ss` block beside the engine's `bb`.
+  if (gs.bb?.secretStory) {
+    const order = finale.finalTwo?.length ? [...finale.finalTwo, finale.cut].filter(Boolean) : finalists;
+    const hunt = secretStoryExport(gs.bb.secretStory, { finalists: order });
+    for (const p of doc.placements) p.ss = hunt.players[p.name] || null;
+    doc.secrets = hunt.secrets;
+    const pct = finale.publicVote || {};
+    doc.finalVote = order.map(n => ({ name: n, percent: Number(pct[n]) || 0 }));
+    doc.jurySize = 0;
+    if (doc.winner) {
+      doc.winner.vote = doc.finalVote.map(f => `${f.name} ${f.percent}%`).join(' — ');
+      doc.winner.kitty = Number(finale.kitty) || 0;
+    }
+  }
   return _attachVillainBoard(doc);
 }
 
@@ -4593,9 +4617,10 @@ export async function exportAndFillBigBrotherSeason(onStatus) {
 
   _status('Extracting the season...');
   const seasonNum = _getSeasonNumber();
+  const fmt = seasonFormat(seasonConfig);
   let template;
   try {
-    template = buildBigBrotherSeasonDocument(seasonNum);
+    template = buildBigBrotherSeasonDocument(seasonNum, { format: fmt });
   } catch (err) {
     alert(err.message || String(err));
     return;
@@ -4675,7 +4700,7 @@ export async function exportAndFillBigBrotherSeason(onStatus) {
 
   const published = await _publishSeasonToSite({
     seasonNumber: seasonNum,
-    format: 'big-brother',
+    format: fmt,
     season: finalSeasonData,
     players: playersDb,
     seasons: seasonsDb,
@@ -4683,7 +4708,7 @@ export async function exportAndFillBigBrotherSeason(onStatus) {
   if (published) return published;
 
   _status('Downloading files...');
-  const file = `${seasonId('big-brother', seasonNum)}-data.json`;
+  const file = `${seasonId(fmt, seasonNum)}-data.json`;
   _downloadJSON(finalSeasonData, file);
   if (playersDb) setTimeout(() => _downloadJSON(playersDb, 'players_database.json'), 500);
   if (seasonsDb) setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), 1000);
@@ -5052,8 +5077,9 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
 
   return {
     seasonNumber: meta.seasonNumber ?? 0,
-    format: 'big-brother',
-    seasonId: seasonId('big-brother', meta.seasonNumber ?? 0),
+    // The show, which is not always the engine: Secret Story plays this one.
+    format: meta.format || 'big-brother',
+    seasonId: seasonId(meta.format || 'big-brother', meta.seasonNumber ?? 0),
     title: '[AI_FILL]',
     subtitle: '[AI_FILL]',
     castSize: meta.castSize ?? cast.length,
@@ -5356,9 +5382,10 @@ function _compRef(comp) {
  * contributions are subtracted first, so corrections do not double-count.
  */
 export function mergeBigBrotherSeason(existing, seasonDoc) {
-  if (!seasonDoc || seasonDoc.format !== 'big-brother') {
+  if (!seasonDoc || engineOf(seasonDoc.format) !== 'big-brother') {
     throw new Error('mergeBigBrotherSeason expects a big-brother season document');
   }
+  const fmt = seasonDoc.format;
   const db = JSON.parse(JSON.stringify(existing || {}));
   const seasonNum = seasonDoc.seasonNumber;
   if (!seasonNum) throw new Error('Big Brother season document has no seasonNumber');
@@ -5367,7 +5394,7 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
   // Take this season off everybody first. Re-exporting only ever visited the
   // players in the NEW document, so anybody dropped from the cast kept the
   // appearance — and their season count, per-show totals and fame with it.
-  _stripSeasonFromAll(db, seasonNum, 'big-brother');
+  _stripSeasonFromAll(db, seasonNum, fmt);
 
   for (const entry of seasonDoc.placements || []) {
     const name = entry.name;
@@ -5396,7 +5423,7 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
     // Strip a previous recording of this same season before adding the new one.
     // Already stripped from everybody above; this only matters for a player who
     // somehow appears twice in one season document.
-    _stripSeasonFromPlayer(player, seasonNum, 'big-brother');
+    _stripSeasonFromPlayer(player, seasonNum, fmt);
 
     // challengeWins stays HOH + veto — the two the rest of the app and every
     // Total Drama season already mean by it. The arena is its own number, and
@@ -5442,11 +5469,13 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
         timesOnBlock: bb.timesOnBlock || 0,
         timesSaved: bb.timesSaved || 0,
       },
+      // Secret Story's hunt, beside the engine's block.
+      ...(entry.ss ? { ss: { ...entry.ss } } : {}),
       notes: _clean(entry.notes) ? [entry.notes] : [],
       gameplayStyle: _clean(entry.gameplayStyle),
       keyMoments: Array.isArray(entry.keyMoments) ? entry.keyMoments
                 : (_clean(entry.keyMoments) ? [entry.keyMoments] : []),
-    }, 'big-brother'));
+    }, fmt));
 
     // Recomputed across both shows on purpose — one career, several résumés.
     const places = player.seasonDetails.map(sd => sd.placement).filter(p => p && p < 99);
@@ -5461,7 +5490,7 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
       player.badges = player.badges || [];
       // BB1 Winner, not S1 Winner — the bare number is Total Drama's, and both
       // shows writing it put two different seasons' badges on one career page.
-      const badge = _winnerBadge(seasonNum, 'big-brother');
+      const badge = _winnerBadge(seasonNum, fmt);
       if (!player.badges.includes(badge)) player.badges.push(badge);
     }
   }
@@ -5535,7 +5564,7 @@ export function extractLiveSeasonSnapshot() {
   // all. This is the recurring bug in this project wearing its usual clothes:
   // one show's vocabulary printed over the other.
   const format = seasonFormat(typeof seasonConfig !== 'undefined' ? seasonConfig : null);
-  const isBB = format === 'big-brother';
+  const isBB = engineOf(format) === 'big-brother';
   const isDrag = format === DRAG_FORMAT;
   const bbStats = (gs.bb && gs.bb.stats) || {};
   /* The running record, taken off the LAST episode because it accumulates —
@@ -5700,7 +5729,7 @@ export async function syncLiveEpisode(onStatus) {
   try {
     const fmt = snap.format || DEFAULT_FORMAT;
     const list = fmt === 'total-drama' ? publishedTDExitInterviews()
-      : fmt === 'big-brother' ? publishedExitInterviews() : publishedExits(fmt);
+      : engineOf(fmt) === 'big-brother' ? publishedExitInterviews() : publishedExits(fmt);
     let sdb = { seasons: [] };
     try { const r = await fetch('seasons_database.json'); if (r.ok) sdb = await r.json(); } catch {}
     const win = _airWindowFor(sdb, fmt, snap.seasonNumber);

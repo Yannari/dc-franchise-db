@@ -36,6 +36,7 @@ import { writerEndpoint } from './social/writer.js';
 // Studio runs in, and reading it there left the portrait panel's show dropdown
 // with nothing in it but "All shows".
 import { SHOWS } from './shows.js';
+import { engineOf } from './shows.js';
 import { CIRCLE_FORMAT } from './shows.js';
 import { readVoiceText, WORD_TAGS } from './td/story/voice-words.js';
 import { voiceRegister, CIRCLE_VOICE_TAGS } from './ci/register.js';
@@ -366,7 +367,7 @@ function _kitOut(d) {
 }
 const _kitCount = d => { const o = _kitOut(d); return o ? Object.keys(o).length : 0; };
 const _tdSelected = () => { try { const f = window.seasonConfig?.format; return !f || f === 'total-drama'; } catch { return true; } };
-const _bbSelected = () => { try { return window.seasonConfig?.format === 'big-brother'; } catch { return false; } };
+const _bbSelected = () => { try { return engineOf(window.seasonConfig?.format) === 'big-brother'; } catch { return false; } };
 const _drSelected = () => { try { return window.seasonConfig?.format === 'drag-race'; } catch { return false; } };
 const _ciSelected = () => { try { return window.seasonConfig?.format === CIRCLE_FORMAT; } catch { return false; } };
 
@@ -1373,7 +1374,7 @@ const _MIX = (who) => `<br>${who} mixes a voice instead of always speaking the f
   + ' (five tags come out about 40 / 25 / 15 / 10 / 10), and a number sets one yourself wherever it sits:'
   + ' "#flirty #proud:4" is half and half, "#loud #goofy #warm:0.5" keeps warm to a hint.';
 function _voiceHelpFor(format) {
-  if (format === 'big-brother') {
+  if ((SHOWS[format]?.engine || format) === 'big-brother') {
     return `Big Brother talks in nine ways. Each tag speaks as one of them: ${_byRegister(bbTagRegisters())}.`
       + ' A register\'s own name works too (#bubbly, #smooth).'
       + '<br>Some tags change with the tags beside them: #loud is tough beside #blunt or #cruel and bubbly beside #warm or #goofy;'
@@ -3000,7 +3001,7 @@ function _schemeLine(arch, s, format) {
     const pct = Math.round((s.strategic / 10) * ((10 - s.loyalty) / 10) * 100);
     return `Pulls dirty tricks about <b>${pct}%</b> of episodes — strategic ${s.strategic} against loyalty ${s.loyalty}`;
   }
-  if (format === 'big-brother') {
+  if ((SHOWS[format]?.engine || format) === 'big-brother') {
     const game = 'Plays the <b>full game</b> — alliances, nominations, backdoors';
     if (villain) return `${game}, and plays it <b>dirty</b>: lies to faces, breaks deals quietly, lobbies the jury`;
     if (nice) return `${game}. Lies to a face or keeps a quiet plan only when strategic enough (strategic ${s.strategic}, loyalty ${s.loyalty}); `

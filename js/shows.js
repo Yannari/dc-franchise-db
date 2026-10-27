@@ -787,6 +787,19 @@ export function familyOf(format) {
   return SHOWS[format]?.family || format;
 }
 
+/**
+ * Which career, records and rankings board a season is filed under.
+ *
+ * A SPIN-OFF (`spinOff`, Drag Race All Stars) plays the same game as its
+ * flagship, so it shares the flagship's career and board. A show of its own
+ * that only borrows an engine and a site tab (Secret Story under Big Brother)
+ * is a different game: its numbers mean other things, so it keeps its own.
+ * `familyOf` is the site's tab row; this is the scoreboard.
+ */
+export function careerShowOf(format) {
+  return SHOWS[format]?.spinOff ? familyOf(format) : format;
+}
+
 /** Every show in this show's family, the parent first. */
 export function familyMembers(format) {
   const fam = familyOf(format);
@@ -837,6 +850,8 @@ export function seasonRowFormat(row) {
 export const DRAG_FORMAT = 'drag-race';
 export const TRAITORS_FORMAT = 'traitors';
 export const BB_FORMAT = 'big-brother';
+/** Secret Story: its own show, on the Big Brother engine. */
+export const SS_FORMAT = 'secret-story';
 export const PERFECT_MATCH_FORMAT = 'perfect-match';
 export const CIRCLE_FORMAT = 'the-circle';
 export const CHALLENGE_FORMAT = 'the-challenge';

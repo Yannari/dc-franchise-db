@@ -4,6 +4,7 @@
 
 import { audio, cueFromElement } from './audio.js';
 import { currentTheme, themeState } from './bb/themes.js';
+import { engineFormat } from './core.js';
 
 const VP_VIEW_MODES = new Set(['watch', 'quick', 'deep']);
 let _vpViewMode = 'watch';
@@ -933,7 +934,7 @@ export function renderVPScreen() {
   try {
     // A Big Brother season is not at any of the Total Drama venues, so it takes
     // its own skin rather than having a camp or a film lot painted over it.
-    const _bb = (typeof seasonConfig !== 'undefined' && seasonConfig?.format === 'big-brother');
+    const _bb = (typeof seasonConfig !== 'undefined' && engineFormat(seasonConfig) === 'big-brother');
     const _set = _bb ? 'bb-house' : (typeof currentSetting === 'function') ? currentSetting() : 'hosted-camp';
     // The mood of the episode on screen, not the mood the season ended in.
     const _ep = (gs?.episodeHistory || [])[(Number(window.vpEpNum) || 0) - 1];

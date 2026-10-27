@@ -37,9 +37,13 @@ describe('the board', () => {
     const c = RU_SHOW['drag-race'];
     expect(c.comp1.label).toMatch(/maxi/i);
     expect(c.comp2.label).toMatch(/lip sync/i);
-    // Highs is the most placement-shaped of the three and must stay cheapest.
-    expect(c.comp3.weight).toBeLessThan(c.comp2.weight);
+    // The Smackdown crown is a competition won outright, priced as a maxi
+    // win (2026-10-27, the user: "count the smackdown"). Highs are no longer
+    // a column: points per episode (the strat slot) pays for a high.
+    expect(c.comp3.label).toMatch(/smackdown/i);
+    expect(c.comp3.weight).toBe(c.comp1.weight);
     expect(c.comp2.weight).toBeLessThan(c.comp1.weight);
+    expect(c.strat.label).toBe('PPE');
     expect(c.adv).toBeFalsy();
   });
 
@@ -59,8 +63,8 @@ describe('the board', () => {
 
   it('reads its numbers from its own block, never another show\'s field', () => {
     const read = RU_SHOW['drag-race'].read;
-    const got = read({ dr: { wins: 3, lipsyncWins: 2, highs: 4, bottoms: 5 } });
-    expect(got).toMatchObject({ comp1: 3, comp2: 2, comp3: 4, social: 5 });
+    const got = read({ dr: { wins: 3, lipsyncWins: 2, highs: 4, bottoms: 5, smackdownCrowns: 1, ppe: 3.4 } });
+    expect(got).toMatchObject({ comp1: 3, comp2: 2, comp3: 1, social: 5, strategicScore: 3.4 });
     // A row from another show must score nothing here rather than borrowing
     // whatever field happens to share a name.
     expect(read({ bb: { hohWins: 9 }, immunityWins: 9 }).comp1).toBe(0);
@@ -218,9 +222,12 @@ describe('the scorer, end to end on a real season', () => {
   it('reads non-zero columns for somebody', () => {
     // The Big Brother and Traitors failure, both times: every column loaded
     // zero because the loader was reading another show's field names.
-    for (const k of ['comp1', 'comp2', 'comp3']) {
+    for (const k of ['comp1', 'comp2', 'strategicScore']) {
       expect(scored.some(x => x.cols[k] > 0), `${k} is zero for the entire cast`).toBe(true);
     }
+    // The Smackdown crown, only where the season played one.
+    const hadSmackdown = doc.placements.some(p => (p.dr?.smackdownCrowns || 0) > 0);
+    expect(scored.some(x => x.cols.comp3 > 0)).toBe(hadSmackdown);
   });
 
   it('produces a score in range for every queen', () => {

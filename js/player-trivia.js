@@ -91,6 +91,18 @@ const WORDS = {
       [d => (d.bb?.hohWins || 0) >= 3, 'win three Heads of Household in one season'],
     ],
   },
+  // No HOH and no veto: the hunt is the game, and the public crowns.
+  'secret-story': {
+    player: 'housemate', players: 'housemates',
+    comps: [
+      { key: c => blockSum(c, 'ss', 'secretsFound'), one: 'secret found', many: 'secrets found' },
+      { key: c => blockSum(c, 'ss', 'secretKept'), one: 'secret kept to the semi-final', many: 'secrets kept to the semi-final' },
+    ],
+    ordinals: won => [
+      [d => won(d) && (d.ss?.secretKept || 0) > 0, 'win with their secret never found'],
+      [d => won(d) && (d.bb?.timesNominated || 0) > 0, 'win after facing the public'],
+    ],
+  },
   'total-drama': {
     player: 'contestant', players: 'contestants',
     comps: [

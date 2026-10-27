@@ -147,6 +147,7 @@ const PLACE = {
   'the-circle': { crowd: 'the Circle', inside: 'in the Circle', exitNoun: 'blocking' },
   'the-challenge': { crowd: 'the house', inside: 'in that house', exitNoun: 'elimination' },
   'ridonculous-race': { crowd: 'the race', inside: 'in that race', exitNoun: 'elimination' },
+  'secret-story': { crowd: 'the house', inside: 'in the House of Secrets', exitNoun: 'elimination' },
 };
 const ORDER = { blame: 0, drag: 1, warn: 2, respect: 3, praise: 4, miss: 5 };
 

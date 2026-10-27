@@ -20,7 +20,7 @@ import { buildEpisodeFeed } from './feed.js';
 import { seasonDataFile } from './adapter.js';
 import { feedSeed } from './live.js';
 import { packFor } from './packs/index.js';
-import { roundExits, publicBallots, roundShape, seasonRounds, SHOWS } from '../shows.js';
+import { roundExits, publicBallots, roundShape, seasonRounds, SHOWS, engineOf } from '../shows.js';
 
 /**
  * Episodes of a published season.
@@ -48,7 +48,7 @@ export function episodesOf(doc, format) {
     })).map((e, i, all) => (i === all.length - 1
       ? { ...e, record: { ...e.record, isFinale: true } } : e));
   }
-  if (format === 'big-brother') {
+  if (engineOf(format) === 'big-brother') {
     return (doc.weeks || []).map((record, i) => ({
       record, episode: Number(record?.week ?? record?.num ?? i + 1),
     }));
@@ -229,7 +229,7 @@ export function eventsForEpisode(doc, format, season, episode) {
      this show's ballots are the audience's to see. A placement round has no
      ballot at all, so tribalEvents has nothing to read and must not be asked.
      A packed show's reader already read its table. */
-  if (!pack && format !== 'big-brother' && roundShape(format) !== 'placements') {
+  if (!pack && engineOf(format) !== 'big-brother' && roundShape(format) !== 'placements') {
     events.push(...tribalEvents(found.record, meta));
   }
   // The document's own account of the night, which nothing had ever read.
@@ -237,7 +237,7 @@ export function eventsForEpisode(doc, format, season, episode) {
   // The finale is whichever night the document calls the finale — either the
   // entry synthesised above, or the last one for a show whose finale IS a vote.
   const isFinale = found.record?.isFinale
-    || (found === all[all.length - 1] && format === 'big-brother');
+    || (found === all[all.length - 1] && engineOf(format) === 'big-brother');
   // Who won, plural, on this side of the file too — `episodesOf` computes its
   // own and neither can borrow the other's.
   const won = seasonWinners(doc);

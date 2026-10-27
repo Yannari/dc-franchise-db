@@ -745,6 +745,9 @@ export const PLAYBACK_A = {
 // bankFor). A kind that only one show has (Big Brother's backdoor, Total
 // Drama's lost challenge) lives here whole.
 export const SHOW = {
+  // Secret Story has no block, no HOH and no veto: until it has lines of its
+  // own (part 3), it speaks the shared lines only, never Big Brother's.
+  'secret-story': {},
   'big-brother': {
     COLD: {
       'seen-it-coming': [

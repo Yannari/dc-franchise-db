@@ -23,7 +23,7 @@
 // `metadata.format`, and player.html refuses a board belonging to another show.
 // The array was just never filled with more than one thing.
 
-import { SHOWS, DEFAULT_FORMAT, familyOf } from './shows.js';
+import { SHOWS, DEFAULT_FORMAT, careerShowOf } from './shows.js';
 
 /**
  * Where each show's board lives.
@@ -53,12 +53,14 @@ export const BOARD_FILES = {
   // Challenge season applied in the tool fell back to Total Drama's board.
   'the-challenge': 'rankings_ch.json',
   'the-circle': 'rankings_ci.json',
+  // Its own board: a different game on the house engine, not Big Brother's.
+  'secret-story': 'rankings_ss.json',
 };
 
 /** The board file for a show, or null if that show does not have one. */
 export function boardFile(format) {
   // A spin-off is ranked on its family's board: All Stars wins are Drag Race wins.
-  return BOARD_FILES[format] || BOARD_FILES[familyOf(format)] || null;
+  return BOARD_FILES[format] || BOARD_FILES[careerShowOf(format)] || null;
 }
 
 /**

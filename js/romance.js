@@ -1,5 +1,5 @@
 // js/romance.js - Romance sparks, showmances, love triangles, affairs
-import { gs, players, seasonConfig } from './core.js';
+import { gs, players, seasonConfig, engineFormat } from './core.js';
 import { scriptEvent } from './td/script/write.js';
 import { makeScene } from './td/script/scene.js';
 
@@ -193,7 +193,7 @@ export function updateRomanticSparks(ep) {
   // days run once, so a spark took five weeks to reach a first move that real houses make in the
   // first fortnight: the same growth, scaled to the days that passed. Not more couples (the caps
   // and the first-move threshold decide that), the same couples sooner.
-  const days = seasonConfig.format === 'big-brother' ? 7 / 3 : 1;
+  const days = engineFormat(seasonConfig) === 'big-brother' ? 7 / 3 : 1;
 
   // Grow or decay each spark
   gs.romanticSparks.forEach(spark => {
@@ -302,7 +302,7 @@ export function checkFirstMove(ep) {
        Scaled in a house rather than everywhere, because a house is where the
        rate was wrong — thirteen weeks on a beach with a spark already burning
        is a different clock. */
-    const houseRules = seasonConfig.format === 'big-brother';
+    const houseRules = engineFormat(seasonConfig) === 'big-brother';
     const pace = arch => (houseRules
       // (one step lower across the board, 2026-10-06: with the weekly clock fixed, real houses make
       // the first move in the first fortnight; the order showmancer < social < everybody holds)
@@ -473,7 +473,7 @@ export function checkShowmanceSabotage(ep) {
     }, 'romance.sabotage', { a: saboteur, b: partner, c: target }, {}, { ep: (gs.episode || 0) + 1 }));
     // the breakup it caused is its own moment: a Big Brother week only ever saw the sabotage, and a
     // couple that split on screen never had the scene where it happened
-    if (targetShowmance.phase === 'broken-up' && seasonConfig.format === 'big-brother') {
+    if (targetShowmance.phase === 'broken-up' && engineFormat(seasonConfig) === 'big-brother') {
       ep.campEvents[campKey].post.push({ type: 'showmanceBreakup', players: [target, partner],
         text: `${target} and ${partner} are over. What ${saboteur} did was enough.`, badgeText: 'BREAKUP', badgeClass: 'red' });
     }
@@ -717,7 +717,7 @@ export function checkShowmanceFormation(ep) {
       // above 6 — so the same rule quietly became the main way couples formed,
       // producing pairings with no scene behind them. In a house, something has
       // to have happened first.
-      if (!existingSpark && seasonConfig.format === 'big-brother') continue;
+      if (!existingSpark && engineFormat(seasonConfig) === 'big-brother') continue;
 
       const threshold = ((aIsShowmancer || bIsShowmancer) ? 5 : 6) - sparkBonus;
       if (bond < threshold) continue;
@@ -1490,7 +1490,7 @@ export function updateLoveTrianglePhases(ep) {
        ultimatum — so the choice, the public fight and the whole back half of
        the arc were written and almost never seen. Two and four in a house,
        which is the same shape of arc against a much shorter clock. */
-    const _fast = seasonConfig.format === 'big-brother';
+    const _fast = engineFormat(seasonConfig) === 'big-brother';
     if (tri.phase === 'tension' && tri.episodesActive >= (_fast ? 2 : 3)) tri.phase = 'escalation';
     if (tri.phase === 'escalation' && tri.episodesActive >= (_fast ? 4 : 5)) tri.phase = 'ultimatum';
 

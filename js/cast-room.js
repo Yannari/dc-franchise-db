@@ -17,6 +17,7 @@ import { CIRCLE_CATEGORIES } from './ci/categories.js';
 import { STATS, ARCHETYPE_NAMES, ARCHETYPES, players, relationships, seasonConfig } from './core.js';
 import { threat, threatTier, overall, tribeColor, playerAvatarUrl } from './players.js';
 import { seasonFormat } from './core.js';
+import { engineOf } from './shows.js';
 import { saveCast, renderCast, editPlayer, cancelEdit, TRIBE_PALETTE } from './cast-ui.js';
 import { franchiseHistorySummary } from './franchise-meta.js';
 
@@ -124,7 +125,7 @@ export function castWarnings(pool, rels, configuredTribes, opts = {}) {
   // format does not have. Optional 4th argument keeps the 3-arg contract.
   // A house has no tribes; the Circle's categories are not teams to balance,
   // and a player left out of them is on Decide, which is fine.
-  const house = opts.format === 'big-brother' || opts.format === 'the-circle';
+  const house = engineOf(opts.format) === 'big-brother' || opts.format === 'the-circle';
   const groups = {};
   cast.filter(p => p.tribe).forEach(p => (groups[p.tribe] ??= []).push(p));
   const names = Object.keys(groups);

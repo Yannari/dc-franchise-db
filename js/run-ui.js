@@ -777,7 +777,7 @@ export function renderSeasonHub() {
     <button type="button" onclick="simulateMultipleEpisodes(5)" ${canBatch ? '' : 'disabled'}>Sim 5</button>
     ${seasonFormat(seasonConfig) === 'total-drama' && model.latest ? `<button type="button" id="hub-voice" data-ep="${Number(model.latest.num)}" onclick="voiceSelectedEpisode(${Number(model.latest.num)})" title="Voice every line of the episode selected above with each character's Inworld voice">🎙 Voice EP ${String(model.latest.num).padStart(2, '0')}</button>` : ''}
     ${seasonFormat(seasonConfig) === CIRCLE_FORMAT && model.latest && Number(model.latest.num) ? `<button type="button" id="hub-ci-voice" data-ep="${Number(model.latest.num)}" onclick="ciVoiceSelected(${Number(model.latest.num)})" title="Voice every line of the episode selected above, each player in their own Inworld voice (the person, not the profile)">🎙 Voice EP ${String(model.latest.num).padStart(2, '0')}</button>` : ''}
-    ${seasonFormat(seasonConfig) === 'big-brother' && model.latest && Number(model.latest.num) ? `<button type="button" id="hub-bb-voice" data-ep="${Number(model.latest.num)}" onclick="bbVoiceSelected(${Number(model.latest.num)})" title="Voice every line of the week selected above with each houseguest's Inworld voice">🎙 Voice WK ${String(model.latest.num).padStart(2, '0')}</button>` : ''}
+    ${engineFormat(seasonConfig) === 'big-brother' && model.latest && Number(model.latest.num) ? `<button type="button" id="hub-bb-voice" data-ep="${Number(model.latest.num)}" onclick="bbVoiceSelected(${Number(model.latest.num)})" title="Voice every line of the week selected above with each houseguest's Inworld voice">🎙 Voice WK ${String(model.latest.num).padStart(2, '0')}</button>` : ''}
     <button type="button" onclick="simulateMultipleEpisodes()" ${canBatch ? '' : 'disabled'}>Sim to finale</button>
     <button type="button" onclick="replayEpisode(${Number(model.latest?.num || 0)})" ${canReplay ? '' : 'disabled'}>Replay viewed</button>
     <button type="button" onclick="saveSeasonToStorage()">Save</button>
@@ -2785,7 +2785,7 @@ function _updateJuryLabel(el) {
   const label = document.getElementById('jury-label');
   const note  = document.getElementById('jury-note');
   const isHouse = (typeof seasonFormat !== 'undefined'
-    ? seasonFormat(seasonConfig) : seasonConfig.format) === 'big-brother';
+    ? engineFormat(seasonConfig) : seasonConfig.format) === 'big-brother';
   if (label) label.textContent = isHouse ? 'Jury Size' : 'Council Size';
   if (!note) return;
   const size = Number(el?.value) || Number(seasonConfig.jurySize) || 0;
@@ -3392,7 +3392,7 @@ export function buildEpisodeMap() {
   // finale starting from two. The engine would have stopped a week earlier; the
   // timeline was the thing that was wrong.
   const _isHouse = (typeof seasonFormat === 'function'
-    ? seasonFormat(seasonConfig) : seasonConfig.format) === 'big-brother';
+    ? engineFormat(seasonConfig) : seasonConfig.format) === 'big-brother';
   const finale  = _isHouse ? 3 : (seasonConfig.finaleSize || 3);
   const mergeAt = seasonConfig.mergeAt || 12;
   // ── Total Drama's returns are Total Drama's ──
@@ -3406,7 +3406,7 @@ export function buildEpisodeMap() {
   // vote and an Aftermayhem carried over showed two houseguests walking back in
   // on the same night, out of nowhere, and the count was wrong from there on.
   const _isBB = (typeof seasonFormat === 'function'
-    ? seasonFormat(seasonConfig.format) : seasonConfig.format) === 'big-brother';
+    ? engineFormat(seasonConfig) : seasonConfig.format) === 'big-brother';
   const riActive = seasonConfig.ri && !_isBB;
 
   // Build ep→engineTypes lookup from the twist schedule (ALL twists per episode)
@@ -4505,7 +4505,7 @@ export function renderTimeline() {
   } catch (e) { /* an unthemed season draws as it always did */ }
   const epMap   = buildEpisodeMap();
   const schedule = (seasonConfig.twistSchedule || []).filter(Boolean);
-  const isHouse = (typeof seasonFormat !== 'undefined' ? seasonFormat(seasonConfig) : seasonConfig.format) === 'big-brother';
+  const isHouse = (typeof engineFormat !== 'undefined' ? engineFormat(seasonConfig) : seasonConfig.format) === 'big-brother';
 
   if (!epMap.length) {
     container.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:13px">Add players in Cast Builder to generate timeline.</div>';
@@ -5894,7 +5894,7 @@ export function showRandomizerPanel() {
   // TWIST_CATALOG challenge twist. Offering the Total Drama panel here was
   // offering to fill in something that does not exist, while the two pickers
   // that DO exist on every week sat on Auto.
-  const isBB = (typeof seasonFormat === 'function' ? seasonFormat(seasonConfig.format) : seasonConfig.format) === 'big-brother';
+  const isBB = (typeof engineFormat === 'function' ? engineFormat(seasonConfig) : seasonConfig.format) === 'big-brother';
 
   const allSeries = [...new Set(TWIST_CATALOG.filter(c => c.category === 'challenge' && c.chalSeries).map(c => c.chalSeries))];
   const seriesLabels = {

@@ -52,7 +52,7 @@ export function blueprintFor(config = {}, castSize = 0) {
   const finaleSize = Number(config.finaleSize) || 0;
   const fmt = config.finaleFormat || 'traditional';
   const N = Number(castSize) || 0;
-  const house = seasonFormat(config) === 'big-brother';
+  const house = engineFormat(config) === 'big-brother';
   const castle = seasonFormat(config) === 'traitors';
   const stage = engineFormat(config) === 'drag-race';
   const villa = seasonFormat(config) === 'perfect-match';
@@ -309,7 +309,7 @@ export function validateQuickSetup(config = {}, playerList = []) {
     rows.push({ key: 'cast', ok, msg });
   }
 
-  const house = seasonFormat(config) === 'big-brother';
+  const house = engineFormat(config) === 'big-brother';
 
   // ── tribes ──
   // Skipped entirely for a house: there is nothing to assign and nothing to
@@ -752,7 +752,7 @@ function _houseNoteHTML() {
 function _structureCardHTML() {
   const cfg = _cfg();
   const N = _players().length;
-  const isHouse = _format() === 'big-brother';
+  const isHouse = engineOf(_format()) === 'big-brother';
 
   const caststrip = `<div class="qs-caststrip">
       <span class="qs-cast-count">${N}</span>
@@ -1277,7 +1277,7 @@ const CONFIG_SCOPE = {
     // A theme is a house premise; there is nothing for one to author on a beach.
     // Scoped here as well as in applySeasonConfig so that switching show on the
     // panel hides it immediately, the way the venue list is rebuilt immediately.
-    'cfg-theme':             ['big-brother'],
+    'cfg-theme':             ['=big-brother'],   // Secret Story wears its own; no theme over it
     'cfg-bb-interview':      ['big-brother'],
     'cfg-bb-host-style':     ['big-brother'],
     'cfg-bb-havenots':       ['big-brother'],
@@ -1389,7 +1389,7 @@ const CONFIG_SCOPE = {
     // castle ends on the fire round, not a jury vote, so nothing in js/tr/ ever
     // reads it. Left unscoped it drew "Council Size: 9 Members" over a castle
     // that has no council; scoped away from traitors it stops appearing there.
-    'cfg-jury':              ['total-drama', 'big-brother'],
+    'cfg-jury':              ['total-drama', '=big-brother'],   // the public crowns Secret Story
     // A castle has one venue and nothing in js/tr/ reads a setting -- the
     // castle layer writes its own events and never asks where it is. Left
     // visible, the picker offered a summer camp and a world tour for a
@@ -1540,7 +1540,7 @@ export function applyFormatScope() {
     const el = _g(id);
     show(el && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName) ? _scopeHost(el) : el, scoped(formats));
   }
-  if (fmt === 'big-brother') qsOnHouseOptionChange();
+  if (engineOf(fmt) === 'big-brother') qsOnHouseOptionChange();
 
   // The jury slider is shared by both shows but not NAMED by both — a house
   // does not send you to a Council — and in a house it also reports the week
@@ -1599,7 +1599,7 @@ function _placeRomance(fmt) {
   if (!acc) return;
   if (!_romanceHome) _romanceHome = { parent: acc.parentNode, next: acc.nextSibling };
   const houseBody = _g('bb-options-body');
-  if (fmt === 'big-brother' && houseBody) {
+  if (engineOf(fmt) === 'big-brother' && houseBody) {
     if (acc.parentNode !== houseBody) houseBody.appendChild(acc);
   } else if (_romanceHome.parent && acc.parentNode !== _romanceHome.parent) {
     _romanceHome.parent.insertBefore(acc, _romanceHome.next);
@@ -1616,7 +1616,7 @@ function _placeRomance(fmt) {
 export function renderHouseStructure() {
   const host = _g('bb-structure');
   if (!host) return;
-  if (seasonFormat(seasonConfig) !== 'big-brother') { host.innerHTML = ''; host.style.display = 'none'; return; }
+  if (engineFormat(seasonConfig) !== 'big-brother') { host.innerHTML = ''; host.style.display = 'none'; return; }
   host.style.display = '';
   const segs = houseStructure(seasonConfig, _players().length);
   host.innerHTML = `<div class="bbst">
@@ -1631,8 +1631,10 @@ export function renderHouseStructure() {
    (Drag Race All Stars on Drag Race's), so it uses that engine's controls —
    plus any listed under its own slug, which is how a control that exists ONLY
    on the spin-off (the All Stars rule) is scoped. */
+// A slug matches its own show and every show on its engine; `=slug` matches
+// that show only (Big Brother's theme picker is not Secret Story's).
 function _inScope(formats, fmt) {
-  return formats.includes(fmt) || formats.includes(engineOf(fmt));
+  return formats.includes(fmt) || formats.includes('=' + fmt) || formats.includes(engineOf(fmt));
 }
 
 /** The controls a given show uses — exported so the scoping can be tested. */

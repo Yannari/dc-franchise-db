@@ -20,7 +20,7 @@
 import { EVENT_KINDS } from './topics.js';
 import { classifyEventTone } from '../tone.js';
 import { withReceipts } from './receipts.js';
-import { roundExits, publicBallots, roundShape } from '../shows.js';
+import { roundExits, publicBallots, roundShape, engineOf } from '../shows.js';
 import { packFor } from './packs/index.js';
 
 /** A nominal episode runtime, in ms. Posts are stamped across it. */
@@ -509,14 +509,14 @@ export function extractEvents(ep, { format, season, episode } = {}, context = nu
   // A Big Brother finale is not a week — no Head of Household, no nominees, no
   // eviction vote — so running the weekly reader over it produces nothing and
   // then a nameless `finale`. It has its own shape and its own reader.
-  if (isFinale && meta.format === 'big-brother') out.push(...bbFinaleEvents(ep, meta));
+  if (isFinale && engineOf(meta.format) === 'big-brother') out.push(...bbFinaleEvents(ep, meta));
   /* ── WHICH READER ──────────────────────────────────────────────────
      Two left. Drag Race used to be read here too — by `drEvents`, which
      folded a runway into a vote show's kinds: a lip sync win as a
      `domination`, the bottom two as `nomination`s. It has its own pack now
      (js/social/packs/drag-race.js) and is handled above, with The Traitors.
      What remains is the two shows the shared library was written for. */
-  else out.push(...(meta.format === 'big-brother' ? bbEvents(ep, meta) : tdEvents(ep, meta)));
+  else out.push(...(engineOf(meta.format) === 'big-brother' ? bbEvents(ep, meta) : tdEvents(ep, meta)));
   out.push(...campEvents(ep, meta));
   // Whatever the advantages did, and what the ballot says about the vote —
   // both available on a played record and both previously read by nobody.

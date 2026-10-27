@@ -48,6 +48,11 @@ export const BOARD_FILES = {
   // not a sentence about a camp, a house or a castle. A shared file would
   // rank a queen's crown against a jury vote.
   'drag-race': 'rankings_dr.json',
+  // Their own boards for the same reason: dailies and Arena wins, Influencer
+  // turns and ratings are not a camp's currency. Without an entry here a
+  // Challenge season applied in the tool fell back to Total Drama's board.
+  'the-challenge': 'rankings_ch.json',
+  'the-circle': 'rankings_ci.json',
 };
 
 /** The board file for a show, or null if that show does not have one. */

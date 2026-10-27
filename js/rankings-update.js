@@ -1194,7 +1194,8 @@ export function computeScore(p) {
   // equivalent to.
   const _rub = _ruRubric(p.format);
   const physBonus = (num(p.immWins) * _rub.comp1.weight)
-                  + (num(p.rewWins) * _rub.comp2.weight)
+                  // A show with one competition (The Circle, Perfect Match) has no comp2.
+                  + (_rub.comp2 ? num(p.rewWins) * _rub.comp2.weight : 0)
                   + (_rub.comp3 ? num(p.comp3Wins) * _rub.comp3.weight : 0);
 
   // STRATEGIC — advantages scored by lifecycle: found (located it) < played effectively,
@@ -1396,7 +1397,7 @@ export function ruScoreRows(rows, { board = null, castSize, coWin = false, forma
     const _mrub = _ruRubric(format);
     const _adv = _mrub.adv || {};
     if (row.immWins)    parts.push(_mrub.comp1.label + ':+' + (row.immWins*_mrub.comp1.weight).toFixed(1));
-    if (row.rewWins)    parts.push(_mrub.comp2.label + ':+' + (row.rewWins*_mrub.comp2.weight).toFixed(1));
+    if (row.rewWins && _mrub.comp2) parts.push(_mrub.comp2.label + ':+' + (row.rewWins*_mrub.comp2.weight).toFixed(1));
     if (row.comp3Wins && _mrub.comp3) {
       parts.push(_mrub.comp3.label + ':+' + (row.comp3Wins*_mrub.comp3.weight).toFixed(1));
     }
@@ -1929,8 +1930,9 @@ export function ruRowsFromDoc(json) {
   const norm = s => (s||'').toLowerCase().trim().replace(/['".]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
   // Fan Favorite lives in the awards block, not in the placements array — map
   // it to a normalized name so we can tick the FANFAV box for that player.
-  // Drag Race keeps its audience award as `congeniality` (Miss Congeniality).
-  const ffRaw = json.awards?.fanFavorite || json.congeniality;
+  // Drag Race keeps its audience award as `congeniality` (Miss Congeniality),
+  // The Circle as `fanFavourite`.
+  const ffRaw = json.awards?.fanFavorite || json.fanFavourite || json.congeniality;
   const fanFavKey = ffRaw ? norm(typeof ffRaw === 'string' ? ffRaw : ffRaw.name) : null;
   /* Remember what kind of season this is BEFORE filling anything: it decides
      which competition each of the two columns holds, and what they are called. */

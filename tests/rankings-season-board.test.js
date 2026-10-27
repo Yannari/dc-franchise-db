@@ -106,3 +106,28 @@ describe('the season in the simulator, as a document', () => {
     expect(ruSeasonDocument({ episodeHistory: [] }, { format: 'total-drama' })).toBeNull();
   });
 });
+
+// Every show with a ranking currency has its own board, and the calculator
+// reads each show's audience award however its document spells it.
+import { boardFile } from '../js/ranking-boards.js';
+describe('boards for The Challenge and The Circle', () => {
+  it('have their own files, never the Total Drama board', () => {
+    expect(boardFile('the-challenge')).toBe('rankings_ch.json');
+    expect(boardFile('the-circle')).toBe('rankings_ci.json');
+  });
+  it("tick The Circle's fan favourite", () => {
+    const ci1 = JSON.parse(readFileSync('data/seasons/ci-1-data.json', 'utf8'));
+    const fav = ci1.fanFavourite?.name || ci1.fanFavourite;
+    const rows = ruRowsFromDoc(ci1);
+    expect(rows.filter(r => r.fanFav).map(r => r.name)).toEqual(fav ? [fav] : []);
+  });
+});
+
+describe('a show with one competition', () => {
+  it('scores The Circle without its missing second column', () => {
+    const ci1 = JSON.parse(readFileSync('data/seasons/ci-1-data.json', 'utf8'));
+    const rows = ruRowsFromDoc(ci1);
+    const res = ruScoreRows(rows, { board: ruEmptyBoard('the-circle'), castSize: rows.length, format: 'the-circle' });
+    expect(res.every(r => Number.isFinite(r.newScore))).toBe(true);
+  });
+});

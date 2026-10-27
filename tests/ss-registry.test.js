@@ -70,3 +70,25 @@ describe('where Secret Story is filed', () => {
       .toMatchObject({ comp1: 2, comp2: 1, comp3: 3, social: 4 });
   });
 });
+
+// The calendar: its own summer, never counted in Big Brother's rhythm.
+import { nextWindowFor } from '../js/franchise-calendar.js';
+import { buildModel } from '../js/calendar-view.js';
+
+describe('Secret Story on the calendar', () => {
+  const row = (format, n, y, slot) => ({ format, seasonNumber: n, airYear: y, airSlot: slot, episodeCount: 12, castSize: 14, seasonId: seasonId(format, n) });
+  const rows = [row('big-brother', 1, 2026, 'summer'), row('big-brother', 2, 2027, 'summer'), row('secret-story', 1, 2027, 'summer')];
+  it('gives Big Brother its next summer without counting Secret Story', () => {
+    expect(nextWindowFor(rows, 'big-brother')).toEqual(nextWindowFor(rows.slice(0, 2), 'big-brother'));
+  });
+  it('continues Secret Story from its own last season', () => {
+    const w = nextWindowFor(rows, 'secret-story');
+    expect(w.airSlot).toBe('summer');
+    expect(w.airYear).toBeGreaterThan(2027);
+  });
+  it('draws a Secret Story season under its own name', () => {
+    const m = buildModel(rows);
+    const text = JSON.stringify(m);
+    expect(text).toMatch(/SS ?1|Secret Story 1/);
+  });
+});

@@ -4062,6 +4062,51 @@ than an empty filter. Adding a spin-off therefore costs the navbar nothing.
 The worker imports `js/shows.js`: a spin-off cannot be published until the
 worker is redeployed with the new registry.
 
+### 23.8 A show of its own on another show's engine (Secret Story, 2026-10-27)
+
+Secret Story (`secret-story`, prefix `ss`) plays on the Big Brother engine and
+sits under Big Brother's site tab, like All Stars, but it is NOT a spin-off:
+no `spinOff`, because it is a different game (no HOH, no veto, no jury; the
+confessional nominates and the public eliminates and crowns). What that
+changes against §23:
+
+| question | spin-off (All Stars) | own show on an engine (Secret Story) |
+|---|---|---|
+| site tab row | `familyOf` | `familyOf` (same) |
+| career, records, rankings board | flagship's | its OWN: `careerShowOf(format)` returns the flagship only for a `spinOff` |
+| rubric | inherited by the alias loop | declared (`RU_SHOW['secret-story']`), its own board file |
+| calendar | waits for the flagship (`nextAllStarsWindow`) | its own rhythm (`nextWindowFor`, rows by `seasonRowFormat`) |
+| setup controls | engine's | engine's, minus `=big-brother` ones (theme picker, jury, Block Buster, have-nots) |
+
+Things that bit, in order:
+
+- **"Is this Big Brother?" has three answers.** 226 checks of `'big-brother'`
+  across 52 files: rows and memory stamps are the ENGINE (leave them); a
+  config check is `engineFormat(seasonConfig)`; a filing check is
+  `careerShowOf`. About 40 config checks moved.
+- **`familyOf` was doing two jobs.** It meant "same tab" and "same career".
+  Records, the worker's board path, `boardFile`, the rubric alias loop and
+  `rankings.html`'s board filter now ask `careerShowOf`.
+- **A show that used to be a theme.** `seasonFormat` reads an old
+  `{ format: 'big-brother', theme: 'secret-story' }` config as the new show,
+  the DRAS legacy pattern. The theme stays in `BB_THEMES` (rows stamped with
+  its id are read by `themeById`) but leaves `THEME_LIST` and the picker;
+  `currentTheme()` returns it for every Secret Story season.
+- **The jury leaks into the export.** A placement status of `Pre-Jury`, a
+  winner card's "Final Jury Vote" at 0-0-0, a runner-up "X & Y": a show the
+  public crowns writes `finalVote` and the page draws the public's shares.
+- **Words a swap can fix, and words it cannot.** The viewer's
+  `THEME_WORDS['secret-story']` swaps houseguest, the Big Brother house,
+  evict and "on the block" (measured: ~500 lines to 0 over three seasons).
+  What is left is house life ABOUT a veto and a jury the show does not have
+  (152 + 37 lines): content, rewritten in the show's writing pass, not
+  swapped.
+- **Authored data born in a season.** A newbie's secret becomes canon on the
+  character: a write-once D1 column (`roster.secret`), never touched by a
+  Studio save, read back out by Publish, written at the season start from a
+  browser with the Studio key or by the season publish. The publish-wipe
+  trap applies to every field like it.
+
 ## 24. Rankings: every show gets a board, a calculator and its own trivia (2026-10-27)
 
 A show is not finished when its first season publishes: the rankings page,

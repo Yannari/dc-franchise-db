@@ -2105,6 +2105,13 @@ export function seasonFormat(source) {
   if (source && typeof source === 'object' && source.drAllStars === true) {
     return seasonRowFormat({ format: raw, allStars: true });
   }
+  /* SECRET STORY USED TO BE A BIG BROTHER THEME (`theme: 'secret-story'`,
+     knob `bbSecretStory: 'on'`). A config from then is a Secret Story season,
+     read here for the same reason as the All Stars flag above. */
+  if (raw === 'big-brother' && source && typeof source === 'object'
+      && (source.theme === 'secret-story' || source.bbSecretStory === 'on')) {
+    return 'secret-story';
+  }
   return raw;
 }
 

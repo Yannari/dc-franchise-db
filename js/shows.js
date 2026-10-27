@@ -129,6 +129,8 @@ export const SHOWS = {
   },
   'big-brother': {
     prefix: 'bb', name: 'Big Brother', short: 'BB', emoji: '📹', accent: '#38bdf8',
+    // The site's tab row for this family: `Big Brother | Secret Story`.
+    familyTab: 'Big Brother',
     // Set at the bottom of js/bb-run.js. Read by formatIsRunnable().
     runnableFlag: '_bbRunnable',
     airNight: 3,
@@ -178,6 +180,58 @@ export const SHOWS = {
       comps: [['bb.hohWins', 'HOH wins'], ['bb.vetoWins', 'Veto wins'],
         ['bb.blockBusterWins', 'Block Buster wins'], ['bb.timesNominated', 'Times nominated'],
         ['bb.timesOnBlock', 'Times on the block'], ['bb.timesSaved', 'Saved by the veto']],
+    },
+  },
+  // ── SECRET STORY: its own show on the Big Brother engine ─────────────
+  //
+  // The French format (TF1, 2007–2026): everybody moves in hiding a secret
+  // and a kitty, the house hunts the secrets with a buzzer, La Voix runs the
+  // house, the confessional nominates and the PUBLIC eliminates and crowns.
+  // It plays on the house engine (rows stamp `format: 'big-brother'`; the
+  // season's identity is `seasonConfig.format`), and on the site it is the
+  // second tab of the Big Brother family.
+  //
+  // Not a `spinOff`: it does not wait for Big Brother season N, it has its
+  // own summer from its first season. Not on Big Brother's board either: no
+  // HOH, no veto, no jury — it scores different currencies.
+  //
+  // Spec: docs/superpowers/specs/2026-10-27-secret-story-show-design.md
+  'secret-story': {
+    prefix: 'ss', name: 'Secret Story', short: 'SS', emoji: '👁️', accent: '#e0b84a',
+    engine: 'big-brother',
+    family: 'big-brother',
+    familyTab: 'Secret Story',
+    // The prime was Thursday from season 10 on; Thursday is free in summer.
+    airNight: 4,
+    airSlots: ['summer'],
+    rosterPlace: 'HOUSE',
+    hasJury: false,
+    words: { seasonComplete: 'The season is complete. The public has chosen.',
+      player: 'housemate', players: 'housemates', round: 'Week', exit: 'eliminated',
+      quietRound: 'A normal week in the House of Secrets',
+      exitAction: 'eliminate',
+      milestone: 'semi-final',
+      fanWords: ['secret', 'buzz', 'kitty', 'la voix', 'prime', 'sas', 'nominated',
+        'confessional', 'clue', 'buzzer'],
+      comp: 'game', comps: 'games won', compBeast: 'game machine', compWon: 'games',
+      audienceAward: "The public's favourite" },
+    // Sold on the hunt and the house's stories more than on the vote: a
+    // public that eliminates rewards a big character and a romance.
+    audience: { strategy: 1.0, blindside: 1.1, steamroll: 1.0, mess: 1.15, showmance: 1.2 },
+    careerStats: [
+      ['challengeWins', 'totalCompWins', 'games won'],
+      ['ss.secretsFound', 'secretsFound', 'secrets found'],
+      ['ss.secretKept', 'secretsKept', 'secrets kept to the semi-final'],
+      ['ss.buzzesWrong', 'wrongBuzzes', 'wrong buzzes'],
+      ['bb.timesNominated', 'timesNominated', 'nominations'],
+    ],
+    articleStats: {
+      career: [['secretsFound', 'Secrets found'], ['secretsKept', 'Secrets kept'],
+        ['wrongBuzzes', 'Wrong buzzes'], ['timesNominated', 'Times nominated']],
+      season: [['ss.secretsFound', 'Secrets found'], ['ss.secretKept', 'Secret kept'],
+        ['ss.kitty', 'Kitty'], ['bb.timesNominated', 'Times nominated']],
+      comps: [['ss.secretsFound', 'Secrets found'], ['ss.buzzesRight', 'Right buzzes'],
+        ['ss.buzzesWrong', 'Wrong buzzes'], ['bb.timesNominated', 'Times nominated']],
     },
   },
   // ── The Traitors ────────────────────────────────────────────────────

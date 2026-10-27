@@ -598,6 +598,7 @@ function _preset() {
 const SHOW_TAGS = {
   'total-drama': 'Tribes, challenges, tribal council',
   'big-brother': 'One house, HOH, veto, live eviction',
+  'secret-story': 'Everybody hides a secret, La Voix runs the house, the public eliminates',
   'traitors':    'A castle, a round table, a murder every night',
   'drag-race':   'Werk room, runway, lip sync for your life',
   'drag-race-all-stars': 'Returning queens, a lip sync for your legacy, and the lipstick',

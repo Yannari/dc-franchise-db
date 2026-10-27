@@ -525,8 +525,12 @@ const EXCLUSIVE = {
     'contestant', 'voted out', 'camper'],
   traitors: ['banished', 'banishment', 'murdered', 'the round table', 'conclave', 'faithful'],
 };
+// Secret Story nominates too (in the confessional), so those two words are
+// its own as well; HOH, veto, the block and eviction never are.
+const SHARED = { 'secret-story': ['nominated', 'nomination'] };
 const forbiddenFor = format => Object.entries(EXCLUSIVE)
-  .filter(([f]) => f !== format).flatMap(([, list]) => list);
+  .filter(([f]) => f !== format).flatMap(([, list]) => list)
+  .filter(w => !(SHARED[format] || []).includes(w));
 const leaks = (text, format) => forbiddenFor(format).filter(w =>
   new RegExp(`\\b${w.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`)
     .test(String(text).toLowerCase()));

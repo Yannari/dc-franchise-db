@@ -21,7 +21,9 @@ describe('the family toggle', () => {
   it('draws one button per family', () => {
     mount();
     const buttons = top(el);
-    expect(buttons).toHaveLength(Object.keys(SHOWS).length - 1 + 1);   // spin-off folded in, + All
+    // Every spin-off folded into its family (All Stars, Secret Story), + All.
+    const families = new Set(Object.keys(SHOWS).map(f => SHOWS[f].family || f));
+    expect(buttons).toHaveLength(families.size + 1);
     expect(buttons.filter(b => /Drag Race/.test(b.textContent))).toHaveLength(1);
     expect(tabs(el)).toHaveLength(0);
   });
@@ -52,7 +54,19 @@ describe('the family toggle', () => {
 
   it('a family of one draws no tab row', () => {
     mount();
-    top(el).find(b => b.dataset.show === 'big-brother').click();
+    top(el).find(b => b.dataset.show === 'traitors').click();
     expect(tabs(el)).toHaveLength(0);
+  });
+});
+
+describe('Secret Story under Big Brother', () => {
+  it('opens a Big Brother | Secret Story tab row', () => {
+    setUrl(''); rememberShow('all');
+    const el = document.createElement('div'); const seen = [];
+    mountShowSwitcher(el, { formats: Object.keys(SHOWS), onChange: f => seen.push(f) });
+    top(el).find(b => b.dataset.show === 'big-brother').click();
+    expect(tabs(el).map(b => b.textContent.trim())).toEqual(['Big Brother', 'Secret Story']);
+    tabs(el).find(b => b.dataset.show === 'secret-story').click();
+    expect(seen.at(-1)).toBe('secret-story');
   });
 });

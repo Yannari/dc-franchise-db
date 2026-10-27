@@ -131,6 +131,40 @@ const SHOW_WORDS = {
       { id: 'veto', text: 'Does the veto get used?' },
     ],
   },
+  // SECRET STORY plays on the house engine but is not Big Brother: no HOH, no
+  // veto, no block, no jury. The confessional nominates, the PUBLIC
+  // eliminates, and the whole country votes for the winner.
+  'secret-story': {
+    name: 'Secret Story',
+    short: 'SS',
+    episode: 'week',
+    Episode: 'Week',
+    episodeShort: 'Wk',
+    elimination: 'elimination',
+    eliminated: 'eliminated',
+    challenge: 'game',
+    home: 'House of Secrets',
+    vote: 'public vote',
+    finalVote: 'public vote',
+    comps: ['game'],
+    danger: 'the nominations',
+    Danger: 'The nominations',
+    onDanger: 'nominated',
+    nominated: 'was nominated',
+    Pawn: 'A safe name',
+    Ceremony: 'Nominations',
+    nominee: 'the nominee',
+    pawn: 'a safe name',
+    ceremony: 'the nominations in the confessional',
+    jury: 'the public',
+    safe: 'safe',
+    nominationLabel: 'Nomination',
+    polls: [
+      { id: 'eliminated', text: 'Who leaves the House of Secrets this week?' },
+      { id: 'buzz', text: 'Whose secret falls next?' },
+      { id: 'kept', text: 'Whose secret lasts to the semi-final?' },
+    ],
+  },
   // ── The Traitors ──
   //
   // A show with two exit verbs, and only one of them belongs in `eliminated`.

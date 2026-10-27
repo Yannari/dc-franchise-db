@@ -1006,6 +1006,8 @@ function renderRankings(rankingsData, playersMap) {
 
   const boards = Array.isArray(rankingsData) ? rankingsData : [rankingsData];
   const formatOfBoard = b => (b && b.metadata && b.metadata.format) || DEFAULT_FORMAT;
+  // A spin-off's board is its family's (Drag Race All Stars ranks on Drag Race's).
+  const familyOfFormat = f => ((sw && sw.SHOWS && sw.SHOWS[f] && sw.SHOWS[f].family) || f);
 
   if (sw && !window._sw) {
     // The switcher lives in the site header now, so the choice follows you
@@ -1022,7 +1024,18 @@ function renderRankings(rankingsData, playersMap) {
   const selected = show === ALL
     ? sw ? sw.orderFormats(boards.map(formatOfBoard)).map(f => boards.find(b => formatOfBoard(b) === f))
          : boards.slice()
-    : boards.filter(b => formatOfBoard(b) === show);
+    : boards.filter(b => familyOfFormat(formatOfBoard(b)) === familyOfFormat(show));
+
+  /* The sort's "votes" options, named by the show: a show with no vote
+     sorts by its own number (Drag Race: times in the bottom). */
+  {
+    const sm = (sw && sw.SHOWS && sw.SHOWS[show]) || {};
+    const stat = sm.words && sm.words.socialStat;
+    const d = document.querySelector('option[value="votesDesc"]');
+    const a = document.querySelector('option[value="votesAsc"]');
+    if (d) d.textContent = stat ? '\u{1F3A4} ' + stat + ' (Most \u2192 Fewest)' : '\u{1F5F3}\uFE0F Votes Against (Most \u2192 Fewest)';
+    if (a) a.textContent = stat ? '\u{1F3A4} ' + stat + ' (Fewest \u2192 Most)' : '\u{1F5F3}\uFE0F Votes Against (Fewest \u2192 Most)';
+  }
 
   if (!selected.length) {
     // Only reachable for a SPECIFIC show: "all" with at least one board never
@@ -1192,6 +1205,9 @@ function getWinnerKeys(player){
 }
 
 function renderPlayerCard(ranking, player, format) {
+  const _meta = (window.showSwitcher && window.showSwitcher.SHOWS
+    && window.showSwitcher.SHOWS[format]) || {};
+  const socialStat = _meta.words && _meta.words.socialStat;
   const winRate = ranking.winRate || Math.round((player.wins / player.totalSeasons) * 100);
   const avgPlacement = calculateAvgPlacement(player);
   const winnerKeys = getWinnerKeys(player);
@@ -1224,7 +1240,7 @@ function renderPlayerCard(ranking, player, format) {
           'data-score="' + ranking.score + '" ' +
           'data-tier="' + ranking.tier + '" ' +
           'data-chwins="' + (ranking.challengeWins || 0) + '" ' +
-          'data-votes="' + (ranking.votesAgainst || 0) + '" ' +
+          'data-votes="' + (socialStat ? (ranking.blockSurvived || 0) : (ranking.votesAgainst || 0)) + '" ' +
           'data-seasons="' + (ranking.seasonsPlayed || 0) + '" ' +
           'data-avp="' + (ranking.avgPlacement || 99) + '" ' +
           'data-jury="' + (ranking.juryVotes || 0) + '" ' +
@@ -1304,6 +1320,11 @@ function renderPlayerCard(ranking, player, format) {
     const survived = ranking.blockSurvived || 0;
     html +=     '<div class="stat-label"><span class="stat-icon">🧱</span> SURVIVED THE BLOCK</div>';
     html +=     '<div class="stat-value">' + survived + (survived === 1 ? ' time' : ' times') + '</div>';
+  } else if (_meta.words && _meta.words.socialStat) {
+    // NO VOTE ON THIS SHOW (Drag Race): its own measure, never "votes against".
+    const times = ranking.blockSurvived || 0;
+    html +=     '<div class="stat-label"><span class="stat-icon">🎤</span> ' + _meta.words.socialStat.toUpperCase() + '</div>';
+    html +=     '<div class="stat-value">' + times + (times === 1 ? ' time' : ' times') + '</div>';
   } else {
     html +=     '<div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div>';
     html +=     '<div class="stat-value">' + player.totalVotesAgainst + ' total' + (player.totalVotesAgainst < 5 ? ' 🔒' : '') + '</div>';
@@ -1315,8 +1336,6 @@ function renderPlayerCard(ranking, player, format) {
      still sitting at it. Both come off the registry, and the jury box is not
      drawn at all for a show that has no jury: an empty stat box reads as
      "never got one" about something that does not exist. */
-  const _meta = (window.showSwitcher && window.showSwitcher.SHOWS
-    && window.showSwitcher.SHOWS[format]) || {};
   const _compWord = ((_meta.words && _meta.words.comp) || 'challenge').toUpperCase();
   html +=     '<div class="stat-box">';
   html +=       '<div class="stat-label"><span class="stat-icon">💪</span> ' + _compWord + ' WINS</div>';

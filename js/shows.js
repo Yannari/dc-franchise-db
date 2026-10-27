@@ -347,6 +347,9 @@ export const SHOWS = {
       // season hub printed this, and read it off a chain of slug comparisons
       // until a fourth show made the chain the thing the guard is for.
       quietRound: 'A normal week',
+      // What a ranking card shows where a voting show shows votes against:
+      // there is no vote here, and the bottom is the show's own measure.
+      socialStat: 'In the bottom',
       player: 'queen', players: 'queens', round: 'Episode',
       exit: 'sashayed away', exitAction: 'send home',
       // THE SECOND EXIT VERB. Read through exitVerbs(); never printed as the

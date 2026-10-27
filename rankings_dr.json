@@ -1,0 +1,427 @@
+{
+  "metadata": {
+    "format": "drag-race",
+    "name": "👑 Drag Race Franchise Rankings",
+    "version": "1.0",
+    "lastUpdated": "2026-10-27",
+    "totalPlayers": 14,
+    "seasons": 1
+  },
+  "scoringSystem": {},
+  "tiers": {
+    "S+": {
+      "name": "TIER S+ - Elite Winners",
+      "description": "90+ • Franchise legends",
+      "scoreRange": [
+        90,
+        100
+      ]
+    },
+    "S": {
+      "name": "TIER S - Championship Caliber",
+      "description": "80-89 • Top-tier threats",
+      "scoreRange": [
+        80,
+        89
+      ]
+    },
+    "A": {
+      "name": "TIER A - Elite Threats",
+      "description": "71-79 • Serious players",
+      "scoreRange": [
+        71,
+        79
+      ]
+    },
+    "B": {
+      "name": "TIER B - Solid Competitors",
+      "description": "60-70 • Held their own",
+      "scoreRange": [
+        60,
+        70
+      ]
+    },
+    "C": {
+      "name": "TIER C - Middle of the Pack",
+      "description": "45-59 • Made no dent",
+      "scoreRange": [
+        45,
+        59
+      ]
+    },
+    "D": {
+      "name": "TIER D - Early Exits",
+      "description": "Under 45 • Gone early",
+      "scoreRange": [
+        0,
+        44
+      ]
+    }
+  },
+  "rankings": [
+    {
+      "playerId": "quin",
+      "name": "Quin",
+      "rank": 1,
+      "tier": "S",
+      "score": 86.9,
+      "wins": 1,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        86.9
+      ],
+      "placements": [
+        1
+      ],
+      "avgPlacement": 1,
+      "challengeWins": 5,
+      "votesAgainst": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "👑",
+      "reasoning": "The defining queen of the season. Quin won five maxi challenges (the Commercial, Design, Snatch Game, Makeover and Music Video challenges) and was high in each of the first three episodes before she won any of them. Her two lows, in the Rusical and the Roast, never put her in the bottom, so she never had to lip sync for her life. She beat Paige Turner to \"9 to 5\" in the final for the crown. Five wins and the best points per episode in the cast put her clearly at the top.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "autumnatic",
+      "name": "Autumnatic",
+      "rank": 2,
+      "tier": "A",
+      "score": 78.3,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        78.3
+      ],
+      "placements": [
+        3
+      ],
+      "avgPlacement": 3,
+      "challengeWins": 6,
+      "votesAgainst": 0,
+      "blockSurvived": 3,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Third place, ranked second. Autumnatic won three maxi challenges (Girl Group, the Roast and the Stand-Up Challenge) and was sent to the bottom three times, winning every one of those lip syncs: against Sharon Needles, Anita Crown Davenport and Gigi Cherie. The bottoms cancel out much of what the wins earned on her points per episode, which is why she sits only just above average there. Her three wins, three lip syncs for her life and the Miss Congeniality title still put her above the queen who finished one place ahead of her.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "paige-turner",
+      "name": "Paige Turner",
+      "rank": 3,
+      "tier": "A",
+      "score": 75,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        75
+      ],
+      "placements": [
+        2
+      ],
+      "avgPlacement": 2,
+      "challengeWins": 2,
+      "votesAgainst": 0,
+      "blockSurvived": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "The most consistent queen of the season, and its runner-up. Paige won the Acting Challenge and was high six more times, from the Commercial Challenge to the Music Video. Her only trip to the bottom came in the Stand-Up Challenge, where she beat Ginger Hollywood to \"Love Shack\". She lost the final lip sync to Quin. She ranks just behind Autumnatic because one maxi win against three is a real gap, even with the steadier record.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "ginger-hollywood",
+      "name": "Ginger Hollywood",
+      "rank": 4,
+      "tier": "B",
+      "score": 65,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        65
+      ],
+      "placements": [
+        5
+      ],
+      "avgPlacement": 5,
+      "challengeWins": 4,
+      "votesAgainst": 0,
+      "blockSurvived": 3,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Fifth place, with three maxi wins: the Ball, the Rusical and the Runway Challenge. Between those wins she was low in the Improv and Makeover challenges, and she beat Velvet Vixen in a lip sync in the Roast. She went home after losing to Paige Turner in the Stand-Up Challenge. Her three wins lift her above Gigi Cherie, who placed one spot higher without winning one.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "gigi-cherie",
+      "name": "Gigi Cherie",
+      "rank": 5,
+      "tier": "B",
+      "score": 62,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        62
+      ],
+      "placements": [
+        4
+      ],
+      "avgPlacement": 4,
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "blockSurvived": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Fourth place without a maxi win. Gigi spent most of the season safe and then rose late, high three weeks running in the Roast, the Runway Challenge and the Stand-Up Challenge. Her first trip to the bottom, in the Music Video Challenge, ended against Autumnatic one step short of the final. A season that averages exactly a safe week, with no win, ranks her just below Ginger Hollywood.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "anita-crown-davenport",
+      "name": "Anita Crown Davenport",
+      "rank": 6,
+      "tier": "C",
+      "score": 58.3,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        58.3
+      ],
+      "placements": [
+        6
+      ],
+      "avgPlacement": 6,
+      "challengeWins": 3,
+      "votesAgainst": 0,
+      "blockSurvived": 5,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Sixth place, and the season's great survivor. Anita was in the bottom five times and won three of those lip syncs, against Marge Stache, Cheryl Hole and Cupcakke, with highs in the Design and Improv challenges between them. Her run ended in the Runway Challenge against Autumnatic. She reached the final of the Lip Sync Smackdown, beating Gigi Cherie and Riot before losing to Cheryl Hole. Five bottoms give her a low points per episode, and the three lip syncs she won keep her in the top half of the board.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "cupcakke",
+      "name": "Cupcakke",
+      "rank": 7,
+      "tier": "C",
+      "score": 54.2,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        54.2
+      ],
+      "placements": [
+        8
+      ],
+      "avgPlacement": 8,
+      "challengeWins": 1,
+      "votesAgainst": 0,
+      "blockSurvived": 2,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Eighth place after a strong start. Cupcakke was high in three of the first five episodes (the Ball, the Acting Challenge and Girl Group) without winning one. She landed in the bottom in the Improv Challenge and beat Minnie Skurr to stay, then went home in Snatch Game after losing to Anita Crown Davenport. Her early highs and a lip sync win put her just above Velvet Vixen, who outlasted her by one episode.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "velvet-vixen",
+      "name": "Velvet Vixen",
+      "rank": 8,
+      "tier": "C",
+      "score": 53.6,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        53.6
+      ],
+      "placements": [
+        7
+      ],
+      "avgPlacement": 7,
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "blockSurvived": 2,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Seventh place, on endurance more than results. Velvet was low in the Commercial, Girl Group, Design and Snatch Game challenges, with one high in the Rusical. She reached the bottom in the Roast and lost the lip sync to Ginger Hollywood. With no maxi wins and no lip syncs won, her score rests on how long she lasted, and her points per episode pull her one place below Cupcakke.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "sharon-needles",
+      "name": "Sharon Needles",
+      "rank": 9,
+      "tier": "C",
+      "score": 52.4,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        52.4
+      ],
+      "placements": [
+        9
+      ],
+      "avgPlacement": 9,
+      "challengeWins": 1,
+      "votesAgainst": 0,
+      "blockSurvived": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Ninth place. Sharon was low in Girl Group, won the Improv Challenge two weeks later, and went home the very next week after losing the Rusical lip sync to Autumnatic. She lost her first-round duel in the Lip Sync Smackdown to Minnie Skurr. A maxi win in a short run keeps her above the queens who went home before her.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "minnie-skurr",
+      "name": "Minnie Skurr",
+      "rank": 10,
+      "tier": "D",
+      "score": 50.7,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        50.7
+      ],
+      "placements": [
+        10
+      ],
+      "avgPlacement": 10,
+      "challengeWins": 4,
+      "votesAgainst": 0,
+      "blockSurvived": 4,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "The season's lip sync assassin. Minnie won the premiere's Talent Show and its lip sync for the win, then landed in the bottom three times in four weeks and won all three: against Taystee twice and Riot once. Her fourth bottom, in the Improv Challenge, ended against Cupcakke. She won her first-round duel in the Lip Sync Smackdown against Sharon Needles. Four bottoms in seven episodes give her a low points per episode, which the lip syncs she won largely make up for.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "taystee",
+      "name": "Taystee",
+      "rank": 11,
+      "tier": "D",
+      "score": 44.7,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        44.7
+      ],
+      "placements": [
+        11
+      ],
+      "avgPlacement": 11,
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "blockSurvived": 2,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Eleventh place, over two runs. Taystee lost the Acting Challenge lip sync to Minnie Skurr and went home, returned the following week, and was high in Girl Group before Minnie sent her home again in the Design Challenge. In the Lip Sync Smackdown she beat Cupcakke before losing to Cheryl Hole. Two lip syncs lost in six episodes leave her near the bottom of the board.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "riot",
+      "name": "Riot",
+      "rank": 12,
+      "tier": "D",
+      "score": 43.6,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        43.6
+      ],
+      "placements": [
+        12
+      ],
+      "avgPlacement": 12,
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "blockSurvived": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Twelfth place. Riot was low in the Ball and high in the Commercial Challenge, then went home in Girl Group after losing to Minnie Skurr. In the Lip Sync Smackdown she beat Ginger Hollywood, a three-time maxi winner, before losing to Anita Crown Davenport. A short run with one high and no wins puts her in the bottom tier.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "cheryl-hole",
+      "name": "Cheryl Hole",
+      "rank": 13,
+      "tier": "D",
+      "score": 41.4,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        41.4
+      ],
+      "placements": [
+        13
+      ],
+      "avgPlacement": 13,
+      "challengeWins": 1,
+      "votesAgainst": 0,
+      "blockSurvived": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Thirteenth place, and the Lip Sync Smackdown champion. Cheryl was low in the Acting Challenge and went home a week later, losing the Commercial Challenge lip sync to Anita Crown Davenport. She came back for the Smackdown and won all three of her duels, against Marge Stache, Taystee and Anita, to take the title Queen of She Done Already Done Had Herses. The crown counts like a maxi win and lifts her above what four episodes alone would give her.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "marge-stache",
+      "name": "Marge Stache",
+      "rank": 14,
+      "tier": "D",
+      "score": 36,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        36
+      ],
+      "placements": [
+        14
+      ],
+      "avgPlacement": 14,
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "blockSurvived": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "The first queen sent home. Marge lost the lip sync in the Ball to Anita Crown Davenport in her second episode, and lost her first-round duel to Cheryl Hole in the Lip Sync Smackdown. Two episodes with a bottom in one of them give her the lowest points per episode in the cast, and she sits at the foot of the board.",
+      "strengths": [],
+      "weaknesses": []
+    }
+  ]
+}

@@ -23,8 +23,11 @@
         "highs": 4,
         "lows": 2,
         "bottoms": 0,
-        "lipsyncWins": 1,
-        "congeniality": 0
+        "lipsyncWins": 0,
+        "congeniality": 0,
+        "smackdownWins": 0,
+        "smackdownCrowns": 0,
+        "ppe": 3.97
       },
       "lead": "During her time on the season, Quin proved to be the competition’s defining force, placing 1st with 5 maxi challenge wins, 4 high placements, and 2 low placements. She opened strongly alongside Minnie Skurr, later built repeated momentum in challenges judged against Paige Turner, Autumnatic, Gigi Cherie, Ginger Hollywood, Anita Crown Davenport, and Velvet Vixen. Even after slipping low in the later game, she rebounded with wins at key points, including the final competitive stretch before the finale. Quin reached the finale with Paige Turner and Autumnatic and was crowned the winner.",
       "personality": "Quin came across as a relentless front-runner whose strength was consistency under pressure. Her season was not spotless, but her ability to recover quickly made her difficult for the others to catch. She was especially tied to Paige Turner and Autumnatic in the endgame, where her competitive edge separated her from the other finalists.",
@@ -45,7 +48,10 @@
         "lows": 0,
         "bottoms": 1,
         "lipsyncWins": 1,
-        "congeniality": 0
+        "congeniality": 0,
+        "smackdownWins": 0,
+        "smackdownCrowns": 0,
+        "ppe": 3.5
       },
       "lead": "During her time on the season, Paige Turner placed 2nd as the runner-up, earning 1 maxi challenge win, 6 high placements, and 1 bottom placement. She made her breakthrough by winning the Acting Challenge and remained a steady presence near the top through later rounds with Quin, Autumnatic, Gigi Cherie, Ginger Hollywood, and Anita Crown Davenport. Her run included multiple mini challenge wins and a late lip sync against Ginger Hollywood to “Love Shack,” after which Ginger Hollywood sashayed away. Paige reached the finale with Quin and Autumnatic, where Quin was crowned.",
       "personality": "Paige Turner played as a polished and persistent competitor who often stayed close to the top even when she was not the main winner of the week. She seemed especially built for the long game, collecting strong placements across different challenge types and staying relevant deep into the season. Her endgame was defined by proximity to Quin: close enough to challenge her, but not quite able to overtake her.",
@@ -69,7 +75,10 @@
         "lows": 0,
         "bottoms": 3,
         "lipsyncWins": 3,
-        "congeniality": 1
+        "congeniality": 1,
+        "smackdownWins": 0,
+        "smackdownCrowns": 0,
+        "ppe": 3.07
       },
       "lead": "During her time on the season, Autumnatic placed 3rd, was named Miss Congeniality, and earned 3 maxi challenge wins while landing in the bottom 3 times. She formed a showmance with Gigi Cherie and competed closely with Quin, Paige Turner, Ginger Hollywood, Anita Crown Davenport, Velvet Vixen, and Sharon Needles across the season. Her run mixed major victories with repeated survival moments, including lip syncs connected to Sharon Needles, Anita Crown Davenport, and Gigi Cherie. Autumnatic reached the finale with Quin and Paige Turner, where Quin was crowned.",
       "personality": "Autumnatic’s season had a warm social identity alongside a volatile competitive path. She was capable of taking command of a challenge, but she also had to fight through danger more than the other finalists. Her showmance with Gigi Cherie gave her run an emotional throughline, especially when the two were linked in Gigi’s final episode.",
@@ -92,7 +101,10 @@
         "lows": 0,
         "bottoms": 1,
         "lipsyncWins": 0,
-        "congeniality": 0
+        "congeniality": 0,
+        "smackdownWins": 0,
+        "smackdownCrowns": 0,
+        "ppe": 3
       },
       "lead": "During her time on the season, Gigi Cherie placed 4th, sashayed away, and earned 3 high placements with 1 bottom placement. Her late-season rise placed her near the top with Paige Turner and Quin while Autumnatic, her showmance, became one of the season’s strongest competitors. Gigi’s final stretch included high placements in episodes won by Autumnatic and Ginger Hollywood before she landed in the bottom during Quin’s Music Video Challenge win. She lip synced against Autumnatic to “Only Girl (In the World)” and sashayed away.",
       "personality": "Gigi Cherie emerged most clearly in the later part of the season as a poised contender who found her footing near the end. Her connection with Autumnatic gave her run a personal stake, but it also made her exit more pointed when they faced each other directly. She was a late bloomer whose best weeks came just before the competition narrowed.",
@@ -113,7 +125,10 @@
         "lows": 1,
         "bottoms": 3,
         "lipsyncWins": 1,
-        "congeniality": 0
+        "congeniality": 0,
+        "smackdownWins": 0,
+        "smackdownCrowns": 0,
+        "ppe": 2.92
       },
       "lead": "During her time on the season, Ginger Hollywood placed 5th, sashayed away, and earned 3 maxi challenge wins, 1 low placement, and 3 bottom placements. She began with an early win and later added victories over fields that included Quin, Velvet Vixen, Paige Turner, Gigi Cherie, Anita Crown Davenport, and Autumnatic. Her season repeatedly swung between success and danger, including a lip sync against Velvet Vixen to “Defying Gravity” before she survived into the final five. Ginger Hollywood landed in the bottom again during Autumnatic’s Stand-Up Challenge win, lip synced against Paige Turner to “Love Shack,” and sashayed away.",
       "personality": "Ginger Hollywood was one of the season’s clearest boom-or-bust competitors. When she connected with a challenge, she could take the whole week; when she missed, she was vulnerable enough to be pulled into the bottom. That instability made her run exciting but ultimately hard to sustain against the steadier endgame queens.",
@@ -136,7 +151,10 @@
         "lows": 1,
         "bottoms": 5,
         "lipsyncWins": 3,
-        "congeniality": 0
+        "congeniality": 0,
+        "smackdownWins": 2,
+        "smackdownCrowns": 0,
+        "ppe": 2.25
       },
       "lead": "During her time on the season, Anita Crown Davenport placed 6th, sashayed away, and earned 2 high placements, 1 low placement, and 5 bottom placements. She formed a showmance with Velvet Vixen and survived multiple lip syncs involving Marge Stache, Cheryl Hole, Cupcakke, and Autumnatic. Anita also found brief momentum with high placements in challenges won by Quin and Sharon Needles, even as her danger level remained high. Her run ended after she landed in the bottom during Ginger Hollywood’s Runway Challenge win, lip synced against Autumnatic to “Freedom! ’90,” and sashayed away.",
       "personality": "Anita Crown Davenport played like a survivor, repeatedly finding a way through situations that could have ended her run much earlier. Her showmance with Velvet Vixen connected her to another queen who also spent much of the season near danger. Anita’s resilience was her defining trait, but the constant pressure eventually caught up with her.",
@@ -159,7 +177,10 @@
         "lows": 3,
         "bottoms": 2,
         "lipsyncWins": 0,
-        "congeniality": 0
+        "congeniality": 0,
+        "smackdownWins": 0,
+        "smackdownCrowns": 0,
+        "ppe": 2.4
       },
       "lead": "During her time on the season, Velvet Vixen placed 7th, sashayed away, and earned 1 high placement, 3 low placements, and 2 bottom placements. She formed a showmance with Anita Crown Davenport and spent much of her run moving between danger and brief recovery alongside queens such as Quin, Autumnatic, Ginger Hollywood, Cupcakke, and Sharon Needles. Her strongest moment came when she was high during Ginger Hollywood’s Rusical win, but she soon fell low again during Quin’s Snatch Game win. Velvet landed in the bottom during Autumnatic’s Roast win, lip synced against Ginger Hollywood to “Defying Gravity,” and sashayed away.",
       "personality": "Velvet Vixen’s season was defined by strain and persistence. She kept surviving long enough to show flashes of promise, but she was often on the wrong side of the judges’ decisions. Her showmance with Anita Crown Davenport gave her an anchor in the competition, even as both of them struggled to stay out of danger.",
@@ -180,7 +201,10 @@
         "lows": 0,
         "bottoms": 2,
         "lipsyncWins": 1,
-        "congeniality": 0
+        "congeniality": 0,
+        "smackdownWins": 0,
+        "smackdownCrowns": 0,
+        "ppe": 2.78
       },
       "lead": "During her time on the season, Cupcakke placed 8th, sashayed away, and earned 3 high placements with 2 bottom placements. She started strongly with high placements in episodes won by Ginger Hollywood, Paige Turner, and Autumnatic, competing alongside Quin, Taystee, Riot, Minnie Skurr, and Anita Crown Davenport. Her momentum faltered when she landed in the bottom against Minnie Skurr to “Roar,” though Minnie Skurr sashayed away. Cupcakke’s run ended during Quin’s Snatch Game win after she landed in the bottom, lip synced against Anita Crown Davenport to “Hung Up,” and sashayed away.",
       "personality": "Cupcakke had an early competitive spark, regularly appearing near the top before the season turned against her. Her arc felt like a gradual loss of footing rather than an immediate collapse. She had enough strength to survive one bottom placement, but her second major danger point ended her run.",
@@ -201,7 +225,10 @@
         "lows": 1,
         "bottoms": 1,
         "lipsyncWins": 0,
-        "congeniality": 0
+        "congeniality": 0,
+        "smackdownWins": 0,
+        "smackdownCrowns": 0,
+        "ppe": 2.75
       },
       "lead": "During her time on the season, Sharon Needles placed 9th, sashayed away, and earned 1 maxi challenge win, 1 low placement, and 1 bottom placement. She showed promise with mini challenge success and a maxi challenge win in the Improv Challenge, where Anita Crown Davenport was high and Minnie Skurr landed in the bottom. Her run also included a low placement during Autumnatic’s Girl Group Challenge win alongside Velvet Vixen. Sharon landed in the bottom during Ginger Hollywood’s Rusical win, lip synced against Autumnatic to “The Beginning,” and sashayed away.",
       "personality": "Sharon Needles had a sharp, uneven run: distinctive enough to win a challenge, but not stable enough to build lasting momentum. Her best week suggested a queen who could seize the room when the format matched her strengths. Her exit came quickly after that peak, making her season feel like a sudden rise followed by an abrupt fall.",
@@ -221,8 +248,11 @@
         "highs": 0,
         "lows": 0,
         "bottoms": 4,
-        "lipsyncWins": 4,
-        "congeniality": 0
+        "lipsyncWins": 3,
+        "congeniality": 0,
+        "smackdownWins": 1,
+        "smackdownCrowns": 0,
+        "ppe": 2
       },
       "lead": "During her time on the season, Minnie Skurr placed 10th, sashayed away, and earned 1 maxi challenge win while landing in the bottom 4 times. She opened the season with a maxi challenge win and a lip sync with Quin to “So Emotional,” but her path soon became defined by repeated lip sync survival against Taystee and Riot. Minnie also won the mini challenge during the Improv Challenge episode, even as the same episode placed her in the bottom. She lip synced against Cupcakke to “Roar” and sashayed away.",
       "personality": "Minnie Skurr began as an immediate threat, winning right out of the gate, but she quickly became one of the season’s most frequent survival artists. Her run had a scrappy quality: she kept returning from danger, but the repeated pressure left little room to rebuild. The contrast between her opening win and later vulnerability made her one of the season’s sharpest reversals.",
@@ -243,7 +273,10 @@
         "lows": 0,
         "bottoms": 2,
         "lipsyncWins": 0,
-        "congeniality": 0
+        "congeniality": 0,
+        "smackdownWins": 1,
+        "smackdownCrowns": 0,
+        "ppe": 2.17
       },
       "lead": "During her time on the season, Taystee placed 13th, sashayed away, and earned 1 high placement with 2 bottom placements. She was first in danger during Paige Turner’s Acting Challenge win, lip syncing against Minnie Skurr to “9 to 5.” Taystee later had a high placement alongside Cupcakke during Autumnatic’s Girl Group Challenge win, but her recovery did not last. She landed in the bottom again during Quin’s episode 6 win, lip synced against Minnie Skurr to “Gypsy Woman,” and sashayed away.",
       "personality": "Taystee’s season was an early fight for stability. She showed a brief capacity to rebound when she reached the top group, but danger returned almost immediately. Her run felt like a queen trying to catch up to the pace of the competition before it moved past her.",
@@ -264,7 +297,10 @@
         "lows": 1,
         "bottoms": 1,
         "lipsyncWins": 0,
-        "congeniality": 0
+        "congeniality": 0,
+        "smackdownWins": 1,
+        "smackdownCrowns": 0,
+        "ppe": 2.4
       },
       "lead": "During her time on the season, Riot placed 11th, sashayed away, and earned 1 high placement, 1 low placement, and 1 bottom placement. Her run moved quickly from a low placement in Ginger Hollywood’s early win to a high placement in Quin’s Commercial Challenge win alongside Paige Turner. That upward movement did not hold through the Girl Group Challenge, where Autumnatic won and Riot landed in the bottom. Riot lip synced against Minnie Skurr to “Point of No Return” and sashayed away.",
       "personality": "Riot’s season was short but changeable, with each major appearance pulling her in a different direction. She showed she could rebound after an early weak week, but the improvement did not settle into consistency. Her exit came before she could define a stable lane in the competition.",
@@ -285,7 +321,10 @@
         "lows": 1,
         "bottoms": 1,
         "lipsyncWins": 0,
-        "congeniality": 0
+        "congeniality": 0,
+        "smackdownWins": 3,
+        "smackdownCrowns": 1,
+        "ppe": 2
       },
       "lead": "During her time on the season, Cheryl Hole placed 12th, sashayed away, and earned 1 low placement with 1 bottom placement. She first fell low during Paige Turner’s Acting Challenge win, in a week where Quin and Cupcakke were high and Taystee landed in the bottom. The following episode, Quin won the Commercial Challenge while Riot and Paige Turner were high, and Cheryl landed in the bottom. Cheryl lip synced against Anita Crown Davenport to “Believe” and sashayed away.",
       "personality": "Cheryl Hole’s run was brief and difficult, marked by early trouble that escalated quickly. She did not have much time to recover from her first weak showing before being placed directly in danger. Her season reads as a short struggle to find traction in a cast that was already producing clear front-runners.",
@@ -306,7 +345,10 @@
         "lows": 0,
         "bottoms": 1,
         "lipsyncWins": 0,
-        "congeniality": 0
+        "congeniality": 0,
+        "smackdownWins": 0,
+        "smackdownCrowns": 0,
+        "ppe": 1.5
       },
       "lead": "During her time on the season, Marge Stache placed 14th, sashayed away, and landed in the bottom 1 time. Her only major competitive episode came when Ginger Hollywood won the maxi challenge, Quin and Cupcakke were high, and Riot was low. Marge landed in the bottom opposite Anita Crown Davenport. She lip synced to “Holding Out for a Hero” and sashayed away.",
       "personality": "Marge Stache’s season was the briefest in the cast, ending before she could build momentum or recover from an early stumble. Her time in the competition was defined by being thrown immediately into survival mode. Unlike later queens who had multiple chances to rebound, Marge’s first major danger point was also her last.",
@@ -2681,7 +2723,53 @@
         "lipsync": null,
         "exits": [],
         "eliminated": null,
-        "twists": []
+        "twists": [],
+        "smackdown": {
+          "winner": "Cheryl Hole",
+          "title": "Queen of She Done Already Done Had Herses",
+          "duels": [
+            {
+              "round": 1,
+              "winner": "Anita Crown Davenport",
+              "loser": "Gigi Cherie"
+            },
+            {
+              "round": 1,
+              "winner": "Riot",
+              "loser": "Ginger Hollywood"
+            },
+            {
+              "round": 1,
+              "winner": "Taystee",
+              "loser": "Cupcakke"
+            },
+            {
+              "round": 1,
+              "winner": "Minnie Skurr",
+              "loser": "Sharon Needles"
+            },
+            {
+              "round": 1,
+              "winner": "Cheryl Hole",
+              "loser": "Marge Stache"
+            },
+            {
+              "round": 2,
+              "winner": "Anita Crown Davenport",
+              "loser": "Riot"
+            },
+            {
+              "round": 2,
+              "winner": "Cheryl Hole",
+              "loser": "Taystee"
+            },
+            {
+              "round": 3,
+              "winner": "Cheryl Hole",
+              "loser": "Anita Crown Davenport"
+            }
+          ]
+        }
       },
       {
         "episode": 16,

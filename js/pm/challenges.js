@@ -13,7 +13,7 @@
 // Couple of Sorts and the Grafties bring the PUBLIC's view into the villa.
 // This file does not read the ledger (tests/pm-ledger-readers.test.js): the
 // ranking comes from public-vote.js, and what the islanders make of it is here.
-import { addBond } from '../bonds.js';
+import { addBond, getBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { makeEvent, partnerOf } from './events.js';
 import { romance, friendship, revealTruth, believed } from './feelings.js';
@@ -28,7 +28,8 @@ import { kissRound, roundSize } from './kiss-round.js';
 import { frameChallenge } from './challenge-frame.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-const pop = (...rows) => Object.fromEntries(rows.filter(r => r[0]).map(([n, approval, fame]) => [n, { approval, fame }]));
+const shuffle = (rng, xs) => xs.map(x => [x, rng()]).sort((a, b) => a[1] - b[1]).map(([x]) => x);
+const pop = (...rows) => Object.fromEntries(rows.filter(r => r && r[0]).map(([n, approval, fame]) => [n, { approval, fame }]));
 const S = (state, n) => state.profiles[n].stats;
 const side = (state, g) => state.villa.filter(n => state.profiles[n].gender === g);
 // Every challenge scene is on screen: that is what the challenge is for.
@@ -281,16 +282,50 @@ function coupleGoals(state, rng) {
 // is more likely to stray — is the one that starts the argument.
 function knowingMe(state, rng) {
   if (state.couples.length < 2) return [];
+  const out = [];
+  const here = n => state.villa.includes(n);
+  const others = (a, b) => state.villa.filter(n => n !== a && n !== b);
+  // THE QUESTIONS, one a couple, about the villa itself — so every answer is
+  // true (user: "don't invent things"): a's closest friend, the one who winds
+  // a up, and, for the couple it will hurt most, who a would go for instead.
+  const asked = [];
+  const couples = shuffle(rng, state.couples.filter(([a, b]) => here(a) && here(b))).slice(0, 5);
+  let fancyAsked = false;
+  for (const [x, y] of couples) {
+    const [a, b] = rng() < 0.5 ? [x, y] : [y, x];      // a's answer; b guesses it
+    const pool = others(a, b);
+    if (pool.length < 2) continue;
+    const eye = pool.filter(n => attr(state, a, n) != null).sort((p, q) => (attr(state, a, q) ?? 0) - (attr(state, a, p) ?? 0))[0];
+    const q = !fancyAsked && eye && (attr(state, a, eye) ?? 0) >= 4 && rng() < 0.6 ? 'fancy' : rng() < 0.55 ? 'friend' : 'nemesis';
+    if (q === 'fancy') fancyAsked = true;
+    const truth = q === 'fancy' ? eye : [...pool].sort((p, r) => q === 'friend' ? getBond(a, r) - getBond(a, p) : getBond(a, p) - getBond(a, r))[0];
+    // How well b knows a: how close they are, and how well b reads people.
+    const knows = clamp(0.25 + 0.4 * coupleStrength(state, a, b) + 0.3 * S(state, b).intuition / 10, 0.1, 0.9);
+    const right = rng() < knows;
+    const guess = right ? truth : shuffle(rng, pool.filter(n => n !== truth))[0];
+    if (right) { addBond(a, b, 0.3); feel(state, a, 'security', 0.3); }
+    else if (q !== 'fancy') feel(state, a, 'security', -0.2);
+    // Who a would go for, said in front of the villa: true, and it lands.
+    if (q === 'fancy') { jealousyHit(state, b, a, truth, right ? 1.2 : 2, { confirmed: true }); nudgeAttraction(state, truth, a, 0.3); }
+    if (q === 'nemesis' && right) addBond(truth, a, -0.3);
+    asked.push([a, b, right]);
+    out.push(scene(state, rng, 'knowing-q', right ? [a, b, truth] : [a, b, truth, guess], { of: q, guessed: right,
+      pop: pop([b, right ? 0.2 : 0, 0.6], q === 'fancy' ? [a, -0.2, 1] : null) }, q === 'fancy' ? [b] : []));
+  }
+  // THE SCORES: six questions a couple, read out from the bottom up.
   const rows = state.couples.map(([a, b]) => {
     const p = clamp(0.3 + 0.5 * coupleStrength(state, a, b) + 0.03 * (romance(a, b) + romance(b, a)) / 2, 0.2, 0.92);
     let got = 0;
     for (let i = 0; i < 6; i++) if (rng() < p) got++;
-    return { couple: [a, b], got };
-  });
-  rows.forEach(r => { r.tie = rng(); });
-  rows.sort((x, y) => y.got - x.got || x.tie - y.tie);
-  const out = [];
+    const q = asked.find(([x, y]) => [x, y].includes(a) && [x, y].includes(b));
+    if (q && q[2] && got < 1) got = 1;
+    return { couple: [a, b], got, tie: rng() };
+  }).sort((x, y) => y.got - x.got || x.tie - y.tie);
   const shown = new Set([rows[0], rows[rows.length - 1], rows[1]]);
+  const results = [];
+  // Two "more likely to stray" boards a game at most, the shakiest couples
+  // first (four in one game, two the same, read 2026-10-26).
+  let strays = 0;
   rows.forEach((r, i) => {
     const [a, b] = r.couple;
     const result = i === 0 ? 'high' : i === rows.length - 1 && r.got < rows[0].got ? 'low' : 'mid';
@@ -298,18 +333,22 @@ function knowingMe(state, rng) {
       if (result === 'high') { feel(state, n, 'security', 1.2); addRelationshipDimension(n, partnerOf(state, n), 'trust', 0.5); }
       if (result === 'low') { feel(state, n, 'security', -1); feel(state, n, 'stress', 1); }
     }
-    if (shown.has(r)) out.push(scene(state, rng, 'knowing-me', [a, b], { of: result, pop: pop([a, result === 'high' ? 0.4 : 0, 1], [b, result === 'high' ? 0.4 : 0, 1]) }));
+    if (shown.has(r)) results.push({ i, e: scene(state, rng, 'knowing-me', [a, b], { of: result, got: r.got, pop: pop([a, result === 'high' ? 0.4 : 0, 1], [b, result === 'high' ? 0.4 : 0, 1]) }) });
     // "Who is more likely to stray?" Each writes what they believe.
     for (const [x, y] of [[a, b], [b, a]]) {
+      if (strays >= 2 || result === 'high') break;
       const doubt = Math.max(0, ...Object.values(emo(state, x).jealousy || {})) + 3 * (1 - believed(state, x, y) / 10);
       if (doubt < 4.5 + rng() * 2) continue;
+      strays++;
       const guilty = state.secrets.some(s => !s.known && s.who === y && s.partner === x);
       if (guilty) feel(state, y, 'guilt', 1.5);
       else { addRelationshipDimension(y, x, 'resentment', 0.6); feel(state, y, 'security', -0.8); }
-      out.push(scene(state, rng, 'knowing-row', [x, y], { of: guilty ? 'guilty' : 'hurt', pop: pop([x, 0, 1.5], [y, guilty ? -0.3 : 0.2, 1.5]) }));
+      results.push({ i, e: scene(state, rng, 'knowing-row', [x, y], { of: guilty ? 'guilty' : 'hurt', pop: pop([x, 0, 1.5], [y, guilty ? -0.3 : 0.2, 1.5]) }) });
       break;
     }
   });
+  // Bottom first, the winners last.
+  out.push(...results.sort((x, y) => y.i - x.i).map(x => x.e));
   return out;
 }
 

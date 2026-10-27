@@ -35,6 +35,7 @@ import { seedGraft } from './threads.js';
 const STEAMY = new Set(['snogger', 'lip-service', 'suck-blow', 'girls-course', 'lads-course', 'truth-dare', 'receipts']);
 const QUIZ = new Set(['knowing-me', 'tower', 'lie-detector', 'couple-goals', 'look-who', 'headlines', 'couple-of-sorts', 'grafties']);
 // The moments in a game where somebody kisses or picks somebody who isn't theirs.
+// (knowing-q's "who would I go for" is a reveal, not a kiss: the partner reacts in its own lines.)
 const STRAY_KINDS = new Set(['game-kiss', 'course-pick', 'snogger-kiss', 'blow-dare', 'blow-slip', 'lip-race', 'receipt', 'tod-truth']);
 // A format that already shows the partner's reaction: the frame adds no second one.
 const OWN_REACTION = new Set(['lip-watch', 'snogger-row', 'knowing-row', 'couple-goals-row', 'lie-row', 'sports-sore']);
@@ -112,7 +113,7 @@ function watches(state, rng, id, events) {
 
 /** After: the prize, as the show gives one (a party, a date, a treat). */
 function prize(state, rng, id, events) {
-  const win = events.find(e => WIN_KINDS.has(e.kind));
+  const win = events.find(e => WIN_KINDS.has(e.kind) || (e.kind === 'blind-run' && e.extra?.of === 'win'));
   if (!win) return [];
   const w = win.players[0];
   const q = partnerOf(state, w);

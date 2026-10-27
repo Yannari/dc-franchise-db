@@ -9,17 +9,17 @@
 // rule as pm/challenges.js: the game is the excuse; what comes out of it
 // moves bonds, beliefs and feelings, and the scenes carry only what the
 // players could know.
-import { addBond } from '../bonds.js';
+import { addBond, getBond } from '../bonds.js';
 import { addRelationshipDimension, getRelationshipDimension } from '../relationships.js';
 import { makeEvent, partnerOf } from './events.js';
-import { romance, friendship, revealTruth } from './feelings.js';
+import { romance, friendship, revealTruth, schemeEligible } from './feelings.js';
 import { nudgeAttraction, attr, ickHit } from './chemistry.js';
 import { coupleStrength } from './ladder.js';
 import { feel, jealousyHit } from './emotions.js';
 import { kissRound, roundSize } from './kiss-round.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-const pop = (...rows) => Object.fromEntries(rows.filter(r => r[0]).map(([n, approval, fame]) => [n, { approval, fame }]));
+const pop = (...rows) => Object.fromEntries(rows.filter(r => r && r[0]).map(([n, approval, fame]) => [n, { approval, fame }]));
 const S = (state, n) => state.profiles[n].stats;
 const side = (state, g) => state.villa.filter(n => state.profiles[n].gender === g);
 const scene = (state, rng, kind, players, extra = {}, major = []) =>
@@ -210,19 +210,27 @@ function blindCourse(state, rng) {
   const pairs = state.couples.map(([a, b]) => state.profiles[a].gender === g ? [b, a] : [a, b]);   // [guide, blind]
   const score = ([gd, bl]) => (getRelationshipDimension(bl, gd, 'trust') + 10) / 20 * 3 + (S(state, gd).social + S(state, bl).intuition) / 10 + rng() * 2;
   const ranked = pairs.map(p => [p, score(p)]).sort((x, y) => y[1] - x[1]).map(([p]) => p);
-  const [win, worst] = [ranked[0], ranked[ranked.length - 1]];
   const out = [];
-  addRelationshipDimension(win[1], win[0], 'trust', 0.6); addBond(win[0], win[1], 0.4);
-  out.push(scene(state, rng, 'blind-run', [...win], { of: 'win', pop: pop([win[0], 0.3, 1.5], [win[1], 0.3, 1.5]) }));
-  const hot = (20 - S(state, worst[0]).temperament - S(state, worst[1]).temperament) / 20;
-  if (rng() < 0.15 + 0.6 * hot) {
-    addRelationshipDimension(worst[1], worst[0], 'trust', -0.4); addBond(worst[0], worst[1], -0.4);
-    out.push(scene(state, rng, 'blind-run', [...worst], { of: 'crash-row', pop: pop([worst[0], -0.2, 1.5], [worst[1], 0, 1]) }));
-  } else {
-    addBond(worst[0], worst[1], 0.2);
-    out.push(scene(state, rng, 'blind-run', [...worst], { of: 'crash-laugh', pop: pop([worst[0], 0.3, 1], [worst[1], 0.3, 1]) }));
-  }
-  return out;
+  // Every couple runs, the slowest first and the winners last: the course is
+  // the suspense (it used to show the winners and the worst, and nobody else).
+  const order = [...ranked].reverse().slice(-5);
+  ranked.forEach(([gd, bl], i) => {
+    if (!order.some(([x]) => x === gd)) return;
+    const last = i === ranked.length - 1, first = i === 0;
+    const hot = (20 - S(state, gd).temperament - S(state, bl).temperament) / 20;
+    let of;
+    if (first) of = 'win';
+    else if (last) of = rng() < 0.15 + 0.6 * hot ? 'crash-row' : 'crash-laugh';
+    else of = rng() < 0.2 + 0.5 * hot ? 'shout' : 'steady';
+    if (of === 'win') { addRelationshipDimension(bl, gd, 'trust', 0.6); addBond(gd, bl, 0.4); }
+    if (of === 'steady') { addRelationshipDimension(bl, gd, 'trust', 0.2); addBond(gd, bl, 0.2); }
+    if (of === 'shout') { addBond(gd, bl, -0.2); feel(state, bl, 'stress', 0.3); }
+    if (of === 'crash-row') { addRelationshipDimension(bl, gd, 'trust', -0.4); addBond(gd, bl, -0.4); }
+    if (of === 'crash-laugh') addBond(gd, bl, 0.2);
+    out.push({ i, e: scene(state, rng, 'blind-run', [gd, bl], { of, place: i + 1, of2: ranked.length,
+      pop: pop([gd, of === 'crash-row' ? -0.2 : of === 'win' ? 0.3 : 0.1, 1.2], [bl, of === 'crash-row' ? 0 : 0.2, 1]) }) });
+  });
+  return out.sort((x, y) => y.i - x.i).map(x => x.e);
 }
 
 // ── SPORTS DAY (UK 7 d28, UK 9 d46)
@@ -231,26 +239,79 @@ function blindCourse(state, rng) {
 // who takes it badly.
 function sportsDay(state, rng) {
   if (state.villa.length < 6) return [];
-  const all = shuffle(rng, state.villa);
-  const teams = [all.filter((_, i) => i % 2 === 0), all.filter((_, i) => i % 2 === 1)];
-  const avg = t => t.reduce((s, n) => s + 0.5 * S(state, n).physical + 0.3 * S(state, n).endurance + 0.2 * S(state, n).boldness, 0) / t.length;
-  const score = teams.map(t => avg(t) + rng() * 1.5);
-  const [W, L] = score[0] >= score[1] ? teams : [teams[1], teams[0]];
-  const cap = t => [...t].sort((x, y) => S(state, y).boldness - S(state, x).boldness)[0];
-  const [cw, cl] = [cap(W), cap(L)];
   const out = [];
-  // The captains: banter or a clash, by temper.
-  const clash = rng() < ((10 - S(state, cw).temperament) + (10 - S(state, cl).temperament)) / 25;
-  if (clash) { addBond(cw, cl, -0.6); addRelationshipDimension(cl, cw, 'resentment', 0.4); }
-  else addBond(cw, cl, 0.3);
-  out.push(scene(state, rng, 'sports-captains', [cw, cl], { of: clash ? 'clash' : 'banter', pop: pop([cw, clash ? -0.2 : 0.2, 1.2], [cl, clash ? -0.2 : 0.2, 1.2]) }));
-  for (let i = 0; i < W.length; i++) for (let j = i + 1; j < W.length; j++) addBond(W[i], W[j], 0.15);
-  out.push(scene(state, rng, 'sports-win', [cw, ...W.filter(n => n !== cw).slice(0, 3)], { pop: Object.fromEntries(W.map(n => [n, { approval: 0.1, fame: 0.8 }])) }));
+  // The captains: the two boldest, and they square up (banter or a clash, by temper).
+  const byBold = [...state.villa].sort((x, y) => S(state, y).boldness - S(state, x).boldness);
+  const [ca, cb] = [byBold[0], byBold.find(n => n !== byBold[0] && partnerOf(state, byBold[0]) !== n) || byBold[1]];
+  const clash = rng() < ((10 - S(state, ca).temperament) + (10 - S(state, cb).temperament)) / 25;
+  if (clash) { addBond(ca, cb, -0.6); addRelationshipDimension(cb, ca, 'resentment', 0.4); }
+  else addBond(ca, cb, 0.3);
+  out.push(scene(state, rng, 'sports-captains', [ca, cb], { of: clash ? 'clash' : 'banter', pop: pop([ca, clash ? -0.2 : 0.2, 1.2], [cb, clash ? -0.2 : 0.2, 1.2]) }));
+  // THE DRAFT, as the playground does it: your partner first, then your
+  // mates, then whoever's left — and somebody is always picked last. A
+  // captain who may scheme takes somebody else's partner, to stir it.
+  const teams = { A: [ca], B: [cb] };
+  const pool = state.villa.filter(n => n !== ca && n !== cb);
+  const cap = { A: ca, B: cb };
+  let turn = 'A', said = 0;
+  while (pool.length) {
+    const c = cap[turn];
+    const want = n => (partnerOf(state, c) === n ? 20 : 0) + getBond(c, n) + 0.4 * S(state, n).physical + rng();
+    const stirOk = schemeEligible(state.profiles[c]);
+    const stir = stirOk && rng() < 0.35 ? pool.find(n => partnerOf(state, n) && partnerOf(state, n) !== c && cap[turn === 'A' ? 'B' : 'A'] === partnerOf(state, n)) : null;
+    const pick = stir || [...pool].sort((x, y) => want(y) - want(x))[0];
+    pool.splice(pool.indexOf(pick), 1);
+    teams[turn].push(pick);
+    const last = pool.length === 0;
+    const of = stir ? 'stir' : partnerOf(state, c) === pick ? 'partner' : last ? 'last' : null;
+    if (of && said < 3) {
+      said++;
+      if (of === 'stir') { const p = partnerOf(state, pick); addBond(p, c, -0.6); jealousyHit(state, p, pick, c, 1, { confirmed: true }); }
+      if (of === 'last') { feel(state, pick, 'confidence', -0.6); addBond(pick, c, -0.2); }
+      if (of === 'partner') feel(state, pick, 'security', 0.3);
+      out.push(scene(state, rng, 'sports-pick', [c, pick, ...(of === 'stir' ? [partnerOf(state, pick)] : [])], { of, pop: pop([c, of === 'stir' ? -0.3 : 0, 0.8], of === 'last' ? [pick, 0.4, 0.8] : null) }));
+    }
+    turn = turn === 'A' ? 'B' : 'A';
+  }
+  // THE EVENTS: two head to head, then everyone on the rope. A running score.
+  const score = { A: 0, B: 0 };
+  const fit = n => 0.5 * S(state, n).physical + 0.3 * S(state, n).endurance + 0.2 * S(state, n).boldness;
+  const used = new Set([ca, cb]);
+  for (const race of ['sack', 'egg']) {
+    const pickFrom = t => shuffle(rng, teams[t].filter(n => !used.has(n)))[0] || shuffle(rng, teams[t])[0];
+    const a = pickFrom('A'), b = pickFrom('B');
+    used.add(a); used.add(b);
+    const qa = fit(a) + rng() * 4, qb = fit(b) + rng() * 4;
+    const [w, l] = qa >= qb ? [a, b] : [b, a];
+    const wt = teams.A.includes(w) ? 'A' : 'B';
+    // How it was won: clean, a fall (the loser's), or a cheat — only by those who may scheme.
+    const cheat = schemeEligible(state.profiles[w]) && rng() < 0.3;
+    const fall = !cheat && Math.abs(qa - qb) > 2.5;
+    score[wt] += 1;
+    if (cheat) { addBond(l, w, -0.6); addRelationshipDimension(l, w, 'resentment', 0.5); }
+    if (fall) feel(state, l, 'confidence', -0.3);
+    const fan = partnerOf(state, w) || null;
+    out.push(scene(state, rng, 'sports-race', [w, l, ...(fan ? [fan] : [])], { of: race, how: cheat ? 'cheat' : fall ? 'fall' : 'clean', score: { ...score },
+      pop: pop([w, cheat ? -0.4 : 0.3, 1], [l, fall ? 0.3 : 0, 0.8]) }));
+  }
+  // The tug of war: the team's average (CLAUDE.md: averages, never sums), and it decides it.
+  const avg = t => teams[t].reduce((s, n) => s + fit(n), 0) / teams[t].length;
+  const tug = avg('A') + rng() * 2 >= avg('B') + rng() * 2 ? 'A' : 'B';
+  score[tug] += 2;
+  out.push(scene(state, rng, 'sports-race', [cap[tug], cap[tug === 'A' ? 'B' : 'A']], { of: 'tug', how: 'clean', score: { ...score }, pop: {} }));
+  const W = score.A >= score.B ? 'A' : 'B', L = W === 'A' ? 'B' : 'A';
+  for (let i = 0; i < teams[W].length; i++) for (let j = i + 1; j < teams[W].length; j++) addBond(teams[W][i], teams[W][j], 0.15);
+  out.push(scene(state, rng, 'sports-win', [cap[W], ...teams[W].filter(n => n !== cap[W]).slice(0, 3)], { score: { ...score }, pop: Object.fromEntries(teams[W].map(n => [n, { approval: 0.1, fame: 0.8 }])) }));
+  // THE STAR PLAYER (Leah picked Sammy, in front of Jess): the winners' best
+  // gets a kiss from anyone on the other side of the villa.
+  const star = [...teams[W]].sort((x, y) => fit(y) - fit(x))[0];
+  const other = state.villa.filter(n => state.profiles[n].gender !== state.profiles[star].gender);
+  out.push(...kissRound(state, rng, { kissers: [star], targets: other, n: 1, game: 'sports', scene }));
   // The sore loser: the one on the losing side with the shortest fuse.
-  const sore = [...L].sort((x, y) => S(state, x).temperament - S(state, y).temperament)[0];
+  const sore = [...teams[L]].sort((x, y) => S(state, x).temperament - S(state, y).temperament)[0];
   if (S(state, sore).temperament < 6 && rng() < 0.7) {
     feel(state, sore, 'stress', 0.5);
-    const mate = L.filter(n => n !== sore).sort((x, y) => friendship(sore, y) - friendship(sore, x))[0];
+    const mate = teams[L].filter(n => n !== sore).sort((x, y) => friendship(sore, y) - friendship(sore, x))[0];
     if (mate) addBond(sore, mate, -0.2);
     out.push(scene(state, rng, 'sports-sore', [sore, ...(mate ? [mate] : [])], { pop: pop([sore, -0.4, 1.2]) }));
   }

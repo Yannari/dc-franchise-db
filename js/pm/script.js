@@ -75,6 +75,8 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   'chaser',
   // a challenge's evening (pm/challenge-frame.js): how the partner took it at the time; a graft started from the kiss
   'watched', 'started',
+  // how a Sports Day event was won (clean · fall · cheat)
+  'how',
   // the postcard a was sent from the other villa this Casa (pm/postcards.js): kiss · bed · pull · game · close · alone
   'postcard',
   // a talk file's own (pm/talk/*.js facts())

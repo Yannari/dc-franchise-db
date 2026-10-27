@@ -224,10 +224,15 @@ export const KNOWING_ROW = build('knowing-row', {
   moves: {
     board: [
       { stage: "The last question: \"Which of you is more likely to stray?\" {a} turns the board round. It says {b}.", turns: [['b', "Me? You think it's me?"]] },
+      { stage: "\"Who's more likely to stray?\" {a} hesitates, then holds up the board with {b}'s name on it.", turns: [['b', "Seriously?"]] },
+      { stage: "The final card. {a} writes for a long time, and then turns it round. {b}'s name, in capitals.", turns: [['b', "In capitals? You wrote it in capitals?"]] },
     ],
     answer: [
       { when: { of: 'hurt' }, turns: [['a', "It's just a feeling. You get a lot of attention in here."], ['b', "And I've turned all of it down. All of it. And you still wrote my name."]] },
       { when: { of: 'hurt' }, turns: [['b', "I've never given you one reason. Not one."], ['a', "I know. I'm sorry. It was my head, not you."]] },
+      { when: { of: 'hurt' }, turns: [['b', "What have I done to make you think that?"], ['a', "Nothing. That's the honest answer. Nothing."], ['b', "Then why is my name on that board?"]] },
+      { when: { of: 'hurt' }, turns: [['a', "I'm not saying you would. I'm saying if one of us did, I think it'd be you."], ['b', "That's the same thing."]] },
+      { when: { of: 'guilty' }, turns: [['b', "Wow. Okay. Thanks for that."], ['a', "Can you look at me and tell me I'm wrong?"], ['b', "Not here. Not in front of everybody."]] },
       { when: { of: 'guilty' }, turns: [['a', "Is there a reason I shouldn't have?"], ['b', "No. Why would there be?"], ['a', "You answered that very quickly."]] },
       { when: { of: 'guilty' }, turns: [['b', "Why would you write that?"], ['a', "Because I've got eyes."], ['b', "What's that supposed to mean?"]] },
     ],
@@ -455,12 +460,25 @@ export const BLIND_RUN = build('blind-run', {
   plans: { featured: ['run', 'after?'], short: ['run'] },
   moves: {
     run: [
+      // Every couple runs now, the slowest first (challenges-more.js blindCourse): `steady` and `shout` are the middle.
+      { when: { of: 'steady' }, stage: "{b} is blindfolded, and {a} talks {b.obj} round the course one step at a time.", turns: [['a', "Small step. Smaller. There's a tyre. Lift your foot. Good."], ['b', "Are we winning?"], ['a', "We're not losing. That's the main thing."]] },
+      { when: { of: 'steady' }, stage: "{a} guides {b} round so carefully that the next couple has to wait.", turns: [['b', "Why is everyone laughing?"], ['a', "Because we're very slow. But nobody's fallen in the pool."]] },
+      { when: { of: 'steady' }, stage: "{b} has the blindfold on, and holds {a}'s voice like a rope.", turns: [['a', "Trust me. Three steps forward, then stop."], ['b', "I'm trusting you. Don't make me regret it."]] },
+      { when: { of: 'shout' }, stage: "{a} starts off calm. By the second obstacle, {a} is shouting.", turns: [['a', "Left! No, your left! LEFT!"], ['b', "Stop shouting at me! I can't see anything!"], ['a', "That's the whole game!"]] },
+      { when: { of: 'shout' }, stage: "{b} stops dead in the middle of the course and refuses to move.", turns: [['b', "I'm not taking another step until you say it nicely."], ['a', "Please. Walk. Forward."], ['b', "Nicer than that."]] },
+      { when: { of: 'win' }, stage: "{b} is blindfolded, and {a} doesn't raise {a.posAdj} voice once. They're round in no time.", turns: [['a', "Last one. Reach out. That's the flag."], ['b', "Have we done it? Have we actually done it?"]] },
+      { when: { of: 'crash-laugh' }, stage: "{b} walks straight past the finish line and keeps going towards the hot tub.", turns: [['a', "Stop! You've finished, you can stop walking!"], ['b', "Then why are you laughing?"]] },
+      { when: { of: 'crash-row' }, stage: "{a} says go left, {b} goes right, and {b} ends up in the pool fully dressed.", turns: [['b', "You meant my right! You always mean my right!"], ['a', "I did not say right!"]] },
       { when: { of: 'win' }, stage: "{b} is blindfolded. {a} shouts directions, and somehow, they win.", turns: [['a', "Left! Left! Your other left!"], ['b', "We won? We won!"]] },
       { when: { of: 'crash-laugh' }, stage: "{a} is meant to be guiding blindfolded {b}. {b} walks straight into a post.", turns: [['b', "You said straight on!"], ['a', "I'm sorry! I'm laughing too hard to say anything!"]] },
       { when: { of: 'crash-row' }, stage: "{b} walks into the pool. Blindfolded. On {a}'s instructions.", turns: [['b', "You did that on purpose!"], ['a', "I said stop! I definitely said stop!"]] },
     ],
     after: [
       { when: { of: 'win' }, turns: [['b', "I trusted you completely."], ['a', "That's the scariest thing anyone's ever said to me."]] },
+      { when: { of: 'win' }, turns: [], beat: "{a} and {b} are the fastest couple by a long way. The others are still arguing about whose left it was." },
+      { when: { of: 'steady' }, turns: [], beat: "They finish, slowly, to a round of applause that's mostly sarcastic." },
+      { when: { of: 'shout' }, turns: [['b', "We're never doing that again."], ['a', "We finished, didn't we?"], ['b', "I don't care."]] },
+      { when: { of: 'crash-laugh' }, turns: [], beat: "{b} pulls the blindfold off, sees where {b} has ended up, and can't stop laughing either." },
       { when: { of: 'crash-row' }, turns: [['b', "I'm not speaking to you until I'm dry."], ['a', "That could be hours."], ['b', "Good."]] },
     ],
   },

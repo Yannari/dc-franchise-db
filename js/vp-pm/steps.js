@@ -44,6 +44,7 @@ export const KIND_LABEL = {
   'movie-text': 'Movie Night', 'movie-seat': 'Taking their seats', 'movie-clip': 'Now showing', 'movie-react': 'The reaction',
   'movie-row': 'After the screening', 'movie-split': "It's over", 'movie-callout': 'Said behind your back', 'movie-after': 'After Movie Night',
   'casa-host': 'The Casa Amor recoupling', 'casa-react': 'The moment', 'casa-row': 'After the fire pit', 'photo-text': 'Post from Casa', 'postcard-text': "You've got post", postcard: 'The postcard',
+  'sports-pick': 'Picking teams', 'sports-race': 'The race', 'knowing-q': 'The question',
   'chal-buzz': 'Before the game', 'chal-watch': 'Watching', 'chal-prize': 'The prize', 'chal-row': 'After the challenge', 'chal-spark': 'That kiss',
   'enemy-snipe': 'A dig', 'enemy-bitch': 'Behind their back', 'enemy-clash': 'It kicks off', 'enemy-freeze': 'Frozen out', 'enemy-truce': 'Clearing the air',
   'photo-row': 'The photo', 'photo-split': "It's over",

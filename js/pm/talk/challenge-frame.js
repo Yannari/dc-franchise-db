@@ -31,9 +31,11 @@ export const CHAL_BUZZ = build('chal-buzz', {
       { when: { of: 'dread' }, stage: "{a} is sitting on the end of the bed while everybody else gets changed.", turns: [['b', "What's wrong?"], ['a', "What if I find out today that {c} doesn't feel the same?"], ['b', "Then at least you'll know."]] },
       { when: { of: 'worried', taken: true }, turns: [['a', "I know it's a game. I know. But {c} has been looking at {pa} all week, and today {c} gets to do something about it."], ['b', "And {pa} gets to say no."]] },
       { when: { of: 'hoping' }, turns: [['a', "I've been waiting for a game like this since I walked in."], ['b', "Because of {c}?"], ['a', "I'm not saying anything. I'm just saying watch."]] },
-      { when: { of: 'fired-up' }, turns: [['a', "Right. Who's on my side? Because I'm not carrying anybody today."], ['b', "You've carried nobody, ever."], ['a', "And I'm not starting now."]] },
+      { when: { of: 'fired-up', game: 'sports-day' }, turns: [['a', "Right. Who's on my side? Because I'm not carrying anybody today."], ['b', "You've carried nobody, ever."], ['a', "And I'm not starting now."]] },
+      { when: { of: 'fired-up' }, turns: [['a', "I've lost every game in here so far. Every one. Today that changes."], ['b', "What's different about today?"], ['a', "I'm angry now."]] },
+      { when: { of: 'fired-up' }, stage: "{a} is stretching on the lawn like it's a world final.", turns: [['b', "What are you doing?"], ['a', "Warming up. Some of us take this seriously."]] },
       { when: { of: 'fired-up' }, turns: [['a', "I don't care what it is. I'm winning it."], ['b', "You don't even know what the prize is."], ['a', "I'll find out when I've won it."]] },
-      { when: { of: 'fired-up' }, turns: [['a', "Have you seen the other side? I'm not losing to that lot."], ['b', "Be nice."], ['a', "I'll be nice after."]] },
+      { when: { of: 'fired-up', game: 'sports-day' }, turns: [['a', "Have you seen the other side? I'm not losing to that lot."], ['b', "Be nice."], ['a', "I'll be nice after."]] },
     ],
     land: [
       { turns: [], beat: "Somebody shouts that they're starting, and everyone runs out to the lawn in their costumes." },
@@ -70,9 +72,14 @@ export const CHAL_PRIZE = build('chal-prize', {
     prize: [
       { when: { of: 'date' }, stage: "The winners' prize arrives by text: dinner for two on the terrace, tonight, away from everybody.", turns: [['a', "We actually won something!"], ['b', "I told you we would."]] },
       { when: { of: 'treat' }, stage: "The prize is a hamper and the hot tub to themselves for the afternoon.", turns: [['a', "Nobody else is allowed in. Those are the rules."], ['b', "I love these rules."]] },
+      { when: { of: 'treat' }, stage: "The prize arrives: a cake, a bottle of something fizzy, and the terrace to themselves until dinner.", turns: [['a', "Is that a whole cake? For us?"], ['b', "We earned the whole cake."]] },
+      { when: { of: 'date' }, stage: "The winners get a text: a picnic on the hill above the villa, just the two of them.", turns: [['b', "A picnic! We're going on an actual date!"], ['a', "Our first one. I'll take it."]] },
       { when: { of: 'party' }, stage: "The prize is a party by the pool, and {a} gets carried round it on everybody's shoulders.", turns: [['a', "This is the best day I've had in here. I mean that."]] },
     ],
     talk: [
+      { when: { of: ['date', 'treat'] }, turns: [['a', "Do you know what I liked about today? You never once looked at anyone else."], ['b', "Why would I? I was busy winning."]] },
+      { when: { of: ['date', 'treat'] }, turns: [['b', "Can we stay out here all night?"], ['a', "Somebody will come and get us."], ['b', "Let them try."]] },
+      { when: { of: ['date', 'treat'] }, turns: [['a', "Everyone's going to be watching us from the kitchen."], ['b', "Good. Let them be jealous for once."]] },
       { when: { of: ['date', 'treat'] }, turns: [['b', "This is the first time we've been on our own all week."], ['a', "I know. I'd forgotten what you sound like when you're not shouting over the music."]] },
       { when: { of: ['date', 'treat'] }, turns: [['a', "Can I tell you something? I was really proud of you today."], ['b', "For winning?"], ['a', "For trying that hard. You actually meant it."]] },
       { when: { of: 'party' }, turns: [], beat: "For one afternoon, nobody in the villa is fighting about anything." },

@@ -74,6 +74,34 @@ export function gameTalkFor(week, ctx, clock, talked, lastGone) {
   const out = [];
   const want = (kind, who, data = {}) => { if (!talked.has(kind) && Object.values(who).every(Boolean)) out.push({ kind, who, data }); };
 
+  // ── an alliance sits down and settles its vote: some weeks, any time between the veto meeting and the eviction ──
+  // (the user, 2026-10-26: "i dont see a lot of alliance meeting before the votes", then "they dont all follow the
+  // alliances right? and it doesnt have to be right after the vote everytime"). The biggest named alliance with a plan
+  // this week (bb/vote-operation.js), three of it here; whether the plan wins is the vote's business. One of them who
+  // ends up voting the other way is in the room, and the scene is the meeting where they said yes anyway.
+  {
+    const evAct = (week.acts || []).find(a => a?.type === 'eviction');
+    const ballots = (evAct?.ballots || []).filter(b => b && b.voter && b.evict);
+    const notYet = !!week.evicted && house.includes(week.evicted);
+    if (clock.cer && notYet && ballots.length && rng() < 0.6) {
+      const ops = (week.voteOperation?.plans || []).map(p => {
+        const al = (gs.namedAlliances || []).find(a => a?.name === p?.alliance);
+        return { p, here: al ? (al.members || []).filter(m => house.includes(m) && m !== p.target) : [] };
+      }).filter(x => x.p?.organizer && x.p.target && house.includes(x.p.target) && x.here.includes(x.p.organizer) && x.here.length >= 3)
+        .sort((x, y) => y.here.length - x.here.length);
+      if (ops.length) {
+        const { p, here } = ops[0];
+        const voteOf = n => ballots.find(b => b.voter === n)?.evict;
+        const others = here.filter(n => n !== p.organizer);
+        const flip = others.find(n => voteOf(n) && voteOf(n) !== p.target);
+        const loyal = others.filter(n => n !== flip).sort((x, y) => getBond(p.organizer, y) - getBond(p.organizer, x));
+        const data = { target: p.target, group: p.alliance };
+        if (flip && loyal[0]) want('votemeet.split', { a: p.organizer, b: loyal[0], c: flip }, data);
+        else if (loyal.length >= 2) want('votemeet.together', { a: p.organizer, b: loyal[0], c: loyal[1] }, data);
+      }
+    }
+  }
+
   // ── a Block Buster week, three on the block, before it is played ──
   // The Block Buster is played after the veto, so blockBeforeSafety holds the block as the veto
   // left it, replacement included. Before the veto meeting the three on the block are the three

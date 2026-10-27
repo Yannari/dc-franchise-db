@@ -99,6 +99,8 @@ const TALK_WHY = {
   'hohweek.backdoor.dodged': '{a}\'s backdoor on {c} is dead: {c} won the veto, and a veto holder cannot be put up.',
   'hohweek.backdoor.missed': '{a} meant to put {c} up in the empty chair, but {d} went up instead.',
   'hohweek.switch.pitch': '{a} changes the plan: {e} came up with a name, and the target is now {d}, not {c}.',
+  'votemeet.together': '{group} meets to settle the vote. {a} organised it: the plan is {target}.',
+  'votemeet.split': '{group} meets to settle the vote, and {a} wants {target}. {c} says yes in the room, and will vote the other way.',
   'hohweek.switch.self': '{a} changes the plan: {c} was the target, came up to the HOH room and made a case, and now it is {d} instead.',
   'hohweek.switch.bloc': '{a} changes the plan: {d} is part of a group that sticks together, and breaking it matters more than {c}.',
   'hohweek.fish.honest': '{b} is {a}\'s real target, and goes to the HOH room to ask. {a} tells the truth.',
@@ -737,7 +739,9 @@ function writeGameTalk0(talk, ctx, at) {
   const sc = { ...base, room, roomName: sp?.label || ROOM[room] || 'Living Room', cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: false, lineId: entry.id,
     ...(sp ? { spot: sp.spot } : {}) };
   // private talk is private: the room around it only where people would be (never a shut door)
-  const shut = kind === 'bond.vent' || /door shut|closes the door|shuts the door|door,? shut|voices? (low|down)|whisper|quiet/i.test(JSON.stringify(entry.turns));
+  // (an alliance settling its vote is private whatever its words say: "making a sandwich very slowly, so she can stay
+  // and listen" walked into one)
+  const shut = kind === 'bond.vent' || /^votemeet\./.test(kind) || /door shut|closes the door|shuts the door|door,? shut|voices? (low|down)|whisper|quiet/i.test(JSON.stringify(entry.turns));
   sc.lines = shut ? lines : background(lines, sc, ctx, sc.id, false);
   sc.why = whyOf(kind, TALK_WHY, who, data, Object.values(who).filter(Boolean));
   return sc;
@@ -915,7 +919,7 @@ function writeEngineScene0(beat, ctx, at) {
 
 // ── set pieces: the whole house in one room ─────────────────────────────
 const SET_ROOM = { firstnight: 'kitchen', firstbed: 'bedroom', hohroom: 'hoh-room', afternoms: 'living-room',
-  morningafter: 'kitchen', dinner: 'kitchen', backyard: 'backyard', gamenight: 'living-room' };
+  morningafter: 'kitchen', evictnight: 'living-room', dinner: 'kitchen', backyard: 'backyard', gamenight: 'living-room' };
 // (a quiet aside for the game's two-person talk: "nods at the door" led into a group game of animals, read 2026-10-14)
 const CUT = sc => (sc.type === 'feud' ? 'clash' : sc.type === 'showmance' ? 'flirt'
   : /^(alliance|target|scheme|deal)/.test(sc.type || '') && new Set(sc.lines.filter(l => l.kind === 'say').map(l => l.by)).size <= 2 ? 'aside' : 'fun');
@@ -975,7 +979,7 @@ export function writeSetPiece(type, ctx, inside, { gone = null, at = 0 } = {}) {
   // on stage: everybody the scene uses, then the room filled out to eight
   const named = order.filter(n => speaking.has(n) || lines.some(l => l.kind === 'beat' && l.text.includes(n)));
   const cast = [...new Set([...named, ...order])].slice(0, Math.max(8, named.length));
-  const MOOD = { firstnight: 'fun', firstbed: 'house', hohroom: 'fun', afternoms: 'ceremony', morningafter: 'house',
+  const MOOD = { firstnight: 'fun', firstbed: 'house', hohroom: 'fun', afternoms: 'ceremony', morningafter: 'house', evictnight: 'drama',
     dinner: 'fun', backyard: 'fun', gamenight: 'fun' };
   return { id: `set:${ctx.week?.num || 0}:${ctx.stretch}:${type}`, line: null, type: 'set', step: type, outcome: 'any',
     room, roomName: ROOM[room] || 'Living Room', cast, mood: inside.some(sc => sc.type === 'feud') ? 'drama' : MOOD[type] || 'house',

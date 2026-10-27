@@ -69,7 +69,8 @@ export function airStorylines(week) {
   let at = 0;
   let pending = [];   // { act, line, step } filed this stretch
   let stretchBeats = [];   // every beat of the stretch, filed or not: { act, beat }
-  const clock = { hoh: false, noms: false, nomsJust: false, hohJust: false, veto: false, safety: false, cer: false };
+  const clock = { hoh: false, noms: false, nomsJust: false, hohJust: false, veto: false, safety: false, cer: false, evictJust: false };
+  let evictedNow = null;
   // the game talk this week has aired (gametalk.js): one of each kind a week, one talk per pair
   const talked = new Set();
   const talkedPairs = new Set();
@@ -138,6 +139,9 @@ export function airStorylines(week) {
     if (ctx.firstNight) return 'firstnight';
     if (clock.hohJust && ctx.hoh) return 'hohroom';
     if (clock.nomsJust && ctx.nominees.length >= 2) return 'afternoms';
+    // the night of an eviction: the house back from the live show, about the vote and who just left (the user,
+    // 2026-10-26: "house life right after the evictee interview rarely talk about the event of eviction night")
+    if (clock.evictJust && evictedNow) return 'evictnight';
     if (stretch === 0 && lastGone) return 'morningafter';
     const rota = ['dinner', 'backyard', 'gamenight'];
     return rota[((week.num || 0) * 3 + stretch) % rota.length];
@@ -416,7 +420,15 @@ export function airStorylines(week) {
     const atStart = presentAtStart || ctx.present;
     presentAtStart = null;
     const sceneBefore = new Set(week.acts.flatMap(a => a?.scenes || []));
-    if (!pending.length) { airAfter(stretchBeats[0]?.act || week.acts.find(Boolean), ctx); airEngine(ctx, atStart, sceneBefore); queueAfter(sceneBefore); stretchBeats = []; return; }
+    if (!pending.length) {
+      // eviction night has its scene even when no storyline has a step to air in it
+      const host = stretchBeats[0]?.act || week.acts.find(Boolean);
+      if (clock.evictJust && evictedNow && atStart.length >= 4) {
+        const set = writeSetPiece('evictnight', { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) }, [], { gone: evictedNow, at: at + 0.5 });
+        if (set) (host.scenes ||= []).push(set);
+      }
+      airAfter(host, ctx); airEngine(ctx, atStart, sceneBefore); queueAfter(sceneBefore); stretchBeats = []; return;
+    }
     const cand = pending.filter(p => {
       const need = NEEDS_WEEK[`${p.line.type}.${p.step.step}`];
       if (need && !clock[need]) return false;
@@ -520,7 +532,7 @@ export function airStorylines(week) {
     // played inside the kitchen set piece
     const inSet = inside.filter(x => !x.sc.ownRoom);
     const set = atStart.length >= 4
-      ? writeSetPiece(setFor(ctx), { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) }, inSet.map(x => x.sc), { gone: lastGone, at: pending[0].step.at - 0.5 }) : null;
+      ? writeSetPiece(setFor(ctx), { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) }, inSet.map(x => x.sc), { gone: clock.evictJust && evictedNow ? evictedNow : lastGone, at: pending[0].step.at - 0.5 }) : null;
     if (set) (firstAct.scenes ||= []).push(set);
     for (const { p, sc } of inside) {
       p.step.aired = true; p.beat.aired = true; note(p);
@@ -674,6 +686,8 @@ export function airStorylines(week) {
       stretch++;
       clock.hohJust = act.type === 'hoh';
       clock.nomsJust = act.type === 'nominations';
+      clock.evictJust = act.type === 'eviction' && !!act.evicted;
+      if (clock.evictJust) evictedNow = act.evicted;
       if (act.type === 'hoh') clock.hoh = true;
       if (act.type === 'nominations') clock.noms = true;
       if (act.type === 'veto') clock.veto = true;

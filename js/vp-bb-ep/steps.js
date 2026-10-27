@@ -3935,7 +3935,7 @@ const SET_OF_ROOM = r => { const s = ROOM_SET[r] || 'ceremony'; return s === 'dr
 // When in the day a scene is (the user, 2026-10-06: the "wow" list, a card at every cut). Set
 // pieces have their hour (dinner is the evening); a scene that stages itself late or early
 // keeps to it; the rest spread across the day in the order they aired, never going backwards.
-const AT_SET = { morningafter: 9.5, hohroom: 15, afternoms: 16, dinner: 19.5, gamenight: 21.5, backyard: 14, firstnight: 20, firstbed: 25.5 };
+const AT_SET = { morningafter: 9.5, evictnight: 22.5, hohroom: 15, afternoms: 16, dinner: 19.5, gamenight: 21.5, backyard: 14, firstnight: 20, firstbed: 25.5 };
 function clockOf(sc, i, k, prev) {
   const first = String((sc.lines || []).find(l => l.kind === 'beat')?.text || '');
   let t = sc.type === 'set' && AT_SET[sc.step] != null ? AT_SET[sc.step]

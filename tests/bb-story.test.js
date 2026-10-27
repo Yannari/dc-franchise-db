@@ -31,7 +31,7 @@ function season(seed, weeks) {
   Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7, bbHaveNots: 'off', bbSafetyMode: 'off' });
   const eps = [];
   for (let w = 0; w < weeks; w++) eps.push(JSON.parse(JSON.stringify(withSeededRandom(seed * 100 + w, () => simulateBBEpisode()))));
-  return { eps, lines: JSON.parse(JSON.stringify(gs.bb.storylines || [])) };
+  return { eps, lines: JSON.parse(JSON.stringify(gs.bb.storylines || [])), alliances: JSON.parse(JSON.stringify(gs.namedAlliances || [])) };
 }
 const A = season(4242, 4);
 
@@ -86,7 +86,7 @@ describe('the storyline pools', () => {
     for (const [key, pool] of all) for (const e of pool) {
       const text = e.turns.map(t => t.say || t.dr || t.beat).join(' ');
       // the first-night sets only air on night one; the morning after only after an eviction
-      if (/^set\.(firstnight|firstbed|morningafter)\./.test(key)) continue;
+      if (/^set\.(firstnight|firstbed|morningafter|evictnight)\./.test(key)) continue;
       // game talk written for later in the season (bb/story/gametalk.js) airs only then
       if (e.phase && !e.phase.includes('early')) continue;
       if (PAST.test(text) && !e.presumes && !CAUSED.test(key) && e.when?.early !== false) bad.push(`${key} ${e.id}`);
@@ -117,6 +117,34 @@ describe('the storyline pools', () => {
 
 describe('house life in real weeks', () => {
   const scenes = A.eps.flatMap(ep => ep.acts.flatMap(a => (a.scenes || []).map(sc => ({ ...sc, week: ep.num }))));
+
+  // the user, 2026-10-26: "house life right after the evictee interview rarely talk about the event of eviction night"
+  it('opens the night of every eviction on the house coming back from it, about who just left', () => {
+    let nights = 0;
+    for (const ep of A.eps) {
+      const ev = ep.acts.find(a => a?.type === 'eviction' && a.evicted);
+      if (!ev) continue;
+      nights++;
+      const night = ep.acts.slice(ep.acts.indexOf(ev)).flatMap(a => a.scenes || []).find(sc => sc.step === 'evictnight');
+      expect(night, `week ${ep.num}`).toBeTruthy();
+      expect(night.lines.map(l => l.text).join(' '), `week ${ep.num}`).toContain(ev.evicted);
+    }
+    expect(nights).toBeGreaterThan(1);
+  });
+
+  // ...and "i dont see a lot of alliance meeting before the votes", then "it doesnt have to be right after the vote":
+  // a meeting airs among the week's talk, before the vote, with the alliance's own members in it
+  it('puts an alliance meeting before the vote, with only that alliance in the room', () => {
+    for (const ep of A.eps) {
+      const ev = ep.acts.findIndex(a => a?.type === 'eviction');
+      ep.acts.forEach((a, i) => { for (const sc of (a.scenes || []).filter(x => /^votemeet\./.test(String(x.step)))) {
+        expect(i, `week ${ep.num}`).toBeLessThan(ev);
+        const group = (sc.why || []).join(' ').match(/^(.+?) meets to settle the vote/)?.[1];
+        const al = A.alliances?.find(x => x.name === group);
+        if (al) for (const n of sc.cast) expect(al.members, `week ${ep.num} ${group}`).toContain(n);
+      } });
+    }
+  });
 
   it('airs three to five whole conversations a stretch, not a pile of snippets', () => {
     expect(scenes.length).toBeGreaterThan(30);

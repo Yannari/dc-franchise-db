@@ -155,7 +155,8 @@ export function navHtml(active = activeHref()) {
 }
 
 export const SITE_HEADER_CSS = `
-.site-show-switch{display:flex;justify-content:center;padding:6px 12px 10px;}
+/* A column: a spin-off's tab row (Drag Race | All Stars) sits under the strip. */
+.site-show-switch{display:flex;flex-direction:column;align-items:center;padding:6px 12px 10px;}
 @media(max-width:640px){.site-show-switch{padding:4px 8px 8px;}}
 /* WHAT YEAR IT IS IN THERE.
    The franchise has a calendar and nothing ever said so out loud: you could
@@ -239,7 +240,7 @@ const STUDIO_CSS = `
 @media (max-width:640px){.bs-studio summary{padding:8px 8px;font-size:12px}}
 @media (max-width:440px){.header-top{gap:8px}.bs-actions{gap:4px}.bs-studio summary{padding:6px 6px;font-size:11px;letter-spacing:.06em}}
 /* The show switcher is wider than a phone: let it scroll inside its own row. */
-@media (max-width:760px){.site-show-switch{justify-content:flex-start;overflow-x:auto;scrollbar-width:none}.site-show-switch::-webkit-scrollbar{display:none}}
+@media (max-width:760px){.site-show-switch{align-items:flex-start;overflow-x:auto;scrollbar-width:none}.site-show-switch::-webkit-scrollbar{display:none}}
 `;
 
 /** Put the Studio menu beside the Simulator link (once). */

@@ -377,7 +377,8 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
   if (sw && house.includes(sw.from) && house.includes(sw.to)) {
     const mute = (week.acts || []).flatMap(x => x?.socialBeats || []).filter(x => x && !x.aired
       && ((sw.why === 'pitch' && x.eventId === 'power-hoh-pitch' && x.players?.[0] === sw.by && x.players?.[1] === hoh)
-        || (sw.why === 'bloc' && x.eventId === 'bloc-target-picked' && x.players?.[0] === hoh && x.players?.includes(sw.to))));
+        || (sw.why === 'bloc' && x.eventId === 'bloc-target-picked' && x.players?.[0] === hoh && x.players?.includes(sw.to))
+        || (sw.why === 'self' && x.eventId === 'power-hoh-self-pitch' && x.players?.[0] === sw.by && x.players?.[1] === hoh)));
     const who = sw.why === 'pitch' ? { a: hoh, b, c: sw.from, d: sw.to, e: sw.by } : { a: hoh, b, c: sw.from, d: sw.to };
     const n = out.length;
     want(`hohweek.switch.${sw.why}`, who);

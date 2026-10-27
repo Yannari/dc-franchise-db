@@ -589,8 +589,9 @@ const endgameSoleVoterCourt = {
   weight(house, ctx) {
     const scene = soleVoter(house, ctx);
     if (!scene) return 0;
-    // This is the whole afternoon at final four.
-    return fit(ctx, ctx?.act === 'campaign' ? 9 : 6);
+    // This is the whole afternoon at final four, and it happens once a season: loud, per the rare-state rule (at 9 it
+    // was eligible in every final four of five seeded seasons and lost every draw to the week's ordinary events)
+    return fit(ctx, ctx?.act === 'campaign' ? 14 : 8);
   },
   fire(house, ctx, api, rng = () => 0.5) {
     const scene = soleVoter(house, ctx);

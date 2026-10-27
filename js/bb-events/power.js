@@ -147,6 +147,62 @@ const hohPitch = {
 };
 
 /**
+ * The target climbs the stairs for themselves.
+ *
+ * The other half of the HOH room (the user, 2026-10-26, asked whether an HOH can change their mind over a
+ * pitch, and wanted the one that was missing: somebody who has heard they might be going up, making their own
+ * case). The same contest as a pitch: how persuasive they are, and how much the HOH already likes them,
+ * against how well the HOH reads people and how set the plan already is. Landing it takes them off the plan
+ * (bb/week.js takeSwitch, `why: 'self'`) and a name the HOH likes less goes in; failing makes it worse,
+ * because the HOH has now watched them beg.
+ */
+const hohSelfPitch = {
+  id: 'power-hoh-self-pitch',
+  location: 'hoh-room',
+  category: 'deals',
+  weight(house, ctx) {
+    const hoh = _hoh(ctx);
+    if (!hoh || house.length < 5 || _blockKnown(ctx)) return 0;
+    // the house has to know who holds the key to go up and ask them
+    if (ctx?.week?.hohSecret || ctx?.week?._selfPitched) return 0;
+    const aim = _aim(ctx, hoh);
+    if (!aim || aim === hoh || !house.includes(aim)) return 0;
+    return band(5);
+  },
+  fire(house, ctx, api, rng) {
+    const hoh = _hoh(ctx);
+    const pitcher = _aim(ctx, hoh);
+    if (ctx?.week) ctx.week._selfPitched = true;
+    // who goes up instead: the houseguest the HOH likes least, other than the one asking
+    const instead = furthestFrom(hoh, _others(house, hoh, pitcher));
+    const ps = pStats(pitcher), hs = pStats(hoh);
+    const push = ps.social * 0.45 + ps.strategic * 0.3 + perceived(hoh, pitcher) * 0.7;
+    // a plan already made is harder to move than a name somebody else brings: +1
+    const resist = hs.intuition * 0.4 + hs.strategic * 0.35 + 1 + (grudge(hoh, pitcher) ? 2.5 : 0);
+    const lands = !!instead && push + (rng() * 5 - 2.5) > resist;
+
+    if (lands) {
+      api.setTarget(hoh, instead, `${pitcher} talked their way off the list`);
+      if (ctx?.week && ctx.week.hoh === hoh) (ctx.week.planSwitch ||= []).push({ to: instead, why: 'self', by: pitcher });
+      api.addBond(hoh, pitcher, 0.6);
+      api.remember(hoh, pitcher, 'promise', 2, { about: 'swore they would never come after me' });
+      api.remember(pitcher, hoh, 'trust', 1, { about: 'heard me out and changed their mind' });
+    } else {
+      api.suspicion(hoh, pitcher, 0.8);
+      api.remember(hoh, pitcher, 'grievance', 1, { about: 'came up and begged' });
+      api.addBond(hoh, pitcher, -0.4);
+    }
+    const scene = makeScene('talk.self-pitch', { a: pitcher, b: hoh }, { ending: lands ? 'lands' : 'fails' }, [], 'hoh-room');
+    scene.seenBy = [pitcher, hoh];
+    return {
+      scene, players: [pitcher, hoh],
+      badgeText: lands ? 'TALKED THEIR WAY OUT' : 'BEGGED AND LOST',
+      badgeClass: lands ? 'blue' : 'red',
+    };
+  },
+};
+
+/**
  * Who came up, and who very deliberately did not.
  *
  * The HOH room is a register of loyalty that nobody signs. Staying away reads
@@ -1153,7 +1209,7 @@ const fearsTheBackdoor = {
 };
 
 export const POWER_EVENTS = [
-  hohPitch, hohRoomTraffic, hohWeight, hohPromise,
+  hohPitch, hohSelfPitch, hohRoomTraffic, hohWeight, hohPromise,
   hohRoomReveal, hohRoomCourt, hohRoomOverstay, hohRoomQueue, hohRoomLastNight, hohRoomSpy,
   hohDeciding, pawnAsk, backdoorPlan, nomEveGuessing,
   savedThemselves, replacementReacts, vetoHolderFallout, nobodySurprised,

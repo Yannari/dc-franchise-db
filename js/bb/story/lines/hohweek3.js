@@ -197,6 +197,40 @@ export default {
       { by: 'a', dr: "{c} can wait. I'd rather face {c} on my own than face {d} and everybody {d} brings." },
     ] },
   ],
+  // {c}, the HOH's target, came up and talked their way off the plan (bb-events/power.js power-hoh-self-pitch);
+  // {d} is the name the HOH likes least instead. {b} is the HOH's closest.
+  'talk.hohweek.switch.self': [
+    { id: 'hw3.ss1', room: 'hoh-room', turns: [
+      { beat: 'HOH room. {b} comes up and finds {a} lying on the bed, staring at the ceiling.' },
+      { by: 'b', say: "What's wrong?" },
+      { by: 'a', say: "{c} came up here." },
+      { by: 'b', say: "To beg?" },
+      { by: 'a', say: "No. That's the thing. {c} didn't beg. {c} just talked to me, straight, and asked me to think about it." },
+      { by: 'b', say: "And did you?" },
+      { by: 'a', say: "I can't stop thinking about it. Maybe it shouldn't be {c}. Maybe it should be {d}." },
+      { by: 'a', dr: "I was sure about {c} this morning. Then {c} came up those stairs and made more sense than anybody else has all week." },
+    ] },
+    { id: 'hw3.ss2', room: 'hoh-room', turns: [
+      { beat: 'HOH room. {a} is sitting on the end of the bed. {b} closes the door.' },
+      { by: 'b', say: "You've gone quiet. What happened?" },
+      { by: 'a', say: "{c} came up and asked me why {c}. And I didn't have a good answer." },
+      { by: 'b', say: "So you're not putting {c} up?" },
+      { by: 'a', say: "I don't know. Honestly, I trust {d} a lot less than I trust {c}." },
+      { by: 'b', say: "That's a big change." },
+      { by: 'a', say: "I know. I hate it." },
+      { by: 'a', dr: "Nobody's ever talked me out of anything before. {c} might have just done it." },
+    ] },
+    { id: 'hw3.ss3', room: 'backyard', turns: [
+      { beat: 'The backyard, late. {a} and {b} are walking laps, keeping their voices down.' },
+      { by: 'b', say: "Is it still {c}?" },
+      { by: 'a', say: "I don't think so." },
+      { by: 'b', say: "What? Since when?" },
+      { by: 'a', say: "Since {c} came up and talked to me. {c} could be on my side. I don't think that's true of everybody." },
+      { by: 'b', say: "And {d}?" },
+      { by: 'a', say: "{d}? I've never trusted {d}." },
+      { by: 'a', dr: "{c} might be more useful to me in this house than out of it. I can't say that about {d}." },
+    ] },
+  ],
   // ════ after the veto meeting: the backdoor, landed or not ════
   // {a} the HOH, {b} their closest person, {c} the backdoor target, {d} who held or went up
   'talk.hohweek.backdoor.landed': [

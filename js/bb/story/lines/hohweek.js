@@ -393,7 +393,7 @@ export default {
       { by: 'a', say: "Then at least I didn't waste a trip up the stairs." },
       { by: 'a', dr: "Everybody who goes up those stairs is asking {c} for something. I'd rather {c} forgot I exist this week." },
     ] },
-    { id: 'hw.fo2', room: 'backyard', turns: [
+    { id: 'hw.fo2', room: 'backyard', presumes: ['nowon'], turns: [
       { beat: 'Backyard. {a} is lying on a lounger with eyes shut, while the house queues on the HOH stairs.' },
       { by: 'b', say: "Aren't you worried?" },
       { by: 'a', say: "About what? I'm not in anybody's way. I haven't won anything. I haven't lied to anybody." },

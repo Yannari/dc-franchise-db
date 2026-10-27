@@ -25,7 +25,7 @@ const POOL = (Array.isArray(R) ? R : R.players || Object.values(R)[0]).filter(p 
 const CONVERTED = {
   campaign: 'deals-vote-pitch', 'final-two': 'deals-final-two', safety: 'deals-safety',
   debrief: 'deals-numbers-check', reaffirm: 'deals-reaffirm', confront: 'social-blow-up',
-  gossip: 'social-info-trade', comfort: 'social-comfort-block', 'pitch-target': 'power-hoh-pitch',
+  gossip: 'social-info-trade', comfort: 'social-comfort-block', 'pitch-target': 'power-hoh-pitch', 'self-pitch': 'power-hoh-self-pitch',
   'hoh-visit': 'power-hoh-room-court', 'hoh-decide': 'power-hoh-deciding',
 };
 // Phase 6: the rest of the house, converted a file at a time. Each batch adds its ids.
@@ -184,7 +184,15 @@ const EVENT_IDS = new Set([...Object.values(CONVERTED), ...PHASE6, ...LAYER]);
 // in twist seasons by the Phase 6 harness instead.
 const TWIST_ONLY = new Set(['kin-ex-relapse', 'kin-ex-unrequited', 'kin-ex-cold-war', 'kin-estranged-attempt', 'kin-family-shield', 'kin-family-compared', 'kin-partners-strain', 'kin-partners-break', 'kin-exfriends-apology', 'kin-known-before', 'kin-blood-question', 'past-surfaces', 'past-nominated-again', 'past-settled-tonight', 'past-known-for-it', 'hacker-benefit-math', 'hacker-swapped-in-hunts', 'hacker-hoh-disowns', 'hacker-seat-witness', 'hacker-missing-vote', 'hacker-silenced-voter', 'hacker-round-table', 'hacker-alibi-trade', 'hacker-false-claim', 'hacker-performed-confusion', 'pandora-price-resented', 'pandora-story-tested', 'pandora-doubters-compare', 'pandora-would-you-open', 'pandora-watching-for-it', 'pandora-oversells', 'pandora-left-closed', 'pandora-still-paying', 'split-picked-last', 'split-missing-ally', 'split-small-room', 'split-through-the-wall', 'split-odd-couple', 'split-rehearsing-reunion', 'split-comparing-weeks', 'temptation-carries-it', 'temptation-hunting', 'temptation-innocent-pays', 'temptation-would-you-take-it', 'temptation-performing-sympathy', 'temptation-refused', 'temptation-afterwards', 'invisible-whodunit-circle', 'invisible-accusation', 'invisible-false-credit', 'invisible-performed-innocence', 'invisible-alibi-pact', 'invisible-nominee-detective', 'nightmare-came-down', 'nightmare-went-up', 'nightmare-counts-the-room', 'nightmare-hoh-after', 'care-country-favourite', 'care-passed-over', 'care-the-costume', 'care-appointed-co-hoh', 'care-silenced-in-public', 'care-public-money', 'coup-dethroned', 'coup-seated', 'coup-saved-debt', 'coup-now-a-target', 'coup-afterwards', 'vetovar-courted-in-the-dark', 'vetovar-two-medallions', 'vetovar-left-in-the-box', 'vetovar-no-say-in-it', 'suite-plus-one', 'suite-spent-for-nothing', 'suite-held-it-and-lost', 'suite-counting-entries', 'suite-when-to-spend', 'coin-dethroned-by-nobody', 'coin-paid-in-public', 'coin-kept-their-money', 'coin-seated-by-nobody', 'coin-called-it-quietly', 'team-the-tell', 'team-the-saboteur', 'team-the-reluctance', 'team-the-cover', 'americas-chair', 'americas-hunt', 'americas-outside-room', 'americas-playing-to-camera', 'americas-mvp-quiet', 'hrr-walked-in', 'hrr-lost-the-seat', 'hrr-wheeled-up', 'hrr-derby-second-veto', 'punish-not-taken-seriously', 'punish-the-horn', 'punish-the-tether', 'punish-pity', 'camp-still-at-the-table', 'camp-honest-voice', 'camp-one-is-coming-back', 'camp-the-room', 'exchange-chose-the-money', 'exchange-the-robbery', 'exchange-gave-it-away', 'exchange-out-of-the-boxes', 'wildcard-serving', 'wildcard-refusal-tested', 'wildcard-wearing-it', 'returned-first-morning', 'returned-re-priced', 'returned-door-defender', 'locust-called-out-survived', 'locust-closest-call', 'locust-no-vote-to-argue-with', 'locust-asterisk-reign', 'cliques-covered', 'cliques-heading-holds', 'cliques-on-your-own', 'camp-director-needled', 'camp-director-survivor', 'camp-director-empty-chair', 'premiere-rich-man', 'premiere-named-the-four', 'secret-comp-anomaly', 'evictionpower-still-here', 'evictionpower-spent-it', 'side-bet-counts-the-rail', 'side-bet-collected', 'roadkill-third-key-theory', 'roadkill-accused-defends', 'roadkill-second-signature', 'whack-declared-it', 'whack-crowded-room', 'whack-stayed-shut', 'whack-sat-it-out', 'whack-suspect-list', 'whack-hoh-watched', 'whack-being-normal', 'whack-still-watching', 'havenot-slop-argument', 'havenot-sleep-deprived-snap', 'havenot-cold-shower-solidarity', 'havenot-selection-resentment', 'havenot-midnight-kitchen-watch', 'life-have-nots', 'twist-announcement-bravado', 'twist-announcement-recalc', 'twist-announcement-dread', 'powerknown-arithmetic', 'powerknown-wait', 'powerknown-flush', 'powerknown-spent-mark']);
 const RARE = new Set(['alliance-deflected-blame', 'alliance-misattributed', 'alliance-betrayal-unseen', 'bond-first-kiss', 'reign-carve-it-up', 'reign-works-both-rooms', 'scheme-kiss-trap',
-  'showmance-hiding-it', 'showmance-defined', 'showmance-separate-campaigns', 'showmance-block-pressure']);
+  'showmance-hiding-it', 'showmance-defined', 'showmance-separate-campaigns', 'showmance-block-pressure',
+  // one chance a season: the final-four campaign, where it is up for a single slot (measured 2026-10-26: eligible in
+  // every final four of five seasons, at the top weight, and it still lost the one draw in all five)
+  'arc-endgame-sole-voter-court',
+  // a backdoor week where the backdoor's real target is drawn to play the veto: red on its own before the seasons
+  // went to five, and again whenever an unrelated weight moves the draws
+  'backdoor-target-played-veto',
+  // a backdoor that lands: in five seasons twice, at the top weight, against the meeting's other top-weight beats
+  'veto-backdoor-lands']);
 
 function playSeason(seed, shift) {
   const cast = Array.from({ length: 14 }, (_, i) => POOL[(i * 11 + 3 + shift) % POOL.length]).map(p => ({ name: p.name,
@@ -206,8 +214,11 @@ const record = eps => eps.map(ep => [ep.hoh, ...(ep.initialNominees || []), ep.v
 let seasons = [];
 // Four seasons: an event that needs a particular kind of HOH (a hothead making nominations
 // personal, a veto holder saving a friend) can miss three by chance once the house's draws move
-// (they moved with the first-night and cause gates, 2026-10-05).
-beforeAll(() => { seasons = [playSeason(4242, 0), playSeason(777, 5), playSeason(31337, 10), playSeason(2026, 15)]; }, 900000);
+// (they moved with the first-night and cause gates, 2026-10-05). Five since 2026-10-26: a backdoor target drawn into
+// the veto, a pawn in danger and the endgame's single voter took turns missing four, one more each time a new
+// event joined the draw (power-hoh-self-pitch was the last).
+const SEEDS = [[4242, 0], [777, 5], [31337, 10], [2026, 15], [9091, 20]];
+beforeAll(() => { seasons = SEEDS.map(([seed, shift]) => playSeason(seed, shift)); }, 900000);
 
 describe('converting the words did not change the game', () => {
   it('plays the same season with the words muted', () => {
@@ -307,7 +318,7 @@ describe('people sound like themselves', () => {
     const registers = new Set();
     for (let i = 0; i < seasons.length; i++) {
       const eps = seasons[i];
-      playSeason([4242, 777, 31337, 2026][i], [0, 5, 10, 15][i]);   // the season's players, for registerOf
+      playSeason(...SEEDS[i]);   // the season's players, for registerOf
       for (const b of beatsOf(eps)) {
         const want = byId.get(b.lineId)?.when?.register;
         if (!want) continue;

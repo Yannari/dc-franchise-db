@@ -99,6 +99,7 @@ const TALK_WHY = {
   'hohweek.backdoor.dodged': '{a}\'s backdoor on {c} is dead: {c} won the veto, and a veto holder cannot be put up.',
   'hohweek.backdoor.missed': '{a} meant to put {c} up in the empty chair, but {d} went up instead.',
   'hohweek.switch.pitch': '{a} changes the plan: {e} came up with a name, and the target is now {d}, not {c}.',
+  'hohweek.switch.self': '{a} changes the plan: {c} was the target, came up to the HOH room and made a case, and now it is {d} instead.',
   'hohweek.switch.bloc': '{a} changes the plan: {d} is part of a group that sticks together, and breaking it matters more than {c}.',
   'hohweek.fish.honest': '{b} is {a}\'s real target, and goes to the HOH room to ask. {a} tells the truth.',
   'hohweek.fish.deflect': '{b} is {a}\'s real target, and goes to the HOH room to ask. {a} will not say.',
@@ -210,6 +211,8 @@ function presumed(entry, ctx, who = null) {
     // won: {a} has really won something (the user, 2026-10-26, on "Because I keep winning?" from somebody who had
     // won nothing: "he didnt won one time hes just a threat based on his stat")
     if (p === 'won' && !(who?.a && hasWon(who.a, ctx))) return false;
+    // ...and nowon: {a} says they have not ("I haven't won anything", the user, 2026-10-26: "but she won two comp")
+    if (p === 'nowon' && who?.a && hasWon(who.a, ctx)) return false;
   }
   // a line written for one stage of the season (bb/story/lines/gametalk.js) airs only then
   if (entry.phase && !entry.phase.includes(ctx.phase || 'early')) return false;
